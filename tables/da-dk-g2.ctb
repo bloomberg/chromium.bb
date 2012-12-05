@@ -2,6 +2,7 @@
 #
 #  Copyright (C) 2009 ViewPlus Technologies, Inc. www.viewplus.com and
 #  JJB Software, Inc. www.jjb-software.com
+# Copyright (C) 2012 by Mesar Hameed <mhameed@src.gnome.org>
 #
 #  This file is part of liblouis.
 
@@ -20,7 +21,7 @@
 #  <http://www.gnu.org/licenses/>.
 
 # April 21, 1997: Danske Punktskriftnævn - 1993
-# Danish table (with the danish braille authorityæs 1993 braille code changes)
+# Danish table (with the danish braille authority's 1993 braille code changes)
 
 include da-dk-g1.utb
 
@@ -77,8 +78,8 @@ always deno 1456-1345-135
 always denu 1456-1345-136
 always deny 1456-1345-13456
 always denâ 1456-1345-16
-always denå 1456-1345-345
 always denå 1456-1345-16
+always denä 1456-1345-345
 always denæ 1456-1345-345
 always denö 1456-1345-246
 always denø 1456-1345-246
@@ -106,7 +107,7 @@ always deror 1456-1235-1346
 word derover 23456-1346
 always dero 1456-1235-135
 word derpâ 23456-1234
-word derpâ 23456-1234
+word derpå 23456-1234
 word dersom 23456-234
 word dertil 23456-2345
 word derunder 23456-12345
@@ -114,7 +115,7 @@ always deru 1456-1235-136
 word derved 23456-1236
 always dery 1456-1235-13456
 always derâ 1456-1235-16
-always derâ 1456-1235-345
+always derä 1456-1235-345
 always derå 1456-1235-16
 always deræ 1456-1235-345
 always derö 1456-1235-246
@@ -133,7 +134,7 @@ always deti 1456-2345-24
 always deto 1456-2345-135
 always detu 1456-2345-136
 always detâ 1456-2345-16
-always detâ 1456-2345-345
+always detä 1456-2345-345
 always detå 1456-2345-16
 always detæ 1456-2345-345
 always detö 1456-2345-246
@@ -164,7 +165,7 @@ always endo 126-145-135
 always endu 126-145-136
 always endy 126-145-13456
 always endâ 126-145-16
-always endâ 126-145-345
+always endä 126-145-345
 always endå 126-145-16
 always endæ 126-145-345
 always endö 126-145-246
@@ -209,7 +210,7 @@ always eror 15-1235-1346
 always ero =
 always eru =
 always ery =
-always erâ 15-1235-345
+always erä 15-1235-345
 always erâ 15-1235-16
 always eræ 15-1235-345
 always erö 15-1235-246
@@ -270,8 +271,9 @@ always gendi 1245-126-145-24
 always gendor 1245-126-145-1346
 always gendo 1245-126-145-135
 always gendu 1245-126-145-136
-always gendâ 1245-126-145-345
 always gendâ 1245-126-145-16
+always gendå 1245-126-145-16
+always gendä 1245-126-145-345
 always gendæ 1245-126-145-345
 always gendö 1245-126-145-246
 always gendø 1245-126-145-246
@@ -291,8 +293,9 @@ always genop 1245-126-135-1234
 always geno 12456-1345-135
 always genu 12456-1345-136
 always geny 12456-1345-13456
-always genâ 12456-1345-345
 always genâ 12456-1345-16
+always genå 12456-1345-16
+always genä 12456-1345-345
 always genæ 12456-1345-345
 always genö 12456-1345-246
 always genø 12456-1345-246
@@ -305,8 +308,9 @@ always geri 12456-1235-24
 always gero 12456-1235-135
 always geru 12456-1235-136
 always gery 12456-1235-13456
-always gerâ 12456-1235-345
 always gerâ 12456-1235-16
+always gerå 12456-1235-16
+always gerä 12456-1235-345
 always geræ 12456-1235-345
 always gerö 12456-1235-246
 always gerø 12456-1235-246
@@ -319,8 +323,9 @@ always geti 12456-24
 always geto 12456-135
 always getu 12456-136
 always gety 12456-13456
-always getâ 12456-345
 always getâ 12456-16
+always getå 12456-16
+always getä 12456-345
 always getæ 12456-345
 always getö 12456-246
 always getø 12456-246
@@ -359,10 +364,10 @@ word hvorigennem 34-24-12456
 word hvorledes 34-15
 word hvormed 34-134
 word hvornâr 34-1345
-word hvornâr 34-1345
+word hvornår 34-1345
 word hvorover 34-1346
 word hvorpâ 34-1234
-word hvorpâ 34-1234
+word hvorpå 34-1234
 word hvortil 34-2345
 word hvorunder 34-12345
 word hvorved 34-1236
@@ -384,8 +389,9 @@ always igor 24-1245-1346
 always igo =
 always igu =
 always igy =
-always igâ 25-1245-345
 always igâ 25-1245-16
+always igå 25-1245-16
+always igä 25-1245-345
 always igæ 25-1245-345
 always igö 25-1245-246
 always igø 25-1245-246
@@ -433,8 +439,9 @@ always mendi 134-126-145-24
 always mendor 134-126-145-1346
 always mendo 134-126-145-135
 always mendu 134-126-145-136
-always mendâ 134-126-145-345
 always mendâ 134-126-145-16
+always mendå 134-126-145-16
+always mendä 134-126-145-345
 always mendæ 134-126-145-345
 always mendö 134-126-145-246
 always mendø 134-126-145-246
@@ -447,8 +454,9 @@ always meni 146-1345-24
 always meno 146-1345-135
 always menu 146-1345-136
 always meny 146-1345-13456
-always menâ 146-1456-345
 always menâ 146-1456-16
+always menå 146-1456-16
+always menä 146-1456-345
 always menæ 146-1456-345
 always menö 146-1456-246
 always menø 146-1456-246
@@ -463,8 +471,9 @@ always meri 146-1235-24
 always mero 146-1235-135
 always meru 146-1235-136
 always mery 146-1235-13456
-always merâ 146-1235-345
 always merâ 146-1235-16
+always merå 146-1235-16
+always merä 146-1235-345
 always meræ 146-1235-345
 always merö 146-1235-246
 always merø 146-1235-246
@@ -478,8 +487,9 @@ always meti 146-2345-24
 always meto 146-2345-135
 always metu 146-2345-136
 always mety 146-2345-13456
-always metâ 146-2345-345
 always metâ 146-2345-16
+always metå 146-2345-16
+always metä 146-2345-345
 always metæ 146-2345-345
 always metö 146-2345-246
 always metø 146-2345-246
@@ -518,8 +528,9 @@ always ndre 1345-145-12356
 always ndr =
 always ndu =
 always ndy =
-always ndâ 1345-145-345
 always ndâ 1345-145-16
+always ndå 1345-145-16
+always ndä 1345-145-345
 always ndæ 1345-145-345
 always ndö 1345-145-246
 always ndø 1345-145-246
@@ -532,8 +543,9 @@ always nendi 1345-126-145-24
 always nendo 1345-126-145-135
 always nendu 1345-126-145-136
 always nendy 1345-126-145-13456
-always nendâ 1345-126-145-345
 always nendâ 1345-126-145-16
+always nendå 1345-126-145-16
+always nendä 1345-126-145-345
 always nendæ 1345-126-145-345
 always nendö 1345-126-145-246
 always nendø 1345-126-145-246
@@ -545,8 +557,9 @@ always nenor 1246-1345-1346
 always neno 1246-1345-136
 always nenu 1246-1345-136
 always neny 1246-1345-13456
-always nenâ 1246-1345-345
 always nenâ 1246-1345-16
+always nenå 1246-1345-16
+always nenä 1246-1345-345
 always nenæ 1246-1345-345
 always nenö 1246-1345-246
 always nenø 1246-1345-246
@@ -566,8 +579,9 @@ always neror 1246-1235-1346
 always nero 1246-1235-135
 always neru 1246-1235-136
 always nery 1246-1235-13456
-always nerâ 1246-1235-345
 always nerâ 1246-1235-16
+always nerå 1246-1235-16
+always nerä 1246-1235-345
 always neræ 1246-1235-345
 always nerö 1246-1235-246
 always nerø 1246-1235-246
@@ -588,8 +602,9 @@ always netor 1246-2345-1346
 always neto 1246-2345-135
 always netu 1246-2345-136
 always nety 1246-2345-13456
-always netâ 1246-2345-345
 always netâ 1246-2345-16
+always netå 1246-2345-16
+always netä 1246-2345-345
 always netæ 1246-2345-345
 always netö 1246-2345-246
 always netø 1246-2345-246
@@ -599,11 +614,11 @@ word nogen 1345-1345
 word noget 1345-2345
 word nogle 1345-123-15
 word nâr 1345
-word nâr 1345
+word når 1345
 
 # letter o
 word ogsâ 14-16
-word ogsâ 14-16
+word også 14-16
 word og 25
 word omkring 135-134-13
 word op 135
@@ -632,8 +647,9 @@ always oror 135-1235-1346
 always oro =
 always oru =
 always ory =
-always orâ 135-1235-345
 always orâ 135-1235-16
+always orå 135-1235-16
+always orä 135-1235-345
 always oræ 135-1235-345
 always orö 135-1235-246
 always orø 135-1235-246
@@ -647,7 +663,7 @@ always pristager 1234-1235-24-234-2345-1-1245-156
 always pristage 1234-1235-24-234-2345-1-12456
 always pristag =
 word pâ 1234
-word pâ 1234
+word på 1234
 
 # letter r
 always rena 12356-1345-1
@@ -662,8 +678,9 @@ always rendor 1235-126-145-1346
 always rendo 1235-126-145-135
 always rendu 1235-126-145-136
 always rendy 1235-126-145-13456
-always rendâ 1235-126-145-345
 always rendâ 1235-126-145-16
+always rendå 1235-126-145-16
+always rendä 1235-126-145-345
 always rendæ 1235-126-145-345
 always rendö 1235-126-145-246
 always rendø 1235-126-145-246
@@ -682,8 +699,9 @@ always renor 12356-1345-1346
 always reno 12356-1345-135
 always renu 12356-1345-136
 always reny 12356-1345-13456
-always renâ 12356-1345-345
 always renâ 12356-1345-16
+always renå 12356-1345-16
+always renä 12356-1345-345
 always renæ 12356-1345-345
 always renö 12356-1345-246
 always renø 12356-1345-246
@@ -703,8 +721,9 @@ always reror 12356-1235-1346
 always rero 12356-1235-135
 always reru 12356-1235-136
 always rery 12356-1235-13456
-always rerâ 12356-1235-345
 always rerâ 12356-1235-16
+always rerå 12356-1235-16
+always rerä 12356-1235-345
 always reræ 12356-1235-345
 always rerö 12356-1235-246
 always rerø 12356-1235-246
@@ -725,8 +744,9 @@ always retor 12356-2345-1346
 always reto 12356-2345-135
 always retu 12356-2345-136
 always rety 12356-2345-13456
-always retâ 12356-2345-345
 always retâ 12356-2345-16
+always retå 12356-2345-16
+always retä 12356-2345-345
 always retæ 12356-2345-345
 always retö 12356-2345-246
 always retø 12356-2345-246
@@ -776,8 +796,9 @@ always tendor 2345-126-145-1346
 always tendo 2345-126-145-135
 always tendu 2345-126-145-136
 always tendy 2345-126-145-13456
-always tendâ 2345-126-145-345
 always tendâ 2345-126-145-16
+always tendå 2345-126-145-16
+always tendä 2345-126-145-345
 always tendæ 2345-126-145-345
 always tendö 2345-126-145-246
 always tendø 2345-126-145-246
@@ -795,8 +816,9 @@ always tenor 1256-1345-1346
 always teno 1256-1345-135
 always tenu 1256-1345-136
 always teny 1256-1345-13456
-always tenâ 1256-1345-345
 always tenâ 1256-1345-16
+always tenå 1256-1345-16
+always tenä 1256-1345-345
 always tenæ 1256-1345-345
 always tenö 1256-1345-246
 always tenø 1256-1345-246
@@ -819,7 +841,8 @@ always tero 1256-1235-135
 always teru 1256-1235-136
 always tery 1256-1235-13456
 always terâ 1256-1235-16
-always terâ 1256-1235-345
+always terå 1256-1235-16
+always terä 1256-1235-345
 always teræ 1256-1235-345
 always terö 1256-1235-246
 always terø 1256-1235-246
@@ -841,8 +864,9 @@ always tetor 1256-2345-1346
 always teto 1256-2345-135
 always tetu 1256-2345-136
 always tety 1256-2345-13456
-always tetâ 1256-2345-345
 always tetâ 1256-2345-16
+always tetå 1256-2345-16
+always tetä 1256-2345-345
 always tetæ 1256-2345-345
 always tetö 1256-2345-246
 always tetø 1256-2345-246
@@ -894,8 +918,9 @@ always vendi 1236-126-145-24
 always vendo 1236-126-145-135
 always vendu 1236-126-145-136
 always vendy 1236-126-145-13456
-always vendâ 1236-126-145-345
 always vendâ 1236-126-145-16
+always vendå 1236-126-145-16
+always vendä 1236-126-145-345
 always vendæ 1236-126-145-345
 always vendö 1236-126-145-246
 always vendø 1236-126-145-246
@@ -929,7 +954,8 @@ always vero 3456-1235-135
 always veru 3456-1235-136
 always very 3456-1235-13456
 always verâ 3456-1235-16
-always verâ 3456-1235-345
+always verå 3456-1235-16
+always verä 3456-1235-345
 always veræ 3456-1235-345
 always verö 3456-1235-246
 always verø 3456-1235-246
@@ -952,7 +978,8 @@ always veto 3456-2345-135
 always vetu 3456-2345-136
 always vety 3456-2345-13456
 always vetâ 3456-2345-16
-always vetâ 3456-2345-345
+always vetå 3456-2345-16
+always vetä 3456-2345-345
 always vetæ 3456-2345-345
 always vetö 3456-2345-246
 always vetø 3456-2345-246

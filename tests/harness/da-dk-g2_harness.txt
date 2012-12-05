@@ -1,3170 +1,6126 @@
 {
+  "tables": [
+    "unicode.dis", 
+    "da-dk-g2.ctb"
+  ], 
   "tests": [
     {
-      "flags": {
-        "outputUniBrl": true
-      },
       "data": [
         {
+          "comment": [
+            "word af 356"
+          ], 
+          "input": " af ", 
+          "output": " ⠴ "
+        }, 
+        {
+          "comment": [
+            "word aldrig 1-35"
+          ], 
+          "input": " aldrig ", 
+          "output": " ⠁⠔ "
+        }, 
+        {
+          "comment": [
+            "word alle 1256"
+          ], 
+          "input": " alle ", 
+          "output": " ⠳ "
+        }, 
+        {
+          "comment": [
+            "word allerede 1-123-1235"
+          ], 
+          "input": " allerede ", 
+          "output": " ⠁⠇⠗ "
+        }, 
+        {
+          "comment": [
+            "word alligevel 1-123-1236"
+          ], 
+          "input": " alligevel ", 
+          "output": " ⠁⠇⠧ "
+        }, 
+        {
+          "comment": [
+            "word altid 1-2345-145"
+          ], 
+          "input": " altid ", 
+          "output": " ⠁⠞⠙ "
+        }, 
+        {
+          "comment": [
+            "word altsâ 1-16"
+          ], 
+          "input": " altsâ ", 
+          "output": " ⠁⠡ "
+        }, 
+        {
+          "comment": [
+            "word altså 1-16"
+          ], 
+          "input": " altså ", 
+          "output": " ⠁⠡ "
+        }, 
+        {
+          "comment": [
+            "word at 1"
+          ], 
+          "input": " at ", 
+          "output": " ⠁ "
+        }, 
+        {
+          "comment": [
+            "always bagefter 12-1-1245-15-124-2345-156"
+          ], 
           "input": "bagefter", 
           "output": "⠃⠁⠛⠑⠋⠞⠱"
         }, 
         {
+          "comment": [
+            "always betre 12-15-2345-12356"
+          ], 
           "input": "betre", 
           "output": "⠃⠑⠞⠷"
         }, 
         {
+          "comment": [
+            "always betr 12-15-2345-1235"
+          ], 
           "input": "betr", 
           "output": "⠃⠑⠞⠗"
         }, 
         {
+          "comment": [
+            "always betv 12-15-2345-1236"
+          ], 
           "input": "betv", 
           "output": "⠃⠑⠞⠧"
         }, 
         {
+          "comment": [
+            "always bety 12-15-2345-12346"
+          ], 
           "input": "bety", 
           "output": "⠃⠑⠞⠯"
         }, 
         {
+          "comment": [
+            "word blevet 12-2345"
+          ], 
+          "input": " blevet ", 
+          "output": " ⠃⠞ "
+        }, 
+        {
+          "comment": [
+            "always blev 12-1236"
+          ], 
           "input": "blev", 
           "output": "⠃⠧"
         }, 
         {
+          "comment": [
+            "word blive 12-3456"
+          ], 
+          "input": " blive ", 
+          "output": " ⠃⠼ "
+        }, 
+        {
+          "comment": [
+            "word bliver 12"
+          ], 
+          "input": " bliver ", 
+          "output": " ⠃ "
+        }, 
+        {
+          "comment": [
+            "always denda 12346-145-1"
+          ], 
           "input": "denda", 
           "output": "⠯⠙⠁"
         }, 
         {
+          "comment": [
+            "always denden 12346-12346"
+          ], 
           "input": "denden", 
           "output": "⠯⠯"
         }, 
         {
+          "comment": [
+            "always dender 12346-23456"
+          ], 
           "input": "dender", 
           "output": "⠯⠾"
         }, 
         {
+          "comment": [
+            "always dendet 12346-2346"
+          ], 
           "input": "dendet", 
           "output": "⠯⠮"
         }, 
         {
+          "comment": [
+            "always dende 12346-1456"
+          ], 
           "input": "dende", 
           "output": "⠯⠹"
         }, 
         {
+          "comment": [
+            "always dendi 12346-145-24"
+          ], 
           "input": "dendi", 
           "output": "⠯⠙⠊"
         }, 
         {
+          "comment": [
+            "always dendo 12346-145-135"
+          ], 
           "input": "dendo", 
           "output": "⠯⠙⠕"
         }, 
         {
+          "comment": [
+            "always dendu 12346-145-136"
+          ], 
           "input": "dendu", 
           "output": "⠯⠙⠥"
         }, 
         {
+          "comment": [
+            "always dendy 12346-145-13456"
+          ], 
           "input": "dendy", 
           "output": "⠯⠙⠽"
         }, 
         {
-          "input": "dendæ", 
-          "output": "⠯⠙⠜"
-        }, 
-        {
+          "comment": [
+            "always dendâ 12346-145-16"
+          ], 
           "input": "dendâ", 
           "output": "⠯⠙⠡"
         }, 
         {
+          "comment": [
+            "always dendå 12346-145-16"
+          ], 
           "input": "dendå", 
           "output": "⠯⠙⠡"
         }, 
         {
+          "comment": [
+            "always dendæ 12346-145-345"
+          ], 
           "input": "dendæ", 
           "output": "⠯⠙⠜"
         }, 
         {
-          "input": "dendæ", 
-          "output": "⠯⠙⠜"
-        }, 
-        {
+          "comment": [
+            "always dendö 12346-145-246"
+          ], 
           "input": "dendö", 
           "output": "⠯⠙⠪"
         }, 
         {
+          "comment": [
+            "always dendø 12346-145-246"
+          ], 
           "input": "dendø", 
           "output": "⠯⠙⠪"
         }, 
         {
+          "comment": [
+            "always dend 1456-12345"
+          ], 
           "input": "dend", 
           "output": "⠹⠟"
         }, 
         {
+          "comment": [
+            "always denend 1456-1246-12345"
+          ], 
           "input": "denend", 
           "output": "⠹⠫⠟"
         }, 
         {
+          "comment": [
+            "always denene 1456-1246-1246"
+          ], 
           "input": "denene", 
           "output": "⠹⠫⠫"
         }, 
         {
+          "comment": [
+            "always denen 1456-1345-126"
+          ], 
           "input": "denen", 
           "output": "⠹⠝⠣"
         }, 
         {
+          "comment": [
+            "always denere 1456-1246-12356"
+          ], 
           "input": "denere", 
           "output": "⠹⠫⠷"
         }, 
         {
+          "comment": [
+            "always dener 1456-1345-12345"
+          ], 
           "input": "dener", 
           "output": "⠹⠝⠟"
         }, 
         {
+          "comment": [
+            "always denete 1456-1246-1256"
+          ], 
           "input": "denete", 
           "output": "⠹⠫⠳"
         }, 
         {
+          "comment": [
+            "always denet 1456-1345-346"
+          ], 
           "input": "denet", 
           "output": "⠹⠝⠬"
         }, 
         {
+          "comment": [
+            "always dene 1456-1246"
+          ], 
           "input": "dene", 
           "output": "⠹⠫"
         }, 
         {
+          "comment": [
+            "always deni 1456-1345-24"
+          ], 
           "input": "deni", 
           "output": "⠹⠝⠊"
         }, 
         {
+          "comment": [
+            "always denore 1456-1345-135-12356"
+          ], 
           "input": "denore", 
           "output": "⠹⠝⠕⠷"
         }, 
         {
+          "comment": [
+            "always denor 1456-1345-1346"
+          ], 
           "input": "denor", 
           "output": "⠹⠝⠭"
         }, 
         {
+          "comment": [
+            "always deno 1456-1345-135"
+          ], 
           "input": "deno", 
           "output": "⠹⠝⠕"
         }, 
         {
+          "comment": [
+            "always denu 1456-1345-136"
+          ], 
           "input": "denu", 
           "output": "⠹⠝⠥"
         }, 
         {
+          "comment": [
+            "always deny 1456-1345-13456"
+          ], 
           "input": "deny", 
           "output": "⠹⠝⠽"
         }, 
         {
-          "input": "denæ", 
-          "output": "⠹⠝⠜"
-        }, 
-        {
+          "comment": [
+            "always denâ 1456-1345-16"
+          ], 
           "input": "denâ", 
           "output": "⠹⠝⠡"
         }, 
         {
-          "input": "denå", 
-          "output": "⠹⠝⠜"
-        }, 
-        {
+          "comment": [
+            "always denå 1456-1345-16"
+          ], 
           "input": "denå", 
           "output": "⠹⠝⠡"
         }, 
         {
+          "comment": [
+            "always denä 1456-1345-345"
+          ], 
+          "input": "denä", 
+          "output": "⠹⠝⠜"
+        }, 
+        {
+          "comment": [
+            "always denæ 1456-1345-345"
+          ], 
           "input": "denæ", 
           "output": "⠹⠝⠜"
         }, 
         {
-          "input": "denæ", 
-          "output": "⠹⠝⠜"
-        }, 
-        {
+          "comment": [
+            "always denö 1456-1345-246"
+          ], 
           "input": "denö", 
           "output": "⠹⠝⠪"
         }, 
         {
+          "comment": [
+            "always denø 1456-1345-246"
+          ], 
           "input": "denø", 
           "output": "⠹⠝⠪"
         }, 
         {
+          "comment": [
+            "always den 12346"
+          ], 
           "input": "den", 
           "output": "⠯"
         }, 
         {
+          "comment": [
+            "always dera 1456-1235-1"
+          ], 
           "input": "dera", 
           "output": "⠹⠗⠁"
         }, 
         {
+          "comment": [
+            "word derefter 23456-1356"
+          ], 
+          "input": " derefter ", 
+          "output": " ⠾⠵ "
+        }, 
+        {
+          "comment": [
+            "always derend 1456-12356-12345"
+          ], 
           "input": "derend", 
           "output": "⠹⠷⠟"
         }, 
         {
+          "comment": [
+            "always derene 1456-12356-1246"
+          ], 
           "input": "derene", 
           "output": "⠹⠷⠫"
         }, 
         {
+          "comment": [
+            "always deren 1456-1235-126"
+          ], 
           "input": "deren", 
           "output": "⠹⠗⠣"
         }, 
         {
+          "comment": [
+            "always derere 1456-12356-12356"
+          ], 
           "input": "derere", 
           "output": "⠹⠷⠷"
         }, 
         {
+          "comment": [
+            "always derer 1456-1235-156"
+          ], 
           "input": "derer", 
           "output": "⠹⠗⠱"
         }, 
         {
+          "comment": [
+            "word deres 256"
+          ], 
+          "input": " deres ", 
+          "output": " ⠲ "
+        }, 
+        {
+          "comment": [
+            "always derete 1456-12356-1256"
+          ], 
           "input": "derete", 
           "output": "⠹⠷⠳"
         }, 
         {
+          "comment": [
+            "always deret 1456-1235-346"
+          ], 
           "input": "deret", 
           "output": "⠹⠗⠬"
         }, 
         {
+          "comment": [
+            "always dere 1456-12356"
+          ], 
           "input": "dere", 
           "output": "⠹⠷"
         }, 
         {
+          "comment": [
+            "word derfor 23456-124"
+          ], 
+          "input": " derfor ", 
+          "output": " ⠾⠋ "
+        }, 
+        {
+          "comment": [
+            "word derigennem 23456-24-12456"
+          ], 
+          "input": " derigennem ", 
+          "output": " ⠾⠊⠻ "
+        }, 
+        {
+          "comment": [
+            "always derige 1456-1235-24-12456"
+          ], 
           "input": "derige", 
           "output": "⠹⠗⠊⠻"
         }, 
         {
+          "comment": [
+            "always derig 1456-1235-35"
+          ], 
           "input": "derig", 
           "output": "⠹⠗⠔"
         }, 
         {
+          "comment": [
+            "always deri 1456-1235-24"
+          ], 
           "input": "deri", 
           "output": "⠹⠗⠊"
         }, 
         {
+          "comment": [
+            "word dermed 23456-134"
+          ], 
+          "input": " dermed ", 
+          "output": " ⠾⠍ "
+        }, 
+        {
+          "comment": [
+            "word derned 23456-1246"
+          ], 
+          "input": " derned ", 
+          "output": " ⠾⠫ "
+        }, 
+        {
+          "comment": [
+            "word derop 23456-135"
+          ], 
+          "input": " derop ", 
+          "output": " ⠾⠕ "
+        }, 
+        {
+          "comment": [
+            "always deror 1456-1235-1346"
+          ], 
           "input": "deror", 
           "output": "⠹⠗⠭"
         }, 
         {
+          "comment": [
+            "word derover 23456-1346"
+          ], 
+          "input": " derover ", 
+          "output": " ⠾⠭ "
+        }, 
+        {
+          "comment": [
+            "always dero 1456-1235-135"
+          ], 
           "input": "dero", 
           "output": "⠹⠗⠕"
         }, 
         {
+          "comment": [
+            "word derpâ 23456-1234"
+          ], 
+          "input": " derpâ ", 
+          "output": " ⠾⠏ "
+        }, 
+        {
+          "comment": [
+            "word derpå 23456-1234"
+          ], 
+          "input": " derpå ", 
+          "output": " ⠾⠏ "
+        }, 
+        {
+          "comment": [
+            "word dersom 23456-234"
+          ], 
+          "input": " dersom ", 
+          "output": " ⠾⠎ "
+        }, 
+        {
+          "comment": [
+            "word dertil 23456-2345"
+          ], 
+          "input": " dertil ", 
+          "output": " ⠾⠞ "
+        }, 
+        {
+          "comment": [
+            "word derunder 23456-12345"
+          ], 
+          "input": " derunder ", 
+          "output": " ⠾⠟ "
+        }, 
+        {
+          "comment": [
+            "always deru 1456-1235-136"
+          ], 
           "input": "deru", 
           "output": "⠹⠗⠥"
         }, 
         {
+          "comment": [
+            "word derved 23456-1236"
+          ], 
+          "input": " derved ", 
+          "output": " ⠾⠧ "
+        }, 
+        {
+          "comment": [
+            "always dery 1456-1235-13456"
+          ], 
           "input": "dery", 
           "output": "⠹⠗⠽"
         }, 
         {
-          "input": "deræ", 
-          "output": "⠹⠗⠜"
-        }, 
-        {
+          "comment": [
+            "always derâ 1456-1235-16"
+          ], 
           "input": "derâ", 
           "output": "⠹⠗⠡"
         }, 
         {
-          "input": "derâ", 
+          "comment": [
+            "always derä 1456-1235-345"
+          ], 
+          "input": "derä", 
           "output": "⠹⠗⠜"
         }, 
         {
+          "comment": [
+            "always derå 1456-1235-16"
+          ], 
           "input": "derå", 
           "output": "⠹⠗⠡"
         }, 
         {
+          "comment": [
+            "always deræ 1456-1235-345"
+          ], 
           "input": "deræ", 
           "output": "⠹⠗⠜"
         }, 
         {
-          "input": "deræ", 
-          "output": "⠹⠗⠜"
-        }, 
-        {
+          "comment": [
+            "always derö 1456-1235-246"
+          ], 
           "input": "derö", 
           "output": "⠹⠗⠪"
         }, 
         {
+          "comment": [
+            "always derø 1456-1235-246"
+          ], 
           "input": "derø", 
           "output": "⠹⠗⠪"
         }, 
         {
+          "comment": [
+            "always der 23456"
+          ], 
           "input": "der", 
           "output": "⠾"
         }, 
         {
+          "comment": [
+            "always deta 1456-2345-1"
+          ], 
           "input": "deta", 
           "output": "⠹⠞⠁"
         }, 
         {
+          "comment": [
+            "always detend 1456-1256-12345"
+          ], 
           "input": "detend", 
           "output": "⠹⠳⠟"
         }, 
         {
+          "comment": [
+            "always detene 1456-1256-1246"
+          ], 
           "input": "detene", 
           "output": "⠹⠳⠫"
         }, 
         {
+          "comment": [
+            "always deten 1456-2345-126"
+          ], 
           "input": "deten", 
           "output": "⠹⠞⠣"
         }, 
         {
+          "comment": [
+            "always detere 1456-1256-12356"
+          ], 
           "input": "detere", 
           "output": "⠹⠳⠷"
         }, 
         {
+          "comment": [
+            "always deter 1456-2345-156"
+          ], 
           "input": "deter", 
           "output": "⠹⠞⠱"
         }, 
         {
+          "comment": [
+            "always detete 1456-1256-1256"
+          ], 
           "input": "detete", 
           "output": "⠹⠳⠳"
         }, 
         {
+          "comment": [
+            "always detet 1456-2345-346"
+          ], 
           "input": "detet", 
           "output": "⠹⠞⠬"
         }, 
         {
+          "comment": [
+            "always dete 1456-1256"
+          ], 
           "input": "dete", 
           "output": "⠹⠳"
         }, 
         {
+          "comment": [
+            "always deti 1456-2345-24"
+          ], 
           "input": "deti", 
           "output": "⠹⠞⠊"
         }, 
         {
+          "comment": [
+            "always deto 1456-2345-135"
+          ], 
           "input": "deto", 
           "output": "⠹⠞⠕"
         }, 
         {
+          "comment": [
+            "always detu 1456-2345-136"
+          ], 
           "input": "detu", 
           "output": "⠹⠞⠥"
         }, 
         {
-          "input": "detæ", 
-          "output": "⠹⠞⠜"
-        }, 
-        {
+          "comment": [
+            "always detâ 1456-2345-16"
+          ], 
           "input": "detâ", 
           "output": "⠹⠞⠡"
         }, 
         {
-          "input": "detâ", 
+          "comment": [
+            "always detä 1456-2345-345"
+          ], 
+          "input": "detä", 
           "output": "⠹⠞⠜"
         }, 
         {
+          "comment": [
+            "always detå 1456-2345-16"
+          ], 
           "input": "detå", 
           "output": "⠹⠞⠡"
         }, 
         {
+          "comment": [
+            "always detæ 1456-2345-345"
+          ], 
           "input": "detæ", 
           "output": "⠹⠞⠜"
         }, 
         {
-          "input": "detæ", 
-          "output": "⠹⠞⠜"
-        }, 
-        {
+          "comment": [
+            "always detö 1456-2345-246"
+          ], 
           "input": "detö", 
           "output": "⠹⠞⠪"
         }, 
         {
+          "comment": [
+            "always detø 1456-2345-246"
+          ], 
           "input": "detø", 
           "output": "⠹⠞⠪"
         }, 
         {
+          "comment": [
+            "always det 2346"
+          ], 
           "input": "det", 
           "output": "⠮"
         }, 
         {
+          "comment": [
+            "always de 1456"
+          ], 
           "input": "de", 
           "output": "⠹"
         }, 
         {
+          "comment": [
+            "word din 145-1345"
+          ], 
+          "input": " din ", 
+          "output": " ⠙⠝ "
+        }, 
+        {
+          "comment": [
+            "word disse 145-234"
+          ], 
+          "input": " disse ", 
+          "output": " ⠙⠎ "
+        }, 
+        {
+          "comment": [
+            "word dit 145-2345"
+          ], 
+          "input": " dit ", 
+          "output": " ⠙⠞ "
+        }, 
+        {
+          "comment": [
+            "word du 145"
+          ], 
+          "input": " du ", 
+          "output": " ⠙ "
+        }, 
+        {
+          "comment": [
+            "word efter 1356"
+          ], 
+          "input": " efter ", 
+          "output": " ⠵ "
+        }, 
+        {
+          "comment": [
+            "word eller 15"
+          ], 
+          "input": " eller ", 
+          "output": " ⠑ "
+        }, 
+        {
+          "comment": [
+            "always ena 15-1345-1"
+          ], 
           "input": "ena", 
           "output": "⠑⠝⠁"
         }, 
         {
+          "comment": [
+            "always enda 126-145-1"
+          ], 
           "input": "enda", 
           "output": "⠣⠙⠁"
         }, 
         {
+          "comment": [
+            "always enden 126-12346"
+          ], 
           "input": "enden", 
           "output": "⠣⠯"
         }, 
         {
+          "comment": [
+            "always ender 126-23456"
+          ], 
           "input": "ender", 
           "output": "⠣⠾"
         }, 
         {
+          "comment": [
+            "always endet 126-2346"
+          ], 
           "input": "endet", 
           "output": "⠣⠮"
         }, 
         {
+          "comment": [
+            "always ende 126-1456"
+          ], 
           "input": "ende", 
           "output": "⠣⠹"
         }, 
         {
+          "comment": [
+            "always endi 126-145-24"
+          ], 
           "input": "endi", 
           "output": "⠣⠙⠊"
         }, 
         {
+          "comment": [
+            "word endnu 15-136"
+          ], 
+          "input": " endnu ", 
+          "output": " ⠑⠥ "
+        }, 
+        {
+          "comment": [
+            "always endor 126-145-136"
+          ], 
           "input": "endor", 
           "output": "⠣⠙⠥"
         }, 
         {
+          "comment": [
+            "always endo 126-145-135"
+          ], 
           "input": "endo", 
           "output": "⠣⠙⠕"
         }, 
         {
+          "comment": [
+            "always endu 126-145-136"
+          ], 
           "input": "endu", 
           "output": "⠣⠙⠥"
         }, 
         {
+          "comment": [
+            "always endy 126-145-13456"
+          ], 
           "input": "endy", 
           "output": "⠣⠙⠽"
         }, 
         {
-          "input": "endæ", 
-          "output": "⠣⠙⠜"
-        }, 
-        {
+          "comment": [
+            "always endâ 126-145-16"
+          ], 
           "input": "endâ", 
           "output": "⠣⠙⠡"
         }, 
         {
-          "input": "endâ", 
+          "comment": [
+            "always endä 126-145-345"
+          ], 
+          "input": "endä", 
           "output": "⠣⠙⠜"
         }, 
         {
+          "comment": [
+            "always endå 126-145-16"
+          ], 
           "input": "endå", 
           "output": "⠣⠙⠡"
         }, 
         {
+          "comment": [
+            "always endæ 126-145-345"
+          ], 
           "input": "endæ", 
           "output": "⠣⠙⠜"
         }, 
         {
-          "input": "endæ", 
-          "output": "⠣⠙⠜"
-        }, 
-        {
+          "comment": [
+            "always endö 126-145-246"
+          ], 
           "input": "endö", 
           "output": "⠣⠙⠪"
         }, 
         {
+          "comment": [
+            "always endø 126-145-246"
+          ], 
           "input": "endø", 
           "output": "⠣⠙⠪"
         }, 
         {
+          "comment": [
+            "always end 15-12345"
+          ], 
           "input": "end", 
           "output": "⠑⠟"
         }, 
         {
+          "comment": [
+            "always enend 126-1246-145-246"
+          ], 
           "input": "enend", 
           "output": "⠣⠫⠙⠪"
         }, 
         {
+          "comment": [
+            "always enene 15-1246-1246"
+          ], 
           "input": "enene", 
           "output": "⠑⠫⠫"
         }, 
         {
+          "comment": [
+            "always enen 15-1345-126"
+          ], 
           "input": "enen", 
           "output": "⠑⠝⠣"
         }, 
         {
+          "comment": [
+            "always enere 15-1246-12356"
+          ], 
           "input": "enere", 
           "output": "⠑⠫⠷"
         }, 
         {
+          "comment": [
+            "always ener 15-1345-156"
+          ], 
           "input": "ener", 
           "output": "⠑⠝⠱"
         }, 
         {
+          "comment": [
+            "always enete 15-1246-1256"
+          ], 
           "input": "enete", 
           "output": "⠑⠫⠳"
         }, 
         {
+          "comment": [
+            "always enet 15-1345-346"
+          ], 
           "input": "enet", 
           "output": "⠑⠝⠬"
         }, 
         {
+          "comment": [
+            "always ene 15-1246"
+          ], 
           "input": "ene", 
           "output": "⠑⠫"
         }, 
         {
+          "comment": [
+            "always eni 15-1345-24"
+          ], 
           "input": "eni", 
           "output": "⠑⠝⠊"
         }, 
         {
+          "comment": [
+            "always enore 15-1345-135-12356"
+          ], 
           "input": "enore", 
           "output": "⠑⠝⠕⠷"
         }, 
         {
+          "comment": [
+            "always enor 15-1345-1346"
+          ], 
           "input": "enor", 
           "output": "⠑⠝⠭"
         }, 
         {
-          "input": "enæ", 
-          "output": "⠑⠝⠜"
-        }, 
-        {
-          "input": "enâ", 
-          "output": "⠑⠝⠡"
-        }, 
-        {
+          "comment": [
+            "always enâ 15-1345-345"
+          ], 
           "input": "enâ", 
           "output": "⠑⠝⠜"
         }, 
         {
+          "comment": [
+            "always enå 15-1345-16"
+          ], 
           "input": "enå", 
           "output": "⠑⠝⠡"
         }, 
         {
-          "input": "enæ", 
-          "output": "⠑⠝⠜"
-        }, 
-        {
+          "comment": [
+            "always enæ 15-1345-126"
+          ], 
           "input": "enæ", 
           "output": "⠑⠝⠣"
         }, 
         {
+          "comment": [
+            "always enö 15-1345-246"
+          ], 
           "input": "enö", 
           "output": "⠑⠝⠪"
         }, 
         {
+          "comment": [
+            "always enø 15-1345-246"
+          ], 
           "input": "enø", 
           "output": "⠑⠝⠪"
         }, 
         {
+          "comment": [
+            "always en 126"
+          ], 
           "input": "en", 
           "output": "⠣"
         }, 
         {
+          "comment": [
+            "always erend 15-12356-12345"
+          ], 
           "input": "erend", 
           "output": "⠑⠷⠟"
         }, 
         {
+          "comment": [
+            "always erenen 15-12356-1345-126"
+          ], 
           "input": "erenen", 
           "output": "⠑⠷⠝⠣"
         }, 
         {
+          "comment": [
+            "always erener 15-12356-1345-156"
+          ], 
           "input": "erener", 
           "output": "⠑⠷⠝⠱"
         }, 
         {
+          "comment": [
+            "always erenet 15-12356-1345-346"
+          ], 
           "input": "erenet", 
           "output": "⠑⠷⠝⠬"
         }, 
         {
+          "comment": [
+            "always erene 15-12356-1246"
+          ], 
           "input": "erene", 
           "output": "⠑⠷⠫"
         }, 
         {
+          "comment": [
+            "always eren 15-1235-126"
+          ], 
           "input": "eren", 
           "output": "⠑⠗⠣"
         }, 
         {
+          "comment": [
+            "always erere 15-12356-12356"
+          ], 
           "input": "erere", 
           "output": "⠑⠷⠷"
         }, 
         {
+          "comment": [
+            "always erer 15-1235-156"
+          ], 
           "input": "erer", 
           "output": "⠑⠗⠱"
         }, 
         {
+          "comment": [
+            "always erete 15-12356-1256"
+          ], 
           "input": "erete", 
           "output": "⠑⠷⠳"
         }, 
         {
+          "comment": [
+            "always eret 15-1235-346"
+          ], 
           "input": "eret", 
           "output": "⠑⠗⠬"
         }, 
         {
+          "comment": [
+            "always ere 15-12356"
+          ], 
           "input": "ere", 
           "output": "⠑⠷"
         }, 
         {
+          "comment": [
+            "always erige 15-1235-24-12456"
+          ], 
           "input": "erige", 
           "output": "⠑⠗⠊⠻"
         }, 
         {
+          "comment": [
+            "always erig 15-1235-35"
+          ], 
           "input": "erig", 
           "output": "⠑⠗⠔"
         }, 
         {
+          "comment": [
+            "always eror 15-1235-1346"
+          ], 
           "input": "eror", 
           "output": "⠑⠗⠭"
         }, 
         {
-          "input": "erâ", 
+          "comment": [
+            "always erä 15-1235-345"
+          ], 
+          "input": "erä", 
           "output": "⠑⠗⠜"
         }, 
         {
+          "comment": [
+            "always erâ 15-1235-16"
+          ], 
           "input": "erâ", 
           "output": "⠑⠗⠡"
         }, 
         {
+          "comment": [
+            "always eræ 15-1235-345"
+          ], 
           "input": "eræ", 
           "output": "⠑⠗⠜"
         }, 
         {
-          "input": "eræ", 
-          "output": "⠑⠗⠜"
-        }, 
-        {
+          "comment": [
+            "always erö 15-1235-246"
+          ], 
           "input": "erö", 
           "output": "⠑⠗⠪"
         }, 
         {
+          "comment": [
+            "always erø 15-1235-246"
+          ], 
           "input": "erø", 
           "output": "⠑⠗⠪"
         }, 
         {
+          "comment": [
+            "always er 156"
+          ], 
           "input": "er", 
           "output": "⠱"
         }, 
         {
+          "comment": [
+            "always etend 15-1256-12345"
+          ], 
           "input": "etend", 
           "output": "⠑⠳⠟"
         }, 
         {
+          "comment": [
+            "always etene 15-1256-1246"
+          ], 
           "input": "etene", 
           "output": "⠑⠳⠫"
         }, 
         {
+          "comment": [
+            "always eten 15-2345-126"
+          ], 
           "input": "eten", 
           "output": "⠑⠞⠣"
         }, 
         {
+          "comment": [
+            "always etere 15-1256-12356"
+          ], 
           "input": "etere", 
           "output": "⠑⠳⠷"
         }, 
         {
+          "comment": [
+            "always eter 15-2345-156"
+          ], 
           "input": "eter", 
           "output": "⠑⠞⠱"
         }, 
         {
+          "comment": [
+            "always etete 15-1256-1256"
+          ], 
           "input": "etete", 
           "output": "⠑⠳⠳"
         }, 
         {
+          "comment": [
+            "always etet 15-2345-346"
+          ], 
           "input": "etet", 
           "output": "⠑⠞⠬"
         }, 
         {
+          "comment": [
+            "always ete 15-1256"
+          ], 
           "input": "ete", 
           "output": "⠑⠳"
         }, 
         {
+          "comment": [
+            "always etore 15-2345-135-12356"
+          ], 
           "input": "etore", 
           "output": "⠑⠞⠕⠷"
         }, 
         {
+          "comment": [
+            "always etor 15-2345-1346"
+          ], 
           "input": "etor", 
           "output": "⠑⠞⠭"
         }, 
         {
-          "input": "etæ", 
-          "output": "⠑⠞⠜"
-        }, 
-        {
+          "comment": [
+            "always etâ 15-2345-345"
+          ], 
           "input": "etâ", 
           "output": "⠑⠞⠜"
         }, 
         {
-          "input": "etâ", 
-          "output": "⠑⠞⠜"
-        }, 
-        {
-          "input": "etâ", 
-          "output": "⠑⠞⠜"
-        }, 
-        {
+          "comment": [
+            "always etæ 15-2345-345"
+          ], 
           "input": "etæ", 
           "output": "⠑⠞⠜"
         }, 
         {
-          "input": "etæ", 
-          "output": "⠑⠞⠜"
-        }, 
-        {
+          "comment": [
+            "always etö 15-2345-246"
+          ], 
           "input": "etö", 
           "output": "⠑⠞⠪"
         }, 
         {
+          "comment": [
+            "always etø 15-2345-246"
+          ], 
           "input": "etø", 
           "output": "⠑⠞⠪"
         }, 
         {
+          "comment": [
+            "always et 346"
+          ], 
           "input": "et", 
           "output": "⠬"
         }, 
         {
+          "comment": [
+            "word fik 124-13"
+          ], 
+          "input": " fik ", 
+          "output": " ⠋⠅ "
+        }, 
+        {
+          "comment": [
+            "word fordi 124-145"
+          ], 
+          "input": " fordi ", 
+          "output": " ⠋⠙ "
+        }, 
+        {
+          "comment": [
+            "always forenen 124-1346-15-1345-126"
+          ], 
           "input": "forenen", 
           "output": "⠋⠭⠑⠝⠣"
         }, 
         {
+          "comment": [
+            "always forener 124-1346-15-1345-156"
+          ], 
           "input": "forener", 
           "output": "⠋⠭⠑⠝⠱"
         }, 
         {
+          "comment": [
+            "always forenet 124-1346-15-1345-346"
+          ], 
           "input": "forenet", 
           "output": "⠋⠭⠑⠝⠬"
         }, 
         {
+          "comment": [
+            "always forene 124-1346-15-1246"
+          ], 
           "input": "forene", 
           "output": "⠋⠭⠑⠫"
         }, 
         {
+          "comment": [
+            "word forskellige 124-123456-15"
+          ], 
+          "input": " forskellige ", 
+          "output": " ⠋⠿⠑ "
+        }, 
+        {
+          "comment": [
+            "word forskelligt 124-123456-2345"
+          ], 
+          "input": " forskelligt ", 
+          "output": " ⠋⠿⠞ "
+        }, 
+        {
+          "comment": [
+            "word forskellig 124-123456"
+          ], 
+          "input": " forskellig ", 
+          "output": " ⠋⠿ "
+        }, 
+        {
+          "comment": [
+            "always foru 124-1346-136"
+          ], 
           "input": "foru", 
           "output": "⠋⠭⠥"
         }, 
         {
+          "comment": [
+            "word for 145"
+          ], 
+          "input": " for ", 
+          "output": " ⠙ "
+        }, 
+        {
+          "comment": [
+            "word fra 235"
+          ], 
+          "input": " fra ", 
+          "output": " ⠖ "
+        }, 
+        {
+          "comment": [
+            "always fremef 124-12356-134-15-124"
+          ], 
           "input": "fremef", 
           "output": "⠋⠷⠍⠑⠋"
         }, 
         {
+          "comment": [
+            "word förste 124-1356-15"
+          ], 
+          "input": " förste ", 
+          "output": " ⠋⠵⠑ "
+        }, 
+        {
+          "comment": [
+            "word först 124-1356"
+          ], 
+          "input": " först ", 
+          "output": " ⠋⠵ "
+        }, 
+        {
+          "comment": [
+            "word för 246"
+          ], 
+          "input": " för ", 
+          "output": " ⠪ "
+        }, 
+        {
+          "comment": [
+            "word første 145-1356-15"
+          ], 
+          "input": " første ", 
+          "output": " ⠙⠵⠑ "
+        }, 
+        {
+          "comment": [
+            "word først 124-1356"
+          ], 
+          "input": " først ", 
+          "output": " ⠋⠵ "
+        }, 
+        {
+          "comment": [
+            "word før 12456"
+          ], 
+          "input": " før ", 
+          "output": " ⠻ "
+        }, 
+        {
+          "comment": [
+            "word ganske 1245-123456"
+          ], 
+          "input": " ganske ", 
+          "output": " ⠛⠿ "
+        }, 
+        {
+          "comment": [
+            "always genda 1245-126-145-1"
+          ], 
           "input": "genda", 
           "output": "⠛⠣⠙⠁"
         }, 
         {
+          "comment": [
+            "always genden 1245-126-12346"
+          ], 
           "input": "genden", 
           "output": "⠛⠣⠯"
         }, 
         {
+          "comment": [
+            "always gender 1245-126-23456"
+          ], 
           "input": "gender", 
           "output": "⠛⠣⠾"
         }, 
         {
+          "comment": [
+            "always gendet 1245-126-2346"
+          ], 
           "input": "gendet", 
           "output": "⠛⠣⠮"
         }, 
         {
+          "comment": [
+            "always gende 1245-126-1456"
+          ], 
           "input": "gende", 
           "output": "⠛⠣⠹"
         }, 
         {
+          "comment": [
+            "always gendig 1245-126-145-35"
+          ], 
           "input": "gendig", 
           "output": "⠛⠣⠙⠔"
         }, 
         {
+          "comment": [
+            "always gendi 1245-126-145-24"
+          ], 
           "input": "gendi", 
           "output": "⠛⠣⠙⠊"
         }, 
         {
+          "comment": [
+            "always gendor 1245-126-145-1346"
+          ], 
           "input": "gendor", 
           "output": "⠛⠣⠙⠭"
         }, 
         {
+          "comment": [
+            "always gendo 1245-126-145-135"
+          ], 
           "input": "gendo", 
           "output": "⠛⠣⠙⠕"
         }, 
         {
+          "comment": [
+            "always gendu 1245-126-145-136"
+          ], 
           "input": "gendu", 
           "output": "⠛⠣⠙⠥"
         }, 
         {
-          "input": "gendæ", 
-          "output": "⠛⠣⠙⠜"
-        }, 
-        {
+          "comment": [
+            "always gendâ 1245-126-145-16"
+          ], 
           "input": "gendâ", 
           "output": "⠛⠣⠙⠡"
         }, 
         {
-          "input": "gendâ", 
-          "output": "⠛⠣⠙⠜"
-        }, 
-        {
-          "input": "gendâ", 
+          "comment": [
+            "always gendå 1245-126-145-16"
+          ], 
+          "input": "gendå", 
           "output": "⠛⠣⠙⠡"
         }, 
         {
+          "comment": [
+            "always gendä 1245-126-145-345"
+          ], 
+          "input": "gendä", 
+          "output": "⠛⠣⠙⠜"
+        }, 
+        {
+          "comment": [
+            "always gendæ 1245-126-145-345"
+          ], 
           "input": "gendæ", 
           "output": "⠛⠣⠙⠜"
         }, 
         {
-          "input": "gendæ", 
-          "output": "⠛⠣⠙⠜"
-        }, 
-        {
+          "comment": [
+            "always gendö 1245-126-145-246"
+          ], 
           "input": "gendö", 
           "output": "⠛⠣⠙⠪"
         }, 
         {
+          "comment": [
+            "always gendø 1245-126-145-246"
+          ], 
           "input": "gendø", 
           "output": "⠛⠣⠙⠪"
         }, 
         {
+          "comment": [
+            "always gend 12456-12345"
+          ], 
           "input": "gend", 
           "output": "⠻⠟"
         }, 
         {
+          "comment": [
+            "always genen 12456-1345-126"
+          ], 
           "input": "genen", 
           "output": "⠻⠝⠣"
         }, 
         {
+          "comment": [
+            "always genera 12456-1246-1235-1"
+          ], 
           "input": "genera", 
           "output": "⠻⠫⠗⠁"
         }, 
         {
+          "comment": [
+            "always genere 12456-1246-12356"
+          ], 
           "input": "genere", 
           "output": "⠻⠫⠷"
         }, 
         {
+          "comment": [
+            "always generi 12456-1246-1235-24"
+          ], 
           "input": "generi", 
           "output": "⠻⠫⠗⠊"
         }, 
         {
+          "comment": [
+            "always genero 12456-1246-1235-135"
+          ], 
           "input": "genero", 
           "output": "⠻⠫⠗⠕"
         }, 
         {
+          "comment": [
+            "always generu 12456-1246-1235-136"
+          ], 
           "input": "generu", 
           "output": "⠻⠫⠗⠥"
         }, 
         {
+          "comment": [
+            "always gener 12456-1345-156"
+          ], 
           "input": "gener", 
           "output": "⠻⠝⠱"
         }, 
         {
+          "comment": [
+            "always genet 12456-1345-346"
+          ], 
           "input": "genet", 
           "output": "⠻⠝⠬"
         }, 
         {
+          "comment": [
+            "always gene 12456-1246"
+          ], 
           "input": "gene", 
           "output": "⠻⠫"
         }, 
         {
+          "comment": [
+            "always geni 12456-1345-24"
+          ], 
           "input": "geni", 
           "output": "⠻⠝⠊"
         }, 
         {
+          "comment": [
+            "word gennem 12456"
+          ], 
+          "input": " gennem ", 
+          "output": " ⠻ "
+        }, 
+        {
+          "comment": [
+            "always genop 1245-126-135-1234"
+          ], 
           "input": "genop", 
           "output": "⠛⠣⠕⠏"
         }, 
         {
+          "comment": [
+            "always geno 12456-1345-135"
+          ], 
           "input": "geno", 
           "output": "⠻⠝⠕"
         }, 
         {
+          "comment": [
+            "always genu 12456-1345-136"
+          ], 
           "input": "genu", 
           "output": "⠻⠝⠥"
         }, 
         {
+          "comment": [
+            "always geny 12456-1345-13456"
+          ], 
           "input": "geny", 
           "output": "⠻⠝⠽"
         }, 
         {
-          "input": "genæ", 
-          "output": "⠻⠝⠜"
-        }, 
-        {
+          "comment": [
+            "always genâ 12456-1345-16"
+          ], 
           "input": "genâ", 
           "output": "⠻⠝⠡"
         }, 
         {
-          "input": "genâ", 
-          "output": "⠻⠝⠜"
-        }, 
-        {
-          "input": "genâ", 
+          "comment": [
+            "always genå 12456-1345-16"
+          ], 
+          "input": "genå", 
           "output": "⠻⠝⠡"
         }, 
         {
+          "comment": [
+            "always genä 12456-1345-345"
+          ], 
+          "input": "genä", 
+          "output": "⠻⠝⠜"
+        }, 
+        {
+          "comment": [
+            "always genæ 12456-1345-345"
+          ], 
           "input": "genæ", 
           "output": "⠻⠝⠜"
         }, 
         {
-          "input": "genæ", 
-          "output": "⠻⠝⠜"
-        }, 
-        {
+          "comment": [
+            "always genö 12456-1345-246"
+          ], 
           "input": "genö", 
           "output": "⠻⠝⠪"
         }, 
         {
+          "comment": [
+            "always genø 12456-1345-246"
+          ], 
           "input": "genø", 
           "output": "⠻⠝⠪"
         }, 
         {
+          "comment": [
+            "always gen 1245-126"
+          ], 
           "input": "gen", 
           "output": "⠛⠣"
         }, 
         {
+          "comment": [
+            "always geren 12456-1235-126"
+          ], 
           "input": "geren", 
           "output": "⠻⠗⠣"
         }, 
         {
+          "comment": [
+            "always gerer 12456-1235-156"
+          ], 
           "input": "gerer", 
           "output": "⠻⠗⠱"
         }, 
         {
+          "comment": [
+            "always geret 12456-1235-346"
+          ], 
           "input": "geret", 
           "output": "⠻⠗⠬"
         }, 
         {
+          "comment": [
+            "always gere 12456-1246"
+          ], 
           "input": "gere", 
           "output": "⠻⠫"
         }, 
         {
+          "comment": [
+            "always geri 12456-1235-24"
+          ], 
           "input": "geri", 
           "output": "⠻⠗⠊"
         }, 
         {
+          "comment": [
+            "always gero 12456-1235-135"
+          ], 
           "input": "gero", 
           "output": "⠻⠗⠕"
         }, 
         {
+          "comment": [
+            "always geru 12456-1235-136"
+          ], 
           "input": "geru", 
           "output": "⠻⠗⠥"
         }, 
         {
+          "comment": [
+            "always gery 12456-1235-13456"
+          ], 
           "input": "gery", 
           "output": "⠻⠗⠽"
         }, 
         {
-          "input": "geræ", 
-          "output": "⠻⠗⠜"
-        }, 
-        {
+          "comment": [
+            "always gerâ 12456-1235-16"
+          ], 
           "input": "gerâ", 
           "output": "⠻⠗⠡"
         }, 
         {
-          "input": "gerâ", 
-          "output": "⠻⠗⠜"
-        }, 
-        {
-          "input": "gerâ", 
+          "comment": [
+            "always gerå 12456-1235-16"
+          ], 
+          "input": "gerå", 
           "output": "⠻⠗⠡"
         }, 
         {
+          "comment": [
+            "always gerä 12456-1235-345"
+          ], 
+          "input": "gerä", 
+          "output": "⠻⠗⠜"
+        }, 
+        {
+          "comment": [
+            "always geræ 12456-1235-345"
+          ], 
           "input": "geræ", 
           "output": "⠻⠗⠜"
         }, 
         {
-          "input": "geræ", 
-          "output": "⠻⠗⠜"
-        }, 
-        {
+          "comment": [
+            "always gerö 12456-1235-246"
+          ], 
           "input": "gerö", 
           "output": "⠻⠗⠪"
         }, 
         {
+          "comment": [
+            "always gerø 12456-1235-246"
+          ], 
           "input": "gerø", 
           "output": "⠻⠗⠪"
         }, 
         {
+          "comment": [
+            "always ger 1245-156"
+          ], 
           "input": "ger", 
           "output": "⠛⠱"
         }, 
         {
+          "comment": [
+            "always geten 12456-2345-126"
+          ], 
           "input": "geten", 
           "output": "⠻⠞⠣"
         }, 
         {
+          "comment": [
+            "always geter 12456-2345-156"
+          ], 
           "input": "geter", 
           "output": "⠻⠞⠱"
         }, 
         {
+          "comment": [
+            "always getet 12456-2345-346"
+          ], 
           "input": "getet", 
           "output": "⠻⠞⠬"
         }, 
         {
+          "comment": [
+            "always gete 12456-1256"
+          ], 
           "input": "gete", 
           "output": "⠻⠳"
         }, 
         {
+          "comment": [
+            "always geti 12456-24"
+          ], 
           "input": "geti", 
           "output": "⠻⠊"
         }, 
         {
+          "comment": [
+            "always geto 12456-135"
+          ], 
           "input": "geto", 
           "output": "⠻⠕"
         }, 
         {
+          "comment": [
+            "always getu 12456-136"
+          ], 
           "input": "getu", 
           "output": "⠻⠥"
         }, 
         {
+          "comment": [
+            "always gety 12456-13456"
+          ], 
           "input": "gety", 
           "output": "⠻⠽"
         }, 
         {
-          "input": "getæ", 
-          "output": "⠻⠜"
-        }, 
-        {
+          "comment": [
+            "always getâ 12456-16"
+          ], 
           "input": "getâ", 
           "output": "⠻⠡"
         }, 
         {
-          "input": "getâ", 
-          "output": "⠻⠜"
-        }, 
-        {
-          "input": "getâ", 
+          "comment": [
+            "always getå 12456-16"
+          ], 
+          "input": "getå", 
           "output": "⠻⠡"
         }, 
         {
+          "comment": [
+            "always getä 12456-345"
+          ], 
+          "input": "getä", 
+          "output": "⠻⠜"
+        }, 
+        {
+          "comment": [
+            "always getæ 12456-345"
+          ], 
           "input": "getæ", 
           "output": "⠻⠜"
         }, 
         {
-          "input": "getæ", 
-          "output": "⠻⠜"
-        }, 
-        {
+          "comment": [
+            "always getö 12456-246"
+          ], 
           "input": "getö", 
           "output": "⠻⠪"
         }, 
         {
+          "comment": [
+            "always getø 12456-246"
+          ], 
           "input": "getø", 
           "output": "⠻⠪"
         }, 
         {
+          "comment": [
+            "always get 1245-346"
+          ], 
           "input": "get", 
           "output": "⠛⠬"
         }, 
         {
+          "comment": [
+            "always ge 12456"
+          ], 
           "input": "ge", 
           "output": "⠻"
         }, 
         {
+          "comment": [
+            "word gik 1245-13"
+          ], 
+          "input": " gik ", 
+          "output": " ⠛⠅ "
+        }, 
+        {
+          "comment": [
+            "always grundele 1245-1235-136-12345-15-123-15"
+          ], 
           "input": "grundele", 
           "output": "⠛⠗⠥⠟⠑⠇⠑"
         }, 
         {
+          "comment": [
+            "word gör 1245"
+          ], 
+          "input": " gör ", 
+          "output": " ⠛ "
+        }, 
+        {
+          "comment": [
+            "word gør 1245"
+          ], 
+          "input": " gør ", 
+          "output": " ⠛ "
+        }, 
+        {
+          "comment": [
+            "word ham 236"
+          ], 
+          "input": " ham ", 
+          "output": " ⠦ "
+        }, 
+        {
+          "comment": [
+            "word hans 13456-234"
+          ], 
+          "input": " hans ", 
+          "output": " ⠽⠎ "
+        }, 
+        {
+          "comment": [
+            "word han 13456"
+          ], 
+          "input": " han ", 
+          "output": " ⠽ "
+        }, 
+        {
+          "comment": [
+            "word har 125"
+          ], 
+          "input": " har ", 
+          "output": " ⠓ "
+        }, 
+        {
+          "comment": [
+            "word havde 125-1456"
+          ], 
+          "input": " havde ", 
+          "output": " ⠓⠹ "
+        }, 
+        {
+          "comment": [
+            "word have 125-3456"
+          ], 
+          "input": " have ", 
+          "output": " ⠓⠼ "
+        }, 
+        {
+          "comment": [
+            "word helt 125-2345"
+          ], 
+          "input": " helt ", 
+          "output": " ⠓⠞ "
+        }, 
+        {
+          "comment": [
+            "word hendes 125-234"
+          ], 
+          "input": " hendes ", 
+          "output": " ⠓⠎ "
+        }, 
+        {
+          "comment": [
+            "word hende 125-145"
+          ], 
+          "input": " hende ", 
+          "output": " ⠓⠙ "
+        }, 
+        {
+          "comment": [
+            "always heref 125-156-15-124"
+          ], 
           "input": "heref", 
           "output": "⠓⠱⠑⠋"
         }, 
         {
+          "comment": [
+            "always herom 125-156-135-134"
+          ], 
           "input": "herom", 
           "output": "⠓⠱⠕⠍"
         }, 
         {
+          "comment": [
+            "word hun 136"
+          ], 
+          "input": " hun ", 
+          "output": " ⠥ "
+        }, 
+        {
+          "comment": [
+            "word hvad 2456"
+          ], 
+          "input": " hvad ", 
+          "output": " ⠺ "
+        }, 
+        {
+          "comment": [
+            "always hven 2456-126"
+          ], 
           "input": "hven", 
           "output": "⠺⠣"
         }, 
         {
+          "comment": [
+            "always hver 2456-156"
+          ], 
           "input": "hver", 
           "output": "⠺⠱"
         }, 
         {
+          "comment": [
+            "always hvet 2456-346"
+          ], 
           "input": "hvet", 
           "output": "⠺⠬"
         }, 
         {
+          "comment": [
+            "always hve 2456-15"
+          ], 
           "input": "hve", 
           "output": "⠺⠑"
         }, 
         {
+          "comment": [
+            "word hvis 2456-234"
+          ], 
+          "input": " hvis ", 
+          "output": " ⠺⠎ "
+        }, 
+        {
+          "comment": [
+            "always hvor/hvornâr 34-6-34-34-1345"
+          ], 
           "input": "hvor/hvornâr", 
           "output": "⠌⠠⠌⠌⠝"
         }, 
         {
+          "comment": [
+            "always hvor/ 34-6-34"
+          ], 
           "input": "hvor/", 
           "output": "⠌⠠⠌"
         }, 
         {
+          "comment": [
+            "word hvordan 34-1"
+          ], 
+          "input": " hvordan ", 
+          "output": " ⠌⠁ "
+        }, 
+        {
+          "comment": [
+            "word hvorefter 34-1356"
+          ], 
+          "input": " hvorefter ", 
+          "output": " ⠌⠵ "
+        }, 
+        {
+          "comment": [
+            "word hvorfor 34-124"
+          ], 
+          "input": " hvorfor ", 
+          "output": " ⠌⠋ "
+        }, 
+        {
+          "comment": [
+            "word hvorigennem 34-24-12456"
+          ], 
+          "input": " hvorigennem ", 
+          "output": " ⠌⠊⠻ "
+        }, 
+        {
+          "comment": [
+            "word hvorledes 34-15"
+          ], 
+          "input": " hvorledes ", 
+          "output": " ⠌⠑ "
+        }, 
+        {
+          "comment": [
+            "word hvormed 34-134"
+          ], 
+          "input": " hvormed ", 
+          "output": " ⠌⠍ "
+        }, 
+        {
+          "comment": [
+            "word hvornâr 34-1345"
+          ], 
+          "input": " hvornâr ", 
+          "output": " ⠌⠝ "
+        }, 
+        {
+          "comment": [
+            "word hvornår 34-1345"
+          ], 
+          "input": " hvornår ", 
+          "output": " ⠌⠝ "
+        }, 
+        {
+          "comment": [
+            "word hvorover 34-1346"
+          ], 
+          "input": " hvorover ", 
+          "output": " ⠌⠭ "
+        }, 
+        {
+          "comment": [
+            "word hvorpâ 34-1234"
+          ], 
+          "input": " hvorpâ ", 
+          "output": " ⠌⠏ "
+        }, 
+        {
+          "comment": [
+            "word hvorpå 34-1234"
+          ], 
+          "input": " hvorpå ", 
+          "output": " ⠌⠏ "
+        }, 
+        {
+          "comment": [
+            "word hvortil 34-2345"
+          ], 
+          "input": " hvortil ", 
+          "output": " ⠌⠞ "
+        }, 
+        {
+          "comment": [
+            "word hvorunder 34-12345"
+          ], 
+          "input": " hvorunder ", 
+          "output": " ⠌⠟ "
+        }, 
+        {
+          "comment": [
+            "word hvorved 34-1236"
+          ], 
+          "input": " hvorved ", 
+          "output": " ⠌⠧ "
+        }, 
+        {
+          "comment": [
+            "always hvor 34"
+          ], 
           "input": "hvor", 
           "output": "⠌"
         }, 
         {
+          "comment": [
+            "always hv 2456"
+          ], 
           "input": "hv", 
           "output": "⠺"
         }, 
         {
+          "comment": [
+            "always iga 24-1245-1"
+          ], 
           "input": "iga", 
           "output": "⠊⠛⠁"
         }, 
         {
+          "comment": [
+            "word igennemi 24-12456"
+          ], 
+          "input": " igennemi ", 
+          "output": " ⠊⠻ "
+        }, 
+        {
+          "comment": [
+            "word igen 35"
+          ], 
+          "input": " igen ", 
+          "output": " ⠔ "
+        }, 
+        {
+          "comment": [
+            "always igen 24-1245-126"
+          ], 
           "input": "igen", 
           "output": "⠊⠛⠣"
         }, 
         {
+          "comment": [
+            "always iger 24-1245-156"
+          ], 
           "input": "iger", 
           "output": "⠊⠛⠱"
         }, 
         {
+          "comment": [
+            "always iget 24-1245-346"
+          ], 
           "input": "iget", 
           "output": "⠊⠛⠬"
         }, 
         {
+          "comment": [
+            "always ige 24-12456"
+          ], 
           "input": "ige", 
           "output": "⠊⠻"
         }, 
         {
+          "comment": [
+            "always igig 24-1245-35"
+          ], 
           "input": "igig", 
           "output": "⠊⠛⠔"
         }, 
         {
+          "comment": [
+            "always igore 24-1245-135-12356"
+          ], 
           "input": "igore", 
           "output": "⠊⠛⠕⠷"
         }, 
         {
+          "comment": [
+            "always igor 24-1245-1346"
+          ], 
           "input": "igor", 
           "output": "⠊⠛⠭"
         }, 
         {
-          "input": "igæ", 
-          "output": "⠊⠛⠜"
-        }, 
-        {
-          "input": "igâ", 
-          "output": "⠊⠛⠡"
-        }, 
-        {
-          "input": "igâ", 
-          "output": "⠒⠛⠜"
-        }, 
-        {
+          "comment": [
+            "always igâ 25-1245-16"
+          ], 
           "input": "igâ", 
           "output": "⠒⠛⠡"
         }, 
         {
+          "comment": [
+            "always igå 25-1245-16"
+          ], 
+          "input": "igå", 
+          "output": "⠒⠛⠡"
+        }, 
+        {
+          "comment": [
+            "always igä 25-1245-345"
+          ], 
+          "input": "igä", 
+          "output": "⠒⠛⠜"
+        }, 
+        {
+          "comment": [
+            "always igæ 25-1245-345"
+          ], 
           "input": "igæ", 
           "output": "⠒⠛⠜"
         }, 
         {
-          "input": "igæ", 
-          "output": "⠒⠛⠜"
-        }, 
-        {
+          "comment": [
+            "always igö 25-1245-246"
+          ], 
           "input": "igö", 
           "output": "⠒⠛⠪"
         }, 
         {
+          "comment": [
+            "always igø 25-1245-246"
+          ], 
           "input": "igø", 
           "output": "⠒⠛⠪"
         }, 
         {
+          "comment": [
+            "always ig 35"
+          ], 
           "input": "ig", 
           "output": "⠔"
         }, 
         {
+          "comment": [
+            "word ikke 24-13"
+          ], 
+          "input": " ikke ", 
+          "output": " ⠊⠅ "
+        }, 
+        {
+          "comment": [
+            "word imidlertid 24-24"
+          ], 
+          "input": " imidlertid ", 
+          "output": " ⠊⠊ "
+        }, 
+        {
+          "comment": [
+            "word jeg 245"
+          ], 
+          "input": " jeg ", 
+          "output": " ⠚ "
+        }, 
+        {
+          "comment": [
+            "word kan 13"
+          ], 
+          "input": " kan ", 
+          "output": " ⠅ "
+        }, 
+        {
+          "comment": [
+            "always karaktereg 13-1-1235-1-13-234-156-15-1245"
+          ], 
           "input": "karaktereg", 
           "output": "⠅⠁⠗⠁⠅⠎⠱⠑⠛"
         }, 
         {
+          "comment": [
+            "always kendete 13-126-1456-1256"
+          ], 
           "input": "kendete", 
           "output": "⠅⠣⠹⠳"
         }, 
         {
+          "comment": [
+            "word kommer 13-156"
+          ], 
+          "input": " kommer ", 
+          "output": " ⠅⠱ "
+        }, 
+        {
+          "comment": [
+            "word kommet 13-346"
+          ], 
+          "input": " kommet ", 
+          "output": " ⠅⠬ "
+        }, 
+        {
+          "comment": [
+            "word komme 13-146"
+          ], 
+          "input": " komme ", 
+          "output": " ⠅⠩ "
+        }, 
+        {
+          "comment": [
+            "word kom 13-134"
+          ], 
+          "input": " kom ", 
+          "output": " ⠅⠍ "
+        }, 
+        {
+          "comment": [
+            "word kunne 13-1246"
+          ], 
+          "input": " kunne ", 
+          "output": " ⠅⠫ "
+        }, 
+        {
+          "comment": [
+            "word ligesom 123-234"
+          ], 
+          "input": " ligesom ", 
+          "output": " ⠇⠎ "
+        }, 
+        {
+          "comment": [
+            "word lige 123"
+          ], 
+          "input": " lige ", 
+          "output": " ⠇ "
+        }, 
+        {
+          "comment": [
+            "word lille 123-123"
+          ], 
+          "input": " lille ", 
+          "output": " ⠇⠇ "
+        }, 
+        {
+          "comment": [
+            "always lösköb 123-246-234-13-246-12"
+          ], 
           "input": "lösköb", 
           "output": "⠇⠪⠎⠅⠪⠃"
         }, 
         {
+          "comment": [
+            "always løskøb 123-246-234-13-246-12"
+          ], 
           "input": "løskøb", 
           "output": "⠇⠪⠎⠅⠪⠃"
         }, 
         {
+          "comment": [
+            "word mange 134-12456"
+          ], 
+          "input": " mange ", 
+          "output": " ⠍⠻ "
+        }, 
+        {
+          "comment": [
+            "word med 134"
+          ], 
+          "input": " med ", 
+          "output": " ⠍ "
+        }, 
+        {
+          "comment": [
+            "word megen 146-126"
+          ], 
+          "input": " megen ", 
+          "output": " ⠩⠣ "
+        }, 
+        {
+          "comment": [
+            "word meget 146-346"
+          ], 
+          "input": " meget ", 
+          "output": " ⠩⠬ "
+        }, 
+        {
+          "comment": [
+            "always mellemö 146-123-123-15-134-246"
+          ], 
           "input": "mellemö", 
           "output": "⠩⠇⠇⠑⠍⠪"
         }, 
         {
+          "comment": [
+            "always mellemø 146-123-123-15-134-246"
+          ], 
           "input": "mellemø", 
           "output": "⠩⠇⠇⠑⠍⠪"
         }, 
         {
+          "comment": [
+            "word mellem 146-134"
+          ], 
+          "input": " mellem ", 
+          "output": " ⠩⠍ "
+        }, 
+        {
+          "comment": [
+            "always mena 146-1345-1"
+          ], 
           "input": "mena", 
           "output": "⠩⠝⠁"
         }, 
         {
+          "comment": [
+            "always menda 134-126-145-1"
+          ], 
           "input": "menda", 
           "output": "⠍⠣⠙⠁"
         }, 
         {
+          "comment": [
+            "always menden 134-126-12346"
+          ], 
           "input": "menden", 
           "output": "⠍⠣⠯"
         }, 
         {
+          "comment": [
+            "always mender 134-126-23456"
+          ], 
           "input": "mender", 
           "output": "⠍⠣⠾"
         }, 
         {
+          "comment": [
+            "always mendet 134-126-2346"
+          ], 
           "input": "mendet", 
           "output": "⠍⠣⠮"
         }, 
         {
+          "comment": [
+            "always mende 134-126-1456"
+          ], 
           "input": "mende", 
           "output": "⠍⠣⠹"
         }, 
         {
+          "comment": [
+            "always mendig 134-126-145-35"
+          ], 
           "input": "mendig", 
           "output": "⠍⠣⠙⠔"
         }, 
         {
+          "comment": [
+            "always mendi 134-126-145-24"
+          ], 
           "input": "mendi", 
           "output": "⠍⠣⠙⠊"
         }, 
         {
+          "comment": [
+            "always mendor 134-126-145-1346"
+          ], 
           "input": "mendor", 
           "output": "⠍⠣⠙⠭"
         }, 
         {
+          "comment": [
+            "always mendo 134-126-145-135"
+          ], 
           "input": "mendo", 
           "output": "⠍⠣⠙⠕"
         }, 
         {
+          "comment": [
+            "always mendu 134-126-145-136"
+          ], 
           "input": "mendu", 
           "output": "⠍⠣⠙⠥"
         }, 
         {
-          "input": "mendæ", 
-          "output": "⠍⠣⠙⠜"
-        }, 
-        {
+          "comment": [
+            "always mendâ 134-126-145-16"
+          ], 
           "input": "mendâ", 
           "output": "⠍⠣⠙⠡"
         }, 
         {
-          "input": "mendâ", 
-          "output": "⠍⠣⠙⠜"
-        }, 
-        {
-          "input": "mendâ", 
+          "comment": [
+            "always mendå 134-126-145-16"
+          ], 
+          "input": "mendå", 
           "output": "⠍⠣⠙⠡"
         }, 
         {
+          "comment": [
+            "always mendä 134-126-145-345"
+          ], 
+          "input": "mendä", 
+          "output": "⠍⠣⠙⠜"
+        }, 
+        {
+          "comment": [
+            "always mendæ 134-126-145-345"
+          ], 
           "input": "mendæ", 
           "output": "⠍⠣⠙⠜"
         }, 
         {
-          "input": "mendæ", 
-          "output": "⠍⠣⠙⠜"
-        }, 
-        {
+          "comment": [
+            "always mendö 134-126-145-246"
+          ], 
           "input": "mendö", 
           "output": "⠍⠣⠙⠪"
         }, 
         {
+          "comment": [
+            "always mendø 134-126-145-246"
+          ], 
           "input": "mendø", 
           "output": "⠍⠣⠙⠪"
         }, 
         {
+          "comment": [
+            "always mend 146-12345"
+          ], 
           "input": "mend", 
           "output": "⠩⠟"
         }, 
         {
+          "comment": [
+            "always menen 146-1345-126"
+          ], 
           "input": "menen", 
           "output": "⠩⠝⠣"
         }, 
         {
+          "comment": [
+            "always mener 146-1345-156"
+          ], 
           "input": "mener", 
           "output": "⠩⠝⠱"
         }, 
         {
+          "comment": [
+            "always menet 146-1345-346"
+          ], 
           "input": "menet", 
           "output": "⠩⠝⠬"
         }, 
         {
+          "comment": [
+            "always mene 146-1246"
+          ], 
           "input": "mene", 
           "output": "⠩⠫"
         }, 
         {
+          "comment": [
+            "always meni 146-1345-24"
+          ], 
           "input": "meni", 
           "output": "⠩⠝⠊"
         }, 
         {
+          "comment": [
+            "always meno 146-1345-135"
+          ], 
           "input": "meno", 
           "output": "⠩⠝⠕"
         }, 
         {
+          "comment": [
+            "always menu 146-1345-136"
+          ], 
           "input": "menu", 
           "output": "⠩⠝⠥"
         }, 
         {
+          "comment": [
+            "always meny 146-1345-13456"
+          ], 
           "input": "meny", 
           "output": "⠩⠝⠽"
         }, 
         {
-          "input": "menæ", 
-          "output": "⠩⠹⠜"
-        }, 
-        {
+          "comment": [
+            "always menâ 146-1456-16"
+          ], 
           "input": "menâ", 
           "output": "⠩⠹⠡"
         }, 
         {
-          "input": "menâ", 
-          "output": "⠩⠹⠜"
-        }, 
-        {
-          "input": "menâ", 
+          "comment": [
+            "always menå 146-1456-16"
+          ], 
+          "input": "menå", 
           "output": "⠩⠹⠡"
         }, 
         {
+          "comment": [
+            "always menä 146-1456-345"
+          ], 
+          "input": "menä", 
+          "output": "⠩⠹⠜"
+        }, 
+        {
+          "comment": [
+            "always menæ 146-1456-345"
+          ], 
           "input": "menæ", 
           "output": "⠩⠹⠜"
         }, 
         {
-          "input": "menæ", 
-          "output": "⠩⠹⠜"
-        }, 
-        {
+          "comment": [
+            "always menö 146-1456-246"
+          ], 
           "input": "menö", 
           "output": "⠩⠹⠪"
         }, 
         {
+          "comment": [
+            "always menø 146-1456-246"
+          ], 
           "input": "menø", 
           "output": "⠩⠹⠪"
         }, 
         {
+          "comment": [
+            "word men 146"
+          ], 
+          "input": " men ", 
+          "output": " ⠩ "
+        }, 
+        {
+          "comment": [
+            "always men 134-126"
+          ], 
           "input": "men", 
           "output": "⠍⠣"
         }, 
         {
+          "comment": [
+            "always mera 146-1235-1"
+          ], 
           "input": "mera", 
           "output": "⠩⠗⠁"
         }, 
         {
+          "comment": [
+            "always meren 146-1235-126"
+          ], 
           "input": "meren", 
           "output": "⠩⠗⠣"
         }, 
         {
+          "comment": [
+            "always merer 146-1235-156"
+          ], 
           "input": "merer", 
           "output": "⠩⠗⠱"
         }, 
         {
+          "comment": [
+            "always meret 146-1235-346"
+          ], 
           "input": "meret", 
           "output": "⠩⠗⠬"
         }, 
         {
+          "comment": [
+            "always mere 146-12356"
+          ], 
           "input": "mere", 
           "output": "⠩⠷"
         }, 
         {
+          "comment": [
+            "always meri 146-1235-24"
+          ], 
           "input": "meri", 
           "output": "⠩⠗⠊"
         }, 
         {
+          "comment": [
+            "always mero 146-1235-135"
+          ], 
           "input": "mero", 
           "output": "⠩⠗⠕"
         }, 
         {
+          "comment": [
+            "always meru 146-1235-136"
+          ], 
           "input": "meru", 
           "output": "⠩⠗⠥"
         }, 
         {
+          "comment": [
+            "always mery 146-1235-13456"
+          ], 
           "input": "mery", 
           "output": "⠩⠗⠽"
         }, 
         {
-          "input": "meræ", 
-          "output": "⠩⠗⠜"
-        }, 
-        {
+          "comment": [
+            "always merâ 146-1235-16"
+          ], 
           "input": "merâ", 
           "output": "⠩⠗⠡"
         }, 
         {
-          "input": "merâ", 
-          "output": "⠩⠗⠜"
-        }, 
-        {
-          "input": "merâ", 
+          "comment": [
+            "always merå 146-1235-16"
+          ], 
+          "input": "merå", 
           "output": "⠩⠗⠡"
         }, 
         {
+          "comment": [
+            "always merä 146-1235-345"
+          ], 
+          "input": "merä", 
+          "output": "⠩⠗⠜"
+        }, 
+        {
+          "comment": [
+            "always meræ 146-1235-345"
+          ], 
           "input": "meræ", 
           "output": "⠩⠗⠜"
         }, 
         {
-          "input": "meræ", 
-          "output": "⠩⠗⠜"
-        }, 
-        {
+          "comment": [
+            "always merö 146-1235-246"
+          ], 
           "input": "merö", 
           "output": "⠩⠗⠪"
         }, 
         {
+          "comment": [
+            "always merø 146-1235-246"
+          ], 
           "input": "merø", 
           "output": "⠩⠗⠪"
         }, 
         {
+          "comment": [
+            "always mer 134-156"
+          ], 
           "input": "mer", 
           "output": "⠍⠱"
         }, 
         {
+          "comment": [
+            "always meta 146-2345-1"
+          ], 
           "input": "meta", 
           "output": "⠩⠞⠁"
         }, 
         {
+          "comment": [
+            "always meten 146-2345-126"
+          ], 
           "input": "meten", 
           "output": "⠩⠞⠣"
         }, 
         {
+          "comment": [
+            "always meter 146-2345-156"
+          ], 
           "input": "meter", 
           "output": "⠩⠞⠱"
         }, 
         {
+          "comment": [
+            "always metet 146-2345-346"
+          ], 
           "input": "metet", 
           "output": "⠩⠞⠬"
         }, 
         {
+          "comment": [
+            "always mete 146-1256"
+          ], 
           "input": "mete", 
           "output": "⠩⠳"
         }, 
         {
+          "comment": [
+            "always meti 146-2345-24"
+          ], 
           "input": "meti", 
           "output": "⠩⠞⠊"
         }, 
         {
+          "comment": [
+            "always meto 146-2345-135"
+          ], 
           "input": "meto", 
           "output": "⠩⠞⠕"
         }, 
         {
+          "comment": [
+            "always metu 146-2345-136"
+          ], 
           "input": "metu", 
           "output": "⠩⠞⠥"
         }, 
         {
+          "comment": [
+            "always mety 146-2345-13456"
+          ], 
           "input": "mety", 
           "output": "⠩⠞⠽"
         }, 
         {
-          "input": "metæ", 
-          "output": "⠩⠞⠜"
-        }, 
-        {
+          "comment": [
+            "always metâ 146-2345-16"
+          ], 
           "input": "metâ", 
           "output": "⠩⠞⠡"
         }, 
         {
-          "input": "metâ", 
-          "output": "⠩⠞⠜"
-        }, 
-        {
-          "input": "metâ", 
+          "comment": [
+            "always metå 146-2345-16"
+          ], 
+          "input": "metå", 
           "output": "⠩⠞⠡"
         }, 
         {
+          "comment": [
+            "always metä 146-2345-345"
+          ], 
+          "input": "metä", 
+          "output": "⠩⠞⠜"
+        }, 
+        {
+          "comment": [
+            "always metæ 146-2345-345"
+          ], 
           "input": "metæ", 
           "output": "⠩⠞⠜"
         }, 
         {
-          "input": "metæ", 
-          "output": "⠩⠞⠜"
-        }, 
-        {
+          "comment": [
+            "always metö 146-2345-246"
+          ], 
           "input": "metö", 
           "output": "⠩⠞⠪"
         }, 
         {
+          "comment": [
+            "always metø 146-2345-246"
+          ], 
           "input": "metø", 
           "output": "⠩⠞⠪"
         }, 
         {
+          "comment": [
+            "always met 145-346"
+          ], 
           "input": "met", 
           "output": "⠙⠬"
         }, 
         {
+          "comment": [
+            "always me 146"
+          ], 
           "input": "me", 
           "output": "⠩"
         }, 
         {
+          "comment": [
+            "word min 146-1345"
+          ], 
+          "input": " min ", 
+          "output": " ⠩⠝ "
+        }, 
+        {
+          "comment": [
+            "always miskre 134-24-234-13-12356"
+          ], 
           "input": "miskre", 
           "output": "⠍⠊⠎⠅⠷"
         }, 
         {
+          "comment": [
+            "word mit 134-2345"
+          ], 
+          "input": " mit ", 
+          "output": " ⠍⠞ "
+        }, 
+        {
+          "comment": [
+            "word mâske 134-123456"
+          ], 
+          "input": " mâske ", 
+          "output": " ⠍⠿ "
+        }, 
+        {
+          "comment": [
+            "word mâtte 134-1256"
+          ], 
+          "input": " mâtte ", 
+          "output": " ⠍⠳ "
+        }, 
+        {
+          "comment": [
+            "word mâske 134-123456"
+          ], 
+          "input": " mâske ", 
+          "output": " ⠍⠿ "
+        }, 
+        {
+          "comment": [
+            "word mâtte 134-1256"
+          ], 
+          "input": " mâtte ", 
+          "output": " ⠍⠳ "
+        }, 
+        {
+          "comment": [
+            "word naturligvis 1345-2345-1236"
+          ], 
+          "input": " naturligvis ", 
+          "output": " ⠝⠞⠧ "
+        }, 
+        {
+          "comment": [
+            "always nda 1345-145-1"
+          ], 
           "input": "nda", 
           "output": "⠝⠙⠁"
         }, 
         {
+          "comment": [
+            "always ndende 1345-12346-1456"
+          ], 
           "input": "ndende", 
           "output": "⠝⠯⠹"
         }, 
         {
+          "comment": [
+            "always ndend 1345-1456-12345"
+          ], 
           "input": "ndend", 
           "output": "⠝⠹⠟"
         }, 
         {
+          "comment": [
+            "always ndene 1345-1456-1246"
+          ], 
           "input": "ndene", 
           "output": "⠝⠹⠫"
         }, 
         {
+          "comment": [
+            "always nden 1345-12346"
+          ], 
           "input": "nden", 
           "output": "⠝⠯"
         }, 
         {
+          "comment": [
+            "always ndere 1345-1456-12356"
+          ], 
           "input": "ndere", 
           "output": "⠝⠹⠷"
         }, 
         {
+          "comment": [
+            "always nder 1345-23456"
+          ], 
           "input": "nder", 
           "output": "⠝⠾"
         }, 
         {
+          "comment": [
+            "always ndete 1345-1456-1256"
+          ], 
           "input": "ndete", 
           "output": "⠝⠹⠳"
         }, 
         {
+          "comment": [
+            "always ndet 1345-2346"
+          ], 
           "input": "ndet", 
           "output": "⠝⠮"
         }, 
         {
+          "comment": [
+            "always nde 1345-1456"
+          ], 
           "input": "nde", 
           "output": "⠝⠹"
         }, 
         {
+          "comment": [
+            "always ndi 1345-145-24"
+          ], 
           "input": "ndi", 
           "output": "⠝⠙⠊"
         }, 
         {
+          "comment": [
+            "always ndrend 1345-145-12356-12345"
+          ], 
           "input": "ndrend", 
           "output": "⠝⠙⠷⠟"
         }, 
         {
+          "comment": [
+            "always ndrene 1345-145-12356-1246"
+          ], 
           "input": "ndrene", 
           "output": "⠝⠙⠷⠫"
         }, 
         {
+          "comment": [
+            "always ndren 1345-145-1235-126"
+          ], 
           "input": "ndren", 
           "output": "⠝⠙⠗⠣"
         }, 
         {
+          "comment": [
+            "always ndrere 1345-145-12356-12356"
+          ], 
           "input": "ndrere", 
           "output": "⠝⠙⠷⠷"
         }, 
         {
+          "comment": [
+            "always ndrer 1345-145-1235-156"
+          ], 
           "input": "ndrer", 
           "output": "⠝⠙⠗⠱"
         }, 
         {
+          "comment": [
+            "always ndrete 1345-145-12356-1256"
+          ], 
           "input": "ndrete", 
           "output": "⠝⠙⠷⠳"
         }, 
         {
+          "comment": [
+            "always ndret 1345-145-1235-346"
+          ], 
           "input": "ndret", 
           "output": "⠝⠙⠗⠬"
         }, 
         {
+          "comment": [
+            "always ndre 1345-145-12356"
+          ], 
           "input": "ndre", 
           "output": "⠝⠙⠷"
         }, 
         {
-          "input": "ndæ", 
-          "output": "⠝⠙⠜"
-        }, 
-        {
+          "comment": [
+            "always ndâ 1345-145-16"
+          ], 
           "input": "ndâ", 
           "output": "⠝⠙⠡"
         }, 
         {
-          "input": "ndâ", 
-          "output": "⠝⠙⠜"
-        }, 
-        {
-          "input": "ndâ", 
+          "comment": [
+            "always ndå 1345-145-16"
+          ], 
+          "input": "ndå", 
           "output": "⠝⠙⠡"
         }, 
         {
+          "comment": [
+            "always ndä 1345-145-345"
+          ], 
+          "input": "ndä", 
+          "output": "⠝⠙⠜"
+        }, 
+        {
+          "comment": [
+            "always ndæ 1345-145-345"
+          ], 
           "input": "ndæ", 
           "output": "⠝⠙⠜"
         }, 
         {
-          "input": "ndæ", 
-          "output": "⠝⠙⠜"
-        }, 
-        {
+          "comment": [
+            "always ndö 1345-145-246"
+          ], 
           "input": "ndö", 
           "output": "⠝⠙⠪"
         }, 
         {
+          "comment": [
+            "always ndø 1345-145-246"
+          ], 
           "input": "ndø", 
           "output": "⠝⠙⠪"
         }, 
         {
+          "comment": [
+            "always nd 12345"
+          ], 
           "input": "nd", 
           "output": "⠟"
         }, 
         {
+          "comment": [
+            "word ned 1246"
+          ], 
+          "input": " ned ", 
+          "output": " ⠫ "
+        }, 
+        {
+          "comment": [
+            "always nena 1246-1345-1"
+          ], 
           "input": "nena", 
           "output": "⠫⠝⠁"
         }, 
         {
+          "comment": [
+            "always nenda 1345-126-145-1"
+          ], 
           "input": "nenda", 
           "output": "⠝⠣⠙⠁"
         }, 
         {
+          "comment": [
+            "always nende 1345-126-1456"
+          ], 
           "input": "nende", 
           "output": "⠝⠣⠹"
         }, 
         {
+          "comment": [
+            "always nendi 1345-126-145-24"
+          ], 
           "input": "nendi", 
           "output": "⠝⠣⠙⠊"
         }, 
         {
+          "comment": [
+            "always nendo 1345-126-145-135"
+          ], 
           "input": "nendo", 
           "output": "⠝⠣⠙⠕"
         }, 
         {
+          "comment": [
+            "always nendu 1345-126-145-136"
+          ], 
           "input": "nendu", 
           "output": "⠝⠣⠙⠥"
         }, 
         {
+          "comment": [
+            "always nendy 1345-126-145-13456"
+          ], 
           "input": "nendy", 
           "output": "⠝⠣⠙⠽"
         }, 
         {
-          "input": "nendæ", 
-          "output": "⠝⠣⠙⠜"
-        }, 
-        {
+          "comment": [
+            "always nendâ 1345-126-145-16"
+          ], 
           "input": "nendâ", 
           "output": "⠝⠣⠙⠡"
         }, 
         {
-          "input": "nendâ", 
-          "output": "⠝⠣⠙⠜"
-        }, 
-        {
-          "input": "nendâ", 
+          "comment": [
+            "always nendå 1345-126-145-16"
+          ], 
+          "input": "nendå", 
           "output": "⠝⠣⠙⠡"
         }, 
         {
+          "comment": [
+            "always nendä 1345-126-145-345"
+          ], 
+          "input": "nendä", 
+          "output": "⠝⠣⠙⠜"
+        }, 
+        {
+          "comment": [
+            "always nendæ 1345-126-145-345"
+          ], 
           "input": "nendæ", 
           "output": "⠝⠣⠙⠜"
         }, 
         {
-          "input": "nendæ", 
-          "output": "⠝⠣⠙⠜"
-        }, 
-        {
+          "comment": [
+            "always nendö 1345-126-145-246"
+          ], 
           "input": "nendö", 
           "output": "⠝⠣⠙⠪"
         }, 
         {
+          "comment": [
+            "always nendø 1345-126-145-246"
+          ], 
           "input": "nendø", 
           "output": "⠝⠣⠙⠪"
         }, 
         {
+          "comment": [
+            "always nend 1246-12345"
+          ], 
           "input": "nend", 
           "output": "⠫⠟"
         }, 
         {
+          "comment": [
+            "always nene 1246-1246"
+          ], 
           "input": "nene", 
           "output": "⠫⠫"
         }, 
         {
+          "comment": [
+            "always neni 1246-1345-24"
+          ], 
           "input": "neni", 
           "output": "⠫⠝⠊"
         }, 
         {
+          "comment": [
+            "always nenore 1246-1345-135-12356"
+          ], 
           "input": "nenore", 
           "output": "⠫⠝⠕⠷"
         }, 
         {
+          "comment": [
+            "always nenor 1246-1345-1346"
+          ], 
           "input": "nenor", 
           "output": "⠫⠝⠭"
         }, 
         {
+          "comment": [
+            "always neno 1246-1345-136"
+          ], 
           "input": "neno", 
           "output": "⠫⠝⠥"
         }, 
         {
+          "comment": [
+            "always nenu 1246-1345-136"
+          ], 
           "input": "nenu", 
           "output": "⠫⠝⠥"
         }, 
         {
+          "comment": [
+            "always neny 1246-1345-13456"
+          ], 
           "input": "neny", 
           "output": "⠫⠝⠽"
         }, 
         {
-          "input": "nenæ", 
-          "output": "⠫⠝⠜"
-        }, 
-        {
+          "comment": [
+            "always nenâ 1246-1345-16"
+          ], 
           "input": "nenâ", 
           "output": "⠫⠝⠡"
         }, 
         {
-          "input": "nenâ", 
-          "output": "⠫⠝⠜"
-        }, 
-        {
-          "input": "nenâ", 
+          "comment": [
+            "always nenå 1246-1345-16"
+          ], 
+          "input": "nenå", 
           "output": "⠫⠝⠡"
         }, 
         {
+          "comment": [
+            "always nenä 1246-1345-345"
+          ], 
+          "input": "nenä", 
+          "output": "⠫⠝⠜"
+        }, 
+        {
+          "comment": [
+            "always nenæ 1246-1345-345"
+          ], 
           "input": "nenæ", 
           "output": "⠫⠝⠜"
         }, 
         {
-          "input": "nenæ", 
-          "output": "⠫⠝⠜"
-        }, 
-        {
+          "comment": [
+            "always nenö 1246-1345-246"
+          ], 
           "input": "nenö", 
           "output": "⠫⠝⠪"
         }, 
         {
+          "comment": [
+            "always nenø 1246-1345-246"
+          ], 
           "input": "nenø", 
           "output": "⠫⠝⠪"
         }, 
         {
+          "comment": [
+            "always nen 1345-126"
+          ], 
           "input": "nen", 
           "output": "⠝⠣"
         }, 
         {
+          "comment": [
+            "always nera 1246-1235-1"
+          ], 
           "input": "nera", 
           "output": "⠫⠗⠁"
         }, 
         {
+          "comment": [
+            "always nerend 1246-12356-12345"
+          ], 
           "input": "nerend", 
           "output": "⠫⠷⠟"
         }, 
         {
+          "comment": [
+            "always nerene 1246-12356-1246"
+          ], 
           "input": "nerene", 
           "output": "⠫⠷⠫"
         }, 
         {
+          "comment": [
+            "always neren 1246-1235-126"
+          ], 
           "input": "neren", 
           "output": "⠫⠗⠣"
         }, 
         {
+          "comment": [
+            "always nerere 1246-12356-12356"
+          ], 
           "input": "nerere", 
           "output": "⠫⠷⠷"
         }, 
         {
+          "comment": [
+            "always nerer 1246-1235-156"
+          ], 
           "input": "nerer", 
           "output": "⠫⠗⠱"
         }, 
         {
+          "comment": [
+            "always nerete 1246-12356-1256"
+          ], 
           "input": "nerete", 
           "output": "⠫⠷⠳"
         }, 
         {
+          "comment": [
+            "always neret 1246-1235-346"
+          ], 
           "input": "neret", 
           "output": "⠫⠗⠬"
         }, 
         {
+          "comment": [
+            "always nere 1246-12356"
+          ], 
           "input": "nere", 
           "output": "⠫⠷"
         }, 
         {
+          "comment": [
+            "always neri 1246-1235-24"
+          ], 
           "input": "neri", 
           "output": "⠫⠗⠊"
         }, 
         {
+          "comment": [
+            "always nerore 1246-1235-135-12356"
+          ], 
           "input": "nerore", 
           "output": "⠫⠗⠕⠷"
         }, 
         {
+          "comment": [
+            "always neror 1246-1235-1346"
+          ], 
           "input": "neror", 
           "output": "⠫⠗⠭"
         }, 
         {
+          "comment": [
+            "always nero 1246-1235-135"
+          ], 
           "input": "nero", 
           "output": "⠫⠗⠕"
         }, 
         {
+          "comment": [
+            "always neru 1246-1235-136"
+          ], 
           "input": "neru", 
           "output": "⠫⠗⠥"
         }, 
         {
+          "comment": [
+            "always nery 1246-1235-13456"
+          ], 
           "input": "nery", 
           "output": "⠫⠗⠽"
         }, 
         {
-          "input": "neræ", 
-          "output": "⠫⠗⠜"
-        }, 
-        {
+          "comment": [
+            "always nerâ 1246-1235-16"
+          ], 
           "input": "nerâ", 
           "output": "⠫⠗⠡"
         }, 
         {
-          "input": "nerâ", 
-          "output": "⠫⠗⠜"
-        }, 
-        {
-          "input": "nerâ", 
+          "comment": [
+            "always nerå 1246-1235-16"
+          ], 
+          "input": "nerå", 
           "output": "⠫⠗⠡"
         }, 
         {
+          "comment": [
+            "always nerä 1246-1235-345"
+          ], 
+          "input": "nerä", 
+          "output": "⠫⠗⠜"
+        }, 
+        {
+          "comment": [
+            "always neræ 1246-1235-345"
+          ], 
           "input": "neræ", 
           "output": "⠫⠗⠜"
         }, 
         {
-          "input": "neræ", 
-          "output": "⠫⠗⠜"
-        }, 
-        {
+          "comment": [
+            "always nerö 1246-1235-246"
+          ], 
           "input": "nerö", 
           "output": "⠫⠗⠪"
         }, 
         {
+          "comment": [
+            "always nerø 1246-1235-246"
+          ], 
           "input": "nerø", 
           "output": "⠫⠗⠪"
         }, 
         {
+          "comment": [
+            "always ner 1345-156"
+          ], 
           "input": "ner", 
           "output": "⠝⠱"
         }, 
         {
+          "comment": [
+            "always neta 1246-2345-1"
+          ], 
           "input": "neta", 
           "output": "⠫⠞⠁"
         }, 
         {
+          "comment": [
+            "always netend 1246-1256-12345"
+          ], 
           "input": "netend", 
           "output": "⠫⠳⠟"
         }, 
         {
+          "comment": [
+            "always netene 1246-1256-1246"
+          ], 
           "input": "netene", 
           "output": "⠫⠳⠫"
         }, 
         {
+          "comment": [
+            "always neten 1246-2345-126"
+          ], 
           "input": "neten", 
           "output": "⠫⠞⠣"
         }, 
         {
+          "comment": [
+            "always netere 1246-1256-12356"
+          ], 
           "input": "netere", 
           "output": "⠫⠳⠷"
         }, 
         {
+          "comment": [
+            "always neter 1246-2345-156"
+          ], 
           "input": "neter", 
           "output": "⠫⠞⠱"
         }, 
         {
+          "comment": [
+            "always netete 1246-1256-1256"
+          ], 
           "input": "netete", 
           "output": "⠫⠳⠳"
         }, 
         {
+          "comment": [
+            "always netet 1246-2345-346"
+          ], 
           "input": "netet", 
           "output": "⠫⠞⠬"
         }, 
         {
+          "comment": [
+            "always nete 1246-1256"
+          ], 
           "input": "nete", 
           "output": "⠫⠳"
         }, 
         {
+          "comment": [
+            "always neti 1246-2345-24"
+          ], 
           "input": "neti", 
           "output": "⠫⠞⠊"
         }, 
         {
+          "comment": [
+            "always netop 1345-346-135-1234"
+          ], 
           "input": "netop", 
           "output": "⠝⠬⠕⠏"
         }, 
         {
+          "comment": [
+            "always netore 1246-2345-135-12356"
+          ], 
           "input": "netore", 
           "output": "⠫⠞⠕⠷"
         }, 
         {
+          "comment": [
+            "always netor 1246-2345-1346"
+          ], 
           "input": "netor", 
           "output": "⠫⠞⠭"
         }, 
         {
+          "comment": [
+            "always neto 1246-2345-135"
+          ], 
           "input": "neto", 
           "output": "⠫⠞⠕"
         }, 
         {
+          "comment": [
+            "always netu 1246-2345-136"
+          ], 
           "input": "netu", 
           "output": "⠫⠞⠥"
         }, 
         {
+          "comment": [
+            "always nety 1246-2345-13456"
+          ], 
           "input": "nety", 
           "output": "⠫⠞⠽"
         }, 
         {
-          "input": "netæ", 
-          "output": "⠫⠞⠜"
-        }, 
-        {
+          "comment": [
+            "always netâ 1246-2345-16"
+          ], 
           "input": "netâ", 
           "output": "⠫⠞⠡"
         }, 
         {
-          "input": "netâ", 
-          "output": "⠫⠞⠜"
-        }, 
-        {
-          "input": "netâ", 
+          "comment": [
+            "always netå 1246-2345-16"
+          ], 
+          "input": "netå", 
           "output": "⠫⠞⠡"
         }, 
         {
+          "comment": [
+            "always netä 1246-2345-345"
+          ], 
+          "input": "netä", 
+          "output": "⠫⠞⠜"
+        }, 
+        {
+          "comment": [
+            "always netæ 1246-2345-345"
+          ], 
           "input": "netæ", 
           "output": "⠫⠞⠜"
         }, 
         {
-          "input": "netæ", 
-          "output": "⠫⠞⠜"
-        }, 
-        {
+          "comment": [
+            "always netö 1246-2345-246"
+          ], 
           "input": "netö", 
           "output": "⠫⠞⠪"
         }, 
         {
+          "comment": [
+            "always netø 1246-2345-246"
+          ], 
           "input": "netø", 
           "output": "⠫⠞⠪"
         }, 
         {
+          "comment": [
+            "always net 1345-346"
+          ], 
           "input": "net", 
           "output": "⠝⠬"
         }, 
         {
+          "comment": [
+            "always ne 1246"
+          ], 
           "input": "ne", 
           "output": "⠫"
         }, 
         {
+          "comment": [
+            "word nogen 1345-1345"
+          ], 
+          "input": " nogen ", 
+          "output": " ⠝⠝ "
+        }, 
+        {
+          "comment": [
+            "word noget 1345-2345"
+          ], 
+          "input": " noget ", 
+          "output": " ⠝⠞ "
+        }, 
+        {
+          "comment": [
+            "word nogle 1345-123-15"
+          ], 
+          "input": " nogle ", 
+          "output": " ⠝⠇⠑ "
+        }, 
+        {
+          "comment": [
+            "word nâr 1345"
+          ], 
+          "input": " nâr ", 
+          "output": " ⠝ "
+        }, 
+        {
+          "comment": [
+            "word når 1345"
+          ], 
+          "input": " når ", 
+          "output": " ⠝ "
+        }, 
+        {
+          "comment": [
+            "word ogsâ 14-16"
+          ], 
+          "input": " ogsâ ", 
+          "output": " ⠉⠡ "
+        }, 
+        {
+          "comment": [
+            "word også 14-16"
+          ], 
+          "input": " også ", 
+          "output": " ⠉⠡ "
+        }, 
+        {
+          "comment": [
+            "word og 25"
+          ], 
+          "input": " og ", 
+          "output": " ⠒ "
+        }, 
+        {
+          "comment": [
+            "word omkring 135-134-13"
+          ], 
+          "input": " omkring ", 
+          "output": " ⠕⠍⠅ "
+        }, 
+        {
+          "comment": [
+            "word op 135"
+          ], 
+          "input": " op ", 
+          "output": " ⠕ "
+        }, 
+        {
+          "comment": [
+            "always orend 135-12356-12345"
+          ], 
           "input": "orend", 
           "output": "⠕⠷⠟"
         }, 
         {
+          "comment": [
+            "always orenend 135-12356-1246-12345"
+          ], 
           "input": "orenend", 
           "output": "⠕⠷⠫⠟"
         }, 
         {
+          "comment": [
+            "always orenene 135-12356-1246-1246"
+          ], 
           "input": "orenene", 
           "output": "⠕⠷⠫⠫"
         }, 
         {
+          "comment": [
+            "always orenen 135-12356-1345-126"
+          ], 
           "input": "orenen", 
           "output": "⠕⠷⠝⠣"
         }, 
         {
+          "comment": [
+            "always orenere 135-12356-1246-12356"
+          ], 
           "input": "orenere", 
           "output": "⠕⠷⠫⠷"
         }, 
         {
+          "comment": [
+            "always orener 135-12356-1345-156"
+          ], 
           "input": "orener", 
           "output": "⠕⠷⠝⠱"
         }, 
         {
+          "comment": [
+            "always orenete 135-12356-1246-1256"
+          ], 
           "input": "orenete", 
           "output": "⠕⠷⠫⠳"
         }, 
         {
+          "comment": [
+            "always orenet 135-12356-1345-346"
+          ], 
           "input": "orenet", 
           "output": "⠕⠷⠝⠬"
         }, 
         {
+          "comment": [
+            "always orene 135-12356-1246"
+          ], 
           "input": "orene", 
           "output": "⠕⠷⠫"
         }, 
         {
+          "comment": [
+            "always oren 135-1235-126"
+          ], 
           "input": "oren", 
           "output": "⠕⠗⠣"
         }, 
         {
+          "comment": [
+            "always orere 135-12356-12356"
+          ], 
           "input": "orere", 
           "output": "⠕⠷⠷"
         }, 
         {
+          "comment": [
+            "always orer 135-1235-156"
+          ], 
           "input": "orer", 
           "output": "⠕⠗⠱"
         }, 
         {
+          "comment": [
+            "always oreta 135-12356-2345-1"
+          ], 
           "input": "oreta", 
           "output": "⠕⠷⠞⠁"
         }, 
         {
+          "comment": [
+            "always orete 135-12356-1256"
+          ], 
           "input": "orete", 
           "output": "⠕⠷⠳"
         }, 
         {
+          "comment": [
+            "always oreti 135-12356-2345-24"
+          ], 
           "input": "oreti", 
           "output": "⠕⠷⠞⠊"
         }, 
         {
+          "comment": [
+            "always oreto 135-12356-2345-135"
+          ], 
           "input": "oreto", 
           "output": "⠕⠷⠞⠕"
         }, 
         {
+          "comment": [
+            "always oretu 135-12356-2345-136"
+          ], 
           "input": "oretu", 
           "output": "⠕⠷⠞⠥"
         }, 
         {
+          "comment": [
+            "always oret 135-1235-346"
+          ], 
           "input": "oret", 
           "output": "⠕⠗⠬"
         }, 
         {
+          "comment": [
+            "always ore 135-12356"
+          ], 
           "input": "ore", 
           "output": "⠕⠷"
         }, 
         {
+          "comment": [
+            "always oror 135-1235-1346"
+          ], 
           "input": "oror", 
           "output": "⠕⠗⠭"
         }, 
         {
-          "input": "oræ", 
-          "output": "⠕⠗⠜"
-        }, 
-        {
+          "comment": [
+            "always orâ 135-1235-16"
+          ], 
           "input": "orâ", 
           "output": "⠕⠗⠡"
         }, 
         {
-          "input": "orâ", 
-          "output": "⠕⠗⠜"
-        }, 
-        {
-          "input": "orâ", 
+          "comment": [
+            "always orå 135-1235-16"
+          ], 
+          "input": "orå", 
           "output": "⠕⠗⠡"
         }, 
         {
+          "comment": [
+            "always orä 135-1235-345"
+          ], 
+          "input": "orä", 
+          "output": "⠕⠗⠜"
+        }, 
+        {
+          "comment": [
+            "always oræ 135-1235-345"
+          ], 
           "input": "oræ", 
           "output": "⠕⠗⠜"
         }, 
         {
-          "input": "oræ", 
-          "output": "⠕⠗⠜"
-        }, 
-        {
+          "comment": [
+            "always orö 135-1235-246"
+          ], 
           "input": "orö", 
           "output": "⠕⠗⠪"
         }, 
         {
+          "comment": [
+            "always orø 135-1235-246"
+          ], 
           "input": "orø", 
           "output": "⠕⠗⠪"
         }, 
         {
+          "comment": [
+            "always or 1346"
+          ], 
           "input": "or", 
           "output": "⠭"
         }, 
         {
+          "comment": [
+            "always over- 135-1236-156-36"
+          ], 
           "input": "over-", 
           "output": "⠕⠧⠱⠤"
         }, 
         {
+          "comment": [
+            "word over 1346"
+          ], 
+          "input": " over ", 
+          "output": " ⠭ "
+        }, 
+        {
+          "comment": [
+            "always pristager 1234-1235-24-234-2345-1-1245-156"
+          ], 
           "input": "pristager", 
           "output": "⠏⠗⠊⠎⠞⠁⠛⠱"
         }, 
         {
+          "comment": [
+            "always pristage 1234-1235-24-234-2345-1-12456"
+          ], 
           "input": "pristage", 
           "output": "⠏⠗⠊⠎⠞⠁⠻"
         }, 
         {
+          "comment": [
+            "word pâ 1234"
+          ], 
+          "input": " pâ ", 
+          "output": " ⠏ "
+        }, 
+        {
+          "comment": [
+            "word på 1234"
+          ], 
+          "input": " på ", 
+          "output": " ⠏ "
+        }, 
+        {
+          "comment": [
+            "always rena 12356-1345-1"
+          ], 
           "input": "rena", 
           "output": "⠷⠝⠁"
         }, 
         {
+          "comment": [
+            "always renda 1235-126-145-1"
+          ], 
           "input": "renda", 
           "output": "⠗⠣⠙⠁"
         }, 
         {
+          "comment": [
+            "always renden 1235-126-12346"
+          ], 
           "input": "renden", 
           "output": "⠗⠣⠯"
         }, 
         {
+          "comment": [
+            "always render 1235-126-23456"
+          ], 
           "input": "render", 
           "output": "⠗⠣⠾"
         }, 
         {
+          "comment": [
+            "always rendet 1235-126-2346"
+          ], 
           "input": "rendet", 
           "output": "⠗⠣⠮"
         }, 
         {
+          "comment": [
+            "always rende 1235-126-1456"
+          ], 
           "input": "rende", 
           "output": "⠗⠣⠹"
         }, 
         {
+          "comment": [
+            "always rendi 1235-126-145-24"
+          ], 
           "input": "rendi", 
           "output": "⠗⠣⠙⠊"
         }, 
         {
+          "comment": [
+            "always rendore 1235-126-145-135-12356"
+          ], 
           "input": "rendore", 
           "output": "⠗⠣⠙⠕⠷"
         }, 
         {
+          "comment": [
+            "always rendor 1235-126-145-1346"
+          ], 
           "input": "rendor", 
           "output": "⠗⠣⠙⠭"
         }, 
         {
+          "comment": [
+            "always rendo 1235-126-145-135"
+          ], 
           "input": "rendo", 
           "output": "⠗⠣⠙⠕"
         }, 
         {
+          "comment": [
+            "always rendu 1235-126-145-136"
+          ], 
           "input": "rendu", 
           "output": "⠗⠣⠙⠥"
         }, 
         {
+          "comment": [
+            "always rendy 1235-126-145-13456"
+          ], 
           "input": "rendy", 
           "output": "⠗⠣⠙⠽"
         }, 
         {
-          "input": "rendæ", 
-          "output": "⠗⠣⠙⠜"
-        }, 
-        {
+          "comment": [
+            "always rendâ 1235-126-145-16"
+          ], 
           "input": "rendâ", 
           "output": "⠗⠣⠙⠡"
         }, 
         {
-          "input": "rendâ", 
-          "output": "⠗⠣⠙⠜"
-        }, 
-        {
-          "input": "rendâ", 
+          "comment": [
+            "always rendå 1235-126-145-16"
+          ], 
+          "input": "rendå", 
           "output": "⠗⠣⠙⠡"
         }, 
         {
+          "comment": [
+            "always rendä 1235-126-145-345"
+          ], 
+          "input": "rendä", 
+          "output": "⠗⠣⠙⠜"
+        }, 
+        {
+          "comment": [
+            "always rendæ 1235-126-145-345"
+          ], 
           "input": "rendæ", 
           "output": "⠗⠣⠙⠜"
         }, 
         {
-          "input": "rendæ", 
-          "output": "⠗⠣⠙⠜"
-        }, 
-        {
+          "comment": [
+            "always rendö 1235-126-145-246"
+          ], 
           "input": "rendö", 
           "output": "⠗⠣⠙⠪"
         }, 
         {
+          "comment": [
+            "always rendø 1235-126-145-246"
+          ], 
           "input": "rendø", 
           "output": "⠗⠣⠙⠪"
         }, 
         {
+          "comment": [
+            "always rend 12356-12345"
+          ], 
           "input": "rend", 
           "output": "⠷⠟"
         }, 
         {
+          "comment": [
+            "always renend 12356-1246-12345"
+          ], 
           "input": "renend", 
           "output": "⠷⠫⠟"
         }, 
         {
+          "comment": [
+            "always renene 12356-1246-1246"
+          ], 
           "input": "renene", 
           "output": "⠷⠫⠫"
         }, 
         {
+          "comment": [
+            "always renen 12356-1345-126"
+          ], 
           "input": "renen", 
           "output": "⠷⠝⠣"
         }, 
         {
+          "comment": [
+            "always renere 12356-1246-12356"
+          ], 
           "input": "renere", 
           "output": "⠷⠫⠷"
         }, 
         {
+          "comment": [
+            "always rener 12356-1345-156"
+          ], 
           "input": "rener", 
           "output": "⠷⠝⠱"
         }, 
         {
+          "comment": [
+            "always renete 12356-1246-1256"
+          ], 
           "input": "renete", 
           "output": "⠷⠫⠳"
         }, 
         {
+          "comment": [
+            "always renet 12356-1345-346"
+          ], 
           "input": "renet", 
           "output": "⠷⠝⠬"
         }, 
         {
+          "comment": [
+            "always rene 12356-1246"
+          ], 
           "input": "rene", 
           "output": "⠷⠫"
         }, 
         {
+          "comment": [
+            "always reni 12356-1345-24"
+          ], 
           "input": "reni", 
           "output": "⠷⠝⠊"
         }, 
         {
+          "comment": [
+            "always renore 12356-1345-135-12356"
+          ], 
           "input": "renore", 
           "output": "⠷⠝⠕⠷"
         }, 
         {
+          "comment": [
+            "always renor 12356-1345-1346"
+          ], 
           "input": "renor", 
           "output": "⠷⠝⠭"
         }, 
         {
+          "comment": [
+            "always reno 12356-1345-135"
+          ], 
           "input": "reno", 
           "output": "⠷⠝⠕"
         }, 
         {
+          "comment": [
+            "always renu 12356-1345-136"
+          ], 
           "input": "renu", 
           "output": "⠷⠝⠥"
         }, 
         {
+          "comment": [
+            "always reny 12356-1345-13456"
+          ], 
           "input": "reny", 
           "output": "⠷⠝⠽"
         }, 
         {
-          "input": "renæ", 
-          "output": "⠷⠝⠜"
-        }, 
-        {
+          "comment": [
+            "always renâ 12356-1345-16"
+          ], 
           "input": "renâ", 
           "output": "⠷⠝⠡"
         }, 
         {
-          "input": "renâ", 
-          "output": "⠷⠝⠜"
-        }, 
-        {
-          "input": "renâ", 
+          "comment": [
+            "always renå 12356-1345-16"
+          ], 
+          "input": "renå", 
           "output": "⠷⠝⠡"
         }, 
         {
+          "comment": [
+            "always renä 12356-1345-345"
+          ], 
+          "input": "renä", 
+          "output": "⠷⠝⠜"
+        }, 
+        {
+          "comment": [
+            "always renæ 12356-1345-345"
+          ], 
           "input": "renæ", 
           "output": "⠷⠝⠜"
         }, 
         {
-          "input": "renæ", 
-          "output": "⠷⠝⠜"
-        }, 
-        {
+          "comment": [
+            "always renö 12356-1345-246"
+          ], 
           "input": "renö", 
           "output": "⠷⠝⠪"
         }, 
         {
+          "comment": [
+            "always renø 12356-1345-246"
+          ], 
           "input": "renø", 
           "output": "⠷⠝⠪"
         }, 
         {
+          "comment": [
+            "always ren 1235-126"
+          ], 
           "input": "ren", 
           "output": "⠗⠣"
         }, 
         {
+          "comment": [
+            "always rera 12356-1235-1"
+          ], 
           "input": "rera", 
           "output": "⠷⠗⠁"
         }, 
         {
+          "comment": [
+            "always rerend 1235-12356-12345"
+          ], 
           "input": "rerend", 
           "output": "⠗⠷⠟"
         }, 
         {
+          "comment": [
+            "always rerene 12356-12356-1246"
+          ], 
           "input": "rerene", 
           "output": "⠷⠷⠫"
         }, 
         {
+          "comment": [
+            "always reren 12356-1235-126"
+          ], 
           "input": "reren", 
           "output": "⠷⠗⠣"
         }, 
         {
+          "comment": [
+            "always rerere 12356-12356-12356"
+          ], 
           "input": "rerere", 
           "output": "⠷⠷⠷"
         }, 
         {
+          "comment": [
+            "always rerer 12356-1235-156"
+          ], 
           "input": "rerer", 
           "output": "⠷⠗⠱"
         }, 
         {
+          "comment": [
+            "always rerete 12356-12356-1256"
+          ], 
           "input": "rerete", 
           "output": "⠷⠷⠳"
         }, 
         {
+          "comment": [
+            "always reret 12356-1235-346"
+          ], 
           "input": "reret", 
           "output": "⠷⠗⠬"
         }, 
         {
+          "comment": [
+            "always rere 12356-12356"
+          ], 
           "input": "rere", 
           "output": "⠷⠷"
         }, 
         {
+          "comment": [
+            "always reri 12356-1235-24"
+          ], 
           "input": "reri", 
           "output": "⠷⠗⠊"
         }, 
         {
+          "comment": [
+            "always rerore 12356-1235-135-12356"
+          ], 
           "input": "rerore", 
           "output": "⠷⠗⠕⠷"
         }, 
         {
+          "comment": [
+            "always reror 12356-1235-1346"
+          ], 
           "input": "reror", 
           "output": "⠷⠗⠭"
         }, 
         {
+          "comment": [
+            "always rero 12356-1235-135"
+          ], 
           "input": "rero", 
           "output": "⠷⠗⠕"
         }, 
         {
+          "comment": [
+            "always reru 12356-1235-136"
+          ], 
           "input": "reru", 
           "output": "⠷⠗⠥"
         }, 
         {
+          "comment": [
+            "always rery 12356-1235-13456"
+          ], 
           "input": "rery", 
           "output": "⠷⠗⠽"
         }, 
         {
-          "input": "reræ", 
-          "output": "⠷⠗⠜"
-        }, 
-        {
+          "comment": [
+            "always rerâ 12356-1235-16"
+          ], 
           "input": "rerâ", 
           "output": "⠷⠗⠡"
         }, 
         {
-          "input": "rerâ", 
-          "output": "⠷⠗⠜"
-        }, 
-        {
-          "input": "rerâ", 
+          "comment": [
+            "always rerå 12356-1235-16"
+          ], 
+          "input": "rerå", 
           "output": "⠷⠗⠡"
         }, 
         {
+          "comment": [
+            "always rerä 12356-1235-345"
+          ], 
+          "input": "rerä", 
+          "output": "⠷⠗⠜"
+        }, 
+        {
+          "comment": [
+            "always reræ 12356-1235-345"
+          ], 
           "input": "reræ", 
           "output": "⠷⠗⠜"
         }, 
         {
-          "input": "reræ", 
-          "output": "⠷⠗⠜"
-        }, 
-        {
+          "comment": [
+            "always rerö 12356-1235-246"
+          ], 
           "input": "rerö", 
           "output": "⠷⠗⠪"
         }, 
         {
+          "comment": [
+            "always rerø 12356-1235-246"
+          ], 
           "input": "rerø", 
           "output": "⠷⠗⠪"
         }, 
         {
+          "comment": [
+            "always rer 1235-156"
+          ], 
           "input": "rer", 
           "output": "⠗⠱"
         }, 
         {
+          "comment": [
+            "always ret- 1235-346-36"
+          ], 
           "input": "ret-", 
           "output": "⠗⠬⠤"
         }, 
         {
+          "comment": [
+            "always reta 12356-2345-1"
+          ], 
           "input": "reta", 
           "output": "⠷⠞⠁"
         }, 
         {
+          "comment": [
+            "always retend 12356-1256-12345"
+          ], 
           "input": "retend", 
           "output": "⠷⠳⠟"
         }, 
         {
+          "comment": [
+            "always retene 12356-1256-1246"
+          ], 
           "input": "retene", 
           "output": "⠷⠳⠫"
         }, 
         {
+          "comment": [
+            "always reten 12356-2345-126"
+          ], 
           "input": "reten", 
           "output": "⠷⠞⠣"
         }, 
         {
+          "comment": [
+            "always retere 12356-1256-12356"
+          ], 
           "input": "retere", 
           "output": "⠷⠳⠷"
         }, 
         {
+          "comment": [
+            "always reter 12356-2345-156"
+          ], 
           "input": "reter", 
           "output": "⠷⠞⠱"
         }, 
         {
+          "comment": [
+            "always retete 12356-1256-1256"
+          ], 
           "input": "retete", 
           "output": "⠷⠳⠳"
         }, 
         {
+          "comment": [
+            "always retet 12356-2345-346"
+          ], 
           "input": "retet", 
           "output": "⠷⠞⠬"
         }, 
         {
+          "comment": [
+            "always rete 12356-1256"
+          ], 
           "input": "rete", 
           "output": "⠷⠳"
         }, 
         {
+          "comment": [
+            "always reti 12356-2345-24"
+          ], 
           "input": "reti", 
           "output": "⠷⠞⠊"
         }, 
         {
+          "comment": [
+            "always retore 12356-2345-135-12356"
+          ], 
           "input": "retore", 
           "output": "⠷⠞⠕⠷"
         }, 
         {
+          "comment": [
+            "always retor 12356-2345-1346"
+          ], 
           "input": "retor", 
           "output": "⠷⠞⠭"
         }, 
         {
+          "comment": [
+            "always reto 12356-2345-135"
+          ], 
           "input": "reto", 
           "output": "⠷⠞⠕"
         }, 
         {
+          "comment": [
+            "always retu 12356-2345-136"
+          ], 
           "input": "retu", 
           "output": "⠷⠞⠥"
         }, 
         {
+          "comment": [
+            "always rety 12356-2345-13456"
+          ], 
           "input": "rety", 
           "output": "⠷⠞⠽"
         }, 
         {
-          "input": "retæ", 
-          "output": "⠷⠞⠜"
-        }, 
-        {
+          "comment": [
+            "always retâ 12356-2345-16"
+          ], 
           "input": "retâ", 
           "output": "⠷⠞⠡"
         }, 
         {
-          "input": "retâ", 
-          "output": "⠷⠞⠜"
-        }, 
-        {
-          "input": "retâ", 
+          "comment": [
+            "always retå 12356-2345-16"
+          ], 
+          "input": "retå", 
           "output": "⠷⠞⠡"
         }, 
         {
+          "comment": [
+            "always retä 12356-2345-345"
+          ], 
+          "input": "retä", 
+          "output": "⠷⠞⠜"
+        }, 
+        {
+          "comment": [
+            "always retæ 12356-2345-345"
+          ], 
           "input": "retæ", 
           "output": "⠷⠞⠜"
         }, 
         {
-          "input": "retæ", 
-          "output": "⠷⠞⠜"
-        }, 
-        {
+          "comment": [
+            "always retö 12356-2345-246"
+          ], 
           "input": "retö", 
           "output": "⠷⠞⠪"
         }, 
         {
+          "comment": [
+            "always retø 12356-2345-246"
+          ], 
           "input": "retø", 
           "output": "⠷⠞⠪"
         }, 
         {
+          "comment": [
+            "word ret 12356"
+          ], 
+          "input": " ret ", 
+          "output": " ⠷ "
+        }, 
+        {
+          "comment": [
+            "always ret 1235-346"
+          ], 
           "input": "ret", 
           "output": "⠗⠬"
         }, 
         {
+          "comment": [
+            "always re 12356"
+          ], 
           "input": "re", 
           "output": "⠷"
         }, 
         {
+          "comment": [
+            "word rigtige 1235-12456"
+          ], 
+          "input": " rigtige ", 
+          "output": " ⠗⠻ "
+        }, 
+        {
+          "comment": [
+            "word rigtigt 1235-2345"
+          ], 
+          "input": " rigtigt ", 
+          "output": " ⠗⠞ "
+        }, 
+        {
+          "comment": [
+            "word rigtig 1235"
+          ], 
+          "input": " rigtig ", 
+          "output": " ⠗ "
+        }, 
+        {
+          "comment": [
+            "word sagde 234-1456"
+          ], 
+          "input": " sagde ", 
+          "output": " ⠎⠹ "
+        }, 
+        {
+          "comment": [
+            "word sammen 234-134"
+          ], 
+          "input": " sammen ", 
+          "output": " ⠎⠍ "
+        }, 
+        {
+          "comment": [
+            "word samme 234-146"
+          ], 
+          "input": " samme ", 
+          "output": " ⠎⠩ "
+        }, 
+        {
+          "comment": [
+            "word selvfölgelig 234-1236-124"
+          ], 
+          "input": " selvfölgelig ", 
+          "output": " ⠎⠧⠋ "
+        }, 
+        {
+          "comment": [
+            "word selvfølgelig 234-1236-124"
+          ], 
+          "input": " selvfølgelig ", 
+          "output": " ⠎⠧⠋ "
+        }, 
+        {
+          "comment": [
+            "word selv 234-1236"
+          ], 
+          "input": " selv ", 
+          "output": " ⠎⠧ "
+        }, 
+        {
+          "comment": [
+            "word sidste 234-1356-15"
+          ], 
+          "input": " sidste ", 
+          "output": " ⠎⠵⠑ "
+        }, 
+        {
+          "comment": [
+            "word sidst 234-1356"
+          ], 
+          "input": " sidst ", 
+          "output": " ⠎⠵ "
+        }, 
+        {
+          "comment": [
+            "word sin 234-1345"
+          ], 
+          "input": " sin ", 
+          "output": " ⠎⠝ "
+        }, 
+        {
+          "comment": [
+            "word sit 234-2345"
+          ], 
+          "input": " sit ", 
+          "output": " ⠎⠞ "
+        }, 
+        {
+          "comment": [
+            "word skal 123456"
+          ], 
+          "input": " skal ", 
+          "output": " ⠿ "
+        }, 
+        {
+          "comment": [
+            "word skulle 123456-123-15"
+          ], 
+          "input": " skulle ", 
+          "output": " ⠿⠇⠑ "
+        }, 
+        {
+          "comment": [
+            "always sk 123456"
+          ], 
           "input": "sk", 
           "output": "⠿"
         }, 
         {
+          "comment": [
+            "word snart 234-1235"
+          ], 
+          "input": " snart ", 
+          "output": " ⠎⠗ "
+        }, 
+        {
+          "comment": [
+            "word som 234"
+          ], 
+          "input": " som ", 
+          "output": " ⠎ "
+        }, 
+        {
+          "comment": [
+            "always st. 234-2345-345"
+          ], 
           "input": "st.", 
           "output": "⠎⠞⠜"
         }, 
         {
+          "comment": [
+            "always st 1356"
+          ], 
           "input": "st", 
           "output": "⠵"
         }, 
         {
+          "comment": [
+            "word sâdan 16-1"
+          ], 
+          "input": " sâdan ", 
+          "output": " ⠡⠁ "
+        }, 
+        {
+          "comment": [
+            "word sâledes 16-15"
+          ], 
+          "input": " sâledes ", 
+          "output": " ⠡⠑ "
+        }, 
+        {
+          "comment": [
+            "word sâ 16"
+          ], 
+          "input": " sâ ", 
+          "output": " ⠡ "
+        }, 
+        {
+          "comment": [
+            "word sâdan 16-1"
+          ], 
+          "input": " sâdan ", 
+          "output": " ⠡⠁ "
+        }, 
+        {
+          "comment": [
+            "word sâledes 16-15"
+          ], 
+          "input": " sâledes ", 
+          "output": " ⠡⠑ "
+        }, 
+        {
+          "comment": [
+            "word sâ 16"
+          ], 
+          "input": " sâ ", 
+          "output": " ⠡ "
+        }, 
+        {
+          "comment": [
+            "always tena 1256-1345-1"
+          ], 
           "input": "tena", 
           "output": "⠳⠝⠁"
         }, 
         {
+          "comment": [
+            "always tenda 2345-126-145-1"
+          ], 
           "input": "tenda", 
           "output": "⠞⠣⠙⠁"
         }, 
         {
+          "comment": [
+            "always tenden 2345-126-12346"
+          ], 
           "input": "tenden", 
           "output": "⠞⠣⠯"
         }, 
         {
+          "comment": [
+            "always tender 2345-126-23456"
+          ], 
           "input": "tender", 
           "output": "⠞⠣⠾"
         }, 
         {
+          "comment": [
+            "always tendet 2345-126-2346"
+          ], 
           "input": "tendet", 
           "output": "⠞⠣⠮"
         }, 
         {
+          "comment": [
+            "always tende 2345-126-1456"
+          ], 
           "input": "tende", 
           "output": "⠞⠣⠹"
         }, 
         {
+          "comment": [
+            "always tendig 2345-126-145-35"
+          ], 
           "input": "tendig", 
           "output": "⠞⠣⠙⠔"
         }, 
         {
+          "comment": [
+            "always tendi 2345-126-145-24"
+          ], 
           "input": "tendi", 
           "output": "⠞⠣⠙⠊"
         }, 
         {
+          "comment": [
+            "always tendore 2345-126-145-135-12356"
+          ], 
           "input": "tendore", 
           "output": "⠞⠣⠙⠕⠷"
         }, 
         {
+          "comment": [
+            "always tendor 2345-126-145-1346"
+          ], 
           "input": "tendor", 
           "output": "⠞⠣⠙⠭"
         }, 
         {
+          "comment": [
+            "always tendo 2345-126-145-135"
+          ], 
           "input": "tendo", 
           "output": "⠞⠣⠙⠕"
         }, 
         {
+          "comment": [
+            "always tendu 2345-126-145-136"
+          ], 
           "input": "tendu", 
           "output": "⠞⠣⠙⠥"
         }, 
         {
+          "comment": [
+            "always tendy 2345-126-145-13456"
+          ], 
           "input": "tendy", 
           "output": "⠞⠣⠙⠽"
         }, 
         {
-          "input": "tendæ", 
-          "output": "⠞⠣⠙⠜"
-        }, 
-        {
+          "comment": [
+            "always tendâ 2345-126-145-16"
+          ], 
           "input": "tendâ", 
           "output": "⠞⠣⠙⠡"
         }, 
         {
-          "input": "tendâ", 
-          "output": "⠞⠣⠙⠜"
-        }, 
-        {
-          "input": "tendâ", 
+          "comment": [
+            "always tendå 2345-126-145-16"
+          ], 
+          "input": "tendå", 
           "output": "⠞⠣⠙⠡"
         }, 
         {
+          "comment": [
+            "always tendä 2345-126-145-345"
+          ], 
+          "input": "tendä", 
+          "output": "⠞⠣⠙⠜"
+        }, 
+        {
+          "comment": [
+            "always tendæ 2345-126-145-345"
+          ], 
           "input": "tendæ", 
           "output": "⠞⠣⠙⠜"
         }, 
         {
-          "input": "tendæ", 
-          "output": "⠞⠣⠙⠜"
-        }, 
-        {
+          "comment": [
+            "always tendö 2345-126-145-246"
+          ], 
           "input": "tendö", 
           "output": "⠞⠣⠙⠪"
         }, 
         {
+          "comment": [
+            "always tendø 2345-126-145-246"
+          ], 
           "input": "tendø", 
           "output": "⠞⠣⠙⠪"
         }, 
         {
+          "comment": [
+            "always tenend 1256-1246-12345"
+          ], 
           "input": "tenend", 
           "output": "⠳⠫⠟"
         }, 
         {
+          "comment": [
+            "always tenene 1256-1246-1246"
+          ], 
           "input": "tenene", 
           "output": "⠳⠫⠫"
         }, 
         {
+          "comment": [
+            "always tenen 1256-1345-126"
+          ], 
           "input": "tenen", 
           "output": "⠳⠝⠣"
         }, 
         {
+          "comment": [
+            "always tenere 1256-1246-12356"
+          ], 
           "input": "tenere", 
           "output": "⠳⠫⠷"
         }, 
         {
+          "comment": [
+            "always tener 1256-1345-156"
+          ], 
           "input": "tener", 
           "output": "⠳⠝⠱"
         }, 
         {
+          "comment": [
+            "always tenete 1256-1246-1256"
+          ], 
           "input": "tenete", 
           "output": "⠳⠫⠳"
         }, 
         {
+          "comment": [
+            "always tenet 1256-1345-346"
+          ], 
           "input": "tenet", 
           "output": "⠳⠝⠬"
         }, 
         {
+          "comment": [
+            "always tene 1256-1246"
+          ], 
           "input": "tene", 
           "output": "⠳⠫"
         }, 
         {
+          "comment": [
+            "always teni 1256-1345-24"
+          ], 
           "input": "teni", 
           "output": "⠳⠝⠊"
         }, 
         {
+          "comment": [
+            "always tenore 1256-1345-135-12356"
+          ], 
           "input": "tenore", 
           "output": "⠳⠝⠕⠷"
         }, 
         {
+          "comment": [
+            "always tenor 1256-1345-1346"
+          ], 
           "input": "tenor", 
           "output": "⠳⠝⠭"
         }, 
         {
+          "comment": [
+            "always teno 1256-1345-135"
+          ], 
           "input": "teno", 
           "output": "⠳⠝⠕"
         }, 
         {
+          "comment": [
+            "always tenu 1256-1345-136"
+          ], 
           "input": "tenu", 
           "output": "⠳⠝⠥"
         }, 
         {
+          "comment": [
+            "always teny 1256-1345-13456"
+          ], 
           "input": "teny", 
           "output": "⠳⠝⠽"
         }, 
         {
-          "input": "tenæ", 
-          "output": "⠳⠝⠜"
-        }, 
-        {
+          "comment": [
+            "always tenâ 1256-1345-16"
+          ], 
           "input": "tenâ", 
           "output": "⠳⠝⠡"
         }, 
         {
-          "input": "tenâ", 
-          "output": "⠳⠝⠜"
-        }, 
-        {
-          "input": "tenâ", 
+          "comment": [
+            "always tenå 1256-1345-16"
+          ], 
+          "input": "tenå", 
           "output": "⠳⠝⠡"
         }, 
         {
+          "comment": [
+            "always tenä 1256-1345-345"
+          ], 
+          "input": "tenä", 
+          "output": "⠳⠝⠜"
+        }, 
+        {
+          "comment": [
+            "always tenæ 1256-1345-345"
+          ], 
           "input": "tenæ", 
           "output": "⠳⠝⠜"
         }, 
         {
-          "input": "tenæ", 
-          "output": "⠳⠝⠜"
-        }, 
-        {
+          "comment": [
+            "always tenö 1256-1345-246"
+          ], 
           "input": "tenö", 
           "output": "⠳⠝⠪"
         }, 
         {
+          "comment": [
+            "always tenø 1256-1345-246"
+          ], 
           "input": "tenø", 
           "output": "⠳⠝⠪"
         }, 
         {
+          "comment": [
+            "always ten 2345-126"
+          ], 
           "input": "ten", 
           "output": "⠞⠣"
         }, 
         {
+          "comment": [
+            "always tera 1256-1235-1"
+          ], 
           "input": "tera", 
           "output": "⠳⠗⠁"
         }, 
         {
+          "comment": [
+            "always terend 1256-12356-12345"
+          ], 
           "input": "terend", 
           "output": "⠳⠷⠟"
         }, 
         {
+          "comment": [
+            "always terene 1256-12356-1246"
+          ], 
           "input": "terene", 
           "output": "⠳⠷⠫"
         }, 
         {
+          "comment": [
+            "always teren 1256-1235-126"
+          ], 
           "input": "teren", 
           "output": "⠳⠗⠣"
         }, 
         {
+          "comment": [
+            "always terere 1256-12356-12356"
+          ], 
           "input": "terere", 
           "output": "⠳⠷⠷"
         }, 
         {
+          "comment": [
+            "always terer 1256-1235-156"
+          ], 
           "input": "terer", 
           "output": "⠳⠗⠱"
         }, 
         {
+          "comment": [
+            "always terete 1256-12356-1256"
+          ], 
           "input": "terete", 
           "output": "⠳⠷⠳"
         }, 
         {
+          "comment": [
+            "always teret 1256-1235-346"
+          ], 
           "input": "teret", 
           "output": "⠳⠗⠬"
         }, 
         {
+          "comment": [
+            "always tere 1256-12356"
+          ], 
           "input": "tere", 
           "output": "⠳⠷"
         }, 
         {
+          "comment": [
+            "always terige 1256-1235-24-12456"
+          ], 
           "input": "terige", 
           "output": "⠳⠗⠊⠻"
         }, 
         {
+          "comment": [
+            "always terig 1256-1235-35"
+          ], 
           "input": "terig", 
           "output": "⠳⠗⠔"
         }, 
         {
+          "comment": [
+            "always teri 1256-1235-24"
+          ], 
           "input": "teri", 
           "output": "⠳⠗⠊"
         }, 
         {
+          "comment": [
+            "always terore 1256-1235-135-12356"
+          ], 
           "input": "terore", 
           "output": "⠳⠗⠕⠷"
         }, 
         {
+          "comment": [
+            "always teror 1256-1235-1346"
+          ], 
           "input": "teror", 
           "output": "⠳⠗⠭"
         }, 
         {
+          "comment": [
+            "always tero 1256-1235-135"
+          ], 
           "input": "tero", 
           "output": "⠳⠗⠕"
         }, 
         {
+          "comment": [
+            "always teru 1256-1235-136"
+          ], 
           "input": "teru", 
           "output": "⠳⠗⠥"
         }, 
         {
+          "comment": [
+            "always tery 1256-1235-13456"
+          ], 
           "input": "tery", 
           "output": "⠳⠗⠽"
         }, 
         {
-          "input": "teræ", 
-          "output": "⠳⠗⠜"
-        }, 
-        {
+          "comment": [
+            "always terâ 1256-1235-16"
+          ], 
           "input": "terâ", 
           "output": "⠳⠗⠡"
         }, 
         {
-          "input": "terâ", 
-          "output": "⠳⠗⠜"
-        }, 
-        {
-          "input": "terâ", 
+          "comment": [
+            "always terå 1256-1235-16"
+          ], 
+          "input": "terå", 
           "output": "⠳⠗⠡"
         }, 
         {
+          "comment": [
+            "always terä 1256-1235-345"
+          ], 
+          "input": "terä", 
+          "output": "⠳⠗⠜"
+        }, 
+        {
+          "comment": [
+            "always teræ 1256-1235-345"
+          ], 
           "input": "teræ", 
           "output": "⠳⠗⠜"
         }, 
         {
-          "input": "teræ", 
-          "output": "⠳⠗⠜"
-        }, 
-        {
+          "comment": [
+            "always terö 1256-1235-246"
+          ], 
           "input": "terö", 
           "output": "⠳⠗⠪"
         }, 
         {
+          "comment": [
+            "always terø 1256-1235-246"
+          ], 
           "input": "terø", 
           "output": "⠳⠗⠪"
         }, 
         {
+          "comment": [
+            "always ter 2345-156"
+          ], 
           "input": "ter", 
           "output": "⠞⠱"
         }, 
         {
+          "comment": [
+            "always teta 1256-2345-1"
+          ], 
           "input": "teta", 
           "output": "⠳⠞⠁"
         }, 
         {
+          "comment": [
+            "always tetend 1256-1256-12345"
+          ], 
           "input": "tetend", 
           "output": "⠳⠳⠟"
         }, 
         {
+          "comment": [
+            "always tetene 1256-1256-1246"
+          ], 
           "input": "tetene", 
           "output": "⠳⠳⠫"
         }, 
         {
+          "comment": [
+            "always teten 1256-2345-126"
+          ], 
           "input": "teten", 
           "output": "⠳⠞⠣"
         }, 
         {
+          "comment": [
+            "always tetere 1256-1256-12356"
+          ], 
           "input": "tetere", 
           "output": "⠳⠳⠷"
         }, 
         {
+          "comment": [
+            "always teter 1256-2345-156"
+          ], 
           "input": "teter", 
           "output": "⠳⠞⠱"
         }, 
         {
+          "comment": [
+            "always tetete 1256-1256-1256"
+          ], 
           "input": "tetete", 
           "output": "⠳⠳⠳"
         }, 
         {
+          "comment": [
+            "always tetet 1256-2345-346"
+          ], 
           "input": "tetet", 
           "output": "⠳⠞⠬"
         }, 
         {
+          "comment": [
+            "always tete 1256-1256"
+          ], 
           "input": "tete", 
           "output": "⠳⠳"
         }, 
         {
+          "comment": [
+            "always tetige 1256-2345-24-12456"
+          ], 
           "input": "tetige", 
           "output": "⠳⠞⠊⠻"
         }, 
         {
+          "comment": [
+            "always tetig 1256-2345-35"
+          ], 
           "input": "tetig", 
           "output": "⠳⠞⠔"
         }, 
         {
+          "comment": [
+            "always teti 1256-2345-24"
+          ], 
           "input": "teti", 
           "output": "⠳⠞⠊"
         }, 
         {
+          "comment": [
+            "always tetore 1256-2345-135-12356"
+          ], 
           "input": "tetore", 
           "output": "⠳⠞⠕⠷"
         }, 
         {
+          "comment": [
+            "always tetor 1256-2345-1346"
+          ], 
           "input": "tetor", 
           "output": "⠳⠞⠭"
         }, 
         {
+          "comment": [
+            "always teto 1256-2345-135"
+          ], 
           "input": "teto", 
           "output": "⠳⠞⠕"
         }, 
         {
+          "comment": [
+            "always tetu 1256-2345-136"
+          ], 
           "input": "tetu", 
           "output": "⠳⠞⠥"
         }, 
         {
+          "comment": [
+            "always tety 1256-2345-13456"
+          ], 
           "input": "tety", 
           "output": "⠳⠞⠽"
         }, 
         {
-          "input": "tetæ", 
-          "output": "⠳⠞⠜"
-        }, 
-        {
+          "comment": [
+            "always tetâ 1256-2345-16"
+          ], 
           "input": "tetâ", 
           "output": "⠳⠞⠡"
         }, 
         {
-          "input": "tetâ", 
-          "output": "⠳⠞⠜"
-        }, 
-        {
-          "input": "tetâ", 
+          "comment": [
+            "always tetå 1256-2345-16"
+          ], 
+          "input": "tetå", 
           "output": "⠳⠞⠡"
         }, 
         {
+          "comment": [
+            "always tetä 1256-2345-345"
+          ], 
+          "input": "tetä", 
+          "output": "⠳⠞⠜"
+        }, 
+        {
+          "comment": [
+            "always tetæ 1256-2345-345"
+          ], 
           "input": "tetæ", 
           "output": "⠳⠞⠜"
         }, 
         {
-          "input": "tetæ", 
-          "output": "⠳⠞⠜"
-        }, 
-        {
+          "comment": [
+            "always tetö 1256-2345-246"
+          ], 
           "input": "tetö", 
           "output": "⠳⠞⠪"
         }, 
         {
+          "comment": [
+            "always tetø 1256-2345-246"
+          ], 
           "input": "tetø", 
           "output": "⠳⠞⠪"
         }, 
         {
+          "comment": [
+            "always tet 2345-346"
+          ], 
           "input": "tet", 
           "output": "⠞⠬"
         }, 
         {
+          "comment": [
+            "always te 1256"
+          ], 
           "input": "te", 
           "output": "⠳"
         }, 
         {
+          "comment": [
+            "word tid 2345-145"
+          ], 
+          "input": " tid ", 
+          "output": " ⠞⠙ "
+        }, 
+        {
+          "comment": [
+            "word tilbage 2345-12"
+          ], 
+          "input": " tilbage ", 
+          "output": " ⠞⠃ "
+        }, 
+        {
+          "comment": [
+            "word til 2345"
+          ], 
+          "input": " til ", 
+          "output": " ⠞ "
+        }, 
+        {
+          "comment": [
+            "word under 12345"
+          ], 
+          "input": " under ", 
+          "output": " ⠟ "
+        }, 
+        {
+          "comment": [
+            "word var 36"
+          ], 
+          "input": " var ", 
+          "output": " ⠤ "
+        }, 
+        {
+          "comment": [
+            "word ved 1236"
+          ], 
+          "input": " ved ", 
+          "output": " ⠧ "
+        }, 
+        {
+          "comment": [
+            "always vena 3456-1345-1"
+          ], 
           "input": "vena", 
           "output": "⠼⠝⠁"
         }, 
         {
+          "comment": [
+            "always venda 1236-126-145-1"
+          ], 
           "input": "venda", 
           "output": "⠧⠣⠙⠁"
         }, 
         {
+          "comment": [
+            "always venden 1236-126-12346"
+          ], 
           "input": "venden", 
           "output": "⠧⠣⠯"
         }, 
         {
+          "comment": [
+            "always vender 1236-126-23456"
+          ], 
           "input": "vender", 
           "output": "⠧⠣⠾"
         }, 
         {
+          "comment": [
+            "always vendet 1236-126-2346"
+          ], 
           "input": "vendet", 
           "output": "⠧⠣⠮"
         }, 
         {
+          "comment": [
+            "always vende 1236-126-1456"
+          ], 
           "input": "vende", 
           "output": "⠧⠣⠹"
         }, 
         {
+          "comment": [
+            "always vendigen 1236-126-145-24-1245-126"
+          ], 
           "input": "vendigen", 
           "output": "⠧⠣⠙⠊⠛⠣"
         }, 
         {
+          "comment": [
+            "always vendiger 1236-126-145-24-1245-156"
+          ], 
           "input": "vendiger", 
           "output": "⠧⠣⠙⠊⠛⠱"
         }, 
         {
+          "comment": [
+            "always vendiget 1236-126-145-24-1245-346"
+          ], 
           "input": "vendiget", 
           "output": "⠧⠣⠙⠊⠛⠬"
         }, 
         {
+          "comment": [
+            "always vendige 1236-126-145-24-12456"
+          ], 
           "input": "vendige", 
           "output": "⠧⠣⠙⠊⠻"
         }, 
         {
+          "comment": [
+            "always vendig 1236-126-145-35"
+          ], 
           "input": "vendig", 
           "output": "⠧⠣⠙⠔"
         }, 
         {
+          "comment": [
+            "always vendi 1236-126-145-24"
+          ], 
           "input": "vendi", 
           "output": "⠧⠣⠙⠊"
         }, 
         {
+          "comment": [
+            "always vendo 1236-126-145-135"
+          ], 
           "input": "vendo", 
           "output": "⠧⠣⠙⠕"
         }, 
         {
+          "comment": [
+            "always vendu 1236-126-145-136"
+          ], 
           "input": "vendu", 
           "output": "⠧⠣⠙⠥"
         }, 
         {
+          "comment": [
+            "always vendy 1236-126-145-13456"
+          ], 
           "input": "vendy", 
           "output": "⠧⠣⠙⠽"
         }, 
         {
-          "input": "vendæ", 
-          "output": "⠧⠣⠙⠜"
-        }, 
-        {
+          "comment": [
+            "always vendâ 1236-126-145-16"
+          ], 
           "input": "vendâ", 
           "output": "⠧⠣⠙⠡"
         }, 
         {
-          "input": "vendâ", 
-          "output": "⠧⠣⠙⠜"
-        }, 
-        {
-          "input": "vendâ", 
+          "comment": [
+            "always vendå 1236-126-145-16"
+          ], 
+          "input": "vendå", 
           "output": "⠧⠣⠙⠡"
         }, 
         {
+          "comment": [
+            "always vendä 1236-126-145-345"
+          ], 
+          "input": "vendä", 
+          "output": "⠧⠣⠙⠜"
+        }, 
+        {
+          "comment": [
+            "always vendæ 1236-126-145-345"
+          ], 
           "input": "vendæ", 
           "output": "⠧⠣⠙⠜"
         }, 
         {
-          "input": "vendæ", 
-          "output": "⠧⠣⠙⠜"
-        }, 
-        {
+          "comment": [
+            "always vendö 1236-126-145-246"
+          ], 
           "input": "vendö", 
           "output": "⠧⠣⠙⠪"
         }, 
         {
+          "comment": [
+            "always vendø 1236-126-145-246"
+          ], 
           "input": "vendø", 
           "output": "⠧⠣⠙⠪"
         }, 
         {
+          "comment": [
+            "always vend 3456-12345"
+          ], 
           "input": "vend", 
           "output": "⠼⠟"
         }, 
         {
+          "comment": [
+            "always venend 3456-1246-12345"
+          ], 
           "input": "venend", 
           "output": "⠼⠫⠟"
         }, 
         {
+          "comment": [
+            "always venene 3456-1246-1246"
+          ], 
           "input": "venene", 
           "output": "⠼⠫⠫"
         }, 
         {
+          "comment": [
+            "always venen 3456-1345-126"
+          ], 
           "input": "venen", 
           "output": "⠼⠝⠣"
         }, 
         {
+          "comment": [
+            "always venere 3456-1246-12356"
+          ], 
           "input": "venere", 
           "output": "⠼⠫⠷"
         }, 
         {
+          "comment": [
+            "always vener 3456-1345-156"
+          ], 
           "input": "vener", 
           "output": "⠼⠝⠱"
         }, 
         {
+          "comment": [
+            "always venete 3456-1246-1256"
+          ], 
           "input": "venete", 
           "output": "⠼⠫⠳"
         }, 
         {
+          "comment": [
+            "always venet 3456-1345-346"
+          ], 
           "input": "venet", 
           "output": "⠼⠝⠬"
         }, 
         {
+          "comment": [
+            "always vene 3456-1246"
+          ], 
           "input": "vene", 
           "output": "⠼⠫"
         }, 
         {
+          "comment": [
+            "always ven 1236-126"
+          ], 
           "input": "ven", 
           "output": "⠧⠣"
         }, 
         {
+          "comment": [
+            "always vera 3456-1235-1"
+          ], 
           "input": "vera", 
           "output": "⠼⠗⠁"
         }, 
         {
+          "comment": [
+            "always verdenskre 1236-156-12346-234-13-12356"
+          ], 
           "input": "verdenskre", 
           "output": "⠧⠱⠯⠎⠅⠷"
         }, 
         {
+          "comment": [
+            "always verdenskr 1236-156-12346-234-13-1235"
+          ], 
           "input": "verdenskr", 
           "output": "⠧⠱⠯⠎⠅⠗"
         }, 
         {
+          "comment": [
+            "always verend 3456-12356-12345"
+          ], 
           "input": "verend", 
           "output": "⠼⠷⠟"
         }, 
         {
+          "comment": [
+            "always verene 3456-12356-1246"
+          ], 
           "input": "verene", 
           "output": "⠼⠷⠫"
         }, 
         {
+          "comment": [
+            "always veren 3456-1235-126"
+          ], 
           "input": "veren", 
           "output": "⠼⠗⠣"
         }, 
         {
+          "comment": [
+            "always verere 3456-12356-12356"
+          ], 
           "input": "verere", 
           "output": "⠼⠷⠷"
         }, 
         {
+          "comment": [
+            "always verer 3456-1235-156"
+          ], 
           "input": "verer", 
           "output": "⠼⠗⠱"
         }, 
         {
+          "comment": [
+            "always verete 3456-12356-1256"
+          ], 
           "input": "verete", 
           "output": "⠼⠷⠳"
         }, 
         {
+          "comment": [
+            "always veret 3456-1235-346"
+          ], 
           "input": "veret", 
           "output": "⠼⠗⠬"
         }, 
         {
+          "comment": [
+            "always vere 3456-12356"
+          ], 
           "input": "vere", 
           "output": "⠼⠷"
         }, 
         {
+          "comment": [
+            "always verige 3456-1235-24-12456"
+          ], 
           "input": "verige", 
           "output": "⠼⠗⠊⠻"
         }, 
         {
+          "comment": [
+            "always verig 3456-1235-35"
+          ], 
           "input": "verig", 
           "output": "⠼⠗⠔"
         }, 
         {
+          "comment": [
+            "always veri 3456-1235-24"
+          ], 
           "input": "veri", 
           "output": "⠼⠗⠊"
         }, 
         {
+          "comment": [
+            "always verore 3456-1235-135-12356"
+          ], 
           "input": "verore", 
           "output": "⠼⠗⠕⠷"
         }, 
         {
+          "comment": [
+            "always veror 3456-1235-1346"
+          ], 
           "input": "veror", 
           "output": "⠼⠗⠭"
         }, 
         {
+          "comment": [
+            "always vero 3456-1235-135"
+          ], 
           "input": "vero", 
           "output": "⠼⠗⠕"
         }, 
         {
+          "comment": [
+            "always veru 3456-1235-136"
+          ], 
           "input": "veru", 
           "output": "⠼⠗⠥"
         }, 
         {
+          "comment": [
+            "always very 3456-1235-13456"
+          ], 
           "input": "very", 
           "output": "⠼⠗⠽"
         }, 
         {
-          "input": "veræ", 
-          "output": "⠼⠗⠜"
-        }, 
-        {
+          "comment": [
+            "always verâ 3456-1235-16"
+          ], 
           "input": "verâ", 
           "output": "⠼⠗⠡"
         }, 
         {
-          "input": "verâ", 
-          "output": "⠼⠗⠜"
-        }, 
-        {
-          "input": "verâ", 
+          "comment": [
+            "always verå 3456-1235-16"
+          ], 
+          "input": "verå", 
           "output": "⠼⠗⠡"
         }, 
         {
+          "comment": [
+            "always verä 3456-1235-345"
+          ], 
+          "input": "verä", 
+          "output": "⠼⠗⠜"
+        }, 
+        {
+          "comment": [
+            "always veræ 3456-1235-345"
+          ], 
           "input": "veræ", 
           "output": "⠼⠗⠜"
         }, 
         {
-          "input": "veræ", 
-          "output": "⠼⠗⠜"
-        }, 
-        {
+          "comment": [
+            "always verö 3456-1235-246"
+          ], 
           "input": "verö", 
           "output": "⠼⠗⠪"
         }, 
         {
+          "comment": [
+            "always verø 3456-1235-246"
+          ], 
           "input": "verø", 
           "output": "⠼⠗⠪"
         }, 
         {
+          "comment": [
+            "always ver 1236-156"
+          ], 
           "input": "ver", 
           "output": "⠧⠱"
         }, 
         {
+          "comment": [
+            "always veta 3456-2345-1"
+          ], 
           "input": "veta", 
           "output": "⠼⠞⠁"
         }, 
         {
+          "comment": [
+            "always vetend 3456-1256-12345"
+          ], 
           "input": "vetend", 
           "output": "⠼⠳⠟"
         }, 
         {
+          "comment": [
+            "always vetene 3456-1256-1246"
+          ], 
           "input": "vetene", 
           "output": "⠼⠳⠫"
         }, 
         {
+          "comment": [
+            "always veten 3456-2345-126"
+          ], 
           "input": "veten", 
           "output": "⠼⠞⠣"
         }, 
         {
+          "comment": [
+            "always vetere 3456-1256-12356"
+          ], 
           "input": "vetere", 
           "output": "⠼⠳⠷"
         }, 
         {
+          "comment": [
+            "always veter 3456-2345-156"
+          ], 
           "input": "veter", 
           "output": "⠼⠞⠱"
         }, 
         {
+          "comment": [
+            "always vetete 3456-1256-1256"
+          ], 
           "input": "vetete", 
           "output": "⠼⠳⠳"
         }, 
         {
+          "comment": [
+            "always vetet 3456-2345-346"
+          ], 
           "input": "vetet", 
           "output": "⠼⠞⠬"
         }, 
         {
+          "comment": [
+            "always vete 3456-1256"
+          ], 
           "input": "vete", 
           "output": "⠼⠳"
         }, 
         {
+          "comment": [
+            "always vetige 3456-2345-24-12456"
+          ], 
           "input": "vetige", 
           "output": "⠼⠞⠊⠻"
         }, 
         {
+          "comment": [
+            "always vetig 3456-2345-35"
+          ], 
           "input": "vetig", 
           "output": "⠼⠞⠔"
         }, 
         {
+          "comment": [
+            "always veti 3456-2345-24"
+          ], 
           "input": "veti", 
           "output": "⠼⠞⠊"
         }, 
         {
+          "comment": [
+            "always vetore 3456-2345-135-12356"
+          ], 
           "input": "vetore", 
           "output": "⠼⠞⠕⠷"
         }, 
         {
+          "comment": [
+            "always vetor 3456-2345-1346"
+          ], 
           "input": "vetor", 
           "output": "⠼⠞⠭"
         }, 
         {
+          "comment": [
+            "always veto 3456-2345-135"
+          ], 
           "input": "veto", 
           "output": "⠼⠞⠕"
         }, 
         {
+          "comment": [
+            "always vetu 3456-2345-136"
+          ], 
           "input": "vetu", 
           "output": "⠼⠞⠥"
         }, 
         {
+          "comment": [
+            "always vety 3456-2345-13456"
+          ], 
           "input": "vety", 
           "output": "⠼⠞⠽"
         }, 
         {
-          "input": "vetæ", 
-          "output": "⠼⠞⠜"
-        }, 
-        {
+          "comment": [
+            "always vetâ 3456-2345-16"
+          ], 
           "input": "vetâ", 
           "output": "⠼⠞⠡"
         }, 
         {
-          "input": "vetâ", 
-          "output": "⠼⠞⠜"
-        }, 
-        {
-          "input": "vetâ", 
+          "comment": [
+            "always vetå 3456-2345-16"
+          ], 
+          "input": "vetå", 
           "output": "⠼⠞⠡"
         }, 
         {
+          "comment": [
+            "always vetä 3456-2345-345"
+          ], 
+          "input": "vetä", 
+          "output": "⠼⠞⠜"
+        }, 
+        {
+          "comment": [
+            "always vetæ 3456-2345-345"
+          ], 
           "input": "vetæ", 
           "output": "⠼⠞⠜"
         }, 
         {
-          "input": "vetæ", 
-          "output": "⠼⠞⠜"
-        }, 
-        {
+          "comment": [
+            "always vetö 3456-2345-246"
+          ], 
           "input": "vetö", 
           "output": "⠼⠞⠪"
         }, 
         {
+          "comment": [
+            "always vetø 3456-2345-246"
+          ], 
           "input": "vetø", 
           "output": "⠼⠞⠪"
         }, 
         {
+          "comment": [
+            "always vet 1236-346"
+          ], 
           "input": "vet", 
           "output": "⠧⠬"
         }, 
         {
+          "comment": [
+            "always ve 3456"
+          ], 
           "input": "ve", 
           "output": "⠼"
+        }, 
+        {
+          "comment": [
+            "word ville 1236-123-15"
+          ], 
+          "input": " ville ", 
+          "output": " ⠧⠇⠑ "
+        }, 
+        {
+          "comment": [
+            "word vil 1236-123"
+          ], 
+          "input": " vil ", 
+          "output": " ⠧⠇ "
+        }, 
+        {
+          "comment": [
+            "word været 1236-2345"
+          ], 
+          "input": " været ", 
+          "output": " ⠧⠞ "
+        }, 
+        {
+          "comment": [
+            "word være 345"
+          ], 
+          "input": " være ", 
+          "output": " ⠜ "
+        }, 
+        {
+          "comment": [
+            "word været 1236-2345"
+          ], 
+          "input": " været ", 
+          "output": " ⠧⠞ "
+        }, 
+        {
+          "comment": [
+            "word være 345"
+          ], 
+          "input": " være ", 
+          "output": " ⠜ "
         }
-      ]
+      ], 
+      "flags": {
+        "outputUniBrl": true
+      }
     }
-  ], 
-  "tables": [
-    "da-dk-g2.ctb"
   ]
 }
