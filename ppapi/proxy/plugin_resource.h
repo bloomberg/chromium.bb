@@ -62,6 +62,13 @@ class PPAPI_PROXY_EXPORT PluginResource : public Resource {
   // Sends a create message to the browser or renderer for the current resource.
   void SendCreate(Destination dest, const IPC::Message& msg);
 
+  // When the host returnes a resource to the plugin, it will create a pending
+  // ResourceHost and send an ID back to the plugin that identifies the pending
+  // object. The plugin uses this function to connect the plugin resource with
+  // the pending host resource. See also PpapiHostMsg_AttachToPendingHost. This
+  // is in lieu of sending a create message.
+  void AttachToPendingHost(Destination dest, int pending_host_id);
+
   // Sends the given IPC message as a resource request to the host
   // corresponding to this resource object and does not expect a reply.
   void Post(Destination dest, const IPC::Message& msg);

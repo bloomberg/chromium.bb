@@ -4,6 +4,7 @@
 
 #include "ppapi/host/resource_host.h"
 
+#include "base/logging.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/host/resource_message_filter.h"
@@ -34,6 +35,12 @@ bool ResourceHost::HandleMessage(const IPC::Message& msg,
   // Run this ResourceHosts message handler.
   RunMessageHandlerAndReply(msg, context);
   return true;
+}
+
+void ResourceHost::SetPPResourceForPendingHost(PP_Resource pp_resource) {
+  DCHECK(!pp_resource_);
+  pp_resource_ = pp_resource;
+  DidConnectPendingHostToResource();
 }
 
 void ResourceHost::SendReply(const ReplyMessageContext& context,

@@ -43,6 +43,14 @@ class PPAPI_HOST_EXPORT ResourceHost : public ResourceMessageHandler {
   virtual bool HandleMessage(const IPC::Message& msg,
                              HostMessageContext* context) OVERRIDE;
 
+  // Sets the PP_Resource ID when the plugin attaches to a pending resource
+  // host. This will notify subclasses by calling
+  // DidConnectPendingHostToResource.
+  //
+  // The current PP_Resource for all pending hosts should be 0.  See
+  // PpapiHostMsg_AttachToPendingHost.
+  void SetPPResourceForPendingHost(PP_Resource pp_resource);
+
   virtual void SendReply(const ReplyMessageContext& context,
                          const IPC::Message& msg) OVERRIDE;
 
@@ -54,6 +62,13 @@ class PPAPI_HOST_EXPORT ResourceHost : public ResourceMessageHandler {
   // handled by the resource host's own message handler. This allows
   // ResourceHosts to easily handle messages on other threads.
   void AddFilter(scoped_refptr<ResourceMessageFilter> filter);
+
+  // Called when this resource host is pending and the corresponding plugin has
+  // just connected to it. The host resource subclass can implement this
+  // function if it wants to do processing (typically sending queued data).
+  //
+  // The PP_Resource will be valid for this call but not before.
+  virtual void DidConnectPendingHostToResource() {}
 
  private:
   // The host that owns this object.

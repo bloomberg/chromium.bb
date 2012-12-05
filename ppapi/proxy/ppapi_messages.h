@@ -1405,6 +1405,20 @@ IPC_MESSAGE_CONTROL3(PpapiHostMsg_ResourceCreated,
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_ResourceDestroyed,
                      PP_Resource /* resource */)
 
+// Most resources are created by the plugin, which then sends a ResourceCreated
+// message to create a corresponding ResourceHost in the renderer or browser
+// host process. However, some resources are first created in the host and
+// "pushed" or returned to the plugin.
+//
+// In this case, the host will create a "pending" ResourceHost object which
+// is identified by an ID. The ID is sent to the plugin process and the
+// PluginResource object is created. This message is sent from the plugin to
+// the host process to connect the PluginResource and the pending ResourceHost
+// (at which point, it's no longer pending).
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_AttachToPendingHost,
+                     PP_Resource /* resource */,
+                     int /* pending_host_id */)
+
 // A resource call is a request from the plugin to the host. It may or may not
 // require a reply, depending on the params. The nested message will be
 // resource-type-specific.

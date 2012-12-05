@@ -28,7 +28,8 @@ const size_t kMaxResourcesPerPlugin = 1 << 14;
 PpapiHost::PpapiHost(IPC::Sender* sender,
                      const PpapiPermissions& perms)
     : sender_(sender),
-      permissions_(perms) {
+      permissions_(perms),
+      next_pending_resource_host_id_(1) {
 }
 
 PpapiHost::~PpapiHost() {
@@ -51,6 +52,8 @@ bool PpapiHost::OnMessageReceived(const IPC::Message& msg) {
                                     OnHostMsgResourceSyncCall)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_ResourceCreated,
                         OnHostMsgResourceCreated)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_AttachToPendingHost,
+                        OnHostMsgAttachToPendingHost)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_ResourceDestroyed,
                         OnHostMsgResourceDestroyed)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -81,8 +84,19 @@ void PpapiHost::SendReply(const ReplyMessageContext& context,
 
 void PpapiHost::SendUnsolicitedReply(PP_Resource resource,
                                      const IPC::Message& msg) {
+  DCHECK(resource);  // If this fails, host is probably pending.
   proxy::ResourceMessageReplyParams params(resource, 0);
   Send(new PpapiPluginMsg_ResourceReply(params, msg));
+}
+
+int PpapiHost::AddPendingResourceHost(scoped_ptr<ResourceHost> resource_host) {
+  // The resource ID should not be assigned.
+  DCHECK(resource_host->pp_resource() == 0);
+
+  int pending_id = next_pending_resource_host_id_++;
+  pending_resource_hosts_[pending_id] =
+      linked_ptr<ResourceHost>(resource_host.release());
+  return pending_id;
 }
 
 void PpapiHost::AddHostFactoryFilter(scoped_ptr<HostFactory> filter) {
@@ -151,8 +165,25 @@ void PpapiHost::OnHostMsgResourceCreated(
     return;
   }
 
+  // Resource should have been assigned a nonzero PP_Resource.
+  DCHECK(resource_host->pp_resource());
+
   resources_[params.pp_resource()] =
       linked_ptr<ResourceHost>(resource_host.release());
+}
+
+void PpapiHost::OnHostMsgAttachToPendingHost(PP_Resource pp_resource,
+                                             int pending_host_id) {
+  PendingHostResourceMap::iterator found =
+      pending_resource_hosts_.find(pending_host_id);
+  if (found == pending_resource_hosts_.end()) {
+    // Plugin sent a bad ID.
+    NOTREACHED();
+    return;
+  }
+  found->second->SetPPResourceForPendingHost(pp_resource);
+  resources_[pp_resource] = found->second;
+  pending_resource_hosts_.erase(found);
 }
 
 void PpapiHost::OnHostMsgResourceDestroyed(PP_Resource resource) {

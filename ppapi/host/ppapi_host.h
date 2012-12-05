@@ -61,6 +61,11 @@ class PPAPI_HOST_EXPORT PpapiHost : public IPC::Sender, public IPC::Listener {
   // Sends the given unsolicited reply message to the plugin.
   void SendUnsolicitedReply(PP_Resource resource, const IPC::Message& msg);
 
+  // Adds the given host resource as a pending one (with no corresponding
+  // PluginResource object and no PP_Resource ID yet). The pending resource ID
+  // is returned. See PpapiHostMsg_AttachToPendingHost.
+  int AddPendingResourceHost(scoped_ptr<ResourceHost> resource_host);
+
   // Adds the given host factory filter to the host. The PpapiHost will take
   // ownership of the pointer.
   void AddHostFactoryFilter(scoped_ptr<HostFactory> filter);
@@ -90,6 +95,7 @@ class PPAPI_HOST_EXPORT PpapiHost : public IPC::Sender, public IPC::Listener {
   void OnHostMsgResourceCreated(const proxy::ResourceMessageCallParams& param,
                                 PP_Instance instance,
                                 const IPC::Message& nested_msg);
+  void OnHostMsgAttachToPendingHost(PP_Resource resource, int pending_host_id);
   void OnHostMsgResourceDestroyed(PP_Resource resource);
 
   // Non-owning pointer.
@@ -111,6 +117,13 @@ class PPAPI_HOST_EXPORT PpapiHost : public IPC::Sender, public IPC::Listener {
 
   typedef std::map<PP_Resource, linked_ptr<ResourceHost> > ResourceMap;
   ResourceMap resources_;
+
+  // Resources that have been created in the host and have not yet had the
+  // corresponding PluginResource associated with them.
+  // See PpapiHostMsg_AttachToPendingHost.
+  typedef std::map<int, linked_ptr<ResourceHost> > PendingHostResourceMap;
+  PendingHostResourceMap pending_resource_hosts_;
+  int next_pending_resource_host_id_;
 
   DISALLOW_COPY_AND_ASSIGN(PpapiHost);
 };
