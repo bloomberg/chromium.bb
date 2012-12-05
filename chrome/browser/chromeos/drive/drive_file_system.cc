@@ -344,7 +344,6 @@ void DriveFileSystem::Initialize() {
 void DriveFileSystem::ResetResourceMetadata() {
   resource_metadata_.reset(new DriveResourceMetadata);
   feed_loader_.reset(new DriveFeedLoader(resource_metadata_.get(),
-                                         drive_service_,
                                          scheduler_.get(),
                                          webapps_registry_,
                                          cache_,

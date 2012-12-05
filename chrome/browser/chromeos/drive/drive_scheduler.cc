@@ -76,6 +76,19 @@ void DriveScheduler::Initialize() {
   initialized_ = true;
 }
 
+void DriveScheduler::GetAccountMetadata(
+    const google_apis::GetDataCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  scoped_ptr<QueueEntry> new_job(
+      new QueueEntry(TYPE_GET_ACCOUNT_METADATA, FilePath()));
+  new_job->get_data_callback = callback;
+
+  QueueJob(new_job.Pass());
+
+  StartJobLoop();
+}
+
 void DriveScheduler::GetApplicationInfo(
     const google_apis::GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -246,6 +259,14 @@ void DriveScheduler::DoJobLoop() {
   const QueueEntry* queue_entry = job_iter->second.get();
 
   switch (job_info.job_type) {
+    case TYPE_GET_ACCOUNT_METADATA: {
+      drive_service_->GetAccountMetadata(
+          base::Bind(&DriveScheduler::OnGetDataJobDone,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     job_id));
+    }
+    break;
+
     case TYPE_GET_APPLICATION_INFO: {
       drive_service_->GetApplicationInfo(
           base::Bind(&DriveScheduler::OnGetDataJobDone,

@@ -33,6 +33,7 @@ class DriveScheduler
 
   // Enum representing the type of job.
   enum JobType {
+    TYPE_GET_ACCOUNT_METADATA,
     TYPE_GET_APPLICATION_INFO,
     TYPE_COPY,
     TYPE_GET_DOCUMENTS,
@@ -86,6 +87,9 @@ class DriveScheduler
   // Initializes the object. This function should be called before any
   // other functions.
   void Initialize();
+
+  // Adds a GetAccountMetadata operation to the queue.
+  void GetAccountMetadata(const google_apis::GetDataCallback& callback);
 
   // Adds a GetApplicationInfo operation to the queue.
   void GetApplicationInfo(const google_apis::GetDataCallback& callback);
@@ -174,7 +178,8 @@ class DriveScheduler
 
     // Callback for operations that take a GetDataCallback.
     // Used by:
-    //   TYPE_GET_APPLICATION_INFO
+    //   TYPE_GET_ACCOUNT_METADATA,
+    //   TYPE_GET_APPLICATION_INFO,
     //   TYPE_GET_DOCUMENTS
     google_apis::GetDataCallback get_data_callback;
   };

@@ -23,7 +23,6 @@ class Value;
 
 namespace google_apis {
 class DocumentFeed;
-class DriveServiceInterface;
 }
 
 namespace drive {
@@ -45,7 +44,6 @@ class DriveFeedLoader {
  public:
   DriveFeedLoader(
       DriveResourceMetadata* resource_metadata,
-      google_apis::DriveServiceInterface* drive_service,
       DriveScheduler* scheduler,
       DriveWebAppsRegistryInterface* webapps_registry,
       DriveCache* cache,
@@ -175,7 +173,6 @@ class DriveFeedLoader {
   void OnUpdateFromFeed(const FileOperationCallback& load_finished_callback);
 
   DriveResourceMetadata* resource_metadata_;  // Not owned.
-  google_apis::DriveServiceInterface* drive_service_;  // Not owned.
   DriveScheduler* scheduler_;  // Not owned.
   DriveWebAppsRegistryInterface* webapps_registry_;  // Not owned.
   DriveCache* cache_;  // Not owned.

@@ -23,7 +23,6 @@
 #include "chrome/browser/chromeos/drive/drive_webapps_registry.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/drive_api_util.h"
-#include "chrome/browser/google_apis/drive_service_interface.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -254,13 +253,11 @@ struct DriveFeedLoader::GetDocumentsUiState {
 
 DriveFeedLoader::DriveFeedLoader(
     DriveResourceMetadata* resource_metadata,
-    google_apis::DriveServiceInterface* drive_service,
     DriveScheduler* scheduler,
     DriveWebAppsRegistryInterface* webapps_registry,
     DriveCache* cache,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
     : resource_metadata_(resource_metadata),
-      drive_service_(drive_service),
       scheduler_(scheduler),
       webapps_registry_(webapps_registry),
       cache_(cache),
@@ -307,7 +304,7 @@ void DriveFeedLoader::ReloadFromServerIfNeeded(
 
   // First fetch the latest changestamp to see if there were any new changes
   // there at all.
-  drive_service_->GetAccountMetadata(
+  scheduler_->GetAccountMetadata(
       base::Bind(&DriveFeedLoader::OnGetAccountMetadata,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback));
