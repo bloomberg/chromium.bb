@@ -587,8 +587,6 @@ nacl_glibc_skiplist = set([
     'run_timefuncs_test',
     # Needs further investigation.
     'sdk_minimal_test',
-    # TODO(elijahtaylor) add apropriate syscall hooks for glibc
-    'run_gc_instrumentation_test',
     # run_srpc_sysv_shm_test fails because:
     # 1) it uses fstat(), while we only have an fstat64() wrapper;
     # 2) the test needs an explicit fflush(stdout) call because the

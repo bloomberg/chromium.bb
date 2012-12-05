@@ -9,8 +9,19 @@ Import('env')
 # BUG http://code.google.com/p/nativeclient/issues/detail?id=2363
 # Neither does next-generation GCC, so far extant only for ARM (and the
 # only non-bitcode compiler for ARM).
+#
+# However, the nacl_irt_blockhook interface works everywhere and is
+# testable from ARM and PNaCl.
+#
+# TODO(mseaborn): Split this test into two parts that test
+# -finstrument-for-thread-suspension and nacl_irt_blockhook
+# separately, because these are independently-usable features.
 
 if env.Bit('bitcode') or env.Bit('target_arm'):
+  Return()
+
+# TODO(mseaborn): Make this test build and run under nacl-glibc.
+if env.Bit('nacl_glibc'):
   Return()
 
 

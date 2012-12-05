@@ -12,10 +12,9 @@
 /* TODO(bradchen): fix this include once it is moved to the right place */
 #include "native_client/src/untrusted/nacl/gc_hooks.h"
 
+#include <errno.h>
 #include <fcntl.h>
-#include <pthread.h>
 #include <sched.h>
-#include <semaphore.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/nacl_syscalls.h>
@@ -23,6 +22,8 @@
 #include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
+
+#include "native_client/src/untrusted/pthread/pthread_internal.h"
 
 
 /* Cheap way to keep track if we're in the main thread */
@@ -73,7 +74,27 @@ unsigned int num_errors = 0;
 
 
 void test_syscall_wrappers(void) {
-  int ret;
+  /*
+   * This tests whether various IRT calls generate
+   * blocking-notification callbacks.  The test expectations here are
+   * subject to change.  We might need to update them when the IRT or
+   * the NaCl trusted runtime are changed.
+   *
+   * For example, if the IRT's mutex_lock() is always reported as
+   * blocking today, it might not be reported as blocking in the
+   * uncontended case in the future.
+   *
+   * Conversely, while the IRT's mutex_unlock() might always be
+   * reported as non-blocking today, in a future implementation it
+   * might briefly hold a lock to inspect a futex wait queue, which
+   * might be reported as blocking.
+   *
+   * The user-code libpthread implementation is similarly subject to
+   * change, but it is one level removed from the IRT interfaces that
+   * generate blocking-notification callbacks.  Therefore, we test the
+   * IRT interfaces rather than testing pthread_mutex, pthread_cond,
+   * etc.
+   */
 
   unsigned int local_pre_call_count = nacl_pre_calls;
   unsigned int local_post_call_count = nacl_pre_calls;
@@ -85,16 +106,9 @@ void test_syscall_wrappers(void) {
   void* ptr = NULL;
   const size_t size = 0;
 
-  /* Mutex/semaphore for pthread lib syscalls */
-  pthread_mutex_t mutex;
-  sem_t sem;
-
   /* Test all syscalls to make sure we are wrapping all the
    * syscalls we are trying to wrap. We don't care about the
    * args or return values as long as the syscall is made.
-   *
-   * Only the pthread lib functions sanitize and require valid
-   * arguments, so we'll initialize a mutex and semaphore below.
    */
   CHECK_SYSCALL_PRE();
   read(fd, ptr, size);
@@ -128,53 +142,83 @@ void test_syscall_wrappers(void) {
   sched_yield();
   CHECK_SYSCALL_WRAPPED();
 
-  /* Neglecting pthread_cond_* syscalls to avoid details of overhead */
+  /*
+   * This initializes __nc_irt_mutex, __nc_irt_cond and __nc_irt_sem
+   * as a side effect.
+   */
+  struct nacl_irt_thread irt_thread;
+  __nc_initialize_interfaces(&irt_thread);
 
+  /* Check the IRT's mutex interface */
+
+  int mutex_handle;
   CHECK_SYSCALL_PRE();
-  ret = pthread_mutex_init(&mutex, NULL);
+  CHECK(__nc_irt_mutex.mutex_create(&mutex_handle) == 0);
   CHECK_SYSCALL_NOT_WRAPPED();
-  CHECK(0 == ret);
 
   CHECK_SYSCALL_PRE();
-  pthread_mutex_lock(&mutex);
+  CHECK(__nc_irt_mutex.mutex_lock(mutex_handle) == 0);
   CHECK_SYSCALL_WRAPPED();
 
   CHECK_SYSCALL_PRE();
-  pthread_mutex_unlock(&mutex);
+  CHECK(__nc_irt_mutex.mutex_trylock(mutex_handle) == EBUSY);
+  CHECK_SYSCALL_WRAPPED();
+
+  CHECK_SYSCALL_PRE();
+  CHECK(__nc_irt_mutex.mutex_unlock(mutex_handle) == 0);
   CHECK_SYSCALL_NOT_WRAPPED();
 
   CHECK_SYSCALL_PRE();
-  if (0 == pthread_mutex_trylock(&mutex)) {
-    CHECK_SYSCALL_WRAPPED();
+  CHECK(__nc_irt_mutex.mutex_destroy(mutex_handle) == 0);
+  CHECK_SYSCALL_NOT_WRAPPED();
 
-    CHECK_SYSCALL_PRE();
-    pthread_mutex_unlock(&mutex);
-    CHECK_SYSCALL_NOT_WRAPPED();
+  /* Check the IRT's condvar interface */
 
-  } else {
-    CHECK_SYSCALL_WRAPPED();
-  }
+  int cond_handle;
+  CHECK_SYSCALL_PRE();
+  CHECK(__nc_irt_cond.cond_create(&cond_handle) == 0);
+  CHECK_SYSCALL_NOT_WRAPPED();
 
   CHECK_SYSCALL_PRE();
-  pthread_mutex_destroy(&mutex);
+  CHECK(__nc_irt_cond.cond_signal(cond_handle) == 0);
   CHECK_SYSCALL_NOT_WRAPPED();
+
+  CHECK_SYSCALL_PRE();
+  CHECK(__nc_irt_cond.cond_broadcast(cond_handle) == 0);
+  CHECK_SYSCALL_NOT_WRAPPED();
+
+  CHECK(__nc_irt_mutex.mutex_create(&mutex_handle) == 0);
+  CHECK(__nc_irt_mutex.mutex_lock(mutex_handle) == 0);
+  struct timespec abstime = { 0, 0 };
+  CHECK_SYSCALL_PRE();
+  CHECK(__nc_irt_cond.cond_timed_wait_abs(cond_handle, mutex_handle,
+                                          &abstime) == ETIMEDOUT);
+  CHECK_SYSCALL_WRAPPED();
+  CHECK(__nc_irt_mutex.mutex_unlock(mutex_handle) == 0);
+  CHECK(__nc_irt_mutex.mutex_destroy(mutex_handle) == 0);
+
+  CHECK_SYSCALL_PRE();
+  CHECK(__nc_irt_cond.cond_destroy(cond_handle) == 0);
+  CHECK_SYSCALL_NOT_WRAPPED();
+
+  /* Check the IRT's semaphore interface */
 
   /* Semaphore with value 1 (we're the only user of it) */
+  int sem_handle;
   CHECK_SYSCALL_PRE();
-  ret = sem_init(&sem, 0, 1);
+  CHECK(__nc_irt_sem.sem_create(&sem_handle, 1) == 0);
   CHECK_SYSCALL_NOT_WRAPPED();
-  CHECK(0 == ret);
 
   CHECK_SYSCALL_PRE();
-  sem_wait(&sem);
+  CHECK(__nc_irt_sem.sem_wait(sem_handle) == 0);
   CHECK_SYSCALL_WRAPPED();
 
   CHECK_SYSCALL_PRE();
-  sem_post(&sem);
+  CHECK(__nc_irt_sem.sem_post(sem_handle) == 0);
   CHECK_SYSCALL_NOT_WRAPPED();
 
   CHECK_SYSCALL_PRE();
-  sem_destroy(&sem);
+  CHECK(__nc_irt_sem.sem_destroy(sem_handle) == 0);
   CHECK_SYSCALL_NOT_WRAPPED();
 }
 
