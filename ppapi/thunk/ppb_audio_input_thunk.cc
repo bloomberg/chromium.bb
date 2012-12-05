@@ -31,15 +31,35 @@ PP_Bool IsAudioInput(PP_Resource resource) {
   return PP_FromBool(enter.succeeded());
 }
 
+int32_t EnumerateDevices0_2(PP_Resource audio_input,
+                            PP_Resource* devices,
+                            PP_CompletionCallback callback) {
+  EnterAudioInput enter(audio_input, callback, true);
+  if (enter.failed())
+    return enter.retval();
+
+  return enter.SetResult(enter.object()->EnumerateDevices0_2(devices,
+                                                             enter.callback()));
+}
+
 int32_t EnumerateDevices(PP_Resource audio_input,
-                         PP_Resource* devices,
+                         PP_ArrayOutput output,
                          PP_CompletionCallback callback) {
   EnterAudioInput enter(audio_input, callback, true);
   if (enter.failed())
     return enter.retval();
 
-  return enter.SetResult(enter.object()->EnumerateDevices(devices,
+  return enter.SetResult(enter.object()->EnumerateDevices(output,
                                                           enter.callback()));
+}
+
+int32_t MonitorDeviceChange(PP_Resource audio_input,
+                            PP_MonitorDeviceChangeCallback callback,
+                            void* user_data) {
+  EnterAudioInput enter(audio_input, true);
+  if (enter.failed())
+    return enter.retval();
+  return enter.object()->MonitorDeviceChange(callback, user_data);
 }
 
 int32_t Open(PP_Resource audio_input,
@@ -98,7 +118,19 @@ void Close(PP_Resource audio_input) {
 const PPB_AudioInput_Dev_0_2 g_ppb_audioinput_0_2_thunk = {
   &Create,
   &IsAudioInput,
+  &EnumerateDevices0_2,
+  &Open,
+  &GetCurrentConfig,
+  &StartCapture,
+  &StopCapture,
+  &Close
+};
+
+const PPB_AudioInput_Dev_0_3 g_ppb_audioinput_0_3_thunk = {
+  &Create,
+  &IsAudioInput,
   &EnumerateDevices,
+  &MonitorDeviceChange,
   &Open,
   &GetCurrentConfig,
   &StartCapture,
@@ -110,6 +142,10 @@ const PPB_AudioInput_Dev_0_2 g_ppb_audioinput_0_2_thunk = {
 
 const PPB_AudioInput_Dev_0_2* GetPPB_AudioInput_Dev_0_2_Thunk() {
   return &g_ppb_audioinput_0_2_thunk;
+}
+
+const PPB_AudioInput_Dev_0_3* GetPPB_AudioInput_Dev_0_3_Thunk() {
+  return &g_ppb_audioinput_0_3_thunk;
 }
 
 }  // namespace thunk

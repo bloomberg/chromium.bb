@@ -37,6 +37,9 @@ class AudioInput_Dev : public Resource {
       const CompletionCallbackWithOutput<std::vector<DeviceRef_Dev> >&
           callback);
 
+  int32_t MonitorDeviceChange(PP_MonitorDeviceChangeCallback callback,
+                              void* user_data);
+
   /// If |device_ref| is null (i.e., is_null() returns true), the default device
   /// will be used.
   int32_t Open(const DeviceRef_Dev& device_ref,

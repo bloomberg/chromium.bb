@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_device_ref_dev.idl modified Fri Jan 20 12:58:06 2012. */
+/* From dev/ppb_device_ref_dev.idl modified Wed Nov 07 13:28:37 2012. */
 
 #ifndef PPAPI_C_DEV_PPB_DEVICE_REF_DEV_H_
 #define PPAPI_C_DEV_PPB_DEVICE_REF_DEV_H_
@@ -22,6 +22,28 @@
  * This file defines the <code>PPB_DeviceRef_Dev</code> interface.
  */
 
+
+/**
+ * @addtogroup Typedefs
+ * @{
+ */
+/**
+ * Defines the callback type to receive device change notifications for
+ * <code>PPB_AudioInput_Dev.MonitorDeviceChange()</code> and
+ * <code>PPB_VideoCapture_Dev.MonitorDeviceChange()</code>.
+ *
+ * @param[inout] user_data The opaque pointer that the caller passed into
+ * <code>MonitorDeviceChange()</code>.
+ * @param[in] device_count How many devices in the array.
+ * @param[in] devices An array of <code>PPB_DeviceRef_Dev</code>. Please note
+ * that the ref count of the elements is not increased on behalf of the plugin.
+ */
+typedef void (*PP_MonitorDeviceChangeCallback)(void* user_data,
+                                               uint32_t device_count,
+                                               const PP_Resource devices[]);
+/**
+ * @}
+ */
 
 /**
  * @addtogroup Enums

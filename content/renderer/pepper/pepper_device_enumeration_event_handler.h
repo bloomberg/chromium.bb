@@ -23,6 +23,7 @@ class PepperDeviceEnumerationEventHandler
 
   int RegisterEnumerateDevicesCallback(
       const webkit::ppapi::PluginDelegate::EnumerateDevicesCallback& callback);
+  void UnregisterEnumerateDevicesCallback(int request_id);
 
   int RegisterOpenDeviceCallback(
       const PepperPluginDelegateImpl::OpenDeviceCallback& callback);

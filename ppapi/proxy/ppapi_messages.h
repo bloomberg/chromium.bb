@@ -1588,9 +1588,6 @@ IPC_MESSAGE_CONTROL4(PpapiPluginMsg_WebSocket_ClosedReply,
 
 // Audio input.
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_AudioInput_Create)
-IPC_MESSAGE_CONTROL0(PpapiHostMsg_AudioInput_EnumerateDevices)
-IPC_MESSAGE_CONTROL1(PpapiPluginMsg_AudioInput_EnumerateDevicesReply,
-                     std::vector<ppapi::DeviceRefData> /* devices */)
 IPC_MESSAGE_CONTROL3(PpapiHostMsg_AudioInput_Open,
                      std::string /* device_id */,
                      PP_AudioSampleRate /* sample_rate */,
@@ -1607,6 +1604,17 @@ IPC_MESSAGE_CONTROL0(PpapiHostMsg_Flash_UpdateActivity)
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_Flash_GetProxyForURL, std::string /* url */)
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_Flash_GetProxyForURLReply,
                      std::string /* proxy */)
+
+// Device enumeration messages used by audio input and video capture.
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_DeviceEnumeration_EnumerateDevices)
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_DeviceEnumeration_EnumerateDevicesReply,
+                     std::vector<ppapi::DeviceRefData> /* devices */)
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_DeviceEnumeration_MonitorDeviceChange,
+                     uint32_t /* callback_id */)
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_DeviceEnumeration_StopMonitoringDeviceChange)
+IPC_MESSAGE_CONTROL2(PpapiPluginMsg_DeviceEnumeration_NotifyDeviceChange,
+                     uint32_t /* callback_id */,
+                     std::vector<ppapi::DeviceRefData> /* devices */)
 
 // Flash clipboard.
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_FlashClipboard_Create)

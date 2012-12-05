@@ -20,8 +20,13 @@ class PPB_AudioInput_API {
  public:
   virtual ~PPB_AudioInput_API() {}
 
-  virtual int32_t EnumerateDevices(PP_Resource* devices,
+  virtual int32_t EnumerateDevices0_2(
+      PP_Resource* devices,
+      scoped_refptr<TrackedCallback> callback) = 0;
+  virtual int32_t EnumerateDevices(const PP_ArrayOutput& output,
                                    scoped_refptr<TrackedCallback> callback) = 0;
+  virtual int32_t MonitorDeviceChange(PP_MonitorDeviceChangeCallback callback,
+                                      void* user_data) = 0;
   virtual int32_t Open(const std::string& device_id,
                        PP_Resource config,
                        PPB_AudioInput_Callback audio_input_callback,

@@ -9,7 +9,8 @@
  */
 
 label Chrome {
-  M19 = 0.2
+  M19 = 0.2,
+  M25 = 0.3
 };
 
 /**
@@ -79,15 +80,60 @@ interface PPB_AudioInput_Dev {
    * @param[out] devices Once the operation is completed successfully,
    * <code>devices</code> will be set to a <code>PPB_ResourceArray_Dev</code>
    * resource, which holds a list of <code>PPB_DeviceRef_Dev</code> resources.
-   * @param[in] callback  A <code>PP_CompletionCallback</code> to run on
+   * @param[in] callback A <code>PP_CompletionCallback</code> to run on
    * completion.
    *
    * @return An error code from <code>pp_errors.h</code>.
    */
+  [deprecate=0.3]
   int32_t EnumerateDevices(
       [in] PP_Resource audio_input,
       [out] PP_Resource devices,
       [in] PP_CompletionCallback callback);
+
+  /**
+   * Enumerates audio input devices.
+   *
+   * @param[in] audio_input A <code>PP_Resource</code> corresponding to an audio
+   * input resource.
+   * @param[in] output An output array which will receive
+   * <code>PPB_DeviceRef_Dev</code> resources on success. Please note that the
+   * ref count of those resources has already been increased by 1 for the
+   * caller.
+   * @param[in] callback A <code>PP_CompletionCallback</code> to run on
+   * completion.
+   *
+   * @return An error code from <code>pp_errors.h</code>.
+   */
+  [version=0.3]
+  int32_t EnumerateDevices(
+      [in] PP_Resource audio_input,
+      [in] PP_ArrayOutput output,
+      [in] PP_CompletionCallback callback);
+
+  /**
+   * Requests device change notifications.
+   *
+   * @param[in] audio_input A <code>PP_Resource</code> corresponding to an audio
+   * input resource.
+   * @param[in] callback The callback to receive notifications. If not NULL, it
+   * will be called once for the currently available devices, and then every
+   * time the list of available devices changes. All calls will happen on the
+   * same thread as the one on which MonitorDeviceChange() is called. It will
+   * receive notifications until <code>audio_input</code> is destroyed or
+   * <code>MonitorDeviceChange()</code> is called to set a new callback for
+   * <code>audio_input</code>. You can pass NULL to cancel sending
+   * notifications.
+   * @param[inout] user_data An opaque pointer that will be passed to
+   * <code>callback</code>.
+   *
+   * @return An error code from <code>pp_errors.h</code>.
+   */
+  [version=0.3]
+  int32_t MonitorDeviceChange(
+      [in] PP_Resource audio_input,
+      [in] PP_MonitorDeviceChangeCallback callback,
+      [inout] mem_t user_data);
 
   /**
    * Opens an audio input device. No sound will be captured until

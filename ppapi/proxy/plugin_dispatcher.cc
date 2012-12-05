@@ -343,8 +343,9 @@ void PluginDispatcher::LockedDispatchResourceReply(
   Resource* resource = PpapiGlobals::Get()->GetResourceTracker()->GetResource(
       reply_params.pp_resource());
   if (!resource) {
-    if (reply_params.sequence())
-      NOTREACHED();
+    DLOG_IF(INFO, reply_params.sequence() != 0)
+        << "Pepper resource reply message received but the resource doesn't "
+           "exist (probably has been destroyed).";
     return;
   }
   resource->OnReplyReceived(reply_params, nested_msg);

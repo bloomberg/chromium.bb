@@ -26,6 +26,11 @@ class PluginDispatcher;
 
 class PPAPI_PROXY_EXPORT PluginResource : public Resource {
  public:
+  enum Destination {
+    RENDERER = 0,
+    BROWSER = 1
+  };
+
   PluginResource(Connection connection, PP_Instance instance);
   virtual ~PluginResource();
 
@@ -48,16 +53,6 @@ class PPAPI_PROXY_EXPORT PluginResource : public Resource {
   virtual void NotifyLastPluginRefWasDeleted() OVERRIDE;
   virtual void NotifyInstanceWasDeleted() OVERRIDE;
 
- protected:
-  enum Destination {
-    RENDERER = 0,
-    BROWSER = 1
-  };
-
-  IPC::Sender* GetSender(Destination dest) {
-    return dest == RENDERER ? connection_.renderer_sender :
-                              connection_.browser_sender;
-  }
 
   // Sends a create message to the browser or renderer for the current resource.
   void SendCreate(Destination dest, const IPC::Message& msg);
@@ -137,6 +132,11 @@ class PPAPI_PROXY_EXPORT PluginResource : public Resource {
                           ResourceMessageReplyParams* reply_params);
 
  private:
+  IPC::Sender* GetSender(Destination dest) {
+    return dest == RENDERER ? connection_.renderer_sender :
+                              connection_.browser_sender;
+  }
+
   // Helper function to send a |PpapiHostMsg_ResourceCall| to the given
   // destination with |nested_msg| and |call_params|.
   bool SendResourceCall(Destination dest,

@@ -5,8 +5,6 @@
 #ifndef PPAPI_PROXY_AUDIO_INPUT_RESOURCE_H_
 #define PPAPI_PROXY_AUDIO_INPUT_RESOURCE_H_
 
-#include <vector>
-
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
@@ -14,14 +12,12 @@
 #include "base/shared_memory.h"
 #include "base/sync_socket.h"
 #include "base/threading/simple_thread.h"
+#include "ppapi/proxy/device_enumeration_resource_helper.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/shared_impl/scoped_pp_resource.h"
 #include "ppapi/thunk/ppb_audio_input_api.h"
 
 namespace ppapi {
-
-struct DeviceRefData;
-
 namespace proxy {
 
 class ResourceMessageReplyParams;
@@ -36,11 +32,19 @@ class AudioInputResource : public PluginResource,
 
   // Resource overrides.
   virtual thunk::PPB_AudioInput_API* AsPPB_AudioInput_API() OVERRIDE;
+  virtual void OnReplyReceived(const ResourceMessageReplyParams& params,
+                               const IPC::Message& msg) OVERRIDE;
 
   // PPB_AudioInput_API implementation.
-  virtual int32_t EnumerateDevices(
+  virtual int32_t EnumerateDevices0_2(
       PP_Resource* devices,
       scoped_refptr<TrackedCallback> callback) OVERRIDE;
+  virtual int32_t EnumerateDevices(
+      const PP_ArrayOutput& output,
+      scoped_refptr<TrackedCallback> callback) OVERRIDE;
+  virtual int32_t MonitorDeviceChange(
+      PP_MonitorDeviceChangeCallback callback,
+      void* user_data) OVERRIDE;
   virtual int32_t Open(const std::string& device_id,
                        PP_Resource config,
                        PPB_AudioInput_Callback audio_input_callback,
@@ -51,6 +55,10 @@ class AudioInputResource : public PluginResource,
   virtual PP_Bool StopCapture() OVERRIDE;
   virtual void Close() OVERRIDE;
 
+ protected:
+  // Resource override.
+  virtual void LastPluginRefWasDeleted() OVERRIDE;
+
  private:
   enum OpenState {
     BEFORE_OPEN,
@@ -58,11 +66,6 @@ class AudioInputResource : public PluginResource,
     CLOSED
   };
 
-  void OnPluginMsgEnumerateDevicesReply(
-      PP_Resource* devices_resource,
-      scoped_refptr<TrackedCallback> callback,
-      const ResourceMessageReplyParams& params,
-      const std::vector<DeviceRefData>& devices);
   void OnPluginMsgOpenReply(const ResourceMessageReplyParams& params);
 
   // Sets the shared memory and socket handles. This will automatically start
@@ -107,7 +110,6 @@ class AudioInputResource : public PluginResource,
   // User data pointer passed verbatim to the callback function.
   void* user_data_;
 
-  bool pending_enumerate_devices_;
   // The callback is not directly passed to OnPluginMsgOpenReply() because we
   // would like to be able to cancel it early in Close().
   scoped_refptr<TrackedCallback> open_callback_;
@@ -115,6 +117,8 @@ class AudioInputResource : public PluginResource,
   // Owning reference to the current config object. This isn't actually used,
   // we just dish it out as requested by the plugin.
   ScopedPPResource config_;
+
+  DeviceEnumerationResourceHelper enumeration_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioInputResource);
 };

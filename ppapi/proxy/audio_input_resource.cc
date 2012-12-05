@@ -14,7 +14,6 @@
 #include "ppapi/proxy/resource_message_params.h"
 #include "ppapi/proxy/serialized_structs.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
-#include "ppapi/shared_impl/ppb_device_ref_shared.h"
 #include "ppapi/shared_impl/resource_tracker.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
@@ -32,7 +31,7 @@ AudioInputResource::AudioInputResource(
       shared_memory_size_(0),
       audio_input_callback_(NULL),
       user_data_(NULL),
-      pending_enumerate_devices_(false) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(enumeration_helper_(this)) {
   SendCreate(RENDERER, PpapiHostMsg_AudioInput_Create());
 }
 
@@ -44,21 +43,29 @@ thunk::PPB_AudioInput_API* AudioInputResource::AsPPB_AudioInput_API() {
   return this;
 }
 
-int32_t AudioInputResource::EnumerateDevices(
+void AudioInputResource::OnReplyReceived(
+    const ResourceMessageReplyParams& params,
+    const IPC::Message& msg) {
+  if (!enumeration_helper_.HandleReply(params, msg))
+    PluginResource::OnReplyReceived(params, msg);
+}
+
+int32_t AudioInputResource::EnumerateDevices0_2(
     PP_Resource* devices,
     scoped_refptr<TrackedCallback> callback) {
-  if (pending_enumerate_devices_)
-    return PP_ERROR_INPROGRESS;
-  if (!devices)
-    return PP_ERROR_BADARGUMENT;
+  return enumeration_helper_.EnumerateDevices0_2(devices, callback);
+}
 
-  pending_enumerate_devices_ = true;
-  PpapiHostMsg_AudioInput_EnumerateDevices msg;
-  Call<PpapiPluginMsg_AudioInput_EnumerateDevicesReply>(
-      RENDERER, msg,
-      base::Bind(&AudioInputResource::OnPluginMsgEnumerateDevicesReply,
-                 base::Unretained(this), devices, callback));
-  return PP_OK_COMPLETIONPENDING;
+int32_t AudioInputResource::EnumerateDevices(
+    const PP_ArrayOutput& output,
+    scoped_refptr<TrackedCallback> callback) {
+  return enumeration_helper_.EnumerateDevices(output, callback);
+}
+
+int32_t AudioInputResource::MonitorDeviceChange(
+    PP_MonitorDeviceChangeCallback callback,
+    void* user_data) {
+  return enumeration_helper_.MonitorDeviceChange(callback, user_data);
 }
 
 int32_t AudioInputResource::Open(const std::string& device_id,
@@ -153,25 +160,8 @@ void AudioInputResource::Close() {
     open_callback_->PostAbort();
 }
 
-void AudioInputResource::OnPluginMsgEnumerateDevicesReply(
-    PP_Resource* devices_resource,
-    scoped_refptr<TrackedCallback> callback,
-    const ResourceMessageReplyParams& params,
-    const std::vector<DeviceRefData>& devices) {
-  pending_enumerate_devices_ = false;
-
-  // We shouldn't access |devices_resource| if the callback has been called,
-  // which is possible if the last plugin reference to this resource has gone
-  // away, and the callback has been aborted.
-  if (!TrackedCallback::IsPending(callback))
-    return;
-
-  if (params.result() == PP_OK) {
-    *devices_resource = PPB_DeviceRef_Shared::CreateResourceArray(
-        OBJECT_IS_PROXY, pp_instance(), devices);
-  }
-
-  callback->Run(params.result());
+void AudioInputResource::LastPluginRefWasDeleted() {
+  enumeration_helper_.LastPluginRefWasDeleted();
 }
 
 void AudioInputResource::OnPluginMsgOpenReply(

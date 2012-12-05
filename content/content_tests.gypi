@@ -703,6 +703,7 @@
             'renderer/browser_plugin/browser_plugin_browsertest.cc',
             'renderer/mouse_lock_dispatcher_browsertest.cc',
             'renderer/pepper/mock_renderer_ppapi_host.cc',
+            'renderer/pepper/pepper_device_enumeration_host_helper_unittest.cc',
             'renderer/pepper/pepper_file_chooser_host_unittest.cc',
             'renderer/pepper/pepper_url_request_unittest.cc',
             'renderer/render_view_browsertest.cc',
@@ -721,6 +722,10 @@
             'test/layout_browsertest.h',
             'test/layout_test_http_server.cc',
             'test/layout_test_http_server.h',
+            '../webkit/plugins/ppapi/mock_platform_image_2d.cc',
+            '../webkit/plugins/ppapi/mock_platform_image_2d.h',
+            '../webkit/plugins/ppapi/mock_plugin_delegate.cc',
+            '../webkit/plugins/ppapi/mock_plugin_delegate.h',
           ],
           'conditions': [
             ['OS=="win"', {

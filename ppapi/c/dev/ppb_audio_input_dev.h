@@ -3,11 +3,13 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_audio_input_dev.idl modified Wed Nov 14 15:08:54 2012. */
+/* From dev/ppb_audio_input_dev.idl modified Tue Dec 04 15:13:31 2012. */
 
 #ifndef PPAPI_C_DEV_PPB_AUDIO_INPUT_DEV_H_
 #define PPAPI_C_DEV_PPB_AUDIO_INPUT_DEV_H_
 
+#include "ppapi/c/dev/ppb_device_ref_dev.h"
+#include "ppapi/c/pp_array_output.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_instance.h"
@@ -16,7 +18,8 @@
 #include "ppapi/c/pp_stdint.h"
 
 #define PPB_AUDIO_INPUT_DEV_INTERFACE_0_2 "PPB_AudioInput(Dev);0.2"
-#define PPB_AUDIO_INPUT_DEV_INTERFACE PPB_AUDIO_INPUT_DEV_INTERFACE_0_2
+#define PPB_AUDIO_INPUT_DEV_INTERFACE_0_3 "PPB_AudioInput(Dev);0.3"
+#define PPB_AUDIO_INPUT_DEV_INTERFACE PPB_AUDIO_INPUT_DEV_INTERFACE_0_3
 
 /**
  * @file
@@ -62,7 +65,7 @@ typedef void (*PPB_AudioInput_Callback)(const void* sample_buffer,
  * device. We may want to move the "recommend" functions to the input or output
  * classes rather than the config.
  */
-struct PPB_AudioInput_Dev_0_2 {
+struct PPB_AudioInput_Dev_0_3 {
   /**
    * Creates an audio input resource.
    *
@@ -85,27 +88,41 @@ struct PPB_AudioInput_Dev_0_2 {
   /**
    * Enumerates audio input devices.
    *
-   * Please note that:
-   * - this method ignores the previous value pointed to by <code>devices</code>
-   *   (won't release reference even if it is not 0);
-   * - <code>devices</code> must be valid until <code>callback</code> is called,
-   *   if the method returns <code>PP_OK_COMPLETIONPENDING</code>;
-   * - the ref count of the returned <code>devices</code> has already been
-   *   increased by 1 for the caller.
-   *
    * @param[in] audio_input A <code>PP_Resource</code> corresponding to an audio
    * input resource.
-   * @param[out] devices Once the operation is completed successfully,
-   * <code>devices</code> will be set to a <code>PPB_ResourceArray_Dev</code>
-   * resource, which holds a list of <code>PPB_DeviceRef_Dev</code> resources.
-   * @param[in] callback  A <code>PP_CompletionCallback</code> to run on
+   * @param[in] output An output array which will receive
+   * <code>PPB_DeviceRef_Dev</code> resources on success. Please note that the
+   * ref count of those resources has already been increased by 1 for the
+   * caller.
+   * @param[in] callback A <code>PP_CompletionCallback</code> to run on
    * completion.
    *
    * @return An error code from <code>pp_errors.h</code>.
    */
   int32_t (*EnumerateDevices)(PP_Resource audio_input,
-                              PP_Resource* devices,
+                              struct PP_ArrayOutput output,
                               struct PP_CompletionCallback callback);
+  /**
+   * Requests device change notifications.
+   *
+   * @param[in] audio_input A <code>PP_Resource</code> corresponding to an audio
+   * input resource.
+   * @param[in] callback The callback to receive notifications. If not NULL, it
+   * will be called once for the currently available devices, and then every
+   * time the list of available devices changes. All calls will happen on the
+   * same thread as the one on which MonitorDeviceChange() is called. It will
+   * receive notifications until <code>audio_input</code> is destroyed or
+   * <code>MonitorDeviceChange()</code> is called to set a new callback for
+   * <code>audio_input</code>. You can pass NULL to cancel sending
+   * notifications.
+   * @param[inout] user_data An opaque pointer that will be passed to
+   * <code>callback</code>.
+   *
+   * @return An error code from <code>pp_errors.h</code>.
+   */
+  int32_t (*MonitorDeviceChange)(PP_Resource audio_input,
+                                 PP_MonitorDeviceChangeCallback callback,
+                                 void* user_data);
   /**
    * Opens an audio input device. No sound will be captured until
    * StartCapture() is called.
@@ -179,7 +196,25 @@ struct PPB_AudioInput_Dev_0_2 {
   void (*Close)(PP_Resource audio_input);
 };
 
-typedef struct PPB_AudioInput_Dev_0_2 PPB_AudioInput_Dev;
+typedef struct PPB_AudioInput_Dev_0_3 PPB_AudioInput_Dev;
+
+struct PPB_AudioInput_Dev_0_2 {
+  PP_Resource (*Create)(PP_Instance instance);
+  PP_Bool (*IsAudioInput)(PP_Resource resource);
+  int32_t (*EnumerateDevices)(PP_Resource audio_input,
+                              PP_Resource* devices,
+                              struct PP_CompletionCallback callback);
+  int32_t (*Open)(PP_Resource audio_input,
+                  PP_Resource device_ref,
+                  PP_Resource config,
+                  PPB_AudioInput_Callback audio_input_callback,
+                  void* user_data,
+                  struct PP_CompletionCallback callback);
+  PP_Resource (*GetCurrentConfig)(PP_Resource audio_input);
+  PP_Bool (*StartCapture)(PP_Resource audio_input);
+  PP_Bool (*StopCapture)(PP_Resource audio_input);
+  void (*Close)(PP_Resource audio_input);
+};
 /**
  * @}
  */

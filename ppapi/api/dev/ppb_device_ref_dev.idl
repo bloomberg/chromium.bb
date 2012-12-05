@@ -14,6 +14,22 @@ label Chrome {
 };
 
 /**
+ * Defines the callback type to receive device change notifications for
+ * <code>PPB_AudioInput_Dev.MonitorDeviceChange()</code> and
+ * <code>PPB_VideoCapture_Dev.MonitorDeviceChange()</code>.
+ *
+ * @param[inout] user_data The opaque pointer that the caller passed into
+ * <code>MonitorDeviceChange()</code>.
+ * @param[in] device_count How many devices in the array.
+ * @param[in] devices An array of <code>PPB_DeviceRef_Dev</code>. Please note
+ * that the ref count of the elements is not increased on behalf of the plugin.
+ */
+typedef void PP_MonitorDeviceChangeCallback(
+    [inout] mem_t user_data,
+    [in] uint32_t device_count,
+    [in, size_is(device_count)] PP_Resource[] devices);
+
+/**
  * Device types.
  */
 [assert_size(4)]

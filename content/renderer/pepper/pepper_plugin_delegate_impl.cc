@@ -1450,6 +1450,9 @@ int PepperPluginDelegateImpl::EnumerateDevices(
 }
 
 void PepperPluginDelegateImpl::StopEnumerateDevices(int request_id) {
+  device_enumeration_event_handler_->UnregisterEnumerateDevicesCallback(
+      request_id);
+
 #if defined(ENABLE_WEBRTC)
   // Need to post task since this function might be called inside the callback
   // of EnumerateDevices.

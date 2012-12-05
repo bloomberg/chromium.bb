@@ -8,13 +8,17 @@
 <head>
   <title>Audio Input Example</title>
   <script type="text/javascript">
-    var device_array = [];
+    var monitor_device_array = [];
+    var enumerate_device_array = [];
+    var monitor_notification_count = 0;
 
     function HandleMessage(message_event) {
       if (message_event.data) {
         var status = document.getElementById('status');
         if (message_event.data == 'EnumerationFailed') {
           status.innerText = 'Device enumeration failed!';
+        } else if (message_event.data == 'MonitorDeviceChangeFailed') {
+          status.innerText = 'Monitor device change failed!';
         } else if (message_event.data == 'OpenFailed') {
           status.innerText = 'Open device failed!';
         } else if (message_event.data == 'StartFailed') {
@@ -22,23 +26,60 @@
         } else if (message_event.data == 'StopFailed') {
           status.innerText = 'Stop capturing failed!';
         } else {
-          device_array = message_event.data.split('#__#');
-
-          var list = document.getElementById('device_list');
-          for (var i = 0; i < device_array.length; ++i) {
-            var list_item = document.createElement('li');
-            var link = document.createElement('a');
-            link.href = 'javascript:UseDesignatedDevice(' + i + ');';
-            link.innerText = device_array[i];
-            list_item.appendChild(link);
-            list.appendChild(list_item);
-          }
+          AddDevices(message_event.data);
         }
       }
     }
 
-    function UseDesignatedDevice(index) {
-      UseDevice(device_array[index], index);
+    function AddDevices(command) {
+      var serialized_names = '';
+      var is_monitor = false;
+      if (command.search('Monitor:') == 0) {
+        serialized_names = command.substr(8);
+        is_monitor = true;
+        monitor_notification_count++;
+        var counter = document.getElementById('notification_counter');
+        counter.innerText = monitor_notification_count;
+      } else if (command.search('Enumerate:') == 0) {
+        serialized_names = command.substr(10);
+      } else {
+        status.innerText = 'Unrecognized command!';
+        return;
+      }
+
+      var storage = serialized_names.length != 0 ?
+                    serialized_names.split('#__#') : [];
+      if (is_monitor)
+        monitor_device_array = storage;
+      else
+        enumerate_device_array = storage;
+
+      var list = document.getElementById(
+          is_monitor ? 'monitor_list' : 'enumerate_list');
+      while (list.firstChild)
+        list.removeChild(list.firstChild);
+
+      for (var i = 0; i < storage.length; ++i) {
+        AppendDevice(
+            list, storage[i],
+            'javascript:UseDesignatedDevice(' + is_monitor + ',' + i + ');');
+      }
+    }
+
+    function AppendDevice(list, text, href) {
+      var list_item = document.createElement('li');
+      var link = document.createElement('a');
+      link.href = href;
+      link.innerText = text;
+      list_item.appendChild(link);
+      list.appendChild(list_item);
+    }
+
+    function UseDesignatedDevice(is_monitor, index) {
+      if (is_monitor)
+        UseDevice(monitor_device_array[index], 'Monitor:' + index);
+      else
+        UseDevice(enumerate_device_array[index], 'Enumerate:' + index);
     }
 
     function UseDefaultDevice() {
@@ -50,12 +91,6 @@
       in_use_device.innerText = display_text;
       var plugin = document.getElementById('plugin');
       plugin.postMessage(command);
-
-      var available_devices = document.getElementById('available_devices');
-      available_devices.parentNode.removeChild(available_devices);
-
-      var control_panel = document.getElementById('control_panel');
-      control_panel.style.display = 'block';
     }
 
     function Stop() {
@@ -70,7 +105,7 @@
 
     function Initialize() {
       var plugin = document.getElementById('plugin');
-      plugin.addEventListener('message', HandleMessage, false);
+      plugin.addEventListener('message', HandleMessage, false)
       plugin.postMessage('PageInitialized');
     }
 
@@ -86,14 +121,26 @@
   </div>
   <div id="available_devices">
     Available device(s), choose one to open:
-    <ul id="device_list">
+    <ul>
       <li><a href="javascript:UseDefaultDevice();">
-          Default - use interface version 0.2 and NULL device ref</a></li>
+          Default - use NULL device ref</a></li>
     </ul>
+    <div>
+      <ul>List retrieved by MonitorDeviceChange(), will change when
+          pluging/unpluging devices: (Notifications received:
+          <span style="font-weight:bold" id="notification_counter">0</span>
+          )</ul>
+      <ul id="monitor_list"/>
+    </div>
+    <div>
+      <ul>List retrieved by EnumerateDevices(), never updated after the page is
+          initialized:</ul>
+      <ul id="enumerate_list"/>
+    </div>
   </div>
-  <div id="control_panel" style="display:none">
+  <div id="control_panel">
     <a href="javascript:Stop();">Stop</a>
-    <a href="javascript:Start();">Start</a>
+    <a href="javascript:Start();">Start</a> (known issue: crbug.com/161058)
   </div>
   <div id="status"></div>
 </body>
