@@ -47,6 +47,9 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
   // Returns the RenderView containing the given WebView.
   static RenderView* FromWebView(WebKit::WebView* webview);
 
+  // Returns the RenderView for the given routing ID.
+  static RenderView* FromRoutingID(int routing_id);
+
   // Visit all RenderViews with a live WebView (i.e., RenderViews that have
   // been closed but not yet destroyed are excluded).
   static void ForEach(RenderViewVisitor* visitor);

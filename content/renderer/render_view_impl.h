@@ -225,6 +225,9 @@ class CONTENT_EXPORT RenderViewImpl
   // Returns the RenderViewImpl containing the given WebView.
   static RenderViewImpl* FromWebView(WebKit::WebView* webview);
 
+  // Returns the RenderViewImpl for the given routing ID.
+  static RenderViewImpl* FromRoutingID(int routing_id);
+
   // May return NULL when the view is closing.
   WebKit::WebView* webview() const;
 

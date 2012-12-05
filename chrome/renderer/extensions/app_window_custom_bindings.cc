@@ -60,27 +60,6 @@ AppWindowCustomBindings::AppWindowCustomBindings(Dispatcher* dispatcher)
 }
 
 namespace {
-class FindViewByID : public content::RenderViewVisitor {
- public:
-  explicit FindViewByID(int route_id) : route_id_(route_id), view_(NULL) {
-  }
-
-  content::RenderView* view() { return view_; }
-
-  // Returns false to terminate the iteration.
-  virtual bool Visit(content::RenderView* render_view) {
-    if (render_view->GetRoutingID() == route_id_) {
-      view_ = render_view;
-      return false;
-    }
-    return true;
-  }
-
- private:
-  int route_id_;
-  content::RenderView* view_;
-};
-
 class LoadWatcher : public content::RenderViewObserver {
  public:
   LoadWatcher(
@@ -134,9 +113,7 @@ v8::Handle<v8::Value> AppWindowCustomBindings::OnContextReady(
 
   int view_id = args[0]->Int32Value();
 
-  FindViewByID view_finder(view_id);
-  content::RenderView::ForEach(&view_finder);
-  content::RenderView* view = view_finder.view();
+  content::RenderView* view = content::RenderView::FromRoutingID(view_id);
   if (!view)
     return v8::Undefined();
 
@@ -166,14 +143,7 @@ v8::Handle<v8::Value> AppWindowCustomBindings::GetView(
   if (view_id == MSG_ROUTING_NONE)
     return v8::Undefined();
 
-  // TODO(jeremya): there exists a direct map of routing_id -> RenderView as
-  // ChildThread::current()->ResolveRoute(), but ResolveRoute returns an
-  // IPC::Listener*, which RenderView doesn't inherit from (RenderViewImpl
-  // does, indirectly, via RenderWidget, but the link isn't exposed outside of
-  // content/.)
-  FindViewByID view_finder(view_id);
-  content::RenderView::ForEach(&view_finder);
-  content::RenderView* view = view_finder.view();
+  content::RenderView* view = content::RenderView::FromRoutingID(view_id);
   if (!view)
     return v8::Undefined();
 

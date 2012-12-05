@@ -371,12 +371,6 @@ static const size_t kContentIntentDelayMilliseconds = 700;
 static RenderViewImpl* (*g_create_render_view_impl)(RenderViewImplParams*) =
     NULL;
 
-static RenderViewImpl* FromRoutingID(int32 routing_id) {
-  RoutingIDViewMap* views = g_routing_id_view_map.Pointer();
-  RoutingIDViewMap::iterator it = views->find(routing_id);
-  return it == views->end() ? NULL : it->second;
-}
-
 static WebKit::WebFrame* FindFrameByID(WebKit::WebFrame* root, int frame_id) {
   for (WebFrame* frame = root; frame; frame = frame->traverseNext(false)) {
     if (frame->identifier() == frame_id)
@@ -782,6 +776,18 @@ RenderViewImpl* RenderViewImpl::FromWebView(WebView* webview) {
 /*static*/
 RenderView* RenderView::FromWebView(WebKit::WebView* webview) {
   return RenderViewImpl::FromWebView(webview);
+}
+
+/*static*/
+RenderViewImpl* RenderViewImpl::FromRoutingID(int32 routing_id) {
+  RoutingIDViewMap* views = g_routing_id_view_map.Pointer();
+  RoutingIDViewMap::iterator it = views->find(routing_id);
+  return it == views->end() ? NULL : it->second;
+}
+
+/*static*/
+RenderView* RenderView::FromRoutingID(int routing_id) {
+  return RenderViewImpl::FromRoutingID(routing_id);
 }
 
 /*static*/
