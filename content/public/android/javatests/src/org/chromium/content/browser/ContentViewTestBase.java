@@ -44,7 +44,8 @@ public class ContentViewTestBase extends ContentShellTestBase {
                 @Override
                 public void run() {
                     ContentView contentView = activity.getActiveContentView();
-                    contentView.getContentViewCore().addJavascriptInterface(object, name, false);
+                    contentView.getContentViewCore().addPossiblyUnsafeJavascriptInterface(object,
+                            name, null);
                     mTestCallbackHelperContainer =
                             new TestCallbackHelperContainer(contentView);
                 }

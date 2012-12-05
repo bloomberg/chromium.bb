@@ -46,6 +46,8 @@ import org.chromium.content.common.TraceEvent;
 import org.chromium.content.R;
 import org.chromium.ui.gfx.NativeWindow;
 
+import java.lang.annotation.Annotation;
+
 /**
  * Provides a Java-side 'wrapper' around a WebContent (native) instance.
  * Contains all the major functionality necessary to manage the lifecycle of a ContentView without
@@ -2093,6 +2095,18 @@ public class ContentViewCore implements MotionEventDelegate {
     }
 
     /**
+     * This will mimic {@link #addPossiblyUnsafeJavascriptInterface(Object, String, Class)}
+     * and automatically pass in {@link JavascriptInterface} as the required annotation.
+     *
+     * @param object The Java object to inject into the ContentViewCore's JavaScript context.  Null
+     *               values are ignored.
+     * @param name   The name used to expose the instance in JavaScript.
+     */
+    public void addJavascriptInterface(Object object, String name) {
+        addPossiblyUnsafeJavascriptInterface(object, name, JavascriptInterface.class);
+    }
+
+    /**
      * This method injects the supplied Java object into the ContentViewCore.
      * The object is injected into the JavaScript context of the main frame,
      * using the supplied name. This allows the Java object to be accessed from
@@ -2112,23 +2126,32 @@ public class ContentViewCore implements MotionEventDelegate {
      * ContentViewCore which could contain untrusted content. Particular care
      * should be taken to avoid unintentional access to inherited methods, such
      * as {@link Object#getClass()}. To prevent access to inherited methods,
-     * set {@code allowInheritedMethods} to {@code false}. In addition, ensure
-     * that the injected object's public methods return only objects designed
-     * to be used by untrusted code, and never return a raw Object instance.
+     * pass an annotation for {@code requiredAnnotation}.  This will ensure
+     * that only methods with {@code requiredAnnotation} are exposed to the
+     * Javascript layer.  {@code requiredAnnotation} will be passed to all
+     * subsequently injected Java objects if any methods return an object.  This
+     * means the same restrictions (or lack thereof) will apply.  Alternatively,
+     * {@link #addJavascriptInterface(Object, String)} can be called, which
+     * automatically uses the {@link JavascriptInterface} annotation.
      * <li> JavaScript interacts with Java objects on a private, background
      * thread of the ContentViewCore. Care is therefore required to maintain
      * thread safety.</li>
      * </ul></p>
      *
-     * @param object The Java object to inject into the ContentViewCore's
-     *               JavaScript context. Null values are ignored.
-     * @param name The name used to expose the instance in JavaScript.
-     * @param requireAnnotation Restrict exposed methods to ones with the
-     *                          {@link JavascriptInterface} annotation.
+     * @param object             The Java object to inject into the
+     *                           ContentViewCore's JavaScript context. Null
+     *                           values are ignored.
+     * @param name               The name used to expose the instance in
+     *                           JavaScript.
+     * @param requiredAnnotation Restrict exposed methods to ones with this
+     *                           annotation.  If {@code null} all methods are
+     *                           exposed.
+     *
      */
-    public void addJavascriptInterface(Object object, String name, boolean requireAnnotation) {
+    public void addPossiblyUnsafeJavascriptInterface(Object object, String name,
+            Class<? extends Annotation> requiredAnnotation) {
         if (mNativeContentViewCore != 0 && object != null) {
-            nativeAddJavascriptInterface(mNativeContentViewCore, object, name, requireAnnotation);
+            nativeAddJavascriptInterface(mNativeContentViewCore, object, name, requiredAnnotation);
         }
     }
 
@@ -2448,7 +2471,7 @@ public class ContentViewCore implements MotionEventDelegate {
     private native void nativeClearSslPreferences(int nativeContentViewCoreImpl);
 
     private native void nativeAddJavascriptInterface(int nativeContentViewCoreImpl, Object object,
-                                                     String name, boolean requireAnnotation);
+            String name, Class requiredAnnotation);
 
     private native void nativeRemoveJavascriptInterface(int nativeContentViewCoreImpl, String name);
 

@@ -36,10 +36,6 @@ namespace {
 const char kJavaLangClass[] = "java/lang/Class";
 const char kJavaLangObject[] = "java/lang/Object";
 const char kJavaLangReflectMethod[] = "java/lang/reflect/Method";
-// TODO(dtrainor): Parameterize this so that WebView and Chrome for Android can
-// use different annotations.
-const char kJavaScriptInterfaceAnnotation[] =
-    "org/chromium/content/browser/JavascriptInterface";
 const char kGetClass[] = "getClass";
 const char kGetMethods[] = "getMethods";
 const char kIsAnnotationPresent[] = "isAnnotationPresent";
@@ -47,8 +43,6 @@ const char kReturningJavaLangClass[] = "()Ljava/lang/Class;";
 const char kReturningJavaLangReflectMethodArray[] =
     "()[Ljava/lang/reflect/Method;";
 const char kTakesJavaLangClassReturningBoolean[] = "(Ljava/lang/Class;)Z";
-
-jclass g_safe_annotation_clazz = NULL;
 
 // Our special NPObject type.  We extend an NPObject with a pointer to a
 // JavaBoundObject.  We also add static methods for each of the NPObject
@@ -131,7 +125,7 @@ bool JavaNPObject::GetProperty(NPObject* np_object,
 // return value is simply converted to the corresponding NPAPI type.
 bool CallJNIMethod(jobject object, const JavaType& return_type, jmethodID id,
                    jvalue* parameters, NPVariant* result,
-                   bool require_annotation) {
+                   base::android::JavaRef<jclass>& safe_annotation_clazz) {
   JNIEnv* env = AttachCurrentThread();
   switch (return_type.type) {
     case JavaType::TypeBoolean:
@@ -215,7 +209,7 @@ bool CallJNIMethod(jobject object, const JavaType& return_type, jmethodID id,
         break;
       }
       OBJECT_TO_NPVARIANT(JavaBoundObject::Create(scoped_java_object,
-                                                  require_annotation),
+                                                  safe_annotation_clazz),
                           *result);
       break;
     }
@@ -731,8 +725,9 @@ jvalue CoerceJavaScriptValueToJavaValue(const NPVariant& variant,
 
 }  // namespace
 
-NPObject* JavaBoundObject::Create(const JavaRef<jobject>& object,
-                                  bool require_annotation) {
+NPObject* JavaBoundObject::Create(
+    const JavaRef<jobject>& object,
+    base::android::JavaRef<jclass>& safe_annotation_clazz) {
   // The first argument (a plugin's instance handle) is passed through to the
   // allocate function directly, and we don't use it, so it's ok to be 0.
   // The object is created with a ref count of one.
@@ -740,15 +735,16 @@ NPObject* JavaBoundObject::Create(const JavaRef<jobject>& object,
       &JavaNPObject::kNPClass));
   // The NPObject takes ownership of the JavaBoundObject.
   reinterpret_cast<JavaNPObject*>(np_object)->bound_object =
-      new JavaBoundObject(object, require_annotation);
+      new JavaBoundObject(object, safe_annotation_clazz);
   return np_object;
 }
 
-JavaBoundObject::JavaBoundObject(const JavaRef<jobject>& object,
-                                 bool require_annotation)
+JavaBoundObject::JavaBoundObject(
+    const JavaRef<jobject>& object,
+    base::android::JavaRef<jclass>& safe_annotation_clazz)
     : java_object_(object),
       are_methods_set_up_(false),
-      require_annotation_(require_annotation) {
+      safe_annotation_clazz_(safe_annotation_clazz) {
   // We don't do anything with our Java object when first created. We do it all
   // lazily when a method is first invoked.
 }
@@ -802,7 +798,7 @@ bool JavaBoundObject::Invoke(const std::string& name, const NPVariant* args,
   // Call
   bool ok = CallJNIMethod(java_object_.obj(), method->return_type(),
                           method->id(), &parameters[0], result,
-                          require_annotation_);
+                          safe_annotation_clazz_);
 
   // Now that we're done with the jvalue, release any local references created
   // by CoerceJavaScriptValueToJavaValue().
@@ -812,14 +808,6 @@ bool JavaBoundObject::Invoke(const std::string& name, const NPVariant* args,
   }
 
   return ok;
-}
-
-bool JavaBoundObject::RegisterJavaBoundObject(JNIEnv* env) {
-  g_safe_annotation_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
-      base::android::GetUnscopedClass(env, kJavaScriptInterfaceAnnotation)));
-  DCHECK(g_safe_annotation_clazz);
-
-  return true;
 }
 
 void JavaBoundObject::EnsureMethodsAreSetUp() const {
@@ -851,14 +839,14 @@ void JavaBoundObject::EnsureMethodsAreSetUp() const {
         env,
         env->GetObjectArrayElement(methods.obj(), i));
 
-    if (require_annotation_) {
+    if (!safe_annotation_clazz_.is_null()) {
       jboolean safe = env->CallBooleanMethod(java_method.obj(),
           GetMethodIDFromClassName(
               env,
               kJavaLangReflectMethod,
               kIsAnnotationPresent,
               kTakesJavaLangClassReturningBoolean),
-          g_safe_annotation_clazz);
+          safe_annotation_clazz_.obj());
 
       if (!safe)
         continue;

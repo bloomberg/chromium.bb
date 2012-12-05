@@ -85,8 +85,7 @@ class JellyBeanAccessibilityInjector extends AccessibilityInjector {
         Context context = mContentViewCore.getContext();
         if (context != null && mCallback == null) {
             mCallback = new CallbackHandler(ALIAS_TRAVERSAL_JS_INTERFACE);
-            mContentViewCore.addJavascriptInterface(
-                    mCallback, ALIAS_TRAVERSAL_JS_INTERFACE, true);
+            mContentViewCore.addJavascriptInterface(mCallback, ALIAS_TRAVERSAL_JS_INTERFACE);
         }
     }
 

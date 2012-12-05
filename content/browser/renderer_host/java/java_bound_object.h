@@ -31,8 +31,9 @@ class JavaBoundObject {
   // propagates to all Objects that get implicitly exposed as return values as
   // well. Returns an NPObject with a ref count of one which owns the
   // JavaBoundObject.
-  static NPObject* Create(const base::android::JavaRef<jobject>& object,
-                          bool require_annotation);
+  static NPObject* Create(
+      const base::android::JavaRef<jobject>& object,
+      base::android::JavaRef<jclass>& safe_annotation_clazz);
 
   virtual ~JavaBoundObject();
 
@@ -46,11 +47,10 @@ class JavaBoundObject {
   bool Invoke(const std::string& name, const NPVariant* args, size_t arg_count,
               NPVariant* result);
 
-  static bool RegisterJavaBoundObject(JNIEnv* env);
-
  private:
-  explicit JavaBoundObject(const base::android::JavaRef<jobject>& object,
-                           bool require_annotation);
+  explicit JavaBoundObject(
+      const base::android::JavaRef<jobject>& object,
+      base::android::JavaRef<jclass>& safe_annotation_clazz);
 
   void EnsureMethodsAreSetUp() const;
 
@@ -65,7 +65,7 @@ class JavaBoundObject {
   mutable JavaMethodMap methods_;
   mutable bool are_methods_set_up_;
 
-  const bool require_annotation_;
+  base::android::ScopedJavaGlobalRef<jclass> safe_annotation_clazz_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(JavaBoundObject);
 };

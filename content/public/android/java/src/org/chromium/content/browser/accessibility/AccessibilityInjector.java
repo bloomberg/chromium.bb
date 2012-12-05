@@ -255,13 +255,13 @@ public class AccessibilityInjector extends WebContentsObserverAndroid {
             if (mTextToSpeech == null) {
                 mTextToSpeech = new TextToSpeechWrapper(context);
                 mContentViewCore.addJavascriptInterface(mTextToSpeech,
-                        ALIAS_ACCESSIBILITY_JS_INTERFACE, true);
+                        ALIAS_ACCESSIBILITY_JS_INTERFACE);
             }
 
             if (mVibrator == null) {
                 mVibrator = new VibratorWrapper(context);
                 mContentViewCore.addJavascriptInterface(mVibrator,
-                        ALIAS_ACCESSIBILITY_JS_INTERFACE_2, true);
+                        ALIAS_ACCESSIBILITY_JS_INTERFACE_2);
             }
         }
     }

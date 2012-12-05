@@ -42,7 +42,6 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
   { "InterstitialPageDelegateAndroid",
     content::InterstitialPageDelegateAndroid
         ::RegisterInterstitialPageDelegateAndroid },
-  { "JavaBoundObject", content::JavaBoundObject::RegisterJavaBoundObject },
   { "LoadUrlParams", content::RegisterLoadUrlParams },
   { "RegisterImeAdapter", content::RegisterImeAdapter },
   { "SandboxedProcessLauncher", content::RegisterSandboxedProcessLauncher },
