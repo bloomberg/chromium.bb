@@ -301,7 +301,10 @@ void ChromeContentRendererClient::RenderViewCreated(
       render_view, content_settings, chrome_observer_.get(),
       extension_dispatcher_.get(), translate);
 
+#if defined(ENABLE_PLUGINS)
   new PepperHelper(render_view);
+#endif
+
   // FaviconHelper will delete itself when render_view is destroyed.
   new FaviconHelper(render_view);
   // Used only for testing/automation.
@@ -1026,7 +1029,9 @@ bool ChromeContentRendererClient::IsOtherExtensionWithWebRequestInstalled() {
 
 void ChromeContentRendererClient::RegisterPPAPIInterfaceFactories(
     webkit::ppapi::PpapiInterfaceFactoryManager* factory_manager) {
+#if defined(ENABLE_PLUGINS)
   factory_manager->RegisterFactory(ChromePPAPIInterfaceFactory);
+#endif
 }
 
 }  // namespace chrome

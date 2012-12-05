@@ -488,6 +488,7 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
     }
   }
 
+#if defined(ENABLE_PLUGINS)
   if (remove_mask & REMOVE_CONTENT_LICENSES) {
     content::RecordAction(
         UserMetricsAction("ClearBrowsingData_ContentLicenses"));
@@ -500,6 +501,7 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
     deauthorize_content_licenses_request_id_ =
         pepper_flash_settings_manager_->DeauthorizeContentLicenses();
   }
+#endif
 
   // Always wipe accumulated network related data (TransportSecurityState and
   // HttpServerPropertiesManager data).
@@ -944,6 +946,7 @@ void BrowsingDataRemover::OnWaitableEventSignaled(
   NotifyAndDeleteIfDone();
 }
 
+#if defined(ENABLE_PLUGINS)
 void BrowsingDataRemover::OnDeauthorizeContentLicensesCompleted(
     uint32 request_id,
     bool /* success */) {
@@ -953,6 +956,7 @@ void BrowsingDataRemover::OnDeauthorizeContentLicensesCompleted(
   waiting_for_clear_content_licenses_ = false;
   NotifyAndDeleteIfDone();
 }
+#endif
 
 void BrowsingDataRemover::OnClearedCookies(int num_deleted) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {

@@ -536,8 +536,10 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 #if defined(ENABLE_WEBRTC)
   channel_->AddFilter(new MediaStreamDispatcherHost(GetID()));
 #endif
+#if defined(ENABLE_PLUGINS)
   channel_->AddFilter(new PepperMessageFilter(PepperMessageFilter::RENDERER,
                                               GetID(), browser_context));
+#endif
 #if defined(ENABLE_INPUT_SPEECH)
   channel_->AddFilter(new InputTagSpeechDispatcherHost(
       IsGuest(), GetID(), storage_partition_impl_->GetURLRequestContext(),

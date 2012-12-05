@@ -20,9 +20,12 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/pepper_plugin_info.h"
-#include "ppapi/proxy/ppapi_messages.h"
 #include "webkit/plugins/npapi/plugin_utils.h"
 #include "webkit/plugins/plugin_constants.h"
+
+#if defined(ENABLE_PLUGINS)
+#include "ppapi/proxy/ppapi_messages.h"
+#endif
 
 namespace content {
 
@@ -178,8 +181,10 @@ class PluginDataRemoverImpl::Context
     IPC_BEGIN_MESSAGE_MAP(Context, message)
       IPC_MESSAGE_HANDLER(PluginHostMsg_ClearSiteDataResult,
                           OnClearSiteDataResult)
+#if defined(ENABLE_PLUGINS)
       IPC_MESSAGE_HANDLER(PpapiHostMsg_ClearSiteDataResult,
                           OnPpapiClearSiteDataResult)
+#endif
       IPC_MESSAGE_UNHANDLED_ERROR()
     IPC_END_MESSAGE_MAP()
 
@@ -199,6 +204,31 @@ class PluginDataRemoverImpl::Context
   friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
   friend class base::DeleteHelper<Context>;
   virtual ~Context() {}
+
+#if defined(ENABLE_PLUGINS)
+  IPC::Message* CreatePpapiClearSiteDataMsg(uint64 max_age) {
+    FilePath profile_path =
+        PepperFlashFileHost::GetDataDirName(browser_context_path_);
+    // TODO(vtl): This "duplicates" logic in webkit/plugins/ppapi/file_path.cc
+    // (which prepends the plugin name to the relative part of the path
+    // instead, with the absolute, profile-dependent part being enforced by
+    // the browser).
+#if defined(OS_WIN)
+    FilePath plugin_data_path =
+        profile_path.Append(FilePath(UTF8ToUTF16(plugin_name_)));
+#else
+    FilePath plugin_data_path = profile_path.Append(FilePath(plugin_name_));
+#endif  // defined(OS_WIN)
+    return new PpapiMsg_ClearSiteData(0u, plugin_data_path, std::string(),
+                                      kClearAllData, max_age);
+  }
+#else
+  IPC::Message* CreatePpapiClearSiteDataMsg(uint64 max_age) {
+    NOTREACHED() << "CreatePpapiClearSiteDataMsg called with "
+        << "ENABLE_PLUGINS undefined.";
+    return NULL;
+  }
+#endif  // defined(ENABLE_PLUGINS)
 
   // Connects the client side of a newly opened plug-in channel.
   void ConnectToChannel(const IPC::ChannelHandle& handle, bool is_ppapi) {
@@ -222,20 +252,7 @@ class PluginDataRemoverImpl::Context
 
     IPC::Message* msg;
     if (is_ppapi) {
-      FilePath profile_path =
-          PepperFlashFileHost::GetDataDirName(browser_context_path_);
-      // TODO(vtl): This "duplicates" logic in webkit/plugins/ppapi/file_path.cc
-      // (which prepends the plugin name to the relative part of the path
-      // instead, with the absolute, profile-dependent part being enforced by
-      // the browser).
-#if defined(OS_WIN)
-      FilePath plugin_data_path =
-          profile_path.Append(FilePath(UTF8ToUTF16(plugin_name_)));
-#else
-      FilePath plugin_data_path = profile_path.Append(FilePath(plugin_name_));
-#endif
-      msg = new PpapiMsg_ClearSiteData(0u, plugin_data_path, std::string(),
-                                       kClearAllData, max_age);
+      msg = CreatePpapiClearSiteDataMsg(max_age);
     } else {
       msg = new PluginMsg_ClearSiteData(std::string(), kClearAllData, max_age);
     }

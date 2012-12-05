@@ -932,7 +932,6 @@
         'browser/debugger/devtools_resources.gyp:devtools_resources',
         '../cc/cc.gyp:cc',
         '../net/net.gyp:http_server',
-        '../ppapi/ppapi_internal.gyp:ppapi_ipc',
         '../printing/printing.gyp:printing',
         '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
         '../ui/surface/surface.gyp:surface',
@@ -1123,6 +1122,18 @@
         ['exclude', '^browser/renderer_host/render_widget_host_view_aura.cc'],
         ['exclude', '^browser/renderer_host/render_widget_host_view_aura.h'],
         ['exclude', '^browser/renderer_host/tap_suppression_controller_aura.cc'],
+      ],
+    }],
+    ['enable_plugins==1', {
+      'dependencies': [
+        '../ppapi/ppapi_internal.gyp:ppapi_ipc',
+      ],
+    }, {  # enable_plugins==0
+      'sources!': [
+        'browser/ppapi_plugin_process_host.cc',
+      ],
+      'sources/': [
+        ['exclude', '^browser/renderer_host/pepper/'],
       ],
     }],
     ['java_bridge==1', {

@@ -88,6 +88,7 @@
 #include "content/renderer/media/rtc_peer_connection_handler.h"
 #include "content/renderer/mhtml_generator.h"
 #include "content/renderer/notification_provider.h"
+#include "content/renderer/pepper/pepper_plugin_delegate_impl.h"
 #include "content/renderer/plugin_channel_host.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
@@ -199,7 +200,6 @@
 #include "webkit/plugins/npapi/webplugin_delegate.h"
 #include "webkit/plugins/npapi/webplugin_delegate_impl.h"
 #include "webkit/plugins/npapi/webplugin_impl.h"
-#include "webkit/plugins/ppapi/ppapi_webplugin_impl.h"
 
 #if defined(OS_ANDROID)
 #include "content/common/android/device_info.h"
@@ -602,8 +602,12 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       updating_frame_tree_(false),
       pending_frame_tree_update_(false),
       target_process_id_(0),
-      target_routing_id_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(pepper_delegate_(this)) {
+      target_routing_id_(0) {
+#if defined(ENABLE_PLUGINS)
+  pepper_helper_.reset(new PepperPluginDelegateImpl(this));
+#else
+  pepper_helper_.reset(new RenderViewPepperHelper());
+#endif
   set_throttle_input_events(params->renderer_prefs.throttle_input_events);
   routing_id_ = params->routing_id;
   surface_id_ = params->surface_id;
@@ -4381,16 +4385,11 @@ WebKit::WebPlugin* RenderViewImpl::CreatePlugin(
     WebKit::WebFrame* frame,
     const webkit::WebPluginInfo& info,
     const WebKit::WebPluginParams& params) {
-  bool pepper_plugin_was_registered = false;
-  scoped_refptr<webkit::ppapi::PluginModule> pepper_module(
-      pepper_delegate_.CreatePepperPluginModule(info,
-                                                &pepper_plugin_was_registered));
-  if (pepper_plugin_was_registered) {
-    if (!pepper_module)
-      return NULL;
-    return new webkit::ppapi::WebPluginImpl(
-        pepper_module.get(), params, pepper_delegate_.AsWeakPtr());
-  }
+  WebKit::WebPlugin* pepper_webplugin =
+      pepper_helper_->CreatePepperWebPlugin(info, params);
+
+  if (pepper_webplugin)
+    return pepper_webplugin;
 
 #if defined(USE_AURA) && !defined(OS_WIN)
   return NULL;
@@ -4574,8 +4573,8 @@ void RenderViewImpl::SyncSelectionIfRequired() {
   size_t offset;
   ui::Range range;
 
-  if (pepper_delegate_.IsPluginFocused()) {
-    pepper_delegate_.GetSurroundingText(&text, &range);
+  if (pepper_helper_->IsPluginFocused()) {
+    pepper_helper_->GetSurroundingText(&text, &range);
     offset = 0;  // Pepper API does not support offset reporting.
     // TODO(kinaba): cut as needed.
   } else {
@@ -5544,12 +5543,12 @@ void RenderViewImpl::OnResize(const gfx::Size& new_size,
 
 void RenderViewImpl::WillInitiatePaint() {
   // Notify the pepper plugins that we're about to paint.
-  pepper_delegate_.ViewWillInitiatePaint();
+  pepper_helper_->ViewWillInitiatePaint();
 }
 
 void RenderViewImpl::DidInitiatePaint() {
   // Notify the pepper plugins that we've painted, and are waiting to flush.
-  pepper_delegate_.ViewInitiatedPaint();
+  pepper_helper_->ViewInitiatedPaint();
 }
 
 void RenderViewImpl::DidFlushPaint() {
@@ -5557,7 +5556,7 @@ void RenderViewImpl::DidFlushPaint() {
   // and we it may ask to close itself as a result. This will, in turn, modify
   // our set, possibly invalidating the iterator. So we iterate on a copy that
   // won't change out from under us.
-  pepper_delegate_.ViewFlushedPaint();
+  pepper_helper_->ViewFlushedPaint();
 
   // If the RenderWidget is closing down then early-exit, otherwise we'll crash.
   // See crbug.com/112921.
@@ -5603,7 +5602,7 @@ webkit::ppapi::PluginInstance* RenderViewImpl::GetBitmapForOptimizedPluginPaint(
     gfx::Rect* location,
     gfx::Rect* clip,
     float* scale_factor) {
-  return pepper_delegate_.GetBitmapForOptimizedPluginPaint(
+  return pepper_helper_->GetBitmapForOptimizedPluginPaint(
       paint_bounds, dib, location, clip, scale_factor);
 }
 
@@ -5724,7 +5723,7 @@ bool RenderViewImpl::WillHandleMouseEvent(const WebKit::WebMouseEvent& event) {
       ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE;
   possible_drag_event_info_.event_location =
       gfx::Point(event.globalX, event.globalY);
-  pepper_delegate_.WillHandleMouseEvent();
+  pepper_helper_->WillHandleMouseEvent();
 
   // If the mouse is locked, only the current owner of the mouse lock can
   // process mouse events.
@@ -5773,7 +5772,7 @@ void RenderViewImpl::OnWasHidden() {
   }
 
   // Inform PPAPI plugins that their page is no longer visible.
-  pepper_delegate_.PageVisibilityChanged(false);
+  pepper_helper_->PageVisibilityChanged(false);
 
 #if defined(OS_MACOSX)
   // Inform NPAPI plugins that their container is no longer visible.
@@ -5795,7 +5794,7 @@ void RenderViewImpl::OnWasShown(bool needs_repainting) {
   }
 
   // Inform PPAPI plugins that their page is visible.
-  pepper_delegate_.PageVisibilityChanged(true);
+  pepper_helper_->PageVisibilityChanged(true);
 
 #if defined(OS_MACOSX)
   // Inform NPAPI plugins that their container is now visible.
@@ -5839,7 +5838,7 @@ void RenderViewImpl::OnSetFocus(bool enable) {
     }
   }
   // Notify all Pepper plugins.
-  pepper_delegate_.OnSetFocus(enable);
+  pepper_helper_->OnSetFocus(enable);
   // Notify all BrowserPlugins of the RenderView's focus state.
   if (browser_plugin_manager_)
     browser_plugin_manager()->SetEmbedderFocus(this, enable);
@@ -5861,9 +5860,9 @@ void RenderViewImpl::PpapiPluginCaretPositionChanged() {
 }
 
 bool RenderViewImpl::GetPpapiPluginCaretBounds(gfx::Rect* rect) {
-  if (!pepper_delegate_.IsPluginFocused())
+  if (!pepper_helper_->IsPluginFocused())
     return false;
-  *rect = pepper_delegate_.GetCaretBounds();
+  *rect = pepper_helper_->GetCaretBounds();
   return true;
 }
 
@@ -5902,12 +5901,12 @@ void RenderViewImpl::OnImeSetComposition(
     const std::vector<WebKit::WebCompositionUnderline>& underlines,
     int selection_start,
     int selection_end) {
-  if (pepper_delegate_.IsPluginFocused()) {
+  if (pepper_helper_->IsPluginFocused()) {
     // When a PPAPI plugin has focus, we bypass WebKit.
-    pepper_delegate_.OnImeSetComposition(text,
-                                         underlines,
-                                         selection_start,
-                                         selection_end);
+    pepper_helper_->OnImeSetComposition(text,
+                                        underlines,
+                                        selection_start,
+                                        selection_end);
   } else {
 #if defined(OS_WIN)
     // When a plug-in has focus, we create platform-specific IME data used by
@@ -5944,9 +5943,9 @@ void RenderViewImpl::OnImeSetComposition(
 
 void RenderViewImpl::OnImeConfirmComposition(
       const string16& text, const ui::Range& replacement_range) {
-  if (pepper_delegate_.IsPluginFocused()) {
+  if (pepper_helper_->IsPluginFocused()) {
     // When a PPAPI plugin has focus, we bypass WebKit.
-    pepper_delegate_.OnImeConfirmComposition(text);
+    pepper_helper_->OnImeConfirmComposition(text);
   } else {
 #if defined(OS_WIN)
     // Same as OnImeSetComposition(), we send the text from IMEs directly to
@@ -5983,17 +5982,17 @@ void RenderViewImpl::SetDeviceScaleFactor(float device_scale_factor) {
 }
 
 ui::TextInputType RenderViewImpl::GetTextInputType() {
-  return pepper_delegate_.IsPluginFocused() ?
-      pepper_delegate_.GetTextInputType() : RenderWidget::GetTextInputType();
+  return pepper_helper_->IsPluginFocused() ?
+      pepper_helper_->GetTextInputType() : RenderWidget::GetTextInputType();
 }
 
 void RenderViewImpl::GetSelectionBounds(gfx::Rect* start, gfx::Rect* end) {
-  if (pepper_delegate_.IsPluginFocused()) {
+  if (pepper_helper_->IsPluginFocused()) {
     // TODO(kinaba) http://crbug.com/101101
     // Current Pepper IME API does not handle selection bounds. So we simply
     // use the caret position as an empty range for now. It will be updated
     // after Pepper API equips features related to surrounding text retrieval.
-    gfx::Rect caret = pepper_delegate_.GetCaretBounds();
+    gfx::Rect caret = pepper_helper_->GetCaretBounds();
     *start = caret;
     *end = caret;
     return;
@@ -6032,8 +6031,8 @@ void RenderViewImpl::GetCompositionCharacterBounds(
 }
 
 bool RenderViewImpl::CanComposeInline() {
-  return pepper_delegate_.IsPluginFocused() ?
-      pepper_delegate_.CanComposeInline() : true;
+  return pepper_helper_->IsPluginFocused() ?
+      pepper_helper_->CanComposeInline() : true;
 }
 
 #if defined(OS_WIN)
@@ -6288,13 +6287,13 @@ void RenderViewImpl::LaunchAndroidContentIntent(const GURL& intent,
   if (!intent.is_empty())
     Send(new ViewHostMsg_StartContentIntent(routing_id_, intent));
 }
-#endif
+#endif  // defined(OS_ANDROID)
 
 void RenderViewImpl::OnAsyncFileOpened(
     base::PlatformFileError error_code,
     IPC::PlatformFileForTransit file_for_transit,
     int message_id) {
-  pepper_delegate_.OnAsyncFileOpened(
+  pepper_helper_->OnAsyncFileOpened(
       error_code,
       IPC::PlatformFileForTransitToPlatformFile(file_for_transit),
       message_id);
@@ -6303,14 +6302,14 @@ void RenderViewImpl::OnAsyncFileOpened(
 void RenderViewImpl::OnPpapiBrokerChannelCreated(
     int request_id,
     const IPC::ChannelHandle& handle) {
-  pepper_delegate_.OnPpapiBrokerChannelCreated(request_id,
-                                               handle);
+  pepper_helper_->OnPpapiBrokerChannelCreated(request_id,
+                                              handle);
 }
 
 void RenderViewImpl::OnPpapiBrokerPermissionResult(
     int request_id,
     bool result) {
-  pepper_delegate_.OnPpapiBrokerPermissionResult(request_id, result);
+  pepper_helper_->OnPpapiBrokerPermissionResult(request_id, result);
 }
 
 #if defined(OS_MACOSX)

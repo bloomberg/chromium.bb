@@ -6,9 +6,6 @@
   'dependencies': [
     '../jingle/jingle.gyp:jingle_glue',
     '../net/net.gyp:net',
-    '../ppapi/ppapi_internal.gyp:ppapi_host',
-    '../ppapi/ppapi_internal.gyp:ppapi_proxy',
-    '../ppapi/ppapi_internal.gyp:ppapi_shared',
     '../skia/skia.gyp:skia',
     '../third_party/hyphen/hyphen.gyp:hyphen',
     '../third_party/icu/icu.gyp:icuuc',
@@ -238,6 +235,8 @@
     'renderer/render_view_linux.cc',
     'renderer/render_view_mouse_lock_dispatcher.cc',
     'renderer/render_view_mouse_lock_dispatcher.h',
+    'renderer/render_view_pepper_helper.cc',
+    'renderer/render_view_pepper_helper.h',
     'renderer/render_widget.cc',
     'renderer/render_widget.h',
     'renderer/render_widget_fullscreen.cc',
@@ -371,6 +370,17 @@
         'renderer/p2p/socket_client.h',
         'renderer/p2p/socket_dispatcher.cc',
         'renderer/p2p/socket_dispatcher.h',
+      ],
+    }],
+    ['enable_plugins==1', {
+      'dependencies': [
+        '../ppapi/ppapi_internal.gyp:ppapi_host',
+        '../ppapi/ppapi_internal.gyp:ppapi_proxy',
+        '../ppapi/ppapi_internal.gyp:ppapi_shared',
+      ],
+    }, {  # enable_plugins==0
+      'sources/': [
+        ['exclude', '^renderer/pepper/'],
       ],
     }],
     ['java_bridge==1', {

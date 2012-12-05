@@ -2235,7 +2235,6 @@
             '../cc/cc.gyp:cc',
             '../content/content.gyp:navigation_interception',
             '../net/net.gyp:net_with_v8',
-            '../ppapi/ppapi_internal.gyp:ppapi_ipc',  # For PpapiMsg_LoadPlugin
             '../printing/printing.gyp:printing',
             '../third_party/adobe/flash/flash_player.gyp:flapper_version_h',
             '../third_party/expat/expat.gyp:expat',
@@ -2383,6 +2382,16 @@
             ['include', 'browser/policy/policy_service.h'],
             ['include', 'browser/policy/policy_service_stub.cc'],
             ['include', 'browser/policy/policy_service_stub.h'],
+          ],
+        }],
+        ['enable_plugins==1', {
+          'dependencies': [
+            '../ppapi/ppapi_internal.gyp:ppapi_ipc',
+          ],
+        }, {  # enable_plugins==0
+          'sources/': [
+            ['exclude', '^browser/pepper_'],
+            ['exclude', '^browser/renderer_host/pepper/'],
           ],
         }],
         ['safe_browsing==1', {

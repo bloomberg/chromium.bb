@@ -15,10 +15,6 @@
         'chrome_resources.gyp:chrome_strings',
         '../content/content.gyp:content_renderer',
         '../net/net.gyp:net',
-        '../ppapi/ppapi_internal.gyp:ppapi_host',
-        '../ppapi/ppapi_internal.gyp:ppapi_proxy',
-        '../ppapi/ppapi_internal.gyp:ppapi_ipc',
-        '../ppapi/ppapi_internal.gyp:ppapi_shared',
         '../printing/printing.gyp:printing',
         '../skia/skia.gyp:skia',
         '../third_party/hunspell/hunspell.gyp:hunspell',
@@ -288,6 +284,18 @@
         ['disable_nacl!=1', {
           'dependencies': [
             'nacl',
+          ],
+        }],
+        ['enable_plugins==1', {
+          'dependencies': [
+            '../ppapi/ppapi_internal.gyp:ppapi_host',
+            '../ppapi/ppapi_internal.gyp:ppapi_proxy',
+            '../ppapi/ppapi_internal.gyp:ppapi_ipc',
+            '../ppapi/ppapi_internal.gyp:ppapi_shared',
+          ],
+        }, {  # enable_plugins==0
+          'sources/': [
+            ['exclude', '^renderer/pepper/'],
           ],
         }],
         ['safe_browsing==1', {

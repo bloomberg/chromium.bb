@@ -2137,7 +2137,6 @@
             'installer_util',
             '../device/device.gyp:device_bluetooth',
             '../net/net.gyp:net_with_v8',
-            '../ppapi/ppapi_internal.gyp:ppapi_ipc',  # For PpapiMsg_LoadPlugin
             '../printing/printing.gyp:printing',
             '../third_party/adobe/flash/flash_player.gyp:flapper_version_h',
             '../third_party/expat/expat.gyp:expat',
@@ -2225,6 +2224,11 @@
           'sources/': [
             ['exclude', 'browser/ui/webui/policy_ui.cc'],
             ['exclude', 'browser/ui/webui/policy_ui.h'],
+          ],
+        }],
+        ['enable_plugins==1', {
+          'dependencies': [
+            '../ppapi/ppapi_internal.gyp:ppapi_ipc',
           ],
         }],
         ['safe_browsing==1', {

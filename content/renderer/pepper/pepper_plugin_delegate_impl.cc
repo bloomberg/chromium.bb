@@ -83,6 +83,7 @@
 #include "webkit/plugins/npapi/webplugin.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/ppapi_webplugin_impl.h"
 #include "webkit/plugins/ppapi/ppb_file_io_impl.h"
 #include "webkit/plugins/ppapi/ppb_flash_impl.h"
 #include "webkit/plugins/ppapi/ppb_tcp_server_socket_private_impl.h"
@@ -333,6 +334,23 @@ PepperPluginDelegateImpl::PepperPluginDelegateImpl(RenderViewImpl* render_view)
 
 PepperPluginDelegateImpl::~PepperPluginDelegateImpl() {
   DCHECK(mouse_lock_instances_.empty());
+}
+
+WebKit::WebPlugin* PepperPluginDelegateImpl::CreatePepperWebPlugin(
+    const webkit::WebPluginInfo& webplugin_info,
+    const WebKit::WebPluginParams& params) {
+  bool pepper_plugin_was_registered = false;
+  scoped_refptr<webkit::ppapi::PluginModule> pepper_module(
+      CreatePepperPluginModule(webplugin_info, &pepper_plugin_was_registered));
+
+  if (pepper_plugin_was_registered) {
+    if (!pepper_module)
+      return NULL;
+    return new webkit::ppapi::WebPluginImpl(
+        pepper_module.get(), params, AsWeakPtr());
+  }
+
+  return NULL;
 }
 
 scoped_refptr<webkit::ppapi::PluginModule>

@@ -512,6 +512,12 @@
             '../webkit/webkit.gyp:test_shell_test_support',
           ],
         }],
+        ['enable_plugins==0', {
+          'sources/': [
+            ['exclude', '^renderer/pepper/'],
+            ['exclude', '^browser/renderer_host/pepper/'],
+          ],
+        }],
         ['enable_webrtc==1', {
           'sources': [
             'browser/renderer_host/p2p/socket_host_test_utils.h',

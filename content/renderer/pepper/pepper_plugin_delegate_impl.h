@@ -16,10 +16,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "content/common/content_export.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
 #include "content/renderer/pepper/pepper_parent_context_provider.h"
+#include "content/renderer/render_view_pepper_helper.h"
 #include "ppapi/shared_impl/private/ppb_host_resolver_shared.h"
 #include "ppapi/shared_impl/private/ppb_tcp_server_socket_shared.h"
 #include "ppapi/shared_impl/private/tcp_socket_private_impl.h"
@@ -28,12 +28,6 @@
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 
 class FilePath;
-class TransportDIB;
-
-namespace gfx {
-class Point;
-class Rect;
-}
 
 namespace IPC {
 struct ChannelHandle;
@@ -43,10 +37,6 @@ namespace ppapi {
 class PepperFilePath;
 class PPB_X509Certificate_Fields;
 class PpapiPermissions;
-}
-
-namespace ui {
-class Range;
 }
 
 namespace webkit {
@@ -59,20 +49,18 @@ class PluginModule;
 
 namespace WebKit {
 class WebGamepads;
-class WebMouseEvent;
 struct WebCompositionUnderline;
 }
 
 namespace content {
-
 class GamepadSharedMemoryReader;
 class PepperBrokerImpl;
 class PepperDeviceEnumerationEventHandler;
-class PepperPluginDelegateImpl;
 class RenderViewImpl;
 
 class PepperPluginDelegateImpl
     : public webkit::ppapi::PluginDelegate,
+      public RenderViewPepperHelper,
       public base::SupportsWeakPtr<PepperPluginDelegateImpl>,
       public PepperParentContextProvider,
       public RenderViewObserver {
@@ -81,20 +69,6 @@ class PepperPluginDelegateImpl
   virtual ~PepperPluginDelegateImpl();
 
   RenderViewImpl* render_view() { return render_view_; }
-
-  // Attempts to create a PPAPI plugin for the given filepath. On success, it
-  // will return the newly-created module.
-  //
-  // There are two reasons for failure. The first is that the plugin isn't
-  // a PPAPI plugin. In this case, |*pepper_plugin_was_registered| will be set
-  // to false and the caller may want to fall back on creating an NPAPI plugin.
-  // the second is that the plugin failed to initialize. In this case,
-  // |*pepper_plugin_was_registered| will be set to true and the caller should
-  // not fall back on any other plugin types.
-  CONTENT_EXPORT scoped_refptr<webkit::ppapi::PluginModule>
-  CreatePepperPluginModule(
-      const webkit::WebPluginInfo& webplugin_info,
-      bool* pepper_plugin_was_registered);
 
   // Sets up the renderer host and out-of-process proxy for an external plugin
   // module. Returns the renderer host, or NULL if it couldn't be created.
@@ -105,63 +79,65 @@ class PepperPluginDelegateImpl
       const IPC::ChannelHandle& channel_handle,
       int plugin_child_id);
 
-  // Called by RenderView to tell us about painting events, these two functions
-  // just correspond to the WillInitiatePaint, DidInitiatePaint and
-  // DidFlushPaint hooks in RenderView.
-  void ViewWillInitiatePaint();
-  void ViewInitiatedPaint();
-  void ViewFlushedPaint();
+  // Removes broker from pending_connect_broker_ if present. Returns true if so.
+  bool StopWaitingForBrokerConnection(PepperBrokerImpl* broker);
 
-  // Called by RenderView to implement the corresponding function in its base
-  // class RenderWidget (see that for more).
-  webkit::ppapi::PluginInstance* GetBitmapForOptimizedPluginPaint(
+  CONTENT_EXPORT int GetRoutingID() const;
+
+  typedef base::Callback<void (int /* request_id */,
+                               bool /* succeeded */,
+                               const std::string& /* label */)>
+      OpenDeviceCallback;
+
+  // Opens the specified device. The request ID passed into the callback will be
+  // the same as the return value. If successful, the label passed into the
+  // callback identifies a audio/video steam, which can be used to call
+  // CloseDevice() and GetSesssionID().
+  int OpenDevice(PP_DeviceType_Dev type,
+                 const std::string& device_id,
+                 const OpenDeviceCallback& callback);
+  void CloseDevice(const std::string& label);
+  // Gets audio/video session ID given a label.
+  int GetSessionID(PP_DeviceType_Dev type, const std::string& label);
+
+ private:
+  // RenderViewPepperHelper implementation.
+  virtual WebKit::WebPlugin* CreatePepperWebPlugin(
+    const webkit::WebPluginInfo& webplugin_info,
+    const WebKit::WebPluginParams& params) OVERRIDE;
+  virtual void ViewWillInitiatePaint() OVERRIDE;
+  virtual void ViewInitiatedPaint() OVERRIDE;
+  virtual void ViewFlushedPaint() OVERRIDE;
+  virtual webkit::ppapi::PluginInstance* GetBitmapForOptimizedPluginPaint(
       const gfx::Rect& paint_bounds,
       TransportDIB** dib,
       gfx::Rect* location,
       gfx::Rect* clip,
-      float* scale_factor);
-
-  // Called by RenderView when ViewMsg_AsyncOpenFile_ACK.
-  void OnAsyncFileOpened(base::PlatformFileError error_code,
-                         base::PlatformFile file,
-                         int message_id);
-
-  // Called by RenderView when ViewMsg_PpapiBrokerChannelCreated.
-  void OnPpapiBrokerChannelCreated(int request_id,
-                                   const IPC::ChannelHandle& handle);
-
-  // Removes broker from pending_connect_broker_ if present. Returns true if so.
-  bool StopWaitingForBrokerConnection(PepperBrokerImpl* broker);
-
-  // Called when we know whether permission to access the PPAPI broker was
-  // granted.
-  void OnPpapiBrokerPermissionResult(int request_id, bool result);
-
-  // Notification that the render view has been focused or defocused. This
-  // notifies all of the plugins.
-  void OnSetFocus(bool has_focus);
-
-  // Notification that the page visibility has changed. The default is visible.
-  void PageVisibilityChanged(bool is_visible);
-
-  // IME status.
-  bool IsPluginFocused() const;
-  gfx::Rect GetCaretBounds() const;
-  ui::TextInputType GetTextInputType() const;
-  bool IsPluginAcceptingCompositionEvents() const;
-  bool CanComposeInline() const;
-  void GetSurroundingText(string16* text, ui::Range* range) const;
-
-  // IME events.
-  void OnImeSetComposition(
+      float* scale_factor) OVERRIDE;
+  virtual void OnAsyncFileOpened(base::PlatformFileError error_code,
+                                 base::PlatformFile file,
+                                 int message_id) OVERRIDE;
+  virtual void OnPpapiBrokerChannelCreated(
+      int request_id,
+      const IPC::ChannelHandle& handle) OVERRIDE;
+  virtual void OnPpapiBrokerPermissionResult(int request_id,
+                                             bool result) OVERRIDE;
+  virtual void OnSetFocus(bool has_focus) OVERRIDE;
+  virtual void PageVisibilityChanged(bool is_visible) OVERRIDE;
+  virtual bool IsPluginFocused() const OVERRIDE;
+  virtual gfx::Rect GetCaretBounds() const OVERRIDE;
+  virtual ui::TextInputType GetTextInputType() const OVERRIDE;
+  virtual bool IsPluginAcceptingCompositionEvents() const OVERRIDE;
+  virtual bool CanComposeInline() const OVERRIDE;
+  virtual void GetSurroundingText(string16* text,
+                                  ui::Range* range) const OVERRIDE;
+  virtual void OnImeSetComposition(
       const string16& text,
       const std::vector<WebKit::WebCompositionUnderline>& underlines,
       int selection_start,
-      int selection_end);
-  void OnImeConfirmComposition(const string16& text);
-
-  // Notification that a mouse event has arrived at the render view.
-  void WillHandleMouseEvent();
+      int selection_end) OVERRIDE;
+  virtual void OnImeConfirmComposition(const string16& text) OVERRIDE;
+  virtual void WillHandleMouseEvent() OVERRIDE;
 
   // PluginDelegate implementation.
   virtual void PluginFocusChanged(webkit::ppapi::PluginInstance* instance,
@@ -269,7 +245,6 @@ class PepperPluginDelegateImpl
       FilePath* platform_path) OVERRIDE;
   virtual scoped_refptr<base::MessageLoopProxy>
       GetFileThreadMessageLoopProxy() OVERRIDE;
-
   virtual uint32 TCPSocketCreate() OVERRIDE;
   virtual void TCPSocketConnect(
       webkit::ppapi::PPB_TCPSocket_Private_Impl* socket,
@@ -293,7 +268,6 @@ class PepperPluginDelegateImpl
   virtual void RegisterTCPSocket(
       webkit::ppapi::PPB_TCPSocket_Private_Impl* socket,
       uint32 socket_id) OVERRIDE;
-
   virtual uint32 UDPSocketCreate() OVERRIDE;
   virtual void UDPSocketSetBoolSocketFeature(
       webkit::ppapi::PPB_UDPSocket_Private_Impl* socket,
@@ -318,7 +292,6 @@ class PepperPluginDelegateImpl
   virtual void TCPServerSocketStopListening(
       PP_Resource socket_resource,
       uint32 socket_id) OVERRIDE;
-
   virtual void RegisterHostResolver(
       ppapi::PPB_HostResolver_Shared* host_resolver,
       uint32 host_resolver_id) OVERRIDE;
@@ -327,12 +300,10 @@ class PepperPluginDelegateImpl
       const ::ppapi::HostPortPair& host_port,
       const PP_HostResolver_Private_Hint* hint) OVERRIDE;
   virtual void UnregisterHostResolver(uint32 host_resolver_id) OVERRIDE;
-
   virtual bool AddNetworkListObserver(
       webkit_glue::NetworkListObserver* observer) OVERRIDE;
   virtual void RemoveNetworkListObserver(
       webkit_glue::NetworkListObserver* observer) OVERRIDE;
-
   virtual bool X509CertificateParseDER(
       const std::vector<char>& der,
       ppapi::PPB_X509Certificate_Fields* fields) OVERRIDE;
@@ -420,25 +391,20 @@ class PepperPluginDelegateImpl
       const std::string& canonical_name,
       const std::vector<PP_NetAddress_Private>& net_address_list);
 
-  CONTENT_EXPORT int GetRoutingID() const;
+  // Attempts to create a PPAPI plugin for the given filepath. On success, it
+  // will return the newly-created module.
+  //
+  // There are two reasons for failure. The first is that the plugin isn't
+  // a PPAPI plugin. In this case, |*pepper_plugin_was_registered| will be set
+  // to false and the caller may want to fall back on creating an NPAPI plugin.
+  // the second is that the plugin failed to initialize. In this case,
+  // |*pepper_plugin_was_registered| will be set to true and the caller should
+  // not fall back on any other plugin types.
+  scoped_refptr<webkit::ppapi::PluginModule>
+  CreatePepperPluginModule(
+      const webkit::WebPluginInfo& webplugin_info,
+      bool* pepper_plugin_was_registered);
 
-  typedef base::Callback<void (int /* request_id */,
-                               bool /* succeeded */,
-                               const std::string& /* label */)>
-      OpenDeviceCallback;
-
-  // Opens the specified device. The request ID passed into the callback will be
-  // the same as the return value. If successful, the label passed into the
-  // callback identifies a audio/video steam, which can be used to call
-  // CloseDevice() and GetSesssionID().
-  int OpenDevice(PP_DeviceType_Dev type,
-                 const std::string& device_id,
-                 const OpenDeviceCallback& callback);
-  void CloseDevice(const std::string& label);
-  // Gets audio/video session ID given a label.
-  int GetSessionID(PP_DeviceType_Dev type, const std::string& label);
-
- private:
   // Asynchronously attempts to create a PPAPI broker for the given plugin.
   scoped_refptr<PepperBrokerImpl> CreateBroker(
       webkit::ppapi::PluginModule* plugin_module);

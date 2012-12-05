@@ -416,7 +416,6 @@
         '../gpu/gpu.gyp:gpu_ipc',
         '../ipc/ipc.gyp:ipc',
         '../media/media.gyp:shared_memory_support',
-        '../ppapi/ppapi_internal.gyp:ppapi_shared',
         '../third_party/npapi/npapi.gyp:npapi',
         '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
         '../ui/gl/gl.gyp:gl',
@@ -464,6 +463,11 @@
       'sources': [
         'common/gpu/x_util.cc',
         'common/gpu/x_util.h',
+      ],
+    }],
+    ['enable_plugins==1', {
+      'dependencies': [
+        '../ppapi/ppapi_internal.gyp:ppapi_shared',
       ],
     }],
     ['enable_gpu==1', {

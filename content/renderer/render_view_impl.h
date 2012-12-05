@@ -28,7 +28,8 @@
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/stop_find_action.h"
 #include "content/public/renderer/render_view.h"
-#include "content/renderer/pepper/pepper_plugin_delegate_impl.h"
+#include "content/renderer/mouse_lock_dispatcher.h"
+#include "content/renderer/render_view_pepper_helper.h"
 #include "content/renderer/render_widget.h"
 #include "content/renderer/renderer_webcookiejar_impl.h"
 #include "ipc/ipc_platform_file.h"
@@ -80,7 +81,6 @@ namespace webkit {
 
 namespace ppapi {
 class PluginInstance;
-class WebPluginImpl;
 }  // namespace ppapi
 
 }  // namespace webkit
@@ -1536,14 +1536,14 @@ class CONTENT_EXPORT RenderViewImpl
   // view, if this is a swapped out render view.
   std::map<int, int> active_frame_id_map_;
 
-  // NOTE: pepper_delegate_ should be last member because its constructor calls
-  // AddObservers method of RenderViewImpl from c-tor.
-  PepperPluginDelegateImpl pepper_delegate_;
-
   // This field stores drag/drop related info for the event that is currently
   // being handled. If the current event results in starting a drag/drop
   // session, this info is sent to the browser along with other drag/drop info.
   DragEventSourceInfo possible_drag_event_info_;
+
+  // NOTE: pepper_helper_ should be last member because its constructor calls
+  // AddObservers method of RenderViewImpl from c-tor.
+  scoped_ptr<RenderViewPepperHelper> pepper_helper_;
 
   // ---------------------------------------------------------------------------
   // ADDING NEW DATA? Please see if it fits appropriately in one of the above

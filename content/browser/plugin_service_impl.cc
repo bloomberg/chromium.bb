@@ -268,6 +268,7 @@ PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiPluginProcess(
     const FilePath& plugin_path,
     const FilePath& profile_data_directory,
     PpapiPluginProcessHost::PluginClient* client) {
+#if defined(ENABLE_PLUGINS)
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   PpapiPluginProcessHost* plugin_host =
@@ -284,6 +285,9 @@ PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiPluginProcess(
   return PpapiPluginProcessHost::CreatePluginHost(
       *info, profile_data_directory,
       client->GetResourceContext()->GetHostResolver());
+#else
+  return NULL;
+#endif
 }
 
 PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiBrokerProcess(
@@ -346,6 +350,7 @@ void PluginServiceImpl::OpenChannelToPpapiPlugin(
 void PluginServiceImpl::OpenChannelToPpapiBroker(
     const FilePath& path,
     PpapiPluginProcessHost::BrokerClient* client) {
+#if defined(ENABLE_PLUGINS)
   PpapiPluginProcessHost* plugin_host = FindOrStartPpapiBrokerProcess(path);
   if (plugin_host) {
     plugin_host->OpenChannelToPlugin(client);
@@ -353,6 +358,7 @@ void PluginServiceImpl::OpenChannelToPpapiBroker(
     // Send error.
     client->OnPpapiChannelOpened(IPC::ChannelHandle(), 0);
   }
+#endif
 }
 
 void PluginServiceImpl::CancelOpenChannelToNpapiPlugin(
