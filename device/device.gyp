@@ -49,6 +49,19 @@
             '../dbus/dbus.gyp:dbus',
           ]
         }],
+        ['OS=="win"', {
+          'all_dependent_settings': {
+            'msvs_settings': {
+              'VCLinkerTool': {
+                'DelayLoadDLLs': [
+                  # Despite MSDN stating that Bthprops.dll contains the
+                  # symbols declared by bthprops.lib, they actually reside here:
+                  'Bthprops.cpl',
+                ],
+              },
+            },
+          },
+        }],
       ],
     },
     {
