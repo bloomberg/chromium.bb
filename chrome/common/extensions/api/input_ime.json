@@ -500,7 +500,7 @@
             "type": "array",
             "optional": true,
             "name": "extraInfoSpec",
-            "description": "Array of extra information that should be passed to the listener function.",
+            "description": "Array of extra information that specifies how the callback is invoked.",
             "items": {
               "type": "string",
               "enum": ["async"]
@@ -509,7 +509,7 @@
         ],
         "returns": {
           "type": "boolean",
-          "description": "True if the keystroke was handled, false if not",
+          "description": "True if the keystroke was handled, false if not.  This function should always return a value if |async| is not specified.",
           "optional": true
         }
       },
