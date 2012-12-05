@@ -8,7 +8,6 @@
 #include <ostream>
 
 #include "sandbox/linux/seccomp-bpf/bpf_tests.h"
-#include "sandbox/linux/seccomp-bpf/syscall.h"
 #include "sandbox/linux/seccomp-bpf/verifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
