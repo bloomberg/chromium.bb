@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/logging.h"  // for NOTIMPLEMENTED()
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/input_method/input_method_config.h"
 #include "chrome/browser/chromeos/input_method/input_method_descriptor.h"
 #include "chrome/browser/chromeos/input_method/input_method_property.h"
@@ -77,13 +77,14 @@ class InputMethodManager {
   virtual void SetState(State new_state) = 0;
 
   // Returns all input methods that are supported, including ones not active.
-  // Caller has to delete the returned list. This function never returns NULL.
-  // Note that input method extensions are NOT included in the result.
-  virtual InputMethodDescriptors* GetSupportedInputMethods() const = 0;
+  // This function never returns NULL. Note that input method extensions are NOT
+  // included in the result.
+  virtual scoped_ptr<InputMethodDescriptors>
+      GetSupportedInputMethods() const = 0;
 
   // Returns the list of input methods we can select (i.e. active) including
-  // extension input methods. Caller has to delete the returned list.
-  virtual InputMethodDescriptors* GetActiveInputMethods() const = 0;
+  // extension input methods.
+  virtual scoped_ptr<InputMethodDescriptors> GetActiveInputMethods() const = 0;
 
   // Returns the number of active input methods including extension input
   // methods.

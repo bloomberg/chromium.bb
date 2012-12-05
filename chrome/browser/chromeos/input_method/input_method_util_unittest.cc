@@ -24,8 +24,8 @@ namespace {
 
 class TestableInputMethodUtil : public InputMethodUtil {
  public:
-  explicit TestableInputMethodUtil(InputMethodDescriptors* methods)
-      : InputMethodUtil(methods) {
+  explicit TestableInputMethodUtil(scoped_ptr<InputMethodDescriptors> methods)
+      : InputMethodUtil(methods.Pass()) {
   }
   // Change access rights.
   using InputMethodUtil::StringIsSupported;

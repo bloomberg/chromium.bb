@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 
 namespace chromeos {
 namespace input_method {
@@ -27,9 +28,9 @@ class InputMethodWhitelist {
   bool InputMethodIdIsWhitelisted(const std::string& input_method_id) const;
 
   // Returns all input methods that are supported, including ones not active.
-  // Caller has to delete the returned list. This function never returns NULL.
-  // Note that input method extensions are not included in the result.
-  InputMethodDescriptors* GetSupportedInputMethods() const;
+  // This function never returns NULL. Note that input method extensions are not
+  // included in the result.
+  scoped_ptr<InputMethodDescriptors> GetSupportedInputMethods() const;
 
  private:
   std::set<std::string> supported_input_methods_;

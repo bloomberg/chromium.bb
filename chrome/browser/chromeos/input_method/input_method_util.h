@@ -37,8 +37,9 @@ class InputMethodUtil {
  public:
   // |supported_input_methods| is a list of all input methods supported,
   // including ones not active. The list is used to initialize member variables
-  // in this class. The class takes ownership of |supported_input_methods|.
-  explicit InputMethodUtil(InputMethodDescriptors* supported_input_methods);
+  // in this class.
+  explicit InputMethodUtil(
+      scoped_ptr<InputMethodDescriptors> supported_input_methods);
   ~InputMethodUtil();
 
   // Converts a string sent from IBus IME engines, which is written in English,

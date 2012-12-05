@@ -41,19 +41,20 @@ void MockInputMethodManager::SetState(State new_state) {
   last_state_ = new_state;
 }
 
-InputMethodDescriptors*
+scoped_ptr<InputMethodDescriptors>
 MockInputMethodManager::GetSupportedInputMethods() const {
-  InputMethodDescriptors* result = new InputMethodDescriptors;
+  scoped_ptr<InputMethodDescriptors> result(new InputMethodDescriptors);
   result->push_back(
       InputMethodDescriptor::GetFallbackInputMethodDescriptor());
-  return result;
+  return result.Pass();
 }
 
-InputMethodDescriptors* MockInputMethodManager::GetActiveInputMethods() const {
-  InputMethodDescriptors* result = new InputMethodDescriptors;
+scoped_ptr<InputMethodDescriptors>
+MockInputMethodManager::GetActiveInputMethods() const {
+  scoped_ptr<InputMethodDescriptors> result(new InputMethodDescriptors);
   result->push_back(
       InputMethodDescriptor::GetFallbackInputMethodDescriptor());
-  return result;
+  return result.Pass();
 }
 
 size_t MockInputMethodManager::GetNumActiveInputMethods() const {

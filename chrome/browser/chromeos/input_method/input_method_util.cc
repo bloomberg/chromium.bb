@@ -306,8 +306,8 @@ const ExtraLanguage kExtraLanguages[] = {
 const size_t kExtraLanguagesLength = arraysize(kExtraLanguages);
 
 InputMethodUtil::InputMethodUtil(
-    InputMethodDescriptors* supported_input_methods)
-    : supported_input_methods_(supported_input_methods) {
+    scoped_ptr<InputMethodDescriptors> supported_input_methods)
+    : supported_input_methods_(supported_input_methods.Pass()) {
   ReloadInternalMaps();
 
   // Initialize a map from English string to Chrome string resource ID as well.

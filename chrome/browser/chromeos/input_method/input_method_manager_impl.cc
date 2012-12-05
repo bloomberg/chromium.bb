@@ -91,13 +91,14 @@ void InputMethodManagerImpl::SetState(State new_state) {
   }
 }
 
-InputMethodDescriptors*
+scoped_ptr<InputMethodDescriptors>
 InputMethodManagerImpl::GetSupportedInputMethods() const {
   return whitelist_.GetSupportedInputMethods();
 }
 
-InputMethodDescriptors* InputMethodManagerImpl::GetActiveInputMethods() const {
-  InputMethodDescriptors* result = new InputMethodDescriptors;
+scoped_ptr<InputMethodDescriptors>
+InputMethodManagerImpl::GetActiveInputMethods() const {
+  scoped_ptr<InputMethodDescriptors> result(new InputMethodDescriptors);
   // Build the active input method descriptors from the active input
   // methods cache |active_input_method_ids_|.
   for (size_t i = 0; i < active_input_method_ids_.size(); ++i) {
@@ -121,7 +122,7 @@ InputMethodDescriptors* InputMethodManagerImpl::GetActiveInputMethods() const {
     result->push_back(
         InputMethodDescriptor::GetFallbackInputMethodDescriptor());
   }
-  return result;
+  return result.Pass();
 }
 
 size_t InputMethodManagerImpl::GetNumActiveInputMethods() const {

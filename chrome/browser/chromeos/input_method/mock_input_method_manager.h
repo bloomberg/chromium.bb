@@ -27,8 +27,10 @@ class MockInputMethodManager : public InputMethodManager {
   virtual void RemoveCandidateWindowObserver(
       InputMethodManager::CandidateWindowObserver* observer) OVERRIDE;
   virtual void SetState(State new_state) OVERRIDE;
-  virtual InputMethodDescriptors* GetSupportedInputMethods() const OVERRIDE;
-  virtual InputMethodDescriptors* GetActiveInputMethods() const OVERRIDE;
+  virtual scoped_ptr<InputMethodDescriptors>
+      GetSupportedInputMethods() const OVERRIDE;
+  virtual scoped_ptr<InputMethodDescriptors>
+      GetActiveInputMethods() const OVERRIDE;
   virtual size_t GetNumActiveInputMethods() const OVERRIDE;
   virtual void EnableLayouts(const std::string& language_code,
                              const std::string& initial_layout) OVERRIDE;
