@@ -43,6 +43,10 @@ class MagnificationManagerTest : public CrosInProcessBrowserTest {
     return PrefServiceBase::FromBrowserContext(profile());
   }
 
+  void SetScreenManagnifierType(ash::MagnifierType type) {
+    MagnificationManager::GetInstance()->SetMagnifier(type);
+  }
+
   void SetScreenManagnifierTypeToPref(ash::MagnifierType type) {
     prefs()->SetString(prefs::kMagnifierType,
                        accessibility::ScreenMagnifierNameFromType(type));
@@ -69,9 +73,47 @@ IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, Login) {
   CheckCurrentMagnifierType(ash::MAGNIFIER_OFF);
 
   // Enables magnifier.
-  SetScreenManagnifierTypeToPref(ash::MAGNIFIER_FULL);
+  SetScreenManagnifierType(ash::MAGNIFIER_FULL);
 
   // Confirms that magnifier is enabled.
+  CheckCurrentMagnifierType(ash::MAGNIFIER_FULL);
+}
+
+IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, ChangeMagnifierType) {
+  // Changes to full screen magnifier and confirms that.
+  SetScreenManagnifierType(ash::MAGNIFIER_FULL);
+  CheckCurrentMagnifierType(ash::MAGNIFIER_FULL);
+
+  // Changes to partial screen magnifier and confirms that.
+  SetScreenManagnifierType(ash::MAGNIFIER_PARTIAL);
+  CheckCurrentMagnifierType(ash::MAGNIFIER_PARTIAL);
+
+  // Disable magnifier and confirms that.
+  SetScreenManagnifierType(ash::MAGNIFIER_OFF);
+  CheckCurrentMagnifierType(ash::MAGNIFIER_OFF);
+
+  // Changes to full screen magnifier again and confirms that.
+  SetScreenManagnifierType(ash::MAGNIFIER_FULL);
+  CheckCurrentMagnifierType(ash::MAGNIFIER_FULL);
+
+  // Logs in
+  UserManager::Get()->UserLoggedIn("owner@invalid.domain", true);
+  UserManager::Get()->SessionStarted();
+
+  // Changes to full screen magnifier and confirms that.
+  SetScreenManagnifierType(ash::MAGNIFIER_FULL);
+  CheckCurrentMagnifierType(ash::MAGNIFIER_FULL);
+
+  // Changes to partial screen magnifier and confirms that.
+  SetScreenManagnifierType(ash::MAGNIFIER_PARTIAL);
+  CheckCurrentMagnifierType(ash::MAGNIFIER_PARTIAL);
+
+  // Disable magnifier and confirms that.
+  SetScreenManagnifierType(ash::MAGNIFIER_OFF);
+  CheckCurrentMagnifierType(ash::MAGNIFIER_OFF);
+
+  // Changes to full screen magnifier again and confirms that.
+  SetScreenManagnifierType(ash::MAGNIFIER_FULL);
   CheckCurrentMagnifierType(ash::MAGNIFIER_FULL);
 }
 
