@@ -3,7 +3,7 @@
  * found in the LICENSE file. */
 
 .apps-page .tile-cell {
-  -webkit-margin-start: 12px;
+  -webkit-margin-start: 22px;
   margin-bottom: 12px;
 }
 
@@ -22,7 +22,7 @@
 .apps-page .app .title {
   color: #777;
   font-size: 0.9166em;
-  margin-top: 2px;
+  margin-top: 4px;
 }
 
 .app-contents {

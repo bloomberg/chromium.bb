@@ -19,12 +19,6 @@ cr.define('ntp', function() {
    * @type {number}
    * @const
    */
-  var TILE_ROW_HEIGHT = 92;
-
-  /**
-   * @type {number}
-   * @const
-   */
   var SCROLL_BAR_WIDTH = 12;
 
   //----------------------------------------------------------------------------
@@ -576,7 +570,7 @@ cr.define('ntp', function() {
       if (isRTL())
         col = colCount - col - 1;
       var config = this.config;
-      var top = TILE_ROW_HEIGHT * row;
+      var top = ntp.TILE_ROW_HEIGHT * row;
       var left = col * (config.cellWidth + config.cellMarginStart);
       return {top: top, left: left};
     },
@@ -690,6 +684,9 @@ cr.define('ntp', function() {
      * @param {boolean=} opt_animate Whether the layout be animated.
      */
     layout: function(opt_animate) {
+      var contentHeight = ntp.getContentHeight();
+      this.content_.style.height = contentHeight + 'px';
+
       var contentWidth = ntp.getContentWidth();
       var colCount = this.getColCountForWidth_(contentWidth);
       var lastColCount = this.colCount_;

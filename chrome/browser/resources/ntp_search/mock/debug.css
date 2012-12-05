@@ -44,6 +44,10 @@
   background: rgb(255, 255, 119);
 }
 
+.debug #bookmark-bar-spacer {
+  background: rgb(255, 255, 119);
+}
+
 .debug .hide-col-0 .tile-col-0,
 .debug .hide-col-1 .tile-col-1,
 .debug .hide-col-2 .tile-col-2,

@@ -72,7 +72,7 @@ body {
 #bottom-panel {
   -webkit-transition: opacity 200ms;
   position: absolute;
-  top: 364px;
+  top: 300px;
   visibility: hidden;
   width: 100%;
 }
@@ -82,7 +82,7 @@ body {
 }
 
 #card-slider-frame {
-  height: 92px;
+  height: 100px;
   overflow: hidden;
 }
 
@@ -95,17 +95,21 @@ body {
 #bottom-panel-header,
 #bottom-panel-footer,
 #bottom-panel-toolbar {
-  margin: 10px auto;
+  margin: 0 auto;
   text-align: center;
 }
 
 #bottom-panel-header {
-  margin-bottom: 20px;
+  padding: 10px 0 20px;
 }
 
 #bottom-panel-toolbar {
   height: 18px;
-  margin-top: 8px;
+  padding: 10px 0;
+}
+
+#bookmark-bar-spacer {
+  height: 48px;
 }
 
 #promo-bubble-anchor {

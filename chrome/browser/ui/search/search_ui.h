@@ -12,7 +12,7 @@ namespace search {
 // should be visible. This value is calculated from the
 // chrome/browser/resources/ntp_search/ tile_page.js
 // HEIGHT_FOR_BOTTOM_PANEL constant.
-static const int kMinContentHeightForBottomBookmarkBar = 558;
+static const int kMinContentHeightForBottomBookmarkBar = 531;
 
 // The maximum width of the detached bookmark bar.
 static const int kMaxWidthForBottomBookmarkBar = 720;

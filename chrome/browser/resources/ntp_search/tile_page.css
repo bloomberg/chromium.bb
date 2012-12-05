@@ -35,7 +35,7 @@
 
 .tile-row {
   -webkit-transition: opacity 200ms;
-  height: 92px;
+  height: 100px;
   text-align: start;
   white-space: nowrap;
 }
@@ -117,11 +117,6 @@
 /* -----------------------------------------------------------------------------
   Scroll Bars
 ----------------------------------------------------------------------------- */
-
-.tile-page-content {
-  /* TODO(pedrosimonetti): Remove this when fixing the Apps page height. */
-  height: 92px;
-}
 
 .scrollable {
   overflow-y: auto;

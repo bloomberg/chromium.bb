@@ -37,7 +37,7 @@ cr.define('ntp', function() {
    * @type {number}
    * @const
    */
-  var HEIGHT_FOR_BOTTOM_PANEL = 558;
+  var HEIGHT_FOR_BOTTOM_PANEL = 531;
 
   /**
    * The Bottom Panel width required to show 6 cols of Tiles, which is used
@@ -75,6 +75,12 @@ cr.define('ntp', function() {
    */
   var NORMAL_BOTTOM_PANEL_WIDTH = 500;
 
+  /**
+   * @type {number}
+   * @const
+   */
+  var TILE_ROW_HEIGHT = 100;
+
   //----------------------------------------------------------------------------
 
   /**
@@ -110,6 +116,27 @@ cr.define('ntp', function() {
    * @private
    */
   var startTime;
+
+  /**
+   * The top position of the Bottom Panel.
+   * @type {number|undefined}
+   * @private
+   */
+  var bottomPanelOffsetTop;
+
+  /**
+   * The height of the Bottom Panel Header, in pixels.
+   * @type {number|undefined}
+   * @private
+   */
+  var headerHeight;
+
+  /**
+   * The height of the Bottom Panel Footer, in pixels.
+   * @type {number|undefined}
+   * @private
+   */
+  var footerHeight;
 
   /**
    * The time in milliseconds for most transitions.  This should match what's
@@ -713,7 +740,26 @@ cr.define('ntp', function() {
 
       // Finally, dispatch the layout method to the current page.
       var currentPage = opt_page || this.cardSlider.currentCardValue;
+
+      var contentHeight = TILE_ROW_HEIGHT;
+      if (!opt_page && currentPage.config.scrollable) {
+        contentHeight = viewHeight - bottomPanelOffsetTop -
+            headerHeight - footerHeight;
+        contentHeight = Math.max(TILE_ROW_HEIGHT, contentHeight);
+        contentHeight = Math.min(2 * TILE_ROW_HEIGHT, contentHeight);
+      }
+      this.contentHeight_ = contentHeight;
+
+      $('card-slider-frame').style.height = contentHeight + 'px';
+
       currentPage.layout(opt_animate);
+    },
+
+    /**
+     * @return {number} The height of the Bottom Panel's content.
+     */
+    get contentHeight() {
+      return this.contentHeight_;
     },
 
     /**
@@ -767,6 +813,10 @@ cr.define('ntp', function() {
     themeChanged();
 
     newTabView = new NewTabView();
+
+    bottomPanelOffsetTop = $('bottom-panel').offsetTop;
+    headerHeight = $('bottom-panel-header').offsetHeight;
+    footerHeight = $('bottom-panel-footer').offsetHeight;
 
     notificationContainer = getRequiredElement('notification-container');
     notificationContainer.addEventListener(
@@ -1074,6 +1124,10 @@ cr.define('ntp', function() {
     newTabView.layout(opt_animate);
   }
 
+  function getContentHeight() {
+    return newTabView.contentHeight;
+  }
+
   function getContentWidth() {
     return newTabView.contentWidth;
   }
@@ -1081,12 +1135,14 @@ cr.define('ntp', function() {
   // Return an object with all the exports
   return {
     APP_LAUNCH: APP_LAUNCH,
+    TILE_ROW_HEIGHT: TILE_ROW_HEIGHT,
     appAdded: appAdded,
     appMoved: appMoved,
     appRemoved: appRemoved,
     appsPrefChangeCallback: appsPrefChangeCallback,
     getAppsCallback: getAppsCallback,
     getCardSlider: getCardSlider,
+    getContentHeight: getContentHeight,
     getContentWidth: getContentWidth,
     getThumbnailUrl: getThumbnailUrl,
     incrementHoveredThumbnailCount: incrementHoveredThumbnailCount,

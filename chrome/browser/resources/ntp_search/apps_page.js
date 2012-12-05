@@ -578,7 +578,7 @@ cr.define('ntp', function() {
       // The width of a cell.
       cellWidth: 70,
       // The start margin of a cell (left or right according to text direction).
-      cellMarginStart: 12,
+      cellMarginStart: 22,
       // The maximum number of Tiles to be displayed.
       maxTileCount: 20,
       // Whether the TilePage content will be scrollable.
