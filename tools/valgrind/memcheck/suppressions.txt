@@ -2098,11 +2098,12 @@
    ...
    fun:_ZN3net8internal26ClientSocketPoolBaseHelper16GetOrCreateGroupERKSs
    fun:_ZN3net8internal26ClientSocketPoolBaseHelper13RequestSocketERKSsPKNS1_7RequestE
-   fun:_ZN3net20ClientSocketPoolBaseINS_15TCPSocketParamsEE13RequestSocketERKSsRK13scoped_refptrIS1_ENS_15RequestPriorityEPNS_18ClientSocketHandleEP14CallbackRunnerI6Tuple1IiEERKNS_11BoundNetLogE
-   fun:_ZN3net19TCPClientSocketPool13RequestSocketERKSsPKvNS_15RequestPriorityEPNS_18ClientSocketHandleEP14CallbackRunnerI6Tuple1IiEERKNS_11BoundNetLogE
-   fun:_ZN3net18ClientSocketHandle4InitINS_15TCPSocketParamsENS_19TCPClientSocketPoolEEEiRKSsRK13scoped_refptrIT_ENS_15RequestPriorityEP14CallbackRunnerI6Tuple1IiEEPT0_RKNS_11BoundNetLogE
-   fun:_ZN3net17HttpStreamRequest16DoInitConnectionEv
-   fun:_ZN3net17HttpStreamRequest6DoLoopEi
+   fun:_ZN3net20ClientSocketPoolBaseINS_*
+   fun:_ZN3net*SocketPool13RequestSocketE*
+   fun:_ZN3net18ClientSocketHandle4InitINS_*
+   ...
+   fun:_ZN3net21HttpStreamFactoryImpl3Job16DoInitConnectionEv
+   fun:_ZN3net21HttpStreamFactoryImpl3Job6DoLoopEi
 }
 {
    bug_58564
@@ -6302,6 +6303,7 @@
    bug_164179
    Memcheck:Leak
    fun:_Znw*
+   ...
    fun:_ZN3net10URLFetcher6CreateERK4GURLNS0_11RequestTypeEPNS_18URLFetcherDelegateE
    fun:_ZN18WebResourceService10StartFetchEv
 }
