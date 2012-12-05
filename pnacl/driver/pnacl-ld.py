@@ -20,7 +20,6 @@ EXTRA_ENV = {
                        # -arch to produce a .nexe.
   'USE_IRT': '1',  # Use stable IRT interfaces.
 
-
   'INPUTS'   : '',
   'OUTPUT'   : '',
 
@@ -118,6 +117,8 @@ def AddToBothFlags(*args):
 LDPatterns = [
   ( '--pnacl-allow-native', "env.set('ALLOW_NATIVE', '1')"),
   ( '--noirt',              "env.set('USE_IRT', '0')"),
+  ( '--pnacl-irt-link', "env.set('IRT_LINK', '1')"),
+
 
   ( '-o(.+)',          "env.set('OUTPUT', pathtools.normalize($0))"),
   ( ('-o', '(.+)'),    "env.set('OUTPUT', pathtools.normalize($0))"),
@@ -246,6 +247,13 @@ def main(argv):
   if env.getbool('ALLOW_NATIVE') and not arch_flag_given:
       Log.Fatal("--pnacl-allow-native given, but translation "
                 "is not happening (missing -arch?)")
+
+  # IRT linking mode uses native-flavored bitcode libs rather than the
+  # portable bitcode libs. As the name implies it is currently only
+  # tested/supported for building the IRT (and currently only for ARM)
+  if env.getbool('IRT_LINK'):
+    env.set('BASE_USR', "${BASE_USR_ARCH}")
+    env.set('BASE_LIB', "${BASE_LIB_ARCH}")
 
   if env.getbool('RELOCATABLE'):
     if env.getbool('SHARED'):
