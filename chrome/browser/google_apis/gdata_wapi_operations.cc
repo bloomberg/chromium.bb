@@ -117,6 +117,7 @@ GetDocumentsOperation::GetDocumentsOperation(
       search_string_(search_string),
       shared_with_me_(shared_with_me),
       directory_resource_id_(directory_resource_id) {
+  DCHECK(!callback.is_null());
 }
 
 GetDocumentsOperation::~GetDocumentsOperation() {}
@@ -139,6 +140,7 @@ GetDocumentEntryOperation::GetDocumentEntryOperation(
     : GetDataOperation(registry, callback),
       url_generator_(url_generator),
       resource_id_(resource_id) {
+  DCHECK(!callback.is_null());
 }
 
 GetDocumentEntryOperation::~GetDocumentEntryOperation() {}
@@ -155,6 +157,7 @@ GetAccountMetadataOperation::GetAccountMetadataOperation(
     const GetDataCallback& callback)
     : GetDataOperation(registry, callback),
       url_generator_(url_generator) {
+  DCHECK(!callback.is_null());
 }
 
 GetAccountMetadataOperation::~GetAccountMetadataOperation() {}
@@ -178,6 +181,9 @@ DownloadFileOperation::DownloadFileOperation(
       download_action_callback_(download_action_callback),
       get_content_callback_(get_content_callback),
       content_url_(content_url) {
+  DCHECK(!download_action_callback_.is_null());
+  // get_content_callback may be null.
+
   // Make sure we download the content into a temp file.
   if (output_file_path.empty())
     save_temp_file_ = true;
@@ -220,14 +226,12 @@ void DownloadFileOperation::ProcessURLFetchResults(const URLFetcher* source) {
     code = GDATA_FILE_ERROR;
   }
 
-  if (!download_action_callback_.is_null())
-    download_action_callback_.Run(code, temp_file);
+  download_action_callback_.Run(code, temp_file);
   OnProcessURLFetchResultsComplete(code == HTTP_SUCCESS);
 }
 
 void DownloadFileOperation::RunCallbackOnPrematureFailure(GDataErrorCode code) {
-  if (!download_action_callback_.is_null())
-    download_action_callback_.Run(code, FilePath());
+  download_action_callback_.Run(code, FilePath());
 }
 
 //=========================== DeleteDocumentOperation ==========================
@@ -238,6 +242,7 @@ DeleteDocumentOperation::DeleteDocumentOperation(
     const GURL& edit_url)
     : EntryActionOperation(registry, callback),
       edit_url_(edit_url) {
+  DCHECK(!callback.is_null());
 }
 
 DeleteDocumentOperation::~DeleteDocumentOperation() {}
@@ -269,6 +274,7 @@ CreateDirectoryOperation::CreateDirectoryOperation(
       url_generator_(url_generator),
       parent_content_url_(parent_content_url),
       directory_name_(directory_name) {
+  DCHECK(!callback.is_null());
 }
 
 CreateDirectoryOperation::~CreateDirectoryOperation() {}
@@ -322,6 +328,7 @@ CopyDocumentOperation::CopyDocumentOperation(
       url_generator_(url_generator),
       resource_id_(resource_id),
       new_name_(new_name) {
+  DCHECK(!callback.is_null());
 }
 
 CopyDocumentOperation::~CopyDocumentOperation() {}
@@ -363,6 +370,7 @@ RenameResourceOperation::RenameResourceOperation(
     : EntryActionOperation(registry, callback),
       edit_url_(edit_url),
       new_name_(new_name) {
+  DCHECK(!callback.is_null());
 }
 
 RenameResourceOperation::~RenameResourceOperation() {}
@@ -410,6 +418,7 @@ AuthorizeAppOperation::AuthorizeAppOperation(
     : GetDataOperation(registry, callback),
       app_id_(app_id),
       edit_url_(edit_url) {
+  DCHECK(!callback.is_null());
 }
 
 AuthorizeAppOperation::~AuthorizeAppOperation() {}
@@ -467,7 +476,7 @@ void AuthorizeAppOperation::ParseResponse(
   // |entry| is NULL if parsing of XML failed.
   if (!entry) {
     LOG(WARNING) << "Failed to parse the XML data: " << data;
-    RunCallback(GDATA_PARSE_ERROR, scoped_ptr<base::Value>());
+    RunCallbackOnPrematureFailure(GDATA_PARSE_ERROR);
     const bool success = false;
     OnProcessURLFetchResultsComplete(success);
     return;
@@ -489,7 +498,7 @@ void AuthorizeAppOperation::ParseResponse(
     }
   }
 
-  RunCallback(fetch_error_code, link_list.PassAs<base::Value>());
+  RunCallbackOnSuccess(fetch_error_code, link_list.PassAs<base::Value>());
   const bool success = true;
   OnProcessURLFetchResultsComplete(success);
 }
@@ -510,6 +519,7 @@ AddResourceToDirectoryOperation::AddResourceToDirectoryOperation(
       url_generator_(url_generator),
       parent_content_url_(parent_content_url),
       edit_url_(edit_url) {
+  DCHECK(!callback.is_null());
 }
 
 AddResourceToDirectoryOperation::~AddResourceToDirectoryOperation() {}
@@ -554,6 +564,7 @@ RemoveResourceFromDirectoryOperation::RemoveResourceFromDirectoryOperation(
     : EntryActionOperation(registry, callback),
       resource_id_(document_resource_id),
       parent_content_url_(parent_content_url) {
+  DCHECK(!callback.is_null());
 }
 
 RemoveResourceFromDirectoryOperation::~RemoveResourceFromDirectoryOperation() {
@@ -594,6 +605,7 @@ InitiateUploadOperation::InitiateUploadOperation(
           params.upload_location,
           kUploadParamConvertKey,
           kUploadParamConvertValue)) {
+  DCHECK(!callback_.is_null());
 }
 
 InitiateUploadOperation::~InitiateUploadOperation() {}
@@ -617,8 +629,7 @@ void InitiateUploadOperation::ProcessURLFetchResults(
           << "]: code=" << code
           << ", location=[" << upload_location << "]";
 
-  if (!callback_.is_null())
-    callback_.Run(code, GURL(upload_location));
+  callback_.Run(code, GURL(upload_location));
   OnProcessURLFetchResultsComplete(code == HTTP_SUCCESS);
 }
 
@@ -628,8 +639,7 @@ void InitiateUploadOperation::NotifySuccessToOperationRegistry() {
 
 void InitiateUploadOperation::RunCallbackOnPrematureFailure(
     GDataErrorCode code) {
-  if (!callback_.is_null())
-    callback_.Run(code, GURL());
+  callback_.Run(code, GURL());
 }
 
 URLFetcher::RequestType InitiateUploadOperation::GetRequestType() const {
@@ -696,6 +706,7 @@ ResumeUploadOperation::ResumeUploadOperation(
       callback_(callback),
       params_(params),
       last_chunk_completed_(false) {
+  DCHECK(!callback_.is_null());
 }
 
 ResumeUploadOperation::~ResumeUploadOperation() {}
@@ -751,12 +762,10 @@ void ResumeUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
       LOG(WARNING) << "Invalid entry received on upload:\n" << response_content;
   }
 
-  if (!callback_.is_null()) {
-    callback_.Run(ResumeUploadResponse(code,
-                                       start_range_received,
-                                       end_range_received),
-                  entry.Pass());
-  }
+  callback_.Run(ResumeUploadResponse(code,
+                                     start_range_received,
+                                     end_range_received),
+                entry.Pass());
 
   // For a new file, HTTP_CREATED is returned.
   // For an existing file, HTTP_SUCCESS is returned.
@@ -782,8 +791,7 @@ void ResumeUploadOperation::NotifySuccessToOperationRegistry() {
 
 void ResumeUploadOperation::RunCallbackOnPrematureFailure(GDataErrorCode code) {
   scoped_ptr<DocumentEntry> entry;
-  if (!callback_.is_null())
-    callback_.Run(ResumeUploadResponse(code, 0, 0), entry.Pass());
+  callback_.Run(ResumeUploadResponse(code, 0, 0), entry.Pass());
 }
 
 URLFetcher::RequestType ResumeUploadOperation::GetRequestType() const {

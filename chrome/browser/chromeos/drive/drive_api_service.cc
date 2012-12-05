@@ -98,6 +98,7 @@ void DriveAPIService::GetDocuments(
     const std::string& directory_resource_id,
     const google_apis::GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   if (search_query.empty())
     GetChangelist(url, start_changestamp, callback);
@@ -114,6 +115,7 @@ void DriveAPIService::GetFilelist(
     const std::string& search_query,
     const google_apis::GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   runner_->StartOperationWithRetry(
       new google_apis::GetFilelistOperation(operation_registry(),
@@ -127,6 +129,7 @@ void DriveAPIService::GetChangelist(
     int64 start_changestamp,
     const google_apis::GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   runner_->StartOperationWithRetry(
       new google_apis::GetChangelistOperation(operation_registry(),
@@ -139,6 +142,7 @@ void DriveAPIService::GetDocumentEntry(
     const std::string& resource_id,
     const google_apis::GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   runner_->StartOperationWithRetry(new google_apis::GetFileOperation(
       operation_registry(),
@@ -149,6 +153,7 @@ void DriveAPIService::GetDocumentEntry(
 void DriveAPIService::GetAccountMetadata(
     const google_apis::GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   runner_->StartOperationWithRetry(
       new google_apis::GetAboutOperation(operation_registry(), callback));
@@ -157,6 +162,7 @@ void DriveAPIService::GetAccountMetadata(
 void DriveAPIService::GetApplicationInfo(
     const google_apis::GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   runner_->StartOperationWithRetry(
       new google_apis::GetApplistOperation(operation_registry(), callback));
@@ -169,6 +175,7 @@ void DriveAPIService::DownloadDocument(
     google_apis::DocumentExportFormat format,
     const google_apis::DownloadActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   // TODO(kochi): Implement this.
   NOTREACHED();
@@ -181,6 +188,8 @@ void DriveAPIService::DownloadFile(
       const google_apis::DownloadActionCallback& download_action_callback,
       const google_apis::GetContentCallback& get_content_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!download_action_callback.is_null());
+  // get_content_callback may be null.
 
   // TODO(kochi): Implement this.
   NOTREACHED();
@@ -190,6 +199,7 @@ void DriveAPIService::DeleteDocument(
     const GURL& document_url,
     const google_apis::EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   // TODO(kochi): Implement this.
   NOTREACHED();
@@ -200,6 +210,7 @@ void DriveAPIService::AddNewDirectory(
     const FilePath::StringType& directory_name,
     const google_apis::GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   // TODO(kochi): Implement this.
   NOTREACHED();
@@ -210,6 +221,7 @@ void DriveAPIService::CopyDocument(
     const FilePath::StringType& new_name,
     const google_apis::GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   // TODO(kochi): Implement this.
   NOTREACHED();
@@ -220,6 +232,7 @@ void DriveAPIService::RenameResource(
     const FilePath::StringType& new_name,
     const google_apis::EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   // TODO(kochi): Implement this.
   NOTREACHED();
@@ -230,6 +243,7 @@ void DriveAPIService::AddResourceToDirectory(
     const GURL& resource_url,
     const google_apis::EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   // TODO(kochi): Implement this.
   NOTREACHED();
@@ -240,6 +254,7 @@ void DriveAPIService::RemoveResourceFromDirectory(
     const std::string& resource_id,
     const google_apis::EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   // TODO(kochi): Implement this.
   NOTREACHED();
@@ -249,6 +264,7 @@ void DriveAPIService::InitiateUpload(
     const google_apis::InitiateUploadParams& params,
     const google_apis::InitiateUploadCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   // TODO(kochi): Implement this.
   NOTREACHED();
@@ -258,6 +274,7 @@ void DriveAPIService::ResumeUpload(
     const google_apis::ResumeUploadParams& params,
     const google_apis::ResumeUploadCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   // TODO(kochi): Implement this.
   NOTREACHED();
@@ -268,6 +285,7 @@ void DriveAPIService::AuthorizeApp(
     const std::string& app_ids,
     const google_apis::GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   // TODO(kochi): Implement this.
   NOTREACHED();

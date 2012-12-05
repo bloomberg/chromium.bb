@@ -118,6 +118,7 @@ class DriveServiceInterface {
   //
   // Upon completion, invokes |callback| with results on the calling thread.
   // TODO(haruki): Refactor this function: crbug.com/160932
+  // |callback| must not be null.
   virtual void GetDocuments(const GURL& feed_url,
                             int64 start_changestamp,
                             const std::string& search_query,
@@ -128,25 +129,30 @@ class DriveServiceInterface {
   // Fetches single entry metadata from server. The entry's resource id equals
   // |resource_id|.
   // Upon completion, invokes |callback| with results on the calling thread.
+  // |callback| must not be null.
   virtual void GetDocumentEntry(const std::string& resource_id,
                                 const GetDataCallback& callback) = 0;
 
   // Gets the account metadata from the server using the default account
   // metadata URL. Upon completion, invokes |callback| with results on the
   // calling thread.
+  // |callback| must not be null.
   virtual void GetAccountMetadata(const GetDataCallback& callback) = 0;
 
   // Gets the application information from the server.
   // Upon completion, invokes |callback| with results on the calling thread.
+  // |callback| must not be null.
   virtual void GetApplicationInfo(const GetDataCallback& callback) = 0;
 
   // Deletes a document identified by its 'self' |url| and |etag|.
   // Upon completion, invokes |callback| with results on the calling thread.
+  // |callback| must not be null.
   virtual void DeleteDocument(const GURL& document_url,
                               const EntryActionCallback& callback) = 0;
 
   // Downloads a document identified by its |content_url| in a given |format|.
   // Upon completion, invokes |callback| with results on the calling thread.
+  // |callback| must not be null.
   virtual void DownloadDocument(const FilePath& virtual_path,
                                 const FilePath& local_cache_path,
                                 const GURL& content_url,
@@ -158,6 +164,7 @@ class DriveServiceInterface {
   // collection. Use AddResourceToDirectory() to add the copy to a collection
   // when needed. Upon completion, invokes |callback| with results on the
   // calling thread.
+  // |callback| must not be null.
   virtual void CopyDocument(const std::string& resource_id,
                             const FilePath::StringType& new_name,
                             const GetDataCallback& callback) = 0;
@@ -165,6 +172,7 @@ class DriveServiceInterface {
   // Renames a document or collection identified by its 'self' link
   // |document_url| to the UTF-8 encoded |new_name|. Upon completion,
   // invokes |callback| with results on the calling thread.
+  // |callback| must not be null.
   virtual void RenameResource(const GURL& resource_url,
                               const FilePath::StringType& new_name,
                               const EntryActionCallback& callback) = 0;
@@ -173,6 +181,7 @@ class DriveServiceInterface {
   // 'self' link |resource_url| to a collection with a content link
   // |parent_content_url|. Upon completion, invokes |callback| with
   // results on the calling thread.
+  // |callback| must not be null.
   virtual void AddResourceToDirectory(const GURL& parent_content_url,
                                       const GURL& resource_url,
                                       const EntryActionCallback& callback) = 0;
@@ -181,6 +190,7 @@ class DriveServiceInterface {
   // |resource_id| from a collection with a content link
   // |parent_content_url|. Upon completion, invokes |callback| with
   // results on the calling thread.
+  // |callback| must not be null.
   virtual void RemoveResourceFromDirectory(
       const GURL& parent_content_url,
       const std::string& resource_id,
@@ -192,6 +202,7 @@ class DriveServiceInterface {
   // invokes |callback| and passes newly created entry on the calling thread.
   // This function cannot be named as "CreateDirectory" as it conflicts with
   // a macro on Windows.
+  // |callback| must not be null.
   virtual void AddNewDirectory(const GURL& parent_content_url,
                                const FilePath::StringType& directory_name,
                                const GetDataCallback& callback) = 0;
@@ -202,6 +213,9 @@ class DriveServiceInterface {
   // If |get_content_callback| is not empty,
   // URLFetcherDelegate::OnURLFetchDownloadData will be called, which will in
   // turn invoke |get_content_callback| on the calling thread.
+  //
+  // |download_action_callback| must not be null.
+  // |get_content_callback| may be null.
   virtual void DownloadFile(
       const FilePath& virtual_path,
       const FilePath& local_cache_path,
@@ -210,15 +224,18 @@ class DriveServiceInterface {
       const GetContentCallback& get_content_callback) = 0;
 
   // Initiates uploading of a document/file.
+  // |callback| must not be null.
   virtual void InitiateUpload(const InitiateUploadParams& params,
                               const InitiateUploadCallback& callback) = 0;
 
   // Resumes uploading of a document/file on the calling thread.
+  // |callback| must not be null.
   virtual void ResumeUpload(const ResumeUploadParams& params,
                             const ResumeUploadCallback& callback) = 0;
 
   // Authorizes a Drive app with the id |app_id| to open the given document.
   // Upon completion, invokes |callback| with results on the calling thread.
+  // |callback| must not be null.
   virtual void AuthorizeApp(const GURL& resource_url,
                             const std::string& app_id,
                             const GetDataCallback& callback) = 0;

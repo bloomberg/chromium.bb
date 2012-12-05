@@ -139,6 +139,7 @@ void GDataWapiService::GetDocuments(
     const std::string& directory_resource_id,
     const GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   // Drive V2 API defines changestamp in int64, while DocumentsList API uses
   // int32. This narrowing should not cause any trouble.
@@ -159,6 +160,7 @@ void GDataWapiService::GetDocumentEntry(
     const std::string& resource_id,
     const GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   GetDocumentEntryOperation* operation =
       new GetDocumentEntryOperation(operation_registry(),
@@ -170,6 +172,7 @@ void GDataWapiService::GetDocumentEntry(
 
 void GDataWapiService::GetAccountMetadata(const GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   GetAccountMetadataOperation* operation =
       new GetAccountMetadataOperation(
@@ -190,6 +193,7 @@ void GDataWapiService::DownloadDocument(
     DocumentExportFormat format,
     const DownloadActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   DownloadFile(
       virtual_path,
@@ -208,6 +212,8 @@ void GDataWapiService::DownloadFile(
     const DownloadActionCallback& download_action_callback,
     const GetContentCallback& get_content_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!download_action_callback.is_null());
+  // get_content_callback may be null.
 
   runner_->StartOperationWithRetry(
       new DownloadFileOperation(operation_registry(),
@@ -220,6 +226,7 @@ void GDataWapiService::DeleteDocument(
     const GURL& document_url,
     const EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   runner_->StartOperationWithRetry(
       new DeleteDocumentOperation(operation_registry(), callback,
@@ -231,6 +238,7 @@ void GDataWapiService::AddNewDirectory(
     const FilePath::StringType& directory_name,
     const GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   runner_->StartOperationWithRetry(
       new CreateDirectoryOperation(operation_registry(),
@@ -245,6 +253,7 @@ void GDataWapiService::CopyDocument(
     const FilePath::StringType& new_name,
     const GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   runner_->StartOperationWithRetry(
       new CopyDocumentOperation(operation_registry(),
@@ -259,6 +268,7 @@ void GDataWapiService::RenameResource(
     const FilePath::StringType& new_name,
     const EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   runner_->StartOperationWithRetry(
       new RenameResourceOperation(operation_registry(), callback,
@@ -270,6 +280,7 @@ void GDataWapiService::AddResourceToDirectory(
     const GURL& resource_url,
     const EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   runner_->StartOperationWithRetry(
       new AddResourceToDirectoryOperation(operation_registry(),
@@ -284,6 +295,7 @@ void GDataWapiService::RemoveResourceFromDirectory(
     const std::string& resource_id,
     const EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   runner_->StartOperationWithRetry(
       new RemoveResourceFromDirectoryOperation(
@@ -297,10 +309,10 @@ void GDataWapiService::InitiateUpload(
     const InitiateUploadParams& params,
     const InitiateUploadCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   if (params.upload_location.is_empty()) {
-    if (!callback.is_null())
-      callback.Run(HTTP_BAD_REQUEST, GURL());
+    callback.Run(HTTP_BAD_REQUEST, GURL());
     return;
   }
 
@@ -312,6 +324,7 @@ void GDataWapiService::InitiateUpload(
 void GDataWapiService::ResumeUpload(const ResumeUploadParams& params,
                                     const ResumeUploadCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   runner_->StartOperationWithRetry(
       new ResumeUploadOperation(
@@ -322,6 +335,7 @@ void GDataWapiService::AuthorizeApp(const GURL& resource_url,
                                     const std::string& app_id,
                                     const GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   runner_->StartOperationWithRetry(
       new AuthorizeAppOperation(operation_registry(),

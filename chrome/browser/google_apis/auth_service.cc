@@ -82,6 +82,7 @@ AuthOperation::AuthOperation(OperationRegistry* registry,
       refresh_token_(refresh_token),
       callback_(callback),
       scopes_(scopes) {
+  DCHECK(!callback_.is_null());
 }
 
 AuthOperation::~AuthOperation() {}
@@ -100,8 +101,7 @@ void AuthOperation::Start() {
 
 void AuthOperation::DoCancel() {
   oauth2_access_token_fetcher_->CancelRequest();
-  if (!callback_.is_null())
-    callback_.Run(GDATA_CANCELLED, std::string());
+  callback_.Run(GDATA_CANCELLED, std::string());
 }
 
 // Callback for OAuth2AccessTokenFetcher on success. |access_token| is the token

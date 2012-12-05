@@ -148,6 +148,7 @@ void UrlFetchOperationBase::Start(const std::string& auth_token,
 
 void UrlFetchOperationBase::SetReAuthenticateCallback(
     const ReAuthenticateCallback& callback) {
+  DCHECK(!callback.is_null());
   DCHECK(re_authenticate_callback_.is_null());
 
   re_authenticate_callback_ = callback;
@@ -194,8 +195,7 @@ void UrlFetchOperationBase::OnURLFetchComplete(const URLFetcher* source) {
   DVLOG(1) << "Response headers:\n" << GetResponseHeadersAsString(source);
 
   if (code == HTTP_UNAUTHORIZED) {
-    if (!re_authenticate_callback_.is_null() &&
-        ++re_authenticate_count_ <= kMaxReAuthenticateAttemptsPerOperation) {
+    if (++re_authenticate_count_ <= kMaxReAuthenticateAttemptsPerOperation) {
       re_authenticate_callback_.Run(this);
       return;
     }
@@ -246,22 +246,20 @@ EntryActionOperation::EntryActionOperation(OperationRegistry* registry,
                                            const EntryActionCallback& callback)
     : UrlFetchOperationBase(registry),
       callback_(callback) {
+  DCHECK(!callback_.is_null());
 }
 
 EntryActionOperation::~EntryActionOperation() {}
 
 void EntryActionOperation::ProcessURLFetchResults(const URLFetcher* source) {
-  if (!callback_.is_null()) {
-    GDataErrorCode code = GetErrorCode(source);
-    callback_.Run(code);
-  }
+  GDataErrorCode code = GetErrorCode(source);
+  callback_.Run(code);
   const bool success = true;
   OnProcessURLFetchResultsComplete(success);
 }
 
 void EntryActionOperation::RunCallbackOnPrematureFailure(GDataErrorCode code) {
-  if (!callback_.is_null())
-    callback_.Run(code);
+  callback_.Run(code);
 }
 
 //============================== GetDataOperation ==============================
@@ -271,6 +269,7 @@ GetDataOperation::GetDataOperation(OperationRegistry* registry,
     : UrlFetchOperationBase(registry),
       callback_(callback),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+  DCHECK(!callback_.is_null());
 }
 
 GetDataOperation::~GetDataOperation() {}
@@ -287,7 +286,7 @@ void GetDataOperation::ProcessURLFetchResults(const URLFetcher* source) {
       ParseResponse(fetch_error_code, data);
       break;
     default:
-      RunCallback(fetch_error_code, scoped_ptr<base::Value>());
+      RunCallbackOnPrematureFailure(fetch_error_code);
       const bool success = false;
       OnProcessURLFetchResultsComplete(success);
       break;
@@ -296,10 +295,7 @@ void GetDataOperation::ProcessURLFetchResults(const URLFetcher* source) {
 
 void GetDataOperation::RunCallbackOnPrematureFailure(
     GDataErrorCode fetch_error_code) {
-  if (!callback_.is_null()) {
-    scoped_ptr<base::Value> root_value;
-    callback_.Run(fetch_error_code, root_value.Pass());
-  }
+  callback_.Run(fetch_error_code, scoped_ptr<base::Value>());
 }
 
 void GetDataOperation::ParseResponse(GDataErrorCode fetch_error_code,
@@ -326,18 +322,16 @@ void GetDataOperation::OnDataParsed(
     success = false;
   }
 
-  // The ownership of the parsed json object is transfered to RunCallBack().
-  RunCallback(fetch_error_code, value.Pass());
+  RunCallbackOnSuccess(fetch_error_code, value.Pass());
 
   DCHECK(!value.get());
   OnProcessURLFetchResultsComplete(success);
 }
 
-void GetDataOperation::RunCallback(GDataErrorCode fetch_error_code,
-                                   scoped_ptr<base::Value> value) {
+void GetDataOperation::RunCallbackOnSuccess(GDataErrorCode fetch_error_code,
+                                            scoped_ptr<base::Value> value) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!callback_.is_null())
-    callback_.Run(fetch_error_code, value.Pass());
+  callback_.Run(fetch_error_code, value.Pass());
 }
 
 }  // namespace google_apis

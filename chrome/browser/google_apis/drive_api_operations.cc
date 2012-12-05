@@ -27,7 +27,9 @@ const char kDriveV2FileURLFormat[] =
 
 GetAboutOperation::GetAboutOperation(OperationRegistry* registry,
                                      const GetDataCallback& callback)
-    : GetDataOperation(registry, callback) {}
+    : GetDataOperation(registry, callback) {
+  DCHECK(!callback.is_null());
+}
 
 GetAboutOperation::~GetAboutOperation() {}
 
@@ -39,7 +41,9 @@ GURL GetAboutOperation::GetURL() const {
 
 GetApplistOperation::GetApplistOperation(OperationRegistry* registry,
                                          const GetDataCallback& callback)
-    : GetDataOperation(registry, callback) {}
+    : GetDataOperation(registry, callback) {
+  DCHECK(!callback.is_null());
+}
 
 GetApplistOperation::~GetApplistOperation() {}
 
@@ -57,6 +61,7 @@ GetChangelistOperation::GetChangelistOperation(
     : GetDataOperation(registry, callback),
       url_(kDriveV2ChangelistURL),
       start_changestamp_(start_changestamp) {
+  DCHECK(!callback.is_null());
   if (!url.is_empty())
     url_ = url;
 }
@@ -80,6 +85,7 @@ GetFilelistOperation::GetFilelistOperation(
     : GetDataOperation(registry, callback),
       url_(kDriveV2FilelistURL),
       search_string_(search_string) {
+  DCHECK(!callback.is_null());
   if (!url.is_empty())
     url_ = url;
 }
@@ -101,7 +107,9 @@ GetFileOperation::GetFileOperation(
     const std::string& file_id,
     const GetDataCallback& callback)
     : GetDataOperation(registry, callback),
-      file_id_(file_id) {}
+      file_id_(file_id) {
+  DCHECK(!callback.is_null());
+}
 
 GetFileOperation::~GetFileOperation() {}
 

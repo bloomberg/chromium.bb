@@ -52,6 +52,7 @@ class AuthenticatedOperationInterface {
   // to an authentication failure.
   // This function should be called before Start().
   // TODO(satorux): Make it a parameter of Start(). crbug.com/163535.
+  // |callback| must not be null.
   virtual void SetReAuthenticateCallback(
       const ReAuthenticateCallback& callback) = 0;
 
@@ -165,6 +166,7 @@ typedef base::Callback<void(GDataErrorCode error)> EntryActionCallback;
 // It is meant to be used for operations that return no JSON blobs.
 class EntryActionOperation : public UrlFetchOperationBase {
  public:
+  // |callback| must not be null.
   EntryActionOperation(OperationRegistry* registry,
                        const EntryActionCallback& callback);
   virtual ~EntryActionOperation();
@@ -192,6 +194,7 @@ typedef base::Callback<void(GDataErrorCode error,
 // content into a base::Value.
 class GetDataOperation : public UrlFetchOperationBase {
  public:
+  // |callback| must not be null.
   GetDataOperation(OperationRegistry* registry,
                    const GetDataCallback& callback);
   virtual ~GetDataOperation();
@@ -201,19 +204,20 @@ class GetDataOperation : public UrlFetchOperationBase {
   virtual void ParseResponse(GDataErrorCode fetch_error_code,
                              const std::string& data);
 
+ protected:
   // UrlFetchOperationBase overrides.
   virtual void ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
 
-  // Runs |callback_| with the given parameters, if |callback_| is not null.
-  // TODO(satorux): Remove this by making |callback_| mandatory.
-  void RunCallback(GDataErrorCode fetch_error_code,
-                   scoped_ptr<base::Value> value);
+  // Runs |callback_| with the given parameters. A derived class should
+  // call this from ParseResponse() if ParseResponse() is overridden.
+  void RunCallbackOnSuccess(GDataErrorCode fetch_error_code,
+                            scoped_ptr<base::Value> value);
 
- private:
   // UrlFetchOperationBase overrides.
   virtual void RunCallbackOnPrematureFailure(
       GDataErrorCode fetch_error_code) OVERRIDE;
 
+ private:
   // Called when ParseJsonOnBlockingPool() is completed.
   void OnDataParsed(google_apis::GDataErrorCode fetch_error_code,
                     scoped_ptr<base::Value> value);

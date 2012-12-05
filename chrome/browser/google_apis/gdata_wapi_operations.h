@@ -42,6 +42,9 @@ class GetDocumentsOperation : public GetDataOperation {
   //
   // directory_resource_id:
   //   If non-empty, fetches a list of documents in a particular directory.
+  //
+  // callback:
+  //   Called once the feed is fetched. Must not be null.
   GetDocumentsOperation(OperationRegistry* registry,
                         const GDataWapiUrlGenerator& url_generator,
                         const GURL& override_url,
@@ -72,6 +75,7 @@ class GetDocumentsOperation : public GetDataOperation {
 // This class performs the operation for fetching a single document entry.
 class GetDocumentEntryOperation : public GetDataOperation {
  public:
+  // |callback| must not be null.
   GetDocumentEntryOperation(OperationRegistry* registry,
                             const GDataWapiUrlGenerator& url_generator,
                             const std::string& resource_id,
@@ -95,6 +99,7 @@ class GetDocumentEntryOperation : public GetDataOperation {
 // This class performs the operation for fetching account metadata.
 class GetAccountMetadataOperation : public GetDataOperation {
  public:
+  // |callback| must not be null.
   GetAccountMetadataOperation(OperationRegistry* registry,
                               const GDataWapiUrlGenerator& url_generator,
                               const GetDataCallback& callback);
@@ -120,11 +125,11 @@ typedef base::Callback<void(GDataErrorCode error,
 class DownloadFileOperation : public UrlFetchOperationBase {
  public:
   // download_action_callback:
-  //   This callback is called when the download is complete.
+  //   This callback is called when the download is complete. Must not be null.
   //
   // get_content_callback:
   //   This callback is called when some part of the content is
-  //   read. Used to read the download content progressively.
+  //   read. Used to read the download content progressively. May be null.
   //
   // content_url:
   //   Specifies the target file to download.
@@ -172,6 +177,7 @@ class DownloadFileOperation : public UrlFetchOperationBase {
 // This class performs the operation for deleting a document.
 class DeleteDocumentOperation : public EntryActionOperation {
  public:
+  // |callback| must not be null.
   DeleteDocumentOperation(OperationRegistry* registry,
                           const EntryActionCallback& callback,
                           const GURL& edit_url);
@@ -197,6 +203,7 @@ class CreateDirectoryOperation : public GetDataOperation {
   // A new directory will be created under a directory specified by
   // |parent_content_url|. If this parameter is empty, a new directory will
   // be created in the root directory.
+  // |callback| must not be null.
   CreateDirectoryOperation(OperationRegistry* registry,
                            const GDataWapiUrlGenerator& url_generator,
                            const GetDataCallback& callback,
@@ -226,6 +233,7 @@ class CreateDirectoryOperation : public GetDataOperation {
 // supported by WAPI.
 class CopyDocumentOperation : public GetDataOperation {
  public:
+  // |callback| must not be null.
   CopyDocumentOperation(OperationRegistry* registry,
                         const GDataWapiUrlGenerator& url_generator,
                         const GetDataCallback& callback,
@@ -253,6 +261,7 @@ class CopyDocumentOperation : public GetDataOperation {
 // This class performs the operation for renaming a document/file/directory.
 class RenameResourceOperation : public EntryActionOperation {
  public:
+  // |callback| must not be null.
   RenameResourceOperation(OperationRegistry* registry,
                           const EntryActionCallback& callback,
                           const GURL& edit_url,
@@ -280,6 +289,7 @@ class RenameResourceOperation : public EntryActionOperation {
 // by |app_id| to access a document specified by |edit_url| for .
 class AuthorizeAppOperation : public GetDataOperation {
  public:
+  // |callback| must not be null.
   AuthorizeAppOperation(OperationRegistry* registry,
                         const GetDataCallback& callback,
                         const GURL& edit_url,
@@ -313,6 +323,7 @@ class AuthorizeAppOperation : public GetDataOperation {
 // to a directory.
 class AddResourceToDirectoryOperation : public EntryActionOperation {
  public:
+  // |callback| must not be null.
   AddResourceToDirectoryOperation(OperationRegistry* registry,
                                   const GDataWapiUrlGenerator& url_generator,
                                   const EntryActionCallback& callback,
@@ -341,6 +352,7 @@ class AddResourceToDirectoryOperation : public EntryActionOperation {
 // from a directory.
 class RemoveResourceFromDirectoryOperation : public EntryActionOperation {
  public:
+  // |callback| must not be null.
   RemoveResourceFromDirectoryOperation(OperationRegistry* registry,
                                        const EntryActionCallback& callback,
                                        const GURL& parent_content_url,
@@ -409,6 +421,7 @@ class InitiateUploadOperation : public UrlFetchOperationBase {
  public:
   // |callback| will be called with the upload URL, where upload data is
   // uploaded to with ResumeUploadOperation.
+  // |callback| must not be null.
   InitiateUploadOperation(OperationRegistry* registry,
                           const InitiateUploadCallback& callback,
                           const InitiateUploadParams& params);
@@ -494,6 +507,7 @@ typedef base::Callback<void(
 class ResumeUploadOperation : public UrlFetchOperationBase {
  public:
   // |callback| will be called on completion of the operation.
+  // |callback| must not be null.
   //
   // If there is more data to upload, |code| in ResumeUploadParams is set to
   // HTTP_RESUME_INCOMPLETE, and |new_entry| parameter is NULL.

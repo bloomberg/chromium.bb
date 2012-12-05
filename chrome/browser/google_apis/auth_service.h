@@ -45,6 +45,7 @@ class AuthService : public content::NotificationObserver {
   void Initialize(Profile* profile);
 
   // Starts fetching OAuth2 auth token from the refresh token for |scopes_|.
+  // |callback| must not be null.
   void StartAuthentication(OperationRegistry* registry,
                            const AuthStatusCallback& callback);
 
