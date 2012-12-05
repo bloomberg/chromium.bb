@@ -565,10 +565,6 @@ willPositionSheet:(NSWindow*)sheet
   // While we move views (and focus) around, disable any bar visibility changes.
   [self disableBarVisibilityUpdates];
 
-  // Destroy the tab strip's sheet controller.  We will recreate it in the new
-  // window when needed.
-  [tabStripController_ destroySheetController];
-
   // Retain the tab strip view while we remove it from its superview.
   scoped_nsobject<NSView> tabStripView;
   if ([self hasTabStrip]) {

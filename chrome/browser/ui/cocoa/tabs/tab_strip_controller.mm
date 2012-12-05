@@ -31,7 +31,6 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.h"
-#import "chrome/browser/ui/cocoa/constrained_window_mac.h"
 #include "chrome/browser/ui/cocoa/drag_util.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
 #import "chrome/browser/ui/cocoa/new_tab_button.h"
@@ -569,39 +568,11 @@ private:
   // It also restores content autoresizing properties.
   [controller ensureContentsVisible];
 
-  // Tell per-tab sheet manager about currently selected tab.
-  if (sheetController_.get()) {
-    [sheetController_ setActiveView:newView];
-  }
-
   NSWindow* parentWindow = [switchView_ window];
   ConstrainedWindowSheetController* sheetController =
       [ConstrainedWindowSheetController
           controllerForParentWindow:parentWindow];
   [sheetController parentViewDidBecomeActive:newView];
-
-  // Make sure the new tabs's sheets are visible (necessary when a background
-  // tab opened a sheet while it was in the background and now becomes active).
-  TabContents* tabContents = tabStripModel_->GetTabContentsAt(modelIndex);
-  DCHECK(tabContents);
-  WebContents* newTab = tabContents->web_contents();
-  if (newTab && ![sheetController sheetCount]) {
-    ConstrainedWindowTabHelper* constrained_window_tab_helper =
-      ConstrainedWindowTabHelper::FromWebContents(newTab);
-
-    ConstrainedWindowTabHelper::ConstrainedWindowList::iterator it, end;
-    end = constrained_window_tab_helper->constrained_window_end();
-    NSWindowController* controller = [[newView window] windowController];
-    DCHECK([controller isKindOfClass:[BrowserWindowController class]]);
-
-    for (it = constrained_window_tab_helper->constrained_window_begin();
-         it != end;
-         ++it) {
-      ConstrainedWindow* constrainedWindow = *it;
-      static_cast<ConstrainedWindowMac*>(constrainedWindow)->Realize(
-          static_cast<BrowserWindowController*>(controller));
-    }
-  }
 }
 
 // Create a new tab view and set its cell correctly so it draws the way we want
@@ -2094,19 +2065,6 @@ private:
   return drag_util::IsUnsupportedDropData(browser_->profile(), info);
 }
 
-- (GTMWindowSheetController*)sheetController {
-  if (!sheetController_.get())
-    sheetController_.reset([[GTMWindowSheetController alloc]
-        initWithWindow:[switchView_ window] delegate:self]);
-  return sheetController_.get();
-}
-
-- (void)destroySheetController {
-  // Make sure there are no open sheets.
-  DCHECK_EQ(0U, [[sheetController_ viewsWithAttachedSheets] count]);
-  sheetController_.reset();
-}
-
 - (TabContentsController*)activeTabContentsController {
   int modelIndex = tabStripModel_->active_index();
   if (modelIndex < 0)
@@ -2116,19 +2074,6 @@ private:
       index >= (NSInteger)[tabContentsArray_ count])
     return nil;
   return [tabContentsArray_ objectAtIndex:index];
-}
-
-- (void)gtm_systemRequestsVisibilityForView:(NSView*)view {
-  // This implementation is required by GTMWindowSheetController.
-
-  // Raise window...
-  [[switchView_ window] makeKeyAndOrderFront:self];
-
-  // ...and raise a tab with a sheet.
-  NSInteger index = [self modelIndexForContentsView:view];
-  DCHECK(index >= 0);
-  if (index >= 0)
-    tabStripModel_->ActivateTabAt(index, false /* not a user gesture */);
 }
 
 @end

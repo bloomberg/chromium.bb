@@ -1161,10 +1161,6 @@ enum {
   return [view convertRect:[view bounds] toView:nil];
 }
 
-- (GTMWindowSheetController*)sheetController {
-  return [tabStripController_ sheetController];
-}
-
 - (void)updateToolbarWithContents:(WebContents*)tab
                shouldRestoreState:(BOOL)shouldRestore {
   [toolbarController_ updateToolbarWithContents:tab
@@ -1518,9 +1514,9 @@ enum {
 }
 
 - (BOOL)isTabDraggable:(NSView*)tabView {
-  // TODO(avi, thakis): GTMWindowSheetController has no api to move tabsheets
-  // between windows. Until then, we have to prevent having to move a tabsheet
-  // between windows, e.g. no tearing off of tabs.
+  // TODO(avi, thakis): ConstrainedWindowSheetController has no api to move
+  // tabsheets between windows. Until then, we have to prevent having to move a
+  // tabsheet between windows, e.g. no tearing off of tabs.
   int index = [tabStripController_ modelIndexForTabView:tabView];
   WebContents* contents = chrome::GetWebContentsAt(browser_.get(), index);
   if (!contents)

@@ -11,11 +11,9 @@
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/browser_command_executor.h"
-#include "chrome/browser/ui/cocoa/constrained_window_mac.h"
 #include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/common/extensions/draggable_region.h"
-#import "third_party/GTM/AppKit/GTMWindowSheetController.h"
 #include "ui/gfx/rect.h"
 
 class ExtensionKeybindingRegistryCocoa;
@@ -28,13 +26,9 @@ class SkRegion;
 // Objective-C notifications to the C++ bridge.
 @interface NativeAppWindowController : NSWindowController
                                       <NSWindowDelegate,
-                                       GTMWindowSheetControllerDelegate,
-                                       ConstrainedWindowSupport,
                                        BrowserCommandExecutor> {
  @private
   NativeAppWindowCocoa* appWindow_;  // Weak; owns self.
-  // Manages per-window sheets.
-  scoped_nsobject<GTMWindowSheetController> sheetController_;
 }
 
 @property(assign, nonatomic) NativeAppWindowCocoa* appWindow;

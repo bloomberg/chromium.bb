@@ -12,7 +12,6 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_controller_target.h"
 #import "chrome/browser/ui/cocoa/url_drop_target.h"
 #include "chrome/browser/ui/tabs/hover_tab_selector.h"
-#import "third_party/GTM/AppKit/GTMWindowSheetController.h"
 
 @class CrTrackingArea;
 @class NewTabButton;
@@ -57,8 +56,7 @@ class WebContents;
 // http://www.chromium.org/developers/design-documents/tab-strip-mac
 @interface TabStripController :
   NSObject<TabControllerTarget,
-           URLDropTargetController,
-           GTMWindowSheetControllerDelegate> {
+           URLDropTargetController> {
  @private
   scoped_nsobject<TabStripView> tabStripView_;
   NSView* switchView_;  // weak
@@ -134,9 +132,6 @@ class WebContents;
   // red/yellow/green and incognito/fullscreen buttons).
   CGFloat leftIndentForControls_;
   CGFloat rightIndentForControls_;
-
-  // Manages per-tab sheets.
-  scoped_nsobject<GTMWindowSheetController> sheetController_;
 
   // Is the mouse currently inside the strip;
   BOOL mouseInside_;
@@ -235,19 +230,6 @@ class WebContents;
 
 // Default indentation for tabs (see |leftIndentForControls_|).
 + (CGFloat)defaultLeftIndentForControls;
-
-// Returns the (lazily created) window sheet controller of this window. Used
-// for the per-tab sheets.
-- (GTMWindowSheetController*)sheetController;
-
-// Destroys the window sheet controller of this window, if it exists.  The sheet
-// controller can be recreated by a subsequent call to |-sheetController|.  Must
-// not be called if any sheets are currently open.
-// TODO(viettrungluu): This is temporary code needed to allow sheets to work
-// (read: not crash) in fullscreen mode.  Once GTMWindowSheetController is
-// modified to support moving sheets between windows, this code can go away.
-// http://crbug.com/19093.
-- (void)destroySheetController;
 
 // Returns the currently active TabContentsController.
 - (TabContentsController*)activeTabContentsController;

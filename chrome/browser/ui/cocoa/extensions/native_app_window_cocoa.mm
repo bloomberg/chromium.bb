@@ -72,19 +72,6 @@
     appWindow_->WindowDidDeminiaturize();
 }
 
-- (void)gtm_systemRequestsVisibilityForView:(NSView*)view {
-  [[self window] makeKeyAndOrderFront:self];
-}
-
-- (GTMWindowSheetController*)sheetController {
-  if (!sheetController_.get()) {
-    sheetController_.reset([[GTMWindowSheetController alloc]
-        initWithWindow:[self window]
-              delegate:self]);
-  }
-  return sheetController_;
-}
-
 - (void)executeCommand:(int)command {
   // No-op, swallow the event.
 }

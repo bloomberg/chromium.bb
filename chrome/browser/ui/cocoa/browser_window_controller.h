@@ -18,7 +18,6 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/browser_command_executor.h"
-#import "chrome/browser/ui/cocoa/constrained_window_mac.h"
 #import "chrome/browser/ui/cocoa/fullscreen_exit_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_window_controller.h"
@@ -37,7 +36,6 @@ class BrowserWindowCocoa;
 class ExtensionKeybindingRegistryCocoa;
 @class FindBarCocoaController;
 @class FullscreenWindow;
-@class GTMWindowSheetController;
 @class InfoBarContainerController;
 class LocationBarViewMac;
 @class PresentationModeController;
@@ -56,8 +54,7 @@ class WebContents;
                       BookmarkBarControllerDelegate,
                       BrowserCommandExecutor,
                       ViewResizer,
-                      TabStripControllerDelegate,
-                      ConstrainedWindowSupport> {
+                      TabStripControllerDelegate> {
  @private
   // The ordering of these members is important as it determines the order in
   // which they are destroyed. |browser_| needs to be destroyed last as most of
@@ -301,10 +298,6 @@ class WebContents;
 // Nil out the weak Chrome To Mobile bubble controller reference.
 // This should be called by the ChromeToMobileBubbleController on close.
 - (void)chromeToMobileBubbleWindowWillClose;
-
-// Returns the (lazily created) window sheet controller of this window. Used
-// for the per-tab sheets.
-- (GTMWindowSheetController*)sheetController;
 
 // Shows or hides the docked web inspector depending on |contents|'s state.
 - (void)updateDevToolsForContents:(content::WebContents*)contents;
