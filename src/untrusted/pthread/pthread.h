@@ -408,7 +408,7 @@ typedef struct {
 */
 extern int pthread_create(pthread_t *thread_id,
                           const pthread_attr_t *attr,
-                          void *(*start_routine) (void *p),
+                          void *(*start_routine)(void *p),
                           void *arg);
 
 /** @nqPosix

@@ -22,7 +22,7 @@ static int nc_thread_cond_init(pthread_cond_t *cond,
 }
 
 /* TODO(gregoryd): make this static?  */
-void pthread_cond_validate(pthread_cond_t* cond) {
+void pthread_cond_validate(pthread_cond_t *cond) {
   if (nc_token_acquire(&cond->token)) {
     nc_thread_cond_init(cond, NULL);
     nc_token_release(&cond->token);
@@ -34,8 +34,8 @@ void pthread_cond_validate(pthread_cond_t* cond) {
  * Initialize condition variable COND using attributes ATTR, or use
  * the default values if later is NULL.
  */
-int pthread_cond_init (pthread_cond_t *cond,
-                       const pthread_condattr_t *cond_attr) {
+int pthread_cond_init(pthread_cond_t *cond,
+                      const pthread_condattr_t *cond_attr) {
   int retval;
   nc_token_init(&cond->token, 1);
   retval = nc_thread_cond_init(cond, cond_attr);
@@ -48,7 +48,7 @@ int pthread_cond_init (pthread_cond_t *cond,
 /*
  * Destroy condition variable COND.
  */
-int pthread_cond_destroy (pthread_cond_t *cond) {
+int pthread_cond_destroy(pthread_cond_t *cond) {
   int retval;
   pthread_cond_validate(cond);
   retval = __nc_irt_cond.cond_destroy(cond->handle);
@@ -59,18 +59,18 @@ int pthread_cond_destroy (pthread_cond_t *cond) {
 /*
  * Wake up one thread waiting for condition variable COND.
  */
-int pthread_cond_signal (pthread_cond_t *cond) {
+int pthread_cond_signal(pthread_cond_t *cond) {
   pthread_cond_validate(cond);
   return __nc_irt_cond.cond_signal(cond->handle);
 }
 
-int pthread_cond_broadcast (pthread_cond_t *cond) {
+int pthread_cond_broadcast(pthread_cond_t *cond) {
   pthread_cond_validate(cond);
   return __nc_irt_cond.cond_broadcast(cond->handle);
 }
 
-int pthread_cond_wait (pthread_cond_t *cond,
-                       pthread_mutex_t *mutex) {
+int pthread_cond_wait(pthread_cond_t *cond,
+                      pthread_mutex_t *mutex) {
   pthread_cond_validate(cond);
   int retval = __nc_irt_cond.cond_wait(cond->handle, mutex->mutex_handle);
   if (retval == 0) {

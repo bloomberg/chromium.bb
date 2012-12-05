@@ -36,8 +36,8 @@ int pthread_mutex_validate(pthread_mutex_t *mutex) {
   return rv;
 }
 
-int pthread_mutex_init (pthread_mutex_t *mutex,
-                        const pthread_mutexattr_t *mutex_attr) {
+int pthread_mutex_init(pthread_mutex_t *mutex,
+                       const pthread_mutexattr_t *mutex_attr) {
   int retval;
   nc_token_init(&mutex->token, 1);
   if (mutex_attr != NULL) {
@@ -50,11 +50,11 @@ int pthread_mutex_init (pthread_mutex_t *mutex,
   return retval;
 }
 
-int pthread_mutex_destroy (pthread_mutex_t *mutex) {
+int pthread_mutex_destroy(pthread_mutex_t *mutex) {
   int retval;
   pthread_mutex_validate(mutex);
   if (NACL_PTHREAD_ILLEGAL_THREAD_ID != mutex->owner_thread_id) {
-    /* the mutex is still locked - cannot destroy */
+    /* The mutex is still locked - cannot destroy. */
     return EBUSY;
   }
   retval = __nc_irt_mutex.mutex_destroy(mutex->mutex_handle);
@@ -85,7 +85,7 @@ static int nc_thread_mutex_lock(pthread_mutex_t *mutex, int try_only) {
     if (mutex->mutex_type == PTHREAD_MUTEX_ERRORCHECK_NP) {
       return EDEADLK;
     } else {
-      /* This thread already owns the mutex */
+      /* This thread already owns the mutex. */
       ++mutex->recursion_counter;
       return 0;
     }
@@ -105,15 +105,15 @@ static int nc_thread_mutex_lock(pthread_mutex_t *mutex, int try_only) {
   return 0;
 }
 
-int pthread_mutex_trylock (pthread_mutex_t *mutex) {
+int pthread_mutex_trylock(pthread_mutex_t *mutex) {
   return nc_thread_mutex_lock(mutex, 1);
 }
 
-int pthread_mutex_lock (pthread_mutex_t *mutex) {
+int pthread_mutex_lock(pthread_mutex_t *mutex) {
   return nc_thread_mutex_lock(mutex, 0);
 }
 
-int pthread_mutex_unlock (pthread_mutex_t *mutex) {
+int pthread_mutex_unlock(pthread_mutex_t *mutex) {
   pthread_mutex_validate(mutex);
   if (mutex->mutex_type != PTHREAD_MUTEX_FAST_NP) {
     if ((PTHREAD_MUTEX_RECURSIVE_NP == mutex->mutex_type) &&
@@ -121,13 +121,13 @@ int pthread_mutex_unlock (pthread_mutex_t *mutex) {
       /*
        * We assume that this thread owns the lock
        * (no verification for recursive locks),
-       * so just decrement the counter, this thread is still the owner
+       * so just decrement the counter, this thread is still the owner.
        */
       return 0;
     }
     if ((PTHREAD_MUTEX_ERRORCHECK_NP == mutex->mutex_type) &&
         (pthread_self() != mutex->owner_thread_id)) {
-      /* error - releasing a mutex that's free or owned by another thread */
+      /* Error - releasing a mutex that's free or owned by another thread. */
       return EPERM;
     }
   }
@@ -141,40 +141,42 @@ int pthread_mutex_unlock (pthread_mutex_t *mutex) {
  * the mutex definitions, so that it overrides the weak symbol in the libstdc++
  * library.  Otherwise we get calls through address zero.
  */
-int pthread_once(pthread_once_t* __once_control,
-                  void (*__init_routine) (void)) {
-/*
- * NOTE(gregoryd): calling pthread_once from __init_routine providing the same
- * __once_control argument is an error and will cause a deadlock
- */
-  volatile AtomicInt32* pdone = &__once_control->done;
+int pthread_once(pthread_once_t *once_control,
+                 void (*init_routine)(void)) {
+  /*
+   * NOTE(gregoryd): calling pthread_once from init_routine providing
+   * the same once_control argument is an error and will cause a
+   * deadlock
+   */
+  volatile AtomicInt32 *pdone = &once_control->done;
   if (*pdone == 0) {
-    /* not done yet */
-    pthread_mutex_lock(&__once_control->lock);
+    /* Not done yet. */
+    pthread_mutex_lock(&once_control->lock);
     if (*pdone == 0) {
-      /* still not done - but this time we own the lock */
-      (*__init_routine)();
+      /* Still not done - but this time we own the lock. */
+      (*init_routine)();
 
-      /* GCC intrinsic; see:
+      /*
+       * GCC intrinsic; see:
        * http://gcc.gnu.org/onlinedocs/gcc/Atomic-Builtins.html.
        * The x86-{32,64} compilers generate inline code.  The ARM
        * implementation is external: stubs/intrinsics_arm.S.
        */
       __sync_fetch_and_add(pdone, 1);
     }
-    pthread_mutex_unlock(&__once_control->lock);
+    pthread_mutex_unlock(&once_control->lock);
   }
   return 0;
 }
 
 int pthread_mutexattr_init(pthread_mutexattr_t *attr) {
-  /* The default mutex type is non-recursive */
+  /* The default mutex type is non-recursive. */
   attr->kind = PTHREAD_MUTEX_FAST_NP;
   return 0;
 }
 
 int pthread_mutexattr_destroy(pthread_mutexattr_t *attr) {
-  /* nothing to do */
+  /* Nothing to do. */
   return 0;
 }
 
@@ -185,7 +187,7 @@ int pthread_mutexattr_settype(pthread_mutexattr_t *attr,
       (kind == PTHREAD_MUTEX_ERRORCHECK_NP)) {
     attr->kind = kind;
   } else {
-    /* unknown kind */
+    /* Unknown kind. */
     return -1;
   }
   return 0;

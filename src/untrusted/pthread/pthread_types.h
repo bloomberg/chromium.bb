@@ -19,10 +19,10 @@ extern "C" {
 #endif
 
 void nc_token_init(volatile int *token, int acquire);
-int  nc_token_acquire(volatile int *token);
+int nc_token_acquire(volatile int *token);
 void nc_token_release(volatile int *token);
 
-int  nc_pthread_condvar_ctor(pthread_cond_t * cond);
+int nc_pthread_condvar_ctor(pthread_cond_t *cond);
 
 typedef enum {
   THREAD_RUNNING,
@@ -60,8 +60,8 @@ typedef struct {
   int join_waiting;
   nc_thread_memory_block_t *stack_node;
   nc_thread_memory_block_t *tls_node;
-  nc_thread_function  start_func;
-  void* state;
+  nc_thread_function start_func;
+  void *state;
   /*
    * irt_thread_data is used when libpthread is linked into the IRT.
    * It is used for free()ing the thread block.
@@ -76,7 +76,7 @@ typedef struct __nc_basic_thread_data {
   void *retval;
   nc_thread_status_t status;
   pthread_cond_t join_condvar;
-  /* pointer to the tdb, will be null after the thread terminates */
+  /* Pointer to the tdb, will be null after the thread terminates. */
   nc_thread_descriptor_t *tdb;
 } nc_basic_thread_data_t;
 
