@@ -286,19 +286,6 @@ int NaClAppCtor(struct NaClApp *nap) {
   return NaClAppWithSyscallTableCtor(nap, nacl_syscall);
 }
 
-size_t  NaClAlignPad(size_t val, size_t align) {
-  /* align is always a power of 2, but we do not depend on it */
-  if (!align) {
-    NaClLog(4,
-            "sel_ldr: NaClAlignPad, align == 0, at 0x%08"NACL_PRIxS"\n",
-            val);
-    return 0;
-  }
-  val = val % align;
-  if (!val) return 0;
-  return align - val;
-}
-
 /*
  * unaligned little-endian load.  precondition: nbytes should never be
  * more than 8.

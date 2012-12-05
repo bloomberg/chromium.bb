@@ -427,9 +427,6 @@ NaClErrorCode NaClAppLoadFile(struct Gio      *gp,
 NaClErrorCode NaClAppLoadFileDynamically(struct NaClApp *nap,
                                          struct Gio     *gio_file) NACL_WUR;
 
-size_t  NaClAlignPad(size_t val,
-                     size_t align);
-
 void  NaClAppPrintDetails(struct NaClApp  *nap,
                           struct Gio      *gp);
 
