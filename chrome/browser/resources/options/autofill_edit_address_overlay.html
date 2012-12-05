@@ -2,95 +2,70 @@
   <div class="close-button"></div>
   <h1 id="autofill-address-title"></h1>
   <div class="content-area">
-    <div id="autofill-name-labels">
-      <label for="first-name">
+    <div>
+      <div id="autofill-name-labels">
         <span i18n-content="autofillFirstNameLabel"></span>
-      </label>
-      <label for="middle-name">
         <span i18n-content="autofillMiddleNameLabel"></span>
-      </label>
-      <label for="last-name">
         <span i18n-content="autofillLastNameLabel"></span>
-      </label>
-    </div>
-    <list id="full-name-list"></list>
-    <div class="input">
-      <label>
-        <div><span i18n-content="autofillCompanyNameLabel"></span></div>
-        <input id="company-name" type="text" class="autofill-form">
-      </label>
-    </div>
-    <div class="input">
-      <label>
-        <div><span i18n-content="autofillAddrLine1Label"></span></div>
-        <input id="addr-line-1" type="text" class="autofill-form">
-      </label>
-    </div>
-    <div class="input">
-      <label>
-        <div><span i18n-content="autofillAddrLine2Label"></span></div>
-        <input id="addr-line-2" type="text" class="autofill-form">
-      </label>
-    </div>
-    <div class="table">
-      <div class="row">
-        <div class="input cell">
-          <label for="city">
-            <span i18n-content="autofillCityLabel"></span>
-          </label>
-        </div>
-        <div class="input cell">
-          <label id="state-label" for="state"></label>
-        </div>
-        <div class="input cell">
-          <label id="postal-code-label" for="postal-code"></label>
-        </div>
-      </div>
-      <div class="row">
-        <div class="input cell">
-          <input id="city" type="text" class="autofill-form">
-        </div>
-        <div class="input cell">
-          <input id="state" type="text" class="autofill-form">
-        </div>
-        <div class="input cell">
-          <input id="postal-code" type="text" class="autofill-form">
-        </div>
       </div>
     </div>
-    <div class="input">
+    <div>
+      <list id="full-name-list"></list>
+    </div>
+
+    <label class="settings-row">
+      <div i18n-content="autofillCompanyNameLabel"></div>
+      <input id="company-name" type="text">
+    </label>
+
+    <label class="settings-row">
+      <div i18n-content="autofillAddrLine1Label"></div>
+      <input id="addr-line-1" type="text">
+    </label>
+
+    <label class="settings-row">
+      <div i18n-content="autofillAddrLine2Label"></div>
+      <input id="addr-line-2" type="text">
+    </label>
+
+    <div class="input-group settings-row">
       <label>
-        <div>
-          <span i18n-content="autofillCountryLabel"></span>
-        </div>
-        <select id="country"></select>
+        <div i18n-content="autofillCityLabel"></div>
+        <input id="city" type="text">
+      </label>
+
+      <label>
+        <div id="state-label"></div>
+        <input id="state" type="text">
+      </label>
+
+      <label>
+        <div id="postal-code-label"></div>
+        <input id="postal-code" type="text">
       </label>
     </div>
-    <div class="table">
-      <div class="row">
-        <div class="input cell">
-          <label for="phone-list">
-            <span i18n-content="autofillPhoneLabel"></span>
-          </label>
-        </div>
-        <div class="input cell">
-          <label for="email-list">
-            <span i18n-content="autofillEmailLabel"></span>
-          </label>
-        </div>
+
+    <div class="settings-row">
+      <div i18n-content="autofillCountryLabel"></div>
+      <select id="country"></select>
+    </div>
+
+    <div class="input-group settings-row">
+      <div>
+        <div i18n-content="autofillPhoneLabel"></div>
+        <list id="phone-list"
+            i18n-values="placeholder:autofillAddPhonePlaceholder"></list>
       </div>
-      <div class="row">
-        <div class="input cell">
-          <list id="phone-list"
-              i18n-values="placeholder:autofillAddPhonePlaceholder"></list>
-        </div>
-        <div class="input cell">
-          <list id="email-list"
-              i18n-values="placeholder:autofillAddEmailPlaceholder"></list>
-        </div>
+
+      <div>
+        <div i18n-content="autofillEmailLabel"></div>
+        <list id="email-list"
+            i18n-values="placeholder:autofillAddEmailPlaceholder"></list>
       </div>
     </div>
+
   </div>
+
   <div class="action-area button-strip">
     <button id="autofill-edit-address-cancel-button" type="reset"
         i18n-content="cancel"></button>

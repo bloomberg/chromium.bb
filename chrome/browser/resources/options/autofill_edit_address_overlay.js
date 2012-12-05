@@ -156,8 +156,8 @@ cr.define('options', function() {
     connectInputEvents_: function() {
       var self = this;
       $('company-name').oninput = $('addr-line-1').oninput =
-      $('addr-line-2').oninput = $('city').oninput = $('state').oninput =
-      $('postal-code').oninput = function(event) {
+          $('addr-line-2').oninput = $('city').oninput = $('state').oninput =
+          $('postal-code').oninput = function(event) {
         self.inputFieldChanged_();
       };
 

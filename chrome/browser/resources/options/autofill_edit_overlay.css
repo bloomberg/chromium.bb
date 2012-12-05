@@ -3,34 +3,18 @@
  * found in the LICENSE file. */
 
 #autofill-edit-address-overlay {
-  min-width: 510px;
+  min-width: 55em;
 }
 
 #autofill-edit-credit-card-overlay {
   min-width: 500px;
 }
 
-div.table {
-  display: table;
-}
-
-div.cell {
-  display: table-cell;
-}
-
-div.row {
-  display: table-row;
-}
-
-div.input {
-  padding: 2px;
-}
-
-/* Size to match large name fields. */
+#full-name-list input,
 #company-name,
 #addr-line-1,
 #addr-line-2 {
-  width: 206px;
+  width: 16em;
 }
 
 #country {
@@ -38,9 +22,9 @@ div.input {
 }
 
 #autofill-edit-address-overlay list {
-  /* Min height is a multiple of the list item height (32) */
+  -webkit-margin-start: -3px;
+  /* Min height is a multiple of the list item height (32px). */
   min-height: 32px;
-  width: 17em;
 }
 
 #autofill-edit-address-overlay list div.static-text {
@@ -50,53 +34,51 @@ div.input {
   -webkit-padding-start: 4px;
   border: 1px solid darkGray;
   /* Set the line-height and min-height to match the height of an input element,
-   * so that even empty cells renderer with the correct height.
-   */
+   * so that even empty cells renderer with the correct height. */
   line-height: 1.75em;
   min-height: 1.75em;
-  width: 16em;
 }
 
-#autofill-edit-address-overlay list input {
-  width: 16em;
+:-webkit-any(#autofill-edit-credit-card-overlay, #autofill-edit-address-overlay)
+    .settings-row div + :-webkit-any(input, select) {
+  margin-top: 4px;
 }
 
 #autofill-name-labels {
-  -webkit-box-orient: horizontal;
-  /* Set the margin to compensate for each list item's close button and
-   * padding.
-   */
-  -webkit-margin-end: 25px;
-  display: -webkit-box;
+  display: -webkit-inline-box;
 }
 
-#autofill-name-labels label {
+#autofill-name-labels span {
   -webkit-box-flex: 1;
   display: block;
-  /* Set the minimum width to the size of an input element, so that all boxes
-   * have an equal amount of flex space to work with.
-   */
-  min-width: 16em;
-  padding: 0 3px;
 }
 
-#autofill-edit-address-overlay list#full-name-list div.static-text {
-  width: 131px;
-}
-
-#autofill-edit-address-overlay list#full-name-list input {
-  width: 16em;
-}
-
-#autofill-edit-address-overlay list#full-name-list {
-  width: 100%;
+#full-name-list {
+  display: inline-block;
 }
 
 #full-name-list div[role='listitem'] > div {
-  -webkit-box-orient: horizontal;
   display: -webkit-box;
 }
 
-#full-name-list div[role='listitem'] > div > div {
-  -webkit-box-flex: 1;
+#full-name-list div[role='listitem'] > div > div,
+#autofill-name-labels span {
+  -webkit-margin-end: 5px;
+  width: 16em;
+}
+
+:-webkit-any(#phone-list, #email-list) div[role='listitem'] > div > div,
+:-webkit-any(#phone-list, #email-list) input {
+  width: 14em;
+}
+
+.input-group > * {
+  -webkit-box-orient: vertical;
+  -webkit-margin-end: 2px;
+  display: -webkit-inline-box;
+  vertical-align: top;
+}
+
+#autofill-edit-credit-card-overlay .content-area > *:first-child {
+  margin-top: 0;
 }

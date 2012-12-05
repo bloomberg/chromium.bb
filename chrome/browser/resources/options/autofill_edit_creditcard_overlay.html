@@ -2,26 +2,26 @@
   <div class="close-button"></div>
   <h1 id="autofill-credit-card-title"></h1>
   <div class="content-area">
-    <div class="input">
-      <label>
-        <span i18n-content="nameOnCardLabel"></span><br>
-        <input id="name-on-card" type="text">
-      </label>
-    </div>
-    <div class="input">
-      <label>
-        <span i18n-content="creditCardNumberLabel"></span><br>
-        <input id="credit-card-number" type="text">
-      </label>
-    </div>
-    <div class="input">
-      <label>
-        <span i18n-content="creditCardExpirationDateLabel"></span><br>
-        <select id="expiration-month"></select>
-        <select id="expiration-year"></select>
-      </label>
+    <label class="settings-row">
+      <div i18n-content="nameOnCardLabel"></div>
+      <input id="name-on-card" type="text">
+    </label>
+
+    <label class="settings-row">
+      <div i18n-content="creditCardNumberLabel"></div>
+      <input id="credit-card-number" type="text">
+    </label>
+
+    <div class="settings-row">
+      <div id="creditCardExpirationLabel"
+          i18n-content="creditCardExpirationDateLabel"></div>
+      <select id="expiration-month" aria-labelledby="creditCardExpirationLabel">
+      </select>
+      <select id="expiration-year" aria-labelledby="creditCardExpirationLabel">
+      </select>
     </div>
   </div>
+
   <div class="action-area button-strip">
     <button id="autofill-edit-credit-card-cancel-button" type="reset"
         i18n-content="cancel"></button>
