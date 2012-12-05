@@ -45,17 +45,17 @@ def GenerateExpectedJSON(options):
     'win32': 'Windows'
   }
 
-  retrieval_url = options.data_server + '/content/retrieve/default/'
+  retrieval_url = options.data_server + '/content/retrieve/'
 
   expected = {
     'test_case_name': TEST_NAME,
-    'data': [[retrieval_url, 'swarm_data.zip']],
+    'data': [[retrieval_url + 'default/', 'swarm_data.zip']],
     'tests' : [
       {
         'action': [
           'python', swarm_trigger_step.RUN_TEST_NAME,
           '--hash', FILE_HASH,
-          '--remote', retrieval_url + '-gzip',
+          '--remote', retrieval_url + 'default-gzip/',
           '-v'
         ],
         'test_name': 'Run Test',

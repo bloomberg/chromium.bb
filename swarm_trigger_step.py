@@ -135,7 +135,7 @@ class Manifest(object):
     self.add_task(
         'Run Test',
         ['python', RUN_TEST_NAME, '--hash', self.manifest_hash,
-         '--remote', self.data_server_retrieval + '-gzip', '-v'])
+         '--remote', self.data_server_retrieval.rstrip('/') + '-gzip/', '-v'])
 
     # Clean up
     self.add_task('Clean Up', ['python', CLEANUP_SCRIPT_NAME])

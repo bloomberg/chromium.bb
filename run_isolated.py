@@ -543,7 +543,7 @@ class Remote(object):
         # TODO(maruel): Reuse HTTP connections. The stdlib doesn't make this
         # easy.
         try:
-          zipped_source = file_or_url.rstrip('/') + '-gzip/' + item
+          zipped_source = file_or_url + item
           logging.debug('download_file(%s)', zipped_source)
           connection = urllib2.urlopen(zipped_source)
           decompressor = zlib.decompressobj()
