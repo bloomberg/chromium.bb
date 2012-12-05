@@ -67,17 +67,6 @@ def CheckChangeHasDescription(input_api, output_api):
   return []
 
 
-def CheckChangeDescriptionNotCommitted(input_api, output_api):
-  """Checks that the CL does not end with a Committed link."""
-  description = input_api.change.DescriptionText()
-  if input_api.re.search('\nCommitted: \S+\s*$', description):
-    return [output_api.PresubmitError(
-      'The CL description appears to end with a committed link. If this issue\n'
-      'has been previously used for a commit, please make a new issue number\n'
-      'by typing "git cl issue 0" and reuploading your CL.')]
-  return []
-
-
 def CheckChangeWasUploaded(input_api, output_api):
   """Checks that the issue was uploaded before committing."""
   if input_api.is_committing and not input_api.change.issue:
@@ -819,9 +808,8 @@ def CheckIssueNotClosed(input_api, output_api):
   issue_props = _GetRietveldIssueProps(input_api=input_api, messages=False)
   if issue_props and issue_props['closed']:
     return [output_api.PresubmitError(
-        'Issue %s is closed.  If this issue was already used for a commit,\n'
-        'please reset the issue number associated with this branch with:\n'
-        'git cl issue 0\n' % issue_props['issue']
+        'Issue %s is closed.  You can reset the issue number associated with\n'
+        'this branch with: git cl issue 0\n' % issue_props['issue']
         )]
   return []
 
@@ -1013,8 +1001,6 @@ def PanProjectChecks(input_api, output_api,
     results.extend(input_api.canned_checks.CheckChangeHasDescription(
         input_api, output_api))
     results.extend(input_api.canned_checks.CheckDoNotSubmitInDescription(
-        input_api, output_api))
-    results.extend(input_api.canned_checks.CheckChangeDescriptionNotCommitted(
         input_api, output_api))
     snapshot("checking do not submit in files")
     results.extend(input_api.canned_checks.CheckDoNotSubmitInFiles(
