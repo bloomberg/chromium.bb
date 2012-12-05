@@ -20,7 +20,7 @@ class ChromeDriverTest(unittest.TestCase):
     driver.Quit()
 
   def testLoadUrl(self):
-    driver = chromedriver.ChromeDriver(_CHROMEDRIVER_LIB)
+    driver = chromedriver.ChromeDriver(_CHROMEDRIVER_LIB, _CHROME_BINARY)
     driver.Load('http://www.google.com')
     driver.Quit()
 
