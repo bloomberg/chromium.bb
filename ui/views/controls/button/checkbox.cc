@@ -15,6 +15,8 @@ namespace {
 
 const int kCheckboxLabelSpacing = 4;
 
+const int kFocusBorderWidth = 1;
+
 // A border with zero left inset.
 class CheckboxNativeThemeBorder : public TextButtonNativeThemeBorder {
  public:
@@ -63,7 +65,7 @@ gfx::Size Checkbox::GetPreferredSize() {
   ui::NativeTheme::ExtraParams extra;
   ui::NativeTheme::State state = GetThemeState(&extra);
   gfx::Size size = GetNativeTheme()->GetPartSize(GetThemePart(), state, extra);
-  prefsize.Enlarge(size.width() + kCheckboxLabelSpacing, 0);
+  prefsize.Enlarge(size.width() + kCheckboxLabelSpacing + kFocusBorderWidth, 0);
   prefsize.set_height(std::max(prefsize.height(), size.height()));
 
   if (max_width_ > 0)
@@ -87,7 +89,10 @@ void Checkbox::OnPaintFocusBorder(gfx::Canvas* canvas) {
     gfx::Rect bounds(GetTextBounds());
     // Increate the bounding box by one on each side so that that focus border
     // does not draw on top of the letters.
-    bounds.Inset(-1, -1, -1, -1);
+    bounds.Inset(-kFocusBorderWidth,
+                 -kFocusBorderWidth,
+                 -kFocusBorderWidth,
+                 -kFocusBorderWidth);
     canvas->DrawFocusRect(bounds);
   }
 }
