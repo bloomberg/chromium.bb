@@ -4,16 +4,16 @@
 
 #include "chrome/browser/policy/device_local_account_policy_service.h"
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
-#include "chrome/browser/policy/cloud_policy_validator.h"
+#include "base/message_loop.h"
+#include "chrome/browser/policy/cloud_policy_client.h"
+#include "chrome/browser/policy/cloud_policy_refresh_scheduler.h"
+#include "chrome/browser/policy/cloud_policy_service.h"
 #include "chrome/browser/policy/device_management_service.h"
 #include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
-#include "chrome/browser/policy/proto/cloud_policy.pb.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "policy/policy_constants.h"
 
 namespace em = enterprise_management;
 
@@ -22,132 +22,47 @@ namespace policy {
 DeviceLocalAccountPolicyBroker::DeviceLocalAccountPolicyBroker(
     const std::string& account_id,
     chromeos::SessionManagerClient* session_manager_client,
-    chromeos::DeviceSettingsService* device_settings_service,
-    Delegate* delegate)
+    chromeos::DeviceSettingsService* device_settings_service)
     : account_id_(account_id),
-      session_manager_client_(session_manager_client),
-      device_settings_service_(device_settings_service),
-      delegate_(delegate),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
-      status_(CloudPolicyStore::STATUS_OK),
-      validation_status_(CloudPolicyValidatorBase::VALIDATION_OK) {}
+      store_(account_id, session_manager_client, device_settings_service) {}
 
 DeviceLocalAccountPolicyBroker::~DeviceLocalAccountPolicyBroker() {}
 
-void DeviceLocalAccountPolicyBroker::Load() {
-  weak_factory_.InvalidateWeakPtrs();
-  session_manager_client_->RetrieveDeviceLocalAccountPolicy(
-      account_id_,
-      base::Bind(&DeviceLocalAccountPolicyBroker::ValidateLoadedPolicyBlob,
-                 weak_factory_.GetWeakPtr()));
+void DeviceLocalAccountPolicyBroker::RefreshPolicy(
+    const base::Closure& callback) {
+  if (service_.get())
+    service_->RefreshPolicy(callback);
+  else
+    callback.Run();
 }
 
-void DeviceLocalAccountPolicyBroker::Store(
-    const em::PolicyFetchResponse& policy) {
-  weak_factory_.InvalidateWeakPtrs();
-  CheckKeyAndValidate(
-      make_scoped_ptr(new em::PolicyFetchResponse(policy)),
-      base::Bind(&DeviceLocalAccountPolicyBroker::StoreValidatedPolicy,
-                 weak_factory_.GetWeakPtr()));
+void DeviceLocalAccountPolicyBroker::Connect(
+    scoped_ptr<CloudPolicyClient> client) {
+  DCHECK(!client_.get());
+  client_ = client.Pass();
+  service_.reset(new CloudPolicyService(client_.get(), &store_));
+  refresh_scheduler_.reset(
+      new CloudPolicyRefreshScheduler(
+          client_.get(), &store_,
+          MessageLoop::current()->message_loop_proxy()));
+  UpdateRefreshDelay();
 }
 
-void DeviceLocalAccountPolicyBroker::ValidateLoadedPolicyBlob(
-    const std::string& policy_blob) {
-  if (policy_blob.empty()) {
-    status_ = CloudPolicyStore::STATUS_LOAD_ERROR;
-    delegate_->OnLoadComplete(account_id_);
-  } else {
-    scoped_ptr<em::PolicyFetchResponse> policy(new em::PolicyFetchResponse());
-    if (policy->ParseFromString(policy_blob)) {
-      CheckKeyAndValidate(
-          policy.Pass(),
-          base::Bind(&DeviceLocalAccountPolicyBroker::UpdatePolicy,
-                     weak_factory_.GetWeakPtr()));
-    } else {
-      status_ = CloudPolicyStore::STATUS_PARSE_ERROR;
-      delegate_->OnLoadComplete(account_id_);
-    }
+void DeviceLocalAccountPolicyBroker::Disconnect() {
+  DCHECK(client_.get());
+  refresh_scheduler_.reset();
+  service_.reset();
+  client_.reset();
+}
+
+void DeviceLocalAccountPolicyBroker::UpdateRefreshDelay() {
+  if (refresh_scheduler_) {
+    const Value* policy_value =
+        store_.policy_map().GetValue(key::kPolicyRefreshRate);
+    int delay = 0;
+    if (policy_value && policy_value->GetAsInteger(&delay))
+      refresh_scheduler_->SetRefreshDelay(delay);
   }
-}
-
-void DeviceLocalAccountPolicyBroker::UpdatePolicy(
-    UserCloudPolicyValidator* validator) {
-  if (validator->success()) {
-    status_ = CloudPolicyStore::STATUS_OK;
-    validation_status_ = CloudPolicyValidatorBase::VALIDATION_OK;
-    policy_data_ = validator->policy_data().Pass();
-    policy_settings_ = validator->payload().Pass();
-  } else {
-    status_ = CloudPolicyStore::STATUS_VALIDATION_ERROR;
-    validation_status_ = validator->status();
-  }
-  delegate_->OnLoadComplete(account_id_);
-}
-
-void DeviceLocalAccountPolicyBroker::StoreValidatedPolicy(
-    UserCloudPolicyValidator* validator) {
-  if (!validator->success()) {
-    status_ = CloudPolicyStore::STATUS_VALIDATION_ERROR;
-    validation_status_ = validator->status();
-    delegate_->OnLoadComplete(account_id_);
-    return;
-  }
-
-  std::string policy_blob;
-  if (!validator->policy()->SerializeToString(&policy_blob)) {
-    status_ = CloudPolicyStore::STATUS_SERIALIZE_ERROR;
-    delegate_->OnLoadComplete(account_id_);
-    return;
-  }
-
-  session_manager_client_->StoreDeviceLocalAccountPolicy(
-      account_id_,
-      policy_blob,
-      base::Bind(&DeviceLocalAccountPolicyBroker::HandleStoreResult,
-                 weak_factory_.GetWeakPtr()));
-}
-
-void DeviceLocalAccountPolicyBroker::HandleStoreResult(bool success) {
-  if (!success) {
-    status_ = CloudPolicyStore::STATUS_STORE_ERROR;
-    delegate_->OnLoadComplete(account_id_);
-  } else {
-    Load();
-  }
-}
-
-void DeviceLocalAccountPolicyBroker::CheckKeyAndValidate(
-    scoped_ptr<em::PolicyFetchResponse> policy,
-    const UserCloudPolicyValidator::CompletionCallback& callback) {
-  device_settings_service_->GetOwnershipStatusAsync(
-      base::Bind(&DeviceLocalAccountPolicyBroker::Validate,
-                 weak_factory_.GetWeakPtr(),
-                 base::Passed(policy.Pass()),
-                 callback));
-}
-
-void DeviceLocalAccountPolicyBroker::Validate(
-    scoped_ptr<em::PolicyFetchResponse> policy,
-    const UserCloudPolicyValidator::CompletionCallback& callback,
-    chromeos::DeviceSettingsService::OwnershipStatus ownership_status,
-    bool is_owner) {
-  DCHECK_NE(chromeos::DeviceSettingsService::OWNERSHIP_UNKNOWN,
-            ownership_status);
-  chromeos::OwnerKey* key = device_settings_service_->GetOwnerKey();
-  if (!key->public_key()) {
-    status_ = CloudPolicyStore::STATUS_BAD_STATE;
-    delegate_->OnLoadComplete(account_id_);
-    return;
-  }
-
-  scoped_ptr<UserCloudPolicyValidator> validator(
-      UserCloudPolicyValidator::Create(policy.Pass()));
-  validator->ValidateUsername(account_id_);
-  validator->ValidatePolicyType(dm_protocol::kChromePublicAccountPolicyType);
-  validator->ValidateAgainstCurrentPolicy(policy_data_.get(), false);
-  validator->ValidatePayload();
-  validator->ValidateSignature(*key->public_key(), false);
-  validator.release()->StartValidation(callback);
 }
 
 DeviceLocalAccountPolicyService::DeviceLocalAccountPolicyService(
@@ -162,21 +77,32 @@ DeviceLocalAccountPolicyService::DeviceLocalAccountPolicyService(
 
 DeviceLocalAccountPolicyService::~DeviceLocalAccountPolicyService() {
   device_settings_service_->RemoveObserver(this);
-
-  STLDeleteContainerPairSecondPointers(policy_brokers_.begin(),
-                                       policy_brokers_.end());
-  policy_brokers_.clear();
+  DeleteBrokers(&policy_brokers_);
 }
 
-void DeviceLocalAccountPolicyService::Initialize(
+void DeviceLocalAccountPolicyService::Connect(
     DeviceManagementService* device_management_service) {
   DCHECK(!device_management_service_);
   device_management_service_ = device_management_service;
+
+  // Connect the brokers.
+  for (PolicyBrokerMap::iterator broker(policy_brokers_.begin());
+       broker != policy_brokers_.end(); ++broker) {
+    DCHECK(!broker->second->client());
+    broker->second->Connect(
+        CreateClientForAccount(broker->second->account_id()).Pass());
+  }
 }
 
-void DeviceLocalAccountPolicyService::Shutdown() {
+void DeviceLocalAccountPolicyService::Disconnect() {
   DCHECK(device_management_service_);
   device_management_service_ = NULL;
+
+  // Disconnect the brokers.
+  for (PolicyBrokerMap::iterator broker(policy_brokers_.begin());
+       broker != policy_brokers_.end(); ++broker) {
+    broker->second->Disconnect();
+  }
 }
 
 DeviceLocalAccountPolicyBroker*
@@ -186,12 +112,8 @@ DeviceLocalAccountPolicyBroker*
   if (entry == policy_brokers_.end())
     return NULL;
 
-  if (!entry->second) {
-    entry->second = new DeviceLocalAccountPolicyBroker(account_id,
-                                                       session_manager_client_,
-                                                       device_settings_service_,
-                                                       this);
-  }
+  if (!entry->second)
+    entry->second = CreateBroker(account_id).release();
 
   return entry->second;
 }
@@ -217,6 +139,19 @@ void DeviceLocalAccountPolicyService::DeviceSettingsUpdated() {
     UpdateAccountList(*device_settings);
 }
 
+void DeviceLocalAccountPolicyService::OnStoreLoaded(CloudPolicyStore* store) {
+  DeviceLocalAccountPolicyBroker* broker = GetBrokerForStore(store);
+  broker->UpdateRefreshDelay();
+  FOR_EACH_OBSERVER(Observer, observers_,
+                    OnPolicyUpdated(broker->account_id()));
+}
+
+void DeviceLocalAccountPolicyService::OnStoreError(CloudPolicyStore* store) {
+  DeviceLocalAccountPolicyBroker* broker = GetBrokerForStore(store);
+  FOR_EACH_OBSERVER(Observer, observers_,
+                    OnPolicyUpdated(broker->account_id()));
+}
+
 void DeviceLocalAccountPolicyService::UpdateAccountList(
     const em::ChromeDeviceSettingsProto& device_settings) {
   using google::protobuf::RepeatedPtrField;
@@ -228,24 +163,85 @@ void DeviceLocalAccountPolicyService::UpdateAccountList(
   RepeatedPtrField<em::DeviceLocalAccountInfoProto>::const_iterator entry;
   for (entry = accounts.begin(); entry != accounts.end(); ++entry) {
     if (entry->has_id()) {
+      // Reuse the existing broker if present.
       DeviceLocalAccountPolicyBroker*& broker = policy_brokers_[entry->id()];
-      new_policy_brokers[entry->id()] = broker;
+      DeviceLocalAccountPolicyBroker*& new_broker =
+          new_policy_brokers[entry->id()];
+      new_broker = broker;
       broker = NULL;
+
+      // Fire up the cloud connection for fetching policy for the account from
+      // the cloud if this is an enterprise-managed device.
+      if (!new_broker || !new_broker->client()) {
+        scoped_ptr<CloudPolicyClient> client(
+            CreateClientForAccount(entry->id()));
+        if (client.get()) {
+          if (!new_broker)
+            new_broker = CreateBroker(entry->id()).release();
+          new_broker->Connect(client.Pass());
+        }
+      }
     }
   }
   policy_brokers_.swap(new_policy_brokers);
-  STLDeleteContainerPairSecondPointers(new_policy_brokers.begin(),
-                                       new_policy_brokers.end());
+  DeleteBrokers(&new_policy_brokers);
 
   FOR_EACH_OBSERVER(Observer, observers_, OnDeviceLocalAccountsChanged());
-
-  // TODO(mnissler): Trigger policy fetches for all the new brokers on
-  // cloud-managed devices.
 }
 
-void DeviceLocalAccountPolicyService::OnLoadComplete(
-    const std::string& account_id) {
-  FOR_EACH_OBSERVER(Observer, observers_, OnPolicyChanged(account_id));
+scoped_ptr<DeviceLocalAccountPolicyBroker>
+    DeviceLocalAccountPolicyService::CreateBroker(
+        const std::string& account_id) {
+  scoped_ptr<DeviceLocalAccountPolicyBroker> broker(
+      new DeviceLocalAccountPolicyBroker(account_id, session_manager_client_,
+                                         device_settings_service_));
+  broker->store()->AddObserver(this);
+  broker->store()->Load();
+  return broker.Pass();
+}
+
+void DeviceLocalAccountPolicyService::DeleteBrokers(PolicyBrokerMap* map) {
+  for (PolicyBrokerMap::iterator broker = map->begin(); broker != map->end();
+       ++broker) {
+    if (broker->second) {
+      broker->second->store()->RemoveObserver(this);
+      delete broker->second;
+    }
+  }
+  map->clear();
+}
+
+DeviceLocalAccountPolicyBroker*
+    DeviceLocalAccountPolicyService::GetBrokerForStore(
+        CloudPolicyStore* store) {
+  for (PolicyBrokerMap::iterator broker(policy_brokers_.begin());
+       broker != policy_brokers_.end(); ++broker) {
+    if (broker->second->store() == store)
+      return broker->second;
+  }
+  return NULL;
+}
+
+scoped_ptr<CloudPolicyClient>
+    DeviceLocalAccountPolicyService::CreateClientForAccount(
+        const std::string& account_id) {
+  const em::PolicyData* policy_data = device_settings_service_->policy_data();
+  if (!policy_data ||
+      !policy_data->has_request_token() ||
+      !policy_data->has_device_id() ||
+      !device_management_service_) {
+    return scoped_ptr<CloudPolicyClient>();
+  }
+
+  scoped_ptr<CloudPolicyClient> client(
+      new CloudPolicyClient(std::string(), std::string(),
+                            USER_AFFILIATION_MANAGED,
+                            CloudPolicyClient::POLICY_TYPE_PUBLIC_ACCOUNT,
+                            NULL, device_management_service_));
+  client->SetupRegistration(policy_data->request_token(),
+                            policy_data->device_id());
+  client->set_entity_id(account_id);
+  return client.Pass();
 }
 
 }  // namespace policy

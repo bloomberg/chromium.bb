@@ -7,107 +7,66 @@
 
 #include <map>
 #include <string>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/policy/cloud_policy_store.h"
+#include "chrome/browser/policy/device_local_account_policy_store.h"
 
 namespace chromeos {
 class SessionManagerClient;
 }
 
-namespace enterprise_management {
-class CloudPolicySettings;
-class PolicyData;
-class PolicyFetchResponse;
-}
-
 namespace policy {
 
+class CloudPolicyClient;
+class CloudPolicyRefreshScheduler;
+class CloudPolicyService;
 class DeviceManagementService;
 
-// This class manages the policy blob for a single device-local account, taking
-// care of interaction with session_manager and doing validation.
+// This class manages the policy settings for a single device-local account,
+// hosting the corresponding DeviceLocalAccountPolicyStore as well as the
+// CloudPolicyClient (for updating the policy from the cloud) if applicable.
 class DeviceLocalAccountPolicyBroker {
  public:
-  class Delegate {
-   public:
-    virtual ~Delegate() {}
-    virtual void OnLoadComplete(const std::string& account_id) = 0;
-  };
-
   DeviceLocalAccountPolicyBroker(
       const std::string& account_id,
       chromeos::SessionManagerClient* session_manager_client,
-      chromeos::DeviceSettingsService* device_settings_service,
-      Delegate* delegate);
+      chromeos::DeviceSettingsService* device_settings_service);
   ~DeviceLocalAccountPolicyBroker();
 
+  CloudPolicyStore* store() { return &store_; }
+  const CloudPolicyStore* store() const { return &store_; }
+
+  CloudPolicyClient* client() { return client_.get(); }
+  const CloudPolicyClient* client() const { return client_.get(); }
+
   const std::string& account_id() const { return account_id_; }
-  const enterprise_management::PolicyData* policy_data() const {
-    return policy_data_.get();
-  }
-  const enterprise_management::CloudPolicySettings* policy_settings() const {
-    return policy_settings_.get();
-  }
-  CloudPolicyStore::Status status() const { return status_; }
-  CloudPolicyValidatorBase::Status validation_status() const {
-    return validation_status_;
-  }
 
-  // Loads the policy from session_manager.
-  void Load();
+  // Refreshes policy (if applicable) and invokes |callback| when done.
+  void RefreshPolicy(const base::Closure& callback);
 
-  // Send policy to session_manager to store it.
-  void Store(const enterprise_management::PolicyFetchResponse& policy);
+  // Establish a cloud connection for the service.
+  void Connect(scoped_ptr<CloudPolicyClient> client);
+
+  // Destroy the cloud connection, stopping policy refreshes.
+  void Disconnect();
+
+  // Updates the refresh scheduler's delay from the key::kPolicyRefreshRate
+  // policy in |store_|.
+  void UpdateRefreshDelay();
 
  private:
-  // Called back by |session_manager_client_| after policy retrieval. Checks for
-  // success and triggers policy validation.
-  void ValidateLoadedPolicyBlob(const std::string& policy_blob);
-
-  // Updates state after validation and notifies the delegate.
-  void UpdatePolicy(UserCloudPolicyValidator* validator);
-
-  // Sends the policy blob to session_manager for storing after validation.
-  void StoreValidatedPolicy(UserCloudPolicyValidator* validator);
-
-  // Called back when a store operation completes, updates state and reloads the
-  // policy if applicable.
-  void HandleStoreResult(bool result);
-
-  // Gets the owner key and triggers policy validation.
-  void CheckKeyAndValidate(
-      scoped_ptr<enterprise_management::PolicyFetchResponse> policy,
-      const UserCloudPolicyValidator::CompletionCallback& callback);
-
-  // Triggers policy validation.
-  void Validate(
-      scoped_ptr<enterprise_management::PolicyFetchResponse> policy,
-      const UserCloudPolicyValidator::CompletionCallback& callback,
-      chromeos::DeviceSettingsService::OwnershipStatus ownership_status,
-      bool is_owner);
-
   const std::string account_id_;
-  chromeos::SessionManagerClient* session_manager_client_;
-  chromeos::DeviceSettingsService* device_settings_service_;
-  Delegate* delegate_;
 
-  base::WeakPtrFactory<DeviceLocalAccountPolicyBroker> weak_factory_;
-
-  // Current policy.
-  scoped_ptr<enterprise_management::PolicyData> policy_data_;
-  scoped_ptr<enterprise_management::CloudPolicySettings> policy_settings_;
-
-  // Status codes.
-  CloudPolicyStore::Status status_;
-  CloudPolicyValidatorBase::Status validation_status_;
+  DeviceLocalAccountPolicyStore store_;
+  scoped_ptr<CloudPolicyClient> client_;
+  scoped_ptr<CloudPolicyService> service_;
+  scoped_ptr<CloudPolicyRefreshScheduler> refresh_scheduler_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceLocalAccountPolicyBroker);
 };
@@ -118,7 +77,7 @@ class DeviceLocalAccountPolicyBroker {
 // ensure they're issued by the device owner.
 class DeviceLocalAccountPolicyService
     : public chromeos::DeviceSettingsService::Observer,
-      public DeviceLocalAccountPolicyBroker::Delegate {
+      public CloudPolicyStore::Observer {
  public:
   // Interface for interested parties to observe policy changes.
   class Observer {
@@ -126,7 +85,7 @@ class DeviceLocalAccountPolicyService
     virtual ~Observer() {}
 
     // Policy for the given account has changed.
-    virtual void OnPolicyChanged(const std::string& account_id) = 0;
+    virtual void OnPolicyUpdated(const std::string& account_id) = 0;
 
     // The list of accounts has been updated.
     virtual void OnDeviceLocalAccountsChanged() = 0;
@@ -138,10 +97,10 @@ class DeviceLocalAccountPolicyService
   virtual ~DeviceLocalAccountPolicyService();
 
   // Initializes the cloud policy service connection.
-  void Initialize(DeviceManagementService* device_management_service);
+  void Connect(DeviceManagementService* device_management_service);
 
   // Prevents further policy fetches from the cloud.
-  void Shutdown();
+  void Disconnect();
 
   // Get the policy broker for a given account. Returns NULL if that account is
   // not valid.
@@ -155,14 +114,34 @@ class DeviceLocalAccountPolicyService
   virtual void OwnershipStatusChanged() OVERRIDE;
   virtual void DeviceSettingsUpdated() OVERRIDE;
 
+  // CloudPolicyStore::Observer:
+  virtual void OnStoreLoaded(CloudPolicyStore* store) OVERRIDE;
+  virtual void OnStoreError(CloudPolicyStore* store) OVERRIDE;
+
  private:
+  typedef std::map<std::string, DeviceLocalAccountPolicyBroker*>
+      PolicyBrokerMap;
+
   // Re-queries the list of defined device-local accounts from device settings
   // and updates |policy_brokers_| to match that list.
   void UpdateAccountList(
       const enterprise_management::ChromeDeviceSettingsProto& device_settings);
 
-  // DeviceLocalAccountPolicyBroker::Delegate:
-  virtual void OnLoadComplete(const std::string& account_id) OVERRIDE;
+  // Creates a broker for the given account ID.
+  scoped_ptr<DeviceLocalAccountPolicyBroker> CreateBroker(
+      const std::string& account_id);
+
+  // Deletes brokers in |map| and clears it.
+  void DeleteBrokers(PolicyBrokerMap* map);
+
+  // Find the broker for a given |store|. Returns NULL if |store| is unknown.
+  DeviceLocalAccountPolicyBroker* GetBrokerForStore(CloudPolicyStore* store);
+
+  // Creates and initializes a cloud policy client for |account_id|. Returns
+  // NULL if the device doesn't have credentials in device settings (i.e. is not
+  // enterprise-enrolled).
+  scoped_ptr<CloudPolicyClient> CreateClientForAccount(
+      const std::string& account_id);
 
   chromeos::SessionManagerClient* session_manager_client_;
   chromeos::DeviceSettingsService* device_settings_service_;
@@ -170,8 +149,6 @@ class DeviceLocalAccountPolicyService
   DeviceManagementService* device_management_service_;
 
   // The device-local account policy brokers, keyed by account ID.
-  typedef std::map<std::string, DeviceLocalAccountPolicyBroker*>
-      PolicyBrokerMap;
   PolicyBrokerMap policy_brokers_;
 
   ObserverList<Observer, true> observers_;

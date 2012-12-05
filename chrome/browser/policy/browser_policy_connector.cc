@@ -180,7 +180,7 @@ void BrowserPolicyConnector::Shutdown() {
   if (device_cloud_policy_manager_)
     device_cloud_policy_manager_->Shutdown();
   if (device_local_account_policy_service_)
-    device_local_account_policy_service_->Shutdown();
+    device_local_account_policy_service_->Disconnect();
   if (user_cloud_policy_manager_)
     user_cloud_policy_manager_->Shutdown();
   global_user_cloud_policy_provider_.Shutdown();
@@ -606,7 +606,7 @@ void BrowserPolicyConnector::CompleteInitialization() {
   }
 
   if (device_local_account_policy_service_.get()) {
-    device_local_account_policy_service_->Initialize(
+    device_local_account_policy_service_->Connect(
         device_management_service_.get());
   }
 
