@@ -204,13 +204,12 @@ const char kGetPowerAccumulationMethod[] = "GetPowerAccumulation";
 const char kHandleUserActivityMethod[] = "HandleUserActivity";
 const char kHandleVideoActivityMethod[] = "HandleVideoActivity";
 const char kSetIsProjectingMethod[] = "SetIsProjecting";
+const char kRegisterSuspendDelayMethod[] = "RegisterSuspendDelay";
+const char kUnregisterSuspendDelayMethod[] = "UnregisterSuspendDelay";
+const char kHandleSuspendReadinessMethod[] = "HandleSuspendReadiness";
 // Signals emitted by powerd.
 const char kRequestSuspendSignal[] = "RequestSuspend";
 const char kCleanShutdown[] = "CleanShutdown";
-const char kRegisterSuspendDelay[] = "RegisterSuspendDelay";
-const char kUnregisterSuspendDelay[] = "UnregisterSuspendDelay";
-const char kSuspendDelay[] = "SuspendDelay";
-const char kSuspendReady[] = "SuspendReady";
 const char kBrightnessChangedSignal[] = "BrightnessChanged";
 const char kIdleNotifySignal[] = "IdleNotify";
 const char kActiveNotifySignal[] = "ActiveNotify";
@@ -222,6 +221,7 @@ const char kStateOverrideCancel[] = "StateOverrideCancel";
 const char kSoftwareScreenDimmingRequestedSignal[] =
     "SoftwareScreenDimmingRequested";
 const char kSetScreenPowerSignal[] = "SetScreenPowerSignal";
+const char kSuspendImminentSignal[] = "SuspendImminent";
 // Signals emitted by powerm.
 const char kInputEventSignal[] = "InputEvent";
 const char kSuspendStateChangedSignal[] = "SuspendStateChanged";
@@ -233,6 +233,10 @@ const int  kBrightnessTransitionInstant = 2;
 const int  kSoftwareScreenDimmingNone = 1;
 const int  kSoftwareScreenDimmingIdle = 2;
 // DEPRECATED
+const char kRegisterSuspendDelay[] = "RegisterSuspendDelay";
+const char kUnregisterSuspendDelay[] = "UnregisterSuspendDelay";
+const char kSuspendDelay[] = "SuspendDelay";
+const char kSuspendReady[] = "SuspendReady";
 const char kRequestLockScreenSignal[] = "RequestLockScreen";
 const char kRequestRestartSignal[] = "RequestRestart";
 const char kRequestShutdownSignal[] = "RequestShutdown";
