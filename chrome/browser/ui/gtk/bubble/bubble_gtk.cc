@@ -310,26 +310,23 @@ BubbleGtk::ArrowLocationGtk BubbleGtk::GetArrowLocation(
     int arrow_y,
     int width,
     int height) {
-  int screen_width = gdk_screen_get_width(gdk_screen_get_default());
-  int screen_height = gdk_screen_get_height(gdk_screen_get_default());
+  const int screen_width = gdk_screen_get_width(gdk_screen_get_default());
+  const int screen_height = gdk_screen_get_height(gdk_screen_get_default());
 
-  // Choose whether we should show this bubble above the specified location or
-  // below it.
-  bool wants_top = IsArrowTop(preferred_location) ||
+  // Choose whether to show the bubble above or below the specified location.
+  const bool prefer_top_arrow = IsArrowTop(preferred_location) ||
       preferred_location == ARROW_LOCATION_NONE;
-  bool top_is_onscreen = (arrow_y + height < screen_height);
-  bool bottom_is_onscreen = (arrow_y - height >= 0);
+  // The bleed measures the amount of bubble that would be shown offscreen.
+  const int top_arrow_bleed =
+      std::max(height + kArrowSize + arrow_y - screen_height, 0);
+  const int bottom_arrow_bleed = std::max(height + kArrowSize - arrow_y, 0);
 
-  ArrowLocationGtk arrow_location_none;
-  ArrowLocationGtk arrow_location_left;
-  ArrowLocationGtk arrow_location_middle;
-  ArrowLocationGtk arrow_location_right;
-  if (top_is_onscreen && (wants_top || !bottom_is_onscreen)) {
-    arrow_location_none = ARROW_LOCATION_NONE;
-    arrow_location_left = ARROW_LOCATION_TOP_LEFT;
-    arrow_location_middle = ARROW_LOCATION_TOP_MIDDLE;
-    arrow_location_right =ARROW_LOCATION_TOP_RIGHT;
-  } else {
+  ArrowLocationGtk arrow_location_none = ARROW_LOCATION_NONE;
+  ArrowLocationGtk arrow_location_left = ARROW_LOCATION_TOP_LEFT;
+  ArrowLocationGtk arrow_location_middle = ARROW_LOCATION_TOP_MIDDLE;
+  ArrowLocationGtk arrow_location_right = ARROW_LOCATION_TOP_RIGHT;
+  if ((prefer_top_arrow && (top_arrow_bleed > bottom_arrow_bleed)) ||
+      (!prefer_top_arrow && (top_arrow_bleed >= bottom_arrow_bleed))) {
     arrow_location_none = ARROW_LOCATION_FLOAT;
     arrow_location_left = ARROW_LOCATION_BOTTOM_LEFT;
     arrow_location_middle = ARROW_LOCATION_BOTTOM_MIDDLE;
@@ -342,17 +339,17 @@ BubbleGtk::ArrowLocationGtk BubbleGtk::GetArrowLocation(
   if (IsArrowMiddle(preferred_location))
     return arrow_location_middle;
 
-  bool wants_left = IsArrowLeft(preferred_location);
-  bool left_is_onscreen = (arrow_x - kArrowX + width < screen_width);
-  bool right_is_onscreen = (arrow_x + kArrowX - width >= 0);
+  // Choose whether to show the bubble left or right of the specified location.
+  const bool prefer_left_arrow = IsArrowLeft(preferred_location);
+  // The bleed measures the amount of bubble that would be shown offscreen.
+  const int left_arrow_bleed =
+      std::max(width + arrow_x - kArrowX - screen_width, 0);
+  const int right_arrow_bleed = std::max(width - arrow_x - kArrowX, 0);
 
-  // Use the requested location if it fits onscreen, use whatever fits
-  // otherwise, and use the requested location if neither fits.
-  if (left_is_onscreen && (wants_left || !right_is_onscreen))
-    return arrow_location_left;
-  if (right_is_onscreen && (!wants_left || !left_is_onscreen))
-    return arrow_location_right;
-  return (wants_left ? arrow_location_left : arrow_location_right);
+  // Use the preferred location if it doesn't bleed more than the opposite side.
+  return ((prefer_left_arrow && (left_arrow_bleed <= right_arrow_bleed)) ||
+          (!prefer_left_arrow && (left_arrow_bleed < right_arrow_bleed))) ?
+      arrow_location_left : arrow_location_right;
 }
 
 bool BubbleGtk::UpdateArrowLocation(bool force_move_and_reshape) {
