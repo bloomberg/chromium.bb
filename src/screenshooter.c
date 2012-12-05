@@ -404,9 +404,6 @@ weston_recorder_create(struct weston_output *output, const char *filename)
 	recorder->output = output;
 	memset(recorder->frame, 0, size);
 
-	recorder->fd = open(filename,
-			    O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC, 0644);
-
 	header.magic = WCAP_HEADER_MAGIC;
 
 	switch (output->compositor->read_format) {
@@ -418,6 +415,14 @@ weston_recorder_create(struct weston_output *output, const char *filename)
 		break;
 	default:
 		weston_log("unknown recorder format\n");
+		return;
+	}
+
+	recorder->fd = open(filename,
+			    O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC, 0644);
+
+	if (recorder->fd < 0) {
+		weston_log("problem opening output file %s: %m\n", filename);
 		return;
 	}
 
