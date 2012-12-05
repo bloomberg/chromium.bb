@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/string16.h"
+#include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/utf_string_conversions.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
@@ -392,6 +393,7 @@ class BrowserPluginPropertyBinding {
   explicit BrowserPluginPropertyBinding(const char name[]) : name_(name) {
   }
   virtual ~BrowserPluginPropertyBinding() {}
+  const std::string& name() const { return name_; }
   bool MatchesName(NPIdentifier name) const {
     return WebBindings::getStringIdentifier(name_.c_str()) == name;
   }
@@ -400,6 +402,12 @@ class BrowserPluginPropertyBinding {
   virtual bool SetProperty(BrowserPluginBindings* bindings,
                            NPObject* np_obj,
                            const NPVariant* variant) = 0;
+  virtual std::string GetDOMAttributeValue(BrowserPlugin* browser_plugin) = 0;
+  // Updates the DOM Attribute value with the current property value.
+  void UpdateDOMAttribute(BrowserPluginBindings* bindings) {
+    bindings->instance()->UpdateDOMAttribute(name(),
+        GetDOMAttributeValue(bindings->instance()));
+  }
  private:
   std::string name_;
 
@@ -414,16 +422,20 @@ class BrowserPluginPropertyBindingAutoSize
   }
   virtual bool GetProperty(BrowserPluginBindings* bindings,
                            NPVariant* result) OVERRIDE {
-    bool autosize = bindings->instance()->auto_size_attribute();
-    BOOLEAN_TO_NPVARIANT(autosize, *result);
+    bool auto_size = bindings->instance()->auto_size_attribute();
+    BOOLEAN_TO_NPVARIANT(auto_size, *result);
     return true;
   }
   virtual bool SetProperty(BrowserPluginBindings* bindings,
                            NPObject* np_obj,
                            const NPVariant* variant) OVERRIDE {
-    bool autosize = NPVARIANT_TO_BOOLEAN(*variant);
-    bindings->instance()->SetAutoSizeAttribute(autosize);
+    bool auto_size = NPVARIANT_TO_BOOLEAN(*variant);
+    bindings->instance()->SetAutoSizeAttribute(auto_size);
     return true;
+  }
+  virtual std::string GetDOMAttributeValue(
+      BrowserPlugin* browser_plugin) OVERRIDE {
+    return browser_plugin->auto_size_attribute() ? "true" : "false";
   }
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBindingAutoSize);
@@ -449,6 +461,9 @@ class BrowserPluginPropertyBindingContentWindow
                            const NPVariant* variant) OVERRIDE {
     return false;
   }
+  virtual std::string GetDOMAttributeValue(BrowserPlugin* browser_plugin) {
+    return std::string();
+  }
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBindingContentWindow);
 };
@@ -471,6 +486,10 @@ class BrowserPluginPropertyBindingMaxHeight
     int max_height = Int32FromNPVariant(*variant);
     bindings->instance()->SetMaxHeightAttribute(max_height);
     return true;
+  }
+  virtual std::string GetDOMAttributeValue(
+      BrowserPlugin* browser_plugin) OVERRIDE {
+    return base::IntToString(browser_plugin->max_height_attribute());
   }
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBindingMaxHeight);
@@ -495,6 +514,10 @@ class BrowserPluginPropertyBindingMaxWidth
     bindings->instance()->SetMaxWidthAttribute(max_width);
     return true;
   }
+  virtual std::string GetDOMAttributeValue(
+      BrowserPlugin* browser_plugin) OVERRIDE {
+    return base::IntToString(browser_plugin->max_width_attribute());
+  }
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBindingMaxWidth);
 };
@@ -518,6 +541,10 @@ class BrowserPluginPropertyBindingMinHeight
     bindings->instance()->SetMinHeightAttribute(min_height);
     return true;
   }
+  virtual std::string GetDOMAttributeValue(
+      BrowserPlugin* browser_plugin) OVERRIDE {
+    return base::IntToString(browser_plugin->min_height_attribute());
+  }
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBindingMinHeight);
 };
@@ -540,6 +567,10 @@ class BrowserPluginPropertyBindingMinWidth
     int min_width = Int32FromNPVariant(*variant);
     bindings->instance()->SetMinWidthAttribute(min_width);
     return true;
+  }
+  virtual std::string GetDOMAttributeValue(
+      BrowserPlugin* browser_plugin) OVERRIDE {
+    return base::IntToString(browser_plugin->min_width_attribute());
   }
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBindingMinWidth);
@@ -569,6 +600,10 @@ class BrowserPluginPropertyBindingPartition
     }
     return true;
   }
+  virtual std::string GetDOMAttributeValue(
+      BrowserPlugin* browser_plugin) OVERRIDE {
+    return browser_plugin->GetPartitionAttribute();
+  }
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBindingPartition);
 };
@@ -594,6 +629,10 @@ class BrowserPluginPropertyBindingSrc : public BrowserPluginPropertyBinding {
       return false;
     }
     return true;
+  }
+  virtual std::string GetDOMAttributeValue(
+      BrowserPlugin* browser_plugin) OVERRIDE {
+    return browser_plugin->src_attribute();
   }
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBindingSrc);
@@ -680,8 +719,13 @@ bool BrowserPluginBindings::SetProperty(NPObject* np_obj,
   for (PropertyBindingList::iterator iter = property_bindings_.begin();
        iter != property_bindings_.end();
        ++iter) {
-    if ((*iter)->MatchesName(name))
-      return (*iter)->SetProperty(this, np_obj, variant);
+    if ((*iter)->MatchesName(name)) {
+      if ((*iter)->SetProperty(this, np_obj, variant)) {
+        (*iter)->UpdateDOMAttribute(this);
+        return true;
+      }
+      break;
+    }
   }
   return false;
 }
