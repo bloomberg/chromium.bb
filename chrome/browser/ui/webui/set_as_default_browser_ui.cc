@@ -248,7 +248,7 @@ class SetAsDefaultBrowserDialogImpl : public ui::WebDialogDelegate,
   Browser* browser_;
   mutable bool owns_handler_;
   SetAsDefaultBrowserHandler* handler_;
-  MakeChromeDefaultResult dialog_interation_result_;
+  MakeChromeDefaultResult dialog_interaction_result_;
 
   DISALLOW_COPY_AND_ASSIGN(SetAsDefaultBrowserDialogImpl);
 };
@@ -259,7 +259,7 @@ SetAsDefaultBrowserDialogImpl::SetAsDefaultBrowserDialogImpl(Profile* profile,
       browser_(browser),
       owns_handler_(true),
       handler_(new SetAsDefaultBrowserHandler(this)),
-      dialog_interation_result_(MAKE_CHROME_DEFAULT_DECLINED) {
+      dialog_interaction_result_(MAKE_CHROME_DEFAULT_DECLINED) {
 }
 
 SetAsDefaultBrowserDialogImpl::~SetAsDefaultBrowserDialogImpl() {
@@ -317,15 +317,22 @@ void SetAsDefaultBrowserDialogImpl::OnDialogClosed(
     const std::string& json_retval) {
   // Register the user's response in UMA.
   UMA_HISTOGRAM_ENUMERATION(kSetAsDefaultBrowserHistogram,
-                            dialog_interation_result_,
+                            dialog_interaction_result_,
                             MAKE_CHROME_DEFAULT_MAX);
 
-  if (dialog_interation_result_ == MAKE_CHROME_DEFAULT_ACCEPTED_IMMERSE) {
+  if (dialog_interaction_result_ == MAKE_CHROME_DEFAULT_ACCEPTED_IMMERSE) {
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
         base::Bind(&SetAsDefaultBrowserDialogImpl::
             AttemptImmersiveFirstRunRestartOnFileThread));
   } else {
+    // If the user explicitly elected *not to* make Chrome default, we won't
+    // ask again.
+    if (dialog_interaction_result_ == MAKE_CHROME_DEFAULT_REGRETTED) {
+      PrefService* prefs = profile_->GetPrefs();
+      prefs->SetBoolean(prefs::kCheckDefaultBrowser, false);
+    }
+
     // Carry on with a normal chrome session. For the purpose of surfacing this
     // dialog the actual browser window had to remain hidden. Now it's time to
     // show it.
@@ -355,7 +362,7 @@ bool SetAsDefaultBrowserDialogImpl::HandleContextMenu(
 
 void SetAsDefaultBrowserDialogImpl::SetDialogInteractionResult(
     MakeChromeDefaultResult result) {
-  dialog_interation_result_ = result;
+  dialog_interaction_result_ = result;
 }
 
 void SetAsDefaultBrowserDialogImpl::
