@@ -40,8 +40,10 @@ InputMethodManagerImpl::InputMethodManagerImpl()
 InputMethodManagerImpl::~InputMethodManagerImpl() {
   if (ibus_controller_.get())
     ibus_controller_->RemoveObserver(this);
-  if (candidate_window_controller_.get())
+  if (candidate_window_controller_.get()) {
     candidate_window_controller_->RemoveObserver(this);
+    candidate_window_controller_->Shutdown(ibus_controller_.get());
+  }
 }
 
 void InputMethodManagerImpl::AddObserver(
@@ -77,11 +79,15 @@ void InputMethodManagerImpl::SetState(State new_state) {
     case STATE_LOCK_SCREEN:
       OnScreenLocked();
       break;
-    case STATE_TERMINATING:
+    case STATE_TERMINATING: {
       ibus_controller_->Stop();
       browser_state_monitor_.reset();  // For crbug.com/120183.
-      candidate_window_controller_.reset();
+      if (candidate_window_controller_.get()) {
+        candidate_window_controller_->Shutdown(ibus_controller_.get());
+        candidate_window_controller_.reset();
+      }
       break;
+    }
   }
 }
 
@@ -587,7 +593,7 @@ void InputMethodManagerImpl::SetIBusControllerForTesting(
 void InputMethodManagerImpl::SetCandidateWindowControllerForTesting(
     CandidateWindowController* candidate_window_controller) {
   candidate_window_controller_.reset(candidate_window_controller);
-  candidate_window_controller_->Init();
+  candidate_window_controller_->Init(ibus_controller_.get());
   candidate_window_controller_->AddObserver(this);
 }
 
@@ -668,9 +674,8 @@ void InputMethodManagerImpl::MaybeInitializeCandidateWindowController() {
     return;
 
   candidate_window_controller_.reset(
-      CandidateWindowController::CreateCandidateWindowController(
-          ibus_controller_.get()));
-  if (candidate_window_controller_->Init())
+      CandidateWindowController::CreateCandidateWindowController());
+  if (candidate_window_controller_->Init(ibus_controller_.get()))
     candidate_window_controller_->AddObserver(this);
   else
     DVLOG(1) << "Failed to initialize the candidate window controller";

@@ -32,9 +32,9 @@ class CandidateWindowControllerImpl : public CandidateWindowController,
   CandidateWindowControllerImpl();
   virtual ~CandidateWindowControllerImpl();
 
-  // Initializes the candidate window. Returns true on success.
-  virtual bool Init() OVERRIDE;
-
+  // CandidateWindowController overrides:
+  virtual bool Init(IBusController* controller) OVERRIDE;
+  virtual void Shutdown(IBusController* controller) OVERRIDE;
   virtual void AddObserver(
       CandidateWindowController::Observer* observer) OVERRIDE;
   virtual void RemoveObserver(

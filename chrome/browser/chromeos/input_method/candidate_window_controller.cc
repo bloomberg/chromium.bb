@@ -12,13 +12,8 @@ namespace input_method {
 
 // static
 CandidateWindowController*
-CandidateWindowController::CreateCandidateWindowController(
-    IBusController* controller) {
-  CandidateWindowControllerImpl* candidate_window_controller =
-      new CandidateWindowControllerImpl;
-  // TODO(nona): Refine observer chain once IBusUiController is removed.
-  controller->AddObserver(candidate_window_controller);
-  return candidate_window_controller;
+CandidateWindowController::CreateCandidateWindowController() {
+  return new CandidateWindowControllerImpl;
 }
 
 }  // namespace input_method

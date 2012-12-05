@@ -32,15 +32,20 @@ class CandidateWindowController {
 
   virtual ~CandidateWindowController() {}
 
-  // Initializes the candidate window. Returns true on success.
-  virtual bool Init() = 0;
+  // Initializes the candidate window. Returns true on success. |controller| can
+  // be NULL.
+  // TODO(nona): Refine observer chain once IBusUiController is removed.
+  virtual bool Init(IBusController* controller) = 0;
+
+  // Shutdown the candidate window controller. |controller| can be NULL.
+  // TODO(nona): Refine observer chain once IBusUiController is removed.
+  virtual void Shutdown(IBusController* controller) = 0;
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
 
   // Gets an instance of CandidateWindowController. Caller has to delete the
   // returned object.
-  static CandidateWindowController* CreateCandidateWindowController(
-      IBusController* controller);
+  static CandidateWindowController* CreateCandidateWindowController();
 };
 
 }  // namespace input_method

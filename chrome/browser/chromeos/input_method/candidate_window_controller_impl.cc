@@ -32,7 +32,9 @@ const int kInfolistShowDelayMilliSeconds = 500;
 const int kInfolistHideDelayMilliSeconds = 500;
 }  // namespace
 
-bool CandidateWindowControllerImpl::Init() {
+bool CandidateWindowControllerImpl::Init(IBusController* controller) {
+  if (controller)
+    controller->AddObserver(this);
   // Create the candidate window view.
   CreateView();
 
@@ -40,6 +42,11 @@ bool CandidateWindowControllerImpl::Init() {
   // initial connection change.
   ibus_ui_controller_->AddObserver(this);
   return true;
+}
+
+void CandidateWindowControllerImpl::Shutdown(IBusController* controller) {
+  if (controller)
+    controller->RemoveObserver(this);
 }
 
 void CandidateWindowControllerImpl::CreateView() {
