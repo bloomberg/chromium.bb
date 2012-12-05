@@ -635,7 +635,7 @@ GURL ChromeContentBrowserClient::GetEffectiveURL(
   // installed app, the effective URL is an extension URL with the ID of that
   // extension as the host. This has the effect of grouping apps together in
   // a common SiteInstance.
-  ExtensionService* extension_service =
+  ExtensionService* extension_service = !profile ? NULL :
       extensions::ExtensionSystem::Get(profile)->extension_service();
   if (!extension_service)
     return url;
@@ -664,7 +664,7 @@ bool ChromeContentBrowserClient::ShouldUseProcessPerSite(
     return false;
 
   Profile* profile = Profile::FromBrowserContext(browser_context);
-  ExtensionService* extension_service =
+  ExtensionService* extension_service = !profile ? NULL :
       extensions::ExtensionSystem::Get(profile)->extension_service();
   if (!extension_service)
     return false;
@@ -736,7 +736,7 @@ bool ChromeContentBrowserClient::ShouldTryToUseExistingProcessHost(
     return false;
 
   Profile* profile = Profile::FromBrowserContext(browser_context);
-  ExtensionService* service =
+  ExtensionService* service = !profile ? NULL :
       extensions::ExtensionSystem::Get(profile)->extension_service();
   if (!service)
     return false;
@@ -1789,7 +1789,7 @@ bool ChromeContentBrowserClient::AllowPepperSocketAPI(
 
   Profile* profile = Profile::FromBrowserContext(browser_context);
   const Extension* extension = NULL;
-  ExtensionService* extension_service =
+  ExtensionService* extension_service = !profile ? NULL :
       extensions::ExtensionSystem::Get(profile)->extension_service();
   if (extension_service) {
     extension = extension_service->extensions()->
