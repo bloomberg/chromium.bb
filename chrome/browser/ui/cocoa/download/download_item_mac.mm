@@ -23,7 +23,6 @@ DownloadItemMac::DownloadItemMac(DownloadItemModel* download_model,
 
 DownloadItemMac::~DownloadItemMac() {
   download_model_->download()->RemoveObserver(this);
-  icon_consumer_.CancelAllRequests();
 }
 
 void DownloadItemMac::OnDownloadUpdated(content::DownloadItem* download) {
@@ -89,13 +88,14 @@ void DownloadItemMac::LoadIcon() {
   }
 
   // The icon isn't cached, load it asynchronously.
-  icon_manager->LoadIcon(file, IconLoader::ALL, &icon_consumer_,
+  icon_manager->LoadIcon(file,
+                         IconLoader::ALL,
                          base::Bind(&DownloadItemMac::OnExtractIconComplete,
-                                    base::Unretained(this)));
+                                    base::Unretained(this)),
+                         &cancelable_task_tracker_);
 }
 
-void DownloadItemMac::OnExtractIconComplete(IconManager::Handle handle,
-                                            gfx::Image* icon) {
+void DownloadItemMac::OnExtractIconComplete(gfx::Image* icon) {
   if (!icon)
     return;
   [item_controller_ setIcon:icon->ToNSImage()];

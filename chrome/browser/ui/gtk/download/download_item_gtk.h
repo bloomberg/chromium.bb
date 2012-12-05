@@ -15,6 +15,7 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/icon_manager.h"
+#include "chrome/common/cancelable_task_tracker.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -63,10 +64,8 @@ class DownloadItemGtk : public content::DownloadItem::Observer,
 
   // Called when the icon manager has finished loading the icon. We take
   // ownership of |icon_bitmap|.
-  void OnLoadSmallIconComplete(IconManager::Handle handle,
-                               gfx::Image* image);
-  void OnLoadLargeIconComplete(IconManager::Handle handle,
-                               gfx::Image* image);
+  void OnLoadSmallIconComplete(gfx::Image* image);
+  void OnLoadLargeIconComplete(gfx::Image* image);
 
   // Returns the DownloadItem model object belonging to this item.
   content::DownloadItem* get_download();
@@ -236,7 +235,7 @@ class DownloadItemGtk : public content::DownloadItem::Observer,
   base::Time creation_time_;
 
   // For canceling an in progress icon request.
-  CancelableRequestConsumerT<int, 0> icon_consumer_;
+  CancelableTaskTracker cancelable_task_tracker_;
 
   // Indicates when the download has completed, so we don't redo
   // on-completion actions.

@@ -9,8 +9,8 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/icon_manager.h"
+#include "chrome/common/cancelable_task_tracker.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 
@@ -46,8 +46,7 @@ class DownloadItemMac : content::DownloadItem::Observer {
 
  private:
   // Callback for asynchronous icon loading.
-  void OnExtractIconComplete(IconManager::Handle handle,
-                             gfx::Image* icon_bitmap);
+  void OnExtractIconComplete(gfx::Image* icon_bitmap);
 
   // The download item model we represent.
   scoped_ptr<DownloadItemModel> download_model_;
@@ -56,7 +55,7 @@ class DownloadItemMac : content::DownloadItem::Observer {
   DownloadItemController* item_controller_;  // weak, owns us.
 
   // For canceling an in progress icon request.
-  CancelableRequestConsumerT<int, 0> icon_consumer_;
+  CancelableTaskTracker cancelable_task_tracker_;
 
   // Stores the last known path where the file will be saved.
   FilePath lastFilePath_;

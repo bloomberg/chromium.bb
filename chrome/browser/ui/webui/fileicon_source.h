@@ -10,6 +10,7 @@
 #include "base/file_path.h"
 #include "chrome/browser/icon_manager.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "chrome/common/cancelable_task_tracker.h"
 #include "ui/base/layout.h"
 
 namespace gfx {
@@ -29,11 +30,6 @@ class FileIconSource : public ChromeURLDataManager::DataSource {
                                 int request_id) OVERRIDE;
 
   virtual std::string GetMimeType(const std::string&) const OVERRIDE;
-
-  // Called when favicon data is available from the history backend.
-  void OnFileIconDataAvailable(
-      IconManager::Handle request_handle,
-      gfx::Image* icon);
 
  protected:
   virtual ~FileIconSource();
@@ -56,8 +52,12 @@ class FileIconSource : public ChromeURLDataManager::DataSource {
     ui::ScaleFactor scale_factor;
   };
 
-  // Consumer for requesting file icons.
-  CancelableRequestConsumerTSimple<IconRequestDetails> cancelable_consumer_;
+  // Called when favicon data is available from the history backend.
+  void OnFileIconDataAvailable(const IconRequestDetails& details,
+                               gfx::Image* icon);
+
+  // Tracks tasks requesting file icons.
+  CancelableTaskTracker cancelable_task_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(FileIconSource);
 };

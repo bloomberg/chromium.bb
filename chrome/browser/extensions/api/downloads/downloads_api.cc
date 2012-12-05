@@ -38,6 +38,7 @@
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
+#include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/api/downloads.h"
 #include "content/public/browser/download_interrupt_reasons.h"
@@ -228,9 +229,9 @@ class DownloadFileIconExtractorImpl : public DownloadFileIconExtractor {
                                      IconLoader::IconSize icon_size,
                                      IconURLCallback callback) OVERRIDE;
  private:
-  void OnIconLoadComplete(IconManager::Handle handle, gfx::Image* icon);
+  void OnIconLoadComplete(gfx::Image* icon);
 
-  CancelableRequestConsumer cancelable_consumer_;
+  CancelableTaskTracker cancelable_task_tracker_;
   IconURLCallback callback_;
 };
 
@@ -244,16 +245,15 @@ bool DownloadFileIconExtractorImpl::ExtractIconURLForPath(
   // request, in which case the associated icon may also have changed.
   // Therefore, for the moment we always call LoadIcon instead of attempting
   // a LookupIcon.
-  im->LoadIcon(
-      path, icon_size, &cancelable_consumer_,
-      base::Bind(&DownloadFileIconExtractorImpl::OnIconLoadComplete,
-                 base::Unretained(this)));
+  im->LoadIcon(path,
+               icon_size,
+               base::Bind(&DownloadFileIconExtractorImpl::OnIconLoadComplete,
+                          base::Unretained(this)),
+               &cancelable_task_tracker_);
   return true;
 }
 
-void DownloadFileIconExtractorImpl::OnIconLoadComplete(
-    IconManager::Handle handle,
-    gfx::Image* icon) {
+void DownloadFileIconExtractorImpl::OnIconLoadComplete(gfx::Image* icon) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   std::string url;
   if (icon)

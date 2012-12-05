@@ -47,15 +47,13 @@
 
 #include <map>
 
-#include "base/hash_tables.h"
-#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/icon_loader.h"
+#include "chrome/common/cancelable_task_tracker.h"
 #include "ui/gfx/image/image.h"
 
 class FilePath;
 
-class IconManager : public IconLoader::Delegate,
-                    public CancelableRequestProvider {
+class IconManager : public IconLoader::Delegate {
  public:
   IconManager();
   virtual ~IconManager();
@@ -65,25 +63,27 @@ class IconManager : public IconLoader::Delegate,
   // it via 'LoadIcon'. The returned bitmap is owned by the IconManager and must
   // not be free'd by the caller. If the caller needs to modify the icon, it
   // must make a copy and modify the copy.
-  gfx::Image* LookupIcon(const FilePath& file_name,
-                         IconLoader::IconSize size);
+  gfx::Image* LookupIcon(const FilePath& file_name, IconLoader::IconSize size);
 
-  typedef CancelableRequestProvider::Handle Handle;
-  typedef base::Callback<void(Handle, gfx::Image*)> IconRequestCallback;
+  typedef base::Callback<void(gfx::Image*)> IconRequestCallback;
 
   // Asynchronous call to lookup and return the icon associated with file. The
-  // work is done on the file thread, with the callbacks running on the UI
-  // thread. The return value is the 'request_id' that will be passed to the
-  // client in the callback. Note: this does *not* check the cache.
+  // work is done on the file thread, with the callbacks running on the thread
+  // this function is called.
   //
-  // WATCH OUT: The returned bitmap pointer may be NULL if decoding failed.
-  Handle LoadIcon(const FilePath& file_name,
-                  IconLoader::IconSize size,
-                  CancelableRequestConsumerBase* consumer,
-                  const IconRequestCallback& callback);
+  // Note:
+  // 1. This does *not* check the cache.
+  // 2. The returned bitmap pointer is *not* owned by callback. So callback
+  //    should never keep it or delete it.
+  // 3. The gfx::Image pointer passed to the callback may be NULL if decoding
+  //    failed.
+  CancelableTaskTracker::TaskId LoadIcon(const FilePath& file_name,
+                                         IconLoader::IconSize size,
+                                         const IconRequestCallback& callback,
+                                         CancelableTaskTracker* tracker);
 
   // IconLoader::Delegate interface.
-  virtual bool OnImageLoaded(IconLoader* source, gfx::Image* result) OVERRIDE;
+  virtual bool OnImageLoaded(IconLoader* loader, gfx::Image* result) OVERRIDE;
 
   // Get the identifying string for the given file. The implementation
   // is in icon_manager_[platform].cc.
@@ -102,8 +102,6 @@ class IconManager : public IconLoader::Delegate,
 
   typedef std::map<CacheKey, gfx::Image*> IconMap;
   IconMap icon_cache_;
-
-  typedef CancelableRequest<IconRequestCallback> IconRequest;
 
   // Asynchronous requests that have not yet been completed.
   struct ClientRequest;

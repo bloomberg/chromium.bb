@@ -217,7 +217,6 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
 }
 
 DownloadItemView::~DownloadItemView() {
-  icon_consumer_.CancelAllRequests();
   StopDownloadProgress();
   download_->RemoveObserver(this);
 }
@@ -243,8 +242,7 @@ void DownloadItemView::StopDownloadProgress() {
   progress_timer_.Stop();
 }
 
-void DownloadItemView::OnExtractIconComplete(IconManager::Handle handle,
-                                             gfx::Image* icon_bitmap) {
+void DownloadItemView::OnExtractIconComplete(gfx::Image* icon_bitmap) {
   if (icon_bitmap)
     parent()->SchedulePaint();
 }
@@ -856,9 +854,10 @@ void DownloadItemView::LoadIcon() {
   IconManager* im = g_browser_process->icon_manager();
   last_download_item_path_ = download_->GetUserVerifiedFilePath();
   im->LoadIcon(last_download_item_path_,
-               IconLoader::SMALL, &icon_consumer_,
+               IconLoader::SMALL,
                base::Bind(&DownloadItemView::OnExtractIconComplete,
-                          base::Unretained(this)));
+                          base::Unretained(this)),
+               &cancelable_task_tracker_);
 }
 
 void DownloadItemView::LoadIconIfItemPathChanged() {

@@ -283,7 +283,6 @@ DownloadItemGtk::~DownloadItemGtk() {
   if (menu_.get())
     menu_.reset();
 
-  icon_consumer_.CancelAllRequests();
   StopDownloadProgress();
   get_download()->RemoveObserver(this);
 
@@ -452,30 +451,30 @@ void DownloadItemGtk::StopDownloadProgress() {
 
 // Icon loading functions.
 
-void DownloadItemGtk::OnLoadSmallIconComplete(IconManager::Handle handle,
-                                              gfx::Image* image) {
+void DownloadItemGtk::OnLoadSmallIconComplete(gfx::Image* image) {
   icon_small_ = image;
   gtk_widget_queue_draw(progress_area_.get());
 }
 
-void DownloadItemGtk::OnLoadLargeIconComplete(IconManager::Handle handle,
-                                              gfx::Image* image) {
+void DownloadItemGtk::OnLoadLargeIconComplete(gfx::Image* image) {
   icon_large_ = image;
   DownloadItemDrag::SetSource(body_.get(), get_download(), icon_large_);
 }
 
 void DownloadItemGtk::LoadIcon() {
-  icon_consumer_.CancelAllRequests();
+  cancelable_task_tracker_.TryCancelAll();
   IconManager* im = g_browser_process->icon_manager();
   icon_filepath_ = get_download()->GetUserVerifiedFilePath();
   im->LoadIcon(icon_filepath_,
-               IconLoader::SMALL, &icon_consumer_,
+               IconLoader::SMALL,
                base::Bind(&DownloadItemGtk::OnLoadSmallIconComplete,
-                          base::Unretained(this)));
+                          base::Unretained(this)),
+               &cancelable_task_tracker_);
   im->LoadIcon(icon_filepath_,
-               IconLoader::LARGE, &icon_consumer_,
+               IconLoader::LARGE,
                base::Bind(&DownloadItemGtk::OnLoadLargeIconComplete,
-                          base::Unretained(this)));
+                          base::Unretained(this)),
+               &cancelable_task_tracker_);
 }
 
 void DownloadItemGtk::UpdateTooltip() {

@@ -5,9 +5,11 @@
 #include "chrome/browser/ui/webui/fileicon_source.h"
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/message_loop.h"
 #include "base/string_split.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -91,9 +93,7 @@ void ParseQueryParams(const std::string& query,
 FileIconSource::FileIconSource()
     : DataSource(kFileIconPath, MessageLoop::current()) {}
 
-FileIconSource::~FileIconSource() {
-  cancelable_consumer_.CancelAllRequests();
-}
+FileIconSource::~FileIconSource() {}
 
 void FileIconSource::FetchFileIcon(const FilePath& path,
                                    ui::ScaleFactor scale_factor,
@@ -110,17 +110,17 @@ void FileIconSource::FetchFileIcon(const FilePath& path,
 
     SendResponse(request_id, icon_data);
   } else {
-    // Icon was not in cache, go fetch it slowly.
-    IconManager::Handle h = im->LoadIcon(
-        path, icon_size, &cancelable_consumer_,
-        base::Bind(&FileIconSource::OnFileIconDataAvailable,
-                   base::Unretained(this)));
-
     // Attach the ChromeURLDataManager request ID to the history request.
     IconRequestDetails details;
     details.request_id = request_id;
     details.scale_factor = scale_factor;
-    cancelable_consumer_.SetClientData(im, h, details);
+
+    // Icon was not in cache, go fetch it slowly.
+    im->LoadIcon(path,
+                 icon_size,
+                 base::Bind(&FileIconSource::OnFileIconDataAvailable,
+                            base::Unretained(this), details),
+                 &cancelable_task_tracker_);
   }
 }
 
@@ -141,17 +141,15 @@ std::string FileIconSource::GetMimeType(const std::string&) const {
   return std::string();
 }
 
-void FileIconSource::OnFileIconDataAvailable(IconManager::Handle handle,
+void FileIconSource::OnFileIconDataAvailable(const IconRequestDetails& details,
                                              gfx::Image* icon) {
-  IconManager* im = g_browser_process->icon_manager();
-  IconRequestDetails details = cancelable_consumer_.GetClientData(im, handle);
-
   if (icon) {
     scoped_refptr<base::RefCountedBytes> icon_data(new base::RefCountedBytes);
     gfx::PNGCodec::EncodeBGRASkBitmap(
-        icon->ToImageSkia()->GetRepresentation(
-            details.scale_factor).sk_bitmap(),
-        false, &icon_data->data());
+        icon->ToImageSkia()->GetRepresentation(details.scale_factor)
+            .sk_bitmap(),
+        false,
+        &icon_data->data());
 
     SendResponse(details.request_id, icon_data);
   } else {

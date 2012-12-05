@@ -4,14 +4,29 @@
 
 #include "chrome/browser/icon_manager.h"
 
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
+#include "base/task_runner.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 
+namespace {
+
+void RunCallbackIfNotCanceled(
+    const CancelableTaskTracker::IsCanceledCallback& is_canceled,
+    const IconManager::IconRequestCallback& callback,
+    gfx::Image* image) {
+  if (is_canceled.Run())
+    return;
+  callback.Run(image);
+}
+
+}  // namespace
+
 struct IconManager::ClientRequest {
-  scoped_refptr<IconRequest> request;
+  IconRequestCallback callback;
   IconGroupID group;
   IconLoader::IconSize size;
 };
@@ -33,29 +48,34 @@ gfx::Image* IconManager::LookupIcon(const FilePath& file_name,
   return NULL;
 }
 
-IconManager::Handle IconManager::LoadIcon(
+CancelableTaskTracker::TaskId IconManager::LoadIcon(
     const FilePath& file_name,
     IconLoader::IconSize size,
-    CancelableRequestConsumerBase* consumer,
-    const IconRequestCallback& callback) {
+    const IconRequestCallback& callback,
+    CancelableTaskTracker* tracker) {
   IconGroupID group = GetGroupIDFromFilepath(file_name);
-  IconRequest* request = new IconRequest(callback);
-  AddRequest(request, consumer);
 
   IconLoader* loader = new IconLoader(group, size, this);
   loader->AddRef();
   loader->Start();
-  ClientRequest client_request = { request, group, size };
+
+  CancelableTaskTracker::IsCanceledCallback is_canceled;
+  CancelableTaskTracker::TaskId id = tracker->NewTrackedTaskId(&is_canceled);
+  IconRequestCallback callback_runner = base::Bind(
+      &RunCallbackIfNotCanceled, is_canceled, callback);
+
+  ClientRequest client_request = { callback_runner, group, size };
   requests_[loader] = client_request;
-  return request->handle();
+  return id;
 }
 
 // IconLoader::Delegate implementation -----------------------------------------
 
-bool IconManager::OnImageLoaded(IconLoader* source, gfx::Image* result) {
-  ClientRequests::iterator rit = requests_.find(source);
+bool IconManager::OnImageLoaded(IconLoader* loader, gfx::Image* result) {
+  ClientRequests::iterator rit = requests_.find(loader);
+
   // Balances the AddRef() in LoadIcon().
-  source->Release();
+  loader->Release();
 
   // Look up our client state.
   if (rit == requests_.end()) {
@@ -63,11 +83,7 @@ bool IconManager::OnImageLoaded(IconLoader* source, gfx::Image* result) {
     return false;  // Return false to indicate result should be deleted.
   }
 
-  ClientRequest client_request = rit->second;
-  if (client_request.request->canceled()) {
-    requests_.erase(rit);
-    return false;  // Return false to indicate result should be deleted.
-  }
+  const ClientRequest& client_request = rit->second;
 
   // Cache the bitmap. Watch out: |result| or the cached bitmap may be NULL to
   // indicate a current or past failure.
@@ -82,8 +98,7 @@ bool IconManager::OnImageLoaded(IconLoader* source, gfx::Image* result) {
   }
 
   // Inform our client that the request has completed.
-  IconRequest* icon_request = client_request.request;
-  icon_request->ForwardResult(icon_request->handle(), result);
+  client_request.callback.Run(result);
   requests_.erase(rit);
 
   return true;  // Indicates we took ownership of result.

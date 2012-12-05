@@ -69,7 +69,7 @@ class DownloadItemView : public views::ButtonListener,
   void StopDownloadProgress();
 
   // IconManager::Client interface.
-  void OnExtractIconComplete(IconManager::Handle handle, gfx::Image* icon);
+  void OnExtractIconComplete(gfx::Image* icon);
 
   // Returns the DownloadItem model object belonging to this item.
   content::DownloadItem* download() const { return download_; }
@@ -281,7 +281,7 @@ class DownloadItemView : public views::ButtonListener,
   gfx::Point drag_start_point_;
 
   // For canceling an in progress icon request.
-  CancelableRequestConsumerT<int, 0> icon_consumer_;
+  CancelableTaskTracker cancelable_task_tracker_;
 
   // A model class to control the status text we display and the cancel
   // behavior.
