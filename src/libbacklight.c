@@ -149,11 +149,11 @@ struct backlight *backlight_init(struct udev_device *drm_device,
 	char *pci_name = NULL;
 	char *chosen_path = NULL;
 	char *path = NULL;
-	DIR *backlights;
+	DIR *backlights = NULL;
 	struct dirent *entry;
 	enum backlight_type type = 0;
 	char buffer[100];
-	struct backlight *backlight;
+	struct backlight *backlight = NULL;
 	int ret;
 
 	if (!drm_device)
@@ -208,10 +208,10 @@ struct backlight *backlight_init(struct udev_device *drm_device,
 
 		if (asprintf(&backlight_path, "%s/%s", "/sys/class/backlight",
 			     entry->d_name) < 0)
-			return NULL;
+			goto err;
 
 		if (asprintf(&path, "%s/%s", backlight_path, "type") < 0)
-			return NULL;
+			goto err;
 
 		fd = open(path, O_RDONLY);
 
@@ -246,7 +246,7 @@ struct backlight *backlight_init(struct udev_device *drm_device,
 		free (path);
 
 		if (asprintf(&path, "%s/%s", backlight_path, "device") < 0)
-			return NULL;
+			goto err;
 
 		ret = readlink(path, buffer, sizeof(buffer) - 1);
 
@@ -280,7 +280,7 @@ struct backlight *backlight_init(struct udev_device *drm_device,
 	}
 
 	if (!chosen_path)
-		return NULL;
+		goto err;
 
 	backlight = malloc(sizeof(struct backlight));
 
@@ -298,10 +298,11 @@ struct backlight *backlight_init(struct udev_device *drm_device,
 	if (backlight->brightness < 0)
 		goto err;
 
+	closedir(backlights);
 	return backlight;
 err:
-	if (chosen_path)
-		free(chosen_path);
+	closedir(backlights);
+	free (chosen_path);
 	free (backlight);
 	return NULL;
 }
