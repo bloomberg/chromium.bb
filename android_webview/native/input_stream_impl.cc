@@ -81,40 +81,43 @@ bool InputStreamImpl::Read(net::IOBuffer* dest, int length, int* bytes_read) {
   jbyteArray buffer = buffer_.obj();
   *bytes_read = 0;
 
-  while (length > 0) {
-    const int read_size = std::min(length, kBufferSize);
-    int32_t byte_count =
-      Java_InputStream_readI_AB_I_I(
-          env, jobject_.obj(), buffer, 0, read_size);
-
+  const int read_size = std::min(length, kBufferSize);
+  int32_t byte_count;
+  do {
+    // Unfortunately it is valid for the Java InputStream to read 0 bytes some
+    // number of times before returning any more data. Because this method
+    // signals EOF by setting |bytes_read| to 0 and returning true necessary to
+    // call the Java-side read method until it returns something other than 0.
+    byte_count = Java_InputStream_readI_AB_I_I(
+        env, jobject_.obj(), buffer, 0, read_size);
     if (ClearException(env))
       return false;
+  } while (byte_count == 0);
 
-    if (byte_count <= 0)
-      break;
+  // We've reached the end of the stream.
+  if (byte_count < 0)
+    return true;
 
 #ifndef NDEBUG
-    int32_t buffer_length = env->GetArrayLength(buffer);
-    DCHECK_GE(read_size, byte_count);
-    DCHECK_GE(buffer_length, byte_count);
+  int32_t buffer_length = env->GetArrayLength(buffer);
+  DCHECK_GE(read_size, byte_count);
+  DCHECK_GE(buffer_length, byte_count);
 #endif // NDEBUG
 
-    // The DCHECKs are in place to help Chromium developers in case of bugs,
-    // this check is to prevent a malicious InputStream implementation from
-    // overrunning the |dest| buffer.
-    if (byte_count > read_size)
-      return false;
+  // The DCHECKs are in place to help Chromium developers in case of bugs,
+  // this check is to prevent a malicious InputStream implementation from
+  // overrunning the |dest| buffer.
+  if (byte_count > read_size)
+    return false;
 
-    // Copy the data over to the provided C++ side buffer.
-    DCHECK_GE(length, byte_count);
-    env->GetByteArrayRegion(buffer, 0, byte_count,
-        reinterpret_cast<jbyte*>(dest->data() + *bytes_read));
-    if (ClearException(env))
-      return false;
+  // Copy the data over to the provided C++ side buffer.
+  DCHECK_GE(length, byte_count);
+  env->GetByteArrayRegion(buffer, 0, byte_count,
+      reinterpret_cast<jbyte*>(dest->data() + *bytes_read));
+  if (ClearException(env))
+    return false;
 
-    *bytes_read += byte_count;
-    length -= byte_count;
-  }
+  *bytes_read = byte_count;
   return true;
 }
 

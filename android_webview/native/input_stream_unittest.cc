@@ -42,19 +42,18 @@ class InputStreamTest : public Test {
     ASSERT_TRUE(RegisterNativesImpl(env_));
   }
 
-  scoped_refptr<IOBuffer> DoReadCountedStreamTest(int streamSize,
-                                                  int bytesToRead) {
+  scoped_refptr<IOBuffer> DoReadCountedStreamTest(int stream_size,
+                                                  int bytes_requested,
+                                                  int* bytes_read) {
     ScopedJavaLocalRef<jobject> counting_jstream =
-        Java_InputStreamUnittest_getCountingStream(env_, streamSize);
+        Java_InputStreamUnittest_getCountingStream(env_, stream_size);
     EXPECT_FALSE(counting_jstream.is_null());
 
     scoped_ptr<InputStream> input_stream(
         new InputStreamImpl(counting_jstream));
-    int bytesRead = 0;
-    scoped_refptr<IOBuffer> buffer = new IOBuffer(bytesToRead);
+    scoped_refptr<IOBuffer> buffer = new IOBuffer(bytes_requested);
 
-    EXPECT_TRUE(input_stream->Read(buffer.get(), bytesToRead, &bytesRead));
-    EXPECT_EQ(bytesToRead, bytesRead);
+    EXPECT_TRUE(input_stream->Read(buffer.get(), bytes_requested, bytes_read));
     return buffer;
   }
 
@@ -67,34 +66,42 @@ TEST_F(InputStreamTest, ReadEmptyStream) {
   EXPECT_FALSE(empty_jstream.is_null());
 
   scoped_ptr<InputStream> input_stream(new InputStreamImpl(empty_jstream));
-  const int bytesToRead = 10;
-  int bytesRead = 0;
-  scoped_refptr<IOBuffer> buffer = new IOBuffer(bytesToRead);
+  const int bytes_requested = 10;
+  int bytes_read = 0;
+  scoped_refptr<IOBuffer> buffer = new IOBuffer(bytes_requested);
 
-  EXPECT_TRUE(input_stream->Read(buffer.get(), bytesToRead, &bytesRead));
-  EXPECT_EQ(0, bytesRead);
+  EXPECT_TRUE(input_stream->Read(buffer.get(), bytes_requested, &bytes_read));
+  EXPECT_EQ(0, bytes_read);
 }
 
 TEST_F(InputStreamTest, ReadStreamPartial) {
-  const int bytesToRead = 128;
-  DoReadCountedStreamTest(bytesToRead * 2, bytesToRead);
+  const int bytes_requested = 128;
+  int bytes_read = 0;
+  DoReadCountedStreamTest(bytes_requested * 2, bytes_requested, &bytes_read);
+  EXPECT_EQ(bytes_requested, bytes_read);
 }
 
 TEST_F(InputStreamTest, ReadStreamCompletely) {
-  const int bytesToRead = 42;
-  DoReadCountedStreamTest(bytesToRead, bytesToRead);
+  const int bytes_requested = 42;
+  int bytes_read = 0;
+  DoReadCountedStreamTest(bytes_requested, bytes_requested, &bytes_read);
+  EXPECT_EQ(bytes_requested, bytes_read);
 }
 
-TEST_F(InputStreamTest, ReadStreamInChunks) {
-  const int bytesToRead = 3 * InputStreamImpl::kBufferSize;
-  DoReadCountedStreamTest(bytesToRead, bytesToRead);
+TEST_F(InputStreamTest, TryReadMoreThanBuffer) {
+  const int bytes_requested = 3 * InputStreamImpl::kBufferSize;
+  int bytes_read = 0;
+  DoReadCountedStreamTest(bytes_requested, bytes_requested, &bytes_read);
+  EXPECT_EQ(InputStreamImpl::kBufferSize, bytes_read);
 }
 
 TEST_F(InputStreamTest, CheckContentsReadCorrectly) {
-  const int bytesToRead = 256;
+  const int bytes_requested = 256;
+  int bytes_read = 0;
   scoped_refptr<IOBuffer> buffer =
-      DoReadCountedStreamTest(bytesToRead, bytesToRead);
-  for (int i = 0; i < bytesToRead; ++i) {
+      DoReadCountedStreamTest(bytes_requested, bytes_requested, &bytes_read);
+  EXPECT_EQ(bytes_requested, bytes_read);
+  for (int i = 0; i < bytes_requested; ++i) {
     EXPECT_EQ(i, buffer->data()[i]);
   }
 }

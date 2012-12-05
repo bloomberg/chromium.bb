@@ -34,9 +34,9 @@ class InputStream {
   // thrown.
   virtual bool Skip(int64_t n, int64_t* bytes_skipped) = 0;
 
-  // Reads |length| bytes into |dest|. Sets |bytes_read| to the total number of
-  // bytes read into |dest| or -1 if there is no more data because the end of
-  // the stream was reached.
+  // Reads at most |length| bytes into |dest|. Sets |bytes_read| to the total
+  // number of bytes read into |dest| or 0 if there is no more data because the
+  // end of the stream was reached.
   // |dest| must be at least |length| in size.
   // Returns true if completed successfully or false if an exception was
   // thrown.
