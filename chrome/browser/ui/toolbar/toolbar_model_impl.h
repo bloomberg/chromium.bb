@@ -53,10 +53,10 @@ class ToolbarModelImpl : public ToolbarModel {
   // If this returns NULL, default values are used.
   content::NavigationController* GetNavigationController() const;
 
-  // Attempt to extract search terms from |url|. Called by GetText if
+  // Attempt to extract search terms from the current url. Called by GetText if
   // |display_search_urls_as_search_terms| is true and by
   // WouldReplaceSearchURLWithSearchTerms.
-  string16 TryToExtractSearchTermsFromURL(const GURL& url) const;
+  string16 TryToExtractSearchTermsFromURL() const;
 
   // Helper method to extract the profile from the navigation controller.
   Profile* GetProfile() const;
