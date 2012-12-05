@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/api/processes/processes_api_factory.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/event_router.h"
+#include "chrome/browser/extensions/extension_function_registry.h"
 #include "chrome/browser/extensions/extension_function_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -488,6 +489,11 @@ ProcessesAPI::ProcessesAPI(Profile* profile) : profile_(profile) {
       this, processes_api_constants::kOnUpdated);
   ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
       this, processes_api_constants::kOnUpdatedWithMemory);
+  ExtensionFunctionRegistry* registry =
+      ExtensionFunctionRegistry::GetInstance();
+  registry->RegisterFunction<extensions::GetProcessIdForTabFunction>();
+  registry->RegisterFunction<extensions::TerminateFunction>();
+  registry->RegisterFunction<extensions::GetProcessInfoFunction>();
 }
 
 ProcessesAPI::~ProcessesAPI() {

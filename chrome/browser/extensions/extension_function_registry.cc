@@ -32,7 +32,6 @@
 #include "chrome/browser/extensions/api/page_capture/page_capture_api.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api.h"
 #include "chrome/browser/extensions/api/preference/preference_api.h"
-#include "chrome/browser/extensions/api/processes/processes_api.h"
 #include "chrome/browser/extensions/api/record/record_api.h"
 #include "chrome/browser/extensions/api/runtime/runtime_api.h"
 #include "chrome/browser/extensions/api/serial/serial_api.h"
@@ -206,11 +205,6 @@ void ExtensionFunctionRegistry::ResetFunctions() {
 
   // I18N.
   RegisterFunction<GetAcceptLanguagesFunction>();
-
-  // Processes.
-  RegisterFunction<extensions::GetProcessIdForTabFunction>();
-  RegisterFunction<extensions::TerminateFunction>();
-  RegisterFunction<extensions::GetProcessInfoFunction>();
 
   // Metrics.
   RegisterFunction<extensions::MetricsRecordUserActionFunction>();
