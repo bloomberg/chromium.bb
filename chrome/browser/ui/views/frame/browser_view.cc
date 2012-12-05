@@ -2754,16 +2754,21 @@ void BrowserView::ShowPasswordGenerationBubble(
 }
 
 bool BrowserView::DoCutCopyPaste(void (content::RenderWidgetHost::*method)()) {
-#if defined(USE_AURA)
   WebContents* contents = chrome::GetActiveWebContents(browser_.get());
-  if (contents && contents->GetContentNativeView() &&
-      contents->GetContentNativeView()->HasFocus()) {
+  if (!contents)
+    return false;
+  gfx::NativeView native_view = contents->GetContentNativeView();
+  if (!native_view)
+    return false;
+#if defined(USE_AURA)
+  if (native_view->HasFocus()) {
+#elif defined(OS_WIN)
+  if (native_view == ::GetFocus()) {
+#endif
     (contents->GetRenderViewHost()->*method)();
     return true;
   }
-#elif defined(OS_WIN)
-  // TODO(yusukes): Support non-Aura Windows.
-#endif
+
   return false;
 }
 
