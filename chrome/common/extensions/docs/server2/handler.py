@@ -44,7 +44,7 @@ DEFAULT_BRANCHES = { 'extensions': 'stable', 'apps': 'trunk' }
 
 # Increment this version to force the server to reload all pages in the first
 # cron job that is run.
-_VERSION = 0
+_VERSION = 1
 
 BRANCH_UTILITY_MEMCACHE = InMemoryObjectStore('branch_utility')
 BRANCH_UTILITY = BranchUtility(url_constants.OMAHA_PROXY_URL,
@@ -135,9 +135,6 @@ def _GetInstanceForBranch(channel_name, local_path):
                                                            file_system,
                                                            API_PATH,
                                                            PUBLIC_TEMPLATE_PATH)
-  intro_data_source_factory = IntroDataSource.Factory(
-      cache_factory,
-      [INTRO_PATH, ARTICLE_PATH])
   api_data_source_factory = APIDataSource.Factory(
       cache_factory,
       API_PATH)
@@ -159,6 +156,10 @@ def _GetInstanceForBranch(channel_name, local_path):
       EXAMPLES_PATH)
   api_data_source_factory.SetSamplesDataSourceFactory(
       samples_data_source_factory)
+  intro_data_source_factory = IntroDataSource.Factory(
+      cache_factory,
+      ref_resolver_factory,
+      [INTRO_PATH, ARTICLE_PATH])
   sidenav_data_source_factory = SidenavDataSource.Factory(cache_factory,
                                                           JSON_PATH)
   template_data_source_factory = TemplateDataSource.Factory(

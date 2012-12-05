@@ -16,7 +16,7 @@ import third_party.json_schema_compiler.idl_parser as idl_parser
 # Increment this version when there are changes to the data stored in any of
 # the caches used by APIDataSource. This allows the cache to be invalidated
 # without having to flush memcache on the production server.
-_VERSION = 5
+_VERSION = 6
 
 def _RemoveNoDocs(item):
   if json_parse.IsDict(item):
@@ -61,38 +61,16 @@ class _JSCModel(object):
     else:
       self._namespace = model.Namespace(clean_json, clean_json['namespace'])
 
-  def _GetLink(self, ref):
-    if not self._disable_refs:
-      ref_data = self._ref_resolver.GetLink(self._namespace.name, ref)
-      if ref_data is not None:
-        return ref_data
-      logging.error('$ref %s could not be resolved.' % ref)
-    if '.' in ref:
-      type_name = ref.rsplit('.', 1)[-1]
-    else:
-      type_name = ref
-    return { 'href': '#type-%s' % type_name, 'text': ref, 'name': ref }
-
   def _FormatDescription(self, description):
-    if description is None or '$ref:' not in description:
+    if self._disable_refs:
       return description
-    refs = description.split('$ref:')
-    formatted_description = [refs[0]]
-    for ref in refs[1:]:
-      parts = ref.split(' ', 1)
-      if len(parts) == 1:
-        ref = parts[0]
-        rest = ''
-      else:
-        ref, rest = parts
-        rest = ' ' + rest
-      if not ref[-1].isalnum():
-        rest = ref[-1] + rest
-        ref = ref[:-1]
-      ref_dict = self._GetLink(ref)
-      formatted_description.append('<a href="%(href)s">%(text)s</a>%(rest)s' %
-          { 'href': ref_dict['href'], 'text': ref_dict['text'], 'rest': rest })
-    return ''.join(formatted_description)
+    return self._ref_resolver.ResolveAllLinks(description, self._namespace.name)
+
+  def _GetLink(self, link):
+    if self._disable_refs:
+      type_name = link.split('.', 1)[-1]
+      return { 'href': '#type-%s' % type_name, 'text': link, 'name': link }
+    return self._ref_resolver.SafeGetLink(link, self._namespace.name)
 
   def ToDict(self):
     if self._namespace is None:

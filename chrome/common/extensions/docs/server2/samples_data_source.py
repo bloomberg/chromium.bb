@@ -16,7 +16,7 @@ import url_constants
 DEFAULT_ICON_PATH = '/images/sample-default-icon.png'
 
 # See api_data_source.py for more info on _VERSION.
-_VERSION = 2
+_VERSION = 3
 
 class SamplesDataSource(object):
   """Constructs a list of samples and their respective files and api calls.
@@ -131,7 +131,7 @@ class SamplesDataSource(object):
             item = item[:-len('.addListener')]
           if item.startswith('chrome.'):
             item = item[len('chrome.'):]
-          ref_data = self._ref_resolver.GetLink('samples', item)
+          ref_data = self._ref_resolver.GetLink(item, 'samples')
           if ref_data is None:
             continue
           api_calls.append({
