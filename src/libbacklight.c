@@ -69,8 +69,7 @@ static long backlight_get(struct backlight *backlight, char *node)
 	ret = value;
 out:
 	close(fd);
-	if (path)
-		free(path);
+	free(path);
 	return ret;
 }
 
@@ -127,8 +126,7 @@ long backlight_set_brightness(struct backlight *backlight, long brightness)
 out:
 	if (buffer)
 		free(buffer);
-	if (path)
-		free(path);
+	free(path);
 	close(fd);
 	return ret;
 }
