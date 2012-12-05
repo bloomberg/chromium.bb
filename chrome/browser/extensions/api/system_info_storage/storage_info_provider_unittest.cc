@@ -37,8 +37,8 @@ struct TestUnitInfo testing_data[] = {
   {"/", "removable", 4000, 10, 3}
 };
 
-// The watching interval for unit test is 100 milliseconds.
-const unsigned int kWatchingIntervalMs = 100;
+// The watching interval for unit test is 1 milliseconds.
+const unsigned int kWatchingIntervalMs = 1u;
 const int kCallTimes = 3;
 
 class MockStorageObserver : public StorageInfoProvider::Observer {
@@ -101,6 +101,11 @@ class StorageInfoProviderTest : public testing::Test {
   // Run message loop until the given |ms| milliseconds has passed.
   void RunMessageLoopUntilTimeout(int ms);
 
+  void RunMessageLoopUntilIdle();
+
+  // Reset the testing data once a round of querying operation is completed.
+  void ResetTestingData();
+
   MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
@@ -134,109 +139,135 @@ void StorageInfoProviderTest::RunMessageLoopUntilTimeout(int ms) {
   message_loop_.PostDelayedTask(FROM_HERE, run_loop.QuitClosure(),
       base::TimeDelta::FromMilliseconds(ms));
   run_loop.Run();
+  ResetTestingData();
+}
+
+void StorageInfoProviderTest::RunMessageLoopUntilIdle() {
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
+  ResetTestingData();
+}
+
+void StorageInfoProviderTest::ResetTestingData() {
+  for (size_t i = 0; i < arraysize(testing_data); ++i)
+    testing_data[i].available_capacity = 10;
 }
 
 TEST_F(StorageInfoProviderTest, WatchingNoChangedStorage) {
   // Case 1: watching a storage that the free space is not changed.
+  StorageInfoProvider::Get()->StartWatching(testing_data[0].id);
   EXPECT_CALL(observer(), OnStorageFreeSpaceChanged(testing_data[0].id,  _,  _))
       .Times(0);
-  StorageInfoProvider::Get()->StartWatching(testing_data[0].id);
-  RunMessageLoopUntilTimeout(300);
+  RunMessageLoopUntilTimeout(10 * kWatchingIntervalMs);
   StorageInfoProvider::Get()->StopWatching(testing_data[0].id);
-  RunMessageLoopUntilTimeout(100);
+  RunMessageLoopUntilIdle();
 }
 
 TEST_F(StorageInfoProviderTest, WatchingOneStorage) {
   // Case 2: only watching one storage.
+  StorageInfoProvider::Get()->StartWatching(testing_data[1].id);
+  RunMessageLoopUntilIdle();
+
   EXPECT_CALL(observer(), OnStorageFreeSpaceChanged(testing_data[1].id,  _,  _))
       .WillRepeatedly(Return());
-
   double base_value = testing_data[1].available_capacity;
   int step = testing_data[1].change_step;
-  for (int i = 1; i <= kCallTimes; i++) {
+  for (int i = 0; i < kCallTimes; i++) {
     double expected_old_value = base_value + i * step;
     double expected_new_value = base_value + (i + 1) * step;
     EXPECT_CALL(observer(), OnStorageFreeSpaceChanged(testing_data[1].id,
         expected_old_value, expected_new_value)).WillOnce(Return());
   }
-
+  // The other storages won't get free space change notification.
   for (size_t i = 2; i < arraysize(testing_data); ++i) {
     EXPECT_CALL(observer(), OnStorageFreeSpaceChanged(testing_data[i].id, _, _))
         .Times(0);
   }
-  StorageInfoProvider::Get()->StartWatching(testing_data[1].id);
-  RunMessageLoopUntilTimeout(500);
+  RunMessageLoopUntilTimeout(100 * kWatchingIntervalMs);
 
+  StorageInfoProvider::Get()->StopWatching(testing_data[1].id);
+  RunMessageLoopUntilIdle();
+  // The watched storage won't get free space change notification after
+  // stopping.
   EXPECT_CALL(observer(), OnStorageFreeSpaceChanged(testing_data[1].id, _, _))
       .Times(0);
-  StorageInfoProvider::Get()->StopWatching(testing_data[1].id);
-  RunMessageLoopUntilTimeout(200);
+  RunMessageLoopUntilIdle();
 }
 
-// Flaky: http://crbug.com/163964
-TEST_F(StorageInfoProviderTest, DISABLED_WatchingMultipleStorages) {
-  // Case 2: watching multiple storages.
-  for (size_t k = 1; k < arraysize(testing_data); ++k) {
-    EXPECT_CALL(observer(),
-        OnStorageFreeSpaceChanged(testing_data[k].id,  _, _))
-        .WillRepeatedly(Return());
-  }
-  for (size_t k = 1; k < arraysize(testing_data); ++k) {
-    double base_value = testing_data[k].available_capacity;
-    int step = testing_data[k].change_step;
-    for (int i = 1; i <= kCallTimes; i++) {
-      double expected_old_value = base_value + i * step;
-      double expected_new_value = base_value + (i + 1) * step;
-      EXPECT_CALL(observer(), OnStorageFreeSpaceChanged(testing_data[k].id,
-          expected_old_value, expected_new_value)).WillOnce(Return());
-    }
-  }
+TEST_F(StorageInfoProviderTest, WatchingMultipleStorages) {
+  // Case 2: watching multiple storages. We ignore the first entry in
+  // |testing_data| since its change_step is zero.
   for (size_t k = 1; k < arraysize(testing_data); ++k) {
     StorageInfoProvider::Get()->StartWatching(testing_data[k].id);
   }
-  RunMessageLoopUntilTimeout(500);
+  // Run the message loop to given a chance for storage info provider to start
+  // watching.
+  RunMessageLoopUntilIdle();
 
-  // Stop watching the first storage.
-  EXPECT_CALL(observer(), OnStorageFreeSpaceChanged(testing_data[1].id, _, _))
-      .Times(0);
-  for (size_t k = 2; k < arraysize(testing_data); ++k) {
+  for (size_t k = 1; k < arraysize(testing_data); ++k) {
     EXPECT_CALL(observer(),
         OnStorageFreeSpaceChanged(testing_data[k].id,  _, _))
         .WillRepeatedly(Return());
-  }
-  for (size_t k = 2; k < arraysize(testing_data); ++k) {
+
     double base_value = testing_data[k].available_capacity;
     int step = testing_data[k].change_step;
-    for (int i = 1; i <= kCallTimes; i++) {
+    for (int i = 0; i < kCallTimes; i++) {
       double expected_old_value = base_value + i * step;
       double expected_new_value = base_value + (i + 1) * step;
       EXPECT_CALL(observer(), OnStorageFreeSpaceChanged(testing_data[k].id,
           expected_old_value, expected_new_value)).WillOnce(Return());
     }
   }
-  StorageInfoProvider::Get()->StopWatching(testing_data[1].id);
-  RunMessageLoopUntilTimeout(500);
+  RunMessageLoopUntilTimeout(100 * kWatchingIntervalMs);
 
-  for (size_t k = 1; k < arraysize(testing_data); ++k) {
-    EXPECT_CALL(observer(), OnStorageFreeSpaceChanged(testing_data[k].id, _, _))
-        .Times(0);
+  // Stop watching the first storage.
+  StorageInfoProvider::Get()->StopWatching(testing_data[1].id);
+  RunMessageLoopUntilIdle();
+
+  for (size_t k = 2; k < arraysize(testing_data); ++k) {
+    EXPECT_CALL(observer(),
+        OnStorageFreeSpaceChanged(testing_data[k].id,  _, _))
+        .WillRepeatedly(Return());
+
+    double base_value = testing_data[k].available_capacity;
+    int step = testing_data[k].change_step;
+    for (int i = 0; i < kCallTimes; i++) {
+      double expected_old_value = base_value + i * step;
+      double expected_new_value = base_value + (i + 1) * step;
+      EXPECT_CALL(observer(), OnStorageFreeSpaceChanged(testing_data[k].id,
+          expected_old_value, expected_new_value)).WillOnce(Return());
+    }
   }
+  // After stopping watching, the callback won't get called.
+  EXPECT_CALL(observer(), OnStorageFreeSpaceChanged(testing_data[1].id, _, _))
+      .Times(0);
+  RunMessageLoopUntilTimeout(100 * kWatchingIntervalMs);
+
   // Stop watching all storages.
   for (size_t k = 1; k < arraysize(testing_data); ++k) {
     StorageInfoProvider::Get()->StopWatching(testing_data[k].id);
   }
-  RunMessageLoopUntilTimeout(300);
+  // Run the message loop to given a chance for storage info provider to stop
+  // watching.
+  RunMessageLoopUntilIdle();
+
+  // After stopping watching, the callback won't get called.
+  for (size_t k = 1; k < arraysize(testing_data); ++k) {
+    EXPECT_CALL(observer(), OnStorageFreeSpaceChanged(testing_data[k].id, _, _))
+        .Times(0);
+  }
+  RunMessageLoopUntilIdle();
 }
 
 TEST_F(StorageInfoProviderTest, WatchingInvalidStorage) {
   // Case 3: watching an invalid storage.
   std::string invalid_id("invalid_id");
+  StorageInfoProvider::Get()->StartWatching(invalid_id);
   EXPECT_CALL(observer(), OnStorageFreeSpaceChanged(invalid_id, _, _))
      .Times(0);
-  StorageInfoProvider::Get()->StartWatching(invalid_id);
-  RunMessageLoopUntilTimeout(200);
+  RunMessageLoopUntilTimeout(10 * kWatchingIntervalMs);
   StorageInfoProvider::Get()->StopWatching(invalid_id);
-  RunMessageLoopUntilTimeout(100);
+  RunMessageLoopUntilIdle();
 }
 
 } // namespace extensions
