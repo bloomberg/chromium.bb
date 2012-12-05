@@ -24,16 +24,11 @@
 #include "base/threading/non_thread_safe.h"
 #include "ui/gfx/native_widget_types.h"
 
-#if defined(OS_POSIX)
-#include "base/file_path.h"
-#endif  // defined(OS_POSIX)
-
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
 #include "base/files/scoped_temp_dir.h"
 #endif  // defined(OS_LINUX) || defined(OS_OPENBSD)
 
 class CommandLine;
-class FilePath;
 
 // ProcessSingleton ----------------------------------------------------------
 //
@@ -70,7 +65,11 @@ class ProcessSingleton : public base::NonThreadSafe {
   // Notify another process, if available. Otherwise sets ourselves as the
   // singleton instance and stores the provided callback for notification from
   // future processes. Returns PROCESS_NONE if we became the singleton
-  // instance.
+  // instance. Callers are guaranteed to either have notified an existing
+  // process or have grabbed the singleton (unless the profile is locked by an
+  // unreachable process).
+  // TODO(brettw): Make the implementation of this method non-platform-specific
+  // by making Linux re-use the Windows implementation.
   NotifyResult NotifyOtherProcessOrCreate(
       const NotificationCallback& notification_callback);
 
@@ -120,13 +119,9 @@ class ProcessSingleton : public base::NonThreadSafe {
 
  protected:
   // Notify another process, if available.
-  // Returns true if another process was found and notified, false if we
-  // should continue with this process.
-  // Windows code roughly based on Mozilla.
-  //
-  // TODO(brettw): this will not handle all cases. If two processes start up too
-  // close to each other, the Create() might not yet have happened for the
-  // first one, so this function won't find it.
+  // Returns true if another process was found and notified, false if we should
+  // continue with the current process.
+  // On Windows, Create() has to be called before this.
   NotifyResult NotifyOtherProcess();
 
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
@@ -167,6 +162,7 @@ class ProcessSingleton : public base::NonThreadSafe {
   HWND window_;  // The HWND_MESSAGE window.
   bool is_virtualized_;  // Stuck inside Microsoft Softricity VM environment.
   HANDLE lock_file_;
+  FilePath user_data_dir_;
 #elif defined(OS_LINUX) || defined(OS_OPENBSD)
   // Return true if the given pid is one of our child processes.
   // Assumes that the current pid is the root of all pids of the current

@@ -47,7 +47,45 @@ const char kLockfile[] = "lockfile";
 const char kSearchUrl[] =
   "http://www.google.com/search?q=%s&sourceid=chrome&ie=UTF-8";
 
-const int kImmersiveChromeInitTimeout = 500;
+const int kMetroChromeActivationTimeoutMs = 3000;
+
+// A helper class that acquires the given |mutex| while the AutoLockMutex is in
+// scope.
+class AutoLockMutex {
+ public:
+  explicit AutoLockMutex(HANDLE mutex) : mutex_(mutex) {
+    DWORD result = WaitForSingleObject(mutex_, INFINITE);
+    DPCHECK(result == WAIT_OBJECT_0) << "Result = " << result;
+  }
+
+  ~AutoLockMutex() {
+    BOOL released = ReleaseMutex(mutex_);
+    DPCHECK(released);
+  }
+
+ private:
+  HANDLE mutex_;
+  DISALLOW_COPY_AND_ASSIGN(AutoLockMutex);
+};
+
+// A helper class that releases the given |mutex| while the AutoUnlockMutex is
+// in scope and immediately re-acquires it when going out of scope.
+class AutoUnlockMutex {
+ public:
+  explicit AutoUnlockMutex(HANDLE mutex) : mutex_(mutex) {
+    BOOL released = ReleaseMutex(mutex_);
+    DPCHECK(released);
+  }
+
+  ~AutoUnlockMutex() {
+    DWORD result = WaitForSingleObject(mutex_, INFINITE);
+    DPCHECK(result == WAIT_OBJECT_0) << "Result = " << result;
+  }
+
+ private:
+  HANDLE mutex_;
+  DISALLOW_COPY_AND_ASSIGN(AutoUnlockMutex);
+};
 
 // Checks the visibility of the enumerated window and signals once a visible
 // window has been found.
@@ -208,22 +246,6 @@ bool ShouldLaunchInWindows8ImmersiveMode(const FilePath& user_data_dir) {
   if (default_user_data_dir != user_data_dir)
     return false;
 
-  // TODO(gab): This is a temporary solution to avoid activating Metro Chrome
-  // when chrome.exe is invoked with one of the short-lived commands below. The
-  // long-term and correct solution is to only check/activate Chrome later;
-  // after handling of these short-lived commands has occured
-  // (http://crbug.com/155585).
-  // This is a 1:1 mapping of the switches that force an early exit of Chrome in
-  // ChromeBrowserMainParts::PreMainMessageLoopRunImpl().
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUninstall) ||
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kHideIcons) ||
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kShowIcons) ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kMakeDefaultBrowser) ||
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kPackExtension)) {
-    return false;
-  }
-
   base::win::RegKey reg_key;
   DWORD reg_value = 0;
   if (reg_key.Create(HKEY_CURRENT_USER, chrome::kMetroRegistryPath,
@@ -268,89 +290,10 @@ bool ProcessSingleton::EscapeVirtualization(const FilePath& user_data_dir) {
   return false;
 }
 
-// Look for a Chrome instance that uses the same profile directory.
-// If there isn't one, create a message window with its title set to
-// the profile directory path.
 ProcessSingleton::ProcessSingleton(const FilePath& user_data_dir)
     : window_(NULL), locked_(false), foreground_window_(NULL),
-    is_virtualized_(false), lock_file_(INVALID_HANDLE_VALUE) {
-  // For Windows 8 and above check if we need to relaunch into Windows 8
-  // immersive mode.
-  if (ShouldLaunchInWindows8ImmersiveMode(user_data_dir)) {
-    bool immersive_chrome_launched = ActivateMetroChrome();
-    if (!immersive_chrome_launched) {
-      LOG(WARNING) << "Failed to launch immersive chrome";
-    } else {
-      // Sleep to allow the immersive chrome process to create its initial
-      // message window.
-      SleepEx(kImmersiveChromeInitTimeout, FALSE);
-    }
-  }
-  remote_window_ = FindWindowEx(HWND_MESSAGE, NULL,
-                                chrome::kMessageWindowClass,
-                                user_data_dir.value().c_str());
-  if (!remote_window_ && !EscapeVirtualization(user_data_dir)) {
-    // Make sure we will be the one and only process creating the window.
-    // We use a named Mutex since we are protecting against multi-process
-    // access. As documented, it's clearer to NOT request ownership on creation
-    // since it isn't guaranteed we will get it. It is better to create it
-    // without ownership and explicitly get the ownership afterward.
-    std::wstring mutex_name(L"Local\\ChromeProcessSingletonStartup!");
-    base::win::ScopedHandle only_me(
-        CreateMutex(NULL, FALSE, mutex_name.c_str()));
-    DCHECK(only_me.Get() != NULL) << "GetLastError = " << GetLastError();
-
-    // This is how we acquire the mutex (as opposed to the initial ownership).
-    DWORD result = WaitForSingleObject(only_me, INFINITE);
-    DCHECK(result == WAIT_OBJECT_0) << "Result = " << result <<
-        "GetLastError = " << GetLastError();
-
-    // We now own the mutex so we are the only process that can create the
-    // window at this time, but we must still check if someone created it
-    // between the time where we looked for it above and the time the mutex
-    // was given to us.
-    remote_window_ = FindWindowEx(HWND_MESSAGE, NULL,
-                                  chrome::kMessageWindowClass,
-                                  user_data_dir.value().c_str());
-    if (!remote_window_) {
-      // We have to make sure there is no Chrome instance running on another
-      // machine that uses the same profile.
-      FilePath lock_file_path = user_data_dir.AppendASCII(kLockfile);
-      lock_file_ = CreateFile(lock_file_path.value().c_str(),
-                              GENERIC_WRITE,
-                              FILE_SHARE_READ,
-                              NULL,
-                              CREATE_ALWAYS,
-                              FILE_ATTRIBUTE_NORMAL | FILE_FLAG_DELETE_ON_CLOSE,
-                              NULL);
-      DWORD error = GetLastError();
-      LOG_IF(WARNING, lock_file_ != INVALID_HANDLE_VALUE &&
-          error == ERROR_ALREADY_EXISTS) << "Lock file exists but is writable.";
-      LOG_IF(ERROR, lock_file_ == INVALID_HANDLE_VALUE)
-          << "Lock file can not be created! Error code: " << error;
-
-      if (lock_file_ != INVALID_HANDLE_VALUE) {
-        HINSTANCE hinst = base::GetModuleFromAddress(&ThunkWndProc);
-
-        WNDCLASSEX wc = {0};
-        wc.cbSize = sizeof(wc);
-        wc.lpfnWndProc = base::win::WrappedWindowProc<ThunkWndProc>;
-        wc.hInstance = hinst;
-        wc.lpszClassName = chrome::kMessageWindowClass;
-        ATOM clazz = ::RegisterClassEx(&wc);
-        DCHECK(clazz);
-
-        // Set the window's title to the path of our user data directory so
-        // other Chrome instances can decide if they should forward to us.
-        window_ = ::CreateWindow(MAKEINTATOM(clazz),
-                                 user_data_dir.value().c_str(),
-                                 0, 0, 0, 0, 0, HWND_MESSAGE, 0, hinst, this);
-        CHECK(window_);
-      }
-    }
-    BOOL success = ReleaseMutex(only_me);
-    DCHECK(success) << "GetLastError = " << GetLastError();
-  }
+      is_virtualized_(false), lock_file_(INVALID_HANDLE_VALUE),
+      user_data_dir_(user_data_dir) {
 }
 
 ProcessSingleton::~ProcessSingleton() {
@@ -366,6 +309,7 @@ ProcessSingleton::~ProcessSingleton() {
     CloseHandle(lock_file_);
 }
 
+// Code roughly based on Mozilla.
 ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
   if (is_virtualized_)
     return PROCESS_NOTIFIED;  // We already spawned the process in this case.
@@ -481,20 +425,147 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
 
 ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessOrCreate(
     const NotificationCallback& notification_callback) {
-  NotifyResult result = NotifyOtherProcess();
-  if (result != PROCESS_NONE)
-    return result;
-  return Create(notification_callback) ? PROCESS_NONE : PROFILE_IN_USE;
+  ProcessSingleton::NotifyResult result = PROCESS_NONE;
+  if (!Create(notification_callback)) {
+    result = NotifyOtherProcess();
+    if (result == PROCESS_NONE)
+      result = PROFILE_IN_USE;
+  }
+  return result;
 }
 
-// On Windows, there is no need to call Create() since the message
-// window is created in the constructor but to avoid having more
-// platform specific code in browser_main.cc we tolerate calls to
-// Create().
+// Look for a Chrome instance that uses the same profile directory. If there
+// isn't one, create a message window with its title set to the profile
+// directory path.
 bool ProcessSingleton::Create(
     const NotificationCallback& notification_callback) {
-  DCHECK(!remote_window_);
   DCHECK(notification_callback_.is_null());
+
+  static const wchar_t kMutexName[] = L"Local\\ChromeProcessSingletonStartup!";
+  static const wchar_t kMetroActivationEventName[] =
+      L"Local\\ChromeProcessSingletonStartupMetroActivation!";
+
+  remote_window_ = FindWindowEx(HWND_MESSAGE, NULL,
+                                chrome::kMessageWindowClass,
+                                user_data_dir_.value().c_str());
+  if (!remote_window_ && !EscapeVirtualization(user_data_dir_)) {
+    // Make sure we will be the one and only process creating the window.
+    // We use a named Mutex since we are protecting against multi-process
+    // access. As documented, it's clearer to NOT request ownership on creation
+    // since it isn't guaranteed we will get it. It is better to create it
+    // without ownership and explicitly get the ownership afterward.
+    base::win::ScopedHandle only_me(CreateMutex(NULL, FALSE, kMutexName));
+    DPCHECK(only_me.IsValid());
+
+    AutoLockMutex auto_lock_only_me(only_me);
+
+    // We now own the mutex so we are the only process that can create the
+    // window at this time, but we must still check if someone created it
+    // between the time where we looked for it above and the time the mutex
+    // was given to us.
+    remote_window_ = FindWindowEx(HWND_MESSAGE, NULL,
+                                  chrome::kMessageWindowClass,
+                                  user_data_dir_.value().c_str());
+
+
+    // In Win8+, a new Chrome process launched in Desktop mode may need to be
+    // transmuted into Metro Chrome (see ShouldLaunchInWindows8ImmersiveMode for
+    // heuristics). To accomplish this, the current Chrome activates Metro
+    // Chrome, releases the startup mutex, and waits for metro Chrome to take
+    // the singleton. From that point onward, the command line for this Chrome
+    // process will be sent to Metro Chrome by the usual channels.
+    if (!remote_window_ && base::win::GetVersion() >= base::win::VERSION_WIN8 &&
+        !base::win::IsMetroProcess()) {
+      // |metro_activation_event| is created right before activating a Metro
+      // Chrome (note that there can only be one Metro Chrome process; by OS
+      // design); all following Desktop processes will then wait for this event
+      // to be signaled by Metro Chrome which will do so as soon as it grabs
+      // this singleton (should any of the waiting processes timeout waiting for
+      // the signal they will try to grab the singleton for themselves which
+      // will result in a forced Desktop Chrome launch in the worst case).
+      base::win::ScopedHandle metro_activation_event(
+          OpenEvent(SYNCHRONIZE, FALSE, kMetroActivationEventName));
+      if (!metro_activation_event.IsValid() &&
+          ShouldLaunchInWindows8ImmersiveMode(user_data_dir_)) {
+        // No Metro activation is under way, but the desire is to launch in
+        // Metro mode: activate and rendez-vous with the activated process.
+        metro_activation_event.Set(
+            CreateEvent(NULL, TRUE, FALSE, kMetroActivationEventName));
+        if (!ActivateMetroChrome()) {
+          // Failed to launch immersive Chrome, default to launching on Desktop.
+          LOG(ERROR) << "Failed to launch immersive chrome";
+          metro_activation_event.Close();
+        }
+      }
+
+      if (metro_activation_event.IsValid()) {
+        // Release |only_me| (to let Metro Chrome grab this singleton) and wait
+        // until the event is signaled (i.e. Metro Chrome was successfully
+        // activated). Ignore timeout waiting for |metro_activation_event|.
+        {
+          AutoUnlockMutex auto_unlock_only_me(only_me);
+
+          DWORD result = WaitForSingleObject(metro_activation_event,
+                                             kMetroChromeActivationTimeoutMs);
+          DPCHECK(result == WAIT_OBJECT_0 || result == WAIT_TIMEOUT)
+              << "Result = " << result;
+        }
+
+        // Check if this singleton was successfully grabbed by another process
+        // (hopefully Metro Chrome). Failing to do so, this process will grab
+        // the singleton and launch in Desktop mode.
+        remote_window_ = FindWindowEx(HWND_MESSAGE, NULL,
+                                      chrome::kMessageWindowClass,
+                                      user_data_dir_.value().c_str());
+      }
+    }
+
+    if (!remote_window_) {
+      // We have to make sure there is no Chrome instance running on another
+      // machine that uses the same profile.
+      FilePath lock_file_path = user_data_dir_.AppendASCII(kLockfile);
+      lock_file_ = CreateFile(lock_file_path.value().c_str(),
+                              GENERIC_WRITE,
+                              FILE_SHARE_READ,
+                              NULL,
+                              CREATE_ALWAYS,
+                              FILE_ATTRIBUTE_NORMAL | FILE_FLAG_DELETE_ON_CLOSE,
+                              NULL);
+      DWORD error = GetLastError();
+      LOG_IF(WARNING, lock_file_ != INVALID_HANDLE_VALUE &&
+          error == ERROR_ALREADY_EXISTS) << "Lock file exists but is writable.";
+      LOG_IF(ERROR, lock_file_ == INVALID_HANDLE_VALUE)
+          << "Lock file can not be created! Error code: " << error;
+
+      if (lock_file_ != INVALID_HANDLE_VALUE) {
+        HINSTANCE hinst = base::GetModuleFromAddress(&ThunkWndProc);
+
+        WNDCLASSEX wc = {0};
+        wc.cbSize = sizeof(wc);
+        wc.lpfnWndProc = base::win::WrappedWindowProc<ThunkWndProc>;
+        wc.hInstance = hinst;
+        wc.lpszClassName = chrome::kMessageWindowClass;
+        ATOM clazz = ::RegisterClassEx(&wc);
+        DCHECK(clazz);
+
+        // Set the window's title to the path of our user data directory so
+        // other Chrome instances can decide if they should forward to us.
+        window_ = ::CreateWindow(MAKEINTATOM(clazz),
+                                 user_data_dir_.value().c_str(),
+                                 0, 0, 0, 0, 0, HWND_MESSAGE, 0, hinst, this);
+        CHECK(window_);
+      }
+
+      if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+        // Make sure no one is still waiting on Metro activation whether it
+        // succeeded (i.e., this is the Metro process) or failed.
+        base::win::ScopedHandle metro_activation_event(
+            OpenEvent(EVENT_MODIFY_STATE, FALSE, kMetroActivationEventName));
+        if (metro_activation_event.IsValid())
+          SetEvent(metro_activation_event);
+      }
+    }
+  }
 
   if (window_ != NULL)
     notification_callback_ = notification_callback;
