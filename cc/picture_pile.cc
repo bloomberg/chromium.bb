@@ -98,8 +98,6 @@ void PicturePile::ResetPile(ContentLayerClient* painter,
 
 void PicturePile::PushPropertiesTo(PicturePileImpl* other) {
   other->pile_ = pile_;
-  // Remove all old clones.
-  other->clones_.clear();
 }
 
 }  // namespace cc

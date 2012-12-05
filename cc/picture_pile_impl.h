@@ -5,11 +5,8 @@
 #ifndef CC_PICTURE_PILE_IMPL_H_
 #define CC_PICTURE_PILE_IMPL_H_
 
-#include <map>
-
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "base/threading/thread.h"
 #include "cc/cc_export.h"
 #include "cc/picture.h"
 #include "cc/picture_pile.h"
@@ -22,9 +19,6 @@ struct RenderingStats;
 class CC_EXPORT PicturePileImpl : public base::RefCounted<PicturePileImpl> {
 public:
   static scoped_refptr<PicturePileImpl> Create();
-
-  // Get paint-safe version of this picture for a specific thread.
-  PicturePileImpl* GetCloneForDrawingOnThread(base::Thread*);
 
   // Clone a paint-safe version of this picture.
   scoped_refptr<PicturePileImpl> CloneForDrawing() const;
@@ -45,10 +39,6 @@ private:
   ~PicturePileImpl();
 
   PicturePile::Pile pile_;
-
-  typedef std::map<base::PlatformThreadId, scoped_refptr<PicturePileImpl> >
-      CloneMap;
-  CloneMap clones_;
 
   friend class base::RefCounted<PicturePileImpl>;
   DISALLOW_COPY_AND_ASSIGN(PicturePileImpl);

@@ -20,19 +20,6 @@ PicturePileImpl::PicturePileImpl() {
 PicturePileImpl::~PicturePileImpl() {
 }
 
-PicturePileImpl* PicturePileImpl::GetCloneForDrawingOnThread(
-    base::Thread* thread) {
-  // Do we have a clone for this thread yet?
-  CloneMap::iterator it = clones_.find(thread->thread_id());
-  if (it != clones_.end())
-    return it->second;
-
-  // Create clone for this thread.
-  scoped_refptr<PicturePileImpl> clone = CloneForDrawing();
-  clones_[thread->thread_id()] = clone;
-  return clone;
-}
-
 scoped_refptr<PicturePileImpl> PicturePileImpl::CloneForDrawing() const {
   TRACE_EVENT0("cc", "PicturePileImpl::CloneForDrawing");
   scoped_refptr<PicturePileImpl> clone = Create();

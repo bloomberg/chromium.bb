@@ -10,8 +10,7 @@
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
-#include "base/stringprintf.h"
-#include "base/threading/thread.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "cc/platform_color.h"
 #include "cc/rendering_stats.h"
 #include "cc/resource_pool.h"
@@ -21,10 +20,27 @@
 
 namespace {
 
-const std::string kRasterThreadNamePrefix = "CompositorRaster";
+void RasterizeTile(cc::PicturePileImpl* picture_pile,
+                   uint8_t* mapped_buffer,
+                   const gfx::Rect& rect,
+                   float contents_scale,
+                   cc::RenderingStats* stats) {
+  TRACE_EVENT0("cc", "RasterizeTile");
+  DCHECK(mapped_buffer);
+  DCHECK(picture_pile);
+  SkBitmap bitmap;
+  bitmap.setConfig(SkBitmap::kARGB_8888_Config, rect.width(), rect.height());
+  bitmap.setPixels(mapped_buffer);
+  SkDevice device(bitmap);
+  SkCanvas canvas(&device);
+  picture_pile->Raster(
+      &canvas,
+      rect,
+      contents_scale,
+      stats);
+}
 
-const int kMaxRasterThreads = 64;
-const int kDefaultNumberOfRasterThreads = 1;
+const char* kRasterThreadNamePrefix = "CompositorRaster";
 
 // Allow two pending raster tasks per thread. This keeps resource usage
 // low while making sure raster threads aren't unnecessarily idle.
@@ -33,69 +49,6 @@ const int kNumPendingRasterTasksPerThread = 2;
 }  // namespace
 
 namespace cc {
-
-class RasterThread : public base::Thread {
- public:
-  RasterThread(const std::string name)
-      : base::Thread(name.c_str()),
-        num_pending_tasks_(0) {
-    Start();
-  }
-  virtual ~RasterThread() {
-    Stop();
-  }
-
-  int num_pending_tasks() { return num_pending_tasks_; }
-
-  void PostRasterTaskAndReply(const tracked_objects::Location& from_here,
-                              PicturePileImpl* picture_pile,
-                              uint8_t* mapped_buffer,
-                              const gfx::Rect& rect,
-                              float contents_scale,
-                              RenderingStats* stats,
-                              const base::Closure& reply) {
-    ++num_pending_tasks_;
-    message_loop_proxy()->PostTaskAndReply(
-        from_here,
-        base::Bind(&RunRasterTask,
-                   base::Unretained(picture_pile),
-                   mapped_buffer,
-                   rect,
-                   contents_scale,
-                   stats),
-        base::Bind(&RasterThread::RunReply, base::Unretained(this), reply));
-  }
-
- private:
-  static void RunRasterTask(PicturePileImpl* picture_pile,
-                            uint8_t* mapped_buffer,
-                            const gfx::Rect& rect,
-                            float contents_scale,
-                            RenderingStats* stats) {
-    TRACE_EVENT0("cc", "RasterThread::RunRasterTask");
-    DCHECK(picture_pile);
-    DCHECK(mapped_buffer);
-    SkBitmap bitmap;
-    bitmap.setConfig(SkBitmap::kARGB_8888_Config, rect.width(), rect.height());
-    bitmap.setPixels(mapped_buffer);
-    SkDevice device(bitmap);
-    SkCanvas canvas(&device);
-    picture_pile->Raster(
-        &canvas,
-        rect,
-        contents_scale,
-        stats);
-  }
-
-  void RunReply(const base::Closure& reply) {
-    --num_pending_tasks_;
-    reply.Run();
-  }
-
-  int num_pending_tasks_;
-
-  DISALLOW_COPY_AND_ASSIGN(RasterThread);
-};
 
 ManagedTileState::ManagedTileState()
     : can_use_gpu_memory(false),
@@ -116,27 +69,23 @@ TileManager::TileManager(
     : client_(client),
       resource_pool_(ResourcePool::Create(resource_provider,
                                           Renderer::ImplPool)),
-      manage_tiles_pending_(false) {
-  // Initialize all threads.
-  while (raster_threads_.size() < num_raster_threads) {
-    int thread_number = raster_threads_.size() + 1;
-    scoped_ptr<RasterThread> thread = make_scoped_ptr(
-        new RasterThread(kRasterThreadNamePrefix +
-                         StringPrintf("Worker%d", thread_number).c_str()));
-    raster_threads_.append(thread.Pass());
-  }
+      manage_tiles_pending_(false),
+      pending_raster_tasks_(0),
+      num_raster_threads_(num_raster_threads),
+      worker_pool_(new base::SequencedWorkerPool(num_raster_threads,
+                                                 kRasterThreadNamePrefix)) {
 }
 
 TileManager::~TileManager() {
   // Reset global state and manage. This should cause
   // our memory usage to drop to zero.
   global_state_ = GlobalStateThatImpactsTilePriority();
-  AssignGpuMemoryToTiles();
-  // This should finish all pending raster tasks and release any
-  // uninitialized resources.
-  raster_threads_.clear();
   ManageTiles();
   DCHECK(tiles_.size() == 0);
+  // This should finish all pending raster tasks and release any
+  // uninitialized resources.
+  worker_pool_->Shutdown();
+  DCHECK(pending_raster_tasks_ == 0);
 }
 
 void TileManager::SetGlobalState(const GlobalStateThatImpactsTilePriority& global_state) {
@@ -340,29 +289,23 @@ void TileManager::FreeResourcesForTile(Tile* tile) {
 
 void TileManager::DispatchMoreRasterTasks() {
   while (!tiles_that_need_to_be_rasterized_.empty()) {
-    RasterThread* thread = 0;
+    int max_pending_tasks = kNumPendingRasterTasksPerThread *
+        num_raster_threads_;
 
-    for (RasterThreadVector::iterator it = raster_threads_.begin();
-         it != raster_threads_.end(); ++it) {
-      if ((*it)->num_pending_tasks() == kNumPendingRasterTasksPerThread)
-        continue;
-      // Check if this is the best thread we've found so far.
-      if (!thread || (*it)->num_pending_tasks() < thread->num_pending_tasks())
-        thread = *it;
-    }
+    // Stop dispatching raster tasks when too many are pending.
+    if (pending_raster_tasks_ >= max_pending_tasks)
+      break;
 
-    // Stop dispatching tasks when all threads are busy.
-    if (!thread)
-        return;
-
-    DispatchOneRasterTask(thread, tiles_that_need_to_be_rasterized_.back());
+    DispatchOneRasterTask(tiles_that_need_to_be_rasterized_.back());
     tiles_that_need_to_be_rasterized_.pop_back();
   }
 }
 
-void TileManager::DispatchOneRasterTask(
-    RasterThread* thread, scoped_refptr<Tile> tile) {
+void TileManager::DispatchOneRasterTask(scoped_refptr<Tile> tile) {
   TRACE_EVENT0("cc", "TileManager::DispatchOneRasterTask");
+  scoped_refptr<PicturePileImpl> cloned_picture_pile =
+      tile->picture_pile()->CloneForDrawing();
+
   ManagedTileState& managed_tile_state = tile->managed_state();
   DCHECK(managed_tile_state.can_use_gpu_memory);
   scoped_ptr<ResourcePool::Resource> resource =
@@ -373,31 +316,35 @@ void TileManager::DispatchOneRasterTask(
   managed_tile_state.can_be_freed = false;
 
   ResourceProvider::ResourceId resource_id = resource->id();
-  scoped_refptr<PicturePileImpl> picture_pile_clone =
-      tile->picture_pile()->GetCloneForDrawingOnThread(thread);
   RenderingStats* stats = new RenderingStats();
 
-  thread->PostRasterTaskAndReply(
-      FROM_HERE,
-      picture_pile_clone.get(),
-      resource_pool_->resource_provider()->mapPixelBuffer(resource_id),
-      tile->rect_inside_picture_,
-      tile->contents_scale(),
-      stats,
-      base::Bind(&TileManager::OnRasterTaskCompleted,
-                 base::Unretained(this),
-                 tile,
-                 base::Passed(&resource),
-                 picture_pile_clone,
-                 stats));
+  ++pending_raster_tasks_;
+  worker_pool_->GetTaskRunnerWithShutdownBehavior(
+      base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)->PostTaskAndReply(
+          FROM_HERE,
+          base::Bind(&RasterizeTile,
+                     base::Unretained(cloned_picture_pile.get()),
+                     resource_pool_->resource_provider()->mapPixelBuffer(
+                         resource_id),
+                     tile->rect_inside_picture_,
+                     tile->contents_scale(),
+                     stats),
+          base::Bind(&TileManager::OnRasterTaskCompleted,
+                     base::Unretained(this),
+                     tile,
+                     base::Passed(&resource),
+                     cloned_picture_pile,
+                     stats));
 }
 
 void TileManager::OnRasterTaskCompleted(
     scoped_refptr<Tile> tile,
     scoped_ptr<ResourcePool::Resource> resource,
-    scoped_refptr<PicturePileImpl> picture_pile_clone,
+    scoped_refptr<PicturePileImpl> cloned_picture_pile,
     RenderingStats* stats) {
   TRACE_EVENT0("cc", "TileManager::OnRasterTaskCompleted");
+  --pending_raster_tasks_;
+
   rendering_stats_.totalRasterizeTimeInSeconds +=
     stats->totalRasterizeTimeInSeconds;
   rendering_stats_.totalPixelsRasterized += stats->totalPixelsRasterized;
