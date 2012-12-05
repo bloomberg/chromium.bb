@@ -760,11 +760,41 @@ void OmniboxViewWin::UpdatePopup() {
 
 void OmniboxViewWin::SetFocus() {
   ::SetFocus(m_hWnd);
+  // Restore caret visibility if focused explicitly. We need to do this here
+  // because if we already have invisible focus, the ::SetFocus call above will
+  // short-circuit, preventing us from reaching OmniboxEditModel::OnSetFocus(),
+  // which handles restoring visibility when we didn't previously have focus.
+  model()->SetCaretVisibility(true);
 }
 
 void OmniboxViewWin::ApplyCaretVisibility() {
-  // TODO(mathp): implement for Windows.
-  NOTIMPLEMENTED();
+  // We hide the caret just before destroying it, since destroying a caret that
+  // is in the "solid" phase of its blinking will leave a solid vertical bar.
+  // We even hide and destroy the caret if we're going to create it again below.
+  // If the caret was already visible on entry to this function, the
+  // CreateCaret() call (which first destroys the old caret) might leave a solid
+  // vertical bar for the same reason as above.  Unconditionally hiding prevents
+  // this.  The caret could be visible on entry to this function if the
+  // underlying edit control had re-created it automatically (see comments in
+  // OnPaint()).
+  HideCaret();
+  // We use DestroyCaret()/CreateCaret() instead of simply HideCaret()/
+  // ShowCaret() because HideCaret() is not sticky across paint events, e.g. a
+  // window resize will effectively restore caret visibility, regardless of
+  // whether HideCaret() was called before. While we do catch and handle these
+  // paint events (see OnPaint()), it doesn't seem to be enough to simply call
+  // HideCaret() while handling them because of the unpredictability of this
+  // Windows API. According to the documentation, it should be a cumulative call
+  // e.g. 5 hide calls should be balanced by 5 show calls. We have not found
+  // this to be true, which may be explained by the fact that this API is called
+  // internally in Windows, as well.
+  ::DestroyCaret();
+  if (model()->is_caret_visible()) {
+    ::CreateCaret(m_hWnd, (HBITMAP) NULL, 1, font_.GetHeight());
+    // According to the Windows API documentation, a newly created caret needs
+    // ShowCaret to be visible.
+    ShowCaret();
+  }
 }
 
 void OmniboxViewWin::SetDropHighlightPosition(int position) {
@@ -1741,7 +1771,7 @@ LRESULT OmniboxViewWin::OnMouseActivate(HWND window,
   // reached before OnXButtonDown(), preventing us from detecting this properly
   // there.  Also in those cases, we need to already know in OnSetFocus() that
   // we should not restore the saved selection.
-  if (!model()->has_focus() &&
+  if ((!model()->has_focus() || !model()->is_caret_visible()) &&
       ((mouse_message == WM_LBUTTONDOWN || mouse_message == WM_RBUTTONDOWN)) &&
       (result == MA_ACTIVATE)) {
     if (gaining_focus_) {
@@ -1751,6 +1781,11 @@ LRESULT OmniboxViewWin::OnMouseActivate(HWND window,
       return result;
     }
     gaining_focus_.reset(new ScopedFreeze(this, GetTextObjectModel()));
+
+    // Explicitely set focus visibility in the case of clicking on the omnibox,
+    // which will remove invisible focus if present.
+    model()->SetCaretVisibility(true);
+
     // NOTE: Despite |mouse_message| being WM_XBUTTONDOWN here, we're not
     // guaranteed to call OnXButtonDown() later!  Specifically, if this is the
     // second click of a double click, we'll reach here but later call
@@ -1899,6 +1934,12 @@ void OmniboxViewWin::OnPaint(HDC bogus_hdc) {
          rect.left, rect.top, SRCCOPY);
   memory_dc.SelectBitmap(old_bitmap);
   edit_hwnd = old_edit_hwnd;
+
+  // This needs to be called regardless of the current state of the caret, even
+  // if reaffirming a current state (hidden or shown). This is because the
+  // underlying edit control will automatically re-create the caret when it
+  // receives certain events that trigger repaints, e.g. window resize events.
+  ApplyCaretVisibility();
 }
 
 void OmniboxViewWin::OnPaste() {
