@@ -125,7 +125,7 @@ void FakeTiledLayer::setTexturePriorities(const PriorityCalculator& calculator)
 
     if (missingTargetRenderSurface) {
         clearRenderSurface();
-        setRenderTarget(0);
+        drawProperties().render_target = 0;
     }
 }
 

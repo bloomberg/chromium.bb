@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/cc_export.h"
+#include "cc/draw_properties.h"
 #include "cc/input_handler.h"
 #include "cc/layer_animation_controller.h"
 #include "cc/region.h"
@@ -160,19 +161,26 @@ public:
 
     bool showDebugBorders() const;
 
-    RenderSurfaceImpl* renderSurface() const { return m_renderSurface.get(); }
     void createRenderSurface();
-    void clearRenderSurface() { m_renderSurface.reset(); }
+    void clearRenderSurface() { m_drawProperties.render_surface.reset(); }
 
-    float drawOpacity() const { return m_drawOpacity; }
-    void setDrawOpacity(float opacity) { m_drawOpacity = opacity; }
+    DrawProperties<LayerImpl, RenderSurfaceImpl>& drawProperties() { return m_drawProperties; }
+    const DrawProperties<LayerImpl, RenderSurfaceImpl>& drawProperties() const { return m_drawProperties; }
 
-    bool drawOpacityIsAnimating() const { return m_drawOpacityIsAnimating; }
-    void setDrawOpacityIsAnimating(bool drawOpacityIsAnimating) { m_drawOpacityIsAnimating = drawOpacityIsAnimating; }
-
-    void setRenderTarget(LayerImpl* target) { m_renderTarget = target; }
-    LayerImpl* renderTarget() { DCHECK(!m_renderTarget || m_renderTarget->renderSurface()); return m_renderTarget; }
-    const LayerImpl* renderTarget() const { DCHECK(!m_renderTarget || m_renderTarget->renderSurface()); return m_renderTarget; }
+    // The following are shortcut accessors to get various information from m_drawProperties
+    const gfx::Transform& drawTransform() const { return m_drawProperties.target_space_transform; }
+    const gfx::Transform& screenSpaceTransform() const { return m_drawProperties.screen_space_transform; }
+    float drawOpacity() const { return m_drawProperties.opacity; }
+    bool drawOpacityIsAnimating() const { return m_drawProperties.opacity_is_animating; }
+    bool drawTransformIsAnimating() const { return m_drawProperties.target_space_transform_is_animating; }
+    bool screenSpaceTransformIsAnimating() const { return m_drawProperties.screen_space_transform_is_animating; }
+    bool isClipped() const { return m_drawProperties.is_clipped; }
+    const gfx::Rect& clipRect() const { return m_drawProperties.clip_rect; }
+    const gfx::Rect& drawableContentRect() const { return m_drawProperties.drawable_content_rect; }
+    const gfx::Rect& visibleContentRect() const { return m_drawProperties.visible_content_rect; }
+    LayerImpl* renderTarget() { DCHECK(!m_drawProperties.render_target || m_drawProperties.render_target->renderSurface()); return m_drawProperties.render_target; }
+    const LayerImpl* renderTarget() const { DCHECK(!m_drawProperties.render_target || m_drawProperties.render_target->renderSurface()); return m_drawProperties.render_target; }
+    RenderSurfaceImpl* renderSurface() const { return m_drawProperties.render_surface.get(); }
 
     // The client should be responsible for setting bounds, contentBounds and
     // contentsScale to appropriate values. LayerImpl doesn't calculate any of
@@ -228,33 +236,11 @@ public:
 
     InputHandlerClient::ScrollStatus tryScroll(const gfx::PointF& screenSpacePoint, InputHandlerClient::ScrollInputType) const;
 
-    const gfx::Rect& visibleContentRect() const { return m_visibleContentRect; }
-    void setVisibleContentRect(const gfx::Rect& visibleContentRect) { m_visibleContentRect = visibleContentRect; }
-
     bool doubleSided() const { return m_doubleSided; }
     void setDoubleSided(bool);
 
     void setTransform(const gfx::Transform&);
     bool transformIsAnimating() const;
-
-    const gfx::Transform& drawTransform() const { return m_drawTransform; }
-    void setDrawTransform(const gfx::Transform& matrix) { m_drawTransform = matrix; }
-    const gfx::Transform& screenSpaceTransform() const { return m_screenSpaceTransform; }
-    void setScreenSpaceTransform(const gfx::Transform& matrix) { m_screenSpaceTransform = matrix; }
-
-    bool drawTransformIsAnimating() const { return m_drawTransformIsAnimating; }
-    void setDrawTransformIsAnimating(bool animating) { m_drawTransformIsAnimating = animating; }
-    bool screenSpaceTransformIsAnimating() const { return m_screenSpaceTransformIsAnimating; }
-    void setScreenSpaceTransformIsAnimating(bool animating) { m_screenSpaceTransformIsAnimating = animating; }
-
-    bool isClipped() const { return m_isClipped; }
-    void setIsClipped(bool isClipped) { m_isClipped = isClipped; }
-
-    const gfx::Rect& clipRect() const { return m_clipRect; }
-    void setClipRect(const gfx::Rect& clipRect) { m_clipRect = clipRect; }
-
-    const gfx::Rect& drawableContentRect() const { return m_drawableContentRect; }
-    void setDrawableContentRect(const gfx::Rect& rect) { m_drawableContentRect = rect; }
 
     const gfx::RectF& updateRect() const { return m_updateRect; }
     void setUpdateRect(const gfx::RectF& updateRect) { m_updateRect = updateRect; }
@@ -356,8 +342,6 @@ private:
     // For layers that do not own a surface this flag acts as m_layerPropertyChanged.
     bool m_layerSurfacePropertyChanged;
 
-    // Uses layer's content space.
-    gfx::Rect m_visibleContentRect;
     bool m_masksToBounds;
     bool m_contentsOpaque;
     float m_opacity;
@@ -382,16 +366,9 @@ private:
     gfx::Vector2d m_maxScrollOffset;
     gfx::Transform m_implTransform;
 
-    // The layer whose coordinate space this layer draws into. This can be
-    // either the same layer (m_renderTarget == this) or an ancestor of this
-    // layer.
-    LayerImpl* m_renderTarget;
-
     // The global depth value of the center of the layer. This value is used
     // to sort layers from back to front.
     float m_drawDepth;
-    float m_drawOpacity;
-    bool m_drawOpacityIsAnimating;
 
     // Debug layer name.
     std::string m_debugName;
@@ -400,25 +377,9 @@ private:
     WebKit::WebFilterOperations m_backgroundFilters;
     skia::RefPtr<SkImageFilter> m_filter;
 
-    gfx::Transform m_drawTransform;
-    gfx::Transform m_screenSpaceTransform;
-    bool m_drawTransformIsAnimating;
-    bool m_screenSpaceTransformIsAnimating;
-
 #ifndef NDEBUG
     bool m_betweenWillDrawAndDidDraw;
 #endif
-
-    // Render surface associated with this layer. The layer and its descendants
-    // will render to this surface.
-    scoped_ptr<RenderSurfaceImpl> m_renderSurface;
-
-    // Uses target surface's space.
-    gfx::Rect m_drawableContentRect;
-    gfx::Rect m_clipRect;
-
-    // True if the layer is clipped by m_clipRect.
-    bool m_isClipped;
 
     // Rect indicating what was repainted/updated during update.
     // Note that plugin layers bypass this and leave it empty.
@@ -430,6 +391,10 @@ private:
 
     // Manages scrollbars for this layer
     scoped_ptr<ScrollbarAnimationController> m_scrollbarAnimationController;
+
+    // Group of properties that need to be computed based on the layer tree
+    // hierarchy before layers can be drawn.
+    DrawProperties<LayerImpl, RenderSurfaceImpl> m_drawProperties;
 
     DISALLOW_COPY_AND_ASSIGN(LayerImpl);
 };

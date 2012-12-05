@@ -512,16 +512,6 @@ TEST_F(LayerTest, checkPropertyChangeCausesCorrectBehavior)
     // sanity check of initial test condition
     EXPECT_FALSE(testLayer->needsDisplay());
 
-    // Test properties that should not call needsDisplay and needsCommit when changed.
-    EXPECT_SET_NEEDS_COMMIT(0, testLayer->setVisibleContentRect(gfx::Rect(0, 0, 40, 50)));
-    EXPECT_SET_NEEDS_COMMIT(0, testLayer->setUseLCDText(true));
-    EXPECT_SET_NEEDS_COMMIT(0, testLayer->setDrawOpacity(0.5));
-    EXPECT_SET_NEEDS_COMMIT(0, testLayer->setRenderTarget(0));
-    EXPECT_SET_NEEDS_COMMIT(0, testLayer->setDrawTransform(gfx::Transform()));
-    EXPECT_SET_NEEDS_COMMIT(0, testLayer->setScreenSpaceTransform(gfx::Transform()));
-    EXPECT_SET_NEEDS_COMMIT(0, testLayer->setDrawableContentRect(gfx::Rect(4, 5, 6, 7)));
-    EXPECT_FALSE(testLayer->needsDisplay());
-
     // Next, test properties that should call setNeedsCommit (but not setNeedsDisplay)
     // All properties need to be set to new values in order for setNeedsCommit to be called.
     EXPECT_SET_NEEDS_COMMIT(1, testLayer->setAnchorPoint(gfx::PointF(1.23f, 4.56f)));

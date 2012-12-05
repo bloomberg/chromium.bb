@@ -210,27 +210,27 @@ TEST(LayerSorterTest, verifyExistingOrderingPreservedWhenNoZDiff)
 
     layer1->setBounds(gfx::Size(10, 10));
     layer1->setContentBounds(gfx::Size(10, 10));
-    layer1->setDrawTransform(BehindMatrix);
+    layer1->drawProperties().target_space_transform = BehindMatrix;
     layer1->setDrawsContent(true);
 
     layer2->setBounds(gfx::Size(20, 20));
     layer2->setContentBounds(gfx::Size(20, 20));
-    layer2->setDrawTransform(BehindMatrix);
+    layer2->drawProperties().target_space_transform = BehindMatrix;
     layer2->setDrawsContent(true);
 
     layer3->setBounds(gfx::Size(30, 30));
     layer3->setContentBounds(gfx::Size(30, 30));
-    layer3->setDrawTransform(FrontMatrix);
+    layer3->drawProperties().target_space_transform = FrontMatrix;
     layer3->setDrawsContent(true);
 
     layer4->setBounds(gfx::Size(40, 40));
     layer4->setContentBounds(gfx::Size(40, 40));
-    layer4->setDrawTransform(FrontMatrix);
+    layer4->drawProperties().target_space_transform = FrontMatrix;
     layer4->setDrawsContent(true);
 
     layer5->setBounds(gfx::Size(50, 50));
     layer5->setContentBounds(gfx::Size(50, 50));
-    layer5->setDrawTransform(BehindMatrix);
+    layer5->drawProperties().target_space_transform = BehindMatrix;
     layer5->setDrawsContent(true);
 
     std::vector<LayerImpl*> layerList;

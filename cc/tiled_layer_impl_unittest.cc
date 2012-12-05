@@ -27,12 +27,12 @@ static scoped_ptr<TiledLayerImpl> createLayer(const gfx::Size& tileSize, const g
     tiler->setBounds(layerSize);
     layer->setTilingData(*tiler);
     layer->setSkipsDraw(false);
-    layer->setVisibleContentRect(gfx::Rect(gfx::Point(), layerSize));
-    layer->setDrawOpacity(1);
+    layer->drawProperties().visible_content_rect = gfx::Rect(gfx::Point(), layerSize);
+    layer->drawProperties().opacity = 1;
     layer->setBounds(layerSize);
     layer->setContentBounds(layerSize);
     layer->createRenderSurface();
-    layer->setRenderTarget(layer.get());
+    layer->drawProperties().render_target = layer.get();
 
     ResourceProvider::ResourceId resourceId = 1;
     for (int i = 0; i < tiler->numTilesX(); ++i)
@@ -62,7 +62,7 @@ TEST(TiledLayerImplTest, emptyQuadList)
     // Layer with empty visible layer rect produces no quads
     {
         scoped_ptr<TiledLayerImpl> layer = createLayer(tileSize, layerSize, LayerTilingData::NoBorderTexels);
-        layer->setVisibleContentRect(gfx::Rect());
+        layer->drawProperties().visible_content_rect = gfx::Rect();
 
         MockQuadCuller quadCuller;
         AppendQuadsData data;
@@ -75,7 +75,7 @@ TEST(TiledLayerImplTest, emptyQuadList)
         scoped_ptr<TiledLayerImpl> layer = createLayer(tileSize, layerSize, LayerTilingData::NoBorderTexels);
 
         gfx::Rect outsideBounds(gfx::Point(-100, -100), gfx::Size(50, 50));
-        layer->setVisibleContentRect(outsideBounds);
+        layer->drawProperties().visible_content_rect = outsideBounds;
 
         MockQuadCuller quadCuller;
         AppendQuadsData data;
@@ -135,7 +135,7 @@ TEST(TiledLayerImplTest, checkerboarding)
 static void getQuads(QuadList& quads, SharedQuadStateList& sharedStates, gfx::Size tileSize, const gfx::Size& layerSize, LayerTilingData::BorderTexelOption borderTexelOption, const gfx::Rect& visibleContentRect)
 {
     scoped_ptr<TiledLayerImpl> layer = createLayer(tileSize, layerSize, borderTexelOption);
-    layer->setVisibleContentRect(visibleContentRect);
+    layer->drawProperties().visible_content_rect = visibleContentRect;
     layer->setBounds(layerSize);
 
     MockQuadCuller quadCuller(quads, sharedStates);

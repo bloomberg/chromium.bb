@@ -25,11 +25,11 @@ TEST(SolidColorLayerImplTest, verifyTilingCompleteAndNoOverlap)
     gfx::Rect visibleContentRect = gfx::Rect(gfx::Point(), layerSize);
 
     scoped_ptr<SolidColorLayerImpl> layer = SolidColorLayerImpl::create(1);
-    layer->setVisibleContentRect(visibleContentRect);
+    layer->drawProperties().visible_content_rect = visibleContentRect;
     layer->setBounds(layerSize);
     layer->setContentBounds(layerSize);
     layer->createRenderSurface();
-    layer->setRenderTarget(layer.get());
+    layer->drawProperties().render_target = layer.get();
 
     AppendQuadsData data;
     layer->appendQuads(quadCuller, data);
@@ -46,12 +46,12 @@ TEST(SolidColorLayerImplTest, verifyCorrectBackgroundColorInQuad)
     gfx::Rect visibleContentRect = gfx::Rect(gfx::Point(), layerSize);
 
     scoped_ptr<SolidColorLayerImpl> layer = SolidColorLayerImpl::create(1);
-    layer->setVisibleContentRect(visibleContentRect);
+    layer->drawProperties().visible_content_rect = visibleContentRect;
     layer->setBounds(layerSize);
     layer->setContentBounds(layerSize);
     layer->setBackgroundColor(testColor);
     layer->createRenderSurface();
-    layer->setRenderTarget(layer.get());
+    layer->drawProperties().render_target = layer.get();
 
     AppendQuadsData data;
     layer->appendQuads(quadCuller, data);
@@ -69,12 +69,12 @@ TEST(SolidColorLayerImplTest, verifyCorrectOpacityInQuad)
     gfx::Rect visibleContentRect = gfx::Rect(gfx::Point(), layerSize);
 
     scoped_ptr<SolidColorLayerImpl> layer = SolidColorLayerImpl::create(1);
-    layer->setVisibleContentRect(visibleContentRect);
+    layer->drawProperties().visible_content_rect = visibleContentRect;
     layer->setBounds(layerSize);
     layer->setContentBounds(layerSize);
-    layer->setDrawOpacity(opacity);
+    layer->drawProperties().opacity = opacity;
     layer->createRenderSurface();
-    layer->setRenderTarget(layer.get());
+    layer->drawProperties().render_target = layer.get();
 
     AppendQuadsData data;
     layer->appendQuads(quadCuller, data);
@@ -89,10 +89,10 @@ TEST(SolidColorLayerImplTest, verifyOpaqueRect)
     gfx::Size layerSize = gfx::Size(100, 100);
     gfx::Rect visibleContentRect = gfx::Rect(gfx::Point(), layerSize);
 
-    layer->setVisibleContentRect(visibleContentRect);
+    layer->drawProperties().visible_content_rect = visibleContentRect;
     layer->setBounds(layerSize);
     layer->createRenderSurface();
-    layer->setRenderTarget(layer.get());
+    layer->drawProperties().render_target = layer.get();
 
     EXPECT_FALSE(layer->contentsOpaque());
     layer->setBackgroundColor(SkColorSetARGBInline(255, 10, 20, 30));
@@ -106,7 +106,7 @@ TEST(SolidColorLayerImplTest, verifyOpaqueRect)
         EXPECT_TRUE(layerImpl->contentsOpaque());
 
         // Impl layer has 1 opacity, and the color is opaque, so the opaqueRect should be the full tile.
-        layerImpl->setDrawOpacity(1);
+        layerImpl->drawProperties().opacity = 1;
 
         MockQuadCuller quadCuller;
         AppendQuadsData data;
@@ -128,7 +128,7 @@ TEST(SolidColorLayerImplTest, verifyOpaqueRect)
         EXPECT_FALSE(layerImpl->contentsOpaque());
 
         // Impl layer has 1 opacity, but the color is not opaque, so the opaque_rect should be empty.
-        layerImpl->setDrawOpacity(1);
+        layerImpl->drawProperties().opacity = 1;
 
         MockQuadCuller quadCuller;
         AppendQuadsData data;

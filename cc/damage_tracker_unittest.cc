@@ -21,7 +21,7 @@ using namespace WebKitTests;
 namespace cc {
 namespace {
 
-void executeCalculateDrawTransformsAndVisibility(LayerImpl* root, std::vector<LayerImpl*>& renderSurfaceLayerList)
+void executeCalculateDrawProperties(LayerImpl* root, std::vector<LayerImpl*>& renderSurfaceLayerList)
 {
     LayerSorter layerSorter;
     int dummyMaxTextureSize = 512;
@@ -32,7 +32,7 @@ void executeCalculateDrawTransformsAndVisibility(LayerImpl* root, std::vector<La
     ASSERT_TRUE(root->renderSurface());
     ASSERT_FALSE(renderSurfaceLayerList.size());
 
-    LayerTreeHostCommon::calculateDrawTransforms(root, root->bounds(), 1, 1, &layerSorter, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(root, root->bounds(), 1, 1, &layerSorter, dummyMaxTextureSize, renderSurfaceLayerList);
 }
 
 void clearDamageForAllSurfaces(LayerImpl* layer)
@@ -53,7 +53,7 @@ void emulateDrawingOneFrame(LayerImpl* root)
     //   3. resetting all updateRects and propertyChanged flags for all layers and surfaces.
 
     std::vector<LayerImpl*> renderSurfaceLayerList;
-    executeCalculateDrawTransformsAndVisibility(root, renderSurfaceLayerList);
+    executeCalculateDrawProperties(root, renderSurfaceLayerList);
 
     // Iterate back-to-front, so that damage correctly propagates from descendant surfaces to ancestors.
     for (int i = renderSurfaceLayerList.size() - 1; i >= 0; --i) {

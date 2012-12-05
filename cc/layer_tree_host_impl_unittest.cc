@@ -118,8 +118,8 @@ public:
         root->setPosition(gfx::PointF(0, 0));
         root->setBounds(gfx::Size(10, 10));
         root->setContentBounds(gfx::Size(10, 10));
-        root->setVisibleContentRect(gfx::Rect(0, 0, 10, 10));
         root->setDrawsContent(true);
+        root->drawProperties().visible_content_rect = gfx::Rect(0, 0, 10, 10);
         myHostImpl->setRootLayer(root.Pass());
         return myHostImpl.Pass();
     }
@@ -910,7 +910,7 @@ protected:
         setContentBounds(gfx::Size(10, 10));
         setDrawsContent(true);
         setSkipsDraw(false);
-        setVisibleContentRect(gfx::Rect(0, 0, 10, 10));
+        drawProperties().visible_content_rect = gfx::Rect(0, 0, 10, 10);
 
         scoped_ptr<LayerTilingData> tiler = LayerTilingData::create(gfx::Size(100, 100), LayerTilingData::HasBorderTexels);
         tiler->setBounds(contentBounds());
@@ -2383,7 +2383,7 @@ static scoped_ptr<LayerTreeHostImpl> setupLayersForOpacity(bool partialSwap, Lay
     root->setPosition(gfx::PointF(rootRect.x(), rootRect.y()));
     root->setBounds(gfx::Size(rootRect.width(), rootRect.height()));
     root->setContentBounds(root->bounds());
-    root->setVisibleContentRect(rootRect);
+    root->drawProperties().visible_content_rect = rootRect;
     root->setDrawsContent(false);
     root->renderSurface()->setContentRect(gfx::Rect(gfx::Point(), gfx::Size(rootRect.width(), rootRect.height())));
 
@@ -2392,7 +2392,7 @@ static scoped_ptr<LayerTreeHostImpl> setupLayersForOpacity(bool partialSwap, Lay
     child->setOpacity(0.5f);
     child->setBounds(gfx::Size(childRect.width(), childRect.height()));
     child->setContentBounds(child->bounds());
-    child->setVisibleContentRect(childRect);
+    child->drawProperties().visible_content_rect = childRect;
     child->setDrawsContent(false);
     child->setForceRenderSurface(true);
 
@@ -2400,7 +2400,7 @@ static scoped_ptr<LayerTreeHostImpl> setupLayersForOpacity(bool partialSwap, Lay
     grandChild->setPosition(gfx::Point(grandChildRect.x(), grandChildRect.y()));
     grandChild->setBounds(gfx::Size(grandChildRect.width(), grandChildRect.height()));
     grandChild->setContentBounds(grandChild->bounds());
-    grandChild->setVisibleContentRect(grandChildRect);
+    grandChild->drawProperties().visible_content_rect = grandChildRect;
     grandChild->setDrawsContent(true);
 
     child->addChild(grandChild.Pass());

@@ -670,7 +670,7 @@ void LayerTreeHost::updateLayers(Layer* rootLayer, ResourceUpdateQueue& queue)
         }
 
         TRACE_EVENT0("cc", "LayerTreeHost::updateLayers::calcDrawEtc");
-        LayerTreeHostCommon::calculateDrawTransforms(rootLayer, deviceViewportSize(), m_deviceScaleFactor, m_pageScaleFactor, rendererCapabilities().maxTextureSize, updateList);
+        LayerTreeHostCommon::calculateDrawProperties(rootLayer, deviceViewportSize(), m_deviceScaleFactor, m_pageScaleFactor, rendererCapabilities().maxTextureSize, updateList);
     }
 
     // Reset partial texture update requests.

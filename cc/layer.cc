@@ -54,12 +54,6 @@ Layer::Layer()
     , m_drawCheckerboardForMissingTiles(false)
     , m_forceRenderSurface(false)
     , m_replicaLayer(0)
-    , m_drawOpacity(0)
-    , m_drawOpacityIsAnimating(false)
-    , m_renderTarget(0)
-    , m_drawTransformIsAnimating(false)
-    , m_screenSpaceTransformIsAnimating(false)
-    , m_isClipped(false)
     , m_rasterScale(1.0)
     , m_automaticallyComputeRasterScale(false)
     , m_boundsContainPageScale(false)
@@ -696,9 +690,9 @@ void Layer::setBoundsContainPageScale(bool boundsContainPageScale)
 
 void Layer::createRenderSurface()
 {
-    DCHECK(!m_renderSurface);
-    m_renderSurface = make_scoped_ptr(new RenderSurface(this));
-    setRenderTarget(this);
+    DCHECK(!m_drawProperties.render_surface);
+    m_drawProperties.render_surface = make_scoped_ptr(new RenderSurface(this));
+    m_drawProperties.render_target = this;
 }
 
 int Layer::descendantsDrawContent()

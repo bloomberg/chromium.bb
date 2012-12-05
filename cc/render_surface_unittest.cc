@@ -74,7 +74,7 @@ TEST(RenderSurfaceTest, sanityCheckSurfaceCreatesCorrectSharedQuadState)
     scoped_ptr<LayerImpl> owningLayer = LayerImpl::create(2);
     owningLayer->createRenderSurface();
     ASSERT_TRUE(owningLayer->renderSurface());
-    owningLayer->setRenderTarget(owningLayer.get());
+    owningLayer->drawProperties().render_target = owningLayer.get();
     RenderSurfaceImpl* renderSurface = owningLayer->renderSurface();
 
     rootLayer->addChild(owningLayer.Pass());
@@ -124,7 +124,7 @@ TEST(RenderSurfaceTest, sanityCheckSurfaceCreatesCorrectRenderPass)
     scoped_ptr<LayerImpl> owningLayer = LayerImpl::create(2);
     owningLayer->createRenderSurface();
     ASSERT_TRUE(owningLayer->renderSurface());
-    owningLayer->setRenderTarget(owningLayer.get());
+    owningLayer->drawProperties().render_target = owningLayer.get();
     RenderSurfaceImpl* renderSurface = owningLayer->renderSurface();
 
     rootLayer->addChild(owningLayer.Pass());

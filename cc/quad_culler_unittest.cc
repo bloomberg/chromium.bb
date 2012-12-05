@@ -43,10 +43,10 @@ static scoped_ptr<TiledLayerImpl> makeLayer(TiledLayerImpl* parent, const gfx::T
     tiler->setBounds(layerRect.size());
     layer->setTilingData(*tiler);
     layer->setSkipsDraw(false);
-    layer->setDrawTransform(drawTransform);
-    layer->setScreenSpaceTransform(drawTransform);
-    layer->setVisibleContentRect(layerRect);
-    layer->setDrawOpacity(opacity);
+    layer->drawProperties().target_space_transform = drawTransform;
+    layer->drawProperties().screen_space_transform = drawTransform;
+    layer->drawProperties().visible_content_rect = layerRect;
+    layer->drawProperties().opacity = opacity;
     layer->setContentsOpaque(opaque);
     layer->setBounds(layerRect.size());
     layer->setContentBounds(layerRect.size());
@@ -64,11 +64,11 @@ static scoped_ptr<TiledLayerImpl> makeLayer(TiledLayerImpl* parent, const gfx::T
         surfaceLayerList.push_back(layer.get());
         layer->renderSurface()->layerList().push_back(layer.get());
     } else {
-        layer->setRenderTarget(parent->renderTarget());
+        layer->drawProperties().render_target = parent->renderTarget();
         parent->renderSurface()->layerList().push_back(layer.get());
         rectInTarget.Union(MathUtil::mapClippedRect(parent->drawTransform(), parent->visibleContentRect()));
     }
-    layer->setDrawableContentRect(rectInTarget);
+    layer->drawProperties().drawable_content_rect = rectInTarget;
 
     return layer.Pass();
 }

@@ -47,13 +47,7 @@ LayerImpl::LayerImpl(int id)
     , m_forceRenderSurface(false)
     , m_isContainerForFixedPositionLayers(false)
     , m_fixedToContainerLayer(false)
-    , m_renderTarget(0)
     , m_drawDepth(0)
-    , m_drawOpacity(0)
-    , m_drawOpacityIsAnimating(false)
-    , m_drawTransformIsAnimating(false)
-    , m_screenSpaceTransformIsAnimating(false)
-    , m_isClipped(false)
 #ifndef NDEBUG
     , m_betweenWillDrawAndDidDraw(false)
 #endif
@@ -104,9 +98,9 @@ void LayerImpl::clearChildList()
 
 void LayerImpl::createRenderSurface()
 {
-    DCHECK(!m_renderSurface);
-    m_renderSurface = make_scoped_ptr(new RenderSurfaceImpl(this));
-    setRenderTarget(this);
+    DCHECK(!m_drawProperties.render_surface);
+    m_drawProperties.render_surface = make_scoped_ptr(new RenderSurfaceImpl(this));
+    m_drawProperties.render_target = this;
 }
 
 int LayerImpl::descendantsDrawContent()
@@ -125,7 +119,12 @@ int LayerImpl::descendantsDrawContent()
 scoped_ptr<SharedQuadState> LayerImpl::createSharedQuadState() const
 {
   scoped_ptr<SharedQuadState> state = SharedQuadState::Create();
-  state->SetAll(m_drawTransform, m_visibleContentRect, m_drawableContentRect, m_clipRect, m_isClipped, m_drawOpacity);
+  state->SetAll(m_drawProperties.target_space_transform,
+                m_drawProperties.visible_content_rect,
+                m_drawProperties.drawable_content_rect,
+                m_drawProperties.clip_rect,
+                m_drawProperties.is_clipped,
+                m_drawProperties.opacity);
   return state.Pass();
 }
 
@@ -294,9 +293,9 @@ void LayerImpl::dumpLayerProperties(std::string* str, int indent) const
     str->append(indentStr);
     base::StringAppendF(str, "bounds: %d, %d\n", bounds().width(), bounds().height());
 
-    if (m_renderTarget) {
+    if (m_drawProperties.render_target) {
         str->append(indentStr);
-        base::StringAppendF(str, "renderTarget: %d\n", m_renderTarget->m_layerId);
+        base::StringAppendF(str, "renderTarget: %d\n", m_drawProperties.render_target->m_layerId);
     }
 
     str->append(indentStr);
@@ -306,11 +305,12 @@ void LayerImpl::dumpLayerProperties(std::string* str, int indent) const
     base::StringAppendF(str, "contentsOpaque: %d\n", m_contentsOpaque);
 
     str->append(indentStr);
+    const gfx::Transform& transform = m_drawProperties.target_space_transform;
     base::StringAppendF(str, "drawTransform: %f, %f, %f, %f  //  %f, %f, %f, %f  //  %f, %f, %f, %f  //  %f, %f, %f, %f\n",
-        m_drawTransform.matrix().getDouble(0, 0), m_drawTransform.matrix().getDouble(0, 1), m_drawTransform.matrix().getDouble(0, 2), m_drawTransform.matrix().getDouble(0, 3),
-        m_drawTransform.matrix().getDouble(1, 0), m_drawTransform.matrix().getDouble(1, 1), m_drawTransform.matrix().getDouble(1, 2), m_drawTransform.matrix().getDouble(1, 3),
-        m_drawTransform.matrix().getDouble(2, 0), m_drawTransform.matrix().getDouble(2, 1), m_drawTransform.matrix().getDouble(2, 2), m_drawTransform.matrix().getDouble(2, 3),
-        m_drawTransform.matrix().getDouble(3, 0), m_drawTransform.matrix().getDouble(3, 1), m_drawTransform.matrix().getDouble(3, 2), m_drawTransform.matrix().getDouble(3, 3));
+        transform.matrix().getDouble(0, 0), transform.matrix().getDouble(0, 1), transform.matrix().getDouble(0, 2), transform.matrix().getDouble(0, 3),
+        transform.matrix().getDouble(1, 0), transform.matrix().getDouble(1, 1), transform.matrix().getDouble(1, 2), transform.matrix().getDouble(1, 3),
+        transform.matrix().getDouble(2, 0), transform.matrix().getDouble(2, 1), transform.matrix().getDouble(2, 2), transform.matrix().getDouble(2, 3),
+        transform.matrix().getDouble(3, 0), transform.matrix().getDouble(3, 1), transform.matrix().getDouble(3, 2), transform.matrix().getDouble(3, 3));
 
     str->append(indentStr);
     base::StringAppendF(str, "drawsContent: %s\n", m_drawsContent ? "yes" : "no");
@@ -366,7 +366,7 @@ bool LayerImpl::layerSurfacePropertyChanged() const
     // not be traversed by the damage tracker. We need to make sure that
     // property change on such layer will be caught by its descendants.
     LayerImpl* current = this->m_parent;
-    while (current && !current->m_renderSurface) {
+    while (current && !current->m_drawProperties.render_surface) {
         if (current->m_layerSurfacePropertyChanged)
             return true;
         current = current->m_parent;
@@ -399,8 +399,8 @@ void LayerImpl::resetAllChangeTrackingForSubtree()
 
     m_updateRect = gfx::RectF();
 
-    if (m_renderSurface)
-        m_renderSurface->resetPropertyChangedFlag();
+    if (m_drawProperties.render_surface)
+        m_drawProperties.render_surface->resetPropertyChangedFlag();
 
     if (m_maskLayer)
         m_maskLayer->resetAllChangeTrackingForSubtree();

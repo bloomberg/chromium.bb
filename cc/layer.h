@@ -11,6 +11,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "cc/cc_export.h"
+#include "cc/draw_properties.h"
 #include "cc/layer_animation_controller.h"
 #include "cc/occlusion_tracker.h"
 #include "cc/region.h"
@@ -128,8 +129,23 @@ public:
     void setTransform(const gfx::Transform&);
     bool transformIsAnimating() const;
 
-    const gfx::Rect& visibleContentRect() const { return m_visibleContentRect; }
-    void setVisibleContentRect(const gfx::Rect& visibleContentRect) { m_visibleContentRect = visibleContentRect; }
+    DrawProperties<Layer, RenderSurface>& drawProperties() { return m_drawProperties; }
+    const DrawProperties<Layer, RenderSurface>& drawProperties() const { return m_drawProperties; }
+
+    // The following are shortcut accessors to get various information from m_drawProperties
+    const gfx::Transform& drawTransform() const { return m_drawProperties.target_space_transform; }
+    const gfx::Transform& screenSpaceTransform() const { return m_drawProperties.screen_space_transform; }
+    float drawOpacity() const { return m_drawProperties.opacity; }
+    bool drawOpacityIsAnimating() const { return m_drawProperties.opacity_is_animating; }
+    bool drawTransformIsAnimating() const { return m_drawProperties.target_space_transform_is_animating; }
+    bool screenSpaceTransformIsAnimating() const { return m_drawProperties.screen_space_transform_is_animating; }
+    bool isClipped() const { return m_drawProperties.is_clipped; }
+    const gfx::Rect& clipRect() const { return m_drawProperties.clip_rect; }
+    const gfx::Rect& drawableContentRect() const { return m_drawProperties.drawable_content_rect; }
+    const gfx::Rect& visibleContentRect() const { return m_drawProperties.visible_content_rect; }
+    Layer* renderTarget() { DCHECK(!m_drawProperties.render_target || m_drawProperties.render_target->renderSurface()); return m_drawProperties.render_target; }
+    const Layer* renderTarget() const { DCHECK(!m_drawProperties.render_target || m_drawProperties.render_target->renderSurface()); return m_drawProperties.render_target; }
+    RenderSurface* renderSurface() const { return m_drawProperties.render_surface.get(); }
 
     void setScrollOffset(gfx::Vector2d);
     gfx::Vector2d scrollOffset() const { return m_scrollOffset; }
@@ -204,43 +220,8 @@ public:
 
     virtual void pushPropertiesTo(LayerImpl*);
 
-    void clearRenderSurface() { m_renderSurface.reset(); }
-    RenderSurface* renderSurface() const { return m_renderSurface.get(); }
+    void clearRenderSurface() { m_drawProperties.render_surface.reset(); }
     void createRenderSurface();
-
-    float drawOpacity() const { return m_drawOpacity; }
-    void setDrawOpacity(float opacity) { m_drawOpacity = opacity; }
-
-    bool drawOpacityIsAnimating() const { return m_drawOpacityIsAnimating; }
-    void setDrawOpacityIsAnimating(bool drawOpacityIsAnimating) { m_drawOpacityIsAnimating = drawOpacityIsAnimating; }
-
-    void setRenderTarget(Layer* target) { m_renderTarget = target; }
-    Layer* renderTarget() { DCHECK(!m_renderTarget || m_renderTarget->renderSurface()); return m_renderTarget; }
-    const Layer* renderTarget() const { DCHECK(!m_renderTarget || m_renderTarget->renderSurface()); return m_renderTarget; }
-
-    bool drawTransformIsAnimating() const { return m_drawTransformIsAnimating; }
-    void setDrawTransformIsAnimating(bool animating) { m_drawTransformIsAnimating = animating; }
-    bool screenSpaceTransformIsAnimating() const { return m_screenSpaceTransformIsAnimating; }
-    void setScreenSpaceTransformIsAnimating(bool animating) { m_screenSpaceTransformIsAnimating = animating; }
-
-    // This moves from layer space, with origin in the center to target space with origin in the top left.
-    // That is, it converts from logical, non-page-scaled, to target pixels (and if the target is the
-    // root render surface, then this converts to physical pixels).
-    const gfx::Transform& drawTransform() const { return m_drawTransform; }
-    void setDrawTransform(const gfx::Transform& matrix) { m_drawTransform = matrix; }
-    // This moves from content space, with origin the top left to screen space with origin in the top left.
-    // It converts logical, non-page-scaled pixels to physical pixels.
-    const gfx::Transform& screenSpaceTransform() const { return m_screenSpaceTransform; }
-    void setScreenSpaceTransform(const gfx::Transform& matrix) { m_screenSpaceTransform = matrix; }
-
-    bool isClipped() const { return m_isClipped; }
-    void setIsClipped(bool isClipped) { m_isClipped = isClipped; }
-
-    const gfx::Rect& clipRect() const { return m_clipRect; }
-    void setClipRect(const gfx::Rect& clipRect) { m_clipRect = clipRect; }
-
-    const gfx::Rect& drawableContentRect() const { return m_drawableContentRect; }
-    void setDrawableContentRect(const gfx::Rect& rect) { m_drawableContentRect = rect; }
 
     // The contentsScale converts from logical, non-page-scaled pixels to target pixels.
     // The contentsScale is 1 for the root layer as it is already in physical pixels.
@@ -357,9 +338,6 @@ private:
     // Layer properties.
     gfx::Size m_bounds;
 
-    // Uses layer's content space.
-    gfx::Rect m_visibleContentRect;
-
     gfx::Vector2d m_scrollOffset;
     gfx::Vector2d m_maxScrollOffset;
     bool m_scrollable;
@@ -397,24 +375,6 @@ private:
     scoped_refptr<Layer> m_replicaLayer;
 
     // Transient properties.
-    scoped_ptr<RenderSurface> m_renderSurface;
-    float m_drawOpacity;
-    bool m_drawOpacityIsAnimating;
-
-    Layer* m_renderTarget;
-
-    gfx::Transform m_drawTransform;
-    gfx::Transform m_screenSpaceTransform;
-    bool m_drawTransformIsAnimating;
-    bool m_screenSpaceTransformIsAnimating;
-
-    // Uses target surface space.
-    gfx::Rect m_drawableContentRect;
-    gfx::Rect m_clipRect;
-
-    // True if the layer is clipped by m_clipRect
-    bool m_isClipped;
-
     float m_rasterScale;
     bool m_automaticallyComputeRasterScale;
     bool m_boundsContainPageScale;
@@ -423,6 +383,8 @@ private:
 
     WebKit::WebAnimationDelegate* m_layerAnimationDelegate;
     WebKit::WebLayerScrollClient* m_layerScrollClient;
+
+    DrawProperties<Layer, RenderSurface> m_drawProperties;
 };
 
 void sortLayers(std::vector<scoped_refptr<Layer> >::iterator, std::vector<scoped_refptr<Layer> >::iterator, void*);

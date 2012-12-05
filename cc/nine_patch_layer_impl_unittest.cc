@@ -38,11 +38,11 @@ TEST(NinePatchLayerImplTest, verifyDrawQuads)
     gfx::Rect scaledApertureNonUniform(20, 30, 340, 350);
 
     scoped_ptr<NinePatchLayerImpl> layer = NinePatchLayerImpl::create(1);
-    layer->setVisibleContentRect(visibleContentRect);
+    layer->drawProperties().visible_content_rect = visibleContentRect;
     layer->setBounds(layerSize);
     layer->setContentBounds(layerSize);
     layer->createRenderSurface();
-    layer->setRenderTarget(layer.get());
+    layer->drawProperties().render_target = layer.get();
     layer->setLayout(bitmapSize, apertureRect);
     layer->setResourceId(1);
 
@@ -50,7 +50,7 @@ TEST(NinePatchLayerImplTest, verifyDrawQuads)
     // the shared draw transform.
     gfx::Transform transform;
     transform.Scale(10, 10);
-    layer->setDrawTransform(transform);
+    layer->drawProperties().target_space_transform = transform;
 
     AppendQuadsData data;
     layer->appendQuads(quadCuller, data);
@@ -97,11 +97,11 @@ TEST(NinePatchLayerImplTest, verifyDrawQuadsForSqueezedLayer)
     gfx::Rect apertureRect(20, 30, 40, 45); // rightWidth: 40, botHeight: 25
 
     scoped_ptr<NinePatchLayerImpl> layer = NinePatchLayerImpl::create(1);
-    layer->setVisibleContentRect(visibleContentRect);
+    layer->drawProperties().visible_content_rect = visibleContentRect;
     layer->setBounds(layerSize);
     layer->setContentBounds(layerSize);
     layer->createRenderSurface();
-    layer->setRenderTarget(layer.get());
+    layer->drawProperties().render_target = layer.get();
     layer->setLayout(bitmapSize, apertureRect);
     layer->setResourceId(1);
 

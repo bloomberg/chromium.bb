@@ -1240,7 +1240,7 @@ public:
         m_layerTreeHost->setViewportSize(gfx::Size(10, 10), gfx::Size(10, 10));
         m_layerTreeHost->rootLayer()->addChild(m_updateCheckLayer);
         m_updateCheckLayer->setOpacity(0);
-        m_updateCheckLayer->setDrawOpacity(0);
+        m_updateCheckLayer->drawProperties().opacity = 0;
         postAddAnimationToMainThread(m_updateCheckLayer.get());
     }
 

@@ -47,6 +47,7 @@
       'delegated_renderer_layer_impl.h',
       'direct_renderer.cc',
       'direct_renderer.h',
+      'draw_properties.h',
       'draw_quad.cc',
       'draw_quad.h',
       'font_atlas.cc',
