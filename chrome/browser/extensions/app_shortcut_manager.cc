@@ -88,7 +88,8 @@ void AppShortcutManager::Observe(int type,
     case chrome::NOTIFICATION_EXTENSION_INSTALLED: {
       const Extension* extension = content::Details<const Extension>(
           details).ptr();
-      if (extension->is_platform_app()) {
+      if (extension->is_platform_app() &&
+          extension->location() != Extension::COMPONENT) {
 #if defined(OS_WIN)
         if (BrowserDistribution::GetDistribution()->AppHostIsSupported()) {
           scoped_refptr<Extension> extension_ref(const_cast<Extension*>(
