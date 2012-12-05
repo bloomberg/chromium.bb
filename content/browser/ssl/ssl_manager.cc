@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/utf_string_conversions.h"
-#include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
-#include "content/browser/renderer_host/resource_request_info_impl.h"
+#include "content/browser/loader/resource_dispatcher_host_impl.h"
+#include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/ssl/ssl_cert_error_handler.h"
 #include "content/browser/ssl/ssl_policy.h"
 #include "content/browser/ssl/ssl_request_info.h"

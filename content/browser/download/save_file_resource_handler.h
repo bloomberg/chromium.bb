@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "content/browser/renderer_host/resource_handler.h"
+#include "content/browser/loader/resource_handler.h"
 #include "googleurl/src/gurl.h"
 
 namespace content {

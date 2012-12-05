@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
-#include "content/browser/renderer_host/resource_handler.h"
+#include "content/browser/loader/resource_handler.h"
 #include "content/public/browser/download_id.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_save_info.h"

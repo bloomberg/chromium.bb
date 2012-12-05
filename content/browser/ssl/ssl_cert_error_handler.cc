@@ -4,7 +4,6 @@
 
 #include "content/browser/ssl/ssl_cert_error_handler.h"
 
-#include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
 #include "content/browser/ssl/ssl_manager.h"
 #include "content/browser/ssl/ssl_policy.h"
 #include "net/base/cert_status_flags.h"

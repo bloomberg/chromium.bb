@@ -7,8 +7,8 @@
 #include "base/logging.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/browser/host_zoom_map_impl.h"
-#include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
-#include "content/browser/renderer_host/resource_request_info_impl.h"
+#include "content/browser/loader/resource_dispatcher_host_impl.h"
+#include "content/browser/loader/resource_request_info_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 

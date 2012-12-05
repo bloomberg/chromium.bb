@@ -12,8 +12,8 @@
 #include "content/browser/download/download_file_factory.h"
 #include "content/browser/download/download_interrupt_reasons_impl.h"
 #include "content/browser/download/download_manager_impl.h"
+#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/power_save_blocker.h"
-#include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 

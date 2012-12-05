@@ -9,6 +9,7 @@
 #include <windows.h>
 #endif
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -18,7 +19,6 @@
 #include "base/shared_memory.h"
 #include "base/string16.h"
 #include "build/build_config.h"
-#include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/common/three_d_api_types.h"
 #include "media/base/channel_layout.h"
@@ -53,6 +53,7 @@ struct MediaLogEvent;
 }
 
 namespace net {
+class URLRequestContext;
 class URLRequestContextGetter;
 }
 
