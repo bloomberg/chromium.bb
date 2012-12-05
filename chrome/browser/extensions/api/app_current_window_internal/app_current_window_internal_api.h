@@ -111,6 +111,16 @@ class AppCurrentWindowInternalSetBoundsFunction
   virtual bool RunWithWindow(ShellWindow* window) OVERRIDE;
 };
 
+class AppCurrentWindowInternalSetIconFunction
+    : public AppCurrentWindowInternalExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("app.currentWindowInternal.setIcon");
+
+ protected:
+  virtual ~AppCurrentWindowInternalSetIconFunction() {}
+  virtual bool RunWithWindow(ShellWindow* window) OVERRIDE;
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_APP_CURRENT_WINDOW_INTERNAL_APP_CURRENT_WINDOW_INTERNAL_API_H_

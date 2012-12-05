@@ -83,6 +83,9 @@ class ShellWindow : public content::NotificationObserver,
                              const GURL& url,
                              const CreateParams& params);
 
+  // Specifies a url for the launcher icon.
+  void SetAppIconUrl(const GURL& icon_url);
+
   // Convert draggable regions in raw format to SkRegion format. Caller is
   // responsible for deleting the returned SkRegion instance.
   static SkRegion* RawDraggableRegionsToSkRegion(
@@ -95,6 +98,7 @@ class ShellWindow : public content::NotificationObserver,
   WindowType window_type() const { return window_type_; }
   Profile* profile() const { return profile_; }
   const gfx::Image& app_icon() const { return app_icon_; }
+  const GURL& app_icon_url() { return app_icon_url_; }
 
   NativeAppWindow* GetBaseWindow();
   gfx::NativeWindow GetNativeWindow();
@@ -220,6 +224,10 @@ class ShellWindow : public content::NotificationObserver,
 
   // Used for loading app_icon_.
   scoped_ptr<ImageLoadingTracker> app_icon_loader_;
+
+  // Icon URL to be used for setting the app icon. If not empty, app_icon_ will
+  // be fetched and set using this URL.
+  GURL app_icon_url_;
 
   scoped_ptr<NativeAppWindow> native_app_window_;
 

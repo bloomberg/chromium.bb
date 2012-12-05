@@ -5,9 +5,46 @@
 #include "base/string_number_conversions.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/platform_app_browsertest_util.h"
+#include "chrome/browser/extensions/shell_window_registry.h"
+#include "chrome/browser/ui/base_window.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
+#include "chrome/test/base/testing_profile.h"
 #include "ui/gfx/rect.h"
+
+namespace {
+
+class TestShellWindowRegistryObserver
+    : public extensions::ShellWindowRegistry::Observer {
+ public:
+  explicit TestShellWindowRegistryObserver(Profile* profile)
+      : profile_(profile),
+        icon_updates_(0) {
+    extensions::ShellWindowRegistry::Get(profile_)->AddObserver(this);
+  }
+  virtual ~TestShellWindowRegistryObserver() {
+    extensions::ShellWindowRegistry::Get(profile_)->RemoveObserver(this);
+  }
+
+  // Overridden from ShellWindowRegistry::Observer:
+  virtual void OnShellWindowAdded(ShellWindow* shell_window) {}
+  virtual void OnShellWindowIconChanged(ShellWindow* shell_window) {
+    ++icon_updates_;
+  }
+  virtual void OnShellWindowRemoved(ShellWindow* shell_window) {
+  }
+
+  int icon_updates() { return icon_updates_; }
+
+ private:
+  Profile* profile_;
+  int icon_updates_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestShellWindowRegistryObserver);
+};
+
+}  // namespace
 
 namespace extensions {
 
@@ -35,6 +72,23 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, WindowsApiBounds) {
 
   ready_listener.Reply(base::IntToString(slop));
   ASSERT_TRUE(success_listener.WaitUntilSatisfied());
+}
+
+// Tests chrome.app.window.setIcon.
+IN_PROC_BROWSER_TEST_F(ExperimentalPlatformAppBrowserTest, WindowsApiSetIcon) {
+  scoped_ptr<TestShellWindowRegistryObserver> test_observer(
+      new TestShellWindowRegistryObserver(browser()->profile()));
+  ExtensionTestMessageListener listener("IconSet", false);
+  LoadAndLaunchPlatformApp("windows_api_set_icon");
+  EXPECT_EQ(0, test_observer->icon_updates());
+
+  ASSERT_TRUE(listener.WaitUntilSatisfied());
+
+  ShellWindow* shell_window = GetFirstShellWindow();
+  ASSERT_TRUE(shell_window);
+  EXPECT_NE(std::string::npos,
+            shell_window->app_icon_url().spec().find("icon.png"));
+  EXPECT_EQ(1, test_observer->icon_updates());
 }
 
 // TODO(asargent) - Fix onMinimzed event on OSX (crbug.com/162793) and figure

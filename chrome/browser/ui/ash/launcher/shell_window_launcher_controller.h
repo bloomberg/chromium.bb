@@ -40,6 +40,7 @@ class ShellWindowLauncherController
 
   // Overridden from ShellWindowRegistry::Observer:
   virtual void OnShellWindowAdded(ShellWindow* shell_window) OVERRIDE;
+  virtual void OnShellWindowIconChanged(ShellWindow* shell_window) OVERRIDE;
   virtual void OnShellWindowRemoved(ShellWindow* shell_window) OVERRIDE;
 
   // Overriden from aura::WindowObserver:

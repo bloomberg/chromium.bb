@@ -94,6 +94,11 @@ ShellWindow* ShellWindow::Create(Profile* profile,
   return window;
 }
 
+void ShellWindow::SetAppIconUrl(const GURL& url) {
+  app_icon_url_ = url;
+  extensions::ShellWindowRegistry::Get(profile_)->ShellWindowIconChanged(this);
+}
+
 ShellWindow::ShellWindow(Profile* profile,
                          const extensions::Extension* extension)
     : profile_(profile),

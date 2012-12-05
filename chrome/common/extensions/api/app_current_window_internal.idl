@@ -27,6 +27,7 @@
     static void show();
     static void hide();
     static void setBounds(Bounds bounds);
+    static void setIcon(DOMString icon_url);
   };
 
   interface Events {

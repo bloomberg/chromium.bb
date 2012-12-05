@@ -68,6 +68,11 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
   void CloseShellWindow(ShellWindow* window);
 };
 
+class ExperimentalPlatformAppBrowserTest : public PlatformAppBrowserTest {
+ public:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
+};
+
 }
 
 #endif  // CHROME_BROWSER_EXTENSIONS_PLATFORM_APP_BROWSERTEST_UTIL_H_

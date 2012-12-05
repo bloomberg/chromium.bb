@@ -152,4 +152,10 @@ void PlatformAppBrowserTest::CloseShellWindow(ShellWindow* window) {
   destroyed_observer.Wait();
 }
 
+void ExperimentalPlatformAppBrowserTest::SetUpCommandLine(
+    CommandLine* command_line) {
+  PlatformAppBrowserTest::SetUpCommandLine(command_line);
+  command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
+}
+
 }  // namespace extensions

@@ -58,6 +58,12 @@ void ShellWindowRegistry::AddShellWindow(ShellWindow* shell_window) {
   FOR_EACH_OBSERVER(Observer, observers_, OnShellWindowAdded(shell_window));
 }
 
+void ShellWindowRegistry::ShellWindowIconChanged(ShellWindow* shell_window) {
+  shell_windows_.insert(shell_window);
+  FOR_EACH_OBSERVER(Observer, observers_,
+                    OnShellWindowIconChanged(shell_window));
+}
+
 void ShellWindowRegistry::RemoveShellWindow(ShellWindow* shell_window) {
   shell_windows_.erase(shell_window);
   FOR_EACH_OBSERVER(Observer, observers_, OnShellWindowRemoved(shell_window));

@@ -39,6 +39,8 @@ class ShellWindowRegistry : public ProfileKeyedService,
    public:
     // Called just after a shell window was added.
     virtual void OnShellWindowAdded(ShellWindow* shell_window) = 0;
+    // Called when the window icon changes.
+    virtual void OnShellWindowIconChanged(ShellWindow* shell_window) = 0;
     // Called just after a shell window was removed.
     virtual void OnShellWindowRemoved(ShellWindow* shell_window) = 0;
 
@@ -58,6 +60,7 @@ class ShellWindowRegistry : public ProfileKeyedService,
   static ShellWindowRegistry* Get(Profile* profile);
 
   void AddShellWindow(ShellWindow* shell_window);
+  void ShellWindowIconChanged(ShellWindow* shell_window);
   void RemoveShellWindow(ShellWindow* shell_window);
 
   void AddObserver(Observer* observer);

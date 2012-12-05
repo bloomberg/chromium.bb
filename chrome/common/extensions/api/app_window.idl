@@ -121,6 +121,11 @@ namespace app.window {
     // Set the window's bounds.
     static void setBounds(Bounds bounds);
 
+    // Set the app icon for the window (experimental).
+    // Currently this is only being implemented on Ash.
+    // TODO(stevenjb): Investigate implementing this on Windows and OSX.
+    [nodoc] static void setIcon(DOMString icon_url);
+
     // The JavaScript 'window' object for the created child.
     [instanceOf=global] object contentWindow;
   };

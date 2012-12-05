@@ -253,6 +253,12 @@ void ShellWindowLauncherController::OnShellWindowAdded(
   owner_->SetItemStatus(launcher_id, status);
 }
 
+void ShellWindowLauncherController::OnShellWindowIconChanged(
+    ShellWindow* shell_window) {
+  // TODO(stevenjb): Fetch and set the launcher icon using
+  // shell_window->app_icon_url().
+}
+
 void ShellWindowLauncherController::OnShellWindowRemoved(
     ShellWindow* shell_window) {
   // Do nothing here; shell_window->window() has allready been deleted and
