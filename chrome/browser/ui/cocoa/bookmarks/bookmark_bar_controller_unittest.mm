@@ -368,8 +368,8 @@ TEST_F(BookmarkBarControllerTest, ShowWhenShowBookmarkBarTrue) {
   [bar_ updateAndShowNormalBar:YES
                showDetachedBar:NO
                  withAnimation:NO];
-  EXPECT_TRUE([bar_ isInState:bookmarks::kShowingState]);
-  EXPECT_FALSE([bar_ isInState:bookmarks::kDetachedState]);
+  EXPECT_TRUE([bar_ isInState:BookmarkBar::SHOW]);
+  EXPECT_FALSE([bar_ isInState:BookmarkBar::DETACHED]);
   EXPECT_TRUE([bar_ isVisible]);
   EXPECT_FALSE([bar_ isAnimationRunning]);
   EXPECT_FALSE([[bar_ view] isHidden]);
@@ -381,8 +381,8 @@ TEST_F(BookmarkBarControllerTest, HideWhenShowBookmarkBarFalse) {
   [bar_ updateAndShowNormalBar:NO
                showDetachedBar:NO
                  withAnimation:NO];
-  EXPECT_FALSE([bar_ isInState:bookmarks::kShowingState]);
-  EXPECT_FALSE([bar_ isInState:bookmarks::kDetachedState]);
+  EXPECT_FALSE([bar_ isInState:BookmarkBar::SHOW]);
+  EXPECT_FALSE([bar_ isInState:BookmarkBar::DETACHED]);
   EXPECT_FALSE([bar_ isVisible]);
   EXPECT_FALSE([bar_ isAnimationRunning]);
   EXPECT_TRUE([[bar_ view] isHidden]);
@@ -395,8 +395,8 @@ TEST_F(BookmarkBarControllerTest, HideWhenShowBookmarkBarTrueButDisabled) {
   [bar_ updateAndShowNormalBar:YES
                showDetachedBar:NO
                  withAnimation:NO];
-  EXPECT_TRUE([bar_ isInState:bookmarks::kShowingState]);
-  EXPECT_FALSE([bar_ isInState:bookmarks::kDetachedState]);
+  EXPECT_TRUE([bar_ isInState:BookmarkBar::SHOW]);
+  EXPECT_FALSE([bar_ isInState:BookmarkBar::DETACHED]);
   EXPECT_FALSE([bar_ isVisible]);
   EXPECT_FALSE([bar_ isAnimationRunning]);
   EXPECT_TRUE([[bar_ view] isHidden]);
@@ -408,8 +408,8 @@ TEST_F(BookmarkBarControllerTest, ShowOnNewTabPage) {
   [bar_ updateAndShowNormalBar:NO
                showDetachedBar:YES
                  withAnimation:NO];
-  EXPECT_FALSE([bar_ isInState:bookmarks::kShowingState]);
-  EXPECT_TRUE([bar_ isInState:bookmarks::kDetachedState]);
+  EXPECT_FALSE([bar_ isInState:BookmarkBar::SHOW]);
+  EXPECT_TRUE([bar_ isInState:BookmarkBar::DETACHED]);
   EXPECT_TRUE([bar_ isVisible]);
   EXPECT_FALSE([bar_ isAnimationRunning]);
   EXPECT_FALSE([[bar_ view] isHidden]);
@@ -456,25 +456,25 @@ TEST_F(BookmarkBarControllerTest, StateChanges) {
   [bar_ updateAndShowNormalBar:NO
                showDetachedBar:NO
                  withAnimation:NO];
-  EXPECT_EQ(bookmarks::kHiddenState, [bar_ visualState]);
+  EXPECT_EQ(BookmarkBar::HIDDEN, [bar_ state]);
   EXPECT_FALSE([bar_ isVisible]);
   EXPECT_FALSE([bar_ isAnimationRunning]);
   [bar_ updateAndShowNormalBar:YES
                showDetachedBar:NO
                  withAnimation:NO];
-  EXPECT_EQ(bookmarks::kShowingState, [bar_ visualState]);
+  EXPECT_EQ(BookmarkBar::SHOW, [bar_ state]);
   EXPECT_TRUE([bar_ isVisible]);
   EXPECT_FALSE([bar_ isAnimationRunning]);
   [bar_ updateAndShowNormalBar:YES
                showDetachedBar:YES
                  withAnimation:NO];
-  EXPECT_EQ(bookmarks::kShowingState, [bar_ visualState]);
+  EXPECT_EQ(BookmarkBar::SHOW, [bar_ state]);
   EXPECT_TRUE([bar_ isVisible]);
   EXPECT_FALSE([bar_ isAnimationRunning]);
   [bar_ updateAndShowNormalBar:NO
                showDetachedBar:YES
                  withAnimation:NO];
-  EXPECT_EQ(bookmarks::kDetachedState, [bar_ visualState]);
+  EXPECT_EQ(BookmarkBar::DETACHED, [bar_ state]);
   EXPECT_TRUE([bar_ isVisible]);
   EXPECT_FALSE([bar_ isAnimationRunning]);
 
@@ -483,13 +483,13 @@ TEST_F(BookmarkBarControllerTest, StateChanges) {
     [bar_ updateAndShowNormalBar:NO
                  showDetachedBar:NO
                    withAnimation:NO];
-    EXPECT_EQ(bookmarks::kHiddenState, [bar_ visualState]);
+    EXPECT_EQ(BookmarkBar::HIDDEN, [bar_ state]);
     EXPECT_FALSE([bar_ isVisible]);
     EXPECT_FALSE([bar_ isAnimationRunning]);
     [bar_ updateAndShowNormalBar:YES
                  showDetachedBar:YES
                    withAnimation:NO];
-    EXPECT_EQ(bookmarks::kShowingState, [bar_ visualState]);
+    EXPECT_EQ(BookmarkBar::SHOW, [bar_ state]);
     EXPECT_TRUE([bar_ isVisible]);
     EXPECT_FALSE([bar_ isAnimationRunning]);
   }
@@ -499,13 +499,13 @@ TEST_F(BookmarkBarControllerTest, StateChanges) {
     [bar_ updateAndShowNormalBar:YES
                  showDetachedBar:NO
                    withAnimation:NO];
-    EXPECT_EQ(bookmarks::kShowingState, [bar_ visualState]);
+    EXPECT_EQ(BookmarkBar::SHOW, [bar_ state]);
     EXPECT_TRUE([bar_ isVisible]);
     EXPECT_FALSE([bar_ isAnimationRunning]);
     [bar_ updateAndShowNormalBar:NO
                  showDetachedBar:YES
                    withAnimation:NO];
-    EXPECT_EQ(bookmarks::kDetachedState, [bar_ visualState]);
+    EXPECT_EQ(BookmarkBar::DETACHED, [bar_ state]);
     EXPECT_TRUE([bar_ isVisible]);
     EXPECT_FALSE([bar_ isAnimationRunning]);
   }

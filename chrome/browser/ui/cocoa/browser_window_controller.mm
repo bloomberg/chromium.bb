@@ -916,8 +916,8 @@ enum {
   //
   // We do not adjust the window height for bookmark bar changes on the NTP.
   BOOL shouldAdjustBookmarkHeight =
-      [bookmarkBarController_ isAnimatingBetweenState:bookmarks::kHiddenState
-                                             andState:bookmarks::kShowingState];
+      [bookmarkBarController_ isAnimatingBetweenState:BookmarkBar::HIDDEN
+                                             andState:BookmarkBar::SHOW];
 
   BOOL resizeRectDirty = NO;
   if ((shouldAdjustBookmarkHeight && view == [bookmarkBarController_ view]) ||
@@ -1842,8 +1842,8 @@ enum {
 
 // (Needed for |BookmarkBarControllerDelegate| protocol.)
 - (void)bookmarkBar:(BookmarkBarController*)controller
- didChangeFromState:(bookmarks::VisualState)oldState
-            toState:(bookmarks::VisualState)newState {
+ didChangeFromState:(BookmarkBar::State)oldState
+            toState:(BookmarkBar::State)newState {
   [toolbarController_
       setDividerOpacity:[bookmarkBarController_ toolbarDividerOpacity]];
   [self adjustToolbarAndBookmarkBarForCompression:
@@ -1852,8 +1852,8 @@ enum {
 
 // (Needed for |BookmarkBarControllerDelegate| protocol.)
 - (void)bookmarkBar:(BookmarkBarController*)controller
-willAnimateFromState:(bookmarks::VisualState)oldState
-            toState:(bookmarks::VisualState)newState {
+willAnimateFromState:(BookmarkBar::State)oldState
+            toState:(BookmarkBar::State)newState {
   [toolbarController_
       setDividerOpacity:[bookmarkBarController_ toolbarDividerOpacity]];
   [self adjustToolbarAndBookmarkBarForCompression:
@@ -1919,7 +1919,7 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 
   // Account for the bookmark bar height if it is currently in the detached
   // state on the new tab page.
-  if ([bookmarkBarController_ isInState:(bookmarks::kDetachedState)])
+  if ([bookmarkBarController_ isInState:BookmarkBar::DETACHED])
     frame.size.height += NSHeight([[bookmarkBarController_ view] bounds]);
 
   return frame;

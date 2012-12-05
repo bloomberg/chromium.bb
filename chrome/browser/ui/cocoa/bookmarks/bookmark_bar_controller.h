@@ -132,13 +132,13 @@ const NSTimeInterval kDragHoverCloseDelay = 0.4;
 // Sent when the state has changed (after any animation), but before the final
 // display update.
 - (void)bookmarkBar:(BookmarkBarController*)controller
- didChangeFromState:(bookmarks::VisualState)oldState
-            toState:(bookmarks::VisualState)newState;
+ didChangeFromState:(BookmarkBar::State)oldState
+            toState:(BookmarkBar::State)newState;
 
 // Sent before the animation begins.
 - (void)bookmarkBar:(BookmarkBarController*)controller
-willAnimateFromState:(bookmarks::VisualState)oldState
-            toState:(bookmarks::VisualState)newState;
+willAnimateFromState:(BookmarkBar::State)oldState
+            toState:(BookmarkBar::State)newState;
 
 @end
 
@@ -153,15 +153,15 @@ willAnimateFromState:(bookmarks::VisualState)oldState
                      NSUserInterfaceValidations,
                      NSDraggingDestination> {
  @private
-  // The visual state of the bookmark bar. If an animation is running, this is
-  // set to the "destination" and |lastVisualState_| is set to the "original"
-  // state. This is set to |kInvalidState| on initialization (when the
-  // appropriate state is not yet known).
-  bookmarks::VisualState visualState_;
+  // The state of the bookmark bar. If an animation is running, this is set to
+  // the "destination" and |lastState_| is set to the "original" state.
+  BookmarkBar::State state_;
 
-  // The "original" state of the bookmark bar if an animation is running,
-  // otherwise it should be |kInvalidState|.
-  bookmarks::VisualState lastVisualState_;
+  // The "original" state of the bookmark bar if an animation is running.
+  BookmarkBar::State lastState_;
+
+  // YES if an animation is running.
+  BOOL isAnimationRunning_;
 
   Browser* browser_;              // weak; owned by its window
   BookmarkModel* bookmarkModel_;  // weak; part of the profile owned by the
@@ -269,8 +269,9 @@ willAnimateFromState:(bookmarks::VisualState)oldState
   BOOL isEmpty_;
 }
 
-@property(readonly, nonatomic) bookmarks::VisualState visualState;
-@property(readonly, nonatomic) bookmarks::VisualState lastVisualState;
+@property(readonly, nonatomic) BookmarkBar::State state;
+@property(readonly, nonatomic) BookmarkBar::State lastState;
+@property(readonly, nonatomic) BOOL isAnimationRunning;
 @property(assign, nonatomic) id<BookmarkBarControllerDelegate> delegate;
 @property(readonly, nonatomic) BOOL isEmpty;
 

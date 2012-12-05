@@ -148,21 +148,18 @@ willPositionSheet:(NSWindow*)sheet
   //    the sheet below the bookmark bar.
   //  - If the bookmark bar is currently animating, position the sheet according
   //    to where the bar will be when the animation ends.
-  switch ([bookmarkBarController_ visualState]) {
-    case bookmarks::kShowingState: {
+  switch ([bookmarkBarController_ state]) {
+    case BookmarkBar::SHOW: {
       NSRect bookmarkBarFrame = [[bookmarkBarController_ view] frame];
       defaultSheetRect.origin.y = bookmarkBarFrame.origin.y;
       break;
     }
-    case bookmarks::kHiddenState:
-    case bookmarks::kDetachedState: {
+    case BookmarkBar::HIDDEN:
+    case BookmarkBar::DETACHED: {
       NSRect toolbarFrame = [[toolbarController_ view] frame];
       defaultSheetRect.origin.y = toolbarFrame.origin.y;
       break;
     }
-    case bookmarks::kInvalidState:
-    default:
-      NOTREACHED();
   }
   return defaultSheetRect;
 }
@@ -372,9 +369,9 @@ willPositionSheet:(NSWindow*)sheet
   // If we are currently displaying the NTP detached bookmark bar or animating
   // to/from it (from/to anything else), we display the bookmark bar below the
   // infobar.
-  return [bookmarkBarController_ isInState:bookmarks::kDetachedState] ||
-      [bookmarkBarController_ isAnimatingToState:bookmarks::kDetachedState] ||
-      [bookmarkBarController_ isAnimatingFromState:bookmarks::kDetachedState];
+  return [bookmarkBarController_ isInState:BookmarkBar::DETACHED] ||
+         [bookmarkBarController_ isAnimatingToState:BookmarkBar::DETACHED] ||
+         [bookmarkBarController_ isAnimatingFromState:BookmarkBar::DETACHED];
 }
 
 - (CGFloat)layoutTopBookmarkBarAtMinX:(CGFloat)minX

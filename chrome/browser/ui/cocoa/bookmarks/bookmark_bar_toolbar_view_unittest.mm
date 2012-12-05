@@ -62,53 +62,53 @@ class MockThemeProvider : public ui::ThemeProvider {
  @private
   int currentTabContentsHeight_;
   ui::ThemeProvider* themeProvider_;
-  bookmarks::VisualState visualState_;
+  BookmarkBar::State state_;
   BOOL shouldShowAtBottomWhenDetached_;
   BOOL isEmpty_;
 }
 @property (nonatomic, assign) int currentTabContentsHeight;
 @property (nonatomic, assign) ui::ThemeProvider* themeProvider;
-@property (nonatomic, assign) bookmarks::VisualState visualState;
+@property (nonatomic, assign) BookmarkBar::State state;
 @property (nonatomic, assign) BOOL shouldShowAtBottomWhenDetached;
 @property (nonatomic, assign) BOOL isEmpty;
 
 // |BookmarkBarState| protocol:
 - (BOOL)isVisible;
 - (BOOL)isAnimationRunning;
-- (BOOL)isInState:(bookmarks::VisualState)state;
-- (BOOL)isAnimatingToState:(bookmarks::VisualState)state;
-- (BOOL)isAnimatingFromState:(bookmarks::VisualState)state;
-- (BOOL)isAnimatingFromState:(bookmarks::VisualState)fromState
-                     toState:(bookmarks::VisualState)toState;
-- (BOOL)isAnimatingBetweenState:(bookmarks::VisualState)fromState
-                       andState:(bookmarks::VisualState)toState;
+- (BOOL)isInState:(BookmarkBar::State)state;
+- (BOOL)isAnimatingToState:(BookmarkBar::State)state;
+- (BOOL)isAnimatingFromState:(BookmarkBar::State)state;
+- (BOOL)isAnimatingFromState:(BookmarkBar::State)fromState
+                     toState:(BookmarkBar::State)toState;
+- (BOOL)isAnimatingBetweenState:(BookmarkBar::State)fromState
+                       andState:(BookmarkBar::State)toState;
 - (CGFloat)detachedMorphProgress;
 @end
 
 @implementation DrawDetachedBarFakeController
 @synthesize currentTabContentsHeight = currentTabContentsHeight_;
 @synthesize themeProvider = themeProvider_;
-@synthesize visualState = visualState_;
+@synthesize state = state_;
 @synthesize shouldShowAtBottomWhenDetached = shouldShowAtBottomWhenDetached_;
 @synthesize isEmpty = isEmpty_;
 
 - (id)init {
   if ((self = [super init])) {
-    [self setVisualState:bookmarks::kHiddenState];
+    [self setState:BookmarkBar::HIDDEN];
   }
   return self;
 }
 
 - (BOOL)isVisible { return YES; }
 - (BOOL)isAnimationRunning { return NO; }
-- (BOOL)isInState:(bookmarks::VisualState)state
-    { return ([self visualState] == state) ? YES : NO; }
-- (BOOL)isAnimatingToState:(bookmarks::VisualState)state { return NO; }
-- (BOOL)isAnimatingFromState:(bookmarks::VisualState)state { return NO; }
-- (BOOL)isAnimatingFromState:(bookmarks::VisualState)fromState
-                     toState:(bookmarks::VisualState)toState { return NO; }
-- (BOOL)isAnimatingBetweenState:(bookmarks::VisualState)fromState
-                       andState:(bookmarks::VisualState)toState { return NO; }
+- (BOOL)isInState:(BookmarkBar::State)state
+    { return ([self state] == state) ? YES : NO; }
+- (BOOL)isAnimatingToState:(BookmarkBar::State)state { return NO; }
+- (BOOL)isAnimatingFromState:(BookmarkBar::State)state { return NO; }
+- (BOOL)isAnimatingFromState:(BookmarkBar::State)fromState
+                     toState:(BookmarkBar::State)toState { return NO; }
+- (BOOL)isAnimatingBetweenState:(BookmarkBar::State)fromState
+                       andState:(BookmarkBar::State)toState { return NO; }
 - (CGFloat)detachedMorphProgress { return 1; }
 @end
 
@@ -132,13 +132,13 @@ TEST_VIEW(BookmarkBarToolbarViewTest, view_)
 
 // Test drawing (part 1), mostly to ensure nothing leaks or crashes.
 TEST_F(BookmarkBarToolbarViewTest, DisplayAsNormalBar) {
-  [controller_.get() setVisualState:bookmarks::kShowingState];
+  [controller_.get() setState:BookmarkBar::SHOW];
   [view_ display];
 }
 
 // Test drawing (part 2), mostly to ensure nothing leaks or crashes.
 TEST_F(BookmarkBarToolbarViewTest, DisplayAsDetachedBarWithNoImage) {
-  [controller_.get() setVisualState:bookmarks::kDetachedState];
+  [controller_.get() setState:BookmarkBar::DETACHED];
 
   // Tests where we don't have a background image, only a color.
   NiceMock<MockThemeProvider> provider;
@@ -164,7 +164,7 @@ ACTION(SetAlignLeft) {
 
 // Test drawing (part 3), mostly to ensure nothing leaks or crashes.
 TEST_F(BookmarkBarToolbarViewTest, DisplayAsDetachedBarWithBgImage) {
-  [controller_.get() setVisualState:bookmarks::kDetachedState];
+  [controller_.get() setState:BookmarkBar::DETACHED];
 
   // Tests where we have a background image, with positioning information.
   NiceMock<MockThemeProvider> provider;
@@ -199,7 +199,7 @@ TEST_F(BookmarkBarToolbarViewTest, DisplayAsDetachedBarWithBgImage) {
 }
 
 TEST_F(BookmarkBarToolbarViewTest, DisplayAsBottomDetachedBar) {
-  [controller_.get() setVisualState:bookmarks::kDetachedState];
+  [controller_.get() setState:BookmarkBar::DETACHED];
   [controller_.get() setShouldShowAtBottomWhenDetached:YES];
 
   // Tests where we don't have a background image, only a color.
@@ -218,7 +218,7 @@ TEST_F(BookmarkBarToolbarViewTest, DisplayAsBottomDetachedBar) {
 }
 
 TEST_F(BookmarkBarToolbarViewTest, DisplayAsEmptyBottomDetachedBar) {
-  [controller_.get() setVisualState:bookmarks::kDetachedState];
+  [controller_.get() setState:BookmarkBar::DETACHED];
   [controller_.get() setShouldShowAtBottomWhenDetached:YES];
   [controller_.get() setIsEmpty:YES];
   [view_ display];

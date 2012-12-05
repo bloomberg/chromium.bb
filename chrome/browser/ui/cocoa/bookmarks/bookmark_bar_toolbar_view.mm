@@ -29,7 +29,7 @@ const CGFloat kBorderRadius = 3.0;
 @implementation BookmarkBarToolbarView
 
 - (BOOL)isOpaque {
-  return [controller_ isInState:bookmarks::kDetachedState];
+  return [controller_ isInState:BookmarkBar::DETACHED];
 }
 
 - (void)resetCursorRects {
@@ -39,9 +39,9 @@ const CGFloat kBorderRadius = 3.0;
 }
 
 - (void)drawRect:(NSRect)rect {
-  if ([controller_ isInState:bookmarks::kDetachedState] ||
-      [controller_ isAnimatingToState:bookmarks::kDetachedState] ||
-      [controller_ isAnimatingFromState:bookmarks::kDetachedState]) {
+  if ([controller_ isInState:BookmarkBar::DETACHED] ||
+      [controller_ isAnimatingToState:BookmarkBar::DETACHED] ||
+      [controller_ isAnimatingFromState:BookmarkBar::DETACHED]) {
     if ([controller_ shouldShowAtBottomWhenDetached])
       [self drawRectAsBottomBubble:rect];
     else
