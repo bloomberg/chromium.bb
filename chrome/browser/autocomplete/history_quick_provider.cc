@@ -18,6 +18,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_field_trial.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
+#include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -185,8 +186,9 @@ void HistoryQuickProvider::DoAutocomplete() {
   }
 
   // Figure out if HistoryURL provider has a URL-what-you-typed match
-  // that ought to go first.
+  // that ought to go first and what's its score will be.
   bool will_have_url_what_you_typed_match_first = false;
+  int url_what_you_typed_match_score = -1;  // undefined
   // These are necessary (but not sufficient) conditions for the omnibox
   // input to be a URL-what-you-typed match.  The username test checks that
   // either the username does not exist (a regular URL such as http://site/)
@@ -237,16 +239,33 @@ void HistoryQuickProvider::DoAutocomplete() {
         // the URL-what-you-typed match are on the same host (i.e., aren't
         // from a longer internet hostname for which the omnibox input is
         // a prefix).
-        will_have_url_what_you_typed_match_first =
-            (url_db->GetRowForURL(autocomplete_input_.canonicalized_url(),
-                                  NULL) != 0) ||
-            (url_db->IsTypedHost(host) &&
+        if (url_db->GetRowForURL(
+                autocomplete_input_.canonicalized_url(), NULL) != 0) {
+          // We visited this URL before.
+          will_have_url_what_you_typed_match_first = true;
+          // HistoryURLProvider gives visited what-you-typed URLs a high score.
+          url_what_you_typed_match_score =
+              HistoryURLProvider::kScoreForBestInlineableResult;
+        } else if (url_db->IsTypedHost(host) &&
              (!autocomplete_input_.parts().path.is_nonempty() ||
               ((autocomplete_input_.parts().path.len == 1) &&
                (autocomplete_input_.text()[
                    autocomplete_input_.parts().path.begin] == '/'))) &&
              !autocomplete_input_.parts().query.is_nonempty() &&
-             !autocomplete_input_.parts().ref.is_nonempty());
+             !autocomplete_input_.parts().ref.is_nonempty()) {
+          // Not visited, but we've seen the host before.
+          will_have_url_what_you_typed_match_first = true;
+          if (net::RegistryControlledDomainService::GetRegistryLength(
+                  host, false) == 0) {
+            // Known intranet hosts get one score.
+            url_what_you_typed_match_score =
+                HistoryURLProvider::kScoreForUnvisitedIntranetResult;
+          } else {
+            // Known internet hosts get another.
+            url_what_you_typed_match_score =
+                HistoryURLProvider::kScoreForWhatYouTypedResult;
+          }
+        }
       }
     }
   }
@@ -259,15 +278,19 @@ void HistoryQuickProvider::DoAutocomplete() {
   // artificially reduce the starting |max_match_score| (which
   // therefore applies to all results) to something low enough that
   // guarantees no result will be offered as an autocomplete
-  // suggestion.  Also do this reduction if we think there will be
+  // suggestion.  Also do a similar reduction if we think there will be
   // a URL-what-you-typed match.  (We want URL-what-you-typed matches for
   // visited URLs to beat out any longer URLs, no matter how frequently
-  // they're visited.)
+  // they're visited.)  The strength of this last reduction depends on the
+  // likely score for the URL-what-you-typed result.
   int max_match_score = (PreventInlineAutocomplete(autocomplete_input_) ||
-      !matches.begin()->can_inline ||
-      will_have_url_what_you_typed_match_first) ?
+      !matches.begin()->can_inline) ?
       (AutocompleteResult::kLowestDefaultScore - 1) :
       matches.begin()->raw_score;
+  if (will_have_url_what_you_typed_match_first) {
+    max_match_score = std::min(max_match_score,
+        url_what_you_typed_match_score - 1);
+  }
   for (ScoredHistoryMatches::const_iterator match_iter = matches.begin();
        match_iter != matches.end(); ++match_iter) {
     const ScoredHistoryMatch& history_match(*match_iter);

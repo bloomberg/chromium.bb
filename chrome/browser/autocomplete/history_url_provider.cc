@@ -133,6 +133,18 @@ bool CompareHistoryMatch(const history::HistoryMatch& a,
 
 }  // namespace
 
+// -----------------------------------------------------------------
+// HistoryURLProvider
+
+const int HistoryURLProvider::kScoreForBestInlineableResult =
+    1410 + kMaxMatches;
+const int HistoryURLProvider::kScoreForUnvisitedIntranetResult =
+    1400 + kMaxMatches;
+const int HistoryURLProvider::kScoreForWhatYouTypedResult =
+    1200 + kMaxMatches;
+const int HistoryURLProvider::kBaseScoreForNonInlineableResult =
+    900;
+
 // VisitClassifier is used to classify the type of visit to a particular url.
 class HistoryURLProvider::VisitClassifier {
  public:
@@ -523,16 +535,17 @@ int HistoryURLProvider::CalculateRelevance(MatchType match_type,
                                            size_t match_number) const {
   switch (match_type) {
     case INLINE_AUTOCOMPLETE:
-      return 1410 + kMaxMatches;
+      return kScoreForBestInlineableResult;
 
     case UNVISITED_INTRANET:
-      return 1400 + kMaxMatches;
+      return kScoreForUnvisitedIntranetResult;
 
     case WHAT_YOU_TYPED:
-      return 1200 + kMaxMatches;
+      return kScoreForWhatYouTypedResult;
 
     default:  // NORMAL
-      return 900 + static_cast<int>(match_number);
+      return kBaseScoreForNonInlineableResult +
+          static_cast<int>(match_number);
   }
 }
 
