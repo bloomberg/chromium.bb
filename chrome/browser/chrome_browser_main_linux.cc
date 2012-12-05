@@ -124,6 +124,8 @@ void ChromeBrowserMainPartsLinux::PreProfileInit() {
 void ChromeBrowserMainPartsLinux::PostProfileInit() {
   media_transfer_protocol_device_observer_.reset(
       new chrome::MediaTransferProtocolDeviceObserverLinux());
+
+  ChromeBrowserMainPartsPosix::PostProfileInit();
 }
 
 void ChromeBrowserMainPartsLinux::PostMainMessageLoopRun() {
