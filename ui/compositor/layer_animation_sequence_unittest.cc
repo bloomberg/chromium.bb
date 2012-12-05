@@ -24,7 +24,7 @@ namespace {
 // Check that the sequence behaves sanely when it contains no elements.
 TEST(LayerAnimationSequenceTest, NoElement) {
   LayerAnimationSequence sequence;
-  EXPECT_EQ(sequence.duration(), base::TimeDelta());
+  EXPECT_TRUE(sequence.IsFinished(base::TimeDelta()));
   EXPECT_TRUE(sequence.properties().size() == 0);
   LayerAnimationElement::AnimatableProperties properties;
   EXPECT_FALSE(sequence.HasCommonProperty(properties));
@@ -55,7 +55,7 @@ TEST(LayerAnimationSequenceTest, SingleElement) {
   EXPECT_TRUE(sequence.properties().size() == 1);
   EXPECT_TRUE(sequence.properties().find(LayerAnimationElement::OPACITY) !=
               sequence.properties().end());
-  EXPECT_EQ(delta, sequence.duration());
+  EXPECT_TRUE(sequence.IsFinished(delta));
 }
 
 // Check that the sequences progresses the delegate as expected when it contains
@@ -124,7 +124,7 @@ TEST(LayerAnimationSequenceTest, MultipleElement) {
               sequence.properties().end());
   EXPECT_TRUE(sequence.properties().find(LayerAnimationElement::BOUNDS) !=
               sequence.properties().end());
-  EXPECT_EQ(delta + delta + delta, sequence.duration());
+  EXPECT_TRUE(sequence.IsFinished(delta + delta + delta));
 }
 
 // Check that a sequence can still be aborted if it has cycled many times.

@@ -333,7 +333,10 @@ void LayerAnimator::ProgressAnimation(LayerAnimationSequence* sequence,
 }
 
 void LayerAnimator::ProgressAnimationToEnd(LayerAnimationSequence* sequence) {
-  ProgressAnimation(sequence, sequence->duration());
+  if (!delegate())
+    return;
+
+  sequence->ProgressToEnd(delegate());
 }
 
 
@@ -365,8 +368,7 @@ void LayerAnimator::Step(base::TimeTicks now) {
       continue;
 
     base::TimeDelta delta = now - running_animations_copy[i].start_time();
-    if (delta >= running_animations_copy[i].sequence()->duration() &&
-        !running_animations_copy[i].sequence()->is_cyclic()) {
+    if (running_animations_copy[i].sequence()->IsFinished(delta)) {
       SAFE_INVOKE_VOID(FinishAnimation, running_animations_copy[i]);
     } else
       SAFE_INVOKE_VOID(ProgressAnimation, running_animations_copy[i], delta);
@@ -423,8 +425,7 @@ LayerAnimationSequence* LayerAnimator::RemoveAnimation(
 void LayerAnimator::FinishAnimation(LayerAnimationSequence* sequence) {
   scoped_refptr<LayerAnimator> retain(this);
   scoped_ptr<LayerAnimationSequence> removed(RemoveAnimation(sequence));
-  if (delegate())
-    sequence->Progress(sequence->duration(), delegate());
+  ProgressAnimationToEnd(sequence);
   ProcessQueue();
   UpdateAnimationState();
 }
@@ -439,8 +440,7 @@ void LayerAnimator::FinishAnyAnimationWithZeroDuration() {
     if (!SAFE_INVOKE_BOOL(HasAnimation, running_animations_copy[i]))
       continue;
 
-    if (running_animations_copy[i].sequence()->duration() ==
-        base::TimeDelta()) {
+    if (running_animations_copy[i].sequence()->IsFinished(base::TimeDelta())) {
       SAFE_INVOKE_VOID(ProgressAnimationToEnd, running_animations_copy[i]);
       scoped_ptr<LayerAnimationSequence> removed(
           SAFE_INVOKE_PTR(RemoveAnimation, running_animations_copy[i]));
@@ -540,7 +540,7 @@ void LayerAnimator::ImmediatelySetNewTarget(LayerAnimationSequence* sequence) {
   if (!weak_sequence_ptr)
     return;
 
-  ProgressAnimation(sequence, sequence->duration());
+  ProgressAnimationToEnd(sequence);
   if (!weak_sequence_ptr)
     return;
 

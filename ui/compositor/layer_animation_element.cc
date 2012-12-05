@@ -405,13 +405,29 @@ LayerAnimationElement::LayerAnimationElement(
 LayerAnimationElement::~LayerAnimationElement() {
 }
 
-bool LayerAnimationElement::Progress(double t,
+bool LayerAnimationElement::Progress(base::TimeDelta elapsed,
                                      LayerAnimationDelegate* delegate) {
   if (first_frame_)
     OnStart(delegate);
+  double t = 1.0;
+  if ((duration_ > base::TimeDelta()) && (elapsed < duration_))
+    t = elapsed.InMillisecondsF() / duration_.InMillisecondsF();
   bool need_draw = OnProgress(Tween::CalculateValue(tween_type_, t), delegate);
   first_frame_ = t == 1.0;
   return need_draw;
+}
+
+bool LayerAnimationElement::IsFinished(base::TimeDelta elapsed,
+                                       base::TimeDelta* total_duration) {
+  if (elapsed >= duration_) {
+    *total_duration = duration_;
+    return true;
+  }
+  return false;
+}
+
+bool LayerAnimationElement::ProgressToEnd(LayerAnimationDelegate* delegate) {
+  return Progress(duration_, delegate);
 }
 
 void LayerAnimationElement::GetTargetValue(TargetValue* target) const {

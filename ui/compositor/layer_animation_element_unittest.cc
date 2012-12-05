@@ -33,13 +33,13 @@ TEST(LayerAnimationElementTest, TransformElement) {
 
   for (int i = 0; i < 2; ++i) {
     delegate.SetTransformFromAnimation(start_transform);
-    element->Progress(0.0, &delegate);
+    element->Progress(base::TimeDelta(), &delegate);
     CheckApproximatelyEqual(start_transform,
                             delegate.GetTransformForAnimation());
-    element->Progress(0.5, &delegate);
+    element->Progress(delta/2, &delegate);
     CheckApproximatelyEqual(middle_transform,
                             delegate.GetTransformForAnimation());
-    element->Progress(1.0, &delegate);
+    element->Progress(delta, &delegate);
     CheckApproximatelyEqual(target_transform,
                             delegate.GetTransformForAnimation());
   }
@@ -48,7 +48,9 @@ TEST(LayerAnimationElementTest, TransformElement) {
   element->GetTargetValue(&target_value);
   CheckApproximatelyEqual(target_transform, target_value.transform);
 
-  EXPECT_EQ(delta, element->duration());
+  base::TimeDelta element_duration;
+  EXPECT_TRUE(element->IsFinished(delta, &element_duration));
+  EXPECT_EQ(delta, element_duration);
 }
 
 // Check that the bounds element progresses the delegate as expected and
@@ -66,11 +68,11 @@ TEST(LayerAnimationElementTest, BoundsElement) {
 
   for (int i = 0; i < 2; ++i) {
     delegate.SetBoundsFromAnimation(start);
-    element->Progress(0.0, &delegate);
+    element->Progress(base::TimeDelta(), &delegate);
     CheckApproximatelyEqual(start, delegate.GetBoundsForAnimation());
-    element->Progress(0.5, &delegate);
+    element->Progress(delta/2, &delegate);
     CheckApproximatelyEqual(middle, delegate.GetBoundsForAnimation());
-    element->Progress(1.0, &delegate);
+    element->Progress(delta, &delegate);
     CheckApproximatelyEqual(target, delegate.GetBoundsForAnimation());
   }
 
@@ -78,7 +80,9 @@ TEST(LayerAnimationElementTest, BoundsElement) {
   element->GetTargetValue(&target_value);
   CheckApproximatelyEqual(target, target_value.bounds);
 
-  EXPECT_EQ(delta, element->duration());
+  base::TimeDelta element_duration;
+  EXPECT_TRUE(element->IsFinished(delta, &element_duration));
+  EXPECT_EQ(delta, element_duration);
 }
 
 // Check that the opacity element progresses the delegate as expected and
@@ -94,11 +98,11 @@ TEST(LayerAnimationElementTest, OpacityElement) {
 
   for (int i = 0; i < 2; ++i) {
     delegate.SetOpacityFromAnimation(start);
-    element->Progress(0.0, &delegate);
+    element->Progress(base::TimeDelta(), &delegate);
     EXPECT_FLOAT_EQ(start, delegate.GetOpacityForAnimation());
-    element->Progress(0.5, &delegate);
+    element->Progress(delta/2, &delegate);
     EXPECT_FLOAT_EQ(middle, delegate.GetOpacityForAnimation());
-    element->Progress(1.0, &delegate);
+    element->Progress(delta, &delegate);
     EXPECT_FLOAT_EQ(target, delegate.GetOpacityForAnimation());
   }
 
@@ -106,7 +110,9 @@ TEST(LayerAnimationElementTest, OpacityElement) {
   element->GetTargetValue(&target_value);
   EXPECT_FLOAT_EQ(target, target_value.opacity);
 
-  EXPECT_EQ(delta, element->duration());
+  base::TimeDelta element_duration;
+  EXPECT_TRUE(element->IsFinished(delta, &element_duration));
+  EXPECT_EQ(delta, element_duration);
 }
 
 // Check that the visibility element progresses the delegate as expected and
@@ -121,11 +127,11 @@ TEST(LayerAnimationElementTest, VisibilityElement) {
 
   for (int i = 0; i < 2; ++i) {
     delegate.SetVisibilityFromAnimation(start);
-    element->Progress(0.0, &delegate);
+    element->Progress(base::TimeDelta(), &delegate);
     EXPECT_TRUE(delegate.GetVisibilityForAnimation());
-    element->Progress(0.5, &delegate);
+    element->Progress(delta/2, &delegate);
     EXPECT_TRUE(delegate.GetVisibilityForAnimation());
-    element->Progress(1.0, &delegate);
+    element->Progress(delta, &delegate);
     EXPECT_FALSE(delegate.GetVisibilityForAnimation());
   }
 
@@ -133,7 +139,9 @@ TEST(LayerAnimationElementTest, VisibilityElement) {
   element->GetTargetValue(&target_value);
   EXPECT_FALSE(target_value.visibility);
 
-  EXPECT_EQ(delta, element->duration());
+  base::TimeDelta element_duration;
+  EXPECT_TRUE(element->IsFinished(delta, &element_duration));
+  EXPECT_EQ(delta, element_duration);
 }
 
 // Check that the Brightness element progresses the delegate as expected and
@@ -149,11 +157,11 @@ TEST(LayerAnimationElementTest, BrightnessElement) {
 
   for (int i = 0; i < 2; ++i) {
     delegate.SetBrightnessFromAnimation(start);
-    element->Progress(0.0, &delegate);
+    element->Progress(base::TimeDelta(), &delegate);
     EXPECT_FLOAT_EQ(start, delegate.GetBrightnessForAnimation());
-    element->Progress(0.5, &delegate);
+    element->Progress(delta/2, &delegate);
     EXPECT_FLOAT_EQ(middle, delegate.GetBrightnessForAnimation());
-    element->Progress(1.0, &delegate);
+    element->Progress(delta, &delegate);
     EXPECT_FLOAT_EQ(target, delegate.GetBrightnessForAnimation());
   }
 
@@ -161,7 +169,9 @@ TEST(LayerAnimationElementTest, BrightnessElement) {
   element->GetTargetValue(&target_value);
   EXPECT_FLOAT_EQ(target, target_value.brightness);
 
-  EXPECT_EQ(delta, element->duration());
+  base::TimeDelta element_duration;
+  EXPECT_TRUE(element->IsFinished(delta, &element_duration));
+  EXPECT_EQ(delta, element_duration);
 }
 
 // Check that the Grayscale element progresses the delegate as expected and
@@ -177,11 +187,11 @@ TEST(LayerAnimationElementTest, GrayscaleElement) {
 
   for (int i = 0; i < 2; ++i) {
     delegate.SetGrayscaleFromAnimation(start);
-    element->Progress(0.0, &delegate);
+    element->Progress(base::TimeDelta(), &delegate);
     EXPECT_FLOAT_EQ(start, delegate.GetGrayscaleForAnimation());
-    element->Progress(0.5, &delegate);
+    element->Progress(delta/2, &delegate);
     EXPECT_FLOAT_EQ(middle, delegate.GetGrayscaleForAnimation());
-    element->Progress(1.0, &delegate);
+    element->Progress(delta, &delegate);
     EXPECT_FLOAT_EQ(target, delegate.GetGrayscaleForAnimation());
   }
 
@@ -189,7 +199,9 @@ TEST(LayerAnimationElementTest, GrayscaleElement) {
   element->GetTargetValue(&target_value);
   EXPECT_FLOAT_EQ(target, target_value.grayscale);
 
-  EXPECT_EQ(delta, element->duration());
+  base::TimeDelta element_duration;
+  EXPECT_TRUE(element->IsFinished(delta, &element_duration));
+  EXPECT_EQ(delta, element_duration);
 }
 
 // Check that the pause element progresses the delegate as expected and
@@ -209,7 +221,7 @@ TEST(LayerAnimationElementTest, PauseElement) {
   TestLayerAnimationDelegate delegate;
   TestLayerAnimationDelegate copy = delegate;
 
-  element->Progress(1.0, &delegate);
+  element->Progress(delta, &delegate);
 
   // Nothing should have changed.
   CheckApproximatelyEqual(delegate.GetBoundsForAnimation(),
@@ -224,7 +236,9 @@ TEST(LayerAnimationElementTest, PauseElement) {
                   copy.GetGrayscaleForAnimation());
 
   // Pause should last for |delta|.
-  EXPECT_EQ(delta, element->duration());
+  base::TimeDelta element_duration;
+  EXPECT_TRUE(element->IsFinished(delta, &element_duration));
+  EXPECT_EQ(delta, element_duration);
 }
 
 } // namespace

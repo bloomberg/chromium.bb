@@ -41,11 +41,17 @@ class COMPOSITOR_EXPORT LayerAnimationSequence
   explicit LayerAnimationSequence(LayerAnimationElement* element);
   virtual ~LayerAnimationSequence();
 
-  // Updates the delegate to the appropriate value for |elapsed|, which is in
-  // the range [0, Duration()].  If the animation is not aborted, it is
-  // guaranteed that Animate will be called with elapsed = Duration(). Requests
-  // a redraw if it is required.
+  // Updates the delegate to the appropriate value for |elapsed|. Requests a
+  // redraw if it is required.
   void Progress(base::TimeDelta elapsed, LayerAnimationDelegate* delegate);
+
+  // Returns true if calling Progress now, with the given elapsed time, will
+  // finish the animation.
+  bool IsFinished(base::TimeDelta elapsed);
+
+  // Updates the delegate to the end of the animation; if this sequence is
+  // cyclic, updates the delegate to the end of one cycle of the sequence.
+  void ProgressToEnd(LayerAnimationDelegate* delegate);
 
   // Sets the target value to the value that would have been set had
   // the sequence completed. Does nothing if the sequence is cyclic.
@@ -57,11 +63,6 @@ class COMPOSITOR_EXPORT LayerAnimationSequence
   // All properties modified by the sequence.
   const LayerAnimationElement::AnimatableProperties& properties() const {
     return properties_;
-  }
-
-  // The total, finite duration of one cycle of the sequence.
-  base::TimeDelta duration() const {
-    return duration_;
   }
 
   // Adds an element to the sequence. The sequences takes ownership of this
@@ -102,9 +103,6 @@ class COMPOSITOR_EXPORT LayerAnimationSequence
 
   // Notifies the observers that this sequence has been aborted.
   void NotifyAborted();
-
-  // The sum of the durations of all the elements in the sequence.
-  base::TimeDelta duration_;
 
   // The union of all the properties modified by all elements in the sequence.
   LayerAnimationElement::AnimatableProperties properties_;

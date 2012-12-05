@@ -113,11 +113,18 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
       SkColor color,
       base::TimeDelta duration);
 
-  // Updates the delegate to the appropriate value for |t|, which is in the
-  // range [0, 1] (0 for initial, and 1 for final). If the animation is not
-  // aborted, it is guaranteed that Progress will eventually be called with
-  // t = 1.0. Returns true if a redraw is required.
-  bool Progress(double t, LayerAnimationDelegate* delegate);
+  // Updates the delegate to the appropriate value for |elapsed|. Returns true
+  // if a redraw is required.
+  bool Progress(base::TimeDelta elapsed, LayerAnimationDelegate* delegate);
+
+  // If calling Progress now, with the given elapsed time, will finish the
+  // animation, returns true and sets |total_duration| to the actual duration
+  // for this animation, incuding any queueing delays.
+  bool IsFinished(base::TimeDelta elapsed, base::TimeDelta* total_duration);
+
+  // Updates the delegate to the end of the animation. Returns true if a
+  // redraw is required.
+  bool ProgressToEnd(LayerAnimationDelegate* delegate);
 
   // Called if the animation is not allowed to complete. This may be called
   // before OnStarted or Progress.
@@ -128,9 +135,6 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
 
   // The properties that the element modifies.
   const AnimatableProperties& properties() const { return properties_; }
-
-  // The duration of the animation
-  base::TimeDelta duration() const { return duration_; }
 
   Tween::Type tween_type() const { return tween_type_; }
   void set_tween_type(Tween::Type tween_type) { tween_type_ = tween_type; }
