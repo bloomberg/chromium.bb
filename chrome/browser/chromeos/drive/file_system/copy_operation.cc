@@ -40,14 +40,18 @@ DriveFileError CopyLocalFileOnBlockingPool(const FilePath& src_file_path,
       DRIVE_FILE_OK : DRIVE_FILE_ERROR_FAILED;
 }
 
-// Gets the file size and the content type of |local_file|.
-DriveFileError GetLocalFileInfoOnBlockingPool(const FilePath& local_file,
-                                              int64* file_size,
-                                              std::string* content_type) {
+// Gets the file size of |local_file|, and the content type for |extension|.
+// Since |local_file| can be "/dev/null" for a new file upload case, we pass
+// the (destination) extension separately from the source file name.
+DriveFileError GetLocalFileInfoOnBlockingPool(
+    const FilePath& local_file,
+    const FilePath::StringType& extension,
+    int64* file_size,
+    std::string* content_type) {
   DCHECK(file_size);
   DCHECK(content_type);
 
-  if (!net::GetMimeTypeFromExtension(local_file.Extension(), content_type))
+  if (!net::GetMimeTypeFromExtension(extension, content_type))
     *content_type = kMimeTypeOctetStream;
 
   *file_size = 0;
@@ -206,6 +210,7 @@ void CopyOperation::TransferRegularFile(
       FROM_HERE,
       base::Bind(&GetLocalFileInfoOnBlockingPool,
                  local_file_path,
+                 remote_dest_file_path.Extension(),
                  file_size,
                  content_type),
       base::Bind(&CopyOperation::StartFileUpload,
