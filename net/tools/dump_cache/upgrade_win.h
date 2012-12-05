@@ -6,17 +6,14 @@
 
 #include "base/command_line.h"
 #include "base/file_path.h"
+#include "base/string16.h"
 
 // Creates a new server, and returns a new named pipe to communicate with it.
-HANDLE CreateServer(std::wstring* pipe_number);
+HANDLE CreateServer(string16* pipe_number);
 
-// This is the controller process for an upgrade operation.
-int CopyCache(const FilePath& output_path, HANDLE pipe, bool copy_to_text);
+// Runs a loop to write a new cache with all the data available from a slave
+// process connected through the provided |pipe|.
+int UpgradeCache(const FilePath& output_path, HANDLE pipe);
 
 // This process will only execute commands from the controller.
-int RunSlave(const FilePath& input_path, const std::wstring& pipe_number);
-
-// Starts a new process, to generate the files.
-int LaunchSlave(CommandLine command_line,
-                const std::wstring& pipe_number,
-                int version);
+int RunSlave(const FilePath& input_path, const string16& pipe_number);

@@ -38,8 +38,8 @@ const int kNumStreams = 4;
 #define DEBUGMSG(...) { printf(__VA_ARGS__); }
 #endif
 
-HANDLE OpenServer(const std::wstring& pipe_number) {
-  std::wstring pipe_name(kPipePrefix);
+HANDLE OpenServer(const string16& pipe_number) {
+  string16 pipe_name(kPipePrefix);
   pipe_name.append(pipe_number);
   return CreateFile(pipe_name.c_str(), GENERIC_READ | GENERIC_WRITE, 0, NULL,
                     OPEN_EXISTING, FILE_FLAG_OVERLAPPED, NULL);
@@ -214,10 +214,9 @@ bool BaseSM::IsPending() {
 
 class MasterSM : public BaseSM {
  public:
-  MasterSM(const FilePath& path, HANDLE channel, bool dump_to_disk)
+  MasterSM(const FilePath& path, HANDLE channel)
       : BaseSM(channel),
-        path_(path),
-        dump_to_disk_(dump_to_disk) {
+        path_(path) {
   }
   virtual ~MasterSM() {
     delete writer_;
@@ -266,7 +265,6 @@ class MasterSM : public BaseSM {
   scoped_ptr<disk_cache::Backend> cache_;
   CacheDumpWriter* writer_;
   const FilePath path_;
-  bool dump_to_disk_;
 };
 
 void MasterSM::OnIOCompleted(MessageLoopForIO::IOContext* context,
@@ -318,23 +316,17 @@ bool MasterSM::DoInit() {
   DEBUGMSG("Master DoInit\n");
   DCHECK(state_ == MASTER_INITIAL);
 
-  if (dump_to_disk_) {
-    writer_ = new DiskDumper(path_);
-  } else {
-    disk_cache::Backend* cache;
-    net::TestCompletionCallback cb;
-    int rv = disk_cache::CreateCacheBackend(net::DISK_CACHE, path_, 0, false,
-                                            cache_thread_.message_loop_proxy(),
-                                            NULL, &cache, cb.callback());
-    if (cb.GetResult(rv) != net::OK) {
-      printf("Unable to initialize new files\n");
-      return false;
-    }
-    cache_.reset(cache);
-    writer_ = new CacheDumper(cache_.get());
-  }
-  if (!writer_)
+  disk_cache::Backend* cache;
+  net::TestCompletionCallback cb;
+  int rv = disk_cache::CreateCacheBackend(net::DISK_CACHE, path_, 0, false,
+                                          cache_thread_.message_loop_proxy(),
+                                          NULL, &cache, cb.callback());
+  if (cb.GetResult(rv) != net::OK) {
+    printf("Unable to initialize new files\n");
     return false;
+  }
+  cache_.reset(cache);
+  writer_ = new CacheDumper(cache_.get());
 
   copied_entries_ = 0;
   remote_entry_ = 0;
@@ -875,8 +867,8 @@ void SlaveSM::Fail() {
 
 // -----------------------------------------------------------------------
 
-HANDLE CreateServer(std::wstring* pipe_number) {
-  std::wstring pipe_name(kPipePrefix);
+HANDLE CreateServer(string16* pipe_number) {
+  string16 pipe_name(kPipePrefix);
   srand(static_cast<int>(base::Time::Now().ToInternalValue()));
   *pipe_number = base::IntToString16(rand());
   pipe_name.append(*pipe_number);
@@ -889,10 +881,10 @@ HANDLE CreateServer(std::wstring* pipe_number) {
 }
 
 // This is the controller process for an upgrade operation.
-int CopyCache(const FilePath& output_path, HANDLE pipe, bool copy_to_text) {
+int UpgradeCache(const FilePath& output_path, HANDLE pipe) {
   MessageLoop loop(MessageLoop::TYPE_IO);
 
-  MasterSM master(output_path, pipe, copy_to_text);
+  MasterSM master(output_path, pipe);
   if (!master.DoInit()) {
     printf("Unable to talk with the helper\n");
     return -1;
@@ -903,7 +895,7 @@ int CopyCache(const FilePath& output_path, HANDLE pipe, bool copy_to_text) {
 }
 
 // This process will only execute commands from the controller.
-int RunSlave(const FilePath& input_path, const std::wstring& pipe_number) {
+int RunSlave(const FilePath& input_path, const string16& pipe_number) {
   MessageLoop loop(MessageLoop::TYPE_IO);
 
   base::win::ScopedHandle pipe(OpenServer(pipe_number));
