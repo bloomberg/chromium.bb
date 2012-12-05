@@ -108,7 +108,8 @@ TEST_F(AddressTest, IsCountry) {
   for (size_t i = 0; i < arraysize(kValidMatches); ++i) {
     SCOPED_TRACE(kValidMatches[i]);
     FieldTypeSet matching_types;
-    address.GetMatchingTypes(ASCIIToUTF16(kValidMatches[i]), &matching_types);
+    address.GetMatchingTypes(ASCIIToUTF16(kValidMatches[i]), "US",
+                             &matching_types);
     ASSERT_EQ(1U, matching_types.size());
     EXPECT_EQ(ADDRESS_HOME_COUNTRY, *matching_types.begin());
   }
@@ -119,7 +120,8 @@ TEST_F(AddressTest, IsCountry) {
   };
   for (size_t i = 0; i < arraysize(kInvalidMatches); ++i) {
     FieldTypeSet matching_types;
-    address.GetMatchingTypes(ASCIIToUTF16(kInvalidMatches[i]), &matching_types);
+    address.GetMatchingTypes(ASCIIToUTF16(kInvalidMatches[i]), "US",
+                             &matching_types);
     EXPECT_EQ(0U, matching_types.size());
   }
 
@@ -127,6 +129,6 @@ TEST_F(AddressTest, IsCountry) {
   address.set_country_code("");
   EXPECT_EQ(std::string(), address.country_code());
   FieldTypeSet matching_types;
-  address.GetMatchingTypes(ASCIIToUTF16("Garbage"), &matching_types);
+  address.GetMatchingTypes(ASCIIToUTF16("Garbage"), "US", &matching_types);
   EXPECT_EQ(0U, matching_types.size());
 }

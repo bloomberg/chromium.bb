@@ -40,13 +40,16 @@ class AutofillProfile : public FormGroup {
   // FormGroup:
   virtual std::string GetGUID() const OVERRIDE;
   virtual void GetMatchingTypes(const string16& text,
+                                const std::string& app_locale,
                                 FieldTypeSet* matching_types) const OVERRIDE;
   virtual string16 GetRawInfo(AutofillFieldType type) const OVERRIDE;
   virtual void SetRawInfo(AutofillFieldType type,
                           const string16& value) OVERRIDE;
-  virtual string16 GetCanonicalizedInfo(AutofillFieldType type) const OVERRIDE;
-  virtual bool SetCanonicalizedInfo(AutofillFieldType type,
-                                    const string16& value) OVERRIDE;
+  virtual string16 GetInfo(AutofillFieldType type,
+                           const std::string& app_locale) const OVERRIDE;
+  virtual bool SetInfo(AutofillFieldType type,
+                       const string16& value,
+                       const std::string& app_locale) OVERRIDE;
   virtual void FillFormField(const AutofillField& field,
                              size_t variant,
                              FormFieldData* field_data) const OVERRIDE;
@@ -56,8 +59,9 @@ class AutofillProfile : public FormGroup {
                        const std::vector<string16>& values);
   void GetRawMultiInfo(AutofillFieldType type,
                        std::vector<string16>* values) const;
-  void GetCanonicalizedMultiInfo(AutofillFieldType type,
-                                 std::vector<string16>* values) const;
+  void GetMultiInfo(AutofillFieldType type,
+                    const std::string& app_locale,
+                    std::vector<string16>* values) const;
 
   // Set |field_data|'s value for phone number based on contents of |this|.
   // The |field| specifies the type of the phone and whether this is a
@@ -148,9 +152,11 @@ class AutofillProfile : public FormGroup {
   virtual bool FillCountrySelectControl(FormFieldData* field) const OVERRIDE;
   virtual void GetSupportedTypes(FieldTypeSet* supported_types) const OVERRIDE;
 
-  // Shared implementation for GetMultiInfo() and GetCanonicalizedMultiInfo().
+  // Shared implementation for GetRawMultiInfo() and GetMultiInfo().  Pass an
+  // empty |app_locale| to get the raw info; otherwise, the returned info is
+  // canonicalized according to the given |app_locale|, if appropriate.
   void GetMultiInfoImpl(AutofillFieldType type,
-                        bool canonicalize,
+                        const std::string& app_locale,
                         std::vector<string16>* values) const;
 
   // Checks if the |phone| is in the |existing_phones| using fuzzy matching:

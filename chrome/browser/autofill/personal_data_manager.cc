@@ -15,6 +15,7 @@
 #include "chrome/browser/api/sync/profile_sync_service_base.h"
 #include "chrome/browser/api/webdata/autofill_web_data_service.h"
 #include "chrome/browser/autofill/autofill-inl.h"
+#include "chrome/browser/autofill/autofill_country.h"
 #include "chrome/browser/autofill/autofill_field.h"
 #include "chrome/browser/autofill/autofill_metrics.h"
 #include "chrome/browser/autofill/autofill_regexes.h"
@@ -243,6 +244,7 @@ bool PersonalDataManager::ImportFormData(
   // complete at the end.
   PhoneNumber::PhoneCombineHelper home;
 
+  const std::string app_locale = AutofillCountry::ApplicationLocale();
   for (size_t i = 0; i < form.field_count(); ++i) {
     const AutofillField* field = form.field(i);
     string16 value = CollapseWhitespace(field->value, false);
@@ -270,7 +272,7 @@ bool PersonalDataManager::ImportFormData(
         DCHECK_EQ(CREDIT_CARD_EXP_MONTH, field_type);
         local_imported_credit_card->SetInfoForMonthInputType(value);
       } else {
-        local_imported_credit_card->SetCanonicalizedInfo(field_type, value);
+        local_imported_credit_card->SetInfo(field_type, value, app_locale);
       }
       ++importable_credit_card_fields;
     } else {
@@ -279,7 +281,7 @@ bool PersonalDataManager::ImportFormData(
       // If the fields are not the phone fields in question home.SetInfo() is
       // going to return false.
       if (!home.SetInfo(field_type, value))
-        imported_profile->SetCanonicalizedInfo(field_type, value);
+        imported_profile->SetInfo(field_type, value, app_locale);
 
       // Reject profiles with invalid country information.
       if (field_type == ADDRESS_HOME_COUNTRY &&
@@ -295,8 +297,8 @@ bool PersonalDataManager::ImportFormData(
     string16 constructed_number;
     if (!home.ParseNumber(imported_profile->CountryCode(),
                           &constructed_number) ||
-        !imported_profile->SetCanonicalizedInfo(PHONE_HOME_WHOLE_NUMBER,
-                                                constructed_number)) {
+        !imported_profile->SetInfo(PHONE_HOME_WHOLE_NUMBER, constructed_number,
+                                   app_locale)) {
       imported_profile.reset();
     }
   }
@@ -320,7 +322,8 @@ bool PersonalDataManager::ImportFormData(
     for (std::vector<CreditCard*>::const_iterator iter = credit_cards_.begin();
          iter != credit_cards_.end();
          ++iter) {
-      if ((*iter)->UpdateFromImportedCard(*local_imported_credit_card.get())) {
+      if ((*iter)->UpdateFromImportedCard(*local_imported_credit_card.get(),
+                                          app_locale)) {
         merged_credit_card = true;
         UpdateCreditCard(**iter);
         local_imported_credit_card.reset();
@@ -491,15 +494,16 @@ CreditCard* PersonalDataManager::GetCreditCardByGUID(const std::string& guid) {
 
 void PersonalDataManager::GetNonEmptyTypes(
     FieldTypeSet* non_empty_types) {
+  const std::string app_locale = AutofillCountry::ApplicationLocale();
   const std::vector<AutofillProfile*>& profiles = GetProfiles();
   for (std::vector<AutofillProfile*>::const_iterator iter = profiles.begin();
        iter != profiles.end(); ++iter) {
-    (*iter)->GetNonEmptyTypes(non_empty_types);
+    (*iter)->GetNonEmptyTypes(app_locale, non_empty_types);
   }
 
   for (ScopedVector<CreditCard>::const_iterator iter = credit_cards_.begin();
        iter != credit_cards_.end(); ++iter) {
-    (*iter)->GetNonEmptyTypes(non_empty_types);
+    (*iter)->GetNonEmptyTypes(app_locale, non_empty_types);
   }
 }
 
@@ -859,13 +863,14 @@ void PersonalDataManager::SaveImportedCreditCard(
   // Set to true if |imported_card| is merged into the credit card list.
   bool merged = false;
 
+  const std::string app_locale = AutofillCountry::ApplicationLocale();
   std::vector<CreditCard> credit_cards;
   for (std::vector<CreditCard*>::const_iterator card = credit_cards_.begin();
        card != credit_cards_.end();
        ++card) {
     // If |imported_card| has not yet been merged, check whether it should be
     // with the current |card|.
-    if (!merged && (*card)->UpdateFromImportedCard(imported_card))
+    if (!merged && (*card)->UpdateFromImportedCard(imported_card, app_locale))
       merged = true;
 
     credit_cards.push_back(**card);

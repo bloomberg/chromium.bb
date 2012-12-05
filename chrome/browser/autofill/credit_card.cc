@@ -331,15 +331,17 @@ void CreditCard::SetRawInfo(AutofillFieldType type, const string16& value) {
   }
 }
 
-string16 CreditCard::GetCanonicalizedInfo(AutofillFieldType type) const {
+string16 CreditCard::GetInfo(AutofillFieldType type,
+                             const std::string& app_locale) const {
   if (type == CREDIT_CARD_NUMBER)
     return StripSeparators(number_);
 
   return GetRawInfo(type);
 }
 
-bool CreditCard::SetCanonicalizedInfo(AutofillFieldType type,
-                                      const string16& value) {
+bool CreditCard::SetInfo(AutofillFieldType type,
+                         const string16& value,
+                         const std::string& app_locale) {
   if (type == CREDIT_CARD_NUMBER)
     SetRawInfo(type, StripSeparators(value));
   else
@@ -349,10 +351,11 @@ bool CreditCard::SetCanonicalizedInfo(AutofillFieldType type,
 }
 
 void CreditCard::GetMatchingTypes(const string16& text,
+                                  const std::string& app_locale,
                                   FieldTypeSet* matching_types) const {
-  FormGroup::GetMatchingTypes(text, matching_types);
+  FormGroup::GetMatchingTypes(text, app_locale, matching_types);
 
-  string16 card_number = GetCanonicalizedInfo(CREDIT_CARD_NUMBER);
+  string16 card_number = GetInfo(CREDIT_CARD_NUMBER, app_locale);
   if (!card_number.empty() && StripSeparators(text) == card_number)
     matching_types->insert(CREDIT_CARD_NUMBER);
 
@@ -433,9 +436,10 @@ void CreditCard::operator=(const CreditCard& credit_card) {
   guid_ = credit_card.guid_;
 }
 
-bool CreditCard::UpdateFromImportedCard(const CreditCard& imported_card) {
-  if (this->GetCanonicalizedInfo(CREDIT_CARD_NUMBER) !=
-          imported_card.GetCanonicalizedInfo(CREDIT_CARD_NUMBER)) {
+bool CreditCard::UpdateFromImportedCard(const CreditCard& imported_card,
+                                        const std::string& app_locale) {
+  if (this->GetInfo(CREDIT_CARD_NUMBER, app_locale) !=
+          imported_card.GetInfo(CREDIT_CARD_NUMBER, app_locale)) {
     return false;
   }
 
@@ -459,19 +463,21 @@ void CreditCard::FillFormField(const AutofillField& field,
   DCHECK_EQ(AutofillType::CREDIT_CARD, AutofillType(field.type()).group());
   DCHECK(field_data);
 
+  const std::string app_locale = AutofillCountry::ApplicationLocale();
+
   if (field_data->form_control_type == "select-one") {
     FillSelectControl(field.type(), field_data);
   } else if (field_data->form_control_type == "month") {
     // HTML5 input="month" consists of year-month.
-    string16 year = GetCanonicalizedInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR);
-    string16 month = GetCanonicalizedInfo(CREDIT_CARD_EXP_MONTH);
+    string16 year = GetInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, app_locale);
+    string16 month = GetInfo(CREDIT_CARD_EXP_MONTH, app_locale);
     if (!year.empty() && !month.empty()) {
       // Fill the value only if |this| includes both year and month
       // information.
       field_data->value = year + ASCIIToUTF16("-") + month;
     }
   } else {
-    field_data->value = GetCanonicalizedInfo(field.type());
+    field_data->value = GetInfo(field.type(), app_locale);
   }
 }
 
@@ -542,7 +548,7 @@ bool CreditCard::IsValidCreditCardNumber(const string16& text) {
 
 bool CreditCard::IsEmpty() const {
   FieldTypeSet types;
-  GetNonEmptyTypes(&types);
+  GetNonEmptyTypes(AutofillCountry::ApplicationLocale(), &types);
   return types.empty();
 }
 

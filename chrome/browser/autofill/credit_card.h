@@ -28,13 +28,16 @@ class CreditCard : public FormGroup {
   // FormGroup implementation:
   virtual std::string GetGUID() const OVERRIDE;
   virtual void GetMatchingTypes(const string16& text,
+                                const std::string& app_locale,
                                 FieldTypeSet* matching_types) const OVERRIDE;
   virtual string16 GetRawInfo(AutofillFieldType type) const OVERRIDE;
   virtual void SetRawInfo(AutofillFieldType type,
                           const string16& value) OVERRIDE;
-  virtual string16 GetCanonicalizedInfo(AutofillFieldType type) const OVERRIDE;
-  virtual bool SetCanonicalizedInfo(AutofillFieldType type,
-                                    const string16& value) OVERRIDE;
+  virtual string16 GetInfo(AutofillFieldType type,
+                           const std::string& app_locale) const OVERRIDE;
+  virtual bool SetInfo(AutofillFieldType type,
+                       const string16& value,
+                       const std::string& app_locale) OVERRIDE;
   virtual void FillFormField(const AutofillField& field,
                              size_t variant,
                              FormFieldData* field_data) const OVERRIDE;
@@ -63,8 +66,8 @@ class CreditCard : public FormGroup {
   // If the card numbers for |this| and |imported_card| match, overwrites |this|
   // card's data with the data in |credit_card| and returns true.  Otherwise,
   // returns false.
-  bool UpdateFromImportedCard(const CreditCard& imported_card)
-      WARN_UNUSED_RESULT;
+  bool UpdateFromImportedCard(const CreditCard& imported_card,
+                              const std::string& app_locale) WARN_UNUSED_RESULT;
 
   // Comparison for Sync.  Returns 0 if the credit card is the same as |this|,
   // or < 0, or > 0 if it is different.  The implied ordering can be used for

@@ -25,6 +25,7 @@
 #include "chrome/browser/api/sync/profile_sync_service_base.h"
 #include "chrome/browser/autofill/autocomplete_history_manager.h"
 #include "chrome/browser/autofill/autofill_cc_infobar_delegate.h"
+#include "chrome/browser/autofill/autofill_country.h"
 #include "chrome/browser/autofill/autofill_external_delegate.h"
 #include "chrome/browser/autofill/autofill_field.h"
 #include "chrome/browser/autofill/autofill_manager_delegate.h"
@@ -143,6 +144,7 @@ bool FormIsHTTPS(const FormStructure& form) {
 void DeterminePossibleFieldTypesForUpload(
     const std::vector<AutofillProfile>& profiles,
     const std::vector<CreditCard>& credit_cards,
+    const std::string& app_locale,
     FormStructure* submitted_form) {
   DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
@@ -155,11 +157,11 @@ void DeterminePossibleFieldTypesForUpload(
     FieldTypeSet matching_types;
     for (std::vector<AutofillProfile>::const_iterator it = profiles.begin();
          it != profiles.end(); ++it) {
-      it->GetMatchingTypes(value, &matching_types);
+      it->GetMatchingTypes(value, app_locale, &matching_types);
     }
     for (std::vector<CreditCard>::const_iterator it = credit_cards.begin();
           it != credit_cards.end(); ++it) {
-      it->GetMatchingTypes(value, &matching_types);
+      it->GetMatchingTypes(value, app_locale, &matching_types);
     }
 
     if (matching_types.empty())
@@ -432,6 +434,7 @@ bool AutofillManager::OnFormSubmitted(const FormData& form,
         base::Bind(&DeterminePossibleFieldTypesForUpload,
                    copied_profiles,
                    copied_credit_cards,
+                   AutofillCountry::ApplicationLocale(),
                    raw_submitted_form),
         base::Bind(&AutofillManager::UploadFormDataAsyncCallback,
                    this,
@@ -1106,6 +1109,7 @@ void AutofillManager::GetProfileSuggestions(
     std::vector<string16>* icons,
     std::vector<int>* unique_ids) const {
   const std::vector<AutofillProfile*>& profiles = personal_data_->GetProfiles();
+  const std::string app_locale = AutofillCountry::ApplicationLocale();
   if (!field.is_autofilled) {
     std::vector<AutofillProfile*> matched_profiles;
     for (std::vector<AutofillProfile*>::const_iterator iter = profiles.begin();
@@ -1114,7 +1118,7 @@ void AutofillManager::GetProfileSuggestions(
 
       // The value of the stored data for this field type in the |profile|.
       std::vector<string16> multi_values;
-      profile->GetCanonicalizedMultiInfo(type, &multi_values);
+      profile->GetMultiInfo(type, app_locale, &multi_values);
 
       for (size_t i = 0; i < multi_values.size(); ++i) {
         if (!multi_values[i].empty() &&
@@ -1146,7 +1150,7 @@ void AutofillManager::GetProfileSuggestions(
 
       // The value of the stored data for this field type in the |profile|.
       std::vector<string16> multi_values;
-      profile->GetCanonicalizedMultiInfo(type, &multi_values);
+      profile->GetMultiInfo(type, app_locale, &multi_values);
 
       for (size_t i = 0; i < multi_values.size(); ++i) {
         if (multi_values[i].empty())
@@ -1192,14 +1196,14 @@ void AutofillManager::GetCreditCardSuggestions(
     std::vector<string16>* labels,
     std::vector<string16>* icons,
     std::vector<int>* unique_ids) const {
+  const std::string app_locale = AutofillCountry::ApplicationLocale();
   for (std::vector<CreditCard*>::const_iterator iter =
            personal_data_->credit_cards().begin();
        iter != personal_data_->credit_cards().end(); ++iter) {
     CreditCard* credit_card = *iter;
 
     // The value of the stored data for this field type in the |credit_card|.
-    string16 creditcard_field_value =
-        credit_card->GetCanonicalizedInfo(type);
+    string16 creditcard_field_value = credit_card->GetInfo(type, app_locale);
     if (!creditcard_field_value.empty() &&
         StartsWith(creditcard_field_value, field.value, false)) {
       if (type == CREDIT_CARD_NUMBER)
@@ -1208,7 +1212,7 @@ void AutofillManager::GetCreditCardSuggestions(
       string16 label;
       if (credit_card->number().empty()) {
         // If there is no CC number, return name to show something.
-        label = credit_card->GetCanonicalizedInfo(CREDIT_CARD_NAME);
+        label = credit_card->GetInfo(CREDIT_CARD_NAME, app_locale);
       } else {
         label = kCreditCardPrefix;
         label.append(credit_card->LastFourDigits());

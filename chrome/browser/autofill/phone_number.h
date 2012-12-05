@@ -29,13 +29,16 @@ class PhoneNumber : public FormGroup {
 
   // FormGroup implementation:
   virtual void GetMatchingTypes(const string16& text,
+                                const std::string& app_locale,
                                 FieldTypeSet* matching_types) const OVERRIDE;
   virtual string16 GetRawInfo(AutofillFieldType type) const OVERRIDE;
   virtual void SetRawInfo(AutofillFieldType type,
                           const string16& value) OVERRIDE;
-  virtual string16 GetCanonicalizedInfo(AutofillFieldType type) const OVERRIDE;
-  virtual bool SetCanonicalizedInfo(AutofillFieldType type,
-                                    const string16& value) OVERRIDE;
+  virtual string16 GetInfo(AutofillFieldType type,
+                           const std::string& app_locale) const OVERRIDE;
+  virtual bool SetInfo(AutofillFieldType type,
+                       const string16& value,
+                       const std::string& app_locale) OVERRIDE;
 
   // Size and offset of the prefix and suffix portions of phone numbers.
   static const size_t kPrefixOffset = 0;
@@ -70,18 +73,16 @@ class PhoneNumber : public FormGroup {
   // FormGroup:
   virtual void GetSupportedTypes(FieldTypeSet* supported_types) const OVERRIDE;
 
-  // Validates |number_| and translates it into digits-only format.
-  bool NormalizePhone();
-
   // Returns the region code for this phone number, which is an ISO 3166
   // 2-letter country code.  The name "region" is chosen since "country code"
   // already refers to part of a phone number.  The returned value is based on
-  // the |profile_|.
-  std::string GetRegion() const;
+  // the |profile_|; if the |profile_| does not have a country code associated
+  // with it, falls back to the country code corresponding to the |app_locale|.
+  std::string GetRegion(const std::string& app_locale) const;
 
   // Updates the cached parsed number if the profile's region has changed
   // since the last time the cache was updated.
-  void UpdateCacheIfNeeded() const;
+  void UpdateCacheIfNeeded(const std::string& app_locale) const;
 
   // The phone number.
   string16 number_;

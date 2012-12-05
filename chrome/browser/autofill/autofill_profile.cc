@@ -119,6 +119,14 @@ const string16 MultiString(const AutofillProfile& p, AutofillFieldType type) {
   return accumulate;
 }
 
+string16 GetFormGroupInfo(const FormGroup& form_group,
+                          AutofillFieldType type,
+                          const std::string& app_locale) {
+  return app_locale.empty() ?
+      form_group.GetRawInfo(type) :
+      form_group.GetInfo(type, app_locale);
+}
+
 template <class T>
 void CopyValuesToItems(AutofillFieldType type,
                        const std::vector<string16>& values,
@@ -137,14 +145,11 @@ void CopyValuesToItems(AutofillFieldType type,
 template <class T>
 void CopyItemsToValues(AutofillFieldType type,
                        const std::vector<T>& form_group_items,
-                       bool canonicalize,
+                       const std::string& app_locale,
                        std::vector<string16>* values) {
   values->resize(form_group_items.size());
   for (size_t i = 0; i < values->size(); ++i) {
-    if (canonicalize)
-      (*values)[i] = form_group_items[i].GetCanonicalizedInfo(type);
-    else
-      (*values)[i] = form_group_items[i].GetRawInfo(type);
+    (*values)[i] = GetFormGroupInfo(form_group_items[i], type, app_locale);
   }
 }
 
@@ -258,10 +263,11 @@ std::string AutofillProfile::GetGUID() const {
 }
 
 void AutofillProfile::GetMatchingTypes(const string16& text,
+                                       const std::string& app_locale,
                                        FieldTypeSet* matching_types) const {
   FormGroupList info = FormGroups();
   for (FormGroupList::const_iterator it = info.begin(); it != info.end(); ++it)
-    (*it)->GetMatchingTypes(text, matching_types);
+    (*it)->GetMatchingTypes(text, app_locale, matching_types);
 }
 
 string16 AutofillProfile::GetRawInfo(AutofillFieldType type) const {
@@ -280,24 +286,25 @@ void AutofillProfile::SetRawInfo(AutofillFieldType type,
     form_group->SetRawInfo(type, CollapseWhitespace(value, false));
 }
 
-string16 AutofillProfile::GetCanonicalizedInfo(AutofillFieldType type) const {
+string16 AutofillProfile::GetInfo(AutofillFieldType type,
+                                  const std::string& app_locale) const {
   AutofillFieldType return_type = AutofillType::GetEquivalentFieldType(type);
   const FormGroup* form_group = FormGroupForType(return_type);
   if (!form_group)
     return string16();
 
-  return form_group->GetCanonicalizedInfo(return_type);
+  return form_group->GetInfo(return_type, app_locale);
 }
 
-bool AutofillProfile::SetCanonicalizedInfo(AutofillFieldType type,
-                                           const string16& value) {
+bool AutofillProfile::SetInfo(AutofillFieldType type,
+                              const string16& value,
+                              const std::string& app_locale) {
   FormGroup* form_group = MutableFormGroupForType(type);
-  if (form_group) {
-    return form_group->SetCanonicalizedInfo(type,
-                                            CollapseWhitespace(value, false));
-  }
+  if (!form_group)
+    return false;
 
-  return false;
+  return
+      form_group->SetInfo(type, CollapseWhitespace(value, false), app_locale);
 }
 
 void AutofillProfile::SetRawMultiInfo(AutofillFieldType type,
@@ -330,12 +337,13 @@ void AutofillProfile::SetRawMultiInfo(AutofillFieldType type,
 
 void AutofillProfile::GetRawMultiInfo(AutofillFieldType type,
                                       std::vector<string16>* values) const {
-  GetMultiInfoImpl(type, false, values);
+  GetMultiInfoImpl(type, std::string(), values);
 }
 
-void AutofillProfile::GetCanonicalizedMultiInfo(
-    AutofillFieldType type, std::vector<string16>* values) const {
-  GetMultiInfoImpl(type, true, values);
+void AutofillProfile::GetMultiInfo(AutofillFieldType type,
+                                   const std::string& app_locale,
+                                   std::vector<string16>* values) const {
+  GetMultiInfoImpl(type, app_locale, values);
 }
 
 void AutofillProfile::FillFormField(const AutofillField& field,
@@ -351,7 +359,7 @@ void AutofillProfile::FillFormField(const AutofillField& field,
     FillSelectControl(type, field_data);
   } else {
     std::vector<string16> values;
-    GetCanonicalizedMultiInfo(type, &values);
+    GetMultiInfo(type, AutofillCountry::ApplicationLocale(), &values);
     if (variant >= values.size()) {
       // If the variant is unavailable, bail.  This case is reachable, for
       // example if Sync updates a profile during the filling process.
@@ -366,7 +374,7 @@ void AutofillProfile::FillPhoneNumberField(const AutofillField& field,
                                            size_t variant,
                                            FormFieldData* field_data) const {
   std::vector<string16> values;
-  GetCanonicalizedMultiInfo(field.type(), &values);
+  GetMultiInfo(field.type(), AutofillCountry::ApplicationLocale(), &values);
   DCHECK(variant < values.size());
 
   // If we are filling a phone number, check to see if the size field
@@ -402,7 +410,7 @@ void AutofillProfile::SetCountryCode(const std::string& country_code) {
 
 bool AutofillProfile::IsEmpty() const {
   FieldTypeSet types;
-  GetNonEmptyTypes(&types);
+  GetNonEmptyTypes(AutofillCountry::ApplicationLocale(), &types);
   return types.empty();
 }
 
@@ -461,7 +469,7 @@ const string16 AutofillProfile::PrimaryValue() const {
 
 bool AutofillProfile::IsSubsetOf(const AutofillProfile& profile) const {
   FieldTypeSet types;
-  GetNonEmptyTypes(&types);
+  GetNonEmptyTypes(AutofillCountry::ApplicationLocale(), &types);
 
   for (FieldTypeSet::const_iterator iter = types.begin(); iter != types.end();
        ++iter) {
@@ -491,7 +499,7 @@ bool AutofillProfile::IsSubsetOf(const AutofillProfile& profile) const {
 
 void AutofillProfile::OverwriteWithOrAddTo(const AutofillProfile& profile) {
   FieldTypeSet field_types;
-  profile.GetNonEmptyTypes(&field_types);
+  profile.GetNonEmptyTypes(AutofillCountry::ApplicationLocale(), &field_types);
 
   // Only transfer "full" types (e.g. full name) and not fragments (e.g.
   // first name, last name).
@@ -635,21 +643,21 @@ bool AutofillProfile::FillCountrySelectControl(FormFieldData* field_data)
 }
 
 void AutofillProfile::GetMultiInfoImpl(AutofillFieldType type,
-                                       bool canonicalize,
+                                       const std::string& app_locale,
                                        std::vector<string16>* values) const {
   switch (AutofillType(type).group()) {
     case AutofillType::NAME:
-      CopyItemsToValues(type, name_, canonicalize, values);
+      CopyItemsToValues(type, name_, app_locale, values);
       break;
     case AutofillType::EMAIL:
-      CopyItemsToValues(type, email_, canonicalize, values);
+      CopyItemsToValues(type, email_, app_locale, values);
       break;
     case AutofillType::PHONE:
-      CopyItemsToValues(type, home_number_, canonicalize, values);
+      CopyItemsToValues(type, home_number_, app_locale, values);
       break;
     default:
       values->resize(1);
-      (*values)[0] = GetRawInfo(type);
+      (*values)[0] = GetFormGroupInfo(*this, type, app_locale);
   }
 }
 

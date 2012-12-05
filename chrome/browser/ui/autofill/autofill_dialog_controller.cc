@@ -6,6 +6,7 @@
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/autofill/autofill_country.h"
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
@@ -82,6 +83,8 @@ template<class T> FormGroup* GetBestDataSource(
     const std::vector<T*>& sources,
     const DetailInputs* const* all_inputs,
     size_t all_inputs_length) {
+  const std::string app_locale = AutofillCountry::ApplicationLocale();
+
   int best_field_fill_count = 0;
   FormGroup* best_source = NULL;
 
@@ -91,9 +94,8 @@ template<class T> FormGroup* GetBestDataSource(
     for (size_t j = 0; j < all_inputs_length; ++j) {
       const DetailInputs& inputs = *all_inputs[j];
       for (size_t k = 0; k < inputs.size(); ++k) {
-        if (!sources[i]->GetCanonicalizedInfo(inputs[k].type).empty()) {
+        if (!sources[i]->GetInfo(inputs[k].type, app_locale).empty())
           field_fill_count++;
-        }
       }
     }
 
@@ -112,10 +114,11 @@ template<class T> FormGroup* GetBestDataSource(
 void FillInputsFromFormGroup(FormGroup* group,
                              DetailInputs** all_inputs,
                              size_t all_inputs_length) {
+  const std::string app_locale = AutofillCountry::ApplicationLocale();
   for (size_t i = 0; i < all_inputs_length; ++i) {
     DetailInputs& inputs = *all_inputs[i];
     for (size_t j = 0; j < inputs.size(); ++j) {
-      inputs[j].starting_value = group->GetCanonicalizedInfo(inputs[j].type);
+      inputs[j].starting_value = group->GetInfo(inputs[j].type, app_locale);
     }
   }
 }
@@ -348,8 +351,9 @@ void AutofillDialogController::GenerateComboboxModels() {
   suggested_cc_.AddItem("", ASCIIToUTF16("Enter new card"));
 
   const std::vector<AutofillProfile*>& profiles = manager->GetProfiles();
+  const std::string app_locale = AutofillCountry::ApplicationLocale();
   for (size_t i = 0; i < profiles.size(); ++i) {
-    string16 email = profiles[i]->GetCanonicalizedInfo(EMAIL_ADDRESS);
+    string16 email = profiles[i]->GetInfo(EMAIL_ADDRESS, app_locale);
     if (!email.empty())
       suggested_email_.AddItem(profiles[i]->guid(), email);
     suggested_billing_.AddItem(profiles[i]->guid(), profiles[i]->Label());

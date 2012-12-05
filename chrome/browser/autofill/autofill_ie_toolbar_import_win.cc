@@ -150,7 +150,7 @@ bool ImportSingleProfile(FormGroup* profile,
 
       // We need to store phone data in |phone| before building the whole number
       // at the end. The rest of the fields are set "as is".
-      // TODO(isherman): Call SetCanonicalizedInfo(), rather than SetRawInfo().
+      // TODO(isherman): Call SetInfo(), rather than SetRawInfo().
       if (!phone.SetInfo(it->second, field_value))
         profile->SetRawInfo(it->second, field_value);
     }
@@ -159,7 +159,7 @@ bool ImportSingleProfile(FormGroup* profile,
   string16 constructed_number;
   if (!phone.IsEmpty() &&
       phone.ParseNumber(std::string("US"), &constructed_number)) {
-    profile->SetCanonicalizedInfo(PHONE_HOME_WHOLE_NUMBER, constructed_number);
+    profile->SetRawInfo(PHONE_HOME_WHOLE_NUMBER, constructed_number);
   }
 
   return has_non_empty_fields;
@@ -256,8 +256,7 @@ bool ImportCurrentUserProfiles(std::vector<AutofillProfile>* profiles,
       RegKey key(HKEY_CURRENT_USER, key_name.c_str(), KEY_READ);
       CreditCard credit_card;
       if (ImportSingleProfile(&credit_card, &key, reg_to_field)) {
-        // TODO(isherman): Call into GetCanonicalizedInfo() below, rather than
-        // GetRawInfo().
+        // TODO(isherman): Call into GetInfo() below, rather than GetRawInfo().
         string16 cc_number = credit_card.GetRawInfo(CREDIT_CARD_NUMBER);
         if (!cc_number.empty())
           credit_cards->push_back(credit_card);

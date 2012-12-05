@@ -17,13 +17,6 @@ namespace {
 
 const char16 kAddressSplitChars[] = {'-', ',', '#', '.', ' ', 0};
 
-// Returns the country code corresponding to |country|, which should be a
-// localized country name.
-std::string ToCountryCode(const string16& country) {
-  std::string app_locale = AutofillCountry::ApplicationLocale();
-  return AutofillCountry::GetCountryCode(country, app_locale);
-}
-
 }  // namespace
 
 Address::Address() {}
@@ -89,7 +82,12 @@ void Address::SetRawInfo(AutofillFieldType type, const string16& value) {
   else if (type == ADDRESS_HOME_STATE)
     state_ = value;
   else if (type == ADDRESS_HOME_COUNTRY)
-    country_code_ = ToCountryCode(value);
+    // TODO(isherman): When setting the country, it should only be possible to
+    // call this with a country code, which means we should be able to drop the
+    // call to GetCountryCode() below.
+    country_code_ =
+        AutofillCountry::GetCountryCode(value,
+                                        AutofillCountry::ApplicationLocale());
   else if (type == ADDRESS_HOME_ZIP)
     zip_code_ = value;
   else
@@ -97,11 +95,12 @@ void Address::SetRawInfo(AutofillFieldType type, const string16& value) {
 }
 
 void Address::GetMatchingTypes(const string16& text,
+                               const std::string& app_locale,
                                FieldTypeSet* matching_types) const {
-  FormGroup::GetMatchingTypes(text, matching_types);
+  FormGroup::GetMatchingTypes(text, app_locale, matching_types);
 
   // Check to see if the |text| canonicalized as a country name is a match.
-  std::string country_code = ToCountryCode(text);
+  std::string country_code = AutofillCountry::GetCountryCode(text, app_locale);
   if (!country_code.empty() && country_code_ == country_code)
     matching_types->insert(ADDRESS_HOME_COUNTRY);
 }

@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/autofill/autofill_country.h"
 #include "chrome/common/form_field_data.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -213,6 +214,7 @@ std::string FormGroup::GetGUID() const {
 }
 
 void FormGroup::GetMatchingTypes(const string16& text,
+                                 const std::string& app_locale,
                                  FieldTypeSet* matching_types) const {
   if (text.empty()) {
     matching_types->insert(EMPTY_TYPE);
@@ -226,27 +228,30 @@ void FormGroup::GetMatchingTypes(const string16& text,
     // TODO(isherman): Matches are case-sensitive for now.  Let's keep an eye on
     // this and decide whether there are compelling reasons to add case-
     // insensitivity.
-    if (GetRawInfo(*type) == text)
+    if (GetInfo(*type, app_locale) == text)
       matching_types->insert(*type);
   }
 }
 
-void FormGroup::GetNonEmptyTypes(FieldTypeSet* non_empty_types) const {
+void FormGroup::GetNonEmptyTypes(const std::string& app_locale,
+                                 FieldTypeSet* non_empty_types) const {
   FieldTypeSet types;
   GetSupportedTypes(&types);
   for (FieldTypeSet::const_iterator type = types.begin();
        type != types.end(); ++type) {
-    if (!GetRawInfo(*type).empty())
+    if (!GetInfo(*type, app_locale).empty())
       non_empty_types->insert(*type);
   }
 }
 
-string16 FormGroup::GetCanonicalizedInfo(AutofillFieldType type) const {
+string16 FormGroup::GetInfo(AutofillFieldType type,
+                            const std::string& app_locale) const {
   return GetRawInfo(type);
 }
 
-bool FormGroup::SetCanonicalizedInfo(AutofillFieldType type,
-                                     const string16& value) {
+bool FormGroup::SetInfo(AutofillFieldType type,
+                        const string16& value,
+                        const std::string& app_locale) {
   SetRawInfo(type, value);
   return true;
 }
@@ -263,7 +268,8 @@ void FormGroup::FillSelectControl(AutofillFieldType type,
   DCHECK_EQ("select-one", field->form_control_type);
   DCHECK_EQ(field->option_values.size(), field->option_contents.size());
 
-  string16 field_text = GetCanonicalizedInfo(type);
+  const std::string app_locale = AutofillCountry::ApplicationLocale();
+  string16 field_text = GetInfo(type, app_locale);
   string16 field_text_lower = StringToLowerASCII(field_text);
   if (field_text.empty())
     return;

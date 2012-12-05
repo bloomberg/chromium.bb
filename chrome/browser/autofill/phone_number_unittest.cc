@@ -16,62 +16,65 @@ TEST(PhoneNumberTest, Matcher) {
   // Set phone number so country_code == 1, city_code = 650, number = 2345678.
   string16 phone(ASCIIToUTF16("1 [650] 234-5678"));
   PhoneNumber phone_number(&profile);
-  phone_number.SetCanonicalizedInfo(PHONE_HOME_WHOLE_NUMBER, phone);
+  phone_number.SetInfo(PHONE_HOME_WHOLE_NUMBER, phone, "US");
 
   FieldTypeSet matching_types;
-  phone_number.GetMatchingTypes(string16(), &matching_types);
+  phone_number.GetMatchingTypes(string16(), "US", &matching_types);
   EXPECT_EQ(1U, matching_types.size());
   EXPECT_TRUE(matching_types.find(EMPTY_TYPE) != matching_types.end());
   matching_types.clear();
-  phone_number.GetMatchingTypes(ASCIIToUTF16("1"), &matching_types);
+  phone_number.GetMatchingTypes(ASCIIToUTF16("1"), "US", &matching_types);
   EXPECT_EQ(1U, matching_types.size());
   EXPECT_TRUE(matching_types.find(PHONE_HOME_COUNTRY_CODE) !=
               matching_types.end());
   matching_types.clear();
-  phone_number.GetMatchingTypes(ASCIIToUTF16("16"), &matching_types);
+  phone_number.GetMatchingTypes(ASCIIToUTF16("16"), "US", &matching_types);
   EXPECT_EQ(0U, matching_types.size());
-  phone_number.GetMatchingTypes(ASCIIToUTF16("165"), &matching_types);
+  phone_number.GetMatchingTypes(ASCIIToUTF16("165"), "US", &matching_types);
   EXPECT_EQ(0U, matching_types.size());
-  phone_number.GetMatchingTypes(ASCIIToUTF16("1650"), &matching_types);
+  phone_number.GetMatchingTypes(ASCIIToUTF16("1650"), "US", &matching_types);
   EXPECT_EQ(0U, matching_types.size());
-  phone_number.GetMatchingTypes(ASCIIToUTF16("16502"), &matching_types);
+  phone_number.GetMatchingTypes(ASCIIToUTF16("16502"), "US", &matching_types);
   EXPECT_EQ(0U, matching_types.size());
-  phone_number.GetMatchingTypes(ASCIIToUTF16("165023"), &matching_types);
+  phone_number.GetMatchingTypes(ASCIIToUTF16("165023"), "US", &matching_types);
   EXPECT_EQ(0U, matching_types.size());
-  phone_number.GetMatchingTypes(ASCIIToUTF16("1650234"), &matching_types);
+  phone_number.GetMatchingTypes(ASCIIToUTF16("1650234"), "US", &matching_types);
   EXPECT_EQ(0U, matching_types.size());
   matching_types.clear();
-  phone_number.GetMatchingTypes(ASCIIToUTF16("16502345678"), &matching_types);
+  phone_number.GetMatchingTypes(ASCIIToUTF16("16502345678"), "US",
+                                &matching_types);
   EXPECT_EQ(1U, matching_types.size());
   EXPECT_TRUE(matching_types.find(PHONE_HOME_WHOLE_NUMBER) !=
               matching_types.end());
   matching_types.clear();
-  phone_number.GetMatchingTypes(ASCIIToUTF16("650"), &matching_types);
+  phone_number.GetMatchingTypes(ASCIIToUTF16("650"), "US", &matching_types);
   EXPECT_EQ(1U, matching_types.size());
   EXPECT_TRUE(matching_types.find(PHONE_HOME_CITY_CODE) !=
               matching_types.end());
   matching_types.clear();
-  phone_number.GetMatchingTypes(ASCIIToUTF16("2345678"), &matching_types);
+  phone_number.GetMatchingTypes(ASCIIToUTF16("2345678"), "US", &matching_types);
   EXPECT_EQ(1U, matching_types.size());
   EXPECT_TRUE(matching_types.find(PHONE_HOME_NUMBER) != matching_types.end());
   matching_types.clear();
-  phone_number.GetMatchingTypes(ASCIIToUTF16("234"), &matching_types);
+  phone_number.GetMatchingTypes(ASCIIToUTF16("234"), "US", &matching_types);
   EXPECT_EQ(1U, matching_types.size());
   EXPECT_TRUE(matching_types.find(PHONE_HOME_NUMBER) != matching_types.end());
   matching_types.clear();
-  phone_number.GetMatchingTypes(ASCIIToUTF16("5678"), &matching_types);
+  phone_number.GetMatchingTypes(ASCIIToUTF16("5678"), "US", &matching_types);
   EXPECT_EQ(1U, matching_types.size());
   EXPECT_TRUE(matching_types.find(PHONE_HOME_NUMBER) != matching_types.end());
   matching_types.clear();
-  phone_number.GetMatchingTypes(ASCIIToUTF16("2345"), &matching_types);
+  phone_number.GetMatchingTypes(ASCIIToUTF16("2345"), "US", &matching_types);
   EXPECT_EQ(0U, matching_types.size());
   matching_types.clear();
-  phone_number.GetMatchingTypes(ASCIIToUTF16("6502345678"), &matching_types);
+  phone_number.GetMatchingTypes(ASCIIToUTF16("6502345678"), "US",
+                                &matching_types);
   EXPECT_EQ(1U, matching_types.size());
   EXPECT_TRUE(matching_types.find(PHONE_HOME_CITY_AND_NUMBER) !=
               matching_types.end());
   matching_types.clear();
-  phone_number.GetMatchingTypes(ASCIIToUTF16("(650)2345678"), &matching_types);
+  phone_number.GetMatchingTypes(ASCIIToUTF16("(650)2345678"), "US",
+                                &matching_types);
   EXPECT_EQ(1U, matching_types.size());
   EXPECT_TRUE(matching_types.find(PHONE_HOME_CITY_AND_NUMBER) !=
               matching_types.end());
