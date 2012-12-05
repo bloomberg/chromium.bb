@@ -13,7 +13,7 @@ def GetOptions(my_commands):
     return parser
 
   subparsers = parser.add_subparsers(title='cros commands')
-  for cmd_name, class_def in my_commands.iteritems():
+  for cmd_name, class_def in sorted(my_commands.iteritems(), key=lambda x:x[0]):
     sub_parser = subparsers.add_parser(cmd_name, help=class_def.__doc__)
     class_def.AddParser(sub_parser)
 
