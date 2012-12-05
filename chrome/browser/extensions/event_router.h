@@ -10,6 +10,7 @@
 #include <string>
 #include <utility>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
@@ -123,6 +124,14 @@ class EventRouter : public content::NotificationObserver,
   bool ExtensionHasEventListener(const std::string& extension_id,
                                  const std::string& event_name);
 
+  // Broadcasts an event to every listener registered for that event.
+  virtual void BroadcastEvent(scoped_ptr<Event> event);
+
+  // Dispatches an event to the given extension.
+  virtual void DispatchEventToExtension(const std::string& extension_id,
+                                        scoped_ptr<Event> event);
+
+  // TODO(mpcomplete): DEPRECATED. Remove this. http://crbug.com/163246
   // Send an event to every registered extension renderer. If
   // |restrict_to_profile| is non-NULL, then the event will not be sent to other
   // profiles unless the extension has permission (e.g. incognito tab update ->
@@ -135,12 +144,14 @@ class EventRouter : public content::NotificationObserver,
                                 const GURL& event_url,
                                 EventFilteringInfo info);
 
+  // TODO(mpcomplete): DEPRECATED. Remove this. http://crbug.com/163246
   // As above, but defaults |info| to EventFilteringInfo().
   void DispatchEventToRenderers(const std::string& event_name,
                                 scoped_ptr<base::ListValue> event_args,
                                 Profile* restrict_to_profile,
                                 const GURL& event_url);
 
+  // TODO(mpcomplete): DEPRECATED. Remove this. http://crbug.com/163246
   // As above, but enables sending an explicit user gesture indicator.
   void DispatchEventToRenderers(const std::string& event_name,
                                 scoped_ptr<ListValue> event_args,
@@ -148,6 +159,7 @@ class EventRouter : public content::NotificationObserver,
                                 const GURL& event_url,
                                 UserGestureState user_gesture);
 
+  // TODO(mpcomplete): DEPRECATED. Remove this. http://crbug.com/163246
   // Same as above, except only send the event to the given extension.
   virtual void DispatchEventToExtension(const std::string& extension_id,
                                         const std::string& event_name,
@@ -155,6 +167,7 @@ class EventRouter : public content::NotificationObserver,
                                         Profile* restrict_to_profile,
                                         const GURL& event_url);
 
+  // TODO(mpcomplete): DEPRECATED. Remove this. http://crbug.com/163246
   // Dispatch an event to particular extension. Also include an
   // explicit user gesture indicator.
   virtual void DispatchEventToExtension(const std::string& extension_id,
@@ -163,20 +176,6 @@ class EventRouter : public content::NotificationObserver,
                                         Profile* restrict_to_profile,
                                         const GURL& event_url,
                                         UserGestureState user_gesture);
-
-  // Send different versions of an event to extensions in different profiles.
-  // This is used in the case of sending one event to extensions that have
-  // incognito access, and another event to extensions that don't (here),
-  // in order to avoid sending 2 events to "spanning" extensions.
-  // If |cross_incognito_profile| is non-NULL and different from
-  // restrict_to_profile, send the event with cross_incognito_args to the
-  // extensions in that profile that can't cross incognito.
-  void DispatchEventsToRenderersAcrossIncognito(
-      const std::string& event_name,
-      scoped_ptr<base::ListValue> event_args,
-      Profile* restrict_to_profile,
-      scoped_ptr<base::ListValue> cross_incognito_args,
-      const GURL& event_url);
 
   // Record the Event Ack from the renderer. (One less event in-flight.)
   void OnEventAck(Profile* profile, const std::string& extension_id);
@@ -281,30 +280,63 @@ class EventRouter : public content::NotificationObserver,
 };
 
 struct Event {
+  typedef base::Callback<
+      void(Profile*, const Extension*, base::ListValue*)> WillDispatchCallback;
+
+  // The event to dispatch.
   std::string event_name;
+
+  // Arguments to send to the event listener.
   scoped_ptr<base::ListValue> event_args;
-  GURL event_url;
-  Profile* restrict_to_profile;
+
+  // This is used in the case of sending one event to extensions that have
+  // incognito access, and another event to extensions that don't (here),
+  // in order to avoid sending 2 events to "spanning" extensions.
+  // If this is non-NULL, these arguments are used in place of event_args
+  // when an event is dispatched across incognito to an extension that can't
+  // cross incognito.
+  // TODO(mpcomplete): figure out a way to clean this up. It's only used in 1
+  // place.
   scoped_ptr<base::ListValue> cross_incognito_args;
+
+  // If non-NULL, then the event will not be sent to other profiles unless the
+  // extension has permission (e.g. incognito tab update -> normal profile only
+  // works if extension is allowed incognito access).
+  Profile* restrict_to_profile;
+
+  // If not empty, the event is only sent to extensions with host permissions
+  // for this url.
+  GURL event_url;
+
+  // Whether a user gesture triggered the event.
   EventRouter::UserGestureState user_gesture;
-  EventFilteringInfo info;
+
+  // Extra information used to filter which events are sent to the listener.
+  EventFilteringInfo filter_info;
+
+  // If specified, this is called before dispatching an event to each
+  // extension. The third argument is a mutable reference to event_args,
+  // allowing the caller to provide different arguments depending on the
+  // extension and profile. This is guaranteed to be called synchronously with
+  // DispatchEvent, so callers don't need to worry about lifetime.
+  WillDispatchCallback will_dispatch_callback;
+
+  Event(const std::string& event_name,
+        scoped_ptr<base::ListValue> event_args);
 
   Event(const std::string& event_name,
         scoped_ptr<base::ListValue> event_args,
-        const GURL& event_url,
-        Profile* restrict_to_profile,
         scoped_ptr<base::ListValue> cross_incognito_args,
-        EventRouter::UserGestureState user_gesture,
-        const EventFilteringInfo& info);
-
-  Event(const std::string& event_name,
-        scoped_ptr<base::ListValue> event_args,
-        const GURL& event_url,
         Profile* restrict_to_profile,
+        const GURL& event_url,
         EventRouter::UserGestureState user_gesture,
         const EventFilteringInfo& info);
 
   ~Event();
+
+  // Makes a deep copy of this instance. Ownership is transferred to the
+  // caller.
+  Event* DeepCopy();
 };
 
 struct EventListenerInfo {

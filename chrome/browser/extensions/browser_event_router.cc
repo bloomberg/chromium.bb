@@ -154,27 +154,29 @@ void BrowserEventRouter::OnBrowserSetLastActive(Browser* browser) {
   }
 }
 
+static void WillDispatchTabCreatedEvent(WebContents* contents,
+                                        bool active,
+                                        Profile* profile,
+                                        const Extension* extension,
+                                        ListValue* event_args) {
+  DictionaryValue* tab_value = ExtensionTabUtil::CreateTabValue(
+      contents, extension);
+  event_args->Clear();
+  event_args->Append(tab_value);
+  tab_value->SetBoolean(tab_keys::kSelectedKey, active);
+}
+
 void BrowserEventRouter::TabCreatedAt(WebContents* contents,
                                       int index,
                                       bool active) {
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
-  const EventListenerMap::ListenerList& listeners(
-      ExtensionSystem::Get(profile)->event_router()->
-      listeners().GetEventListenersByName(events::kOnTabCreated));
-  for (EventListenerMap::ListenerList::const_iterator it = listeners.begin();
-       it != listeners.end();
-       ++it) {
-    scoped_ptr<ListValue> args(new ListValue());
-    DictionaryValue* tab_value = ExtensionTabUtil::CreateTabValue(
-        contents,
-        profile->GetExtensionService()->extensions()->GetByID(
-            (*it)->extension_id));
-    args->Append(tab_value);
-    tab_value->SetBoolean(tab_keys::kSelectedKey, active);
-    DispatchEventToExtension(profile, (*it)->extension_id,
-                             events::kOnTabCreated, args.Pass(),
-                             EventRouter::USER_GESTURE_NOT_ENABLED);
-  }
+  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<Event> event(new Event(events::kOnTabCreated, args.Pass()));
+  event->restrict_to_profile = profile;
+  event->user_gesture = EventRouter::USER_GESTURE_NOT_ENABLED;
+  event->will_dispatch_callback =
+      base::Bind(&WillDispatchTabCreatedEvent, contents, active);
+  ExtensionSystem::Get(profile)->event_router()->BroadcastEvent(event.Pass());
 
   RegisterForTabNotifications(contents);
 }
@@ -380,20 +382,6 @@ void BrowserEventRouter::DispatchEventToExtension(
                                profile, GURL(), user_gesture);
 }
 
-void BrowserEventRouter::DispatchEventsAcrossIncognito(
-    Profile* profile,
-    const char* event_name,
-    scoped_ptr<ListValue> event_args,
-    scoped_ptr<ListValue> cross_incognito_args) {
-  if (!profile_->IsSameProfile(profile) ||
-      !extensions::ExtensionSystem::Get(profile)->event_router())
-    return;
-
-  extensions::ExtensionSystem::Get(profile)->event_router()->
-      DispatchEventsToRenderersAcrossIncognito(event_name, event_args.Pass(),
-          profile, cross_incognito_args.Pass(), GURL());
-}
-
 void BrowserEventRouter::DispatchSimpleBrowserEvent(
     Profile* profile, const int window_id, const char* event_name) {
   if (!profile_->IsSameProfile(profile))
@@ -404,6 +392,16 @@ void BrowserEventRouter::DispatchSimpleBrowserEvent(
 
   DispatchEvent(profile, event_name, args.Pass(),
                 EventRouter::USER_GESTURE_UNKNOWN);
+}
+
+static void WillDispatchTabUpdatedEvent(WebContents* contents,
+                                        Profile* profile,
+                                        const Extension* extension,
+                                        ListValue* event_args) {
+  DictionaryValue* tab_value = ExtensionTabUtil::CreateTabValue(
+      contents, extension);
+  // Overwrite the third arg with our tab value as seen by this extension.
+  event_args->Set(2, tab_value);
 }
 
 void BrowserEventRouter::DispatchTabUpdatedEvent(
@@ -421,25 +419,16 @@ void BrowserEventRouter::DispatchTabUpdatedEvent(
   // Second arg: An object containing the changes to the tab state.
   args_base->Append(changed_properties);
 
-  // Third arg: An object containing the state of the tab.
+  // Third arg: An object containing the state of the tab. Filled in by
+  // WillDispatchTabUpdatedEvent.
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
 
-  const EventListenerMap::ListenerList& listeners(
-      ExtensionSystem::Get(profile)->event_router()->
-      listeners().GetEventListenersByName(events::kOnTabUpdated));
-  for (EventListenerMap::ListenerList::const_iterator it = listeners.begin();
-       it != listeners.end();
-       ++it) {
-    scoped_ptr<ListValue> args(args_base->DeepCopy());
-    DictionaryValue* tab_value = ExtensionTabUtil::CreateTabValue(
-        contents,
-        profile->GetExtensionService()->extensions()->GetByID(
-            (*it)->extension_id));
-    args->Append(tab_value);
-    DispatchEventToExtension(profile, (*it)->extension_id,
-                             events::kOnTabUpdated, args.Pass(),
-                             EventRouter::USER_GESTURE_UNKNOWN);
-  }
+  scoped_ptr<Event> event(new Event(events::kOnTabUpdated, args_base.Pass()));
+  event->restrict_to_profile = profile;
+  event->user_gesture = EventRouter::USER_GESTURE_NOT_ENABLED;
+  event->will_dispatch_callback =
+      base::Bind(&WillDispatchTabUpdatedEvent, contents);
+  ExtensionSystem::Get(profile)->event_router()->BroadcastEvent(event.Pass());
 }
 
 BrowserEventRouter::TabEntry* BrowserEventRouter::GetTabEntry(
