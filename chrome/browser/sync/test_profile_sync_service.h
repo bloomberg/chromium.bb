@@ -48,6 +48,9 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHost {
 
   MOCK_METHOD1(RequestNudge, void(const tracked_objects::Location&));
 
+  virtual void UpdateCredentials(
+      const syncer::SyncCredentials& credentials) OVERRIDE;
+
   virtual void RequestConfigureSyncer(
       syncer::ConfigureReason reason,
       syncer::ModelTypeSet types_to_config,
@@ -74,12 +77,31 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHost {
   virtual void InitCore(const DoInitializeOptions& options) OVERRIDE;
 
  private:
+  void ContinueInitialization(
+      const syncer::WeakHandle<syncer::JsBackend>& js_backend,
+      const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
+          debug_info_listener,
+      syncer::ModelTypeSet restored_types);
+
+  base::WeakPtrFactory<SyncBackendHostForProfileSyncTest> weak_ptr_factory_;
+
   syncer::TestIdFactory& id_factory_;
+
+  // Invoked at the start of HandleSyncManagerInitializationOnFrontendLoop.
+  // Allows extra initialization work to be performed before the backend comes
+  // up.
   base::Closure& callback_;
+
+  // Saved closure in case we failed the initial download but then received
+  // new credentials. Holds the results of
+  // HandleSyncManagerInitializationOnFrontendLoop, and if
+  // |fail_initial_download_| was true, finishes the initialization process
+  // once we receive new credentials.
+  base::Closure initial_download_closure_;
+  bool fail_initial_download_;
 
   bool set_initial_sync_ended_on_init_;
   bool synchronous_init_;
-  bool fail_initial_download_;
   syncer::StorageOption storage_option_;
 };
 
@@ -118,7 +140,9 @@ class TestProfileSyncService : public ProfileSyncService {
   void dont_set_initial_sync_ended_on_init();
   void set_synchronous_sync_configuration();
 
+  // Fails initial download until a new auth token is provided.
   void fail_initial_download();
+
   void set_storage_option(syncer::StorageOption option);
 
   syncer::TestIdFactory* id_factory();

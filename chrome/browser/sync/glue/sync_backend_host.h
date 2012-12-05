@@ -181,7 +181,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
           report_unrecoverable_error_function);
 
   // Called on |frontend_loop| to update SyncCredentials.
-  void UpdateCredentials(const syncer::SyncCredentials& credentials);
+  virtual void UpdateCredentials(const syncer::SyncCredentials& credentials);
 
   // Registers the underlying frontend for the given IDs to the underlying
   // notifier.  This lasts until StopSyncingForShutdown() is called.

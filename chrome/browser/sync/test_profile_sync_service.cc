@@ -43,11 +43,12 @@ SyncBackendHostForProfileSyncTest::SyncBackendHostForProfileSyncTest(
     syncer::StorageOption storage_option)
     : browser_sync::SyncBackendHost(
         profile->GetDebugName(), profile, sync_prefs, invalidator_storage),
+      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       id_factory_(id_factory),
       callback_(callback),
+      fail_initial_download_(fail_initial_download),
       set_initial_sync_ended_on_init_(set_initial_sync_ended_on_init),
       synchronous_init_(synchronous_init),
-      fail_initial_download_(fail_initial_download),
       storage_option_(storage_option) {}
 
 SyncBackendHostForProfileSyncTest::~SyncBackendHostForProfileSyncTest() {}
@@ -89,6 +90,15 @@ void SyncBackendHostForProfileSyncTest::InitCore(
   }
 }
 
+void SyncBackendHostForProfileSyncTest::UpdateCredentials(
+      const syncer::SyncCredentials& credentials) {
+  // If we had failed the initial download, complete initialization now.
+  if (!initial_download_closure_.is_null()) {
+    initial_download_closure_.Run();
+    initial_download_closure_.Reset();
+  }
+}
+
 void SyncBackendHostForProfileSyncTest::RequestConfigureSyncer(
     syncer::ConfigureReason reason,
     syncer::ModelTypeSet types_to_config,
@@ -104,7 +114,7 @@ void SyncBackendHostForProfileSyncTest::RequestConfigureSyncer(
 }
 
 void SyncBackendHostForProfileSyncTest
-        ::HandleSyncManagerInitializationOnFrontendLoop(
+    ::HandleSyncManagerInitializationOnFrontendLoop(
     const syncer::WeakHandle<syncer::JsBackend>& js_backend,
     const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
         debug_info_listener,
@@ -141,8 +151,20 @@ void SyncBackendHostForProfileSyncTest
     restored_types = syncer::ModelTypeSet::All();
   }
 
-  SyncBackendHost::HandleSyncManagerInitializationOnFrontendLoop(
-      js_backend, debug_info_listener, restored_types);
+  initial_download_closure_ = base::Bind(
+      &SyncBackendHostForProfileSyncTest::ContinueInitialization,
+      weak_ptr_factory_.GetWeakPtr(),
+      js_backend,
+      debug_info_listener,
+      restored_types);
+  if (fail_initial_download_) {
+    frontend()->OnSyncConfigureRetry();
+    if (synchronous_init_)
+      MessageLoop::current()->Quit();
+  } else {
+    initial_download_closure_.Run();
+    initial_download_closure_.Reset();
+  }
 }
 
 void SyncBackendHostForProfileSyncTest::SetInitialSyncEndedForAllTypes() {
@@ -165,6 +187,15 @@ void SyncBackendHostForProfileSyncTest::EmitOnIncomingInvalidation(
     const syncer::ObjectIdInvalidationMap& invalidation_map,
     const syncer::IncomingInvalidationSource source) {
   frontend()->OnIncomingInvalidation(invalidation_map, source);
+}
+
+void SyncBackendHostForProfileSyncTest::ContinueInitialization(
+    const syncer::WeakHandle<syncer::JsBackend>& js_backend,
+    const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
+        debug_info_listener,
+    syncer::ModelTypeSet restored_types) {
+  SyncBackendHost::HandleSyncManagerInitializationOnFrontendLoop(
+      js_backend, debug_info_listener, restored_types);
 }
 
 }  // namespace browser_sync

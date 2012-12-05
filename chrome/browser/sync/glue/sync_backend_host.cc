@@ -460,6 +460,7 @@ void SyncBackendHost::Initialize(
 }
 
 void SyncBackendHost::UpdateCredentials(const SyncCredentials& credentials) {
+  DCHECK(sync_thread_.IsRunning());
   sync_thread_.message_loop()->PostTask(FROM_HERE,
       base::Bind(&SyncBackendHost::Core::DoUpdateCredentials, core_.get(),
                  credentials));
@@ -487,6 +488,7 @@ void SyncBackendHost::StartSyncingWithServer() {
 
 void SyncBackendHost::SetEncryptionPassphrase(const std::string& passphrase,
                                               bool is_explicit) {
+  DCHECK(sync_thread_.IsRunning());
   if (!IsNigoriEnabled()) {
     NOTREACHED() << "SetEncryptionPassphrase must never be called when nigori"
                     " is disabled.";

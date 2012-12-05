@@ -235,6 +235,42 @@ TEST_F(ProfileSyncServiceStartupTest, StartNoCredentials) {
   EXPECT_TRUE(service_->ShouldPushChanges());
 }
 
+TEST_F(ProfileSyncServiceStartupTest, StartInvalidCredentials) {
+  DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
+  EXPECT_CALL(*data_type_manager, Configure(_, _)).Times(0);
+  TokenService* token_service = static_cast<TokenService*>(
+      TokenServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+          profile_.get(), BuildFakeTokenService));
+  token_service->LoadTokensFromDB();
+
+  // Tell the backend to stall while downloading control types (simulating an
+  // auth error).
+  service_->fail_initial_download();
+
+  EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
+  service_->Initialize();
+  EXPECT_TRUE(service_->GetBackendForTest());
+  EXPECT_FALSE(service_->sync_initialized());
+  EXPECT_FALSE(service_->ShouldPushChanges());
+  Mock::VerifyAndClearExpectations(data_type_manager);
+
+  // Update the credentials, unstalling the backend.
+  EXPECT_CALL(*data_type_manager, Configure(_, _));
+  EXPECT_CALL(*data_type_manager, state()).
+      WillRepeatedly(Return(DataTypeManager::CONFIGURED));
+  EXPECT_CALL(*data_type_manager, Stop()).Times(1);
+  EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
+  service_->SetSetupInProgress(true);
+  service_->signin()->StartSignIn("test_user", "", "", "");
+  token_service->IssueAuthTokenForTest(
+      GaiaConstants::kSyncService, "sync_token");
+  service_->SetSetupInProgress(false);
+  MessageLoop::current()->Run();
+
+  // Verify we successfully finish startup and configuration.
+  EXPECT_TRUE(service_->ShouldPushChanges());
+}
+
 TEST_F(ProfileSyncServiceStartupCrosTest, StartCrosNoCredentials) {
   EXPECT_CALL(*factory_mock(), CreateDataTypeManager(_, _, _, _)).Times(0);
   profile_->GetPrefs()->ClearPref(prefs::kSyncHasSetupCompleted);

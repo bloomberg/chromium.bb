@@ -278,7 +278,6 @@ void ProfileSyncService::TryStart() {
 
   // All systems Go for launch.
   StartUp();
-
 }
 
 void ProfileSyncService::StartSyncingWithServer() {
@@ -422,23 +421,11 @@ void ProfileSyncService::OnSyncConfigureDone(
 }
 
 void ProfileSyncService::OnSyncConfigureRetry() {
-  // In platforms with auto start we would just wait for the
-  // configure to finish. In other platforms we would throw
-  // an unrecoverable error. The reason we do this is so that
-  // the login dialog would show an error and the user would have
-  // to relogin.
-  // Also if backend has been initialized(the user is authenticated
-  // and nigori is downloaded) we would simply wait rather than going into
-  // unrecoverable error, even if the platform has auto start disabled.
-  // Note: In those scenarios the UI does not wait for the configuration
-  // to finish.
-  if (!auto_start_enabled_ && !backend_initialized_) {
-    OnInternalUnrecoverableError(FROM_HERE,
-                                 "Configure failed to download.",
-                                 true,
-                                 ERROR_REASON_CONFIGURATION_RETRY);
-  }
-
+  // Note: in order to handle auth failures that arise before the backend is
+  // initialized (e.g. from invalidation notifier, or downloading new control
+  // types), we have to gracefully handle configuration retries at all times.
+  // At this point an auth error badge should be shown, which once resolved
+  // will trigger a new sync cycle.
   NotifyObservers();
 }
 
@@ -1776,7 +1763,7 @@ void ProfileSyncService::Observe(int type,
       // Initialize the backend if sync is enabled. If the sync token was
       // not loaded, GetCredentials() will generate invalid credentials to
       // cause the backend to generate an auth error (crbug.com/121755).
-      if (backend_initialized_)
+      if (backend_.get())
         backend_->UpdateCredentials(GetCredentials());
       else
         TryStart();
