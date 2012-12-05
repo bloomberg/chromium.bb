@@ -122,8 +122,8 @@ void ConfigFileWatcherImpl::Watch(const FilePath& config_path) {
   config_watcher_.reset(new base::files::FilePathWatcher());
   config_path_ = config_path;
   if (!config_watcher_->Watch(
-      config_path_,
-      base::Bind(&ConfigFileWatcherImpl::OnConfigUpdated, this))) {
+          config_path_, false,
+          base::Bind(&ConfigFileWatcherImpl::OnConfigUpdated, this))) {
     LOG(ERROR) << "Couldn't watch file '" << config_path_.value() << "'";
     main_task_runner_->PostTask(
         FROM_HERE,

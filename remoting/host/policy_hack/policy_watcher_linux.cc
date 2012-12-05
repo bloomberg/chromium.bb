@@ -68,7 +68,7 @@ class PolicyWatcherLinux : public PolicyWatcher {
 
     if (!config_dir_.empty() &&
         !watcher_->Watch(
-            config_dir_,
+            config_dir_, false,
             base::Bind(&PolicyWatcherLinux::OnFilePathChanged,
                        weak_factory_.GetWeakPtr()))) {
       OnFilePathChanged(config_dir_, true);

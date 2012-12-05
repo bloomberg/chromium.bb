@@ -331,7 +331,7 @@ void RemovableDeviceNotificationsLinux::InitOnFileThread() {
   // RemovableDeviceNotificationsLinux will live longer than expected, and
   // FilePathWatcher will get in trouble at shutdown time.
   bool ret = file_watcher_.Watch(
-      mtab_path_,
+      mtab_path_, false,
       base::Bind(&RemovableDeviceNotificationsLinux::OnFilePathChanged,
                  base::Unretained(this)));
   if (!ret) {

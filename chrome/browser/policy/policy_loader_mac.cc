@@ -88,7 +88,7 @@ PolicyLoaderMac::~PolicyLoaderMac() {}
 void PolicyLoaderMac::InitOnFile() {
   if (!managed_policy_path_.empty()) {
     watcher_.Watch(
-        managed_policy_path_,
+        managed_policy_path_, false,
         base::Bind(&PolicyLoaderMac::OnFileUpdated, base::Unretained(this)));
   }
 }
