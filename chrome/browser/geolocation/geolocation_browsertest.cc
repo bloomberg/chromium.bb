@@ -462,9 +462,8 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoInfobarForOffTheRecord) {
   CheckGeoposition(fake_latitude_, fake_longitude_);
 }
 
-// Test fails: http://crbug.com/90927
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
-                       DISABLED_IFramesWithFreshPosition) {
+                       IFramesWithFreshPosition) {
   html_for_tests_ = "files/geolocation/iframes_different_origin.html";
   ASSERT_TRUE(Initialize(INITIALIZATION_IFRAMES));
   LoadIFrames(2);
@@ -507,9 +506,8 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   LOG(WARNING) << "...done.";
 }
 
-// Test fails: http://crbug.com/90927
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
-                       DISABLED_IFramesWithCachedPosition) {
+                       IFramesWithCachedPosition) {
   html_for_tests_ = "files/geolocation/iframes_different_origin.html";
   ASSERT_TRUE(Initialize(INITIALIZATION_IFRAMES));
   LoadIFrames(2);
