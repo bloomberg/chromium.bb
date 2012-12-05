@@ -8,6 +8,7 @@
   "manifest_version": 2,
   "description": "An experimental wallpaper picker UI",
   "permissions": [
+    "storage",
     "wallpaperPrivate",
     "https://commondatastorage.googleapis.com/",
     "https://storage.googleapis.com/"

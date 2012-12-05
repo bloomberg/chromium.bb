@@ -138,4 +138,65 @@ class WallpaperRestoreMinimizedWindowsFunction : public AsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
+class WallpaperGetThumbnailFunction : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("wallpaperPrivate.getThumbnail");
+
+  WallpaperGetThumbnailFunction();
+
+ protected:
+  virtual ~WallpaperGetThumbnailFunction();
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  // Failed to get thumbnail for |file_name|.
+  void Failure(const std::string& file_name);
+
+  // Sets success field in the results to false. Called when the requested
+  // thumbnail is not found or corrupted in thumbnail directory.
+  void FileNotLoaded();
+
+  // Sets success field to true and data field to the loaded thumbnail binary
+  // data in the results. Called when requested wallpaper thumbnail loaded
+  // successfully.
+  void FileLoaded(const std::string& data);
+
+  // Gets thumbnail with |file_name| from thumbnail directory. If |file_name|
+  // does not exist, call FileNotLoaded().
+  void Get(const std::string& file_name);
+
+  // Sequence token associated with wallpaper operations. Shared with
+  // WallpaperManager.
+  base::SequencedWorkerPool::SequenceToken sequence_token_;
+};
+
+class WallpaperSaveThumbnailFunction : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("wallpaperPrivate.saveThumbnail");
+
+  WallpaperSaveThumbnailFunction();
+
+ protected:
+  virtual ~WallpaperSaveThumbnailFunction();
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  // Failed to save thumbnail for |file_name|.
+  void Failure(const std::string& file_name);
+
+  // Saved thumbnail to thumbnail directory.
+  void Success();
+
+  // Saves thumbnail to thumbnail directory as |file_name|.
+  void Save(const std::string& data, const std::string& file_name);
+
+  // Sequence token associated with wallpaper operations. Shared with
+  // WallpaperManager.
+  base::SequencedWorkerPool::SequenceToken sequence_token_;
+};
+
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_WALLPAPER_PRIVATE_API_H_

@@ -15,6 +15,7 @@
 
 function WallpaperManager(dialogDom) {
   this.dialogDom_ = dialogDom;
+  this.storage_ = chrome.storage.local;
   this.document_ = dialogDom.ownerDocument;
   this.selectedCategory = null;
   this.butterBar_ = new ButterBar(this.dialogDom_);
@@ -38,6 +39,11 @@ function WallpaperManager(dialogDom) {
    * Suffix to append to baseURL if requesting high resoultion wallpaper.
    */
   /** @const */ var HighResolutionSuffix = '_high_resolution.jpg';
+
+  /**
+   * Key to access wallpaper manifest in chrome.local.storage.
+   */
+  /** @const */ var AccessManifestKey = 'wallpaper-picker-manifest-key';
 
   /**
    * Returns a translated string.
@@ -119,9 +125,16 @@ function WallpaperManager(dialogDom) {
       }
     };
 
-    asyncFetchManifestFromUrls(urls, fetchManifestAsync,
-                               this.onLoadManifestSuccess_.bind(this),
-                               this.onLoadManifestFailed_.bind(this));
+    if (navigator.onLine) {
+      asyncFetchManifestFromUrls(urls, fetchManifestAsync,
+                                 this.onLoadManifestSuccess_.bind(this),
+                                 this.onLoadManifestFailed_.bind(this));
+    } else {
+      // If device is offline, fetches manifest from local storage.
+      // TODO(bshe): Always loading the offline manifest first and replacing
+      // with the online one when available.
+      this.onLoadManifestFailed_();
+    }
   };
 
   /**
@@ -131,18 +144,22 @@ function WallpaperManager(dialogDom) {
    */
   WallpaperManager.prototype.onLoadManifestSuccess_ = function(manifest) {
     this.manifest_ = manifest;
+    var items = {};
+    items[AccessManifestKey] = manifest;
+    this.storage_.set(items, function() {});
     this.initDom_();
   };
 
-  // Sets manifest to an empty object and shows connection error. Called after
-  // manifest failed to load.
+  // Sets manifest to previously saved object if any and shows connection error.
+  // Called after manifest failed to load.
   WallpaperManager.prototype.onLoadManifestFailed_ = function() {
-    // TODO(bshe): Fall back to saved manifest if there is a problem fetching
-    // manifest from server.
-    this.manifest_ = {};
-    this.butterBar_.showError_(str('connectionFailed'),
-                               {help_url: LEARN_MORE_URL});
-    this.initDom_();
+    var self = this;
+    this.storage_.get(AccessManifestKey, function(items) {
+      self.manifest_ = items[AccessManifestKey] ? items[AccessManifestKey] : {};
+      self.butterBar_.showError_(str('connectionFailed'),
+                                 {help_url: LEARN_MORE_URL});
+      self.initDom_();
+    });
   };
 
   /**
