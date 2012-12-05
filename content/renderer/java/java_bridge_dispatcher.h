@@ -37,7 +37,7 @@ class JavaBridgeDispatcher : public RenderViewObserver {
                         const NPVariant_Param& variant_param);
   void OnRemoveNamedObject(const string16& name);
 
-  void EnsureChannelIsSetUp();
+  bool EnsureChannelIsSetUp();
 
   // Objects that will be bound to the window when the window object is next
   // cleared. We hold a ref to these.

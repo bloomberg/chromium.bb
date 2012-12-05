@@ -12,6 +12,7 @@ namespace content {
 
 class JavaBridgeChannel : public content::NPChannelBase {
  public:
+  // The return value may be null.
   static JavaBridgeChannel* GetJavaBridgeChannel(
       const IPC::ChannelHandle& channel_handle,
       base::MessageLoopProxy* ipc_message_loop);
