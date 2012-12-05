@@ -20,12 +20,16 @@ class Profile;
 
 namespace base {
 class Value;
-}
+}  // namespace base
 
 namespace google_apis {
 class AuthService;
 class OperationRunner;
-}
+}  // namespace google_apis
+
+namespace net {
+class URLRequestContextGetter;
+}  // namespace net
 
 namespace contacts {
 
@@ -62,7 +66,9 @@ class GDataContactsService : public GDataContactsServiceInterface {
   typedef base::Callback<std::string(const std::string&)>
       RewritePhotoUrlCallback;
 
-  explicit GDataContactsService(Profile* profile);
+  GDataContactsService(
+      net::URLRequestContextGetter* url_request_context_getter,
+      Profile* profile);
   virtual ~GDataContactsService();
 
   google_apis::AuthService* auth_service_for_testing();
@@ -103,7 +109,7 @@ class GDataContactsService : public GDataContactsServiceInterface {
   // unsuccessfully).
   void OnRequestComplete(DownloadContactsRequest* request);
 
-  Profile* profile_;  // not owned
+  net::URLRequestContextGetter* url_request_context_getter_;  // not owned
 
   scoped_ptr<google_apis::OperationRunner> runner_;
 

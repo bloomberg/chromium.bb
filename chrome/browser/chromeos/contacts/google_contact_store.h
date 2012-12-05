@@ -24,6 +24,10 @@
 
 class Profile;
 
+namespace net {
+class URLRequestContextGetter;
+}  // namespace net
+
 namespace contacts {
 
 class Contact;
@@ -72,7 +76,9 @@ class GoogleContactStore
     DISALLOW_COPY_AND_ASSIGN(TestAPI);
   };
 
-  explicit GoogleContactStore(Profile* profile);
+  GoogleContactStore(
+      net::URLRequestContextGetter* url_request_context_getter,
+      Profile* profile);
   virtual ~GoogleContactStore();
 
   // ContactStore implementation:
@@ -129,6 +135,8 @@ class GoogleContactStore
   // Handles contacts being saved to |db_|. Now that the contacts are no longer
   // being accessed by the database, we schedule an update.
   void OnDatabaseContactsSaved(bool success);
+
+  net::URLRequestContextGetter* url_request_context_getter_;  // not owned
 
   Profile* profile_;  // not owned
 

@@ -103,6 +103,7 @@ ResumeUploadParams::~ResumeUploadParams() {
 
 GetDocumentsOperation::GetDocumentsOperation(
     OperationRegistry* registry,
+    net::URLRequestContextGetter* url_request_context_getter,
     const GDataWapiUrlGenerator& url_generator,
     const GURL& override_url,
     int start_changestamp,
@@ -110,7 +111,7 @@ GetDocumentsOperation::GetDocumentsOperation(
     bool shared_with_me,
     const std::string& directory_resource_id,
     const GetDataCallback& callback)
-    : GetDataOperation(registry, callback),
+    : GetDataOperation(registry, url_request_context_getter, callback),
       url_generator_(url_generator),
       override_url_(override_url),
       start_changestamp_(start_changestamp),
@@ -134,10 +135,11 @@ GURL GetDocumentsOperation::GetURL() const {
 
 GetDocumentEntryOperation::GetDocumentEntryOperation(
     OperationRegistry* registry,
+    net::URLRequestContextGetter* url_request_context_getter,
     const GDataWapiUrlGenerator& url_generator,
     const std::string& resource_id,
     const GetDataCallback& callback)
-    : GetDataOperation(registry, callback),
+    : GetDataOperation(registry, url_request_context_getter, callback),
       url_generator_(url_generator),
       resource_id_(resource_id) {
   DCHECK(!callback.is_null());
@@ -153,9 +155,10 @@ GURL GetDocumentEntryOperation::GetURL() const {
 
 GetAccountMetadataOperation::GetAccountMetadataOperation(
     OperationRegistry* registry,
+    net::URLRequestContextGetter* url_request_context_getter,
     const GDataWapiUrlGenerator& url_generator,
     const GetDataCallback& callback)
-    : GetDataOperation(registry, callback),
+    : GetDataOperation(registry, url_request_context_getter, callback),
       url_generator_(url_generator) {
   DCHECK(!callback.is_null());
 }
@@ -170,12 +173,14 @@ GURL GetAccountMetadataOperation::GetURL() const {
 
 DownloadFileOperation::DownloadFileOperation(
     OperationRegistry* registry,
+    net::URLRequestContextGetter* url_request_context_getter,
     const DownloadActionCallback& download_action_callback,
     const GetContentCallback& get_content_callback,
     const GURL& content_url,
     const FilePath& drive_file_path,
     const FilePath& output_file_path)
     : UrlFetchOperationBase(registry,
+                            url_request_context_getter,
                             OPERATION_DOWNLOAD,
                             drive_file_path),
       download_action_callback_(download_action_callback),
@@ -238,9 +243,10 @@ void DownloadFileOperation::RunCallbackOnPrematureFailure(GDataErrorCode code) {
 
 DeleteDocumentOperation::DeleteDocumentOperation(
     OperationRegistry* registry,
+    net::URLRequestContextGetter* url_request_context_getter,
     const EntryActionCallback& callback,
     const GURL& edit_url)
-    : EntryActionOperation(registry, callback),
+    : EntryActionOperation(registry, url_request_context_getter, callback),
       edit_url_(edit_url) {
   DCHECK(!callback.is_null());
 }
@@ -266,11 +272,12 @@ DeleteDocumentOperation::GetExtraRequestHeaders() const {
 
 CreateDirectoryOperation::CreateDirectoryOperation(
     OperationRegistry* registry,
+    net::URLRequestContextGetter* url_request_context_getter,
     const GDataWapiUrlGenerator& url_generator,
     const GetDataCallback& callback,
     const GURL& parent_content_url,
     const FilePath::StringType& directory_name)
-    : GetDataOperation(registry, callback),
+    : GetDataOperation(registry, url_request_context_getter, callback),
       url_generator_(url_generator),
       parent_content_url_(parent_content_url),
       directory_name_(directory_name) {
@@ -320,11 +327,12 @@ bool CreateDirectoryOperation::GetContentData(std::string* upload_content_type,
 
 CopyDocumentOperation::CopyDocumentOperation(
     OperationRegistry* registry,
+    net::URLRequestContextGetter* url_request_context_getter,
     const GDataWapiUrlGenerator& url_generator,
     const GetDataCallback& callback,
     const std::string& resource_id,
     const FilePath::StringType& new_name)
-    : GetDataOperation(registry, callback),
+    : GetDataOperation(registry, url_request_context_getter, callback),
       url_generator_(url_generator),
       resource_id_(resource_id),
       new_name_(new_name) {
@@ -364,10 +372,11 @@ bool CopyDocumentOperation::GetContentData(std::string* upload_content_type,
 
 RenameResourceOperation::RenameResourceOperation(
     OperationRegistry* registry,
+    net::URLRequestContextGetter* url_request_context_getter,
     const EntryActionCallback& callback,
     const GURL& edit_url,
     const FilePath::StringType& new_name)
-    : EntryActionOperation(registry, callback),
+    : EntryActionOperation(registry, url_request_context_getter, callback),
       edit_url_(edit_url),
       new_name_(new_name) {
   DCHECK(!callback.is_null());
@@ -412,10 +421,11 @@ bool RenameResourceOperation::GetContentData(std::string* upload_content_type,
 
 AuthorizeAppOperation::AuthorizeAppOperation(
     OperationRegistry* registry,
+    net::URLRequestContextGetter* url_request_context_getter,
     const GetDataCallback& callback,
     const GURL& edit_url,
     const std::string& app_id)
-    : GetDataOperation(registry, callback),
+    : GetDataOperation(registry, url_request_context_getter, callback),
       app_id_(app_id),
       edit_url_(edit_url) {
   DCHECK(!callback.is_null());
@@ -511,11 +521,12 @@ GURL AuthorizeAppOperation::GetURL() const {
 
 AddResourceToDirectoryOperation::AddResourceToDirectoryOperation(
     OperationRegistry* registry,
+    net::URLRequestContextGetter* url_request_context_getter,
     const GDataWapiUrlGenerator& url_generator,
     const EntryActionCallback& callback,
     const GURL& parent_content_url,
     const GURL& edit_url)
-    : EntryActionOperation(registry, callback),
+    : EntryActionOperation(registry, url_request_context_getter, callback),
       url_generator_(url_generator),
       parent_content_url_(parent_content_url),
       edit_url_(edit_url) {
@@ -558,10 +569,11 @@ bool AddResourceToDirectoryOperation::GetContentData(
 
 RemoveResourceFromDirectoryOperation::RemoveResourceFromDirectoryOperation(
     OperationRegistry* registry,
+    net::URLRequestContextGetter* url_request_context_getter,
     const EntryActionCallback& callback,
     const GURL& parent_content_url,
     const std::string& document_resource_id)
-    : EntryActionOperation(registry, callback),
+    : EntryActionOperation(registry, url_request_context_getter, callback),
       resource_id_(document_resource_id),
       parent_content_url_(parent_content_url) {
   DCHECK(!callback.is_null());
@@ -594,9 +606,11 @@ RemoveResourceFromDirectoryOperation::GetExtraRequestHeaders() const {
 
 InitiateUploadOperation::InitiateUploadOperation(
     OperationRegistry* registry,
+    net::URLRequestContextGetter* url_request_context_getter,
     const InitiateUploadCallback& callback,
     const InitiateUploadParams& params)
     : UrlFetchOperationBase(registry,
+                            url_request_context_getter,
                             OPERATION_UPLOAD,
                             params.drive_file_path),
       callback_(callback),
@@ -698,9 +712,11 @@ bool InitiateUploadOperation::GetContentData(std::string* upload_content_type,
 
 ResumeUploadOperation::ResumeUploadOperation(
     OperationRegistry* registry,
+    net::URLRequestContextGetter* url_request_context_getter,
     const ResumeUploadCallback& callback,
     const ResumeUploadParams& params)
   : UrlFetchOperationBase(registry,
+                          url_request_context_getter,
                           OPERATION_UPLOAD,
                           params.drive_file_path),
       callback_(callback),

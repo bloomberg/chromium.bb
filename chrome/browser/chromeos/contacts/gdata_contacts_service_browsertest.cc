@@ -80,7 +80,9 @@ class GDataContactsServiceTest : public InProcessBrowserTest {
 
   virtual void SetUpOnMainThread() OVERRIDE {
     ASSERT_TRUE(test_server_.Start());
-    service_.reset(new GDataContactsService(browser()->profile()));
+    service_.reset(new GDataContactsService(
+        browser()->profile()->GetRequestContext(),
+        browser()->profile()));
     service_->Initialize();
     service_->auth_service_for_testing()->set_access_token_for_testing(
         net::TestServer::kGDataAuthToken);

@@ -25,6 +25,10 @@ namespace base {
 class Value;
 }  // namespace base
 
+namespace net {
+class URLRequestContextGetter;
+}  // namespace net
+
 namespace google_apis {
 
 //======================= AuthenticatedOperationInterface ======================
@@ -84,13 +88,18 @@ class UrlFetchOperationBase : public AuthenticatedOperationInterface,
   virtual base::WeakPtr<AuthenticatedOperationInterface> GetWeakPtr() OVERRIDE;
 
  protected:
-  explicit UrlFetchOperationBase(OperationRegistry* registry);
+  explicit UrlFetchOperationBase(
+      OperationRegistry* registry,
+      net::URLRequestContextGetter* url_request_context_getter);
   // Use this constructor when you need to implement operations that take a
   // drive file path (ex. for downloading and uploading).
+  // |url_request_context_getter| is used to initialize URLFetcher.
   // TODO(satorux): Remove the drive file path hack. crbug.com/163296
-  UrlFetchOperationBase(OperationRegistry* registry,
-                        OperationType type,
-                        const FilePath& drive_file_path);
+  UrlFetchOperationBase(
+      OperationRegistry* registry,
+      net::URLRequestContextGetter* url_request_context_getter,
+      OperationType type,
+      const FilePath& drive_file_path);
   virtual ~UrlFetchOperationBase();
 
   // Gets URL for the request.
@@ -146,6 +155,7 @@ class UrlFetchOperationBase : public AuthenticatedOperationInterface,
   // AuthenticatedOperationInterface overrides.
   virtual void OnAuthFailed(GDataErrorCode code) OVERRIDE;
 
+  net::URLRequestContextGetter* url_request_context_getter_;
   ReAuthenticateCallback re_authenticate_callback_;
   int re_authenticate_count_;
   scoped_ptr<net::URLFetcher> url_fetcher_;
@@ -166,9 +176,12 @@ typedef base::Callback<void(GDataErrorCode error)> EntryActionCallback;
 // It is meant to be used for operations that return no JSON blobs.
 class EntryActionOperation : public UrlFetchOperationBase {
  public:
+  // |url_request_context_getter| is used to initialize URLFetcher.
   // |callback| must not be null.
-  EntryActionOperation(OperationRegistry* registry,
-                       const EntryActionCallback& callback);
+  EntryActionOperation(
+      OperationRegistry* registry,
+      net::URLRequestContextGetter* url_request_context_getter,
+      const EntryActionCallback& callback);
   virtual ~EntryActionOperation();
 
  protected:
@@ -196,6 +209,7 @@ class GetDataOperation : public UrlFetchOperationBase {
  public:
   // |callback| must not be null.
   GetDataOperation(OperationRegistry* registry,
+                   net::URLRequestContextGetter* url_request_context_getter,
                    const GetDataCallback& callback);
   virtual ~GetDataOperation();
 

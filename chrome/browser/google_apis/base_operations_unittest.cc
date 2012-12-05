@@ -11,6 +11,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace google_apis {
@@ -21,9 +22,11 @@ namespace {
 // pool, instead of UI thread.
 class JsonParseTestGetDataOperation : public GetDataOperation {
  public:
-  JsonParseTestGetDataOperation(OperationRegistry* registry,
-                                const GetDataCallback& callback)
-      : GetDataOperation(registry, callback) {
+  JsonParseTestGetDataOperation(
+      OperationRegistry* registry,
+      net::URLRequestContextGetter* url_request_context_getter,
+      const GetDataCallback& callback)
+      : GetDataOperation(registry, url_request_context_getter, callback) {
   }
 
   virtual ~JsonParseTestGetDataOperation() {
@@ -72,6 +75,7 @@ TEST_F(BaseOperationsTest, GetDataOperation_ParseValidJson) {
   JsonParseTestGetDataOperation* get_data =
       new JsonParseTestGetDataOperation(
           runner_->operation_registry(),
+          NULL,  // request_context_getter.
           base::Bind(&test_util::CopyResultsFromGetDataCallback,
                      &error,
                      &value));
@@ -101,6 +105,7 @@ TEST_F(BaseOperationsTest, GetDataOperation_ParseInvalidJson) {
   JsonParseTestGetDataOperation* get_data =
       new JsonParseTestGetDataOperation(
           runner_->operation_registry(),
+          NULL,  // request_context_getter.
           base::Bind(&test_util::CopyResultsFromGetDataCallback,
                      &error,
                      &value));

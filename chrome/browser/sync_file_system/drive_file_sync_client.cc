@@ -12,6 +12,7 @@
 #include "chrome/browser/google_apis/drive_uploader.h"
 #include "chrome/browser/google_apis/gdata_wapi_service.h"
 #include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "extensions/common/constants.h"
 #include "net/base/escape.h"
@@ -67,6 +68,7 @@ DriveFileSyncClient::DriveFileSyncClient(Profile* profile)
     : url_generator_(GURL(
           google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction)) {
   drive_service_.reset(new google_apis::GDataWapiService(
+      profile->GetRequestContext(),
       GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction),
       "" /* custom_user_agent */));
   drive_service_->Initialize(profile);

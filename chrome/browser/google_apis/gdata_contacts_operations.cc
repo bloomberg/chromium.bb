@@ -38,8 +38,9 @@ const char kGetContactsUpdatedMinParam[] = "updated-min";
 
 GetContactGroupsOperation::GetContactGroupsOperation(
     OperationRegistry* registry,
+    net::URLRequestContextGetter* url_request_context_getter,
     const GetDataCallback& callback)
-    : GetDataOperation(registry, callback) {
+    : GetDataOperation(registry, url_request_context_getter, callback) {
 }
 
 GetContactGroupsOperation::~GetContactGroupsOperation() {}
@@ -52,11 +53,13 @@ GURL GetContactGroupsOperation::GetURL() const {
 
 //============================ GetContactsOperation ============================
 
-GetContactsOperation::GetContactsOperation(OperationRegistry* registry,
-                                           const std::string& group_id,
-                                           const base::Time& min_update_time,
-                                           const GetDataCallback& callback)
-    : GetDataOperation(registry, callback),
+GetContactsOperation::GetContactsOperation(
+    OperationRegistry* registry,
+    net::URLRequestContextGetter* url_request_context_getter,
+    const std::string& group_id,
+    const base::Time& min_update_time,
+    const GetDataCallback& callback)
+    : GetDataOperation(registry, url_request_context_getter, callback),
       group_id_(group_id),
       min_update_time_(min_update_time) {
 }
@@ -85,9 +88,10 @@ GURL GetContactsOperation::GetURL() const {
 
 GetContactPhotoOperation::GetContactPhotoOperation(
     OperationRegistry* registry,
+    net::URLRequestContextGetter* url_request_context_getter,
     const GURL& photo_url,
     const GetContentCallback& callback)
-    : UrlFetchOperationBase(registry),
+    : UrlFetchOperationBase(registry, url_request_context_getter),
       photo_url_(photo_url),
       callback_(callback) {
 }

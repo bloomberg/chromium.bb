@@ -10,6 +10,10 @@
 
 #include "chrome/browser/google_apis/base_operations.h"
 
+namespace net {
+class URLRequestContextGetter;
+}  // namespace net
+
 namespace google_apis {
 
 //========================== GetContactGroupsOperation =========================
@@ -17,8 +21,10 @@ namespace google_apis {
 // This class fetches a JSON feed containing a user's contact groups.
 class GetContactGroupsOperation : public GetDataOperation {
  public:
-  GetContactGroupsOperation(OperationRegistry* registry,
-                            const GetDataCallback& callback);
+  GetContactGroupsOperation(
+      OperationRegistry* registry,
+      net::URLRequestContextGetter* url_request_context_getter,
+      const GetDataCallback& callback);
   virtual ~GetContactGroupsOperation();
 
   void set_feed_url_for_testing(const GURL& url) {
@@ -41,10 +47,12 @@ class GetContactGroupsOperation : public GetDataOperation {
 // This class fetches a JSON feed containing a user's contacts.
 class GetContactsOperation : public GetDataOperation {
  public:
-  GetContactsOperation(OperationRegistry* registry,
-                       const std::string& group_id,
-                       const base::Time& min_update_time,
-                       const GetDataCallback& callback);
+  GetContactsOperation(
+      OperationRegistry* registry,
+      net::URLRequestContextGetter* url_request_context_getter,
+      const std::string& group_id,
+      const base::Time& min_update_time,
+      const GetDataCallback& callback);
   virtual ~GetContactsOperation();
 
   void set_feed_url_for_testing(const GURL& url) {
@@ -76,9 +84,11 @@ class GetContactsOperation : public GetDataOperation {
 // This class fetches a contact's photo.
 class GetContactPhotoOperation : public UrlFetchOperationBase {
  public:
-  GetContactPhotoOperation(OperationRegistry* registry,
-                           const GURL& photo_url,
-                           const GetContentCallback& callback);
+  GetContactPhotoOperation(
+      OperationRegistry* registry,
+      net::URLRequestContextGetter* url_request_context_getter,
+      const GURL& photo_url,
+      const GetContentCallback& callback);
   virtual ~GetContactPhotoOperation();
 
  protected:

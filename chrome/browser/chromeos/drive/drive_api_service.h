@@ -19,7 +19,11 @@ class Profile;
 
 namespace google_apis {
 class OperationRunner;
-}
+}  // namespace google_apis
+
+namespace net {
+class URLRequestContextGetter;
+}  // namespace net
 
 namespace drive {
 
@@ -33,9 +37,12 @@ class DriveAPIService : public google_apis::DriveServiceInterface,
   // Instance is usually created by DriveSystemServiceFactory and owned by
   // DriveFileSystem.
   //
+  // |url_request_context_getter| is used to initialize URLFetcher.
   // |custom_user_agent| will be used for the User-Agent header in HTTP
   // requests issues through the service if the value is not empty.
-  explicit DriveAPIService(const std::string& custom_user_agent);
+  DriveAPIService(
+      net::URLRequestContextGetter* url_request_context_getter,
+      const std::string& custom_user_agent);
   virtual ~DriveAPIService();
 
   // DriveServiceInterface Overrides
@@ -143,6 +150,7 @@ class DriveAPIService : public google_apis::DriveServiceInterface,
   virtual void OnAuthenticationFailed(
       google_apis::GDataErrorCode error) OVERRIDE;
 
+  net::URLRequestContextGetter* url_request_context_getter_;
   Profile* profile_;
   scoped_ptr<google_apis::OperationRunner> runner_;
   ObserverList<google_apis::DriveServiceObserver> observers_;

@@ -17,7 +17,6 @@
 #include "chrome/browser/google_apis/test_server/http_server.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "net/base/escape.h"
@@ -165,30 +164,6 @@ bool ParseContentRangeHeader(const std::string& value,
           base::StringToInt64(parts[1], end_position));
 }
 
-// This class sets a request context getter for testing in
-// |testing_browser_process| and then clears the state when an instance of it
-// goes out of scope.
-class ScopedRequestContextGetterForTesting {
- public:
-  ScopedRequestContextGetterForTesting(
-      TestingBrowserProcess* testing_browser_process)
-      : testing_browser_process_(testing_browser_process) {
-    context_getter_ = new net::TestURLRequestContextGetter(
-        content::BrowserThread::GetMessageLoopProxyForThread(
-            content::BrowserThread::IO));
-    testing_browser_process_->SetSystemRequestContext(context_getter_.get());
-  }
-
-  virtual ~ScopedRequestContextGetterForTesting() {
-    testing_browser_process_->SetSystemRequestContext(NULL);
-  }
-
- private:
-  scoped_refptr<net::TestURLRequestContextGetter> context_getter_;
-  TestingBrowserProcess* testing_browser_process_;
-  DISALLOW_COPY_AND_ASSIGN(ScopedRequestContextGetterForTesting);
-};
-
 class GDataWapiOperationsTest : public testing::Test {
  public:
   GDataWapiOperationsTest()
@@ -202,11 +177,9 @@ class GDataWapiOperationsTest : public testing::Test {
     io_thread_.StartIOThread();
     profile_.reset(new TestingProfile);
 
-    // Set a context getter in |g_browser_process|. This is required to be able
-    // to use net::URLFetcher.
-    request_context_getter_.reset(
-        new ScopedRequestContextGetterForTesting(
-            static_cast<TestingBrowserProcess*>(g_browser_process)));
+    request_context_getter_ = new net::TestURLRequestContextGetter(
+        content::BrowserThread::GetMessageLoopProxyForThread(
+            content::BrowserThread::IO));
 
     ASSERT_TRUE(test_server_.InitializeAndWaitUntilReady());
     test_server_.RegisterRequestHandler(
@@ -231,7 +204,7 @@ class GDataWapiOperationsTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     test_server_.ShutdownAndWaitUntilComplete();
-    request_context_getter_.reset();
+    request_context_getter_ = NULL;
   }
 
  protected:
@@ -422,7 +395,7 @@ class GDataWapiOperationsTest : public testing::Test {
   scoped_ptr<TestingProfile> profile_;
   OperationRegistry operation_registry_;
   scoped_ptr<GDataWapiUrlGenerator> url_generator_;
-  scoped_ptr<ScopedRequestContextGetterForTesting> request_context_getter_;
+  scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
 
   // The incoming HTTP request is saved so tests can verify the request
   // parameters like HTTP method (ex. some operations should use DELETE
@@ -438,6 +411,7 @@ TEST_F(GDataWapiOperationsTest, GetDocumentsOperation_DefaultFeed) {
 
   GetDocumentsOperation* operation = new GetDocumentsOperation(
       &operation_registry_,
+      request_context_getter_.get(),
       *url_generator_,
       GURL(),  // Pass an empty URL to use the default feed
       0,  // start changestamp
@@ -467,6 +441,7 @@ TEST_F(GDataWapiOperationsTest, GetDocumentsOperation_ValidFeed) {
 
   GetDocumentsOperation* operation = new GetDocumentsOperation(
       &operation_registry_,
+      request_context_getter_.get(),
       *url_generator_,
       test_server_.GetURL("/files/gdata/root_feed.json"),
       0,  // start changestamp
@@ -498,6 +473,7 @@ TEST_F(GDataWapiOperationsTest, GetDocumentsOperation_InvalidFeed) {
 
   GetDocumentsOperation* operation = new GetDocumentsOperation(
       &operation_registry_,
+      request_context_getter_.get(),
       *url_generator_,
       test_server_.GetURL("/files/gdata/testfile.txt"),
       0,  // start changestamp
@@ -523,12 +499,13 @@ TEST_F(GDataWapiOperationsTest, GetDocumentEntryOperation_ValidResourceId) {
   scoped_ptr<base::Value> result_data;
 
   GetDocumentEntryOperation* operation = new GetDocumentEntryOperation(
-          &operation_registry_,
-          *url_generator_,
-          "file:2_file_resource_id",  // resource ID
-          base::Bind(&CopyResultsFromGetDataCallbackAndQuit,
-                     &result_code,
-                     &result_data));
+      &operation_registry_,
+      request_context_getter_.get(),
+      *url_generator_,
+      "file:2_file_resource_id",  // resource ID
+      base::Bind(&CopyResultsFromGetDataCallbackAndQuit,
+                 &result_code,
+                 &result_data));
   operation->Start(kTestGDataAuthToken, kTestUserAgent);
   MessageLoop::current()->Run();
 
@@ -548,12 +525,13 @@ TEST_F(GDataWapiOperationsTest, GetDocumentEntryOperation_InvalidResourceId) {
   scoped_ptr<base::Value> result_data;
 
   GetDocumentEntryOperation* operation = new GetDocumentEntryOperation(
-          &operation_registry_,
-          *url_generator_,
-          "<invalid>",  // resource ID
-          base::Bind(&CopyResultsFromGetDataCallbackAndQuit,
-                     &result_code,
-                     &result_data));
+      &operation_registry_,
+      request_context_getter_.get(),
+      *url_generator_,
+      "<invalid>",  // resource ID
+      base::Bind(&CopyResultsFromGetDataCallbackAndQuit,
+                 &result_code,
+                 &result_data));
   operation->Start(kTestGDataAuthToken, kTestUserAgent);
   MessageLoop::current()->Run();
 
@@ -568,13 +546,13 @@ TEST_F(GDataWapiOperationsTest, GetAccountMetadataOperation) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
   scoped_ptr<base::Value> result_data;
 
-  GetAccountMetadataOperation* operation =
-      new google_apis::GetAccountMetadataOperation(
-          &operation_registry_,
-          *url_generator_,
-          base::Bind(&CopyResultsFromGetDataCallbackAndQuit,
-                     &result_code,
-                     &result_data));
+  GetAccountMetadataOperation* operation = new GetAccountMetadataOperation(
+      &operation_registry_,
+      request_context_getter_.get(),
+      *url_generator_,
+      base::Bind(&CopyResultsFromGetDataCallbackAndQuit,
+                 &result_code,
+                 &result_data));
   operation->Start(kTestGDataAuthToken, kTestUserAgent);
   MessageLoop::current()->Run();
 
@@ -592,6 +570,7 @@ TEST_F(GDataWapiOperationsTest, DownloadFileOperation_ValidFile) {
   std::string contents;
   DownloadFileOperation* operation = new DownloadFileOperation(
       &operation_registry_,
+      request_context_getter_.get(),
       base::Bind(&CopyResultsFromDownloadActionCallbackAndQuit,
                  &result_code,
                  &contents),
@@ -618,6 +597,7 @@ TEST_F(GDataWapiOperationsTest, DownloadFileOperation_NonExistentFile) {
   std::string contents;
   DownloadFileOperation* operation = new DownloadFileOperation(
       &operation_registry_,
+      request_context_getter_.get(),
       base::Bind(&CopyResultsFromDownloadActionCallbackAndQuit,
                  &result_code,
                  &contents),
@@ -640,6 +620,7 @@ TEST_F(GDataWapiOperationsTest, DeleteDocumentOperation) {
 
   DeleteDocumentOperation* operation = new DeleteDocumentOperation(
       &operation_registry_,
+      request_context_getter_.get(),
       base::Bind(&CopyResultFromEntryActionCallbackAndQuit,
                  &result_code),
       test_server_.GetURL(
@@ -662,6 +643,7 @@ TEST_F(GDataWapiOperationsTest, CreateDirectoryOperation) {
   // Create "new directory" in the root directory.
   CreateDirectoryOperation* operation = new CreateDirectoryOperation(
       &operation_registry_,
+      request_context_getter_.get(),
       *url_generator_,
       base::Bind(&CopyResultsFromGetDataCallbackAndQuit,
                  &result_code,
@@ -695,6 +677,7 @@ TEST_F(GDataWapiOperationsTest, CopyDocumentOperation) {
   // Copy a document with a new name "New Document".
   CopyDocumentOperation* operation = new CopyDocumentOperation(
       &operation_registry_,
+      request_context_getter_.get(),
       *url_generator_,
       base::Bind(&CopyResultsFromGetDataCallbackAndQuit,
                  &result_code,
@@ -726,6 +709,7 @@ TEST_F(GDataWapiOperationsTest, RenameResourceOperation) {
   // Rename a file with a new name "New File".
   RenameResourceOperation* operation = new RenameResourceOperation(
       &operation_registry_,
+      request_context_getter_.get(),
       base::Bind(&CopyResultFromEntryActionCallbackAndQuit,
                  &result_code),
       test_server_.GetURL(
@@ -757,6 +741,7 @@ TEST_F(GDataWapiOperationsTest, AuthorizeAppOperation_ValidFeed) {
   // Authorize an app with APP_ID to access to a document.
   AuthorizeAppOperation* operation = new AuthorizeAppOperation(
       &operation_registry_,
+      request_context_getter_.get(),
       base::Bind(&CopyResultsFromGetDataCallbackAndQuit,
                  &result_code,
                  &result_data),
@@ -790,6 +775,7 @@ TEST_F(GDataWapiOperationsTest, AuthorizeAppOperation_InvalidFeed) {
   // Authorize an app with APP_ID to access to a document but an invalid feed.
   AuthorizeAppOperation* operation = new AuthorizeAppOperation(
       &operation_registry_,
+      request_context_getter_.get(),
       base::Bind(&CopyResultsFromGetDataCallbackAndQuit,
                  &result_code,
                  &result_data),
@@ -821,6 +807,7 @@ TEST_F(GDataWapiOperationsTest, AddResourceToDirectoryOperation) {
   AddResourceToDirectoryOperation* operation =
       new AddResourceToDirectoryOperation(
           &operation_registry_,
+          request_context_getter_.get(),
           *url_generator_,
           base::Bind(&CopyResultFromEntryActionCallbackAndQuit,
                      &result_code),
@@ -853,6 +840,7 @@ TEST_F(GDataWapiOperationsTest, RemoveResourceFromDirectoryOperation) {
   RemoveResourceFromDirectoryOperation* operation =
       new RemoveResourceFromDirectoryOperation(
           &operation_registry_,
+          request_context_getter_.get(),
           base::Bind(&CopyResultFromEntryActionCallbackAndQuit,
                      &result_code),
           test_server_.GetURL("/feeds/default/private/full/folder%3Aroot"),
@@ -887,13 +875,13 @@ TEST_F(GDataWapiOperationsTest, UploadNewFile) {
       test_server_.GetURL("/feeds/upload/create-session/default/private/full"),
       FilePath::FromUTF8Unsafe("drive/newfile.txt"));
 
-  InitiateUploadOperation* initiate_operation =
-      new InitiateUploadOperation(
-          &operation_registry_,
-          base::Bind(&CopyResultFromInitiateUploadCallbackAndQuit,
-                     &result_code,
-                     &upload_url),
-          initiate_params);
+  InitiateUploadOperation* initiate_operation = new InitiateUploadOperation(
+      &operation_registry_,
+      request_context_getter_.get(),
+      base::Bind(&CopyResultFromInitiateUploadCallbackAndQuit,
+                 &result_code,
+                 &upload_url),
+      initiate_params);
 
   initiate_operation->Start(kTestGDataAuthToken, kTestUserAgent);
   MessageLoop::current()->Run();
@@ -932,13 +920,13 @@ TEST_F(GDataWapiOperationsTest, UploadNewFile) {
   ResumeUploadResponse response;
   scoped_ptr<DocumentEntry> new_entry;
 
-  ResumeUploadOperation* resume_operation =
-      new ResumeUploadOperation(
-          &operation_registry_,
-          base::Bind(&CopyResultFromResumeUploadCallbackAndQuit,
-                     &response,
-                     &new_entry),
-          resume_params);
+  ResumeUploadOperation* resume_operation = new ResumeUploadOperation(
+      &operation_registry_,
+      request_context_getter_.get(),
+      base::Bind(&CopyResultFromResumeUploadCallbackAndQuit,
+                 &response,
+                 &new_entry),
+      resume_params);
 
   resume_operation->Start(kTestGDataAuthToken, kTestUserAgent);
   MessageLoop::current()->Run();
@@ -983,13 +971,13 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
       test_server_.GetURL("/feeds/upload/create-session/default/private/full"),
       FilePath::FromUTF8Unsafe("drive/newfile.txt"));
 
-  InitiateUploadOperation* initiate_operation =
-      new InitiateUploadOperation(
-          &operation_registry_,
-          base::Bind(&CopyResultFromInitiateUploadCallbackAndQuit,
-                     &result_code,
-                     &upload_url),
-          initiate_params);
+  InitiateUploadOperation* initiate_operation = new InitiateUploadOperation(
+      &operation_registry_,
+      request_context_getter_.get(),
+      base::Bind(&CopyResultFromInitiateUploadCallbackAndQuit,
+                 &result_code,
+                 &upload_url),
+      initiate_params);
 
   initiate_operation->Start(kTestGDataAuthToken, kTestUserAgent);
   MessageLoop::current()->Run();
@@ -1041,13 +1029,13 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
     ResumeUploadResponse response;
     scoped_ptr<DocumentEntry> new_entry;
 
-    ResumeUploadOperation* resume_operation =
-        new ResumeUploadOperation(
-            &operation_registry_,
-            base::Bind(&CopyResultFromResumeUploadCallbackAndQuit,
-                       &response,
-                       &new_entry),
-            resume_params);
+    ResumeUploadOperation* resume_operation = new ResumeUploadOperation(
+        &operation_registry_,
+        request_context_getter_.get(),
+        base::Bind(&CopyResultFromResumeUploadCallbackAndQuit,
+                   &response,
+                   &new_entry),
+        resume_params);
 
     resume_operation->Start(kTestGDataAuthToken, kTestUserAgent);
     MessageLoop::current()->Run();
@@ -1104,13 +1092,13 @@ TEST_F(GDataWapiOperationsTest, UploadNewEmptyFile) {
       test_server_.GetURL("/feeds/upload/create-session/default/private/full"),
       FilePath::FromUTF8Unsafe("drive/newfile.txt"));
 
-  InitiateUploadOperation* initiate_operation =
-      new InitiateUploadOperation(
-          &operation_registry_,
-          base::Bind(&CopyResultFromInitiateUploadCallbackAndQuit,
-                     &result_code,
-                     &upload_url),
-          initiate_params);
+  InitiateUploadOperation* initiate_operation = new InitiateUploadOperation(
+      &operation_registry_,
+      request_context_getter_.get(),
+      base::Bind(&CopyResultFromInitiateUploadCallbackAndQuit,
+                 &result_code,
+                 &upload_url),
+      initiate_params);
 
   initiate_operation->Start(kTestGDataAuthToken, kTestUserAgent);
   MessageLoop::current()->Run();
@@ -1149,13 +1137,13 @@ TEST_F(GDataWapiOperationsTest, UploadNewEmptyFile) {
   ResumeUploadResponse response;
   scoped_ptr<DocumentEntry> new_entry;
 
-  ResumeUploadOperation* resume_operation =
-      new ResumeUploadOperation(
-          &operation_registry_,
-          base::Bind(&CopyResultFromResumeUploadCallbackAndQuit,
-                     &response,
-                     &new_entry),
-          resume_params);
+  ResumeUploadOperation* resume_operation = new ResumeUploadOperation(
+      &operation_registry_,
+      request_context_getter_.get(),
+      base::Bind(&CopyResultFromResumeUploadCallbackAndQuit,
+                 &response,
+                 &new_entry),
+      resume_params);
 
   resume_operation->Start(kTestGDataAuthToken, kTestUserAgent);
   MessageLoop::current()->Run();
@@ -1195,13 +1183,13 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFile) {
           "/feeds/upload/create-session/default/private/full/file:foo"),
       FilePath::FromUTF8Unsafe("drive/existingfile.txt"));
 
-  InitiateUploadOperation* initiate_operation =
-      new InitiateUploadOperation(
-          &operation_registry_,
-          base::Bind(&CopyResultFromInitiateUploadCallbackAndQuit,
-                     &result_code,
-                     &upload_url),
-          initiate_params);
+  InitiateUploadOperation* initiate_operation = new InitiateUploadOperation(
+      &operation_registry_,
+      request_context_getter_.get(),
+      base::Bind(&CopyResultFromInitiateUploadCallbackAndQuit,
+                 &result_code,
+                 &upload_url),
+      initiate_params);
 
   initiate_operation->Start(kTestGDataAuthToken, kTestUserAgent);
   MessageLoop::current()->Run();
@@ -1240,13 +1228,13 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFile) {
   ResumeUploadResponse response;
   scoped_ptr<DocumentEntry> new_entry;
 
-  ResumeUploadOperation* resume_operation =
-      new ResumeUploadOperation(
-          &operation_registry_,
-          base::Bind(&CopyResultFromResumeUploadCallbackAndQuit,
-                     &response,
-                     &new_entry),
-          resume_params);
+  ResumeUploadOperation* resume_operation = new ResumeUploadOperation(
+      &operation_registry_,
+      request_context_getter_.get(),
+      base::Bind(&CopyResultFromResumeUploadCallbackAndQuit,
+                 &response,
+                 &new_entry),
+      resume_params);
 
   resume_operation->Start(kTestGDataAuthToken, kTestUserAgent);
   MessageLoop::current()->Run();

@@ -19,6 +19,10 @@ class FilePath;
 class GURL;
 class Profile;
 
+namespace net {
+class URLRequestContextGetter;
+}  // namespace net
+
 namespace google_apis {
 class AuthService;
 class OperationRunner;
@@ -34,12 +38,13 @@ class GDataWapiService : public DriveServiceInterface,
   // Instance is usually created by DriveSystemServiceFactory and owned by
   // DriveFileSystem.
   //
+  // |url_request_context_getter| is used to initialize URLFetcher.
   // |base_url| is used to generate URLs for communicating with the WAPI
-  // |server. See gdata_wapi_url_generator.h for details.
-  //
-  // |custom_user_agent| will be used for the User-Agent header in HTTP
+  // |custom_user_agent| is used for the User-Agent header in HTTP
   // requests issued through the service if the value is not empty.
-  GDataWapiService(const GURL& base_url, const std::string& custom_user_agent);
+  GDataWapiService(net::URLRequestContextGetter* url_request_context_getter,
+                   const GURL& base_url,
+                   const std::string& custom_user_agent);
   virtual ~GDataWapiService();
 
   AuthService* auth_service_for_testing();
@@ -121,6 +126,7 @@ class GDataWapiService : public DriveServiceInterface,
   virtual void OnAuthenticationFailed(
       GDataErrorCode error) OVERRIDE;
 
+  net::URLRequestContextGetter* url_request_context_getter_;
   scoped_ptr<OperationRunner> runner_;
   ObserverList<DriveServiceObserver> observers_;
   // Operation objects should hold a copy of this, rather than a const

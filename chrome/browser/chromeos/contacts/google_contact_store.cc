@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/file_path.h"
 #include "base/logging.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/contacts/contact.pb.h"
 #include "chrome/browser/chromeos/contacts/contact_database.h"
 #include "chrome/browser/chromeos/contacts/contact_store_observer.h"
@@ -91,8 +92,11 @@ scoped_ptr<ContactPointers> GoogleContactStore::TestAPI::GetLoadedContacts() {
   return contacts.Pass();
 }
 
-GoogleContactStore::GoogleContactStore(Profile* profile)
-    : profile_(profile),
+GoogleContactStore::GoogleContactStore(
+    net::URLRequestContextGetter* url_request_context_getter,
+    Profile* profile)
+    : url_request_context_getter_(url_request_context_getter),
+      profile_(profile),
       db_(new ContactDatabase),
       update_delay_on_next_failure_(
           base::TimeDelta::FromSeconds(kUpdateFailureInitialRetrySec)),
@@ -116,7 +120,8 @@ void GoogleContactStore::Init() {
 
   // Create a GData service if one hasn't already been assigned for testing.
   if (!gdata_service_.get()) {
-    gdata_service_.reset(new GDataContactsService(profile_));
+    gdata_service_.reset(new GDataContactsService(
+        url_request_context_getter_, profile_));
     gdata_service_->Initialize();
   }
 
@@ -406,7 +411,8 @@ bool GoogleContactStoreFactory::CanCreateContactStoreForProfile(
 ContactStore* GoogleContactStoreFactory::CreateContactStore(Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(CanCreateContactStoreForProfile(profile));
-  return new GoogleContactStore(profile);
+  return new GoogleContactStore(
+      g_browser_process->system_request_context(), profile);
 }
 
 }  // namespace contacts

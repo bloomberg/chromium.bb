@@ -66,9 +66,12 @@ const char kDriveAppsScope[] = "https://www.googleapis.com/auth/drive.apps";
 
 }  // namespace
 
-GDataWapiService::GDataWapiService(const GURL& base_url,
-                                   const std::string& custom_user_agent)
-    : runner_(NULL),
+GDataWapiService::GDataWapiService(
+    net::URLRequestContextGetter* url_request_context_getter,
+    const GURL& base_url,
+    const std::string& custom_user_agent)
+    : url_request_context_getter_(url_request_context_getter),
+      runner_(NULL),
       url_generator_(base_url),
       custom_user_agent_(custom_user_agent) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -143,17 +146,16 @@ void GDataWapiService::GetDocuments(
 
   // Drive V2 API defines changestamp in int64, while DocumentsList API uses
   // int32. This narrowing should not cause any trouble.
-  GetDocumentsOperation* operation =
-      new google_apis::GetDocumentsOperation(
-          operation_registry(),
-          url_generator_,
-          url,
-          static_cast<int>(start_changestamp),
-          search_query,
-          shared_with_me,
-          directory_resource_id,
-          callback);
-  runner_->StartOperationWithRetry(operation);
+  runner_->StartOperationWithRetry(
+      new GetDocumentsOperation(operation_registry(),
+                                url_request_context_getter_,
+                                url_generator_,
+                                url,
+                                static_cast<int>(start_changestamp),
+                                search_query,
+                                shared_with_me,
+                                directory_resource_id,
+                                callback));
 }
 
 void GDataWapiService::GetDocumentEntry(
@@ -162,22 +164,23 @@ void GDataWapiService::GetDocumentEntry(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  GetDocumentEntryOperation* operation =
+  runner_->StartOperationWithRetry(
       new GetDocumentEntryOperation(operation_registry(),
+                                    url_request_context_getter_,
                                     url_generator_,
                                     resource_id,
-                                    callback);
-  runner_->StartOperationWithRetry(operation);
+                                    callback));
 }
 
 void GDataWapiService::GetAccountMetadata(const GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  GetAccountMetadataOperation* operation =
-      new GetAccountMetadataOperation(
-          operation_registry(), url_generator_, callback);
-  runner_->StartOperationWithRetry(operation);
+  runner_->StartOperationWithRetry(
+      new GetAccountMetadataOperation(operation_registry(),
+                                      url_request_context_getter_,
+                                      url_generator_,
+                                      callback));
 }
 
 void GDataWapiService::GetApplicationInfo(
@@ -217,9 +220,11 @@ void GDataWapiService::DownloadFile(
 
   runner_->StartOperationWithRetry(
       new DownloadFileOperation(operation_registry(),
+                                url_request_context_getter_,
                                 download_action_callback,
                                 get_content_callback, document_url,
-                                virtual_path, local_cache_path));
+                                virtual_path,
+                                local_cache_path));
 }
 
 void GDataWapiService::DeleteDocument(
@@ -229,7 +234,9 @@ void GDataWapiService::DeleteDocument(
   DCHECK(!callback.is_null());
 
   runner_->StartOperationWithRetry(
-      new DeleteDocumentOperation(operation_registry(), callback,
+      new DeleteDocumentOperation(operation_registry(),
+                                  url_request_context_getter_,
+                                  callback,
                                   document_url));
 }
 
@@ -242,6 +249,7 @@ void GDataWapiService::AddNewDirectory(
 
   runner_->StartOperationWithRetry(
       new CreateDirectoryOperation(operation_registry(),
+                                   url_request_context_getter_,
                                    url_generator_,
                                    callback,
                                    parent_content_url,
@@ -257,6 +265,7 @@ void GDataWapiService::CopyDocument(
 
   runner_->StartOperationWithRetry(
       new CopyDocumentOperation(operation_registry(),
+                                url_request_context_getter_,
                                 url_generator_,
                                 callback,
                                 resource_id,
@@ -271,8 +280,11 @@ void GDataWapiService::RenameResource(
   DCHECK(!callback.is_null());
 
   runner_->StartOperationWithRetry(
-      new RenameResourceOperation(operation_registry(), callback,
-                                  resource_url, new_name));
+      new RenameResourceOperation(operation_registry(),
+                                  url_request_context_getter_,
+                                  callback,
+                                  resource_url,
+                                  new_name));
 }
 
 void GDataWapiService::AddResourceToDirectory(
@@ -284,6 +296,7 @@ void GDataWapiService::AddResourceToDirectory(
 
   runner_->StartOperationWithRetry(
       new AddResourceToDirectoryOperation(operation_registry(),
+                                          url_request_context_getter_,
                                           url_generator_,
                                           callback,
                                           parent_content_url,
@@ -298,11 +311,11 @@ void GDataWapiService::RemoveResourceFromDirectory(
   DCHECK(!callback.is_null());
 
   runner_->StartOperationWithRetry(
-      new RemoveResourceFromDirectoryOperation(
-          operation_registry(),
-          callback,
-          parent_content_url,
-          resource_id));
+      new RemoveResourceFromDirectoryOperation(operation_registry(),
+                                               url_request_context_getter_,
+                                               callback,
+                                               parent_content_url,
+                                               resource_id));
 }
 
 void GDataWapiService::InitiateUpload(
@@ -317,8 +330,10 @@ void GDataWapiService::InitiateUpload(
   }
 
   runner_->StartOperationWithRetry(
-      new InitiateUploadOperation(
-          operation_registry(), callback, params));
+      new InitiateUploadOperation(operation_registry(),
+                                  url_request_context_getter_,
+                                  callback,
+                                  params));
 }
 
 void GDataWapiService::ResumeUpload(const ResumeUploadParams& params,
@@ -327,8 +342,10 @@ void GDataWapiService::ResumeUpload(const ResumeUploadParams& params,
   DCHECK(!callback.is_null());
 
   runner_->StartOperationWithRetry(
-      new ResumeUploadOperation(
-          operation_registry(), callback, params));
+      new ResumeUploadOperation(operation_registry(),
+                                url_request_context_getter_,
+                                callback,
+                                params));
 }
 
 void GDataWapiService::AuthorizeApp(const GURL& resource_url,
@@ -339,6 +356,7 @@ void GDataWapiService::AuthorizeApp(const GURL& resource_url,
 
   runner_->StartOperationWithRetry(
       new AuthorizeAppOperation(operation_registry(),
+                                url_request_context_getter_,
                                 callback,
                                 resource_url,
                                 app_id));

@@ -18,6 +18,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 #include "net/base/network_change_notifier.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
@@ -59,9 +60,15 @@ class GoogleContactStoreTest : public testing::Test {
     // Create a mock NetworkChangeNotifier so the store won't be notified about
     // changes to the system's actual network state.
     network_change_notifier_.reset(net::NetworkChangeNotifier::CreateMock());
+
+    request_context_getter_ = new net::TestURLRequestContextGetter(
+        content::BrowserThread::GetMessageLoopProxyForThread(
+            content::BrowserThread::IO));
+
     profile_.reset(new TestingProfile);
 
-    store_.reset(new GoogleContactStore(profile_.get()));
+    store_.reset(new GoogleContactStore(
+        request_context_getter_.get(), profile_.get()));
     store_->AddObserver(&observer_);
 
     test_api_.reset(new GoogleContactStore::TestAPI(store_.get()));
@@ -73,11 +80,16 @@ class GoogleContactStoreTest : public testing::Test {
     test_api_->SetGDataService(gdata_service_);
   }
 
+  virtual void TearDown() OVERRIDE {
+    request_context_getter_ = NULL;
+  }
+
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
 
   TestContactStoreObserver observer_;
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
+  scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<GoogleContactStore> store_;
   scoped_ptr<GoogleContactStore::TestAPI> test_api_;

@@ -29,8 +29,11 @@ const char kDriveAppsReadonlyScope[] =
 
 }  // namespace
 
-DriveAPIService::DriveAPIService(const std::string& custom_user_agent)
-    : profile_(NULL),
+DriveAPIService::DriveAPIService(
+    net::URLRequestContextGetter* url_request_context_getter,
+    const std::string& custom_user_agent)
+    : url_request_context_getter_(url_request_context_getter),
+      profile_(NULL),
       runner_(NULL),
       custom_user_agent_(custom_user_agent) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -119,6 +122,7 @@ void DriveAPIService::GetFilelist(
 
   runner_->StartOperationWithRetry(
       new google_apis::GetFilelistOperation(operation_registry(),
+                                            url_request_context_getter_,
                                             url,
                                             search_query,
                                             callback));
@@ -133,6 +137,7 @@ void DriveAPIService::GetChangelist(
 
   runner_->StartOperationWithRetry(
       new google_apis::GetChangelistOperation(operation_registry(),
+                                              url_request_context_getter_,
                                               url,
                                               start_changestamp,
                                               callback));
@@ -146,6 +151,7 @@ void DriveAPIService::GetDocumentEntry(
 
   runner_->StartOperationWithRetry(new google_apis::GetFileOperation(
       operation_registry(),
+      url_request_context_getter_,
       resource_id,
       callback));
 }
@@ -156,7 +162,9 @@ void DriveAPIService::GetAccountMetadata(
   DCHECK(!callback.is_null());
 
   runner_->StartOperationWithRetry(
-      new google_apis::GetAboutOperation(operation_registry(), callback));
+      new google_apis::GetAboutOperation(operation_registry(),
+                                         url_request_context_getter_,
+                                         callback));
 }
 
 void DriveAPIService::GetApplicationInfo(
@@ -165,7 +173,9 @@ void DriveAPIService::GetApplicationInfo(
   DCHECK(!callback.is_null());
 
   runner_->StartOperationWithRetry(
-      new google_apis::GetApplistOperation(operation_registry(), callback));
+      new google_apis::GetApplistOperation(operation_registry(),
+                                           url_request_context_getter_,
+                                           callback));
 }
 
 void DriveAPIService::DownloadDocument(

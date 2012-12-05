@@ -397,9 +397,12 @@ ProfileKeyedService* DriveSystemServiceFactory::BuildServiceInstanceFor(
   g_test_drive_service = NULL;
   if (!drive_service) {
     if (google_apis::util::IsDriveV2ApiEnabled()) {
-      drive_service = new DriveAPIService(GetDriveUserAgent());
+      drive_service = new DriveAPIService(
+          g_browser_process->system_request_context(),
+          GetDriveUserAgent());
     } else {
       drive_service = new google_apis::GDataWapiService(
+          g_browser_process->system_request_context(),
           GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction),
           GetDriveUserAgent());
     }

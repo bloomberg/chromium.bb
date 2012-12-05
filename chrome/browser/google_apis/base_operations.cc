@@ -10,7 +10,6 @@
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
-#include "chrome/browser/browser_process.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
@@ -72,20 +71,26 @@ namespace google_apis {
 
 //============================ UrlFetchOperationBase ===========================
 
-UrlFetchOperationBase::UrlFetchOperationBase(OperationRegistry* registry)
+UrlFetchOperationBase::UrlFetchOperationBase(
+    OperationRegistry* registry,
+    net::URLRequestContextGetter* url_request_context_getter)
     : OperationRegistry::Operation(registry),
       save_temp_file_(false),
+      url_request_context_getter_(url_request_context_getter),
       re_authenticate_count_(0),
       started_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-UrlFetchOperationBase::UrlFetchOperationBase(OperationRegistry* registry,
-                                             OperationType type,
-                                             const FilePath& path)
+UrlFetchOperationBase::UrlFetchOperationBase(
+    OperationRegistry* registry,
+    net::URLRequestContextGetter* url_request_context_getter,
+    OperationType type,
+    const FilePath& path)
     : OperationRegistry::Operation(registry, type, path),
       save_temp_file_(false),
+      url_request_context_getter_(url_request_context_getter),
       re_authenticate_count_(0),
       started_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
@@ -96,6 +101,8 @@ UrlFetchOperationBase::~UrlFetchOperationBase() {}
 
 void UrlFetchOperationBase::Start(const std::string& auth_token,
                                   const std::string& custom_user_agent) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(url_request_context_getter_);
   DCHECK(!auth_token.empty());
 
   GURL url = GetURL();
@@ -104,7 +111,7 @@ void UrlFetchOperationBase::Start(const std::string& auth_token,
 
   url_fetcher_.reset(
       URLFetcher::Create(url, GetRequestType(), this));
-  url_fetcher_->SetRequestContext(g_browser_process->system_request_context());
+  url_fetcher_->SetRequestContext(url_request_context_getter_);
   // Always set flags to neither send nor save cookies.
   url_fetcher_->SetLoadFlags(
       net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES |
@@ -242,9 +249,11 @@ UrlFetchOperationBase::GetWeakPtr() {
 
 //============================ EntryActionOperation ============================
 
-EntryActionOperation::EntryActionOperation(OperationRegistry* registry,
-                                           const EntryActionCallback& callback)
-    : UrlFetchOperationBase(registry),
+EntryActionOperation::EntryActionOperation(
+    OperationRegistry* registry,
+    net::URLRequestContextGetter* url_request_context_getter,
+    const EntryActionCallback& callback)
+    : UrlFetchOperationBase(registry, url_request_context_getter),
       callback_(callback) {
   DCHECK(!callback_.is_null());
 }
@@ -264,9 +273,11 @@ void EntryActionOperation::RunCallbackOnPrematureFailure(GDataErrorCode code) {
 
 //============================== GetDataOperation ==============================
 
-GetDataOperation::GetDataOperation(OperationRegistry* registry,
-                                   const GetDataCallback& callback)
-    : UrlFetchOperationBase(registry),
+GetDataOperation::GetDataOperation(
+    OperationRegistry* registry,
+    net::URLRequestContextGetter* url_request_context_getter,
+    const GetDataCallback& callback)
+    : UrlFetchOperationBase(registry, url_request_context_getter),
       callback_(callback),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   DCHECK(!callback_.is_null());

@@ -13,6 +13,10 @@
 #include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
 #include "net/base/io_buffer.h"
 
+namespace net {
+class URLRequestContextGetter;
+}  // namespace net
+
 namespace google_apis {
 
 class GDataWapiUrlGenerator;
@@ -45,14 +49,16 @@ class GetDocumentsOperation : public GetDataOperation {
   //
   // callback:
   //   Called once the feed is fetched. Must not be null.
-  GetDocumentsOperation(OperationRegistry* registry,
-                        const GDataWapiUrlGenerator& url_generator,
-                        const GURL& override_url,
-                        int start_changestamp,
-                        const std::string& search_string,
-                        bool shared_with_me,
-                        const std::string& directory_resource_id,
-                        const GetDataCallback& callback);
+  GetDocumentsOperation(
+      OperationRegistry* registry,
+      net::URLRequestContextGetter* url_request_context_getter,
+      const GDataWapiUrlGenerator& url_generator,
+      const GURL& override_url,
+      int start_changestamp,
+      const std::string& search_string,
+      bool shared_with_me,
+      const std::string& directory_resource_id,
+      const GetDataCallback& callback);
   virtual ~GetDocumentsOperation();
 
  protected:
@@ -76,10 +82,12 @@ class GetDocumentsOperation : public GetDataOperation {
 class GetDocumentEntryOperation : public GetDataOperation {
  public:
   // |callback| must not be null.
-  GetDocumentEntryOperation(OperationRegistry* registry,
-                            const GDataWapiUrlGenerator& url_generator,
-                            const std::string& resource_id,
-                            const GetDataCallback& callback);
+  GetDocumentEntryOperation(
+      OperationRegistry* registry,
+      net::URLRequestContextGetter* url_request_context_getter,
+      const GDataWapiUrlGenerator& url_generator,
+      const std::string& resource_id,
+      const GetDataCallback& callback);
   virtual ~GetDocumentEntryOperation();
 
  protected:
@@ -100,9 +108,11 @@ class GetDocumentEntryOperation : public GetDataOperation {
 class GetAccountMetadataOperation : public GetDataOperation {
  public:
   // |callback| must not be null.
-  GetAccountMetadataOperation(OperationRegistry* registry,
-                              const GDataWapiUrlGenerator& url_generator,
-                              const GetDataCallback& callback);
+  GetAccountMetadataOperation(
+      OperationRegistry* registry,
+      net::URLRequestContextGetter* url_request_context_getter,
+      const GDataWapiUrlGenerator& url_generator,
+      const GetDataCallback& callback);
   virtual ~GetAccountMetadataOperation();
 
  protected:
@@ -143,6 +153,7 @@ class DownloadFileOperation : public UrlFetchOperationBase {
   //
   DownloadFileOperation(
       OperationRegistry* registry,
+      net::URLRequestContextGetter* url_request_context_getter,
       const DownloadActionCallback& download_action_callback,
       const GetContentCallback& get_content_callback,
       const GURL& content_url,
@@ -178,9 +189,11 @@ class DownloadFileOperation : public UrlFetchOperationBase {
 class DeleteDocumentOperation : public EntryActionOperation {
  public:
   // |callback| must not be null.
-  DeleteDocumentOperation(OperationRegistry* registry,
-                          const EntryActionCallback& callback,
-                          const GURL& edit_url);
+  DeleteDocumentOperation(
+      OperationRegistry* registry,
+      net::URLRequestContextGetter* url_request_context_getter,
+      const EntryActionCallback& callback,
+      const GURL& edit_url);
   virtual ~DeleteDocumentOperation();
 
  protected:
@@ -204,11 +217,13 @@ class CreateDirectoryOperation : public GetDataOperation {
   // |parent_content_url|. If this parameter is empty, a new directory will
   // be created in the root directory.
   // |callback| must not be null.
-  CreateDirectoryOperation(OperationRegistry* registry,
-                           const GDataWapiUrlGenerator& url_generator,
-                           const GetDataCallback& callback,
-                           const GURL& parent_content_url,
-                           const FilePath::StringType& directory_name);
+  CreateDirectoryOperation(
+      OperationRegistry* registry,
+      net::URLRequestContextGetter* url_request_context_getter,
+      const GDataWapiUrlGenerator& url_generator,
+      const GetDataCallback& callback,
+      const GURL& parent_content_url,
+      const FilePath::StringType& directory_name);
   virtual ~CreateDirectoryOperation();
 
  protected:
@@ -234,11 +249,13 @@ class CreateDirectoryOperation : public GetDataOperation {
 class CopyDocumentOperation : public GetDataOperation {
  public:
   // |callback| must not be null.
-  CopyDocumentOperation(OperationRegistry* registry,
-                        const GDataWapiUrlGenerator& url_generator,
-                        const GetDataCallback& callback,
-                        const std::string& resource_id,
-                        const FilePath::StringType& new_name);
+  CopyDocumentOperation(
+      OperationRegistry* registry,
+      net::URLRequestContextGetter* url_request_context_getter,
+      const GDataWapiUrlGenerator& url_generator,
+      const GetDataCallback& callback,
+      const std::string& resource_id,
+      const FilePath::StringType& new_name);
   virtual ~CopyDocumentOperation();
 
  protected:
@@ -262,10 +279,12 @@ class CopyDocumentOperation : public GetDataOperation {
 class RenameResourceOperation : public EntryActionOperation {
  public:
   // |callback| must not be null.
-  RenameResourceOperation(OperationRegistry* registry,
-                          const EntryActionCallback& callback,
-                          const GURL& edit_url,
-                          const FilePath::StringType& new_name);
+  RenameResourceOperation(
+      OperationRegistry* registry,
+      net::URLRequestContextGetter* url_request_context_getter,
+      const EntryActionCallback& callback,
+      const GURL& edit_url,
+      const FilePath::StringType& new_name);
   virtual ~RenameResourceOperation();
 
  protected:
@@ -290,10 +309,12 @@ class RenameResourceOperation : public EntryActionOperation {
 class AuthorizeAppOperation : public GetDataOperation {
  public:
   // |callback| must not be null.
-  AuthorizeAppOperation(OperationRegistry* registry,
-                        const GetDataCallback& callback,
-                        const GURL& edit_url,
-                        const std::string& app_id);
+  AuthorizeAppOperation(
+      OperationRegistry* registry,
+      net::URLRequestContextGetter* url_request_context_getter,
+      const GetDataCallback& callback,
+      const GURL& edit_url,
+      const std::string& app_id);
   virtual ~AuthorizeAppOperation();
 
  protected:
@@ -324,11 +345,13 @@ class AuthorizeAppOperation : public GetDataOperation {
 class AddResourceToDirectoryOperation : public EntryActionOperation {
  public:
   // |callback| must not be null.
-  AddResourceToDirectoryOperation(OperationRegistry* registry,
-                                  const GDataWapiUrlGenerator& url_generator,
-                                  const EntryActionCallback& callback,
-                                  const GURL& parent_content_url,
-                                  const GURL& edit_url);
+  AddResourceToDirectoryOperation(
+      OperationRegistry* registry,
+      net::URLRequestContextGetter* url_request_context_getter,
+      const GDataWapiUrlGenerator& url_generator,
+      const EntryActionCallback& callback,
+      const GURL& parent_content_url,
+      const GURL& edit_url);
   virtual ~AddResourceToDirectoryOperation();
 
  protected:
@@ -353,10 +376,12 @@ class AddResourceToDirectoryOperation : public EntryActionOperation {
 class RemoveResourceFromDirectoryOperation : public EntryActionOperation {
  public:
   // |callback| must not be null.
-  RemoveResourceFromDirectoryOperation(OperationRegistry* registry,
-                                       const EntryActionCallback& callback,
-                                       const GURL& parent_content_url,
-                                       const std::string& resource_id);
+  RemoveResourceFromDirectoryOperation(
+      OperationRegistry* registry,
+      net::URLRequestContextGetter* url_request_context_getter,
+      const EntryActionCallback& callback,
+      const GURL& parent_content_url,
+      const std::string& resource_id);
   virtual ~RemoveResourceFromDirectoryOperation();
 
  protected:
@@ -422,9 +447,11 @@ class InitiateUploadOperation : public UrlFetchOperationBase {
   // |callback| will be called with the upload URL, where upload data is
   // uploaded to with ResumeUploadOperation.
   // |callback| must not be null.
-  InitiateUploadOperation(OperationRegistry* registry,
-                          const InitiateUploadCallback& callback,
-                          const InitiateUploadParams& params);
+  InitiateUploadOperation(
+      OperationRegistry* registry,
+      net::URLRequestContextGetter* url_request_context_getter,
+      const InitiateUploadCallback& callback,
+      const InitiateUploadParams& params);
   virtual ~InitiateUploadOperation();
 
  protected:
@@ -515,9 +542,11 @@ class ResumeUploadOperation : public UrlFetchOperationBase {
   // If upload is complete, |code| is set to HTTP_CREATED for a new file, or
   // HTTP_SUCCES for an existing file. |new_entry| contains the document
   // entry of the newly uploaded file.
-  ResumeUploadOperation(OperationRegistry* registry,
-                        const ResumeUploadCallback& callback,
-                        const ResumeUploadParams& params);
+  ResumeUploadOperation(
+      OperationRegistry* registry,
+      net::URLRequestContextGetter* url_request_context_getter,
+      const ResumeUploadCallback& callback,
+      const ResumeUploadParams& params);
   virtual ~ResumeUploadOperation();
 
  protected:
