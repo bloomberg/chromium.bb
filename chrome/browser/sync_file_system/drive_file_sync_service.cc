@@ -1479,9 +1479,9 @@ bool DriveFileSyncService::GetOriginForEntry(
        itr != entry.links().end(); ++itr) {
     if ((*itr)->type() != google_apis::Link::LINK_PARENT)
       continue;
-    GURL origin(UTF16ToUTF8((*itr)->title()));
-    if (!origin.is_valid())
-      continue;
+    GURL origin(DriveFileSyncClient::DirectoryTitleToOrigin(
+        UTF16ToUTF8((*itr)->title())));
+    DCHECK(origin.is_valid());
 
     if (!metadata_store_->IsBatchSyncOrigin(origin) &&
         !metadata_store_->IsIncrementalSyncOrigin(origin))
