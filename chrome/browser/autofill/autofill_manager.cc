@@ -586,13 +586,16 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
                                              const FormData& form,
                                              const FormFieldData& field,
                                              int unique_id) {
+  RenderViewHost* host = NULL;
   const FormGroup* form_group = NULL;
   size_t variant = 0;
-  RenderViewHost* host = NULL;
   FormStructure* form_structure = NULL;
   AutofillField* autofill_field = NULL;
-  if (!GetProfileOrCreditCard(unique_id, &form_group, &variant) ||
-      !GetHost(&host) ||
+  // NOTE: GetHost may invalidate |form_group| because it causes the
+  // PersonalDataManager to reload Mac address book entries. Thus it must
+  // come before GetProfileOrCreditCard.
+  if (!GetHost(&host) ||
+      !GetProfileOrCreditCard(unique_id, &form_group, &variant) ||
       !GetCachedFormAndField(form, field, &form_structure, &autofill_field))
     return;
 
