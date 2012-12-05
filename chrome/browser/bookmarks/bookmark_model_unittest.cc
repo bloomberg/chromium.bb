@@ -516,6 +516,22 @@ TEST_F(BookmarkModelTest, Move) {
   EXPECT_EQ(0, root->child_count());
 }
 
+TEST_F(BookmarkModelTest, NonMovingMoveCall) {
+  const BookmarkNode* root = model_.bookmark_bar_node();
+  const string16 title(ASCIIToUTF16("foo"));
+  const GURL url("http://foo.com");
+  const base::Time old_date(base::Time::Now() - base::TimeDelta::FromDays(1));
+
+  const BookmarkNode* node = model_.AddURL(root, 0, title, url);
+  model_.SetDateFolderModified(root, old_date);
+
+  // Since |node| is already at the index 0 of |root|, this is no-op.
+  model_.Move(node, root, 0);
+
+  // Check that the modification date is kept untouched.
+  EXPECT_EQ(old_date, root->date_folder_modified());
+}
+
 TEST_F(BookmarkModelTest, Copy) {
   const BookmarkNode* root = model_.bookmark_bar_node();
   static const std::string model_string("a 1:[ b c ] d 2:[ e f g ] h ");

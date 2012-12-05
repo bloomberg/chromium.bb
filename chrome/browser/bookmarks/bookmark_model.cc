@@ -310,8 +310,6 @@ void BookmarkModel::Move(const BookmarkNode* node,
     return;
   }
 
-  SetDateFolderModified(new_parent, Time::Now());
-
   const BookmarkNode* old_parent = node->parent();
   int old_index = old_parent->GetIndexOf(node);
 
@@ -320,6 +318,8 @@ void BookmarkModel::Move(const BookmarkNode* node,
     // Node is already in this position, nothing to do.
     return;
   }
+
+  SetDateFolderModified(new_parent, Time::Now());
 
   if (old_parent == new_parent && index > old_index)
     index--;
