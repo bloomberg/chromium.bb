@@ -225,8 +225,11 @@ void BalloonViewImpl::RepositionToBalloon() {
 }
 
 void BalloonViewImpl::Update() {
-  DCHECK(html_contents_.get()) << "BalloonView::Update called before Show";
-  if (!html_contents_->web_contents())
+  // Tls might get called before html_contents_ is set in Show() if more than
+  // one update with the same replace_id occurs, or if an update occurs after
+  // the ballon has been closed (e.g. during shutdown) but before this has been
+  // destroyed.
+  if (!html_contents_.get() || !html_contents_->web_contents())
     return;
   html_contents_->web_contents()->GetController().LoadURL(
       balloon_->notification().content_url(), content::Referrer(),
