@@ -188,8 +188,6 @@
         'util/logging.h',
         'util/nigori.cc',
         'util/nigori.h',
-        'util/session_utils_android.cc',
-        'util/session_utils_android.h',
         'util/time.cc',
         'util/time.h',
       ],

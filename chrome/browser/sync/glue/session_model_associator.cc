@@ -48,14 +48,25 @@
 #include "base/linux_util.h"
 #elif defined(OS_WIN)
 #include <windows.h>
-#elif defined(OS_ANDROID)
-#include "sync/util/session_utils_android.h"
 #endif
 
 using content::BrowserThread;
 using content::NavigationEntry;
 using prefs::kSyncSessionsGUID;
 using syncer::SESSIONS;
+
+namespace {
+// Given a transaction, returns the GUID-based string that should be used for
+// |current_machine_tag_|.
+std::string GetMachineTagFromTransaction(
+    syncer::WriteTransaction* trans) {
+  syncer::syncable::Directory* dir = trans->GetWrappedWriteTrans()->directory();
+  std::string machine_tag = "session_sync";
+  machine_tag.append(dir->cache_guid());
+  return machine_tag;
+}
+
+}  // namespace
 
 namespace browser_sync {
 
@@ -643,6 +654,11 @@ syncer::SyncError SessionModelAssociator::AssociateModels(
 
       local_session_syncid_ = write_node.GetId();
     }
+#if defined(OS_ANDROID)
+    std::string transaction_tag = GetMachineTagFromTransaction(&trans);
+    if (current_machine_tag_.compare(transaction_tag) != 0)
+      DeleteForeignSession(transaction_tag);
+#endif
   }
 
   // Check if anything has changed on the client side.
@@ -690,19 +706,7 @@ void SessionModelAssociator::InitializeCurrentMachineTag(
     DVLOG(1) << "Restoring persisted session sync guid: "
              << persisted_guid;
   } else {
-    syncer::syncable::Directory* dir =
-        trans->GetWrappedWriteTrans()->directory();
-    current_machine_tag_ = "session_sync";
-#if defined(OS_ANDROID)
-    const std::string android_id = syncer::internal::GetAndroidId();
-    // There are reports that sometimes the android_id can't be read. Those
-    // are supposed to be fixed as of Gingerbread, but if it happens we fall
-    // back to use the same GUID generation as on other platforms.
-    current_machine_tag_.append(android_id.empty() ?
-                                    dir->cache_guid() : android_id);
-#else
-    current_machine_tag_.append(dir->cache_guid());
-#endif
+    current_machine_tag_ = GetMachineTagFromTransaction(trans);
     DVLOG(1) << "Creating session sync guid: " << current_machine_tag_;
     if (pref_service_)
       pref_service_->SetString(kSyncSessionsGUID, current_machine_tag_);

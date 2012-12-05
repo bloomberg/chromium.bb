@@ -22,7 +22,7 @@
 #elif defined(OS_WIN)
 #include "sync/util/get_session_name_win.h"
 #elif defined(OS_ANDROID)
-#include "sync/util/session_utils_android.h"
+#include "base/android/build_info.h"
 #endif
 
 namespace syncer {
@@ -53,7 +53,9 @@ std::string GetSessionNameSynchronously() {
 #elif defined(OS_WIN)
   session_name = internal::GetComputerName();
 #elif defined(OS_ANDROID)
-  session_name = internal::GetModel();
+  base::android::BuildInfo* android_build_info =
+      base::android::BuildInfo::GetInstance();
+  session_name = android_build_info->model();
 #endif
 
   if (session_name == "Unknown" || session_name.empty())
