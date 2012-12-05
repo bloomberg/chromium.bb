@@ -109,6 +109,13 @@ bool MockPeerConnectionImpl::SendDtmf(
   return false;
 }
 
+bool MockPeerConnectionImpl::GetStats(
+    webrtc::StatsObserver* observer,
+    webrtc::MediaStreamTrackInterface* track) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 void MockPeerConnectionImpl::RemoveStream(
     MediaStreamInterface* local_stream) {
   DCHECK_EQ(stream_label_, local_stream->label());
