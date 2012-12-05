@@ -4049,12 +4049,6 @@
    fun:_ZN17PluginLoaderPosix19LoadPluginsInternalEv
 }
 {
-   bug_103192
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN17PluginServiceImpl10GetPluginsERKN4base8CallbackIFvRKSt6vectorIN6webkit13WebPluginInfoESaIS4_EEEEE
-}
-{
    bug_103467
    Memcheck:Uninitialized
    fun:_ZNK7WebCore12NamedNodeMap20mappedMapsEquivalentEPKS0_
