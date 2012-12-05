@@ -376,8 +376,9 @@ void SyncFileSystemService::DidProcessRemoteChange(
     fileapi::SyncStatusCode status,
     const FileSystemURL& url,
     fileapi::SyncOperationType type) {
-  DVLOG(1) << "DidProcessRemoteChange: "
+  DVLOG(1) << "DidProcessRemoteChange:"
            << " status=" << status
+           << " (" << SyncStatusCodeToString(status) << ")"
            << " url=" << url.DebugString()
            << " operation_type=" << type;
   DCHECK(remote_sync_running_);
@@ -413,8 +414,9 @@ void SyncFileSystemService::DidProcessRemoteChange(
 
 void SyncFileSystemService::DidProcessLocalChange(
     fileapi::SyncStatusCode status, const FileSystemURL& url) {
-  DVLOG(1) << "DidProcessLocalChange: "
+  DVLOG(1) << "DidProcessLocalChange:"
            << " status=" << status
+           << " (" << SyncStatusCodeToString(status) << ")"
            << " url=" << url.DebugString();
   DCHECK(local_sync_running_);
   local_sync_running_ = false;

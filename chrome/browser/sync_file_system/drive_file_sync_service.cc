@@ -92,7 +92,7 @@ class DriveFileSyncService::TaskToken {
     task_type_ = task_type;
     description_ = description;
 
-    DVLOG(1) << "Token updated: " << description_
+    DVLOG(2) << "Token updated: " << description_
              << " " << location_.ToString();
   }
 
@@ -367,6 +367,9 @@ void DriveFileSyncService::ProcessRemoteChange(
   DCHECK(ContainsKey(*path_to_change, path));
   const RemoteChange& remote_change = (*path_to_change)[path];
 
+  DVLOG(1) << "ProcessRemoteChange for " << url.DebugString()
+           << " remote_change:" << remote_change.change.DebugString();
+
   scoped_ptr<ProcessRemoteChangeParam> param(new ProcessRemoteChangeParam(
       token.Pass(), processor, remote_change, callback));
   processor->PrepareForProcessRemoteChange(
@@ -587,8 +590,9 @@ void DriveFileSyncService::NotifyTaskDone(fileapi::SyncStatusCode status,
   token_ = token.Pass();
 
   if (token_->task_type() != TASK_TYPE_NONE) {
-    DVLOG(1) << "NotifyTaskDone: " << token_->description()
+    DVLOG(2) << "NotifyTaskDone: " << token_->description()
              << ": finished with status=" << status
+             << " (" << SyncStatusCodeToString(status) << ")"
              << " " << token_->location().ToString();
 
     RemoteServiceState old_state = state_;
@@ -1418,6 +1422,9 @@ void DriveFileSyncService::FetchChangesForIncrementalSync() {
     return;
   }
 
+  DVLOG(1) << "FetchChangesForIncrementalSync (start_changestamp:"
+           << (largest_fetched_changestamp_ + 1) << ")";
+
   sync_client_->ListChanges(
       largest_fetched_changestamp_ + 1,
       base::Bind(&DriveFileSyncService::DidFetchChangesForIncrementalSync,
@@ -1438,6 +1445,7 @@ void DriveFileSyncService::DidFetchChangesForIncrementalSync(
   for (iterator itr = changes->entries().begin();
        itr != changes->entries().end(); ++itr) {
     const google_apis::DocumentEntry& entry = **itr;
+    DVLOG(3) << " change:" << entry.title();
     GURL origin;
     if (!GetOriginForEntry(entry, &origin))
       continue;
