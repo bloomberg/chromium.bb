@@ -233,17 +233,9 @@ TrayAccessibility::~TrayAccessibility() {
 }
 
 bool TrayAccessibility::GetInitialVisibility() {
-  ShellDelegate* delegate = Shell::GetInstance()->delegate();
-  // Always shows this on the login screen.
-  if (login_ == user::LOGGED_IN_NONE)
-    return true;
-
-  if (delegate->ShouldAlwaysShowAccessibilityMenu() ||
-      IsAnyAccessibilityFeatureEnabled()) {
-    return true;
-  }
-
-  return false;
+  // Shows accessibility icon if any accessibility feature is enabled.
+  // Otherwise, doen't show it.
+  return IsAnyAccessibilityFeatureEnabled();
 }
 
 views::View* TrayAccessibility::CreateDefaultView(user::LoginStatus status) {
@@ -251,7 +243,15 @@ views::View* TrayAccessibility::CreateDefaultView(user::LoginStatus status) {
 
   login_ = status;
 
-  if (!GetInitialVisibility())
+  // Shows accessibility menu if:
+  // - on login screen (not logged in);
+  // - "Enable accessibility menu" on chrome://settings is checked;
+  // - or any of accessibility features is enabled
+  // Otherwise, not shows it.
+  ShellDelegate* delegate = Shell::GetInstance()->delegate();
+  if (login_ != user::LOGGED_IN_NONE &&
+      !delegate->ShouldAlwaysShowAccessibilityMenu() &&
+      !IsAnyAccessibilityFeatureEnabled())
     return NULL;
 
   CHECK(default_ == NULL);
