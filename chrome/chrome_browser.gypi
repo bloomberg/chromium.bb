@@ -2584,6 +2584,7 @@
                 ['exclude', '^browser/lifetime/application_lifetime_win.cc'],
               ],
               'dependencies': [
+                'launcher_support',
                 '../ui/metro_viewer/metro_viewer.gyp:metro_viewer',
               ],
             }],
