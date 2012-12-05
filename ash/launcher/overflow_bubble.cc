@@ -103,14 +103,11 @@ void OverflowBubbleView::InitOverflowBubble(LauncherDelegate* delegate,
   SetPaintToLayer(true);
   SetFillsBoundsOpaquely(false);
   layer()->SetMasksToBounds(true);
-  ShelfAlignment shelf_alignment = GetShelfLayoutManagerForLauncher()->
-      GetAlignment();
-
   launcher_view_ = new LauncherView(model, delegate, NULL);
   launcher_view_->set_first_visible_index(overflow_start_index);
   launcher_view_->set_leading_inset(kLauncherViewLeadingInset);
   launcher_view_->Init();
-  launcher_view_->SetAlignment(shelf_alignment);
+  launcher_view_->OnShelfAlignmentChanged();
   AddChildView(launcher_view_);
 
   set_anchor_view(anchor);

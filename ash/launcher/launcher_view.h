@@ -61,7 +61,7 @@ class ASH_EXPORT LauncherView : public views::View,
 
   void Init();
 
-  void SetAlignment(ShelfAlignment alignment);
+  void OnShelfAlignmentChanged();
 
   // Returns the ideal bounds of the specified item, or an empty rect if id
   // isn't know.
@@ -260,8 +260,6 @@ class ASH_EXPORT LauncherView : public views::View,
 #endif
 
   ObserverList<LauncherIconObserver> observers_;
-
-  ShelfAlignment alignment_;
 
   // Amount content is inset on the left edge (or top edge for vertical
   // alignment).

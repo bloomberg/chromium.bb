@@ -264,7 +264,7 @@ internal::FocusCycler* Launcher::GetFocusCycler() {
 
 void Launcher::SetAlignment(ShelfAlignment alignment) {
   alignment_ = alignment;
-  launcher_view_->SetAlignment(alignment);
+  launcher_view_->OnShelfAlignmentChanged();
   // ShelfLayoutManager will resize the launcher.
 }
 

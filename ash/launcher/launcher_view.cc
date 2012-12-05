@@ -318,10 +318,7 @@ void LauncherView::Init() {
   // We'll layout when our bounds change.
 }
 
-void LauncherView::SetAlignment(ShelfAlignment alignment) {
-  if (alignment_ == alignment)
-    return;
-  alignment_ = alignment;
+void LauncherView::OnShelfAlignmentChanged() {
   UpdateFirstButtonPadding();
   overflow_button_->OnShelfAlignmentChanged();
   LayoutToIdealBounds();
