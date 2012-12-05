@@ -11,16 +11,21 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -51,6 +56,10 @@ using content::BrowserThread;
 using content::NavigationEntry;
 
 namespace {
+
+bool IsGoogleUrl(const GURL& url) {
+  return google_util::IsGoogleHomePageUrl(url.possibly_invalid_spec());
+}
 
 bool IsBrandOrganic(const std::string& brand) {
   return brand.empty() || google_util::IsOrganic(brand);
@@ -189,6 +198,48 @@ bool RLZTracker::InitRlzDelayed(bool first_run,
                              is_google_homepage, is_google_in_startpages);
 }
 
+// static
+bool RLZTracker::InitRlzFromProfileDelayed(Profile* profile,
+                                           bool first_run,
+                                           int delay) {
+  bool is_google_default_search = false;
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(profile);
+  if (template_url_service) {
+    const TemplateURL* url_template =
+        template_url_service->GetDefaultSearchProvider();
+    is_google_default_search =
+        url_template && url_template->url_ref().HasGoogleBaseURLs();
+  }
+
+  PrefService* pref_service = profile->GetPrefs();
+  bool is_google_homepage = google_util::IsGoogleHomePageUrl(
+      pref_service->GetString(prefs::kHomePage));
+
+  bool is_google_in_startpages = false;
+  SessionStartupPref session_startup_prefs =
+      StartupBrowserCreator::GetSessionStartupPref(
+          *CommandLine::ForCurrentProcess(), profile);
+  if (session_startup_prefs.type == SessionStartupPref::URLS) {
+    is_google_in_startpages = std::count_if(session_startup_prefs.urls.begin(),
+                                            session_startup_prefs.urls.end(),
+                                            IsGoogleUrl) > 0;
+  }
+
+  if (!InitRlzDelayed(first_run, delay,
+                      is_google_default_search, is_google_homepage,
+                      is_google_in_startpages)) {
+    return false;
+  }
+
+  // Prime the RLZ cache for the home page access point so that its avaiable
+  // for the startup page if needed (i.e., when the startup page is set to
+  // the home page).
+  GetAccessPointRlz(CHROME_HOME_PAGE, NULL);
+
+  return true;
+}
+
 bool RLZTracker::Init(bool first_run,
                       int delay,
                       bool is_google_default_search,
@@ -217,8 +268,7 @@ bool RLZTracker::Init(bool first_run,
   delay = (delay < kMinDelay) ? kMinDelay : delay;
   delay = (delay > kMaxDelay) ? kMaxDelay : delay;
 
-  std::string brand;
-  if (google_util::GetBrand(&brand) && !IsBrandOrganic(brand)) {
+  if (google_util::GetBrand(&brand_) && !IsBrandOrganic(brand_)) {
     // Register for notifications from the omnibox so that we can record when
     // the user performs a first search.
     registrar_.Add(this, chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
@@ -233,6 +283,7 @@ bool RLZTracker::Init(bool first_run,
     registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
                    content::NotificationService::AllSources());
   }
+  google_util::GetReactivationBrand(&reactivation_brand_);
 
   rlz_lib::SetURLRequestContext(g_browser_process->system_request_context());
   ScheduleDelayedInit(delay);
@@ -256,8 +307,7 @@ void RLZTracker::DelayedInit() {
 
   // For organic brandcodes do not use rlz at all. Empty brandcode usually
   // means a chromium install. This is ok.
-  std::string brand;
-  if (google_util::GetBrand(&brand) && !IsBrandOrganic(brand)) {
+  if (!IsBrandOrganic(brand_)) {
     RecordProductEvents(first_run_, is_google_default_search_,
                         is_google_homepage_, is_google_in_startpages_,
                         already_ran_, omnibox_used_, homepage_used_);
@@ -266,10 +316,8 @@ void RLZTracker::DelayedInit() {
 
   // If chrome has been reactivated, record the events for this brand
   // as well.
-  std::string reactivation_brand;
-  if (google_util::GetReactivationBrand(&reactivation_brand) &&
-      !IsBrandOrganic(reactivation_brand)) {
-    rlz_lib::SupplementaryBranding branding(reactivation_brand.c_str());
+  if (!IsBrandOrganic(reactivation_brand_)) {
+    rlz_lib::SupplementaryBranding branding(reactivation_brand_.c_str());
     RecordProductEvents(first_run_, is_google_default_search_,
                         is_google_homepage_, is_google_in_startpages_,
                         already_ran_, omnibox_used_, homepage_used_);
@@ -298,9 +346,7 @@ void RLZTracker::PingNowImpl() {
   string16 referral;
   GoogleUpdateSettings::GetReferral(&referral);
 
-  std::string brand;
-  if (google_util::GetBrand(&brand) && !IsBrandOrganic(brand) &&
-      SendFinancialPing(brand, lang, referral)) {
+  if (!IsBrandOrganic(brand_) && SendFinancialPing(brand_, lang, referral)) {
     GoogleUpdateSettings::ClearReferral();
 
     {
@@ -313,11 +359,9 @@ void RLZTracker::PingNowImpl() {
     GetAccessPointRlz(RLZTracker::CHROME_HOME_PAGE, NULL);
   }
 
-  std::string reactivation_brand;
-  if (google_util::GetReactivationBrand(&reactivation_brand) &&
-      !IsBrandOrganic(reactivation_brand)) {
-    rlz_lib::SupplementaryBranding branding(reactivation_brand.c_str());
-    SendFinancialPing(reactivation_brand, lang, referral);
+  if (!IsBrandOrganic(reactivation_brand_)) {
+    rlz_lib::SupplementaryBranding branding(reactivation_brand_.c_str());
+    SendFinancialPing(reactivation_brand_, lang, referral);
   }
 }
 
@@ -375,9 +419,8 @@ bool RLZTracker::RecordProductEventImpl(rlz_lib::Product product,
   bool ret = rlz_lib::RecordProductEvent(product, point, event_id);
 
   // If chrome has been reactivated, record the event for this brand as well.
-  std::string reactivation_brand;
-  if (google_util::GetReactivationBrand(&reactivation_brand)) {
-    rlz_lib::SupplementaryBranding branding(reactivation_brand.c_str());
+  if (!reactivation_brand_.empty()) {
+    rlz_lib::SupplementaryBranding branding(reactivation_brand_.c_str());
     ret &= rlz_lib::RecordProductEvent(product, point, event_id);
   }
 

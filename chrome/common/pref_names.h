@@ -799,6 +799,11 @@ extern const char kNetworkProfileLastWarningTime[];
 
 extern const char kLastPolicyStatisticsUpdate[];
 
+#if defined(OS_CHROMEOS)
+extern const char kRLZBrand[];
+extern const char kRLZEnabled[];
+#endif
+
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_

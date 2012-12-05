@@ -8,7 +8,6 @@
 #include <gtk/gtk.h>
 #endif
 
-#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -442,12 +441,6 @@ void LaunchDevToolsHandlerIfNeeded(Profile* profile,
     }
   }
 }
-
-#if defined(ENABLE_RLZ)
-bool IsGoogleUrl(const GURL& url) {
-  return google_util::IsGoogleHomePageUrl(url.possibly_invalid_spec());
-}
-#endif
 
 }  // namespace
 
@@ -1226,44 +1219,13 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 #endif  // OS_WIN
 
 #if defined(ENABLE_RLZ) && !defined(OS_CHROMEOS)
-  // TODO(ivankr): do this on user login on ChromeOS.
   // Init the RLZ library. This just binds the dll and schedules a task on the
   // file thread to be run sometime later. If this is the first run we record
   // the installation event.
-  bool is_google_default_search = false;
-  TemplateURLService* template_url_service =
-      TemplateURLServiceFactory::GetForProfile(profile_);
-  if (template_url_service) {
-    const TemplateURL* url_template =
-        template_url_service->GetDefaultSearchProvider();
-    is_google_default_search =
-        url_template && url_template->url_ref().HasGoogleBaseURLs();
-  }
-
   PrefService* pref_service = profile_->GetPrefs();
-  bool is_google_homepage = google_util::IsGoogleHomePageUrl(
-      pref_service->GetString(prefs::kHomePage));
-
-  bool is_google_in_startpages = false;
-  SessionStartupPref session_startup_prefs =
-      StartupBrowserCreator::GetSessionStartupPref(parsed_command_line(),
-                                                   profile_);
-  if (session_startup_prefs.type == SessionStartupPref::URLS) {
-    is_google_in_startpages = std::count_if(session_startup_prefs.urls.begin(),
-                                            session_startup_prefs.urls.end(),
-                                            IsGoogleUrl) > 0;
-  }
-
   int ping_delay = is_first_run_ ? master_prefs_->ping_delay :
       pref_service->GetInteger(first_run::GetPingDelayPrefName().c_str());
-  RLZTracker::InitRlzDelayed(is_first_run_, ping_delay,
-                             is_google_default_search, is_google_homepage,
-                             is_google_in_startpages);
-
-  // Prime the RLZ cache for the home page access point so that its avaiable
-  // for the startup page if needed (i.e., when the startup page is set to
-  // the home page).
-  RLZTracker::GetAccessPointRlz(RLZTracker::CHROME_HOME_PAGE, NULL);
+  RLZTracker::InitRlzFromProfileDelayed(profile_, is_first_run_, ping_delay);
 #endif  // defined(ENABLE_RLZ) && !defined(OS_CHROMEOS)
 
   // Configure modules that need access to resources.

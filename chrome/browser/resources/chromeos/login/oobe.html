@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<html i18n-values="dir:textdirection;oobe:oobeType;screen:screenType;lockanimations:lockAnimationsType">
+<html i18n-values="dir:textdirection;oobe:oobeType;screen:screenType;lockanimations:lockAnimationsType;rlz:rlzEnabled">
 <head>
 <title i18n-content="title"></title>
 <link rel="stylesheet" href="chrome://resources/css/dialogs.css"></link>
@@ -84,23 +84,33 @@
       <div id="progress-dots" class="down"></div>
     </div>
     <div id="security-info">
-      <a id="security-link" href="#" i18n-content="eulaSystemSecuritySetting">
+      <a id="security-link" href="#"
+         i18n-content="eulaSystemInstallationSettings">
       </a>
     </div>
   </div>
   <div id="popup-overlay" hidden>
-    <div id="security-info-popup">
-      <h1 i18n-content="eulaSystemSecuritySetting"></h1>
+    <div id="installation-settings-popup">
+      <h1 i18n-content="eulaSystemInstallationSettings"></h1>
       <div class="popup-content-area">
-        <p i18n-content="eulaTpmDesc"></p>
-        <p i18n-content="eulaTpmKeyDesc"></p>
-        <div id="tpm-busy">
-          <div id="spinner" class="inline-spinner"></div>
-          <span i18n-content="eulaTpmBusy"></span>
+        <div id="tpm-settings">
+          <p i18n-content="eulaTpmDesc"></p>
+          <p i18n-content="eulaTpmKeyDesc"></p>
+          <div id="tpm-busy">
+            <div id="spinner" class="inline-spinner"></div>
+            <span i18n-content="eulaTpmBusy"></span>
+          </div>
+          <p id="tpm-password"></p>
         </div>
-        <p id="tpm-password" hidden></p>
+        <div id="rlz-settings">
+          <p id="rlz-desc" i18n-content="eulaRlzDesc"></p>
+          <input id="rlz-enable" type="checkbox" checked>
+          <label for="rlz-enable" i18n-content="eulaRlzEnable"></label>
+        </div>
       </div>
-      <button id="security-ok-button" i18n-content="eulaTpmOkButton"></button>
+      <button id="installation-settings-ok-button"
+          i18n-content="eulaSystemInstallationSettingsOkButton">
+      </button>
     </div>
   </div>
   <div id="bubble" class="bubble faded" hidden></div>

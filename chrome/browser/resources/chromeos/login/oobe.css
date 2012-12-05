@@ -138,16 +138,6 @@ html[oobe=new] #inner-container.down {
   -webkit-transform: translateY(50px) rotateX(-2.5deg);
 }
 
-#security-info a,
-#security-tpm a,
-#connect-accessibility a,
-#eula-accessibility a,
-#update-accessibility a,
-#eula a {
-  color: rgb(0, 102, 104);
-  text-decoration: none;
-}
-
 #eula #stats-help-link {
   color: rgb(49, 106, 197);
 }
@@ -780,11 +770,16 @@ html[oobe=old] .step-controls {
 }
 
 .step.loading .step-contents,
-.step.loading .step-controls {
+.step.loading .step-controls,
+.step.loading .step-extra-controls {
   visibility: hidden;
 }
 
 .step:not(.loading) #user-images-loading {
+  visibility: hidden;
+}
+
+.step:not(.loading) #eula-busy {
   visibility: hidden;
 }
 
@@ -854,7 +849,7 @@ html[oobe=old] .step-controls {
 }
 
 /* TODO(nkostylev): Cleanup, security-info - old design,
-   security-tpm - new design. */
+   installation-settings - new design. */
 #security-info {
   bottom: 10px;
   left: 0;
@@ -878,44 +873,32 @@ html[oobe=new] #security-info {
   display: none;
 }
 
-/* TODO(nkostylev): Remove #security-tpm element and rules. */
-html[oobe=old] #security-tpm {
+/* TODO(nkostylev): Remove #security-info element and rules. */
+html[oobe=old] #installation-settings {
   display: none;
 }
 
-#security-tpm a,
-#connect-accessibility a,
-#eula-accessibility a,
-#update-accessibility a {
+#security-info a,
+#eula a,
+.step-extra-controls a {
   color: #8c8c8c;
   font-size: 12px;
+  text-decoration: none;
 }
 
 .step-extra-controls {
   bottom: 26px;
   display: -webkit-box;
-  position: absolute;
-}
-
-#security-tpm {
-  margin-left: 25px;
-}
-
-#connect-accessibility,
-#update-accessibility {
-  bottom: 26px;
-  position: absolute;
-}
-
-html[dir=ltr] #connect-accessibility,
-html[dir=ltr] #update-accessibility,
-html[dir=ltr] .step-extra-controls {
   left: 49px;
+  position: absolute;
 }
 
-html[dir=rtl] #connect-accessibility,
-html[dir=rtl] #update-accessibility,
+.step-extra-controls > *:not(:first-child) {
+  -webkit-margin-start: 25px;
+}
+
 html[dir=rtl] .step-extra-controls {
+  left: auto;
   right: 49px;
 }
 
@@ -1056,7 +1039,7 @@ html[oobe=new] #oem-eula {
   display: none;
 }
 
-#security-info-popup {
+#installation-settings-popup {
   background: white;
   border: 1px solid rgb(188, 193, 208);
   border-radius: 2px;
@@ -1067,7 +1050,7 @@ html[oobe=new] #oem-eula {
   z-index: 10;
 }
 
-#security-info-popup h1 {
+#installation-settings-popup h1 {
   -webkit-padding-end: 24px;
   -webkit-user-select: none;
   background: -webkit-linear-gradient(white, #F8F8F8);
@@ -1083,7 +1066,7 @@ html[oobe=new] #oem-eula {
   padding: 0 20px 60px 20px;
 }
 
-#security-info-popup button {
+#installation-settings-popup button {
   bottom: 20px;
   position: absolute;
   right: 20px;
@@ -1096,6 +1079,15 @@ html[oobe=new] #oem-eula {
 #tpm-password {
   font-weight: bold;
   text-align: center;
+}
+
+html[rlz=disabled] #rlz-settings {
+  display: none;
+}
+
+#rlz-enable {
+  -webkit-margin-end: 10px;
+  -webkit-margin-start: 20px;
 }
 
 [hidden] {

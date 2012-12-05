@@ -23,6 +23,8 @@
 
 #if defined(OS_MACOSX)
 #include "chrome/browser/mac/keystone_glue.h"
+#elif defined(OS_CHROMEOS)
+#include "chrome/browser/google/google_util_chromeos.h"
 #endif
 
 #if defined(GOOGLE_CHROME_BUILD)
@@ -140,6 +142,8 @@ bool GetBrand(std::string* brand) {
 
 #if defined(OS_MACOSX)
   brand->assign(keystone_glue::BrandCode());
+#elif defined(OS_CHROMEOS)
+  brand->assign(google_util::chromeos::GetBrand());
 #else
   brand->clear();
 #endif

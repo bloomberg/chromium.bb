@@ -669,6 +669,8 @@
         'browser/google/google_url_tracker_map_entry.h',
         'browser/google/google_util.cc',
         'browser/google/google_util.h',
+        'browser/google/google_util_chromeos.cc',
+        'browser/google/google_util_chromeos.h',
         'browser/google_apis/auth_service.cc',
         'browser/google_apis/auth_service.h',
         'browser/google_apis/auth_service_observer.h',

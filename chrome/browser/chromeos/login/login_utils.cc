@@ -56,6 +56,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/rlz/rlz.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/token_service.h"
@@ -633,6 +634,14 @@ void LoginUtilsImpl::OnProfileCreated(
       chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
       content::NotificationService::AllSources(),
       content::Details<Profile>(user_profile));
+
+#if defined(ENABLE_RLZ)
+  // Init the RLZ library.
+  int ping_delay = user_profile->GetPrefs()->GetInteger(
+      first_run::GetPingDelayPrefName().c_str());
+  RLZTracker::InitRlzFromProfileDelayed(
+      user_profile, UserManager::Get()->IsCurrentUserNew(), ping_delay);
+#endif
 
   // TODO(altimofeev): This pointer should probably never be NULL, but it looks
   // like LoginUtilsImpl::OnProfileCreated() may be getting called before

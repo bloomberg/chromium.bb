@@ -39,6 +39,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
+#include "chrome/browser/google/google_util_chromeos.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/options/options_util.h"
@@ -146,8 +147,10 @@ WizardController::WizardController(chromeos::LoginDisplayHost* host,
       host_(host),
       oobe_display_(oobe_display),
       usage_statistics_reporting_(true),
+      rlz_enabled_(false),
       skip_update_enroll_after_eula_(false),
-      login_screen_started_(false) {
+      login_screen_started_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   DCHECK(default_controller_ == NULL);
   default_controller_ = this;
 }
@@ -418,6 +421,10 @@ void WizardController::RegisterPrefs(PrefService* local_state) {
   local_state->RegisterBooleanPref(prefs::kOwnerPrimaryMouseButtonRight, false);
   local_state->RegisterBooleanPref(prefs::kOwnerTapToClickEnabled, true);
   local_state->RegisterBooleanPref(prefs::kFactoryResetRequested, false);
+  local_state->RegisterStringPref(prefs::kRLZBrand, std::string(),
+                                  PrefService::UNSYNCABLE_PREF);
+  local_state->RegisterBooleanPref(prefs::kRLZEnabled, false,
+                                   PrefService::UNSYNCABLE_PREF);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -456,7 +463,7 @@ void WizardController::OnUpdateCompleted() {
 void WizardController::OnEulaAccepted() {
   time_eula_accepted_ = base::Time::Now();
   MarkEulaAccepted();
-  bool enabled =
+  bool uma_enabled =
       OptionsUtil::ResolveMetricsReportingEnabled(usage_statistics_reporting_);
 
   content::NotificationService::current()->Notify(
@@ -464,8 +471,8 @@ void WizardController::OnEulaAccepted() {
       content::NotificationSource(content::Source<WizardController>(this)),
       content::NotificationService::NoDetails());
 
-  CrosSettings::Get()->SetBoolean(kStatsReportingPref, enabled);
-  if (enabled) {
+  CrosSettings::Get()->SetBoolean(kStatsReportingPref, uma_enabled);
+  if (uma_enabled) {
 #if defined(USE_LINUX_BREAKPAD)
     // The crash reporter initialization needs IO to complete.
     base::ThreadRestrictions::ScopedAllowIO allow_io;
@@ -473,6 +480,23 @@ void WizardController::OnEulaAccepted() {
 #endif
   }
 
+  // TODO(ivankr): post-AU action when |kRLZEnabled| is unset.
+#if defined(ENABLE_RLZ)
+  SaveBoolPreferenceForced(prefs::kRLZEnabled, rlz_enabled_);
+#endif
+  if (rlz_enabled_)
+    LoadBrandCodeFromFile();
+  else
+    OnEulaBlockingTasksDone();
+}
+
+void WizardController::LoadBrandCodeFromFile() {
+  google_util::chromeos::SetBrandFromFile(
+      base::Bind(&WizardController::OnEulaBlockingTasksDone,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void WizardController::OnEulaBlockingTasksDone() {
   if (skip_update_enroll_after_eula_) {
     PerformPostEulaActions();
     PerformPostUpdateActions();
@@ -826,6 +850,16 @@ void WizardController::SetUsageStatisticsReporting(bool val) {
 
 bool WizardController::GetUsageStatisticsReporting() const {
   return usage_statistics_reporting_;
+}
+
+void WizardController::SetRlzEnabled(bool val) {
+#if defined(ENABLE_RLZ)
+  rlz_enabled_ = val;
+#endif
+}
+
+bool WizardController::GetRlzEnabled() const {
+  return rlz_enabled_;
 }
 
 // static

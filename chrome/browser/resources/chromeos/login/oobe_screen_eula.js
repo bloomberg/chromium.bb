@@ -31,6 +31,25 @@ cr.define('oobe', function() {
       $('stats-help-link').addEventListener('click', function(event) {
         chrome.send('eulaOnLearnMore');
       });
+      $('installation-settings-link').addEventListener(
+          'click', function(event) {
+            chrome.send('eulaOnInstallationSettingsPopupOpened');
+            $('popup-overlay').hidden = false;
+            $('installation-settings-ok-button').focus();
+          });
+      $('installation-settings-ok-button').addEventListener(
+          'click', function(event) {
+            $('popup-overlay').hidden = true;
+          });
+      // Do not allow focus leaving the overlay.
+      $('popup-overlay').addEventListener('focusout', function(event) {
+        // WebKit does not allow immediate focus return.
+        window.setTimeout(function() {
+          // TODO(ivankr): focus cycling.
+          $('installation-settings-ok-button').focus();
+        }, 0);
+        event.preventDefault();
+      });
     },
 
     /**
@@ -52,7 +71,8 @@ cr.define('oobe', function() {
       backButton.id = 'back-button';
       backButton.textContent = localStrings.getString('back');
       backButton.addEventListener('click', function(e) {
-        chrome.send('eulaOnExit', [false, $('usage-stats').checked]);
+        chrome.send('eulaOnExit',
+                    [false, $('usage-stats').checked, $('rlz-enable').checked]);
         e.stopPropagation();
       });
       buttons.push(backButton);
@@ -61,7 +81,9 @@ cr.define('oobe', function() {
       acceptButton.id = 'accept-button';
       acceptButton.textContent = localStrings.getString('acceptAgreement');
       acceptButton.addEventListener('click', function(e) {
-        chrome.send('eulaOnExit', [true, $('usage-stats').checked]);
+        $('eula').classList.add('loading');  // Mark EULA screen busy.
+        chrome.send('eulaOnExit',
+                    [true, $('usage-stats').checked, $('rlz-enable').checked]);
         e.stopPropagation();
       });
       buttons.push(acceptButton);

@@ -182,11 +182,6 @@ net::URLRequestContextGetter* g_context;
 
 bool FinancialPing::SetURLRequestContext(
     net::URLRequestContextGetter* context) {
-  ScopedRlzValueStoreLock lock;
-  RlzValueStore* store = lock.GetStore();
-  if (!store)
-    return false;
-
   g_context = context;
   return true;
 }

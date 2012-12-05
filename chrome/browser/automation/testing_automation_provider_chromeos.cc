@@ -255,8 +255,10 @@ void TestingAutomationProvider::AcceptOOBEEula(DictionaryValue* args,
                                                IPC::Message* reply_message) {
   bool accepted;
   bool usage_stats_reporting;
+  bool rlz_enabled;
   if (!args->GetBoolean("accepted", &accepted) ||
-      !args->GetBoolean("usage_stats_reporting", &usage_stats_reporting)) {
+      !args->GetBoolean("usage_stats_reporting", &usage_stats_reporting) ||
+      !args->GetBoolean("rlz_enabled", &rlz_enabled)) {
     AutomationJSONReply(this, reply_message).SendError(
         "Invalid or missing args.");
     return;
@@ -271,7 +273,8 @@ void TestingAutomationProvider::AcceptOOBEEula(DictionaryValue* args,
   }
   // Observer will delete itself.
   new WizardControllerObserver(wizard_controller, this, reply_message);
-  wizard_controller->GetEulaScreen()->OnExit(accepted, usage_stats_reporting);
+  wizard_controller->GetEulaScreen()->OnExit(
+      accepted, usage_stats_reporting, rlz_enabled);
 }
 
 void TestingAutomationProvider::CancelOOBEUpdate(DictionaryValue* args,

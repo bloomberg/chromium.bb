@@ -1383,17 +1383,23 @@ Press any key to continue exploring.
   <message name="IDS_EULA_ACCEPT_AND_CONTINUE_BUTTON" desc="Accept button text below EULA terms of service">
     Accept and continue
   </message>
-  <message name="IDS_EULA_SYSTEM_SECURITY_SETTING" desc="Link from the EULA wizard screen and title of the according dialog box">
-    System security setting
+  <message name="IDS_EULA_SYSTEM_INSTALLATION_SETTINGS" desc="Link from the EULA wizard screen and title of the TPM and RLZ info dialog">
+    System installation settings
   </message>
-  <message name="IDS_EULA_SYSTEM_SECURITY_SETTING_DESCRIPTION" desc="Dialog box text">
+  <message name="IDS_EULA_TPM_DESCRIPTION" desc="Dialog box text">
     Your computer contains a Trusted Platform Module (TPM) security device, which is used to implement many critical security features in Chrome OS.
   </message>
-  <message name="IDS_EULA_SYSTEM_SECURITY_SETTING_DESCRIPTION_KEY" desc="Dialog box text">
+  <message name="IDS_EULA_TPM_KEY_DESCRIPTION" desc="Dialog box text">
     Below is the randomly generated TPM password that has been assigned to your computer:
   </message>
-  <message name="IDS_EULA_SYSTEM_SECURITY_SETTING_WAIT" desc="Dialog box text">
-   The TPM is being set up. Please be patient; this may take a few minutes.
+  <message name="IDS_EULA_TPM_WAIT" desc="Dialog box text">
+    The TPM is being set up. Please be patient; this may take a few minutes.
+  </message>
+  <message name="IDS_EULA_RLZ_DESCRIPTION" desc="Dialog box text">
+    Your computer also comes with <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>'s RLZ library built in. RLZ assigns a non-unique, non-personally identifiable tag to measure the searches and <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> usage driven by a particular promotional campaign. These labels sometimes appear in Google Search queries in <ph name="PRODUCT_NAME">$2<ex>Google Chrome</ex></ph>.
+  </message>
+  <message name="IDS_EULA_RLZ_ENABLE" desc="Check box text for enabling RLZ tracking on TPM/RLZ info dialog.">
+    Enable RLZ tracking on <ph name="SHORT_PRODUCT_OS_NAME">$1<ex>Chrome OS</ex></ph>.
   </message>
   <message name="IDS_EULA_TPM_BUSY" desc="Message bubble text">
     TPM is being prepared, please wait (this may take a few minutes)...

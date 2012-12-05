@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time.h"
 #include "base/timer.h"
@@ -191,6 +192,12 @@ class WizardController : public ScreenObserver {
   void OnResetCanceled();
   void OnOOBECompleted();
 
+  // Loads brand code on I/O enabled thread and stores to Local State.
+  void LoadBrandCodeFromFile();
+
+  // Called after all post-EULA blocking tasks have been completed.
+  void OnEulaBlockingTasksDone();
+
   // Shows update screen and starts update process.
   void InitiateOOBEUpdate();
 
@@ -208,6 +215,8 @@ class WizardController : public ScreenObserver {
                                      const std::string& password) OVERRIDE;
   virtual void SetUsageStatisticsReporting(bool val) OVERRIDE;
   virtual bool GetUsageStatisticsReporting() const OVERRIDE;
+  virtual void SetRlzEnabled(bool val) OVERRIDE;
+  virtual bool GetRlzEnabled() const OVERRIDE;
 
   // Switches from one screen to another.
   void SetCurrentScreen(WizardScreen* screen);
@@ -272,6 +281,9 @@ class WizardController : public ScreenObserver {
   // during wizard lifetime.
   bool usage_statistics_reporting_;
 
+  // Whether RLZ tracking is enabled.
+  bool rlz_enabled_;
+
   // If true then update check is cancelled and enrollment is started after
   // EULA is accepted.
   bool skip_update_enroll_after_eula_;
@@ -283,6 +295,8 @@ class WizardController : public ScreenObserver {
   ObserverList<Observer> observer_list_;
 
   bool login_screen_started_;
+
+  base::WeakPtrFactory<WizardController> weak_ptr_factory_;
 
   FRIEND_TEST_ALL_PREFIXES(EnterpriseEnrollmentScreenTest, TestCancel);
   FRIEND_TEST_ALL_PREFIXES(WizardControllerFlowTest, Accelerators);

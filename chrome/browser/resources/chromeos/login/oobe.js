@@ -81,28 +81,12 @@ cr.define('cr.ui', function() {
 
     // TODO: Cleanup with old OOBE style removal.
     $('security-link').addEventListener('click', function(event) {
-      chrome.send('eulaOnTpmPopupOpened');
+      chrome.send('eulaOnInstallationSettingsPopupOpened');
       $('popup-overlay').hidden = false;
-      $('security-ok-button').focus();
-    });
-    $('security-tpm-link').addEventListener('click', function(event) {
-      chrome.send('eulaOnTpmPopupOpened');
-      $('popup-overlay').hidden = false;
-      $('security-ok-button').focus();
+      $('installation-settings-ok-button').focus();
     });
 
     Oobe.initializeA11yMenu();
-
-    $('security-ok-button').addEventListener('click', function(event) {
-      $('popup-overlay').hidden = true;
-    });
-
-    // Do not allow focus leaving the overlay.
-    $('popup-overlay').addEventListener('focusout', function(event) {
-      // WebKit does not allow immediate focus return.
-      setTimeout(function() { $('security-ok-button').focus(); }, 0);
-      event.preventDefault();
-    });
 
     chrome.send('screenStateInitialize');
   };

@@ -20,6 +20,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "rlz/lib/rlz_lib.h"
 
+class Profile;
 namespace net {
 class URLRequestContextGetter;
 }
@@ -41,11 +42,9 @@ class RLZTracker : public content::NotificationObserver {
   // registers some events when 'first-run' is true.
   //
   // If the chrome brand is organic (no partners) then the pings don't occur.
-  static bool InitRlzDelayed(bool first_run,
-                             int delay,
-                             bool is_google_default_search,
-                             bool is_google_homepage,
-                             bool is_google_in_startpages);
+  static bool InitRlzFromProfileDelayed(Profile* profile,
+                                        bool first_run,
+                                        int delay);
 
   // Records an RLZ event. Some events can be access point independent.
   // Returns false it the event could not be recorded. Requires write access
@@ -81,6 +80,13 @@ class RLZTracker : public content::NotificationObserver {
  protected:
   RLZTracker();
   virtual ~RLZTracker();
+
+  // Called by InitRlzFromProfileDelayed with values taken from |profile|.
+  static bool InitRlzDelayed(bool first_run,
+                             int delay,
+                             bool is_google_default_search,
+                             bool is_google_homepage,
+                             bool is_google_in_startpages);
 
   // Performs initialization of RLZ tracker that is purposefully delayed so
   // that it does not interfere with chrome startup time.
@@ -185,6 +191,10 @@ class RLZTracker : public content::NotificationObserver {
   // Keeps track of whether the omnibox or host page have been used.
   bool omnibox_used_;
   bool homepage_used_;
+
+  // Main and (optionally) reactivation brand codes, assigned on UI thread.
+  std::string brand_;
+  std::string reactivation_brand_;
 
   content::NotificationRegistrar registrar_;
 

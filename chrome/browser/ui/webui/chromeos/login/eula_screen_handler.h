@@ -49,7 +49,7 @@ class EulaScreenHandler : public EulaScreenActor,
   // JS messages handlers.
   void HandleOnExit(const base::ListValue* args);
   void HandleOnLearnMore(const base::ListValue* args);
-  void HandleOnTpmPopupOpened(const base::ListValue* args);
+  void HandleOnInstallationSettingsPopupOpened(const base::ListValue* args);
 
   Delegate* delegate_;
 

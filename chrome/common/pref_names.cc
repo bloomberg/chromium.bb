@@ -2163,4 +2163,12 @@ const char kNetworkProfileLastWarningTime[] =
 // by UMA_HISTOGRAM_ENUMERATION.
 const char kLastPolicyStatisticsUpdate[] = "policy.last_statistics_update";
 
+#if defined(OS_CHROMEOS)
+// Indicates whether the RLZ tracking has been enabled by user.
+const char kRLZEnabled[] = "rlz.enabled";
+
+// The RLZ brand code, if enabled.
+const char kRLZBrand[] = "rlz.brand";
+#endif
+
 }  // namespace prefs
