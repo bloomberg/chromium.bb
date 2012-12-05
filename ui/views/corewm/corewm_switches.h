@@ -17,10 +17,14 @@ namespace switches {
 // see chromeos::LoginUtil::GetOffTheRecordCommandLine().)
 
 // Please keep alphabetized.
-VIEWS_EXPORT extern const char kUseFocusController[];
 VIEWS_EXPORT extern const char kWindowAnimationsDisabled[];
 
 }  // namespace switches
+
+// Returns true if the new FocusController should be used as the
+// Activation/FocusClient.
+VIEWS_EXPORT bool UseFocusController();
+
 }  // namespace corewm
 }  // namespace views
 

@@ -55,11 +55,11 @@ AshFocusRules::~AshFocusRules() {
 ////////////////////////////////////////////////////////////////////////////////
 // AshFocusRules, views::corewm::FocusRules:
 
-bool AshFocusRules::SupportsChildActivation(aura::Window* window) {
+bool AshFocusRules::SupportsChildActivation(aura::Window* window) const {
   if (window->id() == internal::kShellWindowId_WorkspaceContainer)
     return true;
 
-  if (window->id() != internal::kShellWindowId_DefaultContainer)
+  if (window->id() == internal::kShellWindowId_DefaultContainer)
     return false;
 
   for (size_t i = 0; i < arraysize(kWindowContainerIds); i++) {
@@ -70,7 +70,7 @@ bool AshFocusRules::SupportsChildActivation(aura::Window* window) {
 }
 
 bool AshFocusRules::IsWindowConsideredVisibleForActivation(
-    aura::Window* window) {
+    aura::Window* window) const {
   if (BaseFocusRules::IsWindowConsideredVisibleForActivation(window))
     return true;
 
@@ -84,7 +84,7 @@ bool AshFocusRules::IsWindowConsideredVisibleForActivation(
       internal::kShellWindowId_LockScreenContainer);
 }
 
-bool AshFocusRules::CanActivateWindow(aura::Window* window) {
+bool AshFocusRules::CanActivateWindow(aura::Window* window) const {
   if (!BaseFocusRules::CanActivateWindow(window))
     return false;
 

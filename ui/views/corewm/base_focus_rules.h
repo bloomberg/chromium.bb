@@ -20,18 +20,22 @@ class VIEWS_EXPORT BaseFocusRules : public FocusRules {
   virtual ~BaseFocusRules();
 
   // Returns true if the children of |window| can be activated.
-  virtual bool SupportsChildActivation(aura::Window* window) = 0;
+  virtual bool SupportsChildActivation(aura::Window* window) const = 0;
 
   // Returns true if |window| is considered visible for activation purposes.
-  virtual bool IsWindowConsideredVisibleForActivation(aura::Window* window);
+  virtual bool IsWindowConsideredVisibleForActivation(
+      aura::Window* window) const;
 
   // Overridden from FocusRules:
-  virtual bool CanActivateWindow(aura::Window* window) OVERRIDE;
-  virtual bool CanFocusWindow(aura::Window* window) OVERRIDE;
-  virtual aura::Window* GetActivatableWindow(aura::Window* window) OVERRIDE;
-  virtual aura::Window* GetFocusableWindow(aura::Window* window) OVERRIDE;
-  virtual aura::Window* GetNextActivatableWindow(aura::Window* ignore) OVERRIDE;
-  virtual aura::Window* GetNextFocusableWindow(aura::Window* ignore) OVERRIDE;
+  virtual bool CanActivateWindow(aura::Window* window) const OVERRIDE;
+  virtual bool CanFocusWindow(aura::Window* window) const OVERRIDE;
+  virtual aura::Window* GetActivatableWindow(
+      aura::Window* window) const OVERRIDE;
+  virtual aura::Window* GetFocusableWindow(aura::Window* window) const OVERRIDE;
+  virtual aura::Window* GetNextActivatableWindow(
+      aura::Window* ignore) const OVERRIDE;
+  virtual aura::Window* GetNextFocusableWindow(
+      aura::Window* ignore) const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BaseFocusRules);

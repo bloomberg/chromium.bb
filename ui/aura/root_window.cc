@@ -662,9 +662,7 @@ void RootWindow::OnWindowRemovedFromRootWindow(Window* detached,
                                                RootWindow* new_root) {
   DCHECK(aura::client::GetCaptureWindow(this) != this);
 
-  OnWindowHidden(detached,
-                 (new_root == NULL) ? WINDOW_HIDDEN : WINDOW_MOVING,
-                 new_root);
+  OnWindowHidden(detached, new_root ? WINDOW_MOVING : WINDOW_HIDDEN, new_root);
 
   if (detached->IsVisible() &&
       detached->ContainsPointInRoot(GetLastMouseLocationInRoot())) {
@@ -675,35 +673,10 @@ void RootWindow::OnWindowRemovedFromRootWindow(Window* detached,
 void RootWindow::OnWindowHidden(Window* invisible,
                                 WindowHiddenReason reason,
                                 RootWindow* new_root) {
-    // Update the focused window state if the invisible window contains
-  // focused_window. See the comment below, which also applies for focus with
-  // the exception for the case where the focus managers change (otherwise a
-  // focus manager might dereference a deleted root window).
-  if (reason != WINDOW_MOVING ||
-      (client::GetFocusClient(new_root) != client::GetFocusClient(this))) {
-    Window* focused_window = client::GetFocusClient(this)->GetFocusedWindow();
-    if (invisible->Contains(focused_window)) {
-      Window* focus_to = invisible->transient_parent();
-      if (focus_to) {
-        // Has to be removed from the transient parent before focusing,
-        // otherwise |window| will be focused again.
-        if (reason == WINDOW_DESTROYED)
-          focus_to->RemoveTransientChild(invisible);
-      } else {
-        // If the invisible view has no visible transient window, focus to the
-        // topmost visible parent window.
-        focus_to = invisible->parent();
-      }
-      if (focus_to &&
-          (!focus_to->IsVisible() ||
-           !focus_to->CanFocus() ||
-           (client::GetActivationClient(this) &&
-            !client::GetActivationClient(this)->OnWillFocusWindow(focus_to,
-                                                                  NULL)))) {
-        focus_to = NULL;
-      }
-      client::GetFocusClient(this)->FocusWindow(focus_to, NULL);
-    }
+  // TODO(beng): This should be removed once FocusController is turned on.
+  if (client::GetFocusClient(this)) {
+    client::GetFocusClient(this)->OnWindowHiddenInRootWindow(
+        invisible, this, reason == WINDOW_DESTROYED);
   }
 
   // Do not clear the capture, and the dispatch targets if the window is moving

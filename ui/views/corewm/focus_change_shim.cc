@@ -4,7 +4,6 @@
 
 #include "ui/views/corewm/focus_change_shim.h"
 
-#include "base/command_line.h"
 #include "ui/aura/window.h"
 #include "ui/base/events/event_target.h"
 #include "ui/views/corewm/corewm_switches.h"
@@ -12,21 +11,15 @@
 
 namespace views {
 namespace corewm {
-namespace {
-bool UseFocusController() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kUseFocusController);
-}
-}
 
 FocusChangeShim::FocusChangeShim(ui::EventTarget* target)
     : target_(target) {
-  if (UseFocusController() && target_)
+  if (views::corewm::UseFocusController() && target_)
     target_->AddPreTargetHandler(this);
 }
 
 FocusChangeShim::~FocusChangeShim() {
-  if (UseFocusController() && target_)
+  if (views::corewm::UseFocusController() && target_)
     target_->RemovePreTargetHandler(this);
 }
 
@@ -35,7 +28,7 @@ void FocusChangeShim::OnWindowFocused(aura::Window* window) {
 
 void FocusChangeShim::OnEvent(ui::Event* event) {
   if (event->type() == FocusChangeEvent::focus_changed_event_type()) {
-    DCHECK(UseFocusController());
+    DCHECK(views::corewm::UseFocusController());
     OnWindowFocused(static_cast<aura::Window*>(event->target()));
   }
   EventHandler::OnEvent(event);

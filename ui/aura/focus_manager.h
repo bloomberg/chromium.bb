@@ -31,6 +31,9 @@ class AURA_EXPORT FocusManager : public client::FocusClient {
   virtual void RemoveObserver(client::FocusChangeObserver* observer) OVERRIDE;
   virtual void FocusWindow(Window* window, const ui::Event* event) OVERRIDE;
   virtual Window* GetFocusedWindow() OVERRIDE;
+  virtual void OnWindowHiddenInRootWindow(aura::Window* window,
+                                          aura::RootWindow* root_window,
+                                          bool destroyed) OVERRIDE;
 
  protected:
   aura::Window* focused_window_;

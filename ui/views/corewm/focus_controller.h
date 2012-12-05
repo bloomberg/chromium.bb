@@ -65,6 +65,9 @@ class VIEWS_EXPORT FocusController : public aura::client::ActivationClient,
   virtual void FocusWindow(aura::Window* window,
                            const ui::Event* event) OVERRIDE;
   virtual aura::Window* GetFocusedWindow() OVERRIDE;
+  virtual void OnWindowHiddenInRootWindow(aura::Window* window,
+                                          aura::RootWindow* root_window,
+                                          bool destroyed) OVERRIDE;
 
   // Overridden from ui::EventHandler:
   virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;

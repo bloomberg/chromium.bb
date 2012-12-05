@@ -176,11 +176,6 @@ class AshVisibilityController : public views::corewm::VisibilityController {
   DISALLOW_COPY_AND_ASSIGN(AshVisibilityController);
 };
 
-bool UseFocusController() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      views::corewm::switches::kUseFocusController);
-}
-
 }  // namespace
 
 // static
@@ -437,7 +432,7 @@ void Shell::Init() {
   env_filter_.reset(new views::corewm::CompoundEventFilter);
   AddPreTargetHandler(env_filter_.get());
 
-  if (UseFocusController()) {
+  if (views::corewm::UseFocusController()) {
     views::corewm::FocusController* focus_controller =
         new views::corewm::FocusController(new wm::AshFocusRules);
     focus_client_.reset(focus_controller);
@@ -836,7 +831,7 @@ void Shell::InitRootWindowController(
   aura::client::SetFocusClient(root_window, focus_client_.get());
   input_method_filter_->SetInputMethodPropertyInRootWindow(root_window);
   aura::client::SetActivationClient(root_window, activation_client_);
-  if (UseFocusController()) {
+  if (views::corewm::UseFocusController()) {
     views::corewm::FocusController* controller =
         static_cast<views::corewm::FocusController*>(activation_client_);
     root_window->AddPreTargetHandler(controller);

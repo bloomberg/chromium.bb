@@ -4,6 +4,8 @@
 
 #include "ui/views/corewm/corewm_switches.h"
 
+#include "base/command_line.h"
+
 namespace views {
 namespace corewm {
 namespace switches {
@@ -17,5 +19,11 @@ const char kWindowAnimationsDisabled[] =
     "views-corewm-window-animations-disabled";
 
 }  // namespace switches
+
+bool UseFocusController() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kUseFocusController);
+}
+
 }  // namespace corewm
 }  // namespace views

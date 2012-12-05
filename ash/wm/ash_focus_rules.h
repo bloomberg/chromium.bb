@@ -20,10 +20,10 @@ class ASH_EXPORT AshFocusRules : public views::corewm::BaseFocusRules {
 
  private:
   // Overridden from views::corewm::BaseFocusRules:
-  virtual bool SupportsChildActivation(aura::Window* window) OVERRIDE;
+  virtual bool SupportsChildActivation(aura::Window* window) const OVERRIDE;
   virtual bool IsWindowConsideredVisibleForActivation(
-      aura::Window* window) OVERRIDE;
-  virtual bool CanActivateWindow(aura::Window* window) OVERRIDE;
+      aura::Window* window) const OVERRIDE;
+  virtual bool CanActivateWindow(aura::Window* window) const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(AshFocusRules);
 };

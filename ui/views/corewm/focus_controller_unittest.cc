@@ -85,37 +85,40 @@ class TestFocusRules : public BaseFocusRules {
   }
 
   // Overridden from BaseFocusRules:
-  virtual bool SupportsChildActivation(aura::Window* window) OVERRIDE {
+  virtual bool SupportsChildActivation(aura::Window* window) const OVERRIDE {
     // In FocusControllerTests, only the RootWindow has activatable children.
     return window->GetRootWindow() == window;
   }
-  virtual bool CanActivateWindow(aura::Window* window) OVERRIDE {
+  virtual bool CanActivateWindow(aura::Window* window) const OVERRIDE {
     // Restricting focus to a non-activatable child window means the activatable
     // parent outside the focus restriction is activatable.
     bool can_activate =
         CanFocusOrActivate(window) || window->Contains(focus_restriction_);
     return can_activate ? BaseFocusRules::CanActivateWindow(window) : false;
   }
-  virtual bool CanFocusWindow(aura::Window* window) OVERRIDE {
+  virtual bool CanFocusWindow(aura::Window* window) const OVERRIDE {
     return CanFocusOrActivate(window) ?
         BaseFocusRules::CanFocusWindow(window) : false;
   }
-  virtual aura::Window* GetActivatableWindow(aura::Window* window) OVERRIDE {
+  virtual aura::Window* GetActivatableWindow(
+      aura::Window* window) const OVERRIDE {
     return BaseFocusRules::GetActivatableWindow(
         CanFocusOrActivate(window) ? window : focus_restriction_);
   }
-  virtual aura::Window* GetFocusableWindow(aura::Window* window) OVERRIDE {
+  virtual aura::Window* GetFocusableWindow(
+      aura::Window* window) const OVERRIDE {
     return BaseFocusRules::GetFocusableWindow(
         CanFocusOrActivate(window) ? window : focus_restriction_);
   }
   virtual aura::Window* GetNextActivatableWindow(
-      aura::Window* ignore) OVERRIDE {
+      aura::Window* ignore) const OVERRIDE {
     aura::Window* next_activatable =
         BaseFocusRules::GetNextActivatableWindow(ignore);
     return CanFocusOrActivate(next_activatable) ?
         next_activatable : GetActivatableWindow(focus_restriction_);
   }
-  virtual aura::Window* GetNextFocusableWindow(aura::Window* ignore) OVERRIDE {
+  virtual aura::Window* GetNextFocusableWindow(
+      aura::Window* ignore) const OVERRIDE {
     aura::Window* next_focusable =
         BaseFocusRules::GetNextFocusableWindow(ignore);
     return CanFocusOrActivate(next_focusable) ?
@@ -281,15 +284,24 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
     EXPECT_EQ(1, GetActiveWindowId());
   }
   virtual void FocusEvents() OVERRIDE {
-    FocusEventsTestHandler handler(root_window()->GetChildById(1));
+    FocusEventsTestHandler handler(root_window());
     EXPECT_EQ(0, handler.GetCountForEventType(
         FocusChangeEvent::focus_changing_event_type()));
     EXPECT_EQ(0, handler.GetCountForEventType(
         FocusChangeEvent::focus_changed_event_type()));
     FocusWindowById(1);
-    EXPECT_EQ(1, handler.GetCountForEventType(
+    // Since the focused window is initially NULL, there is no target to
+    // dispatch a changing event to, so none of the pre-target handlers get hit.
+    EXPECT_EQ(0, handler.GetCountForEventType(
         FocusChangeEvent::focus_changing_event_type()));
     EXPECT_EQ(1, handler.GetCountForEventType(
+        FocusChangeEvent::focus_changed_event_type()));
+    FocusWindowById(2);
+    // Now that w1 is focused, it can receive a changing event, and so can our
+    // pre-target handler.
+    EXPECT_EQ(1, handler.GetCountForEventType(
+        FocusChangeEvent::focus_changing_event_type()));
+    EXPECT_EQ(2, handler.GetCountForEventType(
         FocusChangeEvent::focus_changed_event_type()));
   }
   virtual void DuplicateFocusEvents() OVERRIDE {
@@ -300,12 +312,13 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
     EXPECT_EQ(0, handler.GetCountForEventType(
         FocusChangeEvent::focus_changed_event_type()));
     FocusWindowById(1);
-    EXPECT_EQ(1, handler.GetCountForEventType(
+    // See FocusEvents() above for why this is 0.
+    EXPECT_EQ(0, handler.GetCountForEventType(
         FocusChangeEvent::focus_changing_event_type()));
     EXPECT_EQ(1, handler.GetCountForEventType(
         FocusChangeEvent::focus_changed_event_type()));
     FocusWindowById(1);
-    EXPECT_EQ(1, handler.GetCountForEventType(
+    EXPECT_EQ(0, handler.GetCountForEventType(
         FocusChangeEvent::focus_changing_event_type()));
     EXPECT_EQ(1, handler.GetCountForEventType(
         FocusChangeEvent::focus_changed_event_type()));
@@ -500,7 +513,7 @@ class FocusControllerImplicitTestBase : public FocusControllerTestBase {
     aura::Window* w211 = root_window()->GetChildById(211);
     FocusWindow(w211);
 
-    FocusEventsTestHandler handler(root_window()->GetChildById(211));
+    FocusEventsTestHandler handler(root_window());
     EXPECT_EQ(0, handler.GetCountForEventType(
         FocusChangeEvent::focus_changing_event_type()));
     EXPECT_EQ(0, handler.GetCountForEventType(

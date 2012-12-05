@@ -4,7 +4,6 @@
 
 #include "ui/views/corewm/activation_change_shim.h"
 
-#include "base/command_line.h"
 #include "ui/aura/window.h"
 #include "ui/base/events/event_target.h"
 #include "ui/views/corewm/corewm_switches.h"
@@ -12,12 +11,6 @@
 
 namespace views {
 namespace corewm {
-namespace {
-bool UseFocusController() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kUseFocusController);
-}
-}
 
 ActivationChangeShim::ActivationChangeShim(ui::EventTarget* target)
     : target_(target) {

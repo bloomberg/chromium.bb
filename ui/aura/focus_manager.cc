@@ -6,6 +6,7 @@
 
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/focus_change_observer.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window_delegate.h"
 
 namespace aura {
@@ -63,6 +64,36 @@ void FocusManager::FocusWindow(Window* focused_window, const ui::Event* event) {
 
 Window* FocusManager::GetFocusedWindow() {
   return focused_window_;
+}
+
+void FocusManager::OnWindowHiddenInRootWindow(
+    aura::Window* window,
+    aura::RootWindow* root_window,
+    bool destroyed) {
+  Window* focused_window =
+      client::GetFocusClient(root_window)->GetFocusedWindow();
+  if (window->Contains(focused_window)) {
+    Window* focus_to = window->transient_parent();
+    if (focus_to) {
+      // Has to be removed from the transient parent before focusing,
+      // otherwise |window| will be focused again.
+      if (destroyed)
+        focus_to->RemoveTransientChild(window);
+    } else {
+      // If the invisible view has no visible transient window, focus to the
+      // topmost visible parent window.
+      focus_to = window->parent();
+    }
+    if (focus_to &&
+        (!focus_to->IsVisible() ||
+          !focus_to->CanFocus() ||
+          (client::GetActivationClient(root_window) &&
+          !client::GetActivationClient(root_window)->OnWillFocusWindow(
+              focus_to, NULL)))) {
+      focus_to = NULL;
+    }
+    client::GetFocusClient(root_window)->FocusWindow(focus_to, NULL);
+  }
 }
 
 }  // namespace aura

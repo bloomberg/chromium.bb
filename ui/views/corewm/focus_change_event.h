@@ -59,7 +59,7 @@ class VIEWS_EXPORT FocusChangeEvent : public ui::Event {
   // FocusController. It is possible to stop propagation of this event but that
   // only affects handlers downstream from being notified of the change already
   // made in the FocusController.
-  static int focus_changed_event_type() { return focus_changing_event_type_; }
+  static int focus_changed_event_type() { return focus_changed_event_type_; }
   static int activation_changed_event_type() {
     return activation_changed_event_type_;
   }

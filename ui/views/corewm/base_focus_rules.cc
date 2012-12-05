@@ -32,14 +32,14 @@ BaseFocusRules::~BaseFocusRules() {
 }
 
 bool BaseFocusRules::IsWindowConsideredVisibleForActivation(
-    aura::Window* window) {
+    aura::Window* window) const {
   return window->IsVisible();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // BaseFocusRules, FocusRules implementation:
 
-bool BaseFocusRules::CanActivateWindow(aura::Window* window) {
+bool BaseFocusRules::CanActivateWindow(aura::Window* window) const {
   // It is possible to activate a NULL window, it is equivalent to clearing
   // activation.
   if (!window)
@@ -65,7 +65,7 @@ bool BaseFocusRules::CanActivateWindow(aura::Window* window) {
       !GetModalTransientForActivatableWindow(window);
 }
 
-bool BaseFocusRules::CanFocusWindow(aura::Window* window) {
+bool BaseFocusRules::CanFocusWindow(aura::Window* window) const {
   // It is possible to focus a NULL window, it is equivalent to clearing focus.
   if (!window)
     return true;
@@ -78,7 +78,7 @@ bool BaseFocusRules::CanFocusWindow(aura::Window* window) {
   return window->CanFocus();
 }
 
-aura::Window* BaseFocusRules::GetActivatableWindow(aura::Window* window) {
+aura::Window* BaseFocusRules::GetActivatableWindow(aura::Window* window) const {
   aura::Window* parent = window->parent();
   aura::Window* child = window;
   while (parent) {
@@ -94,7 +94,7 @@ aura::Window* BaseFocusRules::GetActivatableWindow(aura::Window* window) {
   return NULL;
 }
 
-aura::Window* BaseFocusRules::GetFocusableWindow(aura::Window* window) {
+aura::Window* BaseFocusRules::GetFocusableWindow(aura::Window* window) const {
   if (CanFocusWindow(window))
     return window;
 
@@ -117,7 +117,8 @@ aura::Window* BaseFocusRules::GetFocusableWindow(aura::Window* window) {
   return window;
 }
 
-aura::Window* BaseFocusRules::GetNextActivatableWindow(aura::Window* ignore) {
+aura::Window* BaseFocusRules::GetNextActivatableWindow(
+    aura::Window* ignore) const {
   DCHECK(ignore);
 
   // Can be called from the RootWindow's destruction, which has a NULL parent.
@@ -141,7 +142,8 @@ aura::Window* BaseFocusRules::GetNextActivatableWindow(aura::Window* ignore) {
   return NULL;
 }
 
-aura::Window* BaseFocusRules::GetNextFocusableWindow(aura::Window* ignore) {
+aura::Window* BaseFocusRules::GetNextFocusableWindow(
+    aura::Window* ignore) const {
   DCHECK(ignore);
 
   // Focus cycling is currently very primitive: we just climb the tree.

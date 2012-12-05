@@ -292,7 +292,7 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   void OnWindowRemovedFromRootWindow(Window* window, RootWindow* new_root);
 
   // Called when a window becomes invisible, either by being removed
-  // from root window hierachy, via SetVisible(false) or being destroyed.
+  // from root window hierarchy, via SetVisible(false) or being destroyed.
   // |reason| specifies what triggered the hiding. |new_root| is the new root
   // window, and may be NULL.
   void OnWindowHidden(Window* invisible,
