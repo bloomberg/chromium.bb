@@ -701,6 +701,8 @@ const char kShortDNSTimeoutTechnologiesProperty[] =
 // Service property names.
 const char kActivateOverNonCellularNetworkProperty[] =
     "Cellular.ActivateOverNonCellularNetwork";
+const char kDiagnosticsDisconnectsProperty[] = "Diagnostics.Disconnects";
+const char kDiagnosticsMisconnectsProperty[] = "Diagnostics.Misconnects";
 const char kEapRemoteCertificationProperty[] = "EAP.RemoteCertification";
 const char kEapSubjectMatchProperty[] = "EAP.SubjectMatch";
 const char kHTTPProxyPortProperty[] = "HTTPProxyPort";
