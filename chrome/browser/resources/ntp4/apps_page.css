@@ -84,6 +84,10 @@
   z-index: 1000;
 }
 
+.app-context-menu > [checked]::before {
+  height: 5px;
+}
+
 .launch-click-target {
   cursor: pointer;
 }
