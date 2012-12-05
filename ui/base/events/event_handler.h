@@ -7,19 +7,20 @@
 
 #include <vector>
 
+#include "base/basictypes.h"
 #include "ui/base/events/event_constants.h"
 #include "ui/base/ui_export.h"
 
 namespace ui {
 
 class Event;
+class EventDispatcher;
+class EventTarget;
 class GestureEvent;
 class KeyEvent;
 class MouseEvent;
 class ScrollEvent;
 class TouchEvent;
-
-class EventTarget;
 
 // Dispatches events to appropriate targets. The default implementations return
 // ER_UNHANDLED for all events.
@@ -43,6 +44,15 @@ class UI_EXPORT EventHandler {
   virtual EventResult OnTouchEvent(TouchEvent* event);
 
   virtual void OnGestureEvent(GestureEvent* event);
+
+ private:
+  friend class EventDispatcher;
+
+  // The |dispatcher_| is set by the dispatcher itself when the event handler
+  // gets into the list of handlers, and reset appropriately.
+  EventDispatcher* dispatcher_;
+
+  DISALLOW_COPY_AND_ASSIGN(EventHandler);
 };
 
 typedef std::vector<EventHandler*> EventHandlerList;

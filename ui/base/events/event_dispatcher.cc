@@ -4,11 +4,14 @@
 
 #include "ui/base/events/event_dispatcher.h"
 
+#include <algorithm>
+
 namespace ui {
 
 EventDispatcher::EventDispatcher()
     : set_on_destroy_(NULL),
-      current_event_(NULL) {
+      current_event_(NULL),
+      handler_list_(NULL) {
 }
 
 EventDispatcher::~EventDispatcher() {
@@ -16,11 +19,19 @@ EventDispatcher::~EventDispatcher() {
     *set_on_destroy_ = true;
 }
 
+void EventDispatcher::OnHandlerDestroyed(EventHandler* handler) {
+  if (!handler_list_)
+    return;
+  handler_list_->erase(std::find(handler_list_->begin(),
+                                 handler_list_->end(),
+                                 handler));
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // EventDispatcher, private:
 
 void EventDispatcher::DispatchEventToSingleHandler(EventHandler* handler,
-                                                          Event* event) {
+                                                   Event* event) {
   handler->OnEvent(event);
 }
 

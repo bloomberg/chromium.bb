@@ -142,7 +142,7 @@ class EventHandlerDestroyDispatcher : public TestEventHandler {
 // Invalidates the target when it receives any event.
 class InvalidateTargetEventHandler : public TestEventHandler {
  public:
-  InvalidateTargetEventHandler(int id) : TestEventHandler(id) {}
+  explicit InvalidateTargetEventHandler(int id) : TestEventHandler(id) {}
   virtual ~InvalidateTargetEventHandler() {}
 
  private:
@@ -153,6 +153,40 @@ class InvalidateTargetEventHandler : public TestEventHandler {
   }
 
   DISALLOW_COPY_AND_ASSIGN(InvalidateTargetEventHandler);
+};
+
+// Destroys a second event handler when this handler gets an event.
+// Optionally also destroys the dispatcher.
+class EventHandlerDestroyer : public TestEventHandler {
+ public:
+  EventHandlerDestroyer(int id, EventHandler* destroy)
+      : TestEventHandler(id),
+        to_destroy_(destroy),
+        dispatcher_(NULL) {
+  }
+
+  virtual ~EventHandlerDestroyer() {
+    CHECK(!to_destroy_);
+  }
+
+  void set_dispatcher(EventDispatcher* dispatcher) { dispatcher_ = dispatcher; }
+
+ private:
+  virtual void ReceivedEvent(Event* event) {
+    TestEventHandler::ReceivedEvent(event);
+    delete to_destroy_;
+    to_destroy_ = NULL;
+
+    if (dispatcher_) {
+      delete dispatcher_;
+      dispatcher_ = NULL;
+    }
+  }
+
+  EventHandler* to_destroy_;
+  EventDispatcher* dispatcher_;
+
+  DISALLOW_COPY_AND_ASSIGN(EventHandlerDestroyer);
 };
 
 class TestEventDispatcher : public EventDispatcher {
@@ -282,7 +316,7 @@ TEST(EventDispatcherTest, EventDispatchPhase) {
 
 // Tests that if the dispatcher is destroyed in the middle of pre or post-target
 // dispatching events, it doesn't cause a crash.
-TEST(EventDispatcherTest, EventDispatcherDestroyTarget) {
+TEST(EventDispatcherTest, EventDispatcherDestroyedDuringDispatch) {
   // Test for pre-target first.
   {
     TestEventDispatcher* dispatcher = new TestEventDispatcher();
@@ -365,4 +399,58 @@ TEST(EventDispatcherTest, EventDispatcherInvalidateTarget) {
   EXPECT_EQ(2, target.handler_list()[1]);
 }
 
+// Tests that if an event-handler gets destroyed during event-dispatch, it does
+// not cause a crash.
+TEST(EventDispatcherTest, EventHandlerDestroyedDuringDispatch) {
+  TestEventDispatcher dispatcher;
+  TestTarget target;
+  TestEventHandler h1(1);
+  TestEventHandler* h3 = new TestEventHandler(3);
+  EventHandlerDestroyer handle_destroyer(2, h3);
+
+  target.AddPreTargetHandler(&h1);
+  target.AddPreTargetHandler(&handle_destroyer);
+  target.AddPreTargetHandler(h3);
+
+  h1.set_expect_pre_target(true);
+  handle_destroyer.set_expect_pre_target(true);
+  // |h3| should not receive events since |handle_destroyer| will have destroyed
+  // it.
+  h3->set_expect_pre_target(false);
+
+  MouseEvent mouse(ui::ET_MOUSE_MOVED, gfx::Point(3, 4), gfx::Point(3, 4), 0);
+  dispatcher.ProcessEvent(&target, &mouse);
+  EXPECT_FALSE(mouse.stopped_propagation());
+  EXPECT_EQ(2U, target.handler_list().size());
+  EXPECT_EQ(1, target.handler_list()[0]);
+  EXPECT_EQ(2, target.handler_list()[1]);
+}
+
+// Tests that things work correctly if an event-handler destroys both the
+// dispatcher and a handler.
+TEST(EventDispatcherTest, EventHandlerAndDispatcherDestroyedDuringDispatch) {
+  TestEventDispatcher* dispatcher = new TestEventDispatcher();
+  TestTarget target;
+  TestEventHandler h1(1);
+  TestEventHandler* h3 = new TestEventHandler(3);
+  EventHandlerDestroyer destroyer(2, h3);
+
+  target.AddPreTargetHandler(&h1);
+  target.AddPreTargetHandler(&destroyer);
+  target.AddPreTargetHandler(h3);
+
+  h1.set_expect_pre_target(true);
+  destroyer.set_expect_pre_target(true);
+  destroyer.set_dispatcher(dispatcher);
+  // |h3| should not receive events since |destroyer| will have destroyed
+  // it.
+  h3->set_expect_pre_target(false);
+
+  MouseEvent mouse(ui::ET_MOUSE_MOVED, gfx::Point(3, 4), gfx::Point(3, 4), 0);
+  dispatcher->ProcessEvent(&target, &mouse);
+  EXPECT_TRUE(mouse.stopped_propagation());
+  EXPECT_EQ(2U, target.handler_list().size());
+  EXPECT_EQ(1, target.handler_list()[0]);
+  EXPECT_EQ(2, target.handler_list()[1]);
+}
 }  // namespace ui

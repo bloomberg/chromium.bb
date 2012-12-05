@@ -12,6 +12,37 @@
 
 namespace ui {
 
+// This is similar to base::AutoReset<>. The difference is that this takes a
+// conditional variable, and resets the variable only if the value of the
+// conditional variable hasn't changed. This gets by the restriction of
+// base::AutoReset<> that the AutoReset instance needs to have a shorter
+// lifetime than the scoped_variable (which does not hold for EventDispatcher
+// when the dispatcher gets destroyed during event dispatch).
+template<class T>
+class ConditionalAutoReset {
+ public:
+  ConditionalAutoReset(T* scoped_variable, T new_value, bool* condition)
+      : scoped_variable_(scoped_variable),
+        original_value_(*scoped_variable),
+        conditional_(condition),
+        initial_condition_(*condition) {
+    *scoped_variable_ = new_value;
+  }
+
+  ~ConditionalAutoReset() {
+    if (*conditional_ == initial_condition_)
+      *scoped_variable_ = original_value_;
+  }
+
+ private:
+  T* scoped_variable_;
+  T original_value_;
+  bool* conditional_;
+  bool initial_condition_;
+
+  DISALLOW_COPY_AND_ASSIGN(ConditionalAutoReset);
+};
+
 // Dispatches events to appropriate targets.
 class UI_EXPORT EventDispatcher {
  public:
@@ -31,10 +62,14 @@ class UI_EXPORT EventDispatcher {
     ScopedDispatchHelper dispatch_helper(event);
     dispatch_helper.set_target(target);
 
+    bool destroyed = false;
     EventHandlerList list;
+    ConditionalAutoReset<EventHandlerList*>
+        reset(&handler_list_, &list, &destroyed);
     target->GetPreTargetHandlers(&list);
+
     dispatch_helper.set_phase(EP_PRETARGET);
-    DispatchEventToEventHandlers(list, event);
+    DispatchEventToEventHandlers(list, event, &destroyed);
     if (event->stopped_propagation())
       return;
 
@@ -45,7 +80,7 @@ class UI_EXPORT EventDispatcher {
     // abstraction.
     if (CanDispatchToTarget(target)) {
       dispatch_helper.set_phase(EP_TARGET);
-      DispatchEvent(target, event);
+      DispatchEvent(target, event, &destroyed);
       if (event->stopped_propagation())
         return;
     }
@@ -56,11 +91,13 @@ class UI_EXPORT EventDispatcher {
     list.clear();
     target->GetPostTargetHandlers(&list);
     dispatch_helper.set_phase(EP_POSTTARGET);
-    DispatchEventToEventHandlers(list, event);
+    DispatchEventToEventHandlers(list, event, &destroyed);
   }
 
   const Event* current_event() const { return current_event_; }
   Event* current_event() { return current_event_; }
+
+  void OnHandlerDestroyed(EventHandler* handler);
 
  private:
   class UI_EXPORT ScopedDispatchHelper : public NON_EXPORTED_BASE(
@@ -73,12 +110,25 @@ class UI_EXPORT EventDispatcher {
   };
 
   template<class T>
-  void DispatchEventToEventHandlers(EventHandlerList& list, T* event) {
+  void DispatchEventToEventHandlers(EventHandlerList& list,
+                                    T* event,
+                                    bool* destroyed) {
     for (EventHandlerList::const_iterator it = list.begin(),
             end = list.end(); it != end; ++it) {
-      DispatchEvent((*it), event);
-      if (event->stopped_propagation())
-        return;
+      (*it)->dispatcher_ = this;
+    }
+
+    while (!list.empty()) {
+      EventHandler* handler = (*list.begin());
+      if (!event->stopped_propagation())
+        DispatchEvent(handler, event, destroyed);
+
+      if (!list.empty() && *list.begin() == handler) {
+        // The handler has not been destroyed (because if it were, then it would
+        // have been removed from the list).
+        handler->dispatcher_ = NULL;
+        list.erase(list.begin());
+      }
     }
   }
 
@@ -86,27 +136,19 @@ class UI_EXPORT EventDispatcher {
   // event-handling result if the dispatcher itself has been destroyed during
   // dispatching the event to the event handler.
   template<class T>
-  void DispatchEvent(EventHandler* handler, T* event) {
+  void DispatchEvent(EventHandler* handler, T* event, bool* destroyed) {
     // If the target has been invalidated or deleted, don't dispatch the event.
     if (!CanDispatchToTarget(event->target())) {
       event->StopPropagation();
       return;
     }
-    bool destroyed = false;
-    set_on_destroy_ = &destroyed;
 
-    // Do not use base::AutoReset for |current_event_|. The EventDispatcher can
-    // be destroyed by the event-handler during the event-dispatch. That would
-    // cause invalid memory-write when AutoReset tries to restore the value.
-    Event* old_event = current_event_;
-    current_event_ = event;
+    ConditionalAutoReset<Event*> event_reset(&current_event_, event, destroyed);
+    ConditionalAutoReset<bool*> reset(&set_on_destroy_, destroyed, destroyed);
+
     DispatchEventToSingleHandler(handler, event);
-    if (destroyed) {
+    if (*destroyed)
       event->StopPropagation();
-    } else {
-      current_event_ = old_event;
-      set_on_destroy_ = NULL;
-    }
   }
 
   void DispatchEventToSingleHandler(EventHandler* handler, Event* event);
@@ -116,6 +158,8 @@ class UI_EXPORT EventDispatcher {
   bool* set_on_destroy_;
 
   Event* current_event_;
+
+  EventHandlerList* handler_list_;
 
   DISALLOW_COPY_AND_ASSIGN(EventDispatcher);
 };
