@@ -140,6 +140,10 @@ class OmniboxViewViews
   virtual void OnAfterUserAction(views::Textfield* sender) OVERRIDE;
   virtual void OnAfterCutOrCopy() OVERRIDE;
   virtual void OnWriteDragData(ui::OSExchangeData* data) OVERRIDE;
+  virtual void AppendDropFormats(
+      int* formats,
+      std::set<ui::OSExchangeData::CustomFormat>* custom_formats) OVERRIDE;
+  virtual int OnDrop(const ui::OSExchangeData& data) OVERRIDE;
   virtual void UpdateContextMenu(ui::SimpleMenuModel* menu_contents) OVERRIDE;
   virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
   virtual bool IsItemForCommandIdDynamic(int command_id) const OVERRIDE;

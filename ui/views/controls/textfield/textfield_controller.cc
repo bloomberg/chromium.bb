@@ -4,7 +4,13 @@
 
 #include "ui/views/controls/textfield/textfield_controller.h"
 
+#include "ui/base/dragdrop/drag_drop_types.h"
+
 namespace views {
+
+int TextfieldController::OnDrop(const ui::OSExchangeData& data) {
+  return ui::DragDropTypes::DRAG_NONE;
+}
 
 bool TextfieldController::IsCommandIdEnabled(int command_id) const {
   return false;

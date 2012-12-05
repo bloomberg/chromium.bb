@@ -196,11 +196,18 @@ bool NativeTextfieldViews::GetDropFormats(
     return false;
   // TODO(msw): Can we support URL, FILENAME, etc.?
   *formats = ui::OSExchangeData::STRING;
+  TextfieldController* controller = textfield_->GetController();
+  if (controller)
+    controller->AppendDropFormats(formats, custom_formats);
   return true;
 }
 
 bool NativeTextfieldViews::CanDrop(const OSExchangeData& data) {
-  return textfield_->enabled() && !textfield_->read_only() && data.HasString();
+  int formats;
+  std::set<OSExchangeData::CustomFormat> custom_formats;
+  GetDropFormats(&formats, &custom_formats);
+  return textfield_->enabled() && !textfield_->read_only() &&
+      data.HasAnyFormat(formats, custom_formats);
 }
 
 int NativeTextfieldViews::OnDragUpdated(const ui::DropTargetEvent& event) {
@@ -222,6 +229,14 @@ int NativeTextfieldViews::OnDragUpdated(const ui::DropTargetEvent& event) {
 
 int NativeTextfieldViews::OnPerformDrop(const ui::DropTargetEvent& event) {
   DCHECK(CanDrop(event.data()));
+
+  TextfieldController* controller = textfield_->GetController();
+  if (controller) {
+      int drag_operation = controller->OnDrop(event.data());
+      if (drag_operation != ui::DragDropTypes::DRAG_NONE)
+        return drag_operation;
+  }
+
   DCHECK(!initiating_drag_ ||
          !GetRenderText()->IsPointInSelection(event.location()));
   OnBeforeUserAction();

@@ -5,12 +5,14 @@
 #ifndef UI_VIEWS_CONTROLS_TEXTFIELD_TEXTFIELD_CONTROLLER_H_
 #define UI_VIEWS_CONTROLS_TEXTFIELD_TEXTFIELD_CONTROLLER_H_
 
+#include <set>
+
 #include "base/string16.h"
+#include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/views/views_export.h"
 
 namespace ui {
 class KeyEvent;
-class OSExchangeData;
 class SimpleMenuModel;
 }  // namespace ui
 
@@ -48,6 +50,17 @@ class VIEWS_EXPORT TextfieldController {
   // Called after the textfield has written drag data to give the controller a
   // chance to modify the drag data.
   virtual void OnWriteDragData(ui::OSExchangeData* data) {}
+
+  // Enables the controller to append to the accepted drop formats.
+  virtual void AppendDropFormats(
+      int* formats,
+      std::set<ui::OSExchangeData::CustomFormat>* custom_formats) {}
+
+  // Called when a drop of dragged data happens on the textfield. This method is
+  // called before regular handling of the drop. If this returns a drag
+  // operation other than |ui::DragDropTypes::DRAG_NONE|, regular handling is
+  // skipped.
+  virtual int OnDrop(const ui::OSExchangeData& data);
 
   // Gives the controller a chance to modify the context menu contents.
   virtual void UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {}

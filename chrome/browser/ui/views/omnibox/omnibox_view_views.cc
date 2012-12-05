@@ -779,6 +779,27 @@ void OmniboxViewViews::OnWriteDragData(ui::OSExchangeData* data) {
     data->SetURL(url, selected_text);
 }
 
+void OmniboxViewViews::AppendDropFormats(
+    int* formats,
+    std::set<ui::OSExchangeData::CustomFormat>* custom_formats) {
+  *formats = *formats | ui::OSExchangeData::URL;
+}
+
+int OmniboxViewViews::OnDrop(const ui::OSExchangeData& data) {
+  if (data.HasURL()) {
+    GURL url;
+    string16 title;
+    if (data.GetURLAndTitle(&url, &title)) {
+      string16 text(StripJavascriptSchemas(UTF8ToUTF16(url.spec())));
+      if (model()->CanPasteAndGo(text)) {
+        model()->PasteAndGo(text);
+        return ui::DragDropTypes::DRAG_COPY;
+      }
+    }
+  }
+  return ui::DragDropTypes::DRAG_NONE;
+}
+
 void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
   // Minor note: We use IDC_ for command id here while the underlying textfield
   // is using IDS_ for all its command ids. This is because views cannot depend
