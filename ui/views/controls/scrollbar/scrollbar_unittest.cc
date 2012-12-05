@@ -64,7 +64,7 @@ class NativeScrollBarTest : public ViewsTestBase {
     native_scrollbar_->set_controller(controller_.get());
 
     widget_ = new Widget;
-    Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
+    Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
     params.bounds = gfx::Rect(0, 0, 100, 100);
     widget_->Init(params);
     View* container = new View();

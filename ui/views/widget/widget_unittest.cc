@@ -137,65 +137,73 @@ class GestureCaptureView : public View {
   DISALLOW_COPY_AND_ASSIGN(GestureCaptureView);
 };
 
-typedef ViewsTestBase WidgetTest;
+class WidgetTest : public ViewsTestBase {
+ public:
+  WidgetTest() {}
+  virtual ~WidgetTest() {}
 
-NativeWidget* CreatePlatformNativeWidget(
-    internal::NativeWidgetDelegate* delegate) {
-  return new NativeWidgetPlatformForTest(delegate);
-}
+  NativeWidget* CreatePlatformNativeWidget(
+      internal::NativeWidgetDelegate* delegate) {
+    return new NativeWidgetPlatformForTest(delegate);
+  }
 
-Widget* CreateTopLevelPlatformWidget() {
-  Widget* toplevel = new Widget;
-  Widget::InitParams toplevel_params(Widget::InitParams::TYPE_WINDOW);
-  toplevel_params.native_widget = CreatePlatformNativeWidget(toplevel);
-  toplevel->Init(toplevel_params);
-  return toplevel;
-}
+  Widget* CreateTopLevelPlatformWidget() {
+    Widget* toplevel = new Widget;
+    Widget::InitParams toplevel_params =
+        CreateParams(Widget::InitParams::TYPE_WINDOW);
+    toplevel_params.native_widget = CreatePlatformNativeWidget(toplevel);
+    toplevel->Init(toplevel_params);
+    return toplevel;
+  }
 
-Widget* CreateChildPlatformWidget(gfx::NativeView parent_native_view) {
-  Widget* child = new Widget;
-  Widget::InitParams child_params(Widget::InitParams::TYPE_CONTROL);
-  child_params.native_widget = CreatePlatformNativeWidget(child);
-  child_params.parent = parent_native_view;
-  child->Init(child_params);
-  child->SetContentsView(new View);
-  return child;
-}
+  Widget* CreateChildPlatformWidget(gfx::NativeView parent_native_view) {
+    Widget* child = new Widget;
+    Widget::InitParams child_params =
+        CreateParams(Widget::InitParams::TYPE_CONTROL);
+    child_params.native_widget = CreatePlatformNativeWidget(child);
+    child_params.parent = parent_native_view;
+    child->Init(child_params);
+    child->SetContentsView(new View);
+    return child;
+  }
 
 #if defined(OS_WIN) && !defined(USE_AURA)
-// On Windows, it is possible for us to have a child window that is TYPE_POPUP.
-Widget* CreateChildPopupPlatformWidget(gfx::NativeView parent_native_view) {
-  Widget* child = new Widget;
-  Widget::InitParams child_params(Widget::InitParams::TYPE_POPUP);
-  child_params.child = true;
-  child_params.native_widget = CreatePlatformNativeWidget(child);
-  child_params.parent = parent_native_view;
-  child->Init(child_params);
-  child->SetContentsView(new View);
-  return child;
-}
+  // On Windows, it is possible for us to have a child window that is
+  // TYPE_POPUP.
+  Widget* CreateChildPopupPlatformWidget(gfx::NativeView parent_native_view) {
+    Widget* child = new Widget;
+    Widget::InitParams child_params =
+        CreateParams(Widget::InitParams::TYPE_POPUP);
+    child_params.child = true;
+    child_params.native_widget = CreatePlatformNativeWidget(child);
+    child_params.parent = parent_native_view;
+    child->Init(child_params);
+    child->SetContentsView(new View);
+    return child;
+  }
 #endif
 
-Widget* CreateTopLevelNativeWidget() {
-  Widget* toplevel = new Widget;
-  Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
-  toplevel->Init(params);
-  toplevel->SetContentsView(new View);
-  return toplevel;
-}
+  Widget* CreateTopLevelNativeWidget() {
+    Widget* toplevel = new Widget;
+    Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+    toplevel->Init(params);
+    toplevel->SetContentsView(new View);
+    return toplevel;
+  }
 
-Widget* CreateChildNativeWidgetWithParent(Widget* parent) {
-  Widget* child = new Widget;
-  Widget::InitParams params(Widget::InitParams::TYPE_CONTROL);
-  params.parent_widget = parent;
-  child->Init(params);
-  child->SetContentsView(new View);
-  return child;
-}
+  Widget* CreateChildNativeWidgetWithParent(Widget* parent) {
+    Widget* child = new Widget;
+    Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_CONTROL);
+    params.parent_widget = parent;
+    child->Init(params);
+    child->SetContentsView(new View);
+    return child;
+  }
 
-Widget* CreateChildNativeWidget() {
-  return CreateChildNativeWidgetWithParent(NULL);
-}
+  Widget* CreateChildNativeWidget() {
+    return CreateChildNativeWidgetWithParent(NULL);
+  }
+};
 
 bool WidgetHasMouseCapture(const Widget* widget) {
   return static_cast<const internal::NativeWidgetPrivate*>(widget->
@@ -524,10 +532,9 @@ TEST_F(WidgetOwnershipTest, Ownership_WidgetOwnsPlatformNativeWidget) {
   OwnershipTestState state;
 
   scoped_ptr<Widget> widget(new OwnershipTestWidget(&state));
-  Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.native_widget =
       new OwnershipTestNativeWidgetPlatform(widget.get(), &state);
-  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   widget->Init(params);
 
   // Now delete the Widget, which should delete the NativeWidget.
@@ -545,10 +552,9 @@ TEST_F(WidgetOwnershipTest, Ownership_WidgetOwnsViewsNativeWidget) {
   OwnershipTestState state;
 
   scoped_ptr<Widget> widget(new OwnershipTestWidget(&state));
-  Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.native_widget =
       new OwnershipTestNativeWidgetPlatform(widget.get(), &state);
-  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   widget->Init(params);
 
   // Now delete the Widget, which should delete the NativeWidget.
@@ -570,11 +576,10 @@ TEST_F(WidgetOwnershipTest,
   Widget* toplevel = CreateTopLevelPlatformWidget();
 
   scoped_ptr<Widget> widget(new OwnershipTestWidget(&state));
-  Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.native_widget =
       new OwnershipTestNativeWidgetPlatform(widget.get(), &state);
   params.parent_widget = toplevel;
-  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   widget->Init(params);
 
   // Now close the toplevel, which deletes the view hierarchy.

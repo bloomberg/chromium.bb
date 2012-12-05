@@ -24,7 +24,7 @@ const int kDefaultMargin = 6;
 
 class SizedBubbleDelegateView : public BubbleDelegateView {
  public:
-  SizedBubbleDelegateView();
+  SizedBubbleDelegateView(View* anchor_view);
   virtual ~SizedBubbleDelegateView();
 
   // View overrides:
@@ -34,7 +34,9 @@ class SizedBubbleDelegateView : public BubbleDelegateView {
   DISALLOW_COPY_AND_ASSIGN(SizedBubbleDelegateView);
 };
 
-SizedBubbleDelegateView::SizedBubbleDelegateView() {}
+SizedBubbleDelegateView::SizedBubbleDelegateView(View* anchor_view)
+    : BubbleDelegateView(anchor_view, BubbleBorder::TOP_LEFT) {
+}
 
 SizedBubbleDelegateView::~SizedBubbleDelegateView() {}
 
@@ -87,7 +89,14 @@ TEST_F(BubbleFrameViewTest, GetBoundsForClientView) {
 }
 
 TEST_F(BubbleFrameViewTest, NonClientHitTest) {
-  BubbleDelegateView* delegate = new SizedBubbleDelegateView();
+  // Create the anchor and parent widgets.
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+  scoped_ptr<Widget> anchor_widget(new Widget);
+  anchor_widget->Init(params);
+  anchor_widget->Show();
+
+  BubbleDelegateView* delegate =
+      new SizedBubbleDelegateView(anchor_widget->GetContentsView());
   Widget* widget(BubbleDelegateView::CreateBubble(delegate));
   delegate->Show();
   gfx::Point kPtInBound(100, 100);
