@@ -69,8 +69,18 @@ const char kCryptohomeInstallAttributesIsInvalid[] =
     "InstallAttributesIsInvalid";
 const char kCryptohomeInstallAttributesIsFirstInstall[] =
     "InstallAttributesIsFirstInstall";
+const char kCryptohomeTpmIsAttestationPrepared[] = "TpmIsAttestationPrepared";
+const char kCryptohomeTpmIsAttestationEnrolled[] = "TpmIsAttestationEnrolled";
+const char kCryptohomeAsyncTpmAttestationCreateEnrollRequest[] =
+    "AsyncTpmAttestationCreateEnrollRequest";
+const char kCryptohomeAsyncTpmAttestationEnroll[] = "AsyncTpmAttestationEnroll";
+const char kCryptohomeAsyncTpmAttestationCreateCertRequest[] =
+    "AsyncTpmAttestationCreateCertRequest";
+const char kCryptohomeAsyncTpmAttestationFinishCertRequest[] =
+    "AsyncTpmAttestationFinishCertRequest";
 // Signals
 const char kSignalAsyncCallStatus[] = "AsyncCallStatus";
+const char kSignalAsyncCallStatusWithData[] = "AsyncCallStatusWithData";
 const char kSignalTpmInitStatus[] = "TpmInitStatus";
 const char kSignalCleanupUsersRemoved[] = "CleanupUsersRemoved";
 // Error code
