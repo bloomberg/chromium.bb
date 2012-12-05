@@ -213,29 +213,6 @@ ChromeLauncherControllerPerBrowser::~ChromeLauncherControllerPerBrowser() {
 }
 
 void ChromeLauncherControllerPerBrowser::Init() {
-  // TODO(xiyuan): Remove migration code and kUseDefaultPinnedApp after M20.
-  // Migration cases:
-  // - Users that unpin all apps:
-  //   - have default pinned apps
-  //   - kUseDefaultPinnedApps set to false
-  //   Migrate them by setting an empty list for kPinnedLauncherApps.
-  //
-  // - Users that have customized pinned apps:
-  //   - have non-default non-empty pinned apps list
-  //   - kUseDefaultPinnedApps set to false
-  //   Nothing needs to be done because customized pref overrides default.
-  //
-  // - Users that have default apps (i.e. new user or never pin/unpin):
-  //   - have default pinned apps
-  //   - kUseDefaultPinnedApps is still true
-  //   Nothing needs to be done because they should get the default.
-  if (profile_->GetPrefs()->FindPreference(
-          prefs::kPinnedLauncherApps)->IsDefaultValue() &&
-      !profile_->GetPrefs()->GetBoolean(prefs::kUseDefaultPinnedApps)) {
-    ListPrefUpdate updater(profile_->GetPrefs(), prefs::kPinnedLauncherApps);
-    updater.Get()->Clear();
-  }
-
   UpdateAppLaunchersFromPref();
 
   // TODO(sky): update unit test so that this test isn't necessary.
@@ -862,10 +839,6 @@ void ChromeLauncherControllerPerBrowser::PersistPinnedState() {
     NOTREACHED() << "Can't pin but pinned state being updated";
     return;
   }
-
-  // Set kUseDefaultPinnedApps to false and use pinned apps list from prefs
-  // from now on.
-  profile_->GetPrefs()->SetBoolean(prefs::kUseDefaultPinnedApps, false);
 
   // Mutating kPinnedLauncherApps is going to notify us and trigger us to
   // process the change. We don't want that to happen so remove ourselves as a

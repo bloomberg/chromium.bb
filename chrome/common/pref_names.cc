@@ -2080,10 +2080,7 @@ const char kShelfAlignmentLocal[] = "shelf_alignment_local";
 // String value corresponding to ash::Shell::ShelfAutoHideBehavior.
 const char kShelfAutoHideBehavior[] = "auto_hide_behavior";
 const char kShelfAutoHideBehaviorLocal[] = "auto_hide_behavior_local";
-// Boolean value indicating whether to use default pinned apps.
-const char kUseDefaultPinnedApps[] = "use_default_pinned_apps";
-const char kPinnedLauncherApps[] =
-    "pinned_launcher_apps";
+const char kPinnedLauncherApps[] = "pinned_launcher_apps";
 // Boolean value indicating whether to show a logout button in the ash tray.
 const char kShowLogoutButtonInTray[] = "show_logout_button_in_tray";
 

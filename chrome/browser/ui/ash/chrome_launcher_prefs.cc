@@ -44,9 +44,6 @@ extern const char kShelfAlignmentRight[] = "Right";
 void RegisterChromeLauncherUserPrefs(PrefService* user_prefs) {
   // TODO: If we want to support multiple profiles this will likely need to be
   // pushed to local state and we'll need to track profile per item.
-  user_prefs->RegisterBooleanPref(prefs::kUseDefaultPinnedApps,
-                                  true,
-                                  PrefService::SYNCABLE_PREF);
   user_prefs->RegisterListPref(prefs::kPinnedLauncherApps,
                                CreateDefaultPinnedAppsList(),
                                PrefService::SYNCABLE_PREF);
