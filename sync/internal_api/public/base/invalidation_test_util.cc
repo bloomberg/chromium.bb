@@ -5,6 +5,9 @@
 #include "sync/internal_api/public/base/invalidation_test_util.h"
 
 #include "base/basictypes.h"
+#include "base/json/json_writer.h"
+#include "base/json/string_escape.h"
+#include "base/values.h"
 #include "sync/internal_api/public/base/invalidation.h"
 
 namespace syncer {
@@ -16,6 +19,39 @@ using ::testing::MatcherInterface;
 using ::testing::PrintToString;
 
 namespace {
+
+class AckHandleEqMatcher
+    : public MatcherInterface<const AckHandle&> {
+ public:
+  explicit AckHandleEqMatcher(const AckHandle& expected);
+
+  virtual bool MatchAndExplain(const AckHandle& actual,
+                               MatchResultListener* listener) const;
+  virtual void DescribeTo(::std::ostream* os) const;
+  virtual void DescribeNegationTo(::std::ostream* os) const;
+
+ private:
+  const AckHandle expected_;
+
+  DISALLOW_COPY_AND_ASSIGN(AckHandleEqMatcher);
+};
+
+AckHandleEqMatcher::AckHandleEqMatcher(const AckHandle& expected)
+    : expected_(expected) {
+}
+
+bool AckHandleEqMatcher::MatchAndExplain(const AckHandle& actual,
+                                         MatchResultListener* listener) const {
+  return expected_.Equals(actual);
+}
+
+void AckHandleEqMatcher::DescribeTo(::std::ostream* os) const {
+  *os << " is equal to " << PrintToString(expected_);
+}
+
+void AckHandleEqMatcher::DescribeNegationTo(::std::ostream* os) const {
+  *os << " isn't equal to " << PrintToString(expected_);
+}
 
 class InvalidationEqMatcher
     : public MatcherInterface<const Invalidation&> {
@@ -52,8 +88,23 @@ void InvalidationEqMatcher::DescribeNegationTo(::std::ostream* os) const {
 
 }  // namespace
 
-void PrintTo(const Invalidation& invalidation, ::std::ostream* os) {
-  *os << "{ payload: " << invalidation.payload << " }";
+void PrintTo(const AckHandle& ack_handle, ::std::ostream* os ) {
+  scoped_ptr<base::Value> value(ack_handle.ToValue());
+  std::string printable_ack_handle;
+  base::JSONWriter::Write(value.get(), &printable_ack_handle);
+  *os << "{ ack_handle: " << printable_ack_handle << " }";
+}
+
+Matcher<const AckHandle&> Eq(const AckHandle& expected) {
+  return MakeMatcher(new AckHandleEqMatcher(expected));
+}
+
+void PrintTo(const Invalidation& state, ::std::ostream* os) {
+  std::string printable_payload;
+  base::JsonDoubleQuote(state.payload,
+                        true /* put_in_quotes */,
+                        &printable_payload);
+  *os << "{ payload: " << printable_payload << " }";
 }
 
 Matcher<const Invalidation&> Eq(const Invalidation& expected) {

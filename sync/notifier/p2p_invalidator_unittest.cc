@@ -194,9 +194,11 @@ TEST_F(P2PInvalidatorTest, P2PNotificationDataNonDefault) {
   EXPECT_EQ(
       "{\"idInvalidationMap\":["
       "{\"objectId\":{\"name\":\"BOOKMARK\",\"source\":1004},"
-      "\"state\":{\"ackHandle\":{},\"payload\":\"\"}},"
+      "\"state\":{\"ackHandle\":{\"state\":\"\",\"timestamp\":\"0\"},"
+      "\"payload\":\"\"}},"
       "{\"objectId\":{\"name\":\"THEME\",\"source\":1004},"
-      "\"state\":{\"ackHandle\":{},\"payload\":\"\"}}"
+      "\"state\":{\"ackHandle\":{\"state\":\"\",\"timestamp\":\"0\"},"
+      "\"payload\":\"\"}}"
       "],\"notificationType\":\"notifyAll\","
       "\"senderId\":\"sender\",\"source\":1}", notification_data_str);
 

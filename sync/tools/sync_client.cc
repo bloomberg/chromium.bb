@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/at_exit.h"
-#include "base/base64.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/debug/stack_trace.h"
@@ -44,6 +43,7 @@
 #include "sync/notifier/invalidator.h"
 #include "sync/notifier/invalidator_factory.h"
 #include "sync/test/fake_encryptor.h"
+#include "sync/tools/null_invalidation_state_tracker.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -64,41 +64,6 @@ const char kXmppTrySslTcpFirstSwitch[] = "xmpp-try-ssltcp-first";
 const char kXmppAllowInsecureConnectionSwitch[] =
     "xmpp-allow-insecure-connection";
 const char kNotificationMethodSwitch[] = "notification-method";
-
-class NullInvalidationStateTracker
-    : public base::SupportsWeakPtr<NullInvalidationStateTracker>,
-      public InvalidationStateTracker {
- public:
-  NullInvalidationStateTracker() {}
-  virtual ~NullInvalidationStateTracker() {}
-
-  virtual InvalidationStateMap GetAllInvalidationStates() const OVERRIDE {
-    return InvalidationStateMap();
-  }
-
-  virtual void SetMaxVersion(
-      const invalidation::ObjectId& id,
-      int64 max_invalidation_version) OVERRIDE {
-    VLOG(1) << "Setting max invalidation version for "
-            << ObjectIdToString(id) << " to " << max_invalidation_version;
-  }
-
-  virtual void Forget(const ObjectIdSet& ids) OVERRIDE {
-    for (ObjectIdSet::const_iterator it = ids.begin(); it != ids.end(); ++it) {
-      VLOG(1) << "Forgetting invalidation state for " << ObjectIdToString(*it);
-    }
-  }
-
-  virtual std::string GetBootstrapData() const OVERRIDE {
-    return std::string();
-  }
-
-  virtual void SetBootstrapData(const std::string& data) OVERRIDE {
-    std::string base64_data;
-    CHECK(base::Base64Encode(data, &base64_data));
-    VLOG(1) << "Setting bootstrap data to: " << base64_data;
-  }
-};
 
 // Needed to use a real host resolver.
 class MyTestURLRequestContext : public net::TestURLRequestContext {

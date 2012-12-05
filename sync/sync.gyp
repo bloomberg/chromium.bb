@@ -921,6 +921,25 @@
   'conditions': [
     ['OS != "ios"', {
       'targets': [
+        {
+          'target_name': 'sync_tools_helper',
+          'type': 'static_library',
+          'include_dirs': [
+            '..',
+          ],
+          'dependencies': [
+            '../base/base.gyp:base',
+            'sync_notifier',
+          ],
+          'export_dependent_settings': [
+            '../base/base.gyp:base',
+            'sync_notifier',
+          ],
+          'sources': [
+            'tools/null_invalidation_state_tracker.cc',
+            'tools/null_invalidation_state_tracker.h',
+          ],
+        },
         # A tool to listen to sync notifications and print them out.
         {
           'target_name': 'sync_listen_notifications',
@@ -931,6 +950,7 @@
             '../net/net.gyp:net',
             '../net/net.gyp:net_test_support',
             'sync',
+            'sync_tools_helper',
           ],
           'sources': [
             'tools/sync_listen_notifications.cc',
@@ -950,6 +970,7 @@
             '../net/net.gyp:net',
             '../net/net.gyp:net_test_support',
             'sync',
+            'sync_tools_helper',
           ],
           'sources': [
             'tools/sync_client.cc',

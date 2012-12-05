@@ -7,13 +7,11 @@
 #include <string>
 
 #include "base/at_exit.h"
-#include "base/base64.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/threading/thread.h"
 #include "jingle/notifier/base/notification_method.h"
@@ -30,6 +28,7 @@
 #include "sync/notifier/invalidation_util.h"
 #include "sync/notifier/invalidator_factory.h"
 #include "sync/notifier/invalidator.h"
+#include "sync/tools/null_invalidation_state_tracker.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -76,41 +75,6 @@ class NotificationPrinter : public InvalidationHandler {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NotificationPrinter);
-};
-
-class NullInvalidationStateTracker
-    : public base::SupportsWeakPtr<NullInvalidationStateTracker>,
-      public InvalidationStateTracker {
- public:
-  NullInvalidationStateTracker() {}
-  virtual ~NullInvalidationStateTracker() {}
-
-  virtual InvalidationStateMap GetAllInvalidationStates() const OVERRIDE {
-    return InvalidationStateMap();
-  }
-
-  virtual void SetMaxVersion(
-      const invalidation::ObjectId& id,
-      int64 max_invalidation_version) OVERRIDE {
-    LOG(INFO) << "Setting max invalidation version for "
-              << ObjectIdToString(id) << " to " << max_invalidation_version;
-  }
-
-  virtual void Forget(const ObjectIdSet& ids) OVERRIDE {
-    for (ObjectIdSet::const_iterator it = ids.begin(); it != ids.end(); ++it) {
-      LOG(INFO) << "Forgetting saved state for " << ObjectIdToString(*it);
-    }
-  }
-
-  virtual std::string GetBootstrapData() const OVERRIDE {
-    return std::string();
-  }
-
-  virtual void SetBootstrapData(const std::string& data) OVERRIDE {
-    std::string base64_data;
-    CHECK(base::Base64Encode(data, &base64_data));
-    LOG(INFO) << "Setting bootstrap data to: " << base64_data;
-  }
 };
 
 // Needed to use a real host resolver.

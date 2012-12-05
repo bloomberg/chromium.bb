@@ -43,12 +43,19 @@ class InvalidatorStorage : public base::SupportsWeakPtr<InvalidatorStorage>,
   // InvalidationStateTracker implementation.
   virtual syncer::InvalidationStateMap GetAllInvalidationStates() const
       OVERRIDE;
-  virtual void SetMaxVersion(const invalidation::ObjectId& id,
-                             int64 max_version) OVERRIDE;
+  virtual void SetMaxVersionAndPayload(const invalidation::ObjectId& id,
+                                       int64 max_version,
+                                       const std::string& payload) OVERRIDE;
   virtual void Forget(const syncer::ObjectIdSet& ids) OVERRIDE;
   // TODO(tim): These are not yet used. Bug 124140.
   virtual void SetBootstrapData(const std::string& data) OVERRIDE;
   virtual std::string GetBootstrapData() const OVERRIDE;
+  virtual void GenerateAckHandles(
+      const syncer::ObjectIdSet& ids,
+      const scoped_refptr<base::TaskRunner>& task_runner,
+      base::Callback<void(const syncer::AckHandleMap&)> callback) OVERRIDE;
+  virtual void Acknowledge(const invalidation::ObjectId& id,
+                           const syncer::AckHandle& ack_handle) OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(InvalidatorStorageTest, SerializeEmptyMap);
@@ -61,6 +68,8 @@ class InvalidatorStorage : public base::SupportsWeakPtr<InvalidatorStorage>,
   FRIEND_TEST_ALL_PREFIXES(InvalidatorStorageTest,
                            DeserializeFromEmptyList);
   FRIEND_TEST_ALL_PREFIXES(InvalidatorStorageTest, DeserializeFromListBasic);
+  FRIEND_TEST_ALL_PREFIXES(InvalidatorStorageTest,
+                           DeserializeFromListMissingOptionalValues);
   FRIEND_TEST_ALL_PREFIXES(InvalidatorStorageTest, DeserializeMapOutOfRange);
   FRIEND_TEST_ALL_PREFIXES(InvalidatorStorageTest, DeserializeMapInvalidFormat);
   FRIEND_TEST_ALL_PREFIXES(InvalidatorStorageTest,

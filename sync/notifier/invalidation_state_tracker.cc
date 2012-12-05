@@ -6,8 +6,19 @@
 
 namespace syncer {
 
+InvalidationState::InvalidationState()
+    : version(kint64min),
+      expected(AckHandle::InvalidAckHandle()),
+      current(AckHandle::InvalidAckHandle()) {
+}
+
+InvalidationState::~InvalidationState() {
+}
+
 bool operator==(const InvalidationState& lhs, const InvalidationState& rhs) {
-  return lhs.version == rhs.version;
+  return lhs.version == rhs.version &&
+      lhs.expected.Equals(rhs.expected) &&
+      lhs.current.Equals(rhs.current);
 }
 
 }  // namespace syncer

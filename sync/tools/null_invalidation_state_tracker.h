@@ -2,47 +2,39 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_NOTIFIER_FAKE_INVALIDATION_STATE_TRACKER_H_
-#define SYNC_NOTIFIER_FAKE_INVALIDATION_STATE_TRACKER_H_
+#ifndef SYNC_TOOLS_NULL_INVALIDATION_STATE_TRACKER_H_
+#define SYNC_TOOLS_NULL_INVALIDATION_STATE_TRACKER_H_
 
+#include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "sync/notifier/invalidation_state_tracker.h"
 
 namespace syncer {
 
-// InvalidationStateTracker implementation that simply keeps track of
-// the max versions and invalidation state in memory.
-class FakeInvalidationStateTracker
-    : public InvalidationStateTracker,
-      public base::SupportsWeakPtr<FakeInvalidationStateTracker> {
+class NullInvalidationStateTracker
+    : public base::SupportsWeakPtr<NullInvalidationStateTracker>,
+      public InvalidationStateTracker {
  public:
-  FakeInvalidationStateTracker();
-  virtual ~FakeInvalidationStateTracker();
+  NullInvalidationStateTracker();
+  virtual ~NullInvalidationStateTracker();
 
-  int64 GetMaxVersion(const invalidation::ObjectId& id) const;
-
-  // InvalidationStateTracker implementation.
   virtual InvalidationStateMap GetAllInvalidationStates() const OVERRIDE;
   virtual void SetMaxVersionAndPayload(const invalidation::ObjectId& id,
-                                       int64 max_version,
+                                       int64 max_invalidation_version,
                                        const std::string& payload) OVERRIDE;
   virtual void Forget(const ObjectIdSet& ids) OVERRIDE;
-  virtual void SetBootstrapData(const std::string& data) OVERRIDE;
+
   virtual std::string GetBootstrapData() const OVERRIDE;
+  virtual void SetBootstrapData(const std::string& data) OVERRIDE;
+
   virtual void GenerateAckHandles(
       const ObjectIdSet& ids,
       const scoped_refptr<base::TaskRunner>& task_runner,
       base::Callback<void(const AckHandleMap&)> callback) OVERRIDE;
   virtual void Acknowledge(const invalidation::ObjectId& id,
                            const AckHandle& ack_handle) OVERRIDE;
-
-  static const int64 kMinVersion;
-
- private:
-  InvalidationStateMap state_map_;
-  std::string bootstrap_data_;
 };
 
 }  // namespace syncer
 
-#endif  // SYNC_NOTIFIER_FAKE_INVALIDATION_STATE_TRACKER_H_
+#endif  // SYNC_TOOLS_NULL_INVALIDATION_STATE_TRACKER_H_

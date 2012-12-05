@@ -5,11 +5,14 @@
 
 #include "chrome/browser/sync/invalidations/invalidator_storage.h"
 
+#include "base/bind.h"
 #include "base/message_loop.h"
+#include "base/message_loop_proxy.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service.h"
+#include "sync/internal_api/public/base/invalidation_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -22,8 +25,16 @@ namespace {
 const char kSourceKey[] = "source";
 const char kNameKey[] = "name";
 const char kMaxVersionKey[] = "max-version";
+const char kPayloadKey[] = "payload";
+const char kCurrentAckHandleKey[] = "current-ack";
+const char kExpectedAckHandleKey[] = "expected-ack";
 
 const int kChromeSyncSourceId = 1004;
+
+void GenerateAckHandlesTestHelper(syncer::AckHandleMap* output,
+                                  const syncer::AckHandleMap& input) {
+  *output = input;
+}
 
 }  // namespace
 
@@ -43,33 +54,35 @@ class InvalidatorStorageTest : public testing::Test {
   const invalidation::ObjectId kAppNotificationsId_;
   const invalidation::ObjectId kAutofillId_;
 
- private:
   MessageLoop loop_;
 };
 
-// Set max versions for various keys and verify that they are written and read
-// back correctly.
-TEST_F(InvalidatorStorageTest, MaxInvalidationVersions) {
+// Set invalidation states for various keys and verify that they are written and
+// read back correctly.
+TEST_F(InvalidatorStorageTest, SetMaxVersionAndPayload) {
   InvalidatorStorage storage(&pref_service_);
 
-  InvalidationStateMap expected_max_versions;
-  EXPECT_EQ(expected_max_versions, storage.GetAllInvalidationStates());
+  InvalidationStateMap expected_states;
+  EXPECT_EQ(expected_states, storage.GetAllInvalidationStates());
 
-  expected_max_versions[kBookmarksId_].version = 2;
-  storage.SetMaxVersion(kBookmarksId_, 2);
-  EXPECT_EQ(expected_max_versions, storage.GetAllInvalidationStates());
+  expected_states[kBookmarksId_].version = 2;
+  expected_states[kBookmarksId_].payload = "hello";
+  storage.SetMaxVersionAndPayload(kBookmarksId_, 2, "hello");
+  EXPECT_EQ(expected_states, storage.GetAllInvalidationStates());
 
-  expected_max_versions[kPreferencesId_].version = 5;
-  storage.SetMaxVersion(kPreferencesId_, 5);
-  EXPECT_EQ(expected_max_versions, storage.GetAllInvalidationStates());
+  expected_states[kPreferencesId_].version = 5;
+  storage.SetMaxVersionAndPayload(kPreferencesId_, 5, std::string());
+  EXPECT_EQ(expected_states, storage.GetAllInvalidationStates());
 
-  expected_max_versions[kAppNotificationsId_].version = 3;
-  storage.SetMaxVersion(kAppNotificationsId_, 3);
-  EXPECT_EQ(expected_max_versions, storage.GetAllInvalidationStates());
+  expected_states[kAppNotificationsId_].version = 3;
+  expected_states[kAppNotificationsId_].payload = "world";
+  storage.SetMaxVersionAndPayload(kAppNotificationsId_, 3, "world");
+  EXPECT_EQ(expected_states, storage.GetAllInvalidationStates());
 
-  expected_max_versions[kAppNotificationsId_].version = 4;
-  storage.SetMaxVersion(kAppNotificationsId_, 4);
-  EXPECT_EQ(expected_max_versions, storage.GetAllInvalidationStates());
+  expected_states[kAppNotificationsId_].version = 4;
+  expected_states[kAppNotificationsId_].payload = "again";
+  storage.SetMaxVersionAndPayload(kAppNotificationsId_, 4, "again");
+  EXPECT_EQ(expected_states, storage.GetAllInvalidationStates());
 }
 
 // Forgetting an entry should cause that entry to be deleted.
@@ -77,18 +90,20 @@ TEST_F(InvalidatorStorageTest, Forget) {
   InvalidatorStorage storage(&pref_service_);
   EXPECT_TRUE(storage.GetAllInvalidationStates().empty());
 
-  InvalidationStateMap expected_max_versions;
-  expected_max_versions[kBookmarksId_].version = 2;
-  expected_max_versions[kPreferencesId_].version = 5;
-  storage.SetMaxVersion(kBookmarksId_, 2);
-  storage.SetMaxVersion(kPreferencesId_, 5);
-  EXPECT_EQ(expected_max_versions, storage.GetAllInvalidationStates());
+  InvalidationStateMap expected_states;
+  expected_states[kBookmarksId_].version = 2;
+  expected_states[kBookmarksId_].payload = "a";
+  expected_states[kPreferencesId_].version = 5;
+  expected_states[kPreferencesId_].payload = "b";
+  storage.SetMaxVersionAndPayload(kBookmarksId_, 2, "a");
+  storage.SetMaxVersionAndPayload(kPreferencesId_, 5, "b");
+  EXPECT_EQ(expected_states, storage.GetAllInvalidationStates());
 
-  expected_max_versions.erase(kPreferencesId_);
+  expected_states.erase(kPreferencesId_);
   syncer::ObjectIdSet to_forget;
   to_forget.insert(kPreferencesId_);
   storage.Forget(to_forget);
-  EXPECT_EQ(expected_max_versions, storage.GetAllInvalidationStates());
+  EXPECT_EQ(expected_states, storage.GetAllInvalidationStates());
 }
 
 // Clearing the storage should erase all version map entries and the bootstrap
@@ -101,10 +116,10 @@ TEST_F(InvalidatorStorageTest, Clear) {
   storage.SetBootstrapData("test");
   EXPECT_EQ("test", storage.GetBootstrapData());
   {
-    InvalidationStateMap expected_max_versions;
-    expected_max_versions[kAppNotificationsId_].version = 3;
-    storage.SetMaxVersion(kAppNotificationsId_, 3);
-    EXPECT_EQ(expected_max_versions, storage.GetAllInvalidationStates());
+    InvalidationStateMap expected_states;
+    expected_states[kAppNotificationsId_].version = 3;
+    storage.SetMaxVersionAndPayload(kAppNotificationsId_, 3, std::string());
+    EXPECT_EQ(expected_states, storage.GetAllInvalidationStates());
   }
 
   storage.Clear();
@@ -227,28 +242,82 @@ TEST_F(InvalidatorStorageTest, DeserializeFromEmptyList) {
   EXPECT_TRUE(map.empty());
 }
 
-// Tests that deserializing a well-formed value results in the expected version
+// Tests that deserializing a well-formed value results in the expected state
 // map.
 TEST_F(InvalidatorStorageTest, DeserializeFromListBasic) {
   InvalidationStateMap map;
   base::ListValue list;
   DictionaryValue* value;
+  syncer::AckHandle ack_handle_1 = syncer::AckHandle::CreateUnique();
+  syncer::AckHandle ack_handle_2 = syncer::AckHandle::CreateUnique();
 
+  value = new DictionaryValue();
+  value->SetString(kSourceKey,
+                   base::IntToString(kAppNotificationsId_.source()));
+  value->SetString(kNameKey, kAppNotificationsId_.name());
+  value->SetString(kMaxVersionKey, "20");
+  value->SetString(kPayloadKey, "testing");
+  value->Set(kCurrentAckHandleKey, ack_handle_1.ToValue().release());
+  value->Set(kExpectedAckHandleKey, ack_handle_2.ToValue().release());
+  list.Append(value);
+
+  InvalidatorStorage::DeserializeFromList(list, &map);
+  EXPECT_EQ(1U, map.size());
+  EXPECT_EQ(20, map[kAppNotificationsId_].version);
+  EXPECT_EQ("testing", map[kAppNotificationsId_].payload);
+  EXPECT_THAT(map[kAppNotificationsId_].current, Eq(ack_handle_1));
+  EXPECT_THAT(map[kAppNotificationsId_].expected, Eq(ack_handle_2));
+}
+
+// Tests that deserializing well-formed values when optional parameters are
+// omitted works.
+TEST_F(InvalidatorStorageTest, DeserializeFromListMissingOptionalValues) {
+  InvalidationStateMap map;
+  base::ListValue list;
+  DictionaryValue* value;
+  syncer::AckHandle ack_handle = syncer::AckHandle::CreateUnique();
+
+  // Payload missing because of an upgrade from a previous browser version that
+  // didn't set the field.
   value = new DictionaryValue();
   value->SetString(kSourceKey, base::IntToString(kAutofillId_.source()));
   value->SetString(kNameKey, kAutofillId_.name());
   value->SetString(kMaxVersionKey, "10");
   list.Append(value);
+  // A crash between SetMaxVersion() and a callback from GenerateAckHandles()
+  // could result in this state.
   value = new DictionaryValue();
   value->SetString(kSourceKey, base::IntToString(kBookmarksId_.source()));
   value->SetString(kNameKey, kBookmarksId_.name());
   value->SetString(kMaxVersionKey, "15");
+  value->SetString(kPayloadKey, "hello");
+  list.Append(value);
+  // Never acknowledged, so current ack handle is unset.
+  value = new DictionaryValue();
+  value->SetString(kSourceKey, base::IntToString(kPreferencesId_.source()));
+  value->SetString(kNameKey, kPreferencesId_.name());
+  value->SetString(kMaxVersionKey, "20");
+  value->SetString(kPayloadKey, "world");
+  value->Set(kExpectedAckHandleKey, ack_handle.ToValue().release());
   list.Append(value);
 
   InvalidatorStorage::DeserializeFromList(list, &map);
-  EXPECT_EQ(2U, map.size());
+  EXPECT_EQ(3U, map.size());
+
   EXPECT_EQ(10, map[kAutofillId_].version);
+  EXPECT_EQ("", map[kAutofillId_].payload);
+  EXPECT_FALSE(map[kAutofillId_].current.IsValid());
+  EXPECT_FALSE(map[kAutofillId_].expected.IsValid());
+
   EXPECT_EQ(15, map[kBookmarksId_].version);
+  EXPECT_EQ("hello", map[kBookmarksId_].payload);
+  EXPECT_FALSE(map[kBookmarksId_].current.IsValid());
+  EXPECT_FALSE(map[kBookmarksId_].expected.IsValid());
+
+  EXPECT_EQ(20, map[kPreferencesId_].version);
+  EXPECT_EQ("world", map[kPreferencesId_].payload);
+  EXPECT_FALSE(map[kPreferencesId_].current.IsValid());
+  EXPECT_THAT(map[kPreferencesId_].expected, Eq(ack_handle));
 }
 
 // Tests for legacy deserialization code.
@@ -338,6 +407,82 @@ TEST_F(InvalidatorStorageTest, SetGetBootstrapData) {
 
   storage.SetBootstrapData(mess);
   EXPECT_EQ(mess, storage.GetBootstrapData());
+}
+
+// Test that we correctly generate ack handles, acknowledge them, and persist
+// them.
+TEST_F(InvalidatorStorageTest, GenerateAckHandlesAndAcknowledge) {
+  InvalidatorStorage storage(&pref_service_);
+  syncer::ObjectIdSet ids;
+  InvalidationStateMap state_map;
+  syncer::AckHandleMap ack_handle_map;
+  syncer::AckHandleMap::const_iterator it;
+
+  // Test that it works as expected if the key doesn't already exist in the map,
+  // e.g. the first invalidation received for the object ID was not for a
+  // specific version.
+  ids.insert(kAutofillId_);
+  storage.GenerateAckHandles(
+      ids, base::MessageLoopProxy::current(),
+      base::Bind(&GenerateAckHandlesTestHelper, &ack_handle_map));
+  loop_.RunUntilIdle();
+  EXPECT_EQ(1U, ack_handle_map.size());
+  it = ack_handle_map.find(kAutofillId_);
+  // Android STL appears to be buggy and causes gtest's IsContainerTest<> to
+  // treat an iterator as a STL container so we use != instead of ASSERT_NE.
+  ASSERT_TRUE(ack_handle_map.end() != it);
+  EXPECT_TRUE(it->second.IsValid());
+  state_map[kAutofillId_].expected = it->second;
+  EXPECT_EQ(state_map, storage.GetAllInvalidationStates());
+
+  storage.Acknowledge(kAutofillId_, it->second);
+  state_map[kAutofillId_].current = it->second;
+  EXPECT_EQ(state_map, storage.GetAllInvalidationStates());
+
+  ids.clear();
+
+  // Test that it works as expected if the key already exists.
+  state_map[kBookmarksId_].version = 11;
+  state_map[kBookmarksId_].payload = "hello";
+  storage.SetMaxVersionAndPayload(kBookmarksId_, 11, "hello");
+  EXPECT_EQ(state_map, storage.GetAllInvalidationStates());
+  ids.insert(kBookmarksId_);
+  storage.GenerateAckHandles(
+      ids, base::MessageLoopProxy::current(),
+      base::Bind(&GenerateAckHandlesTestHelper, &ack_handle_map));
+  loop_.RunUntilIdle();
+  EXPECT_EQ(1U, ack_handle_map.size());
+  it = ack_handle_map.find(kBookmarksId_);
+  ASSERT_TRUE(ack_handle_map.end() != it);
+  EXPECT_TRUE(it->second.IsValid());
+  state_map[kBookmarksId_].expected = it->second;
+  EXPECT_EQ(state_map, storage.GetAllInvalidationStates());
+
+  storage.Acknowledge(kBookmarksId_, it->second);
+  state_map[kBookmarksId_].current = it->second;
+  EXPECT_EQ(state_map, storage.GetAllInvalidationStates());
+
+  // Finally, test that the ack handles are updated if we're asked to generate
+  // another ack handle for the same object ID.
+  state_map[kBookmarksId_].version = 12;
+  state_map[kBookmarksId_].payload = "world";
+  storage.SetMaxVersionAndPayload(kBookmarksId_, 12, "world");
+  EXPECT_EQ(state_map, storage.GetAllInvalidationStates());
+  ids.insert(kBookmarksId_);
+  storage.GenerateAckHandles(
+      ids, base::MessageLoopProxy::current(),
+      base::Bind(&GenerateAckHandlesTestHelper, &ack_handle_map));
+  loop_.RunUntilIdle();
+  EXPECT_EQ(1U, ack_handle_map.size());
+  it = ack_handle_map.find(kBookmarksId_);
+  ASSERT_TRUE(ack_handle_map.end() != it);
+  EXPECT_TRUE(it->second.IsValid());
+  state_map[kBookmarksId_].expected = it->second;
+  EXPECT_EQ(state_map, storage.GetAllInvalidationStates());
+
+  storage.Acknowledge(kBookmarksId_, it->second);
+  state_map[kBookmarksId_].current = it->second;
+  EXPECT_EQ(state_map, storage.GetAllInvalidationStates());
 }
 
 }  // namespace browser_sync

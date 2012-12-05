@@ -7,25 +7,36 @@
 
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time.h"
 
 namespace base {
 class DictionaryValue;
-class Value;
 }  // namespace
 
 namespace syncer {
 
-// Opaque class that represents an ack handle.
-// TODO(dcheng): This is just a refactoring change, so the class is empty for
-// the moment. It will be filled once we start implementing 'reminders'.
+// Opaque class that represents a local ack handle. We don't reuse the
+// invalidation ack handles to avoid unnecessary dependencies.
 class AckHandle {
  public:
+  static AckHandle CreateUnique();
+  static AckHandle InvalidAckHandle();
+
   bool Equals(const AckHandle& other) const;
 
-  scoped_ptr<base::Value> ToValue() const;
+  scoped_ptr<base::DictionaryValue> ToValue() const;
+  bool ResetFromValue(const base::DictionaryValue& value);
 
-  bool ResetFromValue(const base::Value& value);
+  bool IsValid() const;
+
+ private:
+  // Explicitly copyable and assignable for STL containers.
+  AckHandle(const std::string& state, base::Time timestamp);
+
+  std::string state_;
+  base::Time timestamp_;
 };
 
 // Represents a local invalidation, and is roughly analogous to
@@ -34,15 +45,15 @@ class AckHandle {
 // acknowledge receipt of the invalidation. It does not embed the object ID,
 // since it is typically associated with it through ObjectIdInvalidationMap.
 struct Invalidation {
-  std::string payload;
-  AckHandle ack_handle;
+  Invalidation();
 
   bool Equals(const Invalidation& other) const;
 
-  // Caller owns the returned DictionaryValue.
   scoped_ptr<base::DictionaryValue> ToValue() const;
-
   bool ResetFromValue(const base::DictionaryValue& value);
+
+  std::string payload;
+  AckHandle ack_handle;
 };
 
 }  // namespace syncer

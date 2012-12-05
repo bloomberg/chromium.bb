@@ -148,18 +148,19 @@ void SyncInvalidationListener::Invalidate(
     client->Acknowledge(ack_handle);
     return;
   }
-  DVLOG(2) << "Setting max invalidation version for " << ObjectIdToString(id)
-           << " to " << invalidation.version();
-  invalidation_state_map_[id].version = invalidation.version();
-  invalidation_state_tracker_.Call(
-      FROM_HERE,
-      &InvalidationStateTracker::SetMaxVersion,
-      id, invalidation.version());
 
   std::string payload;
   // payload() CHECK()'s has_payload(), so we must check it ourselves first.
   if (invalidation.has_payload())
     payload = invalidation.payload();
+
+  DVLOG(2) << "Setting max invalidation version for " << ObjectIdToString(id)
+           << " to " << invalidation.version();
+  invalidation_state_map_[id].version = invalidation.version();
+  invalidation_state_tracker_.Call(
+      FROM_HERE,
+      &InvalidationStateTracker::SetMaxVersionAndPayload,
+      id, invalidation.version(), payload);
 
   ObjectIdInvalidationMap invalidation_map;
   invalidation_map[id].payload = payload;
