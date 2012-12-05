@@ -4,6 +4,10 @@
 
 #include "ui/gl/gl_gl_api_implementation.h"
 
+#include <algorithm>
+#include <vector>
+
+#include "base/string_util.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_state_restorer.h"
 #include "ui/gl/gl_surface.h"
@@ -78,6 +82,22 @@ VirtualGLApi::~VirtualGLApi() {
 void VirtualGLApi::Initialize(DriverGL* driver, GLContext* real_context) {
   driver_ = driver;
   real_context_ = real_context;
+
+  DCHECK(real_context->IsCurrent(NULL));
+  std::string ext_string(
+      reinterpret_cast<const char*>(driver_->fn.glGetStringFn(GL_EXTENSIONS)));
+  std::vector<std::string> ext;
+  Tokenize(ext_string, " ", &ext);
+
+  std::vector<std::string>::iterator it;
+  // We can't support GL_EXT_occlusion_query_boolean which is
+  // based on GL_ARB_occlusion_query without a lot of work virtualizing
+  // queries.
+  it = std::find(ext.begin(), ext.end(), "GL_EXT_occlusion_query_boolean");
+  if (it != ext.end())
+    ext.erase(it);
+
+  extensions_ = JoinString(ext, " ");
 }
 
 bool VirtualGLApi::MakeCurrent(GLContext* virtual_context, GLSurface* surface) {
@@ -103,6 +123,10 @@ bool VirtualGLApi::MakeCurrent(GLContext* virtual_context, GLSurface* surface) {
   DCHECK(virtual_context->IsCurrent(surface));
 
   if (switched_contexts || virtual_context != current_context_) {
+    // There should be no errors from the previous context leaking into the
+    // new context.
+    DCHECK_EQ(glGetErrorFn(), static_cast<GLenum>(GL_NO_ERROR));
+
     current_context_ = virtual_context;
     // Set all state that is different from the real state
     // NOTE: !!! This is a temporary implementation that just restores all
@@ -116,6 +140,11 @@ bool VirtualGLApi::MakeCurrent(GLContext* virtual_context, GLSurface* surface) {
   }
   SetGLApi(this);
   return true;
+}
+
+void VirtualGLApi::OnDestroyVirtualContext(GLContext* virtual_context) {
+  if (current_context_ == virtual_context)
+    current_context_ = NULL;
 }
 
 void VirtualGLApi::glActiveTextureFn(GLenum texture) {
@@ -582,18 +611,7 @@ void VirtualGLApi::glGetShaderSourceFn(
 const GLubyte* VirtualGLApi::glGetStringFn(GLenum name) {
   switch (name) {
     case GL_EXTENSIONS:
-      // For now return no extensions.
-      //
-      // Specificially we can't support GL_EXT_occlusion_query_boolean which is
-      // based on GL_ARB_occlusion_query without a lot of work virtualizing
-      // queries.
-      //
-      // Also we don't support multisample yet, nor vertex array objects,
-      // etc..
-      //
-      // We can turn on other extensions on an as needed basis. For now, if you
-      // need the extensions, don't make a virtual context.
-      return reinterpret_cast<const GLubyte*>("");
+      return reinterpret_cast<const GLubyte*>(extensions_.c_str());
     default:
       return driver_->fn.glGetStringFn(name);
   }

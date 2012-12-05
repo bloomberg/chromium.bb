@@ -23,6 +23,8 @@
 namespace gpu {
 namespace gles2 {
 
+class FeatureInfo;
+
 // State associated with each texture unit.
 struct GPU_EXPORT TextureUnit {
   TextureUnit();
@@ -88,7 +90,7 @@ struct Vec4 {
 };
 
 struct GPU_EXPORT ContextState {
-  ContextState();
+  explicit ContextState(FeatureInfo* feature_info);
   ~ContextState();
 
   void Initialize();
@@ -148,6 +150,8 @@ struct GPU_EXPORT ContextState {
   GLenum hint_fragment_shader_derivative;
 
   bool pack_reverse_row_order;
+
+  FeatureInfo* feature_info_;
 };
 
 }  // namespace gles2

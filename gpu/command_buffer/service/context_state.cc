@@ -30,13 +30,14 @@ TextureUnit::TextureUnit()
 TextureUnit::~TextureUnit() {
 }
 
-ContextState::ContextState()
+ContextState::ContextState(FeatureInfo* feature_info)
     : pack_alignment(4),
       unpack_alignment(4),
       active_texture_unit(0),
       hint_generate_mipmap(GL_DONT_CARE),
       hint_fragment_shader_derivative(GL_DONT_CARE),
-      pack_reverse_row_order(false) {
+      pack_reverse_row_order(false),
+      feature_info_(feature_info) {
   Initialize();
 }
 
@@ -64,8 +65,18 @@ void ContextState::RestoreState() const {
     service_id = texture_unit.bound_texture_cube_map ?
         texture_unit.bound_texture_cube_map->service_id() : 0;
     glBindTexture(GL_TEXTURE_CUBE_MAP, service_id);
-    // TODO: Restore bindings for GL_TEXTURE_RECTANGLE_ARB and
-    // GL_TEXTURE_EXTERNAL_OES.
+
+    if (feature_info_->feature_flags().oes_egl_image_external) {
+      service_id = texture_unit.bound_texture_external_oes ?
+          texture_unit.bound_texture_external_oes->service_id() : 0;
+      glBindTexture(GL_TEXTURE_EXTERNAL_OES, service_id);
+    }
+
+    if (feature_info_->feature_flags().arb_texture_rectangle) {
+      service_id = texture_unit.bound_texture_rectangle_arb ?
+          texture_unit.bound_texture_rectangle_arb->service_id() : 0;
+      glBindTexture(GL_TEXTURE_RECTANGLE_ARB, service_id);
+    }
   }
   glActiveTexture(GL_TEXTURE0 + active_texture_unit);
 

@@ -85,7 +85,11 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   void SetupForVirtualization();
 
   // Make this context current when used for context virtualization.
-  bool MakeVirtuallyCurrent(GLContext* virutal_context, GLSurface* surface);
+  bool MakeVirtuallyCurrent(GLContext* virtual_context, GLSurface* surface);
+
+  // Notify this context that |virtual_context|, that was using us, is
+  // being destroyed.
+  void OnDestroyVirtualContext(GLContext* virtual_context);
 
  protected:
   virtual ~GLContext();

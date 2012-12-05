@@ -1933,6 +1933,7 @@ GLES2Decoder* GLES2Decoder::Create(ContextGroup* group) {
 GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
     : GLES2Decoder(),
       group_(group),
+      state_(group_->feature_info()),
       error_bits_(0),
       unpack_flip_y_(false),
       unpack_premultiply_alpha_(false),

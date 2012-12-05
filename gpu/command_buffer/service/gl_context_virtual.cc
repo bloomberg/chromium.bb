@@ -18,7 +18,6 @@ GLContextVirtual::GLContextVirtual(
     display_(NULL),
     state_restorer_(new GLStateRestorerImpl(decoder)),
     decoder_(decoder) {
-  shared_context_->SetupForVirtualization();
 }
 
 gfx::Display* GLContextVirtual::display() {
@@ -32,11 +31,14 @@ bool GLContextVirtual::Initialize(
   if (!shared_context_->MakeCurrent(compatible_surface))
     return false;
 
+  shared_context_->SetupForVirtualization();
+
   shared_context_->ReleaseCurrent(compatible_surface);
   return true;
 }
 
 void GLContextVirtual::Destroy() {
+  shared_context_->OnDestroyVirtualContext(this);
   shared_context_ = NULL;
   display_ = NULL;
 }

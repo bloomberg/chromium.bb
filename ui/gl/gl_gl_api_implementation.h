@@ -59,6 +59,8 @@ class GL_EXPORT VirtualGLApi : public GLApi {
   // Sets the current virutal context.
   bool MakeCurrent(GLContext* virtual_context, GLSurface* surface);
 
+  void OnDestroyVirtualContext(GLContext* virtual_context);
+
  private:
   DriverGL* driver_;
 
@@ -67,6 +69,9 @@ class GL_EXPORT VirtualGLApi : public GLApi {
 
   // The current virtual context.
   GLContext* current_context_;
+
+  // The supported extensions being advertised for this virtual context.
+  std::string extensions_;
 };
 
 }  // namespace gfx

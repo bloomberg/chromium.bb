@@ -120,6 +120,11 @@ bool GLContext::MakeVirtuallyCurrent(
   return virtual_gl_api_->MakeCurrent(virtual_context, surface);
 }
 
+void GLContext::OnDestroyVirtualContext(GLContext* virtual_context) {
+  DCHECK(virtual_gl_api_);
+  virtual_gl_api_->OnDestroyVirtualContext(virtual_context);
+}
+
 void GLContext::SetRealGLApi() {
   SetGLToRealGLApi();
 }
