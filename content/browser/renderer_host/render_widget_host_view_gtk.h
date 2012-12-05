@@ -272,6 +272,9 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk
   gfx::Point global_mouse_position_;
   // Indicates when mouse motion is valid after the widget has moved.
   bool mouse_has_been_warped_to_new_center_;
+  // Indicates the cursor has been warped to the unlocked position,
+  // but a move event has not yet been received for it there.
+  bool mouse_is_being_warped_to_unlocked_position_;
 
   // For full-screen windows we have a OnDestroy handler that we need to remove,
   // so we keep it ID here.

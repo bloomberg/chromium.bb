@@ -101,7 +101,7 @@ GdkCursor* GetMozSpinningCursor() {
   return moz_spinning_cursor;
 }
 
-bool MovedToCenter(const WebKit::WebMouseEvent& mouse_event,
+bool MovedToPoint(const WebKit::WebMouseEvent& mouse_event,
                    const gfx::Point& center) {
   return mouse_event.globalX == center.x() &&
          mouse_event.globalY == center.y();
@@ -391,7 +391,7 @@ class RenderWidgetHostViewGtkWidget {
     if (host_view->mouse_locked_) {
       gfx::Point center = host_view->GetWidgetCenter();
 
-      bool moved_to_center = MovedToCenter(mouse_event, center);
+      bool moved_to_center = MovedToPoint(mouse_event, center);
       if (moved_to_center)
         host_view->mouse_has_been_warped_to_new_center_ = true;
 
@@ -408,8 +408,12 @@ class RenderWidgetHostViewGtkWidget {
       }
     } else {  // Mouse is not locked.
       host_view->ModifyEventMovementAndCoords(&mouse_event);
-      RenderWidgetHostImpl::From(
-          host_view->GetRenderWidgetHost())->ForwardMouseEvent(mouse_event);
+      // Do not send mouse events while the mouse cursor is being warped back
+      // to the unlocked location.
+      if (!host_view->mouse_is_being_warped_to_unlocked_position_) {
+        RenderWidgetHostImpl::From(
+            host_view->GetRenderWidgetHost())->ForwardMouseEvent(mouse_event);
+      }
     }
     return FALSE;
   }
@@ -555,6 +559,7 @@ RenderWidgetHostViewGtk::RenderWidgetHostViewGtk(RenderWidgetHost* widget_host)
       do_x_grab_(false),
       is_fullscreen_(false),
       made_active_(false),
+      mouse_is_being_warped_to_unlocked_position_(false),
       destroy_handler_id_(0),
       dragged_at_horizontal_edge_(0),
       dragged_at_vertical_edge_(0),
@@ -1338,6 +1343,7 @@ void RenderWidgetHostViewGtk::UnlockMouse() {
   gdk_display_warp_pointer(display, screen,
                            unlocked_global_mouse_position_.x(),
                            unlocked_global_mouse_position_.y());
+  mouse_is_being_warped_to_unlocked_position_ = true;
 
   if (host_)
     host_->LostMouseLock();
@@ -1430,6 +1436,15 @@ void RenderWidgetHostViewGtk::ModifyEventMovementAndCoords(
   // effect.
   event->movementX = event->globalX - global_mouse_position_.x();
   event->movementY = event->globalY - global_mouse_position_.y();
+
+  // While the cursor is being warped back to the unlocked position, suppress
+  // the movement member data.
+  if (mouse_is_being_warped_to_unlocked_position_) {
+    event->movementX = 0;
+    event->movementY = 0;
+    if (MovedToPoint(*event, unlocked_global_mouse_position_))
+      mouse_is_being_warped_to_unlocked_position_ = false;
+  }
 
   global_mouse_position_.SetPoint(event->globalX, event->globalY);
 
