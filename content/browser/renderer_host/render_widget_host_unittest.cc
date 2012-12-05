@@ -12,6 +12,7 @@
 #include "content/browser/renderer_host/gesture_event_filter.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/browser/renderer_host/overscroll_controller_delegate.h"
+#include "content/browser/renderer_host/tap_suppression_controller.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/renderer_host/touch_event_queue.h"
 #include "content/common/view_messages.h"
@@ -117,6 +118,14 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
   using RenderWidgetHostImpl::touch_event_queue_;
   using RenderWidgetHostImpl::overscroll_controller_;
 
+  enum TapSuppressionState {
+    TSC_NOTHING = TapSuppressionController::NOTHING,
+    TSC_GFC_IN_PROGRESS = TapSuppressionController::GFC_IN_PROGRESS,
+    TSC_MD_STASHED = TapSuppressionController::MD_STASHED,
+    TSC_LAST_CANCEL_STOPPED_FLING =
+      TapSuppressionController::LAST_CANCEL_STOPPED_FLING,
+  };
+
   bool unresponsive_timer_fired() const {
     return unresponsive_timer_fired_;
   }
@@ -151,6 +160,11 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
 
   bool FlingInProgress() {
     return gesture_event_filter_->fling_in_progress_;
+  }
+
+  TapSuppressionState TapSuppressionControllerState() {
+    return static_cast<TapSuppressionState>(
+        gesture_event_filter_->tap_suppression_controller_->state_);
   }
 
   void SetupForOverscrollControllerTest() {
@@ -509,6 +523,12 @@ class RenderWidgetHostTest : public testing::Test {
     key_event.type = type;
     key_event.windowsKeyCode = ui::VKEY_L;  // non-null made up value.
     host_->ForwardKeyboardEvent(key_event);
+  }
+
+  void SimulateMouseEvent(WebInputEvent::Type type) {
+    WebMouseWheelEvent mouse_event;
+    mouse_event.type = type;
+    host_->ForwardMouseEvent(mouse_event);
   }
 
   void SimulateWheelEvent(float dX, float dY, int modifiers) {
@@ -1509,6 +1529,650 @@ TEST_F(RenderWidgetHostTest, DebounceDropsDeferredEvents) {
     EXPECT_EQ(expected[i], merged_event.type);
   }
 }
+
+#if defined(USE_AURA)
+// Test TapSuppressionController for when GestureFlingCancel Ack comes before
+// MouseDown and everything happens without any delays.
+TEST_F(RenderWidgetHostTest, GFCAckBeforeMouseFast) {
+  process_->sink().ClearMessages();
+
+  // Send GestureFlingStart.
+  SimulateGestureFlingStartEvent(0, -10);
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(WebInputEvent::GestureFlingStart,
+            host_->GestureEventLastQueueEvent().type);
+  EXPECT_EQ(MockRenderWidgetHost::TSC_NOTHING,
+            host_->TapSuppressionControllerState());
+  EXPECT_TRUE(host_->FlingInProgress());
+
+  // Send GestureFlingStart Ack.
+  SendInputEventACK(WebInputEvent::GestureFlingStart, true);
+  MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(MockRenderWidgetHost::TSC_NOTHING,
+            host_->TapSuppressionControllerState());
+  EXPECT_TRUE(host_->FlingInProgress());
+
+  // Send GestureFlingCancel.
+  SimulateGestureEvent(WebInputEvent::GestureFlingCancel);
+  EXPECT_EQ(2U, process_->sink().message_count());
+  EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(WebInputEvent::GestureFlingCancel,
+            host_->GestureEventLastQueueEvent().type);
+  EXPECT_EQ(MockRenderWidgetHost::TSC_GFC_IN_PROGRESS,
+            host_->TapSuppressionControllerState());
+  EXPECT_FALSE(host_->FlingInProgress());
+
+  // Send GestureFlingCancel Ack.
+  SendInputEventACK(WebInputEvent::GestureFlingCancel, true);
+  MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(2U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(MockRenderWidgetHost::TSC_LAST_CANCEL_STOPPED_FLING,
+            host_->TapSuppressionControllerState());
+  EXPECT_FALSE(host_->FlingInProgress());
+
+  // Send MouseDown. This MouseDown should be suppressed.
+  SimulateMouseEvent(WebInputEvent::MouseDown);
+  EXPECT_EQ(2U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(MockRenderWidgetHost::TSC_MD_STASHED,
+            host_->TapSuppressionControllerState());
+  EXPECT_FALSE(host_->FlingInProgress());
+
+  // Send MouseUp. This MouseUp should be suppressed.
+  SimulateMouseEvent(WebInputEvent::MouseUp);
+  EXPECT_EQ(2U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(MockRenderWidgetHost::TSC_NOTHING,
+            host_->TapSuppressionControllerState());
+  EXPECT_FALSE(host_->FlingInProgress());
+}
+
+// Test TapSuppressionController for when GestureFlingCancel Ack comes before
+// MouseDown, but there is a small delay between MouseDown and MouseUp.
+TEST_F(RenderWidgetHostTest, GFCAckBeforeMouseInsufficientlyLateMouseUp) {
+  process_->sink().ClearMessages();
+
+  // Send GestureFlingStart.
+  SimulateGestureFlingStartEvent(0, -10);
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(WebInputEvent::GestureFlingStart,
+            host_->GestureEventLastQueueEvent().type);
+  EXPECT_EQ(MockRenderWidgetHost::TSC_NOTHING,
+            host_->TapSuppressionControllerState());
+  EXPECT_TRUE(host_->FlingInProgress());
+
+  // Send GestureFlingStart Ack.
+  SendInputEventACK(WebInputEvent::GestureFlingStart, true);
+  MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(MockRenderWidgetHost::TSC_NOTHING,
+            host_->TapSuppressionControllerState());
+  EXPECT_TRUE(host_->FlingInProgress());
+
+  // Send GestureFlingCancel.
+  SimulateGestureEvent(WebInputEvent::GestureFlingCancel);
+  EXPECT_EQ(2U, process_->sink().message_count());
+  EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(WebInputEvent::GestureFlingCancel,
+            host_->GestureEventLastQueueEvent().type);
+  EXPECT_EQ(MockRenderWidgetHost::TSC_GFC_IN_PROGRESS,
+            host_->TapSuppressionControllerState());
+  EXPECT_FALSE(host_->FlingInProgress());
+
+  // Send GestureFlingCancel Ack.
+  SendInputEventACK(WebInputEvent::GestureFlingCancel, true);
+  MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(2U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(MockRenderWidgetHost::TSC_LAST_CANCEL_STOPPED_FLING,
+            host_->TapSuppressionControllerState());
+  EXPECT_FALSE(host_->FlingInProgress());
+
+  // Send MouseDown. This MouseDown should be suppressed.
+  SimulateMouseEvent(WebInputEvent::MouseDown);
+  EXPECT_EQ(2U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(MockRenderWidgetHost::TSC_MD_STASHED,
+            host_->TapSuppressionControllerState());
+  EXPECT_FALSE(host_->FlingInProgress());
+
+  // Wait less than allowed delay between MouseDown and MouseUp, so they are
+  // still considered a tap.
+  // TODO(mohsen): The amounts used for delays are too much and will slow down
+  // the tests. A better way is to reduce the allowed delays in TSC before each
+  // test. So, they should be made accessible and configurable.
+  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+                                          MessageLoop::QuitClosure(),
+                                          TimeDelta::FromMilliseconds(100));
+  MessageLoop::current()->Run();
+  EXPECT_EQ(2U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(MockRenderWidgetHost::TSC_MD_STASHED,
+            host_->TapSuppressionControllerState());
+  EXPECT_FALSE(host_->FlingInProgress());
+
+  // Send MouseUp. This MouseUp should be suppressed.
+  SimulateMouseEvent(WebInputEvent::MouseUp);
+  EXPECT_EQ(2U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(MockRenderWidgetHost::TSC_NOTHING,
+            host_->TapSuppressionControllerState());
+  EXPECT_FALSE(host_->FlingInProgress());
+}
+
+// Test TapSuppressionController for when GestureFlingCancel Ack comes before
+// MouseDown, but there is a long delay between MouseDown and MouseUp.
+TEST_F(RenderWidgetHostTest, GFCAckBeforeMouseSufficientlyLateMouseUp) {
+  process_->sink().ClearMessages();
+
+  // Send GestureFlingStart.
+  SimulateGestureFlingStartEvent(0, -10);
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(WebInputEvent::GestureFlingStart,
+            host_->GestureEventLastQueueEvent().type);
+  EXPECT_EQ(MockRenderWidgetHost::TSC_NOTHING,
+            host_->TapSuppressionControllerState());
+  EXPECT_TRUE(host_->FlingInProgress());
+
+  // Send GestureFlingStart Ack.
+  SendInputEventACK(WebInputEvent::GestureFlingStart, true);
+  MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(MockRenderWidgetHost::TSC_NOTHING,
+            host_->TapSuppressionControllerState());
+  EXPECT_TRUE(host_->FlingInProgress());
+
+  // Send GestureFlingCancel.
+  SimulateGestureEvent(WebInputEvent::GestureFlingCancel);
+  EXPECT_EQ(2U, process_->sink().message_count());
+  EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(WebInputEvent::GestureFlingCancel,
+            host_->GestureEventLastQueueEvent().type);
+  EXPECT_EQ(MockRenderWidgetHost::TSC_GFC_IN_PROGRESS,
+            host_->TapSuppressionControllerState());
+  EXPECT_FALSE(host_->FlingInProgress());
+
+  // Send processed GestureFlingCancel Ack.
+  SendInputEventACK(WebInputEvent::GestureFlingCancel, true);
+  MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(2U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(MockRenderWidgetHost::TSC_LAST_CANCEL_STOPPED_FLING,
+            host_->TapSuppressionControllerState());
+  EXPECT_FALSE(host_->FlingInProgress());
+
+  // Send MouseDown. This MouseDown should be suppressed, for now.
+  SimulateMouseEvent(WebInputEvent::MouseDown);
+  EXPECT_EQ(2U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(MockRenderWidgetHost::TSC_MD_STASHED,
+            host_->TapSuppressionControllerState());
+  EXPECT_FALSE(host_->FlingInProgress());
+
+  // Wait more than allowed delay between MosueDown and MouseUp, so they are
+  // not considered a tap. This should release the previously suppressed
+  // MouseDown.
+  // TODO(mohsen): The amounts used for delays are too much and will slow down
+  // the tests. A better way is to reduce the allowed delays in TSC before each
+  // test. So, they should be made configurable and accessible here.
+  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+                                          MessageLoop::QuitClosure(),
+                                          TimeDelta::FromMilliseconds(300));
+  MessageLoop::current()->Run();
+  EXPECT_EQ(3U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(MockRenderWidgetHost::TSC_NOTHING,
+            host_->TapSuppressionControllerState());
+  EXPECT_FALSE(host_->FlingInProgress());
+
+  // Send MouseUp. This MouseUp should not be suppressed.
+  SimulateMouseEvent(WebInputEvent::MouseUp);
+  EXPECT_EQ(4U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(MockRenderWidgetHost::TSC_NOTHING,
+            host_->TapSuppressionControllerState());
+  EXPECT_FALSE(host_->FlingInProgress());
+}
+
+// Test TapSuppressionController for when GestureFlingCancel Ack comes before
+// MouseDown, but there is a small delay between the Ack and MouseDown.
+TEST_F(RenderWidgetHostTest, GFCAckBeforeMouseInsufficientlyLateMouseDown) {
+  process_->sink().ClearMessages();
+
+  // Send GestureFlingStart.
+  SimulateGestureFlingStartEvent(0, -10);
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(WebInputEvent::GestureFlingStart,
+            host_->GestureEventLastQueueEvent().type);
+  EXPECT_EQ(MockRenderWidgetHost::TSC_NOTHING,
+            host_->TapSuppressionControllerState());
+  EXPECT_TRUE(host_->FlingInProgress());
+
+  // Send GestureFlingStart Ack.
+  SendInputEventACK(WebInputEvent::GestureFlingStart, true);
+  MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(MockRenderWidgetHost::TSC_NOTHING,
+            host_->TapSuppressionControllerState());
+  EXPECT_TRUE(host_->FlingInProgress());
+
+  // Send GestureFlingCancel.
+  SimulateGestureEvent(WebInputEvent::GestureFlingCancel);
+  EXPECT_EQ(2U, process_->sink().message_count());
+  EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(WebInputEvent::GestureFlingCancel,
+            host_->GestureEventLastQueueEvent().type);
+  EXPECT_EQ(MockRenderWidgetHost::TSC_GFC_IN_PROGRESS,
+            host_->TapSuppressionControllerState());
+  EXPECT_FALSE(host_->FlingInProgress());
+
+  // Send GestureFlingCancel Ack.
+  SendInputEventACK(WebInputEvent::GestureFlingCancel, true);
+  MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(2U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(MockRenderWidgetHost::TSC_LAST_CANCEL_STOPPED_FLING,
+            host_->TapSuppressionControllerState());
+  EXPECT_FALSE(host_->FlingInProgress());
+
+  // Wait less than allowed delay between GestureFlingCancel and MouseDown,
+  // so the MouseDown is still considered associated with the
+  // GestureFlingCancel.
+  // TODO(mohsen): The amounts used for delays are too much and will slow down
+  // the tests. A better way is to reduce the allowed delays in TSC before each
+  // test. So, they should be made configurable and accessible here.
+  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+                                          MessageLoop::QuitClosure(),
+                                          TimeDelta::FromMilliseconds(300));
+  MessageLoop::current()->Run();
+  EXPECT_EQ(2U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(MockRenderWidgetHost::TSC_LAST_CANCEL_STOPPED_FLING,
+            host_->TapSuppressionControllerState());
+  EXPECT_FALSE(host_->FlingInProgress());
+
+  // Send MouseDown. This MouseDown should be suppressed.
+  SimulateMouseEvent(WebInputEvent::MouseDown);
+  EXPECT_EQ(2U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(MockRenderWidgetHost::TSC_MD_STASHED,
+            host_->TapSuppressionControllerState());
+  EXPECT_FALSE(host_->FlingInProgress());
+
+  // Send MouseUp. This MouseUp should be suppressed.
+  SimulateMouseEvent(WebInputEvent::MouseUp);
+  EXPECT_EQ(2U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(MockRenderWidgetHost::TSC_NOTHING,
+            host_->TapSuppressionControllerState());
+  EXPECT_FALSE(host_->FlingInProgress());
+}
+
+// Test TapSuppressionController for when GestureFlingCancel Ack comes before
+// MouseDown, but there is a long delay between the Ack and MouseDown.
+TEST_F(RenderWidgetHostTest, GFCAckBeforeMouseSufficientlyLateMouseDown) {
+  process_->sink().ClearMessages();
+
+  // Send GestureFlingStart.
+  SimulateGestureFlingStartEvent(0, -10);
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(WebInputEvent::GestureFlingStart,
+            host_->GestureEventLastQueueEvent().type);
+  EXPECT_EQ(MockRenderWidgetHost::TSC_NOTHING,
+            host_->TapSuppressionControllerState());
+  EXPECT_TRUE(host_->FlingInProgress());
+
+  // Send GestureFlingStart Ack.
+  SendInputEventACK(WebInputEvent::GestureFlingStart, true);
+  MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(MockRenderWidgetHost::TSC_NOTHING,
+            host_->TapSuppressionControllerState());
+  EXPECT_TRUE(host_->FlingInProgress());
+
+  // Send GestureFlingCancel.
+  SimulateGestureEvent(WebInputEvent::GestureFlingCancel);
+  EXPECT_EQ(2U, process_->sink().message_count());
+  EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(WebInputEvent::GestureFlingCancel,
+            host_->GestureEventLastQueueEvent().type);
+  EXPECT_EQ(MockRenderWidgetHost::TSC_GFC_IN_PROGRESS,
+            host_->TapSuppressionControllerState());
+  EXPECT_FALSE(host_->FlingInProgress());
+
+  // Send GestureFlingCancel Ack.
+  SendInputEventACK(WebInputEvent::GestureFlingCancel, true);
+  MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(2U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(MockRenderWidgetHost::TSC_LAST_CANCEL_STOPPED_FLING,
+            host_->TapSuppressionControllerState());
+  EXPECT_FALSE(host_->FlingInProgress());
+
+  // Wait more than allowed delay between GestureFlingCancel and MouseDown,
+  // so the MouseDown is not considered associated with the GestureFlingCancel.
+  // TODO(mohsen): The amounts used for delays are too much and will slow down
+  // the tests. A better way is to reduce the allowed delays in TSC before each
+  // test. So, they should be made configurable and accessible here.
+  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+                                          MessageLoop::QuitClosure(),
+                                          TimeDelta::FromMilliseconds(500));
+  MessageLoop::current()->Run();
+  EXPECT_EQ(2U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(MockRenderWidgetHost::TSC_LAST_CANCEL_STOPPED_FLING,
+            host_->TapSuppressionControllerState());
+  EXPECT_FALSE(host_->FlingInProgress());
+
+  // Send MouseDown. This MouseDown should not be suppressed.
+  SimulateMouseEvent(WebInputEvent::MouseDown);
+  EXPECT_EQ(3U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(MockRenderWidgetHost::TSC_NOTHING,
+            host_->TapSuppressionControllerState());
+  EXPECT_FALSE(host_->FlingInProgress());
+
+  // Send MouseUp. This MouseUp should not be suppressed.
+  SimulateMouseEvent(WebInputEvent::MouseUp);
+  EXPECT_EQ(4U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(MockRenderWidgetHost::TSC_NOTHING,
+            host_->TapSuppressionControllerState());
+  EXPECT_FALSE(host_->FlingInProgress());
+}
+
+// Test TapSuppressionController for when unprocessed GestureFlingCancel Ack
+// comes after MouseDown and everything happens without any delay.
+TEST_F(RenderWidgetHostTest, GFCAckUnprocessedAfterMouseFast) {
+  process_->sink().ClearMessages();
+
+  // Send GestureFlingStart.
+  SimulateGestureFlingStartEvent(0, -10);
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(WebInputEvent::GestureFlingStart,
+            host_->GestureEventLastQueueEvent().type);
+  EXPECT_EQ(MockRenderWidgetHost::TSC_NOTHING,
+            host_->TapSuppressionControllerState());
+  EXPECT_TRUE(host_->FlingInProgress());
+
+  // Send GestureFlingStart Ack.
+  SendInputEventACK(WebInputEvent::GestureFlingStart, true);
+  MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(MockRenderWidgetHost::TSC_NOTHING,
+            host_->TapSuppressionControllerState());
+  EXPECT_TRUE(host_->FlingInProgress());
+
+  // Send GestureFlingCancel.
+  SimulateGestureEvent(WebInputEvent::GestureFlingCancel);
+  EXPECT_EQ(2U, process_->sink().message_count());
+  EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(WebInputEvent::GestureFlingCancel,
+            host_->GestureEventLastQueueEvent().type);
+  EXPECT_EQ(MockRenderWidgetHost::TSC_GFC_IN_PROGRESS,
+            host_->TapSuppressionControllerState());
+  EXPECT_FALSE(host_->FlingInProgress());
+
+  // Send MouseDown. This MouseDown should be suppressed, for now.
+  SimulateMouseEvent(WebInputEvent::MouseDown);
+  EXPECT_EQ(2U, process_->sink().message_count());
+  EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(WebInputEvent::GestureFlingCancel,
+            host_->GestureEventLastQueueEvent().type);
+  EXPECT_EQ(MockRenderWidgetHost::TSC_MD_STASHED,
+            host_->TapSuppressionControllerState());
+  EXPECT_FALSE(host_->FlingInProgress());
+
+  // Send unprocessed GestureFlingCancel Ack. This should release the
+  // previously suppressed MouseDown.
+  SendInputEventACK(WebInputEvent::GestureFlingCancel, false);
+  MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(3U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(MockRenderWidgetHost::TSC_NOTHING,
+            host_->TapSuppressionControllerState());
+  EXPECT_FALSE(host_->FlingInProgress());
+
+  // Send MouseUp. This MouseUp should not be suppressed.
+  SimulateMouseEvent(WebInputEvent::MouseUp);
+  EXPECT_EQ(4U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(MockRenderWidgetHost::TSC_NOTHING,
+            host_->TapSuppressionControllerState());
+  EXPECT_FALSE(host_->FlingInProgress());
+}
+
+// Test TapSuppressionController for when processed GestureFlingCancel Ack
+// comes after MouseDown and everything happens without any delay.
+TEST_F(RenderWidgetHostTest, GFCAckProcessedAfterMouseFast) {
+  process_->sink().ClearMessages();
+
+  // Send GestureFlingStart.
+  SimulateGestureFlingStartEvent(0, -10);
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(WebInputEvent::GestureFlingStart,
+            host_->GestureEventLastQueueEvent().type);
+  EXPECT_EQ(MockRenderWidgetHost::TSC_NOTHING,
+            host_->TapSuppressionControllerState());
+  EXPECT_TRUE(host_->FlingInProgress());
+
+  // Send GestureFlingStart Ack.
+  SendInputEventACK(WebInputEvent::GestureFlingStart, true);
+  MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(MockRenderWidgetHost::TSC_NOTHING,
+            host_->TapSuppressionControllerState());
+  EXPECT_TRUE(host_->FlingInProgress());
+
+  // Send GestureFlingCancel.
+  SimulateGestureEvent(WebInputEvent::GestureFlingCancel);
+  EXPECT_EQ(2U, process_->sink().message_count());
+  EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(WebInputEvent::GestureFlingCancel,
+            host_->GestureEventLastQueueEvent().type);
+  EXPECT_EQ(MockRenderWidgetHost::TSC_GFC_IN_PROGRESS,
+            host_->TapSuppressionControllerState());
+  EXPECT_FALSE(host_->FlingInProgress());
+
+  // Send MouseDown. This MouseDown should be suppressed.
+  SimulateMouseEvent(WebInputEvent::MouseDown);
+  EXPECT_EQ(2U, process_->sink().message_count());
+  EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(WebInputEvent::GestureFlingCancel,
+            host_->GestureEventLastQueueEvent().type);
+  EXPECT_EQ(MockRenderWidgetHost::TSC_MD_STASHED,
+            host_->TapSuppressionControllerState());
+  EXPECT_FALSE(host_->FlingInProgress());
+
+  // Send GestureFlingCancel Ack.
+  SendInputEventACK(WebInputEvent::GestureFlingCancel, true);
+  MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(2U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(MockRenderWidgetHost::TSC_MD_STASHED,
+            host_->TapSuppressionControllerState());
+  EXPECT_FALSE(host_->FlingInProgress());
+
+  // Send MouseUp. This MouseUp should be suppressed.
+  SimulateMouseEvent(WebInputEvent::MouseUp);
+  EXPECT_EQ(2U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(MockRenderWidgetHost::TSC_NOTHING,
+            host_->TapSuppressionControllerState());
+  EXPECT_FALSE(host_->FlingInProgress());
+}
+
+// Test TapSuppressionController for when GestureFlingCancel Ack comes after
+// MouseDown and there is a small delay between the Ack and MouseUp.
+TEST_F(RenderWidgetHostTest, GFCAckAfterMouseInsufficientlyLateMouseUp) {
+  process_->sink().ClearMessages();
+
+  // Send GestureFlingStart.
+  SimulateGestureFlingStartEvent(0, -10);
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(WebInputEvent::GestureFlingStart,
+            host_->GestureEventLastQueueEvent().type);
+  EXPECT_EQ(MockRenderWidgetHost::TSC_NOTHING,
+            host_->TapSuppressionControllerState());
+  EXPECT_TRUE(host_->FlingInProgress());
+
+  // Send GestureFlingStart Ack.
+  SendInputEventACK(WebInputEvent::GestureFlingStart, true);
+  MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(MockRenderWidgetHost::TSC_NOTHING,
+            host_->TapSuppressionControllerState());
+  EXPECT_TRUE(host_->FlingInProgress());
+
+  // Send GestureFlingCancel.
+  SimulateGestureEvent(WebInputEvent::GestureFlingCancel);
+  EXPECT_EQ(2U, process_->sink().message_count());
+  EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(WebInputEvent::GestureFlingCancel,
+            host_->GestureEventLastQueueEvent().type);
+  EXPECT_EQ(MockRenderWidgetHost::TSC_GFC_IN_PROGRESS,
+            host_->TapSuppressionControllerState());
+  EXPECT_FALSE(host_->FlingInProgress());
+
+  // Send MouseDown. This MouseDown should be suppressed.
+  SimulateMouseEvent(WebInputEvent::MouseDown);
+  EXPECT_EQ(2U, process_->sink().message_count());
+  EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(WebInputEvent::GestureFlingCancel,
+            host_->GestureEventLastQueueEvent().type);
+  EXPECT_EQ(MockRenderWidgetHost::TSC_MD_STASHED,
+            host_->TapSuppressionControllerState());
+  EXPECT_FALSE(host_->FlingInProgress());
+
+  // Send GestureFlingCancel Ack.
+  SendInputEventACK(WebInputEvent::GestureFlingCancel, true);
+  MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(2U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(MockRenderWidgetHost::TSC_MD_STASHED,
+            host_->TapSuppressionControllerState());
+  EXPECT_FALSE(host_->FlingInProgress());
+
+  // Wait less than allowed delay between MouseDown and MouseUp, so they are
+  // still considered as a tap.
+  // TODO(mohsen): The amounts used for delays are too much and will slow down
+  // the tests. A better way is to reduce the allowed delays in TSC before each
+  // test. So, they should be made configurable and accessible here.
+  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+                                          MessageLoop::QuitClosure(),
+                                          TimeDelta::FromMilliseconds(100));
+  MessageLoop::current()->Run();
+  EXPECT_EQ(2U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(MockRenderWidgetHost::TSC_MD_STASHED,
+            host_->TapSuppressionControllerState());
+  EXPECT_FALSE(host_->FlingInProgress());
+
+  // Send MouseUp. This MouseUp should be suppressed.
+  SimulateMouseEvent(WebInputEvent::MouseUp);
+  EXPECT_EQ(2U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(MockRenderWidgetHost::TSC_NOTHING,
+            host_->TapSuppressionControllerState());
+  EXPECT_FALSE(host_->FlingInProgress());
+}
+
+// Test TapSuppressionController for when GestureFlingCancel Ack comes after
+// MouseDown and there is a long delay between the Ack and MouseUp.
+TEST_F(RenderWidgetHostTest, GFCAckAfterMouseSufficientlyLateMouseUp) {
+  process_->sink().ClearMessages();
+
+  // Send GestureFlingStart.
+  SimulateGestureFlingStartEvent(0, -10);
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(WebInputEvent::GestureFlingStart,
+            host_->GestureEventLastQueueEvent().type);
+  EXPECT_EQ(MockRenderWidgetHost::TSC_NOTHING,
+            host_->TapSuppressionControllerState());
+  EXPECT_TRUE(host_->FlingInProgress());
+
+  // Send GestureFlingStart Ack.
+  SendInputEventACK(WebInputEvent::GestureFlingStart, true);
+  MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(MockRenderWidgetHost::TSC_NOTHING,
+            host_->TapSuppressionControllerState());
+  EXPECT_TRUE(host_->FlingInProgress());
+
+  // Send GestureFlingCancel.
+  SimulateGestureEvent(WebInputEvent::GestureFlingCancel);
+  EXPECT_EQ(2U, process_->sink().message_count());
+  EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(WebInputEvent::GestureFlingCancel,
+            host_->GestureEventLastQueueEvent().type);
+  EXPECT_EQ(MockRenderWidgetHost::TSC_GFC_IN_PROGRESS,
+            host_->TapSuppressionControllerState());
+  EXPECT_FALSE(host_->FlingInProgress());
+
+  // Send MouseDown. This MouseDown should be suppressed, for now.
+  SimulateMouseEvent(WebInputEvent::MouseDown);
+  EXPECT_EQ(2U, process_->sink().message_count());
+  EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(WebInputEvent::GestureFlingCancel,
+            host_->GestureEventLastQueueEvent().type);
+  EXPECT_EQ(MockRenderWidgetHost::TSC_MD_STASHED,
+            host_->TapSuppressionControllerState());
+  EXPECT_FALSE(host_->FlingInProgress());
+
+  // Send GestureFlingCancel Ack.
+  SendInputEventACK(WebInputEvent::GestureFlingCancel, true);
+  MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(2U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(MockRenderWidgetHost::TSC_MD_STASHED,
+            host_->TapSuppressionControllerState());
+  EXPECT_FALSE(host_->FlingInProgress());
+
+  // Wait more than allowed delay between MouseDown and MouseUp, so they are
+  // not considered as a tap. This should release the previously suppressed
+  // MouseDown.
+  // TODO(mohsen): The amounts used for delays are too much and will slow down
+  // the tests. A better way is to reduce the allowed delays in TSC before each
+  // test. So, they should be made configurable and accessible here.
+  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+                                          MessageLoop::QuitClosure(),
+                                          TimeDelta::FromMilliseconds(300));
+  MessageLoop::current()->Run();
+  EXPECT_EQ(3U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(MockRenderWidgetHost::TSC_NOTHING,
+            host_->TapSuppressionControllerState());
+  EXPECT_FALSE(host_->FlingInProgress());
+
+  // Send MouseUp. This MouseUp should not be suppressed.
+  SimulateMouseEvent(WebInputEvent::MouseUp);
+  EXPECT_EQ(4U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(MockRenderWidgetHost::TSC_NOTHING,
+            host_->TapSuppressionControllerState());
+  EXPECT_FALSE(host_->FlingInProgress());
+}
+#endif  // defined(USE_AURA)
 
 // Tests that touch-events are queued properly.
 TEST_F(RenderWidgetHostTest, TouchEventQueue) {
