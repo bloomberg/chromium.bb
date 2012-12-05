@@ -81,6 +81,9 @@ TwoFingerDragHandler::~TwoFingerDragHandler() {
 
 bool TwoFingerDragHandler::ProcessGestureEvent(aura::Window* target,
                                                const ui::GestureEvent& event) {
+  if (!target->delegate())
+    return false;
+
   if (event.type() == ui::ET_GESTURE_BEGIN &&
       event.details().touch_points() == 1) {
     first_finger_hittest_ =
