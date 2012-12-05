@@ -301,12 +301,15 @@ ChannelProxy::ChannelProxy(Context* context)
 }
 
 ChannelProxy::~ChannelProxy() {
+  DCHECK(CalledOnValidThread());
+
   Close();
 }
 
 void ChannelProxy::Init(const IPC::ChannelHandle& channel_handle,
                         Channel::Mode mode,
                         bool create_pipe_now) {
+  DCHECK(CalledOnValidThread());
   DCHECK(!did_init_);
 #if defined(OS_POSIX)
   // When we are creating a server on POSIX, we need its file descriptor
@@ -338,6 +341,8 @@ void ChannelProxy::Init(const IPC::ChannelHandle& channel_handle,
 }
 
 void ChannelProxy::Close() {
+  DCHECK(CalledOnValidThread());
+
   // Clear the backpointer to the listener so that any pending calls to
   // Context::OnDispatchMessage or OnDispatchError will be ignored.  It is
   // possible that the channel could be closed while it is receiving messages!
@@ -351,6 +356,9 @@ void ChannelProxy::Close() {
 
 bool ChannelProxy::Send(Message* message) {
   DCHECK(did_init_);
+
+  // TODO(alexeypa): add DCHECK(CalledOnValidThread()) here. Currently there are
+  // tests that call Send() from a wrong thread. See http://crbug.com/163523.
   if (outgoing_message_filter())
     message = outgoing_message_filter()->Rewrite(message);
 
@@ -366,16 +374,22 @@ bool ChannelProxy::Send(Message* message) {
 }
 
 void ChannelProxy::AddFilter(MessageFilter* filter) {
+  DCHECK(CalledOnValidThread());
+
   context_->AddFilter(filter);
 }
 
 void ChannelProxy::RemoveFilter(MessageFilter* filter) {
+  DCHECK(CalledOnValidThread());
+
   context_->ipc_task_runner()->PostTask(
       FROM_HERE, base::Bind(&Context::OnRemoveFilter, context_.get(),
                             make_scoped_refptr(filter)));
 }
 
 void ChannelProxy::ClearIPCTaskRunner() {
+  DCHECK(CalledOnValidThread());
+
   context()->ClearIPCTaskRunner();
 }
 
@@ -383,6 +397,8 @@ void ChannelProxy::ClearIPCTaskRunner() {
 // See the TODO regarding lazy initialization of the channel in
 // ChannelProxy::Init().
 int ChannelProxy::GetClientFileDescriptor() {
+  DCHECK(CalledOnValidThread());
+
   Channel* channel = context_.get()->channel_.get();
   // Channel must have been created first.
   DCHECK(channel) << context_.get()->channel_id_;
@@ -390,6 +406,8 @@ int ChannelProxy::GetClientFileDescriptor() {
 }
 
 int ChannelProxy::TakeClientFileDescriptor() {
+  DCHECK(CalledOnValidThread());
+
   Channel* channel = context_.get()->channel_.get();
   // Channel must have been created first.
   DCHECK(channel) << context_.get()->channel_id_;
@@ -397,6 +415,8 @@ int ChannelProxy::TakeClientFileDescriptor() {
 }
 
 bool ChannelProxy::GetClientEuid(uid_t* client_euid) const {
+  DCHECK(CalledOnValidThread());
+
   Channel* channel = context_.get()->channel_.get();
   // Channel must have been created first.
   DCHECK(channel) << context_.get()->channel_id_;
