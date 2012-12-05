@@ -143,10 +143,10 @@ void AddFadeEffect(const gfx::Rect& text_rect,
 
 // Creates a SkShader to fade the text, with |left_part| specifying the left
 // fade effect, if any, and |right_part| specifying the right fade effect.
-SkShader* CreateFadeShader(const gfx::Rect& text_rect,
-                           const gfx::Rect& left_part,
-                           const gfx::Rect& right_part,
-                           SkColor color) {
+skia::RefPtr<SkShader> CreateFadeShader(const gfx::Rect& text_rect,
+                                        const gfx::Rect& left_part,
+                                        const gfx::Rect& right_part,
+                                        SkColor color) {
   // Fade alpha of 51/255 corresponds to a fade of 0.2 of the original color.
   const SkColor fade_color = SkColorSetA(color, 51);
   std::vector<SkScalar> positions;
@@ -170,8 +170,9 @@ SkShader* CreateFadeShader(const gfx::Rect& text_rect,
   points[0].iset(text_rect.x(), text_rect.y());
   points[1].iset(text_rect.right(), text_rect.y());
 
-  return SkGradientShader::CreateLinear(&points[0], &colors[0], &positions[0],
-      colors.size(), SkShader::kClamp_TileMode);
+  return skia::AdoptRef(
+      SkGradientShader::CreateLinear(&points[0], &colors[0], &positions[0],
+                                     colors.size(), SkShader::kClamp_TileMode));
 }
 
 }  // namespace
@@ -237,11 +238,11 @@ void SkiaTextRenderer::SetFontFamilyWithStyle(const std::string& family,
   DCHECK(!family.empty());
 
   SkTypeface::Style skia_style = ConvertFontStyleToSkiaTypefaceStyle(style);
-  SkTypeface* typeface = SkTypeface::CreateFromName(family.c_str(), skia_style);
-  SkAutoUnref auto_unref(typeface);
+  skia::RefPtr<SkTypeface> typeface =
+      skia::AdoptRef(SkTypeface::CreateFromName(family.c_str(), skia_style));
   if (typeface) {
     // |paint_| adds its own ref. So don't |release()| it from the ref ptr here.
-    SetTypeface(typeface);
+    SetTypeface(typeface.get());
 
     // Enable fake bold text if bold style is needed but new typeface does not
     // have it.
@@ -916,18 +917,16 @@ void RenderText::ApplyFadeEffects(internal::SkiaTextRenderer* renderer) {
   text_rect.Inset(GetAlignmentOffset().x(), 0, 0, 0);
 
   const SkColor color = default_style().foreground;
-  SkShader* shader = CreateFadeShader(text_rect, left_part, right_part, color);
-  SkAutoUnref auto_unref(shader);
-  if (shader) {
-    // |renderer| adds its own ref. So don't |release()| it from the ref ptr.
-    renderer->SetShader(shader, display_rect());
-  }
+  skia::RefPtr<SkShader> shader =
+      CreateFadeShader(text_rect, left_part, right_part, color);
+  if (shader)
+    renderer->SetShader(shader.get(), display_rect());
 }
 
 void RenderText::ApplyTextShadows(internal::SkiaTextRenderer* renderer) {
-  SkDrawLooper* looper = gfx::CreateShadowDrawLooper(text_shadows_);
-  SkAutoUnref auto_unref(looper);
-  renderer->SetDrawLooper(looper);
+  skia::RefPtr<SkDrawLooper> looper =
+      gfx::CreateShadowDrawLooper(text_shadows_);
+  renderer->SetDrawLooper(looper.get());
 }
 
 // static

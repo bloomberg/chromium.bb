@@ -253,14 +253,15 @@ class TouchSelectionControllerImpl::TouchContextMenuView
     points[0].iset(0, 0);
     points[1].iset(0, height());
 
-    SkShader* shader = SkGradientShader::CreateLinear(points,
-        kGradientColors, kGradientPoints, arraysize(kGradientPoints),
-        SkShader::kRepeat_TileMode);
+    skia::RefPtr<SkShader> shader = skia::AdoptRef(
+        SkGradientShader::CreateLinear(
+            points, kGradientColors, kGradientPoints,
+            arraysize(kGradientPoints),
+            SkShader::kRepeat_TileMode));
     DCHECK(shader);
 
     SkPaint paint;
-    paint.setShader(shader);
-    shader->unref();
+    paint.setShader(shader.get());
 
     paint.setStyle(SkPaint::kFill_Style);
     paint.setXfermodeMode(SkXfermode::kSrc_Mode);

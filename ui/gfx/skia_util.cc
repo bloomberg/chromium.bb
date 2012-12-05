@@ -47,11 +47,11 @@ RectF SkRectToRectF(const SkRect& rect) {
 }
 
 
-SkShader* CreateImageRepShader(const gfx::ImageSkiaRep& image_rep,
-                               SkShader::TileMode tile_mode,
-                               const SkMatrix& local_matrix) {
-  SkShader* shader = SkShader::CreateBitmapShader(image_rep.sk_bitmap(),
-      tile_mode, tile_mode);
+skia::RefPtr<SkShader> CreateImageRepShader(const gfx::ImageSkiaRep& image_rep,
+                                            SkShader::TileMode tile_mode,
+                                            const SkMatrix& local_matrix) {
+  skia::RefPtr<SkShader> shader = skia::AdoptRef(SkShader::CreateBitmapShader(
+      image_rep.sk_bitmap(), tile_mode, tile_mode));
   SkScalar scale_x = local_matrix.getScaleX();
   SkScalar scale_y = local_matrix.getScaleY();
   SkScalar bitmap_scale = SkFloatToScalar(image_rep.GetScale());
@@ -72,24 +72,26 @@ SkShader* CreateImageRepShader(const gfx::ImageSkiaRep& image_rep,
   return shader;
 }
 
-SkShader* CreateGradientShader(int start_point,
-                               int end_point,
-                               SkColor start_color,
-                               SkColor end_color) {
+skia::RefPtr<SkShader> CreateGradientShader(int start_point,
+                                            int end_point,
+                                            SkColor start_color,
+                                            SkColor end_color) {
   SkColor grad_colors[2] = { start_color, end_color};
   SkPoint grad_points[2];
   grad_points[0].iset(0, start_point);
   grad_points[1].iset(0, end_point);
 
-  return SkGradientShader::CreateLinear(
-      grad_points, grad_colors, NULL, 2, SkShader::kRepeat_TileMode);
+  return skia::AdoptRef(SkGradientShader::CreateLinear(
+      grad_points, grad_colors, NULL, 2, SkShader::kRepeat_TileMode));
 }
 
-SkDrawLooper* CreateShadowDrawLooper(const std::vector<ShadowValue>& shadows) {
+skia::RefPtr<SkDrawLooper> CreateShadowDrawLooper(
+    const std::vector<ShadowValue>& shadows) {
   if (shadows.empty())
-    return NULL;
+    return skia::RefPtr<SkDrawLooper>();
 
-  SkLayerDrawLooper* looper = new SkLayerDrawLooper;
+  skia::RefPtr<SkLayerDrawLooper> looper =
+      skia::AdoptRef(new SkLayerDrawLooper);
 
   looper->addLayer();  // top layer of the original.
 
@@ -106,17 +108,17 @@ SkDrawLooper* CreateShadowDrawLooper(const std::vector<ShadowValue>& shadows) {
 
     // SkBlurMaskFilter's blur radius defines the range to extend the blur from
     // original mask, which is half of blur amount as defined in ShadowValue.
-    SkMaskFilter* blur_mask = SkBlurMaskFilter::Create(
-        SkDoubleToScalar(shadow.blur() / 2),
-        SkBlurMaskFilter::kNormal_BlurStyle,
-        SkBlurMaskFilter::kHighQuality_BlurFlag);
-    SkColorFilter* color_filter = SkColorFilter::CreateModeFilter(
-        shadow.color(),
-        SkXfermode::kSrcIn_Mode);
+    skia::RefPtr<SkMaskFilter> blur_mask = skia::AdoptRef(
+        SkBlurMaskFilter::Create(SkDoubleToScalar(shadow.blur() / 2),
+                                 SkBlurMaskFilter::kNormal_BlurStyle,
+                                 SkBlurMaskFilter::kHighQuality_BlurFlag));
+    skia::RefPtr<SkColorFilter> color_filter = skia::AdoptRef(
+        SkColorFilter::CreateModeFilter(shadow.color(),
+                                        SkXfermode::kSrcIn_Mode));
 
     SkPaint* paint = looper->addLayer(layer_info);
-    SkSafeUnref(paint->setMaskFilter(blur_mask));
-    SkSafeUnref(paint->setColorFilter(color_filter));
+    paint->setMaskFilter(blur_mask.get());
+    paint->setColorFilter(color_filter.get());
   }
 
   return looper;

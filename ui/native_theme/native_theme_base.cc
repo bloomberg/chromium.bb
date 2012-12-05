@@ -576,12 +576,12 @@ SkRect NativeThemeBase::PaintCheckboxRadioNewCommon(
   else /* kNormal */
     startEndColors = kCheckboxGradientColors;
   SkColor colors[3] = {startEndColors[0], startEndColors[0], startEndColors[1]};
-  SkShader* shader = SkGradientShader::CreateLinear(
-      gradient_bounds, colors, NULL, 3, SkShader::kClamp_TileMode, NULL);
+  skia::RefPtr<SkShader> shader = skia::AdoptRef(
+      SkGradientShader::CreateLinear(
+          gradient_bounds, colors, NULL, 3, SkShader::kClamp_TileMode, NULL));
   SkPaint paint;
   paint.setAntiAlias(true);
-  paint.setShader(shader);
-  shader->unref();
+  paint.setShader(shader.get());
   paint.setStyle(SkPaint::kFill_Style);
   canvas->drawRoundRect(skrect, borderRadius, borderRadius, paint);
   paint.setShader(NULL);
@@ -725,12 +725,12 @@ void NativeThemeBase::PaintButton(SkCanvas* canvas,
   colors[0] = light_color;
   colors[1] = base_color;
 
-  SkShader* shader = SkGradientShader::CreateLinear(
-      gradient_bounds, colors, NULL, 2, SkShader::kClamp_TileMode, NULL);
+  skia::RefPtr<SkShader> shader = skia::AdoptRef(
+      SkGradientShader::CreateLinear(
+          gradient_bounds, colors, NULL, 2, SkShader::kClamp_TileMode, NULL));
   paint.setStyle(SkPaint::kFill_Style);
   paint.setAntiAlias(true);
-  paint.setShader(shader);
-  shader->unref();
+  paint.setShader(shader.get());
 
   canvas->drawRoundRect(skrect, SkIntToScalar(1), SkIntToScalar(1), paint);
   paint.setShader(NULL);

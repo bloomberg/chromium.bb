@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "skia/ext/platform_canvas.h"
+#include "skia/ext/refptr.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/shadow_value.h"
@@ -398,7 +399,7 @@ class UI_EXPORT Canvas {
   // Canvas::Scale() does not affect |scale_factor_|.
   ui::ScaleFactor scale_factor_;
 
-  scoped_ptr<skia::PlatformCanvas> owned_canvas_;
+  skia::RefPtr<skia::PlatformCanvas> owned_canvas_;
   SkCanvas* canvas_;
 
   DISALLOW_COPY_AND_ASSIGN(Canvas);

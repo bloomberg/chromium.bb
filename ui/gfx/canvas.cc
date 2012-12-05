@@ -27,13 +27,12 @@ Canvas::Canvas(const gfx::Size& size,
                ui::ScaleFactor scale_factor,
                bool is_opaque)
       : scale_factor_(scale_factor),
-        owned_canvas_(NULL),
         canvas_(NULL) {
   gfx::Size pixel_size = gfx::ToFlooredSize(
       gfx::ScaleSize(size, ui::GetScaleFactorScale(scale_factor)));
-  owned_canvas_.reset(skia::CreatePlatformCanvas(pixel_size.width(),
-                                                 pixel_size.height(),
-                                                 is_opaque));
+  owned_canvas_ = skia::AdoptRef(skia::CreatePlatformCanvas(pixel_size.width(),
+                                                            pixel_size.height(),
+                                                            is_opaque));
   canvas_ = owned_canvas_.get();
 #if defined(OS_WIN) || defined(OS_MACOSX)
   // skia::PlatformCanvas instances are initialized to 0 by Cairo on Linux, but
@@ -48,9 +47,10 @@ Canvas::Canvas(const gfx::Size& size,
 
 Canvas::Canvas(const gfx::ImageSkiaRep& image_rep, bool is_opaque)
     : scale_factor_(image_rep.scale_factor()),
-    owned_canvas_(skia::CreatePlatformCanvas(image_rep.pixel_width(),
-                                             image_rep.pixel_height(),
-                                             is_opaque)),
+      owned_canvas_(skia::AdoptRef(
+          skia::CreatePlatformCanvas(image_rep.pixel_width(),
+                                     image_rep.pixel_height(),
+                                     is_opaque))),
       canvas_(owned_canvas_.get()) {
   SkScalar scale = SkFloatToScalar(ui::GetScaleFactorScale(scale_factor_));
   canvas_->scale(scale, scale);
@@ -59,7 +59,7 @@ Canvas::Canvas(const gfx::ImageSkiaRep& image_rep, bool is_opaque)
 
 Canvas::Canvas()
     : scale_factor_(ui::SCALE_FACTOR_100P),
-      owned_canvas_(skia::CreatePlatformCanvas(0, 0, false)),
+      owned_canvas_(skia::AdoptRef(skia::CreatePlatformCanvas(0, 0, false))),
       canvas_(owned_canvas_.get()) {
 }
 
@@ -78,9 +78,9 @@ void Canvas::RecreateBackingCanvas(const gfx::Size& size,
   scale_factor_ = scale_factor;
   gfx::Size pixel_size = gfx::ToFlooredSize(
       gfx::ScaleSize(size, ui::GetScaleFactorScale(scale_factor)));
-  owned_canvas_.reset(skia::CreatePlatformCanvas(pixel_size.width(),
-                                                 pixel_size.height(),
-                                                 is_opaque));
+  owned_canvas_ = skia::AdoptRef(skia::CreatePlatformCanvas(pixel_size.width(),
+                                                            pixel_size.height(),
+                                                            is_opaque));
   canvas_ = owned_canvas_.get();
   SkScalar scale = SkFloatToScalar(ui::GetScaleFactorScale(scale_factor_));
   canvas_->scale(scale, scale);
@@ -140,14 +140,14 @@ void Canvas::DrawDashedRect(const gfx::Rect& rect, SkColor color) {
 
   // Make a shader for the bitmap with an origin of the box we'll draw. This
   // shader is refcounted and will have an initial refcount of 1.
-  SkShader* shader = SkShader::CreateBitmapShader(
-      *dots, SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode);
+  skia::RefPtr<SkShader> shader = skia::AdoptRef(
+      SkShader::CreateBitmapShader(
+          *dots, SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode));
   // Assign the shader to the paint & release our reference. The paint will
   // now own the shader and the shader will be destroyed when the paint goes
   // out of scope.
   SkPaint paint;
-  paint.setShader(shader);
-  shader->unref();
+  paint.setShader(shader.get());
 
   DrawRect(gfx::Rect(rect.x(), rect.y(), rect.width(), 1), paint);
   DrawRect(gfx::Rect(rect.x(), rect.y() + rect.height() - 1, rect.width(), 1),
@@ -373,16 +373,16 @@ void Canvas::DrawImageInt(const gfx::ImageSkia& image,
   shader_scale.preTranslate(SkIntToScalar(-src_x), SkIntToScalar(-src_y));
   shader_scale.postTranslate(SkIntToScalar(dest_x), SkIntToScalar(dest_y));
 
-  SkShader* shader = gfx::CreateImageRepShader(image_rep,
-                                               SkShader::kRepeat_TileMode,
-                                               shader_scale);
+  skia::RefPtr<SkShader> shader = gfx::CreateImageRepShader(
+      image_rep,
+      SkShader::kRepeat_TileMode,
+      shader_scale);
 
   // Set up our paint to use the shader & release our reference (now just owned
   // by the paint).
   SkPaint p(paint);
   p.setFilterBitmap(filter);
-  p.setShader(shader);
-  shader->unref();
+  p.setShader(shader.get());
 
   // The rect will be filled by the bitmap.
   canvas_->drawRect(dest_rect, p);
@@ -399,12 +399,13 @@ void Canvas::DrawImageInPath(const gfx::ImageSkia& image,
 
   SkMatrix matrix;
   matrix.setTranslate(SkIntToScalar(x), SkIntToScalar(y));
-  SkShader* shader = gfx::CreateImageRepShader(image_rep,
-      SkShader::kRepeat_TileMode, matrix);
+  skia::RefPtr<SkShader> shader = gfx::CreateImageRepShader(
+      image_rep,
+      SkShader::kRepeat_TileMode,
+      matrix);
 
   SkPaint p(paint);
-  p.setShader(shader);
-  shader->unref();
+  p.setShader(shader.get());
   canvas_->drawPath(path, p);
 }
 
@@ -465,14 +466,14 @@ void Canvas::TileImageInt(const gfx::ImageSkia& image,
   shader_scale.preTranslate(SkIntToScalar(-src_x), SkIntToScalar(-src_y));
   shader_scale.postTranslate(SkIntToScalar(dest_x), SkIntToScalar(dest_y));
 
-  SkShader* shader = gfx::CreateImageRepShader(image_rep,
-                                               SkShader::kRepeat_TileMode,
-                                               shader_scale);
+  skia::RefPtr<SkShader> shader = gfx::CreateImageRepShader(
+      image_rep,
+      SkShader::kRepeat_TileMode,
+      shader_scale);
 
   SkPaint paint;
-  paint.setShader(shader);
+  paint.setShader(shader.get());
   paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
-  shader->unref();
 
   SkRect dest_rect = { SkIntToScalar(dest_x),
                        SkIntToScalar(dest_y),

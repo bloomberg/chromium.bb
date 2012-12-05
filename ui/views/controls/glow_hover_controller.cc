@@ -83,16 +83,17 @@ void GlowHoverController::Draw(gfx::Canvas* canvas,
       static_cast<int>(255 * kOpacityScale * animation_.GetCurrentValue());
   colors[0] = SkColorSetARGB(hover_alpha, 255, 255, 255);
   colors[1] = SkColorSetARGB(0, 255, 255, 255);
-  SkShader* shader = SkGradientShader::CreateRadial(center_point,
-      SkIntToScalar(radius), colors, NULL, 2, SkShader::kClamp_TileMode);
+  skia::RefPtr<SkShader> shader = skia::AdoptRef(
+      SkGradientShader::CreateRadial(
+          center_point, SkIntToScalar(radius), colors, NULL, 2,
+          SkShader::kClamp_TileMode));
   // Shader can end up null when radius = 0.
   // If so, this results in default full tab glow behavior.
   if (shader) {
     SkPaint paint;
     paint.setStyle(SkPaint::kFill_Style);
     paint.setAntiAlias(true);
-    paint.setShader(shader);
-    shader->unref();
+    paint.setShader(shader.get());
     hover_canvas.DrawRect(gfx::Rect(location_.x() - radius,
                                     location_.y() - radius,
                                     radius * 2, radius * 2), paint);

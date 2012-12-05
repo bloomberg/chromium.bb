@@ -70,11 +70,9 @@ void FillRoundRect(gfx::Canvas* canvas,
   } else {
     p[1].iset(x, y + h);
   }
-  SkShader* s = SkGradientShader::CreateLinear(
-      p, colors, points, count, SkShader::kClamp_TileMode, NULL);
-  paint.setShader(s);
-  // Need to unref shader, otherwise never deleted.
-  s->unref();
+  skia::RefPtr<SkShader> s = skia::AdoptRef(SkGradientShader::CreateLinear(
+      p, colors, points, count, SkShader::kClamp_TileMode, NULL));
+  paint.setShader(s.get());
 
   canvas->DrawPath(path, paint);
 }

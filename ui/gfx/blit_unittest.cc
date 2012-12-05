@@ -143,10 +143,10 @@ TEST(Blit, WithSharedMemory) {
   base::SharedMemory shared_mem;
   ASSERT_TRUE(shared_mem.CreateAnonymous(kCanvasWidth * kCanvasHeight));
   base::SharedMemoryHandle section = shared_mem.handle();
-  SkCanvas* canvas = skia::CreatePlatformCanvas(kCanvasWidth, kCanvasHeight,
-                                   true, section, skia::RETURN_NULL_ON_FAILURE);
-  ASSERT_TRUE(NULL != canvas);
-  SkAutoUnref aur(canvas);
+  skia::RefPtr<SkCanvas> canvas = skia::AdoptRef(
+      skia::CreatePlatformCanvas(kCanvasWidth, kCanvasHeight, true, section,
+                                 skia::RETURN_NULL_ON_FAILURE));
+  ASSERT_TRUE(canvas);
   shared_mem.Close();
 
   uint8 initial_values[kCanvasHeight][kCanvasWidth] = {
@@ -155,10 +155,10 @@ TEST(Blit, WithSharedMemory) {
       { 0x20, 0x21, 0x22, 0x23, 0x24 },
       { 0x30, 0x31, 0x32, 0x33, 0x34 },
       { 0x40, 0x41, 0x42, 0x43, 0x44 }};
-  SetToCanvas<5, 5>(canvas, initial_values);
+  SetToCanvas<5, 5>(canvas.get(), initial_values);
 
   // Sanity check on input.
-  VerifyCanvasValues<5, 5>(canvas, initial_values);
+  VerifyCanvasValues<5, 5>(canvas.get(), initial_values);
 }
 
 #endif

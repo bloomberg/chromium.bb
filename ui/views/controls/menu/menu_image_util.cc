@@ -51,14 +51,14 @@ class RadioButtonImageSource : public gfx::CanvasImageSource {
                             static_cast<int>(kIndicatorSize * kGradientStop));
     gradient_points[2].iset(0, kIndicatorSize);
     SkColor gradient_colors[3] = { kGradient0, kGradient1, kGradient2 };
-    SkShader* shader = SkGradientShader::CreateLinear(
-        gradient_points, gradient_colors, NULL, arraysize(gradient_points),
-        SkShader::kClamp_TileMode, NULL);
+    skia::RefPtr<SkShader> shader = skia::AdoptRef(
+        SkGradientShader::CreateLinear(
+            gradient_points, gradient_colors, NULL, arraysize(gradient_points),
+            SkShader::kClamp_TileMode, NULL));
     SkPaint paint;
     paint.setStyle(SkPaint::kFill_Style);
     paint.setAntiAlias(true);
-    paint.setShader(shader);
-    shader->unref();
+    paint.setShader(shader.get());
     int radius = kIndicatorSize / 2;
     canvas->sk_canvas()->drawCircle(radius, radius, radius, paint);
     paint.setStrokeWidth(SkIntToScalar(0));
@@ -73,11 +73,12 @@ class RadioButtonImageSource : public gfx::CanvasImageSource {
       selected_gradient_points[1].iset(0, kSelectedIndicatorSize);
       SkColor selected_gradient_colors[2] = { kRadioButtonIndicatorGradient0,
                                               kRadioButtonIndicatorGradient1 };
-      shader = SkGradientShader::CreateLinear(
-          selected_gradient_points, selected_gradient_colors, NULL,
-          arraysize(selected_gradient_points), SkShader::kClamp_TileMode, NULL);
-      paint.setShader(shader);
-      shader->unref();
+      shader = skia::AdoptRef(
+          SkGradientShader::CreateLinear(
+              selected_gradient_points, selected_gradient_colors, NULL,
+              arraysize(selected_gradient_points),
+              SkShader::kClamp_TileMode, NULL));
+      paint.setShader(shader.get());
       paint.setStyle(SkPaint::kFill_Style);
       canvas->sk_canvas()->drawCircle(radius, radius,
                                       kSelectedIndicatorSize / 2, paint);

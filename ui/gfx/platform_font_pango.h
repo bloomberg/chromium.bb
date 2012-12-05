@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/platform_font.h"
 
@@ -52,7 +53,7 @@ class UI_EXPORT PlatformFontPango : public PlatformFont {
  private:
   // Create a new instance of this object with the specified properties. Called
   // from DeriveFont.
-  PlatformFontPango(SkTypeface* typeface,
+  PlatformFontPango(const skia::RefPtr<SkTypeface>& typeface,
                     const std::string& name,
                     int size,
                     int style);
@@ -60,10 +61,11 @@ class UI_EXPORT PlatformFontPango : public PlatformFont {
 
   // Initialize this object.
   void InitWithNameAndSize(const std::string& font_name, int font_size);
-  void InitWithTypefaceNameSizeAndStyle(SkTypeface* typeface,
-                                        const std::string& name,
-                                        int size,
-                                        int style);
+  void InitWithTypefaceNameSizeAndStyle(
+      const skia::RefPtr<SkTypeface>& typeface,
+      const std::string& name,
+      int size,
+      int style);
   void InitFromPlatformFont(const PlatformFontPango* other);
 
   // Potentially slow call to get pango metrics (average width, underline info).
@@ -78,11 +80,7 @@ class UI_EXPORT PlatformFontPango : public PlatformFont {
   // The average width of a character, initialized and cached if needed.
   double GetAverageWidth() const;
 
-  // These two both point to the same SkTypeface. We use the SkAutoUnref to
-  // handle the reference counting, but without @typeface_ we would have to
-  // cast the SkRefCnt from @typeface_helper_ every time.
-  scoped_ptr<SkAutoUnref> typeface_helper_;
-  SkTypeface* typeface_;
+  skia::RefPtr<SkTypeface> typeface_;
 
   // Additional information about the face
   // Skia actually expects a family name and not a font name.

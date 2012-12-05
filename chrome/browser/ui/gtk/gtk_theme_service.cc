@@ -1016,13 +1016,12 @@ SkBitmap GtkThemeService::GenerateFrameImage(
         color_utils::HSLShift(base, kGtkFrameShift);
     if (gradient_top_color)
       gdk_color_free(gradient_top_color);
-    SkShader* shader = gfx::CreateGradientShader(
+    skia::RefPtr<SkShader> shader = gfx::CreateGradientShader(
         0, gradient_size, lighter, base);
     SkPaint paint;
     paint.setStyle(SkPaint::kFill_Style);
     paint.setAntiAlias(true);
-    paint.setShader(shader);
-    shader->unref();
+    paint.setShader(shader.get());
 
     canvas.DrawRect(gfx::Rect(0, 0, kToolbarImageWidth, gradient_size), paint);
   }

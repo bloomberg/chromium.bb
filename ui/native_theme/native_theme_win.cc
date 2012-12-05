@@ -81,16 +81,16 @@ void SetCheckerboardShader(SkPaint* paint, const RECT& align_rect) {
   temp_bitmap.setPixels(buffer);
   SkBitmap bitmap;
   temp_bitmap.copyTo(&bitmap, temp_bitmap.config());
-  SkShader* shader = SkShader::CreateBitmapShader(bitmap,
-                                                  SkShader::kRepeat_TileMode,
-                                                  SkShader::kRepeat_TileMode);
+  skia::RefPtr<SkShader> shader = skia::AdoptRef(
+      SkShader::CreateBitmapShader(
+          bitmap, SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode));
 
   // Align the pattern with the upper corner of |align_rect|.
   SkMatrix matrix;
   matrix.setTranslate(SkIntToScalar(align_rect.left),
                       SkIntToScalar(align_rect.top));
   shader->setLocalMatrix(matrix);
-  SkSafeUnref(paint->setShader(shader));
+  paint->setShader(shader.get());
 }
 
 //    <-a->
@@ -509,11 +509,11 @@ void NativeThemeWin::PaintIndirect(SkCanvas* canvas,
   //                  keeping a cache of the resulting bitmaps.
 
   // Create an offscreen canvas that is backed by an HDC.
-  skia::BitmapPlatformDevice* device = skia::BitmapPlatformDevice::Create(
-      rect.width(), rect.height(), false, NULL);
+  skia::RefPtr<skia::BitmapPlatformDevice> device = skia::AdoptRef(
+      skia::BitmapPlatformDevice::Create(
+          rect.width(), rect.height(), false, NULL));
   DCHECK(device);
-  SkCanvas offscreen_canvas(device);
-  device->unref();
+  SkCanvas offscreen_canvas(device.get());
   DCHECK(skia::SupportsPlatformPaint(&offscreen_canvas));
 
   // Some of the Windows theme drawing operations do not write correct alpha

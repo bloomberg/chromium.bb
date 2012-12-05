@@ -48,12 +48,11 @@ class GradientPainter : public Painter {
     else
       p[1].iset(0, size.height());
 
-    SkShader* s = SkGradientShader::CreateLinear(p, colors_.get(), pos_.get(),
-        count_, SkShader::kClamp_TileMode, NULL);
+    skia::RefPtr<SkShader> s = skia::AdoptRef(SkGradientShader::CreateLinear(
+        p, colors_.get(), pos_.get(), count_, SkShader::kClamp_TileMode, NULL));
     paint.setStyle(SkPaint::kFill_Style);
-    paint.setShader(s);
+    paint.setShader(s.get());
     // Need to unref shader, otherwise never deleted.
-    s->unref();
 
     canvas->sk_canvas()->drawRectCoords(SkIntToScalar(0), SkIntToScalar(0),
                                         SkIntToScalar(size.width()),

@@ -59,11 +59,11 @@ void Canvas::DrawStringWithShadows(const string16& text,
                                    const ShadowValues& shadows) {
   DLOG_IF(WARNING, !shadows.empty()) << "Text shadow not implemented.";
 
-  SkTypeface* typeface = SkTypeface::CreateFromName(font.GetFontName().c_str(),
-                                                    FontTypefaceStyle(font));
+  skia::RefPtr<SkTypeface> typeface = skia::AdoptRef(
+      SkTypeface::CreateFromName(
+          font.GetFontName().c_str(), FontTypefaceStyle(font)));
   SkPaint paint;
-  paint.setTypeface(typeface);
-  typeface->unref();
+  paint.setTypeface(typeface.get());
   paint.setColor(color);
   canvas_->drawText(text.c_str(),
                     text.size() * sizeof(string16::value_type),

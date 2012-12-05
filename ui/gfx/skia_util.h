@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkShader.h"
@@ -36,33 +37,23 @@ UI_EXPORT RectF SkRectToRectF(const SkRect& rect);
 // The shader's local matrix should not be changed after the shader is created.
 // TODO(pkotwicz): Allow shader's local matrix to be changed after the shader
 // is created.
-// Example usage to avoid leaks:
-//   SkSafeUnref(paint.setShader(gfx::CreateImageRepShader(image_rep,
-//       tile_mode, matrix)));
 //
-// (The old shader in the paint, if any, needs to be freed, and SkSafeUnref will
-// handle the NULL case.)
-UI_EXPORT SkShader* CreateImageRepShader(const gfx::ImageSkiaRep& image_rep,
-                                         SkShader::TileMode tile_mode,
-                                         const SkMatrix& local_matrix);
+UI_EXPORT skia::RefPtr<SkShader> CreateImageRepShader(
+    const gfx::ImageSkiaRep& image_rep,
+    SkShader::TileMode tile_mode,
+    const SkMatrix& local_matrix);
 
 // Creates a vertical gradient shader. The caller owns the shader.
 // Example usage to avoid leaks:
-//   SkSafeUnref(paint.setShader(gfx::CreateGradientShader(0, 10, red, blue)));
-//
-// (The old shader in the paint, if any, needs to be freed, and SkSafeUnref will
-// handle the NULL case.)
-UI_EXPORT SkShader* CreateGradientShader(int start_point,
-                                         int end_point,
-                                         SkColor start_color,
-                                         SkColor end_color);
+UI_EXPORT skia::RefPtr<SkShader> CreateGradientShader(int start_point,
+                                                      int end_point,
+                                                      SkColor start_color,
+                                                      SkColor end_color);
 
 // Creates a draw looper to generate |shadows|. The caller owns the draw looper.
 // NULL is returned if |shadows| is empty since no draw looper is needed in
 // this case.
-// Example usage to avoid leaks:
-//   SkSafeUnref(paint.setDrawLooper(gfx::CreateShadowDrawLooper(shadows)));
-UI_EXPORT SkDrawLooper* CreateShadowDrawLooper(
+UI_EXPORT skia::RefPtr<SkDrawLooper> CreateShadowDrawLooper(
     const std::vector<ShadowValue>& shadows);
 
 // Returns true if the two bitmaps contain the same pixels.

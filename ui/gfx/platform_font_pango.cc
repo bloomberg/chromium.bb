@@ -174,10 +174,10 @@ Font PlatformFontPango::DeriveFont(int size_delta, int style) const {
   if (gfx::Font::ITALIC & style)
     skstyle |= SkTypeface::kItalic;
 
-  SkTypeface* typeface = SkTypeface::CreateFromName(
-      font_family_.c_str(),
-      static_cast<SkTypeface::Style>(skstyle));
-  SkAutoUnref tf_helper(typeface);
+  skia::RefPtr<SkTypeface> typeface = skia::AdoptRef(
+      SkTypeface::CreateFromName(
+          font_family_.c_str(),
+          static_cast<SkTypeface::Style>(skstyle)));
 
   return Font(new PlatformFontPango(typeface,
                                     font_family_,
@@ -252,7 +252,7 @@ NativeFont PlatformFontPango::GetNativeFont() const {
 ////////////////////////////////////////////////////////////////////////////////
 // PlatformFontPango, private:
 
-PlatformFontPango::PlatformFontPango(SkTypeface* typeface,
+PlatformFontPango::PlatformFontPango(const skia::RefPtr<SkTypeface>& typeface,
                                      const std::string& name,
                                      int size,
                                      int style) {
@@ -266,19 +266,19 @@ void PlatformFontPango::InitWithNameAndSize(const std::string& font_name,
   DCHECK_GT(font_size, 0);
   std::string fallback;
 
-  SkTypeface* typeface = SkTypeface::CreateFromName(
-      font_name.c_str(), SkTypeface::kNormal);
+  skia::RefPtr<SkTypeface> typeface = skia::AdoptRef(
+          SkTypeface::CreateFromName(font_name.c_str(), SkTypeface::kNormal));
   if (!typeface) {
     // A non-scalable font such as .pcf is specified. Falls back to a default
     // scalable font.
-    typeface = SkTypeface::CreateFromName(
-        kFallbackFontFamilyName, SkTypeface::kNormal);
+    typeface = skia::AdoptRef(
+        SkTypeface::CreateFromName(
+            kFallbackFontFamilyName, SkTypeface::kNormal));
     CHECK(typeface) << "Could not find any font: "
                     << font_name
                     << ", " << kFallbackFontFamilyName;
     fallback = kFallbackFontFamilyName;
   }
-  SkAutoUnref typeface_helper(typeface);
 
   InitWithTypefaceNameSizeAndStyle(typeface,
                                    fallback.empty() ? font_name : fallback,
@@ -287,13 +287,11 @@ void PlatformFontPango::InitWithNameAndSize(const std::string& font_name,
 }
 
 void PlatformFontPango::InitWithTypefaceNameSizeAndStyle(
-    SkTypeface* typeface,
+    const skia::RefPtr<SkTypeface>& typeface,
     const std::string& font_family,
     int font_size,
     int style) {
-  typeface_helper_.reset(new SkAutoUnref(typeface));
   typeface_ = typeface;
-  typeface_->ref();
   font_family_ = font_family;
   font_size_pixels_ = font_size;
   style_ = style;
@@ -312,9 +310,7 @@ void PlatformFontPango::InitWithTypefaceNameSizeAndStyle(
 }
 
 void PlatformFontPango::InitFromPlatformFont(const PlatformFontPango* other) {
-  typeface_helper_.reset(new SkAutoUnref(other->typeface_));
   typeface_ = other->typeface_;
-  typeface_->ref();
   font_family_ = other->font_family_;
   font_size_pixels_ = other->font_size_pixels_;
   style_ = other->style_;
@@ -330,7 +326,7 @@ void PlatformFontPango::PaintSetup(SkPaint* paint) const {
   paint->setAntiAlias(false);
   paint->setSubpixelText(false);
   paint->setTextSize(font_size_pixels_);
-  paint->setTypeface(typeface_);
+  paint->setTypeface(typeface_.get());
   paint->setFakeBoldText((gfx::Font::BOLD & style_) && !typeface_->isBold());
   paint->setTextSkewX((gfx::Font::ITALIC & style_) && !typeface_->isItalic() ?
                       -SK_Scalar1/4 : 0);
