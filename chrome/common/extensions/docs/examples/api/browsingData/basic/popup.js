@@ -109,7 +109,7 @@ PopupController.prototype = {
     if (removal_start !== undefined) {
       this.button_.setAttribute('disabled', 'disabled');
       this.button_.innerText = 'Clearing...';
-      chrome.browsingData.remove(removal_start, {
+      chrome.browsingData.remove({ "since" : removal_start }, {
         "appcache": true,
         "cache": true,
         "cookies": true,
