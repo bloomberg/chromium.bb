@@ -247,6 +247,9 @@ create_lockfile(int display, char *lockfile, size_t lsize)
 		if (fd < 0 || read(fd, pid, 11) != 11) {
 			weston_log("can't read lock file %s: %s\n",
 				lockfile, strerror(errno));
+			if (fd >= 0)
+				close (fd);
+
 			errno = EEXIST;
 			return -1;
 		}
