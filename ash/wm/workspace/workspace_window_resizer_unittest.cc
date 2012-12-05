@@ -1647,7 +1647,7 @@ TEST_F(WorkspaceWindowResizerTest, DontExpandRightmostPastMaxWidth) {
   EXPECT_EQ("299,100 101x100", window3_->bounds().ToString());
 }
 
-TEST_F(WorkspaceWindowResizerTest, DontContractMainIfAttachedAreStretched) {
+TEST_F(WorkspaceWindowResizerTest, MoveAttachedWhenGrownToMaxSize) {
   aura::RootWindow* root = Shell::GetPrimaryRootWindow();
   root->SetHostSize(gfx::Size(600, 800));
 
@@ -1667,11 +1667,11 @@ TEST_F(WorkspaceWindowResizerTest, DontContractMainIfAttachedAreStretched) {
   scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
       window_.get(), gfx::Point(), HTRIGHT, windows));
   ASSERT_TRUE(resizer.get());
-  // Move it 52 to the left, which should contract w1 and expand w2-3.
+  // Move it 52 to the left, which should contract w1 and expand and move w2-3.
   resizer->Drag(CalculateDragPoint(*resizer, -52, 0), 0);
-  EXPECT_EQ("100,100 98x100", window_->bounds().ToString());
-  EXPECT_EQ("198,100 101x100", window2_->bounds().ToString());
-  EXPECT_EQ("299,100 101x100", window3_->bounds().ToString());
+  EXPECT_EQ("100,100 48x100", window_->bounds().ToString());
+  EXPECT_EQ("148,100 101x100", window2_->bounds().ToString());
+  EXPECT_EQ("249,100 101x100", window3_->bounds().ToString());
 }
 
 TEST_F(WorkspaceWindowResizerTest, MainWindowHonoursMaxWidth) {
@@ -1716,7 +1716,6 @@ TEST_F(WorkspaceWindowResizerTest, MainWindowHonoursMinWidth) {
   std::vector<aura::Window*> windows;
   windows.push_back(window2_.get());
   windows.push_back(window3_.get());
-  windows.push_back(window4_.get());
   scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
       window_.get(), gfx::Point(), HTRIGHT, windows));
   ASSERT_TRUE(resizer.get());

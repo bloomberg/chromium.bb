@@ -535,6 +535,11 @@ void WorkspaceWindowResizer::LayoutAttachedWindows(
   std::vector<int> sizes;
   int leftovers = CalculateAttachedSizes(delta, available_size, &sizes);
 
+  // leftovers > 0 means that the attached windows can't grow to compensate for
+  // the shrinkage of the main window. This line causes the attached windows to
+  // be moved so they are still flush against the main window, rather than the
+  // main window being prevented from shrinking.
+  leftovers = std::min(0, leftovers);
   // Reallocate any leftover pixels back into the main window. This is
   // necessary when, for example, the main window shrinks, but none of the
   // attached windows can grow without exceeding their max size constraints.
