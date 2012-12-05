@@ -148,9 +148,11 @@ Browser* FindOrCreateTabbedBrowser(Profile* profile,
   return browser;
 }
 
-Browser* FindAnyBrowser(Profile* profile, bool match_original_profiles) {
+Browser* FindAnyBrowser(Profile* profile,
+                        bool match_original_profiles,
+                        chrome::HostDesktopType type) {
   return FindBrowserWithTabbedOrAnyType(profile,
-                                        kDefaultHostDesktopType,
+                                        type,
                                         false,
                                         match_original_profiles);
 }

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_BROWSER_FINDER_H_
 
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "ui/gfx/native_widget_types.h"
 
 class Profile;
@@ -38,9 +39,11 @@ Browser* FindOrCreateTabbedBrowser(Profile* profile);
 Browser* FindOrCreateTabbedBrowser(Profile* profile,
                                    chrome::HostDesktopType type);
 
-// Find an existing browser window with any type. See comment above for
-// additional information.
-Browser* FindAnyBrowser(Profile* profile, bool match_original_profiles);
+// Finds an existing browser window of any kind.
+// |type| refers to the host desktop the returned browser should belong to.
+Browser* FindAnyBrowser(Profile* profile,
+                        bool match_original_profiles,
+                        chrome::HostDesktopType type);
 
 // Find an existing browser window with the provided profile and hosted in the
 // given desktop. Searches in the order of last activation. Only browsers that

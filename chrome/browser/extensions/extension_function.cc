@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/notification_source.h"
@@ -207,11 +208,14 @@ Browser* UIThreadExtensionFunction::GetCurrentBrowser() {
   // is true, we will also search browsers in the incognito version of this
   // profile. Note that the profile may already be incognito, in which case
   // we will search the incognito version only, regardless of the value of
-  // |include_incognito|.
+  // |include_incognito|. Look only for browsers on the active desktop as it is
+  // preferable to pretend no browser is open then to return a browser on
+  // another desktop.
   if (render_view_host_) {
     Profile* profile = Profile::FromBrowserContext(
         render_view_host_->GetProcess()->GetBrowserContext());
-    Browser* browser = browser::FindAnyBrowser(profile, include_incognito_);
+    Browser* browser = browser::FindAnyBrowser(profile, include_incognito_,
+                                               chrome::GetActiveDesktop());
     if (browser)
       return browser;
   }

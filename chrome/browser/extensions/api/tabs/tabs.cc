@@ -302,7 +302,7 @@ bool GetLastFocusedWindowFunction::RunImpl() {
   // include other window types (e.g. panels), we will need to add logic to
   // WindowControllerList that mirrors the active behavior of BrowserList.
   Browser* browser = browser::FindAnyBrowser(
-      profile(), include_incognito());
+      profile(), include_incognito(), chrome::GetActiveDesktop());
   if (!browser || !browser->window()) {
     error_ = keys::kNoLastFocusedWindowError;
     return false;
