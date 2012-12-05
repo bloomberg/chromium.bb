@@ -101,6 +101,8 @@ class OneClickSigninHelper
  private:
   explicit OneClickSigninHelper(content::WebContents* web_contents);
   friend class content::WebContentsUserData<OneClickSigninHelper>;
+  FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperTest,
+                           ShowInfoBarUIThreadIncognito);
   FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperIOTest, CanOfferOnIOThread);
   FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperIOTest,
                            CanOfferOnIOThreadIncognito);

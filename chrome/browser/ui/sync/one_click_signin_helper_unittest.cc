@@ -26,6 +26,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_renderer_host.h"
 #include "grit/generated_resources.h"
@@ -517,6 +518,21 @@ TEST_F(OneClickSigninHelperTest, CanOfferNoSigninCookies) {
       web_contents(), OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
       "", &error_message_id));
   EXPECT_EQ(0, error_message_id);
+}
+
+// Should not crash if a helper instance is not associated with an incognito
+// web contents.
+TEST_F(OneClickSigninHelperTest, ShowInfoBarUIThreadIncognito) {
+  CreateSigninManager(true, "");
+  OneClickSigninHelper* helper =
+      OneClickSigninHelper::FromWebContents(web_contents());
+  EXPECT_EQ(NULL, helper);
+
+  OneClickSigninHelper::ShowInfoBarUIThread("session_index", "email",
+                                            OneClickSigninHelper::AUTO_ACCEPT,
+                                            SyncPromoUI::SOURCE_UNKNOWN,
+                                            process()->GetID(),
+                                            rvh()->GetRoutingID());
 }
 
 // I/O thread tests

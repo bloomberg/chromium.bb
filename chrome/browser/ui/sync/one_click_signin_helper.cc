@@ -681,6 +681,9 @@ void OneClickSigninHelper::ShowInfoBarUIThread(
   // browser_test.
   OneClickSigninHelper* helper =
       OneClickSigninHelper::FromWebContents(web_contents);
+  if (!helper)
+    return;
+
   int error_message_id = 0;
 
   CanOfferFor can_offer_for =
@@ -700,17 +703,15 @@ void OneClickSigninHelper::ShowInfoBarUIThread(
   // Save the email in the one-click signin manager.  The manager may
   // not exist if the contents is incognito or if the profile is already
   // connected to a Google account.
-  if (helper) {
-    if (!session_index.empty())
-      helper->session_index_ = session_index;
+  if (!session_index.empty())
+    helper->session_index_ = session_index;
 
-    if (!email.empty())
-      helper->email_ = email;
+  if (!email.empty())
+    helper->email_ = email;
 
-    if (auto_accept != NO_AUTO_ACCEPT) {
-      helper->auto_accept_ = auto_accept;
-      helper->source_ = source;
-    }
+  if (auto_accept != NO_AUTO_ACCEPT) {
+    helper->auto_accept_ = auto_accept;
+    helper->source_ = source;
   }
 }
 
