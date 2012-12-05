@@ -791,17 +791,40 @@ def CheckOwners(input_api, output_api, source_file_filter=None):
   return []
 
 
+def _GetRietveldIssueProps(input_api, messages):
+  """Gets the issue properties from rietveld."""
+  issue = input_api.change.issue
+  if issue and input_api.rietveld:
+    return input_api.rietveld.get_issue_properties(
+        issue=int(issue), messages=messages)
+
+
+def CheckIssueNotClosed(input_api, output_api):
+  """Verifies issue is not closed.
+
+  We should not be working with a closed review. CQ and dcommit set this bit,
+  so it is a pretty good indicator of whether an issue has been committed.
+  """
+  issue_props = _GetRietveldIssueProps(input_api=input_api, messages=False)
+  if issue_props and issue_props['closed']:
+    return [output_api.PresubmitError(
+        'Issue %s is closed.  If this issue was already used for a commit,\n'
+        'please reset the issue number associated with this branch with:\n'
+        'git cl issue 0\n' % issue_props['issue']
+        )]
+  return []
+
+
 def _RietveldOwnerAndReviewers(input_api, email_regexp, approval_needed=False):
   """Return the owner and reviewers of a change, if any.
 
   If approval_needed is True, only reviewers who have approved the change
   will be returned.
   """
-  if not input_api.change.issue:
+  issue_props = _GetRietveldIssueProps(input_api, True)
+  if not issue_props:
     return None, None
 
-  issue_props = input_api.rietveld.get_issue_properties(
-      int(input_api.change.issue), True)
   if not approval_needed:
     return issue_props['owner_email'], set(issue_props['reviewers'])
 
@@ -939,6 +962,10 @@ def PanProjectChecks(input_api, output_api,
     snapshot("checking owners")
     results.extend(input_api.canned_checks.CheckOwners(
         input_api, output_api, source_file_filter=None))
+
+  snapshot("checking review not closed")
+  results.extend(input_api.canned_checks.CheckIssueNotClosed(
+      input_api, output_api))
 
   snapshot("checking long lines")
   results.extend(input_api.canned_checks.CheckLongLines(

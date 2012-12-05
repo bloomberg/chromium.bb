@@ -1507,6 +1507,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
       'CheckLongLines', 'CheckTreeIsOpen', 'PanProjectChecks',
       'CheckLicense',
       'CheckOwners',
+      'CheckIssueNotClosed',
       'CheckRietveldTryJobExecution',
       'CheckSingletonInHeaders',
       'CheckSvnModifiedDirectories',
@@ -2253,7 +2254,8 @@ class CannedChecksUnittest(PresubmitTestsBase):
 
       if issue:
         input_api.rietveld.get_issue_properties(
-            int(input_api.change.issue), True).AndReturn(rietveld_response)
+            issue=int(input_api.change.issue), messages=True).AndReturn(
+                rietveld_response)
         people.add(owner_email)
 
       fake_db.directories_not_covered_by(set(['foo/xyz.cc']),
@@ -2393,6 +2395,24 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.AssertOwnersWorks(approvers=set(['ben@example.com']),
                            is_committing=False,
                            uncovered_dirs=set())
+
+  def CheckIssueClosedBase(self, closed):
+    input_api = self.MockInputApi(
+        presubmit.Change('', '', None, None, 1, 0, None), False)
+    input_api.rietveld.get_issue_properties(
+        issue=int(input_api.change.issue), messages=False).AndReturn(
+            {'closed': closed, 'issue': 1})
+    self.mox.ReplayAll()
+    return presubmit_canned_checks.CheckIssueNotClosed(
+        input_api, presubmit.OutputApi)
+
+  def testIssueOpen(self):
+    self.assertEqual([], self.CheckIssueClosedBase(False))
+
+  def testIssueClosed(self):
+    results = self.CheckIssueClosedBase(True)
+    self.assertEqual(len(results), 1)
+    self.assertTrue(results[0].fatal)
 
   def testCannedRunUnitTests(self):
     change = presubmit.Change(
