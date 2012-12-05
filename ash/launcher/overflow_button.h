@@ -23,7 +23,7 @@ class OverflowButton : public views::CustomButton {
   explicit OverflowButton(views::ButtonListener* listener);
   virtual ~OverflowButton();
 
-  void SetShelfAlignment(ShelfAlignment alignment);
+  void OnShelfAlignmentChanged();
 
  private:
   void PaintBackground(gfx::Canvas* canvas, int alpha);
@@ -31,7 +31,6 @@ class OverflowButton : public views::CustomButton {
   // views::View overrides:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
-  ShelfAlignment alignment_;
   const gfx::ImageSkia* image_;
 
   DISALLOW_COPY_AND_ASSIGN(OverflowButton);

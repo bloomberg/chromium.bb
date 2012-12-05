@@ -4,6 +4,7 @@
 
 #include "ash/launcher/overflow_button.h"
 
+#include "ash/wm/shelf_layout_manager.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "third_party/skia/include/core/SkPaint.h"
@@ -14,6 +15,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 namespace internal {
@@ -48,7 +50,6 @@ void RotateClockwise(gfx::Transform* transform) {
 
 OverflowButton::OverflowButton(views::ButtonListener* listener)
     : CustomButton(listener),
-      alignment_(SHELF_ALIGNMENT_BOTTOM),
       image_(NULL) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   image_ = rb.GetImageNamed(IDR_AURA_LAUNCHER_OVERFLOW).ToImageSkia();
@@ -62,20 +63,18 @@ OverflowButton::OverflowButton(views::ButtonListener* listener)
 OverflowButton::~OverflowButton() {
 }
 
-void OverflowButton::SetShelfAlignment(ShelfAlignment alignment) {
-  if (alignment_ == alignment)
-    return;
-
-  alignment_ = alignment;
+void OverflowButton::OnShelfAlignmentChanged() {
   SchedulePaint();
 }
 
 void OverflowButton::PaintBackground(gfx::Canvas* canvas, int alpha) {
   gfx::Rect bounds(GetContentsBounds());
   gfx::Rect rect(0, 0, kButtonHoverSize, kButtonHoverSize);
+  ShelfLayoutManager* shelf =
+      ShelfLayoutManager::ForLauncher(GetWidget()->GetNativeView());
 
   // Nudge the background a little to line up right.
-  if (alignment_ == SHELF_ALIGNMENT_BOTTOM) {
+  if (shelf->GetAlignment() == SHELF_ALIGNMENT_BOTTOM) {
     rect.set_origin(gfx::Point(
         bounds.x() + ((bounds.width() - kButtonHoverSize) / 2) - 1,
         bounds.y() + kBackgroundOffset - 1));
@@ -100,6 +99,9 @@ void OverflowButton::PaintBackground(gfx::Canvas* canvas, int alpha) {
 }
 
 void OverflowButton::OnPaint(gfx::Canvas* canvas) {
+  ShelfAlignment alignment = ShelfLayoutManager::ForLauncher(
+      GetWidget()->GetNativeView())->GetAlignment();
+
   if (hover_animation_->is_animating()) {
     PaintBackground(
         canvas,
@@ -113,7 +115,7 @@ void OverflowButton::OnPaint(gfx::Canvas* canvas) {
 
   gfx::Transform transform;
 
-  switch (alignment_) {
+  switch (alignment) {
     case SHELF_ALIGNMENT_BOTTOM:
       // Shift 1 pixel left to align with overflow bubble tip.
       transform.Translate(-1, kBackgroundOffset);
@@ -132,7 +134,7 @@ void OverflowButton::OnPaint(gfx::Canvas* canvas) {
   canvas->Transform(transform);
 
   gfx::Rect rect(GetContentsBounds());
-  if (alignment_ == SHELF_ALIGNMENT_BOTTOM) {
+  if (alignment == SHELF_ALIGNMENT_BOTTOM) {
     canvas->DrawImageInt(*image_,
                          rect.x() + (rect.width() - image_->width()) / 2,
                          kButtonHoverSize - image_->height());

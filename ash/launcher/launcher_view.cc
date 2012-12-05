@@ -16,8 +16,8 @@
 #include "ash/launcher/overflow_bubble.h"
 #include "ash/launcher/overflow_button.h"
 #include "ash/launcher/tabbed_launcher_button.h"
-#include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ash/wm/shelf_layout_manager.h"
 #include "base/auto_reset.h"
 #include "base/memory/scoped_ptr.h"
 #include "grit/ash_strings.h"
@@ -282,7 +282,6 @@ LauncherView::LauncherView(LauncherModel* model,
       drag_offset_(0),
       start_drag_index_(-1),
       context_menu_id_(0),
-      alignment_(SHELF_ALIGNMENT_BOTTOM),
       leading_inset_(kDefaultLeadingInset) {
   DCHECK(model_);
   bounds_animator_.reset(new views::BoundsAnimator(this));
@@ -290,7 +289,7 @@ LauncherView::LauncherView(LauncherModel* model,
   set_context_menu_controller(this);
   focus_search_.reset(new LauncherFocusSearch(view_model_.get()));
   tooltip_.reset(new LauncherTooltipManager(
-      alignment_, shelf_layout_manager, this));
+      shelf_layout_manager, this));
 }
 
 LauncherView::~LauncherView() {
@@ -324,9 +323,9 @@ void LauncherView::SetAlignment(ShelfAlignment alignment) {
     return;
   alignment_ = alignment;
   UpdateFirstButtonPadding();
-  overflow_button_->SetShelfAlignment(alignment_);
+  overflow_button_->OnShelfAlignmentChanged();
   LayoutToIdealBounds();
-  tooltip_->SetArrowLocation(alignment_);
+  tooltip_->UpdateArrowLocation();
   if (overflow_bubble_.get())
     overflow_bubble_->Hide();
 }
@@ -395,29 +394,32 @@ void LauncherView::LayoutToIdealBounds() {
 }
 
 void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
-  int available_size = primary_axis_coordinate(width(), height());
+  ShelfLayoutManager* shelf = tooltip_->shelf_layout_manager();
+
+  int available_size = shelf->PrimaryAxisValue(width(), height());
   if (!available_size)
     return;
 
   // Initial x,y values account both leading_inset in primary
   // coordinate and secondary coordinate based on the dynamic edge of the
   // launcher (eg top edge on bottom-aligned launcher).
-  int x = alignment_based_value(leading_inset(),
+  int x = shelf->SelectValueForShelfAlignment(
+      leading_inset(),
       width() - kLauncherPreferredSize,
       std::max(width() - kLauncherPreferredSize,
-          ShelfLayoutManager::kAutoHideSize + 1));
-  int y = primary_axis_coordinate(0, leading_inset());
+               ShelfLayoutManager::kAutoHideSize + 1));
+  int y = shelf->PrimaryAxisValue(0, leading_inset());
   for (int i = 0; i < view_model_->view_size(); ++i) {
     if (i < first_visible_index_) {
       view_model_->set_ideal_bounds(i, gfx::Rect(x, y, 0, 0));
       continue;
     }
 
-    int w = primary_axis_coordinate(kLauncherPreferredSize, width());
-    int h = primary_axis_coordinate(height(), kLauncherPreferredSize);
+    int w = shelf->PrimaryAxisValue(kLauncherPreferredSize, width());
+    int h = shelf->PrimaryAxisValue(height(), kLauncherPreferredSize);
     view_model_->set_ideal_bounds(i, gfx::Rect(x, y, w, h));
-    x = primary_axis_coordinate(x + w + kButtonSpacing, x);
-    y = primary_axis_coordinate(y, y + h + kButtonSpacing);
+    x = shelf->PrimaryAxisValue(x + w + kButtonSpacing, x);
+    y = shelf->PrimaryAxisValue(y, y + h + kButtonSpacing);
   }
 
   int app_list_index = view_model_->view_size() - 1;
@@ -431,8 +433,8 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
   }
 
   bounds->overflow_bounds.set_size(gfx::Size(
-      primary_axis_coordinate(kLauncherPreferredSize, width()),
-      primary_axis_coordinate(height(), kLauncherPreferredSize)));
+      shelf->PrimaryAxisValue(kLauncherPreferredSize, width()),
+      shelf->PrimaryAxisValue(height(), kLauncherPreferredSize)));
   last_visible_index_ = DetermineLastVisibleIndex(
       available_size - leading_inset() - kLauncherPreferredSize -
       kButtonSpacing - kLauncherPreferredSize);
@@ -447,24 +449,25 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
   if (show_overflow) {
     DCHECK_NE(0, view_model_->view_size());
     if (last_visible_index_ == -1) {
-      x = alignment_based_value(leading_inset(),
-              width() - kLauncherPreferredSize,
-              std::max(width() - kLauncherPreferredSize,
-                  ShelfLayoutManager::kAutoHideSize + 1));
-      y = primary_axis_coordinate(0, leading_inset());
+      x = shelf->SelectValueForShelfAlignment(
+          leading_inset(),
+          width() - kLauncherPreferredSize,
+          std::max(width() - kLauncherPreferredSize,
+                   ShelfLayoutManager::kAutoHideSize + 1));
+      y = shelf->PrimaryAxisValue(0, leading_inset());
     } else {
-      x = primary_axis_coordinate(
+      x = shelf->PrimaryAxisValue(
           view_model_->ideal_bounds(last_visible_index_).right(),
           view_model_->ideal_bounds(last_visible_index_).x());
-      y = primary_axis_coordinate(
+      y = shelf->PrimaryAxisValue(
           view_model_->ideal_bounds(last_visible_index_).y(),
           view_model_->ideal_bounds(last_visible_index_).bottom());
     }
     gfx::Rect app_list_bounds = view_model_->ideal_bounds(app_list_index);
     bounds->overflow_bounds.set_x(x);
     bounds->overflow_bounds.set_y(y);
-    x = primary_axis_coordinate(x + kLauncherPreferredSize + kButtonSpacing, x);
-    y = primary_axis_coordinate(y, y + kLauncherPreferredSize + kButtonSpacing);
+    x = shelf->PrimaryAxisValue(x + kLauncherPreferredSize + kButtonSpacing, x);
+    y = shelf->PrimaryAxisValue(y, y + kLauncherPreferredSize + kButtonSpacing);
     app_list_bounds.set_x(x);
     app_list_bounds.set_y(y);
     view_model_->set_ideal_bounds(app_list_index, app_list_bounds);
@@ -475,9 +478,11 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
 }
 
 int LauncherView::DetermineLastVisibleIndex(int max_value) {
+  ShelfLayoutManager* shelf = tooltip_->shelf_layout_manager();
+
   int index = view_model_->view_size() - 1;
   while (index >= 0 &&
-         primary_axis_coordinate(
+         shelf->PrimaryAxisValue(
              view_model_->ideal_bounds(index).right(),
              view_model_->ideal_bounds(index).bottom()) > max_value) {
     index--;
@@ -511,6 +516,7 @@ views::View* LauncherView::CreateViewForItem(const LauncherItem& item) {
           TabbedLauncherButton::Create(
               this,
               this,
+              tooltip_->shelf_layout_manager(),
               item.is_incognito ?
                   TabbedLauncherButton::STATE_INCOGNITO :
                   TabbedLauncherButton::STATE_NOT_INCOGNITO);
@@ -523,7 +529,8 @@ views::View* LauncherView::CreateViewForItem(const LauncherItem& item) {
     case TYPE_APP_SHORTCUT:
     case TYPE_PLATFORM_APP:
     case TYPE_APP_PANEL: {
-      LauncherButton* button = LauncherButton::Create(this, this);
+      LauncherButton* button = LauncherButton::Create(
+          this, this, tooltip_->shelf_layout_manager());
       button->SetImage(item.image);
       ReflectItemStatus(item, button);
       view = button;
@@ -539,7 +546,8 @@ views::View* LauncherView::CreateViewForItem(const LauncherItem& item) {
 
     case TYPE_BROWSER_SHORTCUT: {
       ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-      LauncherButton* button = LauncherButton::Create(this, this);
+      LauncherButton* button = LauncherButton::Create(
+          this, this, tooltip_->shelf_layout_manager());
       int image_id = delegate_ ?
           delegate_->GetBrowserShortcutResourceId() :
           IDR_AURA_LAUNCHER_BROWSER_SHORTCUT;
@@ -587,6 +595,8 @@ void LauncherView::PrepareForDrag(Pointer pointer,
 }
 
 void LauncherView::ContinueDrag(const ui::LocatedEvent& event) {
+  ShelfLayoutManager* shelf = tooltip_->shelf_layout_manager();
+
   // TODO: I don't think this works correctly with RTL.
   gfx::Point drag_point(event.location());
   views::View::ConvertPointToTarget(drag_view_, this, &drag_point);
@@ -608,7 +618,7 @@ void LauncherView::ContinueDrag(const ui::LocatedEvent& event) {
   if (last_drag_index > last_visible_index_)
     last_drag_index = last_visible_index_;
   int x = 0, y = 0;
-  if (is_horizontal_alignment()) {
+  if (shelf->IsHorizontalAlignment()) {
     x = std::max(view_model_->ideal_bounds(indices.first).x(),
                      drag_point.x() - drag_offset_);
     x = std::min(view_model_->ideal_bounds(last_drag_index).right() -
@@ -631,7 +641,7 @@ void LauncherView::ContinueDrag(const ui::LocatedEvent& event) {
   int target_index =
       views::ViewModelUtils::DetermineMoveIndex(
           *view_model_, drag_view_,
-          is_horizontal_alignment() ?
+          shelf->IsHorizontalAlignment() ?
               views::ViewModelUtils::HORIZONTAL :
               views::ViewModelUtils::VERTICAL,
           x, y);
@@ -693,20 +703,21 @@ void LauncherView::ShowOverflowBubble() {
   overflow_bubble_->Show(delegate_,
                          model_,
                          overflow_button_,
-                         alignment_,
                          first_overflow_index);
 
   Shell::GetInstance()->UpdateShelfVisibility();
 }
 
 void LauncherView::UpdateFirstButtonPadding() {
+  ShelfLayoutManager* shelf = tooltip_->shelf_layout_manager();
+
   // Creates an empty border for first launcher button to make included leading
   // inset act as the button's padding. This is only needed on button creation
   // and when shelf alignment changes.
   if (view_model_->view_size() > 0) {
     view_model_->view_at(0)->set_border(views::Border::CreateEmptyBorder(
-        primary_axis_coordinate(0, leading_inset()),
-        primary_axis_coordinate(leading_inset(), 0),
+        shelf->PrimaryAxisValue(0, leading_inset()),
+        shelf->PrimaryAxisValue(leading_inset(), 0),
         0,
         0));
   }
@@ -766,7 +777,9 @@ gfx::Size LauncherView::GetPreferredSize() {
           gfx::Rect(gfx::Size(kLauncherPreferredSize,
                               kLauncherPreferredSize));
 
-  if (is_horizontal_alignment()) {
+  ShelfLayoutManager* shelf = tooltip_->shelf_layout_manager();
+
+  if (shelf->IsHorizontalAlignment()) {
     return gfx::Size(last_button_bounds.right() + leading_inset(),
                      kLauncherPreferredSize);
   }
@@ -911,15 +924,18 @@ void LauncherView::PointerPressedOnButton(views::View* view,
       !delegate_->IsDraggable(model_->items()[index]))
     return;  // View is being deleted or not draggable, ignore request.
 
+  ShelfLayoutManager* shelf = tooltip_->shelf_layout_manager();
+
   drag_view_ = view;
-  drag_offset_ = primary_axis_coordinate(event.x(), event.y());
+  drag_offset_ = shelf->PrimaryAxisValue(event.x(), event.y());
 }
 
 void LauncherView::PointerDraggedOnButton(views::View* view,
                                           Pointer pointer,
                                           const ui::LocatedEvent& event) {
+  ShelfLayoutManager* shelf = tooltip_->shelf_layout_manager();
   if (!dragging() && drag_view_ &&
-      primary_axis_coordinate(abs(event.x() - drag_offset_),
+      shelf->PrimaryAxisValue(abs(event.x() - drag_offset_),
                               abs(event.y() - drag_offset_)) >=
       kMinimumDragDistance) {
     PrepareForDrag(pointer, event);
@@ -968,10 +984,6 @@ void LauncherView::MouseEnteredButton(views::View* view) {
 void LauncherView::MouseExitedButton(views::View* view) {
   if (!tooltip_->IsVisible())
     tooltip_->StopTimer();
-}
-
-ShelfAlignment LauncherView::GetShelfAlignment() const {
-  return alignment_;
 }
 
 string16 LauncherView::GetAccessibleName(const views::View* view) {

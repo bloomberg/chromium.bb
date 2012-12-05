@@ -45,19 +45,11 @@ ui::Layer* GetLayer(views::Widget* widget) {
 views::BubbleBorder::ArrowLocation GetBubbleArrowLocation(
     aura::Window* window) {
   DCHECK(Shell::HasInstance());
-  ShelfAlignment shelf_alignment = Shell::GetInstance()->GetShelfAlignment(
-      window->GetRootWindow());
-  switch (shelf_alignment) {
-    case ash::SHELF_ALIGNMENT_BOTTOM:
-      return views::BubbleBorder::BOTTOM_CENTER;
-    case ash::SHELF_ALIGNMENT_LEFT:
-      return views::BubbleBorder::LEFT_CENTER;
-    case ash::SHELF_ALIGNMENT_RIGHT:
-      return views::BubbleBorder::RIGHT_CENTER;
-    default:
-      NOTREACHED() << "Unknown shelf alignment " << shelf_alignment;
-      return views::BubbleBorder::BOTTOM_CENTER;
-  }
+  return ShelfLayoutManager::ForLauncher(window)->
+      SelectValueForShelfAlignment(
+          views::BubbleBorder::BOTTOM_CENTER,
+          views::BubbleBorder::LEFT_CENTER,
+          views::BubbleBorder::RIGHT_CENTER);
 }
 
 // Offset given |rect| towards shelf.

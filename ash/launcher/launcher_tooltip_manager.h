@@ -40,10 +40,13 @@ class ASH_EXPORT LauncherTooltipManager : public ui::EventHandler,
                                           public ShelfLayoutManager::Observer,
                                           public SessionStateObserver {
  public:
-  LauncherTooltipManager(ShelfAlignment alignment,
-                         ShelfLayoutManager* shelf_layout_manager,
+  LauncherTooltipManager(ShelfLayoutManager* shelf_layout_manager,
                          LauncherView* launcher_view);
   virtual ~LauncherTooltipManager();
+
+  ShelfLayoutManager* shelf_layout_manager() {
+    return shelf_layout_manager_;
+  }
 
   // Called when the bubble is closed.
   void OnBubbleClosed(views::BubbleDelegateView* view);
@@ -59,7 +62,7 @@ class ASH_EXPORT LauncherTooltipManager : public ui::EventHandler,
 
   // Changes the arrow location of the tooltip in case that the launcher
   // arrangement has changed.
-  void SetArrowLocation(ShelfAlignment alignment);
+  void UpdateArrowLocation();
 
   // Resets the timer for the delayed showing |view_|.  If the timer isn't
   // running, it starts a new timer.
@@ -101,7 +104,6 @@ protected:
   views::Widget* widget_;
   views::View* anchor_;
   string16 text_;
-  ShelfAlignment alignment_;
   scoped_ptr<base::Timer> timer_;
 
   ShelfLayoutManager* shelf_layout_manager_;

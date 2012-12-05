@@ -483,7 +483,7 @@ bool RootWindowController::SetShelfAlignment(ShelfAlignment alignment) {
 }
 
 ShelfAlignment RootWindowController::GetShelfAlignment() {
-  return shelf_->alignment();
+  return shelf_->GetAlignment();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

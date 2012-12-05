@@ -167,12 +167,13 @@ void Launcher::DelegateView::Layout() {
 void Launcher::DelegateView::OnPaintBackground(gfx::Canvas* canvas) {
   if (launcher_->alignment_ == SHELF_ALIGNMENT_BOTTOM) {
     SkPaint paint;
-    static const gfx::ImageSkia* launcher_background = NULL;
-    if (!launcher_background) {
-      ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-      launcher_background =
-          rb.GetImageNamed(IDR_AURA_LAUNCHER_BACKGROUND_BOTTOM).ToImageSkia();
-    }
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    const gfx::ImageSkia* launcher_background = rb.GetImageSkiaNamed(
+        internal::ShelfLayoutManager::ForLauncher(
+            launcher_->widget()->GetNativeView())->
+        SelectValueForShelfAlignment(IDR_AURA_LAUNCHER_BACKGROUND_BOTTOM,
+                                     IDR_AURA_LAUNCHER_BACKGROUND_LEFT,
+                                     IDR_AURA_LAUNCHER_BACKGROUND_RIGHT));
     paint.setAlpha(alpha_);
     canvas->DrawImageInt(
         *launcher_background,
@@ -230,6 +231,7 @@ Launcher::Launcher(aura::Window* window_container,
   widget_->GetNativeView()->SetName("LauncherView");
   widget_->GetNativeView()->SetProperty(internal::kStayInSameRootWindowKey,
                                         true);
+
   // SetBounds() has to be called after kStayInSameRootWindowKey is set.
   gfx::Size pref =
       static_cast<views::View*>(launcher_view_)->GetPreferredSize();

@@ -9,6 +9,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/wm/session_state_controller.h"
 #include "ash/wm/session_state_observer.h"
+#include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/window_animations.h"
 #include "base/bind.h"
 #include "base/message_loop.h"
@@ -41,18 +42,6 @@ const int kTooltipMaxWidth = 250;
 // The distance between the arrow tip and edge of the anchor view.
 const int kArrowOffset = 10;
 
-views::BubbleBorder::ArrowLocation GetArrowLocation(ShelfAlignment alignment) {
-  switch (alignment) {
-    case SHELF_ALIGNMENT_LEFT:
-      return views::BubbleBorder::LEFT_CENTER;
-    case SHELF_ALIGNMENT_RIGHT:
-      return views::BubbleBorder::RIGHT_CENTER;
-    case SHELF_ALIGNMENT_BOTTOM:
-      return views::BubbleBorder::BOTTOM_CENTER;
-  }
-
-  return views::BubbleBorder::NONE;
-}
 }  // namespace
 
 // The implementation of tooltip of the launcher.
@@ -139,13 +128,11 @@ gfx::Size LauncherTooltipManager::LauncherTooltipBubble::GetPreferredSize() {
 }
 
 LauncherTooltipManager::LauncherTooltipManager(
-    ShelfAlignment alignment,
     ShelfLayoutManager* shelf_layout_manager,
     LauncherView* launcher_view)
     : view_(NULL),
       widget_(NULL),
       anchor_(NULL),
-      alignment_(alignment),
       shelf_layout_manager_(shelf_layout_manager),
       launcher_view_(launcher_view) {
   if (shelf_layout_manager)
@@ -217,11 +204,7 @@ void LauncherTooltipManager::OnBubbleClosed(views::BubbleDelegateView* view) {
   }
 }
 
-void LauncherTooltipManager::SetArrowLocation(ShelfAlignment alignment) {
-  if (alignment_ == alignment)
-    return;
-
-  alignment_ = alignment;
+void LauncherTooltipManager::UpdateArrowLocation() {
   if (view_) {
     CancelHidingAnimation();
     Close();
@@ -368,8 +351,13 @@ void LauncherTooltipManager::CreateBubble(views::View* anchor,
 
   anchor_ = anchor;
   text_ = text;
-  view_ = new LauncherTooltipBubble(
-      anchor, GetArrowLocation(alignment_), this);
+  views::BubbleBorder::ArrowLocation arrow_location =
+      shelf_layout_manager_->SelectValueForShelfAlignment(
+          views::BubbleBorder::BOTTOM_CENTER,
+          views::BubbleBorder::LEFT_CENTER,
+          views::BubbleBorder::RIGHT_CENTER);
+
+  view_ = new LauncherTooltipBubble(anchor, arrow_location, this);
   widget_ = view_->GetWidget();
   view_->SetText(text_);
 

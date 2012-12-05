@@ -12,6 +12,7 @@
 #include "ash/launcher/launcher_icon_observer.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/launcher/launcher_tooltip_manager.h"
+#include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/launcher_view_test_api.h"
@@ -178,7 +179,9 @@ class LauncherViewTest : public AshTestBase {
     model_.reset(new LauncherModel);
 
     launcher_view_.reset(new internal::LauncherView(
-        model_.get(), &delegate_, NULL));
+        model_.get(),
+        &delegate_,
+        Shell::GetPrimaryRootWindowController()->shelf()));
     launcher_view_->Init();
     // The bounds should be big enough for 4 buttons + overflow chevron.
     launcher_view_->SetBounds(0, 0, 500, 50);

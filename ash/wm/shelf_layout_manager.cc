@@ -124,8 +124,7 @@ class ShelfLayoutManager::UpdateShelfObserver
 
   virtual void OnImplicitAnimationsCompleted() OVERRIDE {
     if (shelf_) {
-      shelf_->UpdateShelfBackground(
-          internal::BackgroundAnimator::CHANGE_ANIMATE);
+      shelf_->UpdateShelfBackground(BackgroundAnimator::CHANGE_ANIMATE);
     }
     delete this;
   }
@@ -309,7 +308,7 @@ void ShelfLayoutManager::UpdateAutoHideState() {
 
 void ShelfLayoutManager::SetWindowOverlapsShelf(bool value) {
   window_overlaps_shelf_ = value;
-  UpdateShelfBackground(internal::BackgroundAnimator::CHANGE_ANIMATE);
+  UpdateShelfBackground(BackgroundAnimator::CHANGE_ANIMATE);
 }
 
 void ShelfLayoutManager::AddObserver(Observer* observer) {
@@ -328,12 +327,12 @@ void ShelfLayoutManager::StartGestureDrag(const ui::GestureEvent& gesture) {
   gesture_drag_amount_ = 0.f;
   gesture_drag_auto_hide_state_ = visibility_state() == SHELF_AUTO_HIDE ?
       auto_hide_state() : SHELF_AUTO_HIDE_SHOWN;
-  UpdateShelfBackground(internal::BackgroundAnimator::CHANGE_ANIMATE);
+  UpdateShelfBackground(BackgroundAnimator::CHANGE_ANIMATE);
 }
 
 ShelfLayoutManager::DragState ShelfLayoutManager::UpdateGestureDrag(
     const ui::GestureEvent& gesture) {
-  bool horizontal = alignment() == SHELF_ALIGNMENT_BOTTOM;
+  bool horizontal = alignment_ == SHELF_ALIGNMENT_BOTTOM;
   gesture_drag_amount_ += horizontal ? gesture.details().scroll_y() :
                                        gesture.details().scroll_x();
   LayoutShelf();
@@ -359,7 +358,7 @@ ShelfLayoutManager::DragState ShelfLayoutManager::UpdateGestureDrag(
 }
 
 void ShelfLayoutManager::CompleteGestureDrag(const ui::GestureEvent& gesture) {
-  bool horizontal = alignment() == SHELF_ALIGNMENT_BOTTOM;
+  bool horizontal = alignment_ == SHELF_ALIGNMENT_BOTTOM;
   bool should_change = false;
   if (gesture.type() == ui::ET_GESTURE_SCROLL_END) {
     // The visibility of the shelf changes only if the shelf was dragged X%
@@ -373,7 +372,7 @@ void ShelfLayoutManager::CompleteGestureDrag(const ui::GestureEvent& gesture) {
       should_change = drag_ratio > kDragHideThreshold;
     } else {
       bool correct_direction = false;
-      switch (alignment()) {
+      switch (alignment_) {
         case SHELF_ALIGNMENT_BOTTOM:
         case SHELF_ALIGNMENT_RIGHT:
           correct_direction = gesture_drag_amount_ < 0;
@@ -391,7 +390,7 @@ void ShelfLayoutManager::CompleteGestureDrag(const ui::GestureEvent& gesture) {
     } else {
       if (horizontal)
         should_change = gesture.details().velocity_y() < 0;
-      else if (alignment() == SHELF_ALIGNMENT_LEFT)
+      else if (alignment_ == SHELF_ALIGNMENT_LEFT)
         should_change = gesture.details().velocity_x() > 0;
       else
         should_change = gesture.details().velocity_x() < 0;
@@ -433,7 +432,7 @@ void ShelfLayoutManager::CancelGestureDrag() {
       status_settings(GetLayer(status_area_widget_)->GetAnimator());
   LayoutShelf();
   UpdateVisibilityState();
-  UpdateShelfBackground(internal::BackgroundAnimator::CHANGE_ANIMATE);
+  UpdateShelfBackground(BackgroundAnimator::CHANGE_ANIMATE);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -477,6 +476,15 @@ void ShelfLayoutManager::OnWindowActivated(aura::Window* active,
   UpdateAutoHideStateNow();
 }
 
+bool ShelfLayoutManager::IsHorizontalAlignment() const {
+  return alignment_ == SHELF_ALIGNMENT_BOTTOM;
+}
+
+// static
+ShelfLayoutManager* ShelfLayoutManager::ForLauncher(aura::Window* window) {
+  return RootWindowController::ForLauncher(window)->shelf();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ShelfLayoutManager, private:
 
@@ -517,12 +525,11 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
 
   // Animating the background when transitioning from auto-hide & hidden to
   // visible is janky. Update the background immediately in this case.
-  internal::BackgroundAnimator::ChangeType change_type =
+  BackgroundAnimator::ChangeType change_type =
       (state_.visibility_state == SHELF_AUTO_HIDE &&
        state_.auto_hide_state == SHELF_AUTO_HIDE_HIDDEN &&
        state.visibility_state == SHELF_VISIBLE) ?
-      internal::BackgroundAnimator::CHANGE_IMMEDIATE :
-      internal::BackgroundAnimator::CHANGE_ANIMATE;
+      BackgroundAnimator::CHANGE_IMMEDIATE : BackgroundAnimator::CHANGE_ANIMATE;
   StopAnimating();
 
   State old_state = state_;
@@ -694,7 +701,7 @@ void ShelfLayoutManager::CalculateTargetBounds(
 void ShelfLayoutManager::UpdateTargetBoundsForGesture(
     TargetBounds* target_bounds) const {
   CHECK_EQ(GESTURE_DRAG_IN_PROGRESS, gesture_drag_status_);
-  bool horizontal = alignment() == SHELF_ALIGNMENT_BOTTOM;
+  bool horizontal = alignment_ == SHELF_ALIGNMENT_BOTTOM;
   int resistance_free_region = 0;
 
   if (gesture_drag_auto_hide_state_ == SHELF_AUTO_HIDE_HIDDEN &&
@@ -713,7 +720,7 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
   bool resist = false;
   if (horizontal)
     resist = gesture_drag_amount_ < -resistance_free_region;
-  else if (alignment() == SHELF_ALIGNMENT_LEFT)
+  else if (alignment_ == SHELF_ALIGNMENT_LEFT)
     resist = gesture_drag_amount_ > resistance_free_region;
   else
     resist = gesture_drag_amount_ < -resistance_free_region;
@@ -752,20 +759,20 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
     }
   } else {
     // Move the launcher with the gesture.
-    if (alignment() == SHELF_ALIGNMENT_RIGHT)
+    if (alignment_ == SHELF_ALIGNMENT_RIGHT)
       target_bounds->launcher_bounds_in_root.Offset(translate, 0);
 
-    if ((translate > 0 && alignment() == SHELF_ALIGNMENT_RIGHT) ||
-        (translate < 0 && alignment() == SHELF_ALIGNMENT_LEFT)) {
+    if ((translate > 0 && alignment_ == SHELF_ALIGNMENT_RIGHT) ||
+        (translate < 0 && alignment_ == SHELF_ALIGNMENT_LEFT)) {
       // When dragging towards the edge, the statusbar should move.
       target_bounds->status_bounds_in_root.Offset(translate, 0);
     } else {
       // When dragging away from the edge, the launcher width should increase.
-      float move = alignment() == SHELF_ALIGNMENT_RIGHT ?
+      float move = alignment_ == SHELF_ALIGNMENT_RIGHT ?
           std::max(translate, -static_cast<float>(resistance_free_region)) :
           std::min(translate, static_cast<float>(resistance_free_region));
 
-      if (alignment() == SHELF_ALIGNMENT_RIGHT) {
+      if (alignment_ == SHELF_ALIGNMENT_RIGHT) {
         target_bounds->launcher_bounds_in_root.set_width(
             target_bounds->launcher_bounds_in_root.width() + move - translate);
       } else {

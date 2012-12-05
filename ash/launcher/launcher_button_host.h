@@ -6,7 +6,6 @@
 #define ASH_LAUNCHER_LAUNCHER_BUTTON_HOST_H_
 
 #include "ash/ash_export.h"
-#include "ash/shelf_types.h"
 #include "base/string16.h"
 
 namespace ui {
@@ -53,8 +52,6 @@ class ASH_EXPORT LauncherButtonHost {
 
   // Invoked when the mouse exits the item.
   virtual void MouseExitedButton(views::View* view) = 0;
-
-  virtual ShelfAlignment GetShelfAlignment() const = 0;
 
   // Invoked to get the accessible name of the item.
   virtual string16 GetAccessibleName(const views::View* view) = 0;

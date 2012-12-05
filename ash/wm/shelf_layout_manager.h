@@ -11,6 +11,7 @@
 #include "ash/shell_observer.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "base/observer_list.h"
 #include "base/timer.h"
 #include "ui/aura/layout_manager.h"
@@ -76,7 +77,7 @@ class ASH_EXPORT ShelfLayoutManager :
   // Sets the alignment. Returns true if the alignment is changed. Otherwise,
   // returns false.
   bool SetAlignment(ShelfAlignment alignment);
-  ShelfAlignment alignment() const { return alignment_; }
+  ShelfAlignment GetAlignment() const { return alignment_; }
 
   void set_workspace_controller(WorkspaceController* controller) {
     workspace_controller_ = controller;
@@ -156,6 +157,36 @@ class ASH_EXPORT ShelfLayoutManager :
   virtual void OnWindowActivated(aura::Window* active,
                                  aura::Window* old_active) OVERRIDE;
 
+  // TODO(harrym|oshima): These templates will be moved to
+  // new Shelf class.
+  // A helper function that provides a shortcut for choosing
+  // values specific to a shelf alignment.
+  template<typename T>
+  T SelectValueForShelfAlignment(T bottom, T left, T right) const {
+    switch (alignment_) {
+      case SHELF_ALIGNMENT_BOTTOM:
+        return bottom;
+      case SHELF_ALIGNMENT_LEFT:
+        return left;
+      case SHELF_ALIGNMENT_RIGHT:
+        return right;
+    }
+    NOTREACHED();
+    return right;
+  }
+
+  template<typename T>
+  T PrimaryAxisValue(T horizontal, T vertical) const {
+    return IsHorizontalAlignment() ? horizontal : vertical;
+  }
+
+  // Is the shelf's alignment horizontal?
+  bool IsHorizontalAlignment() const;
+
+  // Returns a ShelfLayoutManager on the display which has a launcher for
+  // given |window|. See RootWindowController::ForLauncher for more info.
+  static ShelfLayoutManager* ForLauncher(aura::Window* window);
+
  private:
   class AutoHideEventFilter;
   class UpdateShelfObserver;
@@ -233,10 +264,6 @@ class ASH_EXPORT ShelfLayoutManager :
   bool IsShelfWindow(aura::Window* window);
 
   int GetWorkAreaSize(const State& state, int size) const;
-
-  int axis_position(int x, int y) const {
-    return alignment_ == SHELF_ALIGNMENT_BOTTOM ? y : x;
-  }
 
   // The RootWindow is cached so that we don't invoke Shell::GetInstance() from
   // our destructor. We avoid that as at the time we're deleted Shell is being

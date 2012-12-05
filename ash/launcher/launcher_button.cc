@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "ash/launcher/launcher_button_host.h"
+#include "ash/wm/shelf_layout_manager.h"
 #include "grit/ash_resources.h"
 #include "skia/ext/image_operations.h"
 #include "ui/base/accessibility/accessible_view_state.h"
@@ -112,20 +113,25 @@ bool LauncherButton::IconView::HitTestRect(const gfx::Rect& rect) const {
 ////////////////////////////////////////////////////////////////////////////////
 // LauncherButton
 
-LauncherButton* LauncherButton::Create(views::ButtonListener* listener,
-                                       LauncherButtonHost* host) {
-  LauncherButton* button = new LauncherButton(listener, host);
+LauncherButton* LauncherButton::Create(
+    views::ButtonListener* listener,
+    LauncherButtonHost* host,
+    ShelfLayoutManager* shelf_layout_manager) {
+  LauncherButton* button =
+      new LauncherButton(listener, host, shelf_layout_manager);
   button->Init();
   return button;
 }
 
 LauncherButton::LauncherButton(views::ButtonListener* listener,
-                               LauncherButtonHost* host)
+                               LauncherButtonHost* host,
+                               ShelfLayoutManager* shelf_layout_manager)
     : CustomButton(listener),
       host_(host),
       icon_view_(NULL),
       bar_(new BarView),
-      state_(STATE_NORMAL) {
+      state_(STATE_NORMAL),
+      shelf_layout_manager_(shelf_layout_manager) {
   set_accessibility_focusable(true);
 
   const gfx::ShadowValue kShadows[] = {
@@ -269,7 +275,7 @@ void LauncherButton::Layout() {
   int x_offset = 0, y_offset = 0;
   gfx::Rect icon_bounds;
 
-  if (host_->GetShelfAlignment() == SHELF_ALIGNMENT_BOTTOM) {
+  if (shelf_layout_manager_->GetAlignment() == SHELF_ALIGNMENT_BOTTOM) {
     icon_bounds.SetRect(
         button_bounds.x(), button_bounds.y() + kIconPad,
         button_bounds.width(), kIconSize);
@@ -283,7 +289,7 @@ void LauncherButton::Layout() {
       x_offset += kHopSpacing;
   }
 
-  if (host_->GetShelfAlignment() == SHELF_ALIGNMENT_LEFT)
+  if (shelf_layout_manager_->GetAlignment() == SHELF_ALIGNMENT_LEFT)
     x_offset = -x_offset;
   icon_bounds.Offset(x_offset, y_offset);
   icon_view_->SetBoundsRect(icon_bounds);
@@ -347,7 +353,7 @@ LauncherButton::IconView* LauncherButton::CreateIconView() {
 }
 
 bool LauncherButton::IsShelfHorizontal() const {
-  return host_->GetShelfAlignment() == SHELF_ALIGNMENT_BOTTOM;
+  return shelf_layout_manager_->IsHorizontalAlignment();
 }
 
 void LauncherButton::UpdateState() {
@@ -355,28 +361,39 @@ void LauncherButton::UpdateState() {
     bar_->SetVisible(false);
   } else {
     int bar_id;
-    if (IsShelfHorizontal()) {
-      if (state_ & STATE_ACTIVE)
-        bar_id = IDR_AURA_LAUNCHER_UNDERLINE_BOTTOM_ACTIVE;
-      else if (state_ & (STATE_HOVERED | STATE_FOCUSED | STATE_ATTENTION))
-        bar_id = IDR_AURA_LAUNCHER_UNDERLINE_BOTTOM_HOVER;
-      else
-        bar_id = IDR_AURA_LAUNCHER_UNDERLINE_BOTTOM_RUNNING;
+    if (state_ & STATE_ACTIVE) {
+      bar_id = shelf_layout_manager_->SelectValueForShelfAlignment(
+          IDR_AURA_LAUNCHER_UNDERLINE_BOTTOM_ACTIVE,
+          IDR_AURA_LAUNCHER_UNDERLINE_LEFT_ACTIVE,
+          IDR_AURA_LAUNCHER_UNDERLINE_RIGHT_ACTIVE);
+    } else if (state_ & (STATE_HOVERED | STATE_FOCUSED | STATE_ATTENTION)) {
+      bar_id = shelf_layout_manager_->SelectValueForShelfAlignment(
+          IDR_AURA_LAUNCHER_UNDERLINE_BOTTOM_HOVER,
+          IDR_AURA_LAUNCHER_UNDERLINE_LEFT_HOVER,
+          IDR_AURA_LAUNCHER_UNDERLINE_RIGHT_HOVER);
     } else {
-      if (state_ & STATE_ACTIVE)
-        bar_id = IDR_AURA_LAUNCHER_UNDERLINE_LEFT_ACTIVE;
-      else if (state_ & (STATE_HOVERED | STATE_FOCUSED | STATE_ATTENTION))
-        bar_id = IDR_AURA_LAUNCHER_UNDERLINE_LEFT_HOVER;
-      else
-        bar_id = IDR_AURA_LAUNCHER_UNDERLINE_LEFT_RUNNING;
+      bar_id = shelf_layout_manager_->SelectValueForShelfAlignment(
+          IDR_AURA_LAUNCHER_UNDERLINE_BOTTOM_RUNNING,
+          IDR_AURA_LAUNCHER_UNDERLINE_LEFT_RUNNING,
+          IDR_AURA_LAUNCHER_UNDERLINE_RIGHT_RUNNING);
     }
-
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     bar_->SetImage(rb.GetImageNamed(bar_id).ToImageSkia());
     bar_->SetVisible(true);
   }
+  bool rtl = base::i18n::IsRTL();
+  bar_->SetHorizontalAlignment(
+      shelf_layout_manager_->SelectValueForShelfAlignment(
+          views::ImageView::CENTER,
+          rtl ? views::ImageView::TRAILING : views::ImageView::LEADING,
+          rtl ? views::ImageView::LEADING : views::ImageView::TRAILING));
+  bar_->SetVerticalAlignment(
+      shelf_layout_manager_->SelectValueForShelfAlignment(
+          views::ImageView::TRAILING,
+          views::ImageView::CENTER,
+          views::ImageView::CENTER));
 
-  switch (host_->GetShelfAlignment()) {
+  switch (shelf_layout_manager_->GetAlignment()) {
     case SHELF_ALIGNMENT_BOTTOM:
       bar_->SetHorizontalAlignment(views::ImageView::CENTER);
       bar_->SetVerticalAlignment(views::ImageView::TRAILING);
@@ -395,7 +412,10 @@ void LauncherButton::UpdateState() {
       break;
   }
 
+  // Force bar to layout as alignment may have changed but not bounds.
+  bar_->Layout();
   Layout();
+  bar_->SchedulePaint();
   SchedulePaint();
 }
 

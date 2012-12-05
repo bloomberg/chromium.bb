@@ -106,21 +106,6 @@ class ASH_EXPORT LauncherView : public views::View,
     gfx::Rect overflow_bounds;
   };
 
-  // Used in calculating ideal bounds.
-  int primary_axis_coordinate(int x, int y) const {
-    return is_horizontal_alignment() ? x : y;
-  }
-
-  bool is_horizontal_alignment() const {
-    return alignment_ == SHELF_ALIGNMENT_BOTTOM;
-  }
-
-  // Used in calculating ideal bounds.
-  int alignment_based_value(int bottom, int left, int right) const {
-    return (SHELF_ALIGNMENT_BOTTOM == alignment_ ? bottom :
-        (SHELF_ALIGNMENT_LEFT == alignment_ ? left : right));
-  }
-
   bool is_overflow_mode() const {
     return first_visible_index_ > 0;
   }
@@ -209,7 +194,6 @@ class ASH_EXPORT LauncherView : public views::View,
   virtual void MouseMovedOverButton(views::View* view) OVERRIDE;
   virtual void MouseEnteredButton(views::View* view) OVERRIDE;
   virtual void MouseExitedButton(views::View* view) OVERRIDE;
-  virtual ShelfAlignment GetShelfAlignment() const OVERRIDE;
   virtual string16 GetAccessibleName(const views::View* view) OVERRIDE;
 
   // Overridden from views::ButtonListener:

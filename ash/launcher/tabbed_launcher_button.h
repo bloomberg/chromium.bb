@@ -37,6 +37,7 @@ class TabbedLauncherButton : public LauncherButton {
 
   static TabbedLauncherButton* Create(views::ButtonListener* listener,
                                       LauncherButtonHost* host,
+                                      ShelfLayoutManager* shelf_layout_manager,
                                       IncognitoState is_incognito);
   virtual ~TabbedLauncherButton();
 
@@ -49,6 +50,7 @@ class TabbedLauncherButton : public LauncherButton {
  protected:
   TabbedLauncherButton(views::ButtonListener* listener,
                        LauncherButtonHost* host,
+                       ShelfLayoutManager* shelf_layout_manager,
                        IncognitoState is_incognito);
   // View override.
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;

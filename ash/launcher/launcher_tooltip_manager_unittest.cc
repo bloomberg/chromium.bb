@@ -41,7 +41,6 @@ class LauncherTooltipManagerTest : public AshTestBase {
     internal::RootWindowController* controller =
         Shell::GetPrimaryRootWindowController();
     tooltip_manager_.reset(new internal::LauncherTooltipManager(
-        SHELF_ALIGNMENT_BOTTOM,
         controller->shelf(),
         controller->launcher()->GetLauncherViewForTest()));
   }
