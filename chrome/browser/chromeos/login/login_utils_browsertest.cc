@@ -272,6 +272,8 @@ class LoginUtilsTest : public testing::Test,
     cryptohome::AsyncMethodCaller::Shutdown();
     mock_async_method_caller_ = NULL;
 
+    UserManager::Get()->Shutdown();
+
     InvokeOnIO(
         base::Bind(&LoginUtilsTest::TearDownOnIO, base::Unretained(this)));
 
