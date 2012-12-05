@@ -8,6 +8,7 @@
 #ifndef UI_GFX_IMAGE_IMAGE_UNITTEST_UTIL_H_
 #define UI_GFX_IMAGE_IMAGE_UNITTEST_UTIL_H_
 
+#include "ui/base/layout.h"
 #include "ui/gfx/image/image.h"
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -28,11 +29,38 @@ void SetSupportedScaleFactorsTo1xAnd2x();
 
 const SkBitmap CreateBitmap(int width, int height);
 
+// Returns PNG encoded bytes for a bitmap of |edge_size|x|edge_size|.
+scoped_refptr<base::RefCountedBytes> CreatePNGBytes(int edge_size);
+
 // TODO(rohitrao): Remove the no-argument version of CreateImage().
 gfx::Image CreateImage();
 gfx::Image CreateImage(int width, int height);
 
+// Returns true if the images are equal. Converts the images to ImageSkia to
+// compare them.
 bool IsEqual(const gfx::Image& image1, const gfx::Image& image2);
+
+bool IsEqual(const SkBitmap& bitmap1, const SkBitmap& bitmap2);
+
+bool IsEqual(const scoped_refptr<base::RefCountedMemory>& bytes,
+             const SkBitmap& bitmap);
+
+// An image which was not successfully decoded to PNG should be a red bitmap.
+// Fails if the bitmap is not red.
+void CheckImageIndicatesPNGDecodeFailure(const gfx::Image& image);
+
+// Returns true if the structure of |image_skia| matches the structure
+// described by |width|, |height|, and |scale_factors|.
+// The structure matches if:
+// - |image_skia| is non null.
+// - |image_skia| has ImageSkiaReps of |scale_factors|.
+// - Each of the ImageSkiaReps has a pixel size of |image_skia|.size() *
+//   scale_factor.
+bool ImageSkiaStructureMatches(
+    const gfx::ImageSkia& image_skia,
+    int width,
+    int height,
+    const std::vector<ui::ScaleFactor>& scale_factors);
 
 bool IsEmpty(const gfx::Image& image);
 

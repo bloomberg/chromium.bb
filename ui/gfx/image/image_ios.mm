@@ -4,73 +4,127 @@
 
 #include "ui/gfx/image/image.h"
 
+#include <cmath>
+#include <limits>
 #import <UIKit/UIKit.h>
 
 #include "base/logging.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_nsobject.h"
 #include "ui/base/layout.h"
+#include "ui/gfx/image/image_png_rep.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_util_ios.h"
 
 namespace gfx {
 namespace internal {
 
-void PNGFromUIImage(UIImage* uiimage, std::vector<unsigned char>* png) {
+namespace {
+
+// Returns a 16x16 red UIImage to visually show when a UIImage cannot be
+// created from PNG data. Logs error as well.
+// Caller takes ownership of returned UIImage.
+UIImage* GetErrorUIImage(float scale) {
+  LOG(ERROR) << "Unable to decode PNG into UIImage.";
+  base::mac::ScopedCFTypeRef<CGColorSpaceRef> color_space(
+      CGColorSpaceCreateDeviceRGB());
+  base::mac::ScopedCFTypeRef<CGContextRef> context(
+      CGBitmapContextCreate(NULL,  // Allow CG to allocate memory.
+                            16,  // width
+                            16,  // height
+                            8,  // bitsPerComponent
+                            0,  // CG will calculate by default.
+                            color_space,
+                            kCGImageAlphaPremultipliedFirst |
+                                kCGBitmapByteOrder32Host));
+  CGContextSetRGBFillColor(context, 1.0, 0.0, 0.0, 1.0);
+  CGContextFillRect(context, CGRectMake(0.0, 0.0, 16, 16));
+  base::mac::ScopedCFTypeRef<CGImageRef> cg_image(
+      CGBitmapContextCreateImage(context));
+  return [UIImage imageWithCGImage:cg_image.get()
+                             scale:scale
+                       orientation:UIImageOrientationUp];
+}
+
+// Converts from ImagePNGRep to UIImage.
+UIImage* CreateUIImageFromImagePNGRep(const gfx::ImagePNGRep& image_png_rep) {
+  float scale = ui::GetScaleFactorScale(image_png_rep.scale_factor);
+  scoped_refptr<base::RefCountedBytes> png = image_png_rep.raw_data;
+  CHECK(png.get());
+  NSData* data = [NSData dataWithBytes:png->front() length:png->size()];
+  UIImage* image = [[UIImage alloc] initWithData:data scale:scale];
+  return image ? image : GetErrorUIImage(scale);
+}
+
+}  // namespace
+
+scoped_refptr<base::RefCountedBytes> Get1xPNGBytesFromUIImage(
+    UIImage* uiimage) {
   NSData* data = UIImagePNGRepresentation(uiimage);
 
   if ([data length] == 0)
-    return;
+    return NULL;
 
-  png->resize([data length]);
-  [data getBytes:&png->at(0) length:[data length]];
+  scoped_refptr<base::RefCountedBytes> png_bytes(
+      new base::RefCountedBytes());
+  png_bytes->data().resize([data length]);
+  [data getBytes:&png_bytes->data().at(0) length:[data length]];
+  return png_bytes;
 }
 
-UIImage* CreateUIImageFromPNG(const std::vector<unsigned char>& png) {
-  ui::ScaleFactor scale_factor = ui::GetMaxScaleFactor();
-  float scale = ui::GetScaleFactorScale(scale_factor);
+UIImage* CreateUIImageFromPNG(
+    const std::vector<gfx::ImagePNGRep>& image_png_reps) {
+  ui::ScaleFactor ideal_scale_factor = ui::GetMaxScaleFactor();
+  float ideal_scale = ui::GetScaleFactorScale(ideal_scale_factor);
 
-  NSData* data = [NSData dataWithBytes:&png.front() length:png.size()];
-  scoped_nsobject<UIImage> image (
-      [[UIImage alloc] initWithData:data scale:scale]);
-  if (!image) {
-    LOG(WARNING) << "Unable to decode PNG into UIImage.";
-    // Return a 16x16 red image to visually show error.
-    BOOL opaque = YES;
-    UIGraphicsBeginImageContextWithOptions(CGSizeMake(16, 16), opaque, scale);
-    CGContextRef context = UIGraphicsGetCurrentContext();
-    CGContextSetRGBFillColor(context, 1.0, 0.0, 0.0, 1.0);
-    CGContextFillRect(context, CGRectMake(0.0, 0.0, 16, 16));
-    image.reset([UIGraphicsGetImageFromCurrentImageContext() retain]);
-    UIGraphicsEndImageContext();
+  if (image_png_reps.empty())
+    return GetErrorUIImage(ideal_scale);
+
+  // Find best match for |ideal_scale_factor|.
+  float smallest_diff = std::numeric_limits<float>::max();
+  size_t closest_index = 0u;
+  for (size_t i = 0; i < image_png_reps.size(); ++i) {
+    float scale = ui::GetScaleFactorScale(image_png_reps[i].scale_factor);
+    float diff = std::abs(ideal_scale - scale);
+    if (diff < smallest_diff) {
+      smallest_diff = diff;
+      closest_index = i;
+    }
   }
-  return image.release();
+
+  return CreateUIImageFromImagePNGRep(image_png_reps[closest_index]);
 }
 
-void PNGFromImageSkia(const ImageSkia* skia, std::vector<unsigned char>* png) {
+scoped_refptr<base::RefCountedBytes> Get1xPNGBytesFromImageSkia(
+    const ImageSkia* skia) {
   // iOS does not expose libpng, so conversion from ImageSkia to PNG must go
   // through UIImage.
   // TODO(rohitrao): Rewrite the callers of this function to save the UIImage
   // representation in the gfx::Image.  If we're generating it, we might as well
   // hold on to it.
-  UIImage* image = UIImageFromImageSkia(*skia);
-  PNGFromUIImage(image, png);
+  const gfx::ImageSkiaRep& image_skia_rep = skia->GetRepresentation(
+      ui::SCALE_FACTOR_100P);
+  if (image_skia_rep.scale_factor() != ui::SCALE_FACTOR_100P)
+    return NULL;
+
+  UIImage* image = UIImageFromImageSkiaRep(image_skia_rep);
+  return Get1xPNGBytesFromUIImage(image);
 }
 
-ImageSkia* ImageSkiaFromPNG(const std::vector<unsigned char>& png) {
+ImageSkia* ImageSkiaFromPNG(
+    const std::vector<gfx::ImagePNGRep>& image_png_reps) {
   // iOS does not expose libpng, so conversion from PNG to ImageSkia must go
   // through UIImage.
-  scoped_nsobject<UIImage> uiimage(CreateUIImageFromPNG(png));
-  if (!uiimage) {
-    LOG(WARNING) << "Unable to decode PNG into ImageSkia.";
-    // Return a 16x16 red image to visually show error.
-    SkBitmap bitmap;
-    bitmap.setConfig(SkBitmap::kARGB_8888_Config, 16, 16);
-    bitmap.allocPixels();
-    bitmap.eraseRGB(0xff, 0, 0);
-    return new ImageSkia(bitmap);
+  gfx::ImageSkia* image_skia = new gfx::ImageSkia();
+  for (size_t i = 0; i < image_png_reps.size(); ++i) {
+    scoped_nsobject<UIImage> uiimage(CreateUIImageFromImagePNGRep(
+        image_png_reps[i]));
+    gfx::ImageSkiaRep image_skia_rep = ImageSkiaRepOfScaleFactorFromUIImage(
+        uiimage, image_png_reps[i].scale_factor);
+    if (!image_skia_rep.is_null())
+      image_skia->AddRepresentation(image_skia_rep);
   }
-
-  return new ImageSkia(ImageSkiaFromUIImage(uiimage));
+  return image_skia;
 }
 
 } // namespace internal

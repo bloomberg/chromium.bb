@@ -337,9 +337,8 @@ class WebIntentPickerControllerBrowserTest : public InProcessBrowserTest {
 
   void CreateFakeIcon() {
     gfx::Image image(gfx::test::CreateImage());
-    std::vector<unsigned char> image_data;
-    bool result = gfx::PNGEncodedDataFromImage(image, &image_data);
-    DCHECK(result);
+    std::vector<unsigned char> image_data = image.As1xPNGBytes()->data();
+    DCHECK(image_data.size());
 
     std::copy(image_data.begin(), image_data.end(),
               std::back_inserter(icon_response_));

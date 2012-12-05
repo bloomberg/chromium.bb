@@ -8,30 +8,17 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image_unittest_util.h"
-
-TEST(ImageUtilTest, PNGEncodeAndDecode) {
-  gfx::Image original = gfx::test::CreateImage(100, 100);
-
-  std::vector<unsigned char> encoded;
-  ASSERT_TRUE(gfx::PNGEncodedDataFromImage(original, &encoded));
-
-  scoped_ptr<gfx::Image> decoded(
-      gfx::ImageFromPNGEncodedData(&encoded.front(), encoded.size()));
-  ASSERT_TRUE(decoded.get());
-
-  // PNG is lossless, so test that the decoded image matches the original.
-  EXPECT_TRUE(gfx::test::IsEqual(original, *decoded));
-}
 
 TEST(ImageUtilTest, JPEGEncodeAndDecode) {
   gfx::Image original = gfx::test::CreateImage(100, 100);
 
   std::vector<unsigned char> encoded;
-  ASSERT_TRUE(gfx::JPEGEncodedDataFromImage(original, 80, &encoded));
+  ASSERT_TRUE(gfx::JPEG1xEncodedDataFromImage(original, 80, &encoded));
 
   gfx::Image decoded =
-      gfx::ImageFromJPEGEncodedData(&encoded.front(), encoded.size());
+      gfx::ImageFrom1xJPEGEncodedData(&encoded.front(), encoded.size());
 
   // JPEG is lossy, so simply check that the image decoded successfully.
   EXPECT_FALSE(decoded.IsEmpty());

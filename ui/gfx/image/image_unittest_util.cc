@@ -5,11 +5,13 @@
 // Because the unit tests for gfx::Image are spread across multiple
 // implementation files, this header contains the reusable components.
 
-#include "base/memory/scoped_ptr.h"
-#include "ui/base/layout.h"
 #include "ui/gfx/image/image_unittest_util.h"
+
+#include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/image/image_skia.h"
 
 #if defined(TOOLKIT_GTK)
 #include <gtk/gtk.h>
@@ -41,6 +43,13 @@ const SkBitmap CreateBitmap(int width, int height) {
   return bitmap;
 }
 
+scoped_refptr<base::RefCountedBytes> CreatePNGBytes(int edge_size) {
+  SkBitmap bitmap = CreateBitmap(edge_size, edge_size);
+  scoped_refptr<base::RefCountedBytes> bytes(new base::RefCountedBytes());
+  PNGCodec::EncodeBGRASkBitmap(bitmap, false, &bytes->data());
+  return bytes;
+}
+
 gfx::Image CreateImage() {
   return CreateImage(100, 50);
 }
@@ -49,9 +58,27 @@ gfx::Image CreateImage(int width, int height) {
   return gfx::Image(CreateBitmap(width, height));
 }
 
-bool IsEqual(const gfx::Image& image1, const gfx::Image& image2) {
-  const SkBitmap& bmp1 = *image1.ToSkBitmap();
-  const SkBitmap& bmp2 = *image2.ToSkBitmap();
+bool IsEqual(const gfx::Image& img1, const gfx::Image& img2) {
+  std::vector<gfx::ImageSkiaRep> img1_reps = img1.AsImageSkia().image_reps();
+  gfx::ImageSkia image_skia2 = img2.AsImageSkia();
+  if (image_skia2.image_reps().size() != img1_reps.size())
+    return false;
+
+  for (size_t i = 0; i < img1_reps.size(); ++i) {
+    ui::ScaleFactor scale_factor = img1_reps[i].scale_factor();
+    const gfx::ImageSkiaRep& image_rep2 = image_skia2.GetRepresentation(
+        scale_factor);
+    if (image_rep2.scale_factor() != scale_factor ||
+        !IsEqual(img1_reps[i].sk_bitmap(), image_rep2.sk_bitmap())) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool IsEqual(const SkBitmap& bmp1, const SkBitmap& bmp2) {
+  if (bmp1.isNull() && bmp2.isNull())
+    return true;
 
   if (bmp1.width() != bmp2.width() ||
       bmp1.height() != bmp2.height() ||
@@ -72,6 +99,54 @@ bool IsEqual(const gfx::Image& image1, const gfx::Image& image2) {
     }
   }
 
+  return true;
+}
+
+bool IsEqual(const scoped_refptr<base::RefCountedMemory>& bytes,
+             const SkBitmap& bitmap) {
+  SkBitmap decoded;
+  if (!bytes.get() ||
+      !PNGCodec::Decode(bytes->front(), bytes->size(), &decoded)) {
+    return bitmap.isNull();
+  }
+
+  return IsEqual(bitmap, decoded);
+}
+
+void CheckImageIndicatesPNGDecodeFailure(const gfx::Image& image) {
+  SkBitmap bitmap = image.AsBitmap();
+  EXPECT_FALSE(bitmap.isNull());
+  EXPECT_LE(16, bitmap.width());
+  EXPECT_LE(16, bitmap.height());
+  SkAutoLockPixels auto_lock(bitmap);
+  CheckColor(bitmap.getColor(10, 10), true);
+}
+
+bool ImageSkiaStructureMatches(
+    const gfx::ImageSkia& image_skia,
+    int width,
+    int height,
+    const std::vector<ui::ScaleFactor>& scale_factors) {
+  if (image_skia.isNull() ||
+      image_skia.width() != width ||
+      image_skia.height() != height ||
+      image_skia.image_reps().size() != scale_factors.size()) {
+    return false;
+  }
+
+  for (size_t i = 0; i < scale_factors.size(); ++i) {
+    gfx::ImageSkiaRep image_rep =
+        image_skia.GetRepresentation(scale_factors[i]);
+    if (image_rep.is_null() ||
+        image_rep.scale_factor() != scale_factors[i])
+      return false;
+
+    float scale = ui::GetScaleFactorScale(scale_factors[i]);
+    if (image_rep.pixel_width() != static_cast<int>(width * scale) ||
+        image_rep.pixel_height() != static_cast<int>(height * scale)) {
+      return false;
+    }
+  }
   return true;
 }
 

@@ -11,9 +11,9 @@
 
 namespace gfx {
 
-bool JPEGEncodedDataFromImage(const Image& image,
-                              int quality,
-                              std::vector<unsigned char>* dst) {
+bool JPEG1xEncodedDataFromImage(const Image& image,
+                                int quality,
+                                std::vector<unsigned char>* dst) {
   NSData* data = UIImageJPEGRepresentation(image.ToUIImage(), quality / 100.0);
 
   if ([data length] == 0)

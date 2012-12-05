@@ -150,13 +150,14 @@ void ReadBitmap(const FilePath& image_path,
 
   const unsigned char* data =
       reinterpret_cast<const unsigned char*>(image_data.data());
-  gfx::Image* image = gfx::ImageFromPNGEncodedData(data, image_data.length());
-  if (image == NULL) {
+  gfx::Image image =
+      gfx::Image::CreateFrom1xPNGEncodedData(data, image_data.length());
+  if (image.IsEmpty()) {
     LOG(ERROR) << "Failed to decode PNG file.";
     return;
   }
 
-  *out_image = image;
+  *out_image = new gfx::Image(image);
 }
 
 void DeleteBitmap(const FilePath& image_path) {
@@ -556,7 +557,9 @@ void ProfileInfoCache::SetGAIAPictureOfProfileAtIndex(size_t index,
     // Save the new bitmap to disk.
     gaia_pictures_[key] = new gfx::Image(*image);
     scoped_ptr<ImageData> data(new ImageData);
-    if (!gfx::PNGEncodedDataFromImage(*image, data.get())) {
+    scoped_refptr<base::RefCountedBytes> png_data = image->As1xPNGBytes();
+    data->assign(png_data->front(), png_data->front() + png_data->size());
+    if (!data->size()) {
       LOG(ERROR) << "Failed to PNG encode the image.";
     } else {
       new_file_name =

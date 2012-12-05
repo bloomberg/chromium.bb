@@ -10,10 +10,10 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 
 class TestFaviconHandler;
 
@@ -280,9 +280,7 @@ class TestFaviconHandler : public FaviconHandler {
                                   const GURL& icon_url,
                                   history::IconType icon_type,
                                   const gfx::Image& image) OVERRIDE {
-    std::vector<unsigned char> bitmap_data;
-    if (!image.IsEmpty())
-      bitmap_data = *image.ToImagePNG();
+    std::vector<unsigned char> bitmap_data = image.As1xPNGBytes()->data();
     history_handler_.reset(new HistoryRequestHandler(
         page_url, icon_url, icon_type, bitmap_data,
         FaviconService::FaviconResultsCallback()));

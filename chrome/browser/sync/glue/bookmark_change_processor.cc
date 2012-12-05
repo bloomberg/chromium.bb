@@ -93,8 +93,7 @@ void BookmarkChangeProcessor::EncodeFavicon(const BookmarkNode* src,
 
   // Re-encode the BookmarkNode's favicon as a PNG, and pass the data to the
   // sync subsystem.
-  if (!gfx::PNGEncodedDataFromImage(favicon, dst))
-    return;
+  *dst = favicon.As1xPNGBytes()->data();
 }
 
 void BookmarkChangeProcessor::RemoveOneSyncNode(

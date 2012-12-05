@@ -320,6 +320,7 @@
    fun:deflateSetDictionary
    fun:deflate
    fun:png_write_finish_row
+   ...
    fun:png_write_find_filter
    fun:_cg_png_write_row
    fun:writeOnePng
@@ -327,8 +328,7 @@
    fun:CGImageDestinationFinalize
    fun:+[NSBitmapImageRep(NSBitmapImageFileTypeExtensions) representationOfImageRepsInArray:usingType:properties:]
    fun:-[NSBitmapImageRep(NSBitmapImageFileTypeExtensions) representationUsingType:properties:]
-   fun:_ZN3gfx8internal14PNGFromNSImageEP7NSImagePSt6vectorIhSaIhEE
-   fun:_ZNK3gfx5Image10ToImagePNGEv
+   fun:_ZN3gfx8internal24Get1xPNGBytesFromNSImageEP7NSImage
 }
 
 # 2. Intentional unit test errors, stuff that is somehow a false positive

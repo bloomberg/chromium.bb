@@ -373,7 +373,7 @@ bool ThumbnailDatabase::SetPageThumbnail(
     return true;
 
   std::vector<unsigned char> jpeg_data;
-  bool encoded = gfx::JPEGEncodedDataFromImage(
+  bool encoded = gfx::JPEG1xEncodedDataFromImage(
       *thumbnail, kImageQuality, &jpeg_data);
   if (encoded) {
     sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,

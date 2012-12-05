@@ -6,6 +6,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_png_rep.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_unittest_util.h"
 
@@ -54,13 +55,13 @@ TEST_F(ImageTest, EmptyImage) {
 
 // Test constructing a gfx::Image from an empty PlatformImage.
 TEST_F(ImageTest, EmptyImageFromEmptyPlatformImage) {
-#if defined(OS_MACOSX) || defined(TOOLKIT_GTK)
+#if defined(OS_IOS) || defined(OS_MACOSX) || defined(TOOLKIT_GTK)
   gfx::Image image1(NULL);
   EXPECT_TRUE(image1.IsEmpty());
   EXPECT_EQ(0U, image1.RepresentationCount());
 #endif
 
-  // SkBitmap and gfx::ImageSkia are available on all platforms.
+  // SkBitmap, gfx::ImageSkia, and ImagePNGRep are available on all platforms.
   SkBitmap bitmap;
   EXPECT_TRUE(bitmap.empty());
   gfx::Image image2(bitmap);
@@ -72,6 +73,28 @@ TEST_F(ImageTest, EmptyImageFromEmptyPlatformImage) {
   gfx::Image image3(image_skia);
   EXPECT_TRUE(image3.IsEmpty());
   EXPECT_EQ(0U, image3.RepresentationCount());
+
+  std::vector<gfx::ImagePNGRep> image_png_reps;
+  gfx::Image image4(image_png_reps);
+  EXPECT_TRUE(image4.IsEmpty());
+  EXPECT_EQ(0U, image4.RepresentationCount());
+}
+
+// The resulting Image should be empty when it is created using obviously
+// invalid data.
+TEST_F(ImageTest, EmptyImageFromObviouslyInvalidPNGImage) {
+  std::vector<gfx::ImagePNGRep> image_png_reps1;
+  image_png_reps1.push_back(gfx::ImagePNGRep(NULL, ui::SCALE_FACTOR_100P));
+  gfx::Image image1(image_png_reps1);
+  EXPECT_TRUE(image1.IsEmpty());
+  EXPECT_EQ(0U, image1.RepresentationCount());
+
+  std::vector<gfx::ImagePNGRep> image_png_reps2;
+  image_png_reps2.push_back(gfx::ImagePNGRep(
+      new base::RefCountedBytes(), ui::SCALE_FACTOR_100P));
+  gfx::Image image2(image_png_reps2);
+  EXPECT_TRUE(image2.IsEmpty());
+  EXPECT_EQ(0U, image2.RepresentationCount());
 }
 
 TEST_F(ImageTest, SkiaToSkia) {
@@ -120,28 +143,122 @@ TEST_F(ImageTest, SkiaToSkiaRef) {
     EXPECT_FALSE(image.HasRepresentation(gt::GetPlatformRepresentationType()));
 }
 
-TEST_F(ImageTest, SkiaToPNGEncodeAndDecode) {
-  gfx::Image image(gt::CreateBitmap(25, 25));
-  const std::vector<unsigned char>* png = image.ToImagePNG();
-  EXPECT_TRUE(png);
-  EXPECT_FALSE(png->empty());
-  EXPECT_TRUE(image.HasRepresentation(gfx::Image::kImageRepPNG));
-
-  gfx::Image from_png(&png->front(), png->size());
-  EXPECT_TRUE(image.HasRepresentation(gfx::Image::kImageRepPNG));
-  EXPECT_TRUE(gt::IsEqual(from_png, image));
+TEST_F(ImageTest, EmptyImageToPNG) {
+  gfx::Image image;
+  scoped_refptr<base::RefCountedBytes> png_bytes = image.As1xPNGBytes();
+  EXPECT_TRUE(png_bytes.get());
+  EXPECT_FALSE(png_bytes->size());
 }
+
+// Check that getting the 1x PNG bytes from images which do not have a 1x
+// representation returns NULL.
+TEST_F(ImageTest, ImageNo1xToPNG) {
+  // Image with 2x only.
+  const int kSize2x = 50;
+  gfx::ImageSkia image_skia;
+  image_skia.AddRepresentation(gfx::ImageSkiaRep(gt::CreateBitmap(
+      kSize2x, kSize2x), ui::SCALE_FACTOR_200P));
+  gfx::Image image1(image_skia);
+  scoped_refptr<base::RefCountedBytes> png_bytes1 = image1.As1xPNGBytes();
+  EXPECT_TRUE(png_bytes1.get());
+  EXPECT_FALSE(png_bytes1->size());
+
+  std::vector<gfx::ImagePNGRep> image_png_reps;
+  image_png_reps.push_back(gfx::ImagePNGRep(
+      gt::CreatePNGBytes(kSize2x), ui::SCALE_FACTOR_200P));
+  gfx::Image image2(image_png_reps);
+  scoped_refptr<base::RefCountedBytes> png_bytes2 = image2.As1xPNGBytes();
+  EXPECT_TRUE(png_bytes2.get());
+  EXPECT_FALSE(png_bytes2->size());
+}
+
+// Check that for an image initialized with multi resolution PNG data,
+// As1xPNGBytes() returns the 1x bytes.
+TEST_F(ImageTest, CreateExtractPNGBytes) {
+  const int kSize1x = 25;
+  const int kSize2x = 50;
+
+  scoped_refptr<base::RefCountedBytes> bytes1x = gt::CreatePNGBytes(kSize1x);
+  std::vector<gfx::ImagePNGRep> image_png_reps;
+  image_png_reps.push_back(gfx::ImagePNGRep(bytes1x, ui::SCALE_FACTOR_100P));
+  image_png_reps.push_back(gfx::ImagePNGRep(
+      gt::CreatePNGBytes(kSize2x), ui::SCALE_FACTOR_200P));
+
+  gfx::Image image(image_png_reps);
+
+  EXPECT_TRUE(std::equal(bytes1x->front(), bytes1x->front() + bytes1x->size(),
+                         image.As1xPNGBytes()->front()));
+}
+
+TEST_F(ImageTest, MultiResolutionImageSkiaToPNG) {
+  const int kSize1x = 25;
+  const int kSize2x = 50;
+
+  SkBitmap bitmap_1x = gt::CreateBitmap(kSize1x, kSize1x);
+  gfx::ImageSkia image_skia;
+  image_skia.AddRepresentation(gfx::ImageSkiaRep(bitmap_1x,
+                                                 ui::SCALE_FACTOR_100P));
+  image_skia.AddRepresentation(gfx::ImageSkiaRep(gt::CreateBitmap(
+      kSize2x, kSize2x), ui::SCALE_FACTOR_200P));
+  gfx::Image image(image_skia);
+
+  EXPECT_TRUE(gt::IsEqual(image.As1xPNGBytes(), bitmap_1x));
+  EXPECT_TRUE(image.HasRepresentation(gfx::Image::kImageRepPNG));
+}
+
+TEST_F(ImageTest, MultiResolutionPNGToImageSkia) {
+  const int kSize1x = 25;
+  const int kSize2x = 50;
+
+  scoped_refptr<base::RefCountedBytes> bytes1x = gt::CreatePNGBytes(kSize1x);
+  scoped_refptr<base::RefCountedBytes> bytes2x = gt::CreatePNGBytes(kSize2x);
+
+  std::vector<gfx::ImagePNGRep> image_png_reps;
+  image_png_reps.push_back(gfx::ImagePNGRep(bytes1x, ui::SCALE_FACTOR_100P));
+  image_png_reps.push_back(gfx::ImagePNGRep(bytes2x, ui::SCALE_FACTOR_200P));
+  gfx::Image image(image_png_reps);
+
+  std::vector<ui::ScaleFactor> scale_factors;
+  scale_factors.push_back(ui::SCALE_FACTOR_100P);
+  scale_factors.push_back(ui::SCALE_FACTOR_200P);
+  gfx::ImageSkia image_skia = image.AsImageSkia();
+  EXPECT_TRUE(gt::ImageSkiaStructureMatches(image_skia, kSize1x, kSize1x,
+                                            scale_factors));
+  EXPECT_TRUE(gt::IsEqual(bytes1x,
+      image_skia.GetRepresentation(ui::SCALE_FACTOR_100P).sk_bitmap()));
+  EXPECT_TRUE(gt::IsEqual(bytes2x,
+      image_skia.GetRepresentation(ui::SCALE_FACTOR_200P).sk_bitmap()));
+}
+
+TEST_F(ImageTest, MultiResolutionPNGToPlatform) {
+  const int kSize1x = 25;
+  const int kSize2x = 50;
+
+  scoped_refptr<base::RefCountedBytes> bytes1x = gt::CreatePNGBytes(kSize1x);
+  std::vector<gfx::ImagePNGRep> image_png_reps;
+  image_png_reps.push_back(gfx::ImagePNGRep(bytes1x, ui::SCALE_FACTOR_100P));
+  image_png_reps.push_back(gfx::ImagePNGRep(
+      gt::CreatePNGBytes(kSize2x), ui::SCALE_FACTOR_200P));
+
+  gfx::Image from_png(image_png_reps);
+  gfx::Image from_platform(gt::CopyPlatformType(from_png));
+  EXPECT_TRUE(gt::IsEqual(bytes1x, from_platform.AsBitmap()));
+}
+
 
 TEST_F(ImageTest, PlatformToPNGEncodeAndDecode) {
   gfx::Image image(gt::CreatePlatformImage());
-  const std::vector<unsigned char>* png = image.ToImagePNG();
-  EXPECT_TRUE(png);
-  EXPECT_FALSE(png->empty());
+  scoped_refptr<base::RefCountedBytes> png_data = image.As1xPNGBytes();
+  EXPECT_TRUE(png_data.get());
+  EXPECT_TRUE(png_data->size());
   EXPECT_TRUE(image.HasRepresentation(gfx::Image::kImageRepPNG));
 
-  gfx::Image from_png(&png->front(), png->size());
-  EXPECT_TRUE(image.HasRepresentation(gfx::Image::kImageRepPNG));
-  EXPECT_TRUE(gt::IsPlatformImageValid(gt::ToPlatformType(image)));
+  std::vector<gfx::ImagePNGRep> image_png_reps;
+  image_png_reps.push_back(gfx::ImagePNGRep(png_data, ui::SCALE_FACTOR_100P));
+  gfx::Image from_png(image_png_reps);
+
+  EXPECT_TRUE(from_png.HasRepresentation(gfx::Image::kImageRepPNG));
+  EXPECT_TRUE(gt::IsPlatformImageValid(gt::ToPlatformType(from_png)));
 }
 
 // The platform types use the platform provided encoding/decoding of PNGs. Make
@@ -149,38 +266,51 @@ TEST_F(ImageTest, PlatformToPNGEncodeAndDecode) {
 TEST_F(ImageTest, PNGEncodeFromSkiaDecodeToPlatform) {
   // Force the conversion sequence skia to png to platform_type.
   gfx::Image from_skia(gt::CreateBitmap(25, 25));
-  const std::vector<unsigned char>* png = from_skia.ToImagePNG();
-  gfx::Image from_png(&png->front(), png->size());
+  scoped_refptr<base::RefCountedBytes> png_bytes =
+      from_skia.As1xPNGBytes();
+
+  std::vector<gfx::ImagePNGRep> image_png_reps;
+  image_png_reps.push_back(gfx::ImagePNGRep(png_bytes, ui::SCALE_FACTOR_100P));
+  gfx::Image from_png(image_png_reps);
+
   gfx::Image from_platform(gt::CopyPlatformType(from_png));
 
   EXPECT_TRUE(gt::IsPlatformImageValid(gt::ToPlatformType(from_platform)));
-  EXPECT_TRUE(gt::IsEqual(from_skia, from_platform));
+  EXPECT_TRUE(gt::IsEqual(png_bytes, from_platform.AsBitmap()));
 }
 
 TEST_F(ImageTest, PNGEncodeFromPlatformDecodeToSkia) {
   // Force the conversion sequence platform_type to png to skia.
   gfx::Image from_platform(gt::CreatePlatformImage());
-  const std::vector<unsigned char>* png = from_platform.ToImagePNG();
-  gfx::Image from_png(&png->front(), png->size());
-  gfx::Image from_skia(*from_png.ToImageSkia());
+  scoped_refptr<base::RefCountedBytes> png_bytes = from_platform.As1xPNGBytes();
+  std::vector<gfx::ImagePNGRep> image_png_reps;
+  image_png_reps.push_back(gfx::ImagePNGRep(png_bytes, ui::SCALE_FACTOR_100P));
+  gfx::Image from_png(image_png_reps);
 
-  EXPECT_TRUE(gt::IsEqual(from_skia, from_platform));
+  EXPECT_TRUE(gt::IsEqual(from_platform.AsBitmap(), from_png.AsBitmap()));
 }
 
 TEST_F(ImageTest, PNGDecodeToSkiaFailure) {
-  std::vector<unsigned char> png(100, 0);
-  gfx::Image image(&png.front(), png.size());
-  const SkBitmap* bitmap = image.ToSkBitmap();
-
-  SkAutoLockPixels auto_lock(*bitmap);
-  gt::CheckColor(bitmap->getColor(10, 10), true);
+  scoped_refptr<base::RefCountedBytes> invalid_bytes(
+      new base::RefCountedBytes());
+  invalid_bytes->data().push_back('0');
+  std::vector<gfx::ImagePNGRep> image_png_reps;
+  image_png_reps.push_back(gfx::ImagePNGRep(
+      invalid_bytes, ui::SCALE_FACTOR_100P));
+  gfx::Image image(image_png_reps);
+  gt::CheckImageIndicatesPNGDecodeFailure(image);
 }
 
 TEST_F(ImageTest, PNGDecodeToPlatformFailure) {
-  std::vector<unsigned char> png(100, 0);
-  gfx::Image image(&png.front(), png.size());
-  gt::CheckColor(gt::GetPlatformImageColor(gt::ToPlatformType(image), 10, 10),
-                 true);
+  scoped_refptr<base::RefCountedBytes> invalid_bytes(
+      new base::RefCountedBytes());
+  invalid_bytes->data().push_back('0');
+  std::vector<gfx::ImagePNGRep> image_png_reps;
+  image_png_reps.push_back(gfx::ImagePNGRep(
+      invalid_bytes, ui::SCALE_FACTOR_100P));
+  gfx::Image from_png(image_png_reps);
+  gfx::Image from_platform(gt::CopyPlatformType(from_png));
+  gt::CheckImageIndicatesPNGDecodeFailure(from_platform);
 }
 
 TEST_F(ImageTest, SkiaToPlatform) {
@@ -436,7 +566,7 @@ TEST_F(ImageTest, Assign) {
   EXPECT_EQ(image1.ToSkBitmap(), image2.ToSkBitmap());
 }
 
-TEST_F(ImageTest, MultiResolutionImage) {
+TEST_F(ImageTest, MultiResolutionImageSkia) {
   const int kWidth1x = 10;
   const int kHeight1x = 12;
   const int kWidth2x = 20;
@@ -450,32 +580,18 @@ TEST_F(ImageTest, MultiResolutionImage) {
       gt::CreateBitmap(kWidth2x, kHeight2x),
       ui::SCALE_FACTOR_200P));
 
-  EXPECT_EQ(2u, image_skia.image_reps().size());
-
-  const gfx::ImageSkiaRep& image_rep1x =
-      image_skia.GetRepresentation(ui::SCALE_FACTOR_100P);
-  EXPECT_TRUE(!image_rep1x.is_null());
-  EXPECT_EQ(ui::SCALE_FACTOR_100P, image_rep1x.scale_factor());
-  EXPECT_EQ(kWidth1x, image_rep1x.GetWidth());
-  EXPECT_EQ(kHeight1x, image_rep1x.GetHeight());
-  EXPECT_EQ(kWidth1x, image_rep1x.pixel_width());
-  EXPECT_EQ(kHeight1x, image_rep1x.pixel_height());
-
-  const gfx::ImageSkiaRep& image_rep2x =
-      image_skia.GetRepresentation(ui::SCALE_FACTOR_200P);
-  EXPECT_TRUE(!image_rep2x.is_null());
-  EXPECT_EQ(ui::SCALE_FACTOR_200P, image_rep2x.scale_factor());
-  EXPECT_EQ(kWidth1x, image_rep2x.GetWidth());
-  EXPECT_EQ(kHeight1x, image_rep2x.GetHeight());
-  EXPECT_EQ(kWidth2x, image_rep2x.pixel_width());
-  EXPECT_EQ(kHeight2x, image_rep2x.pixel_height());
+  std::vector<ui::ScaleFactor> scale_factors;
+  scale_factors.push_back(ui::SCALE_FACTOR_100P);
+  scale_factors.push_back(ui::SCALE_FACTOR_200P);
+  EXPECT_TRUE(gt::ImageSkiaStructureMatches(image_skia, kWidth1x, kHeight1x,
+                                            scale_factors));
 
   // Check that the image has a single representation.
   gfx::Image image(image_skia);
   EXPECT_EQ(1u, image.RepresentationCount());
 }
 
-TEST_F(ImageTest, RemoveFromMultiResolutionImage) {
+TEST_F(ImageTest, RemoveFromMultiResolutionImageSkia) {
   const int kWidth2x = 20;
   const int kHeight2x = 24;
 

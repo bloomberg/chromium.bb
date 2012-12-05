@@ -12,20 +12,10 @@
 
 namespace gfx {
 
-Image* ImageFromPNGEncodedData(const unsigned char* input, size_t input_size) {
-  Image* image = new Image(input, input_size);
-  return image;
-}
-
-bool PNGEncodedDataFromImage(const Image& image,
-                             std::vector<unsigned char>* dst) {
-  *dst = *image.ToImagePNG();
-  return !dst->empty();
-}
-
 // The iOS implementations of the JPEG functions are in image_util_ios.mm.
 #if !defined(OS_IOS)
-Image ImageFromJPEGEncodedData(const unsigned char* input, size_t input_size) {
+Image ImageFrom1xJPEGEncodedData(const unsigned char* input,
+                                 size_t input_size) {
   scoped_ptr<SkBitmap> bitmap(gfx::JPEGCodec::Decode(input, input_size));
   if (bitmap.get())
     return Image(*bitmap);
@@ -33,9 +23,14 @@ Image ImageFromJPEGEncodedData(const unsigned char* input, size_t input_size) {
   return Image();
 }
 
-bool JPEGEncodedDataFromImage(const Image& image, int quality,
+bool JPEG1xEncodedDataFromImage(const Image& image, int quality,
                               std::vector<unsigned char>* dst) {
-  const SkBitmap& bitmap = *image.ToSkBitmap();
+  const gfx::ImageSkiaRep& image_skia_rep =
+      image.AsImageSkia().GetRepresentation(ui::SCALE_FACTOR_100P);
+  if (image_skia_rep.scale_factor() != ui::SCALE_FACTOR_100P)
+    return false;
+
+  const SkBitmap& bitmap = image_skia_rep.sk_bitmap();
   SkAutoLockPixels bitmap_lock(bitmap);
 
   if (!bitmap.readyToDraw())
