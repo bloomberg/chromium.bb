@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
-#include "base/message_loop_proxy.h"
+#include "base/run_loop.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -14,17 +14,25 @@ namespace remoting {
 // operates properly and all threads and message loops are valid.
 TEST(ChromotingHostContextTest, StartAndStop) {
   MessageLoopForUI message_loop;
-  ChromotingHostContext context(new AutoThreadTaskRunner(
-      base::MessageLoopProxy::current()));
+  base::RunLoop run_loop;
 
-  context.Start();
-  EXPECT_TRUE(context.audio_task_runner());
-  EXPECT_TRUE(context.video_capture_task_runner());
-  EXPECT_TRUE(context.video_encode_task_runner());
-  EXPECT_TRUE(context.file_task_runner());
-  EXPECT_TRUE(context.input_task_runner());
-  EXPECT_TRUE(context.network_task_runner());
-  EXPECT_TRUE(context.ui_task_runner());
+  scoped_ptr<ChromotingHostContext> context =
+      ChromotingHostContext::Create(new AutoThreadTaskRunner(
+      message_loop.message_loop_proxy(), run_loop.QuitClosure()));
+
+  EXPECT_TRUE(context);
+  if (!context)
+    return;
+  EXPECT_TRUE(context->audio_task_runner());
+  EXPECT_TRUE(context->video_capture_task_runner());
+  EXPECT_TRUE(context->video_encode_task_runner());
+  EXPECT_TRUE(context->file_task_runner());
+  EXPECT_TRUE(context->input_task_runner());
+  EXPECT_TRUE(context->network_task_runner());
+  EXPECT_TRUE(context->ui_task_runner());
+
+  context.reset();
+  run_loop.Run();
 }
 
 }  // namespace remoting

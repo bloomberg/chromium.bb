@@ -73,13 +73,6 @@ scoped_ptr<LocalInputMonitor> LocalInputMonitor::Create() {
   return scoped_ptr<LocalInputMonitor>(new MockLocalInputMonitor());
 }
 
-MockChromotingHostContext::MockChromotingHostContext()
-    : ChromotingHostContext(new AutoThreadTaskRunner(
-          base::MessageLoopProxy::current())) {
-}
-
-MockChromotingHostContext::~MockChromotingHostContext() {}
-
 MockClientSessionEventHandler::MockClientSessionEventHandler() {}
 
 MockClientSessionEventHandler::~MockClientSessionEventHandler() {}
