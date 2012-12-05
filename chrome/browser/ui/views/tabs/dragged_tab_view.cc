@@ -155,17 +155,18 @@ void DraggedTabView::PaintDetachedView(gfx::Canvas* canvas) {
   SkBitmap mipmap = scale_canvas.ExtractImageRep().sk_bitmap();
   mipmap.buildMipMap(true);
 
-  skia::RefPtr<SkShader> bitmap_shader = skia::AdoptRef(
+  SkShader* bitmap_shader =
       SkShader::CreateBitmapShader(mipmap, SkShader::kClamp_TileMode,
-                                   SkShader::kClamp_TileMode));
+                                   SkShader::kClamp_TileMode);
 
   SkMatrix shader_scale;
   shader_scale.setScale(kScalingFactor, kScalingFactor);
   bitmap_shader->setLocalMatrix(shader_scale);
 
   SkPaint paint;
-  paint.setShader(bitmap_shader.get());
+  paint.setShader(bitmap_shader);
   paint.setAntiAlias(true);
+  bitmap_shader->unref();
 
   canvas->DrawRect(gfx::Rect(ps), paint);
 }

@@ -818,13 +818,13 @@ bool ChromeRenderViewObserver::CaptureSnapshot(WebView* view,
   view->layout();
   const WebSize& size = view->size();
 
-  skia::RefPtr<SkCanvas> canvas = skia::AdoptRef(
-      skia::CreatePlatformCanvas(
-          size.width, size.height, true, NULL, skia::RETURN_NULL_ON_FAILURE));
+  SkCanvas* canvas = skia::CreatePlatformCanvas(size.width, size.height, true,
+                                            NULL, skia::RETURN_NULL_ON_FAILURE);
   if (!canvas)
     return false;
 
-  view->paint(webkit_glue::ToWebCanvas(canvas.get()),
+  SkAutoUnref au(canvas);
+  view->paint(webkit_glue::ToWebCanvas(canvas),
               WebRect(0, 0, size.width, size.height));
   // TODO: Add a way to snapshot the whole page, not just the currently
   // visible part.

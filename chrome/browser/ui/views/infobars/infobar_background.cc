@@ -24,14 +24,14 @@ void InfoBarBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
   gradient_points[0].iset(0, 0);
   gradient_points[1].iset(0, view->height());
   SkColor gradient_colors[2] = { top_color_, bottom_color_ };
-  skia::RefPtr<SkShader> gradient_shader = skia::AdoptRef(
-      SkGradientShader::CreateLinear(gradient_points, gradient_colors, NULL, 2,
-                                     SkShader::kClamp_TileMode));
+  SkShader* gradient_shader = SkGradientShader::CreateLinear(
+      gradient_points, gradient_colors, NULL, 2, SkShader::kClamp_TileMode);
   SkPaint paint;
   paint.setStrokeWidth(SkIntToScalar(InfoBar::kSeparatorLineHeight));
   paint.setStyle(SkPaint::kFill_Style);
   paint.setStrokeCap(SkPaint::kRound_Cap);
-  paint.setShader(gradient_shader.get());
+  paint.setShader(gradient_shader);
+  gradient_shader->unref();
 
   InfoBarView* infobar = static_cast<InfoBarView*>(view);
   SkCanvas* canvas_skia = canvas->sk_canvas();

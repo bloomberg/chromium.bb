@@ -68,8 +68,8 @@ SkPaint* GetBadgeTextPaintSingleton() {
     text_paint->setAntiAlias(true);
     text_paint->setTextAlign(SkPaint::kLeft_Align);
 
-    skia::RefPtr<SkTypeface> typeface = skia::AdoptRef(
-        SkTypeface::CreateFromName(kPreferredTypeface, SkTypeface::kBold));
+    SkTypeface* typeface = SkTypeface::CreateFromName(
+        kPreferredTypeface, SkTypeface::kBold);
     // Skia doesn't do any font fallback---if the user is missing the font then
     // typeface will be NULL. If we don't do manual fallback then we'll crash.
     if (typeface) {
@@ -81,13 +81,14 @@ SkPaint* GetBadgeTextPaintSingleton() {
       // that don't have Arial.
       ResourceBundle& rb = ResourceBundle::GetSharedInstance();
       const gfx::Font& base_font = rb.GetFont(ResourceBundle::BaseFont);
-      typeface = skia::AdoptRef(SkTypeface::CreateFromName(
-          base_font.GetFontName().c_str(), SkTypeface::kNormal));
+      typeface = SkTypeface::CreateFromName(
+          base_font.GetFontName().c_str(), SkTypeface::kNormal);
       DCHECK(typeface);
     }
 
-    text_paint->setTypeface(typeface.get());
+    text_paint->setTypeface(typeface);
     // |text_paint| adds its own ref. Release the ref from CreateFontName.
+    typeface->unref();
   }
   return text_paint;
 }

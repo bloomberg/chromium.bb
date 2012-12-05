@@ -179,10 +179,10 @@ void InfoBarContainerGtk::PaintArrowOn(GtkWidget* widget,
   grad_colors[0] = source->ConvertGetColor(&InfoBarGtk::GetTopColor);
   grad_colors[1] = source->ConvertGetColor(&InfoBarGtk::GetBottomColor);
 
-  skia::RefPtr<SkShader> gradient_shader = skia::AdoptRef(
-      SkGradientShader::CreateLinear(
-          grad_points, grad_colors, NULL, 2, SkShader::kMirror_TileMode));
-  paint.setShader(gradient_shader.get());
+  SkShader* gradient_shader = SkGradientShader::CreateLinear(
+      grad_points, grad_colors, NULL, 2, SkShader::kMirror_TileMode);
+  paint.setShader(gradient_shader);
+  gradient_shader->unref();
 
   gfx::CanvasSkiaPaint canvas_paint(expose, false);
   SkCanvas& canvas = *canvas_paint.sk_canvas();

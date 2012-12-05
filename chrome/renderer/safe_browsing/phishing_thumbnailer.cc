@@ -32,12 +32,12 @@ SkBitmap GrabPhishingThumbnail(content::RenderView* render_view,
   }
   WebView* view = render_view->GetWebView();
   base::TimeTicks beginning_time = base::TimeTicks::Now();
-  skia::RefPtr<SkCanvas> canvas = skia::AdoptRef(
-      skia::CreatePlatformCanvas(view_size.width(),
-                                 view_size.height(), true, 0,
-                                 skia::RETURN_NULL_ON_FAILURE));
+  SkCanvas* canvas = skia::CreatePlatformCanvas(view_size.width(),
+                                                view_size.height(), true, 0,
+                                                skia::RETURN_NULL_ON_FAILURE);
   if (!canvas)
     return SkBitmap();
+  SkAutoUnref au(canvas);
 
   // Make sure we are not using any zoom when we take the snapshot.  We will
   // restore the previous zoom level after the snapshot is taken.
@@ -51,7 +51,7 @@ SkBitmap GrabPhishingThumbnail(content::RenderView* render_view,
   view->mainFrame()->setCanHaveScrollbars(false);  // always hide scrollbars.
   view->resize(view_size);
   view->layout();
-  view->paint(webkit_glue::ToWebCanvas(canvas.get()),
+  view->paint(webkit_glue::ToWebCanvas(canvas),
               WebRect(0, 0, view_size.width(), view_size.height()));
 
   SkDevice* device = skia::GetTopDevice(*canvas);

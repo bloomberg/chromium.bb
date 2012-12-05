@@ -50,11 +50,11 @@ void PaintExtensionActionBackground(const ExtensionAction& action,
     color_utils::AlphaBlend(text_color, background_color, 0x13),
     color_utils::AlphaBlend(text_color, background_color, 0x1d)
   };
-  skia::RefPtr<SkShader> gradient = skia::AdoptRef(
-      SkGradientShader::CreateLinear(gradient_bounds, gradient_colors,
-                                     NULL, 2, SkShader::kClamp_TileMode));
+  SkShader* gradient = SkGradientShader::CreateLinear(
+      gradient_bounds, gradient_colors, NULL, 2, SkShader::kClamp_TileMode);
   SkPaint paint;
-  paint.setShader(gradient.get());
+  paint.setShader(gradient);
+  gradient->unref();
   canvas->DrawRect(bounds, paint);
 
   SkColor border_color =

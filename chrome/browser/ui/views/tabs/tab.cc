@@ -1108,12 +1108,11 @@ void Tab::PaintInactiveTabBackgroundWithTitleChange(gfx::Canvas* canvas) {
   center_point.iset(x, 0);
   SkColor colors[2] = { kMiniTitleChangeGradientColor1,
                         kMiniTitleChangeGradientColor2 };
-  skia::RefPtr<SkShader> shader = skia::AdoptRef(
-      SkGradientShader::CreateRadial(
-          center_point, SkIntToScalar(radius), colors, NULL, 2,
-          SkShader::kClamp_TileMode));
+  SkShader* shader = SkGradientShader::CreateRadial(center_point,
+      SkIntToScalar(radius), colors, NULL, 2, SkShader::kClamp_TileMode);
   SkPaint paint;
-  paint.setShader(shader.get());
+  paint.setShader(shader);
+  shader->unref();
   hover_canvas.DrawRect(gfx::Rect(x - radius, -radius, radius * 2, radius * 2),
                         paint);
 
