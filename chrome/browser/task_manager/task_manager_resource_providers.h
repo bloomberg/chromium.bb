@@ -20,11 +20,12 @@
 
 class BackgroundContents;
 class BalloonHost;
-class TabContents;
 class Panel;
+class Profile;
 
 namespace content {
 class RenderViewHost;
+class WebContents;
 }
 
 namespace extensions {
@@ -104,12 +105,13 @@ class TaskManagerRendererResource : public TaskManager::Resource {
   DISALLOW_COPY_AND_ASSIGN(TaskManagerRendererResource);
 };
 
+// Tracks a single tab contents, prerendered page, or instant page.
 class TaskManagerTabContentsResource : public TaskManagerRendererResource {
  public:
-  explicit TaskManagerTabContentsResource(TabContents* tab_contents);
+  explicit TaskManagerTabContentsResource(content::WebContents* web_contents);
   virtual ~TaskManagerTabContentsResource();
 
-  // Called when the underlying tab_contents has been committed, and is thus no
+  // Called when the underlying web_contents has been committed and is no
   // longer an Instant preview.
   void InstantCommitted();
 
@@ -122,18 +124,18 @@ class TaskManagerTabContentsResource : public TaskManagerRendererResource {
   virtual const extensions::Extension* GetExtension() const OVERRIDE;
 
  private:
-  bool IsPrerendering() const;
-
   // Returns true if contains content rendered by an extension.
   bool HostsExtension() const;
 
   static gfx::ImageSkia* prerender_icon_;
-  TabContents* tab_contents_;
+  content::WebContents* web_contents_;
+  Profile* profile_;
   bool is_instant_preview_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskManagerTabContentsResource);
 };
 
+// Provides resources for tab contents, prerendered pages, and instant pages.
 class TaskManagerTabContentsResourceProvider
     : public TaskManager::ResourceProvider,
       public content::NotificationObserver {
@@ -154,11 +156,11 @@ class TaskManagerTabContentsResourceProvider
  private:
   virtual ~TaskManagerTabContentsResourceProvider();
 
-  void Add(TabContents* tab_contents);
-  void Remove(TabContents* tab_contents);
-  void Update(TabContents* tab_contents);
+  void Add(content::WebContents* web_contents);
+  void Remove(content::WebContents* web_contents);
+  void InstantCommitted(content::WebContents* web_contents);
 
-  void AddToTaskManager(TabContents* tab_contents);
+  void AddToTaskManager(content::WebContents* web_contents);
 
   // Whether we are currently reporting to the task manager. Used to ignore
   // notifications sent after StopUpdating().
@@ -166,9 +168,9 @@ class TaskManagerTabContentsResourceProvider
 
   TaskManager* task_manager_;
 
-  // Maps the actual resources (the TabContentses) to the Task Manager
+  // Maps the actual resources (the WebContentses) to the Task Manager
   // resources.
-  std::map<TabContents*, TaskManagerTabContentsResource*> resources_;
+  std::map<content::WebContents*, TaskManagerTabContentsResource*> resources_;
 
   // A scoped container for notification registries.
   content::NotificationRegistrar registrar_;

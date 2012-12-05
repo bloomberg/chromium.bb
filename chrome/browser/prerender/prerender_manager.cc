@@ -685,6 +685,21 @@ PrerenderContents* PrerenderManager::GetPrerenderContents(
   return NULL;
 }
 
+const std::vector<WebContents*>
+PrerenderManager::GetAllPrerenderingContents() const {
+  DCHECK(CalledOnValidThread());
+  std::vector<WebContents*> result;
+
+  for (ScopedVector<PrerenderData>::const_iterator it =
+           active_prerenders_.begin();
+       it != active_prerenders_.end(); ++it) {
+    if (TabContents* contents = (*it)->contents()->prerender_contents())
+      result.push_back(contents->web_contents());
+  }
+
+  return result;
+}
+
 void PrerenderManager::MarkWebContentsAsPrerendered(WebContents* web_contents,
                                                     Origin origin) {
   DCHECK(CalledOnValidThread());

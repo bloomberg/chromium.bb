@@ -195,6 +195,9 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   PrerenderContents* GetPrerenderContents(
       content::WebContents* web_contents) const;
 
+  // Returns a list of all WebContents being prerendered.
+  const std::vector<content::WebContents*> GetAllPrerenderingContents() const;
+
   // Maintaining and querying the set of WebContents belonging to this
   // PrerenderManager that are currently showing prerendered pages.
   void MarkWebContentsAsPrerendered(content::WebContents* web_contents,
