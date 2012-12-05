@@ -9,7 +9,6 @@
   display: -webkit-box;
   left: 0;
   margin: 0;
-  overflow: hidden;
   padding: 0;
 }
 
@@ -22,8 +21,4 @@ html[oobe=old] #account-picker {
 html[oobe=new] #account-picker {
   background: transparent;
   box-shadow: none;
-  /* In new OOBE/sign in design each step defines size of #inner-container.
-     Leave space for all users (up to 4 + guest) and for pod animation. */
-  height: 300px;
-  width: 1100px;
 }

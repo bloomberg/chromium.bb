@@ -9,7 +9,14 @@ podrow {
   -webkit-box-align: center;
   -webkit-box-pack: center;
   display: -webkit-box;
+  max-height: 650px;
+  overflow: hidden;
   position: relative;
+  width: 1152px;
+}
+
+podrow[ncolumns='4'] {
+  width: 900px;
 }
 
 /* Hide the pod row while images are loading. */
@@ -24,10 +31,7 @@ html[oobe=old] podrow {
 .pod {
   border-radius: 2px;
   cursor: pointer;
-  /* TODO(nkostylev): Figure out why explicit display: block is needed.
-     See http://crbug.com/161297 */
-  display: block;
-  outline: none;
+  display: inline-block;
   padding: 10px;
   position: relative;
   text-align: center;
@@ -40,6 +44,7 @@ html[oobe=old] .pod {
 }
 
 html[oobe=new] .pod {
+  -webkit-transform: scale(0.9);
   -webkit-transition: all 180ms ease;
   background-color: white;
   box-shadow: 0 4px 23px 5px rgba(0, 0, 0, 0.2),
@@ -48,6 +53,16 @@ html[oobe=new] .pod {
   margin: 0 20px;
   padding-bottom: 3px;
   width: 160px;
+}
+
+html[oobe=new] podrow[ncolumns='6'] .pod {
+  -webkit-transform: scale(0.8);
+  margin: 0 6px;
+}
+
+html[oobe=new] .pod.focused {
+  /* Focused pod has the same size no matter how many pods. */
+  -webkit-transform: scale(1.0) !important;
 }
 
 html[oobe=old] .pod .user-image {
@@ -84,17 +99,6 @@ html[oobe=new] .pod .user-image {
 
 html[oobe=new] .pod.focused .user-image {
   opacity: 1;
-}
-
-html[oobe=new] .pod:not(.focused) {
-  -webkit-transform: scale(0.9);
-}
-
-/* TODO(ivankr): workaround that forces a reflow for remove button when it
- * becomes .active and its width/height change.
- */
-html[oobe=new] .pod.focused {
-  -webkit-transform: scale(1.0);
 }
 
 .pod.init {

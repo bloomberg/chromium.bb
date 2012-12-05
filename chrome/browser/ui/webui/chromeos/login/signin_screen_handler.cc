@@ -74,7 +74,7 @@ const char kKeyCanRemove[] = "canRemove";
 const char kKeyOauthTokenStatus[] = "oauthTokenStatus";
 
 // Max number of users to show.
-const size_t kMaxUsers = 5;
+const size_t kMaxUsers = 18;
 
 // The Task posted to PostTaskAndReply in StartClearingDnsCache on the IO
 // thread.

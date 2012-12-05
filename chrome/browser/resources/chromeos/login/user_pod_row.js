@@ -15,6 +15,13 @@ cr.define('login', function() {
   var POD_WIDTH = 170 + 2 * (10 + 10);
 
   /**
+   * Number of displayed columns depending on user pod count.
+   * @type {Array.<number>}
+   * @const
+   */
+  var COLUMNS = [0, 1, 2, 3, 4, 5, 4, 4, 4, 5, 5, 6, 6, 5, 5, 6, 6, 6, 6];
+
+  /**
    * Whether to preselect the first pod automatically on login screen.
    * @type {boolean}
    * @const
@@ -95,6 +102,13 @@ cr.define('login', function() {
   var UserPod = cr.ui.define(function() {
     return $('user-pod-template').cloneNode(true);
   });
+
+  /**
+   * Unique salt added to user image URLs to prevent caching. Dictionary with
+   * user names as keys.
+   * @type {Object}
+   */
+  UserPod.userImageSalt_ = {};
 
   UserPod.prototype = {
     __proto__: HTMLDivElement.prototype,
@@ -223,7 +237,8 @@ cr.define('login', function() {
      * Updates the user pod element.
      */
     update: function() {
-      this.updateUserImage();
+      this.imageElement.src = 'chrome://userimage/' + this.user.username +
+          '?id=' + UserPod.userImageSalt_[this.user.username];
 
       this.nameElement.textContent = this.user_.displayName;
       this.removeUserButtonElement.hidden = !this.user_.canRemove;
@@ -303,8 +318,8 @@ cr.define('login', function() {
      * Updates the image element of the user.
      */
     updateUserImage: function() {
-      this.imageElement.src = 'chrome://userimage/' + this.user.username +
-          '?id=' + new Date().getTime();
+      UserPod.userImageSalt_[this.user.username] = new Date().getTime();
+      this.update();
     },
 
     /**
@@ -546,29 +561,6 @@ cr.define('login', function() {
     },
 
     /**
-     * Ensures the given pod is visible.
-     * @param {UserPod} pod Pod to scroll into view.
-     */
-    scrollPodIntoView: function(pod) {
-      var podIndex = this.indexOf_(pod);
-      if (podIndex == -1)
-        return;
-
-      var left = podIndex * POD_WIDTH;
-      var right = left + POD_WIDTH;
-
-      var viewportLeft = -parseInt(this.style.left);
-      var viewportRight = viewportLeft + this.parentNode.clientWidth;
-
-      if (left < viewportLeft) {
-        this.style.left = -left + 'px';
-      } else if (right > viewportRight) {
-        var offset = right - viewportRight;
-        this.style.left = (viewportLeft - offset) + 'px';
-      }
-    },
-
-    /**
      * Start first time show animation.
      */
     startInitAnimation: function() {
@@ -625,6 +617,14 @@ cr.define('login', function() {
       // so make sure that tooltips are updated.
       $('pod-row').updateTitles();
 
+      var columns = users.length < COLUMNS.length ?
+          COLUMNS[users.length] : COLUMNS[COLUMNS.length - 1];
+      var rows = Math.floor((users.length - 1) / columns) + 1;
+
+      // Cannot use 'columns' and 'rows' here.
+      this.setAttribute('ncolumns', columns);
+      this.setAttribute('nrows', rows);
+
       this.focusPod(this.preselectedPod);
     },
 
@@ -672,7 +672,6 @@ cr.define('login', function() {
         podToFocus.classList.remove('faded');
         podToFocus.classList.add('focused');
         podToFocus.reset(true);  // Reset and give focus.
-        this.scrollPodIntoView(podToFocus);
         if (hadFocus && this.keyboardActivated_) {
           // Delay wallpaper loading to let user tab through pods without lag.
           this.loadWallpaperTimeout_ = window.setTimeout(

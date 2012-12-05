@@ -29,7 +29,7 @@
   bottom: -16px;
 }
 
-html[dir=ltf] .bubble-top:before {
+html[dir=ltr] .bubble-top:before {
   left: 17px;
 }
 
