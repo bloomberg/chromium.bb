@@ -5,6 +5,7 @@
 #include "chrome/renderer/spellchecker/spellcheck_provider.h"
 
 #include "base/command_line.h"
+#include "base/metrics/histogram.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/spellcheck_result.h"
@@ -144,9 +145,10 @@ void SpellCheckProvider::spellCheck(
   spellcheck_->SpellCheckWord(
       word.c_str(), word.size(), routing_id(),
       &offset, &length, optional_suggestions ? & suggestions : NULL);
-  if (optional_suggestions)
-    *optional_suggestions = suggestions;
-  if (!optional_suggestions) {
+  if (optional_suggestions) {
+    UMA_HISTOGRAM_COUNTS("SpellCheck.api.check.suggestions", word.size());
+  } else {
+    UMA_HISTOGRAM_COUNTS("SpellCheck.api.check", word.size());
     // If optional_suggestions is not requested, the API is called
     // for marking.  So we use this for counting markable words.
     Send(new SpellCheckHostMsg_NotifyChecked(routing_id(), word, 0 < length));
@@ -167,6 +169,7 @@ void SpellCheckProvider::checkTextOfParagraph(
     return;
 
   spellcheck_->SpellCheckParagraph(string16(text), results);
+  UMA_HISTOGRAM_COUNTS("SpellCheck.api.paragraph", text.length());
 #endif
 }
 
@@ -174,17 +177,21 @@ void SpellCheckProvider::requestCheckingOfText(
     const WebString& text,
     WebTextCheckingCompletion* completion) {
   RequestTextChecking(text, completion);
+  UMA_HISTOGRAM_COUNTS("SpellCheck.api.async", text.length());
 }
 
 WebString SpellCheckProvider::autoCorrectWord(const WebString& word) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kEnableSpellingAutoCorrect))
+  if (command_line.HasSwitch(switches::kEnableSpellingAutoCorrect)) {
+    UMA_HISTOGRAM_COUNTS("SpellCheck.api.autocorrect", word.length());
     return spellcheck_->GetAutoCorrectionWord(word, routing_id());
+  }
   return string16();
 }
 
 void SpellCheckProvider::showSpellingUI(bool show) {
 #if defined(OS_MACOSX)
+  UMA_HISTOGRAM_BOOLEAN("SpellCheck.api.showUI", show);
   Send(new SpellCheckHostMsg_ShowSpellingPanel(routing_id(), show));
 #endif
 }
