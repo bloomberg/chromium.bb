@@ -29,7 +29,7 @@ var WEB_VIEW_EVENTS = {
   'exit' : ['processId', 'reason'],
   'loadabort' : ['url', 'isTopLevel', 'reason'],
   'loadcommit' : ['url', 'isTopLevel'],
-  'loadredirect' : ['oldurl', 'newurl', 'isTopLevel'],
+  'loadredirect' : ['oldUrl', 'newUrl', 'isTopLevel'],
   'loadstart' : ['url', 'isTopLevel'],
   'loadstop' : [],
   'sizechanged': ['oldHeight', 'oldWidth', 'newHeight', 'newWidth'],
