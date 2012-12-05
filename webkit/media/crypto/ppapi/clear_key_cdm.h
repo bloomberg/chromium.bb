@@ -17,17 +17,9 @@
 #include "webkit/media/crypto/ppapi/content_decryption_module.h"
 
 // Enable this to use the fake decoder for testing.
-// TODO(xhwang): Move fake decoders into separate classes.
+// TODO(tomfinegan): Move fake audio decoder into a separate class.
 #if 0
 #define CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER
-#endif
-
-#if 0
-#define CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER
-#endif
-
-#if defined(CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER)
-#undef CLEAR_KEY_CDM_USE_FFMPEG_DECODER
 #endif
 
 namespace media {
@@ -36,8 +28,8 @@ class DecoderBuffer;
 
 namespace webkit_media {
 
+class CdmVideoDecoder;
 class FFmpegCdmAudioDecoder;
-class FFmpegCdmVideoDecoder;
 
 // Clear key implementation of the cdm::ContentDecryptionModule interface.
 class ClearKeyCdm : public cdm::ContentDecryptionModule {
@@ -143,13 +135,7 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule {
   // Returns cdm::kSuccess if any audio frame is successfully generated.
   cdm::Status GenerateFakeAudioFrames(int64 timestamp_in_microseconds,
                                       cdm::AudioFrames* audio_frames);
-#endif  // CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER
-
-#if defined(CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER)
-  // Generates a fake video frame with |video_size_| and |timestamp|.
-  void GenerateFakeVideoFrame(base::TimeDelta timestamp,
-                              cdm::VideoFrame* video_frame);
-#endif  // CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER
+#endif  // CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER
 
   Client client_;
   media::AesDecryptor decryptor_;
@@ -180,12 +166,11 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule {
 
 #if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
   scoped_ptr<FFmpegCdmAudioDecoder> audio_decoder_;
-  scoped_ptr<FFmpegCdmVideoDecoder> video_decoder_;
 #endif  // CLEAR_KEY_CDM_USE_FFMPEG_DECODER
 
-#if defined(CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER)
-  cdm::Size video_size_;
-#endif  // CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER
+  scoped_ptr<CdmVideoDecoder> video_decoder_;
+
+  DISALLOW_COPY_AND_ASSIGN(ClearKeyCdm);
 };
 
 }  // namespace webkit_media
