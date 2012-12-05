@@ -831,4 +831,13 @@ backend_init(struct wl_display *display, int argc, char *argv[],
 int
 module_init(struct weston_compositor *compositor);
 
+void
+weston_transformed_coord(int width, int height,
+			 enum wl_output_transform transform,
+			 float sx, float sy, float *bx, float *by);
+pixman_box32_t
+weston_transformed_rect(int width, int height,
+			enum wl_output_transform transform,
+			pixman_box32_t rect);
+
 #endif

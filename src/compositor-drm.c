@@ -572,11 +572,11 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 	int found = 0;
 	struct gbm_bo *bo;
 	pixman_region32_t dest_rect, src_rect;
-	pixman_box32_t *box;
+	pixman_box32_t *box, tbox;
 	uint32_t format;
 	wl_fixed_t sx1, sy1, sx2, sy2;
 
-	if (output_base->transform != WL_OUTPUT_TRANSFORM_NORMAL)
+	if (es->buffer_transform != output_base->transform)
 		return NULL;
 
 	if (c->sprites_are_broken)
@@ -645,10 +645,13 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 				  &output_base->region);
 	pixman_region32_translate(&dest_rect, -output_base->x, -output_base->y);
 	box = pixman_region32_extents(&dest_rect);
-	s->dest_x = box->x1;
-	s->dest_y = box->y1;
-	s->dest_w = box->x2 - box->x1;
-	s->dest_h = box->y2 - box->y1;
+	tbox = weston_transformed_rect(output_base->width,
+				       output_base->height,
+				       output_base->transform, *box);
+	s->dest_x = tbox.x1;
+	s->dest_y = tbox.y1;
+	s->dest_w = tbox.x2 - tbox.x1;
+	s->dest_h = tbox.y2 - tbox.y1;
 	pixman_region32_fini(&dest_rect);
 
 	pixman_region32_init(&src_rect);
@@ -674,10 +677,19 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 	if (sy2 > wl_fixed_from_int(es->geometry.height))
 		sy2 = wl_fixed_from_int(es->geometry.height);
 
-	s->src_x = sx1 << 8;
-	s->src_y = sy1 << 8;
-	s->src_w = (sx2 - sx1) << 8;
-	s->src_h = (sy2 - sy1) << 8;
+	tbox.x1 = sx1;
+	tbox.y1 = sy1;
+	tbox.x2 = sx2;
+	tbox.y2 = sy2;
+
+	tbox = weston_transformed_rect(wl_fixed_from_int(es->geometry.width),
+				       wl_fixed_from_int(es->geometry.height),
+				       es->buffer_transform, tbox);
+
+	s->src_x = tbox.x1 << 8;
+	s->src_y = tbox.y1 << 8;
+	s->src_w = (tbox.x2 - tbox.x1) << 8;
+	s->src_h = (tbox.y2 - tbox.y1) << 8;
 	pixman_region32_fini(&src_rect);
 
 	return &s->plane;
