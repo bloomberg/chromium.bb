@@ -41,7 +41,11 @@ class CommonSwitches {
             FeatureSwitch::DEFAULT_DISABLED),
         prompt_for_external_extensions(
             switches::kPromptForExternalExtensions,
+#if defined(OS_WIN)
+            FeatureSwitch::DEFAULT_ENABLED),
+#else
             FeatureSwitch::DEFAULT_DISABLED),
+#endif
         tab_capture(
             switches::kTabCapture,
             FeatureSwitch::DEFAULT_ENABLED)
