@@ -55,7 +55,7 @@ def GenerateExpectedJSON(options):
         'action': [
           'python', swarm_trigger_step.RUN_TEST_NAME,
           '--hash', FILE_HASH,
-          '--remote', retrieval_url,
+          '--remote', retrieval_url + '-gzip',
           '-v'
         ],
         'test_name': 'Run Test',
