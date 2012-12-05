@@ -70,6 +70,41 @@ void DeleteInstallTempDir(const FilePath& target_path) {
   }
 }
 
+// Iterates over the list of distribution types in |dist_types|, and
+// adds to |update_list| the work item to update the corresponding "ap"
+// registry value specified in |channel_info|.
+void AddChannelValueUpdateWorkItems(
+    const installer::InstallationState& original_state,
+    const installer::InstallerState& installer_state,
+    const installer::ChannelInfo& channel_info,
+    const std::vector<BrowserDistribution::Type>& dist_types,
+    WorkItemList* update_list) {
+  const bool system_level = installer_state.system_install();
+  const HKEY reg_root = installer_state.root_key();
+  for (size_t i = 0; i < dist_types.size(); ++i) {
+    BrowserDistribution::Type dist_type = dist_types[i];
+    const installer::ProductState* product_state =
+        original_state.GetProductState(system_level, dist_type);
+    // Only modify other products if they're installed and multi.
+    if (product_state != NULL &&
+        product_state->is_multi_install() &&
+        !product_state->channel().Equals(channel_info)) {
+      BrowserDistribution* other_dist =
+          BrowserDistribution::GetSpecificDistribution(dist_type);
+      update_list->AddSetRegValueWorkItem(reg_root, other_dist->GetStateKey(),
+          google_update::kRegApField, channel_info.value(), true);
+    } else {
+      LOG_IF(ERROR,
+             product_state != NULL && product_state->is_multi_install())
+          << "Channel value for "
+          << BrowserDistribution::GetSpecificDistribution(
+                 dist_type)->GetAppShortCutName()
+          << " is somehow already set to the desired new value of "
+          << channel_info.value();
+    }
+  }
+}
+
 // Makes appropriate changes to the Google Update "ap" value in the registry.
 // Specifically, removes the flags associated with this product ("-chrome" or
 // "-chromeframe[-readymode]") from the "ap" values for all other
@@ -81,7 +116,6 @@ void ProcessGoogleUpdateItems(
   DCHECK(installer_state.is_multi_install());
   const bool system_level = installer_state.system_install();
   BrowserDistribution* distribution = product.distribution();
-  const HKEY reg_root = installer_state.root_key();
   const installer::ProductState* product_state =
       original_state.GetProductState(system_level, distribution->GetType());
   DCHECK(product_state != NULL);
@@ -95,34 +129,16 @@ void ProcessGoogleUpdateItems(
   if (modified) {
     scoped_ptr<WorkItemList>
         update_list(WorkItem::CreateNoRollbackWorkItemList());
-
+    std::vector<BrowserDistribution::Type> dist_types;
     for (size_t i = 0; i < BrowserDistribution::NUM_TYPES; ++i) {
       BrowserDistribution::Type other_dist_type =
           static_cast<BrowserDistribution::Type>(i);
-      if (distribution->GetType() == other_dist_type)
-        continue;
-
-      product_state =
-          original_state.GetProductState(system_level, other_dist_type);
-      // Only modify other products if they're installed and multi.
-      if (product_state != NULL &&
-          product_state->is_multi_install() &&
-          !product_state->channel().Equals(channel_info)) {
-        BrowserDistribution* other_dist =
-            BrowserDistribution::GetSpecificDistribution(other_dist_type);
-        update_list->AddSetRegValueWorkItem(reg_root, other_dist->GetStateKey(),
-            google_update::kRegApField, channel_info.value(), true);
-      } else {
-        LOG_IF(ERROR,
-               product_state != NULL && product_state->is_multi_install())
-            << "Channel value for "
-            << BrowserDistribution::GetSpecificDistribution(
-                   other_dist_type)->GetAppShortCutName()
-            << " is somehow already set to the desired new value of "
-            << channel_info.value();
-      }
+      if (distribution->GetType() != other_dist_type)
+        dist_types.push_back(other_dist_type);
     }
-
+    AddChannelValueUpdateWorkItems(original_state, installer_state,
+                                   channel_info, dist_types,
+                                   update_list.get());
     bool success = update_list->Do();
     LOG_IF(ERROR, !success) << "Failed updating channel values.";
   }
@@ -1252,6 +1268,78 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
   }
 
   return ret;
+}
+
+// Eventually App Launcher will be the only way to run V2 apps, and this flow
+// will become obsolete. That's why we concentrate all the changes here,
+// to reduce polluting common code, and to simplify future removal.
+void DemoteAppLauncherToAppHost(
+    const InstallationState& original_state,
+    const InstallerState& installer_state) {
+  VLOG(1) << "Demoting App Launcher to App Host.";
+  InstallStatus ret = installer::UNKNOWN_STATUS;
+  // App Host can only be present if Chrome is present (unlike App Launcher).
+  DCHECK(original_state.GetProductState(false,
+             BrowserDistribution::CHROME_BROWSER) ||
+         original_state.GetProductState(true,
+             BrowserDistribution::CHROME_BROWSER));
+  const ProductState* app_host_state = original_state.GetProductState(
+      installer_state.system_install(), BrowserDistribution::CHROME_APP_HOST);
+  if (!app_host_state || !app_host_state->uninstall_command().HasSwitch(
+          switches::kChromeAppLauncher)) {
+    NOTREACHED();
+    return;
+  }
+
+  BrowserDistribution* app_host_dist =
+      BrowserDistribution::GetSpecificDistribution(
+          BrowserDistribution::CHROME_APP_HOST);
+  Product app_host_product(app_host_dist);
+  app_host_product.InitializeFromUninstallCommand(
+      app_host_state->uninstall_command());
+  app_host_product.SetOption(installer::kOptionAppHostIsLauncher, false);
+
+  scoped_ptr<WorkItemList>
+      work_item_list(WorkItem::CreateNoRollbackWorkItemList());
+
+  // Update the App Host uninstall string in Google Update Client.
+  // This is extracted from AddUninstallShortcutWorkItems().
+  HKEY reg_root = installer_state.root_key();
+  string16 update_state_key(app_host_dist->GetStateKey());
+  CommandLine uninstall_arguments(CommandLine::NO_PROGRAM);
+  AppendUninstallCommandLineFlags(
+      installer_state, app_host_product, &uninstall_arguments);
+  work_item_list->AddSetRegValueWorkItem(reg_root, update_state_key,
+      installer::kUninstallArgumentsField,
+      uninstall_arguments.GetCommandLineString(), true);
+
+  // Change the "ap" keys in Google Update registry.
+  // This is extracted from ProcessGoogleUpdateItems().
+  installer::ChannelInfo channel_info;
+  channel_info.set_value(app_host_state->channel().value());
+  bool modified_app_launcher = channel_info.SetAppLauncher(false);
+  bool modified_app_host = channel_info.SetAppHost(true);
+  DCHECK(modified_app_host && modified_app_launcher);
+  std::vector<BrowserDistribution::Type> dist_types;
+  for (size_t i = 0; i < BrowserDistribution::NUM_TYPES; ++i) {
+    dist_types.push_back(static_cast<BrowserDistribution::Type>(i));
+  }
+  AddChannelValueUpdateWorkItems(original_state, installer_state, channel_info,
+                                 dist_types, work_item_list.get());
+
+  // Remove Control Panel uninstall link.
+  work_item_list->AddDeleteRegKeyWorkItem(
+      reg_root, app_host_dist->GetUninstallRegPath());
+
+  // Execute task list.
+  if (!work_item_list->Do())
+    LOG(ERROR) << "Failed to demote App Launcher to App Host.";
+
+  // Delete shortcuts.
+  FilePath app_host_exe(installer::GetChromeInstallPath(
+                            installer_state.system_install(), app_host_dist)
+                        .Append(kChromeAppHostExe));
+  DeleteShortcuts(installer_state, app_host_product, app_host_exe.value());
 }
 
 }  // namespace installer
