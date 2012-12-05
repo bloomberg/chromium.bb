@@ -130,6 +130,7 @@ bool MakeEncryptedBlockInfo(int data_size,
 // Deserializes audio data stored in |audio_frames| into individual audio
 // buffers in |frames|. Returns true upon success.
 bool DeserializeAudioFrames(PP_Resource audio_frames,
+                            int data_size,
                             media::Decryptor::AudioBuffers* frames) {
   DCHECK(frames);
   EnterResourceNoLock<PPB_Buffer_API> enter(audio_frames, true);
@@ -137,11 +138,12 @@ bool DeserializeAudioFrames(PP_Resource audio_frames,
     return false;
 
   BufferAutoMapper mapper(enter.object());
-  if (!mapper.data() || !mapper.size())
+  if (!mapper.data() || !mapper.size() ||
+      mapper.size() < static_cast<uint32_t>(data_size))
     return false;
 
   const uint8* cur = static_cast<uint8*>(mapper.data());
-  int bytes_left = mapper.size();
+  int bytes_left = data_size;
 
   do {
     int64 timestamp = 0;
@@ -281,7 +283,9 @@ ContentDecryptorDelegate::ContentDecryptorDelegate(
       pending_audio_decode_request_id_(0),
       pending_video_decode_request_id_(0),
       audio_input_resource_size_(0),
-      video_input_resource_size_(0) {
+      video_input_resource_size_(0),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
+      weak_this_(weak_ptr_factory_.GetWeakPtr()) {
 }
 
 void ContentDecryptorDelegate::set_decrypt_client(
@@ -357,7 +361,7 @@ bool ContentDecryptorDelegate::Decrypt(
   const uint32_t request_id = next_decryption_request_id_++;
   DVLOG(2) << "Decrypt() - request_id " << request_id;
 
-  PP_EncryptedBlockInfo block_info;
+  PP_EncryptedBlockInfo block_info = {};
   DCHECK(encrypted_buffer->GetDecryptConfig());
   if (!MakeEncryptedBlockInfo(encrypted_buffer->GetDataSize(),
                               encrypted_buffer->GetDecryptConfig(),
@@ -386,6 +390,8 @@ bool ContentDecryptorDelegate::Decrypt(
       NOTREACHED();
       return false;
   }
+
+  SetBufferToFreeInTrackingInfo(&block_info.tracking_info);
 
   plugin_decryption_interface_->Decrypt(pp_instance_,
                                         encrypted_resource,
@@ -532,7 +538,7 @@ bool ContentDecryptorDelegate::DecryptAndDecodeAudio(
   const uint32_t request_id = next_decryption_request_id_++;
   DVLOG(2) << "DecryptAndDecodeAudio() - request_id " << request_id;
 
-  PP_EncryptedBlockInfo block_info;
+  PP_EncryptedBlockInfo block_info = {};
   if (!MakeEncryptedBlockInfo(
       encrypted_buffer->GetDataSize(),
       encrypted_buffer->GetDecryptConfig(),
@@ -541,6 +547,8 @@ bool ContentDecryptorDelegate::DecryptAndDecodeAudio(
       &block_info)) {
     return false;
   }
+
+  SetBufferToFreeInTrackingInfo(&block_info.tracking_info);
 
   // There is only one pending audio decode request at any time. This is
   // enforced by the media pipeline.
@@ -582,7 +590,7 @@ bool ContentDecryptorDelegate::DecryptAndDecodeVideo(
   TRACE_EVENT_ASYNC_BEGIN0(
       "eme", "ContentDecryptorDelegate::DecryptAndDecodeVideo", request_id);
 
-  PP_EncryptedBlockInfo block_info;
+  PP_EncryptedBlockInfo block_info = {};
   if (!MakeEncryptedBlockInfo(
       encrypted_buffer->GetDataSize(),
       encrypted_buffer->GetDecryptConfig(),
@@ -591,6 +599,8 @@ bool ContentDecryptorDelegate::DecryptAndDecodeVideo(
       &block_info)) {
     return false;
   }
+
+  SetBufferToFreeInTrackingInfo(&block_info.tracking_info);
 
   // Only one pending video decode request at any time. This is enforced by the
   // media pipeline.
@@ -746,6 +756,9 @@ void ContentDecryptorDelegate::DeliverBlock(
     PP_Resource decrypted_block,
     const PP_DecryptedBlockInfo* block_info) {
   DCHECK(block_info);
+
+  FreeBuffer(block_info->tracking_info.buffer_id);
+
   const uint32_t request_id = block_info->tracking_info.request_id;
   DVLOG(2) << "DeliverBlock() - request_id: " << request_id;
 
@@ -782,7 +795,8 @@ void ContentDecryptorDelegate::DeliverBlock(
     return;
   }
   BufferAutoMapper mapper(enter.object());
-  if (!mapper.data() || !mapper.size()) {
+  if (!mapper.data() || !mapper.size() ||
+      mapper.size() < block_info->data_size) {
     decrypt_cb.Run(media::Decryptor::kError, NULL);
     return;
   }
@@ -791,22 +805,57 @@ void ContentDecryptorDelegate::DeliverBlock(
   // managed by the PPB_Buffer_Dev, and avoid the extra copy.
   scoped_refptr<media::DecoderBuffer> decrypted_buffer(
       media::DecoderBuffer::CopyFrom(
-          static_cast<uint8*>(mapper.data()), mapper.size()));
+          static_cast<uint8*>(mapper.data()), block_info->data_size));
   decrypted_buffer->SetTimestamp(base::TimeDelta::FromMicroseconds(
       block_info->tracking_info.timestamp));
   decrypt_cb.Run(media::Decryptor::kSuccess, decrypted_buffer);
+}
+
+// Use a non-class-member function here so that if for some reason
+// ContentDecryptorDelegate is destroyed before VideoFrame calls this callback,
+// we can still get the shared memory unmapped.
+static void BufferNoLongerNeeded(
+    const scoped_refptr<PPB_Buffer_Impl>& ppb_buffer,
+    base::Closure buffer_no_longer_needed_cb) {
+  ppb_buffer->Unmap();
+  buffer_no_longer_needed_cb.Run();
+}
+
+// Enters |resource|, maps shared memory and returns pointer of mapped data.
+// Returns NULL if any error occurs.
+static uint8* GetMappedBuffer(PP_Resource resource,
+                              scoped_refptr<PPB_Buffer_Impl>* ppb_buffer) {
+  EnterResourceNoLock<PPB_Buffer_API> enter(resource, true);
+  if (!enter.succeeded())
+    return NULL;
+
+  uint8* mapped_data = static_cast<uint8*>(enter.object()->Map());
+  if (!enter.object()->IsMapped() || !mapped_data)
+    return NULL;
+
+  uint32_t mapped_size = 0;
+  if (!enter.object()->Describe(&mapped_size) || !mapped_size) {
+    enter.object()->Unmap();
+    return NULL;
+  }
+
+  *ppb_buffer = static_cast<PPB_Buffer_Impl*>(enter.object());
+
+  return mapped_data;
 }
 
 void ContentDecryptorDelegate::DeliverFrame(
     PP_Resource decrypted_frame,
     const PP_DecryptedFrameInfo* frame_info) {
   DCHECK(frame_info);
+
   const uint32_t request_id = frame_info->tracking_info.request_id;
   DVLOG(2) << "DeliverFrame() - request_id: " << request_id;
 
   // If the request ID is not valid or does not match what's saved, do nothing.
   if (request_id == 0 || request_id != pending_video_decode_request_id_) {
     DVLOG(1) << "DeliverFrame() - request_id " << request_id << " not found";
+    FreeBuffer(frame_info->tracking_info.buffer_id);
     return;
   }
 
@@ -821,27 +870,15 @@ void ContentDecryptorDelegate::DeliverFrame(
   media::Decryptor::Status status =
       PpDecryptResultToMediaDecryptorStatus(frame_info->result);
   if (status != media::Decryptor::kSuccess) {
+    DCHECK(!frame_info->tracking_info.buffer_id);
     video_decode_cb.Run(status, NULL);
     return;
   }
 
-  EnterResourceNoLock<PPB_Buffer_API> enter(decrypted_frame, true);
-  if (!enter.succeeded()) {
-    video_decode_cb.Run(media::Decryptor::kError, NULL);
-    return;
-  }
-
-  scoped_refptr<PPB_Buffer_Impl> ppb_buffer =
-      static_cast<PPB_Buffer_Impl*>(enter.object());
-
-  uint8* frame_data = static_cast<uint8*>(ppb_buffer->Map());
-  if (!ppb_buffer->IsMapped() || !frame_data) {
-    video_decode_cb.Run(media::Decryptor::kError, NULL);
-    return;
-  }
-
-  uint32_t mapped_size = 0;
-  if (!ppb_buffer->Describe(&mapped_size) || !mapped_size) {
+  scoped_refptr<PPB_Buffer_Impl> ppb_buffer;
+  uint8* frame_data = GetMappedBuffer(decrypted_frame, &ppb_buffer);
+  if (!frame_data) {
+    FreeBuffer(frame_info->tracking_info.buffer_id);
     video_decode_cb.Run(media::Decryptor::kError, NULL);
     return;
   }
@@ -861,8 +898,12 @@ void ContentDecryptorDelegate::DeliverFrame(
           frame_data + frame_info->plane_offsets[PP_DECRYPTEDFRAMEPLANES_V],
           base::TimeDelta::FromMicroseconds(
               frame_info->tracking_info.timestamp),
-          media::BindToLoop(base::MessageLoopProxy::current(),
-                            base::Bind(&PPB_Buffer_Impl::Unmap, ppb_buffer)));
+          media::BindToLoop(
+              base::MessageLoopProxy::current(),
+              base::Bind(&BufferNoLongerNeeded, ppb_buffer,
+                         base::Bind(&ContentDecryptorDelegate::FreeBuffer,
+                                    weak_this_,
+                                    frame_info->tracking_info.buffer_id))));
 
   video_decode_cb.Run(media::Decryptor::kSuccess, decoded_frame);
 }
@@ -871,6 +912,9 @@ void ContentDecryptorDelegate::DeliverSamples(
     PP_Resource audio_frames,
     const PP_DecryptedBlockInfo* block_info) {
   DCHECK(block_info);
+
+  FreeBuffer(block_info->tracking_info.buffer_id);
+
   const uint32_t request_id = block_info->tracking_info.request_id;
   DVLOG(2) << "DeliverSamples() - request_id: " << request_id;
 
@@ -895,7 +939,9 @@ void ContentDecryptorDelegate::DeliverSamples(
   }
 
   media::Decryptor::AudioBuffers audio_frame_list;
-  if (!DeserializeAudioFrames(audio_frames, &audio_frame_list)) {
+  if (!DeserializeAudioFrames(audio_frames,
+                              block_info->data_size,
+                              &audio_frame_list)) {
     NOTREACHED() << "CDM did not serialize the buffer correctly.";
     audio_decode_cb.Run(media::Decryptor::kError, empty_frames);
     return;
@@ -991,6 +1037,22 @@ bool ContentDecryptorDelegate::MakeMediaBufferResource(
 
   *resource = media_resource;
   return true;
+}
+
+void ContentDecryptorDelegate::FreeBuffer(uint32_t buffer_id) {
+  if (buffer_id)
+    free_buffers_.push(buffer_id);
+}
+
+void ContentDecryptorDelegate::SetBufferToFreeInTrackingInfo(
+    PP_DecryptTrackingInfo* tracking_info) {
+  DCHECK_EQ(tracking_info->buffer_id, 0u);
+
+  if (free_buffers_.empty())
+    return;
+
+  tracking_info->buffer_id = free_buffers_.front();
+  free_buffers_.pop();
 }
 
 }  // namespace ppapi

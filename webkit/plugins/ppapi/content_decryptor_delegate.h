@@ -5,11 +5,13 @@
 #ifndef WEBKIT_PLUGINS_PPAPI_CONTENT_DECRYPTOR_DELEGATE_H_
 #define WEBKIT_PLUGINS_PPAPI_CONTENT_DECRYPTOR_DELEGATE_H_
 
+#include <queue>
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "media/base/decryptor.h"
 #include "ppapi/c/private/pp_content_decryptor.h"
 #include "ppapi/c/private/ppp_content_decryptor_private.h"
@@ -111,6 +113,10 @@ class WEBKIT_PLUGINS_EXPORT ContentDecryptorDelegate {
                                const uint8* data, int size,
                                ::ppapi::ScopedPPResource* resource);
 
+  void FreeBuffer(uint32_t buffer_id);
+
+  void SetBufferToFreeInTrackingInfo(PP_DecryptTrackingInfo* tracking_info);
+
   const PP_Instance pp_instance_;
   const PPP_ContentDecryptor_Private* const plugin_decryption_interface_;
 
@@ -148,6 +154,11 @@ class WEBKIT_PLUGINS_EXPORT ContentDecryptorDelegate {
   int audio_input_resource_size_;
   ::ppapi::ScopedPPResource video_input_resource_;
   int video_input_resource_size_;
+
+  std::queue<uint32_t> free_buffers_;
+
+  base::WeakPtrFactory<ContentDecryptorDelegate> weak_ptr_factory_;
+  base::WeakPtr<ContentDecryptorDelegate> weak_this_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentDecryptorDelegate);
 };

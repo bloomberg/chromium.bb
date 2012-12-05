@@ -343,6 +343,12 @@ class Buffer {
   virtual void Destroy() = 0;
 
   virtual uint8_t* data() = 0;
+
+  // TODO(xhwang): It is legitimate for the CDM to request a Buffer with a
+  // capacity larger than the real size it needs. For example, to avoid any
+  // memcpy, the CDM may request a Buffer with a capacity not less than the
+  // maximum possible output size and let the decoder to decode directly into
+  // that Buffer. Add capacity() and set_size() calls to support this.
   virtual int32_t size() const = 0;
 
  protected:
@@ -358,8 +364,8 @@ class Buffer {
 class Allocator {
  public:
   // Returns a Buffer* containing non-zero members upon success, or NULL on
-  // failure. The caller owns the Buffer* until it is passed back to the CDM
-  // wrapper.
+  // failure. The caller owns the Buffer* after this call. The buffer is not
+  // guaranteed to be zero initialized.
   virtual Buffer* Allocate(int32_t size) = 0;
 
  protected:
@@ -388,6 +394,8 @@ class KeyMessage {
   virtual int32_t session_id_length() const = 0;
 
   virtual void set_message(Buffer* message) = 0;
+  // TODO(xhwang): Key messages are usually small. Treat them the same way as
+  // session ID and default URL.
   virtual Buffer* message() = 0;
 
   virtual void set_default_url(const char* default_url, int32_t length) = 0;

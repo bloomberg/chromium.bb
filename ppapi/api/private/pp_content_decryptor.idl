@@ -18,11 +18,16 @@ struct PP_DecryptTrackingInfo {
   uint32_t request_id;
 
   /**
-   * 4-byte padding to make the size of <code>PP_DecryptTrackingInfo</code>
-   * a multiple of 8 bytes and make sure |timestamp| starts on 8-byte boundary.
-   * The value of this field should not be used.
+   * A unique buffer ID to identify a PPB_Buffer_Dev. Unlike a PP_Resource,
+   * this ID is identical at both the renderer side and the plugin side.
+   * In <code>PPB_ContentDecryptor_Private</code> calls, this is the ID of the
+   * buffer associated with the decrypted block/frame/samples.
+   * In <code>PPP_ContentDecryptor_Private</code> calls, this is the ID of a
+   * buffer that is no longer need at the renderer side, which can be released
+   * or recycled by the plugin. This ID can be 0 if there is no buffer to be
+   * released or recycled.
    */
-  uint32_t padding;
+  uint32_t buffer_id;
 
   /**
    * Timestamp in microseconds of the associated block. By using this value,
@@ -164,11 +169,10 @@ struct PP_DecryptedBlockInfo {
   PP_DecryptResult result;
 
   /**
-   * 4-byte padding to make the size of <code>PP_DecryptedBlockInfo</code>
-   * a multiple of 8 bytes, and ensure consistent size on all targets. This
-   * value should never be used.
+   * Size in bytes of decrypted data, which may be less than the size of the
+   * corresponding buffer.
    */
-  uint32_t padding;
+  uint32_t data_size;
 
   /**
    * Information needed by the client to track the block to be decrypted.

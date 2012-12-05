@@ -30,7 +30,7 @@ PpapiDecryptor::PpapiDecryptor(
       plugin_instance_(plugin_instance),
       plugin_cdm_delegate_(NULL),
       render_loop_proxy_(base::MessageLoopProxy::current()),
-      weak_ptr_factory_(this),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
       weak_this_(weak_ptr_factory_.GetWeakPtr()) {
   DCHECK(client_);
   DCHECK(plugin_instance_);
