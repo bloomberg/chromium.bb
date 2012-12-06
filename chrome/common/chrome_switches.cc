@@ -1456,8 +1456,11 @@ const char kSkipOAuthLogin[]                = "skip-oauth-login";
 const char kEnableChromebookFunctionKey[] =
     "enable-chromebook-function-key";
 
-// Enable Kiosk mode for ChromeOS
+// Enable Kiosk mode for ChromeOS.
 const char kEnableKioskMode[]               = "enable-kiosk-mode";
+
+// Enable policy-configured local accounts.
+const char kEnableLocalAccounts[]           = "enable-local-accounts";
 
 // Enables request of tablet site (via user agent override).
 const char kEnableRequestTabletSite[]       = "enable-request-tablet-site";

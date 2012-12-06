@@ -28,6 +28,7 @@ class CloudPolicyProvider;
 class CloudPolicySubsystem;
 class ConfigurationPolicyProvider;
 class DeviceCloudPolicyManagerChromeOS;
+class DeviceLocalAccountPolicyProvider;
 class DeviceLocalAccountPolicyService;
 class DeviceManagementService;
 class NetworkConfigurationUpdater;
@@ -131,6 +132,7 @@ class BrowserPolicyConnector : public content::NotificationObserver {
   // initialized after a policy fetch is attempted. Note that Profile creation
   // is blocked until this initialization is complete.
   void InitializeUserPolicy(const std::string& user_name,
+                            bool is_public_account,
                             bool wait_for_policy_fetch);
 
   // Installs a token service for user policy.
@@ -228,12 +230,14 @@ class BrowserPolicyConnector : public content::NotificationObserver {
   scoped_ptr<DeviceCloudPolicyManagerChromeOS> device_cloud_policy_manager_;
   scoped_ptr<DeviceLocalAccountPolicyService>
       device_local_account_policy_service_;
+  scoped_ptr<DeviceLocalAccountPolicyProvider>
+      device_local_account_policy_provider_;
   scoped_ptr<UserCloudPolicyManagerChromeOS> user_cloud_policy_manager_;
 
   // This policy provider is used on Chrome OS to feed user policy into the
   // global PolicyService instance. This works by installing
-  // |user_cloud_policy_manager_| as the delegate once the former is
-  // initialized.
+  // |user_cloud_policy_manager_| or |device_local_account_policy_provider_|,
+  // respectively as the delegate after login.
   ProxyPolicyProvider global_user_cloud_policy_provider_;
 #endif
 

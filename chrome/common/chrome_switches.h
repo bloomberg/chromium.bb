@@ -399,6 +399,7 @@ extern const char kEnableTouchpadThreeFingerClick[];
 extern const char kEnableTouchpadThreeFingerSwipe[];
 extern const char kSkipOAuthLogin[];
 extern const char kEnableKioskMode[];
+extern const char kEnableLocalAccounts[];
 extern const char kEnableRequestTabletSite[];
 extern const char kEnableStaticIPConfig[];
 extern const char kFirstBoot[];

@@ -132,7 +132,7 @@ void SetUpNewStackAfterCreatingBrowser(Browser* browser) {
   connector->ScheduleServiceInitialization(0);
 
 #if defined(OS_CHROMEOS)
-  connector->InitializeUserPolicy(GetTestUser(), true);
+  connector->InitializeUserPolicy(GetTestUser(), false, true);
   UserCloudPolicyManagerChromeOS* policy_manager =
       connector->GetUserCloudPolicyManager();
   ASSERT_TRUE(policy_manager);

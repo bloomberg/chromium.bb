@@ -58,6 +58,7 @@
 #include "chrome/browser/policy/cros_user_policy_cache.h"
 #include "chrome/browser/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/policy/device_cloud_policy_store_chromeos.h"
+#include "chrome/browser/policy/device_local_account_policy_provider.h"
 #include "chrome/browser/policy/device_local_account_policy_service.h"
 #include "chrome/browser/policy/device_policy_cache.h"
 #include "chrome/browser/policy/network_configuration_updater.h"
@@ -132,10 +133,12 @@ void BrowserPolicyConnector::Init() {
         new DeviceCloudPolicyManagerChromeOS(
             device_cloud_policy_store.Pass(),
             install_attributes_.get()));
-    device_local_account_policy_service_.reset(
-        new DeviceLocalAccountPolicyService(
-            chromeos::DBusThreadManager::Get()->GetSessionManagerClient(),
-            chromeos::DeviceSettingsService::Get()));
+    if (command_line->HasSwitch(switches::kEnableLocalAccounts)) {
+      device_local_account_policy_service_.reset(
+          new DeviceLocalAccountPolicyService(
+              chromeos::DBusThreadManager::Get()->GetSessionManagerClient(),
+              chromeos::DeviceSettingsService::Get()));
+    }
   } else {
     cloud_provider_.reset(new CloudPolicyProvider(this));
   }
@@ -179,6 +182,8 @@ void BrowserPolicyConnector::Shutdown() {
 
   if (device_cloud_policy_manager_)
     device_cloud_policy_manager_->Shutdown();
+  if (device_local_account_policy_provider_)
+    device_local_account_policy_provider_->Shutdown();
   if (device_local_account_policy_service_)
     device_local_account_policy_service_->Disconnect();
   if (user_cloud_policy_manager_)
@@ -315,6 +320,7 @@ void BrowserPolicyConnector::ScheduleServiceInitialization(
 
 void BrowserPolicyConnector::InitializeUserPolicy(
     const std::string& user_name,
+    bool is_public_account,
     bool wait_for_policy_fetch) {
 #if defined(OS_CHROMEOS)
   // If the user is managed then importing certificates from ONC policy is
@@ -354,19 +360,30 @@ void BrowserPolicyConnector::InitializeUserPolicy(
 
   if (command_line->HasSwitch(switches::kEnableCloudPolicyService)) {
 #if defined(OS_CHROMEOS)
-    scoped_ptr<CloudPolicyStore> store(
-        new UserCloudPolicyStoreChromeOS(
-            chromeos::DBusThreadManager::Get()->GetSessionManagerClient(),
-            policy_cache_file, token_cache_file));
-    user_cloud_policy_manager_.reset(
-        new UserCloudPolicyManagerChromeOS(store.Pass(),
-                                           wait_for_policy_fetch));
-    user_cloud_policy_manager_->Init();
-    user_cloud_policy_manager_->Connect(g_browser_process->local_state(),
-                                        device_management_service_.get(),
-                                        GetUserAffiliation(user_name));
-    global_user_cloud_policy_provider_.SetDelegate(
-        user_cloud_policy_manager_.get());
+    if (is_public_account && device_local_account_policy_service_.get()) {
+      device_local_account_policy_provider_.reset(
+          new DeviceLocalAccountPolicyProvider(
+              user_name, device_local_account_policy_service_.get()));
+
+      device_local_account_policy_provider_->Init();
+      global_user_cloud_policy_provider_.SetDelegate(
+          device_local_account_policy_provider_.get());
+    } else {
+      scoped_ptr<CloudPolicyStore> store(
+          new UserCloudPolicyStoreChromeOS(
+              chromeos::DBusThreadManager::Get()->GetSessionManagerClient(),
+              policy_cache_file, token_cache_file));
+      user_cloud_policy_manager_.reset(
+          new UserCloudPolicyManagerChromeOS(store.Pass(),
+                                             wait_for_policy_fetch));
+
+      user_cloud_policy_manager_->Init();
+      user_cloud_policy_manager_->Connect(g_browser_process->local_state(),
+                                          device_management_service_.get(),
+                                          GetUserAffiliation(user_name));
+      global_user_cloud_policy_provider_.SetDelegate(
+          user_cloud_policy_manager_.get());
+    }
 #endif
   } else {
     CloudPolicyCacheBase* user_policy_cache = NULL;

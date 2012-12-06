@@ -26,8 +26,8 @@
 #include "chrome/browser/chromeos/dbus/cros_dbus_service.h"
 #include "chrome/browser/chromeos/display/display_preferences.h"
 #include "chrome/browser/chromeos/display/primary_display_switch_observer.h"
-#include "chrome/browser/chromeos/external_metrics.h"
 #include "chrome/browser/chromeos/extensions/default_app_order.h"
+#include "chrome/browser/chromeos/external_metrics.h"
 #include "chrome/browser/chromeos/imageburner/burn_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
@@ -447,7 +447,8 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
     std::string username =
         parsed_command_line().GetSwitchValueASCII(::switches::kLoginUser);
     VLOG(1) << "Relaunching browser for user: " << username;
-    UserManager::Get()->UserLoggedIn(username, true);
+    UserManager* user_manager = UserManager::Get();
+    user_manager->UserLoggedIn(username, true);
 
     // Redirects Chrome logging to the user data dir.
     logging::RedirectChromeLogging(parsed_command_line());
@@ -455,16 +456,17 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
     // Initialize user policy before creating the profile so the profile
     // initialization code sees policy settings.
     // Guest accounts are not subject to user policy.
-    if (!UserManager::Get()->IsLoggedInAsGuest()) {
+    if (!user_manager->IsLoggedInAsGuest()) {
       g_browser_process->browser_policy_connector()->InitializeUserPolicy(
-          username, false  /* wait_for_policy_fetch */);
+          username, user_manager->IsLoggedInAsPublicAccount(),
+          false  /* wait_for_policy_fetch */);
     }
 
     // Load the default app order synchronously for restarting case.
     app_order_loader_.reset(
         new default_app_order::ExternalLoader(false /* async */));
 
-    UserManager::Get()->SessionStarted();
+    user_manager->SessionStarted();
   }
 
   if (!app_order_loader_) {

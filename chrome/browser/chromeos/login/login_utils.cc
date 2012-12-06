@@ -493,7 +493,9 @@ void LoginUtilsImpl::PrepareProfile(
 
   // Initialize user policy before the profile is created so the profile
   // initialization code sees the cached policy settings.
-  connector->InitializeUserPolicy(username, wait_for_policy_fetch);
+  connector->InitializeUserPolicy(username,
+                                  user_manager->IsLoggedInAsPublicAccount(),
+                                  wait_for_policy_fetch);
 
   // The default profile will have been changed because the ProfileManager
   // will process the notification that the UserManager sends out.
