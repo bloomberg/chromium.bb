@@ -32,7 +32,7 @@ static int nacl_irt_mutex_unlock(int mutex_handle) {
 }
 
 static int nacl_irt_mutex_trylock(int mutex_handle) {
-  return NACL_GC_WRAP_SYSCALL(-NACL_SYSCALL(mutex_trylock)(mutex_handle));
+  return -NACL_SYSCALL(mutex_trylock)(mutex_handle);
 }
 
 const struct nacl_irt_mutex nacl_irt_mutex = {

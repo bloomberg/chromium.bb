@@ -162,7 +162,7 @@ void test_syscall_wrappers(void) {
 
   CHECK_SYSCALL_PRE();
   CHECK(__nc_irt_mutex.mutex_trylock(mutex_handle) == EBUSY);
-  CHECK_SYSCALL_WRAPPED();
+  CHECK_SYSCALL_NOT_WRAPPED();
 
   CHECK_SYSCALL_PRE();
   CHECK(__nc_irt_mutex.mutex_unlock(mutex_handle) == 0);
