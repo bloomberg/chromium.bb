@@ -82,7 +82,8 @@ class DeviceSettingsProvider : public CrosSettingsProvider,
   // Parses the policy data and fills in |values_cache_|.
   void UpdateValuesCache(
       const enterprise_management::PolicyData& policy_data,
-      const enterprise_management::ChromeDeviceSettingsProto& settings);
+      const enterprise_management::ChromeDeviceSettingsProto& settings,
+      TrustedStatus trusted_status);
 
   // Applies the metrics policy and if not set migrates the legacy file.
   void ApplyMetricsSetting(bool use_file, bool new_value);

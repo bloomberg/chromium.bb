@@ -168,7 +168,7 @@ void DeviceSettingsProvider::RetrieveCachedData() {
     VLOG(1) << "Can't retrieve temp store, possibly not created yet.";
   }
 
-  UpdateValuesCache(policy_data, device_settings_);
+  UpdateValuesCache(policy_data, device_settings_, trusted_status_);
 }
 
 void DeviceSettingsProvider::SetInPolicy() {
@@ -311,7 +311,7 @@ void DeviceSettingsProvider::SetInPolicy() {
   CHECK(device_settings_.SerializeToString(data.mutable_policy_value()));
 
   // Set the cache to the updated value.
-  UpdateValuesCache(data, device_settings_);
+  UpdateValuesCache(data, device_settings_, trusted_status_);
 
   if (ownership_status_ == DeviceSettingsService::OWNERSHIP_TAKEN) {
     StoreDeviceSettings();
@@ -533,7 +533,8 @@ void DeviceSettingsProvider::DecodeGenericPolicies(
 
 void DeviceSettingsProvider::UpdateValuesCache(
     const em::PolicyData& policy_data,
-    const em::ChromeDeviceSettingsProto& settings) {
+    const em::ChromeDeviceSettingsProto& settings,
+    TrustedStatus trusted_status) {
   PrefValueMap new_values_cache;
 
   if (policy_data.has_username() && !policy_data.has_request_token())
@@ -565,6 +566,7 @@ void DeviceSettingsProvider::UpdateValuesCache(
   }
   // Swap and notify.
   values_cache_.Swap(&new_values_cache);
+  trusted_status_ = trusted_status;
   for (size_t i = 0; i < notifications.size(); ++i)
     NotifyObservers(notifications[i]);
 }
@@ -642,9 +644,8 @@ bool DeviceSettingsProvider::MitigateMissingPolicy() {
   device_settings_.mutable_allow_new_users()->set_allow_new_users(true);
   device_settings_.mutable_guest_mode_enabled()->set_guest_mode_enabled(true);
   em::PolicyData empty_policy_data;
-  UpdateValuesCache(empty_policy_data, device_settings_);
+  UpdateValuesCache(empty_policy_data, device_settings_, TRUSTED);
   values_cache_.SetBoolean(kPolicyMissingMitigationMode, true);
-  trusted_status_ = TRUSTED;
 
   return true;
 }
@@ -702,9 +703,8 @@ bool DeviceSettingsProvider::UpdateFromService() {
                                           g_browser_process->local_state())) {
           LOG(ERROR) << "Couldn't update the local state cache.";
         }
-        UpdateValuesCache(*policy_data, *device_settings);
+        UpdateValuesCache(*policy_data, *device_settings, TRUSTED);
         device_settings_ = *device_settings;
-        trusted_status_ = TRUSTED;
 
         // TODO(pastarmovj): Make those side effects responsibility of the
         // respective subsystems.
