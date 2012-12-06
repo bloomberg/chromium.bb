@@ -44,19 +44,16 @@ SpellcheckService::SpellcheckService(Profile* profile)
       prefs::kEnableAutoSpellCorrect,
       base::Bind(&SpellcheckService::OnEnableAutoSpellCorrectChanged,
                  base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kSpellCheckDictionary,
+      base::Bind(&SpellcheckService::OnSpellCheckDictionaryChanged,
+                 base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kEnableSpellCheck,
+      base::Bind(&SpellcheckService::InitForAllRenderers,
+                 base::Unretained(this)));
 
-  base::Closure init_for_all_renderers_callback = base::Bind(
-      &SpellcheckService::InitForAllRenderers, base::Unretained(this));
-  pref_change_registrar_.Add(prefs::kSpellCheckDictionary,
-                             init_for_all_renderers_callback);
-  pref_change_registrar_.Add(prefs::kEnableSpellCheck,
-                             init_for_all_renderers_callback);
-
-  hunspell_dictionary_.reset(new SpellcheckHunspellDictionary(
-      profile, prefs->GetString(prefs::kSpellCheckDictionary),
-      profile->GetRequestContext(), this));
-
-  hunspell_dictionary_->Load();
+  OnSpellCheckDictionaryChanged();
 
   custom_dictionary_.reset(new SpellcheckCustomDictionary(profile_));
   custom_dictionary_->AddObserver(this);
@@ -215,6 +212,15 @@ void SpellcheckService::OnEnableAutoSpellCorrectChanged() {
     content::RenderProcessHost* process = i.GetCurrentValue();
     process->Send(new SpellCheckMsg_EnableAutoSpellCorrect(enabled));
   }
+}
+
+void SpellcheckService::OnSpellCheckDictionaryChanged() {
+  hunspell_dictionary_.reset(new SpellcheckHunspellDictionary(
+      profile_,
+      profile_->GetPrefs()->GetString(prefs::kSpellCheckDictionary),
+      profile_->GetRequestContext(),
+      this));
+  hunspell_dictionary_->Load();
 }
 
 void SpellcheckService::OnCustomDictionaryLoaded() {

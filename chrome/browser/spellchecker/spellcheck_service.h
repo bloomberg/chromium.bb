@@ -104,7 +104,13 @@ class SpellcheckService : public ProfileKeyedService,
   // immediately when we do not set an event to |status_event_|.
   static EventType WaitStatusEvent();
 
+  // Reacts to a change in user preferences on whether auto-spell-correct should
+  // be enabled.
   void OnEnableAutoSpellCorrectChanged();
+
+  // Reacts to a change in user preference on which language should be used for
+  // spellchecking.
+  void OnSpellCheckDictionaryChanged();
 
   PrefChangeRegistrar pref_change_registrar_;
   content::NotificationRegistrar registrar_;
