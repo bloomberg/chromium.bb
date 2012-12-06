@@ -475,8 +475,8 @@ void ContentViewCoreImpl::ConfirmTouchEvent(InputEventAckState ack_result) {
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
   if (j_obj.is_null())
     return;
-  bool processed = (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED);
-  Java_ContentViewCore_confirmTouchEvent(env, j_obj.obj(), processed);
+  Java_ContentViewCore_confirmTouchEvent(env, j_obj.obj(),
+                                         static_cast<jint>(ack_result));
 }
 
 void ContentViewCoreImpl::HasTouchEventHandlers(bool need_touch_events) {

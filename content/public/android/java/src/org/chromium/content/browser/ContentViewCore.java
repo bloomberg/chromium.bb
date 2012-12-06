@@ -968,8 +968,8 @@ public class ContentViewCore implements MotionEventDelegate {
 
     @SuppressWarnings("unused")
     @CalledByNative
-    private void confirmTouchEvent(boolean handled) {
-        mContentViewGestureHandler.confirmTouchEvent(handled);
+    private void confirmTouchEvent(int ackResult) {
+        mContentViewGestureHandler.confirmTouchEvent(ackResult);
     }
 
     @Override

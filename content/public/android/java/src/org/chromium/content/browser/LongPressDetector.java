@@ -121,12 +121,12 @@ class LongPressDetector {
     }
 
     // Given a stream of pending events, cancel the LONG_PRESS timer if appropriate.
-    void cancelLongPressIfNeeded(Iterator<Pair<MotionEvent, Boolean>> pendingEvents) {
+    void cancelLongPressIfNeeded(Iterator<MotionEvent> pendingEvents) {
         if (mCurrentDownEvent == null)
             return;
         long currentDownTime = mCurrentDownEvent.getDownTime();
         while (pendingEvents.hasNext()) {
-            MotionEvent pending = pendingEvents.next().first;
+            MotionEvent pending = pendingEvents.next();
             if (pending.getDownTime() != currentDownTime) {
                 break;
             }
