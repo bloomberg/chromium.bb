@@ -14,11 +14,13 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/version.h"
 #include "chrome/browser/extensions/updater/extension_downloader_delegate.h"
 #include "chrome/browser/extensions/updater/manifest_fetch_data.h"
+#include "chrome/browser/extensions/updater/request_queue.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/update_manifest.h"
 #include "googleurl/src/gurl.h"
@@ -91,6 +93,8 @@ class ExtensionDownloader : public net::URLFetcherDelegate {
   // Update AppID for extension blacklist.
   static const char kBlacklistAppID[];
 
+  static const int kMaxRetries = 10;
+
  private:
   friend class ExtensionUpdaterTest;
 
@@ -139,8 +143,11 @@ class ExtensionDownloader : public net::URLFetcherDelegate {
   // Adds all recorded stats taken so far to histogram counts.
   void ReportStats() const;
 
-  // Begins an update check. Takes ownership of |fetch_data|.
-  void StartUpdateCheck(ManifestFetchData* fetch_data);
+  // Begins an update check.
+  void StartUpdateCheck(scoped_ptr<ManifestFetchData> fetch_data);
+
+  // Called by RequestQueue when a new manifest fetch request is started.
+  void CreateManifestFetcher();
 
   // net::URLFetcherDelegate implementation.
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
@@ -149,6 +156,7 @@ class ExtensionDownloader : public net::URLFetcherDelegate {
   void OnManifestFetchComplete(const GURL& url,
                                const net::URLRequestStatus& status,
                                int response_code,
+                               const base::TimeDelta& backoff_delay,
                                const std::string& data);
 
   // Once a manifest is parsed, this starts fetches of any relevant crx files.
@@ -163,17 +171,17 @@ class ExtensionDownloader : public net::URLFetcherDelegate {
                         std::vector<int>* result);
 
   // Begins (or queues up) download of an updated extension.
-  void FetchUpdatedExtension(const std::string& id,
-                             const GURL& url,
-                             const std::string& hash,
-                             const std::string& version,
-                             const std::set<int>& request_ids);
+  void FetchUpdatedExtension(scoped_ptr<ExtensionFetch> fetch_data);
+
+  // Called by RequestQueue when a new extension fetch request is started.
+  void CreateExtensionFetcher();
 
   // Handles the result of a crx fetch.
   void OnCRXFetchComplete(const net::URLFetcher* source,
                           const GURL& url,
                           const net::URLRequestStatus& status,
-                          int response_code);
+                          int response_code,
+                          const base::TimeDelta& backoff_delay);
 
   // Invokes OnExtensionDownloadFailed() on the |delegate_| for each extension
   // in the set, with |error| as the reason for failure.
@@ -203,7 +211,7 @@ class ExtensionDownloader : public net::URLFetcherDelegate {
   // on the length of http GET requests, so there might be multiple
   // ManifestFetchData* objects with the same base_url.
   typedef std::map<std::pair<int, GURL>,
-                   std::vector<ManifestFetchData*> > FetchMap;
+                   std::vector<linked_ptr<ManifestFetchData> > > FetchMap;
   FetchMap fetches_preparing_;
 
   // Outstanding url fetch requests for manifests and updates.
@@ -212,14 +220,8 @@ class ExtensionDownloader : public net::URLFetcherDelegate {
 
   // Pending manifests and extensions to be fetched when the appropriate fetcher
   // is available.
-  std::deque<ManifestFetchData*> manifests_pending_;
-  std::deque<ExtensionFetch> extensions_pending_;
-
-  // The manifest currently being fetched (if any).
-  scoped_ptr<ManifestFetchData> current_manifest_fetch_;
-
-  // The extension currently being fetched (if any).
-  ExtensionFetch current_extension_fetch_;
+  RequestQueue<ManifestFetchData> manifests_queue_;
+  RequestQueue<ExtensionFetch> extensions_queue_;
 
   // Maps an extension-id to its PingResult data.
   std::map<std::string, ExtensionDownloaderDelegate::PingResult> ping_results_;

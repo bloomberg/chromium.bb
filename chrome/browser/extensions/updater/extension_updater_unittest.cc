@@ -37,6 +37,7 @@
 #include "chrome/browser/extensions/updater/extension_downloader_delegate.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/extensions/updater/manifest_fetch_data.h"
+#include "chrome/browser/extensions/updater/request_queue_impl.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -51,6 +52,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/test_browser_thread.h"
 #include "libxml/globals.h"
+#include "net/base/backoff_entry.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -73,6 +75,32 @@ typedef ExtensionDownloaderDelegate::Error Error;
 typedef ExtensionDownloaderDelegate::PingResult PingResult;
 
 namespace {
+
+const net::BackoffEntry::Policy kNoBackoffPolicy = {
+  // Number of initial errors (in sequence) to ignore before applying
+  // exponential back-off rules.
+  1000,
+
+  // Initial delay for exponential back-off in ms.
+  0,
+
+  // Factor by which the waiting time will be multiplied.
+  0,
+
+  // Fuzzing percentage. ex: 10% will spread requests randomly
+  // between 90%-100% of the calculated time.
+  0,
+
+  // Maximum amount of time we are willing to delay our request in ms.
+  0,
+
+  // Time to keep an entry from being discarded even when it
+  // has no significant state, -1 to never discard.
+  -1,
+
+  // Don't use initial delay unless the last request was an error.
+  false,
+};
 
 const char kEmptyUpdateUrlData[] = "";
 
@@ -472,11 +500,11 @@ class ExtensionUpdaterTest : public testing::Test {
 
   void StartUpdateCheck(ExtensionDownloader* downloader,
                         ManifestFetchData* fetch_data) {
-    downloader->StartUpdateCheck(fetch_data);
+    downloader->StartUpdateCheck(scoped_ptr<ManifestFetchData>(fetch_data));
   }
 
   size_t ManifestFetchersCount(ExtensionDownloader* downloader) {
-    return downloader->manifests_pending_.size() +
+    return downloader->manifests_queue_.size() +
            (downloader->manifest_fetcher_.get() ? 1 : 0);
   }
 
@@ -752,13 +780,14 @@ class ExtensionUpdaterTest : public testing::Test {
     MockService service(prefs_.get());
     MockExtensionDownloaderDelegate delegate;
     ExtensionDownloader downloader(&delegate, service.request_context());
+    downloader.manifests_queue_.set_backoff_policy(&kNoBackoffPolicy);
 
     GURL kUpdateUrl("http://localhost/manifest1");
 
-    ManifestFetchData* fetch1 = new ManifestFetchData(kUpdateUrl, 0);
-    ManifestFetchData* fetch2 = new ManifestFetchData(kUpdateUrl, 0);
-    ManifestFetchData* fetch3 = new ManifestFetchData(kUpdateUrl, 0);
-    ManifestFetchData* fetch4 = new ManifestFetchData(kUpdateUrl, 0);
+    scoped_ptr<ManifestFetchData> fetch1(new ManifestFetchData(kUpdateUrl, 0));
+    scoped_ptr<ManifestFetchData> fetch2(new ManifestFetchData(kUpdateUrl, 0));
+    scoped_ptr<ManifestFetchData> fetch3(new ManifestFetchData(kUpdateUrl, 0));
+    scoped_ptr<ManifestFetchData> fetch4(new ManifestFetchData(kUpdateUrl, 0));
     ManifestFetchData::PingData zeroDays(0, 0, true);
     fetch1->AddExtension("1111", "1.0", &zeroDays, kEmptyUpdateUrlData, "");
     fetch2->AddExtension("2222", "2.0", &zeroDays, kEmptyUpdateUrlData, "");
@@ -767,10 +796,10 @@ class ExtensionUpdaterTest : public testing::Test {
 
     // This will start the first fetcher and queue the others. The next in queue
     // is started as each fetcher receives its response.
-    downloader.StartUpdateCheck(fetch1);
-    downloader.StartUpdateCheck(fetch2);
-    downloader.StartUpdateCheck(fetch3);
-    downloader.StartUpdateCheck(fetch4);
+    downloader.StartUpdateCheck(fetch1.Pass());
+    downloader.StartUpdateCheck(fetch2.Pass());
+    downloader.StartUpdateCheck(fetch3.Pass());
+    downloader.StartUpdateCheck(fetch4.Pass());
     RunUntilIdle();
 
     // The first fetch will fail.
@@ -858,7 +887,79 @@ class ExtensionUpdaterTest : public testing::Test {
     EXPECT_TRUE(observer.Updated("4444"));
   }
 
-  void TestSingleExtensionDownloading(bool pending) {
+  void TestManifestRetryDownloading() {
+    net::TestURLFetcherFactory factory;
+    net::TestURLFetcher* fetcher = NULL;
+    NotificationsObserver observer;
+    MockService service(prefs_.get());
+    MockExtensionDownloaderDelegate delegate;
+    ExtensionDownloader downloader(&delegate, service.request_context());
+    downloader.manifests_queue_.set_backoff_policy(&kNoBackoffPolicy);
+
+    GURL kUpdateUrl("http://localhost/manifest1");
+
+    scoped_ptr<ManifestFetchData> fetch(new ManifestFetchData(kUpdateUrl, 0));
+    ManifestFetchData::PingData zeroDays(0, 0, true);
+    fetch->AddExtension("1111", "1.0", &zeroDays, kEmptyUpdateUrlData, "");
+
+    // This will start the first fetcher.
+    downloader.StartUpdateCheck(fetch.Pass());
+    RunUntilIdle();
+
+    // ExtensionDownloader should retry kMaxRetries times and then fail.
+    EXPECT_CALL(delegate, OnExtensionDownloadFailed(
+        "1111", ExtensionDownloaderDelegate::MANIFEST_FETCH_FAILED, _, _));
+    for (int i = 0; i <= ExtensionDownloader::kMaxRetries; ++i) {
+      // All fetches will fail.
+      fetcher = factory.GetFetcherByID(ExtensionDownloader::kManifestFetcherId);
+      EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
+      EXPECT_TRUE(fetcher->GetLoadFlags() == kExpectedLoadFlags);
+      fetcher->set_url(kUpdateUrl);
+      fetcher->set_status(net::URLRequestStatus());
+      // Code 5xx causes ExtensionDownloader to retry.
+      fetcher->set_response_code(500);
+      fetcher->delegate()->OnURLFetchComplete(fetcher);
+      RunUntilIdle();
+    }
+    Mock::VerifyAndClearExpectations(&delegate);
+
+
+    // For response codes that are not in the 5xx range ExtensionDownloader
+    // should not retry.
+    fetch.reset(new ManifestFetchData(kUpdateUrl, 0));
+    fetch->AddExtension("1111", "1.0", &zeroDays, kEmptyUpdateUrlData, "");
+
+    // This will start the first fetcher.
+    downloader.StartUpdateCheck(fetch.Pass());
+    RunUntilIdle();
+
+    EXPECT_CALL(delegate, OnExtensionDownloadFailed(
+        "1111", ExtensionDownloaderDelegate::MANIFEST_FETCH_FAILED, _, _));
+    // The first fetch will fail, and require retrying.
+    fetcher = factory.GetFetcherByID(ExtensionDownloader::kManifestFetcherId);
+    EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
+    EXPECT_TRUE(fetcher->GetLoadFlags() == kExpectedLoadFlags);
+    fetcher->set_url(kUpdateUrl);
+    fetcher->set_status(net::URLRequestStatus());
+    fetcher->set_response_code(500);
+    fetcher->delegate()->OnURLFetchComplete(fetcher);
+    RunUntilIdle();
+
+    // The second fetch will fail with response 400 and should not cause
+    // ExtensionDownloader to retry.
+    fetcher = factory.GetFetcherByID(ExtensionDownloader::kManifestFetcherId);
+    EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
+    EXPECT_TRUE(fetcher->GetLoadFlags() == kExpectedLoadFlags);
+    fetcher->set_url(kUpdateUrl);
+    fetcher->set_status(net::URLRequestStatus());
+    fetcher->set_response_code(400);
+    fetcher->delegate()->OnURLFetchComplete(fetcher);
+    RunUntilIdle();
+
+    Mock::VerifyAndClearExpectations(&delegate);
+  }
+
+  void TestSingleExtensionDownloading(bool pending, bool retry) {
     net::TestURLFetcherFactory factory;
     net::TestURLFetcher* fetcher = NULL;
     scoped_ptr<ServiceForDownloadTests> service(
@@ -872,6 +973,8 @@ class ExtensionUpdaterTest : public testing::Test {
     ResetDownloader(
         &updater,
         new ExtensionDownloader(&updater, service->request_context()));
+    updater.downloader_->extensions_queue_.set_backoff_policy(
+        &kNoBackoffPolicy);
 
     GURL test_url("http://localhost/extension.crx");
 
@@ -880,8 +983,10 @@ class ExtensionUpdaterTest : public testing::Test {
     Version version("0.0.1");
     std::set<int> requests;
     requests.insert(0);
-    updater.downloader_->FetchUpdatedExtension(
-        id, test_url, hash, version.GetString(), requests);
+    scoped_ptr<ExtensionDownloader::ExtensionFetch> fetch(
+        new ExtensionDownloader::ExtensionFetch(
+            id, test_url, hash, version.GetString(), requests));
+    updater.downloader_->FetchUpdatedExtension(fetch.Pass());
 
     if (pending) {
       const bool kIsFromSync = true;
@@ -900,6 +1005,20 @@ class ExtensionUpdaterTest : public testing::Test {
     fetcher = factory.GetFetcherByID(ExtensionDownloader::kExtensionFetcherId);
     EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
     EXPECT_TRUE(fetcher->GetLoadFlags() == kExpectedLoadFlags);
+
+    if (retry) {
+      // Reply with response code 500 to cause ExtensionDownloader to retry
+      fetcher->set_url(test_url);
+      fetcher->set_status(net::URLRequestStatus());
+      fetcher->set_response_code(500);
+      fetcher->delegate()->OnURLFetchComplete(fetcher);
+
+      RunUntilIdle();
+      fetcher = factory.GetFetcherByID(
+          ExtensionDownloader::kExtensionFetcherId);
+      EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
+      EXPECT_TRUE(fetcher->GetLoadFlags() == kExpectedLoadFlags);
+    }
 
     fetcher->set_url(test_url);
     fetcher->set_status(net::URLRequestStatus());
@@ -930,6 +1049,9 @@ class ExtensionUpdaterTest : public testing::Test {
     ResetDownloader(
         &updater,
         new ExtensionDownloader(&updater, service.request_context()));
+    updater.downloader_->extensions_queue_.set_backoff_policy(
+        &kNoBackoffPolicy);
+
     GURL test_url("http://localhost/extension.crx");
 
     std::string id = "com.google.crx.blacklist";
@@ -940,8 +1062,10 @@ class ExtensionUpdaterTest : public testing::Test {
     std::string version = "0.0.1";
     std::set<int> requests;
     requests.insert(0);
-    updater.downloader_->FetchUpdatedExtension(id, test_url, hash, version,
-                                               requests);
+    scoped_ptr<ExtensionDownloader::ExtensionFetch> fetch(
+        new ExtensionDownloader::ExtensionFetch(
+            id, test_url, hash, version, requests));
+    updater.downloader_->FetchUpdatedExtension(fetch.Pass());
 
     // Call back the ExtensionUpdater with a 200 response and some test data.
     std::string extension_data("aaaabbbbcccceeeeaaaabbbbcccceeee");
@@ -980,6 +1104,8 @@ class ExtensionUpdaterTest : public testing::Test {
     ResetDownloader(
         &updater,
         new ExtensionDownloader(&updater, service.request_context()));
+    updater.downloader_->extensions_queue_.set_backoff_policy(
+        &kNoBackoffPolicy);
 
     EXPECT_FALSE(updater.crx_install_is_running_);
 
@@ -997,10 +1123,14 @@ class ExtensionUpdaterTest : public testing::Test {
     std::set<int> requests;
     requests.insert(0);
     // Start two fetches
-    updater.downloader_->FetchUpdatedExtension(id1, url1, hash1, version1,
-                                               requests);
-    updater.downloader_->FetchUpdatedExtension(id2, url2, hash2, version2,
-                                               requests);
+    scoped_ptr<ExtensionDownloader::ExtensionFetch> fetch1(
+        new ExtensionDownloader::ExtensionFetch(
+            id1, url1, hash1, version1, requests));
+    scoped_ptr<ExtensionDownloader::ExtensionFetch> fetch2(
+        new ExtensionDownloader::ExtensionFetch(
+            id2, url2, hash2, version2, requests));
+    updater.downloader_->FetchUpdatedExtension(fetch1.Pass());
+    updater.downloader_->FetchUpdatedExtension(fetch2.Pass());
 
     // Make the first fetch complete.
     FilePath extension_file_path(FILE_PATH_LITERAL("/whatever"));
@@ -1349,11 +1479,19 @@ TEST_F(ExtensionUpdaterTest, TestMultipleManifestDownloading) {
 }
 
 TEST_F(ExtensionUpdaterTest, TestSingleExtensionDownloading) {
-  TestSingleExtensionDownloading(false);
+  TestSingleExtensionDownloading(false, false);
 }
 
 TEST_F(ExtensionUpdaterTest, TestSingleExtensionDownloadingPending) {
-  TestSingleExtensionDownloading(true);
+  TestSingleExtensionDownloading(true, false);
+}
+
+TEST_F(ExtensionUpdaterTest, TestSingleExtensionDownloadingWithRetry) {
+  TestSingleExtensionDownloading(false, true);
+}
+
+TEST_F(ExtensionUpdaterTest, TestSingleExtensionDownloadingPendingWithRetry) {
+  TestSingleExtensionDownloading(true, true);
 }
 
 TEST_F(ExtensionUpdaterTest, TestBlacklistDownloading) {
@@ -1365,6 +1503,10 @@ TEST_F(ExtensionUpdaterTest, TestMultipleExtensionDownloadingUpdatesFail) {
 }
 TEST_F(ExtensionUpdaterTest, TestMultipleExtensionDownloadingUpdatesSucceed) {
   TestMultipleExtensionDownloading(true);
+}
+
+TEST_F(ExtensionUpdaterTest, TestManifestRetryDownloading) {
+  TestManifestRetryDownloading();
 }
 
 TEST_F(ExtensionUpdaterTest, TestGalleryRequestsWithOrganicBrand) {

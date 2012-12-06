@@ -75,6 +75,7 @@ class ManifestFetchData {
   // fetch (in particular this adds all request ids associated with |other|
   // to this ManifestFetchData).
   void Merge(const ManifestFetchData& other);
+
  private:
   // The set of extension id's for this ManifestFetchData.
   std::set<std::string> extension_ids_;
