@@ -33,7 +33,6 @@
 #include "chrome/browser/chrome_plugin_service_filter.h"
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/extensions/api/app_runtime/app_runtime_api.h"
-#include "chrome/browser/extensions/api/cookies/cookies_api.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
 #include "chrome/browser/extensions/api/extension_action/extension_actions_api.h"
 #include "chrome/browser/extensions/api/font_settings/font_settings_api.h"
@@ -546,8 +545,6 @@ void ExtensionService::InitEventRouters() {
       new extensions::PreferenceEventRouter(profile_));
   bookmark_event_router_.reset(new BookmarkExtensionEventRouter(
       BookmarkModelFactory::GetForProfile(profile_)));
-  cookies_event_router_.reset(
-      new extensions::ExtensionCookiesEventRouter(profile_));
   web_navigation_event_router_.reset(
       new extensions::WebNavigationEventRouter(profile_));
   font_settings_event_router_.reset(

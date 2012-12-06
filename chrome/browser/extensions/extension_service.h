@@ -67,7 +67,6 @@ class ContentSettingsStore;
 class CrxInstaller;
 class Extension;
 class ExtensionActionStorageManager;
-class ExtensionCookiesEventRouter;
 class ExtensionManagedModeEventRouter;
 class ExtensionSyncData;
 class ExtensionSystem;
@@ -971,8 +970,6 @@ class ExtensionService
   scoped_ptr<extensions::PreferenceEventRouter> preference_event_router_;
 
   scoped_ptr<BookmarkExtensionEventRouter> bookmark_event_router_;
-
-  scoped_ptr<extensions::ExtensionCookiesEventRouter> cookies_event_router_;
 
   scoped_ptr<extensions::MediaGalleriesPrivateEventRouter>
       media_galleries_private_event_router_;

@@ -114,6 +114,8 @@
         'browser/extensions/api/cookies/cookies_api.h',
         'browser/extensions/api/cookies/cookies_api_constants.cc',
         'browser/extensions/api/cookies/cookies_api_constants.h',
+        'browser/extensions/api/cookies/cookies_api_factory.cc',
+        'browser/extensions/api/cookies/cookies_api_factory.h',
         'browser/extensions/api/cookies/cookies_helpers.cc',
         'browser/extensions/api/cookies/cookies_helpers.h',
         'browser/extensions/api/debugger/debugger_api.cc',

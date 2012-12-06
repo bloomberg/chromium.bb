@@ -16,6 +16,7 @@
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_api_factory.h"
 #include "chrome/browser/extensions/api/commands/command_service_factory.h"
+#include "chrome/browser/extensions/api/cookies/cookies_api_factory.h"
 #include "chrome/browser/extensions/api/discovery/suggested_links_registry_factory.h"
 #include "chrome/browser/extensions/api/idle/idle_manager_factory.h"
 #include "chrome/browser/extensions/api/management/management_api_factory.h"
@@ -223,6 +224,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   extensions::AppRestoreServiceFactory::GetInstance();
   extensions::BluetoothAPIFactory::GetInstance();
   extensions::CommandServiceFactory::GetInstance();
+  extensions::CookiesAPIFactory::GetInstance();
   extensions::ExtensionSystemFactory::GetInstance();
   extensions::IdleManagerFactory::GetInstance();
   extensions::ProcessesAPIFactory::GetInstance();

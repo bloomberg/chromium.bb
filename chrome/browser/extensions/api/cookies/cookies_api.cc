@@ -45,7 +45,7 @@ namespace Set = extensions::api::cookies::Set;
 namespace extensions {
 namespace keys = cookies_api_constants;
 
-ExtensionCookiesEventRouter::ExtensionCookiesEventRouter(Profile* profile)
+CookiesEventRouter::CookiesEventRouter(Profile* profile)
     : profile_(profile) {
   CHECK(registrar_.IsEmpty());
   registrar_.Add(this,
@@ -53,10 +53,10 @@ ExtensionCookiesEventRouter::ExtensionCookiesEventRouter(Profile* profile)
                  content::NotificationService::AllBrowserContextsAndSources());
 }
 
-ExtensionCookiesEventRouter::~ExtensionCookiesEventRouter() {
+CookiesEventRouter::~CookiesEventRouter() {
 }
 
-void ExtensionCookiesEventRouter::Observe(
+void CookiesEventRouter::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
@@ -76,7 +76,7 @@ void ExtensionCookiesEventRouter::Observe(
   }
 }
 
-void ExtensionCookiesEventRouter::CookieChanged(
+void CookiesEventRouter::CookieChanged(
     Profile* profile,
     ChromeCookieDetails* details) {
   scoped_ptr<ListValue> args(new ListValue());
@@ -123,7 +123,7 @@ void ExtensionCookiesEventRouter::CookieChanged(
   DispatchEvent(profile, keys::kOnChanged, args.Pass(), cookie_domain);
 }
 
-void ExtensionCookiesEventRouter::DispatchEvent(
+void CookiesEventRouter::DispatchEvent(
     Profile* profile,
     const std::string& event_name,
     scoped_ptr<ListValue> event_args,
@@ -538,6 +538,25 @@ bool GetAllCookieStoresFunction::RunImpl() {
 
 void GetAllCookieStoresFunction::Run() {
   SendResponse(RunImpl());
+}
+
+CookiesAPI::CookiesAPI(Profile* profile)
+    : profile_(profile) {
+  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+      this, keys::kOnChanged);
+}
+
+CookiesAPI::~CookiesAPI() {
+}
+
+void CookiesAPI::Shutdown() {
+  ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
+}
+
+void CookiesAPI::OnListenerAdded(
+    const extensions::EventListenerInfo& details) {
+  cookies_event_router_.reset(new CookiesEventRouter(profile_));
+  ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
 }
 
 }  // namespace extensions

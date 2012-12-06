@@ -13,8 +13,10 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/common/extensions/api/cookies.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -29,10 +31,10 @@ namespace extensions {
 
 // Observes CookieMonster notifications and routes them as events to the
 // extension system.
-class ExtensionCookiesEventRouter : public content::NotificationObserver {
+class CookiesEventRouter : public content::NotificationObserver {
  public:
-  explicit ExtensionCookiesEventRouter(Profile* profile);
-  virtual ~ExtensionCookiesEventRouter();
+  explicit CookiesEventRouter(Profile* profile);
+  virtual ~CookiesEventRouter();
 
  private:
   // content::NotificationObserver implementation.
@@ -55,7 +57,7 @@ class ExtensionCookiesEventRouter : public content::NotificationObserver {
 
   Profile* profile_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionCookiesEventRouter);
+  DISALLOW_COPY_AND_ASSIGN(CookiesEventRouter);
 };
 
 // Serves as a base class for all cookies API functions, and defines some
@@ -188,6 +190,26 @@ class GetAllCookieStoresFunction : public CookiesFunction {
   // GetAllCookieStoresFunction is sync.
   virtual void Run() OVERRIDE;
   virtual bool RunImpl() OVERRIDE;
+};
+
+class CookiesAPI : public ProfileKeyedService,
+                   public extensions::EventRouter::Observer {
+ public:
+  explicit CookiesAPI(Profile* profile);
+  virtual ~CookiesAPI();
+
+  // ProfileKeyedService implementation.
+  virtual void Shutdown() OVERRIDE;
+
+  // EventRouter::Observer implementation.
+  virtual void OnListenerAdded(const extensions::EventListenerInfo& details)
+      OVERRIDE;
+
+ private:
+  Profile* profile_;
+
+  // Created lazily upon OnListenerAdded.
+  scoped_ptr<CookiesEventRouter> cookies_event_router_;
 };
 
 }  // namespace extensions
