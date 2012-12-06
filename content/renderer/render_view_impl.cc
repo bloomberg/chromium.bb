@@ -3240,10 +3240,6 @@ void RenderViewImpl::didStartProvisionalLoad(WebFrame* frame) {
   WebDataSource* ds = frame->provisionalDataSource();
   DocumentState* document_state = DocumentState::FromDataSource(ds);
 
-  // We should only navigate to swappedout:// when is_swapped_out_ is true.
-  CHECK((ds->request().url() != GURL(kSwappedOutURL)) ||
-        is_swapped_out_) << "Heard swappedout:// when not swapped out.";
-
   // Update the request time if WebKit has better knowledge of it.
   if (document_state->request_time().is_null()) {
     double event_time = ds->triggeringEventTime();
@@ -5459,7 +5455,6 @@ void RenderViewImpl::NavigateToSwappedOutURL(WebKit::WebFrame* frame) {
   // synchronously.  Otherwise a new navigation can interrupt the navigation
   // to kSwappedOutURL. If that happens to be to the page we had been
   // showing, then WebKit will never send a commit and we'll be left spinning.
-  CHECK(is_swapped_out_);
   GURL swappedOutURL(kSwappedOutURL);
   WebURLRequest request(swappedOutURL);
   frame->loadRequest(request);
