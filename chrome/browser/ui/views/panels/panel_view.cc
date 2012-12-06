@@ -675,7 +675,7 @@ void PanelView::OnWindowEndUserBoundsChange() {
   panel_->IncreaseMaxSize(bounds_.size());
   panel_->set_full_size(bounds_.size());
 
-  panel_->panel_strip()->RefreshLayout();
+  panel_->collection()->RefreshLayout();
 }
 
 views::Widget* PanelView::GetWidget() {

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/panels/base_panel_browser_test.h"
-#include "chrome/browser/ui/panels/detached_panel_strip.h"
+#include "chrome/browser/ui/panels/detached_panel_collection.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_resize_controller.h"
@@ -92,7 +92,7 @@ IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, DockedPanelResizability) {
 
   panel_manager->EndResizingByMouse(false);
   WaitForBoundsAnimationFinished(panel);
-  bounds.Offset(-30, 0);  // Layout of panel adjusted in docked strip.
+  bounds.Offset(-30, 0);  // Layout of panel adjusted in docked collection.
   EXPECT_EQ(bounds, panel->GetBounds());
 
   // Try resizing by the right side.
@@ -107,7 +107,7 @@ IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, DockedPanelResizability) {
 
   panel_manager->EndResizingByMouse(false);
   WaitForBoundsAnimationFinished(panel);
-  bounds.Offset(-5, 0);  // Layout of panel adjusted in docked strip.
+  bounds.Offset(-5, 0);  // Layout of panel adjusted in docked collection.
   EXPECT_EQ(bounds, panel->GetBounds());
 
   // Try resizing by the bottom side; verify resize won't work.
@@ -262,13 +262,14 @@ IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, ResizeDetachedPanelToClampSize) {
 IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, CloseDetachedPanelOnResize) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   PanelResizeController* resize_controller = panel_manager->resize_controller();
-  DetachedPanelStrip* detached_strip = panel_manager->detached_strip();
+  DetachedPanelCollection* detached_collection =
+      panel_manager->detached_collection();
 
   // Create 3 detached panels.
   Panel* panel1 = CreateDetachedPanel("1", gfx::Rect(100, 200, 100, 100));
   Panel* panel2 = CreateDetachedPanel("2", gfx::Rect(200, 210, 110, 110));
   Panel* panel3 = CreateDetachedPanel("3", gfx::Rect(300, 220, 120, 120));
-  ASSERT_EQ(3, detached_strip->num_panels());
+  ASSERT_EQ(3, detached_collection->num_panels());
 
   gfx::Rect panel1_bounds = panel1->GetBounds();
   gfx::Rect panel2_bounds = panel2->GetBounds();
@@ -290,7 +291,7 @@ IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, CloseDetachedPanelOnResize) {
 
   CloseWindowAndWait(panel2);
   EXPECT_TRUE(resize_controller->IsResizing());
-  EXPECT_EQ(2, detached_strip->num_panels());
+  EXPECT_EQ(2, detached_collection->num_panels());
 
   panel_manager->EndResizingByMouse(false);
   EXPECT_EQ(panel1_bounds, panel1->GetBounds());
@@ -309,7 +310,7 @@ IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, CloseDetachedPanelOnResize) {
   EXPECT_EQ(panel3_bounds, panel3->GetBounds());
 
   CloseWindowAndWait(panel3);
-  EXPECT_EQ(1, detached_strip->num_panels());
+  EXPECT_EQ(1, detached_collection->num_panels());
   // Since we closed the panel we were resizing, we should be out of the
   // resizing mode by now.
   EXPECT_FALSE(resize_controller->IsResizing());

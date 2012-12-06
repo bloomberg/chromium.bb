@@ -10,14 +10,14 @@
 #include "ui/gfx/point.h"
 
 class Panel;
+class PanelCollection;
 class PanelManager;
-class PanelStrip;
 namespace gfx {
 class Rect;
 }
 
 // Responsible for handling drags initiated for all panels, including both
-// intra-strip and inter-strip drags.
+// intra-collection and inter-collection drags.
 class PanelDragController {
  public:
   explicit PanelDragController(PanelManager* panel_manager);
@@ -47,14 +47,14 @@ class PanelDragController {
 #endif
 
  private:
-  // Helper methods to figure out if the panel can be dragged to other strip.
-  // Returns target strip/boolean flag, and |new_panel_bounds| if the panel
-  // can enter other strip at |mouse_location|.
-  PanelStrip* ComputeDragTargetStrip(
+  // Helper methods to figure out if the panel can be dragged to other
+  // collection. Returns target collection/boolean flag, and |new_panel_bounds|
+  // if the panelcan enter other collection at |mouse_location|.
+  PanelCollection* ComputeDragTargetCollection(
       const gfx::Point& mouse_location, gfx::Rect* new_panel_bounds) const;
-  bool CanDragToDockedStrip(
+  bool CanDragToDockedCollection(
       const gfx::Point& mouse_location, gfx::Rect* new_panel_bounds) const;
-  bool CanDragToDetachedStrip(
+  bool CanDragToDetachedCollection(
       const gfx::Point& mouse_location, gfx::Rect* new_panel_bounds) const;
 
   // The potential panel position is computed based on the fact that the panel
@@ -67,8 +67,8 @@ class PanelDragController {
   // Panel currently being dragged.
   Panel* dragging_panel_;
 
-  // The original panel strip when the drag is started.
-  PanelStrip* dragging_panel_original_strip_;
+  // The original panel collection when the drag is started.
+  PanelCollection* dragging_panel_original_collection_;
 
   // The mouse location, in screen coordinates, when StartDragging or Drag was
   // pveviously called.

@@ -39,7 +39,7 @@ enum TitlebarButtonType {
 // than the actual modifier key to generalize across platforms.
 enum ClickModifier {
   NO_MODIFIER,
-  APPLY_TO_ALL,  // Apply the click behavior to all panels in the strip.
+  APPLY_TO_ALL,  // Apply the click behavior to all panels in the collection.
 };
 
 // Edge at which a panel is being resized using the mouse.

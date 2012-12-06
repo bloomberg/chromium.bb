@@ -2,27 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_PANELS_DETACHED_PANEL_STRIP_H_
-#define CHROME_BROWSER_UI_PANELS_DETACHED_PANEL_STRIP_H_
+#ifndef CHROME_BROWSER_UI_PANELS_DETACHED_PANEL_COLLECTION_H_
+#define CHROME_BROWSER_UI_PANELS_DETACHED_PANEL_COLLECTION_H_
 
 #include <set>
 #include "base/basictypes.h"
 #include "chrome/browser/ui/panels/panel.h"
-#include "chrome/browser/ui/panels/panel_strip.h"
+#include "chrome/browser/ui/panels/panel_collection.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 
 class PanelManager;
 
 // This class manages a group of free-floating panels.
-class DetachedPanelStrip : public PanelStrip {
+class DetachedPanelCollection : public PanelCollection {
  public:
   typedef std::set<Panel*> Panels;
 
-  explicit DetachedPanelStrip(PanelManager* panel_manager);
-  virtual ~DetachedPanelStrip();
+  explicit DetachedPanelCollection(PanelManager* panel_manager);
+  virtual ~DetachedPanelCollection();
 
-  // PanelStrip OVERRIDES:
+  // PanelCollection OVERRIDES:
   virtual gfx::Rect GetDisplayArea() const OVERRIDE;
   virtual void SetDisplayArea(const gfx::Rect& display_area) OVERRIDE;
   virtual void RefreshLayout() OVERRIDE;
@@ -50,13 +50,14 @@ class DetachedPanelStrip : public PanelStrip {
   virtual void SavePanelPlacement(Panel* panel) OVERRIDE;
   virtual void RestorePanelToSavedPlacement() OVERRIDE;
   virtual void DiscardSavedPanelPlacement()  OVERRIDE;
-  virtual void StartDraggingPanelWithinStrip(Panel* panel) OVERRIDE;
-  virtual void DragPanelWithinStrip(Panel* panel,
-                                    const gfx::Point& target_position) OVERRIDE;
-  virtual void EndDraggingPanelWithinStrip(Panel* panel,
-                                           bool aborted) OVERRIDE;
+  virtual void StartDraggingPanelWithinCollection(Panel* panel) OVERRIDE;
+  virtual void DragPanelWithinCollection(
+      Panel* panel,
+      const gfx::Point& target_position) OVERRIDE;
+  virtual void EndDraggingPanelWithinCollection(Panel* panel,
+                                                bool aborted) OVERRIDE;
   virtual void ClearDraggingStateWhenPanelClosed() OVERRIDE;
-  virtual void UpdatePanelOnStripChange(Panel* panel) OVERRIDE;
+  virtual void UpdatePanelOnCollectionChange(Panel* panel) OVERRIDE;
   virtual void OnPanelActiveStateChanged(Panel* panel) OVERRIDE;
 
   bool HasPanel(Panel* panel) const;
@@ -82,7 +83,7 @@ class DetachedPanelStrip : public PanelStrip {
 
   PanelManager* panel_manager_;  // Weak, owns us.
 
-  // All panels in the panel strip must fit within this area.
+  // All panels in the collection must fit within this area.
   gfx::Rect display_area_;
 
   // Collection of all panels.
@@ -95,7 +96,7 @@ class DetachedPanelStrip : public PanelStrip {
   // unspecified by panel creator.
   gfx::Point default_panel_origin_;
 
-  DISALLOW_COPY_AND_ASSIGN(DetachedPanelStrip);
+  DISALLOW_COPY_AND_ASSIGN(DetachedPanelCollection);
 };
 
-#endif  // CHROME_BROWSER_UI_PANELS_DETACHED_PANEL_STRIP_H_
+#endif  // CHROME_BROWSER_UI_PANELS_DETACHED_PANEL_COLLECTION_H_

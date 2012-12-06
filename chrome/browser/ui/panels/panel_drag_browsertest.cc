@@ -4,13 +4,13 @@
 
 #include "base/message_loop.h"
 #include "chrome/browser/ui/panels/base_panel_browser_test.h"
-#include "chrome/browser/ui/panels/detached_panel_strip.h"
-#include "chrome/browser/ui/panels/docked_panel_strip.h"
+#include "chrome/browser/ui/panels/detached_panel_collection.h"
+#include "chrome/browser/ui/panels/docked_panel_collection.h"
 #include "chrome/browser/ui/panels/native_panel.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_drag_controller.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
-#include "chrome/browser/ui/panels/test_panel_strip_squeeze_observer.h"
+#include "chrome/browser/ui/panels/test_panel_collection_squeeze_observer.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
@@ -68,16 +68,18 @@ class PanelDragBrowserTest : public BasePanelBrowserTest {
   }
 
   static gfx::Vector2d GetDragDeltaToRemainDetached(Panel* panel) {
-    int distance = panel->manager()->docked_strip()->display_area().bottom() -
-                   panel->GetBounds().bottom();
+    int distance =
+      panel->manager()->docked_collection()->display_area().bottom() -
+      panel->GetBounds().bottom();
     return gfx::Vector2d(
         -5,
         distance - PanelDragController::GetDockDetachedPanelThreshold() * 2);
   }
 
   static gfx::Vector2d GetDragDeltaToAttach(Panel* panel) {
-    int distance = panel->manager()->docked_strip()->display_area().bottom() -
-                   panel->GetBounds().bottom();
+    int distance =
+        panel->manager()->docked_collection()->display_area().bottom() -
+        panel->GetBounds().bottom();
     return gfx::Vector2d(
         -20,
         distance - PanelDragController::GetDockDetachedPanelThreshold() / 2);
@@ -495,7 +497,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest,
 IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDockedPanelOnDrag) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   PanelDragController* drag_controller = panel_manager->drag_controller();
-  DockedPanelStrip* docked_strip = panel_manager->docked_strip();
+  DockedPanelCollection* docked_collection = panel_manager->docked_collection();
 
   // Create 4 docked panels.
   // We have:  P4  P3  P2  P1
@@ -503,7 +505,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDockedPanelOnDrag) {
   Panel* panel2 = CreatePanelWithBounds("Panel2", gfx::Rect(0, 0, 100, 100));
   Panel* panel3 = CreatePanelWithBounds("Panel3", gfx::Rect(0, 0, 100, 100));
   Panel* panel4 = CreatePanelWithBounds("Panel4", gfx::Rect(0, 0, 100, 100));
-  ASSERT_EQ(4, docked_strip->num_panels());
+  ASSERT_EQ(4, docked_collection->num_panels());
 
   scoped_ptr<NativePanelTesting> panel1_testing(
       CreateNativePanelTesting(panel1));
@@ -527,7 +529,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDockedPanelOnDrag) {
     EXPECT_TRUE(drag_controller->IsDragging());
     EXPECT_EQ(panel1, drag_controller->dragging_panel());
 
-    ASSERT_EQ(4, docked_strip->num_panels());
+    ASSERT_EQ(4, docked_collection->num_panels());
     panels = PanelManager::GetInstance()->panels();
     EXPECT_EQ(panel2, panels[0]);
     EXPECT_EQ(panel3, panels[1]);
@@ -545,7 +547,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDockedPanelOnDrag) {
     EXPECT_TRUE(drag_controller->IsDragging());
     EXPECT_EQ(panel1, drag_controller->dragging_panel());
 
-    ASSERT_EQ(3, docked_strip->num_panels());
+    ASSERT_EQ(3, docked_collection->num_panels());
     panels = PanelManager::GetInstance()->panels();
     EXPECT_EQ(panel3, panels[0]);
     EXPECT_EQ(panel4, panels[1]);
@@ -559,7 +561,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDockedPanelOnDrag) {
     panel1_testing->CancelDragTitlebar();
     EXPECT_FALSE(drag_controller->IsDragging());
 
-    ASSERT_EQ(3, docked_strip->num_panels());
+    ASSERT_EQ(3, docked_collection->num_panels());
     panels = PanelManager::GetInstance()->panels();
     EXPECT_EQ(panel1, panels[0]);
     EXPECT_EQ(panel3, panels[1]);
@@ -584,7 +586,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDockedPanelOnDrag) {
     EXPECT_TRUE(drag_controller->IsDragging());
     EXPECT_EQ(panel1, drag_controller->dragging_panel());
 
-    ASSERT_EQ(3, docked_strip->num_panels());
+    ASSERT_EQ(3, docked_collection->num_panels());
     panels = PanelManager::GetInstance()->panels();
     EXPECT_EQ(panel3, panels[0]);
     EXPECT_EQ(panel4, panels[1]);
@@ -600,7 +602,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDockedPanelOnDrag) {
     EXPECT_TRUE(drag_controller->IsDragging());
     EXPECT_EQ(panel1, drag_controller->dragging_panel());
 
-    ASSERT_EQ(2, docked_strip->num_panels());
+    ASSERT_EQ(2, docked_collection->num_panels());
     panels = PanelManager::GetInstance()->panels();
     EXPECT_EQ(panel4, panels[0]);
     EXPECT_EQ(panel1, panels[1]);
@@ -612,7 +614,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDockedPanelOnDrag) {
     panel1_testing->FinishDragTitlebar();
     EXPECT_FALSE(drag_controller->IsDragging());
 
-    ASSERT_EQ(2, docked_strip->num_panels());
+    ASSERT_EQ(2, docked_collection->num_panels());
     panels = PanelManager::GetInstance()->panels();
     EXPECT_EQ(panel4, panels[0]);
     EXPECT_EQ(panel1, panels[1]);
@@ -636,7 +638,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDockedPanelOnDrag) {
     EXPECT_EQ(panel1, drag_controller->dragging_panel());
     EXPECT_EQ(panel1_new_position, panel1->GetBounds().origin());
 
-    ASSERT_EQ(2, docked_strip->num_panels());
+    ASSERT_EQ(2, docked_collection->num_panels());
     panels = PanelManager::GetInstance()->panels();
     EXPECT_EQ(panel4, panels[0]);
     EXPECT_EQ(panel1, panels[1]);
@@ -647,7 +649,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDockedPanelOnDrag) {
     CloseWindowAndWait(panel1);
     EXPECT_FALSE(drag_controller->IsDragging());
 
-    ASSERT_EQ(1, docked_strip->num_panels());
+    ASSERT_EQ(1, docked_collection->num_panels());
     panels = PanelManager::GetInstance()->panels();
     EXPECT_EQ(panel4, panels[0]);
     EXPECT_EQ(position1, panel4->GetBounds().origin());
@@ -705,14 +707,15 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DragOneDetachedPanel) {
 IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDetachedPanelOnDrag) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   PanelDragController* drag_controller = panel_manager->drag_controller();
-  DetachedPanelStrip* detached_strip = panel_manager->detached_strip();
+  DetachedPanelCollection* detached_collection =
+      panel_manager->detached_collection();
 
   // Create 4 detached panels.
   Panel* panel1 = CreateDetachedPanel("1", gfx::Rect(100, 200, 100, 100));
   Panel* panel2 = CreateDetachedPanel("2", gfx::Rect(200, 210, 110, 110));
   Panel* panel3 = CreateDetachedPanel("3", gfx::Rect(300, 220, 120, 120));
   Panel* panel4 = CreateDetachedPanel("4", gfx::Rect(400, 230, 130, 130));
-  ASSERT_EQ(4, detached_strip->num_panels());
+  ASSERT_EQ(4, detached_collection->num_panels());
 
   scoped_ptr<NativePanelTesting> panel1_testing(
       CreateNativePanelTesting(panel1));
@@ -732,11 +735,11 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDetachedPanelOnDrag) {
     EXPECT_TRUE(drag_controller->IsDragging());
     EXPECT_EQ(panel1, drag_controller->dragging_panel());
 
-    ASSERT_EQ(4, detached_strip->num_panels());
-    EXPECT_TRUE(detached_strip->HasPanel(panel1));
-    EXPECT_TRUE(detached_strip->HasPanel(panel2));
-    EXPECT_TRUE(detached_strip->HasPanel(panel3));
-    EXPECT_TRUE(detached_strip->HasPanel(panel4));
+    ASSERT_EQ(4, detached_collection->num_panels());
+    EXPECT_TRUE(detached_collection->HasPanel(panel1));
+    EXPECT_TRUE(detached_collection->HasPanel(panel2));
+    EXPECT_TRUE(detached_collection->HasPanel(panel3));
+    EXPECT_TRUE(detached_collection->HasPanel(panel4));
     EXPECT_EQ(panel1_new_position, panel1->GetBounds().origin());
     EXPECT_EQ(panel2_position, panel2->GetBounds().origin());
     EXPECT_EQ(panel3_position, panel3->GetBounds().origin());
@@ -748,10 +751,10 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDetachedPanelOnDrag) {
     EXPECT_TRUE(drag_controller->IsDragging());
     EXPECT_EQ(panel1, drag_controller->dragging_panel());
 
-    ASSERT_EQ(3, detached_strip->num_panels());
-    EXPECT_TRUE(detached_strip->HasPanel(panel1));
-    EXPECT_TRUE(detached_strip->HasPanel(panel3));
-    EXPECT_TRUE(detached_strip->HasPanel(panel4));
+    ASSERT_EQ(3, detached_collection->num_panels());
+    EXPECT_TRUE(detached_collection->HasPanel(panel1));
+    EXPECT_TRUE(detached_collection->HasPanel(panel3));
+    EXPECT_TRUE(detached_collection->HasPanel(panel4));
     EXPECT_EQ(panel1_new_position, panel1->GetBounds().origin());
     EXPECT_EQ(panel3_position, panel3->GetBounds().origin());
     EXPECT_EQ(panel4_position, panel4->GetBounds().origin());
@@ -761,10 +764,10 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDetachedPanelOnDrag) {
     WaitForBoundsAnimationFinished(panel1);
     EXPECT_FALSE(drag_controller->IsDragging());
 
-    ASSERT_EQ(3, detached_strip->num_panels());
-    EXPECT_TRUE(detached_strip->HasPanel(panel1));
-    EXPECT_TRUE(detached_strip->HasPanel(panel3));
-    EXPECT_TRUE(detached_strip->HasPanel(panel4));
+    ASSERT_EQ(3, detached_collection->num_panels());
+    EXPECT_TRUE(detached_collection->HasPanel(panel1));
+    EXPECT_TRUE(detached_collection->HasPanel(panel3));
+    EXPECT_TRUE(detached_collection->HasPanel(panel4));
     EXPECT_EQ(panel1_old_position, panel1->GetBounds().origin());
     EXPECT_EQ(panel3_position, panel3->GetBounds().origin());
     EXPECT_EQ(panel4_position, panel4->GetBounds().origin());
@@ -781,10 +784,10 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDetachedPanelOnDrag) {
     EXPECT_TRUE(drag_controller->IsDragging());
     EXPECT_EQ(panel1, drag_controller->dragging_panel());
 
-    ASSERT_EQ(3, detached_strip->num_panels());
-    EXPECT_TRUE(detached_strip->HasPanel(panel1));
-    EXPECT_TRUE(detached_strip->HasPanel(panel3));
-    EXPECT_TRUE(detached_strip->HasPanel(panel4));
+    ASSERT_EQ(3, detached_collection->num_panels());
+    EXPECT_TRUE(detached_collection->HasPanel(panel1));
+    EXPECT_TRUE(detached_collection->HasPanel(panel3));
+    EXPECT_TRUE(detached_collection->HasPanel(panel4));
     EXPECT_EQ(panel1_new_position, panel1->GetBounds().origin());
     EXPECT_EQ(panel3_position, panel3->GetBounds().origin());
     EXPECT_EQ(panel4_position, panel4->GetBounds().origin());
@@ -795,9 +798,9 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDetachedPanelOnDrag) {
     EXPECT_TRUE(drag_controller->IsDragging());
     EXPECT_EQ(panel1, drag_controller->dragging_panel());
 
-    ASSERT_EQ(2, detached_strip->num_panels());
-    EXPECT_TRUE(detached_strip->HasPanel(panel1));
-    EXPECT_TRUE(detached_strip->HasPanel(panel4));
+    ASSERT_EQ(2, detached_collection->num_panels());
+    EXPECT_TRUE(detached_collection->HasPanel(panel1));
+    EXPECT_TRUE(detached_collection->HasPanel(panel4));
     EXPECT_EQ(panel1_new_position, panel1->GetBounds().origin());
     EXPECT_EQ(panel4_position, panel4->GetBounds().origin());
 
@@ -805,9 +808,9 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDetachedPanelOnDrag) {
     panel1_testing->FinishDragTitlebar();
     EXPECT_FALSE(drag_controller->IsDragging());
 
-    ASSERT_EQ(2, detached_strip->num_panels());
-    EXPECT_TRUE(detached_strip->HasPanel(panel1));
-    EXPECT_TRUE(detached_strip->HasPanel(panel4));
+    ASSERT_EQ(2, detached_collection->num_panels());
+    EXPECT_TRUE(detached_collection->HasPanel(panel1));
+    EXPECT_TRUE(detached_collection->HasPanel(panel4));
     EXPECT_EQ(panel1_new_position, panel1->GetBounds().origin());
     EXPECT_EQ(panel4_position, panel4->GetBounds().origin());
   }
@@ -823,9 +826,9 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDetachedPanelOnDrag) {
     EXPECT_TRUE(drag_controller->IsDragging());
     EXPECT_EQ(panel1, drag_controller->dragging_panel());
 
-    ASSERT_EQ(2, detached_strip->num_panels());
-    EXPECT_TRUE(detached_strip->HasPanel(panel1));
-    EXPECT_TRUE(detached_strip->HasPanel(panel4));
+    ASSERT_EQ(2, detached_collection->num_panels());
+    EXPECT_TRUE(detached_collection->HasPanel(panel1));
+    EXPECT_TRUE(detached_collection->HasPanel(panel4));
     EXPECT_EQ(panel1_new_position, panel1->GetBounds().origin());
     EXPECT_EQ(panel4_position, panel4->GetBounds().origin());
 
@@ -833,8 +836,8 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDetachedPanelOnDrag) {
     CloseWindowAndWait(panel1);
     EXPECT_FALSE(drag_controller->IsDragging());
 
-    ASSERT_EQ(1, detached_strip->num_panels());
-    EXPECT_TRUE(detached_strip->HasPanel(panel4));
+    ASSERT_EQ(1, detached_collection->num_panels());
+    EXPECT_TRUE(detached_collection->HasPanel(panel4));
     EXPECT_EQ(panel4_position, panel4->GetBounds().origin());
   }
 
@@ -843,13 +846,14 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDetachedPanelOnDrag) {
 
 IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, Detach) {
   PanelManager* panel_manager = PanelManager::GetInstance();
-  DockedPanelStrip* docked_strip = panel_manager->docked_strip();
-  DetachedPanelStrip* detached_strip = panel_manager->detached_strip();
+  DockedPanelCollection* docked_collection = panel_manager->docked_collection();
+  DetachedPanelCollection* detached_collection =
+      panel_manager->detached_collection();
 
   // Create one docked panel.
   Panel* panel = CreateDockedPanel("1", gfx::Rect(0, 0, 100, 100));
-  ASSERT_EQ(1, docked_strip->num_panels());
-  ASSERT_EQ(0, detached_strip->num_panels());
+  ASSERT_EQ(1, docked_collection->num_panels());
+  ASSERT_EQ(0, detached_collection->num_panels());
 
   gfx::Rect panel_old_bounds = panel->GetBounds();
 
@@ -865,9 +869,9 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, Detach) {
   gfx::Vector2d drag_delta_to_remain_docked = GetDragDeltaToRemainDocked();
   mouse_location = mouse_location + drag_delta_to_remain_docked;
   panel_testing->DragTitlebar(mouse_location);
-  ASSERT_EQ(1, docked_strip->num_panels());
-  ASSERT_EQ(0, detached_strip->num_panels());
-  EXPECT_EQ(PanelStrip::DOCKED, panel->panel_strip()->type());
+  ASSERT_EQ(1, docked_collection->num_panels());
+  ASSERT_EQ(0, detached_collection->num_panels());
+  EXPECT_EQ(PanelCollection::DOCKED, panel->collection()->type());
   gfx::Rect panel_new_bounds = panel_old_bounds;
   panel_new_bounds.Offset(drag_delta_to_remain_docked.x(), 0);
   EXPECT_EQ(panel_new_bounds, panel->GetBounds());
@@ -877,9 +881,9 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, Detach) {
   gfx::Vector2d drag_delta_to_detach = GetDragDeltaToDetach();
   mouse_location = mouse_location + drag_delta_to_detach;
   panel_testing->DragTitlebar(mouse_location);
-  ASSERT_EQ(0, docked_strip->num_panels());
-  ASSERT_EQ(1, detached_strip->num_panels());
-  EXPECT_EQ(PanelStrip::DETACHED, panel->panel_strip()->type());
+  ASSERT_EQ(0, docked_collection->num_panels());
+  ASSERT_EQ(1, detached_collection->num_panels());
+  EXPECT_EQ(PanelCollection::DETACHED, panel->collection()->type());
   panel_new_bounds.Offset(
       drag_delta_to_detach.x(),
       drag_delta_to_detach.y() + drag_delta_to_remain_docked.y());
@@ -888,9 +892,9 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, Detach) {
   // Finish the drag.
   // Expect that the panel stays as detached.
   panel_testing->FinishDragTitlebar();
-  ASSERT_EQ(0, docked_strip->num_panels());
-  ASSERT_EQ(1, detached_strip->num_panels());
-  EXPECT_EQ(PanelStrip::DETACHED, panel->panel_strip()->type());
+  ASSERT_EQ(0, docked_collection->num_panels());
+  ASSERT_EQ(1, detached_collection->num_panels());
+  EXPECT_EQ(PanelCollection::DETACHED, panel->collection()->type());
   EXPECT_EQ(panel_new_bounds, panel->GetBounds());
 
   panel_manager->CloseAll();
@@ -898,13 +902,14 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, Detach) {
 
 IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DetachAndCancel) {
   PanelManager* panel_manager = PanelManager::GetInstance();
-  DockedPanelStrip* docked_strip = panel_manager->docked_strip();
-  DetachedPanelStrip* detached_strip = panel_manager->detached_strip();
+  DockedPanelCollection* docked_collection = panel_manager->docked_collection();
+  DetachedPanelCollection* detached_collection =
+      panel_manager->detached_collection();
 
   // Create one docked panel.
   Panel* panel = CreateDockedPanel("1", gfx::Rect(0, 0, 100, 100));
-  ASSERT_EQ(1, docked_strip->num_panels());
-  ASSERT_EQ(0, detached_strip->num_panels());
+  ASSERT_EQ(1, docked_collection->num_panels());
+  ASSERT_EQ(0, detached_collection->num_panels());
 
   gfx::Rect panel_old_bounds = panel->GetBounds();
 
@@ -920,9 +925,9 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DetachAndCancel) {
   gfx::Vector2d drag_delta_to_remain_docked = GetDragDeltaToRemainDocked();
   mouse_location = mouse_location + drag_delta_to_remain_docked;
   panel_testing->DragTitlebar(mouse_location);
-  ASSERT_EQ(1, docked_strip->num_panels());
-  ASSERT_EQ(0, detached_strip->num_panels());
-  EXPECT_EQ(PanelStrip::DOCKED, panel->panel_strip()->type());
+  ASSERT_EQ(1, docked_collection->num_panels());
+  ASSERT_EQ(0, detached_collection->num_panels());
+  EXPECT_EQ(PanelCollection::DOCKED, panel->collection()->type());
   gfx::Rect panel_new_bounds = panel_old_bounds;
   panel_new_bounds.Offset(drag_delta_to_remain_docked.x(), 0);
   EXPECT_EQ(panel_new_bounds, panel->GetBounds());
@@ -932,9 +937,9 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DetachAndCancel) {
   gfx::Vector2d drag_delta_to_detach = GetDragDeltaToDetach();
   mouse_location = mouse_location + drag_delta_to_detach;
   panel_testing->DragTitlebar(mouse_location);
-  ASSERT_EQ(0, docked_strip->num_panels());
-  ASSERT_EQ(1, detached_strip->num_panels());
-  EXPECT_EQ(PanelStrip::DETACHED, panel->panel_strip()->type());
+  ASSERT_EQ(0, docked_collection->num_panels());
+  ASSERT_EQ(1, detached_collection->num_panels());
+  EXPECT_EQ(PanelCollection::DETACHED, panel->collection()->type());
   panel_new_bounds.Offset(
       drag_delta_to_detach.x(),
       drag_delta_to_detach.y() + drag_delta_to_remain_docked.y());
@@ -943,9 +948,9 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DetachAndCancel) {
   // Cancel the drag.
   // Expect that the panel is back as docked.
   panel_testing->CancelDragTitlebar();
-  ASSERT_EQ(1, docked_strip->num_panels());
-  ASSERT_EQ(0, detached_strip->num_panels());
-  EXPECT_EQ(PanelStrip::DOCKED, panel->panel_strip()->type());
+  ASSERT_EQ(1, docked_collection->num_panels());
+  ASSERT_EQ(0, detached_collection->num_panels());
+  EXPECT_EQ(PanelCollection::DOCKED, panel->collection()->type());
   EXPECT_EQ(panel_old_bounds, panel->GetBounds());
 
   panel_manager->CloseAll();
@@ -953,14 +958,15 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DetachAndCancel) {
 
 IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, Attach) {
   PanelManager* panel_manager = PanelManager::GetInstance();
-  DockedPanelStrip* docked_strip = panel_manager->docked_strip();
-  DetachedPanelStrip* detached_strip = panel_manager->detached_strip();
+  DockedPanelCollection* docked_collection = panel_manager->docked_collection();
+  DetachedPanelCollection* detached_collection =
+      panel_manager->detached_collection();
 
   // Create one detached panel.
   Panel* panel = CreateDetachedPanel("1", gfx::Rect(400, 300, 100, 100));
-  ASSERT_EQ(0, docked_strip->num_panels());
-  ASSERT_EQ(1, detached_strip->num_panels());
-  EXPECT_EQ(PanelStrip::DETACHED, panel->panel_strip()->type());
+  ASSERT_EQ(0, docked_collection->num_panels());
+  ASSERT_EQ(1, detached_collection->num_panels());
+  EXPECT_EQ(PanelCollection::DETACHED, panel->collection()->type());
 
   gfx::Rect panel_old_bounds = panel->GetBounds();
 
@@ -976,9 +982,9 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, Attach) {
       GetDragDeltaToRemainDetached(panel);
   mouse_location = mouse_location + drag_delta_to_remain_detached;
   panel_testing->DragTitlebar(mouse_location);
-  ASSERT_EQ(0, docked_strip->num_panels());
-  ASSERT_EQ(1, detached_strip->num_panels());
-  EXPECT_EQ(PanelStrip::DETACHED, panel->panel_strip()->type());
+  ASSERT_EQ(0, docked_collection->num_panels());
+  ASSERT_EQ(1, detached_collection->num_panels());
+  EXPECT_EQ(PanelCollection::DETACHED, panel->collection()->type());
   gfx::Rect panel_new_bounds = panel_old_bounds;
   panel_new_bounds.Offset(drag_delta_to_remain_detached);
   EXPECT_EQ(panel_new_bounds, panel->GetBounds());
@@ -989,22 +995,22 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, Attach) {
   gfx::Vector2d drag_delta_to_attach = GetDragDeltaToAttach(panel);
   mouse_location = mouse_location + drag_delta_to_attach;
   panel_testing->DragTitlebar(mouse_location);
-  ASSERT_EQ(1, docked_strip->num_panels());
-  ASSERT_EQ(0, detached_strip->num_panels());
-  EXPECT_EQ(PanelStrip::DOCKED, panel->panel_strip()->type());
+  ASSERT_EQ(1, docked_collection->num_panels());
+  ASSERT_EQ(0, detached_collection->num_panels());
+  EXPECT_EQ(PanelCollection::DOCKED, panel->collection()->type());
   panel_new_bounds.Offset(drag_delta_to_attach);
   EXPECT_EQ(panel_new_bounds, panel->GetBounds());
 
   // Finish the drag.
   // Expect that the panel stays as docked and moves to the final position.
   panel_testing->FinishDragTitlebar();
-  ASSERT_EQ(1, docked_strip->num_panels());
-  ASSERT_EQ(0, detached_strip->num_panels());
-  EXPECT_EQ(PanelStrip::DOCKED, panel->panel_strip()->type());
+  ASSERT_EQ(1, docked_collection->num_panels());
+  ASSERT_EQ(0, detached_collection->num_panels());
+  EXPECT_EQ(PanelCollection::DOCKED, panel->collection()->type());
   panel_new_bounds.set_x(
-      docked_strip->StartingRightPosition() - panel_new_bounds.width());
+      docked_collection->StartingRightPosition() - panel_new_bounds.width());
   panel_new_bounds.set_y(
-      docked_strip->display_area().bottom() - panel_new_bounds.height());
+      docked_collection->display_area().bottom() - panel_new_bounds.height());
   EXPECT_EQ(panel_new_bounds, panel->GetBounds());
 
   panel_manager->CloseAll();
@@ -1012,14 +1018,15 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, Attach) {
 
 IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, AttachAndCancel) {
   PanelManager* panel_manager = PanelManager::GetInstance();
-  DockedPanelStrip* docked_strip = panel_manager->docked_strip();
-  DetachedPanelStrip* detached_strip = panel_manager->detached_strip();
+  DockedPanelCollection* docked_collection = panel_manager->docked_collection();
+  DetachedPanelCollection* detached_collection =
+      panel_manager->detached_collection();
 
   // Create one detached panel.
   Panel* panel = CreateDetachedPanel("1", gfx::Rect(400, 300, 100, 100));
-  ASSERT_EQ(0, docked_strip->num_panels());
-  ASSERT_EQ(1, detached_strip->num_panels());
-  EXPECT_EQ(PanelStrip::DETACHED, panel->panel_strip()->type());
+  ASSERT_EQ(0, docked_collection->num_panels());
+  ASSERT_EQ(1, detached_collection->num_panels());
+  EXPECT_EQ(PanelCollection::DETACHED, panel->collection()->type());
 
   gfx::Rect panel_old_bounds = panel->GetBounds();
 
@@ -1035,9 +1042,9 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, AttachAndCancel) {
       GetDragDeltaToRemainDetached(panel);
   mouse_location = mouse_location + drag_delta_to_remain_detached;
   panel_testing->DragTitlebar(mouse_location);
-  ASSERT_EQ(0, docked_strip->num_panels());
-  ASSERT_EQ(1, detached_strip->num_panels());
-  EXPECT_EQ(PanelStrip::DETACHED, panel->panel_strip()->type());
+  ASSERT_EQ(0, docked_collection->num_panels());
+  ASSERT_EQ(1, detached_collection->num_panels());
+  EXPECT_EQ(PanelCollection::DETACHED, panel->collection()->type());
   gfx::Rect panel_new_bounds = panel_old_bounds;
   panel_new_bounds.Offset(drag_delta_to_remain_detached);
   EXPECT_EQ(panel_new_bounds, panel->GetBounds());
@@ -1048,18 +1055,18 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, AttachAndCancel) {
   gfx::Vector2d drag_delta_to_attach = GetDragDeltaToAttach(panel);
   mouse_location = mouse_location + drag_delta_to_attach;
   panel_testing->DragTitlebar(mouse_location);
-  ASSERT_EQ(1, docked_strip->num_panels());
-  ASSERT_EQ(0, detached_strip->num_panels());
-  EXPECT_EQ(PanelStrip::DOCKED, panel->panel_strip()->type());
+  ASSERT_EQ(1, docked_collection->num_panels());
+  ASSERT_EQ(0, detached_collection->num_panels());
+  EXPECT_EQ(PanelCollection::DOCKED, panel->collection()->type());
   panel_new_bounds.Offset(drag_delta_to_attach);
   EXPECT_EQ(panel_new_bounds, panel->GetBounds());
 
   // Cancel the drag.
   // Expect that the panel is back as detached.
   panel_testing->CancelDragTitlebar();
-  ASSERT_EQ(0, docked_strip->num_panels());
-  ASSERT_EQ(1, detached_strip->num_panels());
-  EXPECT_EQ(PanelStrip::DETACHED, panel->panel_strip()->type());
+  ASSERT_EQ(0, docked_collection->num_panels());
+  ASSERT_EQ(1, detached_collection->num_panels());
+  EXPECT_EQ(PanelCollection::DETACHED, panel->collection()->type());
   EXPECT_EQ(panel_old_bounds, panel->GetBounds());
 
   panel_manager->CloseAll();
@@ -1067,13 +1074,14 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, AttachAndCancel) {
 
 IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DetachAttachAndCancel) {
   PanelManager* panel_manager = PanelManager::GetInstance();
-  DockedPanelStrip* docked_strip = panel_manager->docked_strip();
-  DetachedPanelStrip* detached_strip = panel_manager->detached_strip();
+  DockedPanelCollection* docked_collection = panel_manager->docked_collection();
+  DetachedPanelCollection* detached_collection =
+      panel_manager->detached_collection();
 
   // Create one docked panel.
   Panel* panel = CreateDockedPanel("1", gfx::Rect(0, 0, 100, 100));
-  ASSERT_EQ(1, docked_strip->num_panels());
-  ASSERT_EQ(0, detached_strip->num_panels());
+  ASSERT_EQ(1, docked_collection->num_panels());
+  ASSERT_EQ(0, detached_collection->num_panels());
 
   gfx::Rect panel_old_bounds = panel->GetBounds();
 
@@ -1088,9 +1096,9 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DetachAttachAndCancel) {
   gfx::Vector2d drag_delta_to_detach = GetDragDeltaToDetach();
   mouse_location = mouse_location + drag_delta_to_detach;
   panel_testing->DragTitlebar(mouse_location);
-  ASSERT_EQ(0, docked_strip->num_panels());
-  ASSERT_EQ(1, detached_strip->num_panels());
-  EXPECT_EQ(PanelStrip::DETACHED, panel->panel_strip()->type());
+  ASSERT_EQ(0, docked_collection->num_panels());
+  ASSERT_EQ(1, detached_collection->num_panels());
+  EXPECT_EQ(PanelCollection::DETACHED, panel->collection()->type());
   gfx::Rect panel_new_bounds = panel_old_bounds;
   panel_new_bounds.Offset(drag_delta_to_detach);
   EXPECT_EQ(panel_new_bounds, panel->GetBounds());
@@ -1099,9 +1107,9 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DetachAttachAndCancel) {
   gfx::Vector2d drag_delta_to_reattach = GetDragDeltaToAttach(panel);
   mouse_location = mouse_location + drag_delta_to_reattach;
   panel_testing->DragTitlebar(mouse_location);
-  ASSERT_EQ(1, docked_strip->num_panels());
-  ASSERT_EQ(0, detached_strip->num_panels());
-  EXPECT_EQ(PanelStrip::DOCKED, panel->panel_strip()->type());
+  ASSERT_EQ(1, docked_collection->num_panels());
+  ASSERT_EQ(0, detached_collection->num_panels());
+  EXPECT_EQ(PanelCollection::DOCKED, panel->collection()->type());
   panel_new_bounds.Offset(drag_delta_to_reattach);
   EXPECT_EQ(panel_new_bounds, panel->GetBounds());
 
@@ -1109,18 +1117,18 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DetachAttachAndCancel) {
   gfx::Vector2d drag_delta_to_detach_again = GetDragDeltaToDetach();
   mouse_location = mouse_location + drag_delta_to_detach_again;
   panel_testing->DragTitlebar(mouse_location);
-  ASSERT_EQ(0, docked_strip->num_panels());
-  ASSERT_EQ(1, detached_strip->num_panels());
-  EXPECT_EQ(PanelStrip::DETACHED, panel->panel_strip()->type());
+  ASSERT_EQ(0, docked_collection->num_panels());
+  ASSERT_EQ(1, detached_collection->num_panels());
+  EXPECT_EQ(PanelCollection::DETACHED, panel->collection()->type());
   panel_new_bounds.Offset(drag_delta_to_detach_again);
   EXPECT_EQ(panel_new_bounds, panel->GetBounds());
 
   // Cancel the drag.
   // Expect that the panel stays as docked.
   panel_testing->CancelDragTitlebar();
-  ASSERT_EQ(1, docked_strip->num_panels());
-  ASSERT_EQ(0, detached_strip->num_panels());
-  EXPECT_EQ(PanelStrip::DOCKED, panel->panel_strip()->type());
+  ASSERT_EQ(1, docked_collection->num_panels());
+  ASSERT_EQ(0, detached_collection->num_panels());
+  EXPECT_EQ(PanelCollection::DOCKED, panel->collection()->type());
   EXPECT_EQ(panel_old_bounds, panel->GetBounds());
 
   panel_manager->CloseAll();
@@ -1128,8 +1136,9 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DetachAttachAndCancel) {
 
 IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DetachWithSqueeze) {
   PanelManager* panel_manager = PanelManager::GetInstance();
-  DockedPanelStrip* docked_strip = panel_manager->docked_strip();
-  DetachedPanelStrip* detached_strip = panel_manager->detached_strip();
+  DockedPanelCollection* docked_collection = panel_manager->docked_collection();
+  DetachedPanelCollection* detached_collection =
+      panel_manager->detached_collection();
 
   gfx::Vector2d drag_delta_to_detach = GetDragDeltaToDetach();
 
@@ -1140,8 +1149,8 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DetachWithSqueeze) {
   Panel* panel3 = CreateDockedPanel("3", gfx::Rect(0, 0, 200, 100));
   Panel* panel4 = CreateDockedPanel("4", gfx::Rect(0, 0, 200, 100));
   Panel* panel5 = CreateDockedPanel("5", gfx::Rect(0, 0, 200, 100));
-  ASSERT_EQ(0, detached_strip->num_panels());
-  ASSERT_EQ(5, docked_strip->num_panels());
+  ASSERT_EQ(0, detached_collection->num_panels());
+  ASSERT_EQ(5, docked_collection->num_panels());
 
   // Drag to detach the middle docked panel.
   // Expect to have:
@@ -1149,13 +1158,13 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DetachWithSqueeze) {
   //   docked:    P1  P3  P4 P5
   gfx::Point panel2_docked_position = panel2->GetBounds().origin();
   DragPanelByDelta(panel2, drag_delta_to_detach);
-  ASSERT_EQ(1, detached_strip->num_panels());
-  ASSERT_EQ(4, docked_strip->num_panels());
-  EXPECT_EQ(PanelStrip::DOCKED, panel1->panel_strip()->type());
-  EXPECT_EQ(PanelStrip::DETACHED, panel2->panel_strip()->type());
-  EXPECT_EQ(PanelStrip::DOCKED, panel3->panel_strip()->type());
-  EXPECT_EQ(PanelStrip::DOCKED, panel4->panel_strip()->type());
-  EXPECT_EQ(PanelStrip::DOCKED, panel5->panel_strip()->type());
+  ASSERT_EQ(1, detached_collection->num_panels());
+  ASSERT_EQ(4, docked_collection->num_panels());
+  EXPECT_EQ(PanelCollection::DOCKED, panel1->collection()->type());
+  EXPECT_EQ(PanelCollection::DETACHED, panel2->collection()->type());
+  EXPECT_EQ(PanelCollection::DOCKED, panel3->collection()->type());
+  EXPECT_EQ(PanelCollection::DOCKED, panel4->collection()->type());
+  EXPECT_EQ(PanelCollection::DOCKED, panel5->collection()->type());
   gfx::Point panel2_new_position =
       panel2_docked_position + drag_delta_to_detach;
   EXPECT_EQ(panel2_new_position, panel2->GetBounds().origin());
@@ -1166,13 +1175,13 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DetachWithSqueeze) {
   //   docked:    P1  P3  P5
   gfx::Point panel4_docked_position = panel4->GetBounds().origin();
   DragPanelByDelta(panel4, drag_delta_to_detach);
-  ASSERT_EQ(2, detached_strip->num_panels());
-  ASSERT_EQ(3, docked_strip->num_panels());
-  EXPECT_EQ(PanelStrip::DOCKED, panel1->panel_strip()->type());
-  EXPECT_EQ(PanelStrip::DETACHED, panel2->panel_strip()->type());
-  EXPECT_EQ(PanelStrip::DOCKED, panel3->panel_strip()->type());
-  EXPECT_EQ(PanelStrip::DETACHED, panel4->panel_strip()->type());
-  EXPECT_EQ(PanelStrip::DOCKED, panel5->panel_strip()->type());
+  ASSERT_EQ(2, detached_collection->num_panels());
+  ASSERT_EQ(3, docked_collection->num_panels());
+  EXPECT_EQ(PanelCollection::DOCKED, panel1->collection()->type());
+  EXPECT_EQ(PanelCollection::DETACHED, panel2->collection()->type());
+  EXPECT_EQ(PanelCollection::DOCKED, panel3->collection()->type());
+  EXPECT_EQ(PanelCollection::DETACHED, panel4->collection()->type());
+  EXPECT_EQ(PanelCollection::DOCKED, panel5->collection()->type());
   EXPECT_EQ(panel2_new_position, panel2->GetBounds().origin());
   gfx::Point panel4_new_position =
       panel4_docked_position + drag_delta_to_detach;
@@ -1186,13 +1195,13 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DetachWithSqueeze) {
   gfx::Point docked_position2 = panel3->GetBounds().origin();
 
   DragPanelByDelta(panel1, drag_delta_to_detach);
-  ASSERT_EQ(3, detached_strip->num_panels());
-  ASSERT_EQ(2, docked_strip->num_panels());
-  EXPECT_EQ(PanelStrip::DETACHED, panel1->panel_strip()->type());
-  EXPECT_EQ(PanelStrip::DETACHED, panel2->panel_strip()->type());
-  EXPECT_EQ(PanelStrip::DOCKED, panel3->panel_strip()->type());
-  EXPECT_EQ(PanelStrip::DETACHED, panel4->panel_strip()->type());
-  EXPECT_EQ(PanelStrip::DOCKED, panel5->panel_strip()->type());
+  ASSERT_EQ(3, detached_collection->num_panels());
+  ASSERT_EQ(2, docked_collection->num_panels());
+  EXPECT_EQ(PanelCollection::DETACHED, panel1->collection()->type());
+  EXPECT_EQ(PanelCollection::DETACHED, panel2->collection()->type());
+  EXPECT_EQ(PanelCollection::DOCKED, panel3->collection()->type());
+  EXPECT_EQ(PanelCollection::DETACHED, panel4->collection()->type());
+  EXPECT_EQ(PanelCollection::DOCKED, panel5->collection()->type());
   gfx::Point panel1_new_position = docked_position1 + drag_delta_to_detach;
   EXPECT_EQ(panel1_new_position, panel1->GetBounds().origin());
   EXPECT_EQ(panel2_new_position, panel2->GetBounds().origin());
@@ -1215,8 +1224,9 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DetachWithSqueeze) {
 #endif
 IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, MAYBE_AttachWithSqueeze) {
   PanelManager* panel_manager = PanelManager::GetInstance();
-  DockedPanelStrip* docked_strip = panel_manager->docked_strip();
-  DetachedPanelStrip* detached_strip = panel_manager->detached_strip();
+  DockedPanelCollection* docked_collection = panel_manager->docked_collection();
+  DetachedPanelCollection* detached_collection =
+      panel_manager->detached_collection();
 
   // Create some detached, docked panels.
   //   detached:  P1  P2  P3
@@ -1228,11 +1238,11 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, MAYBE_AttachWithSqueeze) {
   Panel* panel5 = CreateDockedPanel("5", gfx::Rect(0, 0, 200, 100));
   Panel* panel6 = CreateDockedPanel("6", gfx::Rect(0, 0, 200, 100));
   Panel* panel7 = CreateDockedPanel("7", gfx::Rect(0, 0, 200, 100));
-  ASSERT_EQ(3, detached_strip->num_panels());
-  ASSERT_EQ(4, docked_strip->num_panels());
+  ASSERT_EQ(3, detached_collection->num_panels());
+  ASSERT_EQ(4, docked_collection->num_panels());
 
   // Wait for active states to settle.
-  PanelStripSqueezeObserver panel7_settled(docked_strip, panel7);
+  PanelCollectionSqueezeObserver panel7_settled(docked_collection, panel7);
   panel7_settled.Wait();
 
   gfx::Point detached_position1 = panel1->GetBounds().origin();
@@ -1250,15 +1260,15 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, MAYBE_AttachWithSqueeze) {
   gfx::Point drag_to_location(panel5->GetBounds().x() + 10,
                               panel5->GetBounds().y());
   DragPanelToMouseLocation(panel3, drag_to_location);
-  ASSERT_EQ(2, detached_strip->num_panels());
-  ASSERT_EQ(5, docked_strip->num_panels());
-  EXPECT_EQ(PanelStrip::DETACHED, panel1->panel_strip()->type());
-  EXPECT_EQ(PanelStrip::DETACHED, panel2->panel_strip()->type());
-  EXPECT_EQ(PanelStrip::DOCKED, panel3->panel_strip()->type());
-  EXPECT_EQ(PanelStrip::DOCKED, panel4->panel_strip()->type());
-  EXPECT_EQ(PanelStrip::DOCKED, panel5->panel_strip()->type());
-  EXPECT_EQ(PanelStrip::DOCKED, panel6->panel_strip()->type());
-  EXPECT_EQ(PanelStrip::DOCKED, panel7->panel_strip()->type());
+  ASSERT_EQ(2, detached_collection->num_panels());
+  ASSERT_EQ(5, docked_collection->num_panels());
+  EXPECT_EQ(PanelCollection::DETACHED, panel1->collection()->type());
+  EXPECT_EQ(PanelCollection::DETACHED, panel2->collection()->type());
+  EXPECT_EQ(PanelCollection::DOCKED, panel3->collection()->type());
+  EXPECT_EQ(PanelCollection::DOCKED, panel4->collection()->type());
+  EXPECT_EQ(PanelCollection::DOCKED, panel5->collection()->type());
+  EXPECT_EQ(PanelCollection::DOCKED, panel6->collection()->type());
+  EXPECT_EQ(PanelCollection::DOCKED, panel7->collection()->type());
   EXPECT_EQ(detached_position1, panel1->GetBounds().origin());
   EXPECT_EQ(detached_position2, panel2->GetBounds().origin());
 
@@ -1296,15 +1306,15 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, MAYBE_AttachWithSqueeze) {
   gfx::Point drag_to_location2(panel4->GetBounds().right() + 10,
                                panel4->GetBounds().y());
   DragPanelToMouseLocation(panel2, drag_to_location2);
-  ASSERT_EQ(1, detached_strip->num_panels());
-  ASSERT_EQ(6, docked_strip->num_panels());
-  EXPECT_EQ(PanelStrip::DETACHED, panel1->panel_strip()->type());
-  EXPECT_EQ(PanelStrip::DOCKED, panel2->panel_strip()->type());
-  EXPECT_EQ(PanelStrip::DOCKED, panel3->panel_strip()->type());
-  EXPECT_EQ(PanelStrip::DOCKED, panel4->panel_strip()->type());
-  EXPECT_EQ(PanelStrip::DOCKED, panel5->panel_strip()->type());
-  EXPECT_EQ(PanelStrip::DOCKED, panel6->panel_strip()->type());
-  EXPECT_EQ(PanelStrip::DOCKED, panel7->panel_strip()->type());
+  ASSERT_EQ(1, detached_collection->num_panels());
+  ASSERT_EQ(6, docked_collection->num_panels());
+  EXPECT_EQ(PanelCollection::DETACHED, panel1->collection()->type());
+  EXPECT_EQ(PanelCollection::DOCKED, panel2->collection()->type());
+  EXPECT_EQ(PanelCollection::DOCKED, panel3->collection()->type());
+  EXPECT_EQ(PanelCollection::DOCKED, panel4->collection()->type());
+  EXPECT_EQ(PanelCollection::DOCKED, panel5->collection()->type());
+  EXPECT_EQ(PanelCollection::DOCKED, panel6->collection()->type());
+  EXPECT_EQ(PanelCollection::DOCKED, panel7->collection()->type());
   EXPECT_EQ(detached_position1, panel1->GetBounds().origin());
 
   // Drag to attach a detached panel to most-left.
@@ -1313,15 +1323,15 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, MAYBE_AttachWithSqueeze) {
   gfx::Point drag_to_location3(panel3->GetBounds().x() - 10,
                                panel3->GetBounds().y());
   DragPanelToMouseLocation(panel1, drag_to_location3);
-  ASSERT_EQ(0, detached_strip->num_panels());
-  ASSERT_EQ(7, docked_strip->num_panels());
-  EXPECT_EQ(PanelStrip::DOCKED, panel1->panel_strip()->type());
-  EXPECT_EQ(PanelStrip::DOCKED, panel2->panel_strip()->type());
-  EXPECT_EQ(PanelStrip::DOCKED, panel3->panel_strip()->type());
-  EXPECT_EQ(PanelStrip::DOCKED, panel4->panel_strip()->type());
-  EXPECT_EQ(PanelStrip::DOCKED, panel5->panel_strip()->type());
-  EXPECT_EQ(PanelStrip::DOCKED, panel6->panel_strip()->type());
-  EXPECT_EQ(PanelStrip::DOCKED, panel7->panel_strip()->type());
+  ASSERT_EQ(0, detached_collection->num_panels());
+  ASSERT_EQ(7, docked_collection->num_panels());
+  EXPECT_EQ(PanelCollection::DOCKED, panel1->collection()->type());
+  EXPECT_EQ(PanelCollection::DOCKED, panel2->collection()->type());
+  EXPECT_EQ(PanelCollection::DOCKED, panel3->collection()->type());
+  EXPECT_EQ(PanelCollection::DOCKED, panel4->collection()->type());
+  EXPECT_EQ(PanelCollection::DOCKED, panel5->collection()->type());
+  EXPECT_EQ(PanelCollection::DOCKED, panel6->collection()->type());
+  EXPECT_EQ(PanelCollection::DOCKED, panel7->collection()->type());
 
   panel_manager->CloseAll();
 }
@@ -1339,7 +1349,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DragDetachedPanelToTop) {
   // the work area.
   gfx::Point drag_to_location(250, 0);
   DragPanelToMouseLocation(panel, drag_to_location);
-  EXPECT_EQ(PanelStrip::DETACHED, panel->panel_strip()->type());
+  EXPECT_EQ(PanelCollection::DETACHED, panel->collection()->type());
   EXPECT_EQ(drag_to_location.x(), panel->GetBounds().origin().x());
   EXPECT_EQ(work_area.y(), panel->GetBounds().origin().y());
 
@@ -1347,7 +1357,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DragDetachedPanelToTop) {
   // constraint.
   drag_to_location = gfx::Point(280, 150);
   DragPanelToMouseLocation(panel, drag_to_location);
-  EXPECT_EQ(PanelStrip::DETACHED, panel->panel_strip()->type());
+  EXPECT_EQ(PanelCollection::DETACHED, panel->collection()->type());
   EXPECT_EQ(drag_to_location, panel->GetBounds().origin());
 
   panel_manager->CloseAll();

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/panels/docked_panel_strip.h"
+#include "chrome/browser/ui/panels/docked_panel_collection.h"
 
 #include <math.h>
 
@@ -43,8 +43,8 @@ const int kNumPanelsToAnimateSimultaneously = 3;
 
 }  // namespace
 
-DockedPanelStrip::DockedPanelStrip(PanelManager* panel_manager)
-    : PanelStrip(PanelStrip::DOCKED),
+DockedPanelCollection::DockedPanelCollection(PanelManager* panel_manager)
+    : PanelCollection(PanelCollection::DOCKED),
       panel_manager_(panel_manager),
       minimized_panel_count_(0),
       are_titlebars_up_(false),
@@ -56,17 +56,17 @@ DockedPanelStrip::DockedPanelStrip(PanelManager* panel_manager)
   panel_manager_->display_settings_provider()->AddDesktopBarObserver(this);
 }
 
-DockedPanelStrip::~DockedPanelStrip() {
+DockedPanelCollection::~DockedPanelCollection() {
   DCHECK(panels_.empty());
   DCHECK_EQ(0, minimized_panel_count_);
   panel_manager_->display_settings_provider()->RemoveDesktopBarObserver(this);
 }
 
-gfx::Rect DockedPanelStrip::GetDisplayArea() const  {
+gfx::Rect DockedPanelCollection::GetDisplayArea() const  {
   return display_area_;
 }
 
-void DockedPanelStrip::SetDisplayArea(const gfx::Rect& display_area) {
+void DockedPanelCollection::SetDisplayArea(const gfx::Rect& display_area) {
   if (display_area_ == display_area)
     return;
 
@@ -84,14 +84,14 @@ void DockedPanelStrip::SetDisplayArea(const gfx::Rect& display_area) {
   RefreshLayout();
 }
 
-void DockedPanelStrip::AddPanel(Panel* panel,
+void DockedPanelCollection::AddPanel(Panel* panel,
                                 PositioningMask positioning_mask) {
   // This method does not handle minimized panels.
   DCHECK_EQ(Panel::EXPANDED, panel->expansion_state());
 
   DCHECK(panel->initialized());
-  DCHECK_NE(this, panel->panel_strip());
-  panel->set_panel_strip(this);
+  DCHECK_NE(this, panel->collection());
+  panel->set_collection(this);
 
   bool default_position = (positioning_mask & KNOWN_POSITION) == 0;
   bool update_bounds = (positioning_mask & DO_NOT_UPDATE_BOUNDS) == 0;
@@ -119,7 +119,7 @@ void DockedPanelStrip::AddPanel(Panel* panel,
   }
 }
 
-gfx::Point DockedPanelStrip::GetDefaultPositionForPanel(
+gfx::Point DockedPanelCollection::GetDefaultPositionForPanel(
     const gfx::Size& full_size) const {
   int x = 0;
   if (!panels_.empty() &&
@@ -142,18 +142,18 @@ gfx::Point DockedPanelStrip::GetDefaultPositionForPanel(
   return gfx::Point(x, display_area_.bottom() - full_size.height());
 }
 
-int DockedPanelStrip::StartingRightPosition() const {
+int DockedPanelCollection::StartingRightPosition() const {
   return display_area_.right();
 }
 
-int DockedPanelStrip::GetRightMostAvailablePosition() const {
+int DockedPanelCollection::GetRightMostAvailablePosition() const {
   return panels_.empty() ? StartingRightPosition() :
       (panels_.back()->GetBounds().x() - kPanelsHorizontalSpacing);
 }
 
-void DockedPanelStrip::RemovePanel(Panel* panel) {
-  DCHECK_EQ(this, panel->panel_strip());
-  panel->set_panel_strip(NULL);
+void DockedPanelCollection::RemovePanel(Panel* panel) {
+  DCHECK_EQ(this, panel->collection());
+  panel->set_collection(NULL);
 
   // Removing an element from the list will invalidate the iterator that refers
   // to it. We need to update the iterator in that case.
@@ -189,7 +189,7 @@ void DockedPanelStrip::RemovePanel(Panel* panel) {
   RefreshLayout();
 }
 
-void DockedPanelStrip::SavePanelPlacement(Panel* panel) {
+void DockedPanelCollection::SavePanelPlacement(Panel* panel) {
   DCHECK(!saved_panel_placement_.panel);
 
   saved_panel_placement_.panel = panel;
@@ -202,7 +202,7 @@ void DockedPanelStrip::SavePanelPlacement(Panel* panel) {
   saved_panel_placement_.left_panel = (iter == panels_.end()) ? NULL : *iter;
 }
 
-void DockedPanelStrip::RestorePanelToSavedPlacement() {
+void DockedPanelCollection::RestorePanelToSavedPlacement() {
   DCHECK(saved_panel_placement_.panel);
 
   Panel* panel = saved_panel_placement_.panel;
@@ -235,20 +235,20 @@ void DockedPanelStrip::RestorePanelToSavedPlacement() {
   DiscardSavedPanelPlacement();
 }
 
-void DockedPanelStrip::DiscardSavedPanelPlacement() {
+void DockedPanelCollection::DiscardSavedPanelPlacement() {
   DCHECK(saved_panel_placement_.panel);
   saved_panel_placement_.panel = NULL;
   saved_panel_placement_.left_panel = NULL;
 }
 
-void DockedPanelStrip::StartDraggingPanelWithinStrip(Panel* panel) {
+void DockedPanelCollection::StartDraggingPanelWithinCollection(Panel* panel) {
   dragging_panel_current_iterator_ =
       find(panels_.begin(), panels_.end(), panel);
   DCHECK(dragging_panel_current_iterator_ != panels_.end());
 }
 
-void DockedPanelStrip::DragPanelWithinStrip(Panel* panel,
-                                            const gfx::Point& target_position) {
+void DockedPanelCollection::DragPanelWithinCollection(
+    Panel* panel, const gfx::Point& target_position) {
   // Moves this panel to the dragging position.
   // Note that we still allow the panel to be moved vertically until it gets
   // aligned to the bottom area.
@@ -276,7 +276,7 @@ void DockedPanelStrip::DragPanelWithinStrip(Panel* panel,
   }
 }
 
-void DockedPanelStrip::DragLeft(Panel* dragging_panel) {
+void DockedPanelCollection::DragLeft(Panel* dragging_panel) {
   // This is the left corner of the dragging panel. We use it to check against
   // all the panels on its left.
   int dragging_panel_left_boundary = dragging_panel->GetBounds().x();
@@ -302,7 +302,7 @@ void DockedPanelStrip::DragLeft(Panel* dragging_panel) {
   }
 }
 
-void DockedPanelStrip::DragRight(Panel* dragging_panel) {
+void DockedPanelCollection::DragRight(Panel* dragging_panel) {
   // This is the right corner of the dragging panel. We use it to check against
   // all the panels on its right.
   int dragging_panel_right_boundary = dragging_panel->GetBounds().x() +
@@ -329,33 +329,34 @@ void DockedPanelStrip::DragRight(Panel* dragging_panel) {
   }
 }
 
-void DockedPanelStrip::EndDraggingPanelWithinStrip(Panel* panel, bool aborted) {
+void DockedPanelCollection::EndDraggingPanelWithinCollection(
+    Panel* panel, bool aborted) {
   dragging_panel_current_iterator_ = panels_.end();
 
-  // If the drag is aborted, the panel will be removed from this strip
+  // If the drag is aborted, the panel will be removed from this collection
   // or returned to its original position, causing RefreshLayout()
   if (!aborted)
     RefreshLayout();
 }
 
-void DockedPanelStrip::ClearDraggingStateWhenPanelClosed() {
+void DockedPanelCollection::ClearDraggingStateWhenPanelClosed() {
   dragging_panel_current_iterator_ = panels_.end();
 }
 
-panel::Resizability DockedPanelStrip::GetPanelResizability(
+panel::Resizability DockedPanelCollection::GetPanelResizability(
     const Panel* panel) const {
   return (panel->expansion_state() == Panel::EXPANDED) ?
       panel::RESIZABLE_ALL_SIDES_EXCEPT_BOTTOM : panel::NOT_RESIZABLE;
 }
 
-void DockedPanelStrip::OnPanelResizedByMouse(Panel* panel,
+void DockedPanelCollection::OnPanelResizedByMouse(Panel* panel,
                                              const gfx::Rect& new_bounds) {
-  DCHECK_EQ(this, panel->panel_strip());
+  DCHECK_EQ(this, panel->collection());
   panel->set_full_size(new_bounds.size());
   panel->SetPanelBoundsInstantly(new_bounds);
 }
 
-void DockedPanelStrip::OnPanelExpansionStateChanged(Panel* panel) {
+void DockedPanelCollection::OnPanelExpansionStateChanged(Panel* panel) {
   gfx::Rect panel_bounds = panel->GetBounds();
   AdjustPanelBoundsPerExpansionState(panel, &panel_bounds);
   panel->SetPanelBounds(panel_bounds);
@@ -373,7 +374,7 @@ void DockedPanelStrip::OnPanelExpansionStateChanged(Panel* panel) {
   }
 }
 
-void DockedPanelStrip::AdjustPanelBoundsPerExpansionState(Panel* panel,
+void DockedPanelCollection::AdjustPanelBoundsPerExpansionState(Panel* panel,
                                                           gfx::Rect* bounds) {
   Panel::ExpansionState expansion_state = panel->expansion_state();
   switch (expansion_state) {
@@ -398,8 +399,8 @@ void DockedPanelStrip::AdjustPanelBoundsPerExpansionState(Panel* panel,
   bounds->set_y(bottom - bounds->height());
 }
 
-void DockedPanelStrip::OnPanelAttentionStateChanged(Panel* panel) {
-  DCHECK_EQ(this, panel->panel_strip());
+void DockedPanelCollection::OnPanelAttentionStateChanged(Panel* panel) {
+  DCHECK_EQ(this, panel->collection());
   Panel::ExpansionState state = panel->expansion_state();
   if (panel->IsDrawingAttention()) {
     // Bring up the titlebar to get user's attention.
@@ -431,9 +432,9 @@ void DockedPanelStrip::OnPanelAttentionStateChanged(Panel* panel) {
   panel->SetExpansionState(Panel::MINIMIZED);
 }
 
-void DockedPanelStrip::OnPanelTitlebarClicked(Panel* panel,
+void DockedPanelCollection::OnPanelTitlebarClicked(Panel* panel,
                                               panel::ClickModifier modifier) {
-  DCHECK_EQ(this, panel->panel_strip());
+  DCHECK_EQ(this, panel->collection());
   if (!IsPanelMinimized(panel))
     return;
 
@@ -443,8 +444,8 @@ void DockedPanelStrip::OnPanelTitlebarClicked(Panel* panel,
     RestorePanel(panel);
 }
 
-void DockedPanelStrip::ActivatePanel(Panel* panel) {
-  DCHECK_EQ(this, panel->panel_strip());
+void DockedPanelCollection::ActivatePanel(Panel* panel) {
+  DCHECK_EQ(this, panel->collection());
 
   // Make sure the panel is expanded when activated so the user input
   // does not go into a collapsed window.
@@ -454,8 +455,8 @@ void DockedPanelStrip::ActivatePanel(Panel* panel) {
   // the activation notification (and with a slight delay to let things settle).
 }
 
-void DockedPanelStrip::MinimizePanel(Panel* panel) {
-  DCHECK_EQ(this, panel->panel_strip());
+void DockedPanelCollection::MinimizePanel(Panel* panel) {
+  DCHECK_EQ(this, panel->collection());
 
   if (panel->expansion_state() != Panel::EXPANDED)
     return;
@@ -464,12 +465,12 @@ void DockedPanelStrip::MinimizePanel(Panel* panel) {
       Panel::TITLE_ONLY : Panel::MINIMIZED);
 }
 
-void DockedPanelStrip::RestorePanel(Panel* panel) {
-  DCHECK_EQ(this, panel->panel_strip());
+void DockedPanelCollection::RestorePanel(Panel* panel) {
+  DCHECK_EQ(this, panel->collection());
   panel->SetExpansionState(Panel::EXPANDED);
 }
 
-void DockedPanelStrip::MinimizeAll() {
+void DockedPanelCollection::MinimizeAll() {
   // Set minimizing_all_ to prevent deactivation of each panel when it
   // is minimized. See comments in OnPanelExpansionStateChanged.
   base::AutoReset<bool> pin(&minimizing_all_, true);
@@ -492,24 +493,24 @@ void DockedPanelStrip::MinimizeAll() {
   }
 }
 
-void DockedPanelStrip::RestoreAll() {
+void DockedPanelCollection::RestoreAll() {
   for (Panels::const_iterator iter = panels_.begin();
        iter != panels_.end(); ++iter) {
     RestorePanel(*iter);
   }
 }
 
-bool DockedPanelStrip::CanMinimizePanel(const Panel* panel) const {
-  DCHECK_EQ(this, panel->panel_strip());
+bool DockedPanelCollection::CanMinimizePanel(const Panel* panel) const {
+  DCHECK_EQ(this, panel->collection());
   // Docked panels can be minimized.
   return true;
 }
 
-bool DockedPanelStrip::IsPanelMinimized(const Panel* panel) const {
+bool DockedPanelCollection::IsPanelMinimized(const Panel* panel) const {
   return panel->expansion_state() != Panel::EXPANDED;
 }
 
-void DockedPanelStrip::UpdateMinimizedPanelCount() {
+void DockedPanelCollection::UpdateMinimizedPanelCount() {
   int prev_minimized_panel_count = minimized_panel_count_;
   minimized_panel_count_ = 0;
   for (Panels::const_iterator panel_iter = panels_.begin();
@@ -526,10 +527,10 @@ void DockedPanelStrip::UpdateMinimizedPanelCount() {
   DCHECK_LE(minimized_panel_count_, num_panels());
 }
 
-void DockedPanelStrip::ResizePanelWindow(
+void DockedPanelCollection::ResizePanelWindow(
     Panel* panel,
     const gfx::Size& preferred_window_size) {
-  DCHECK_EQ(this, panel->panel_strip());
+  DCHECK_EQ(this, panel->collection());
   // Make sure the new size does not violate panel's size restrictions.
   gfx::Size new_size(preferred_window_size.width(),
                      preferred_window_size.height());
@@ -543,7 +544,8 @@ void DockedPanelStrip::ResizePanelWindow(
   RefreshLayout();
 }
 
-bool DockedPanelStrip::ShouldBringUpTitlebars(int mouse_x, int mouse_y) const {
+bool DockedPanelCollection::ShouldBringUpTitlebars(int mouse_x,
+                                                   int mouse_y) const {
   // We should always bring up the titlebar if the mouse is over the
   // visible auto-hiding bottom bar.
   DisplaySettingsProvider* provider =
@@ -585,7 +587,7 @@ bool DockedPanelStrip::ShouldBringUpTitlebars(int mouse_x, int mouse_y) const {
   return false;
 }
 
-void DockedPanelStrip::BringUpOrDownTitlebars(bool bring_up) {
+void DockedPanelCollection::BringUpOrDownTitlebars(bool bring_up) {
   if (are_titlebars_up_ == bring_up)
     return;
 
@@ -637,13 +639,13 @@ void DockedPanelStrip::BringUpOrDownTitlebars(bool bring_up) {
   titlebar_action_factory_.InvalidateWeakPtrs();
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&DockedPanelStrip::DelayedBringUpOrDownTitlebarsCheck,
+      base::Bind(&DockedPanelCollection::DelayedBringUpOrDownTitlebarsCheck,
                  titlebar_action_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(
           PanelManager::AdjustTimeInterval(task_delay_ms)));
 }
 
-void DockedPanelStrip::DelayedBringUpOrDownTitlebarsCheck() {
+void DockedPanelCollection::DelayedBringUpOrDownTitlebarsCheck() {
   // Task was already processed or cancelled - bail out.
   if (delayed_titlebar_action_ == NO_ACTION)
     return;
@@ -661,7 +663,7 @@ void DockedPanelStrip::DelayedBringUpOrDownTitlebarsCheck() {
   DoBringUpOrDownTitlebars(need_to_bring_up_titlebars);
 }
 
-void DockedPanelStrip::DoBringUpOrDownTitlebars(bool bring_up) {
+void DockedPanelCollection::DoBringUpOrDownTitlebars(bool bring_up) {
   for (Panels::const_iterator iter = panels_.begin();
        iter != panels_.end(); ++iter) {
     Panel* panel = *iter;
@@ -680,7 +682,7 @@ void DockedPanelStrip::DoBringUpOrDownTitlebars(bool bring_up) {
   }
 }
 
-int DockedPanelStrip::GetBottomPositionForExpansionState(
+int DockedPanelCollection::GetBottomPositionForExpansionState(
     Panel::ExpansionState expansion_state) const {
   int bottom = display_area_.bottom();
   // If there is an auto-hiding desktop bar aligned to the bottom edge, we need
@@ -697,13 +699,13 @@ int DockedPanelStrip::GetBottomPositionForExpansionState(
   return bottom;
 }
 
-void DockedPanelStrip::OnMouseMove(const gfx::Point& mouse_position) {
+void DockedPanelCollection::OnMouseMove(const gfx::Point& mouse_position) {
   bool bring_up_titlebars = ShouldBringUpTitlebars(mouse_position.x(),
                                                    mouse_position.y());
   BringUpOrDownTitlebars(bring_up_titlebars);
 }
 
-void DockedPanelStrip::OnAutoHidingDesktopBarVisibilityChanged(
+void DockedPanelCollection::OnAutoHidingDesktopBarVisibilityChanged(
     DisplaySettingsProvider::DesktopBarAlignment alignment,
     DisplaySettingsProvider::DesktopBarVisibility visibility) {
   if (delayed_titlebar_action_ == NO_ACTION)
@@ -720,14 +722,14 @@ void DockedPanelStrip::OnAutoHidingDesktopBarVisibilityChanged(
   delayed_titlebar_action_ = NO_ACTION;
 }
 
-void DockedPanelStrip::OnFullScreenModeChanged(bool is_full_screen) {
+void DockedPanelCollection::OnFullScreenModeChanged(bool is_full_screen) {
   for (Panels::const_iterator iter = panels_.begin();
        iter != panels_.end(); ++iter) {
     (*iter)->FullScreenModeChanged(is_full_screen);
   }
 }
 
-void DockedPanelStrip::RefreshLayout() {
+void DockedPanelCollection::RefreshLayout() {
   int total_active_width = 0;
   int total_inactive_width = 0;
 
@@ -764,9 +766,9 @@ void DockedPanelStrip::RefreshLayout() {
     AdjustPanelBoundsPerExpansionState(panel, &new_bounds);
 
     new_bounds.set_width(
-      WidthToDisplayPanelInStrip(panel->IsActive(),
-                                 overflow_squeeze_factor,
-                                 panel->full_size().width()));
+      WidthToDisplayPanelInCollection(panel->IsActive(),
+                                      overflow_squeeze_factor,
+                                      panel->full_size().width()));
     int x = rightmost_position - new_bounds.width();
     new_bounds.set_x(x);
 
@@ -817,20 +819,19 @@ void DockedPanelStrip::RefreshLayout() {
   }
 
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PANEL_STRIP_UPDATED,
-      content::Source<PanelStrip>(this),
+      chrome::NOTIFICATION_PANEL_COLLECTION_UPDATED,
+      content::Source<PanelCollection>(this),
       content::NotificationService::NoDetails());
 }
 
-int DockedPanelStrip::WidthToDisplayPanelInStrip(bool is_for_active_panel,
-                                                 double squeeze_factor,
-                                                 int full_width) const {
+int DockedPanelCollection::WidthToDisplayPanelInCollection(
+    bool is_for_active_panel, double squeeze_factor, int full_width) const {
   return is_for_active_panel ? full_width :
       std::max(panel::kPanelMinWidth,
                static_cast<int>(floor(full_width * squeeze_factor)));
 }
 
-void DockedPanelStrip::CloseAll() {
+void DockedPanelCollection::CloseAll() {
   // This should only be called at the end of tests to clean up.
 
   // Make a copy of the iterator as closing panels can modify the vector.
@@ -842,29 +843,29 @@ void DockedPanelStrip::CloseAll() {
     (*iter)->Close();
 }
 
-void DockedPanelStrip::UpdatePanelOnStripChange(Panel* panel) {
+void DockedPanelCollection::UpdatePanelOnCollectionChange(Panel* panel) {
   panel->set_attention_mode(Panel::USE_PANEL_ATTENTION);
   panel->SetAlwaysOnTop(true);
   panel->EnableResizeByMouse(true);
   panel->UpdateMinimizeRestoreButtonVisibility();
 }
 
-void DockedPanelStrip::ScheduleLayoutRefresh() {
+void DockedPanelCollection::ScheduleLayoutRefresh() {
   refresh_action_factory_.InvalidateWeakPtrs();
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      base::Bind(&DockedPanelStrip::RefreshLayout,
+      base::Bind(&DockedPanelCollection::RefreshLayout,
                  refresh_action_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(PanelManager::AdjustTimeInterval(
           kRefreshLayoutAfterActivePanelChangeDelayMs)));
 }
 
-void DockedPanelStrip::OnPanelActiveStateChanged(Panel* panel) {
+void DockedPanelCollection::OnPanelActiveStateChanged(Panel* panel) {
   // Refresh layout, but wait till active states settle.
   // This lets us avoid refreshing too many times when one panel loses
   // focus and another gains it.
   ScheduleLayoutRefresh();
 }
 
-bool DockedPanelStrip::HasPanel(Panel* panel) const {
+bool DockedPanelCollection::HasPanel(Panel* panel) const {
   return find(panels_.begin(), panels_.end(), panel) != panels_.end();
 }

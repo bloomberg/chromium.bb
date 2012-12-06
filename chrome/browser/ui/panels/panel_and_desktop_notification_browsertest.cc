@@ -242,18 +242,18 @@ IN_PROC_BROWSER_TEST_F(PanelAndDesktopNotificationTest, DetachAndAttachPanel) {
 
   // Detach the panel. Expect that the notification balloon moves down to its
   // original position.
-  panel_manager->MovePanelToStrip(
-      panel, PanelStrip::DETACHED, PanelStrip::DEFAULT_POSITION);
+  panel_manager->MovePanelToCollection(
+      panel, PanelCollection::DETACHED, PanelCollection::DEFAULT_POSITION);
   MessageLoopForUI::current()->RunUntilIdle();
-  EXPECT_EQ(PanelStrip::DETACHED, panel->panel_strip()->type());
+  EXPECT_EQ(PanelCollection::DETACHED, panel->collection()->type());
   EXPECT_EQ(original_balloon_bottom, GetBalloonBottomPosition(balloon));
 
   // Reattach the panel. Expect that the notification balloon moves above the
   // panel.
-  panel_manager->MovePanelToStrip(
-      panel, PanelStrip::DOCKED, PanelStrip::DEFAULT_POSITION);
+  panel_manager->MovePanelToCollection(
+      panel, PanelCollection::DOCKED, PanelCollection::DEFAULT_POSITION);
   MessageLoopForUI::current()->RunUntilIdle();
-  EXPECT_EQ(PanelStrip::DOCKED, panel->panel_strip()->type());
+  EXPECT_EQ(PanelCollection::DOCKED, panel->collection()->type());
   EXPECT_EQ(balloon_bottom_after_panel_created,
             GetBalloonBottomPosition(balloon));
 

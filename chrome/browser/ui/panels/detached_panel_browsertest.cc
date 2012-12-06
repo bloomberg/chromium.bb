@@ -4,7 +4,7 @@
 
 #include "base/message_loop.h"
 #include "chrome/browser/ui/panels/base_panel_browser_test.h"
-#include "chrome/browser/ui/panels/detached_panel_strip.h"
+#include "chrome/browser/ui/panels/detached_panel_collection.h"
 #include "chrome/browser/ui/panels/native_panel.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
@@ -21,7 +21,8 @@ class DetachedPanelBrowserTest : public BasePanelBrowserTest {
 IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest,
                        MAYBE_CheckDetachedPanelProperties) {
   PanelManager* panel_manager = PanelManager::GetInstance();
-  DetachedPanelStrip* detached_strip = panel_manager->detached_strip();
+  DetachedPanelCollection* detached_collection =
+      panel_manager->detached_collection();
 
   // Create an initially detached panel (as opposed to other tests which create
   // a docked panel, then detaches it).
@@ -33,7 +34,7 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest,
       CreateNativePanelTesting(panel));
 
   EXPECT_EQ(1, panel_manager->num_panels());
-  EXPECT_TRUE(detached_strip->HasPanel(panel));
+  EXPECT_TRUE(detached_collection->HasPanel(panel));
 
   EXPECT_EQ(bounds, panel->GetBounds());
   EXPECT_FALSE(panel->IsAlwaysOnTop());

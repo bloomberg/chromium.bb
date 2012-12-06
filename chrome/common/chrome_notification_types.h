@@ -1197,10 +1197,10 @@ enum NotificationType {
   // Used only in unit testing.
   NOTIFICATION_PANEL_APP_ICON_LOADED,
 
-  // Sent when panel strip get updated.
-  // The source is the PanelStrip, no details.
+  // Sent when panel collection get updated.
+  // The source is the PanelCollection, no details.
   // Used only in coordination with notification balloons.
-  NOTIFICATION_PANEL_STRIP_UPDATED,
+  NOTIFICATION_PANEL_COLLECTION_UPDATED,
 
   // Sent when panel is closed.
   // The source is the Panel, no details.

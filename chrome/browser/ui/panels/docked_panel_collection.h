@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_PANELS_DOCKED_PANEL_STRIP_H_
-#define CHROME_BROWSER_UI_PANELS_DOCKED_PANEL_STRIP_H_
+#ifndef CHROME_BROWSER_UI_PANELS_DOCKED_PANEL_COLLECTION_H_
+#define CHROME_BROWSER_UI_PANELS_DOCKED_PANEL_COLLECTION_H_
 
 #include <list>
 #include <set>
@@ -11,37 +11,36 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/panels/display_settings_provider.h"
 #include "chrome/browser/ui/panels/panel.h"
-#include "chrome/browser/ui/panels/panel_strip.h"
+#include "chrome/browser/ui/panels/panel_collection.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher_observer.h"
 #include "ui/gfx/rect.h"
 
 class PanelManager;
 
-// This class manages a group of panels displayed in a horizontal strip,
-// positioning the panels and controlling how they are displayed.
-// Panels in the strip appear minimized, showing title-only or expanded.
-// All panels in the strip are contained within the bounds of the strip.
-class DockedPanelStrip : public PanelStrip,
-                         public PanelMouseWatcherObserver,
-                         public DisplaySettingsProvider::DesktopBarObserver {
+// This class manages a group of panels that could be docked to the bottom of
+// screen.
+class DockedPanelCollection :
+    public PanelCollection,
+    public PanelMouseWatcherObserver,
+    public DisplaySettingsProvider::DesktopBarObserver {
  public:
   typedef std::list<Panel*> Panels;
 
-  explicit DockedPanelStrip(PanelManager* panel_manager);
-  virtual ~DockedPanelStrip();
+  explicit DockedPanelCollection(PanelManager* panel_manager);
+  virtual ~DockedPanelCollection();
 
-  // PanelStrip OVERRIDES:
+  // PanelCollection OVERRIDES:
   virtual gfx::Rect GetDisplayArea() const OVERRIDE;
   virtual void SetDisplayArea(const gfx::Rect& display_area) OVERRIDE;
 
-  // Rearranges the positions of the panels in the strip
+  // Rearranges the positions of the panels in the collection
   // and reduces their width when there is not enough room.
   // This is called when the display space has been changed, i.e. working
   // area being changed or a panel being closed.
   virtual void RefreshLayout() OVERRIDE;
 
-  // Adds a panel to the strip. The panel may be a newly created panel or one
-  // that is transitioning from another grouping of panels.
+  // Adds a panel to the collection. The panel may be a newly created panel or
+  // one that is transitioning from another grouping of panels.
   virtual void AddPanel(Panel* panel,
                         PositioningMask positioning_mask) OVERRIDE;
   virtual void RemovePanel(Panel* panel) OVERRIDE;
@@ -66,13 +65,14 @@ class DockedPanelStrip : public PanelStrip,
   virtual void SavePanelPlacement(Panel* panel) OVERRIDE;
   virtual void RestorePanelToSavedPlacement() OVERRIDE;
   virtual void DiscardSavedPanelPlacement() OVERRIDE;
-  virtual void StartDraggingPanelWithinStrip(Panel* panel) OVERRIDE;
-  virtual void DragPanelWithinStrip(Panel* panel,
-                                    const gfx::Point& target_position) OVERRIDE;
-  virtual void EndDraggingPanelWithinStrip(Panel* panel,
-                                           bool aborted) OVERRIDE;
+  virtual void StartDraggingPanelWithinCollection(Panel* panel) OVERRIDE;
+  virtual void DragPanelWithinCollection(
+      Panel* panel,
+      const gfx::Point& target_position) OVERRIDE;
+  virtual void EndDraggingPanelWithinCollection(Panel* panel,
+                                                bool aborted) OVERRIDE;
   virtual void ClearDraggingStateWhenPanelClosed() OVERRIDE;
-  virtual void UpdatePanelOnStripChange(Panel* panel) OVERRIDE;
+  virtual void UpdatePanelOnCollectionChange(Panel* panel) OVERRIDE;
   virtual void OnPanelActiveStateChanged(Panel* panel) OVERRIDE;
 
   // Invoked when a panel's expansion state changes.
@@ -96,14 +96,14 @@ class DockedPanelStrip : public PanelStrip,
       Panel::ExpansionState expansion_state) const;
 
   // Returns panel width to be used, taking into account possible "squeezing"
-  // due to lack of space in the strip.
-  int WidthToDisplayPanelInStrip(bool is_for_active_panel,
-                                 double squeeze_factor,
-                                 int full_width) const;
+  // due to lack of space in the collection.
+  int WidthToDisplayPanelInCollection(bool is_for_active_panel,
+                                      double squeeze_factor,
+                                      int full_width) const;
 
   bool HasPanel(Panel* panel) const;
 
-  // num_panels() and panels() only includes panels in the panel strip that
+  // num_panels() and panels() only includes panels in the collection that
   // do NOT have a temporary layout.
   int num_panels() const { return panels_.size(); }
   const Panels& panels() const { return panels_; }
@@ -150,7 +150,7 @@ class DockedPanelStrip : public PanelStrip,
   void UpdateMinimizedPanelCount();
 
   // Makes sure the panel's bounds reflect its expansion state and the
-  // panel is aligned at the bottom of the strip. Does not touch the x
+  // panel is aligned at the bottom of the screen. Does not touch the x
   // coordinate.
   void AdjustPanelBoundsPerExpansionState(Panel* panel,
       gfx::Rect* panel_bounds);
@@ -169,7 +169,7 @@ class DockedPanelStrip : public PanelStrip,
 
   PanelManager* panel_manager_;  // Weak, owns us.
 
-  // All panels in the panel strip must fit within this area.
+  // All panels in the collection must fit within this area.
   gfx::Rect display_area_;
 
   Panels panels_;
@@ -188,17 +188,17 @@ class DockedPanelStrip : public PanelStrip,
   TitlebarAction delayed_titlebar_action_;
 
   // Owned by MessageLoop after posting.
-  base::WeakPtrFactory<DockedPanelStrip> titlebar_action_factory_;
+  base::WeakPtrFactory<DockedPanelCollection> titlebar_action_factory_;
 
   // Owned by MessageLoop after posting.
-  base::WeakPtrFactory<DockedPanelStrip> refresh_action_factory_;
+  base::WeakPtrFactory<DockedPanelCollection> refresh_action_factory_;
 
   // Used to save the placement information for a panel.
   PanelPlacement saved_panel_placement_;
 
   static const int kPanelsHorizontalSpacing = 4;
 
-  DISALLOW_COPY_AND_ASSIGN(DockedPanelStrip);
+  DISALLOW_COPY_AND_ASSIGN(DockedPanelCollection);
 };
 
-#endif  // CHROME_BROWSER_UI_PANELS_DOCKED_PANEL_STRIP_H_
+#endif  // CHROME_BROWSER_UI_PANELS_DOCKED_PANEL_COLLECTION_H_

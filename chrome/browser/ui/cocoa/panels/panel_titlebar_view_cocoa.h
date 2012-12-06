@@ -28,7 +28,7 @@
 
 // This view overlays the titlebar on top. It is used to intercept
 // mouse input to prevent reordering of the other browser windows when clicking
-// on the titlebar (to minimize or reorder) while in a docked strip.
+// on the titlebar (to minimize or reorder) while in a docked collection.
 @interface PanelTitlebarOverlayView : NSView {
  @private
   IBOutlet PanelWindowControllerCocoa* controller_;

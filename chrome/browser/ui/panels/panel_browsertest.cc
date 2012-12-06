@@ -19,7 +19,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/panels/base_panel_browser_test.h"
-#include "chrome/browser/ui/panels/docked_panel_strip.h"
+#include "chrome/browser/ui/panels/docked_panel_collection.h"
 #include "chrome/browser/ui/panels/native_panel.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
@@ -256,7 +256,7 @@ class PanelBrowserTest : public BasePanelBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CheckDockedPanelProperties) {
   PanelManager* panel_manager = PanelManager::GetInstance();
-  DockedPanelStrip* docked_strip = panel_manager->docked_strip();
+  DockedPanelCollection* docked_collection = panel_manager->docked_collection();
 
   // Create 3 docked panels that are in expanded, title-only or minimized states
   // respectively.
@@ -279,9 +279,9 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CheckDockedPanelProperties) {
   MessageLoop::current()->RunUntilIdle();
 
   EXPECT_EQ(3, panel_manager->num_panels());
-  EXPECT_TRUE(docked_strip->HasPanel(panel1));
-  EXPECT_TRUE(docked_strip->HasPanel(panel2));
-  EXPECT_TRUE(docked_strip->HasPanel(panel3));
+  EXPECT_TRUE(docked_collection->HasPanel(panel1));
+  EXPECT_TRUE(docked_collection->HasPanel(panel2));
+  EXPECT_TRUE(docked_collection->HasPanel(panel3));
 
   EXPECT_EQ(Panel::EXPANDED, panel1->expansion_state());
   EXPECT_EQ(Panel::TITLE_ONLY, panel2->expansion_state());
@@ -329,7 +329,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreatePanel) {
   EXPECT_GT(bounds.height(), 0);
 
   EXPECT_EQ(bounds.right(),
-            panel_manager->docked_strip()->StartingRightPosition());
+            panel_manager->docked_collection()->StartingRightPosition());
 
   CloseWindowAndWait(panel);
 
@@ -352,7 +352,7 @@ class WaitForStableInitialSize : public TestPanelNotificationObserver {
  public:
   explicit WaitForStableInitialSize(Panel* panel)
       : TestPanelNotificationObserver(
-          chrome::NOTIFICATION_PANEL_STRIP_UPDATED,
+          chrome::NOTIFICATION_PANEL_COLLECTION_UPDATED,
           content::NotificationService::AllSources()),
         panel_(panel) {}
   virtual ~WaitForStableInitialSize() {}
@@ -368,7 +368,7 @@ class WaitForAutoResizeWider : public TestPanelNotificationObserver {
  public:
   explicit WaitForAutoResizeWider(Panel* panel)
       : TestPanelNotificationObserver(
-          chrome::NOTIFICATION_PANEL_STRIP_UPDATED,
+          chrome::NOTIFICATION_PANEL_COLLECTION_UPDATED,
           content::NotificationService::AllSources()),
         panel_(panel),
         initial_size_(panel->GetBounds().size()) {}
@@ -386,7 +386,7 @@ class WaitForAutoResizeNarrower : public TestPanelNotificationObserver {
  public:
   explicit WaitForAutoResizeNarrower(Panel* panel)
       : TestPanelNotificationObserver(
-          chrome::NOTIFICATION_PANEL_STRIP_UPDATED,
+          chrome::NOTIFICATION_PANEL_COLLECTION_UPDATED,
           content::NotificationService::AllSources()),
         panel_(panel),
         initial_size_(panel->GetBounds().size()) {}
@@ -416,12 +416,12 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, FLAKY_AutoResize) {
   Panel* panel = CreatePanelWithParams(params);
 
   // Ensure panel has auto resized to original web content size.
-  // The resize will update the docked panel strip.
+  // The resize will update the docked panel collection.
   WaitForStableInitialSize initial_resize(panel);
   initial_resize.Wait();
   gfx::Rect initial_bounds = panel->GetBounds();
 
-  // Expand the test page. The resize will update the docked panel strip.
+  // Expand the test page. The resize will update the docked panel collection.
   WaitForAutoResizeWider enlarge(panel);
   EXPECT_TRUE(content::ExecuteJavaScript(
       panel->GetWebContents()->GetRenderViewHost(),
@@ -432,7 +432,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, FLAKY_AutoResize) {
   EXPECT_GT(bounds_on_grow.width(), initial_bounds.width());
   EXPECT_EQ(bounds_on_grow.height(), initial_bounds.height());
 
-  // Shrink the test page. The resize will update the docked panel strip.
+  // Shrink the test page. The resize will update the docked panel collection.
   WaitForAutoResizeNarrower shrink(panel);
   EXPECT_TRUE(content::ExecuteJavaScript(
       panel->GetWebContents()->GetRenderViewHost(),
@@ -458,7 +458,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, FLAKY_AutoResize) {
 
   // Turn back on auto-resize and verify that panel auto resizes.
   content::WindowedNotificationObserver auto_resize_enabled(
-      chrome::NOTIFICATION_PANEL_STRIP_UPDATED,
+      chrome::NOTIFICATION_PANEL_COLLECTION_UPDATED,
       content::NotificationService::AllSources());
   panel->SetAutoResizable(true);
   auto_resize_enabled.Wait();
@@ -832,8 +832,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, RestoreAllWithTitlebarClick) {
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
                        MinimizeRestoreOnAutoHidingDesktopBar) {
   PanelManager* panel_manager = PanelManager::GetInstance();
-  DockedPanelStrip* docked_strip = panel_manager->docked_strip();
-  int expected_bottom_on_expanded = docked_strip->display_area().bottom();
+  DockedPanelCollection* docked_collection = panel_manager->docked_collection();
+  int expected_bottom_on_expanded = docked_collection->display_area().bottom();
   int expected_bottom_on_title_only = expected_bottom_on_expanded;
   int expected_bottom_on_minimized = expected_bottom_on_expanded;
 
@@ -874,8 +874,9 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, ChangeAutoHideTaskBarThickness) {
   PanelManager* manager = PanelManager::GetInstance();
-  DockedPanelStrip* docked_strip = manager->docked_strip();
-  int initial_starting_right_position = docked_strip->StartingRightPosition();
+  DockedPanelCollection* docked_collection = manager->docked_collection();
+  int initial_starting_right_position =
+      docked_collection->StartingRightPosition();
 
   int bottom_bar_thickness = 20;
   int right_bar_thickness = 30;
@@ -887,20 +888,20 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, ChangeAutoHideTaskBarThickness) {
       DisplaySettingsProvider::DESKTOP_BAR_ALIGNED_RIGHT,
       true,
       right_bar_thickness);
-  EXPECT_EQ(
-      initial_starting_right_position - docked_strip->StartingRightPosition(),
-      right_bar_thickness);
+  EXPECT_EQ(initial_starting_right_position -
+                docked_collection->StartingRightPosition(),
+            right_bar_thickness);
 
   Panel* panel = CreatePanel("PanelTest");
   panel->SetExpansionState(Panel::TITLE_ONLY);
   WaitForBoundsAnimationFinished(panel);
 
-  EXPECT_EQ(docked_strip->display_area().bottom() - bottom_bar_thickness,
+  EXPECT_EQ(docked_collection->display_area().bottom() - bottom_bar_thickness,
             panel->GetBounds().bottom());
-  EXPECT_EQ(docked_strip->StartingRightPosition(),
+  EXPECT_EQ(docked_collection->StartingRightPosition(),
             panel->GetBounds().right());
 
-  initial_starting_right_position = docked_strip->StartingRightPosition();
+  initial_starting_right_position = docked_collection->StartingRightPosition();
   int bottom_bar_thickness_delta = 10;
   bottom_bar_thickness += bottom_bar_thickness_delta;
   int right_bar_thickness_delta = 15;
@@ -912,15 +913,15 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, ChangeAutoHideTaskBarThickness) {
       DisplaySettingsProvider::DESKTOP_BAR_ALIGNED_RIGHT,
       right_bar_thickness);
   MessageLoopForUI::current()->RunUntilIdle();
-  EXPECT_EQ(
-      initial_starting_right_position - docked_strip->StartingRightPosition(),
-      right_bar_thickness_delta);
-  EXPECT_EQ(docked_strip->display_area().bottom() - bottom_bar_thickness,
+  EXPECT_EQ(initial_starting_right_position -
+                docked_collection->StartingRightPosition(),
+            right_bar_thickness_delta);
+  EXPECT_EQ(docked_collection->display_area().bottom() - bottom_bar_thickness,
             panel->GetBounds().bottom());
-  EXPECT_EQ(docked_strip->StartingRightPosition(),
+  EXPECT_EQ(docked_collection->StartingRightPosition(),
             panel->GetBounds().right());
 
-  initial_starting_right_position = docked_strip->StartingRightPosition();
+  initial_starting_right_position = docked_collection->StartingRightPosition();
   bottom_bar_thickness_delta = 20;
   bottom_bar_thickness -= bottom_bar_thickness_delta;
   right_bar_thickness_delta = 10;
@@ -932,12 +933,12 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, ChangeAutoHideTaskBarThickness) {
       DisplaySettingsProvider::DESKTOP_BAR_ALIGNED_RIGHT,
       right_bar_thickness);
   MessageLoopForUI::current()->RunUntilIdle();
-  EXPECT_EQ(
-      docked_strip->StartingRightPosition() - initial_starting_right_position,
-      right_bar_thickness_delta);
-  EXPECT_EQ(docked_strip->display_area().bottom() - bottom_bar_thickness,
+  EXPECT_EQ(docked_collection->StartingRightPosition() -
+                initial_starting_right_position,
+            right_bar_thickness_delta);
+  EXPECT_EQ(docked_collection->display_area().bottom() - bottom_bar_thickness,
             panel->GetBounds().bottom());
-  EXPECT_EQ(docked_strip->StartingRightPosition(),
+  EXPECT_EQ(docked_collection->StartingRightPosition(),
             panel->GetBounds().right());
 
   panel->Close();

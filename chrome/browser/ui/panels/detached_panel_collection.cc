@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/panels/detached_panel_strip.h"
+#include "chrome/browser/ui/panels/detached_panel_collection.h"
 
 #include <algorithm>
 #include "base/logging.h"
@@ -15,20 +15,20 @@ namespace {
 const int kPanelTilePixels = 10;
 }  // namespace
 
-DetachedPanelStrip::DetachedPanelStrip(PanelManager* panel_manager)
-    : PanelStrip(PanelStrip::DETACHED),
+DetachedPanelCollection::DetachedPanelCollection(PanelManager* panel_manager)
+    : PanelCollection(PanelCollection::DETACHED),
       panel_manager_(panel_manager) {
 }
 
-DetachedPanelStrip::~DetachedPanelStrip() {
+DetachedPanelCollection::~DetachedPanelCollection() {
   DCHECK(panels_.empty());
 }
 
-gfx::Rect DetachedPanelStrip::GetDisplayArea() const  {
+gfx::Rect DetachedPanelCollection::GetDisplayArea() const  {
   return display_area_;
 }
 
-void DetachedPanelStrip::SetDisplayArea(const gfx::Rect& display_area) {
+void DetachedPanelCollection::SetDisplayArea(const gfx::Rect& display_area) {
   if (display_area_ == display_area)
     return;
   gfx::Rect old_display_area = display_area_;
@@ -61,16 +61,16 @@ void DetachedPanelStrip::SetDisplayArea(const gfx::Rect& display_area) {
   }
 }
 
-void DetachedPanelStrip::RefreshLayout() {
+void DetachedPanelCollection::RefreshLayout() {
   // Nothing needds to be done here: detached panels always stay
   // where the user dragged them.
 }
 
-void DetachedPanelStrip::AddPanel(Panel* panel,
+void DetachedPanelCollection::AddPanel(Panel* panel,
                                   PositioningMask positioning_mask) {
   // positioning_mask is ignored since the detached panel is free-floating.
-  DCHECK_NE(this, panel->panel_strip());
-  panel->set_panel_strip(this);
+  DCHECK_NE(this, panel->collection());
+  panel->set_collection(this);
   panels_.insert(panel);
 
   // Offset the default position of the next detached panel if the current
@@ -79,13 +79,13 @@ void DetachedPanelStrip::AddPanel(Panel* panel,
     ComputeNextDefaultPanelOrigin();
 }
 
-void DetachedPanelStrip::RemovePanel(Panel* panel) {
-  DCHECK_EQ(this, panel->panel_strip());
-  panel->set_panel_strip(NULL);
+void DetachedPanelCollection::RemovePanel(Panel* panel) {
+  DCHECK_EQ(this, panel->collection());
+  panel->set_collection(NULL);
   panels_.erase(panel);
 }
 
-void DetachedPanelStrip::CloseAll() {
+void DetachedPanelCollection::CloseAll() {
   // Make a copy as closing panels can modify the iterator.
   Panels panels_copy = panels_;
 
@@ -94,22 +94,22 @@ void DetachedPanelStrip::CloseAll() {
     (*iter)->Close();
 }
 
-void DetachedPanelStrip::OnPanelAttentionStateChanged(Panel* panel) {
-  DCHECK_EQ(this, panel->panel_strip());
+void DetachedPanelCollection::OnPanelAttentionStateChanged(Panel* panel) {
+  DCHECK_EQ(this, panel->collection());
   // Nothing to do.
 }
 
-void DetachedPanelStrip::OnPanelTitlebarClicked(Panel* panel,
+void DetachedPanelCollection::OnPanelTitlebarClicked(Panel* panel,
                                                 panel::ClickModifier modifier) {
-  DCHECK_EQ(this, panel->panel_strip());
+  DCHECK_EQ(this, panel->collection());
   // Click on detached panel titlebars does not do anything.
 }
 
-void DetachedPanelStrip::ResizePanelWindow(
+void DetachedPanelCollection::ResizePanelWindow(
     Panel* panel,
     const gfx::Size& preferred_window_size) {
   // We should get this call only of we have the panel.
-  DCHECK_EQ(this, panel->panel_strip());
+  DCHECK_EQ(this, panel->collection());
 
   // Make sure the new size does not violate panel's size restrictions.
   gfx::Size new_size(preferred_window_size.width(),
@@ -130,52 +130,52 @@ void DetachedPanelStrip::ResizePanelWindow(
     panel->SetPanelBounds(bounds);
 }
 
-void DetachedPanelStrip::ActivatePanel(Panel* panel) {
-  DCHECK_EQ(this, panel->panel_strip());
+void DetachedPanelCollection::ActivatePanel(Panel* panel) {
+  DCHECK_EQ(this, panel->collection());
   // No change in panel's appearance.
 }
 
-void DetachedPanelStrip::MinimizePanel(Panel* panel) {
-  DCHECK_EQ(this, panel->panel_strip());
+void DetachedPanelCollection::MinimizePanel(Panel* panel) {
+  DCHECK_EQ(this, panel->collection());
   // Detached panels do not minimize. However, extensions may call this API
-  // regardless of which strip the panel is in. So we just quietly return.
+  // regardless of which collection the panel is in. So we just quietly return.
 }
 
-void DetachedPanelStrip::RestorePanel(Panel* panel) {
-  DCHECK_EQ(this, panel->panel_strip());
+void DetachedPanelCollection::RestorePanel(Panel* panel) {
+  DCHECK_EQ(this, panel->collection());
   // Detached panels do not minimize. However, extensions may call this API
-  // regardless of which strip the panel is in. So we just quietly return.
+  // regardless of which collection the panel is in. So we just quietly return.
 }
 
-void DetachedPanelStrip::MinimizeAll() {
+void DetachedPanelCollection::MinimizeAll() {
   // Detached panels do not minimize.
   NOTREACHED();
 }
 
-void DetachedPanelStrip::RestoreAll() {
+void DetachedPanelCollection::RestoreAll() {
   // Detached panels do not minimize.
   NOTREACHED();
 }
 
-bool DetachedPanelStrip::CanMinimizePanel(const Panel* panel) const {
-  DCHECK_EQ(this, panel->panel_strip());
+bool DetachedPanelCollection::CanMinimizePanel(const Panel* panel) const {
+  DCHECK_EQ(this, panel->collection());
   // Detached panels do not minimize.
   return false;
 }
 
-bool DetachedPanelStrip::IsPanelMinimized(const Panel* panel) const {
-  DCHECK_EQ(this, panel->panel_strip());
+bool DetachedPanelCollection::IsPanelMinimized(const Panel* panel) const {
+  DCHECK_EQ(this, panel->collection());
   // Detached panels do not minimize.
   return false;
 }
 
-void DetachedPanelStrip::SavePanelPlacement(Panel* panel) {
+void DetachedPanelCollection::SavePanelPlacement(Panel* panel) {
   DCHECK(!saved_panel_placement_.panel);
   saved_panel_placement_.panel = panel;
   saved_panel_placement_.position = panel->GetBounds().origin();
 }
 
-void DetachedPanelStrip::RestorePanelToSavedPlacement() {
+void DetachedPanelCollection::RestorePanelToSavedPlacement() {
   DCHECK(saved_panel_placement_.panel);
 
   gfx::Rect new_bounds(saved_panel_placement_.panel->GetBounds());
@@ -185,16 +185,16 @@ void DetachedPanelStrip::RestorePanelToSavedPlacement() {
   DiscardSavedPanelPlacement();
 }
 
-void DetachedPanelStrip::DiscardSavedPanelPlacement() {
+void DetachedPanelCollection::DiscardSavedPanelPlacement() {
   DCHECK(saved_panel_placement_.panel);
   saved_panel_placement_.panel = NULL;
 }
 
-void DetachedPanelStrip::StartDraggingPanelWithinStrip(Panel* panel) {
+void DetachedPanelCollection::StartDraggingPanelWithinCollection(Panel* panel) {
   DCHECK(HasPanel(panel));
 }
 
-void DetachedPanelStrip::DragPanelWithinStrip(
+void DetachedPanelCollection::DragPanelWithinCollection(
     Panel* panel,
     const gfx::Point& target_position) {
   gfx::Rect new_bounds(panel->GetBounds());
@@ -202,32 +202,32 @@ void DetachedPanelStrip::DragPanelWithinStrip(
   panel->SetPanelBoundsInstantly(new_bounds);
 }
 
-void DetachedPanelStrip::EndDraggingPanelWithinStrip(Panel* panel,
-                                                     bool aborted) {
+void DetachedPanelCollection::EndDraggingPanelWithinCollection(Panel* panel,
+                                                               bool aborted) {
 }
 
-void DetachedPanelStrip::ClearDraggingStateWhenPanelClosed() {
+void DetachedPanelCollection::ClearDraggingStateWhenPanelClosed() {
 }
 
 
-panel::Resizability DetachedPanelStrip::GetPanelResizability(
+panel::Resizability DetachedPanelCollection::GetPanelResizability(
     const Panel* panel) const {
   return panel::RESIZABLE_ALL_SIDES;
 }
 
-void DetachedPanelStrip::OnPanelResizedByMouse(Panel* panel,
+void DetachedPanelCollection::OnPanelResizedByMouse(Panel* panel,
                                                const gfx::Rect& new_bounds) {
-  DCHECK_EQ(this, panel->panel_strip());
+  DCHECK_EQ(this, panel->collection());
   panel->set_full_size(new_bounds.size());
 
   panel->SetPanelBoundsInstantly(new_bounds);
 }
 
-bool DetachedPanelStrip::HasPanel(Panel* panel) const {
+bool DetachedPanelCollection::HasPanel(Panel* panel) const {
   return panels_.find(panel) != panels_.end();
 }
 
-void DetachedPanelStrip::UpdatePanelOnStripChange(Panel* panel) {
+void DetachedPanelCollection::UpdatePanelOnCollectionChange(Panel* panel) {
   panel->set_attention_mode(
       static_cast<Panel::AttentionMode>(Panel::USE_PANEL_ATTENTION |
                                         Panel::USE_SYSTEM_ATTENTION));
@@ -236,10 +236,10 @@ void DetachedPanelStrip::UpdatePanelOnStripChange(Panel* panel) {
   panel->UpdateMinimizeRestoreButtonVisibility();
 }
 
-void DetachedPanelStrip::OnPanelActiveStateChanged(Panel* panel) {
+void DetachedPanelCollection::OnPanelActiveStateChanged(Panel* panel) {
 }
 
-gfx::Point DetachedPanelStrip::GetDefaultPanelOrigin() {
+gfx::Point DetachedPanelCollection::GetDefaultPanelOrigin() {
   if (!default_panel_origin_.x() && !default_panel_origin_.y()) {
     gfx::Rect display_area =
         panel_manager_->display_settings_provider()->GetDisplayArea();
@@ -249,7 +249,7 @@ gfx::Point DetachedPanelStrip::GetDefaultPanelOrigin() {
   return default_panel_origin_;
 }
 
-void DetachedPanelStrip::ComputeNextDefaultPanelOrigin() {
+void DetachedPanelCollection::ComputeNextDefaultPanelOrigin() {
   default_panel_origin_.Offset(kPanelTilePixels, kPanelTilePixels);
   gfx::Rect display_area =
       panel_manager_->display_settings_provider()->GetDisplayArea();

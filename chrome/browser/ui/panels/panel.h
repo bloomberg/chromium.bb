@@ -23,9 +23,9 @@
 
 class GURL;
 class NativePanel;
+class PanelCollection;
 class PanelHost;
 class PanelManager;
-class PanelStrip;
 class Profile;
 
 namespace content {
@@ -110,7 +110,7 @@ class Panel : public BaseWindow,
   int TitleOnlyHeight() const;
 
   // Returns true if the panel can be minimized or restored, depending on the
-  // strip the panel is in.
+  // collection the panel is in.
   bool CanMinimize() const;
   bool CanRestore() const;
 
@@ -169,10 +169,12 @@ class Panel : public BaseWindow,
   // * panel is newly created and has not been positioned yet.
   // * panel is being closed asynchronously.
   // Please use it with caution.
-  PanelStrip* panel_strip() const { return panel_strip_; }
+  PanelCollection* collection() const { return collection_; }
 
-  // Sets the current panel strip that contains this panel.
-  void set_panel_strip(PanelStrip* new_strip) { panel_strip_ = new_strip; }
+  // Sets the current panel collection that contains this panel.
+  void set_collection(PanelCollection* new_collection) {
+    collection_ = new_collection;
+  }
 
   ExpansionState expansion_state() const { return expansion_state_; }
   const gfx::Size& min_size() const { return min_size_; }
@@ -189,7 +191,7 @@ class Panel : public BaseWindow,
   }
 
   // The full size is the size of the panel when it is detached or expanded
-  // in the docked strip and squeezing mode is not on.
+  // in the docked collection and squeezing mode is not on.
   gfx::Size full_size() const { return full_size_; }
   void set_full_size(const gfx::Size& size) { full_size_ = size; }
 
@@ -340,12 +342,12 @@ class Panel : public BaseWindow,
 
   // Current collection of panels to which this panel belongs. This determines
   // the panel's screen layout.
-  PanelStrip* panel_strip_;  // Owned by PanelManager.
+  PanelCollection* collection_;  // Owned by PanelManager.
 
   bool initialized_;
 
   // Stores the full size of the panel so we can restore it after it's
-  // been minimized or squeezed due to lack of space in the strip.
+  // been minimized or squeezed due to lack of space in the collection.
   gfx::Size full_size_;
 
   // This is the minimum size that the panel can shrink to.
@@ -362,7 +364,7 @@ class Panel : public BaseWindow,
 
   // True if this panel is in preview mode. When in preview mode, panel bounds
   // should not be affected by layout refresh. This is currently used by drag
-  // controller to add a panel to the strip without causing its bounds to
+  // controller to add a panel to the collection without causing its bounds to
   // change.
   bool in_preview_mode_;
 

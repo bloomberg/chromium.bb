@@ -21,9 +21,9 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/panels/native_panel.h"
+#include "chrome/browser/ui/panels/panel_collection.h"
 #include "chrome/browser/ui/panels/panel_host.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
-#include "chrome/browser/ui/panels/panel_strip.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
@@ -137,7 +137,7 @@ Panel::Panel(const std::string& app_name,
              const gfx::Size& min_size, const gfx::Size& max_size)
     : app_name_(app_name),
       profile_(NULL),
-      panel_strip_(NULL),
+      collection_(NULL),
       initialized_(false),
       min_size_(min_size),
       max_size_(max_size),
@@ -151,7 +151,7 @@ Panel::Panel(const std::string& app_name,
 }
 
 Panel::~Panel() {
-  DCHECK(!panel_strip_);
+  DCHECK(!collection_);
   // Invoked by native panel destructor. Do not access native_panel_ here.
   browser::EndKeepAlive();  // Remove shutdown prevention.
 }
@@ -159,7 +159,7 @@ Panel::~Panel() {
 void Panel::Initialize(Profile* profile, const GURL& url,
                        const gfx::Rect& bounds) {
   DCHECK(!initialized_);
-  DCHECK(!panel_strip_);  // Cannot be added to a strip until fully created.
+  DCHECK(!collection_);  // Cannot be added to a collection until fully created.
   DCHECK_EQ(EXPANDED, expansion_state_);
   DCHECK(!bounds.IsEmpty());
   initialized_ = true;
@@ -225,7 +225,7 @@ void Panel::OnNativePanelClosed() {
   app_icon_loader_.reset();
   registrar_.RemoveAll();
   manager()->OnPanelClosed(this);
-  DCHECK(!panel_strip_);
+  DCHECK(!collection_);
 }
 
 PanelManager* Panel::manager() const {
@@ -249,18 +249,18 @@ content::WebContents* Panel::GetWebContents() const {
 }
 
 bool Panel::CanMinimize() const {
-  return panel_strip_ && panel_strip_->CanMinimizePanel(this) && !IsMinimized();
+  return collection_ && collection_->CanMinimizePanel(this) && !IsMinimized();
 }
 
 bool Panel::CanRestore() const {
-  return panel_strip_ && panel_strip_->CanMinimizePanel(this) && IsMinimized();
+  return collection_ && collection_->CanMinimizePanel(this) && IsMinimized();
 }
 
 panel::Resizability Panel::CanResizeByMouse() const {
-  if (!panel_strip_)
+  if (!collection_)
     return panel::NOT_RESIZABLE;
 
-  return panel_strip_->GetPanelResizability(this);
+  return collection_->GetPanelResizability(this);
 }
 
 void Panel::SetPanelBounds(const gfx::Rect& bounds) {
@@ -387,8 +387,8 @@ void Panel::SetExpansionState(ExpansionState new_state) {
 
   manager()->OnPanelExpansionStateChanged(this);
 
-  DCHECK(initialized_ && panel_strip_ != NULL);
-  native_panel_->PreventActivationByOS(panel_strip_->IsPanelMinimized(this));
+  DCHECK(initialized_ && collection_ != NULL);
+  native_panel_->PreventActivationByOS(collection_->IsPanelMinimized(this));
   UpdateMinimizeRestoreButtonVisibility();
 
   content::NotificationService::current()->Notify(
@@ -406,14 +406,14 @@ void Panel::FullScreenModeChanged(bool is_full_screen) {
 }
 
 void Panel::Show() {
-  if (manager()->display_settings_provider()->is_full_screen() || !panel_strip_)
+  if (manager()->display_settings_provider()->is_full_screen() || !collection_)
     return;
 
     native_panel_->ShowPanel();
 }
 
 void Panel::ShowInactive() {
-  if (manager()->display_settings_provider()->is_full_screen() || !panel_strip_)
+  if (manager()->display_settings_provider()->is_full_screen() || !collection_)
     return;
 
   native_panel_->ShowPanelInactive();
@@ -425,9 +425,9 @@ void Panel::Hide() {
 
 void Panel::SetBounds(const gfx::Rect& bounds) {
   // Ignore bounds position as the panel manager controls all positioning.
-  if (!panel_strip_)
+  if (!collection_)
     return;
-  panel_strip_->ResizePanelWindow(this, bounds.size());
+  collection_->ResizePanelWindow(this, bounds.size());
   SetAutoResizable(false);
 }
 
@@ -438,10 +438,10 @@ void Panel::Close() {
 }
 
 void Panel::Activate() {
-  if (!panel_strip_)
+  if (!collection_)
     return;
 
-  panel_strip_->ActivatePanel(this);
+  collection_->ActivatePanel(this);
   native_panel_->ActivatePanel();
 }
 
@@ -454,7 +454,7 @@ bool Panel::IsActive() const {
 }
 
 void Panel::FlashFrame(bool draw_attention) {
-  if (IsDrawingAttention() == draw_attention || !panel_strip_)
+  if (IsDrawingAttention() == draw_attention || !collection_)
     return;
 
   // Don't draw attention for an active panel.
@@ -462,10 +462,10 @@ void Panel::FlashFrame(bool draw_attention) {
     return;
 
   // Invoking native panel to draw attention must be done before informing the
-  // panel strip because it needs to check internal state of the panel to
+  // panel collection because it needs to check internal state of the panel to
   // determine if the panel has been drawing attention.
   native_panel_->DrawAttention(draw_attention);
-  panel_strip_->OnPanelAttentionStateChanged(this);
+  collection_->OnPanelAttentionStateChanged(this);
 }
 
 bool Panel::IsAlwaysOnTop() const {
@@ -498,7 +498,7 @@ bool Panel::IsMaximized() const {
 }
 
 bool Panel::IsMinimized() const {
-  return !panel_strip_ || panel_strip()->IsPanelMinimized(this);
+  return !collection_ || collection_->IsPanelMinimized(this);
 }
 
 void Panel::Maximize() {
@@ -506,13 +506,13 @@ void Panel::Maximize() {
 }
 
 void Panel::Minimize() {
-  if (panel_strip_)
-    panel_strip_->MinimizePanel(this);
+  if (collection_)
+    collection_->MinimizePanel(this);
 }
 
 void Panel::Restore() {
-  if (panel_strip_)
-    panel_strip_->RestorePanel(this);
+  if (collection_)
+    collection_->RestorePanel(this);
 }
 
 bool Panel::IsFullscreen() const {
@@ -521,7 +521,7 @@ bool Panel::IsFullscreen() const {
 
 void Panel::OnContentsAutoResized(const gfx::Size& new_content_size) {
   DCHECK(auto_resizable_);
-  if (!panel_strip_)
+  if (!collection_)
     return;
 
   gfx::Size new_window_size =
@@ -534,12 +534,12 @@ void Panel::OnContentsAutoResized(const gfx::Size& new_content_size) {
   if (new_content_size == new_window_size)
     return;
 
-  panel_strip_->ResizePanelWindow(this, new_window_size);
+  collection_->ResizePanelWindow(this, new_window_size);
 }
 
 void Panel::OnWindowResizedByMouse(const gfx::Rect& new_bounds) {
-  if (panel_strip_)
-    panel_strip_->OnPanelResizedByMouse(this, new_bounds);
+  if (collection_)
+    collection_->OnPanelResizedByMouse(this, new_bounds);
 }
 
 void Panel::EnableWebContentsAutoResize(content::WebContents* web_contents) {
@@ -677,8 +677,8 @@ void Panel::OnActiveStateChanged(bool active) {
   if (active && IsDrawingAttention() && !IsMinimized())
     FlashFrame(false);
 
-  if (panel_strip_)
-    panel_strip_->OnPanelActiveStateChanged(this);
+  if (collection_)
+    collection_->OnPanelActiveStateChanged(this);
 
   // Send extension event about window changing active state.
   ExtensionService* service =
@@ -713,8 +713,8 @@ void Panel::OnWindowSizeAvailable() {
 }
 
 void Panel::OnTitlebarClicked(panel::ClickModifier modifier) {
-  if (panel_strip_)
-    panel_strip_->OnPanelTitlebarClicked(this, modifier);
+  if (collection_)
+    collection_->OnPanelTitlebarClicked(this, modifier);
 
   // Normally the system activates a window when the titlebar is clicked.
   // However, we prevent system activation of minimized panels, thus the
@@ -729,11 +729,11 @@ void Panel::OnTitlebarClicked(panel::ClickModifier modifier) {
 }
 
 void Panel::OnMinimizeButtonClicked(panel::ClickModifier modifier) {
-  if (!panel_strip_)
+  if (!collection_)
     return;
 
   if (modifier == panel::APPLY_TO_ALL)
-    panel_strip_->MinimizeAll();
+    collection_->MinimizeAll();
   else
     Minimize();
 }

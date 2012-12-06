@@ -14,8 +14,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/panels/native_panel.h"
+#include "chrome/browser/ui/panels/panel_collection.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher.h"
-#include "chrome/browser/ui/panels/panel_strip.h"
 #include "chrome/browser/ui/panels/test_panel_active_state_observer.h"
 #include "chrome/browser/ui/panels/test_panel_mouse_watcher.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -368,17 +368,17 @@ Panel* BasePanelBrowserTest::CreatePanel(const std::string& panel_name) {
 Panel* BasePanelBrowserTest::CreateDockedPanel(const std::string& name,
                                                const gfx::Rect& bounds) {
   Panel* panel = CreatePanelWithBounds(name, bounds);
-  EXPECT_EQ(PanelStrip::DOCKED, panel->panel_strip()->type());
+  EXPECT_EQ(PanelCollection::DOCKED, panel->collection()->type());
   return panel;
 }
 
 Panel* BasePanelBrowserTest::CreateDetachedPanel(const std::string& name,
                                                  const gfx::Rect& bounds) {
   Panel* panel = CreatePanelWithBounds(name, bounds);
-  panel->manager()->MovePanelToStrip(panel,
-                                     PanelStrip::DETACHED,
-                                     PanelStrip::DEFAULT_POSITION);
-  EXPECT_EQ(PanelStrip::DETACHED, panel->panel_strip()->type());
+  panel->manager()->MovePanelToCollection(panel,
+                                          PanelCollection::DETACHED,
+                                          PanelCollection::DEFAULT_POSITION);
+  EXPECT_EQ(PanelCollection::DETACHED, panel->collection()->type());
   // The panel is first created as docked panel, which ignores the specified
   // origin in |bounds|. We need to reposition the panel after it becomes
   // detached.
