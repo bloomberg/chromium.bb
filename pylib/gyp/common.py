@@ -378,6 +378,8 @@ def GetFlavor(params):
     return 'solaris'
   if sys.platform.startswith('freebsd'):
     return 'freebsd'
+  if sys.platform.startswith('aix'):
+    return 'aix'
 
   return 'linux'
 
