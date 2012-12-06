@@ -9,6 +9,7 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 *** New Braille tables
     - Inuktitut grade 1, thanks to Greg Kearney.
     - ueb grade 1 and 2, thanks to Joseph Lee.
+    - Korean table thanks to Joseph Lee
 
 ** Braille Table Improvements
    - da-gk-g2.ctb, fixes for transposed â, å, æ, ä, ø  and ö, corrected/improved harness tests.

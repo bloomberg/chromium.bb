@@ -16,6 +16,7 @@ table_files = \
 	ca-chardefs.cti \
 	ca-g1.ctb \
 	chardefs.cti \
+	chardefs-ueb.cti \
 	ckb-chardefs.cti \
 	ckb-g1.ctb \
 	ckb-translation.ctb \
@@ -135,6 +136,7 @@ table_files = \
 	kannada.cti \
 	kha.ctb \
 	kn.ctb \
+	ko.ctb \
 	kok.ctb \
 	kru.ctb \
 	lang2table \
