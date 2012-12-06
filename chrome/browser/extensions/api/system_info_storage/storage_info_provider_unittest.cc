@@ -194,7 +194,7 @@ TEST_F(StorageInfoProviderTest, WatchingOneStorage) {
   RunMessageLoopUntilIdle();
 }
 
-TEST_F(StorageInfoProviderTest, WatchingMultipleStorages) {
+TEST_F(StorageInfoProviderTest, DISABLED_WatchingMultipleStorages) {
   // Case 2: watching multiple storages. We ignore the first entry in
   // |testing_data| since its change_step is zero.
   for (size_t k = 1; k < arraysize(testing_data); ++k) {
