@@ -543,9 +543,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   CheckGeoposition(cached_position_latitude, cached_position_lognitude);
 }
 
-// See http://crbug.com/56033
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
-                       DISABLED_CancelPermissionForFrame) {
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, CancelPermissionForFrame) {
   html_for_tests_ = "files/geolocation/iframes_different_origin.html";
   ASSERT_TRUE(Initialize(INITIALIZATION_IFRAMES));
   LoadIFrames(2);
