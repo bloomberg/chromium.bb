@@ -23,6 +23,7 @@
 #endif
 #include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
+#include "base/stringprintf.h"
 #include "build/build_config.h"
 #define GLES2_GPU_SERVICE 1
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
@@ -1218,6 +1219,13 @@ class GLES2DecoderImpl : public GLES2Decoder {
   // Clear all real GL errors. This is to prevent the client from seeing any
   // errors caused by GL calls that it was not responsible for issuing.
   void ClearRealGLErrors();
+
+  // Generates a GL error for a bad parameter.
+  void SetGLErrorInvalidParam(
+      GLenum error,
+      const char* function_name,
+      GLenum pname,
+      GLint param);
 
   // Checks if the current program and vertex attributes are valid for drawing.
   bool IsDrawValid(
@@ -4666,9 +4674,11 @@ void GLES2DecoderImpl::DoTexParameterf(
     return;
   }
 
-  if (!texture_manager()->SetParameter(
-      info, pname, static_cast<GLint>(param))) {
-    SetGLErrorInvalidEnum("glTexParameterf", pname, "pname");
+  GLenum error = texture_manager()->SetParameter(
+      info, pname, static_cast<GLint>(param));
+  if (error != GL_NO_ERROR) {
+    SetGLErrorInvalidParam(
+        error, "glTexParameterf", pname, static_cast<GLint>(param));
     return;
   }
   glTexParameterf(target, pname, param);
@@ -4682,8 +4692,9 @@ void GLES2DecoderImpl::DoTexParameteri(
     return;
   }
 
-  if (!texture_manager()->SetParameter(info, pname, param)) {
-    SetGLErrorInvalidEnum("glTexParameteri", pname, "pname");
+  GLenum error =  texture_manager()->SetParameter(info, pname, param);
+  if(error != GL_NO_ERROR) {
+    SetGLErrorInvalidParam(error, "glTexParameteri", pname, param);
     return;
   }
   glTexParameteri(target, pname, param);
@@ -4697,9 +4708,11 @@ void GLES2DecoderImpl::DoTexParameterfv(
     return;
   }
 
-  if (!texture_manager()->SetParameter(
-      info, pname, static_cast<GLint>(params[0]))) {
-    SetGLErrorInvalidEnum("glTexParameterfv", pname, "pname");
+  GLenum error =texture_manager()->SetParameter(
+      info, pname, static_cast<GLint>(params[0]));
+  if (error != GL_NO_ERROR) {
+    SetGLErrorInvalidParam(
+        error, "glTexParameterfv", pname, static_cast<GLint>(params[0]));
     return;
   }
   glTexParameterfv(target, pname, params);
@@ -4713,8 +4726,9 @@ void GLES2DecoderImpl::DoTexParameteriv(
     return;
   }
 
-  if (!texture_manager()->SetParameter(info, pname, *params)) {
-    SetGLErrorInvalidEnum("glTexParameteriv", pname, "pname");
+  GLenum error = texture_manager()->SetParameter(info, pname, *params);
+  if (error != GL_NO_ERROR) {
+    SetGLErrorInvalidParam(error, "glTexParameteriv", pname, *params);
     return;
   }
   glTexParameteriv(target, pname, params);
@@ -5022,6 +5036,26 @@ void GLES2DecoderImpl::SetGLErrorInvalidEnum(
   SetGLError(GL_INVALID_ENUM, function_name,
              (std::string(label) + " was " +
               GLES2Util::GetStringEnum(value)).c_str());
+}
+
+void GLES2DecoderImpl::SetGLErrorInvalidParam(
+    GLenum error,
+    const char* function_name,
+    GLenum pname,
+    GLint param) {
+  if (error == GL_INVALID_ENUM) {
+    SetGLError(
+        GL_INVALID_ENUM, function_name,
+        (std::string("trying to set ") +
+         GLES2Util::GetStringEnum(pname) + " to " +
+         GLES2Util::GetStringEnum(param)).c_str());
+  } else {
+    SetGLError(
+        error, function_name,
+        (std::string("trying to set ") +
+         GLES2Util::GetStringEnum(pname) + " to " +
+         base::StringPrintf("%d", param)).c_str());
+  }
 }
 
 const std::string& GLES2DecoderImpl::GetLogPrefix() const {

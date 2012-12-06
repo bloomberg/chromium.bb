@@ -442,7 +442,7 @@ bool TextureManager::TextureInfo::GetLevelType(
   return false;
 }
 
-bool TextureManager::TextureInfo::SetParameter(
+GLenum TextureManager::TextureInfo::SetParameter(
     const FeatureInfo* feature_info, GLenum pname, GLint param) {
   DCHECK(feature_info);
 
@@ -450,53 +450,55 @@ bool TextureManager::TextureInfo::SetParameter(
       target_ == GL_TEXTURE_RECTANGLE_ARB) {
     if (pname == GL_TEXTURE_MIN_FILTER &&
         (param != GL_NEAREST && param != GL_LINEAR))
-      return false;
+      return GL_INVALID_ENUM;
     if ((pname == GL_TEXTURE_WRAP_S || pname == GL_TEXTURE_WRAP_T) &&
         param != GL_CLAMP_TO_EDGE)
-      return false;
+      return GL_INVALID_ENUM;
   }
 
   switch (pname) {
     case GL_TEXTURE_MIN_FILTER:
       if (!feature_info->validators()->texture_min_filter_mode.IsValid(param)) {
-        return false;
+        return GL_INVALID_ENUM;
       }
       min_filter_ = param;
       break;
     case GL_TEXTURE_MAG_FILTER:
       if (!feature_info->validators()->texture_mag_filter_mode.IsValid(param)) {
-        return false;
+        return GL_INVALID_ENUM;
       }
       mag_filter_ = param;
       break;
     case GL_TEXTURE_WRAP_S:
       if (!feature_info->validators()->texture_wrap_mode.IsValid(param)) {
-        return false;
+        return GL_INVALID_ENUM;
       }
       wrap_s_ = param;
       break;
     case GL_TEXTURE_WRAP_T:
       if (!feature_info->validators()->texture_wrap_mode.IsValid(param)) {
-        return false;
+        return GL_INVALID_ENUM;
       }
       wrap_t_ = param;
       break;
     case GL_TEXTURE_MAX_ANISOTROPY_EXT:
-      // Nothing to do for this case at the moment.
+      if (param < 1) {
+        return GL_INVALID_VALUE;
+      }
       break;
     case GL_TEXTURE_USAGE_ANGLE:
       if (!feature_info->validators()->texture_usage.IsValid(param)) {
-        return false;
+        return GL_INVALID_ENUM;
       }
       usage_ = param;
       break;
     default:
       NOTREACHED();
-      return false;
+      return GL_INVALID_ENUM;
   }
   Update(feature_info);
   UpdateCleared();
-  return true;
+  return GL_NO_ERROR;
 }
 
 void TextureManager::TextureInfo::Update(const FeatureInfo* feature_info) {
@@ -1028,7 +1030,7 @@ bool TextureManager::Restore(TextureInfo* info,
   return true;
 }
 
-bool TextureManager::SetParameter(
+GLenum TextureManager::SetParameter(
     TextureManager::TextureInfo* info, GLenum pname, GLint param) {
   DCHECK(info);
   if (!info->CanRender(feature_info_)) {
@@ -1039,7 +1041,7 @@ bool TextureManager::SetParameter(
     DCHECK_NE(0, num_unsafe_textures_);
     --num_unsafe_textures_;
   }
-  bool result = info->SetParameter(feature_info_, pname, param);
+  GLenum result = info->SetParameter(feature_info_, pname, param);
   if (!info->CanRender(feature_info_)) {
     ++num_unrenderable_textures_;
   }

@@ -104,24 +104,36 @@ TEST_F(TextureManagerTest, SetParameter) {
   // Check texture got created.
   TextureManager::TextureInfo* info = manager_.GetTextureInfo(kClient1Id);
   ASSERT_TRUE(info != NULL);
-  EXPECT_TRUE(manager_.SetParameter(info, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), manager_.SetParameter(
+      info, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
   EXPECT_EQ(static_cast<GLenum>(GL_NEAREST), info->min_filter());
-  EXPECT_TRUE(manager_.SetParameter(info, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), manager_.SetParameter(
+      info, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
   EXPECT_EQ(static_cast<GLenum>(GL_NEAREST), info->mag_filter());
-  EXPECT_TRUE(manager_.SetParameter(info, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), manager_.SetParameter(
+      info, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
   EXPECT_EQ(static_cast<GLenum>(GL_CLAMP_TO_EDGE), info->wrap_s());
-  EXPECT_TRUE(manager_.SetParameter(info, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), manager_.SetParameter(
+      info, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
   EXPECT_EQ(static_cast<GLenum>(GL_CLAMP_TO_EDGE), info->wrap_t());
-  EXPECT_FALSE(manager_.SetParameter(
+  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), manager_.SetParameter(
+      info, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1));
+  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), manager_.SetParameter(
+      info, GL_TEXTURE_MAX_ANISOTROPY_EXT, 2));
+  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_ENUM), manager_.SetParameter(
       info, GL_TEXTURE_MIN_FILTER, GL_CLAMP_TO_EDGE));
   EXPECT_EQ(static_cast<GLenum>(GL_NEAREST), info->min_filter());
-  EXPECT_FALSE(manager_.SetParameter(
+  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_ENUM), manager_.SetParameter(
       info, GL_TEXTURE_MAG_FILTER, GL_CLAMP_TO_EDGE));
   EXPECT_EQ(static_cast<GLenum>(GL_NEAREST), info->min_filter());
-  EXPECT_FALSE(manager_.SetParameter(info, GL_TEXTURE_WRAP_S, GL_NEAREST));
+  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_ENUM), manager_.SetParameter(
+      info, GL_TEXTURE_WRAP_S, GL_NEAREST));
   EXPECT_EQ(static_cast<GLenum>(GL_CLAMP_TO_EDGE), info->wrap_s());
-  EXPECT_FALSE(manager_.SetParameter(info, GL_TEXTURE_WRAP_T, GL_NEAREST));
+  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_ENUM), manager_.SetParameter(
+      info, GL_TEXTURE_WRAP_T, GL_NEAREST));
   EXPECT_EQ(static_cast<GLenum>(GL_CLAMP_TO_EDGE), info->wrap_t());
+  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), manager_.SetParameter(
+      info, GL_TEXTURE_MAX_ANISOTROPY_EXT, 0));
 }
 
 TEST_F(TextureManagerTest, TextureUsageExt) {
@@ -137,7 +149,7 @@ TEST_F(TextureManagerTest, TextureUsageExt) {
   // Check texture got created.
   TextureManager::TextureInfo* info = manager.GetTextureInfo(kClient1Id);
   ASSERT_TRUE(info != NULL);
-  EXPECT_TRUE(manager.SetParameter(
+  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), manager.SetParameter(
       info, GL_TEXTURE_USAGE_ANGLE, GL_FRAMEBUFFER_ATTACHMENT_ANGLE));
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_ATTACHMENT_ANGLE),
             info->usage());

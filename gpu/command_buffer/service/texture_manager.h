@@ -241,8 +241,8 @@ class GPU_EXPORT TextureManager {
 
     // Sets a texture parameter.
     // TODO(gman): Expand to SetParameteri,f,iv,fv
-    // Returns false if param was INVALID_ENUN
-    bool SetParameter(
+    // Returns GL_NO_ERROR on success. Otherwise the error to generate.
+    GLenum SetParameter(
         const FeatureInfo* feature_info, GLenum pname, GLint param);
 
     // Makes each of the mip levels as though they were generated.
@@ -435,8 +435,9 @@ class GPU_EXPORT TextureManager {
   void SetLevelCleared(TextureInfo* info, GLenum target, GLint level);
 
   // Sets a texture parameter of a TextureInfo
+  // Returns GL_NO_ERROR on success. Otherwise the error to generate.
   // TODO(gman): Expand to SetParameteri,f,iv,fv
-  bool SetParameter(
+  GLenum SetParameter(
       TextureInfo* info, GLenum pname, GLint param);
 
   // Makes each of the mip levels as though they were generated.
