@@ -19,9 +19,7 @@
 #include "content/public/browser/web_ui_message_handler.h"
 #include "policy/policy_constants.h"
 
-namespace policy {
-class CloudPolicyDataStore;
-}
+class CloudPolicyStatusProvider;
 
 // The base class handler of Javascript messages of the about:policy page.
 class PolicyUIHandler : public content::WebUIMessageHandler,
@@ -76,19 +74,17 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
   // DictionaryValue pointer.
   base::DictionaryValue* GetStatusData();
 
-  // Returns the time at which policy was last fetched by the
-  // CloudPolicySubsystem |subsystem| in string form.
-  string16 GetLastFetchTime(policy::CloudPolicySubsystem* subsystem);
-
-  // Reads the device id from |data_store| and returns it as a string16.
-  string16 GetDeviceId(const policy::CloudPolicyDataStore* data_store);
-
-  // Reads the policy fetch interval from the preferences specified by
-  // |refresh_pref| and returns it as a string16.
-  string16 GetPolicyFetchInterval(const char* refresh_pref);
-
   // Used to post a callback to RefreshPolicies with a WeakPtr to |this|.
   base::WeakPtrFactory<PolicyUIHandler> weak_factory_;
+
+  // Providers that supply status dictionaries for user and device policy,
+  // respectively. These are created on initialization time as appropriate for
+  // the platform (Chrome OS / desktop) and type of policy that is in effect.
+  scoped_ptr<CloudPolicyStatusProvider> user_status_provider_;
+  scoped_ptr<CloudPolicyStatusProvider> device_status_provider_;
+
+  // The domain the device is enrolled to, if applicable.
+  string16 enterprise_domain_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyUIHandler);
 };

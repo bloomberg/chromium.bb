@@ -28,32 +28,34 @@
           <span id="status-title" i18n-content="statusPaneTitle"></span>
         </div>
           <div id="status-pane">
-            <fieldset class="status-box" jsdisplay="displayDeviceStatus">
+            <fieldset class="status-box" jsselect="deviceStatus"
+                jsdisplay="display">
               <legend i18n-content="devicePoliciesBoxTitle"></legend>
                 <ul>
                   <li>
                     <span i18n-content="enrollmentDomainText"></span>
-                    <span jscontent="devicePolicyDomain"></span>
+                    <span jscontent="domain"></span>
                   </li>
                   <li>
                     <span i18n-content="clientIdText"></span>
-                    <span jscontent="deviceId"></span>
+                    <span jscontent="clientId"></span>
                   </li>
                   <li>
-                    <span i18n-content="lastFetchedText"></span>
-                    <span jscontent="deviceLastFetchTime"></span>
+                    <span i18n-content="timeSinceLastFetchText"></span>
+                    <span jscontent="timeSinceLastFetch"></span>
                   </li>
                   <li>
                     <span i18n-content="fetchIntervalText"></span>
-                    <span jscontent="deviceFetchInterval"></span>
+                    <span jscontent="fetchInterval"></span>
                   </li>
                   <li>
                     <span i18n-content="serverStatusText"></span>
-                    <span jscontent="deviceStatusMessage"></span>
+                    <span jscontent="statusMessage"></span>
                   </li>
                 </ul>
             </fieldset>
-            <fieldset class="status-box" jsdisplay="displayUserStatus">
+            <fieldset class="status-box" jsselect="userStatus"
+                jsdisplay="display">
               <legend i18n-content="userPoliciesBoxTitle"></legend>
                 <ul>
                   <li>
@@ -62,19 +64,19 @@
                   </li>
                   <li>
                     <span i18n-content="clientIdText"></span>
-                    <span jscontent="userId"></span>
+                    <span jscontent="clientId"></span>
                   </li>
                   <li>
-                    <span i18n-content="lastFetchedText"></span>
-                    <span jscontent="userLastFetchTime"></span>
+                    <span i18n-content="timeSinceLastFetchText"></span>
+                    <span jscontent="timeSinceLastFetch"></span>
                   </li>
                   <li>
                     <span i18n-content="fetchIntervalText"></span>
-                    <span jscontent="userFetchInterval"></span>
+                    <span jscontent="fetchInterval"></span>
                   </li>
                   <li>
                     <span i18n-content="serverStatusText"></span>
-                    <span jscontent="userStatusMessage"></span>
+                    <span jscontent="statusMessage"></span>
                   </li>
                 </ul>
             </fielset>

@@ -108,6 +108,8 @@ class CloudPolicySubsystem
   // Returns the CloudPolicyCacheBase associated with this CloudPolicySubsystem.
   CloudPolicyCacheBase* GetCloudPolicyCacheBase() const;
 
+  CloudPolicyDataStore* data_store() { return data_store_; }
+
  private:
   friend class TestingCloudPolicySubsystem;
 

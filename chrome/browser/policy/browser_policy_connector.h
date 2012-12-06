@@ -170,6 +170,9 @@ class BrowserPolicyConnector : public content::NotificationObserver {
   UserCloudPolicyManagerChromeOS* GetUserCloudPolicyManager() {
     return user_cloud_policy_manager_.get();
   }
+  DeviceLocalAccountPolicyService* GetDeviceLocalAccountPolicyService() {
+    return device_local_account_policy_service_.get();
+  }
 #endif
 
   // Sets a |provider| that will be included in PolicyServices returned by
