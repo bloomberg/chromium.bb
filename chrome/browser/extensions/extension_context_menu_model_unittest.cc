@@ -59,9 +59,6 @@ TEST_F(ExtensionContextMenuModelTest, PolicyDisablesItems) {
 
   // Now the actions are disabled.
   ASSERT_FALSE(menu->IsCommandIdEnabled(ExtensionContextMenuModel::UNINSTALL));
-
-  // Don't leave |policy_provider| dangling.
-  system->management_policy()->UnregisterAllProviders();
 }
 
 }  // namespace

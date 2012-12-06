@@ -103,7 +103,8 @@ void ExtensionSystemImpl::Shared::InitPrefs() {
   blacklist_.reset(new Blacklist(extension_prefs_.get()));
 
   standard_management_policy_provider_.reset(
-      new StandardManagementPolicyProvider(extension_prefs_.get()));
+      new StandardManagementPolicyProvider(extension_prefs_.get(),
+                                           blacklist_.get()));
 }
 
 void ExtensionSystemImpl::Shared::RegisterManagementPolicyProviders() {

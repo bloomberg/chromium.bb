@@ -84,7 +84,8 @@ ExtensionService* TestExtensionSystem::CreateExtensionService(
       new ShellWindowGeometryCache(profile_, state_store_.get()));
   blacklist_.reset(new Blacklist(extension_prefs_.get()));
   standard_management_policy_provider_.reset(
-      new StandardManagementPolicyProvider(extension_prefs_.get()));
+      new StandardManagementPolicyProvider(extension_prefs_.get(),
+                                           blacklist_.get()));
   management_policy_.reset(new ManagementPolicy());
   management_policy_->RegisterProvider(
       standard_management_policy_provider_.get());

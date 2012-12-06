@@ -748,48 +748,57 @@ void ExtensionPrefs::ClearDisableReasons(const std::string& extension_id) {
   UpdateExtensionPref(extension_id, kPrefDisableReasons, NULL);
 }
 
-std::set<std::string> ExtensionPrefs::GetBlacklistedExtensions() {
-  std::set<std::string> ids;
-
+void ExtensionPrefs::UpdateBlacklist(
+    const std::set<std::string>& blacklist_set) {
+  ExtensionIdList remove_pref_ids;
+  std::set<std::string> used_id_set;
   const DictionaryValue* extensions = prefs_->GetDictionary(kExtensionsPref);
-  if (!extensions)
-    return ids;
 
-  for (DictionaryValue::Iterator it(*extensions); it.HasNext(); it.Advance()) {
-    if (!it.value().IsType(Value::TYPE_DICTIONARY)) {
-      NOTREACHED() << "Invalid pref for extension " << it.key();
-      continue;
+  if (extensions) {
+    for (DictionaryValue::key_iterator extension_id = extensions->begin_keys();
+         extension_id != extensions->end_keys(); ++extension_id) {
+      const DictionaryValue* ext;
+      if (!extensions->GetDictionaryWithoutPathExpansion(*extension_id, &ext)) {
+        NOTREACHED() << "Invalid pref for extension " << *extension_id;
+        continue;
+      }
+      const std::string& id(*extension_id);
+      if (blacklist_set.find(id) == blacklist_set.end()) {
+        if (!IsBlacklistBitSet(ext)) {
+          // This extension is not in blacklist. And it was not blacklisted
+          // before.
+          continue;
+        } else {
+          if (ext->size() == 1) {
+            // We should remove the entry if the only flag here is blacklist.
+            remove_pref_ids.push_back(id);
+          } else {
+            // Remove the blacklist bit.
+            UpdateExtensionPref(id, kPrefBlacklist, NULL);
+          }
+        }
+      } else {
+        if (!IsBlacklistBitSet(ext)) {
+          // Only set the blacklist if it was not set.
+          UpdateExtensionPref(id, kPrefBlacklist,
+                              Value::CreateBooleanValue(true));
+        }
+        // Keep the record if this extension is already processed.
+        used_id_set.insert(id);
+      }
     }
-    if (IsBlacklistBitSet(static_cast<const DictionaryValue*>(&it.value())))
-      ids.insert(it.key());
   }
 
-  return ids;
-}
-
-void ExtensionPrefs::SetExtensionBlacklisted(const std::string& extension_id,
-                                             bool is_blacklisted) {
-  bool currently_blacklisted = IsExtensionBlacklisted(extension_id);
-  if (is_blacklisted == currently_blacklisted) {
-    NOTREACHED() << extension_id << " is " <<
-                    (currently_blacklisted ? "already" : "not") <<
-                    " blacklisted";
-    return;
+  // Iterate the leftovers to set blacklist in pref
+  std::set<std::string>::const_iterator set_itr = blacklist_set.begin();
+  for (; set_itr != blacklist_set.end(); ++set_itr) {
+    if (used_id_set.find(*set_itr) == used_id_set.end()) {
+      UpdateExtensionPref(*set_itr, kPrefBlacklist,
+                          Value::CreateBooleanValue(true));
+    }
   }
-
-  // Always make sure the "acknowledged" bit is cleared since the blacklist bit
-  // is changing.
-  UpdateExtensionPref(extension_id, kPrefBlacklistAcknowledged, NULL);
-
-  if (is_blacklisted) {
-    UpdateExtensionPref(extension_id,
-                        kPrefBlacklist,
-                        new base::FundamentalValue(true));
-  } else {
-    UpdateExtensionPref(extension_id, kPrefBlacklist, NULL);
-    const DictionaryValue* dict = GetExtensionPref(extension_id);
-    if (dict && dict->empty())
-      DeleteExtensionPrefs(extension_id);
+  for (size_t i = 0; i < remove_pref_ids.size(); ++i) {
+    DeleteExtensionPrefs(remove_pref_ids[i]);
   }
 }
 
@@ -1646,6 +1655,8 @@ scoped_ptr<ExtensionInfo> ExtensionPrefs::GetInstalledExtensionInfo(
   const DictionaryValue* extensions = prefs_->GetDictionary(kExtensionsPref);
   if (!extensions ||
       !extensions->GetDictionaryWithoutPathExpansion(extension_id, &ext))
+    return scoped_ptr<ExtensionInfo>();
+  if (IsBlacklistBitSet(ext))
     return scoped_ptr<ExtensionInfo>();
   int state_value;
   if (!ext->GetInteger(kPrefState, &state_value) ||

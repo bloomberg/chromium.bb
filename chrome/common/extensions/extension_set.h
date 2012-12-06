@@ -90,8 +90,7 @@ class ExtensionSet {
   bool InsertAll(const ExtensionSet& extensions);
 
   // Removes the specified extension.
-  // Returns true if the set contained the specified extnesion.
-  bool Remove(const std::string& id);
+  void Remove(const std::string& id);
 
   // Removes all extensions.
   void Clear();
@@ -123,9 +122,6 @@ class ExtensionSet {
 
   // Look up an Extension object by id.
   const extensions::Extension* GetByID(const std::string& id) const;
-
-  // Gets the IDs of all extensions in the set.
-  std::set<std::string> GetIDs() const;
 
   // Returns true if |info| should get extension api bindings and be permitted
   // to make api calls. Note that this is independent of what extension

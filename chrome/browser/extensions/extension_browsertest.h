@@ -12,8 +12,6 @@
 #include "base/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/extensions/features/feature.h"
@@ -23,9 +21,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 
-class ExtensionService;
 class ExtensionProcessManager;
-class Profile;
 
 // Base class for extension browser tests. Provides utilities for loading,
 // unloading, and installing extensions.
@@ -53,12 +49,6 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest,
 
   ExtensionBrowserTest();
   virtual ~ExtensionBrowserTest();
-
-  // Useful accessors.
-  Profile* profile() { return browser()->profile(); }
-  ExtensionService* extension_service() {
-    return extensions::ExtensionSystem::Get(profile())->extension_service();
-  }
 
   // InProcessBrowserTest
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;

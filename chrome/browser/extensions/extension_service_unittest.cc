@@ -626,8 +626,7 @@ class ExtensionServiceTest
   enum InstallState {
     INSTALL_FAILED,
     INSTALL_UPDATED,
-    INSTALL_NEW,
-    INSTALL_WITHOUT_LOAD,
+    INSTALL_NEW
   };
 
   const Extension* PackAndInstallCRX(const FilePath& dir_path,
@@ -702,19 +701,14 @@ class ExtensionServiceTest
         ++expected_extensions_count_;
 
       EXPECT_TRUE(installed_) << path.value();
+
+      EXPECT_EQ(1u, loaded_.size()) << path.value();
       EXPECT_EQ(0u, errors.size()) << path.value();
-
-      if (install_state == INSTALL_WITHOUT_LOAD) {
-        EXPECT_EQ(0u, loaded_.size()) << path.value();
-      } else {
-        EXPECT_EQ(1u, loaded_.size()) << path.value();
-        EXPECT_EQ(expected_extensions_count_, service_->extensions()->size()) <<
-            path.value();
-        extension = loaded_[0];
-        EXPECT_TRUE(service_->GetExtensionById(extension->id(), false)) <<
-            path.value();
-      }
-
+      EXPECT_EQ(expected_extensions_count_, service_->extensions()->size()) <<
+          path.value();
+      extension = loaded_[0];
+      EXPECT_TRUE(service_->GetExtensionById(extension->id(), false)) <<
+          path.value();
       for (std::vector<string16>::iterator err = errors.begin();
         err != errors.end(); ++err) {
         LOG(ERROR) << *err;
@@ -3004,7 +2998,7 @@ TEST_F(ExtensionServiceTest, BlacklistedExtensionWillNotInstall) {
 
   // We can not install good_crx.
   FilePath path = data_dir_.AppendASCII("good.crx");
-  InstallCRX(path, INSTALL_WITHOUT_LOAD);
+  InstallCRX(path, INSTALL_FAILED);
   EXPECT_EQ(0u, service_->extensions()->size());
   ValidateBooleanPref(good_crx, "blacklist", true);
 }
@@ -3030,11 +3024,95 @@ TEST_F(ExtensionServiceTest, UnloadBlacklistedExtensionPolicy) {
                                                                     "v1");
 
   // Make sure pref is updated
-  loop_.RunUntilIdle();
 
-  // The good_crx is blacklisted and the whitelist doesn't negate it.
+  // Now, the good_crx is blacklisted but whitelist negates it.
+  ValidateBooleanPref(good_crx, "blacklist", true);
+  EXPECT_EQ(1u, service_->extensions()->size());
+
+  whitelist.Clear();
+  prefs->Set(prefs::kExtensionInstallAllowList, whitelist);
+
+  // Now, the good_crx is blacklisted for good.
   ValidateBooleanPref(good_crx, "blacklist", true);
   EXPECT_EQ(0u, service_->extensions()->size());
+}
+
+// Allow Google-blacklisted extension if policy explicitly allows it (blacklist
+// then set policy).
+TEST_F(ExtensionServiceTest, WhitelistGoogleBlacklistedExtension) {
+  InitializeEmptyExtensionService();
+
+  std::vector<std::string> blacklist;
+  blacklist.push_back(good_crx);
+  ExtensionSystem::Get(profile_.get())->blacklist()->SetFromUpdater(blacklist,
+                                                                    "v1");
+
+  FilePath path = data_dir_.AppendASCII("good.crx");
+  InstallCRX(path, INSTALL_FAILED);
+
+  base::ListValue whitelist;
+  whitelist.Append(base::Value::CreateStringValue(good_crx));
+  service_->extension_prefs()->pref_service()->Set(
+      prefs::kExtensionInstallAllowList, whitelist);
+
+  InstallCRX(path, INSTALL_NEW);
+}
+
+// Allow Google-blacklisted extension if policy requires it (blacklist then set
+// policy).
+TEST_F(ExtensionServiceTest, ForcelistGoogleBlacklistedExtension) {
+  InitializeEmptyExtensionService();
+
+  std::vector<std::string> blacklist;
+  blacklist.push_back(good_crx);
+  ExtensionSystem::Get(profile_.get())->blacklist()->SetFromUpdater(blacklist,
+                                                                    "v1");
+
+  FilePath path = data_dir_.AppendASCII("good.crx");
+  InstallCRX(path, INSTALL_FAILED);
+
+  base::ListValue forcelist;
+  forcelist.Append(base::Value::CreateStringValue(good_crx));
+  service_->extension_prefs()->pref_service()->Set(
+      prefs::kExtensionInstallAllowList, forcelist);
+
+  InstallCRX(path, INSTALL_NEW);
+}
+
+// Allow Google-blacklisted extension if policy explicitly allows it (set policy
+// then blacklist).
+TEST_F(ExtensionServiceTest, GoogleBlacklistWhitelistedExtension) {
+  InitializeEmptyExtensionService();
+
+  base::ListValue whitelist;
+  whitelist.Append(base::Value::CreateStringValue(good_crx));
+  service_->extension_prefs()->pref_service()->Set(
+      prefs::kExtensionInstallAllowList, whitelist);
+
+  std::vector<std::string> blacklist;
+  blacklist.push_back(good_crx);
+  ExtensionSystem::Get(profile_.get())->blacklist()->SetFromUpdater(blacklist,
+                                                                    "v1");
+
+  InstallCRX(data_dir_.AppendASCII("good.crx"), INSTALL_NEW);
+}
+
+// Allow Google-blacklisted extension if policy requires it (set policy then
+// blacklist).
+TEST_F(ExtensionServiceTest, GoogleBlacklistForcelistedExtension) {
+  InitializeEmptyExtensionService();
+
+  base::ListValue forcelist;
+  forcelist.Append(base::Value::CreateStringValue(good_crx));
+  service_->extension_prefs()->pref_service()->Set(
+      prefs::kExtensionInstallAllowList, forcelist);
+
+  std::vector<std::string> blacklist;
+  blacklist.push_back(good_crx);
+  ExtensionSystem::Get(profile_.get())->blacklist()->SetFromUpdater(blacklist,
+                                                                    "v1");
+
+  InstallCRX(data_dir_.AppendASCII("good.crx"), INSTALL_NEW);
 }
 
 // Test loading extensions from the profile directory, except
@@ -3070,10 +3148,7 @@ TEST_F(ExtensionServiceTest, WillNotLoadBlacklistedExtensionsFromDirectory) {
   }
   ASSERT_EQ(2u, loaded_.size());
 
-  EXPECT_TRUE(service_->GetInstalledExtension(good1));
-  int include_mask = ExtensionService::INCLUDE_EVERYTHING &
-                    ~ExtensionService::INCLUDE_BLACKLISTED;
-  EXPECT_FALSE(service_->GetExtensionById(good1, include_mask));
+  EXPECT_FALSE(service_->GetExtensionById(good1, true));
 }
 
 // Will not install extension blacklisted by policy.

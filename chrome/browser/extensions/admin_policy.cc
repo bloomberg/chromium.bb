@@ -41,7 +41,8 @@ bool BlacklistedByDefault(const base::ListValue* blacklist) {
   return blacklist && blacklist->Find(wildcard) != blacklist->end();
 }
 
-bool UserMayLoad(const base::ListValue* blacklist,
+bool UserMayLoad(bool is_google_blacklisted,
+                 const base::ListValue* blacklist,
                  const base::ListValue* whitelist,
                  const base::ListValue* forcelist,
                  const Extension* extension,
@@ -49,17 +50,19 @@ bool UserMayLoad(const base::ListValue* blacklist,
   if (IsRequired(extension))
     return true;
 
-  if (!blacklist || blacklist->empty())
+  if ((!blacklist || blacklist->empty()) && !is_google_blacklisted)
     return true;
 
-  // Check the whitelist/forcelist first.
+  // Check the whitelist/forcelist first (takes precedence over Google
+  // blacklist).
   base::StringValue id_value(extension->id());
   if ((whitelist && whitelist->Find(id_value) != whitelist->end()) ||
       (forcelist && forcelist->Find(id_value) != forcelist->end()))
     return true;
 
-  // Then check the admin blacklist.
-  bool result = (!blacklist || blacklist->Find(id_value) == blacklist->end()) &&
+  // Then check both admin and Google blacklists.
+  bool result = !is_google_blacklisted &&
+                (!blacklist || blacklist->Find(id_value) == blacklist->end()) &&
                 !BlacklistedByDefault(blacklist);
   if (error && !result) {
     *error = l10n_util::GetStringFUTF16(

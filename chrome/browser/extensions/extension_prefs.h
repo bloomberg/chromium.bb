@@ -175,13 +175,6 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
                            Extension::DisableReason disable_reason);
   void ClearDisableReasons(const std::string& extension_id);
 
-  // Gets the set of extensions that have been blacklisted in prefs.
-  std::set<std::string> GetBlacklistedExtensions();
-
-  // Sets whether the extension with |id| is blacklisted.
-  void SetExtensionBlacklisted(const std::string& extension_id,
-                               bool is_blacklisted);
-
   // Returns the version string for the currently installed extension, or
   // the empty string if not found.
   std::string GetVersionString(const std::string& extension_id);
@@ -196,12 +189,11 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   // Returns base extensions install directory.
   const FilePath& install_directory() const { return install_directory_; }
 
-  // Returns whether the extension with |id| has its blacklist bit set.
-  //
-  // WARNING: this only checks the extension's entry in prefs, so by definition
-  // can only check extensions that prefs knows about. There may be other
-  // sources of blacklist information, such as safebrowsing. You probably want
-  // to use Blacklist::GetBlacklistedIDs rather than this method.
+  // Updates the prefs based on the blacklist.
+  void UpdateBlacklist(const std::set<std::string>& blacklist_set);
+
+  // Returns whether the extension with |id| is blacklisted.
+  // You probably don't want to call this method, see Blacklist::IsBlacklisted.
   bool IsExtensionBlacklisted(const std::string& id) const;
 
   // Based on extension id, checks prefs to see if it is orphaned.
@@ -503,8 +495,7 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   URLPatternSet GetAllowedInstallSites();
 
  private:
-  friend class ExtensionPrefsBlacklistedExtensions;  // Unit test.
-  friend class ExtensionPrefsUninstallExtension;     // Unit test.
+  friend class ExtensionPrefsUninstallExtension;  // Unit test.
 
   // See the Create methods.
   ExtensionPrefs(PrefService* prefs,

@@ -63,8 +63,8 @@ bool ExtensionSet::InsertAll(const ExtensionSet& extensions) {
   return size() != before;
 }
 
-bool ExtensionSet::Remove(const std::string& id) {
-  return extensions_.erase(id) > 0;
+void ExtensionSet::Remove(const std::string& id) {
+  extensions_.erase(id);
 }
 
 void ExtensionSet::Clear() {
@@ -135,15 +135,6 @@ const Extension* ExtensionSet::GetByID(const std::string& id) const {
     return i->second.get();
   else
     return NULL;
-}
-
-std::set<std::string> ExtensionSet::GetIDs() const {
-  std::set<std::string> ids;
-  for (ExtensionMap::const_iterator it = extensions_.begin();
-       it != extensions_.end(); ++it) {
-    ids.insert(it->first);
-  }
-  return ids;
 }
 
 bool ExtensionSet::ExtensionBindingsAllowed(

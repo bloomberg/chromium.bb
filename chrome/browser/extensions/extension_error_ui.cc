@@ -49,8 +49,8 @@ string16 ExtensionErrorUI::GenerateMessageSection(
 
   for (ExtensionIdSet::const_iterator iter = extensions->begin();
        iter != extensions->end(); ++iter) {
-    const extensions::Extension* e =
-        extension_service_->GetInstalledExtension(*iter);
+    const extensions::Extension* e = extension_service_->GetExtensionById(*iter,
+        true);
     message += l10n_util::GetStringFUTF16(
         e->is_app() ? app_template_message_id : extension_template_message_id,
         UTF8ToUTF16(e->name())) + char16('\n');

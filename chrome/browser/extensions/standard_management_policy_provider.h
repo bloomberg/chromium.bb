@@ -17,8 +17,9 @@ class ExtensionPrefs;
 // extension black/whitelists and admin black/whitelists.
 class StandardManagementPolicyProvider : public ManagementPolicy::Provider {
  public:
-  // |prefs| must outlive this.
-  explicit StandardManagementPolicyProvider(ExtensionPrefs* prefs);
+  // |prefs| and |blacklist| must outlive this.
+  StandardManagementPolicyProvider(ExtensionPrefs* prefs,
+                                   Blacklist* blacklist);
 
   virtual ~StandardManagementPolicyProvider();
 
@@ -33,6 +34,8 @@ class StandardManagementPolicyProvider : public ManagementPolicy::Provider {
 
  private:
   ExtensionPrefs* const prefs_;
+
+  Blacklist* const blacklist_;
 };
 
 }  // namespace extensions
