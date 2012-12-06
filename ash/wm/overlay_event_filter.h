@@ -31,7 +31,8 @@ class OverlayEventFilter : public ui::EventHandler,
     // Returns true if the overlay should be canceled in response to |event|.
     virtual bool IsCancelingKeyEvent(ui::KeyEvent* event) = 0;
 
-    // Returns the window that needs to receive events.
+    // Returns the window that needs to receive events. NULL if no window needs
+    // to receive key events from OverlayEventFilter.
     virtual aura::Window* GetWindow() = 0;
   };
 
@@ -52,7 +53,6 @@ class OverlayEventFilter : public ui::EventHandler,
 
   // ui::EventHandler overrides:
   virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
-  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
 
   // ShellObserver overrides:
   virtual void OnLoginStateChanged(user::LoginStatus status) OVERRIDE;

@@ -40,23 +40,13 @@ ui::EventResult OverlayEventFilter::OnKeyEvent(ui::KeyEvent* event) {
   // Handle key events only when they are sent to a child of the delegate's
   // window.
   aura::Window* target = static_cast<aura::Window*>(event->target());
-  if (delegate_ && delegate_->GetWindow()->Contains(target))
+  if (delegate_ && delegate_->GetWindow() &&
+      delegate_->GetWindow()->Contains(target))
     target->delegate()->OnKeyEvent(event);
 
   // Always handled: other windows shouldn't receive input while we're
   // displaying an overlay.
   return ui::ER_CONSUMED;
-}
-
-ui::EventResult OverlayEventFilter::OnMouseEvent(ui::MouseEvent* event) {
-  // Handle mouse events only when they are sent to a child of the delegate's
-  // window.
-  aura::Window* target = static_cast<aura::Window*>(event->target());
-  if (delegate_ && delegate_->GetWindow()->Contains(target)) {
-    target->delegate()->OnMouseEvent(event);
-    return ui::ER_CONSUMED;
-  }
-  return ui::ER_UNHANDLED;
 }
 
 void OverlayEventFilter::OnLoginStateChanged(
