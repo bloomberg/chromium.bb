@@ -534,6 +534,8 @@
         'browser/chromeos/customization_document_unittest.cc',
         'browser/chromeos/dbus/cros_dbus_service_unittest.cc',
         'browser/chromeos/dbus/proxy_resolution_service_provider_unittest.cc',
+        'browser/chromeos/dbus/service_provider_test_helper.cc',
+        'browser/chromeos/dbus/service_provider_test_helper.h',
         'browser/chromeos/drive/document_entry_conversion_unittest.cc',
         'browser/chromeos/drive/drive_cache_metadata_unittest.cc',
         'browser/chromeos/drive/drive_cache_unittest.cc',
