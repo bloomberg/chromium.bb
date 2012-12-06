@@ -1358,7 +1358,6 @@ void DriveFileSyncService::FinalizeRemoteSync(
     fileapi::SyncStatusCode status) {
   if (!param->temporary_file_path.empty())
     DeleteTemporaryFile(param->temporary_file_path);
-  param->token->ResetTask(FROM_HERE);
   NotifyTaskDone(status, param->token.Pass());
   if (status == fileapi::SYNC_STATUS_OK ||
       status == fileapi::SYNC_STATUS_HAS_CONFLICT) {
