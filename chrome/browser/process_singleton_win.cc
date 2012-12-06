@@ -352,6 +352,7 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
     }
     return PROCESS_NOTIFIED;
   }
+
   // Non-metro mode, send our command line to the other chrome message window.
   // format is "START\0<<<current directory>>>\0<<<commandline>>>".
   std::wstring to_send(L"START\0", 6);  // want the NULL in the string.
@@ -362,6 +363,15 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
   to_send.append(L"\0", 1);  // Null separator.
   to_send.append(GetCommandLineW());
   to_send.append(L"\0", 1);  // Null separator.
+
+  base::win::ScopedHandle process_handle;
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
+      base::OpenProcessHandleWithAccess(
+          process_id, PROCESS_QUERY_INFORMATION,
+          process_handle.Receive()) &&
+      base::win::IsProcessImmersive(process_handle.Get())) {
+    ActivateMetroChrome();
+  }
 
   // Allow the current running browser window making itself the foreground
   // window (otherwise it will just flash in the taskbar).
@@ -383,15 +393,6 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
     if (!result) {
       remote_window_ = NULL;
       return PROCESS_NONE;
-    }
-
-    base::win::ScopedHandle process_handle;
-    if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
-        base::OpenProcessHandleWithAccess(
-            process_id, PROCESS_QUERY_INFORMATION,
-            process_handle.Receive())) {
-      if (base::win::IsProcessImmersive(process_handle.Get()))
-        ActivateMetroChrome();
     }
     return PROCESS_NOTIFIED;
   }
