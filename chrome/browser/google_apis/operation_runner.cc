@@ -43,34 +43,26 @@ void OperationRunner::StartOperationWithRetry(
     AuthenticatedOperationInterface* operation) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // The re-authentication callback will run on UI thread.
-  operation->SetReAuthenticateCallback(
-      base::Bind(&OperationRunner::RetryOperation,
-                 weak_ptr_factory_.GetWeakPtr()));
-  StartOperation(operation);
-}
-
-void OperationRunner::StartOperation(
-    AuthenticatedOperationInterface* operation) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
   if (!auth_service_->HasAccessToken()) {
-    // Fetch OAuth2 authentication token from the refresh token first.
+    // Fetch OAuth2 access token from the refresh token first.
     auth_service_->StartAuthentication(
         operation_registry_.get(),
-        base::Bind(&OperationRunner::OnOperationAuthRefresh,
+        base::Bind(&OperationRunner::OnAccessTokenFetched,
                    weak_ptr_factory_.GetWeakPtr(),
                    operation->GetWeakPtr()));
     return;
   }
 
-  operation->Start(auth_service_->access_token(), custom_user_agent_);
+  operation->Start(auth_service_->access_token(),
+                   custom_user_agent_,
+                   base::Bind(&OperationRunner::RetryOperation,
+                              weak_ptr_factory_.GetWeakPtr()));
 }
 
-void OperationRunner::OnOperationAuthRefresh(
+void OperationRunner::OnAccessTokenFetched(
     const base::WeakPtr<AuthenticatedOperationInterface>& operation,
     GDataErrorCode code,
-    const std::string& auth_token) {
+    const std::string& /* access_token */) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Do nothing if the operation is canceled during authentication.
@@ -78,8 +70,8 @@ void OperationRunner::OnOperationAuthRefresh(
     return;
 
   if (code == HTTP_SUCCESS) {
-    DCHECK(auth_service_->HasRefreshToken());
-    StartOperation(operation);
+    DCHECK(auth_service_->HasAccessToken());
+    StartOperationWithRetry(operation);
   } else {
     operation->OnAuthFailed(code);
   }
@@ -92,7 +84,7 @@ void OperationRunner::RetryOperation(
   auth_service_->ClearAccessToken();
   // User authentication might have expired - rerun the request to force
   // auth token refresh.
-  StartOperation(operation);
+  StartOperationWithRetry(operation);
 }
 
 }  // namespace google_apis

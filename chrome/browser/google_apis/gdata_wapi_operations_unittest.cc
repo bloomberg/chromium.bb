@@ -164,6 +164,13 @@ bool ParseContentRangeHeader(const std::string& value,
           base::StringToInt64(parts[1], end_position));
 }
 
+// Does nothing for ReAuthenticateCallback(). This function should not be
+// reached as there won't be any authentication failures in the test.
+void DoNothingForReAuthenticateCallback(
+    AuthenticatedOperationInterface* /* operation */) {
+  NOTREACHED();
+}
+
 class GDataWapiOperationsTest : public testing::Test {
  public:
   GDataWapiOperationsTest()
@@ -421,7 +428,8 @@ TEST_F(GDataWapiOperationsTest, GetDocumentsOperation_DefaultFeed) {
       base::Bind(&CopyResultsFromGetDataCallbackAndQuit,
                  &result_code,
                  &result_data));
-  operation->Start(kTestGDataAuthToken, kTestUserAgent);
+  operation->Start(kTestGDataAuthToken, kTestUserAgent,
+                   base::Bind(&DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
@@ -451,7 +459,8 @@ TEST_F(GDataWapiOperationsTest, GetDocumentsOperation_ValidFeed) {
       base::Bind(&CopyResultsFromGetDataCallbackAndQuit,
                  &result_code,
                  &result_data));
-  operation->Start(kTestGDataAuthToken, kTestUserAgent);
+  operation->Start(kTestGDataAuthToken, kTestUserAgent,
+                   base::Bind(&DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
@@ -483,7 +492,8 @@ TEST_F(GDataWapiOperationsTest, GetDocumentsOperation_InvalidFeed) {
       base::Bind(&CopyResultsFromGetDataCallbackAndQuit,
                  &result_code,
                  &result_data));
-  operation->Start(kTestGDataAuthToken, kTestUserAgent);
+  operation->Start(kTestGDataAuthToken, kTestUserAgent,
+                   base::Bind(&DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
 
   EXPECT_EQ(GDATA_PARSE_ERROR, result_code);
@@ -506,7 +516,8 @@ TEST_F(GDataWapiOperationsTest, GetDocumentEntryOperation_ValidResourceId) {
       base::Bind(&CopyResultsFromGetDataCallbackAndQuit,
                  &result_code,
                  &result_data));
-  operation->Start(kTestGDataAuthToken, kTestUserAgent);
+  operation->Start(kTestGDataAuthToken, kTestUserAgent,
+                   base::Bind(&DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
@@ -532,7 +543,8 @@ TEST_F(GDataWapiOperationsTest, GetDocumentEntryOperation_InvalidResourceId) {
       base::Bind(&CopyResultsFromGetDataCallbackAndQuit,
                  &result_code,
                  &result_data));
-  operation->Start(kTestGDataAuthToken, kTestUserAgent);
+  operation->Start(kTestGDataAuthToken, kTestUserAgent,
+                   base::Bind(&DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_NOT_FOUND, result_code);
@@ -553,7 +565,8 @@ TEST_F(GDataWapiOperationsTest, GetAccountMetadataOperation) {
       base::Bind(&CopyResultsFromGetDataCallbackAndQuit,
                  &result_code,
                  &result_data));
-  operation->Start(kTestGDataAuthToken, kTestUserAgent);
+  operation->Start(kTestGDataAuthToken, kTestUserAgent,
+                   base::Bind(&DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
@@ -578,7 +591,8 @@ TEST_F(GDataWapiOperationsTest, DownloadFileOperation_ValidFile) {
       test_server_.GetURL("/files/gdata/testfile.txt"),
       FilePath::FromUTF8Unsafe("/dummy/gdata/testfile.txt"),
       GetTestCachedFilePath(FilePath::FromUTF8Unsafe("cached_testfile.txt")));
-  operation->Start(kTestGDataAuthToken, kTestUserAgent);
+  operation->Start(kTestGDataAuthToken, kTestUserAgent,
+                   base::Bind(&DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
@@ -606,7 +620,8 @@ TEST_F(GDataWapiOperationsTest, DownloadFileOperation_NonExistentFile) {
       FilePath::FromUTF8Unsafe("/dummy/gdata/no-such-file.txt"),
       GetTestCachedFilePath(
           FilePath::FromUTF8Unsafe("cache_no-such-file.txt")));
-  operation->Start(kTestGDataAuthToken, kTestUserAgent);
+  operation->Start(kTestGDataAuthToken, kTestUserAgent,
+                   base::Bind(&DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_NOT_FOUND, result_code);
@@ -626,7 +641,8 @@ TEST_F(GDataWapiOperationsTest, DeleteDocumentOperation) {
       test_server_.GetURL(
           "/feeds/default/private/full/file:2_file_resource_id"));
 
-  operation->Start(kTestGDataAuthToken, kTestUserAgent);
+  operation->Start(kTestGDataAuthToken, kTestUserAgent,
+                   base::Bind(&DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
@@ -651,7 +667,8 @@ TEST_F(GDataWapiOperationsTest, CreateDirectoryOperation) {
       test_server_.GetURL("/feeds/default/private/full/folder%3Aroot"),
       FILE_PATH_LITERAL("new directory"));
 
-  operation->Start(kTestGDataAuthToken, kTestUserAgent);
+  operation->Start(kTestGDataAuthToken, kTestUserAgent,
+                   base::Bind(&DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
@@ -685,7 +702,8 @@ TEST_F(GDataWapiOperationsTest, CopyDocumentOperation) {
       "document:5_document_resource_id",  // source resource ID
       FILE_PATH_LITERAL("New Document"));
 
-  operation->Start(kTestGDataAuthToken, kTestUserAgent);
+  operation->Start(kTestGDataAuthToken, kTestUserAgent,
+                   base::Bind(&DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
@@ -716,7 +734,8 @@ TEST_F(GDataWapiOperationsTest, RenameResourceOperation) {
           "/feeds/default/private/full/file:2_file_resource_id"),
       FILE_PATH_LITERAL("New File"));
 
-  operation->Start(kTestGDataAuthToken, kTestUserAgent);
+  operation->Start(kTestGDataAuthToken, kTestUserAgent,
+                   base::Bind(&DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
@@ -749,7 +768,8 @@ TEST_F(GDataWapiOperationsTest, AuthorizeAppOperation_ValidFeed) {
           "/feeds/default/private/full/file:2_file_resource_id"),
       "APP_ID");
 
-  operation->Start(kTestGDataAuthToken, kTestUserAgent);
+  operation->Start(kTestGDataAuthToken, kTestUserAgent,
+                   base::Bind(&DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
@@ -782,7 +802,8 @@ TEST_F(GDataWapiOperationsTest, AuthorizeAppOperation_InvalidFeed) {
       test_server_.GetURL("/files/gdata/testfile.txt"),
       "APP_ID");
 
-  operation->Start(kTestGDataAuthToken, kTestUserAgent);
+  operation->Start(kTestGDataAuthToken, kTestUserAgent,
+                   base::Bind(&DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
 
   EXPECT_EQ(GDATA_PARSE_ERROR, result_code);
@@ -815,7 +836,8 @@ TEST_F(GDataWapiOperationsTest, AddResourceToDirectoryOperation) {
           test_server_.GetURL(
               "/feeds/default/private/full/file:2_file_resource_id"));
 
-  operation->Start(kTestGDataAuthToken, kTestUserAgent);
+  operation->Start(kTestGDataAuthToken, kTestUserAgent,
+                   base::Bind(&DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
@@ -846,7 +868,8 @@ TEST_F(GDataWapiOperationsTest, RemoveResourceFromDirectoryOperation) {
           test_server_.GetURL("/feeds/default/private/full/folder%3Aroot"),
           "file:2_file_resource_id");
 
-  operation->Start(kTestGDataAuthToken, kTestUserAgent);
+  operation->Start(kTestGDataAuthToken, kTestUserAgent,
+                   base::Bind(&DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
@@ -883,7 +906,8 @@ TEST_F(GDataWapiOperationsTest, UploadNewFile) {
                  &upload_url),
       initiate_params);
 
-  initiate_operation->Start(kTestGDataAuthToken, kTestUserAgent);
+  initiate_operation->Start(kTestGDataAuthToken, kTestUserAgent,
+                            base::Bind(&DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
@@ -928,7 +952,8 @@ TEST_F(GDataWapiOperationsTest, UploadNewFile) {
                  &new_entry),
       resume_params);
 
-  resume_operation->Start(kTestGDataAuthToken, kTestUserAgent);
+  resume_operation->Start(kTestGDataAuthToken, kTestUserAgent,
+                          base::Bind(&DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
 
   // METHOD_PUT should be used to upload data.
@@ -979,7 +1004,8 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
                  &upload_url),
       initiate_params);
 
-  initiate_operation->Start(kTestGDataAuthToken, kTestUserAgent);
+  initiate_operation->Start(kTestGDataAuthToken, kTestUserAgent,
+                            base::Bind(&DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
@@ -1037,7 +1063,8 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
                    &new_entry),
         resume_params);
 
-    resume_operation->Start(kTestGDataAuthToken, kTestUserAgent);
+    resume_operation->Start(kTestGDataAuthToken, kTestUserAgent,
+                            base::Bind(&DoNothingForReAuthenticateCallback));
     MessageLoop::current()->Run();
 
     // METHOD_PUT should be used to upload data.
@@ -1100,7 +1127,8 @@ TEST_F(GDataWapiOperationsTest, UploadNewEmptyFile) {
                  &upload_url),
       initiate_params);
 
-  initiate_operation->Start(kTestGDataAuthToken, kTestUserAgent);
+  initiate_operation->Start(kTestGDataAuthToken, kTestUserAgent,
+                            base::Bind(&DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
@@ -1145,7 +1173,8 @@ TEST_F(GDataWapiOperationsTest, UploadNewEmptyFile) {
                  &new_entry),
       resume_params);
 
-  resume_operation->Start(kTestGDataAuthToken, kTestUserAgent);
+  resume_operation->Start(kTestGDataAuthToken, kTestUserAgent,
+                          base::Bind(&DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
 
   // METHOD_PUT should be used to upload data.
@@ -1191,7 +1220,8 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFile) {
                  &upload_url),
       initiate_params);
 
-  initiate_operation->Start(kTestGDataAuthToken, kTestUserAgent);
+  initiate_operation->Start(kTestGDataAuthToken, kTestUserAgent,
+                            base::Bind(&DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
@@ -1236,7 +1266,8 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFile) {
                  &new_entry),
       resume_params);
 
-  resume_operation->Start(kTestGDataAuthToken, kTestUserAgent);
+  resume_operation->Start(kTestGDataAuthToken, kTestUserAgent,
+                          base::Bind(&DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
 
   // METHOD_PUT should be used to upload data.

@@ -99,11 +99,16 @@ UrlFetchOperationBase::UrlFetchOperationBase(
 
 UrlFetchOperationBase::~UrlFetchOperationBase() {}
 
-void UrlFetchOperationBase::Start(const std::string& auth_token,
-                                  const std::string& custom_user_agent) {
+void UrlFetchOperationBase::Start(const std::string& access_token,
+                                  const std::string& custom_user_agent,
+                                  const ReAuthenticateCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(url_request_context_getter_);
-  DCHECK(!auth_token.empty());
+  DCHECK(!access_token.empty());
+  DCHECK(!callback.is_null());
+  DCHECK(re_authenticate_callback_.is_null());
+
+  re_authenticate_callback_ = callback;
 
   GURL url = GetURL();
   DCHECK(!url.is_empty());
@@ -132,7 +137,7 @@ void UrlFetchOperationBase::Start(const std::string& auth_token,
     url_fetcher_->AddExtraRequestHeader("User-Agent: " + custom_user_agent);
   url_fetcher_->AddExtraRequestHeader(kGDataVersionHeader);
   url_fetcher_->AddExtraRequestHeader(
-        base::StringPrintf(kAuthorizationHeaderFormat, auth_token.data()));
+        base::StringPrintf(kAuthorizationHeaderFormat, access_token.data()));
   std::vector<std::string> headers = GetExtraRequestHeaders();
   for (size_t i = 0; i < headers.size(); ++i) {
     url_fetcher_->AddExtraRequestHeader(headers[i]);
@@ -151,14 +156,6 @@ void UrlFetchOperationBase::Start(const std::string& auth_token,
 
   url_fetcher_->Start();
   started_ = true;
-}
-
-void UrlFetchOperationBase::SetReAuthenticateCallback(
-    const ReAuthenticateCallback& callback) {
-  DCHECK(!callback.is_null());
-  DCHECK(re_authenticate_callback_.is_null());
-
-  re_authenticate_callback_ = callback;
 }
 
 URLFetcher::RequestType UrlFetchOperationBase::GetRequestType() const {

@@ -53,18 +53,14 @@ class OperationRunner {
   void StartOperationWithRetry(AuthenticatedOperationInterface* operation);
 
  private:
-  // Starts an operation implementing the AuthenticatedOperationInterface
-  // interface.
-  void StartOperation(AuthenticatedOperationInterface* operation);
-
-  // Called when the authentication token is refreshed.
-  void OnOperationAuthRefresh(
+  // Called when the access token is fetched.
+  void OnAccessTokenFetched(
       const base::WeakPtr<AuthenticatedOperationInterface>& operation,
       GDataErrorCode error,
-      const std::string& auth_token);
+      const std::string& access_token);
 
-  // Clears any authentication token and retries the operation, which
-  // forces an authentication token refresh.
+  // Clears any authentication token and retries the operation, which forces
+  // an authentication token refresh.
   void RetryOperation(AuthenticatedOperationInterface* operation);
 
   Profile* profile_;  // not owned

@@ -37,28 +37,26 @@ namespace google_apis {
 // authentication.
 class AuthenticatedOperationInterface {
  public:
-  // Callback to DriveServiceInterface upon for re-authentication.
+  // Called when re-authentication is required. See Start() for details.
   typedef base::Callback<void(AuthenticatedOperationInterface* operation)>
       ReAuthenticateCallback;
 
   virtual ~AuthenticatedOperationInterface() {}
 
-  // Starts the actual operation after obtaining an authentication token
-  // |auth_token|. User-Agent header will be set to |custom_user_agent| if
-  // the value is not empty.
-  virtual void Start(const std::string& auth_token,
-                     const std::string& custom_user_agent) = 0;
+  // Starts the operation with |access_token|. User-Agent header will be set
+  // to |custom_user_agent| if the value is not empty.
+  //
+  // |callback| is called when re-authentication is needed for a certain
+  // number of times (see kMaxReAuthenticateAttemptsPerOperation in .cc).
+  // The callback should retry by calling Start() again with a new access
+  // token, or just call OnAuthFailed() if a retry is not attempted.
+  // |callback| must not be null.
+  virtual void Start(const std::string& access_token,
+                     const std::string& custom_user_agent,
+                     const ReAuthenticateCallback& callback) = 0;
 
   // Invoked when the authentication failed with an error code |code|.
   virtual void OnAuthFailed(GDataErrorCode code) = 0;
-
-  // Sets the callback to DriveServiceInterface when the operation restarts due
-  // to an authentication failure.
-  // This function should be called before Start().
-  // TODO(satorux): Make it a parameter of Start(). crbug.com/163535.
-  // |callback| must not be null.
-  virtual void SetReAuthenticateCallback(
-      const ReAuthenticateCallback& callback) = 0;
 
   // Gets a weak pointer to this operation object. Since operations may be
   // deleted when it is canceled by user action, for posting asynchronous tasks
@@ -81,10 +79,9 @@ class UrlFetchOperationBase : public AuthenticatedOperationInterface,
                               public net::URLFetcherDelegate {
  public:
   // AuthenticatedOperationInterface overrides.
-  virtual void Start(const std::string& auth_token,
-                     const std::string& custom_user_agent) OVERRIDE;
-  virtual void SetReAuthenticateCallback(
-      const ReAuthenticateCallback& callback) OVERRIDE;
+  virtual void Start(const std::string& access_token,
+                     const std::string& custom_user_agent,
+                     const ReAuthenticateCallback& callback) OVERRIDE;
   virtual base::WeakPtr<AuthenticatedOperationInterface> GetWeakPtr() OVERRIDE;
 
  protected:
