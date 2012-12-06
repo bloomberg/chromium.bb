@@ -10,6 +10,23 @@
 namespace views {
 namespace corewm {
 
+namespace {
+
+std::string FocusChangeEventName(int type) {
+  if (type == FocusChangeEvent::focus_changing_event_type())
+    return "FOCUS_CHANGING";
+  if (type == FocusChangeEvent::focus_changed_event_type())
+    return "FOCUS_CHANGED";
+  if (type == FocusChangeEvent::activation_changing_event_type())
+    return "ACTIVATION_CHANGING";
+  if (type == FocusChangeEvent::activation_changed_event_type())
+    return "ACTIVATION_CHANGED";
+  NOTREACHED();
+  return std::string();
+}
+
+}  // namespace
+
 // static
 int FocusChangeEvent::focus_changing_event_type_ = ui::ET_UNKNOWN;
 int FocusChangeEvent::focus_changed_event_type_ = ui::ET_UNKNOWN;
@@ -23,6 +40,7 @@ FocusChangeEvent::FocusChangeEvent(int type)
       last_focus_(NULL) {
   DCHECK_NE(type, ui::ET_UNKNOWN) <<
       "Call RegisterEventTypes() before instantiating this class";
+  set_name(FocusChangeEventName(type));
 }
 
 FocusChangeEvent::~FocusChangeEvent() {

@@ -43,7 +43,7 @@ class CancelledTouchEvent : public MirroredTouchEvent {
  public:
   explicit CancelledTouchEvent(const TouchEvent* src)
       : MirroredTouchEvent(src) {
-    set_type(ET_TOUCH_CANCELLED);
+    SetType(ET_TOUCH_CANCELLED);
   }
 
   virtual ~CancelledTouchEvent() {}

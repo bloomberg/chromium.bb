@@ -64,6 +64,7 @@ class UI_EXPORT Event {
 
   const base::NativeEvent& native_event() const { return native_event_; }
   EventType type() const { return type_; }
+  const std::string& name() const { return name_; }
   // time_stamp represents time since machine was booted.
   const base::TimeDelta& time_stamp() const { return time_stamp_; }
   int flags() const { return flags_; }
@@ -174,11 +175,13 @@ class UI_EXPORT Event {
   Event(EventType type, base::TimeDelta time_stamp, int flags);
   Event(const base::NativeEvent& native_event, EventType type, int flags);
   Event(const Event& copy);
-  void set_type(EventType type) { type_ = type; }
+  void SetType(EventType type);
   void set_delete_native_event(bool delete_native_event) {
     delete_native_event_ = delete_native_event;
   }
   void set_time_stamp(base::TimeDelta time_stamp) { time_stamp_ = time_stamp; }
+
+  void set_name(const std::string& name) { name_ = name; }
 
  private:
   void operator=(const Event&);
@@ -189,6 +192,7 @@ class UI_EXPORT Event {
 
   base::NativeEvent native_event_;
   EventType type_;
+  std::string name_;
   base::TimeDelta time_stamp_;
   int flags_;
   bool delete_native_event_;
@@ -301,7 +305,7 @@ class UI_EXPORT MouseEvent : public LocatedEvent {
              int flags)
       : LocatedEvent(model, source, target),
         changed_button_flags_(model.changed_button_flags_) {
-    set_type(type);
+    SetType(type);
     set_flags(flags);
   }
 

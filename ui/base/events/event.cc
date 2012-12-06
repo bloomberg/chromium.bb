@@ -51,6 +51,54 @@ gfx::Point CalibratePoint(const gfx::Point& point,
                     static_cast<int>(floorf(calibrated_y + 0.5f)));
 }
 
+std::string EventTypeName(ui::EventType type) {
+#define RETURN_IF_TYPE(t) if (type == ui::t)  return #t
+  RETURN_IF_TYPE(ET_UNKNOWN);
+  RETURN_IF_TYPE(ET_MOUSE_PRESSED);
+  RETURN_IF_TYPE(ET_MOUSE_DRAGGED);
+  RETURN_IF_TYPE(ET_MOUSE_RELEASED);
+  RETURN_IF_TYPE(ET_MOUSE_MOVED);
+  RETURN_IF_TYPE(ET_MOUSE_ENTERED);
+  RETURN_IF_TYPE(ET_MOUSE_EXITED);
+  RETURN_IF_TYPE(ET_KEY_PRESSED);
+  RETURN_IF_TYPE(ET_KEY_RELEASED);
+  RETURN_IF_TYPE(ET_MOUSEWHEEL);
+  RETURN_IF_TYPE(ET_MOUSE_CAPTURE_CHANGED);
+  RETURN_IF_TYPE(ET_TOUCH_RELEASED);
+  RETURN_IF_TYPE(ET_TOUCH_PRESSED);
+  RETURN_IF_TYPE(ET_TOUCH_MOVED);
+  RETURN_IF_TYPE(ET_TOUCH_STATIONARY);
+  RETURN_IF_TYPE(ET_TOUCH_CANCELLED);
+  RETURN_IF_TYPE(ET_DROP_TARGET_EVENT);
+  RETURN_IF_TYPE(ET_TRANSLATED_KEY_PRESS);
+  RETURN_IF_TYPE(ET_TRANSLATED_KEY_RELEASE);
+
+  RETURN_IF_TYPE(ET_GESTURE_SCROLL_BEGIN);
+  RETURN_IF_TYPE(ET_GESTURE_SCROLL_END);
+  RETURN_IF_TYPE(ET_GESTURE_SCROLL_UPDATE);
+  RETURN_IF_TYPE(ET_GESTURE_TAP);
+  RETURN_IF_TYPE(ET_GESTURE_TAP_DOWN);
+  RETURN_IF_TYPE(ET_GESTURE_TAP_CANCEL);
+  RETURN_IF_TYPE(ET_GESTURE_BEGIN);
+  RETURN_IF_TYPE(ET_GESTURE_END);
+  RETURN_IF_TYPE(ET_GESTURE_DOUBLE_TAP);
+  RETURN_IF_TYPE(ET_GESTURE_TWO_FINGER_TAP);
+  RETURN_IF_TYPE(ET_GESTURE_PINCH_BEGIN);
+  RETURN_IF_TYPE(ET_GESTURE_PINCH_END);
+  RETURN_IF_TYPE(ET_GESTURE_PINCH_UPDATE);
+  RETURN_IF_TYPE(ET_GESTURE_LONG_PRESS);
+  RETURN_IF_TYPE(ET_GESTURE_LONG_TAP);
+  RETURN_IF_TYPE(ET_GESTURE_MULTIFINGER_SWIPE);
+
+  RETURN_IF_TYPE(ET_SCROLL);
+  RETURN_IF_TYPE(ET_SCROLL_FLING_START);
+  RETURN_IF_TYPE(ET_SCROLL_FLING_CANCEL);
+#undef RETURN_IF_TYPE
+
+  NOTREACHED();
+  return std::string();
+}
+
 }  // namespace
 
 namespace ui {
@@ -90,6 +138,8 @@ Event::Event(EventType type, base::TimeDelta time_stamp, int flags)
       target_(NULL),
       phase_(EP_PREDISPATCH),
       result_(ER_UNHANDLED) {
+  if (type_ < ET_LAST)
+    name_ = EventTypeName(type_);
   Init();
 }
 
@@ -103,6 +153,8 @@ Event::Event(const base::NativeEvent& native_event,
       target_(NULL),
       phase_(EP_PREDISPATCH),
       result_(ER_UNHANDLED) {
+  if (type_ < ET_LAST)
+    name_ = EventTypeName(type_);
   InitWithNativeEvent(native_event);
 }
 
@@ -115,10 +167,20 @@ Event::Event(const Event& copy)
       target_(NULL),
       phase_(EP_PREDISPATCH),
       result_(ER_UNHANDLED) {
+  if (type_ < ET_LAST)
+    name_ = EventTypeName(type_);
 #if defined(USE_X11)
   if (native_event_)
     delete_native_event_ = true;
 #endif
+}
+
+void Event::SetType(EventType type) {
+  if (type_ < ET_LAST)
+    name_ = std::string();
+  type_ = type;
+  if (type_ < ET_LAST)
+    name_ = EventTypeName(type_);
 }
 
 void Event::Init() {
@@ -184,7 +246,7 @@ MouseEvent::MouseEvent(EventType type,
                    base::Time::NowFromSystemTime() - base::Time(), flags),
       changed_button_flags_(0) {
   if (this->type() == ET_MOUSE_MOVED && IsAnyButton())
-    set_type(ET_MOUSE_DRAGGED);
+    SetType(ET_MOUSE_DRAGGED);
 }
 
 // static
@@ -285,7 +347,7 @@ MouseWheelEvent::MouseWheelEvent(const base::NativeEvent& native_event)
 MouseWheelEvent::MouseWheelEvent(const ScrollEvent& scroll_event)
     : MouseEvent(scroll_event),
       offset_(scroll_event.y_offset()) {
-  set_type(ET_MOUSEWHEEL);
+  SetType(ET_MOUSEWHEEL);
 }
 
 MouseWheelEvent::MouseWheelEvent(const MouseEvent& mouse_event, int offset)
@@ -481,8 +543,8 @@ void KeyEvent::NormalizeFlags() {
 TranslatedKeyEvent::TranslatedKeyEvent(const base::NativeEvent& native_event,
                                        bool is_char)
     : KeyEvent(native_event, is_char) {
-  set_type(type() == ET_KEY_PRESSED ?
-           ET_TRANSLATED_KEY_PRESS : ET_TRANSLATED_KEY_RELEASE);
+  SetType(type() == ET_KEY_PRESSED ?
+          ET_TRANSLATED_KEY_PRESS : ET_TRANSLATED_KEY_RELEASE);
 }
 
 TranslatedKeyEvent::TranslatedKeyEvent(bool is_press,
@@ -495,8 +557,8 @@ TranslatedKeyEvent::TranslatedKeyEvent(bool is_press,
 }
 
 void TranslatedKeyEvent::ConvertToKeyEvent() {
-  set_type(type() == ET_TRANSLATED_KEY_PRESS ?
-           ET_KEY_PRESSED : ET_KEY_RELEASED);
+  SetType(type() == ET_TRANSLATED_KEY_PRESS ?
+          ET_KEY_PRESSED : ET_KEY_RELEASED);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
