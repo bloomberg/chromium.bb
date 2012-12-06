@@ -161,7 +161,8 @@ void InitializeCompositingFieldTrial() {
   threaded_compositing_probability = kDivisor;
 #elif defined(OS_MACOSX)
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  if (channel == chrome::VersionInfo::CHANNEL_DEV ||
+  if (channel == chrome::VersionInfo::CHANNEL_CANARY ||
+      channel == chrome::VersionInfo::CHANNEL_DEV ||
       channel == chrome::VersionInfo::CHANNEL_BETA) {
     // Enable force-compositing-mode on the Mac.
     force_compositing_mode_probability = kDivisor;
