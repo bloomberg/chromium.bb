@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "webkit/fileapi/syncable/sync_operation_type.h"
+#include "webkit/fileapi/syncable/sync_operation_result.h"
 
 class GURL;
 
@@ -19,7 +19,7 @@ namespace sync_file_system {
 
 class SyncEventObserver {
  public:
-  typedef fileapi::SyncOperationType SyncOperationType;
+  typedef fileapi::SyncOperationResult SyncOperationResult;
 
   SyncEventObserver() {}
   virtual ~SyncEventObserver() {}
@@ -49,10 +49,10 @@ class SyncEventObserver {
                                   SyncServiceState state,
                                   const std::string& description) = 0;
 
-  // Reports the file |url| was updated for |operation|
+  // Reports the file |url| was updated and resulted in |result|
   // by the sync file system backend.
   virtual void OnFileSynced(const fileapi::FileSystemURL& url,
-                            fileapi::SyncOperationType operation) = 0;
+                            fileapi::SyncOperationResult result) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncEventObserver);

@@ -12,7 +12,7 @@
 #include "chrome/browser/sync_file_system/sync_file_system_service.h"
 #include "chrome/common/extensions/api/sync_file_system.h"
 #include "webkit/fileapi/file_system_url.h"
-#include "webkit/fileapi/syncable/sync_operation_type.h"
+#include "webkit/fileapi/syncable/sync_operation_result.h"
 
 using sync_file_system::SyncEventObserver;
 
@@ -38,24 +38,27 @@ api::sync_file_system::SyncStateStatus SyncServiceStateEnumToExtensionEnum(
   return api::sync_file_system::SYNC_FILE_SYSTEM_SYNC_STATE_STATUS_NONE;
 }
 
-api::sync_file_system::SyncOperationType SyncOperationTypeToExtensionEnum(
-    fileapi::SyncOperationType operation_type) {
-  switch (operation_type) {
+api::sync_file_system::SyncOperationResult SyncOperationResultToExtensionEnum(
+    fileapi::SyncOperationResult operation_result) {
+  switch (operation_result) {
     case fileapi::SYNC_OPERATION_NONE:
       return api::sync_file_system::
-          SYNC_FILE_SYSTEM_SYNC_OPERATION_TYPE_NONE;
-    case fileapi::SYNC_OPERATION_ADD:
+          SYNC_FILE_SYSTEM_SYNC_OPERATION_RESULT_NONE;
+    case fileapi::SYNC_OPERATION_ADDED:
       return api::sync_file_system::
-          SYNC_FILE_SYSTEM_SYNC_OPERATION_TYPE_ADDED;
-    case fileapi::SYNC_OPERATION_UPDATE:
+          SYNC_FILE_SYSTEM_SYNC_OPERATION_RESULT_ADDED;
+    case fileapi::SYNC_OPERATION_UPDATED:
       return api::sync_file_system::
-          SYNC_FILE_SYSTEM_SYNC_OPERATION_TYPE_UPDATED;
-    case fileapi::SYNC_OPERATION_DELETE:
+          SYNC_FILE_SYSTEM_SYNC_OPERATION_RESULT_UPDATED;
+    case fileapi::SYNC_OPERATION_DELETED:
       return api::sync_file_system::
-          SYNC_FILE_SYSTEM_SYNC_OPERATION_TYPE_DELETED;
+          SYNC_FILE_SYSTEM_SYNC_OPERATION_RESULT_DELETED;
+    case fileapi::SYNC_OPERATION_CONFLICTED:
+      return api::sync_file_system::
+          SYNC_FILE_SYSTEM_SYNC_OPERATION_RESULT_CONFLICTED;
   }
   NOTREACHED();
-  return api::sync_file_system::SYNC_FILE_SYSTEM_SYNC_OPERATION_TYPE_NONE;
+  return api::sync_file_system::SYNC_FILE_SYSTEM_SYNC_OPERATION_RESULT_NONE;
 }
 
 }  // namespace
@@ -112,14 +115,14 @@ void ExtensionSyncEventObserver::OnSyncStateUpdated(
 
 void ExtensionSyncEventObserver::OnFileSynced(
     const fileapi::FileSystemURL& url,
-    fileapi::SyncOperationType operation) {
+    fileapi::SyncOperationResult result) {
   // TODO(calvinlo):Convert filePath from string to Webkit FileEntry.
-  const api::sync_file_system::SyncOperationType sync_operation_type =
-      SyncOperationTypeToExtensionEnum(operation);
+  const api::sync_file_system::SyncOperationResult sync_operation_result =
+      SyncOperationResultToExtensionEnum(result);
   const std::string filePath = url.path().AsUTF8Unsafe();
   scoped_ptr<base::ListValue> params(
       api::sync_file_system::OnFileSynced::Create(filePath,
-                                                  sync_operation_type));
+                                                  sync_operation_result));
 
   BroadcastOrDispatchEvent(url.origin(),
                            event_names::kOnFileSynced,

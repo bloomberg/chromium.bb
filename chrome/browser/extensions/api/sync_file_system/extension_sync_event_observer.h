@@ -42,7 +42,7 @@ class ExtensionSyncEventObserver
       const std::string& description) OVERRIDE;
 
   virtual void OnFileSynced(const fileapi::FileSystemURL& url,
-                            fileapi::SyncOperationType operation) OVERRIDE;
+                            fileapi::SyncOperationResult result) OVERRIDE;
 
  private:
    const std::string& GetExtensionId(const GURL& app_origin);

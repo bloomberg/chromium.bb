@@ -232,32 +232,32 @@ class DriveFileSyncServiceTest : public testing::Test {
 
   void ProcessRemoteChange(fileapi::SyncStatusCode expected_status,
                            const fileapi::FileSystemURL& expected_url,
-                           fileapi::SyncOperationType expected_operation) {
+                           fileapi::SyncOperationResult expected_result) {
     fileapi::SyncStatusCode actual_status = fileapi::SYNC_STATUS_UNKNOWN;
     fileapi::FileSystemURL actual_url;
-    fileapi::SyncOperationType actual_operation = fileapi::SYNC_OPERATION_NONE;
+    fileapi::SyncOperationResult actual_result = fileapi::SYNC_OPERATION_NONE;
 
     sync_service_->ProcessRemoteChange(
         mock_remote_processor(),
         base::Bind(&DriveFileSyncServiceTest::DidProcessRemoteChange,
                    base::Unretained(this),
-                   &actual_status, &actual_url, &actual_operation));
+                   &actual_status, &actual_url, &actual_result));
     message_loop_.RunUntilIdle();
 
     EXPECT_EQ(expected_status, actual_status);
     EXPECT_EQ(expected_url, actual_url);
-    EXPECT_EQ(expected_operation, actual_operation);
+    EXPECT_EQ(expected_result, actual_result);
   }
 
   void DidProcessRemoteChange(fileapi::SyncStatusCode* status_out,
                               fileapi::FileSystemURL* url_out,
-                              fileapi::SyncOperationType* operation_out,
+                              fileapi::SyncOperationResult* result_out,
                               fileapi::SyncStatusCode status,
                               const fileapi::FileSystemURL& url,
-                              fileapi::SyncOperationType operation) {
+                              fileapi::SyncOperationResult result) {
     *status_out = status;
     *url_out = url;
-    *operation_out = operation;
+    *result_out = result;
   }
 
   void AppendIncrementalRemoteChange(const GURL& origin,
@@ -814,7 +814,7 @@ TEST_F(DriveFileSyncServiceTest, RemoteChange_NewFile) {
 
   ProcessRemoteChange(fileapi::SYNC_STATUS_OK,
                       CreateURL(kOrigin, kFileName),
-                      fileapi::SYNC_OPERATION_ADD);
+                      fileapi::SYNC_OPERATION_ADDED);
 }
 
 TEST_F(DriveFileSyncServiceTest, RemoteChange_UpdateFile) {
@@ -859,7 +859,7 @@ TEST_F(DriveFileSyncServiceTest, RemoteChange_UpdateFile) {
   AppendIncrementalRemoteChange(kOrigin, *entry, 12345);
   ProcessRemoteChange(fileapi::SYNC_STATUS_OK,
                       CreateURL(kOrigin, kFileName),
-                      fileapi::SYNC_OPERATION_UPDATE);
+                      fileapi::SYNC_OPERATION_UPDATED);
 }
 
 #endif  // !defined(OS_ANDROID)

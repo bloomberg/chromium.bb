@@ -8,17 +8,17 @@ namespace syncFileSystem {
     long usage_bytes;
     long quota_bytes;
   };
-  
+
   dictionary SyncState {
     DOMString service_name;  // i.e. ‘drive’
     SyncStateStatus state;
     DOMString description;
   };
-  
-  enum SyncOperationType {
-    added, updated, deleted
+
+  enum SyncOperationResult {
+    added, updated, deleted, conflicted
   };
-  
+
   enum SyncStateStatus {
     // The sync service is being initialized (e.g. restoring data from the
     // database, checking connectivity and authenticating to the service etc).
@@ -44,14 +44,14 @@ namespace syncFileSystem {
     // error.)
     disabled
   };
-  
+
   enum FileSyncStatus {
     // Not conflicting and has no pending local changes.
     synced,
-    
-    // Has one or more pending local changes that haven't been synchronized. 
+
+    // Has one or more pending local changes that haven't been synchronized.
     pending,
-    
+
     // File conflicts with remote version and must be resolved manually.
     conflicting
   };
@@ -59,11 +59,11 @@ namespace syncFileSystem {
   // [nodoc] A callback type for requestFileSystem.
   callback GetFileSystemCallback =
       void ([instanceOf=DOMFileSystem] object fileSystem);
-      
+
   // [nodoc] A callback type for getUsageAndQuota.
   callback QuotaAndUsageCallback = void (StorageInfo info);
 
-  // Returns true if operation was successful.  
+  // Returns true if operation was successful.
   callback DeleteFileSystemCallback = void (boolean result);
 
   // [nodoc] A callback type for getFileSyncStatus.
@@ -75,11 +75,11 @@ namespace syncFileSystem {
     // will return the same handle to the same file system.
     static void requestFileSystem(DOMString serviceName,
                                   GetFileSystemCallback callback);
-                                  
+
     // Get usage and quota in bytes for sync file system with |serviceName|.
     static void getUsageAndQuota([instanceOf=DOMFileSystem] object fileSystem,
                                  QuotaAndUsageCallback callback);
-                                 
+
     // Deletes everything in the syncable filesystem.
     static void deleteFileSystem([instanceOf=DOMFileSystem] object fileSystem,
                                  DeleteFileSystemCallback callback);
@@ -88,17 +88,17 @@ namespace syncFileSystem {
     static void getFileSyncStatus([instanceOf=FileEntry] object fileEntry,
                                   GetFileSyncStatusCallback callback);
   };
-  
+
   interface Events {
     // Fired when an error or other state change has happened in the
     // sync backend. (e.g. the sync is temporarily disabled due to
     // network or authentication error etc).
     static void onSyncStateChanged(SyncState detail);
-    
+
     // Fired when a file has been updated by the background sync service.
     // TODO(calvinlo): Convert |file_entry_path| from to Webkit FileEntry.
     static void onFileSynced(DOMString file_entry_path,
-                             SyncOperationType operation);
+                             SyncOperationResult result);
   };
 
 };

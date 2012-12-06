@@ -112,7 +112,7 @@ class SyncFileSystemService
   // Callbacks for remote/local sync.
   void DidProcessRemoteChange(fileapi::SyncStatusCode status,
                               const fileapi::FileSystemURL& url,
-                              fileapi::SyncOperationType type);
+                              fileapi::SyncOperationResult result);
   void DidProcessLocalChange(fileapi::SyncStatusCode status,
                              const fileapi::FileSystemURL& url);
 

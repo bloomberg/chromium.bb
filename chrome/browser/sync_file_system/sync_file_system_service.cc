@@ -376,12 +376,12 @@ void SyncFileSystemService::MaybeStartLocalSync() {
 void SyncFileSystemService::DidProcessRemoteChange(
     fileapi::SyncStatusCode status,
     const FileSystemURL& url,
-    fileapi::SyncOperationType type) {
-  DVLOG(1) << "DidProcessRemoteChange:"
+    fileapi::SyncOperationResult result) {
+  DVLOG(1) << "DidProcessRemoteChange: "
            << " status=" << status
            << " (" << SyncStatusCodeToString(status) << ")"
            << " url=" << url.DebugString()
-           << " operation_type=" << type;
+           << " operation_result=" << result;
   DCHECK(remote_sync_running_);
   remote_sync_running_ = false;
 
@@ -391,22 +391,24 @@ void SyncFileSystemService::DidProcessRemoteChange(
     local_file_service_->ClearSyncFlagForURL(url);
   }
 
-  if (status == fileapi::SYNC_STATUS_OK &&
-      type != fileapi::SYNC_OPERATION_NONE) {
-    // Notify observers of the changes made for a remote sync.
-    FOR_EACH_OBSERVER(SyncEventObserver, observers_, OnFileSynced(url, type));
-  } else if (status == fileapi::SYNC_STATUS_NO_CHANGE_TO_SYNC) {
+  if (status == fileapi::SYNC_STATUS_NO_CHANGE_TO_SYNC) {
     // We seem to have no changes to work on for now.
     // TODO(kinuko): Might be better setting a timer to call MaybeStartSync.
     return;
-  } else if (status == fileapi::SYNC_STATUS_FILE_BUSY) {
+  }
+  if (status == fileapi::SYNC_STATUS_FILE_BUSY) {
     is_waiting_remote_sync_enabled_ = true;
     local_file_service_->RegisterURLForWaitingSync(
         url, base::Bind(&SyncFileSystemService::OnSyncEnabledForRemoteSync,
                         AsWeakPtr()));
     return;
-  } else if (status == fileapi::SYNC_STATUS_HAS_CONFLICT) {
-    // TODO(kinuko,tzik): Handle conflict!
+  }
+
+  if ((status == fileapi::SYNC_STATUS_OK ||
+       status == fileapi::SYNC_STATUS_HAS_CONFLICT) &&
+      result != fileapi::SYNC_OPERATION_NONE) {
+    // Notify observers of the changes made for a remote sync.
+    FOR_EACH_OBSERVER(SyncEventObserver, observers_, OnFileSynced(url, result));
   }
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE, base::Bind(&SyncFileSystemService::MaybeStartSync,
@@ -422,18 +424,19 @@ void SyncFileSystemService::DidProcessLocalChange(
   DCHECK(local_sync_running_);
   local_sync_running_ = false;
 
-  if (status != fileapi::SYNC_STATUS_NO_CHANGE_TO_SYNC) {
-    DCHECK(url.is_valid());
-    local_file_service_->ClearSyncFlagForURL(url);
-  }
-
   if (status == fileapi::SYNC_STATUS_NO_CHANGE_TO_SYNC) {
     // We seem to have no changes to work on for now.
-    // TODO(kinuko): Might be better setting a timer to call MaybeStartSync.
     return;
-  } else if (status == fileapi::SYNC_STATUS_HAS_CONFLICT) {
-    // TODO(kinuko,tzik): Handle conflict!
   }
+
+  DCHECK(url.is_valid());
+  local_file_service_->ClearSyncFlagForURL(url);
+
+  if (status == fileapi::SYNC_STATUS_HAS_CONFLICT) {
+    FOR_EACH_OBSERVER(SyncEventObserver, observers_,
+                      OnFileSynced(url, fileapi::SYNC_OPERATION_CONFLICTED));
+  }
+
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE, base::Bind(&SyncFileSystemService::MaybeStartSync,
                             AsWeakPtr()));

@@ -26,6 +26,7 @@
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/syncable/sync_file_metadata.h"
 #include "webkit/fileapi/syncable/sync_file_type.h"
+#include "webkit/fileapi/syncable/sync_operation_result.h"
 #include "webkit/fileapi/syncable/syncable_file_system_util.h"
 
 namespace sync_file_system {
@@ -142,7 +143,7 @@ struct DriveFileSyncService::ProcessRemoteChangeParam {
   bool metadata_updated;
   FilePath temporary_file_path;
   std::string md5_checksum;
-  fileapi::SyncOperationType operation_type;
+  fileapi::SyncOperationResult operation_result;
 
   ProcessRemoteChangeParam(scoped_ptr<TaskToken> token,
                            RemoteChangeProcessor* processor,
@@ -153,7 +154,7 @@ struct DriveFileSyncService::ProcessRemoteChangeParam {
         remote_change(remote_change),
         callback(callback),
         metadata_updated(false),
-        operation_type(fileapi::SYNC_OPERATION_NONE) {
+        operation_result(fileapi::SYNC_OPERATION_NONE) {
   }
 };
 
@@ -1108,14 +1109,14 @@ void DriveFileSyncService::DidPrepareForProcessRemoteChange(
       }
 
       DCHECK(param->remote_change.change.IsDelete());
-      param->operation_type = fileapi::SYNC_OPERATION_NONE;
+      param->operation_result = fileapi::SYNC_OPERATION_NONE;
       DeleteMetadataForRemoteSync(param.Pass());
       return;
     }
 
     DCHECK(!missing_local_file);
     if (param->remote_change.change.IsAddOrUpdate()) {
-      param->operation_type = fileapi::SYNC_OPERATION_NONE;
+      param->operation_result = fileapi::SYNC_OPERATION_NONE;
       param->drive_metadata.set_conflicted(true);
 
       metadata_store_->UpdateEntry(
@@ -1135,20 +1136,20 @@ void DriveFileSyncService::DidPrepareForProcessRemoteChange(
   if (param->remote_change.change.IsAddOrUpdate()) {
     if (local_changes.empty()) {
       if (missing_local_file) {
-        param->operation_type = fileapi::SYNC_OPERATION_ADD;
+        param->operation_result = fileapi::SYNC_OPERATION_ADDED;
         DownloadForRemoteSync(param.Pass());
         return;
       }
 
       DCHECK(!missing_local_file);
-      param->operation_type = fileapi::SYNC_OPERATION_UPDATE;
+      param->operation_result = fileapi::SYNC_OPERATION_UPDATED;
       DownloadForRemoteSync(param.Pass());
       return;
     }
 
     DCHECK(!local_changes.empty());
     if (local_changes.list().back().IsAddOrUpdate()) {
-      param->operation_type = fileapi::SYNC_OPERATION_NONE;
+      param->operation_result = fileapi::SYNC_OPERATION_CONFLICTED;
       param->drive_metadata.set_conflicted(true);
 
       metadata_store_->UpdateEntry(
@@ -1159,7 +1160,7 @@ void DriveFileSyncService::DidPrepareForProcessRemoteChange(
     }
 
     DCHECK(local_changes.list().back().IsDelete());
-    param->operation_type = fileapi::SYNC_OPERATION_ADD;
+    param->operation_result = fileapi::SYNC_OPERATION_ADDED;
     DownloadForRemoteSync(param.Pass());
     return;
   }
@@ -1167,7 +1168,7 @@ void DriveFileSyncService::DidPrepareForProcessRemoteChange(
   DCHECK(param->remote_change.change.IsDelete());
   if (local_changes.empty()) {
     if (missing_local_file) {
-      param->operation_type = fileapi::SYNC_OPERATION_NONE;
+      param->operation_result = fileapi::SYNC_OPERATION_NONE;
       if (missing_db_entry)
         CompleteRemoteSync(param.Pass(), fileapi::SYNC_STATUS_OK);
       else
@@ -1175,7 +1176,7 @@ void DriveFileSyncService::DidPrepareForProcessRemoteChange(
       return;
     }
     DCHECK(!missing_local_file);
-    param->operation_type = fileapi::SYNC_OPERATION_DELETE;
+    param->operation_result = fileapi::SYNC_OPERATION_DELETED;
 
     const fileapi::FileChange& file_change = param->remote_change.change;
     param->processor->ApplyRemoteChange(
@@ -1187,13 +1188,13 @@ void DriveFileSyncService::DidPrepareForProcessRemoteChange(
 
   DCHECK(!local_changes.empty());
   if (local_changes.list().back().IsAddOrUpdate()) {
-    param->operation_type = fileapi::SYNC_OPERATION_NONE;
+    param->operation_result = fileapi::SYNC_OPERATION_NONE;
     CompleteRemoteSync(param.Pass(), fileapi::SYNC_STATUS_OK);
     return;
   }
 
   DCHECK(local_changes.list().back().IsDelete());
-  param->operation_type = fileapi::SYNC_OPERATION_NONE;
+  param->operation_result = fileapi::SYNC_OPERATION_NONE;
   if (missing_db_entry)
     CompleteRemoteSync(param.Pass(), fileapi::SYNC_STATUS_OK);
   else
@@ -1242,7 +1243,7 @@ void DriveFileSyncService::DidDownloadFile(
     google_apis::GDataErrorCode error,
     const std::string& md5_checksum) {
   if (error == google_apis::HTTP_NOT_MODIFIED) {
-    param->operation_type = fileapi::SYNC_OPERATION_NONE;
+    param->operation_result = fileapi::SYNC_OPERATION_NONE;
     CompleteRemoteSync(param.Pass(), fileapi::SYNC_STATUS_OK);
     return;
   }
@@ -1330,6 +1331,7 @@ void DriveFileSyncService::CompleteRemoteSync(
 
   if (param->drive_metadata.conflicted())
     status = fileapi::SYNC_STATUS_HAS_CONFLICT;
+
   FinalizeRemoteSync(param.Pass(), status);
 }
 
@@ -1346,9 +1348,10 @@ void DriveFileSyncService::FinalizeRemoteSync(
     DeleteTemporaryFile(param->temporary_file_path);
   param->token->ResetTask(FROM_HERE);
   NotifyTaskDone(status, param->token.Pass());
-  if (status == fileapi::SYNC_STATUS_OK) {
+  if (status == fileapi::SYNC_STATUS_OK ||
+      status == fileapi::SYNC_STATUS_HAS_CONFLICT) {
     param->callback.Run(status, param->remote_change.url,
-                        param->operation_type);
+                        param->operation_result);
   } else {
     param->callback.Run(status, param->remote_change.url,
                         fileapi::SYNC_OPERATION_NONE);

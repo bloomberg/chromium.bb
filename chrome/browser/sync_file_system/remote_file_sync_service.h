@@ -10,7 +10,6 @@
 #include "base/basictypes.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/syncable/sync_callbacks.h"
-#include "webkit/fileapi/syncable/sync_operation_type.h"
 
 class GURL;
 

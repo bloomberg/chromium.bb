@@ -22,7 +22,6 @@
 #include "chrome/browser/sync_file_system/remote_file_sync_service.h"
 #include "webkit/fileapi/syncable/file_change.h"
 #include "webkit/fileapi/syncable/sync_callbacks.h"
-#include "webkit/fileapi/syncable/sync_operation_type.h"
 
 namespace google_apis {
 class DocumentFeed;
