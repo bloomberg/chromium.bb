@@ -282,23 +282,27 @@ void DisplayOptionsHandler::HandleStartOverscanCalibration(
 
 void DisplayOptionsHandler::HandleFinishOverscanCalibration(
     const base::ListValue* args) {
-  DCHECK(overscan_calibrator_.get());
-  overscan_calibrator_->Commit();
-  overscan_calibrator_.reset();
+  if (overscan_calibrator_.get()) {
+    overscan_calibrator_->Commit();
+    overscan_calibrator_.reset();
+  }
   SendDisplayInfo();
 }
 
 void DisplayOptionsHandler::HandleClearOverscanCalibration(
     const base::ListValue* args) {
-  DCHECK(overscan_calibrator_.get());
-  overscan_calibrator_->UpdateInsets(gfx::Insets());
-  overscan_calibrator_->Commit();
+  if (overscan_calibrator_.get()) {
+    overscan_calibrator_->UpdateInsets(gfx::Insets());
+    overscan_calibrator_->Commit();
+  }
   SendDisplayInfo();
 }
 
 void DisplayOptionsHandler::HandleUpdateOverscanCalibration(
     const base::ListValue* args) {
-  DCHECK(overscan_calibrator_.get());
+  if (!overscan_calibrator_.get())
+    return;
+
   double top = 0, left = 0, bottom = 0, right = 0;
   if (!args->GetDouble(0, &top) || !args->GetDouble(1, &left) ||
       !args->GetDouble(2, &bottom) || !args->GetDouble(3, &right)) {
