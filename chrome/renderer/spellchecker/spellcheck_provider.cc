@@ -146,6 +146,7 @@ void SpellCheckProvider::spellCheck(
       word.c_str(), word.size(), routing_id(),
       &offset, &length, optional_suggestions ? & suggestions : NULL);
   if (optional_suggestions) {
+    *optional_suggestions = suggestions;
     UMA_HISTOGRAM_COUNTS("SpellCheck.api.check.suggestions", word.size());
   } else {
     UMA_HISTOGRAM_COUNTS("SpellCheck.api.check", word.size());
