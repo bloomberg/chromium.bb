@@ -252,8 +252,8 @@ bool LinuxSandbox::LimitAddressSpace(const std::string& process_type) {
   if (command_line->HasSwitch(switches::kNoSandbox)) {
     return false;
   }
-  // Limit the address space to 8GB.
-  const rlim_t kNewAddressSpaceMaxSize = 0x200000000L;
+  // Limit the address space to 4GB.
+  const rlim_t kNewAddressSpaceMaxSize = 0x100000000L;
   struct rlimit old_address_space_limit;
   if (getrlimit(RLIMIT_AS, &old_address_space_limit))
     return false;
