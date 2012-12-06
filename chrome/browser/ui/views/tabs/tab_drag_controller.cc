@@ -477,18 +477,6 @@ void TabDragController::SetMoveBehavior(MoveBehavior behavior) {
 }
 
 void TabDragController::Drag(const gfx::Point& point_in_screen) {
-#if defined(OS_WIN) && !defined(USE_AURA)
-  // Windows coordinates are 16 bit values. When we hide the frame we move it to
-  // the max x/y coordinate. If the distance between the hidden frame and the
-  // current mouse coordinate is greater than 32k then the coordinate passed to
-  // the mouse handler wraps and we drag to the wrong place. For this reason we
-  // ignore the coordinates and use the actual cursor position.
-  // NOTE: this works for touch too as dragging with touch updates the mouse
-  // position.
-  gfx::Point real_point_in_screen(GetCursorScreenPoint());
-#else
-  gfx::Point real_point_in_screen(point_in_screen);
-#endif
   bring_to_front_timer_.Stop();
   move_stacked_timer_.Stop();
 
@@ -496,7 +484,7 @@ void TabDragController::Drag(const gfx::Point& point_in_screen) {
     return;
 
   if (!started_drag_) {
-    if (!CanStartDrag(real_point_in_screen))
+    if (!CanStartDrag(point_in_screen))
       return;  // User hasn't dragged far enough yet.
 
     started_drag_ = true;
@@ -509,7 +497,7 @@ void TabDragController::Drag(const gfx::Point& point_in_screen) {
     }
   }
 
-  ContinueDragging(real_point_in_screen);
+  ContinueDragging(point_in_screen);
 }
 
 void TabDragController::EndDrag(EndDragReason reason) {
@@ -1879,10 +1867,21 @@ void TabDragController::HideFrame() {
 #if defined(OS_WIN) && !defined(USE_AURA)
   // We don't actually hide the window, rather we just move it way off-screen.
   // If we actually hide it, we stop receiving drag events.
+  //
+  // Windows coordinates are 16 bit values. Additionally mouse events are
+  // relative, this means if we move this window to the max position it is easy
+  // to trigger overflow. To avoid this we don't move to the max position,
+  // rather some where reasonably large. This should avoid common overflow
+  // problems.
+  // An alternative approach is to query the mouse pointer and ignore the
+  // location on the mouse (early versions did this). This proves problematic as
+  // if we happen to get behind in event processing it is all to easy to process
+  // a release in the wrong location, triggering either an unexpected move or an
+  // unexpected detach.
   HWND frame_hwnd = source_tabstrip_->GetWidget()->GetNativeView();
   RECT wr;
   GetWindowRect(frame_hwnd, &wr);
-  MoveWindow(frame_hwnd, 0xFFFF, 0xFFFF, wr.right - wr.left,
+  MoveWindow(frame_hwnd, 0x3FFF, 0x3FFF, wr.right - wr.left,
              wr.bottom - wr.top, TRUE);
 
   // We also save the bounds of the window prior to it being moved, so that if
