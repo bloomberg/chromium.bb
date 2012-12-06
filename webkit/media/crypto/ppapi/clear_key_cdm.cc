@@ -150,15 +150,14 @@ const char* GetCdmVersion() {
 
 namespace webkit_media {
 
-ClearKeyCdm::Client::Client() : status_(kKeyError), key_message_length_(0) {}
+ClearKeyCdm::Client::Client() : status_(kKeyError) {}
 
 ClearKeyCdm::Client::~Client() {}
 
 void ClearKeyCdm::Client::Reset() {
   status_ = kKeyError;
   session_id_.clear();
-  key_message_.reset();
-  key_message_length_ = 0;
+  key_message_.clear();
   default_url_.clear();
 }
 
@@ -178,13 +177,11 @@ void ClearKeyCdm::Client::KeyError(const std::string& key_system,
 
 void ClearKeyCdm::Client::KeyMessage(const std::string& key_system,
                                      const std::string& session_id,
-                                     scoped_array<uint8> message,
-                                     int message_length,
+                                     const std::string& message,
                                      const std::string& default_url) {
   status_ = kKeyMessage;
   session_id_ = session_id;
-  key_message_ = message.Pass();
-  key_message_length_ = message_length;
+  key_message_ = message;
 }
 
 void ClearKeyCdm::Client::NeedKey(const std::string& key_system,
@@ -236,14 +233,15 @@ cdm::Status ClearKeyCdm::GenerateKeyRequest(const char* type, int type_size,
   latest_session_id_ = client_.session_id();
 
   DCHECK(!key_request->message());
-  if (client_.key_message_length()) {
+  if (!client_.key_message().empty()) {
     // TODO(tomfinegan): Get rid of this copy.
     key_request->set_message(
-        allocator_->Allocate(client_.key_message_length()));
+        allocator_->Allocate(client_.key_message().size()));
     DCHECK(key_request->message());
-    DCHECK_EQ(key_request->message()->size(), client_.key_message_length());
+    DCHECK_EQ(static_cast<size_t>(key_request->message()->size()),
+              client_.key_message().size());
     memcpy(key_request->message()->data(),
-           client_.key_message(), client_.key_message_length());
+           client_.key_message().data(), client_.key_message().size());
   }
 
   key_request->set_default_url(client_.default_url().data(),

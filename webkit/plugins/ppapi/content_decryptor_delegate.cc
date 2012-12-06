@@ -655,8 +655,7 @@ void ContentDecryptorDelegate::KeyMessage(PP_Var key_system_var,
     return;
   }
 
-  scoped_array<uint8> message_array;
-  int message_size = 0;
+  std::string message;
 
   if (message_resource) {
     EnterResourceNoLock<PPB_Buffer_API> enter(message_resource, true);
@@ -677,15 +676,13 @@ void ContentDecryptorDelegate::KeyMessage(PP_Var key_system_var,
       return;
     }
 
-    message_size = mapper.size();
-    message_array.reset(new uint8[message_size]);
-    memcpy(message_array.get(), mapper.data(), mapper.size());
+    message = std::string(reinterpret_cast<const char*>(mapper.data()),
+                          mapper.size());
   }
 
   decryptor_client_->KeyMessage(key_system_string->value(),
                                 session_id_string->value(),
-                                message_array.Pass(),
-                                message_size,
+                                message,
                                 default_url_string->value());
 }
 

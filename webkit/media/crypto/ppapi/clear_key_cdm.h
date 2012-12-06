@@ -78,8 +78,7 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule {
 
     Status status() { return status_; }
     const std::string& session_id() { return session_id_; }
-    const uint8* key_message() { return key_message_.get(); }
-    int key_message_length() { return key_message_length_; }
+    const std::string& key_message() { return key_message_; }
     const std::string& default_url() { return default_url_; }
 
     // Resets the Client to a clean state.
@@ -94,8 +93,7 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule {
                           int system_code) OVERRIDE;
     virtual void KeyMessage(const std::string& key_system,
                             const std::string& session_id,
-                            scoped_array<uint8> message,
-                            int message_length,
+                            const std::string& message,
                             const std::string& default_url) OVERRIDE;
     virtual void NeedKey(const std::string& key_system,
                          const std::string& session_id,
@@ -106,8 +104,7 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule {
    private:
     Status status_;
     std::string session_id_;
-    scoped_array<uint8> key_message_;
-    int key_message_length_;
+    std::string key_message_;
     std::string default_url_;
   };
 

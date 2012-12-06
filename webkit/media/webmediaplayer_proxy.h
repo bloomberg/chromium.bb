@@ -80,8 +80,7 @@ class WebMediaPlayerProxy
                         int system_code) OVERRIDE;
   virtual void KeyMessage(const std::string& key_system,
                           const std::string& session_id,
-                          scoped_array<uint8> message,
-                          int message_length,
+                          const std::string& message,
                           const std::string& default_url) OVERRIDE;
   virtual void NeedKey(const std::string& key_system,
                        const std::string& session_id,
@@ -109,8 +108,7 @@ class WebMediaPlayerProxy
   // Notify |webmediaplayer_| that a key message has been generated.
   void KeyMessageTask(const std::string& key_system,
                       const std::string& session_id,
-                      scoped_array<uint8> message,
-                      int message_length,
+                      const std::string& message,
                       const std::string& default_url);
 
   // Notify |webmediaplayer_| that a key is needed for decryption.
