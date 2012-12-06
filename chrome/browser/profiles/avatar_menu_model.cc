@@ -195,6 +195,5 @@ void AvatarMenuModel::RebuildMenu() {
 }
 
 void AvatarMenuModel::ClearMenu() {
-  STLDeleteContainerPointers(items_.begin(), items_.end());
-  items_.clear();
+  STLDeleteElements(&items_);
 }
