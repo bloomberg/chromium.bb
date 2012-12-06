@@ -85,11 +85,11 @@ using content::WebContents;
 // Our model is that the BWC controls us and also the toolbar. We try not to
 // talk to the browser nor the toolbar directly, instead centralizing control in
 // the BWC. The key method by which the BWC controls us is
-// |-updateAndShowNormalBar:showDetachedBar:withAnimation:|. This invokes state
-// changes, and at appropriate times we request that the BWC do things for us
-// via either the resize delegate or our general delegate. If the BWC needs any
-// information about what it should do, or tell the toolbar to do, it can then
-// query us back (e.g., |-isShownAs...|, |-getDesiredToolbarHeightCompression|,
+// |-updateState:ChangeType:|. This invokes state changes, and at appropriate
+// times we request that the BWC do things for us via either the resize delegate
+// or our general delegate. If the BWC needs any information about what it
+// should do, or tell the toolbar to do, it can then query us back (e.g.,
+// |-isShownAs...|, |-getDesiredToolbarHeightCompression|,
 // |-toolbarDividerOpacity|, etc.).
 //
 // Animation-related complications:
@@ -146,10 +146,6 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 }  // namespace
 
 @interface BookmarkBarController(Private)
-
-// Determines the appropriate state for the given situation.
-+ (BookmarkBar::State)stateToShowNormalBar:(BOOL)showNormalBar
-                           showDetachedBar:(BOOL)showDetachedBar;
 
 // Moves to the given next state (from the current state), possibly animating.
 // If |animate| is NO, it will stop any running animation and jump to the given
@@ -1445,16 +1441,6 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   [buttonFolderContextMenu_ cancelTracking];
 }
 
-// Determines the appropriate state for the given situation.
-+ (BookmarkBar::State)stateToShowNormalBar:(BOOL)showNormalBar
-                           showDetachedBar:(BOOL)showDetachedBar {
-  if (showNormalBar)
-    return BookmarkBar::SHOW;
-  if (showDetachedBar)
-    return BookmarkBar::DETACHED;
-  return BookmarkBar::HIDDEN;
-}
-
 - (void)moveToState:(BookmarkBar::State)nextState
       withAnimation:(BOOL)animate {
   BOOL isAnimationRunning = [self isAnimationRunning];
@@ -1514,14 +1500,11 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 }
 
 // N.B.: |-moveToState:...| will check if this should be a no-op or not.
-- (void)updateAndShowNormalBar:(BOOL)showNormalBar
-               showDetachedBar:(BOOL)showDetachedBar
-                 withAnimation:(BOOL)animate {
-  BookmarkBar::State newState =
-      [BookmarkBarController stateToShowNormalBar:showNormalBar
-                                  showDetachedBar:showDetachedBar];
-  [self moveToState:newState
-      withAnimation:animate && !ignoreAnimations_];
+- (void)updateState:(BookmarkBar::State)newState
+         changeType:(BookmarkBar::AnimateChangeType)changeType {
+  BOOL animate = changeType == BookmarkBar::ANIMATE_STATE_CHANGE &&
+                 !ignoreAnimations_;
+  [self moveToState:newState withAnimation:animate];
 }
 
 // (Private)

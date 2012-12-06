@@ -7,7 +7,6 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/weak_ptr.h"
-#include "base/prefs/public/pref_change_registrar.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -158,10 +157,8 @@ class BrowserWindowCocoa :
   virtual void DestroyBrowser() OVERRIDE;
 
  private:
-  virtual void OnShowBookmarkBarChanged();
   NSWindow* window() const;  // Accessor for the (current) |NSWindow|.
 
-  PrefChangeRegistrar pref_change_registrar_;
   Browser* browser_;  // weak, owned by controller
   BrowserWindowController* controller_;  // weak, owns us
   base::WeakPtrFactory<Browser> confirm_close_factory_;

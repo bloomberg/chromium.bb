@@ -16,25 +16,6 @@
 #import "third_party/ocmock/gtest_support.h"
 #import "third_party/ocmock/ocmock/OCMock.h"
 
-// A BrowserWindowCocoa that goes PONG when
-// BOOKMARK_BAR_VISIBILITY_PREF_CHANGED is sent.  This is so we can be
-// sure we are observing it.
-class BrowserWindowCocoaPong : public BrowserWindowCocoa {
- public:
-  BrowserWindowCocoaPong(Browser* browser,
-                         BrowserWindowController* controller)
-      : BrowserWindowCocoa(browser, controller) {
-    pong_ = false;
-  }
-  virtual ~BrowserWindowCocoaPong() { }
-
-  virtual void OnShowBookmarkBarChanged() OVERRIDE {
-    pong_ = true;
-  }
-
-  bool pong_;
-};
-
 // Main test class.
 class BrowserWindowCocoaTest : public CocoaProfileTest {
   virtual void SetUp() {
@@ -54,26 +35,9 @@ class BrowserWindowCocoaTest : public CocoaProfileTest {
   BrowserWindowController* controller_;
 };
 
-
-TEST_F(BrowserWindowCocoaTest, TestNotification) {
-  BrowserWindowCocoaPong *bwc =
-      new BrowserWindowCocoaPong(browser(), controller_);
-
-  EXPECT_FALSE(bwc->pong_);
-  chrome::ToggleBookmarkBarWhenVisible(profile());
-  // Confirm we are listening
-  EXPECT_TRUE(bwc->pong_);
-  delete bwc;
-  // If this does NOT crash it confirms we stopped listening in the destructor.
-  chrome::ToggleBookmarkBarWhenVisible(profile());
-}
-
-
 TEST_F(BrowserWindowCocoaTest, TestBookmarkBarVisible) {
-  BrowserWindowCocoaPong *bwc = new BrowserWindowCocoaPong(
-    browser(),
-    controller_);
-  scoped_ptr<BrowserWindowCocoaPong> scoped_bwc(bwc);
+  scoped_ptr<BrowserWindowCocoa> bwc(
+      new BrowserWindowCocoa(browser(), controller_));
 
   bool before = bwc->IsBookmarkBarVisible();
   chrome::ToggleBookmarkBarWhenVisible(profile());
@@ -107,10 +71,8 @@ TEST_F(BrowserWindowCocoaTest, TestFullscreen) {
   // windowWillClose: never gets called).
   scoped_nsobject<FakeController> fake_controller(
       [[FakeController alloc] init]);
-  BrowserWindowCocoaPong* bwc = new BrowserWindowCocoaPong(
-    browser(),
-    (BrowserWindowController*)fake_controller.get());
-  scoped_ptr<BrowserWindowCocoaPong> scoped_bwc(bwc);
+  scoped_ptr<BrowserWindowCocoa> bwc(new BrowserWindowCocoa(
+      browser(), static_cast<BrowserWindowController*>(fake_controller.get())));
 
   EXPECT_FALSE(bwc->IsFullscreen());
   bwc->EnterFullscreen(GURL(), FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION);

@@ -283,10 +283,9 @@ willAnimateFromState:(BookmarkBar::State)oldState
        resizeDelegate:(id<ViewResizer>)resizeDelegate;
 
 // Updates the bookmark bar (from its current, possibly in-transition) state to
-// the one appropriate for the new conditions.
-- (void)updateAndShowNormalBar:(BOOL)showNormalBar
-               showDetachedBar:(BOOL)showDetachedBar
-                 withAnimation:(BOOL)animate;
+// the new state.
+- (void)updateState:(BookmarkBar::State)newState
+         changeType:(BookmarkBar::AnimateChangeType)changeType;
 
 // Update the visible state of the bookmark bar.
 - (void)updateVisibility;

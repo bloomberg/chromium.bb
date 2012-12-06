@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/cocoa/tab_contents/instant_preview_controller_mac.h"
 
 #include "chrome/browser/instant/instant_model.h"
+#include "chrome/browser/ui/browser.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/tab_contents/previewable_contents_controller.h"
 
@@ -29,5 +30,5 @@ void InstantPreviewControllerMac::PreviewStateChanged(
   } else {
     [preview_ hidePreview];
   }
-  [window_ updateBookmarkBarVisibilityWithAnimation:NO];
+  browser_->MaybeUpdateBookmarkBarStateForInstantPreview(model.mode());
 }

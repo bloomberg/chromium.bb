@@ -88,11 +88,6 @@ BrowserWindowCocoa::BrowserWindowCocoa(Browser* browser,
     initial_show_state_(ui::SHOW_STATE_DEFAULT),
     attention_request_id_(0) {
 
-  pref_change_registrar_.Init(browser_->profile()->GetPrefs());
-  pref_change_registrar_.Add(
-      prefs::kShowBookmarkBar,
-      base::Bind(&BrowserWindowCocoa::OnShowBookmarkBarChanged,
-                 base::Unretained(this)));
   gfx::Rect bounds;
   chrome::GetSavedWindowBoundsAndShowState(browser_,
                                            &bounds,
@@ -256,7 +251,9 @@ void BrowserWindowCocoa::UpdateTitleBar() {
 
 void BrowserWindowCocoa::BookmarkBarStateChanged(
     BookmarkBar::AnimateChangeType change_type) {
-  // TODO: route changes to state through this.
+  [[controller_ bookmarkBarController]
+      updateState:browser_->bookmark_bar_state()
+       changeType:change_type];
 }
 
 void BrowserWindowCocoa::UpdateDevTools() {
@@ -615,10 +612,6 @@ FindBar* BrowserWindowCocoa::CreateFindBar() {
 
 bool BrowserWindowCocoa::GetConstrainedWindowTopY(int* top_y) {
   return false;
-}
-
-void BrowserWindowCocoa::OnShowBookmarkBarChanged() {
-  [controller_ updateBookmarkBarVisibilityWithAnimation:YES];
 }
 
 extensions::ActiveTabPermissionGranter*

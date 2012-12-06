@@ -355,7 +355,8 @@ enum {
     // We don't want to try and show the bar before it gets placed in its parent
     // view, so this step shoudn't be inside the bookmark bar controller's
     // |-awakeFromNib|.
-    [self updateBookmarkBarVisibilityWithAnimation:NO];
+    windowShim_->BookmarkBarStateChanged(
+        BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
 
     // Allow bar visibility to be changed.
     [self enableBarVisibilityUpdates];
@@ -1431,13 +1432,6 @@ enum {
   return [bookmarkBarController_ isAnimationRunning];
 }
 
-- (void)updateBookmarkBarVisibilityWithAnimation:(BOOL)animate {
-  [bookmarkBarController_
-      updateAndShowNormalBar:[self shouldShowBookmarkBar]
-             showDetachedBar:[self shouldShowDetachedBookmarkBar]
-               withAnimation:animate];
-}
-
 - (BookmarkBarController*)bookmarkBarController {
   return bookmarkBarController_;
 }
@@ -1541,7 +1535,8 @@ enum {
   // call resizeView -> layoutSubviews and cause unnecessary relayout.
   // TODO(viettrungluu): perhaps update to not terminate running animations (if
   // applicable)?
-  [self updateBookmarkBarVisibilityWithAnimation:NO];
+  windowShim_->BookmarkBarStateChanged(
+      BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
 
   [infoBarContainerController_ changeWebContents:contents];
 
@@ -1560,8 +1555,10 @@ enum {
   // (showing its floating bookmark bar) and normal web pages (showing no
   // bookmark bar).
   // TODO(viettrungluu): perhaps update to not terminate running animations?
-  if (change != TabStripModelObserver::TITLE_NOT_LOADING)
-    [self updateBookmarkBarVisibilityWithAnimation:NO];
+  if (change != TabStripModelObserver::TITLE_NOT_LOADING) {
+    windowShim_->BookmarkBarStateChanged(
+        BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
+  }
 }
 
 - (void)onTabDetachedWithContents:(WebContents*)contents {

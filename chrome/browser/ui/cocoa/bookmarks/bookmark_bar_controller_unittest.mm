@@ -307,9 +307,8 @@ class BookmarkBarControllerTestBase : public CocoaProfileTest {
       [contentView addSubview:parent_view_];
 
     // Make sure it's open so certain things aren't no-ops.
-    [bar updateAndShowNormalBar:YES
-                showDetachedBar:NO
-                  withAnimation:NO];
+    [bar updateState:BookmarkBar::SHOW
+          changeType:BookmarkBar::DONT_ANIMATE_STATE_CHANGE];
   }
 };
 
@@ -365,9 +364,8 @@ class BookmarkBarControllerTest : public BookmarkBarControllerTestBase {
 };
 
 TEST_F(BookmarkBarControllerTest, ShowWhenShowBookmarkBarTrue) {
-  [bar_ updateAndShowNormalBar:YES
-               showDetachedBar:NO
-                 withAnimation:NO];
+  [bar_ updateState:BookmarkBar::SHOW
+         changeType:BookmarkBar::DONT_ANIMATE_STATE_CHANGE];
   EXPECT_TRUE([bar_ isInState:BookmarkBar::SHOW]);
   EXPECT_FALSE([bar_ isInState:BookmarkBar::DETACHED]);
   EXPECT_TRUE([bar_ isVisible]);
@@ -378,9 +376,8 @@ TEST_F(BookmarkBarControllerTest, ShowWhenShowBookmarkBarTrue) {
 }
 
 TEST_F(BookmarkBarControllerTest, HideWhenShowBookmarkBarFalse) {
-  [bar_ updateAndShowNormalBar:NO
-               showDetachedBar:NO
-                 withAnimation:NO];
+  [bar_ updateState:BookmarkBar::HIDDEN
+         changeType:BookmarkBar::DONT_ANIMATE_STATE_CHANGE];
   EXPECT_FALSE([bar_ isInState:BookmarkBar::SHOW]);
   EXPECT_FALSE([bar_ isInState:BookmarkBar::DETACHED]);
   EXPECT_FALSE([bar_ isVisible]);
@@ -392,9 +389,8 @@ TEST_F(BookmarkBarControllerTest, HideWhenShowBookmarkBarFalse) {
 
 TEST_F(BookmarkBarControllerTest, HideWhenShowBookmarkBarTrueButDisabled) {
   [bar_ setBookmarkBarEnabled:NO];
-  [bar_ updateAndShowNormalBar:YES
-               showDetachedBar:NO
-                 withAnimation:NO];
+  [bar_ updateState:BookmarkBar::SHOW
+         changeType:BookmarkBar::DONT_ANIMATE_STATE_CHANGE];
   EXPECT_TRUE([bar_ isInState:BookmarkBar::SHOW]);
   EXPECT_FALSE([bar_ isInState:BookmarkBar::DETACHED]);
   EXPECT_FALSE([bar_ isVisible]);
@@ -405,9 +401,8 @@ TEST_F(BookmarkBarControllerTest, HideWhenShowBookmarkBarTrueButDisabled) {
 }
 
 TEST_F(BookmarkBarControllerTest, ShowOnNewTabPage) {
-  [bar_ updateAndShowNormalBar:NO
-               showDetachedBar:YES
-                 withAnimation:NO];
+  [bar_ updateState:BookmarkBar::DETACHED
+         changeType:BookmarkBar::DONT_ANIMATE_STATE_CHANGE];
   EXPECT_FALSE([bar_ isInState:BookmarkBar::SHOW]);
   EXPECT_TRUE([bar_ isInState:BookmarkBar::DETACHED]);
   EXPECT_TRUE([bar_ isVisible]);
@@ -449,46 +444,38 @@ TEST_F(BookmarkBarControllerTest, ShowOnNewTabPage) {
   }
 }
 
-// Test whether |-updateAndShowNormalBar:...| sets states as we expect. Make
+// Test whether |-updateState:...| sets states as we expect. Make
 // sure things don't crash.
 TEST_F(BookmarkBarControllerTest, StateChanges) {
   // First, go in one-at-a-time cycle.
-  [bar_ updateAndShowNormalBar:NO
-               showDetachedBar:NO
-                 withAnimation:NO];
+  [bar_ updateState:BookmarkBar::HIDDEN
+         changeType:BookmarkBar::DONT_ANIMATE_STATE_CHANGE];
   EXPECT_EQ(BookmarkBar::HIDDEN, [bar_ state]);
   EXPECT_FALSE([bar_ isVisible]);
   EXPECT_FALSE([bar_ isAnimationRunning]);
-  [bar_ updateAndShowNormalBar:YES
-               showDetachedBar:NO
-                 withAnimation:NO];
+
+  [bar_ updateState:BookmarkBar::SHOW
+         changeType:BookmarkBar::DONT_ANIMATE_STATE_CHANGE];
   EXPECT_EQ(BookmarkBar::SHOW, [bar_ state]);
   EXPECT_TRUE([bar_ isVisible]);
   EXPECT_FALSE([bar_ isAnimationRunning]);
-  [bar_ updateAndShowNormalBar:YES
-               showDetachedBar:YES
-                 withAnimation:NO];
-  EXPECT_EQ(BookmarkBar::SHOW, [bar_ state]);
-  EXPECT_TRUE([bar_ isVisible]);
-  EXPECT_FALSE([bar_ isAnimationRunning]);
-  [bar_ updateAndShowNormalBar:NO
-               showDetachedBar:YES
-                 withAnimation:NO];
+
+  [bar_ updateState:BookmarkBar::DETACHED
+         changeType:BookmarkBar::DONT_ANIMATE_STATE_CHANGE];
   EXPECT_EQ(BookmarkBar::DETACHED, [bar_ state]);
   EXPECT_TRUE([bar_ isVisible]);
   EXPECT_FALSE([bar_ isAnimationRunning]);
 
   // Now try some "jumps".
   for (int i = 0; i < 2; i++) {
-    [bar_ updateAndShowNormalBar:NO
-                 showDetachedBar:NO
-                   withAnimation:NO];
+  [bar_ updateState:BookmarkBar::HIDDEN
+         changeType:BookmarkBar::DONT_ANIMATE_STATE_CHANGE];
     EXPECT_EQ(BookmarkBar::HIDDEN, [bar_ state]);
     EXPECT_FALSE([bar_ isVisible]);
     EXPECT_FALSE([bar_ isAnimationRunning]);
-    [bar_ updateAndShowNormalBar:YES
-                 showDetachedBar:YES
-                   withAnimation:NO];
+
+    [bar_ updateState:BookmarkBar::SHOW
+           changeType:BookmarkBar::DONT_ANIMATE_STATE_CHANGE];
     EXPECT_EQ(BookmarkBar::SHOW, [bar_ state]);
     EXPECT_TRUE([bar_ isVisible]);
     EXPECT_FALSE([bar_ isAnimationRunning]);
@@ -496,15 +483,14 @@ TEST_F(BookmarkBarControllerTest, StateChanges) {
 
   // Now try some "jumps".
   for (int i = 0; i < 2; i++) {
-    [bar_ updateAndShowNormalBar:YES
-                 showDetachedBar:NO
-                   withAnimation:NO];
+    [bar_ updateState:BookmarkBar::SHOW
+           changeType:BookmarkBar::DONT_ANIMATE_STATE_CHANGE];
     EXPECT_EQ(BookmarkBar::SHOW, [bar_ state]);
     EXPECT_TRUE([bar_ isVisible]);
     EXPECT_FALSE([bar_ isAnimationRunning]);
-    [bar_ updateAndShowNormalBar:NO
-                 showDetachedBar:YES
-                   withAnimation:NO];
+
+    [bar_ updateState:BookmarkBar::DETACHED
+           changeType:BookmarkBar::DONT_ANIMATE_STATE_CHANGE];
     EXPECT_EQ(BookmarkBar::DETACHED, [bar_ state]);
     EXPECT_TRUE([bar_ isVisible]);
     EXPECT_FALSE([bar_ isAnimationRunning]);
@@ -664,24 +650,16 @@ TEST_F(BookmarkBarControllerTest, DeleteFromOffTheSideWhileItIsOpen) {
 // Test whether |-dragShouldLockBarVisibility| returns NO iff the bar is
 // detached.
 TEST_F(BookmarkBarControllerTest, TestDragShouldLockBarVisibility) {
-  [bar_ updateAndShowNormalBar:NO
-               showDetachedBar:NO
-                 withAnimation:NO];
+  [bar_ updateState:BookmarkBar::HIDDEN
+         changeType:BookmarkBar::DONT_ANIMATE_STATE_CHANGE];
   EXPECT_TRUE([bar_ dragShouldLockBarVisibility]);
 
-  [bar_ updateAndShowNormalBar:YES
-               showDetachedBar:NO
-                 withAnimation:NO];
+  [bar_ updateState:BookmarkBar::SHOW
+         changeType:BookmarkBar::DONT_ANIMATE_STATE_CHANGE];
   EXPECT_TRUE([bar_ dragShouldLockBarVisibility]);
 
-  [bar_ updateAndShowNormalBar:YES
-               showDetachedBar:YES
-                 withAnimation:NO];
-  EXPECT_TRUE([bar_ dragShouldLockBarVisibility]);
-
-  [bar_ updateAndShowNormalBar:NO
-               showDetachedBar:YES
-                 withAnimation:NO];
+  [bar_ updateState:BookmarkBar::DETACHED
+         changeType:BookmarkBar::DONT_ANIMATE_STATE_CHANGE];
   EXPECT_FALSE([bar_ dragShouldLockBarVisibility]);
 }
 
@@ -1609,9 +1587,8 @@ TEST_F(BookmarkBarControllerTest, CloseFolderOnAnimate) {
   EXPECT_TRUE([bar_ isVisible]);
 
   // Hide the bookmark bar.
-  [bar_ updateAndShowNormalBar:NO
-               showDetachedBar:YES
-                 withAnimation:YES];
+  [bar_ updateState:BookmarkBar::DETACHED
+         changeType:BookmarkBar::ANIMATE_STATE_CHANGE];
   EXPECT_TRUE([bar_ isAnimationRunning]);
 
   // Now that we've closed the bookmark bar (with animation) the folder menu

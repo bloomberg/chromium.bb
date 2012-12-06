@@ -506,21 +506,6 @@ willPositionSheet:(NSWindow*)sheet
   }
 }
 
-- (BOOL)shouldShowBookmarkBar {
-  DCHECK(browser_.get());
-  return browser_->profile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar) ?
-      YES : NO;
-}
-
-- (BOOL)shouldShowDetachedBookmarkBar {
-  DCHECK(browser_.get());
-  WebContents* web_contents = chrome::GetActiveWebContents(browser_.get());
-  BookmarkTabHelper* bookmark_tab_helper =
-      web_contents ? BookmarkTabHelper::FromWebContents(web_contents) : NULL;
-  return (bookmark_tab_helper && bookmark_tab_helper->ShouldShowBookmarkBar() &&
-          ![previewableContentsController_ isShowingPreview]);
-}
-
 - (void)adjustToolbarAndBookmarkBarForCompression:(CGFloat)compression {
   CGFloat newHeight =
       [toolbarController_ desiredHeightForCompression:compression];

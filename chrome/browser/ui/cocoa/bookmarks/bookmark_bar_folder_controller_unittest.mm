@@ -688,9 +688,8 @@ class BookmarkBarFolderControllerMenuTest : public CocoaProfileTest {
     [[test_window() contentView] addSubview:parent_view_];
 
     // Make sure it's open so certain things aren't no-ops.
-    [bar updateAndShowNormalBar:YES
-                showDetachedBar:NO
-                  withAnimation:NO];
+    [bar updateState:BookmarkBar::SHOW
+          changeType:BookmarkBar::DONT_ANIMATE_STATE_CHANGE];
   }
 };
 

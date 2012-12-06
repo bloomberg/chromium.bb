@@ -112,7 +112,8 @@ TEST_F(BrowserWindowControllerTest, TestNormal) {
   // Force the bookmark bar to be shown.
   profile()->GetPrefs()->
       SetBoolean(prefs::kShowBookmarkBar, true);
-  [controller_ updateBookmarkBarVisibilityWithAnimation:NO];
+  [controller_ browserWindow]->BookmarkBarStateChanged(
+      BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
 
   // Make sure a normal BrowserWindowController is, uh, normal.
   EXPECT_TRUE([controller_ isTabbedWindow]);
@@ -196,7 +197,8 @@ TEST_F(BrowserWindowControllerTest, BookmarkBarControllerIndirection) {
   // because of the notification issues.
   profile()->GetPrefs()->SetBoolean(prefs::kShowBookmarkBar, true);
 
-  [controller_ updateBookmarkBarVisibilityWithAnimation:NO];
+  [controller_ browserWindow]->BookmarkBarStateChanged(
+      BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
   EXPECT_TRUE([controller_ isBookmarkBarVisible]);
 }
 
@@ -427,7 +429,8 @@ TEST_F(BrowserWindowControllerTest, TestResizeViewsWithBookmarkBar) {
   // Force a display of the bookmark bar.
   profile()->GetPrefs()->
       SetBoolean(prefs::kShowBookmarkBar, true);
-  [controller_ updateBookmarkBarVisibilityWithAnimation:NO];
+  [controller_ browserWindow]->BookmarkBarStateChanged(
+      BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
 
   TabStripView* tabstrip = [controller_ tabStripView];
   NSView* contentView = [[tabstrip window] contentView];
