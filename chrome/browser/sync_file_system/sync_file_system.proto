@@ -14,4 +14,8 @@ message DriveMetadata {
   required string resource_id = 1;
   required string md5_checksum = 2;
   required bool conflicted = 3;
+
+  // When true, indicates that the remote file identified by |resource_id|
+  // should be fetched for solving the conflict (resolve-to-remote resolution).
+  required bool to_be_fetched = 4;
 }

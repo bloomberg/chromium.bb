@@ -682,6 +682,7 @@ TEST_F(DriveFileSyncServiceTest, ResolveSyncOperationType) {
   metadata.set_resource_id(kResourceId);
   metadata.set_md5_checksum("654321");
   metadata.set_conflicted(false);
+  metadata.set_to_be_fetched(false);
   metadata_store()->UpdateEntry(url, metadata,
                                 base::Bind(&DidEntryOperation));
 

@@ -510,6 +510,7 @@ void DriveFileSyncService::ApplyLocalChange(
         DCHECK(has_remote_change);
         metadata.set_resource_id(remote_change.resource_id);
         metadata.set_md5_checksum(std::string());
+        metadata.set_to_be_fetched(false);
       }
       metadata.set_conflicted(true);
       metadata_store_->UpdateEntry(
@@ -963,10 +964,10 @@ void DriveFileSyncService::DidUploadNewFile(
     const std::string& file_md5) {
   if (error == google_apis::HTTP_SUCCESS) {
     DriveMetadata metadata;
-    metadata_store_->ReadEntry(url, &metadata);
     metadata.set_resource_id(resource_id);
     metadata.set_md5_checksum(file_md5);
     metadata.set_conflicted(false);
+    metadata.set_to_be_fetched(false);
     metadata_store_->UpdateEntry(
         url, metadata,
         base::Bind(&DriveFileSyncService::DidApplyLocalChange,
@@ -989,10 +990,10 @@ void DriveFileSyncService::DidUploadExistingFile(
   switch (error) {
     case google_apis::HTTP_SUCCESS: {
       DriveMetadata metadata;
-      metadata_store_->ReadEntry(url, &metadata);
       metadata.set_resource_id(resource_id);
       metadata.set_md5_checksum(file_md5);
       metadata.set_conflicted(false);
+      metadata.set_to_be_fetched(false);
       metadata_store_->UpdateEntry(
           url, metadata,
           base::Bind(&DriveFileSyncService::DidApplyLocalChange,
@@ -1002,7 +1003,9 @@ void DriveFileSyncService::DidUploadExistingFile(
     case google_apis::HTTP_CONFLICT: {
       // Mark the file as conflicted.
       DriveMetadata metadata;
-      metadata_store_->ReadEntry(url, &metadata);
+      const fileapi::SyncStatusCode status =
+          metadata_store_->ReadEntry(url, &metadata);
+      DCHECK_EQ(fileapi::SYNC_STATUS_OK, status);
       metadata.set_conflicted(true);
       metadata_store_->UpdateEntry(
           url, metadata,
@@ -1041,7 +1044,9 @@ void DriveFileSyncService::DidDeleteFile(
     case google_apis::HTTP_CONFLICT: {
       // Mark the file as conflicted.
       DriveMetadata metadata;
-      metadata_store_->ReadEntry(url, &metadata);
+      const fileapi::SyncStatusCode status =
+          metadata_store_->ReadEntry(url, &metadata);
+      DCHECK_EQ(fileapi::SYNC_STATUS_OK, status);
       metadata.set_conflicted(true);
       metadata_store_->UpdateEntry(
           url, metadata,
@@ -1082,6 +1087,7 @@ void DriveFileSyncService::DidPrepareForProcessRemoteChange(
     param->drive_metadata.set_resource_id(param->remote_change.resource_id);
     param->drive_metadata.set_md5_checksum(std::string());
     param->drive_metadata.set_conflicted(false);
+    param->drive_metadata.set_to_be_fetched(false);
   }
   bool missing_local_file =
       (metadata.file_type == fileapi::SYNC_FILE_TYPE_UNKNOWN);
@@ -1286,6 +1292,16 @@ void DriveFileSyncService::CompleteRemoteSync(
   }
 
   RemoveRemoteChange(param->remote_change.url);
+
+  if (param->drive_metadata.to_be_fetched()) {
+    // Clear |to_be_fetched| flag since we completed fetching the remote change
+    // and applying it to the local file.
+    DCHECK(!param->drive_metadata.conflicted());
+    param->drive_metadata.set_to_be_fetched(false);
+    metadata_store_->UpdateEntry(
+        param->remote_change.url, param->drive_metadata,
+        base::Bind(&EmptyStatusCallback));
+  }
 
   GURL origin = param->remote_change.url.origin();
   if (metadata_store_->IsIncrementalSyncOrigin(origin)) {

@@ -46,11 +46,13 @@ std::string GetResourceID(const ResourceIDMap& sync_origins,
 
 DriveMetadata CreateMetadata(const std::string& resource_id,
                              const std::string& md5_checksum,
-                             bool conflicted) {
+                             bool conflicted,
+                             bool to_be_fetched) {
   DriveMetadata metadata;
   metadata.set_resource_id(resource_id);
   metadata.set_md5_checksum(md5_checksum);
   metadata.set_conflicted(conflicted);
+  metadata.set_to_be_fetched(to_be_fetched);
   return metadata;
 }
 
@@ -244,7 +246,7 @@ TEST_F(DriveMetadataStoreTest, ReadWriteTest) {
   EXPECT_EQ(fileapi::SYNC_DATABASE_ERROR_NOT_FOUND,
             metadata_store()->ReadEntry(url, &metadata));
 
-  metadata = CreateMetadata("1234567890", "09876543210", true);
+  metadata = CreateMetadata("1234567890", "09876543210", true, false);
   EXPECT_EQ(fileapi::SYNC_STATUS_OK, UpdateEntry(url, metadata));
   EXPECT_EQ(fileapi::SYNC_STATUS_OK, SetLargestChangeStamp(1));
 
@@ -281,11 +283,11 @@ TEST_F(DriveMetadataStoreTest, GetConflictURLsTest) {
   // Populate metadata in DriveMetadataStore. The metadata identified by "file2"
   // and "file3" are marked as conflicted.
   EXPECT_EQ(fileapi::SYNC_STATUS_OK,
-            UpdateEntry(URL(path1), CreateMetadata("1", "1", false)));
+            UpdateEntry(URL(path1), CreateMetadata("1", "1", false, false)));
   EXPECT_EQ(fileapi::SYNC_STATUS_OK,
-            UpdateEntry(URL(path2), CreateMetadata("2", "2", true)));
+            UpdateEntry(URL(path2), CreateMetadata("2", "2", true, false)));
   EXPECT_EQ(fileapi::SYNC_STATUS_OK,
-            UpdateEntry(URL(path3), CreateMetadata("3", "3", true)));
+            UpdateEntry(URL(path3), CreateMetadata("3", "3", true, false)));
 
   EXPECT_EQ(fileapi::SYNC_STATUS_OK, metadata_store()->GetConflictURLs(&urls));
   EXPECT_EQ(2U, urls.size());
@@ -391,27 +393,27 @@ TEST_F(DriveMetadataStoreTest, RemoveOrigin) {
             UpdateEntry(
                 fileapi::CreateSyncableFileSystemURL(
                     kOrigin1, kServiceName, FilePath(FPL("guf"))),
-                CreateMetadata("foo", "spam", false)));
+                CreateMetadata("foo", "spam", false, false)));
   EXPECT_EQ(fileapi::SYNC_STATUS_OK,
             UpdateEntry(
                 fileapi::CreateSyncableFileSystemURL(
                     kOrigin2, kServiceName, FilePath(FPL("mof"))),
-                CreateMetadata("bar", "ham", false)));
+                CreateMetadata("bar", "ham", false, false)));
   EXPECT_EQ(fileapi::SYNC_STATUS_OK,
             UpdateEntry(
                 fileapi::CreateSyncableFileSystemURL(
                     kOrigin3, kServiceName, FilePath(FPL("waf"))),
-                CreateMetadata("baz", "egg", false)));
+                CreateMetadata("baz", "egg", false, false)));
   EXPECT_EQ(fileapi::SYNC_STATUS_OK,
             UpdateEntry(
                 fileapi::CreateSyncableFileSystemURL(
                     kOrigin4, kServiceName, FilePath(FPL("cue"))),
-                CreateMetadata("lat", "fork", false)));
+                CreateMetadata("lat", "fork", false, false)));
   EXPECT_EQ(fileapi::SYNC_STATUS_OK,
             UpdateEntry(
                 fileapi::CreateSyncableFileSystemURL(
                     kOrigin1, kServiceName, FilePath(FPL("tic"))),
-                CreateMetadata("zav", "sause", false)));
+                CreateMetadata("zav", "sause", false, false)));
 
   EXPECT_EQ(fileapi::SYNC_STATUS_OK, RemoveOrigin(kOrigin1));
   EXPECT_EQ(fileapi::SYNC_STATUS_OK, RemoveOrigin(kOrigin2));
