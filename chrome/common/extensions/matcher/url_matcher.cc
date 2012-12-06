@@ -307,24 +307,42 @@ URLMatcherCondition URLMatcherConditionFactory::CreatePathEqualsCondition(
 
 URLMatcherCondition URLMatcherConditionFactory::CreateQueryPrefixCondition(
     const std::string& prefix) {
-  return CreateCondition(URLMatcherCondition::QUERY_PREFIX,
-      kEndOfPath + prefix);
+  std::string pattern;
+  if (!prefix.empty() && prefix[0] == '?')
+    pattern = kEndOfPath + prefix;
+  else
+    pattern = kEndOfPath + ('?' + prefix);
+
+  return CreateCondition(URLMatcherCondition::QUERY_PREFIX, pattern);
 }
 
 URLMatcherCondition URLMatcherConditionFactory::CreateQuerySuffixCondition(
     const std::string& suffix) {
-  return CreateCondition(URLMatcherCondition::QUERY_SUFFIX, suffix + kEndOfURL);
+  if (!suffix.empty() && suffix[0] == '?') {
+    return CreateQueryEqualsCondition(suffix);
+  } else {
+    return CreateCondition(URLMatcherCondition::QUERY_SUFFIX,
+                           suffix + kEndOfURL);
+  }
 }
 
 URLMatcherCondition URLMatcherConditionFactory::CreateQueryContainsCondition(
     const std::string& str) {
-  return CreateCondition(URLMatcherCondition::QUERY_CONTAINS, str);
+  if (!str.empty() && str[0] == '?')
+    return CreateQueryPrefixCondition(str);
+  else
+    return CreateCondition(URLMatcherCondition::QUERY_CONTAINS, str);
 }
 
 URLMatcherCondition URLMatcherConditionFactory::CreateQueryEqualsCondition(
     const std::string& str) {
-  return CreateCondition(URLMatcherCondition::QUERY_EQUALS,
-      kEndOfPath + str + kEndOfURL);
+  std::string pattern;
+  if (!str.empty() && str[0] == '?')
+    pattern = kEndOfPath + str + kEndOfURL;
+  else
+    pattern = kEndOfPath + ('?' + str) + kEndOfURL;
+
+  return CreateCondition(URLMatcherCondition::QUERY_EQUALS, pattern);
 }
 
 URLMatcherCondition

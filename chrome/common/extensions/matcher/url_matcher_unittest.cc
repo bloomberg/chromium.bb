@@ -284,6 +284,7 @@ TEST(URLMatcherConditionFactoryTest, TestComponentSearches) {
   EXPECT_TRUE(Matches(factory.CreatePathPrefixCondition("/webhp"), url));
   EXPECT_FALSE(Matches(factory.CreatePathPrefixCondition("webhp"), url));
   EXPECT_FALSE(Matches(factory.CreatePathPrefixCondition("/webhp?"), url));
+  EXPECT_FALSE(Matches(factory.CreatePathPrefixCondition("?sourceid"), url));
 
   EXPECT_TRUE(Matches(factory.CreatePathSuffixCondition(""), url));
   EXPECT_TRUE(Matches(factory.CreatePathSuffixCondition("webhp"), url));
@@ -300,18 +301,28 @@ TEST(URLMatcherConditionFactoryTest, TestComponentSearches) {
 
   // Test query component.
   EXPECT_TRUE(Matches(factory.CreateQueryPrefixCondition(""), url));
+  EXPECT_TRUE(Matches(factory.CreateQueryPrefixCondition("sourceid"), url));
+  // The '?' at the beginning is just ignored.
   EXPECT_TRUE(Matches(factory.CreateQueryPrefixCondition("?sourceid"), url));
-  EXPECT_FALSE(Matches(factory.CreatePathPrefixCondition("sourceid"), url));
 
   EXPECT_TRUE(Matches(factory.CreateQuerySuffixCondition(""), url));
   EXPECT_TRUE(Matches(factory.CreateQuerySuffixCondition("ion=1"), url));
-  EXPECT_FALSE(Matches(factory.CreatePathPrefixCondition("?sourceid"), url));
   EXPECT_FALSE(Matches(factory.CreateQuerySuffixCondition("www"), url));
+  // "Suffix" condition + pattern starting with '?' = "equals" condition.
+  EXPECT_FALSE(Matches(factory.CreateQuerySuffixCondition(
+      "?sourceid=chrome-instant&ie=UTF-8&ion="), url));
+  EXPECT_TRUE(Matches(factory.CreateQuerySuffixCondition(
+      "?sourceid=chrome-instant&ie=UTF-8&ion=1"), url));
 
+  EXPECT_FALSE(Matches(factory.CreateQueryEqualsCondition(
+      "?sourceid=chrome-instant&ie=UTF-8&ion="), url));
+  EXPECT_FALSE(Matches(factory.CreateQueryEqualsCondition(
+      "sourceid=chrome-instant&ie=UTF-8&ion="), url));
+  EXPECT_TRUE(Matches(factory.CreateQueryEqualsCondition(
+      "sourceid=chrome-instant&ie=UTF-8&ion=1"), url));
+  // The '?' at the beginning is just ignored.
   EXPECT_TRUE(Matches(factory.CreateQueryEqualsCondition(
       "?sourceid=chrome-instant&ie=UTF-8&ion=1"), url));
-  EXPECT_FALSE(Matches(factory.CreateQueryEqualsCondition(
-        "sourceid=chrome-instant&ie=UTF-8&ion="), url));
   EXPECT_FALSE(
       Matches(factory.CreateQueryEqualsCondition("www.google.com"), url));
 
@@ -320,20 +331,20 @@ TEST(URLMatcherConditionFactoryTest, TestComponentSearches) {
   EXPECT_TRUE(Matches(factory.CreateHostSuffixPathPrefixCondition(
       "google.com", "/webhp"), url));
   EXPECT_TRUE(Matches(factory.CreateHostSuffixPathPrefixCondition(
-        "", "/webhp"), url));
+      "", "/webhp"), url));
   EXPECT_TRUE(Matches(factory.CreateHostSuffixPathPrefixCondition(
-        "google.com", ""), url));
+      "google.com", ""), url));
   EXPECT_FALSE(Matches(factory.CreateHostSuffixPathPrefixCondition(
-        "www", ""), url));
+      "www", ""), url));
 
   EXPECT_TRUE(Matches(factory.CreateHostEqualsPathPrefixCondition(
       "www.google.com", "/webhp"), url));
   EXPECT_FALSE(Matches(factory.CreateHostEqualsPathPrefixCondition(
-        "", "/webhp"), url));
+      "", "/webhp"), url));
   EXPECT_TRUE(Matches(factory.CreateHostEqualsPathPrefixCondition(
-        "www.google.com", ""), url));
+      "www.google.com", ""), url));
   EXPECT_FALSE(Matches(factory.CreateHostEqualsPathPrefixCondition(
-        "google.com", ""), url));
+      "google.com", ""), url));
 }
 
 TEST(URLMatcherConditionFactoryTest, TestFullSearches) {
@@ -560,6 +571,59 @@ TEST(URLMatcherTest, FullTest) {
   // matcher.condition_factory_ does not leak memory by holding onto
   // unused patterns.
   EXPECT_NE(patternId1, patternId2);
+}
+
+TEST(URLMatcherTest, TestComponentsImplyContains) {
+  // Due to a different implementation of component (prefix, suffix and equals)
+  // and *Contains conditions we need to check that when a pattern matches a
+  // given part of a URL as equal, prefix or suffix, it also matches it in the
+  // "contains" test.
+  GURL url("https://www.google.com:1234/webhp?test=val&a=b");
+
+  URLMatcher matcher;
+  URLMatcherConditionFactory* factory = matcher.condition_factory();
+
+  URLMatcherConditionSet::Conditions conditions;
+
+  // First insert all the matching equals => contains pairs.
+  conditions.insert(factory->CreateHostEqualsCondition("www.google.com"));
+  conditions.insert(factory->CreateHostContainsCondition("www.google.com"));
+
+  conditions.insert(factory->CreateHostPrefixCondition("www."));
+  conditions.insert(factory->CreateHostContainsCondition("www."));
+
+  conditions.insert(factory->CreateHostSuffixCondition("com"));
+  conditions.insert(factory->CreateHostContainsCondition("com"));
+
+  conditions.insert(factory->CreatePathEqualsCondition("/webhp"));
+  conditions.insert(factory->CreatePathContainsCondition("/webhp"));
+
+  conditions.insert(factory->CreatePathPrefixCondition("/we"));
+  conditions.insert(factory->CreatePathContainsCondition("/we"));
+
+  conditions.insert(factory->CreatePathSuffixCondition("hp"));
+  conditions.insert(factory->CreatePathContainsCondition("hp"));
+
+  conditions.insert(factory->CreateQueryEqualsCondition("test=val&a=b"));
+  conditions.insert(factory->CreateQueryContainsCondition("test=val&a=b"));
+
+  conditions.insert(factory->CreateQueryPrefixCondition("test=v"));
+  conditions.insert(factory->CreateQueryContainsCondition("test=v"));
+
+  conditions.insert(factory->CreateQuerySuffixCondition("l&a=b"));
+  conditions.insert(factory->CreateQueryContainsCondition("l&a=b"));
+
+  // The '?' for equality is just ignored.
+  conditions.insert(factory->CreateQueryEqualsCondition("?test=val&a=b"));
+  // Due to '?' the condition created here is a prefix-testing condition.
+  conditions.insert(factory->CreateQueryContainsCondition("?test=val&a=b"));
+
+  const int kConditionSetId = 1;
+  URLMatcherConditionSet::Vector insert;
+  insert.push_back(make_scoped_refptr(
+      new URLMatcherConditionSet(kConditionSetId, conditions)));
+  matcher.AddConditionSets(insert);
+  EXPECT_EQ(1u, matcher.MatchURL(url).size());
 }
 
 }  // namespace extensions
