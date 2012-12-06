@@ -118,4 +118,6 @@ message TabNavigation {
   // The id for this navigation, which is globally unique with high
   // probability.
   optional int64 global_id = 15;
+  // Search terms extracted from the URL.
+  optional string search_terms = 16;
 }
