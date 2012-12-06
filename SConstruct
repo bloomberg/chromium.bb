@@ -3081,7 +3081,9 @@ if nacl_irt_env.Bit('bitcode'):
 # call to __nacl_read_tp, which the IRT code overrides to segregate
 # IRT-private TLS from user TLS.
 if nacl_irt_env.Bit('bitcode'):
-  nacl_irt_env.Append(LINKFLAGS=['--pnacl-allow-native', '-Wt,-mtls-use-call'])
+  nacl_irt_env.Append(LINKFLAGS=['--pnacl-allow-native',
+                                 '-Wt,-mtls-use-call',
+                                 '-Wl,--pnacl-irt-link'])
 elif nacl_irt_env.Bit('target_arm'):
   nacl_irt_env.Append(CCFLAGS=['-mtp=soft'])
 else:

@@ -90,6 +90,7 @@
              # TODO(olonho): rethink
              '-L<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm',
              '-Wt,-mtls-use-call',
+             '-Wl,--pnacl-irt-link',
            ],
          },
        ],
