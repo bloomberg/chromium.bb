@@ -133,7 +133,7 @@ OmniboxViewMac::OmniboxViewMac(OmniboxEditController* controller,
                                CommandUpdater* command_updater,
                                AutocompleteTextField* field)
     : OmniboxView(profile, controller, toolbar_model, command_updater),
-      popup_view_(new OmniboxPopupViewMac(this, model(), field)),
+      popup_view_(OmniboxPopupViewMac::Create(this, model(), field)),
       field_(field),
       suggest_text_length_(0),
       delete_was_pressed_(false),

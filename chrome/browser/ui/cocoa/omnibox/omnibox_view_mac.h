@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 
-class OmniboxPopupViewMac;
+class OmniboxPopupView;
 
 namespace ui {
 class Clipboard;
@@ -158,7 +158,7 @@ class OmniboxViewMac : public OmniboxView,
   // Returns true if the caret is at the end of the content.
   bool IsCaretAtEnd() const;
 
-  scoped_ptr<OmniboxPopupViewMac> popup_view_;
+  scoped_ptr<OmniboxPopupView> popup_view_;
 
   AutocompleteTextField* field_;  // owned by tab controller
 

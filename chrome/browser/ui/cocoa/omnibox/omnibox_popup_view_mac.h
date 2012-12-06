@@ -27,6 +27,10 @@ class OmniboxView;
 
 class OmniboxPopupViewMac : public OmniboxPopupView {
  public:
+  static OmniboxPopupView* Create(OmniboxView* omnibox_view,
+                                  OmniboxEditModel* edit_model,
+                                  NSTextField* field);
+
   OmniboxPopupViewMac(OmniboxView* omnibox_view,
                       OmniboxEditModel* edit_model,
                       NSTextField* field);

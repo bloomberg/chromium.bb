@@ -13,6 +13,8 @@
 #include "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
+#include "chrome/browser/ui/omnibox/omnibox_popup_non_view.h"
+#include "chrome/browser/ui/search/search.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
@@ -277,6 +279,16 @@ NSAttributedString* OmniboxPopupViewMac::MatchText(
 - (NSInteger)highlightedRow;
 
 @end
+
+// static
+OmniboxPopupView* OmniboxPopupViewMac::Create(OmniboxView* omnibox_view,
+                                              OmniboxEditModel* edit_model,
+                                              NSTextField* field) {
+  if (chrome::search::IsInstantExtendedAPIEnabled(edit_model->profile()))
+    return new OmniboxPopupNonView(edit_model);
+  return new OmniboxPopupViewMac(omnibox_view, edit_model, field);
+}
+
 
 OmniboxPopupViewMac::OmniboxPopupViewMac(OmniboxView* omnibox_view,
                                          OmniboxEditModel* edit_model,

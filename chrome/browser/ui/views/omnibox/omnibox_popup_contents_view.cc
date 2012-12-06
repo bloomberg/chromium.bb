@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
 
+#include "chrome/browser/ui/omnibox/omnibox_popup_non_view.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
-#include "chrome/browser/ui/views/omnibox/omnibox_popup_non_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
 #include "chrome/browser/ui/views/omnibox/touch_omnibox_popup_contents_view.h"
 #include "chrome/browser/ui/search/search.h"
@@ -64,10 +64,8 @@ OmniboxPopupView* OmniboxPopupContentsView::Create(
     OmniboxView* omnibox_view,
     OmniboxEditModel* edit_model,
     views::View* location_bar) {
-  if (chrome::search::IsInstantExtendedAPIEnabled(edit_model->profile())) {
-    OmniboxPopupNonView* non_view = new OmniboxPopupNonView(edit_model);
-    return non_view;
-  }
+  if (chrome::search::IsInstantExtendedAPIEnabled(edit_model->profile()))
+    return new OmniboxPopupNonView(edit_model);
 
   OmniboxPopupContentsView* view = NULL;
   if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH) {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/omnibox/omnibox_popup_non_view.h"
+#include "chrome/browser/ui/omnibox/omnibox_popup_non_view.h"
 
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
@@ -34,18 +34,4 @@ void OmniboxPopupNonView::PaintUpdatesNow() {
 }
 
 void OmniboxPopupNonView::OnDragCanceled() {
-}
-
-bool OmniboxPopupNonView::IsSelectedIndex(size_t index) const {
-  return index == model_.selected_line();
-}
-
-bool OmniboxPopupNonView::IsHoveredIndex(size_t index) const {
-  return index == model_.hovered_line();
-}
-
-gfx::Image OmniboxPopupNonView::GetIconIfExtensionMatch(size_t index) const {
-  if (index < model_.result().size())
-    return model_.GetIconIfExtensionMatch(model_.result().match_at(index));
-  return gfx::Image();
 }
