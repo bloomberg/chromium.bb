@@ -18,10 +18,6 @@
 extern "C" {
 #endif
 
-void nc_token_init(volatile int *token, int acquire);
-int nc_token_acquire(volatile int *token);
-void nc_token_release(volatile int *token);
-
 int nc_pthread_condvar_ctor(pthread_cond_t *cond);
 
 typedef enum {

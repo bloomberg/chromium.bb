@@ -14,6 +14,7 @@
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 #include "native_client/src/untrusted/nacl/tls.h"
 #include "native_client/src/untrusted/nacl/tls_params.h"
+#include "native_client/src/untrusted/pthread/futex.h"
 #include "native_client/src/untrusted/pthread/pthread_internal.h"
 #include "native_client/src/untrusted/pthread/pthread_types.h"
 
@@ -30,6 +31,8 @@ static struct nc_combined_tdb *get_irt_tdb(void *thread_ptr) {
  */
 void __pthread_initialize(void) {
   struct nc_combined_tdb *tdb;
+
+  __nc_futex_init();
 
   /*
    * Allocate the area.  If malloc fails here, we'll crash before it returns.
@@ -63,6 +66,7 @@ static void nacl_irt_thread_exit(int32_t *stack_flag) {
   struct nc_combined_tdb *tdb = get_irt_tdb(NACL_SYSCALL(second_tls_get)());
 
   __nc_tsd_exit();
+  __nc_futex_thread_exit();
 
   /*
    * Sanity check: Check that this function was not called on a thread

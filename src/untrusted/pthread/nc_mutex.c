@@ -12,61 +12,83 @@
 #include <unistd.h>
 
 #include "native_client/src/untrusted/nacl/nacl_irt.h"
+#include "native_client/src/untrusted/pthread/futex.h"
 #include "native_client/src/untrusted/pthread/pthread.h"
 #include "native_client/src/untrusted/pthread/pthread_internal.h"
 #include "native_client/src/untrusted/pthread/pthread_types.h"
 
-/* Mutex functions */
+/*
+ * This mutex implementation is based on Ulrich Drepper's paper
+ * "Futexes Are Tricky" (dated November 5, 2011; see
+ * http://www.akkadia.org/drepper/futex.pdf).  We use the approach
+ * from "Mutex, Take 2".
+ *
+ * Ideally we would use the slightly modified approach from "Mutex,
+ * Take 3" instead, for better performance.  For the contended case,
+ * this replaces the atomic compare-and-swap ("lock cmpxchg" on x86)
+ * with a non-comparing atomic swap ("xchg" on x86 -- the "lock"
+ * prefix is redundant for this x86 instruction).
+ *
+ * However, in NaCl's current x86 GCC, the only atomic swap operation
+ * is __sync_lock_test_and_set(), which is documented with the
+ * warning:
+ *
+ *   "Many targets have only minimal support for such locks, and do
+ *   not support a full exchange operation.  In this case, a target
+ *   may support reduced functionality here by which the only valid
+ *   value to store is the immediate constant 1.  The exact value
+ *   actually stored in *ptr is implementation defined.
+ *
+ *   This builtin is not a full barrier, but rather an acquire
+ *   barrier."
+ *
+ * While this GCC and PNaCl/LLVM seem to generate the desired code in
+ * this case, the wording is not good enough if we are targeting
+ * arbitrary architectures.
+ *
+ * TODO(mseaborn): Switch to the more modern __atomic_exchange_n()
+ * when x86 nacl-gcc supports it.
+ */
 
-static int nc_thread_mutex_init(pthread_mutex_t *mutex) {
-  mutex->owner_thread_id = NACL_PTHREAD_ILLEGAL_THREAD_ID;
-  mutex->recursion_counter = 0;
-  return __nc_irt_mutex.mutex_create(&mutex->mutex_handle);
-}
 
-int pthread_mutex_validate(pthread_mutex_t *mutex) {
-  int rv = 0;
-
-  if (nc_token_acquire(&mutex->token)) {
-    /* Mutex_type was set by pthread_mutex_init */
-    rv = nc_thread_mutex_init(mutex);
-    nc_token_release(&mutex->token);
-  }
-
-  return rv;
-}
+/*
+ * Possible values of mutex_state.  The numeric values are significant
+ * because unlocking does an atomic decrement on the mutex_state
+ * field.
+ */
+enum MutexState {
+  UNLOCKED = 0,
+  LOCKED_WITHOUT_WAITERS = 1,
+  LOCKED_WITH_WAITERS = 2
+};
 
 int pthread_mutex_init(pthread_mutex_t *mutex,
                        const pthread_mutexattr_t *mutex_attr) {
-  int retval;
-  nc_token_init(&mutex->token, 1);
+  mutex->mutex_state = UNLOCKED;
+  mutex->owner_thread_id = NACL_PTHREAD_ILLEGAL_THREAD_ID;
+  mutex->recursion_counter = 0;
   if (mutex_attr != NULL) {
     mutex->mutex_type = mutex_attr->kind;
   } else {
     mutex->mutex_type = PTHREAD_MUTEX_FAST_NP;
   }
-  retval = nc_thread_mutex_init(mutex);
-  nc_token_release(&mutex->token);
-  return retval;
+  return 0;
 }
 
 int pthread_mutex_destroy(pthread_mutex_t *mutex) {
-  int retval;
-  pthread_mutex_validate(mutex);
+  if (mutex->mutex_state != UNLOCKED) {
+    return EBUSY;
+  }
   if (NACL_PTHREAD_ILLEGAL_THREAD_ID != mutex->owner_thread_id) {
     /* The mutex is still locked - cannot destroy. */
     return EBUSY;
   }
-  retval = __nc_irt_mutex.mutex_destroy(mutex->mutex_handle);
-  mutex->mutex_handle = NC_INVALID_HANDLE;
   mutex->owner_thread_id = NACL_PTHREAD_ILLEGAL_THREAD_ID;
   mutex->recursion_counter = 0;
-  return retval;
+  return 0;
 }
 
 static int nc_thread_mutex_lock(pthread_mutex_t *mutex, int try_only) {
-  int rv;
-  pthread_mutex_validate(mutex);
   /*
    * Checking mutex's owner thread id without synchronization is safe:
    * - We are checking whether the owner's id is equal to the current thread id,
@@ -90,13 +112,32 @@ static int nc_thread_mutex_lock(pthread_mutex_t *mutex, int try_only) {
       return 0;
     }
   }
-  if (try_only) {
-    rv = __nc_irt_mutex.mutex_trylock(mutex->mutex_handle);
-  } else {
-    rv = __nc_irt_mutex.mutex_lock(mutex->mutex_handle);
-  }
-  if (rv) {
-    return rv;
+
+  /*
+   * Try to claim the mutex.  This compare-and-swap executes the full
+   * memory barrier that pthread_mutex_lock() is required to execute.
+   */
+  int old_state = __sync_val_compare_and_swap(&mutex->mutex_state, UNLOCKED,
+                                              LOCKED_WITHOUT_WAITERS);
+  if (old_state != UNLOCKED) {
+    if (try_only) {
+      return EBUSY;
+    }
+    do {
+      /*
+       * If the state shows there are already waiters, or we can
+       * update it to indicate that there are waiters, then wait.
+       */
+      if (old_state == LOCKED_WITH_WAITERS ||
+          __sync_val_compare_and_swap(&mutex->mutex_state,
+                                      LOCKED_WITHOUT_WAITERS,
+                                      LOCKED_WITH_WAITERS) != UNLOCKED) {
+        __nc_futex_wait(&mutex->mutex_state, LOCKED_WITH_WAITERS, NULL);
+      }
+      /* Try again to claim the mutex. */
+      old_state = __sync_val_compare_and_swap(&mutex->mutex_state, UNLOCKED,
+                                              LOCKED_WITH_WAITERS);
+    } while (old_state != UNLOCKED);
   }
 
   mutex->owner_thread_id = pthread_self();
@@ -114,7 +155,6 @@ int pthread_mutex_lock(pthread_mutex_t *mutex) {
 }
 
 int pthread_mutex_unlock(pthread_mutex_t *mutex) {
-  pthread_mutex_validate(mutex);
   if (mutex->mutex_type != PTHREAD_MUTEX_FAST_NP) {
     if ((PTHREAD_MUTEX_RECURSIVE_NP == mutex->mutex_type) &&
         (0 != (--mutex->recursion_counter))) {
@@ -133,7 +173,23 @@ int pthread_mutex_unlock(pthread_mutex_t *mutex) {
   }
   mutex->owner_thread_id = NACL_PTHREAD_ILLEGAL_THREAD_ID;
   mutex->recursion_counter = 0;
-  return __nc_irt_mutex.mutex_unlock(mutex->mutex_handle);
+
+  /*
+   * Release the mutex.  This atomic decrement executes the full
+   * memory barrier that pthread_mutex_unlock() is required to
+   * execute.
+   */
+  int old_state = __sync_fetch_and_sub(&mutex->mutex_state, 1);
+  if (old_state != LOCKED_WITHOUT_WAITERS) {
+    if (old_state == UNLOCKED) {
+      /* Mutex was not locked. */
+      return EPERM;
+    }
+    mutex->mutex_state = 0;
+    int woken;
+    __nc_futex_wake(&mutex->mutex_state, 1, &woken);
+  }
+  return 0;
 }
 
 /*

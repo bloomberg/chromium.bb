@@ -72,8 +72,7 @@ irt_support_objs += [
                              '${MAIN_DIR}/src/untrusted/pthread/%s.c' % module)
     for module in ['futex',
                    'nc_mutex',
-                   'nc_condvar',
-                   'nc_token']]
+                   'nc_condvar']]
 
 irt_support_objs += [
     blob_env.ComponentObject('sys_private',

@@ -37,7 +37,6 @@
       '../pthread/futex.c',
       '../pthread/nc_mutex.c',
       '../pthread/nc_condvar.c',
-      '../pthread/nc_token.c',
       '../nacl/sys_private.c',
       '../valgrind/dynamic_annotations.c',
     ],

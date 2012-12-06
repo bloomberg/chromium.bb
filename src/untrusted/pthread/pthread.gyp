@@ -13,7 +13,6 @@
       'nc_mutex.c',
       'nc_condvar.c',
       'nc_semaphore.c',
-      'nc_token.c',
       'nc_init_irt.c',
       '../valgrind/dynamic_annotations.c',
     ],

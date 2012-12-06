@@ -10,11 +10,13 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #include "native_client/src/untrusted/irt/irt.h"
 #include "native_client/src/untrusted/irt/irt_interfaces.h"
 #include "native_client/src/untrusted/nacl/tls.h"
+#include "native_client/src/untrusted/pthread/futex.h"
 
 
 __thread int tls_var = 123;
@@ -26,6 +28,41 @@ static int32_t g_thread_flag;
 
 static __thread uint32_t g_block_hook_call_count = 0;
 
+
+/*
+ * Get the number of descriptors this process has.  This is used for
+ * checking for leaks.  Since there is no NaCl syscall for querying
+ * this directly, we scan the descriptor table.  We assume this NaCl
+ * process has not created more than 1000 descriptors.
+ */
+static int get_descriptor_count(void) {
+  int count = 0;
+  int fd;
+  for (fd = 0; fd < 1000; fd++) {
+    struct stat st;
+    if (fstat(fd, &st) == 0) {
+      count++;
+    } else {
+      assert(errno == EBADF);
+    }
+  }
+  return count;
+}
+
+/*
+ * Force NaCl's futex implementation to allocate its internal condvar,
+ * so that we can test that the condvar is properly freed later and
+ * does not leak.
+ */
+static void force_futex_condvar_alloc(void) {
+  int desc_count = get_descriptor_count();
+  int dummy_val = 0;
+  struct timespec abstime = { 0, 0 };
+  int rc = __nc_futex_wait(&dummy_val, dummy_val, &abstime);
+  assert(rc == ETIMEDOUT);
+  /* Verify that a descriptor did actually get created. */
+  assert(get_descriptor_count() == desc_count + 1);
+}
 
 static void wait_for_thread_exit(void) {
   /* Using a mutex+condvar is a hassle to set up, so wait by spinning. */
@@ -80,12 +117,14 @@ static int block_hooks_are_called(void) {
 
 
 static void user_thread_func(void) {
+  force_futex_condvar_alloc();
   check_thread();
   assert(block_hooks_are_called());
   nacl_irt_thread.thread_exit(&g_thread_flag);
 }
 
 void test_user_thread(void) {
+  int prev_desc_count = get_descriptor_count();
   g_initial_thread_id = pthread_self();
   /* NULL is not a valid thread ID in our pthreads implementation. */
   assert(g_initial_thread_id != NULL);
@@ -98,10 +137,13 @@ void test_user_thread(void) {
   wait_for_thread_exit();
   /* The assignment should not have affected our copy of tls_var. */
   assert(tls_var == 123);
+  /* Check that no descriptors were leaked. */
+  assert(get_descriptor_count() == prev_desc_count);
 }
 
 
 static void *irt_thread_func(void *arg) {
+  force_futex_condvar_alloc();
   assert((uintptr_t) arg == 0x12345678);
   check_thread();
   /* GC block hooks should not be called on IRT-internal threads. */
@@ -110,6 +152,7 @@ static void *irt_thread_func(void *arg) {
 }
 
 void test_irt_thread(void) {
+  int prev_desc_count = get_descriptor_count();
   /*
    * Test that a thread created by the IRT for internal use works, and
    * that TLS works inside the thread.
@@ -124,6 +167,8 @@ void test_irt_thread(void) {
   assert(result == (void *) 0x23456789);
   /* The assignment should not have affected our copy of tls_var. */
   assert(tls_var == 123);
+  /* Check that no descriptors were leaked. */
+  assert(get_descriptor_count() == prev_desc_count);
 }
 
 
@@ -147,6 +192,13 @@ void test_exiting_initial_thread(void) {
 
 
 int main(void) {
+  /*
+   * Force the allocation of this thread's futex condvar, otherwise it
+   * will look like a descriptor leak when the later pthread_join()
+   * call causes the condvar to be allocated.
+   */
+  force_futex_condvar_alloc();
+
   /*
    * Register these at startup because deregistering them is not
    * allowed by the IRT's interface and nor is registering different

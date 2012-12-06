@@ -9,25 +9,32 @@
  */
 
 #include <errno.h>
+#include <limits.h>
 #include <unistd.h>
 
 #include "native_client/src/untrusted/nacl/nacl_irt.h"
+#include "native_client/src/untrusted/pthread/futex.h"
 #include "native_client/src/untrusted/pthread/pthread.h"
 #include "native_client/src/untrusted/pthread/pthread_internal.h"
 #include "native_client/src/untrusted/pthread/pthread_types.h"
 
-static int nc_thread_cond_init(pthread_cond_t *cond,
-                               const pthread_condattr_t *cond_attr) {
-  return __nc_irt_cond.cond_create(&cond->handle);
-}
-
-/* TODO(gregoryd): make this static?  */
-void pthread_cond_validate(pthread_cond_t *cond) {
-  if (nc_token_acquire(&cond->token)) {
-    nc_thread_cond_init(cond, NULL);
-    nc_token_release(&cond->token);
-  }
-}
+/*
+ * This implementation is based on the condvar implementation in
+ * Android's C library, Bionic.  See libc/bionic/pthread.c in Bionic:
+ *
+ * https://android.googlesource.com/platform/bionic.git/+/7a34ed2bb36fcbe6967d8b670f4d70ada1dcef49/libc/bionic/pthread.c
+ *
+ * Technically there is a race condition in our pthread_cond_wait():
+ * It could miss a wakeup if pthread_cond_signal() or
+ * pthread_cond_broadcast() is called an exact multiple of 2^32 times
+ * between pthread_cond_wait()'s fetching of cond->sequence_number and
+ * its call to futex_wait().  That is very unlikely to happen,
+ * however.
+ *
+ * Unlike glibc's more complex condvar implementation, we do not
+ * attempt to optimize pthread_cond_signal/broadcast() to avoid a
+ * futex_wake() call in the case where there are no waiting threads.
+ */
 
 
 /*
@@ -36,12 +43,7 @@ void pthread_cond_validate(pthread_cond_t *cond) {
  */
 int pthread_cond_init(pthread_cond_t *cond,
                       const pthread_condattr_t *cond_attr) {
-  int retval;
-  nc_token_init(&cond->token, 1);
-  retval = nc_thread_cond_init(cond, cond_attr);
-  nc_token_release(&cond->token);
-  if (0 != retval)
-    return EAGAIN;
+  cond->sequence_number = 0;
   return 0;
 }
 
@@ -49,53 +51,64 @@ int pthread_cond_init(pthread_cond_t *cond,
  * Destroy condition variable COND.
  */
 int pthread_cond_destroy(pthread_cond_t *cond) {
-  int retval;
-  pthread_cond_validate(cond);
-  retval = __nc_irt_cond.cond_destroy(cond->handle);
-  cond->handle = NC_INVALID_HANDLE;
-  return retval;
+  return 0;
+}
+
+static int pulse(pthread_cond_t *cond, int count) {
+  /*
+   * This atomic increment executes the full memory barrier that
+   * pthread_cond_signal/broadcast() are required to execute.
+   */
+  __sync_fetch_and_add(&cond->sequence_number, 1);
+
+  int unused_woken_count;
+  __nc_futex_wake(&cond->sequence_number, count, &unused_woken_count);
+  return 0;
 }
 
 /*
  * Wake up one thread waiting for condition variable COND.
  */
 int pthread_cond_signal(pthread_cond_t *cond) {
-  pthread_cond_validate(cond);
-  return __nc_irt_cond.cond_signal(cond->handle);
+  return pulse(cond, 1);
 }
 
 int pthread_cond_broadcast(pthread_cond_t *cond) {
-  pthread_cond_validate(cond);
-  return __nc_irt_cond.cond_broadcast(cond->handle);
+  return pulse(cond, INT_MAX);
 }
 
 int pthread_cond_wait(pthread_cond_t *cond,
                       pthread_mutex_t *mutex) {
-  pthread_cond_validate(cond);
-  int retval = __nc_irt_cond.cond_wait(cond->handle, mutex->mutex_handle);
-  if (retval == 0) {
-    mutex->owner_thread_id = pthread_self();
-    mutex->recursion_counter = 1;
-  }
-  return retval;
+  return pthread_cond_timedwait_abs(cond, mutex, NULL);
 }
 
 int pthread_cond_timedwait_abs(pthread_cond_t *cond,
                                pthread_mutex_t *mutex,
                                const struct timespec *abstime) {
-  pthread_cond_validate(cond);
-  int retval = __nc_irt_cond.cond_timed_wait_abs(cond->handle,
-                                                 mutex->mutex_handle,
-                                                 abstime);
-  if (retval == 0 || retval == ETIMEDOUT) {
-    mutex->owner_thread_id = pthread_self();
-    mutex->recursion_counter = 1;
+  int old_value = cond->sequence_number;
+
+  int err = pthread_mutex_unlock(mutex);
+  if (err != 0)
+    return err;
+
+  int status = __nc_futex_wait(&cond->sequence_number, old_value, abstime);
+
+  err = pthread_mutex_lock(mutex);
+  if (err != 0)
+    return err;
+
+  /*
+   * futex_wait() can return EWOULDBLOCK but pthread_cond_wait() is
+   * not allowed to return that.
+   */
+  if (status == ETIMEDOUT) {
+    return ETIMEDOUT;
+  } else {
+    return 0;
   }
-  return retval;
 }
 
 int nc_pthread_condvar_ctor(pthread_cond_t *cond) {
-  nc_token_init(&cond->token, 0);
-  cond->handle = NC_INVALID_HANDLE;
+  pthread_cond_init(cond, NULL);
   return 1;
 }

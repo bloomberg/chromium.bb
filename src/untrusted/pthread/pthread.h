@@ -62,8 +62,11 @@ enum {
  * opaque record; the names of the fields can change anytime.
  */
 typedef struct {
-  /** Initialization token **/
-  int token;
+  /*
+   * mutex_state is either UNLOCKED (0), LOCKED_WITHOUT_WAITERS (1) or
+   * LOCKED_WITH_WAITERS (2).  See "enum MutexState".
+   */
+  int mutex_state;
 
   /**
    * The kind of mutex:
@@ -78,8 +81,12 @@ typedef struct {
   /** Recursion depth counter for recursive mutexes */
   uint32_t recursion_counter;
 
-  /** Handle to the system-side mutex */
-  int mutex_handle;
+  /*
+   * Padding is for compatibility with libraries (newlib etc.) that
+   * were built before libpthread switched to using futexes, and to
+   * match _LOCK_T in newlib's newlib/libc/include/sys/lock.h.
+   */
+  int unused_padding;
 } pthread_mutex_t;
 
 /**
@@ -100,11 +107,14 @@ typedef struct {
  * opaque record; the names of the fields can change anytime.
  */
 typedef struct {
-  /** Initialization token **/
-  int token;
+  /* This is incremented on each pthread_cond_signal/broadcast() call. */
+  int sequence_number;
 
-  /**< Handle to the system-side condition variable */
-  int handle;
+  /*
+   * Padding is for compatibility with libraries (newlib etc.) that
+   * were built before libpthread switched to using futexes.
+   */
+  int unused_padding;
 } pthread_cond_t;
 
 /**
