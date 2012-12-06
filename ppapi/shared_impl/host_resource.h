@@ -15,7 +15,10 @@ namespace ppapi {
 // The point is to prevent mistakes where the wrong resource value is sent.
 // Resource values are remapped in the plugin so that it can talk to multiple
 // hosts. If all values were PP_Resource, it would be easy to forget to do
-// this tranformation.
+// this transformation.
+//
+// To get the corresponding plugin PP_Resource for a HostResource, use
+// PluginResourceTracker::PluginResourceForHostResource().
 //
 // All HostResources respresent IDs valid in the host.
 class PPAPI_SHARED_EXPORT HostResource {
