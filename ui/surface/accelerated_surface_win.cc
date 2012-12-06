@@ -189,7 +189,6 @@ class PresentThread : public base::Thread,
   void ResetDevice();
 
  protected:
-  virtual void Init();
   virtual void CleanUp();
 
  private:
@@ -354,11 +353,6 @@ void PresentThread::ResetDevice() {
   device_->SetVertexDeclaration(vertex_declaration);
 }
 
-void PresentThread::Init() {
-  TRACE_EVENT0("gpu", "Initialize thread");
-  InitDevice();
-}
-
 void PresentThread::CleanUp() {
   // The D3D device and query are leaked because destroying the associated D3D
   // query crashes some Intel drivers.
@@ -371,19 +365,18 @@ PresentThread::~PresentThread() {
 }
 
 PresentThreadPool::PresentThreadPool() : next_thread_(0) {
+  // Do this in the constructor so present_threads_ is initialized before any
+  // other thread sees it. See LazyInstance documentation.
+  for (int i = 0; i < kNumPresentThreads; ++i) {
+    present_threads_[i] = new PresentThread(
+        base::StringPrintf("PresentThread #%d", i).c_str());
+    present_threads_[i]->Start();
+  }
 }
 
 PresentThread* PresentThreadPool::NextThread() {
   next_thread_ = (next_thread_ + 1) % kNumPresentThreads;
-  PresentThread* thread = present_threads_[next_thread_].get();
-  if (!thread) {
-    thread = new PresentThread(
-        base::StringPrintf("PresentThread #%d", next_thread_).c_str());
-    thread->Start();
-    present_threads_[next_thread_] = thread;
-  }
-
-  return thread;
+  return present_threads_[next_thread_].get();
 }
 
 AcceleratedPresenterMap::AcceleratedPresenterMap() {
@@ -1025,7 +1018,7 @@ gfx::Size AcceleratedPresenter::GetWindowSize() {
 
 bool AcceleratedPresenter::CheckDirect3DWillWork() {
   gfx::Size window_size = GetWindowSize();
-  if (window_size != last_window_size_ && last_window_size_.GetArea() != 0) {
+  if (window_size != last_window_size_) {
     last_window_size_ = window_size;
     last_window_resize_time_ = base::Time::Now();
     return false;
