@@ -31,3 +31,7 @@ AppNotificationManagerSyncTest.*
 ExtensionWebRequestTest.*
 # Timing out all over the place. Disabling for now. http://crbug.com/149882
 NativeMessagingTest.*
+
+# Timing out all over the place. Disabling for now. http://crbug.com/164589
+StorageInfoProviderTest.*
+
