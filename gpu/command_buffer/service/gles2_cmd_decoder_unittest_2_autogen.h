@@ -223,6 +223,14 @@ TEST_F(GLES2DecoderTest2, LineWidthValidArgs) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
+TEST_F(GLES2DecoderTest2, LineWidthInValue0_0) {
+  SpecializedSetup<LineWidth, 0>(false);
+  LineWidth cmd;
+  cmd.Init(0.0f);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+}
+
 TEST_F(GLES2DecoderTest2, LinkProgramValidArgs) {
   EXPECT_CALL(*gl_, LinkProgram(kServiceProgramId));
   SpecializedSetup<LinkProgram, 0>(true);

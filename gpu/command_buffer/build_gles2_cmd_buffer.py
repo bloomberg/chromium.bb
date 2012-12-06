@@ -351,7 +351,13 @@ _STATES = {
     'type': 'Normal',
     'func': 'LineWidth',
     'enum': 'GL_LINE_WIDTH',
-    'states': [{'name': 'line_width', 'type': 'GLfloat', 'default': '1.0f'}],
+    'states': [
+      {
+        'name': 'line_width',
+        'type': 'GLfloat',
+        'default': '1.0f',
+        'range_checks': [{'check': "<= 0.0f", 'test_value': "0.0f"}],
+      }],
   },
   'DepthMask': {
     'type': 'Normal',
@@ -2958,6 +2964,18 @@ class StateSetHandler(TypeHandler):
     args = func.GetOriginalArgs()
     code = []
     for ndx,item in enumerate(states):
+      if 'range_checks' in item:
+        for range_check in item['range_checks']:
+          code.append("%s %s" % (args[ndx].name, range_check['check']))
+    if len(code):
+      file.Write("  if (%s) {\n" % " ||\n      ".join(code))
+      file.Write(
+        '    SetGLError(GL_INVALID_VALUE, "%s", "%s out of range");\n' %
+        (func.name, args[ndx].name))
+      file.Write("    return error::kNoError;\n")
+      file.Write("  }\n")
+    code = []
+    for ndx,item in enumerate(states):
       code.append("state_.%s != %s" % (item['name'], args[ndx].name))
     file.Write("  if (%s) {\n" % " ||\n      ".join(code))
     for ndx,item in enumerate(states):
@@ -2968,6 +2986,38 @@ class StateSetHandler(TypeHandler):
       file.Write("    %s(%s);\n" %
                  (func.GetGLFunctionName(), func.MakeOriginalArgString("")))
     file.Write("  }\n")
+
+  def WriteServiceUnitTest(self, func, file):
+    """Overrriden from TypeHandler."""
+    TypeHandler.WriteServiceUnitTest(self, func, file)
+    state_name = func.GetInfo('state')
+    state = _STATES[state_name]
+    states = state['states']
+    for ndx,item in enumerate(states):
+      if 'range_checks' in item:
+        for check_ndx, range_check in enumerate(item['range_checks']):
+          valid_test = """
+TEST_F(%(test_name)s, %(name)sInvalidValue%(ndx)d_%(check_ndx)d) {
+  SpecializedSetup<%(name)s, 0>(false);
+  %(name)s cmd;
+  cmd.Init(%(args)s);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+}
+"""
+          name = func.name
+          arg_strings = []
+          for count, arg in enumerate(func.GetOriginalArgs()):
+            arg_strings.append(arg.GetValidArg(func, count, 0))
+          arg_strings[ndx] = range_check['test_value']
+          vars = {
+            'test_name': 'GLES2DecoderTest%d' % file.file_num,
+            'name': name,
+            'ndx': ndx,
+            'check_ndx': check_ndx,
+            'args': ", ".join(arg_strings),
+          }
+          file.Write(valid_test % vars)
 
 
 class StateSetRGBAlphaHandler(TypeHandler):

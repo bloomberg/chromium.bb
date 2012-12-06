@@ -1486,6 +1486,10 @@ error::Error GLES2DecoderImpl::HandleIsTexture(
 error::Error GLES2DecoderImpl::HandleLineWidth(
     uint32 immediate_data_size, const gles2::LineWidth& c) {
   GLfloat width = static_cast<GLfloat>(c.width);
+  if (width <= 0.0f) {
+    SetGLError(GL_INVALID_VALUE, "LineWidth", "width out of range");
+    return error::kNoError;
+  }
   if (state_.line_width != width) {
     state_.line_width = width;
     glLineWidth(width);
