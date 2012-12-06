@@ -29,6 +29,16 @@ chromeHidden.registerCustomHook('app.window', function(bindingsAPI) {
       return;
     }
 
+    if (windowParams.existingWindow) {
+      // Not creating a new window, but activating an existing one, so trigger
+      // callback with existing window and don't do anything else.
+      if (request.callback) {
+        request.callback(view.chrome.app.window.current());
+        delete request.callback;
+      }
+      return;
+    }
+
     // Initialize appWindowData in the newly created JS context
     view.chrome.app.window.initializeAppWindow(windowParams);
 

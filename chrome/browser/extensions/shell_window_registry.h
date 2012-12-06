@@ -78,6 +78,12 @@ class ShellWindowRegistry : public ProfileKeyedService,
   // open. If there is a window for the given app that is active, that one will
   // be returned, otherwise an arbitrary window will be returned.
   ShellWindow* GetCurrentShellWindowForApp(const std::string& app_id) const;
+  // Returns an app window for the given app and window key, or NULL if no shell
+  // window with the key are open. If there is a window for the given app and
+  // key that is active, that one will be returned, otherwise an arbitrary
+  // window will be returned.
+  ShellWindow* GetShellWindowForAppAndKey(const std::string& app_id,
+                                          const std::string& window_key) const;
 
   // Returns whether a ShellWindow's ID was last known to have a DevToolsAgent
   // attached to it, which should be restored during a reload of a corresponding

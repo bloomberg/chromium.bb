@@ -115,12 +115,28 @@ ShellWindow* ShellWindowRegistry::GetCurrentShellWindowForApp(
   ShellWindow* result = NULL;
   for (ShellWindowSet::const_iterator i = shell_windows_.begin();
        i != shell_windows_.end(); ++i) {
-    if ((*i)->extension()->id() == app_id)
+    if ((*i)->extension()->id() == app_id) {
       result = *i;
-    if (result->GetBaseWindow()->IsActive())
-      return result;
+      if (result->GetBaseWindow()->IsActive())
+        return result;
+    }
   }
 
+  return result;
+}
+
+ShellWindow* ShellWindowRegistry::GetShellWindowForAppAndKey(
+    const std::string& app_id,
+    const std::string& window_key) const {
+  ShellWindow* result = NULL;
+  for (ShellWindowSet::const_iterator i = shell_windows_.begin();
+       i != shell_windows_.end(); ++i) {
+    if ((*i)->extension()->id() == app_id && (*i)->window_key() == window_key) {
+      result = *i;
+      if (result->GetBaseWindow()->IsActive())
+        return result;
+    }
+  }
   return result;
 }
 

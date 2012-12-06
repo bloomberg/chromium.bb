@@ -66,6 +66,13 @@ namespace app.window {
     // If true, the window will be created in a hidden state. Call show() on
     // the window to show it once it has been created. Defaults to false.
     boolean? hidden;
+
+    // By default if you specify an id for the window, the window will only be
+    // created if another window with the same id doesn't already exist. If a
+    // window with the same id already exists that window is activated instead.
+    // If you do want to create multiple windows with the same id, you can
+    // set this property to false.
+    boolean? singleton;
   };
 
   callback CreateWindowCallback =

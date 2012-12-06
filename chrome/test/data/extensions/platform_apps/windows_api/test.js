@@ -117,7 +117,7 @@ chrome.app.runtime.onLaunched.addListener(function() {
      chrome.app.window.create('test.html', {
        bounds: { width: 250, height: 250 },
        minWidth: 400, minHeight: 450,
-       id: 'test-id'
+       id: 'test-id', singleton: false
      }, callbackPass(function(win) {
        var w = win.contentWindow;
        chrome.test.assertEq(400, w.innerWidth);
@@ -127,12 +127,40 @@ chrome.app.runtime.onLaunched.addListener(function() {
        chrome.app.window.create('test.html', {
          bounds: { width: 250, height: 250 },
          minWidth: 500, minHeight: 550,
-         id: 'test-id'
+         id: 'test-id', singleton: false
        }, callbackPass(function(win) {
          var w = win.contentWindow;
          chrome.test.assertEq(500, w.innerWidth);
          chrome.test.assertEq(550, w.innerHeight);
          w.close();
+       }));
+     }));
+   },
+
+   function testSingleton() {
+     chrome.app.window.create('test.html', {
+       id: 'singleton-id'
+     }, callbackPass(function(win) {
+       var w = win.contentWindow;
+
+       chrome.app.window.create('test.html', {
+         id: 'singleton-id'
+       }, callbackPass(function(win) {
+         var w2 = win.contentWindow;
+
+         chrome.test.assertTrue(w === w2);
+
+         chrome.app.window.create('test.html', {
+           id: 'singleton-id', singleton: false
+         }, callbackPass(function(win) {
+           var w3 = win.contentWindow;
+
+           chrome.test.assertFalse(w === w3);
+
+           w.close();
+           w2.close();
+           w3.close();
+         }));
        }));
      }));
    },

@@ -112,6 +112,30 @@ bool AppWindowCreateFunction::RunImpl() {
       }
 
       create_params.window_key = *options->id;
+
+      if (!options->singleton || *options->singleton) {
+        ShellWindow* window = ShellWindowRegistry::Get(profile())->
+            GetShellWindowForAppAndKey(extension_id(),
+                                       create_params.window_key);
+        if (window) {
+          content::RenderViewHost* created_view =
+              window->web_contents()->GetRenderViewHost();
+          int view_id = MSG_ROUTING_NONE;
+          if (render_view_host_->GetProcess()->GetID() ==
+              created_view->GetProcess()->GetID()) {
+            view_id = created_view->GetRoutingID();
+          }
+
+          window->GetBaseWindow()->Show();
+          base::DictionaryValue* result = new base::DictionaryValue;
+          result->Set("viewId", base::Value::CreateIntegerValue(view_id));
+          result->SetBoolean("existingWindow", true);
+          result->SetBoolean("injectTitlebar", false);
+          SetResult(result);
+          SendResponse(true);
+          return true;
+        }
+      }
     }
 
     // TODO(jeremya): remove these, since they do the same thing as
