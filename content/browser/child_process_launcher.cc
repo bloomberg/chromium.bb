@@ -415,6 +415,7 @@ base::ProcessHandle ChildProcessLauncher::GetHandle() {
 }
 
 base::TerminationStatus ChildProcessLauncher::GetChildTerminationStatus(
+    bool known_dead,
     int* exit_code) {
   base::ProcessHandle handle = context_->process_.handle();
   if (handle == base::kNullProcessHandle) {
@@ -426,7 +427,7 @@ base::TerminationStatus ChildProcessLauncher::GetChildTerminationStatus(
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
   if (context_->zygote_) {
     context_->termination_status_ = ZygoteHostImpl::GetInstance()->
-        GetTerminationStatus(handle, &context_->exit_code_);
+        GetTerminationStatus(handle, known_dead, &context_->exit_code_);
   } else
 #endif
   {

@@ -451,10 +451,12 @@ void ZygoteHostImpl::EnsureProcessTerminated(pid_t process) {
 
 base::TerminationStatus ZygoteHostImpl::GetTerminationStatus(
     base::ProcessHandle handle,
+    bool known_dead,
     int* exit_code) {
   DCHECK(init_);
   Pickle pickle;
   pickle.WriteInt(kZygoteCommandGetTerminationStatus);
+  pickle.WriteBool(known_dead);
   pickle.WriteInt(handle);
 
   // Set this now to handle the early termination cases.

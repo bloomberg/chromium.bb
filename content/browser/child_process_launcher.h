@@ -53,11 +53,14 @@ class CONTENT_EXPORT ChildProcessLauncher {
   // Getter for the process handle.  Only call after the process has started.
   base::ProcessHandle GetHandle();
 
-  // Call this when the child process exits to know what happened to
-  // it.  |exit_code| is the exit code of the process if it exited
-  // (e.g. status from waitpid if on posix, from GetExitCodeProcess on
-  // Windows). |exit_code| may be NULL.
-  base::TerminationStatus GetChildTerminationStatus(int* exit_code);
+  // Call this when the child process exits to know what happened to it.
+  // |known_dead| can be true if we already know the process is dead as it can
+  // help the implemention figure the proper TerminationStatus.
+  // |exit_code| is the exit code of the process if it exited (e.g. status from
+  // waitpid if on posix, from GetExitCodeProcess on Windows). |exit_code| may
+  // be NULL.
+  base::TerminationStatus GetChildTerminationStatus(bool known_dead,
+                                                    int* exit_code);
 
   // Changes whether the process runs in the background or not.  Only call
   // this after the process has started.

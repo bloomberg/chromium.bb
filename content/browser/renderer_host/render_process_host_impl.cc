@@ -884,7 +884,7 @@ bool RenderProcessHostImpl::FastShutdownIfPossible() {
   if (!SuddenTerminationAllowed())
     return false;
 
-  ProcessDied();
+  ProcessDied(false /* already_dead */);
   fast_shutdown_started_ = true;
   return true;
 }
@@ -1065,7 +1065,7 @@ void RenderProcessHostImpl::OnChannelConnected(int32 peer_pid) {
 }
 
 void RenderProcessHostImpl::OnChannelError() {
-  ProcessDied();
+  ProcessDied(true /* already_dead */);
 }
 
 BrowserContext* RenderProcessHostImpl::GetBrowserContext() const {
@@ -1420,7 +1420,7 @@ void RenderProcessHostImpl::RegisterProcessHostForSite(
   map->RegisterProcess(site, process);
 }
 
-void RenderProcessHostImpl::ProcessDied() {
+void RenderProcessHostImpl::ProcessDied(bool already_dead) {
   // Our child process has died.  If we didn't expect it, it's a crash.
   // In any case, we need to let everyone know it's gone.
   // The OnChannelError notification can fire multiple times due to nested sync
@@ -1432,7 +1432,8 @@ void RenderProcessHostImpl::ProcessDied() {
   int exit_code = 0;
   base::TerminationStatus status =
       child_process_launcher_.get() ?
-      child_process_launcher_->GetChildTerminationStatus(&exit_code) :
+      child_process_launcher_->GetChildTerminationStatus(already_dead,
+                                                         &exit_code) :
       base::TERMINATION_STATUS_NORMAL_TERMINATION;
 
   RendererClosedDetails details(GetHandle(), status, exit_code);

@@ -37,7 +37,12 @@ class CONTENT_EXPORT ZygoteHostImpl : public ZygoteHost {
   // Get the termination status (and, optionally, the exit code) of
   // the process. |exit_code| is set to the exit code of the child
   // process. (|exit_code| may be NULL.)
+  // Unfortunately the Zygote can not accurately figure out if a process
+  // is already dead without waiting synchronously for it.
+  // |known_dead| should be set to true when we already know that the process
+  // is dead.
   base::TerminationStatus GetTerminationStatus(base::ProcessHandle handle,
+                                               bool known_dead,
                                                int* exit_code);
 
   // ZygoteHost implementation:
