@@ -16,7 +16,7 @@
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
-#include "ui/views/layout/fill_layout.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -38,12 +38,19 @@ const int kDetailedBubbleMaxHeight = kTrayPopupItemHeight * 5;
 class TrayPopupItemContainer : public views::View {
  public:
   TrayPopupItemContainer(views::View* view,
-                         ShelfAlignment alignment,
-                         bool change_background)
+                         bool change_background,
+                         bool draw_border)
       : hover_(false),
         change_background_(change_background) {
     set_notify_enter_exit_on_child(true);
-    SetLayoutManager(new views::FillLayout);
+    if (draw_border) {
+      set_border(
+          views::Border::CreateSolidSidedBorder(0, 0, 1, 0, kBorderLightColor));
+    }
+    views::BoxLayout* layout = new views::BoxLayout(
+        views::BoxLayout::kVertical, 0, 0, 0);
+    layout->set_spread_blank_space(true);
+    SetLayoutManager(layout);
     SetPaintToLayer(view->layer() != NULL);
     if (view->layer())
       SetFillsBoundsOpaquely(view->layer()->fills_bounds_opaquely());
@@ -314,24 +321,26 @@ bool SystemTrayBubble::ShouldShowLauncher() const {
 }
 
 void SystemTrayBubble::CreateItemViews(user::LoginStatus login_status) {
-  for (std::vector<ash::SystemTrayItem*>::iterator it = items_.begin();
-       it != items_.end();
-       ++it) {
+  for (size_t i = 0; i < items_.size(); ++i) {
     views::View* view = NULL;
     switch (bubble_type_) {
       case BUBBLE_TYPE_DEFAULT:
-        view = (*it)->CreateDefaultView(login_status);
+        view = items_[i]->CreateDefaultView(login_status);
         break;
       case BUBBLE_TYPE_DETAILED:
-        view = (*it)->CreateDetailedView(login_status);
+        view = items_[i]->CreateDetailedView(login_status);
         break;
       case BUBBLE_TYPE_NOTIFICATION:
-        view = (*it)->CreateNotificationView(login_status);
+        view = items_[i]->CreateNotificationView(login_status);
         break;
     }
     if (view) {
+      // For default view, draw bottom border for each item, except the last
+      // 2 items, which are the bottom header row and the one just above it.
+      bool is_default_bubble = bubble_type_ == BUBBLE_TYPE_DEFAULT;
       bubble_view_->AddChildView(new TrayPopupItemContainer(
-          view, tray_->shelf_alignment(), bubble_type_ == BUBBLE_TYPE_DEFAULT));
+          view, is_default_bubble,
+          is_default_bubble && (i < items_.size() - 2)));
     }
   }
 }
