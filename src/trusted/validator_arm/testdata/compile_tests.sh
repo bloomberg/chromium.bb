@@ -9,12 +9,11 @@ set -eu
 dir=$(pwd)
 cd ../../../..
 topdir=$(pwd)
-# TODO(pnacl-team): We have to not hard-code this.
-tools="$topdir/toolchain/pnacl_linux_x86/host_x86_32/bin"
+tools="$topdir/toolchain/linux_arm_newlib/bin"
 cd $dir
 
-readonly ARM_LD="$tools/arm-pc-nacl-ld"
-readonly ARM_AS="$tools/arm-pc-nacl-as"
+readonly ARM_LD="$tools/arm-nacl-ld"
+readonly ARM_AS="$tools/arm-nacl-as"
 
 for test_file in *.S ; do
   object_file=${test_file%.*}.o
