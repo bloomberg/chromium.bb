@@ -5,7 +5,7 @@
 # failures in phase sel_ldr
 # ======================================================================
 # alignment issues using __alignof__ (or stack alignment)
-alloca-1.c arm
+alloca-1.c arm,O0
 alloca-1.c x86-64
 alloca-1.c x86-32
 # setjmp/longjmp TODO
@@ -14,17 +14,15 @@ built-in-setjmp.c
 bitfld-5.c
 bitfld-3.c
 # local version of llabs overrides libc version
-20021127-1.c
-# postincrement of argument in definition prototype (is that even legal?)
-970217-1.c
+20021127-1.c O0
 # bad shift of a 40-bit bitfield (assumes intermediate values are 40-bit)
 pr32244-1.c
 pr34971.c
+# Probably some kind of issue with NEON (started failing when we enabled it)
+mul-subnormal-single-1.c arm O0
 # ======================================================================
 # failures in phase translate
 # ======================================================================
-# llvm does not know that "fabs(x) >= 0"
-20020720-1.c O3
 # undef signal
 fp-cmp-1.c
 # undef signal
@@ -39,19 +37,16 @@ pr39228.c
 va-arg-pack-1.c
 # prefetch broken on ARM
 builtin-prefetch-2.c arm
-# vector broken on ARM
-simd-6.c arm,O0
 # This uses __builtin_return_address(1)
 # Segfaults because of an uninit frame pointer (must force fp on?).
-20010122-1.c
+20010122-1.c x86-32
+20010122-1.c arm
 # DCE not performed at -O0 (wontfix?)
 medce-1.c O0
 fp-cmp-7.c O0
 # ======================================================================
 # failures in phase compile-bc
 # ======================================================================
-# undefined reference to conjf (from builtin_conjf; should work?)
-20020411-1.c
 # unknown builtin __builtin_malloc (wontfix?)
 20071018-1.c
 20071120-1.c

@@ -1,7 +1,4 @@
 # Unknown runtime failures
-filter1.C O3
-ctor2.C arm,O3
-new1.C arm,O3
 registers1.C arm,O3
 registers1.C x86-64,O3
 
@@ -16,9 +13,6 @@ init-temp1.C
 # changing the signature from "throw (IntArray)" => "throw (int*)"
 # fixes the problem
 spec9.C
-# runtime failure: base class destructor does not seem to be called
-# at the right time
-dtor1.C
 
 # ======================================================================
 # NOTE: the tests below fail on a regular gcc as well
