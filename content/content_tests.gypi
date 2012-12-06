@@ -682,7 +682,7 @@
             'browser/fileapi/blob_layout_browsertest.cc',
             'browser/fileapi/file_system_browsertest.cc',
             'browser/gpu/gpu_crash_browsertest.cc',
-            'browser/gpu/webgl_conformance_tests.cc',
+            'browser/gpu/webgl_conformance_test.cc',
             'browser/gpu/webgl_conformance_test_list_autogen.h',
             'browser/in_process_webkit/indexed_db_browsertest.cc',
             'browser/in_process_webkit/indexed_db_layout_browsertest.cc',

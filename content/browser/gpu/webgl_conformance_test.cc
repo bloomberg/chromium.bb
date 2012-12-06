@@ -19,9 +19,9 @@
 
 namespace content {
 
-class WebGLConformanceTests : public ContentBrowserTest {
+class WebGLConformanceTest : public ContentBrowserTest {
  public:
-  WebGLConformanceTests() {}
+  WebGLConformanceTest() {}
 
   virtual void SetUpCommandLine(CommandLine* command_line) {
     // Allow privileged WebGL extensions.
@@ -78,7 +78,7 @@ class WebGLConformanceTests : public ContentBrowserTest {
 };
 
 #define CONFORMANCE_TEST(name, url) \
-IN_PROC_BROWSER_TEST_F(WebGLConformanceTests, MANUAL_##name) { \
+IN_PROC_BROWSER_TEST_F(WebGLConformanceTest, MANUAL_##name) { \
   RunTest(url); \
 }
 
