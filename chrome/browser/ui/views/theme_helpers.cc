@@ -49,13 +49,13 @@ void GetRebarGradientColors(int width, int x1, int x2,
     SkPoint grad_points[2];
     grad_points[0].set(SkIntToScalar(0), SkIntToScalar(0));
     grad_points[1].set(SkIntToScalar(width), SkIntToScalar(0));
-    SkShader* gradient_shader = SkGradientShader::CreateLinear(
-        grad_points, grad_colors, NULL, 2, SkShader::kRepeat_TileMode);
+    skia::RefPtr<SkShader> gradient_shader = skia::AdoptRef(
+        SkGradientShader::CreateLinear(
+            grad_points, grad_colors, NULL, 2, SkShader::kRepeat_TileMode));
     SkPaint paint;
-    paint.setShader(gradient_shader);
+    paint.setShader(gradient_shader.get());
     // Shader created with a ref count of 1, release as the paint now owns
     // the gradient.
-    gradient_shader->unref();
     paint.setStyle(SkPaint::kFill_Style);
     canvas.sk_canvas()->drawRectCoords(
         SkIntToScalar(0), SkIntToScalar(0),

@@ -38,11 +38,10 @@ void DrawRoundedRect(gfx::Canvas* canvas,
     p[0].set(SkIntToScalar(rect.left()), SkIntToScalar(rect.top()));
     p[1].set(SkIntToScalar(rect.left()), SkIntToScalar(rect.bottom()));
     SkColor colors[2] = { top_color, bottom_color };
-    SkShader* s = SkGradientShader::CreateLinear(p, colors, NULL, 2,
-        SkShader::kClamp_TileMode, NULL);
-    paint.setShader(s);
-    // Need to unref shader, otherwise never deleted.
-    s->unref();
+    skia::RefPtr<SkShader> s = skia::AdoptRef(
+        SkGradientShader::CreateLinear(
+            p, colors, NULL, 2, SkShader::kClamp_TileMode, NULL));
+    paint.setShader(s.get());
   } else {
     paint.setColor(top_color);
   }
@@ -59,9 +58,10 @@ void DrawRoundedRectShadow(gfx::Canvas* canvas,
   paint.setFlags(SkPaint::kAntiAlias_Flag);
   paint.setStyle(SkPaint::kFill_Style);
   paint.setColor(color);
-  SkMaskFilter* filter = SkBlurMaskFilter::Create(
-      shadow / 2, SkBlurMaskFilter::kNormal_BlurStyle);
-  paint.setMaskFilter(filter)->unref();
+  skia::RefPtr<SkMaskFilter> filter = skia::AdoptRef(
+      SkBlurMaskFilter::Create(
+          shadow / 2, SkBlurMaskFilter::kNormal_BlurStyle));
+  paint.setMaskFilter(filter.get());
   SkRect inset_rect(rect);
   inset_rect.inset(SkIntToScalar(shadow / 2), SkIntToScalar(shadow / 2));
   canvas->sk_canvas()->drawRoundRect(
