@@ -153,6 +153,7 @@
           '../third_party/tlslite/tlslite/utils/TripleDES.py',
           '<(PRODUCT_DIR)/chrome.pak',
           '<(PRODUCT_DIR)/libffmpegsumo.so',
+          '<(PRODUCT_DIR)/locales/fr.pak',
           '<(PRODUCT_DIR)/pyproto/google/__init__.py',
           '<(PRODUCT_DIR)/xdisplaycheck<(EXECUTABLE_SUFFIX)',
         ],
