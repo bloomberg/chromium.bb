@@ -409,17 +409,18 @@ void Layer::SetFillsBoundsOpaquely(bool fills_bounds_opaquely) {
 
 void Layer::SetExternalTexture(Texture* texture) {
   DCHECK_EQ(type_, LAYER_TEXTURED);
+  DCHECK(!solid_color_layer_);
   layer_updated_externally_ = !!texture;
   texture_ = texture;
   if (cc_layer_is_accelerated_ != layer_updated_externally_) {
     // Switch to a different type of layer.
     cc_layer_->removeAllChildren();
-    scoped_refptr<cc::ContentLayer> old_content_layer(
-        content_layer_.release());
-    scoped_refptr<cc::SolidColorLayer> old_solid_layer(
-        solid_color_layer_.release());
-    scoped_refptr<cc::TextureLayer> old_texture_layer(
-        texture_layer_.release());
+
+    scoped_refptr<cc::ContentLayer> old_content_layer;
+    old_content_layer.swap(content_layer_);
+    scoped_refptr<cc::TextureLayer> old_texture_layer;
+    old_texture_layer.swap(texture_layer_);
+
     cc::Layer* new_layer = NULL;
     if (layer_updated_externally_) {
       texture_layer_ = cc::TextureLayer::create(this);
