@@ -7,7 +7,7 @@
 #include "device/bluetooth/bluetooth_adapter_win.h"
 
 #include <BluetoothAPIs.h>
-#if defined(_WIN32_WINNT_WIN8)
+#if defined(_WIN32_WINNT_WIN8) && _MSC_VER < 1700
 // The Windows 8 SDK defines FACILITY_VISUALCPP in winerror.h.
 #undef FACILITY_VISUALCPP
 #endif
