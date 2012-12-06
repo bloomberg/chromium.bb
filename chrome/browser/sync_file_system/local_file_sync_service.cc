@@ -182,6 +182,14 @@ void LocalFileSyncService::ApplyRemoteChange(
       change, local_path, url, callback);
 }
 
+void LocalFileSyncService::ClearLocalChanges(
+    const fileapi::FileSystemURL& url,
+    const base::Closure& completion_callback) {
+  DCHECK(ContainsKey(origin_to_contexts_, url.origin()));
+  sync_context_->ClearChangesForURL(origin_to_contexts_[url.origin()],
+                                    url, completion_callback);
+}
+
 void LocalFileSyncService::RecordFakeLocalChange(
     const fileapi::FileSystemURL& url,
     const fileapi::FileChange& change,

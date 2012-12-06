@@ -108,6 +108,9 @@ class LocalFileSyncService
       const FilePath& local_path,
       const fileapi::FileSystemURL& url,
       const fileapi::SyncStatusCallback& callback) OVERRIDE;
+  virtual void ClearLocalChanges(
+      const fileapi::FileSystemURL& url,
+      const base::Closure& completion_callback) OVERRIDE;
   virtual void RecordFakeLocalChange(
       const fileapi::FileSystemURL& url,
       const fileapi::FileChange& change,

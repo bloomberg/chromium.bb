@@ -33,6 +33,9 @@ class MockRemoteChangeProcessor : public RemoteChangeProcessor {
                     const FilePath& local_path,
                     const fileapi::FileSystemURL& url,
                     const fileapi::SyncStatusCallback& callback));
+  MOCK_METHOD2(ClearLocalChanges,
+               void(const fileapi::FileSystemURL& url,
+                    const base::Closure& completion_callback));
   MOCK_METHOD3(RecordFakeLocalChange,
                void(const fileapi::FileSystemURL& url,
                     const fileapi::FileChange& change,
