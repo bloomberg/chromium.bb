@@ -696,6 +696,10 @@ class ExtensionService
   void TrackTerminatedExtensionForTest(const extensions::Extension* extension) {
     TrackTerminatedExtension(extension);
   }
+
+  void FinishInstallationForTest(const extensions::Extension* extension) {
+    FinishInstallation(extension);
+  }
 #endif
 
   extensions::AppShortcutManager* app_shortcut_manager() {

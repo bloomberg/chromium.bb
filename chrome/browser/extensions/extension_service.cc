@@ -2186,15 +2186,6 @@ void ExtensionService::AddExtension(const Extension* extension) {
     SyncExtensionChangeIfNeeded(*extension);
     NotifyExtensionLoaded(extension);
     DoPostLoadTasks(extension);
-
-#if defined(ENABLE_THEMES)
-    if (extension->is_theme()) {
-      // Now that the theme extension is visible from outside the
-      // ExtensionService, notify the ThemeService about the
-      // newly-installed theme.
-      ThemeServiceFactory::GetForProfile(profile_)->SetTheme(extension);
-    }
-#endif
   }
 
   // Lastly, begin the process for checking the blacklist status of extensions.
@@ -2558,6 +2549,20 @@ void ExtensionService::FinishInstallation(const Extension* extension) {
   bool unacknowledged_external = IsUnacknowledgedExternalExtension(extension);
 
   AddExtension(extension);
+
+#if defined(ENABLE_THEMES)
+  // We do this here since AddExtension() is always called on browser
+  // startup, and we only really care about the last theme installed.
+  // If that ever changes and we have to move this code somewhere
+  // else, it should be somewhere that's not in the startup path.
+  if (extension->is_theme() && extensions_.GetByID(extension->id())) {
+    DCHECK_EQ(extensions_.GetByID(extension->id()), extension);
+    // Now that the theme extension is visible from outside the
+    // ExtensionService, notify the ThemeService about the
+    // newly-installed theme.
+    ThemeServiceFactory::GetForProfile(profile_)->SetTheme(extension);
+  }
+#endif
 
   // If this is a new external extension that was disabled, alert the user
   // so he can reenable it. We do this last so that it has already been
