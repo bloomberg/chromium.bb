@@ -49,9 +49,9 @@ to a RESTful API on your server.
 <p>
 As long as Chrome is running in the background or foreground,
 even if the extension or app is not running,
-it will get 'woken up' to deliver a message.
+it will be woken up to deliver a message.
 For this to work,
-your app or extension client must register a handler to receive the event,
+your app or extension must register a handler to receive the event,
 similar to how they’d register for launch events.
 </p>
 
@@ -66,31 +66,25 @@ the channel ID identifies the user and app to receive the message.
 </p>
 
 <p>
-When Chrome is online and connected to the push messaging service,
-messages are delivered immediately (to that instance of Chrome).
-A message for a given application and user will be delivered
-to all instances of that application running
+Any messages sent will be delivered
+to all instances of that application installed 
 in a Chrome profile signed in as that user.
+The most recent message sent on each subchannel will automatically be queued
+for delivery to instances of Chrome which are not connected to the push
+messaging service at the time. If multiple messages are sent on one subchannel
+while Chrome is disconnected, then Chrome may only receive the last one sent
+when it reconnects.
 </p>
 
 <p>
-When (an instance of) Chrome is offline or otherwise unable
-to directly receive the message from the service,
-the message is queued for delivery once connectivity is restored.
-Applications can use up to 4 “sub-channels” per user
-that each queue messages separately;
-the most recent message is queued on each sub-channel.
-</p>
-
-<p>
-Sub-channels can also be used to implement priority schemes.
+Subchannels can also be used to implement priority schemes.
 For example,
 if you had an instant messaging app,
 requests for a phone call or video chat can go through immediately,
-instead of waiting for all the backed-up chat messages to be cleared.
+instead of waiting for all the backed up chat messages to be cleared.
 </p>
 
-<h2 id="checklist">To-do Checklist</h2>
+<h2 id="checklist">To Do Checklist</h2>
 
 <p>
 Here's a quick checklist of what you need to do
@@ -102,7 +96,7 @@ to use the push messaging service
   <li>Register your app or extension:
     <ul>
       <li>Create the client ID in the Google API console.</li>
-      <li>Get the refresh token to set-up authorization to use the service.</li>
+      <li>Get the refresh token to setup authorization to use the service.</li>
     </ul>
   </li>
   <li>Set up your app or extension to use the service:
@@ -213,15 +207,12 @@ they could potentially send messages as your server.
 <p>
 To use the push messaging service,
 you must declare the <code>pushMessaging</code>
-permission and Google accounts and API URLs
-in the <code>manifest.json</code>:
+permission in <code>manifest.json</code>:
 </p>
 
 <pre>
 "permissions": [
   "pushMessaging",
-  "https://accounts.google.com/o/oauth2/token",
-  "https://www.googleapis.com/chromewebstore/v1.1/notifications"
  ]
 </pre>
 
@@ -295,25 +286,24 @@ the handler can be registered after the message arrives.
 To use the push messaging service,
 you must publish your extension in the
 <a href="https://developers.google.com/chrome/web-store/docs/get_started_simple">Chrome Web Store</a>.
-Your extension must also be white-listed.
-To get white-listed,
+Your extension must also be whitelisted.
+To be added to the whitelist,
 please email
 <a href="mailto:gcm-for-chrome-whitelist@google.com">gcm-for-chrome-whitelist@google.com</a>
-with your Chrome Web Store app ID and we will reply appropriately.
+with your extension ID and we will reply appropriately.
 </p>
 {{/is_apps}}
 
 {{?is_apps}}
 <p>
-Before your app can use the push messaging API,
-it needs to be white-listed.
-Your app also needs a Chrome Web Store app ID.
-You can't just yet publish your packaged apps in the store.
-To get your app ID and white-listed to use the service,
+To use the push messaging service,
+you must publish your app in the
+<a href="https://developers.google.com/chrome/web-store/docs/get_started_simple">Chrome Web Store</a>.
+Your app must also be whitelisted.
+To be added to the whitelist,
 please email
-<a href="mailto:gcm-for-chrome-whitelist@google.com">gcm-for-chrome-whitelist@google.com</a>.
-Please provide your packaged app and Google account details
-and we'll reply appropriately.
+<a href="mailto:gcm-for-chrome-whitelist@google.com">gcm-for-chrome-whitelist@google.com</a>
+with your app ID and we will reply appropriately.
 </p>
 {{/is_apps}}
 
@@ -370,7 +360,7 @@ if you get a new access token every time you send a push message.
 <p>
 Send a POST body that includes the channel ID and subchannel ID
 along with the message payload to the API endpoint
-<code>https://www..googleapis.com/chromewebstore/v1.1/notifications</code>.
+<code>https://www.googleapis.com/chromewebstore/v1.1/notifications</code>.
 Here's what a sample HTTP call would look like:
 </p>
 
@@ -399,20 +389,20 @@ to get data if the payload is not present.
 </p>
 
 <p>Here's a simple example that shows a push message
-as a text notification (toast) when it arrives:
+as a text notification when it arrives:
 </p>
 
 <pre>
 function showPushMessage(payload, subChannel) {
   var notification = window.webkitNotifications.createNotification(
-      payload +" [" + subChannel + "]");
+      payload + " [" + subChannel + "]");
   notification.show();
 }
 </pre>
 
 <p>
 You will need to add the "notifications" permission
-to the <code>manifest.json</code>
+to <code>manifest.json</code>
 to use text notifications
 (see <a href="notifications.html">Desktop Notifications</a>):
 </p>
@@ -420,8 +410,6 @@ to use text notifications
 <pre>
 "permissions": [
   "pushMessaging",
-  "https://accounts.google.com/o/oauth2/token",
-  "https://www.googleapis.com/chromewebstore/v1.1/notifications",
   "notifications"
  ]
 </pre>
