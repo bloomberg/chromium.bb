@@ -623,15 +623,6 @@ bool AcceleratorController::PerformAction(int action,
       return HandleRotatePaneFocus(Shell::FORWARD);
     case FOCUS_PREVIOUS_PANE:
       return HandleRotatePaneFocus(Shell::BACKWARD);
-    case FOCUS_SYSTEM_TRAY: {
-      internal::StatusAreaWidget* status_area =
-          ash::Shell::GetInstance()->status_area_widget();
-      if (status_area) {
-        return shell->focus_cycler()->FocusWidget(
-            status_area->system_tray()->GetWidget());
-      }
-      break;
-    }
     case SHOW_KEYBOARD_OVERLAY:
       ash::Shell::GetInstance()->delegate()->ShowKeyboardOverlay();
       return true;
@@ -641,6 +632,10 @@ bool AcceleratorController::PerformAction(int action,
         oak::ShowOakWindow();
         return true;
       }
+      break;
+    case SHOW_SYSTEM_TRAY_BUBBLE:
+      if (!shell->system_tray()->HasSystemBubble())
+        shell->system_tray()->ShowDefaultView(BUBBLE_CREATE_NEW);
       break;
     case SHOW_TASK_MANAGER:
       Shell::GetInstance()->delegate()->ShowTaskManager();

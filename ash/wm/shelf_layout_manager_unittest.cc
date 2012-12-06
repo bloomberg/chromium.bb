@@ -822,12 +822,12 @@ TEST_F(ShelfLayoutManagerTest, ShelfFlickerOnTrayActivation) {
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
 
-  // Focus the system tray. That should make the shelf visible again.
+  // Show the status menu. That should make the shelf visible again.
   Shell::GetInstance()->accelerator_controller()->PerformAction(
-      FOCUS_SYSTEM_TRAY, ui::Accelerator());
+      SHOW_SYSTEM_TRAY_BUBBLE, ui::Accelerator());
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->auto_hide_state());
-  EXPECT_FALSE(Shell::GetInstance()->system_tray()->HasSystemBubble());
+  EXPECT_TRUE(Shell::GetInstance()->system_tray()->HasSystemBubble());
 
   // Now activate the tray (using the keyboard, instead of using the mouse to
   // make sure the mouse does not alter the auto-hide state in the shelf).
