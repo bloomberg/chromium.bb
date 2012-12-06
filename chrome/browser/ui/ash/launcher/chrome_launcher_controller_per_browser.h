@@ -32,7 +32,6 @@ class BrowserLauncherItemControllerTest;
 class LauncherItemController;
 class Profile;
 class ShellWindowLauncherController;
-class TabContents;
 
 namespace ash {
 class LauncherModel;
@@ -206,7 +205,7 @@ class ChromeLauncherControllerPerBrowser
       aura::RootWindow* root_window) OVERRIDE;
 
   // The tab no longer represents its previously identified application.
-  virtual void RemoveTabFromRunningApp(TabContents* tab,
+  virtual void RemoveTabFromRunningApp(content::WebContents* tab,
                                        const std::string& app_id) OVERRIDE;
 
   // Notify the controller that the state of an non platform app's tabs
@@ -276,9 +275,9 @@ class ChromeLauncherControllerPerBrowser
 
   typedef std::map<ash::LauncherID, LauncherItemController*>
           IDToItemControllerMap;
-  typedef std::list<TabContents*> TabContentsList;
-  typedef std::map<std::string, TabContentsList> AppIDToTabContentsListMap;
-  typedef std::map<TabContents*, std::string> TabContentsToAppIDMap;
+  typedef std::list<content::WebContents*> WebContentsList;
+  typedef std::map<std::string, WebContentsList> AppIDToWebContentsListMap;
+  typedef std::map<content::WebContents*, std::string> WebContentsToAppIDMap;
 
   // Returns the profile used for new windows.
   Profile* GetProfileForNewWindows();
@@ -304,8 +303,8 @@ class ChromeLauncherControllerPerBrowser
   // Sets the shelf alignment from prefs.
   void SetShelfAlignmentFromPrefs();
 
-  // Returns the most recently active tab contents for an app.
-  TabContents* GetLastActiveTabContents(const std::string& app_id);
+  // Returns the most recently active WebContents for an app.
+  content::WebContents* GetLastActiveWebContents(const std::string& app_id);
 
   // Creates an app launcher to insert at |index|. Note that |index| may be
   // adjusted by the model to meet ordering constraints.
@@ -325,11 +324,11 @@ class ChromeLauncherControllerPerBrowser
 
   IDToItemControllerMap id_to_item_controller_map_;
 
-  // Maintains activation order of tab contents for each app.
-  AppIDToTabContentsListMap app_id_to_tab_contents_list_;
+  // Maintains activation order of web contents for each app.
+  AppIDToWebContentsListMap app_id_to_web_contents_list_;
 
-  // Direct access to app_id for a tab contents.
-  TabContentsToAppIDMap tab_contents_to_app_id_;
+  // Direct access to app_id for a web contents.
+  WebContentsToAppIDMap web_contents_to_app_id_;
 
   // Used to track shell windows.
   scoped_ptr<ShellWindowLauncherController> shell_window_controller_;

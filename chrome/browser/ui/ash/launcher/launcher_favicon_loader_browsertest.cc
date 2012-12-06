@@ -75,7 +75,7 @@ class LauncherFaviconLoaderBrowsertest : public InProcessBrowserTest {
           Browser::TYPE_PANEL, "Test Panel", gfx::Rect(),
           browser()->profile()));
       EXPECT_TRUE(panel_browser_->is_type_panel());
-      // Load initial tab contents before setting the observer.
+      // Load initial web contents before setting the observer.
       ui_test_utils::NavigateToURL(panel_browser_, GURL());
       EXPECT_FALSE(contents_observer_.get());
       contents_observer_.reset(

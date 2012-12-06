@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "content/public/browser/web_contents.h"
@@ -64,7 +63,7 @@ void BrowserLauncherItemController::Init() {
         app_status);
   }
   // In testing scenarios we can get tab strips with no active contents.
-  if (tab_model_->GetActiveTabContents())
+  if (tab_model_->active_index() != TabStripModel::kNoTab)
     UpdateLauncher(tab_model_->GetActiveWebContents());
 }
 
@@ -111,9 +110,8 @@ void BrowserLauncherItemController::BrowserActivationStateChanged() {
 
 string16 BrowserLauncherItemController::GetTitle() {
   if (type() == TYPE_TABBED || type() == TYPE_EXTENSION_PANEL) {
-    if (tab_model_->GetActiveTabContents()) {
-      const content::WebContents* contents =
-          tab_model_->GetActiveTabContents()->web_contents();
+    if (tab_model_->active_index() != TabStripModel::kNoTab) {
+      const content::WebContents* contents = tab_model_->GetActiveWebContents();
       if (contents)
         return contents->GetTitle();
     }

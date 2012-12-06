@@ -20,7 +20,6 @@
 
 class Browser;
 class LauncherFaviconLoader;
-class TabContents;
 
 namespace ash {
 class LauncherModel;

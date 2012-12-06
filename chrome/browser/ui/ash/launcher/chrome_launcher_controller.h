@@ -15,7 +15,6 @@
 class BrowserLauncherItemControllerTest;
 class LauncherItemController;
 class Profile;
-class TabContents;
 
 namespace ash {
 class LauncherModel;
@@ -49,7 +48,7 @@ class ChromeLauncherController
     STATE_NOT_INCOGNITO,
   };
 
-  // Used to update the state of non plaform apps, as tab contents change.
+  // Used to update the state of non plaform apps, as web contents change.
   enum AppState {
     APP_STATE_ACTIVE,
     APP_STATE_WINDOW_ACTIVE,
@@ -230,7 +229,7 @@ class ChromeLauncherController
   virtual void ToggleShelfAutoHideBehavior(aura::RootWindow* root_window) = 0;
 
   // The tab no longer represents its previously identified application.
-  virtual void RemoveTabFromRunningApp(TabContents* tab,
+  virtual void RemoveTabFromRunningApp(content::WebContents* tab,
                                        const std::string& app_id) = 0;
 
   // Notify the controller that the state of an non platform app's tabs

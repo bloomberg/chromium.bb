@@ -31,7 +31,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -47,6 +46,7 @@
 #include "grit/theme_resources.h"
 #include "ui/aura/window.h"
 
+using content::WebContents;
 using extensions::Extension;
 
 namespace {
@@ -412,19 +412,18 @@ void ChromeLauncherControllerPerApp::ActivateApp(const std::string& app_id,
   }
 
   // Check if there are any open tabs for this app.
-  AppIDToTabContentsListMap::iterator app_i =
-      app_id_to_tab_contents_list_.find(app_id);
-  if (app_i != app_id_to_tab_contents_list_.end()) {
-    for (TabContentsList::iterator tab_i = app_i->second.begin();
+  AppIDToWebContentsListMap::iterator app_i =
+      app_id_to_web_contents_list_.find(app_id);
+  if (app_i != app_id_to_web_contents_list_.end()) {
+    for (WebContentsList::iterator tab_i = app_i->second.begin();
          tab_i != app_i->second.end();
          ++tab_i) {
-      TabContents* tab = *tab_i;
-      const GURL tab_url = tab->web_contents()->GetURL();
+      WebContents* tab = *tab_i;
+      const GURL tab_url = tab->GetURL();
       if (refocus_pattern.MatchesURL(tab_url)) {
-        Browser* browser = chrome::FindBrowserWithWebContents(
-            tab->web_contents());
+        Browser* browser = chrome::FindBrowserWithWebContents(tab);
         TabStripModel* tab_strip = browser->tab_strip_model();
-        int index = tab_strip->GetIndexOfTabContents(tab);
+        int index = tab_strip->GetIndexOfWebContents(tab);
         DCHECK_NE(TabStripModel::kNoTab, index);
         tab_strip->ActivateTabAt(index, false);
         browser->window()->Show();
@@ -588,17 +587,17 @@ void ChromeLauncherControllerPerApp::ToggleShelfAutoHideBehavior(
 }
 
 void ChromeLauncherControllerPerApp::RemoveTabFromRunningApp(
-    TabContents* tab,
+    WebContents* tab,
     const std::string& app_id) {
-  tab_contents_to_app_id_.erase(tab);
-  AppIDToTabContentsListMap::iterator i_app_id =
-      app_id_to_tab_contents_list_.find(app_id);
-  if (i_app_id != app_id_to_tab_contents_list_.end()) {
-    TabContentsList* tab_list = &i_app_id->second;
+  web_contents_to_app_id_.erase(tab);
+  AppIDToWebContentsListMap::iterator i_app_id =
+      app_id_to_web_contents_list_.find(app_id);
+  if (i_app_id != app_id_to_web_contents_list_.end()) {
+    WebContentsList* tab_list = &i_app_id->second;
     tab_list->remove(tab);
     if (tab_list->empty()) {
-      app_id_to_tab_contents_list_.erase(i_app_id);
-      i_app_id = app_id_to_tab_contents_list_.end();
+      app_id_to_web_contents_list_.erase(i_app_id);
+      i_app_id = app_id_to_web_contents_list_.end();
       ash::LauncherID id = GetLauncherIDForAppID(app_id);
       if (id > 0)
         SetItemStatus(id, ash::STATUS_CLOSED);
@@ -613,37 +612,36 @@ void ChromeLauncherControllerPerApp::UpdateAppState(
 
   // Check the old |app_id| for a tab. If the contents has changed we need to
   // remove it from the previous app.
-  TabContents* tab = TabContents::FromWebContents(contents);
-  if (tab_contents_to_app_id_.find(tab) != tab_contents_to_app_id_.end()) {
-    std::string last_app_id = tab_contents_to_app_id_[tab];
+  if (web_contents_to_app_id_.find(contents) != web_contents_to_app_id_.end()) {
+    std::string last_app_id = web_contents_to_app_id_[contents];
     if (last_app_id != app_id)
-      RemoveTabFromRunningApp(tab, last_app_id);
+      RemoveTabFromRunningApp(contents, last_app_id);
   }
 
   if (app_id.empty())
     return;
 
-  tab_contents_to_app_id_[tab] = app_id;
+  web_contents_to_app_id_[contents] = app_id;
 
   if (app_state == APP_STATE_REMOVED) {
     // The tab has gone away.
-    RemoveTabFromRunningApp(tab, app_id);
+    RemoveTabFromRunningApp(contents, app_id);
   } else {
-    TabContentsList& tab_list(app_id_to_tab_contents_list_[app_id]);
+    WebContentsList& tab_list(app_id_to_web_contents_list_[app_id]);
 
     if (app_state == APP_STATE_INACTIVE) {
-      TabContentsList::const_iterator i_tab =
-          std::find(tab_list.begin(), tab_list.end(), tab);
+      WebContentsList::const_iterator i_tab =
+          std::find(tab_list.begin(), tab_list.end(), contents);
       if (i_tab == tab_list.end())
-        tab_list.push_back(tab);
+        tab_list.push_back(contents);
       if (i_tab != tab_list.begin()) {
         // Going inactive, but wasn't the front tab, indicating that a new
         // tab has already become active.
         return;
       }
     } else {
-      tab_list.remove(tab);
-      tab_list.push_front(tab);
+      tab_list.remove(contents);
+      tab_list.push_front(contents);
     }
     ash::LauncherID id = GetLauncherIDForAppID(app_id);
     if (id > 0) {
@@ -1025,11 +1023,11 @@ void ChromeLauncherControllerPerApp::SetShelfAlignmentFromPrefs() {
       alignment, ash::Shell::GetPrimaryRootWindow());
 }
 
-TabContents* ChromeLauncherControllerPerApp::GetLastActiveTabContents(
+WebContents* ChromeLauncherControllerPerApp::GetLastActiveWebContents(
     const std::string& app_id) {
-  AppIDToTabContentsListMap::const_iterator i =
-      app_id_to_tab_contents_list_.find(app_id);
-  if (i == app_id_to_tab_contents_list_.end())
+  AppIDToWebContentsListMap::const_iterator i =
+      app_id_to_web_contents_list_.find(app_id);
+  if (i == app_id_to_web_contents_list_.end())
     return NULL;
   DCHECK_GT(i->second.size(), 0u);
   return *i->second.begin();
@@ -1051,10 +1049,9 @@ ash::LauncherID ChromeLauncherControllerPerApp::InsertAppLauncherItem(
   item.is_incognito = false;
   item.image = Extension::GetDefaultIcon(true);
 
-  TabContents* active_tab = GetLastActiveTabContents(app_id);
+  WebContents* active_tab = GetLastActiveWebContents(app_id);
   if (active_tab) {
-    Browser* browser = chrome::FindBrowserWithWebContents(
-        active_tab->web_contents());
+    Browser* browser = chrome::FindBrowserWithWebContents(active_tab);
     DCHECK(browser);
     if (browser->window()->IsActive())
       status = ash::STATUS_ACTIVE;
