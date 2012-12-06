@@ -12,9 +12,7 @@ import Queue
 
 class StdioBuffer(object):
   def __init__(self, shard):
-    self.line_ready_event = threading.Event()
     self.queue = Queue.Queue()
-    self.lock = threading.Lock()
     self.completed = 0
     self.shard = shard
 
@@ -28,17 +26,13 @@ class StdioBuffer(object):
       char = program_pipe.read(1)
       if not char and self.shard.poll() is not None:
         pipe_running = False
-        self.line_ready_event.set()
       buffer.write(char)
       if char == '\n' or not pipe_running:
         line = buffer.getvalue()
-        if not line and not pipe_running:
-          with self.lock:
-            self.completed += 1
-            self.line_ready_event.set()
-          break
-        self.queue.put((system_pipe, line))
-        self.line_ready_event.set()
+        if line:
+          self.queue.put((system_pipe, line))
+        if not pipe_running:
+          self.queue.put((system_pipe, None))
         buffer.close()
         buffer = cStringIO.StringIO()
 
@@ -49,12 +43,12 @@ class StdioBuffer(object):
     return t
 
   def readline(self):
-    """Emits a tuple of (sys.stderr, line) or (sys.stdout, line).  This is a
-    blocking call."""
-    while self.completed < 2 and self.queue.empty():
-      self.line_ready_event.wait()
-      self.line_ready_event.clear()
-    if not self.queue.empty():
-      return self.queue.get_nowait()
-    else:
-      return (None, None)
+    """Emits a tuple of (sys.stderr, line), (sys.stdout, line), or (None, None)
+    if the process has finished.  This is a blocking call."""
+    while True:
+      (pipe, line) = self.queue.get(True)
+      if line:
+        return (pipe, line)
+      self.completed += 1
+      if self.completed >= 2:
+        return (None, None)
