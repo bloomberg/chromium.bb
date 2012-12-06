@@ -133,7 +133,6 @@
         'controls/menu/menu_host_root_view.h',
         'controls/menu/menu_item_view.cc',
         'controls/menu/menu_item_view.h',
-        'controls/menu/menu_item_view_views.cc',
         'controls/menu/menu_item_view_win.cc',
         'controls/menu/menu_listener.cc',
         'controls/menu/menu_listener.h',
@@ -506,7 +505,6 @@
         ['use_aura==0 and OS=="win"', {
           'sources!': [
             'controls/menu/menu_config_views.cc',
-            'controls/menu/menu_item_view_views.cc',
             'controls/menu/menu_separator_views.cc',
             'controls/table/group_table_view_views.cc',
             'controls/table/group_table_view_views.h',

@@ -19,6 +19,8 @@ const SkColor kMenuBackgroundColor = SK_ColorWHITE;
 const SkColor kMenuHighlightBackgroundColor = SkColorSetA(SK_ColorBLACK, 15);
 const SkColor kMenuBorderColor = SkColorSetRGB(0xBA, 0xBA, 0xBA);
 const SkColor kMenuSeparatorColor = SkColorSetRGB(0xE9, 0xE9, 0xE9);
+const SkColor kEnabledMenuItemForegroundColor = SK_ColorBLACK;
+const SkColor kDisabledMenuItemForegroundColor = SkColorSetRGB(161, 161, 146);
 
 }  // namespace
 
@@ -35,6 +37,15 @@ bool CommonThemeGetSystemColor(NativeTheme::ColorId color_id, SkColor* color) {
       break;
     case NativeTheme::kColorId_MenuBackgroundColor:
       *color = kMenuBackgroundColor;
+      break;
+    case NativeTheme::kColorId_FocusedMenuItemBackgroundColor:
+      *color = kMenuHighlightBackgroundColor;
+      break;
+    case NativeTheme::kColorId_EnabledMenuItemForegroundColor:
+      *color = kEnabledMenuItemForegroundColor;
+      break;
+    case NativeTheme::kColorId_DisabledMenuItemForegroundColor:
+      *color = kDisabledMenuItemForegroundColor;
       break;
     default:
       return false;

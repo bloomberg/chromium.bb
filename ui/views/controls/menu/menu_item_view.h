@@ -386,6 +386,9 @@ class VIEWS_EXPORT MenuItemView : public View {
   // are not rendered.
   void PaintButton(gfx::Canvas* canvas, PaintButtonMode mode);
 
+  // Paints menu item using skia (platform independent).
+  void PaintButtonCommon(gfx::Canvas* canvas, PaintButtonMode mode);
+
 #if defined(OS_WIN)
   enum SelectionState { SELECTED, UNSELECTED };
 

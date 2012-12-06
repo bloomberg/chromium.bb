@@ -17,20 +17,22 @@ namespace ui {
 // Drawing code that is common for all platforms.
 
 // Returns true and |color| if |color_id| is found, or false otherwise.
-bool CommonThemeGetSystemColor(NativeTheme::ColorId color_id, SkColor* color);
+bool NATIVE_THEME_EXPORT CommonThemeGetSystemColor(
+    NativeTheme::ColorId color_id, SkColor* color);
 
-void CommonThemePaintMenuSeparator(
+void NATIVE_THEME_EXPORT CommonThemePaintMenuSeparator(
     SkCanvas* canvas,
     const gfx::Rect& rect,
     const NativeTheme::MenuSeparatorExtraParams& extra);
 
-void CommonThemePaintMenuGutter(SkCanvas* canvas, const gfx::Rect& rect);
+void NATIVE_THEME_EXPORT CommonThemePaintMenuGutter(SkCanvas* canvas,
+    const gfx::Rect& rect);
 
-void CommonThemePaintMenuBackground(SkCanvas* canvas, const gfx::Rect& rect);
+void NATIVE_THEME_EXPORT CommonThemePaintMenuBackground(SkCanvas* canvas,
+    const gfx::Rect& rect);
 
-void CommonThemePaintMenuItemBackground(SkCanvas* canvas,
-                                        NativeTheme::State state,
-                                        const gfx::Rect& rect);
+void NATIVE_THEME_EXPORT CommonThemePaintMenuItemBackground(SkCanvas* canvas,
+    NativeTheme::State state, const gfx::Rect& rect);
 
 }  // namespace ui
 

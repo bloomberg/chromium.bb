@@ -12,6 +12,7 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/skbitmap_operations.h"
+#include "ui/native_theme/common_theme.h"
 
 namespace {
 
@@ -74,8 +75,13 @@ NativeThemeAura::~NativeThemeAura() {
 
 SkColor NativeThemeAura::GetSystemColor(ColorId color_id) const {
   // This implementation returns hardcoded colors.
-  switch (color_id) {
+  SkColor color;
+  if (IsNewMenuStyleEnabled() &&
+      CommonThemeGetSystemColor(color_id, &color)) {
+    return color;
+  }
 
+  switch (color_id) {
     // Dialogs
     case kColorId_DialogBackground:
       return kDialogBackgroundColor;
