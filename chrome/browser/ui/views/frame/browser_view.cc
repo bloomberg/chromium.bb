@@ -1360,6 +1360,8 @@ int BrowserView::GetExtraRenderViewHeight() const {
 void BrowserView::WebContentsFocused(WebContents* contents) {
   if (contents_container_->GetWebContents() == contents)
     contents_container_->OnWebContentsFocused(contents);
+  else if (contents_->preview_web_contents() == contents)
+    preview_controller_->preview()->OnWebContentsFocused(contents);
   else
     devtools_container_->OnWebContentsFocused(contents);
 }

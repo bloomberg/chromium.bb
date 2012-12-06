@@ -191,6 +191,11 @@ bool InstantController::Update(const AutocompleteMatch& match,
   DCHECK(user_input_in_progress || omnibox_popup_is_open || user_text.empty())
       << user_text;
 
+  // The preview is being clicked and will commit soon. Don't change anything.
+  // TODO(sreeram): Add a browser test for this.
+  if (loader_ && loader_->is_pointer_down_from_activate())
+    return false;
+
   // In non-extended mode, SearchModeChanged() is never called, so fake it. The
   // mode is set to "disallow suggestions" here, so that if one of the early
   // "return false" conditions is hit, suggestions will be disallowed. If the
@@ -270,11 +275,8 @@ bool InstantController::Update(const AutocompleteMatch& match,
     }
   } else if (!omnibox_popup_is_open || full_text.empty()) {
     // In the non-extended case, hide the preview as long as the user isn't
-    // actively typing a non-empty query. However, Update() can be called if the
-    // user clicks the preview while composing text with an IME, so don't hide
-    // if the mouse is down, since we'll commit on mouse up later.
-    if (!loader_ || !loader_->is_pointer_down_from_activate())
-      HideLoader();
+    // actively typing a non-empty query.
+    HideLoader();
     return false;
   }
 

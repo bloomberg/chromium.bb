@@ -113,7 +113,11 @@ void InstantLoader::WebContentsDelegateImpl::LostCapture() {
 
 void InstantLoader::WebContentsDelegateImpl::WebContentsFocused(
     content::WebContents* /* contents */) {
+  // The preview is getting focus. Equivalent to it being clicked.
+  bool tmp = loader_->is_pointer_down_from_activate_;
+  loader_->is_pointer_down_from_activate_ = true;
   loader_->controller_->InstantLoaderContentsFocused();
+  loader_->is_pointer_down_from_activate_ = tmp;
 }
 
 bool InstantLoader::WebContentsDelegateImpl::CanDownload(
