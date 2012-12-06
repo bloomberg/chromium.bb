@@ -76,10 +76,10 @@ void SetupPrerenderFieldTrial() {
         release_experiment_no_use_probability == divisor,
         release_experiment_probabilities_must_equal_divisor);
 
-    control_probability = release_experiment_15min_ttl_probability;
+    control_probability = release_control_probability;
     experiment_multi_prerender_probability =
         release_experiment_multi_prerender_probability;
-    experiment_15min_ttl_probability = release_control_probability;
+    experiment_15min_ttl_probability = release_experiment_15min_ttl_probability;
     experiment_no_use_probability = release_experiment_no_use_probability;
   } else {
     // In testing channels, use more experiments and a larger control group to
@@ -96,10 +96,10 @@ void SetupPrerenderFieldTrial() {
                    dev_experiment_no_use_probability == divisor,
                    dev_experiment_probabilities_must_equal_divisor);
 
-    control_probability = dev_experiment_15min_ttl_probability;
+    control_probability = dev_control_probability;
     experiment_multi_prerender_probability =
         dev_experiment_multi_prerender_probability;
-    experiment_15min_ttl_probability = dev_control_probability;
+    experiment_15min_ttl_probability = dev_experiment_15min_ttl_probability;
     experiment_no_use_probability = dev_experiment_no_use_probability;
   }
 
