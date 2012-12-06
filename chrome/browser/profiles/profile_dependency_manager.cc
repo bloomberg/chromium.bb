@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/api/cookies/cookies_api_factory.h"
 #include "chrome/browser/extensions/api/discovery/suggested_links_registry_factory.h"
 #include "chrome/browser/extensions/api/idle/idle_manager_factory.h"
+#include "chrome/browser/extensions/api/managed_mode/managed_mode_api_factory.h"
 #include "chrome/browser/extensions/api/management/management_api_factory.h"
 #include "chrome/browser/extensions/api/processes/processes_api_factory.h"
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry_factory.h"
@@ -227,6 +228,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   extensions::CookiesAPIFactory::GetInstance();
   extensions::ExtensionSystemFactory::GetInstance();
   extensions::IdleManagerFactory::GetInstance();
+  extensions::ManagedModeAPIFactory::GetInstance();
   extensions::ProcessesAPIFactory::GetInstance();
   extensions::SuggestedLinksRegistryFactory::GetInstance();
   extensions::TabCaptureRegistryFactory::GetInstance();

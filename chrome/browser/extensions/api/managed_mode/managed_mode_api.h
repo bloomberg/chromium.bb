@@ -9,17 +9,19 @@
 #define CHROME_BROWSER_EXTENSIONS_API_MANAGED_MODE_MANAGED_MODE_API_H_
 
 #include "base/prefs/public/pref_change_registrar.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 
 class Profile;
 
 namespace extensions {
 
-class ExtensionManagedModeEventRouter {
+class ManagedModeEventRouter {
  public:
-  explicit ExtensionManagedModeEventRouter(Profile* profile);
-  virtual ~ExtensionManagedModeEventRouter();
+  explicit ManagedModeEventRouter(Profile* profile);
+  virtual ~ManagedModeEventRouter();
 
  private:
   void OnInManagedModeChanged();
@@ -27,7 +29,7 @@ class ExtensionManagedModeEventRouter {
   PrefChangeRegistrar registrar_;
   Profile* profile_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionManagedModeEventRouter);
+  DISALLOW_COPY_AND_ASSIGN(ManagedModeEventRouter);
 };
 
 class GetManagedModeFunction : public SyncExtensionFunction {
@@ -77,6 +79,26 @@ class SetPolicyFunction : public SyncExtensionFunction {
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
+};
+
+class ManagedModeAPI : public ProfileKeyedService,
+                   public extensions::EventRouter::Observer {
+ public:
+  explicit ManagedModeAPI(Profile* profile);
+  virtual ~ManagedModeAPI();
+
+  // ProfileKeyedService implementation.
+  virtual void Shutdown() OVERRIDE;
+
+  // EventRouter::Observer implementation.
+  virtual void OnListenerAdded(const extensions::EventListenerInfo& details)
+      OVERRIDE;
+
+ private:
+  Profile* profile_;
+
+  // Created lazily upon OnListenerAdded.
+  scoped_ptr<ManagedModeEventRouter> managed_mode_event_router_;
 };
 
 }  // namespace extensions

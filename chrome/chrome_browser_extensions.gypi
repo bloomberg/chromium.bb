@@ -199,6 +199,8 @@
         'browser/extensions/api/input_ime/input_ime_api.h',
         'browser/extensions/api/managed_mode/managed_mode_api.cc',
         'browser/extensions/api/managed_mode/managed_mode_api.h',
+        'browser/extensions/api/managed_mode/managed_mode_api_factory.cc',
+        'browser/extensions/api/managed_mode/managed_mode_api_factory.h',
         'browser/extensions/api/management/management_api.cc',
         'browser/extensions/api/management/management_api.h',
         'browser/extensions/api/management/management_api_constants.cc',

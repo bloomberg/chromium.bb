@@ -39,19 +39,19 @@ namespace keys = extensions::preference_api_constants;
 
 namespace extensions {
 
-ExtensionManagedModeEventRouter::ExtensionManagedModeEventRouter(
+ManagedModeEventRouter::ManagedModeEventRouter(
     Profile* profile) : profile_(profile) {
   registrar_.Init(g_browser_process->local_state());
   registrar_.Add(
       prefs::kInManagedMode,
-      base::Bind(&ExtensionManagedModeEventRouter::OnInManagedModeChanged,
+      base::Bind(&ManagedModeEventRouter::OnInManagedModeChanged,
                  base::Unretained(this)));
 }
 
-ExtensionManagedModeEventRouter::~ExtensionManagedModeEventRouter() {
+ManagedModeEventRouter::~ManagedModeEventRouter() {
 }
 
-void ExtensionManagedModeEventRouter::OnInManagedModeChanged() {
+void ManagedModeEventRouter::OnInManagedModeChanged() {
   DictionaryValue* dict = new DictionaryValue();
   dict->SetBoolean(
       keys::kValue,
@@ -121,6 +121,25 @@ bool SetPolicyFunction::RunImpl() {
   policy_provider->SetPolicy(key, value);
 #endif
   return true;
+}
+
+ManagedModeAPI::ManagedModeAPI(Profile* profile)
+    : profile_(profile) {
+  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+      this, kChangeEventName);
+}
+
+ManagedModeAPI::~ManagedModeAPI() {
+}
+
+void ManagedModeAPI::Shutdown() {
+  ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
+}
+
+void ManagedModeAPI::OnListenerAdded(
+    const extensions::EventListenerInfo& details) {
+  managed_mode_event_router_.reset(new ManagedModeEventRouter(profile_));
+  ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
 }
 
 }  // namespace extensions
