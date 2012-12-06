@@ -1297,6 +1297,7 @@ public:
         m_childLayer->setAnchorPoint(gfx::PointF(0, 0));
 
         m_layerTreeHost->setRootLayer(m_rootLayer);
+        postSetNeedsCommitToMainThread();
     }
 
     virtual void commitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE
@@ -1354,8 +1355,8 @@ public:
         childScreenSpaceTransform.Translate(3, 3);
         gfx::Transform childDrawTransform = childScreenSpaceTransform;
 
-        EXPECT_EQ(childDrawTransform, child->drawTransform());
-        EXPECT_EQ(childScreenSpaceTransform, child->screenSpaceTransform());
+        EXPECT_TRANSFORMATION_MATRIX_EQ(childDrawTransform, child->drawTransform());
+        EXPECT_TRANSFORMATION_MATRIX_EQ(childScreenSpaceTransform, child->screenSpaceTransform());
 
         endTest();
     }
@@ -1372,8 +1373,7 @@ private:
     scoped_refptr<ContentLayer> m_childLayer;
 };
 
-// Test is flaky - http://crbug.com/148490
-TEST_F(LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers, DISABLED_runMultiThread)
+TEST_F(LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers, runMultiThread)
 {
     runTest(true);
 }
@@ -1440,7 +1440,7 @@ public:
 
         if (impl->sourceFrameNumber() < 1) {
             context->resetUsedTextures();
-            postSetNeedsAnimateAndCommitToMainThread();
+            postSetNeedsCommitToMainThread();
             postSetNeedsRedrawToMainThread();
         } else
             endTest();
@@ -1566,7 +1566,7 @@ public:
 
         if (impl->sourceFrameNumber() < 4) {
             context->resetUsedTextures();
-            postSetNeedsAnimateAndCommitToMainThread();
+            postSetNeedsCommitToMainThread();
             postSetNeedsRedrawToMainThread();
         } else
             endTest();

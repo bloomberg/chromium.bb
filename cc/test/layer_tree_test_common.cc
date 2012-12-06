@@ -338,11 +338,6 @@ void ThreadedTest::postSetNeedsRedrawToMainThread()
     m_mainThreadProxy->postTask(FROM_HERE, base::Bind(&ThreadedTest::dispatchSetNeedsRedraw, base::Unretained(this)));
 }
 
-void ThreadedTest::postSetNeedsAnimateAndCommitToMainThread()
-{
-    m_mainThreadProxy->postTask(FROM_HERE, base::Bind(&ThreadedTest::dispatchSetNeedsAnimateAndCommit, base::Unretained(this)));
-}
-
 void ThreadedTest::postSetVisibleToMainThread(bool visible)
 {
     m_mainThreadProxy->postTask(FROM_HERE, base::Bind(&ThreadedTest::dispatchSetVisible, base::Unretained(this), visible));
@@ -429,19 +424,6 @@ void ThreadedTest::dispatchAddAnimation(Layer* layerToReceiveAnimation)
 
     if (layerToReceiveAnimation)
         addOpacityTransitionToLayer(*layerToReceiveAnimation, 10, 0, 0.5, true);
-}
-
-void ThreadedTest::dispatchSetNeedsAnimateAndCommit()
-{
-    DCHECK(!proxy() || proxy()->isMainThread());
-
-    if (m_finished)
-        return;
-
-    if (m_layerTreeHost.get()) {
-        m_layerTreeHost->setNeedsAnimate();
-        m_layerTreeHost->setNeedsCommit();
-    }
 }
 
 void ThreadedTest::dispatchSetNeedsCommit()

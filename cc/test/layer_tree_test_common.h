@@ -83,7 +83,6 @@ public:
     void postSetNeedsCommitToMainThread();
     void postAcquireLayerTextures();
     void postSetNeedsRedrawToMainThread();
-    void postSetNeedsAnimateAndCommitToMainThread();
     void postSetVisibleToMainThread(bool visible);
     void postDidAddAnimationToMainThread();
 
@@ -104,7 +103,6 @@ protected:
     void dispatchSetNeedsAnimate();
     void dispatchAddInstantAnimation();
     void dispatchAddAnimation(cc::Layer*);
-    void dispatchSetNeedsAnimateAndCommit();
     void dispatchSetNeedsCommit();
     void dispatchAcquireLayerTextures();
     void dispatchSetNeedsRedraw();
