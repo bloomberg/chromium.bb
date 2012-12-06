@@ -9,10 +9,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "ui/views/controls/webview/webview_export.h"
 #include "ui/views/view.h"
+
+namespace content {
+class SiteInstance;
+}
 
 namespace views {
 

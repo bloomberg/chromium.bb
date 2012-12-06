@@ -7,6 +7,7 @@
 #include "ash/test/ash_test_base.h"
 #include "base/bind.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/test/webview_test_helper.h"
 

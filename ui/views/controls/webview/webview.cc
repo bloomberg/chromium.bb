@@ -12,6 +12,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/web_contents.h"
 #include "ipc/ipc_message.h"
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/accessibility/accessible_view_state.h"

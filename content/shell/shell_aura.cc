@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
