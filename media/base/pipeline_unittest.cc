@@ -11,9 +11,9 @@
 #include "media/base/clock.h"
 #include "media/base/gmock_callback_support.h"
 #include "media/base/media_log.h"
-#include "media/base/mock_callback.h"
 #include "media/base/mock_filters.h"
 #include "media/base/pipeline.h"
+#include "media/base/test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/size.h"
 
