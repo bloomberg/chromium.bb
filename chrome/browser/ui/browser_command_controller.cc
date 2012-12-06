@@ -306,11 +306,11 @@ void BrowserCommandController::LoadingStateChanged(bool is_loading,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// BrowserCommandController,
-//     CommandUpdater::CommandUpdaterDelegate implementation:
+// BrowserCommandController, CommandUpdaterDelegate implementation:
 
 void BrowserCommandController::ExecuteCommandWithDisposition(
-  int id, WindowOpenDisposition disposition) {
+    int id,
+    WindowOpenDisposition disposition) {
   // No commands are enabled if there is not yet any selected tab.
   // TODO(pkasting): It seems like we should not need this, because either
   // most/all commands should not have been enabled yet anyway or the ones that

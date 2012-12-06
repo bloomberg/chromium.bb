@@ -8,6 +8,7 @@
 #include "base/prefs/public/pref_change_registrar.h"
 #include "chrome/browser/api/sync/profile_sync_service_observer.h"
 #include "chrome/browser/command_updater.h"
+#include "chrome/browser/command_updater_delegate.h"
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "content/public/browser/notification_observer.h"
@@ -25,7 +26,7 @@ struct NativeWebKeyboardEvent;
 
 namespace chrome {
 
-class BrowserCommandController : public CommandUpdater::CommandUpdaterDelegate,
+class BrowserCommandController : public CommandUpdaterDelegate,
                                  public content::NotificationObserver,
                                  public TabStripModelObserver,
                                  public TabRestoreServiceObserver,
@@ -76,7 +77,7 @@ class BrowserCommandController : public CommandUpdater::CommandUpdaterDelegate,
     FULLSCREEN_METRO_SNAP,
   };
 
-  // Overridden from CommandUpdater::CommandUpdaterDelegate:
+  // Overridden from CommandUpdaterDelegate:
   virtual void ExecuteCommandWithDisposition(
       int id,
       WindowOpenDisposition disposition) OVERRIDE;

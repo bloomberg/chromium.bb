@@ -10,6 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chromeos/login/captive_portal_window_proxy.h"
+#include "chrome/browser/command_updater.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager/password_manager_delegate_impl.h"
 #include "chrome/browser/profiles/profile.h"

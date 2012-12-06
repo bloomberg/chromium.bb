@@ -10,6 +10,7 @@
 #include "webkit/glue/window_open_disposition.h"
 
 class CommandObserver;
+class CommandUpdaterDelegate;
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -21,24 +22,10 @@ class CommandObserver;
 //
 class CommandUpdater {
  public:
-  // A Delegate object implements this interface so that it can execute commands
-  // when needed.
-  class CommandUpdaterDelegate {
-   public:
-    // Performs the action associated with the command with the specified ID and
-    // using the given disposition.
-    virtual void ExecuteCommandWithDisposition(
-        int id,
-        WindowOpenDisposition disposition) = 0;
-
-   protected:
-    virtual ~CommandUpdaterDelegate();
-  };
-
-  // Create a CommandUpdater with a CommandUpdaterDelegate to handle execution
-  // of specific commands.
-  explicit CommandUpdater(CommandUpdaterDelegate* handler);
-  virtual ~CommandUpdater();
+  // Create a CommandUpdater with |delegate| to handle the execution of specific
+  // commands.
+  explicit CommandUpdater(CommandUpdaterDelegate* delegate);
+  ~CommandUpdater();
 
   // Returns true if the specified command ID is supported.
   bool SupportsCommand(int id) const;
@@ -91,7 +78,6 @@ class CommandUpdater {
   typedef base::hash_map<int, Command*> CommandMap;
   CommandMap commands_;
 
-  CommandUpdater();
   DISALLOW_COPY_AND_ASSIGN(CommandUpdater);
 };
 

@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/command_updater.h"
+#include "chrome/browser/command_updater_delegate.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/base_window.h"
@@ -47,7 +48,7 @@ class WindowController;
 // - Invoke an appropriate PanelManager function to do stuff that might affect
 //   other Panels. For example deleting a panel would rearrange other panels.
 class Panel : public BaseWindow,
-              public CommandUpdater::CommandUpdaterDelegate,
+              public CommandUpdaterDelegate,
               public content::NotificationObserver,
               public ImageLoadingTracker::Observer {
  public:
@@ -134,7 +135,7 @@ class Panel : public BaseWindow,
   virtual void FlashFrame(bool flash) OVERRIDE;
   virtual bool IsAlwaysOnTop() const OVERRIDE;
 
-  // Overridden from CommandUpdater::CommandUpdaterDelegate:
+  // Overridden from CommandUpdaterDelegate:
   virtual void ExecuteCommandWithDisposition(
       int id,
       WindowOpenDisposition disposition) OVERRIDE;

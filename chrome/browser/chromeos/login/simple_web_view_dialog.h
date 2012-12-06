@@ -7,7 +7,7 @@
 
 #include <string>
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/command_updater.h"
+#include "chrome/browser/command_updater_delegate.h"
 #include "chrome/browser/ui/toolbar/toolbar_model_delegate.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "content/public/browser/page_navigator.h"
@@ -16,6 +16,7 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/widget/widget_delegate.h"
 
+class CommandUpdater;
 class Profile;
 class ReloadButton;
 class ToolbarModel;
@@ -38,7 +39,7 @@ class SimpleWebViewDialog : public views::ButtonListener,
                             public views::WidgetDelegateView,
                             public LocationBarView::Delegate,
                             public ToolbarModelDelegate,
-                            public CommandUpdater::CommandUpdaterDelegate,
+                            public CommandUpdaterDelegate,
                             public content::PageNavigator,
                             public content::WebContentsDelegate {
  public:

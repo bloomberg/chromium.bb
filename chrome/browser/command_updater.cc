@@ -10,9 +10,7 @@
 #include "base/observer_list.h"
 #include "base/stl_util.h"
 #include "chrome/browser/command_observer.h"
-
-CommandUpdater::CommandUpdaterDelegate::~CommandUpdaterDelegate() {
-}
+#include "chrome/browser/command_updater_delegate.h"
 
 class CommandUpdater::Command {
  public:
@@ -22,12 +20,16 @@ class CommandUpdater::Command {
   Command() : enabled(true) {}
 };
 
-CommandUpdater::CommandUpdater(CommandUpdaterDelegate* handler)
-    : delegate_(handler) {
+CommandUpdater::CommandUpdater(CommandUpdaterDelegate* delegate)
+    : delegate_(delegate) {
 }
 
 CommandUpdater::~CommandUpdater() {
   STLDeleteContainerPairSecondPointers(commands_.begin(), commands_.end());
+}
+
+bool CommandUpdater::SupportsCommand(int id) const {
+  return commands_.find(id) != commands_.end();
 }
 
 bool CommandUpdater::IsCommandEnabled(int id) const {
@@ -35,10 +37,6 @@ bool CommandUpdater::IsCommandEnabled(int id) const {
   if (command == commands_.end())
     return false;
   return command->second->enabled;
-}
-
-bool CommandUpdater::SupportsCommand(int id) const {
-  return commands_.find(id) != commands_.end();
 }
 
 bool CommandUpdater::ExecuteCommand(int id) {
@@ -55,7 +53,22 @@ bool CommandUpdater::ExecuteCommandWithDisposition(
   return false;
 }
 
-CommandObserver::~CommandObserver() {
+void CommandUpdater::AddCommandObserver(int id, CommandObserver* observer) {
+  GetCommand(id, true)->observers.AddObserver(observer);
+}
+
+void CommandUpdater::RemoveCommandObserver(int id, CommandObserver* observer) {
+  GetCommand(id, false)->observers.RemoveObserver(observer);
+}
+
+void CommandUpdater::RemoveCommandObserver(CommandObserver* observer) {
+  for (CommandMap::const_iterator it = commands_.begin();
+       it != commands_.end();
+       ++it) {
+    Command* command = it->second;
+    if (command)
+      command->observers.RemoveObserver(observer);
+  }
 }
 
 void CommandUpdater::UpdateCommandEnabled(int id, bool enabled) {
@@ -75,22 +88,4 @@ CommandUpdater::Command* CommandUpdater::GetCommand(int id, bool create) {
   Command* command = new Command;
   commands_[id] = command;
   return command;
-}
-
-void CommandUpdater::AddCommandObserver(int id, CommandObserver* observer) {
-  GetCommand(id, true)->observers.AddObserver(observer);
-}
-
-void CommandUpdater::RemoveCommandObserver(int id, CommandObserver* observer) {
-  GetCommand(id, false)->observers.RemoveObserver(observer);
-}
-
-void CommandUpdater::RemoveCommandObserver(CommandObserver* observer) {
-  for (CommandMap::const_iterator it = commands_.begin();
-       it != commands_.end();
-       ++it) {
-    Command* command = it->second;
-    if (command)
-      command->observers.RemoveObserver(observer);
-  }
 }

@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/command_updater.h"
+
 #include "base/compiler_specific.h"
 #include "chrome/browser/command_observer.h"
-#include "chrome/browser/command_updater.h"
+#include "chrome/browser/command_updater_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class TestingCommandHandlerMock
-    : public CommandUpdater::CommandUpdaterDelegate {
+class FakeCommandUpdaterDelegate : public CommandUpdaterDelegate {
  public:
   virtual void ExecuteCommandWithDisposition(int id,
                                              WindowOpenDisposition) OVERRIDE {
@@ -16,14 +17,11 @@ class TestingCommandHandlerMock
   }
 };
 
-class CommandUpdaterTest : public testing::Test {
-};
-
-class TestingCommandObserverMock : public CommandObserver {
+class FakeCommandObserver : public CommandObserver {
  public:
-  TestingCommandObserverMock() : enabled_(true) {}
+  FakeCommandObserver() : enabled_(true) {}
 
-  virtual void EnabledStateChangedForCommand(int id, bool enabled) {
+  virtual void EnabledStateChangedForCommand(int id, bool enabled) OVERRIDE {
     enabled_ = enabled;
   }
 
@@ -33,14 +31,14 @@ class TestingCommandObserverMock : public CommandObserver {
   bool enabled_;
 };
 
-TEST_F(CommandUpdaterTest, TestBasicAPI) {
-  TestingCommandHandlerMock handler;
-  CommandUpdater command_updater(&handler);
+TEST(CommandUpdaterTest, TestBasicAPI) {
+  FakeCommandUpdaterDelegate delegate;
+  CommandUpdater command_updater(&delegate);
 
   // Unsupported command
   EXPECT_FALSE(command_updater.SupportsCommand(0));
   EXPECT_FALSE(command_updater.IsCommandEnabled(0));
-  // TestingCommandHandlerMock::ExecuteCommand should not be called, since
+  // FakeCommandUpdaterDelegate::ExecuteCommand should not be called, since
   // the command is not supported.
   command_updater.ExecuteCommand(0);
 
@@ -54,18 +52,18 @@ TEST_F(CommandUpdaterTest, TestBasicAPI) {
   command_updater.UpdateCommandEnabled(2, false);
   EXPECT_TRUE(command_updater.SupportsCommand(2));
   EXPECT_FALSE(command_updater.IsCommandEnabled(2));
-  // TestingCommandHandlerMock::ExecuteCommmand should not be called, since
+  // FakeCommandUpdaterDelegate::ExecuteCommmand should not be called, since
   // the command_updater is disabled
   command_updater.ExecuteCommand(2);
 }
 
-TEST_F(CommandUpdaterTest, TestObservers) {
-  TestingCommandHandlerMock handler;
-  CommandUpdater command_updater(&handler);
+TEST(CommandUpdaterTest, TestObservers) {
+  FakeCommandUpdaterDelegate delegate;
+  CommandUpdater command_updater(&delegate);
 
   // Create an observer for the command 2 and add it to the controller, then
   // update the command.
-  TestingCommandObserverMock observer;
+  FakeCommandObserver observer;
   command_updater.AddCommandObserver(2, &observer);
   command_updater.UpdateCommandEnabled(2, true);
   EXPECT_TRUE(observer.enabled());
@@ -78,16 +76,16 @@ TEST_F(CommandUpdaterTest, TestObservers) {
   EXPECT_FALSE(observer.enabled());
 }
 
-TEST_F(CommandUpdaterTest, TestObserverRemovingAllCommands) {
-  TestingCommandHandlerMock handler;
-  CommandUpdater command_updater(&handler);
+TEST(CommandUpdaterTest, TestObserverRemovingAllCommands) {
+  FakeCommandUpdaterDelegate delegate;
+  CommandUpdater command_updater(&delegate);
 
   // Create two observers for the commands 1-3 as true, remove one using the
   // single remove command, then set the command to false. Ensure that the
   // removed observer still thinks all commands are true and the one left
   // observing picked up the change.
 
-  TestingCommandObserverMock observer_remove, observer_keep;
+  FakeCommandObserver observer_remove, observer_keep;
   command_updater.AddCommandObserver(1, &observer_remove);
   command_updater.AddCommandObserver(2, &observer_remove);
   command_updater.AddCommandObserver(3, &observer_remove);

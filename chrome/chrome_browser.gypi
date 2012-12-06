@@ -450,6 +450,7 @@
         'browser/command_observer.h',
         'browser/command_updater.cc',
         'browser/command_updater.h',
+        'browser/command_updater_delegate.h',
         'browser/common/cancelable_request.cc',
         'browser/common/cancelable_request.h',
         'browser/component_updater/component_updater_configurator.cc',
