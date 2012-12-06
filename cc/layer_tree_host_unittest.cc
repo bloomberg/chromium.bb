@@ -163,7 +163,7 @@ public:
     virtual void drawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE
     {
         m_numDraws++;
-        if (!impl->sourceFrameNumber())
+        if (!impl->activeTree()->source_frame_number())
             endTest();
     }
 
@@ -205,9 +205,9 @@ public:
 
     virtual void drawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE
     {
-        if (!impl->sourceFrameNumber())
+        if (impl->activeTree()->source_frame_number() == 0)
             postSetNeedsCommitToMainThread();
-        else if (impl->sourceFrameNumber() == 1)
+        else if (impl->activeTree()->source_frame_number() == 1)
             endTest();
     }
 
@@ -249,7 +249,7 @@ public:
 
     virtual void drawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE
     {
-        EXPECT_EQ(0, impl->sourceFrameNumber());
+        EXPECT_EQ(0, impl->activeTree()->source_frame_number());
         if (!m_numDraws)
             postSetNeedsRedrawToMainThread(); // Redraw again to verify that the second redraw doesn't commit.
         else
@@ -296,7 +296,7 @@ public:
     {
         // Only the initial draw should bring us here.
         EXPECT_TRUE(impl->canDraw());
-        EXPECT_EQ(0, impl->sourceFrameNumber());
+        EXPECT_EQ(0, impl->activeTree()->source_frame_number());
     }
 
     virtual void commitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE
@@ -871,11 +871,11 @@ public:
         root->setMaxScrollOffset(gfx::Vector2d(100, 100));
         root->scrollBy(m_scrollAmount);
 
-        if (!impl->sourceFrameNumber()) {
+        if (!impl->activeTree()->source_frame_number()) {
             EXPECT_VECTOR_EQ(root->scrollOffset(), m_initialScroll);
             EXPECT_VECTOR_EQ(root->scrollDelta(), m_scrollAmount);
             postSetNeedsCommitToMainThread();
-        } else if (impl->sourceFrameNumber() == 1) {
+        } else if (impl->activeTree()->source_frame_number() == 1) {
             EXPECT_VECTOR_EQ(root->scrollOffset(), m_secondScroll);
             EXPECT_VECTOR_EQ(root->scrollDelta(), m_scrollAmount);
             endTest();
@@ -938,7 +938,7 @@ public:
         root->setScrollable(true);
         root->setMaxScrollOffset(gfx::Vector2d(100, 100));
 
-        if (!impl->sourceFrameNumber() && impl->sourceAnimationFrameNumber() == 1) {
+        if (!impl->activeTree()->source_frame_number() && impl->sourceAnimationFrameNumber() == 1) {
             // First draw after first commit.
             EXPECT_VECTOR_EQ(root->scrollDelta(), gfx::Vector2d());
             root->scrollBy(m_scrollAmount);
@@ -946,7 +946,7 @@ public:
 
             EXPECT_VECTOR_EQ(root->scrollOffset(), m_initialScroll);
             postSetNeedsRedrawToMainThread();
-        } else if (!impl->sourceFrameNumber() && impl->sourceAnimationFrameNumber() == 2) {
+        } else if (!impl->activeTree()->source_frame_number() && impl->sourceAnimationFrameNumber() == 2) {
             // Second draw after first commit.
             EXPECT_EQ(root->scrollDelta(), m_scrollAmount);
             root->scrollBy(m_scrollAmount);
@@ -954,7 +954,7 @@ public:
 
             EXPECT_VECTOR_EQ(root->scrollOffset(), m_initialScroll);
             postSetNeedsCommitToMainThread();
-        } else if (impl->sourceFrameNumber() == 1) {
+        } else if (impl->activeTree()->source_frame_number() == 1) {
             // Third or later draw after second commit.
             EXPECT_GE(impl->sourceAnimationFrameNumber(), 3);
             EXPECT_VECTOR_EQ(root->scrollDelta(), gfx::Vector2d());
@@ -1064,7 +1064,7 @@ public:
     {
         impl->processScrollDeltas();
         // We get one commit before the first draw, and the animation doesn't happen until the second draw.
-        if (impl->sourceFrameNumber() == 1) {
+        if (impl->activeTree()->source_frame_number() == 1) {
             EXPECT_EQ(1.25, impl->pageScaleFactor());
             endTest();
         } else
@@ -1308,7 +1308,7 @@ public:
         MockLayerTreeHostImpl* mockImpl = static_cast<MockLayerTreeHostImpl*>(impl);
 
         // Should only do one commit.
-        EXPECT_EQ(0, impl->sourceFrameNumber());
+        EXPECT_EQ(0, impl->activeTree()->source_frame_number());
         // Device scale factor should come over to impl.
         EXPECT_NEAR(impl->deviceScaleFactor(), 1.5, 0.00001);
 
@@ -1403,7 +1403,7 @@ public:
     {
         CompositorFakeWebGraphicsContext3DWithTextureTracking* context = static_cast<CompositorFakeWebGraphicsContext3DWithTextureTracking*>(impl->outputSurface()->context3D());
 
-        switch (impl->sourceFrameNumber()) {
+        switch (impl->activeTree()->source_frame_number()) {
         case 0:
             // Number of textures should be one.
             ASSERT_EQ(1, context->numTextures());
@@ -1440,7 +1440,7 @@ public:
         // Number of textures used for draw should always be one.
         EXPECT_EQ(1, context->numUsedTextures());
 
-        if (impl->sourceFrameNumber() < 1) {
+        if (impl->activeTree()->source_frame_number() < 1) {
             context->resetUsedTextures();
             postSetNeedsCommitToMainThread();
             postSetNeedsRedrawToMainThread();
@@ -1507,7 +1507,7 @@ public:
     {
         CompositorFakeWebGraphicsContext3DWithTextureTracking* context = static_cast<CompositorFakeWebGraphicsContext3DWithTextureTracking*>(impl->outputSurface()->context3D());
 
-        switch (impl->sourceFrameNumber()) {
+        switch (impl->activeTree()->source_frame_number()) {
         case 0:
             // Number of textures should be two.
             ASSERT_EQ(2, context->numTextures());
@@ -1561,12 +1561,12 @@ public:
 
         // Number of textures used for drawing should two except for frame 4
         // where the viewport only contains one layer.
-        if (impl->sourceFrameNumber() == 3)
+        if (impl->activeTree()->source_frame_number() == 3)
             EXPECT_EQ(1, context->numUsedTextures());
         else
             EXPECT_EQ(2, context->numUsedTextures());
 
-        if (impl->sourceFrameNumber() < 4) {
+        if (impl->activeTree()->source_frame_number() < 4) {
             context->resetUsedTextures();
             postSetNeedsCommitToMainThread();
             postSetNeedsRedrawToMainThread();
@@ -2045,15 +2045,15 @@ public:
         root->setMaxScrollOffset(gfx::Vector2d(100, 100));
 
         // Check that a fractional scroll delta is correctly accumulated over multiple commits.
-        if (!impl->sourceFrameNumber()) {
+        if (!impl->activeTree()->source_frame_number()) {
             EXPECT_VECTOR_EQ(root->scrollOffset(), gfx::Vector2d(0, 0));
             EXPECT_VECTOR_EQ(root->scrollDelta(), gfx::Vector2d(0, 0));
             postSetNeedsCommitToMainThread();
-        } else if (impl->sourceFrameNumber() == 1) {
+        } else if (impl->activeTree()->source_frame_number() == 1) {
             EXPECT_VECTOR_EQ(root->scrollOffset(), gfx::ToFlooredVector2d(m_scrollAmount));
             EXPECT_VECTOR_EQ(root->scrollDelta(), gfx::Vector2dF(fmod(m_scrollAmount.x(), 1), 0));
             postSetNeedsCommitToMainThread();
-        } else if (impl->sourceFrameNumber() == 2) {
+        } else if (impl->activeTree()->source_frame_number() == 2) {
             EXPECT_VECTOR_EQ(root->scrollOffset(), gfx::ToFlooredVector2d(m_scrollAmount + m_scrollAmount));
             EXPECT_VECTOR_EQ(root->scrollDelta(), gfx::Vector2dF(fmod(2 * m_scrollAmount.x(), 1), 0));
             endTest();
@@ -2265,7 +2265,7 @@ public:
         EXPECT_EQ(childLayer->bounds().width() * m_deviceScaleFactor, childLayer->contentBounds().width());
         EXPECT_EQ(childLayer->bounds().height() * m_deviceScaleFactor, childLayer->contentBounds().height());
 
-        switch (impl->sourceFrameNumber()) {
+        switch (impl->activeTree()->source_frame_number()) {
         case 0:
             // Gesture scroll on impl thread.
             EXPECT_EQ(impl->scrollBegin(gfx::Point(5, 5), InputHandlerClient::Gesture), InputHandlerClient::ScrollStarted);
@@ -2400,7 +2400,7 @@ public:
         EXPECT_EQ(rootScrollLayer->bounds().width() * m_deviceScaleFactor, rootScrollLayer->contentBounds().width());
         EXPECT_EQ(rootScrollLayer->bounds().height() * m_deviceScaleFactor, rootScrollLayer->contentBounds().height());
 
-        switch (impl->sourceFrameNumber()) {
+        switch (impl->activeTree()->source_frame_number()) {
         case 0:
             // Gesture scroll on impl thread.
             EXPECT_EQ(impl->scrollBegin(gfx::Point(5, 5), InputHandlerClient::Gesture), InputHandlerClient::ScrollStarted);
@@ -2566,7 +2566,7 @@ public:
         RenderPass::Id surface1RenderPassId = hostImpl->rootLayer()->children()[0]->renderSurface()->renderPassId();
         RenderPass::Id surface2RenderPassId = hostImpl->rootLayer()->children()[0]->children()[0]->renderSurface()->renderPassId();
 
-        switch (hostImpl->sourceFrameNumber()) {
+        switch (hostImpl->activeTree()->source_frame_number()) {
         case 0:
             EXPECT_TRUE(renderer->haveCachedResourcesForRenderPassId(surface1RenderPassId));
             EXPECT_TRUE(renderer->haveCachedResourcesForRenderPassId(surface2RenderPassId));

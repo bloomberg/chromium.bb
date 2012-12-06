@@ -102,6 +102,8 @@
       'layer_tree_host_common.h',
       'layer_tree_host_impl.cc',
       'layer_tree_host_impl.h',
+      'layer_tree_impl.cc',
+      'layer_tree_impl.h',
       'layer_updater.cc',
       'layer_updater.h',
       'managed_memory_policy.cc',

@@ -12,6 +12,7 @@
 #include "cc/cc_export.h"
 #include "cc/input_handler.h"
 #include "cc/layer_sorter.h"
+#include "cc/layer_tree_impl.h"
 #include "cc/render_pass.h"
 #include "cc/render_pass_sink.h"
 #include "cc/renderer.h"
@@ -25,7 +26,6 @@ namespace cc {
 class CompletionEvent;
 class DebugRectHistory;
 class FrameRateCounter;
-class HeadsUpDisplayLayerImpl;
 class LayerImpl;
 class LayerTreeHostImplTimeSourceAdapter;
 class PageScaleAnimation;
@@ -113,6 +113,7 @@ private:
 class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
                                     public RendererClient,
                                     public TileManagerClient,
+                                    public LayerTreeImplClient,
                                     public NON_EXPORTED_BASE(WebKit::WebCompositorOutputSurfaceClient) {
     typedef std::vector<LayerImpl*> LayerList;
 
@@ -179,6 +180,9 @@ public:
     // WebCompositorOutputSurfaceClient implementation.
     virtual void onVSyncParametersChanged(double monotonicTimebase, double intervalInSeconds) OVERRIDE;
 
+    // LayerTreeImplClient implementation.
+    virtual void OnCanDrawStateChangedForTree(LayerTreeImpl*) OVERRIDE;
+
     // Implementation
     bool canDraw();
     OutputSurface* outputSurface() const;
@@ -198,23 +202,23 @@ public:
 
     void readback(void* pixels, const gfx::Rect&);
 
-    void setRootLayer(scoped_ptr<LayerImpl>);
-    LayerImpl* rootLayer() { return m_rootLayerImpl.get(); }
+    LayerTreeImpl* activeTree() { return m_activeTree.get(); }
 
-    void setHudLayer(HeadsUpDisplayLayerImpl* layerImpl) { m_hudLayerImpl = layerImpl; }
-    HeadsUpDisplayLayerImpl* hudLayer() { return m_hudLayerImpl; }
+    // TODO(nduca): Remove these in favor of LayerTreeImpl.
+    void setRootLayer(scoped_ptr<LayerImpl>);
+    LayerImpl* rootLayer() const { return m_activeTree->RootLayer(); }
 
     // Release ownership of the current layer tree and replace it with an empty
     // tree. Returns the root layer of the detached tree.
     scoped_ptr<LayerImpl> detachLayerTree();
 
-    LayerImpl* rootScrollLayer() const { return m_rootScrollLayerImpl; }
+    LayerImpl* rootScrollLayer() const { return m_activeTree->root_scroll_layer(); }
+
+    // TOOD(nduca): This goes away when scrolling moves to LayerTreeImpl.
+    LayerImpl* currentlyScrollingLayer() const { return m_activeTree->currently_scrolling_layer(); }
 
     bool visible() const { return m_visible; }
     void setVisible(bool);
-
-    int sourceFrameNumber() const { return m_sourceFrameNumber; }
-    void setSourceFrameNumber(int frameNumber) { m_sourceFrameNumber = frameNumber; }
 
     bool contentsTexturesPurged() const { return m_contentsTexturesPurged; }
     void setContentsTexturesPurged();
@@ -305,7 +309,6 @@ protected:
 
     LayerTreeHostImplClient* m_client;
     Proxy* m_proxy;
-    int m_sourceFrameNumber;
 
 private:
     void computeDoubleTapZoomDeltas(ScrollAndScaleSet* scrollInfo);
@@ -337,11 +340,9 @@ private:
     scoped_ptr<ResourceProvider> m_resourceProvider;
     scoped_ptr<Renderer> m_renderer;
     scoped_ptr<TileManager> m_tileManager;
-    scoped_ptr<LayerImpl> m_rootLayerImpl;
-    LayerImpl* m_rootScrollLayerImpl;
-    LayerImpl* m_currentlyScrollingLayerImpl;
-    HeadsUpDisplayLayerImpl* m_hudLayerImpl;
-    int m_scrollingLayerIdFromPreviousTree;
+
+    scoped_ptr<LayerTreeImpl> m_activeTree;
+
     bool m_scrollDeltaIsInViewportSpace;
     LayerTreeSettings m_settings;
     LayerTreeDebugState m_debugState;

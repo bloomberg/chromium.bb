@@ -383,16 +383,16 @@ void LayerTreeHost::finishCommitOnImplThread(LayerTreeHostImpl* hostImpl)
     m_needsFullTreeSync = false;
 
     if (m_rootLayer && m_hudLayer)
-        hostImpl->setHudLayer(static_cast<HeadsUpDisplayLayerImpl*>(LayerTreeHostCommon::findLayerInSubtree(hostImpl->rootLayer(), m_hudLayer->id())));
+        hostImpl->activeTree()->set_hud_layer(static_cast<HeadsUpDisplayLayerImpl*>(LayerTreeHostCommon::findLayerInSubtree(hostImpl->rootLayer(), m_hudLayer->id())));
     else
-        hostImpl->setHudLayer(0);
+        hostImpl->activeTree()->set_hud_layer(0);
 
     // We may have added an animation during the tree sync. This will cause both layer tree hosts
     // to visit their controllers.
     if (rootLayer() && m_needsAnimateLayers)
         hostImpl->setNeedsAnimateLayers();
 
-    hostImpl->setSourceFrameNumber(commitNumber());
+    hostImpl->activeTree()->set_source_frame_number(commitNumber());
     hostImpl->setViewportSize(layoutViewportSize(), deviceViewportSize());
     hostImpl->setDeviceScaleFactor(deviceScaleFactor());
     hostImpl->setPageScaleFactorAndLimits(m_pageScaleFactor, m_minPageScaleFactor, m_maxPageScaleFactor);
