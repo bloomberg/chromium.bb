@@ -336,7 +336,7 @@ bool GtkThemeService::HasCustomImage(int id) const {
   return ThemeService::HasCustomImage(id);
 }
 
-void GtkThemeService::InitThemesFor(content::NotificationObserver* observer) {
+void GtkThemeService::InitThemesFor(NotificationObserver* observer) {
   observer->Observe(chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                     content::Source<ThemeService>(this),
                     content::NotificationService::NoDetails());

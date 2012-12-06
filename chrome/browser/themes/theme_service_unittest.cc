@@ -94,7 +94,7 @@ TEST_F(ThemeServiceTest, ThemeInstallUninstall) {
   theme_service->UseDefaultTheme();
   scoped_refptr<extensions::Extension> extension =
       MakeThemeExtension(temp_dir.path());
-  service_->FinishInstallationForTest(extension);
+  service_->AddExtension(extension);
   // Let ThemeService finish creating the theme pack.
   MessageLoop::current()->RunUntilIdle();
   EXPECT_FALSE(theme_service->UsingDefaultTheme());
@@ -116,7 +116,7 @@ TEST_F(ThemeServiceTest, ThemeUpgrade) {
   theme_service->UseDefaultTheme();
   scoped_refptr<extensions::Extension> extension =
       MakeThemeExtension(temp_dir.path());
-  service_->FinishInstallationForTest(extension);
+  service_->AddExtension(extension);
   // Let ThemeService finish creating the theme pack.
   MessageLoop::current()->RunUntilIdle();
   EXPECT_FALSE(theme_service->UsingDefaultTheme());

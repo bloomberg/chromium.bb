@@ -15,6 +15,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/base/theme_provider.h"
 
 class BrowserThemePack;
@@ -47,6 +49,7 @@ extern "C" NSString* const kBrowserThemeDidChangeNotification;
 #endif  // __OBJC__
 
 class ThemeService : public base::NonThreadSafe,
+                     public content::NotificationObserver,
                      public ProfileKeyedService,
                      public ui::ThemeProvider {
  public:
@@ -180,8 +183,6 @@ class ThemeService : public base::NonThreadSafe,
 #endif
 
   // Set the current theme to the theme defined in |extension|.
-  // |extension| must already be added to this profile's
-  // ExtensionService.
   virtual void SetTheme(const extensions::Extension* extension);
 
   // Reset the theme to default.
@@ -273,6 +274,11 @@ class ThemeService : public base::NonThreadSafe,
 
   Profile* profile() { return profile_; }
 
+  // content::NotificationObserver:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
  private:
   friend class ThemeServiceTest;
 
@@ -313,6 +319,8 @@ class ThemeService : public base::NonThreadSafe,
 
   // The number of infobars currently displayed.
   int number_of_infobars_;
+
+  content::NotificationRegistrar registrar_;
 
   scoped_ptr<ThemeSyncableService> theme_syncable_service_;
 
