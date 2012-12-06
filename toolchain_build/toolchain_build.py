@@ -31,7 +31,7 @@ TARGET_GCC_CONFIG = {
 PACKAGE_NAME = 'Native Client SDK [%(build_signature)s]'
 BUG_URL = 'http://gonacl.com/reportissue'
 
-GIT_BASE_URL = 'https://chromium.googlesource.com/native_client'
+GIT_BASE_URL = 'http://git.chromium.org/native_client'
 
 TAR_XV = ['tar', '-x', '-v']
 EXTRACT_STRIP_TGZ = TAR_XV + ['--gzip', '--strip-components=1', '-f']
