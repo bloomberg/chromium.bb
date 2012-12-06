@@ -893,7 +893,7 @@ class TrackerCommTest(cros_test_lib.MoxOutputTestCase):
     # We expect a Query instance to be passed into get_issues.
     self.mox.StubOutClassWithMocks(gd_ph_client, 'Query')
 
-    mocked_query = gd_ph_client.Query(text_query='summary:"%s" is:open' % text)
+    mocked_query = gd_ph_client.Query(text_query='%s is:open' % text)
     feed = cros_test_lib.EasyAttr(entry=[tissue])
     mocked_itclient.get_issues(project, query=mocked_query).AndReturn(feed)
     gdata_lib.Issue.GetTrackerIssueComments(1, project).AndReturn([])

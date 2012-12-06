@@ -341,7 +341,7 @@ class TrackerComm(object):
       return self._CreateIssue(feed.entry[0])
     return None
 
-  def GetTrackerIssuesByText(self, search_text, full_text=False,
+  def GetTrackerIssuesByText(self, search_text, full_text=True,
                              only_open=True):
     """Find all Tracker Issues that contain the text search_text."""
     if not full_text:
