@@ -185,7 +185,7 @@ int pthread_mutex_unlock(pthread_mutex_t *mutex) {
       /* Mutex was not locked. */
       return EPERM;
     }
-    mutex->mutex_state = 0;
+    mutex->mutex_state = UNLOCKED;
     int woken;
     __nc_futex_wake(&mutex->mutex_state, 1, &woken);
   }
