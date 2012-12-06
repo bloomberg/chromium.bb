@@ -507,6 +507,27 @@ class PluginDelegate {
   virtual void WillUpdateFile(const GURL& file_path) = 0;
   virtual void DidUpdateFile(const GURL& file_path, int64_t delta) = 0;
 
+  virtual base::PlatformFileError OpenFile(
+      const ::ppapi::PepperFilePath& path,
+      int flags,
+      base::PlatformFile* file) = 0;
+  virtual base::PlatformFileError RenameFile(
+      const ::ppapi::PepperFilePath& from_path,
+      const ::ppapi::PepperFilePath& to_path) = 0;
+  virtual base::PlatformFileError DeleteFileOrDir(
+      const ::ppapi::PepperFilePath& path,
+      bool recursive) = 0;
+  virtual base::PlatformFileError CreateDir(
+      const ::ppapi::PepperFilePath& path) = 0;
+  virtual base::PlatformFileError QueryFile(
+      const ::ppapi::PepperFilePath& path,
+      base::PlatformFileInfo* info) = 0;
+  virtual base::PlatformFileError GetDirContents(
+      const ::ppapi::PepperFilePath& path,
+      ::ppapi::DirContents* contents) = 0;
+  virtual base::PlatformFileError CreateTemporaryFile(
+      base::PlatformFile* file) = 0;
+
   // Synchronously returns the platform file path for a filesystem URL.
   virtual void SyncGetFileSystemPlatformPath(const GURL& url,
                                              FilePath* platform_path) = 0;

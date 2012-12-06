@@ -9,5 +9,6 @@
 // included here.
 #include "content/common/content_message_generator.h"
 #if defined(ENABLE_PLUGINS)
+#include "ppapi/proxy/pepper_file_messages.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #endif

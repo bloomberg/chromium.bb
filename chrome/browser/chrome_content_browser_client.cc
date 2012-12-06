@@ -1826,6 +1826,11 @@ bool ChromeContentBrowserClient::AllowPepperSocketAPI(
   return false;
 }
 
+bool ChromeContentBrowserClient::AllowPepperPrivateFileAPI() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kPpapiFlashInProcess);
+}
+
 FilePath ChromeContentBrowserClient::GetHyphenDictionaryDirectory() {
   FilePath directory;
   PathService::Get(chrome::DIR_APP_DICTIONARIES, &directory);

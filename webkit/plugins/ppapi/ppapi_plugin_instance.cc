@@ -2133,7 +2133,6 @@ PP_Bool PluginInstance::GetScreenSize(PP_Instance instance, PP_Size* size) {
   // Flash APIs aren't implemented in-process.
   switch (id) {
     case ::ppapi::FLASH_CLIPBOARD_SINGLETON_ID:
-    case ::ppapi::FLASH_FILE_SINGLETON_ID:
     case ::ppapi::FLASH_FULLSCREEN_SINGLETON_ID:
     case ::ppapi::FLASH_SINGLETON_ID:
       NOTIMPLEMENTED();

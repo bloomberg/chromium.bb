@@ -6,7 +6,6 @@
 
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
 #include "content/browser/renderer_host/pepper/pepper_flash_browser_host.h"
-#include "content/browser/renderer_host/pepper/pepper_flash_file_host.h"
 #include "content/browser/renderer_host/pepper/pepper_gamepad_host.h"
 #include "content/browser/renderer_host/pepper/pepper_print_settings_manager.h"
 #include "content/browser/renderer_host/pepper/pepper_printing_host.h"
@@ -62,9 +61,6 @@ scoped_ptr<ResourceHost> ContentBrowserPepperHostFactory::CreateResourceHost(
     switch (message.type()) {
       case PpapiHostMsg_Flash_Create::ID:
         return scoped_ptr<ResourceHost>(new PepperFlashBrowserHost(
-            host_, instance, params.pp_resource()));
-      case PpapiHostMsg_FlashFile_Create::ID:
-        return scoped_ptr<ResourceHost>(new PepperFlashFileHost(
             host_, instance, params.pp_resource()));
     }
   }

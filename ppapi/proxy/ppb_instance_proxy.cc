@@ -17,7 +17,6 @@
 #include "ppapi/proxy/content_decryptor_private_serializer.h"
 #include "ppapi/proxy/enter_proxy.h"
 #include "ppapi/proxy/flash_clipboard_resource.h"
-#include "ppapi/proxy/flash_file_resource.h"
 #include "ppapi/proxy/flash_fullscreen_resource.h"
 #include "ppapi/proxy/flash_resource.h"
 #include "ppapi/proxy/gamepad_resource.h"
@@ -383,9 +382,6 @@ Resource* PPB_Instance_Proxy::GetSingletonResource(PP_Instance instance,
     case FLASH_CLIPBOARD_SINGLETON_ID:
       new_singleton = new FlashClipboardResource(connection, instance);
       break;
-    case FLASH_FILE_SINGLETON_ID:
-      new_singleton = new FlashFileResource(connection, instance);
-      break;
     case FLASH_FULLSCREEN_SINGLETON_ID:
       new_singleton = new FlashFullscreenResource(connection, instance);
       break;
@@ -394,7 +390,6 @@ Resource* PPB_Instance_Proxy::GetSingletonResource(PP_Instance instance,
       break;
 #else
     case FLASH_CLIPBOARD_SINGLETON_ID:
-    case FLASH_FILE_SINGLETON_ID:
     case FLASH_FULLSCREEN_SINGLETON_ID:
     case FLASH_SINGLETON_ID:
       NOTREACHED();

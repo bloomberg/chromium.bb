@@ -459,6 +459,9 @@ class CONTENT_EXPORT ContentBrowserClient {
                                     const GURL& url,
                                     const SocketPermissionRequest& params);
 
+  // Returns true if renderer processes can use private Pepper File APIs.
+  virtual bool AllowPepperPrivateFileAPI();
+
   // Returns the directory containing hyphenation dictionaries.
   virtual FilePath GetHyphenDictionaryDirectory();
 
