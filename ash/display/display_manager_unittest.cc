@@ -316,6 +316,7 @@ TEST_F(DisplayManagerTest, TestNativeDisplaysChanged) {
       display_manager()->SetFirstDisplayAsInternalDisplayForTest();
   const gfx::Display native_display(internal_display_id,
                                     gfx::Rect(0, 0, 500, 500));
+  const gfx::Display external_display(10, gfx::Rect(1, 1, 100, 100));
 
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
   std::string default_bounds =
@@ -329,7 +330,7 @@ TEST_F(DisplayManagerTest, TestNativeDisplaysChanged) {
             display_manager()->GetDisplayAt(0)->bounds().ToString());
 
   // External connected while primary was disconnected.
-  displays.push_back(gfx::Display(10, gfx::Rect(1, 1, 100, 100)));
+  displays.push_back(external_display);
   display_manager()->OnNativeDisplaysChanged(displays);
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
   EXPECT_EQ(default_bounds,
@@ -340,7 +341,7 @@ TEST_F(DisplayManagerTest, TestNativeDisplaysChanged) {
   // Primary connected, with different bounds.
   displays.clear();
   displays.push_back(native_display);
-  displays.push_back(gfx::Display(10, gfx::Rect(1, 1, 100, 100)));
+  displays.push_back(external_display);
   display_manager()->OnNativeDisplaysChanged(displays);
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
   EXPECT_EQ("0,0 500x500",
@@ -350,7 +351,7 @@ TEST_F(DisplayManagerTest, TestNativeDisplaysChanged) {
 
   // Turn off primary.
   displays.clear();
-  displays.push_back(gfx::Display(10, gfx::Rect(1, 1, 100, 100)));
+  displays.push_back(external_display);
   display_manager()->OnNativeDisplaysChanged(displays);
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
   EXPECT_EQ("0,0 500x500",
@@ -373,6 +374,22 @@ TEST_F(DisplayManagerTest, TestNativeDisplaysChanged) {
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
   EXPECT_EQ("0,0 500x500",
             FindDisplayForId(internal_display_id).bounds().ToString());
+
+  // External display was changed during suspend.
+  displays.push_back(external_display);
+  display_manager()->OnNativeDisplaysChanged(displays);
+  EXPECT_EQ(2U, display_manager()->GetNumDisplays());
+
+  // suspend...
+  displays.clear();
+  display_manager()->OnNativeDisplaysChanged(displays);
+  EXPECT_EQ(2U, display_manager()->GetNumDisplays());
+
+  // and resume with different external display.
+  displays.push_back(native_display);
+  displays.push_back(gfx::Display(11, gfx::Rect(1, 1, 100, 100)));
+  display_manager()->OnNativeDisplaysChanged(displays);
+  EXPECT_EQ(2U, display_manager()->GetNumDisplays());
 }
 
 TEST_F(DisplayManagerTest, EnsurePointerInDisplays) {

@@ -406,7 +406,6 @@ void RootWindowController::CloseChildWindows() {
     aura::Window* child = root_window_->children()[0];
     delete child;
   }
-
   launcher_.reset();
   // All containers are deleted, so reset shelf_.
   shelf_ = NULL;

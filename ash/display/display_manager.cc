@@ -296,18 +296,18 @@ void DisplayManager::UpdateDisplays(
   // being removed are accessed during shutting down the root.
   displays_.insert(displays_.end(), removed_displays.begin(),
                    removed_displays.end());
-  for (std::vector<size_t>::iterator iter = changed_display_indices.begin();
-       iter != changed_display_indices.end(); ++iter) {
-    Shell::GetInstance()->screen()->NotifyBoundsChanged(displays_[*iter]);
+  for (DisplayList::const_reverse_iterator iter = removed_displays.rbegin();
+       iter != removed_displays.rend(); ++iter) {
+    Shell::GetInstance()->screen()->NotifyDisplayRemoved(displays_.back());
+    displays_.pop_back();
   }
   for (std::vector<size_t>::iterator iter = added_display_indices.begin();
        iter != added_display_indices.end(); ++iter) {
     Shell::GetInstance()->screen()->NotifyDisplayAdded(displays_[*iter]);
   }
-  for (DisplayList::const_reverse_iterator iter = removed_displays.rbegin();
-       iter != removed_displays.rend(); ++iter) {
-    Shell::GetInstance()->screen()->NotifyDisplayRemoved(displays_.back());
-    displays_.pop_back();
+  for (std::vector<size_t>::iterator iter = changed_display_indices.begin();
+       iter != changed_display_indices.end(); ++iter) {
+    Shell::GetInstance()->screen()->NotifyBoundsChanged(displays_[*iter]);
   }
   EnsurePointerInDisplays();
 
