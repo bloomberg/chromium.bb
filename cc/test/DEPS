@@ -1,5 +1,0 @@
-include_rules = [
-  "+ui/gl/",
-# TODO(jamesr): Remove once cc depends on GLES2Interface instead of WGC3D
-  "+webkit/gpu",
-]

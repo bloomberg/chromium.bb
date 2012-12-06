@@ -99,7 +99,6 @@
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/base/base.gyp:test_support_base',
         '<(DEPTH)/cc/cc.gyp:cc',
-        '<(DEPTH)/cc/cc_tests.gyp:cc_test_utils',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/testing/gtest.gyp:gtest',
         '<(DEPTH)/ui/gl/gl.gyp:gl',

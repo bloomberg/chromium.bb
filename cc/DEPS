@@ -5,7 +5,6 @@ include_rules = [
   "+third_party/khronos/GLES2/gl2.h",
   "+third_party/khronos/GLES2/gl2ext.h",
   "+ui/gfx",
-  "+ui/gl",
   # TODO(danakj): Drop dependencies on WebKit Platform API from cc.
   "+third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h",
   "+third_party/WebKit/Source/Platform/chromium/public/WebGraphicsMemoryAllocation.h",

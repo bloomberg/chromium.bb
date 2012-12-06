@@ -11,7 +11,6 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "cc/layer.h"
-#include "cc/test/pixel_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/compositor_setup.h"
@@ -23,11 +22,76 @@
 #include "ui/gfx/gfx_paths.h"
 #include "ui/gfx/skia_util.h"
 
-using cc::test::IsSameAsPNGFile;
-
 namespace ui {
 
 namespace {
+
+// Encodes a bitmap into a PNG and write to disk. Returns true on success. The
+// parent directory does not have to exist.
+bool WritePNGFile(const SkBitmap& bitmap, const FilePath& file_path) {
+  std::vector<unsigned char> png_data;
+  if (gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, true, &png_data) &&
+      file_util::CreateDirectory(file_path.DirName())) {
+    char* data = reinterpret_cast<char*>(&png_data[0]);
+    int size = static_cast<int>(png_data.size());
+    return file_util::WriteFile(file_path, data, size) == size;
+  }
+  return false;
+}
+
+// Reads and decodes a PNG image to a bitmap. Returns true on success. The PNG
+// should have been encoded using |gfx::PNGCodec::Encode|.
+bool ReadPNGFile(const FilePath& file_path, SkBitmap* bitmap) {
+  DCHECK(bitmap);
+  std::string png_data;
+  return file_util::ReadFileToString(file_path, &png_data) &&
+         gfx::PNGCodec::Decode(reinterpret_cast<unsigned char*>(&png_data[0]),
+                               png_data.length(),
+                               bitmap);
+}
+
+// Compares with a PNG file on disk, and returns true if it is the same as
+// the given image. |ref_img_path| is absolute.
+bool IsSameAsPNGFile(const SkBitmap& gen_bmp, FilePath ref_img_path) {
+  SkBitmap ref_bmp;
+  if (!ReadPNGFile(ref_img_path, &ref_bmp)) {
+    LOG(ERROR) << "Cannot read reference image: " << ref_img_path.value();
+    return false;
+  }
+
+  if (ref_bmp.width() != gen_bmp.width() ||
+      ref_bmp.height() != gen_bmp.height()) {
+    LOG(ERROR)
+        << "Dimensions do not match (Expected) vs (Actual):"
+        << "(" << ref_bmp.width() << "x" << ref_bmp.height()
+            << ") vs. "
+        << "(" << gen_bmp.width() << "x" << gen_bmp.height() << ")";
+    return false;
+  }
+
+  // Compare pixels and create a simple diff image.
+  int diff_pixels_count = 0;
+  SkAutoLockPixels lock_bmp(gen_bmp);
+  SkAutoLockPixels lock_ref_bmp(ref_bmp);
+  // The reference images were saved with no alpha channel. Use the mask to
+  // set alpha to 0.
+  uint32_t kAlphaMask = 0x00FFFFFF;
+  for (int x = 0; x < gen_bmp.width(); ++x) {
+    for (int y = 0; y < gen_bmp.height(); ++y) {
+      if ((*gen_bmp.getAddr32(x, y) & kAlphaMask) !=
+          (*ref_bmp.getAddr32(x, y) & kAlphaMask)) {
+        ++diff_pixels_count;
+      }
+    }
+  }
+
+  if (diff_pixels_count != 0) {
+    LOG(ERROR) << "Images differ by pixel count: " << diff_pixels_count;
+    return false;
+  }
+
+  return true;
+}
 
 // Returns a comma-separated list of the names of |layer|'s children in
 // bottom-to-top stacking order.
