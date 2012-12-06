@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/ime/input_method_win.h"
+#include "ui/base/ime/input_method_win.h"
 
 #include "base/basictypes.h"
+#include "base/debug/stack_trace.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "ui/base/events/event.h"
@@ -19,46 +20,52 @@
 // is returned to IME for improving conversion accuracy.
 static const size_t kExtraNumberOfChars = 20;
 
-namespace views {
+namespace ui {
 
 InputMethodWin::InputMethodWin(internal::InputMethodDelegate* delegate,
-                               HWND hwnd,
-                               ui::InputMethod* host)
+                               HWND hwnd)
     : hwnd_(hwnd),
       active_(false),
       direction_(base::i18n::UNKNOWN_DIRECTION),
       pending_requested_direction_(base::i18n::UNKNOWN_DIRECTION),
-      host_(host) {
-  set_delegate(delegate);
+      enabled_(false) {
+  SetDelegate(delegate);
 }
 
 InputMethodWin::~InputMethodWin() {
-  if (widget())
-    ime_input_.DisableIME(hwnd_);
+  ime_input_.DisableIME(hwnd_);
 }
 
-void InputMethodWin::Init(Widget* widget) {
+void InputMethodWin::Init(bool focused) {
   // Gets the initial input locale and text direction information.
   OnInputLangChange(0, 0);
 
-  InputMethodBase::Init(widget);
+  InputMethodBase::Init(focused);
 }
 
 void InputMethodWin::OnFocus() {
-  DCHECK(!widget_focused());
   InputMethodBase::OnFocus();
   UpdateIMEState();
 }
 
 void InputMethodWin::OnBlur() {
-  DCHECK(widget_focused());
   ConfirmCompositionText();
   InputMethodBase::OnBlur();
 }
 
-void InputMethodWin::DispatchKeyEvent(const ui::KeyEvent& key) {
+void InputMethodWin::DispatchKeyEvent(
+    const base::NativeEvent& native_key_event) {
+  if (native_key_event.message == WM_CHAR) {
+    BOOL handled;
+    OnChar(native_key_event.message, native_key_event.wParam,
+           native_key_event.lParam, &handled);
+    return;  // Don't send WM_CHAR for post event processing.
+  }
   // Handles ctrl-shift key to change text direction and layout alignment.
   if (ui::ImeInput::IsRTLKeyboardLayoutInstalled() && !IsTextInputTypeNone()) {
+    // TODO: shouldn't need to generate a KeyEvent here.
+    const ui::KeyEvent key(native_key_event,
+                           native_key_event.message == WM_CHAR);
     ui::KeyboardCode code = key.key_code();
     if (key.type() == ui::ET_KEY_PRESSED) {
       if (code == ui::VKEY_SHIFT) {
@@ -77,26 +84,38 @@ void InputMethodWin::DispatchKeyEvent(const ui::KeyEvent& key) {
     }
   }
 
-  DispatchKeyEventPostIME(key);
+  DispatchKeyEventPostIME(native_key_event);
 }
 
-void InputMethodWin::OnTextInputTypeChanged(View* view) {
-  if (IsViewFocused(view)) {
+void InputMethodWin::OnTextInputTypeChanged(const TextInputClient* client) {
+  if (IsTextInputClientFocused(client)) {
     ime_input_.CancelIME(hwnd_);
     UpdateIMEState();
   }
-  InputMethodBase::OnTextInputTypeChanged(view);
+  InputMethodBase::OnTextInputTypeChanged(client);
 }
 
-void InputMethodWin::OnCaretBoundsChanged(View* view) {
-  gfx::Rect rect;
-  if (!IsViewFocused(view) || !GetCaretBoundsInWidget(&rect))
+void InputMethodWin::OnCaretBoundsChanged(const TextInputClient* client) {
+  if (!enabled_ || !IsTextInputClientFocused(client))
     return;
-  ime_input_.UpdateCaretRect(hwnd_, rect);
+
+  // The current text input type should not be NONE if |client| is focused.
+  DCHECK(!IsTextInputTypeNone());
+  gfx::Rect screen_bounds(GetTextInputClient()->GetCaretBounds());
+  // TODO(ime): see comment in TextInputClient::GetCaretBounds(), this
+  // conversion shouldn't be necessary.
+  RECT r;
+  GetClientRect(hwnd_, &r);
+  POINT window_point = { screen_bounds.x(), screen_bounds.y() };
+  ScreenToClient(hwnd_, &window_point);
+  ime_input_.UpdateCaretRect(
+      hwnd_,
+      gfx::Rect(gfx::Point(window_point.x, window_point.y),
+                screen_bounds.size()));
 }
 
-void InputMethodWin::CancelComposition(View* view) {
-  if (IsViewFocused(view))
+void InputMethodWin::CancelComposition(const TextInputClient* client) {
+  if (enabled_ && IsTextInputClientFocused(client))
     ime_input_.CancelIME(hwnd_);
 }
 
@@ -112,16 +131,10 @@ bool InputMethodWin::IsActive() {
   return active_;
 }
 
-ui::TextInputClient* InputMethodWin::GetTextInputClient() const {
-  if (InputMethodBase::GetTextInputClient())
-    return InputMethodBase::GetTextInputClient();
-
-  return host_ ? host_->GetTextInputClient() : NULL;
-}
-
-
-LRESULT InputMethodWin::OnImeMessages(
-    UINT message, WPARAM w_param, LPARAM l_param, BOOL* handled) {
+LRESULT InputMethodWin::OnImeMessages(UINT message,
+                                      WPARAM w_param,
+                                      LPARAM l_param,
+                                      BOOL* handled) {
   LRESULT result = 0;
   switch (message) {
     case WM_IME_SETCONTEXT:
@@ -154,14 +167,6 @@ LRESULT InputMethodWin::OnImeMessages(
   return result;
 }
 
-void InputMethodWin::OnWillChangeFocus(View* focused_before, View* focused) {
-  ConfirmCompositionText();
-}
-
-void InputMethodWin::OnDidChangeFocus(View* focused_before, View* focused) {
-  UpdateIMEState();
-}
-
 void InputMethodWin::OnInputLangChange(DWORD character_set,
                                        HKL input_language_id) {
   active_ = ime_input_.SetInputLanguage();
@@ -170,8 +175,29 @@ void InputMethodWin::OnInputLangChange(DWORD character_set,
   OnInputMethodChanged();
 }
 
-LRESULT InputMethodWin::OnImeSetContext(
-    UINT message, WPARAM wparam, LPARAM lparam, BOOL* handled) {
+void InputMethodWin::OnWillChangeFocusedClient(TextInputClient* focused_before,
+                                               TextInputClient* focused) {
+  ConfirmCompositionText();
+}
+
+void InputMethodWin::OnDidChangeFocusedClient(TextInputClient* focused_before,
+                                              TextInputClient* focused) {
+  // Force to update the input type since client's TextInputStateChanged()
+  // function might not be called if text input types before the client loses
+  // focus and after it acquires focus again are the same.
+  OnTextInputTypeChanged(focused);
+
+  UpdateIMEState();
+
+  // Force to update caret bounds, in case the client thinks that the caret
+  // bounds has not changed.
+  OnCaretBoundsChanged(focused);
+}
+
+LRESULT InputMethodWin::OnImeSetContext(UINT message,
+                                        WPARAM wparam,
+                                        LPARAM lparam,
+                                        BOOL* handled) {
   active_ = (wparam == TRUE);
   if (active_)
     ime_input_.CreateImeWindow(hwnd_);
@@ -180,8 +206,10 @@ LRESULT InputMethodWin::OnImeSetContext(
   return ime_input_.SetImeWindowStyle(hwnd_, message, wparam, lparam, handled);
 }
 
-LRESULT InputMethodWin::OnImeStartComposition(
-    UINT message, WPARAM wparam, LPARAM lparam, BOOL* handled) {
+LRESULT InputMethodWin::OnImeStartComposition(UINT message,
+                                              WPARAM wparam,
+                                              LPARAM lparam,
+                                              BOOL* handled) {
   // We have to prevent WTL from calling ::DefWindowProc() because the function
   // calls ::ImmSetCompositionWindow() and ::ImmSetCandidateWindow() to
   // over-write the position of IME windows.
@@ -196,8 +224,10 @@ LRESULT InputMethodWin::OnImeStartComposition(
   return 0;
 }
 
-LRESULT InputMethodWin::OnImeComposition(
-    UINT message, WPARAM wparam, LPARAM lparam, BOOL* handled) {
+LRESULT InputMethodWin::OnImeComposition(UINT message,
+                                         WPARAM wparam,
+                                         LPARAM lparam,
+                                         BOOL* handled) {
   // We have to prevent WTL from calling ::DefWindowProc() because we do not
   // want for the IMM (Input Method Manager) to send WM_IME_CHAR messages.
   *handled = TRUE;
@@ -227,8 +257,10 @@ LRESULT InputMethodWin::OnImeComposition(
   return 0;
 }
 
-LRESULT InputMethodWin::OnImeEndComposition(
-    UINT message, WPARAM wparam, LPARAM lparam, BOOL* handled) {
+LRESULT InputMethodWin::OnImeEndComposition(UINT message,
+                                            WPARAM wparam,
+                                            LPARAM lparam,
+                                            BOOL* handled) {
   // Let WTL call ::DefWindowProc() and release its resources.
   *handled = FALSE;
 
@@ -243,8 +275,10 @@ LRESULT InputMethodWin::OnImeEndComposition(
   return 0;
 }
 
-LRESULT InputMethodWin::OnImeRequest(
-    UINT message, WPARAM wparam, LPARAM lparam, BOOL* handled) {
+LRESULT InputMethodWin::OnImeRequest(UINT message,
+                                     WPARAM wparam,
+                                     LPARAM lparam,
+                                     BOOL* handled) {
   *handled = FALSE;
 
   // Should not receive WM_IME_REQUEST message, if IME is disabled.
@@ -266,8 +300,10 @@ LRESULT InputMethodWin::OnImeRequest(
   }
 }
 
-LRESULT InputMethodWin::OnChar(
-    UINT message, WPARAM wparam, LPARAM lparam, BOOL* handled) {
+LRESULT InputMethodWin::OnChar(UINT message,
+                               WPARAM wparam,
+                               LPARAM lparam,
+                               BOOL* handled) {
   *handled = TRUE;
 
   // We need to send character events to the focused text input client event if
@@ -280,8 +316,10 @@ LRESULT InputMethodWin::OnChar(
   return 0;
 }
 
-LRESULT InputMethodWin::OnDeadChar(
-    UINT message, WPARAM wparam, LPARAM lparam, BOOL* handled) {
+LRESULT InputMethodWin::OnDeadChar(UINT message,
+                                   WPARAM wparam,
+                                   LPARAM lparam,
+                                   BOOL* handled) {
   *handled = TRUE;
 
   if (IsTextInputTypeNone())
@@ -436,11 +474,13 @@ void InputMethodWin::UpdateIMEState() {
     case ui::TEXT_INPUT_TYPE_NONE:
     case ui::TEXT_INPUT_TYPE_PASSWORD:
       ime_input_.DisableIME(hwnd_);
+      enabled_ = false;
       break;
     default:
       ime_input_.EnableIME(hwnd_);
+      enabled_ = true;
       break;
   }
 }
 
-}  // namespace views
+}  // namespace ui

@@ -20,6 +20,8 @@
       'input_method_factory.h',
       'input_method_ibus.cc',
       'input_method_ibus.h',
+      'input_method_win.cc',
+      'input_method_win.h',
       'mock_input_method.cc',
       'mock_input_method.h',
       'text_input_client.cc',

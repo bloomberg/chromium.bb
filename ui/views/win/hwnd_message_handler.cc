@@ -463,7 +463,6 @@ gfx::Rect HWNDMessageHandler::GetClientAreaBoundsInScreen() const {
   return gfx::Rect(point.x, point.y, r.right - r.left, r.bottom - r.top);
 }
 
-
 gfx::Rect HWNDMessageHandler::GetRestoredBounds() const {
   // If we're in fullscreen mode, we've changed the normal bounds to the monitor
   // rect, so return the saved bounds instead.
@@ -1436,7 +1435,6 @@ void HWNDMessageHandler::OnInputLangChange(DWORD character_set,
 LRESULT HWNDMessageHandler::OnKeyEvent(UINT message,
                                        WPARAM w_param,
                                        LPARAM l_param) {
-
   MSG msg = { hwnd(), message, w_param, l_param };
   ui::KeyEvent key(msg, message == WM_CHAR);
   if (!delegate_->HandleUntranslatedKeyEvent(key))

@@ -23,10 +23,6 @@ class DesktopActivationClient;
 class DesktopCursorClient;
 class DesktopDispatcherClient;
 class HWNDMessageHandler;
-namespace corewm {
-class CompoundEventFilter;
-class InputMethodEventFilter;
-}
 
 class VIEWS_EXPORT DesktopRootWindowHostWin
     : public DesktopRootWindowHost,
@@ -73,8 +69,6 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
   virtual bool IsMinimized() const OVERRIDE;
   virtual bool HasCapture() const OVERRIDE;
   virtual void SetAlwaysOnTop(bool always_on_top) OVERRIDE;
-  virtual InputMethod* CreateInputMethod() OVERRIDE;
-  virtual internal::InputMethodDelegate* GetInputMethodDelegate() OVERRIDE;
   virtual void SetWindowTitle(const string16& title) OVERRIDE;
   virtual void ClearNativeFocus() OVERRIDE;
   virtual Widget::MoveLoopResult RunMoveLoop(
@@ -213,7 +207,6 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
   scoped_ptr<aura::client::FocusClient> focus_client_;
   // Depends on focus_manager_.
   scoped_ptr<DesktopActivationClient> activation_client_;
-  scoped_ptr<corewm::InputMethodEventFilter> input_method_filter_;
 
   // TODO(beng): Consider providing an interface to DesktopNativeWidgetAura
   //             instead of providing this route back to Widget.
@@ -230,9 +223,6 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
 
   // A simple cursor client which just forwards events to the RootWindow.
   scoped_ptr<DesktopCursorClient> cursor_client_;
-
-  // The RootWindow's CompoundEventFilter.
-  views::corewm::CompoundEventFilter* root_window_event_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopRootWindowHostWin);
 };

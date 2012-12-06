@@ -19,8 +19,7 @@ InputMethodBase::InputMethodBase()
 InputMethodBase::~InputMethodBase() {
 }
 
-void InputMethodBase::SetDelegate(
-    internal::InputMethodDelegate* delegate) {
+void InputMethodBase::SetDelegate(internal::InputMethodDelegate* delegate) {
   delegate_ = delegate;
 }
 

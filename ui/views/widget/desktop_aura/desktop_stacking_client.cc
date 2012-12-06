@@ -49,7 +49,8 @@ void DesktopStackingClient::CreateNULLParent() {
   window_event_filter_ = new corewm::CompoundEventFilter;
   null_parent_->SetEventFilter(window_event_filter_);
 
-  input_method_filter_.reset(new corewm::InputMethodEventFilter);
+  input_method_filter_.reset(new corewm::InputMethodEventFilter(
+                                 null_parent_->GetAcceleratedWidget()));
   input_method_filter_->SetInputMethodPropertyInRootWindow(null_parent_.get());
   window_event_filter_->AddHandler(input_method_filter_.get());
 

@@ -474,7 +474,8 @@ void Shell::Init() {
   AddPreTargetHandler(overlay_filter_.get());
   AddShellObserver(overlay_filter_.get());
 
-  input_method_filter_.reset(new views::corewm::InputMethodEventFilter);
+  input_method_filter_.reset(new views::corewm::InputMethodEventFilter(
+                                 root_window->GetAcceleratedWidget()));
   AddPreTargetHandler(input_method_filter_.get());
 
 #if !defined(OS_MACOSX)

@@ -8,15 +8,20 @@
 
 #if defined(OS_CHROMEOS)
 #include "ui/base/ime/input_method_ibus.h"
+#elif defined(OS_WIN)
+#include "ui/base/ime/input_method_win.h"
 #else
 #include "ui/base/ime/mock_input_method.h"
 #endif
 
 namespace ui {
 
-InputMethod* CreateInputMethod(internal::InputMethodDelegate* delegate) {
+InputMethod* CreateInputMethod(internal::InputMethodDelegate* delegate,
+                               gfx::AcceleratedWidget widget) {
 #if defined(OS_CHROMEOS)
   return new InputMethodIBus(delegate);
+#elif defined(OS_WIN)
+  return new InputMethodWin(delegate, widget);
 #else
   return new MockInputMethod(delegate);
 #endif

@@ -22,8 +22,6 @@
 #include "ui/base/x/x11_util.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/corewm/compound_event_filter.h"
-#include "ui/views/corewm/input_method_event_filter.h"
-#include "ui/views/ime/input_method_bridge.h"
 #include "ui/views/widget/desktop_aura/desktop_activation_client.h"
 #include "ui/views/widget/desktop_aura/desktop_cursor_client.h"
 #include "ui/views/widget/desktop_aura/desktop_dispatcher_client.h"
@@ -231,20 +229,14 @@ aura::RootWindow* DesktopRootWindowHostLinux::InitRootWindow(
   aura::client::SetScreenPositionClient(root_window_,
                                         position_client_.get());
 
-  // No event filter for aura::Env. Create CompoundEvnetFilter per RootWindow.
-  root_window_event_filter_ = new corewm::CompoundEventFilter;
-  // Pass ownership of the filter to the root_window.
-  root_window_->SetEventFilter(root_window_event_filter_);
-
-  input_method_filter_.reset(new corewm::InputMethodEventFilter);
-  input_method_filter_->SetInputMethodPropertyInRootWindow(root_window_);
-  root_window_event_filter_->AddHandler(input_method_filter_.get());
+  desktop_native_widget_aura_->InstallInputMethodEventFilter(root_window_);
 
   // TODO(erg): Unify this code once the other consumer goes away.
   x11_window_event_filter_.reset(
       new X11WindowEventFilter(root_window_, activation_client_.get()));
   x11_window_event_filter_->SetUseHostWindowBorders(false);
-  root_window_event_filter_->AddHandler(x11_window_event_filter_.get());
+  desktop_native_widget_aura_->root_window_event_filter()->AddHandler(
+      x11_window_event_filter_.get());
 
   x11_window_move_client_.reset(new X11DesktopWindowMoveClient);
   aura::client::SetWindowMoveClient(root_window_,
@@ -328,8 +320,8 @@ void DesktopRootWindowHostLinux::Close() {
 void DesktopRootWindowHostLinux::CloseNow() {
   // Remove the event listeners we've installed. We need to remove these
   // because otherwise we get assert during ~RootWindow().
-  root_window_event_filter_->RemoveHandler(x11_window_event_filter_.get());
-  root_window_event_filter_->RemoveHandler(input_method_filter_.get());
+  desktop_native_widget_aura_->root_window_event_filter()->RemoveHandler(
+      x11_window_event_filter_.get());
 
   // Actually free our native resources.
   base::MessagePumpAuraX11::Current()->RemoveDispatcherForWindow(xwindow_);
@@ -510,16 +502,6 @@ bool DesktopRootWindowHostLinux::HasCapture() const {
 void DesktopRootWindowHostLinux::SetAlwaysOnTop(bool always_on_top) {
   // TODO(erg):
   NOTIMPLEMENTED();
-}
-
-InputMethod* DesktopRootWindowHostLinux::CreateInputMethod() {
-  ui::InputMethod* host = input_method_filter_->input_method();
-  return new InputMethodBridge(this, host);
-}
-
-internal::InputMethodDelegate*
-    DesktopRootWindowHostLinux::GetInputMethodDelegate() {
-  return this;
 }
 
 void DesktopRootWindowHostLinux::SetWindowTitle(const string16& title) {
@@ -843,18 +825,6 @@ void DesktopRootWindowHostLinux::OnDeviceScaleFactorChanged(
 }
 
 void DesktopRootWindowHostLinux::PrepareForShutdown() {
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// DesktopRootWindowHostLinux, views::internal::InputMethodDelegate:
-
-void DesktopRootWindowHostLinux::DispatchKeyEventPostIME(
-    const ui::KeyEvent& key) {
-  FocusManager* focus_manager =
-      native_widget_delegate_->AsWidget()->GetFocusManager();
-  if (native_widget_delegate_->OnKeyEvent(key) || !focus_manager)
-    return;
-  focus_manager->OnKeyEvent(key);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

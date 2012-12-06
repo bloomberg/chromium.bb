@@ -23,7 +23,6 @@ class VIEWS_EXPORT InputMethodDelegate {
 
   // Dispatch a key event already processed by the input method.
   virtual void DispatchKeyEventPostIME(const ui::KeyEvent& key) = 0;
-
 };
 
 }  // namespace internal

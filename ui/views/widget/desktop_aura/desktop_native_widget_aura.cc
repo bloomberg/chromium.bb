@@ -15,7 +15,10 @@
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/corewm/compound_event_filter.h"
+#include "ui/views/corewm/input_method_event_filter.h"
 #include "ui/views/ime/input_method.h"
+#include "ui/views/ime/input_method_bridge.h"
 #include "ui/views/widget/desktop_aura/desktop_root_window_host.h"
 #include "ui/views/widget/native_widget_aura_window_observer.h"
 #include "ui/views/widget/widget.h"
@@ -85,9 +88,28 @@ DesktopNativeWidgetAura* DesktopNativeWidgetAura::ForWindow(
 }
 
 void DesktopNativeWidgetAura::OnHostClosed() {
+  root_window_event_filter_->RemoveHandler(input_method_event_filter_.get());
   // This will, through a long list of callbacks, trigger |root_window_| going
   // away. See OnWindowDestroyed()
   delete window_;
+}
+
+void DesktopNativeWidgetAura::InstallInputMethodEventFilter(
+    aura::RootWindow* root) {
+  DCHECK(!input_method_event_filter_.get());
+
+  // CEF sets focus to the window the user clicks down on.
+  // TODO(beng): see if we can't do this some other way. CEF seems a heavy-
+  //             handed way of accomplishing focus.
+  // No event filter for aura::Env. Create CompoundEvnetFilter per RootWindow.
+  root_window_event_filter_ = new corewm::CompoundEventFilter;
+  // Pass ownership of the filter to the root_window.
+  root->SetEventFilter(root_window_event_filter_);
+
+  input_method_event_filter_.reset(
+      new corewm::InputMethodEventFilter(root->GetAcceleratedWidget()));
+  input_method_event_filter_->SetInputMethodPropertyInRootWindow(root);
+  root_window_event_filter_->AddHandler(input_method_event_filter_.get());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -208,12 +230,13 @@ bool DesktopNativeWidgetAura::HasCapture() const {
 }
 
 InputMethod* DesktopNativeWidgetAura::CreateInputMethod() {
-  return desktop_root_window_host_->CreateInputMethod();
+  ui::InputMethod* host = input_method_event_filter_->input_method();
+  return new InputMethodBridge(this, host);
 }
 
 internal::InputMethodDelegate*
     DesktopNativeWidgetAura::GetInputMethodDelegate() {
-  return desktop_root_window_host_->GetInputMethodDelegate();
+  return this;
 }
 
 void DesktopNativeWidgetAura::CenterWindow(const gfx::Size& size) {
@@ -445,6 +468,13 @@ void DesktopNativeWidgetAura::OnBoundsChanged(const gfx::Rect& old_bounds,
 void DesktopNativeWidgetAura::OnFocus(aura::Window* old_focused_window) {
   desktop_root_window_host_->OnNativeWidgetFocus();
   native_widget_delegate_->OnNativeFocus(old_focused_window);
+
+  // If focus is moving from a descendant Window to |window_| then native
+  // activation hasn't changed. We still need to inform the InputMethod we've
+  // been focused though.
+  InputMethod* input_method = GetWidget()->GetInputMethod();
+  if (input_method)
+    input_method->OnFocus();
 }
 
 void DesktopNativeWidgetAura::OnBlur() {
@@ -590,6 +620,17 @@ void DesktopNativeWidgetAura::OnLostActive() {
   native_widget_delegate_->OnNativeWidgetActivationChanged(false);
   if (IsVisible() && GetWidget()->non_client_view())
     GetWidget()->non_client_view()->SchedulePaint();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// DesktopNativeWidgetAura, views::internal::InputMethodDelegate:
+
+void DesktopNativeWidgetAura::DispatchKeyEventPostIME(const ui::KeyEvent& key) {
+  FocusManager* focus_manager =
+      native_widget_delegate_->AsWidget()->GetFocusManager();
+  if (native_widget_delegate_->OnKeyEvent(key) || !focus_manager)
+    return;
+  focus_manager->OnKeyEvent(key);
 }
 
 }  // namespace views

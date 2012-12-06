@@ -8,6 +8,7 @@
 #include "base/memory/weak_ptr.h"
 #include "ui/aura/client/activation_delegate.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/views/ime/input_method_delegate.h"
 #include "ui/views/widget/native_widget_private.h"
 
 namespace aura {
@@ -19,6 +20,11 @@ class StackingClient;
 
 namespace views {
 
+namespace corewm {
+class CompoundEventFilter;
+class InputMethodEventFilter;
+}
+
 class DesktopRootWindowHost;
 class NativeWidgetAuraWindowObserver;
 
@@ -26,7 +32,8 @@ class NativeWidgetAuraWindowObserver;
 class VIEWS_EXPORT DesktopNativeWidgetAura
     : public internal::NativeWidgetPrivate,
       public aura::WindowDelegate,
-      public aura::client::ActivationDelegate {
+      public aura::client::ActivationDelegate,
+      public views::internal::InputMethodDelegate {
  public:
   explicit DesktopNativeWidgetAura(internal::NativeWidgetDelegate* delegate);
   virtual ~DesktopNativeWidgetAura();
@@ -37,6 +44,16 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   // Called by our DesktopRootWindowHost after it has deleted native resources;
   // this is the signal that we should start our shutdown.
   void OnHostClosed();
+
+  // Installs the input method filter on |root|. This is intended to be invoked
+  // by the DesktopRootWindowHost implementation during Init().
+  void InstallInputMethodEventFilter(aura::RootWindow* root);
+  corewm::InputMethodEventFilter* input_method_event_filter() {
+    return input_method_event_filter_.get();
+  }
+  corewm::CompoundEventFilter* root_window_event_filter() {
+    return root_window_event_filter_;
+  }
 
  protected:
   // Overridden from internal::NativeWidgetPrivate:
@@ -160,6 +177,9 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   virtual void OnActivated() OVERRIDE;
   virtual void OnLostActive() OVERRIDE;
 
+  // Overridden from views::internal::InputMethodDelegate:
+  virtual void DispatchKeyEventPostIME(const ui::KeyEvent& key) OVERRIDE;
+
  private:
   // See class documentation for Widget in widget.h for a note about ownership.
   Widget::InitParams::Ownership ownership_;
@@ -183,6 +203,11 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   internal::NativeWidgetDelegate* native_widget_delegate_;
 
   scoped_ptr<aura::client::StackingClient> stacking_client_;
+
+  // Toplevel event filter which dispatches to other event filters.
+  corewm::CompoundEventFilter* root_window_event_filter_;
+
+  scoped_ptr<corewm::InputMethodEventFilter> input_method_event_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopNativeWidgetAura);
 };

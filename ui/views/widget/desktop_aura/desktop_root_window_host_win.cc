@@ -13,6 +13,7 @@
 #include "ui/aura/ui_controls_aura.h"
 #include "ui/aura/window_property.h"
 #include "ui/base/cursor/cursor_loader_win.h"
+#include "ui/base/ime/input_method_win.h"
 #include "ui/base/win/shell.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/path_win.h"
@@ -21,7 +22,7 @@
 #include "ui/ui_controls/ui_controls.h"
 #include "ui/views/corewm/compound_event_filter.h"
 #include "ui/views/corewm/input_method_event_filter.h"
-#include "ui/views/ime/input_method_win.h"
+#include "ui/views/ime/input_method_bridge.h"
 #include "ui/views/widget/desktop_aura/desktop_activation_client.h"
 #include "ui/views/widget/desktop_aura/desktop_cursor_client.h"
 #include "ui/views/widget/desktop_aura/desktop_dispatcher_client.h"
@@ -134,15 +135,7 @@ aura::RootWindow* DesktopRootWindowHostWin::Init(
   aura::client::SetScreenPositionClient(root_window_,
                                         position_client_.get());
 
-  // CEF sets focus to the window the user clicks down on.
-  // TODO(beng): see if we can't do this some other way. CEF seems a heavy-
-  //             handed way of accomplishing focus.
-  root_window_event_filter_ = new views::corewm::CompoundEventFilter;
-  root_window_->SetEventFilter(root_window_event_filter_);
-
-  input_method_filter_.reset(new views::corewm::InputMethodEventFilter);
-  input_method_filter_->SetInputMethodPropertyInRootWindow(root_window_);
-  root_window_event_filter_->AddHandler(input_method_filter_.get());
+  desktop_native_widget_aura_->InstallInputMethodEventFilter(root_window_);
 
   focus_client_->FocusWindow(content_window_, NULL);
   root_window_->SetProperty(kContentWindowForRootWindow, content_window_);
@@ -256,25 +249,6 @@ bool DesktopRootWindowHostWin::HasCapture() const {
 
 void DesktopRootWindowHostWin::SetAlwaysOnTop(bool always_on_top) {
   message_handler_->SetAlwaysOnTop(always_on_top);
-}
-
-InputMethod* DesktopRootWindowHostWin::CreateInputMethod() {
-  // TODO(ime): This is wrong. We need to hook up the native win32 IME on the
-  // InputMethodEventFilter, and instead create an InputMethodBridge
-  // per-NativeWidget implementation. Once we achieve that we can get rid of
-  // this function on this object and DesktopRootWindowHostLinux and just
-  // create the InputMethodBridge directly in DesktopNativeWidgetAura. Also
-  // at that time DNWA can become the InputMethodDelegate.
-  ui::InputMethod* host =
-      root_window_->GetProperty(aura::client::kRootWindowInputMethodKey);
-  return new InputMethodWin(message_handler_.get(),
-                            message_handler_->hwnd(),
-                            host);
-}
-
-internal::InputMethodDelegate*
-    DesktopRootWindowHostWin::GetInputMethodDelegate() {
-  return message_handler_.get();
 }
 
 void DesktopRootWindowHostWin::SetWindowTitle(const string16& title) {
@@ -623,7 +597,6 @@ void DesktopRootWindowHostWin::HandleDestroying() {
 }
 
 void DesktopRootWindowHostWin::HandleDestroyed() {
-  root_window_event_filter_->RemoveHandler(input_method_filter_.get());
   desktop_native_widget_aura_->OnHostClosed();
 }
 
@@ -692,29 +665,35 @@ bool DesktopRootWindowHostWin::HandleMouseEvent(const ui::MouseEvent& event) {
 }
 
 bool DesktopRootWindowHostWin::HandleKeyEvent(const ui::KeyEvent& event) {
-  return root_window_host_delegate_->OnHostKeyEvent(
-      const_cast<ui::KeyEvent*>(&event));
+  // We must return false here so HWNDMessageHandler::DispatchKeyEventPostIME()
+  // marks the message as not handled. This enables win32 to map things like an
+  // alt key press to a WM_SYSCHAR for showing a menu.
+  // NOTE: we get here because HandleIMEMessage() below returns false. We need
+  // not do anything as HandleIMEMessage already processed the message.
+  return false;
 }
 
 bool DesktopRootWindowHostWin::HandleUntranslatedKeyEvent(
     const ui::KeyEvent& event) {
-  InputMethod* input_method = GetInputMethod();
-  if (input_method)
-    input_method->DispatchKeyEvent(event);
-  return !!input_method;
+  scoped_ptr<ui::KeyEvent> duplicate_event(event.Copy());
+  static_cast<aura::RootWindowHostDelegate*>(root_window_)->OnHostKeyEvent(
+      duplicate_event.get());
+  // We must return false here so that HWNDMessageHandler invokes
+  // HandleKeyEvent(). See comment in HandleKeyEvent as to why it's important.
+  return false;
 }
 
 bool DesktopRootWindowHostWin::HandleIMEMessage(UINT message,
-                                           WPARAM w_param,
-                                           LPARAM l_param,
-                                           LRESULT* result) {
-  InputMethod* input_method = GetInputMethod();
-  if (!input_method || input_method->IsMock()) {
-    *result = 0;
-    return false;
-  }
-
-  InputMethodWin* ime_win = static_cast<InputMethodWin*>(input_method);
+                                                WPARAM w_param,
+                                                LPARAM l_param,
+                                                LRESULT* result) {
+  // TODO(ime): Having to cast here is wrong. Maybe we should have IME events
+  // and have these flow through the same path as HandleUntranslatedKeyEvent()
+  // does.
+  ui::InputMethodWin* ime_win =
+      static_cast<ui::InputMethodWin*>(
+          desktop_native_widget_aura_->input_method_event_filter()->
+          input_method());
   BOOL handled = FALSE;
   *result = ime_win->OnImeMessages(message, w_param, l_param, &handled);
   return !!handled;
@@ -723,11 +702,12 @@ bool DesktopRootWindowHostWin::HandleIMEMessage(UINT message,
 void DesktopRootWindowHostWin::HandleInputLanguageChange(
     DWORD character_set,
     HKL input_language_id) {
-  InputMethod* input_method = GetInputMethod();
-  if (input_method && !input_method->IsMock()) {
-    static_cast<InputMethodWin*>(input_method)->OnInputLangChange(
-        character_set, input_language_id);
-  }
+  // TODO(ime): Seem comment in HandleIMEMessage().
+  ui::InputMethodWin* ime_win =
+      static_cast<ui::InputMethodWin*>(
+          desktop_native_widget_aura_->input_method_event_filter()->
+          input_method());
+  ime_win->OnInputLangChange(character_set, input_language_id);
 }
 
 bool DesktopRootWindowHostWin::HandlePaintAccelerated(

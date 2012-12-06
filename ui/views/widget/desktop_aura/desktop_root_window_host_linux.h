@@ -17,7 +17,6 @@
 #include "ui/gfx/rect.h"
 #include "ui/base/cursor/cursor_loader_x11.h"
 #include "ui/base/x/x11_atom_cache.h"
-#include "ui/views/ime/input_method_delegate.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/desktop_aura/desktop_root_window_host.h"
 
@@ -35,15 +34,10 @@ class DesktopCursorClient;
 class DesktopDispatcherClient;
 class X11DesktopWindowMoveClient;
 class X11WindowEventFilter;
-namespace corewm {
-class CompoundEventFilter;
-class InputMethodEventFilter;
-}
 
 class VIEWS_EXPORT DesktopRootWindowHostLinux
     : public DesktopRootWindowHost,
       public aura::RootWindowHost,
-      public views::internal::InputMethodDelegate,
       public MessageLoop::Dispatcher {
  public:
   DesktopRootWindowHostLinux(
@@ -122,8 +116,6 @@ class VIEWS_EXPORT DesktopRootWindowHostLinux
   virtual bool IsMinimized() const OVERRIDE;
   virtual bool HasCapture() const OVERRIDE;
   virtual void SetAlwaysOnTop(bool always_on_top) OVERRIDE;
-  virtual InputMethod* CreateInputMethod() OVERRIDE;
-  virtual internal::InputMethodDelegate* GetInputMethodDelegate() OVERRIDE;
   virtual void SetWindowTitle(const string16& title) OVERRIDE;
   virtual void ClearNativeFocus() OVERRIDE;
   virtual Widget::MoveLoopResult RunMoveLoop(
@@ -174,9 +166,6 @@ class VIEWS_EXPORT DesktopRootWindowHostLinux
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
   virtual void PrepareForShutdown() OVERRIDE;
 
-  // Overridden from views::internal::InputMethodDelegate:
-  virtual void DispatchKeyEventPostIME(const ui::KeyEvent& key) OVERRIDE;
-
   // Overridden from Dispatcher:
   virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
 
@@ -221,11 +210,6 @@ class VIEWS_EXPORT DesktopRootWindowHostLinux
   // The invisible cursor.
   ::Cursor invisible_cursor_;
 
-  // Toplevel event filter which dispatches to other event filters.
-  corewm::CompoundEventFilter* root_window_event_filter_;
-
-  // An event filter that pre-handles all key events to send them to an IME.
-  scoped_ptr<corewm::InputMethodEventFilter> input_method_filter_;
   scoped_ptr<X11WindowEventFilter> x11_window_event_filter_;
   scoped_ptr<X11DesktopWindowMoveClient> x11_window_move_client_;
 

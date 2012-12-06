@@ -800,20 +800,6 @@ ui::EventResult NativeWidgetAura::OnKeyEvent(ui::KeyEvent* event) {
   // and the window may be invisible by that time.
   if (!window_->IsVisible())
     return ui::ER_UNHANDLED;
-#if defined(OS_WIN)
-  // Work around for incomplete InputMethod wiring. If we're in a constrained
-  // window DispatchKeyEvent below results in an infinite loop. Short circuit
-  // that by invoking DispatchKeyEventIME() directly, which is what
-  // InputMethodBridge::DispatchKeyEvent does.
-  // TODO(ime): remove this hack.
-  if (DesktopRootWindowHostWin::GetContentWindowForHWND(
-          window_->GetRootWindow()->GetAcceleratedWidget()) &&
-      (event->type() != ui::ET_TRANSLATED_KEY_PRESS &&
-       event->type() != ui::ET_TRANSLATED_KEY_RELEASE)) {
-    DispatchKeyEventPostIME(*event);
-    return ui::ER_HANDLED;
-  }
-#endif
   GetWidget()->GetInputMethod()->DispatchKeyEvent(*event);
   return ui::ER_HANDLED;
 }

@@ -32,7 +32,8 @@ TEST_F(InputMethodEventFilterTest, TestInputMethodProperty) {
   CompoundEventFilter* root_filter = new CompoundEventFilter;
   root_window()->SetEventFilter(root_filter);
 
-  InputMethodEventFilter input_method_event_filter;
+  InputMethodEventFilter input_method_event_filter(
+      root_window()->GetAcceleratedWidget());
   root_filter->AddHandler(&input_method_event_filter);
 
   // Tests if InputMethodEventFilter adds a window property on its
@@ -50,7 +51,8 @@ TEST_F(InputMethodEventFilterTest, TestInputMethodKeyEventPropagation) {
   root_window()->SetEventFilter(root_filter);
 
   // Add the InputMethodEventFilter before the TestEventFilter.
-  InputMethodEventFilter input_method_event_filter;
+  InputMethodEventFilter input_method_event_filter(
+      root_window()->GetAcceleratedWidget());
   root_filter->AddHandler(&input_method_event_filter);
 
   // Add TestEventFilter to the RootWindow.

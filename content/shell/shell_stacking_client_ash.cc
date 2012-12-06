@@ -38,7 +38,8 @@ aura::Window* ShellStackingClientAsh::GetDefaultParent(
     // Pass ownership of the filter to the root_window.
     root_window_->SetEventFilter(root_window_event_filter_);
 
-    input_method_filter_.reset(new views::corewm::InputMethodEventFilter);
+    input_method_filter_.reset(new views::corewm::InputMethodEventFilter(
+                                   root_window_->GetAcceleratedWidget()));
     input_method_filter_->SetInputMethodPropertyInRootWindow(
         root_window_.get());
     root_window_event_filter_->AddHandler(input_method_filter_.get());

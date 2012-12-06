@@ -43,7 +43,9 @@ void InputMethodBridge::OnFocus() {
 }
 
 void InputMethodBridge::OnBlur() {
-  DCHECK(widget_focused());
+  // win32 sends multiple focus lost events, ignore all but the first.
+  if (widget_focused())
+    return;
 
   ConfirmCompositionText();
   InputMethodBase::OnBlur();
