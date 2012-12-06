@@ -165,7 +165,7 @@ void GDataWapiService::GetDocumentEntry(
   DCHECK(!callback.is_null());
 
   runner_->StartOperationWithRetry(
-      new GetDocumentEntryOperation(operation_registry(),
+      new GetResourceEntryOperation(operation_registry(),
                                     url_request_context_getter_,
                                     url_generator_,
                                     resource_id,
@@ -234,7 +234,7 @@ void GDataWapiService::DeleteDocument(
   DCHECK(!callback.is_null());
 
   runner_->StartOperationWithRetry(
-      new DeleteDocumentOperation(operation_registry(),
+      new DeleteResourceOperation(operation_registry(),
                                   url_request_context_getter_,
                                   callback,
                                   document_url));
@@ -264,12 +264,12 @@ void GDataWapiService::CopyDocument(
   DCHECK(!callback.is_null());
 
   runner_->StartOperationWithRetry(
-      new CopyDocumentOperation(operation_registry(),
-                                url_request_context_getter_,
-                                url_generator_,
-                                callback,
-                                resource_id,
-                                new_name));
+      new CopyHostedDocumentOperation(operation_registry(),
+                                      url_request_context_getter_,
+                                      url_generator_,
+                                      callback,
+                                      resource_id,
+                                      new_name));
 }
 
 void GDataWapiService::RenameResource(

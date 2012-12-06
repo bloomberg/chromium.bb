@@ -76,19 +76,19 @@ class GetResourceListOperation : public GetDataOperation {
   DISALLOW_COPY_AND_ASSIGN(GetResourceListOperation);
 };
 
-//========================= GetDocumentEntryOperation ==========================
+//========================= GetResourceEntryOperation ==========================
 
-// This class performs the operation for fetching a single document entry.
-class GetDocumentEntryOperation : public GetDataOperation {
+// This class performs the operation for fetching a single resource entry.
+class GetResourceEntryOperation : public GetDataOperation {
  public:
   // |callback| must not be null.
-  GetDocumentEntryOperation(
+  GetResourceEntryOperation(
       OperationRegistry* registry,
       net::URLRequestContextGetter* url_request_context_getter,
       const GDataWapiUrlGenerator& url_generator,
       const std::string& resource_id,
       const GetDataCallback& callback);
-  virtual ~GetDocumentEntryOperation();
+  virtual ~GetResourceEntryOperation();
 
  protected:
   // UrlFetchOperationBase overrides.
@@ -99,7 +99,7 @@ class GetDocumentEntryOperation : public GetDataOperation {
   // Resource id of the requested entry.
   const std::string resource_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(GetDocumentEntryOperation);
+  DISALLOW_COPY_AND_ASSIGN(GetResourceEntryOperation);
 };
 
 //========================= GetAccountMetadataOperation ========================
@@ -183,18 +183,23 @@ class DownloadFileOperation : public UrlFetchOperationBase {
   DISALLOW_COPY_AND_ASSIGN(DownloadFileOperation);
 };
 
-//=========================== DeleteDocumentOperation ==========================
+//=========================== DeleteResourceOperation ==========================
 
-// This class performs the operation for deleting a document.
-class DeleteDocumentOperation : public EntryActionOperation {
+// This class performs the operation for deleting a resource.
+//
+// In WAPI, "gd:deleted" means that the resource was put in the trash, and
+// "docs:removed" means its permanently gone. Since what the class does is to
+// put the resource into trash, we have chosen "Delete" in the name, even though
+// we are preferring the term "Remove" in drive/google_api code.
+class DeleteResourceOperation : public EntryActionOperation {
  public:
   // |callback| must not be null.
-  DeleteDocumentOperation(
+  DeleteResourceOperation(
       OperationRegistry* registry,
       net::URLRequestContextGetter* url_request_context_getter,
       const EntryActionCallback& callback,
       const GURL& edit_url);
-  virtual ~DeleteDocumentOperation();
+  virtual ~DeleteResourceOperation();
 
  protected:
   // UrlFetchOperationBase overrides.
@@ -205,7 +210,7 @@ class DeleteDocumentOperation : public EntryActionOperation {
  private:
   const GURL edit_url_;
 
-  DISALLOW_COPY_AND_ASSIGN(DeleteDocumentOperation);
+  DISALLOW_COPY_AND_ASSIGN(DeleteResourceOperation);
 };
 
 //========================== CreateDirectoryOperation ==========================
@@ -241,22 +246,22 @@ class CreateDirectoryOperation : public GetDataOperation {
   DISALLOW_COPY_AND_ASSIGN(CreateDirectoryOperation);
 };
 
-//============================ CopyDocumentOperation ===========================
+//============================ CopyHostedDocumentOperation =====================
 
 // This class performs the operation for making a copy of a hosted document.
 // Note that this function cannot be used to copy regular files, as it's not
 // supported by WAPI.
-class CopyDocumentOperation : public GetDataOperation {
+class CopyHostedDocumentOperation : public GetDataOperation {
  public:
   // |callback| must not be null.
-  CopyDocumentOperation(
+  CopyHostedDocumentOperation(
       OperationRegistry* registry,
       net::URLRequestContextGetter* url_request_context_getter,
       const GDataWapiUrlGenerator& url_generator,
       const GetDataCallback& callback,
       const std::string& resource_id,
       const FilePath::StringType& new_name);
-  virtual ~CopyDocumentOperation();
+  virtual ~CopyHostedDocumentOperation();
 
  protected:
   // UrlFetchOperationBase overrides.
@@ -270,7 +275,7 @@ class CopyDocumentOperation : public GetDataOperation {
   const std::string resource_id_;
   const FilePath::StringType new_name_;
 
-  DISALLOW_COPY_AND_ASSIGN(CopyDocumentOperation);
+  DISALLOW_COPY_AND_ASSIGN(CopyHostedDocumentOperation);
 };
 
 //=========================== RenameResourceOperation ==========================
@@ -371,7 +376,7 @@ class AddResourceToDirectoryOperation : public EntryActionOperation {
 
 //==================== RemoveResourceFromDirectoryOperation ====================
 
-// This class performs the operation for adding a document/file/directory
+// This class performs the operation for removing a document/file/directory
 // from a directory.
 class RemoveResourceFromDirectoryOperation : public EntryActionOperation {
  public:

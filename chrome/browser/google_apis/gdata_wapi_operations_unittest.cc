@@ -504,11 +504,11 @@ TEST_F(GDataWapiOperationsTest, GetResourceListOperation_InvalidFeed) {
   EXPECT_FALSE(result_data);
 }
 
-TEST_F(GDataWapiOperationsTest, GetDocumentEntryOperation_ValidResourceId) {
+TEST_F(GDataWapiOperationsTest, GetResourceEntryOperation_ValidResourceId) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
   scoped_ptr<base::Value> result_data;
 
-  GetDocumentEntryOperation* operation = new GetDocumentEntryOperation(
+  GetResourceEntryOperation* operation = new GetResourceEntryOperation(
       &operation_registry_,
       request_context_getter_.get(),
       *url_generator_,
@@ -531,11 +531,11 @@ TEST_F(GDataWapiOperationsTest, GetDocumentEntryOperation_ValidResourceId) {
       result_data.get()));
 }
 
-TEST_F(GDataWapiOperationsTest, GetDocumentEntryOperation_InvalidResourceId) {
+TEST_F(GDataWapiOperationsTest, GetResourceEntryOperation_InvalidResourceId) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
   scoped_ptr<base::Value> result_data;
 
-  GetDocumentEntryOperation* operation = new GetDocumentEntryOperation(
+  GetResourceEntryOperation* operation = new GetResourceEntryOperation(
       &operation_registry_,
       request_context_getter_.get(),
       *url_generator_,
@@ -630,10 +630,10 @@ TEST_F(GDataWapiOperationsTest, DownloadFileOperation_NonExistentFile) {
   // Do not verify the not found message.
 }
 
-TEST_F(GDataWapiOperationsTest, DeleteDocumentOperation) {
+TEST_F(GDataWapiOperationsTest, DeleteResourceOperation) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
 
-  DeleteDocumentOperation* operation = new DeleteDocumentOperation(
+  DeleteResourceOperation* operation = new DeleteResourceOperation(
       &operation_registry_,
       request_context_getter_.get(),
       base::Bind(&CopyResultFromEntryActionCallbackAndQuit,
@@ -687,12 +687,12 @@ TEST_F(GDataWapiOperationsTest, CreateDirectoryOperation) {
             http_request_.content);
 }
 
-TEST_F(GDataWapiOperationsTest, CopyDocumentOperation) {
+TEST_F(GDataWapiOperationsTest, CopyHostedDocumentOperation) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
   scoped_ptr<base::Value> result_data;
 
   // Copy a document with a new name "New Document".
-  CopyDocumentOperation* operation = new CopyDocumentOperation(
+  CopyHostedDocumentOperation* operation = new CopyHostedDocumentOperation(
       &operation_registry_,
       request_context_getter_.get(),
       *url_generator_,

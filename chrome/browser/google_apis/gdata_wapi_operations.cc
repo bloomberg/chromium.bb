@@ -131,9 +131,9 @@ GURL GetResourceListOperation::GetURL() const {
                                                 directory_resource_id_);
 }
 
-//============================ GetDocumentEntryOperation =======================
+//============================ GetResourceEntryOperation =======================
 
-GetDocumentEntryOperation::GetDocumentEntryOperation(
+GetResourceEntryOperation::GetResourceEntryOperation(
     OperationRegistry* registry,
     net::URLRequestContextGetter* url_request_context_getter,
     const GDataWapiUrlGenerator& url_generator,
@@ -145,9 +145,9 @@ GetDocumentEntryOperation::GetDocumentEntryOperation(
   DCHECK(!callback.is_null());
 }
 
-GetDocumentEntryOperation::~GetDocumentEntryOperation() {}
+GetResourceEntryOperation::~GetResourceEntryOperation() {}
 
-GURL GetDocumentEntryOperation::GetURL() const {
+GURL GetResourceEntryOperation::GetURL() const {
   return url_generator_.GenerateDocumentEntryUrl(resource_id_);
 }
 
@@ -239,9 +239,9 @@ void DownloadFileOperation::RunCallbackOnPrematureFailure(GDataErrorCode code) {
   download_action_callback_.Run(code, FilePath());
 }
 
-//=========================== DeleteDocumentOperation ==========================
+//=========================== DeleteResourceOperation ==========================
 
-DeleteDocumentOperation::DeleteDocumentOperation(
+DeleteResourceOperation::DeleteResourceOperation(
     OperationRegistry* registry,
     net::URLRequestContextGetter* url_request_context_getter,
     const EntryActionCallback& callback,
@@ -251,18 +251,18 @@ DeleteDocumentOperation::DeleteDocumentOperation(
   DCHECK(!callback.is_null());
 }
 
-DeleteDocumentOperation::~DeleteDocumentOperation() {}
+DeleteResourceOperation::~DeleteResourceOperation() {}
 
-GURL DeleteDocumentOperation::GetURL() const {
+GURL DeleteResourceOperation::GetURL() const {
   return GDataWapiUrlGenerator::AddStandardUrlParams(edit_url_);
 }
 
-URLFetcher::RequestType DeleteDocumentOperation::GetRequestType() const {
+URLFetcher::RequestType DeleteResourceOperation::GetRequestType() const {
   return URLFetcher::DELETE_REQUEST;
 }
 
 std::vector<std::string>
-DeleteDocumentOperation::GetExtraRequestHeaders() const {
+DeleteResourceOperation::GetExtraRequestHeaders() const {
   std::vector<std::string> headers;
   headers.push_back(kIfMatchAllHeader);
   return headers;
@@ -323,9 +323,9 @@ bool CreateDirectoryOperation::GetContentData(std::string* upload_content_type,
   return true;
 }
 
-//============================ CopyDocumentOperation ===========================
+//============================ CopyHostedDocumentOperation =====================
 
-CopyDocumentOperation::CopyDocumentOperation(
+CopyHostedDocumentOperation::CopyHostedDocumentOperation(
     OperationRegistry* registry,
     net::URLRequestContextGetter* url_request_context_getter,
     const GDataWapiUrlGenerator& url_generator,
@@ -339,18 +339,19 @@ CopyDocumentOperation::CopyDocumentOperation(
   DCHECK(!callback.is_null());
 }
 
-CopyDocumentOperation::~CopyDocumentOperation() {}
+CopyHostedDocumentOperation::~CopyHostedDocumentOperation() {}
 
-URLFetcher::RequestType CopyDocumentOperation::GetRequestType() const {
+URLFetcher::RequestType CopyHostedDocumentOperation::GetRequestType() const {
   return URLFetcher::POST;
 }
 
-GURL CopyDocumentOperation::GetURL() const {
+GURL CopyHostedDocumentOperation::GetURL() const {
   return url_generator_.GenerateDocumentListRootUrl();
 }
 
-bool CopyDocumentOperation::GetContentData(std::string* upload_content_type,
-                                           std::string* upload_content) {
+bool CopyHostedDocumentOperation::GetContentData(
+    std::string* upload_content_type,
+    std::string* upload_content) {
   upload_content_type->assign("application/atom+xml");
   XmlWriter xml_writer;
   xml_writer.StartWriting();
@@ -363,8 +364,8 @@ bool CopyDocumentOperation::GetContentData(std::string* upload_content_type,
   xml_writer.EndElement();  // Ends "entry" element.
   xml_writer.StopWriting();
   upload_content->assign(xml_writer.GetWrittenString());
-  DVLOG(1) << "CopyDocumentOperation data: " << *upload_content_type << ", ["
-           << *upload_content << "]";
+  DVLOG(1) << "CopyHostedDocumentOperation data: " << *upload_content_type
+           << ", [" << *upload_content << "]";
   return true;
 }
 
