@@ -422,6 +422,10 @@ RemoteServiceState DriveFileSyncService::GetCurrentState() const {
   return state_;
 }
 
+const char* DriveFileSyncService::GetServiceName() const {
+  return kServiceName;
+}
+
 void DriveFileSyncService::ApplyLocalChange(
     const fileapi::FileChange& local_file_change,
     const FilePath& local_file_path,

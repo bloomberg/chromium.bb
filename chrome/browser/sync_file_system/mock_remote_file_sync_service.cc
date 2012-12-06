@@ -19,6 +19,8 @@ using ::testing::Return;
 
 namespace sync_file_system {
 
+const char MockRemoteFileSyncService::kServiceName[] = "mock_sync_service";
+
 MockRemoteFileSyncService::MockRemoteFileSyncService() {
   typedef MockRemoteFileSyncService self;
   ON_CALL(*this, AddObserver(_))
@@ -42,6 +44,8 @@ MockRemoteFileSyncService::MockRemoteFileSyncService() {
       .WillByDefault(Invoke(this, &self::GetRemoteFileMetadataStub));
   ON_CALL(*this, GetCurrentState())
       .WillByDefault(Return(REMOTE_SERVICE_OK));
+  ON_CALL(*this, GetServiceName())
+      .WillByDefault(Return(kServiceName));
 }
 
 MockRemoteFileSyncService::~MockRemoteFileSyncService() {

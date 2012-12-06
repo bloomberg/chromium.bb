@@ -128,6 +128,9 @@ class RemoteFileSyncService {
   // returned by the last OnRemoteServiceStateUpdated notification.
   virtual RemoteServiceState GetCurrentState() const = 0;
 
+  // Returns the service name that backs this remote_file_sync_service.
+  virtual const char* GetServiceName() const = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(RemoteFileSyncService);
 };

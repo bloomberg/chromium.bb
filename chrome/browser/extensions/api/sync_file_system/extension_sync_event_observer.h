@@ -7,20 +7,35 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/values.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/sync_file_system/sync_event_observer.h"
 
 class Profile;
+
+namespace sync_file_system {
+class SyncFileSystemService;
+}
 
 namespace extensions {
 
 // Observes changes in SyncFileSystem and relays events to JS Extension API.
 class ExtensionSyncEventObserver
-    : public sync_file_system::SyncEventObserver {
+    : public sync_file_system::SyncEventObserver,
+      public ProfileKeyedService {
  public:
-  explicit ExtensionSyncEventObserver(Profile* profile,
-                                      const std::string& service_name);
+  explicit ExtensionSyncEventObserver(Profile* profile);
   virtual ~ExtensionSyncEventObserver();
 
+  void InitializeForService(
+      sync_file_system::SyncFileSystemService* sync_service,
+      const std::string& service_name);
+
+  // ProfileKeyedService override.
+  virtual void Shutdown() OVERRIDE;
+
+  // sync_file_system::SyncEventObserver interface implementation.
   virtual void OnSyncStateUpdated(
       const GURL& app_origin,
       sync_file_system::SyncEventObserver::SyncServiceState state,
@@ -33,7 +48,14 @@ class ExtensionSyncEventObserver
    const std::string& GetExtensionId(const GURL& app_origin);
 
    Profile* profile_;
-   const std::string service_name_;
+
+   // Not owned. If not null, then this is registered to SyncFileSystemService.
+   sync_file_system::SyncFileSystemService* sync_service_;
+   std::string service_name_;
+
+   void BroadcastOrDispatchEvent(const GURL& app_origin,
+                                 const std::string& event_name,
+                                 scoped_ptr<base::ListValue> value);
 
    DISALLOW_COPY_AND_ASSIGN(ExtensionSyncEventObserver);
 };

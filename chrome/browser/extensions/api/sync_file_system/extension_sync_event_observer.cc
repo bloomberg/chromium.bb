@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/sync_file_system/sync_event_observer.h"
+#include "chrome/browser/sync_file_system/sync_file_system_service.h"
 #include "chrome/common/extensions/api/sync_file_system.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/syncable/sync_operation_type.h"
@@ -60,12 +61,29 @@ api::sync_file_system::SyncOperationType SyncOperationTypeToExtensionEnum(
 }  // namespace
 
 ExtensionSyncEventObserver::ExtensionSyncEventObserver(
-    Profile* profile,
-    const std::string& service_name)
+    Profile* profile)
     : profile_(profile),
-      service_name_(service_name) {}
+      sync_service_(NULL) {}
+
+void ExtensionSyncEventObserver::InitializeForService(
+    sync_file_system::SyncFileSystemService* sync_service,
+    const std::string& service_name) {
+  DCHECK(sync_service);
+  if (sync_service_ != NULL) {
+    DCHECK_EQ(sync_service_, sync_service);
+    return;
+  }
+  sync_service_ = sync_service;
+  service_name_ = service_name;
+  sync_service_->AddSyncEventObserver(this);
+}
 
 ExtensionSyncEventObserver::~ExtensionSyncEventObserver() {}
+
+void ExtensionSyncEventObserver::Shutdown() {
+  if (sync_service_ != NULL)
+    sync_service_->RemoveSyncEventObserver(this);
+}
 
 const std::string& ExtensionSyncEventObserver::GetExtensionId(
     const GURL& app_origin) {
@@ -79,11 +97,7 @@ void ExtensionSyncEventObserver::OnSyncStateUpdated(
     const GURL& app_origin,
     sync_file_system::SyncEventObserver::SyncServiceState state,
     const std::string& description) {
-  // TODO(calvinlo): Check extension in set of extension_ids that are listening
-  // for events. If extension_id is not in the set, then ignore the event.
-  const std::string extension_id = GetExtensionId(app_origin);
-
-  // Convert state and description into SyncState Object
+  // Convert state and description into SyncState Object.
   api::sync_file_system::SyncState sync_state;
   sync_state.service_name = service_name_;
   sync_state.state = SyncServiceStateEnumToExtensionEnum(state);
@@ -91,17 +105,14 @@ void ExtensionSyncEventObserver::OnSyncStateUpdated(
   scoped_ptr<base::ListValue> params(
       api::sync_file_system::OnSyncStateChanged::Create(sync_state));
 
-  // Dispatch the event to the extension
-  ExtensionSystem::Get(profile_)->event_router()->DispatchEventToExtension(
-      extension_id, event_names::kOnSyncStateChanged, params.Pass(),
-      profile_, GURL());
+  BroadcastOrDispatchEvent(app_origin,
+                           event_names::kOnSyncStateChanged,
+                           params.Pass());
 }
 
 void ExtensionSyncEventObserver::OnFileSynced(
     const fileapi::FileSystemURL& url,
     fileapi::SyncOperationType operation) {
-  const std::string extension_id = GetExtensionId(url.origin());
-
   // TODO(calvinlo):Convert filePath from string to Webkit FileEntry.
   const api::sync_file_system::SyncOperationType sync_operation_type =
       SyncOperationTypeToExtensionEnum(operation);
@@ -110,10 +121,32 @@ void ExtensionSyncEventObserver::OnFileSynced(
       api::sync_file_system::OnFileSynced::Create(filePath,
                                                   sync_operation_type));
 
-  // Dispatch the event to the extension
-  ExtensionSystem::Get(profile_)->event_router()->DispatchEventToExtension(
-      extension_id, event_names::kOnFileSynced, params.Pass(),
-      profile_, GURL());
+  BroadcastOrDispatchEvent(url.origin(),
+                           event_names::kOnFileSynced,
+                           params.Pass());
+}
+
+void ExtensionSyncEventObserver::BroadcastOrDispatchEvent(
+    const GURL& app_origin,
+    const std::string& event_name,
+    scoped_ptr<base::ListValue> values) {
+  // Check to see whether the event should be broadcasted to all listening
+  // extensions or sent to a specific extension ID.
+  bool broadcast_mode = app_origin.is_empty();
+  EventRouter* event_router = ExtensionSystem::Get(profile_)->event_router();
+  DCHECK(event_router);
+
+  // No app_origin, broadcast to all listening extensions for this event name.
+  if (broadcast_mode) {
+    event_router->DispatchEventToRenderers(event_name, values.Pass(), profile_,
+                                           GURL());
+    return;
+  }
+
+  // Dispatch to single extension ID.
+  const std::string extension_id = GetExtensionId(app_origin);
+  event_router->DispatchEventToExtension(extension_id, event_name,
+                                         values.Pass(), profile_, GURL());
 }
 
 }  // namespace extensions

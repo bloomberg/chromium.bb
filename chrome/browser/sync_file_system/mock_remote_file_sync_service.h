@@ -21,6 +21,8 @@ namespace sync_file_system {
 
 class MockRemoteFileSyncService : public RemoteFileSyncService {
  public:
+  static const char kServiceName[];
+
   MockRemoteFileSyncService();
   virtual ~MockRemoteFileSyncService();
 
@@ -46,6 +48,8 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
                     const fileapi::SyncFileMetadataCallback& callback));
   MOCK_CONST_METHOD0(GetCurrentState,
                      RemoteServiceState());
+  MOCK_CONST_METHOD0(GetServiceName, const char*());
+
 
   // Send notifications to the observers.
   // Can be used in the mock implementation.

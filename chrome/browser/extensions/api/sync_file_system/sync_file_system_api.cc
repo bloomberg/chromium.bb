@@ -9,6 +9,8 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/stringprintf.h"
+#include "chrome/browser/extensions/api/sync_file_system/extension_sync_event_observer.h"
+#include "chrome/browser/extensions/api/sync_file_system/extension_sync_event_observer_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_service.h"
 #include "chrome/browser/sync_file_system/sync_file_system_service.h"
@@ -56,6 +58,18 @@ api::sync_file_system::FileSyncStatus FileSyncStatusEnumToExtensionEnum(
   }
   NOTREACHED();
   return api::sync_file_system::SYNC_FILE_SYSTEM_FILE_SYNC_STATUS_NONE;
+}
+
+sync_file_system::SyncFileSystemService* GetSyncFileSystemService(
+    Profile* profile) {
+  sync_file_system::SyncFileSystemService* service =
+      SyncFileSystemServiceFactory::GetForProfile(profile);
+  DCHECK(service);
+  ExtensionSyncEventObserver* observer =
+      ExtensionSyncEventObserverFactory::GetForProfile(profile);
+  DCHECK(observer);
+  observer->InitializeForService(service, kDriveCloudService);
+  return service;
 }
 
 }  // namespace
@@ -119,7 +133,7 @@ bool SyncFileSystemRequestFileSystemFunction::RunImpl() {
 
   // Initializes sync context for this extension and continue to open
   // a new file system.
-  SyncFileSystemServiceFactory::GetForProfile(profile())->
+  GetSyncFileSystemService(profile())->
       InitializeForApp(
           GetFileSystemContext(),
           service_name,
