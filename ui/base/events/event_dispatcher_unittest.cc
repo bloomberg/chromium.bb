@@ -117,26 +117,26 @@ class TestEventHandler : public EventHandler {
   DISALLOW_COPY_AND_ASSIGN(TestEventHandler);
 };
 
-// Destroys the dispatcher when it receives any event.
-class EventHandlerDestroyDispatcher : public TestEventHandler {
+// Destroys the dispatcher-delegate when it receives any event.
+class EventHandlerDestroyDispatcherDelegate : public TestEventHandler {
  public:
-  EventHandlerDestroyDispatcher(EventDispatcher* dispatcher,
-                      int id)
+  EventHandlerDestroyDispatcherDelegate(EventDispatcherDelegate* delegate,
+                                        int id)
       : TestEventHandler(id),
-        dispatcher_(dispatcher) {
+        dispatcher_delegate_(delegate) {
   }
 
-  virtual ~EventHandlerDestroyDispatcher() {}
+  virtual ~EventHandlerDestroyDispatcherDelegate() {}
 
  private:
   virtual void ReceivedEvent(Event* event) OVERRIDE {
     TestEventHandler::ReceivedEvent(event);
-    delete dispatcher_;
+    delete dispatcher_delegate_;
   }
 
-  EventDispatcher* dispatcher_;
+  EventDispatcherDelegate* dispatcher_delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(EventHandlerDestroyDispatcher);
+  DISALLOW_COPY_AND_ASSIGN(EventHandlerDestroyDispatcherDelegate);
 };
 
 // Invalidates the target when it receives any event.
@@ -162,14 +162,16 @@ class EventHandlerDestroyer : public TestEventHandler {
   EventHandlerDestroyer(int id, EventHandler* destroy)
       : TestEventHandler(id),
         to_destroy_(destroy),
-        dispatcher_(NULL) {
+        dispatcher_delegate_(NULL) {
   }
 
   virtual ~EventHandlerDestroyer() {
     CHECK(!to_destroy_);
   }
 
-  void set_dispatcher(EventDispatcher* dispatcher) { dispatcher_ = dispatcher; }
+  void set_dispatcher_delegate(EventDispatcherDelegate* dispatcher_delegate) {
+    dispatcher_delegate_ = dispatcher_delegate;
+  }
 
  private:
   virtual void ReceivedEvent(Event* event) {
@@ -177,25 +179,30 @@ class EventHandlerDestroyer : public TestEventHandler {
     delete to_destroy_;
     to_destroy_ = NULL;
 
-    if (dispatcher_) {
-      delete dispatcher_;
-      dispatcher_ = NULL;
+    if (dispatcher_delegate_) {
+      delete dispatcher_delegate_;
+      dispatcher_delegate_ = NULL;
     }
   }
 
   EventHandler* to_destroy_;
-  EventDispatcher* dispatcher_;
+  EventDispatcherDelegate* dispatcher_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(EventHandlerDestroyer);
 };
 
-class TestEventDispatcher : public EventDispatcher {
+class TestEventDispatcher : public EventDispatcherDelegate {
  public:
   TestEventDispatcher() {}
+
   virtual ~TestEventDispatcher() {}
 
+  void ProcessEvent(EventTarget* target, Event* event) {
+    DispatchEvent(target, event);
+  }
+
  private:
-  // Overridden from EventDispatcher:
+  // Overridden from EventDispatcherDelegate:
   virtual bool CanDispatchToTarget(EventTarget* target) OVERRIDE {
     TestTarget* test_target = static_cast<TestTarget*>(target);
     return test_target->valid();
@@ -321,7 +328,7 @@ TEST(EventDispatcherTest, EventDispatcherDestroyedDuringDispatch) {
   {
     TestEventDispatcher* dispatcher = new TestEventDispatcher();
     TestTarget target;
-    EventHandlerDestroyDispatcher handler(dispatcher, 5);
+    EventHandlerDestroyDispatcherDelegate handler(dispatcher, 5);
     TestEventHandler h1(1), h2(2);
 
     target.AddPreTargetHandler(&h1);
@@ -348,7 +355,7 @@ TEST(EventDispatcherTest, EventDispatcherDestroyedDuringDispatch) {
   {
     TestEventDispatcher* dispatcher = new TestEventDispatcher();
     TestTarget target;
-    EventHandlerDestroyDispatcher handler(dispatcher, 5);
+    EventHandlerDestroyDispatcherDelegate handler(dispatcher, 5);
     TestEventHandler h1(1), h2(2);
 
     target.AddPostTargetHandler(&h1);
@@ -441,7 +448,7 @@ TEST(EventDispatcherTest, EventHandlerAndDispatcherDestroyedDuringDispatch) {
 
   h1.set_expect_pre_target(true);
   destroyer.set_expect_pre_target(true);
-  destroyer.set_dispatcher(dispatcher);
+  destroyer.set_dispatcher_delegate(dispatcher);
   // |h3| should not receive events since |destroyer| will have destroyed
   // it.
   h3->set_expect_pre_target(false);

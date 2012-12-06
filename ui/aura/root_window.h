@@ -55,7 +55,7 @@ class RootWindowObserver;
 class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
                                public ui::CompositorObserver,
                                public Window,
-                               public ui::EventDispatcher,
+                               public ui::EventDispatcherDelegate,
                                public ui::GestureEventHelper,
                                public ui::LayerAnimationObserver,
                                public aura::client::CaptureDelegate,
@@ -280,11 +280,8 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // sending exited and entered events as its value changes.
   void HandleMouseMoved(const ui::MouseEvent& event, Window* target);
 
-  void ProcessMouseEvent(Window* target, ui::MouseEvent* event);
-  void ProcessKeyEvent(Window* target, ui::KeyEvent* event);
-  void ProcessScrollEvent(Window* target, ui::ScrollEvent* event);
-  void ProcessTouchEvent(Window* target, ui::TouchEvent* event);
-  void ProcessGestureEvent(Window* target, ui::GestureEvent* event);
+  void ProcessEvent(Window* target, ui::Event* event);
+
   bool ProcessGestures(ui::GestureRecognizer::Gestures* gestures);
 
   // Called when a Window is attached or detached from the RootWindow.
@@ -303,7 +300,7 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // |window| itself).
   void CleanupGestureRecognizerState(Window* window);
 
-  // Overridden from ui::EventDispatcher.
+  // Overridden from ui::EventDispatcherDelegate.
   virtual bool CanDispatchToTarget(EventTarget* target) OVERRIDE;
 
   // Overridden from ui::GestureEventHelper.

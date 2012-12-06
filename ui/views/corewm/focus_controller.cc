@@ -28,40 +28,6 @@ void StackTransientParentsBelowModalWindow(aura::Window* window) {
   }
 }
 
-// Updates focused window state and dispatches changing/changed events.
-void DispatchEventsAndUpdateState(ui::EventDispatcher* dispatcher,
-                                  int changing_event_type,
-                                  int changed_event_type,
-                                  aura::Window** state,
-                                  aura::Window* new_state,
-                                  bool restack,
-                                  ui::EventTarget** event_dispatch_target) {
-  int result = ui::ER_UNHANDLED;
-  {
-    base::AutoReset<ui::EventTarget*> reset(event_dispatch_target, *state);
-    FocusChangeEvent changing_event(changing_event_type);
-    dispatcher->ProcessEvent(*state, &changing_event);
-    result = changing_event.result();
-  }
-  DCHECK(!(result & ui::ER_CONSUMED))
-      << "Focus and Activation events cannot be consumed";
-
-  aura::Window* lost_active = *state;
-  *state = new_state;
-
-  if (restack && new_state) {
-    StackTransientParentsBelowModalWindow(new_state);
-    new_state->parent()->StackChildAtTop(new_state);
-  }
-
-  {
-    base::AutoReset<ui::EventTarget*> reset(event_dispatch_target, *state);
-    FocusChangeEvent changed_event(changed_event_type);
-    FocusChangeEvent::DispatcherApi(&changed_event).set_last_focus(lost_active);
-    dispatcher->ProcessEvent(*state, &changed_event);
-  }
-}
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -216,7 +182,7 @@ void FocusController::OnWindowInitialized(aura::Window* window) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// FocusController, ui::EventDispatcher implementation:
+// FocusController, ui::EventDispatcherDelegate implementation:
 
 bool FocusController::CanDispatchToTarget(ui::EventTarget* target) {
   return target == event_dispatch_target_;
@@ -231,14 +197,13 @@ void FocusController::SetFocusedWindow(aura::Window* window) {
   DCHECK(rules_->CanFocusWindow(window));
   if (window)
     DCHECK_EQ(window, rules_->GetFocusableWindow(window));
-  DispatchEventsAndUpdateState(
-      this,
+
+  DispatchEvents(
       FocusChangeEvent::focus_changing_event_type(),
       FocusChangeEvent::focus_changed_event_type(),
       &focused_window_,
       window,
-      /* restack */ false,
-      &event_dispatch_target_);
+      false /* restack */);
 }
 
 void FocusController::SetActiveWindow(aura::Window* window) {
@@ -247,14 +212,47 @@ void FocusController::SetActiveWindow(aura::Window* window) {
   DCHECK(rules_->CanActivateWindow(window));
   if (window)
     DCHECK_EQ(window, rules_->GetActivatableWindow(window));
-  DispatchEventsAndUpdateState(
-      this,
+  DispatchEvents(
       FocusChangeEvent::activation_changing_event_type(),
       FocusChangeEvent::activation_changed_event_type(),
       &active_window_,
       window,
-      /* restack */ true,
-      &event_dispatch_target_);
+      true  /* restack */);
+}
+
+
+void FocusController::DispatchEvents(int changing_event_type,
+                                     int changed_event_type,
+                                     aura::Window** state,
+                                     aura::Window* new_state,
+                                     bool restack) {
+  int result = ui::ER_UNHANDLED;
+  ui::EventTarget* old_target = event_dispatch_target_;
+  event_dispatch_target_ = *state;
+
+  FocusChangeEvent changing_event(changing_event_type);
+  if (!DispatchEvent(*state, &changing_event))
+    return;
+  event_dispatch_target_ = old_target;
+  result = changing_event.result();
+
+  DCHECK(!(result & ui::ER_CONSUMED))
+      << "Focus and Activation events cannot be consumed";
+
+  aura::Window* lost_active = *state;
+  *state = new_state;
+
+  if (restack && new_state) {
+    StackTransientParentsBelowModalWindow(new_state);
+    new_state->parent()->StackChildAtTop(new_state);
+  }
+
+  old_target = event_dispatch_target_;
+  event_dispatch_target_ = *state;
+  FocusChangeEvent changed_event(changed_event_type);
+  FocusChangeEvent::DispatcherApi(&changed_event).set_last_focus(lost_active);
+  if (DispatchEvent(*state, &changed_event))
+    event_dispatch_target_ = old_target;
 }
 
 void FocusController::WindowLostFocusFromDispositionChange(

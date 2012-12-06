@@ -37,7 +37,7 @@ class VIEWS_EXPORT FocusController : public aura::client::ActivationClient,
                                      public ui::EventHandler,
                                      public aura::WindowObserver,
                                      public aura::EnvObserver,
-                                     public ui::EventDispatcher {
+                                     public ui::EventDispatcherDelegate {
  public:
   // |rules| cannot be NULL.
   explicit FocusController(FocusRules* rules);
@@ -86,7 +86,7 @@ class VIEWS_EXPORT FocusController : public aura::client::ActivationClient,
   // Overridden from aura::EnvObserver:
   virtual void OnWindowInitialized(aura::Window* window) OVERRIDE;
 
-  // Overridden from ui::EventDispatcher:
+  // Overridden from ui::EventDispatcherDelegate:
   virtual bool CanDispatchToTarget(ui::EventTarget* target) OVERRIDE;
 
   // Internal implementations that set the focused/active windows, fire events
@@ -94,6 +94,11 @@ class VIEWS_EXPORT FocusController : public aura::client::ActivationClient,
   // windows.
   void SetFocusedWindow(aura::Window* window);
   void SetActiveWindow(aura::Window* window);
+  void DispatchEvents(int changing_event_type,
+                      int changed_event_type,
+                      aura::Window** state,
+                      aura::Window* new_state,
+                      bool restack);
 
   // Called when a window's disposition changed such that it and its hierarchy
   // are no longer focusable/activatable. The system must determine what window
