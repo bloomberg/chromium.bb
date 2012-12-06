@@ -448,8 +448,6 @@ void DesktopNativeWidgetAura::OnFocus(aura::Window* old_focused_window) {
 }
 
 void DesktopNativeWidgetAura::OnBlur() {
-  if (GetWidget()->HasFocusManager())
-    GetWidget()->GetFocusManager()->StoreFocusedView();
   desktop_root_window_host_->OnNativeWidgetBlur();
   native_widget_delegate_->OnNativeBlur(
       aura::client::GetFocusClient(window_)->GetFocusedWindow());
@@ -583,8 +581,6 @@ bool DesktopNativeWidgetAura::ShouldActivate() const {
 }
 
 void DesktopNativeWidgetAura::OnActivated() {
-  if (GetWidget()->HasFocusManager())
-    GetWidget()->GetFocusManager()->RestoreFocusedView();
   native_widget_delegate_->OnNativeWidgetActivationChanged(true);
   if (IsVisible() && GetWidget()->non_client_view())
     GetWidget()->non_client_view()->SchedulePaint();
