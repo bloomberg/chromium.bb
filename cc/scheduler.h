@@ -79,8 +79,8 @@ public:
     void setSwapBuffersCompleteSupported(bool);
     void didSwapBuffersComplete();
 
-    void didLoseContext();
-    void didRecreateContext();
+    void didLoseOutputSurface();
+    void didRecreateOutputSurface();
 
     bool commitPending() const { return m_stateMachine.commitPending(); }
     bool redrawPending() const { return m_stateMachine.redrawPending(); }

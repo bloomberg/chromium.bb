@@ -680,7 +680,7 @@ Region LayerImpl::visibleContentOpaqueRegion() const
     return Region();
 }
 
-void LayerImpl::didLoseContext()
+void LayerImpl::didLoseOutputSurface()
 {
 }
 

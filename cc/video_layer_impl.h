@@ -50,7 +50,7 @@ public:
     virtual void didReceiveFrame(); // Callable on impl thread.
     virtual void didUpdateMatrix(const float*); // Callable on impl thread.
 
-    virtual void didLoseContext() OVERRIDE;
+    virtual void didLoseOutputSurface() OVERRIDE;
 
     void setNeedsRedraw();
 

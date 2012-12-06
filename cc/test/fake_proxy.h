@@ -19,11 +19,11 @@ public:
     virtual void startPageScaleAnimation(gfx::Vector2d targetPosition, bool useAnchor, float scale, base::TimeDelta duration) OVERRIDE { }
     virtual void finishAllRendering() OVERRIDE { }
     virtual bool isStarted() const OVERRIDE;
-    virtual bool initializeContext() OVERRIDE;
+    virtual bool initializeOutputSurface() OVERRIDE;
     virtual void setSurfaceReady() OVERRIDE { }
     virtual void setVisible(bool) OVERRIDE { }
     virtual bool initializeRenderer() OVERRIDE;
-    virtual bool recreateContext() OVERRIDE;
+    virtual bool recreateOutputSurface() OVERRIDE;
     virtual void renderingStats(RenderingStats*) OVERRIDE { }
     virtual const RendererCapabilities& rendererCapabilities() const OVERRIDE;
     virtual void setNeedsAnimate() OVERRIDE { }
@@ -37,7 +37,7 @@ public:
     virtual void forceSerializeOnSwapBuffers() OVERRIDE { }
     virtual size_t maxPartialTextureUpdates() const OVERRIDE;
     virtual void acquireLayerTextures() OVERRIDE { }
-    virtual void loseContext() OVERRIDE { }
+    virtual void loseOutputSurface() OVERRIDE { }
 
     virtual RendererCapabilities& rendererCapabilities();
     void setMaxPartialTextureUpdates(size_t);

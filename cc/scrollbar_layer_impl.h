@@ -42,7 +42,7 @@ public:
 
     virtual void appendQuads(QuadSink&, AppendQuadsData&) OVERRIDE;
 
-    virtual void didLoseContext() OVERRIDE;
+    virtual void didLoseOutputSurface() OVERRIDE;
 
 protected:
     explicit ScrollbarLayerImpl(int id);

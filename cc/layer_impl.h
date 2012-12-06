@@ -262,10 +262,10 @@ public:
 
     virtual void didUpdateTransforms() { }
 
-    // Indicates that the context previously used to render this layer
+    // Indicates that the surface previously used to render this layer
     // was lost and that a new one has been created. Won't be called
-    // until the new context has been created successfully.
-    virtual void didLoseContext();
+    // until the new surface has been created successfully.
+    virtual void didLoseOutputSurface();
 
     ScrollbarAnimationController* scrollbarAnimationController() const { return m_scrollbarAnimationController.get(); }
 

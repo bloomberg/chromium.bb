@@ -29,7 +29,7 @@ public:
     virtual void didDraw(ResourceProvider*) OVERRIDE;
     virtual ResourceProvider::ResourceId contentsResourceId() const OVERRIDE;
     virtual void dumpLayerProperties(std::string*, int indent) const OVERRIDE;
-    virtual void didLoseContext() OVERRIDE;
+    virtual void didLoseOutputSurface() OVERRIDE;
 
 protected:
     explicit NinePatchLayerImpl(int id);

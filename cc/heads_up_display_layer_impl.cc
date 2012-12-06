@@ -134,7 +134,7 @@ void HeadsUpDisplayLayerImpl::didDraw(ResourceProvider* resourceProvider)
     DCHECK(!resourceProvider->inUseByConsumer(m_hudTexture->id()));
 }
 
-void HeadsUpDisplayLayerImpl::didLoseContext()
+void HeadsUpDisplayLayerImpl::didLoseOutputSurface()
 {
     m_hudTexture.reset();
 }

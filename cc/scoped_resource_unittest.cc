@@ -5,7 +5,7 @@
 #include "cc/scoped_resource.h"
 
 #include "cc/renderer.h"
-#include "cc/test/fake_graphics_context.h"
+#include "cc/test/fake_output_surface.h"
 #include "cc/test/tiled_layer_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -17,7 +17,7 @@ namespace {
 
 TEST(ScopedResourceTest, NewScopedResource)
 {
-    scoped_ptr<GraphicsContext> context(createFakeGraphicsContext());
+    scoped_ptr<OutputSurface> context(createFakeOutputSurface());
     scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(context.get()));
     scoped_ptr<ScopedResource> texture = ScopedResource::create(resourceProvider.get());
 
@@ -31,7 +31,7 @@ TEST(ScopedResourceTest, NewScopedResource)
 
 TEST(ScopedResourceTest, CreateScopedResource)
 {
-    scoped_ptr<GraphicsContext> context(createFakeGraphicsContext());
+    scoped_ptr<OutputSurface> context(createFakeOutputSurface());
     scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(context.get()));
     scoped_ptr<ScopedResource> texture = ScopedResource::create(resourceProvider.get());
     texture->Allocate(Renderer::ImplPool, gfx::Size(30, 30), GL_RGBA, ResourceProvider::TextureUsageAny);
@@ -47,7 +47,7 @@ TEST(ScopedResourceTest, CreateScopedResource)
 
 TEST(ScopedResourceTest, ScopedResourceIsDeleted)
 {
-    scoped_ptr<GraphicsContext> context(createFakeGraphicsContext());
+    scoped_ptr<OutputSurface> context(createFakeOutputSurface());
     scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(context.get()));
 
     {
@@ -74,7 +74,7 @@ TEST(ScopedResourceTest, ScopedResourceIsDeleted)
 
 TEST(ScopedResourceTest, LeakScopedResource)
 {
-    scoped_ptr<GraphicsContext> context(createFakeGraphicsContext());
+    scoped_ptr<OutputSurface> context(createFakeOutputSurface());
     scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(context.get()));
 
     {

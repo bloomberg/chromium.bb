@@ -7,7 +7,7 @@
 #include "cc/prioritized_resource_manager.h"
 #include "cc/resource.h"
 #include "cc/single_thread_proxy.h" // For DebugScopedSetImplThread
-#include "cc/test/fake_graphics_context.h"
+#include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_proxy.h"
 #include "cc/test/tiled_layer_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,10 +22,10 @@ public:
         : m_proxy(scoped_ptr<Thread>(NULL))
         , m_textureSize(256, 256)
         , m_textureFormat(GL_RGBA)
-        , m_context(WebKit::createFakeGraphicsContext())
+        , m_outputSurface(createFakeOutputSurface())
     {
         DebugScopedSetImplThread implThread(&m_proxy);
-        m_resourceProvider = ResourceProvider::create(m_context.get());
+        m_resourceProvider = ResourceProvider::create(m_outputSurface.get());
     }
 
     virtual ~PrioritizedResourceTest()
@@ -98,7 +98,7 @@ protected:
     FakeProxy m_proxy;
     const gfx::Size m_textureSize;
     const GLenum m_textureFormat;
-    scoped_ptr<GraphicsContext> m_context;
+    scoped_ptr<OutputSurface> m_outputSurface;
     scoped_ptr<ResourceProvider> m_resourceProvider;
 };
 

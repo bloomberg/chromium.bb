@@ -34,14 +34,14 @@ public:
     virtual void startPageScaleAnimation(gfx::Vector2d targetOffset, bool useAnchor, float scale, base::TimeDelta duration) OVERRIDE;
     virtual void finishAllRendering() OVERRIDE;
     virtual bool isStarted() const OVERRIDE;
-    virtual bool initializeContext() OVERRIDE;
+    virtual bool initializeOutputSurface() OVERRIDE;
     virtual void setSurfaceReady() OVERRIDE;
     virtual void setVisible(bool) OVERRIDE;
     virtual bool initializeRenderer() OVERRIDE;
-    virtual bool recreateContext() OVERRIDE;
+    virtual bool recreateOutputSurface() OVERRIDE;
     virtual void renderingStats(RenderingStats*) OVERRIDE;
     virtual const RendererCapabilities& rendererCapabilities() const OVERRIDE;
-    virtual void loseContext() OVERRIDE;
+    virtual void loseOutputSurface() OVERRIDE;
     virtual void setNeedsAnimate() OVERRIDE;
     virtual void setNeedsCommit() OVERRIDE;
     virtual void setNeedsRedraw() OVERRIDE;
@@ -55,7 +55,7 @@ public:
     virtual void forceSerializeOnSwapBuffers() OVERRIDE;
 
     // LayerTreeHostImplClient implementation
-    virtual void didLoseContextOnImplThread() OVERRIDE;
+    virtual void didLoseOutputSurfaceOnImplThread() OVERRIDE;
     virtual void onSwapBuffersCompleteOnImplThread() OVERRIDE;
     virtual void onVSyncParametersChanged(base::TimeTicks timebase, base::TimeDelta interval) OVERRIDE;
     virtual void onCanDrawStateChanged(bool canDraw) OVERRIDE;
@@ -97,7 +97,7 @@ private:
     void didCompleteSwapBuffers();
     void setAnimationEvents(scoped_ptr<AnimationEventsVector>, base::Time wallClockTime);
     void beginContextRecreation();
-    void tryToRecreateContext();
+    void tryToRecreateOutputSurface();
 
     // Called on impl thread
     struct ReadbackRequest {
@@ -115,13 +115,13 @@ private:
     void initializeImplOnImplThread(CompletionEvent*, InputHandler*);
     void setSurfaceReadyOnImplThread();
     void setVisibleOnImplThread(CompletionEvent*, bool);
-    void initializeContextOnImplThread(scoped_ptr<GraphicsContext>);
+    void initializeOutputSurfaceOnImplThread(scoped_ptr<OutputSurface>);
     void initializeRendererOnImplThread(CompletionEvent*, bool* initializeSucceeded, RendererCapabilities*);
     void layerTreeHostClosedOnImplThread(CompletionEvent*);
     void manageTilesOnImplThread();
     void setFullRootLayerDamageOnImplThread();
     void acquireLayerTexturesForMainThreadOnImplThread(CompletionEvent*);
-    void recreateContextOnImplThread(CompletionEvent*, scoped_ptr<GraphicsContext>, bool* recreateSucceeded, RendererCapabilities*);
+    void recreateOutputSurfaceOnImplThread(CompletionEvent*, scoped_ptr<OutputSurface>, bool* recreateSucceeded, RendererCapabilities*);
     void renderingStatsOnImplThread(CompletionEvent*, RenderingStats*);
     ScheduledActionDrawAndSwapResult scheduledActionDrawAndSwapInternal(bool forcedDraw);
     void forceSerializeOnSwapBuffersOnImplThread(CompletionEvent*);
@@ -131,7 +131,7 @@ private:
     bool m_animateRequested; // Set only when setNeedsAnimate is called.
     bool m_commitRequested; // Set only when setNeedsCommit is called.
     bool m_commitRequestSentToImplThread; // Set by setNeedsCommit and setNeedsAnimate.
-    base::CancelableClosure m_contextRecreationCallback;
+    base::CancelableClosure m_outputSurfaceRecreationCallback;
     LayerTreeHost* m_layerTreeHost;
     bool m_rendererInitialized;
     RendererCapabilities m_RendererCapabilitiesMainThreadCopy;
@@ -150,7 +150,7 @@ private:
 
     // Holds on to the context we might use for compositing in between initializeContext()
     // and initializeRenderer() calls.
-    scoped_ptr<GraphicsContext> m_contextBeforeInitializationOnImplThread;
+    scoped_ptr<OutputSurface> m_outputSurfaceBeforeInitializationOnImplThread;
 
     // Set when the main thread is waiting on a scheduledActionBeginFrame to be issued.
     CompletionEvent* m_beginFrameCompletionEventOnImplThread;
