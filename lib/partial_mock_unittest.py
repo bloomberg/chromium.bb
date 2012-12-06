@@ -70,6 +70,29 @@ class RecursiveCompareTest(cros_test_lib.MoxTestCase):
     self.FalseHelper(self.LIST, self.TUPLE)
 
 
+class ListContainsTest(cros_test_lib.MoxTestCase):
+
+  L = range(10) + range(10) + [9]
+  STRICTLY_TRUE_LISTS = [range(10), range(9, 10), range(3, 6), range(1), [],
+                         [9, 9]]
+  LOOSELY_TRUE_LISTS = [range(0, 10, 2), range(3, 6, 2), [1, 1]]
+  FALSE_LISTS = [[1.5], [-1], [1, 1, 1], [10], [22], range(6, 11), range(-1, 5)]
+
+  def testStrictContains(self):
+    """Test ListContains with strict=True."""
+    for x in self.STRICTLY_TRUE_LISTS:
+      self.assertTrue(partial_mock.ListContains(x, self.L, strict=True))
+    for x in self.LOOSELY_TRUE_LISTS + self.FALSE_LISTS:
+      self.assertFalse(partial_mock.ListContains(x, self.L, strict=True))
+
+  def testLooseContains(self):
+    """Test ListContains with strict=False."""
+    for x in self.STRICTLY_TRUE_LISTS + self.LOOSELY_TRUE_LISTS:
+      self.assertTrue(partial_mock.ListContains(x, self.L))
+    for x in self.FALSE_LISTS:
+      self.assertFalse(partial_mock.ListContains(x, self.L))
+
+
 class MockedCallResultsTest(cros_test_lib.MoxTestCase):
   """Test MockedCallResults functionality."""
 

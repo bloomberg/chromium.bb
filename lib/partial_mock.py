@@ -130,6 +130,44 @@ def _RecursiveCompare(lhs, rhs):
     return lhs == rhs
 
 
+def ListContains(small, big, strict=False):
+  """Looks for a sublist within a bigger list.
+
+  Arguments:
+    small: The sublist to search for.
+    big: The list to search in.
+    strict: If True, all items in list must be adjacent.
+  """
+  if strict:
+    for i in xrange(len(big) - len(small) + 1):
+      if _RecursiveCompare(small, big[i:i + len(small)]):
+        return True
+    return False
+  else:
+    j = 0
+    for i in xrange(len(small)):
+      for j in xrange(j, len(big)):
+        if _RecursiveCompare(small[i], big[j]):
+          j += 1
+          break
+      else:
+        return False
+    return True
+
+
+def DictContains(small, big):
+  """Looks for a subset within a dictionary.
+
+  Arguments:
+    small: The sub-dict to search for.
+    big: The dict to search in.
+  """
+  for k, v in small.iteritems():
+    if k not in big or not _RecursiveCompare(v, big[k]):
+      return False
+  return True
+
+
 class MockedCallResults(object):
   """Implements internal result specification for partial mocks.
 
@@ -233,10 +271,8 @@ class MockedCallResults(object):
       if mc.strict:
         return _RecursiveCompare(mc.params, params)
 
-      for k, v in mc.params.kwargs.iteritems():
-        if k not in kwargs or not _RecursiveCompare(v, kwargs[k]):
-          return False
-      return _RecursiveCompare(mc.params.args, args)
+      return (DictContains(mc.params.kwargs, kwargs) and
+              _RecursiveCompare(mc.params.args, args))
 
     self.AssertArgs(args, kwargs)
     if kwargs is None:
