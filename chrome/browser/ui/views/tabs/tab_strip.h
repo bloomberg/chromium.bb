@@ -330,9 +330,8 @@ class TabStrip : public views::View,
 
   // Calculates the bounds needed for each of the tabs, placing the result in
   // |bounds|.
-  void CalculateBoundsForDraggedTabs(
-      const std::vector<Tab*>& tabs,
-      std::vector<gfx::Rect>* bounds);
+  void CalculateBoundsForDraggedTabs(const std::vector<Tab*>& tabs,
+                                     std::vector<gfx::Rect>* bounds);
 
   // Returns the size needed for the specified tabs. This is invoked during drag
   // and drop to calculate offsets and positioning.
@@ -502,10 +501,6 @@ class TabStrip : public views::View,
 
   // Should the layout dynamically adjust?
   bool GetAdjustLayout() const;
-
-  // Extracts the NTP background theme for the tabstrip area to use for the
-  // active tab when Instant Extended API is enabled and theme is used.
-  void ExtractNTPBackgroundTheme(ui::ScaleFactor scale_factor);
 
   // -- Member Variables ------------------------------------------------------
 

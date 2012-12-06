@@ -916,6 +916,18 @@ views::View* TabStrip::newtab_button() {
   return newtab_button_;
 }
 
+void TabStrip::SetImmersiveStyle(bool enable) {
+  if (immersive_style_ == enable)
+    return;
+  immersive_style_ = enable;
+  if (immersive_style_) {
+    // Dominant colors are only updated automatically when the tab strip is
+    // already using immersive style. Compute the initial values.
+    for (int i = 0; i < tab_count(); ++i)
+      tab_at(i)->UpdateIconDominantColor();
+  }
+}
+
 const TabStripSelectionModel& TabStrip::GetSelectionModel() {
   return controller_->GetSelectionModel();
 }
@@ -1092,8 +1104,7 @@ bool TabStrip::EndDrag(EndDragReason reason) {
   return started_drag;
 }
 
-Tab* TabStrip::GetTabAt(Tab* tab,
-                        const gfx::Point& tab_in_tab_coordinates) {
+Tab* TabStrip::GetTabAt(Tab* tab, const gfx::Point& tab_in_tab_coordinates) {
   gfx::Point local_point = tab_in_tab_coordinates;
   ConvertPointToTarget(tab, this, &local_point);
 
@@ -1153,18 +1164,6 @@ bool TabStrip::ShouldPaintTab(const Tab* tab, gfx::Rect* clip) {
     }
   }
   return true;
-}
-
-void TabStrip::SetImmersiveStyle(bool enable) {
-  if (immersive_style_ == enable)
-    return;
-  immersive_style_ = enable;
-  if (immersive_style_) {
-    // Dominant colors are only updated automatically when the tab strip is
-    // already using immersive style. Compute the initial values.
-    for (int i = 0; i < tab_count(); ++i)
-      tab_at(i)->UpdateIconDominantColor();
-  }
 }
 
 bool TabStrip::IsImmersiveStyle() const {
@@ -1491,12 +1490,6 @@ void TabStrip::OnGestureEvent(ui::GestureEvent* event) {
       break;
   }
   event->SetHandled();
-}
-
-void TabStrip::GetCurrentTabWidths(double* unselected_width,
-                                   double* selected_width) const {
-  *unselected_width = current_unselected_width_;
-  *selected_width = current_selected_width_;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2020,6 +2013,12 @@ void TabStrip::UpdateLayoutTypeFromMouseEvent(views::View* source,
     default:
       break;
   }
+}
+
+void TabStrip::GetCurrentTabWidths(double* unselected_width,
+                                   double* selected_width) const {
+  *unselected_width = current_unselected_width_;
+  *selected_width = current_selected_width_;
 }
 
 void TabStrip::GetDesiredTabWidths(int tab_count,
