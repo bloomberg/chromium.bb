@@ -546,10 +546,6 @@ bool NaClIPCAdapter::OnMessageReceived(const IPC::Message& msg) {
                          base::Passed(&response)));
           break;
         }
-        case ppapi::proxy::SerializedHandle::FILE:
-          // TODO(raymes): Handle file handles for NaCl.
-          NOTIMPLEMENTED();
-          break;
         case ppapi::proxy::SerializedHandle::INVALID: {
           // Nothing to do. TODO(dmichael): Should we log this? Or is it
           // sometimes okay to pass an INVALID handle?

@@ -55,6 +55,8 @@
           'shared_impl/ppb_file_io_shared.h',
           'shared_impl/ppb_file_ref_shared.cc',
           'shared_impl/ppb_file_ref_shared.h',
+          'shared_impl/ppb_flash_shared.cc',
+          'shared_impl/ppb_flash_shared.h',
           'shared_impl/ppb_gamepad_shared.cc',
           'shared_impl/ppb_gamepad_shared.h',
           'shared_impl/ppb_graphics_3d_shared.cc',

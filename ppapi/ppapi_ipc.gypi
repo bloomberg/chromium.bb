@@ -12,6 +12,8 @@
       # This part is shared between the targets defined below.
       ['ppapi_ipc_target==1', {
         'sources': [
+          'proxy/pepper_file_messages.cc',
+          'proxy/pepper_file_messages.h',
           'proxy/ppapi_messages.cc',
           'proxy/ppapi_messages.h',
           'proxy/ppapi_param_traits.cc',

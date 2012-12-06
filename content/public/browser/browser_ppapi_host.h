@@ -44,7 +44,6 @@ class CONTENT_EXPORT BrowserPpapiHost {
       IPC::Sender* sender,
       ppapi::PpapiPermissions permissions,
       base::ProcessHandle plugin_child_process,
-      int plugin_child_process_id,
       IPC::ChannelProxy* channel,
       net::HostResolver* host_resolver,
       int render_process_id,
@@ -73,14 +72,6 @@ class CONTENT_EXPORT BrowserPpapiHost {
   virtual bool GetRenderViewIDsForInstance(PP_Instance instance,
                                            int* render_process_id,
                                            int* render_view_id) const = 0;
-  // Returns the name of the plugin.
-  virtual const std::string& GetPluginName() = 0;
-
-  // Returns the user's profile data directory.
-  virtual const FilePath& GetProfileDataDirectory() = 0;
-
-  // Returns the unique id of the child plugin process (this is NOT the pid).
-  virtual int GetPluginProcessID() = 0;
 };
 
 }  // namespace content

@@ -771,7 +771,6 @@ void NaClProcessHost::OnPpapiChannelCreated(
         ipc_proxy_channel_.get(), //process_.get(),  // sender
         permissions_,
         process_->GetData().handle,
-        process_->GetData().id,
         ipc_proxy_channel_.get(),
         chrome_render_message_filter_->GetHostResolver(),
         chrome_render_message_filter_->render_process_id(),

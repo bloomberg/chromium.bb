@@ -11,7 +11,6 @@ namespace ppapi {
 // PPB_Instance_API.GetSingletonResource.
 enum SingletonResourceID {
   FLASH_CLIPBOARD_SINGLETON_ID,
-  FLASH_FILE_SINGLETON_ID,
   FLASH_FULLSCREEN_SINGLETON_ID,
   FLASH_SINGLETON_ID,
   GAMEPAD_SINGLETON_ID,

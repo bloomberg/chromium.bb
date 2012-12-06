@@ -70,6 +70,7 @@
 #include "content/browser/renderer_host/media/media_stream_dispatcher_host.h"
 #include "content/browser/renderer_host/media/video_capture_host.h"
 #include "content/browser/renderer_host/p2p/socket_dispatcher_host.h"
+#include "content/browser/renderer_host/pepper/pepper_file_message_filter.h"
 #include "content/browser/renderer_host/pepper/pepper_message_filter.h"
 #include "content/browser/renderer_host/quota_dispatcher_host.h"
 #include "content/browser/renderer_host/render_message_filter.h"
@@ -538,6 +539,12 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   channel_->AddFilter(new MediaStreamDispatcherHost(GetID()));
 #endif
 #if defined(ENABLE_PLUGINS)
+  channel_->AddFilter(
+      GetContentClient()->browser()->AllowPepperPrivateFileAPI() ?
+          new PepperUnsafeFileMessageFilter(
+              GetID(),
+              storage_partition_impl_->GetPath()) :
+          new PepperFileMessageFilter(GetID()));
   channel_->AddFilter(new PepperMessageFilter(PepperMessageFilter::RENDERER,
                                               GetID(), browser_context));
 #endif

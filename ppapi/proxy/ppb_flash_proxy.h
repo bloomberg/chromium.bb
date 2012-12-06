@@ -6,8 +6,10 @@
 #define PPAPI_PROXY_PPB_FLASH_PROXY_H_
 
 #include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
+#include "ipc/ipc_platform_file.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
@@ -16,7 +18,7 @@
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/serialized_var.h"
 #include "ppapi/shared_impl/host_resource.h"
-#include "ppapi/thunk/ppb_flash_api.h"
+#include "ppapi/shared_impl/ppb_flash_shared.h"
 
 struct PPB_Flash_Print_1_0;
 
@@ -35,7 +37,7 @@ class SerializedVarReturnValue;
 // implemented in the new-style resource proxy (see flash_resource.h).
 // TODO(raymes): All of these functions should be moved to the new-style proxy.
 ////////////////////////////////////////////////////////////////////////////////
-class PPB_Flash_Proxy : public InterfaceProxy, public thunk::PPB_Flash_API {
+class PPB_Flash_Proxy : public InterfaceProxy, public PPB_Flash_Shared {
  public:
   explicit PPB_Flash_Proxy(Dispatcher* dispatcher);
   virtual ~PPB_Flash_Proxy();
@@ -76,6 +78,34 @@ class PPB_Flash_Proxy : public InterfaceProxy, public thunk::PPB_Flash_API {
                                 const PP_Rect* rect) OVERRIDE;
   virtual PP_Var GetSetting(PP_Instance instance,
                             PP_FlashSetting setting) OVERRIDE;
+  virtual bool CreateThreadAdapterForInstance(PP_Instance instance) OVERRIDE;
+  virtual void ClearThreadAdapterForInstance(PP_Instance instance) OVERRIDE;
+  virtual int32_t OpenFile(PP_Instance instance,
+                           const char* path,
+                           int32_t mode,
+                           PP_FileHandle* file) OVERRIDE;
+  virtual int32_t RenameFile(PP_Instance instance,
+                             const char* path_from,
+                             const char* path_to) OVERRIDE;
+  virtual int32_t DeleteFileOrDir(PP_Instance instance,
+                                  const char* path,
+                                  PP_Bool recursive) OVERRIDE;
+  virtual int32_t CreateDir(PP_Instance instance, const char* path) OVERRIDE;
+  virtual int32_t QueryFile(PP_Instance instance,
+                            const char* path,
+                            PP_FileInfo* info) OVERRIDE;
+  virtual int32_t GetDirContents(PP_Instance instance,
+                                 const char* path,
+                                 PP_DirContents_Dev** contents) OVERRIDE;
+  virtual int32_t CreateTemporaryFile(PP_Instance instance,
+                                      PP_FileHandle* file) OVERRIDE;
+  virtual int32_t OpenFileRef(PP_Instance instance,
+                              PP_Resource file_ref,
+                              int32_t mode,
+                              PP_FileHandle* file) OVERRIDE;
+  virtual int32_t QueryFileRef(PP_Instance instance,
+                               PP_Resource file_ref,
+                               PP_FileInfo* info) OVERRIDE;
 
   static const ApiID kApiID = API_ID_PPB_FLASH;
 
@@ -96,6 +126,15 @@ class PPB_Flash_Proxy : public InterfaceProxy, public thunk::PPB_Flash_API {
   void OnHostMsgIsRectTopmost(PP_Instance instance,
                               PP_Rect rect,
                               PP_Bool* result);
+  void OnHostMsgOpenFileRef(PP_Instance instance,
+                            const ppapi::HostResource& host_resource,
+                            int32_t mode,
+                            IPC::PlatformFileForTransit* file_handle,
+                            int32_t* result);
+  void OnHostMsgQueryFileRef(PP_Instance instance,
+                             const ppapi::HostResource& host_resource,
+                             PP_FileInfo* info,
+                             int32_t* result);
   void OnHostMsgGetSetting(PP_Instance instance,
                            PP_FlashSetting setting,
                            SerializedVarReturnValue result);

@@ -13,10 +13,7 @@ BrowserPpapiHostTest::BrowserPpapiHostTest()
     : sink_() {
   ppapi_host_.reset(new BrowserPpapiHostImpl(
                         &sink_,
-                        ppapi::PpapiPermissions::AllPermissions(),
-                        std::string(),
-                        FilePath(),
-                        0));
+                        ppapi::PpapiPermissions::AllPermissions()));
   ppapi_host_->set_plugin_process_handle(base::GetCurrentProcessHandle());
 }
 

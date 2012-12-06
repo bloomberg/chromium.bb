@@ -38,8 +38,8 @@ class PPAPI_PROXY_EXPORT ResourceMessageParams {
   SerializedHandle TakeHandleOfTypeAtIndex(size_t index,
                                            SerializedHandle::Type type) const;
 
-  // Helper functions to return shared memory, socket or file handles passed in
-  // the params struct.
+  // Helper functions to return shared memory or socket handles passed in the
+  // params struct.
   // If the index has a valid handle of the given type, it will be placed in the
   // output parameter, the corresponding slot in the list will be set to an
   // invalid handle, and the function will return true. If the handle doesn't
@@ -54,8 +54,6 @@ class PPAPI_PROXY_EXPORT ResourceMessageParams {
                                      base::SharedMemoryHandle* handle) const;
   bool TakeSocketHandleAtIndex(size_t index,
                                IPC::PlatformFileForTransit* handle) const;
-  bool TakeFileHandleAtIndex(size_t index,
-                             IPC::PlatformFileForTransit* handle) const;
   void TakeAllSharedMemoryHandles(
       std::vector<base::SharedMemoryHandle>* handles) const;
 

@@ -346,7 +346,6 @@ void ParamTraits<ppapi::proxy::SerializedHandle>::Write(Message* m,
       break;
     case ppapi::proxy::SerializedHandle::SOCKET:
     case ppapi::proxy::SerializedHandle::CHANNEL_HANDLE:
-    case ppapi::proxy::SerializedHandle::FILE:
       ParamTraits<IPC::PlatformFileForTransit>::Write(m, p.descriptor());
       break;
     case ppapi::proxy::SerializedHandle::INVALID:
@@ -383,14 +382,6 @@ bool ParamTraits<ppapi::proxy::SerializedHandle>::Read(const Message* m,
       IPC::PlatformFileForTransit desc;
       if (ParamTraits<IPC::PlatformFileForTransit>::Read(m, iter, &desc)) {
         r->set_channel_handle(desc);
-        return true;
-      }
-      break;
-    }
-    case ppapi::proxy::SerializedHandle::FILE: {
-      IPC::PlatformFileForTransit desc;
-      if (ParamTraits<IPC::PlatformFileForTransit>::Read(m, iter, &desc)) {
-        r->set_file_handle(desc);
         return true;
       }
       break;
@@ -559,41 +550,6 @@ bool ParamTraits<ppapi::proxy::SerializedFontDescription>::Read(
 void ParamTraits<ppapi::proxy::SerializedFontDescription>::Log(
     const param_type& p,
     std::string* l) {
-}
-
-// ppapi::PepperFilePath -------------------------------------------------------
-
-// static
-void ParamTraits<ppapi::PepperFilePath>::Write(Message* m,
-                                               const param_type& p) {
-  WriteParam(m, static_cast<unsigned>(p.domain()));
-  WriteParam(m, p.path());
-}
-
-// static
-bool ParamTraits<ppapi::PepperFilePath>::Read(const Message* m,
-                                              PickleIterator* iter,
-                                              param_type* p) {
-  unsigned domain;
-  FilePath path;
-  if (!ReadParam(m, iter, &domain) || !ReadParam(m, iter, &path))
-    return false;
-  if (domain > ppapi::PepperFilePath::DOMAIN_MAX_VALID)
-    return false;
-
-  *p = ppapi::PepperFilePath(
-      static_cast<ppapi::PepperFilePath::Domain>(domain), path);
-  return true;
-}
-
-// static
-void ParamTraits<ppapi::PepperFilePath>::Log(const param_type& p,
-                                             std::string* l) {
-  l->append("(");
-  LogParam(static_cast<unsigned>(p.domain()), l);
-  l->append(", ");
-  LogParam(p.path(), l);
-  l->append(")");
 }
 
 // SerializedFlashMenu ---------------------------------------------------------

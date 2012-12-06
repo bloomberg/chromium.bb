@@ -16,7 +16,6 @@
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/proxy/flash_resource.h"
 #include "ppapi/proxy/flash_clipboard_resource.h"
-#include "ppapi/proxy/flash_file_resource.h"
 #include "ppapi/proxy/gamepad_resource.h"
 #include "ppapi/proxy/interface_list.h"
 #include "ppapi/proxy/interface_proxy.h"

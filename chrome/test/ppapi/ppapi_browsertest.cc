@@ -659,6 +659,8 @@ TEST_PPAPI_OUT_OF_PROCESS(Flash_SetInstanceAlwaysOnTop)
 TEST_PPAPI_OUT_OF_PROCESS(Flash_GetLocalTimeZoneOffset)
 TEST_PPAPI_OUT_OF_PROCESS(Flash_GetCommandLineArgs)
 TEST_PPAPI_OUT_OF_PROCESS(Flash_GetSetting)
+// No in-process test for SetCrashData.
+TEST_PPAPI_OUT_OF_PROCESS(Flash_SetCrashData)
 
 // NaCl based PPAPI tests with WebSocket server
 TEST_PPAPI_IN_PROCESS(WebSocket_IsWebSocket)
@@ -884,9 +886,8 @@ TEST_PPAPI_OUT_OF_PROCESS(MessageLoop_Post)
 
 // Going forward, Flash APIs will only work out-of-process.
 TEST_PPAPI_OUT_OF_PROCESS(Flash_GetProxyForURL)
-TEST_PPAPI_OUT_OF_PROCESS(Flash_SetCrashData)
 TEST_PPAPI_OUT_OF_PROCESS(FlashClipboard)
-TEST_PPAPI_OUT_OF_PROCESS(FlashFile)
+TEST_PPAPI_OUT_OF_PROCESS(FlashFile_CreateTemporaryFile)
 // Mac/Aura reach NOTIMPLEMENTED/time out.
 // mac: http://crbug.com/96767
 // aura: http://crbug.com/104384
