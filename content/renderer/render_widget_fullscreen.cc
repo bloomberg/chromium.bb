@@ -11,15 +11,6 @@ using WebKit::WebWidget;
 
 namespace content {
 
-// static
-RenderWidgetFullscreen* RenderWidgetFullscreen::Create(int32 opener_id) {
-  DCHECK_NE(MSG_ROUTING_NONE, opener_id);
-  scoped_refptr<RenderWidgetFullscreen> widget(
-      new RenderWidgetFullscreen(WebKit::WebScreenInfo()));
-  widget->Init(opener_id);
-  return widget.release();
-}
-
 void RenderWidgetFullscreen::show(WebKit::WebNavigationPolicy) {
   DCHECK(!did_show_) << "received extraneous Show call";
   DCHECK_NE(MSG_ROUTING_NONE, routing_id_);

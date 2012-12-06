@@ -313,7 +313,7 @@ TestFileErrorInjector::TestFileErrorInjector(
       // This code is only used for browser_tests, so a
       // DownloadManager is always a DownloadManagerImpl.
       download_manager_(
-          static_cast<DownloadManagerImpl*>(download_manager.release())) {
+          static_cast<DownloadManagerImpl*>(download_manager.get())) {
   // Record the value of the pointer, for later validation.
   created_factory_ =
       new DownloadFileWithErrorsFactory(

@@ -303,7 +303,7 @@ bool MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
                                             signaling_thread_,
                                             audio_device_));
     if (factory.get())
-      pc_factory_ = factory.release();
+      pc_factory_ = factory;
     else
       audio_device_ = NULL;
   }

@@ -93,7 +93,8 @@ const Orientation* AccelerometerMac::GetOrientation() {
   DCHECK_GE(orientation->gamma(), -90.0);
   DCHECK_LT(orientation->gamma(),  90.0);
 
-  return orientation.release();
+  orientation->AddRef();
+  return orientation.get();
 }
 
 bool AccelerometerMac::Init() {

@@ -30,7 +30,8 @@ PepperPlatformAudioOutputImpl* PepperPlatformAudioOutputImpl::Create(
                                source_render_view_id, client)) {
     // Balanced by Release invoked in
     // PepperPlatformAudioOutputImpl::ShutDownOnIOThread().
-    return audio_output.release();
+    audio_output->AddRef();
+    return audio_output.get();
   }
   return NULL;
 }

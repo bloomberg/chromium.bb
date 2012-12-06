@@ -30,7 +30,8 @@ PepperPlatformAudioInputImpl* PepperPlatformAudioInputImpl::Create(
                               frames_per_buffer, client)) {
     // Balanced by Release invoked in
     // PepperPlatformAudioInputImpl::ShutDownOnIOThread().
-    return audio_input.release();
+    audio_input->AddRef();
+    return audio_input.get();
   }
   return NULL;
 }

@@ -352,7 +352,8 @@ RenderWidgetFullscreenPepper* RenderWidgetFullscreenPepper::Create(
   scoped_refptr<RenderWidgetFullscreenPepper> widget(
       new RenderWidgetFullscreenPepper(plugin, active_url, screen_info));
   widget->Init(opener_id);
-  return widget.release();
+  widget->AddRef();
+  return widget.get();
 }
 
 RenderWidgetFullscreenPepper::RenderWidgetFullscreenPepper(
