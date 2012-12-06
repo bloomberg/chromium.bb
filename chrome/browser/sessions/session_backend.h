@@ -53,6 +53,7 @@ class SessionBackend : public base::RefCountedThreadSafe<SessionBackend> {
   // NOTE: this is invoked before every command, and does nothing if we've
   // already Init'ed.
   void Init();
+  bool inited() const { return inited_; }
 
   // Appends the specified commands to the current file. If reset_first is
   // true the the current file is recreated.

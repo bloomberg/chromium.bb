@@ -542,6 +542,10 @@ void SessionService::Init() {
   BrowserList::AddObserver(this);
 }
 
+bool SessionService::processed_any_commands() {
+  return backend()->inited() || !pending_commands().empty();
+}
+
 bool SessionService::ShouldNewWindowStartSession() {
   // ChromeOS and OSX have different ideas of application lifetime than
   // the other platforms.
@@ -1743,6 +1747,8 @@ void SessionService::RecordUpdatedSaveTime(base::TimeDelta delta,
 void SessionService::TabInserted(WebContents* contents) {
   SessionTabHelper* session_tab_helper =
       SessionTabHelper::FromWebContents(contents);
+  if (!ShouldTrackChangesToWindow(session_tab_helper->window_id()))
+    return;
   SetTabWindow(session_tab_helper->window_id(),
                session_tab_helper->session_id());
   extensions::TabHelper* extensions_tab_helper =

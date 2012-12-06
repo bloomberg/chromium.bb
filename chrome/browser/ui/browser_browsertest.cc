@@ -21,6 +21,8 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/sessions/session_backend.h"
+#include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
 #include "chrome/browser/ui/app_modal_dialogs/javascript_app_modal_dialog.h"
@@ -1686,6 +1688,24 @@ IN_PROC_BROWSER_TEST_F(NoStartupWindowTest, NoStartupWindowBasicTest) {
 
   EXPECT_EQ(1u, BrowserList::size());
 }
+
+// Chromeos needs to track app windows because it considers them to be part of
+// session state.
+#if !defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(NoStartupWindowTest, DontInitSessionServiceForApps) {
+  Profile* profile = ProfileManager::GetDefaultProfile();
+
+  SessionService* session_service =
+      SessionServiceFactory::GetForProfile(profile);
+  ASSERT_FALSE(session_service->processed_any_commands());
+
+  ui_test_utils::BrowserAddedObserver browser_added_observer;
+  CreateBrowserForApp("blah", profile);
+  browser_added_observer.WaitForSingleNewBrowser();
+
+  ASSERT_FALSE(session_service->processed_any_commands());
+}
+#endif  // !defined(OS_CHROMEOS)
 
 // This test needs to be placed outside the anonymous namespace because we
 // need to access private type of Browser.

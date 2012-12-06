@@ -208,6 +208,7 @@ class SessionService : public BaseSessionService,
   // Allow tests to access our innards for testing purposes.
   FRIEND_TEST_ALL_PREFIXES(SessionServiceTest, RestoreActivation1);
   FRIEND_TEST_ALL_PREFIXES(SessionServiceTest, RestoreActivation2);
+  FRIEND_TEST_ALL_PREFIXES(NoStartupWindowTest, DontInitSessionServiceForApps);
 
   typedef std::map<SessionID::id_type, std::pair<int, int> > IdToRange;
   typedef std::map<SessionID::id_type, SessionTab*> IdToSessionTab;
@@ -224,6 +225,10 @@ class SessionService : public BaseSessionService,
   };
 
   void Init();
+
+  // Returns true if we have scheduled any commands, or any scheduled commands
+  // have been saved.
+  bool processed_any_commands();
 
   // Implementation of RestoreIfNecessary. If |browser| is non-null and we need
   // to restore, the tabs are added to it, otherwise a new browser is created.
