@@ -751,6 +751,14 @@ bool EventRewriter::RewriteExtendedKeys(ui::KeyEvent* event) {
 
 bool EventRewriter::RewriteFunctionKeys(ui::KeyEvent* event) {
 #if defined(OS_CHROMEOS)
+  const PrefService* pref_service =
+      pref_service_ ? pref_service_ : GetPrefService();
+  bool chromebook_function_key = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableChromebookFunctionKey);
+
+  bool search_as_function_key = chromebook_function_key && pref_service &&
+      pref_service->GetBoolean(prefs::kLanguageSearchKeyActsAsFunctionKey);
+
   XEvent* xev = event->native_event();
   XKeyEvent* xkey = &(xev->xkey);
   const KeySym keysym = XLookupKeysym(xkey, 0);
@@ -760,40 +768,65 @@ bool EventRewriter::RewriteFunctionKeys(ui::KeyEvent* event) {
   ui::KeyboardCode remapped_keycode = ui::VKEY_UNKNOWN;
   unsigned int remapped_mods = 0;
 
-  // Rewrite the actual F1-F12 keys on a Chromebook keyboard to special keys.
-  static const KeyboardRemapping fkeys_to_special_keys[] = {
-    { XK_F1, 0, 0, XF86XK_Back, ui::VKEY_BROWSER_BACK, },
-    { XK_F2, 0, 0, XF86XK_Forward, ui::VKEY_BROWSER_FORWARD, },
-    { XK_F3, 0, 0, XF86XK_Reload, ui::VKEY_BROWSER_REFRESH, },
-    { XK_F4, 0, 0, XF86XK_LaunchB, ui::VKEY_MEDIA_LAUNCH_APP2, },
-    { XK_F5, 0, 0, XF86XK_LaunchA, ui::VKEY_MEDIA_LAUNCH_APP1, },
-    { XK_F6, 0, 0, XF86XK_MonBrightnessDown, ui::VKEY_BRIGHTNESS_DOWN, },
-    { XK_F7, 0, 0, XF86XK_MonBrightnessUp, ui::VKEY_BRIGHTNESS_UP, },
-    { XK_F8, 0, 0, XF86XK_AudioMute, ui::VKEY_VOLUME_MUTE, },
-    { XK_F9, 0, 0, XF86XK_AudioLowerVolume, ui::VKEY_VOLUME_DOWN, },
-    { XK_F10, 0, 0, XF86XK_AudioRaiseVolume, ui::VKEY_VOLUME_UP, },
-  };
+  bool remapped = false;
 
-  bool remapped =
-      RewriteWithKeyboardRemappingsByKeySym(fkeys_to_special_keys,
-                                            arraysize(fkeys_to_special_keys),
-                                            keysym,
-                                            xkey->state,
-                                            event->flags(),
-                                            &remapped_native_keysym,
-                                            &remapped_native_mods,
-                                            &remapped_keycode,
-                                            &remapped_mods);
+  if (search_as_function_key && xkey->state & Mod4Mask) {
+    // Allow Search to avoid rewriting F1-F12.
+    static const KeyboardRemapping kFkeysToFkeys[] = {
+      { XK_F1, 0, Mod4Mask, XK_F1, ui::VKEY_F1, },
+      { XK_F2, 0, Mod4Mask, XK_F2, ui::VKEY_F2, },
+      { XK_F3, 0, Mod4Mask, XK_F3, ui::VKEY_F3, },
+      { XK_F4, 0, Mod4Mask, XK_F4, ui::VKEY_F4, },
+      { XK_F5, 0, Mod4Mask, XK_F5, ui::VKEY_F5, },
+      { XK_F6, 0, Mod4Mask, XK_F6, ui::VKEY_F6, },
+      { XK_F7, 0, Mod4Mask, XK_F7, ui::VKEY_F7, },
+      { XK_F8, 0, Mod4Mask, XK_F8, ui::VKEY_F8, },
+      { XK_F9, 0, Mod4Mask, XK_F9, ui::VKEY_F9, },
+      { XK_F10, 0, Mod4Mask, XK_F10, ui::VKEY_F10, },
+      { XK_F11, 0, Mod4Mask, XK_F11, ui::VKEY_F11, },
+      { XK_F12, 0, Mod4Mask, XK_F12, ui::VKEY_F12, },
+    };
+
+    remapped =
+        RewriteWithKeyboardRemappingsByKeySym(kFkeysToFkeys,
+                                              arraysize(kFkeysToFkeys),
+                                              keysym,
+                                              xkey->state,
+                                              event->flags(),
+                                              &remapped_native_keysym,
+                                              &remapped_native_mods,
+                                              &remapped_keycode,
+                                              &remapped_mods);
+  }
 
   if (!remapped) {
-    const PrefService* pref_service =
-        pref_service_ ? pref_service_ : GetPrefService();
-    bool chromebook_function_key = CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableChromebookFunctionKey);
+    // Rewrite the actual F1-F12 keys on a Chromebook keyboard to special keys.
+    static const KeyboardRemapping kFkeysToSpecialKeys[] = {
+      { XK_F1, 0, 0, XF86XK_Back, ui::VKEY_BROWSER_BACK, },
+      { XK_F2, 0, 0, XF86XK_Forward, ui::VKEY_BROWSER_FORWARD, },
+      { XK_F3, 0, 0, XF86XK_Reload, ui::VKEY_BROWSER_REFRESH, },
+      { XK_F4, 0, 0, XF86XK_LaunchB, ui::VKEY_MEDIA_LAUNCH_APP2, },
+      { XK_F5, 0, 0, XF86XK_LaunchA, ui::VKEY_MEDIA_LAUNCH_APP1, },
+      { XK_F6, 0, 0, XF86XK_MonBrightnessDown, ui::VKEY_BRIGHTNESS_DOWN, },
+      { XK_F7, 0, 0, XF86XK_MonBrightnessUp, ui::VKEY_BRIGHTNESS_UP, },
+      { XK_F8, 0, 0, XF86XK_AudioMute, ui::VKEY_VOLUME_MUTE, },
+      { XK_F9, 0, 0, XF86XK_AudioLowerVolume, ui::VKEY_VOLUME_DOWN, },
+      { XK_F10, 0, 0, XF86XK_AudioRaiseVolume, ui::VKEY_VOLUME_UP, },
+    };
 
-    bool search_as_function_key = chromebook_function_key && pref_service &&
-        pref_service->GetBoolean(prefs::kLanguageSearchKeyActsAsFunctionKey);
+    remapped =
+        RewriteWithKeyboardRemappingsByKeySym(kFkeysToSpecialKeys,
+                                              arraysize(kFkeysToSpecialKeys),
+                                              keysym,
+                                              xkey->state,
+                                              event->flags(),
+                                              &remapped_native_keysym,
+                                              &remapped_native_mods,
+                                              &remapped_keycode,
+                                              &remapped_mods);
+  }
 
+  if (!remapped) {
     // When using Search as a Function key, remap Search+<number> to F<number>.
     if (search_as_function_key && xkey->state & Mod4Mask) {
       // We check the keycode here instead of the keysym, as these keys have
@@ -802,7 +835,7 @@ bool EventRewriter::RewriteFunctionKeys(ui::KeyEvent* event) {
       // TODO(danakj): On some i18n keyboards, these choices will be bad and we
       // should make layout-specific choices here. For eg. on a french keyboard
       // "-" and "6" are the same key, so F11 will not be accessible.
-      static const KeyboardRemapping number_keys_to_fkeys[] = {
+      static const KeyboardRemapping kNumberKeysToFkeys[] = {
         { XK_1, 0, Mod4Mask, XK_F1, ui::VKEY_F1, },
         { XK_2, 0, Mod4Mask, XK_F2, ui::VKEY_F2, },
         { XK_3, 0, Mod4Mask, XK_F3, ui::VKEY_F3, },
@@ -817,8 +850,8 @@ bool EventRewriter::RewriteFunctionKeys(ui::KeyEvent* event) {
         { XK_equal, 0, Mod4Mask, XK_F12, ui::VKEY_F12, }
       };
 
-      RewriteWithKeyboardRemappingsByKeyCode(number_keys_to_fkeys,
-                                             arraysize(number_keys_to_fkeys),
+      RewriteWithKeyboardRemappingsByKeyCode(kNumberKeysToFkeys,
+                                             arraysize(kNumberKeysToFkeys),
                                              xkey->keycode,
                                              xkey->state,
                                              event->flags(),

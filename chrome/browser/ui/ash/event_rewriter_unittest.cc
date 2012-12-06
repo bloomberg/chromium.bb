@@ -2099,6 +2099,20 @@ TEST_F(EventRewriterTest, TestRewriteFunctionKeys) {
     { ui::VKEY_0, keycode_0_, ui::VKEY_F10, keycode_f10_, },
     { ui::VKEY_OEM_MINUS, keycode_minus_, ui::VKEY_F11, keycode_f11_, },
     { ui::VKEY_OEM_PLUS, keycode_equal_, ui::VKEY_F12, keycode_f12_, },
+
+    // The function keys should not be rewritten anymore.
+    { ui::VKEY_F1, keycode_f1_, ui::VKEY_F1, keycode_f1_, },
+    { ui::VKEY_F2, keycode_f2_, ui::VKEY_F2, keycode_f2_, },
+    { ui::VKEY_F3, keycode_f3_, ui::VKEY_F3, keycode_f3_, },
+    { ui::VKEY_F4, keycode_f4_, ui::VKEY_F4, keycode_f4_, },
+    { ui::VKEY_F5, keycode_f5_, ui::VKEY_F5, keycode_f5_, },
+    { ui::VKEY_F6, keycode_f6_, ui::VKEY_F6, keycode_f6_, },
+    { ui::VKEY_F7, keycode_f7_, ui::VKEY_F7, keycode_f7_, },
+    { ui::VKEY_F8, keycode_f8_, ui::VKEY_F8, keycode_f8_, },
+    { ui::VKEY_F9, keycode_f9_, ui::VKEY_F9, keycode_f9_, },
+    { ui::VKEY_F10, keycode_f10_, ui::VKEY_F10, keycode_f10_, },
+    { ui::VKEY_F11, keycode_f11_, ui::VKEY_F11, keycode_f11_, },
+    { ui::VKEY_F12, keycode_f12_, ui::VKEY_F12, keycode_f12_, },
   };
 
   // But with a Search key as a modifier, we should have new rewrite rules now.
