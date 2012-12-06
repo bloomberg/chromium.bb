@@ -178,7 +178,7 @@ class DepsChecker(object):
     Returns: A new set of rules combining the existing_rules with the other
              arguments.
     """
-    rules = copy.copy(existing_rules)
+    rules = copy.deepcopy(existing_rules)
 
     # First apply the implicit "allow" rule for the current directory.
     if cur_dir.startswith(

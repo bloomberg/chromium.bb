@@ -149,6 +149,29 @@ class CheckDepsTest(unittest.TestCase):
       ]])
     self.failUnless(problems)
 
+  def testCopyIsDeep(self):
+    # Regression test for a bug where we were making shallow copies of
+    # Rules objects and therefore all Rules objects shared the same
+    # dictionary for specific rules.
+    #
+    # The first pair should bring in a rule from testdata/allowed/DEPS
+    # into that global dictionary that allows the
+    # temp_allowed_for_tests.h file to be included in files ending
+    # with _unittest.cc, and the second pair should completely fail
+    # once the bug is fixed, but succeed (with a temporary allowance)
+    # if the bug is in place.
+    problems = self.deps_checker.CheckAddedCppIncludes(
+      [['tools/checkdeps/testdata/allowed/test.cc',
+        ['#include "tools/checkdeps/testdata/disallowed/temporarily_allowed.h"']
+       ],
+       ['tools/checkdeps/testdata/disallowed/foo_unittest.cc',
+        ['#include "tools/checkdeps/testdata/bongo/temp_allowed_for_tests.h"']
+       ]])
+    # With the bug in place, there would be two problems reported, and
+    # the second would be for foo_unittest.cc.
+    self.failUnless(len(problems) == 1)
+    self.failUnless(problems[0][0].endswith('/test.cc'))
+
 
 if __name__ == '__main__':
   unittest.main()
