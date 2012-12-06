@@ -79,10 +79,12 @@ class MTPGetFileInfoWorker
   // correct thread.
   scoped_refptr<base::SequencedTaskRunner> media_task_runner_;
 
-  // Stores the result of GetFileInfo().
+  // Stores the result of GetFileInfo(). Normally accessed on
+  // |media_task_runner_| but it is also safe to access on the UI thread when
+  // |media_task_runner_| is blocked.
   base::PlatformFileError error_;
 
-  // Stores the media file entry information.
+  // Stores the media file entry information. Same access policy as |error_|.
   base::PlatformFileInfo file_entry_info_;
 
   // |media_task_runner_| can wait on this event until the required operation

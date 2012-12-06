@@ -45,7 +45,7 @@ class MTPOpenStorageWorker
   // thread. This blocks the |media_task_runner_| until the task is complete.
   void Run();
 
-  // Returns a device handle string if the OpenStorage() request was
+  // Returns a device handle string if the open storage request was
   // successfully completed or an empty string otherwise.
   const std::string& device_handle() const { return device_handle_; }
 
@@ -90,7 +90,9 @@ class MTPOpenStorageWorker
   // Stores a reference to waitable event associated with the shut down message.
   base::WaitableEvent* on_shutdown_event_;
 
-  // Stores the result of OpenStorage() request.
+  // Stores the result of an open storage request. Read from
+  // |media_task_runner_| and written to on the UI thread only when
+  // |media_task_runner_| is blocked.
   std::string device_handle_;
 
   // Set to ignore the request results. This will be set when

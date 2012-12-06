@@ -104,7 +104,9 @@ class MTPReadDirectoryWorker
   // Stores a reference to waitable event associated with the shut down message.
   base::WaitableEvent* on_shutdown_event_;
 
-  // Stores the result of read directory request.
+  // Stores the result of a read directory request. Read from
+  // |media_task_runner_| and written to on the UI thread only when
+  // |media_task_runner_| is blocked.
   std::vector<MtpFileEntry> file_entries_;
 
   // Set to ignore the request results. This will be set when

@@ -30,6 +30,8 @@ MTPOpenStorageWorker::MTPOpenStorageWorker(
 }
 
 void MTPOpenStorageWorker::Run() {
+  DCHECK(media_task_runner_->RunsTasksOnCurrentThread());
+
   if (on_shutdown_event_->IsSignaled()) {
     // Process is in shutdown mode.
     // Do not post any task on |media_task_runner_|.
@@ -47,7 +49,7 @@ void MTPOpenStorageWorker::Run() {
 }
 
 MTPOpenStorageWorker::~MTPOpenStorageWorker() {
-  // This object must be destructed on |media_task_runner_|.
+  DCHECK(media_task_runner_->RunsTasksOnCurrentThread());
 }
 
 void MTPOpenStorageWorker::DoWorkOnUIThread() {

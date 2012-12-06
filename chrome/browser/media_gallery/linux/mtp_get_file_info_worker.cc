@@ -31,9 +31,12 @@ MTPGetFileInfoWorker::MTPGetFileInfoWorker(
 }
 
 void MTPGetFileInfoWorker::Run() {
+  DCHECK(media_task_runner_->RunsTasksOnCurrentThread());
+
   if (on_shutdown_event_->IsSignaled()) {
     // Process is in shutdown mode.
     // Do not post any task on |media_task_runner_|.
+    error_ = base::PLATFORM_FILE_ERROR_FAILED;
     return;
   }
 
@@ -42,8 +45,10 @@ void MTPGetFileInfoWorker::Run() {
                                      this));
   on_task_completed_event_->Wait();
 
-  if (on_shutdown_event_->IsSignaled())
+  if (on_shutdown_event_->IsSignaled()) {
+    error_ = base::PLATFORM_FILE_ERROR_FAILED;
     cancel_tasks_flag_.Set();
+  }
 }
 
 base::PlatformFileError MTPGetFileInfoWorker::get_file_info(
@@ -54,15 +59,13 @@ base::PlatformFileError MTPGetFileInfoWorker::get_file_info(
 }
 
 MTPGetFileInfoWorker::~MTPGetFileInfoWorker() {
-  // This object must be destructed on |media_task_runner_|.
+  DCHECK(media_task_runner_->RunsTasksOnCurrentThread());
 }
 
 void MTPGetFileInfoWorker::DoWorkOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (cancel_tasks_flag_.IsSet()) {
-    error_ = base::PLATFORM_FILE_ERROR_FAILED;
+  if (cancel_tasks_flag_.IsSet())
     return;
-  }
 
   GetMediaTransferProtocolManager()->GetFileInfoByPath(
       device_handle_, path_,
@@ -72,10 +75,8 @@ void MTPGetFileInfoWorker::DoWorkOnUIThread() {
 void MTPGetFileInfoWorker::OnDidWorkOnUIThread(const MtpFileEntry& file_entry,
                                                bool error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (cancel_tasks_flag_.IsSet()) {
-    error_ = base::PLATFORM_FILE_ERROR_FAILED;
+  if (cancel_tasks_flag_.IsSet())
     return;
-  }
 
   if (error) {
     error_ = base::PLATFORM_FILE_ERROR_NOT_FOUND;
