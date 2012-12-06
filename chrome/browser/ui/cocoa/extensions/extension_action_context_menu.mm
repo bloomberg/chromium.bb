@@ -138,13 +138,6 @@ enum {
     extension_ = extension;
     browser_ = browser;
 
-    // The tab ID is needed to work out if the action has a popup.
-    content::WebContents* active_tab = chrome::GetActiveWebContents(browser_);
-    if (!active_tab)
-       return nil;
-
-    int tabId = ExtensionTabUtil::GetTabId(active_tab);
-
     // NOTE: You MUST keep this in sync with the enumeration in the header file.
     NSArray* menuItems = [NSArray arrayWithObjects:
         base::SysUTF8ToNSString(extension->name()),
@@ -175,10 +168,6 @@ enum {
             GetBrowserAction(*extension)) {
           [itemObj setTarget:nil];  // Item is disabled.
           [itemObj setHidden:YES];  // Item is hidden.
-        } else if ([itemObj tag] == kExtensionContextInspect &&
-            !action_->HasPopup(tabId)) {
-          // Disable inspect popup if there is no popup.
-          [itemObj setTarget:nil];  // Item is disabled.
         } else {
           [itemObj setTarget:self];
         }
@@ -265,7 +254,9 @@ enum {
       int tabId = ExtensionTabUtil::GetTabId(active_tab);
 
       GURL url = action_->GetPopupUrl(tabId);
-      DCHECK(url.is_valid());
+      if (!url.is_valid())
+        return;
+
       [ExtensionPopupController showURL:url
                               inBrowser:browser_
                              anchoredAt:popupPoint

@@ -34,7 +34,7 @@ public:
   ExtensionActionContextMenuTest() : extension_(NULL), action_(NULL) {}
 
  protected:
-  void SetupExtensionAndAction() {
+  void SetupPageAction() {
     extension_ = InstallExtension(
         test_data_dir_.AppendASCII("browsertest")
                       .AppendASCII("page_action_popup"),
@@ -63,7 +63,7 @@ public:
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionActionContextMenuTest, BasicTest) {
-  SetupExtensionAndAction();
+  SetupPageAction();
   scoped_nsobject<ExtensionActionContextMenu> menu;
   menu.reset([[ExtensionActionContextMenu alloc] initWithExtension:extension_
                                                            browser:browser()
@@ -85,8 +85,36 @@ IN_PROC_BROWSER_TEST_F(ExtensionActionContextMenuTest, BasicTest) {
   service->SetBoolean(prefs::kExtensionsUIDeveloperMode, original);
 }
 
+// Test that browser action context menus work. Browser actions have their
+// menus created during browser initialization, when there is no tab. This
+// test simulates that and checks the menu is operational.
+IN_PROC_BROWSER_TEST_F(ExtensionActionContextMenuTest, BrowserAction) {
+  extension_ = InstallExtension(
+      test_data_dir_.AppendASCII("browsertest")
+                    .AppendASCII("browser_action_popup"),
+      1);
+  EXPECT_TRUE(extension_);
+  extensions::ExtensionActionManager* action_manager =
+      extensions::ExtensionActionManager::Get(browser()->profile());
+  action_ = action_manager->GetBrowserAction(*extension_);
+  EXPECT_TRUE(action_);
+
+  scoped_ptr<Browser> empty_browser(
+       new Browser(Browser::CreateParams(browser()->profile())));
+
+  scoped_nsobject<ExtensionActionContextMenu> menu;
+  menu.reset([[ExtensionActionContextMenu alloc]
+      initWithExtension:extension_
+                browser:empty_browser.get()
+        extensionAction:action_]);
+
+  NSMenuItem* inspectItem = [menu itemWithTag:
+        extension_action_context_menu::kExtensionContextInspect];
+  EXPECT_TRUE(inspectItem);
+}
+
 IN_PROC_BROWSER_TEST_F(ExtensionActionContextMenuTest, RunInspectPopup) {
-  SetupExtensionAndAction();
+  SetupPageAction();
   scoped_nsobject<ExtensionActionContextMenu> menu;
   menu.reset([[ExtensionActionContextMenu alloc] initWithExtension:extension_
                                                            browser:browser()
