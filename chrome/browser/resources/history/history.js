@@ -7,7 +7,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Globals:
 /** @const */ var RESULTS_PER_PAGE = 150;
-/** @const */ var MAX_SEARCH_DEPTH_MONTHS = 18;
 
 // Amount of time between pageviews that we consider a 'break' in browsing,
 // measured in milliseconds.
@@ -311,7 +310,7 @@ HistoryModel.prototype.setSearchText = function(searchText, opt_page) {
   this.clearModel_();
   this.searchText_ = searchText;
   this.requestedPage_ = opt_page ? opt_page : 0;
-  this.queryHistory_(false);
+  this.queryHistory_();
 };
 
 /**
@@ -323,7 +322,7 @@ HistoryModel.prototype.reload = function() {
   this.clearModel_();
   this.searchText_ = search;
   this.requestedPage_ = page;
-  this.queryHistory_(false);
+  this.queryHistory_();
 };
 
 /**
@@ -353,9 +352,7 @@ HistoryModel.prototype.addResults = function(info, results) {
   $('loading-spinner').hidden = true;
   this.inFlight_ = false;
   this.isQueryFinished_ = info.finished;
-
-  if (this.searchText_ && this.searchDepth_ >= MAX_SEARCH_DEPTH_MONTHS)
-    this.isQueryFinished_ = true;
+  this.queryCursor_ = info.cursor;
 
   // If our results aren't for our current search term, they're rubbish.
   if (info.term != this.searchText_)
@@ -424,10 +421,6 @@ HistoryModel.prototype.clearModel_ = function() {
   this.inFlight_ = false;  // Whether a query is inflight.
   this.searchText_ = '';
 
-  // Keeps track of how far back we've gone in the current query.
-  // This is in days when browsing, and in months when searching.
-  this.searchDepth_ = 0;
-
   this.visits_ = [];  // Date-sorted list of visits (most recent first).
   this.last_id_ = 0;
   selectionAnchor = -1;
@@ -440,6 +433,10 @@ HistoryModel.prototype.clearModel_ = function() {
   // Keeps track of whether or not there are more results available than are
   // currently held in |this.visits_|.
   this.isQueryFinished_ = false;
+
+  // An opaque value that is returned with the query results. This is used to
+  // fetch the next page of results for a query.
+  this.queryCursor_ = null;
 
   if (this.view_)
     this.view_.clear_();
@@ -457,7 +454,7 @@ HistoryModel.prototype.updateSearch_ = function() {
 
   // Try to fetch more results if the current page isn't full.
   if (!doneLoading && !this.inFlight_)
-    this.queryHistory_(true);
+    this.queryHistory_();
 
   // If we have any data for the requested page, show it.
   if (this.changed && this.haveDataForPage_(this.requestedPage_)) {
@@ -468,18 +465,22 @@ HistoryModel.prototype.updateSearch_ = function() {
 
 /**
  * Query for history, either for a search or time-based browsing.
- *
- * @param {boolean} continueQuery If true, query for the next page of
- *     results from the current query. If false, start a new query.
- *
  * @private
  */
-HistoryModel.prototype.queryHistory_ = function(continueQuery) {
-  this.searchDepth_ = continueQuery ? this.searchDepth_ + 1 : 0;
-  chrome.send('queryHistory',
-              [this.searchText_, this.searchDepth_, RESULTS_PER_PAGE]);
+HistoryModel.prototype.queryHistory_ = function() {
+  var endTime = 0;
+
+  // If there are already some visits, pick up the previous query where it
+  // left off.
+  if (this.visits_.length > 0) {
+    var lastVisit = this.visits_.slice(-1)[0];
+    endTime = lastVisit.time;
+  }
+
   $('loading-spinner').hidden = false;
   this.inFlight_ = true;
+  chrome.send('queryHistory',
+      [this.searchText_, endTime, this.queryCursor_, RESULTS_PER_PAGE]);
 };
 
 /**

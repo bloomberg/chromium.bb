@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 /** @const */ var TOTAL_RESULT_COUNT = 160;
+/** @const */ var WAIT_TIMEOUT = 200;
 
 /**
  * Create a fake history result with the given timestamp.
@@ -61,7 +62,10 @@ BaseHistoryWebUITest.prototype = {
    * @param {Array} arguments The original arguments to queryHistory.
    */
   queryHistoryStub_: function(args) {
-      historyResult({ term: args[0], finished: true, }, []);
+    // Respond asynchronously to simulate real behavior in Chrome.
+    setTimeout(function() {
+      historyResult({ term: args[0], finished: true, cursor: 0 }, []);
+    }, 1);
   },
 };
 
@@ -77,24 +81,34 @@ HistoryWebUITest.prototype = {
   __proto__: BaseHistoryWebUITest.prototype,
 
   queryHistoryStub_: (function() {
-    // The number of results to return per call to getHistory/searchHistory.
-    var RESULT_SIZE = 20;
-
     // Prepare a list of fake history results. The entries will begin at
     // 1:00 AM on Sept 2, 2008, and will be spaced two minutes apart.
     var timestamp = new Date(2008, 9, 2, 1, 0).getTime();
-    var history = [];
-    for (var i = 0; i < TOTAL_RESULT_COUNT; i++) {
-      history.push(createHistoryEntry(timestamp));
-      timestamp -= 2 * 60 * 1000;  // Next visit is two minutes earlier.
-    }
 
     return function (args) {
-      var start = args[1] * RESULT_SIZE;
-      var results = history.slice(start, start + RESULT_SIZE);
-      historyResult(
-          { term: args[0], finished: start + RESULT_SIZE >= history.length, },
-          results);
+      var searchText = args[0];
+      var endTime = args[1];
+      var cursor = args[2];
+      var maxCount = args[3];
+
+      // Generate the requested number of results.
+      var results = [];
+      var resultCount = Math.min(maxCount, TOTAL_RESULT_COUNT - cursor);
+      for (var i = 0; i < resultCount; i++) {
+        results.push(createHistoryEntry(timestamp));
+        timestamp -= 2 * 60 * 1000;  // Next visit is two minutes earlier.
+      }
+
+      // Respond asynchronously to simulate real behavior in Chrome.
+      setTimeout(function() {
+        historyResult(
+            {
+              term: searchText,
+              finished: cursor + results.length >= TOTAL_RESULT_COUNT,
+              cursor: cursor + results.length,
+            },
+            results);
+      }, 1);
     }
   }()),
 };
@@ -157,33 +171,39 @@ TEST_F('HistoryWebUITest', 'basicTest', function() {
 
   // Go to the next page.
   $('older-button').click();
-  resultCount += document.querySelectorAll('.entry').length;
+  setTimeout(function() {
+    resultCount += document.querySelectorAll('.entry').length;
 
-  // Check that the two pages include all of the entries.
-  expectEquals(TOTAL_RESULT_COUNT, resultCount);
+    // Check that the two pages include all of the entries.
+    expectEquals(TOTAL_RESULT_COUNT, resultCount);
 
-  // Check that the day header was properly continued -- the header for the
-  // last day on the first page should be a substring of the header on the
-  // second page. E.g. "Wed, Oct 8, 2008" and "Web, Oct 8, 2008 - cont'd".
-  var newDayHeaders = document.querySelectorAll('.day');
-  expectEquals(1, newDayHeaders.length);
-  expectEquals(0,
-      newDayHeaders[0].textContent.indexOf(dayHeaders[1].textContent));
+    // Check that the day header was properly continued -- the header for the
+    // last day on the first page should be a substring of the header on the
+    // second page. E.g. "Wed, Oct 8, 2008" and "Web, Oct 8, 2008 - cont'd".
+    var newDayHeaders = document.querySelectorAll('.day');
+    expectEquals(1, newDayHeaders.length);
+    expectEquals(0,
+        newDayHeaders[0].textContent.indexOf(dayHeaders[1].textContent));
 
-  // Check that the "Newest" and "Newer" links are now visible, but the "Older"
-  // link is hidden.
-  expectEquals(3, document.querySelectorAll('.link-button').length)
-  expectFalse($('newest-button').hidden);
-  expectFalse($('newer-button').hidden);
-  expectTrue($('older-button').hidden);
+    // Check that the "Newest" and "Newer" links are now visible, but the
+    // "Older" link is hidden.
+    expectEquals(3, document.querySelectorAll('.link-button').length)
+    expectFalse($('newest-button').hidden);
+    expectFalse($('newer-button').hidden);
+    expectTrue($('older-button').hidden);
 
-  // Go back to the first page, and check that the same day headers are there.
-  $('newest-button').click();
-  var newDayHeaders = document.querySelectorAll('.day');
-  expectEquals(2, newDayHeaders.length);
-  expectNotEquals(newDayHeaders[0].textContent, newDayHeaders[1].textContent);
-  expectEquals(dayHeaders[0].textContent, newDayHeaders[0].textContent);
-  expectEquals(dayHeaders[1].textContent, newDayHeaders[1].textContent);
+    // Go back to the first page, and check that the same day headers are there.
+    $('newest-button').click();
+    setTimeout(function() {
+      var newDayHeaders = document.querySelectorAll('.day');
+      expectEquals(2, newDayHeaders.length);
 
-  testDone();
+      expectNotEquals(newDayHeaders[0].textContent,
+                      newDayHeaders[1].textContent);
+      expectEquals(dayHeaders[0].textContent, newDayHeaders[0].textContent);
+      expectEquals(dayHeaders[1].textContent, newDayHeaders[1].textContent);
+
+      testDone();
+    }, WAIT_TIMEOUT);
+  }, WAIT_TIMEOUT);
 });

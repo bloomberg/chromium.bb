@@ -289,39 +289,51 @@ void TextDatabase::GetTextMatches(const std::string& query,
                                   base::Time* first_time_searched) {
   *first_time_searched = options.begin_time;
 
-  std::string sql = "SELECT url, title, time, offsets(pages), body FROM pages "
-                    "LEFT OUTER JOIN info ON pages.rowid = info.rowid WHERE ";
+  std::string sql =
+      "SELECT info.rowid, url, title, time, offsets(pages), body FROM pages "
+      "LEFT OUTER JOIN info ON pages.rowid = info.rowid WHERE ";
   sql += options.body_only ? "body " : "pages ";
-  sql += "MATCH ? AND time >= ? AND time < ? ORDER BY time DESC LIMIT ?";
+  sql += "MATCH ? AND time >= ? AND (time < ?";
+  if (!options.cursor.empty())
+    sql += " OR (time = ? AND info.rowid < ?)";
+  // Times may not be unique, so also sort by rowid to ensure a stable order.
+  sql += ") ORDER BY time DESC, info.rowid DESC LIMIT ?";
 
-  // Generate unique IDs for the two possible variations of the statement,
+  // Generate unique IDs for the different variations of the statement,
   // so they don't share the same cached prepared statement.
   sql::StatementID body_only_id = SQL_FROM_HERE;
   sql::StatementID pages_id = SQL_FROM_HERE;
+  sql::StatementID pages_with_cursor_id = SQL_FROM_HERE;
 
-  sql::Statement statement(db_.GetCachedStatement(
-      (options.body_only ? body_only_id : pages_id), sql.c_str()));
+  // Ensure that cursor and body_only aren't both specified, because that
+  // combination is not covered here.
+  DCHECK(!options.body_only || options.cursor.empty());
 
-  // When their values indicate "unspecified", saturate the numbers to the max
-  // or min to get the correct result.
-  int64 effective_begin_time = options.begin_time.is_null() ?
-      0 : options.begin_time.ToInternalValue();
-  int64 effective_end_time = options.end_time.is_null() ?
-      std::numeric_limits<int64>::max() : options.end_time.ToInternalValue();
-  int effective_max_count = options.max_count ?
-      options.max_count : std::numeric_limits<int>::max();
+  // Choose the correct statement ID based on the options.
+  sql::StatementID statement_id = pages_id;
+  if (options.body_only)
+    statement_id = body_only_id;
+  else if (!options.cursor.empty())
+    statement_id = pages_with_cursor_id;
 
-  statement.BindString(0, query);
-  statement.BindInt64(1, effective_begin_time);
-  statement.BindInt64(2, effective_end_time);
-  statement.BindInt(3, effective_max_count);
+  sql::Statement statement(db_.GetCachedStatement(statement_id, sql.c_str()));
+
+  int i = 0;
+  statement.BindString(i++, query);
+  statement.BindInt64(i++, options.EffectiveBeginTime());
+  statement.BindInt64(i++, options.EffectiveEndTime());
+  if (!options.cursor.empty()) {
+    statement.BindInt64(i++, options.EffectiveEndTime());
+    statement.BindInt64(i++, options.cursor.rowid_);
+  }
+  statement.BindInt(i++, options.EffectiveMaxCount());
 
   while (statement.Step()) {
     // TODO(brettw) allow canceling the query in the middle.
     // if (canceled_or_something)
     //   break;
 
-    GURL url(statement.ColumnString(0));
+    GURL url(statement.ColumnString(1));
     URLSet::const_iterator found_url = found_urls->find(url);
     if (found_url != found_urls->end())
       continue;  // Don't add this duplicate.
@@ -329,16 +341,17 @@ void TextDatabase::GetTextMatches(const std::string& query,
     // Fill the results into the vector (avoid copying the URL with Swap()).
     results->resize(results->size() + 1);
     Match& match = results->at(results->size() - 1);
+    match.rowid = statement.ColumnInt64(0);
     match.url.Swap(&url);
 
-    match.title = statement.ColumnString16(1);
-    match.time = base::Time::FromInternalValue(statement.ColumnInt64(2));
+    match.title = statement.ColumnString16(2);
+    match.time = base::Time::FromInternalValue(statement.ColumnInt64(3));
 
     // Extract any matches in the title.
-    std::string offsets_str = statement.ColumnString(3);
+    std::string offsets_str = statement.ColumnString(4);
     Snippet::ExtractMatchPositions(offsets_str, kTitleColumnIndex,
                                    &match.title_match_positions);
-    Snippet::ConvertMatchPositionsToWide(statement.ColumnString(1),
+    Snippet::ConvertMatchPositionsToWide(statement.ColumnString(2),
                                          &match.title_match_positions);
 
     // Extract the matches in the body.
@@ -347,7 +360,7 @@ void TextDatabase::GetTextMatches(const std::string& query,
                                    &match_positions);
 
     // Compute the snippet based on those matches.
-    std::string body = statement.ColumnString(4);
+    std::string body = statement.ColumnString(5);
     match.snippet.ComputeSnippet(match_positions, body);
   }
 

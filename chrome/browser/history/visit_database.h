@@ -109,8 +109,7 @@ class VisitDatabase {
   //
   // Only one visit for each URL will be returned, and it will be the most
   // recent one in the time range.
-  void GetVisibleVisitsInRange(base::Time begin_time, base::Time end_time,
-                               int max_count,
+  void GetVisibleVisitsInRange(const QueryOptions& options,
                                VisitVector* visits);
 
   // Fills all visits in the given time ranges into the given vector that are

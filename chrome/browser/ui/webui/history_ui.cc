@@ -209,21 +209,38 @@ void BrowsingHistoryHandler::QueryHistory(
 
 void BrowsingHistoryHandler::HandleQueryHistory(const ListValue* args) {
   history::QueryOptions options;
-  int search_depth = 0;
 
-  // There are three required arguments: the text to search for (which may be
-  // empty), the requested depth (in months if searching, otherwise in days),
-  // and the max number of results to return.
+  // Parse the arguments from JavaScript. There are four required arguments:
+  // - the text to search for (may be empty)
+  // - the end time of the range to search (see QueryOptions.end_time)
+  // - the search cursor, an opaque value from a previous query result, which
+  //   allows this query to pick up where the previous one left off. May be
+  //   null or undefined.
+  // - the maximum number of results to return (may be 0, meaning that there
+  //   is no maximum)
   string16 search_text = ExtractStringValue(args);
-  if (!ExtractIntegerValueAtIndex(args, 1, &search_depth))
-    return;
-  if (!ExtractIntegerValueAtIndex(args, 2, &options.max_count))
-    return;
 
-  if (search_text.empty())
-    SetQueryDepthInDays(options, search_depth);
-  else
-    SetQueryDepthInMonths(options, search_depth);
+  double end_time;
+  if (!args->GetDouble(1, &end_time))
+    return;
+  if (end_time)
+    options.end_time = base::Time::FromJsTime(end_time);
+
+  const Value* cursor_value;
+  base::FundamentalValue cursor_not_specified(0.0);
+
+  // Get the cursor. It must be either null, or a list.
+  if (!args->Get(2, &cursor_value) ||
+      (!cursor_value->IsType(Value::TYPE_NULL) &&
+      !history::QueryCursor::FromValue(cursor_value, &options.cursor))) {
+    NOTREACHED() << "Failed to convert argument 2. ";
+    return;
+  }
+
+  if (!ExtractIntegerValueAtIndex(args, 3, &options.max_count)) {
+    NOTREACHED() << "Failed to convert argument 3.";
+    return;
+  }
 
   QueryHistory(search_text, options);
 }
@@ -345,6 +362,7 @@ void BrowsingHistoryHandler::QueryComplete(
   DictionaryValue info_value;
   info_value.SetString("term", search_text);
   info_value.SetBoolean("finished", results->reached_beginning());
+  info_value.Set("cursor", results->cursor().ToValue());
 
   web_ui()->CallJavascriptFunction("historyResult", info_value, results_value);
 }

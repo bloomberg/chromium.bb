@@ -35,7 +35,7 @@ struct TestEntry {
 
   // These are deliberately added out of chronological order. The history
   // service should sort them by visit time when returning query results.
-  // The correct index sort order is 4 2 3 1 0.
+  // The correct index sort order is 4 2 3 1 7 6 5 0.
   {"http://www.google.com/1", "Title 1", 10,
    "PAGEONE FOO some body text"},
   {"http://www.google.com/3", "Title 3", 8,
@@ -45,6 +45,14 @@ struct TestEntry {
 
   // A more recent visit of the first one.
   {"http://example.com/", "Other", 6, "Other"},
+
+  {"http://www.google.com/6", "Title 6", 12,
+   "I'm the second oldest"},
+
+  {"http://www.google.com/4", "Title 4", 11,
+   "duplicate timestamps"},
+  {"http://www.google.com/5", "Title 5", 11,
+   "duplicate timestamps"},
 };
 
 // Returns true if the nth result in the given results set matches. It will
@@ -83,6 +91,41 @@ class HistoryQueryTest : public testing::Test {
                    base::Unretained(this)));
     MessageLoop::current()->Run();  // Will go until ...Complete calls Quit.
     results->Swap(&last_query_results_);
+  }
+
+  // Test paging through results using a cursor.
+  // Defined here so code can be shared for the FTS version and the non-FTS
+  // version.
+  void TestWithCursor(const std::string& query_text,
+                      int* expected_results,
+                      int results_length) {
+    ASSERT_TRUE(history_.get());
+
+    QueryOptions options;
+    QueryResults results;
+
+    options.max_count = 1;
+    for (int i = 0; i < results_length; i++) {
+      SCOPED_TRACE(testing::Message() << "i = " << i);
+      QueryHistory(query_text, options, &results);
+      ASSERT_EQ(1U, results.size());
+      EXPECT_TRUE(NthResultIs(results, 0, expected_results[i]));
+      options.cursor = results.cursor();
+    }
+    QueryHistory(query_text, options, &results);
+    EXPECT_EQ(0U, results.size());
+
+    // Try using a cursor with a max_count > 1.
+    options.max_count = 2;
+    options.cursor.Clear();
+    for (int i = 0; i < results_length / 2; i++) {
+      SCOPED_TRACE(testing::Message() << "i = " << i);
+      QueryHistory(query_text, options, &results);
+      ASSERT_EQ(2U, results.size());
+      EXPECT_TRUE(NthResultIs(results, 0, expected_results[i * 2]));
+      EXPECT_TRUE(NthResultIs(results, 1, expected_results[i * 2 + 1]));
+      options.cursor = results.cursor();
+    }
   }
 
  protected:
@@ -154,13 +197,18 @@ TEST_F(HistoryQueryTest, Basic) {
   QueryOptions options;
   QueryResults results;
 
-  // Test duplicate collapsing.
+  // Test duplicate collapsing. 0 is an older duplicate of 4, and should not
+  // appear in the result set.
   QueryHistory(std::string(), options, &results);
-  EXPECT_EQ(4U, results.size());
+  EXPECT_EQ(7U, results.size());
+
   EXPECT_TRUE(NthResultIs(results, 0, 4));
   EXPECT_TRUE(NthResultIs(results, 1, 2));
   EXPECT_TRUE(NthResultIs(results, 2, 3));
   EXPECT_TRUE(NthResultIs(results, 3, 1));
+  EXPECT_TRUE(NthResultIs(results, 4, 7));
+  EXPECT_TRUE(NthResultIs(results, 5, 6));
+  EXPECT_TRUE(NthResultIs(results, 6, 5));
 
   // Next query a time range. The beginning should be inclusive, the ending
   // should be exclusive.
@@ -261,6 +309,7 @@ TEST_F(HistoryQueryTest, FTSTitle) {
 
   // Query all time but with a limit on the number of entries. We should
   // get the N most recent entries.
+  options.max_count = 3;
   QueryHistory("title", options, &results);
   EXPECT_EQ(3U, results.size());
   EXPECT_TRUE(NthResultIs(results, 0, 2));
@@ -357,5 +406,21 @@ TEST_F(HistoryQueryTest, FTSDupes) {
   EXPECT_TRUE(NthResultIs(results, 0, 4));
 }
 */
+
+// Test iterating over pages of results using a cursor.
+TEST_F(HistoryQueryTest, Cursor) {
+  // Since results are fetched 1 and 2 at a time, entry #0 and #6 will not
+  // be de-duplicated.
+  int expected_results[] = { 4, 2, 3, 1, 7, 6, 5, 0 };
+  TestWithCursor("", expected_results, arraysize(expected_results));
+}
+
+TEST_F(HistoryQueryTest, FTSCursor) {
+  // Since results are fetched 1 and 2 at a time, entry #0 and #6 will not
+  // be de-duplicated. Entry #4 does not contain the text "title", so it
+  // shouldn't appear.
+  int expected_results[] = { 2, 3, 1, 7, 6, 5 };
+  TestWithCursor("title", expected_results, arraysize(expected_results));
+}
 
 }  // namespace history

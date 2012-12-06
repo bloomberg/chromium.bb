@@ -819,8 +819,9 @@ TEST_F(HistoryBackendTest, KeywordGenerated) {
 
   // But no visible visits.
   visits.clear();
-  backend_->db()->GetVisibleVisitsInRange(base::Time(), base::Time(), 1,
-                                          &visits);
+  QueryOptions query_options;
+  query_options.max_count = 1;
+  backend_->db()->GetVisibleVisitsInRange(query_options, &visits);
   EXPECT_TRUE(visits.empty());
 
   // Expire the visits.

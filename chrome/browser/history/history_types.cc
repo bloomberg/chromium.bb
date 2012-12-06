@@ -8,6 +8,8 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "base/string_number_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/history/page_usage_data.h"
 
 namespace history {
@@ -116,6 +118,38 @@ void URLResult::SwapResult(URLResult* other) {
   title_match_positions_.swap(other->title_match_positions_);
 }
 
+// QueryCursor -----------------------------------------------------------------
+
+QueryCursor::QueryCursor() : rowid_(0) {
+}
+
+QueryCursor::~QueryCursor() {
+}
+
+Value* QueryCursor::ToValue() const {
+  ListValue* value = new ListValue;
+  value->AppendString(base::Int64ToString(time_.ToInternalValue()));
+  value->AppendString(base::Int64ToString(rowid_));
+  return value;
+}
+
+bool QueryCursor::FromValue(const Value* value, QueryCursor* cursor) {
+  if (value->GetType() == Value::TYPE_LIST) {
+    const ListValue* list_value = static_cast<const ListValue*>(value);
+    string16 string_value;
+    int64 timestamp;
+
+    if (list_value->GetString(0, &string_value) &&
+        base::StringToInt64(string_value, &timestamp) &&
+        list_value->GetString(1, &string_value) &&
+        base::StringToInt64(string_value, &cursor->rowid_)) {
+      cursor->time_ = base::Time::FromInternalValue(timestamp);
+      return true;
+    }
+  }
+  return false;
+}
+
 // QueryResults ----------------------------------------------------------------
 
 QueryResults::QueryResults() : reached_beginning_(false) {
@@ -146,6 +180,7 @@ const size_t* QueryResults::MatchesForURL(const GURL& url,
 void QueryResults::Swap(QueryResults* other) {
   std::swap(first_time_searched_, other->first_time_searched_);
   std::swap(reached_beginning_, other->reached_beginning_);
+  std::swap(cursor_, other->cursor_);
   results_.swap(other->results_);
   url_to_results_.swap(other->url_to_results_);
 }
@@ -156,31 +191,6 @@ void QueryResults::AppendURLBySwapping(URLResult* result) {
 
   results_.push_back(new_result);
   AddURLUsageAtIndex(new_result->url(), results_.size() - 1);
-}
-
-void QueryResults::AppendResultsBySwapping(QueryResults* other,
-                                           bool remove_dupes) {
-  if (remove_dupes) {
-    // Delete all entries in the other array that are already in this one.
-    for (size_t i = 0; i < results_.size(); i++)
-      other->DeleteURL(results_[i]->url());
-  }
-
-  if (first_time_searched_ > other->first_time_searched_)
-    std::swap(first_time_searched_, other->first_time_searched_);
-
-  if (reached_beginning_ != other->reached_beginning_)
-    std::swap(reached_beginning_, other->reached_beginning_);
-
-  for (size_t i = 0; i < other->results_.size(); i++) {
-    // Just transfer pointer ownership.
-    results_.push_back(other->results_[i]);
-    AddURLUsageAtIndex(results_.back()->url(), results_.size() - 1);
-  }
-
-  // We just took ownership of all the results in the input vector.
-  other->results_.clear();
-  other->url_to_results_.clear();
 }
 
 void QueryResults::DeleteURL(const GURL& url) {
@@ -267,6 +277,26 @@ QueryOptions::QueryOptions() : max_count(0), body_only(false) {}
 void QueryOptions::SetRecentDayRange(int days_ago) {
   end_time = base::Time::Now();
   begin_time = end_time - base::TimeDelta::FromDays(days_ago);
+}
+
+int64 QueryOptions::EffectiveBeginTime() const {
+  return begin_time.ToInternalValue();
+}
+
+int64 QueryOptions::EffectiveEndTime() const {
+  int64 end = end_time.is_null() ?
+      std::numeric_limits<int64>::max() : end_time.ToInternalValue();
+
+  // If the cursor is specified, it provides the true end time.
+  if (!cursor.empty()) {
+    DCHECK(cursor.time_.ToInternalValue() <= end);
+    return cursor.time_.ToInternalValue();
+  }
+  return end;
+}
+
+int QueryOptions::EffectiveMaxCount() const {
+  return max_count ? max_count : std::numeric_limits<int>::max();
 }
 
 // KeywordSearchTermVisit -----------------------------------------------------

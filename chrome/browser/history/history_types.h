@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/string16.h"
 #include "base/time.h"
+#include "base/values.h"
 #include "chrome/browser/history/snippet.h"
 #include "chrome/browser/search_engines/template_url_id.h"
 #include "chrome/common/ref_counted_util.h"
@@ -31,7 +32,9 @@ namespace history {
 
 // Forward declaration for friend statements.
 class HistoryBackend;
+class TextDatabase;
 class URLDatabase;
+class VisitDatabase;
 
 // Structure to hold redirect lists for URLs.  For a redirect chain
 // A -> B -> C, and entry in the map would look like "A => {B -> C}".
@@ -321,6 +324,42 @@ class URLResult : public URLRow {
   // We support the implicit copy constructor and operator=.
 };
 
+// QueryCursor -----------------------------------------------------------------
+
+// Represents the point at which a QueryResult ended. This should be treated as
+// an opaque token by clients of the history service.
+class QueryCursor {
+ public:
+  QueryCursor();
+  ~QueryCursor();
+
+  // Returns a newly-allocated Value object representing the cursor. The caller
+  // takes ownership of the value.
+  Value* ToValue() const;
+
+  // Opposite of ToValue() -- converts a Value object to a QueryCursor.
+  // Returns true if the conversion was successful.
+  static bool FromValue(const Value* value, QueryCursor* cursor);
+
+  bool empty() const {
+    return time_.is_null() && rowid_ == 0;
+  }
+
+  void Clear() {
+    time_ = base::Time();
+    rowid_ = 0;
+  }
+
+ private:
+  friend class HistoryBackend;
+  friend struct QueryOptions;
+  friend class TextDatabase;
+  friend class VisitDatabase;
+
+  int64 rowid_;
+  base::Time time_;
+};
+
 // QueryResults ----------------------------------------------------------------
 
 // Encapsulates the results of a history query. It supports an ordered list of
@@ -351,6 +390,9 @@ class QueryResults {
 
   void set_reached_beginning(bool reached) { reached_beginning_ = reached; }
   bool reached_beginning() { return reached_beginning_; }
+
+  void set_cursor(const QueryCursor& cursor) { cursor_ = cursor; }
+  QueryCursor cursor() { return cursor_; }
 
   size_t size() const { return results_.size(); }
   bool empty() const { return results_.empty(); }
@@ -385,12 +427,6 @@ class QueryResults {
   // object will be cleared after this call.
   void AppendURLBySwapping(URLResult* result);
 
-  // Appends a new result set to the other. The |other| results will be
-  // destroyed because the pointer ownership will just be transferred. When
-  // |remove_dupes| is set, each URL that appears in this array will be removed
-  // from the |other| array before appending.
-  void AppendResultsBySwapping(QueryResults* other, bool remove_dupes);
-
   // Removes all instances of the given URL from the result set.
   void DeleteURL(const GURL& url);
 
@@ -424,6 +460,23 @@ class QueryResults {
   // Maps URLs to entries in results_.
   URLToResultIndices url_to_results_;
 
+  // An opaque value representing the point at which the QueryResult begins.
+  // This value can be passed to a future query through QueryOptions::cursor,
+  // in order to fetch a set of results contiguous to, but strictly older than,
+  // the results in this object. (Just using timestamps doesn't work because
+  // multiple visits can have the same timestamp.)
+  //
+  // For example, to fetch all results, 100 at a time:
+  //
+  //   QueryOptions options;
+  //   QueryResults results;
+  //   options.max_count = 100;
+  //   do {
+  //     QueryHistory(query_text, options, &results);
+  //     options.cursor = results.cursor();
+  //   } while (results.size() > 0);
+  QueryCursor cursor_;
+
   DISALLOW_COPY_AND_ASSIGN(QueryResults);
 };
 
@@ -432,18 +485,15 @@ class QueryResults {
 struct QueryOptions {
   QueryOptions();
 
-  // The time range to search for matches in.
+  // The time range to search for matches in. The beginning is inclusive and
+  // the ending is exclusive. Either one (or both) may be null. If |cursor| is
+  // set, it takes precedence over end_time.
   //
-  // This will match only the one recent visit of a URL.  For text search
-  // queries, if the URL was visited in the given time period, but has also been
-  // visited more recently than that, it will not be returned. When the text
-  // query is empty, this will return the most recent visit within the time
-  // range.
-  //
-  // As a special case, if both times are is_null(), then the entire database
-  // will be searched. However, if you set one, you must set the other.
-  //
-  // The beginning is inclusive and the ending is exclusive.
+  // This will match only the one recent visit of a URL. For text search
+  // queries, if the URL was visited in the given time period, but has also
+  // been visited more recently than that, it will not be returned. When the
+  // text query is empty, this will return the most recent visit within the
+  // time range.
   base::Time begin_time;
   base::Time end_time;
 
@@ -458,6 +508,24 @@ struct QueryOptions {
   // Only search within the page body if true, otherwise search all columns
   // including url and time. Defaults to false.
   bool body_only;
+
+  // If set, the cursor provides an alternate way to specify the end of the
+  // query range. The value should come from QueryResults::cursor() from a
+  // previous query, which means that the new query should only return results
+  // older than the ones in the previous query. Due to the possiblity of
+  // duplicate timestamps, |end_time| is not sufficient for that purpose.
+  QueryCursor cursor;
+
+  // Helpers to get the effective parameters values, since a value of 0 means
+  // "unspecified".
+  int EffectiveMaxCount() const;
+  int64 EffectiveBeginTime() const;
+
+  // The effective end time can be determined by either |end_time| or |cursor|.
+  // If cursor is set, it takes precedence. This allows consecutive queries to
+  // re-use the same QueryOptions to fetch consecutive pages of results by
+  // simply copying the cursor from the QueryResults of the previous query.
+  int64 EffectiveEndTime() const;
 };
 
 // KeywordSearchTermVisit -----------------------------------------------------

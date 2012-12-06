@@ -129,44 +129,6 @@ TEST(HistoryQueryResult, ResultDeleteURL) {
   EXPECT_FALSE(results.MatchesForURL(url2, NULL));
 }
 
-TEST(HistoryQueryResult, AppendResults) {
-  GURL url1(kURL1);
-  GURL url2(kURL2);
-  GURL url3(kURL3);
-
-  // This is the base.
-  QueryResults results;
-  AddSimpleData(&results);
-
-  // Now create the appendee.
-  QueryResults appendee;
-  AddAlternateData(&appendee);
-
-  results.AppendResultsBySwapping(&appendee, true);
-  CheckHistoryResultConsistency(results);
-
-  // There should be 3 results, the second one of the appendee should be
-  // deleted because it was already in the first one and we said remove dupes.
-  ASSERT_EQ(4U, results.size());
-
-  // The first URL should be unchanged in the first two spots.
-  size_t match_count;
-  const size_t* matches = results.MatchesForURL(url1, &match_count);
-  ASSERT_EQ(2U, match_count);
-  EXPECT_TRUE((matches[0] == 0 && matches[1] == 1) ||
-              (matches[0] == 1 && matches[1] == 0));
-
-  // The second URL should be there once after that
-  matches = results.MatchesForURL(url2, &match_count);
-  ASSERT_EQ(1U, match_count);
-  EXPECT_TRUE(matches[0] == 2);
-
-  // The third one should be after that.
-  matches = results.MatchesForURL(url3, &match_count);
-  ASSERT_EQ(1U, match_count);
-  EXPECT_TRUE(matches[0] == 3);
-}
-
 TEST(HistoryQueryResult, RowSignificance) {
   const base::Time& threshold(AutocompleteAgeThreshold());
   const GURL url("http://www.google.com/");

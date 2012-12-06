@@ -160,7 +160,8 @@ HistoryContentsProvider::~HistoryContentsProvider() {
 
 void HistoryContentsProvider::QueryComplete(HistoryService::Handle handle,
                                             history::QueryResults* results) {
-  results_.AppendResultsBySwapping(results, true);
+  DCHECK(results_.empty());
+  results_.Swap(results);
   have_results_ = true;
   ConvertResults();
 
