@@ -542,7 +542,7 @@ def _CheckIncludeOrderForScope(scope, input_api, file_path, changed_linenums):
   return warnings
 
 
-def _CheckIncludeOrderInFile(input_api, f, is_source, changed_linenums):
+def _CheckIncludeOrderInFile(input_api, f, changed_linenums):
   """Checks the #include order for the given file f."""
 
   system_include_pattern = input_api.re.compile(r'\s*#include \<.*')
@@ -550,34 +550,34 @@ def _CheckIncludeOrderInFile(input_api, f, is_source, changed_linenums):
   # often need to appear in a specific order.
   excluded_include_pattern = input_api.re.compile(r'\s*#include \<.*/.*')
   custom_include_pattern = input_api.re.compile(r'\s*#include "(?P<FILE>.*)"')
-  if_pattern = input_api.re.compile(r'\s*#\s*(if|elif|else|endif).*')
+  if_pattern = (
+      input_api.re.compile(r'\s*#\s*(if|elif|else|endif|define|undef).*'))
 
   contents = f.NewContents()
   warnings = []
   line_num = 0
 
-  # Handle the special first include for source files. If the header file is
-  # some/path/file.h, the corresponding source file can be some/path/file.cc,
-  # some/other/path/file.cc, some/path/file_platform.cc etc. It's also possible
-  # that no special first include exists.
-  if is_source:
-    for line in contents:
-      line_num += 1
-      if system_include_pattern.match(line):
+  # Handle the special first include. If the first include file is
+  # some/path/file.h, the corresponding including file can be some/path/file.cc,
+  # some/other/path/file.cc, some/path/file_platform.cc, some/path/file-suffix.h
+  # etc. It's also possible that no special first include exists.
+  for line in contents:
+    line_num += 1
+    if system_include_pattern.match(line):
+      # No special first include -> process the line again along with normal
+      # includes.
+      line_num -= 1
+      break
+    match = custom_include_pattern.match(line)
+    if match:
+      match_dict = match.groupdict()
+      header_basename = input_api.os_path.basename(
+          match_dict['FILE']).replace('.h', '')
+      if header_basename not in input_api.os_path.basename(f.LocalPath()):
         # No special first include -> process the line again along with normal
         # includes.
         line_num -= 1
-        break
-      match = custom_include_pattern.match(line)
-      if match:
-        match_dict = match.groupdict()
-        header_basename = input_api.os_path.basename(
-            match_dict['FILE']).replace('.h', '')
-        if header_basename not in input_api.os_path.basename(f.LocalPath()):
-          # No special first include -> process the line again along with normal
-          # includes.
-          line_num -= 1
-        break
+      break
 
   # Split into scopes: Each region between #if and #endif is its own scope.
   scopes = []
@@ -607,18 +607,15 @@ def _CheckIncludeOrder(input_api, output_api):
   3. C++ system files in alphabetical order
   4. Project's .h files in alphabetical order
 
-  Each region between #if and #endif follows these rules separately.
+  Each region separated by #if, #elif, #else, #endif, #define and #undef follows
+  these rules separately.
   """
 
   warnings = []
   for f in input_api.AffectedFiles():
-    changed_linenums = set([line_num for line_num, _ in f.ChangedContents()])
-    if f.LocalPath().endswith('.cc'):
-      warnings.extend(_CheckIncludeOrderInFile(input_api, f, True,
-                                               changed_linenums))
-    elif f.LocalPath().endswith('.h'):
-      warnings.extend(_CheckIncludeOrderInFile(input_api, f, False,
-                                               changed_linenums))
+    if f.LocalPath().endswith(('.cc', '.h')):
+      changed_linenums = set(line_num for line_num, _ in f.ChangedContents())
+      warnings.extend(_CheckIncludeOrderInFile(input_api, f, changed_linenums))
 
   results = []
   if warnings:

@@ -28,13 +28,16 @@ class MockOutputApi(object):
       self.long_text = long_text
 
   class PresubmitError(PresubmitResult):
-    pass
+    def __init__(self, message, items, long_text=''):
+      MockOutputApi.PresubmitResult.__init__(self, message, items, long_text)
 
   class PresubmitPromptWarning(PresubmitResult):
-    pass
+    def __init__(self, message, items, long_text=''):
+      MockOutputApi.PresubmitResult.__init__(self, message, items, long_text)
 
   class PresubmitNotifyResult(PresubmitResult):
-    pass
+    def __init__(self, message, items, long_text=''):
+      MockOutputApi.PresubmitResult.__init__(self, message, items, long_text)
 
 
 class MockFile(object):
@@ -120,7 +123,7 @@ class IncludeOrderTest(unittest.TestCase):
                 '#include "a/header.h"']
     mock_file = MockFile('some/path/foo.cc', contents)
     warnings = PRESUBMIT._CheckIncludeOrderInFile(
-        mock_input_api, mock_file, True, range(1, len(contents) + 1))
+        mock_input_api, mock_file, range(1, len(contents) + 1))
     self.assertEqual(0, len(warnings))
 
   def testSpecialFirstInclude2(self):
@@ -129,7 +132,7 @@ class IncludeOrderTest(unittest.TestCase):
                 '#include "a/header.h"']
     mock_file = MockFile('some/path/foo.cc', contents)
     warnings = PRESUBMIT._CheckIncludeOrderInFile(
-        mock_input_api, mock_file, True, range(1, len(contents) + 1))
+        mock_input_api, mock_file, range(1, len(contents) + 1))
     self.assertEqual(0, len(warnings))
 
   def testSpecialFirstInclude3(self):
@@ -138,7 +141,7 @@ class IncludeOrderTest(unittest.TestCase):
                 '#include "a/header.h"']
     mock_file = MockFile('some/path/foo_platform.cc', contents)
     warnings = PRESUBMIT._CheckIncludeOrderInFile(
-        mock_input_api, mock_file, True, range(1, len(contents) + 1))
+        mock_input_api, mock_file, range(1, len(contents) + 1))
     self.assertEqual(0, len(warnings))
 
   def testSpecialFirstInclude4(self):
@@ -147,9 +150,18 @@ class IncludeOrderTest(unittest.TestCase):
                 '#include "a/header.h"']
     mock_file = MockFile('some/path/foo_platform.cc', contents)
     warnings = PRESUBMIT._CheckIncludeOrderInFile(
-        mock_input_api, mock_file, True, range(1, len(contents) + 1))
+        mock_input_api, mock_file, range(1, len(contents) + 1))
     self.assertEqual(1, len(warnings))
     self.assertTrue('2' in warnings[0])
+
+  def testSpecialFirstInclude5(self):
+    mock_input_api = MockInputApi()
+    contents = ['#include "some/other/path/foo.h"',
+                '#include "a/header.h"']
+    mock_file = MockFile('some/path/foo-suffix.h', contents)
+    warnings = PRESUBMIT._CheckIncludeOrderInFile(
+        mock_input_api, mock_file, range(1, len(contents) + 1))
+    self.assertEqual(0, len(warnings))
 
   def testOrderAlreadyWrong(self):
     scope = [(1, '#include "b.h"'),
@@ -183,6 +195,10 @@ class IncludeOrderTest(unittest.TestCase):
   def testIfElifElseEndif(self):
     mock_input_api = MockInputApi()
     contents = ['#include "e.h"',
+                '#define foo',
+                '#include "f.h"',
+                '#undef foo',
+                '#include "e.h"',
                 '#if foo',
                 '#include "d.h"',
                 '#elif bar',
@@ -193,7 +209,7 @@ class IncludeOrderTest(unittest.TestCase):
                 '#include "a.h"']
     mock_file = MockFile('', contents)
     warnings = PRESUBMIT._CheckIncludeOrderInFile(
-        mock_input_api, mock_file, True, range(1, len(contents) + 1))
+        mock_input_api, mock_file, range(1, len(contents) + 1))
     self.assertEqual(0, len(warnings))
 
   def testSysIncludes(self):
@@ -203,8 +219,21 @@ class IncludeOrderTest(unittest.TestCase):
                 '#include <sys/a.h>']
     mock_file = MockFile('', contents)
     warnings = PRESUBMIT._CheckIncludeOrderInFile(
-        mock_input_api, mock_file, True, range(1, len(contents) + 1))
+        mock_input_api, mock_file, range(1, len(contents) + 1))
     self.assertEqual(0, len(warnings))
+
+  def testCheckOnlyCFiles(self):
+    mock_input_api = MockInputApi()
+    mock_output_api = MockOutputApi()
+    contents = ['#include <b.h>',
+                '#include <a.h>']
+    mock_file_cc = MockFile('something.cc', contents)
+    mock_file_h = MockFile('something.h', contents)
+    mock_file_other = MockFile('something.py', contents)
+    mock_input_api.files = [mock_file_cc, mock_file_h, mock_file_other]
+    warnings = PRESUBMIT._CheckIncludeOrder(mock_input_api, mock_output_api)
+    self.assertEqual(1, len(warnings))
+    self.assertEqual(2, len(warnings[0].items))
 
 
 class VersionControlerConflictsTest(unittest.TestCase):
