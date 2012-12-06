@@ -64,7 +64,10 @@ class InputDialogContainer {
     private static int sTextInputTypeTime;
 
     private Context mContext;
-    private boolean mDialogCanceled;
+
+    // Prevents sending two notifications (from onClick and from onDismiss)
+    private boolean mDialogAlreadyDismissed;
+
     private AlertDialog mDialog;
     private InputActionDelegate mInputActionDelegate;
 
@@ -118,7 +121,7 @@ class InputDialogContainer {
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        mDialogCanceled = true;
+                        mDialogAlreadyDismissed = true;
                     }
                 });
 
@@ -127,7 +130,7 @@ class InputDialogContainer {
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        mDialogCanceled = true;
+                        mDialogAlreadyDismissed = true;
                         mInputActionDelegate.replaceText("");
                     }
                 });
@@ -138,7 +141,7 @@ class InputDialogContainer {
                         mInputActionDelegate.clearFocus();
                     }
                 });
-        mDialogCanceled = false;
+        mDialogAlreadyDismissed = false;
         mDialog.show();
     }
 
@@ -200,7 +203,7 @@ class InputDialogContainer {
     private class DateListener implements OnDateSetListener {
         @Override
         public void onDateSet(DatePicker view, int year, int month, int monthDay) {
-            if (!mDialogCanceled) {
+            if (!mDialogAlreadyDismissed) {
                 setFieldDateTimeValue(year, month, monthDay, HOUR_DEFAULT, MINUTE_DEFAULT,
                         HTML_DATE_FORMAT);
             }
@@ -210,7 +213,7 @@ class InputDialogContainer {
     private class TimeListener implements OnTimeSetListener {
         @Override
         public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-            if (!mDialogCanceled) {
+            if (!mDialogAlreadyDismissed) {
                 setFieldDateTimeValue(YEAR_DEFAULT, MONTH_DEFAULT, MONTHDAY_DEFAULT,
                         hourOfDay, minute, HTML_TIME_FORMAT);
             }
@@ -228,7 +231,7 @@ class InputDialogContainer {
         public void onDateTimeSet(DatePicker dateView, TimePicker timeView,
                 int year, int month, int monthDay,
                 int hourOfDay, int minute) {
-            if (!mDialogCanceled) {
+            if (!mDialogAlreadyDismissed) {
                 setFieldDateTimeValue(year, month, monthDay, hourOfDay, minute,
                         mLocal ? HTML_DATE_TIME_LOCAL_FORMAT : HTML_DATE_TIME_FORMAT);
             }
@@ -238,7 +241,7 @@ class InputDialogContainer {
     private class MonthListener implements OnMonthSetListener {
         @Override
         public void onMonthSet(MonthPicker view, int year, int month) {
-            if (!mDialogCanceled) {
+            if (!mDialogAlreadyDismissed) {
                 setFieldDateTimeValue(year, month, MONTHDAY_DEFAULT,
                         HOUR_DEFAULT, MINUTE_DEFAULT, HTML_MONTH_FORMAT);
             }
@@ -247,6 +250,10 @@ class InputDialogContainer {
 
     private void setFieldDateTimeValue(int year, int month, int monthDay, int hourOfDay,
             int minute, String dateFormat) {
+        // Just in case more than one signal is triggered by the dialog so that
+        // no more than one callback is sent to the native side.
+        mDialogAlreadyDismissed = true;
+
         Time time = new Time();
         time.year = year;
         time.month = month;

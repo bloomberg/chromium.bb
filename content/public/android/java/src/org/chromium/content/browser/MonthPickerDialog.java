@@ -99,6 +99,10 @@ public class MonthPickerDialog extends AlertDialog implements OnClickListener,
     @Override
     protected void onStop() {
         if (Build.VERSION.SDK_INT >= 16) {
+            // The default behavior of dialogs changed after JellyBean. In JB
+            // dismissing a dialog (by pressing back for example)
+            // applies the chosen date. This code is added here so that the custom
+            // pickers behave the same as the internal DatePickerDialog.
             tryNotifyMonthSet();
         }
         super.onStop();
