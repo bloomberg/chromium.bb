@@ -162,9 +162,11 @@ class Browser : public TabStripModelObserver,
   };
 
   struct CreateParams {
-    CreateParams();
+    // Deprecated: please use the form taking |host_desktop_type| below.
     explicit CreateParams(Profile* profile);
     CreateParams(Type type, Profile* profile);
+
+    CreateParams(Profile* profile, chrome::HostDesktopType host_desktop_type);
     CreateParams(Type type,
                  Profile* profile,
                  chrome::HostDesktopType host_desktop_type);

@@ -261,16 +261,7 @@ bool ShouldReloadCrashedTab(WebContents* contents) {
 ////////////////////////////////////////////////////////////////////////////////
 // Browser, CreateParams:
 
-Browser::CreateParams::CreateParams()
-    : type(TYPE_TABBED),
-      profile(NULL),
-      host_desktop_type(kDefaultHostDesktopType),
-      app_type(APP_TYPE_HOST),
-      initial_show_state(ui::SHOW_STATE_DEFAULT),
-      is_session_restore(false),
-      window(NULL) {
-}
-
+// Deprecated: please use the form taking |host_desktop_type| below.
 Browser::CreateParams::CreateParams(Profile* profile)
     : type(TYPE_TABBED),
       profile(profile),
@@ -281,10 +272,22 @@ Browser::CreateParams::CreateParams(Profile* profile)
       window(NULL) {
 }
 
+// Deprecated: please use the form taking |host_desktop_type| below.
 Browser::CreateParams::CreateParams(Type type, Profile* profile)
     : type(type),
       profile(profile),
       host_desktop_type(kDefaultHostDesktopType),
+      app_type(APP_TYPE_HOST),
+      initial_show_state(ui::SHOW_STATE_DEFAULT),
+      is_session_restore(false),
+      window(NULL) {
+}
+
+Browser::CreateParams::CreateParams(Profile* profile,
+                                    chrome::HostDesktopType host_desktop_type)
+    : type(TYPE_TABBED),
+      profile(profile),
+      host_desktop_type(host_desktop_type),
       app_type(APP_TYPE_HOST),
       initial_show_state(ui::SHOW_STATE_DEFAULT),
       is_session_restore(false),
