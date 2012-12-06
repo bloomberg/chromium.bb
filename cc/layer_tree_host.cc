@@ -155,6 +155,7 @@ RendererCapabilities::RendererCapabilities()
     , usingGpuMemoryManager(false)
     , usingDiscardFramebuffer(false)
     , usingEglImage(false)
+    , allowPartialTextureUpdates(false)
     , maxTextureSize(0)
 {
 }
@@ -204,14 +205,23 @@ LayerTreeHost::LayerTreeHost(LayerTreeHostClient* client, const LayerTreeSetting
 
 bool LayerTreeHost::initialize(scoped_ptr<Thread> implThread)
 {
-    TRACE_EVENT0("cc", "LayerTreeHost::initialize");
-
     if (implThread)
-        m_proxy = ThreadProxy::create(this, implThread.Pass());
+        return initializeProxy(ThreadProxy::create(this, implThread.Pass()));
     else
-        m_proxy = SingleThreadProxy::create(this);
-    m_proxy->start();
+        return initializeProxy(SingleThreadProxy::create(this));
+}
 
+bool LayerTreeHost::initializeForTesting(scoped_ptr<Proxy> proxyForTesting)
+{
+    return initializeProxy(proxyForTesting.Pass());
+}
+
+bool LayerTreeHost::initializeProxy(scoped_ptr<Proxy> proxy)
+{
+    TRACE_EVENT0("cc", "LayerTreeHost::initializeForReal");
+
+    m_proxy = proxy.Pass();
+    m_proxy->start();
     return m_proxy->initializeContext();
 }
 
@@ -247,7 +257,10 @@ void LayerTreeHost::initializeRenderer()
     m_settings.acceleratePainting = m_proxy->rendererCapabilities().usingAcceleratedPainting;
 
     // Update m_settings based on partial update capability.
-    m_settings.maxPartialTextureUpdates = min(m_settings.maxPartialTextureUpdates, m_proxy->maxPartialTextureUpdates());
+    size_t maxPartialTextureUpdates = 0;
+    if (m_proxy->rendererCapabilities().allowPartialTextureUpdates)
+        maxPartialTextureUpdates = min(m_settings.maxPartialTextureUpdates, m_proxy->maxPartialTextureUpdates());
+    m_settings.maxPartialTextureUpdates = maxPartialTextureUpdates;
 
     m_contentsTextureManager = PrioritizedResourceManager::create(Renderer::ContentPool, m_proxy.get());
     m_surfaceMemoryPlaceholder = m_contentsTextureManager->createTexture(gfx::Size(), GL_RGBA);

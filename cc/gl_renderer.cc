@@ -129,6 +129,9 @@ bool GLRenderer::initialize()
     GLC(m_context, m_context->getIntegerv(GL_MAX_TEXTURE_SIZE, &m_capabilities.maxTextureSize));
     m_capabilities.bestTextureFormat = PlatformColor::bestTextureFormat(m_context, extensions.count("GL_EXT_texture_format_BGRA8888"));
 
+    // The updater can access textures while the GLRenderer is using them.
+    m_capabilities.allowPartialTextureUpdates = true;
+
     m_isUsingBindUniform = extensions.count("GL_CHROMIUM_bind_uniform_location");
 
     // Make sure scissoring starts as disabled.

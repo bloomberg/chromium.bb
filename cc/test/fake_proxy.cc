@@ -8,30 +8,35 @@ namespace cc {
 
 bool FakeProxy::compositeAndReadback(void *pixels, const gfx::Rect&)
 {
-    return false;
+    return true;
 }
 
 bool FakeProxy::isStarted() const
 {
-    return false;
+    return true;
 }
 
 bool FakeProxy::initializeContext()
 {
-    return false;
+    return true;
 }
 
 bool FakeProxy::initializeRenderer()
 {
-    return false;
+    return true;
 }
 
 bool FakeProxy::recreateContext()
 {
-    return false;
+    return true;
 }
 
 const RendererCapabilities& FakeProxy::rendererCapabilities() const
+{
+    return m_capabilities;
+}
+
+RendererCapabilities& FakeProxy::rendererCapabilities()
 {
     return m_capabilities;
 }
@@ -43,7 +48,12 @@ bool FakeProxy::commitRequested() const
 
 size_t FakeProxy::maxPartialTextureUpdates() const
 {
-    return 0;
+    return m_maxPartialTextureUpdates;
+}
+
+void FakeProxy::setMaxPartialTextureUpdates(size_t max)
+{
+    m_maxPartialTextureUpdates = max;
 }
 
 

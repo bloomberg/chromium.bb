@@ -110,6 +110,7 @@ struct CC_EXPORT RendererCapabilities {
     bool usingGpuMemoryManager;
     bool usingDiscardFramebuffer;
     bool usingEglImage;
+    bool allowPartialTextureUpdates;
     int maxTextureSize;
 };
 
@@ -246,10 +247,12 @@ public:
 protected:
     LayerTreeHost(LayerTreeHostClient*, const LayerTreeSettings&);
     bool initialize(scoped_ptr<Thread> implThread);
+    bool initializeForTesting(scoped_ptr<Proxy> proxyForTesting);
 
 private:
     typedef std::vector<scoped_refptr<Layer> > LayerList;
 
+    bool initializeProxy(scoped_ptr<Proxy> proxy);
     void initializeRenderer();
 
     void update(Layer*, ResourceUpdateQueue&, const OcclusionTracker*);

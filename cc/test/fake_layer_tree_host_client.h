@@ -15,6 +15,11 @@ namespace cc {
 
 class FakeLayerImplTreeHostClient : public LayerTreeHostClient {
 public:
+    FakeLayerImplTreeHostClient(bool useSoftwareRendering = false)
+        : m_useSoftwareRendering(useSoftwareRendering)
+    {
+    }
+
     virtual void willBeginFrame() OVERRIDE { }
     virtual void didBeginFrame() OVERRIDE { }
     virtual void animate(double monotonicFrameBeginTime) OVERRIDE { }
@@ -33,6 +38,9 @@ public:
     virtual void scheduleComposite() OVERRIDE { }
 
     virtual scoped_ptr<FontAtlas> createFontAtlas() OVERRIDE;
+
+private:
+    bool m_useSoftwareRendering;
 };
 
 }

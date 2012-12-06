@@ -39,8 +39,12 @@ public:
     virtual void acquireLayerTextures() OVERRIDE { }
     virtual void loseContext() OVERRIDE { }
 
+    virtual RendererCapabilities& rendererCapabilities();
+    void setMaxPartialTextureUpdates(size_t);
+
 private:
     RendererCapabilities m_capabilities;
+    size_t m_maxPartialTextureUpdates;
 };
 
 }  // namespace cc

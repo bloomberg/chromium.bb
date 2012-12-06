@@ -11,6 +11,8 @@
 #include "cc/layer_tree_host_impl.h"
 #include "cc/single_thread_proxy.h"
 #include "cc/test/fake_content_layer_client.h"
+#include "cc/test/fake_layer_tree_host_client.h"
+#include "cc/test/fake_proxy.h"
 #include "cc/test/fake_web_compositor_output_surface.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_tree_test_common.h"
@@ -3260,6 +3262,98 @@ private:
 TEST_F(LayerTreeHostTestDeferCommits, runMultiThread)
 {
     runTest(true);
+}
+
+class LayerTreeHostWithProxy : public LayerTreeHost {
+public:
+    LayerTreeHostWithProxy(FakeLayerImplTreeHostClient* client, const LayerTreeSettings& settings, scoped_ptr<Proxy> proxy)
+            : LayerTreeHost(client, settings)
+    {
+        EXPECT_TRUE(initializeForTesting(proxy.Pass()));
+    }
+
+private:
+    FakeLayerImplTreeHostClient m_client;
+};
+
+TEST(LayerTreeHostTest, LimitPartialUpdates)
+{
+    // When partial updates are not allowed, max updates should be 0.
+    {
+        FakeLayerImplTreeHostClient client;
+
+        scoped_ptr<FakeProxy> proxy = make_scoped_ptr(new FakeProxy(scoped_ptr<Thread>()));
+        proxy->rendererCapabilities().allowPartialTextureUpdates = false;
+        proxy->setMaxPartialTextureUpdates(5);
+
+        LayerTreeSettings settings;
+        settings.maxPartialTextureUpdates = 10;
+
+        LayerTreeHostWithProxy host(&client, settings, proxy.PassAs<Proxy>());
+        EXPECT_TRUE(host.initializeRendererIfNeeded());
+
+        EXPECT_EQ(0u, host.settings().maxPartialTextureUpdates);
+    }
+
+    // When partial updates are allowed, max updates should be limited by the proxy.
+    {
+        FakeLayerImplTreeHostClient client;
+
+        scoped_ptr<FakeProxy> proxy = make_scoped_ptr(new FakeProxy(scoped_ptr<Thread>()));
+        proxy->rendererCapabilities().allowPartialTextureUpdates = true;
+        proxy->setMaxPartialTextureUpdates(5);
+
+        LayerTreeSettings settings;
+        settings.maxPartialTextureUpdates = 10;
+
+        LayerTreeHostWithProxy host(&client, settings, proxy.PassAs<Proxy>());
+        EXPECT_TRUE(host.initializeRendererIfNeeded());
+
+        EXPECT_EQ(5u, host.settings().maxPartialTextureUpdates);
+    }
+
+    // When partial updates are allowed, max updates should also be limited by the settings.
+    {
+        FakeLayerImplTreeHostClient client;
+
+        scoped_ptr<FakeProxy> proxy = make_scoped_ptr(new FakeProxy(scoped_ptr<Thread>()));
+        proxy->rendererCapabilities().allowPartialTextureUpdates = true;
+        proxy->setMaxPartialTextureUpdates(20);
+
+        LayerTreeSettings settings;
+        settings.maxPartialTextureUpdates = 10;
+
+        LayerTreeHostWithProxy host(&client, settings, proxy.PassAs<Proxy>());
+        EXPECT_TRUE(host.initializeRendererIfNeeded());
+
+        EXPECT_EQ(10u, host.settings().maxPartialTextureUpdates);
+    }
+}
+
+TEST(LayerTreeHostTest, PartialUpdatesWithGLRenderer)
+{
+    bool useSoftwareRendering = false;
+    FakeLayerImplTreeHostClient client(useSoftwareRendering);
+
+    LayerTreeSettings settings;
+    settings.maxPartialTextureUpdates = 4;
+
+    scoped_ptr<LayerTreeHost> host = LayerTreeHost::create(&client, settings, scoped_ptr<Thread>());
+    EXPECT_TRUE(host->initializeRendererIfNeeded());
+    EXPECT_EQ(4u, host->settings().maxPartialTextureUpdates);
+}
+
+TEST(LayerTreeHostTest, PartialUpdatesWithSoftwareRenderer)
+{
+    bool useSoftwareRendering = true;
+    FakeLayerImplTreeHostClient client(useSoftwareRendering);
+
+    LayerTreeSettings settings;
+    settings.maxPartialTextureUpdates = 4;
+
+    scoped_ptr<LayerTreeHost> host = LayerTreeHost::create(&client, settings, scoped_ptr<Thread>());
+    EXPECT_TRUE(host->initializeRendererIfNeeded());
+    EXPECT_EQ(4u, host->settings().maxPartialTextureUpdates);
 }
 
 }  // namespace
