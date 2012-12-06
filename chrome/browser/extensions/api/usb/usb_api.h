@@ -70,8 +70,6 @@ class UsbFindDevicesFunction : public UsbAsyncApiFunction {
   virtual bool Prepare() OVERRIDE;
   virtual void AsyncWorkStart() OVERRIDE;
 
-  void OnCompleted(UsbDevice* device);
-
  private:
   scoped_ptr<extensions::api::usb::FindDevices::Params> parameters_;
 };
