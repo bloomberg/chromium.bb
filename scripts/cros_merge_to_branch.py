@@ -59,7 +59,8 @@ def _GetParser():
   parser = commandline.OptionParser(usage=_USAGE)
   parser.add_option('-d', '--draft', default=False, action='store_true',
                     help='Upload a draft to Gerrit rather than a change.')
-  parser.add_option('--dryrun', default=False, action='store_true',
+  parser.add_option('-n', '--dry-run', default=False, action='store_true',
+                    dest='dryrun',
                     help='Apply changes locally but do not upload them.')
   parser.add_option('-e', '--email',
                     help='If specified, use this email instead of '
@@ -82,7 +83,7 @@ def _UploadChangeToBranch(work_dir, patch, branch, draft, dryrun):
     work_dir: Local directory where repository is checked out in.
     draft: If True, upload to refs/draft/|branch| rather than refs/for/|branch|.
     dryrun: Don't actually upload a change but go through all the steps up to
-      and including git push --dryrun.
+      and including git push --dry-run.
   """
   upload_type = 'drafts' if draft else 'for'
   # Apply the actual change.
@@ -241,7 +242,8 @@ def main(argv):
       shutil.rmtree(root_work_dir)
 
   if options.dryrun:
-    logging.info('Success! To actually upload changes re-run without --dryrun.')
+    logging.info('Success! To actually upload changes, re-run without '
+                 '--dry-run.')
   else:
     logging.info('Successfully uploaded all changes requested.')
 
