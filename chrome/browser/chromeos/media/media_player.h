@@ -12,9 +12,7 @@
 template <typename T> struct DefaultSingletonTraits;
 
 class Browser;
-class FilePath;
 class GURL;
-class Profile;
 
 class MediaPlayer {
  public:
@@ -58,10 +56,12 @@ class MediaPlayer {
   static MediaPlayer* GetInstance();
 
  private:
+  friend class MediaPlayerBrowserTest;
   friend struct DefaultSingletonTraits<MediaPlayer>;
 
   // The current playlist of urls.
   UrlVector current_playlist_;
+
   // The position into the current_playlist_ of the currently playing item.
   int current_position_;
 
@@ -72,7 +72,6 @@ class MediaPlayer {
   // Browser containing the Mediaplayer.
   static Browser* GetBrowser();
 
-  friend class MediaPlayerBrowserTest;
   DISALLOW_COPY_AND_ASSIGN(MediaPlayer);
 };
 

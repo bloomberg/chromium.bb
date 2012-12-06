@@ -13,25 +13,23 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
-#include "net/url_request/url_request_job.h"
 #include "ui/gfx/screen.h"
 
 using content::BrowserThread;
 
-static const char* kMediaPlayerAppName = "mediaplayer";
-static const int kPopupRight = 20;
-static const int kPopupBottom = 80;
-static const int kPopupWidth = 280;
+namespace {
+
+const char kMediaPlayerAppName[] = "mediaplayer";
+const int kPopupRight = 20;
+const int kPopupBottom = 80;
+const int kPopupWidth = 280;
 
 // Set the initial height to the minimum possible height. Keep the constants
 // in sync with chrome/browser/resources/file_manager/css/audio_player.css.
@@ -39,10 +37,12 @@ static const int kPopupWidth = 280;
 // height which will cause a nice slide-up animation.
 // TODO(kaznacheev): Remove kTitleHeight when MediaPlayer becomes chromeless.
 // kTitleHeight is an approximate value. May be different for touch-enabled UI.
-static const int kTitleHeight = 35;
-static const int kTrackHeight = 58;
-static const int kControlsHeight = 35;
-static const int kPopupHeight = kTitleHeight + kTrackHeight + kControlsHeight;
+const int kTitleHeight = 35;
+const int kTrackHeight = 58;
+const int kControlsHeight = 35;
+const int kPopupHeight = kTitleHeight + kTrackHeight + kControlsHeight;
+
+}  // namespace
 
 const MediaPlayer::UrlVector& MediaPlayer::GetPlaylist() const {
   return current_playlist_;
@@ -153,9 +153,7 @@ Browser* MediaPlayer::GetBrowser() {
     Browser* browser = *browser_iterator;
     TabStripModel* tab_strip = browser->tab_strip_model();
     for (int idx = 0; idx < tab_strip->count(); idx++) {
-      content::WebContents* web_contents =
-          tab_strip->GetTabContentsAt(idx)->web_contents();
-      const GURL& url = web_contents->GetURL();
+      const GURL& url = tab_strip->GetWebContentsAt(idx)->GetURL();
       GURL base_url(url.GetOrigin().spec() + url.path().substr(1));
       if (base_url == GetMediaPlayerUrl())
         return browser;

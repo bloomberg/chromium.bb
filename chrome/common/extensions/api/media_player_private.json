@@ -10,7 +10,7 @@
       {
         "id": "Playlist",
         "type": "object",
-        "description": "Mediaplayer playlist stored in the browser (it extsts even if the mediaplayer is closed).",
+        "description": "Mediaplayer playlist stored in the browser (it exists even if the mediaplayer is closed).",
         "properties": {
           "items": {
             "name": "items",
