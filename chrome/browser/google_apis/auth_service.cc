@@ -177,7 +177,7 @@ void AuthService::StartAuthentication(OperationRegistry* registry,
 
   if (HasAccessToken()) {
     relay_proxy->PostTask(FROM_HERE,
-         base::Bind(callback, google_apis::HTTP_SUCCESS, access_token_));
+         base::Bind(callback, HTTP_SUCCESS, access_token_));
   } else if (HasRefreshToken()) {
     BrowserThread::PostTask(
         BrowserThread::UI,
@@ -191,7 +191,7 @@ void AuthService::StartAuthentication(OperationRegistry* registry,
                                   callback))));
   } else {
     relay_proxy->PostTask(FROM_HERE,
-        base::Bind(callback, google_apis::GDATA_NOT_READY, std::string()));
+        base::Bind(callback, GDATA_NOT_READY, std::string()));
   }
 }
 

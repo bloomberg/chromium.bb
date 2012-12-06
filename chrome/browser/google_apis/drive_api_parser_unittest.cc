@@ -162,12 +162,12 @@ TEST(DriveAPIParserTest, FileListParser) {
   EXPECT_TRUE(file1.labels().is_viewed());
 
   base::Time created_time;
-  ASSERT_TRUE(google_apis::util::GetTimeFromString("2012-07-24T08:51:16.570Z",
+  ASSERT_TRUE(util::GetTimeFromString("2012-07-24T08:51:16.570Z",
                                                    &created_time));
   EXPECT_EQ(created_time, file1.created_date());
 
   base::Time modified_time;
-  ASSERT_TRUE(google_apis::util::GetTimeFromString("2012-07-27T05:43:20.269Z",
+  ASSERT_TRUE(util::GetTimeFromString("2012-07-27T05:43:20.269Z",
                                                    &modified_time));
   EXPECT_EQ(modified_time, file1.modified_by_me_date());
 

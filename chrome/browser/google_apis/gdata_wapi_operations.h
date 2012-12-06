@@ -526,7 +526,7 @@ struct ResumeUploadParams {
 // Callback type for DocumentServiceInterface::ResumeUpload.
 typedef base::Callback<void(
     const ResumeUploadResponse& response,
-    scoped_ptr<google_apis::DocumentEntry> new_entry)> ResumeUploadCallback;
+    scoped_ptr<DocumentEntry> new_entry)> ResumeUploadCallback;
 
 // This class performs the operation for resuming the upload of a file.
 // More specifically, this operation uploads a chunk of data carried in |buf|

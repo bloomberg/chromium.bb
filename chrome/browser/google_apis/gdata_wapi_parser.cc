@@ -584,7 +584,7 @@ void FeedEntry::RegisterJSONConverter(
   converter->RegisterCustomField<base::Time>(
       kUpdatedField,
       &FeedEntry::updated_time_,
-      &google_apis::util::GetTimeFromString);
+      &util::GetTimeFromString);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -635,10 +635,10 @@ void DocumentEntry::RegisterJSONConverter(
   converter->RegisterStringField(kTitleTField, &DocumentEntry::title_);
   converter->RegisterCustomField<base::Time>(
       kPublishedField, &DocumentEntry::published_time_,
-      &google_apis::util::GetTimeFromString);
+      &util::GetTimeFromString);
   converter->RegisterCustomField<base::Time>(
       kLastViewedField, &DocumentEntry::last_viewed_time_,
-      &google_apis::util::GetTimeFromString);
+      &util::GetTimeFromString);
   converter->RegisterRepeatedMessage(
       kFeedLinkField, &DocumentEntry::feed_links_);
   converter->RegisterNestedField(kContentField, &DocumentEntry::content_);
@@ -832,12 +832,12 @@ scoped_ptr<DocumentEntry> DocumentEntry::CreateFromXml(XmlReader* xml_reader) {
     } else if (xml_reader->NodeName() == kUpdatedNode) {
       std::string time;
       if (xml_reader->ReadElementContent(&time))
-        google_apis::util::GetTimeFromString(time, &entry->updated_time_);
+        util::GetTimeFromString(time, &entry->updated_time_);
       skip_read = true;
     } else if (xml_reader->NodeName() == kPublishedNode) {
       std::string time;
       if (xml_reader->ReadElementContent(&time))
-        google_apis::util::GetTimeFromString(time, &entry->published_time_);
+        util::GetTimeFromString(time, &entry->published_time_);
       skip_read = true;
     } else if (xml_reader->NodeName() == kIDNode) {
       xml_reader->ReadElementContent(&entry->id_);
@@ -871,7 +871,7 @@ scoped_ptr<DocumentEntry> DocumentEntry::CreateFromXml(XmlReader* xml_reader) {
     } else if (xml_reader->NodeName() == kLastViewedNode) {
       std::string time;
       if (xml_reader->ReadElementContent(&time))
-        google_apis::util::GetTimeFromString(time, &entry->last_viewed_time_);
+        util::GetTimeFromString(time, &entry->last_viewed_time_);
       skip_read = true;
     } else {
       DVLOG(1) << "Unknown node " << xml_reader->NodeName();

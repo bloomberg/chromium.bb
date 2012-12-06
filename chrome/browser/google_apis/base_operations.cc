@@ -320,13 +320,13 @@ void GetDataOperation::ParseResponse(GDataErrorCode fetch_error_code,
 }
 
 void GetDataOperation::OnDataParsed(
-    google_apis::GDataErrorCode fetch_error_code,
+    GDataErrorCode fetch_error_code,
     scoped_ptr<base::Value> value) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   bool success = true;
   if (!value.get()) {
-    fetch_error_code = google_apis::GDATA_PARSE_ERROR;
+    fetch_error_code = GDATA_PARSE_ERROR;
     success = false;
   }
 

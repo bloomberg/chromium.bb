@@ -230,7 +230,7 @@ class GetDataOperation : public UrlFetchOperationBase {
 
  private:
   // Called when ParseJsonOnBlockingPool() is completed.
-  void OnDataParsed(google_apis::GDataErrorCode fetch_error_code,
+  void OnDataParsed(GDataErrorCode fetch_error_code,
                     scoped_ptr<base::Value> value);
 
   const GetDataCallback callback_;

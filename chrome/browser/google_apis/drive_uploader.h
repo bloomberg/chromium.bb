@@ -31,10 +31,10 @@ struct ResumeUploadResponse;
 
 // Callback to be invoked once the upload has completed.
 typedef base::Callback<void(
-    google_apis::DriveUploadError error,
+    DriveUploadError error,
     const FilePath& drive_path,
     const FilePath& file_path,
-    scoped_ptr<google_apis::DocumentEntry> document_entry)>
+    scoped_ptr<DocumentEntry> document_entry)>
     UploadCompletionCallback;
 
 // Callback to be invoked once the uploader is ready to upload.
@@ -126,7 +126,7 @@ class DriveUploaderInterface {
 
 class DriveUploader : public DriveUploaderInterface {
  public:
-  explicit DriveUploader(google_apis::DriveServiceInterface* drive_service);
+  explicit DriveUploader(DriveServiceInterface* drive_service);
   virtual ~DriveUploader();
 
   // DriveUploaderInterface overrides.
@@ -183,7 +183,7 @@ class DriveUploader : public DriveUploaderInterface {
     std::string content_type;  // Content-Type of file.
     int64 content_length;  // Header content-Length.
 
-    google_apis::UploadMode upload_mode;
+    UploadMode upload_mode;
 
     // Location URL used to get |upload_location| with InitiateUpload.
     GURL initial_upload_location;
@@ -227,7 +227,7 @@ class DriveUploader : public DriveUploaderInterface {
     int num_file_open_tries;  // Number of times we've tried to open this file.
 
     // Will be set once the upload is complete.
-    scoped_ptr<google_apis::DocumentEntry> entry;
+    scoped_ptr<DocumentEntry> entry;
 
     // Callback to be invoked once the uploader is ready to upload.
     UploaderReadyCallback ready_callback;
@@ -257,7 +257,7 @@ class DriveUploader : public DriveUploaderInterface {
 
   // DriveService callback for InitiateUpload.
   void OnUploadLocationReceived(int upload_id,
-                                google_apis::GDataErrorCode code,
+                                GDataErrorCode code,
                                 const GURL& upload_location);
 
   // Uploads the next chunk of data from the file.
@@ -274,15 +274,15 @@ class DriveUploader : public DriveUploaderInterface {
   // DriveService callback for ResumeUpload.
   void OnResumeUploadResponseReceived(
       int upload_id,
-      const google_apis::ResumeUploadResponse& response,
-      scoped_ptr<google_apis::DocumentEntry> entry);
+      const ResumeUploadResponse& response,
+      scoped_ptr<DocumentEntry> entry);
 
   // Initiate the upload.
   void InitiateUpload(UploadFileInfo* uploader_file_info);
 
   // Handle failed uploads.
   void UploadFailed(UploadFileInfo* upload_file_info,
-                    google_apis::DriveUploadError error);
+                    DriveUploadError error);
 
   // Removes |upload_file_info| from UploadFileInfoMap |pending_uploads_|.
   // After its removal from the map, |upload_file_info| is deleted.
@@ -296,7 +296,7 @@ class DriveUploader : public DriveUploaderInterface {
   // Pointers to DriveServiceInterface object owned by DriveSystemService.
   // The lifetime of this object is guaranteed to exceed that of the
   // DriveUploader instance.
-  google_apis::DriveServiceInterface* drive_service_;
+  DriveServiceInterface* drive_service_;
 
   int next_upload_id_;  // id counter.
 
