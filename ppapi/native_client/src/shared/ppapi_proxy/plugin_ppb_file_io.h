@@ -13,7 +13,7 @@ namespace ppapi_proxy {
 // Implements the untrusted side of the PPB_FileIO interface.
 class PluginFileIO {
  public:
-  static const PPB_FileIO* GetInterface();
+  static const PPB_FileIO_1_0* GetInterface1_0();
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(PluginFileIO);

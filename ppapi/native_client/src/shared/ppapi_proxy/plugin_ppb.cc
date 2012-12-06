@@ -64,7 +64,7 @@ InterfaceMapElement interface_map[] = {
   { PPB_CORE_INTERFACE, PluginCore::GetInterface(), true },
   { PPB_MOUSECURSOR_INTERFACE_1_0, PluginMouseCursor::GetInterface(),
     true },
-  { PPB_FILEIO_INTERFACE, PluginFileIO::GetInterface(), true },
+  { PPB_FILEIO_INTERFACE_1_0, PluginFileIO::GetInterface1_0(), true },
   { PPB_FILEREF_INTERFACE, PluginFileRef::GetInterface(), true },
   { PPB_FILESYSTEM_INTERFACE, PluginFileSystem::GetInterface(), true },
   { PPB_FIND_DEV_INTERFACE, PluginFind::GetInterface(), true },

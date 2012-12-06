@@ -102,7 +102,7 @@ const void* GetBrowserInterfaceSafe(const char* interface_name);
 // under both trusted and untrusted compilation.
 const PPB_Core* PPBCoreInterface();  // shared
 const PPB_MouseCursor_1_0* PPBMouseCursorInterface();
-const PPB_FileIO* PPBFileIOInterface();
+const PPB_FileIO_1_0* PPBFileIOInterface();
 const PPB_FileRef* PPBFileRefInterface();
 const PPB_FileSystem* PPBFileSystemInterface();
 const PPB_Find_Dev* PPBFindInterface();

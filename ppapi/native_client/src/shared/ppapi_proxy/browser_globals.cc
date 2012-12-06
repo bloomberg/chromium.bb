@@ -375,11 +375,10 @@ const PPB_WheelInputEvent* PPBWheelInputEventInterface() {
   return ppb;
 }
 
-// Dev interfaces.
-const PPB_FileIO* PPBFileIOInterface() {
-  static const PPB_FileIO* ppb =
-      static_cast<const PPB_FileIO*>(
-        GetBrowserInterfaceSafe(PPB_FILEIO_INTERFACE));
+const PPB_FileIO_1_0* PPBFileIOInterface() {
+  static const PPB_FileIO_1_0* ppb =
+      static_cast<const PPB_FileIO_1_0*>(
+        GetBrowserInterfaceSafe(PPB_FILEIO_INTERFACE_1_0));
   return ppb;
 }
 
