@@ -5,30 +5,20 @@
 #include "base/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/extensions/autoupdate_interceptor.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/global_error/global_error.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
-#include "net/url_request/url_fetcher.h"
 
 using extensions::Extension;
 
 class ExtensionDisabledGlobalErrorTest : public ExtensionBrowserTest {
  protected:
-  void SetUpCommandLine(CommandLine* command_line) {
-    ExtensionBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(switches::kAppsGalleryUpdateURL,
-                                    "http://localhost/autoupdate/updates.xml");
-  }
-
   void SetUpOnMainThread() {
     EXPECT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
     service_ = browser()->profile()->GetExtensionService();
@@ -170,50 +160,4 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest,
   extension = UpdateIncreasingPermissionExtension(extension, path_v3_, 0);
   ASSERT_TRUE(extension);
   ASSERT_TRUE(GetExtensionDisabledGlobalError());
-}
-
-// Test that an error appears if the extension gets disabled because a
-// version with higher permissions was installed by sync.
-IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest,
-                       HigherPermissionsFromSync) {
-  // Get data for extension v2 (disabled) into sync.
-  const Extension* extension = InstallAndUpdateIncreasingPermissionsExtension();
-  std::string extension_id = extension->id();
-  // service_->GrantPermissionsAndEnableExtension(extension, false);
-  extensions::ExtensionSyncData sync_data =
-      service_->GetExtensionSyncData(*extension);
-  UninstallExtension(extension_id);
-  extension = NULL;
-
-  // Install extension v1.
-  InstallIncreasingPermissionExtensionV1();
-
-  // Note: This interceptor gets requests on the IO thread.
-  scoped_refptr<extensions::AutoUpdateInterceptor> interceptor(
-      new extensions::AutoUpdateInterceptor());
-  net::URLFetcher::SetEnableInterceptionForTests(true);
-  interceptor->SetResponseOnIOThread(
-      "http://localhost/autoupdate/updates.xml",
-      test_data_dir_.AppendASCII("permissions_increase")
-                    .AppendASCII("updates.xml"));
-  interceptor->SetResponseOnIOThread(
-      "http://localhost/autoupdate/v2.crx",
-      scoped_temp_dir_.path().AppendASCII("permissions2.crx"));
-
-  extensions::ExtensionUpdater::CheckParams params;
-  params.check_blacklist = false;
-  service_->updater()->set_default_check_params(params);
-
-  // Sync is replacing an older version, so it pends.
-  EXPECT_FALSE(service_->ProcessExtensionSyncData(sync_data));
-
-  WaitForExtensionInstall();
-
-  extension = service_->GetExtensionById(extension_id, true);
-  ASSERT_TRUE(extension);
-  EXPECT_EQ("2", extension->VersionString());
-  EXPECT_EQ(1u, service_->disabled_extensions()->size());
-  EXPECT_EQ(Extension::DISABLE_PERMISSIONS_INCREASE,
-            service_->extension_prefs()->GetDisableReasons(extension_id));
-  EXPECT_TRUE(GetExtensionDisabledGlobalError());
 }
