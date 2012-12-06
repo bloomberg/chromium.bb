@@ -562,6 +562,9 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // been cleared yet. Virtual for testing purposes.
   virtual bool waiting_for_auth() const;
 
+  // The set of currently enabled sync experiments.
+  const syncer::Experiments& current_experiments() const;
+
   // InvalidationFrontend implementation.  It is an error to have
   // registered handlers when Shutdown() is called.
   virtual void RegisterInvalidationHandler(
@@ -858,7 +861,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   bool setup_in_progress_;
 
   // The set of currently enabled sync experiments.
-  syncer::Experiments current_experiments;
+  syncer::Experiments current_experiments_;
 
   // Factory the backend will use to build the SyncManager.
   syncer::SyncManagerFactory sync_manager_factory_;

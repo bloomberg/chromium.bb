@@ -6,14 +6,12 @@
 
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/rand_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/webdata/autofill_table.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "net/base/escape.h"
@@ -81,24 +79,12 @@ bool MergeTimestamps(const sync_pb::AutofillSpecifics& autofill,
   }
 }
 
-bool ShouldCullSyncedData() {
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-
-  // To set probability to 10% - set it to 0.1, 5% to 0.05, etc.
-  double culling_probability = 0.0;
-  if (channel == chrome::VersionInfo::CHANNEL_CANARY)
-    culling_probability = 1.0;
-  else if (channel == chrome::VersionInfo::CHANNEL_DEV)
-    culling_probability = 0.2;
-
-  return (base::RandDouble() < culling_probability);
-}
-
 }  // namespace
 
 AutocompleteSyncableService::AutocompleteSyncableService(
     WebDataService* web_data_service)
-    : web_data_service_(web_data_service) {
+    : web_data_service_(web_data_service),
+      cull_expired_entries_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   DCHECK(web_data_service_);
   notification_registrar_.Add(
@@ -111,7 +97,8 @@ AutocompleteSyncableService::~AutocompleteSyncableService() {
 }
 
 AutocompleteSyncableService::AutocompleteSyncableService()
-    : web_data_service_(NULL) {
+    : web_data_service_(NULL),
+      cull_expired_entries_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 }
 
@@ -173,7 +160,7 @@ syncer::SyncMergeResult AutocompleteSyncableService::MergeDataAndStartSyncing(
                            CreateSyncData(*(i->second.second))));
   }
 
-  if (ShouldCullSyncedData()) {
+  if (cull_expired_entries_) {
     // This will schedule a deletion operation on the DB thread, which will
     // trigger a notification to propagate the deletion to Sync.
     web_data_service_->RemoveExpiredFormElements();
@@ -281,7 +268,7 @@ syncer::SyncError AutocompleteSyncableService::ProcessSyncChanges(
 
   WebDataService::NotifyOfMultipleAutofillChanges(web_data_service_);
 
-  if (ShouldCullSyncedData()) {
+  if (cull_expired_entries_) {
     // This will schedule a deletion operation on the DB thread, which will
     // trigger a notification to propagate the deletion to Sync.
     web_data_service_->RemoveExpiredFormElements();
@@ -452,6 +439,12 @@ void AutocompleteSyncableService::ActOnChanges(
                   << " Failed processing change:"
                   << " Error:" << error.message();
   }
+}
+
+void AutocompleteSyncableService::UpdateCullSetting(
+    bool cull_expired_entries) {
+  DCHECK(CalledOnValidThread());
+  cull_expired_entries_ = cull_expired_entries;
 }
 
 syncer::SyncData AutocompleteSyncableService::CreateSyncData(

@@ -827,7 +827,7 @@ void ProfileSyncService::OnSyncCycleCompleted() {
 
 void ProfileSyncService::OnExperimentsChanged(
     const syncer::Experiments& experiments) {
-  if (current_experiments.Matches(experiments))
+  if (current_experiments_.Matches(experiments))
     return;
 
   // If this is a first time sync for a client, this will be called before
@@ -904,7 +904,7 @@ void ProfileSyncService::OnExperimentsChanged(
                                       true);
   }
 
-  current_experiments = experiments;
+  current_experiments_ = experiments;
 }
 
 void ProfileSyncService::UpdateAuthErrorState(const AuthError& error) {
@@ -1232,6 +1232,10 @@ bool ProfileSyncService::sync_initialized() const {
 
 bool ProfileSyncService::waiting_for_auth() const {
   return is_auth_in_progress_;
+}
+
+const syncer::Experiments& ProfileSyncService::current_experiments() const {
+  return current_experiments_;
 }
 
 bool ProfileSyncService::HasUnrecoverableError() const {

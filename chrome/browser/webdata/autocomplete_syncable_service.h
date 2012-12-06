@@ -67,6 +67,11 @@ class AutocompleteSyncableService
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // Called via sync to tell us if we should cull expired entries when merging
+  // and/or processing sync changes.
+  void UpdateCullSetting(bool cull_expired_entries);
+  bool cull_expired_entries() const { return cull_expired_entries_; }
+
  protected:
   // Helper to query WebDatabase for the current autocomplete state.
   // Made virtual for ease of mocking in the unit-test.
@@ -142,6 +147,10 @@ class AutocompleteSyncableService
   // We receive ownership of |error_handler_| in MergeDataAndStartSyncing() and
   // destroy it in StopSyncing().
   scoped_ptr<syncer::SyncErrorFactory> error_handler_;
+
+  // Whether we should cull expired autofill entries, can be updated by sync
+  // via UpdateCullingSetting.
+  bool cull_expired_entries_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteSyncableService);
 };

@@ -11,15 +11,18 @@ namespace syncer {
 
 const char kKeystoreEncryptionTag[] = "keystore_encryption";
 const char kKeystoreEncryptionFlag[] = "sync-keystore-encryption";
+const char kAutofillCullingTag[] = "autofill_culling";
 
 // A structure to hold the enable status of experimental sync features.
 struct Experiments {
   Experiments() : sync_tab_favicons(false),
-                  keystore_encryption(false) {}
+                  keystore_encryption(false),
+                  autofill_culling(false) {}
 
   bool Matches(const Experiments& rhs) {
     return (sync_tab_favicons == rhs.sync_tab_favicons &&
-            keystore_encryption == rhs.keystore_encryption);
+            keystore_encryption == rhs.keystore_encryption &&
+            autofill_culling == rhs.autofill_culling);
   }
 
   // Enable syncing of favicons within tab sync (only has an effect if tab sync
@@ -28,6 +31,9 @@ struct Experiments {
 
   // Enable keystore encryption logic and the new encryption UI.
   bool keystore_encryption;
+
+  // Enable deletion of expired autofill entries (if autofill sync is enabled).
+  bool autofill_culling;
 };
 
 }  // namespace syncer

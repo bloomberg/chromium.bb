@@ -1328,6 +1328,16 @@ bool SyncManagerImpl::ReceivedExperiment(Experiments* experiments) {
     found_experiment = true;
   }
 
+  ReadNode autofill_culling_node(&trans);
+  if (autofill_culling_node.InitByClientTagLookup(
+          syncer::EXPERIMENTS,
+          syncer::kAutofillCullingTag) == BaseNode::INIT_OK &&
+      autofill_culling_node.GetExperimentsSpecifics().
+          autofill_culling().enabled()) {
+    experiments->autofill_culling = true;
+    found_experiment = true;
+  }
+
   return found_experiment;
 }
 

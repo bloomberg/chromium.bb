@@ -31,6 +31,10 @@ class AutofillDataTypeController : public NewNonFrontendDataTypeController,
   virtual syncer::ModelType type() const OVERRIDE;
   virtual syncer::ModelSafeGroup model_safe_group() const OVERRIDE;
 
+  // NonFrontendDatatypeController override, needed as stop-gap until bug
+  // 163431 is addressed / implemented.
+  virtual void StartAssociating(const StartCallback& start_callback) OVERRIDE;
+
   // content::NotificationObserver implementation.
   virtual void Observe(int notification_type,
                        const content::NotificationSource& source,
@@ -50,6 +54,10 @@ class AutofillDataTypeController : public NewNonFrontendDataTypeController,
   friend class AutofillDataTypeControllerTest;
   FRIEND_TEST_ALL_PREFIXES(AutofillDataTypeControllerTest, StartWDSReady);
   FRIEND_TEST_ALL_PREFIXES(AutofillDataTypeControllerTest, StartWDSNotReady);
+
+  // Self-invoked on the DB thread to call the AutocompleteSyncableService with
+  // an updated value of autofill culling settings.
+  void UpdateAutofillCullingSettings(bool cull_expired_entries);
 
   scoped_refptr<WebDataService> web_data_service_;
   content::NotificationRegistrar notification_registrar_;
