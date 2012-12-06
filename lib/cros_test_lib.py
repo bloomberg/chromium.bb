@@ -377,11 +377,7 @@ class TestCase(unittest.TestCase):
     self.__saved_umask__ = os.umask(022)
 
   def tearDown(self):
-    for var in set(os.environ).difference(self.__saved_env__):
-      del os.environ[var]
-    # Just brute force overwrite whats there with the
-    # saved copy.
-    os.environ.update(self.__saved_env__)
+    osutils.SetEnvironment(self.__saved_env__)
     os.chdir(self.__saved_cwd__)
     os.umask(self.__saved_umask__)
 

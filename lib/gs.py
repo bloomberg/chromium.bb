@@ -71,8 +71,8 @@ class GSContext(object):
       cls.DEFAULT_GSUTIL_BIN = gsutil_bin
     return cls.DEFAULT_GSUTIL_BIN
 
-  def __init__(self, boto_file=None, acl_file=None,
-               dry_run=False, gsutil_bin=None, retries=None, sleep=None):
+  def __init__(self, boto_file=None, acl_file=None, dry_run=False,
+               gsutil_bin=None, retries=None, sleep=None):
     """Constructor.
 
     Args:
@@ -85,10 +85,9 @@ class GSContext(object):
       retries: Number of times to retry a command before failing.
       sleep: Amount of time to sleep between failures.
     """
-    if gsutil_bin is not None:
-      self._CheckFile('gsutil not found', gsutil_bin)
-    else:
+    if gsutil_bin is None:
       gsutil_bin = self.GetDefaultGSUtilBin()
+    self._CheckFile('gsutil not found', gsutil_bin)
     self.gsutil_bin = gsutil_bin
 
     # Prefer boto_file if specified, else prefer the env then the default.

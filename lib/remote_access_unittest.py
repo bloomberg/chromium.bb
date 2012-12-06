@@ -23,10 +23,11 @@ class RemoteShMock(partial_mock.PartialCmdMock):
 
   TARGET = 'chromite.lib.remote_access.RemoteAccess'
   ATTRS = ('RemoteSh',)
+  DEFAULT_ATTR =  'RemoteSh'
 
   def RemoteSh(self, inst, cmd, *args, **kwargs):
     """Simulates a RemoteSh invocation."""
-    result = self._results.LookupResult(
+    result = self._results['RemoteSh'].LookupResult(
         (cmd,), hook_args=(inst, cmd,) + args, hook_kwargs=kwargs)
 
     # Run the real RemoteSh with RunCommand mocked out.

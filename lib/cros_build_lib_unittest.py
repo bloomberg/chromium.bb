@@ -35,17 +35,17 @@ class RunCommandMock(partial_mock.PartialCmdMock):
 
   TARGET = 'chromite.lib.cros_build_lib'
   ATTRS = ('RunCommand',)
+  DEFAULT_ATTR = 'RunCommand'
 
   def RunCommand(self, cmd, *args, **kwargs):
-    result = self._results.LookupResult(
+    result = self._results['RunCommand'].LookupResult(
         (cmd,), hook_args=(cmd,) + args, hook_kwargs=kwargs)
 
-    with osutils.TempDirContextManager() as tempdir:
-      popen_mock = PopenMock(tempdir)
-      popen_mock.AddCmdResult(partial_mock.Ignore(), result.returncode,
-                              result.output, result.error)
-      with popen_mock:
-        return self.backup['RunCommand'](cmd, *args, **kwargs)
+    popen_mock = PopenMock()
+    popen_mock.AddCmdResult(partial_mock.Ignore(), result.returncode,
+                            result.output, result.error)
+    with popen_mock:
+      return self.backup['RunCommand'](cmd, *args, **kwargs)
 
 
 class RunCommandTestCase(cros_test_lib.TestCase):
@@ -70,18 +70,13 @@ class PopenMock(partial_mock.PartialCmdMock):
 
   TARGET = 'chromite.lib.cros_build_lib._Popen'
   ATTRS = ('__init__',)
+  DEFAULT_ATTR = '__init__'
 
-  def __init__(self, tempdir):
-    """Initialize.
-
-    Arguments:
-      tempdir: A temporary directory to use for mocking.
-    """
-    partial_mock.PartialCmdMock.__init__(self)
-    self.tempdir = tempdir
+  def __init__(self):
+    partial_mock.PartialCmdMock.__init__(self, create_tempdir=True)
 
   def _target__init__(self, inst, cmd, *args, **kwargs):
-    result = self._results.LookupResult(
+    result = self._results['__init__'].LookupResult(
         (cmd,), hook_args=(inst, cmd,) + args, hook_kwargs=kwargs)
 
     script = os.path.join(self.tempdir, 'mock_cmd.sh')

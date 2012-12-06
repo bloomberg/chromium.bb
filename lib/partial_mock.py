@@ -9,9 +9,11 @@
 import collections
 import logging
 import mock
+import os
 import re
 
 from chromite.lib import cros_build_lib
+from chromite.lib import osutils
 
 
 class Comparator(object):
@@ -313,20 +315,50 @@ class PartialMock(object):
   TARGET = None
   ATTRS = None
 
-  def __init__(self):
+  def __init__(self, create_tempdir=False):
+    """Initialize.
+
+    Arguments:
+      create_tempdir: If set to True, the partial mock will create its own
+        temporary directory when Start() is called, and will set self.tempdir to
+        the path of the directory.  The directory is deleted when Stop() is
+        called.
+    """
     self.backup = {}
     self.patchers = {}
     self.patched = {}
+    self.create_tempdir = create_tempdir
+
+    # Set when Start() is called.
+    self.tempdir = None
+    self.__saved_env__ = None
+    self.started = False
+
+    self._results = {}
+    for attr in self.ATTRS:
+      self._results[attr] = MockedCallResults(attr)
 
   def __enter__(self):
-    self.Start()
-    return self
+    return self.Start()
 
   def __exit__(self, exc_type, exc_value, traceback):
     self.Stop()
 
-  def Start(self):
-    """Activates the mock context."""
+  def PreStart(self):
+    """Called at the beginning of Start(). Child classes can override this.
+
+    If __init__ was called with |create_tempdir| set, then self.tempdir will
+    point to an existing temporary directory when this function is called.
+    """
+
+  def PreStop(self):
+    """Called at the beginning of Stop().  Child classes can override this.
+
+    If __init__ was called with |create_tempdir| set, then self.tempdir will
+    not be deleted until after this function returns.
+    """
+
+  def _Start(self):
     chunks = self.TARGET.rsplit('.', 1)
     module = cros_build_lib.load_module(chunks[0])
 
@@ -334,6 +366,10 @@ class PartialMock(object):
     for attr in self.ATTRS:
       self.backup[attr] = getattr(cls, attr)
       src_attr = '_target%s' % attr if attr.startswith('__') else attr
+      if hasattr(self.backup[attr], 'reset_mock'):
+        raise AssertionError(
+            'You are trying to nest mock contexts - this is currently '
+            'unsupported by PartialMock.')
       if callable(self.backup[attr]):
         patcher = mock.patch.object(cls, attr, autospec=True,
                                     side_effect=getattr(self, src_attr))
@@ -342,14 +378,65 @@ class PartialMock(object):
       self.patched[attr] = patcher.start()
       self.patchers[attr] = patcher
 
-  def Stop(self):
-    """Restores namespace to the unmocked state."""
+    return self
+
+  def Start(self):
+    """Activates the mock context."""
+    # pylint: disable=W0212
+    try:
+      if self.create_tempdir:
+        osutils._TempDirSetup(self)
+      self.__saved_env__ = os.environ.copy()
+
+      self.started = True
+      self.PreStart()
+      return self._Start()
+    except:
+      self.Stop()
+      raise
+
+  def _Stop(self):
     for patcher in self.patchers.itervalues():
       patcher.stop()
+
+  def Stop(self):
+    """Restores namespace to the unmocked state."""
+    # pylint: disable=W0212
+    try:
+      if self.__saved_env__ is not None:
+        osutils.SetEnvironment(self.__saved_env__)
+
+      if self.started:
+        self.PreStop()
+        self._Stop()
+    finally:
+      self.started = False
+      if getattr(self, 'tempdir', None):
+        osutils._TempDirTearDown(self, False)
 
   def UnMockAttr(self, attr):
     """Unsetting the mock of an attribute/function."""
     self.patchers.pop(attr).stop()
+
+
+def CheckAttr(f):
+  """Automatically set mock_attr based on class default.
+
+  This function decorator automatically sets the mock_attr keyword argument
+  based on the class default. The mock_attr specifies which mocked attribute
+  a given function is referring to.
+
+  Raises an AssertionError if mock_attr is left unspecified.
+  """
+  def new_f(self, *args, **kwargs):
+    mock_attr = kwargs.pop('mock_attr', None)
+    if mock_attr is None:
+      mock_attr = self.DEFAULT_ATTR
+      if self.DEFAULT_ATTR is None:
+        raise AssertionError(
+            'mock_attr not specified, and no default configured.')
+    return f(self, *args, mock_attr=mock_attr, **kwargs)
+  return new_f
 
 
 class PartialCmdMock(PartialMock):
@@ -358,15 +445,15 @@ class PartialCmdMock(PartialMock):
   Implements mocking for functions that shell out.  The internal results are
   'returncode', 'output', 'error'.
   """
+
   CmdResult = collections.namedtuple(
     'MockResult', ['returncode', 'output', 'error'])
 
-  def __init__(self):
-    PartialMock.__init__(self)
-    self._results = MockedCallResults(self.ATTRS[0])
+  DEFAULT_ATTR = None
 
+  @CheckAttr
   def SetDefaultCmdResult(self, returncode=0, output='', error='',
-                          side_effect=None):
+                          side_effect=None, mock_attr=None):
     """Specify the default command result if no command is matched.
 
     Arguments:
@@ -374,10 +461,11 @@ class PartialCmdMock(PartialMock):
       side_effect: See MockedCallResults.AddResultForParams
     """
     result = self.CmdResult(returncode, output, error)
-    self._results.SetDefaultResult(result, side_effect)
+    self._results[mock_attr].SetDefaultResult(result, side_effect)
 
+  @CheckAttr
   def AddCmdResult(self, cmd, returncode=0, output='', error='',
-                   kwargs=None, strict=False, side_effect=None):
+                   kwargs=None, strict=False, side_effect=None, mock_attr=None):
     """Specify the result to simulate for a given command.
 
     Arguments:
@@ -390,22 +478,28 @@ class PartialCmdMock(PartialMock):
       side_effect: See MockedCallResults.AddResultForParams
     """
     result = self.CmdResult(returncode, output, error)
-    self._results.AddResultForParams(
+    self._results[mock_attr].AddResultForParams(
         (cmd,), result, kwargs=kwargs, side_effect=side_effect, strict=strict)
 
-  def CommandContains(self, args, **kwargs):
+  @CheckAttr
+  def CommandContains(self, args, cmd_arg_index=-1, mock_attr=None, **kwargs):
     """Verify that at least one command contains the specified args.
 
     Arguments:
       args: Set of expected command-line arguments.
+      cmd_arg_index: The index of the command list in the positional call_args.
+        Defaults to the last positional argument.
       kwargs: Set of expected keyword arguments.
     """
-    for call_args, call_kwargs in self.patched[self.ATTRS[0]].call_args_list:
-      if ListContains(args, call_args[0]) and DictContains(kwargs, call_kwargs):
+    for call_args, call_kwargs in self.patched[mock_attr].call_args_list:
+      if (ListContains(args, call_args[cmd_arg_index]) and
+          DictContains(kwargs, call_kwargs)):
         return True
     return False
 
-  def assertCommandContains(self, args=(), expected=True, **kwargs):
+  @CheckAttr
+  def assertCommandContains(self, args=(), expected=True, mock_attr=None,
+                            **kwargs):
     """Assert that RunCommand was called with the specified args.
 
     This verifies that at least one of the RunCommand calls contains the
@@ -422,6 +516,6 @@ class PartialCmdMock(PartialMock):
         msg = 'Expected to find %r in any of:\n%s'
       else:
         msg = 'Expected to not find %r in any of:\n%s'
-      patched = self.patched[self.ATTRS[0]]
+      patched = self.patched[mock_attr]
       cmds = '\n'.join(repr(x) for x in patched.call_args_list)
       raise AssertionError(msg % (mock.call(args, **kwargs), cmds))
