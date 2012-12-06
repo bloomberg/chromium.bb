@@ -1186,6 +1186,7 @@
         'browser/ui/prefs/prefs_tab_helper.h',
         'browser/ui/profile_error_dialog.cc',
         'browser/ui/profile_error_dialog.h',
+        'browser/ui/sad_tab.h',
         'browser/ui/sad_tab_helper.cc',
         'browser/ui/sad_tab_helper.h',
         'browser/ui/sad_tab_types.h',

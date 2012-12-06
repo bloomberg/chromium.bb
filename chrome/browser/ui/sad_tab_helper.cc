@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/browser_shutdown.h"
-#include "chrome/browser/ui/sad_tab_types.h"
+#include "chrome/browser/ui/sad_tab.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
@@ -17,10 +17,6 @@
 #elif defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/sad_tab_view.h"
 #include "ui/views/widget/widget.h"
-#elif defined(TOOLKIT_GTK)
-#include <gtk/gtk.h>
-
-#include "chrome/browser/ui/gtk/sad_tab_gtk.h"
 #endif
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(SadTabHelper)
@@ -118,7 +114,7 @@ void SadTabHelper::InstallSadTab(base::TerminationStatus status) {
   web_contents()->GetView()->GetContainerBounds(&bounds);
   sad_tab_->SetBounds(gfx::Rect(bounds.size()));
 #elif defined(TOOLKIT_GTK)
-  sad_tab_.reset(new SadTabGtk(web_contents(), kind));
+  sad_tab_.reset(chrome::SadTab::Create(web_contents(), kind));
   sad_tab_->Show();
 #else
 #error Unknown platform

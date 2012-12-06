@@ -17,14 +17,16 @@
 #include "base/mac/foundation_util.h"
 #endif
 
+namespace chrome {
+class SadTab;
+}
+
 #if defined(OS_MACOSX)
 class SadTabController;
 #elif defined(TOOLKIT_VIEWS)
 namespace views {
 class Widget;
 }
-#elif defined(TOOLKIT_GTK)
-class SadTabGtk;
 #endif
 
 // Per-tab class to manage sad tab views.
@@ -42,8 +44,9 @@ class SadTabHelper : public content::WebContentsObserver,
 #endif
 
  private:
-  explicit SadTabHelper(content::WebContents* web_contents);
   friend class content::WebContentsUserData<SadTabHelper>;
+
+  explicit SadTabHelper(content::WebContents* web_contents);
 
   // Platform specific function to get an instance of the sad tab page.
   void InstallSadTab(base::TerminationStatus status);
@@ -71,7 +74,7 @@ class SadTabHelper : public content::WebContentsObserver,
 #elif defined(TOOLKIT_VIEWS)
   scoped_ptr<views::Widget> sad_tab_;
 #elif defined(TOOLKIT_GTK)
-  scoped_ptr<SadTabGtk> sad_tab_;
+  scoped_ptr<chrome::SadTab> sad_tab_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(SadTabHelper);

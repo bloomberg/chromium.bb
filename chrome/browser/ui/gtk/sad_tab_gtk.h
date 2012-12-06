@@ -6,25 +6,23 @@
 #define CHROME_BROWSER_UI_GTK_SAD_TAB_GTK_H_
 
 #include "base/basictypes.h"
-#include "chrome/browser/ui/sad_tab_types.h"
+#include "base/compiler_specific.h"
+#include "chrome/browser/ui/sad_tab.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
 
 typedef struct _GtkWidget GtkWidget;
 
-namespace content {
-class WebContents;
-}
-
-class SadTabGtk {
+class SadTabGtk : public chrome::SadTab {
  public:
   SadTabGtk(content::WebContents* web_contents, chrome::SadTabKind kind);
-  ~SadTabGtk();
-
-  void Show();
-  void Close();
+  virtual ~SadTabGtk();
 
  private:
+  // Overridden from SadTab:
+  virtual void Show() OVERRIDE;
+  virtual void Close() OVERRIDE;
+
   CHROMEGTK_CALLBACK_0(SadTabGtk, void, OnLinkButtonClick);
 
   void OnLinkButtonClick();

@@ -179,3 +179,11 @@ void SadTabGtk::OnLinkButtonClick(GtkWidget* sender) {
     web_contents_->OpenURL(params);
   }
 }
+
+namespace chrome {
+
+SadTab* SadTab::Create(content::WebContents* web_contents, SadTabKind kind) {
+  return new SadTabGtk(web_contents, kind);
+}
+
+}  // namespace chrome
