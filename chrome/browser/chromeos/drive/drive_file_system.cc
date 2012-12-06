@@ -1300,7 +1300,7 @@ void DriveFileSystem::GetAvailableSpaceOnUIThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  drive_service_->GetAccountMetadata(
+  scheduler_->GetAccountMetadata(
       google_apis::util::IsDriveV2ApiEnabled() ?
       base::Bind(&DriveFileSystem::OnGetAboutResource,
                  ui_weak_ptr_,
