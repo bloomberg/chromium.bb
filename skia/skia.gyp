@@ -167,6 +167,7 @@
         'ext/google_logging.cc',
         'ext/image_operations.cc',
         'ext/image_operations.h',
+        'ext/lazy_pixel_ref.cc',
         'ext/lazy_pixel_ref.h',
         'ext/SkThread_chrome.cc',
         'ext/platform_canvas.cc',
