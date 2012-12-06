@@ -103,13 +103,14 @@ class DimmerView : public views::WidgetDelegateView,
  private:
   // views::View overrides:
   virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE {
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    const gfx::ImageSkia* launcher_background = rb.GetImageSkiaNamed(
+        internal::ShelfLayoutManager::ForLauncher(
+            launcher_->GetNativeView())->
+        SelectValueForShelfAlignment(IDR_AURA_LAUNCHER_DIMMING_BOTTOM,
+                                     IDR_AURA_LAUNCHER_DIMMING_LEFT,
+                                     IDR_AURA_LAUNCHER_DIMMING_RIGHT));
     SkPaint paint;
-    static const gfx::ImageSkia* launcher_background = NULL;
-    if (!launcher_background) {
-      ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-      launcher_background =
-          rb.GetImageNamed(IDR_AURA_LAUNCHER_DIMMING_BOTTOM).ToImageSkia();
-    }
     paint.setAlpha(kDimAlpha);
     canvas->DrawImageInt(
         *launcher_background,
