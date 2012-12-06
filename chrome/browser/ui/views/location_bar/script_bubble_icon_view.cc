@@ -38,7 +38,7 @@ void ScriptBubbleIconView::SetScriptCount(size_t script_count) {
   script_count_ = script_count;
   gfx::ImageSkia* icon =
       ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          IDR_SCRIPT_BUBBLE);
+          IDR_EXTENSIONS_SCRIPT_BUBBLE);
   gfx::Size requested_size(19, 19);  // Icon is only 16x16, too small to badge.
 
   gfx::ImageSkia image = gfx::ImageSkia(
