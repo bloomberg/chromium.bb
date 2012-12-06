@@ -679,9 +679,9 @@ Rect RenderText::GetCursorBounds(const SelectionModel& caret,
   // overtype the next character.
   LogicalCursorDirection caret_affinity =
       insert_mode ? caret.caret_affinity() : CURSOR_FORWARD;
-  int x = 0, width = 0, height = 0;
+  int x = 0, width = 1, height = 0;
   if (caret_pos == (caret_affinity == CURSOR_BACKWARD ? 0 : text().length())) {
-    // The caret is attached to the boundary. Always return a zero-width caret,
+    // The caret is attached to the boundary. Always return a 1-dip width caret,
     // since there is nothing to overtype.
     Size size = GetStringSize();
     if ((GetTextDirection() == base::i18n::RIGHT_TO_LEFT) == (caret_pos == 0))
@@ -1017,10 +1017,8 @@ void RenderText::DrawCursor(Canvas* canvas) {
   // TODO(msw): Draw a better cursor with a better indication of association.
   if (cursor_enabled() && cursor_visible() && focused()) {
     const Rect& bounds = GetUpdatedCursorBounds();
-    if (bounds.width() != 0)
-      canvas->FillRect(bounds, cursor_color_);
-    else
-      canvas->DrawRect(bounds, cursor_color_);
+    DCHECK(bounds.width());
+    canvas->FillRect(bounds, cursor_color_);
   }
 }
 

@@ -1224,16 +1224,18 @@ TEST_F(RenderTextTest, SameFontForParentheses) {
   }
 }
 
+// Make sure the caret width is always >=1 so that the correct
+// caret is drawn at high DPI. crbug.com/164100.
+TEST_F(RenderTextTest, CaretWidth) {
+  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  render_text->SetText(ASCIIToUTF16("abcdefg"));
+  EXPECT_GE(render_text->GetUpdatedCursorBounds().width(), 1);
+}
+
 // TODO(asvitkine): Cursor movements tests disabled on Mac because RenderTextMac
 //                  does not implement this yet. http://crbug.com/131618
 #if !defined(OS_MACOSX)
-// http://crbug.com/161902
-#if defined(OS_LINUX)
-#define MAYBE_DisplayRectShowsCursorLTR DISABLED_DisplayRectShowsCursorLTR
-#else
-#define MAYBE_DisplayRectShowsCursorLTR DisplayRectShowsCursorLTR
-#endif
-TEST_F(RenderTextTest, MAYBE_DisplayRectShowsCursorLTR) {
+TEST_F(RenderTextTest, DisplayRectShowsCursorLTR) {
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetText(WideToUTF16(L"abcdefghijklmnopqrstuvwxzyabcdefg"));
   render_text->MoveCursorTo(SelectionModel(render_text->text().length(),
@@ -1248,8 +1250,11 @@ TEST_F(RenderTextTest, MAYBE_DisplayRectShowsCursorLTR) {
   // Ensure that shrinking the display rectangle keeps the cursor in view.
   render_text->SetDisplayRect(Rect(width - 10, 1));
   EXPECT_EQ(render_text->display_rect().width() - 1,
-            render_text->GetUpdatedCursorBounds().x());
+            render_text->GetUpdatedCursorBounds().right());
 
+  // TODO(msw): Investigate why this test passes with
+  // |GetUpdateCursorBounds().x()|, while the above have to use
+  // |.right()|.
   // Ensure that the text will pan to fill its expanding display rectangle.
   render_text->SetDisplayRect(Rect(width - 5, 1));
   EXPECT_EQ(render_text->display_rect().width() - 1,
@@ -1273,7 +1278,7 @@ TEST_F(RenderTextTest, MAYBE_DisplayRectShowsCursorLTR) {
   // Ensure that shrinking the display rectangle keeps the cursor in view.
   render_text->SetDisplayRect(Rect(width - 10, 1));
   EXPECT_EQ(render_text->display_rect().width() - 1,
-            render_text->GetUpdatedCursorBounds().x());
+            render_text->GetUpdatedCursorBounds().right());
 
   // Ensure that the text will pan to fill its expanding display rectangle.
   render_text->SetDisplayRect(Rect(width - 5, 1));
