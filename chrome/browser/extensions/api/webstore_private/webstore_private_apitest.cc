@@ -75,11 +75,8 @@ class WebstoreInstallListener : public WebstoreInstaller::Delegate {
     waiting_ = true;
     content::RunMessageLoop();
   }
-
-  bool received_failure() const { return received_failure_; }
   bool received_success() const { return received_success_; }
   const std::string& id() const { return id_; }
-  const std::string& error() const { return error_; }
 
  private:
   bool received_failure_;
@@ -176,14 +173,6 @@ class ExtensionWebstorePrivateBundleTest
   }
 
  protected:
-  void PackCRX(const std::string& id) {
-    FilePath dir_path = tmp_.path()
-        .AppendASCII("webstore_private/bundle")
-        .AppendASCII(id);
-
-    PackCRX(id, dir_path);
-  }
-
   // Packs the |manifest| file into a CRX using |id|'s PEM key.
   void PackCRX(const std::string& id, const std::string& manifest) {
     // Move the extension to a temporary directory.
