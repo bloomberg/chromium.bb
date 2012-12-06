@@ -5,15 +5,11 @@
 #include "ash/wm/workspace/workspace_window_resizer.h"
 
 #include "ash/display/display_controller.h"
-#include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/cursor_manager_test_api.h"
-#include "ash/wm/cursor_manager.h"
-#include "ash/wm/drag_window_controller.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/window_util.h"
@@ -135,7 +131,7 @@ class WorkspaceWindowResizerTest : public test::AshTestBase {
   gfx::Point CalculateDragPoint(const WorkspaceWindowResizer& resizer,
                                 int delta_x,
                                 int delta_y) const {
-    gfx::Point location = resizer.initial_location_in_parent();
+    gfx::Point location = resizer.GetInitialLocationInParentForTest();
     location.set_x(location.x() + delta_x);
     location.set_y(location.y() + delta_y);
     return location;
@@ -521,170 +517,6 @@ TEST_F(WorkspaceWindowResizerTest, NonResizableWindows) {
   EXPECT_EQ("0,30 50x60", window_->bounds().ToString());
 }
 
-// Verifies a window can be moved from the primary display to another.
-TEST_F(WorkspaceWindowResizerTest, WindowDragWithMultiDisplays) {
-  // The secondary display is logically on the right, but on the system (e.g. X)
-  // layer, it's below the primary one. See UpdateDisplay() in ash_test_base.cc.
-  UpdateDisplay("800x600,800x600");
-  shelf_layout_manager()->LayoutShelf();
-  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
-  ASSERT_EQ(2U, root_windows.size());
-
-  window_->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
-                             Shell::GetScreen()->GetPrimaryDisplay());
-  EXPECT_EQ(root_windows[0], window_->GetRootWindow());
-  {
-    // Grab (0, 0) of the window.
-    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
-        window_.get(), gfx::Point(), HTCAPTION, empty_windows()));
-    ASSERT_TRUE(resizer.get());
-    // Drag the pointer to the right. Once it reaches the right edge of the
-    // primary display, it warps to the secondary.
-    resizer->Drag(CalculateDragPoint(*resizer, 800, 10), 0);
-    resizer->CompleteDrag(0);
-    // The whole window is on the secondary display now. The parent should be
-    // changed.
-    EXPECT_EQ(root_windows[1], window_->GetRootWindow());
-    EXPECT_EQ("0,10 50x60", window_->bounds().ToString());
-  }
-
-  window_->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
-                             Shell::GetScreen()->GetPrimaryDisplay());
-  EXPECT_EQ(root_windows[0], window_->GetRootWindow());
-  {
-    // Grab (0, 0) of the window and move the pointer to (790, 10).
-    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
-        window_.get(), gfx::Point(), HTCAPTION, empty_windows()));
-    ASSERT_TRUE(resizer.get());
-    resizer->Drag(CalculateDragPoint(*resizer, 790, 10), 0);
-    resizer->CompleteDrag(0);
-    // Since the pointer is still on the primary root window, the parent should
-    // not be changed.
-    EXPECT_EQ(root_windows[0], window_->GetRootWindow());
-    EXPECT_EQ("790,10 50x60", window_->bounds().ToString());
-  }
-
-  window_->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
-                             Shell::GetScreen()->GetPrimaryDisplay());
-  EXPECT_EQ(root_windows[0], window_->GetRootWindow());
-  {
-    // Grab the top-right edge of the window and move the pointer to (0, 10)
-    // in the secondary root window's coordinates.
-    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
-        window_.get(), gfx::Point(49, 0), HTCAPTION, empty_windows()));
-    ASSERT_TRUE(resizer.get());
-    resizer->Drag(CalculateDragPoint(*resizer, 751, 10), ui::EF_CONTROL_DOWN);
-    resizer->CompleteDrag(0);
-    // Since the pointer is on the secondary, the parent should be changed
-    // even though only small fraction of the window is within the secondary
-    // root window's bounds.
-    EXPECT_EQ(root_windows[1], window_->GetRootWindow());
-    EXPECT_EQ("-49,10 50x60", window_->bounds().ToString());
-  }
-}
-
-// Verifies a window can be moved from the secondary display to primary.
-TEST_F(WorkspaceWindowResizerTest,
-       WindowDragWithMultiDisplaysRightToLeft) {
-  UpdateDisplay("800x600,800x600");
-  shelf_layout_manager()->LayoutShelf();
-  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
-  ASSERT_EQ(2U, root_windows.size());
-
-  window_->SetBoundsInScreen(
-      gfx::Rect(800, 00, 50, 60),
-      Shell::GetScreen()->GetDisplayNearestWindow(root_windows[1]));
-  EXPECT_EQ(root_windows[1], window_->GetRootWindow());
-  {
-    // Grab (0, 0) of the window.
-    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
-        window_.get(), gfx::Point(), HTCAPTION, empty_windows()));
-    ASSERT_TRUE(resizer.get());
-    // Move the mouse near the right edge, (798, 0), of the primary display.
-    resizer->Drag(CalculateDragPoint(*resizer, -2, 0), ui::EF_CONTROL_DOWN);
-    resizer->CompleteDrag(0);
-    EXPECT_EQ(root_windows[0], window_->GetRootWindow());
-    EXPECT_EQ("798,0 50x60", window_->bounds().ToString());
-  }
-}
-
-// Verifies the drag window controller is instanciated appropriately.
-TEST_F(WorkspaceWindowResizerTest, DragWindowController) {
-  UpdateDisplay("800x600,800x600");
-  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
-  ASSERT_EQ(2U, root_windows.size());
-
-  window_->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
-                             Shell::GetScreen()->GetPrimaryDisplay());
-  EXPECT_EQ(root_windows[0], window_->GetRootWindow());
-  EXPECT_FLOAT_EQ(1.0f, window_->layer()->opacity());
-  {
-    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
-        window_.get(), gfx::Point(), HTCAPTION, empty_windows()));
-    ASSERT_TRUE(resizer.get());
-    EXPECT_FALSE(resizer->snap_phantom_window_controller_.get());
-    EXPECT_FALSE(resizer->drag_window_controller_.get());
-
-    // The pointer is inside the primary root. Both phantoms should be NULL.
-    resizer->Drag(CalculateDragPoint(*resizer, 10, 10), 0);
-    EXPECT_FALSE(resizer->snap_phantom_window_controller_.get());
-    EXPECT_FALSE(resizer->drag_window_controller_.get());
-
-    // The window spans both root windows.
-    resizer->Drag(CalculateDragPoint(*resizer, 798, 10), 0);
-    EXPECT_FALSE(resizer->snap_phantom_window_controller_.get());
-    DragWindowController* controller =
-        resizer->drag_window_controller_.get();
-    ASSERT_TRUE(controller);
-    ASSERT_TRUE(controller->drag_widget_);
-    ui::Layer* drag_layer =
-        controller->drag_widget_->GetNativeWindow()->layer();
-    ASSERT_TRUE(drag_layer);
-
-    // Check if |resizer->layer_| is properly set to the phantom widget.
-    const std::vector<ui::Layer*>& layers = drag_layer->children();
-    EXPECT_FALSE(layers.empty());
-    EXPECT_EQ(controller->layer_, layers.back());
-
-    // |window_| should be opaque since the pointer is still on the primary
-    // root window. The phantom should be semi-transparent.
-    EXPECT_FLOAT_EQ(1.0f, window_->layer()->opacity());
-    EXPECT_GT(1.0f, drag_layer->opacity());
-
-    // Enter the pointer to the secondary display.
-    resizer->Drag(CalculateDragPoint(*resizer, 800, 10), 0);
-    EXPECT_FALSE(resizer->snap_phantom_window_controller_.get());
-    controller = resizer->drag_window_controller_.get();
-    ASSERT_TRUE(controller);
-    // |window_| should be transparent, and the phantom should be opaque.
-    EXPECT_GT(1.0f, window_->layer()->opacity());
-    EXPECT_FLOAT_EQ(1.0f, drag_layer->opacity());
-
-    resizer->CompleteDrag(0);
-    EXPECT_EQ(root_windows[1], window_->GetRootWindow());
-    EXPECT_FLOAT_EQ(1.0f, window_->layer()->opacity());
-  }
-
-  // Do the same test with RevertDrag().
-  window_->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
-                             Shell::GetScreen()->GetPrimaryDisplay());
-  EXPECT_EQ(root_windows[0], window_->GetRootWindow());
-  EXPECT_FLOAT_EQ(1.0f, window_->layer()->opacity());
-  {
-    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
-        window_.get(), gfx::Point(), HTCAPTION, empty_windows()));
-    ASSERT_TRUE(resizer.get());
-    EXPECT_FALSE(resizer->snap_phantom_window_controller_.get());
-    EXPECT_FALSE(resizer->drag_window_controller_.get());
-
-    resizer->Drag(CalculateDragPoint(*resizer, 0, 610), 0);
-    resizer->RevertDrag();
-    EXPECT_EQ(root_windows[0], window_->GetRootWindow());
-    EXPECT_FLOAT_EQ(1.0f, window_->layer()->opacity());
-  }
-}
-
-// Verifies the style of the drag phantom window is correct.
 TEST_F(WorkspaceWindowResizerTest, CancelSnapPhantom) {
   UpdateDisplay("800x600,800x600");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
@@ -699,80 +531,17 @@ TEST_F(WorkspaceWindowResizerTest, CancelSnapPhantom) {
         window_.get(), gfx::Point(), HTCAPTION, empty_windows()));
     ASSERT_TRUE(resizer.get());
     EXPECT_FALSE(resizer->snap_phantom_window_controller_.get());
-    EXPECT_FALSE(resizer->drag_window_controller_.get());
-    EXPECT_EQ(WorkspaceWindowResizer::SNAP_NONE, resizer->snap_type_);
 
-    // The pointer is on the edge but not shared.  Both controllers should be
-    // non-NULL.
+    // The pointer is on the edge but not shared. The snap phantom window
+    // controller should be non-NULL.
     resizer->Drag(CalculateDragPoint(*resizer, 799, 0), 0);
     EXPECT_TRUE(resizer->snap_phantom_window_controller_.get());
-    EXPECT_EQ(WorkspaceWindowResizer::SNAP_RIGHT_EDGE, resizer->snap_type_);
-    DragWindowController* controller =
-        resizer->drag_window_controller_.get();
-    ASSERT_TRUE(controller);
 
-    // Move the cursor across the edge.  Now the snap phantom controller
+    // Move the cursor across the edge. Now the snap phantom window controller
     // should be canceled.
     resizer->Drag(CalculateDragPoint(*resizer, 800, 0), 0);
     EXPECT_FALSE(resizer->snap_phantom_window_controller_.get());
-    EXPECT_EQ(WorkspaceWindowResizer::SNAP_NONE, resizer->snap_type_);
-    controller =
-        resizer->drag_window_controller_.get();
-    ASSERT_TRUE(controller);
   }
-}
-
-// Verifies if the resizer sets and resets
-// MouseCursorEventFilter::mouse_warp_mode_ as expected.
-TEST_F(WorkspaceWindowResizerTest, WarpMousePointer) {
-  MouseCursorEventFilter* event_filter =
-      Shell::GetInstance()->mouse_cursor_filter();
-  ASSERT_TRUE(event_filter);
-  window_->SetBounds(gfx::Rect(0, 0, 50, 60));
-
-  EXPECT_EQ(MouseCursorEventFilter::WARP_ALWAYS,
-            event_filter->mouse_warp_mode_);
-  {
-    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
-        window_.get(), gfx::Point(), HTCAPTION, empty_windows()));
-    // While dragging a window, warp should be allowed.
-    EXPECT_EQ(MouseCursorEventFilter::WARP_DRAG,
-              event_filter->mouse_warp_mode_);
-    resizer->CompleteDrag(0);
-  }
-  EXPECT_EQ(MouseCursorEventFilter::WARP_ALWAYS,
-            event_filter->mouse_warp_mode_);
-
-  {
-    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
-        window_.get(), gfx::Point(), HTCAPTION, empty_windows()));
-    EXPECT_EQ(MouseCursorEventFilter::WARP_DRAG,
-              event_filter->mouse_warp_mode_);
-    resizer->RevertDrag();
-  }
-  EXPECT_EQ(MouseCursorEventFilter::WARP_ALWAYS,
-            event_filter->mouse_warp_mode_);
-
-  {
-    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
-        window_.get(), gfx::Point(), HTRIGHT, empty_windows()));
-    // While resizing a window, warp should NOT be allowed.
-    EXPECT_EQ(MouseCursorEventFilter::WARP_NONE,
-              event_filter->mouse_warp_mode_);
-    resizer->CompleteDrag(0);
-  }
-  EXPECT_EQ(MouseCursorEventFilter::WARP_ALWAYS,
-            event_filter->mouse_warp_mode_);
-
-  {
-    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
-        window_.get(), gfx::Point(), HTRIGHT, empty_windows()));
-    EXPECT_EQ(MouseCursorEventFilter::WARP_NONE,
-              event_filter->mouse_warp_mode_);
-    resizer->RevertDrag();
-  }
-  EXPECT_EQ(MouseCursorEventFilter::WARP_ALWAYS,
-            event_filter->mouse_warp_mode_);
 }
 
 // Verifies windows are correctly restacked when reordering multiple windows.
@@ -1367,60 +1136,6 @@ TEST_F(WorkspaceWindowResizerTest, MagneticallyResize_LEFT) {
   ASSERT_TRUE(resizer.get());
   resizer->Drag(CalculateDragPoint(*resizer, 0, 0), 0);
   EXPECT_EQ("99,200 21x30", window_->bounds().ToString());
-}
-
-// Verifies cursor's device scale factor is updated whe a window is moved across
-// root windows with different device scale factors (http://crbug.com/154183).
-TEST_F(WorkspaceWindowResizerTest, CursorDeviceScaleFactor) {
-  // The secondary display is logically on the right, but on the system (e.g. X)
-  // layer, it's below the primary one. See UpdateDisplay() in ash_test_base.cc.
-  UpdateDisplay("400x400,800x800*2");
-  shelf_layout_manager()->LayoutShelf();
-  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
-  ASSERT_EQ(2U, root_windows.size());
-
-  test::CursorManagerTestApi cursor_test_api(
-      Shell::GetInstance()->cursor_manager());
-  MouseCursorEventFilter* event_filter =
-      Shell::GetInstance()->mouse_cursor_filter();
-  // Move window from the root window with 1.0 device scale factor to the root
-  // window with 2.0 device scale factor.
-  {
-    window_->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
-                               Shell::GetScreen()->GetPrimaryDisplay());
-    EXPECT_EQ(root_windows[0], window_->GetRootWindow());
-    // Grab (0, 0) of the window.
-    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
-        window_.get(), gfx::Point(), HTCAPTION, empty_windows()));
-    EXPECT_EQ(1.0f, cursor_test_api.GetDeviceScaleFactor());
-    ASSERT_TRUE(resizer.get());
-    resizer->Drag(CalculateDragPoint(*resizer, 399, 200), 0);
-    event_filter->WarpMouseCursorIfNecessary(root_windows[0],
-                                             gfx::Point(399, 200));
-    EXPECT_EQ(2.0f, cursor_test_api.GetDeviceScaleFactor());
-    resizer->CompleteDrag(0);
-    EXPECT_EQ(2.0f, cursor_test_api.GetDeviceScaleFactor());
-  }
-
-  // Move window from the root window with 2.0 device scale factor to the root
-  // window with 1.0 device scale factor.
-  {
-    window_->SetBoundsInScreen(
-        gfx::Rect(600, 0, 50, 60),
-        Shell::GetScreen()->GetDisplayNearestWindow(root_windows[1]));
-    EXPECT_EQ(root_windows[1], window_->GetRootWindow());
-    // Grab (0, 0) of the window.
-    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
-        window_.get(), gfx::Point(), HTCAPTION, empty_windows()));
-    EXPECT_EQ(2.0f, cursor_test_api.GetDeviceScaleFactor());
-    ASSERT_TRUE(resizer.get());
-    resizer->Drag(CalculateDragPoint(*resizer, -200, 200), 0);
-    event_filter->WarpMouseCursorIfNecessary(root_windows[1],
-                                             gfx::Point(400, 200));
-    EXPECT_EQ(1.0f, cursor_test_api.GetDeviceScaleFactor());
-    resizer->CompleteDrag(0);
-    EXPECT_EQ(1.0f, cursor_test_api.GetDeviceScaleFactor());
-  }
 }
 
 // Test that the user user moved window flag is getting properly set.

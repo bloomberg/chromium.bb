@@ -61,8 +61,8 @@ class ASH_EXPORT MouseCursorEventFilter : public ui::EventHandler {
   FRIEND_TEST_ALL_PREFIXES(MouseCursorEventFilterTest,
                            IndicatorBoundsTestOnTopBottom);
   FRIEND_TEST_ALL_PREFIXES(MouseCursorEventFilterTest, CursorDeviceScaleFactor);
-  FRIEND_TEST_ALL_PREFIXES(WorkspaceWindowResizerTest, WarpMousePointer);
-  FRIEND_TEST_ALL_PREFIXES(WorkspaceWindowResizerTest, CursorDeviceScaleFactor);
+  FRIEND_TEST_ALL_PREFIXES(DragWindowResizerTest, WarpMousePointer);
+  FRIEND_TEST_ALL_PREFIXES(DragWindowResizerTest, CursorDeviceScaleFactor);
 
   // Warps the mouse cursor to an alternate root window when the
   // |point_in_screen|, which is the location of the mouse cursor,

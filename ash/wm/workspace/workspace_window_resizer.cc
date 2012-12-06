@@ -10,14 +10,13 @@
 #include <vector>
 
 #include "ash/display/display_controller.h"
-#include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/cursor_manager.h"
 #include "ash/wm/default_window_resizer.h"
-#include "ash/wm/drag_window_controller.h"
+#include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
@@ -41,6 +40,7 @@ scoped_ptr<WindowResizer> CreateWindowResizer(aura::Window* window,
   if (!wm::CanResizeWindow(window) && window_component != HTCAPTION)
     return scoped_ptr<WindowResizer>();
 
+  WindowResizer* window_resizer = NULL;
   if (window->parent() &&
       window->parent()->id() == internal::kShellWindowId_WorkspaceContainer) {
     // Allow dragging maximized windows if it's not tracked by workspace. This
@@ -48,19 +48,20 @@ scoped_ptr<WindowResizer> CreateWindowResizer(aura::Window* window,
     if (!wm::IsWindowNormal(window) &&
         (window_component != HTCAPTION || GetTrackedByWorkspace(window)))
       return scoped_ptr<WindowResizer>();
-    return make_scoped_ptr<WindowResizer>(
-        internal::WorkspaceWindowResizer::Create(window,
-                                                 point_in_parent,
-                                                 window_component,
-                                                 std::vector<aura::Window*>()));
-  } else if (wm::IsWindowNormal(window)) {
-    return make_scoped_ptr<WindowResizer>(DefaultWindowResizer::Create(
+    window_resizer = internal::WorkspaceWindowResizer::Create(
         window,
         point_in_parent,
-        window_component));
-  } else {
-    return scoped_ptr<WindowResizer>();
+        window_component,
+        std::vector<aura::Window*>());
+  } else if (wm::IsWindowNormal(window)) {
+    window_resizer = DefaultWindowResizer::Create(
+        window, point_in_parent, window_component);
   }
+  if (window_resizer) {
+    window_resizer = internal::DragWindowResizer::Create(
+        window_resizer, window, point_in_parent, window_component);
+  }
+  return make_scoped_ptr<WindowResizer>(window_resizer);
 }
 
 namespace internal {
@@ -70,30 +71,10 @@ namespace {
 // Duration of the animation when snapping the window into place.
 const int kSnapDurationMS = 100;
 
-// The maximum opacity of the drag phantom window.
-const float kMaxOpacity = 0.8f;
-
 // Returns true if should snap to the edge.
 bool ShouldSnapToEdge(int distance_from_edge, int grid_size) {
   return distance_from_edge < grid_size &&
       distance_from_edge > -grid_size * 2;
-}
-
-// Returns true if Ash has more than one root window.
-bool HasSecondaryRootWindow() {
-  return Shell::GetAllRootWindows().size() > 1;
-}
-
-// When there are two root windows, returns one of the root windows which is not
-// |root_window|. Returns NULL if only one root window exists.
-aura::RootWindow* GetAnotherRootWindow(aura::RootWindow* root_window) {
-  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
-  if (root_windows.size() < 2)
-    return NULL;
-  DCHECK_EQ(2U, root_windows.size());
-  if (root_windows[0] == root_window)
-    return root_windows[1];
-  return root_windows[0];
 }
 
 // Returns the coordinate along the secondary axis to snap to.
@@ -307,13 +288,7 @@ class WindowSize {
 
 WorkspaceWindowResizer::~WorkspaceWindowResizer() {
   Shell* shell = Shell::GetInstance();
-  shell->mouse_cursor_filter()->set_mouse_warp_mode(
-      MouseCursorEventFilter::WARP_ALWAYS);
-  shell->mouse_cursor_filter()->HideSharedEdgeIndicator();
   shell->cursor_manager()->UnlockCursor();
-
-  if (destroyed_)
-    *destroyed_ = true;
 }
 
 // static
@@ -362,26 +337,12 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location_in_parent,
 
   if (!attached_windows_.empty())
     LayoutAttachedWindows(&bounds);
-  if (bounds != window()->bounds()) {
-    bool destroyed = false;
-    destroyed_ = &destroyed;
+  if (bounds != window()->bounds())
     window()->SetBounds(bounds);
-    if (destroyed)
-      return;
-    destroyed_ = NULL;
-  }
-  // Show a phantom window for dragging in another root window.
-  if (HasSecondaryRootWindow())
-    UpdateDragWindow(bounds, in_original_root);
-  else
-    drag_window_controller_.reset();
-
 }
 
 void WorkspaceWindowResizer::CompleteDrag(int event_flags) {
   wm::SetUserHasChangedWindowPositionOrSize(details_.window, true);
-  window()->layer()->SetOpacity(details_.initial_opacity);
-  drag_window_controller_.reset();
   snap_phantom_window_controller_.reset();
   if (!did_move_or_resize_ || details_.window_component != HTCAPTION)
     return;
@@ -403,29 +364,10 @@ void WorkspaceWindowResizer::CompleteDrag(int event_flags) {
     window()->SetBounds(snap_sizer_->target_bounds());
     return;
   }
-  gfx::Rect bounds(GetFinalBounds(window()->bounds()));
-
-  // Check if the destination is another display.
-  gfx::Point last_mouse_location_in_screen = last_mouse_location_;
-  wm::ConvertPointToScreen(window()->parent(), &last_mouse_location_in_screen);
-  gfx::Screen* screen = Shell::GetScreen();
-  const gfx::Display dst_display =
-      screen->GetDisplayNearestPoint(last_mouse_location_in_screen);
-
-  if (dst_display.id() !=
-      screen->GetDisplayNearestWindow(window()->GetRootWindow()).id()) {
-    // Don't animate when moving to another display.
-    const gfx::Rect dst_bounds =
-        ScreenAsh::ConvertRectToScreen(window()->parent(), bounds);
-    window()->SetBoundsInScreen(dst_bounds, dst_display);
-  }
 }
 
 void WorkspaceWindowResizer::RevertDrag() {
-  window()->layer()->SetOpacity(details_.initial_opacity);
-  drag_window_controller_.reset();
   snap_phantom_window_controller_.reset();
-  Shell::GetInstance()->mouse_cursor_filter()->HideSharedEdgeIndicator();
 
   if (!did_move_or_resize_)
     return;
@@ -469,26 +411,11 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
       total_initial_size_(0),
       snap_type_(SNAP_NONE),
       num_mouse_moves_since_bounds_change_(0),
-      destroyed_(NULL),
       magnetism_window_(NULL) {
   DCHECK(details_.is_resizable);
 
   Shell* shell = Shell::GetInstance();
   shell->cursor_manager()->LockCursor();
-
-  // The pointer should be confined in one display during resizing a window
-  // because the window cannot span two displays at the same time anyway. The
-  // exception is window/tab dragging operation. During that operation,
-  // |mouse_warp_mode_| should be set to WARP_DRAG so that the user could move a
-  // window/tab to another display.
-  MouseCursorEventFilter* mouse_cursor_filter = shell->mouse_cursor_filter();
-  mouse_cursor_filter->set_mouse_warp_mode(
-      ShouldAllowMouseWarp() ?
-      MouseCursorEventFilter::WARP_DRAG : MouseCursorEventFilter::WARP_NONE);
-  if (ShouldAllowMouseWarp()) {
-    mouse_cursor_filter->ShowSharedEdgeIndicator(
-        details.window->GetRootWindow());
-  }
 
   // Only support attaching to the right/bottom.
   DCHECK(attached_windows_.empty() ||
@@ -823,51 +750,6 @@ int WorkspaceWindowResizer::PrimaryAxisCoordinate(int x, int y) const {
   return 0;
 }
 
-void WorkspaceWindowResizer::UpdateDragWindow(const gfx::Rect& bounds,
-                                              bool in_original_root) {
-  if (!did_move_or_resize_ || details_.window_component != HTCAPTION ||
-      !ShouldAllowMouseWarp()) {
-    return;
-  }
-
-  // It's available. Show a phantom window on the display if needed.
-  aura::RootWindow* another_root =
-      GetAnotherRootWindow(window()->GetRootWindow());
-  const gfx::Rect root_bounds_in_screen(another_root->GetBoundsInScreen());
-  const gfx::Rect bounds_in_screen =
-      ScreenAsh::ConvertRectToScreen(window()->parent(), bounds);
-  gfx::Rect bounds_in_another_root =
-      gfx::IntersectRects(root_bounds_in_screen, bounds_in_screen);
-
-  const float fraction_in_another_window =
-      (bounds_in_another_root.width() * bounds_in_another_root.height()) /
-      static_cast<float>(bounds.width() * bounds.height());
-  const float phantom_opacity =
-      !in_original_root ? 1 : (kMaxOpacity * fraction_in_another_window);
-  const float window_opacity =
-      in_original_root ? 1 : (kMaxOpacity * (1 - fraction_in_another_window));
-
-  if (fraction_in_another_window > 0) {
-    if (!drag_window_controller_.get()) {
-      drag_window_controller_.reset(
-          new DragWindowController(window()));
-      // Always show the drag phantom on the |another_root| window.
-      drag_window_controller_->SetDestinationDisplay(
-          Shell::GetScreen()->GetDisplayMatching(
-              another_root->GetBoundsInScreen()));
-      drag_window_controller_->Show();
-    } else {
-      // No animation.
-      drag_window_controller_->SetBounds(bounds_in_screen);
-    }
-    drag_window_controller_->SetOpacity(phantom_opacity);
-    window()->layer()->SetOpacity(window_opacity);
-  } else {
-    drag_window_controller_.reset();
-    window()->layer()->SetOpacity(1.0f);
-  }
-}
-
 void WorkspaceWindowResizer::UpdateSnapPhantomWindow(const gfx::Point& location,
                                                      const gfx::Rect& bounds) {
   if (!did_move_or_resize_ || details_.window_component != HTCAPTION)
@@ -943,12 +825,6 @@ WorkspaceWindowResizer::SnapType WorkspaceWindowResizer::GetSnapType(
   if (location.x() >= area.right() - 1)
     return SNAP_RIGHT_EDGE;
   return SNAP_NONE;
-}
-
-bool WorkspaceWindowResizer::ShouldAllowMouseWarp() const {
-  return (details_.window_component == HTCAPTION) &&
-      (window()->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_NONE) &&
-      (window()->type() == aura::client::WINDOW_TYPE_NORMAL);
 }
 
 }  // namespace internal

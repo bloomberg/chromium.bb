@@ -54,7 +54,7 @@ class ASH_EXPORT DragWindowController {
   void SetOpacity(float opacity);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(WorkspaceWindowResizerTest, DragWindowController);
+  FRIEND_TEST_ALL_PREFIXES(DragWindowResizerTest, DragWindowController);
 
   // Creates and shows the |drag_widget_| at |bounds|.
   // |layer| is shown on top of the drag window if it is non-NULL.
