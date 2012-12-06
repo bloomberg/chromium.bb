@@ -390,7 +390,7 @@ TEST_F(ViewTest, MouseEvent) {
   v2->SetBoundsRect(gfx::Rect(100, 100, 100, 100));
 
   scoped_ptr<Widget> widget(new Widget);
-  Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(50, 50, 650, 650);
   widget->Init(params);
@@ -452,7 +452,7 @@ TEST_F(ViewTest, DeleteOnPressed) {
   v2->Reset();
 
   scoped_ptr<Widget> widget(new Widget);
-  Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(50, 50, 650, 650);
   widget->Init(params);
@@ -508,7 +508,7 @@ TEST_F(ViewTest, TouchEvent) {
   v3->SetBoundsRect(gfx::Rect(0, 0, 100, 100));
 
   scoped_ptr<Widget> widget(new Widget());
-  Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(50, 50, 650, 650);
   widget->Init(params);
@@ -608,7 +608,7 @@ TEST_F(ViewTest, GestureEvent) {
   v3->SetBoundsRect(gfx::Rect(0, 0, 100, 100));
 
   scoped_ptr<Widget> widget(new Widget());
-  Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(50, 50, 650, 650);
   widget->Init(params);
@@ -674,7 +674,7 @@ TEST_F(ViewTest, ScrollGestureEvent) {
   v3->SetBoundsRect(gfx::Rect(0, 0, 100, 100));
 
   scoped_ptr<Widget> widget(new Widget());
-  Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(50, 50, 650, 650);
   widget->Init(params);
@@ -983,7 +983,8 @@ void RotateClockwise(gfx::Transform* transform) {
 
 TEST_F(ViewTest, HitTestMasks) {
   Widget* widget = new Widget;
-  widget->Init(Widget::InitParams(Widget::InitParams::TYPE_POPUP));
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  widget->Init(params);
   View* root_view = widget->GetRootView();
   root_view->SetBoundsRect(gfx::Rect(0, 0, 500, 500));
 
@@ -1039,7 +1040,8 @@ TEST_F(ViewTest, HitTestMasks) {
 
 TEST_F(ViewTest, NotifyEnterExitOnChild) {
   Widget* widget = new Widget;
-  widget->Init(Widget::InitParams(Widget::InitParams::TYPE_POPUP));
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  widget->Init(params);
   View* root_view = widget->GetRootView();
   root_view->SetBoundsRect(gfx::Rect(0, 0, 500, 500));
 
@@ -1174,7 +1176,7 @@ TEST_F(ViewTest, Textfield) {
   const string16 kEmptyString;
 
   Widget* widget = new Widget;
-  Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.bounds = gfx::Rect(0, 0, 100, 100);
   widget->Init(params);
   View* root_view = widget->GetRootView();
@@ -1212,7 +1214,7 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
 
   Widget* widget = new Widget;
-  Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.bounds = gfx::Rect(0, 0, 100, 100);
   widget->Init(params);
   View* root_view = widget->GetRootView();
@@ -1334,7 +1336,7 @@ TEST_F(ViewTest, ActivateAccelerator) {
 
   // Create a window and add the view as its child.
   scoped_ptr<Widget> widget(new Widget);
-  Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(0, 0, 100, 100);
   widget->Init(params);
@@ -1399,7 +1401,7 @@ TEST_F(ViewTest, HiddenViewWithAccelerator) {
   EXPECT_EQ(view->accelerator_count_map_[return_accelerator], 0);
 
   scoped_ptr<Widget> widget(new Widget);
-  Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(0, 0, 100, 100);
   widget->Init(params);
@@ -1429,7 +1431,7 @@ TEST_F(ViewTest, ViewInHiddenWidgetWithAccelerator) {
   EXPECT_EQ(view->accelerator_count_map_[return_accelerator], 0);
 
   scoped_ptr<Widget> widget(new Widget);
-  Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(0, 0, 100, 100);
   widget->Init(params);
@@ -1700,8 +1702,13 @@ class DefaultButtonTest : public ViewTest {
   virtual void SetUp() OVERRIDE {
     ViewTest::SetUp();
     test_dialog_ = new TestDialog(NULL);
-    Widget* window =
-        Widget::CreateWindowWithBounds(test_dialog_, gfx::Rect(0, 0, 100, 100));
+
+    Widget* window = new Widget;
+    Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+    params.delegate = test_dialog_;
+    params.bounds = gfx::Rect(0, 0, 100, 100);
+    window->Init(params);
+
     test_dialog_->widget_ = window;
     window->Show();
     focus_manager_ = test_dialog_->contents_->GetFocusManager();
@@ -1811,8 +1818,13 @@ class ButtonDropDownTest : public ViewTest {
   virtual void SetUp() OVERRIDE {
     ViewTest::SetUp();
     test_dialog_ = new TestDialog(new MockMenuModel());
-    Widget* window =
-        Widget::CreateWindowWithBounds(test_dialog_, gfx::Rect(0, 0, 100, 100));
+
+    Widget* window = new Widget;
+    Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+    params.delegate = test_dialog_;
+    params.bounds = gfx::Rect(0, 0, 100, 100);
+    window->Init(params);
+
     test_dialog_->widget_ = window;
     window->Show();
     test_dialog_->button_drop_->SetBoundsRect(gfx::Rect(0, 0, 100, 100));
@@ -2038,7 +2050,7 @@ TEST_F(ViewTest, TransformPaint) {
   v2->SetBoundsRect(gfx::Rect(100, 100, 200, 100));
 
   Widget* widget = new Widget;
-  Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.bounds = gfx::Rect(50, 50, 650, 650);
   widget->Init(params);
   widget->Show();
@@ -2077,7 +2089,7 @@ TEST_F(ViewTest, TransformEvent) {
   v2->SetBoundsRect(gfx::Rect(100, 100, 200, 100));
 
   Widget* widget = new Widget;
-  Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.bounds = gfx::Rect(50, 50, 650, 650);
   widget->Init(params);
   View* root = widget->GetRootView();
@@ -2214,7 +2226,7 @@ TEST_F(ViewTest, TransformVisibleBound) {
   gfx::Rect viewport_bounds(0, 0, 100, 100);
 
   scoped_ptr<Widget> widget(new Widget);
-  Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = viewport_bounds;
   widget->Init(params);
@@ -2273,7 +2285,7 @@ TEST_F(ViewTest, OnVisibleBoundsChanged) {
   gfx::Rect viewport_bounds(0, 0, 100, 100);
 
   scoped_ptr<Widget> widget(new Widget);
-  Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = viewport_bounds;
   widget->Init(params);
@@ -2448,7 +2460,7 @@ TEST_F(ViewTest, ConvertPointToViewWithTransform) {
 // Tests conversion methods for rectangles.
 TEST_F(ViewTest, ConvertRectWithTransform) {
   scoped_ptr<Widget> widget(new Widget);
-  Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(50, 50, 650, 650);
   widget->Init(params);
@@ -2920,7 +2932,7 @@ class ViewLayerTest : public ViewsTestBase {
     View::set_use_acceleration_when_possible(true);
 
     widget_ = new Widget;
-    Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
+    Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
     params.bounds = gfx::Rect(50, 50, 200, 200);
     widget_->Init(params);
     widget_->Show();
