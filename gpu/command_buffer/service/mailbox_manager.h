@@ -30,7 +30,8 @@ class TextureManager;
 // Identifies a mailbox where a texture definition can be stored for
 // transferring textures between contexts that are not in the same context
 // group. It is a random key signed with a hash of a private key.
-struct MailboxName {
+struct GPU_EXPORT MailboxName {
+  MailboxName();
   GLbyte key[GL_MAILBOX_SIZE_CHROMIUM / 2];
   GLbyte signature[GL_MAILBOX_SIZE_CHROMIUM / 2];
 };

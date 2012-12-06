@@ -112,14 +112,17 @@ class COMPOSITOR_EXPORT Texture : public base::RefCounted<Texture> {
   virtual unsigned int PrepareTexture() = 0;
   virtual WebKit::WebGraphicsContext3D* HostContext3D() = 0;
 
+  virtual void Consume(const gfx::Size& new_size) {}
+  virtual void Produce() {}
+
  protected:
   virtual ~Texture();
+  gfx::Size size_;  // in pixel
 
  private:
   friend class base::RefCounted<Texture>;
 
   bool flipped_;
-  gfx::Size size_;  // in pixel
   float device_scale_factor_;
 
   DISALLOW_COPY_AND_ASSIGN(Texture);

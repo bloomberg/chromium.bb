@@ -16,7 +16,6 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
   scoped_refptr<gfx::GLSurface> surface;
   if (!handle.handle) {
     DCHECK(handle.transport);
-    DCHECK(handle.parent_client_id);
     surface = new TextureImageTransportSurface(manager, stub, handle);
   } else {
     surface = gfx::GLSurface::CreateViewGLSurface(false, handle.handle);

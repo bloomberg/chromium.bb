@@ -16,6 +16,8 @@ class Rect;
 class Size;
 }
 
+class SkRegion;
+
 namespace content {
 
 // Provides higher level operations on top of the WebKit::WebGraphicsContext3D
@@ -66,6 +68,12 @@ class GLHelper {
   WebKit::WebGLId CompileShaderFromSource(const WebKit::WGC3Dchar* source,
                                           WebKit::WGC3Denum type);
 
+  // Copies all pixels from |previous_texture| into |texture| that are
+  // inside the region covered by |old_damage| but not part of |new_damage|.
+  void CopySubBufferDamage(WebKit::WebGLId texture,
+                           WebKit::WebGLId previous_texture,
+                           const SkRegion& new_damage,
+                           const SkRegion& old_damage);
  private:
   class CopyTextureToImpl;
 

@@ -397,7 +397,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   static void AcknowledgeBufferPresent(
       int32 route_id,
       int gpu_host_id,
-      bool presented,
+      uint64 surface_handle,
       uint32 sync_point);
 
   // Called by the view in response to AcceleratedSurfaceBuffersSwapped for
@@ -410,15 +410,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // Called by the view when the parent changes. If a parent isn't available,
   // NULL is used.
   void ParentChanged(gfx::NativeViewId new_parent);
-
-  // Called by the view in response to visibility changes:
-  // 1. After the front surface is guarenteed to no longer be in use by the ui
-  //    (protected false),
-  // 2. When the ui expects to have a valid front surface (protected true).
-  static void SendFrontSurfaceIsProtected(bool is_protected,
-                                          uint32 protection_state_id,
-                                          int32 route_id,
-                                          int gpu_host_id);
 #endif
 
   // Signals that the compositing surface was updated, e.g. after a lost context

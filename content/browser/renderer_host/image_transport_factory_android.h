@@ -30,6 +30,12 @@ class ImageTransportFactoryAndroid {
       const gfx::GLSurfaceHandle& handle) = 0;
 
   virtual uint32_t InsertSyncPoint() = 0;
+  virtual uint32_t CreateTexture() = 0;
+  virtual void DeleteTexture(uint32_t id) = 0;
+  virtual void AcquireTexture(
+      uint32 texture_id, const signed char* mailbox_name) = 0;
+  virtual void ReleaseTexture(
+      uint32 texture_id, const signed char* mailbox_name) = 0;
 
   virtual WebKit::WebGraphicsContext3D* GetContext3D() = 0;
   virtual GLHelper* GetGLHelper() = 0;

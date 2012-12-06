@@ -4,6 +4,8 @@
 
 #include "gpu/command_buffer/service/mailbox_manager.h"
 
+#include <algorithm>
+
 #include "base/rand_util.h"
 #include "crypto/hmac.h"
 #include "gpu/command_buffer/service/gl_utils.h"
@@ -12,6 +14,11 @@
 namespace gpu {
 namespace gles2 {
 
+MailboxName::MailboxName() {
+  std::fill(key, key + sizeof(key), 0);
+  std::fill(signature, signature + sizeof(signature), 0);
+}
+
 MailboxManager::MailboxManager()
     : hmac_(crypto::HMAC::SHA256),
       textures_(std::ptr_fun(&MailboxManager::TargetNameLess)) {
@@ -19,9 +26,11 @@ MailboxManager::MailboxManager()
   bool success = hmac_.Init(
       base::StringPiece(private_key_, sizeof(private_key_)));
   DCHECK(success);
+  DCHECK(!IsMailboxNameValid(MailboxName()));
 }
 
 MailboxManager::~MailboxManager() {
+  DCHECK(!textures_.size());
 }
 
 void MailboxManager::GenerateMailboxName(MailboxName* name) {
@@ -36,10 +45,8 @@ TextureDefinition* MailboxManager::ConsumeTexture(unsigned target,
 
   TextureDefinitionMap::iterator it =
       textures_.find(TargetName(target, name));
-  if (it == textures_.end()) {
-    NOTREACHED();
+  if (it == textures_.end())
     return NULL;
-  }
 
   TextureDefinition* definition = it->second.definition.release();
   textures_.erase(it);

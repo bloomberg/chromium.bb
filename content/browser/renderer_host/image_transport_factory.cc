@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
@@ -27,6 +28,8 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebCompositorOutputSurface.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebCompositorOutputSurfaceClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGraphicsContext3D.h"
+#include "third_party/khronos/GLES2/gl2.h"
+#include "third_party/khronos/GLES2/gl2ext.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_setup.h"
 #include "ui/compositor/test_web_graphics_context_3d.h"
@@ -65,7 +68,7 @@ class DefaultTransportFactory
   virtual scoped_refptr<ui::Texture> CreateTransportClient(
       const gfx::Size& size,
       float device_scale_factor,
-      uint64 transport_handle) OVERRIDE {
+      const std::string& mailbox_name) OVERRIDE {
     return NULL;
   }
 
@@ -95,40 +98,6 @@ class DefaultTransportFactory
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DefaultTransportFactory);
-};
-
-class ImageTransportClientTexture : public ui::Texture {
- public:
-  ImageTransportClientTexture(
-      WebKit::WebGraphicsContext3D* host_context,
-      const gfx::Size& size,
-      float device_scale_factor,
-      uint64 surface_id)
-          : ui::Texture(true, size, device_scale_factor),
-            host_context_(host_context),
-            texture_id_(surface_id) {
-  }
-
-  // ui::Texture overrides:
-  virtual unsigned int PrepareTexture() OVERRIDE {
-    return texture_id_;
-  }
-
-  virtual WebKit::WebGraphicsContext3D* HostContext3D() OVERRIDE {
-    return host_context_;
-  }
-
- protected:
-  virtual ~ImageTransportClientTexture() {}
-
- private:
-  // A raw pointer. This |ImageTransportClientTexture| will be destroyed
-  // before the |host_context_| via
-  // |ImageTransportFactoryObserver::OnLostContext()| handlers.
-  WebKit::WebGraphicsContext3D* host_context_;
-  unsigned texture_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(ImageTransportClientTexture);
 };
 
 class OwnedTexture : public ui::Texture, ImageTransportFactoryObserver {
@@ -163,7 +132,7 @@ class OwnedTexture : public ui::Texture, ImageTransportFactoryObserver {
     DeleteTexture();
   }
 
- private:
+ protected:
   void DeleteTexture() {
     if (texture_id_) {
       host_context_->deleteTexture(texture_id_);
@@ -178,6 +147,53 @@ class OwnedTexture : public ui::Texture, ImageTransportFactoryObserver {
   unsigned texture_id_;
 
   DISALLOW_COPY_AND_ASSIGN(OwnedTexture);
+};
+
+class ImageTransportClientTexture : public OwnedTexture {
+ public:
+  ImageTransportClientTexture(
+      WebKit::WebGraphicsContext3D* host_context,
+      const gfx::Size& size,
+      float device_scale_factor,
+      const std::string& mailbox_name)
+      : OwnedTexture(host_context,
+                     size,
+                     device_scale_factor,
+                     host_context->createTexture()),
+        mailbox_name_(mailbox_name) {
+    DCHECK(mailbox_name.size() == GL_MAILBOX_SIZE_CHROMIUM);
+  }
+
+  virtual void Consume(const gfx::Size& new_size) OVERRIDE {
+    if (!mailbox_name_.length())
+      return;
+
+    DCHECK(host_context_ && texture_id_);
+    host_context_->bindTexture(GL_TEXTURE_2D, texture_id_);
+    host_context_->consumeTextureCHROMIUM(
+        GL_TEXTURE_2D,
+        reinterpret_cast<const signed char*>(mailbox_name_.c_str()));
+    size_ = new_size;
+    host_context_->flush();
+  }
+
+  virtual void Produce() OVERRIDE {
+    if (!mailbox_name_.length())
+      return;
+
+    DCHECK(host_context_ && texture_id_);
+    host_context_->bindTexture(GL_TEXTURE_2D, texture_id_);
+    host_context_->produceTextureCHROMIUM(
+        GL_TEXTURE_2D,
+        reinterpret_cast<const signed char*>(mailbox_name_.c_str()));
+  }
+
+ protected:
+  virtual ~ImageTransportClientTexture() {}
+
+ private:
+  std::string mailbox_name_;
+  DISALLOW_COPY_AND_ASSIGN(ImageTransportClientTexture);
 };
 
 class GpuProcessTransportFactory;
@@ -408,41 +424,24 @@ class GpuProcessTransportFactory :
     gfx::GLSurfaceHandle handle = gfx::GLSurfaceHandle(
         gfx::kNullPluginWindow, true);
     handle.parent_gpu_process_id = shared_context_->GetGPUProcessID();
-    handle.parent_client_id = shared_context_->GetChannelID();
-    handle.parent_context_id = shared_context_->GetContextID();
-    handle.parent_texture_id[0] = shared_context_->createTexture();
-    handle.parent_texture_id[1] = shared_context_->createTexture();
-    handle.sync_point = shared_context_->insertSyncPoint();
 
     return handle;
   }
 
   virtual void DestroySharedSurfaceHandle(
       gfx::GLSurfaceHandle surface) OVERRIDE {
-    if (!shared_context_.get())
-      return;
-    uint32 channel_id = shared_context_->GetChannelID();
-    uint32 context_id = shared_context_->GetContextID();
-    if (surface.parent_gpu_process_id != shared_context_->GetGPUProcessID() ||
-        surface.parent_client_id != channel_id ||
-        surface.parent_context_id != context_id)
-      return;
-
-    shared_context_->deleteTexture(surface.parent_texture_id[0]);
-    shared_context_->deleteTexture(surface.parent_texture_id[1]);
-    shared_context_->flush();
   }
 
   virtual scoped_refptr<ui::Texture> CreateTransportClient(
       const gfx::Size& size,
       float device_scale_factor,
-      uint64 transport_handle) {
+      const std::string& mailbox_name) {
     if (!shared_context_.get())
         return NULL;
     scoped_refptr<ImageTransportClientTexture> image(
         new ImageTransportClientTexture(shared_context_.get(),
                                         size, device_scale_factor,
-                                        transport_handle));
+                                        mailbox_name));
     return image;
   }
 

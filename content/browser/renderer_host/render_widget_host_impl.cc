@@ -1530,7 +1530,7 @@ void RenderWidgetHostImpl::OnCompositorSurfaceBuffersSwapped(
   if (!view_) {
     RenderWidgetHostImpl::AcknowledgeBufferPresent(route_id,
                                                    gpu_process_host_id,
-                                                   false,
+                                                   surface_handle,
                                                    0);
     return;
   }
@@ -2310,11 +2310,11 @@ bool RenderWidgetHostImpl::GotResponseToLockMouseRequest(bool allowed) {
 
 // static
 void RenderWidgetHostImpl::AcknowledgeBufferPresent(
-    int32 route_id, int gpu_host_id, bool presented, uint32 sync_point) {
+    int32 route_id, int gpu_host_id, uint64 surface_handle, uint32 sync_point) {
   GpuProcessHostUIShim* ui_shim = GpuProcessHostUIShim::FromID(gpu_host_id);
   if (ui_shim)
     ui_shim->Send(new AcceleratedSurfaceMsg_BufferPresented(route_id,
-                                                            presented,
+                                                            surface_handle,
                                                             sync_point));
 }
 
@@ -2337,18 +2337,6 @@ void RenderWidgetHostImpl::ParentChanged(gfx::NativeViewId new_parent) {
 #endif
 }
 
-// static
-void RenderWidgetHostImpl::SendFrontSurfaceIsProtected(
-    bool is_protected,
-    uint32 protection_state_id,
-    int32 route_id,
-    int gpu_host_id) {
-  GpuProcessHostUIShim* ui_shim = GpuProcessHostUIShim::FromID(gpu_host_id);
-  if (ui_shim) {
-    ui_shim->Send(new AcceleratedSurfaceMsg_SetFrontSurfaceIsProtected(
-        route_id, is_protected, protection_state_id));
-  }
-}
 #endif
 
 void RenderWidgetHostImpl::DelayedAutoResized() {
