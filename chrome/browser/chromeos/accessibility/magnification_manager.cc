@@ -87,6 +87,18 @@ class MagnificationManagerImpl : public MagnificationManager,
     observers_.RemoveObserver(observer);
   }
 
+  void SaveScreenMagnifierScale(double scale) OVERRIDE {
+    Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
+    profile->GetPrefs()->SetDouble(prefs::kScreenMagnifierScale, scale);
+  }
+
+  double GetSavedScreenMagnifierScale() OVERRIDE {
+    Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
+    if (profile->GetPrefs()->HasPrefPath(prefs::kScreenMagnifierScale))
+      return profile->GetPrefs()->GetDouble(prefs::kScreenMagnifierScale);
+    return std::numeric_limits<double>::min();
+  }
+
  private:
   void NotifyMagnifierTypeChanged(ash::MagnifierType new_type) {
     FOR_EACH_OBSERVER(MagnificationObserver, observers_,

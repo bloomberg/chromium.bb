@@ -11,6 +11,7 @@
 #include "ash/wm/window_util.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -517,16 +518,17 @@ string16 ChromeShellDelegate::GetTimeDurationLongString(base::TimeDelta delta) {
 }
 void ChromeShellDelegate::SaveScreenMagnifierScale(double scale) {
 #if defined(OS_CHROMEOS)
-  Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
-  profile->GetPrefs()->SetDouble(prefs::kScreenMagnifierScale, scale);
+  if (chromeos::MagnificationManager::Get())
+    chromeos::MagnificationManager::Get()->SaveScreenMagnifierScale(scale);
 #endif
 }
 
 double ChromeShellDelegate::GetSavedScreenMagnifierScale() {
 #if defined(OS_CHROMEOS)
-  Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
-  if (profile->GetPrefs()->HasPrefPath(prefs::kScreenMagnifierScale))
-    return profile->GetPrefs()->GetDouble(prefs::kScreenMagnifierScale);
+  if (chromeos::MagnificationManager::Get()) {
+    return chromeos::MagnificationManager::Get()->
+        GetSavedScreenMagnifierScale();
+  }
 #endif
   return std::numeric_limits<double>::min();
 }

@@ -42,6 +42,11 @@ class MagnificationManager {
   // Changes the type of the screen magnifier.
   virtual void SetMagnifier(ash::MagnifierType type) = 0;
 
+  // Saves the magnifier scale to the pref.
+  virtual void SaveScreenMagnifierScale(double scale) = 0;
+  // Loads the magnifier scale from the pref.
+  virtual double GetSavedScreenMagnifierScale() = 0;
+
  protected:
   virtual ~MagnificationManager() {}
 };
