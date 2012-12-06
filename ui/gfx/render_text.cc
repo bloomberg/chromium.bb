@@ -339,10 +339,10 @@ void SkiaTextRenderer::DrawDecorations(int x, int y, int width,
     SkPaint paint(paint_);
     paint.setAntiAlias(true);
     paint.setStyle(SkPaint::kFill_Style);
-    paint.setStrokeWidth(height);
+    paint.setStrokeWidth(height * 2);
     canvas_skia_->drawLine(
-        SkIntToScalar(x), SkIntToScalar(y) - text_size + offset,
-        SkIntToScalar(x + width), SkIntToScalar(y),
+        SkIntToScalar(x), SkIntToScalar(y),
+        SkIntToScalar(x + width), SkIntToScalar(y) - text_size + offset,
         paint);
   }
 }
