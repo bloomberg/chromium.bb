@@ -17,7 +17,7 @@ void _start(unsigned int info[]) {
   __asm__("mov %0, sp" : "=r" (sp));
   __asm__ volatile(
       ".p2align 4\n"
-      "bfc %0, #30, #2\n"
+      "bic %0, %0, #0xc0000000\n"
       "ldr %0, [%0, #-4095]\n"
       : "=r" (scratch) : "0" (sp + 4095));
 #elif defined(__x86_64__)

@@ -1143,8 +1143,7 @@ class Unary1RegisterUse : public ClassDecoder {
 //
 // If Rd is R15 or msbit < lsbit, the instruction is unpredictable.
 // NaCl disallows writing to PC to cause a jump.
-// Note: Currently, only implements bfc. (A8-46), which is used as an
-// alternative form of masking to that of bic.
+// Note: Currently, only implements bfc.
 class Unary1RegisterBitRangeMsbGeLsb : public ClassDecoder {
  public:
   // Interface for components of the instruction.
@@ -1157,7 +1156,6 @@ class Unary1RegisterBitRangeMsbGeLsb : public ClassDecoder {
   Unary1RegisterBitRangeMsbGeLsb() : ClassDecoder() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
-  virtual bool clears_bits(Instruction i, uint32_t mask) const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Unary1RegisterBitRangeMsbGeLsb);

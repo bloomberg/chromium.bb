@@ -667,33 +667,33 @@ TEST_F(ValidatorTests, DifferentConditionsBicLdrTest) {
   EXPECT_EQ(nacl_arm_val::kProblemUnsafeLoadStore, problem.problem());
 }
 
-TEST_F(ValidatorTests, BfcLdrInstGoodTest) {
-  // Test if we can use bfc to clear mask bits.
+TEST_F(ValidatorTests, BfcLdrInst) {
   static const arm_inst bfc_inst[] = {
     0xe7df2f1f,  // bfc r2, #30, #2
     0xe1920f9f,  // ldrex r0, [r2]
   };
-  validation_should_pass(bfc_inst,
+  validation_should_fail(bfc_inst,
                          NACL_ARRAY_SIZE(bfc_inst),
                          kDefaultBaseAddr,
-                         "Bfc Lcr instruction mask good test");
+                         "Bfc Ldr instruction mask has a mask that's "
+                         "technically safe, but we disallow it out of "
+                         "paranoia");
 }
 
 TEST_F(ValidatorTests, BfcLdrInstMaskTooBigTest) {
-  // Run test where bfc mask is too big (acceptable to mask off more than
-  // needed).
   static const arm_inst bfc_inst[] = {
     0xe7df2e9f,  // bfc r2, #29, #3
     0xe1920f9f,  // ldrex r0, [r2]
   };
-  validation_should_pass(bfc_inst,
+  validation_should_fail(bfc_inst,
                          NACL_ARRAY_SIZE(bfc_inst),
                          kDefaultBaseAddr,
-                         "Bfc Ldr instruction mask too big test");
+                         "Bfc Ldr instruction mask has a mask that's "
+                         "technically safe (even too wide!), but we "
+                         "disallow it out of paranoia");
 }
 
 TEST_F(ValidatorTests, BfcLdrInstMaskWrongPlaceTest) {
-  // Run test where bfc mask is in the wrong place.
   static const arm_inst bfc_inst[] = {
     0xe7da2c9f,  // bfc r2, #25, #2
     0xe1920f9f,  // ldrex r0, [r2]
@@ -701,7 +701,9 @@ TEST_F(ValidatorTests, BfcLdrInstMaskWrongPlaceTest) {
   validation_should_fail(bfc_inst,
                          NACL_ARRAY_SIZE(bfc_inst),
                          kDefaultBaseAddr,
-                         "Bfc Ldr instruction mask wrong place test");
+                         "Bfc Ldr instruction mask has a mask that's "
+                         "not safe, and anyways we disallow it out of "
+                         "paranoia");
 }
 
 // Test effects of virtual dynamic_code_replacement_sentinel on the movw
@@ -924,12 +926,7 @@ struct AlwaysDominatesTestInfo {
 };
 TEST_F(ValidatorTests, AlwaysDominatesTest) {
   // Test always_dominates, with all conditional combinations of:
-  AlwaysDominatesTestInfo test[2] = {
-    { {
-        // BFC followed by a load/store.
-        0xe7df2f1f,  // bfcCC r2, #30, #2
-        0xe1920f9f,  // ldrexCC r0, [r2]
-      }, { "bfc", "ldrex" }, false },
+  AlwaysDominatesTestInfo test[] = {
     { {
         // BIC (potentially setting flags) followed by a branch.
         0xe3cee2fe,  // bic[s]CC lr, lr, #-536870897     ; 0xe000000f
@@ -1025,8 +1022,6 @@ TEST_F(ValidatorTests, AlwaysDominatesTest) {
     }
   }
 }
-
-// TODO(karl): Add pattern rules and test cases for using bfc to update SP.
 
 TEST_F(ValidatorTests, UnmaskedSpUpdate) {
   vector<arm_inst> code(_validator->InstructionsPerBundle(), kNop);

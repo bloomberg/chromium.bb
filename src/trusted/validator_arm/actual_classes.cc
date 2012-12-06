@@ -850,22 +850,4 @@ RegisterList Unary1RegisterBitRangeMsbGeLsb::defs(Instruction i) const {
   return RegisterList(d.reg(i));
 }
 
-bool Unary1RegisterBitRangeMsbGeLsb
-::clears_bits(Instruction i, uint32_t mask) const {
-  int msbit = msb.value(i);
-  int lsbit = lsb.value(i);
-  int width = msbit + 1 - lsbit;
-  if (msbit < lsbit) {
-    // This is UNPREDICTABLE, return the safest thing: no bits were cleared.
-    return false;
-  }
-  else if (width == 32) {
-    // Clears everything.
-    return true;
-  } else {
-    uint32_t bit_mask = (((1 << width) - 1) << lsbit);
-    return (bit_mask & mask) == mask;
-  }
-}
-
 }  // namespace nacl_arm_dec

@@ -66,9 +66,6 @@ TEST_F(ValidatorTests, WholeA32InstructionSpaceTesting) {
   const uint32_t data_address_mask = _validator->data_address_mask();
   EXPECT_NE(data_address_mask, 0u);  // There should be some mask.
   EXPECT_EQ(nacl::PopCount(~data_address_mask + 1) , 1);  // Power of 2.
-  const uint32_t data_address_mask_msb = 31;  // Implied by the above.
-  const uint32_t min_data_address_mask_lsb =
-      nacl::CountTrailingZeroes(data_address_mask);
 
   const nacl_arm_dec::Arm32DecoderState decode_state;
   uint32_t i = 0;
@@ -185,25 +182,17 @@ TEST_F(ValidatorTests, WholeA32InstructionSpaceTesting) {
              ((i & 0x0F3F0E00) == 0x0D1F0A00) ||
              ((i & 0x0FBF0E00) == 0x0D3F0A00)));
     bool expect_clears_code_bits_or_unsafe = !expect_unconditional &&
-        ((  // BIC{S} Rd, Rn, #imm.
+        (  // BIC{S} Rd, Rn, #imm.
             // cccc 0011 110S nnnn dddd iiii iiii iiii
             ((i & 0x0FE00000) == 0x03C00000) &&
             ((ARMExpandImm(i & 0xFFF) & code_address_mask) ==
-             code_address_mask)) ||
-         (  // BFC Rd, #0, #32  // Clears all the bits.
-             // cccc 0111 1101 1111 dddd 0000 0001 1111
-             ((i & 0x0FFF0FFF) == 0x07DF001F)));
+             code_address_mask));
     bool expect_clears_data_bits_or_unsafe = !expect_unconditional &&
-        ((  // BIC{S} Rd, Rn, #imm.
+        (  // BIC{S} Rd, Rn, #imm.
             // cccc 0011 110S nnnn dddd iiii iiii iiii
             ((i & 0x0FE00000) == 0x03C00000) &&
             ((ARMExpandImm(i & 0xFFF) & data_address_mask) ==
-             data_address_mask)) ||
-         (  // BFC Rd, #lsb, #width.
-             // cccc 0111 110M MMMM dddd LLLL L001 1111
-             ((i & 0x0FE0007F) == 0x07C0001F) &&
-             (((i >> 7) & 0x1F) <= min_data_address_mask_lsb) &&
-             (((i >> 16) & 0x1F) == data_address_mask_msb)));
+             data_address_mask));
     uint32_t expect_sets_Z_if_data_bits_clear_register_bitmask =
         !expect_unconditional &&
         // TST Rn, #imm

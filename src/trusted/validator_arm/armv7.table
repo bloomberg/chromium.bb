@@ -1154,9 +1154,6 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
                                         cccc0111101wwwwwddddlllll101nnnn
                                         RegsNotPc (v6T2)
 | 1110x      x00      -         1111  = Unary1RegisterBitRangeMsbGeLsb
-                                        # Note: Alternative form for clearing
-                                        # bits in a memory address (i.e.
-                                        # alternative for bic).
                                         Bfc_17_A1_P46
                                         cccc0111110mmmmmddddlllll0011111
                                         RegsNotPc (v6T2)
