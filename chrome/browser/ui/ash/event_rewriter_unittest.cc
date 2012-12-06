@@ -1759,116 +1759,11 @@ TEST_F(EventRewriterTest, TestRewriteCapsLockMod3InUse) {
 }
 
 TEST_F(EventRewriterTest, TestRewriteExtendedKeys) {
+  const CommandLine original_cl(*CommandLine::ForCurrentProcess());
   TestingPrefService prefs;
   chromeos::Preferences::RegisterUserPrefs(&prefs);
   EventRewriter rewriter;
   rewriter.set_pref_service_for_testing(&prefs);
-
-  // On non-chromebooks, the keyboard doesn't need to be remapped.
-
-  struct {
-    ui::KeyboardCode input;
-    KeyCode input_native;
-    unsigned int input_mods;
-    unsigned int input_native_mods;
-    ui::KeyboardCode output;
-    KeyCode output_native;
-    unsigned int output_mods;
-    unsigned int output_native_mods;
-  } default_tests[] = {
-    { ui::VKEY_BACK, keycode_backspace_,
-      ui::EF_ALT_DOWN, Mod1Mask,
-      ui::VKEY_BACK, keycode_backspace_,
-      ui::EF_ALT_DOWN, Mod1Mask, },
-    { ui::VKEY_UP, keycode_up_,
-      ui::EF_ALT_DOWN, Mod1Mask,
-      ui::VKEY_UP, keycode_up_,
-      ui::EF_ALT_DOWN, Mod1Mask, },
-    { ui::VKEY_UP, keycode_up_,
-      ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN, Mod1Mask | ControlMask,
-      ui::VKEY_UP, keycode_up_,
-      ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN, Mod1Mask | ControlMask, },
-    { ui::VKEY_DOWN, keycode_down_,
-      ui::EF_ALT_DOWN, Mod1Mask,
-      ui::VKEY_DOWN, keycode_down_,
-      ui::EF_ALT_DOWN, Mod1Mask, },
-    { ui::VKEY_LEFT, keycode_left_, 0, 0,
-      ui::VKEY_LEFT, keycode_left_, 0, 0 },
-    { ui::VKEY_RIGHT, keycode_right_, 0, 0,
-      ui::VKEY_RIGHT, keycode_right_, 0, 0 },
-    { ui::VKEY_OEM_PERIOD, keycode_period_, 0, 0,
-      ui::VKEY_OEM_PERIOD, keycode_period_, 0, 0 }
-  };
-
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(default_tests); ++i) {
-    EXPECT_EQ(GetExpectedResultAsString(default_tests[i].output,
-                                        default_tests[i].output_mods,
-                                        ui::ET_KEY_PRESSED,
-                                        default_tests[i].output_native,
-                                        default_tests[i].output_native_mods,
-                                        KeyPress),
-              GetRewrittenEventAsString(&rewriter,
-                                        default_tests[i].input,
-                                        default_tests[i].input_mods,
-                                        ui::ET_KEY_PRESSED,
-                                        default_tests[i].input_native,
-                                        default_tests[i].input_native_mods));
-
-    // Search key as a modifier does not change the outcome.
-    EXPECT_EQ(GetExpectedResultAsString(default_tests[i].output,
-                                        default_tests[i].output_mods,
-                                        ui::ET_KEY_PRESSED,
-                                        default_tests[i].output_native,
-                                        Mod4Mask |
-                                        default_tests[i].output_native_mods,
-                                        KeyPress),
-              GetRewrittenEventAsString(&rewriter,
-                                        default_tests[i].input,
-                                        default_tests[i].input_mods,
-                                        ui::ET_KEY_PRESSED,
-                                        default_tests[i].input_native,
-                                        Mod4Mask |
-                                        default_tests[i].input_native_mods));
-  }
-
-  // On a chromebook, an external keyboard doesn't need to be remapped.
-  const CommandLine original_cl(*CommandLine::ForCurrentProcess());
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kHasChromeOSKeyboard, "");
-
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(default_tests); ++i) {
-    EXPECT_EQ(GetExpectedResultAsString(default_tests[i].output,
-                                        default_tests[i].output_mods,
-                                        ui::ET_KEY_PRESSED,
-                                        default_tests[i].output_native,
-                                        default_tests[i].output_native_mods,
-                                        KeyPress),
-              GetRewrittenEventAsString(&rewriter,
-                                        default_tests[i].input,
-                                        default_tests[i].input_mods,
-                                        ui::ET_KEY_PRESSED,
-                                        default_tests[i].input_native,
-                                        default_tests[i].input_native_mods));
-
-    // Search key as a modifier does not change the outcome.
-    EXPECT_EQ(GetExpectedResultAsString(default_tests[i].output,
-                                        default_tests[i].output_mods,
-                                        ui::ET_KEY_PRESSED,
-                                        default_tests[i].output_native,
-                                        Mod4Mask |
-                                        default_tests[i].output_native_mods,
-                                        KeyPress),
-              GetRewrittenEventAsString(&rewriter,
-                                        default_tests[i].input,
-                                        default_tests[i].input_mods,
-                                        ui::ET_KEY_PRESSED,
-                                        default_tests[i].input_native,
-                                        Mod4Mask |
-                                        default_tests[i].input_native_mods));
-  }
-
-  // The internal chromebook keybaord should be remapped.
-  rewriter.set_force_chromeos_keyboard_for_testing(true);
 
   struct {
     ui::KeyboardCode input;
@@ -1954,44 +1849,6 @@ TEST_F(EventRewriterTest, TestRewriteExtendedKeys) {
   search_key_as_function_key.Init(prefs::kLanguageSearchKeyActsAsFunctionKey,
                                   &prefs);
   search_key_as_function_key.SetValue(true);
-
-
-  // An external keyboard should still not be remapped.
-  rewriter.set_force_chromeos_keyboard_for_testing(false);
-
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(default_tests); ++i) {
-    EXPECT_EQ(GetExpectedResultAsString(default_tests[i].output,
-                                        default_tests[i].output_mods,
-                                        ui::ET_KEY_PRESSED,
-                                        default_tests[i].output_native,
-                                        default_tests[i].output_native_mods,
-                                        KeyPress),
-              GetRewrittenEventAsString(&rewriter,
-                                        default_tests[i].input,
-                                        default_tests[i].input_mods,
-                                        ui::ET_KEY_PRESSED,
-                                        default_tests[i].input_native,
-                                        default_tests[i].input_native_mods));
-
-    // Search key as a modifier does not change the outcome.
-    EXPECT_EQ(GetExpectedResultAsString(default_tests[i].output,
-                                        default_tests[i].output_mods,
-                                        ui::ET_KEY_PRESSED,
-                                        default_tests[i].output_native,
-                                        Mod4Mask |
-                                        default_tests[i].output_native_mods,
-                                        KeyPress),
-              GetRewrittenEventAsString(&rewriter,
-                                        default_tests[i].input,
-                                        default_tests[i].input_mods,
-                                        ui::ET_KEY_PRESSED,
-                                        default_tests[i].input_native,
-                                        Mod4Mask |
-                                        default_tests[i].input_native_mods));
-  }
-
-  // The ChromeOS keyboard should be remapped with Search key modifiers.
-  rewriter.set_force_chromeos_keyboard_for_testing(true);
 
   struct {
     ui::KeyboardCode input;
@@ -2098,106 +1955,6 @@ TEST_F(EventRewriterTest, TestRewriteFunctionKeys) {
   chromeos::Preferences::RegisterUserPrefs(&prefs);
   EventRewriter rewriter;
   rewriter.set_pref_service_for_testing(&prefs);
-
-  // When not on a chromebook, F<numbers> are not rewritten.
-
-  struct {
-    ui::KeyboardCode input;
-    KeyCode input_native;
-    ui::KeyboardCode output;
-    KeyCode output_native;
-  } default_tests[] = {
-    { ui::VKEY_F1, keycode_f1_, ui::VKEY_F1, keycode_f1_, },
-    { ui::VKEY_F2, keycode_f2_, ui::VKEY_F2, keycode_f2_, },
-    { ui::VKEY_F3, keycode_f3_, ui::VKEY_F3, keycode_f3_, },
-    { ui::VKEY_F4, keycode_f4_, ui::VKEY_F4, keycode_f4_, },
-    { ui::VKEY_F5, keycode_f5_, ui::VKEY_F5, keycode_f5_, },
-    { ui::VKEY_F6, keycode_f6_, ui::VKEY_F6, keycode_f6_, },
-    { ui::VKEY_F7, keycode_f7_, ui::VKEY_F7, keycode_f7_, },
-    { ui::VKEY_F8, keycode_f8_, ui::VKEY_F8, keycode_f8_, },
-    { ui::VKEY_F9, keycode_f9_, ui::VKEY_F9, keycode_f9_, },
-    { ui::VKEY_F10, keycode_f10_, ui::VKEY_F10, keycode_f10_, },
-    { ui::VKEY_F11, keycode_f11_, ui::VKEY_F11, keycode_f11_, },
-    { ui::VKEY_F12, keycode_f12_, ui::VKEY_F12, keycode_f12_, },
-    { ui::VKEY_1, keycode_1_, ui::VKEY_1, keycode_1_, },
-    { ui::VKEY_2, keycode_2_, ui::VKEY_2, keycode_2_, },
-    { ui::VKEY_3, keycode_3_, ui::VKEY_3, keycode_3_, },
-    { ui::VKEY_4, keycode_4_, ui::VKEY_4, keycode_4_, },
-    { ui::VKEY_5, keycode_5_, ui::VKEY_5, keycode_5_, },
-    { ui::VKEY_6, keycode_6_, ui::VKEY_6, keycode_6_, },
-    { ui::VKEY_7, keycode_7_, ui::VKEY_7, keycode_7_, },
-    { ui::VKEY_8, keycode_8_, ui::VKEY_8, keycode_8_, },
-    { ui::VKEY_9, keycode_9_, ui::VKEY_9, keycode_9_, },
-    { ui::VKEY_0, keycode_0_, ui::VKEY_0, keycode_0_, },
-    { ui::VKEY_OEM_MINUS, keycode_minus_, ui::VKEY_OEM_MINUS, keycode_minus_, },
-    { ui::VKEY_OEM_PLUS, keycode_equal_, ui::VKEY_OEM_PLUS, keycode_equal_, },
-  };
-
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(default_tests); ++i) {
-    EXPECT_EQ(GetExpectedResultAsString(default_tests[i].output,
-                                        0,
-                                        ui::ET_KEY_PRESSED,
-                                        default_tests[i].output_native,
-                                        0U,
-                                        KeyPress),
-              GetRewrittenEventAsString(&rewriter,
-                                        default_tests[i].input,
-                                        0,
-                                        ui::ET_KEY_PRESSED,
-                                        default_tests[i].input_native,
-                                        0));
-
-    // Search key as a modifier does not change the outcome.
-    EXPECT_EQ(GetExpectedResultAsString(default_tests[i].output,
-                                        0,
-                                        ui::ET_KEY_PRESSED,
-                                        default_tests[i].output_native,
-                                        Mod4Mask,
-                                        KeyPress),
-              GetRewrittenEventAsString(&rewriter,
-                                        default_tests[i].input,
-                                        0,
-                                        ui::ET_KEY_PRESSED,
-                                        default_tests[i].input_native,
-                                        Mod4Mask));
-  }
-
-  // When on a Chromebook, but on the external keyboard, F<numbers> are not
-  // rewritten.
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kHasChromeOSKeyboard, "");
-
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(default_tests); ++i) {
-    EXPECT_EQ(GetExpectedResultAsString(default_tests[i].output,
-                                        0,
-                                        ui::ET_KEY_PRESSED,
-                                        default_tests[i].output_native,
-                                        0U,
-                                        KeyPress),
-              GetRewrittenEventAsString(&rewriter,
-                                        default_tests[i].input,
-                                        0,
-                                        ui::ET_KEY_PRESSED,
-                                        default_tests[i].input_native,
-                                        0));
-
-    // Search key as a modifier does not change the outcome.
-    EXPECT_EQ(GetExpectedResultAsString(default_tests[i].output,
-                                        0,
-                                        ui::ET_KEY_PRESSED,
-                                        default_tests[i].output_native,
-                                        Mod4Mask,
-                                        KeyPress),
-              GetRewrittenEventAsString(&rewriter,
-                                        default_tests[i].input,
-                                        0,
-                                        ui::ET_KEY_PRESSED,
-                                        default_tests[i].input_native,
-                                        Mod4Mask));
-  }
-
-  // When on a chromebook keyboard, F<number> keys do special stuff.
-  rewriter.set_force_chromeos_keyboard_for_testing(true);
 
   struct {
     ui::KeyboardCode input;
@@ -2405,7 +2162,6 @@ TEST_F(EventRewriterTest, TestRewriteExtendedKeysWithSearchRemapped) {
 
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kHasChromeOSKeyboard, "");
-  rewriter.set_force_chromeos_keyboard_for_testing(true);
 
   // Alt+Search+Down -> End
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_END,

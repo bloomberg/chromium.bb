@@ -43,9 +43,6 @@ class EventRewriter : public ash::EventRewriterDelegate,
   enum DeviceType {
     kDeviceUnknown = 0,
     kDeviceAppleKeyboard,
-#if defined(OS_CHROMEOS)
-    kDeviceChromeOSKeyboard,
-#endif
   };
 
   EventRewriter();
@@ -70,9 +67,6 @@ class EventRewriter : public ash::EventRewriterDelegate,
   void set_xkeyboard_for_testing(chromeos::input_method::XKeyboard* xkeyboard) {
     xkeyboard_ = xkeyboard;
   }
-  void set_force_chromeos_keyboard_for_testing(bool chromeos_keyboard) {
-    force_chromeos_keyboard_for_testing_ = chromeos_keyboard;
-  }
 #endif
 
   // Gets DeviceType from the |device_name|.
@@ -94,8 +88,6 @@ class EventRewriter : public ash::EventRewriterDelegate,
   virtual void DeviceAdded(int device_id) OVERRIDE;
   virtual void DeviceRemoved(int device_id) OVERRIDE;
   virtual void DeviceKeyPressedOrReleased(int device_id) OVERRIDE;
-
-  bool EventSourceIsChromeOSKeyboard() const;
 
   // We don't want to include Xlib.h here since it has polluting macros, so
   // define these locally.
@@ -211,8 +203,6 @@ class EventRewriter : public ash::EventRewriterDelegate,
   int last_device_id_;
 
 #if defined(OS_CHROMEOS)
-  bool force_chromeos_keyboard_for_testing_;
-
   // A mapping from X11 KeySym keys to KeyCode values.
   base::hash_map<unsigned long, unsigned long> keysym_to_keycode_map_;
 

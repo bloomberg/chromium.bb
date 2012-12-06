@@ -143,7 +143,6 @@ const PrefService* GetPrefService() {
 EventRewriter::EventRewriter()
     : last_device_id_(kBadDeviceId),
 #if defined(OS_CHROMEOS)
-      force_chromeos_keyboard_for_testing_(false),
       xkeyboard_(NULL),
 #endif
       pref_service_(NULL) {
@@ -194,20 +193,6 @@ EventRewriter::DeviceType EventRewriter::GetDeviceType(
     if (found_apple && found_keyboard)
       return kDeviceAppleKeyboard;
   }
-
-#if defined(OS_CHROMEOS)
-  if (HasChromeOSKeyboard()) {
-    // The chromebook internal keyboard's name.
-    if (LowerCaseEqualsASCII(device_name, "at translated set 2 keyboard"))
-      return kDeviceChromeOSKeyboard;
-    // The daisy chromebook internal keyboard's name.
-    if (LowerCaseEqualsASCII(device_name, "chromeos-ec-i2c"))
-      return kDeviceChromeOSKeyboard;
-    // The chromebox chrome-specific keyboard's name.
-    if (LowerCaseEqualsASCII(device_name, "samsung usb keyboard"))
-      return kDeviceChromeOSKeyboard;
-  }
-#endif
 
   return kDeviceUnknown;
 }
@@ -295,25 +280,6 @@ KeyCode EventRewriter::NativeKeySymToNativeKeycode(KeySym keysym) {
   KeyCode keycode = XKeysymToKeycode(display, keysym);
   keysym_to_keycode_map_[keysym] = keycode;
   return keycode;
-}
-
-bool EventRewriter::EventSourceIsChromeOSKeyboard() const {
-  if (force_chromeos_keyboard_for_testing_)
-    return true;
-
-  if (last_device_id_ == kBadDeviceId)
-    return false;
-
-  // Check which device generated |event|.
-  std::map<int, DeviceType>::const_iterator iter =
-      device_id_to_type_.find(last_device_id_);
-  if (iter == device_id_to_type_.end()) {
-    LOG(ERROR) << "Device ID " << last_device_id_ << " is unknown.";
-    return false;
-  }
-
-  const DeviceType type = iter->second;
-  return type == kDeviceChromeOSKeyboard;
 }
 
 bool EventRewriter::RewriteWithKeyboardRemappingsByKeySym(
@@ -668,12 +634,6 @@ bool EventRewriter::RewriteNumPadKeys(ui::KeyEvent* event) {
 
 bool EventRewriter::RewriteExtendedKeys(ui::KeyEvent* event) {
 #if defined(OS_CHROMEOS)
-  // On a ChromeOS keyboard, modifier keys can be used to access extended
-  // keyboard shortcuts. On other keyboards, keys such as delete and page up are
-  // already available, so we do not need to rewrite anything here.
-  if (!EventSourceIsChromeOSKeyboard())
-    return false;
-
   const PrefService* pref_service =
       pref_service_ ? pref_service_ : GetPrefService();
   bool chromebook_function_key = CommandLine::ForCurrentProcess()->HasSwitch(
@@ -681,8 +641,6 @@ bool EventRewriter::RewriteExtendedKeys(ui::KeyEvent* event) {
 
   bool search_as_function_key = chromebook_function_key && pref_service &&
       pref_service->GetBoolean(prefs::kLanguageSearchKeyActsAsFunctionKey);
-  if (search_as_function_key)
-    DCHECK(HasChromeOSKeyboard());
 
   XEvent* xev = event->native_event();
   XKeyEvent* xkey = &(xev->xkey);
@@ -802,11 +760,6 @@ bool EventRewriter::RewriteFunctionKeys(ui::KeyEvent* event) {
   ui::KeyboardCode remapped_keycode = ui::VKEY_UNKNOWN;
   unsigned int remapped_mods = 0;
 
-  // On a ChromeOS keyboard, F<number> keys have special purposes. On other
-  // keyboards, they should act as usual.
-  if (!EventSourceIsChromeOSKeyboard())
-    return false;
-
   // Rewrite the actual F1-F12 keys on a Chromebook keyboard to special keys.
   static const KeyboardRemapping fkeys_to_special_keys[] = {
     { XK_F1, 0, 0, XF86XK_Back, ui::VKEY_BROWSER_BACK, },
@@ -840,8 +793,6 @@ bool EventRewriter::RewriteFunctionKeys(ui::KeyEvent* event) {
 
     bool search_as_function_key = chromebook_function_key && pref_service &&
         pref_service->GetBoolean(prefs::kLanguageSearchKeyActsAsFunctionKey);
-    if (search_as_function_key)
-      DCHECK(HasChromeOSKeyboard());
 
     // When using Search as a Function key, remap Search+<number> to F<number>.
     if (search_as_function_key && xkey->state & Mod4Mask) {
@@ -962,11 +913,6 @@ EventRewriter::DeviceType EventRewriter::DeviceAddedInternal(
   if (type == kDeviceAppleKeyboard) {
     VLOG(1) << "Apple keyboard '" << device_name << "' connected: "
             << "id=" << device_id;
-#if defined(OS_CHROMEOS)
-  } else if (type == kDeviceChromeOSKeyboard) {
-    VLOG(1) << "ChromeOS keyboard '" << device_name << "' connected: "
-            << "id=" << device_id;
-#endif
   }
   // Always overwrite the existing device_id since the X server may reuse a
   // device id for an unattached device.

@@ -547,11 +547,6 @@ bool ChromeShellDelegate::IsSearchKeyActingAsFunctionKey() const {
   if (!chromebook_function_key)
     return false;
 
-  bool chromeos_keyboard = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kHasChromeOSKeyboard);
-  if (!chromeos_keyboard)
-    return false;
-
   Profile* profile = ProfileManager::GetDefaultProfile();
   return profile->GetPrefs()->GetBoolean(
       prefs::kLanguageSearchKeyActsAsFunctionKey);
