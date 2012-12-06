@@ -79,22 +79,30 @@ AudioHandler* AudioHandler::GetInstance() {
 
 // static
 void AudioHandler::RegisterPrefs(PrefService* local_state) {
-  if (!local_state->FindPreference(prefs::kAudioVolumePercent))
+  if (!local_state->FindPreference(prefs::kAudioVolumePercent)) {
     local_state->RegisterDoublePref(prefs::kAudioVolumePercent,
                                     kDefaultVolumePercent,
                                     PrefService::UNSYNCABLE_PREF);
-  if (!local_state->FindPreference(prefs::kAudioMute))
+  }
+  if (!local_state->FindPreference(prefs::kAudioMute)) {
     local_state->RegisterIntegerPref(prefs::kAudioMute,
                                      kPrefMuteOff,
                                      PrefService::UNSYNCABLE_PREF);
+  }
 
-  // Register the prefs backing the audio muting policies.
-  local_state->RegisterBooleanPref(prefs::kAudioOutputAllowed,
-                                   true,
-                                   PrefService::UNSYNCABLE_PREF);
-  local_state->RegisterBooleanPref(prefs::kAudioCaptureAllowed,
-                                   true,
-                                   PrefService::UNSYNCABLE_PREF);
+  if (!local_state->FindPreference(prefs::kAudioOutputAllowed)) {
+    // Register the prefs backing the audio muting policies.
+    local_state->RegisterBooleanPref(prefs::kAudioOutputAllowed,
+                                     true,
+                                     PrefService::UNSYNCABLE_PREF);
+  }
+  // This pref has moved to the media subsystem but we should verify it is there
+  // before we use it.
+  if (!local_state->FindPreference(prefs::kAudioCaptureAllowed)) {
+    local_state->RegisterBooleanPref(prefs::kAudioCaptureAllowed,
+                                     true,
+                                     PrefService::UNSYNCABLE_PREF);
+  }
 }
 
 double AudioHandler::GetVolumePercent() {

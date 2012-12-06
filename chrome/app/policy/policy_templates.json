@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 166
+#   For your editing convenience: highest ID currently used: 167
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -1823,16 +1823,17 @@
             {
               'name': 'BlockAccess',
               'value': 2,
-              'caption': '''Do not allow any site to access my camera and microphone''',
+              'caption': '''Do not allow any site to access the camera and microphone''',
             },
             {
               'name': 'PromptOnAccess',
               'value': 3,
-              'caption': '''Ask every time a site wants to access my camera and/or microphone''',
+              'caption': '''Ask every time a site wants to access the camera and/or microphone''',
             },
           ],
           'supported_on': ['chrome.*:22-', 'chrome_os:0.22-'],
           'features': {'dynamic_refresh': True},
+          'deprecated': True,
           'example_value': 2,
           'id': 149,
           'caption': '''Default mediastream setting''',
@@ -3236,7 +3237,7 @@
       'name': 'AudioCaptureAllowed',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome_os:0.23-'],
+      'supported_on': ['chrome.*:25-', 'chrome_os:0.23-'],
       'features': {'dynamic_refresh': True},
       'example_value': False,
       'id': 160,
@@ -3248,6 +3249,23 @@
       This policy affects all types of audio inputs and not only the built-in microphone.
 
       If this setting is set to true or not configured then users can use all supported audio inputs on their device.''',
+    },
+    {
+      'name': 'VideoCaptureAllowed',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:25-', 'chrome_os:0.25-'],
+      'features': {'dynamic_refresh': True},
+      'example_value': False,
+      'id': 167,
+      'caption': '''Allow capturing video''',
+      'desc': '''Allow capturing video.
+
+      When this policy is set to false, video capturing will not be available on the device while the user is logged in.
+
+      This policy affects all types of video inputs and not only the built-in camera.
+
+      If this setting is set to true or not configured then users can use all supported video inputs on their device.''',
     },
     {
       'name': 'DisableScreenshots',

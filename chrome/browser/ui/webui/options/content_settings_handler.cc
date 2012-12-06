@@ -412,6 +412,12 @@ void ContentSettingsHandler::GetLocalizedValues(
     { "media-stream_header", IDS_MEDIA_STREAM_HEADER },
     { "mediaStreamAsk", IDS_MEDIA_STREAM_ASK_RADIO },
     { "mediaStreamBlock", IDS_MEDIA_STREAM_BLOCK_RADIO },
+    { "mediaStreamAudioAsk", IDS_MEDIA_STREAM_ASK_AUDIO_ONLY_RADIO },
+    { "mediaStreamAudioBlock", IDS_MEDIA_STREAM_BLOCK_AUDIO_ONLY_RADIO },
+    { "mediaStreamVideoAsk", IDS_MEDIA_STREAM_ASK_VIDEO_ONLY_RADIO },
+    { "mediaStreamVideoBlock", IDS_MEDIA_STREAM_BLOCK_VIDEO_ONLY_RADIO },
+    { "mediaStreamBubbleAudio", IDS_MEDIA_STREAM_AUDIO_MANAGED },
+    { "mediaStreamBubbleVideo", IDS_MEDIA_STREAM_VIDEO_MANAGED },
     // PPAPI broker filter.
     // TODO(bauerb): Use IDS_PPAPI_BROKER_HEADER.
     { "ppapi-broker_header", IDS_PPAPI_BROKER_TAB_LABEL },
@@ -493,6 +499,14 @@ void ContentSettingsHandler::InitializeHandler() {
       base::Bind(&ContentSettingsHandler::RefreshFlashSettingsCache,
                  base::Unretained(this),
                  false));
+  pref_change_registrar_.Add(
+      prefs::kAudioCaptureAllowed,
+      base::Bind(&ContentSettingsHandler::UpdateMediaSettingsView,
+                 base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kVideoCaptureAllowed,
+      base::Bind(&ContentSettingsHandler::UpdateMediaSettingsView,
+                 base::Unretained(this)));
 
   flash_settings_manager_.reset(new PepperFlashSettingsManager(this, profile));
 }
@@ -599,6 +613,67 @@ void ContentSettingsHandler::UpdateSettingDefaultFromModel(
       "ContentSettings.setContentFilterSettingsValue", filter_settings);
 }
 
+void ContentSettingsHandler::UpdateMediaSettingsView() {
+  PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
+  bool audio_disabled = !prefs->GetBoolean(prefs::kAudioCaptureAllowed) &&
+      prefs->IsManagedPreference(prefs::kAudioCaptureAllowed);
+  bool video_disabled = !prefs->GetBoolean(prefs::kVideoCaptureAllowed) &&
+      prefs->IsManagedPreference(prefs::kVideoCaptureAllowed);
+
+  UpdateExceptionsViewFromHostContentSettingsMap(
+      CONTENT_SETTINGS_TYPE_MEDIASTREAM);
+
+  DictionaryValue media_ui_settings;
+  media_ui_settings.SetBoolean("cameraDisabled", video_disabled);
+  media_ui_settings.SetBoolean("micDisabled", audio_disabled);
+
+  // In case only video is enabled change the text appropriately.
+  if (audio_disabled && !video_disabled) {
+    media_ui_settings.SetString("askText", "mediaStreamVideoAsk");
+    media_ui_settings.SetString("blockText", "mediaStreamVideoBlock");
+    media_ui_settings.SetBoolean("showBubble", true);
+    media_ui_settings.SetString("bubbleText", "mediaStreamBubbleAudio");
+
+    web_ui()->CallJavascriptFunction("ContentSettings.updateMediaUI",
+                                     media_ui_settings);
+    return;
+  }
+
+  // In case only audio is enabled change the text appropriately.
+  if (video_disabled && !audio_disabled) {
+    DictionaryValue media_ui_settings;
+    media_ui_settings.SetString("askText", "mediaStreamAudioAsk");
+    media_ui_settings.SetString("blockText", "mediaStreamAudioBlock");
+    media_ui_settings.SetBoolean("showBubble", true);
+    media_ui_settings.SetString("bubbleText", "mediaStreamBubbleVideo");
+
+    web_ui()->CallJavascriptFunction("ContentSettings.updateMediaUI",
+                                     media_ui_settings);
+    return;
+  }
+
+  if (audio_disabled && video_disabled) {
+    // Fake policy controlled default because the user can not change anything
+    // until both audio and video are blocked.
+    DictionaryValue filter_settings;
+    std::string group_name =
+        ContentSettingsTypeToGroupName(CONTENT_SETTINGS_TYPE_MEDIASTREAM);
+    filter_settings.SetString(group_name + ".value",
+                              ContentSettingToString(CONTENT_SETTING_BLOCK));
+    filter_settings.SetString(group_name + ".managedBy", "policy");
+    web_ui()->CallJavascriptFunction(
+        "ContentSettings.setContentFilterSettingsValue", filter_settings);
+  }
+
+  media_ui_settings.SetString("askText", "mediaStreamAsk");
+  media_ui_settings.SetString("blockText", "mediaStreamBlock");
+  media_ui_settings.SetBoolean("showBubble", false);
+  media_ui_settings.SetString("bubbleText", "");
+
+  web_ui()->CallJavascriptFunction("ContentSettings.updateMediaUI",
+                                   media_ui_settings);
+}
+
 std::string ContentSettingsHandler::GetSettingDefaultFromModel(
     const ExContentSettingsType& type, std::string* provider_id) {
   Profile* profile = Profile::FromWebUI(web_ui());
@@ -673,6 +748,9 @@ void ContentSettingsHandler::UpdateExceptionsViewFromModel(
     case CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE:
       break;
     case CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS:
+      break;
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
+      UpdateMediaSettingsView();
       break;
     default:
       UpdateExceptionsViewFromHostContentSettingsMap(

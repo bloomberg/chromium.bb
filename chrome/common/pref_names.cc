@@ -1847,6 +1847,14 @@ const char kHttpReceivedContentLength[] = "http_received_content_length";
 // was received over the network.
 const char kHttpOriginalContentLength[] = "http_original_content_length";
 
+// A pref holding the value of the policy used to disable capturing audio on
+// ChromeOS devices.
+const char kAudioCaptureAllowed[] = "hardware.audio_capture_enabled";
+
+// A pref holding the value of the policy used to disable capturing audio on
+// ChromeOS devices.
+const char kVideoCaptureAllowed[] = "hardware.video_capture_enabled";
+
 #if defined(OS_CHROMEOS)
 // Dictionary for transient storage of settings that should go into device
 // settings storage before owner has been assigned.
@@ -1892,10 +1900,6 @@ const char kExternalStorageDisabled[] = "hardware.external_storage_disabled";
 // ChromeOS devices. This pref overrides |kAudioMute| but does not overwrite
 // it, therefore when the policy is lifted the original mute state is restored.
 const char kAudioOutputAllowed[] = "hardware.audio_output_enabled";
-
-// A pref holding the value of the policy used to disable capturing audio on
-// ChromeOS devices.
-const char kAudioCaptureAllowed[] = "hardware.audio_capture_enabled";
 
 // A dictionary that maps usernames to wallpaper properties.
 const char kUsersWallpaperInfo[] = "user_wallpaper_info";

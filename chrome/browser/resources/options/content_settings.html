@@ -421,7 +421,11 @@
 </if>
     <!-- Media Stream capture device filter -->
     <section>
-      <h3 i18n-content="mediaStreamTabLabel"></h3>
+      <div role="section-header">
+        <h3 i18n-content="mediaStreamTabLabel"></h3>
+        <span id="media-indicator"
+            class="controlled-setting-indicator group-indicator"></span>
+      </div>
       <div>
         <div class="media-device-control">
           <span i18n-content="mediaSelectMicLabel"></span>
@@ -436,7 +440,8 @@
             <input id="media-stream-ask" type="radio" name="media-stream"
                 value="ask">
             <span>
-              <label for="media-stream-ask" i18n-content="mediaStreamAsk">
+              <label id="media-stream-ask-label" for="media-stream-ask"
+                  i18n-content="mediaStreamAsk">
               </label>
               <span class="controlled-setting-indicator"
                   content-setting="media-stream" value="ask">
@@ -449,7 +454,8 @@
             <input id="media-stream-block" type="radio" name="media-stream"
                 value="block">
             <span>
-              <label for="media-stream-block" i18n-content="mediaStreamBlock">
+              <label id="media-stream-block-label" for="media-stream-block"
+                  i18n-content="mediaStreamBlock">
               </label>
               <span class="controlled-setting-indicator"
                   content-setting="media-stream" value="block">

@@ -309,6 +309,12 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kDisableScreenshots,
     prefs::kDisableScreenshots,
     Value::TYPE_BOOLEAN },
+  { key::kAudioCaptureAllowed,
+    prefs::kAudioCaptureAllowed,
+    Value::TYPE_BOOLEAN },
+  { key::kVideoCaptureAllowed,
+    prefs::kVideoCaptureAllowed,
+    Value::TYPE_BOOLEAN },
 
 #if defined(OS_CHROMEOS)
   { key::kChromeOsLockOnIdleSuspend,
@@ -328,9 +334,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     Value::TYPE_BOOLEAN },
   { key::kAudioOutputAllowed,
     prefs::kAudioOutputAllowed,
-    Value::TYPE_BOOLEAN },
-  { key::kAudioCaptureAllowed,
-    prefs::kAudioCaptureAllowed,
     Value::TYPE_BOOLEAN },
   { key::kShowLogoutButtonInTray,
     prefs::kShowLogoutButtonInTray,

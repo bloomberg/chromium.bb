@@ -59,10 +59,25 @@ MediaStreamDevicesController::MediaStreamDevicesController(
     } else if (content::IsVideoMediaType(it->first)) {
       has_video_ |= !it->second.empty();
     }
+    if (IsAudioDeviceBlockedByPolicy())
+      has_audio_ = false;
+    if (IsVideoDeviceBlockedByPolicy())
+      has_video_ = false;
   }
 }
 
 MediaStreamDevicesController::~MediaStreamDevicesController() {}
+
+// static
+void MediaStreamDevicesController::RegisterUserPrefs(PrefService* prefs) {
+  prefs->RegisterBooleanPref(prefs::kVideoCaptureAllowed,
+                             true,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kAudioCaptureAllowed,
+                             true,
+                             PrefService::UNSYNCABLE_PREF);
+}
+
 
 bool MediaStreamDevicesController::DismissInfoBarAndTakeActionOnSettings() {
   // For tab media requests, we need to make sure the request came from the
@@ -226,12 +241,26 @@ bool MediaStreamDevicesController::ShouldAlwaysAllowOrigin() {
       CONTENT_SETTINGS_TYPE_MEDIASTREAM);
 }
 
-bool MediaStreamDevicesController::IsMediaDeviceBlocked() {
+bool MediaStreamDevicesController::IsMediaDeviceBlocked() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   ContentSetting current_setting =
       profile_->GetHostContentSettingsMap()->GetDefaultContentSetting(
           CONTENT_SETTINGS_TYPE_MEDIASTREAM, NULL);
   return (current_setting == CONTENT_SETTING_BLOCK);
+}
+
+bool MediaStreamDevicesController::IsAudioDeviceBlockedByPolicy() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return (!profile_->GetPrefs()->GetBoolean(prefs::kAudioCaptureAllowed) &&
+          profile_->GetPrefs()->IsManagedPreference(
+              prefs::kAudioCaptureAllowed));
+}
+
+bool MediaStreamDevicesController::IsVideoDeviceBlockedByPolicy() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return (!profile_->GetPrefs()->GetBoolean(prefs::kVideoCaptureAllowed) &&
+          profile_->GetPrefs()->IsManagedPreference(
+              prefs::kVideoCaptureAllowed));
 }
 
 void MediaStreamDevicesController::AlwaysAllowOriginAndDevices(

@@ -919,6 +919,32 @@
     "note": "TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
   },
 
+  "AudioCaptureAllowed": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "AudioCaptureAllowed": false },
+    "pref_mappings": [
+      { "pref": "hardware.audio_capture_enabled",
+        "indicator_selector": "#media-indicator",
+        "indicator_tests": [
+          { "policy": { "AudioCaptureAllowed": false } }
+        ]
+      }
+    ]
+  },
+
+  "VideoCaptureAllowed": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "VideoCaptureAllowed": false },
+    "pref_mappings": [
+      { "pref": "hardware.video_capture_enabled",
+        "indicator_selector": "#media-indicator",
+        "indicator_tests": [
+          { "policy": { "VideoCaptureAllowed": false } }
+        ]
+      }
+    ]
+  },
+
   "AutoSelectCertificateForUrls": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "AutoSelectCertificateForUrls": ["{'pattern':'https://example.com','filter':{'ISSUER':{'CN': 'issuer-name'}}}"] },

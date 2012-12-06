@@ -33,6 +33,7 @@ cr.define('options', function() {
 
       this.className = 'controlled-setting-indicator';
       this.tabIndex = 0;
+      this.location = cr.ui.ArrowLocation.TOP_END;
       this.setAttribute('role', 'button');
       this.addEventListener('click', this);
       this.addEventListener('keydown', this);
@@ -185,7 +186,7 @@ cr.define('options', function() {
           content.appendChild(container);
         }
 
-        OptionsPage.showBubble(content, this);
+        OptionsPage.showBubble(content, this, this.location);
       }
     },
   };

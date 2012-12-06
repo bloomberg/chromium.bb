@@ -9,6 +9,7 @@
 
 #include "content/public/browser/web_contents_delegate.h"
 
+class PrefService;
 class Profile;
 
 class MediaStreamDevicesController {
@@ -19,6 +20,9 @@ class MediaStreamDevicesController {
                                const content::MediaResponseCallback& callback);
 
   virtual ~MediaStreamDevicesController();
+
+  // Registers the prefs backing the audio and video policies.
+  static void RegisterUserPrefs(PrefService* prefs);
 
   // Public method to be called before creating the MediaStreamInfoBarDelegate.
   // This function will check the content settings exceptions and take the
@@ -51,7 +55,13 @@ class MediaStreamDevicesController {
 
   // Returns true if the media section in content settings is set to
   // |CONTENT_SETTING_BLOCK|, otherwise returns false.
-  bool IsMediaDeviceBlocked();
+  bool IsMediaDeviceBlocked() const;
+
+  // Returns true if audio capture is disabled by policy.
+  bool IsAudioDeviceBlockedByPolicy() const;
+
+  // Returns true if video capture is disabled by policy.
+  bool IsVideoDeviceBlockedByPolicy() const;
 
   // NOTE on AlwaysAllowOrigin functionality: The rules only apply to physical
   // capture devices, and not tab mirroring (or other "virtual device" types).

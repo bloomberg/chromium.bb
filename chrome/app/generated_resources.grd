@@ -8153,6 +8153,24 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_MEDIA_STREAM_ASK_RADIO" desc="A radio button in Content Settings dialog to allow site to query the permision to access capture devices.">
         Ask me when a site requires access to my camera and microphone (recommended)
       </message>
+      <message name="IDS_MEDIA_STREAM_BLOCK_AUDIO_ONLY_RADIO" desc="A radio button in Content Settings dialog to deny all sites to access audio capture device.">
+        Do not allow sites to access my microphone
+      </message>
+      <message name="IDS_MEDIA_STREAM_ASK_AUDIO_ONLY_RADIO" desc="A radio button in Content Settings dialog to allow site to query the permision to access audio capture devices.">
+        Ask me when a site requires access to my microphone (recommended)
+      </message>
+      <message name="IDS_MEDIA_STREAM_BLOCK_VIDEO_ONLY_RADIO" desc="A radio button in Content Settings dialog to deny all sites to access video capture device.">
+        Do not allow sites to access my camera
+      </message>
+      <message name="IDS_MEDIA_STREAM_ASK_VIDEO_ONLY_RADIO" desc="A radio button in Content Settings dialog to allow site to query the permision to access video capture devices.">
+        Ask me when a site requires access to my camera (recommended)
+      </message>
+      <message name="IDS_MEDIA_STREAM_AUDIO_MANAGED" desc="A notification bubble shown if the access to audio capture devices is controlled through policy.">
+        Access to your microphone is controlled by your administrator.
+      </message>
+      <message name="IDS_MEDIA_STREAM_VIDEO_MANAGED" desc="A notification bubble shown if the access to video capture devices is controlled through policy.">
+        Access to your camera is controlled by your administrator.
+      </message>
       <message name="IDS_MEDIA_SELECTED_MIC_LABEL" desc="The label of the 'microphone device' select menu">
         Microphone:
       </message>

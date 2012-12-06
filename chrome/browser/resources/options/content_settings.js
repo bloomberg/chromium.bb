@@ -129,6 +129,46 @@ cr.define('options', function() {
   };
 
   /**
+   * Updates the labels and indicators for the Media settings. Those require
+   * special handling because they are backed by multiple prefs and can change
+   * their scope based on the managed state of the backing prefs.
+   * @param {Object} mediaSettings A dictionary containing the following fields:
+   *     {String} askText The label for the ask radio button.
+   *     {String} blockText The label for the block radio button.
+   *     {Boolean} cameraDisabled Whether to disable the camera dropdown.
+   *     {Boolean} micDisabled Whether to disable the microphone dropdown.
+   *     {Boolean} showBubble Wether to show the managed icon and bubble for the
+   *         media label.
+   *     {String} bubbleText The text to use inside the bubble if it is shown.
+   */
+  ContentSettings.updateMediaUI = function(mediaSettings) {
+    $('media-stream-ask-label').innerHTML =
+        loadTimeData.getString(mediaSettings.askText);
+    $('media-stream-block-label').innerHTML =
+        loadTimeData.getString(mediaSettings.blockText);
+
+    if (mediaSettings.micDisabled)
+      $('media-select-mic').disabled = true;
+    if (mediaSettings.cameraDisabled)
+      $('media-select-camera').disabled = true;
+
+    OptionsPage.hideBubble();
+    // Create a synthetic pref change event decorated as
+    // CoreOptionsHandler::CreateValueForPref() does.
+    var event = new cr.Event();
+    event.value = {};
+
+    if (mediaSettings.showBubble) {
+      event.value = { controlledBy: 'policy' };
+      $('media-indicator').setAttribute(
+          'textpolicy', loadTimeData.getString(mediaSettings.bubbleText));
+      $('media-indicator').location = cr.ui.ArrowLocation.TOP_START;
+    }
+
+    $('media-indicator').handlePrefChange(event);
+  };
+
+  /**
    * Initializes an exceptions list.
    * @param {string} type The content type that we are setting exceptions for.
    * @param {Array} list An array of pairs, where the first element of each pair

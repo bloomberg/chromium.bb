@@ -75,6 +75,9 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
   // Updates the page with the default settings (allow, ask, block, etc.)
   void UpdateSettingDefaultFromModel(const ExContentSettingsType& type);
 
+  // Updates the media radio buttons according to the enabled split prefs.
+  void UpdateMediaSettingsView();
+
   // Clobbers and rebuilds the specific content setting type exceptions table.
   void UpdateExceptionsViewFromModel(const ExContentSettingsType& type);
   // Clobbers and rebuilds the specific content setting type exceptions

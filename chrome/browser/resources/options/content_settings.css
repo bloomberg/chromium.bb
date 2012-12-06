@@ -58,10 +58,23 @@ select.exception-setting {
   padding: 7px 0;
 }
 
+#group-indicator {
+  margin-left: 5px;
+}
+
 div[role='listitem'][controlled-by] {
   color: #666;
   font-style: italic;
   position: relative;
+}
+
+div[role='section-header'] {
+  -webkit-margin-start: -18px;
+  margin-bottom: 0.8em;
+}
+
+div[role='section-header'] > h3 {
+  display: inline;
 }
 
 .settings-list div[role='listitem'][controlled-by='policy'],

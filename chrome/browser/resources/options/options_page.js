@@ -417,13 +417,14 @@ cr.define('options', function() {
    * current page's tab order as siblings of |anchor|.
    * @param {HTMLDivElement} content The content of the bubble.
    * @param {HTMLElement} anchor The element at which the bubble points.
+   * @param {cr.ui.ArrowLocation} location The arrow location.
    */
-  OptionsPage.showBubble = function(content, anchor) {
+  OptionsPage.showBubble = function(content, anchor, location) {
     OptionsPage.hideBubble();
 
     var bubble = new options.OptionsBubble;
     bubble.anchorNode = anchor;
-    bubble.arrowLocation = cr.ui.ArrowLocation.TOP_END;
+    bubble.arrowLocation = location;
     bubble.content = content;
     bubble.show();
     OptionsPage.bubble_ = bubble;
