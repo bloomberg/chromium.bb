@@ -329,7 +329,31 @@ gTestInclusions = {
          'CaptivePortalBrowserTest.*',
          # 'src/chrome/browser/geolocation'
          'GeolocationAccessTokenStoreTest.*',
-         'GeolocationBrowserTest.*', ),
+         'GeolocationBrowserTest.*',
+         # 'src/chrome/browser/nacl_host'
+         'NaClGdbTest.*',
+         # 'src/chrome/browser/debugger'
+         'DevToolsSanityTest.*',
+         'DevToolsExtensionTest.*',
+         'DevToolsExperimentalExtensionTest.*',
+         'WorkerDevToolsSanityTest.*',
+         # 'src/chrome/browser/first_run'
+         'FirstRunBrowserTest.*',
+         # 'src/chrome/browser/importer'
+         'ToolbarImporterUtilsTest.*',
+         # 'src/chrome/browser/page_cycler'
+         'PageCyclerBrowserTest.*',
+         'PageCyclerCachedBrowserTest.*',
+         # 'src/chrome/browser/performance_monitor'
+         'PerformanceMonitorBrowserTest.*',
+         'PerformanceMonitorUncleanExitBrowserTest.*',
+         'PerformanceMonitorSessionRestoreBrowserTest.*',
+         # 'src/chrome/browser/prerender'
+         'PrerenderBrowserTest.*',
+         'PrerenderBrowserTestWithNaCl.*',
+         'PrerenderBrowserTestWithExtensions.*',
+         'PrefetchBrowserTest.*',
+         'PrefetchBrowserTestNoPrefetching.*', ),
   },
 }
 
