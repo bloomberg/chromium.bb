@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PRINTING_PRINT_JOB_MANAGER_H_
 #define CHROME_BROWSER_PRINTING_PRINT_JOB_MANAGER_H_
 
+#include <set>
 #include <vector>
 
 #include "base/memory/ref_counted.h"
@@ -52,7 +53,7 @@ class PrintJobManager : public content::NotificationObserver {
   PrintDestinationInterface* destination() const { return destination_.get(); }
 
  private:
-  typedef std::vector<scoped_refptr<PrintJob> > PrintJobs;
+  typedef std::set<scoped_refptr<PrintJob> > PrintJobs;
   typedef std::vector<scoped_refptr<PrinterQuery> > PrinterQueries;
 
   // Processes a NOTIFY_PRINT_JOB_EVENT notification.

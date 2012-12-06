@@ -29,23 +29,17 @@ void PrintJobManager::OnQuit() {
 }
 
 void PrintJobManager::StopJobs(bool wait_for_finish) {
-  if (current_jobs_.empty())
-    return;
-  {
-    // Copy the array since it can be modified in transit.
-    PrintJobs current_jobs(current_jobs_);
-    // Wait for each job to finish.
-    for (size_t i = 0; i < current_jobs.size(); ++i) {
-      PrintJob* job = current_jobs[i];
-      if (!job)
-        continue;
-      // Wait for two minutes for the print job to be spooled.
-      if (wait_for_finish)
-        job->FlushJob(base::TimeDelta::FromMinutes(2));
-      job->Stop();
-    }
+  // Copy the array since it can be modified in transit.
+  PrintJobs to_stop;
+  to_stop.swap(current_jobs_);
+
+  for (PrintJobs::const_iterator job = to_stop.begin(); job != to_stop.end();
+       ++job) {
+    // Wait for two minutes for the print job to be spooled.
+    if (wait_for_finish)
+      (*job)->FlushJob(base::TimeDelta::FromMinutes(2));
+    (*job)->Stop();
   }
-  current_jobs_.clear();
 }
 
 void PrintJobManager::SetPrintDestination(
@@ -98,37 +92,18 @@ void PrintJobManager::OnPrintJobEvent(
     const JobEventDetails& event_details) {
   switch (event_details.type()) {
     case JobEventDetails::NEW_DOC: {
-      DCHECK(current_jobs_.end() == std::find(current_jobs_.begin(),
-                                              current_jobs_.end(),
-                                              print_job));
+      DCHECK(current_jobs_.end() == current_jobs_.find(print_job));
       // Causes a AddRef().
-      current_jobs_.push_back(make_scoped_refptr(print_job));
+      current_jobs_.insert(print_job);
       break;
     }
     case JobEventDetails::JOB_DONE: {
-      PrintJobs::iterator itr = std::find(current_jobs_.begin(),
-                                          current_jobs_.end(),
-                                          print_job);
-      DCHECK(current_jobs_.end() != itr);
-      current_jobs_.erase(itr);
-      DCHECK(current_jobs_.end() == std::find(current_jobs_.begin(),
-                                              current_jobs_.end(),
-                                              print_job));
-      destination_ = NULL;
+      DCHECK(current_jobs_.end() != current_jobs_.find(print_job));
+      current_jobs_.erase(print_job);
       break;
     }
     case JobEventDetails::FAILED: {
-      PrintJobs::iterator itr = std::find(current_jobs_.begin(),
-                                          current_jobs_.end(),
-                                          print_job);
-      // A failed job may have never started.
-      if (current_jobs_.end() != itr) {
-        current_jobs_.erase(itr);
-        DCHECK(current_jobs_.end() ==
-                  std::find(current_jobs_.begin(),
-                            current_jobs_.end(),
-                            print_job));
-      }
+      current_jobs_.erase(print_job);
       break;
     }
     case JobEventDetails::USER_INIT_DONE:
