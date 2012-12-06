@@ -164,6 +164,9 @@ class CONTENT_EXPORT RenderViewHostManager
   // Called when a renderer's main frame navigates.
   void DidNavigateMainFrame(RenderViewHost* render_view_host);
 
+  // Called when a renderer sets its opener to null.
+  void DidDisownOpener(RenderViewHost* render_view_host);
+
   // Called when a renderer has navigated and when its frame tree is updated.
   void DidUpdateFrameTree(RenderViewHost* render_view_host);
 
@@ -310,7 +313,8 @@ class CONTENT_EXPORT RenderViewHostManager
   scoped_ptr<WebUIImpl> pending_web_ui_;
   base::WeakPtr<WebUIImpl> pending_and_current_web_ui_;
 
-  // A map of site instance ID to swapped out RenderViewHosts.
+  // A map of site instance ID to swapped out RenderViewHosts.  This may include
+  // pending_render_view_host_ for navigations to existing entries.
   typedef base::hash_map<int32, RenderViewHostImpl*> RenderViewHostMap;
   RenderViewHostMap swapped_out_hosts_;
 

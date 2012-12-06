@@ -454,6 +454,87 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   close_observer.Wait();
 }
 
+// Test that setting the opener to null in a window affects cross-process
+// navigations, including those to existing entries.  http://crbug.com/156669.
+IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, DisownOpener) {
+  // Start two servers with different sites.
+  ASSERT_TRUE(test_server()->Start());
+  net::TestServer https_server(
+      net::TestServer::TYPE_HTTPS,
+      net::TestServer::kLocalhost,
+      FilePath(FILE_PATH_LITERAL("content/test/data")));
+  ASSERT_TRUE(https_server.Start());
+
+  // Load a page with links that open in a new window.
+  std::string replacement_path;
+  ASSERT_TRUE(GetFilePathWithHostAndPortReplacement(
+      "files/click-noreferrer-links.html",
+      https_server.host_port_pair(),
+      &replacement_path));
+  NavigateToURL(shell(), test_server()->GetURL(replacement_path));
+
+  // Get the original SiteInstance for later comparison.
+  scoped_refptr<SiteInstance> orig_site_instance(
+      shell()->web_contents()->GetSiteInstance());
+  EXPECT_TRUE(orig_site_instance != NULL);
+
+  // Test clicking a target=_blank link.
+  ShellAddedObserver new_shell_observer;
+  bool success = false;
+  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
+      shell()->web_contents()->GetRenderViewHost(), L"",
+      L"window.domAutomationController.send(clickSameSiteTargetBlankLink());",
+      &success));
+  EXPECT_TRUE(success);
+  Shell* new_shell = new_shell_observer.GetShell();
+
+  // Wait for the navigation in the new tab to finish, if it hasn't.
+  WaitForLoadStop(new_shell->web_contents());
+  EXPECT_EQ("/files/title2.html",
+            new_shell->web_contents()->GetURL().path());
+
+  // Should have the same SiteInstance.
+  scoped_refptr<SiteInstance> blank_site_instance(
+      new_shell->web_contents()->GetSiteInstance());
+  EXPECT_EQ(orig_site_instance, blank_site_instance);
+
+  // Now navigate the new tab to a different site.
+  NavigateToURL(new_shell, https_server.GetURL("files/title1.html"));
+  scoped_refptr<SiteInstance> new_site_instance(
+      new_shell->web_contents()->GetSiteInstance());
+  EXPECT_NE(orig_site_instance, new_site_instance);
+
+  // Now disown the opener.
+  EXPECT_TRUE(ExecuteJavaScript(
+      new_shell->web_contents()->GetRenderViewHost(), L"",
+      L"window.opener = null;"));
+
+  // Go back and ensure the opener is still null.
+  {
+    WindowedNotificationObserver back_nav_load_observer(
+        NOTIFICATION_NAV_ENTRY_COMMITTED,
+        Source<NavigationController>(
+            &new_shell->web_contents()->GetController()));
+    new_shell->web_contents()->GetController().GoBack();
+    back_nav_load_observer.Wait();
+  }
+  success = false;
+  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
+      new_shell->web_contents()->GetRenderViewHost(), L"",
+      L"window.domAutomationController.send(window.opener == null);",
+      &success));
+  EXPECT_TRUE(success);
+
+  // Now navigate forward again (creating a new process) and check opener.
+  NavigateToURL(new_shell, https_server.GetURL("files/title1.html"));
+  success = false;
+  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
+      new_shell->web_contents()->GetRenderViewHost(), L"",
+      L"window.domAutomationController.send(window.opener == null);",
+      &success));
+  EXPECT_TRUE(success);
+}
+
 // Test for crbug.com/99202.  PostMessage calls should still work after
 // navigating the source and target windows to different sites.
 // Specifically:

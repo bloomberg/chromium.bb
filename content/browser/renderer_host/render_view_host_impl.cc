@@ -990,6 +990,8 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidStopLoading, OnMsgDidStopLoading)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidChangeLoadProgress,
                         OnMsgDidChangeLoadProgress)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidDisownOpener,
+                        OnMsgDidDisownOpener)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentAvailableInMainFrame,
                         OnMsgDocumentAvailableInMainFrame)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentOnLoadCompletedInMainFrame,
@@ -1317,6 +1319,10 @@ void RenderViewHostImpl::OnMsgDidStopLoading() {
 
 void RenderViewHostImpl::OnMsgDidChangeLoadProgress(double load_progress) {
   delegate_->DidChangeLoadProgress(load_progress);
+}
+
+void RenderViewHostImpl::OnMsgDidDisownOpener() {
+  delegate_->DidDisownOpener(this);
 }
 
 void RenderViewHostImpl::OnMsgDocumentAvailableInMainFrame() {
@@ -1759,10 +1765,20 @@ webkit_glue::WebPreferences RenderViewHostImpl::GetWebkitPreferences() {
   return delegate_->GetWebkitPrefs();
 }
 
+void RenderViewHostImpl::DisownOpener() {
+  // This should only be called when swapped out.
+  DCHECK(is_swapped_out_);
+
+  Send(new ViewMsg_DisownOpener(GetRoutingID()));
+}
+
 void RenderViewHostImpl::UpdateFrameTree(
     int process_id,
     int route_id,
     const std::string& frame_tree) {
+  // This should only be called when swapped out.
+  DCHECK(is_swapped_out_);
+
   frame_tree_ = frame_tree;
   Send(new ViewMsg_UpdateFrameTree(GetRoutingID(),
                                    process_id,

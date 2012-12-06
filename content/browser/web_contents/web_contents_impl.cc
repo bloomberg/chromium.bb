@@ -2866,6 +2866,17 @@ void WebContentsImpl::DidChangeLoadProgress(double progress) {
 #endif
 }
 
+void WebContentsImpl::DidDisownOpener(RenderViewHost* rvh) {
+  // Clear our opener so that future cross-process navigations don't have an
+  // opener assigned.
+  opener_ = NULL;
+
+  // Notify all swapped out RenderViewHosts for this tab.  This is important
+  // in case we go back to them, or if another window in those processes tries
+  // to access window.opener.
+  render_manager_.DidDisownOpener(rvh);
+}
+
 void WebContentsImpl::DidUpdateFrameTree(RenderViewHost* rvh) {
   render_manager_.DidUpdateFrameTree(rvh);
 }

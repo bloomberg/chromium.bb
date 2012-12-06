@@ -335,6 +335,7 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void DidStopLoading(RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidCancelLoading() OVERRIDE;
   virtual void DidChangeLoadProgress(double progress) OVERRIDE;
+  virtual void DidDisownOpener(RenderViewHost* rvh) OVERRIDE;
   virtual void DidUpdateFrameTree(RenderViewHost* rvh) OVERRIDE;
   virtual void DocumentAvailableInMainFrame(
       RenderViewHost* render_view_host) OVERRIDE;

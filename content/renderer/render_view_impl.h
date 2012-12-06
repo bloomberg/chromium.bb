@@ -517,6 +517,7 @@ class CONTENT_EXPORT RenderViewImpl
   virtual WebKit::WebCookieJar* cookieJar(WebKit::WebFrame* frame);
   virtual void didCreateFrame(WebKit::WebFrame* parent,
                               WebKit::WebFrame* child);
+  virtual void didDisownOpener(WebKit::WebFrame* frame);
   virtual void frameDetached(WebKit::WebFrame* frame);
   virtual void willClose(WebKit::WebFrame* frame);
   virtual void loadURLExternally(WebKit::WebFrame* frame,
@@ -1003,6 +1004,7 @@ class CONTENT_EXPORT RenderViewImpl
 
   void OnJavaBridgeInit();
 
+  void OnDisownOpener();
   void OnUpdatedFrameTree(int process_id,
                           int route_id,
                           const std::string& frame_tree);

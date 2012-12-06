@@ -215,6 +215,10 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // entirely loaded).
   virtual void DidChangeLoadProgress(double progress) {}
 
+  // The RenderView set its opener to null, disowning it for the lifetime of
+  // the window.
+  virtual void DidDisownOpener(RenderViewHost* rvh) {}
+
   // The RenderView has changed its frame hierarchy, so we need to update all
   // other renderers interested in this event.
   virtual void DidUpdateFrameTree(RenderViewHost* rvh) {}

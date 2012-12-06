@@ -232,6 +232,17 @@ void RenderViewHostManager::DidNavigateMainFrame(
   }
 }
 
+void RenderViewHostManager::DidDisownOpener(RenderViewHost* render_view_host) {
+  // Notify all swapped out hosts, including the pending RVH.
+  for (RenderViewHostMap::iterator iter = swapped_out_hosts_.begin();
+       iter != swapped_out_hosts_.end();
+       ++iter) {
+    DCHECK_NE(iter->second->GetSiteInstance(),
+              current_host()->GetSiteInstance());
+    iter->second->DisownOpener();
+  }
+}
+
 void RenderViewHostManager::DidUpdateFrameTree(
     RenderViewHost* render_view_host) {
   // TODO(nasko): This used to be a CHECK_EQ, but it causes more crashes than
@@ -251,7 +262,6 @@ void RenderViewHostManager::DidUpdateFrameTree(
 
     // Send updates to the other swapped out RVHs, unless it's the pending RVH
     // (which is in the process of navigating).
-    // TODO(creis): Remove the pending RVH from swapped_out_hosts_.
     // TODO(nasko): Don't send updates across BrowsingInstances.
     // See http://crbug.com/150855.
     if (iter->second != pending_render_view_host_) {

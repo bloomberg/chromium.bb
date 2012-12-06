@@ -417,6 +417,9 @@ class CONTENT_EXPORT RenderViewHostImpl
     return frame_tree_;
   }
 
+  // Set the opener to null in the renderer process.
+  void DisownOpener();
+
   // Updates the frame tree for this RVH and sends an IPC down to the renderer
   // process to keep them in sync. For more details, see the comments on
   // ViewHostMsg_FrameTreeUpdated.
@@ -500,6 +503,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnMsgDidStartLoading();
   void OnMsgDidStopLoading();
   void OnMsgDidChangeLoadProgress(double load_progress);
+  void OnMsgDidDisownOpener();
   void OnMsgDocumentAvailableInMainFrame();
   void OnMsgDocumentOnLoadCompletedInMainFrame(int32 page_id);
   void OnMsgContextMenu(const ContextMenuParams& params);

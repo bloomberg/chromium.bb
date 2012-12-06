@@ -1017,6 +1017,7 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_EnableViewSourceMode, OnEnableViewSourceMode)
     IPC_MESSAGE_HANDLER(JavaBridgeMsg_Init, OnJavaBridgeInit)
     IPC_MESSAGE_HANDLER(ViewMsg_SetAccessibilityMode, OnSetAccessibilityMode)
+    IPC_MESSAGE_HANDLER(ViewMsg_DisownOpener, OnDisownOpener)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateFrameTree, OnUpdatedFrameTree)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(ViewMsg_ActivateNearestFindResult,
@@ -2644,6 +2645,21 @@ WebCookieJar* RenderViewImpl::cookieJar(WebFrame* frame) {
 void RenderViewImpl::didCreateFrame(WebFrame* parent, WebFrame* child) {
   if (!updating_frame_tree_)
     SendUpdatedFrameTree(NULL);
+}
+
+void RenderViewImpl::didDisownOpener(WebKit::WebFrame* frame) {
+  // We should only hear this from the top-level frame, because subframes do not
+  // have openers.
+  CHECK(!frame->parent());
+
+  // We only need to notify the browser if the active frame clears its opener.
+  // We can ignore cases where a swapped out frame clears its opener after
+  // hearing about it from the browser.
+  if (is_swapped_out_)
+    return;
+
+  // Notify WebContents and all its swapped out RenderViews.
+  Send(new ViewHostMsg_DidDisownOpener(routing_id_));
 }
 
 void RenderViewImpl::frameDetached(WebFrame* frame) {
@@ -6371,6 +6387,15 @@ void RenderViewImpl::OnJavaBridgeInit() {
 #if defined(ENABLE_JAVA_BRIDGE)
   java_bridge_dispatcher_ = new JavaBridgeDispatcher(this);
 #endif
+}
+
+void RenderViewImpl::OnDisownOpener() {
+  if (!webview())
+    return;
+
+  WebFrame* main_frame = webview()->mainFrame();
+  if (main_frame && main_frame->opener())
+    main_frame->setOpener(NULL);
 }
 
 void RenderViewImpl::OnUpdatedFrameTree(
