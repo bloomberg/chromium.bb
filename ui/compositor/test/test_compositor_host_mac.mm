@@ -127,8 +127,7 @@ void TestCompositorHostMac::Show() {
                             backing:NSBackingStoreBuffered
                               defer:NO];
   scoped_nsobject<AcceleratedTestView> view([[AcceleratedTestView alloc] init]);
-  compositor_.reset(new ui::Compositor(this, view));
-  compositor_->SetScaleAndSize(1.0f, bounds_.size());
+  compositor_.reset(new ui::Compositor(this, view, bounds_.size()));
   [view setCompositor:compositor_.get()];
   [window_ setContentView:view];
   [window_ orderFront:nil];
