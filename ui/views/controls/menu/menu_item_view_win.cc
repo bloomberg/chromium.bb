@@ -25,7 +25,7 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   const MenuConfig& config = GetMenuConfig();
 
 #if defined(USE_AURA)
-  if ((config.native_theme == ui::NativeThemeAura::instance()) {
+  if (config.native_theme == ui::NativeThemeAura::instance()) {
     PaintButtonCommon(canvas, mode);
     return;
   }
