@@ -22,9 +22,10 @@ InstantPreviewControllerMac::~InstantPreviewControllerMac() {
 
 void InstantPreviewControllerMac::PreviewStateChanged(
     const InstantModel& model) {
-  if (model.mode().is_search_suggestions()) {
-    // TODO(dhollowa): Needs height and units implementation on Mac.
-    [preview_ showPreview:model.GetPreviewContents()];
+  if (model.mode().is_ntp() || model.mode().is_search_suggestions()) {
+    [preview_ showPreview:model.GetPreviewContents()
+                   height:model.height()
+              heightUnits:model.height_units()];
   } else {
     [preview_ hidePreview];
   }

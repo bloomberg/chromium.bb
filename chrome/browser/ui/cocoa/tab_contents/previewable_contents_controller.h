@@ -7,7 +7,9 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/common/instant_types.h"
 
 class Browser;
 @class BrowserWindowController;
@@ -31,13 +33,17 @@ class WebContents;
 @interface PreviewableContentsController : NSViewController {
  @private
   // Container view for the "active" contents.
-  IBOutlet NSView* activeContainer_;
+  scoped_nsobject<NSView> activeContainer_;
 
   // The preview WebContents.  Will be NULL if no preview is currently showing.
   content::WebContents* previewContents_;  // weak
 
   // C++ bridge to the Instant model change interface.
   scoped_ptr<InstantPreviewControllerMac> instantPreviewController_;
+
+  // The desired height of the preview and units.
+  CGFloat previewHeight_;
+  InstantSizeUnits previewHeightUnits_;
 }
 
 @property(readonly, nonatomic) NSView* activeContainer;
@@ -48,7 +54,9 @@ class WebContents;
 
 // Sets the current preview and installs its WebContentsView into the view
 // hierarchy.  Hides the active view.  |preview| must not be NULL.
-- (void)showPreview:(content::WebContents*)preview;
+- (void)showPreview:(content::WebContents*)preview
+             height:(CGFloat)height
+        heightUnits:(InstantSizeUnits)heightUnits;
 
 // Closes the current preview and shows the active view.
 - (void)hidePreview;
@@ -59,6 +67,8 @@ class WebContents;
 
 // Returns YES if the preview contents is currently showing.
 - (BOOL)isShowingPreview;
+
+- (InstantPreviewControllerMac*)instantPreviewController;
 
 @end
 

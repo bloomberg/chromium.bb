@@ -49,7 +49,10 @@ void InstantModel::SetPreviewContents(content::WebContents* preview_contents) {
 }
 
 content::WebContents* InstantModel::GetPreviewContents() const {
-  return controller_->GetPreviewContents();
+  // |controller_| maybe NULL durning tests.
+  if (controller_)
+    return controller_->GetPreviewContents();
+  return preview_contents_;
 }
 
 void InstantModel::AddObserver(InstantModelObserver* observer) const {
