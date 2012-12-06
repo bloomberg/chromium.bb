@@ -12,16 +12,12 @@
 #error "Media file system is not supported for this platform."
 #endif
 
-#if defined(OS_LINUX)  // Implies OS_CHROMEOS
-#include "chrome/browser/media_gallery/linux/mtp_device_delegate_impl_linux.h"
-#endif
+#include "webkit/fileapi/media/mtp_device_delegate.h"
 
 namespace chrome {
 
-// TODO(kmadhusu): Implement MTP device delegates on other platforms.
-#if defined(OS_LINUX)  // Implies OS_CHROMEOS
-typedef class MTPDeviceDelegateImplLinux MTPDeviceDelegateImpl;
-#endif
+fileapi::MTPDeviceDelegate* CreateMTPDeviceDelegate(
+    const std::string& device_location);
 
 }  // namespace chrome
 

@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
 #include "base/synchronization/waitable_event.h"
+#include "chrome/browser/media_gallery/mtp_device_delegate_impl.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/media/mtp_device_delegate.h"
 
@@ -30,12 +31,6 @@ namespace chrome {
 // supports weak pointers because the base class supports weak pointers.
 class MTPDeviceDelegateImplLinux : public fileapi::MTPDeviceDelegate {
  public:
-  // Should only be called by ScopedMTPDeviceMapEntry. Use
-  // GetAsWeakPtrOnIOThread() to get a weak pointer instance of this class.
-  // Defer the device initializations until the first file operation request.
-  // Do all the initializations in LazyInit() function.
-  explicit MTPDeviceDelegateImplLinux(const std::string& device_location);
-
   // MTPDeviceDelegate:
   virtual base::PlatformFileError GetFileInfo(
       const FilePath& file_path,
@@ -53,6 +48,14 @@ class MTPDeviceDelegateImplLinux : public fileapi::MTPDeviceDelegate {
       OVERRIDE;
 
  private:
+  friend MTPDeviceDelegate* CreateMTPDeviceDelegate(const std::string&);
+
+  // Should only be called by CreateMTPDeviceDelegate factory. Use
+  // GetAsWeakPtrOnIOThread() to get a weak pointer instance of this class.
+  // Defer the device initializations until the first file operation request.
+  // Do all the initializations in LazyInit() function.
+  explicit MTPDeviceDelegateImplLinux(const std::string& device_location);
+
   // Destructed via DeleteDelegateOnTaskRunner(). Do all the clean up in
   // DeleteDelegateOnTaskRunner().
   virtual ~MTPDeviceDelegateImplLinux();

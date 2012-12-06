@@ -213,4 +213,9 @@ void MTPDeviceDelegateImplLinux::DeleteDelegateOnTaskRunner() {
   delete this;
 }
 
+fileapi::MTPDeviceDelegate* CreateMTPDeviceDelegate(
+    const std::string& device_location) {
+  return new MTPDeviceDelegateImplLinux(device_location);
+}
+
 }  // namespace chrome

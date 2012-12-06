@@ -140,7 +140,7 @@ ScopedMTPDeviceMapEntry::ScopedMTPDeviceMapEntry(
       Bind(&MTPDeviceMapService::AddDelegate,
            base::Unretained(MTPDeviceMapService::GetInstance()),
            device_location_,
-           new MTPDeviceDelegateImpl(device_location_)));
+           CreateMTPDeviceDelegate(device_location_)));
 }
 
 ScopedMTPDeviceMapEntry::~ScopedMTPDeviceMapEntry() {
