@@ -237,6 +237,7 @@ namespace extension_misc {
     UNLOAD_REASON_UPDATE,     // Extension is being updated to a newer version.
     UNLOAD_REASON_UNINSTALL,  // Extension is being uninstalled.
     UNLOAD_REASON_TERMINATE,  // Extension has terminated.
+    UNLOAD_REASON_BLACKLIST,  // Extension has been blacklisted.
   };
 
   // The states that an app can be in, as reported by chrome.app.installState

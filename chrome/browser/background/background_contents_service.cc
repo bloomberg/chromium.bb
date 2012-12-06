@@ -325,7 +325,8 @@ void BackgroundContentsService::Observe(
       switch (content::Details<UnloadedExtensionInfo>(details)->reason) {
         case extension_misc::UNLOAD_REASON_DISABLE:    // Fall through.
         case extension_misc::UNLOAD_REASON_TERMINATE:  // Fall through.
-        case extension_misc::UNLOAD_REASON_UNINSTALL:
+        case extension_misc::UNLOAD_REASON_UNINSTALL:  // Fall through.
+        case extension_misc::UNLOAD_REASON_BLACKLIST:
           ShutdownAssociatedBackgroundContents(
               ASCIIToUTF16(content::Details<UnloadedExtensionInfo>(details)->
                   extension->id()));

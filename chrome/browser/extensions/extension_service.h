@@ -210,14 +210,15 @@ class ExtensionService
   virtual const ExtensionSet* extensions() const OVERRIDE;
   virtual const ExtensionSet* disabled_extensions() const OVERRIDE;
   const ExtensionSet* terminated_extensions() const;
+  const ExtensionSet* blacklisted_extensions() const;
 
-  // Returns a set of all installed, disabled, and terminated extensions and
-  // transfers ownership to caller.
-  const ExtensionSet* GenerateInstalledExtensionsSet() const;
+  // Returns a set of all installed, disabled, blacklisted, and terminated
+  // extensions.
+  scoped_ptr<const ExtensionSet> GenerateInstalledExtensionsSet() const;
 
   // Returns a set of all extensions disabled by the sideload wipeout
   // initiative.
-  const ExtensionSet* GetWipedOutExtensions() const;
+  scoped_ptr<const ExtensionSet> GetWipedOutExtensions() const;
 
   // Gets the object managing the set of pending extensions.
   virtual extensions::PendingExtensionManager*
@@ -304,17 +305,34 @@ class ExtensionService
   // Called when the associated Profile is going to be destroyed.
   void Shutdown();
 
-  // Look up an extension by ID.  Does not include terminated
+  // Look up an extension by ID. Does not include terminated
   // extensions.
   virtual const extensions::Extension* GetExtensionById(
       const std::string& id, bool include_disabled) const OVERRIDE;
+
+  enum IncludeFlag {
+    INCLUDE_NONE        = 0,
+    INCLUDE_ENABLED     = 1 << 0,
+    INCLUDE_DISABLED    = 1 << 1,
+    INCLUDE_TERMINATED  = 1 << 2,
+    INCLUDE_BLACKLISTED = 1 << 3,
+    INCLUDE_EVERYTHING = (1 << 4) - 1,
+  };
+
+  // Look up an extension by ID, selecting which sets to look in:
+  //  * extensions()             --> INCLUDE_ENABLED
+  //  * disabled_extensions()    --> INCLUDE_DISABLED
+  //  * terminated_extensions()  --> INCLUDE_TERMINATED
+  //  * blacklisted_extensions() --> INCLUDE_BLACKLISTED
+  const extensions::Extension* GetExtensionById(const std::string& id,
+                                                int include_mask) const;
 
   // Looks up a terminated (crashed) extension by ID.
   const extensions::Extension*
       GetTerminatedExtension(const std::string& id) const;
 
   // Looks up an extension by ID, regardless of whether it's enabled,
-  // disabled, or terminated.
+  // disabled, blacklisted, or terminated.
   virtual const extensions::Extension* GetInstalledExtension(
       const std::string& id) const OVERRIDE;
 
@@ -741,25 +759,12 @@ class ExtensionService
       const extensions::ExtensionSyncData& extension_sync_data,
       syncer::ModelType type);
 
-  enum IncludeFlag {
-    INCLUDE_NONE = 0,
-    INCLUDE_ENABLED = 1 << 0,
-    INCLUDE_DISABLED = 1 << 1,
-    INCLUDE_TERMINATED = 1 << 2
-  };
-
   // Events to be fired after an extension is reloaded.
   enum PostReloadEvents {
     EVENT_NONE = 0,
     EVENT_LAUNCHED = 1 << 0,
     EVENT_RESTARTED = 1 << 1,
   };
-
-  // Look up an extension by ID, optionally including either or both of enabled
-  // and disabled extensions.
-  const extensions::Extension* GetExtensionByIdInternal(
-      const std::string& id,
-      int include_mask) const;
 
   // Adds the given extension to the list of terminated extensions if
   // it is not already there and unloads it.
@@ -843,14 +848,22 @@ class ExtensionService
   // extensions::Blacklist::Observer implementation.
   virtual void OnBlacklistUpdated() OVERRIDE;
 
+  // Manages the blacklisted extensions, intended as callback from
+  // Blacklist::GetBlacklistedIDs.
+  void ManageBlacklist(const std::set<std::string>& old_blacklisted_ids,
+                       const std::set<std::string>& new_blacklisted_ids);
+
   // The normal profile associated with this ExtensionService.
   Profile* profile_;
 
   // The ExtensionSystem for the profile above.
   extensions::ExtensionSystem* system_;
 
-  // Preferences for the owning profile (weak reference).
+  // Preferences for the owning profile.
   extensions::ExtensionPrefs* extension_prefs_;
+
+  // Blacklist for the owning profile.
+  extensions::Blacklist* blacklist_;
 
   // Settings for the owning profile.
   scoped_ptr<extensions::SettingsFrontend> settings_frontend_;
@@ -863,6 +876,12 @@ class ExtensionService
 
   // The list of installed extensions that have been terminated.
   ExtensionSet terminated_extensions_;
+
+  // The list of installed extensions that have been blacklisted. Generally
+  // these shouldn't be considered as installed by the extension platform: we
+  // only keep them around so that if extensions are blacklisted by mistake
+  // they can easily be un-blacklisted.
+  ExtensionSet blacklisted_extensions_;
 
   // The list of extension updates that are waiting to be installed.
   ExtensionSet pending_extension_updates_;

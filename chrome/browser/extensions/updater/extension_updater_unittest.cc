@@ -7,11 +7,16 @@
 #include <set>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop.h"
+#include "base/run_loop.h"
+#include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
@@ -24,6 +29,7 @@
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/test_blacklist.h"
 #include "chrome/browser/extensions/test_extension_prefs.h"
 #include "chrome/browser/extensions/test_extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -1035,9 +1041,10 @@ class ExtensionUpdaterTest : public testing::Test {
     net::TestURLFetcherFactory factory;
     net::TestURLFetcher* fetcher = NULL;
     MockService service(prefs_.get());
+    TestBlacklist blacklist(service.blacklist());
     ExtensionUpdater updater(
         &service, service.extension_prefs(), service.pref_service(),
-        service.profile(), service.blacklist(), kUpdateFrequencySecs);
+        service.profile(), blacklist.blacklist(), kUpdateFrequencySecs);
     updater.Start();
     ResetDownloader(
         &updater,
@@ -1062,7 +1069,7 @@ class ExtensionUpdaterTest : public testing::Test {
 
     // Call back the ExtensionUpdater with a 200 response and some test data.
     std::string extension_data("aaaabbbbcccceeeeaaaabbbbcccceeee");
-    EXPECT_FALSE(service.blacklist()->IsBlacklisted(extension_data));
+    EXPECT_FALSE(blacklist.IsBlacklisted(extension_data));
 
     fetcher = factory.GetFetcherByID(ExtensionDownloader::kExtensionFetcherId);
     EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
@@ -1076,7 +1083,7 @@ class ExtensionUpdaterTest : public testing::Test {
 
     RunUntilIdle();
 
-    EXPECT_TRUE(service.blacklist()->IsBlacklisted(extension_data));
+    EXPECT_TRUE(blacklist.IsBlacklisted(extension_data));
 
     EXPECT_EQ(version, service.pref_service()->
       GetString(prefs::kExtensionBlacklistUpdateVersion));
