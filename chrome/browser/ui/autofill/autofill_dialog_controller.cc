@@ -8,12 +8,16 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_country.h"
 #include "chrome/browser/autofill/autofill_manager.h"
+#include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
 #include "chrome/common/form_data.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/url_constants.h"
+#include "googleurl/src/gurl.h"
+#include "net/base/cert_status_flags.h"
 
 namespace autofill {
 
@@ -138,10 +142,14 @@ void FillFormGroupFromOutputs(const DetailOutputMap& detail_outputs,
 AutofillDialogController::AutofillDialogController(
     content::WebContents* contents,
     const FormData& form,
+    const GURL& source_url,
+    const content::SSLStatus& ssl_status,
     const base::Callback<void(const FormStructure*)>& callback)
     : profile_(Profile::FromBrowserContext(contents->GetBrowserContext())),
       contents_(contents),
       form_structure_(form),
+      source_url_(source_url),
+      ssl_status_(ssl_status),
       callback_(callback) {
   // TODO(estade): |this| should observe PersonalDataManager.
   // TODO(estade): remove duplicates from |form|?
@@ -156,6 +164,16 @@ void AutofillDialogController::Show() {
                                                             &has_sections);
   // Fail if the author didn't specify autocomplete types.
   if (!has_types) {
+    callback_.Run(NULL);
+    delete this;
+    return;
+  }
+
+  // Any request for credit info has to be secure with no minor or major errors.
+  if (RequestingCreditCardInfo() &&
+      (!source_url_.SchemeIs(chrome::kHttpsScheme) ||
+       net::IsCertStatusError(ssl_status_.cert_status) ||
+       net::IsCertStatusMinorError(ssl_status_.cert_status))) {
     callback_.Run(NULL);
     delete this;
     return;
@@ -230,10 +248,14 @@ string16 AutofillDialogController::DialogTitle() const {
   return string16(ASCIIToUTF16("PaY"));
 }
 
+string16 AutofillDialogController::SiteLabel() const {
+  return UTF8ToUTF16(source_url_.host());
+}
+
 string16 AutofillDialogController::IntroText() const {
   // TODO(estade): real strings and l10n.
-  return string16(
-      ASCIIToUTF16("random.com has requested the following deets:"));
+  // TODO(dbeam): what's the clearest way to not confuse translators here?
+  return ASCIIToUTF16("Da following deets will be passed to ");
 }
 
 string16 AutofillDialogController::LabelForSection(DialogSection section)
@@ -280,6 +302,19 @@ string16 AutofillDialogController::ConfirmButtonText() const {
 bool AutofillDialogController::ConfirmButtonEnabled() const {
   // TODO(estade): implement.
   return true;
+}
+
+bool AutofillDialogController::RequestingCreditCardInfo() const {
+  DCHECK_GT(form_structure_.field_count(), 0U);
+
+  for (size_t i = 0; i < form_structure_.field_count(); ++i) {
+    if (AutofillType(form_structure_.field(i)->type()).group() ==
+        AutofillType::CREDIT_CARD) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 const DetailInputs& AutofillDialogController::RequestedFieldsForSection(

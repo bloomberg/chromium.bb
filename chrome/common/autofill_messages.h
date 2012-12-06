@@ -13,7 +13,10 @@
 #include "chrome/common/form_field_data.h"
 #include "chrome/common/form_field_data_predictions.h"
 #include "chrome/common/password_form_fill_data.h"
+#include "content/public/common/common_param_traits_macros.h"
 #include "content/public/common/password_form.h"
+#include "content/public/common/ssl_status.h"
+#include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormElement.h"
@@ -147,6 +150,9 @@ IPC_MESSAGE_ROUTED0(AutofillMsg_RequestAutocompleteError)
 
 // Autofill messages sent from the renderer to the browser.
 
+// TODO(creis): check in the browser that the renderer actually has permission
+// for the URL to avoid compromised renderers talking to the browser.
+
 // Notification that forms have been seen that are candidates for
 // filling/submitting by the AutofillManager.
 IPC_MESSAGE_ROUTED2(AutofillHostMsg_FormsSeen,
@@ -202,8 +208,10 @@ IPC_MESSAGE_ROUTED1(AutofillHostMsg_DidFillAutofillFormData,
                     base::TimeTicks /* timestamp */)
 
 // Sent when a form receives a request to do interactive autocomplete.
-IPC_MESSAGE_ROUTED1(AutofillHostMsg_RequestAutocomplete,
-                    FormData /* form_data */)
+IPC_MESSAGE_ROUTED3(AutofillHostMsg_RequestAutocomplete,
+                    FormData /* form_data */,
+                    GURL /* frame_url */,
+                    content::SSLStatus /* ssl_status */)
 
 // Instructs the browser to remove the specified Autocomplete entry from the
 // database.

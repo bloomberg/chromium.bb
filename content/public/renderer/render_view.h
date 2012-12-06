@@ -41,6 +41,7 @@ namespace content {
 class ContextMenuClient;
 class RenderViewVisitor;
 struct ContextMenuParams;
+struct SSLStatus;
 
 class CONTENT_EXPORT RenderView : public IPC::Sender {
  public:
@@ -158,6 +159,9 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
   virtual void SetEditCommandForNextKeyEvent(const std::string& name,
                                              const std::string& value) = 0;
   virtual void ClearEditCommands() = 0;
+
+  // Returns a collection of security info about |frame|.
+  virtual SSLStatus GetSSLStatusOfFrame(WebKit::WebFrame* frame) const = 0;
 
  protected:
   virtual ~RenderView() {}

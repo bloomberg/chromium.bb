@@ -713,6 +713,7 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void SetEditCommandForNextKeyEvent(const std::string& name,
                                              const std::string& value) OVERRIDE;
   virtual void ClearEditCommands() OVERRIDE;
+  virtual SSLStatus GetSSLStatusOfFrame(WebKit::WebFrame* frame) const OVERRIDE;
 
   // webkit_glue::WebPluginPageDelegate implementation -------------------------
 

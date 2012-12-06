@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
-#include "base/string_util.h"
 #include "base/string_split.h"
+#include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/autofill_messages.h"
@@ -18,10 +18,11 @@
 #include "chrome/renderer/autofill/form_autofill_util.h"
 #include "chrome/renderer/autofill/password_autofill_manager.h"
 #include "content/public/common/password_form.h"
+#include "content/public/common/ssl_status.h"
 #include "content/public/renderer/render_view.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormControlElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormElement.h"
@@ -31,6 +32,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNodeCollection.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebOptionElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -233,7 +235,11 @@ void AutofillAgent::didRequestAutocomplete(WebKit::WebFrame* frame,
   HidePopups();
 
   in_flight_request_form_ = form;
-  Send(new AutofillHostMsg_RequestAutocomplete(routing_id(), form_data));
+  Send(new AutofillHostMsg_RequestAutocomplete(
+      routing_id(),
+      form_data,
+      frame->document().url(),
+      render_view()->GetSSLStatusOfFrame(frame)));
 }
 
 bool AutofillAgent::InputElementClicked(const WebInputElement& element,

@@ -774,14 +774,27 @@ void AutofillManager::OnSetDataList(const std::vector<string16>& values,
   }
 }
 
-void AutofillManager::OnRequestAutocomplete(const FormData& form) {
+void AutofillManager::OnRequestAutocomplete(
+    const FormData& form,
+    const GURL& frame_url,
+    const content::SSLStatus& ssl_status) {
   base::Callback<void(const FormStructure*)> callback =
       base::Bind(&AutofillManager::ReturnAutocompleteData, this);
   autofill::AutofillDialogController* controller =
       new autofill::AutofillDialogController(web_contents(),
                                              form,
+                                             frame_url,
+                                             ssl_status,
                                              callback);
   controller->Show();
+}
+
+void AutofillManager::ReturnAutocompleteError() {
+  RenderViewHost* host = web_contents()->GetRenderViewHost();
+  if (!host)
+    return;
+
+  host->Send(new AutofillMsg_RequestAutocompleteError(host->GetRoutingID()));
 }
 
 void AutofillManager::ReturnAutocompleteData(const FormStructure* result) {
@@ -795,7 +808,7 @@ void AutofillManager::ReturnAutocompleteData(const FormStructure* result) {
     return;
 
   if (!result) {
-    host->Send(new AutofillMsg_RequestAutocompleteError(host->GetRoutingID()));
+    ReturnAutocompleteError();
     return;
   }
 

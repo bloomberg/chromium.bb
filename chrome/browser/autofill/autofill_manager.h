@@ -26,6 +26,7 @@
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/form_structure.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/ssl_status.h"
 
 class AutofillExternalDelegate;
 class AutofillField;
@@ -33,6 +34,7 @@ class AutofillProfile;
 class AutofillMetrics;
 class CreditCard;
 class FormGroup;
+class GURL;
 class PersonalDataManager;
 class PrefService;
 class ProfileSyncService;
@@ -226,10 +228,15 @@ class AutofillManager : public content::WebContentsObserver,
                      const std::vector<int>& unique_ids);
 
   // Requests an interactive autocomplete UI be shown.
-  void OnRequestAutocomplete(const FormData& form);
+  void OnRequestAutocomplete(const FormData& form,
+                             const GURL& frame_url,
+                             const content::SSLStatus& ssl_status);
 
   // Passes return data for an OnRequestAutocomplete call back to the page.
   void ReturnAutocompleteData(const FormStructure* result);
+
+  // Tell the renderer the current interactive autocomplete failed somehow.
+  void ReturnAutocompleteError();
 
   // Fills |host| with the RenderViewHost for this tab.
   // Returns false if Autofill is disabled or if the host is unavailable.

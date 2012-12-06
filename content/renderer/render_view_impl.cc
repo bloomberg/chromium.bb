@@ -44,6 +44,7 @@
 #include "content/common/quota_dispatcher.h"
 #include "content/common/request_extra_data.h"
 #include "content/common/socket_stream_handle_data.h"
+#include "content/common/ssl_status_serialization.h"
 #include "content/common/view_messages.h"
 #include "content/common/webmessageportchannel_impl.h"
 #include "content/public/common/bindings_policy.h"
@@ -52,6 +53,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/file_chooser_params.h"
+#include "content/public/common/ssl_status.h"
 #include "content/public/common/three_d_api_types.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/content_renderer_client.h"
@@ -2698,6 +2700,21 @@ void RenderViewImpl::SetEditCommandForNextKeyEvent(const std::string& name,
 
 void RenderViewImpl::ClearEditCommands() {
   edit_commands_.clear();
+}
+
+SSLStatus RenderViewImpl::GetSSLStatusOfFrame(WebKit::WebFrame* frame) const {
+  SSLStatus ssl_status;
+
+  DocumentState* doc_state = DocumentState::FromDataSource(frame->dataSource());
+  if (doc_state && !doc_state->security_info().empty()) {
+    DeserializeSecurityInfo(doc_state->security_info(),
+                            &ssl_status.cert_id,
+                            &ssl_status.cert_status,
+                            &ssl_status.security_bits,
+                            &ssl_status.connection_status);
+  }
+
+  return ssl_status;
 }
 
 void RenderViewImpl::loadURLExternally(

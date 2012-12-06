@@ -15,9 +15,11 @@
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_comboboxes.h"
+#include "content/public/common/ssl_status.h"
 #include "ui/base/models/combobox_model.h"
 
 class FormGroup;
+class GURL;
 class Profile;
 
 namespace content {
@@ -73,6 +75,8 @@ class AutofillDialogController {
   AutofillDialogController(
       content::WebContents* contents,
       const FormData& form_structure,
+      const GURL& source_url,
+      const content::SSLStatus& ssl_status,
       const base::Callback<void(const FormStructure*)>& callback);
   ~AutofillDialogController();
 
@@ -80,6 +84,7 @@ class AutofillDialogController {
 
   // Called by the view.
   string16 DialogTitle() const;
+  string16 SiteLabel() const;
   string16 IntroText() const;
   string16 LabelForSection(DialogSection section) const;
   string16 UseBillingForShippingText() const;
@@ -105,6 +110,9 @@ class AutofillDialogController {
   // Determines whether |input| and |field| match.
   typedef base::Callback<bool(const DetailInput& input,
                               const AutofillField& field)> InputFieldComparator;
+
+  // Whether or not the current request wants credit info back.
+  bool RequestingCreditCardInfo() const;
 
   // Initializes |suggested_email_| et al.
   void GenerateComboboxModels();
@@ -138,6 +146,12 @@ class AutofillDialogController {
   content::WebContents* const contents_;
 
   FormStructure form_structure_;
+
+  // The URL of the invoking site.
+  GURL source_url_;
+
+  // The SSL info from the invoking site.
+  content::SSLStatus ssl_status_;
 
   base::Callback<void(const FormStructure*)> callback_;
 
