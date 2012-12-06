@@ -100,7 +100,9 @@ cr.define('login', function() {
    * @extends {HTMLDivElement}
    */
   var UserPod = cr.ui.define(function() {
-    return $('user-pod-template').cloneNode(true);
+    var dom = $('user-pod-template').cloneNode(true);
+    dom.id = '';
+    return dom;
   });
 
   /**
@@ -182,7 +184,7 @@ cr.define('login', function() {
      * @type {!HTMLDivElement}
      */
     get signedInIndicatorElement() {
-      return this.firstElementChild;
+      return this.querySelector('.signed-in-indicator');
     },
 
     /**
@@ -190,7 +192,7 @@ cr.define('login', function() {
      * @type {!HTMLImageElement}
      */
     get imageElement() {
-      return this.signedInIndicatorElement.nextElementSibling;
+      return this.querySelector('.user-image');
     },
 
     /**
@@ -198,7 +200,7 @@ cr.define('login', function() {
      * @type {!HTMLDivElement}
      */
     get nameElement() {
-      return this.imageElement.nextElementSibling;
+      return this.querySelector('.name');
     },
 
     /**
@@ -206,7 +208,7 @@ cr.define('login', function() {
      * @type {!HTMLInputElement}
      */
     get passwordElement() {
-      return this.nameElement.nextElementSibling;
+      return this.querySelector('.password');
     },
 
     /**
@@ -214,7 +216,7 @@ cr.define('login', function() {
      * @type {!HTMLImageElement}
      */
     get capslockHintElement() {
-      return this.signinButtonElement.previousElementSibling;
+      return this.querySelector('.capslock-hint');
     },
 
     /**
@@ -222,7 +224,7 @@ cr.define('login', function() {
      * @type {!HTMLInputElement}
      */
     get signinButtonElement() {
-      return this.removeUserButtonElement.previousElementSibling;
+      return this.querySelector('.signin-button');
     },
 
     /**
@@ -230,7 +232,7 @@ cr.define('login', function() {
      * @type {!HTMLInputElement}
      */
     get removeUserButtonElement() {
-      return this.lastElementChild;
+      return this.querySelector('.remove-user-button');
     },
 
     /**
@@ -410,6 +412,140 @@ cr.define('login', function() {
     }
   };
 
+  /**
+   * Creates a public account user pod.
+   * @constructor
+   * @extends {UserPod}
+   */
+  var PublicAccountUserPod = cr.ui.define(function() {
+    var dom = UserPod();
+
+    var extras = $('public-account-user-pod-extras-template').children;
+    for (var i = 0; i < extras.length; ++i) {
+      var el = extras[i].cloneNode(true);
+      dom.appendChild(el);
+    }
+
+    return dom;
+  });
+
+  PublicAccountUserPod.prototype = {
+    __proto__: UserPod.prototype,
+
+    /**
+     * "Enter" button in expanded side pane.
+     * @type {!HTMLButtonElement}
+     */
+    get enterButtonElement() {
+      return this.querySelector('.enter-button');
+    },
+
+    /**
+     * Boolean flag of whether the pod is showing the side pane. The flag
+     * controls whether 'expanded' class is added to the pod's class list and
+     * resets tab order because main input element changes when the 'expanded'
+     * state changes.
+     * @type {boolean}
+     */
+    get expanded() {
+      return this.classList.contains('expanded');
+    },
+    set expanded(expanded) {
+      if (this.expanded == expanded)
+        return;
+
+      this.resetTabOrder();
+      this.classList.toggle('expanded', expanded);
+
+      var self = this;
+      this.classList.add('animating');
+      this.addEventListener('webkitTransitionEnd', function f(e) {
+        self.removeEventListener('webkitTransitionEnd', f);
+        self.classList.remove('animating');
+      });
+    },
+
+    /** @override */
+    get needGaiaSignin() {
+      return false;
+    },
+
+    /** @override */
+    get mainInput() {
+      if (this.expanded)
+        return this.enterButtonElement;
+      else
+        return this.nameElement;
+    },
+
+    /** @override */
+    decorate: function() {
+      UserPod.prototype.decorate.call(this);
+
+      this.classList.remove('need-password');
+      this.classList.add('public-account');
+
+      this.nameElement.addEventListener('keydown', (function(e) {
+        if (e.keyIdentifier == 'Enter') {
+          this.parentNode.activatedPod = this;
+          // Stop this keydown event from bubbling up to PodRow handler.
+          e.stopPropagation();
+          // Prevent default so that we don't trigger a 'click' event on the
+          // newly focused "Enter" button.
+          e.preventDefault();
+        }
+      }).bind(this));
+
+      this.enterButtonElement.addEventListener('click', (function(e) {
+        chrome.send('launchPublicAccount', [this.user.username]);
+      }).bind(this));
+    },
+
+    /**
+     * Updates the user pod element.
+     */
+    update: function() {
+      UserPod.prototype.update.call(this);
+      this.querySelector('.side-pane-name').textContent =
+          this.user_.displayName;
+      this.querySelector('.info').textContent =
+          localStrings.getStringF('publicAccountInfoFormat',
+                                  this.user_.enterpriseDomain);
+    },
+
+    /** @override */
+    focusInput: function() {
+      // Move tabIndex from the whole pod to the main input.
+      this.tabIndex = -1;
+      this.mainInput.tabIndex = UserPodTabOrder.POD_INPUT;
+      this.mainInput.focus();
+    },
+
+    /** @override */
+    reset: function(takeFocus) {
+      if (!takeFocus)
+        this.expanded = false;
+      UserPod.prototype.reset.call(this, takeFocus);
+    },
+
+    /** @override */
+    activate: function() {
+      this.expanded = true;
+      this.focusInput();
+      return true;
+    },
+
+    /** @override */
+    handleMouseDown_: function(e) {
+      if (this.parentNode.disabled)
+        return;
+
+      this.parentNode.focusPod(this);
+      this.parentNode.activatedPod = this;
+      // Prevent default so that we don't trigger 'focus' event.
+      e.preventDefault();
+    }
+  };
 
   /**
    * Creates a new pod row element.
@@ -526,7 +662,12 @@ cr.define('login', function() {
      * @param {string} email User's email.
      */
     createUserPod: function(user) {
-      var userPod = new UserPod({user: user});
+      var userPod;
+      if (user.publicAccount)
+        userPod = new PublicAccountUserPod({user: user});
+      else
+        userPod = new UserPod({user: user});
+
       userPod.hidden = false;
       return userPod;
     },
@@ -795,9 +936,8 @@ cr.define('login', function() {
       if (this.disabled)
         return;
       // Clears focus if not clicked on a pod and if there's more than one pod.
-      if (e.target.parentNode != this &&
-          e.target.parentNode.parentNode != this &&
-          !this.isSinglePod) {
+      var pod = findAncestorByClass(e.target, 'pod');
+      if ((!pod || pod.parentNode != this) && !this.isSinglePod) {
         this.focusPod();
       }
 
@@ -821,22 +961,27 @@ cr.define('login', function() {
           e.target.focusInput();
         else
           this.focusPod(e.target);
-      } else if (e.target.parentNode.parentNode == this) {
+        return;
+      }
+
+      var pod = findAncestorByClass(e.target, 'pod');
+      if (pod && pod.parentNode == this) {
         // Focus on a control of a pod but not on the Remove button.
-        if (!e.target.parentNode.classList.contains('focused') &&
+        if (!pod.classList.contains('focused') &&
             !e.target.classList.contains('remove-user-button')) {
-          this.focusPod(e.target.parentNode);
+          this.focusPod(pod);
           e.target.focus();
         }
-      } else {
-        // Clears pod focus when we reach here. It means new focus is neither
-        // on a pod nor on a button/input for a pod.
-        // Do not "defocus" user pod when it is a single pod.
-        // That means that 'focused' class will not be removed and
-        // input field/button will always be visible.
-        if (!this.isSinglePod)
-          this.focusPod();
+        return;
       }
+
+      // Clears pod focus when we reach here. It means new focus is neither
+      // on a pod nor on a button/input for a pod.
+      // Do not "defocus" user pod when it is a single pod.
+      // That means that 'focused' class will not be removed and
+      // input field/button will always be visible.
+      if (!this.isSinglePod)
+        this.focusPod();
     },
 
     /**

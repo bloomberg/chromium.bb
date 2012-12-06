@@ -67,6 +67,7 @@ const char kGaiaExtStartPageOffline[] =
 const char kKeyUsername[] = "username";
 const char kKeyDisplayName[] = "displayName";
 const char kKeyEmailAddress[] = "emailAddress";
+const char kKeyEnterpriseDomain[] = "enterpriseDomain";
 const char kKeyNameTooltip[] = "nameTooltip";
 const char kKeyPublicAccount[] = "publicAccount";
 const char kKeySignedIn[] = "signedIn";
@@ -105,7 +106,7 @@ void UpdateAuthParamsFromSettings(DictionaryValue* params,
   params->SetBoolean("guestSignin", allow_guest);
 }
 
-} //  namespace
+}  // namespace
 
 // SigninScreenHandler implementation ------------------------------------------
 
@@ -195,6 +196,13 @@ void SigninScreenHandler::GetLocalizedStrings(
           g_browser_process->browser_policy_connector()->IsEnterpriseManaged() ?
             IDS_DISABLED_ADD_USER_TOOLTIP_ENTERPRISE :
             IDS_DISABLED_ADD_USER_TOOLTIP));
+
+  localized_strings->SetString("publicAccountInfoFormat",
+      l10n_util::GetStringUTF16(IDS_LOGIN_PUBLIC_ACCOUNT_INFO_FORMAT));
+  localized_strings->SetString("publicAccountReminder",
+       l10n_util::GetStringUTF16(IDS_LOGIN_PUBLIC_ACCOUNT_SIGNOUT_REMINDER));
+  localized_strings->SetString("publicAccountEnter",
+       l10n_util::GetStringUTF16(IDS_LOGIN_PUBLIC_ACCOUNT_ENTER));
 
   if (chromeos::KioskModeSettings::Get()->IsKioskModeEnabled()) {
     localized_strings->SetString("demoLoginMessage",
@@ -288,6 +296,9 @@ void SigninScreenHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("launchIncognito",
       base::Bind(&SigninScreenHandler::HandleLaunchIncognito,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("launchPublicAccount",
+      base::Bind(&SigninScreenHandler::HandleLaunchPublicAccount,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("offlineLogin",
       base::Bind(&SigninScreenHandler::HandleOfflineLogin,
@@ -624,6 +635,11 @@ void SigninScreenHandler::HandleLaunchIncognito(const base::ListValue* args) {
     delegate_->LoginAsGuest();
 }
 
+void SigninScreenHandler::HandleLaunchPublicAccount(
+    const base::ListValue* args) {
+  // TODO(bartfab): Wire this with real public account signin.
+}
+
 void SigninScreenHandler::HandleOfflineLogin(const base::ListValue* args) {
   if (!delegate_ || delegate_->IsShowUsers()) {
     NOTREACHED();
@@ -748,6 +764,16 @@ void SigninScreenHandler::SendUserList(bool animated) {
       user_dict->SetBoolean(kKeyPublicAccount, public_account);
       user_dict->SetInteger(kKeyOauthTokenStatus, (*it)->oauth_token_status());
       user_dict->SetBoolean(kKeySignedIn, signed_in);
+
+      if (public_account) {
+        policy::BrowserPolicyConnector* policy_connector =
+            g_browser_process->browser_policy_connector();
+
+        if (policy_connector->IsEnterpriseManaged()) {
+          user_dict->SetString(kKeyEnterpriseDomain,
+                               policy_connector->GetEnterpriseDomain());
+        }
+      }
 
       // Single user check here is necessary because owner info might not be
       // available when running into login screen on first boot.

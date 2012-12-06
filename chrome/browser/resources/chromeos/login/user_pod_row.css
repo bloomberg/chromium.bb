@@ -33,6 +33,9 @@ html[oobe=old] podrow {
   cursor: pointer;
   display: inline-block;
   padding: 10px;
+}
+
+.pod .main-pane {
   position: relative;
   text-align: center;
 }
@@ -40,6 +43,10 @@ html[oobe=old] podrow {
 html[oobe=old] .pod {
   -webkit-transition: all 230ms ease;
   margin: 0 10px;
+}
+
+html[oobe=old] .pod,
+html[oobe=old] .pod .main-pane {
   width: 170px;
 }
 
@@ -52,6 +59,10 @@ html[oobe=new] .pod {
               0 3px 0 rgba(0, 0, 0, 0.08);
   margin: 0 20px;
   padding-bottom: 3px;
+}
+
+html[oobe=new] .pod,
+html[oobe=new] .pod .main-pane {
   width: 160px;
 }
 
@@ -140,6 +151,7 @@ html[oobe=new] .name {
      when pod is not focused increase that a bit. */
   font-size: 16px;
   height: 26px;
+  line-height: 26px;  /* This vertically centers text */
   overflow: hidden;
   white-space: nowrap;
 }
@@ -148,12 +160,13 @@ html[oobe=new] .name {
   opacity: 0;
 }
 
-.pod.focused .name {
+.pod.need-password.focused .name {
   display: none;
 }
 
 .pod input[type='password'] {
   box-sizing: border-box;
+  display: none;
   padding: 4px 6px;
   width: 100%;
 }
@@ -178,8 +191,8 @@ html[oobe=new] .pod input[type='password'] {
   outline: none;
 }
 
-.pod:not(.focused) input[type='password'] {
-  display: none;
+.pod.need-password.focused input[type='password'] {
+  display: inline-block;
 }
 
 html[oobe=old] .pod input[type='password']:focus {
@@ -317,4 +330,109 @@ html[oobe=old] .pod.focused .signed-in-indicator {
   /* Track shifting of .user-image on pod focus. */
   -webkit-transform: translateY(-1px);
   -webkit-transition: -webkit-transform 140ms ease;
+}
+
+/**** Public account user pod rules *******************************************/
+
+.pod.public-account .name,
+.side-pane-name {
+  -webkit-padding-end: 16px;
+  background-image: url('chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY_GRAY');
+  background-position: right;
+  background-repeat: no-repeat;
+  outline: none;
+}
+
+html[dir=rtl] .pod.public-account .name,
+html[dir=rtl] .side-pane-name {
+  background-position: left;
+}
+
+.side-pane-divider,
+.side-pane-container {
+  bottom: 5px;
+  top: 5px;
+  visibility: hidden;
+}
+
+.side-pane-divider {
+  border-left: 1px solid lightgray;
+  left: 180px;
+  position: absolute;
+  right: auto;
+  width: 1px;
+}
+
+html[dir=rtl] .side-pane-divider {
+  left: auto;
+  right: 180px;
+}
+
+.side-pane-container {
+  left: 185px;
+  overflow: hidden;
+  padding: 5px;
+  position: absolute;
+  right: auto;
+}
+
+html[dir=rtl] .side-pane-container {
+  left: auto;
+  right: 185px;
+}
+
+.side-pane-contents {
+  -webkit-transform: translateX(-240px);
+  -webkit-transition: -webkit-transform 180ms ease;
+  height: 100%;
+  width: 225px;
+}
+
+html[dir=rtl] .side-pane-contents {
+  -webkit-transform: translateX(240px);
+}
+
+.pod.public-account.expanded .side-pane-contents {
+  -webkit-transform: translateX(0);
+}
+
+.side-pane-container .info,
+.side-pane-container .reminder {
+  font-size: 12px;
+}
+
+.side-pane-container .info {
+  -webkit-margin-before: 25px;
+}
+
+.side-pane-container .reminder {
+  font-weight: bold;
+}
+
+.side-pane-container .enter-button {
+  bottom: 5px;
+  display: block;
+  left: auto;
+  position: absolute;
+  right: 5px;
+}
+
+html[dir=rtl] .side-pane-container .enter-button {
+  left: 5px;
+  right: auto;
+}
+
+.pod.public-account.expanded {
+  padding: 10px;
+  width: 400px;
+}
+
+.pod.public-account.expanded .name {
+  display: none;
+}
+
+.pod.public-account.expanded .side-pane-divider,
+.pod.public-account.expanded .side-pane-container,
+.pod.public-account.animating .side-pane-container {
+  visibility: visible;
 }

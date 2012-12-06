@@ -3509,4 +3509,13 @@ Battery full
   <message name="IDS_LOGIN_MANAGED_REPORTING_HINT" desc="Text for the hint on reporting features displayed in the enterprise notification bar on the login screen.">
     Device usage may be tracked.
   </message>
+  <message name="IDS_LOGIN_PUBLIC_ACCOUNT_INFO_FORMAT" desc="Template for text shown in the public account user pod, informing the user that this is a public, managed account.">
+    This device is owned by <ph name="DOMAIN">$1<ex>yourdomain.com</ex></ph> and will be used by others after you.
+  </message>
+  <message name="IDS_LOGIN_PUBLIC_ACCOUNT_SIGNOUT_REMINDER" desc="Text shown in the public account user pod, reminding the user to log out.">
+    Please remember to sign out when you're done.
+  </message>
+  <message name="IDS_LOGIN_PUBLIC_ACCOUNT_ENTER" desc="Label text for the sign-in button in the public account user pod.">
+    Enter
+  </message>
 </grit-part>

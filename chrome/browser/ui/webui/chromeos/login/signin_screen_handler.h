@@ -210,6 +210,7 @@ class SigninScreenHandler
   void HandleAuthenticateUser(const base::ListValue* args);
   void HandleLaunchDemoUser(const base::ListValue* args);
   void HandleLaunchIncognito(const base::ListValue* args);
+  void HandleLaunchPublicAccount(const base::ListValue* args);
   void HandleOfflineLogin(const base::ListValue* args);
   void HandleShutdownSystem(const base::ListValue* args);
   void HandleLoadWallpaper(const base::ListValue* args);
