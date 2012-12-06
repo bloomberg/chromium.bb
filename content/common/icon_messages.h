@@ -5,7 +5,7 @@
 // Multiply-included message file, no traditional include guard.
 #include <vector>
 
-#include "chrome/common/favicon_url.h"
+#include "content/public/common/favicon_url.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
@@ -13,9 +13,9 @@
 
 #define IPC_MESSAGE_START IconMsgStart
 
-IPC_ENUM_TRAITS(FaviconURL::IconType)
+IPC_ENUM_TRAITS(content::FaviconURL::IconType)
 
-IPC_STRUCT_TRAITS_BEGIN(FaviconURL)
+IPC_STRUCT_TRAITS_BEGIN(content::FaviconURL)
   IPC_STRUCT_TRAITS_MEMBER(icon_url)
   IPC_STRUCT_TRAITS_MEMBER(icon_type)
 IPC_STRUCT_TRAITS_END()
@@ -35,7 +35,7 @@ IPC_MESSAGE_ROUTED3(IconMsg_DownloadFavicon,
 // Notification that the urls for the favicon of a site has been determined.
 IPC_MESSAGE_ROUTED2(IconHostMsg_UpdateFaviconURL,
                     int32 /* page_id */,
-                    std::vector<FaviconURL> /* urls of the favicon */)
+                    std::vector<content::FaviconURL> /* urls of the favicon */)
 
 IPC_MESSAGE_ROUTED5(IconHostMsg_DidDownloadFavicon,
                     int /* Identifier of the request */,

@@ -9,12 +9,10 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/favicon/favicon_download_helper.h"
 #include "chrome/browser/favicon/favicon_util.h"
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/icon_messages.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
@@ -39,7 +37,8 @@ message_center::MessageCenter* GetMessageCenter() {
 
 BalloonViewAsh::BalloonViewAsh(BalloonCollection* collection)
     : collection_(collection),
-      balloon_(NULL) {
+      balloon_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
 BalloonViewAsh::~BalloonViewAsh() {
@@ -90,6 +89,20 @@ BalloonHost* BalloonViewAsh::GetHost() const {
   return NULL;
 }
 
+void BalloonViewAsh::DidDownloadFavicon(
+    int id,
+    const GURL& image_url,
+    bool errored,
+    int requested_size,
+    const std::vector<SkBitmap>& bitmaps) {
+  if (id != current_download_id_ || bitmaps.empty())
+    return;
+  GetMessageCenter()->SetNotificationImage(
+      cached_notification_id_, gfx::ImageSkia(bitmaps[0]));
+  current_download_id_ = -1;
+  cached_notification_id_.clear();
+}
+
 void BalloonViewAsh::FetchIcon(const Notification& notification) {
   if (!notification.icon().isNull()) {
     GetMessageCenter()->SetNotificationImage(
@@ -109,24 +122,11 @@ void BalloonViewAsh::FetchIcon(const Notification& notification) {
     LOG(WARNING) << "Notification has icon url but no WebContents";
     return;
   }
-  icon_fetcher_.reset(new FaviconDownloadHelper(web_contents, this));
-  current_download_id_ = icon_fetcher_->DownloadFavicon(
-      notification.icon_url(), kNotificationIconImageSize);
+  current_download_id_ = web_contents->DownloadFavicon(
+      notification.icon_url(), kNotificationIconImageSize,
+      base::Bind(&BalloonViewAsh::DidDownloadFavicon,
+                 weak_ptr_factory_.GetWeakPtr()));
   cached_notification_id_ = notification.notification_id();
-}
-
-void BalloonViewAsh::OnDidDownloadFavicon(
-    int id,
-    const GURL& image_url,
-    bool errored,
-    int requested_size,
-    const std::vector<SkBitmap>& bitmaps) {
-  if (id != current_download_id_ || bitmaps.empty())
-    return;
-  GetMessageCenter()->SetNotificationImage(
-      cached_notification_id_, gfx::ImageSkia(bitmaps[0]));
-  current_download_id_ = -1;
-  cached_notification_id_.clear();
 }
 
 std::string BalloonViewAsh::GetExtensionId(Balloon* balloon) {

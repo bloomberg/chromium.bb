@@ -11,8 +11,6 @@
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/tab_helper.h"
-#include "chrome/browser/favicon/favicon_download_helper.h"
-#include "chrome/browser/favicon/favicon_download_helper_delegate.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/favicon/favicon_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -24,6 +22,8 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
+#include "googleurl/src/gurl.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include "base/environment.h"
@@ -46,8 +46,7 @@ namespace {
 // updated. If there are such shortcuts, it schedules icon download and
 // update them when icons are downloaded. It observes TAB_CLOSING notification
 // and cancels all the work when the underlying tab is closing.
-class UpdateShortcutWorker : public content::NotificationObserver,
-                             public FaviconDownloadHelperDelegate {
+class UpdateShortcutWorker : public content::NotificationObserver {
  public:
   explicit UpdateShortcutWorker(WebContents* web_contents);
 
@@ -62,13 +61,13 @@ class UpdateShortcutWorker : public content::NotificationObserver,
   // Downloads icon via the FaviconTabHelper.
   void DownloadIcon();
 
-  // FaviconDownloadHelperDelegate override.
-  virtual void OnDidDownloadFavicon(
+  // Favicon download callback.
+  void DidDownloadFavicon(
       int id,
       const GURL& image_url,
       bool errored,
       int requested_size,
-      const std::vector<SkBitmap>& bitmaps) OVERRIDE;
+      const std::vector<SkBitmap>& bitmaps);
 
   // Checks if shortcuts exists on desktop, start menu and quick launch.
   void CheckExistingShortcuts();
@@ -157,26 +156,21 @@ void UpdateShortcutWorker::DownloadIcon() {
     return;
   }
 
-  scoped_ptr<FaviconDownloadHelper> download_helper(
-      new FaviconDownloadHelper(web_contents_, this));
-
-  download_helper->DownloadFavicon(unprocessed_icons_.back().url,
-                                   std::max(unprocessed_icons_.back().width,
-                                            unprocessed_icons_.back().height));
+  web_contents_->DownloadFavicon(
+      unprocessed_icons_.back().url,
+      std::max(unprocessed_icons_.back().width,
+               unprocessed_icons_.back().height),
+      base::Bind(&UpdateShortcutWorker::DidDownloadFavicon,
+                 base::Unretained(this)));
   unprocessed_icons_.pop_back();
 }
 
-void UpdateShortcutWorker::OnDidDownloadFavicon(
+void UpdateShortcutWorker::DidDownloadFavicon(
     int id,
     const GURL& image_url,
     bool errored,
     int requested_size,
     const std::vector<SkBitmap>& bitmaps) {
-  if (web_contents_ == NULL) {
-    DeleteMe();  // We are done if underlying WebContents is gone.
-    return;
-  }
-
   std::vector<ui::ScaleFactor> scale_factors;
   scale_factors.push_back(ui::SCALE_FACTOR_100P);
 

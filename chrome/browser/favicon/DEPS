@@ -34,16 +34,6 @@
 
 specific_include_rules = {
   # TODO(caitkp): Look into removing history/ dependencies.
-  'favicon_download_helper(_delegate)*\.(h|cc)': [
-    "-chrome",
-    "-chrome/browser",
-    "+chrome/browser/favicon/favicon_download_helper.h",
-    "+chrome/browser/favicon/favicon_download_helper_delegate.h",
-    "+chrome/browser/favicon/favicon_util.h",
-    "+chrome/common/icon_messages.h",
-    "+chrome/common/favicon_url.h",
-  ],
-
   'favicon_util\.(h|cc)': [
     "-chrome",
     "-chrome/browser",

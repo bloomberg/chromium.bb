@@ -9,9 +9,8 @@
 
 #include "content/public/browser/render_view_host_observer.h"
 
-struct FaviconURL;
-
 namespace content {
+struct FaviconURL;
 class RenderViewHost;
 }
 
@@ -40,7 +39,7 @@ class PrerenderRenderViewHostObserver : public content::RenderViewHostObserver {
 
  private:
   // Message handlers.
-  void OnUpdateFaviconURL(int32 page_id, const std::vector<FaviconURL>& urls);
+
   void OnMaybeCancelPrerenderForHTML5Media();
   void OnCancelPrerenderForPrinting();
 

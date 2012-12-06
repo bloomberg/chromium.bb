@@ -19,6 +19,7 @@ namespace content {
 class RenderViewHost;
 class WebContents;
 class WebContentsImpl;
+struct FaviconURL;
 struct FrameNavigateParams;
 struct LoadCommittedDetails;
 struct Referrer;
@@ -141,6 +142,10 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   // reset recently.
   virtual void DidBlock3DAPIs(const GURL& url,
                               ThreeDAPIType requester) {}
+
+  // Invoked when new FaviconURL candidates are received from the renderer.
+  virtual void DidUpdateFaviconURL(int32 page_id,
+                                   const std::vector<FaviconURL>& candidates) {}
 
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

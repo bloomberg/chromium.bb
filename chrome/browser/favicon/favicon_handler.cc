@@ -18,7 +18,6 @@
 #include "chrome/browser/favicon/favicon_util.h"
 #include "chrome/browser/history/select_favicon_frames.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/icon_messages.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
 #include "skia/ext/image_operations.h"
@@ -27,6 +26,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_util.h"
 
+using content::FaviconURL;
 using content::NavigationEntry;
 
 namespace {

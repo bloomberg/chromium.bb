@@ -73,6 +73,7 @@
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/do_not_track_bindings.h"
 #include "content/renderer/external_popup_menu.h"
+#include "content/renderer/favicon_helper.h"
 #include "content/renderer/geolocation_dispatcher.h"
 #include "content/renderer/gpu/compositor_thread.h"
 #include "content/renderer/gpu/compositor_output_surface.h"
@@ -587,6 +588,7 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       renderer_accessibility_(NULL),
       java_bridge_dispatcher_(NULL),
       mouse_lock_dispatcher_(NULL),
+      favicon_helper_(NULL),
 #if defined(OS_ANDROID)
       body_background_color_(SK_ColorWHITE),
       update_frame_info_scheduled_(false),
@@ -705,6 +707,7 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
   devtools_agent_ = new DevToolsAgent(this);
   mouse_lock_dispatcher_ = new RenderViewMouseLockDispatcher(this);
   intents_host_ = new WebIntentsHost(this);
+  favicon_helper_ = new FaviconHelper(this);
 
   // Create renderer_accessibility_ if needed.
   OnSetAccessibilityMode(params->accessibility_mode);
@@ -3513,8 +3516,7 @@ void RenderViewImpl::didReceiveTitle(WebFrame* frame, const WebString& title,
 }
 
 void RenderViewImpl::didChangeIcon(WebFrame* frame, WebIconURL::Type type) {
-  FOR_EACH_OBSERVER(RenderViewObserver, observers_,
-                    DidChangeIcon(frame, type));
+  favicon_helper_->DidChangeIcon(frame, type);
 }
 
 void RenderViewImpl::didFinishDocumentLoad(WebFrame* frame) {

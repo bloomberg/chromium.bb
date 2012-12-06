@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/favicon_url.h"
+#include "content/public/common/favicon_url.h"
+
+namespace content {
 
 FaviconURL::FaviconURL()
   : icon_type(INVALID_ICON) {
@@ -15,3 +17,5 @@ FaviconURL::FaviconURL(const GURL& url, IconType type)
 
 FaviconURL::~FaviconURL() {
 }
+
+} // namespace content

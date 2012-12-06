@@ -393,6 +393,23 @@ class WebContents : public PageNavigator,
 
   // Does this have an opener associated with it?
   virtual bool HasOpener() const = 0;
+
+  typedef base::Callback<void(int, /* id */
+                              const GURL&, /* image_url */
+                              bool, /* errored */
+                              int,  /* requested_size */
+                              const std::vector<SkBitmap>& /* bitmaps*/)>
+      FaviconDownloadCallback;
+
+  // Sends a request to download the given favicon |url| and returns the unique
+  // id of the download request. When the download is finished, |callback| will
+  // be called with the bitmaps received from the renderer. Note that
+  // |image_size| is a hint for images with multiple sizes. The downloaded image
+  // is not resized to the given image_size. If 0 is passed, the first frame of
+  // the image is returned.
+  virtual int DownloadFavicon(const GURL& url, int image_size,
+                              const FaviconDownloadCallback& callback) = 0;
+
 };
 
 }  // namespace content

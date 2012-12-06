@@ -2,13 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_FAVICON_URL_
-#define CHROME_COMMON_FAVICON_URL_
+#ifndef CONTENT_PUBLIC_COMMON_FAVICON_URL_
+#define CONTENT_PUBLIC_COMMON_FAVICON_URL_
 
+#include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
 
+namespace content {
+
 // The favicon url from the render.
-struct FaviconURL {
+struct CONTENT_EXPORT FaviconURL {
   // The icon type in a page. The definition must be same as history::IconType.
   enum IconType {
     INVALID_ICON = 0x0,
@@ -28,4 +31,6 @@ struct FaviconURL {
   IconType icon_type;
 };
 
-#endif  // CHROME_COMMON_FAVICON_URL_
+} // namespace content
+
+#endif  // CONTENT_PUBLIC_COMMON_FAVICON_URL_

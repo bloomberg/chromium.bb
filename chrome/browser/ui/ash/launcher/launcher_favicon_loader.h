@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "chrome/common/favicon_url.h"
+#include "content/public/common/favicon_url.h"
 
 class GURL;
 class SkBitmap;

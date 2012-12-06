@@ -11,7 +11,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/extensions/tab_helper.h"
-#include "chrome/browser/favicon/favicon_download_helper.h"
 #include "chrome/browser/favicon/favicon_util.h"
 #include "chrome/browser/history/select_favicon_frames.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -28,7 +27,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_delegate.h"
+#include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
@@ -445,18 +444,17 @@ void CreateUrlApplicationShortcutView::FetchIcon() {
   if (unprocessed_icons_.empty())  // No icons to fetch.
     return;
 
-  if (!download_helper_.get())
-    download_helper_.reset(new FaviconDownloadHelper(web_contents_, this));
-
-  pending_download_id_ = download_helper_->DownloadFavicon(
+  pending_download_id_ = web_contents_->DownloadFavicon(
       unprocessed_icons_.back().url,
       std::max(unprocessed_icons_.back().width,
-               unprocessed_icons_.back().height));
+               unprocessed_icons_.back().height),
+      base::Bind(&CreateUrlApplicationShortcutView::DidDownloadFavicon,
+                 base::Unretained(this)));
 
   unprocessed_icons_.pop_back();
 }
 
-void CreateUrlApplicationShortcutView::OnDidDownloadFavicon(
+void CreateUrlApplicationShortcutView::DidDownloadFavicon(
     int id,
     const GURL& image_url,
     bool errored,

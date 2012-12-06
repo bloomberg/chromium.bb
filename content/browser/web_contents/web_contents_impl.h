@@ -62,6 +62,7 @@ class WebContentsImpl;
 class WebContentsObserver;
 class WebContentsView;
 class WebContentsViewDelegate;
+struct FaviconURL;
 struct LoadNotificationDetails;
 
 // Factory function for the implementations that content knows about. Takes
@@ -277,6 +278,8 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void DidChooseColorInColorChooser(int color_chooser_id,
                                             SkColor color) OVERRIDE;
   virtual void DidEndColorChooser(int color_chooser_id) OVERRIDE;
+  virtual int DownloadFavicon(const GURL& url, int image_size,
+                              const FaviconDownloadCallback& callback) OVERRIDE;
 
   // Implementation of PageNavigator.
   virtual WebContents* OpenURL(const OpenURLParams& params) OVERRIDE;
@@ -571,6 +574,13 @@ class CONTENT_EXPORT WebContentsImpl
   void OnBrowserPluginCreateGuest(
       int instance_id,
       const BrowserPluginHostMsg_CreateGuest_Params& params);
+  void OnDidDownloadFavicon(int id,
+                            const GURL& image_url,
+                            bool errored,
+                            int requested_size,
+                            const std::vector<SkBitmap>& bitmaps);
+  void OnUpdateFaviconURL(int32 page_id,
+                          const std::vector<FaviconURL>& candidates);
 
   // Changes the IsLoading state and notifies delegate as needed
   // |details| is used to provide details on the load that just finished
@@ -857,6 +867,10 @@ class CONTENT_EXPORT WebContentsImpl
   // All live RenderWidgetHostImpls that are created by this object and may
   // outlive it.
   std::set<RenderWidgetHostImpl*> created_widgets_;
+
+  // Maps the ids of pending favicon downloads to their callbacks
+  typedef std::map<int, FaviconDownloadCallback> FaviconDownloadMap;
+  FaviconDownloadMap favicon_download_map_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsImpl);
 };

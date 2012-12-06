@@ -24,13 +24,13 @@
 
 class Profile;
 class TabContents;
-struct FaviconURL;
 
 namespace base {
 class ProcessMetrics;
 }
 
 namespace content {
+struct FaviconURL;
 class RenderViewHost;
 class SessionStorageNamespace;
 class WebContents;
@@ -202,6 +202,8 @@ class PrerenderContents : public content::NotificationObserver,
       const GURL& validated_url,
       bool is_main_frame,
       content::RenderViewHost* render_view_host) OVERRIDE;
+  virtual void DidUpdateFaviconURL(int32 page_id,
+      const std::vector<content::FaviconURL>& urls) OVERRIDE;
 
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
 
@@ -293,9 +295,6 @@ class PrerenderContents : public content::NotificationObserver,
   friend class PrerenderContentsFactoryImpl;
 
   friend class PrerenderRenderViewHostObserver;
-
-  // Message handlers.
-  void OnUpdateFaviconURL(int32 page_id, const std::vector<FaviconURL>& urls);
 
   // Returns the RenderViewHost Delegate for this prerender.
   content::WebContents* GetWebContents();

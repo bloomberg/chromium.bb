@@ -11,12 +11,12 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
-#include "chrome/browser/favicon/favicon_download_helper_delegate.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/window/dialog_delegate.h"
 
 class FaviconDownloadHelper;
+class GURL;
 class Profile;
 class SkBitmap;
 
@@ -85,8 +85,7 @@ class CreateApplicationShortcutView : public views::DialogDelegateView,
 };
 
 // Create an application shortcut pointing to a URL.
-class CreateUrlApplicationShortcutView : public CreateApplicationShortcutView,
-                                         public FaviconDownloadHelperDelegate {
+class CreateUrlApplicationShortcutView : public CreateApplicationShortcutView {
  public:
   explicit CreateUrlApplicationShortcutView(content::WebContents* web_contents);
   virtual ~CreateUrlApplicationShortcutView();
@@ -98,19 +97,16 @@ class CreateUrlApplicationShortcutView : public CreateApplicationShortcutView,
   // The first largest icon downloaded and decoded successfully will be used.
   void FetchIcon();
 
-  // FaviconDownloadHelperDelegate overrides.
-  virtual void OnDidDownloadFavicon(
+  // Favicon download callback.
+  void DidDownloadFavicon(
       int id,
       const GURL& image_url,
       bool errored,
       int requested_size,
-      const std::vector<SkBitmap>& bitmaps) OVERRIDE;
+      const std::vector<SkBitmap>& bitmaps);
 
   // The tab whose URL is being turned into an app.
   content::WebContents* web_contents_;
-
-  // Helper class to manage the downloading of favicons.
-  scoped_ptr<FaviconDownloadHelper> download_helper_;
 
   // Pending app icon download tracked by us.
   int pending_download_id_;

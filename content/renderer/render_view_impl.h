@@ -143,6 +143,7 @@ class DevToolsAgent;
 class DocumentState;
 class DomAutomationController;
 class ExternalPopupMenu;
+class FaviconHelper;
 class GeolocationDispatcher;
 class InputTagSpeechDispatcher;
 class JavaBridgeDispatcher;
@@ -1403,6 +1404,9 @@ class CONTENT_EXPORT RenderViewImpl
 
   // Mouse Lock dispatcher attached to this view.
   MouseLockDispatcher* mouse_lock_dispatcher_;
+
+  // Helper class to handle favicon changes.
+  FaviconHelper* favicon_helper_;
 
 #if defined(OS_ANDROID)
   // Android Specific ---------------------------------------------------------

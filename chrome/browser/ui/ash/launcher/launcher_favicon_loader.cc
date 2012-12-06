@@ -5,14 +5,11 @@
 #include "chrome/browser/ui/ash/launcher/launcher_favicon_loader.h"
 
 #include "base/logging.h"
-#include "chrome/browser/favicon/favicon_download_helper.h"
-#include "chrome/browser/favicon/favicon_download_helper_delegate.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/ash/launcher/browser_launcher_item_controller.h"
-#include "chrome/common/favicon_url.h"
-#include "chrome/common/icon_messages.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_delegate.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -26,12 +23,14 @@ const int kMaxBitmapSize = 256;
 // These icon bitmaps are not resized and are not cached beyond the lifetime
 // of the class. Bitmaps larger than kMaxBitmapSize are ignored.
 
-class FaviconBitmapHandler : public FaviconDownloadHelperDelegate {
+class FaviconBitmapHandler : public content::WebContentsObserver {
  public:
   FaviconBitmapHandler(content::WebContents* web_contents,
                        LauncherFaviconLoader::Delegate* delegate)
-      : delegate_(delegate) {
-    download_helper_.reset(new FaviconDownloadHelper(web_contents, this));
+      : content::WebContentsObserver(web_contents),
+        delegate_(delegate),
+        web_contents_(web_contents),
+        ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   }
 
   ~FaviconBitmapHandler() {}
@@ -40,25 +39,24 @@ class FaviconBitmapHandler : public FaviconDownloadHelperDelegate {
 
   bool HasPendingDownloads() const;
 
-  // FaviconDownloadHelperDelegate methods
-  virtual void OnUpdateFaviconURL(
+  // content::WebContentObserver implementation.
+  virtual void DidUpdateFaviconURL(
     int32 page_id,
-    const std::vector<FaviconURL>& candidates) OVERRIDE;
-
-  virtual void OnDidDownloadFavicon(
-    int id,
-    const GURL& image_url,
-    bool errored,
-    int requested_size,
-    const std::vector<SkBitmap>& bitmaps) OVERRIDE;
+    const std::vector<content::FaviconURL>& candidates) OVERRIDE;
 
  private:
-  void DownloadFavicon(const GURL& image_url);
+  void DidDownloadFavicon(
+      int id,
+      const GURL& image_url,
+      bool errored,
+      int requested_size,
+      const std::vector<SkBitmap>& bitmaps);
+
   void AddFavicon(const GURL& image_url, const SkBitmap& new_bitmap);
 
   LauncherFaviconLoader::Delegate* delegate_;
 
-  scoped_ptr<FaviconDownloadHelper> download_helper_;
+  content::WebContents* web_contents_;
 
   typedef std::set<GURL> UrlSet;
   // Map of pending download urls.
@@ -69,12 +67,14 @@ class FaviconBitmapHandler : public FaviconDownloadHelperDelegate {
   SkBitmap bitmap_;
   GURL bitmap_url_;
 
+  base::WeakPtrFactory<FaviconBitmapHandler> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(FaviconBitmapHandler);
 };
 
-void FaviconBitmapHandler::OnUpdateFaviconURL(
+void FaviconBitmapHandler::DidUpdateFaviconURL(
     int32 page_id,
-    const std::vector<FaviconURL>& candidates) {
+    const std::vector<content::FaviconURL>& candidates) {
   // This function receives a complete list of faviocn urls for the page.
   // It may get called multiple times with the same list, and will also get
   // called any time an item is added or removed. As such, we track processed
@@ -82,9 +82,9 @@ void FaviconBitmapHandler::OnUpdateFaviconURL(
   UrlSet new_pending, new_processed;
   // Create a map of valid favicon urls.
   std::set<GURL> urls;
-  for (std::vector<FaviconURL>::const_iterator iter = candidates.begin();
-       iter != candidates.end(); ++iter) {
-    if (iter->icon_type != FaviconURL::FAVICON)
+  std::vector<content::FaviconURL>::const_iterator iter;
+  for (iter = candidates.begin(); iter != candidates.end(); ++iter) {
+    if (iter->icon_type != content::FaviconURL::FAVICON)
       continue;
     const GURL& url = iter->icon_url;
     if (url.is_valid())
@@ -110,11 +110,17 @@ void FaviconBitmapHandler::OnUpdateFaviconURL(
     if (pending_requests_.find(*iter) != pending_requests_.end())
       continue;  // Skip already pending downloads.
     pending_requests_.insert(*iter);
-    download_helper_->DownloadFavicon(*iter, 0);
+    web_contents_->DownloadFavicon(*iter, 0,
+        base::Bind(&FaviconBitmapHandler::DidDownloadFavicon,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
-void FaviconBitmapHandler::OnDidDownloadFavicon(
+bool FaviconBitmapHandler::HasPendingDownloads() const {
+  return !pending_requests_.empty();
+}
+
+void FaviconBitmapHandler::DidDownloadFavicon(
     int id,
     const GURL& image_url,
     bool errored,
@@ -130,10 +136,6 @@ void FaviconBitmapHandler::OnDidDownloadFavicon(
   // Favicon bitmaps are ordered by decreasing width.
   if (!errored && !bitmaps.empty())
     AddFavicon(image_url, bitmaps[0]);
-}
-
-bool FaviconBitmapHandler::HasPendingDownloads() const {
-  return !pending_requests_.empty();
 }
 
 void FaviconBitmapHandler::AddFavicon(const GURL& image_url,

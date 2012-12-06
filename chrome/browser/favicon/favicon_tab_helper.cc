@@ -4,7 +4,6 @@
 
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 
-#include "chrome/browser/favicon/favicon_download_helper.h"
 #include "chrome/browser/favicon/favicon_handler.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/favicon/favicon_util.h"
@@ -13,7 +12,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/icon_messages.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_controller.h"
@@ -39,7 +37,6 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(FaviconTabHelper)
 FaviconTabHelper::FaviconTabHelper(WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())) {
-  favicon_download_helper_.reset(new FaviconDownloadHelper(web_contents, this));
   favicon_handler_.reset(new FaviconHandler(profile_, this,
                                             FaviconHandler::FAVICON));
   if (chrome::kEnableTouchIcon)
@@ -95,14 +92,6 @@ bool FaviconTabHelper::ShouldDisplayFavicon() {
   return true;
 }
 
-void FaviconTabHelper::OnUpdateFaviconURL(
-    int32 page_id,
-    const std::vector<FaviconURL>& candidates) {
-  favicon_handler_->OnUpdateFaviconURL(page_id, candidates);
-  if (touch_icon_handler_.get())
-    touch_icon_handler_->OnUpdateFaviconURL(page_id, candidates);
-}
-
 void FaviconTabHelper::SaveFavicon() {
   NavigationEntry* entry = web_contents()->GetController().GetActiveEntry();
   if (!entry || entry->GetURL().is_empty())
@@ -134,7 +123,9 @@ NavigationEntry* FaviconTabHelper::GetActiveEntry() {
 }
 
 int FaviconTabHelper::StartDownload(const GURL& url, int image_size) {
-  return favicon_download_helper_->DownloadFavicon(url, image_size);
+  return web_contents()->DownloadFavicon(url, image_size,
+      base::Bind(&FaviconTabHelper::DidDownloadFavicon,
+                 base::Unretained(this)));
 }
 
 void FaviconTabHelper::NotifyFaviconUpdated() {
@@ -164,7 +155,15 @@ void FaviconTabHelper::DidNavigateMainFrame(
   FetchFavicon(details.entry->GetURL());
 }
 
-void FaviconTabHelper::OnDidDownloadFavicon(
+void FaviconTabHelper::DidUpdateFaviconURL(
+    int32 page_id,
+    const std::vector<content::FaviconURL>& candidates) {
+  favicon_handler_->OnUpdateFaviconURL(page_id, candidates);
+  if (touch_icon_handler_.get())
+    touch_icon_handler_->OnUpdateFaviconURL(page_id, candidates);
+}
+
+void FaviconTabHelper::DidDownloadFavicon(
     int id,
     const GURL& image_url,
     bool errored,

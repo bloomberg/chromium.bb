@@ -5,7 +5,6 @@
 #include "chrome/browser/prerender/prerender_render_view_host_observer.h"
 
 #include "chrome/browser/prerender/prerender_contents.h"
-#include "chrome/common/icon_messages.h"
 #include "chrome/common/render_messages.h"
 
 using content::RenderViewHost;
@@ -34,7 +33,6 @@ bool PrerenderRenderViewHostObserver::OnMessageReceived(
   bool handled = true;
   // The following messages we do want to consume.
   IPC_BEGIN_MESSAGE_MAP(PrerenderRenderViewHostObserver, message)
-    IPC_MESSAGE_HANDLER(IconHostMsg_UpdateFaviconURL, OnUpdateFaviconURL)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_MaybeCancelPrerenderForHTML5Media,
                         OnMaybeCancelPrerenderForHTML5Media)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_CancelPrerenderForPrinting,
@@ -53,12 +51,6 @@ bool PrerenderRenderViewHostObserver::OnMessageReceived(
 // public so it is visible to the caller.
 bool PrerenderRenderViewHostObserver::Send(IPC::Message* message) {
   return content::RenderViewHostObserver::Send(message);
-}
-
-void PrerenderRenderViewHostObserver::OnUpdateFaviconURL(
-    int32 page_id,
-    const std::vector<FaviconURL>& urls) {
-  prerender_contents_->OnUpdateFaviconURL(page_id, urls);
 }
 
 void PrerenderRenderViewHostObserver::OnMaybeCancelPrerenderForHTML5Media() {

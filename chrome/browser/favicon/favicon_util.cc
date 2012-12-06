@@ -6,7 +6,6 @@
 
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/select_favicon_frames.h"
-#include "chrome/common/icon_messages.h"
 #include "content/public/browser/render_view_host.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/codec/png_codec.h"

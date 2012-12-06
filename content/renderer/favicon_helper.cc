@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/favicon_helper.h"
+#include "content/renderer/favicon_helper.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/message_loop.h"
-#include "chrome/common/chrome_constants.h"
-#include "chrome/common/favicon_url.h"
-#include "chrome/common/icon_messages.h"
+#include "content/common/icon_messages.h"
 #include "content/public/renderer/render_view.h"
 #include "net/base/data_url.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/skbitmap_operations.h"
@@ -28,6 +28,21 @@ using WebKit::WebVector;
 using WebKit::WebURL;
 using WebKit::WebURLRequest;
 using webkit_glue::MultiResolutionImageResourceFetcher;
+
+namespace content {
+
+namespace {
+bool TouchEnabled() {
+// Based on the definition of chrome::kEnableTouchIcon.
+#if defined(OS_ANDROID)
+  return true;
+#else
+  return false;
+#endif
+}
+
+} // namespace
+
 
 static FaviconURL::IconType ToFaviconType(WebIconURL::Type type) {
   switch (type) {
@@ -43,8 +58,25 @@ static FaviconURL::IconType ToFaviconType(WebIconURL::Type type) {
   return FaviconURL::INVALID_ICON;
 }
 
-FaviconHelper::FaviconHelper(content::RenderView* render_view)
-    : content::RenderViewObserver(render_view) {
+FaviconHelper::FaviconHelper(RenderView* render_view)
+    : RenderViewObserver(render_view) {
+}
+
+void FaviconHelper::DidChangeIcon(WebKit::WebFrame* frame,
+                                  WebKit::WebIconURL::Type icon_type) {
+  if (frame->parent())
+    return;
+
+  if (!TouchEnabled() && icon_type != WebIconURL::TypeFavicon)
+    return;
+
+  WebVector<WebIconURL> icon_urls = frame->iconURLs(icon_type);
+  std::vector<FaviconURL> urls;
+  for (size_t i = 0; i < icon_urls.size(); i++) {
+    urls.push_back(FaviconURL(icon_urls[i].iconURL(),
+                              ToFaviconType(icon_urls[i].iconType())));
+  }
+  SendUpdateFaviconURL(routing_id(), render_view()->GetPageId(), urls);
 }
 
 FaviconHelper::~FaviconHelper() {
@@ -139,7 +171,7 @@ bool FaviconHelper::OnMessageReceived(const IPC::Message& message) {
 
 void FaviconHelper::DidStopLoading() {
   int icon_types = WebIconURL::TypeFavicon;
-  if (chrome::kEnableTouchIcon)
+  if (TouchEnabled())
     icon_types |= WebIconURL::TypeTouchPrecomposed | WebIconURL::TypeTouch;
 
   WebVector<WebIconURL> icon_urls =
@@ -153,20 +185,4 @@ void FaviconHelper::DidStopLoading() {
   SendUpdateFaviconURL(routing_id(), render_view()->GetPageId(), urls);
 }
 
-void FaviconHelper::DidChangeIcon(WebKit::WebFrame* frame,
-                                  WebKit::WebIconURL::Type icon_type) {
-  if (frame->parent())
-    return;
-
-  if (!chrome::kEnableTouchIcon &&
-      icon_type != WebIconURL::TypeFavicon)
-    return;
-
-  WebVector<WebIconURL> icon_urls = frame->iconURLs(icon_type);
-  std::vector<FaviconURL> urls;
-  for (size_t i = 0; i < icon_urls.size(); i++) {
-    urls.push_back(FaviconURL(icon_urls[i].iconURL(),
-                              ToFaviconType(icon_urls[i].iconType())));
-  }
-  SendUpdateFaviconURL(routing_id(), render_view()->GetPageId(), urls);
-}
+} // namespace content

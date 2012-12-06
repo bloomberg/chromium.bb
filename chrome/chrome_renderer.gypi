@@ -129,8 +129,6 @@
         'renderer/extensions/web_request_custom_bindings.h',
         'renderer/extensions/webstore_bindings.cc',
         'renderer/extensions/webstore_bindings.h',
-        'renderer/favicon_helper.cc',
-        'renderer/favicon_helper.h',
         'renderer/frame_sniffer.cc',
         'renderer/frame_sniffer.h',
         'renderer/loadtimes_extension_bindings.h',

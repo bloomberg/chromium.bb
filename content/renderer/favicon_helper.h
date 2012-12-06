@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_FAVICON_HELPER_H_
-#define CHROME_RENDERER_FAVICON_HELPER_H_
+#ifndef CONTENT_RENDERER_FAVICON_HELPER_H_
+#define CONTENT_RENDERER_FAVICON_HELPER_H_
 
 #include <string>
 #include <vector>
@@ -13,18 +13,29 @@
 #include "content/public/renderer/render_view_observer.h"
 #include "googleurl/src/gurl.h"
 
-struct FaviconURL;
 class SkBitmap;
+
+namespace content {
+struct FaviconURL;
+}
 
 namespace webkit_glue {
 class MultiResolutionImageResourceFetcher;
 }
 
+namespace content {
+
+struct FaviconURL;
+
 // This class deals with favicon downloading.
 // There is one FaviconHelper per RenderView, which is owned by the RenderView.
-class FaviconHelper : public content::RenderViewObserver {
+class FaviconHelper : public RenderViewObserver {
  public:
-  explicit FaviconHelper(content::RenderView* render_view);
+  explicit FaviconHelper(RenderView* render_view);
+
+  // Sund a message that the favicon has changed.
+  void DidChangeIcon(WebKit::WebFrame* frame,
+                     WebKit::WebIconURL::Type icon_type);
 
  private:
   virtual ~FaviconHelper();
@@ -60,8 +71,6 @@ class FaviconHelper : public content::RenderViewObserver {
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void DidStopLoading() OVERRIDE;
-  virtual void DidChangeIcon(WebKit::WebFrame* frame,
-                             WebKit::WebIconURL::Type icon_type) OVERRIDE;
 
   typedef ScopedVector<webkit_glue::MultiResolutionImageResourceFetcher>
     ImageResourceFetcherList;
@@ -72,4 +81,6 @@ class FaviconHelper : public content::RenderViewObserver {
   DISALLOW_COPY_AND_ASSIGN(FaviconHelper);
 };
 
-#endif  // CHROME_RENDERER_FAVICON_HELPER_H_
+} // namespace content
+
+#endif  // CONTENT_RENDERER_FAVICON_HELPER_H_

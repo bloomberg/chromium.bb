@@ -18,12 +18,10 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/metro.h"
-#include "chrome/browser/favicon/favicon_download_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/favicon/favicon_util.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/icon_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "crypto/sha2.h"
@@ -368,9 +366,7 @@ void MetroPinTabHelper::FaviconChooser::AddPendingRequest(int request_id) {
 }
 
 MetroPinTabHelper::MetroPinTabHelper(content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          favicon_download_helper_(web_contents, this)) {
+    : content::WebContentsObserver(web_contents) {
 }
 
 MetroPinTabHelper::~MetroPinTabHelper() {}
@@ -425,12 +421,14 @@ void MetroPinTabHelper::TogglePinnedToStartScreen() {
 
   // Request all the candidates.
   int image_size = 0; // Request the full sized image.
-  for (std::vector<FaviconURL>::const_iterator iter =
+  for (std::vector<content::FaviconURL>::const_iterator iter =
            favicon_url_candidates_.begin();
        iter != favicon_url_candidates_.end();
        ++iter) {
     favicon_chooser_->AddPendingRequest(
-        favicon_download_helper_.DownloadFavicon(iter->icon_url, image_size));
+        web_contents()->DownloadFavicon(iter->icon_url, image_size,
+            base::Bind(&MetroPinTabHelper::DidDownloadFavicon,
+                       base::Unretained(this))));
   }
 
 }
@@ -446,13 +444,13 @@ void MetroPinTabHelper::DidNavigateMainFrame(
   favicon_url_candidates_.clear();
 }
 
-void MetroPinTabHelper::OnUpdateFaviconURL(
+void MetroPinTabHelper::DidUpdateFaviconURL(
     int32 page_id,
-    const std::vector<FaviconURL>& candidates) {
+    const std::vector<content::FaviconURL>& candidates) {
   favicon_url_candidates_ = candidates;
 }
 
-void MetroPinTabHelper::OnDidDownloadFavicon(
+void MetroPinTabHelper::DidDownloadFavicon(
     int id,
     const GURL& image_url,
     bool errored,

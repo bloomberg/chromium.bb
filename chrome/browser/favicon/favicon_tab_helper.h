@@ -9,19 +9,17 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "chrome/browser/favicon/favicon_download_helper_delegate.h"
 #include "chrome/browser/favicon/favicon_handler_delegate.h"
 #include "chrome/browser/history/history_types.h"
-#include "chrome/common/favicon_url.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "content/public/common/favicon_url.h"
 
 namespace gfx {
 class Image;
 }
 
 class GURL;
-class FaviconDownloadHelper;
 class FaviconHandler;
 class Profile;
 class SkBitmap;
@@ -34,7 +32,6 @@ class SkBitmap;
 //
 class FaviconTabHelper : public content::WebContentsObserver,
                          public FaviconHandlerDelegate,
-                         public FaviconDownloadHelperDelegate,
                          public content::WebContentsUserData<FaviconTabHelper> {
  public:
   virtual ~FaviconTabHelper();
@@ -55,11 +52,11 @@ class FaviconTabHelper : public content::WebContentsObserver,
   // space is provided for the favicon, and the favicon is never displayed.
   virtual bool ShouldDisplayFavicon();
 
-  // Message Handler.  Must be public, because also called from
-  // PrerenderContents.
-  virtual void OnUpdateFaviconURL(
+  // content::WebContentsObserver override. Must be public, because also
+  // called from PrerenderContents.
+  virtual void DidUpdateFaviconURL(
       int32 page_id,
-      const std::vector<FaviconURL>& candidates) OVERRIDE;
+      const std::vector<content::FaviconURL>& candidates) OVERRIDE;
 
   // Saves the favicon for the current page.
   void SaveFavicon();
@@ -81,17 +78,15 @@ class FaviconTabHelper : public content::WebContentsObserver,
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
 
-  // FaviconDownloadHelperDelegate overrides.
-  virtual void OnDidDownloadFavicon(
+  // Favicon download callback.
+  void DidDownloadFavicon(
       int id,
       const GURL& image_url,
       bool errored,
       int requested_size,
-      const std::vector<SkBitmap>& bitmaps) OVERRIDE;
+      const std::vector<SkBitmap>& bitmaps);
 
   Profile* profile_;
-
-  scoped_ptr<FaviconDownloadHelper> favicon_download_helper_;
 
   scoped_ptr<FaviconHandler> favicon_handler_;
 

@@ -5,19 +5,19 @@
 #include <vector>
 
 #include "base/file_path.h"
+#include "base/stringprintf.h"
 #include "base/time.h"
 #include "chrome/browser/ui/ash/launcher/browser_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/launcher_favicon_loader.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/common/favicon_url.h"
-#include "chrome/common/icon_messages.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/favicon_url.h"
 #include "net/test/test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -39,22 +39,13 @@ class ContentsObserver : public content::WebContentsObserver {
   }
 
   // content::WebContentsObserver overrides.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
-    bool message_handled = false;   // Allow other handlers to receive these.
-    IPC_BEGIN_MESSAGE_MAP(ContentsObserver, message)
-      IPC_MESSAGE_HANDLER(IconHostMsg_UpdateFaviconURL, OnUpdateFaviconURL)
-      IPC_MESSAGE_UNHANDLED(message_handled = false)
-    IPC_END_MESSAGE_MAP()
-    return message_handled;
-  }
-
- private:
-  void OnUpdateFaviconURL(int32 page_id,
-                          const std::vector<FaviconURL>& candidates) {
+  virtual void DidUpdateFaviconURL(int32 page_id,
+      const std::vector<content::FaviconURL>& candidates) OVERRIDE {
     if (!candidates.empty())
       got_favicons_ = true;
   }
 
+ private:
   bool got_favicons_;
 };
 

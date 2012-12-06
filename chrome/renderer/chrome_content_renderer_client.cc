@@ -43,7 +43,6 @@
 #include "chrome/renderer/extensions/miscellaneous_bindings.h"
 #include "chrome/renderer/extensions/resource_request_policy.h"
 #include "chrome/renderer/external_extension.h"
-#include "chrome/renderer/favicon_helper.h"
 #include "chrome/renderer/loadtimes_extension_bindings.h"
 #include "chrome/renderer/net/renderer_net_predictor.h"
 #include "chrome/renderer/page_click_tracker.h"
@@ -305,8 +304,6 @@ void ChromeContentRendererClient::RenderViewCreated(
   new PepperHelper(render_view);
 #endif
 
-  // FaviconHelper will delete itself when render_view is destroyed.
-  new FaviconHelper(render_view);
   // Used only for testing/automation.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDomAutomationController)) {

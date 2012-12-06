@@ -13,8 +13,8 @@
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
-#include "chrome/common/favicon_url.h"
 #include "chrome/common/ref_counted_util.h"
+#include "content/public/common/favicon_url.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image.h"
@@ -94,7 +94,7 @@ class FaviconHandler {
   // Message Handler.  Must be public, because also called from
   // PrerenderContents. Collects the |image_urls| list.
   void OnUpdateFaviconURL(int32 page_id,
-                          const std::vector<FaviconURL>& candidates);
+                          const std::vector<content::FaviconURL>& candidates);
 
   // Processes the current image_irls_ entry, requesting the image from the
   // history / download service.
@@ -110,7 +110,9 @@ class FaviconHandler {
                             const std::vector<SkBitmap>& bitmaps);
 
   // For testing.
-  const std::deque<FaviconURL>& image_urls() const { return image_urls_; }
+  const std::deque<content::FaviconURL>& image_urls() const {
+    return image_urls_;
+  }
 
  protected:
   // These virtual methods make FaviconHandler testable and are overridden by
@@ -237,7 +239,7 @@ class FaviconHandler {
   void FetchFaviconInternal();
 
   // Return the current candidate if any.
-  FaviconURL* current_candidate() {
+  content::FaviconURL* current_candidate() {
     return (image_urls_.size() > 0) ? &image_urls_[0] : NULL;
   }
 
@@ -271,7 +273,7 @@ class FaviconHandler {
   const int icon_types_;
 
   // The prioritized favicon candidates from the page back from the renderer.
-  std::deque<FaviconURL> image_urls_;
+  std::deque<content::FaviconURL> image_urls_;
 
   // The FaviconBitmapResults from history.
   std::vector<history::FaviconBitmapResult> history_results_;

@@ -39,6 +39,7 @@
 #include "content/browser/web_contents/web_contents_view_guest.h"
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/common/browser_plugin_messages.h"
+#include "content/common/icon_messages.h"
 #include "content/common/intents_messages.h"
 #include "content/common/ssl_status_serialization.h"
 #include "content/common/view_messages.h"
@@ -147,6 +148,17 @@ const int kQueryStateDelay = 5000;
 const int kSyncWaitDelay = 40;
 
 const char kDotGoogleDotCom[] = ".google.com";
+
+static int StartDownload(content::RenderViewHost* rvh,
+                         const GURL& url,
+                         int image_size) {
+  static int g_next_favicon_download_id = 0;
+  rvh->Send(new IconMsg_DownloadFavicon(rvh->GetRoutingID(),
+                                        ++g_next_favicon_download_id,
+                                        url,
+                                        image_size));
+  return g_next_favicon_download_id;
+}
 
 #if defined(OS_WIN)
 
@@ -746,6 +758,8 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
                         OnRequestPpapiBrokerPermission)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_CreateGuest,
                         OnBrowserPluginCreateGuest)
+    IPC_MESSAGE_HANDLER(IconHostMsg_DidDownloadFavicon, OnDidDownloadFavicon)
+    IPC_MESSAGE_HANDLER(IconHostMsg_UpdateFaviconURL, OnUpdateFaviconURL)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   message_source_ = NULL;
@@ -1950,6 +1964,14 @@ void WebContentsImpl::DidEndColorChooser(int color_chooser_id) {
   color_chooser_ = NULL;
 }
 
+int WebContentsImpl::DownloadFavicon(const GURL& url, int image_size,
+                                     const FaviconDownloadCallback& callback) {
+  RenderViewHost* host = GetRenderViewHost();
+  int id = StartDownload(host, url, image_size);
+  favicon_download_map_[id] = callback;
+  return id;
+}
+
 bool WebContentsImpl::FocusLocationBarByDefault() {
   WebUI* web_ui = GetWebUIForCurrentState();
   if (web_ui)
@@ -2363,6 +2385,31 @@ void WebContentsImpl::OnBrowserPluginCreateGuest(
   browser_plugin_embedder_->CreateGuest(GetRenderViewHost(),
                                         instance_id,
                                         params);
+}
+
+void WebContentsImpl::OnDidDownloadFavicon(
+    int id,
+    const GURL& image_url,
+    bool errored,
+    int requested_size,
+    const std::vector<SkBitmap>& bitmaps) {
+  FaviconDownloadMap::iterator iter = favicon_download_map_.find(id);
+  if (iter == favicon_download_map_.end()) {
+    // Currently WebContents notifies us of ANY downloads so that it is
+    // possible to get here.
+    return;
+  }
+  if (!iter->second.is_null()) {
+    iter->second.Run(id, image_url, errored, requested_size, bitmaps);
+  }
+  favicon_download_map_.erase(id);
+}
+
+void WebContentsImpl::OnUpdateFaviconURL(
+    int32 page_id,
+    const std::vector<FaviconURL>& candidates) {
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                    DidUpdateFaviconURL(page_id, candidates));
 }
 
 void WebContentsImpl::DidBlock3DAPIs(const GURL& url,

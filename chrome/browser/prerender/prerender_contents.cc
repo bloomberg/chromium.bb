@@ -20,7 +20,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/icon_messages.h"
 #include "chrome/common/prerender_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_child_process_host.h"
@@ -32,6 +31,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_view.h"
+#include "content/public/common/favicon_url.h"
 #include "ui/gfx/rect.h"
 
 using content::DownloadItem;
@@ -295,7 +295,6 @@ void PrerenderContents::StartPrerendering(
 
   tab_contents_delegate_.reset(new TabContentsDelegateImpl(this));
   new_contents->SetDelegate(tab_contents_delegate_.get());
-
   // Set the size of the prerender WebContents.
   prerender_contents_->web_contents()->GetView()->SizeContents(size_);
 
@@ -484,13 +483,13 @@ WebContents* PrerenderContents::CreateWebContents(
       profile_, NULL, MSG_ROUTING_NONE, NULL, session_storage_namespace_map);
 }
 
-void PrerenderContents::OnUpdateFaviconURL(
+void PrerenderContents::DidUpdateFaviconURL(
     int32 page_id,
-    const std::vector<FaviconURL>& urls) {
+    const std::vector<content::FaviconURL>& urls) {
   VLOG(1) << "PrerenderContents::OnUpdateFaviconURL" << icon_url_;
-  for (std::vector<FaviconURL>::const_iterator it = urls.begin();
+  for (std::vector<content::FaviconURL>::const_iterator it = urls.begin();
        it != urls.end(); ++it) {
-    if (it->icon_type == FaviconURL::FAVICON) {
+    if (it->icon_type == content::FaviconURL::FAVICON) {
       icon_url_ = it->icon_url;
       VLOG(1) << icon_url_;
       return;

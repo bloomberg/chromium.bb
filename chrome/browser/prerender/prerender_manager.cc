@@ -54,6 +54,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_view.h"
+#include "content/public/common/favicon_url.h"
 
 using content::BrowserThread;
 using content::RenderViewHost;
@@ -451,10 +452,10 @@ bool PrerenderManager::MaybeUsePrerenderedPage(WebContents* web_contents,
 
   GURL icon_url = prerender_contents->icon_url();
   if (!icon_url.is_empty()) {
-    std::vector<FaviconURL> urls;
-    urls.push_back(FaviconURL(icon_url, FaviconURL::FAVICON));
+    std::vector<content::FaviconURL> urls;
+    urls.push_back(content::FaviconURL(icon_url, content::FaviconURL::FAVICON));
     FaviconTabHelper::FromWebContents(new_tab_contents->web_contents())->
-        OnUpdateFaviconURL(prerender_contents->page_id(), urls);
+        DidUpdateFaviconURL(prerender_contents->page_id(), urls);
   }
 
   // Update PPLT metrics:
