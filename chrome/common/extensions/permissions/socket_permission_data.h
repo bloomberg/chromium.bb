@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "chrome/common/extensions/permissions/api_permission.h"
 #include "content/public/common/socket_permission_request.h"
 
 namespace extensions {
@@ -41,7 +42,7 @@ class SocketPermissionData {
   bool operator<(const SocketPermissionData& rhs) const;
   bool operator==(const SocketPermissionData& rhs) const;
 
-  bool Match(content::SocketPermissionRequest request) const;
+  bool Check(const APIPermission::CheckParam* param) const;
 
   bool Parse(const std::string& permission);
 

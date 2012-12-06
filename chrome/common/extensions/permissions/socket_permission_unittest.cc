@@ -138,61 +138,83 @@ TEST(SocketPermissionTest, Parse) {
 
 TEST(SocketPermissionTest, Match) {
   SocketPermissionData data;
+  scoped_ptr<SocketPermission::CheckParam> param;
 
   CHECK(data.Parse("tcp-connect"));
-  EXPECT_TRUE(data.Match(SocketPermissionRequest(
-        SocketPermissionRequest::TCP_CONNECT, "www.example.com", 80)));
-  EXPECT_FALSE(data.Match(SocketPermissionRequest(
-        SocketPermissionRequest::UDP_SEND_TO, "www.example.com", 80)));
+  param.reset(new SocketPermission::CheckParam(
+        SocketPermissionRequest::TCP_CONNECT, "www.example.com", 80));
+  EXPECT_TRUE(data.Check(param.get()));
+  param.reset(new SocketPermission::CheckParam(
+        SocketPermissionRequest::UDP_SEND_TO, "www.example.com", 80));
+  EXPECT_FALSE(data.Check(param.get()));
 
   CHECK(data.Parse("udp-send-to::8800"));
-  EXPECT_TRUE(data.Match(SocketPermissionRequest(
-        SocketPermissionRequest::UDP_SEND_TO, "www.example.com", 8800)));
-  EXPECT_TRUE(data.Match(SocketPermissionRequest(
-        SocketPermissionRequest::UDP_SEND_TO, "smtp.example.com", 8800)));
-  EXPECT_FALSE(data.Match(SocketPermissionRequest(
-        SocketPermissionRequest::TCP_CONNECT, "www.example.com", 80)));
+  param.reset(new SocketPermission::CheckParam(
+        SocketPermissionRequest::UDP_SEND_TO, "www.example.com", 8800));
+  EXPECT_TRUE(data.Check(param.get()));
+  param.reset(new SocketPermission::CheckParam(
+        SocketPermissionRequest::UDP_SEND_TO, "smtp.example.com", 8800));
+  EXPECT_TRUE(data.Check(param.get()));
+  param.reset(new SocketPermission::CheckParam(
+        SocketPermissionRequest::TCP_CONNECT, "www.example.com", 80));
+  EXPECT_FALSE(data.Check(param.get()));
 
   CHECK(data.Parse("udp-send-to:*.example.com:8800"));
-  EXPECT_TRUE(data.Match(SocketPermissionRequest(
-        SocketPermissionRequest::UDP_SEND_TO, "www.example.com", 8800)));
-  EXPECT_TRUE(data.Match(SocketPermissionRequest(
-        SocketPermissionRequest::UDP_SEND_TO, "smtp.example.com", 8800)));
-  EXPECT_TRUE(data.Match(SocketPermissionRequest(
-        SocketPermissionRequest::UDP_SEND_TO, "SMTP.example.com", 8800)));
-  EXPECT_FALSE(data.Match(SocketPermissionRequest(
-        SocketPermissionRequest::TCP_CONNECT, "www.example.com", 80)));
-  EXPECT_FALSE(data.Match(SocketPermissionRequest(
-        SocketPermissionRequest::UDP_SEND_TO, "www.google.com", 8800)));
-  EXPECT_FALSE(data.Match(SocketPermissionRequest(
-        SocketPermissionRequest::UDP_SEND_TO, "wwwexample.com", 8800)));
+  param.reset(new SocketPermission::CheckParam(
+        SocketPermissionRequest::UDP_SEND_TO, "www.example.com", 8800));
+  EXPECT_TRUE(data.Check(param.get()));
+  param.reset(new SocketPermission::CheckParam(
+        SocketPermissionRequest::UDP_SEND_TO, "smtp.example.com", 8800));
+  EXPECT_TRUE(data.Check(param.get()));
+  param.reset(new SocketPermission::CheckParam(
+        SocketPermissionRequest::UDP_SEND_TO, "SMTP.example.com", 8800));
+  EXPECT_TRUE(data.Check(param.get()));
+  param.reset(new SocketPermission::CheckParam(
+        SocketPermissionRequest::TCP_CONNECT, "www.example.com", 80));
+  EXPECT_FALSE(data.Check(param.get()));
+  param.reset(new SocketPermission::CheckParam(
+        SocketPermissionRequest::UDP_SEND_TO, "www.google.com", 8800));
+  EXPECT_FALSE(data.Check(param.get()));
+  param.reset(new SocketPermission::CheckParam(
+        SocketPermissionRequest::UDP_SEND_TO, "wwwexample.com", 8800));
+  EXPECT_FALSE(data.Check(param.get()));
 
   CHECK(data.Parse("udp-send-to:*.ExAmPlE.cOm:8800"));
-  EXPECT_TRUE(data.Match(SocketPermissionRequest(
-        SocketPermissionRequest::UDP_SEND_TO, "www.example.com", 8800)));
-  EXPECT_TRUE(data.Match(SocketPermissionRequest(
-        SocketPermissionRequest::UDP_SEND_TO, "smtp.example.com", 8800)));
-  EXPECT_TRUE(data.Match(SocketPermissionRequest(
-        SocketPermissionRequest::UDP_SEND_TO, "SMTP.example.com", 8800)));
-  EXPECT_FALSE(data.Match(SocketPermissionRequest(
-        SocketPermissionRequest::TCP_CONNECT, "www.example.com", 80)));
-  EXPECT_FALSE(data.Match(SocketPermissionRequest(
-        SocketPermissionRequest::UDP_SEND_TO, "www.google.com", 8800)));
+  param.reset(new SocketPermission::CheckParam(
+        SocketPermissionRequest::UDP_SEND_TO, "www.example.com", 8800));
+  EXPECT_TRUE(data.Check(param.get()));
+  param.reset(new SocketPermission::CheckParam(
+        SocketPermissionRequest::UDP_SEND_TO, "smtp.example.com", 8800));
+  EXPECT_TRUE(data.Check(param.get()));
+  param.reset(new SocketPermission::CheckParam(
+        SocketPermissionRequest::UDP_SEND_TO, "SMTP.example.com", 8800));
+  EXPECT_TRUE(data.Check(param.get()));
+  param.reset(new SocketPermission::CheckParam(
+        SocketPermissionRequest::TCP_CONNECT, "www.example.com", 80));
+  EXPECT_FALSE(data.Check(param.get()));
+  param.reset(new SocketPermission::CheckParam(
+        SocketPermissionRequest::UDP_SEND_TO, "www.google.com", 8800));
+  EXPECT_FALSE(data.Check(param.get()));
 
   CHECK(data.Parse("udp-bind::8800"));
-  EXPECT_TRUE(data.Match(SocketPermissionRequest(
-        SocketPermissionRequest::UDP_BIND, "127.0.0.1", 8800)));
-  EXPECT_FALSE(data.Match(SocketPermissionRequest(
-        SocketPermissionRequest::UDP_BIND, "127.0.0.1", 8888)));
-  EXPECT_FALSE(data.Match(SocketPermissionRequest(
-        SocketPermissionRequest::TCP_CONNECT, "www.example.com", 80)));
-  EXPECT_FALSE(data.Match(SocketPermissionRequest(
-        SocketPermissionRequest::UDP_SEND_TO, "www.google.com", 8800)));
+  param.reset(new SocketPermission::CheckParam(
+        SocketPermissionRequest::UDP_BIND, "127.0.0.1", 8800));
+  EXPECT_TRUE(data.Check(param.get()));
+  param.reset(new SocketPermission::CheckParam(
+        SocketPermissionRequest::UDP_BIND, "127.0.0.1", 8888));
+  EXPECT_FALSE(data.Check(param.get()));
+  param.reset(new SocketPermission::CheckParam(
+        SocketPermissionRequest::TCP_CONNECT, "www.example.com", 80));
+  EXPECT_FALSE(data.Check(param.get()));
+  param.reset(new SocketPermission::CheckParam(
+        SocketPermissionRequest::UDP_SEND_TO, "www.google.com", 8800));
+  EXPECT_FALSE(data.Check(param.get()));
 
   // Do not wildcard part of ip address.
   CHECK(data.Parse("tcp-connect:*.168.0.1:8800"));
-  EXPECT_FALSE(data.Match(SocketPermissionRequest(
-        SocketPermissionRequest::TCP_CONNECT, "192.168.0.1", 8800)));
+  param.reset(new SocketPermission::CheckParam(
+        SocketPermissionRequest::TCP_CONNECT, "192.168.0.1", 8800));
+  EXPECT_FALSE(data.Check(param.get()));
 }
 
 TEST(SocketPermissionTest, IPC) {

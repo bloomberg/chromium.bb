@@ -13,8 +13,7 @@
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "base/values.h"
-#include "chrome/common/extensions/extension_messages.h"
+#include "chrome/common/extensions/permissions/bluetooth_device_permission_data.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -31,7 +30,9 @@ const char* kSeparator = "|";
 namespace extensions {
 
 BluetoothDevicePermission::BluetoothDevicePermission(
-    const APIPermissionInfo* info) : APIPermission(info) {
+    const APIPermissionInfo* info)
+  : SetDisjunctionPermission<BluetoothDevicePermissionData,
+                             BluetoothDevicePermission>(info) {
 }
 
 BluetoothDevicePermission::~BluetoothDevicePermission() {
@@ -43,26 +44,22 @@ void BluetoothDevicePermission::AddDevicesFromString(
   Tokenize(devices_string, kSeparator, &devices);
   for (std::vector<std::string>::const_iterator i = devices.begin();
       i != devices.end(); ++i) {
-    devices_.insert(*i);
+    data_set_.insert(BluetoothDevicePermissionData(*i));
   }
 }
 
 std::string BluetoothDevicePermission::ToString() const {
   std::vector<std::string> parts;
   parts.push_back(name());
-  for (std::set<std::string>::const_iterator i = devices_.begin();
-      i != devices_.end(); ++i) {
-    parts.push_back(*i);
+  for (std::set<BluetoothDevicePermissionData>::const_iterator i =
+      data_set_.begin(); i != data_set_.end(); ++i) {
+    parts.push_back(i->GetAsString());
   }
   return JoinString(parts, kSeparator);
 }
 
 bool BluetoothDevicePermission::ManifestEntryForbidden() const {
   return true;
-}
-
-bool BluetoothDevicePermission::HasMessages() const {
-  return !devices_.empty();
 }
 
 PermissionMessages BluetoothDevicePermission::GetMessages() const {
@@ -72,18 +69,21 @@ PermissionMessages BluetoothDevicePermission::GetMessages() const {
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter =
       device::BluetoothAdapterFactory::DefaultAdapter();
 
-  for (std::set<std::string>::const_iterator i = devices_.begin();
-      i != devices_.end(); ++i) {
+  for (std::set<BluetoothDevicePermissionData>::const_iterator i =
+      data_set_.begin(); i != data_set_.end(); ++i) {
 
+    const std::string& device_address = i->GetAsString();
     string16 device_identifier;
     if (bluetooth_adapter) {
-      device::BluetoothDevice* device = bluetooth_adapter->GetDevice(*i);
+      device::BluetoothDevice* device =
+          bluetooth_adapter->GetDevice(device_address);
       if (device)
         device_identifier = device->GetName();
     }
 
     if (device_identifier.length() == 0) {
-      UTF8ToUTF16(i->c_str(), i->length(), &device_identifier);
+      UTF8ToUTF16(device_address.c_str(), device_address.length(),
+          &device_identifier);
     }
 
     result.push_back(PermissionMessage(
@@ -94,127 +94,6 @@ PermissionMessages BluetoothDevicePermission::GetMessages() const {
   }
 
   return result;
-}
-
-bool BluetoothDevicePermission::Check(
-    const APIPermission::CheckParam* param) const {
-  const CheckParam* bluetooth_device_parameter =
-      static_cast<const CheckParam*>(param);
-  for (std::set<std::string>::const_iterator i = devices_.begin();
-      i != devices_.end(); ++i) {
-    if (*i == bluetooth_device_parameter->device_address)
-      return true;
-  }
-  return false;
-}
-
-bool BluetoothDevicePermission::Contains(const APIPermission* rhs) const {
-  CHECK(rhs->info() == info());
-  const BluetoothDevicePermission* perm =
-      static_cast<const BluetoothDevicePermission*>(rhs);
-  return std::includes(
-      devices_.begin(), devices_.end(),
-      perm->devices_.begin(), perm->devices_.end());
-}
-
-bool BluetoothDevicePermission::Equal(const APIPermission* rhs) const {
-  CHECK(rhs->info() == info());
-  const BluetoothDevicePermission* perm =
-      static_cast<const BluetoothDevicePermission*>(rhs);
-  return devices_ == perm->devices_;
-}
-
-bool BluetoothDevicePermission::FromValue(const base::Value* value) {
-  devices_.clear();
-  const base::ListValue* list = NULL;
-
-  if (!value)
-    return false;
-
-  if (!value->GetAsList(&list) || list->GetSize() == 0)
-    return false;
-
-  for (size_t i = 0; i < list->GetSize(); ++i) {
-    std::string device_address;
-    if (!list->GetString(i, &device_address))
-      return false;
-    devices_.insert(device_address);
-  }
-
-  return true;
-}
-
-void BluetoothDevicePermission::ToValue(base::Value** value) const {
-  base::ListValue* list = new ListValue();
-  std::set<std::string>::const_iterator i;
-  for (std::set<std::string>::const_iterator i = devices_.begin();
-      i != devices_.end(); ++i) {
-    list->Append(base::Value::CreateStringValue(*i));
-  }
-  *value = list;
-}
-
-APIPermission* BluetoothDevicePermission::Clone() const {
-  BluetoothDevicePermission* result = new BluetoothDevicePermission(info());
-  result->devices_ = devices_;
-  return result;
-}
-
-APIPermission* BluetoothDevicePermission::Diff(const APIPermission* rhs) const {
-  CHECK(rhs->info() == info());
-  const BluetoothDevicePermission* perm =
-      static_cast<const BluetoothDevicePermission*>(rhs);
-  scoped_ptr<BluetoothDevicePermission> result(
-      new BluetoothDevicePermission(info()));
-  std::set_difference(
-      devices_.begin(), devices_.end(),
-      perm->devices_.begin(), perm->devices_.end(),
-      std::inserter<std::set<std::string> >(
-          result->devices_, result->devices_.begin()));
-  return result->devices_.empty() ? NULL : result.release();
-}
-
-APIPermission* BluetoothDevicePermission::Union(
-    const APIPermission* rhs) const {
-  CHECK(rhs->info() == info());
-  const BluetoothDevicePermission* perm =
-      static_cast<const BluetoothDevicePermission*>(rhs);
-  scoped_ptr<BluetoothDevicePermission> result(
-      new BluetoothDevicePermission(info()));
-  std::set_union(
-      devices_.begin(), devices_.end(),
-      perm->devices_.begin(), perm->devices_.end(),
-      std::inserter<std::set<std::string> >(
-          result->devices_, result->devices_.begin()));
-  return result->devices_.empty() ? NULL : result.release();
-}
-
-APIPermission* BluetoothDevicePermission::Intersect(
-    const APIPermission* rhs) const {
-  CHECK(rhs->info() == info());
-  const BluetoothDevicePermission* perm =
-      static_cast<const BluetoothDevicePermission*>(rhs);
-  scoped_ptr<BluetoothDevicePermission> result(
-      new BluetoothDevicePermission(info()));
-  std::set_intersection(
-      devices_.begin(), devices_.end(),
-      perm->devices_.begin(), perm->devices_.end(),
-      std::inserter<std::set<std::string> >(
-          result->devices_, result->devices_.begin()));
-  return result->devices_.empty() ? NULL : result.release();
-}
-
-void BluetoothDevicePermission::Write(IPC::Message* m) const {
-  IPC::WriteParam(m, devices_);
-}
-
-bool BluetoothDevicePermission::Read(
-    const IPC::Message* m, PickleIterator* iter) {
-  return IPC::ReadParam(m, iter, &devices_);
-}
-
-void BluetoothDevicePermission::Log(std::string* log) const {
-  IPC::LogParam(devices_, log);
 }
 
 }  // namespace extensions

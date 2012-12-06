@@ -9,28 +9,25 @@
 #include <string>
 
 #include "chrome/common/extensions/permissions/api_permission.h"
-
-namespace base {
-class Value;
-}
-
-namespace IPC {
-class Message;
-}
+#include "chrome/common/extensions/permissions/bluetooth_device_permission_data.h"
+#include "chrome/common/extensions/permissions/set_disjunction_permission.h"
 
 namespace extensions {
 
-// There's room to share code with related classes, see http://crbug.com/147531
-class BluetoothDevicePermission : public APIPermission {
+// BluetoothDevicePermission represents the permission to access a specific
+// Bluetooth Device.
+class BluetoothDevicePermission
+  : public SetDisjunctionPermission<BluetoothDevicePermissionData,
+                                    BluetoothDevicePermission> {
  public:
-  struct CheckParam : public APIPermission::CheckParam {
-    explicit CheckParam(const std::string& device_address)
+  // A Bluetooth device address that should be check for permission to access.
+  struct CheckParam : APIPermission::CheckParam {
+    explicit CheckParam(std::string device_address)
       : device_address(device_address) {}
     const std::string device_address;
   };
 
   explicit BluetoothDevicePermission(const APIPermissionInfo* info);
-
   virtual ~BluetoothDevicePermission();
 
   // Adds BluetoothDevices from |devices| to the set of allowed devices.
@@ -40,24 +37,7 @@ class BluetoothDevicePermission : public APIPermission {
   // APIPermission overrides
   virtual std::string ToString() const OVERRIDE;
   virtual bool ManifestEntryForbidden() const OVERRIDE;
-  virtual bool HasMessages() const OVERRIDE;
   virtual PermissionMessages GetMessages() const OVERRIDE;
-  virtual bool Check(
-      const APIPermission::CheckParam* param) const OVERRIDE;
-  virtual bool Contains(const APIPermission* rhs) const OVERRIDE;
-  virtual bool Equal(const APIPermission* rhs) const OVERRIDE;
-  virtual bool FromValue(const base::Value* value) OVERRIDE;
-  virtual void ToValue(base::Value** value) const OVERRIDE;
-  virtual APIPermission* Clone() const OVERRIDE;
-  virtual APIPermission* Diff(const APIPermission* rhs) const OVERRIDE;
-  virtual APIPermission* Union(const APIPermission* rhs) const OVERRIDE;
-  virtual APIPermission* Intersect(const APIPermission* rhs) const OVERRIDE;
-  virtual void Write(IPC::Message* m) const OVERRIDE;
-  virtual bool Read(const IPC::Message* m, PickleIterator* iter) OVERRIDE;
-  virtual void Log(std::string* log) const OVERRIDE;
-
- private:
-  std::set<std::string> devices_;
 };
 
 }  // namespace extensions
