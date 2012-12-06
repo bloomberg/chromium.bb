@@ -14,6 +14,7 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
+#include "net/http/http_cache.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/file_protocol_handler.h"
@@ -92,13 +93,6 @@ void AwURLRequestContextGetter::Init() {
   builder.set_accept_charset(
       net::HttpUtil::GenerateAcceptCharsetHeader("ISO-8859-1"));
 
-  net::URLRequestContextBuilder::HttpCacheParams cache_params;
-  cache_params.type = net::URLRequestContextBuilder::HttpCacheParams::DISK;
-  cache_params.max_size = 10 * 1024 * 1024;  // 10M
-  cache_params.path =
-      browser_context_->GetPath().Append(FILE_PATH_LITERAL("Cache")),
-  builder.EnableHttpCache(cache_params);
-
   url_request_context_.reset(builder.Build());
 
   job_factory_.reset(new AwURLRequestJobFactory);
@@ -111,8 +105,36 @@ void AwURLRequestContextGetter::Init() {
   job_factory_->AddInterceptor(new AwRequestInterceptor());
   url_request_context_->set_job_factory(job_factory_.get());
 
+  // TODO(mnaganov): Fix URLRequestContextBuilder to use proper threads.
+  net::HttpNetworkSession::Params network_session_params;
+  PopulateNetworkSessionParams(&network_session_params);
+  net::HttpCache* main_cache = new net::HttpCache(
+      network_session_params,
+      new net::HttpCache::DefaultBackend(
+          net::DISK_CACHE,
+          browser_context_->GetPath().Append(FILE_PATH_LITERAL("Cache")),
+          10 * 1024 * 1024,  // 10M
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE)));
+  main_http_factory_.reset(main_cache);
+  url_request_context_->set_http_transaction_factory(main_cache);
+
   OnNetworkStackInitialized(url_request_context_.get(),
                             job_factory_.get());
+}
+
+void AwURLRequestContextGetter::PopulateNetworkSessionParams(
+    net::HttpNetworkSession::Params* params) {
+  net::URLRequestContext* context = url_request_context_.get();
+  params->host_resolver = context->host_resolver();
+  params->cert_verifier = context->cert_verifier();
+  params->server_bound_cert_service = context->server_bound_cert_service();
+  params->transport_security_state = context->transport_security_state();
+  params->proxy_service = context->proxy_service();
+  params->ssl_config_service = context->ssl_config_service();
+  params->http_auth_handler_factory = context->http_auth_handler_factory();
+  params->network_delegate = context->network_delegate();
+  params->http_server_properties = context->http_server_properties();
+  params->net_log = context->net_log();
 }
 
 content::ResourceContext* AwURLRequestContextGetter::GetResourceContext() {

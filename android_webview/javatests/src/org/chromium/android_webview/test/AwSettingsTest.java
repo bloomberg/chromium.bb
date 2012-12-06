@@ -16,7 +16,6 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.ImagePageGenerator;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.base.test.util.UrlUtils;
@@ -2221,9 +2220,6 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
                 createAwTestContainerViewOnMainSync(false, contentClient);
         final AwContents awContents = testContainer.getAwContents();
         final ContentSettings settings = getContentSettingsOnUiThread(awContents);
-        // Not sure why, but I'm experiencing DCHECK failures at net/disk_cache/in_flight_io.cc:98
-        // w/o this line. crbug.com/163383
-        clearCacheOnUiThread(awContents, true);
         settings.setJavaScriptEnabled(true);
         // Note that the cache isn't actually enabled until the call to setAppCachePath.
         settings.setAppCacheEnabled(true);
@@ -2253,14 +2249,8 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         }
     }
 
-    /*
-     * @SmallTest
-     * @Feature({"AndroidWebView", "Preferences", "AppCache"})
-     * BUG=crbug.com/163383
-     * If you run this test with a non-empty profile, it will crash,
-     * unless you delete the test's data directory.
-     */
-    @DisabledTest
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences", "AppCache"})
     public void testAppCacheNormal() throws Throwable {
         // We don't use the test helper here, because making sure that AppCache
         // is disabled takes a lot of time, so running through the usual drill
@@ -2274,8 +2264,6 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         settings1.setJavaScriptEnabled(true);
         // AppCachePath setting is global, no need to set it for the second view.
         settings1.setAppCacheEnabled(true);
-
-        clearCacheOnUiThread(views.getContents0(), true);
 
         TestWebServer webServer = null;
         try {

@@ -8,6 +8,7 @@
 #include "content/public/browser/browser_thread_delegate.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "net/http/http_network_session.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace content {
@@ -15,6 +16,7 @@ class ResourceContext;
 }
 
 namespace net {
+class HttpTransactionFactory;
 class ProxyConfigService;
 class URLRequestContext;
 class URLRequestJobFactory;
@@ -46,11 +48,14 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter,
  private:
   virtual ~AwURLRequestContextGetter();
 
+  void PopulateNetworkSessionParams(net::HttpNetworkSession::Params* params);
+
   AwBrowserContext* browser_context_;  // weak
   scoped_ptr<net::URLRequestContext> url_request_context_;
   scoped_ptr<net::ProxyConfigService> proxy_config_service_;
   scoped_ptr<content::ResourceContext> resource_context_;
   scoped_ptr<net::URLRequestJobFactory> job_factory_;
+  scoped_ptr<net::HttpTransactionFactory> main_http_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AwURLRequestContextGetter);
 };
