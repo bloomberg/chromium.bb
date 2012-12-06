@@ -135,7 +135,7 @@ Browser* FindTabbedBrowser(Profile* profile,
                                         match_original_profiles);
 }
 
-Browser* FindOrCreateTabbedBrowser(Profile* profile) {
+Browser* FindOrCreateTabbedBrowserDeprecated(Profile* profile) {
   return FindOrCreateTabbedBrowser(profile, chrome::HOST_DESKTOP_TYPE_NATIVE);
 }
 

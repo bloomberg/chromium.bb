@@ -296,7 +296,8 @@ void ShellWindow::AddNewContents(WebContents* source,
   DCHECK(source == web_contents_);
   DCHECK(Profile::FromBrowserContext(new_contents->GetBrowserContext()) ==
       profile_);
-  Browser* browser = browser::FindOrCreateTabbedBrowser(profile_);
+  Browser* browser =
+      browser::FindOrCreateTabbedBrowser(profile_, chrome::GetActiveDesktop());
   // Force all links to open in a new tab, even if they were trying to open a
   // new window.
   disposition =

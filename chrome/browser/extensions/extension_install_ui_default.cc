@@ -133,7 +133,9 @@ void ExtensionInstallUIDefault::OnInstallSuccess(const Extension* extension,
   // Extensions aren't enabled by default in incognito so we confirm
   // the install in a normal window.
   Profile* current_profile = profile_->GetOriginalProfile();
-  Browser* browser = browser::FindOrCreateTabbedBrowser(current_profile);
+  Browser* browser =
+      browser::FindOrCreateTabbedBrowser(current_profile,
+                                         chrome::GetActiveDesktop());
   if (browser->tab_count() == 0)
     chrome::AddBlankTabAt(browser, -1, true);
   browser->window()->Show();

@@ -152,7 +152,7 @@ _BANNED_CPP_FUNCTIONS = (
       (),
     ),
     (
-      'browser::FindOrCreateTabbedBrowser',
+      'browser::FindOrCreateTabbedBrowserDeprecated',
       (
        'This function is deprecated and we\'re working on removing it. Pass',
        'more context to get a Browser*, like a WebContents, window, or session',
