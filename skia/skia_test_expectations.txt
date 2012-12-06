@@ -51,21 +51,7 @@
 # bungeman@ will rebaseline this test
 crbug.com/155867 platform/chromium-linux/fast/text/chromium-linux-fontconfig-renderstyle.html [ Failure ImageOnlyFailure ]
 
-# To be rebaselined after skia rev. 6530 has landed in webkit
-crbug.com/162247  fast/canvas/canvas-incremental-repaint.html [ ImageOnlyFailure ]
-crbug.com/162247  svg/W3C-SVG-1.1/animate-elem-81-t.svg [ ImageOnlyFailure ]
-crbug.com/162247  svg/W3C-SVG-1.1/animate-elem-82-t.svg [ ImageOnlyFailure ]
-crbug.com/162247  svg/W3C-SVG-1.1/painting-stroke-02-t.svg [ ImageOnlyFailure ]
-crbug.com/162247  svg/css/group-with-shadow.svg [ ImageOnlyFailure ]
-crbug.com/162247  svg/custom/linking-a-03-b-transform.svg [ ImageOnlyFailure ]
-crbug.com/162247  svg/custom/linking-a-03-b-viewBox-transform.svg [ ImageOnlyFailure ]
-crbug.com/162247  svg/custom/pattern-rotate.svg [ ImageOnlyFailure ]
-crbug.com/162247  svg/custom/stroke-width-large.svg [ ImageOnlyFailure ]
-crbug.com/162247  svg/custom/use-transform.svg [ ImageOnlyFailure ]
-crbug.com/162247  svg/transforms/text-with-pattern-with-svg-transform.svg [ ImageOnlyFailure ]
-
-# These are still failing post-rebaseline for SK_DISABLE_SEPARABLE_MASK_BLUR
-# The expectations should be upstreamed and removed.
+# These have been rebaselined upstream; can be removed once Chrome rolls past WebKit r136873.
 Bug(senorblanco) fast/borders/border-radius-constraints.html [ ImageOnlyFailure ]
 Bug(senorblanco) fast/borders/mixed-border-styles-radius.html [ ImageOnlyFailure ]
 webkit.org/b/23166 fast/css/background-clip-radius-values.html [ ImageOnlyFailure ]
