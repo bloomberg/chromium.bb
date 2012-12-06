@@ -713,11 +713,6 @@ const char kLanguageRemapAltKeyTo[] =
 const char kLanguageRemapCapsLockKeyTo[] =
     "settings.language.remap_caps_lock_key_to";
 
-// A boolean pref which determines whether the Search key should act like a
-// Function key when held down.
-const char kLanguageSearchKeyActsAsFunctionKey[] =
-    "settings.language.search_key_acts_as_function_key";
-
 // A boolean pref which determines whether key repeat is enabled.
 const char kLanguageXkbAutoRepeatEnabled[] =
     "settings.language.xkb_auto_repeat_enabled_r2";

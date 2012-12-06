@@ -38,20 +38,11 @@ cr.define('options', function() {
     showCapsLockOptions_: function(show) {
       $('caps-lock-remapping-section').hidden = !show;
     },
-
-    /**
-     * Show/hide the function key remapping section.
-     * @private
-     */
-    showFunctionKeyOptions_: function(show) {
-      $('function-key-remapping-section').hidden = !show;
-    },
   };
 
   // Forward public APIs to private implementations.
   [
     'showCapsLockOptions',
-    'showFunctionKeyOptions',
   ].forEach(function(name) {
     KeyboardOverlay[name] = function() {
       var instance = KeyboardOverlay.getInstance();

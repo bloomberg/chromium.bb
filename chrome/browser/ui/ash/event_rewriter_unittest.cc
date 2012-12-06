@@ -1845,10 +1845,6 @@ TEST_F(EventRewriterTest, TestRewriteExtendedKeys) {
   // bindings.
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kEnableChromebookFunctionKey, "");
-  BooleanPrefMember search_key_as_function_key;
-  search_key_as_function_key.Init(prefs::kLanguageSearchKeyActsAsFunctionKey,
-                                  &prefs);
-  search_key_as_function_key.SetValue(true);
 
   struct {
     ui::KeyboardCode input;
@@ -2059,10 +2055,6 @@ TEST_F(EventRewriterTest, TestRewriteFunctionKeys) {
   // act like the F<number> row.
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kEnableChromebookFunctionKey, "");
-  BooleanPrefMember search_key_as_function_key;
-  search_key_as_function_key.Init(prefs::kLanguageSearchKeyActsAsFunctionKey,
-                                  &prefs);
-  search_key_as_function_key.SetValue(true);
 
   // Without a Search key modifier, the results should be the same as before.
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(chromeos_tests); ++i) {

@@ -634,13 +634,9 @@ bool EventRewriter::RewriteNumPadKeys(ui::KeyEvent* event) {
 
 bool EventRewriter::RewriteExtendedKeys(ui::KeyEvent* event) {
 #if defined(OS_CHROMEOS)
-  const PrefService* pref_service =
-      pref_service_ ? pref_service_ : GetPrefService();
-  bool chromebook_function_key = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableChromebookFunctionKey);
-
-  bool search_as_function_key = chromebook_function_key && pref_service &&
-      pref_service->GetBoolean(prefs::kLanguageSearchKeyActsAsFunctionKey);
+  const bool search_as_function_key =
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableChromebookFunctionKey);
 
   XEvent* xev = event->native_event();
   XKeyEvent* xkey = &(xev->xkey);
@@ -751,13 +747,9 @@ bool EventRewriter::RewriteExtendedKeys(ui::KeyEvent* event) {
 
 bool EventRewriter::RewriteFunctionKeys(ui::KeyEvent* event) {
 #if defined(OS_CHROMEOS)
-  const PrefService* pref_service =
-      pref_service_ ? pref_service_ : GetPrefService();
-  bool chromebook_function_key = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableChromebookFunctionKey);
-
-  bool search_as_function_key = chromebook_function_key && pref_service &&
-      pref_service->GetBoolean(prefs::kLanguageSearchKeyActsAsFunctionKey);
+  const bool search_as_function_key =
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableChromebookFunctionKey);
 
   XEvent* xev = event->native_event();
   XKeyEvent* xkey = &(xev->xkey);

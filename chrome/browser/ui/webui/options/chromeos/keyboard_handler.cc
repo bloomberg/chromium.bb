@@ -95,19 +95,12 @@ void KeyboardHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
 void KeyboardHandler::InitializePage() {
   bool chromeos_keyboard = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kHasChromeOSKeyboard);
-  bool chromebook_function_key = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableChromebookFunctionKey);
 
   const base::FundamentalValue show_options(true);
 
   if (!chromeos_keyboard) {
     web_ui()->CallJavascriptFunction(
         "options.KeyboardOverlay.showCapsLockOptions", show_options);
-  }
-
-  if (chromebook_function_key) {
-    web_ui()->CallJavascriptFunction(
-        "options.KeyboardOverlay.showFunctionKeyOptions", show_options);
   }
 }
 

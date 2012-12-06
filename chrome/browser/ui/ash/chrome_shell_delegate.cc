@@ -544,14 +544,8 @@ aura::client::StackingClient* ChromeShellDelegate::CreateStackingClient() {
 
 bool ChromeShellDelegate::IsSearchKeyActingAsFunctionKey() const {
 #if defined(OS_CHROMEOS)
-  bool chromebook_function_key = CommandLine::ForCurrentProcess()->HasSwitch(
+  return CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableChromebookFunctionKey);
-  if (!chromebook_function_key)
-    return false;
-
-  Profile* profile = ProfileManager::GetDefaultProfile();
-  return profile->GetPrefs()->GetBoolean(
-      prefs::kLanguageSearchKeyActsAsFunctionKey);
 #else
   return false;
 #endif

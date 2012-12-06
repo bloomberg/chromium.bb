@@ -367,12 +367,9 @@ KeyboardOverlayUI::KeyboardOverlayUI(content::WebUI* web_ui)
   KeyboardOverlayHandler* handler = new KeyboardOverlayHandler(profile);
   web_ui->AddMessageHandler(handler);
 
-  PrefService* pref_service = profile->GetPrefs();
-  bool chromebook_function_key = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableChromebookFunctionKey);
-
-  bool search_key_acts_as_function_key = chromebook_function_key &&
-      pref_service->GetBoolean(prefs::kLanguageSearchKeyActsAsFunctionKey);
+  const bool search_key_acts_as_function_key =
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableChromebookFunctionKey);
 
   // Set up the chrome://keyboardoverlay/ source.
   ChromeURLDataManager::AddDataSource(profile,

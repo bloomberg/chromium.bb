@@ -241,9 +241,6 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterIntegerPref(prefs::kLanguageRemapCapsLockKeyTo,
                              input_method::kCapsLockKey,
                              PrefService::SYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kLanguageSearchKeyActsAsFunctionKey,
-                             false,
-                             PrefService::SYNCABLE_PREF);
   // We don't sync the following keyboard prefs since they are not user-
   // configurable.
   prefs->RegisterBooleanPref(prefs::kLanguageXkbAutoRepeatEnabled,
@@ -376,8 +373,6 @@ void Preferences::InitUserPrefs(PrefService* prefs) {
     mozc_integer_prefs_[i].Init(
         language_prefs::kMozcIntegerPrefs[i].pref_name, prefs, callback);
   }
-  search_key_acts_as_function_key_.Init(
-      prefs::kLanguageSearchKeyActsAsFunctionKey, prefs, callback);
   xkb_auto_repeat_enabled_.Init(
       prefs::kLanguageXkbAutoRepeatEnabled, prefs, callback);
   xkb_auto_repeat_delay_pref_.Init(
