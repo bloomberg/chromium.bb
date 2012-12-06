@@ -67,7 +67,7 @@ void TextureLayerImpl::dumpLayerProperties(std::string* str, int indent) const
     LayerImpl::dumpLayerProperties(str, indent);
 }
 
-void TextureLayerImpl::didLoseContext()
+void TextureLayerImpl::didLoseOutputSurface()
 {
     m_textureId = 0;
     m_externalTextureResource = 0;

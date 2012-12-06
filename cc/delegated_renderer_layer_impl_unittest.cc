@@ -12,6 +12,7 @@
 #include "cc/single_thread_proxy.h"
 #include "cc/solid_color_draw_quad.h"
 #include "cc/solid_color_layer_impl.h"
+#include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_proxy.h"
 #include "cc/test/fake_web_compositor_output_surface.h"
 #include "cc/test/fake_web_graphics_context_3d.h"
@@ -39,12 +40,12 @@ public:
         settings.minimumOcclusionTrackingSize = gfx::Size();
 
         m_hostImpl = LayerTreeHostImpl::create(settings, this, &m_proxy);
-        m_hostImpl->initializeRenderer(createContext());
+        m_hostImpl->initializeRenderer(createFakeOutputSurface());
         m_hostImpl->setViewportSize(gfx::Size(10, 10), gfx::Size(10, 10));
     }
 
     // LayerTreeHostImplClient implementation.
-    virtual void didLoseContextOnImplThread() OVERRIDE { }
+    virtual void didLoseOutputSurfaceOnImplThread() OVERRIDE { }
     virtual void onSwapBuffersCompleteOnImplThread() OVERRIDE { }
     virtual void onVSyncParametersChanged(base::TimeTicks, base::TimeDelta) OVERRIDE { }
     virtual void onCanDrawStateChanged(bool) OVERRIDE { }
@@ -56,11 +57,6 @@ public:
     virtual void sendManagedMemoryStats() OVERRIDE { }
 
 protected:
-    scoped_ptr<GraphicsContext> createContext()
-    {
-        return FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new FakeWebGraphicsContext3D)).PassAs<GraphicsContext>();
-    }
-
     FakeProxy m_proxy;
     DebugScopedSetImplThreadAndMainThreadBlocked m_alwaysImplThreadAndMainThreadBlocked;
     scoped_ptr<LayerTreeHostImpl> m_hostImpl;

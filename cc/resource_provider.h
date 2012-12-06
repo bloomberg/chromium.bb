@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "cc/cc_export.h"
-#include "cc/graphics_context.h"
+#include "cc/output_surface.h"
 #include "cc/texture_copier.h"
 #include "cc/transferable_resource.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -46,7 +46,7 @@ public:
         Bitmap,
     };
 
-    static scoped_ptr<ResourceProvider> create(GraphicsContext*);
+    static scoped_ptr<ResourceProvider> create(OutputSurface*);
 
     virtual ~ResourceProvider();
 
@@ -257,7 +257,7 @@ private:
     };
     typedef base::hash_map<int, Child> ChildMap;
 
-    explicit ResourceProvider(GraphicsContext*);
+    explicit ResourceProvider(OutputSurface*);
     bool initialize();
 
     const Resource* lockForRead(ResourceId);
@@ -269,7 +269,7 @@ private:
     bool transferResource(WebKit::WebGraphicsContext3D*, ResourceId, TransferableResource*);
     void deleteResourceInternal(ResourceMap::iterator it);
 
-    GraphicsContext* m_context;
+    OutputSurface* m_outputSurface;
     ResourceId m_nextId;
     ResourceMap m_resources;
     int m_nextChild;

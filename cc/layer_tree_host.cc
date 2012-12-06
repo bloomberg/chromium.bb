@@ -9,7 +9,6 @@
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
 #include "cc/font_atlas.h"
-#include "cc/graphics_context.h"
 #include "cc/heads_up_display_layer.h"
 #include "cc/heads_up_display_layer_impl.h"
 #include "cc/layer.h"
@@ -147,8 +146,6 @@ LayerTreeSettings::~LayerTreeSettings()
 
 RendererCapabilities::RendererCapabilities()
     : bestTextureFormat(0)
-    , contextHasCachedFrontBuffer(false)
-    , usingPartialSwap(false)
     , usingAcceleratedPainting(false)
     , usingSetVisibility(false)
     , usingSwapCompleteCallback(false)
@@ -185,7 +182,7 @@ LayerTreeHost::LayerTreeHost(LayerTreeHostClient* client, const LayerTreeSetting
     , m_commitNumber(0)
     , m_renderingStats()
     , m_rendererInitialized(false)
-    , m_contextLost(false)
+    , m_outputSurfaceLost(false)
     , m_numTimesRecreateShouldFail(0)
     , m_numFailedRecreateAttempts(0)
     , m_settings(settings)
@@ -222,7 +219,7 @@ bool LayerTreeHost::initializeProxy(scoped_ptr<Proxy> proxy)
 
     m_proxy = proxy.Pass();
     m_proxy->start();
-    return m_proxy->initializeContext();
+    return m_proxy->initializeOutputSurface();
 }
 
 LayerTreeHost::~LayerTreeHost()
@@ -248,7 +245,7 @@ void LayerTreeHost::initializeRenderer()
 {
     TRACE_EVENT0("cc", "LayerTreeHost::initializeRenderer");
     if (!m_proxy->initializeRenderer()) {
-        // Uh oh, better tell the client that we can't do anything with this context.
+        // Uh oh, better tell the client that we can't do anything with this output surface.
         m_client->didRecreateOutputSurface(false);
         return;
     }
@@ -273,28 +270,28 @@ void LayerTreeHost::initializeRenderer()
                                                min(m_settings.maxUntiledLayerSize.height(), m_proxy->rendererCapabilities().maxTextureSize));
 }
 
-LayerTreeHost::RecreateResult LayerTreeHost::recreateContext()
+LayerTreeHost::RecreateResult LayerTreeHost::recreateOutputSurface()
 {
-    TRACE_EVENT0("cc", "LayerTreeHost::recreateContext");
-    DCHECK(m_contextLost);
+    TRACE_EVENT0("cc", "LayerTreeHost::recreateOutputSurface");
+    DCHECK(m_outputSurfaceLost);
 
     bool recreated = false;
     if (!m_numTimesRecreateShouldFail)
-        recreated = m_proxy->recreateContext();
+        recreated = m_proxy->recreateOutputSurface();
     else
         m_numTimesRecreateShouldFail--;
 
     if (recreated) {
         m_client->didRecreateOutputSurface(true);
-        m_contextLost = false;
+        m_outputSurfaceLost = false;
         return RecreateSucceeded;
     }
 
     // Tolerate a certain number of recreation failures to work around races
-    // in the context-lost machinery.
+    // in the output-surface-lost machinery.
     m_numFailedRecreateAttempts++;
     if (m_numFailedRecreateAttempts < 5) {
-        // FIXME: The single thread does not self-schedule context
+        // FIXME: The single thread does not self-schedule output surface
         // recreation. So force another recreation attempt to happen by requesting
         // another commit.
         if (!m_proxy->hasImplThread())
@@ -302,8 +299,8 @@ LayerTreeHost::RecreateResult LayerTreeHost::recreateContext()
         return RecreateFailedButTryAgain;
     }
 
-    // We have tried too many times to recreate the context. Tell the host to fall
-    // back to software rendering.
+    // We have tried too many times to recreate the output surface. Tell the
+    // host to fall back to software rendering.
     m_client->didRecreateOutputSurface(false);
     return RecreateFailedAndGaveUp;
 }
@@ -429,7 +426,7 @@ void LayerTreeHost::commitComplete()
     m_client->didCommit();
 }
 
-scoped_ptr<GraphicsContext> LayerTreeHost::createContext()
+scoped_ptr<OutputSurface> LayerTreeHost::createOutputSurface()
 {
     return m_client->createOutputSurface();
 }
@@ -444,11 +441,11 @@ scoped_ptr<LayerTreeHostImpl> LayerTreeHost::createLayerTreeHostImpl(LayerTreeHo
     return LayerTreeHostImpl::create(m_settings, client, m_proxy.get());
 }
 
-void LayerTreeHost::didLoseContext()
+void LayerTreeHost::didLoseOutputSurface()
 {
-    TRACE_EVENT0("cc", "LayerTreeHost::didLoseContext");
+    TRACE_EVENT0("cc", "LayerTreeHost::didLoseOutputSurface");
     DCHECK(m_proxy->isMainThread());
-    m_contextLost = true;
+    m_outputSurfaceLost = true;
     m_numFailedRecreateAttempts = 0;
     setNeedsCommit();
 }
@@ -596,11 +593,11 @@ void LayerTreeHost::startPageScaleAnimation(gfx::Vector2d targetOffset, bool use
     m_proxy->startPageScaleAnimation(targetOffset, useAnchor, scale, duration);
 }
 
-void LayerTreeHost::loseContext(int numTimes)
+void LayerTreeHost::loseOutputSurface(int numTimes)
 {
-    TRACE_EVENT1("cc", "LayerTreeHost::loseCompositorContext", "numTimes", numTimes);
+    TRACE_EVENT1("cc", "LayerTreeHost::loseCompositorOutputSurface", "numTimes", numTimes);
     m_numTimesRecreateShouldFail = numTimes - 1;
-    m_proxy->loseContext();
+    m_proxy->loseOutputSurface();
 }
 
 PrioritizedResourceManager* LayerTreeHost::contentsTextureManager() const
@@ -629,8 +626,8 @@ bool LayerTreeHost::initializeRendererIfNeeded()
         if (!m_rendererInitialized)
             return false;
     }
-    if (m_contextLost) {
-        if (recreateContext() != RecreateSucceeded)
+    if (m_outputSurfaceLost) {
+        if (recreateOutputSurface() != RecreateSucceeded)
             return false;
     }
     return true;

@@ -82,7 +82,7 @@ public:
         settings.pageScalePinchZoomEnabled = GetParam();
 
         m_hostImpl = LayerTreeHostImpl::create(settings, this, &m_proxy);
-        m_hostImpl->initializeRenderer(createContext());
+        m_hostImpl->initializeRenderer(createOutputSurface());
         m_hostImpl->setViewportSize(gfx::Size(10, 10), gfx::Size(10, 10));
     }
 
@@ -90,7 +90,7 @@ public:
     {
     }
 
-    virtual void didLoseContextOnImplThread() OVERRIDE { }
+    virtual void didLoseOutputSurfaceOnImplThread() OVERRIDE { }
     virtual void onSwapBuffersCompleteOnImplThread() OVERRIDE { }
     virtual void onVSyncParametersChanged(base::TimeTicks, base::TimeDelta) OVERRIDE { }
     virtual void onCanDrawStateChanged(bool canDraw) OVERRIDE { m_onCanDrawStateChangedCalled = true; }
@@ -103,7 +103,7 @@ public:
 
     void setReduceMemoryResult(bool reduceMemoryResult) { m_reduceMemoryResult = reduceMemoryResult; }
 
-    scoped_ptr<LayerTreeHostImpl> createLayerTreeHost(bool partialSwap, scoped_ptr<GraphicsContext> graphicsContext, scoped_ptr<LayerImpl> root)
+    scoped_ptr<LayerTreeHostImpl> createLayerTreeHost(bool partialSwap, scoped_ptr<OutputSurface> outputSurface, scoped_ptr<LayerImpl> root)
     {
         LayerTreeSettings settings;
         settings.minimumOcclusionTrackingSize = gfx::Size();
@@ -111,7 +111,7 @@ public:
 
         scoped_ptr<LayerTreeHostImpl> myHostImpl = LayerTreeHostImpl::create(settings, this, &m_proxy);
 
-        myHostImpl->initializeRenderer(graphicsContext.Pass());
+        myHostImpl->initializeRenderer(outputSurface.Pass());
         myHostImpl->setViewportSize(gfx::Size(10, 10), gfx::Size(10, 10));
 
         root->setAnchorPoint(gfx::PointF(0, 0));
@@ -192,7 +192,7 @@ public:
 
     void initializeRendererAndDrawFrame()
     {
-        m_hostImpl->initializeRenderer(createContext());
+        m_hostImpl->initializeRenderer(createOutputSurface());
         LayerTreeHostImpl::FrameData frame;
         EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
         m_hostImpl->drawLayers(frame);
@@ -205,9 +205,9 @@ public:
     void pinchZoomPanViewportAndScrollBoundaryTest(const float deviceScaleFactor);
 
 protected:
-    scoped_ptr<GraphicsContext> createContext()
+    scoped_ptr<OutputSurface> createOutputSurface()
     {
-        return FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new FakeWebGraphicsContext3D)).PassAs<GraphicsContext>();
+        return FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new FakeWebGraphicsContext3D)).PassAs<OutputSurface>();
     }
 
     FakeProxy m_proxy;
@@ -376,7 +376,7 @@ TEST_P(LayerTreeHostImplTest, scrollWithoutRenderer)
     m_hostImpl = LayerTreeHostImpl::create(settings, this, &m_proxy);
 
     // Initialization will fail here.
-    m_hostImpl->initializeRenderer(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new FakeWebGraphicsContext3DMakeCurrentFails)).PassAs<GraphicsContext>());
+    m_hostImpl->initializeRenderer(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new FakeWebGraphicsContext3DMakeCurrentFails)).PassAs<OutputSurface>());
     m_hostImpl->setViewportSize(gfx::Size(10, 10), gfx::Size(10, 10));
 
     setupScrollAndContentsLayers(gfx::Size(100, 100));
@@ -1885,7 +1885,7 @@ TEST_P(LayerTreeHostImplTest, blendingOffWhenDrawingOpaqueLayers)
 
 TEST_P(LayerTreeHostImplTest, viewportCovered)
 {
-    m_hostImpl->initializeRenderer(createContext());
+    m_hostImpl->initializeRenderer(createOutputSurface());
     m_hostImpl->setBackgroundColor(SK_ColorGRAY);
 
     gfx::Size viewportSize(1000, 1000);
@@ -1997,7 +1997,7 @@ protected:
 // viewport size is never set.
 TEST_P(LayerTreeHostImplTest, reshapeNotCalledUntilDraw)
 {
-    scoped_ptr<GraphicsContext> outputSurface = FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new ReshapeTrackerContext)).PassAs<GraphicsContext>();
+    scoped_ptr<OutputSurface> outputSurface = FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new ReshapeTrackerContext)).PassAs<OutputSurface>();
     ReshapeTrackerContext* reshapeTracker = static_cast<ReshapeTrackerContext*>(outputSurface->context3D());
     m_hostImpl->initializeRenderer(outputSurface.Pass());
 
@@ -2040,7 +2040,7 @@ private:
 // where it should request to swap only the subBuffer that is damaged.
 TEST_P(LayerTreeHostImplTest, partialSwapReceivesDamageRect)
 {
-    scoped_ptr<GraphicsContext> outputSurface = FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new PartialSwapTrackerContext)).PassAs<GraphicsContext>();
+    scoped_ptr<OutputSurface> outputSurface = FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new PartialSwapTrackerContext)).PassAs<OutputSurface>();
     PartialSwapTrackerContext* partialSwapTracker = static_cast<PartialSwapTrackerContext*>(outputSurface->context3D());
 
     // This test creates its own LayerTreeHostImpl, so
@@ -2255,12 +2255,12 @@ public:
 
 TEST_P(LayerTreeHostImplTest, noPartialSwap)
 {
-    scoped_ptr<GraphicsContext> context = FakeWebCompositorOutputSurface::create(scoped_ptr<WebGraphicsContext3D>(new MockContext)).PassAs<GraphicsContext>();
-    MockContext* mockContext = static_cast<MockContext*>(context->context3D());
+    scoped_ptr<OutputSurface> outputSurface = FakeWebCompositorOutputSurface::create(scoped_ptr<WebGraphicsContext3D>(new MockContext)).PassAs<OutputSurface>();
+    MockContext* mockContext = static_cast<MockContext*>(outputSurface->context3D());
     MockContextHarness harness(mockContext);
 
     // Run test case
-    scoped_ptr<LayerTreeHostImpl> myHostImpl = createLayerTreeHost(false, context.Pass(), FakeLayerWithQuads::create(1));
+    scoped_ptr<LayerTreeHostImpl> myHostImpl = createLayerTreeHost(false, outputSurface.Pass(), FakeLayerWithQuads::create(1));
 
     // without partial swap, and no clipping, no scissor is set.
     harness.mustDrawSolidQuad();
@@ -2288,11 +2288,11 @@ TEST_P(LayerTreeHostImplTest, noPartialSwap)
 
 TEST_P(LayerTreeHostImplTest, partialSwap)
 {
-    scoped_ptr<GraphicsContext> context = FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new MockContext)).PassAs<GraphicsContext>();
-    MockContext* mockContext = static_cast<MockContext*>(context->context3D());
+    scoped_ptr<OutputSurface> outputSurface = FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new MockContext)).PassAs<OutputSurface>();
+    MockContext* mockContext = static_cast<MockContext*>(outputSurface->context3D());
     MockContextHarness harness(mockContext);
 
-    scoped_ptr<LayerTreeHostImpl> myHostImpl = createLayerTreeHost(true, context.Pass(), FakeLayerWithQuads::create(1));
+    scoped_ptr<LayerTreeHostImpl> myHostImpl = createLayerTreeHost(true, outputSurface.Pass(), FakeLayerWithQuads::create(1));
 
     // The first frame is not a partially-swapped one.
     harness.mustSetScissor(0, 0, 10, 10);
@@ -2344,12 +2344,12 @@ public:
 
 static scoped_ptr<LayerTreeHostImpl> setupLayersForOpacity(bool partialSwap, LayerTreeHostImplClient* client, Proxy* proxy)
 {
-    scoped_ptr<GraphicsContext> context = FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new PartialSwapContext)).PassAs<GraphicsContext>();
+    scoped_ptr<OutputSurface> outputSurface = FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new PartialSwapContext)).PassAs<OutputSurface>();
 
     LayerTreeSettings settings;
     settings.partialSwapEnabled = partialSwap;
     scoped_ptr<LayerTreeHostImpl> myHostImpl = LayerTreeHostImpl::create(settings, client, proxy);
-    myHostImpl->initializeRenderer(context.Pass());
+    myHostImpl->initializeRenderer(outputSurface.Pass());
     myHostImpl->setViewportSize(gfx::Size(100, 100), gfx::Size(100, 100));
 
     /*
@@ -2450,48 +2450,48 @@ TEST_P(LayerTreeHostImplTest, contributingLayerEmptyScissorNoPartialSwap)
     }
 }
 
-// Make sure that context lost notifications are propagated through the tree.
-class ContextLostNotificationCheckLayer : public LayerImpl {
+// Make sure that output surface lost notifications are propagated through the tree.
+class OutputSurfaceLostNotificationCheckLayer : public LayerImpl {
 public:
-    static scoped_ptr<LayerImpl> create(int id) { return scoped_ptr<LayerImpl>(new ContextLostNotificationCheckLayer(id)); }
+    static scoped_ptr<LayerImpl> create(int id) { return scoped_ptr<LayerImpl>(new OutputSurfaceLostNotificationCheckLayer(id)); }
 
-    virtual void didLoseContext() OVERRIDE
+    virtual void didLoseOutputSurface() OVERRIDE
     {
-        m_didLoseContextCalled = true;
+        m_didLoseOutputSurfaceCalled = true;
     }
 
-    bool didLoseContextCalled() const { return m_didLoseContextCalled; }
+    bool didLoseOutputSurfaceCalled() const { return m_didLoseOutputSurfaceCalled; }
 
 private:
-    explicit ContextLostNotificationCheckLayer(int id)
+    explicit OutputSurfaceLostNotificationCheckLayer(int id)
         : LayerImpl(id)
-        , m_didLoseContextCalled(false)
+        , m_didLoseOutputSurfaceCalled(false)
     {
     }
 
-    bool m_didLoseContextCalled;
+    bool m_didLoseOutputSurfaceCalled;
 };
 
-TEST_P(LayerTreeHostImplTest, contextLostAndRestoredNotificationSentToAllLayers)
+TEST_P(LayerTreeHostImplTest, outputSurfaceLostAndRestoredNotificationSentToAllLayers)
 {
-    m_hostImpl->setRootLayer(ContextLostNotificationCheckLayer::create(1));
-    ContextLostNotificationCheckLayer* root = static_cast<ContextLostNotificationCheckLayer*>(m_hostImpl->rootLayer());
+    m_hostImpl->setRootLayer(OutputSurfaceLostNotificationCheckLayer::create(1));
+    OutputSurfaceLostNotificationCheckLayer* root = static_cast<OutputSurfaceLostNotificationCheckLayer*>(m_hostImpl->rootLayer());
 
-    root->addChild(ContextLostNotificationCheckLayer::create(1));
-    ContextLostNotificationCheckLayer* layer1 = static_cast<ContextLostNotificationCheckLayer*>(root->children()[0]);
+    root->addChild(OutputSurfaceLostNotificationCheckLayer::create(1));
+    OutputSurfaceLostNotificationCheckLayer* layer1 = static_cast<OutputSurfaceLostNotificationCheckLayer*>(root->children()[0]);
 
-    layer1->addChild(ContextLostNotificationCheckLayer::create(2));
-    ContextLostNotificationCheckLayer* layer2 = static_cast<ContextLostNotificationCheckLayer*>(layer1->children()[0]);
+    layer1->addChild(OutputSurfaceLostNotificationCheckLayer::create(2));
+    OutputSurfaceLostNotificationCheckLayer* layer2 = static_cast<OutputSurfaceLostNotificationCheckLayer*>(layer1->children()[0]);
 
-    EXPECT_FALSE(root->didLoseContextCalled());
-    EXPECT_FALSE(layer1->didLoseContextCalled());
-    EXPECT_FALSE(layer2->didLoseContextCalled());
+    EXPECT_FALSE(root->didLoseOutputSurfaceCalled());
+    EXPECT_FALSE(layer1->didLoseOutputSurfaceCalled());
+    EXPECT_FALSE(layer2->didLoseOutputSurfaceCalled());
 
-    m_hostImpl->initializeRenderer(createContext());
+    m_hostImpl->initializeRenderer(createOutputSurface());
 
-    EXPECT_TRUE(root->didLoseContextCalled());
-    EXPECT_TRUE(layer1->didLoseContextCalled());
-    EXPECT_TRUE(layer2->didLoseContextCalled());
+    EXPECT_TRUE(root->didLoseOutputSurfaceCalled());
+    EXPECT_TRUE(layer1->didLoseOutputSurfaceCalled());
+    EXPECT_TRUE(layer2->didLoseOutputSurfaceCalled());
 }
 
 TEST_P(LayerTreeHostImplTest, finishAllRenderingAfterContextLost)
@@ -2500,7 +2500,7 @@ TEST_P(LayerTreeHostImplTest, finishAllRenderingAfterContextLost)
     m_hostImpl = LayerTreeHostImpl::create(settings, this, &m_proxy);
 
     // The context initialization will fail, but we should still be able to call finishAllRendering() without any ill effects.
-    m_hostImpl->initializeRenderer(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new FakeWebGraphicsContext3DMakeCurrentFails)).PassAs<GraphicsContext>());
+    m_hostImpl->initializeRenderer(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new FakeWebGraphicsContext3DMakeCurrentFails)).PassAs<OutputSurface>());
     m_hostImpl->finishAllRendering();
 }
 
@@ -2518,14 +2518,14 @@ private:
     unsigned m_succeedCount;
 };
 
-TEST_P(LayerTreeHostImplTest, contextLostDuringInitialize)
+TEST_P(LayerTreeHostImplTest, context3DLostDuringInitialize)
 {
     LayerTreeSettings settings;
     m_hostImpl = LayerTreeHostImpl::create(settings, this, &m_proxy);
 
     // Initialize into a known successful state.
-    EXPECT_TRUE(m_hostImpl->initializeRenderer(createContext()));
-    EXPECT_TRUE(m_hostImpl->context());
+    EXPECT_TRUE(m_hostImpl->initializeRenderer(createOutputSurface()));
+    EXPECT_TRUE(m_hostImpl->outputSurface());
     EXPECT_TRUE(m_hostImpl->renderer());
     EXPECT_TRUE(m_hostImpl->resourceProvider());
 
@@ -2538,15 +2538,15 @@ TEST_P(LayerTreeHostImplTest, contextLostDuringInitialize)
     for (unsigned i = 0; i < kMakeCurrentSuccessesNeededForSuccessfulInitialization; ++i) {
         // The context will get lost during initialization, we shouldn't crash. We
         // should also be in a consistent state.
-        EXPECT_FALSE(m_hostImpl->initializeRenderer(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new FakeWebGraphicsContext3DMakeCurrentFailsEventually(i))).PassAs<GraphicsContext>()));
-        EXPECT_EQ(0, m_hostImpl->context());
+        EXPECT_FALSE(m_hostImpl->initializeRenderer(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new FakeWebGraphicsContext3DMakeCurrentFailsEventually(i))).PassAs<OutputSurface>()));
+        EXPECT_EQ(0, m_hostImpl->outputSurface());
         EXPECT_EQ(0, m_hostImpl->renderer());
         EXPECT_EQ(0, m_hostImpl->resourceProvider());
-        EXPECT_TRUE(m_hostImpl->initializeRenderer(createContext()));
+        EXPECT_TRUE(m_hostImpl->initializeRenderer(createOutputSurface()));
     }
 
-    EXPECT_TRUE(m_hostImpl->initializeRenderer(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new FakeWebGraphicsContext3DMakeCurrentFailsEventually(kMakeCurrentSuccessesNeededForSuccessfulInitialization))).PassAs<GraphicsContext>()));
-    EXPECT_TRUE(m_hostImpl->context());
+    EXPECT_TRUE(m_hostImpl->initializeRenderer(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new FakeWebGraphicsContext3DMakeCurrentFailsEventually(kMakeCurrentSuccessesNeededForSuccessfulInitialization))).PassAs<OutputSurface>()));
+    EXPECT_TRUE(m_hostImpl->outputSurface());
     EXPECT_TRUE(m_hostImpl->renderer());
     EXPECT_TRUE(m_hostImpl->resourceProvider());
 }
@@ -2783,7 +2783,7 @@ static inline scoped_ptr<RenderPass> createRenderPassWithResource(ResourceProvid
     return pass.PassAs<RenderPass>();
 }
 
-TEST_P(LayerTreeHostImplTest, dontUseOldResourcesAfterLostContext)
+TEST_P(LayerTreeHostImplTest, dontUseOldResourcesAfterLostOutputSurface)
 {
     int layerId = 1;
 
@@ -2899,7 +2899,7 @@ TEST_P(LayerTreeHostImplTest, dontUseOldResourcesAfterLostContext)
     rootLayer->addChild(delegatedRendererLayer.PassAs<LayerImpl>());
 
     // Use a context that supports IOSurfaces
-    m_hostImpl->initializeRenderer(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new FakeWebGraphicsContext3DWithIOSurface)).PassAs<GraphicsContext>());
+    m_hostImpl->initializeRenderer(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new FakeWebGraphicsContext3DWithIOSurface)).PassAs<OutputSurface>());
 
     FakeVideoFrame hwVideoFrame(
         VideoFrame::WrapNativeTexture(
@@ -2927,9 +2927,9 @@ TEST_P(LayerTreeHostImplTest, dontUseOldResourcesAfterLostContext)
 
     unsigned numResources = m_hostImpl->resourceProvider()->numResources();
 
-    // Lose the context, replacing it with a StrictWebGraphicsContext3DWithIOSurface,
+    // Lose the WebGraphicsContext3D, replacing it with a StrictWebGraphicsContext3DWithIOSurface,
     // that will warn if any resource from the previous context gets used.
-    m_hostImpl->initializeRenderer(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new StrictWebGraphicsContext3DWithIOSurface)).PassAs<GraphicsContext>());
+    m_hostImpl->initializeRenderer(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new StrictWebGraphicsContext3DWithIOSurface)).PassAs<OutputSurface>());
 
     // Create dummy resources so that looking up an old resource will get an
     // invalid texture id mapping.
@@ -2937,7 +2937,7 @@ TEST_P(LayerTreeHostImplTest, dontUseOldResourcesAfterLostContext)
         m_hostImpl->resourceProvider()->createResourceFromExternalTexture(StrictWebGraphicsContext3D::kExternalTextureId);
 
     // The WebVideoFrameProvider is expected to recreate its textures after a
-    // lost context (or not serve a frame).
+    // lost output surface (or not serve a frame).
     hwProvider.setFrame(0);
     providerScaled.setFrame(0);
 
@@ -3047,9 +3047,9 @@ TEST_P(LayerTreeHostImplTest, layersFreeTextures)
     ioSurfaceLayer->setLayerTreeHostImpl(m_hostImpl.get());
     rootLayer->addChild(ioSurfaceLayer.PassAs<LayerImpl>());
 
-    // Lose the context, replacing it with a TrackingWebGraphicsContext3D (which the LayerTreeHostImpl takes ownership of).
-    scoped_ptr<GraphicsContext> outputSurface(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new TrackingWebGraphicsContext3D)));
-    TrackingWebGraphicsContext3D* trackingWebGraphicsContext = static_cast<TrackingWebGraphicsContext3D*>(outputSurface->context3D());
+    // Lose the WebGraphicsContext3D, replacing it with a TrackingWebGraphicsContext3D (which the LayerTreeHostImpl takes ownership of).
+    scoped_ptr<OutputSurface> outputSurface(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new TrackingWebGraphicsContext3D)));
+    TrackingWebGraphicsContext3D* trackingWebGraphicsContext3D = static_cast<TrackingWebGraphicsContext3D*>(outputSurface->context3D());
     m_hostImpl->initializeRenderer(outputSurface.Pass());
 
     m_hostImpl->setRootLayer(rootLayer.Pass());
@@ -3060,12 +3060,12 @@ TEST_P(LayerTreeHostImplTest, layersFreeTextures)
     m_hostImpl->didDrawAllLayers(frame);
     m_hostImpl->swapBuffers();
 
-    EXPECT_GT(trackingWebGraphicsContext->numTextures(), 0u);
+    EXPECT_GT(trackingWebGraphicsContext3D->numTextures(), 0u);
 
     // Kill the layer tree.
     m_hostImpl->setRootLayer(LayerImpl::create(100));
     // There should be no textures left in use after.
-    EXPECT_EQ(0u, trackingWebGraphicsContext->numTextures());
+    EXPECT_EQ(0u, trackingWebGraphicsContext3D->numTextures());
 }
 
 class MockDrawQuadsToFillScreenContext : public FakeWebGraphicsContext3D {
@@ -3076,11 +3076,11 @@ public:
 
 TEST_P(LayerTreeHostImplTest, hasTransparentBackground)
 {
-    scoped_ptr<GraphicsContext> context = FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new MockDrawQuadsToFillScreenContext)).PassAs<GraphicsContext>();
-    MockDrawQuadsToFillScreenContext* mockContext = static_cast<MockDrawQuadsToFillScreenContext*>(context->context3D());
+    scoped_ptr<OutputSurface> outputSurface = FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new MockDrawQuadsToFillScreenContext)).PassAs<OutputSurface>();
+    MockDrawQuadsToFillScreenContext* mockContext = static_cast<MockDrawQuadsToFillScreenContext*>(outputSurface->context3D());
 
     // Run test case
-    scoped_ptr<LayerTreeHostImpl> myHostImpl = createLayerTreeHost(false, context.Pass(), LayerImpl::create(1));
+    scoped_ptr<LayerTreeHostImpl> myHostImpl = createLayerTreeHost(false, outputSurface.Pass(), LayerImpl::create(1));
     myHostImpl->setBackgroundColor(SK_ColorWHITE);
 
     // Verify one quad is drawn when transparent background set is not set.
@@ -3120,9 +3120,9 @@ static void addDrawingLayerTo(LayerImpl* parent, int id, const gfx::Rect& layerR
 
 static void setupLayersForTextureCaching(LayerTreeHostImpl* layerTreeHostImpl, LayerImpl*& rootPtr, LayerImpl*& intermediateLayerPtr, LayerImpl*& surfaceLayerPtr, LayerImpl*& childPtr, const gfx::Size& rootSize)
 {
-    scoped_ptr<GraphicsContext> context = FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new PartialSwapContext)).PassAs<GraphicsContext>();
+    scoped_ptr<OutputSurface> outputSurface = FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new PartialSwapContext)).PassAs<OutputSurface>();
 
-    layerTreeHostImpl->initializeRenderer(context.Pass());
+    layerTreeHostImpl->initializeRenderer(outputSurface.Pass());
     layerTreeHostImpl->setViewportSize(rootSize, rootSize);
 
     scoped_ptr<LayerImpl> root = LayerImpl::create(1);
@@ -3164,11 +3164,11 @@ TEST_P(LayerTreeHostImplTest, textureCachingWithClipping)
     LayerImpl* rootPtr;
     LayerImpl* surfaceLayerPtr;
 
-    scoped_ptr<GraphicsContext> context = FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new PartialSwapContext)).PassAs<GraphicsContext>();
+    scoped_ptr<OutputSurface> outputSurface = FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new PartialSwapContext)).PassAs<OutputSurface>();
 
     gfx::Size rootSize(100, 100);
 
-    myHostImpl->initializeRenderer(context.Pass());
+    myHostImpl->initializeRenderer(outputSurface.Pass());
     myHostImpl->setViewportSize(gfx::Size(rootSize.width(), rootSize.height()), gfx::Size(rootSize.width(), rootSize.height()));
 
     scoped_ptr<LayerImpl> root = LayerImpl::create(1);
@@ -3275,11 +3275,11 @@ TEST_P(LayerTreeHostImplTest, textureCachingWithOcclusion)
     LayerImpl* layerS1Ptr;
     LayerImpl* layerS2Ptr;
 
-    scoped_ptr<GraphicsContext> context = FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new PartialSwapContext)).PassAs<GraphicsContext>();
+    scoped_ptr<OutputSurface> outputSurface = FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new PartialSwapContext)).PassAs<OutputSurface>();
 
     gfx::Size rootSize(1000, 1000);
 
-    myHostImpl->initializeRenderer(context.Pass());
+    myHostImpl->initializeRenderer(outputSurface.Pass());
     myHostImpl->setViewportSize(gfx::Size(rootSize.width(), rootSize.height()), gfx::Size(rootSize.width(), rootSize.height()));
 
     scoped_ptr<LayerImpl> root = LayerImpl::create(1);
@@ -3386,11 +3386,11 @@ TEST_P(LayerTreeHostImplTest, textureCachingWithOcclusionEarlyOut)
     LayerImpl* layerS1Ptr;
     LayerImpl* layerS2Ptr;
 
-    scoped_ptr<GraphicsContext> context = FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new PartialSwapContext)).PassAs<GraphicsContext>();
+    scoped_ptr<OutputSurface> outputSurface = FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new PartialSwapContext)).PassAs<OutputSurface>();
 
     gfx::Size rootSize(1000, 1000);
 
-    myHostImpl->initializeRenderer(context.Pass());
+    myHostImpl->initializeRenderer(outputSurface.Pass());
     myHostImpl->setViewportSize(gfx::Size(rootSize.width(), rootSize.height()), gfx::Size(rootSize.width(), rootSize.height()));
 
     scoped_ptr<LayerImpl> root = LayerImpl::create(1);
@@ -3498,11 +3498,11 @@ TEST_P(LayerTreeHostImplTest, textureCachingWithOcclusionExternalOverInternal)
     LayerImpl* layerS1Ptr;
     LayerImpl* layerS2Ptr;
 
-    scoped_ptr<GraphicsContext> context = FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new PartialSwapContext)).PassAs<GraphicsContext>();
+    scoped_ptr<OutputSurface> outputSurface = FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new PartialSwapContext)).PassAs<OutputSurface>();
 
     gfx::Size rootSize(1000, 1000);
 
-    myHostImpl->initializeRenderer(context.Pass());
+    myHostImpl->initializeRenderer(outputSurface.Pass());
     myHostImpl->setViewportSize(gfx::Size(rootSize.width(), rootSize.height()), gfx::Size(rootSize.width(), rootSize.height()));
 
     scoped_ptr<LayerImpl> root = LayerImpl::create(1);
@@ -3579,11 +3579,11 @@ TEST_P(LayerTreeHostImplTest, textureCachingWithOcclusionExternalNotAligned)
     LayerImpl* rootPtr;
     LayerImpl* layerS1Ptr;
 
-    scoped_ptr<GraphicsContext> context = FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new PartialSwapContext)).PassAs<GraphicsContext>();
+    scoped_ptr<OutputSurface> outputSurface = FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new PartialSwapContext)).PassAs<OutputSurface>();
 
     gfx::Size rootSize(1000, 1000);
 
-    myHostImpl->initializeRenderer(context.Pass());
+    myHostImpl->initializeRenderer(outputSurface.Pass());
     myHostImpl->setViewportSize(gfx::Size(rootSize.width(), rootSize.height()), gfx::Size(rootSize.width(), rootSize.height()));
 
     scoped_ptr<LayerImpl> root = LayerImpl::create(1);
@@ -3663,11 +3663,11 @@ TEST_P(LayerTreeHostImplTest, textureCachingWithOcclusionPartialSwap)
     LayerImpl* layerS1Ptr;
     LayerImpl* layerS2Ptr;
 
-    scoped_ptr<GraphicsContext> context = FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new PartialSwapContext)).PassAs<GraphicsContext>();
+    scoped_ptr<OutputSurface> outputSurface = FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new PartialSwapContext)).PassAs<OutputSurface>();
 
     gfx::Size rootSize(1000, 1000);
 
-    myHostImpl->initializeRenderer(context.Pass());
+    myHostImpl->initializeRenderer(outputSurface.Pass());
     myHostImpl->setViewportSize(gfx::Size(rootSize.width(), rootSize.height()), gfx::Size(rootSize.width(), rootSize.height()));
 
     scoped_ptr<LayerImpl> root = LayerImpl::create(1);
@@ -3782,8 +3782,8 @@ TEST_P(LayerTreeHostImplTest, textureCachingWithScissor)
     gfx::Rect childRect(10, 10, 50, 50);
     gfx::Rect grandChildRect(5, 5, 150, 150);
 
-    scoped_ptr<GraphicsContext> context = FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new PartialSwapContext)).PassAs<GraphicsContext>();
-    myHostImpl->initializeRenderer(context.Pass());
+    scoped_ptr<OutputSurface> outputSurface = FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new PartialSwapContext)).PassAs<OutputSurface>();
+    myHostImpl->initializeRenderer(outputSurface.Pass());
 
     root->setAnchorPoint(gfx::PointF(0, 0));
     root->setPosition(gfx::PointF(rootRect.x(), rootRect.y()));
@@ -4228,7 +4228,7 @@ public:
     // RendererClient implementation.
     virtual const gfx::Size& deviceViewportSize() const OVERRIDE { return m_viewportSize; }
     virtual const LayerTreeSettings& settings() const OVERRIDE { return m_settings; }
-    virtual void didLoseContext() OVERRIDE { }
+    virtual void didLoseOutputSurface() OVERRIDE { }
     virtual void onSwapBuffersComplete() OVERRIDE { }
     virtual void setFullRootLayerDamage() OVERRIDE { }
     virtual void setManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE { }
@@ -4523,9 +4523,9 @@ static void verifyRenderPassTestData(TestCase& testCase, RenderPassRemovalTestDa
 
 TEST_P(LayerTreeHostImplTest, testRemoveRenderPasses)
 {
-    scoped_ptr<GraphicsContext> context(createContext());
-    ASSERT_TRUE(context->context3D());
-    scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(context.get()));
+    scoped_ptr<OutputSurface> outputSurface(createOutputSurface());
+    ASSERT_TRUE(outputSurface->context3D());
+    scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(outputSurface.get()));
 
     scoped_ptr<TestRenderer> renderer(TestRenderer::create(resourceProvider.get(), &m_proxy));
 

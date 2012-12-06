@@ -57,6 +57,7 @@
       'tiled_layer_unittest.cc',
       'tree_synchronizer_unittest.cc',
       'timing_function_unittest.cc',
+      'test/fake_web_graphics_context_3d_unittest.cc',
     ],
     'cc_tests_support_files': [
       'test/animation_test_common.cc',
@@ -64,8 +65,7 @@
       'test/compositor_fake_web_graphics_context_3d.h',
       'test/fake_content_layer_client.cc',
       'test/fake_content_layer_client.h',
-      'test/fake_graphics_context.h',
-      'test/fake_graphics_context_3d_unittest.cc',
+      'test/fake_output_surface.h',
       'test/fake_layer_tree_host_client.cc',
       'test/fake_layer_tree_host_client.h',
       'test/fake_picture_layer_tiling_client.cc',

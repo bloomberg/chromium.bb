@@ -236,7 +236,7 @@ Region TiledLayerImpl::visibleContentOpaqueRegion() const
     return m_tiler->opaqueRegionInContentRect(visibleContentRect());
 }
 
-void TiledLayerImpl::didLoseContext()
+void TiledLayerImpl::didLoseOutputSurface()
 {
     m_tiler->reset();
 }

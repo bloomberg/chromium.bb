@@ -125,7 +125,7 @@ void ScrollbarLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& append
     }
 }
 
-void ScrollbarLayerImpl::didLoseContext()
+void ScrollbarLayerImpl::didLoseOutputSurface()
 {
     m_backTrackResourceId = 0;
     m_foreTrackResourceId = 0;

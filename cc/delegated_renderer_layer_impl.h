@@ -23,7 +23,7 @@ public:
     void setRenderPasses(ScopedPtrVector<RenderPass>&);
     void clearRenderPasses();
 
-    virtual void didLoseContext() OVERRIDE;
+    virtual void didLoseOutputSurface() OVERRIDE;
 
     virtual RenderPass::Id firstContributingRenderPassId() const OVERRIDE;
     virtual RenderPass::Id nextContributingRenderPassId(RenderPass::Id) const OVERRIDE;

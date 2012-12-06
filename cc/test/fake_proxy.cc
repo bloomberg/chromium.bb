@@ -16,7 +16,7 @@ bool FakeProxy::isStarted() const
     return true;
 }
 
-bool FakeProxy::initializeContext()
+bool FakeProxy::initializeOutputSurface()
 {
     return true;
 }
@@ -26,7 +26,7 @@ bool FakeProxy::initializeRenderer()
     return true;
 }
 
-bool FakeProxy::recreateContext()
+bool FakeProxy::recreateOutputSurface()
 {
     return true;
 }

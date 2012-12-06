@@ -26,14 +26,14 @@ public:
     virtual void startPageScaleAnimation(gfx::Vector2d targetOffset, bool useAnchor, float scale, base::TimeDelta duration) OVERRIDE;
     virtual void finishAllRendering() OVERRIDE;
     virtual bool isStarted() const OVERRIDE;
-    virtual bool initializeContext() OVERRIDE;
+    virtual bool initializeOutputSurface() OVERRIDE;
     virtual void setSurfaceReady() OVERRIDE;
     virtual void setVisible(bool) OVERRIDE;
     virtual bool initializeRenderer() OVERRIDE;
-    virtual bool recreateContext() OVERRIDE;
+    virtual bool recreateOutputSurface() OVERRIDE;
     virtual void renderingStats(RenderingStats*) OVERRIDE;
     virtual const RendererCapabilities& rendererCapabilities() const OVERRIDE;
-    virtual void loseContext() OVERRIDE;
+    virtual void loseOutputSurface() OVERRIDE;
     virtual void setNeedsAnimate() OVERRIDE;
     virtual void setNeedsCommit() OVERRIDE;
     virtual void setNeedsRedraw() OVERRIDE;
@@ -47,7 +47,7 @@ public:
     virtual void forceSerializeOnSwapBuffers() OVERRIDE;
 
     // LayerTreeHostImplClient implementation
-    virtual void didLoseContextOnImplThread() OVERRIDE { }
+    virtual void didLoseOutputSurfaceOnImplThread() OVERRIDE { }
     virtual void onSwapBuffersCompleteOnImplThread() OVERRIDE;
     virtual void onVSyncParametersChanged(base::TimeTicks timebase, base::TimeDelta interval) OVERRIDE { }
     virtual void onCanDrawStateChanged(bool canDraw) OVERRIDE { }
@@ -71,11 +71,11 @@ private:
 
     // Accessed on main thread only.
     LayerTreeHost* m_layerTreeHost;
-    bool m_contextLost;
+    bool m_outputSurfaceLost;
 
     // Holds on to the context between initializeContext() and initializeRenderer() calls. Shouldn't
     // be used for anything else.
-    scoped_ptr<GraphicsContext> m_contextBeforeInitialization;
+    scoped_ptr<OutputSurface> m_outputSurfaceBeforeInitialization;
 
     // Used on the Thread, but checked on main thread during initialization/shutdown.
     scoped_ptr<LayerTreeHostImpl> m_layerTreeHostImpl;

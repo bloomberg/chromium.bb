@@ -15,10 +15,10 @@
 #include "base/time.h"
 #include "cc/animation_events.h"
 #include "cc/cc_export.h"
-#include "cc/graphics_context.h"
 #include "cc/layer_tree_host_client.h"
 #include "cc/layer_tree_host_common.h"
 #include "cc/occlusion_tracker.h"
+#include "cc/output_surface.h"
 #include "cc/prioritized_resource_manager.h"
 #include "cc/proxy.h"
 #include "cc/rate_limiter.h"
@@ -102,7 +102,6 @@ struct CC_EXPORT RendererCapabilities {
     ~RendererCapabilities();
 
     GLenum bestTextureFormat;
-    bool contextHasCachedFrontBuffer;
     bool usingPartialSwap;
     bool usingAcceleratedPainting;
     bool usingSetVisibility;
@@ -137,16 +136,16 @@ public:
     void finishCommitOnImplThread(LayerTreeHostImpl*);
     void willCommit();
     void commitComplete();
-    scoped_ptr<GraphicsContext> createContext();
+    scoped_ptr<OutputSurface> createOutputSurface();
     scoped_ptr<InputHandler> createInputHandler();
     virtual scoped_ptr<LayerTreeHostImpl> createLayerTreeHostImpl(LayerTreeHostImplClient*);
-    void didLoseContext();
+    void didLoseOutputSurface();
     enum RecreateResult {
         RecreateSucceeded,
         RecreateFailedButTryAgain,
         RecreateFailedAndGaveUp,
     };
-    RecreateResult recreateContext();
+    RecreateResult recreateOutputSurface();
     void didCommitAndDrawFrame() { m_client->didCommitAndDrawFrame(); }
     void didCompleteSwapBuffers() { m_client->didCompleteSwapBuffers(); }
     void deleteContentsTexturesOnImplThread(ResourceProvider*);
@@ -181,7 +180,7 @@ public:
     const RendererCapabilities& rendererCapabilities() const;
 
     // Test only hook
-    void loseContext(int numTimes);
+    void loseOutputSurface(int numTimes);
 
     void setNeedsAnimate();
     // virtual for testing
@@ -284,7 +283,7 @@ private:
     RenderingStats m_renderingStats;
 
     bool m_rendererInitialized;
-    bool m_contextLost;
+    bool m_outputSurfaceLost;
     int m_numTimesRecreateShouldFail;
     int m_numFailedRecreateAttempts;
 
