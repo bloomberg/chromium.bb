@@ -4,9 +4,9 @@
 
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 
-#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "content/browser/renderer_host/basic_mouse_wheel_smooth_scroll_gesture.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/port/browser/smooth_scroll_gesture.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
@@ -425,56 +425,6 @@ void RenderWidgetHostViewBase::UpdateScreenInfo(gfx::NativeView view) {
   if (impl)
     impl->NotifyScreenInfoChanged();
   }
-
-class BasicMouseWheelSmoothScrollGesture
-    : public SmoothScrollGesture {
- public:
-  BasicMouseWheelSmoothScrollGesture(bool scroll_down, int pixels_to_scroll,
-                                     int mouse_event_x, int mouse_event_y)
-      : scroll_down_(scroll_down),
-        pixels_scrolled_(0),
-        pixels_to_scroll_(pixels_to_scroll),
-        mouse_event_x_(mouse_event_x),
-        mouse_event_y_(mouse_event_y) { }
-
-  virtual bool ForwardInputEvents(base::TimeTicks now,
-                                  RenderWidgetHost* host) OVERRIDE {
-
-    if (pixels_scrolled_ >= pixels_to_scroll_)
-      return false;
-
-    WebKit::WebMouseWheelEvent event;
-    event.type = WebKit::WebInputEvent::MouseWheel;
-    // TODO(nduca): Figure out plausible value.
-    event.deltaY = scroll_down_ ? -10 : 10;
-    event.wheelTicksY = (scroll_down_ ? 1 : -1);
-    event.modifiers = 0;
-
-    // TODO(nduca): Figure out plausible x and y values.
-    event.globalX = 0;
-    event.globalY = 0;
-    event.x = mouse_event_x_;
-    event.y = mouse_event_y_;
-    event.windowX = event.x;
-    event.windowY = event.y;
-    host->ForwardWheelEvent(event);
-
-    pixels_scrolled_ += abs(event.deltaY);
-
-    TRACE_COUNTER_ID1("gpu", "smooth_scroll_by_pixels_scrolled", this,
-                      pixels_scrolled_);
-
-    return true;
-  }
-
- private:
-  virtual ~BasicMouseWheelSmoothScrollGesture() { }
-  bool scroll_down_;
-  int pixels_scrolled_;
-  int pixels_to_scroll_;
-  int mouse_event_x_;
-  int mouse_event_y_;
-};
 
 SmoothScrollGesture* RenderWidgetHostViewBase::CreateSmoothScrollGesture(
     bool scroll_down, int pixels_to_scroll, int mouse_event_x,

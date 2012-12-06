@@ -280,6 +280,10 @@ void RenderWidgetHostImpl::SendScreenRects() {
   waiting_for_screen_rects_ack_ = true;
 }
 
+int RenderWidgetHostImpl::SyntheticScrollMessageInterval() const {
+  return kSyntheticScrollMessageIntervalMs;
+}
+
 void RenderWidgetHostImpl::Init() {
   DCHECK(process_->HasConnection());
 

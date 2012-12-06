@@ -586,6 +586,8 @@
     'browser/renderer_host/backing_store_manager.h',
     'browser/renderer_host/backing_store_win.cc',
     'browser/renderer_host/backing_store_win.h',
+    'browser/renderer_host/basic_mouse_wheel_smooth_scroll_gesture.cc',
+    'browser/renderer_host/basic_mouse_wheel_smooth_scroll_gesture.h',
     'browser/renderer_host/clipboard_message_filter.cc',
     'browser/renderer_host/clipboard_message_filter.h',
     'browser/renderer_host/clipboard_message_filter_mac.mm',
