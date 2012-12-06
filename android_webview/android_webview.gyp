@@ -34,6 +34,68 @@
       ],
     },
     {
+      'target_name': 'android_webview_pak',
+      'type': 'none',
+      'dependencies': [
+        '<(DEPTH)/content/browser/debugger/devtools_resources.gyp:devtools_resources',
+        '<(DEPTH)/content/content_resources.gyp:content_resources',
+        '<(DEPTH)/net/net.gyp:net_resources',
+        '<(DEPTH)/ui/ui.gyp:ui_resources',
+        '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_resources',
+      ],
+      'variables': {
+        'repack_path': '<(DEPTH)/tools/grit/grit/format/repack.py',
+      },
+      'actions': [
+        {
+          'action_name': 'repack_android_webview_pack',
+          'variables': {
+            'pak_inputs': [
+              '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.pak',
+              '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.pak',
+              '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_100_percent.pak',
+              '<(SHARED_INTERMEDIATE_DIR)/webkit/devtools_resources.pak',
+              '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.pak',
+              '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources_100_percent.pak',
+            ],
+          },
+          'inputs': [
+            '<(repack_path)',
+            '<@(pak_inputs)',
+          ],
+          'outputs': [
+            '<(PRODUCT_DIR)/android_webview/assets/android_webview.pak',
+          ],
+          'action': ['python', '<(repack_path)', '<@(_outputs)',
+                     '<@(pak_inputs)'],
+      },
+      {
+          # TODO(benm): remove this when we can get our strings from the
+          # java framework.
+          'action_name': 'repack_android_webview__strings_pack',
+          'dependencies': [
+            '<(DEPTH)/ui/base/strings/ui_strings.gyp:ui_strings',
+            '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_strings',
+          ],
+          'variables': {
+            'pak_inputs': [
+              '<(SHARED_INTERMEDIATE_DIR)/ui/app_locale_settings/app_locale_settings_en-US.pak',
+              '<(SHARED_INTERMEDIATE_DIR)/ui/ui_strings/ui_strings_en-US.pak',
+              '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_en-US.pak',
+            ],
+          },
+          'inputs': [
+            '<(repack_path)',
+            '<@(pak_inputs)',
+          ],
+          'outputs': [
+            '<(PRODUCT_DIR)/android_webview/assets/android_webview_strings.pak',
+          ],
+          'action': ['python', '<(repack_path)', '<@(_outputs)',
+                     '<@(pak_inputs)'],
+      }],
+    },
+    {
       'target_name': 'android_webview_common',
       'type': 'static_library',
       'dependencies': [
@@ -41,11 +103,12 @@
         '../content/content.gyp:content',
         '../content/content.gyp:navigation_interception',
         '../content/content.gyp:web_contents_delegate_android',
-        '../ui/ui.gyp:ui_resources',
+        'android_webview_pak',
       ],
       'include_dirs': [
         '..',
         '../skia/config',
+        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/',
       ],
       'sources': [
         'browser/aw_browser_context.cc',

@@ -12,9 +12,9 @@ import org.chromium.content.common.CommandLine;
 
 public class AndroidWebViewTestRunnerApplication extends Application {
 
-    /** The minimum set of .pak files Chrome needs. */
-    private static final String[] CHROME_MANDATORY_PAKS = {
-        "chrome.pak", "chrome_100_percent.pak", "en-US.pak",
+    /** The minimum set of .pak files the test runner needs. */
+    private static final String[] MANDATORY_PAKS = {
+        "android_webview.pak", "android_webview_strings.pak"
     };
 
     @Override
@@ -23,7 +23,8 @@ public class AndroidWebViewTestRunnerApplication extends Application {
 
         CommandLine.initFromFile("/data/local/chrome-command-line");
 
-        ResourceExtractor.setMandatoryPaksToExtract(CHROME_MANDATORY_PAKS);
+        ResourceExtractor.setMandatoryPaksToExtract(MANDATORY_PAKS);
+        ResourceExtractor.setExtractImplicitLocaleForTesting(false);
         AwBrowserProcess.loadLibrary();
         AwBrowserProcess.start(this);
     }

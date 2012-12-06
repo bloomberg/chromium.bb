@@ -7,6 +7,8 @@
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_result_codes.h"
 #include "base/android/build_info.h"
+#include "base/file_path.h"
+#include "base/path_service.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
@@ -14,7 +16,9 @@
 #include "content/public/common/result_codes.h"
 #include "net/android/network_change_notifier_factory_android.h"
 #include "net/base/network_change_notifier.h"
+#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_paths.h"
 
 namespace android_webview {
 
@@ -45,11 +49,28 @@ void AwBrowserMainParts::PreEarlyInitialization() {
 
 int AwBrowserMainParts::PreCreateThreads() {
   browser_context_->InitializeBeforeThreadCreation();
-  const std::string loaded_locale =
-      ui::ResourceBundle::InitSharedInstanceWithLocale(
-          content::GetContentClient()->browser()->GetApplicationLocale(), NULL);
-  if (loaded_locale.empty())
-    return RESULT_CODE_MISSING_DATA;
+
+  // Although we don't load a locale pak for Android WebView, we still
+  // need to initialise the resource bundle with a locale.
+  ui::ResourceBundle::InitSharedInstanceLocaleOnly(
+      content::GetContentClient()->browser()->GetApplicationLocale(), NULL);
+
+  // TODO(benm): It would be nice to be able to take string resources from
+  // the Android framework for WebView, and rely on resource paks only
+  // for non-string assets. e.g. graphics (and might be nice in the
+  // long term to move them into the Android framwork too). Toward
+  // that, seed the ResourceBundle instance with a non-string, locale
+  // independant pak. Until we no longer rely on paks for strings,
+  // load an extra data pack separately that has the strings in it.
+  FilePath pak_path;
+  PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &pak_path);
+  ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
+      pak_path.AppendASCII("android_webview_strings.pak"),
+      ui::SCALE_FACTOR_NONE);
+  ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
+      pak_path.AppendASCII("android_webview.pak"),
+      ui::SCALE_FACTOR_NONE);
+
   return content::RESULT_CODE_NORMAL_EXIT;
 }
 
