@@ -40,32 +40,6 @@ bool FileModuleLocal::IsAvailable() {
 }
 
 // static
-bool FileModuleLocal::CreateThreadAdapterForInstance(
-    const InstanceHandle& instance) {
-  bool rv = false;
-  if (has_interface<PPB_Flash_File_ModuleLocal_3_0>()) {
-    rv = get_interface<PPB_Flash_File_ModuleLocal_3_0>()->
-        CreateThreadAdapterForInstance(instance.pp_instance());
-  } else if (has_interface<PPB_Flash_File_ModuleLocal_2_0>()) {
-    rv = get_interface<PPB_Flash_File_ModuleLocal_2_0>()->
-        CreateThreadAdapterForInstance( instance.pp_instance());
-  }
-  return rv;
-}
-
-// static
-void FileModuleLocal::ClearThreadAdapterForInstance(
-    const InstanceHandle& instance) {
-  if (has_interface<PPB_Flash_File_ModuleLocal_3_0>()) {
-    get_interface<PPB_Flash_File_ModuleLocal_3_0>()->
-        ClearThreadAdapterForInstance(instance.pp_instance());
-  } else if (has_interface<PPB_Flash_File_ModuleLocal_2_0>()) {
-    get_interface<PPB_Flash_File_ModuleLocal_2_0>()->
-        ClearThreadAdapterForInstance(instance.pp_instance());
-  }
-}
-
-// static
 PP_FileHandle FileModuleLocal::OpenFile(const InstanceHandle& instance,
                                         const std::string& path,
                                         int32_t mode) {
@@ -176,11 +150,6 @@ bool FileModuleLocal::GetDirContents(
     }
   }
   return result == PP_OK;
-}
-
-// static
-bool FileModuleLocal::IsCreateTemporaryFileAvailable() {
-  return has_interface<PPB_Flash_File_ModuleLocal_3_0>();
 }
 
 // static

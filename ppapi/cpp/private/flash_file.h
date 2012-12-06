@@ -24,9 +24,6 @@ class FileModuleLocal {
   // Returns true if the required interface is available.
   static bool IsAvailable();
 
-  static bool CreateThreadAdapterForInstance(const InstanceHandle& instance);
-  static void ClearThreadAdapterForInstance(const InstanceHandle& instance);
-
   // Returns |PP_kInvalidFileHandle| on error.
   static PP_FileHandle OpenFile(const InstanceHandle& instance,
                                 const std::string& path,
@@ -51,9 +48,6 @@ class FileModuleLocal {
                              const std::string& path,
                              std::vector<DirEntry>* dir_contents);
 
-  // Returns true if |CreateTemporaryFile()| is supported.
-  // TODO(viettrungluu): Remove this sometime after M21 ships to Stable?
-  static bool IsCreateTemporaryFileAvailable();
   // Returns |PP_kInvalidFileHandle| on error.
   static PP_FileHandle CreateTemporaryFile(const InstanceHandle& instance);
 };

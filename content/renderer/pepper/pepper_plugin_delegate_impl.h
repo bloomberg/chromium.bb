@@ -240,26 +240,6 @@ class PepperPluginDelegateImpl
       const AvailableSpaceCallback& callback) OVERRIDE;
   virtual void WillUpdateFile(const GURL& file_path) OVERRIDE;
   virtual void DidUpdateFile(const GURL& file_path, int64_t delta) OVERRIDE;
-  virtual base::PlatformFileError OpenFile(
-      const ppapi::PepperFilePath& path,
-      int flags,
-      base::PlatformFile* file) OVERRIDE;
-  virtual base::PlatformFileError RenameFile(
-      const ppapi::PepperFilePath& from_path,
-      const ppapi::PepperFilePath& to_path) OVERRIDE;
-  virtual base::PlatformFileError DeleteFileOrDir(
-      const ppapi::PepperFilePath& path,
-      bool recursive) OVERRIDE;
-  virtual base::PlatformFileError CreateDir(
-      const ppapi::PepperFilePath& path) OVERRIDE;
-  virtual base::PlatformFileError QueryFile(
-      const ppapi::PepperFilePath& path,
-      base::PlatformFileInfo* info) OVERRIDE;
-  virtual base::PlatformFileError GetDirContents(
-      const ppapi::PepperFilePath& path,
-      ppapi::DirContents* contents) OVERRIDE;
-  virtual base::PlatformFileError CreateTemporaryFile(
-      base::PlatformFile* file) OVERRIDE;
   virtual void SyncGetFileSystemPlatformPath(
       const GURL& url,
       FilePath* platform_path) OVERRIDE;

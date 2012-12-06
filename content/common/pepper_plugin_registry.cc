@@ -70,6 +70,10 @@ void ComputePluginsFromCommandLine(std::vector<PepperPluginInfo>* plugins) {
       plugin.mime_types.push_back(mime_type);
     }
 
+    // If the plugin name is empty, use the filename.
+    if (plugin.name.empty())
+      plugin.name = UTF16ToUTF8(plugin.path.BaseName().LossyDisplayName());
+
     // Command-line plugins get full permissions.
     plugin.permissions = ppapi::PERMISSION_ALL_BITS;
 

@@ -6,8 +6,7 @@
 #include "ppapi/c/private/ppb_flash_file.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_file_ref_api.h"
-#include "ppapi/thunk/ppb_flash_api.h"
-#include "ppapi/thunk/ppb_instance_api.h"
+#include "ppapi/thunk/ppb_flash_file_api.h"
 #include "ppapi/thunk/thunk.h"
 
 namespace ppapi {
@@ -27,22 +26,20 @@ int32_t OpenFile(PP_Resource file_ref_id, int32_t mode, PP_FileHandle* file) {
   // TODO(brettw): this function should take an instance.
   // To work around this, use the PP_Instance from the resource.
   PP_Instance instance = GetInstanceFromFileRef(file_ref_id);
-  EnterInstance enter(instance);
+  EnterInstanceAPI<PPB_Flash_File_API> enter(instance);
   if (enter.failed())
     return PP_ERROR_BADARGUMENT;
-  return enter.functions()->GetFlashAPI()->OpenFileRef(instance, file_ref_id,
-                                                       mode, file);
+  return enter.functions()->OpenFileRef(instance, file_ref_id, mode, file);
 }
 
 int32_t QueryFile(PP_Resource file_ref_id, struct PP_FileInfo* info) {
   // TODO(brettw): this function should take an instance.
   // To work around this, use the PP_Instance from the resource.
   PP_Instance instance = GetInstanceFromFileRef(file_ref_id);
-  EnterInstance enter(instance);
+  EnterInstanceAPI<PPB_Flash_File_API> enter(instance);
   if (enter.failed())
     return PP_ERROR_BADARGUMENT;
-  return enter.functions()->GetFlashAPI()->QueryFileRef(instance, file_ref_id,
-                                                        info);
+  return enter.functions()->QueryFileRef(instance, file_ref_id, info);
 }
 
 const PPB_Flash_File_FileRef g_ppb_flash_file_fileref_thunk = {

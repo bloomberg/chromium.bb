@@ -7,17 +7,12 @@
 #include <string>
 #include <vector>
 
-#include "base/time.h"
-#include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/c/private/ppb_flash.h"
-#include "ppapi/shared_impl/file_path.h"
-#include "ppapi/shared_impl/file_type_conversion.h"
 #include "ppapi/shared_impl/time_conversion.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
-#include "ppapi/thunk/ppb_file_ref_api.h"
 #include "ppapi/thunk/ppb_image_data_api.h"
 #include "ppapi/thunk/ppb_url_request_info_api.h"
 #include "skia/ext/platform_canvas.h"
@@ -36,16 +31,12 @@
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
-#include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
 
 using ppapi::PPTimeToTime;
 using ppapi::StringVar;
-using ppapi::TimeToPPTime;
-using ppapi::thunk::EnterResource;
 using ppapi::thunk::EnterResourceNoLock;
-using ppapi::thunk::PPB_FileRef_API;
 using ppapi::thunk::PPB_ImageData_API;
 using ppapi::thunk::PPB_URLRequestInfo_API;
 
@@ -211,226 +202,6 @@ PP_Var PPB_Flash_Impl::GetSetting(PP_Instance instance,
       // No other settings are supported in-process.
       return PP_MakeUndefined();
   }
-}
-
-bool PPB_Flash_Impl::CreateThreadAdapterForInstance(PP_Instance instance) {
-  return false;  // No multithreaded access allowed.
-}
-
-void PPB_Flash_Impl::ClearThreadAdapterForInstance(PP_Instance instance) {
-}
-
-int32_t PPB_Flash_Impl::OpenFile(PP_Instance pp_instance,
-                                 const char* path,
-                                 int32_t mode,
-                                 PP_FileHandle* file) {
-  int flags = 0;
-  if (!path ||
-      !::ppapi::PepperFileOpenFlagsToPlatformFileFlags(mode, &flags) ||
-      !file)
-    return PP_ERROR_BADARGUMENT;
-
-  PluginInstance* instance = HostGlobals::Get()->GetInstance(pp_instance);
-  if (!instance)
-    return PP_ERROR_FAILED;
-
-  base::PlatformFile base_file;
-  base::PlatformFileError result = instance->delegate()->OpenFile(
-      ::ppapi::PepperFilePath::MakeModuleLocal(
-          instance->module()->name(), path),
-      flags,
-      &base_file);
-  *file = base_file;
-  return ::ppapi::PlatformFileErrorToPepperError(result);
-}
-
-int32_t PPB_Flash_Impl::RenameFile(PP_Instance pp_instance,
-                                   const char* path_from,
-                                   const char* path_to) {
-  if (!path_from || !path_to)
-    return PP_ERROR_BADARGUMENT;
-
-  PluginInstance* instance = HostGlobals::Get()->GetInstance(pp_instance);
-  if (!instance)
-    return PP_ERROR_FAILED;
-
-  base::PlatformFileError result = instance->delegate()->RenameFile(
-      ::ppapi::PepperFilePath::MakeModuleLocal(
-          instance->module()->name(), path_from),
-      ::ppapi::PepperFilePath::MakeModuleLocal(
-          instance->module()->name(), path_to));
-  return ::ppapi::PlatformFileErrorToPepperError(result);
-}
-
-int32_t PPB_Flash_Impl::DeleteFileOrDir(PP_Instance pp_instance,
-                                        const char* path,
-                                        PP_Bool recursive) {
-  if (!path)
-    return PP_ERROR_BADARGUMENT;
-
-  PluginInstance* instance = HostGlobals::Get()->GetInstance(pp_instance);
-  if (!instance)
-    return PP_ERROR_FAILED;
-
-  base::PlatformFileError result = instance->delegate()->DeleteFileOrDir(
-      ::ppapi::PepperFilePath::MakeModuleLocal(
-          instance->module()->name(), path),
-      PPBoolToBool(recursive));
-  return ::ppapi::PlatformFileErrorToPepperError(result);
-}
-
-int32_t PPB_Flash_Impl::CreateDir(PP_Instance pp_instance, const char* path) {
-  if (!path)
-    return PP_ERROR_BADARGUMENT;
-
-  PluginInstance* instance = HostGlobals::Get()->GetInstance(pp_instance);
-  if (!instance)
-    return PP_ERROR_FAILED;
-
-  base::PlatformFileError result = instance->delegate()->CreateDir(
-      ::ppapi::PepperFilePath::MakeModuleLocal(
-          instance->module()->name(), path));
-  return ::ppapi::PlatformFileErrorToPepperError(result);
-}
-
-int32_t PPB_Flash_Impl::QueryFile(PP_Instance pp_instance,
-                                  const char* path,
-                                  PP_FileInfo* info) {
-  if (!path || !info)
-    return PP_ERROR_BADARGUMENT;
-
-  PluginInstance* instance = HostGlobals::Get()->GetInstance(pp_instance);
-  if (!instance)
-    return PP_ERROR_FAILED;
-
-  base::PlatformFileInfo file_info;
-  base::PlatformFileError result = instance->delegate()->QueryFile(
-      ::ppapi::PepperFilePath::MakeModuleLocal(
-          instance->module()->name(), path),
-      &file_info);
-  if (result == base::PLATFORM_FILE_OK) {
-    info->size = file_info.size;
-    info->creation_time = TimeToPPTime(file_info.creation_time);
-    info->last_access_time = TimeToPPTime(file_info.last_accessed);
-    info->last_modified_time = TimeToPPTime(file_info.last_modified);
-    info->system_type = PP_FILESYSTEMTYPE_EXTERNAL;
-    if (file_info.is_directory)
-      info->type = PP_FILETYPE_DIRECTORY;
-    else
-      info->type = PP_FILETYPE_REGULAR;
-  }
-  return ::ppapi::PlatformFileErrorToPepperError(result);
-}
-
-int32_t PPB_Flash_Impl::GetDirContents(PP_Instance pp_instance,
-                                       const char* path,
-                                       PP_DirContents_Dev** contents) {
-  if (!path || !contents)
-    return PP_ERROR_BADARGUMENT;
-  PluginInstance* instance = HostGlobals::Get()->GetInstance(pp_instance);
-  if (!instance)
-    return PP_ERROR_FAILED;
-
-  *contents = NULL;
-  ::ppapi::DirContents pepper_contents;
-  base::PlatformFileError result = instance->delegate()->GetDirContents(
-      ::ppapi::PepperFilePath::MakeModuleLocal(
-          instance->module()->name(), path),
-      &pepper_contents);
-
-  if (result != base::PLATFORM_FILE_OK)
-    return ::ppapi::PlatformFileErrorToPepperError(result);
-
-  *contents = new PP_DirContents_Dev;
-  size_t count = pepper_contents.size();
-  (*contents)->count = count;
-  (*contents)->entries = new PP_DirEntry_Dev[count];
-  for (size_t i = 0; i < count; ++i) {
-    PP_DirEntry_Dev& entry = (*contents)->entries[i];
-#if defined(OS_WIN)
-    const std::string& name = UTF16ToUTF8(pepper_contents[i].name.value());
-#else
-    const std::string& name = pepper_contents[i].name.value();
-#endif
-    size_t size = name.size() + 1;
-    char* name_copy = new char[size];
-    memcpy(name_copy, name.c_str(), size);
-    entry.name = name_copy;
-    entry.is_dir = BoolToPPBool(pepper_contents[i].is_dir);
-  }
-  return PP_OK;
-}
-
-int32_t PPB_Flash_Impl::CreateTemporaryFile(PP_Instance instance,
-                                            PP_FileHandle* file) {
-  if (!file)
-    return PP_ERROR_BADARGUMENT;
-
-  PluginInstance* plugin_instance = HostGlobals::Get()->GetInstance(instance);
-  if (!plugin_instance) {
-    *file = PP_kInvalidFileHandle;
-    return PP_ERROR_FAILED;
-  }
-
-  base::PlatformFileError result =
-      plugin_instance->delegate()->CreateTemporaryFile(file);
-  return ::ppapi::PlatformFileErrorToPepperError(result);
-}
-
-int32_t PPB_Flash_Impl::OpenFileRef(PP_Instance pp_instance,
-                                    PP_Resource file_ref_id,
-                                    int32_t mode,
-                                    PP_FileHandle* file) {
-  int flags = 0;
-  if (!::ppapi::PepperFileOpenFlagsToPlatformFileFlags(mode, &flags) || !file)
-    return PP_ERROR_BADARGUMENT;
-
-  EnterResourceNoLock<PPB_FileRef_API> enter(file_ref_id, true);
-  if (enter.failed())
-    return PP_ERROR_BADRESOURCE;
-  PPB_FileRef_Impl* file_ref = static_cast<PPB_FileRef_Impl*>(enter.object());
-
-  PluginInstance* instance = HostGlobals::Get()->GetInstance(pp_instance);
-  if (!instance)
-    return PP_ERROR_FAILED;
-
-  base::PlatformFile base_file;
-  base::PlatformFileError result = instance->delegate()->OpenFile(
-      ::ppapi::PepperFilePath::MakeAbsolute(file_ref->GetSystemPath()),
-      flags,
-      &base_file);
-  *file = base_file;
-  return ::ppapi::PlatformFileErrorToPepperError(result);
-}
-
-int32_t PPB_Flash_Impl::QueryFileRef(PP_Instance pp_instance,
-                                     PP_Resource file_ref_id,
-                                     PP_FileInfo* info) {
-  EnterResource<PPB_FileRef_API> enter(file_ref_id, true);
-  if (enter.failed())
-    return PP_ERROR_BADRESOURCE;
-  PPB_FileRef_Impl* file_ref = static_cast<PPB_FileRef_Impl*>(enter.object());
-
-  PluginInstance* instance = HostGlobals::Get()->GetInstance(pp_instance);
-  if (!instance)
-    return PP_ERROR_FAILED;
-
-  base::PlatformFileInfo file_info;
-  base::PlatformFileError result = instance->delegate()->QueryFile(
-      ::ppapi::PepperFilePath::MakeAbsolute(file_ref->GetSystemPath()),
-      &file_info);
-  if (result == base::PLATFORM_FILE_OK) {
-    info->size = file_info.size;
-    info->creation_time = TimeToPPTime(file_info.creation_time);
-    info->last_access_time = TimeToPPTime(file_info.last_accessed);
-    info->last_modified_time = TimeToPPTime(file_info.last_modified);
-    info->system_type = PP_FILESYSTEMTYPE_EXTERNAL;
-    if (file_info.is_directory)
-      info->type = PP_FILETYPE_DIRECTORY;
-    else
-      info->type = PP_FILETYPE_REGULAR;
-  }
-  return ::ppapi::PlatformFileErrorToPepperError(result);
 }
 
 }  // namespace ppapi

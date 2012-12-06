@@ -35,9 +35,6 @@ class ResourceCreationAPI;
 
 namespace proxy {
 
-class FlashClipboardResource;
-class FlashResource;
-class GamepadResource;
 class ResourceMessageReplyParams;
 
 // Used to keep track of per-instance data.
