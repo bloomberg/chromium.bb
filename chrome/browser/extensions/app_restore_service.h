@@ -25,7 +25,7 @@ class AppRestoreService : public ProfileKeyedService,
 
   // Restart apps that need to be restarted and clear the "running" preference
   // from apps to prevent them being restarted in subsequent restarts.
-  void HandleStartup(bool is_restart);
+  void HandleStartup(bool should_restore_apps);
 
  private:
   // content::NotificationObserver.

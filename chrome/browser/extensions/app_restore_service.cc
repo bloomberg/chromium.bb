@@ -34,7 +34,7 @@ AppRestoreService::AppRestoreService(Profile* profile)
       content::NotificationService::AllSources());
 }
 
-void AppRestoreService::HandleStartup(bool is_restart) {
+void AppRestoreService::HandleStartup(bool should_restore_apps) {
   ExtensionService* extension_service =
       ExtensionSystem::Get(profile_)->extension_service();
   const ExtensionSet* extensions = extension_service->extensions();
@@ -45,7 +45,7 @@ void AppRestoreService::HandleStartup(bool is_restart) {
     const Extension* extension = *it;
     if (extension_prefs->IsExtensionRunning(extension->id())) {
       RecordAppStop(extension->id());
-      if (is_restart)
+      if (should_restore_apps)
         RestoreApp(*it);
     }
   }
