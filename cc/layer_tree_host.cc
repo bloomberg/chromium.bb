@@ -146,7 +146,7 @@ LayerTreeSettings::~LayerTreeSettings()
 
 RendererCapabilities::RendererCapabilities()
     : bestTextureFormat(0)
-    , usingPartialSwap(0)
+    , usingPartialSwap(false)
     , usingAcceleratedPainting(false)
     , usingSetVisibility(false)
     , usingSwapCompleteCallback(false)
