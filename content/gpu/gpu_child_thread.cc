@@ -160,35 +160,40 @@ void GpuChildThread::StopWatchdog() {
 }
 
 void GpuChildThread::OnCollectGraphicsInfo() {
+#if defined(OS_WIN)
+  // GPU full info collection should only happen on un-sandboxed GPU process
+  // or single process/in-process gpu mode on Windows.
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kDisableGpuSandbox) ||
-      command_line->ForCurrentProcess()->HasSwitch(switches::kSingleProcess) ||
-      command_line->ForCurrentProcess()->HasSwitch(switches::kInProcessGPU)) {
-    // GPU full info collection should only happen on un-sandboxed GPU process
-    // or single process/in-process gpu mode.
+  DCHECK(command_line->HasSwitch(switches::kDisableGpuSandbox) ||
+         command_line->HasSwitch(switches::kSingleProcess) ||
+         command_line->HasSwitch(switches::kInProcessGPU));
+#endif  // OS_WIN
 
-    if (!gpu_info_collector::CollectGraphicsInfo(&gpu_info_))
-      VLOG(1) << "gpu_info_collector::CollectGraphicsInfo failed";
-    GetContentClient()->SetGpuInfo(gpu_info_);
+  // Sandbox state is not part of the gpu info collection.  It is determined
+  // in GpuMain() and passed down to GpuChildThread.
+  bool sandboxed = gpu_info_.sandboxed;
+  if (!gpu_info_collector::CollectGraphicsInfo(&gpu_info_))
+    VLOG(1) << "gpu_info_collector::CollectGraphicsInfo failed";
+  gpu_info_.sandboxed = sandboxed;
+  GetContentClient()->SetGpuInfo(gpu_info_);
 
 #if defined(OS_WIN)
-    if (!collecting_dx_diagnostics_) {
-      // Prevent concurrent collection of DirectX diagnostics.
-      collecting_dx_diagnostics_ = true;
+  if (!collecting_dx_diagnostics_) {
+    // Prevent concurrent collection of DirectX diagnostics.
+    collecting_dx_diagnostics_ = true;
 
-      // Asynchronously collect the DirectX diagnostics because this can take a
-      // couple of seconds.
-      if (!base::WorkerPool::PostTask(
-          FROM_HERE, base::Bind(&GpuChildThread::CollectDxDiagnostics, this),
-          true)) {
-        // Flag GPU info as complete if the DirectX diagnostics cannot be
-        // collected.
-        collecting_dx_diagnostics_ = false;
-        gpu_info_.finalized = true;
-      }
+    // Asynchronously collect the DirectX diagnostics because this can take a
+    // couple of seconds.
+    if (!base::WorkerPool::PostTask(
+        FROM_HERE, base::Bind(&GpuChildThread::CollectDxDiagnostics, this),
+        true)) {
+      // Flag GPU info as complete if the DirectX diagnostics cannot be
+      // collected.
+      collecting_dx_diagnostics_ = false;
+      gpu_info_.finalized = true;
     }
-#endif
   }
+#endif  // OS_WIN
   Send(new GpuHostMsg_GraphicsInfoCollected(gpu_info_));
 }
 
