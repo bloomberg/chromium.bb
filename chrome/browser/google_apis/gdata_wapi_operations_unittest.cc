@@ -412,11 +412,11 @@ class GDataWapiOperationsTest : public testing::Test {
 
 }  // namespace
 
-TEST_F(GDataWapiOperationsTest, GetDocumentsOperation_DefaultFeed) {
+TEST_F(GDataWapiOperationsTest, GetResourceListOperation_DefaultFeed) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
   scoped_ptr<base::Value> result_data;
 
-  GetDocumentsOperation* operation = new GetDocumentsOperation(
+  GetResourceListOperation* operation = new GetResourceListOperation(
       &operation_registry_,
       request_context_getter_.get(),
       *url_generator_,
@@ -443,11 +443,11 @@ TEST_F(GDataWapiOperationsTest, GetDocumentsOperation_DefaultFeed) {
       result_data.get()));
 }
 
-TEST_F(GDataWapiOperationsTest, GetDocumentsOperation_ValidFeed) {
+TEST_F(GDataWapiOperationsTest, GetResourceListOperation_ValidFeed) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
   scoped_ptr<base::Value> result_data;
 
-  GetDocumentsOperation* operation = new GetDocumentsOperation(
+  GetResourceListOperation* operation = new GetResourceListOperation(
       &operation_registry_,
       request_context_getter_.get(),
       *url_generator_,
@@ -474,13 +474,13 @@ TEST_F(GDataWapiOperationsTest, GetDocumentsOperation_ValidFeed) {
       result_data.get()));
 }
 
-TEST_F(GDataWapiOperationsTest, GetDocumentsOperation_InvalidFeed) {
+TEST_F(GDataWapiOperationsTest, GetResourceListOperation_InvalidFeed) {
   // testfile.txt exists but the response is not JSON, so it should
   // emit a parse error instead.
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
   scoped_ptr<base::Value> result_data;
 
-  GetDocumentsOperation* operation = new GetDocumentsOperation(
+  GetResourceListOperation* operation = new GetResourceListOperation(
       &operation_registry_,
       request_context_getter_.get(),
       *url_generator_,

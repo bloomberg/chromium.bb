@@ -147,15 +147,15 @@ void GDataWapiService::GetDocuments(
   // Drive V2 API defines changestamp in int64, while DocumentsList API uses
   // int32. This narrowing should not cause any trouble.
   runner_->StartOperationWithRetry(
-      new GetDocumentsOperation(operation_registry(),
-                                url_request_context_getter_,
-                                url_generator_,
-                                url,
-                                static_cast<int>(start_changestamp),
-                                search_query,
-                                shared_with_me,
-                                directory_resource_id,
-                                callback));
+      new GetResourceListOperation(operation_registry(),
+                                   url_request_context_getter_,
+                                   url_generator_,
+                                   url,
+                                   static_cast<int>(start_changestamp),
+                                   search_query,
+                                   shared_with_me,
+                                   directory_resource_id,
+                                   callback));
 }
 
 void GDataWapiService::GetDocumentEntry(

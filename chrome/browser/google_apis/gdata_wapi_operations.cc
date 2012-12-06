@@ -99,9 +99,9 @@ ResumeUploadParams::ResumeUploadParams(
 ResumeUploadParams::~ResumeUploadParams() {
 }
 
-//============================ GetDocumentsOperation ===========================
+//============================ GetResourceListOperation ========================
 
-GetDocumentsOperation::GetDocumentsOperation(
+GetResourceListOperation::GetResourceListOperation(
     OperationRegistry* registry,
     net::URLRequestContextGetter* url_request_context_getter,
     const GDataWapiUrlGenerator& url_generator,
@@ -121,9 +121,9 @@ GetDocumentsOperation::GetDocumentsOperation(
   DCHECK(!callback.is_null());
 }
 
-GetDocumentsOperation::~GetDocumentsOperation() {}
+GetResourceListOperation::~GetResourceListOperation() {}
 
-GURL GetDocumentsOperation::GetURL() const {
+GURL GetResourceListOperation::GetURL() const {
   return url_generator_.GenerateDocumentListUrl(override_url_,
                                                 start_changestamp_,
                                                 search_string_,

@@ -22,10 +22,10 @@ namespace google_apis {
 class GDataWapiUrlGenerator;
 class DocumentEntry;
 
-//============================ GetDocumentsOperation ===========================
+//============================ GetResourceListOperation ========================
 
-// This class performs the operation for fetching a document list.
-class GetDocumentsOperation : public GetDataOperation {
+// This class performs the operation for fetching a resource list.
+class GetResourceListOperation : public GetDataOperation {
  public:
   // override_url:
   //   If empty, a hard-coded base URL of the WAPI server is used to fetch
@@ -37,19 +37,19 @@ class GetDocumentsOperation : public GetDataOperation {
   //   full feed is necessary.
   //
   // search_string:
-  //   If non-empty, fetches a list of documents that match the search
+  //   If non-empty, fetches a list of resources that match the search
   //   string.
   //
   // shared_with_me:
-  //   If true, fetches a list of documents shared to the user, otherwise
-  //   fetches a list of documents owned by the user.
+  //   If true, fetches a list of resources shared to the user, otherwise
+  //   fetches a list of resources owned by the user.
   //
   // directory_resource_id:
-  //   If non-empty, fetches a list of documents in a particular directory.
+  //   If non-empty, fetches a list of resources in a particular directory.
   //
   // callback:
   //   Called once the feed is fetched. Must not be null.
-  GetDocumentsOperation(
+  GetResourceListOperation(
       OperationRegistry* registry,
       net::URLRequestContextGetter* url_request_context_getter,
       const GDataWapiUrlGenerator& url_generator,
@@ -59,7 +59,7 @@ class GetDocumentsOperation : public GetDataOperation {
       bool shared_with_me,
       const std::string& directory_resource_id,
       const GetDataCallback& callback);
-  virtual ~GetDocumentsOperation();
+  virtual ~GetResourceListOperation();
 
  protected:
   // UrlFetchOperationBase overrides.
@@ -73,7 +73,7 @@ class GetDocumentsOperation : public GetDataOperation {
   const bool shared_with_me_;
   const std::string directory_resource_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(GetDocumentsOperation);
+  DISALLOW_COPY_AND_ASSIGN(GetResourceListOperation);
 };
 
 //========================= GetDocumentEntryOperation ==========================
