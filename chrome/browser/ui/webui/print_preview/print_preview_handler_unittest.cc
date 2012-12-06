@@ -11,7 +11,6 @@
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_handler.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
@@ -20,6 +19,8 @@
 #include "content/public/browser/web_contents.h"
 #include "printing/page_size_margins.h"
 #include "printing/print_job_constants.h"
+
+using content::WebContents;
 
 namespace {
 
@@ -62,8 +63,8 @@ class PrintPreviewHandlerTest : public BrowserWithTestWindowTest {
   }
 
   void OpenPrintPreviewTab() {
-    TabContents* initiator_tab =
-        browser()->tab_strip_model()->GetActiveTabContents();
+    WebContents* initiator_tab =
+        browser()->tab_strip_model()->GetActiveWebContents();
     ASSERT_TRUE(initiator_tab);
 
     printing::PrintPreviewTabController* controller =
@@ -71,14 +72,13 @@ class PrintPreviewHandlerTest : public BrowserWithTestWindowTest {
     ASSERT_TRUE(controller);
 
     printing::PrintViewManager* print_view_manager =
-        printing::PrintViewManager::FromWebContents(
-            initiator_tab->web_contents());
+        printing::PrintViewManager::FromWebContents(initiator_tab);
     print_view_manager->PrintPreviewNow();
     preview_tab_ = controller->GetOrCreatePreviewTab(initiator_tab);
     ASSERT_TRUE(preview_tab_);
 
-    preview_ui_ = static_cast<PrintPreviewUI*>(
-        preview_tab_->web_contents()->GetWebUI()->GetController());
+    preview_ui_ =
+        static_cast<PrintPreviewUI*>(preview_tab_->GetWebUI()->GetController());
     ASSERT_TRUE(preview_ui_);
   }
 
@@ -87,7 +87,7 @@ class PrintPreviewHandlerTest : public BrowserWithTestWindowTest {
         g_browser_process->background_printing_manager();
     ASSERT_TRUE(bg_printing_manager->HasPrintPreviewTab(preview_tab_));
 
-    // Deleting TabContents* to avoid warings from pref_notifier_impl.cc
+    // Deleting WebContents* to avoid warnings from pref_notifier_impl.cc
     // after the test ends.
     delete preview_tab_;
   }
@@ -138,5 +138,5 @@ class PrintPreviewHandlerTest : public BrowserWithTestWindowTest {
 
  private:
 
-  TabContents* preview_tab_;
+  WebContents* preview_tab_;
 };

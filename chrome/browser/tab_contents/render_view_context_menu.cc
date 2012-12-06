@@ -495,10 +495,8 @@ void RenderViewContextMenu::InitMenu() {
   AppendDeveloperItems();
 
   if (!print_preview_menu_observer_.get()) {
-    TabContents* tab_contents =
-        TabContents::FromWebContents(source_web_contents_);
     print_preview_menu_observer_.reset(
-        new PrintPreviewContextMenuObserver(tab_contents));
+        new PrintPreviewContextMenuObserver(source_web_contents_));
   }
   observers_.AddObserver(print_preview_menu_observer_.get());
 }

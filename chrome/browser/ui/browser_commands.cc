@@ -184,7 +184,7 @@ bool HasConstrainedWindow(const Browser* browser) {
 }
 
 bool PrintPreviewShowing(const Browser* browser) {
-  TabContents* contents = browser->tab_strip_model()->GetActiveTabContents();
+  WebContents* contents = browser->tab_strip_model()->GetActiveWebContents();
   printing::PrintPreviewTabController* controller =
       printing::PrintPreviewTabController::GetInstance();
   return controller && (controller->GetPrintPreviewForTab(contents) ||

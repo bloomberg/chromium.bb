@@ -14,7 +14,6 @@ class AutomationProvider;
 class Browser;
 class GURL;
 class Profile;
-class TabContents;
 
 namespace content {
 class RenderViewHost;
@@ -96,7 +95,7 @@ bool SendErrorIfModalDialogActive(AutomationProvider* provider,
                                   IPC::Message* message);
 
 // Returns a valid automation ID for the given tab.
-AutomationId GetIdForTab(const TabContents* tab);
+AutomationId GetIdForTab(const content::WebContents* tab);
 
 // Returns a valid automation ID for the extension view.
 AutomationId GetIdForExtensionView(

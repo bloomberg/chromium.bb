@@ -8,13 +8,14 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/url_constants.h"
+
+using content::WebContents;
 
 // Test crashes on Aura due to initiator tab's native view having no parent.
 // http://crbug.com/104284
@@ -39,17 +40,16 @@ TEST_F(PrintPreviewTabControllerUnitTest, MAYBE_GetOrCreatePreviewTab) {
   EXPECT_EQ(1, browser()->tab_count());
 
   // Create a reference to initiator tab contents.
-  TabContents* initiator_tab =
-      browser()->tab_strip_model()->GetActiveTabContents();
+  WebContents* initiator_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
 
   printing::PrintPreviewTabController* tab_controller =
       printing::PrintPreviewTabController::GetInstance();
   ASSERT_TRUE(tab_controller);
 
   // Get the preview tab for initiator tab.
-  printing::PrintViewManager::FromWebContents(initiator_tab->web_contents())->
-      PrintPreviewNow();
-  TabContents* preview_tab =
+  printing::PrintViewManager::FromWebContents(initiator_tab)->PrintPreviewNow();
+  WebContents* preview_tab =
       tab_controller->GetOrCreatePreviewTab(initiator_tab);
 
   // New print preview tab is created.
@@ -57,7 +57,7 @@ TEST_F(PrintPreviewTabControllerUnitTest, MAYBE_GetOrCreatePreviewTab) {
   EXPECT_NE(initiator_tab, preview_tab);
 
   // Get the print preview tab for initiator tab.
-  TabContents* new_preview_tab =
+  WebContents* new_preview_tab =
       tab_controller->GetOrCreatePreviewTab(initiator_tab);
 
   // Preview tab already exists. Tab count remains the same.
@@ -76,13 +76,13 @@ TEST_F(PrintPreviewTabControllerUnitTest, MAYBE_MultiplePreviewTabs) {
   EXPECT_EQ(0, browser()->tab_count());
 
   chrome::NewTab(browser());
-  TabContents* tab_contents_1 =
-      browser()->tab_strip_model()->GetActiveTabContents();
+  WebContents* tab_contents_1 =
+      browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(tab_contents_1);
 
   chrome::NewTab(browser());
-  TabContents* tab_contents_2 =
-      browser()->tab_strip_model()->GetActiveTabContents();
+  WebContents* tab_contents_2 =
+      browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(tab_contents_2);
   EXPECT_EQ(2, browser()->tab_count());
 
@@ -91,18 +91,18 @@ TEST_F(PrintPreviewTabControllerUnitTest, MAYBE_MultiplePreviewTabs) {
   ASSERT_TRUE(tab_controller);
 
   // Create preview tab for |tab_contents_1|
-  printing::PrintViewManager::FromWebContents(tab_contents_1->web_contents())->
+  printing::PrintViewManager::FromWebContents(tab_contents_1)->
       PrintPreviewNow();
-  TabContents* preview_tab_1 =
+  WebContents* preview_tab_1 =
       tab_controller->GetOrCreatePreviewTab(tab_contents_1);
 
   EXPECT_NE(tab_contents_1, preview_tab_1);
   EXPECT_EQ(2, browser()->tab_count());
 
   // Create preview tab for |tab_contents_2|
-  printing::PrintViewManager::FromWebContents(tab_contents_2->web_contents())->
+  printing::PrintViewManager::FromWebContents(tab_contents_2)->
       PrintPreviewNow();
-  TabContents* preview_tab_2 =
+  WebContents* preview_tab_2 =
       tab_controller->GetOrCreatePreviewTab(tab_contents_2);
 
   EXPECT_NE(tab_contents_2, preview_tab_2);
@@ -113,10 +113,10 @@ TEST_F(PrintPreviewTabControllerUnitTest, MAYBE_MultiplePreviewTabs) {
   TabStripModel* model = browser()->tab_strip_model();
   ASSERT_TRUE(model);
 
-  int tab_1_index = model->GetIndexOfTabContents(tab_contents_1);
-  int tab_2_index = model->GetIndexOfTabContents(tab_contents_2);
-  int preview_tab_1_index = model->GetIndexOfTabContents(preview_tab_1);
-  int preview_tab_2_index = model->GetIndexOfTabContents(preview_tab_2);
+  int tab_1_index = model->GetIndexOfWebContents(tab_contents_1);
+  int tab_2_index = model->GetIndexOfWebContents(tab_contents_2);
+  int preview_tab_1_index = model->GetIndexOfWebContents(preview_tab_1);
+  int preview_tab_2_index = model->GetIndexOfWebContents(preview_tab_2);
 
   EXPECT_EQ(-1, preview_tab_1_index);
   EXPECT_EQ(-1, preview_tab_2_index);
@@ -137,17 +137,16 @@ TEST_F(PrintPreviewTabControllerUnitTest, MAYBE_ClearInitiatorTabDetails) {
   EXPECT_EQ(1, browser()->tab_count());
 
   // Create a reference to initiator tab contents.
-  TabContents* initiator_tab =
-      browser()->tab_strip_model()->GetActiveTabContents();
+  WebContents* initiator_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
 
   printing::PrintPreviewTabController* tab_controller =
       printing::PrintPreviewTabController::GetInstance();
   ASSERT_TRUE(tab_controller);
 
   // Get the preview tab for initiator tab.
-  printing::PrintViewManager::FromWebContents(initiator_tab->web_contents())->
-      PrintPreviewNow();
-  TabContents* preview_tab =
+  printing::PrintViewManager::FromWebContents(initiator_tab)->PrintPreviewNow();
+  WebContents* preview_tab =
       tab_controller->GetOrCreatePreviewTab(initiator_tab);
 
   // New print preview tab is created. Current focus is on preview tab.
@@ -158,7 +157,7 @@ TEST_F(PrintPreviewTabControllerUnitTest, MAYBE_ClearInitiatorTabDetails) {
   tab_controller->EraseInitiatorTabInfo(preview_tab);
 
   // Get the print preview tab for initiator tab.
-  TabContents* new_preview_tab =
+  WebContents* new_preview_tab =
       tab_controller->GetOrCreatePreviewTab(initiator_tab);
 
   // New preview tab is created.

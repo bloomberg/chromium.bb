@@ -61,7 +61,7 @@ class TabContentsIterator {
   }
 
  private:
-  // Loads the next host into cur_. This is designed so that for the initial
+  // Loads the next host into |cur_|. This is designed so that for the initial
   // call when browser_iterator_ points to the first browser and
   // web_view_index_ is -1, it will fill the first host.
   void Advance();

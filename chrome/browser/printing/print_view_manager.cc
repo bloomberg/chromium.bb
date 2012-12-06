@@ -22,7 +22,6 @@
 #include "chrome/browser/printing/print_view_manager_observer.h"
 #include "chrome/browser/printing/printer_query.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -44,6 +43,7 @@
 
 using base::TimeDelta;
 using content::BrowserThread;
+using content::WebContents;
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(printing::PrintViewManager)
 
@@ -106,14 +106,14 @@ bool PrintViewManager::AdvancedPrintNow() {
       PrintPreviewTabController::GetInstance();
   if (!tab_controller)
     return false;
-  TabContents* print_preview_tab = tab_controller->GetPrintPreviewForTab(
-      TabContents::FromWebContents(web_contents()));
+  WebContents* print_preview_tab =
+      tab_controller->GetPrintPreviewForTab(web_contents());
   if (print_preview_tab) {
     // Preview tab exist for current tab or current tab is preview tab.
-    if (!print_preview_tab->web_contents()->GetWebUI())
+    if (!print_preview_tab->GetWebUI())
       return false;
     PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
-        print_preview_tab->web_contents()->GetWebUI()->GetController());
+        print_preview_tab->GetWebUI()->GetController());
     print_preview_ui->OnShowSystemDialog();
     return true;
   } else {
@@ -342,10 +342,9 @@ void PrintViewManager::OnScriptedPrintPreview(bool source_is_modifiable,
   map[rph] = callback;
   scripted_print_preview_rph_ = rph;
 
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents());
-  tab_controller->PrintPreview(tab_contents);
+  tab_controller->PrintPreview(web_contents());
   PrintPreviewUI::SetSourceIsModifiable(
-      tab_controller->GetPrintPreviewForTab(tab_contents),
+      tab_controller->GetPrintPreviewForTab(web_contents()),
       source_is_modifiable);
 }
 

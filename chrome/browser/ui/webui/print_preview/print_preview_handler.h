@@ -19,7 +19,6 @@
 
 class FilePath;
 class PrintSystemTaskProxy;
-class TabContents;
 
 namespace base {
 class DictionaryValue;
@@ -78,7 +77,6 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   // PrintSystemTaskProxy should not need to be a friend.
   friend class PrintSystemTaskProxy;
 
-  TabContents* preview_tab_contents() const;
   content::WebContents* preview_web_contents() const;
 
   // Gets the list of printers. |args| is unused.
@@ -166,7 +164,7 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   void SendCloudPrintJob();
 
   // Gets the initiator tab for the print preview tab.
-  TabContents* GetInitiatorTab() const;
+  content::WebContents* GetInitiatorTab() const;
 
   // Activates the initiator tab and close the preview tab.
   void ActivateInitiatorTabAndClosePreviewTab();

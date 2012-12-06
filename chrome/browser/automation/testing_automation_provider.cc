@@ -6053,13 +6053,13 @@ void TestingAutomationProvider::GetViews(
   for (; browser_iter != BrowserList::end(); ++browser_iter) {
     Browser* browser = *browser_iter;
     for (int i = 0; i < browser->tab_count(); ++i) {
-      TabContents* tab = browser->tab_strip_model()->GetTabContentsAt(i);
+      WebContents* tab = browser->tab_strip_model()->GetWebContentsAt(i);
       DictionaryValue* dict = new DictionaryValue();
       AutomationId id = automation_util::GetIdForTab(tab);
       dict->Set("auto_id", id.ToValue());
       view_list->Append(dict);
       if (preview_controller) {
-        TabContents* preview_tab =
+        WebContents* preview_tab =
             preview_controller->GetPrintPreviewForTab(tab);
         if (preview_tab) {
           DictionaryValue* dict = new DictionaryValue();

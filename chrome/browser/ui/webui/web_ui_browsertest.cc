@@ -225,10 +225,10 @@ void WebUIBrowserTest::BrowsePrintPreload(const GURL& browse_to) {
   printing::PrintPreviewTabController* tab_controller =
       printing::PrintPreviewTabController::GetInstance();
   ASSERT_TRUE(tab_controller);
-  TabContents* preview_tab = tab_controller->GetPrintPreviewForTab(
-      browser()->tab_strip_model()->GetActiveTabContents());
+  WebContents* preview_tab = tab_controller->GetPrintPreviewForTab(
+      browser()->tab_strip_model()->GetActiveWebContents());
   ASSERT_TRUE(preview_tab);
-  SetWebUIInstance(preview_tab->web_contents()->GetWebUI());
+  SetWebUIInstance(preview_tab->GetWebUI());
 }
 
 const char WebUIBrowserTest::kDummyURL[] = "chrome://DummyURL";

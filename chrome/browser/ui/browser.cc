@@ -73,7 +73,6 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_flow.h"
-#include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_destroyer.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -1577,19 +1576,11 @@ void Browser::ContentRestrictionsChanged(WebContents* source) {
 }
 
 void Browser::RendererUnresponsive(WebContents* source) {
-  // Ignore hangs if print preview is open.
-  TabContents* tab_contents = TabContents::FromWebContents(source);
-  if (tab_contents) {
-    printing::PrintPreviewTabController* controller =
-        printing::PrintPreviewTabController::GetInstance();
-    if (controller) {
-      TabContents* preview_tab =
-          controller->GetPrintPreviewForTab(tab_contents);
-      if (preview_tab && preview_tab != tab_contents) {
-        return;
-      }
-    }
-  }
+  // Ignore hangs if a tab is blocked.
+  int index = tab_strip_model_->GetIndexOfWebContents(source);
+  DCHECK_NE(TabStripModel::kNoTab, index);
+  if (tab_strip_model_->IsTabBlocked(index))
+    return;
 
   chrome::ShowHungRendererDialog(source);
 }

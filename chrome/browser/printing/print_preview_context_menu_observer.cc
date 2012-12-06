@@ -9,7 +9,7 @@
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 
 PrintPreviewContextMenuObserver::PrintPreviewContextMenuObserver(
-    TabContents* tab) : tab_(tab) {
+    content::WebContents* tab) : tab_(tab) {
 }
 
 PrintPreviewContextMenuObserver::~PrintPreviewContextMenuObserver() {

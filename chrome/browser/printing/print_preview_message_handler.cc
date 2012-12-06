@@ -15,7 +15,6 @@
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/printing/printer_query.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/common/print_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -75,22 +74,20 @@ PrintPreviewMessageHandler::PrintPreviewMessageHandler(
 PrintPreviewMessageHandler::~PrintPreviewMessageHandler() {
 }
 
-TabContents* PrintPreviewMessageHandler::GetPrintPreviewTab() {
+WebContents* PrintPreviewMessageHandler::GetPrintPreviewTab() {
   PrintPreviewTabController* tab_controller =
       PrintPreviewTabController::GetInstance();
   if (!tab_controller)
     return NULL;
 
-  return tab_controller->GetPrintPreviewForTab(
-      TabContents::FromWebContents(web_contents()));
+  return tab_controller->GetPrintPreviewForTab(web_contents());
 }
 
 PrintPreviewUI* PrintPreviewMessageHandler::GetPrintPreviewUI() {
-  TabContents* tab = GetPrintPreviewTab();
-  if (!tab || !tab->web_contents()->GetWebUI())
+  WebContents* tab = GetPrintPreviewTab();
+  if (!tab || !tab->GetWebUI())
     return NULL;
-  return static_cast<PrintPreviewUI*>(
-      tab->web_contents()->GetWebUI()->GetController());
+  return static_cast<PrintPreviewUI*>(tab->GetWebUI()->GetController());
 }
 
 void PrintPreviewMessageHandler::OnRequestPrintPreview(
@@ -99,8 +96,7 @@ void PrintPreviewMessageHandler::OnRequestPrintPreview(
     printing::PrintViewManager::FromWebContents(web_contents())->
         PrintPreviewForWebNode();
   }
-  PrintPreviewTabController::PrintPreview(
-      TabContents::FromWebContents(web_contents()));
+  PrintPreviewTabController::PrintPreview(web_contents());
   PrintPreviewUI::SetSourceIsModifiable(GetPrintPreviewTab(),
                                         source_is_modifiable);
 }

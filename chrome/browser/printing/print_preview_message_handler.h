@@ -10,10 +10,13 @@
 #include "content/public/browser/web_contents_user_data.h"
 
 class PrintPreviewUI;
-class TabContents;
 struct PrintHostMsg_DidGetPreviewPageCount_Params;
 struct PrintHostMsg_DidPreviewDocument_Params;
 struct PrintHostMsg_DidPreviewPage_Params;
+
+namespace content {
+class WebContents;
+}
 
 namespace gfx {
 class Rect;
@@ -38,7 +41,7 @@ class PrintPreviewMessageHandler
   friend class content::WebContentsUserData<PrintPreviewMessageHandler>;
 
   // Gets the print preview tab associated with the WebContents being observed.
-  TabContents* GetPrintPreviewTab();
+  content::WebContents* GetPrintPreviewTab();
 
   // Gets the PrintPreviewUI associated with the WebContents being observed.
   PrintPreviewUI* GetPrintPreviewUI();

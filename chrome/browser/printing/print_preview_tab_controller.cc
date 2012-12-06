@@ -55,7 +55,7 @@ using ui::WebDialogWebContentsDelegate;
 
 namespace {
 
-void EnableInternalPDFPluginForTab(TabContents* preview_tab) {
+void EnableInternalPDFPluginForTab(WebContents* preview_tab) {
   // Always enable the internal PDF plugin for the print preview page.
   FilePath pdf_plugin_path;
   if (!PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_plugin_path))
@@ -67,8 +67,8 @@ void EnableInternalPDFPluginForTab(TabContents* preview_tab) {
     return;
 
   ChromePluginServiceFilter::GetInstance()->OverridePluginForTab(
-      preview_tab->web_contents()->GetRenderProcessHost()->GetID(),
-      preview_tab->web_contents()->GetRenderViewHost()->GetRoutingID(),
+      preview_tab->GetRenderProcessHost()->GetID(),
+      preview_tab->GetRenderViewHost()->GetRoutingID(),
       GURL(), pdf_plugin);
 }
 
@@ -76,7 +76,7 @@ void EnableInternalPDFPluginForTab(TabContents* preview_tab) {
 // will look like.
 class PrintPreviewTabDelegate : public WebDialogDelegate {
  public:
-  explicit PrintPreviewTabDelegate(TabContents* initiator_tab);
+  explicit PrintPreviewTabDelegate(WebContents* initiator_tab);
   virtual ~PrintPreviewTabDelegate();
 
   virtual ui::ModalType GetDialogModalType() const OVERRIDE;
@@ -92,12 +92,12 @@ class PrintPreviewTabDelegate : public WebDialogDelegate {
   virtual bool ShouldShowDialogTitle() const OVERRIDE;
 
  private:
-  TabContents* initiator_tab_;
+  WebContents* initiator_tab_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewTabDelegate);
 };
 
-PrintPreviewTabDelegate::PrintPreviewTabDelegate(TabContents* initiator_tab) {
+PrintPreviewTabDelegate::PrintPreviewTabDelegate(WebContents* initiator_tab) {
   initiator_tab_ = initiator_tab;
 }
 
@@ -129,7 +129,7 @@ void PrintPreviewTabDelegate::GetDialogSize(gfx::Size* size) const {
   const gfx::Size kMinDialogSize(800, 480);
   const int kBorder = 50;
   gfx::Rect rect;
-  initiator_tab_->web_contents()->GetContainerBounds(&rect);
+  initiator_tab_->GetContainerBounds(&rect);
   size->set_width(std::max(rect.width(), kMinDialogSize.width()) - kBorder);
   size->set_height(std::max(rect.height(), kMinDialogSize.height()) - kBorder);
 
@@ -167,7 +167,7 @@ bool PrintPreviewTabDelegate::ShouldShowDialogTitle() const {
 class PrintPreviewWebContentDelegate : public WebDialogWebContentsDelegate,
                                        public CoreTabHelperDelegate {
  public:
-  PrintPreviewWebContentDelegate(Profile* profile, TabContents* initiator_tab);
+  PrintPreviewWebContentDelegate(Profile* profile, WebContents* initiator_tab);
   virtual ~PrintPreviewWebContentDelegate();
 
   // Overridden from WebDialogWebContentsDelegate:
@@ -176,32 +176,30 @@ class PrintPreviewWebContentDelegate : public WebDialogWebContentsDelegate,
       const NativeWebKeyboardEvent& event) OVERRIDE;
 
   // Overridden from CoreTabHelperDelegate:
-  virtual bool CanReloadContents(
-      content::WebContents* web_contents) const OVERRIDE;
-  virtual bool CanSaveContents(
-      content::WebContents* web_contents) const OVERRIDE;
+  virtual bool CanReloadContents(WebContents* web_contents) const OVERRIDE;
+  virtual bool CanSaveContents(WebContents* web_contents) const OVERRIDE;
 
  private:
-  TabContents* tab_;
+  WebContents* tab_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewWebContentDelegate);
 };
 
 PrintPreviewWebContentDelegate::PrintPreviewWebContentDelegate(
     Profile* profile,
-    TabContents* initiator_tab)
+    WebContents* initiator_tab)
     : WebDialogWebContentsDelegate(profile, new ChromeWebContentsHandler),
       tab_(initiator_tab) {}
 
 PrintPreviewWebContentDelegate::~PrintPreviewWebContentDelegate() {}
 
 bool PrintPreviewWebContentDelegate::CanReloadContents(
-    content::WebContents* web_contents) const {
+    WebContents* web_contents) const {
   return false;
 }
 
 bool PrintPreviewWebContentDelegate::CanSaveContents(
-    content::WebContents* web_contents) const {
+    WebContents* web_contents) const {
   return false;
 }
 
@@ -210,8 +208,7 @@ void PrintPreviewWebContentDelegate::HandleKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
   // Disabled on Mac due to http://crbug.com/112173
 #if !defined(OS_MACOSX)
-  Browser* current_browser =
-      chrome::FindBrowserWithWebContents(tab_->web_contents());
+  Browser* current_browser = chrome::FindBrowserWithWebContents(tab_);
   if (!current_browser)
     return;
   current_browser->window()->HandleKeyboardEvent(event);
@@ -235,36 +232,33 @@ PrintPreviewTabController* PrintPreviewTabController::GetInstance() {
 }
 
 // static
-void PrintPreviewTabController::PrintPreview(TabContents* tab) {
-  if (tab->web_contents()->ShowingInterstitialPage())
+void PrintPreviewTabController::PrintPreview(WebContents* tab) {
+  if (tab->ShowingInterstitialPage())
     return;
 
   PrintPreviewTabController* tab_controller = GetInstance();
   if (!tab_controller)
     return;
-  if (!tab_controller->GetOrCreatePreviewTab(tab)) {
-    printing::PrintViewManager::FromWebContents(tab->web_contents())->
-        PrintPreviewDone();
-  }
+  if (!tab_controller->GetOrCreatePreviewTab(tab))
+    printing::PrintViewManager::FromWebContents(tab)->PrintPreviewDone();
 }
 
-TabContents* PrintPreviewTabController::GetOrCreatePreviewTab(
-    TabContents* initiator_tab) {
+WebContents* PrintPreviewTabController::GetOrCreatePreviewTab(
+    WebContents* initiator_tab) {
   DCHECK(initiator_tab);
 
   // Get the print preview tab for |initiator_tab|.
-  TabContents* preview_tab = GetPrintPreviewForTab(initiator_tab);
+  WebContents* preview_tab = GetPrintPreviewForTab(initiator_tab);
   if (!preview_tab)
     return CreatePrintPreviewTab(initiator_tab);
 
   // Show the initiator tab holding the existing preview tab.
-  WebContents* web_contents = initiator_tab->web_contents();
-  web_contents->GetDelegate()->ActivateContents(web_contents);
+  initiator_tab->GetDelegate()->ActivateContents(initiator_tab);
   return preview_tab;
 }
 
-TabContents* PrintPreviewTabController::GetPrintPreviewForTab(
-    TabContents* tab) const {
+WebContents* PrintPreviewTabController::GetPrintPreviewForTab(
+    WebContents* tab) const {
   // |preview_tab_map_| is keyed by the preview tab, so if find() succeeds, then
   // |tab| is the preview tab.
   PrintPreviewTabMap::const_iterator it = preview_tab_map_.find(tab);
@@ -281,8 +275,8 @@ TabContents* PrintPreviewTabController::GetPrintPreviewForTab(
   return NULL;
 }
 
-TabContents* PrintPreviewTabController::GetInitiatorTab(
-    TabContents* preview_tab) {
+WebContents* PrintPreviewTabController::GetInitiatorTab(
+    WebContents* preview_tab) {
   PrintPreviewTabMap::iterator it = preview_tab_map_.find(preview_tab);
   if (it != preview_tab_map_.end())
     return preview_tab_map_[preview_tab];
@@ -300,16 +294,16 @@ void PrintPreviewTabController::Observe(
     OnWebContentsDestroyed(content::Source<WebContents>(source).ptr());
   } else {
     DCHECK_EQ(content::NOTIFICATION_NAV_ENTRY_COMMITTED, type);
-    TabContents* tab = TabContents::FromWebContents(
-        content::Source<NavigationController>(source)->GetWebContents());
+    WebContents* tab =
+        content::Source<NavigationController>(source)->GetWebContents();
     OnNavEntryCommitted(tab,
         content::Details<content::LoadCommittedDetails>(details).ptr());
   }
 }
 
 // static
-bool PrintPreviewTabController::IsPrintPreviewTab(TabContents* tab) {
-  return IsPrintPreviewURL(tab->web_contents()->GetURL());
+bool PrintPreviewTabController::IsPrintPreviewTab(WebContents* tab) {
+  return IsPrintPreviewURL(tab->GetURL());
 }
 
 // static
@@ -319,7 +313,7 @@ bool PrintPreviewTabController::IsPrintPreviewURL(const GURL& url) {
 }
 
 void PrintPreviewTabController::EraseInitiatorTabInfo(
-    TabContents* preview_tab) {
+    WebContents* preview_tab) {
   PrintPreviewTabMap::iterator it = preview_tab_map_.find(preview_tab);
   if (it == preview_tab_map_.end())
     return;
@@ -338,16 +332,16 @@ void PrintPreviewTabController::OnRendererProcessClosed(
     content::RenderProcessHost* rph) {
   // Store tabs in a vector and deal with them after iterating through
   // |preview_tab_map_| because RemoveFooTab() can change |preview_tab_map_|.
-  std::vector<TabContents*> closed_initiator_tabs;
-  std::vector<TabContents*> closed_preview_tabs;
+  std::vector<WebContents*> closed_initiator_tabs;
+  std::vector<WebContents*> closed_preview_tabs;
   for (PrintPreviewTabMap::iterator iter = preview_tab_map_.begin();
        iter != preview_tab_map_.end(); ++iter) {
-    TabContents* preview_tab = iter->first;
-    TabContents* initiator_tab = iter->second;
-    if (preview_tab->web_contents()->GetRenderProcessHost() == rph) {
+    WebContents* preview_tab = iter->first;
+    WebContents* initiator_tab = iter->second;
+    if (preview_tab->GetRenderProcessHost() == rph) {
       closed_preview_tabs.push_back(preview_tab);
     } else if (initiator_tab &&
-               initiator_tab->web_contents()->GetRenderProcessHost() == rph) {
+               initiator_tab->GetRenderProcessHost() == rph) {
       closed_initiator_tabs.push_back(initiator_tab);
     }
   }
@@ -355,7 +349,7 @@ void PrintPreviewTabController::OnRendererProcessClosed(
   for (size_t i = 0; i < closed_preview_tabs.size(); ++i) {
     RemovePreviewTab(closed_preview_tabs[i]);
     PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
-        closed_preview_tabs[i]->web_contents()->GetWebUI()->GetController());
+        closed_preview_tabs[i]->GetWebUI()->GetController());
     if (print_preview_ui)
       print_preview_ui->OnPrintPreviewTabClosed();
   }
@@ -364,24 +358,22 @@ void PrintPreviewTabController::OnRendererProcessClosed(
     RemoveInitiatorTab(closed_initiator_tabs[i]);
 }
 
-void PrintPreviewTabController::OnWebContentsDestroyed(
-    content::WebContents* tab) {
-  TabContents* destroyed_tab_contents = TabContents::FromWebContents(tab);
-  TabContents* preview_tab = GetPrintPreviewForTab(destroyed_tab_contents);
+void PrintPreviewTabController::OnWebContentsDestroyed(WebContents* tab) {
+  WebContents* preview_tab = GetPrintPreviewForTab(tab);
   if (!preview_tab) {
     NOTREACHED();
     return;
   }
 
-  if (destroyed_tab_contents == preview_tab)
-    RemovePreviewTab(destroyed_tab_contents);
+  if (tab == preview_tab)
+    RemovePreviewTab(tab);
   else
-    RemoveInitiatorTab(destroyed_tab_contents);
+    RemoveInitiatorTab(tab);
 }
 
 void PrintPreviewTabController::OnNavEntryCommitted(
-    TabContents* tab, content::LoadCommittedDetails* details) {
-  TabContents* preview_tab = GetPrintPreviewForTab(tab);
+    WebContents* tab, content::LoadCommittedDetails* details) {
+  WebContents* preview_tab = GetPrintPreviewForTab(tab);
   if (!preview_tab) {
     NOTREACHED();
     return;
@@ -419,12 +411,11 @@ void PrintPreviewTabController::OnNavEntryCommitted(
   RemoveInitiatorTab(tab);
 }
 
-TabContents* PrintPreviewTabController::CreatePrintPreviewTab(
-    TabContents* initiator_tab) {
+WebContents* PrintPreviewTabController::CreatePrintPreviewTab(
+    WebContents* initiator_tab) {
   base::AutoReset<bool> auto_reset(&is_creating_print_preview_tab_, true);
-  WebContents* web_contents = initiator_tab->web_contents();
   Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+      Profile::FromBrowserContext(initiator_tab->GetBrowserContext());
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kChromeFrame)) {
     Browser* current_browser = new Browser(
         Browser::CreateParams(Browser::TYPE_POPUP, profile));
@@ -445,11 +436,10 @@ TabContents* PrintPreviewTabController::CreatePrintPreviewTab(
       CreateConstrainedWebDialog(profile,
                                  web_dialog_delegate,
                                  pp_wcd,
-                                 initiator_tab->web_contents());
-  TabContents* preview_tab = constrained_delegate->tab();
+                                 initiator_tab);
+  WebContents* preview_tab = constrained_delegate->tab()->web_contents();
   EnableInternalPDFPluginForTab(preview_tab);
-  CoreTabHelper::FromWebContents(preview_tab->web_contents())->
-      set_delegate(pp_wcd);
+  CoreTabHelper::FromWebContents(preview_tab)->set_delegate(pp_wcd);
 
   // Add an entry to the map.
   preview_tab_map_[preview_tab] = initiator_tab;
@@ -462,29 +452,28 @@ TabContents* PrintPreviewTabController::CreatePrintPreviewTab(
 }
 
 void PrintPreviewTabController::SetInitiatorTabURLAndTitle(
-    TabContents* preview_tab) {
-  TabContents* initiator_tab = GetInitiatorTab(preview_tab);
-  if (initiator_tab && preview_tab->web_contents()->GetWebUI()) {
+    WebContents* preview_tab) {
+  WebContents* initiator_tab = GetInitiatorTab(preview_tab);
+  if (initiator_tab && preview_tab->GetWebUI()) {
     PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
-        preview_tab->web_contents()->GetWebUI()->GetController());
+        preview_tab->GetWebUI()->GetController());
     print_preview_ui->SetInitiatorTabURLAndTitle(
-        initiator_tab->web_contents()->GetURL().spec(),
+        initiator_tab->GetURL().spec(),
         printing::PrintViewManager::FromWebContents(
-            initiator_tab->web_contents())->RenderSourceName());
+            initiator_tab)->RenderSourceName());
   }
 }
 
-void PrintPreviewTabController::AddObservers(TabContents* tab) {
-  WebContents* web_contents = tab->web_contents();
+void PrintPreviewTabController::AddObservers(WebContents* tab) {
   registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                 content::Source<WebContents>(web_contents));
+                 content::Source<WebContents>(tab));
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::Source<NavigationController>(&web_contents->GetController()));
+      content::Source<NavigationController>(&tab->GetController()));
 
   // Multiple sites may share the same RenderProcessHost, so check if this
   // notification has already been added.
   content::Source<content::RenderProcessHost> rph_source(
-      web_contents->GetRenderProcessHost());
+      tab->GetRenderProcessHost());
   if (!registrar_.IsRegistered(this,
       content::NOTIFICATION_RENDERER_PROCESS_CLOSED, rph_source)) {
     registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
@@ -492,17 +481,16 @@ void PrintPreviewTabController::AddObservers(TabContents* tab) {
   }
 }
 
-void PrintPreviewTabController::RemoveObservers(TabContents* tab) {
-  WebContents* web_contents = tab->web_contents();
+void PrintPreviewTabController::RemoveObservers(WebContents* tab) {
   registrar_.Remove(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                    content::Source<WebContents>(web_contents));
+                    content::Source<WebContents>(tab));
   registrar_.Remove(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::Source<NavigationController>(&web_contents->GetController()));
+      content::Source<NavigationController>(&tab->GetController()));
 
   // Multiple sites may share the same RenderProcessHost, so check if this
   // notification has already been added.
   content::Source<content::RenderProcessHost> rph_source(
-      web_contents->GetRenderProcessHost());
+      tab->GetRenderProcessHost());
   if (registrar_.IsRegistered(this,
       content::NOTIFICATION_RENDERER_PROCESS_CLOSED, rph_source)) {
     registrar_.Remove(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
@@ -510,8 +498,8 @@ void PrintPreviewTabController::RemoveObservers(TabContents* tab) {
   }
 }
 
-void PrintPreviewTabController::RemoveInitiatorTab(TabContents* initiator_tab) {
-  TabContents* preview_tab = GetPrintPreviewForTab(initiator_tab);
+void PrintPreviewTabController::RemoveInitiatorTab(WebContents* initiator_tab) {
+  WebContents* preview_tab = GetPrintPreviewForTab(initiator_tab);
   DCHECK(preview_tab);
   // Update the map entry first, so when the print preview tab gets destroyed
   // and reaches RemovePreviewTab(), it does not attempt to also remove the
@@ -519,29 +507,29 @@ void PrintPreviewTabController::RemoveInitiatorTab(TabContents* initiator_tab) {
   preview_tab_map_[preview_tab] = NULL;
   RemoveObservers(initiator_tab);
 
-  printing::PrintViewManager::FromWebContents(initiator_tab->web_contents())->
+  printing::PrintViewManager::FromWebContents(initiator_tab)->
       PrintPreviewDone();
 
   // Initiator tab is closed. Close the print preview tab too.
   PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
-      preview_tab->web_contents()->GetWebUI()->GetController());
+      preview_tab->GetWebUI()->GetController());
   if (print_preview_ui)
     print_preview_ui->OnInitiatorTabClosed();
 }
 
-void PrintPreviewTabController::RemovePreviewTab(TabContents* preview_tab) {
+void PrintPreviewTabController::RemovePreviewTab(WebContents* preview_tab) {
   // Remove the initiator tab's observers before erasing the mapping.
-  TabContents* initiator_tab = GetInitiatorTab(preview_tab);
+  WebContents* initiator_tab = GetInitiatorTab(preview_tab);
   if (initiator_tab) {
     RemoveObservers(initiator_tab);
-    printing::PrintViewManager::FromWebContents(initiator_tab->web_contents())->
+    printing::PrintViewManager::FromWebContents(initiator_tab)->
         PrintPreviewDone();
   }
 
   // Print preview WebContents is destroyed. Notify |PrintPreviewUI| to abort
   // the initiator tab preview request.
   PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
-      preview_tab->web_contents()->GetWebUI()->GetController());
+      preview_tab->GetWebUI()->GetController());
   if (print_preview_ui)
     print_preview_ui->OnTabDestroyed();
 

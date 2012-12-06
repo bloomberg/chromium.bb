@@ -28,7 +28,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/automation_id.h"
@@ -463,9 +462,9 @@ bool SendErrorIfModalDialogActive(AutomationProvider* provider,
   return active;
 }
 
-AutomationId GetIdForTab(const TabContents* tab) {
-  SessionTabHelper* session_tab_helper =
-      SessionTabHelper::FromWebContents(tab->web_contents());
+AutomationId GetIdForTab(const WebContents* tab) {
+  const SessionTabHelper* session_tab_helper =
+      SessionTabHelper::FromWebContents(tab);
   return AutomationId(AutomationId::kTypeTab,
                       base::IntToString(session_tab_helper->session_id().id()));
 }
@@ -513,26 +512,25 @@ bool GetTabForId(const AutomationId& id, WebContents** tab) {
   for (; iter != BrowserList::end(); ++iter) {
     Browser* browser = *iter;
     for (int tab_index = 0; tab_index < browser->tab_count(); ++tab_index) {
-      TabContents* tab_contents =
-          browser->tab_strip_model()->GetTabContentsAt(tab_index);
+      WebContents* web_contents =
+          browser->tab_strip_model()->GetWebContentsAt(tab_index);
       SessionTabHelper* session_tab_helper =
-          SessionTabHelper::FromWebContents(tab_contents->web_contents());
+          SessionTabHelper::FromWebContents(web_contents);
       if (base::IntToString(
               session_tab_helper->session_id().id()) == id.id()) {
-        *tab = tab_contents->web_contents();
+        *tab = web_contents;
         return true;
       }
       if (preview_controller) {
-        TabContents* preview_tab_contents =
-            preview_controller->GetPrintPreviewForTab(tab_contents);
-        if (preview_tab_contents) {
+        WebContents* print_preview_contents =
+            preview_controller->GetPrintPreviewForTab(web_contents);
+        if (print_preview_contents) {
           SessionTabHelper* preview_session_tab_helper =
-              SessionTabHelper::FromWebContents(
-                  preview_tab_contents->web_contents());
+              SessionTabHelper::FromWebContents(print_preview_contents);
           std::string preview_id = base::IntToString(
               preview_session_tab_helper->session_id().id());
           if (preview_id == id.id()) {
-            *tab = preview_tab_contents->web_contents();
+            *tab = print_preview_contents;
             return true;
           }
         }

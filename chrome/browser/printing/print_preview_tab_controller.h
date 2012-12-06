@@ -13,11 +13,11 @@
 #include "content/public/browser/notification_registrar.h"
 
 class GURL;
-class TabContents;
 
 namespace content {
 struct LoadCommittedDetails;
 class RenderProcessHost;
+class WebContents;
 }
 
 namespace printing {
@@ -28,6 +28,13 @@ namespace printing {
 // tab is focused/activated. There may be more than one PP tab open. There is a
 // 1:1 relationship between PP tabs and initiating tabs. This class manages PP
 // tabs and initiator tabs.
+//
+// THE ABOVE COMMENT IS OBSOLETE
+//
+// This class needs to be renamed. It no longer controls tabs. All tests need to
+// be reevaluated as to whether they're useful. The comments, both here and in
+// the tests, need to be fixed so that they don't lie.
+// http://crbug.com/163671
 class PrintPreviewTabController
     : public base::RefCounted<PrintPreviewTabController>,
       public content::NotificationObserver {
@@ -38,20 +45,21 @@ class PrintPreviewTabController
 
   // Initiate print preview for |initiator_tab|.
   // Call this instead of GetOrCreatePreviewTab().
-  static void PrintPreview(TabContents* initiator_tab);
+  static void PrintPreview(content::WebContents* initiator_tab);
 
   // Get/Create the print preview tab for |initiator_tab|.
   // Exposed for unit tests.
-  TabContents* GetOrCreatePreviewTab(TabContents* initiator_tab);
+  content::WebContents* GetOrCreatePreviewTab(
+      content::WebContents* initiator_tab);
 
   // Returns preview tab for |tab|.
   // Returns |tab| if |tab| is a preview tab.
   // Returns NULL if no preview tab exists for |tab|.
-  TabContents* GetPrintPreviewForTab(TabContents* tab) const;
+  content::WebContents* GetPrintPreviewForTab(content::WebContents* tab) const;
 
   // Returns initiator tab for |preview_tab|.
   // Returns NULL if no initiator tab exists for |preview_tab|.
-  TabContents* GetInitiatorTab(TabContents* preview_tab);
+  content::WebContents* GetInitiatorTab(content::WebContents* preview_tab);
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -59,13 +67,13 @@ class PrintPreviewTabController
                        const content::NotificationDetails& details) OVERRIDE;
 
   // Returns true if |tab| is a print preview tab.
-  static bool IsPrintPreviewTab(TabContents* tab);
+  static bool IsPrintPreviewTab(content::WebContents* tab);
 
   // Returns true if |url| is a print preview url.
   static bool IsPrintPreviewURL(const GURL& url);
 
   // Erase the initiator tab info associated with |preview_tab|.
-  void EraseInitiatorTabInfo(TabContents* preview_tab);
+  void EraseInitiatorTabInfo(content::WebContents* preview_tab);
 
   bool is_creating_print_preview_tab() const;
 
@@ -75,7 +83,8 @@ class PrintPreviewTabController
   // 1:1 relationship between initiator tab and print preview tab.
   // Key: Preview tab.
   // Value: Initiator tab.
-  typedef std::map<TabContents*, TabContents*> PrintPreviewTabMap;
+  typedef std::map<content::WebContents*, content::WebContents*>
+      PrintPreviewTabMap;
 
   virtual ~PrintPreviewTabController();
 
@@ -89,23 +98,24 @@ class PrintPreviewTabController
 
   // Handler for the NAV_ENTRY_COMMITTED notification. This is observed when the
   // renderer is navigated to a different page.
-  void OnNavEntryCommitted(TabContents* tab,
+  void OnNavEntryCommitted(content::WebContents* tab,
                            content::LoadCommittedDetails* details);
 
   // Creates a new print preview tab.
-  TabContents* CreatePrintPreviewTab(TabContents* initiator_tab);
+  content::WebContents* CreatePrintPreviewTab(
+      content::WebContents* initiator_tab);
 
   // Helper function to store the initiator tab(title and url) information
   // in PrintPreviewUI.
-  void SetInitiatorTabURLAndTitle(TabContents* preview_tab);
+  void SetInitiatorTabURLAndTitle(content::WebContents* preview_tab);
 
   // Adds/Removes observers for notifications from |tab|.
-  void AddObservers(TabContents* tab);
-  void RemoveObservers(TabContents* tab);
+  void AddObservers(content::WebContents* tab);
+  void RemoveObservers(content::WebContents* tab);
 
   // Removes tabs when they close/crash/navigate.
-  void RemoveInitiatorTab(TabContents* initiator_tab);
-  void RemovePreviewTab(TabContents* preview_tab);
+  void RemoveInitiatorTab(content::WebContents* initiator_tab);
+  void RemovePreviewTab(content::WebContents* preview_tab);
 
   // Mapping between print preview tab and the corresponding initiator tab.
   PrintPreviewTabMap preview_tab_map_;
