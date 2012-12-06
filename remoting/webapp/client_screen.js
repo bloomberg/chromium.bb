@@ -237,6 +237,7 @@ function onClientStateChange_(oldState, newState) {
     if (remoting.clientSession) {
       clearPin = true;
       setConnectionInterruptedButtonsText_();
+      remoting.retryIfOffline = false;
       remoting.setMode(remoting.AppMode.IN_SESSION);
       remoting.toolbar.center();
       remoting.toolbar.preview();
