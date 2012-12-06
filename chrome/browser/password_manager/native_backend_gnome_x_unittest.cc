@@ -257,23 +257,7 @@ const gchar* mock_gnome_keyring_result_to_message(GnomeKeyringResult res) {
   return "mock keyring simulating failure";
 }
 
-// Inherit to get access to protected fields.
-class MockGnomeKeyringLoader : public GnomeKeyringLoader {
- public:
-  static bool LoadMockGnomeKeyring() {
-#define GNOME_KEYRING_ASSIGN_POINTER(name) \
-  gnome_keyring_##name = &mock_gnome_keyring_##name;
-    GNOME_KEYRING_FOR_EACH_FUNC(GNOME_KEYRING_ASSIGN_POINTER)
-#undef GNOME_KEYRING_ASSIGN_POINTER
-    keyring_loaded = true;
-    // Reset the state of the mock library.
-    mock_keyring_items.clear();
-    mock_keyring_reject_local_ids = false;
-    return true;
-  }
-};
-
-}  // anonymous namespace
+}  // namespace
 
 class NativeBackendGnomeTest : public testing::Test {
  protected:
@@ -284,8 +268,6 @@ class NativeBackendGnomeTest : public testing::Test {
 
   virtual void SetUp() {
     ASSERT_TRUE(db_thread_.Start());
-
-    MockGnomeKeyringLoader::LoadMockGnomeKeyring();
 
     form_google_.origin = GURL("http://www.google.com/");
     form_google_.action = GURL("http://www.google.com/login");
@@ -310,6 +292,20 @@ class NativeBackendGnomeTest : public testing::Test {
     MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
     MessageLoop::current()->Run();
     db_thread_.Stop();
+  }
+
+  static void SetUpMockKeyring(NativeBackendGnome* backend) {
+    LibGnomeKeyringLoader* loader = backend->libgnome_keyring_loader();
+    loader->gnome_keyring_is_available = &mock_gnome_keyring_is_available;
+    loader->gnome_keyring_store_password = &mock_gnome_keyring_store_password;
+    loader->gnome_keyring_delete_password = &mock_gnome_keyring_delete_password;
+    loader->gnome_keyring_find_itemsv = &mock_gnome_keyring_find_itemsv;
+    loader->gnome_keyring_result_to_message =
+        &mock_gnome_keyring_result_to_message;
+
+    // Reset the state of the mock library.
+    mock_keyring_items.clear();
+    mock_keyring_reject_local_ids = false;
   }
 
   void RunBothThreads() {
@@ -395,6 +391,7 @@ TEST_F(NativeBackendGnomeTest, BasicAddLogin) {
 
   NativeBackendGnome backend(42, profile_.GetPrefs());
   backend.Init();
+  SetUpMockKeyring(&backend);
 
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
@@ -414,6 +411,7 @@ TEST_F(NativeBackendGnomeTest, BasicListLogins) {
 
   NativeBackendGnome backend(42, profile_.GetPrefs());
   backend.Init();
+  SetUpMockKeyring(&backend);
 
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
@@ -444,6 +442,7 @@ TEST_F(NativeBackendGnomeTest, BasicRemoveLogin) {
 
   NativeBackendGnome backend(42, profile_.GetPrefs());
   backend.Init();
+  SetUpMockKeyring(&backend);
 
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
@@ -472,6 +471,7 @@ TEST_F(NativeBackendGnomeTest, RemoveNonexistentLogin) {
 
   NativeBackendGnome backend(42, profile_.GetPrefs());
   backend.Init();
+  SetUpMockKeyring(&backend);
 
   // First add an unrelated login.
   BrowserThread::PostTask(
@@ -516,6 +516,7 @@ TEST_F(NativeBackendGnomeTest, AddDuplicateLogin) {
 
   NativeBackendGnome backend(42, profile_.GetPrefs());
   backend.Init();
+  SetUpMockKeyring(&backend);
 
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
@@ -539,6 +540,7 @@ TEST_F(NativeBackendGnomeTest, ListLoginsAppends) {
 
   NativeBackendGnome backend(42, profile_.GetPrefs());
   backend.Init();
+  SetUpMockKeyring(&backend);
 
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
@@ -578,6 +580,7 @@ TEST_F(NativeBackendGnomeTest, DISABLED_MigrateOneLogin) {
   {
     NativeBackendGnome backend(42, profile_.GetPrefs());
     backend.Init();
+    SetUpMockKeyring(&backend);
 
     BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
         base::Bind(base::IgnoreResult(&NativeBackendGnome::AddLogin),
@@ -608,6 +611,7 @@ TEST_F(NativeBackendGnomeTest, DISABLED_MigrateOneLogin) {
   {
     NativeBackendGnome backend(42, profile_.GetPrefs());
     backend.Init();
+    SetUpMockKeyring(&backend);
 
     // This should not trigger migration because there will be no results.
     std::vector<PasswordForm*> form_list;
@@ -635,6 +639,7 @@ TEST_F(NativeBackendGnomeTest, DISABLED_MigrateOneLogin) {
   {
     NativeBackendGnome backend(42, profile_.GetPrefs());
     backend.Init();
+    SetUpMockKeyring(&backend);
 
     // Trigger the migration by looking something up.
     std::vector<PasswordForm*> form_list;
@@ -669,6 +674,7 @@ TEST_F(NativeBackendGnomeTest, DISABLED_MigrateToMultipleProfiles) {
   {
     NativeBackendGnome backend(42, profile_.GetPrefs());
     backend.Init();
+    SetUpMockKeyring(&backend);
 
     BrowserThread::PostTask(
         BrowserThread::DB, FROM_HERE,
@@ -688,6 +694,7 @@ TEST_F(NativeBackendGnomeTest, DISABLED_MigrateToMultipleProfiles) {
   {
     NativeBackendGnome backend(42, profile_.GetPrefs());
     backend.Init();
+    SetUpMockKeyring(&backend);
 
     // Trigger the migration by looking something up.
     std::vector<PasswordForm*> form_list;
@@ -721,6 +728,7 @@ TEST_F(NativeBackendGnomeTest, DISABLED_MigrateToMultipleProfiles) {
   {
     NativeBackendGnome backend(24, profile_.GetPrefs());
     backend.Init();
+    SetUpMockKeyring(&backend);
 
     // Trigger the migration by looking something up.
     std::vector<PasswordForm*> form_list;
@@ -753,6 +761,7 @@ TEST_F(NativeBackendGnomeTest, DISABLED_NoMigrationWithPrefSet) {
   {
     NativeBackendGnome backend(42, profile_.GetPrefs());
     backend.Init();
+    SetUpMockKeyring(&backend);
 
     BrowserThread::PostTask(
         BrowserThread::DB, FROM_HERE,
@@ -773,6 +782,7 @@ TEST_F(NativeBackendGnomeTest, DISABLED_NoMigrationWithPrefSet) {
   {
     NativeBackendGnome backend(42, profile_.GetPrefs());
     backend.Init();
+    SetUpMockKeyring(&backend);
 
     // Trigger the migration by adding a new login.
     BrowserThread::PostTask(
@@ -811,6 +821,7 @@ TEST_F(NativeBackendGnomeTest, DISABLED_DeleteMigratedPasswordIsIsolated) {
   {
     NativeBackendGnome backend(42, profile_.GetPrefs());
     backend.Init();
+    SetUpMockKeyring(&backend);
 
     BrowserThread::PostTask(
         BrowserThread::DB, FROM_HERE,
@@ -830,6 +841,7 @@ TEST_F(NativeBackendGnomeTest, DISABLED_DeleteMigratedPasswordIsIsolated) {
   {
     NativeBackendGnome backend(42, profile_.GetPrefs());
     backend.Init();
+    SetUpMockKeyring(&backend);
 
     // Trigger the migration by looking something up.
     std::vector<PasswordForm*> form_list;
@@ -863,6 +875,7 @@ TEST_F(NativeBackendGnomeTest, DISABLED_DeleteMigratedPasswordIsIsolated) {
   {
     NativeBackendGnome backend(24, profile_.GetPrefs());
     backend.Init();
+    SetUpMockKeyring(&backend);
 
     // Trigger the migration by looking something up.
     std::vector<PasswordForm*> form_list;
