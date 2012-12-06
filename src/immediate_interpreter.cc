@@ -154,7 +154,6 @@ void TapRecord::Clear() {
 bool TapRecord::Moving(const HardwareState& hwstate,
                        const float dist_max) const {
   const float cotap_min_pressure = CotapMinPressure();
-  Log("Moving? cmp = %f", cotap_min_pressure);
   for (map<short, FingerState, kMaxTapFingers>::const_iterator it =
            touched_.begin(), e = touched_.end(); it != e; ++it) {
     const FingerState* fs = hwstate.GetFingerState((*it).first);
@@ -163,10 +162,8 @@ bool TapRecord::Moving(const HardwareState& hwstate,
     // Only look for moving when current frame meets cotap pressure and
     // our history contains a contact that's met cotap pressure.
     if (fs->pressure < cotap_min_pressure ||
-        (*it).second.pressure < cotap_min_pressure) {
-      Log("PR too small");
+        (*it).second.pressure < cotap_min_pressure)
       continue;
-    }
     // Compute distance moved
     float dist_x = fs->position_x - (*it).second.position_x;
     float dist_y = fs->position_y - (*it).second.position_y;
@@ -431,7 +428,6 @@ Gesture* ImmediateInterpreter::SyncInterpretImpl(HardwareState* hwstate,
     FillStartPositions(*hwstate);
     UpdatePinchState(*hwstate, true);
   }
-  Log("HW IN: %s", hwstate->String().c_str());
 
   if (hwstate->finger_cnt < prev_state_.finger_cnt)
     finger_leave_time_ = hwstate->timestamp;
@@ -453,12 +449,6 @@ Gesture* ImmediateInterpreter::SyncInterpretImpl(HardwareState* hwstate,
   UpdateCurrentGestureType(*hwstate, gs_fingers);
   if (result_.type == kGestureTypeNull)
     FillResultGesture(*hwstate, gs_fingers);
-
-  // Prevent moves while in a tap
-  if ((tap_to_click_state_ == kTtcFirstTapBegan ||
-       tap_to_click_state_ == kTtcSubsequentTapBegan) &&
-      result_.type == kGestureTypeMove)
-    result_.type = kGestureTypeNull;
 
   SetPrevState(*hwstate);
   prev_gs_fingers_ = gs_fingers;
@@ -1120,7 +1110,7 @@ void ImmediateInterpreter::UpdateTapState(
   if (tap_to_click_state_ == kTtcIdle && (!tap_enable_.val_ ||
                                           tap_paused_.val_))
     return;
-  Log("Entering UpdateTapState %f", now);
+  Log("Entering UpdateTapState");
 
   set<short, kMaxGesturingFingers> tap_gs_fingers;
 
