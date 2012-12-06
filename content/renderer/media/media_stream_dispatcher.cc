@@ -165,7 +165,7 @@ void MediaStreamDispatcher::RemoveEnumerationRequest(
        it != requests->end(); ++it) {
     if (it->request_id == request_id && it->handler == event_handler) {
       requests->erase(it);
-      if (requests->empty() && !state->cached_devices.get()) {
+      if (requests->empty() && state->cached_devices.get()) {
         // No more request and has a label, try to stop the label
         // and invalidate the state.
         Send(new MediaStreamHostMsg_StopGeneratedStream(
