@@ -1317,10 +1317,10 @@ void DriveFileSyncService::CompleteRemoteSync(
   }
 
   GURL origin = param->remote_change.url.origin();
-  if (metadata_store_->IsIncrementalSyncOrigin(origin) &&
-      param->remote_change.changestamp) {
-    DCHECK_EQ(REMOTE_SYNC_TYPE_INCREMENTAL, param->remote_change.sync_type);
+  if (param->remote_change.sync_type == REMOTE_SYNC_TYPE_INCREMENTAL) {
+    DCHECK(metadata_store_->IsIncrementalSyncOrigin(origin));
     int64 changestamp = param->remote_change.changestamp;
+    DCHECK(changestamp);
     metadata_store_->SetLargestChangeStamp(
         changestamp,
         base::Bind(&DriveFileSyncService::FinalizeRemoteSync,
