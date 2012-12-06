@@ -18,7 +18,7 @@ namespace content {
 
 class RendererWebIDBTransactionImpl : public WebKit::WebIDBTransaction {
  public:
-  explicit RendererWebIDBTransactionImpl(int32 idb_transaction_id);
+  explicit RendererWebIDBTransactionImpl(int32 ipc_transaction_id);
   virtual ~RendererWebIDBTransactionImpl();
 
   virtual WebKit::WebIDBObjectStore* objectStore(long long object_store_id,
@@ -28,10 +28,10 @@ class RendererWebIDBTransactionImpl : public WebKit::WebIDBTransaction {
   virtual void didCompleteTaskEvents();
   virtual void setCallbacks(WebKit::WebIDBTransactionCallbacks*);
 
-  int ipc_id() const { return idb_transaction_id_; }
+  int ipc_id() const { return ipc_transaction_id_; }
 
  private:
-  int32 idb_transaction_id_;
+  int32 ipc_transaction_id_;
 };
 
 }  // namespace content

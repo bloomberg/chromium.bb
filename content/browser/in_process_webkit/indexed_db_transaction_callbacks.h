@@ -16,8 +16,8 @@ class IndexedDBTransactionCallbacks
     : public WebKit::WebIDBTransactionCallbacks {
  public:
   IndexedDBTransactionCallbacks(IndexedDBDispatcherHost* dispatcher_host,
-                                int thread_id,
-                                int transaction_id);
+                                int ipc_thread_id,
+                                int ipc_transaction_id);
 
   virtual ~IndexedDBTransactionCallbacks();
 
@@ -26,8 +26,8 @@ class IndexedDBTransactionCallbacks
 
  private:
   scoped_refptr<IndexedDBDispatcherHost> dispatcher_host_;
-  int thread_id_;
-  int transaction_id_;
+  int ipc_thread_id_;
+  int ipc_transaction_id_;
 };
 
 }  // namespace content

@@ -31,8 +31,8 @@ using webkit_glue::WorkerTaskRunner;
 
 namespace content {
 
-RendererWebIDBDatabaseImpl::RendererWebIDBDatabaseImpl(int32 idb_database_id)
-    : idb_database_id_(idb_database_id) {
+RendererWebIDBDatabaseImpl::RendererWebIDBDatabaseImpl(int32 ipc_database_id)
+    : ipc_database_id_(ipc_database_id) {
 }
 
 RendererWebIDBDatabaseImpl::~RendererWebIDBDatabaseImpl() {
@@ -41,16 +41,16 @@ RendererWebIDBDatabaseImpl::~RendererWebIDBDatabaseImpl() {
   // this object. But, if that ever changed, then we'd need to invalidate
   // any such pointers.
   IndexedDBDispatcher::Send(new IndexedDBHostMsg_DatabaseDestroyed(
-      idb_database_id_));
+      ipc_database_id_));
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance();
-  dispatcher->DatabaseDestroyed(idb_database_id_);
+  dispatcher->DatabaseDestroyed(ipc_database_id_);
 }
 
 WebIDBMetadata RendererWebIDBDatabaseImpl::metadata() const {
   IndexedDBDatabaseMetadata idb_metadata;
   IndexedDBDispatcher::Send(
-      new IndexedDBHostMsg_DatabaseMetadata(idb_database_id_, &idb_metadata));
+      new IndexedDBHostMsg_DatabaseMetadata(ipc_database_id_, &idb_metadata));
 
   WebIDBMetadata web_metadata;
   web_metadata.id = idb_metadata.id;
@@ -104,8 +104,8 @@ WebKit::WebIDBObjectStore* RendererWebIDBDatabaseImpl::createObjectStore(
   params.name = name;
   params.key_path = IndexedDBKeyPath(key_path);
   params.auto_increment = auto_increment;
-  params.transaction_id = IndexedDBDispatcher::TransactionId(transaction);
-  params.idb_database_id = idb_database_id_;
+  params.ipc_transaction_id = IndexedDBDispatcher::TransactionId(transaction);
+  params.ipc_database_id = ipc_database_id_;
 
   int object_store;
   IndexedDBDispatcher::Send(
@@ -122,7 +122,7 @@ void RendererWebIDBDatabaseImpl::deleteObjectStore(
     WebExceptionCode& ec) {
   IndexedDBDispatcher::Send(
       new IndexedDBHostMsg_DatabaseDeleteObjectStore(
-          idb_database_id_, object_store_id,
+          ipc_database_id_, object_store_id,
           IndexedDBDispatcher::TransactionId(transaction), &ec));
 }
 
@@ -135,20 +135,20 @@ WebKit::WebIDBTransaction* RendererWebIDBDatabaseImpl::createTransaction(
   for (unsigned int i = 0; i < object_store_ids.size(); ++i)
       object_stores.push_back(object_store_ids[i]);
 
-  int idb_transaction_id;
+  int ipc_transaction_id;
   IndexedDBDispatcher::Send(new IndexedDBHostMsg_DatabaseCreateTransaction(
       WorkerTaskRunner::Instance()->CurrentWorkerId(),
-      idb_database_id_, transaction_id, object_stores, mode,
-      &idb_transaction_id));
+      ipc_database_id_, transaction_id, object_stores, mode,
+      &ipc_transaction_id));
   if (!transaction_id)
     return NULL;
-  return new RendererWebIDBTransactionImpl(idb_transaction_id);
+  return new RendererWebIDBTransactionImpl(ipc_transaction_id);
 }
 
 void RendererWebIDBDatabaseImpl::close() {
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance();
-  dispatcher->RequestIDBDatabaseClose(idb_database_id_);
+  dispatcher->RequestIDBDatabaseClose(ipc_database_id_);
 }
 
 }  // namespace content

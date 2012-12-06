@@ -20,8 +20,8 @@ using WebKit::WebVector;
 
 namespace content {
 
-RendererWebIDBIndexImpl::RendererWebIDBIndexImpl(int32 idb_index_id)
-    : idb_index_id_(idb_index_id) {
+RendererWebIDBIndexImpl::RendererWebIDBIndexImpl(int32 ipc_index_id)
+    : ipc_index_id_(ipc_index_id) {
 }
 
 RendererWebIDBIndexImpl::~RendererWebIDBIndexImpl() {
@@ -30,7 +30,7 @@ RendererWebIDBIndexImpl::~RendererWebIDBIndexImpl() {
   // this object. But, if that ever changed, then we'd need to invalidate
   // any such pointers.
   IndexedDBDispatcher::Send(new IndexedDBHostMsg_IndexDestroyed(
-      idb_index_id_));
+      ipc_index_id_));
 }
 
 void RendererWebIDBIndexImpl::openObjectCursor(
@@ -42,7 +42,7 @@ void RendererWebIDBIndexImpl::openObjectCursor(
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance();
   dispatcher->RequestIDBIndexOpenObjectCursor(
-      range, direction, callbacks,  idb_index_id_, transaction, &ec);
+      range, direction, callbacks,  ipc_index_id_, transaction, &ec);
 }
 
 void RendererWebIDBIndexImpl::openKeyCursor(
@@ -54,7 +54,7 @@ void RendererWebIDBIndexImpl::openKeyCursor(
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance();
   dispatcher->RequestIDBIndexOpenKeyCursor(
-      range, direction, callbacks,  idb_index_id_, transaction, &ec);
+      range, direction, callbacks,  ipc_index_id_, transaction, &ec);
 }
 
 void RendererWebIDBIndexImpl::count(
@@ -65,7 +65,7 @@ void RendererWebIDBIndexImpl::count(
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance();
   dispatcher->RequestIDBIndexCount(
-      range, callbacks, idb_index_id_, transaction, &ec);
+      range, callbacks, ipc_index_id_, transaction, &ec);
 }
 
 void RendererWebIDBIndexImpl::getObject(
@@ -76,7 +76,7 @@ void RendererWebIDBIndexImpl::getObject(
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance();
   dispatcher->RequestIDBIndexGetObject(
-      IndexedDBKeyRange(key_range), callbacks, idb_index_id_,
+      IndexedDBKeyRange(key_range), callbacks, ipc_index_id_,
       transaction, &ec);
 }
 
@@ -88,7 +88,7 @@ void RendererWebIDBIndexImpl::getKey(
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance();
   dispatcher->RequestIDBIndexGetKey(
-      IndexedDBKeyRange(key_range), callbacks, idb_index_id_,
+      IndexedDBKeyRange(key_range), callbacks, ipc_index_id_,
       transaction, &ec);
 }
 

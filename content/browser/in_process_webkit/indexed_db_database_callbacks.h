@@ -14,8 +14,8 @@ class IndexedDBDispatcherHost;
 class IndexedDBDatabaseCallbacks : public WebKit::WebIDBDatabaseCallbacks {
  public:
   IndexedDBDatabaseCallbacks(IndexedDBDispatcherHost* dispatcher_host,
-                             int thread_id,
-                             int database_id);
+                             int ipc_thread_id,
+                             int ipc_database_id);
 
   virtual ~IndexedDBDatabaseCallbacks();
 
@@ -26,8 +26,8 @@ class IndexedDBDatabaseCallbacks : public WebKit::WebIDBDatabaseCallbacks {
 
  private:
   scoped_refptr<IndexedDBDispatcherHost> dispatcher_host_;
-  int thread_id_;
-  int database_id_;
+  int ipc_thread_id_;
+  int ipc_database_id_;
 };
 
 }  // namespace content

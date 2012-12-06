@@ -21,7 +21,7 @@ namespace content {
 
 class RendererWebIDBObjectStoreImpl : public WebKit::WebIDBObjectStore {
  public:
-  explicit RendererWebIDBObjectStoreImpl(int32 object_store_ipc_id);
+  explicit RendererWebIDBObjectStoreImpl(int32 ipc_object_store_id);
   virtual ~RendererWebIDBObjectStoreImpl();
 
   // TODO(alecflett): Remove this when it is removed from webkit:
@@ -83,7 +83,7 @@ class RendererWebIDBObjectStoreImpl : public WebKit::WebIDBObjectStore {
                      WebKit::WebExceptionCode& ec);
 
  private:
-  int32 object_store_ipc_id_;
+  int32 ipc_object_store_id_;
 };
 
 }  // namespace content

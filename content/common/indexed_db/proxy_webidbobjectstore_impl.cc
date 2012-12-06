@@ -37,8 +37,8 @@ using WebKit::WebVector;
 namespace content {
 
 RendererWebIDBObjectStoreImpl::RendererWebIDBObjectStoreImpl(
-    int32 object_store_ipc_id)
-    : object_store_ipc_id_(object_store_ipc_id) {
+    int32 ipc_object_store_id)
+    : ipc_object_store_id_(ipc_object_store_id) {
 }
 
 RendererWebIDBObjectStoreImpl::~RendererWebIDBObjectStoreImpl() {
@@ -47,7 +47,7 @@ RendererWebIDBObjectStoreImpl::~RendererWebIDBObjectStoreImpl() {
   // this object. But, if that ever changed, then we'd need to invalidate
   // any such pointers.
   IndexedDBDispatcher::Send(
-      new IndexedDBHostMsg_ObjectStoreDestroyed(object_store_ipc_id_));
+      new IndexedDBHostMsg_ObjectStoreDestroyed(ipc_object_store_id_));
 }
 
 void RendererWebIDBObjectStoreImpl::get(
@@ -59,7 +59,7 @@ void RendererWebIDBObjectStoreImpl::get(
       IndexedDBDispatcher::ThreadSpecificInstance();
   dispatcher->RequestIDBObjectStoreGet(
       IndexedDBKeyRange(key_range), callbacks,
-      object_store_ipc_id_, transaction, &ec);
+      ipc_object_store_id_, transaction, &ec);
 }
 
 void RendererWebIDBObjectStoreImpl::put(
@@ -74,7 +74,7 @@ void RendererWebIDBObjectStoreImpl::put(
       IndexedDBDispatcher::ThreadSpecificInstance();
   dispatcher->RequestIDBObjectStorePut(
       SerializedScriptValue(value), IndexedDBKey(key),
-      put_mode, callbacks, object_store_ipc_id_, transaction,
+      put_mode, callbacks, ipc_object_store_id_, transaction,
       index_ids, index_keys);
 }
 
@@ -97,7 +97,7 @@ void RendererWebIDBObjectStoreImpl::setIndexKeys(
     }
   }
   IndexedDBDispatcher::Send(new IndexedDBHostMsg_ObjectStoreSetIndexKeys(
-      object_store_ipc_id_,
+      ipc_object_store_id_,
       IndexedDBKey(primaryKey),
       index_ids_list,
       index_keys_list,
@@ -114,7 +114,7 @@ void RendererWebIDBObjectStoreImpl::setIndexesReady(
   }
 
   IndexedDBDispatcher::Send(new IndexedDBHostMsg_ObjectStoreSetIndexesReady(
-      object_store_ipc_id_,
+      ipc_object_store_id_,
       index_id_list, IndexedDBDispatcher::TransactionId(transaction)));
 }
 
@@ -126,7 +126,7 @@ void RendererWebIDBObjectStoreImpl::deleteFunction(
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance();
   dispatcher->RequestIDBObjectStoreDelete(
-      IndexedDBKeyRange(key_range), callbacks, object_store_ipc_id_,
+      IndexedDBKeyRange(key_range), callbacks, ipc_object_store_id_,
       transaction, &ec);
 }
 
@@ -137,7 +137,7 @@ void RendererWebIDBObjectStoreImpl::clear(
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance();
   dispatcher->RequestIDBObjectStoreClear(
-      callbacks, object_store_ipc_id_, transaction, &ec);
+      callbacks, ipc_object_store_id_, transaction, &ec);
 }
 
 WebIDBIndex* RendererWebIDBObjectStoreImpl::createIndex(
@@ -154,26 +154,26 @@ WebIDBIndex* RendererWebIDBObjectStoreImpl::createIndex(
   params.key_path = IndexedDBKeyPath(key_path);
   params.unique = unique;
   params.multi_entry = multi_entry;
-  params.transaction_id = IndexedDBDispatcher::TransactionId(transaction);
-  params.object_store_ipc_id = object_store_ipc_id_;
+  params.ipc_transaction_id = IndexedDBDispatcher::TransactionId(transaction);
+  params.ipc_object_store_id = ipc_object_store_id_;
 
-  int32 index_id;
+  int32 ipc_index_id;
   IndexedDBDispatcher::Send(
-      new IndexedDBHostMsg_ObjectStoreCreateIndex(params, &index_id, &ec));
-  if (!index_id)
+      new IndexedDBHostMsg_ObjectStoreCreateIndex(params, &ipc_index_id, &ec));
+  if (!ipc_index_id)
     return NULL;
-  return new RendererWebIDBIndexImpl(index_id);
+  return new RendererWebIDBIndexImpl(ipc_index_id);
 }
 
 WebIDBIndex* RendererWebIDBObjectStoreImpl::index(
     const long long index_id) {
-  int32 idb_index_id;
+  int32 ipc_index_id;
   IndexedDBDispatcher::Send(
-      new IndexedDBHostMsg_ObjectStoreIndex(object_store_ipc_id_, index_id,
-                                            &idb_index_id));
-  if (!idb_index_id)
+      new IndexedDBHostMsg_ObjectStoreIndex(ipc_object_store_id_, index_id,
+                                            &ipc_index_id));
+  if (!ipc_index_id)
       return NULL;
-  return new RendererWebIDBIndexImpl(idb_index_id);
+  return new RendererWebIDBIndexImpl(ipc_index_id);
 }
 
 void RendererWebIDBObjectStoreImpl::deleteIndex(
@@ -182,7 +182,7 @@ void RendererWebIDBObjectStoreImpl::deleteIndex(
     WebExceptionCode& ec) {
   IndexedDBDispatcher::Send(
       new IndexedDBHostMsg_ObjectStoreDeleteIndex(
-          object_store_ipc_id_, index_id,
+          ipc_object_store_id_, index_id,
           IndexedDBDispatcher::TransactionId(transaction), &ec));
 }
 
@@ -195,7 +195,7 @@ void RendererWebIDBObjectStoreImpl::openCursor(
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance();
   dispatcher->RequestIDBObjectStoreOpenCursor(
-      idb_key_range, direction, callbacks,  object_store_ipc_id_,
+      idb_key_range, direction, callbacks,  ipc_object_store_id_,
       task_type, transaction, &ec);
 }
 
@@ -207,7 +207,7 @@ void RendererWebIDBObjectStoreImpl::count(
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance();
   dispatcher->RequestIDBObjectStoreCount(
-      idb_key_range, callbacks,  object_store_ipc_id_,
+      idb_key_range, callbacks,  ipc_object_store_id_,
       transaction, &ec);
 }
 

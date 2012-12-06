@@ -13,7 +13,7 @@ namespace content {
 
 class RendererWebIDBIndexImpl : public WebKit::WebIDBIndex {
  public:
-  explicit RendererWebIDBIndexImpl(int32 idb_index_id);
+  explicit RendererWebIDBIndexImpl(int32 ipc_index_id);
   virtual ~RendererWebIDBIndexImpl();
 
   // WebKit::WebIDBIndex
@@ -41,7 +41,7 @@ class RendererWebIDBIndexImpl : public WebKit::WebIDBIndex {
                       WebKit::WebExceptionCode& ec);
 
  private:
-  int32 idb_index_id_;
+  int32 ipc_index_id_;
 };
 
 }  // namespace content

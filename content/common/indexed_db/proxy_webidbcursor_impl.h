@@ -19,7 +19,7 @@ namespace content {
 
 class RendererWebIDBCursorImpl : public WebKit::WebIDBCursor {
  public:
-  explicit RendererWebIDBCursorImpl(int32 idb_cursor_id);
+  explicit RendererWebIDBCursorImpl(int32 ipc_cursor_id);
   virtual ~RendererWebIDBCursorImpl();
 
   virtual void advance(unsigned long count,
@@ -41,7 +41,7 @@ class RendererWebIDBCursorImpl : public WebKit::WebIDBCursor {
   void ResetPrefetchCache();
 
  private:
-  int32 idb_cursor_id_;
+  int32 ipc_cursor_id_;
 
   // Prefetch cache.
   std::deque<IndexedDBKey> prefetch_keys_;

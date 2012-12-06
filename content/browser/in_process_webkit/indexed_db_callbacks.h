@@ -28,18 +28,18 @@ class IndexedDBCallbacksBase : public WebKit::WebIDBCallbacks {
 
  protected:
   IndexedDBCallbacksBase(IndexedDBDispatcherHost* dispatcher_host,
-                         int32 thread_id,
-                         int32 response_id);
+                         int32 ipc_thread_id,
+                         int32 ipc_response_id);
   IndexedDBDispatcherHost* dispatcher_host() const {
     return dispatcher_host_.get();
   }
-  int32 thread_id() const { return thread_id_; }
-  int32 response_id() const { return response_id_; }
+  int32 ipc_thread_id() const { return ipc_thread_id_; }
+  int32 ipc_response_id() const { return ipc_response_id_; }
 
  private:
   scoped_refptr<IndexedDBDispatcherHost> dispatcher_host_;
-  int32 response_id_;
-  int32 thread_id_;
+  int32 ipc_response_id_;
+  int32 ipc_thread_id_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacksBase);
 };
@@ -55,8 +55,8 @@ class IndexedDBCallbacksDatabase : public IndexedDBCallbacksBase {
  public:
   IndexedDBCallbacksDatabase(
       IndexedDBDispatcherHost* dispatcher_host,
-      int32 thread_id,
-      int32 response_id,
+      int32 ipc_thread_id,
+      int32 ipc_response_id,
       const GURL& origin_url);
 
   virtual void onSuccess(WebKit::WebIDBDatabase* idb_object);
@@ -67,7 +67,7 @@ class IndexedDBCallbacksDatabase : public IndexedDBCallbacksBase {
 
  private:
   GURL origin_url_;
-  int32 database_id_;
+  int32 ipc_database_id_;
   DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacksDatabase);
 };
 
@@ -85,11 +85,11 @@ class IndexedDBCallbacks<WebKit::WebIDBCursor>
  public:
   IndexedDBCallbacks(
       IndexedDBDispatcherHost* dispatcher_host,
-      int32 thread_id,
-      int32 response_id,
-      int32 cursor_id)
-      : IndexedDBCallbacksBase(dispatcher_host, thread_id, response_id),
-        cursor_id_(cursor_id) { }
+      int32 ipc_thread_id,
+      int32 ipc_response_id,
+      int32 ipc_cursor_id)
+      : IndexedDBCallbacksBase(dispatcher_host, ipc_thread_id, ipc_response_id),
+        ipc_cursor_id_(ipc_cursor_id) { }
 
   virtual void onSuccess(WebKit::WebIDBCursor* idb_object,
                          const WebKit::WebIDBKey& key,
@@ -107,7 +107,7 @@ class IndexedDBCallbacks<WebKit::WebIDBCursor>
  private:
   // The id of the cursor this callback concerns, or -1 if the cursor
   // does not exist yet.
-  int32 cursor_id_;
+  int32 ipc_cursor_id_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacks);
 };
@@ -120,9 +120,10 @@ class IndexedDBCallbacks<WebKit::WebIDBKey>
     : public IndexedDBCallbacksBase {
  public:
   IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
-                     int32 thread_id,
-                     int32 response_id)
-      : IndexedDBCallbacksBase(dispatcher_host, thread_id, response_id) { }
+                     int32 ipc_thread_id,
+                     int32 ipc_response_id)
+      : IndexedDBCallbacksBase(dispatcher_host, ipc_thread_id,
+                               ipc_response_id) { }
 
   virtual void onSuccess(const WebKit::WebIDBKey& value);
 
@@ -139,9 +140,10 @@ class IndexedDBCallbacks<WebKit::WebDOMStringList>
  public:
   IndexedDBCallbacks(
       IndexedDBDispatcherHost* dispatcher_host,
-      int32 thread_id,
-      int32 response_id)
-      : IndexedDBCallbacksBase(dispatcher_host, thread_id, response_id) { }
+      int32 ipc_thread_id,
+      int32 ipc_response_id)
+      : IndexedDBCallbacksBase(dispatcher_host, ipc_thread_id,
+                               ipc_response_id) { }
 
   virtual void onSuccess(const WebKit::WebDOMStringList& value);
 
@@ -157,9 +159,10 @@ class IndexedDBCallbacks<WebKit::WebSerializedScriptValue>
     : public IndexedDBCallbacksBase {
  public:
   IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
-                     int32 thread_id,
-                     int32 response_id)
-      : IndexedDBCallbacksBase(dispatcher_host, thread_id, response_id) { }
+                     int32 ipc_thread_id,
+                     int32 ipc_response_id)
+      : IndexedDBCallbacksBase(dispatcher_host, ipc_thread_id,
+                               ipc_response_id) { }
 
   virtual void onSuccess(const WebKit::WebSerializedScriptValue& value);
   virtual void onSuccess(const WebKit::WebSerializedScriptValue& value,

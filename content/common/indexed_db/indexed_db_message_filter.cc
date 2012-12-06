@@ -22,11 +22,11 @@ IndexedDBMessageFilter::IndexedDBMessageFilter() :
 bool IndexedDBMessageFilter::OnMessageReceived(const IPC::Message& msg) {
   if (IPC_MESSAGE_CLASS(msg) != IndexedDBMsgStart)
     return false;
-  int thread_id = IPC::MessageIterator(msg).NextInt();
+  int ipc_thread_id = IPC::MessageIterator(msg).NextInt();
   base::Closure closure = base::Bind(
       &IndexedDBMessageFilter::DispatchMessage, this, msg);
-  if (thread_id)
-    WorkerTaskRunner::Instance()->PostTask(thread_id, closure);
+  if (ipc_thread_id)
+    WorkerTaskRunner::Instance()->PostTask(ipc_thread_id, closure);
   else
     main_thread_loop_proxy_->PostTask(FROM_HERE, closure);
   return true;

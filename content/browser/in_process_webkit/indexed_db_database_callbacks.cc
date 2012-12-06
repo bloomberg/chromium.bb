@@ -11,11 +11,11 @@ namespace content {
 
 IndexedDBDatabaseCallbacks::IndexedDBDatabaseCallbacks(
     IndexedDBDispatcherHost* dispatcher_host,
-    int thread_id,
-    int database_id)
+    int ipc_thread_id,
+    int ipc_database_id)
     : dispatcher_host_(dispatcher_host),
-      thread_id_(thread_id),
-      database_id_(database_id) {
+      ipc_thread_id_(ipc_thread_id),
+      ipc_database_id_(ipc_database_id) {
 }
 
 IndexedDBDatabaseCallbacks::~IndexedDBDatabaseCallbacks() {
@@ -23,14 +23,15 @@ IndexedDBDatabaseCallbacks::~IndexedDBDatabaseCallbacks() {
 
 void IndexedDBDatabaseCallbacks::onForcedClose() {
   dispatcher_host_->Send(
-      new IndexedDBMsg_DatabaseCallbacksForcedClose(thread_id_, database_id_));
+      new IndexedDBMsg_DatabaseCallbacksForcedClose(ipc_thread_id_,
+                                                    ipc_database_id_));
 }
 
 void IndexedDBDatabaseCallbacks::onVersionChange(long long old_version,
                                                  long long new_version) {
   dispatcher_host_->Send(
-      new IndexedDBMsg_DatabaseCallbacksIntVersionChange(thread_id_,
-                                                         database_id_,
+      new IndexedDBMsg_DatabaseCallbacksIntVersionChange(ipc_thread_id_,
+                                                         ipc_database_id_,
                                                          old_version,
                                                          new_version));
 }
@@ -38,7 +39,8 @@ void IndexedDBDatabaseCallbacks::onVersionChange(long long old_version,
 void IndexedDBDatabaseCallbacks::onVersionChange(
     const WebKit::WebString& requested_version) {
   dispatcher_host_->Send(
-      new IndexedDBMsg_DatabaseCallbacksVersionChange(thread_id_, database_id_,
+      new IndexedDBMsg_DatabaseCallbacksVersionChange(ipc_thread_id_,
+                                                      ipc_database_id_,
                                                       requested_version));
 }
 

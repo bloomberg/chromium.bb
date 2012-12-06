@@ -19,8 +19,8 @@ using WebKit::WebString;
 namespace content {
 
 RendererWebIDBTransactionImpl::RendererWebIDBTransactionImpl(
-    int32 idb_transaction_id)
-    : idb_transaction_id_(idb_transaction_id) {
+    int32 ipc_transaction_id)
+    : ipc_transaction_id_(ipc_transaction_id) {
 }
 
 RendererWebIDBTransactionImpl::~RendererWebIDBTransactionImpl() {
@@ -29,35 +29,35 @@ RendererWebIDBTransactionImpl::~RendererWebIDBTransactionImpl() {
   // this object. But, if that ever changed, then we'd need to invalidate
   // any such pointers.
   IndexedDBDispatcher::Send(new IndexedDBHostMsg_TransactionDestroyed(
-      idb_transaction_id_));
+      ipc_transaction_id_));
 }
 
 WebIDBObjectStore* RendererWebIDBTransactionImpl::objectStore(
     long long object_store_id,
     WebKit::WebExceptionCode& ec) {
-  int idb_object_store_id;
+  int ipc_object_store_id;
   IndexedDBDispatcher::Send(
       new IndexedDBHostMsg_TransactionObjectStore(
-          idb_transaction_id_, object_store_id, &idb_object_store_id, &ec));
+          ipc_transaction_id_, object_store_id, &ipc_object_store_id, &ec));
   if (!object_store_id)
     return NULL;
-  return new RendererWebIDBObjectStoreImpl(idb_object_store_id);
+  return new RendererWebIDBObjectStoreImpl(ipc_object_store_id);
 }
 
 void RendererWebIDBTransactionImpl::commit() {
   IndexedDBDispatcher::Send(new IndexedDBHostMsg_TransactionCommit(
-      idb_transaction_id_));
+      ipc_transaction_id_));
 }
 
 void RendererWebIDBTransactionImpl::abort() {
   IndexedDBDispatcher::Send(new IndexedDBHostMsg_TransactionAbort(
-      idb_transaction_id_));
+      ipc_transaction_id_));
 }
 
 void RendererWebIDBTransactionImpl::didCompleteTaskEvents() {
   IndexedDBDispatcher::Send(
       new IndexedDBHostMsg_TransactionDidCompleteTaskEvents(
-          idb_transaction_id_));
+          ipc_transaction_id_));
 }
 
 void RendererWebIDBTransactionImpl::setCallbacks(
@@ -65,7 +65,7 @@ void RendererWebIDBTransactionImpl::setCallbacks(
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance();
   dispatcher->RegisterWebIDBTransactionCallbacks(callbacks,
-                                                 idb_transaction_id_);
+                                                 ipc_transaction_id_);
 }
 
 }  // namespace content

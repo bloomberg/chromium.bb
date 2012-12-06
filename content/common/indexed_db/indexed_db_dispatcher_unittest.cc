@@ -30,7 +30,7 @@ TEST(IndexedDBDispatcherTest, DISABLED_ValueSizeTest) {
   const bool kIsNull = false;
   const bool kIsInvalid = false;
   const SerializedScriptValue value(kIsNull, kIsInvalid, data);
-  const int32 dummy_id = -1;
+  const int32 ipc_dummy_id = -1;
 
   {
     IndexedDBDispatcher dispatcher;
@@ -41,7 +41,7 @@ TEST(IndexedDBDispatcherTest, DISABLED_ValueSizeTest) {
         key,
         WebKit::WebIDBObjectStore::AddOrUpdate,
         static_cast<WebKit::WebIDBCallbacks*>(NULL),
-        dummy_id,
+        ipc_dummy_id,
         FakeWebIDBTransaction(),
         WebVector<long long>(),
         WebVector<WebVector<WebKit::WebIDBKey> >());
