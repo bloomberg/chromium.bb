@@ -2922,6 +2922,7 @@ map(struct desktop_shell *shell, struct weston_surface *surface,
 		break;
 	case SHELL_SURFACE_POPUP:
 		shell_map_popup(shsurf);
+		break;
 	case SHELL_SURFACE_NONE:
 		weston_surface_set_position(surface,
 					    surface->geometry.x + sx,
