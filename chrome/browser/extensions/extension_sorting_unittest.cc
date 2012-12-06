@@ -698,7 +698,7 @@ TEST_F(ExtensionSortingGetMinOrMaxAppLaunchOrdinalsOnPage,
        ExtensionSortingGetMinOrMaxAppLaunchOrdinalsOnPage) {}
 
 // Make sure that empty pages aren't removed from the integer to ordinal
-// mapping. See http://www.crbug.com/109802 for details.
+// mapping. See http://crbug.com/109802 for details.
 class ExtensionSortingKeepEmptyStringOrdinalPages
     : public ExtensionSortingPreinstalledAppsBase {
  public:

@@ -83,8 +83,8 @@ const CGFloat kWindowGradientHeight = 24.0;
                                  backing:bufferingType
                                    defer:flag])) {
     if (aStyle & NSTexturedBackgroundWindowMask) {
-      // The following two calls fix http://www.crbug.com/25684 by preventing
-      // the window from recalculating the border thickness as the window is
+      // The following two calls fix http://crbug.com/25684 by preventing the
+      // window from recalculating the border thickness as the window is
       // resized.
       // This was causing the window tint to change for the default system theme
       // when the window was being resized.

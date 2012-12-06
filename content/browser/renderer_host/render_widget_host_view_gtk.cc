@@ -900,7 +900,7 @@ void RenderWidgetHostViewGtk::Destroy() {
   // this code is currently executing within the context of a gtk signal
   // handler.  Note that |view_| is still alive after this call.  It will be
   // deallocated in the destructor.
-  // See http://www.crbug.com/11847 for details.
+  // See http://crbug.com/11847 for details.
   gtk_widget_destroy(view_.get());
 
   // The RenderWidgetHost's destruction led here, so don't call it.

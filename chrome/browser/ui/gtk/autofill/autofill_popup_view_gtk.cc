@@ -294,7 +294,7 @@ void AutofillPopupViewGtk::DrawAutofillEntry(cairo_t* cairo_context,
       delete_icon = theme_service_->GetImageNamed(IDR_CLOSE_BAR);
 
     // TODO(csharp): Create a custom resource for the delete icon.
-    // http://www.crbug.com/131801
+    // http://crbug.com/131801
     cairo_save(cairo_context);
     gtk_util::DrawFullImage(
         cairo_context,

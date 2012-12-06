@@ -9,7 +9,7 @@ namespace switches {
 // These constants are duplicated from chrome/common/chrome_switches.cc
 // in order to avoid dependency problems.
 // TODO(abodenha@chromium.org) Reunify them in some sensible manner.
-// Bug: www.crbug.com/88991
+// Bug: http://crbug.com/88991
 
 // Location of Chrome user profile. Optional.
 extern const char kCloudPrintUserDataDir[];

@@ -169,7 +169,7 @@ void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
     x_align_left -= kDeleteIconWidth;
 
     // TODO(csharp): Create a custom resource for the delete icon.
-    // http://www.crbug.com/131801
+    // http://crbug.com/131801
     canvas->DrawImageInt(
         *rb.GetImageSkiaNamed(IDR_CLOSE_BAR),
         x_align_left,

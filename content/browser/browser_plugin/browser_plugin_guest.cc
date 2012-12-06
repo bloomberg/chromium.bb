@@ -607,7 +607,7 @@ void BrowserPluginGuest::DidStopLoading(RenderViewHost* render_view_host) {
 
 void BrowserPluginGuest::RenderViewReady() {
   // TODO(fsamuel): Investigate whether it's possible to update state earlier
-  // here (see http://www.crbug.com/158151).
+  // here (see http://crbug.com/158151).
   Send(new ViewMsg_SetFocus(routing_id(), focused_));
   bool embedder_visible =
       embedder_web_contents_->GetBrowserPluginEmbedder()->visible();
