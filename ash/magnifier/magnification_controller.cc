@@ -105,21 +105,6 @@ class MagnificationControllerImpl : virtual public MagnificationController,
   // Returns if the magnification scale is 1.0 or not (larger then 1.0).
   bool IsMagnified() const;
 
-  // Returns the default scale which depends on the login status.
-  float GetDefaultZoomScale() const {
-    // TODO(yoshiki,mazda): Do not use SystemTrayDelegate to get the user login
-    // status (http://crbug.com/163170).
-    user::LoginStatus login = Shell::GetInstance()->tray_delegate() ?
-        Shell::GetInstance()->tray_delegate()->GetUserLoginStatus() :
-        user::LOGGED_IN_NONE;
-
-    // On login screen, don't magnify the screen by default.
-    if (login == user::LOGGED_IN_NONE)
-      return kNonMagnifiedScale;
-
-    return kInitialMagnifiedScale;
-  }
-
   // Returns the rect of the magnification window.
   gfx::RectF GetWindowRectDIP(float scale) const;
   // Returns the size of the root window.
@@ -476,7 +461,7 @@ void MagnificationControllerImpl::SetEnabled(bool enabled) {
     float scale =
         ash::Shell::GetInstance()->delegate()->GetSavedScreenMagnifierScale();
     if (scale <= 0.0f)
-      scale = GetDefaultZoomScale();
+      scale = kInitialMagnifiedScale;
     ValidateScale(&scale);
 
     // Do nothing, if already enabled with same scale.
@@ -484,6 +469,7 @@ void MagnificationControllerImpl::SetEnabled(bool enabled) {
       return;
 
     RedrawKeepingMousePosition(scale, true);
+    ash::Shell::GetInstance()->delegate()->SaveScreenMagnifierScale(scale);
     is_enabled_ = enabled;
   } else {
     // Do nothing, if already disabled.

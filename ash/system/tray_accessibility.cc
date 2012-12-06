@@ -295,8 +295,7 @@ void TrayAccessibility::OnAccessibilityModeChanged() {
     tray_view()->SetVisible(GetInitialVisibility());
 
   bool accessibility_enabled = IsAnyAccessibilityFeatureEnabled();
-  if (!accessibility_previously_enabled_ && accessibility_enabled &&
-      login_ != user::LOGGED_IN_NONE) {
+  if (!accessibility_previously_enabled_ && accessibility_enabled) {
     // Shows popup if the accessibilty status is being changed to true from
     // false.
     request_popup_view_ = true;

@@ -25,13 +25,15 @@
 namespace chromeos {
 
 namespace {
+const double kInitialMagnifiedScale = 2.0;
 static MagnificationManager* g_magnification_manager = NULL;
 }
 
 class MagnificationManagerImpl : public MagnificationManager,
                                  public content::NotificationObserver {
  public:
-  MagnificationManagerImpl() : profile_(NULL),
+  MagnificationManagerImpl() : first_time_update_(true),
+                               profile_(NULL),
                                type_(ash::MAGNIFIER_OFF) {
     registrar_.Add(this,
                   chrome::NOTIFICATION_SESSION_STARTED,
@@ -136,6 +138,30 @@ class MagnificationManagerImpl : public MagnificationManager,
   }
 
   void UpdateMagnifierStatus() {
+    // Historycally, from r162080 to r170956, screen magnifier had been enabled
+    // with 1.0x scale on login screen by default, hence some users
+    // unintentionally have the pref to enable magnifier. Now, the default scale
+    // is 2.0x on login screen (same as other screens), so despite them, with
+    // the old pref, their screen might be magnified with 2.0x scale.
+    // The following code prevents it. If the user on login screen has full
+    // screen magnifier pref but no scale pref, doesn't make magnifier enabled.
+    // TODO(yoshiki): remove this in the near future: crbug.com/164627
+    if (first_time_update_) {
+      first_time_update_ = false;
+      UserManager* manager = UserManager::Get();
+      if (profile_ &&
+          !profile_->GetPrefs()->HasPrefPath(prefs::kScreenMagnifierScale) &&
+          accessibility::MagnifierTypeFromName(profile_->GetPrefs()->GetString(
+              prefs::kMagnifierType).c_str()) == ash::MAGNIFIER_FULL &&
+          manager &&
+          !manager->IsSessionStarted()) {
+        SetMagnifier(ash::MAGNIFIER_OFF);
+        profile_->GetPrefs()->SetDouble(prefs::kScreenMagnifierScale,
+                                        kInitialMagnifiedScale);
+        return;
+      }
+    }
+
     ash::MagnifierType type = GetMagnifierTypeFromPref();
     SetMagnifier(type);
   }
@@ -158,6 +184,7 @@ class MagnificationManagerImpl : public MagnificationManager,
     }
   }
 
+  bool first_time_update_;
   Profile* profile_;
   ash::MagnifierType type_;
   content::NotificationRegistrar registrar_;
