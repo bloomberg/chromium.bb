@@ -581,8 +581,8 @@ ConstrainedWindowViews::ConstrainedWindowViews(
   params.child = true;
 
   if (enable_chrome_style_) {
-    params.parent_widget = Widget::GetTopLevelWidgetForNativeView(
-        web_contents_->GetView()->GetNativeView());
+    params.parent = Widget::GetTopLevelWidgetForNativeView(
+        web_contents_->GetView()->GetNativeView())->GetNativeView();
   } else {
     params.parent = web_contents_->GetNativeView();
   }
@@ -594,7 +594,7 @@ ConstrainedWindowViews::ConstrainedWindowViews(
   }
   // Ash window headers can be transparent.
   params.transparent = true;
-  views::corewm::SetChildWindowVisibilityChangesAnimated(params.GetParent());
+  views::corewm::SetChildWindowVisibilityChangesAnimated(params.parent);
   // No animations should get performed on the window since that will re-order
   // the window stack which will then cause many problems.
   if (params.parent && params.parent->parent()) {

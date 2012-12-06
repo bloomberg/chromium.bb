@@ -52,7 +52,6 @@ views::Widget* CreateNewWidgetWithBoundsOn(int display,
   params.accept_events = true;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.context = Shell::GetAllRootWindows().at(display);
-  params.parent_widget = NULL;
   params.child = true;
   params.bounds = bounds;
   widget->Init(params);

@@ -144,7 +144,7 @@ void NativeWidgetWin::ClearAccessibilityViewEvent(View* view) {
 
 void NativeWidgetWin::InitNativeWidget(const Widget::InitParams& params) {
   SetInitParams(params);
-  message_handler_->Init(params.GetParent(), params.bounds);
+  message_handler_->Init(params.parent, params.bounds);
 }
 
 NonClientFrameView* NativeWidgetWin::CreateNonClientFrameView() {

@@ -201,8 +201,8 @@ aura::RootWindow* DesktopRootWindowHostLinux::InitRootWindow(
 
   // If we're given a parent, we need to mark ourselves as transient to another
   // window. Otherwise activation gets screwy.
-  gfx::NativeView parent = params.GetParent();
-  if (!params.child && params.GetParent())
+  gfx::NativeView parent = params.parent;
+  if (!params.child && params.parent)
     parent->AddTransientChild(content_window_);
 
   native_widget_delegate_->OnNativeWidgetCreated();

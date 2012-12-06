@@ -155,7 +155,6 @@ Widget::InitParams::InitParams()
       show_state(ui::SHOW_STATE_DEFAULT),
       double_buffer(false),
       parent(NULL),
-      parent_widget(NULL),
       native_widget(NULL),
       desktop_root_window_host(NULL),
       top_level(false),
@@ -181,16 +180,11 @@ Widget::InitParams::InitParams(Type type)
       show_state(ui::SHOW_STATE_DEFAULT),
       double_buffer(false),
       parent(NULL),
-      parent_widget(NULL),
       native_widget(NULL),
       desktop_root_window_host(NULL),
       top_level(false),
       layer_type(ui::LAYER_TEXTURED),
       context(NULL) {
-}
-
-gfx::NativeView Widget::InitParams::GetParent() const {
-  return parent_widget ? parent_widget->GetNativeView() : parent;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -336,7 +330,7 @@ void Widget::Init(const InitParams& params) {
       params.delegate : new DefaultWidgetDelegate(this, params);
   ownership_ = params.ownership;
   native_widget_ = CreateNativeWidget(
-      params.native_widget, this, params.type, params.GetParent())->
+      params.native_widget, this, params.type, params.parent)->
           AsNativeWidgetPrivate();
   GetRootView();
   default_theme_provider_.reset(new DefaultThemeProvider);

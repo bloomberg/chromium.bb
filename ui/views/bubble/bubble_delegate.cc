@@ -30,8 +30,8 @@ Widget* CreateBubbleWidget(BubbleDelegateView* bubble) {
   bubble_params.accept_events = bubble->accept_events();
   if (bubble->parent_window())
     bubble_params.parent = bubble->parent_window();
-  else
-    bubble_params.parent_widget = bubble->anchor_widget();
+  else if (bubble->anchor_widget())
+    bubble_params.parent = bubble->anchor_widget()->GetNativeView();
   bubble_params.can_activate = bubble->CanActivate();
 #if defined(OS_WIN) && !defined(USE_AURA)
   bubble_params.type = Widget::InitParams::TYPE_WINDOW_FRAMELESS;
@@ -88,7 +88,7 @@ Widget* CreateBorderWidget(BubbleDelegateView* bubble) {
   Widget::InitParams border_params(Widget::InitParams::TYPE_BUBBLE);
   border_params.delegate = new BubbleBorderDelegate(bubble, border_widget);
   border_params.transparent = true;
-  border_params.parent_widget = bubble->GetWidget();
+  border_params.parent = bubble->GetWidget()->GetNativeView();
   border_params.can_activate = false;
   border_widget->Init(border_params);
   border_widget->set_focus_on_creation(false);

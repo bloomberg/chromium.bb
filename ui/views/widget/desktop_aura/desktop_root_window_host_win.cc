@@ -90,7 +90,7 @@ aura::RootWindow* DesktopRootWindowHostWin::Init(
                         native_widget_delegate_);
 
   HWND parent_hwnd = NULL;
-  aura::Window* parent_window = params.GetParent();
+  aura::Window* parent_window = params.parent;
   if (parent_window)
     parent_hwnd = parent_window->GetRootWindow()->GetAcceleratedWidget();
 

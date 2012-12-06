@@ -139,7 +139,7 @@ TEST_F(FocusManagerTest, WidgetFocusChangeListener) {
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(10, 10, 100, 100);
-  params.parent_widget = GetWidget();
+  params.parent = GetWidget()->GetNativeView();
 
   scoped_ptr<Widget> widget1(new Widget);
   widget1->Init(params);

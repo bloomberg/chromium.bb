@@ -141,9 +141,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     InitParams();
     explicit InitParams(Type type);
 
-    // If |parent_widget| is non-null, its native view is returned, otherwise
-    // |parent| is returned.
-    gfx::NativeView GetParent() const;
 
     // Will return the first of the following that isn't NULL: the native view,
     // |parent|, |context|.
@@ -177,7 +174,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // Should the widget be double buffered? Default is false.
     bool double_buffer;
     gfx::NativeView parent;
-    Widget* parent_widget;
     // Specifies the initial bounds of the Widget. Default is empty, which means
     // the NativeWidget may specify a default size. If the parent is specified,
     // |bounds| is in the parent's coordinate system. If the parent is not

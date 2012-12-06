@@ -212,7 +212,7 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
     params.can_activate = false;
     params.transparent = true;
-    params.parent_widget = location_bar_->GetWidget();
+    params.parent = location_bar_->GetWidget()->GetNativeView();
     params.bounds = GetPopupBounds();
     params.context = location_bar_->GetWidget()->GetNativeView();
     popup_->Init(params);

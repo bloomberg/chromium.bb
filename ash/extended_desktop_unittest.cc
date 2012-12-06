@@ -37,7 +37,8 @@ views::Widget* CreateTestWidgetWithParent(views::Widget* parent,
                                           const gfx::Rect& bounds,
                                           bool child) {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
-  params.parent_widget = parent;
+  if (parent)
+    params.parent = parent->GetNativeView();
   params.bounds = bounds;
   params.child = child;
   views::Widget* widget = new views::Widget;

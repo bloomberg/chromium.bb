@@ -116,7 +116,7 @@ void WidgetExample::CreateChild(View* parent, bool transparent) {
   // Initialize the child widget with the computed bounds.
   Widget::InitParams params(Widget::InitParams::TYPE_CONTROL);
   params.transparent = transparent;
-  params.parent_widget = parent_widget;
+  params.parent = parent_widget->GetNativeView();
   widget->Init(params);
   InitWidget(widget, transparent);
 }
@@ -136,7 +136,7 @@ void WidgetExample::CreatePopup(View* parent, bool transparent) {
   // Initialize the popup widget with the computed bounds.
   Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
   params.transparent = transparent;
-  params.parent_widget = parent->GetWidget();
+  params.parent = parent->GetWidget()->GetNativeView();
   params.bounds = gfx::Rect(point.x(), point.y(), 200, 300);
   widget->Init(params);
   InitWidget(widget, transparent);

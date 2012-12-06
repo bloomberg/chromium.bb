@@ -194,7 +194,7 @@ class WidgetTest : public ViewsTestBase {
   Widget* CreateChildNativeWidgetWithParent(Widget* parent) {
     Widget* child = new Widget;
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_CONTROL);
-    params.parent_widget = parent;
+    params.parent = parent->GetNativeView();
     child->Init(params);
     child->SetContentsView(new View);
     return child;
@@ -581,8 +581,8 @@ TEST_F(WidgetOwnershipTest,
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.native_widget =
       new OwnershipTestNativeWidgetPlatform(widget.get(), &state);
+  params.parent = toplevel->GetNativeView();
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.parent_widget = toplevel;
   widget->Init(params);
 
   // Now close the toplevel, which deletes the view hierarchy.
@@ -630,7 +630,7 @@ TEST_F(WidgetOwnershipTest, Ownership_ViewsNativeWidgetOwnsWidget) {
   Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
   params.native_widget =
       new OwnershipTestNativeWidgetPlatform(widget, &state);
-  params.parent_widget = toplevel;
+  params.parent = toplevel->GetNativeView();
   widget->Init(params);
 
   // Now destroy the native widget. This is achieved by closing the toplevel.
@@ -679,7 +679,7 @@ TEST_F(WidgetOwnershipTest,
   Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
   params.native_widget =
       new OwnershipTestNativeWidgetPlatform(widget, &state);
-  params.parent_widget = toplevel;
+  params.parent = toplevel->GetNativeView();
   widget->Init(params);
 
   // Destroy the widget (achieved by closing the toplevel).
@@ -705,7 +705,7 @@ TEST_F(WidgetOwnershipTest,
   Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
   params.native_widget =
       new OwnershipTestNativeWidgetPlatform(widget, &state);
-  params.parent_widget = toplevel;
+  params.parent = toplevel->GetNativeView();
   widget->Init(params);
 
   // Destroy the widget.

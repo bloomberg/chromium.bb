@@ -107,7 +107,7 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   delegate_->OnNativeWidgetCreated();
 
   gfx::Rect window_bounds = params.bounds;
-  gfx::NativeView parent = params.GetParent();
+  gfx::NativeView parent = params.parent;
   if (!params.child) {
     // Set up the transient child before the window is added. This way the
     // LayoutManager knows the window has a transient parent.
