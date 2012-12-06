@@ -9,6 +9,11 @@
 
 namespace chromeos {
 
+class MagnificationObserver {
+ public:
+  virtual void OnMagnifierTypeChanged(ash::MagnifierType new_type) = 0;
+};
+
 // MagnificationManager controls the full screen magnifier from chrome-browser
 // side (not ash side).
 //
@@ -21,17 +26,24 @@ namespace chromeos {
 class MagnificationManager {
  public:
   // Creates an instance of MagnificationManager. This should be called once,
+  // Returns the existing instance. If there is no instance, creates one.
   // because only one instance should exist at the same time.
-  static MagnificationManager* CreateInstance();
+  static void Initialize();
+  // Deletes the existing instance of MagnificationManager.
+  static void Shutdown();
   // Returns the existing instance. If there is no instance, returns NULL.
-  static MagnificationManager* GetInstance();
+  static MagnificationManager* Get();
 
-  virtual ~MagnificationManager() {}
+  virtual void AddObserver(MagnificationObserver* observer) = 0;
+  virtual void RemoveObserver(MagnificationObserver* observer) = 0;
 
   // Returns the current type of the screen magnifier.
   virtual ash::MagnifierType GetMagnifierType() = 0;
   // Changes the type of the screen magnifier.
   virtual void SetMagnifier(ash::MagnifierType type) = 0;
+
+ protected:
+  virtual ~MagnificationManager() {}
 };
 
 }  // namespace chromeos

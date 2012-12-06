@@ -24,34 +24,76 @@
 
 namespace chromeos {
 
+namespace {
+static MagnificationManager* g_magnification_manager = NULL;
+}
+
 class MagnificationManagerImpl : public MagnificationManager,
                                  public content::NotificationObserver {
  public:
-  MagnificationManagerImpl() {
-    DCHECK(!instance_);
-    instance_ = this;
-
+  MagnificationManagerImpl() : profile_(NULL),
+                               type_(ash::MAGNIFIER_OFF) {
     registrar_.Add(this,
                   chrome::NOTIFICATION_SESSION_STARTED,
                   content::NotificationService::AllSources());
     registrar_.Add(this,
-                  chrome::NOTIFICATION_PROFILE_CREATED,
+                  chrome::NOTIFICATION_PROFILE_DESTROYED,
                   content::NotificationService::AllSources());
     registrar_.Add(this,
                   chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE,
                   content::NotificationService::AllSources());
-
-    Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
-    SetProfile(profile);
   }
-  virtual ~MagnificationManagerImpl() {}
 
-  static MagnificationManagerImpl* GetInstance() {
-    return instance_;
+  virtual ~MagnificationManagerImpl() {
+    CHECK(this == g_magnification_manager);
   }
 
   // MagnificationManager implimentation:
   ash::MagnifierType GetMagnifierType() OVERRIDE {
+    return type_;
+  }
+
+  void SetMagnifier(ash::MagnifierType type) OVERRIDE {
+    if (type == type_)
+      return;
+
+    type_ = type;
+
+    if (profile_) {
+      PrefService* prefs = profile_->GetPrefs();
+      if (prefs) {
+        std::string typeString =
+            accessibility::ScreenMagnifierNameFromType(type);
+        if (typeString != prefs->GetString(prefs::kMagnifierType)) {
+          prefs->SetString(prefs::kMagnifierType, typeString);
+          prefs->CommitPendingWrite();
+        }
+      }
+    }
+
+    ash::Shell::GetInstance()->magnification_controller()->SetEnabled(
+        type == ash::MAGNIFIER_FULL);
+    ash::Shell::GetInstance()->partial_magnification_controller()->SetEnabled(
+        type == ash::MAGNIFIER_PARTIAL);
+
+    NotifyMagnifierTypeChanged(type);
+  }
+
+  void AddObserver(MagnificationObserver* observer) OVERRIDE {
+    observers_.AddObserver(observer);
+  }
+
+  void RemoveObserver(MagnificationObserver* observer) OVERRIDE {
+    observers_.RemoveObserver(observer);
+  }
+
+ private:
+  void NotifyMagnifierTypeChanged(ash::MagnifierType new_type) {
+    FOR_EACH_OBSERVER(MagnificationObserver, observers_,
+                      OnMagnifierTypeChanged(new_type));
+  }
+
+  ash::MagnifierType GetMagnifierTypeFromPref() {
     if (!profile_)
       return ash::MAGNIFIER_OFF;
 
@@ -63,26 +105,6 @@ class MagnificationManagerImpl : public MagnificationManager,
         prefs->GetString(prefs::kMagnifierType).c_str());
   }
 
-  void SetMagnifier(ash::MagnifierType type) OVERRIDE {
-    PrefService* prefs = profile_->GetPrefs();
-    if (prefs) {
-      std::string typeString = accessibility::ScreenMagnifierNameFromType(type);
-      if (typeString != prefs->GetString(prefs::kMagnifierType)) {
-        prefs->SetString(prefs::kMagnifierType, typeString);
-        prefs->CommitPendingWrite();
-      }
-    }
-
-    ash::Shell::GetInstance()->system_tray_notifier()->
-        NotifyAccessibilityModeChanged();
-
-    ash::Shell::GetInstance()->magnification_controller()->SetEnabled(
-        type == ash::MAGNIFIER_FULL);
-    ash::Shell::GetInstance()->partial_magnification_controller()->SetEnabled(
-        type == ash::MAGNIFIER_PARTIAL);
-  }
-
- private:
   void SetProfile(Profile* profile) {
     if (pref_change_registrar_) {
       pref_change_registrar_.reset();
@@ -102,10 +124,11 @@ class MagnificationManagerImpl : public MagnificationManager,
   }
 
   void UpdateMagnifierStatus() {
-    ash::MagnifierType type = GetMagnifierType();
+    ash::MagnifierType type = GetMagnifierTypeFromPref();
     SetMagnifier(type);
   }
 
+  // content::NotificationObserver implimentation:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
@@ -116,30 +139,38 @@ class MagnificationManagerImpl : public MagnificationManager,
         SetProfile(profile);
         break;
       }
+      case chrome::NOTIFICATION_PROFILE_DESTROYED: {
+        SetProfile(NULL);
+        break;
+      }
     }
   }
 
-  static MagnificationManagerImpl* instance_;
-
   Profile* profile_;
+  ash::MagnifierType type_;
   content::NotificationRegistrar registrar_;
   scoped_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
-  friend struct DefaultSingletonTraits<MagnificationManagerImpl>;
+  ObserverList<MagnificationObserver> observers_;
   DISALLOW_COPY_AND_ASSIGN(MagnificationManagerImpl);
 };
 
-MagnificationManagerImpl* MagnificationManagerImpl::instance_ = NULL;
-
-MagnificationManager* MagnificationManager::GetInstance() {
-  return MagnificationManagerImpl::GetInstance();
+// static
+void MagnificationManager::Initialize() {
+  CHECK(g_magnification_manager == NULL);
+  g_magnification_manager = new MagnificationManagerImpl();
 }
 
-MagnificationManager* MagnificationManager::CreateInstance() {
-  // Makes sure that this is not called more than once.
-  CHECK(!GetInstance());
+// static
+void MagnificationManager::Shutdown() {
+  CHECK(g_magnification_manager);
+  delete g_magnification_manager;
+  g_magnification_manager = NULL;
+}
 
-  return new MagnificationManagerImpl();
+// static
+MagnificationManager* MagnificationManager::Get() {
+  return g_magnification_manager;
 }
 
 }  // namespace chromeos

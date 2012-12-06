@@ -472,6 +472,9 @@ void MagnificationControllerImpl::EnsurePointIsVisible(
 }
 
 void MagnificationControllerImpl::SetEnabled(bool enabled) {
+  if (enabled == is_enabled_)
+    return;
+
   if (enabled) {
     float scale =
         ash::Shell::GetInstance()->delegate()->GetSavedScreenMagnifierScale();

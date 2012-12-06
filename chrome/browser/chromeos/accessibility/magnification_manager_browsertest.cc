@@ -22,15 +22,31 @@
 
 namespace chromeos {
 
-class MagnificationManagerTest : public CrosInProcessBrowserTest {
+class MagnificationManagerTest : public CrosInProcessBrowserTest,
+                                 public MagnificationObserver {
  protected:
-  MagnificationManagerTest() {}
+  MagnificationManagerTest() : observed_(false),
+                               observed_type_(ash::MAGNIFIER_OFF) {}
   virtual ~MagnificationManagerTest() {}
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitch(switches::kLoginManager);
     command_line->AppendSwitchASCII(switches::kLoginProfile,
                                     TestingProfile::kTestUserProfileDir);
+  }
+
+  virtual void SetUpOnMainThread() OVERRIDE {
+    MagnificationManager::Get()->AddObserver(this);
+  }
+
+  virtual void CleanUpOnMainThread() OVERRIDE {
+    MagnificationManager::Get()->RemoveObserver(this);
+  }
+
+  // Overridden from MagnificationObserever:
+  virtual void OnMagnifierTypeChanged(ash::MagnifierType new_type) OVERRIDE {
+    observed_ = true;
+    observed_type_ = new_type;
   }
 
   Profile* profile() {
@@ -44,7 +60,7 @@ class MagnificationManagerTest : public CrosInProcessBrowserTest {
   }
 
   void SetScreenManagnifierType(ash::MagnifierType type) {
-    MagnificationManager::GetInstance()->SetMagnifier(type);
+    MagnificationManager::Get()->SetMagnifier(type);
   }
 
   void SetScreenManagnifierTypeToPref(ash::MagnifierType type) {
@@ -54,10 +70,11 @@ class MagnificationManagerTest : public CrosInProcessBrowserTest {
 
   void CheckCurrentMagnifierType(
       ash::MagnifierType type) {
-    EXPECT_EQ(MagnificationManager::GetInstance()->GetMagnifierType(),
-             type);
+    EXPECT_EQ(MagnificationManager::Get()->GetMagnifierType(), type);
   }
 
+  bool observed_;
+  ash::MagnifierType observed_type_;
   DISALLOW_COPY_AND_ASSIGN(MagnificationManagerTest);
 };
 
@@ -156,6 +173,44 @@ IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, ResumeSavedPref) {
 
   // Confirms that magnifier is enabled just after login.
   CheckCurrentMagnifierType(ash::MAGNIFIER_FULL);
+}
+
+IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, ChangingTypeInvokesObserver) {
+  // Logs in
+  UserManager::Get()->UserLoggedIn("owner@invalid.domain", true);
+  UserManager::Get()->SessionStarted();
+
+  // Before the test, sets to full magnifier.
+  SetScreenManagnifierTypeToPref(ash::MAGNIFIER_FULL);
+  CheckCurrentMagnifierType(ash::MAGNIFIER_FULL);
+
+  // Disables magnifier and confirms observer is invoked.
+  observed_ = false;
+  SetScreenManagnifierTypeToPref(ash::MAGNIFIER_OFF);
+  EXPECT_TRUE(observed_);
+  EXPECT_EQ(observed_type_, ash::MAGNIFIER_OFF);
+  CheckCurrentMagnifierType(ash::MAGNIFIER_OFF);
+
+  // Enables full screen magnifier and confirms observer is invoked.
+  observed_ = false;
+  SetScreenManagnifierTypeToPref(ash::MAGNIFIER_FULL);
+  EXPECT_TRUE(observed_);
+  EXPECT_EQ(observed_type_, ash::MAGNIFIER_FULL);
+  CheckCurrentMagnifierType(ash::MAGNIFIER_FULL);
+
+  // Enables partial screen magnifier and confirms observer is invoked.
+  observed_ = false;
+  SetScreenManagnifierTypeToPref(ash::MAGNIFIER_PARTIAL);
+  EXPECT_TRUE(observed_);
+  EXPECT_EQ(observed_type_, ash::MAGNIFIER_PARTIAL);
+  CheckCurrentMagnifierType(ash::MAGNIFIER_PARTIAL);
+
+  // Disables magnifier again and confirms observer is invoked.
+  observed_ = false;
+  SetScreenManagnifierTypeToPref(ash::MAGNIFIER_OFF);
+  EXPECT_TRUE(observed_);
+  EXPECT_EQ(observed_type_, ash::MAGNIFIER_OFF);
+  CheckCurrentMagnifierType(ash::MAGNIFIER_OFF);
 }
 
 }  // namespace chromeos

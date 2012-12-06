@@ -214,8 +214,8 @@ void EnableHighContrast(bool enabled) {
 }
 
 void SetMagnifier(ash::MagnifierType type) {
-  if (MagnificationManager::GetInstance())
-    MagnificationManager::GetInstance()->SetMagnifier(type);
+  if (MagnificationManager::Get())
+    MagnificationManager::Get()->SetMagnifier(type);
 }
 
 void EnableVirtualKeyboard(bool enabled) {
@@ -278,9 +278,9 @@ bool IsVirtualKeyboardEnabled() {
 }
 
 ash::MagnifierType GetMagnifierType() {
-  if (!MagnificationManager::GetInstance())
+  if (!MagnificationManager::Get())
     return ash::MAGNIFIER_OFF;
-  return MagnificationManager::GetInstance()->GetMagnifierType();
+  return MagnificationManager::Get()->GetMagnifierType();
 }
 
 ash::MagnifierType MagnifierTypeFromName(const char type_name[]) {

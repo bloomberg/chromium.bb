@@ -472,6 +472,10 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
         new default_app_order::ExternalLoader(true /* async */));
   }
 
+  // Initialize magnification manager before ash tray is created. And this must
+  // be placed after UserManager::SessionStarted();
+  chromeos::MagnificationManager::Initialize();
+
   // In Aura builds this will initialize ash::Shell.
   ChromeBrowserMainPartsLinux::PreProfileInit();
 }
@@ -527,8 +531,6 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
     power_state_override_ = new PowerStateOverride(
         PowerStateOverride::BLOCK_DISPLAY_SLEEP);
   }
-  magnification_manager_.reset(
-      chromeos::MagnificationManager::CreateInstance());
   chromeos::accessibility::Initialize();
 
   primary_display_switch_observer_.reset(
@@ -627,7 +629,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   resume_observer_.reset();
   brightness_observer_.reset();
   output_observer_.reset();
-  magnification_manager_.reset();
   power_state_override_ = NULL;
 
   // The XInput2 event listener needs to be shut down earlier than when
@@ -654,6 +655,8 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 
   // Delete ContactManager while |g_browser_process| is still alive.
   contact_manager_.reset();
+
+  chromeos::MagnificationManager::Shutdown();
 
   // Let the UserManager unregister itself as an observer of the CrosSettings
   // singleton before it is destroyed.

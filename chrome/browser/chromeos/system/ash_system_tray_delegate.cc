@@ -32,6 +32,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
+#include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/audio/audio_handler.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
@@ -163,7 +164,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                            public system::TimezoneSettings::Observer,
                            public device::BluetoothAdapter::Observer,
                            public SystemKeyEventListener::CapsLockObserver,
-                           public ash::NetworkTrayDelegate {
+                           public ash::NetworkTrayDelegate,
+                           public MagnificationObserver {
  public:
   SystemTrayDelegate()
       : ui_weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(
@@ -219,6 +221,9 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     if (SystemKeyEventListener::GetInstance())
       SystemKeyEventListener::GetInstance()->AddCapsLockObserver(this);
 
+    if (chromeos::MagnificationManager::Get())
+      chromeos::MagnificationManager::Get()->AddObserver(this);
+
     spoken_feedback_enabled_.Init(
         prefs::kSpokenFeedbackEnabled,
         g_browser_process->local_state(),
@@ -253,6 +258,9 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     if (SystemKeyEventListener::GetInstance())
       SystemKeyEventListener::GetInstance()->RemoveCapsLockObserver(this);
     bluetooth_adapter_->RemoveObserver(this);
+
+    if (chromeos::MagnificationManager::Get())
+      chromeos::MagnificationManager::Get()->RemoveObserver(this);
 
     // Stop observing gdata operations.
     DriveSystemService* system_service = FindDriveSystemService();
@@ -788,10 +796,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         base::Bind(&SystemTrayDelegate::UpdateShowLogoutButtonInTray,
                    base::Unretained(this)));
     pref_registrar_->Add(
-        prefs::kMagnifierType,
-        base::Bind(&SystemTrayDelegate::OnAccessibilityModeChanged,
-                   base::Unretained(this)));
-    pref_registrar_->Add(
         prefs::kShouldAlwaysShowAccessibilityMenu,
         base::Bind(&SystemTrayDelegate::OnAccessibilityModeChanged,
                    base::Unretained(this)));
@@ -1267,6 +1271,11 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         return;
       chrome::ShowSingletonTab(browser, GURL(deal_url_to_open));
     }
+  }
+
+  // Overridden from MagnificationObserver
+  void OnMagnifierTypeChanged(ash::MagnifierType new_type) {
+    OnAccessibilityModeChanged();
   }
 
   scoped_ptr<base::WeakPtrFactory<SystemTrayDelegate> > ui_weak_ptr_factory_;
