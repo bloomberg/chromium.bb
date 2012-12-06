@@ -420,6 +420,7 @@
           '<(PRODUCT_DIR)/osmesa.dll',
           '<(PRODUCT_DIR)/ppGoogleNaClPluginChrome.dll',
           '<(PRODUCT_DIR)/ppapi_tests.dll',
+          '<(PRODUCT_DIR)/security_tests.dll',
           'third_party/jstemplate/jstemplate_compiled.js',
           'tools/build/repack_locales.py',
         ],
