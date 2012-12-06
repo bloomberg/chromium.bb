@@ -296,6 +296,34 @@ TEST_F(DriveMetadataStoreTest, GetConflictURLsTest) {
   EXPECT_TRUE(ContainsKey(urls, URL(path3)));
 }
 
+TEST_F(DriveMetadataStoreTest, GetToBeFetchedFilessTest) {
+  InitializeDatabase();
+
+  DriveMetadataStore::URLAndResourceIdList list;
+  EXPECT_EQ(fileapi::SYNC_STATUS_OK,
+            metadata_store()->GetToBeFetchedFiles(&list));
+  EXPECT_TRUE(list.empty());
+
+  const FilePath path1(FPL("file1"));
+  const FilePath path2(FPL("file2"));
+  const FilePath path3(FPL("file3"));
+
+  // Populate metadata in DriveMetadataStore. The metadata identified by "file2"
+  // and "file3" are marked to be fetched.
+  EXPECT_EQ(fileapi::SYNC_STATUS_OK,
+            UpdateEntry(URL(path1), CreateMetadata("1", "1", false, false)));
+  EXPECT_EQ(fileapi::SYNC_STATUS_OK,
+            UpdateEntry(URL(path2), CreateMetadata("2", "2", false, true)));
+  EXPECT_EQ(fileapi::SYNC_STATUS_OK,
+            UpdateEntry(URL(path3), CreateMetadata("3", "3", false, true)));
+
+  EXPECT_EQ(fileapi::SYNC_STATUS_OK,
+            metadata_store()->GetToBeFetchedFiles(&list));
+  EXPECT_EQ(2U, list.size());
+  EXPECT_EQ(list[0].first, URL(path2));
+  EXPECT_EQ(list[1].first, URL(path3));
+}
+
 TEST_F(DriveMetadataStoreTest, StoreSyncRootDirectory) {
   const std::string kResourceID("hoge");
 

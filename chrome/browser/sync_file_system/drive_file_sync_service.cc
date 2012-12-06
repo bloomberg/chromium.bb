@@ -712,6 +712,18 @@ void DriveFileSyncService::DidInitializeMetadataStore(
     return;
   }
 
+  DriveMetadataStore::URLAndResourceIdList to_be_fetched_files;
+  status = metadata_store_->GetToBeFetchedFiles(&to_be_fetched_files);
+  DCHECK_EQ(fileapi::SYNC_STATUS_OK, status);
+  typedef DriveMetadataStore::URLAndResourceIdList::const_iterator iterator;
+  for (iterator itr = to_be_fetched_files.begin();
+       itr != to_be_fetched_files.end(); ++itr) {
+    DriveMetadata metadata;
+    const fileapi::FileSystemURL& url = itr->first;
+    const std::string& resource_id = itr->second;
+    AppendFetchChange(url.origin(), url.path(), resource_id);
+  }
+
   NotifyTaskDone(status, token.Pass());
 
   for (std::map<GURL, std::string>::const_iterator itr =

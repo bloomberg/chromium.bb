@@ -38,6 +38,8 @@ class DriveMetadataStore
   typedef std::map<GURL, std::string> ResourceIDMap;
   typedef std::map<FilePath, DriveMetadata> PathToMetadata;
   typedef std::map<GURL, PathToMetadata> MetadataMap;
+  typedef std::vector<std::pair<fileapi::FileSystemURL, std::string> >
+      URLAndResourceIdList;
   typedef base::Callback<void(fileapi::SyncStatusCode status, bool created)>
       InitializationCallback;
 
@@ -93,7 +95,11 @@ class DriveMetadataStore
   void SetSyncRootDirectory(const std::string& resource_id);
 
   // Returns a set of URLs for files in conflict.
-  fileapi::SyncStatusCode GetConflictURLs(fileapi::FileSystemURLSet* urls);
+  fileapi::SyncStatusCode GetConflictURLs(
+      fileapi::FileSystemURLSet* urls) const;
+
+  // Returns a set of URLs and Resource IDs for files te be fetched.
+  fileapi::SyncStatusCode GetToBeFetchedFiles(URLAndResourceIdList* list) const;
 
   // Returns resource id for |origin|. |origin| must be a batch sync origin or
   // an incremental sync origin.

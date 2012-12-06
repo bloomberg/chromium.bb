@@ -429,7 +429,7 @@ void DriveMetadataStore::UpdateDBStatusAndInvokeCallback(
 }
 
 SyncStatusCode DriveMetadataStore::GetConflictURLs(
-    fileapi::FileSystemURLSet* urls) {
+    fileapi::FileSystemURLSet* urls) const {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(fileapi::SYNC_STATUS_OK, db_status_);
 
@@ -443,6 +443,28 @@ SyncStatusCode DriveMetadataStore::GetConflictURLs(
       if (itr->second.conflicted()) {
         urls->insert(fileapi::CreateSyncableFileSystemURL(
             origin_itr->first, kServiceName, itr->first));
+      }
+    }
+  }
+  return fileapi::SYNC_STATUS_OK;
+}
+
+SyncStatusCode DriveMetadataStore::GetToBeFetchedFiles(
+    URLAndResourceIdList* list) const {
+  DCHECK(CalledOnValidThread());
+  DCHECK_EQ(fileapi::SYNC_STATUS_OK, db_status_);
+
+  list->clear();
+  for (MetadataMap::const_iterator origin_itr = metadata_map_.begin();
+       origin_itr != metadata_map_.end();
+       ++origin_itr) {
+    for (PathToMetadata::const_iterator itr = origin_itr->second.begin();
+         itr != origin_itr->second.end();
+         ++itr) {
+      if (itr->second.to_be_fetched()) {
+        fileapi::FileSystemURL url = fileapi::CreateSyncableFileSystemURL(
+            origin_itr->first, kServiceName, itr->first);
+        list->push_back(std::make_pair(url, itr->second.resource_id()));
       }
     }
   }
