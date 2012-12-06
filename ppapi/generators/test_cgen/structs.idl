@@ -8,6 +8,10 @@
  * This file will test that the IDL snippet matches the comment.
  */
 
+label Chrome {
+  M14=1.0
+};
+
 /* typedef uint8_t s_array[3]; */
 typedef uint8_t[3] s_array;
 

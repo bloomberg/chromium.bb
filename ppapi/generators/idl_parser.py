@@ -1130,22 +1130,15 @@ def FindVersionError(releases, node):
   if node.IsA('Interface', 'Struct'):
     comment_list = []
     comment = node.GetOneOf('Comment')
-    if comment:
-      print comment.GetName()
     if comment and comment.GetName()[:4] == 'REL:':
       comment_list = comment.GetName()[5:].strip().split(' ')
-      print comment_list
 
-    if len(comment_list) != len(releases):
-      node.Error("Mismatch size of releases: %s vs %s." % (
-          comment_list, releases))
+    first_list = [node.first_release[rel] for rel in releases]
+    first_list = sorted(set(first_list))
+    if first_list != comment_list:
+      node.Error("Mismatch in releases: %s vs %s." % (
+          comment_list, first_list))
       err_cnt += 1
-    else:
-      first_list = [node.first_release[rel] for rel in releases]
-      if first_list != comment_list:
-        node.Error("Mismatch in releases: %s vs %s." % (
-            comment_list, first_list))
-        err_cnt += 1
 
   for child in node.GetChildren():
     err_cnt += FindVersionError(releases, child)

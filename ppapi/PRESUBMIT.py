@@ -31,10 +31,10 @@ def RunUnittests(input_api, output_api):
     if name_parts[0:2] == ['ppapi', 'generators']:
       generator_files.append(filename)
   if generator_files != []:
-    cmd = [ sys.executable, 'idl_gen_pnacl.py', '--wnone', '--test']
+    cmd = [ sys.executable, 'idl_tests.py']
     ppapi_dir = input_api.PresubmitLocalPath()
     results.extend(RunCmdAndCheck(cmd,
-                                  'PPAPI IDL Pnacl unittest failed.',
+                                  'PPAPI IDL unittests failed.',
                                   output_api,
                                   os.path.join(ppapi_dir, 'generators')))
   return results

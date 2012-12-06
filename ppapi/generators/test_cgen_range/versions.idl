@@ -15,30 +15,20 @@ describe {
   int32_t;
 };
 
-
-/* Bogus Struct Foo */
+/* Bogus Interface Foo */
 [version=0.0]
-struct Foo {
+interface Foo {
   /**
    * Comment for function x
    */
-  [version=0.0] int32_t Foo(int32_t x);
+  [version=0.0] int32_t Bar(int32_t x);
   /**
    * Comment for function x,y
    */
-  [version=1.0] int32_t Foo(int32_t x, int32_t y);
+  [version=1.0] int32_t Bar(int32_t x, int32_t y);
   /**
    * Comment for function x,y,z
    */
-  [version=2.0] int32_t Foo(int32_t x, int32_t y, int32_t z);
+  [version=2.0] int32_t Bar(int32_t x, int32_t y, int32_t z);
 };
 
-
-/* Inherit revisions thanks to Foo */
-[version=0.0]
-interface Bar {
-  /**
-   * Comment for function
-   */
-  int32_t UseFoo(Foo val);
-};

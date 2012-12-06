@@ -18,14 +18,14 @@ struct ist {
 };
 
 /*
- * struct iface1 {
+ * struct ifaceFoo_1_0 {
  * int8_t (*mem1)(int16_t x, int32_t y);
  * int32_t (*mem2)(const struct ist* a);
  * int32_t (*mem3)(struct ist* b);
  * int32_t (*mem4)(const void** ptr);
  * int32_t (*mem5)(void** ptr);
- * int32_t (*mem6)(void** ptr);
  * };
+ * typedef struct ifaceFoo_1_0 ifaceFoo;
  */
 interface ifaceFoo {
   int8_t mem1([in] int16_t x, [in] int32_t y);

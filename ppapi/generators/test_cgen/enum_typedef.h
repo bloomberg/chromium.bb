@@ -4,7 +4,7 @@
  * found in the LICENSE file.
  */
 
-/* From test_cgen/enum_typedef.idl modified Mon Aug 22 15:15:49 2011. */
+/* From test_cgen/enum_typedef.idl modified Wed Dec  5 13:08:05 2012. */
 
 #ifndef PPAPI_C_TEST_CGEN_ENUM_TYPEDEF_H_
 #define PPAPI_C_TEST_CGEN_ENUM_TYPEDEF_H_
@@ -41,11 +41,11 @@ typedef enum {
 /* typedef int32_t i; */
 typedef int32_t i;
 
-/* typedef int32_t i2[2]; */
-typedef int32_t i2[2];
+/* typedef int32_t i2[3]; */
+typedef int32_t i2[3];
 
-/* typedef int32_t (*i_func)(); */
-typedef int32_t (*i_func)();
+/* typedef int32_t (*i_func)(void); */
+typedef int32_t (*i_func)(void);
 
 /* typedef int32_t (*i_func_i)(int32_t i); */
 typedef int32_t (*i_func_i)(int32_t i);

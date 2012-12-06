@@ -449,7 +449,7 @@ class CGen(object):
 
     # TODO(noelallen) : Bug 157017 finish multiversion support
     if len(build_list) != 1:
-      node.Error('Can not support multiple versions of node.')
+      node.Error('Can not support multiple versions of node: %s' % build_list)
     assert len(build_list) == 1
 
     out = 'typedef %s;\n' % self.GetSignature(node, build_list[0], 'return',
@@ -671,7 +671,8 @@ def TestFile(filenode):
     outstr = CleanString(outstr)
 
     if instr != outstr:
-      ErrOut.Log('Failed match of\n>>%s<<\n>>%s<<\nto:' % (instr, outstr))
+      ErrOut.Log('Failed match of\n>>%s<<\nto:\n>>%s<<\nFor:\n' %
+                 (instr, outstr))
       node.Dump(1, comments=True)
       errors += 1
   return errors
@@ -701,7 +702,7 @@ def TestFiles(filenames):
     InfoOut.Log('Passed generator test.')
   return total_errs
 
-def Main(args):
+def main(args):
   filenames = ParseOptions(args)
   if GetOption('test'):
     return TestFiles(filenames)
@@ -716,5 +717,5 @@ def Main(args):
 
 
 if __name__ == '__main__':
-  sys.exit(Main(sys.argv[1:]))
+  sys.exit(main(sys.argv[1:]))
 

@@ -23,13 +23,17 @@ Option('dstroot', 'Base directory of output', default=os.path.join('..', 'c'))
 Option('guard', 'Include guard prefix', default=os.path.join('ppapi', 'c'))
 
 
-def GetOutFileName(filenode, relpath=None, prefix=None):
+def GetPathFromNode(filenode, relpath=None, ext=None):
   path, name = os.path.split(filenode.GetProperty('NAME'))
-  name = os.path.splitext(name)[0] + '.h'
-  if prefix: name = '%s%s' % (prefix, name)
+  if ext: name = os.path.splitext(name)[0] + ext
   if path: name = os.path.join(path, name)
   if relpath: name = os.path.join(relpath, name)
+  name = os.path.normpath(name)
   return name
+
+
+def GetHeaderFromNode(filenode, relpath=None):
+  return GetPathFromNode(filenode, relpath, ext='.h')
 
 
 def WriteGroupMarker(out, node, last_group):
@@ -108,7 +112,7 @@ class HGen(GeneratorByFile):
     Generator.__init__(self, 'C Header', 'cgen', 'Generate the C headers.')
 
   def GenerateFile(self, filenode, releases, options):
-    savename = GetOutFileName(filenode, GetOption('dstroot'))
+    savename = GetHeaderFromNode(filenode, GetOption('dstroot'))
     my_min, my_max = filenode.GetMinMax(releases)
     if my_min > releases[-1] or my_max < releases[0]:
       if os.path.isfile(savename):
@@ -126,7 +130,7 @@ class HGen(GeneratorByFile):
     __pychecker__ = 'unusednames=options'
     cgen = CGen()
     gpath = GetOption('guard')
-    def_guard = GetOutFileName(filenode, relpath=gpath)
+    def_guard = GetHeaderFromNode(filenode, relpath=gpath)
     def_guard = def_guard.replace(os.sep,'_').replace('.','_').upper() + '_'
 
     cright_node = filenode.GetChildren()[0]
@@ -137,8 +141,7 @@ class HGen(GeneratorByFile):
     out.Write('%s\n' % cgen.Copyright(cright_node))
 
     # Wrap the From ... modified ... comment if it would be >80 characters.
-    from_text = 'From %s' % (
-        filenode.GetProperty('NAME').replace(os.sep,'/'))
+    from_text = 'From %s' % GetPathFromNode(filenode)
     modified_text = 'modified %s.' % (
         filenode.GetProperty('DATETIME'))
     if len(from_text) + len(modified_text) < 74:
@@ -158,7 +161,7 @@ class HGen(GeneratorByFile):
       depfile = dep.GetProperty('FILE')
       if depfile:
         includes.add(depfile)
-    includes = [GetOutFileName(
+    includes = [GetHeaderFromNode(
         include, relpath=gpath).replace(os.sep, '/') for include in includes]
     includes.append('ppapi/c/pp_macros.h')
 
@@ -167,7 +170,8 @@ class HGen(GeneratorByFile):
       includes.append('ppapi/c/pp_stdint.h')
 
     includes = sorted(set(includes))
-    cur_include = GetOutFileName(filenode, relpath=gpath).replace(os.sep, '/')
+    cur_include = GetHeaderFromNode(filenode,
+                                    relpath=gpath).replace(os.sep, '/')
     for include in includes:
       if include == cur_include: continue
       out.Write('#include "%s"\n' % include)
@@ -209,14 +213,14 @@ class HGen(GeneratorByFile):
   def GenerateTail(self, out, filenode, releases, options):
     __pychecker__ = 'unusednames=options,releases'
     gpath = GetOption('guard')
-    def_guard = GetOutFileName(filenode, relpath=gpath)
+    def_guard = GetPathFromNode(filenode, relpath=gpath, ext='.h')
     def_guard = def_guard.replace(os.sep,'_').replace('.','_').upper() + '_'
     out.Write('#endif  /* %s */\n\n' % def_guard)
 
 
 hgen = HGen()
 
-def Main(args):
+def main(args):
   # Default invocation will verify the golden files are unchanged.
   failed = 0
   if not args:
@@ -249,5 +253,5 @@ def Main(args):
   return failed
 
 if __name__ == '__main__':
-  sys.exit(Main(sys.argv[1:]))
+  sys.exit(main(sys.argv[1:]))
 

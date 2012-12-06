@@ -12,6 +12,7 @@
 #
 import sys
 
+
 class IDLLog(object):
   def __init__(self, name, out):
     if name:

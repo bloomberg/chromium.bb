@@ -5,6 +5,10 @@
 
 /* File Comment */
 
+describe {
+  int32_t;
+};
+
 /* PPAPI Structure */
 struct PP_Size {
   /* This value represents the width of the rectangle. */

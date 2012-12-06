@@ -3,17 +3,17 @@
  * found in the LICENSE file.
  */
 
-/* From test_cgen_range/versions.idl modified Wed Aug 24 19:49:19 2011. */
+/* From test_cgen_range/versions.idl modified Wed Nov 21 15:18:23 2012. */
 
 #ifndef PPAPI_C_TEST_CGEN_RANGE_VERSIONS_H_
 #define PPAPI_C_TEST_CGEN_RANGE_VERSIONS_H_
 
 #include "ppapi/c/pp_macros.h"
 
-#define BAR_INTERFACE_0_0 "Bar;0.0"
-#define BAR_INTERFACE_1_0 "Bar;1.0"
-#define BAR_INTERFACE_2_0 "Bar;2.0"
-#define BAR_INTERFACE BAR_INTERFACE_2_0
+#define FOO_INTERFACE_0_0 "Foo;0.0"
+#define FOO_INTERFACE_1_0 "Foo;1.0"
+#define FOO_INTERFACE_2_0 "Foo;2.0"
+#define FOO_INTERFACE FOO_INTERFACE_2_0
 
 /**
  * @file
@@ -21,42 +21,25 @@
 
 
 /**
- * @addtogroup Structs
- * @{
- */
-/* Bogus Struct Foo */
-struct Foo {
-  /**
-   * Comment for function x,y,z
-   */
-  int32_t (*Foo)(int32_t x, int32_t y, int32_t z);
-};
-struct Foo_0_0 {
-  int32_t (*Foo)(int32_t x);
-};
-struct Foo_1_0 {
-  int32_t (*Foo)(int32_t x, int32_t y);
-};
-/**
- * @}
- */
-
-/**
  * @addtogroup Interfaces
  * @{
  */
-/* Inherit revisions thanks to Foo */
-struct Bar {
+/* Bogus Interface Foo */
+struct Foo_2_0 {
   /**
-   * Comment for function
+   * Comment for function x,y,z
    */
-  int32_t (*UseFoo)( struct Foo* val);
+  int32_t (*Bar)(int32_t x, int32_t y, int32_t z);
 };
-struct Bar_0_0 {
-  int32_t (*UseFoo)( struct Foo* val);
+
+typedef struct Foo_2_0 Foo;
+
+struct Foo_0_0 {
+  int32_t (*Bar)(int32_t x);
 };
-struct Bar_1_0 {
-  int32_t (*UseFoo)( struct Foo* val);
+
+struct Foo_1_0 {
+  int32_t (*Bar)(int32_t x, int32_t y);
 };
 /**
  * @}

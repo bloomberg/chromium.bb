@@ -4,7 +4,7 @@
  * found in the LICENSE file.
  */
 
-/* From test_cgen/structs.idl modified Mon Aug 22 15:15:38 2011. */
+/* From test_cgen/structs.idl modified Wed Nov 21 11:02:50 2012. */
 
 #ifndef PPAPI_C_TEST_CGEN_STRUCTS_H_
 #define PPAPI_C_TEST_CGEN_STRUCTS_H_

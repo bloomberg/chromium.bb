@@ -322,7 +322,8 @@ class IDLNode(IDLRelease):
     return self.releases
 
 
-  def _GetReleaseList(self, releases, visited=set()):
+  def _GetReleaseList(self, releases, visited=None):
+    visited = visited or set()
     if not self.releases:
       # If we are unversionable, then return first available release
       if self.IsA('Comment', 'Copyright', 'Label'):
@@ -344,14 +345,18 @@ class IDLNode(IDLRelease):
 
       visited |= set([self])
 
-      # Files inherit all thier releases from items in the file
+      # Files inherit all their releases from items in the file
       if self.IsA('AST', 'File'):
         my_releases = set()
 
       # Visit all children
       child_releases = set()
+
+      # Exclude sibling results from parent visited set
+      cur_visits = visited
+
       for child in self.children:
-        child_releases |= set(child._GetReleaseList(releases, visited))
+        child_releases |= set(child._GetReleaseList(releases, cur_visits))
         visited |= set(child_releases)
 
       # Visit my type
@@ -359,8 +364,7 @@ class IDLNode(IDLRelease):
       if self.typelist:
         type_list = self.typelist.GetReleases()
         for typenode in type_list:
-          type_releases |= set(typenode._GetReleaseList(releases, visited))
-          visited |= set(type_releases)
+          type_releases |= set(typenode._GetReleaseList(releases, cur_visits))
 
         type_release_list = sorted(type_releases)
         if my_min < type_release_list[0]:
@@ -368,12 +372,11 @@ class IDLNode(IDLRelease):
           self.Error('requires %s in %s which is undefined at %s.' % (
               type_node, type_node.filename, my_min))
 
-      for rel in child_releases:
+      for rel in child_releases | type_releases:
         if rel >= my_min and rel <= my_max:
           my_releases |= set([rel])
 
       self.releases = sorted(my_releases)
-
     return self.releases
 
   def GetReleaseList(self):
