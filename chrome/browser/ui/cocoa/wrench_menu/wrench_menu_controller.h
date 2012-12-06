@@ -37,11 +37,12 @@ class ZoomLevelObserver;
   scoped_ptr<WrenchMenuControllerInternal::AcceleratorDelegate>
       acceleratorDelegate_;
 
-  // Used to update icons in the recent tabs menu.
-  scoped_ptr<RecentTabsMenuModelDelegate> recentTabsMenuModelDelegate_;
-
   // The model, rebuilt each time the |-menuNeedsUpdate:|.
   scoped_ptr<WrenchMenuModel> wrenchMenuModel_;
+
+  // Used to update icons in the recent tabs menu. This must be declared after
+  // |wrenchMenuModel_| so that it gets deleted first.
+  scoped_ptr<RecentTabsMenuModelDelegate> recentTabsMenuModelDelegate_;
 
   // A shim NSViewController that loads the buttons from the NIB because ObjC
   // doesn't have multiple inheritance as this class is a MenuController.

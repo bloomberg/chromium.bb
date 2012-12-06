@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/cocoa/run_loop_testing.h"
 #import "chrome/browser/ui/cocoa/view_resizer_pong.h"
 #import "chrome/browser/ui/cocoa/wrench_menu/wrench_menu_controller.h"
+#include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/toolbar/recent_tabs_sub_menu_model.h"
 #include "chrome/browser/ui/toolbar/recent_tabs_builder_test_helper.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
@@ -178,6 +179,14 @@ TEST_F(WrenchMenuControllerTest, RecentTabsElideTitle) {
 
   controller_.reset();
   fake_model_.reset();
+}
+
+// Verify that |RecentTabsMenuModelDelegate| is deleted before the model
+// it's observing.
+TEST_F(WrenchMenuControllerTest, RecentTabDeleteOrder) {
+  chrome::search::EnableInstantExtendedAPIForTesting();
+  [controller_ menuNeedsUpdate:[controller_ menu]];
+  // If the delete order is wrong then the test will crash on exit.
 }
 
 }  // namespace
