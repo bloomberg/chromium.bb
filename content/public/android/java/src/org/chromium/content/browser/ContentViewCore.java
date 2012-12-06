@@ -2094,6 +2094,13 @@ public class ContentViewCore implements MotionEventDelegate {
         return mZoomManager.getZoomControlsViewForTest();
     }
 
+    // TODO(joth): Remove in next patch.
+    @Deprecated
+    public void addJavascriptInterface(Object object, String name, boolean requireAnnotation) {
+        addPossiblyUnsafeJavascriptInterface(object, name,
+                requireAnnotation ? JavascriptInterface.class : null);
+    }
+
     /**
      * This will mimic {@link #addPossiblyUnsafeJavascriptInterface(Object, String, Class)}
      * and automatically pass in {@link JavascriptInterface} as the required annotation.
