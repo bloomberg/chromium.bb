@@ -173,19 +173,19 @@ class DriveFileSyncServiceTest : public testing::Test {
                        const fileapi::FileChange& file_change) {
     typedef DriveFileSyncService::PendingChangeQueue::iterator iterator;
     typedef DriveFileSyncService::ChangeQueueItem ChangeQueueItem;
+    typedef DriveFileSyncService::RemoteSyncType RemoteSyncType;
     sync_service_->pending_changes_.clear();
 
+    RemoteSyncType sync_type = DriveFileSyncService::REMOTE_SYNC_TYPE_BATCH;
     std::pair<iterator, bool> inserted_to_queue =
         sync_service_->pending_changes_.insert(
-            ChangeQueueItem(changestamp,
-                            DriveFileSyncService::REMOTE_SYNC_TYPE_BATCH,
-                            url));
+            ChangeQueueItem(changestamp, sync_type, url));
     DCHECK(inserted_to_queue.second);
 
     DriveFileSyncService::PathToChange* path_to_change =
         &sync_service_->url_to_change_[url.origin()];
     (*path_to_change)[url.path()] = DriveFileSyncService::RemoteChange(
-        changestamp, resource_id, url, file_change,
+        changestamp, resource_id, sync_type, url, file_change,
         inserted_to_queue.first);
   }
 
@@ -263,7 +263,7 @@ class DriveFileSyncServiceTest : public testing::Test {
   void AppendIncrementalRemoteChange(const GURL& origin,
                                      const google_apis::DocumentEntry& entry,
                                      int64 changestamp) {
-    sync_service_->AppendNewRemoteChange(
+    sync_service_->AppendRemoteChange(
         origin, entry, changestamp,
         DriveFileSyncService::REMOTE_SYNC_TYPE_INCREMENTAL);
   }
@@ -402,7 +402,7 @@ TEST_F(DriveFileSyncServiceTest, BatchSyncOnInitialization) {
   metadata_store()->AddBatchSyncOrigin(kOrigin2, kDirectoryResourceId2);
   metadata_store()->MoveBatchSyncOriginToIncremental(kOrigin2);
 
-  EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeQueueUpdated(4))
+  EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeQueueUpdated(3))
       .Times(AnyNumber());
 
   InSequence sequence;
@@ -437,7 +437,7 @@ TEST_F(DriveFileSyncServiceTest, BatchSyncOnInitialization) {
   // changes.
   EXPECT_EQ(1u, metadata_store()->batch_sync_origins().size());
   EXPECT_EQ(1u, metadata_store()->incremental_sync_origins().size());
-  EXPECT_EQ(4u, pending_changes().size());
+  EXPECT_EQ(3u, pending_changes().size());
 }
 
 TEST_F(DriveFileSyncServiceTest, RegisterNewOrigin) {
@@ -578,7 +578,7 @@ TEST_F(DriveFileSyncServiceTest, RegisterExistingOrigin) {
   EXPECT_TRUE(metadata_store()->incremental_sync_origins().empty());
 
   // |listing_files_in_directory| contains 4 items to sync.
-  EXPECT_EQ(4u, pending_changes().size());
+  EXPECT_EQ(3u, pending_changes().size());
 }
 
 TEST_F(DriveFileSyncServiceTest, UnregisterOrigin) {
@@ -625,7 +625,7 @@ TEST_F(DriveFileSyncServiceTest, UnregisterOrigin) {
 
   EXPECT_EQ(1u, metadata_store()->batch_sync_origins().size());
   EXPECT_EQ(1u, metadata_store()->incremental_sync_origins().size());
-  EXPECT_EQ(4u, pending_changes().size());
+  EXPECT_EQ(3u, pending_changes().size());
 
   bool done = false;
   sync_service()->UnregisterOriginForTrackingChanges(

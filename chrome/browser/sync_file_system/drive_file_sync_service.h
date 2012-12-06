@@ -97,8 +97,9 @@ class DriveFileSyncService
 
   enum RemoteSyncType {
     // Smaller number indicates higher priority in ChangeQueue.
-    REMOTE_SYNC_TYPE_INCREMENTAL = 0,
-    REMOTE_SYNC_TYPE_BATCH = 1,
+    REMOTE_SYNC_TYPE_FETCH = 0,
+    REMOTE_SYNC_TYPE_INCREMENTAL = 1,
+    REMOTE_SYNC_TYPE_BATCH = 2,
   };
 
   struct ChangeQueueItem {
@@ -121,6 +122,7 @@ class DriveFileSyncService
   struct RemoteChange {
     int64 changestamp;
     std::string resource_id;
+    RemoteSyncType sync_type;
     fileapi::FileSystemURL url;
     fileapi::FileChange change;
     PendingChangeQueue::iterator position_in_queue;
@@ -128,6 +130,7 @@ class DriveFileSyncService
     RemoteChange();
     RemoteChange(int64 changestamp,
                  const std::string& resource_id,
+                 RemoteSyncType sync_type,
                  const fileapi::FileSystemURL& url,
                  const fileapi::FileChange& change,
                  PendingChangeQueue::iterator position_in_queue);
@@ -281,10 +284,19 @@ class DriveFileSyncService
       fileapi::SyncStatusCode status);
 
   // Returns true if |pending_changes_| was updated.
-  bool AppendNewRemoteChange(const GURL& origin,
-                             const google_apis::DocumentEntry& entry,
-                             int64 changestamp,
-                             RemoteSyncType sync_type);
+  bool AppendRemoteChange(const GURL& origin,
+                          const google_apis::DocumentEntry& entry,
+                          int64 changestamp,
+                          RemoteSyncType sync_type);
+  bool AppendFetchChange(const GURL& origin,
+                         const FilePath& path,
+                         const std::string& resource_id);
+  bool AppendRemoteChangeInternal(const GURL& origin,
+                                  const FilePath& path,
+                                  bool is_deleted,
+                                  const std::string& resource_id,
+                                  int64 changestamp,
+                                  RemoteSyncType sync_type);
   void RemoveRemoteChange(const fileapi::FileSystemURL& url);
   void MaybeMarkAsIncrementalSyncOrigin(const GURL& origin);
 

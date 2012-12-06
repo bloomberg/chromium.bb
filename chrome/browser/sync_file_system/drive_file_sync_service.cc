@@ -183,6 +183,7 @@ bool DriveFileSyncService::ChangeQueueComparator::operator()(
 
 DriveFileSyncService::RemoteChange::RemoteChange()
     : changestamp(0),
+      sync_type(REMOTE_SYNC_TYPE_INCREMENTAL),
       change(fileapi::FileChange::FILE_CHANGE_ADD_OR_UPDATE,
              fileapi::SYNC_FILE_TYPE_UNKNOWN) {
 }
@@ -190,11 +191,13 @@ DriveFileSyncService::RemoteChange::RemoteChange()
 DriveFileSyncService::RemoteChange::RemoteChange(
     int64 changestamp,
     const std::string& resource_id,
+    RemoteSyncType sync_type,
     const fileapi::FileSystemURL& url,
     const fileapi::FileChange& change,
     PendingChangeQueue::iterator position_in_queue)
     : changestamp(changestamp),
       resource_id(resource_id),
+      sync_type(sync_type),
       url(url),
       change(change),
       position_in_queue(position_in_queue) {
@@ -841,8 +844,8 @@ void DriveFileSyncService::DidGetDirectoryContentForBatchSync(
   typedef ScopedVector<google_apis::DocumentEntry>::const_iterator iterator;
   for (iterator itr = feed->entries().begin();
        itr != feed->entries().end(); ++itr) {
-    AppendNewRemoteChange(origin, **itr, largest_changestamp,
-                          REMOTE_SYNC_TYPE_BATCH);
+    AppendRemoteChange(origin, **itr, largest_changestamp,
+                       REMOTE_SYNC_TYPE_BATCH);
   }
 
   GURL next_feed_url;
@@ -1216,9 +1219,15 @@ void DriveFileSyncService::DidGetTemporaryFileForDownload(
 
   const FilePath& temporary_file_path = param->temporary_file_path;
   std::string resource_id = param->remote_change.resource_id;
-  const DriveMetadata& drive_metadata = param->drive_metadata;
+
+  // We should not use the md5 in metadata for FETCH type to avoid the download
+  // finishes due to NOT_MODIFIED.
+  std::string md5_checksum;
+  if (param->remote_change.sync_type != REMOTE_SYNC_TYPE_FETCH)
+    md5_checksum = param->drive_metadata.md5_checksum();
+
   sync_client_->DownloadFile(
-      resource_id, drive_metadata.md5_checksum(),
+      resource_id, md5_checksum,
       temporary_file_path,
       base::Bind(&DriveFileSyncService::DidDownloadFile,
                  AsWeakPtr(), base::Passed(&param)));
@@ -1304,7 +1313,9 @@ void DriveFileSyncService::CompleteRemoteSync(
   }
 
   GURL origin = param->remote_change.url.origin();
-  if (metadata_store_->IsIncrementalSyncOrigin(origin)) {
+  if (metadata_store_->IsIncrementalSyncOrigin(origin) &&
+      param->remote_change.changestamp) {
+    DCHECK_EQ(REMOTE_SYNC_TYPE_INCREMENTAL, param->remote_change.sync_type);
     int64 changestamp = param->remote_change.changestamp;
     metadata_store_->SetLargestChangeStamp(
         changestamp,
@@ -1340,14 +1351,36 @@ void DriveFileSyncService::FinalizeRemoteSync(
   }
 }
 
-bool DriveFileSyncService::AppendNewRemoteChange(
+bool DriveFileSyncService::AppendRemoteChange(
     const GURL& origin,
     const google_apis::DocumentEntry& entry,
     int64 changestamp,
     RemoteSyncType sync_type) {
   // TODO(tzik): Normalize the path here.
   FilePath path = FilePath::FromUTF8Unsafe(UTF16ToUTF8(entry.title()));
+  DCHECK(!entry.is_folder());
+  return AppendRemoteChangeInternal(
+      origin, path, entry.deleted(),
+      entry.resource_id(), changestamp, sync_type);
+}
 
+bool DriveFileSyncService::AppendFetchChange(
+    const GURL& origin,
+    const FilePath& path,
+    const std::string& resource_id) {
+  return AppendRemoteChangeInternal(
+      origin, path, false /* is_deleted */,
+      resource_id, 0 /* changestamp */,
+      REMOTE_SYNC_TYPE_FETCH);
+}
+
+bool DriveFileSyncService::AppendRemoteChangeInternal(
+    const GURL& origin,
+    const FilePath& path,
+    bool is_deleted,
+    const std::string& resource_id,
+    int64 changestamp,
+    RemoteSyncType sync_type) {
   PathToChange* path_to_change = &url_to_change_[origin];
   PathToChange::iterator found = path_to_change->find(path);
   if (found != path_to_change->end()) {
@@ -1361,15 +1394,12 @@ bool DriveFileSyncService::AppendNewRemoteChange(
 
   fileapi::FileChange::ChangeType change_type;
   fileapi::SyncFileType file_type;
-  if (entry.deleted()) {
+  if (is_deleted) {
     change_type = fileapi::FileChange::FILE_CHANGE_DELETE;
     file_type = fileapi::SYNC_FILE_TYPE_UNKNOWN;
   } else {
     change_type = fileapi::FileChange::FILE_CHANGE_ADD_OR_UPDATE;
-    if (entry.is_folder())
-      file_type = fileapi::SYNC_FILE_TYPE_DIRECTORY;
-    else
-      file_type = fileapi::SYNC_FILE_TYPE_FILE;
+    file_type = fileapi::SYNC_FILE_TYPE_FILE;
   }
 
   fileapi::FileChange file_change(change_type, file_type);
@@ -1383,7 +1413,7 @@ bool DriveFileSyncService::AppendNewRemoteChange(
            << file_change.DebugString();
 
   (*path_to_change)[path] = RemoteChange(
-      changestamp, entry.resource_id(), url, file_change,
+      changestamp, resource_id, sync_type, url, file_change,
       inserted_to_queue.first);
   return true;
 }
@@ -1473,8 +1503,8 @@ void DriveFileSyncService::DidFetchChangesForIncrementalSync(
              << (entry.deleted() ? " (deleted)" : " ")
              << "[" << origin.spec() << "]";
     has_new_changes =
-        AppendNewRemoteChange(origin, entry, entry.changestamp(),
-                              REMOTE_SYNC_TYPE_INCREMENTAL) || has_new_changes;
+        AppendRemoteChange(origin, entry, entry.changestamp(),
+                           REMOTE_SYNC_TYPE_INCREMENTAL) || has_new_changes;
   }
 
   GURL next_feed;
