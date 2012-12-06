@@ -14,6 +14,7 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size.h"
+#include "ui/gfx/text_utils.h"
 #include "ui/gfx/transform.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/button.h"
@@ -288,11 +289,10 @@ class TouchSelectionControllerImpl::TouchContextMenuView
     for (size_t i = 0; i < arraysize(kContextMenuCommands); i++) {
       int command_id = kContextMenuCommands[i];
       if (controller_->IsCommandIdEnabled(command_id)) {
-        TextButton* button = new TextButton(
-            this, l10n_util::GetStringUTF16(command_id));
+        TextButton* button = new TextButton(this, gfx::RemoveAcceleratorChar(
+            l10n_util::GetStringUTF16(command_id), '&', NULL, NULL));
         button->set_focusable(true);
         button->set_request_focus_on_press(false);
-        button->set_prefix_type(TextButton::PREFIX_HIDE);
         button->SetEnabledColor(MenuConfig::instance().text_color);
         button->set_background(new ContextMenuButtonBackground());
         button->set_alignment(TextButton::ALIGN_CENTER);

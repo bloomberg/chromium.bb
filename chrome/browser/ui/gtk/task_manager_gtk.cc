@@ -32,7 +32,6 @@
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
-#include "ui/base/gtk/menu_label_accelerator_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -473,8 +472,7 @@ void TaskManagerGtk::Init() {
   }
 
   gtk_dialog_add_button(GTK_DIALOG(dialog_),
-      ui::ConvertAcceleratorsFromWindowsStyle(
-          l10n_util::GetStringUTF8(IDS_TASK_MANAGER_KILL)).c_str(),
+      l10n_util::GetStringUTF8(IDS_TASK_MANAGER_KILL).c_str(),
       kTaskManagerResponseKill);
 
   // The response button should not be sensitive when the dialog is first opened

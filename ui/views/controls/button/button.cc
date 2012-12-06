@@ -24,10 +24,6 @@ void Button::SetAccessibleName(const string16& name) {
   accessible_name_ = name;
 }
 
-void Button::SetAccessibleKeyboardShortcut(const string16& shortcut) {
-  accessible_shortcut_ = shortcut;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // Button, View overrides:
 
@@ -42,7 +38,6 @@ bool Button::GetTooltipText(const gfx::Point& p, string16* tooltip) const {
 void Button::GetAccessibleState(ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
   state->name = accessible_name_;
-  state->keyboard_shortcut = accessible_shortcut_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

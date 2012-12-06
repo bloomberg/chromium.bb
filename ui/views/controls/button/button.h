@@ -34,7 +34,6 @@ class VIEWS_EXPORT Button : public View {
   void set_tag(int tag) { tag_ = tag; }
 
   void SetAccessibleName(const string16& name);
-  void SetAccessibleKeyboardShortcut(const string16& shortcut);
 
   // Overridden from View:
   virtual bool GetTooltipText(const gfx::Point& p,
@@ -59,7 +58,6 @@ class VIEWS_EXPORT Button : public View {
 
   // Accessibility data.
   string16 accessible_name_;
-  string16 accessible_shortcut_;
 
   // The id tag associated with this button. Used to disambiguate buttons in
   // the ButtonListener implementation.

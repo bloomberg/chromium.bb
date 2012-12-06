@@ -130,19 +130,6 @@ class VIEWS_EXPORT TextButtonBase : public CustomButton,
   // The menu button's class name.
   static const char kViewClassName[];
 
-  // Enumeration of how the prefix ('&') character is processed. The default
-  // is |PREFIX_NONE|.
-  enum PrefixType {
-    // No special processing is done.
-    PREFIX_NONE,
-
-    // The character following the prefix character is not rendered specially.
-    PREFIX_HIDE,
-
-    // The character following the prefix character is underlined.
-    PREFIX_SHOW
-  };
-
   virtual ~TextButtonBase();
 
   // Call SetText once per string in your set of possible values at button
@@ -158,8 +145,6 @@ class VIEWS_EXPORT TextButtonBase : public CustomButton,
   };
 
   void set_alignment(TextAlignment alignment) { alignment_ = alignment; }
-
-  void set_prefix_type(PrefixType type) { prefix_type_ = type; }
 
   const ui::Animation* GetAnimation() const;
 
@@ -311,8 +296,6 @@ class VIEWS_EXPORT TextButtonBase : public CustomButton,
 
   // Whether the text button should handle its text string as multi-line.
   bool multi_line_;
-
-  PrefixType prefix_type_;
 
  private:
   // Text color.

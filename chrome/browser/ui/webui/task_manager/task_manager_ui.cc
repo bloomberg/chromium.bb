@@ -30,10 +30,10 @@ ChromeWebUIDataSource* CreateTaskManagerUIHTMLSource() {
   source->set_use_json_js_format_v2();
 
   source->AddLocalizedString("closeWindow", IDS_CLOSE);
-  source->AddLocalizedString("title",IDS_TASK_MANAGER_TITLE);
+  source->AddLocalizedString("title", IDS_TASK_MANAGER_TITLE);
   source->AddLocalizedString("aboutMemoryLink",
                              IDS_TASK_MANAGER_ABOUT_MEMORY_LINK);
-  source->AddLocalizedString("killChromeOS", IDS_TASK_MANAGER_KILL_CHROMEOS);
+  source->AddLocalizedString("killButton", IDS_TASK_MANAGER_KILL);
   source->AddLocalizedString("processIDColumn",
                              IDS_TASK_MANAGER_PROCESS_ID_COLUMN);
   source->AddLocalizedString("taskColumn", IDS_TASK_MANAGER_TASK_COLUMN);

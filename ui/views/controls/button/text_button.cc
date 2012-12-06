@@ -54,20 +54,6 @@ const int kMinWidthDLUs = 50;
 const int kMinHeightDLUs = 14;
 #endif
 
-int PrefixTypeToCanvasType(TextButton::PrefixType type) {
-  switch (type) {
-    case TextButton::PREFIX_HIDE:
-      return gfx::Canvas::HIDE_PREFIX;
-    case TextButton::PREFIX_SHOW:
-      return gfx::Canvas::SHOW_PREFIX;
-    case TextButton::PREFIX_NONE:
-      return 0;
-    default:
-      NOTREACHED();
-      return 0;
-  }
-}
-
 }  // namespace
 
 // static
@@ -218,7 +204,6 @@ TextButtonBase::TextButtonBase(ButtonListener* listener, const string16& text)
       show_multiple_icon_states_(true),
       is_default_(false),
       multi_line_(false),
-      prefix_type_(PREFIX_NONE),
       color_(ui::NativeTheme::instance()->GetSystemColor(
           ui::NativeTheme::kColorId_TextButtonEnabledColor)),
       color_enabled_(ui::NativeTheme::instance()->GetSystemColor(
@@ -401,24 +386,21 @@ void TextButtonBase::CalculateTextSize(gfx::Size* text_size, int max_width) {
 }
 
 int TextButtonBase::ComputeCanvasStringFlags() const {
-  int flags = PrefixTypeToCanvasType(prefix_type_);
+  if (!multi_line_)
+    return 0;
 
-  if (multi_line_) {
-    flags |= gfx::Canvas::MULTI_LINE;
-
-    switch (alignment_) {
-      case ALIGN_LEFT:
-        flags |= gfx::Canvas::TEXT_ALIGN_LEFT;
-        break;
-      case ALIGN_RIGHT:
-        flags |= gfx::Canvas::TEXT_ALIGN_RIGHT;
-        break;
-      case ALIGN_CENTER:
-        flags |= gfx::Canvas::TEXT_ALIGN_CENTER;
-        break;
-    }
+  int flags = gfx::Canvas::MULTI_LINE;
+  switch (alignment_) {
+    case ALIGN_LEFT:
+      flags |= gfx::Canvas::TEXT_ALIGN_LEFT;
+      break;
+    case ALIGN_RIGHT:
+      flags |= gfx::Canvas::TEXT_ALIGN_RIGHT;
+      break;
+    case ALIGN_CENTER:
+      flags |= gfx::Canvas::TEXT_ALIGN_CENTER;
+      break;
   }
-
   return flags;
 }
 

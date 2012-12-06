@@ -4380,9 +4380,6 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
       <!-- Task Manager Window -->
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_TASK_MANAGER_KILL" desc="The caption of the Task Manager kill button">
-          &amp;End process
-        </message>
-        <message name="IDS_TASK_MANAGER_KILL_CHROMEOS" desc="The caption of the Task Manager kill button in WebUI">
           End process
         </message>
         <message name="IDS_TASK_MANAGER_PURGE_MEMORY" desc="The caption of the Task Manager purge memory button">
@@ -4445,9 +4442,6 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
       </if>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_TASK_MANAGER_KILL" desc="The caption of the Task Manager kill button">
-          &amp;End Process
-        </message>
-        <message name="IDS_TASK_MANAGER_KILL_CHROMEOS" desc="The caption of the Task Manager kill button in WebUI">
           End Process
         </message>
         <message name="IDS_TASK_MANAGER_PURGE_MEMORY" desc="The caption of the Task Manager purge memory button">

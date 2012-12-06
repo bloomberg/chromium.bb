@@ -40,6 +40,7 @@
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/gfx/text_utils.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/menu_button.h"
@@ -348,15 +349,14 @@ class WrenchMenuView : public ScheduleAllView, public views::ButtonListener {
                                       int index,
                                       MenuButtonBackground** background,
                                       int acc_string_id) {
-    TextButton* button = new TextButton(this,
-                                        l10n_util::GetStringUTF16(string_id));
+    TextButton* button = new TextButton(this, gfx::RemoveAcceleratorChar(
+        l10n_util::GetStringUTF16(string_id), '&', NULL, NULL));
     button->SetAccessibleName(
         GetAccessibleNameForWrenchMenuItem(menu_model_, index, acc_string_id));
     button->set_focusable(true);
     button->set_request_focus_on_press(false);
     button->set_tag(index);
     button->SetEnabled(menu_model_->IsEnabledAt(index));
-    button->set_prefix_type(TextButton::PREFIX_HIDE);
     MenuButtonBackground* bg =
         new MenuButtonBackground(type, menu_->use_new_menu());
     button->set_background(bg);
