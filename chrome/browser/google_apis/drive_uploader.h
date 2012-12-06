@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/google_apis/drive_upload_error.h"
 #include "chrome/browser/google_apis/drive_upload_mode.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
@@ -197,7 +198,14 @@ class DriveUploader : public DriveUploaderInterface {
     // TODO(achuith): Use generic stream object after FileStream is refactored
     // to extend a generic stream.
     //
+    // TODO(kinaba): We should switch to async API of FileStream once
+    // crbug.com/164312 is fixed.
+    //
     // For opening and reading from physical file.
+    // Every file operation is posted to the sequenced worker pool, while the
+    // ownership of |file_stream| is held by DriveUploader in UI thread. At the
+    // point when DriveUploader deletes UploadFileInfo, it passes the ownership
+    // of the stream to sequenced worker pool.
     scoped_ptr<net::FileStream> file_stream;
     scoped_refptr<net::IOBuffer> buf;  // Holds current content to be uploaded.
     // Size of |buf|, max is 512KB; Google Docs requires size of each upload
@@ -296,6 +304,9 @@ class DriveUploader : public DriveUploaderInterface {
   // Upload file infos added to the map are deleted either in |RemoveUpload| or
   // in DriveUploader dtor (i.e. we can assume |this| takes their ownership).
   UploadFileInfoMap pending_uploads_;
+
+  // TaskRunner for opening, reading, and closing files.
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

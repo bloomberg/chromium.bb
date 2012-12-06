@@ -27,6 +27,13 @@ const int64 kUploadChunkSize = 512 * 1024;
 // Maximum number of times we try to open a file before giving up.
 const int kMaxFileOpenTries = 5;
 
+// Reads |bytes_to_read| bytes from |file_stream| to |buf|.
+int ReadFileStreamOnBlockingPool(net::FileStream* file_stream,
+                                 scoped_refptr<net::IOBuffer> buf,
+                                 int bytes_to_read) {
+  return file_stream->ReadSync(buf->data(), bytes_to_read);
+}
+
 }  // namespace
 
 namespace google_apis {
@@ -35,11 +42,20 @@ DriveUploader::DriveUploader(DriveServiceInterface* drive_service)
   : drive_service_(drive_service),
     next_upload_id_(0),
     ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+  base::SequencedWorkerPool* blocking_pool = BrowserThread::GetBlockingPool();
+  blocking_task_runner_ = blocking_pool->GetSequencedTaskRunner(
+      blocking_pool->GetSequenceToken());
 }
 
 DriveUploader::~DriveUploader() {
-  STLDeleteContainerPairSecondPointers(pending_uploads_.begin(),
-                                       pending_uploads_.end());
+  for (UploadFileInfoMap::iterator iter = pending_uploads_.begin();
+       iter != pending_uploads_.end();
+       ++iter) {
+    // FileStream must be closed on a file-access-allowed thread.
+    blocking_task_runner_->DeleteSoon(
+        FROM_HERE, iter->second->file_stream.release());
+    delete iter->second;
+  }
 }
 
 int DriveUploader::UploadNewFile(
@@ -249,17 +265,23 @@ DriveUploader::UploadFileInfo* DriveUploader::GetUploadFileInfo(
 
 void DriveUploader::OpenFile(UploadFileInfo* upload_file_info,
                              FileOpenType open_type) {
-  // Open the file asynchronously.
-  const int rv = upload_file_info->file_stream->Open(
-      upload_file_info->file_path,
-      base::PLATFORM_FILE_OPEN |
-      base::PLATFORM_FILE_READ |
-      base::PLATFORM_FILE_ASYNC,
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Passing a raw net::FileStream* from upload_file_info->file_stream.get() is
+  // safe, because the FileStream is always deleted by posting the task to the
+  // same sequenced task runner. (See RemoveUpload() and ~DriveUploader()).
+  // That is, deletion won't happen until this task completes.
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_.get(),
+      FROM_HERE,
+      base::Bind(&net::FileStream::OpenSync,
+                 base::Unretained(upload_file_info->file_stream.get()),
+                 upload_file_info->file_path,
+                 base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ),
       base::Bind(&DriveUploader::OpenCompletionCallback,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       open_type,
-                       upload_file_info->upload_id));
-  DCHECK_EQ(net::ERR_IO_PENDING, rv);
+                 weak_ptr_factory_.GetWeakPtr(),
+                 open_type,
+                 upload_file_info->upload_id));
 }
 
 void DriveUploader::OpenCompletionCallback(FileOpenType open_type,
@@ -403,21 +425,24 @@ void DriveUploader::UploadNextChunk(UploadFileInfo* upload_file_info) {
     return;
   }
 
-  upload_file_info->file_stream->Read(
-      upload_file_info->buf,
-      bytes_to_read,
+  // Passing a raw net::FileStream* from upload_file_info->file_stream.get() is
+  // safe. See the comment in OpenFile().
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_.get(),
+      FROM_HERE,
+      base::Bind(&ReadFileStreamOnBlockingPool,
+                 upload_file_info->file_stream.get(),
+                 upload_file_info->buf,
+                 bytes_to_read),
       base::Bind(&DriveUploader::ReadCompletionCallback,
                  weak_ptr_factory_.GetWeakPtr(),
                  upload_file_info->upload_id,
                  bytes_to_read));
 }
 
-void DriveUploader::ReadCompletionCallback(
-    int upload_id,
-    int bytes_to_read,
-    int bytes_read) {
-  // The Read is asynchronously executed on BrowserThread::UI, where
-  // Read() was called.
+void DriveUploader::ReadCompletionCallback(int upload_id,
+                                           int bytes_to_read,
+                                           int bytes_read) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Should be non-zero. FileStream::Read() returns 0 only at end-of-file,
   // but we don't try to read from end-of-file.
@@ -536,6 +561,9 @@ void DriveUploader::UploadFailed(UploadFileInfo* upload_file_info,
 
 void DriveUploader::RemoveUpload(scoped_ptr<UploadFileInfo> upload_file_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // FileStream must be closed on a file-access-allowed thread.
+  blocking_task_runner_->DeleteSoon(
+      FROM_HERE, upload_file_info->file_stream.release());
   pending_uploads_.erase(upload_file_info->upload_id);
 }
 
