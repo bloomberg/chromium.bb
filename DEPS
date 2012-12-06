@@ -161,6 +161,9 @@ deps = {
   "src/chrome/test/data/perf/frame_rate/content":
     "/trunk/deps/frame_rate/content@93671",
 
+  "src/chrome/test/data/perf/third_party/octane":
+    (Var("googlecode_url") % "octane-benchmark") + "/trunk@19",
+
   "src/third_party/bidichecker":
     (Var("googlecode_url") % "bidichecker") + "/trunk/lib@4",
 
