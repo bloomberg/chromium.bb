@@ -44,6 +44,14 @@ void EventTarget::RemovePostTargetHandler(EventHandler* handler) {
     post_target_list_.erase(find);
 }
 
+void EventTarget::OnEvent(Event* event) {
+  CHECK_EQ(this, event->target());
+  if (target_handler_)
+    target_handler_->OnEvent(event);
+  else
+    EventHandler::OnEvent(event);
+}
+
 EventResult EventTarget::OnKeyEvent(KeyEvent* event) {
   CHECK_EQ(this, event->target());
   return target_handler_ ? target_handler_->OnKeyEvent(event) : ER_UNHANDLED;

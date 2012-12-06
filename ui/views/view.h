@@ -647,7 +647,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   virtual InputMethod* GetInputMethod();
 
   // Overridden from ui::EventTarget:
-  virtual bool CanAcceptEvents() OVERRIDE;
+  virtual bool CanAcceptEvent(const ui::Event& event) OVERRIDE;
   virtual ui::EventTarget* GetParentTarget() OVERRIDE;
 
   // Overridden from ui::EventHandler:

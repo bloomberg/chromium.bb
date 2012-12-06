@@ -449,7 +449,7 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate,
   virtual bool CanWindowReceiveEvents(aura::Window* window) OVERRIDE;
 
   // Overridden from ui::EventTarget:
-  virtual bool CanAcceptEvents() OVERRIDE;
+  virtual bool CanAcceptEvent(const ui::Event& event) OVERRIDE;
   virtual EventTarget* GetParentTarget() OVERRIDE;
 
   static Shell* instance_;

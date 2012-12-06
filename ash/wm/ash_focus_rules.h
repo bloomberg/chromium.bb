@@ -24,6 +24,12 @@ class ASH_EXPORT AshFocusRules : public views::corewm::BaseFocusRules {
   virtual bool IsWindowConsideredVisibleForActivation(
       aura::Window* window) const OVERRIDE;
   virtual bool CanActivateWindow(aura::Window* window) const OVERRIDE;
+  virtual aura::Window* GetNextActivatableWindow(
+      aura::Window* ignore) const OVERRIDE;
+
+  aura::Window* GetTopmostWindowToActivateInContainer(
+      aura::Window* container,
+      aura::Window* ignore) const;
 
   DISALLOW_COPY_AND_ASSIGN(AshFocusRules);
 };

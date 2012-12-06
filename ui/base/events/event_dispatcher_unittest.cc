@@ -32,7 +32,7 @@ class TestTarget : public EventTarget {
 
  private:
   // Overridden from EventTarget:
-  virtual bool CanAcceptEvents() OVERRIDE {
+  virtual bool CanAcceptEvent(const ui::Event& event) OVERRIDE {
     return true;
   }
 

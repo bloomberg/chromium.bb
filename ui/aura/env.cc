@@ -126,7 +126,7 @@ void Env::NotifyWindowInitialized(Window* window) {
 ////////////////////////////////////////////////////////////////////////////////
 // Env, ui::EventTarget implementation:
 
-bool Env::CanAcceptEvents() {
+bool Env::CanAcceptEvent(const ui::Event& event) {
   return true;
 }
 

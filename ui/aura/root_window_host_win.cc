@@ -294,7 +294,7 @@ void RootWindowHostWin::OnPaint(HDC dc) {
 void RootWindowHostWin::OnSize(UINT param, const CSize& size) {
   // Minimizing resizes the window to 0x0 which causes our layout to go all
   // screwy, so we just ignore it.
-  if (param != SIZE_MINIMIZED)
+  if (delegate_ && param != SIZE_MINIMIZED)
     delegate_->OnHostResized(gfx::Size(size.cx, size.cy));
 }
 

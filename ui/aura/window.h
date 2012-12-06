@@ -431,7 +431,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   virtual base::Closure PrepareForLayerBoundsChange() OVERRIDE;
 
   // Overridden from ui::EventTarget:
-  virtual bool CanAcceptEvents() OVERRIDE;
+  virtual bool CanAcceptEvent(const ui::Event& event) OVERRIDE;
   virtual EventTarget* GetParentTarget() OVERRIDE;
 
   // Updates the layer name with a name based on the window's name and id.

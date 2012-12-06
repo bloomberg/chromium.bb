@@ -76,6 +76,9 @@ class UI_EXPORT Event {
   EventTarget* target() const { return target_; }
   EventPhase phase() const { return phase_; }
   EventResult result() const { return result_; }
+  bool dispatch_to_hidden_targets() const {
+    return dispatch_to_hidden_targets_;
+  }
 
   // The following methods return true if the respective keys were pressed at
   // the time the event was created.
@@ -180,6 +183,9 @@ class UI_EXPORT Event {
     delete_native_event_ = delete_native_event;
   }
   void set_time_stamp(base::TimeDelta time_stamp) { time_stamp_ = time_stamp; }
+  void set_dispatch_to_hidden_targets(bool dispatch_to_hidden_targets) {
+    dispatch_to_hidden_targets_ = dispatch_to_hidden_targets;
+  }
 
   void set_name(const std::string& name) { name_ = name; }
 
@@ -195,6 +201,7 @@ class UI_EXPORT Event {
   std::string name_;
   base::TimeDelta time_stamp_;
   int flags_;
+  bool dispatch_to_hidden_targets_;
   bool delete_native_event_;
   EventTarget* target_;
   EventPhase phase_;

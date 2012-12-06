@@ -51,7 +51,7 @@ class UI_EXPORT EventTarget : public EventHandler {
   EventTarget();
   virtual ~EventTarget();
 
-  virtual bool CanAcceptEvents() = 0;
+  virtual bool CanAcceptEvent(const ui::Event& event) = 0;
   virtual EventTarget* GetParentTarget() = 0;
 
   // Adds a handler to receive events before the target. The handler must be
@@ -72,6 +72,7 @@ class UI_EXPORT EventTarget : public EventHandler {
   }
 
   // Overridden from EventHandler:
+  virtual void OnEvent(Event* event) OVERRIDE;
   virtual EventResult OnKeyEvent(KeyEvent* event) OVERRIDE;
   virtual EventResult OnMouseEvent(MouseEvent* event) OVERRIDE;
   virtual EventResult OnScrollEvent(ScrollEvent* event) OVERRIDE;

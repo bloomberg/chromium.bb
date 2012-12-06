@@ -886,7 +886,7 @@ bool Shell::CanWindowReceiveEvents(aura::Window* window) {
   return false;
 }
 
-bool Shell::CanAcceptEvents() {
+bool Shell::CanAcceptEvent(const ui::Event& event) {
   return true;
 }
 

@@ -302,7 +302,9 @@ class TestEventClient : public client::EventClient {
   // Overridden from client::EventClient:
   virtual bool CanProcessEventsWithinSubtree(
       const Window* window) const OVERRIDE {
-    return lock_ ? GetLockWindow()->Contains(window) : true;
+    return lock_ ?
+        window->Contains(GetLockWindow()) || GetLockWindow()->Contains(window) :
+        true;
   }
 
   virtual ui::EventTarget* GetToplevelEventTarget() OVERRIDE {

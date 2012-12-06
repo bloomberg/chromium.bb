@@ -21,6 +21,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/views/controls/menu/menu_controller.h"
+#include "ui/views/corewm/focus_change_event.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -53,6 +54,7 @@ class DeleteOnBlurDelegate : public aura::test::TestWindowDelegate {
 
   void set_window(aura::Window* window) { window_ = window; }
 
+ private:
   // aura::test::TestWindowDelegate overrides:
   virtual bool CanFocus() OVERRIDE {
     return true;
@@ -61,7 +63,15 @@ class DeleteOnBlurDelegate : public aura::test::TestWindowDelegate {
     delete window_;
   }
 
- private:
+  // ui::EventHandler overrides:
+  virtual void OnEvent(ui::Event* event) OVERRIDE {
+    if (event->type() ==
+        views::corewm::FocusChangeEvent::focus_changing_event_type()) {
+      if (event->target() == window_)
+        OnBlur();
+    }
+  }
+
   aura::Window* window_;
 
   DISALLOW_COPY_AND_ASSIGN(DeleteOnBlurDelegate);

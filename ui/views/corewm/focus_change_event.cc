@@ -40,6 +40,7 @@ FocusChangeEvent::FocusChangeEvent(int type)
       last_focus_(NULL) {
   DCHECK_NE(type, ui::ET_UNKNOWN) <<
       "Call RegisterEventTypes() before instantiating this class";
+  set_dispatch_to_hidden_targets(true);
   set_name(FocusChangeEventName(type));
 }
 

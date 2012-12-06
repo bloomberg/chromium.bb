@@ -56,7 +56,7 @@ class UI_EXPORT EventDispatcher {
 
   template<class T>
   void ProcessEvent(EventTarget* target, T* event) {
-    if (!target || !target->CanAcceptEvents())
+    if (!target || !target->CanAcceptEvent(*event))
       return;
 
     ScopedDispatchHelper dispatch_helper(event);

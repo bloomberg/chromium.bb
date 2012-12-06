@@ -91,7 +91,7 @@ class AURA_EXPORT Env : public ui::EventTarget {
   void NotifyWindowInitialized(Window* window);
 
   // Overridden from ui::EventTarget:
-  virtual bool CanAcceptEvents() OVERRIDE;
+  virtual bool CanAcceptEvent(const ui::Event& event) OVERRIDE;
   virtual ui::EventTarget* GetParentTarget() OVERRIDE;
 
   ObserverList<EnvObserver> observers_;

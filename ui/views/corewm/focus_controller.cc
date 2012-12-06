@@ -99,7 +99,8 @@ void FocusController::ActivateWindow(aura::Window* window) {
 }
 
 void FocusController::DeactivateWindow(aura::Window* window) {
-  FocusWindow(rules_->GetNextActivatableWindow(window), NULL);
+  if (window)
+    FocusWindow(rules_->GetNextActivatableWindow(window), NULL);
 }
 
 aura::Window* FocusController::GetActiveWindow() {
@@ -138,8 +139,11 @@ void FocusController::FocusWindow(aura::Window* window,
   // Focusing a window also activates its containing activatable window. Note
   // that the rules could redirect activation activation and/or focus.
   aura::Window* focusable = rules_->GetFocusableWindow(window);
-  SetActiveWindow(rules_->GetActivatableWindow(focusable));
-  DCHECK(GetActiveWindow()->Contains(focusable));
+  aura::Window* activatable =
+      focusable ? rules_->GetActivatableWindow(focusable) : NULL;
+  SetActiveWindow(activatable);
+  if (focusable && activatable)
+    DCHECK(GetActiveWindow()->Contains(focusable));
   SetFocusedWindow(focusable);
 }
 

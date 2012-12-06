@@ -895,8 +895,8 @@ InputMethod* View::GetInputMethod() {
   return widget ? widget->GetInputMethod() : NULL;
 }
 
-bool View::CanAcceptEvents() {
-  return IsDrawn();
+bool View::CanAcceptEvent(const ui::Event& event) {
+  return event.dispatch_to_hidden_targets() || IsDrawn();
 }
 
 ui::EventTarget* View::GetParentTarget() {

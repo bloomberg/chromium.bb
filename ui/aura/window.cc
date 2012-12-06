@@ -933,8 +933,15 @@ base::Closure Window::PrepareForLayerBoundsChange() {
                     bounds(), ContainsMouse());
 }
 
-bool Window::CanAcceptEvents() {
-  return CanReceiveEvents();
+bool Window::CanAcceptEvent(const ui::Event& event) {
+  // The client may forbid certain windows from receiving events at a given
+  // point in time.
+  client::EventClient* client = client::GetEventClient(GetRootWindow());
+  if (client && !client->CanProcessEventsWithinSubtree(this))
+    return false;
+
+  bool visible = event.dispatch_to_hidden_targets() || IsVisible();
+  return visible && (!parent_ || parent_->CanAcceptEvent(event));
 }
 
 ui::EventTarget* Window::GetParentTarget() {

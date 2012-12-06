@@ -85,6 +85,10 @@ bool AshFocusRules::IsWindowConsideredVisibleForActivation(
 }
 
 bool AshFocusRules::CanActivateWindow(aura::Window* window) const {
+  // Clearing activation is always permissible.
+  if (!window)
+    return true;
+
   if (!BaseFocusRules::CanActivateWindow(window))
     return false;
 
@@ -94,6 +98,68 @@ bool AshFocusRules::CanActivateWindow(aura::Window* window) const {
   }
 
   return true;
+}
+
+aura::Window* AshFocusRules::GetNextActivatableWindow(
+    aura::Window* ignore) const {
+  DCHECK(ignore);
+
+  size_t current_container_index = 0;
+  // If the container of the window losing focus is in the list, start from that
+  // container.
+  aura::RootWindow* root = ignore->GetRootWindow();
+  if (!root)
+    root = Shell::GetActiveRootWindow();
+  for (size_t i = 0; ignore && i < arraysize(kWindowContainerIds); i++) {
+    aura::Window* container = Shell::GetContainer(root, kWindowContainerIds[i]);
+    if (container && container->Contains(ignore)) {
+      current_container_index = i;
+      break;
+    }
+  }
+
+  // Look for windows to focus in that container and below.
+  aura::Window* window = NULL;
+  for (; !window && current_container_index < arraysize(kWindowContainerIds);
+       current_container_index++) {
+    aura::Window::Windows containers =
+        Shell::GetAllContainers(kWindowContainerIds[current_container_index]);
+    for (aura::Window::Windows::const_iterator iter = containers.begin();
+         iter != containers.end() && !window; ++iter) {
+      window = GetTopmostWindowToActivateInContainer((*iter), ignore);
+    }
+  }
+  return window;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// AshFocusRules, private:
+
+aura::Window* AshFocusRules::GetTopmostWindowToActivateInContainer(
+    aura::Window* container,
+    aura::Window* ignore) const {
+  // Workspace has an extra level of windows that needs to be special cased.
+  if (container->id() == internal::kShellWindowId_DefaultContainer) {
+    for (aura::Window::Windows::const_reverse_iterator i =
+             container->children().rbegin();
+         i != container->children().rend(); ++i) {
+      if ((*i)->IsVisible()) {
+        aura::Window* window =
+            GetTopmostWindowToActivateInContainer(*i, ignore);
+        if (window)
+          return window;
+      }
+    }
+    return NULL;
+  }
+  for (aura::Window::Windows::const_reverse_iterator i =
+           container->children().rbegin();
+       i != container->children().rend();
+       ++i) {
+    if (*i != ignore && CanActivateWindow(*i) && !wm::IsWindowMinimized(*i))
+      return *i;
+  }
+  return NULL;
 }
 
 }  // namespace wm

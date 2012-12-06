@@ -280,6 +280,10 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
     EXPECT_EQ(1, GetActiveWindowId());
     ActivateWindowById(2);
     EXPECT_EQ(2, GetActiveWindowId());
+    // Verify that attempting to deactivate NULL does not crash and does not
+    // change activation.
+    DeactivateWindow(NULL);
+    EXPECT_EQ(2, GetActiveWindowId());
     DeactivateWindow(GetActiveWindow());
     EXPECT_EQ(1, GetActiveWindowId());
   }

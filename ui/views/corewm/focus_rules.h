@@ -44,6 +44,7 @@ class VIEWS_EXPORT FocusRules {
   //   RootWindow.
   // - it is being destroyed.
   // - it is being explicitly deactivated.
+  // |ignore| cannot be NULL.
   virtual aura::Window* GetNextActivatableWindow(
       aura::Window* ignore) const = 0;
   virtual aura::Window* GetNextFocusableWindow(
