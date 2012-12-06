@@ -221,6 +221,8 @@ void PrioritizedResourceManager::acquireBackingTextureIfNeeded(PrioritizedResour
     for (BackingList::iterator it = m_backings.begin(); it != m_backings.end(); ++it) {
         if (!(*it)->canBeRecycled())
             break;
+        if (resourceProvider->inUseByConsumer((*it)->id()))
+            continue;
         if ((*it)->size() == texture->size() && (*it)->format() == texture->format()) {
             backing = (*it);
             m_backings.erase(it);
