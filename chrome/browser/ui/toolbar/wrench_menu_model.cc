@@ -61,11 +61,6 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 
-#if defined(TOOLKIT_GTK)
-#include <gtk/gtk.h>
-#include "chrome/browser/ui/gtk/gtk_util.h"
-#endif
-
 #if defined(OS_WIN)
 #include "base/win/metro.h"
 #include "base/win/windows_version.h"
