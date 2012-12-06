@@ -13,19 +13,12 @@
 
 class Browser;
 class BrowserTabstripTabContentsCreator;
-class ChromeWebContentsHandler;
 class ConstrainedWebDialogDelegateBase;
-class ExtensionTabUtil;
 class InstantLoader;
 class OffscreenTabContentsCreator;
-class PanelHost;
 class Profile;
 class TabStripModel;
 class TestTabStripModelDelegate;
-
-namespace extensions {
-class WebAuthFlow;
-}
 
 namespace prerender {
 class PrerenderContents;
@@ -56,13 +49,9 @@ class TabContents : public content::WebContentsObserver {
 
     friend class Browser;
     friend class BrowserTabstripTabContentsCreator;
-    friend class ChromeWebContentsHandler;
     friend class ConstrainedWebDialogDelegateBase;
-    friend class extensions::WebAuthFlow;
-    friend class ExtensionTabUtil;
     friend class InstantLoader;
     friend class OffscreenTabContentsCreator;
-    friend class PanelHost;
     friend class prerender::PrerenderContents;
     // See crbug.com/153587
     friend class TabAndroid;

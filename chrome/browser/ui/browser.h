@@ -416,7 +416,7 @@ class Browser : public TabStripModelObserver,
 
   // Called by chrome::Navigate() when a navigation has occurred in a tab in
   // this Browser. Updates the UI for the start of this navigation.
-  void UpdateUIForNavigationInTab(TabContents* contents,
+  void UpdateUIForNavigationInTab(content::WebContents* contents,
                                   content::PageTransition transition,
                                   bool user_initiated);
 
@@ -425,7 +425,18 @@ class Browser : public TabStripModelObserver,
   class Adoption {
    private:
     friend class Browser;
+
+    // chrome::Navigate creates WebContents that are destined for the tab strip,
+    // and that might have WebUI that immediately calls back into random tab
+    // helpers. It, alas, needs special permission to create the complete tab
+    // helper environment.
+    friend class BrowserNavigatorWebContentsAdoption;
+
+    // BrowserTabStripModelDelegate receives the notifications from the
+    // TabStripModel that a WebContents is being inserted into the tab strip. It
+    // needs the power to set up any necessary tab helpers.
     friend class chrome::BrowserTabStripModelDelegate;
+
     // Chrome Frame is a special case. Chrome Frame is defined as a complete
     // tab of Chrome inside of an IE window, so it has the unique privilege of
     // asking Browser to set up a WebContents to have the full complement of tab
@@ -801,8 +812,8 @@ class Browser : public TabStripModelObserver,
 
   // Adoption functions ////////////////////////////////////////////////////////
 
-  // Sets the specified browser as the delegate of all the parts of the
-  // TabContents that are needed.
+  // Sets the specified browser as the delegate of the WebContents and all the
+  // associated tab helpers that are needed.
   void SetAsDelegate(content::WebContents* web_contents, Browser* delegate);
 
   // Assorted utility functions ///////////////////////////////////////////////

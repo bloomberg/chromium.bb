@@ -50,8 +50,7 @@ void AddBlankTabAt(Browser* browser, int index, bool foreground) {
   params.disposition = foreground ? NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB;
   params.tabstrip_index = index;
   chrome::Navigate(&params);
-  params.target_contents->web_contents()->SetNewTabStartTime(
-      new_tab_start_time);
+  params.target_contents->SetNewTabStartTime(new_tab_start_time);
 }
 
 content::WebContents* AddSelectedTabWithURL(
@@ -61,7 +60,7 @@ content::WebContents* AddSelectedTabWithURL(
   NavigateParams params(browser, url, transition);
   params.disposition = NEW_FOREGROUND_TAB;
   Navigate(&params);
-  return params.target_contents ? params.target_contents->web_contents() : NULL;
+  return params.target_contents;
 }
 
 void AddWebContents(Browser* browser,
@@ -75,13 +74,6 @@ void AddWebContents(Browser* browser,
   DCHECK(disposition != SAVE_TO_DISK);
   // Can't create a new contents for the current tab - invalid case.
   DCHECK(disposition != CURRENT_TAB);
-
-  // TODO(avi): Use browser tab contents adoption here.
-  TabContents* new_tab_contents = TabContents::FromWebContents(new_contents);
-  if (!new_tab_contents) {
-    new_tab_contents =
-        BrowserTabstripTabContentsCreator::CreateTabContents(new_contents);
-  }
 
   BlockedContentTabHelper* source_blocked_content = NULL;
   if (source_contents) {
@@ -116,9 +108,8 @@ void AddWebContents(Browser* browser,
     new_contents->GetRenderViewHost()->DisassociateFromPopupCount();
   }
 
-  NavigateParams params(browser, new_tab_contents);
-  params.source_contents =
-      source_contents ? TabContents::FromWebContents(source_contents) : NULL;
+  NavigateParams params(browser, new_contents);
+  params.source_contents = source_contents;
   params.disposition = disposition;
   params.window_bounds = initial_pos;
   params.window_action = NavigateParams::SHOW_WINDOW;

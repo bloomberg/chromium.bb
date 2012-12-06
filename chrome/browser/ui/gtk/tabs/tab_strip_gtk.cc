@@ -1796,7 +1796,7 @@ bool TabStripGtk::CompleteDrop(const guchar* data, bool is_plain_text) {
     params.disposition = NEW_FOREGROUND_TAB;
   } else {
     params.disposition = CURRENT_TAB;
-    params.source_contents = model_->GetTabContentsAt(drop_index);
+    params.source_contents = model_->GetWebContentsAt(drop_index);
   }
 
   chrome::Navigate(&params);

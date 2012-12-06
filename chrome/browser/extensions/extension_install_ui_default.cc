@@ -257,7 +257,7 @@ void ExtensionInstallUI::OpenAppInstalledUI(Browser* browser,
 
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_APP_INSTALLED_TO_NTP,
-        content::Source<WebContents>(params.target_contents->web_contents()),
+        content::Source<WebContents>(params.target_contents),
         content::Details<const std::string>(&app_id));
   } else {
 #if defined(USE_ASH)

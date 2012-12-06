@@ -1099,17 +1099,17 @@ bool CreateTabFunction::RunImpl() {
   // The tab may have been created in a different window, so make sure we look
   // at the right tab strip.
   tab_strip = params.browser->tab_strip_model();
-  int new_index = tab_strip->GetIndexOfTabContents(params.target_contents);
+  int new_index = tab_strip->GetIndexOfWebContents(params.target_contents);
   if (opener)
     tab_strip->SetOpenerOfWebContentsAt(new_index, opener);
 
   if (active)
-    params.target_contents->web_contents()->GetView()->SetInitialFocus();
+    params.target_contents->GetView()->SetInitialFocus();
 
   // Return data about the newly created tab.
   if (has_callback()) {
     SetResult(ExtensionTabUtil::CreateTabValue(
-        params.target_contents->web_contents(),
+        params.target_contents,
         tab_strip, new_index, GetExtension()));
   }
 

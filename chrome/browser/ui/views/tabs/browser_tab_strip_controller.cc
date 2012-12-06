@@ -329,7 +329,7 @@ void BrowserTabStripController::PerformDrop(bool drop_before,
   } else {
     content::RecordAction(UserMetricsAction("Tab_DropURLOnTab"));
     params.disposition = CURRENT_TAB;
-    params.source_contents = model_->GetTabContentsAt(index);
+    params.source_contents = model_->GetWebContentsAt(index);
   }
   params.window_action = chrome::NavigateParams::SHOW_WINDOW;
   chrome::Navigate(&params);

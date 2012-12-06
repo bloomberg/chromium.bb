@@ -24,7 +24,6 @@
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/browser/ui/intents/web_intent_picker_controller.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/api/app_window.h"
@@ -277,9 +276,7 @@ WebContents* ShellWindow::OpenURLFromTab(WebContents* source,
   new_tab_params.initiating_profile = profile_;
   chrome::Navigate(&new_tab_params);
 
-  WebContents* new_contents = new_tab_params.target_contents ?
-      new_tab_params.target_contents->web_contents() : NULL;
-  if (!new_contents) {
+  if (!new_tab_params.target_contents) {
     AddMessageToDevToolsConsole(
         content::CONSOLE_MESSAGE_LEVEL_ERROR,
         base::StringPrintf(
@@ -287,7 +284,7 @@ WebContents* ShellWindow::OpenURLFromTab(WebContents* source,
             params.url.spec().c_str()));
   }
 
-  return new_contents;
+  return new_tab_params.target_contents;
 }
 
 void ShellWindow::AddNewContents(WebContents* source,

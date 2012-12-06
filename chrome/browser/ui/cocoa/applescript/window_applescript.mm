@@ -196,10 +196,9 @@
   params.disposition = NEW_FOREGROUND_TAB;
   params.tabstrip_index = index;
   chrome::Navigate(&params);
-  params.target_contents->web_contents()->SetNewTabStartTime(
-      newTabStartTime);
+  params.target_contents->SetNewTabStartTime(newTabStartTime);
 
-  [aTab setWebContents:params.target_contents->web_contents()];
+  [aTab setWebContents:params.target_contents];
 }
 
 - (void)removeFromTabsAtIndex:(int)index {

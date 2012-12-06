@@ -908,10 +908,10 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysInsecureContentTwoTabs) {
   ui_test_utils::NavigateToURL(browser(),
       https_server_.GetURL("files/ssl/blank_page.html"));
 
-  TabContents* tab1 = browser()->tab_strip_model()->GetActiveTabContents();
+  WebContents* tab1 = browser()->tab_strip_model()->GetActiveWebContents();
 
   // This tab should be fine.
-  CheckAuthenticatedState(tab1->web_contents(), false);
+  CheckAuthenticatedState(tab1, false);
 
   // Create a new tab.
   std::string replacement_path;
@@ -929,14 +929,14 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysInsecureContentTwoTabs) {
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
   chrome::Navigate(&params);
-  TabContents* tab2 = params.target_contents;
+  WebContents* tab2 = params.target_contents;
   observer.Wait();
 
   // The new tab has insecure content.
-  CheckAuthenticatedState(tab2->web_contents(), true);
+  CheckAuthenticatedState(tab2, true);
 
   // The original tab should not be contaminated.
-  CheckAuthenticatedState(tab1->web_contents(), false);
+  CheckAuthenticatedState(tab1, false);
 }
 
 // Visits two pages from the same origin: one that runs insecure content and one
@@ -949,10 +949,10 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRunsInsecureContentTwoTabs) {
   ui_test_utils::NavigateToURL(browser(),
       https_server_.GetURL("files/ssl/blank_page.html"));
 
-  TabContents* tab1 = browser()->tab_strip_model()->GetActiveTabContents();
+  WebContents* tab1 = browser()->tab_strip_model()->GetActiveWebContents();
 
   // This tab should be fine.
-  CheckAuthenticatedState(tab1->web_contents(), false);
+  CheckAuthenticatedState(tab1, false);
 
   std::string replacement_path;
   ASSERT_TRUE(GetFilePathWithHostAndPortReplacement(
@@ -971,19 +971,19 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRunsInsecureContentTwoTabs) {
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
   chrome::Navigate(&params);
-  TabContents* tab2 = params.target_contents;
+  WebContents* tab2 = params.target_contents;
   observer.Wait();
 
   // Both tabs should have the same process.
-  EXPECT_EQ(tab1->web_contents()->GetRenderProcessHost(),
-            tab2->web_contents()->GetRenderProcessHost());
+  EXPECT_EQ(tab1->GetRenderProcessHost(),
+            tab2->GetRenderProcessHost());
 
   // The new tab has insecure content.
-  CheckAuthenticationBrokenState(tab2->web_contents(), 0, true, false);
+  CheckAuthenticationBrokenState(tab2, 0, true, false);
 
   // Which means the origin for the first tab has also been contaminated with
   // insecure content.
-  CheckAuthenticationBrokenState(tab1->web_contents(), 0, true, false);
+  CheckAuthenticationBrokenState(tab1, 0, true, false);
 }
 
 // Visits a page with an image over http.  Visits another page over https

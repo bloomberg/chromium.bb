@@ -18,7 +18,10 @@
 
 class Browser;
 class Profile;
-class TabContents;
+
+namespace content {
+class WebContents;
+}
 
 namespace chrome {
 
@@ -37,7 +40,7 @@ namespace chrome {
 // params.disposition = NEW_BACKGROUND_TAB;
 // chrome::Navigate(&params);
 //
-// Opens a popup TabContents:
+// Opens a popup WebContents:
 // chrome::NavigateParams params(browser, popup_contents);
 // params.source_contents = source_contents;
 // chrome::Navigate(&params);
@@ -48,7 +51,8 @@ struct NavigateParams {
   NavigateParams(Browser* browser,
                  const GURL& a_url,
                  content::PageTransition a_transition);
-  NavigateParams(Browser* browser, TabContents* a_target_contents);
+  NavigateParams(Browser* browser,
+                 content::WebContents* a_target_contents);
   NavigateParams(Profile* profile,
                  const GURL& a_url,
                  content::PageTransition a_transition);
@@ -63,28 +67,28 @@ struct NavigateParams {
   // is terminated by \r\n.  May be empty if no extra headers are needed.
   std::string extra_headers;
 
-  // [in]  A TabContents to be navigated or inserted into the target
+  // [in]  A WebContents to be navigated or inserted into the target
   //       Browser's tabstrip. If NULL, |url| or the homepage will be used
   //       instead. When non-NULL, Navigate() assumes it has already been
   //       navigated to its intended destination and will not load any URL in it
   //       (i.e. |url| is ignored).
   //       Default is NULL.
-  // [out] The TabContents in which the navigation occurred or that was
+  // [out] The WebContents in which the navigation occurred or that was
   //       inserted. Guaranteed non-NULL except for note below:
   // Note: If this field is set to NULL by the caller and Navigate() creates
-  //       a new TabContents, this field will remain NULL and the
-  //       TabContents deleted if the TabContents it created is
+  //       a new WebContents, this field will remain NULL and the
+  //       WebContents deleted if the WebContents it created is
   //       not added to a TabStripModel before Navigate() returns.
-  TabContents* target_contents;
+  content::WebContents* target_contents;
 
-  // [in]  The TabContents that initiated the Navigate() request if such
+  // [in]  The WebContents that initiated the Navigate() request if such
   //       context is necessary. Default is NULL, i.e. no context.
-  // [out] If NULL, this value will be set to the selected TabContents in
+  // [out] If NULL, this value will be set to the selected WebContents in
   //       the originating browser prior to the operation performed by
   //       Navigate(). However, if the originating page is from a different
   //       profile (e.g. an OFF_THE_RECORD page originating from a non-OTR
   //       window), then |source_contents| is reset to NULL.
-  TabContents* source_contents;
+  content::WebContents* source_contents;
 
   // The disposition requested by the navigation source. Default is
   // CURRENT_TAB. What follows is a set of coercions that happen to this value

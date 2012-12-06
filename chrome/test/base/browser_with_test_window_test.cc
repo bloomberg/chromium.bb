@@ -90,7 +90,7 @@ void BrowserWithTestWindowTest::AddTab(Browser* browser, const GURL& url) {
   params.tabstrip_index = 0;
   params.disposition = NEW_FOREGROUND_TAB;
   chrome::Navigate(&params);
-  CommitPendingLoad(&params.target_contents->web_contents()->GetController());
+  CommitPendingLoad(&params.target_contents->GetController());
 }
 
 void BrowserWithTestWindowTest::CommitPendingLoad(

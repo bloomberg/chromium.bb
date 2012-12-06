@@ -990,13 +990,13 @@ void Browser::RequestMediaAccessPermissionHelper(
   }
 }
 
-void Browser::UpdateUIForNavigationInTab(TabContents* contents,
+void Browser::UpdateUIForNavigationInTab(WebContents* contents,
                                          content::PageTransition transition,
                                          bool user_initiated) {
-  tab_strip_model_->TabNavigating(contents->web_contents(), transition);
+  tab_strip_model_->TabNavigating(contents, transition);
 
   bool contents_is_selected =
-      contents == tab_strip_model_->GetActiveTabContents();
+      contents == tab_strip_model_->GetActiveWebContents();
   if (user_initiated && contents_is_selected && window()->GetLocationBar()) {
     // Forcibly reset the location bar if the url is going to change in the
     // current tab, since otherwise it won't discard any ongoing user edits,
@@ -1013,10 +1013,10 @@ void Browser::UpdateUIForNavigationInTab(TabContents* contents,
   // displaying a favicon, which controls the throbber. If we updated it here,
   // the throbber will show the default favicon for a split second when
   // navigating away from the new tab page.
-  ScheduleUIUpdate(contents->web_contents(), content::INVALIDATE_TYPE_URL);
+  ScheduleUIUpdate(contents, content::INVALIDATE_TYPE_URL);
 
   if (contents_is_selected)
-    contents->web_contents()->Focus();
+    contents->Focus();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1323,8 +1323,7 @@ void Browser::MaybeUpdateBookmarkBarStateForInstantPreview(
 WebContents* Browser::OpenURLFromTab(WebContents* source,
                                      const OpenURLParams& params) {
   chrome::NavigateParams nav_params(this, params.url, params.transition);
-  nav_params.source_contents =
-      source ? TabContents::FromWebContents(source) : NULL;
+  nav_params.source_contents = source;
   nav_params.referrer = params.referrer;
   nav_params.extra_headers = params.extra_headers;
   nav_params.disposition = params.disposition;
@@ -1338,8 +1337,7 @@ WebContents* Browser::OpenURLFromTab(WebContents* source,
   nav_params.is_cross_site_redirect = params.is_cross_site_redirect;
   chrome::Navigate(&nav_params);
 
-  return nav_params.target_contents ?
-      nav_params.target_contents->web_contents() : NULL;
+  return nav_params.target_contents;
 }
 
 void Browser::NavigationStateChanged(const WebContents* source,

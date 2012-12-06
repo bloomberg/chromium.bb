@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -91,8 +90,8 @@ Browser* BrowserNavigatorTest::CreateEmptyBrowserForApp(Browser::Type type,
   return browser;
 }
 
-TabContents* BrowserNavigatorTest::CreateTabContents() {
-  return chrome::TabContentsFactory(
+WebContents* BrowserNavigatorTest::CreateWebContents() {
+  return WebContents::Create(
       browser()->profile(),
       NULL,
       MSG_ROUTING_NONE,
@@ -190,9 +189,9 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_CurrentTab) {
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_SingletonTabExisting) {
   GURL singleton_url1("http://maps.google.com/");
 
-  // Register for a notification if an additional tab_contents was instantiated.
+  // Register for a notification if an additional WebContents was instantiated.
   // Opening a Singleton tab that is already opened should not be opening a new
-  // tab nor be creating a new TabContents object.
+  // tab nor be creating a new WebContents object.
   content::NotificationRegistrar registrar;
 
   // As the registrar object goes out of scope, this will get unregistered
@@ -306,7 +305,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewForegroundTab) {
   p.disposition = NEW_FOREGROUND_TAB;
   chrome::Navigate(&p);
   EXPECT_NE(old_contents, chrome::GetActiveWebContents(browser()));
-  EXPECT_EQ(browser()->tab_strip_model()->GetActiveTabContents(),
+  EXPECT_EQ(browser()->tab_strip_model()->GetActiveWebContents(),
             p.target_contents);
   EXPECT_EQ(2, browser()->tab_count());
 }
@@ -627,17 +626,17 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_IgnoreAction) {
   RunSuppressTest(IGNORE_ACTION);
 }
 
-// This tests adding a foreground tab with a predefined TabContents.
+// This tests adding a foreground tab with a predefined WebContents.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, TargetContents_ForegroundTab) {
   chrome::NavigateParams p(MakeNavigateParams());
   p.disposition = NEW_FOREGROUND_TAB;
-  p.target_contents = CreateTabContents();
+  p.target_contents = CreateWebContents();
   chrome::Navigate(&p);
 
   // Navigate() should have opened the contents in a new foreground in the
   // current Browser.
   EXPECT_EQ(browser(), p.browser);
-  EXPECT_EQ(browser()->tab_strip_model()->GetActiveTabContents(),
+  EXPECT_EQ(browser()->tab_strip_model()->GetActiveWebContents(),
             p.target_contents);
 
   // We should have one window, with two tabs.
@@ -646,11 +645,11 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, TargetContents_ForegroundTab) {
 }
 
 #if defined(OS_WIN)
-// This tests adding a popup with a predefined TabContents.
+// This tests adding a popup with a predefined WebContents.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, DISABLED_TargetContents_Popup) {
   chrome::NavigateParams p(MakeNavigateParams());
   p.disposition = NEW_POPUP;
-  p.target_contents = CreateTabContents();
+  p.target_contents = CreateWebContents();
   p.window_bounds = gfx::Rect(10, 10, 500, 500);
   chrome::Navigate(&p);
 
@@ -662,7 +661,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, DISABLED_TargetContents_Popup) {
   // The web platform is weird. The window bounds specified in
   // |p.window_bounds| are used as follows:
   // - the origin is used to position the window
-  // - the size is used to size the TabContents of the window.
+  // - the size is used to size the WebContents of the window.
   // As such the position of the resulting window will always match
   // p.window_bounds.origin(), but its size will not. We need to match
   // the size against the selected tab's view's container size.
@@ -674,7 +673,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, DISABLED_TargetContents_Popup) {
   // All platforms should respect size however provided width > 400 (Mac has a
   // minimum window width of 400).
   EXPECT_EQ(p.window_bounds.size(),
-            p.target_contents->web_contents()->GetView()->GetContainerSize());
+            p.target_contents->GetView()->GetContainerSize());
 
   // We should have two windows, the new popup and the browser() provided by the
   // framework.
@@ -698,8 +697,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Tabstrip_InsertAtIndex) {
 
   // Navigate() should have inserted a new tab at slot 0 in the tabstrip.
   EXPECT_EQ(browser(), p.browser);
-  EXPECT_EQ(0, browser()->tab_strip_model()->GetIndexOfTabContents(
-      static_cast<const TabContents*>(p.target_contents)));
+  EXPECT_EQ(0, browser()->tab_strip_model()->GetIndexOfWebContents(
+      static_cast<const WebContents*>(p.target_contents)));
 
   // We should have one window - the browser() provided by the framework.
   EXPECT_EQ(1u, BrowserList::size());

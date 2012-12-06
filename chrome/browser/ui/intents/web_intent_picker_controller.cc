@@ -330,21 +330,22 @@ void WebIntentPickerController::OnServiceChosen(
     }
 
     case webkit_glue::WebIntentServiceData::DISPOSITION_WINDOW: {
-      TabContents* contents = chrome::TabContentsFactory(
+      content::WebContents* contents = content::WebContents::Create(
           profile_,
           tab_util::GetSiteInstanceForNewTab(profile_, url),
           MSG_ROUTING_NONE, NULL);
+      WebIntentPickerController::CreateForWebContents(contents);
 
-      // Let the controller for the target TabContents know that it is hosting a
+      // Let the controller for the target WebContents know that it is hosting a
       // web intents service. Suppress if we're not showing the
       // use-another-service button.
       if (picker_model_->show_use_another_service()) {
-        WebIntentPickerController::FromWebContents(contents->web_contents())->
+        WebIntentPickerController::FromWebContents(contents)->
             SetWindowDispositionSource(web_contents_, intents_dispatcher_);
       }
 
-      intents_dispatcher_->DispatchIntent(contents->web_contents());
-      service_tab_ = contents->web_contents();
+      intents_dispatcher_->DispatchIntent(contents);
+      service_tab_ = contents;
 
       // This call performs all the tab strip manipulation, notifications, etc.
       // Since we're passing in a target_contents, it assumes that we will

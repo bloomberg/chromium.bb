@@ -8,7 +8,6 @@
 
 #include "base/message_loop.h"
 #include "chrome/browser/ui/browser_navigator.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -79,8 +78,7 @@ void InstantUnloadHandler::RunUnloadListenersOrDestroy(
 void InstantUnloadHandler::Activate(WebContentsDelegateImpl* delegate,
                                     content::WebContents* contents,
                                     int index) {
-  chrome::NavigateParams params(browser_,
-                                TabContents::FromWebContents(contents));
+  chrome::NavigateParams params(browser_, contents);
   params.disposition = NEW_FOREGROUND_TAB;
   params.tabstrip_index = index;
 

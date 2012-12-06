@@ -112,8 +112,7 @@ void WebAuthFlow::ShowAuthFlowPopup() {
   Browser::CreateParams browser_params(Browser::TYPE_POPUP, profile_);
   browser_params.initial_bounds = initial_bounds_;
   Browser* browser = new Browser(browser_params);
-  chrome::NavigateParams params(
-      browser, TabContents::Factory::CreateTabContents(contents_));
+  chrome::NavigateParams params(browser, contents_);
   params.disposition = CURRENT_TAB;
   params.window_action = chrome::NavigateParams::SHOW_WINDOW;
   chrome::Navigate(&params);

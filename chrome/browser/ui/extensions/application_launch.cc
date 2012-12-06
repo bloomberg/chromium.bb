@@ -205,7 +205,7 @@ WebContents* OpenApplicationTab(Profile* profile,
     contents = existing_tab;
   } else {
     chrome::Navigate(&params);
-    contents = params.target_contents->web_contents();
+    contents = params.target_contents;
   }
 
 #if defined(USE_ASH)

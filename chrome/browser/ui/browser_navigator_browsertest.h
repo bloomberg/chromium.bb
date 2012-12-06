@@ -10,10 +10,13 @@
 #include "content/public/browser/notification_types.h"
 
 class Profile;
-class TabContents;
 
 namespace chrome {
 struct NavigateParams;
+}
+
+namespace content {
+class WebContents;
 }
 
 // Browsertest class for testing the browser navigation. It is also a base class
@@ -28,7 +31,7 @@ class BrowserNavigatorTest : public InProcessBrowserTest,
   Browser* CreateEmptyBrowserForType(Browser::Type type, Profile* profile);
   Browser* CreateEmptyBrowserForApp(Browser::Type type, Profile* profile);
 
-  TabContents* CreateTabContents();
+  content::WebContents* CreateWebContents();
 
   void RunSuppressTest(WindowOpenDisposition disposition);
   void RunUseNonIncognitoWindowTest(const GURL& url);

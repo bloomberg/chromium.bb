@@ -7,8 +7,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_url_handler.h"
@@ -46,7 +44,8 @@ void ShowSingletonTabRespectRef(Browser* browser, const GURL& url) {
 void ShowSingletonTabOverwritingNTP(Browser* browser,
                                     const NavigateParams& params) {
   NavigateParams local_params(params);
-  content::WebContents* contents = GetActiveWebContents(browser);
+  content::WebContents* contents =
+      browser->tab_strip_model()->GetActiveWebContents();
   if (contents) {
     const GURL& contents_url = contents->GetURL();
     if ((contents_url == GURL(kChromeUINewTabURL) ||
@@ -89,8 +88,8 @@ int GetIndexOfSingletonTab(NavigateParams* params) {
   int tab_count = params->browser->tab_count();
   for (int i = 0; i < tab_count; ++i) {
     int tab_index = (start_index + i) % tab_count;
-    TabContents* tab =
-        params->browser->tab_strip_model()->GetTabContentsAt(tab_index);
+    content::WebContents* tab =
+        params->browser->tab_strip_model()->GetWebContentsAt(tab_index);
 
     url_canon::Replacements<char> replacements;
     if (params->ref_behavior == NavigateParams::IGNORE_REF)
@@ -101,7 +100,7 @@ int GetIndexOfSingletonTab(NavigateParams* params) {
       replacements.ClearQuery();
     }
 
-    GURL tab_url = tab->web_contents()->GetURL();
+    GURL tab_url = tab->GetURL();
     GURL rewritten_tab_url = tab_url;
     content::BrowserURLHandler::GetInstance()->RewriteURLIfNecessary(
         &rewritten_tab_url,
