@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_LOCAL_FILE_SYNC_SERVICE_H_
 
 #include <map>
+#include <set>
 #include <string>
 
 #include "base/basictypes.h"
@@ -172,6 +173,11 @@ class LocalFileSyncService
   // Origin to context map. (Assuming that as far as we're in the same
   // profile single origin wouldn't belong to multiple FileSystemContexts.)
   std::map<GURL, fileapi::FileSystemContext*> origin_to_contexts_;
+
+  // Origins which have pending changes but have not been initialized yet.
+  // (Used only for handling dirty files left in the local tracker database
+  // after a restart.)
+  std::set<GURL> pending_origins_with_changes_;
 
   OriginChangeMap origin_change_map_;
 

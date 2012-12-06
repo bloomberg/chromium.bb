@@ -201,15 +201,26 @@ void LocalFileSyncService::RecordFakeLocalChange(
 
 void LocalFileSyncService::OnChangesAvailableInOrigins(
     const std::set<GURL>& origins) {
+  bool need_notification = false;
   for (std::set<GURL>::const_iterator iter = origins.begin();
        iter != origins.end(); ++iter) {
     const GURL& origin = *iter;
-    DCHECK(ContainsKey(origin_to_contexts_, origin));
+    if (!ContainsKey(origin_to_contexts_, origin)) {
+      // This could happen if this is called for apps/origins that haven't
+      // been initialized yet. (Local change tracker could call this for
+      // uninitialized origins while it's reading dirty files from the
+      // database in the initialization phase.)
+      pending_origins_with_changes_.insert(origin);
+      continue;
+    }
+    need_notification = true;
     fileapi::FileSystemContext* context = origin_to_contexts_[origin];
     DCHECK(context->change_tracker());
     origin_change_map_.SetOriginChangeCount(
         origin, context->change_tracker()->num_changes());
   }
+  if (!need_notification)
+    return;
   int64 num_changes = origin_change_map_.GetTotalChangeCount();
   FOR_EACH_OBSERVER(Observer, change_observers_,
                     OnLocalChangeAvailable(num_changes));
@@ -220,8 +231,24 @@ void LocalFileSyncService::DidInitializeFileSystemContext(
     fileapi::FileSystemContext* file_system_context,
     const SyncStatusCallback& callback,
     SyncStatusCode status) {
-  if (status == fileapi::SYNC_STATUS_OK)
-    origin_to_contexts_[app_origin] = file_system_context;
+  if (status != fileapi::SYNC_STATUS_OK) {
+    callback.Run(status);
+    return;
+  }
+  DCHECK(file_system_context);
+  origin_to_contexts_[app_origin] = file_system_context;
+
+  if (pending_origins_with_changes_.find(app_origin) !=
+      pending_origins_with_changes_.end()) {
+    // We have remaining changes for the origin.
+    pending_origins_with_changes_.erase(app_origin);
+    DCHECK(file_system_context->change_tracker());
+    origin_change_map_.SetOriginChangeCount(
+        app_origin, file_system_context->change_tracker()->num_changes());
+    int64 num_changes = origin_change_map_.GetTotalChangeCount();
+    FOR_EACH_OBSERVER(Observer, change_observers_,
+                      OnLocalChangeAvailable(num_changes));
+  }
   callback.Run(status);
 }
 

@@ -169,10 +169,10 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
 
   void ShutdownOnIOThread();
 
-  // Adds |origin| to the internal origin set that have pending changes
-  // (origins_with_pending_changes_) and start timer to eventually call
-  // NotifyAvailableChangesOnIOThread. This is called on IO thread.
-  void OnNumberOfAvailableChangesUpdatedOnIOThread(const GURL& origin);
+  // Starts a timer to eventually call NotifyAvailableChangesOnIOThread.
+  // The caller is expected to update origins_with_pending_changes_ before
+  // calling this.
+  void ScheduleNotifyChangesUpdatedOnIOThread();
 
   // Called by the internal timer on IO thread to notify changes to UI thread.
   void NotifyAvailableChangesOnIOThread();
@@ -187,12 +187,14 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
       FileSystemContext* file_system_context);
   SyncStatusCode InitializeChangeTrackerOnFileThread(
       scoped_ptr<LocalFileChangeTracker>* tracker_ptr,
-      FileSystemContext* file_system_context);
+      FileSystemContext* file_system_context,
+      std::set<GURL>* origins_with_changes);
   void DidInitializeChangeTrackerOnIOThread(
       scoped_ptr<LocalFileChangeTracker>* tracker_ptr,
       const GURL& source_url,
       const std::string& service_name,
       FileSystemContext* file_system_context,
+      std::set<GURL>* origins_with_changes,
       SyncStatusCode status);
   void DidInitialize(
       const GURL& source_url,
