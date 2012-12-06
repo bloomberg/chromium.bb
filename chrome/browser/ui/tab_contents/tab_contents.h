@@ -15,7 +15,6 @@ class Browser;
 class BrowserTabstripTabContentsCreator;
 class ConstrainedWebDialogDelegateBase;
 class InstantLoader;
-class OffscreenTabContentsCreator;
 class Profile;
 class TabStripModel;
 class TestTabStripModelDelegate;
@@ -51,7 +50,6 @@ class TabContents : public content::WebContentsObserver {
     friend class BrowserTabstripTabContentsCreator;
     friend class ConstrainedWebDialogDelegateBase;
     friend class InstantLoader;
-    friend class OffscreenTabContentsCreator;
     friend class prerender::PrerenderContents;
     // See crbug.com/153587
     friend class TabAndroid;
