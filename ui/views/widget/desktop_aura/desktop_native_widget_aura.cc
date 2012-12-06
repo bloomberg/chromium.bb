@@ -493,9 +493,8 @@ void DesktopNativeWidgetAura::OnWindowDestroying() {
 void DesktopNativeWidgetAura::OnWindowDestroyed() {
   window_ = NULL;
   native_widget_delegate_->OnNativeWidgetDestroyed();
-  // TODO(beng): I think we should only do this if widget owns native widget.
-  //             Verify and if untrue remove this comment.
-  delete this;
+  if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
+    delete this;
 }
 
 void DesktopNativeWidgetAura::OnWindowTargetVisibilityChanged(bool visible) {
