@@ -154,161 +154,161 @@ void GLES2DecoderTestBase::SpecializedSetup<ValidateProgram, 0>(
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<Uniform1f, 0>(bool /* valid */) {
-  SetupShaderForUniform();
+  SetupShaderForUniform(GL_FLOAT);
 };
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<Uniform1fv, 0>(bool /* valid */) {
-  SetupShaderForUniform();
+  SetupShaderForUniform(GL_FLOAT);
 };
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<Uniform1fvImmediate, 0>(
     bool /* valid */) {
-  SetupShaderForUniform();
+  SetupShaderForUniform(GL_FLOAT);
 };
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<Uniform1iv, 0>(bool /* valid */) {
-  SetupShaderForUniform();
+  SetupShaderForUniform(GL_INT);
 };
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<Uniform1ivImmediate, 0>(
     bool /* valid */) {
-  SetupShaderForUniform();
+  SetupShaderForUniform(GL_INT);
 };
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<Uniform2f, 0>(bool /* valid */) {
-  SetupShaderForUniform();
+  SetupShaderForUniform(GL_FLOAT_VEC2);
 };
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<Uniform2i, 0>(bool /* valid */) {
-  SetupShaderForUniform();
+  SetupShaderForUniform(GL_INT_VEC2);
 };
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<Uniform2fv, 0>(bool /* valid */) {
-  SetupShaderForUniform();
+  SetupShaderForUniform(GL_FLOAT_VEC2);
 };
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<Uniform2iv, 0>(bool /* valid */) {
-  SetupShaderForUniform();
+  SetupShaderForUniform(GL_INT_VEC2);
 };
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<Uniform2fvImmediate, 0>(
     bool /* valid */) {
-  SetupShaderForUniform();
+  SetupShaderForUniform(GL_FLOAT_VEC2);
 };
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<Uniform2ivImmediate, 0>(
     bool /* valid */) {
-  SetupShaderForUniform();
+  SetupShaderForUniform(GL_INT_VEC2);
 };
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<Uniform3f, 0>(bool /* valid */) {
-  SetupShaderForUniform();
+  SetupShaderForUniform(GL_FLOAT_VEC3);
 };
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<Uniform3i, 0>(bool /* valid */) {
-  SetupShaderForUniform();
+  SetupShaderForUniform(GL_INT_VEC3);
 };
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<Uniform3fv, 0>(bool /* valid */) {
-  SetupShaderForUniform();
+  SetupShaderForUniform(GL_FLOAT_VEC3);
 };
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<Uniform3iv, 0>(bool /* valid */) {
-  SetupShaderForUniform();
+  SetupShaderForUniform(GL_INT_VEC3);
 };
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<Uniform3fvImmediate, 0>(
     bool /* valid */) {
-  SetupShaderForUniform();
+  SetupShaderForUniform(GL_FLOAT_VEC3);
 };
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<Uniform3ivImmediate, 0>(
     bool /* valid */) {
-  SetupShaderForUniform();
+  SetupShaderForUniform(GL_INT_VEC3);
 };
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<Uniform4f, 0>(bool /* valid */) {
-  SetupShaderForUniform();
+  SetupShaderForUniform(GL_FLOAT_VEC4);
 };
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<Uniform4i, 0>(bool /* valid */) {
-  SetupShaderForUniform();
+  SetupShaderForUniform(GL_INT_VEC4);
 };
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<Uniform4fv, 0>(bool /* valid */) {
-  SetupShaderForUniform();
+  SetupShaderForUniform(GL_FLOAT_VEC4);
 };
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<Uniform4iv, 0>(bool /* valid */) {
-  SetupShaderForUniform();
+  SetupShaderForUniform(GL_INT_VEC4);
 };
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<Uniform4fvImmediate, 0>(
     bool /* valid */) {
-  SetupShaderForUniform();
+  SetupShaderForUniform(GL_FLOAT_VEC4);
 };
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<Uniform4ivImmediate, 0>(
     bool /* valid */) {
-  SetupShaderForUniform();
+  SetupShaderForUniform(GL_INT_VEC4);
 };
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<UniformMatrix2fv, 0>(
     bool /* valid */) {
-  SetupShaderForUniform();
+  SetupShaderForUniform(GL_FLOAT_MAT2);
 };
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<UniformMatrix2fvImmediate, 0>(
     bool /* valid */) {
-  SetupShaderForUniform();
+  SetupShaderForUniform(GL_FLOAT_MAT2);
 };
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<UniformMatrix3fv, 0>(
     bool /* valid */) {
-  SetupShaderForUniform();
+  SetupShaderForUniform(GL_FLOAT_MAT3);
 };
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<UniformMatrix3fvImmediate, 0>(
     bool /* valid */) {
-  SetupShaderForUniform();
+  SetupShaderForUniform(GL_FLOAT_MAT3);
 };
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<UniformMatrix4fv, 0>(
     bool /* valid */) {
-  SetupShaderForUniform();
+  SetupShaderForUniform(GL_FLOAT_MAT4);
 };
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<UniformMatrix4fvImmediate, 0>(
     bool /* valid */) {
-  SetupShaderForUniform();
+  SetupShaderForUniform(GL_FLOAT_MAT4);
 };
 
 template <>

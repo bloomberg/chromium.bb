@@ -528,14 +528,14 @@ void GLES2DecoderTestBase::SetupExpectationsForFramebufferClearingMulti(
   }
 }
 
-void GLES2DecoderTestBase::SetupShaderForUniform() {
+void GLES2DecoderTestBase::SetupShaderForUniform(GLenum uniform_type) {
   static AttribInfo attribs[] = {
     { "foo", 1, GL_FLOAT, 1, },
     { "goo", 1, GL_FLOAT, 2, },
   };
-  static UniformInfo uniforms[] = {
-    { "bar", 1, GL_INT, 0, 2, -1, },
-    { "car", 4, GL_INT, 1, 1, -1, },
+  UniformInfo uniforms[] = {
+    { "bar", 1, uniform_type, 0, 2, -1, },
+    { "car", 4, uniform_type, 1, 1, -1, },
   };
   const GLuint kClientVertexShaderId = 5001;
   const GLuint kServiceVertexShaderId = 6001;

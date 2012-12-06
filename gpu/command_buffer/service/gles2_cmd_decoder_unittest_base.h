@@ -183,7 +183,7 @@ class GLES2DecoderTestBase : public testing::Test {
   void ExpectEnableDisable(GLenum cap, bool enable);
 
   // Setups up a shader for testing glUniform.
-  void SetupShaderForUniform();
+  void SetupShaderForUniform(GLenum uniform_type);
   void SetupDefaultProgram();
   void SetupCubemapProgram();
   void SetupTexture();
