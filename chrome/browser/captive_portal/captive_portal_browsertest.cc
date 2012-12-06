@@ -25,7 +25,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -482,7 +481,7 @@ int NumLoadingTabs() {
   for (TabContentsIterator tab_contents_it;
        !tab_contents_it.done();
        ++tab_contents_it) {
-    if (tab_contents_it->web_contents()->IsLoading())
+    if (tab_contents_it->IsLoading())
       ++num_loading_tabs;
   }
   return num_loading_tabs;
@@ -633,8 +632,8 @@ FailLoadsAfterLoginObserver::FailLoadsAfterLoginObserver()
   for (TabContentsIterator tab_contents_it;
        !tab_contents_it.done();
        ++tab_contents_it) {
-    if (tab_contents_it->web_contents()->IsLoading())
-      tabs_needing_navigation_.insert(tab_contents_it->web_contents());
+    if (tab_contents_it->IsLoading())
+      tabs_needing_navigation_.insert(*tab_contents_it);
   }
 }
 
@@ -1025,7 +1024,7 @@ int CaptivePortalBrowserTest::NumTabsWithState(
   for (TabContentsIterator tab_contents_it;
        !tab_contents_it.done();
        ++tab_contents_it) {
-    if (GetStateOfTabReloader((*tab_contents_it)->web_contents()) == state)
+    if (GetStateOfTabReloader(*tab_contents_it) == state)
       ++num_tabs;
   }
   return num_tabs;

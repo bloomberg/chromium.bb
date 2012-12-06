@@ -7,16 +7,15 @@
 
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/table/group_table_model.h"
 #include "ui/views/controls/table/group_table_view.h"
 #include "ui/views/window/dialog_delegate.h"
 
-using content::RenderViewHost;
-using content::WebContents;
+namespace content {
+class WebContents;
+}
 
 // Provides functionality to display information about a hung renderer.
 class HungPagesTableModel : public views::GroupTableModel {
@@ -34,14 +33,14 @@ class HungPagesTableModel : public views::GroupTableModel {
   explicit HungPagesTableModel(Delegate* delegate);
   virtual ~HungPagesTableModel();
 
-  void InitForWebContents(WebContents* hung_contents);
+  void InitForWebContents(content::WebContents* hung_contents);
 
   // Returns the first RenderProcessHost, or NULL if there aren't any
   // WebContents.
   content::RenderProcessHost* GetRenderProcessHost();
 
   // Returns the first RenderViewHost, or NULL if there aren't any WebContents.
-  RenderViewHost* GetRenderViewHost();
+  content::RenderViewHost* GetRenderViewHost();
 
   // Overridden from views::GroupTableModel:
   virtual int RowCount() OVERRIDE;
@@ -57,9 +56,9 @@ class HungPagesTableModel : public views::GroupTableModel {
   class WebContentsObserverImpl : public content::WebContentsObserver {
    public:
     WebContentsObserverImpl(HungPagesTableModel* model,
-                            TabContents* tab);
+                            content::WebContents* tab);
 
-    WebContents* web_contents() const {
+    content::WebContents* web_contents() const {
       return content::WebContentsObserver::web_contents();
     }
 
@@ -69,11 +68,10 @@ class HungPagesTableModel : public views::GroupTableModel {
 
     // WebContentsObserver overrides:
     virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
-    virtual void WebContentsDestroyed(WebContents* tab) OVERRIDE;
+    virtual void WebContentsDestroyed(content::WebContents* tab) OVERRIDE;
 
    private:
     HungPagesTableModel* model_;
-    TabContents* tab_;
 
     DISALLOW_COPY_AND_ASSIGN(WebContentsObserverImpl);
   };
@@ -109,10 +107,10 @@ class HungRendererDialogView : public views::DialogDelegateView,
   static void KillRendererProcess(base::ProcessHandle process_handle);
 
   // Returns true if the frame is in the foreground.
-  static bool IsFrameActive(WebContents* contents);
+  static bool IsFrameActive(content::WebContents* contents);
 
-  virtual void ShowForWebContents(WebContents* contents);
-  virtual void EndForWebContents(WebContents* contents);
+  virtual void ShowForWebContents(content::WebContents* contents);
+  virtual void EndForWebContents(content::WebContents* contents);
 
   // views::DialogDelegateView overrides:
   virtual string16 GetWindowTitle() const OVERRIDE;
@@ -148,7 +146,7 @@ class HungRendererDialogView : public views::DialogDelegateView,
 
   // Returns the bounds the dialog should be displayed at to be meaningfully
   // associated with the specified WebContents.
-  gfx::Rect GetDisplayBounds(WebContents* contents);
+  gfx::Rect GetDisplayBounds(content::WebContents* contents);
 
   static void InitClass();
 

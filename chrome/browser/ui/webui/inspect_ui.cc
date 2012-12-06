@@ -17,7 +17,6 @@
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
@@ -180,7 +179,7 @@ void InspectDataSource::StartDataRequest(const std::string& path,
 
   std::set<RenderViewHost*> tab_rvhs;
   for (TabContentsIterator it; !it.done(); ++it)
-    tab_rvhs.insert(it->web_contents()->GetRenderViewHost());
+    tab_rvhs.insert(it->GetRenderViewHost());
 
   scoped_ptr<ListValue> rvh_list(new ListValue());
 

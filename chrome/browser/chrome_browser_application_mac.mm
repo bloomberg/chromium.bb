@@ -12,7 +12,6 @@
 #import "base/metrics/histogram.h"
 #import "base/sys_string_conversions.h"
 #import "chrome/browser/app_controller_mac.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #import "chrome/common/mac/objc_method_swizzle.h"
 #import "chrome/common/mac/objc_zombie.h"
@@ -503,15 +502,10 @@ void SwizzleInit() {
   if ([attribute isEqualToString:@"AXEnhancedUserInterface"] &&
       [value intValue] == 1) {
     content::BrowserAccessibilityState::GetInstance()->OnScreenReaderDetected();
-    for (TabContentsIterator it;
-         !it.done();
-         ++it) {
-      if (TabContents* contents = *it) {
-        if (content::RenderViewHost* rvh =
-                contents->web_contents()->GetRenderViewHost()) {
+    for (TabContentsIterator it; !it.done(); ++it) {
+      if (content::WebContents* contents = *it)
+        if (content::RenderViewHost* rvh = contents->GetRenderViewHost())
           rvh->EnableFullAccessibilityMode();
-        }
-      }
     }
   }
   return [super accessibilitySetValue:value forAttribute:attribute];

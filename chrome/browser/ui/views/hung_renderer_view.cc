@@ -21,6 +21,7 @@
 #include "chrome/common/logging_chrome.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/result_codes.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -38,6 +39,8 @@
 #if defined(USE_AURA)
 #include "ui/aura/window.h"
 #endif
+
+using content::WebContents;
 
 // These functions allow certain chrome platforms to override the default hung
 // renderer dialog. For e.g. Chrome on Windows 8 metro
@@ -72,7 +75,7 @@ content::RenderProcessHost* HungPagesTableModel::GetRenderProcessHost() {
       tab_observers_[0]->web_contents()->GetRenderProcessHost();
 }
 
-RenderViewHost* HungPagesTableModel::GetRenderViewHost() {
+content::RenderViewHost* HungPagesTableModel::GetRenderViewHost() {
   return tab_observers_.empty() ? NULL :
       tab_observers_[0]->web_contents()->GetRenderViewHost();
 }
@@ -81,16 +84,13 @@ void HungPagesTableModel::InitForWebContents(WebContents* hung_contents) {
   tab_observers_.clear();
   if (hung_contents) {
     // Force hung_contents to be first.
-    TabContents* hung_tab_contents =
-        TabContents::FromWebContents(hung_contents);
-    if (hung_tab_contents) {
+    if (hung_contents) {
       tab_observers_.push_back(new WebContentsObserverImpl(this,
-                                                           hung_tab_contents));
+                                                           hung_contents));
     }
     for (TabContentsIterator it; !it.done(); ++it) {
-      if (*it != hung_tab_contents &&
-          it->web_contents()->GetRenderProcessHost() ==
-          hung_contents->GetRenderProcessHost())
+      if (*it != hung_contents &&
+          it->GetRenderProcessHost() == hung_contents->GetRenderProcessHost())
         tab_observers_.push_back(new WebContentsObserverImpl(this, *it));
     }
   }
@@ -151,11 +151,9 @@ void HungPagesTableModel::TabDestroyed(WebContentsObserverImpl* tab) {
 }
 
 HungPagesTableModel::WebContentsObserverImpl::WebContentsObserverImpl(
-    HungPagesTableModel* model,
-    TabContents* tab)
-    : content::WebContentsObserver(tab->web_contents()),
-      model_(model),
-      tab_(tab) {
+    HungPagesTableModel* model, WebContents* tab)
+    : content::WebContentsObserver(tab),
+      model_(model) {
 }
 
 void HungPagesTableModel::WebContentsObserverImpl::RenderViewGone(

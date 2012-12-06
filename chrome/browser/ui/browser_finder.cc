@@ -8,7 +8,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_impl.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/navigation_controller.h"
@@ -188,7 +187,7 @@ namespace chrome {
 Browser* FindBrowserWithWebContents(const WebContents* web_contents) {
   DCHECK(web_contents);
   for (TabContentsIterator it; !it.done(); ++it) {
-    if (it->web_contents() == web_contents)
+    if (*it == web_contents)
       return it.browser();
   }
   return NULL;

@@ -11,7 +11,6 @@
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/common/logging_chrome.h"
 #include "content/public/browser/render_process_host.h"
@@ -185,14 +184,13 @@ void HungRendererDialogGtk::ShowForWebContents(WebContents* hung_contents) {
 
   GtkTreeIter tree_iter;
   for (TabContentsIterator it; !it.done(); ++it) {
-    if (it->web_contents()->GetRenderProcessHost() ==
-        hung_contents->GetRenderProcessHost()) {
+    if (it->GetRenderProcessHost() == hung_contents->GetRenderProcessHost()) {
       gtk_list_store_append(model_, &tree_iter);
-      std::string title = UTF16ToUTF8(it->web_contents()->GetTitle());
+      std::string title = UTF16ToUTF8(it->GetTitle());
       if (title.empty())
         title = UTF16ToUTF8(CoreTabHelper::GetDefaultTitle());
       FaviconTabHelper* favicon_tab_helper =
-          FaviconTabHelper::FromWebContents(it->web_contents());
+          FaviconTabHelper::FromWebContents(*it);
       SkBitmap favicon = favicon_tab_helper->GetFavicon().AsBitmap();
 
       GdkPixbuf* pixbuf = NULL;

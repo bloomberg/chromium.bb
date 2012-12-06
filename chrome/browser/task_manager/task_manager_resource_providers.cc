@@ -417,9 +417,9 @@ void TaskManagerTabContentsResourceProvider::StartUpdating() {
   // are tab contents (WebContents serving as a tab in a Browser), instant
   // pages, and prerender pages.
 
-  // Add all the existing tab contents.
+  // Add all the existing WebContentses.
   for (TabContentsIterator iterator; !iterator.done(); ++iterator)
-    Add(iterator->web_contents());
+    Add(*iterator);
 
   // Add all the instant pages.
   for (BrowserList::const_iterator i = BrowserList::begin();
