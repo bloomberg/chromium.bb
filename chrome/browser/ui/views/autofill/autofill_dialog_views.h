@@ -89,6 +89,9 @@ class AutofillDialogViews : public AutofillDialogView,
   // Creates and returns a view that holds all detail sections.
   views::View* CreateDetailsContainer();
 
+  // Creates and returns a view that holds the requesting host and intro text.
+  views::View* CreateIntroContainer();
+
   // Creates a detail section (Shipping, Email, etc.) with the given label,
   // inputs View, and suggestion model. Relevant pointers are stored in |group|.
   void CreateDetailsSection(DialogSection section);

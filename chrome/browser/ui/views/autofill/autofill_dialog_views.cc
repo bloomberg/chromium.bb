@@ -197,9 +197,7 @@ void AutofillDialogViews::InitChildViews() {
                         0);
 
   layout->StartRow(0, single_column_set);
-  views::Label* intro = new views::Label(controller_->IntroText());
-  intro->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  layout->AddView(intro);
+  layout->AddView(CreateIntroContainer());
 
   layout->StartRowWithPadding(0, single_column_set,
                               0, views::kUnrelatedControlVerticalSpacing);
@@ -214,6 +212,21 @@ void AutofillDialogViews::InitChildViews() {
   layout->StartRowWithPadding(0, single_column_set,
                               0, views::kRelatedControlVerticalSpacing);
   layout->AddView(new views::Checkbox(controller_->WalletOptionText()));
+}
+
+views::View* AutofillDialogViews::CreateIntroContainer() {
+  views::View* view = new views::View();
+  view->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
+
+  views::Label* intro = new views::Label(controller_->IntroText());
+  view->AddChildView(intro);
+
+  views::Label* site = new views::Label(controller_->SiteLabel());
+  site->SetFont(site->font().DeriveFont(0, gfx::Font::BOLD));
+  view->AddChildView(site);
+
+  return view;
 }
 
 views::View* AutofillDialogViews::CreateDetailsContainer() {
