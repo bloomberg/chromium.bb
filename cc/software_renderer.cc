@@ -71,6 +71,7 @@ SoftwareRenderer::SoftwareRenderer(RendererClient* client, ResourceProvider* res
 
     m_capabilities.maxTextureSize = INT_MAX;
     m_capabilities.bestTextureFormat = GL_RGBA;
+    m_capabilities.contextHasCachedFrontBuffer = true;
     m_capabilities.usingSetVisibility = true;
     // The updater can access bitmaps while the SoftwareRenderer is using them.
     m_capabilities.allowPartialTextureUpdates = true;

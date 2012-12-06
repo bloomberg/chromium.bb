@@ -39,10 +39,10 @@ public:
         LAYER_TEXTURE_STATE_ACQUIRED_BY_IMPL_THREAD,
     };
 
-    enum OutputSurfaceState {
-        OUTPUT_SURFACE_ACTIVE,
-        OUTPUT_SURFACE_LOST,
-        OUTPUT_SURFACE_RECREATING,
+    enum ContextState {
+        CONTEXT_ACTIVE,
+        CONTEXT_LOST,
+        CONTEXT_RECREATING,
     };
 
     bool commitPending() const
@@ -58,7 +58,7 @@ public:
         ACTION_COMMIT,
         ACTION_DRAW_IF_POSSIBLE,
         ACTION_DRAW_FORCED,
-        ACTION_BEGIN_OUTPUT_SURFACE_RECREATION,
+        ACTION_BEGIN_CONTEXT_RECREATION,
         ACTION_ACQUIRE_LAYER_TEXTURES_FOR_MAIN_THREAD,
     };
     Action nextAction() const;
@@ -120,8 +120,8 @@ public:
     // when such behavior would be undesirable.
     void setCanDraw(bool can) { m_canDraw = can; }
 
-    void didLoseOutputSurface();
-    void didRecreateOutputSurface();
+    void didLoseContext();
+    void didRecreateContext();
 
     // Exposed for testing purposes.
     void setMaximumNumberOfFailedDrawsBeforeDrawIsForced(int);
@@ -155,7 +155,7 @@ protected:
     bool m_canDraw;
     bool m_drawIfPossibleFailed;
     TextureState m_textureState;
-    OutputSurfaceState m_outputSurfaceState;
+    ContextState m_contextState;
 
     DISALLOW_COPY_AND_ASSIGN(SchedulerStateMachine);
 };

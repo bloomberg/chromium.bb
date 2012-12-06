@@ -11,8 +11,8 @@
 #include "cc/resource_update_controller.h"
 #include "cc/single_thread_proxy.h" // For DebugScopedSetImplThread
 #include "cc/test/animation_test_common.h"
+#include "cc/test/fake_graphics_context.h"
 #include "cc/test/fake_layer_tree_host_client.h"
-#include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_proxy.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/tiled_layer_test_common.h"
@@ -48,7 +48,7 @@ class TiledLayerTest : public testing::Test {
 public:
     TiledLayerTest()
         : m_proxy(NULL)
-        , m_outputSurface(createFakeOutputSurface())
+        , m_context(WebKit::createFakeGraphicsContext())
         , m_queue(make_scoped_ptr(new ResourceUpdateQueue))
         , m_occlusion(0)
     {
@@ -61,7 +61,7 @@ public:
         m_resourceManager = PrioritizedResourceManager::create(Renderer::ContentPool, m_proxy);
         m_layerTreeHost->initializeRendererIfNeeded();
         DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked(m_proxy);
-        m_resourceProvider = ResourceProvider::create(m_outputSurface.get());
+        m_resourceProvider = ResourceProvider::create(m_context.get());
     }
 
     virtual ~TiledLayerTest()
@@ -164,7 +164,7 @@ public:
 public:
     Proxy* m_proxy;
     LayerTreeSettings m_settings;
-    scoped_ptr<OutputSurface> m_outputSurface;
+    scoped_ptr<GraphicsContext> m_context;
     scoped_ptr<ResourceProvider> m_resourceProvider;
     scoped_ptr<ResourceUpdateQueue> m_queue;
     RenderingStats m_stats;

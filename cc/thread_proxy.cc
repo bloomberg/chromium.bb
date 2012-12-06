@@ -9,9 +9,9 @@
 #include "cc/delay_based_time_source.h"
 #include "cc/draw_quad.h"
 #include "cc/frame_rate_controller.h"
+#include "cc/graphics_context.h"
 #include "cc/input_handler.h"
 #include "cc/layer_tree_host.h"
-#include "cc/output_surface.h"
 #include "cc/scheduler.h"
 #include "cc/scoped_thread_proxy.h"
 #include "cc/thread.h"
@@ -147,14 +147,14 @@ bool ThreadProxy::isStarted() const
     return m_started;
 }
 
-bool ThreadProxy::initializeOutputSurface()
+bool ThreadProxy::initializeContext()
 {
-    TRACE_EVENT0("cc", "ThreadProxy::initializeOutputSurface");
-    scoped_ptr<OutputSurface> context = m_layerTreeHost->createOutputSurface();
+    TRACE_EVENT0("cc", "ThreadProxy::initializeContext");
+    scoped_ptr<GraphicsContext> context = m_layerTreeHost->createContext();
     if (!context.get())
         return false;
 
-    Proxy::implThread()->postTask(base::Bind(&ThreadProxy::initializeOutputSurfaceOnImplThread, base::Unretained(this), base::Passed(context.Pass())));
+    Proxy::implThread()->postTask(base::Bind(&ThreadProxy::initializeContextOnImplThread, base::Unretained(this), base::Passed(context.Pass())));
     return true;
 }
 
@@ -210,30 +210,30 @@ bool ThreadProxy::initializeRenderer()
     return initializeSucceeded;
 }
 
-bool ThreadProxy::recreateOutputSurface()
+bool ThreadProxy::recreateContext()
 {
-    TRACE_EVENT0("cc", "ThreadProxy::recreateOutputSurface");
+    TRACE_EVENT0("cc", "ThreadProxy::recreateContext");
     DCHECK(isMainThread());
 
-    // Try to create the surface.
-    scoped_ptr<OutputSurface> outputSurface = m_layerTreeHost->createOutputSurface();
-    if (!outputSurface.get())
+    // Try to create the context.
+    scoped_ptr<GraphicsContext> context = m_layerTreeHost->createContext();
+    if (!context.get())
         return false;
     if (m_layerTreeHost->needsSharedContext())
         if (!WebSharedGraphicsContext3D::createCompositorThreadContext())
             return false;
 
-    // Make a blocking call to recreateOutputSurfaceOnImplThread. The results of that
+    // Make a blocking call to recreateContextOnImplThread. The results of that
     // call are pushed into the recreateSucceeded and capabilities local
     // variables.
     CompletionEvent completion;
     bool recreateSucceeded = false;
     RendererCapabilities capabilities;
     DebugScopedSetMainThreadBlocked mainThreadBlocked(this);
-    Proxy::implThread()->postTask(base::Bind(&ThreadProxy::recreateOutputSurfaceOnImplThread,
+    Proxy::implThread()->postTask(base::Bind(&ThreadProxy::recreateContextOnImplThread,
                                              base::Unretained(this),
                                              &completion,
-                                             base::Passed(outputSurface.Pass()),
+                                             base::Passed(context.Pass()),
                                              &recreateSucceeded,
                                              &capabilities));
     completion.wait();
@@ -263,9 +263,9 @@ const RendererCapabilities& ThreadProxy::rendererCapabilities() const
     return m_RendererCapabilitiesMainThreadCopy;
 }
 
-void ThreadProxy::loseOutputSurface()
+void ThreadProxy::loseContext()
 {
-    Proxy::implThread()->postTask(base::Bind(&ThreadProxy::didLoseOutputSurfaceOnImplThread, base::Unretained(this)));
+    Proxy::implThread()->postTask(base::Bind(&ThreadProxy::didLoseContextOnImplThread, base::Unretained(this)));
 }
 
 void ThreadProxy::setNeedsAnimate()
@@ -297,11 +297,11 @@ void ThreadProxy::setNeedsCommit()
     Proxy::implThread()->postTask(base::Bind(&ThreadProxy::setNeedsCommitOnImplThread, base::Unretained(this)));
 }
 
-void ThreadProxy::didLoseOutputSurfaceOnImplThread()
+void ThreadProxy::didLoseContextOnImplThread()
 {
     DCHECK(isImplThread());
-    TRACE_EVENT0("cc", "ThreadProxy::didLoseOutputSurfaceOnImplThread");
-    m_schedulerOnImplThread->didLoseOutputSurface();
+    TRACE_EVENT0("cc", "ThreadProxy::didLoseContextOnImplThread");
+    m_schedulerOnImplThread->didLoseContext();
 }
 
 void ThreadProxy::onSwapBuffersCompleteOnImplThread()
@@ -869,20 +869,20 @@ void ThreadProxy::beginContextRecreation()
 {
     TRACE_EVENT0("cc", "ThreadProxy::beginContextRecreation");
     DCHECK(isMainThread());
-    m_layerTreeHost->didLoseOutputSurface();
-    m_outputSurfaceRecreationCallback.Reset(base::Bind(&ThreadProxy::tryToRecreateOutputSurface, base::Unretained(this)));
-    Proxy::mainThread()->postTask(m_outputSurfaceRecreationCallback.callback());
+    m_layerTreeHost->didLoseContext();
+    m_contextRecreationCallback.Reset(base::Bind(&ThreadProxy::tryToRecreateContext, base::Unretained(this)));
+    Proxy::mainThread()->postTask(m_contextRecreationCallback.callback());
 }
 
-void ThreadProxy::tryToRecreateOutputSurface()
+void ThreadProxy::tryToRecreateContext()
 {
     DCHECK(isMainThread());
     DCHECK(m_layerTreeHost);
-    LayerTreeHost::RecreateResult result = m_layerTreeHost->recreateOutputSurface();
+    LayerTreeHost::RecreateResult result = m_layerTreeHost->recreateContext();
     if (result == LayerTreeHost::RecreateFailedButTryAgain)
-        Proxy::mainThread()->postTask(m_outputSurfaceRecreationCallback.callback());
+        Proxy::mainThread()->postTask(m_contextRecreationCallback.callback());
     else if (result == LayerTreeHost::RecreateSucceeded)
-        m_outputSurfaceRecreationCallback.Cancel();
+        m_contextRecreationCallback.Cancel();
 }
 
 void ThreadProxy::initializeImplOnImplThread(CompletionEvent* completion, InputHandler* handler)
@@ -906,19 +906,19 @@ void ThreadProxy::initializeImplOnImplThread(CompletionEvent* completion, InputH
     completion->signal();
 }
 
-void ThreadProxy::initializeOutputSurfaceOnImplThread(scoped_ptr<OutputSurface> outputSurface)
+void ThreadProxy::initializeContextOnImplThread(scoped_ptr<GraphicsContext> context)
 {
     TRACE_EVENT0("cc", "ThreadProxy::initializeContextOnImplThread");
     DCHECK(isImplThread());
-    m_outputSurfaceBeforeInitializationOnImplThread = outputSurface.Pass();
+    m_contextBeforeInitializationOnImplThread = context.Pass();
 }
 
 void ThreadProxy::initializeRendererOnImplThread(CompletionEvent* completion, bool* initializeSucceeded, RendererCapabilities* capabilities)
 {
     TRACE_EVENT0("cc", "ThreadProxy::initializeRendererOnImplThread");
     DCHECK(isImplThread());
-    DCHECK(m_outputSurfaceBeforeInitializationOnImplThread.get());
-    *initializeSucceeded = m_layerTreeHostImpl->initializeRenderer(m_outputSurfaceBeforeInitializationOnImplThread.Pass());
+    DCHECK(m_contextBeforeInitializationOnImplThread.get());
+    *initializeSucceeded = m_layerTreeHostImpl->initializeRenderer(m_contextBeforeInitializationOnImplThread.Pass());
     if (*initializeSucceeded) {
         *capabilities = m_layerTreeHostImpl->rendererCapabilities();
         m_schedulerOnImplThread->setSwapBuffersCompleteSupported(
@@ -950,15 +950,15 @@ size_t ThreadProxy::maxPartialTextureUpdates() const
     return ResourceUpdateController::maxPartialTextureUpdates();
 }
 
-void ThreadProxy::recreateOutputSurfaceOnImplThread(CompletionEvent* completion, scoped_ptr<OutputSurface> outputSurface, bool* recreateSucceeded, RendererCapabilities* capabilities)
+void ThreadProxy::recreateContextOnImplThread(CompletionEvent* completion, scoped_ptr<GraphicsContext> context, bool* recreateSucceeded, RendererCapabilities* capabilities)
 {
-    TRACE_EVENT0("cc", "ThreadProxy::recreateOutputSurfaceOnImplThread");
+    TRACE_EVENT0("cc", "ThreadProxy::recreateContextOnImplThread");
     DCHECK(isImplThread());
     m_layerTreeHost->deleteContentsTexturesOnImplThread(m_layerTreeHostImpl->resourceProvider());
-    *recreateSucceeded = m_layerTreeHostImpl->initializeRenderer(outputSurface.Pass());
+    *recreateSucceeded = m_layerTreeHostImpl->initializeRenderer(context.Pass());
     if (*recreateSucceeded) {
         *capabilities = m_layerTreeHostImpl->rendererCapabilities();
-        m_schedulerOnImplThread->didRecreateOutputSurface();
+        m_schedulerOnImplThread->didRecreateContext();
     }
     completion->signal();
 }

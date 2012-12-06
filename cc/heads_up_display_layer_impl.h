@@ -37,7 +37,7 @@ public:
     void updateHudTexture(ResourceProvider*);
     virtual void didDraw(ResourceProvider*) OVERRIDE;
 
-    virtual void didLoseOutputSurface() OVERRIDE;
+    virtual void didLoseContext() OVERRIDE;
 
     virtual bool layerIsAlwaysDamaged() const OVERRIDE;
 

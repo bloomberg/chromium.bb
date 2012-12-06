@@ -33,7 +33,7 @@ public:
     void pushInvalidTile(int, int);
 
     virtual Region visibleContentOpaqueRegion() const OVERRIDE;
-    virtual void didLoseOutputSurface() OVERRIDE;
+    virtual void didLoseContext() OVERRIDE;
 
 protected:
     explicit TiledLayerImpl(int id);

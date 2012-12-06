@@ -102,6 +102,9 @@ bool GLRenderer::initialize()
     else
         m_capabilities.usingAcceleratedPainting = false;
 
+
+    m_capabilities.contextHasCachedFrontBuffer = extensions.count("GL_CHROMIUM_front_buffer_cached");
+
     m_capabilities.usingPartialSwap = settings().partialSwapEnabled && extensions.count("GL_CHROMIUM_post_sub_buffer");
 
     // Use the swapBuffers callback only with the threaded proxy.
@@ -1350,7 +1353,7 @@ void GLRenderer::ensureFramebuffer()
 
 void GLRenderer::onContextLost()
 {
-    m_client->didLoseOutputSurface();
+    m_client->didLoseContext();
 }
 
 

@@ -65,7 +65,7 @@ void DelegatedRendererLayerImpl::clearRenderPasses()
     m_renderPassesInDrawOrder.clear();
 }
 
-void DelegatedRendererLayerImpl::didLoseOutputSurface()
+void DelegatedRendererLayerImpl::didLoseContext()
 {
     clearRenderPasses();
 }

@@ -7,8 +7,8 @@
 #include "base/synchronization/lock.h"
 #include "cc/content_layer.h"
 #include "cc/content_layer_client.h"
+#include "cc/graphics_context.h"
 #include "cc/layer_tree_host_impl.h"
-#include "cc/output_surface.h"
 #include "cc/single_thread_proxy.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_layer_tree_host_client.h"
@@ -1401,7 +1401,7 @@ public:
 
     virtual void commitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE
     {
-        CompositorFakeWebGraphicsContext3DWithTextureTracking* context = static_cast<CompositorFakeWebGraphicsContext3DWithTextureTracking*>(impl->outputSurface()->context3D());
+        CompositorFakeWebGraphicsContext3DWithTextureTracking* context = static_cast<CompositorFakeWebGraphicsContext3DWithTextureTracking*>(impl->context()->context3D());
 
         switch (impl->sourceFrameNumber()) {
         case 0:
@@ -1435,7 +1435,7 @@ public:
 
     virtual void drawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE
     {
-        CompositorFakeWebGraphicsContext3DWithTextureTracking* context = static_cast<CompositorFakeWebGraphicsContext3DWithTextureTracking*>(impl->outputSurface()->context3D());
+        CompositorFakeWebGraphicsContext3DWithTextureTracking* context = static_cast<CompositorFakeWebGraphicsContext3DWithTextureTracking*>(impl->context()->context3D());
 
         // Number of textures used for draw should always be one.
         EXPECT_EQ(1, context->numUsedTextures());
@@ -1505,7 +1505,7 @@ public:
 
     virtual void commitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE
     {
-        CompositorFakeWebGraphicsContext3DWithTextureTracking* context = static_cast<CompositorFakeWebGraphicsContext3DWithTextureTracking*>(impl->outputSurface()->context3D());
+        CompositorFakeWebGraphicsContext3DWithTextureTracking* context = static_cast<CompositorFakeWebGraphicsContext3DWithTextureTracking*>(impl->context()->context3D());
 
         switch (impl->sourceFrameNumber()) {
         case 0:
@@ -1557,7 +1557,7 @@ public:
 
     virtual void drawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE
     {
-        CompositorFakeWebGraphicsContext3DWithTextureTracking* context = static_cast<CompositorFakeWebGraphicsContext3DWithTextureTracking*>(impl->outputSurface()->context3D());
+        CompositorFakeWebGraphicsContext3DWithTextureTracking* context = static_cast<CompositorFakeWebGraphicsContext3DWithTextureTracking*>(impl->context()->context3D());
 
         // Number of textures used for drawing should two except for frame 4
         // where the viewport only contains one layer.
@@ -1958,7 +1958,7 @@ public:
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestManySurfaces)
 
-// A loseOutputSurface(1) should lead to a didRecreateOutputSurface(true)
+// A loseContext(1) should lead to a didRecreateOutputSurface(true)
 class LayerTreeHostTestSetSingleLostContext : public LayerTreeHostTest {
 public:
     LayerTreeHostTestSetSingleLostContext()
@@ -1972,7 +1972,7 @@ public:
 
     virtual void didCommitAndDrawFrame() OVERRIDE
     {
-        m_layerTreeHost->loseOutputSurface(1);
+        m_layerTreeHost->loseContext(1);
     }
 
     virtual void didRecreateOutputSurface(bool succeeded) OVERRIDE
@@ -1991,7 +1991,7 @@ TEST_F(LayerTreeHostTestSetSingleLostContext, runMultiThread)
     runTest(true);
 }
 
-// A loseOutputSurface(10) should lead to a didRecreateOutputSurface(false), and
+// A loseContext(10) should lead to a didRecreateOutputSurface(false), and
 // a finishAllRendering() should not hang.
 class LayerTreeHostTestSetRepeatedLostContext : public LayerTreeHostTest {
 public:
@@ -2006,7 +2006,7 @@ public:
 
     virtual void didCommitAndDrawFrame() OVERRIDE
     {
-        m_layerTreeHost->loseOutputSurface(10);
+        m_layerTreeHost->loseContext(10);
     }
 
     virtual void didRecreateOutputSurface(bool succeeded) OVERRIDE
@@ -2880,7 +2880,7 @@ public:
             EXPECT_TRUE(m_layer->haveBackingTexture());
             m_layerTreeHost->setVisible(false);
             postEvictTextures();
-            m_layerTreeHost->loseOutputSurface(1);
+            m_layerTreeHost->loseContext(1);
             m_layerTreeHost->setVisible(true);
             break;
         default:

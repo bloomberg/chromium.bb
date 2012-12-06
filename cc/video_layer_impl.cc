@@ -410,7 +410,7 @@ void VideoLayerImpl::didUpdateMatrix(const float matrix[16])
     setNeedsRedraw();
 }
 
-void VideoLayerImpl::didLoseOutputSurface()
+void VideoLayerImpl::didLoseContext()
 {
     freePlaneData(layerTreeHostImpl()->resourceProvider());
 }

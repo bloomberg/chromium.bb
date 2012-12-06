@@ -4,11 +4,10 @@
 
 #include "cc/texture_layer.h"
 
+#include "third_party/khronos/GLES2/gl2.h"
 #include "cc/layer_tree_host.h"
 #include "cc/texture_layer_client.h"
 #include "cc/texture_layer_impl.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
-#include "third_party/khronos/GLES2/gl2.h"
 
 namespace cc {
 

@@ -37,7 +37,7 @@ struct RenderingStats;
 // LayerTreeHost->Proxy callback interface.
 class LayerTreeHostImplClient {
 public:
-    virtual void didLoseOutputSurfaceOnImplThread() = 0;
+    virtual void didLoseContextOnImplThread() = 0;
     virtual void onSwapBuffersCompleteOnImplThread() = 0;
     virtual void onVSyncParametersChanged(base::TimeTicks timebase, base::TimeDelta interval) = 0;
     virtual void onCanDrawStateChanged(bool canDraw) = 0;
@@ -165,7 +165,7 @@ public:
     // RendererClient implementation
     virtual const gfx::Size& deviceViewportSize() const OVERRIDE;
     virtual const LayerTreeSettings& settings() const OVERRIDE;
-    virtual void didLoseOutputSurface() OVERRIDE;
+    virtual void didLoseContext() OVERRIDE;
     virtual void onSwapBuffersComplete() OVERRIDE;
     virtual void setFullRootLayerDamage() OVERRIDE;
     virtual void setManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE;
@@ -181,14 +181,14 @@ public:
 
     // Implementation
     bool canDraw();
-    OutputSurface* outputSurface() const;
+    GraphicsContext* context() const;
 
     std::string layerTreeAsText() const;
 
     void finishAllRendering();
     int sourceAnimationFrameNumber() const;
 
-    bool initializeRenderer(scoped_ptr<OutputSurface>);
+    bool initializeRenderer(scoped_ptr<GraphicsContext>);
     bool isContextLost();
     TileManager* tileManager() { return m_tileManager.get(); }
     Renderer* renderer() { return m_renderer.get(); }
@@ -324,7 +324,7 @@ private:
     void setBackgroundTickingEnabled(bool);
     gfx::Size contentSize() const;
 
-    void sendDidLoseOutputSurfaceRecursive(LayerImpl*);
+    void sendDidLoseContextRecursive(LayerImpl*);
     void clearRenderSurfaces();
     bool ensureRenderSurfaceLayerList();
     void clearCurrentlyScrollingLayer();
@@ -333,7 +333,7 @@ private:
 
     void dumpRenderSurfaces(std::string*, int indent, const LayerImpl*) const;
 
-    scoped_ptr<OutputSurface> m_outputSurface;
+    scoped_ptr<GraphicsContext> m_context;
     scoped_ptr<ResourceProvider> m_resourceProvider;
     scoped_ptr<Renderer> m_renderer;
     scoped_ptr<TileManager> m_tileManager;

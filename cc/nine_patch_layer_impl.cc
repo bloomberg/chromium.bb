@@ -146,7 +146,7 @@ void NinePatchLayerImpl::didDraw(ResourceProvider* resourceProvider)
 {
 }
 
-void NinePatchLayerImpl::didLoseOutputSurface()
+void NinePatchLayerImpl::didLoseContext()
 {
     m_resourceId = 0;
 }

@@ -279,9 +279,9 @@ bool LayerTreeHostImpl::canDraw()
     return true;
 }
 
-OutputSurface* LayerTreeHostImpl::outputSurface() const
+GraphicsContext* LayerTreeHostImpl::context() const
 {
-    return m_outputSurface.get();
+    return m_context.get();
 }
 
 void LayerTreeHostImpl::animate(base::TimeTicks monotonicTime, base::Time wallClockTime)
@@ -891,9 +891,9 @@ const LayerTreeSettings& LayerTreeHostImpl::settings() const
     return m_settings;
 }
 
-void LayerTreeHostImpl::didLoseOutputSurface()
+void LayerTreeHostImpl::didLoseContext()
 {
-    m_client->didLoseOutputSurfaceOnImplThread();
+    m_client->didLoseContextOnImplThread();
 }
 
 void LayerTreeHostImpl::onSwapBuffersComplete()
@@ -983,40 +983,40 @@ void LayerTreeHostImpl::setVisible(bool visible)
     setBackgroundTickingEnabled(!m_visible && m_needsAnimateLayers);
 }
 
-bool LayerTreeHostImpl::initializeRenderer(scoped_ptr<OutputSurface> outputSurface)
+bool LayerTreeHostImpl::initializeRenderer(scoped_ptr<GraphicsContext> context)
 {
     // Since we will create a new resource provider, we cannot continue to use
     // the old resources (i.e. renderSurfaces and texture IDs). Clear them
     // before we destroy the old resource provider.
     if (m_rootLayerImpl) {
         clearRenderSurfaces();
-        sendDidLoseOutputSurfaceRecursive(m_rootLayerImpl.get());
+        sendDidLoseContextRecursive(m_rootLayerImpl.get());
     }
     // Note: order is important here.
     m_renderer.reset();
     m_tileManager.reset();
     m_resourceProvider.reset();
-    m_outputSurface.reset();
+    m_context.reset();
 
-    if (!outputSurface->bindToClient(this))
+    if (!context->bindToClient(this))
         return false;
 
-    scoped_ptr<ResourceProvider> resourceProvider = ResourceProvider::create(outputSurface.get());
+    scoped_ptr<ResourceProvider> resourceProvider = ResourceProvider::create(context.get());
     if (!resourceProvider)
         return false;
 
     if (m_settings.implSidePainting)
       m_tileManager.reset(new TileManager(this, resourceProvider.get(), m_settings.numRasterThreads));
 
-    if (outputSurface->context3D())
+    if (context->context3D())
         m_renderer = GLRenderer::create(this, resourceProvider.get());
-    else if (outputSurface->softwareDevice())
-        m_renderer = SoftwareRenderer::create(this, resourceProvider.get(), outputSurface->softwareDevice());
+    else if (context->softwareDevice())
+        m_renderer = SoftwareRenderer::create(this, resourceProvider.get(), context->softwareDevice());
     if (!m_renderer)
         return false;
 
     m_resourceProvider = resourceProvider.Pass();
-    m_outputSurface = outputSurface.Pass();
+    m_context = context.Pass();
 
     if (!m_visible)
         m_renderer->setVisible(m_visible);
@@ -1556,16 +1556,16 @@ base::TimeDelta LayerTreeHostImpl::lowFrequencyAnimationInterval() const
     return base::TimeDelta::FromSeconds(1);
 }
 
-void LayerTreeHostImpl::sendDidLoseOutputSurfaceRecursive(LayerImpl* current)
+void LayerTreeHostImpl::sendDidLoseContextRecursive(LayerImpl* current)
 {
     DCHECK(current);
-    current->didLoseOutputSurface();
+    current->didLoseContext();
     if (current->maskLayer())
-        sendDidLoseOutputSurfaceRecursive(current->maskLayer());
+        sendDidLoseContextRecursive(current->maskLayer());
     if (current->replicaLayer())
-        sendDidLoseOutputSurfaceRecursive(current->replicaLayer());
+        sendDidLoseContextRecursive(current->replicaLayer());
     for (size_t i = 0; i < current->children().size(); ++i)
-        sendDidLoseOutputSurfaceRecursive(current->children()[i]);
+        sendDidLoseContextRecursive(current->children()[i]);
 }
 
 static void clearRenderSurfacesOnLayerImplRecursive(LayerImpl* current)

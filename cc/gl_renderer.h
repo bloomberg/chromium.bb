@@ -16,8 +16,6 @@
 #include "cc/solid_color_draw_quad.h"
 #include "cc/tile_draw_quad.h"
 #include "cc/yuv_video_draw_quad.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsMemoryAllocation.h"
 #include "ui/gfx/quad_f.h"
 
 namespace WebKit {

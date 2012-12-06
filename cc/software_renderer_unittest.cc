@@ -40,7 +40,7 @@ public:
     // RendererClient implementation.
     virtual const gfx::Size& deviceViewportSize() const OVERRIDE { return m_viewportSize; }
     virtual const LayerTreeSettings& settings() const OVERRIDE { return m_settings; }
-    virtual void didLoseOutputSurface() OVERRIDE { }
+    virtual void didLoseContext() OVERRIDE { }
     virtual void onSwapBuffersComplete() OVERRIDE { }
     virtual void setFullRootLayerDamage() OVERRIDE { }
     virtual void setManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE { };

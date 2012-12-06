@@ -637,16 +637,16 @@ TEST(SchedulerStateMachineTest, TestContextLostWhenCompletelyIdle)
     state.setVisible(true);
     state.setCanDraw(true);
 
-    state.didLoseOutputSurface();
+    state.didLoseContext();
 
-    EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_RECREATION, state.nextAction());
+    EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_CONTEXT_RECREATION, state.nextAction());
     state.updateState(state.nextAction());
 
     // Once context recreation begins, nothing should happen.
     EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.nextAction());
 
     // Recreate the context
-    state.didRecreateOutputSurface();
+    state.didRecreateContext();
 
     // When the context is recreated, we should begin a commit
     EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
@@ -660,9 +660,9 @@ TEST(SchedulerStateMachineTest, TestContextLostWhenIdleAndCommitRequestedWhileRe
     state.setVisible(true);
     state.setCanDraw(true);
 
-    state.didLoseOutputSurface();
+    state.didLoseContext();
 
-    EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_RECREATION, state.nextAction());
+    EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_CONTEXT_RECREATION, state.nextAction());
     state.updateState(state.nextAction());
 
     // Once context recreation begins, nothing should happen.
@@ -673,7 +673,7 @@ TEST(SchedulerStateMachineTest, TestContextLostWhenIdleAndCommitRequestedWhileRe
     EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.nextAction());
 
     // Recreate the context
-    state.didRecreateOutputSurface();
+    state.didRecreateContext();
 
     // When the context is recreated, we should begin a commit
     EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
@@ -710,7 +710,7 @@ TEST(SchedulerStateMachineTest, TestContextLostWhileCommitInProgress)
     state.didLeaveVSync();
 
     // Cause a lost context while the begin frame is in flight.
-    state.didLoseOutputSurface();
+    state.didLoseContext();
 
     // Ask for another draw. Expect nothing happens.
     state.setNeedsRedraw(true);
@@ -728,9 +728,9 @@ TEST(SchedulerStateMachineTest, TestContextLostWhileCommitInProgress)
 
     // Expect to be told to begin context recreation, independent of vsync state
     state.didEnterVSync();
-    EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_RECREATION, state.nextAction());
+    EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_CONTEXT_RECREATION, state.nextAction());
     state.didLeaveVSync();
-    EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_RECREATION, state.nextAction());
+    EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_CONTEXT_RECREATION, state.nextAction());
 }
 
 TEST(SchedulerStateMachineTest, TestContextLostWhileCommitInProgressAndAnotherCommitRequested)
@@ -753,7 +753,7 @@ TEST(SchedulerStateMachineTest, TestContextLostWhileCommitInProgressAndAnotherCo
     state.didLeaveVSync();
 
     // Cause a lost context while the begin frame is in flight.
-    state.didLoseOutputSurface();
+    state.didLoseContext();
 
     // Ask for another draw and also set needs commit. Expect nothing happens.
     state.setNeedsRedraw(true);
@@ -772,9 +772,9 @@ TEST(SchedulerStateMachineTest, TestContextLostWhileCommitInProgressAndAnotherCo
 
     // Expect to be told to begin context recreation, independent of vsync state
     state.didEnterVSync();
-    EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_RECREATION, state.nextAction());
+    EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_CONTEXT_RECREATION, state.nextAction());
     state.didLeaveVSync();
-    EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_RECREATION, state.nextAction());
+    EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_CONTEXT_RECREATION, state.nextAction());
 }
 
 
@@ -785,7 +785,7 @@ TEST(SchedulerStateMachineTest, TestFinishAllRenderingWhileContextLost)
     state.setCanDraw(true);
 
     // Cause a lost context lost.
-    state.didLoseOutputSurface();
+    state.didLoseContext();
 
     // Ask a forced redraw and verify it ocurrs.
     state.setNeedsForcedRedraw(true);
@@ -797,7 +797,7 @@ TEST(SchedulerStateMachineTest, TestFinishAllRenderingWhileContextLost)
     state.setNeedsForcedRedraw(false);
 
     // Expect to be told to begin context recreation, independent of vsync state
-    EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_RECREATION, state.nextAction());
+    EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_CONTEXT_RECREATION, state.nextAction());
     state.updateState(state.nextAction());
 
     // Ask a forced redraw and verify it ocurrs.
@@ -853,7 +853,7 @@ TEST(SchedulerStateMachineTest, TestBeginFrameWhenContextLost)
     state.setCanDraw(true);
     state.setNeedsCommit();
     state.setNeedsForcedCommit();
-    state.didLoseOutputSurface();
+    state.didLoseContext();
     EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
 }
 

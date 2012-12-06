@@ -208,7 +208,7 @@ scoped_ptr<FontAtlas> WebLayerTreeViewImpl::createFontAtlas()
 
 void WebLayerTreeViewImpl::loseCompositorContext(int numTimes)
 {
-    m_layerTreeHost->loseOutputSurface(numTimes);
+    m_layerTreeHost->loseContext(numTimes);
 }
 
 void WebLayerTreeViewImpl::willBeginFrame()

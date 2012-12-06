@@ -12,8 +12,8 @@
 #include "cc/single_thread_proxy.h"
 #include "cc/resource_update_queue.h"
 #include "cc/texture_uploader.h"
+#include "cc/test/fake_graphics_context.h"
 #include "cc/test/fake_layer_tree_host_client.h"
-#include "cc/test/fake_output_surface.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_tree_test_common.h"
 #include "SkBitmap.h"
@@ -103,13 +103,13 @@ TEST_F(NinePatchLayerTest, triggerFullUploadOnceWhenChangingBitmap)
     m_layerTreeHost->contentsTextureManager()->setMaxMemoryLimitBytes(1024 * 1024);
     m_layerTreeHost->contentsTextureManager()->prioritizeTextures();
 
-    scoped_ptr<OutputSurface> outputSurface;
+    scoped_ptr<GraphicsContext> context;
     scoped_ptr<ResourceProvider> resourceProvider;
     {
         DebugScopedSetImplThread implThread(proxy());
         DebugScopedSetMainThreadBlocked mainThreadBlocked(proxy());
-        outputSurface = createFakeOutputSurface();
-        resourceProvider = ResourceProvider::create(outputSurface.get());
+        context = WebKit::createFakeGraphicsContext();
+        resourceProvider = ResourceProvider::create(context.get());
         params.texture->acquireBackingTexture(resourceProvider.get());
         ASSERT_TRUE(params.texture->haveBackingTexture());
     }

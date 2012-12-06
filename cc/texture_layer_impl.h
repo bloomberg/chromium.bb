@@ -22,7 +22,7 @@ public:
     virtual void appendQuads(QuadSink&, AppendQuadsData&) OVERRIDE;
     virtual void didDraw(ResourceProvider*) OVERRIDE;
 
-    virtual void didLoseOutputSurface() OVERRIDE;
+    virtual void didLoseContext() OVERRIDE;
 
     virtual void dumpLayerProperties(std::string*, int indent) const OVERRIDE;
 

@@ -121,7 +121,7 @@ public:
 protected:
     virtual void SetUp()
     {
-        m_outputSurface = FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new WebGraphicsContext3DForUploadTest(this)));
+        m_context = FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new WebGraphicsContext3DForUploadTest(this)));
         m_bitmap.setConfig(SkBitmap::kARGB_8888_Config, 300, 150);
         m_bitmap.allocPixels();
 
@@ -133,7 +133,7 @@ protected:
         }
         m_resourceManager->prioritizeTextures();
 
-        m_resourceProvider = ResourceProvider::create(m_outputSurface.get());
+        m_resourceProvider = ResourceProvider::create(m_context.get());
     }
 
 
@@ -198,7 +198,7 @@ protected:
 protected:
     // Classes required to interact and test the ResourceUpdateController
     FakeProxy m_proxy;
-    scoped_ptr<OutputSurface> m_outputSurface;
+    scoped_ptr<GraphicsContext> m_context;
     scoped_ptr<ResourceProvider> m_resourceProvider;
     scoped_ptr<ResourceUpdateQueue> m_queue;
     scoped_ptr<PrioritizedResource> m_textures[4];

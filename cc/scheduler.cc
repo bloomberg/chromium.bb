@@ -104,18 +104,18 @@ void Scheduler::didSwapBuffersComplete()
     m_frameRateController->didFinishFrame();
 }
 
-void Scheduler::didLoseOutputSurface()
+void Scheduler::didLoseContext()
 {
-    TRACE_EVENT0("cc", "Scheduler::didLoseOutputSurface");
+    TRACE_EVENT0("cc", "Scheduler::didLoseContext");
     m_frameRateController->didAbortAllPendingFrames();
-    m_stateMachine.didLoseOutputSurface();
+    m_stateMachine.didLoseContext();
     processScheduledActions();
 }
 
-void Scheduler::didRecreateOutputSurface()
+void Scheduler::didRecreateContext()
 {
-    TRACE_EVENT0("cc", "Scheduler::didRecreateOutputSurface");
-    m_stateMachine.didRecreateOutputSurface();
+    TRACE_EVENT0("cc", "Scheduler::didRecreateContext");
+    m_stateMachine.didRecreateContext();
     processScheduledActions();
 }
 
@@ -174,7 +174,7 @@ void Scheduler::processScheduledActions()
             if (result.didSwap)
                 m_frameRateController->didBeginFrame();
             break;
-        } case SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_RECREATION:
+        } case SchedulerStateMachine::ACTION_BEGIN_CONTEXT_RECREATION:
             m_client->scheduledActionBeginContextRecreation();
             break;
         case SchedulerStateMachine::ACTION_ACQUIRE_LAYER_TEXTURES_FOR_MAIN_THREAD:

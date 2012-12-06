@@ -55,7 +55,7 @@ public:
 
     // Attempts to initialize a context to use for rendering. Returns false if the context could not be created.
     // The context will not be used and no frames may be produced until initializeRenderer() is called.
-    virtual bool initializeOutputSurface() = 0;
+    virtual bool initializeContext() = 0;
 
     // Indicates that the compositing surface associated with our context is ready to use.
     virtual void setSurfaceReady() = 0;
@@ -67,7 +67,7 @@ public:
 
     // Attempts to recreate the context and layer renderer after a context lost. Returns false if the renderer couldn't be
     // reinitialized.
-    virtual bool recreateOutputSurface() = 0;
+    virtual bool recreateContext() = 0;
 
     virtual void renderingStats(RenderingStats*) = 0;
 
@@ -98,7 +98,7 @@ public:
     virtual void acquireLayerTextures() = 0;
 
     // Testing hooks
-    virtual void loseOutputSurface() = 0;
+    virtual void loseContext() = 0;
 
 protected:
     explicit Proxy(scoped_ptr<Thread> implThread);

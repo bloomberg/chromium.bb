@@ -19,7 +19,7 @@ class CC_EXPORT RendererClient {
 public:
     virtual const gfx::Size& deviceViewportSize() const = 0;
     virtual const LayerTreeSettings& settings() const = 0;
-    virtual void didLoseOutputSurface() = 0;
+    virtual void didLoseContext() = 0;
     virtual void onSwapBuffersComplete() = 0;
     virtual void setFullRootLayerDamage() = 0;
     virtual void setManagedMemoryPolicy(const ManagedMemoryPolicy& policy) = 0;

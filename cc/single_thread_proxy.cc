@@ -6,8 +6,8 @@
 
 #include "base/debug/trace_event.h"
 #include "cc/draw_quad.h"
+#include "cc/graphics_context.h"
 #include "cc/layer_tree_host.h"
-#include "cc/output_surface.h"
 #include "cc/resource_update_controller.h"
 #include "cc/thread.h"
 
@@ -21,7 +21,7 @@ scoped_ptr<Proxy> SingleThreadProxy::create(LayerTreeHost* layerTreeHost)
 SingleThreadProxy::SingleThreadProxy(LayerTreeHost* layerTreeHost)
     : Proxy(scoped_ptr<Thread>(NULL))
     , m_layerTreeHost(layerTreeHost)
-    , m_outputSurfaceLost(false)
+    , m_contextLost(false)
     , m_rendererInitialized(false)
     , m_nextFrameIsNewlyCommittedFrame(false)
     , m_totalCommitCount(0)
@@ -82,13 +82,13 @@ bool SingleThreadProxy::isStarted() const
     return m_layerTreeHostImpl.get();
 }
 
-bool SingleThreadProxy::initializeOutputSurface()
+bool SingleThreadProxy::initializeContext()
 {
     DCHECK(Proxy::isMainThread());
-    scoped_ptr<OutputSurface> outputSurface = m_layerTreeHost->createOutputSurface();
-    if (!outputSurface.get())
+    scoped_ptr<GraphicsContext> context = m_layerTreeHost->createContext();
+    if (!context.get())
         return false;
-    m_outputSurfaceBeforeInitialization = outputSurface.Pass();
+    m_contextBeforeInitialization = context.Pass();
     return true;
 }
 
@@ -106,10 +106,10 @@ void SingleThreadProxy::setVisible(bool visible)
 bool SingleThreadProxy::initializeRenderer()
 {
     DCHECK(Proxy::isMainThread());
-    DCHECK(m_outputSurfaceBeforeInitialization.get());
+    DCHECK(m_contextBeforeInitialization.get());
     {
         DebugScopedSetImplThread impl(this);
-        bool ok = m_layerTreeHostImpl->initializeRenderer(m_outputSurfaceBeforeInitialization.Pass());
+        bool ok = m_layerTreeHostImpl->initializeRenderer(m_contextBeforeInitialization.Pass());
         if (ok) {
             m_rendererInitialized = true;
             m_RendererCapabilitiesForMainThread = m_layerTreeHostImpl->rendererCapabilities();
@@ -119,14 +119,14 @@ bool SingleThreadProxy::initializeRenderer()
     }
 }
 
-bool SingleThreadProxy::recreateOutputSurface()
+bool SingleThreadProxy::recreateContext()
 {
     TRACE_EVENT0("cc", "SingleThreadProxy::recreateContext");
     DCHECK(Proxy::isMainThread());
-    DCHECK(m_outputSurfaceLost);
+    DCHECK(m_contextLost);
 
-    scoped_ptr<OutputSurface> outputSurface = m_layerTreeHost->createOutputSurface();
-    if (!outputSurface.get())
+    scoped_ptr<GraphicsContext> context = m_layerTreeHost->createContext();
+    if (!context.get())
         return false;
 
     bool initialized;
@@ -135,14 +135,14 @@ bool SingleThreadProxy::recreateOutputSurface()
         DebugScopedSetImplThread impl(this);
         if (!m_layerTreeHostImpl->contentsTexturesPurged())
             m_layerTreeHost->deleteContentsTexturesOnImplThread(m_layerTreeHostImpl->resourceProvider());
-        initialized = m_layerTreeHostImpl->initializeRenderer(outputSurface.Pass());
+        initialized = m_layerTreeHostImpl->initializeRenderer(context.Pass());
         if (initialized) {
             m_RendererCapabilitiesForMainThread = m_layerTreeHostImpl->rendererCapabilities();
         }
     }
 
     if (initialized)
-        m_outputSurfaceLost = false;
+        m_contextLost = false;
 
     return initialized;
 }
@@ -161,11 +161,11 @@ const RendererCapabilities& SingleThreadProxy::rendererCapabilities() const
     return m_RendererCapabilitiesForMainThread;
 }
 
-void SingleThreadProxy::loseOutputSurface()
+void SingleThreadProxy::loseContext()
 {
     DCHECK(Proxy::isMainThread());
-    m_layerTreeHost->didLoseOutputSurface();
-    m_outputSurfaceLost = true;
+    m_layerTreeHost->didLoseContext();
+    m_contextLost = true;
 }
 
 void SingleThreadProxy::setNeedsAnimate()
@@ -359,7 +359,7 @@ bool SingleThreadProxy::commitAndComposite()
 
 bool SingleThreadProxy::doComposite()
 {
-    DCHECK(!m_outputSurfaceLost);
+    DCHECK(!m_contextLost);
     {
         DebugScopedSetImplThread impl(this);
 
@@ -384,8 +384,8 @@ bool SingleThreadProxy::doComposite()
     }
 
     if (m_layerTreeHostImpl->isContextLost()) {
-        m_outputSurfaceLost = true;
-        m_layerTreeHost->didLoseOutputSurface();
+        m_contextLost = true;
+        m_layerTreeHost->didLoseContext();
         return false;
     }
 

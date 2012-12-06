@@ -6,13 +6,13 @@
 
 #include "base/stringprintf.h"
 #include "cc/gl_renderer.h" // For the GLC() macro.
+#include "cc/graphics_context.h"
 #include "cc/io_surface_draw_quad.h"
 #include "cc/layer_tree_host_impl.h"
-#include "cc/output_surface.h"
 #include "cc/quad_sink.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
+#include <public/WebGraphicsContext3D.h>
 
 namespace cc {
 
@@ -29,9 +29,9 @@ IOSurfaceLayerImpl::~IOSurfaceLayerImpl()
     if (!m_ioSurfaceTextureId)
         return;
 
-    OutputSurface* outputSurface = layerTreeHostImpl()->outputSurface();
+    GraphicsContext* context = layerTreeHostImpl()->context();
     // FIXME: Implement this path for software compositing.
-    WebKit::WebGraphicsContext3D* context3d = outputSurface->context3D();
+    WebKit::WebGraphicsContext3D* context3d = context->context3D();
     if (context3d)
         context3d->deleteTexture(m_ioSurfaceTextureId);
 }
@@ -91,7 +91,7 @@ void IOSurfaceLayerImpl::dumpLayerProperties(std::string* str, int indent) const
     LayerImpl::dumpLayerProperties(str, indent);
 }
 
-void IOSurfaceLayerImpl::didLoseOutputSurface()
+void IOSurfaceLayerImpl::didLoseContext()
 {
     // We don't have a valid texture ID in the new context; however,
     // the IOSurface is still valid.
