@@ -638,6 +638,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   void OnWindowlessPluginDummyWindowDestroyed(
       gfx::NativeViewId dummy_activation_window);
 #endif
+#if defined(OS_CHROMEOS)  // http://crbug.com/162981
+  void OnMsgGetWindowRect(gfx::Rect* results);
+  void OnMsgGetRootWindowRect(gfx::Rect* results);
+#endif
 
   // Called (either immediately or asynchronously) after we're done with our
   // BackingStore and can send an ACK to the renderer so it can paint onto it

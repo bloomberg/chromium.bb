@@ -383,6 +383,10 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_WindowlessPluginDummyWindowDestroyed,
                         OnWindowlessPluginDummyWindowDestroyed)
 #endif
+#if defined(OS_CHROMEOS)  // http://crbug.com/162981
+    IPC_MESSAGE_HANDLER(ViewHostMsg_GetWindowRect, OnMsgGetWindowRect)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_GetRootWindowRect, OnMsgGetRootWindowRect)
+#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 
@@ -393,6 +397,18 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
   }
   return handled;
 }
+
+#if defined(OS_CHROMEOS)  // http://crbug.com/162981
+void RenderWidgetHostImpl::OnMsgGetWindowRect(gfx::Rect* results) {
+  if (view_)
+    *results = view_->GetViewBounds();
+}
+
+void RenderWidgetHostImpl::OnMsgGetRootWindowRect(gfx::Rect* results) {
+  if (view_)
+    *results = view_->GetBoundsInRootWindow();
+}
+#endif
 
 bool RenderWidgetHostImpl::Send(IPC::Message* msg) {
   return process_->Send(msg);

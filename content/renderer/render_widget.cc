@@ -1392,6 +1392,11 @@ void RenderWidget::Close() {
 }
 
 WebRect RenderWidget::windowRect() {
+#if defined(OS_CHROMEOS)  // http://crbug.com/162981
+  gfx::Rect rect;
+  Send(new ViewHostMsg_GetWindowRect(routing_id_, &rect));
+  return rect;
+#endif
   if (pending_window_rect_count_)
     return pending_window_rect_;
 
@@ -1418,6 +1423,11 @@ void RenderWidget::SetPendingWindowRect(const WebRect& rect) {
 }
 
 WebRect RenderWidget::rootWindowRect() {
+#if defined(OS_CHROMEOS)  // http://crbug.com/162981
+  gfx::Rect rect;
+  Send(new ViewHostMsg_GetRootWindowRect(routing_id_, &rect));
+  return rect;
+#endif
   if (pending_window_rect_count_) {
     // NOTE(mbelshe): If there is a pending_window_rect_, then getting
     // the RootWindowRect is probably going to return wrong results since the

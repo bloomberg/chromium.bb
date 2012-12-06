@@ -2437,3 +2437,11 @@ IPC_SYNC_MESSAGE_CONTROL2_0(ViewHostMsg_PreCacheFontCharacters,
                             LOGFONT /* font_data */,
                             string16 /* characters */)
 #endif
+
+#if defined(OS_CHROMEOS)  // http://crbug.com/162981
+IPC_SYNC_MESSAGE_ROUTED0_1(ViewHostMsg_GetWindowRect,
+                           gfx::Rect /* window_rect */)
+
+IPC_SYNC_MESSAGE_ROUTED0_1(ViewHostMsg_GetRootWindowRect,
+                           gfx::Rect /* window_rect */)
+#endif
