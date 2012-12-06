@@ -32,7 +32,6 @@ var remoting = remoting || {};
  *     authentication methods the client should attempt to use.
  * @param {string} authenticationTag A host-specific tag to mix into
  *     authentication hashes.
- * @param {string} email The username for the talk network.
  * @param {remoting.ClientSession.Mode} mode The mode of this connection.
  * @param {function(remoting.ClientSession.State,
                     remoting.ClientSession.State):void} onStateChange
@@ -41,7 +40,7 @@ var remoting = remoting || {};
  */
 remoting.ClientSession = function(hostJid, hostPublicKey, sharedSecret,
                                   authenticationMethods, authenticationTag,
-                                  email, mode, onStateChange) {
+                                  mode, onStateChange) {
   this.state = remoting.ClientSession.State.CREATED;
 
   this.hostJid = hostJid;
@@ -49,7 +48,6 @@ remoting.ClientSession = function(hostJid, hostPublicKey, sharedSecret,
   this.sharedSecret = sharedSecret;
   this.authenticationMethods = authenticationMethods;
   this.authenticationTag = authenticationTag;
-  this.email = email;
   this.mode = mode;
   this.clientJid = '';
   this.sessionId = '';
@@ -243,17 +241,15 @@ remoting.ClientSession.prototype.pluginLostFocus_ = function() {
  * Adds <embed> element to |container| and readies the sesion object.
  *
  * @param {Element} container The element to add the plugin to.
- * @param {string} oauth2AccessToken A valid OAuth2 access token.
  */
 remoting.ClientSession.prototype.createPluginAndConnect =
-    function(container, oauth2AccessToken) {
+    function(container) {
   this.plugin = this.createClientPlugin_(container, this.PLUGIN_ID);
 
   this.plugin.element().focus();
 
   /** @param {boolean} result */
-  this.plugin.initialize(
-      this.onPluginInitialized_.bind(this, oauth2AccessToken));
+  this.plugin.initialize(this.onPluginInitialized_.bind(this));
   this.plugin.element().addEventListener(
       'focus', this.callPluginGotFocus_, false);
   this.plugin.element().addEventListener(
@@ -261,11 +257,9 @@ remoting.ClientSession.prototype.createPluginAndConnect =
 };
 
 /**
- * @param {string} oauth2AccessToken
  * @param {boolean} initialized
  */
-remoting.ClientSession.prototype.onPluginInitialized_ =
-    function(oauth2AccessToken, initialized) {
+remoting.ClientSession.prototype.onPluginInitialized_ = function(initialized) {
   if (!initialized) {
     console.error('ERROR: remoting plugin not loaded');
     this.plugin.cleanup();
@@ -317,7 +311,7 @@ remoting.ClientSession.prototype.onPluginInitialized_ =
   this.plugin.onDesktopSizeUpdateHandler =
       this.onDesktopSizeChanged_.bind(this);
 
-  this.connectPluginToWcs_(oauth2AccessToken);
+  this.connectPluginToWcs_();
 };
 
 /**
@@ -482,11 +476,9 @@ remoting.ClientSession.prototype.sendIq_ = function(msg) {
  * Connects the plugin to WCS.
  *
  * @private
- * @param {string} oauth2AccessToken A valid OAuth2 access token.
  * @return {void} Nothing.
  */
-remoting.ClientSession.prototype.connectPluginToWcs_ =
-    function(oauth2AccessToken) {
+remoting.ClientSession.prototype.connectPluginToWcs_ = function() {
   this.clientJid = remoting.wcs.getJid();
   if (this.clientJid == '') {
     console.error('Tried to connect without a full JID.');

@@ -159,7 +159,7 @@ remoting.logExtensionInfoAsync_ = function() {
  * @return {?string} The prompt string if a connection is active.
  */
 remoting.promptClose = function() {
-  if (remoting.currentConnectionType == remoting.ConnectionType.Me2Me) {
+  if (remoting.currentConnectionType == remoting.ClientSession.Mode.ME2ME) {
     return null;
   }
   switch (remoting.currentMode) {
