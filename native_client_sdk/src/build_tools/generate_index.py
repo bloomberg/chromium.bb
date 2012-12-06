@@ -85,7 +85,7 @@ class LandingPage(object):
   def _GenerateSection(self, section):
     out = SECTIONS[section]
     for desc in self.section_map[section]:
-      index_path = desc['DEST'] + '/' + desc['NAME']
+      index_path = desc['NAME']
       title = desc['TITLE']
       details = desc['DESC']
       focus = desc['FOCUS']
