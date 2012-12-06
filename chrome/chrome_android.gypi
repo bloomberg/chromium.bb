@@ -138,29 +138,5 @@
         }
       ],
     },
-    # This target is left out to avoid breaking downstream Chrome for Android
-    # build. It will be removed once the corresponding downstream change will
-    # land.
-    # crbug.com/163955
-    {
-      'target_name': 'chrome_android_paks',
-      'type': 'none',
-      'dependencies': [
-        '<(DEPTH)/chrome/chrome_resources.gyp:packed_resources',
-        '<(DEPTH)/chrome/chrome_resources.gyp:packed_extra_resources',
-      ],
-      'variables': {
-        'package_name': 'chrome',
-      },
-      'includes': [
-        'chrome_android_paks.gypi',
-      ],
-      'copies': [
-        {
-          'destination': '<(chrome_android_pak_output_folder)',
-          'files': [ '<@(chrome_android_pak_input_resources)' ],
-        }
-      ],
-    },
   ],
 }
