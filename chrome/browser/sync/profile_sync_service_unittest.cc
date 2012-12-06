@@ -113,8 +113,7 @@ class ProfileSyncServiceTestHarness {
           profile.get(),
           signin,
           ProfileSyncService::AUTO_START,
-          true,
-          base::Closure()));
+          true));
       if (!set_initial_sync_ended)
         service->dont_set_initial_sync_ended_on_init();
       if (synchronous_sync_configuration)
@@ -178,8 +177,7 @@ TEST_F(ProfileSyncServiceTest, InitialState) {
       harness_.profile.get(),
       signin,
       ProfileSyncService::MANUAL_START,
-      true,
-      base::Closure()));
+      true));
   harness_.service->Initialize();
   EXPECT_TRUE(
       harness_.service->sync_service_url().spec() ==
@@ -199,8 +197,7 @@ TEST_F(ProfileSyncServiceTest, DisabledByPolicy) {
       harness_.profile.get(),
       signin,
       ProfileSyncService::MANUAL_START,
-      true,
-      base::Closure()));
+      true));
   harness_.service->Initialize();
   EXPECT_TRUE(harness_.service->IsManaged());
 }
@@ -216,8 +213,7 @@ TEST_F(ProfileSyncServiceTest, AbortedByShutdown) {
       harness_.profile.get(),
       signin,
       ProfileSyncService::AUTO_START,
-      true,
-      base::Closure()));
+      true));
   EXPECT_CALL(*factory, CreateDataTypeManager(_, _, _, _)).Times(0);
   EXPECT_CALL(*factory, CreateBookmarkSyncComponents(_, _)).
       Times(0);
@@ -241,8 +237,7 @@ TEST_F(ProfileSyncServiceTest, DisableAndEnableSyncTemporarily) {
       harness_.profile.get(),
       signin,
       ProfileSyncService::AUTO_START,
-      true,
-      base::Closure()));
+      true));
   // Register the bookmark data type.
   EXPECT_CALL(*factory, CreateDataTypeManager(_, _, _, _)).
       WillRepeatedly(ReturnNewDataTypeManager());

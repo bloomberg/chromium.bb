@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/test_profile_sync_service.h"
 
 #include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
@@ -215,23 +216,37 @@ TestProfileSyncService::TestProfileSyncService(
     Profile* profile,
     SigninManager* signin,
     ProfileSyncService::StartBehavior behavior,
-    bool synchronous_backend_initialization,
-    const base::Closure& callback)
-    : ProfileSyncService(factory,
-                         profile,
-                         signin,
-                         behavior),
-      synchronous_backend_initialization_(
-          synchronous_backend_initialization),
-      synchronous_sync_configuration_(false),
-      callback_(callback),
-      set_initial_sync_ended_on_init_(true),
-      fail_initial_download_(false),
-      storage_option_(syncer::STORAGE_IN_MEMORY) {
+    bool synchronous_backend_initialization)
+        : ProfileSyncService(factory,
+                             profile,
+                             signin,
+                             behavior),
+    synchronous_backend_initialization_(
+        synchronous_backend_initialization),
+    synchronous_sync_configuration_(false),
+    set_initial_sync_ended_on_init_(true),
+    fail_initial_download_(false),
+    storage_option_(syncer::STORAGE_IN_MEMORY) {
   SetSyncSetupCompleted();
 }
 
 TestProfileSyncService::~TestProfileSyncService() {
+}
+
+// static
+ProfileKeyedService* TestProfileSyncService::BuildAutoStartAsyncInit(
+    Profile* profile) {
+  SigninManager* signin = SigninManagerFactory::GetForProfile(profile);
+  ProfileSyncComponentsFactoryMock* factory =
+      new ProfileSyncComponentsFactoryMock();
+  return new TestProfileSyncService(
+      factory, profile, signin, ProfileSyncService::AUTO_START, false);
+}
+
+ProfileSyncComponentsFactoryMock*
+TestProfileSyncService::components_factory_mock() {
+  // We always create a mock factory, see Build* routines.
+  return static_cast<ProfileSyncComponentsFactoryMock*>(factory());
 }
 
 void TestProfileSyncService::OnBackendInitialized(

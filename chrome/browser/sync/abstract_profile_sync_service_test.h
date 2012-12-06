@@ -56,7 +56,7 @@ class AbstractProfileSyncServiceTest : public testing::Test {
   content::TestBrowserThread file_thread_;
   content::TestBrowserThread io_thread_;
   TokenService* token_service_;
-  scoped_ptr<TestProfileSyncService> service_;
+  TestProfileSyncService* sync_service_;
 };
 
 class CreateRootHelper {

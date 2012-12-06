@@ -33,6 +33,7 @@
 #include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -150,7 +151,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
  public:
   void AddTypedUrlSyncNode(const history::URLRow& url,
                            const history::VisitVector& visits) {
-    syncer::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
+    syncer::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
     syncer::ReadNode typed_url_root(&trans);
     ASSERT_EQ(syncer::BaseNode::INIT_OK,
               typed_url_root.InitByTagLookup(browser_sync::kTypedUrlTag));
@@ -184,8 +185,8 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
   virtual void TearDown() {
     history_backend_ = NULL;
     history_service_ = NULL;
-    service_->Shutdown();
-    service_.reset();
+    ProfileSyncServiceFactory::GetInstance()->SetTestingFactory(
+        &profile_, NULL);
     history_thread_.Stop();
     profile_.ResetRequestContext();
     AbstractProfileSyncServiceTest::TearDown();
@@ -193,42 +194,39 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
 
   TypedUrlModelAssociator* StartSyncService(const base::Closure& callback) {
     TypedUrlModelAssociator* model_associator = NULL;
-    if (!service_.get()) {
+    if (!sync_service_) {
       SigninManager* signin = SigninManagerFactory::GetForProfile(&profile_);
       signin->SetAuthenticatedUsername("test");
       token_service_ = static_cast<TokenService*>(
           TokenServiceFactory::GetInstance()->SetTestingFactoryAndUse(
               &profile_, BuildTokenService));
-      ProfileSyncComponentsFactoryMock* factory =
-          new ProfileSyncComponentsFactoryMock();
-      service_.reset(
-          new TestProfileSyncService(factory,
-                                     &profile_,
-                                     signin,
-                                     ProfileSyncService::AUTO_START,
-                                     false,
-                                     callback));
+      sync_service_ = static_cast<TestProfileSyncService*>(
+          ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+              &profile_, &TestProfileSyncService::BuildAutoStartAsyncInit));
+      sync_service_->set_backend_init_callback(callback);
+      ProfileSyncComponentsFactoryMock* components =
+          sync_service_->components_factory_mock();
       TypedUrlDataTypeController* data_type_controller =
-          new TypedUrlDataTypeController(factory,
+          new TypedUrlDataTypeController(components,
                                          &profile_,
-                                         service_.get());
+                                         sync_service_);
 
-      EXPECT_CALL(*factory, CreateTypedUrlSyncComponents(_, _, _)).
+      EXPECT_CALL(*components, CreateTypedUrlSyncComponents(_, _, _)).
           WillOnce(MakeTypedUrlSyncComponents(&profile_,
-                                              service_.get(),
+                                              sync_service_,
                                               history_backend_.get(),
                                               data_type_controller,
                                               &error_handler_,
                                               &model_associator));
-      EXPECT_CALL(*factory, CreateDataTypeManager(_, _, _, _)).
+      EXPECT_CALL(*components, CreateDataTypeManager(_, _, _, _)).
           WillOnce(ReturnNewDataTypeManager());
 
       token_service_->IssueAuthTokenForTest(
           GaiaConstants::kSyncService, "token");
 
-      service_->RegisterDataTypeController(data_type_controller);
+      sync_service_->RegisterDataTypeController(data_type_controller);
 
-      service_->Initialize();
+      sync_service_->Initialize();
       MessageLoop::current()->Run();
     }
     return model_associator;
@@ -236,7 +234,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
 
   void GetTypedUrlsFromSyncDB(history::URLRows* urls) {
     urls->clear();
-    syncer::ReadTransaction trans(FROM_HERE, service_->GetUserShare());
+    syncer::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
     syncer::ReadNode typed_url_root(&trans);
     if (typed_url_root.InitByTagLookup(browser_sync::kTypedUrlTag) !=
             syncer::BaseNode::INIT_OK)
@@ -907,7 +905,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, FailWriteToHistoryBackend) {
   // Errors writing to the DB should be recorded, but should not cause an
   // unrecoverable error.
   ASSERT_FALSE(
-      service_->failed_datatypes_handler().GetFailedTypes().Has(
+      sync_service_->failed_datatypes_handler().GetFailedTypes().Has(
           syncer::TYPED_URLS));
   // Some calls should have succeeded, so the error percentage should be
   // somewhere > 0 and < 100.
@@ -939,10 +937,10 @@ TEST_F(ProfileSyncServiceTypedUrlTest, FailToGetTypedURLs) {
   // Errors getting typed URLs will cause an unrecoverable error (since we can
   // do *nothing* in that case).
   ASSERT_TRUE(
-      service_->failed_datatypes_handler().GetFailedTypes().Has(
+      sync_service_->failed_datatypes_handler().GetFailedTypes().Has(
           syncer::TYPED_URLS));
   ASSERT_EQ(
-      1u, service_->failed_datatypes_handler().GetFailedTypes().Size());
+      1u, sync_service_->failed_datatypes_handler().GetFailedTypes().Size());
   // Can't check GetErrorPercentage(), because generating an unrecoverable
   // error will free the model associator.
 }

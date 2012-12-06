@@ -22,6 +22,7 @@
 #include "chrome/browser/sync/glue/generic_change_processor.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/glue/ui_data_type_controller.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/common/pref_names.h"
@@ -73,7 +74,7 @@ class ProfileSyncServicePreferenceTest
       public syncer::DataTypeDebugInfoListener {
  public:
   int64 SetSyncedValue(const std::string& name, const Value& value) {
-    syncer::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
+    syncer::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
     syncer::ReadNode root(&trans);
     if (root.InitByTagLookup(syncer::ModelTypeToRootTag(
             syncer::PREFERENCES)) != syncer::BaseNode::INIT_OK) {
@@ -127,14 +128,12 @@ class ProfileSyncServicePreferenceTest
   }
 
   virtual void TearDown() {
-    service_->Shutdown();
-    service_.reset();
     profile_.reset();
     AbstractProfileSyncServiceTest::TearDown();
   }
 
   int GetSyncPreferenceCount() {
-    syncer::ReadTransaction trans(FROM_HERE, service_->GetUserShare());
+    syncer::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
     syncer::ReadNode node(&trans);
     if (node.InitByTagLookup(syncer::ModelTypeToRootTag(syncer::PREFERENCES)) !=
         syncer::BaseNode::INIT_OK)
@@ -144,49 +143,46 @@ class ProfileSyncServicePreferenceTest
 
   bool StartSyncService(const base::Closure& callback,
                         bool will_fail_association) {
-    if (service_.get())
+    if (sync_service_)
       return false;
 
     SigninManager* signin = SigninManagerFactory::GetForProfile(profile_.get());
     signin->SetAuthenticatedUsername("test");
-    ProfileSyncComponentsFactoryMock* factory =
-        new ProfileSyncComponentsFactoryMock();
-    service_.reset(new TestProfileSyncService(
-        factory,
-        profile_.get(),
-        signin,
-        ProfileSyncService::AUTO_START,
-        false,
-        callback));
+    sync_service_ = static_cast<TestProfileSyncService*>(
+        ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+            profile_.get(), &TestProfileSyncService::BuildAutoStartAsyncInit));
+    sync_service_->set_backend_init_callback(callback);
     pref_sync_service_ = reinterpret_cast<PrefModelAssociator*>(
         prefs_->GetSyncableService());
     if (!pref_sync_service_)
       return false;
-    EXPECT_CALL(*factory, GetSyncableServiceForType(syncer::PREFERENCES)).
+    ProfileSyncComponentsFactoryMock* components =
+        sync_service_->components_factory_mock();
+    EXPECT_CALL(*components, GetSyncableServiceForType(syncer::PREFERENCES)).
         WillOnce(Return(pref_sync_service_->AsWeakPtr()));
 
-    EXPECT_CALL(*factory, CreateDataTypeManager(_, _, _, _)).
+    EXPECT_CALL(*components, CreateDataTypeManager(_, _, _, _)).
         WillOnce(ReturnNewDataTypeManagerWithDebugListener(
                      syncer::MakeWeakHandle(debug_ptr_factory_.GetWeakPtr())));
     dtc_ = new UIDataTypeController(syncer::PREFERENCES,
-                                    factory,
+                                    components,
                                     profile_.get(),
-                                    service_.get());
-    EXPECT_CALL(*factory, CreateSharedChangeProcessor()).
+                                    sync_service_);
+    EXPECT_CALL(*components, CreateSharedChangeProcessor()).
         WillOnce(Return(new SharedChangeProcessor()));
-    EXPECT_CALL(*factory, CreateGenericChangeProcessor(_, _, _, _)).
+    EXPECT_CALL(*components, CreateGenericChangeProcessor(_, _, _, _)).
         WillOnce(CreateAndSaveChangeProcessor(
                      &change_processor_));
-    service_->RegisterDataTypeController(dtc_);
+    sync_service_->RegisterDataTypeController(dtc_);
     TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
         GaiaConstants::kSyncService, "token");
 
-    service_->Initialize();
+    sync_service_->Initialize();
     MessageLoop::current()->Run();
 
     // It's possible this test triggered an unrecoverable error, in which case
     // we can't get the preference count.
-    if (service_->ShouldPushChanges()) {
+    if (sync_service_->ShouldPushChanges()) {
         EXPECT_EQ(GetSyncPreferenceCount(),
                   association_stats_.num_sync_items_after_association);
     }
@@ -206,7 +202,7 @@ class ProfileSyncServicePreferenceTest
 
   // Caller gets ownership of the returned value.
   const Value* GetSyncedValue(const std::string& name) {
-    syncer::ReadTransaction trans(FROM_HERE, service_->GetUserShare());
+    syncer::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
     syncer::ReadNode node(&trans);
 
     if (node.InitByClientTagLookup(syncer::PREFERENCES, name) !=
@@ -399,7 +395,7 @@ TEST_F(ProfileSyncServicePreferenceTest, ModelAssociationCloudHasData) {
 
 TEST_F(ProfileSyncServicePreferenceTest, FailModelAssociation) {
   ASSERT_TRUE(StartSyncService(base::Closure(), true));
-  EXPECT_TRUE(service_->HasUnrecoverableError());
+  EXPECT_TRUE(sync_service_->HasUnrecoverableError());
 }
 
 TEST_F(ProfileSyncServicePreferenceTest, UpdatedPreferenceWithDefaultValue) {
@@ -443,7 +439,7 @@ TEST_F(ProfileSyncServicePreferenceTest, UpdatedSyncNodeActionUpdate) {
   int64 node_id = SetSyncedValue(prefs::kHomePage, *expected);
   ASSERT_NE(node_id, syncer::kInvalidId);
   {
-    syncer::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
+    syncer::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
     change_processor_->ApplyChangesFromSyncModel(
         &trans, 0,
         ProfileSyncServiceTestHelper::MakeSingletonChangeRecordList(
@@ -464,7 +460,7 @@ TEST_F(ProfileSyncServicePreferenceTest, UpdatedSyncNodeActionAdd) {
   int64 node_id = SetSyncedValue(prefs::kHomePage, *expected);
   ASSERT_NE(node_id, syncer::kInvalidId);
   {
-    syncer::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
+    syncer::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
     change_processor_->ApplyChangesFromSyncModel(
         &trans, 0,
         ProfileSyncServiceTestHelper::MakeSingletonChangeRecordList(
@@ -487,7 +483,7 @@ TEST_F(ProfileSyncServicePreferenceTest, UpdatedSyncNodeUnknownPreference) {
   int64 node_id = SetSyncedValue("unknown preference", *expected);
   ASSERT_NE(node_id, syncer::kInvalidId);
   {
-    syncer::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
+    syncer::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
     change_processor_->ApplyChangesFromSyncModel(
         &trans, 0,
         ProfileSyncServiceTestHelper::MakeSingletonChangeRecordList(
@@ -522,7 +518,7 @@ TEST_F(ProfileSyncServicePreferenceTest, ManagedPreferences) {
   int64 node_id = SetSyncedValue(prefs::kHomePage, *sync_value);
   ASSERT_NE(node_id, syncer::kInvalidId);
   {
-    syncer::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
+    syncer::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
     change_processor_->ApplyChangesFromSyncModel(
         &trans, 0,
         ProfileSyncServiceTestHelper::MakeSingletonChangeRecordList(
@@ -575,7 +571,7 @@ TEST_F(ProfileSyncServicePreferenceTest, ManagedListPreferences) {
   int64 node_id = SetSyncedValue(prefs::kURLsToRestoreOnStartup, sync_value);
   ASSERT_NE(node_id, syncer::kInvalidId);
   {
-    syncer::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
+    syncer::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
     change_processor_->ApplyChangesFromSyncModel(
         &trans, 0,
         ProfileSyncServiceTestHelper::MakeSingletonChangeRecordList(
@@ -640,7 +636,7 @@ TEST_F(ProfileSyncServicePreferenceTest,
   int64 node_id = SetSyncedValue(prefs::kHomePage, *sync_value);
   ASSERT_NE(node_id, syncer::kInvalidId);
   {
-    syncer::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
+    syncer::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
     change_processor_->ApplyChangesFromSyncModel(
         &trans, 0,
         ProfileSyncServiceTestHelper::MakeSingletonChangeRecordList(

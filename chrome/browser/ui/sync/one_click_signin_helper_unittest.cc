@@ -14,8 +14,8 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_manager_fake.h"
 #include "chrome/browser/signin/signin_names_io_thread.h"
-#include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
 #include "chrome/common/chrome_switches.h"
@@ -172,8 +172,7 @@ class OneClickTestProfileSyncService : public TestProfileSyncService {
                                 profile,
                                 NULL,
                                 ProfileSyncService::MANUAL_START,
-                                false,  // synchronous_backend_init
-                                base::Closure()),
+                                false),  // synchronous_backend_init
          first_setup_in_progress_(false) {}
 
    bool first_setup_in_progress_;

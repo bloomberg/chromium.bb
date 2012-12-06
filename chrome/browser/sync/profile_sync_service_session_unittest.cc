@@ -230,8 +230,8 @@ class ProfileSyncServiceSessionTest
         profile(),
         signin,
         ProfileSyncService::AUTO_START,
-        false,
-        callback));
+        false));
+    sync_service_->set_backend_init_callback(callback);
 
     // Register the session data type.
     SessionDataTypeController *dtc = new SessionDataTypeController(factory,

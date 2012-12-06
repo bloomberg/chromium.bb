@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/sync/glue/data_type_manager_impl.h"
 #include "chrome/browser/sync/invalidations/invalidator_storage.h"
+#include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/test/base/profile_mock.h"
@@ -109,8 +110,6 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHost {
 
 class TestProfileSyncService : public ProfileSyncService {
  public:
-  // |callback| can be used to populate nodes before the OnBackendInitialized
-  // callback fires.
   // TODO(tim): Remove |synchronous_backend_initialization|, and add ability to
   // inject TokenService alongside SigninManager.
   TestProfileSyncService(
@@ -118,8 +117,7 @@ class TestProfileSyncService : public ProfileSyncService {
       Profile* profile,
       SigninManager* signin,
       ProfileSyncService::StartBehavior behavior,
-      bool synchronous_backend_initialization,
-      const base::Closure& callback);
+      bool synchronous_backend_initialization);
 
   virtual ~TestProfileSyncService();
 
@@ -135,6 +133,10 @@ class TestProfileSyncService : public ProfileSyncService {
   // We implement our own version to avoid some DCHECKs.
   virtual syncer::UserShare* GetUserShare() const OVERRIDE;
 
+  static ProfileKeyedService* BuildAutoStartAsyncInit(Profile* profile);
+
+  ProfileSyncComponentsFactoryMock* components_factory_mock();
+
   // If this is called, configuring data types will require a syncer
   // nudge.
   void dont_set_initial_sync_ended_on_init();
@@ -144,6 +146,12 @@ class TestProfileSyncService : public ProfileSyncService {
   void fail_initial_download();
 
   void set_storage_option(syncer::StorageOption option);
+
+  // |callback| can be used to populate nodes before the OnBackendInitialized
+  // callback fires.
+  void set_backend_init_callback(const base::Closure& callback) {
+    callback_ = callback;
+  }
 
   syncer::TestIdFactory* id_factory();
 

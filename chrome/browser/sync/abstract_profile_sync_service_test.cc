@@ -44,7 +44,9 @@ AbstractProfileSyncServiceTest::AbstractProfileSyncServiceTest()
     : ui_thread_(BrowserThread::UI, &ui_loop_),
       db_thread_(BrowserThread::DB),
       file_thread_(BrowserThread::FILE),
-      io_thread_(BrowserThread::IO) {
+      io_thread_(BrowserThread::IO),
+      token_service_(NULL),
+      sync_service_(NULL) {
 }
 
 AbstractProfileSyncServiceTest::~AbstractProfileSyncServiceTest() {}
@@ -67,7 +69,7 @@ void AbstractProfileSyncServiceTest::TearDown() {
 
 bool AbstractProfileSyncServiceTest::CreateRoot(ModelType model_type) {
   return syncer::TestUserShare::CreateRoot(model_type,
-                                           service_->GetUserShare());
+                                           sync_service_->GetUserShare());
 }
 
 // static
