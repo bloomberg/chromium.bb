@@ -1852,11 +1852,12 @@ class ArchiveStage(BoardSpecificBuilderStage):
 
     def ArchiveStandaloneTarballs():
       """Build and upload standalone tarballs for each image."""
-      inputs = []
-      for image_file in glob.glob(os.path.join(image_dir, '*.bin')):
-        if os.path.basename(image_file) != 'chromiumos_qemu_image.bin':
-          inputs.append([image_file])
-      parallel.RunTasksInProcessPool(ArchiveStandaloneTarball, inputs)
+      if config['upload_standalone_images']:
+        inputs = []
+        for image_file in glob.glob(os.path.join(image_dir, '*.bin')):
+          if os.path.basename(image_file) != 'chromiumos_qemu_image.bin':
+            inputs.append([image_file])
+        parallel.RunTasksInProcessPool(ArchiveStandaloneTarball, inputs)
 
     def ArchiveZipFiles():
       """Build and archive zip files.

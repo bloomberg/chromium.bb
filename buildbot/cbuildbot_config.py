@@ -290,6 +290,9 @@ _settings = dict(
 # upload_hw_test_artifacts -- If true, uploads artifacts for hw testing.
   upload_hw_test_artifacts=False,
 
+# upload_standalone_images -- If true, uploads individual image tarballs.
+  upload_standalone_images=True,
+
 # gs_path -- Google Storage path to offload files to.
 #            None - No upload
 #            GS_PATH_DEFAULT - 'gs://chromeos-archive/' + bot_id
@@ -547,6 +550,7 @@ paladin = _config(
   trybot_list=True,
   description='Commit Queue',
   hw_tests_timeout=30 * 60,
+  upload_standalone_images=False,
 )
 
 incremental = _config(
