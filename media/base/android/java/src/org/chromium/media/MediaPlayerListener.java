@@ -7,6 +7,7 @@ package org.chromium.media;
 import android.Manifest.permission;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
@@ -22,7 +23,8 @@ class MediaPlayerListener extends PhoneStateListener implements MediaPlayer.OnPr
     MediaPlayer.OnBufferingUpdateListener,
     MediaPlayer.OnSeekCompleteListener,
     MediaPlayer.OnVideoSizeChangedListener,
-    MediaPlayer.OnErrorListener {
+    MediaPlayer.OnErrorListener,
+    AudioManager.OnAudioFocusChangeListener {
     // These values are mirrored as enums in media/base/android/media_player_bridge.h.
     // Please ensure they stay in sync.
     private static final int MEDIA_ERROR_FORMAT = 0;
@@ -110,14 +112,27 @@ class MediaPlayerListener extends PhoneStateListener implements MediaPlayer.OnPr
         }
     }
 
+    @Override
+    public void onAudioFocusChange(int focusChange) {
+        if (focusChange == AudioManager.AUDIOFOCUS_LOSS) {
+            nativeOnMediaInterrupted(mNativeMediaPlayerListener);
+        }
+    }
+
     @CalledByNative
     public void releaseResources() {
-        // Unregister the listener
         if (mContext != null) {
+            // Unregister the listener.
             TelephonyManager mgr =
                     (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
             if (mgr != null) {
                 mgr.listen(this, PhoneStateListener.LISTEN_NONE);
+            }
+
+            // Unregister the wish for audio focus.
+            AudioManager am = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
+            if (am != null) {
+                am.abandonAudioFocus(this);
             }
         }
     }
@@ -125,7 +140,8 @@ class MediaPlayerListener extends PhoneStateListener implements MediaPlayer.OnPr
     @CalledByNative
     private static MediaPlayerListener create(int nativeMediaPlayerListener,
             Context context, MediaPlayer mediaPlayer) {
-        MediaPlayerListener listener = new MediaPlayerListener(nativeMediaPlayerListener, context);
+        final MediaPlayerListener listener =
+            new MediaPlayerListener(nativeMediaPlayerListener, context);
         mediaPlayer.setOnBufferingUpdateListener(listener);
         mediaPlayer.setOnCompletionListener(listener);
         mediaPlayer.setOnErrorListener(listener);
@@ -142,6 +158,14 @@ class MediaPlayerListener extends PhoneStateListener implements MediaPlayer.OnPr
         if (mgr != null) {
             mgr.listen(listener, PhoneStateListener.LISTEN_CALL_STATE);
         }
+
+        AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        am.requestAudioFocus(
+                listener,
+                AudioManager.STREAM_MUSIC,
+
+                // Request permanent focus.
+                AudioManager.AUDIOFOCUS_GAIN);
         return listener;
     }
 
