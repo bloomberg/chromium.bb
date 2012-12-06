@@ -1,13 +1,14 @@
 /*
- * Copyright 2010 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2010 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #ifndef NATIVE_CLIENT_SRC_SHARED_PLATFORM_NACL_FIND_ADDRSP_H_
 #define NATIVE_CLIENT_SRC_SHARED_PLATFORM_NACL_FIND_ADDRSP_H_
 
 #include "native_client/src/include/nacl_base.h"
+#include "native_client/src/include/nacl_compiler_annotations.h"
 
 EXTERN_C_BEGIN
 
@@ -33,7 +34,16 @@ EXTERN_C_BEGIN
  */
 
 /* bool */
-int NaClFindAddressSpace(uintptr_t *addr, size_t memory_size);
+int NaClFindAddressSpace(uintptr_t *addr, size_t memory_size) NACL_WUR;
+
+/*
+ * Same as NaClFindAddressSpace, except that the function will try
+ * |max_tries| times to pick a random address before letting the
+ * underlying host OS pick.  Used to implement ASLR.
+ */
+/* bool */
+int NaClFindAddressSpaceRandomized(uintptr_t *addr, size_t memory_size,
+                                   int max_tries) NACL_WUR;
 
 EXTERN_C_END
 

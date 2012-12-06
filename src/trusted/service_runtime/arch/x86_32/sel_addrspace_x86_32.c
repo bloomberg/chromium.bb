@@ -17,8 +17,12 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
 
-NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) {
+NaClErrorCode NaClAllocateSpaceAslr(void **mem, size_t addrsp_size,
+                                    enum NaClAslrMode aslr_mode) {
   int result;
+  int (*allocator)(void **, size_t) = ((NACL_ENABLE_ASLR == aslr_mode) ?
+                                       NaCl_page_alloc_randomized :
+                                       NaCl_page_alloc);
 
   CHECK(NULL != mem);
 
@@ -39,7 +43,7 @@ NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) {
     result = NaCl_page_alloc_at_addr(&tmp_mem, addrsp_size);
   } else {
     /* Zero-based sandbox not prereserved. Attempt to allocate anyway. */
-    result = NaCl_page_alloc(mem, addrsp_size);
+    result = (*allocator)(mem, addrsp_size);
   }
 #elif NACL_WINDOWS
   /*
@@ -51,10 +55,10 @@ NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) {
   if (0 == NaClFindPrereservedSandboxMemory(mem, addrsp_size)) {
     result = NaCl_page_alloc_at_addr(mem, addrsp_size);
   } else {
-    result = NaCl_page_alloc(mem, addrsp_size);
+    result = (*allocator)(mem, addrsp_size);
   }
 #else
-  result = NaCl_page_alloc(mem, addrsp_size);
+  result = (*allocator)(mem, addrsp_size);
 #endif
 
   if (0 != result) {

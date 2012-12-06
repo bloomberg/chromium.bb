@@ -49,6 +49,7 @@
 
 #include "native_client/src/trusted/service_runtime/nacl_secure_service.h"
 
+#include "native_client/src/trusted/service_runtime/sel_addrspace.h"
 #include "native_client/src/trusted/service_runtime/sel_mem.h"
 #include "native_client/src/trusted/service_runtime/sel_util.h"
 #include "native_client/src/trusted/service_runtime/sel_rt.h"
@@ -423,6 +424,14 @@ int   NaClAppCtor(struct NaClApp  *nap) NACL_WUR;
  */
 NaClErrorCode NaClAppLoadFile(struct Gio      *gp,
                               struct NaClApp  *nap) NACL_WUR;
+
+/*
+ * Just like NaClAppLoadFile, but allow control over ASLR.
+ */
+NaClErrorCode NaClAppLoadFileAslr(struct Gio        *gp,
+                                  struct NaClApp    *nap,
+                                  enum NaClAslrMode aslr_mode) NACL_WUR;
+
 
 NaClErrorCode NaClAppLoadFileDynamically(struct NaClApp *nap,
                                          struct Gio     *gio_file) NACL_WUR;

@@ -189,8 +189,9 @@ void NaClLogAddressSpaceLayout(struct NaClApp *nap) {
   NaClLog(2, "nap->bundle_size        = 0x%x\n", nap->bundle_size);
 }
 
-NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
-                              struct NaClApp   *nap) {
+NaClErrorCode NaClAppLoadFileAslr(struct Gio        *gp,
+                                  struct NaClApp    *nap,
+                                  enum NaClAslrMode aslr_mode) {
   NaClErrorCode       ret = LOAD_INTERNAL;
   NaClErrorCode       subret;
   uintptr_t           rodata_end;
@@ -295,7 +296,7 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
   NaClLog(2, "Allocating address space\n");
   NaClPerfCounterMark(&time_load_file, "PreAllocAddrSpace");
   NaClPerfCounterIntervalLast(&time_load_file);
-  subret = NaClAllocAddrSpace(nap);
+  subret = NaClAllocAddrSpaceAslr(nap, aslr_mode);
   NaClPerfCounterMark(&time_load_file,
                       NACL_PERF_IMPORTANT_PREFIX "AllocAddrSpace");
   NaClPerfCounterIntervalLast(&time_load_file);
@@ -402,6 +403,11 @@ done:
   NaClPerfCounterMark(&time_load_file, "EndLoadFile");
   NaClPerfCounterIntervalTotal(&time_load_file);
   return ret;
+}
+
+NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
+                              struct NaClApp   *nap) {
+  return NaClAppLoadFileAslr(gp, nap, NACL_ENABLE_ASLR);
 }
 
 NaClErrorCode NaClAppLoadFileDynamically(struct NaClApp *nap,

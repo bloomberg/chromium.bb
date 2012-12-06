@@ -23,8 +23,8 @@ int   NaCl_page_alloc(void    **p,
 int   NaCl_page_alloc_randomized(void   **p,
                                  size_t num_bytes) NACL_WUR;
 
-int   NaCl_page_alloc_at_addr(void **p,
-                              size_t  size) NACL_WUR;
+int   NaCl_page_alloc_at_addr(void    **p,
+                              size_t  num_bytes) NACL_WUR;
 
 void  NaCl_page_free(void     *p,
                      size_t   num_bytes);

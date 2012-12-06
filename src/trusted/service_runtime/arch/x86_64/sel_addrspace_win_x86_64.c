@@ -13,14 +13,25 @@
 #define FOURGIG     (((size_t) 1) << 32)
 #define ALIGN_BITS  32
 
+#define MAX_ADDRESS_RANDOMIZATION_ATTEMPTS  8
+
 
 static uintptr_t NaClFindAddressSpacePow2Aligned(size_t mem_sz,
-                                                 size_t log_alignment) {
+                                                 size_t log_alignment,
+                                                 enum NaClAslrMode aslr_mode) {
   uintptr_t pow2align = ((uintptr_t) 1) << log_alignment;
   size_t request_size = mem_sz + pow2align;
   uintptr_t unrounded_addr;
+  int found_memory;
 
-  if (!NaClFindAddressSpace(&unrounded_addr, request_size)) {
+  if (NACL_ENABLE_ASLR == aslr_mode) {
+    found_memory = NaClFindAddressSpaceRandomized(
+        &unrounded_addr, request_size,
+        MAX_ADDRESS_RANDOMIZATION_ATTEMPTS);
+  } else {
+    found_memory = NaClFindAddressSpace(&unrounded_addr, request_size);
+  }
+  if (!found_memory) {
     NaClLog(LOG_FATAL,
             "NaClFindAddressSpacePow2Aligned: Failed to reserve %"NACL_PRIxS
             " bytes of address space\n",
@@ -29,7 +40,8 @@ static uintptr_t NaClFindAddressSpacePow2Aligned(size_t mem_sz,
   return (unrounded_addr + (pow2align - 1)) & ~(pow2align - 1);
 }
 
-NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) {
+NaClErrorCode NaClAllocateSpaceAslr(void **mem, size_t addrsp_size,
+                                    enum NaClAslrMode aslr_mode) {
   /* 40G guard on each side */
   size_t mem_sz = (NACL_ADDRSPACE_LOWER_GUARD_SIZE + FOURGIG +
                    NACL_ADDRSPACE_UPPER_GUARD_SIZE);
@@ -40,7 +52,8 @@ NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) {
 
   CHECK(addrsp_size == FOURGIG);
 
-  rounded_addr = NaClFindAddressSpacePow2Aligned(mem_sz, ALIGN_BITS);
+  rounded_addr = NaClFindAddressSpacePow2Aligned(mem_sz, ALIGN_BITS,
+                                                 aslr_mode);
 
   /*
    * Reserve the guard regions.  We can map these with a single

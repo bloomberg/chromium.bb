@@ -54,7 +54,18 @@ int main(int argc, char **argv) {
     app[i].addr_bits = 29; /* 512MB per process */
 #endif
 
-    CHECK(NaClAppLoadFile((struct Gio *) &gio_file, &app[i]) == LOAD_OK);
+    /*
+     * On x86-32, we cannot enable ASLR even when the address space is
+     * 512MB.  In particular, when on Windows where the available
+     * contiguous address space is tight, if the random choice for the
+     * base of the first 512MB address space puts that address space
+     * in the middle of the available address space region, the
+     * address space allocation code might not be able to (randomly)
+     * find another contiguous 512MB region for the second NaCl
+     * module.
+     */
+    CHECK(NaClAppLoadFileAslr((struct Gio *) &gio_file, &app[i],
+                              NACL_DISABLE_ASLR) == LOAD_OK);
     NaClAppInitialDescriptorHookup(&app[i]);
     CHECK(NaClAppPrepareToLaunch(&app[i]) == LOAD_OK);
   }

@@ -19,7 +19,8 @@
 #include "native_client/src/trusted/service_runtime/sel_util.h"
 
 
-NaClErrorCode NaClAllocAddrSpace(struct NaClApp *nap) {
+NaClErrorCode NaClAllocAddrSpaceAslr(struct NaClApp *nap,
+                                     enum NaClAslrMode aslr_mode) {
   void        *mem;
   int         rv;
   uintptr_t   hole_start;
@@ -31,7 +32,8 @@ NaClErrorCode NaClAllocAddrSpace(struct NaClApp *nap) {
           NACL_PRIxS")\n",
           ((size_t) 1 << nap->addr_bits));
 
-  rv = NaClAllocateSpace(&mem, (uintptr_t) 1U << nap->addr_bits);
+  rv = NaClAllocateSpaceAslr(&mem, (uintptr_t) 1U << nap->addr_bits,
+                             aslr_mode);
   if (LOAD_OK != rv) {
     return rv;
   }
@@ -97,6 +99,9 @@ NaClErrorCode NaClAllocAddrSpace(struct NaClApp *nap) {
   return LOAD_OK;
 }
 
+NaClErrorCode NaClAllocAddrSpace(struct NaClApp *nap) {
+  return NaClAllocAddrSpaceAslr(nap, 1);
+}
 
 /*
  * Apply memory protection to memory regions.
@@ -285,4 +290,8 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
                PROT_READ | PROT_WRITE,
                NACL_VMMAP_ENTRY_ANONYMOUS);
   return LOAD_OK;
+}
+
+NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) {
+  return NaClAllocateSpaceAslr(mem, addrsp_size, 1);
 }

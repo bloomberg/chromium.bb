@@ -156,7 +156,7 @@ uintptr_t NaClHostDescMap(struct NaClHostDesc *d,
   if (0 == (flags & NACL_ABI_MAP_FIXED)) {
     /*
      * Not fixed, addr is a hint... which we ignore.  We cannot just
-     * let windows pick, since we are mapping memmory in chunks of
+     * let windows pick, since we are mapping memory in chunks of
      * 64-kB to permit piecewise unmapping.
      */
     if (!NaClFindAddressSpace(&addr, len)) {

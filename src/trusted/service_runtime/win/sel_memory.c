@@ -48,7 +48,7 @@ void  NaCl_page_free(void     *p,
 
 
 int   NaCl_page_alloc_at_addr(void    **p,
-                           size_t  num_bytes) {
+                              size_t  num_bytes) {
   SYSTEM_INFO sys_info;
 
   int         attempt_count;
@@ -167,7 +167,7 @@ int   NaCl_page_alloc(void    **p,
  * Pick a "hint" address that is random.
  */
 int NaCl_page_alloc_randomized(void   **p,
-                               size_t size) {
+                               size_t num_bytes) {
   uintptr_t addr;
   int       neg_errno = -ENOMEM;  /* in case we change kNumTries to 0 */
   int       tries;
@@ -200,7 +200,7 @@ int NaCl_page_alloc_randomized(void   **p,
 
     NaClLog(2, "NaCl_page_alloc_randomized: hint 0x%"NACL_PRIxPTR"\n",
             (uintptr_t) *p);
-    neg_errno = NaCl_page_alloc_at_addr(p, size);
+    neg_errno = NaCl_page_alloc_at_addr(p, num_bytes);
     if (0 == neg_errno) {
       break;
     }
@@ -210,7 +210,7 @@ int NaCl_page_alloc_randomized(void   **p,
             "NaCl_page_alloc_randomized: failed (%d), dropping hints\n",
             -neg_errno);
     *p = 0;
-    neg_errno = NaCl_page_alloc_at_addr(p, size);
+    neg_errno = NaCl_page_alloc_at_addr(p, num_bytes);
   }
   return neg_errno;
 }

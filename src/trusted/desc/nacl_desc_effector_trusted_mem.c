@@ -20,7 +20,7 @@ static void NaClDescEffTrustedMemUnmapMemory(struct NaClDescEffector  *vself,
   UNREFERENCED_PARAMETER(vself);
   UNREFERENCED_PARAMETER(sysaddr);
   UNREFERENCED_PARAMETER(nbytes);
-  NaClLog(4, "TrustedMem effector's UnmapMemory called, nothing to do\n");
+  NaClLog(8, "TrustedMem effector's UnmapMemory called, nothing to do\n");
 }
 
 static struct NaClDescEffectorVtbl const NaClDescEffectorTrustedMemVtbl = {

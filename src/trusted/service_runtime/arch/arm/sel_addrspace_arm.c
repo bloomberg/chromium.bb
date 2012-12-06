@@ -15,10 +15,12 @@
 
 /* NOTE: This routine is almost identical to the x86_32 version.
  */
-NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) {
+NaClErrorCode NaClAllocateSpaceAslr(void **mem, size_t addrsp_size,
+                                    enum NaClAslrMode aslr_mode) {
   int result;
   void *tmp_mem = (void *) NACL_TRAMPOLINE_START;
 
+  UNREFERENCED_PARAMETER(aslr_mode);
   CHECK(NULL != mem);
 
   /*

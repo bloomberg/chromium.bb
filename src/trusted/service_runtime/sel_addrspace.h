@@ -8,8 +8,8 @@
  * NaCl Simple/secure ELF loader (NaCl SEL).
  */
 
-#ifndef __SEL_ADDRSPACE_H__
-#define __SEL_ADDRSPACE_H__ 1
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_SEL_ADDRSPACE_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_SEL_ADDRSPACE_H_ 1
 
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/portability.h"
@@ -23,6 +23,11 @@ EXTERN_C_BEGIN
 extern size_t g_prereserved_sandbox_size;
 #endif
 
+enum NaClAslrMode {
+  NACL_DISABLE_ASLR,
+  NACL_ENABLE_ASLR
+};
+
 /*
  * Try to find prereserved sandbox memory.  Sets *p to the start of the
  * sandbox.
@@ -34,6 +39,18 @@ int NaClFindPrereservedSandboxMemory(void **p, size_t num_bytes);
 
 void NaClAddrSpaceBeforeAlloc(size_t guarded_addrsp_size);
 
+/*
+ * Allocate the NaCl module's address space.  The |aslr_mode|
+ * argument is passed to NaClAllocateSpaceAslr and may be ignored on
+ * platforms where the sandbox requires a zero-base, e.g., ARM.
+ */
+NaClErrorCode NaClAllocAddrSpaceAslr(struct NaClApp *nap,
+                                     enum NaClAslrMode aslr_mode) NACL_WUR;
+
+/*
+ * Old interface.  Invokes NaClAllocAddrSpaceAlsr with aslr_mode =
+ * NACL_ENABLE_ASLR.
+ */
 NaClErrorCode NaClAllocAddrSpace(struct NaClApp *nap) NACL_WUR;
 
 /*
@@ -48,6 +65,11 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) NACL_WUR;
  * nap->addr_bits.  On x86-64, there's a further requirement that this
  * is 4G.
  *
+ * If |aslr_mode| is NACL_ENABLE_ASLR, this routine will attempt to
+ * pick a random address for the address space.  If we are running on
+ * a platform where a zero-based address space is pre-reserved (for
+ * Atom performance issues), then |aslr_mode| may be ignored.
+ *
  * The actual amount of memory allocated is larger than requested on
  * x86-64 and on the ARM, since guard pages are also allocated to be
  * contiguous with the allocated address space.
@@ -55,6 +77,13 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) NACL_WUR;
  * If successful, the guard pages are also mapped as inaccessible (PROT_NONE).
  *
  * Returns LOAD_OK on success.
+ */
+NaClErrorCode NaClAllocateSpaceAslr(void **mem, size_t addrsp_size,
+                                    enum NaClAslrMode aslr_mode) NACL_WUR;
+
+/*
+ * Old interface.  Invokes NaClAllocateSpaceAslr with aslr_mode =
+ * NACL_ENABLE_ASLR.
  */
 NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) NACL_WUR;
 
