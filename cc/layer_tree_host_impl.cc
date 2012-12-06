@@ -1298,7 +1298,9 @@ bool LayerTreeHostImpl::scrollBy(const gfx::Point& viewportPoint,
         if (!layerImpl->scrollable())
             continue;
 
-        PinchZoomViewport* viewport = layerImpl == m_rootScrollLayerImpl ? &m_pinchZoomViewport : 0;
+        PinchZoomViewport* viewport = NULL;
+        if (m_settings.pageScalePinchZoomEnabled && layerImpl == m_rootScrollLayerImpl)
+            viewport = &m_pinchZoomViewport;
         gfx::Vector2dF appliedDelta;
         if (m_scrollDeltaIsInViewportSpace) {
             float scaleFromViewportToScreenSpace = m_deviceScaleFactor;
