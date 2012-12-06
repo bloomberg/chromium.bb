@@ -248,6 +248,9 @@ Press Ctrl+Alt+Z to cancel.
       <message name="IDS_ASH_STATUS_TRAY_VPN" desc="The label used in the VPN detailed view header.">
         Private Network
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED_TOOLTIP" desc="Tooltip for the network tray item when connected to a network.">
+        Connected to <ph name="NAME">$1<ex>GoogleGuest</ex></ph>
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_SETTINGS" desc="The label used in the settings entry in the network dialog.">
         Settings...
       </message>

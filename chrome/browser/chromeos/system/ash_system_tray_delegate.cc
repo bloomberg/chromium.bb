@@ -99,7 +99,8 @@ ash::NetworkIconInfo CreateNetworkIconInfo(const Network* network,
   info.name = UTF8ToUTF16(network->name());
   info.image = NetworkMenuIcon::GetImage(network, NetworkMenuIcon::COLOR_DARK);
   info.service_path = network->service_path();
-  info.highlight = network->connected() || network->connecting();
+  info.connecting = network->connecting();
+  info.connected = network->connected();
   return info;
 }
 
@@ -178,7 +179,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         clock_type_(base::k24HourClock),
         search_key_mapped_to_(input_method::kSearchKey),
         screen_locked_(false),
-        connected_network_state_(STATE_UNKNOWN),
         data_promo_notification_(new DataPromoNotification()),
         volume_control_delegate_(new VolumeController()) {
     // Register notifications on construction so that events such as
@@ -828,38 +828,19 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   void NotifyRefreshNetwork() {
     chromeos::NetworkLibrary* crosnet =
         chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+    const Network* network = crosnet->connected_network();
     ash::NetworkIconInfo info;
+    if (network) {
+      info.name = network->type() == TYPE_ETHERNET ?
+          l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET) :
+          UTF8ToUTF16(network->name());
+      info.connecting = network->connecting();
+      info.connected = network->connected();
+    }
     info.image = network_icon_->GetIconAndText(&info.description);
     info.tray_icon_visible = network_icon_->ShouldShowIconInTray();
     GetSystemTrayNotifier()->NotifyRefreshNetwork(info);
     GetSystemTrayNotifier()->NotifyVpnRefreshNetwork(info);
-
-    // Update Accessibility.
-
-    std::string connected_network_path;
-    ConnectionState connected_network_state(STATE_UNKNOWN);
-    if (crosnet->connected_network()) {
-      connected_network_path = crosnet->connected_network()->service_path();
-      connected_network_state = crosnet->connected_network()->state();
-    }
-    if (accessibility::IsSpokenFeedbackEnabled()) {
-      bool speak = false;
-      if ((connected_network_path_ != connected_network_path) ||
-          (Network::IsConnectedState(connected_network_state_) &&
-           !Network::IsConnectedState(connected_network_state)) ||
-          (Network::IsConnectingState(connected_network_state_) &&
-           !Network::IsConnectingState(connected_network_state)) ||
-          (Network::IsDisconnectedState(connected_network_state_) &&
-           !Network::IsDisconnectedState(connected_network_state))) {
-        speak = true;
-      }
-
-      if (speak)
-        AccessibilitySpeak(crosnet->connected_network());
-    }
-
-    connected_network_path_ = connected_network_path_;
-    connected_network_state_ = connected_network_state;
   }
 
   void RefreshNetworkObserver(NetworkLibrary* crosnet) {
@@ -880,43 +861,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         cellular->device_path() : std::string();
     if (cellular_device_path_ != new_cellular_device_path)
       cellular_device_path_ = new_cellular_device_path;
-  }
-
-  // Generate accessability text and call Speak().
-  void AccessibilitySpeak(const Network* network) {
-    if (!network)
-      return;
-    NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
-    std::string connection_string;
-    if (Network::IsConnectedState(network->state())) {
-      switch (network->type()) {
-        case TYPE_ETHERNET:
-          connection_string = l10n_util::GetStringFUTF8(
-              IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP,
-              l10n_util::GetStringUTF16(
-                  IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET));
-          break;
-        default:
-          connection_string = l10n_util::GetStringFUTF8(
-              IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP,
-              UTF8ToUTF16(network->name()));
-          break;
-      }
-    } else if (Network::IsConnectingState(network->state())) {
-      const Network* connecting_network = cros->connecting_network();
-      if (connecting_network && connecting_network->type() != TYPE_ETHERNET) {
-        connection_string = l10n_util::GetStringFUTF8(
-            IDS_STATUSBAR_NETWORK_CONNECTING_TOOLTIP,
-            UTF8ToUTF16(connecting_network->name()));
-      }
-    } else if (Network::IsDisconnectedState(network->state())) {
-      connection_string = l10n_util::GetStringUTF8(
-          IDS_STATUSBAR_NETWORK_NO_NETWORK_TOOLTIP);
-    }
-    if (connection_string != last_connection_string_) {
-      last_connection_string_ = connection_string;
-      accessibility::Speak(connection_string);
-    }
   }
 
   void AddNetworkToList(std::vector<ash::NetworkIconInfo>* list,
@@ -1290,10 +1234,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   base::HourClockType clock_type_;
   int search_key_mapped_to_;
   bool screen_locked_;
-  ConnectionState connected_network_state_;
-  std::string connected_network_path_;
-
-  std::string last_connection_string_;
 
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
 

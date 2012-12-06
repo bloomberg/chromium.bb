@@ -20,11 +20,13 @@
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/widget/widget.h"
 
 namespace {
 
@@ -111,11 +113,35 @@ class NetworkTrayView : public TrayItemView {
     image_view_->SetImage(info.image);
     SetVisible(info.tray_icon_visible);
     SchedulePaint();
+    UpdateConnectionStatus(info.name, info.connected);
+  }
+
+  // views::View override.
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE {
+    state->name = connection_status_string_;
+    state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
   }
 
  private:
+  // Updates connection status and notifies accessibility event when necessary.
+  void UpdateConnectionStatus(const string16& network_name, bool connected) {
+    string16 new_connection_status_string;
+    if (connected) {
+      new_connection_status_string = l10n_util::GetStringFUTF16(
+          IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED_TOOLTIP, network_name);
+    }
+    if (new_connection_status_string != connection_status_string_) {
+      connection_status_string_ = new_connection_status_string;
+      if(!connection_status_string_.empty()) {
+        GetWidget()->NotifyAccessibilityEvent(
+            this, ui::AccessibilityTypes::EVENT_ALERT, true);
+      }
+    }
+  }
+
   views::ImageView* image_view_;
   ColorTheme color_theme_;
+  string16 connection_status_string_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkTrayView);
 };

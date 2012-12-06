@@ -210,6 +210,8 @@ void NetworkListDetailedViewBase::RefreshNetworkScrollWithUpdatedNetworkList() {
     std::map<std::string, HoverHighlightView*>::const_iterator it =
         service_path_map_.find(network_list_[i].service_path);
     HoverHighlightView* container = NULL;
+    const bool highlight =
+        network_list_[i].connected || network_list_[i].connecting;
     if (it == service_path_map_.end()) {
       // Create a new view.
       container = new HoverHighlightView(this);
@@ -217,8 +219,7 @@ void NetworkListDetailedViewBase::RefreshNetworkScrollWithUpdatedNetworkList() {
       container->AddIconAndLabel(network_list_[i].image,
           network_list_[i].description.empty() ?
               network_list_[i].name : network_list_[i].description,
-          network_list_[i].highlight ?
-              gfx::Font::BOLD : gfx::Font::NORMAL);
+          highlight ? gfx::Font::BOLD : gfx::Font::NORMAL);
       scroll_content()->AddChildViewAt(container, i);
       container->set_border(views::Border::CreateEmptyBorder(0,
           kTrayPopupPaddingHorizontal, 0, 0));
@@ -229,7 +230,7 @@ void NetworkListDetailedViewBase::RefreshNetworkScrollWithUpdatedNetworkList() {
       container->AddIconAndLabel(network_list_[i].image,
           network_list_[i].description.empty() ?
               network_list_[i].name : network_list_[i].description,
-          network_list_[i].highlight ? gfx::Font::BOLD : gfx::Font::NORMAL);
+          highlight ? gfx::Font::BOLD : gfx::Font::NORMAL);
       container->Layout();
       container->SchedulePaint();
 
@@ -241,7 +242,7 @@ void NetworkListDetailedViewBase::RefreshNetworkScrollWithUpdatedNetworkList() {
       }
     }
 
-    if (network_list_[i].highlight)
+    if (highlight)
       highlighted_view = container;
     network_map_[container] = network_list_[i].service_path;
     service_path_map_[network_list_[i].service_path] = container;

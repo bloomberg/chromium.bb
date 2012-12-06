@@ -23,7 +23,8 @@ struct ASH_EXPORT NetworkIconInfo {
   NetworkIconInfo();
   ~NetworkIconInfo();
 
-  bool highlight;
+  bool connecting;
+  bool connected;
   bool tray_icon_visible;
   gfx::ImageSkia image;
   string16 name;
