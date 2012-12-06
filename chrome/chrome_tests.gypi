@@ -134,13 +134,12 @@
       'target_name': 'interactive_ui_tests',
       'type': 'executable',
       'dependencies': [
-        '../sync/protocol/sync_proto.gyp:sync_proto',
-        '../sync/sync.gyp:sync_api',
-        'chrome',
+        'browser',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',
         'common/extensions/api/api.gyp:api',
         'debugger',
+        'renderer',
         'test_support_common',
         # NOTE: don't add test_support_ui, no more UITests. See
         # http://crbug.com/137365
@@ -149,6 +148,8 @@
         '../net/net.gyp:net_resources',
         '../net/net.gyp:net_test_support',
         '../skia/skia.gyp:skia',
+        '../sync/protocol/sync_proto.gyp:sync_proto',
+        '../sync/sync.gyp:sync_api',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/libpng/libpng.gyp:libpng',
@@ -281,6 +282,9 @@
             'browser/ui/views/tabs/tab_drag_controller_interactive_uitest.cc',
             'test/base/view_event_test_base.cc',
             'test/base/view_event_test_base.h',
+          ],
+          'dependencies': [
+            'chrome'
           ],
           # See comment about the same line in chrome/chrome_tests.gypi.
           'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
