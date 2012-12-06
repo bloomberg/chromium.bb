@@ -69,11 +69,5 @@ crbug.com/162247  svg/transforms/text-with-pattern-with-svg-transform.svg [ Imag
 Bug(senorblanco) fast/borders/border-radius-constraints.html [ ImageOnlyFailure ]
 Bug(senorblanco) fast/borders/mixed-border-styles-radius.html [ ImageOnlyFailure ]
 webkit.org/b/23166 fast/css/background-clip-radius-values.html [ ImageOnlyFailure ]
-Bug(senorblanco) platform/chromium/fast/forms/calendar-picker/calendar-picker-appearance.html [ ImageOnlyFailure ]
-Bug(senorblanco) platform/chromium/fast/forms/calendar-picker/calendar-picker-appearance-ru.html [ ImageOnlyFailure ]
-Bug(senorblanco) platform/chromium/fast/forms/calendar-picker/month-picker-appearance.html [ ImageOnlyFailure ]
-Bug(senorblanco) platform/chromium/fast/forms/calendar-picker/month-picker-appearance-step.html [ ImageOnlyFailure ]
-Bug(senorblanco) platform/chromium/fast/forms/calendar-picker/week-picker-appearance.html [ ImageOnlyFailure ]
-Bug(senorblanco) platform/chromium/fast/forms/color/color-suggestion-picker-appearance.html [ ImageOnlyFailure ]
 
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
