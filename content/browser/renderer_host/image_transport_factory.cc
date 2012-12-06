@@ -410,7 +410,6 @@ class GpuProcessTransportFactory :
     per_compositor_data_.erase(it);
     if (per_compositor_data_.empty()) {
       gl_helper_.reset();
-      shared_context_.reset();
       callback_factory_.InvalidateWeakPtrs();
     }
   }
@@ -594,8 +593,8 @@ class GpuProcessTransportFactory :
 
   typedef std::map<ui::Compositor*, PerCompositorData*> PerCompositorDataMap;
   PerCompositorDataMap per_compositor_data_;
-  scoped_ptr<GLHelper> gl_helper_;
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> shared_context_;
+  scoped_ptr<GLHelper> gl_helper_;
   ObserverList<ImageTransportFactoryObserver> observer_list_;
   base::WeakPtrFactory<GpuProcessTransportFactory> callback_factory_;
   scoped_refptr<BrowserCompositorOutputSurfaceProxy> output_surface_proxy_;
