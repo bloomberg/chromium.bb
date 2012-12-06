@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_DOWNLOAD_OBSERVER_H_
 #define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_DOWNLOAD_OBSERVER_H_
 
-#include <string>
-
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/drive/drive_file_error.h"
@@ -19,21 +17,16 @@ class DownloadItem;
 class DownloadManager;
 }
 
-namespace google_apis {
-class DocumentEntry;
-class DriveUploader;
-}
-
 namespace drive {
 
-class DriveEntryProto;
 class DriveFileSystemInterface;
+class FileWriteHelper;
 
 // Observes downloads to temporary local drive folder. Schedules these
 // downloads for upload to drive service.
 class DriveDownloadObserver : public AllDownloadItemNotifier::Observer {
  public:
-  DriveDownloadObserver(google_apis::DriveUploader* uploader,
+  DriveDownloadObserver(FileWriteHelper* file_write_helper,
                         DriveFileSystemInterface* file_system);
   virtual ~DriveDownloadObserver();
 
@@ -64,31 +57,7 @@ class DriveDownloadObserver : public AllDownloadItemNotifier::Observer {
   // Checks if there is a Drive upload associated with |download|
   static bool IsDriveDownload(const content::DownloadItem* download);
 
-  // Checks if |download| is ready to complete. Returns true if |download| has
-  // no Drive upload associated with it or if the Drive upload has already
-  // completed. This method is called by the ChromeDownloadManagerDelegate to
-  // check if the download is ready to complete.  If the download is not yet
-  // ready to complete and |complete_callback| is not null, then
-  // |complete_callback| will be called on the UI thread when the download
-  // becomes ready to complete.  If this method is called multiple times with
-  // the download not ready to complete, only the last |complete_callback|
-  // passed to this method for |download| will be called.
-  static bool IsReadyToComplete(content::DownloadItem* download,
-                                const base::Closure& complete_callback);
-
-  // Returns the count of bytes confirmed as uploaded so far for |download|.
-  static int64 GetUploadedBytes(const content::DownloadItem* download);
-
-  // Returns the progress of the upload of |download| as a percentage. If the
-  // progress is unknown, returns -1.
-  static int PercentComplete(const content::DownloadItem* download);
-
  private:
-  // Structure containing arguments required to process uploading.
-  // For internal use, to avoid passing all of the parameters every time
-  // separately.
-  struct UploaderParams;
-
   // AllDownloadItemNotifier::Observer
   virtual void OnDownloadUpdated(content::DownloadManager* manager,
                                  content::DownloadItem* download) OVERRIDE;
@@ -96,72 +65,7 @@ class DriveDownloadObserver : public AllDownloadItemNotifier::Observer {
   // Starts the upload of a downloaded/downloading file.
   void UploadDownloadItem(content::DownloadItem* download);
 
-  // Updates metadata of ongoing upload if it exists.
-  void UpdateUpload(content::DownloadItem* download);
-
-  // Checks if this DownloadItem should be uploaded.
-  bool ShouldUpload(content::DownloadItem* download);
-
-  // Creates UploaderParams and initializes it using DownloadItem*.
-  void CreateUploaderParams(content::DownloadItem* download);
-
-  // Callback for checking if the file already exists.  If so, the file is
-  // overwritten, and StartUpload() to actually start the upload.  If not, the
-  // directory is queried to determine where to store the file.
-  void CreateUploaderParamsAfterCheckExistence(
-    int32 download_id,
-    scoped_ptr<UploaderParams> upload_params,
-    DriveFileError error,
-    scoped_ptr<DriveEntryProto> entry_proto);
-
-  // Callback for handling results of DriveFileSystem::GetEntryInfoByPath()
-  // initiated by CreateUploadParamsAfterCheckExistence(). This callback
-  // reads the directory entry to determine the upload path, then calls
-  // StartUpload() to actually start the upload.
-  void CreateUploaderParamsAfterCheckTargetDir(
-      int32 download_id,
-      scoped_ptr<UploaderParams> upload_params,
-      DriveFileError error,
-      scoped_ptr<DriveEntryProto> entry_proto);
-
-  // Starts the upload.
-  void StartUpload(int32 download_id,
-                   scoped_ptr<UploaderParams> upload_params);
-
-  // Callback invoked by DriveUploader when all the asynchronous callbacks
-  // are finished and the uploader is ready to start uploading.
-  //
-  // Used to save upload_id to the content::DownloadItem structure which
-  // is required by the UpdateUpload() method.
-  //
-  // Note, that it may happen that the file will be downloaded to the local
-  // storage before the Uploader gets ready. Therefore, all of the UpdateUpload
-  // invocations will be ignored (since upload_id is not set yet).
-  //
-  // We have to update the upload from OnUploadReady() to be sure that the last
-  // chunk is uploaded to GDrive.
-  //
-  // See: http://crbug.com/145831
-  void OnUploaderReady(int32 download_id, int32 upload_id);
-
-  // Callback invoked by DriveUploader when the upload associated with
-  // |download_id| has completed. |error| indicated whether the
-  // call was successful. This function takes ownership of DocumentEntry from
-  // for use by MoveFileToDriveCache(). It also invokes the
-  // download callback method to allow it to complete.
-  void OnUploadComplete(int32 download_id,
-                        google_apis::DriveUploadError error,
-                        const FilePath& drive_path,
-                        const FilePath& file_path,
-                        scoped_ptr<google_apis::DocumentEntry> document_entry);
-
-  // Moves the downloaded file to drive cache.
-  // Must be called after DriveDownloadObserver receives COMPLETE notification.
-  void MoveFileToDriveCache(content::DownloadItem* download);
-
-  // Private data.
-  // The uploader owned by DriveSystemService. Used to trigger file uploads.
-  google_apis::DriveUploader* drive_uploader_;
+  FileWriteHelper* file_write_helper_;
   // The file system owned by DriveSystemService.
   DriveFileSystemInterface* file_system_;
   // Observe the DownloadManager for new downloads.

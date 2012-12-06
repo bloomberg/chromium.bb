@@ -2854,12 +2854,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
                desc="When starting a download, let the user know we're starting the download.">
         Starting...
       </message>
-      <if expr="pp_ifdef('chromeos')">
-        <message name="IDS_DOWNLOAD_STATUS_WAITING"
-                 desc="Displayed as the status for download items associated with Drive uploads. Indicates that we are waiting for the download portion to progress far enough to begin uploading.">
-          Downloading...
-        </message>
-      </if>
       <message name="IDS_DOWNLOAD_STATUS_IN_PROGRESS"
                desc="Size and units downloaded, time remaining.">
         <ph name="DOWNLOAD_RECEIVED">$1<ex>54/154 MB</ex></ph>, <ph name="TIME_LEFT">$2<ex>5s</ex></ph>

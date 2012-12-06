@@ -330,14 +330,6 @@ bool ChromeDownloadManagerDelegate::IsDownloadReadyForCompletion(
     return false;
   }
 #endif
-
-#if defined(OS_CHROMEOS)
-  // If there's a Drive upload associated with this download, we wait until that
-  // is complete before allowing the download item to complete.
-  if (!drive::DriveDownloadObserver::IsReadyToComplete(
-        item, internal_complete_callback))
-    return false;
-#endif
   return true;
 }
 

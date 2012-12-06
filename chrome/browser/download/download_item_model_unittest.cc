@@ -48,7 +48,6 @@ class TestDownloadItemModel : public DownloadItemModel {
       : DownloadItemModel(download) {
   }
 
-  MOCK_CONST_METHOD0(IsDriveDownload, bool());
   MOCK_CONST_METHOD0(GetTotalBytes, int64());
   MOCK_CONST_METHOD0(GetCompletedBytes, int64());
 };
@@ -85,8 +84,6 @@ class DownloadItemModelTest : public testing::Test {
 
     // Setup the model:
     model_.reset(new NiceMock<TestDownloadItemModel>(&item_));
-    ON_CALL(*model_.get(), IsDriveDownload())
-        .WillByDefault(Return(false));
     ON_CALL(*model_.get(), GetTotalBytes())
         .WillByDefault(Return(2));
     ON_CALL(*model_.get(), GetCompletedBytes())
@@ -284,7 +281,6 @@ TEST_F(DownloadItemModelTest, InProgressStatus) {
     bool  time_remaining_known;         // If TimeRemaining() is known.
     bool  open_when_complete;           // GetOpenWhenComplete().
     bool  is_paused;                    // IsPaused().
-    bool  is_drive_download;            // Is Drive download?
     const char* expected_status;        // Expected status text.
   } kTestCases[] = {
     // These are all the valid combinations of the above fields for a download
@@ -300,61 +296,30 @@ TEST_F(DownloadItemModelTest, InProgressStatus) {
     //         .-- .TimeRemaining() is known.
     //        |       .-- .GetOpenWhenComplete()
     //        |      |      .---- .IsPaused()
-    //        |      |      |      .---- Is Drive download?
-    { 0, 0, false, false, false, false, "Starting..." },
-    { 1, 0, false, false, false, false, "1 B" },
-    { 0, 2, false, false, false, false, "Starting..." },
-    { 1, 2, false, false, false, false, "1/2 B" },
-    { 0, 2, true,  false, false, false, "0/2 B, 10 secs left" },
-    { 1, 2, true,  false, false, false, "1/2 B, 10 secs left" },
-    { 0, 0, false, true,  false, false, "Opening when complete" },
-    { 1, 0, false, true,  false, false, "Opening when complete" },
-    { 0, 2, false, true,  false, false, "Opening when complete" },
-    { 1, 2, false, true,  false, false, "Opening when complete" },
-    { 0, 2, true,  true,  false, false, "Opening in 10 secs..." },
-    { 1, 2, true,  true,  false, false, "Opening in 10 secs..." },
-    { 0, 0, false, false, true,  false, "0 B, Paused" },
-    { 1, 0, false, false, true,  false, "1 B, Paused" },
-    { 0, 2, false, false, true,  false, "0/2 B, Paused" },
-    { 1, 2, false, false, true,  false, "1/2 B, Paused" },
-    { 0, 2, true,  false, true,  false, "0/2 B, Paused" },
-    { 1, 2, true,  false, true,  false, "1/2 B, Paused" },
-    { 0, 0, false, true,  true,  false, "0 B, Paused" },
-    { 1, 0, false, true,  true,  false, "1 B, Paused" },
-    { 0, 2, false, true,  true,  false, "0/2 B, Paused" },
-    { 1, 2, false, true,  true,  false, "1/2 B, Paused" },
-    { 0, 2, true,  true,  true,  false, "0/2 B, Paused" },
-    { 1, 2, true,  true,  true,  false, "1/2 B, Paused" },
-#if defined(OS_CHROMEOS)
-    // For Drive downloads, .TimeRemaining() is ignored since the actual time
-    // remaining should come from the upload portion. Currently that
-    // functionality is missing. So the |time_remaining_known| == true test
-    // cases are equivalent to the |time_remaining_known| == false test cases.
-    { 0, 0, false, false, false, true,  "Downloading..." },
-    { 1, 0, false, false, false, true,  "1 B" },
-    { 0, 2, false, false, false, true,  "Downloading..." },
-    { 1, 2, false, false, false, true,  "1/2 B" },
-    { 0, 2, true,  false, false, true,  "Downloading..." },
-    { 1, 2, true,  false, false, true,  "1/2 B" },
-    { 0, 0, false, true,  false, true,  "Opening when complete" },
-    { 1, 0, false, true,  false, true,  "Opening when complete" },
-    { 0, 2, false, true,  false, true,  "Opening when complete" },
-    { 1, 2, false, true,  false, true,  "Opening when complete" },
-    { 0, 2, true,  true,  false, true,  "Opening when complete" },
-    { 1, 2, true,  true,  false, true,  "Opening when complete" },
-    { 0, 0, false, false, true,  true,  "0 B, Paused" },
-    { 1, 0, false, false, true,  true,  "1 B, Paused" },
-    { 0, 2, false, false, true,  true,  "0/2 B, Paused" },
-    { 1, 2, false, false, true,  true,  "1/2 B, Paused" },
-    { 0, 2, true,  false, true,  true,  "0/2 B, Paused" },
-    { 1, 2, true,  false, true,  true,  "1/2 B, Paused" },
-    { 0, 0, false, true,  true,  true,  "0 B, Paused" },
-    { 1, 0, false, true,  true,  true,  "1 B, Paused" },
-    { 0, 2, false, true,  true,  true,  "0/2 B, Paused" },
-    { 1, 2, false, true,  true,  true,  "1/2 B, Paused" },
-    { 0, 2, true,  true,  true,  true,  "0/2 B, Paused" },
-    { 1, 2, true,  true,  true,  true,  "1/2 B, Paused" },
-#endif
+    { 0, 0, false, false, false, "Starting..." },
+    { 1, 0, false, false, false, "1 B" },
+    { 0, 2, false, false, false, "Starting..." },
+    { 1, 2, false, false, false, "1/2 B" },
+    { 0, 2, true,  false, false, "0/2 B, 10 secs left" },
+    { 1, 2, true,  false, false, "1/2 B, 10 secs left" },
+    { 0, 0, false, true,  false, "Opening when complete" },
+    { 1, 0, false, true,  false, "Opening when complete" },
+    { 0, 2, false, true,  false, "Opening when complete" },
+    { 1, 2, false, true,  false, "Opening when complete" },
+    { 0, 2, true,  true,  false, "Opening in 10 secs..." },
+    { 1, 2, true,  true,  false, "Opening in 10 secs..." },
+    { 0, 0, false, false, true,  "0 B, Paused" },
+    { 1, 0, false, false, true,  "1 B, Paused" },
+    { 0, 2, false, false, true,  "0/2 B, Paused" },
+    { 1, 2, false, false, true,  "1/2 B, Paused" },
+    { 0, 2, true,  false, true,  "0/2 B, Paused" },
+    { 1, 2, true,  false, true,  "1/2 B, Paused" },
+    { 0, 0, false, true,  true,  "0 B, Paused" },
+    { 1, 0, false, true,  true,  "1 B, Paused" },
+    { 0, 2, false, true,  true,  "0/2 B, Paused" },
+    { 1, 2, false, true,  true,  "1/2 B, Paused" },
+    { 0, 2, true,  true,  true,  "0/2 B, Paused" },
+    { 1, 2, true,  true,  true,  "1/2 B, Paused" },
   };
 
   SetupDownloadItemDefaults();
@@ -367,8 +332,6 @@ TEST_F(DownloadItemModelTest, InProgressStatus) {
         .WillRepeatedly(Return(test_case.received_bytes));
     EXPECT_CALL(model(), GetTotalBytes())
         .WillRepeatedly(Return(test_case.total_bytes));
-    EXPECT_CALL(model(), IsDriveDownload())
-        .WillRepeatedly(Return(test_case.is_drive_download));
     EXPECT_CALL(item(), TimeRemaining(_))
         .WillRepeatedly(testing::DoAll(
             testing::SetArgPointee<0>(base::TimeDelta::FromSeconds(10)),

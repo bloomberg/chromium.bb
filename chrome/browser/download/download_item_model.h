@@ -84,11 +84,6 @@ class DownloadItemModel {
 
   content::DownloadItem* download() { return download_; }
 
- protected:
-  // Returns true if |download_| is a Drive download. Protected virtual for
-  // testing.
-  virtual bool IsDriveDownload() const;
-
  private:
   // Returns a string representations of the current download progress sizes. If
   // the total size of the download is known, this string looks like: "100/200

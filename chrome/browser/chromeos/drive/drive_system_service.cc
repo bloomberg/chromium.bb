@@ -133,7 +133,7 @@ void DriveSystemService::Initialize(
                                          webapps_registry(),
                                          blocking_task_runner_));
   file_write_helper_.reset(new FileWriteHelper(file_system()));
-  download_observer_.reset(new DriveDownloadObserver(uploader(),
+  download_observer_.reset(new DriveDownloadObserver(file_write_helper(),
                                                      file_system()));
   sync_client_.reset(new DriveSyncClient(profile_, file_system(), cache()));
   prefetcher_.reset(new DrivePrefetcher(file_system(),

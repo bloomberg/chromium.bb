@@ -21,10 +21,6 @@
 #include "ui/base/text/bytes_formatting.h"
 #include "ui/base/text/text_elider.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/drive/drive_download_observer.h"
-#endif
-
 using base::TimeDelta;
 using content::DownloadItem;
 
@@ -232,14 +228,8 @@ string16 DownloadItemModel::GetTooltipText(const gfx::Font& font,
 
 // TODO(asanka,rdsmith): Once 'open' moves exclusively to the
 //     ChromeDownloadManagerDelegate, we should calculate the percentage here
-//     instead of calling into the DownloadItem or Drive.
+//     instead of calling into the DownloadItem.
 int DownloadItemModel::PercentComplete() const {
-#if defined(OS_CHROMEOS)
-  // For Drive uploads, progress is based on the number of bytes
-  // uploaded. Progress is unknown until the upload starts.
-  if (IsDriveDownload())
-    return drive::DriveDownloadObserver::PercentComplete(download_);
-#endif
   return download_->PercentComplete();
 }
 
@@ -326,20 +316,7 @@ int64 DownloadItemModel::GetTotalBytes() const {
 }
 
 int64 DownloadItemModel::GetCompletedBytes() const {
-#if defined(OS_CHROMEOS)
-  // For Drive downloads, the size is the count of bytes uploaded.
-  if (IsDriveDownload())
-    return drive::DriveDownloadObserver::GetUploadedBytes(download_);
-#endif
   return download_->GetReceivedBytes();
-}
-
-bool DownloadItemModel::IsDriveDownload() const {
-#if defined(OS_CHROMEOS)
-  return drive::DriveDownloadObserver::IsDriveDownload(download_);
-#else
-  return false;
-#endif
 }
 
 string16 DownloadItemModel::GetProgressSizesString() const {
@@ -369,10 +346,8 @@ string16 DownloadItemModel::GetInProgressStatusString() const {
   DCHECK(download_->IsInProgress());
 
   TimeDelta time_remaining;
-  // time_remaining is only known if the download isn't paused and is not a
-  // Drive download.
-  // TODO(asanka): Calculate a TimeRemaining() for Drive uploads.
-  bool time_remaining_known = (!IsDriveDownload() && !download_->IsPaused() &&
+  // time_remaining is only known if the download isn't paused.
+  bool time_remaining_known = (!download_->IsPaused() &&
                                download_->TimeRemaining(&time_remaining));
 
   // Indication of progress. (E.g.:"100/200 MB" or "100MB")
@@ -413,14 +388,6 @@ string16 DownloadItemModel::GetInProgressStatusString() const {
   // "100/120 MB" or "100 MB"
   if (GetCompletedBytes() > 0)
     return size_ratio;
-
-#if defined(OS_CHROMEOS)
-  // We haven't started the upload yet. The download needs to progress
-  // further before we will see any upload progress. Show "Downloading..."
-  // until we start uploading.
-  if (IsDriveDownload())
-    return l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_WAITING);
-#endif
 
   // Instead of displaying "0 B" we say "Starting..."
   return l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_STARTING);
