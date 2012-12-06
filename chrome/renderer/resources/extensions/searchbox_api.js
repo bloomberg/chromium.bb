@@ -48,10 +48,18 @@ if (!chrome.searchBox) {
       var node = document.createElement('div');
       var nodeShadow = new WebKitShadowRoot(node);
       nodeShadow.applyAuthorStyles = true;
+      // The fonts specified here are as follows:
+      //  Segoe UI - WIndows 7
+      //  Chrome Droid Sans - ChromeOS
+      //  Arial - fallback for other platforms.
+      // This doesn't look right on WInXP, MacOS, and Linux, but rather than
+      // try to include all the logic here, the correct value should be passed
+      // in from the C++. crbug.com/164496 tracks this task.
       nodeShadow.innerHTML =
           '<div style="width:700px!important;' +
           '            height:22px!important;' +
-          '            font-family:\'Chrome Droid Sans\',\'Arial\'!important;' +
+          '            font-family:\'Segoe UI\',\'Chrome Droid Sans\',' +
+          '                        \'Arial\'!important;' +
           '            overflow:hidden!important;' +
           '            text-overflow:ellipsis!important">' +
           '  <nobr>' + restrictedText + '</nobr>' +
