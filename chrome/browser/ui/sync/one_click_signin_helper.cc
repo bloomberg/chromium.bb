@@ -214,10 +214,6 @@ class OneClickInfoBarDelegateImpl : public OneClickSigninInfoBarDelegate {
   // OneClickSigninInfoBarDelegate overrides.
   virtual void GetAlternateColors(AlternateColors* alt_colors) OVERRIDE;
 
-  // Set the profile preference to turn off one-click sign in so that it won't
-  // show again in this profile.
-  void DisableOneClickSignIn();
-
   // Add a specific email to the list of emails rejected for one-click
   // sign-in, for this profile.
   void AddEmailToOneClickRejectedList(const std::string& email);
@@ -287,7 +283,10 @@ string16 OneClickInfoBarDelegateImpl::GetButtonLabel(
 bool OneClickInfoBarDelegateImpl::Accept() {
   // User has accepted one-click sign-in for this account. Never ask again for
   // this profile.
-  DisableOneClickSignIn();
+  Profile* profile = Profile::FromBrowserContext(
+      owner()->GetWebContents()->GetBrowserContext());
+  SigninManager::DisableOneClickSignIn(profile);
+
   content::WebContents* web_contents = owner()->GetWebContents();
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   RecordHistogramAction(one_click_signin::HISTOGRAM_ACCEPTED);
@@ -333,13 +332,6 @@ void OneClickInfoBarDelegateImpl::GetAlternateColors(
   }
 
   return OneClickSigninInfoBarDelegate::GetAlternateColors(alt_colors);
-}
-
-void OneClickInfoBarDelegateImpl::DisableOneClickSignIn() {
-  Profile* profile = Profile::FromBrowserContext(
-      owner()->GetWebContents()->GetBrowserContext());
-  PrefService* pref_service = profile->GetPrefs();
-  pref_service->SetBoolean(prefs::kReverseAutologinEnabled, false);
 }
 
 void OneClickInfoBarDelegateImpl::AddEmailToOneClickRejectedList(

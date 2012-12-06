@@ -392,6 +392,11 @@ void SigninManager::OnGetUserInfoKeyNotFound(const std::string& key) {
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
 }
 
+void SigninManager::DisableOneClickSignIn(Profile* profile) {
+  PrefService* pref_service = profile->GetPrefs();
+  pref_service->SetBoolean(prefs::kReverseAutologinEnabled, false);
+}
+
 void SigninManager::OnClientLoginSuccess(const ClientLoginResult& result) {
   last_result_ = result;
   // Make a request for the canonical email address and services.
@@ -496,6 +501,7 @@ void SigninManager::OnGetUserInfoSuccess(const UserInfoMap& data) {
       content::Details<const GoogleServiceSigninSuccessDetails>(&details));
 
   password_.clear();  // Don't need it anymore.
+  DisableOneClickSignIn(profile_);  // Don't ever offer again.
 
   TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
   token_service->UpdateCredentials(last_result_);

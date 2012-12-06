@@ -138,6 +138,10 @@ class SigninManager : public GaiaAuthConsumer,
   // GetUserInfo call.
   void OnGetUserInfoKeyNotFound(const std::string& key);
 
+  // Set the profile preference to turn off one-click sign-in so that it won't
+  // ever show it again in this profile (even if the user tries a new account).
+  static void DisableOneClickSignIn(Profile* profile);
+
   // GaiaAuthConsumer
   virtual void OnClientLoginSuccess(const ClientLoginResult& result) OVERRIDE;
   virtual void OnClientLoginFailure(
