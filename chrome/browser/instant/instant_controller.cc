@@ -662,6 +662,8 @@ void InstantController::SetSuggestions(
              << " type=" << suggestion.type;
     browser_->SetInstantSuggestion(suggestion);
   } else {
+    bool is_valid_suggestion = true;
+
     // Suggestion text should be a full URL for URL suggestions, or the
     // completion of a query for query suggestions.
     if (suggestion.type == INSTANT_SUGGESTION_URL) {
@@ -670,7 +672,7 @@ void InstantController::SetSuggestions(
       if (!GURL(suggestion.text).is_valid()) {
         suggestion.text.insert(0, ASCIIToUTF16("http://"));
         if (!GURL(suggestion.text).is_valid())
-          suggestion = InstantSuggestion();
+          is_valid_suggestion = false;
       }
     } else if (StartsWith(suggestion.text, last_omnibox_text_, true)) {
       // The user typed an exact prefix of the suggestion.
@@ -681,26 +683,27 @@ void InstantController::SetSuggestions(
       // for instance, if the user types 'i' and the suggestion is 'INSTANT',
       // suggest 'nstant'. Otherwise, the user text really isn't a prefix, so
       // suggest nothing.
-      suggestion = InstantSuggestion();
+      is_valid_suggestion = false;
     }
 
     // Don't suggest gray text if there already was inline autocompletion.
     // http://crbug.com/162303
     if (suggestion.behavior == INSTANT_COMPLETE_NEVER &&
         last_omnibox_text_has_inline_autocompletion_)
-      suggestion = InstantSuggestion();
+      is_valid_suggestion = false;
 
     // Don't allow inline autocompletion if the query was verbatim.
     if (suggestion.behavior == INSTANT_COMPLETE_NOW && last_verbatim_)
-      suggestion = InstantSuggestion();
+      is_valid_suggestion = false;
 
-    last_suggestion_ = suggestion;
-
-    if (!suggestion.text.empty()) {
+    if (is_valid_suggestion) {
+      last_suggestion_ = suggestion;
       DVLOG(1) << "SetInstantSuggestion: text='" << suggestion.text << "'"
                << " behavior=" << suggestion.behavior << " type="
                << suggestion.type;
       browser_->SetInstantSuggestion(suggestion);
+    } else {
+      last_suggestion_ = InstantSuggestion();
     }
   }
 
