@@ -54,7 +54,7 @@ class MagnificationManagerImpl : public MagnificationManager,
   }
 
   void SetMagnifier(ash::MagnifierType type) OVERRIDE {
-    if (type == type_)
+    if (type == type_ && type == ash::MAGNIFIER_OFF)
       return;
 
     type_ = type;

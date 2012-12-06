@@ -175,7 +175,7 @@ void MagnificationControllerImpl::RedrawKeepingMousePosition(
 
   // mouse_in_root is invalid value when the cursor is hidden.
   if (!root_window_->bounds().Contains(mouse_in_root))
-    return;
+    mouse_in_root = root_window_->bounds().CenterPoint();
 
   const gfx::PointF origin =
       gfx::PointF(mouse_in_root.x() -
@@ -472,18 +472,24 @@ void MagnificationControllerImpl::EnsurePointIsVisible(
 }
 
 void MagnificationControllerImpl::SetEnabled(bool enabled) {
-  if (enabled == is_enabled_)
-    return;
-
   if (enabled) {
     float scale =
         ash::Shell::GetInstance()->delegate()->GetSavedScreenMagnifierScale();
     if (scale <= 0.0f)
       scale = GetDefaultZoomScale();
     ValidateScale(&scale);
+
+    // Do nothing, if already enabled with same scale.
+    if (is_enabled_ && scale == scale_)
+      return;
+
     RedrawKeepingMousePosition(scale, true);
     is_enabled_ = enabled;
   } else {
+    // Do nothing, if already disabled.
+    if (!is_enabled_)
+      return;
+
     RedrawKeepingMousePosition(kNonMagnifiedScale, true);
     is_enabled_ = enabled;
   }
