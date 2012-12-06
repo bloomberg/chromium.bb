@@ -10,14 +10,16 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/gfx/screen.h"
 #include "ui/gfx/transform.h"
-#include "ui/views/mouse_watcher_view_host.h"
 #include "ui/views/view.h"
 #include "ui/views/window/non_client_view.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/window.h"
 #endif
+
+using views::View;
 
 namespace {
 
@@ -35,15 +37,23 @@ const int kHideDelayMs = 200;
 // View to hold the tab strip, toolbar, and sometimes the bookmark bar during
 // an immersive mode reveal. Paints on top of other layers in order to appear
 // over the web contents. Immersive mode uses this view to avoid changing the
-// BrowserView's view structure in the steady state.
+// BrowserView's view structure in the steady state. Informs the controller
+// when the mouse leaves its bounds and when its children lose focus.
 // TODO(jamescook): If immersive mode becomes non-experimental, use a permanent
 // top-of-window container view in BrowserView instead of RevealView to avoid
 // reparenting.
 // TODO(jamescook): Bookmark bar does not yet work.
-class RevealView : public views::View {
+class ImmersiveModeController::RevealView : public views::View,
+                                            public views::FocusChangeListener {
  public:
-  explicit RevealView(BrowserView* browser_view);
+  RevealView(ImmersiveModeController* controller, BrowserView* browser_view);
   virtual ~RevealView();
+
+  // Returns true if the mouse is in the bounds of this view.
+  bool hovered() const { return hovered_; }
+
+  // Returns true when this or any child view has focus.
+  bool ContainsFocusedView() const;
 
   // Reparents the |browser_view_| tab strip, toolbar, and bookmark bar to
   // this view.
@@ -53,28 +63,65 @@ class RevealView : public views::View {
   void ReleaseTopViews();
 
   // views::View overrides:
+  virtual std::string GetClassName() const OVERRIDE;
+  virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
   virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
 
+  // views::FocusChangeListener overrides:
+  virtual void OnWillChangeFocus(View* focused_before,
+                                 View* focused_now) OVERRIDE {}
+  virtual void OnDidChangeFocus(View* focused_before,
+                                View* focused_now) OVERRIDE;
+
  private:
+  // Returns true if the mouse cursor is inside this view.
+  bool ContainsCursor() const;
+
+  // The controller owns this view.
+  ImmersiveModeController* controller_;
+
   // None of these views are owned.
   BrowserView* browser_view_;
   TabStrip* tabstrip_;
   ToolbarView* toolbar_view_;
 
+  // True until the mouse leaves the view.
+  bool hovered_;
+
+  // During widget destruction the views are disconnected from the widget and
+  // GetFocusManager() and GetWidget() return NULL. Cache a pointer to the
+  // focus manager so we can remove our listener.
+  views::FocusManager* focus_manager_;
+
   DISALLOW_COPY_AND_ASSIGN(RevealView);
 };
 
-RevealView::RevealView(BrowserView* browser_view)
-    : browser_view_(browser_view),
+ImmersiveModeController::RevealView::RevealView(
+    ImmersiveModeController* controller,
+    BrowserView* browser_view)
+    : controller_(controller),
+      browser_view_(browser_view),
       tabstrip_(NULL),
-      toolbar_view_(NULL) {
+      toolbar_view_(NULL),
+      hovered_(false),
+      focus_manager_(browser_view->GetFocusManager()) {
+  set_notify_enter_exit_on_child(true);
   SetPaintToLayer(true);
   SetFillsBoundsOpaquely(true);
+  focus_manager_->AddFocusChangeListener(this);
 }
 
-RevealView::~RevealView() {}
+ImmersiveModeController::RevealView::~RevealView() {
+  focus_manager_->RemoveFocusChangeListener(this);
+}
 
-void RevealView::AcquireTopViews() {
+bool ImmersiveModeController::RevealView::ContainsFocusedView() const {
+  // Views are considered to contain themselves and their children.
+  return Contains(focus_manager_->GetFocusedView());
+}
+
+void ImmersiveModeController::RevealView::AcquireTopViews() {
   // Reparenting causes hit tests that require a parent for |this|.
   DCHECK(parent());
 
@@ -95,7 +142,7 @@ void RevealView::AcquireTopViews() {
   SetBounds(0, 0, width, height);
 }
 
-void RevealView::ReleaseTopViews() {
+void ImmersiveModeController::RevealView::ReleaseTopViews() {
   // Reparenting causes hit tests that require a parent for |this|.
   DCHECK(parent());
 
@@ -110,7 +157,35 @@ void RevealView::ReleaseTopViews() {
   toolbar_view_ = NULL;
 }
 
-void RevealView::PaintChildren(gfx::Canvas* canvas) {
+std::string ImmersiveModeController::RevealView::GetClassName() const {
+  return "RevealView";
+}
+
+void ImmersiveModeController::RevealView::OnMouseEntered(
+    const ui::MouseEvent& event) {
+  // Entering this view or a child view always means we are hovered.
+  hovered_ = true;
+}
+
+void ImmersiveModeController::RevealView::OnMouseExited(
+    const ui::MouseEvent& event) {
+  // TODO(jamescook):  Currently Ash does not differentiate between disabling
+  // and hiding the mouse. When the mouse is "hidden" by typing, it actually
+  // moves to -10000, -10000 and generates mouse moved events. For now, ignore
+  // mouse exit events caused by a move to that location. Remove this code
+  // when crbug.com/153703 is fixed.
+  if (event.location().x() == -10000 && event.location().y() == -10000)
+    return;
+
+  // This view may still be hovered if the mouse exit was on a child view.
+  bool was_hovered = hovered_;
+  hovered_ = ContainsCursor();
+
+  if (was_hovered && !hovered_)
+    controller_->OnRevealViewLostMouse();
+}
+
+void ImmersiveModeController::RevealView::PaintChildren(gfx::Canvas* canvas) {
   // Top-views depend on parts of the frame (themes, window buttons) being
   // painted underneath them. Clip rect has already been set to the bounds
   // of this view, so just paint the frame.
@@ -118,6 +193,22 @@ void RevealView::PaintChildren(gfx::Canvas* canvas) {
   frame->Paint(canvas);
 
   views::View::PaintChildren(canvas);
+}
+
+void ImmersiveModeController::RevealView::OnDidChangeFocus(View* focused_before,
+                                                           View* focused_now) {
+  // If one of this view's children had focus before, but doesn't have focus
+  // now, inform the controller.
+  if (Contains(focused_before) && !Contains(focused_now))
+    controller_->OnRevealViewLostFocus();
+  // |this| may be deleted.
+}
+
+bool ImmersiveModeController::RevealView::ContainsCursor() const {
+  gfx::Point cursor_point(gfx::Screen::GetScreenFor(
+      GetWidget()->GetNativeView())->GetCursorScreenPoint());
+  ConvertPointToTarget(NULL, this, &cursor_point);
+  return GetLocalBounds().Contains(cursor_point);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -129,11 +220,8 @@ ImmersiveModeController::ImmersiveModeController(BrowserView* browser_view)
 }
 
 ImmersiveModeController::~ImmersiveModeController() {
-  // Ensure views are reparented if we are deleted mid-reveal.
-  if (reveal_view_.get()) {
-    reveal_view_->ReleaseTopViews();
-    ResetRevealView();
-  }
+  // Ensure views are reparented if we are deleted while revealing.
+  EndReveal(ANIMATE_NO, LAYOUT_NO);
 }
 
 void ImmersiveModeController::SetEnabled(bool enabled) {
@@ -145,8 +233,7 @@ void ImmersiveModeController::SetEnabled(bool enabled) {
     browser_view_->tabstrip()->SetImmersiveStyle(true);
     browser_view_->Layout();
   } else {
-    // Don't Layout() browser_view_ because EndReveal() does so.
-    EndReveal(false);
+    EndReveal(ANIMATE_NO, LAYOUT_YES);
     top_timer_.Stop();
   }
 
@@ -161,6 +248,15 @@ void ImmersiveModeController::SetEnabled(bool enabled) {
   else
     browser_view_->GetNativeWindow()->RemovePreTargetHandler(this);
 #endif  // defined(USE_AURA)
+}
+
+void ImmersiveModeController::MaybeStackViewAtTop() {
+#if defined(USE_AURA)
+  if (enabled_ && revealed_ && reveal_view_.get()) {
+    ui::Layer* reveal_layer = reveal_view_->layer();
+    reveal_layer->parent()->StackAtTop(reveal_layer);
+  }
+#endif
 }
 
 // ui::EventHandler overrides:
@@ -182,15 +278,10 @@ ui::EventResult ImmersiveModeController::OnMouseEvent(ui::MouseEvent* event) {
   return ui::ER_UNHANDLED;
 }
 
-// views::MouseWatcherListener overrides:
-void ImmersiveModeController::MouseMovedOutOfHost() {
-  EndReveal(true);
-}
-
 // ui::ImplicitAnimationObserver overrides:
 void ImmersiveModeController::OnImplicitAnimationsCompleted() {
   // Fired when the slide-out animation completes.
-  ResetRevealView();
+  reveal_view_.reset();  // Also removes from parent.
 }
 
 // Testing interface:
@@ -198,8 +289,12 @@ void ImmersiveModeController::StartRevealForTest() {
   StartReveal();
 }
 
+void ImmersiveModeController::OnRevealViewLostMouseForTest() {
+  OnRevealViewLostMouse();
+}
+
 void ImmersiveModeController::EndRevealForTest() {
-  EndReveal(false);
+  EndReveal(ANIMATE_NO, LAYOUT_YES);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -216,15 +311,12 @@ void ImmersiveModeController::StartReveal() {
 
   // Place tabstrip, toolbar, and bookmarks bar in a new view at the end of
   // the BrowserView hierarchy so it paints over the web contents.
-  reveal_view_.reset(new RevealView(browser_view_));
+  reveal_view_.reset(new RevealView(this, browser_view_));
   browser_view_->AddChildView(reveal_view_.get());
   reveal_view_->AcquireTopViews();
 
   // Slide in the reveal view.
   AnimateShowRevealView();
-
-  // Stop the immersive reveal when the mouse leaves the top-of-window area.
-  StartMouseWatcher();
 }
 
 void ImmersiveModeController::AnimateShowRevealView() {
@@ -239,33 +331,39 @@ void ImmersiveModeController::AnimateShowRevealView() {
   reveal_view_->SetTransform(gfx::Transform());
 }
 
-void ImmersiveModeController::StartMouseWatcher() {
-  DCHECK(reveal_view_.get());
-  views::MouseWatcherViewHost* host =
-      new views::MouseWatcherViewHost(reveal_view_.get(), gfx::Insets());
-  // MouseWatcher takes ownership of |host|.
-  mouse_watcher_.reset(new views::MouseWatcher(host, this));
-  mouse_watcher_->set_notify_on_exit_time(
-      base::TimeDelta::FromMilliseconds(kHideDelayMs));
-  mouse_watcher_->Start();
+void ImmersiveModeController::OnRevealViewLostMouse() {
+  // Stop the reveal if the view's children don't have focus.
+  // TODO(jamescook): Consider stopping the reveal after a delay. This code
+  // isn't using a MouseWatcher because it needs to know if the mouse re-enters
+  // the RevealView before focus is lost.
+  if (!reveal_view_->ContainsFocusedView())
+    EndReveal(ANIMATE_YES, LAYOUT_YES);
 }
 
-void ImmersiveModeController::EndReveal(bool animate) {
+void ImmersiveModeController::OnRevealViewLostFocus() {
+  // Stop the reveal if the mouse is outside the reveal view.
+  if (!reveal_view_->hovered())
+    EndReveal(ANIMATE_YES, LAYOUT_YES);
+}
+
+void ImmersiveModeController::EndReveal(Animate animate, Layout layout) {
   revealed_ = false;
-  mouse_watcher_.reset();
 
   if (reveal_view_.get()) {
     reveal_view_->ReleaseTopViews();
-    if (animate) {
+    if (animate == ANIMATE_YES) {
       // Animation resets the reveal view when complete.
       AnimateHideRevealView();
     } else {
-      ResetRevealView();
+      // Deleting the reveal view also removes it from its parent.
+      reveal_view_.reset();
     }
   }
 
-  browser_view_->tabstrip()->SetImmersiveStyle(enabled_);
-  browser_view_->Layout();
+  if (layout == LAYOUT_YES) {
+    browser_view_->tabstrip()->SetImmersiveStyle(enabled_);
+    browser_view_->Layout();
+  }
 }
 
 void ImmersiveModeController::AnimateHideRevealView() {
@@ -277,9 +375,3 @@ void ImmersiveModeController::AnimateHideRevealView() {
   transform.Translate(0, -layer->bounds().height());
   layer->SetTransform(transform);
 }
-
-void ImmersiveModeController::ResetRevealView() {
-  browser_view_->RemoveChildView(reveal_view_.get());
-  reveal_view_.reset();
-}
-

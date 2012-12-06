@@ -1677,6 +1677,10 @@ void BrowserView::ActiveTabChanged(content::WebContents* old_contents,
 
   MaybeStackBookmarkBarAtTop();
 
+  // Like the preview layer and the bookmark bar layer, the immersive mode
+  // reveal view's layer may need to live above the web contents.
+  immersive_mode_controller_->MaybeStackViewAtTop();
+
   // No need to update Toolbar because it's already updated in
   // browser.cc.
 }

@@ -101,4 +101,29 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, ImmersiveMode) {
   EXPECT_FALSE(browser_view->tabstrip()->IsImmersiveStyle());
   EXPECT_TRUE(browser_view->IsTabStripVisible());
   EXPECT_TRUE(browser_view->IsToolbarVisible());
+
+  // Reveal ends when the mouse moves out of the reveal view.
+  controller->SetEnabled(true);
+  controller->StartRevealForTest();
+  controller->OnRevealViewLostMouseForTest();
+  EXPECT_FALSE(controller->IsRevealed());
+
+  // Focus testing is not reliable on Windows, crbug.com/79493
+#if !defined(OS_WIN)
+  // Giving focus to the location bar prevents the reveal from ending when
+  // the mouse exits.
+  controller->SetEnabled(true);
+  controller->StartRevealForTest();
+  browser_view->SetFocusToLocationBar(false);
+  controller->OnRevealViewLostMouseForTest();
+  EXPECT_TRUE(controller->IsRevealed());
+
+  // Releasing focus ends the reveal.
+  browser_view->GetFocusManager()->ClearFocus();
+  EXPECT_FALSE(controller->IsRevealed());
+#endif  // defined(OS_WIN)
+
+  // Don't crash if we exit the test during a reveal.
+  controller->SetEnabled(true);
+  controller->StartRevealForTest();
 }
