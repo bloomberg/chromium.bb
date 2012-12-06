@@ -518,6 +518,9 @@ void ThreadWatcherList::ParseCommandLine(
   if (base::win::GetVersion() <= base::win::VERSION_XP)
     *unresponsive_threshold *= 2;
 #endif
+  // TODO(rtenneti): A temporary change to crash if IO thread doesn't respond
+  // for 20 secs.
+  *unresponsive_threshold = 10;
 
   std::string crash_on_hang_seconds =
       command_line.GetSwitchValueASCII(switches::kCrashOnHangSeconds);
@@ -538,6 +541,10 @@ void ThreadWatcherList::ParseCommandLine(
   else
     crash_on_hang_threads = "UI,IO";
 
+  // TODO(rtenneti): A temporary change to crash if IO thread doesn't respond
+  // for 20 secs.
+  crash_on_hang_threads = "IO";
+
   if (command_line.HasSwitch(switches::kCrashOnHangThreads)) {
     crash_on_hang_threads =
         command_line.GetSwitchValueASCII(switches::kCrashOnHangThreads);
@@ -548,6 +555,9 @@ void ThreadWatcherList::ParseCommandLine(
 
   // Determine |live_threads_threshold| based on switches::kCrashOnLive.
   *live_threads_threshold = kLiveThreadsThreshold;
+  // TODO(rtenneti): A temporary change to crash if IO thread doesn't respond
+  // for 20 secs.
+  *live_threads_threshold = INT_MAX;
   if (command_line.HasSwitch(switches::kCrashOnLive)) {
     std::string live_threads =
         command_line.GetSwitchValueASCII(switches::kCrashOnLive);
