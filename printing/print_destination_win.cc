@@ -5,6 +5,7 @@
 #include "printing/print_destination_interface.h"
 
 #include "base/win/metro.h"
+#include "win8/util/win8_util.h"
 
 namespace printing {
 
@@ -43,7 +44,7 @@ class PrintDestinationWin : public PrintDestinationInterface {
 
 PrintDestinationInterface* CreatePrintDestination() {
   // We currently only support the Metro print destination.
-  if (base::win::IsMetroProcess())
+  if (win8::IsSingleWindowMetroMode())
     return new PrintDestinationWin;
   else
     return NULL;

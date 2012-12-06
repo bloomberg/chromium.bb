@@ -25,7 +25,7 @@
 #endif
 
 #if defined(OS_WIN)
-#include "base/win/metro.h"
+#include "win8/util/win8_util.h"
 #endif
 
 namespace {
@@ -76,7 +76,7 @@ bool PanelManager::ShouldUsePanels(const std::string& extension_id) {
 
 #if defined(OS_WIN)
   // No panels in Metro mode.
-  if (base::win::IsMetroProcess())
+  if (win8::IsSingleWindowMetroMode())
     return false;
 #endif // OS_WIN
 

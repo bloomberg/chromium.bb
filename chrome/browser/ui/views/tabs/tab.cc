@@ -45,7 +45,7 @@
 #include "ui/views/window/non_client_view.h"
 
 #if defined(OS_WIN)
-#include "base/win/metro.h"
+#include "win8/util/win8_util.h"
 #endif
 
 #if defined(USE_ASH)
@@ -1139,7 +1139,7 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
   } else if (data().incognito) {
     tab_id = IDR_THEME_TAB_BACKGROUND_INCOGNITO;
 #if defined(OS_WIN)
-  } else if (base::win::IsMetroProcess()) {
+  } else if (win8::IsSingleWindowMetroMode()) {
     tab_id = IDR_THEME_TAB_BACKGROUND_V;
 #endif
   } else {

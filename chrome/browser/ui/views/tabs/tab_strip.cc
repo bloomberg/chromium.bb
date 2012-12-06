@@ -51,9 +51,9 @@
 #include "ui/views/window/non_client_view.h"
 
 #if defined(OS_WIN)
-#include "base/win/metro.h"
 #include "ui/base/win/hwnd_util.h"
 #include "ui/views/widget/monitor_win.h"
+#include "win8/util/win8_util.h"
 #endif
 
 using content::UserMetricsAction;
@@ -401,7 +401,7 @@ gfx::ImageSkia NewTabButton::GetBackgroundImage(
   } else if (tab_strip_->controller()->IsIncognito()) {
     background_id = IDR_THEME_TAB_BACKGROUND_INCOGNITO;
 #if defined(OS_WIN)
-  } else if (base::win::IsMetroProcess()) {
+  } else if (win8::IsSingleWindowMetroMode()) {
     background_id = IDR_THEME_TAB_BACKGROUND_V;
 #endif
   } else {
@@ -1062,8 +1062,8 @@ void TabStrip::MaybeStartDrag(
     move_behavior = TabDragController::MOVE_VISIBILE_TABS;
   }
 #if defined(OS_WIN)
-  // It doesn't make sense to drag tabs out on metro.
-  if (base::win::IsMetroProcess())
+  // It doesn't make sense to drag tabs out on Win8's single window Metro mode.
+  if (win8::IsSingleWindowMetroMode())
     detach_behavior = TabDragController::NOT_DETACHABLE;
 #endif
   // Gestures don't automatically do a capture. We don't allow multiple drags at

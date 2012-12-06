@@ -68,6 +68,7 @@
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/textfield/native_textfield_win.h"
 #include "ui/views/widget/widget.h"
+#include "win8/util/win8_util.h"
 
 #pragma comment(lib, "oleacc.lib")  // Needed for accessibility support.
 
@@ -1777,7 +1778,7 @@ LRESULT OmniboxViewWin::OnMouseActivate(HWND window,
     if (gaining_focus_) {
       // On Windows 8 in metro mode, we get two WM_MOUSEACTIVATE messages when
       // we click on the omnibox with the mouse.
-      DCHECK(base::win::IsMetroProcess());
+      DCHECK(win8::IsSingleWindowMetroMode());
       return result;
     }
     gaining_focus_.reset(new ScopedFreeze(this, GetTextObjectModel()));

@@ -35,5 +35,16 @@
         },
       ],
     },
+    {
+      'target_name': 'win8_util',
+      'type': 'static_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+      ],
+      'sources': [
+        'util/win8_util.cc',
+        'util/win8_util.h',
+      ],
+    },
   ],
 }

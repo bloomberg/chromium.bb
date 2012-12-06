@@ -23,6 +23,7 @@
 #include "printing/printed_document.h"
 #include "printing/units.h"
 #include "skia/ext/platform_device.h"
+#include "win8/util/win8_util.h"
 
 using base::Time;
 
@@ -223,7 +224,7 @@ void PrintingContextWin::AskUserForSettings(
 #if !defined(USE_AURA)
   DCHECK(!in_print_job_);
 
-  if (base::win::IsMetroProcess()) {
+  if (win8::IsSingleWindowMetroMode()) {
     // The system dialog can not be opened while running in Metro.
     // But we can programatically launch the Metro print device charm though.
     HMODULE metro_module = base::win::GetMetroModule();

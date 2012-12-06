@@ -46,6 +46,7 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
 #include "webkit/glue/window_open_disposition.h"
+#include "win8/util/win8_util.h"
 
 #pragma comment(lib, "dwmapi.lib")
 
@@ -102,7 +103,7 @@ BrowserFrameWin::BrowserFrameWin(BrowserFrame* browser_frame,
       browser_frame_(browser_frame),
       system_menu_delegate_(new SystemMenuModelDelegate(browser_view,
           browser_view->browser())) {
-  if (base::win::IsMetroProcess()) {
+  if (win8::IsSingleWindowMetroMode()) {
     browser_view->SetWindowSwitcherButton(
         MakeWindowSwitcherButton(this, browser_view->IsOffTheRecord()));
   }
@@ -206,7 +207,7 @@ bool BrowserFrameWin::PreHandleMSG(UINT message,
       minimize_button_metrics_.OnHWNDActivated();
     return false;
   case WM_PRINT:
-    if (base::win::IsMetroProcess()) {
+    if (win8::IsSingleWindowMetroMode()) {
       // This message is sent by the AnimateWindow API which is used in metro
       // mode to flip between active chrome windows.
       RECT client_rect = {0};
@@ -310,7 +311,7 @@ void BrowserFrameWin::FrameTypeChanged() {
   // In Windows 8 metro mode the frame type is set to FRAME_TYPE_FORCE_CUSTOM
   // by default. We reset it back to FRAME_TYPE_DEFAULT to ensure that we
   // don't end up defaulting to BrowserNonClientFrameView in all cases.
-  if (base::win::IsMetroProcess())
+  if (win8::IsSingleWindowMetroMode())
     browser_frame_->set_frame_type(views::Widget::FRAME_TYPE_DEFAULT);
 
   views::NativeWidgetWin::FrameTypeChanged();
@@ -318,12 +319,12 @@ void BrowserFrameWin::FrameTypeChanged() {
   // In Windows 8 metro mode we call Show on the BrowserFrame instance to
   // ensure that the window can be styled appropriately, i.e. no sysmenu,
   // etc.
-  if (base::win::IsMetroProcess())
+  if (win8::IsSingleWindowMetroMode())
     Show();
 }
 
 void BrowserFrameWin::SetFullscreen(bool fullscreen) {
-  if (base::win::IsMetroProcess()) {
+  if (win8::IsSingleWindowMetroMode()) {
     HMODULE metro = base::win::GetMetroModule();
     if (metro) {
       MetroSetFullscreen set_full_screen = reinterpret_cast<MetroSetFullscreen>(
@@ -345,7 +346,7 @@ void BrowserFrameWin::Activate() {
   // being displayed is hidden and the new window being activated becomes
   // visible. This is achieved by calling AdjustFrameForImmersiveMode()
   // followed by ShowWindow().
-  if (base::win::IsMetroProcess()) {
+  if (win8::IsSingleWindowMetroMode()) {
     AdjustFrameForImmersiveMode();
     ::ShowWindow(browser_frame_->GetNativeWindow(), SW_SHOWNORMAL);
   } else {
@@ -605,7 +606,7 @@ const gfx::Font& BrowserFrame::GetTitleFont() {
 }
 
 bool BrowserFrame::ShouldLeaveOffsetNearTopBorder() {
-  if (base::win::IsMetroProcess()) {
+  if (win8::IsSingleWindowMetroMode()) {
     if (ui::GetDisplayLayout() == ui::LAYOUT_DESKTOP)
       return false;
   }

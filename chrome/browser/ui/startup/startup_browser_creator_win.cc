@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
 #include "chrome/common/url_constants.h"
+#include "win8/util/win8_util.h"
 
 namespace chrome {
 
@@ -45,7 +46,7 @@ GURL GetURLToOpen(Profile* profile) {
 bool StartupBrowserCreatorImpl::OpenStartupURLsInExistingBrowser(
     Profile* profile,
     const std::vector<GURL>& startup_urls) {
-  if (!base::win::IsMetroProcess())
+  if (!win8::IsSingleWindowMetroMode())
     return false;
 
   // We activate an existing browser window if we are opening just the new tab
@@ -66,4 +67,3 @@ bool StartupBrowserCreatorImpl::OpenStartupURLsInExistingBrowser(
   return true;
 }
 #endif
-

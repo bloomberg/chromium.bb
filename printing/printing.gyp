@@ -132,6 +132,9 @@
           ],
         }],
         ['OS=="win"', {
+          'dependencies': [
+            '../win8/win8.gyp:win8_util',
+          ],
           'conditions': [
             ['use_aura==0', {
               'sources': [

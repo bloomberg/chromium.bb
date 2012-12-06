@@ -66,6 +66,7 @@
 #include "webkit/plugins/npapi/plugin_constants_win.h"
 #include "webkit/plugins/npapi/webplugin.h"
 #include "webkit/plugins/npapi/webplugin_delegate_impl.h"
+#include "win8/util/win8_util.h"
 
 using base::TimeDelta;
 using base::TimeTicks;
@@ -739,7 +740,7 @@ void RenderWidgetHostViewWin::Destroy() {
   being_destroyed_ = true;
   CleanupCompositorWindow();
 
-  if (is_fullscreen_ && base::win::IsMetroProcess()) {
+  if (is_fullscreen_ && win8::IsSingleWindowMetroMode()) {
     MetroCloseFrameWindow close_frame_window =
         reinterpret_cast<MetroCloseFrameWindow>(
             ::GetProcAddress(base::win::GetMetroModule(), "CloseFrameWindow"));
@@ -2778,7 +2779,7 @@ void RenderWidgetHostViewWin::DoPopupOrFullscreenInit(HWND parent_hwnd,
   MoveWindow(pos.x(), pos.y(), pos.width(), pos.height(), TRUE);
   ShowWindow(IsActivatable() ? SW_SHOW : SW_SHOWNA);
 
-  if (is_fullscreen_ && base::win::IsMetroProcess()) {
+  if (is_fullscreen_ && win8::IsSingleWindowMetroMode()) {
     MetroSetFrameWindow set_frame_window =
         reinterpret_cast<MetroSetFrameWindow>(
             ::GetProcAddress(base::win::GetMetroModule(), "SetFrameWindow"));

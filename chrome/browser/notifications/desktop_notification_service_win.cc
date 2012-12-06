@@ -10,6 +10,7 @@
 #include "chrome/browser/notifications/notification_object_proxy.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
+#include "win8/util/win8_util.h"
 
 typedef void (*MetroDisplayNotification)(
     const char* origin_url, const char* icon_url, const wchar_t* title,
@@ -23,7 +24,7 @@ bool DesktopNotificationService::CancelDesktopNotification(
   scoped_refptr<NotificationObjectProxy> proxy(
       new NotificationObjectProxy(process_id, route_id, notification_id,
                                   false));
-  if (base::win::IsMetroProcess()) {
+  if (win8::IsSingleWindowMetroMode()) {
     MetroCancelNotification cancel_metro_notification =
         reinterpret_cast<MetroCancelNotification>(GetProcAddress(
             base::win::GetMetroModule(), "CancelNotification"));
@@ -36,7 +37,7 @@ bool DesktopNotificationService::CancelDesktopNotification(
 
 void DesktopNotificationService::ShowNotification(
     const Notification& notification) {
-  if (base::win::IsMetroProcess()) {
+  if (win8::IsSingleWindowMetroMode()) {
     MetroDisplayNotification display_metro_notification =
         reinterpret_cast<MetroDisplayNotification>(GetProcAddress(
             base::win::GetMetroModule(), "DisplayNotification"));

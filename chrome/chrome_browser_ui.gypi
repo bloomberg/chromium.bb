@@ -2661,6 +2661,7 @@
             '../ui/app_list/app_list.gyp:app_list',
             '../ui/views/controls/webview/webview.gyp:webview',
             '../ui/views/views.gyp:views',
+            '../win8/win8.gyp:win8_util',
           ],
           'export_dependent_settings': [
             '../ui/views/controls/webview/webview.gyp:webview',

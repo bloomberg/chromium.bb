@@ -71,6 +71,7 @@
 #include "base/win/windows_version.h"
 #include "chrome/browser/enumerate_modules_model_win.h"
 #include "chrome/browser/ui/metro_pin_tab_helper_win.h"
+#include "win8/util/win8_util.h"
 #endif
 
 #if defined(USE_ASH)
@@ -474,9 +475,10 @@ void WrenchMenuModel::Build(bool is_new_menu, bool supports_new_separators) {
 
   AddItemWithStringId(IDC_NEW_TAB, IDS_NEW_TAB);
 #if defined(OS_WIN)
-  if (base::win::IsMetroProcess()) {
-    // In Metro, we only show the New Window options if there isn't already
-    // a window of the requested type (incognito or not) that is available.
+  if (win8::IsSingleWindowMetroMode()) {
+    // In Win8's single window Metro mode, we only show the New Window options
+    // if there isn't already a window of the requested type (incognito or not)
+    // that is available.
     if (browser_->profile()->IsOffTheRecord()) {
       if (browser::FindBrowserWithProfile(
               browser_->profile()->GetOriginalProfile(),

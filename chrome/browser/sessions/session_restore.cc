@@ -54,7 +54,7 @@
 #endif
 
 #if defined(OS_WIN)
-#include "base/win/metro.h"
+#include "win8/util/win8_util.h"
 #endif
 
 #if defined(USE_ASH)
@@ -804,7 +804,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
         }
         browser = NULL;
 #if defined(OS_WIN)
-        if (base::win::IsMetroProcess()) {
+        if (win8::IsSingleWindowMetroMode()) {
           // We don't want to add tabs to the off the record browser.
           if (browser_ && !browser_->profile()->IsOffTheRecord()) {
             browser = browser_;

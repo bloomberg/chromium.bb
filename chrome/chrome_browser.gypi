@@ -2872,6 +2872,7 @@
             '../third_party/isimpledom/isimpledom.gyp:isimpledom',
             '../ui/views/controls/webview/webview.gyp:webview',
             '../ui/views/views.gyp:views',
+            '../win8/win8.gyp:win8_util',
           ],
           'export_dependent_settings': [
             '../ui/views/controls/webview/webview.gyp:webview',

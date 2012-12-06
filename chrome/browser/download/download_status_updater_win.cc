@@ -23,6 +23,7 @@
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "win8/util/win8_util.h"
 
 // This code doesn't compile with Aura on. TODO(avi): hook it up so that
 // win_aura can do platform integration.
@@ -94,7 +95,7 @@ void DownloadStatusUpdater::UpdateAppIconDownloadProgress(
   UpdateTaskbarProgressBar(download_count, progress_known, progress);
 
   // Fire notifications when downloads complete.
-  if (!base::win::IsMetroProcess())
+  if (!win8::IsSingleWindowMetroMode())
     return;
 
   if (download->GetState() != content::DownloadItem::COMPLETE)

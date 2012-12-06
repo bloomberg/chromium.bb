@@ -31,7 +31,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN)
-#include "base/win/metro.h"
+#include "win8/util/win8_util.h"
 #endif  // OS_WIN
 
 namespace keys = bookmark_extension_api_constants;
@@ -515,7 +515,7 @@ bool CanOpenNewWindowsBookmarkFunction::RunImpl() {
   bool can_open_new_windows = true;
 
 #if defined(OS_WIN)
-  if (base::win::IsMetroProcess())
+  if (win8::IsSingleWindowMetroMode())
     can_open_new_windows = false;
 #endif  // OS_WIN
 

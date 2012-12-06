@@ -5,6 +5,7 @@ include_rules = [
   "+media/audio",  # For audio input for speech input feature.
   "+media/base",  # For Android JNI registration and kEnableEncryptedMedia.
   "+ui/ui_controls",  # this should probably move into a DEPS file under test.
+  "+win8/util",
 
   # Other libraries.
   "+third_party/iaccessible2",

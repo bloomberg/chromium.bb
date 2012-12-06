@@ -79,8 +79,8 @@
 #endif
 
 #if defined(OS_WIN)
-#include "base/win/metro.h"
 #include "chrome/browser/ui/metro_pin_tab_helper_win.h"
+#include "win8/util/win8_util.h"
 #endif
 
 namespace {
@@ -866,7 +866,7 @@ void ToggleDevToolsWindow(Browser* browser, DevToolsToggleAction action) {
 bool CanOpenTaskManager() {
 #if defined(OS_WIN)
   // In metro we can't display the task manager, as it is a native window.
-  return !base::win::IsMetroProcess();
+  return !win8::IsSingleWindowMetroMode();
 #else
   return true;
 #endif

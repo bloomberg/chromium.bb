@@ -30,6 +30,7 @@ include_rules = [
   "+sync/notifier",  # Sync invalidation API files.
   "+sync/protocol",  # Sync protobuf files.
   "+third_party/cros_system_api",
+  "+win8/util",
   "+xib_localizers", # For generated mac localization helpers
 
   # TODO(stuartmorgan): Remove these by refactoring necessary code out of

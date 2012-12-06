@@ -4,4 +4,5 @@ include_rules = [
   "+third_party/skia",
   "+ui/base/text",
   "+ui/gfx",
+  "+win8/util",
 ]

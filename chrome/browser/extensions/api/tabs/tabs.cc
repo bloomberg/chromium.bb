@@ -77,7 +77,7 @@
 #include "ui/gfx/codec/png_codec.h"
 
 #if defined(OS_WIN)
-#include "base/win/metro.h"
+#include "win8/util/win8_util.h"
 #endif  // OS_WIN
 
 namespace Get = extensions::api::windows::Get;
@@ -229,7 +229,7 @@ Browser* CreateBrowserWindow(const Browser::CreateParams& params,
 
 #if defined(OS_WIN)
   // In windows 8 metro mode we don't allow windows to be created.
-  if (base::win::IsMetroProcess())
+  if (win8::IsSingleWindowMetroMode())
     use_existing_browser_window = true;
 #endif  // OS_WIN
 
@@ -670,7 +670,7 @@ bool UpdateWindowFunction::RunImpl() {
 
 #if defined(OS_WIN)
   // Silently ignore changes on the window for metro mode.
-  if (base::win::IsMetroProcess()) {
+  if (win8::IsSingleWindowMetroMode()) {
     SetResult(controller->CreateWindowValue());
     return true;
   }
@@ -810,10 +810,10 @@ bool RemoveWindowFunction::RunImpl() {
   if (!GetWindowFromWindowID(this, window_id, &controller))
     return false;
 
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
   // In Windows 8 metro mode, an existing Browser instance is reused for
   // hosting the extension tab. We should not be closing it as we don't own it.
-  if (base::win::IsMetroProcess())
+  if (win8::IsSingleWindowMetroMode())
     return false;
 #endif
 

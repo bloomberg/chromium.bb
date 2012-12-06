@@ -31,7 +31,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN)
-#include "base/win/metro.h"
+#include "win8/util/win8_util.h"
 #endif  // OS_WIN
 
 namespace extensions {
@@ -1213,8 +1213,8 @@ ExtensionPrefs::LaunchType ExtensionPrefs::GetLaunchType(
   #endif
 
 #if defined(OS_WIN)
-    // We don't support app windows in windows 8 metro mode.
-    if (base::win::IsMetroProcess() && result == LAUNCH_WINDOW)
+    // We don't support app windows in Windows 8 single window Metro mode.
+    if (win8::IsSingleWindowMetroMode() && result == LAUNCH_WINDOW)
       result = LAUNCH_REGULAR;
 #endif  // OS_WIN
 

@@ -130,12 +130,6 @@
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 #include "chrome/browser/ui/ash/launcher/browser_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/window_positioner.h"
-#elif defined(OS_WIN) && !defined(USE_AURA)
-#include "base/win/metro.h"
-#include "chrome/browser/jumplist_win.h"
-#include "chrome/browser/ui/views/omnibox/omnibox_view_win.h"
-#include "ui/views/widget/native_widget_win.h"
-#include "ui/views/win/scoped_fullscreen_visibility.h"
 #endif
 
 #if defined(USE_AURA)
@@ -143,6 +137,15 @@
 #include "chrome/browser/ui/webui/task_manager/task_manager_dialog.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/screen.h"
+#elif defined(OS_WIN)  // !defined(USE_AURA)
+#include "chrome/browser/jumplist_win.h"
+#include "chrome/browser/ui/views/omnibox/omnibox_view_win.h"
+#include "ui/views/widget/native_widget_win.h"
+#include "ui/views/win/scoped_fullscreen_visibility.h"
+#endif
+
+#if defined(OS_WIN)
+#include "win8/util/win8_util.h"
 #endif
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
@@ -184,10 +187,10 @@ const int BrowserView::kToolbarIndex = 2;
 namespace {
 
 bool ShouldSaveOrRestoreWindowPos() {
-#if defined(OS_WIN) && !defined(USE_AURA)
-  // In Windows 8 metro mode the window is always maximized (without the
-  // WS_MAXIMIZE) style.
-  if (base::win::IsMetroProcess())
+#if defined(OS_WIN)
+  // In Windows 8's single window Metro mode the window is always maximized
+  // (without the WS_MAXIMIZE style).
+  if (win8::IsSingleWindowMetroMode())
     return false;
 #endif
   return true;
@@ -1553,12 +1556,8 @@ bool BrowserView::IsInstantTabShowing() {
 WindowOpenDisposition BrowserView::GetDispositionForPopupBounds(
     const gfx::Rect& bounds) {
 #if defined(OS_WIN)
-#if defined(USE_AURA)
-  return NEW_POPUP;
-#else
-  // If we are in windows metro-mode, we can't allow popup windows.
-  return base::win::IsMetroProcess() ? NEW_BACKGROUND_TAB : NEW_POPUP;
-#endif
+  // If we are in Win8's single window Metro mode, we can't allow popup windows.
+  return win8::IsSingleWindowMetroMode() ? NEW_BACKGROUND_TAB : NEW_POPUP;
 #else
   return NEW_POPUP;
 #endif
@@ -1783,12 +1782,12 @@ bool BrowserView::ShouldShowWindowIcon() const {
 
 bool BrowserView::ExecuteWindowsCommand(int command_id) {
   // This function handles WM_SYSCOMMAND, WM_APPCOMMAND, and WM_COMMAND.
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
   if (command_id == IDC_DEBUG_FRAME_TOGGLE)
     GetWidget()->DebugToggleFrameType();
 
   // In Windows 8 metro mode prevent sizing and moving.
-  if (base::win::IsMetroProcess()) {
+  if (win8::IsSingleWindowMetroMode()) {
     // Windows uses the 4 lower order bits of |notification_code| for type-
     // specific information so we must exclude this when comparing.
     static const int sc_mask = 0xFFF0;
@@ -2124,8 +2123,8 @@ int BrowserView::GetOTRIconResourceID() const {
   if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH) {
     if (IsFullscreen())
       otr_resource_id = IDR_OTR_ICON_FULLSCREEN;
-#if defined(OS_WIN) && !defined(USE_AURA)
-    if (base::win::IsMetroProcess())
+#if defined(OS_WIN)
+    if (win8::IsSingleWindowMetroMode())
       otr_resource_id = IDR_OTR_ICON_FULLSCREEN;
 #endif
   }

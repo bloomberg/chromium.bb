@@ -11,6 +11,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "win8/util/win8_util.h"
 
 // Metro functions for displaying and dismissing a dialog box.
 typedef void (*MetroShowDialogBox)(
@@ -29,7 +30,7 @@ using content::WebContents;
 HungRendererDialogMetro* HungRendererDialogMetro::g_instance_ = NULL;
 
 bool PlatformShowCustomHungRendererDialog(WebContents* contents) {
-  if (!base::win::IsMetroProcess())
+  if (!win8::IsSingleWindowMetroMode())
     return false;
 
   HungRendererDialogMetro::Create()->Show(contents);
@@ -37,7 +38,7 @@ bool PlatformShowCustomHungRendererDialog(WebContents* contents) {
 }
 
 bool PlatformHideCustomHungRendererDialog(WebContents* contents) {
-  if (!base::win::IsMetroProcess())
+  if (!win8::IsSingleWindowMetroMode())
     return false;
 
   if (HungRendererDialogMetro::GetInstance())

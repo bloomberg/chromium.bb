@@ -45,7 +45,7 @@
 #include "ui/views/window/window_shape.h"
 
 #if defined(OS_WIN)
-#include "base/win/metro.h"
+#include "win8/util/win8_util.h"
 #endif  // OS_WIN
 
 using content::WebContents;
@@ -118,8 +118,8 @@ bool ConvertedContainsCheck(gfx::Rect bounds, const views::View* src,
 }
 
 bool ShouldAddDefaultCaptionButtons() {
-#if defined(OS_WIN) && !defined(USE_AURA)
-  return !base::win::IsMetroProcess();
+#if defined(OS_WIN)
+  return !win8::IsSingleWindowMetroMode();
 #endif  // OS_WIN
   return true;
 }
