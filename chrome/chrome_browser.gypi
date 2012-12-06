@@ -1311,6 +1311,8 @@
         'browser/policy/cloud_policy_constants.h',
         'browser/policy/cloud_policy_controller.cc',
         'browser/policy/cloud_policy_controller.h',
+        'browser/policy/cloud_policy_core.cc',
+        'browser/policy/cloud_policy_core.h',
         'browser/policy/cloud_policy_data_store.cc',
         'browser/policy/cloud_policy_data_store.h',
         'browser/policy/cloud_policy_manager.cc',

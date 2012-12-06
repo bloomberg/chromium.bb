@@ -27,31 +27,32 @@ UserCloudPolicyManager::~UserCloudPolicyManager() {
   UserCloudPolicyManagerFactory::GetInstance()->Unregister(profile_, this);
 }
 
-void UserCloudPolicyManager::Initialize(
+void UserCloudPolicyManager::Connect(
     PrefService* local_state,
     DeviceManagementService* device_management_service) {
-  InitializeService(
+  core()->Connect(
       make_scoped_ptr(new CloudPolicyClient(std::string(), std::string(),
                                             USER_AFFILIATION_NONE,
                                             CloudPolicyClient::POLICY_TYPE_USER,
                                             NULL, device_management_service)));
-  StartRefreshScheduler(local_state, prefs::kUserPolicyRefreshRate);
+  core()->StartRefreshScheduler();
+  core()->TrackRefreshDelayPref(local_state, prefs::kUserPolicyRefreshRate);
 }
 
-void UserCloudPolicyManager::ShutdownAndRemovePolicy() {
-  ShutdownService();
+void UserCloudPolicyManager::DisconnectAndRemovePolicy() {
+  core()->Disconnect();
   store_->Clear();
 }
 
 bool UserCloudPolicyManager::IsClientRegistered() const {
-  return cloud_policy_client() && cloud_policy_client()->is_registered();
+  return client() && client()->is_registered();
 }
 
 void UserCloudPolicyManager::RegisterClient(const std::string& access_token) {
-  DCHECK(cloud_policy_client()) << "Callers must invoke Initialize() first";
-  if (!cloud_policy_client()->is_registered()) {
+  DCHECK(client()) << "Callers must invoke Initialize() first";
+  if (!client()->is_registered()) {
     DVLOG(1) << "Registering client with access token: " << access_token;
-    cloud_policy_client()->Register(access_token);
+    client()->Register(access_token);
   }
 }
 

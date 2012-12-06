@@ -131,9 +131,9 @@ class TestCloudPolicyManager : public CloudPolicyManager {
   virtual ~TestCloudPolicyManager() {}
 
   // Publish the protected members for testing.
-  using CloudPolicyManager::InitializeService;
-  using CloudPolicyManager::ShutdownService;
-  using CloudPolicyManager::StartRefreshScheduler;
+  using CloudPolicyManager::client;
+  using CloudPolicyManager::store;
+  using CloudPolicyManager::service;
   using CloudPolicyManager::CheckAndPublishPolicy;
 
  private:
@@ -207,18 +207,18 @@ TEST_F(CloudPolicyManagerTest, InitAndShutdown) {
 
   MockCloudPolicyClient* client = new MockCloudPolicyClient();
   EXPECT_CALL(*client, SetupRegistration(_, _));
-  manager_->InitializeService(scoped_ptr<CloudPolicyClient>(client));
+  manager_->core()->Connect(scoped_ptr<CloudPolicyClient>(client));
   Mock::VerifyAndClearExpectations(client);
-  EXPECT_TRUE(manager_->cloud_policy_client());
-  EXPECT_TRUE(manager_->cloud_policy_service());
+  EXPECT_TRUE(manager_->client());
+  EXPECT_TRUE(manager_->service());
 
   EXPECT_CALL(observer_, OnUpdatePolicy(manager_.get()));
   manager_->CheckAndPublishPolicy();
   Mock::VerifyAndClearExpectations(&observer_);
 
-  manager_->ShutdownService();
-  EXPECT_FALSE(manager_->cloud_policy_client());
-  EXPECT_FALSE(manager_->cloud_policy_service());
+  manager_->core()->Disconnect();
+  EXPECT_FALSE(manager_->client());
+  EXPECT_FALSE(manager_->service());
 }
 
 TEST_F(CloudPolicyManagerTest, RegistrationAndFetch) {
@@ -228,7 +228,7 @@ TEST_F(CloudPolicyManagerTest, RegistrationAndFetch) {
   EXPECT_TRUE(manager_->IsInitializationComplete());
 
   MockCloudPolicyClient* client = new MockCloudPolicyClient();
-  manager_->InitializeService(scoped_ptr<CloudPolicyClient>(client));
+  manager_->core()->Connect(scoped_ptr<CloudPolicyClient>(client));
 
   client->SetDMToken(policy_.policy_data().request_token());
   client->NotifyRegistrationStateChanged();
@@ -263,7 +263,7 @@ TEST_F(CloudPolicyManagerTest, Update) {
 
 TEST_F(CloudPolicyManagerTest, RefreshNotRegistered) {
   MockCloudPolicyClient* client = new MockCloudPolicyClient();
-  manager_->InitializeService(scoped_ptr<CloudPolicyClient>(client));
+  manager_->core()->Connect(scoped_ptr<CloudPolicyClient>(client));
 
   EXPECT_CALL(observer_, OnUpdatePolicy(manager_.get()));
   store_.NotifyStoreLoaded();
@@ -277,7 +277,7 @@ TEST_F(CloudPolicyManagerTest, RefreshNotRegistered) {
 
 TEST_F(CloudPolicyManagerTest, RefreshSuccessful) {
   MockCloudPolicyClient* client = new MockCloudPolicyClient();
-  manager_->InitializeService(scoped_ptr<CloudPolicyClient>(client));
+  manager_->core()->Connect(scoped_ptr<CloudPolicyClient>(client));
 
   // Simulate a store load.
   store_.policy_.reset(new em::PolicyData(policy_.policy_data()));

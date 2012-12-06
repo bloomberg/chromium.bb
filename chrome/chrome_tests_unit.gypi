@@ -894,6 +894,7 @@
         'browser/policy/auto_enrollment_client_unittest.cc',
         'browser/policy/cloud_policy_client_unittest.cc',
         'browser/policy/cloud_policy_controller_unittest.cc',
+        'browser/policy/cloud_policy_core_unittest.cc',
         'browser/policy/cloud_policy_manager_unittest.cc',
         'browser/policy/cloud_policy_provider_unittest.cc',
         'browser/policy/cloud_policy_refresh_scheduler_unittest.cc',

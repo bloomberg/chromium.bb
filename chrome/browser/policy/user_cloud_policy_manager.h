@@ -17,7 +17,6 @@ class Profile;
 
 namespace policy {
 
-class CloudPolicyClient;
 class DeviceManagementService;
 class UserCloudPolicyStore;
 
@@ -32,14 +31,14 @@ class UserCloudPolicyManager : public CloudPolicyManager {
   // Initializes the cloud connection. |local_state| and
   // |device_management_service| must stay valid until this object is deleted or
   // ShutdownAndRemovePolicy() gets called. Virtual for mocking.
-  virtual void Initialize(PrefService* local_state,
-                          DeviceManagementService* device_management_service);
+  virtual void Connect(PrefService* local_state,
+                       DeviceManagementService* device_management_service);
 
   // Shuts down the UserCloudPolicyManager (removes and stops refreshing the
   // cached cloud policy). This is typically called when a profile is being
   // disassociated from a given user (e.g. during signout). No policy will be
   // provided by this object until the next time Initialize() is invoked.
-  void ShutdownAndRemovePolicy();
+  void DisconnectAndRemovePolicy();
 
   // Returns true if the underlying CloudPolicyClient is already registered.
   // Virtual for mocking.

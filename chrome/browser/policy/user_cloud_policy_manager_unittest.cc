@@ -69,8 +69,9 @@ class UserCloudPolicyManagerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyManagerTest);
 };
 
-TEST_F(UserCloudPolicyManagerTest, ShutdownAndRemovePolicy) {
-  // Load policy, make sure it goes away when ShutdownAndRemove() is called.
+TEST_F(UserCloudPolicyManagerTest, DisconnectAndRemovePolicy) {
+  // Load policy, make sure it goes away when DisconnectAndRemovePolicy() is
+  // called.
   CreateManager();
   store_->policy_map_.CopyFrom(policy_map_);
   EXPECT_CALL(observer_, OnUpdatePolicy(manager_.get()));
@@ -78,8 +79,8 @@ TEST_F(UserCloudPolicyManagerTest, ShutdownAndRemovePolicy) {
   EXPECT_TRUE(expected_bundle_.Equals(manager_->policies()));
   EXPECT_TRUE(manager_->IsInitializationComplete());
   EXPECT_CALL(*store_, Clear());
-  manager_->ShutdownAndRemovePolicy();
-  EXPECT_FALSE(manager_->cloud_policy_service());
+  manager_->DisconnectAndRemovePolicy();
+  EXPECT_FALSE(manager_->core()->service());
 }
 
 }  // namespace

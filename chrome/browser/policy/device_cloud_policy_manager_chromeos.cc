@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
+#include "chrome/browser/policy/cloud_policy_store.h"
 #include "chrome/browser/policy/device_cloud_policy_store_chromeos.h"
 #include "chrome/browser/policy/device_management_service.h"
 #include "chrome/browser/policy/enrollment_handler_chromeos.h"
@@ -76,7 +77,7 @@ void DeviceCloudPolicyManagerChromeOS::StartEnrollment(
     const AllowedDeviceModes& allowed_device_modes,
     const EnrollmentCallback& callback) {
   CHECK(device_management_service_);
-  ShutdownService();
+  core()->Disconnect();
 
   enrollment_handler_.reset(
       new EnrollmentHandlerChromeOS(
@@ -144,8 +145,10 @@ void DeviceCloudPolicyManagerChromeOS::EnrollmentCompleted(
     const EnrollmentCallback& callback,
     EnrollmentStatus status) {
   if (status.status() == EnrollmentStatus::STATUS_SUCCESS) {
-    InitializeService(enrollment_handler_->ReleaseClient());
-    StartRefreshScheduler(local_state_, prefs::kDevicePolicyRefreshRate);
+    core()->Connect(enrollment_handler_->ReleaseClient());
+    core()->StartRefreshScheduler();
+    core()->TrackRefreshDelayPref(local_state_,
+                                  prefs::kDevicePolicyRefreshRate);
   } else {
     StartIfManaged();
   }
@@ -158,11 +161,13 @@ void DeviceCloudPolicyManagerChromeOS::EnrollmentCompleted(
 void DeviceCloudPolicyManagerChromeOS::StartIfManaged() {
   if (device_management_service_ &&
       local_state_ &&
-      cloud_policy_store()->is_initialized() &&
-      cloud_policy_store()->is_managed() &&
-      !cloud_policy_service()) {
-    InitializeService(CreateClient());
-    StartRefreshScheduler(local_state_, prefs::kDevicePolicyRefreshRate);
+      store()->is_initialized() &&
+      store()->is_managed() &&
+      !service()) {
+    core()->Connect(CreateClient());
+    core()->StartRefreshScheduler();
+    core()->TrackRefreshDelayPref(local_state_,
+                                  prefs::kDevicePolicyRefreshRate);
   }
 }
 

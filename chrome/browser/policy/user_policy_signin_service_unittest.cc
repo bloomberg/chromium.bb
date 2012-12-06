@@ -118,7 +118,7 @@ TEST_F(UserPolicySigninServiceTest, InitWhileSignedOut) {
       content::NotificationService::NoDetails());
 
   // UserCloudPolicyManager should not be initialized.
-  ASSERT_FALSE(manager_->cloud_policy_service());
+  ASSERT_FALSE(manager_->core()->service());
 }
 
 TEST_F(UserPolicySigninServiceTest, InitWhileSignedIn) {
@@ -133,7 +133,7 @@ TEST_F(UserPolicySigninServiceTest, InitWhileSignedIn) {
       content::NotificationService::NoDetails());
 
   // UserCloudPolicyManager should be initialized.
-  ASSERT_TRUE(manager_->cloud_policy_service());
+  ASSERT_TRUE(manager_->core()->service());
 
   // Complete initialization of the store.
   mock_store_->NotifyStoreLoaded();
@@ -159,7 +159,7 @@ TEST_F(UserPolicySigninServiceTest, SignInAfterInit) {
 
   // UserCloudPolicyManager should not be initialized since there is no
   // signed-in user.
-  ASSERT_FALSE(manager_->cloud_policy_service());
+  ASSERT_FALSE(manager_->core()->service());
 
   // Now sign in the user.
   SigninManagerFactory::GetForProfile(profile_.get())->SetAuthenticatedUsername(
@@ -173,7 +173,7 @@ TEST_F(UserPolicySigninServiceTest, SignInAfterInit) {
       GaiaConstants::kGaiaOAuth2LoginRefreshToken, "oauth_login_refresh_token");
 
   // UserCloudPolicyManager should be initialized.
-  ASSERT_TRUE(manager_->cloud_policy_service());
+  ASSERT_TRUE(manager_->core()->service());
 
   // Client registration should be in progress since we have an oauth token.
   ASSERT_TRUE(IsRequestActive());
@@ -189,7 +189,7 @@ TEST_F(UserPolicySigninServiceTest, UnregisteredClient) {
 
   // UserCloudPolicyManager should not be initialized since there is no
   // signed-in user.
-  ASSERT_FALSE(manager_->cloud_policy_service());
+  ASSERT_FALSE(manager_->core()->service());
 
   // Now sign in the user.
   SigninManagerFactory::GetForProfile(profile_.get())->SetAuthenticatedUsername(
@@ -200,7 +200,7 @@ TEST_F(UserPolicySigninServiceTest, UnregisteredClient) {
       GaiaConstants::kGaiaOAuth2LoginRefreshToken, "oauth_login_refresh_token");
 
   // UserCloudPolicyManager should be initialized.
-  ASSERT_TRUE(manager_->cloud_policy_service());
+  ASSERT_TRUE(manager_->core()->service());
 
   // Client registration should not be in progress since the store is not
   // yet initialized.
@@ -223,7 +223,7 @@ TEST_F(UserPolicySigninServiceTest, RegisteredClient) {
 
   // UserCloudPolicyManager should not be initialized since there is no
   // signed-in user.
-  ASSERT_FALSE(manager_->cloud_policy_service());
+  ASSERT_FALSE(manager_->core()->service());
 
   // Now sign in the user.
   SigninManagerFactory::GetForProfile(profile_.get())->SetAuthenticatedUsername(
@@ -234,7 +234,7 @@ TEST_F(UserPolicySigninServiceTest, RegisteredClient) {
       GaiaConstants::kGaiaOAuth2LoginRefreshToken, "oauth_login_refresh_token");
 
   // UserCloudPolicyManager should be initialized.
-  ASSERT_TRUE(manager_->cloud_policy_service());
+  ASSERT_TRUE(manager_->core()->service());
 
   // Client registration should not be in progress since the store is not
   // yet initialized.
@@ -267,13 +267,13 @@ TEST_F(UserPolicySigninServiceTest, SignOutAfterInit) {
       content::NotificationService::NoDetails());
 
   // UserCloudPolicyManager should be initialized.
-  ASSERT_TRUE(manager_->cloud_policy_service());
+  ASSERT_TRUE(manager_->core()->service());
 
   // Now sign out.
   SigninManagerFactory::GetForProfile(profile_.get())->SignOut();
 
   // UserCloudPolicyManager should be shut down.
-  ASSERT_FALSE(manager_->cloud_policy_service());
+  ASSERT_FALSE(manager_->core()->service());
 }
 
 }  // namespace

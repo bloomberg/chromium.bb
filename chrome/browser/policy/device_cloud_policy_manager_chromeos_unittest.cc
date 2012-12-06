@@ -181,8 +181,8 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
       EXPECT_EQ(DEVICE_MODE_ENTERPRISE, install_attributes_.GetMode());
       EXPECT_TRUE(store_->has_policy());
       EXPECT_TRUE(store_->is_managed());
-      ASSERT_TRUE(manager_.cloud_policy_client());
-      EXPECT_TRUE(manager_.cloud_policy_client()->is_registered());
+      ASSERT_TRUE(manager_.core()->client());
+      EXPECT_TRUE(manager_.core()->client()->is_registered());
 
       bundle.Get(POLICY_DOMAIN_CHROME, std::string()).Set(
           key::kDeviceMetricsReportingEnabled, POLICY_LEVEL_MANDATORY,

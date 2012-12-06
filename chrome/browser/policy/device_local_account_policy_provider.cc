@@ -5,6 +5,7 @@
 #include "chrome/browser/policy/device_local_account_policy_provider.h"
 
 #include "base/bind.h"
+#include "chrome/browser/policy/cloud_policy_service.h"
 #include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/policy/policy_service.h"
 
@@ -33,9 +34,9 @@ bool DeviceLocalAccountPolicyProvider::IsInitializationComplete() const {
 
 void DeviceLocalAccountPolicyProvider::RefreshPolicies() {
   DeviceLocalAccountPolicyBroker* broker = GetBroker();
-  if (broker) {
+  if (broker && broker->core()->service()) {
     waiting_for_policy_refresh_ = true;
-    broker->RefreshPolicy(
+    broker->core()->service()->RefreshPolicy(
         base::Bind(&DeviceLocalAccountPolicyProvider::ReportPolicyRefresh,
                    weak_factory_.GetWeakPtr()));
   } else {
@@ -66,11 +67,11 @@ void DeviceLocalAccountPolicyProvider::UpdateFromBroker() {
   DeviceLocalAccountPolicyBroker* broker = GetBroker();
   scoped_ptr<PolicyBundle> bundle(new PolicyBundle());
   if (broker) {
-    store_initialized_ |= broker->store()->is_initialized();
+    store_initialized_ |= broker->core()->store()->is_initialized();
     if (!waiting_for_policy_refresh_) {
       // Copy policy from the broker.
       bundle->Get(POLICY_DOMAIN_CHROME, std::string()).CopyFrom(
-          broker->store()->policy_map());
+          broker->core()->store()->policy_map());
     } else {
       // Wait for the refresh to finish.
       return;

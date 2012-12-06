@@ -64,8 +64,8 @@ UserPolicySigninService::~UserPolicySigninService() {}
 
 void UserPolicySigninService::StopObserving() {
   UserCloudPolicyManager* manager = GetManager();
-  if (manager && manager->cloud_policy_service())
-    manager->cloud_policy_service()->RemoveObserver(this);
+  if (manager && manager->core()->service())
+    manager->core()->service()->RemoveObserver(this);
 }
 
 void UserPolicySigninService::Observe(
@@ -114,10 +114,10 @@ void UserPolicySigninService::ConfigureUserCloudPolicyManager() {
   if (signin_manager->GetAuthenticatedUsername().empty()) {
     // User has signed out - remove existing policy.
     StopObserving();
-    manager->ShutdownAndRemovePolicy();
+    manager->DisconnectAndRemovePolicy();
   } else {
     // Initialize the UserCloudPolicyManager if it isn't already initialized.
-    if (!manager->cloud_policy_service()) {
+    if (!manager->core()->service()) {
       // Make sure we've initialized the DeviceManagementService. It's OK to
       // call this multiple times so we do it every time we initialize the
       // UserCloudPolicyManager.
@@ -128,14 +128,14 @@ void UserPolicySigninService::ConfigureUserCloudPolicyManager() {
       // the OnInitializationCompleted() callback is invoked.
       policy::DeviceManagementService* service = g_browser_process->
           browser_policy_connector()->device_management_service();
-      manager->Initialize(g_browser_process->local_state(), service);
-      DCHECK(manager->cloud_policy_service());
-      manager->cloud_policy_service()->AddObserver(this);
+      manager->Connect(g_browser_process->local_state(), service);
+      DCHECK(manager->core()->service());
+      manager->core()->service()->AddObserver(this);
     }
 
     // If the CloudPolicyService is initialized, but the CloudPolicyClient still
     // needs to be registered, kick off registration.
-    if (manager->cloud_policy_service()->IsInitializationComplete() &&
+    if (manager->core()->service()->IsInitializationComplete() &&
         !manager->IsClientRegistered()) {
       RegisterCloudPolicyService();
     }
@@ -145,7 +145,7 @@ void UserPolicySigninService::ConfigureUserCloudPolicyManager() {
 void UserPolicySigninService::OnInitializationCompleted(
     CloudPolicyService* service) {
   UserCloudPolicyManager* manager = GetManager();
-  DCHECK_EQ(service, manager->cloud_policy_service());
+  DCHECK_EQ(service, manager->core()->service());
   DCHECK(service->IsInitializationComplete());
   // The service is now initialized - if the client is not yet registered, then
   // it means that there is no cached policy and so we need to initiate a new

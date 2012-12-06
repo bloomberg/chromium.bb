@@ -147,23 +147,23 @@ void SetUpNewStackAfterCreatingBrowser(Browser* browser) {
   UserCloudPolicyManager* policy_manager =
       UserCloudPolicyManagerFactory::GetForProfile(browser->profile());
   ASSERT_TRUE(policy_manager);
-  policy_manager->Initialize(g_browser_process->local_state(),
-                             connector->device_management_service());
+  policy_manager->Connect(g_browser_process->local_state(),
+                          connector->device_management_service());
 #endif  // defined(OS_CHROMEOS)
 
-  ASSERT_TRUE(policy_manager->cloud_policy_client());
+  ASSERT_TRUE(policy_manager->core()->client());
   base::RunLoop run_loop;
   MockCloudPolicyClientObserver observer;
   EXPECT_CALL(observer, OnRegistrationStateChanged(_)).WillOnce(
       InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
-  policy_manager->cloud_policy_client()->AddObserver(&observer);
+  policy_manager->core()->client()->AddObserver(&observer);
 
   // Give a bogus OAuth token to the |policy_manager|. This should make its
   // CloudPolicyClient fetch the DMToken.
   policy_manager->RegisterClient("bogus");
   run_loop.Run();
   Mock::VerifyAndClearExpectations(&observer);
-  policy_manager->cloud_policy_client()->RemoveObserver(&observer);
+  policy_manager->core()->client()->RemoveObserver(&observer);
 }
 
 struct TestSetup {

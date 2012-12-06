@@ -14,8 +14,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chrome/browser/policy/cloud_policy_core.h"
 #include "chrome/browser/policy/cloud_policy_store.h"
-#include "chrome/browser/policy/device_local_account_policy_store.h"
 
 namespace chromeos {
 class SessionManagerClient;
@@ -24,31 +24,21 @@ class SessionManagerClient;
 namespace policy {
 
 class CloudPolicyClient;
-class CloudPolicyRefreshScheduler;
-class CloudPolicyService;
+class DeviceLocalAccountPolicyStore;
 class DeviceManagementService;
 
-// This class manages the policy settings for a single device-local account,
-// hosting the corresponding DeviceLocalAccountPolicyStore as well as the
-// CloudPolicyClient (for updating the policy from the cloud) if applicable.
+// The main switching central that downloads, caches, refreshes, etc. policy for
+// a single device-local account.
 class DeviceLocalAccountPolicyBroker {
  public:
-  DeviceLocalAccountPolicyBroker(
-      const std::string& account_id,
-      chromeos::SessionManagerClient* session_manager_client,
-      chromeos::DeviceSettingsService* device_settings_service);
+  explicit DeviceLocalAccountPolicyBroker(
+      scoped_ptr<DeviceLocalAccountPolicyStore> store);
   ~DeviceLocalAccountPolicyBroker();
 
-  CloudPolicyStore* store() { return &store_; }
-  const CloudPolicyStore* store() const { return &store_; }
+  const std::string& account_id() const;
 
-  CloudPolicyClient* client() { return client_.get(); }
-  const CloudPolicyClient* client() const { return client_.get(); }
-
-  const std::string& account_id() const { return account_id_; }
-
-  // Refreshes policy (if applicable) and invokes |callback| when done.
-  void RefreshPolicy(const base::Closure& callback);
+  CloudPolicyCore* core() { return &core_; }
+  const CloudPolicyCore* core() const { return &core_; }
 
   // Establish a cloud connection for the service.
   void Connect(scoped_ptr<CloudPolicyClient> client);
@@ -56,17 +46,13 @@ class DeviceLocalAccountPolicyBroker {
   // Destroy the cloud connection, stopping policy refreshes.
   void Disconnect();
 
-  // Updates the refresh scheduler's delay from the key::kPolicyRefreshRate
-  // policy in |store_|.
+  // Reads the refresh delay from policy and configures the refresh scheduler.
   void UpdateRefreshDelay();
 
  private:
   const std::string account_id_;
-
-  DeviceLocalAccountPolicyStore store_;
-  scoped_ptr<CloudPolicyClient> client_;
-  scoped_ptr<CloudPolicyService> service_;
-  scoped_ptr<CloudPolicyRefreshScheduler> refresh_scheduler_;
+  scoped_ptr<DeviceLocalAccountPolicyStore> store_;
+  CloudPolicyCore core_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceLocalAccountPolicyBroker);
 };

@@ -105,7 +105,7 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, WaitForPolicyFetch) {
   EXPECT_CALL(device_management_service_,
               CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH))
       .WillOnce(device_management_service_.CreateAsyncJob(&fetch_request));
-  manager_->cloud_policy_client()->SetupRegistration("dm_token", "client_id");
+  manager_->core()->client()->SetupRegistration("dm_token", "client_id");
   ASSERT_TRUE(fetch_request);
   EXPECT_FALSE(manager_->IsInitializationComplete());
   Mock::VerifyAndClearExpectations(&observer_);
@@ -134,7 +134,7 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, WaitForPolicyFetchError) {
   EXPECT_CALL(device_management_service_,
               CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH))
       .WillOnce(device_management_service_.CreateAsyncJob(&fetch_request));
-  manager_->cloud_policy_client()->SetupRegistration("dm_token", "client_id");
+  manager_->core()->client()->SetupRegistration("dm_token", "client_id");
   ASSERT_TRUE(fetch_request);
   EXPECT_FALSE(manager_->IsInitializationComplete());
   Mock::VerifyAndClearExpectations(&observer_);

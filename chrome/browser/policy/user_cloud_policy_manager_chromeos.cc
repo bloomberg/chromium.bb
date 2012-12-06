@@ -27,12 +27,12 @@ void UserCloudPolicyManagerChromeOS::Connect(
   DCHECK(device_management_service);
   DCHECK(local_state);
   local_state_ = local_state;
-  scoped_ptr<CloudPolicyClient> client(
+  scoped_ptr<CloudPolicyClient> cloud_policy_client(
       new CloudPolicyClient(std::string(), std::string(), user_affiliation,
                             CloudPolicyClient::POLICY_TYPE_USER, NULL,
                             device_management_service));
-  InitializeService(client.Pass());
-  cloud_policy_client()->AddObserver(this);
+  core()->Connect(cloud_policy_client.Pass());
+  client()->AddObserver(this);
 
   if (wait_for_policy_fetch_) {
     // If we are supposed to wait for a policy fetch, we trigger an explicit
@@ -40,8 +40,8 @@ void UserCloudPolicyManagerChromeOS::Connect(
     // done. The refresh scheduler only gets started once that refresh
     // completes. Note that we might have to wait for registration to happen,
     // see OnRegistrationStateChanged() below.
-    if (cloud_policy_client()->is_registered()) {
-      cloud_policy_service()->RefreshPolicy(
+    if (client()->is_registered()) {
+      service()->RefreshPolicy(
           base::Bind(
               &UserCloudPolicyManagerChromeOS::OnInitialPolicyFetchComplete,
               base::Unretained(this)));
@@ -57,26 +57,28 @@ void UserCloudPolicyManagerChromeOS::CancelWaitForPolicyFetch() {
 
   // Now that |wait_for_policy_fetch_| is guaranteed to be false, the scheduler
   // can be started.
-  if (cloud_policy_service() && local_state_)
-    StartRefreshScheduler(local_state_, prefs::kUserPolicyRefreshRate);
+  if (service() && local_state_) {
+    core()->StartRefreshScheduler();
+    core()->TrackRefreshDelayPref(local_state_, prefs::kUserPolicyRefreshRate);
+  }
 }
 
 bool UserCloudPolicyManagerChromeOS::IsClientRegistered() const {
-  return cloud_policy_client() && cloud_policy_client()->is_registered();
+  return client() && client()->is_registered();
 }
 
 void UserCloudPolicyManagerChromeOS::RegisterClient(
     const std::string& access_token) {
-  DCHECK(cloud_policy_client()) << "Callers must invoke Initialize() first";
-  if (!cloud_policy_client()->is_registered()) {
+  DCHECK(client()) << "Callers must invoke Initialize() first";
+  if (!client()->is_registered()) {
     DVLOG(1) << "Registering client with access token: " << access_token;
-    cloud_policy_client()->Register(access_token);
+    client()->Register(access_token);
   }
 }
 
 void UserCloudPolicyManagerChromeOS::Shutdown() {
-  if (cloud_policy_client())
-    cloud_policy_client()->RemoveObserver(this);
+  if (client())
+    client()->RemoveObserver(this);
   CloudPolicyManager::Shutdown();
 }
 
@@ -92,12 +94,12 @@ void UserCloudPolicyManagerChromeOS::OnPolicyFetched(
 }
 
 void UserCloudPolicyManagerChromeOS::OnRegistrationStateChanged(
-    CloudPolicyClient* client) {
-  DCHECK_EQ(cloud_policy_client(), client);
+    CloudPolicyClient* cloud_policy_client) {
+  DCHECK_EQ(client(), cloud_policy_client);
   if (wait_for_policy_fetch_) {
     // If we're blocked on the policy fetch, now is a good time to issue it.
-    if (cloud_policy_client()->is_registered()) {
-      cloud_policy_service()->RefreshPolicy(
+    if (client()->is_registered()) {
+      service()->RefreshPolicy(
           base::Bind(
               &UserCloudPolicyManagerChromeOS::OnInitialPolicyFetchComplete,
               base::Unretained(this)));
@@ -109,8 +111,9 @@ void UserCloudPolicyManagerChromeOS::OnRegistrationStateChanged(
   }
 }
 
-void UserCloudPolicyManagerChromeOS::OnClientError(CloudPolicyClient* client) {
-  DCHECK_EQ(cloud_policy_client(), client);
+void UserCloudPolicyManagerChromeOS::OnClientError(
+    CloudPolicyClient* cloud_policy_client) {
+  DCHECK_EQ(client(), cloud_policy_client);
   CancelWaitForPolicyFetch();
 }
 

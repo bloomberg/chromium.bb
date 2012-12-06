@@ -43,6 +43,8 @@ class CloudPolicyRefreshScheduler
       const scoped_refptr<base::TaskRunner>& task_runner);
   virtual ~CloudPolicyRefreshScheduler();
 
+  int64 refresh_delay() const { return refresh_delay_ms_; }
+
   // Sets the refresh delay to |refresh_delay| (subject to min/max clamping).
   void SetRefreshDelay(int64 refresh_delay);
 

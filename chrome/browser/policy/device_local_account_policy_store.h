@@ -39,6 +39,8 @@ class DeviceLocalAccountPolicyStore
       chromeos::DeviceSettingsService* device_settings_service);
   virtual ~DeviceLocalAccountPolicyStore();
 
+  const std::string& account_id() const { return account_id_; }
+
   // CloudPolicyStore:
   virtual void Store(
       const enterprise_management::PolicyFetchResponse& policy) OVERRIDE;

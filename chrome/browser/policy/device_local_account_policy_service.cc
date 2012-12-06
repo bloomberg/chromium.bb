@@ -8,7 +8,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/policy/cloud_policy_client.h"
 #include "chrome/browser/policy/cloud_policy_refresh_scheduler.h"
-#include "chrome/browser/policy/cloud_policy_service.h"
+#include "chrome/browser/policy/device_local_account_policy_store.h"
 #include "chrome/browser/policy/device_management_service.h"
 #include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
@@ -20,48 +20,35 @@ namespace em = enterprise_management;
 namespace policy {
 
 DeviceLocalAccountPolicyBroker::DeviceLocalAccountPolicyBroker(
-    const std::string& account_id,
-    chromeos::SessionManagerClient* session_manager_client,
-    chromeos::DeviceSettingsService* device_settings_service)
-    : account_id_(account_id),
-      store_(account_id, session_manager_client, device_settings_service) {}
+    scoped_ptr<DeviceLocalAccountPolicyStore> store)
+    : store_(store.Pass()),
+      core_(store_.get()) {
+}
 
 DeviceLocalAccountPolicyBroker::~DeviceLocalAccountPolicyBroker() {}
 
-void DeviceLocalAccountPolicyBroker::RefreshPolicy(
-    const base::Closure& callback) {
-  if (service_.get())
-    service_->RefreshPolicy(callback);
-  else
-    callback.Run();
+const std::string& DeviceLocalAccountPolicyBroker::account_id() const {
+  return store_->account_id();
 }
 
 void DeviceLocalAccountPolicyBroker::Connect(
     scoped_ptr<CloudPolicyClient> client) {
-  DCHECK(!client_.get());
-  client_ = client.Pass();
-  service_.reset(new CloudPolicyService(client_.get(), &store_));
-  refresh_scheduler_.reset(
-      new CloudPolicyRefreshScheduler(
-          client_.get(), &store_,
-          MessageLoop::current()->message_loop_proxy()));
+  core_.Connect(client.Pass());
+  core_.StartRefreshScheduler();
   UpdateRefreshDelay();
 }
 
 void DeviceLocalAccountPolicyBroker::Disconnect() {
-  DCHECK(client_.get());
-  refresh_scheduler_.reset();
-  service_.reset();
-  client_.reset();
+  core_.Disconnect();
 }
 
 void DeviceLocalAccountPolicyBroker::UpdateRefreshDelay() {
-  if (refresh_scheduler_) {
+  if (core_.refresh_scheduler()) {
     const Value* policy_value =
-        store_.policy_map().GetValue(key::kPolicyRefreshRate);
+        store_->policy_map().GetValue(key::kPolicyRefreshRate);
     int delay = 0;
     if (policy_value && policy_value->GetAsInteger(&delay))
-      refresh_scheduler_->SetRefreshDelay(delay);
+      core_.refresh_scheduler()->SetRefreshDelay(delay);
   }
 }
 
@@ -88,7 +75,7 @@ void DeviceLocalAccountPolicyService::Connect(
   // Connect the brokers.
   for (PolicyBrokerMap::iterator broker(policy_brokers_.begin());
        broker != policy_brokers_.end(); ++broker) {
-    DCHECK(!broker->second->client());
+    DCHECK(!broker->second->core()->client());
     broker->second->Connect(
         CreateClientForAccount(broker->second->account_id()).Pass());
   }
@@ -172,7 +159,7 @@ void DeviceLocalAccountPolicyService::UpdateAccountList(
 
       // Fire up the cloud connection for fetching policy for the account from
       // the cloud if this is an enterprise-managed device.
-      if (!new_broker || !new_broker->client()) {
+      if (!new_broker || !new_broker->core()->client()) {
         scoped_ptr<CloudPolicyClient> client(
             CreateClientForAccount(entry->id()));
         if (client.get()) {
@@ -192,11 +179,13 @@ void DeviceLocalAccountPolicyService::UpdateAccountList(
 scoped_ptr<DeviceLocalAccountPolicyBroker>
     DeviceLocalAccountPolicyService::CreateBroker(
         const std::string& account_id) {
+  scoped_ptr<DeviceLocalAccountPolicyStore> store(
+      new DeviceLocalAccountPolicyStore(account_id, session_manager_client_,
+                                        device_settings_service_));
   scoped_ptr<DeviceLocalAccountPolicyBroker> broker(
-      new DeviceLocalAccountPolicyBroker(account_id, session_manager_client_,
-                                         device_settings_service_));
-  broker->store()->AddObserver(this);
-  broker->store()->Load();
+      new DeviceLocalAccountPolicyBroker(store.Pass()));
+  broker->core()->store()->AddObserver(this);
+  broker->core()->store()->Load();
   return broker.Pass();
 }
 
@@ -204,7 +193,7 @@ void DeviceLocalAccountPolicyService::DeleteBrokers(PolicyBrokerMap* map) {
   for (PolicyBrokerMap::iterator broker = map->begin(); broker != map->end();
        ++broker) {
     if (broker->second) {
-      broker->second->store()->RemoveObserver(this);
+      broker->second->core()->store()->RemoveObserver(this);
       delete broker->second;
     }
   }
@@ -216,7 +205,7 @@ DeviceLocalAccountPolicyBroker*
         CloudPolicyStore* store) {
   for (PolicyBrokerMap::iterator broker(policy_brokers_.begin());
        broker != policy_brokers_.end(); ++broker) {
-    if (broker->second->store() == store)
+    if (broker->second->core()->store() == store)
       return broker->second;
   }
   return NULL;

@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
 #include "chrome/browser/policy/cloud_policy_client.h"
 #include "chrome/browser/policy/cloud_policy_constants.h"
+#include "chrome/browser/policy/cloud_policy_service.h"
 #include "chrome/browser/policy/device_local_account_policy_provider.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "chrome/browser/policy/mock_device_management_service.h"
@@ -96,10 +97,10 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, GetBroker) {
       service_.GetBrokerForAccount(PolicyBuilder::kFakeUsername);
   ASSERT_TRUE(broker);
   EXPECT_EQ(PolicyBuilder::kFakeUsername, broker->account_id());
-  ASSERT_TRUE(broker->store());
-  EXPECT_EQ(CloudPolicyStore::STATUS_OK, broker->store()->status());
-  EXPECT_FALSE(broker->client());
-  EXPECT_TRUE(broker->store()->policy_map().empty());
+  ASSERT_TRUE(broker->core()->store());
+  EXPECT_EQ(CloudPolicyStore::STATUS_OK, broker->core()->store()->status());
+  EXPECT_FALSE(broker->core()->client());
+  EXPECT_TRUE(broker->core()->store()->policy_map().empty());
 }
 
 TEST_F(DeviceLocalAccountPolicyServiceTest, LoadNoPolicy) {
@@ -112,9 +113,10 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, LoadNoPolicy) {
   FlushDeviceSettings();
   Mock::VerifyAndClearExpectations(&service_observer_);
 
-  ASSERT_TRUE(broker->store());
-  EXPECT_EQ(CloudPolicyStore::STATUS_LOAD_ERROR, broker->store()->status());
-  EXPECT_TRUE(broker->store()->policy_map().empty());
+  ASSERT_TRUE(broker->core()->store());
+  EXPECT_EQ(CloudPolicyStore::STATUS_LOAD_ERROR,
+            broker->core()->store()->status());
+  EXPECT_TRUE(broker->core()->store()->policy_map().empty());
 }
 
 TEST_F(DeviceLocalAccountPolicyServiceTest, LoadValidationFailure) {
@@ -132,10 +134,10 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, LoadValidationFailure) {
   FlushDeviceSettings();
   Mock::VerifyAndClearExpectations(&service_observer_);
 
-  ASSERT_TRUE(broker->store());
+  ASSERT_TRUE(broker->core()->store());
   EXPECT_EQ(CloudPolicyStore::STATUS_VALIDATION_ERROR,
-            broker->store()->status());
-  EXPECT_TRUE(broker->store()->policy_map().empty());
+            broker->core()->store()->status());
+  EXPECT_TRUE(broker->core()->store()->policy_map().empty());
 }
 
 TEST_F(DeviceLocalAccountPolicyServiceTest, LoadPolicy) {
@@ -150,12 +152,14 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, LoadPolicy) {
   FlushDeviceSettings();
   Mock::VerifyAndClearExpectations(&service_observer_);
 
-  ASSERT_TRUE(broker->store());
-  EXPECT_EQ(CloudPolicyStore::STATUS_OK, broker->store()->status());
-  ASSERT_TRUE(broker->store()->policy());
+  ASSERT_TRUE(broker->core()->store());
+  EXPECT_EQ(CloudPolicyStore::STATUS_OK,
+            broker->core()->store()->status());
+  ASSERT_TRUE(broker->core()->store()->policy());
   EXPECT_EQ(device_local_account_policy_.policy_data().SerializeAsString(),
-            broker->store()->policy()->SerializeAsString());
-  EXPECT_TRUE(expected_policy_map_.Equals(broker->store()->policy_map()));
+            broker->core()->store()->policy()->SerializeAsString());
+  EXPECT_TRUE(expected_policy_map_.Equals(
+      broker->core()->store()->policy_map()));
 }
 
 TEST_F(DeviceLocalAccountPolicyServiceTest, StoreValidationFailure) {
@@ -168,16 +172,16 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, StoreValidationFailure) {
   DeviceLocalAccountPolicyBroker* broker =
       service_.GetBrokerForAccount(PolicyBuilder::kFakeUsername);
   ASSERT_TRUE(broker);
-  ASSERT_TRUE(broker->store());
-  broker->store()->Store(device_local_account_policy_.policy());
+  ASSERT_TRUE(broker->core()->store());
+  broker->core()->store()->Store(device_local_account_policy_.policy());
   FlushDeviceSettings();
   Mock::VerifyAndClearExpectations(&service_observer_);
 
-  ASSERT_TRUE(broker->store());
+  ASSERT_TRUE(broker->core()->store());
   EXPECT_EQ(CloudPolicyStore::STATUS_VALIDATION_ERROR,
-            broker->store()->status());
+            broker->core()->store()->status());
   EXPECT_EQ(CloudPolicyValidatorBase::VALIDATION_WRONG_POLICY_TYPE,
-            broker->store()->validation_status());
+            broker->core()->store()->validation_status());
 }
 
 TEST_F(DeviceLocalAccountPolicyServiceTest, StorePolicy) {
@@ -187,8 +191,8 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, StorePolicy) {
   DeviceLocalAccountPolicyBroker* broker =
       service_.GetBrokerForAccount(PolicyBuilder::kFakeUsername);
   ASSERT_TRUE(broker);
-  ASSERT_TRUE(broker->store());
-  broker->store()->Store(device_local_account_policy_.policy());
+  ASSERT_TRUE(broker->core()->store());
+  broker->core()->store()->Store(device_local_account_policy_.policy());
   FlushDeviceSettings();
   Mock::VerifyAndClearExpectations(&service_observer_);
 
@@ -222,7 +226,7 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, FetchPolicy) {
   ASSERT_TRUE(broker);
 
   service_.Connect(&mock_device_management_service_);
-  EXPECT_TRUE(broker->client());
+  EXPECT_TRUE(broker->core()->client());
 
   em::DeviceManagementRequest request;
   em::DeviceManagementResponse response;
@@ -240,7 +244,7 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, FetchPolicy) {
                        _))
       .WillOnce(SaveArg<6>(&request));
   EXPECT_CALL(service_observer_, OnPolicyUpdated(PolicyBuilder::kFakeUsername));
-  broker->client()->FetchPolicy();
+  broker->core()->client()->FetchPolicy();
   FlushDeviceSettings();
   Mock::VerifyAndClearExpectations(&service_observer_);
   Mock::VerifyAndClearExpectations(&mock_device_management_service_);
@@ -252,17 +256,19 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, FetchPolicy) {
   EXPECT_EQ(PolicyBuilder::kFakeUsername,
             request.policy_request().request(0).settings_entity_id());
 
-  ASSERT_TRUE(broker->store());
-  EXPECT_EQ(CloudPolicyStore::STATUS_OK, broker->store()->status());
-  ASSERT_TRUE(broker->store()->policy());
+  ASSERT_TRUE(broker->core()->store());
+  EXPECT_EQ(CloudPolicyStore::STATUS_OK,
+            broker->core()->store()->status());
+  ASSERT_TRUE(broker->core()->store()->policy());
   EXPECT_EQ(device_local_account_policy_.policy_data().SerializeAsString(),
-            broker->store()->policy()->SerializeAsString());
-  EXPECT_TRUE(expected_policy_map_.Equals(broker->store()->policy_map()));
+            broker->core()->store()->policy()->SerializeAsString());
+  EXPECT_TRUE(expected_policy_map_.Equals(
+      broker->core()->store()->policy_map()));
 
   EXPECT_CALL(service_observer_,
               OnPolicyUpdated(PolicyBuilder::kFakeUsername)).Times(0);
   service_.Disconnect();
-  EXPECT_FALSE(broker->client());
+  EXPECT_FALSE(broker->core()->client());
   Mock::VerifyAndClearExpectations(&service_observer_);
 }
 
@@ -276,6 +282,7 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, RefreshPolicy) {
   ASSERT_TRUE(broker);
 
   service_.Connect(&mock_device_management_service_);
+  ASSERT_TRUE(broker->core()->service());
 
   em::DeviceManagementResponse response;
   response.mutable_policy_response()->add_response()->CopyFrom(
@@ -285,7 +292,7 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, RefreshPolicy) {
   EXPECT_CALL(mock_device_management_service_, StartJob(_, _, _, _, _, _, _));
   EXPECT_CALL(*this, OnRefreshDone()).Times(1);
   EXPECT_CALL(service_observer_, OnPolicyUpdated(PolicyBuilder::kFakeUsername));
-  broker->RefreshPolicy(
+  broker->core()->service()->RefreshPolicy(
       base::Bind(&DeviceLocalAccountPolicyServiceTest::OnRefreshDone,
                  base::Unretained(this)));
   FlushDeviceSettings();
@@ -293,9 +300,11 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, RefreshPolicy) {
   Mock::VerifyAndClearExpectations(this);
   Mock::VerifyAndClearExpectations(&mock_device_management_service_);
 
-  ASSERT_TRUE(broker->store());
-  EXPECT_EQ(CloudPolicyStore::STATUS_OK, broker->store()->status());
-  EXPECT_TRUE(expected_policy_map_.Equals(broker->store()->policy_map()));
+  ASSERT_TRUE(broker->core()->store());
+  EXPECT_EQ(CloudPolicyStore::STATUS_OK,
+            broker->core()->store()->status());
+  EXPECT_TRUE(expected_policy_map_.Equals(
+      broker->core()->store()->policy_map()));
 }
 
 class DeviceLocalAccountPolicyProviderTest
@@ -376,7 +385,7 @@ TEST_F(DeviceLocalAccountPolicyProviderTest, Policy) {
   DeviceLocalAccountPolicyBroker* broker =
       service_.GetBrokerForAccount(PolicyBuilder::kFakeUsername);
   ASSERT_TRUE(broker);
-  broker->store()->Load();
+  broker->core()->store()->Load();
   FlushDeviceSettings();
   Mock::VerifyAndClearExpectations(&provider_observer_);
 
@@ -416,7 +425,7 @@ TEST_F(DeviceLocalAccountPolicyProviderTest, RefreshPolicies) {
   DeviceLocalAccountPolicyBroker* broker =
       service_.GetBrokerForAccount(PolicyBuilder::kFakeUsername);
   ASSERT_TRUE(broker);
-  EXPECT_FALSE(broker->client());
+  EXPECT_FALSE(broker->core()->client());
   EXPECT_CALL(provider_observer_, OnUpdatePolicy(&provider_)).Times(AtLeast(1));
   provider_.RefreshPolicies();
   Mock::VerifyAndClearExpectations(&provider_observer_);
