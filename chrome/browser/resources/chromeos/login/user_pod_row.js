@@ -100,9 +100,9 @@ cr.define('login', function() {
    * @extends {HTMLDivElement}
    */
   var UserPod = cr.ui.define(function() {
-    var dom = $('user-pod-template').cloneNode(true);
-    dom.id = '';
-    return dom;
+    var node = $('user-pod-template').cloneNode(true);
+    node.removeAttribute('id');
+    return node;
   });
 
   /**
@@ -399,7 +399,7 @@ cr.define('login', function() {
 
     /**
      * Handles mousedown event on a user pod.
-     * @param {Event} e Mouseout event.
+     * @param {Event} e Mousedown event.
      */
     handleMouseDown_: function(e) {
       if (this.parentNode.disabled)
@@ -418,15 +418,15 @@ cr.define('login', function() {
    * @extends {UserPod}
    */
   var PublicAccountUserPod = cr.ui.define(function() {
-    var dom = UserPod();
+    var node = UserPod();
 
     var extras = $('public-account-user-pod-extras-template').children;
     for (var i = 0; i < extras.length; ++i) {
       var el = extras[i].cloneNode(true);
-      dom.appendChild(el);
+      node.appendChild(el);
     }
 
-    return dom;
+    return node;
   });
 
   PublicAccountUserPod.prototype = {
@@ -762,11 +762,59 @@ cr.define('login', function() {
           COLUMNS[users.length] : COLUMNS[COLUMNS.length - 1];
       var rows = Math.floor((users.length - 1) / columns) + 1;
 
-      // Cannot use 'columns' and 'rows' here.
-      this.setAttribute('ncolumns', columns);
-      this.setAttribute('nrows', rows);
+      // Cancel any pending resize operation.
+      this.removeEventListener('mouseout', this.deferredResizeListener_);
+
+      if (!this.columns || !this.rows) {
+        // Set initial dimensions.
+        this.resize_(columns, rows);
+      } else if (columns != this.columns || rows != this.rows) {
+        // Defer the resize until mouse cursor leaves the pod row.
+        this.deferredResizeListener_ = function(e) {
+          if (!findAncestorByClass(e.toElement, 'podrow')) {
+            this.resize_(columns, rows);
+          }
+        }.bind(this);
+        this.addEventListener('mouseout', this.deferredResizeListener_);
+      }
 
       this.focusPod(this.preselectedPod);
+    },
+
+    /**
+     * Resizes the pod row and cancel any pending resize operations.
+     * @param {number} columns Number of columns.
+     * @param {number} rows Number of rows.
+     * @private
+     */
+    resize_: function(columns, rows) {
+      this.removeEventListener('mouseout', this.deferredResizeListener_);
+      this.columns = columns;
+      this.rows = rows;
+    },
+
+    /**
+     * Number of columns.
+     * @type {?number}
+     */
+    set columns(columns) {
+      // Cannot use 'columns' here.
+      this.setAttribute('ncolumns', columns);
+    },
+    get columns() {
+      return this.getAttribute('ncolumns');
+    },
+
+    /**
+     * Number of rows.
+     * @type {?number}
+     */
+    set rows(rows) {
+      // Cannot use 'rows' here.
+      this.setAttribute('nrows', rows);
+    },
+    get rows() {
+      return this.getAttribute('nrows');
     },
 
     /**

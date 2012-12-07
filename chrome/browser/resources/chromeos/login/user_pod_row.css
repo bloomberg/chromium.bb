@@ -8,6 +8,7 @@
 podrow {
   -webkit-box-align: center;
   -webkit-box-pack: center;
+  -webkit-transition: width 180ms ease;
   display: -webkit-box;
   max-height: 650px;
   overflow: hidden;
