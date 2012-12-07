@@ -144,6 +144,7 @@ struct DriveFileSyncService::ProcessRemoteChangeParam {
   FilePath temporary_file_path;
   std::string md5_checksum;
   fileapi::SyncOperationResult operation_result;
+  bool clear_local_changes;
 
   ProcessRemoteChangeParam(scoped_ptr<TaskToken> token,
                            RemoteChangeProcessor* processor,
@@ -154,7 +155,8 @@ struct DriveFileSyncService::ProcessRemoteChangeParam {
         remote_change(remote_change),
         callback(callback),
         metadata_updated(false),
-        operation_result(fileapi::SYNC_OPERATION_NONE) {
+        operation_result(fileapi::SYNC_OPERATION_NONE),
+        clear_local_changes(true) {
   }
 };
 
@@ -1096,6 +1098,7 @@ void DriveFileSyncService::DidPrepareForProcessRemoteChange(
 
   const fileapi::FileSystemURL& url = param->remote_change.url;
   const DriveMetadata& drive_metadata = param->drive_metadata;
+  const fileapi::FileChange& remote_file_change = param->remote_change.change;
 
   status = metadata_store_->ReadEntry(param->remote_change.url,
                                       &param->drive_metadata);
@@ -1114,20 +1117,25 @@ void DriveFileSyncService::DidPrepareForProcessRemoteChange(
 
   if (param->drive_metadata.conflicted()) {
     if (missing_local_file) {
-      if (param->remote_change.change.IsAddOrUpdate()) {
-        NOTIMPLEMENTED() << "ResolveToRemote()";
+      if (remote_file_change.IsAddOrUpdate()) {
+        DVLOG(1) << "ProcessRemoteChange for " << url.DebugString()
+                 << (param->drive_metadata.conflicted() ? " (conflicted)" : " ")
+                 << (missing_local_file ? " (missing local file)" : " ")
+                 << " remote_change: " << remote_file_change.DebugString()
+                 << " ==> operation: ResolveConflictToRemoteChange";
+        NOTIMPLEMENTED() << "ResolveConflictToRemoteChange()";
         AbortRemoteSync(param.Pass(), fileapi::SYNC_STATUS_FAILED);
         return;
       }
 
-      DCHECK(param->remote_change.change.IsDelete());
+      DCHECK(remote_file_change.IsDelete());
       param->operation_result = fileapi::SYNC_OPERATION_NONE;
       DeleteMetadataForRemoteSync(param.Pass());
       return;
     }
 
     DCHECK(!missing_local_file);
-    if (param->remote_change.change.IsAddOrUpdate()) {
+    if (remote_file_change.IsAddOrUpdate()) {
       param->operation_result = fileapi::SYNC_OPERATION_NONE;
       param->drive_metadata.set_conflicted(true);
 
@@ -1138,14 +1146,26 @@ void DriveFileSyncService::DidPrepareForProcessRemoteChange(
       return;
     }
 
-    DCHECK(param->remote_change.change.IsDelete());
-    NOTIMPLEMENTED() << "ResolveToLocal()";
-    AbortRemoteSync(param.Pass(), fileapi::SYNC_STATUS_FAILED);
+    DCHECK(remote_file_change.IsDelete());
+    DVLOG(1) << "ProcessRemoteChange for " << url.DebugString()
+             << (param->drive_metadata.conflicted() ? " (conflicted)" : " ")
+             << (missing_local_file ? " (missing local file)" : " ")
+             << " remote_change: " << remote_file_change.DebugString()
+             << " ==> operation: ResolveConflictToLocalChange";
+
+    param->operation_result = fileapi::SYNC_OPERATION_NONE;
+    param->clear_local_changes = false;
+
+    RemoteChangeProcessor* processor = param->processor;
+    ResolveConflictToLocalChange(
+        processor, url,
+        base::Bind(&DriveFileSyncService::DidResolveConflictToLocalChange,
+                   AsWeakPtr(), base::Passed(&param)));
     return;
   }
 
   DCHECK(!param->drive_metadata.conflicted());
-  if (param->remote_change.change.IsAddOrUpdate()) {
+  if (remote_file_change.IsAddOrUpdate()) {
     if (local_changes.empty()) {
       if (missing_local_file) {
         param->operation_result = fileapi::SYNC_OPERATION_ADDED;
@@ -1177,7 +1197,7 @@ void DriveFileSyncService::DidPrepareForProcessRemoteChange(
     return;
   }
 
-  DCHECK(param->remote_change.change.IsDelete());
+  DCHECK(remote_file_change.IsDelete());
   if (local_changes.empty()) {
     if (missing_local_file) {
       param->operation_result = fileapi::SYNC_OPERATION_NONE;
@@ -1190,7 +1210,7 @@ void DriveFileSyncService::DidPrepareForProcessRemoteChange(
     DCHECK(!missing_local_file);
     param->operation_result = fileapi::SYNC_OPERATION_DELETED;
 
-    const fileapi::FileChange& file_change = param->remote_change.change;
+    const fileapi::FileChange& file_change = remote_file_change;
     param->processor->ApplyRemoteChange(
         file_change, FilePath(), url,
         base::Bind(&DriveFileSyncService::DidApplyRemoteChange, AsWeakPtr(),
@@ -1211,6 +1231,34 @@ void DriveFileSyncService::DidPrepareForProcessRemoteChange(
     CompleteRemoteSync(param.Pass(), fileapi::SYNC_STATUS_OK);
   else
     DeleteMetadataForRemoteSync(param.Pass());
+}
+
+void DriveFileSyncService::ResolveConflictToLocalChange(
+    RemoteChangeProcessor* processor,
+    const fileapi::FileSystemURL& url,
+    const fileapi::SyncStatusCallback& callback) {
+  const fileapi::FileChange file_change(
+      fileapi::FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+      fileapi::SYNC_FILE_TYPE_FILE);
+  processor->RecordFakeLocalChange(url, file_change, callback);
+}
+
+void DriveFileSyncService::DidResolveConflictToLocalChange(
+    scoped_ptr<ProcessRemoteChangeParam> param,
+    fileapi::SyncStatusCode status) {
+  if (status != fileapi::SYNC_STATUS_OK) {
+    AbortRemoteSync(param.Pass(), status);
+    return;
+  }
+
+  const DriveMetadata& metadata = param->drive_metadata;
+  param->drive_metadata.set_conflicted(false);
+  const fileapi::FileSystemURL& url = param->remote_change.url;
+
+  metadata_store_->UpdateEntry(
+      url, metadata,
+      base::Bind(&DriveFileSyncService::CompleteRemoteSync,
+                 AsWeakPtr(), base::Passed(&param)));
 }
 
 void DriveFileSyncService::DownloadForRemoteSync(
@@ -1356,6 +1404,19 @@ void DriveFileSyncService::AbortRemoteSync(
 void DriveFileSyncService::FinalizeRemoteSync(
     scoped_ptr<ProcessRemoteChangeParam> param,
     fileapi::SyncStatusCode status) {
+  // Clear the local changes. If the operation was resolve-to-local, we should
+  // not clear them here since we added the fake local change to sync with the
+  // remote file.
+  if (param->clear_local_changes) {
+    RemoteChangeProcessor* processor = param->processor;
+    const fileapi::FileSystemURL& url = param->remote_change.url;
+    param->clear_local_changes = false;
+    processor->ClearLocalChanges(
+        url, base::Bind(&DriveFileSyncService::FinalizeRemoteSync,
+                        AsWeakPtr(), base::Passed(&param), status));
+    return;
+  }
+
   if (!param->temporary_file_path.empty())
     DeleteTemporaryFile(param->temporary_file_path);
   NotifyTaskDone(status, param->token.Pass());

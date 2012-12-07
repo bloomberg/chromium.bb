@@ -288,6 +288,10 @@ class DriveFileSyncServiceTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(DriveFileSyncServiceTest);
 };
 
+ACTION(InvokeCompletionCallback) {
+  base::MessageLoopProxy::current()->PostTask(FROM_HERE, arg1);
+}
+
 // Invokes |arg0| as a GetDataCallback.
 ACTION_P2(InvokeGetDataCallback0, error, result) {
   scoped_ptr<base::Value> value(result.Pass());
@@ -759,6 +763,9 @@ TEST_F(DriveFileSyncServiceTest, RemoteChange_Busy) {
   EXPECT_CALL(*mock_remote_processor(),
               PrepareForProcessRemoteChange(CreateURL(kOrigin, kFileName), _))
       .WillOnce(PrepareForRemoteChange_Busy());
+  EXPECT_CALL(*mock_remote_processor(),
+              ClearLocalChanges(CreateURL(kOrigin, kFileName), _))
+      .WillOnce(InvokeCompletionCallback());
 
   SetUpDriveSyncService();
 
@@ -791,6 +798,9 @@ TEST_F(DriveFileSyncServiceTest, RemoteChange_NewFile) {
   EXPECT_CALL(*mock_remote_processor(),
               PrepareForProcessRemoteChange(CreateURL(kOrigin, kFileName), _))
       .WillOnce(PrepareForRemoteChange_NotFound());
+  EXPECT_CALL(*mock_remote_processor(),
+              ClearLocalChanges(CreateURL(kOrigin, kFileName), _))
+      .WillOnce(InvokeCompletionCallback());
 
   scoped_ptr<Value> file_entry(LoadJSONFile("gdata/file_entry.json").Pass());
   EXPECT_CALL(*mock_drive_service(),
@@ -837,6 +847,9 @@ TEST_F(DriveFileSyncServiceTest, RemoteChange_UpdateFile) {
   EXPECT_CALL(*mock_remote_processor(),
               PrepareForProcessRemoteChange(CreateURL(kOrigin, kFileName), _))
       .WillOnce(PrepareForRemoteChange_NotModified());
+  EXPECT_CALL(*mock_remote_processor(),
+              ClearLocalChanges(CreateURL(kOrigin, kFileName), _))
+      .WillOnce(InvokeCompletionCallback());
 
   scoped_ptr<Value> file_entry(LoadJSONFile("gdata/file_entry.json").Pass());
   EXPECT_CALL(*mock_drive_service(),

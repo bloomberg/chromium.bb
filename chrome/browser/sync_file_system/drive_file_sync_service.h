@@ -257,6 +257,13 @@ class DriveFileSyncService
       fileapi::SyncStatusCode status,
       const fileapi::SyncFileMetadata& metadata,
       const fileapi::FileChangeList& changes);
+  void ResolveConflictToLocalChange(
+      RemoteChangeProcessor* processor,
+      const fileapi::FileSystemURL& url,
+      const fileapi::SyncStatusCallback& callback);
+  void DidResolveConflictToLocalChange(
+      scoped_ptr<ProcessRemoteChangeParam> param,
+      fileapi::SyncStatusCode status);
   void DownloadForRemoteSync(
       scoped_ptr<ProcessRemoteChangeParam> param);
   void DidGetTemporaryFileForDownload(
