@@ -766,6 +766,15 @@ void InstantController::InstantLoaderContentsFocused() {
 #endif
 }
 
+void InstantController::InstantLoaderRenderViewGone() {
+  ++blacklisted_urls_[loader_->instant_url()];
+  HideInternal();
+  delete loader_->ReleaseContents();
+  // Delay deletion as we have gotten here from an InstantLoader method.
+  MessageLoop::current()->DeleteSoon(FROM_HERE, loader_.release());
+  CreateDefaultLoader();
+}
+
 bool InstantController::ResetLoader(const TemplateURL* template_url,
                                     const content::WebContents* active_tab) {
   std::string instant_url;

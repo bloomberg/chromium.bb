@@ -24,7 +24,9 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/result_codes.h"
 #include "content/public/test/browser_test_utils.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -89,6 +91,13 @@ class InstantTest : public InProcessBrowserTest {
 
   OmniboxView* omnibox() {
     return browser()->window()->GetLocationBar()->GetLocationEntry();
+  }
+
+  void KillInstantRenderView() {
+    base::KillProcess(
+        instant()->GetPreviewContents()->GetRenderProcessHost()->GetHandle(),
+        content::RESULT_CODE_KILLED,
+        false);
   }
 
   void FocusOmnibox() {
@@ -1058,4 +1067,21 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionsAreReusable) {
 
   SetOmniboxText("insane");
   EXPECT_EQ(ASCIIToUTF16(""), omnibox()->GetInstantSuggestion());
+}
+
+// Test that instant loader is recreated if it gets destroyed.
+IN_PROC_BROWSER_TEST_F(InstantTest, InstantRenderViewGone) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
+  FocusOmniboxAndWaitForInstantSupport();
+
+  // Type partial query, get suggestion to show.
+  SetOmniboxTextAndWaitForInstantToShow("q");
+  EXPECT_EQ(ASCIIToUTF16("query suggestion"), omnibox()->GetText());
+
+  // Kill the instant renderer and wait for instant support again.
+  KillInstantRenderView();
+  FocusOmniboxAndWaitForInstantSupport();
+
+  SetOmniboxTextAndWaitForInstantToShow("qu");
+  EXPECT_EQ(ASCIIToUTF16("query suggestion"), omnibox()->GetText());
 }

@@ -97,6 +97,10 @@ bool InstantClient::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
+void InstantClient::RenderViewGone(base::TerminationStatus status) {
+  delegate_->RenderViewGone();
+}
+
 void InstantClient::SetSuggestions(
     int page_id,
     const std::vector<InstantSuggestion>& suggestions) {

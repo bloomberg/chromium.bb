@@ -75,3 +75,7 @@ void InstantTab::StartCapturingKeyStrokes() {
 void InstantTab::StopCapturingKeyStrokes() {
   // We don't honor this call from committed tabs.
 }
+
+void InstantTab::RenderViewGone() {
+  // For a commit page, a crash should not be handled differently.
+}

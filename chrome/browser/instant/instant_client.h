@@ -58,6 +58,9 @@ class InstantClient : public content::WebContentsObserver {
     // strokes.
     virtual void StopCapturingKeyStrokes() = 0;
 
+    // Called when the underlying RenderView crashes.
+    virtual void RenderViewGone() = 0;
+
    protected:
     virtual ~Delegate();
   };
@@ -123,6 +126,7 @@ class InstantClient : public content::WebContentsObserver {
       bool is_main_frame,
       content::RenderViewHost* render_view_host) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
 
   void SetSuggestions(int page_id,
                       const std::vector<InstantSuggestion>& suggestions);

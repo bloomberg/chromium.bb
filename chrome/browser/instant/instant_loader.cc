@@ -291,6 +291,10 @@ void InstantLoader::StopCapturingKeyStrokes() {
   // focus) doesn't require doing anything explicitly here.
 }
 
+void InstantLoader::RenderViewGone() {
+  controller_->InstantLoaderRenderViewGone();
+}
+
 void InstantLoader::Observe(int type,
                             const content::NotificationSource& source,
                             const content::NotificationDetails& details) {

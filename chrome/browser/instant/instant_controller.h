@@ -142,6 +142,9 @@ class InstantController {
   // user clicking on it.
   void InstantLoaderContentsFocused();
 
+  // Invoked by the InstantLoader when its RenderView crashes.
+  void InstantLoaderRenderViewGone();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(InstantTest, OmniboxFocusLoadsInstant);
   FRIEND_TEST_ALL_PREFIXES(InstantTest, NonInstantSearchProvider);
@@ -256,10 +259,11 @@ class InstantController {
   base::OneShotTimer<InstantController> stale_loader_timer_;
 
   // For each key K => value N, the map says that we found that the search
-  // engine identified by Instant URL K didn't support the Instant API in each
-  // of the last N times that we loaded it. If an Instant URL isn't present in
-  // the map at all or has a value 0, it means that search engine supports the
-  // Instant API (or we assume it does, since we haven't determined it doesn't).
+  // engine identified by Instant URL K didn't support the Instant API, or
+  // caused RenderView crashes in each of the last N times that we loaded it.
+  // If an Instant URL isn't present in the map at all or has a value 0,
+  // it means that search engine supports the Instant API (or we assume it does,
+  // since we haven't determined it doesn't) and it did not cause a crash.
   std::map<std::string, int> blacklisted_urls_;
 
   // Search terms extraction (for autocomplete history matches) doesn't work

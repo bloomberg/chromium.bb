@@ -54,6 +54,7 @@ class InstantTab : public InstantClient::Delegate {
                                   InstantSizeUnits units) OVERRIDE;
   virtual void StartCapturingKeyStrokes() OVERRIDE;
   virtual void StopCapturingKeyStrokes() OVERRIDE;
+  virtual void RenderViewGone() OVERRIDE;
 
   InstantClient client_;
   InstantController* const controller_;
