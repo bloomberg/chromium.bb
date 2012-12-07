@@ -7,11 +7,13 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/auth_attempt_state.h"
 #include "chrome/browser/chromeos/login/auth_attempt_state_resolver.h"
+#include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -47,6 +49,7 @@ OnlineAttempt::OnlineAttempt(bool using_oauth,
       resolver_(callback),
       weak_factory_(this),
       try_again_(true) {
+  DCHECK(attempt_->user_type == User::USER_TYPE_REGULAR);
 }
 
 OnlineAttempt::~OnlineAttempt() {

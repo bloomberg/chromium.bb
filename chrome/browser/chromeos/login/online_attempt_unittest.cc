@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/login/mock_url_fetchers.h"
 #include "chrome/browser/chromeos/login/online_attempt.h"
 #include "chrome/browser/chromeos/login/test_attempt_state.h"
+#include "chrome/browser/chromeos/login/user.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
@@ -34,7 +35,7 @@ class OnlineAttemptTest : public testing::Test {
   OnlineAttemptTest()
       : message_loop_(MessageLoop::TYPE_UI),
         ui_thread_(BrowserThread::UI, &message_loop_),
-        state_("", "", "", "", "", false),
+        state_("", "", "", "", "", User::USER_TYPE_REGULAR, false),
         resolver_(new MockAuthAttemptStateResolver) {
   }
 
@@ -167,7 +168,8 @@ TEST_F(OnlineAttemptTest, HostedLoginRejected) {
   // This is how we inject fake URLFetcher objects, with a factory.
   MockURLFetcherFactory<HostedFetcher> factory;
 
-  TestAttemptState local_state("", "", "", "", "", true);
+  TestAttemptState local_state("", "", "", "", "",
+                               User::USER_TYPE_REGULAR, true);
   attempt_.reset(new OnlineAttempt(false, &local_state, resolver_.get()));
   attempt_->Initiate(&profile);
   BrowserThread::PostTask(
@@ -191,7 +193,8 @@ TEST_F(OnlineAttemptTest, FullLogin) {
   // This is how we inject fake URLFetcher objects, with a factory.
   MockURLFetcherFactory<SuccessFetcher> factory;
 
-  TestAttemptState local_state("", "", "", "", "", true);
+  TestAttemptState local_state("", "", "", "", "",
+                               User::USER_TYPE_REGULAR, true);
   attempt_.reset(new OnlineAttempt(false, &local_state, resolver_.get()));
   attempt_->Initiate(&profile);
   BrowserThread::PostTask(

@@ -240,7 +240,7 @@ class ParallelAuthenticator : public Authenticator,
   scoped_ptr<OnlineAttempt> current_online_;
   bool migrate_attempted_;
   bool remove_attempted_;
-  bool mount_guest_attempted_;
+  bool ephemeral_mount_attempted_;
   bool check_key_attempted_;
 
   // When the user has changed her password, but gives us the old one, we will

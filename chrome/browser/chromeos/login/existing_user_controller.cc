@@ -677,8 +677,8 @@ void ExistingUserController::OnProfilePrepared(Profile* profile) {
     LoginUtils::Get()->DoBrowserLaunch(profile, host_);
     host_ = NULL;
   }
-  // Inform |login_status_consumer_| about successful login. Set most params to
-  // empty since they're not needed.
+  // Inform |login_status_consumer_| about successful login. Set most
+  // parameters to empty since they're not needed.
   if (login_status_consumer_)
     login_status_consumer_->OnLoginSuccess("", "", false, false);
   login_display_->OnFadeOut();

@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/login/authentication_notification_details.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
+#include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -181,7 +182,7 @@ ParallelAuthenticator::ParallelAuthenticator(LoginStatusConsumer* consumer)
     : Authenticator(consumer),
       migrate_attempted_(false),
       remove_attempted_(false),
-      mount_guest_attempted_(false),
+      ephemeral_mount_attempted_(false),
       check_key_attempted_(false),
       already_reported_success_(false),
       owner_is_verified_(false),
@@ -206,6 +207,7 @@ void ParallelAuthenticator::AuthenticateToLogin(
           HashPassword(password),
           login_token,
           login_captcha,
+          User::USER_TYPE_REGULAR,
           !UserManager::Get()->IsKnownUser(canonicalized)));
   // Reset the verified flag.
   owner_is_verified_ = false;
@@ -286,17 +288,21 @@ void ParallelAuthenticator::LoginRetailMode() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Note: |kRetailModeUserEMail| is used in other places to identify a retail
   // mode session.
-  current_state_.reset(
-      new AuthAttemptState(kRetailModeUserEMail, "", "", "", "", false));
-  mount_guest_attempted_ = true;
+  current_state_.reset(new AuthAttemptState(kRetailModeUserEMail,
+                                            "", "", "", "",
+                                            User::USER_TYPE_RETAIL_MODE,
+                                            false));
+  ephemeral_mount_attempted_ = true;
   MountGuest(current_state_.get(),
              scoped_refptr<ParallelAuthenticator>(this));
 }
 
 void ParallelAuthenticator::LoginOffTheRecord() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  current_state_.reset(new AuthAttemptState("", "", "", "", "", false));
-  mount_guest_attempted_ = true;
+  current_state_.reset(new AuthAttemptState("", "", "", "", "",
+                                            User::USER_TYPE_GUEST,
+                                            false));
+  ephemeral_mount_attempted_ = true;
   MountGuest(current_state_.get(),
              scoped_refptr<ParallelAuthenticator>(this));
 }
@@ -440,6 +446,7 @@ void ParallelAuthenticator::RetryAuth(Profile* profile,
           HashPassword(password),
           login_token,
           login_captcha,
+          User::USER_TYPE_REGULAR,
           false /* not a new user */));
   // Always use ClientLogin regardless of using_oauth flag. This is because
   // we are unable to renew oauth token on lock screen currently and will
@@ -650,7 +657,7 @@ ParallelAuthenticator::AuthState ParallelAuthenticator::ResolveState() {
   DCHECK(current_state_->cryptohome_complete());  // Ensure invariant holds.
   migrate_attempted_ = false;
   remove_attempted_ = false;
-  mount_guest_attempted_ = false;
+  ephemeral_mount_attempted_ = false;
   check_key_attempted_ = false;
 
   if (state != POSSIBLE_PW_CHANGE &&
@@ -697,7 +704,7 @@ ParallelAuthenticator::ResolveCryptohomeFailureState() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (remove_attempted_)
     return FAILED_REMOVE;
-  if (mount_guest_attempted_)
+  if (ephemeral_mount_attempted_)
     return FAILED_TMPFS;
   if (migrate_attempted_)
     return NEED_OLD_PW;
@@ -739,16 +746,15 @@ ParallelAuthenticator::ResolveCryptohomeSuccessState() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (remove_attempted_)
     return CREATE_NEW;
-  if (mount_guest_attempted_) {
-    if (current_state_->username == kRetailModeUserEMail)
-      return DEMO_LOGIN;
-    else
-      return GUEST_LOGIN;
-  }
   if (migrate_attempted_)
     return RECOVER_MOUNT;
   if (check_key_attempted_)
     return UNLOCK;
+
+  if (current_state_->user_type == User::USER_TYPE_GUEST)
+    return GUEST_LOGIN;
+  if (current_state_->user_type == User::USER_TYPE_RETAIL_MODE)
+    return DEMO_LOGIN;
 
   if (!VerifyOwner())
     return CONTINUE;

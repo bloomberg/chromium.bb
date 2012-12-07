@@ -8,6 +8,7 @@
 #include <string>
 
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
+#include "chrome/browser/chromeos/login/user.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -25,6 +26,7 @@ class AuthAttemptState {
                    const std::string& ascii_hash,
                    const std::string& login_token,
                    const std::string& login_captcha,
+                   const User::UserType user_type,
                    const bool user_is_new);
 
   // Used to initialize for a externally authenticated login.
@@ -81,6 +83,9 @@ class AuthAttemptState {
   const std::string ascii_hash;
   const std::string login_token;
   const std::string login_captcha;
+
+  // The type of the user attempting to log in.
+  const User::UserType user_type;
 
   const bool unlock;  // True if authenticating to unlock the computer.
 

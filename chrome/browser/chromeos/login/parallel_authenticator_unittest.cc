@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/login/mock_url_fetchers.h"
 #include "chrome/browser/chromeos/login/mock_user_manager.h"
 #include "chrome/browser/chromeos/login/test_attempt_state.h"
+#include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
@@ -93,6 +94,7 @@ class ParallelAuthenticatorTest : public testing::Test {
                                       hash_ascii_,
                                       "",
                                       "",
+                                      User::USER_TYPE_REGULAR,
                                       false));
   }
 
@@ -307,6 +309,7 @@ TEST_F(ParallelAuthenticatorTest, ResolveOwnerNeededMount) {
                                     hash_ascii_,
                                     "",
                                     "",
+                                    User::USER_TYPE_REGULAR,
                                     false));
   state_->PresetCryptohomeStatus(true, cryptohome::MOUNT_ERROR_NONE);
   EXPECT_EQ(ParallelAuthenticator::OFFLINE_LOGIN,
@@ -351,6 +354,7 @@ TEST_F(ParallelAuthenticatorTest, ResolveOwnerNeededFailedMount) {
                                     hash_ascii_,
                                     "",
                                     "",
+                                    User::USER_TYPE_REGULAR,
                                     false));
   state_->PresetCryptohomeStatus(true, cryptohome::MOUNT_ERROR_NONE);
   EXPECT_EQ(ParallelAuthenticator::OWNER_REQUIRED,
