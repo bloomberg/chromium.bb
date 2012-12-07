@@ -135,6 +135,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
                            const std::string& request_method) OVERRIDE;
   virtual bool HandleContextMenu(const ContextMenuParams& params) OVERRIDE;
   virtual void RendererUnresponsive(WebContents* source) OVERRIDE;
+  virtual void RendererResponsive(WebContents* source) OVERRIDE;
   virtual void RunFileChooser(WebContents* web_contents,
                               const FileChooserParams& params) OVERRIDE;
   virtual bool ShouldFocusPageAfterCrash() OVERRIDE;
@@ -214,8 +215,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   virtual void HandleInputEvent(RenderViewHost* render_view_host,
                                 const gfx::Rect& guest_window_rect,
                                 const gfx::Rect& guest_screen_rect,
-                                const WebKit::WebInputEvent& event,
-                                IPC::Message* reply_message);
+                                const WebKit::WebInputEvent& event);
   virtual bool ViewTakeFocus(bool reverse);
   // If possible, navigate the guest to |relative_index| entries away from the
   // current navigation entry.
@@ -292,7 +292,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
 #endif
   gfx::Size damage_view_size_;
   float damage_buffer_scale_factor_;
-  scoped_ptr<IPC::Message> pending_input_event_reply_;
   gfx::Rect guest_window_rect_;
   gfx::Rect guest_screen_rect_;
   IDMap<RenderViewHost> pending_updates_;

@@ -62,6 +62,8 @@ class BrowserPluginManagerImpl : public BrowserPluginManager {
   void OnPluginAtPositionRequest(const IPC::Message& message,
                                  int request_id,
                                  const gfx::Point& position);
+  void OnGuestUnresponsive(int instance_id, int process_id);
+  void OnGuestResponsive(int instance_id, int process_id);
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginManagerImpl);
 };

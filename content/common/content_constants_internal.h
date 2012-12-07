@@ -13,6 +13,9 @@ extern const char kFrameTreeNodeNameKey[];
 extern const char kFrameTreeNodeIdKey[];
 extern const char kFrameTreeNodeSubtreeKey[];
 
+// How long to wait before we consider a renderer hung.
+extern const int kHungRendererDelayMs;
+
 } // namespace content
 
 #endif  // CONTENT_COMMON_CONTENT_CONSTANTS_INTERNAL_H_

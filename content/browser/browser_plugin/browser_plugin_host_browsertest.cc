@@ -39,10 +39,17 @@ namespace {
 
 const char kHTMLForGuest[] =
     "data:text/html,<html><body>hello world</body></html>";
-const char kHTMLForGuestInfiniteLoop[] =
+const char kHTMLForGuestBusyLoop[] =
     "data:text/html,<html><head><script type=\"text/javascript\">"
-    "function StartInfiniteLoop() {"
-    "  setTimeout(function () {while (true) {} }, 0);"
+    "function PauseMs(timems) {"
+    "  var date = new Date();"
+    "  var currDate = null;"
+    "  do {"
+    "    currDate = new Date();"
+    "  } while (currDate - date < timems)"
+    "}"
+    "function StartPauseMs(timems) {"
+    "  setTimeout(function() { PauseMs(timems); }, 0);"
     "}"
     "</script></head><body></body></html>";
 const char kHTMLForGuestTouchHandler[] =
@@ -333,31 +340,49 @@ class BrowserPluginHostTest : public ContentBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginHostTest);
 };
 
-// This test loads a guest that has infinite loop, therefore it hangs the guest
-// and eventually gets killed.
-// TODO(lazyboy): This test is flaky on Windows, since this relies on
-// RenderViewGone to be called and times out. http://crbug.com/151190.
-#if defined(OS_WIN)
-#define MAYBE_NavigateGuest DISABLED_NavigateGuest
-#else
-#define MAYBE_NavigateGuest NavigateGuest
-#endif
-IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, MAYBE_NavigateGuest) {
+// This test loads a guest that has a busy loop, and therefore it hangs the
+// guest.
+IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, GuestUnresponsive) {
   // Override the hang timeout for guest to be very small.
   content::BrowserPluginGuest::set_factory_for_testing(
       TestShortHangTimeoutGuestFactory::GetInstance());
-  const char kEmbedderURL[] = "files/browser_plugin_embedder_crash.html";
-  StartBrowserPluginTest(kEmbedderURL, kHTMLForGuestInfiniteLoop, true, "");
+  const char kEmbedderURL[] =
+      "files/browser_plugin_embedder_guest_unresponsive.html";
+  StartBrowserPluginTest(kEmbedderURL, kHTMLForGuestBusyLoop, true, "");
 
-  ExecuteSyncJSFunction(test_guest()->web_contents()->GetRenderViewHost(),
-                        ASCIIToUTF16("StartInfiniteLoop();"));
+  // Hang the guest for a period of time.
+  {
+    const string16 expected_title = ASCIIToUTF16("done");
+    content::TitleWatcher title_watcher(test_embedder()->web_contents(),
+                                        expected_title);
+    // Hang the guest for a length of time.
+    int spin_time = 10 * TestTimeouts::tiny_timeout().InMilliseconds();
+    ExecuteSyncJSFunction(test_guest()->web_contents()->GetRenderViewHost(),
+        ASCIIToUTF16(StringPrintf("StartPauseMs(%d);", spin_time).c_str()));
 
-  // Send a mouse event to the guest.
-  SimulateMouseClick(test_embedder()->web_contents(), 0,
-      WebKit::WebMouseEvent::ButtonLeft);
+    // Send a mouse event to the guest.
+    SimulateMouseClick(test_embedder()->web_contents(), 0,
+        WebKit::WebMouseEvent::ButtonLeft);
 
-  // Expect the guest to crash.
-  test_guest()->WaitForExit();
+    string16 actual_title = title_watcher.WaitAndGetTitle();
+    EXPECT_EQ(expected_title, actual_title);
+  }
+
+  // Verify that the embedder has received the 'unresponsive' and 'responsive'
+  // events.
+  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
+      test_embedder()->web_contents()->GetRenderViewHost());
+  scoped_ptr<base::Value> value(rvh->ExecuteJavascriptAndGetValue(string16(),
+      ASCIIToUTF16("unresponsiveCalled")));
+  bool result = false;
+  ASSERT_TRUE(value->GetAsBoolean(&result));
+  EXPECT_TRUE(result);
+
+  value.reset(rvh->ExecuteJavascriptAndGetValue(string16(),
+      ASCIIToUTF16("responsiveCalled")));
+  result = false;
+  ASSERT_TRUE(value->GetAsBoolean(&result));
+  EXPECT_TRUE(result);
 }
 
 // This test ensures that if guest isn't there and we resize the guest (from

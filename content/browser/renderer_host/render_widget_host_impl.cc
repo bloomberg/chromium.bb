@@ -31,6 +31,7 @@
 #include "content/browser/renderer_host/tap_suppression_controller.h"
 #include "content/browser/renderer_host/touch_event_queue.h"
 #include "content/common/accessibility_messages.h"
+#include "content/common/content_constants_internal.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
 #include "content/port/browser/render_widget_host_view_port.h"
@@ -83,9 +84,6 @@ namespace {
 // returning a null or incorrectly sized backing-store from GetBackingStore.
 // This timeout impacts the "choppiness" of our window resize perf.
 const int kPaintMsgTimeoutMS = 50;
-
-// How long to wait before we consider a renderer hung.
-const int kHungRendererDelayMs = 30000;
 
 // How many milliseconds apart synthetic scroll messages should be sent.
 static const int kSyntheticScrollMessageIntervalMs = 8;

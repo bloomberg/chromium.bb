@@ -918,16 +918,7 @@ bool RenderViewHostImpl::SuddenTerminationAllowed() const {
 // RenderViewHostImpl, IPC message handlers:
 
 bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
-  // Allow BrowserPluginHostMsg_* sync messages to run on the UI thread.
-  // Platform apps will not support windowed plugins so the deadlock cycle
-  // browser -> plugin -> renderer -> browser referred in
-  // BrowserMessageFilter::CheckCanDispatchOnUI() is not supposed to happen. If
-  // we want to support windowed plugins, sync messages in BrowserPlugin might
-  // need to be changed to async messages.
-  // TODO(fsamuel): Disallow BrowserPluginHostMsg_* sync messages to run on UI
-  // thread and make these messages async: http://crbug.com/149063.
-  if (msg.type() != BrowserPluginHostMsg_HandleInputEvent::ID &&
-      !BrowserMessageFilter::CheckCanDispatchOnUI(msg, this))
+  if (!BrowserMessageFilter::CheckCanDispatchOnUI(msg, this))
     return true;
 
   // Filter out most IPC messages if this renderer is swapped out.

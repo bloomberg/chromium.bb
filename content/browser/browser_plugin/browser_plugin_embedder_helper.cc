@@ -41,8 +41,7 @@ bool BrowserPluginEmbedderHelper::OnMessageReceived(
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_UpdateRect_ACK, OnUpdateRectACK);
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetFocus, OnSetFocus);
     IPC_MESSAGE_HANDLER_GENERIC(BrowserPluginHostMsg_HandleInputEvent,
-        OnHandleInputEvent(*static_cast<const IPC::SyncMessage*>(&message),
-                           &handled))
+        OnHandleInputEvent(message))
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_PluginDestroyed,
                         OnPluginDestroyed);
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_Go, OnGo)
@@ -70,22 +69,17 @@ void BrowserPluginEmbedderHelper::OnResizeGuest(
 }
 
 void BrowserPluginEmbedderHelper::OnHandleInputEvent(
-    const IPC::SyncMessage& message,
-    bool* handled) {
-  *handled = true;
+    const IPC::Message& message) {
   PickleIterator iter(message);
 
-  // TODO(fsamuel): This appears to be a monotonically increasing value.
   int instance_id = -1;
   const char* guest_rect_data = NULL;
   int guest_rect_data_length = -1;
   const char* input_event_data = NULL;
   int input_event_data_length = -1;
-  if (!iter.SkipBytes(4) ||
-      !message.ReadInt(&iter, &instance_id) ||
+  if (!message.ReadInt(&iter, &instance_id) ||
       !message.ReadData(&iter, &guest_rect_data, &guest_rect_data_length) ||
       !message.ReadData(&iter, &input_event_data, &input_event_data_length)) {
-    *handled = false;
     return;
   }
   const gfx::Rect* guest_window_rect =
@@ -95,14 +89,10 @@ void BrowserPluginEmbedderHelper::OnHandleInputEvent(
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       render_view_host());
 
-
-  IPC::Message* reply_message =
-      IPC::SyncMessage::GenerateReply(&message);
   embedder_->HandleInputEvent(instance_id,
                               rvh,
                               *guest_window_rect,
-                              *input_event,
-                              reply_message);
+                              *input_event);
 }
 
 void BrowserPluginEmbedderHelper::OnCreateGuest(

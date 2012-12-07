@@ -14,6 +14,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/browser_plugin_messages.h"
+#include "content/common/content_constants_internal.h"
 #include "content/common/view_messages.h"
 #include "content/port/browser/render_view_host_delegate_view.h"
 #include "content/public/browser/notification_service.h"
@@ -36,10 +37,6 @@ namespace content {
 // static
 BrowserPluginHostFactory* BrowserPluginGuest::factory_ = NULL;
 
-namespace {
-const int kGuestHangTimeoutMs = 5000;
-}
-
 BrowserPluginGuest::BrowserPluginGuest(
     int instance_id,
     WebContentsImpl* web_contents,
@@ -54,7 +51,7 @@ BrowserPluginGuest::BrowserPluginGuest(
       damage_buffer_scale_factor_(1.0f),
       pending_update_counter_(0),
       guest_hang_timeout_(
-          base::TimeDelta::FromMilliseconds(kGuestHangTimeoutMs)),
+          base::TimeDelta::FromMilliseconds(kHungRendererDelayMs)),
       focused_(params.focused),
       visible_(params.visible),
       auto_size_enabled_(params.auto_size_params.enable),
@@ -142,10 +139,23 @@ bool BrowserPluginGuest::HandleContextMenu(
 }
 
 void BrowserPluginGuest::RendererUnresponsive(WebContents* source) {
-  base::ProcessHandle process_handle =
-      web_contents()->GetRenderProcessHost()->GetHandle();
-  base::KillProcess(process_handle, RESULT_CODE_HUNG, false);
+  int process_id =
+      web_contents()->GetRenderProcessHost()->GetID();
+  SendMessageToEmbedder(
+      new BrowserPluginMsg_GuestUnresponsive(embedder_routing_id(),
+                                             instance_id(),
+                                             process_id));
   RecordAction(UserMetricsAction("BrowserPlugin.Guest.Hung"));
+}
+
+void BrowserPluginGuest::RendererResponsive(WebContents* source) {
+  int process_id =
+      web_contents()->GetRenderProcessHost()->GetID();
+  SendMessageToEmbedder(
+      new BrowserPluginMsg_GuestResponsive(embedder_routing_id(),
+                                           instance_id(),
+                                           process_id));
+  RecordAction(UserMetricsAction("BrowserPlugin.Guest.Responsive"));
 }
 
 void BrowserPluginGuest::RunFileChooser(WebContents* web_contents,
@@ -449,9 +459,7 @@ void BrowserPluginGuest::UpdateRectACK(
 void BrowserPluginGuest::HandleInputEvent(RenderViewHost* render_view_host,
                                           const gfx::Rect& guest_window_rect,
                                           const gfx::Rect& guest_screen_rect,
-                                          const WebKit::WebInputEvent& event,
-                                          IPC::Message* reply_message) {
-  DCHECK(!pending_input_event_reply_.get());
+                                          const WebKit::WebInputEvent& event) {
   guest_window_rect_ = guest_window_rect;
   guest_screen_rect_ = guest_screen_rect;
   RenderViewHostImpl* guest_rvh = static_cast<RenderViewHostImpl*>(
@@ -471,23 +479,7 @@ void BrowserPluginGuest::HandleInputEvent(RenderViewHost* render_view_host,
   // TODO(fsamuel): What do we need to do here? This is for keyboard shortcuts.
   if (input_event->type == WebKit::WebInputEvent::RawKeyDown)
     message->WriteBool(false);
-  if (!Send(message)) {
-    // If the embedder is waiting for a previous input ack, a new input message
-    // won't get sent to the guest. Reply immediately with handled = false so
-    // embedder doesn't hang.
-    BrowserPluginHostMsg_HandleInputEvent::WriteReplyParams(
-        reply_message, false /* handled */);
-    SendMessageToEmbedder(reply_message);
-    return;
-  }
-
-  pending_input_event_reply_.reset(reply_message);
-  // Input events are handled synchronously, meaning it blocks the embedder. We
-  // set a hang monitor here that will kill the guest process (5s timeout) if we
-  // don't receive an ack. This will kill all the guests that are running in the
-  // same process (undesired behavior).
-  // TODO(fsamuel,lazyboy): Find a way to get rid of guest process kill
-  // behavior. http://crbug.com/147272.
+  guest_rvh->Send(message);
   guest_rvh->StartHangMonitorTimeout(guest_hang_timeout_);
 }
 
@@ -496,11 +488,6 @@ void BrowserPluginGuest::HandleInputEventAck(RenderViewHost* render_view_host,
   RenderViewHostImpl* guest_rvh =
       static_cast<RenderViewHostImpl*>(render_view_host);
   guest_rvh->StopHangMonitorTimeout();
-  DCHECK(pending_input_event_reply_.get());
-  IPC::Message* reply_message = pending_input_event_reply_.release();
-  BrowserPluginHostMsg_HandleInputEvent::WriteReplyParams(reply_message,
-                                                          handled);
-  SendMessageToEmbedder(reply_message);
 }
 
 void BrowserPluginGuest::Stop() {
@@ -625,12 +612,6 @@ void BrowserPluginGuest::RenderViewReady() {
 }
 
 void BrowserPluginGuest::RenderViewGone(base::TerminationStatus status) {
-  if (pending_input_event_reply_.get()) {
-    IPC::Message* reply_message = pending_input_event_reply_.release();
-    BrowserPluginHostMsg_HandleInputEvent::WriteReplyParams(reply_message,
-                                                            false);
-    SendMessageToEmbedder(reply_message);
-  }
   int process_id = web_contents()->GetRenderProcessHost()->GetID();
   SendMessageToEmbedder(new BrowserPluginMsg_GuestGone(embedder_routing_id(),
                                                        instance_id(),

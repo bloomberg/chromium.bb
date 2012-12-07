@@ -177,8 +177,7 @@ IPC_MESSAGE_ROUTED1(BrowserPluginHostMsg_Reload,
 // 1. A blob that should be cast to WebInputEvent
 // 2. An optional boolean value indicating if a RawKeyDown event is associated
 //    to a keyboard shortcut of the browser.
-IPC_SYNC_MESSAGE_ROUTED0_1(BrowserPluginHostMsg_HandleInputEvent,
-                           bool /* handled */)
+IPC_MESSAGE_ROUTED0(BrowserPluginHostMsg_HandleInputEvent)
 
 // An ACK to the guest process letting it know that the embedder has handled
 // the previous frame and is ready for the next frame. If the guest sent the
@@ -293,6 +292,18 @@ IPC_MESSAGE_ROUTED3(BrowserPluginMsg_GuestGone,
                     int /* instance_id */,
                     int /* process_id */,
                     int /* This is really base::TerminationStatus */)
+
+// When the guest is unresponsive, the browser process informs the embedder
+// through this message.
+IPC_MESSAGE_ROUTED2(BrowserPluginMsg_GuestUnresponsive,
+                    int /* instance_id */,
+                    int /* process_id */)
+
+// When the guest begins responding again, the browser process informs the
+// embedder through this message.
+IPC_MESSAGE_ROUTED2(BrowserPluginMsg_GuestResponsive,
+                    int /* instance_id */,
+                    int /* process_id */)
 
 // When the user tabs to the end of the tab stops of a guest, the browser
 // process informs the embedder to tab out of the browser plugin.

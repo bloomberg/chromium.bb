@@ -53,6 +53,8 @@ bool BrowserPluginManagerImpl::OnMessageReceived(
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetCursor, OnSetCursor)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_PluginAtPositionRequest,
                         OnPluginAtPositionRequest);
+    IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestUnresponsive, OnGuestUnresponsive)
+    IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestResponsive, OnGuestResponsive)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -170,4 +172,17 @@ void BrowserPluginManagerImpl::OnSetCursor(int instance_id,
     plugin->SetCursor(cursor);
 }
 
+void BrowserPluginManagerImpl::OnGuestUnresponsive(int instance_id,
+                                                   int process_id) {
+  BrowserPlugin* plugin = GetBrowserPlugin(instance_id);
+  if (plugin)
+    plugin->GuestUnresponsive(process_id);
+}
+
+void BrowserPluginManagerImpl::OnGuestResponsive(int instance_id,
+                                                 int process_id) {
+  BrowserPlugin* plugin = GetBrowserPlugin(instance_id);
+  if (plugin)
+    plugin->GuestResponsive(process_id);
+}
 }  // namespace content

@@ -68,7 +68,7 @@ class BrowserPluginEmbedderHelper : public RenderViewHostObserver {
       const BrowserPluginHostMsg_AutoSize_Params& auto_size_params,
       const BrowserPluginHostMsg_ResizeGuest_Params& resize_guest_params);
   void OnSwapBuffersACK(int route_id, int gpu_host_id, uint32 sync_point);
-  void OnHandleInputEvent(const IPC::SyncMessage& message, bool* handled);
+  void OnHandleInputEvent(const IPC::Message& message);
   void OnSetFocus(int instance_id, bool focused);
   void OnPluginDestroyed(int instance_id);
   void OnGo(int instance_id, int relative_index);

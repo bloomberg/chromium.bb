@@ -40,8 +40,7 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
   virtual void HandleInputEvent(RenderViewHost* render_view_host,
                                 const gfx::Rect& guest_window_rect,
                                 const gfx::Rect& guest_screen_rect,
-                                const WebKit::WebInputEvent& event,
-                                IPC::Message* reply_message) OVERRIDE;
+                                const WebKit::WebInputEvent& event) OVERRIDE;
   virtual void SetFocus(bool focused) OVERRIDE;
   virtual bool ViewTakeFocus(bool reverse) OVERRIDE;
   virtual void Reload() OVERRIDE;

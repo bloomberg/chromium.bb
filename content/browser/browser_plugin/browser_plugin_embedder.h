@@ -107,12 +107,16 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver,
       const BrowserPluginHostMsg_ResizeGuest_Params& resize_guest_params);
   void SetFocus(int instance_id, bool focused);
   // Handles input events sent from the BrowserPlugin (embedder's renderer
-  // process) by passing them to appropriate guest's input handler.
+  // process) by passing them to appropriate guest's input handler. The
+  // BrowserPlugin behaves like a black hole for events, so the embedder does
+  // not see them in the capture or bubble phase.
+  // Currently scroll events do not propagate back to the embedder process
+  // and so even if the guest discards a scroll event, it won't make its
+  // way back to the embedder. This may change in the future.
   void HandleInputEvent(int instance_id,
                         RenderViewHost* render_view_host,
                         const gfx::Rect& guest_window_rect,
-                        const WebKit::WebInputEvent& event,
-                        IPC::Message* reply_message);
+                        const WebKit::WebInputEvent& event);
   void PluginDestroyed(int instance_id);
   void SetGuestVisibility(int instance_id,
                           bool guest_visible);

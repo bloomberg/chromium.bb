@@ -90,6 +90,11 @@ class CONTENT_EXPORT BrowserPlugin :
                   const BrowserPluginMsg_UpdateRect_Params& params);
   // Inform the BrowserPlugin that its guest process is gone.
   void GuestGone(int process_id, base::TerminationStatus status);
+  // Inform the BrowserPlugin that the guest process is unresponsive.
+  void GuestUnresponsive(int process_id);
+  // Inform the BrowserPlugin that the guest process is responsive again after
+  // being reported as unresponsive.
+  void GuestResponsive(int process_id);
   // Inform the BrowserPlugin that the guest has navigated to a new URL.
   void LoadCommit(const BrowserPluginMsg_LoadCommit_Params& params);
   // Inform the BrowserPlugin that the guest has started loading a new page.

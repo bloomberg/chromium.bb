@@ -233,11 +233,11 @@ void BrowserPluginEmbedder::CleanUp() {
   pending_get_render_view_callbacks_.clear();
 }
 
-void BrowserPluginEmbedder::HandleInputEvent(int instance_id,
-                                             RenderViewHost* render_view_host,
-                                             const gfx::Rect& guest_window_rect,
-                                             const WebKit::WebInputEvent& event,
-                                             IPC::Message* reply_message) {
+void BrowserPluginEmbedder::HandleInputEvent(
+    int instance_id,
+    RenderViewHost* render_view_host,
+    const gfx::Rect& guest_window_rect,
+    const WebKit::WebInputEvent& event) {
   // Convert the window coordinates into screen coordinates.
   gfx::Rect guest_screen_rect(guest_window_rect);
   guest_screen_rect.Offset(
@@ -248,8 +248,7 @@ void BrowserPluginEmbedder::HandleInputEvent(int instance_id,
     guest->HandleInputEvent(render_view_host,
                             guest_window_rect,
                             guest_screen_rect,
-                            event,
-                            reply_message);
+                            event);
   }
 }
 

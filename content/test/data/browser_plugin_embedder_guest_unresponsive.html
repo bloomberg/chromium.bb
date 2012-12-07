@@ -1,0 +1,28 @@
+<script type="text/javascript">
+var unresponsiveCalled = false;
+var responsiveCalled = false;
+function SetSrc(src) {
+  plugin = document.getElementById('plugin');
+  plugin.src = src;
+}
+function GuestUnresponsive(evt) {
+  unresponsiveCalled = true;
+}
+
+function GuestResponsive(evt) {
+  responsiveCalled = true;
+  document.title = "done";
+}
+</script>
+
+<!-- The plugin size is same as the browser's size -->
+<object id="plugin"
+    tabindex="0"
+    type="application/browser-plugin"
+    style="height: 100%; width: 100%; border: 0px"></object>
+
+<script>
+  var plugin = document.getElementById('plugin');
+  plugin.addEventListener('-internal-unresponsive', GuestUnresponsive);
+  plugin.addEventListener('-internal-responsive', GuestResponsive);
+</script>

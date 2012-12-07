@@ -27,8 +27,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginParams.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptSource.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
 #include "webkit/plugins/sad_plugin.h"
 
 #if defined (OS_WIN)
@@ -54,7 +54,9 @@ const char kEventLoadCommit[] = "loadcommit";
 const char kEventLoadRedirect[] = "loadredirect";
 const char kEventLoadStart[] = "loadstart";
 const char kEventLoadStop[] = "loadstop";
+const char kEventResponsive[] = "responsive";
 const char kEventSizeChanged[] = "sizechanged";
+const char kEventUnresponsive[] = "unresponsive";
 
 // Parameters/properties on events.
 const char kIsTopLevel[] = "isTopLevel";
@@ -622,6 +624,18 @@ void BrowserPlugin::GuestGone(int process_id, base::TerminationStatus status) {
     container_->invalidate();
 }
 
+void BrowserPlugin::GuestUnresponsive(int process_id) {
+  std::map<std::string, base::Value*> props;
+  props[kProcessId] = base::Value::CreateIntegerValue(process_id);
+  TriggerEvent(kEventUnresponsive, &props);
+}
+
+void BrowserPlugin::GuestResponsive(int process_id) {
+  std::map<std::string, base::Value*> props;
+  props[kProcessId] = base::Value::CreateIntegerValue(process_id);
+  TriggerEvent(kEventResponsive, &props);
+}
+
 void BrowserPlugin::LoadStart(const GURL& url, bool is_top_level) {
   std::map<std::string, base::Value*> props;
   props[kURL] = base::Value::CreateStringValue(url.spec());
@@ -953,18 +967,16 @@ bool BrowserPlugin::handleInputEvent(const WebKit::WebInputEvent& event,
                                      WebKit::WebCursorInfo& cursor_info) {
   if (guest_crashed_ || !navigate_src_sent_)
     return false;
-  bool handled = false;
   IPC::Message* message =
       new BrowserPluginHostMsg_HandleInputEvent(
-          render_view_routing_id_,
-          &handled);
+          render_view_routing_id_);
   message->WriteInt(instance_id_);
   message->WriteData(reinterpret_cast<const char*>(&plugin_rect_),
                      sizeof(gfx::Rect));
   message->WriteData(reinterpret_cast<const char*>(&event), event.size);
   browser_plugin_manager()->Send(message);
   cursor_.GetCursorInfo(&cursor_info);
-  return handled;
+  return true;
 }
 
 bool BrowserPlugin::handleDragStatusUpdate(WebKit::WebDragStatus drag_status,

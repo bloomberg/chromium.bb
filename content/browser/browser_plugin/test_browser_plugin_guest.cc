@@ -120,13 +120,11 @@ void TestBrowserPluginGuest::HandleInputEvent(
     RenderViewHost* render_view_host,
     const gfx::Rect& guest_window_rect,
     const gfx::Rect& guest_screen_rect,
-    const WebKit::WebInputEvent& event,
-    IPC::Message* reply_message) {
+    const WebKit::WebInputEvent& event) {
   BrowserPluginGuest::HandleInputEvent(render_view_host,
                                        guest_window_rect,
                                        guest_screen_rect,
-                                       event,
-                                       reply_message);
+                                       event);
   input_observed_ = true;
   if (input_message_loop_runner_)
     input_message_loop_runner_->Quit();
