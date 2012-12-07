@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/string_util.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/policy/cloud_policy_constants.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/browser/ui/options/options_util.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/google_update_settings.h"
 
 using google::protobuf::RepeatedPtrField;
@@ -380,12 +382,15 @@ void DeviceSettingsProvider::DecodeLoginPolicies(
   new_values_cache->SetValue(kAccountsPrefUsers, list);
 
   base::ListValue* account_list = new base::ListValue();
-  const RepeatedPtrField<em::DeviceLocalAccountInfoProto>& accounts =
-      policy.device_local_accounts().account();
-  RepeatedPtrField<em::DeviceLocalAccountInfoProto>::const_iterator entry;
-  for (entry = accounts.begin(); entry != accounts.end(); ++entry) {
-    if (entry->has_id())
-      account_list->AppendString(entry->id());
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableLocalAccounts)) {
+    const RepeatedPtrField<em::DeviceLocalAccountInfoProto>& accounts =
+        policy.device_local_accounts().account();
+    RepeatedPtrField<em::DeviceLocalAccountInfoProto>::const_iterator entry;
+    for (entry = accounts.begin(); entry != accounts.end(); ++entry) {
+      if (entry->has_id())
+        account_list->AppendString(entry->id());
+    }
   }
   new_values_cache->SetValue(kAccountsPrefDeviceLocalAccounts, account_list);
 }
