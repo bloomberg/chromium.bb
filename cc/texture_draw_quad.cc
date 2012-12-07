@@ -58,4 +58,48 @@ const TextureDrawQuad* TextureDrawQuad::MaterialCast(
   return static_cast<const TextureDrawQuad*>(quad);
 }
 
+bool TextureDrawQuad::PerformClipping() {
+  // This only occurs if the rect is only scaled and translated (and thus still
+  // axis aligned).
+  if (!quadTransform().IsScaleOrTranslation())
+    return false;
+
+  // Grab our scale and offset.
+  float x_scale = quadTransform().matrix().getDouble(0,0);
+  float y_scale = quadTransform().matrix().getDouble(1,1);
+  gfx::Vector2dF offset(
+      quadTransform().matrix().getDouble(0,3),
+      quadTransform().matrix().getDouble(1,3));
+
+  // Transform the rect by the scale and offset.
+  gfx::RectF rectF = rect;
+  rectF.Scale(x_scale, y_scale);
+  rectF += offset;
+
+  // Perform clipping and check to see if the result is empty.
+  gfx::RectF clippedRect = IntersectRects(rectF, clipRect());
+  if (clippedRect.IsEmpty()) {
+    rect = gfx::Rect();
+    uv_rect = gfx::RectF();
+    return true;
+  }
+
+  // Create a new uv-rect by clipping the old one to the new bounds.
+  uv_rect = gfx::RectF(
+      uv_rect.x()+uv_rect.width ()/rectF.width ()*(clippedRect.x()-rectF.x()),
+      uv_rect.y()+uv_rect.height()/rectF.height()*(clippedRect.y()-rectF.y()),
+      uv_rect.width () / rectF.width () * clippedRect.width (),
+      uv_rect.height() / rectF.height() * clippedRect.height());
+
+  // Move the clipped rectangle back into its space.
+  clippedRect -= offset;
+  clippedRect.Scale(1.0f / x_scale, 1.0f / y_scale);
+  rect = gfx::Rect(
+      static_cast<int>(clippedRect.x() + 0.5f),
+      static_cast<int>(clippedRect.y() + 0.5f),
+      static_cast<int>(clippedRect.width() + 0.5f),
+      static_cast<int>(clippedRect.height() + 0.5f));
+  return true;
+}
+
 }  // namespace cc
