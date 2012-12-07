@@ -47,16 +47,16 @@ include $(BUILD_STATIC_JAVA_LIBRARY)
 # These packages are the resource paks used by webview.
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := android_webview_pak
-LOCAL_MODULE_STEM := android_webview
-LOCAL_BUILT_MODULE_STEM := android_webview/assets/android_webview.pak
+LOCAL_MODULE := webviewchromium_pak
+LOCAL_MODULE_STEM := webviewchromium
+LOCAL_BUILT_MODULE_STEM := android_webview/assets/webviewichromium.pak
 include $(LOCAL_PATH)/webview_pak.mk
 
 # TODO(benm): remove when we get all our strings from java.
 include $(CLEAR_VARS)
-LOCAL_MODULE := android_webview_strings_pak
-LOCAL_MODULE_STEM := android_webview_strings
-LOCAL_BUILT_MODULE_STEM := android_webview/assets/android_webview_strings.pak
+LOCAL_MODULE := webviewchromium_strings_pak
+LOCAL_MODULE_STEM := webviewchromium_strings
+LOCAL_BUILT_MODULE_STEM := android_webview/assets/webviewchromium_strings.pak
 include $(LOCAL_PATH)/webview_pak.mk
 
 # TODO(benm): Remove the following pak rules when the above

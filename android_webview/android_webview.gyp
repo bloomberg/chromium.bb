@@ -64,7 +64,7 @@
             '<@(pak_inputs)',
           ],
           'outputs': [
-            '<(PRODUCT_DIR)/android_webview/assets/android_webview.pak',
+            '<(PRODUCT_DIR)/android_webview/assets/webviewchromium.pak',
           ],
           'action': ['python', '<(repack_path)', '<@(_outputs)',
                      '<@(pak_inputs)'],
@@ -89,7 +89,7 @@
             '<@(pak_inputs)',
           ],
           'outputs': [
-            '<(PRODUCT_DIR)/android_webview/assets/android_webview_strings.pak',
+            '<(PRODUCT_DIR)/android_webview/assets/webviewchromium_strings.pak',
           ],
           'action': ['python', '<(repack_path)', '<@(_outputs)',
                      '<@(pak_inputs)'],

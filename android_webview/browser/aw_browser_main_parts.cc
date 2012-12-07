@@ -65,10 +65,10 @@ int AwBrowserMainParts::PreCreateThreads() {
   FilePath pak_path;
   PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &pak_path);
   ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
-      pak_path.AppendASCII("android_webview_strings.pak"),
+      pak_path.AppendASCII("webviewchromium_strings.pak"),
       ui::SCALE_FACTOR_NONE);
   ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
-      pak_path.AppendASCII("android_webview.pak"),
+      pak_path.AppendASCII("webviewchromium.pak"),
       ui::SCALE_FACTOR_NONE);
 
   return content::RESULT_CODE_NORMAL_EXIT;
