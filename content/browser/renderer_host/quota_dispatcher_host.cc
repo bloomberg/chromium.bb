@@ -134,6 +134,10 @@ class QuotaDispatcherHost::RequestQuotaDispatcher
       DidFinish(status, 0);
       return;
     }
+    if (requested_quota_ < 0) {
+      DidFinish(quota::kQuotaErrorInvalidModification, 0);
+      return;
+    }
     if (requested_quota_ <= quota) {
       // Seems like we can just let it go.
       DidFinish(quota::kQuotaStatusOk, requested_quota_);
