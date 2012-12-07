@@ -17,7 +17,7 @@ static const struct {
   const char* language_region;
 } g_supported_spellchecker_languages[] = {
   // Several languages are not to be included in the spellchecker list:
-  // th-TH, uk-UA
+  // th-TH
   {"af", "af-ZA"},
   {"bg", "bg-BG"},
   {"ca", "ca-ES"},
