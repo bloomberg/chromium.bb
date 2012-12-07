@@ -78,7 +78,7 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   virtual void GetWidgetHitTestMask(gfx::Path* mask) const OVERRIDE;
 
   // Overridden from views::View:
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
 
   // Overridden from AppsGridViewDelegate:
   virtual void ActivateApp(AppListItemModel* item, int event_flags) OVERRIDE;

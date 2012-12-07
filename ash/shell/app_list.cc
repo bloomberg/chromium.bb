@@ -272,7 +272,7 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     // Nothing needs to be done.
   }
 
-  virtual void Close() OVERRIDE {
+  virtual void Dismiss() OVERRIDE {
     DCHECK(ash::Shell::HasInstance());
     if (Shell::GetInstance()->GetAppListTargetVisibility())
       Shell::GetInstance()->ToggleAppList();

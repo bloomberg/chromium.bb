@@ -75,8 +75,8 @@ void AppListViewDelegate::InvokeSearchResultAction(
     search_builder_->InvokeResultAction(result, action_index, event_flags);
 }
 
-void AppListViewDelegate::Close()  {
-  controller_->CloseView();
+void AppListViewDelegate::Dismiss()  {
+  controller_->DismissView();
 }
 
 void AppListViewDelegate::ViewClosing() {

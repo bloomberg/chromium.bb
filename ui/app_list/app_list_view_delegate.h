@@ -44,8 +44,9 @@ class APP_LIST_EXPORT AppListViewDelegate {
                                         int action_index,
                                         int event_flags) = 0;
 
-  // Invoked to close app list.
-  virtual void Close() = 0;
+  // Invoked to dismiss app list. This may leave the view open but hidden from
+  // the user.
+  virtual void Dismiss() = 0;
 
   // Invoked when the app list is closing.
   virtual void ViewClosing() = 0;

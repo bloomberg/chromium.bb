@@ -123,6 +123,7 @@ void AppListView::InitAsBubble(
   set_move_with_anchor(true);
   set_parent_window(parent);
   set_close_on_deactivate(false);
+  set_close_on_esc(false);
   set_anchor_insets(gfx::Insets(kArrowOffset, kArrowOffset,
                                 kArrowOffset, kArrowOffset));
   set_shadow(views::BubbleBorder::BIG_SHADOW);
@@ -180,7 +181,7 @@ void AppListView::Close() {
   icon_loading_wait_timer_.Stop();
 
   if (delegate_.get())
-    delegate_->Close();
+    delegate_->Dismiss();
   else
     GetWidget()->Close();
 }
@@ -247,8 +248,9 @@ void AppListView::GetWidgetHitTestMask(gfx::Path* mask) const {
       GetBubbleFrameView()->GetContentsBounds()));
 }
 
-bool AppListView::OnKeyPressed(const ui::KeyEvent& event) {
-  if (event.key_code() == ui::VKEY_ESCAPE) {
+bool AppListView::AcceleratorPressed(const ui::Accelerator& accelerator) {
+  // The accelerator is added by BubbleDelegateView.
+  if (accelerator.key_code() == ui::VKEY_ESCAPE) {
     Close();
     return true;
   }

@@ -91,7 +91,7 @@ class AppListControllerDelegateWin : public AppListControllerDelegate {
 
  private:
   // AppListController overrides:
-  virtual void CloseView() OVERRIDE;
+  virtual void DismissView() OVERRIDE;
   virtual void ViewClosing() OVERRIDE;
   virtual void ViewActivationChanged(bool active) OVERRIDE;
   virtual bool CanPin() OVERRIDE;
@@ -115,13 +115,17 @@ class AppListControllerDelegateWin : public AppListControllerDelegate {
 // list to operate, and controls when the app list is opened and closed.
 class AppListController {
  public:
-  AppListController() : current_view_(NULL), can_close_app_list_(true) {}
+  AppListController()
+      : current_view_(NULL),
+        can_close_app_list_(true),
+        app_list_is_showing_(false) {}
   ~AppListController() {}
 
   void set_can_close(bool can_close) { can_close_app_list_ = can_close; }
   bool can_close() { return can_close_app_list_; }
+  void CreateAppList();
   void ShowAppList();
-  void CloseAppList();
+  void DismissAppList();
   void AppListClosing();
   void AppListActivationChanged(bool active);
   app_list::AppListView* GetView() { return current_view_; }
@@ -134,7 +138,7 @@ class AppListController {
       int min_space_y,
       views::BubbleBorder::ArrowLocation* arrow,
       gfx::Point* anchor);
-  void UpdateArrowPositionAndAnchorPoint(app_list::AppListView* view);
+  void UpdateArrowPositionAndAnchorPoint(const gfx::Point& cursor);
   string16 GetAppListIconPath();
 
   // Check if the app list or the taskbar has focus. The app list is kept
@@ -156,22 +160,22 @@ class AppListController {
   // True if the controller can close the app list.
   bool can_close_app_list_;
 
+  // True if the app list is showing. Used to ensure we only ever have 0 or 1
+  // browser process keep-alives active.
+  bool app_list_is_showing_;
+
   DISALLOW_COPY_AND_ASSIGN(AppListController);
 };
 
 base::LazyInstance<AppListController>::Leaky g_app_list_controller =
     LAZY_INSTANCE_INITIALIZER;
 
-AppListControllerDelegateWin::AppListControllerDelegateWin() {
-  browser::StartKeepAlive();
-}
+AppListControllerDelegateWin::AppListControllerDelegateWin() {}
 
-AppListControllerDelegateWin::~AppListControllerDelegateWin() {
-  browser::EndKeepAlive();
-}
+AppListControllerDelegateWin::~AppListControllerDelegateWin() {}
 
-void AppListControllerDelegateWin::CloseView() {
-  g_app_list_controller.Get().CloseAppList();
+void AppListControllerDelegateWin::DismissView() {
+  g_app_list_controller.Get().DismissAppList();
 }
 
 void AppListControllerDelegateWin::ViewActivationChanged(bool active) {
@@ -242,14 +246,10 @@ void AppListControllerDelegateWin::LaunchApp(Profile* profile,
   application_launch::OpenApplication(params);
 }
 
-void AppListController::ShowAppList() {
+void AppListController::CreateAppList() {
 #if !defined(USE_AURA)
-  // If there is already a view visible, activate it.
-  if (current_view_) {
-    current_view_->Show();
-    current_view_->GetWidget()->Activate();
+  if (current_view_)
     return;
-  }
 
   // The controller will be owned by the view delegate, and the delegate is
   // owned by the app list view. The app list view manages it's own lifetime.
@@ -262,7 +262,6 @@ void AppListController::ShowAppList() {
                               cursor,
                               views::BubbleBorder::BOTTOM_LEFT);
 
-  UpdateArrowPositionAndAnchorPoint(current_view_);
   HWND hwnd =
       current_view_->GetWidget()->GetTopLevelWidget()->GetNativeWindow();
   ui::win::SetAppIdForWindow(GetAppModelId(), hwnd);
@@ -273,14 +272,32 @@ void AppListController::ShowAppList() {
   ::SetWindowText(hwnd, app_name.c_str());
   string16 icon_path = GetAppListIconPath();
   ui::win::SetAppIconForWindow(icon_path, hwnd);
+#endif
+}
+
+void AppListController::ShowAppList() {
+#if !defined(USE_AURA)
+  if (!current_view_)
+    CreateAppList();
+
+  if (app_list_is_showing_)
+    return;
+  app_list_is_showing_ = true;
+  browser::StartKeepAlive();
+  gfx::Point cursor = gfx::Screen::GetNativeScreen()->GetCursorScreenPoint();
+  UpdateArrowPositionAndAnchorPoint(cursor);
   current_view_->Show();
   current_view_->GetWidget()->Activate();
 #endif
 }
 
-void AppListController::CloseAppList() {
-  if (current_view_ && can_close_app_list_)
-    current_view_->GetWidget()->Close();
+void AppListController::DismissAppList() {
+  if (current_view_ && app_list_is_showing_ && can_close_app_list_) {
+    current_view_->GetWidget()->Hide();
+    timer_.Stop();
+    browser::EndKeepAlive();
+    app_list_is_showing_ = false;
+  }
 }
 
 void AppListController::AppListClosing() {
@@ -320,14 +337,14 @@ void AppListController::GetArrowLocationAndUpdateAnchor(
   if (work_area.width() == display.size().width()) {
     // Prefer the bottom as it is the most natural position.
     if (anchor->y() - work_area.y() >= min_space_y) {
-      *arrow = views::BubbleBorder::BOTTOM_LEFT;
+      *arrow = views::BubbleBorder::BOTTOM_CENTER;
       anchor->Offset(0, -kAnchorOffset);
       return;
     }
 
     // The view won't fit above the cursor. Will it fit below?
     if (work_area.bottom() - anchor->y() >= min_space_y) {
-      *arrow = views::BubbleBorder::TOP_LEFT;
+      *arrow = views::BubbleBorder::TOP_CENTER;
       anchor->Offset(0, kAnchorOffset);
       return;
     }
@@ -335,37 +352,38 @@ void AppListController::GetArrowLocationAndUpdateAnchor(
 
   // Now try on the right.
   if (work_area.right() - anchor->x() >= min_space_x) {
-    *arrow = views::BubbleBorder::LEFT_TOP;
+    *arrow = views::BubbleBorder::LEFT_CENTER;
     anchor->Offset(kAnchorOffset, 0);
     return;
   }
 
-  *arrow = views::BubbleBorder::RIGHT_TOP;
+  *arrow = views::BubbleBorder::RIGHT_CENTER;
   anchor->Offset(-kAnchorOffset, 0);
 }
 
 void AppListController::UpdateArrowPositionAndAnchorPoint(
-    app_list::AppListView* view) {
+    const gfx::Point& cursor) {
   const int kArrowSize = 10;
   const int kPadding = 20;
 
-  gfx::Size preferred = view->GetPreferredSize();
+  gfx::Point anchor(cursor);
+  gfx::Size preferred = current_view_->GetPreferredSize();
   // Add the size of the arrow to the space needed, as the preferred size is
   // of the view excluding the arrow.
   int min_space_x = preferred.width() + kAnchorOffset + kPadding + kArrowSize;
   int min_space_y = preferred.height() + kAnchorOffset + kPadding + kArrowSize;
 
-  gfx::Point anchor = view->anchor_point();
-  gfx::Display display = gfx::Screen::GetScreenFor(
-      view->GetWidget()->GetNativeView())->GetDisplayNearestPoint(anchor);
+  gfx::Screen* screen =
+      gfx::Screen::GetScreenFor(current_view_->GetWidget()->GetNativeView());
+  gfx::Display display = screen->GetDisplayNearestPoint(anchor);
   views::BubbleBorder::ArrowLocation arrow;
   GetArrowLocationAndUpdateAnchor(display,
                                   min_space_x,
                                   min_space_y,
                                   &arrow,
                                   &anchor);
-  view->SetBubbleArrowLocation(arrow);
-  view->SetAnchorPoint(anchor);
+  current_view_->SetBubbleArrowLocation(arrow);
+  current_view_->SetAnchorPoint(anchor);
 }
 
 string16 AppListController::GetAppListIconPath() {
@@ -410,7 +428,7 @@ void AppListController::CheckTaskbarOrViewHasFocus() {
 
   // If we get here, the focused window is not the taskbar, it's context menu,
   // or the app list, so close the app list.
-  CloseAppList();
+  DismissAppList();
 #endif
 }
 
@@ -472,16 +490,22 @@ void CheckAppListTaskbarShortcutOnFileThread(const FilePath& user_data_dir,
 
 namespace app_list_controller {
 
-void ShowAppList() {
-  g_app_list_controller.Get().ShowAppList();
-}
-
-void CheckAppListTaskbarShortcut() {
+void InitAppList() {
+  // Check that the presence of the app list shortcut matches the flag
+  // kShowAppListShortcut. This will either create or delete a shortcut
+  // file in the user data directory.
+  // TODO(benwells): Remove this and the flag once the app list installation
+  // is implemented.
   FilePath user_data_dir(g_browser_process->profile_manager()->user_data_dir());
   content::BrowserThread::PostTask(
       content::BrowserThread::FILE, FROM_HERE,
       base::Bind(&CheckAppListTaskbarShortcutOnFileThread, user_data_dir,
                  GetAppModelId()));
+}
+
+void ShowAppList() {
+  // Create the App list.
+  g_app_list_controller.Get().ShowAppList();
 }
 
 }  // namespace app_list_controller

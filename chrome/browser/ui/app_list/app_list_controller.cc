@@ -33,7 +33,7 @@ namespace app_list_controller {
 
 #if defined(OS_CHROMEOS)
 // Default implementation for ports which do not have this implemented.
-void CheckAppListTaskbarShortcut() {}
+void InitAppList() {}
 #endif
 
 }  // namespace app_list_controller

@@ -346,7 +346,7 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
     base::StatisticsRecorder::set_dump_on_exit(true);
 
 #if defined(ENABLE_APP_LIST)
-  app_list_controller::CheckAppListTaskbarShortcut();
+  app_list_controller::InitAppList();
   if (command_line_.HasSwitch(switches::kShowAppList)) {
     app_list_controller::ShowAppList();
     return true;

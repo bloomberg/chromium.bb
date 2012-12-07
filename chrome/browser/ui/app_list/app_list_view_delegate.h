@@ -38,7 +38,7 @@ class AppListViewDelegate : public app_list::AppListViewDelegate {
   virtual void InvokeSearchResultAction(const app_list::SearchResult& result,
                                         int action_index,
                                         int event_flags) OVERRIDE;
-  virtual void Close() OVERRIDE;
+  virtual void Dismiss() OVERRIDE;
   virtual void ViewClosing() OVERRIDE;
   virtual void ViewActivationChanged(bool active) OVERRIDE;
 

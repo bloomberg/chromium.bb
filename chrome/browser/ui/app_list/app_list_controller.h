@@ -16,8 +16,8 @@ class AppListControllerDelegate {
  public:
   virtual ~AppListControllerDelegate();
 
-  // Close the view.
-  virtual void CloseView() = 0;
+  // Dismisses the view.
+  virtual void DismissView() = 0;
 
   // Handle the view being closed.
   virtual void ViewClosing();
@@ -57,15 +57,11 @@ class AppListControllerDelegate {
 
 namespace app_list_controller {
 
+// Do any once off initialization needed for the app list.
+void InitAppList();
+
 // Show the app list.
 void ShowAppList();
-
-// Check that the presence of the app list shortcut matches the flag
-// kShowAppListShortcut. This will either create or delete a shortcut
-// file in the user data directory.
-// TODO(benwells): Remove this and the flag once the app list installation
-// is implemented.
-void CheckAppListTaskbarShortcut();
 
 }  // namespace app_list_controller
 
