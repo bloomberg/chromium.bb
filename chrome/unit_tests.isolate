@@ -4,6 +4,11 @@
 {
   'variables': {
     'isolate_dependency_tracked': [
+      '../base/prefs/test/data/pref_service/invalid.json',
+      '../base/prefs/test/data/pref_service/read.json',
+      '../base/prefs/test/data/pref_service/read.need_empty_value.json',
+      '../base/prefs/test/data/pref_service/write.golden.json',
+      '../base/prefs/test/data/pref_service/write.golden.need_empty_value.json',
       '../net/data/ssl/certificates/expired_cert.pem',
       '../net/data/ssl/certificates/test_mail_google_com.pem',
       '../net/data/ssl/certificates/unittest.originbound.der',
@@ -190,11 +195,6 @@
     }, {
       'variables': {
         'isolate_dependency_tracked': [
-          '../base/prefs/test/data/pref_service/invalid.json',
-          '../base/prefs/test/data/pref_service/read.json',
-          '../base/prefs/test/data/pref_service/read.need_empty_value.json',
-          '../base/prefs/test/data/pref_service/write.golden.json',
-          '../base/prefs/test/data/pref_service/write.golden.need_empty_value.json',
           '../third_party/hunspell_dictionaries/en-AU-2-5.bdic',
           '../third_party/hunspell_dictionaries/en-GB-2-5.bdic',
           '<(PRODUCT_DIR)/chrome_100_percent.pak',
