@@ -13,7 +13,7 @@
       'target_name': 'check_sdk_patch',
       'type': 'none',
       'variables': {
-        'check_sdk_script': '<(DEPTH)/chrome/tools/build/win/check_sdk_patch.py',
+        'check_sdk_script': 'util/check_sdk_patch.py',
         'output_path': '<(INTERMEDIATE_DIR)/check_sdk_patch',
       },
       'actions': [
