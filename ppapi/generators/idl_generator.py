@@ -107,7 +107,7 @@ class Generator(object):
       if releasestr == 'end':
         releasestr = ast.releases[-1]
 
-      if releasestr > ast.releases[0]:
+      if releasestr > ast.releases[-1]:
         InfoOut.Log('There is no unique release for %s, using last release.' %
                     releasestr)
         releasestr = ast.releases[-1]
