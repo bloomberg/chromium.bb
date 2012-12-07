@@ -141,51 +141,48 @@ void TabStripModel::InsertWebContentsAt(int index,
   }
 }
 
-TabContents* TabStripModel::ReplaceTabContentsAt(int index,
-                                                 TabContents* new_contents) {
+WebContents* TabStripModel::ReplaceWebContentsAt(int index,
+                                                 WebContents* new_contents) {
+  delegate_->WillAddWebContents(new_contents);
+
   DCHECK(ContainsIndex(index));
-  TabContents* old_contents = GetTabContentsAtImpl(index);
+  WebContents* old_contents = GetWebContentsAtImpl(index);
 
-  ForgetOpenersAndGroupsReferencing(old_contents->web_contents());
+  ForgetOpenersAndGroupsReferencing(old_contents);
 
-  contents_data_[index]->contents = new_contents->web_contents();
+  contents_data_[index]->contents = new_contents;
 
   FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
-                    TabReplacedAt(this,
-                                  old_contents->web_contents(),
-                                  new_contents->web_contents(),
-                                  index));
+                    TabReplacedAt(this, old_contents, new_contents, index));
 
-  // When the active tab contents is replaced send out a selection notification
+  // When the active WebContents is replaced send out a selection notification
   // too. We do this as nearly all observers need to treat a replacement of the
   // selected contents as the selection changing.
   if (active_index() == index) {
     FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
-                      ActiveTabChanged(old_contents->web_contents(),
-                                       new_contents->web_contents(),
+                      ActiveTabChanged(old_contents, new_contents,
                                        active_index(), false));
   }
   return old_contents;
 }
 
-TabContents* TabStripModel::DiscardTabContentsAt(int index) {
+WebContents* TabStripModel::DiscardWebContentsAt(int index) {
   DCHECK(ContainsIndex(index));
   // Do not discard active tab.
   if (active_index() == index)
     return NULL;
 
-  TabContents* null_contents = TabContents::Factory::CreateTabContents(
+  WebContents* null_contents =
       WebContents::Create(profile(),
                           NULL /* site_instance */,
                           MSG_ROUTING_NONE,
-                          NULL /* base_tab_contents */));
-  TabContents* old_contents = GetTabContentsAtImpl(index);
+                          NULL /* base_web_contents */);
+  WebContents* old_contents = GetWebContentsAtImpl(index);
   // Copy over the state from the navigation controller so we preserve the
   // back/forward history and continue to display the correct title/favicon.
-  null_contents->web_contents()->GetController().CopyStateFrom(
-      old_contents->web_contents()->GetController());
+  null_contents->GetController().CopyStateFrom(old_contents->GetController());
   // Replace the tab we're discarding with the null version.
-  ReplaceTabContentsAt(index, null_contents);
+  ReplaceWebContentsAt(index, null_contents);
   // Mark the tab so it will reload when we click.
   contents_data_[index]->discarded = true;
   // Discard the old tab's renderer.

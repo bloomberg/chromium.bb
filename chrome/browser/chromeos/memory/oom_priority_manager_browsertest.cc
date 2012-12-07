@@ -103,7 +103,7 @@ IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPriorityManagerBasics) {
   browser()->tab_strip_model()->ActivateTabAt(1, true);
   EXPECT_EQ(1, browser()->active_index());
   EXPECT_FALSE(browser()->tab_strip_model()->IsTabDiscarded(1));
-  browser()->tab_strip_model()->DiscardTabContentsAt(2);
+  browser()->tab_strip_model()->DiscardWebContentsAt(2);
   EXPECT_TRUE(browser()->tab_strip_model()->IsTabDiscarded(2));
 
   // Force creation of the FindBarController.

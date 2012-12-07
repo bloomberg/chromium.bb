@@ -27,7 +27,6 @@
 #include "chrome/browser/memory_details.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -78,7 +77,7 @@ const int kFocusedTabScoreAdjustIntervalMs = 500;
 
 // Returns a unique ID for a WebContents.  Do not cast back to a pointer, as
 // the WebContents could be deleted if the user closed the tab.
-int64 IdFromTabContents(WebContents* web_contents) {
+int64 IdFromWebContents(WebContents* web_contents) {
   return reinterpret_cast<int64>(web_contents);
 }
 
@@ -233,15 +232,15 @@ bool OomPriorityManager::DiscardTabById(int64 target_web_contents_id) {
       // Can't discard tabs that are already discarded or active.
       if (model->IsTabDiscarded(idx) || (model->active_index() == idx))
         continue;
-      WebContents* web_contents = model->GetTabContentsAt(idx)->web_contents();
-      int64 web_contents_id = IdFromTabContents(web_contents);
+      WebContents* web_contents = model->GetWebContentsAt(idx);
+      int64 web_contents_id = IdFromWebContents(web_contents);
       if (web_contents_id == target_web_contents_id) {
         LOG(WARNING) << "Discarding tab " << idx
             << " id " << target_web_contents_id;
         // Record statistics before discarding because we want to capture the
         // memory state that lead to the discard.
         RecordDiscardStatistics();
-        model->DiscardTabContentsAt(idx);
+        model->DiscardWebContentsAt(idx);
         return true;
       }
     }
@@ -444,7 +443,7 @@ OomPriorityManager::TabStatsList OomPriorityManager::GetTabStatsOnUIThread() {
     bool is_browser_for_app = browser->is_app();
     const TabStripModel* model = browser->tab_strip_model();
     for (int i = 0; i < model->count(); i++) {
-      WebContents* contents = model->GetTabContentsAt(i)->web_contents();
+      WebContents* contents = model->GetWebContentsAt(i);
       if (!contents->IsCrashed()) {
         TabStats stats;
         stats.is_app = is_browser_for_app;
@@ -454,7 +453,7 @@ OomPriorityManager::TabStatsList OomPriorityManager::GetTabStatsOnUIThread() {
         stats.last_selected = contents->GetLastSelectedTime();
         stats.renderer_handle = contents->GetRenderProcessHost()->GetHandle();
         stats.title = contents->GetTitle();
-        stats.tab_contents_id = IdFromTabContents(contents);
+        stats.tab_contents_id = IdFromWebContents(contents);
         stats_list.push_back(stats);
       }
     }

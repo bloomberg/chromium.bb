@@ -55,7 +55,6 @@ class TabContents : public content::WebContentsObserver {
     friend class TabAndroid;
     friend class TabStripModel;
     friend class TestTabStripModelDelegate;
-    FRIEND_TEST_ALL_PREFIXES(SessionRestoreTest, SessionStorageAfterTabReplace);
 
     static TabContents* CreateTabContents(content::WebContents* contents);
   };

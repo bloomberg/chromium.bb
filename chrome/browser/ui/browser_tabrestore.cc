@@ -140,7 +140,8 @@ void ReplaceRestoredTab(
                                                 session_storage_namespace,
                                                 user_agent_override);
 
-  // ReplaceTabContentsAt won't animate in the restoration, so do it manually.
+  // ReplaceWebContentsAt won't animate in the restoration, so manually do the
+  // equivalent of ReplaceWebContentsAt.
   int insertion_index = browser->active_index();
   browser->tab_strip_model()->InsertWebContentsAt(
       insertion_index + 1,

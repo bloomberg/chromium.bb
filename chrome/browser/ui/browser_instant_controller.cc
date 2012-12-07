@@ -92,13 +92,12 @@ void BrowserInstantController::CommitInstant(content::WebContents* preview,
     browser_->tab_strip_model()->AddWebContents(preview, -1,
         instant_.last_transition_type(), TabStripModel::ADD_ACTIVE);
   } else {
-    content::WebContents* active_tab =
-        browser_->tab_strip_model()->GetActiveWebContents();
-    int index = browser_->tab_strip_model()->GetIndexOfWebContents(active_tab);
+    int index = browser_->tab_strip_model()->active_index();
     DCHECK_NE(TabStripModel::kNoTab, index);
+    content::WebContents* active_tab =
+        browser_->tab_strip_model()->GetWebContentsAt(index);
     // TabStripModel takes ownership of |preview|.
-    browser_->tab_strip_model()->ReplaceTabContentsAt(index,
-        TabContents::FromWebContents(preview));
+    browser_->tab_strip_model()->ReplaceWebContentsAt(index, preview);
     // InstantUnloadHandler takes ownership of |active_tab|.
     instant_unload_handler_.RunUnloadListenersOrDestroy(active_tab, index);
 

@@ -188,17 +188,18 @@ class TabStripModel : public content::NotificationObserver {
   // user to confirm closure).
   bool CloseWebContentsAt(int index, uint32 close_types);
 
-  // Replaces the tab contents at |index| with |new_contents|. The
-  // TabContents that was at |index| is returned and ownership returns
+  // Replaces the WebContents at |index| with |new_contents|. The
+  // WebContents that was at |index| is returned and its ownership returns
   // to the caller.
-  TabContents* ReplaceTabContentsAt(int index,
-                                    TabContents* new_contents);
+  content::WebContents* ReplaceWebContentsAt(
+      int index,
+      content::WebContents* new_contents);
 
-  // Destroys the TabContents at the specified index, but keeps the tab
+  // Destroys the WebContents at the specified index, but keeps the tab
   // visible in the tab strip. Used to free memory in low-memory conditions,
   // especially on Chrome OS. The tab reloads if the user clicks on it.
-  // Returns an empty TabContents, used only for testing.
-  TabContents* DiscardTabContentsAt(int index);
+  // Returns the new empty WebContents, used only for testing.
+  content::WebContents* DiscardWebContentsAt(int index);
 
   // Detaches the WebContents at the specified index from this strip. The
   // WebContents is not destroyed, just removed from display. The caller
@@ -342,7 +343,7 @@ class TabStripModel : public content::NotificationObserver {
   bool IsTabBlocked(int index) const;
 
   // Returns true if the WebContents at |index| has been discarded to
-  // save memory.  See DiscardTabContentsAt() for details.
+  // save memory.  See DiscardWebContentsAt() for details.
   bool IsTabDiscarded(int index) const;
 
   // Returns the index of the first tab that is not a mini-tab. This returns

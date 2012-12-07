@@ -113,10 +113,6 @@ class TabStripModelTest : public ChromeRenderViewHostTestHarness {
   TabStripModelTest() : browser_thread_(BrowserThread::UI, &message_loop_) {
   }
 
-  TabContents* CreateTabContents() {
-    return chrome::TabContentsFactory(profile(), NULL, MSG_ROUTING_NONE, NULL);
-  }
-
   WebContents* CreateWebContents() {
     return WebContents::Create(profile(), NULL, MSG_ROUTING_NONE, NULL);
   }
@@ -2017,20 +2013,18 @@ TEST_F(TabStripModelTest, ReplaceSendsSelected) {
   MockTabStripModelObserver tabstrip_observer(&strip);
   strip.AddObserver(&tabstrip_observer);
 
-  TabContents* new_contents = CreateTabContents();
-  delete strip.ReplaceTabContentsAt(0, new_contents);
+  WebContents* new_contents = CreateWebContents();
+  delete strip.ReplaceWebContentsAt(0, new_contents);
 
   ASSERT_EQ(2, tabstrip_observer.GetStateCount());
 
   // First event should be for replaced.
-  State state(
-      new_contents->web_contents(), 0, MockTabStripModelObserver::REPLACED);
+  State state(new_contents, 0, MockTabStripModelObserver::REPLACED);
   state.src_contents = first_contents;
   EXPECT_TRUE(tabstrip_observer.StateEquals(0, state));
 
   // And the second for selected.
-  state = State(
-      new_contents->web_contents(), 0, MockTabStripModelObserver::ACTIVATE);
+  state = State(new_contents, 0, MockTabStripModelObserver::ACTIVATE);
   state.src_contents = first_contents;
   EXPECT_TRUE(tabstrip_observer.StateEquals(1, state));
 
@@ -2043,13 +2037,12 @@ TEST_F(TabStripModelTest, ReplaceSendsSelected) {
   tabstrip_observer.ClearStates();
 
   // And replace it.
-  new_contents = CreateTabContents();
-  delete strip.ReplaceTabContentsAt(1, new_contents);
+  new_contents = CreateWebContents();
+  delete strip.ReplaceWebContentsAt(1, new_contents);
 
   ASSERT_EQ(1, tabstrip_observer.GetStateCount());
 
-  state = State(
-      new_contents->web_contents(), 1, MockTabStripModelObserver::REPLACED);
+  state = State(new_contents, 1, MockTabStripModelObserver::REPLACED);
   state.src_contents = third_contents;
   EXPECT_TRUE(tabstrip_observer.StateEquals(0, state));
 
@@ -2057,7 +2050,7 @@ TEST_F(TabStripModelTest, ReplaceSendsSelected) {
 }
 
 // Ensures discarding tabs leaves TabStripModel in a good state.
-TEST_F(TabStripModelTest, DiscardTabContentsAt) {
+TEST_F(TabStripModelTest, DiscardWebContentsAt) {
   typedef MockTabStripModelObserver::State State;
 
   TabStripDummyDelegate delegate;
@@ -2075,8 +2068,7 @@ TEST_F(TabStripModelTest, DiscardTabContentsAt) {
   tabstrip.AddObserver(&tabstrip_observer);
 
   // Discard one of the tabs.
-  TabContents* null_tab_contents1 = tabstrip.DiscardTabContentsAt(0);
-  WebContents* null_contents1 = null_tab_contents1->web_contents();
+  WebContents* null_contents1 = tabstrip.DiscardWebContentsAt(0);
   ASSERT_EQ(2, tabstrip.count());
   EXPECT_TRUE(tabstrip.IsTabDiscarded(0));
   EXPECT_FALSE(tabstrip.IsTabDiscarded(1));
@@ -2089,8 +2081,7 @@ TEST_F(TabStripModelTest, DiscardTabContentsAt) {
   tabstrip_observer.ClearStates();
 
   // Discard the same tab again.
-  TabContents* null_tab_contents2 = tabstrip.DiscardTabContentsAt(0);
-  WebContents* null_contents2 = null_tab_contents2->web_contents();
+  WebContents* null_contents2 = tabstrip.DiscardWebContentsAt(0);
   ASSERT_EQ(2, tabstrip.count());
   EXPECT_TRUE(tabstrip.IsTabDiscarded(0));
   EXPECT_FALSE(tabstrip.IsTabDiscarded(1));
@@ -2109,7 +2100,7 @@ TEST_F(TabStripModelTest, DiscardTabContentsAt) {
   EXPECT_FALSE(tabstrip.IsTabDiscarded(1));
 
   // Don't discard active tab.
-  tabstrip.DiscardTabContentsAt(0);
+  tabstrip.DiscardWebContentsAt(0);
   ASSERT_EQ(2, tabstrip.count());
   EXPECT_FALSE(tabstrip.IsTabDiscarded(0));
   EXPECT_FALSE(tabstrip.IsTabDiscarded(1));
