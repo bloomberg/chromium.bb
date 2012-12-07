@@ -158,6 +158,12 @@ DialogType.isModal = function(type) {
 
     set label(value) {
       // Grid sets it to entry. Ignore.
+    },
+
+    decorate: function() {
+      // Override the default role 'listitem' to 'option' to match the parent's
+      // role (listbox).
+      this.setAttribute('role', 'option');
     }
   };
 
@@ -1029,7 +1035,10 @@ DialogType.isModal = function(type) {
    * Initialize the file thumbnail grid.
    */
   FileManager.prototype.initGrid_ = function() {
-    var self = this;
+    // Overriding the default role 'list' to 'listbox' for better accessibility
+    // on ChromeOS.
+    this.grid_.setAttribute('role', 'listbox');
+
     this.grid_.itemConstructor =
         GridItem.bind(null, this, this.showCheckboxes_);
     this.grid_.addEventListener('click', this.onDetailClick_.bind(this));
@@ -1039,9 +1048,18 @@ DialogType.isModal = function(type) {
    * Initialize the file list table.
    */
   FileManager.prototype.initTable_ = function() {
+    // Overriding the default role 'list' to 'listbox' for better accessibility
+    // on ChromeOS.
+    this.table_.list.setAttribute('role', 'listbox');
+
     var renderFunction = this.table_.getRenderFunction();
     this.table_.setRenderFunction(function(entry, parent) {
       var item = renderFunction(entry, parent);
+
+      // Overriding the default role 'list' to 'listbox' for better
+      // accessibility on ChromeOS.
+      item.setAttribute('role', 'option');
+
       this.updateGeneralItemStyle_(item, entry);
       this.updateGDataStyle_(
           item, entry, this.metadataCache_.getCached(entry, 'gdata'));
@@ -1755,7 +1773,7 @@ DialogType.isModal = function(type) {
   };
 
   /**
-   * Updates the list item style foe the entry.
+   * Updates the list item style for the entry.
    * @param {ListItem} listItem List item.
    * @param {Entry} entry The entry.
    */
