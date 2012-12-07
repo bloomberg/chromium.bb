@@ -166,13 +166,43 @@ class HostProcess
   virtual void OnUnknownHostIdError() OVERRIDE;
 
  private:
+  enum HostState {
+    // Host process has just been started. Waiting for config and policies to be
+    // read from the disk.
+    HOST_INITIALIZING,
+
+    // Host is started and running.
+    HOST_STARTED,
+
+    // Host is being stopped and will need to be started again.
+    HOST_STOPPING_TO_RESTART,
+
+    // Host is being stopped.
+    HOST_STOPPING,
+
+    // Host has been stopped.
+    HOST_STOPPED,
+
+    // Allowed state transitions:
+    //   INITIALIZING->STARTED
+    //   INITIALIZING->STOPPED
+    //   STARTED->STOPPING_TO_RESTART
+    //   STARTED->STOPPING
+    //   STOPPING_TO_RESTART->STARTED
+    //   STOPPING_TO_RESTART->STOPPING
+    //   STOPPING->STOPPED
+    //   STOPPED->STARTED
+    //
+    // |host_| must be NULL in INITIALIZING and STOPPED states and not-NULL in
+    // all other states.
+  };
+
   friend class base::RefCountedThreadSafe<HostProcess>;
   virtual ~HostProcess();
 
-#if defined(OS_POSIX)
-  // Registers a SIGTERM handler on the network thread, to shutdown the host.
-  void ListenForShutdownSignal();
+  void StartOnNetworkThread();
 
+#if defined(OS_POSIX)
   // Callback passed to RegisterSignalHandler() to handle SIGTERM events.
   void SigTermHandler(int signal_number);
 #endif
@@ -206,8 +236,6 @@ class HostProcess
   bool OnCurtainPolicyUpdate(bool curtain_required);
   bool OnHostTalkGadgetPrefixPolicyUpdate(const std::string& talkgadget_prefix);
 
-  void StartHostStatusService();
-
   void StartHost();
 
   void OnAuthFailed();
@@ -222,13 +250,10 @@ class HostProcess
 
   void RestartHost();
 
-  void RestartOnHostShutdown();
-
-  void Shutdown(int exit_code);
+  // Stops the host and shuts down the process with the specified |exit_code|.
+  void ShutdownHost(int exit_code);
 
   void ShutdownOnNetworkThread();
-
-  void ResetHost();
 
   // Crashes the process in response to a daemon's request. The daemon passes
   // the location of the code that detected the fatal error resulted in this
@@ -245,11 +270,12 @@ class HostProcess
   // Accessed on the UI thread.
   scoped_ptr<IPC::ChannelProxy> daemon_channel_;
   FilePath host_config_path_;
-  scoped_ptr<ConfigFileWatcher> config_watcher_;
   scoped_ptr<DesktopEnvironmentFactory> desktop_environment_factory_;
 
   // Accessed on the network thread.
+  HostState state_;
 
+  scoped_ptr<ConfigFileWatcher> config_watcher_;
   scoped_ptr<HostStatusService> status_service_;
 
   std::string host_id_;
@@ -268,9 +294,6 @@ class HostProcess
   scoped_ptr<CurtainMode> curtain_;
   scoped_ptr<CurtainingHostObserver> curtaining_host_observer_;
   bool curtain_required_;
-
-  bool restarting_;
-  bool shutting_down_;
 
   scoped_ptr<DesktopResizer> desktop_resizer_;
   scoped_ptr<ResizingHostObserver> resizing_host_observer_;
@@ -298,10 +321,9 @@ class HostProcess
 HostProcess::HostProcess(scoped_ptr<ChromotingHostContext> context,
                          int* exit_code_out)
     : context_(context.Pass()),
+      state_(HOST_INITIALIZING),
       allow_nat_traversal_(true),
       curtain_required_(false),
-      restarting_(false),
-      shutting_down_(false),
       desktop_resizer_(DesktopResizer::Create()),
 #if defined(REMOTING_MULTI_PROCESS)
       desktop_session_connector_(NULL),
@@ -405,76 +427,80 @@ void HostProcess::OnConfigUpdated(
   scoped_ptr<JsonHostConfig> config(new JsonHostConfig(FilePath()));
   if (!config->SetSerializedData(serialized_config)) {
     LOG(ERROR) << "Invalid configuration.";
-    Shutdown(kInvalidHostConfigurationExitCode);
+    ShutdownHost(kInvalidHostConfigurationExitCode);
     return;
   }
 
   if (!ApplyConfig(config.Pass())) {
     LOG(ERROR) << "Failed to apply the configuration.";
-    Shutdown(kInvalidHostConfigurationExitCode);
+    ShutdownHost(kInvalidHostConfigurationExitCode);
     return;
   }
 
-  // Start watching the policy (and eventually start the host) if this is
-  // the first configuration update. Otherwise, create new authenticator
-  // factory in case PIN has changed.
-  if (!policy_watcher_) {
+  if (state_ == HOST_INITIALIZING) {
+    // TODO(sergeyu): Currently OnPolicyUpdate() assumes that host config is
+    // already loaded so PolicyWatcher has to be started here. Separate policy
+    // loading from policy verifications and move |policy_watcher_|
+    // initialization to StartOnNetworkThread().
     policy_watcher_.reset(
         policy_hack::PolicyWatcher::Create(context_->file_task_runner()));
     policy_watcher_->StartWatching(
         base::Bind(&HostProcess::OnPolicyUpdate, base::Unretained(this)));
-  } else {
+  } else if (state_ == HOST_STARTED) {
+    // TODO(sergeyu): Here we assume that PIN is the only part of the config
+    // that may change while the service is running. Change ApplyConfig() to
+    // detect other changes in the config and restart host if necessary here.
     CreateAuthenticatorFactory();
   }
 }
 
 void HostProcess::OnConfigWatcherError() {
-  DCHECK(context_->ui_task_runner()->BelongsToCurrentThread());
-
-  context_->network_task_runner()->PostTask(FROM_HERE,
-      base::Bind(&HostProcess::Shutdown, this,
-                 kInvalidHostConfigurationExitCode));
+  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
+  ShutdownHost(kInvalidHostConfigurationExitCode);
 }
 
-void HostProcess::StartWatchingConfigChanges() {
-  DCHECK(context_->ui_task_runner()->BelongsToCurrentThread());
+void HostProcess::StartOnNetworkThread() {
+  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          kEnableStatusServiceSwitchName)) {
+    status_service_.reset(new HostStatusService());
+  }
 
 #if !defined(REMOTING_MULTI_PROCESS)
   // Start watching the host configuration file.
-  config_watcher_.reset(new ConfigFileWatcher(context_->ui_task_runner(),
+  config_watcher_.reset(new ConfigFileWatcher(context_->network_task_runner(),
                                               context_->file_task_runner(),
                                               this));
   config_watcher_->Watch(host_config_path_);
 #endif  // !defined(REMOTING_MULTI_PROCESS)
-}
 
 #if defined(OS_POSIX)
-void HostProcess::ListenForShutdownSignal() {
-  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
-
   remoting::RegisterSignalHandler(
       SIGTERM,
       base::Bind(&HostProcess::SigTermHandler, base::Unretained(this)));
+#endif  // defined(OS_POSIX)
 }
 
+#if defined(OS_POSIX)
 void HostProcess::SigTermHandler(int signal_number) {
   DCHECK(signal_number == SIGTERM);
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
   LOG(INFO) << "Caught SIGTERM: Shutting down...";
-  Shutdown(kSuccessExitCode);
+  ShutdownHost(kSuccessExitCode);
 }
 #endif  // OS_POSIX
 
 void HostProcess::CreateAuthenticatorFactory() {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
-  if (!host_ || shutting_down_)
+  if (state_ != HOST_STARTED)
     return;
 
   std::string local_certificate = key_pair_.GenerateCertificate();
   if (local_certificate.empty()) {
     LOG(ERROR) << "Failed to generate host certificate.";
-    Shutdown(kInitializationFailed);
+    ShutdownHost(kInitializationFailed);
     return;
   }
 
@@ -520,7 +546,7 @@ void HostProcess::OnChannelError() {
   // Shutdown the host if the daemon process disconnects the IPC channel.
   context_->network_task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&HostProcess::Shutdown, this, kSuccessExitCode));
+      base::Bind(&HostProcess::ShutdownHost, this, kSuccessExitCode));
 }
 
 void HostProcess::StartOnUiThread() {
@@ -545,14 +571,6 @@ void HostProcess::StartOnUiThread() {
         context_->audio_task_runner(), audio_pipe_name);
   }
 #endif  // defined(OS_LINUX)
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          kEnableStatusServiceSwitchName)) {
-    context_->network_task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&HostProcess::StartHostStatusService,
-                   base::Unretained(this)));
-  }
 
   // Create a desktop environment factory appropriate to the build type &
   // platform.
@@ -582,11 +600,6 @@ void HostProcess::StartOnUiThread() {
 
   desktop_environment_factory_.reset(desktop_environment_factory);
 
-#if defined(OS_POSIX)
-  context_->network_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&HostProcess::ListenForShutdownSignal, this));
-#endif // OS_POSIX
-
   // The host UI should be created on the UI thread.
   bool want_user_interface = true;
 #if defined(OS_LINUX)
@@ -609,7 +622,9 @@ void HostProcess::StartOnUiThread() {
     host_user_interface_->Init();
   }
 
-  StartWatchingConfigChanges();
+  context_->network_task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&HostProcess::StartOnNetworkThread, this));
 }
 
 void HostProcess::SendSasToConsole() {
@@ -624,7 +639,6 @@ void HostProcess::ShutdownOnUiThread() {
 
   // Tear down resources that need to be torn down on the UI thread.
   network_change_notifier_.reset();
-  config_watcher_.reset();
   daemon_channel_.reset();
   desktop_environment_factory_.reset();
   host_user_interface_.reset();
@@ -644,7 +658,7 @@ void HostProcess::ShutdownOnUiThread() {
 // Overridden from HeartbeatSender::Listener
 void HostProcess::OnUnknownHostIdError() {
   LOG(ERROR) << "Host ID not found.";
-  Shutdown(kInvalidHostIdExitCode);
+  ShutdownHost(kInvalidHostIdExitCode);
 }
 
 // Applies the host config, returning true if successful.
@@ -695,6 +709,10 @@ bool HostProcess::ApplyConfig(scoped_ptr<JsonHostConfig> config) {
 
 void HostProcess::OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies) {
   // TODO(rmsousa): Consolidate all On*PolicyUpdate methods into this one.
+  // TODO(sergeyu): Currently polices are verified only when they are loaded.
+  // Separate policy loading from policy verifications - this will allow to
+  // check policies again later, e.g. when host config changes.
+
   if (!context_->network_task_runner()->BelongsToCurrentThread()) {
     context_->network_task_runner()->PostTask(FROM_HERE, base::Bind(
         &HostProcess::OnPolicyUpdate, this, base::Passed(&policies)));
@@ -725,11 +743,12 @@ void HostProcess::OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies) {
   if (policies->GetBoolean(
           policy_hack::PolicyWatcher::kHostRequireCurtainPolicyName,
           &bool_value)) {
-      restart_required |= OnCurtainPolicyUpdate(bool_value);
+    restart_required |= OnCurtainPolicyUpdate(bool_value);
   }
-  if (!host_) {
+
+  if (state_ == HOST_INITIALIZING) {
     StartHost();
-  } else if (restart_required) {
+  } else if (state_ == HOST_STARTED && restart_required) {
     RestartHost();
   }
 }
@@ -742,7 +761,7 @@ bool HostProcess::OnHostDomainPolicyUpdate(const std::string& host_domain) {
 
   if (!host_domain.empty() &&
       !EndsWith(xmpp_login_, std::string("@") + host_domain, false)) {
-    Shutdown(kInvalidHostDomainExitCode);
+    ShutdownHost(kInvalidHostDomainExitCode);
   }
   return false;
 }
@@ -767,7 +786,7 @@ bool HostProcess::OnUsernamePolicyUpdate(bool host_username_match_required) {
 #endif
 
     if (shutdown) {
-      Shutdown(kUsernameMismatchExitCode);
+      ShutdownHost(kUsernameMismatchExitCode);
     }
   } else {
     LOG(INFO) << "Policy does not require host username match.";
@@ -807,7 +826,7 @@ bool HostProcess::OnCurtainPolicyUpdate(bool curtain_required) {
     // TODO(jamiewalch): Fix this once we have implemented the multi-process
     // daemon architecture (crbug.com/134894)
     if (getuid() == 0) {
-      Shutdown(kLoginScreenNotSupportedExitCode);
+      ShutdownHost(kLoginScreenNotSupportedExitCode);
       return false;
     }
   }
@@ -839,18 +858,13 @@ bool HostProcess::OnHostTalkGadgetPrefixPolicyUpdate(
   return false;
 }
 
-void HostProcess::StartHostStatusService() {
-  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
-  status_service_.reset(new HostStatusService());
-}
-
 void HostProcess::StartHost() {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
   DCHECK(!host_);
   DCHECK(!signal_strategy_.get());
-
-  if (shutting_down_)
-    return;
+  DCHECK(state_ == HOST_INITIALIZING || state_ == HOST_STOPPING_TO_RESTART ||
+         state_ == HOST_STOPPED) << state_;
+  state_ = HOST_STARTED;
 
   signal_strategy_.reset(
       new XmppSignalStrategy(context_->url_request_context_getter(),
@@ -933,7 +947,7 @@ void HostProcess::StartHost() {
 }
 
 void HostProcess::OnAuthFailed() {
-  Shutdown(kInvalidOauthCredentialsExitCode);
+  ShutdownHost(kInvalidOauthCredentialsExitCode);
 }
 
 void HostProcess::OnCurtainModeFailed() {
@@ -964,69 +978,45 @@ void HostProcess::OnDisconnectRequested() {
 
 void HostProcess::RestartHost() {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
+  DCHECK_EQ(state_, HOST_STARTED);
 
-  if (restarting_ || shutting_down_)
-    return;
-
-  restarting_ = true;
-  host_->Shutdown(base::Bind(&HostProcess::RestartOnHostShutdown, this));
+  state_ = HOST_STOPPING_TO_RESTART;
+  host_->Shutdown(base::Bind(&HostProcess::ShutdownOnNetworkThread, this));
 }
 
-void HostProcess::RestartOnHostShutdown() {
+void HostProcess::ShutdownHost(int exit_code) {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
-  if (shutting_down_)
-    return;
-
-  restarting_ = false;
-  host_ = NULL;
-  ResetHost();
-
-  StartHost();
-}
-
-void HostProcess::Shutdown(int exit_code) {
-  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
-
-  if (shutting_down_)
-    return;
-
-  if (status_service_)
-    status_service_->SetHostIsDown();
-
-  shutting_down_ = true;
   *exit_code_out_ = exit_code;
-  if (host_) {
-    host_->Shutdown(base::Bind(&HostProcess::ShutdownOnNetworkThread, this));
-  } else {
-    ShutdownOnNetworkThread();
+
+  switch (state_) {
+    case HOST_INITIALIZING:
+      state_ = HOST_STOPPED;
+      ShutdownOnNetworkThread();
+      break;
+
+    case HOST_STARTED:
+      state_ = HOST_STOPPING;
+      if (status_service_)
+        status_service_->SetHostIsDown();
+      host_->Shutdown(base::Bind(&HostProcess::ShutdownOnNetworkThread, this));
+      break;
+
+    case HOST_STOPPING_TO_RESTART:
+      state_ = HOST_STOPPING;
+      break;
+
+    case HOST_STOPPING:
+    case HOST_STOPPED:
+      // Host is already stopped or being stopped. No action is required.
+      break;
   }
 }
 
 void HostProcess::ShutdownOnNetworkThread() {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
-  // Destroy networking objects while we are on the network thread.
   host_ = NULL;
-  ResetHost();
-
-  if (policy_watcher_.get()) {
-    base::WaitableEvent done_event(true, false);
-    policy_watcher_->StopWatching(&done_event);
-    done_event.Wait();
-    policy_watcher_.reset();
-  }
-
-  status_service_.reset();
-
-  // Complete the rest of shutdown on the main thread.
-  context_->ui_task_runner()->PostTask(FROM_HERE,
-      base::Bind(&HostProcess::ShutdownOnUiThread, this));
-}
-
-void HostProcess::ResetHost() {
-  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
-
   curtaining_host_observer_.reset();
   host_event_logger_.reset();
   log_to_server_.reset();
@@ -1034,6 +1024,31 @@ void HostProcess::ResetHost() {
   signaling_connector_.reset();
   signal_strategy_.reset();
   resizing_host_observer_.reset();
+
+  if (state_ == HOST_STOPPING_TO_RESTART) {
+    StartHost();
+  } else if (state_ == HOST_STOPPING) {
+    state_ = HOST_STOPPED;
+
+    if (policy_watcher_.get()) {
+      base::WaitableEvent done_event(true, false);
+      policy_watcher_->StopWatching(&done_event);
+      done_event.Wait();
+      policy_watcher_.reset();
+    }
+
+    config_watcher_.reset();
+    status_service_.reset();
+
+    // Complete the rest of shutdown on the main thread.
+    context_->ui_task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&HostProcess::ShutdownOnUiThread, this));
+  } else {
+    // This method is used as a callback for ChromotingHost::Shutdown() which is
+    // called only in STOPPING_TO_RESTART and STOPPING states.
+    NOTREACHED();
+  }
 }
 
 void HostProcess::OnCrash(const std::string& function_name,
