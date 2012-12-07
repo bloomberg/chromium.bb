@@ -109,21 +109,35 @@ def _CheckVersions(input_api, output_api, results):
             '_VERSION of %s needs to be incremented.' % affected_file))
 
 def _CheckLinks(input_api, output_api, results):
-  regex = re.compile(
-      r'<a(.*?)href=(.*?)#(property|type|method|event)-(.*?)>(.*?)</a>',
-      flags=re.DOTALL)
   for affected_file in input_api.AffectedFiles():
     name = affected_file.LocalPath()
+    absolute_path = affected_file.AbsoluteLocalPath()
     if (fnmatch.fnmatch(name, '%s*' % PUBLIC_TEMPLATES_PATH) or
         fnmatch.fnmatch(name, '%s*' % INTROS_PATH) or
         fnmatch.fnmatch(name, '%s*' % ARTICLES_PATH) or
         fnmatch.fnmatch(name, '%s*' % API_PATH)):
-      contents = _ReadFile(affected_file.AbsoluteLocalPath())
-      if re.search(regex, contents):
+      contents = _ReadFile(absolute_path)
+      args = []
+      if input_api.platform == 'win32':
+        args = [input_api.python_executable]
+      args.extend([os.path.join('docs', 'server2', 'link_converter.py'),
+                   '-o',
+                   '-f',
+                   absolute_path])
+      output = input_api.subprocess.check_output(
+          args,
+          cwd=input_api.PresubmitLocalPath())
+      if output != contents:
+        changes = ''
+        for i, (line1, line2) in enumerate(
+            zip(contents.split('\n'), output.split('\n'))):
+          if line1 != line2:
+            changes = ('%s\nLine %d:\n-%s\n+%s\n' %
+                (changes, i + 1, line1, line2))
         results.append(output_api.PresubmitPromptWarning(
             'File %s may have an old-style <a> link to an API page. Please run '
             'docs/server2/link_converter.py to convert the link[s], or convert '
-            'them manually.' % name))
+            'them manually.\n\nSuggested changes are: %s' % (name, changes)))
 
 def _CheckChange(input_api, output_api):
   results = [

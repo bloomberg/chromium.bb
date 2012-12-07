@@ -54,7 +54,7 @@ def _Replace(matches, filename):
   else:
     return '%s$ref:[%s%s %s]' % (padding, page, link, title)
 
-def _ConvertFile(filename):
+def _ConvertFile(filename, use_stdout):
   regex = re.compile(r'<a(.*?)href=(.*?)>(.*?)</a>', flags=re.DOTALL)
   contents = _ReadFile(filename)
   contents  = re.sub(regex,
@@ -62,7 +62,10 @@ def _ConvertFile(filename):
                      contents)
   contents = contents.replace('$ref:extension.lastError',
                               '$ref:runtime.lastError')
-  _WriteFile(filename, contents)
+  if use_stdout:
+    print contents
+  else:
+    _WriteFile(filename, contents)
 
 if __name__ == '__main__':
   parser = optparse.OptionParser(
@@ -70,16 +73,17 @@ if __name__ == '__main__':
       usage='usage: %prog [option] <directory>')
   parser.add_option('-f', '--file', default='',
       help='Convert links in single file.')
+  parser.add_option('-o', '--out', action='store_true', default=False,
+      help='Write to stdout.')
   regex = re.compile(r'<a(.*?)href=(.*?)>(.*?)</a>', flags=re.DOTALL)
 
   opts, argv = parser.parse_args()
-
   if opts.file:
-    _ConvertFile(opts.file)
+    _ConvertFile(opts.file, opts.out)
   else:
     if len(argv) != 1:
       parser.print_usage()
       exit(0)
     for root, dirs, files in os.walk(argv[0]):
       for name in files:
-        _ConvertFile(os.path.join(root, name))
+        _ConvertFile(os.path.join(root, name), opts.out)
