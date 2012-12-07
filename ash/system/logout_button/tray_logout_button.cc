@@ -8,16 +8,20 @@
 
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
+#include "ash/system/tray/tray_constants.h"
 #include "ash/system/user/login_status.h"
 #include "base/logging.h"
 #include "base/string16.h"
 #include "grit/ash_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/border_images.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/label_button_border.h"
+#include "ui/views/layout/box_layout.h"
+#include "ui/views/view.h"
 
 namespace {
 
@@ -62,17 +66,25 @@ namespace internal {
 
 namespace tray {
 
-class LogoutButton : public views::LabelButton,
+class LogoutButton : public views::View,
                      public views::ButtonListener {
  public:
-  LogoutButton(user::LoginStatus status) : views::LabelButton(this, string16()),
+  LogoutButton(user::LoginStatus status) : button_(NULL),
                                            login_status_(user::LOGGED_IN_NONE),
                                            show_logout_button_in_tray_(false) {
+    views::BoxLayout* layout = new views::BoxLayout(
+        views::BoxLayout::kHorizontal, 0, 0, 0);
+    layout->set_spread_blank_space(true);
+    SetLayoutManager(layout);
+    set_border(views::Border::CreateEmptyBorder(
+        0, kTrayLabelItemHorizontalPaddingBottomAlignment, 0, 0));
+
+    button_ = new views::LabelButton(this, string16());
     for (size_t state = 0; state < views::CustomButton::STATE_COUNT; ++state) {
-      SetTextColor(static_cast<views::CustomButton::ButtonState>(state),
-                   SK_ColorWHITE);
+      button_->SetTextColor(
+          static_cast<views::CustomButton::ButtonState>(state), SK_ColorWHITE);
     }
-    SetFont(GetFont().DeriveFont(1));
+    button_->SetFont(button_->GetFont().DeriveFont(1));
     views::LabelButtonBorder* border = new views::LabelButtonBorder();
     border->SetImages(views::CustomButton::STATE_NORMAL,
                       views::BorderImages(kLogoutButtonBorderNormalImages));
@@ -80,7 +92,8 @@ class LogoutButton : public views::LabelButton,
                       views::BorderImages(kLogoutButtonBorderHotImages));
     border->SetImages(views::CustomButton::STATE_PRESSED,
                       views::BorderImages(kLogoutButtonBorderPushedImages));
-    set_border(border);
+    button_->set_border(border);
+    AddChildView(button_);
     OnLoginStatusChanged(status);
   }
 
@@ -88,8 +101,8 @@ class LogoutButton : public views::LabelButton,
     login_status_ = status;
     const string16 title = GetLocalizedSignOutStringForStatus(login_status_,
                                                               false);
-    SetText(title);
-    SetAccessibleName(title);
+    button_->SetText(title);
+    button_->SetAccessibleName(title);
     UpdateVisibility();
   }
 
@@ -100,7 +113,7 @@ class LogoutButton : public views::LabelButton,
 
   // Overridden from views::ButtonListener.
   void ButtonPressed(views::Button* sender, const ui::Event& event) OVERRIDE {
-    DCHECK_EQ(sender, this);
+    DCHECK_EQ(sender, button_);
     Shell::GetInstance()->tray_delegate()->SignOut();
   }
 
@@ -111,6 +124,7 @@ class LogoutButton : public views::LabelButton,
                login_status_ != user::LOGGED_IN_LOCKED);
   }
 
+  views::LabelButton* button_;
   user::LoginStatus login_status_;
   bool show_logout_button_in_tray_;
 
