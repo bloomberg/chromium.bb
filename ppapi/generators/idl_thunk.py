@@ -215,7 +215,7 @@ def _MakeNormalMemberBody(filenode, node, member, rtype, args, meta):
     if value is None:
       value = 'enter.retval()'
     body += '    return %s;\n' % value
-    body += '  return enter.SetResult(%s);\n' % invocation
+    body += '  return enter.SetResult(%s);' % invocation
   elif rtype == 'void':
     body = '  %s\n' % _MakeEnterLine(filenode, node, args[0], handle_errors,
                                      None, meta)

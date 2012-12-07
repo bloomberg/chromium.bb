@@ -8,6 +8,8 @@
  * This file defines the API to create a file i/o object.
  */
 
+[generate_thunk]
+
 label Chrome {
   M14 = 1.0,
   M25 = 1.1
