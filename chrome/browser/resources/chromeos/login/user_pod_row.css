@@ -11,6 +11,7 @@ podrow {
   display: -webkit-box;
   max-height: 650px;
   overflow: hidden;
+  padding: 10px 0;
   position: relative;
   width: 1152px;
 }
@@ -33,6 +34,7 @@ html[oobe=old] podrow {
   cursor: pointer;
   display: inline-block;
   padding: 10px;
+  vertical-align: middle;
 }
 
 .pod .main-pane {
@@ -265,17 +267,14 @@ html[dir=rtl] .pod .capslock-hint {
   opacity: 0;
   padding: 0;
   position: absolute;
+  right: 0;
+  top: 0;
   width: 16px;
 }
 
-html[oobe=old] .remove-user-button {
-  right: 14px;
-  top: 14px;
-}
-
-html[oobe=new] .remove-user-button {
-  right: 10px;
-  top: 10px;
+html[dir=rtl] .remove-user-button {
+  left: 0;
+  right: auto;
 }
 
 .pod .remove-user-button:focus,
