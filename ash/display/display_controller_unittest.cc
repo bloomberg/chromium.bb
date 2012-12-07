@@ -10,7 +10,6 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/cursor_manager_test_api.h"
-#include "base/debug/stack_trace.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window_tracker.h"
@@ -33,10 +32,6 @@ class TestObserver : public DisplayController::Observer {
   }
 
   virtual void OnDisplayConfigurationChanging() OVERRIDE {
-    if (!count_)
-      stack_traces_.str(std::string());
-    stack_traces_ << "=========\n";
-    base::debug::StackTrace().OutputToStream(&stack_traces_);
     ++count_;
   }
 
@@ -46,15 +41,8 @@ class TestObserver : public DisplayController::Observer {
     return c;
   }
 
-  std::string ToString() {
-    std::string str = stack_traces_.str();
-    stack_traces_.str(std::string());
-    return str;
-  }
-
  private:
   int count_;
-  std::stringstream stack_traces_;
 
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
@@ -105,105 +93,71 @@ TEST_F(DisplayControllerShutdownTest, Shutdown) {
 TEST_F(DisplayControllerTest, SecondaryDisplayLayout) {
   TestObserver observer;
   UpdateDisplay("500x500,400x400");
-  EXPECT_EQ(2, observer.CountAndReset())
-      << observer.ToString();  // resize and add
+  EXPECT_EQ(2, observer.CountAndReset());  // resize and add
   gfx::Display* secondary_display =
       Shell::GetInstance()->display_manager()->GetDisplayAt(1);
   gfx::Insets insets(5, 5, 5, 5);
   secondary_display->UpdateWorkAreaFromInsets(insets);
 
   // Default layout is RIGHT.
-  EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString())
-      << observer.ToString();
-  EXPECT_EQ("500,0 400x400", GetSecondaryDisplay().bounds().ToString())
-      << observer.ToString();
-  EXPECT_EQ("505,5 390x390", GetSecondaryDisplay().work_area().ToString())
-      << observer.ToString();
+  EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString());
+  EXPECT_EQ("500,0 400x400", GetSecondaryDisplay().bounds().ToString());
+  EXPECT_EQ("505,5 390x390", GetSecondaryDisplay().work_area().ToString());
 
   // Layout the secondary display to the bottom of the primary.
   SetSecondaryDisplayLayout(DisplayLayout::BOTTOM);
-  EXPECT_EQ(1, observer.CountAndReset())
-      << observer.ToString();
-  EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString())
-      << observer.ToString();
-  EXPECT_EQ("0,500 400x400", GetSecondaryDisplay().bounds().ToString())
-      << observer.ToString();
-  EXPECT_EQ("5,505 390x390", GetSecondaryDisplay().work_area().ToString())
-      << observer.ToString();
+  EXPECT_EQ(1, observer.CountAndReset());
+  EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString());
+  EXPECT_EQ("0,500 400x400", GetSecondaryDisplay().bounds().ToString());
+  EXPECT_EQ("5,505 390x390", GetSecondaryDisplay().work_area().ToString());
 
   // Layout the secondary display to the left of the primary.
   SetSecondaryDisplayLayout(DisplayLayout::LEFT);
-  EXPECT_EQ(1, observer.CountAndReset())
-      << observer.ToString();
-  EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString())
-      << observer.ToString();
-  EXPECT_EQ("-400,0 400x400", GetSecondaryDisplay().bounds().ToString())
-      << observer.ToString();
-  EXPECT_EQ("-395,5 390x390", GetSecondaryDisplay().work_area().ToString())
-      << observer.ToString();
+  EXPECT_EQ(1, observer.CountAndReset());
+  EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString());
+  EXPECT_EQ("-400,0 400x400", GetSecondaryDisplay().bounds().ToString());
+  EXPECT_EQ("-395,5 390x390", GetSecondaryDisplay().work_area().ToString());
 
   // Layout the secondary display to the top of the primary.
   SetSecondaryDisplayLayout(DisplayLayout::TOP);
-  EXPECT_EQ(1, observer.CountAndReset())
-      << observer.ToString();
-  EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString())
-      << observer.ToString();
-  EXPECT_EQ("0,-400 400x400", GetSecondaryDisplay().bounds().ToString())
-      << observer.ToString();
-  EXPECT_EQ("5,-395 390x390", GetSecondaryDisplay().work_area().ToString())
-      << observer.ToString();
+  EXPECT_EQ(1, observer.CountAndReset());
+  EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString());
+  EXPECT_EQ("0,-400 400x400", GetSecondaryDisplay().bounds().ToString());
+  EXPECT_EQ("5,-395 390x390", GetSecondaryDisplay().work_area().ToString());
 
   // Layout to the right with an offset.
   SetSecondaryDisplayLayoutAndOffset(DisplayLayout::RIGHT, 300);
-  EXPECT_EQ(1, observer.CountAndReset())
-      << observer.ToString();
-  EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString())
-      << observer.ToString();
-  EXPECT_EQ("500,300 400x400", GetSecondaryDisplay().bounds().ToString())
-      << observer.ToString();
+  EXPECT_EQ(1, observer.CountAndReset());  // resize and add
+  EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString());
+  EXPECT_EQ("500,300 400x400", GetSecondaryDisplay().bounds().ToString());
 
   // Keep the minimum 100.
   SetSecondaryDisplayLayoutAndOffset(DisplayLayout::RIGHT, 490);
-  EXPECT_EQ(1, observer.CountAndReset())
-      << observer.ToString();
-  EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString())
-      << observer.ToString();
-  EXPECT_EQ("500,400 400x400", GetSecondaryDisplay().bounds().ToString())
-      << observer.ToString();
+  EXPECT_EQ(1, observer.CountAndReset());  // resize and add
+  EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString());
+  EXPECT_EQ("500,400 400x400", GetSecondaryDisplay().bounds().ToString());
 
   SetSecondaryDisplayLayoutAndOffset(DisplayLayout::RIGHT, -400);
-  EXPECT_EQ(1, observer.CountAndReset())
-      << observer.ToString();
-  EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString())
-      << observer.ToString();
-  EXPECT_EQ("500,-300 400x400", GetSecondaryDisplay().bounds().ToString())
-      << observer.ToString();
+  EXPECT_EQ(1, observer.CountAndReset());  // resize and add
+  EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString());
+  EXPECT_EQ("500,-300 400x400", GetSecondaryDisplay().bounds().ToString());
 
   //  Layout to the bottom with an offset.
   SetSecondaryDisplayLayoutAndOffset(DisplayLayout::BOTTOM, -200);
-  EXPECT_EQ(1, observer.CountAndReset())
-      << observer.ToString();
-  EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString())
-      << observer.ToString();
-  EXPECT_EQ("-200,500 400x400", GetSecondaryDisplay().bounds().ToString())
-      << observer.ToString();
+  EXPECT_EQ(1, observer.CountAndReset());  // resize and add
+  EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString());
+  EXPECT_EQ("-200,500 400x400", GetSecondaryDisplay().bounds().ToString());
 
   // Keep the minimum 100.
   SetSecondaryDisplayLayoutAndOffset(DisplayLayout::BOTTOM, 490);
-  EXPECT_EQ(1, observer.CountAndReset())
-      << observer.ToString();
-  EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString())
-      << observer.ToString();
-  EXPECT_EQ("400,500 400x400", GetSecondaryDisplay().bounds().ToString())
-      << observer.ToString();
+  EXPECT_EQ(1, observer.CountAndReset());  // resize and add
+  EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString());
+  EXPECT_EQ("400,500 400x400", GetSecondaryDisplay().bounds().ToString());
 
   SetSecondaryDisplayLayoutAndOffset(DisplayLayout::BOTTOM, -400);
-  EXPECT_EQ(1, observer.CountAndReset())
-      << observer.ToString();
-  EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString())
-      << observer.ToString();
-  EXPECT_EQ("-300,500 400x400", GetSecondaryDisplay().bounds().ToString())
-      << observer.ToString();
+  EXPECT_EQ(1, observer.CountAndReset());  // resize and add
+  EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString());
+  EXPECT_EQ("-300,500 400x400", GetSecondaryDisplay().bounds().ToString());
 
 }
 
