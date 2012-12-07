@@ -80,6 +80,12 @@ class UI_EXPORT Event {
     return dispatch_to_hidden_targets_;
   }
 
+  // By default, events are "cancelable", this means any default processing that
+  // the containing abstraction layer may perform can be prevented by calling
+  // SetHandled(). SetHandled() or StopPropagation() must not be called for
+  // events that are not cancelable.
+  bool cancelable() const { return cancelable_; }
+
   // The following methods return true if the respective keys were pressed at
   // the time the event was created.
   bool IsShiftDown() const { return (flags_ & EF_SHIFT_DOWN) != 0; }
@@ -168,6 +174,8 @@ class UI_EXPORT Event {
   // Immediately stops the propagation of the event. This must be called only
   // from an EventHandler during an event-dispatch. Any event handler that may
   // be in the list will not receive the event after this is called.
+  // Note that StopPropagation() or SetHandled() must not be called for
+  // cancelable events.
   void StopPropagation();
   bool stopped_propagation() const { return !!(result_ & ui::ER_CONSUMED); }
 
@@ -182,6 +190,7 @@ class UI_EXPORT Event {
   void set_delete_native_event(bool delete_native_event) {
     delete_native_event_ = delete_native_event;
   }
+  void set_cancelable(bool cancelable) { cancelable_ = cancelable; }
   void set_time_stamp(base::TimeDelta time_stamp) { time_stamp_ = time_stamp; }
   void set_dispatch_to_hidden_targets(bool dispatch_to_hidden_targets) {
     dispatch_to_hidden_targets_ = dispatch_to_hidden_targets;
@@ -203,6 +212,7 @@ class UI_EXPORT Event {
   int flags_;
   bool dispatch_to_hidden_targets_;
   bool delete_native_event_;
+  bool cancelable_;
   EventTarget* target_;
   EventPhase phase_;
   EventResult result_;

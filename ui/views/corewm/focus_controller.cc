@@ -261,6 +261,8 @@ void FocusController::DispatchEvents(int changing_event_type,
 
 void FocusController::WindowLostFocusFromDispositionChange(
     aura::Window* window) {
+  if (window == event_dispatch_target_)
+    event_dispatch_target_ = NULL;
   // TODO(beng): See if this function can be replaced by a call to
   //             FocusWindow().
   // Activation adjustments are handled first in the event of a disposition

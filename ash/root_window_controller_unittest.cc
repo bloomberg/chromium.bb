@@ -69,8 +69,6 @@ class DeleteOnBlurDelegate : public aura::test::TestWindowDelegate {
         views::corewm::FocusChangeEvent::focus_changing_event_type()) {
       if (event->target() == window_) {
         OnBlur();
-        // TODO(sadrul): should not be necessary.
-        event->StopPropagation();
       }
     }
   }

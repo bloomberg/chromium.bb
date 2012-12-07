@@ -120,13 +120,18 @@ bool Event::HasNativeEvent() const {
 }
 
 void Event::StopPropagation() {
-//  CHECK(phase_ != EP_PREDISPATCH && phase_ != EP_POSTDISPATCH);
+  // TODO(sad): Re-enable these checks once View uses dispatcher to dispatch
+  // events.
+  // CHECK(phase_ != EP_PREDISPATCH && phase_ != EP_POSTDISPATCH);
+  CHECK(cancelable_);
   result_ = static_cast<ui::EventResult>(result_ | ER_CONSUMED);
-  CHECK(stopped_propagation());
 }
 
 void Event::SetHandled() {
-//  CHECK(phase_ != EP_PREDISPATCH && phase_ != EP_POSTDISPATCH);
+  // TODO(sad): Re-enable these checks once View uses dispatcher to dispatch
+  // events.
+  // CHECK(phase_ != EP_PREDISPATCH && phase_ != EP_POSTDISPATCH);
+  CHECK(cancelable_);
   result_ = static_cast<ui::EventResult>(result_ | ER_HANDLED);
 }
 
@@ -136,6 +141,7 @@ Event::Event(EventType type, base::TimeDelta time_stamp, int flags)
       flags_(flags),
       dispatch_to_hidden_targets_(false),
       delete_native_event_(false),
+      cancelable_(true),
       target_(NULL),
       phase_(EP_PREDISPATCH),
       result_(ER_UNHANDLED) {
@@ -152,6 +158,7 @@ Event::Event(const base::NativeEvent& native_event,
       flags_(flags),
       dispatch_to_hidden_targets_(false),
       delete_native_event_(false),
+      cancelable_(true),
       target_(NULL),
       phase_(EP_PREDISPATCH),
       result_(ER_UNHANDLED) {
@@ -167,6 +174,7 @@ Event::Event(const Event& copy)
       flags_(copy.flags_),
       dispatch_to_hidden_targets_(false),
       delete_native_event_(false),
+      cancelable_(true),
       target_(NULL),
       phase_(EP_PREDISPATCH),
       result_(ER_UNHANDLED) {
