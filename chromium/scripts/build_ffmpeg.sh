@@ -6,20 +6,21 @@
 
 # Builds Chromium, Google Chrome and *OS FFmpeg binaries.
 #
-# For Windows it assumes being run from a MinGW shell with Visual Studio
-# environment (i.e., lib.exe and editbin.exe are in $PATH).
+# For Windows it the script must be run from either a x64 or ia32 Visual Studio
+# environment (i.e., cl.exe, lib.exe and editbin.exe are in $PATH).  Using the
+# x64 environment will build the x64 version and vice versa.
 #
 # For MIPS it assumes that cross-toolchain bin directory is in $PATH.
 #
 # Instructions for setting up a MinGW/MSYS shell can be found here:
 # http://src.chromium.org/viewvc/chrome/trunk/deps/third_party/mingw/README.chromium
 
-if [ "$3" = "" -o "$4" != "" ]; then
+if [ "$3" = "" ]; then
   echo "Usage:"
-  echo "  $0 [TARGET_OS] [TARGET_ARCH] [path/to/third_party/ffmpeg]"
+  echo "  $0 [TARGET_OS] [TARGET_ARCH] [path/to/ffmpeg] [config-only]"
   echo
   echo "Valid combinations are linux [ia32|x64|mipsel|arm|arm-neon]"
-  echo "                       win   [ia32]"
+  echo "                       win   [ia32|x64]"
   echo "                       mac   [ia32|x64]"
   echo
   echo " linux ia32/x64 - script can be run on a normal Ubuntu box."
@@ -30,6 +31,9 @@ if [ "$3" = "" -o "$4" != "" ]; then
   echo
   echo " mac - ensure the Chromium (not Apple) version of clang is in the path,"
   echo " usually found under src/third_party/llvm-build/Release+Asserts/bin"
+  echo
+  echo "Specifying 'config-only' will skip the build step.  Useful when a"
+  echo "given platform is not necessary for generate_gyp.py."
   echo
   echo "The path should be absolute and point at Chromium's copy of FFmpeg."
   echo "This corresponds to:"
@@ -46,6 +50,7 @@ fi
 TARGET_OS=$1
 TARGET_ARCH=$2
 FFMPEG_PATH=$3
+CONFIG_ONLY=$4
 
 # Check TARGET_OS (TARGET_ARCH is checked during configuration).
 if [[ "$TARGET_OS" != "linux" &&
@@ -200,7 +205,7 @@ function build {
     fi
   fi
 
-  if [ "$HOST_OS" = "$TARGET_OS" ]; then
+  if [[ "$HOST_OS" = "$TARGET_OS" && "$CONFIG_ONLY" = "" ]]; then
     # Build!
     LIBS="libavcodec/$(dso_name avcodec $LIBAVCODEC_VERSION_MAJOR)"
     LIBS="libavformat/$(dso_name avformat $LIBAVFORMAT_VERSION_MAJOR) $LIBS"
@@ -216,6 +221,8 @@ function build {
         exit 1
       fi
     done
+  elif [ ! "$CONFIG_ONLY" = "" ]; then
+    echo "Skipping build step as requested."
   else
     echo "Skipping compile as host configuration differs from target."
     echo "Please compare the generated config.h with the previous version."
@@ -347,14 +354,9 @@ fi
 # Should be run on Windows.
 if [ "$TARGET_OS" = "win" ]; then
   if [ "$HOST_OS" = "win" ]; then
-    if [ "$TARGET_ARCH" = "ia32" ]; then
-      add_flag_common --toolchain=msvc
-      add_flag_common --enable-yasm
-      add_flag_common --extra-cflags=-I$FFMPEG_PATH/chromium/include/win
-    else
-      echo "Error: Unknown TARGET_ARCH=$TARGET_ARCH for TARGET_OS=$TARGET_OS!"
-      exit 1
-    fi
+    add_flag_common --toolchain=msvc
+    add_flag_common --enable-yasm
+    add_flag_common --extra-cflags=-I$FFMPEG_PATH/chromium/include/win
   else
     echo "Script should be run on Windows host. If this is not possible try a "
     echo "merge of config files with new linux ia32 config.h by hand."

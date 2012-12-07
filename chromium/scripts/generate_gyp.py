@@ -11,7 +11,7 @@ FFmpeg's configure scripts and Makefiles. It scans through build directories for
 object files then does a reverse lookup against the FFmpeg source tree to find
 the corresponding C or assembly file.
 
-Running build_ffmpeg.sh for ia32, x64, arm, and arm-neon platforms is required
+Running build_ffmpeg.sh for ia32, arm, and arm-neon platforms is required
 prior to running this script. The arm and arm-neon platforms assume a
 Chromium OS build environment.
 
@@ -26,10 +26,9 @@ Step 2: Check out deps/third_party/ffmpeg inside Chromium OS (or symlink it in).
   cd deps
   git clone http://git.chromium.org/chromium/third_party/ffmpeg.git
 
-Step 3: Build for ia32/x64 platforms outside chroot (will need yasm in path)
+Step 3: Build for ia32 platform outside chroot (will need yasm in path)
   cd path/to/chromeos/deps/ffmpeg
   ./chromium/scripts/build_ffmpeg.sh linux ia32 path/to/chromeos/deps
-  ./chromium/scripts/build_ffmpeg.sh linux x64 path/to/chromeos/deps
 
 Step 4: Build and enter Chromium OS chroot:
   cd path/to/chromeos/src/scripts
@@ -111,7 +110,7 @@ GYP_HEADERS_STANZA_ITEM = """      '%s',
 """
 
 # Controls GYP conditional stanza generation.
-SUPPORTED_ARCHITECTURES = ['ia32', 'x64', 'arm', 'arm-neon']
+SUPPORTED_ARCHITECTURES = ['ia32', 'arm', 'arm-neon']
 SUPPORTED_TARGETS = ['Chromium', 'Chrome', 'ChromiumOS', 'ChromeOS']
 # Mac doesn't have any platform specific files, so just use linux and win.
 SUPPORTED_PLATFORMS = ['linux', 'win']
@@ -323,7 +322,7 @@ class SourceSet(object):
     # Only build a non-trivial conditional if it's a subset of all supported
     # architectures.
     arch_conditions = []
-    if self.architectures == set(SUPPORTED_ARCHITECTURES):
+    if self.architectures == set(SUPPORTED_ARCHITECTURES + ['x64']):
       arch_conditions.append('1')
     else:
       for arch in self.architectures:
@@ -495,6 +494,11 @@ def main():
         # Generate the set of source files to build said target.
         s = GetSourceFileSet(object_to_sources, object_files)
         sets.append(SourceSet(s, set([arch]), set([target]), set([platform])))
+
+        # x64 and ia32 are the same file set.
+        if arch == 'ia32':
+          sets.append(SourceSet(s, set(['x64']), set([target]),
+                      set([platform])))
 
   # Generate conditional stanza for each disjoint source set.
   fd.write(GYP_CONDITIONAL_BEGIN)
