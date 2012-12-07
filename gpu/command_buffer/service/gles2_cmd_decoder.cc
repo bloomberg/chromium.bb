@@ -803,14 +803,16 @@ class GLES2DecoderImpl : public GLES2Decoder {
 #else
   void LogClientServiceMapping(
       const char* function_name, GLuint client_id, GLuint service_id) {
-    DLOG(INFO) << "[" << GetLogPrefix() << "] " << function_name
-               << ": client_id = " << client_id
-               << ", service_id = " << service_id;
+    if (service_logging_) {
+      DLOG(INFO) << "[" << GetLogPrefix() << "] " << function_name
+                 << ": client_id = " << client_id
+                 << ", service_id = " << service_id;
+    }
   }
   template<typename T>
   void LogClientServiceForInfo(
       T* info, GLuint client_id, const char* function_name) {
-    if (service_logging_ && info) {
+    if (info) {
       LogClientServiceMapping(function_name, client_id, info->service_id());
     }
   }
