@@ -7,6 +7,8 @@
 // The actual tag is implemented via the browser plugin. The internals of this
 // are hidden via Shadow DOM.
 
+var watchForTag = require("tagWatcher").watchForTag;
+
 var WEB_VIEW_ATTRIBUTES = ['src', 'partition'];
 
 var WEB_VIEW_READONLY_ATTRIBUTES = ['contentWindow'];
@@ -36,23 +38,7 @@ var WEB_VIEW_EVENTS = {
 };
 
 window.addEventListener('DOMContentLoaded', function() {
-  // Handle <webview> tags already in the document.
-  var webViewNodes = document.body.querySelectorAll('webview');
-  for (var i = 0, webViewNode; webViewNode = webViewNodes[i]; i++) {
-    new WebView(webViewNode);
-  }
-
-  // Handle <webview> tags added later.
-  var documentObserver = new WebKitMutationObserver(function(mutations) {
-    mutations.forEach(function(mutation) {
-      for (var i = 0, addedNode; addedNode = mutation.addedNodes[i]; i++) {
-        if (addedNode.tagName == 'WEBVIEW') {
-          new WebView(addedNode);
-        }
-      }
-    });
-  });
-  documentObserver.observe(document, {subtree: true, childList: true});
+  watchForTag('WEBVIEW', function(addedNode) { new WebView(addedNode); });
 });
 
 /**
