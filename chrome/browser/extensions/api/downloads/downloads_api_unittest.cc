@@ -468,26 +468,27 @@ class DownloadExtensionTest : public ExtensionApiTest {
   // profile(), so pass it the on-record browser so that it always uses the
   // on-record profile to match real-life behavior.
 
-  base::Value* RunFunctionAndReturnResult(UIThreadExtensionFunction* function,
-                                          const std::string& args) {
-    scoped_refptr<UIThreadExtensionFunction> delete_function(function);
-    SetUpExtensionFunction(function);
+  base::Value* RunFunctionAndReturnResult(
+      scoped_refptr<UIThreadExtensionFunction> function,
+      const std::string& args) {
+    SetUpExtensionFunction(function.get());
     return extension_function_test_utils::RunFunctionAndReturnSingleResult(
-        function, args, browser(), GetFlags());
+        function.get(), args, browser(), GetFlags());
   }
 
-  std::string RunFunctionAndReturnError(UIThreadExtensionFunction* function,
-                                        const std::string& args) {
-    scoped_refptr<UIThreadExtensionFunction> delete_function(function);
-    SetUpExtensionFunction(function);
+  std::string RunFunctionAndReturnError(
+      scoped_refptr<UIThreadExtensionFunction> function,
+      const std::string& args) {
+    SetUpExtensionFunction(function.get());
     return extension_function_test_utils::RunFunctionAndReturnError(
-        function, args, browser(), GetFlags());
+        function.get(), args, browser(), GetFlags());
   }
 
-  bool RunFunctionAndReturnString(UIThreadExtensionFunction* function,
-                                  const std::string& args,
-                                  std::string* result_string) {
-    SetUpExtensionFunction(function);
+  bool RunFunctionAndReturnString(
+      scoped_refptr<UIThreadExtensionFunction> function,
+      const std::string& args,
+      std::string* result_string) {
+    SetUpExtensionFunction(function.get());
     scoped_ptr<base::Value> result(RunFunctionAndReturnResult(function, args));
     EXPECT_TRUE(result.get());
     return result.get() && result->GetAsString(result_string);
@@ -882,7 +883,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                error.c_str());
 }
 
-UIThreadExtensionFunction* MockedGetFileIconFunction(
+scoped_refptr<UIThreadExtensionFunction> MockedGetFileIconFunction(
     const FilePath& expected_path,
     IconLoader::IconSize icon_size,
     const std::string& response) {
@@ -890,7 +891,7 @@ UIThreadExtensionFunction* MockedGetFileIconFunction(
       new DownloadsGetFileIconFunction());
   function->SetIconExtractorForTesting(new MockIconExtractorImpl(
       expected_path, icon_size, response));
-  return function.release();
+  return function;
 }
 
 // Test downloads.getFileIcon() on in-progress, finished, cancelled and deleted

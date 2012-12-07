@@ -44,8 +44,10 @@ PageCaptureSaveAsMHTMLFunction::PageCaptureSaveAsMHTMLFunction() {
 
 PageCaptureSaveAsMHTMLFunction::~PageCaptureSaveAsMHTMLFunction() {
   if (mhtml_file_.get()) {
-    BrowserThread::ReleaseSoon(BrowserThread::IO, FROM_HERE,
-                               mhtml_file_.release());
+    webkit_blob::ShareableFileReference* to_release = mhtml_file_.get();
+    to_release->AddRef();
+    mhtml_file_ = NULL;
+    BrowserThread::ReleaseSoon(BrowserThread::IO, FROM_HERE, to_release);
   }
 }
 
