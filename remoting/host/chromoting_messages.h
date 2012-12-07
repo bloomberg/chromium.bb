@@ -91,6 +91,10 @@ IPC_MESSAGE_CONTROL3(ChromotingDaemonDesktopMsg_Crash,
 IPC_MESSAGE_CONTROL1(ChromotingDesktopDaemonMsg_DesktopAttached,
                      IPC::PlatformFileForTransit /* desktop_pipe */)
 
+// Asks the daemon to inject Secure Attention Sequence (SAS) in the session
+// where the desktop process is running.
+IPC_MESSAGE_CONTROL0(ChromotingDesktopDaemonMsg_InjectSas)
+
 //-----------------------------------------------------------------------------
 // Chromoting messages sent from the desktop to the network process.
 

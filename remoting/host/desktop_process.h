@@ -11,7 +11,9 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "ipc/ipc_listener.h"
+#include "remoting/host/desktop_session_agent.h"
 
 namespace IPC {
 class ChannelProxy;
@@ -22,11 +24,17 @@ namespace remoting {
 class AutoThreadTaskRunner;
 class DesktopSessionAgent;
 
-class DesktopProcess : public IPC::Listener {
+class DesktopProcess : public DesktopSessionAgent::Delegate,
+                       public IPC::Listener,
+                       public base::SupportsWeakPtr<DesktopProcess> {
  public:
   DesktopProcess(scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
                  const std::string& daemon_channel_name);
   virtual ~DesktopProcess();
+
+  // DesktopSessionAgent::Delegate implementation.
+  virtual void OnNetworkProcessDisconnected() OVERRIDE;
+  virtual void InjectSas() OVERRIDE;
 
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

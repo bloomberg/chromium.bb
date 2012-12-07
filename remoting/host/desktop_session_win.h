@@ -22,6 +22,7 @@ namespace remoting {
 
 class AutoThreadTaskRunner;
 class DaemonProcess;
+class SasInjector;
 class WorkerProcessLauncher;
 class WtsConsoleMonitor;
 
@@ -60,6 +61,9 @@ class DesktopSessionWin
   // ChromotingDesktopDaemonMsg_DesktopAttached handler.
   void OnDesktopSessionAgentAttached(IPC::PlatformFileForTransit desktop_pipe);
 
+  // ChromotingDesktopDaemonMsg_InjectSas handler.
+  void OnInjectSas();
+
   // Restarts the desktop process.
   void RestartDesktopProcess(const tracked_objects::Location& location);
 
@@ -80,6 +84,8 @@ class DesktopSessionWin
 
   // Pointer used to unsubscribe from session attach and detach events.
   WtsConsoleMonitor* monitor_;
+
+  scoped_ptr<SasInjector> sas_injector_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopSessionWin);
 };

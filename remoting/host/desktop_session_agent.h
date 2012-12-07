@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_platform_file.h"
 #include "remoting/base/shared_buffer.h"
@@ -38,6 +39,18 @@ class DesktopSessionAgent
       public SharedBufferFactory,
       public VideoFrameCapturer::Delegate {
  public:
+  class Delegate {
+   public:
+    virtual ~Delegate();
+
+    // Notifies the delegate that the network-to-desktop channel has been
+    // disconnected.
+    virtual void OnNetworkProcessDisconnected() = 0;
+
+    // Request the delegate to inject Secure Attention Sequence.
+    virtual void InjectSas() = 0;
+  };
+
   static scoped_refptr<DesktopSessionAgent> Create(
       scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
       scoped_refptr<AutoThreadTaskRunner> input_task_runner,
@@ -66,10 +79,7 @@ class DesktopSessionAgent
   // Creates desktop integration components and a connected IPC channel to be
   // used to access them. The client end of the channel is returned in
   // the variable pointed by |desktop_pipe_out|.
-  //
-  // |disconnected_task| is invoked on |caller_task_runner_| to notify
-  // the caller that the network-to-desktop channel has been disconnected.
-  bool Start(const base::Closure& disconnected_task,
+  bool Start(const base::WeakPtr<Delegate>& delegate,
              IPC::PlatformFileForTransit* desktop_pipe_out);
 
   // Stops the agent asynchronously.
@@ -90,6 +100,9 @@ class DesktopSessionAgent
   virtual bool CreateChannelForNetworkProcess(
       IPC::PlatformFileForTransit* client_out,
       scoped_ptr<IPC::ChannelProxy>* server_out) = 0;
+
+  // Creates an event executor specific to the platform.
+  virtual scoped_ptr<EventExecutor> CreateEventExecutor() = 0;
 
   // Handles CaptureFrame requests from the client.
   void OnCaptureFrame();
@@ -132,6 +145,10 @@ class DesktopSessionAgent
     return video_capture_task_runner_;
   }
 
+  const base::WeakPtr<Delegate>& delegate() const {
+    return delegate_;
+  }
+
  private:
   // Task runner on which public methods of this class should be called.
   scoped_refptr<AutoThreadTaskRunner> caller_task_runner_;
@@ -145,9 +162,7 @@ class DesktopSessionAgent
   // Task runner dedicated to running methods of |video_capturer_|.
   scoped_refptr<AutoThreadTaskRunner> video_capture_task_runner_;
 
-  // Runs on |caller_task_runner_| to notify the caller that the network-to-
-  // desktop channel has been disconnected.
-  base::Closure disconnected_task_;
+  base::WeakPtr<Delegate> delegate_;
 
   // Executes keyboard, mouse and clipboard events.
   scoped_ptr<EventExecutor> event_executor_;

@@ -60,6 +60,9 @@ void DesktopSesssionClipboardStub::InjectClipboardEvent(
 
 }  // namespace
 
+DesktopSessionAgent::Delegate::~Delegate() {
+}
+
 DesktopSessionAgent::~DesktopSessionAgent() {
   DCHECK(!network_channel_);
   DCHECK(!video_capturer_);
@@ -100,7 +103,8 @@ void DesktopSessionAgent::OnChannelError() {
   network_channel_.reset();
 
   // Notify the caller that the channel has been disconnected.
-  disconnected_task_.Run();
+  if (delegate_.get())
+    delegate_->OnNetworkProcessDisconnected();
 }
 
 scoped_refptr<SharedBuffer> DesktopSessionAgent::CreateSharedBuffer(
@@ -188,19 +192,19 @@ void DesktopSessionAgent::InjectClipboardEvent(
       new ChromotingDesktopNetworkMsg_InjectClipboardEvent(serialized_event));
 }
 
-bool DesktopSessionAgent::Start(const base::Closure& disconnected_task,
+bool DesktopSessionAgent::Start(const base::WeakPtr<Delegate>& delegate,
                                 IPC::PlatformFileForTransit* desktop_pipe_out) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
+  DCHECK(delegate_.get() == NULL);
 
-  disconnected_task_ = disconnected_task;
+  delegate_ = delegate;
 
   // Create an IPC channel to communicate with the network process.
   if (!CreateChannelForNetworkProcess(desktop_pipe_out, &network_channel_))
     return false;
 
   // Create and start the event executor.
-  event_executor_ = EventExecutor::Create(input_task_runner(),
-                                          caller_task_runner());
+  event_executor_ = CreateEventExecutor();
   scoped_ptr<protocol::ClipboardStub> clipboard_stub(
       new DesktopSesssionClipboardStub(this));
   event_executor_->Start(clipboard_stub.Pass());
@@ -213,6 +217,8 @@ bool DesktopSessionAgent::Start(const base::Closure& disconnected_task,
 
 void DesktopSessionAgent::Stop() {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
+
+  delegate_.reset();
 
   // Make sure the channel is closed.
   network_channel_.reset();

@@ -13,7 +13,9 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "remoting/base/auto_thread_task_runner.h"
+#include "remoting/host/event_executor.h"
 #include "remoting/host/win/launch_process_with_token.h"
+#include "remoting/host/win/session_event_executor.h"
 
 using base::win::ScopedHandle;
 
@@ -35,6 +37,11 @@ class DesktopSessionAgentWin : public DesktopSessionAgent {
   virtual bool CreateChannelForNetworkProcess(
       IPC::PlatformFileForTransit* client_out,
       scoped_ptr<IPC::ChannelProxy>* server_out) OVERRIDE;
+  virtual scoped_ptr<EventExecutor> CreateEventExecutor() OVERRIDE;
+
+  // Requests the daemon to inject Secure Attention Sequence into the current
+  // session.
+  void InjectSas();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DesktopSessionAgentWin);
@@ -85,6 +92,24 @@ bool DesktopSessionAgentWin::CreateChannelForNetworkProcess(
   *client_out = client.Take();
   *server_out = server.Pass();
   return true;
+}
+
+scoped_ptr<EventExecutor> DesktopSessionAgentWin::CreateEventExecutor() {
+  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+
+  scoped_ptr<EventExecutor> event_executor =
+      EventExecutor::Create(input_task_runner(), caller_task_runner());
+  event_executor.reset(new SessionEventExecutorWin(
+      input_task_runner(), event_executor.Pass(), caller_task_runner(),
+      base::Bind(&DesktopSessionAgentWin::InjectSas, this)));
+  return event_executor.Pass();
+}
+
+void DesktopSessionAgentWin::InjectSas() {
+  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+
+  if (delegate().get())
+    delegate()->InjectSas();
 }
 
 // static

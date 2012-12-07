@@ -9,6 +9,7 @@
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/daemon_process.h"
+#include "remoting/host/sas_injector.h"
 #include "remoting/host/win/worker_process_launcher.h"
 #include "remoting/host/win/wts_console_monitor.h"
 #include "remoting/host/win/wts_session_process_delegate.h"
@@ -72,6 +73,8 @@ bool DesktopSessionWin::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(DesktopSessionWin, message)
     IPC_MESSAGE_HANDLER(ChromotingDesktopDaemonMsg_DesktopAttached,
                         OnDesktopSessionAgentAttached)
+    IPC_MESSAGE_HANDLER(ChromotingDesktopDaemonMsg_InjectSas,
+                        OnInjectSas)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -126,6 +129,20 @@ void DesktopSessionWin::OnDesktopSessionAgentAttached(
                                                        desktop_pipe)) {
     RestartDesktopProcess(FROM_HERE);
   }
+}
+
+void DesktopSessionWin::OnInjectSas() {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+
+  // Do not try to inject SAS if the desktop process is not running. This can
+  // happen when  the session has detached from the console for instance.
+  if (!launcher_)
+    return;
+
+  if (!sas_injector_)
+    sas_injector_ = SasInjector::Create();
+  if (!sas_injector_->InjectSas())
+    LOG(ERROR) << "Failed to inject Secure Attention Sequence.";
 }
 
 void DesktopSessionWin::RestartDesktopProcess(

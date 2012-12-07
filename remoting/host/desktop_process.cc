@@ -34,6 +34,18 @@ DesktopProcess::~DesktopProcess() {
   DCHECK(!desktop_agent_);
 }
 
+void DesktopProcess::OnNetworkProcessDisconnected() {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  OnChannelError();
+}
+
+void DesktopProcess::InjectSas() {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  daemon_channel_->Send(new ChromotingDesktopDaemonMsg_InjectSas());
+}
+
 bool DesktopProcess::OnMessageReceived(const IPC::Message& message) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
@@ -84,13 +96,9 @@ bool DesktopProcess::Start() {
                                                io_task_runner,
                                                video_capture_task_runner);
 
-  // Start the agent and create an IPC channel to talk to it. It is safe to
-  // use base::Unretained(this) here because the message loop below will run
-  // until |desktop_agent_| is completely destroyed.
+  // Start the agent and create an IPC channel to talk to it.
   IPC::PlatformFileForTransit desktop_pipe;
-  if (!desktop_agent_->Start(base::Bind(&DesktopProcess::OnChannelError,
-                                        base::Unretained(this)),
-                             &desktop_pipe)) {
+  if (!desktop_agent_->Start(AsWeakPtr(), &desktop_pipe)) {
     desktop_agent_ = NULL;
     caller_task_runner_ = NULL;
     return false;
