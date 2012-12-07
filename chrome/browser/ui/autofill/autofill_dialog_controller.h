@@ -89,7 +89,6 @@ class AutofillDialogController {
   string16 LabelForSection(DialogSection section) const;
   string16 UseBillingForShippingText() const;
   string16 WalletOptionText() const;
-  bool ShouldShowInput(const DetailInput& input) const;
   string16 CancelButtonText() const;
   string16 ConfirmButtonText() const;
   bool ConfirmButtonEnabled() const;

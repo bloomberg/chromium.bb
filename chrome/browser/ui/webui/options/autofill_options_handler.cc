@@ -353,35 +353,35 @@ void AutofillOptionsHandler::SetAddressOverlayStrings(
   localized_strings->SetString("autofillEditAddressTitle",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_EDIT_ADDRESS_CAPTION));
   localized_strings->SetString("autofillFirstNameLabel",
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_FIRST_NAME));
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_FIRST_NAME));
   localized_strings->SetString("autofillMiddleNameLabel",
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_MIDDLE_NAME));
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_MIDDLE_NAME));
   localized_strings->SetString("autofillLastNameLabel",
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_LAST_NAME));
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_LAST_NAME));
   localized_strings->SetString("autofillCompanyNameLabel",
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_COMPANY_NAME));
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_COMPANY_NAME));
   localized_strings->SetString("autofillAddrLine1Label",
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADDRESS_LINE_1));
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_ADDRESS_LINE_1));
   localized_strings->SetString("autofillAddrLine2Label",
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADDRESS_LINE_2));
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_ADDRESS_LINE_2));
   localized_strings->SetString("autofillCityLabel",
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_CITY));
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_CITY));
   localized_strings->SetString("autofillCountryLabel",
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_COUNTRY));
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_COUNTRY));
   localized_strings->SetString("autofillPhoneLabel",
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PHONE));
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_PHONE));
   localized_strings->SetString("autofillEmailLabel",
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_EMAIL));
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_EMAIL));
   localized_strings->SetString("autofillAddFirstNamePlaceholder",
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_FIRST_NAME));
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_ADD_FIRST_NAME));
   localized_strings->SetString("autofillAddMiddleNamePlaceholder",
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_MIDDLE_NAME));
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_ADD_MIDDLE_NAME));
   localized_strings->SetString("autofillAddLastNamePlaceholder",
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_LAST_NAME));
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_ADD_LAST_NAME));
   localized_strings->SetString("autofillAddPhonePlaceholder",
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_PHONE));
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_ADD_PHONE));
   localized_strings->SetString("autofillAddEmailPlaceholder",
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_EMAIL));
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_ADD_EMAIL));
 
   std::string app_locale = AutofillCountry::ApplicationLocale();
   std::string default_country_code =
@@ -395,11 +395,11 @@ void AutofillOptionsHandler::SetCreditCardOverlayStrings(
   localized_strings->SetString("autofillEditCreditCardTitle",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_EDIT_CREDITCARD_CAPTION));
   localized_strings->SetString("nameOnCardLabel",
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_NAME_ON_CARD));
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_NAME_ON_CARD));
   localized_strings->SetString("creditCardNumberLabel",
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_CREDIT_CARD_NUMBER));
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_CREDIT_CARD_NUMBER));
   localized_strings->SetString("creditCardExpirationDateLabel",
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_EXPIRATION_DATE));
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_EXPIRATION_DATE));
 }
 
 void AutofillOptionsHandler::LoadAutofillData() {

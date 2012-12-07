@@ -321,9 +321,6 @@ views::View* AutofillDialogViews::InitInputsView(DialogSection section) {
   for (DetailInputs::const_iterator it = inputs.begin();
        it != inputs.end(); ++it) {
     const DetailInput& input = *it;
-    if (!controller_->ShouldShowInput(input))
-      continue;
-
     int kColumnSetId = input.row_id;
     views::ColumnSet* column_set = layout->GetColumnSet(kColumnSetId);
     if (!column_set) {

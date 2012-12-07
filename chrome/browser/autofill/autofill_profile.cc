@@ -677,7 +677,7 @@ string16 AutofillProfile::ConstructInferredLabel(
     const std::vector<AutofillFieldType>& included_fields,
     size_t num_fields_to_use) const {
   const string16 separator =
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADDRESS_SUMMARY_SEPARATOR);
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_ADDRESS_SUMMARY_SEPARATOR);
 
   string16 label;
   size_t num_fields_used = 0;

@@ -19,7 +19,9 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "googleurl/src/gurl.h"
+#include "grit/generated_resources.h"
 #include "net/base/cert_status_flags.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace autofill {
 
@@ -249,8 +251,7 @@ void AutofillDialogController::Show() {
 }
 
 string16 AutofillDialogController::DialogTitle() const {
-  // TODO(estade): real strings and l10n.
-  return string16(ASCIIToUTF16("PaY"));
+  return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_TITLE);
 }
 
 string16 AutofillDialogController::SiteLabel() const {
@@ -258,21 +259,20 @@ string16 AutofillDialogController::SiteLabel() const {
 }
 
 string16 AutofillDialogController::IntroText() const {
-  // TODO(estade): real strings and l10n.
-  // TODO(dbeam): what's the clearest way to not confuse translators here?
-  return ASCIIToUTF16("Da following deets will be passed to ");
+  // TODO(estade): Use the real site name and bold it.
+  return l10n_util::GetStringFUTF16(IDS_AUTOFILL_DIALOG_SITE_WARNING,
+                                    ASCIIToUTF16("www.randomsite.com"));
 }
 
 string16 AutofillDialogController::LabelForSection(DialogSection section)
     const {
   switch (section) {
     case SECTION_EMAIL:
-      // TODO(estade): real strings and l10n.
-      return ASCIIToUTF16("Email address fixme");
+      return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SECTION_EMAIL);
     case SECTION_BILLING:
-      return ASCIIToUTF16("Billing details fixme");
+      return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SECTION_BILLING);
     case SECTION_SHIPPING:
-      return ASCIIToUTF16("Shipping details fixme");
+      return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SECTION_SHIPPING);
     default:
       NOTREACHED();
       return string16();
@@ -280,8 +280,8 @@ string16 AutofillDialogController::LabelForSection(DialogSection section)
 }
 
 string16 AutofillDialogController::UseBillingForShippingText() const {
-  // TODO(estade): real strings and l10n.
-  return ASCIIToUTF16("also ship here");
+  return l10n_util::GetStringUTF16(
+      IDS_AUTOFILL_DIALOG_USE_BILLING_FOR_SHIPPING);
 }
 
 string16 AutofillDialogController::WalletOptionText() const {
@@ -289,19 +289,12 @@ string16 AutofillDialogController::WalletOptionText() const {
   return string16(ASCIIToUTF16("I love lamp."));
 }
 
-bool AutofillDialogController::ShouldShowInput(const DetailInput& input) const {
-  // TODO(estade): filter fields that aren't part of this autofill request.
-  return true;
-}
-
 string16 AutofillDialogController::CancelButtonText() const {
-  // TODO(estade): real strings and l10n.
-  return string16(ASCIIToUTF16("CaNceL"));
+  return l10n_util::GetStringUTF16(IDS_CANCEL);
 }
 
 string16 AutofillDialogController::ConfirmButtonText() const {
-  // TODO(estade): real strings and l10n.
-  return string16(ASCIIToUTF16("SuBMiT"));
+  return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SUBMIT_BUTTON);
 }
 
 bool AutofillDialogController::ConfirmButtonEnabled() const {

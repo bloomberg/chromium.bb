@@ -10614,7 +10614,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_AUTOFILL_MAC_ADDRESS_LINE_SEPARATOR" desc="The separator character used to join multi-line addresses on the Mac.">
         , '''
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_ADDRESS_SUMMARY_SEPARATOR" desc="The separator character used in the summary of an address.">
+      <message name="IDS_AUTOFILL_ADDRESS_SUMMARY_SEPARATOR" desc="The separator character used in the summary of an address.">
         , '''
       </message>
       <message name="IDS_CREDIT_CARD_NUMBER_PREVIEW_FORMAT"
@@ -10627,96 +10627,96 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         <ph name="SAVED_BYTES">$1<ex>5</ex></ph> / <ph name="TOTAL_BYTES">$2<ex>13</ex></ph> bytes, Interrupted
       </message>
 
-      <message name="IDS_AUTOFILL_DIALOG_FIRST_NAME" desc="The label of the first name entry.">
+      <message name="IDS_AUTOFILL_FIELD_LABEL_FIRST_NAME" desc="The label of the first name entry.">
         First name
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_MIDDLE_NAME" desc="The label of the middle name entry.">
+      <message name="IDS_AUTOFILL_FIELD_LABEL_MIDDLE_NAME" desc="The label of the middle name entry.">
         Middle name(s)
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_LAST_NAME" desc="The label of the last name entry.">
+      <message name="IDS_AUTOFILL_FIELD_LABEL_LAST_NAME" desc="The label of the last name entry.">
         Last name
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_EMAIL" desc="The label of the Email entry.">
+      <message name="IDS_AUTOFILL_FIELD_LABEL_EMAIL" desc="The label of the Email entry.">
         Email
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_COMPANY_NAME" desc="The label of the Company name entry.">
+      <message name="IDS_AUTOFILL_FIELD_LABEL_COMPANY_NAME" desc="The label of the Company name entry.">
         Company name
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_ADDRESS_LINE_1" desc="The label of the Address Line 1 entry.">
+      <message name="IDS_AUTOFILL_FIELD_LABEL_ADDRESS_LINE_1" desc="The label of the Address Line 1 entry.">
         Address line 1
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_ADDRESS_LINE_2" desc="The label of the Address Line 2 entry.">
+      <message name="IDS_AUTOFILL_FIELD_LABEL_ADDRESS_LINE_2" desc="The label of the Address Line 2 entry.">
         Address line 2
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_CITY" desc="The label of the City entry.">
+      <message name="IDS_AUTOFILL_FIELD_LABEL_CITY" desc="The label of the City entry.">
         City/Town
       </message>
       <!-- These are all variants of the same logical field: The major subdivision below the "country" level. -->
-      <message name="IDS_AUTOFILL_DIALOG_STATE" desc="The label of the State entry.">
+      <message name="IDS_AUTOFILL_FIELD_LABEL_STATE" desc="The label of the State entry.">
         State
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_AREA" desc="The label of the Area entry.">
+      <message name="IDS_AUTOFILL_FIELD_LABEL_AREA" desc="The label of the Area entry.">
         Area
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_COUNTY" desc="The label of the County entry.">
+      <message name="IDS_AUTOFILL_FIELD_LABEL_COUNTY" desc="The label of the County entry.">
         County
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_DEPARTMENT" desc="The label of the Department entry.">
+      <message name="IDS_AUTOFILL_FIELD_LABEL_DEPARTMENT" desc="The label of the Department entry.">
         Department
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_DISTRICT" desc="The label of the District entry.">
+      <message name="IDS_AUTOFILL_FIELD_LABEL_DISTRICT" desc="The label of the District entry.">
         District
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_EMIRATE" desc="The label of the Emirate entry.">
+      <message name="IDS_AUTOFILL_FIELD_LABEL_EMIRATE" desc="The label of the Emirate entry.">
         Emirate
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_ISLAND" desc="The label of the Island entry.">
+      <message name="IDS_AUTOFILL_FIELD_LABEL_ISLAND" desc="The label of the Island entry.">
         Island
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_PARISH" desc="The label of the Parish entry.">
+      <message name="IDS_AUTOFILL_FIELD_LABEL_PARISH" desc="The label of the Parish entry.">
         Parish
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_PREFECTURE" desc="The label of the Prefecture entry.">
+      <message name="IDS_AUTOFILL_FIELD_LABEL_PREFECTURE" desc="The label of the Prefecture entry.">
         Prefecture
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_PROVINCE" desc="The label of the Province entry.">
+      <message name="IDS_AUTOFILL_FIELD_LABEL_PROVINCE" desc="The label of the Province entry.">
         Province
       </message>
       <!-- End state variants. -->
-      <message name="IDS_AUTOFILL_DIALOG_ZIP_CODE" desc="The label of the ZIP code entry.">
+      <message name="IDS_AUTOFILL_FIELD_LABEL_ZIP_CODE" desc="The label of the ZIP code entry.">
         ZIP code
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_POSTAL_CODE" desc="The label of the Postal code entry.">
+      <message name="IDS_AUTOFILL_FIELD_LABEL_POSTAL_CODE" desc="The label of the Postal code entry.">
         Postal code
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_COUNTRY" desc="The label of the Country entry.">
+      <message name="IDS_AUTOFILL_FIELD_LABEL_COUNTRY" desc="The label of the Country entry.">
         Country
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_PHONE" desc="The label of the Phone entry.">
+      <message name="IDS_AUTOFILL_FIELD_LABEL_PHONE" desc="The label of the Phone entry.">
         Phone
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_ADD_FIRST_NAME" desc="The placeholder text of the first name field.">
+      <message name="IDS_AUTOFILL_FIELD_LABEL_ADD_FIRST_NAME" desc="The placeholder text of the first name field.">
         Add first name
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_ADD_MIDDLE_NAME" desc="The placeholder text of the middle name field.">
+      <message name="IDS_AUTOFILL_FIELD_LABEL_ADD_MIDDLE_NAME" desc="The placeholder text of the middle name field.">
         Add middle name(s)
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_ADD_LAST_NAME" desc="The placeholder text of the last name field.">
+      <message name="IDS_AUTOFILL_FIELD_LABEL_ADD_LAST_NAME" desc="The placeholder text of the last name field.">
         Add last name
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_ADD_PHONE" desc="The placeholder text of the phone field.">
+      <message name="IDS_AUTOFILL_FIELD_LABEL_ADD_PHONE" desc="The placeholder text of the phone field.">
         Add phone number
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_ADD_EMAIL" desc="The placeholder text of the email field.">
+      <message name="IDS_AUTOFILL_FIELD_LABEL_ADD_EMAIL" desc="The placeholder text of the email field.">
         Add email address
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_NAME_ON_CARD" desc="The label of the Name on card entry.">
+      <message name="IDS_AUTOFILL_FIELD_LABEL_NAME_ON_CARD" desc="The label of the Name on card entry.">
         Name on card
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_CREDIT_CARD_NUMBER" desc="The label of the Credit card number entry.">
+      <message name="IDS_AUTOFILL_FIELD_LABEL_CREDIT_CARD_NUMBER" desc="The label of the Credit card number entry.">
         Credit card number
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_EXPIRATION_DATE" desc="The label of the Expiration date entry.">
+      <message name="IDS_AUTOFILL_FIELD_LABEL_EXPIRATION_DATE" desc="The label of the Expiration date entry.">
         Expiration date
       </message>
 
@@ -10743,6 +10743,30 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       <message name="IDS_AUTOFILL_FEEDBACK_POPULAR_FORM_MESSAGE" desc="Feedback message template used when a popular Autofill form is found.">
         The form signature <ph name="FORM_SIGNATURE">$1<ex>15146752457155269744</ex></ph> is for <ph name="FORM_URL">$2<ex>http://www.facebook.com</ex></ph>.
       </message>
+
+      <message name="IDS_AUTOFILL_DIALOG_TITLE" desc="Title for imperative autofill dialog which asks user to input address + payment info.">
+        Submit Payment Details
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_SITE_WARNING" desc="Text that explains that user data will be sent to the site.">
+        The following details will be shared with <ph name="SITE">$1<ex>www.shopping.com</ex></ph>
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_SECTION_EMAIL" desc="Label for the email section of the imperative autofill dialog.">
+        Email address
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_SECTION_BILLING" desc="Label for the billing details section of the imperative autofill dialog.">
+        Billing details
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_SECTION_SHIPPING" desc="Label for the shipping details section of the imperative autofill dialog.">
+        Shipping details
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_USE_BILLING_FOR_SHIPPING" desc="Checkbox label that asks whether the billing info should also be used for shipping info.">
+        Use as shipping address?
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_SUBMIT_BUTTON" desc="Button text for confirmation of user details.">
+        Submit
+      </message>
+
+
       <message name="IDS_APPEARANCE_GROUP_NAME" desc="The title of the appearance group">
         Appearance
       </message>
