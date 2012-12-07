@@ -84,6 +84,10 @@ class ScopedPtrVector {
     data_.insert(data_.begin() + index, item.release());
   }
 
+  void swap(ScopedPtrVector<T>& other) {
+    data_.swap(other.data_);
+  }
+
   iterator begin() { return data_.begin(); }
   const_iterator begin() const { return data_.begin(); }
   iterator end() { return data_.end(); }
