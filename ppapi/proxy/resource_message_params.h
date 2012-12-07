@@ -69,7 +69,8 @@ class PPAPI_PROXY_EXPORT ResourceMessageParams {
   virtual bool Deserialize(const IPC::Message* msg, PickleIterator* iter);
 
  private:
-  class SerializedHandles : public base::RefCounted<SerializedHandles> {
+  class SerializedHandles
+      : public base::RefCountedThreadSafe<SerializedHandles> {
    public:
     SerializedHandles();
     ~SerializedHandles();
@@ -78,7 +79,7 @@ class PPAPI_PROXY_EXPORT ResourceMessageParams {
     std::vector<SerializedHandle>& data() { return data_; }
 
    private:
-    friend class base::RefCounted<SerializedHandles>;
+    friend class base::RefCountedThreadSafe<SerializedHandles>;
 
     // Whether the handles stored in |data_| should be closed when this object
     // goes away.
