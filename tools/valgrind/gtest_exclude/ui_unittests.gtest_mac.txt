@@ -3,3 +3,8 @@ ImageTest.SkBitmapConversionPreservesOrientation
 
 # See crbug.com/161377
 ImageTest.SkBitmapConversionPreservesTransparency
+
+# See crbug.com/141293, crbug.com/153782
+ImageMacTest.MultiResolutionPNGToNSImage
+ImageTest.MultiResolutionPNGToPlatform
+ImageTest.PNGEncodeFromSkiaDecodeToPlatform
