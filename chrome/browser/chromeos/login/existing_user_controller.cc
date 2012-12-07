@@ -70,13 +70,18 @@ const char kSettingsSyncLoginURL[] = "chrome://settings/personal";
 // Major version where we still show GSG as "Release Notes" after the update.
 const long int kReleaseNotesTargetRelease = 19;
 
-// Getting started guide URL, will be opened as in app window for each new
+// Getting started guide url, will be opened as in app window for each new
 // user who logs on the device.
-const char kGetStartedURLPattern[] =
-    "http://gweb-gettingstartedguide.appspot.com/";
+// It actually goes to HelpApp and get redirected to our actual server there.
+const char kGetStartedWebUrl[] =
+#if defined(OFFICIAL_BUILD)
+    "chrome-extension://honijodknafkokifofgiaalefdiedpko/gsg.html?oobe=1";
+#else
+    "https://gweb-gettingstartedguide.appspot.com/";
+#endif  // defined(OFFICIAL_BUILD)
 
 // Getting started guide application window size.
-const char kGSGAppWindowSize[] = "820,550";
+const char kGSGAppWindowSize[] = "820,600";
 
 // Parameter to be added to GetStarted URL that contains board.
 const char kGetStartedBoardParam[] = "board";
@@ -844,11 +849,10 @@ gfx::NativeWindow ExistingUserController::GetNativeWindow() const {
 
 void ExistingUserController::InitializeStartUrls() const {
   std::vector<std::string> start_urls;
-  // Guide URL is not added to start URLs as it should be passed as an app.
-  std::string guide_url;
 
   PrefService* prefs = g_browser_process->local_state();
   const base::ListValue *urls;
+  bool show_getstarted_guide = false;
   if (UserManager::Get()->IsLoggedInAsDemoUser()) {
     if (CrosSettings::Get()->GetList(kStartUpUrls, &urls)) {
       // The retail mode user will get start URLs from a special policy if it is
@@ -868,7 +872,7 @@ void ExistingUserController::InitializeStartUrls() const {
       std::string vox_url = base::StringPrintf(url, current_locale.c_str());
       start_urls.push_back(vox_url);
     } else {
-      guide_url = GetGettingStartedGuideURL();
+      show_getstarted_guide = true;
     }
   }
 
@@ -880,9 +884,9 @@ void ExistingUserController::InitializeStartUrls() const {
     customization->ApplyCustomization();
   }
 
-  if (!guide_url.empty()) {
-    CommandLine::ForCurrentProcess()->AppendSwitchASCII(switches::kApp,
-                                                        guide_url);
+  if (show_getstarted_guide) {
+    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kApp, kGetStartedWebUrl);
     CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kAppWindowSize, kGSGAppWindowSize);
   } else {
@@ -891,33 +895,6 @@ void ExistingUserController::InitializeStartUrls() const {
     for (size_t i = 0; i < start_urls.size(); ++i)
       CommandLine::ForCurrentProcess()->AppendArg(start_urls[i]);
   }
-}
-
-std::string ExistingUserController::GetGettingStartedGuideURL() const {
-  GURL guide_url(kGetStartedURLPattern);
-  std::string board;
-  const char kMachineInfoBoard[] = "CHROMEOS_RELEASE_BOARD";
-  system::StatisticsProvider* provider =
-      system::StatisticsProvider::GetInstance();
-  if (!provider->GetMachineStatistic(kMachineInfoBoard, &board))
-    LOG(ERROR) << "Failed to get board information";
-  if (!board.empty()) {
-    guide_url = chrome_common_net::AppendQueryParameter(guide_url,
-                                                         kGetStartedBoardParam,
-                                                         board);
-  }
-  if (is_owner_login_) {
-    guide_url = chrome_common_net::AppendQueryParameter(
-        guide_url,
-        kGetStartedOwnerParam,
-        kGetStartedOwnerParamValue);
-  }
-  guide_url = google_util::AppendGoogleLocaleParam(guide_url);
-  guide_url = chrome_common_net::AppendQueryParameter(
-      guide_url,
-      kGetStartedInitialLocaleParam,
-      WizardController::GetInitialLocale());
-  return guide_url.spec();
 }
 
 void ExistingUserController::OptionallyShowReleaseNotes(
@@ -958,13 +935,12 @@ void ExistingUserController::OptionallyShowReleaseNotes(
 
   // Otherwise, trigger on major version change.
   if (current_version.components()[0] > prev_version.components()[0]) {
-    std::string release_notes_url = GetGettingStartedGuideURL();
-    if (!release_notes_url.empty()) {
-      CommandLine::ForCurrentProcess()->AppendSwitchASCII(switches::kApp,
-                                                          release_notes_url);
+    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kApp, kGetStartedWebUrl);
+    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kAppWindowSize, kGSGAppWindowSize);
       prefs->SetString(prefs::kChromeOSReleaseNotesVersion,
                        current_version.GetString());
-    }
   }
 }
 

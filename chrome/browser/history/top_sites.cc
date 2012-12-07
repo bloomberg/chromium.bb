@@ -45,10 +45,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_util.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/existing_user_controller.h"
-#endif
-
 using base::DictionaryValue;
 using content::BrowserThread;
 using content::NavigationController;
@@ -88,11 +84,7 @@ static const int64 kMaxUpdateIntervalMinutes = 60;
 static const int kTopSitesImageQuality = 100;
 
 const TopSites::PrepopulatedPage kPrepopulatedPages[] = {
-#if defined(OS_CHROMEOS)
-  { IDS_CHROMEOS_WELCOME_URL, IDS_NEW_TAB_CHROME_WELCOME_PAGE_TITLE,
-    IDR_PRODUCT_LOGO_16, IDR_NEWTAB_CHROME_WELCOME_PAGE_THUMBNAIL,
-    SkColorSetRGB(0, 147, 60) },
-#elif defined(OS_ANDROID)
+#if defined(OS_ANDROID)
     { IDS_MOBILE_WELCOME_URL, IDS_NEW_TAB_CHROME_WELCOME_PAGE_TITLE,
     IDR_PRODUCT_LOGO_16, IDR_NEWTAB_CHROME_WELCOME_PAGE_THUMBNAIL,
     SkColorSetRGB(0, 147, 60) }
@@ -172,26 +164,6 @@ class LoadThumbnailsFromHistoryTask : public HistoryDBTask {
   DISALLOW_COPY_AND_ASSIGN(LoadThumbnailsFromHistoryTask);
 };
 
-// Adds overridden URL to the given vector and returns true if the given
-// |url_id| needs to be overridden. Otherwise, does nothing but returns false.
-bool MaybeOverrideUrl(int url_id, std::vector<GURL>* prepopulated_page_urls) {
-#if defined(OS_CHROMEOS)
-  if (url_id == IDS_CHROMEOS_WELCOME_URL) {
-    std::string getting_started_guide_url;
-    if (chromeos::ExistingUserController::current_controller()) {
-      getting_started_guide_url =
-          chromeos::ExistingUserController::current_controller()->
-          GetGettingStartedGuideURL();
-    }
-    if (!getting_started_guide_url.empty()) {
-      prepopulated_page_urls->push_back(GURL(getting_started_guide_url));
-      return true;
-    }
-  }
-#endif
-  return false;
-}
-
 }  // namespace
 
 TopSites::TopSites(Profile* profile)
@@ -214,13 +186,10 @@ TopSites::TopSites(Profile* profile)
     registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                    content::NotificationService::AllSources());
   }
-
   for (size_t i = 0; i < arraysize(kPrepopulatedPages); i++) {
     int url_id = kPrepopulatedPages[i].url_id;
-    if (!MaybeOverrideUrl(url_id, &prepopulated_page_urls_)) {
-      prepopulated_page_urls_.push_back(
-          GURL(l10n_util::GetStringUTF8(url_id)));
-    }
+    prepopulated_page_urls_.push_back(
+        GURL(l10n_util::GetStringUTF8(url_id)));
   }
 }
 
