@@ -232,7 +232,6 @@ void FocusController::DispatchEvents(int changing_event_type,
                                      aura::Window** state,
                                      aura::Window* new_state,
                                      bool restack) {
-  int result = ui::ER_UNHANDLED;
   ui::EventTarget* old_target = event_dispatch_target_;
   event_dispatch_target_ = *state;
 
@@ -240,7 +239,6 @@ void FocusController::DispatchEvents(int changing_event_type,
   if (!DispatchEvent(*state, &changing_event))
     return;
   event_dispatch_target_ = old_target;
-  result = changing_event.result();
 
   // We ignore attempts to cancel the default action of focus changing events,
   // this is not supported as it can leave an inconsistent state.
