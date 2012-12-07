@@ -11,6 +11,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 
+import org.chromium.base.ChromiumActivity;
 import org.chromium.chrome.browser.DevToolsServer;
 import org.chromium.chrome.browser.TabBase;
 import org.chromium.content.app.LibraryLoader;
@@ -22,7 +23,7 @@ import org.chromium.ui.gfx.ActivityNativeWindow;
 /**
  * The {@link Activity} component of a basic test shell to test Chrome features.
  */
-public class ChromiumTestShellActivity extends Activity {
+public class ChromiumTestShellActivity extends ChromiumActivity {
     private static final String TAG = ChromiumTestShellActivity.class.getCanonicalName();
     private static final String COMMAND_LINE_FILE =
             "/data/local/tmp/chromium-testshell-command-line";

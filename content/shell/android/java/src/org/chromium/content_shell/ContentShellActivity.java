@@ -11,6 +11,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 
+import org.chromium.base.ChromiumActivity;
 import org.chromium.content.app.LibraryLoader;
 import org.chromium.content.browser.ActivityContentVideoViewDelegate;
 import org.chromium.content.browser.ContentVideoView;
@@ -22,7 +23,7 @@ import org.chromium.ui.gfx.ActivityNativeWindow;
 /**
  * Activity for managing the Content Shell.
  */
-public class ContentShellActivity extends Activity {
+public class ContentShellActivity extends ChromiumActivity {
 
     public static final String COMMAND_LINE_FILE = "/data/local/tmp/content-shell-command-line";
     private static final String TAG = ContentShellActivity.class.getName();

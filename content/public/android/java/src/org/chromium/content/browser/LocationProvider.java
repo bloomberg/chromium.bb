@@ -37,7 +37,7 @@ class LocationProvider {
      * ensures that the start/stop calls into this class are done in the UI thread.
      */
     private static class LocationProviderImpl
-            implements LocationListener, ActivityStatus.Listener {
+            implements LocationListener, ActivityStatus.StateListener {
 
         private Context mContext;
         private LocationManager mLocationManager;
@@ -49,11 +49,11 @@ class LocationProvider {
             mContext = context;
         }
 
-        public void onActivityStatusChanged(boolean isPaused) {
-            if (isPaused) {
+        public void onActivityStateChange(int state) {
+            if (state == ActivityStatus.PAUSED) {
                 mShouldRunAfterActivityResume = mIsRunning;
                 unregisterFromLocationUpdates();
-            } else {
+            } else if (state == ActivityStatus.RESUMED) {
                 assert !mIsRunning;
                 if (mShouldRunAfterActivityResume) {
                     registerForLocationUpdates();
@@ -68,7 +68,7 @@ class LocationProvider {
         private void start(boolean gpsEnabled) {
             if (!mIsRunning && !mShouldRunAfterActivityResume) {
                 // Currently idle so start listening to activity status changes.
-                ActivityStatus.getInstance().registerListener(this);
+                ActivityStatus.registerStateListener(this);
             }
             mIsGpsEnabled = gpsEnabled;
             if (ActivityStatus.getInstance().isPaused()) {
@@ -84,7 +84,7 @@ class LocationProvider {
          */
         private void stop() {
             unregisterFromLocationUpdates();
-            ActivityStatus.getInstance().unregisterListener(this);
+            ActivityStatus.unregisterStateListener(this);
             mShouldRunAfterActivityResume = false;
         }
 
