@@ -67,8 +67,11 @@ class DeleteOnBlurDelegate : public aura::test::TestWindowDelegate {
   virtual void OnEvent(ui::Event* event) OVERRIDE {
     if (event->type() ==
         views::corewm::FocusChangeEvent::focus_changing_event_type()) {
-      if (event->target() == window_)
+      if (event->target() == window_) {
         OnBlur();
+        // TODO(sadrul): should not be necessary.
+        event->StopPropagation();
+      }
     }
   }
 

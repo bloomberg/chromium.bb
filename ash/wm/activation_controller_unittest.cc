@@ -15,6 +15,7 @@
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/compositor/layer.h"
+#include "ui/views/corewm/corewm_switches.h"
 
 #if defined(OS_WIN)
 // Windows headers define macros for these function names which screw with us.
@@ -257,6 +258,10 @@ TEST_F(ActivationControllerTest, Deactivate) {
 // Verifies that when WindowDelegate::OnLostActive is invoked the window is not
 // active.
 TEST_F(ActivationControllerTest, NotActiveInLostActive) {
+  // TODO(beng): remove this test once the new focus controller is on.
+  if (views::corewm::UseFocusController())
+    return;
+
   TestActivationDelegate ad1;
   aura::test::TestWindowDelegate wd;
   scoped_ptr<aura::Window> w1(CreateTestWindowInShellWithDelegate(
@@ -412,6 +417,9 @@ TEST_F(ActivationControllerTest, CanActivateWindowIteselfTest)
 // Verifies code in ActivationController::OnWindowVisibilityChanged() that keeps
 // hiding windows layers stacked above the newly active window while they
 // animate away.
+// TODO(beng): This test now duplicates a test in:
+//                ui/views/corewm/focus_controller_unittest.cc
+//             ...and can be removed once the new focus controller is enabled.
 TEST_F(ActivationControllerTest, AnimateHideMaintainsStacking) {
   aura::test::TestWindowDelegate wd;
   scoped_ptr<aura::Window> w1(CreateTestWindowInShellWithDelegate(

@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "ui/aura/client/activation_delegate.h"
+#include "ui/base/events/event_handler.h"
 
 namespace aura {
 class Window;
@@ -18,7 +19,8 @@ namespace test {
 
 // A test ActivationDelegate that can be used to track activation changes for
 // an aura::Window.
-class TestActivationDelegate : public aura::client::ActivationDelegate {
+class TestActivationDelegate : public aura::client::ActivationDelegate,
+                               public ui::EventHandler {
  public:
   TestActivationDelegate();
   explicit TestActivationDelegate(bool activate);
@@ -42,6 +44,9 @@ class TestActivationDelegate : public aura::client::ActivationDelegate {
   virtual void OnLostActive() OVERRIDE;
 
  private:
+  // Overridden from ui::EventHandler:
+  virtual void OnEvent(ui::Event* event) OVERRIDE;
+
   aura::Window* window_;
   bool window_was_active_;
   bool activate_;

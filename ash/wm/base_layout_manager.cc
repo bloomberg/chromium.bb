@@ -17,6 +17,7 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/corewm/focus_change_event.h"
 #include "ui/views/corewm/window_util.h"
 
 namespace ash {
@@ -30,10 +31,12 @@ BaseLayoutManager::BaseLayoutManager(aura::RootWindow* root_window)
   Shell::GetInstance()->AddShellObserver(this);
   root_window_->AddRootWindowObserver(this);
   root_window_->AddObserver(this);
+  root_window_->AddPreTargetHandler(this);
 }
 
 BaseLayoutManager::~BaseLayoutManager() {
   if (root_window_) {
+    root_window_->RemovePreTargetHandler(this);
     root_window_->RemoveObserver(this);
     root_window_->RemoveRootWindowObserver(this);
   }
@@ -143,6 +146,20 @@ void BaseLayoutManager::OnWindowDestroying(aura::Window* window) {
   if (root_window_ == window) {
     root_window_->RemoveObserver(this);
     root_window_ = NULL;
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// BaseLayoutManager, ui::EventHandler implementation:
+
+void BaseLayoutManager::OnEvent(ui::Event* event) {
+  if (event->type() ==
+      views::corewm::FocusChangeEvent::activation_changed_event_type()) {
+    aura::Window* activated = static_cast<aura::Window*>(event->target());
+    if (wm::IsWindowMinimized(activated)) {
+      activated->Show();
+      DCHECK(!wm::IsWindowMinimized(activated));
+    }
   }
 }
 

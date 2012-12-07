@@ -37,7 +37,8 @@ FocusController::FocusController(FocusRules* rules)
     : active_window_(NULL),
       focused_window_(NULL),
       event_dispatch_target_(NULL),
-      rules_(rules) {
+      rules_(rules),
+      ALLOW_THIS_IN_INITIALIZER_LIST(observer_manager_(this)) {
   DCHECK(rules);
   FocusChangeEvent::RegisterEventTypes();
   aura::Env::GetInstance()->AddObserver(this);
@@ -156,13 +157,18 @@ void FocusController::OnGestureEvent(ui::GestureEvent* event) {
 ////////////////////////////////////////////////////////////////////////////////
 // FocusController, aura::WindowObserver implementation:
 
-void FocusController::OnWindowVisibilityChanging(aura::Window* window,
-                                                 bool visible) {
-  // We need to process this change in VisibilityChanging while the window is
-  // still visible, since focus events cannot be dispatched to invisible
-  // windows.
-  if (!visible)
+void FocusController::OnWindowVisibilityChanged(aura::Window* window,
+                                                bool visible) {
+  if (!visible) {
     WindowLostFocusFromDispositionChange(window);
+    // Despite the focus change, we need to keep the window being hidden
+    // stacked above the new window so it stays open on top as it animates away.
+    aura::Window* next_window = GetActiveWindow();
+    if (next_window && next_window->parent() == window->parent()) {
+      window->layer()->parent()->StackAbove(window->layer(),
+                                            next_window->layer());
+    }
+  }
 }
 
 void FocusController::OnWindowDestroying(aura::Window* window) {
@@ -170,15 +176,15 @@ void FocusController::OnWindowDestroying(aura::Window* window) {
 }
 
 void FocusController::OnWindowDestroyed(aura::Window* window) {
-  window->RemoveObserver(this);
+  observer_manager_.Remove(window);
 }
 
-void FocusController::OnWillRemoveWindow(aura::Window* window) {
+void FocusController::OnWindowRemovingFromRootWindow(aura::Window* window) {
   WindowLostFocusFromDispositionChange(window);
 }
 
 void FocusController::OnWindowInitialized(aura::Window* window) {
-  window->AddObserver(this);
+  observer_manager_.Add(window);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -236,8 +242,8 @@ void FocusController::DispatchEvents(int changing_event_type,
   event_dispatch_target_ = old_target;
   result = changing_event.result();
 
-  DCHECK(!(result & ui::ER_CONSUMED))
-      << "Focus and Activation events cannot be consumed";
+  // We ignore attempts to cancel the default action of focus changing events,
+  // this is not supported as it can leave an inconsistent state.
 
   aura::Window* lost_active = *state;
   *state = new_state;

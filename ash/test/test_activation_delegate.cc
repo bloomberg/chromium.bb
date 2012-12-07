@@ -8,6 +8,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/events/event.h"
+#include "ui/views/corewm/focus_change_event.h"
 
 namespace ash {
 namespace test {
@@ -36,6 +37,7 @@ TestActivationDelegate::TestActivationDelegate(bool activate)
 void TestActivationDelegate::SetWindow(aura::Window* window) {
   window_ = window;
   aura::client::SetActivationDelegate(window, this);
+  window_->AddPreTargetHandler(this);
 }
 
 bool TestActivationDelegate::ShouldActivate() const {
@@ -50,6 +52,19 @@ void TestActivationDelegate::OnActivated() {
 void TestActivationDelegate::OnLostActive() {
   if (lost_active_count_++ == 0)
     window_was_active_ = wm::IsActiveWindow(window_);
+}
+
+void TestActivationDelegate::OnEvent(ui::Event* event) {
+  if (event->target() == window_) {
+    if (event->type() ==
+        views::corewm::FocusChangeEvent::activation_changed_event_type()) {
+      OnActivated();
+    } else if (event->type() ==
+        views::corewm::FocusChangeEvent::activation_changing_event_type()) {
+      OnLostActive();
+    }
+  }
+  EventHandler::OnEvent(event);
 }
 
 }  // namespace test

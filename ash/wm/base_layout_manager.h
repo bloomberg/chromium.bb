@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/root_window_observer.h"
+#include "ui/base/events/event_handler.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/aura/window_observer.h"
 
@@ -32,7 +33,8 @@ namespace internal {
 class ASH_EXPORT BaseLayoutManager : public aura::LayoutManager,
                                      public aura::RootWindowObserver,
                                      public ash::ShellObserver,
-                                     public aura::WindowObserver {
+                                     public aura::WindowObserver,
+                                     public ui::EventHandler {
  public:
   typedef std::set<aura::Window*> WindowSet;
 
@@ -69,6 +71,9 @@ class ASH_EXPORT BaseLayoutManager : public aura::LayoutManager,
                                        const void* key,
                                        intptr_t old) OVERRIDE;
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
+
+  // ui::EventHandler overrides:
+  virtual void OnEvent(ui::Event* event) OVERRIDE;
 
  protected:
   // Invoked from OnWindowPropertyChanged() if |kShowStateKey| changes.

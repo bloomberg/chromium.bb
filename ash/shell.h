@@ -451,6 +451,7 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate,
   // Overridden from ui::EventTarget:
   virtual bool CanAcceptEvent(const ui::Event& event) OVERRIDE;
   virtual EventTarget* GetParentTarget() OVERRIDE;
+  virtual void OnEvent(ui::Event* event) OVERRIDE;
 
   static Shell* instance_;
 

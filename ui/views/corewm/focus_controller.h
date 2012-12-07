@@ -6,6 +6,7 @@
 #define UI_VIEWS_COREWM_FOCUS_CONTROLLER_H_
 
 #include "base/compiler_specific.h"
+#include "base/scoped_observer.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/env_observer.h"
@@ -77,11 +78,11 @@ class VIEWS_EXPORT FocusController : public aura::client::ActivationClient,
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   // Overridden from aura::WindowObserver:
-  virtual void OnWindowVisibilityChanging(aura::Window* window,
+  virtual void OnWindowVisibilityChanged(aura::Window* window,
                                          bool visible) OVERRIDE;
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
   virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
-  virtual void OnWillRemoveWindow(aura::Window* window) OVERRIDE;
+  virtual void OnWindowRemovingFromRootWindow(aura::Window* window) OVERRIDE;
 
   // Overridden from aura::EnvObserver:
   virtual void OnWindowInitialized(aura::Window* window) OVERRIDE;
@@ -116,6 +117,8 @@ class VIEWS_EXPORT FocusController : public aura::client::ActivationClient,
   ui::EventTarget* event_dispatch_target_;
 
   scoped_ptr<FocusRules> rules_;
+
+  ScopedObserver<aura::Window, aura::WindowObserver> observer_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(FocusController);
 };

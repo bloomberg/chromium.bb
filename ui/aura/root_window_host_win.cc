@@ -213,9 +213,7 @@ void RootWindowHostWin::UnConfineCursor() {
 }
 
 void RootWindowHostWin::MoveCursorTo(const gfx::Point& location) {
-  POINT pt;
-  ClientToScreen(hwnd(), &pt);
-  SetCursorPos(pt.x, pt.y);
+  // Deliberately not implemented.
 }
 
 void RootWindowHostWin::SetFocusWhenShown(bool focus_when_shown) {

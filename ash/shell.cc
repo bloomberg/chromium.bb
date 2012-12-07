@@ -85,6 +85,7 @@
 #include "ui/ui_controls/ui_controls.h"
 #include "ui/views/corewm/compound_event_filter.h"
 #include "ui/views/corewm/corewm_switches.h"
+#include "ui/views/corewm/focus_change_event.h"
 #include "ui/views/corewm/focus_controller.h"
 #include "ui/views/corewm/input_method_event_filter.h"
 #include "ui/views/corewm/shadow_controller.h"
@@ -246,6 +247,7 @@ Shell::Shell(ShellDelegate* delegate)
   base::MessagePumpAuraX11::Current()->AddDispatcherForRootWindow(
       output_configurator());
 #endif  // defined(OS_CHROMEOS)
+  AddPreTargetHandler(this);
 }
 
 Shell::~Shell() {
@@ -887,12 +889,23 @@ bool Shell::CanWindowReceiveEvents(aura::Window* window) {
   return false;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// Shell, ui::EventTarget overrides:
+
 bool Shell::CanAcceptEvent(const ui::Event& event) {
   return true;
 }
 
 ui::EventTarget* Shell::GetParentTarget() {
   return NULL;
+}
+
+void Shell::OnEvent(ui::Event* event) {
+  if (event->type() ==
+      views::corewm::FocusChangeEvent::activation_changed_event_type()) {
+    active_root_window_ =
+        static_cast<aura::Window*>(event->target())->GetRootWindow();
+  }
 }
 
 }  // namespace ash
