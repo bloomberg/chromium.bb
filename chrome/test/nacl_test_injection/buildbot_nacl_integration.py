@@ -49,11 +49,8 @@ def Main(args):
       tests_to_disable.append('run_inbrowser_test_runner')
 
   script_dir = os.path.dirname(os.path.abspath(__file__))
-  test_dir = os.path.dirname(script_dir)
-  chrome_dir = os.path.dirname(test_dir)
-  src_dir = os.path.dirname(chrome_dir)
-  nacl_integration_script = os.path.join(
-      src_dir, 'native_client/build/buildbot_chrome_nacl_stage.py')
+  nacl_integration_script = os.path.join(script_dir,
+                                         'buildbot_chrome_nacl_stage.py')
   cmd = [sys.executable,
          nacl_integration_script,
          # TODO(ncbray) re-enable.
