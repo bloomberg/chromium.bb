@@ -20,12 +20,9 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/pepper_plugin_info.h"
+#include "ppapi/proxy/ppapi_messages.h"
 #include "webkit/plugins/npapi/plugin_utils.h"
 #include "webkit/plugins/plugin_constants.h"
-
-#if defined(ENABLE_PLUGINS)
-#include "ppapi/proxy/ppapi_messages.h"
-#endif
 
 namespace content {
 
@@ -181,10 +178,8 @@ class PluginDataRemoverImpl::Context
     IPC_BEGIN_MESSAGE_MAP(Context, message)
       IPC_MESSAGE_HANDLER(PluginHostMsg_ClearSiteDataResult,
                           OnClearSiteDataResult)
-#if defined(ENABLE_PLUGINS)
       IPC_MESSAGE_HANDLER(PpapiHostMsg_ClearSiteDataResult,
                           OnPpapiClearSiteDataResult)
-#endif
       IPC_MESSAGE_UNHANDLED_ERROR()
     IPC_END_MESSAGE_MAP()
 
@@ -205,7 +200,6 @@ class PluginDataRemoverImpl::Context
   friend class base::DeleteHelper<Context>;
   virtual ~Context() {}
 
-#if defined(ENABLE_PLUGINS)
   IPC::Message* CreatePpapiClearSiteDataMsg(uint64 max_age) {
     FilePath profile_path =
         PepperFileMessageFilter::GetDataDirName(browser_context_path_);
@@ -222,13 +216,6 @@ class PluginDataRemoverImpl::Context
     return new PpapiMsg_ClearSiteData(0u, plugin_data_path, std::string(),
                                       kClearAllData, max_age);
   }
-#else
-  IPC::Message* CreatePpapiClearSiteDataMsg(uint64 max_age) {
-    NOTREACHED() << "CreatePpapiClearSiteDataMsg called with "
-        << "ENABLE_PLUGINS undefined.";
-    return NULL;
-  }
-#endif  // defined(ENABLE_PLUGINS)
 
   // Connects the client side of a newly opened plug-in channel.
   void ConnectToChannel(const IPC::ChannelHandle& handle, bool is_ppapi) {

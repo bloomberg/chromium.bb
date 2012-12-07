@@ -366,11 +366,11 @@ class BrowsingDataRemover : public content::NotificationObserver,
   scoped_refptr<net::URLRequestContextGetter> main_context_getter_;
   scoped_refptr<net::URLRequestContextGetter> media_context_getter_;
 
+#if defined(ENABLE_PLUGINS)
   // Used to delete plugin data.
   scoped_ptr<content::PluginDataRemover> plugin_data_remover_;
   base::WaitableEventWatcher watcher_;
 
-#if defined(ENABLE_PLUGINS)
   // Used to deauthorize content licenses for Pepper Flash.
   scoped_ptr<PepperFlashSettingsManager> pepper_flash_settings_manager_;
 #endif

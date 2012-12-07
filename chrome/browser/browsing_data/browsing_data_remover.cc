@@ -406,6 +406,7 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
                    base::Unretained(this)));
   }
 
+#if defined(ENABLE_PLUGINS)
   // Plugin is data not separated for protected and unprotected web origins. We
   // check the origin_set_mask_ to prevent unintended deletion.
   if (remove_mask & REMOVE_PLUGIN_DATA &&
@@ -419,6 +420,7 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
         plugin_data_remover_->StartRemoving(delete_begin_);
     watcher_.StartWatching(event, this);
   }
+#endif
 
   if (remove_mask & REMOVE_PASSWORDS) {
     content::RecordAction(UserMetricsAction("ClearBrowsingData_Passwords"));

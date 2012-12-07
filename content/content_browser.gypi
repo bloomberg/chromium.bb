@@ -1133,6 +1133,8 @@
       ],
     }, {  # enable_plugins==0
       'sources!': [
+        'browser/plugin_data_remover_impl.cc',
+        'browser/plugin_data_remover_impl.h',
         'browser/ppapi_plugin_process_host.cc',
       ],
       'sources/': [
