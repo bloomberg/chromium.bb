@@ -109,8 +109,9 @@ void MoveOperation::OnFilePathUpdated(const FileOperationCallback& callback,
                                         DriveFileError error,
                                         const FilePath& /* file_path */) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!callback.is_null())
-    callback.Run(error);
+  DCHECK(!callback.is_null());
+
+  callback.Run(error);
 }
 
 void MoveOperation::Rename(const FilePath& file_path,

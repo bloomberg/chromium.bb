@@ -58,16 +58,6 @@ DriveFileError GetLocalFileInfoOnBlockingPool(
       DRIVE_FILE_OK : DRIVE_FILE_ERROR_NOT_FOUND;
 }
 
-// Helper function called upon completion of AddUploadFile invoked by
-// OnTransferCompleted.
-// TODO(mtomasz): The same method is in drive_file_system.cc. Share it.
-void OnAddUploadFileCompleted(const FileOperationCallback& callback,
-                              DriveFileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!callback.is_null())
-    callback.Run(error);
-}
-
 // Checks if a local file at |local_file_path| is a JSON file referencing a
 // hosted document on blocking pool, and if so, gets the resource ID of the
 // document.
@@ -201,6 +191,7 @@ void CopyOperation::TransferRegularFile(
     const FilePath& remote_dest_file_path,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   int64* file_size = new int64;
   std::string* content_type = new std::string;
@@ -439,11 +430,10 @@ void CopyOperation::StartFileUpload(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(file_size);
   DCHECK(content_type);
+  DCHECK(!params.callback.is_null());
 
   if (error != DRIVE_FILE_OK) {
-    if (!params.callback.is_null())
-      params.callback.Run(error);
-
+    params.callback.Run(error);
     return;
   }
 
@@ -465,13 +455,13 @@ void CopyOperation::StartFileUploadAfterGetEntryInfo(
     DriveFileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!params.callback.is_null());
 
   if (entry_proto.get() && !entry_proto->file_info().is_directory())
     error = DRIVE_FILE_ERROR_NOT_A_DIRECTORY;
 
   if (error != DRIVE_FILE_OK) {
-    if (!params.callback.is_null())
-      params.callback.Run(error);
+    params.callback.Run(error);
     return;
   }
   DCHECK(entry_proto.get());
@@ -496,6 +486,7 @@ void CopyOperation::OnTransferCompleted(
     const FilePath& file_path,
     scoped_ptr<DocumentEntry> document_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   if (error == google_apis::DRIVE_UPLOAD_OK && document_entry.get()) {
     drive_file_system_->AddUploadedFile(
@@ -503,8 +494,8 @@ void CopyOperation::OnTransferCompleted(
         document_entry.Pass(),
         file_path,
         DriveCache::FILE_OPERATION_COPY,
-        base::Bind(&OnAddUploadFileCompleted, callback));
-  } else if (!callback.is_null()) {
+        callback);
+  } else {
     callback.Run(DriveUploadErrorToDriveFileError(error));
   }
 }

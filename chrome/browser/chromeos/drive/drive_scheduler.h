@@ -89,17 +89,21 @@ class DriveScheduler
   void Initialize();
 
   // Adds a GetAccountMetadata operation to the queue.
+  // |callback| must not be null.
   void GetAccountMetadata(const google_apis::GetDataCallback& callback);
 
   // Adds a GetApplicationInfo operation to the queue.
+  // |callback| must not be null.
   void GetApplicationInfo(const google_apis::GetDataCallback& callback);
 
   // Adds a copy operation to the queue.
+  // |callback| must not be null.
   void Copy(const FilePath& src_file_path,
             const FilePath& dest_file_path,
             const FileOperationCallback& callback);
 
   // Adds a GetDocuments operation to the queue.
+  // |callback| must not be null.
   void GetDocuments(const GURL& feed_url,
                     int64 start_changestamp,
                     const std::string& search_query,
@@ -108,26 +112,31 @@ class DriveScheduler
                     const google_apis::GetDataCallback& callback);
 
   // Adds a transfer operation to the queue.
+  // |callback| must not be null.
   void TransferFileFromRemoteToLocal(const FilePath& remote_src_file_path,
                                      const FilePath& local_dest_file_path,
                                      const FileOperationCallback& callback);
 
   // Adds a transfer operation to the queue.
+  // |callback| must not be null.
   void TransferFileFromLocalToRemote(const FilePath& local_src_file_path,
                                      const FilePath& remote_dest_file_path,
                                      const FileOperationCallback& callback);
 
   // Adds a transfer operation to the queue.
+  // |callback| must not be null.
   void TransferRegularFile(const FilePath& local_src_file_path,
                            const FilePath& remote_dest_file_path,
                            const FileOperationCallback& callback);
 
   // Adds a move operation to the queue.
+  // |callback| must not be null.
   void Move(const FilePath& src_file_path,
             const FilePath& dest_file_path,
             const FileOperationCallback& callback);
 
   // Adds a remove operation to the queue.
+  // |callback| must not be null.
   void Remove(const FilePath& file_path,
               bool is_recursive,
               const FileOperationCallback& callback);

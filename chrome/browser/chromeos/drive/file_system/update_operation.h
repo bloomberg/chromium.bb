@@ -94,6 +94,7 @@ class UpdateOperation {
       scoped_ptr<google_apis::DocumentEntry> document_entry);
 
   // Part of UpdateFileByResourceId().
+  // |callback| must not be null.
   void OnUpdatedFileRefreshed(const FileOperationCallback& callback,
                               DriveFileError error,
                               const FilePath& drive_file_path,

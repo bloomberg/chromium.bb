@@ -47,7 +47,7 @@ class CopyOperation {
 
   // Performs the copy operation on the file at drive path |src_file_path|
   // with a target of |dest_file_path|. Invokes |callback| when finished with
-  // the result of the operation.
+  // the result of the operation. |callback| must not be null.
   virtual void Copy(const FilePath& src_file_path,
                     const FilePath& dest_file_path,
                     const FileOperationCallback& callback);
@@ -81,6 +81,7 @@ class CopyOperation {
   // path within Drive file system.
   //
   // Must be called from *UI* thread. |callback| is run on the calling thread.
+  // |callback| must not be null.
   virtual void TransferRegularFile(const FilePath& local_file_path,
                                    const FilePath& remote_dest_file_path,
                                    const FileOperationCallback& callback);

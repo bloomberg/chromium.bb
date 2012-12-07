@@ -40,7 +40,7 @@ class MoveOperation {
 
   // Performs the move operation on the file at drive path |src_file_path|
   // with a target of |dest_file_path|.  Invokes |callback| when finished with
-  // the result of the operation.
+  // the result of the operation. |callback| must not be null.
   virtual void Move(const FilePath& src_file_path,
                     const FilePath& dest_file_path,
                     const FileOperationCallback& callback);

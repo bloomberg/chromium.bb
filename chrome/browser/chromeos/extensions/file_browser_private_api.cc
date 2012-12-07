@@ -398,6 +398,12 @@ void LogDefaultTask(const std::set<std::string>& mime_types,
   }
 }
 
+// Does nothing with a bool parameter. Used as a placeholder for calling
+// ClearCacheAndRemountFileSystem(). TODO(yoshiki): Handle an error from
+// ClearCacheAndRemountFileSystem() properly: http://crbug.com/140511.
+void DoNothingWithBool(bool /* success */) {
+}
+
 }  // namespace
 
 class RequestLocalFileSystemFunction::LocalFileSystemCallbackDispatcher {
@@ -2787,7 +2793,8 @@ bool ClearDriveCacheFunction::RunImpl() {
 
   // TODO(yoshiki): Receive a callback from JS-side and pass it to
   // ClearCacheAndRemountFileSystem(). http://crbug.com/140511
-  system_service->ClearCacheAndRemountFileSystem(base::Callback<void(bool)>());
+  system_service->ClearCacheAndRemountFileSystem(
+      base::Bind(&DoNothingWithBool));
 
   SendResponse(true);
   return true;

@@ -107,11 +107,13 @@ void RemoveOperation::NotifyDirectoryChanged(
     const FileOperationCallback& callback,
     DriveFileError error,
     const FilePath& directory_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
   if (error == DRIVE_FILE_OK)
     observer_->OnDirectoryChangedByOperation(directory_path);
 
-  if (!callback.is_null())
-    callback.Run(error);
+  callback.Run(error);
 }
 
 }  // namespace file_system

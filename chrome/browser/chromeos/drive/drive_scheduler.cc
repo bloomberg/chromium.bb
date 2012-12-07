@@ -31,15 +31,18 @@ DriveScheduler::JobInfo::JobInfo(JobType in_job_type, FilePath in_file_path)
       total_bytes(0),
       file_path(in_file_path),
       state(STATE_NONE) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 DriveScheduler::QueueEntry::QueueEntry(JobType in_job_type,
                                        FilePath in_file_path)
     : job_info(in_job_type, in_file_path),
       is_recursive(false) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 DriveScheduler::QueueEntry::~QueueEntry() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 DriveScheduler::DriveScheduler(
@@ -79,6 +82,7 @@ void DriveScheduler::Initialize() {
 void DriveScheduler::GetAccountMetadata(
     const google_apis::GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   scoped_ptr<QueueEntry> new_job(
       new QueueEntry(TYPE_GET_ACCOUNT_METADATA, FilePath()));
@@ -92,6 +96,7 @@ void DriveScheduler::GetAccountMetadata(
 void DriveScheduler::GetApplicationInfo(
     const google_apis::GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   scoped_ptr<QueueEntry> new_job(
       new QueueEntry(TYPE_GET_APPLICATION_INFO, FilePath()));
@@ -106,6 +111,7 @@ void DriveScheduler::Copy(const FilePath& src_file_path,
                           const FilePath& dest_file_path,
                           const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   scoped_ptr<QueueEntry> new_job(new QueueEntry(TYPE_COPY, src_file_path));
   new_job->dest_file_path = dest_file_path;
@@ -124,6 +130,7 @@ void DriveScheduler::GetDocuments(
     const std::string& directory_resource_id,
     const google_apis::GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   scoped_ptr<QueueEntry> new_job(
       new QueueEntry(TYPE_GET_DOCUMENTS, FilePath()));
@@ -144,6 +151,7 @@ void DriveScheduler::TransferFileFromRemoteToLocal(
     const FilePath& local_dest_file_path,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   scoped_ptr<QueueEntry> new_job(new QueueEntry(TYPE_TRANSFER_REMOTE_TO_LOCAL,
                                                 remote_src_file_path));
@@ -160,6 +168,7 @@ void DriveScheduler::TransferFileFromLocalToRemote(
     const FilePath& remote_dest_file_path,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   scoped_ptr<QueueEntry> new_job(new QueueEntry(TYPE_TRANSFER_LOCAL_TO_REMOTE,
                                                 local_src_file_path));
@@ -176,6 +185,7 @@ void DriveScheduler::TransferRegularFile(
     const FilePath& remote_dest_file_path,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   scoped_ptr<QueueEntry> new_job(new QueueEntry(TYPE_TRANSFER_REGULAR_FILE,
                                                 local_src_file_path));
@@ -191,6 +201,7 @@ void DriveScheduler::Move(const FilePath& src_file_path,
                           const FilePath& dest_file_path,
                           const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   scoped_ptr<QueueEntry> new_job(new QueueEntry(TYPE_MOVE, src_file_path));
   new_job->dest_file_path = dest_file_path;
@@ -205,6 +216,7 @@ void DriveScheduler::Remove(const FilePath& file_path,
                             bool is_recursive,
                             const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   scoped_ptr<QueueEntry> new_job(new QueueEntry(TYPE_REMOVE, file_path));
   new_job->is_recursive = is_recursive;
@@ -354,6 +366,8 @@ void DriveScheduler::DoJobLoop() {
 }
 
 bool DriveScheduler::ShouldStopJobLoop() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   // Should stop if the gdata feature was disabled while running the fetch
   // loop.
   if (profile_->GetPrefs()->GetBoolean(prefs::kDisableDrive))
@@ -411,6 +425,8 @@ void DriveScheduler::ResetThrottleAndContinueJobLoop() {
 scoped_ptr<DriveScheduler::QueueEntry> DriveScheduler::OnJobDone(
     int job_id,
     DriveFileError error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   JobMap::iterator job_iter = job_info_map_.find(job_id);
   DCHECK(job_iter != job_info_map_.end());
 
@@ -435,21 +451,24 @@ scoped_ptr<DriveScheduler::QueueEntry> DriveScheduler::OnJobDone(
 }
 
 void DriveScheduler::OnFileOperationJobDone(int job_id, DriveFileError error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   scoped_ptr<DriveScheduler::QueueEntry> job_info = OnJobDone(job_id, error);
 
   if (!job_info)
     return;
 
   // Handle the callback.
-  if (!job_info->file_operation_callback.is_null()) {
-    MessageLoop::current()->PostTask(FROM_HERE,
-        base::Bind(job_info->file_operation_callback, error));
-  }
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(job_info->file_operation_callback, error));
 }
 
 void DriveScheduler::OnGetDataJobDone(int job_id,
                                       google_apis::GDataErrorCode error,
                                       scoped_ptr<base::Value> feed_data) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   DriveFileError drive_error(util::GDataToDriveFileError(error));
 
   scoped_ptr<QueueEntry> job_info = OnJobDone(job_id, drive_error);
@@ -457,13 +476,12 @@ void DriveScheduler::OnGetDataJobDone(int job_id,
   if (!job_info)
     return;
 
-    // Handle the callback.
-  if (!job_info->get_data_callback.is_null()) {
-    MessageLoop::current()->PostTask(FROM_HERE,
-        base::Bind(job_info->get_data_callback,
-                   error,
-                   base::Passed(&feed_data)));
-  }
+  // Handle the callback.
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(job_info->get_data_callback,
+                 error,
+                 base::Passed(&feed_data)));
 }
 
 void DriveScheduler::OnConnectionTypeChanged(

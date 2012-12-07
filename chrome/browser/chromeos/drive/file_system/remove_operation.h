@@ -41,6 +41,7 @@ class RemoveOperation {
 
   // Perform the remove operation on the file at drive path |file_path|.
   // Invokes |callback| when finished with the result of the operation.
+  // |callback| must not be null.
   virtual void Remove(const FilePath& file_path,
                       bool is_recursive,
                       const FileOperationCallback& callback);
@@ -62,7 +63,7 @@ class RemoveOperation {
       google_apis::GDataErrorCode status);
 
   // Sends notification for directory changes. Notifies of directory changes,
-  // and runs |callback| with |error|. |callback| may be null.
+  // and runs |callback| with |error|. |callback| must not be null.
   void NotifyDirectoryChanged(
       const FileOperationCallback& callback,
       DriveFileError error,

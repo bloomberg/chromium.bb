@@ -55,8 +55,10 @@ class DriveSystemService : public ProfileKeyedService,
   DriveWebAppsRegistry* webapps_registry() { return webapps_registry_.get(); }
   EventLogger* event_logger() { return event_logger_.get(); }
 
-  // Clears all the local cache files and in-memory data, and remounts the file
-  // system.
+  // Clears all the local cache files and in-memory data, and remounts the
+  // file system. |callback| is called with true when this operation is done
+  // successfully. Otherwise, |callback| is called with false.
+  // |callback| must not be null.
   void ClearCacheAndRemountFileSystem(
       const base::Callback<void(bool)>& callback);
 
