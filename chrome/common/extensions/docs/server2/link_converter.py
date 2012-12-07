@@ -3,6 +3,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# This script converts old-style <a> links to API docs to the new $ref links.
+# See reference_resolver.py for more info on the format of $ref links.
+
+import optparse
 import os
 import sys
 import re
@@ -19,10 +23,11 @@ def _WriteFile(filename, contents):
     f.write(contents)
 
 def _Replace(matches, filename):
+  title = matches.group(3)
   if matches.group(2).count('#') != 1:
     return '<a%shref=%s>%s</a>' % (matches.group(1),
                                    matches.group(2),
-                                   matches.group(3))
+                                   title)
   clean = (matches.group(2).replace('\\', '')
                            .replace("'", '')
                            .replace('"', '')
@@ -36,7 +41,7 @@ def _Replace(matches, filename):
       not link.startswith('event-')):
     return '<a%shref=%s>%s</a>' % (matches.group(1),
                                    matches.group(2),
-                                   matches.group(3))
+                                   title)
 
   link = re.sub('^(property|type|method|event)-', '', link).replace('-', '.')
   page = page.replace('.html', '.').replace('_', '.')
@@ -44,17 +49,37 @@ def _Replace(matches, filename):
     padding = ''
   else:
     padding = matches.group(1)
-  return '%s$ref:%s%s' % (padding, page, link)
+  if link in title:
+    return '%s$ref:%s%s' % (padding, page, link)
+  else:
+    return '%s$ref:[%s%s %s]' % (padding, page, link, title)
+
+def _ConvertFile(filename):
+  regex = re.compile(r'<a(.*?)href=(.*?)>(.*?)</a>', flags=re.DOTALL)
+  contents = _ReadFile(filename)
+  contents  = re.sub(regex,
+                     lambda m: _Replace(m, filename),
+                     contents)
+  contents = contents.replace('$ref:extension.lastError',
+                              '$ref:runtime.lastError')
+  _WriteFile(filename, contents)
 
 if __name__ == '__main__':
-  for root, dirs, files in os.walk(sys.argv[1]):
-    for name in files:
-      filename = os.path.join(root, name)
-      contents = _ReadFile(filename)
-      contents  = re.sub(r'<a(.*?)href=(.*?)>(.*?)</a>',
-                         lambda m: _Replace(m, filename),
-                         contents,
-                         flags=re.DOTALL)
-      contents = contents.replace('$ref:extension.lastError',
-                                  '$ref:runtime.lastError')
-      _WriteFile(filename, contents)
+  parser = optparse.OptionParser(
+      description='Converts <a> links to $ref links.',
+      usage='usage: %prog [option] <directory>')
+  parser.add_option('-f', '--file', default='',
+      help='Convert links in single file.')
+  regex = re.compile(r'<a(.*?)href=(.*?)>(.*?)</a>', flags=re.DOTALL)
+
+  opts, argv = parser.parse_args()
+
+  if opts.file:
+    _ConvertFile(opts.file)
+  else:
+    if len(argv) != 1:
+      parser.print_usage()
+      exit(0)
+    for root, dirs, files in os.walk(argv[0]):
+      for name in files:
+        _ConvertFile(os.path.join(root, name))

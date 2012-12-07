@@ -47,32 +47,32 @@ made in recent releases.
 
 <h4> Additions to Existing Features </h4>
   <ul>
-    <li>The <a href="types.html#method-ChromeSetting-set"
-      >ChromeSetting.set()</a> method now has a
+    <li>The $ref:types.ChromeSetting.set
+       method now has a
       <code>regular_only</code> scope.
-    <li>The <a href="browsingData.html#type-RemovalOptions"
-      >browsingData.RemovalOptions</a> now has an <code>originTypes</code>
+    <li>The $ref:browsingData.RemovalOptions
+       now has an <code>originTypes</code>
       property.
-    <li>The <a href="management.html#method-uninstall"
-      >management.uninstall()</a> method now has a <code
+    <li>The $ref:management.uninstall
+       method now has a <code
       >showConfirmDialog</code> parameter.
-    <li>The <a href="contextMenus.html#method-create"
-      >contextMenus.create()</a> method now allows you to specify unique
+    <li>The $ref:contextMenus.create
+       method now allows you to specify unique
       IDs for each item. This is intended to be used with the new
-      <a href="contextMenus.html#event-onClicked"
-      >contextMenus.onClicked</a> event, to distinguish the clicked item.
-    <li>The <a href="browserAction.html#method-setIcon"
-      >browserAction.setIcon()</a> and
-      <a href="pageAction.html#method-setIcon"
-      >pageAction.setIcon()</a> methods now accept optional callbacks.
-    <li>The <a href="privacy.html#property-websites"
-      >privacy.websites</a> namespace now has a <code
+      $ref:contextMenus.onClicked
+       event, to distinguish the clicked item.
+    <li>The $ref:browserAction.setIcon
+       and
+      $ref:pageAction.setIcon
+       methods now accept optional callbacks.
+    <li>The $ref:privacy.websites
+       namespace now has a <code
       >protectedContentEnabled</code> property.
-    <li>The <code>index</code> parameter to the <a href="tabs.html#method-move"
-      >tabs.move()</a> method now accepts <code>-1</code> to indicate
+    <li>The <code>index</code> parameter to the $ref:tabs.move
+       method now accepts <code>-1</code> to indicate
       that the tab should be placed at the end.
     <li>The <code>windowId</code> parameter to the
-      <a href="tabs.html#method-highlight">tabs.highlight()</a>
+      $ref:tabs.highlight
       method is now optional.
     <li><a href="manifest.html#intents">Web intents</a> can now be used to
       register content-type viewers.
@@ -98,14 +98,14 @@ made in recent releases.
 <h4> Additions to existing APIs </h4>
   <ul>
     <li>The <code>chrome.contextMenus</code>
-      <a href="contextMenus.html#method-create">create()</a> and
-      <a href="contextMenus.html#method-update">update()</a>
+      $ref:contextMenus.create and
+      $ref:contextMenus.update
       methods now have an <code>enabled</code> parameter.</li>
-    <li>The privacy API's <a href="privacy.html#property-services">services</a> object
+    <li>The privacy API's $ref:privacy.services object
       now has a <code>spellingServiceEnabled</code> setting.</li>
     <li>The <code>chrome.tabs</code>
-      <a href="tabs.html#method-executeScript">executeScript()</a> and
-      <a href="tabs.html#method-insertCSS">insertCSS()</a>
+      $ref:tabs.executeScript and
+      $ref:tabs.insertCSS
       now accept a <code>runAt</code> parameter.</li>
   </ul>
 
@@ -115,8 +115,8 @@ made in recent releases.
     <li>The <code>sendRequest()</code> method
       has been deprecated in favor of the
       <code>sendMessage()</code> method for both the
-      <a href="extension.html#method-sendMessage">extension API</a> and
-      <a href="tabs.html#method-sendMessage">tabs API</a>.</li>
+      $ref:extension.sendMessage and
+      $ref:tabs.sendMessage.</li>
     <li>The <a href="external_extensions.html">external_extensions.json file</a>
       has been deprecated in favor of individual
       <code>&lt;extension-id&gt;.json</code> files.</li>
@@ -141,24 +141,23 @@ made in recent releases.
 
  <h4> Additions to existing APIs </h4>
   <ul>
-    <li>The window API's <a href="windows.html#type-Window">Window</a>
+    <li>The window API's $ref:windows.Window
       object now has an <code>alwaysOnTop</code> property and
        supports the "fullscreen" state.
      <li>The <code>chrome.tabs</code>
-       <a href="tabs.html#method-query">query()</a> method
+       $ref:tabs.query method
        now has the <code>currentWindow</code> and
       <code>lastFocusedWindow</code> parameters.
      <li>The <a href="browserAction.html">browser action API</a>
        has the following new getter functions:
-       <a href="browserAction.html#method-getTitle">getTitle</a>,
-       <a href="browserAction.html#method-getBadgeText">getBadgeText</a>,
-       <a href="browserAction.html#method-getBadgeBackgroundColor">getBadgeBackgr
-     oundColor</a>, and
-       <a href="browserAction.html#method-getPopup">getPopup</a>.
+       $ref:browserAction.getTitle,
+       $ref:browserAction.getBadgeText,
+       $ref:browserAction.getBadgeBackgroundColor, and
+       $ref:browserAction.getPopup.
     <li>The <a href="pageAction.html">page action API</a>
       has the following new getter functions:
-       <a href="pageAction.html#method-getTitle">getTitle</a> and
-       <a href="pageAction.html#method-getPopup">getPopup</a>.
+       $ref:pageAction.getTitle and
+       $ref:pageAction.getPopup.
    </ul>
 
 <h2 id="18"> Google Chrome 18 </h2>
@@ -205,11 +204,11 @@ made in recent releases.
 
 <h4> Additions to existing APIs </h4>
   <ul>
-    <li>The <a href="windows.html#property-WINDOW_ID_CURRENT">windows API</a>
+    <li>The $ref:windows.WINDOW_ID_CURRENT
     now has a <code>WINDOW_ID_CURRENT</code> property.
     <li>The <code>chrome.tabs</code>
-    <a href="tabs.html#method-create">create()</a> and
-    <a href="tabs.html#method-update">update()</a> methods
+    $ref:tabs.create and
+    $ref:tabs.update methods
     now have an <code>openerTabId</code> parameter.
   </ul>
 
@@ -235,7 +234,7 @@ made in recent releases.
 <h4> Additions to existing APIs </h4>
   <ul>
     <li>The management API's
-    <a href="management.html#type-ExtensionInfo">ExtensionInfo</a> object
+    $ref:management.ExtensionInfo object
     now has a <code>disabledReason</code> property.
   </ul>
 
@@ -280,15 +279,15 @@ made in recent releases.
 <h4> Additions to existing APIs </h4>
   <ul>
     <li>The new
-    <a href="tabs.html#method-query">chrome.tabs.query()</a> method
+    $ref:tabs.query method
     gets all tabs that have the specified properties or
     all tabs if no properties are specified.
     <li>The new
-    <a href="tabs.html#method-reload">chrome.tabs.reload()</a> method
+    $ref:tabs.reload method
     reloads a tab and includes the option
     to preserve the local cache of the reloaded tab.
     <li>The management API's
-    <a href="management.html#type-ExtensionInfo">ExtensionInfo</a> object
+    $ref:management.ExtensionInfo object
     now has an <code>updateURL</code> property.
     <li>You can now limit the supported locales for an
     <a href="external_extensions.html">external extension</a>
@@ -301,14 +300,14 @@ made in recent releases.
     <li>The methods <code>getAllInWindow()</code> and
     <code>getSelected()</code> have been deprecated.
     To get details about all tabs in the specified window, use
-    <a href="tabs.html#method-query">chrome.tabs.query()</a>
+    $ref:tabs.query
     with the argument <code>{'windowId': windowID}</code>.
     To get the tab that is selected in the specified window, use
     <code>chrome.tabs.query()</code>
     with the argument <code>{'active': true}</code>.
     <li>You are no longer required
     to specify the <code>tabID</code> for the
-    <a href="tabs.html#method-update">chrome.tabs.update()</a> method.
+    $ref:tabs.update method.
     When not provided,
     the <code>tabID</code> defaults
     to the selected tab of the current window.
@@ -316,7 +315,7 @@ made in recent releases.
     within a wheel group (or an admin group).
     <li>The "experimental" permission is no longer required
     for the
-    <a href="windows.html#type-Window">window "panel"</a> type.
+    $ref:windows.Window type.
     By default, the "panel" type creates a popup
     unless the <code>--enable-panels</code> flag is set.
   </ul>
@@ -343,11 +342,11 @@ made in recent releases.
 <h4> Additions to existing APIs </h4>
   <ul>
     <li>You can retrieve permission warnings using the new management API methods
-      <a href="management.html#method-getPermissionWarningsById">getPermissionWarningsById()</a>
+      $ref:management.getPermissionWarningsById
       and
-      <a href="management.html#method-getPermissionWarningsByManifest">getPermissionWarningsByManifest()</a>.
+      $ref:management.getPermissionWarningsByManifest.
     <li>The management API’s
-      <a href="management.html#type-ExtensionInfo">ExtensionInfo</a> object has
+      $ref:management.ExtensionInfo object has
       a new field, <code>offlineEnabled</code>.
     <li>You can now <a href="i18n.html">internationalize</a> content script CSS
       files by using <code>__MSG_messagename__</code> placeholders.
@@ -355,7 +354,7 @@ made in recent releases.
 
 <h4> Changes to existing APIs </h4>
   <ul>
-    <li>The callback for the <a href="tabs.html#method-update">tabs.update</a>
+    <li>The callback for the $ref:tabs.update
       method is passed <code>null</code> instead of the tab details if the
       extension does not have the "tabs" permission.
   </ul>
@@ -397,19 +396,19 @@ made in recent releases.
       Previously, they were restricted to documents with
       http:// or https:// URLs.
     <li>An optional <code>drawAttention</code> field in
-      <a href="windows.html#method-update">chrome.windows.update()</a>'s
+      $ref:windows.update's
       <code>updateInfo</code> object lets you specify that the window
       should entice the user to change focus to it.
     <li>The new
-      <a href="bookmarks.html#method-getSubTree">bookmarks.getSubTree()</a>
+      $ref:bookmarks.getSubTree
       function lets you retrieve just part of the Bookmarks hierarchy.
   </ul>
 
 <h4> Changes to existing APIs </h4>
   <ul>
     <li>The "tabs" permission is no longer required for
-      <a href="tabs.html#method-remove">tabs.remove</a> and
-      <a href="tabs.html#event-onRemoved">tabs.onRemoved</a>.
+      $ref:tabs.remove and
+      $ref:tabs.onRemoved.
   </ul>
 
 <h2 id="13"> Google Chrome 13 </h2>
@@ -419,7 +418,7 @@ made in recent releases.
     <li>The <a href="proxy.html">proxy API</a>
       lets extensions manage Chrome's proxy settings.
     <li>The
-      <a href="types.html#type-ChromeSetting">chrome.types.ChromeSetting</a> prototype
+      $ref:types.ChromeSetting prototype
       provides an interface to browser settings;
       it's used by the proxy API.
     <li> <em>Chrome OS only:</em>
@@ -459,27 +458,27 @@ made in recent releases.
 <h4> Additions to existing APIs </h4>
   <ul>
     <li>Two new <code>chrome.extension</code>
-      methods&mdash;<a href="extension.html#method-isAllowedFileSchemeAccess">isAllowedFileSchemeAccess()</a> and
-      <a href="extension.html#method-isAllowedIncognitoAccess">isAllowedIncognitoAccess()</a>&mdash;let you
+      methods&mdash;$ref:extension.isAllowedFileSchemeAccess and
+      $ref:extension.isAllowedIncognitoAccess&mdash;let you
       determine whether your extension has increased access,
       which the user specifies using the extensions management page
       (<b>chrome://extensions</b>).
-    <li>The <a href="windows.html#method-create">chrome.windows.create()</a>
+    <li>The $ref:windows.create
       method can now take a <code>focused</code> value.
       Previously, all new windows had the keyboard focus;
       now you can create windows without interrupting the user's typing.
     <li>If the manifest specifies "experimental" permission,
       your extension can specify "panel" as the value of
       the <code>type</code> field in
-      the <a href="windows.html#method-create">chrome.windows.create()</a>
+      the $ref:windows.create
       method
-      or the <a href="windows.html#type-Window">Window</a> type.
-    <li>The <a href="cookies.html#event-onChanged">onChanged</a>
+      or the $ref:windows.Window type.
+    <li>The $ref:cookies.onChanged
       event of <code>chrome.cookies</code>
       now has a <code>cause</code> parameter.
     <li>The <code>chrome.contextMenus</code>
-      <a href="contextMenus.html#method-create">create()</a> and
-      <a href="contextMenus.html#method-update">update()</a>
+      $ref:contextMenus.create and
+      $ref:contextMenus.update
       methods now let you specify a context value of "frame".
   </ul>
 
@@ -488,7 +487,7 @@ made in recent releases.
 <h4> Changes to existing APIs </h4>
   <ul>
     <li>For security reasons, you can no longer call
-      <a href="tabs.html#method-captureVisibleTab">chrome.tab.captureVisibleTab()</a>
+      $ref:tabs.captureVisibleTab
       on just any tab.
       Instead, you now must have
       <a href="manifest.html#permissions">host permission</a>
@@ -500,16 +499,16 @@ made in recent releases.
 <h4> Additions to existing APIs </h4>
   <ul>
     <li>The management API's
-      <a href="management.html#type-ExtensionInfo">ExtensionInfo</a> object
+      $ref:management.ExtensionInfo object
       now has a <code>homepageUrl</code> property.
     <li>The management API now lets you get the icons of
       disabled apps and extensions.
       Also, you can now modify the regular icon's URL
       to get its disabled equivalent.
-      See <a href="management.html#type-IconInfo">IconInfo</a> for details.
+      See $ref:management.IconInfo for details.
     <li>The cookies API
-      <a href="cookies.html#method-set">set()</a>
-      and <a href="cookies.html#method-remove">remove()</a> methods
+      $ref:cookies.set
+      and $ref:cookies.remove methods
       can now take callbacks.
   </ul>
 
@@ -525,7 +524,7 @@ made in recent releases.
 
 <h4> Additions to existing APIs </h4>
   <ul>
-    <li>The <a href="windows.html#method-create">chrome.windows.create()</a>
+    <li>The $ref:windows.create
       method now has a <code>tabId</code> field.
       You can use it to move a tab or panel into a new window.
       <p class="note">
@@ -550,17 +549,17 @@ made in recent releases.
 
 <h4> Additions to existing APIs </h4>
   <ul>
-    <li>The <a href="tabs.html#type-Tab">Tab</a> object
+    <li>The $ref:tabs.Tab object
       now has a <code>pinned</code> property
       that's reflected in various <code>chrome.tabs</code> methods.
       For example,
-      you can <a href="tabs.html#method-create">create</a>
+      you can $ref:tabs.create
       a pinned tab.
-    <li>The <a href="windows.html#method-create">chrome.windows.create()</a>
+    <li>The $ref:windows.create
       method can now take a list of URLs,
       letting you create multiple tabs in the new window.
     <li>The new
-      <a href="management.html#method-get">chrome.management.get()</a> method
+      $ref:management.get method
       lets you get information about the specified extension or app.
   </ul>
 
@@ -610,14 +609,14 @@ No API or manifest changes worth noting.
 
 <h4> Additions to existing APIs </h4>
   <ul>
-    <li>The <a
-      href="extension.html#method-getViews">chrome.extension.getViews()</a>
+    <li>The 
+      $ref:extension.getViews
       method can now return popup views.
-    <li>A new <a
-      href="windows.html#property-WINDOW_ID_NONE">WINDOW_ID_NONE</a> constant
+    <li>A new 
+      $ref:windows.WINDOW_ID_NONE constant
       identifies when focus shifts away from the browser.
-    <li>The new <a
-      href="tabs.html#method-getCurrent">chrome.tabs.getCurrent()</a> method
+    <li>The new 
+      $ref:tabs.getCurrent method
       returns the tab associated with the currently executing script.
   </ul>
 

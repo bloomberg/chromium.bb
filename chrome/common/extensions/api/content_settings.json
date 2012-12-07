@@ -20,7 +20,7 @@
             "description": "A human readable description of the resource."
           }
         },
-        "description": "The only content type using resource identifiers is <a href=\"contentSettings.html#property-plugins\"><var>plugins</var></a>. For more information, see <a href=\"contentSettings.html#resource-identifiers\">Resource Identifiers</a>."
+        "description": "The only content type using resource identifiers is $ref:contentSettings.plugins. For more information, see <a href=\"contentSettings.html#resource-identifiers\">Resource Identifiers</a>."
       },
       {
         "id": "ContentSetting",

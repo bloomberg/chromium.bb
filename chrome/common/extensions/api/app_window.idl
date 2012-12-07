@@ -168,7 +168,7 @@ namespace app.window {
                        optional CreateWindowOptions options,
                        optional CreateWindowCallback callback);
 
-    // Returns an <a href="#type-AppWindow">AppWindow</a> object for the
+    // Returns an $ref:AppWindow object for the
     // current script context (ie JavaScript 'window' object). This can also be
     // called on a handle to a script context for another page, for example:
     // otherWindow.chrome.app.window.current().

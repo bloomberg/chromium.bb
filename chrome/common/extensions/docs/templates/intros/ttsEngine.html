@@ -15,8 +15,8 @@ to the calling function to report the status.
 
 <p>An extension can register itself as a speech engine. By doing so, it
 can intercept some or all calls to functions such as
-<a href="tts.html#method-speak"><code>speak()</code></a> and
-<a href="tts.html#method-stop"><code>stop()</code></a>
+$ref:tts.speak and
+$ref:tts.stop
 and provide an alternate implementation.
 Extensions are free to use any available web technology
 to provide speech, including streaming audio from a server, HTML5 audio,
@@ -117,7 +117,7 @@ not sent by the speech engine; they are generated automatically by Chrome.</p>
 
 <p>Text-to-speech clients can get the voice information from your
 extension's manifest by calling
-<a href="tts.html#method-getVoices">getVoices()</a>,
+$ref:tts.getVoices,
 assuming you've registered speech event listeners as described below.</p>
 
 <h2 id="handling_speech_events">Handling speech events</h2>

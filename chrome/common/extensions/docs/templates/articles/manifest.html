@@ -278,7 +278,7 @@ it is loaded during development.
 use this value. Instead, write your
 code so that the key value doesn't matter
 by using <a href="overview.html#relative-urls">relative paths</a>
-and <a href="extension.html#method-getURL">chrome.extension.getURL()</a>.
+and $ref:extension.getURL.
 </p>
 
 <p>
@@ -550,9 +550,7 @@ etc.) as follows:
 <p>
 These resources would then be available in a webpage via the URL
 <code>chrome-extension://[PACKAGE ID]/[PATH]</code>, which can be generated with
-the <a href="extension.html#method-getURL">
-  <code>chrome.extension.getURL</code>
-</a> method. Whitelisted resources are served with appropriate
+the $ref:extension.getURL method. Whitelisted resources are served with appropriate
 <a href="http://www.w3.org/TR/cors/">CORS</a> headers, so they're available via
 mechanisms like XHR.
 </p>

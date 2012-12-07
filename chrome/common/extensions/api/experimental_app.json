@@ -48,7 +48,7 @@
             "name": "callback",
             "optional": true,
             "parameters": [],
-            "description": "A callback when the function is complete. Any errors will be reported in <a href='extension.html#property-lastError'>chrome.extension.lastError</a>."
+            "description": "A callback when the function is complete. Any errors will be reported in $ref:runtime.lastError."
           }
         ]
       },
@@ -74,7 +74,7 @@
             "type": "function",
             "name": "callback",
             "optional": true,
-            "description": "A callback when the function is complete. Any errors will be reported in <a href='extension.html#property-lastError'>chrome.extension.lastError</a>.",
+            "description": "A callback when the function is complete. Any errors will be reported in $ref:runtime.lastError.",
             "parameters": []
           }
         ]

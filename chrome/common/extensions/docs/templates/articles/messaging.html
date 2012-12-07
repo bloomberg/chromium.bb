@@ -27,9 +27,9 @@ section.
 <p>
 If you only need to send a single message to another part of your extension
 (and optionally get a response back), you should use the simplified
-<a href="extension.html#method-sendMessage">chrome.extension.sendMessage()</a>
+$ref:extension.sendMessage
 or
-<a href="tabs.html#method-sendMessage">chrome.tabs.sendMessage()</a>
+$ref:tabs.sendMessage
 methods. This lets you send a one-time JSON-serializable message from a
 content script to extension, or vice versa, respectively. An optional
 callback parameter allows you handle the response from the other side, if
@@ -61,7 +61,7 @@ chrome.tabs.getSelected(null, function(tab) {
 
 <p>
 On the receiving end, you need to set up an
-<a href="extension.html#event-onMessage">chrome.extension.onMessage</a>
+$ref:extension.onMessage
 event listener to handle the message. This looks the same from a content
 script or extension page.
 <pre>
@@ -87,9 +87,9 @@ response. All other responses to that event will be ignored.
 Sometimes it's useful to have a conversation that lasts longer than a single
 request and response. In this case, you can open a long-lived channel from
 your content script to an extension page, or vice versa, using
-<a href="extension.html#method-connect">chrome.extension.connect()</a>
+$ref:extension.connect
 or
-<a href="tabs.html#method-connect">chrome.tabs.connect()</a> respectively. The
+$ref:tabs.connect respectively. The
 channel can optionally have a name, allowing you to distinguish between
 different types of connections.
 
@@ -102,7 +102,7 @@ shared state linking the several messages coming from the content script.
 
 <p>
 When establishing a connection, each end is given a
-<a href="extension.html#type-Port">Port</a>
+$ref:extension.Port
 object which is used for sending and receiving messages through that
 connection.
 
@@ -126,16 +126,15 @@ port.onMessage.addListener(function(msg) {
 Sending a request from the extension to a content script looks very similar,
 except that you need to specify which tab to connect to. Simply replace the
 call to connect in the above example with
-<a href="tabs.html#method-connect">chrome.tabs.connect(tabId, {name:
-"knockknock"})</a>.
+$ref:tabs.connect.
 
 <p>
 In order to handle incoming connections, you need to set up a
-<a href="extension.html#event-onConnect">chrome.extension.onConnect</a>
+$ref:extension.onConnect
 event listener. This looks the same from a content script or an extension
 page. When another part of your extension calls "connect()", this event is
 fired, along with the
-<a href="extension.html#type-Port">Port</a>
+$ref:extension.Port
 object you can use to send and receive messages through the connection. Here's
 what it looks like to respond to incoming connections:
 <pre>
@@ -155,10 +154,10 @@ chrome.extension.onConnect.addListener(function(port) {
 <p>
 You may want to find out when a connection is closed, for example if you are
 maintaining separate state for each open port. For this you can listen to the
-<a href="extension.html#type-Port">Port.onDisconnect</a>
+$ref:extension.Port
 event. This event is fired either when the other side of the channel manually
 calls
-<a href="extension.html#type-Port">Port.disconnect()</a>, or when the page
+$ref:extension.Port, or when the page
 containing the port is unloaded (for example if the tab is navigated).
 onDisconnect is guaranteed to be fired only once for any given port.
 
@@ -172,9 +171,9 @@ This lets you expose a public API that other extensions can take advantage of.
 <p>
 Listening for incoming requests and connections is similar to the internal
 case, except you use the
-<a href="extension.html#event-onMessageExternal">chrome.extension.onMessageExternal</a>
+$ref:extension.onMessageExternal
 or
-<a href="extension.html#event-onConnectExternal">chrome.extension.onConnectExternal</a>
+$ref:extension.onConnectExternal
 methods. Here's an example of each:
 <pre>
 // For simple requests:

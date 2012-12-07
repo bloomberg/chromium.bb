@@ -133,9 +133,7 @@
           The <code>icons</code> property of <code>browser_action</code> has
           been removed. Use <a href="browserAction.html#manifest">
             the <code>default_icon</code> property
-          </a> or <a href="browserAction.html#method-setIcon">
-            <code>chrome.browserAction.setIcon</code>
-          </a> instead.
+          </a> or $ref:browserAction.setIcon instead.
         </p>
       </li>
       <li>
@@ -143,9 +141,7 @@
           The <code>name</code> property of <code>browser_action</code> has been
           removed. Use <a href="browserAction.html#manifest">
             the <code>default_title</code> property
-          </a> or <a href="browserAction.html#method-setTitle">
-            <code>chrome.browserAction.setTitle</code>
-          </a> instead.
+          </a> or $ref:browserAction.setTitle instead.
         </p>
       </li>
       <li>
@@ -153,9 +149,7 @@
           The <code>popup</code> property of <code>browser_action</code> has
           been removed. Use <a href="browserAction.html#manifest">
             the <code>default_popup</code> property
-          </a> or <a href="browserAction.html#method-setPopup">
-            <code>chrome.browserAction.setPopup</code>
-          </a> instead.
+          </a> or $ref:browserAction.setPopup instead.
         </p>
       </li>
       <li>
@@ -183,9 +177,7 @@
           The <code>icons</code> property of <code>page_action</code> has been
           removed. Use <a href="pageAction.html#manifest">
             the <code>default_icon</code> property
-          </a> or <a href="pageAction.html#method-setIcon">
-            <code>chrome.pageAction.setIcon</code>
-          </a> instead.
+          </a> or $ref:pageAction.setIcon instead.
         </p>
       </li>
       <li>
@@ -193,9 +185,7 @@
           The <code>name</code> property of <code>page_action</code> has been
           removed. Use <a href="pageAction.html#manifest">
             the <code>default_title</code> property
-          </a> or <a href="pageAction.html#method-setTitle">
-            <code>chrome.pageAction.setTitle</code>
-          </a> instead.
+          </a> or $ref:pageAction.setTitle instead.
         </p>
       </li>
       <li>
@@ -203,9 +193,7 @@
           The <code>popup</code> property of <code>page_action</code> has been
           removed. Use <a href="pageAction.html#manifest">
             the <code>default_popup</code> property
-          </a> or <a href="pageAction.html#method-setPopup">
-            <code>chrome.pageAction.setPopup</code>
-          </a> instead.
+          </a> or $ref:pageAction.setPopup instead.
         </p>
       </li>
       <li>
@@ -226,15 +214,13 @@
     <p>
       <code>chrome.extension.getTabContentses</code> (!!!) and
       <code>chrome.extension.getExtensionTabs</code> are gone. Use
-      <a href="extension.html#method-getViews">
-        <code>chrome.extension.getViews({ "type": "tab" })</code>
-      </a> instead.
+      $ref:extension.getViews instead.
     </p>
   </li>
   <li>
     <p>
       <code>Port.tab</code> is gone. Use
-      <a href="extension.html#type-Port"><code>Port.sender</code></a>
+      $ref:extension.Port
       instead.
     </p>
   </li>

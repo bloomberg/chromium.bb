@@ -55,7 +55,7 @@ that will cause the event page to load:
 <li>A content script or other extension
 <a href="messaging.html">sends a message.</a>
 <li>Another view in the extension (for example, a popup) calls
-<code><a href="runtime.html#method-getBackgroundPage">chrome.runtime.getBackgroundPage()</a></code>.
+<code>$ref:runtime.getBackgroundPage</code>.
 </ul>
 
 <p>
@@ -77,7 +77,7 @@ extension appears in the list of processes.
 <p>
 Once the event page has been idle a short time
 (a few seconds), the
-<code><a href="runtime.html#event-onSuspend">chrome.runtime.onSuspend</a></code>
+<code>$ref:runtime.onSuspend</code>
 event is dispatched. The event page has a few more seconds to handle this
 event before it is forcibly unloaded. Note that once the event is dispatched,
 new activity will not keep the event page open.
@@ -97,7 +97,7 @@ load its event page for that event.
 Because the listeners themselves only exist in the context of the
 event page, you must use <code>addListener</code> each time the event
 page loads; only doing so at
-<code><a href="runtime.html#event-onInstalled">chrome.runtime.onInstalled</a></code>
+<code>$ref:runtime.onInstalled</code>
 by itself is insufficient.
 </p>
 
@@ -122,12 +122,8 @@ Follow this checklist to convert your extension's
 
   <li>If you need to do some initialization when your extension is
   installed or upgraded, listen to the
-  <code><a href="runtime.html#event-onInstalled">chrome.runtime.onInstalled</a></code>
-  event. If you need to do some initialization each time the browser starts,
-  listen to the
-  <code><a href="runtime.html#event-onBrowserStartup">chrome.runtime.onBrowserStartup</a></code>
-  event; however, you should (in almost all cases) prefer
-  the <code>chrome.runtime.onInstalled</code> event.
+  <code>$ref:runtime.onInstalled</code>
+  event.
 
   <li>If you need to keep runtime state in memory throughout a browser
   session, use the <a href="storage.html">storage API</a> or
@@ -136,15 +132,15 @@ Follow this checklist to convert your extension's
 
   <li>Use <a href="events.html#filtered">event filters</a> to restrict
   your event notifications to the cases you care about. For example, if
-  you listen to the <code><a href="tabs.html#event-onUpdated">tabs.onUpdated</a></code>
+  you listen to the <code>$ref:tabs.onUpdated</code>
   event, try using the
-  <code><a href="webNavigation.html#event-onCompleted">webNavigation.onComplete</a></code>
+  <code>$ref:webNavigation.onCompleted</code>
   event with filters instead (the tabs API does not support filters).
   That way, your event page will only be loaded for events that
   interest you.
 
   <li>Listen to the
-  <code><a href="runtime.html#event-onSuspend">chrome.runtime.onSuspend</a></code>
+  <code>$ref:runtime.onSuspend</code>
   event if you need to do last second cleanup before your event page
   is shut down. However, we recommend persisting periodically instead.
   That way if your extension crashes without receiving
@@ -156,9 +152,9 @@ Follow this checklist to convert your extension's
   be honored if the event page shuts down.
 
   <li>If your extension uses,
-  <code><a href="extension.html#method-getBackgroundPage">chrome.extension.getBackgroundPage()</a></code>,
+  <code>$ref:extension.getBackgroundPage</code>,
   switch to
-  <code><a href="runtime.html#method-getBackgroundPage">chrome.runtime.getBackgroundPage()</a></code>
+  <code>$ref:runtime.getBackgroundPage</code>
   instead. The newer method is asynchronous so that it can start the event
   page if necessary before returning it.
 
@@ -168,10 +164,10 @@ Follow this checklist to convert your extension's
 
   <li>If you're using the <a href="contextMenus.html">context menus</a> API,
   pass a string <code>id</code> parameter to
-  <code><a href="contextMenus.html#method-create">chrome.contextMenus.create</a></code>,
+  <code>$ref:contextMenus.create</code>,
   and use the
-  <code><a href="contextMenus.html#event-onClicked">chrome.contextMenus.onClicked</a></code>
+  <code>$ref:contextMenus.onClicked</code>
   callback instead of an <code>onclick</code> parameter to
-  <code><a href="contextMenus.html#method-create">chrome.contextMenus.create</a></code>.
+  <code>$ref:contextMenus.create</code>.
 </ol>
 </p>

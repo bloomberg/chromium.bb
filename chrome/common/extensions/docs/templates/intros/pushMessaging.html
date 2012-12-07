@@ -226,7 +226,7 @@ Your app or extension will need to send this value
 to its application server so that the server
 can trigger push messages back.
 To get the user's channel ID,
-call <a href="http://developer.chrome.com/apps/pushMessaging.html#method-getChannelId">getChannelId</a>.
+call $ref:pushMessaging.getChannelId.
 Use the callback function
 to send the channel ID back to your app or extension.
 </p>
@@ -450,7 +450,7 @@ your app or extension on the Extensions management page
 (go to <strong>chrome://extensions</strong> in your browser).
 Your app or extension doesn't need to be running, just installed.
 You will need to get the channel ID at install time
-using <a href="app.runtime.html#event-onLaunched">chrome.app.runtime.onLaunched.addListener</a>.
+using $ref:app.runtime.onLaunched.
 Then, use that channel ID on the server to send a test
 push message through the system.
 All going well,

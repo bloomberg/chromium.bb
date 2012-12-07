@@ -122,58 +122,58 @@ namespace downloads {
 
   [inline_doc] dictionary DownloadQuery {
     // This space-separated string of search terms that may be grouped using
-    // quotation marks limits results to <a
-    // href='#type-DownloadItem'>DownloadItems</a> whose <code>filename</code>
+    // quotation marks limits results to
+    // $ref:DownloadItem whose <code>filename</code>
     // or <code>url</code> contain all of the search terms that do not begin with a dash '-'
     // and none of the search terms that do begin with a dash.
     DOMString? query;
 
-    // Limits results to <a href='#type-DownloadItem'>DownloadItems</a> that
+    // Limits results to $ref:DownloadItem that
     // started before the given ms since the epoch.
     long? startedBefore;
 
-    // Limits results to <a href='#type-DownloadItem'>DownloadItems</a> that
+    // Limits results to $ref:DownloadItem that
     // started after the given ms since the epoch.
     long? startedAfter;
 
-    // Limits results to <a href='#type-DownloadItem'>DownloadItems</a> that ended before the given ms since the
+    // Limits results to $ref:DownloadItem that ended before the given ms since the
     // epoch.
     long? endedBefore;
 
-    // Limits results to <a href='#type-DownloadItem'>DownloadItems</a> that ended after the given ms since the
+    // Limits results to $ref:DownloadItem that ended after the given ms since the
     // epoch.
     long? endedAfter;
 
-    // Limits results to <a href='#type-DownloadItem'>DownloadItems</a> whose
+    // Limits results to $ref:DownloadItem whose
     // <code>totalBytes</code> is greater than the given integer.
     long? totalBytesGreater;
 
-    // Limits results to <a href='#type-DownloadItem'>DownloadItems</a> whose
+    // Limits results to $ref:DownloadItem whose
     // <code>totalBytes</code> is less than the given integer.
     long? totalBytesLess;
 
-    // Limits results to <a href='#type-DownloadItem'>DownloadItems</a> whose
+    // Limits results to $ref:DownloadItem whose
     // <code>filename</code> matches the given regular expression.
     DOMString? filenameRegex;
 
-    // Limits results to <a href='#type-DownloadItem'>DownloadItems</a> whose
+    // Limits results to $ref:DownloadItem whose
     // <code>url</code> matches the given regular expression.
     DOMString? urlRegex;
 
     // Setting this integer limits the number of results. Otherwise, all
-    // matching <a href='#type-DownloadItem'>DownloadItems</a> will be returned.
+    // matching $ref:DownloadItem will be returned.
     long? limit;
 
-    // Setting this string to a <a href='#type-DownloadItem'>DownloadItem</a>
-    // property sorts the <a href='#type-DownloadItem'>DownloadItems</a> prior
+    // Setting this string to a $ref:DownloadItem
+    // property sorts the $ref:DownloadItem prior
     // to applying the above filters. For example, setting
-    // <code>orderBy='startTime'</code> sorts the <a
-    // href='#type-DownloadItem'>DownloadItems</a> by their start time in
+    // <code>orderBy='startTime'</code> sorts the
+    // $ref:DownloadItem by their start time in
     // ascending order. To specify descending order, prefix <code>orderBy</code>
     // with a hyphen: '-startTime'.
     DOMString? orderBy;
 
-    // The <code>id</code> of the <a href="#type-DownloadItem">DownloadItem</a>
+    // The <code>id</code> of the $ref:DownloadItem
     // that changed.
     long? id;
 
@@ -298,37 +298,37 @@ namespace downloads {
     // <code>filename</code> and <code>saveAs</code> are specified, then the
     // Save As dialog will be displayed, pre-populated with the specified
     // <code>filename</code>. If the download started successfully,
-    // <code>callback</code> will be called with the new <a href='#type-DownloadItem'>DownloadItem</a>'s
+    // <code>callback</code> will be called with the new $ref:DownloadItem's
     // <code>downloadId</code>. If there was an error starting the download,
     // then <code>callback</code> will be called with
-    // <code>downloadId=undefined</code> and <a
-    // href='extension.html#property-lastError'>chrome.extension.lastError</a>
+    // <code>downloadId=undefined</code> and
+    // $ref:runtime.lastError
     // will contain a descriptive string. The error strings are not guaranteed
     // to remain backwards compatible between releases. You must not parse it.
     // |options|: What to download and how.
-    // |callback|: Called with the id of the new <a href='#type-DownloadItem'>DownloadItem</a>.
+    // |callback|: Called with the id of the new $ref:DownloadItem.
     static void download(DownloadOptions options,
                          optional DownloadCallback callback);
 
-    // Find <a href='#type-DownloadItem'>DownloadItems</a>. Set
-    // <code>query</code> to the empty object to get all <a
-    // href='#type-DownloadItem'>DownloadItems</a>. To get a specific <a
-    // href='#type-DownloadItem'>DownloadItem</a>, set only the <code>id</code>
+    // Find $ref:DownloadItem. Set
+    // <code>query</code> to the empty object to get all
+    // $ref:DownloadItem. To get a specific
+    // $ref:DownloadItem, set only the <code>id</code>
     // field.
     static void search(DownloadQuery query, SearchCallback callback);
 
     // Pause the download. If the request was successful the download is in a
-    // paused state. Otherwise <a
-    // href='extension.html#property-lastError'>chrome.extension.lastError</a>
+    // paused state. Otherwise
+    // $ref:runtime.lastError
     // contains an error message. The request will fail if the download is not
     // active.
     // |downloadId|: The id of the download to pause.
-    // |callback|: Called when the pause request is completed. 
+    // |callback|: Called when the pause request is completed.
     static void pause(long downloadId, optional NullCallback callback);
 
     // Resume a paused download. If the request was successful the download is
-    // in progress and unpaused. Otherwise <a
-    // href='extension.html#property-lastError'>chrome.extension.lastError</a>
+    // in progress and unpaused. Otherwise
+    // $ref:runtime.lastError
     // contains an error message. The request will fail if the download is not
     // active.
     // |downloadId|: The id of the download to resume.
@@ -342,15 +342,15 @@ namespace downloads {
     static void cancel(long downloadId, optional NullCallback callback);
 
     // Retrieve an icon for the specified download. For new downloads, file
-    // icons are available after the <a href='#event-onCreated'>onCreated</a>
+    // icons are available after the $ref:onCreated
     // event has been received. The image returned by this function while a
     // download is in progress may be different from the image returned after
     // the download is complete. Icon retrieval is done by querying the
     // underlying operating system or toolkit depending on the platform. The
     // icon that is returned will therefore depend on a number of factors
     // including state of the download, platform, registered file types and
-    // visual theme. If a file icon cannot be determined, <a
-    // href='extension.html#property-lastError'>chrome.extension.lastError</a>
+    // visual theme. If a file icon cannot be determined,
+    // $ref:runtime.lastError
     // will contain an error message.
     // |downloadId|: The identifier for the download.
     // |callback|: A URL to an image that represents the download.
@@ -358,7 +358,7 @@ namespace downloads {
                             optional GetFileIconOptions options,
                             GetFileIconCallback callback);
 
-    // Erase matching <a href='#type-DownloadItem'>DownloadItems</a> from
+    // Erase matching $ref:DownloadItem from
     // history
     [nodoc] static void erase(DownloadQuery query,
                               optional EraseCallback callback);
@@ -382,16 +382,16 @@ namespace downloads {
   };
 
   interface Events {
-    // This event fires with the <a href='#type-DownloadItem'>DownloadItem</a>
+    // This event fires with the $ref:DownloadItem
     // object when a download begins.
     static void onCreated(DownloadItem downloadItem);
 
     // Fires with the <code>downloadId</code> when a download is erased from
     // history.
-    // |downloadId|: The <code>id</code> of the <a href='#type-DownloadItem'>DownloadItem</a> that was erased.
+    // |downloadId|: The <code>id</code> of the $ref:DownloadItem that was erased.
     static void onErased(long downloadId);
 
-    // When any of a <a href='#type-DownloadItem'>DownloadItem</a>'s properties
+    // When any of a $ref:DownloadItem's properties
     // except <code>bytesReceived</code> changes, this event fires with the
     // <code>downloadId</code> and an object containing the properties that changed.
     static void onChanged(DownloadDelta downloadDelta);

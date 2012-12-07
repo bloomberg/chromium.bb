@@ -80,12 +80,12 @@ in the hostname.</li>
 <p>
 The URL taken into account when deciding which content setting to apply depends
 on the content type. For example, for
-<a href="#property-notifications">notifications</a> settings are
+$ref:contentSettings.notifications settings are
 based on the URL shown in the omnibox. This URL is called the "primary" URL.</p>
 <p>
 Some content types can take additional URLs into account. For example,
 whether a site is allowed to set a
-<a href="#property-cookies">cookie</a> is decided based on the URL
+$ref:contentSettings.cookies is decided based on the URL
 of the HTTP request (which is the primary URL in this case) as well as the URL
 shown in the omnibox (which is called the "secondary" URL).
 </p>
@@ -120,7 +120,7 @@ is ordered by precedence:</p>
 <p>
 Resource identifiers allow you to specify content settings for specific
 subtypes of a content type. Currently, the only content type that supports
-resource identifiers is <a href="#property-plugins"><code>plugins</code></a>,
+resource identifiers is $ref:contentSettings.plugins,
 where a resource identifier identifies a specific plug-in. When applying content
 settings, first the settings for the specific plug-in are checked. If there are
 no settings found for the specific plug-in, the general content settings for
@@ -134,8 +134,7 @@ it takes precedence over a rule without a resource identifier and the pattern
 </p>
 <p>
 You can get a list of resource identifiers for a content type by calling the
-<a href="contentSettings.html#method-ContentSetting-getResourceIdentifiers">
-<code>getResourceIdentifiers()</code></a> method. The returned list
+$ref:contentSettings.ContentSetting.getResourceIdentifiers method. The returned list
 can change with the set of installed plug-ins on the user's machine, but Chrome
 tries to keep the identifiers stable across plug-in updates.
 </p>

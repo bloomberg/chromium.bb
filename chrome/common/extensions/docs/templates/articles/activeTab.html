@@ -89,8 +89,8 @@ In contrast, an extension with the <code>activeTab</code> permission only obtain
 <p>
 While the <code>activeTab</code> permission is enabled for a tab, an extension can:
 <ul>
-  <li>Call <code><a href="tabs.html#method-executeScript">executeScript()</a></code> or <code><a href="tabs.html#method-insertCSS">insertCSS()</a></code> on that tab.
-  <li>Get the URL, title, and favicon for that tab via an API that returns a <code><a href="tabs.html#type-Tab">Tab</a></code> object (essentially, <code>activeTab</code> grants the <code><a href="tabs.html#manifest">tabs</a></code> permission temporarily).
+  <li>Call <code>$ref:tabs.executeScript</code> or <code>$ref:tabs.insertCSS</code> on that tab.
+  <li>Get the URL, title, and favicon for that tab via an API that returns a <code>$ref:tabs.Tab</code> object (essentially, <code>activeTab</code> grants the <code><a href="tabs.html#manifest">tabs</a></code> permission temporarily).
 </ul>
 </p>
 

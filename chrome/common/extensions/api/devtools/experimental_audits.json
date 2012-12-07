@@ -40,7 +40,7 @@
         "id": "FormattedValue",
         "type": "object",
         "additionalProperties": { "type": "any" },
-        "description": "A value returned from one of the formatters (a URL, code snippet etc), to be passed to <code>createResult()</code> or <code>addChild()</code>. See <a href=\"#method-AuditResults-createSnippet\"><code>createSnippet()</code></a> and <a href=\"#method-AuditResults-createURL\"><code>createURL()</code></a>."
+        "description": "A value returned from one of the formatters (a URL, code snippet etc), to be passed to <code>createResult()</code> or <code>addChild()</code>. See $ref:AuditResults.createSnippet and $ref:AuditResults.createURL."
       },
       {
         "id": "AuditResults",

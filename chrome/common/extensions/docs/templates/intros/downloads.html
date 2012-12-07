@@ -6,7 +6,7 @@ manipulate, and search for downloads.</p>
 <p> You must declare the 'downloads' permission in the <a
 href='manifest.html'>extension manifest</a> to use this API, along with <a
 href='manifest.html#permissions'>host permissions</a> for any hosts that you
-may pass to <a href='#method-download'>download()</a>.</p>
+may pass to $ref:downloads.download.</p>
 
 <pre>{
   'name': 'My extension',
@@ -18,10 +18,10 @@ may pass to <a href='#method-download'>download()</a>.</p>
   ...
 }</pre>
 
-<p>If the URL's hostname is not specified in the permissions, then <a
-href='#method-download'>download()</a> will call its callback with a null
-<code>downloadId</code> and set the <a
-href='extension.html#property-lastError'>chrome.extensions.lastError</a>
+<p>If the URL's hostname is not specified in the permissions, then 
+$ref:downloads.download will call its callback with a null
+<code>downloadId</code> and set the 
+$ref:runtime.lastError
 object to indicate that the extension does not have permission to access that
 hostname.</p>
 

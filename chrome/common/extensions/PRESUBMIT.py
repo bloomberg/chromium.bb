@@ -25,6 +25,10 @@ LOCAL_PUBLIC_TEMPLATES_PATH = os.path.join('docs',
                                            'templates',
                                            'public')
 
+def _ReadFile(filename):
+  with open(filename) as f:
+    return f.read()
+
 def _ListFilesInPublic():
   all_files = []
   for path, dirs, files in os.walk(LOCAL_PUBLIC_TEMPLATES_PATH):
@@ -104,6 +108,23 @@ def _CheckVersions(input_api, output_api, results):
         results.append(output_api.PresubmitPromptWarning(
             '_VERSION of %s needs to be incremented.' % affected_file))
 
+def _CheckLinks(input_api, output_api, results):
+  regex = re.compile(
+      r'<a(.*?)href=(.*?)#(property|type|method|event)-(.*?)>(.*?)</a>',
+      flags=re.DOTALL)
+  for affected_file in input_api.AffectedFiles():
+    name = affected_file.LocalPath()
+    if (fnmatch.fnmatch(name, '%s*' % PUBLIC_TEMPLATES_PATH) or
+        fnmatch.fnmatch(name, '%s*' % INTROS_PATH) or
+        fnmatch.fnmatch(name, '%s*' % ARTICLES_PATH) or
+        fnmatch.fnmatch(name, '%s*' % API_PATH)):
+      contents = _ReadFile(affected_file.AbsoluteLocalPath())
+      if re.search(regex, contents):
+        results.append(output_api.PresubmitPromptWarning(
+            'File %s may have an old-style <a> link to an API page. Please run '
+            'docs/server2/link_converter.py to convert the link[s], or convert '
+            'them manually.' % name))
+
 def _CheckChange(input_api, output_api):
   results = [
       output_api.PresubmitError('File %s needs an id for each heading.' % name)
@@ -121,6 +142,7 @@ def _CheckChange(input_api, output_api):
   except input_api.subprocess.CalledProcessError:
     results.append(output_api.PresubmitError('IntegrationTest failed!'))
   _CheckVersions(input_api, output_api, results)
+  _CheckLinks(input_api, output_api, results)
   return results
 
 def CheckChangeOnUpload(input_api, output_api):

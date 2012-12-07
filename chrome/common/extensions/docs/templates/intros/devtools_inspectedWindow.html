@@ -12,7 +12,7 @@ general introduction to using Developer Tools APIs.
 
 <h2 id="overview">Overview</h2>
 <p>
-The <a href="#property-tabId"><code>tabId</code></a> property
+The $ref:devtools.inspectedWindow.tabId property
 provides the tab identifier that you can use with the
 <a href="tabs.html"><code>chrome.tabs.*</code></a> API calls.
 However, please note that <code>chrome.tabs.*</code> API is not
@@ -57,8 +57,7 @@ extension.</em>
 <p class="caution">
 <strong>Important:</strong>
 Due to the security considerations explained above, the
-<a href="tabs.html#method-executeScript"><code
->chrome.tabs.executeScript()</code></a> method is the preferred way for an
+$ref:tabs.executeScript method is the preferred way for an
 extension to access DOM data of the inspected page in cases where the access to
 JavaScript state of the inspected page is not required.</em>
 </p><p>

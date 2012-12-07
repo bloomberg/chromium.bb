@@ -55,13 +55,13 @@ chrome.tts.speak(
 </pre>
 
 <p>A complete description of all options can be found in the
-<a href="#method-speak">speak() method documentation</a> below.
+$ref:tts.speak below.
 Not all speech engines will support all options.</p>
 
 <p>To catch errors and make sure you're calling <code>speak()</code>
 correctly, pass a callback function that takes no arguments. Inside
 the callback, check
-<a href="extension.html#property-lastError">chrome.extension.lastError</a>
+$ref:runtime.lastError
 to see if there were any errors.</p>
 
 <pre>chrome.tts.speak(
