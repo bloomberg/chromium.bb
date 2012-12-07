@@ -215,6 +215,7 @@ void DriveSystemService::OnIncomingInvalidation(
 void DriveSystemService::ClearCacheAndRemountFileSystem(
     const base::Callback<void(bool)>& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   RemoveDriveMountPoint();
   drive_service()->CancelAll();
@@ -227,12 +228,12 @@ void DriveSystemService::AddBackDriveMountPoint(
     const base::Callback<void(bool)>& callback,
     bool success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   file_system_->Initialize();
   AddDriveMountPoint();
 
-  if (!callback.is_null())
-    callback.Run(success);
+  callback.Run(success);
 }
 
 void DriveSystemService::ReloadAndRemountFileSystem() {
