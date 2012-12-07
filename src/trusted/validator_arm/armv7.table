@@ -273,8 +273,17 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | 1111        -          -     ->unconditional_instructions
 +--
 
-# TODO(karl): Add uses to corresponding classes.
 +-- data_processing_and_miscellaneous_instructions (See Section A5.2)
+*mov
+  { cond(31:28), S(20), imm4(19:16), Rd(15:12), imm12(11:0) }
+  baseline := Unary1RegisterImmediateOpDynCodeReplace;
+  imm := imm4:imm12;
+  safety := Rd=1111 => UNPREDICTABLE;
+  defs := { Rd , NZCV if S else None };
+  uses := {};
+  dynamic_code_replace_immediates := {imm4, imm12};
+  arch := v6T2;
++--
 | op(25) op1(24:20) op2(7:4)
 | 0      ~10xx0     xxx0     ->data_processing_register
 | "      "          0xx1     ->data_processing_register_shifted_register
@@ -284,34 +293,17 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | "      1xxxx      1001     ->synchronization_primitives
 | "      ~0xx1x     1011     ->extra_load_store_instructions
 | "      "          11x1     "
-| "      0xx1x      1011     =ForbiddenCondDecoder => Forbidden
-                              pattern := cccc0000xx1xxxxxxxxxxxxx1011xxxx;
-                              rule := extra_load_store_instructions_unpriviledged;
-| "      "          11x1     =ForbiddenCondDecoder => Forbidden
-                              # TODO(jfb) Same as above, but different pattern.
-                              pattern := cccc0000xx1xxxxxxxxxxxxx11x1xxxx;
-                              rule := extra_load_store_instructions_unpriviledged;
+| "      0xx1x      1011     = baseline := ForbiddenCondDecoder;
+                               pattern := cccc0000xx1xxxxxxxxxxxxx1xx1xxxx;
+                               rule := extra_load_store_instructions_unpriviledged;
+| "      "          11x1     "
 | 1      ~10xx0     -        ->data_processing_immediate
-| "      10000      -        = Unary1RegisterImmediateOpDynCodeReplace
-                               { cond(31:28), S(20), imm4(19:16),
-                                 Rd(15:12), imm12(11:0) }
-                               imm := imm4:imm12;
-                               safety := Rd=1111 => UNPREDICTABLE;
-                               defs := { Rd , NZCV if S else None };
-                               pattern := cccc00110000iiiiddddiiiiiiiiiiii;
-                               rule := Movw_Rule_96_A2_P194;
-                               dynamic_code_replace_immediates := {imm4, imm12};
-                               arch := v6T2;
-| "      10100      -        = Unary1RegisterImmediateOpDynCodeReplace
-                               { cond(31:28), S(20), imm4(19:16),
-                                 Rd(15:12), imm12(11:0) }
-                               imm := imm4:imm12;
-                               safety := Rd=1111 => UNPREDICTABLE;
-                               defs := { Rd , NZCV if S else None };
-                               pattern := cccc00110100iiiiddddiiiiiiiiiiii;
-                               rule := Movt_Rule_99_A1_P200;
-                               dynamic_code_replace_immediates := {imm4, imm12};
-                               arch := v6T2;
+| "      10000      -        = *mov
+                                pattern := cccc00110000iiiiddddiiiiiiiiiiii;
+                                rule := MOVW;
+| "      10100      -        = *mov
+                                pattern := cccc00110100iiiiddddiiiiiiiiiiii;
+                                rule := MOVT;
 | "      10x10      -        ->msr_immediate_and_hints
 +--
 

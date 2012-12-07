@@ -265,7 +265,7 @@ class ForbiddenCondDecoderTester_Case1
 //    = {baseline: 'Unary1RegisterImmediateOpDynCodeReplace',
 //       constraints: ,
 //       defs: {inst(15:12),16 if inst(20) else 32},
-//       rule: 'Movw_Rule_96_A2_P194',
+//       rule: 'MOVW',
 //       safety: ['inst(15:12)=1111 => UNPREDICTABLE']}
 //
 // Representative case:
@@ -278,14 +278,14 @@ class ForbiddenCondDecoderTester_Case1
 //       constraints: ,
 //       defs: {Rd,NZCV if S else None},
 //       fields: [S(20), Rd(15:12)],
-//       rule: Movw_Rule_96_A2_P194,
+//       rule: MOVW,
 //       safety: [Rd(15:12)=1111 => UNPREDICTABLE]}
 class Unary1RegisterImmediateOpDynCodeReplaceTester_Case2
     : public Unary1RegisterImmediateOpTesterCase2 {
  public:
   Unary1RegisterImmediateOpDynCodeReplaceTester_Case2()
     : Unary1RegisterImmediateOpTesterCase2(
-      state_.Unary1RegisterImmediateOpDynCodeReplace_Movw_Rule_96_A2_P194_instance_)
+      state_.Unary1RegisterImmediateOpDynCodeReplace_MOVW_instance_)
   {}
 };
 
@@ -294,7 +294,7 @@ class Unary1RegisterImmediateOpDynCodeReplaceTester_Case2
 //    = {baseline: 'Unary1RegisterImmediateOpDynCodeReplace',
 //       constraints: ,
 //       defs: {inst(15:12),16 if inst(20) else 32},
-//       rule: 'Movt_Rule_99_A1_P200',
+//       rule: 'MOVT',
 //       safety: ['inst(15:12)=1111 => UNPREDICTABLE']}
 //
 // Representative case:
@@ -307,14 +307,14 @@ class Unary1RegisterImmediateOpDynCodeReplaceTester_Case2
 //       constraints: ,
 //       defs: {Rd,NZCV if S else None},
 //       fields: [S(20), Rd(15:12)],
-//       rule: Movt_Rule_99_A1_P200,
+//       rule: MOVT,
 //       safety: [Rd(15:12)=1111 => UNPREDICTABLE]}
 class Unary1RegisterImmediateOpDynCodeReplaceTester_Case3
     : public Unary1RegisterImmediateOpTesterCase3 {
  public:
   Unary1RegisterImmediateOpDynCodeReplaceTester_Case3()
     : Unary1RegisterImmediateOpTesterCase3(
-      state_.Unary1RegisterImmediateOpDynCodeReplace_Movt_Rule_99_A1_P200_instance_)
+      state_.Unary1RegisterImmediateOpDynCodeReplace_MOVT_instance_)
   {}
 };
 
@@ -329,48 +329,44 @@ class Arm32DecoderStateTests : public ::testing::Test {
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=0xx1x & inst(7:4)=1011
-//    = {actual: 'Forbidden',
+//    = {actual: 'ForbiddenCondDecoder',
 //       baseline: 'ForbiddenCondDecoder',
 //       constraints: ,
-//       pattern: 'cccc0000xx1xxxxxxxxxxxxx1011xxxx',
+//       pattern: 'cccc0000xx1xxxxxxxxxxxxx1xx1xxxx',
 //       rule: 'extra_load_store_instructions_unpriviledged'}
 //
-// Representative case:
+// Representaive case:
 // op(25)=0 & op1(24:20)=0xx1x & op2(7:4)=1011
-//    = {actual: Forbidden,
+//    = {actual: ForbiddenCondDecoder,
 //       baseline: ForbiddenCondDecoder,
 //       constraints: ,
-//       pattern: cccc0000xx1xxxxxxxxxxxxx1011xxxx,
+//       pattern: cccc0000xx1xxxxxxxxxxxxx1xx1xxxx,
 //       rule: extra_load_store_instructions_unpriviledged}
 TEST_F(Arm32DecoderStateTests,
        ForbiddenCondDecoderTester_Case0_TestCase0) {
-  ForbiddenCondDecoderTester_Case0 baseline_tester;
-  NamedForbidden_extra_load_store_instructions_unpriviledged actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0000xx1xxxxxxxxxxxxx1011xxxx");
+  ForbiddenCondDecoderTester_Case0 tester;
+  tester.Test("cccc0000xx1xxxxxxxxxxxxx1xx1xxxx");
 }
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=0xx1x & inst(7:4)=11x1
-//    = {actual: 'Forbidden',
+//    = {actual: 'ForbiddenCondDecoder',
 //       baseline: 'ForbiddenCondDecoder',
 //       constraints: ,
-//       pattern: 'cccc0000xx1xxxxxxxxxxxxx11x1xxxx',
+//       pattern: 'cccc0000xx1xxxxxxxxxxxxx1xx1xxxx',
 //       rule: 'extra_load_store_instructions_unpriviledged'}
 //
-// Representative case:
+// Representaive case:
 // op(25)=0 & op1(24:20)=0xx1x & op2(7:4)=11x1
-//    = {actual: Forbidden,
+//    = {actual: ForbiddenCondDecoder,
 //       baseline: ForbiddenCondDecoder,
 //       constraints: ,
-//       pattern: cccc0000xx1xxxxxxxxxxxxx11x1xxxx,
+//       pattern: cccc0000xx1xxxxxxxxxxxxx1xx1xxxx,
 //       rule: extra_load_store_instructions_unpriviledged}
 TEST_F(Arm32DecoderStateTests,
        ForbiddenCondDecoderTester_Case1_TestCase1) {
-  ForbiddenCondDecoderTester_Case1 baseline_tester;
-  NamedForbidden_extra_load_store_instructions_unpriviledged actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0000xx1xxxxxxxxxxxxx11x1xxxx");
+  ForbiddenCondDecoderTester_Case1 tester;
+  tester.Test("cccc0000xx1xxxxxxxxxxxxx1xx1xxxx");
 }
 
 // Neutral case:
@@ -380,7 +376,7 @@ TEST_F(Arm32DecoderStateTests,
 //       constraints: ,
 //       defs: {inst(15:12),16 if inst(20) else 32},
 //       pattern: 'cccc00110000iiiiddddiiiiiiiiiiii',
-//       rule: 'Movw_Rule_96_A2_P194',
+//       rule: 'MOVW',
 //       safety: ['inst(15:12)=1111 => UNPREDICTABLE']}
 //
 // Representaive case:
@@ -395,7 +391,7 @@ TEST_F(Arm32DecoderStateTests,
 //       defs: {Rd,NZCV if S else None},
 //       fields: [S(20), Rd(15:12)],
 //       pattern: cccc00110000iiiiddddiiiiiiiiiiii,
-//       rule: Movw_Rule_96_A2_P194,
+//       rule: MOVW,
 //       safety: [Rd(15:12)=1111 => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Unary1RegisterImmediateOpDynCodeReplaceTester_Case2_TestCase2) {
@@ -410,7 +406,7 @@ TEST_F(Arm32DecoderStateTests,
 //       constraints: ,
 //       defs: {inst(15:12),16 if inst(20) else 32},
 //       pattern: 'cccc00110100iiiiddddiiiiiiiiiiii',
-//       rule: 'Movt_Rule_99_A1_P200',
+//       rule: 'MOVT',
 //       safety: ['inst(15:12)=1111 => UNPREDICTABLE']}
 //
 // Representaive case:
@@ -425,7 +421,7 @@ TEST_F(Arm32DecoderStateTests,
 //       defs: {Rd,NZCV if S else None},
 //       fields: [S(20), Rd(15:12)],
 //       pattern: cccc00110100iiiiddddiiiiiiiiiiii,
-//       rule: Movt_Rule_99_A1_P200,
+//       rule: MOVT,
 //       safety: [Rd(15:12)=1111 => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Unary1RegisterImmediateOpDynCodeReplaceTester_Case3_TestCase3) {

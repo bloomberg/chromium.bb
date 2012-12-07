@@ -618,12 +618,12 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_data_processing_and_misc
 
   if ((inst.Bits() & 0x02000000) == 0x02000000 /* op(25)=1 */ &&
       (inst.Bits() & 0x01F00000) == 0x01000000 /* op1(24:20)=10000 */) {
-    return Unary1RegisterImmediateOpDynCodeReplace_Movw_Rule_96_A2_P194_instance_;
+    return Unary1RegisterImmediateOpDynCodeReplace_MOVW_instance_;
   }
 
   if ((inst.Bits() & 0x02000000) == 0x02000000 /* op(25)=1 */ &&
       (inst.Bits() & 0x01F00000) == 0x01400000 /* op1(24:20)=10100 */) {
-    return Unary1RegisterImmediateOpDynCodeReplace_Movt_Rule_99_A1_P200_instance_;
+    return Unary1RegisterImmediateOpDynCodeReplace_MOVT_instance_;
   }
 
   if ((inst.Bits() & 0x02000000) == 0x02000000 /* op(25)=1 */ &&

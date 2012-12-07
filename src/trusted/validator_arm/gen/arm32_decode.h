@@ -180,6 +180,7 @@ class Arm32DecoderState : DecoderState {
   const DontCareInstRdNotPc DontCareInstRdNotPc_instance_;
   const DuplicateToAdvSIMDRegisters DuplicateToAdvSIMDRegisters_instance_;
   const Forbidden Forbidden_instance_;
+  const ForbiddenCondDecoder ForbiddenCondDecoder_instance_;
   const InstructionBarrier InstructionBarrier_instance_;
   const LdrImmediateOp LdrImmediateOp_instance_;
   const LoadBasedImmedMemory LoadBasedImmedMemory_instance_;

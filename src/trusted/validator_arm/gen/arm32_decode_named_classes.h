@@ -1115,11 +1115,11 @@ class Unary1RegisterImmediateOp12DynCodeReplace_MVN_immediate
     : public Unary1RegisterImmediateOp12DynCodeReplace {
 };
 
-class Unary1RegisterImmediateOpDynCodeReplace_Movt_Rule_99_A1_P200
+class Unary1RegisterImmediateOpDynCodeReplace_MOVT
     : public Unary1RegisterImmediateOpDynCodeReplace {
 };
 
-class Unary1RegisterImmediateOpDynCodeReplace_Movw_Rule_96_A2_P194
+class Unary1RegisterImmediateOpDynCodeReplace_MOVW
     : public Unary1RegisterImmediateOpDynCodeReplace {
 };
 
@@ -2412,10 +2412,6 @@ class Forbidden_Wfe_Rule_411_A1_P808
 };
 
 class Forbidden_Wfi_Rule_412_A1_P810
-    : public Forbidden {
-};
-
-class Forbidden_extra_load_store_instructions_unpriviledged
     : public Forbidden {
 };
 
@@ -5950,28 +5946,28 @@ class NamedUnary1RegisterImmediateOp12DynCodeReplace_MVN_immediate
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedUnary1RegisterImmediateOp12DynCodeReplace_MVN_immediate);
 };
 
-class NamedUnary1RegisterImmediateOpDynCodeReplace_Movt_Rule_99_A1_P200
+class NamedUnary1RegisterImmediateOpDynCodeReplace_MOVT
     : public NamedClassDecoder {
  public:
-  NamedUnary1RegisterImmediateOpDynCodeReplace_Movt_Rule_99_A1_P200()
-    : NamedClassDecoder(decoder_, "Unary1RegisterImmediateOpDynCodeReplace Movt_Rule_99_A1_P200")
+  NamedUnary1RegisterImmediateOpDynCodeReplace_MOVT()
+    : NamedClassDecoder(decoder_, "Unary1RegisterImmediateOpDynCodeReplace MOVT")
   {}
 
  private:
-  nacl_arm_dec::Unary1RegisterImmediateOpDynCodeReplace_Movt_Rule_99_A1_P200 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedUnary1RegisterImmediateOpDynCodeReplace_Movt_Rule_99_A1_P200);
+  nacl_arm_dec::Unary1RegisterImmediateOpDynCodeReplace_MOVT decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedUnary1RegisterImmediateOpDynCodeReplace_MOVT);
 };
 
-class NamedUnary1RegisterImmediateOpDynCodeReplace_Movw_Rule_96_A2_P194
+class NamedUnary1RegisterImmediateOpDynCodeReplace_MOVW
     : public NamedClassDecoder {
  public:
-  NamedUnary1RegisterImmediateOpDynCodeReplace_Movw_Rule_96_A2_P194()
-    : NamedClassDecoder(decoder_, "Unary1RegisterImmediateOpDynCodeReplace Movw_Rule_96_A2_P194")
+  NamedUnary1RegisterImmediateOpDynCodeReplace_MOVW()
+    : NamedClassDecoder(decoder_, "Unary1RegisterImmediateOpDynCodeReplace MOVW")
   {}
 
  private:
-  nacl_arm_dec::Unary1RegisterImmediateOpDynCodeReplace_Movw_Rule_96_A2_P194 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedUnary1RegisterImmediateOpDynCodeReplace_Movw_Rule_96_A2_P194);
+  nacl_arm_dec::Unary1RegisterImmediateOpDynCodeReplace_MOVW decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedUnary1RegisterImmediateOpDynCodeReplace_MOVW);
 };
 
 class NamedUnary1RegisterImmediateOpPc_ADR_A1
@@ -9848,18 +9844,6 @@ class NamedForbidden_Wfi_Rule_412_A1_P810
  private:
   nacl_arm_dec::Forbidden_Wfi_Rule_412_A1_P810 decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedForbidden_Wfi_Rule_412_A1_P810);
-};
-
-class NamedForbidden_extra_load_store_instructions_unpriviledged
-    : public NamedClassDecoder {
- public:
-  NamedForbidden_extra_load_store_instructions_unpriviledged()
-    : NamedClassDecoder(decoder_, "Forbidden extra_load_store_instructions_unpriviledged")
-  {}
-
- private:
-  nacl_arm_dec::Forbidden_extra_load_store_instructions_unpriviledged decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedForbidden_extra_load_store_instructions_unpriviledged);
 };
 
 class NamedLoadBasedImmedMemory_Ldr_Rule_59_A1_P122

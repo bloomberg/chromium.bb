@@ -45,6 +45,7 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , DontCareInstRdNotPc_instance_()
   , DuplicateToAdvSIMDRegisters_instance_()
   , Forbidden_instance_()
+  , ForbiddenCondDecoder_instance_()
   , InstructionBarrier_instance_()
   , LdrImmediateOp_instance_()
   , LoadBasedImmedMemory_instance_()
@@ -529,13 +530,13 @@ const ClassDecoder& Arm32DecoderState::decode_data_processing_and_miscellaneous_
   if ((inst.Bits() & 0x02000000) == 0x00000000 /* op(25)=0 */ &&
       (inst.Bits() & 0x01200000) == 0x00200000 /* op1(24:20)=0xx1x */ &&
       (inst.Bits() & 0x000000F0) == 0x000000B0 /* op2(7:4)=1011 */) {
-    return Forbidden_instance_;
+    return ForbiddenCondDecoder_instance_;
   }
 
   if ((inst.Bits() & 0x02000000) == 0x00000000 /* op(25)=0 */ &&
       (inst.Bits() & 0x01200000) == 0x00200000 /* op1(24:20)=0xx1x */ &&
       (inst.Bits() & 0x000000D0) == 0x000000D0 /* op2(7:4)=11x1 */) {
-    return Forbidden_instance_;
+    return ForbiddenCondDecoder_instance_;
   }
 
   if ((inst.Bits() & 0x02000000) == 0x00000000 /* op(25)=0 */ &&
