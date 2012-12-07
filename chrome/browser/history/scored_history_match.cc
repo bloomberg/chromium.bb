@@ -123,6 +123,41 @@ ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& row,
   can_inline = (best_inlineable_prefix != NULL) &&
       !IsWhitespace(*(lower_string.rbegin()));
   match_in_scheme = can_inline && best_inlineable_prefix->prefix.empty();
+  if (can_inline) {
+    // Initialize innermost_match.
+    // The idea here is that matches that occur in the scheme or
+    // "www." are worse than matches which don't.  For the URLs
+    // "http://www.google.com" and "http://wellsfargo.com", we want
+    // the omnibox input "w" to cause the latter URL to rank higher
+    // than the former.  Note that this is not the same as checking
+    // whether one match's inlinable prefix has more components than
+    // the other match's, since in this example, both matches would
+    // have an inlinable prefix of "http://", which is one component.
+    //
+    // Instead, we look for the overall best (i.e., most components)
+    // prefix of the current URL, and then check whether the inlinable
+    // prefix has that many components.  If it does, this is an
+    // "innermost" match, and should be boosted.  In the example
+    // above, the best prefixes for the two URLs have two and one
+    // components respectively, while the inlinable prefixes each
+    // have one component; this means the first match is not innermost
+    // and the second match is innermost, resulting in us boosting the
+    // second match.
+    //
+    // Now, the code that implements this.
+    // The deepest prefix for this URL regardless of where the match is.
+    const URLPrefix* best_prefix =
+        URLPrefix::BestURLPrefix(UTF8ToUTF16(gurl.spec()), string16());
+    DCHECK(best_prefix != NULL);
+    const int num_components_in_best_prefix = best_prefix->num_components;
+    // If the URL is inlineable, we must have a match.  Note the prefix that
+    // makes it inlineable may be empty.
+    DCHECK(best_inlineable_prefix != NULL);
+    const int num_components_in_best_inlineable_prefix =
+        best_inlineable_prefix->num_components;
+    innermost_match = (num_components_in_best_inlineable_prefix ==
+        num_components_in_best_prefix);
+  }
 
   // Determine if the associated URLs is referenced by any bookmarks.
   float bookmark_boost =
@@ -191,74 +226,37 @@ ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& row,
 
   if (also_do_hup_like_scoring && can_inline) {
     // HistoryURL-provider-like scoring gives any result that is
-    // inlineable a certain minimum score.  This derives from the
-    // first test in HistoryURLProvider::CompareHistoryMatch() that
-    // says that anything with a typed count is better than anything
-    // without.
-    int hup_like_score = (row.typed_count() > 0) ?
+    // capable of being inlined a certain minimum score.  Some of these
+    // are given a higher score that lets them be shown in inline.
+    // This test here derives from the test in
+    // HistoryURLProvider::PromoteMatchForInlineAutocomplete().
+    const bool promote_to_inline = (row.typed_count() > 1) ||
+        (IsHostOnly() && (row.typed_count() == 1));
+    int hup_like_score = promote_to_inline ?
         HistoryURLProvider::kScoreForBestInlineableResult :
         HistoryURLProvider::kBaseScoreForNonInlineableResult;
 
-    // Tweak the hup_like_score based on "innermost matches".  This
-    // corresponds to the second test in
-    // HistoryURLProvider::CompareHistoryMatch().
-    //
-    // The idea here is that matches that occur in the scheme or
-    // "www." are worse than matches which don't.  For the URLs
-    // "http://www.google.com" and "http://wellsfargo.com", we want
-    // the omnibox input "w" to cause the latter URL to rank higher
-    // than the former.  Note that this is not the same as checking
-    // whether one match's inlinable prefix has more components than
-    // the other match's, since in this example, both matches would
-    // have an inlinable prefix of "http://", which is one component.
-    //
-    // Instead, we look for the overall best (i.e., most components)
-    // prefix of the current URL, and then check whether the inlinable
-    // prefix has that many components.  If it does, this is an
-    // "innermost" match, and should be boosted.  In the example
-    // above, the best prefixes for the two URLs have two and one
-    // components respectively, while the inlinable prefixes each
-    // have one component; this means the first match is not innermost
-    // and the second match is innermost, resulting in us boosting the
-    // second match.
-    //
-    // Now, the code that implements this.
-    // The deepest prefix for this URL regardless of where the match is.
-    const URLPrefix* best_prefix =
-        URLPrefix::BestURLPrefix(UTF8ToUTF16(gurl.spec()), string16());
-    DCHECK(best_prefix != NULL);
-    const int num_components_in_best_prefix = best_prefix->num_components;
-    // If the URL is inlineable, we must have a match.  Note the prefix that
-    // makes it inlineable may be empty.
-    DCHECK(best_inlineable_prefix != NULL);
-    const int num_components_in_best_inlineable_prefix =
-        best_inlineable_prefix->num_components;
-    if (num_components_in_best_inlineable_prefix ==
-        num_components_in_best_prefix) {
+    // HistoryURLProvider has the function PromoteOrCreateShorterSuggestion()
+    // that's meant to promote prefixes of the best match (if they've
+    // been visited enough related to the best match) or
+    // create/promote host-only suggestions (even if they've never
+    // been typed).  The code is complicated and we don't try to
+    // duplicate the logic here.  Instead, we handle a simple case: in
+    // low-typed-count ranges, give host-only results (i.e.,
+    // http://www.foo.com/ vs. http://www.foo.com/bar.html) a boost so
+    // that the host-only result outscores all the other results that
+    // would normally have the same base score.  This behavior is not
+    // identical to what happens in HistoryURLProvider even in these
+    // low typed count ranges--sometimes it will create/promote when
+    // this test does not (indeed, we cannot create matches like HUP
+    // can) and vice versa--but the underlying philosophy is similar.
+    if (!promote_to_inline && IsHostOnly())
       hup_like_score++;
-    }
-
-    // In low-typed-count ranges, give non-host-only results (i.e.,
-    // http://www.foo.com/bar.html vs. http://www.foo.com/) enough of
-    // a penalty so that the host-only result outscores all the other
-    // results that would normally have the same base score.  This
-    // roughly approximates the code in
-    // HistoryURLProvider::PromoteOrCreateShorterSuggestion().  The
-    // The value of this penalty (-5) has to be greater in magnitude
-    // than the maximum boost applied by all other boosts.  As we have
-    // only one other boost--a boost (below) based on the number of
-    // components that can be part of an inline completion--the this
-    // value simply has to be greater in magnitude than the maximum
-    // number of components.  Right now that maximum boost is 2 (see
-    // chrome/browser/autocomplete/url_prefix.cc) so using 5 should be
-    // safe.
-    if ((row.typed_count() <= 1) && !IsHostOnly())
-      hup_like_score -= 5;
 
     // All the other logic to goes into hup-like-scoring happens in
     // the tie-breaker case of MatchScoreGreater().
 
-    // Finally, incorporate hup_like_score into raw_score.
+    // Incorporate hup_like_score into raw_score.
     raw_score = std::max(raw_score, hup_like_score);
   }
 }
@@ -397,6 +395,16 @@ bool ScoredHistoryMatch::MatchScoreGreater(const ScoredHistoryMatch& m1,
 
   // This tie-breaking logic is inspired by / largely copied from the
   // ordering logic in history_url_provider.cc CompareHistoryMatch().
+
+  // A URL that has been typed at all is better than one that has never been
+  // typed.  (Note "!"s on each side.)
+  if (!m1.url_info.typed_count() != !m2.url_info.typed_count())
+    return m1.url_info.typed_count() > m2.url_info.typed_count();
+
+  // Innermost matches (matches after any scheme or "www.") are better than
+  // non-innermost matches.
+  if (m1.innermost_match != m2.innermost_match)
+    return m1.innermost_match;
 
   // URLs that have been typed more often are better.
   if (m1.url_info.typed_count() != m2.url_info.typed_count())

@@ -27,7 +27,7 @@ static const char kHUPCullRedirectsFieldTrialName[] = "OmniboxHUPCullRedirects";
 static const char kHUPCreateShorterMatchFieldTrialName[] =
     "OmniboxHUPCreateShorterMatch";
 static const char kHQPReplaceHUPScoringFieldTrialName[] =
-    "OmniboxHQPReplaceHUPNumComponentsFix";
+    "OmniboxHQPReplaceHUPRearrangeNumComponents";
 static const char kHQPOnlyCountMatchesAtWordBoundariesFieldTrialName[] =
     "OmniboxHQPOnlyCountMatchesAtWordBoundaries";
 
