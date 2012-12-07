@@ -277,6 +277,16 @@ def RefreshPackageStatus(buildroot, boards, debug):
     _RunBuildScript(buildroot, cmd, enter_chroot=True)
 
 
+def SetSharedUserPassword(buildroot, password):
+  """Wrapper around set_shared_user_password.sh"""
+  if password is not None:
+    cmd = ['./set_shared_user_password.sh', password]
+    _RunBuildScript(buildroot, cmd, enter_chroot=True)
+  else:
+    passwd_file = os.path.join(buildroot, 'chroot/etc/shared_user_passwd.txt')
+    osutils.SafeUnlink(passwd_file, sudo=True)
+
+
 def SetupBoard(buildroot, board, usepkg, extra_env=None, profile=None,
                chroot_upgrade=True):
   """Wrapper around setup_board."""

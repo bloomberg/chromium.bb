@@ -1342,6 +1342,10 @@ class SetupBoardStage(InitSDKStage):
                           chroot_upgrade=chroot_upgrade)
       chroot_upgrade = False
 
+    commands.SetSharedUserPassword(
+        self._build_root,
+        password=self._build_config['shared_user_password'])
+
 
 class UprevStage(bs.BuilderStage):
   """Stage that uprevs Chromium OS packages that the builder intends to

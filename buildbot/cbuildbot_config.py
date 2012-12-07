@@ -391,6 +391,12 @@ _settings = dict(
 #                  add_group method.
   child_configs=[],
 
+# shared_user_password -- Set shared user password for "chronos" user in built
+#                         images. Use "None" (default) to remove the shared
+#                         user password. Note that test images will always set
+#                         the password to "test0000".
+  shared_user_password=None,
+
 # grouped -- Whether this config belongs to a config group.
   grouped=False,
 
