@@ -307,9 +307,7 @@ class WebContentsViewAura::WindowObserver
 
  private:
   void SendScreenRects() {
-    if (!view_->view_)
-      return;
-    RenderWidgetHostImpl::From(view_->view_->GetRenderWidgetHost())->
+    RenderWidgetHostImpl::From(view_->web_contents_->GetRenderViewHost())->
         SendScreenRects();
   }
 
@@ -514,9 +512,7 @@ void WebContentsViewAura::CreateView(const gfx::Size& initial_size) {
   window_->layer()->SetMasksToBounds(true);
   window_->SetName("WebContentsViewAura");
 
-#if !defined(OS_CHROMEOS)  // http://crbug.com/162981
   window_observer_.reset(new WindowObserver(this));
-#endif
 
   // delegate_->GetDragDestDelegate() creates a new delegate on every call.
   // Hence, we save a reference to it locally. Similar model is used on other
