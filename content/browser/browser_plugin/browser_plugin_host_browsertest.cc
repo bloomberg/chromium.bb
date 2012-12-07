@@ -342,7 +342,13 @@ class BrowserPluginHostTest : public ContentBrowserTest {
 
 // This test loads a guest that has a busy loop, and therefore it hangs the
 // guest.
-IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, GuestUnresponsive) {
+// Disabled on Windows since it is flaky http://crbug.com/164812.
+#if defined(OS_WIN)
+#define MAYBE_GuestUnresponsive DISABLED_GuestUnresponsive
+#else
+#define MAYBE_GuestUnresponsive GuestUnresponsive
+#endif
+IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, MAYBE_GuestUnresponsive) {
   // Override the hang timeout for guest to be very small.
   content::BrowserPluginGuest::set_factory_for_testing(
       TestShortHangTimeoutGuestFactory::GetInstance());
