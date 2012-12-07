@@ -63,7 +63,7 @@ message RegisterSuspendDelayRequest {
   // Upper bound on the amount of time that the power manager will wait for this
   // client to call HandleSuspendReadiness before suspending the system, as
   // given by base::TimeDelta::ToInternalValue().
-  optional int64 delay = 1;
+  optional int64 timeout = 1;
 }
 
 // Included in responses to powerd's RegisterSuspendDelay method.
