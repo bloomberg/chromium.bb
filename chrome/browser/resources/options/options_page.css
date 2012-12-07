@@ -493,45 +493,52 @@ input:-webkit-any([type='text'],[type='url'],:not([type])) +
 }
 
 .controlled-setting-indicator[controlled-by] {
-  background-size: 16px;
-  bottom: 2px;
   display: inline-block;
-  height: 16px;
-  position: relative;
+  height: 0;
+  line-height: 1;
   vertical-align: middle;
   width: 16px;
 }
 
-.controlled-setting-indicator[controlled-by='policy'] {
+.controlled-setting-indicator[controlled-by] > div {
+  background-size: 16px;
+  height: 16px;
+  position: relative;
+  top: -8px;
+  width: 16px;
+}
+
+.controlled-setting-indicator[controlled-by='policy'] > div {
   background-image:
       url('chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY_GRAY');
 }
 
-.controlled-setting-indicator[controlled-by='policy']:-webkit-any(:hover,
-    .showing-bubble) {
+.controlled-setting-indicator[controlled-by='policy'] >
+    div:-webkit-any(:hover,.showing-bubble) {
   background-image:
       url('chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY');
 }
 
-.controlled-setting-indicator[controlled-by='extension'] {
+.controlled-setting-indicator[controlled-by='extension'] > div {
   background-image:
       url('chrome://theme/IDR_CONTROLLED_SETTING_EXTENSION_GRAY');
 }
 
-.controlled-setting-indicator[controlled-by='extension']:-webkit-any(:hover,
-    .showing-bubble) {
+.controlled-setting-indicator[controlled-by='extension'] >
+    div:-webkit-any(:hover,.showing-bubble) {
   background-image:
       url('chrome://theme/IDR_CONTROLLED_SETTING_EXTENSION');
 }
 
 .controlled-setting-indicator:-webkit-any([controlled-by='recommended'],
-    [controlled-by='hasRecommendation']) {
+    [controlled-by='hasRecommendation']) > div {
   background-image:
       url('chrome://theme/IDR_CONTROLLED_SETTING_RECOMMENDED_GRAY');
 }
 
 .controlled-setting-indicator:-webkit-any([controlled-by='recommended'],
-    [controlled-by='hasRecommendation']):-webkit-any(:hover,.showing-bubble) {
+    [controlled-by='hasRecommendation']) >
+    div:-webkit-any(:hover,.showing-bubble) {
   background-image:
       url('chrome://theme/IDR_CONTROLLED_SETTING_RECOMMENDED');
 }

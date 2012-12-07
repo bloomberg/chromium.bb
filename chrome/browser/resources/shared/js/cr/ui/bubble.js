@@ -239,7 +239,6 @@ cr.define('cr.ui', function() {
       this.attachToDOM_();
       this.hidden = false;
       this.reposition();
-      this.anchorNode_.showingBubble = true;
 
       var doc = this.ownerDocument;
       this.eventTracker_ = new EventTracker;
@@ -255,7 +254,6 @@ cr.define('cr.ui', function() {
         return;
 
       this.eventTracker_.removeAll();
-      this.anchorNode_.showingBubble = false;
       this.hidden = true;
       this.parentNode.removeChild(this);
     },

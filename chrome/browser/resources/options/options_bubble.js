@@ -20,6 +20,20 @@ cr.define('options', function() {
     },
 
     /**
+     * Set the DOM sibling node, i.e. the node as whose sibling the bubble
+     * should join the DOM to ensure that focusable elements inside the bubble
+     * follow the target element in the document's tab order. Only available
+     * when the bubble is not being shown.
+     * @param {HTMLElement} node The new DOM sibling node.
+     */
+    set domSibling(node) {
+      if (!this.hidden)
+        return;
+
+      this.domSibling_ = node;
+    },
+
+    /**
      * Show the bubble.
      */
     show: function() {
@@ -27,6 +41,7 @@ cr.define('options', function() {
         return;
 
       BubbleBase.prototype.show.call(this);
+      this.domSibling_.showingBubble = true;
 
       var doc = this.ownerDocument;
       this.eventTracker_.add(doc, 'mousewheel', this, true);
@@ -36,8 +51,16 @@ cr.define('options', function() {
     },
 
     /**
+     * Hide the bubble.
+     */
+    hide: function() {
+      BubbleBase.prototype.hide.call(this);
+      this.domSibling_.showingBubble = false;
+    },
+
+    /**
      * Handle events, closing the bubble when the user clicks or moves the focus
-     * outside the bubble and its anchor elements, scrolls the underlying
+     * outside the bubble and its target element, scrolls the underlying
      * document or resizes the window.
      * @param {Event} event The event.
      */
@@ -46,8 +69,8 @@ cr.define('options', function() {
 
       switch (event.type) {
         // Close the bubble when the user clicks outside it, except if it is a
-        // left-click on the anchor element (allowing the anchor to handle the
-        // event and close the bubble itself).
+        // left-click on the bubble's target element (allowing the target to
+        // handle the event and close the bubble itself).
         case 'mousedown':
           if (event.button == 0 && this.anchorNode_.contains(event.target))
             break;
@@ -61,7 +84,7 @@ cr.define('options', function() {
           this.hide();
           break;
         // Close the bubble when the focus moves to an element that is not the
-        // anchor and is not inside the bubble.
+        // bubble target and is not inside the bubble.
         case 'elementFocused':
           if (!this.anchorNode_.contains(event.target) &&
               !this.contains(event.target)) {
@@ -73,13 +96,13 @@ cr.define('options', function() {
 
     /**
      * Attach the bubble to the document's DOM, making it a sibling of the
-     * anchor element so that focusable elements inside the bubble follow the
-     * anchor in the document's tab order.
+     * |domSibling_| so that focusable elements inside the bubble follow the
+     * target element in the document's tab order.
      * @private
      */
     attachToDOM_: function() {
-      var parent = this.anchorNode_.parentNode;
-      parent.insertBefore(this, this.anchorNode_.nextSibling);
+      var parent = this.domSibling_.parentNode;
+      parent.insertBefore(this, this.domSibling_.nextSibling);
     },
   };
 

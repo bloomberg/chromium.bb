@@ -413,17 +413,20 @@ cr.define('options', function() {
 
   /**
    * Shows an informational bubble displaying |content| and pointing at the
-   * |anchor| element. If |content| has focusable elements, they join the
-   * current page's tab order as siblings of |anchor|.
+   * |target| element. If |content| has focusable elements, they join the
+   * current page's tab order as siblings of |domSibling|.
    * @param {HTMLDivElement} content The content of the bubble.
-   * @param {HTMLElement} anchor The element at which the bubble points.
+   * @param {HTMLElement} target The element at which the bubble points.
+   * @param {HTMLElement} domSibling The element after which the bubble is added
+   *                      to the DOM.
    * @param {cr.ui.ArrowLocation} location The arrow location.
    */
-  OptionsPage.showBubble = function(content, anchor, location) {
+  OptionsPage.showBubble = function(content, target, domSibling, location) {
     OptionsPage.hideBubble();
 
     var bubble = new options.OptionsBubble;
-    bubble.anchorNode = anchor;
+    bubble.anchorNode = target;
+    bubble.domSibling = domSibling;
     bubble.arrowLocation = location;
     bubble.content = content;
     bubble.show();
