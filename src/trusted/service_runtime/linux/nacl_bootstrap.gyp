@@ -156,6 +156,15 @@
             }],
           ],
           'action': ['python', 'ld_bfd.py',
+                     # ld_bfd.py needs to know the target compiler used for the
+                     # build but the $CXX environment variable might only be
+                     # set at gyp time. This is a hacky way to bake the correct
+                     # CXX into the build at gyp time.
+                     # TODO(sbc): Do this better by providing some gyp syntax
+                     # for accessing the name of the configured compiler, or
+                     # even a better way to access gyp time environment
+                     # variables from within a gyp file.
+                     '--compiler', '<!(echo $CXX)',
                      '-m', '<(linker_emulation)',
                      '--build-id',
                      # This program is (almost) entirely

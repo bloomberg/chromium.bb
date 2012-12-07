@@ -23,36 +23,46 @@ def PathTo(fname):
       return fpath
   return fname
 
-def GccPrintName(what, switch, defresult):
-  cxx = os.getenv("CXX")
-  if not cxx:
-    cxx = "g++"
-  popen = subprocess.Popen(cxx + ' ' + switch,
+
+def GccPrintName(cxx_bin, what, switch, defresult):
+  popen = subprocess.Popen(cxx_bin + ' ' + switch,
                            shell=True,
                            stdout=subprocess.PIPE,
                            stdin=subprocess.PIPE)
   result, error = popen.communicate()
-  if popen.wait() != 0:
+  if popen.returncode != 0:
     print "Could not find %s: %s" % (what, error)
     return defresult
   return result.strip()
 
-def FindLDBFD():
-  ld = GccPrintName('ld', '-print-prog-name=ld', 'ld')
+
+def FindLDBFD(cxx_bin):
+  ld = GccPrintName(cxx_bin, 'ld', '-print-prog-name=ld', 'ld')
   ld_bfd = PathTo(ld + ".bfd")
   if os.access(ld_bfd, os.X_OK):
     return ld_bfd
   return ld
 
-def FindLibgcc():
-  return GccPrintName('libgcc', '-print-libgcc-file-name', None)
 
-def main():
-  args = [FindLDBFD()] + sys.argv[1:]
-  libgcc = FindLibgcc()
+def FindLibgcc(cxx_bin):
+  return GccPrintName(cxx_bin, 'libgcc', '-print-libgcc-file-name', None)
+
+
+def main(args):
+  # Find path to compiler, either from the command line or the environment,
+  # falling back to just 'g++'
+  if '--compiler' in args:
+    index = args.index('--compiler')
+    cxx_bin = args[index + 1]
+    del args[index:index + 2]
+  else:
+    cxx_bin = os.getenv('CXX', 'g++')
+
+  args = [FindLDBFD(cxx_bin)] + args
+  libgcc = FindLibgcc(cxx_bin)
   if libgcc is not None:
     args.append(libgcc)
-  sys.exit(subprocess.call(args))
+  return subprocess.call(args)
 
 if __name__ == "__main__":
-  main()
+  sys.exit(main(sys.argv[1:]))
