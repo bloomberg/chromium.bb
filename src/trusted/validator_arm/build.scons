@@ -82,11 +82,6 @@ GEN_TABLES = ["ARMv7",
               "advanced_simd_element_or_structure_load_store_instructions",
               ]
 
-# The list of (NEON) tables that we have turned off. That is, no instructions
-# in the corresponding table will be accepted by the NACL ARM validator.
-# TODO(karl): Remove this list when NEON tables are ready.
-TURNED_OFF_TABLES = []
-
 # Changes table name to test name.
 def _TableTestName(tbl):
   return 'arm32_decode_' + tbl + '_tests'
@@ -106,12 +101,6 @@ GEN_OTHER_LIST = ['arm32_decode.cc', 'arm32_decode.h',
 
 # Set of generated source files.
 GEN_LIST = [_gen_file(x) for x in (GEN_TEST_LIST + GEN_OTHER_LIST)]
-
-# Adds the (NEON) turned off tables to the list of generator command
-# line arguments.
-if TURNED_OFF_TABLES:
-  GEN_CL_ARGS = GEN_CL_ARGS + ''.join(
-      [' --table_remove=' + tbl for tbl in TURNED_OFF_TABLES])
 
 generate = False
 gen_env = env.Clone()
@@ -198,13 +187,9 @@ validator_tests = {
   'test_internal_jumps': 1,
   'test_sp_updates': 1,
   'test_stores': 1,
-  # Removed test because these are simd vector stores.
-  # TODO(karl): Turn back on when NEON tables are ready.
-  # 'test_vector_stores': 1,
+  'test_vector_stores': 1,
   'test_loads': 1,
-  # Removed test because these are simd vector loads.
-  # TODO(karl): Turn back on when NEON tables are ready.
-  # 'test_vector_loads': 1,
+  'test_vector_loads': 1,
 }
 
 for test, exit_status in validator_tests.iteritems():

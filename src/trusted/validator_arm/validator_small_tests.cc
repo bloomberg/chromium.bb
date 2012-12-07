@@ -298,9 +298,6 @@ TEST_F(ValidatorTests, SafeMaskedStores) {
   }
 }
 
-/* TODO(karl): Add these back once simd instructions are turned back on.
-// These stores can't be predicated, so we must use a different, simpler
-// fixture generator.
 static const AnnotatedInstruction examples_of_safe_unconditional_stores[] = {
   // Vector stores
   { 0xF481A5AF, "vst2.16 {d10[2],d12[2]}, [r1]: simple vector store" },
@@ -315,9 +312,6 @@ TEST_F(ValidatorTests, SafeUnconditionalMaskedStores) {
   //
   // Each mask instruction must leave a valid (data) address in r1.
 
-  // These instructions can't be predicated.
-  arm_inst predicate = 0xE0000000;  // "always"
-
   for (unsigned m = 0; m < NACL_ARRAY_SIZE(examples_of_safe_masks); m++) {
     for (unsigned s = 0;
          s < NACL_ARRAY_SIZE(examples_of_safe_unconditional_stores);
@@ -327,7 +321,8 @@ TEST_F(ValidatorTests, SafeUnconditionalMaskedStores) {
               << ", "
               << examples_of_safe_unconditional_stores[s].about;
       arm_inst program[] = {
-        examples_of_safe_masks[m].inst | predicate,
+        ValidatorTests::ChangeCond(examples_of_safe_masks[m].inst,
+                                   Instruction::AL),
         examples_of_safe_unconditional_stores[s].inst,
       };
       validation_should_pass2(program,
@@ -337,7 +332,7 @@ TEST_F(ValidatorTests, SafeUnconditionalMaskedStores) {
     }
   }
 }
-*/
+
 TEST_F(ValidatorTests, SafeConditionalStores) {
   // Produces many examples of conditional stores using the safe store table
   // (above) and the list of possible conditional guards (below).
