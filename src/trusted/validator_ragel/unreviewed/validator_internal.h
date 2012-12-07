@@ -294,6 +294,13 @@ static FORCEINLINE void BitmapSetBits(bitmap_word *bitmap,
                ((((bitmap_word)1) << bits) - 1) << (index % NACL_HOST_WORDSIZE);
 }
 
+/* All the bits must be in a single 32-bit bundle. */
+static FORCEINLINE void BitmapClearBits(bitmap_word *bitmap,
+                                        size_t index, size_t bits) {
+  bitmap[index / NACL_HOST_WORDSIZE] &=
+            ~(((((bitmap_word)1) << bits) - 1) << (index % NACL_HOST_WORDSIZE));
+}
+
 /* Mark the destination of a jump instruction and make an early validity check:
  * to jump outside given code region, the target address must be aligned.
  *
@@ -312,6 +319,31 @@ static FORCEINLINE int MarkJumpTarget(size_t jump_dest,
   return TRUE;
 }
 
+/*
+ * Mark the given address as valid jump target address.
+ */
+static FORCEINLINE void MarkValidJumpTarget(size_t address,
+                                            bitmap_word *valid_targets) {
+  BitmapSetBit(valid_targets, address);
+}
+
+/*
+ * Mark the given address as invalid jump target address (that is: unmark it).
+ */
+static FORCEINLINE void UnmarkValidJumpTarget(size_t address,
+                                              bitmap_word *valid_targets) {
+  BitmapClearBit(valid_targets, address);
+}
+
+/*
+ * Mark the given addresses as invalid jump target addresses (that is: unmark
+ * them).
+ */
+static FORCEINLINE void UnmarkValidJumpTargets(size_t address,
+                                               size_t bytes,
+                                               bitmap_word *valid_targets) {
+  BitmapClearBits(valid_targets, address, bytes);
+}
 
 static INLINE Bool ProcessInvalidJumpTargets(
     const uint8_t *data,
@@ -550,6 +582,272 @@ static INLINE void process_2_operands_zero_extends(
   } else if ((operand_states & 0x7000) == (OperandSandboxRestricted << 13)) {
     *restricted_register = (operand_states & 0x0f00) >> 8;
   }
+}
+
+/*
+ * This function merges “dangerous” instruction with sandboxing instructions to
+ * get a “superinstruction” and unmarks in-between jump targets.
+ */
+static INLINE void ExpandSuperinstructionBySandboxingBytes(
+    size_t sandbox_instructions_size, const uint8_t **instruction_start,
+    const uint8_t *data, bitmap_word *valid_targets) {
+  *instruction_start -= sandbox_instructions_size;
+  /*
+   * We need to unmark start of the “dangerous” instruction itself, too, but we
+   * don't need to mark the beginning of the whole “superinstruction” - that's
+   * why we move start by one byte and don't change the length.
+   */
+  UnmarkValidJumpTargets((*instruction_start + 1 - data),
+                         sandbox_instructions_size,
+                         valid_targets);
+}
+
+/*
+ * Return TRUE if naclcall or nacljmp uses the same register in all three
+ * instructions.
+ *
+ * This version is for the case where “add %src_register, %dst_register” with
+ * dst in RM field and src in REG field of ModR/M byte is used.
+ *
+ * There are five possible forms:
+ *
+ *              0: 83 eX e0    and    $~0x1f,E86
+ *              3: 4? 01 fX    add    RBASE,R86
+ *              6: ff eX       jmpq   *R86
+ *                 ↑  ↑
+ * instruction_start  current_position
+ *
+ *              0: 4? 83 eX e0 and    $~0x1f,E86
+ *              4: 4? 01 fX    add    RBASE,R86
+ *              7: ff eX       jmpq   *R86
+ *                 ↑  ↑
+ * instruction_start  current_position
+ *
+ *              0: 83 eX e0    and    $~0x1f,E86
+ *              3: 4? 01 fX    add    RBASE,R86
+ *              6: 4? ff eX    jmpq   *R86
+ *                 ↑     ↑
+ * instruction_start     current_position
+ *
+ *              0: 4? 83 eX e0 and    $~0x1f,E86
+ *              4: 4? 01 fX    add    RBASE,R86
+ *              7: 4? ff eX       jmpq   *R86
+ *                 ↑     ↑
+ * instruction_start     current_position
+ *
+ *              0: 4? 83 eX e0 and    $~0x1f,E64
+ *              4: 4? 01 fX    add    RBASE,R64
+ *              7: 4? ff eX    jmpq   *R64
+ *                 ↑     ↑
+ * instruction_start     current_position
+ *
+ * We don't care about “?” (they are checked by DFA).
+ */
+static INLINE Bool VerifyNaclCallOrJmpAddToRM(
+   const uint8_t *instruction_start, const uint8_t *current_position) {
+  return
+    RMFromModRM(instruction_start[-5]) == RMFromModRM(instruction_start[-1]) &&
+    RMFromModRM(instruction_start[-5]) == RMFromModRM(current_position[0]);
+}
+
+/*
+ * Return TRUE if naclcall or nacljmp uses the same register in all three
+ * instructions.
+ *
+ * This version is for the case where “add %src_register, %dst_register” with
+ * dst in REG field and src in RM field of ModR/M byte is used.
+ *
+ * There are five possible forms:
+ *
+ *              0: 83 eX e0    and    $~0x1f,E86
+ *              3: 4? 03 Xf    add    RBASE,R86
+ *              6: ff eX       jmpq   *R86
+ *                 ↑  ↑
+ * instruction_start  current_position
+ *
+ *              0: 4? 83 eX e0 and    $~0x1f,E86
+ *              4: 4? 03 Xf    add    RBASE,R86
+ *              7: ff eX       jmpq   *R86
+ *                 ↑  ↑
+ * instruction_start  current_position
+ *
+ *              0: 83 eX e0    and    $~0x1f,E86
+ *              3: 4? 03 Xf    add    RBASE,R86
+ *              6: 4? ff eX       jmpq   *R86
+ *                 ↑     ↑
+ * instruction_start     current_position
+ *
+ *              0: 4? 83 eX e0 and    $~0x1f,E86
+ *              4: 4? 03 Xf    add    RBASE,R86
+ *              7: 4? ff eX       jmpq   *R86
+ *                 ↑     ↑
+ * instruction_start     current_position
+ *
+ *              0: 4? 83 eX e0 and    $~0x1f,E64
+ *              4: 4? 03 Xf    add    RBASE,R64
+ *              7: 4? ff eX    jmpq   *R64
+ *                 ↑     ↑
+ * instruction_start     current_position
+ *
+ * We don't care about “?” (they are checked by DFA).
+ */
+static INLINE Bool VerifyNaclCallOrJmpAddToReg(
+   const uint8_t *instruction_start, const uint8_t *current_position) {
+  return
+    RMFromModRM(instruction_start[-5]) == RegFromModRM(instruction_start[-1]) &&
+    RMFromModRM(instruction_start[-5]) == RMFromModRM(current_position[0]);
+}
+
+/*
+ * This function checks that naclcall or nacljmp are correct (that is: three
+ * component instructions match) and if that is true then it merges call or jmp
+ * with a sandboxing to get a “superinstruction” and removes in-between jump
+ * targets.  If it's not true then it triggers “unrecognized instruction” error
+ * condition.
+ *
+ * This version is for the case where “add with dst register in RM field”
+ * (opcode 0x01) and “add without REX prefix” is used.
+ *
+ * There are two possibile forms:
+ *
+ *              0: 83 eX e0    and    $~0x1f,E86
+ *              3: 4? 01 fX    add    RBASE,R86
+ *              6: ff eX       jmpq   *R86
+ *                 ↑  ↑
+ * instruction_start  current_position
+ *
+ *              0: 83 eX e0    and    $~0x1f,E86
+ *              3: 4? 01 fX    add    RBASE,R86
+ *              6: 4? ff eX    jmpq   *R86
+ *                 ↑     ↑
+ * instruction_start     current_position
+ */
+static INLINE void ProcessNaclCallOrJmpAddToRMNoRex(
+    uint32_t *instruction_info_collected, const uint8_t **instruction_start,
+    const uint8_t *current_position, const uint8_t *data,
+    bitmap_word *valid_targets) {
+  if (VerifyNaclCallOrJmpAddToRM(*instruction_start, current_position))
+    ExpandSuperinstructionBySandboxingBytes(
+      3 /* and */ + 3 /* add */, instruction_start, data, valid_targets);
+  else
+    *instruction_info_collected |= UNRECOGNIZED_INSTRUCTION;
+}
+
+/*
+ * This function checks that naclcall or nacljmp are correct (that is: three
+ * component instructions match) and if that is true then it merges call or jmp
+ * with a sandboxing to get a “superinstruction” and removes in-between jump
+ * targets.  If it's not true then it triggers “unrecognized instruction” error
+ * condition.
+ *
+ * This version is for the case where “add with dst register in REG field”
+ * (opcode 0x03) and “add without REX prefix” is used.
+ *
+ * There are two possibile forms:
+ *
+ *              0: 83 eX e0    and    $~0x1f,E86
+ *              3: 4? 03 Xf    add    RBASE,R86
+ *              6: ff eX       jmpq   *R86
+ *                 ↑  ↑
+ * instruction_start  current_position
+ *
+ *              0: 83 eX e0    and    $~0x1f,E86
+ *              3: 4? 03 Xf    add    RBASE,R86
+ *              6: 4? ff eX    jmpq   *R86
+ *                 ↑     ↑
+ * instruction_start     current_position
+ */
+static INLINE void ProcessNaclCallOrJmpAddToRegNoRex(
+    uint32_t *instruction_info_collected, const uint8_t **instruction_start,
+    const uint8_t *current_position, const uint8_t *data,
+    bitmap_word *valid_targets) {
+  if (VerifyNaclCallOrJmpAddToReg(*instruction_start, current_position))
+    ExpandSuperinstructionBySandboxingBytes(
+      3 /* and */ + 3 /* add */, instruction_start, data, valid_targets);
+  else
+    *instruction_info_collected |= UNRECOGNIZED_INSTRUCTION;
+}
+
+/*
+ * This function checks that naclcall or nacljmp are correct (that is: three
+ * component instructions match) and if that is true then it merges call or jmp
+ * with a sandboxing to get a “superinstruction” and removes in-between jump
+ * targets.  If it's not true then it triggers “unrecognized instruction” error
+ * condition.
+ *
+ * This version is for the case where “add with dst register in RM field”
+ * (opcode 0x01) and “add without REX prefix” is used.
+ *
+ * There are three possibile forms:
+ *
+ *              0: 4? 83 eX e0 and    $~0x1f,E86
+ *              4: 4? 01 fX    add    RBASE,R86
+ *              7: ff eX    jmpq   *R86
+ *                 ↑  ↑
+ * instruction_start  current_position
+ *
+ *              0: 4? 83 eX e0 and    $~0x1f,E86
+ *              4: 4? 01 fX    add    RBASE,R86
+ *              7: 4? ff eX    jmpq   *R86
+ *                 ↑     ↑
+ * instruction_start     current_position
+ *
+ *              0: 4? 83 eX e0 and    $~0x1f,E64
+ *              4: 4? 01 fX    add    RBASE,R64
+ *              7: 4? ff eX    jmpq   *R64
+ *                 ↑     ↑
+ * instruction_start     current_position
+ */
+static INLINE void ProcessNaclCallOrJmpAddToRMWithRex(
+    uint32_t *instruction_info_collected, const uint8_t **instruction_start,
+    const uint8_t *current_position, const uint8_t *data,
+    bitmap_word *valid_targets) {
+  if (VerifyNaclCallOrJmpAddToRM(*instruction_start, current_position))
+    ExpandSuperinstructionBySandboxingBytes(
+      4 /* and */ + 3 /* add */, instruction_start, data, valid_targets);
+  else
+    *instruction_info_collected |= UNRECOGNIZED_INSTRUCTION;
+}
+
+/*
+ * This function checks that naclcall or nacljmp are correct (that is: three
+ * component instructions match) and if that is true then it merges call or jmp
+ * with a sandboxing to get a “superinstruction” and removes in-between jump
+ * targets.  If it's not true then it triggers “unrecognized instruction” error
+ * condition.
+ *
+ * This version is for the case where “add with dst register in REG field”
+ * (opcode 0x03) and “add without REX prefix” is used.
+ *
+ * There are three possibile forms:
+ *
+ *              0: 4? 83 eX e0 and    $~0x1f,E86
+ *              4: 4? 03 Xf    add    RBASE,R86
+ *              7: ff eX    jmpq   *R86
+ *                 ↑  ↑
+ * instruction_start  current_position
+ *
+ *              0: 4? 83 eX e0 and    $~0x1f,E86
+ *              4: 4? 03 Xf    add    RBASE,R86
+ *              7: 4? ff eX    jmpq   *R86
+ *                 ↑     ↑
+ * instruction_start     current_position
+ *
+ *              0: 4? 83 eX e0 and    $~0x1f,E64
+ *              4: 4? 03 Xf    add    RBASE,R64
+ *              7: 4? ff eX    jmpq   *R64
+ *                 ↑     ↑
+ * instruction_start     current_position
+ */
+static INLINE void ProcessNaclCallOrJmpAddToRegWithRex(
+    uint32_t *instruction_info_collected, const uint8_t **instruction_start,
+    const uint8_t *current_position, const uint8_t *data,
+    bitmap_word *valid_targets) {
+  if (VerifyNaclCallOrJmpAddToReg(*instruction_start, current_position))
+    ExpandSuperinstructionBySandboxingBytes(
+      4 /* and */ + 3 /* add */, instruction_start, data, valid_targets);
+  else
+    *instruction_info_collected |= UNRECOGNIZED_INSTRUCTION;
 }
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_RAGEL_VALIDATOR_INTERNAL_H_ */

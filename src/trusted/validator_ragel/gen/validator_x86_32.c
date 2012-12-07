@@ -3,6 +3,14 @@
  * Compiled for ia32 mode.
  */
 
+/*
+ * This is the core of ia32-mode validator.  Please note that this file
+ * combines ragel machine description and C language actions.  Please read
+ * validator_internals.html first to understand how the whole thing is built:
+ * it explains how the byte sequences are constructed, what constructs like
+ * “@{}” or “REX_WRX?” mean, etc.
+ */
+
 #include <assert.h>
 #include <errno.h>
 #include <stddef.h>
@@ -72,11 +80,22 @@ Bool ValidateChunkIA32(const uint8_t *data, size_t size,
     }
   }
 
+  /*
+   * This option is usually used in tests: we will process the whole chunk
+   * in one pass. Usually each bundle is processed separately which means
+   * instructions (and super-instructions) can not cross borders of the bundle.
+   */
   if (options & PROCESS_CHUNK_AS_A_CONTIGUOUS_STREAM)
     end_of_bundle = data + size;
   else
     end_of_bundle = data + kBundleSize;
 
+  /*
+   * Main loop.  Here we process the data array bundle-after-bundle.
+   * Ragel-produced DFA does all the checks with one exception: direct jumps.
+   * It collects the two arrays: valid_targets and jump_dests which are used
+   * to test direct jumps later.
+   */
   for (current_position = data;
        current_position < data + size;
        current_position = end_of_bundle,
@@ -109,7 +128,7 @@ tr0:
         * causing error.  */
        instruction_start = current_position + 1;
        /* Mark this position as a valid target for jump.  */
-       BitmapSetBit(valid_targets, current_position + 1 - data);
+       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -129,7 +148,7 @@ tr9:
         * causing error.  */
        instruction_start = current_position + 1;
        /* Mark this position as a valid target for jump.  */
-       BitmapSetBit(valid_targets, current_position + 1 - data);
+       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -149,7 +168,7 @@ tr10:
         * causing error.  */
        instruction_start = current_position + 1;
        /* Mark this position as a valid target for jump.  */
-       BitmapSetBit(valid_targets, current_position + 1 - data);
+       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -169,7 +188,7 @@ tr11:
         * causing error.  */
        instruction_start = current_position + 1;
        /* Mark this position as a valid target for jump.  */
-       BitmapSetBit(valid_targets, current_position + 1 - data);
+       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -189,7 +208,7 @@ tr15:
         * causing error.  */
        instruction_start = current_position + 1;
        /* Mark this position as a valid target for jump.  */
-       BitmapSetBit(valid_targets, current_position + 1 - data);
+       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -206,7 +225,7 @@ tr19:
         * causing error.  */
        instruction_start = current_position + 1;
        /* Mark this position as a valid target for jump.  */
-       BitmapSetBit(valid_targets, current_position + 1 - data);
+       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -223,7 +242,7 @@ tr27:
         * causing error.  */
        instruction_start = current_position + 1;
        /* Mark this position as a valid target for jump.  */
-       BitmapSetBit(valid_targets, current_position + 1 - data);
+       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -240,7 +259,7 @@ tr36:
         * causing error.  */
        instruction_start = current_position + 1;
        /* Mark this position as a valid target for jump.  */
-       BitmapSetBit(valid_targets, current_position + 1 - data);
+       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -257,7 +276,7 @@ tr50:
         * causing error.  */
        instruction_start = current_position + 1;
        /* Mark this position as a valid target for jump.  */
-       BitmapSetBit(valid_targets, current_position + 1 - data);
+       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -274,7 +293,7 @@ tr51:
         * causing error.  */
        instruction_start = current_position + 1;
        /* Mark this position as a valid target for jump.  */
-       BitmapSetBit(valid_targets, current_position + 1 - data);
+       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -291,7 +310,7 @@ tr52:
         * causing error.  */
        instruction_start = current_position + 1;
        /* Mark this position as a valid target for jump.  */
-       BitmapSetBit(valid_targets, current_position + 1 - data);
+       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -311,7 +330,7 @@ tr64:
         * causing error.  */
        instruction_start = current_position + 1;
        /* Mark this position as a valid target for jump.  */
-       BitmapSetBit(valid_targets, current_position + 1 - data);
+       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -331,7 +350,7 @@ tr65:
         * causing error.  */
        instruction_start = current_position + 1;
        /* Mark this position as a valid target for jump.  */
-       BitmapSetBit(valid_targets, current_position + 1 - data);
+       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -348,7 +367,7 @@ tr71:
         * causing error.  */
        instruction_start = current_position + 1;
        /* Mark this position as a valid target for jump.  */
-       BitmapSetBit(valid_targets, current_position + 1 - data);
+       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -368,7 +387,7 @@ tr95:
         * causing error.  */
        instruction_start = current_position + 1;
        /* Mark this position as a valid target for jump.  */
-       BitmapSetBit(valid_targets, current_position + 1 - data);
+       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -385,7 +404,7 @@ tr98:
         * causing error.  */
        instruction_start = current_position + 1;
        /* Mark this position as a valid target for jump.  */
-       BitmapSetBit(valid_targets, current_position + 1 - data);
+       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -402,7 +421,7 @@ tr107:
         * causing error.  */
        instruction_start = current_position + 1;
        /* Mark this position as a valid target for jump.  */
-       BitmapSetBit(valid_targets, current_position + 1 - data);
+       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -419,7 +438,7 @@ tr108:
         * causing error.  */
        instruction_start = current_position + 1;
        /* Mark this position as a valid target for jump.  */
-       BitmapSetBit(valid_targets, current_position + 1 - data);
+       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -436,7 +455,7 @@ tr115:
         * causing error.  */
        instruction_start = current_position + 1;
        /* Mark this position as a valid target for jump.  */
-       BitmapSetBit(valid_targets, current_position + 1 - data);
+       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -456,7 +475,7 @@ tr123:
         * causing error.  */
        instruction_start = current_position + 1;
        /* Mark this position as a valid target for jump.  */
-       BitmapSetBit(valid_targets, current_position + 1 - data);
+       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -476,7 +495,7 @@ tr144:
         * causing error.  */
        instruction_start = current_position + 1;
        /* Mark this position as a valid target for jump.  */
-       BitmapSetBit(valid_targets, current_position + 1 - data);
+       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -495,7 +514,7 @@ tr161:
         * causing error.  */
        instruction_start = current_position + 1;
        /* Mark this position as a valid target for jump.  */
-       BitmapSetBit(valid_targets, current_position + 1 - data);
+       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -514,7 +533,7 @@ tr246:
         * causing error.  */
        instruction_start = current_position + 1;
        /* Mark this position as a valid target for jump.  */
-       BitmapSetBit(valid_targets, current_position + 1 - data);
+       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -531,7 +550,7 @@ tr259:
         * causing error.  */
        instruction_start = current_position + 1;
        /* Mark this position as a valid target for jump.  */
-       BitmapSetBit(valid_targets, current_position + 1 - data);
+       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -548,7 +567,7 @@ tr266:
         * causing error.  */
        instruction_start = current_position + 1;
        /* Mark this position as a valid target for jump.  */
-       BitmapSetBit(valid_targets, current_position + 1 - data);
+       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -565,7 +584,7 @@ tr300:
         * causing error.  */
        instruction_start = current_position + 1;
        /* Mark this position as a valid target for jump.  */
-       BitmapSetBit(valid_targets, current_position + 1 - data);
+       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -582,7 +601,7 @@ tr327:
         * causing error.  */
        instruction_start = current_position + 1;
        /* Mark this position as a valid target for jump.  */
-       BitmapSetBit(valid_targets, current_position + 1 - data);
+       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -602,7 +621,7 @@ tr353:
         * causing error.  */
        instruction_start = current_position + 1;
        /* Mark this position as a valid target for jump.  */
-       BitmapSetBit(valid_targets, current_position + 1 - data);
+       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -619,7 +638,7 @@ tr377:
         * causing error.  */
        instruction_start = current_position + 1;
        /* Mark this position as a valid target for jump.  */
-       BitmapSetBit(valid_targets, current_position + 1 - data);
+       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -636,7 +655,7 @@ tr383:
         * causing error.  */
        instruction_start = current_position + 1;
        /* Mark this position as a valid target for jump.  */
-       BitmapSetBit(valid_targets, current_position + 1 - data);
+       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -660,7 +679,7 @@ tr387:
         * causing error.  */
        instruction_start = current_position + 1;
        /* Mark this position as a valid target for jump.  */
-       BitmapSetBit(valid_targets, current_position + 1 - data);
+       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -679,13 +698,13 @@ tr404:
         * causing error.  */
        instruction_start = current_position + 1;
        /* Mark this position as a valid target for jump.  */
-       BitmapSetBit(valid_targets, current_position + 1 - data);
+       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
        instruction_info_collected = 0;
      }
 	goto st246;
 tr415:
 	{
-      BitmapClearBit(valid_targets, (current_position - data) - 1);
+      UnmarkValidJumpTarget((current_position - data) - 1, valid_targets);
       instruction_start -= 3;
       instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
@@ -704,13 +723,13 @@ tr415:
         * causing error.  */
        instruction_start = current_position + 1;
        /* Mark this position as a valid target for jump.  */
-       BitmapSetBit(valid_targets, current_position + 1 - data);
+       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
        instruction_info_collected = 0;
      }
 	goto st246;
 tr416:
 	{
-      BitmapClearBit(valid_targets, (current_position - data) - 1);
+      UnmarkValidJumpTarget((current_position - data) - 1, valid_targets);
       instruction_start -= 3;
       instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
@@ -725,7 +744,7 @@ tr416:
         * causing error.  */
        instruction_start = current_position + 1;
        /* Mark this position as a valid target for jump.  */
-       BitmapSetBit(valid_targets, current_position + 1 - data);
+       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
        instruction_info_collected = 0;
      }
 	goto st246;
@@ -1331,6 +1350,14 @@ tr16:
 	{
         result &= user_callback(instruction_start, current_position,
                                 UNRECOGNIZED_INSTRUCTION, callback_data);
+        /*
+         * Process the next bundle: “continue” here is for the “for” cycle in
+         * the ValidateChunkIA32 function.
+         *
+         * It does not affect the case which we really care about (when code
+         * is validatable), but makes it possible to detect more errors in one
+         * run in tools like ncval.
+         */
         continue;
     }
 	goto st0;
@@ -1749,21 +1776,13 @@ st29:
 case 29:
 	switch( (*( current_position)) ) {
 		case 4u: goto st2;
-		case 5u: goto st3;
 		case 12u: goto st2;
-		case 13u: goto st3;
 		case 20u: goto st2;
-		case 21u: goto st3;
 		case 28u: goto st2;
-		case 29u: goto st3;
 		case 36u: goto st2;
-		case 37u: goto st3;
 		case 44u: goto st2;
-		case 45u: goto st3;
 		case 52u: goto st2;
-		case 53u: goto st3;
 		case 60u: goto st2;
-		case 61u: goto st3;
 		case 68u: goto st8;
 		case 76u: goto st8;
 		case 84u: goto st8;
@@ -1781,15 +1800,39 @@ case 29:
 		case 180u: goto st9;
 		case 188u: goto st9;
 	}
-	if ( (*( current_position)) < 64u ) {
-		if ( (*( current_position)) <= 63u )
+	if ( (*( current_position)) < 38u ) {
+		if ( (*( current_position)) < 14u ) {
+			if ( (*( current_position)) > 3u ) {
+				if ( 6u <= (*( current_position)) && (*( current_position)) <= 11u )
+					goto tr0;
+			} else
+				goto tr0;
+		} else if ( (*( current_position)) > 19u ) {
+			if ( (*( current_position)) > 27u ) {
+				if ( 30u <= (*( current_position)) && (*( current_position)) <= 35u )
+					goto tr0;
+			} else if ( (*( current_position)) >= 22u )
+				goto tr0;
+		} else
 			goto tr0;
-	} else if ( (*( current_position)) > 127u ) {
-		if ( 128u <= (*( current_position)) && (*( current_position)) <= 191u )
-			goto st3;
+	} else if ( (*( current_position)) > 43u ) {
+		if ( (*( current_position)) < 62u ) {
+			if ( (*( current_position)) > 51u ) {
+				if ( 54u <= (*( current_position)) && (*( current_position)) <= 59u )
+					goto tr0;
+			} else if ( (*( current_position)) >= 46u )
+				goto tr0;
+		} else if ( (*( current_position)) > 63u ) {
+			if ( (*( current_position)) > 127u ) {
+				if ( 192u <= (*( current_position)) )
+					goto tr16;
+			} else if ( (*( current_position)) >= 64u )
+				goto st7;
+		} else
+			goto tr0;
 	} else
-		goto st7;
-	goto tr16;
+		goto tr0;
+	goto st3;
 st30:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof30;
@@ -3676,7 +3719,7 @@ tr230:
         * causing error.  */
        instruction_start = current_position + 1;
        /* Mark this position as a valid target for jump.  */
-       BitmapSetBit(valid_targets, current_position + 1 - data);
+       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
        instruction_info_collected = 0;
      }
 	goto st247;
@@ -4469,8 +4512,12 @@ tr280:
 	goto st151;
 tr361:
 	{
-    /* VEX.R is not used in ia32 mode.  */
-    SET_VEX_PREFIX3((*current_position) & 0x7f);
+    /*
+     * VEX.R is not used ia32 mode and VEX.W is always unset.
+     *
+     * Look for AMD64 version below for details of encoding.
+     */
+    SET_VEX_PREFIX3((*current_position) & (~VEX_W));
   }
 	goto st151;
 st151:
@@ -4548,8 +4595,12 @@ tr281:
 	goto st153;
 tr362:
 	{
-    /* VEX.R is not used in ia32 mode.  */
-    SET_VEX_PREFIX3((*current_position) & 0x7f);
+    /*
+     * VEX.R is not used ia32 mode and VEX.W is always unset.
+     *
+     * Look for AMD64 version below for details of encoding.
+     */
+    SET_VEX_PREFIX3((*current_position) & (~VEX_W));
   }
 	goto st153;
 st153:
@@ -4677,8 +4728,12 @@ tr284:
 	goto st158;
 tr365:
 	{
-    /* VEX.R is not used in ia32 mode.  */
-    SET_VEX_PREFIX3((*current_position) & 0x7f);
+    /*
+     * VEX.R is not used ia32 mode and VEX.W is always unset.
+     *
+     * Look for AMD64 version below for details of encoding.
+     */
+    SET_VEX_PREFIX3((*current_position) & (~VEX_W));
   }
 	goto st158;
 st158:
@@ -4706,8 +4761,12 @@ tr285:
 	goto st159;
 tr366:
 	{
-    /* VEX.R is not used in ia32 mode.  */
-    SET_VEX_PREFIX3((*current_position) & 0x7f);
+    /*
+     * VEX.R is not used ia32 mode and VEX.W is always unset.
+     *
+     * Look for AMD64 version below for details of encoding.
+     */
+    SET_VEX_PREFIX3((*current_position) & (~VEX_W));
   }
 	goto st159;
 st159:
@@ -4739,8 +4798,12 @@ tr286:
 	goto st160;
 tr367:
 	{
-    /* VEX.R is not used in ia32 mode.  */
-    SET_VEX_PREFIX3((*current_position) & 0x7f);
+    /*
+     * VEX.R is not used ia32 mode and VEX.W is always unset.
+     *
+     * Look for AMD64 version below for details of encoding.
+     */
+    SET_VEX_PREFIX3((*current_position) & (~VEX_W));
   }
 	goto st160;
 st160:
@@ -4757,8 +4820,12 @@ tr287:
 	goto st161;
 tr368:
 	{
-    /* VEX.R is not used in ia32 mode.  */
-    SET_VEX_PREFIX3((*current_position) & 0x7f);
+    /*
+     * VEX.R is not used ia32 mode and VEX.W is always unset.
+     *
+     * Look for AMD64 version below for details of encoding.
+     */
+    SET_VEX_PREFIX3((*current_position) & (~VEX_W));
   }
 	goto st161;
 st161:
@@ -4780,8 +4847,12 @@ tr288:
 	goto st162;
 tr369:
 	{
-    /* VEX.R is not used in ia32 mode.  */
-    SET_VEX_PREFIX3((*current_position) & 0x7f);
+    /*
+     * VEX.R is not used ia32 mode and VEX.W is always unset.
+     *
+     * Look for AMD64 version below for details of encoding.
+     */
+    SET_VEX_PREFIX3((*current_position) & (~VEX_W));
   }
 	goto st162;
 st162:
@@ -4842,8 +4913,12 @@ tr289:
 	goto st164;
 tr370:
 	{
-    /* VEX.R is not used in ia32 mode.  */
-    SET_VEX_PREFIX3((*current_position) & 0x7f);
+    /*
+     * VEX.R is not used ia32 mode and VEX.W is always unset.
+     *
+     * Look for AMD64 version below for details of encoding.
+     */
+    SET_VEX_PREFIX3((*current_position) & (~VEX_W));
   }
 	goto st164;
 st164:
@@ -5022,8 +5097,12 @@ tr292:
 	goto st168;
 tr373:
 	{
-    /* VEX.R is not used in ia32 mode.  */
-    SET_VEX_PREFIX3((*current_position) & 0x7f);
+    /*
+     * VEX.R is not used ia32 mode and VEX.W is always unset.
+     *
+     * Look for AMD64 version below for details of encoding.
+     */
+    SET_VEX_PREFIX3((*current_position) & (~VEX_W));
   }
 	goto st168;
 st168:
@@ -5056,8 +5135,12 @@ tr293:
 	goto st169;
 tr374:
 	{
-    /* VEX.R is not used in ia32 mode.  */
-    SET_VEX_PREFIX3((*current_position) & 0x7f);
+    /*
+     * VEX.R is not used ia32 mode and VEX.W is always unset.
+     *
+     * Look for AMD64 version below for details of encoding.
+     */
+    SET_VEX_PREFIX3((*current_position) & (~VEX_W));
   }
 	goto st169;
 st169:
@@ -5097,8 +5180,12 @@ tr294:
 	goto st170;
 tr375:
 	{
-    /* VEX.R is not used in ia32 mode.  */
-    SET_VEX_PREFIX3((*current_position) & 0x7f);
+    /*
+     * VEX.R is not used ia32 mode and VEX.W is always unset.
+     *
+     * Look for AMD64 version below for details of encoding.
+     */
+    SET_VEX_PREFIX3((*current_position) & (~VEX_W));
   }
 	goto st170;
 st170:
@@ -5122,8 +5209,12 @@ tr295:
 	goto st171;
 tr376:
 	{
-    /* VEX.R is not used in ia32 mode.  */
-    SET_VEX_PREFIX3((*current_position) & 0x7f);
+    /*
+     * VEX.R is not used ia32 mode and VEX.W is always unset.
+     *
+     * Look for AMD64 version below for details of encoding.
+     */
+    SET_VEX_PREFIX3((*current_position) & (~VEX_W));
   }
 	goto st171;
 st171:
@@ -5976,8 +6067,12 @@ case 199:
 	goto tr16;
 tr363:
 	{
-    /* VEX.R is not used in ia32 mode.  */
-    SET_VEX_PREFIX3((*current_position) & 0x7f);
+    /*
+     * VEX.R is not used ia32 mode and VEX.W is always unset.
+     *
+     * Look for AMD64 version below for details of encoding.
+     */
+    SET_VEX_PREFIX3((*current_position) & (~VEX_W));
   }
 	goto st200;
 st200:
@@ -5997,8 +6092,12 @@ case 200:
 	goto tr16;
 tr364:
 	{
-    /* VEX.R is not used in ia32 mode.  */
-    SET_VEX_PREFIX3((*current_position) & 0x7f);
+    /*
+     * VEX.R is not used ia32 mode and VEX.W is always unset.
+     *
+     * Look for AMD64 version below for details of encoding.
+     */
+    SET_VEX_PREFIX3((*current_position) & (~VEX_W));
   }
 	goto st201;
 st201:
@@ -6021,8 +6120,12 @@ case 201:
 	goto tr16;
 tr371:
 	{
-    /* VEX.R is not used in ia32 mode.  */
-    SET_VEX_PREFIX3((*current_position) & 0x7f);
+    /*
+     * VEX.R is not used ia32 mode and VEX.W is always unset.
+     *
+     * Look for AMD64 version below for details of encoding.
+     */
+    SET_VEX_PREFIX3((*current_position) & (~VEX_W));
   }
 	goto st202;
 st202:
@@ -6051,8 +6154,12 @@ case 202:
 	goto tr16;
 tr372:
 	{
-    /* VEX.R is not used in ia32 mode.  */
-    SET_VEX_PREFIX3((*current_position) & 0x7f);
+    /*
+     * VEX.R is not used ia32 mode and VEX.W is always unset.
+     *
+     * Look for AMD64 version below for details of encoding.
+     */
+    SET_VEX_PREFIX3((*current_position) & (~VEX_W));
   }
 	goto st203;
 st203:
@@ -7042,7 +7149,7 @@ tr417:
         * causing error.  */
        instruction_start = current_position + 1;
        /* Mark this position as a valid target for jump.  */
-       BitmapSetBit(valid_targets, current_position + 1 - data);
+       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
        instruction_info_collected = 0;
      }
 	goto st248;
@@ -7241,7 +7348,7 @@ tr418:
         * causing error.  */
        instruction_start = current_position + 1;
        /* Mark this position as a valid target for jump.  */
-       BitmapSetBit(valid_targets, current_position + 1 - data);
+       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
        instruction_info_collected = 0;
      }
 	goto st249;
@@ -7440,7 +7547,7 @@ tr419:
         * causing error.  */
        instruction_start = current_position + 1;
        /* Mark this position as a valid target for jump.  */
-       BitmapSetBit(valid_targets, current_position + 1 - data);
+       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
        instruction_info_collected = 0;
      }
 	goto st250;
@@ -7639,7 +7746,7 @@ tr420:
         * causing error.  */
        instruction_start = current_position + 1;
        /* Mark this position as a valid target for jump.  */
-       BitmapSetBit(valid_targets, current_position + 1 - data);
+       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
        instruction_info_collected = 0;
      }
 	goto st251;
@@ -7838,7 +7945,7 @@ tr421:
         * causing error.  */
        instruction_start = current_position + 1;
        /* Mark this position as a valid target for jump.  */
-       BitmapSetBit(valid_targets, current_position + 1 - data);
+       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
        instruction_info_collected = 0;
      }
 	goto st252;
@@ -8037,7 +8144,7 @@ tr422:
         * causing error.  */
        instruction_start = current_position + 1;
        /* Mark this position as a valid target for jump.  */
-       BitmapSetBit(valid_targets, current_position + 1 - data);
+       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
        instruction_info_collected = 0;
      }
 	goto st253;
@@ -8236,7 +8343,7 @@ tr423:
         * causing error.  */
        instruction_start = current_position + 1;
        /* Mark this position as a valid target for jump.  */
-       BitmapSetBit(valid_targets, current_position + 1 - data);
+       MarkValidJumpTarget(current_position + 1 - data, valid_targets);
        instruction_info_collected = 0;
      }
 	goto st254;
@@ -8920,6 +9027,14 @@ case 245:
 	{
         result &= user_callback(instruction_start, current_position,
                                 UNRECOGNIZED_INSTRUCTION, callback_data);
+        /*
+         * Process the next bundle: “continue” here is for the “for” cycle in
+         * the ValidateChunkIA32 function.
+         *
+         * It does not affect the case which we really care about (when code
+         * is validatable), but makes it possible to detect more errors in one
+         * run in tools like ncval.
+         */
         continue;
     }
 	break;
@@ -8931,6 +9046,10 @@ case 245:
 
   }
 
+  /*
+   * Check the direct jumps.  All the targets from jump_dests must be in
+   * valid_targets.
+   */
   result &= ProcessInvalidJumpTargets(data, size, valid_targets, jump_dests,
                                       user_callback, callback_data);
 

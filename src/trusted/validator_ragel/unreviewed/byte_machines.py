@@ -35,8 +35,14 @@ byte_machines = [
   'b_11_111_xxx',
   'b_11_xxx_111',
   'b_11_xxx_xxx',
+  'b_xx_xxx_000',
+  'b_xx_xxx_001',
+  'b_xx_xxx_010',
+  'b_xx_xxx_011',
   'b_xx_xxx_100',
   'b_xx_xxx_101',
+  'b_xx_xxx_110',
+  'b_xx_xxx_111',
 
   # Opcodes
   'b_xx_000_xxx',

@@ -351,8 +351,7 @@
   0000000000000003: 4c 01 f8                                     add %rax, %r15
   0000000000000006: ff e0                                        jmp %rax
 @rdfa_output:
-  0: [0] unrecognized instruction
-  6: [1] unrecognized instruction
+  6: [0] unrecognized instruction
   return code: 1
 @validators_disagree:
   Difference in error reporting.
@@ -375,8 +374,7 @@
   0000000000000003: 4c 01 fb                                     add %rbx, %r15
   0000000000000006: ff e0                                        jmp %rax
 @rdfa_output:
-  0: [0] unrecognized instruction
-  6: [1] unrecognized instruction
+  6: [0] unrecognized instruction
   return code: 1
 @validators_disagree:
   Difference in error reporting.
@@ -399,8 +397,7 @@
   0000000000000003: 4c 01 f8                                     add %rax, %r15
   0000000000000006: ff e3                                        jmp %rbx
 @rdfa_output:
-  0: [0] unrecognized instruction
-  6: [1] unrecognized instruction
+  6: [0] unrecognized instruction
   return code: 1
 @validators_disagree:
   Difference in error reporting.
@@ -423,8 +420,7 @@
   0000000000000003: 4c 01 fb                                     add %rbx, %r15
   0000000000000006: ff e3                                        jmp %rbx
 @rdfa_output:
-  0: [0] unrecognized instruction
-  6: [1] unrecognized instruction
+  6: [0] unrecognized instruction
   return code: 1
 @validators_disagree:
   Difference in error reporting.
@@ -447,8 +443,7 @@
   0000000000000003: 4c 01 fb                                     add %rbx, %r15
   0000000000000006: ff e0                                        jmp %rax
 @rdfa_output:
-  0: [0] unrecognized instruction
-  6: [1] unrecognized instruction
+  6: [0] unrecognized instruction
   return code: 1
 @validators_disagree:
   Difference in error reporting.

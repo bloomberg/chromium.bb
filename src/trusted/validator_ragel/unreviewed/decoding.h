@@ -8,8 +8,8 @@
  * This file contains common parts of x86-32 and x86-64 internals (inline
  * functions and defines).
  *
- * We only include simple schemetic diagrams here.  For full see AMD/Intel
- * manuals.
+ * We only include simple schematic diagrams here.  For full description see
+ * AMD/Intel manuals.
  */
 
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_RAGEL_DECODING_H_

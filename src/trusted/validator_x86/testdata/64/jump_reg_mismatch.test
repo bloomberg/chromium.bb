@@ -38,8 +38,7 @@
   0000000000000003: 4c 01 fb                                     add %rbx, %r15
   0000000000000006: ff e0                                        [P] dontcarejump %rip (s), %rax (u)
 @rdfa_output:
-  0: [0] unrecognized instruction
-  6: [1] unrecognized instruction
+  6: [0] unrecognized instruction
   return code: 1
 @validators_disagree:
   errors reported by rdfa  but not old validator:
