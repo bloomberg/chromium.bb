@@ -37,7 +37,6 @@ LayerImpl::LayerImpl(int id)
     , m_layerSurfacePropertyChanged(false)
     , m_masksToBounds(false)
     , m_contentsOpaque(false)
-    , m_opacity(1.0)
     , m_preserves3D(false)
     , m_useParentBackfaceVisibility(false)
     , m_drawCheckerboardForMissingTiles(false)
@@ -50,9 +49,10 @@ LayerImpl::LayerImpl(int id)
 #ifndef NDEBUG
     , m_betweenWillDrawAndDidDraw(false)
 #endif
-    , m_layerAnimationController(LayerAnimationController::create(this))
+    , m_layerAnimationController(LayerAnimationController::create())
 {
     DCHECK(m_layerId > 0);
+    m_layerAnimationController->setId(m_layerId);
 }
 
 LayerImpl::~LayerImpl()
@@ -113,6 +113,12 @@ int LayerImpl::descendantsDrawContent()
             return result;
     }
     return result;
+}
+
+void LayerImpl::setLayerTreeHostImpl(LayerTreeHostImpl* hostImpl)
+{
+    m_layerTreeHostImpl = hostImpl;
+    m_layerAnimationController->setAnimationRegistrar(hostImpl);
 }
 
 scoped_ptr<SharedQuadState> LayerImpl::createSharedQuadState() const
@@ -415,26 +421,6 @@ int LayerImpl::id() const
      return m_layerId;
 }
 
-float LayerImpl::opacity() const
-{
-     return m_opacity;
-}
-
-void LayerImpl::setOpacityFromAnimation(float opacity)
-{
-    setOpacity(opacity);
-}
-
-const gfx::Transform& LayerImpl::transform() const
-{
-     return m_transform;
-}
-
-void LayerImpl::setTransformFromAnimation(const gfx::Transform& transform)
-{
-    setTransform(transform);
-}
-
 void LayerImpl::setBounds(const gfx::Size& bounds)
 {
     if (m_bounds == bounds)
@@ -557,11 +543,14 @@ void LayerImpl::setContentsOpaque(bool opaque)
 
 void LayerImpl::setOpacity(float opacity)
 {
-    if (m_opacity == opacity)
+    if (!m_layerAnimationController->setOpacity(opacity))
         return;
-
-    m_opacity = opacity;
     m_layerSurfacePropertyChanged = true;
+}
+
+float LayerImpl::opacity() const
+{
+    return m_layerAnimationController->opacity();
 }
 
 bool LayerImpl::opacityIsAnimating() const
@@ -599,11 +588,14 @@ void LayerImpl::setSublayerTransform(const gfx::Transform& sublayerTransform)
 
 void LayerImpl::setTransform(const gfx::Transform& transform)
 {
-    if (m_transform == transform)
+    if (!m_layerAnimationController->setTransform(transform))
         return;
-
-    m_transform = transform;
     m_layerSurfacePropertyChanged = true;
+}
+
+const gfx::Transform& LayerImpl::transform() const
+{
+    return m_layerAnimationController->transform();
 }
 
 bool LayerImpl::transformIsAnimating() const

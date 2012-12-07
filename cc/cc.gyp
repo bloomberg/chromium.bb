@@ -10,6 +10,7 @@
       'animation_curve.cc',
       'animation_curve.h',
       'animation_events.h',
+      'animation_registrar.h',
       'append_quads_data.h',
       'bitmap_content_layer_updater.cc',
       'bitmap_content_layer_updater.h',

@@ -84,7 +84,6 @@ public:
     void postAcquireLayerTextures();
     void postSetNeedsRedrawToMainThread();
     void postSetVisibleToMainThread(bool visible);
-    void postDidAddAnimationToMainThread();
 
     void doBeginTest();
     void timeout();

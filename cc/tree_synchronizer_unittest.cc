@@ -77,19 +77,20 @@ private:
 
 class FakeLayerAnimationController : public LayerAnimationController {
 public:
-    static scoped_ptr<FakeLayerAnimationController> create(LayerAnimationControllerClient* client)
+    static scoped_refptr<LayerAnimationController> create()
     {
-        return make_scoped_ptr(new FakeLayerAnimationController(client));
+        return static_cast<LayerAnimationController*>(new FakeLayerAnimationController);
     }
 
     bool synchronizedAnimations() const { return m_synchronizedAnimations; }
 
 private:
-    explicit FakeLayerAnimationController(LayerAnimationControllerClient* client)
-        : LayerAnimationController(client)
+    FakeLayerAnimationController()
+        : LayerAnimationController()
         , m_synchronizedAnimations(false)
-    {
-    }
+    { }
+
+    virtual ~FakeLayerAnimationController() { }
 
     virtual void pushAnimationUpdatesTo(LayerAnimationController* controllerImpl)
     {
@@ -394,8 +395,7 @@ TEST(TreeSynchronizerTest, synchronizeAnimations)
 
     scoped_refptr<Layer> layerTreeRoot = Layer::create();
 
-    FakeLayerAnimationControllerClient dummy;
-    layerTreeRoot->setLayerAnimationController(FakeLayerAnimationController::create(&dummy).PassAs<LayerAnimationController>());
+    layerTreeRoot->setLayerAnimationController(FakeLayerAnimationController::create());
 
     EXPECT_FALSE(static_cast<FakeLayerAnimationController*>(layerTreeRoot->layerAnimationController())->synchronizedAnimations());
 

@@ -7,10 +7,13 @@
 
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time.h"
 #include "cc/animation_events.h"
 #include "cc/cc_export.h"
 #include "cc/scoped_ptr_vector.h"
+#include "ui/gfx/transform.h"
 
 namespace gfx {
 class Transform;
@@ -19,24 +22,13 @@ class Transform;
 namespace cc {
 
 class Animation;
+class AnimationRegistrar;
 class KeyframeValueList;
 
-class CC_EXPORT LayerAnimationControllerClient {
+class CC_EXPORT LayerAnimationController
+    : public base::RefCounted<LayerAnimationController> {
 public:
-    virtual ~LayerAnimationControllerClient() { }
-
-    virtual int id() const = 0;
-    virtual void setOpacityFromAnimation(float) = 0;
-    virtual float opacity() const = 0;
-    virtual void setTransformFromAnimation(const gfx::Transform&) = 0;
-    virtual const gfx::Transform& transform() const = 0;
-};
-
-class CC_EXPORT LayerAnimationController {
-public:
-    static scoped_ptr<LayerAnimationController> create(LayerAnimationControllerClient*);
-
-    virtual ~LayerAnimationController();
+    static scoped_refptr<LayerAnimationController> create();
 
     // These methods are virtual for testing.
     virtual void addAnimation(scoped_ptr<ActiveAnimation>);
@@ -75,10 +67,30 @@ public:
     // thread, all animations will be transferred.
     void setForceSync() { m_forceSync = true; }
 
-    void setClient(LayerAnimationControllerClient*);
+    void setAnimationRegistrar(AnimationRegistrar*);
+    void setId(int id);
+
+    // Gets the last animated opacity value.
+    float opacity() const { return m_opacity; }
+
+    // Sets the opacity. Returns true if this call actually updates the opacity.
+    // This can return false if either the new opacity matches the old, or if
+    // the property is currently animating.
+    bool setOpacity(float opacity);
+
+    // Gets the last animate transform value.
+    const gfx::Transform& transform() const { return m_transform; }
+
+    // Sets the transform. Returns true if this call actually updates the
+    // transform. This can return false if either the new transform matches the
+    // old or if the property is currently animating.
+    bool setTransform(const gfx::Transform& transform);
 
 protected:
-    explicit LayerAnimationController(LayerAnimationControllerClient*);
+    friend class base::RefCounted<LayerAnimationController>;
+
+    LayerAnimationController();
+    virtual ~LayerAnimationController();
 
 private:
     typedef base::hash_set<int> TargetProperties;
@@ -97,10 +109,16 @@ private:
 
     void tickAnimations(double monotonicTime);
 
+    void updateRegistration();
+
     // If this is true, we force a sync to the impl thread.
     bool m_forceSync;
 
-    LayerAnimationControllerClient* m_client;
+    float m_opacity;
+    gfx::Transform m_transform;
+
+    AnimationRegistrar* m_registrar;
+    int m_id;
     ScopedPtrVector<ActiveAnimation> m_activeAnimations;
 
     DISALLOW_COPY_AND_ASSIGN(LayerAnimationController);

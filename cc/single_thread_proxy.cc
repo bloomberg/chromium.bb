@@ -241,10 +241,6 @@ bool SingleThreadProxy::commitRequested() const
     return false;
 }
 
-void SingleThreadProxy::didAddAnimation()
-{
-}
-
 size_t SingleThreadProxy::maxPartialTextureUpdates() const
 {
     return std::numeric_limits<size_t>::max();

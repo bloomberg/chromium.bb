@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/message_loop.h"
+#include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "cc/font_atlas.h"
 #include "cc/heads_up_display_layer.h"
@@ -177,7 +178,6 @@ scoped_ptr<LayerTreeHost> LayerTreeHost::create(LayerTreeHostClient* client, con
 
 LayerTreeHost::LayerTreeHost(LayerTreeHostClient* client, const LayerTreeSettings& settings)
     : m_animating(false)
-    , m_needsAnimateLayers(false)
     , m_needsFullTreeSync(true)
     , m_client(client)
     , m_commitNumber(0)
@@ -235,6 +235,9 @@ LayerTreeHost::~LayerTreeHost()
     RateLimiterMap::iterator it = m_rateLimiters.begin();
     if (it != m_rateLimiters.end())
         it->second->stop();
+
+    if (m_rootLayer)
+        m_rootLayer = 0;
 }
 
 void LayerTreeHost::setSurfaceReady()
@@ -387,11 +390,6 @@ void LayerTreeHost::finishCommitOnImplThread(LayerTreeHostImpl* hostImpl)
     else
         hostImpl->activeTree()->set_hud_layer(0);
 
-    // We may have added an animation during the tree sync. This will cause both layer tree hosts
-    // to visit their controllers.
-    if (rootLayer() && m_needsAnimateLayers)
-        hostImpl->setNeedsAnimateLayers();
-
     hostImpl->activeTree()->set_source_frame_number(commitNumber());
     hostImpl->setViewportSize(layoutViewportSize(), deviceViewportSize());
     hostImpl->setDeviceScaleFactor(deviceScaleFactor());
@@ -523,12 +521,6 @@ void LayerTreeHost::setAnimationEvents(scoped_ptr<AnimationEventsVector> events,
 {
     DCHECK(m_proxy->isMainThread());
     setAnimationEventsRecursive(*events.get(), m_rootLayer.get(), wallClockTime);
-}
-
-void LayerTreeHost::didAddAnimation()
-{
-    m_needsAnimateLayers = true;
-    m_proxy->didAddAnimation();
 }
 
 void LayerTreeHost::setRootLayer(scoped_refptr<Layer> rootLayer)
@@ -933,33 +925,16 @@ void LayerTreeHost::setDeviceScaleFactor(float deviceScaleFactor)
 
 void LayerTreeHost::animateLayers(base::TimeTicks time)
 {
-    if (!m_settings.acceleratedAnimationEnabled || !m_needsAnimateLayers)
+    if (!m_settings.acceleratedAnimationEnabled || m_activeAnimationControllers.empty())
         return;
 
     TRACE_EVENT0("cc", "LayerTreeHostImpl::animateLayers");
-    m_needsAnimateLayers = animateLayersRecursive(m_rootLayer.get(), time);
-}
 
-bool LayerTreeHost::animateLayersRecursive(Layer* current, base::TimeTicks time)
-{
-    if (!current)
-        return false;
-
-    bool subtreeNeedsAnimateLayers = false;
-    LayerAnimationController* currentController = current->layerAnimationController();
     double monotonicTime = (time - base::TimeTicks()).InSecondsF();
-    currentController->animate(monotonicTime, 0);
 
-    // If the current controller still has an active animation, we must continue animating layers.
-    if (currentController->hasActiveAnimation())
-         subtreeNeedsAnimateLayers = true;
-
-    for (size_t i = 0; i < current->children().size(); ++i) {
-        if (animateLayersRecursive(current->children()[i].get(), time))
-            subtreeNeedsAnimateLayers = true;
-    }
-
-    return subtreeNeedsAnimateLayers;
+    AnimationControllerSet copy = m_activeAnimationControllers;
+    for (AnimationControllerSet::iterator iter = copy.begin(); iter != copy.end(); ++iter)
+        (*iter)->animate(monotonicTime, 0);
 }
 
 void LayerTreeHost::setAnimationEventsRecursive(const AnimationEventsVector& events, Layer* layer, base::Time wallClockTime)
@@ -978,6 +953,32 @@ void LayerTreeHost::setAnimationEventsRecursive(const AnimationEventsVector& eve
 
     for (size_t childIndex = 0; childIndex < layer->children().size(); ++childIndex)
         setAnimationEventsRecursive(events, layer->children()[childIndex].get(), wallClockTime);
+}
+
+void LayerTreeHost::DidActivateAnimationController(LayerAnimationController* controller) {
+    // Controllers register themselves when they have new animations. We need
+    // to commit in this case.
+    setNeedsCommit();
+    m_activeAnimationControllers.insert(controller);
+}
+
+void LayerTreeHost::DidDeactivateAnimationController(LayerAnimationController* controller) {
+    if (ContainsKey(m_activeAnimationControllers, controller))
+        m_activeAnimationControllers.erase(controller);
+}
+
+void LayerTreeHost::RegisterAnimationController(LayerAnimationController* controller) {
+#if !defined(NDEBUG)
+    m_allAnimationControllers.insert(controller);
+#endif
+}
+
+void LayerTreeHost::UnregisterAnimationController(LayerAnimationController* controller) {
+#if !defined(NDEBUG)
+    if (ContainsKey(m_allAnimationControllers, controller))
+        m_allAnimationControllers.erase(controller);
+#endif
+    DidDeactivateAnimationController(controller);
 }
 
 }  // namespace cc

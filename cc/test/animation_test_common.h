@@ -60,23 +60,6 @@ private:
     float m_to;
 };
 
-class FakeLayerAnimationControllerClient : public cc::LayerAnimationControllerClient {
-public:
-    FakeLayerAnimationControllerClient();
-    virtual ~FakeLayerAnimationControllerClient();
-
-    // LayerAnimationControllerClient implementation
-    virtual int id() const OVERRIDE;
-    virtual void setOpacityFromAnimation(float) OVERRIDE;
-    virtual float opacity() const OVERRIDE;
-    virtual void setTransformFromAnimation(const gfx::Transform&) OVERRIDE;
-    virtual const gfx::Transform& transform() const OVERRIDE;
-
-private:
-    float m_opacity;
-    gfx::Transform m_transform;
-};
-
 int addOpacityTransitionToController(cc::LayerAnimationController&, double duration, float startOpacity, float endOpacity, bool useTimingFunction);
 int addAnimatedTransformToController(cc::LayerAnimationController&, double duration, int deltaX, int deltaY);
 

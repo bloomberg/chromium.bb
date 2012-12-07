@@ -43,21 +43,13 @@ struct RenderingStats;
 
 // Base class for composited layers. Special layer types are derived from
 // this class.
-class CC_EXPORT Layer : public base::RefCounted<Layer>, public LayerAnimationControllerClient {
+class CC_EXPORT Layer : public base::RefCounted<Layer> {
 public:
     typedef std::vector<scoped_refptr<Layer> > LayerList;
 
     static scoped_refptr<Layer> create();
 
-    // LayerAnimationControllerClient implementation
-    virtual int id() const OVERRIDE;
-    virtual void setOpacityFromAnimation(float) OVERRIDE;
-    virtual float opacity() const OVERRIDE;
-    virtual void setTransformFromAnimation(const gfx::Transform&) OVERRIDE;
-    // A layer's transform operates layer space. That is, entirely in logical,
-    // non-page-scaled pixels (that is, they have page zoom baked in, but not page scale).
-    // The root layer is a special case -- it operates in physical pixels.
-    virtual const gfx::Transform& transform() const OVERRIDE;
+    int id() const;
 
     Layer* rootLayer();
     Layer* parent() { return m_parent; }
@@ -98,6 +90,7 @@ public:
     virtual bool needsDisplay() const;
 
     void setOpacity(float);
+    float opacity() const;
     bool opacityIsAnimating() const;
 
     void setFilters(const WebKit::WebFilterOperations&);
@@ -127,6 +120,7 @@ public:
     const gfx::Transform& sublayerTransform() const { return m_sublayerTransform; }
 
     void setTransform(const gfx::Transform&);
+    const gfx::Transform& transform() const;
     bool transformIsAnimating() const;
 
     DrawProperties<Layer, RenderSurface>& drawProperties() { return m_drawProperties; }
@@ -266,8 +260,8 @@ public:
     void resumeAnimations(double monotonicTime);
 
     LayerAnimationController* layerAnimationController() { return m_layerAnimationController.get(); }
-    void setLayerAnimationController(scoped_ptr<LayerAnimationController>);
-    scoped_ptr<LayerAnimationController> releaseLayerAnimationController();
+    void setLayerAnimationController(scoped_refptr<LayerAnimationController>);
+    scoped_refptr<LayerAnimationController> releaseLayerAnimationController();
 
     void setLayerAnimationDelegate(WebKit::WebAnimationDelegate* layerAnimationDelegate) { m_layerAnimationDelegate = layerAnimationDelegate; }
 
@@ -333,7 +327,7 @@ private:
     // updated via setLayerTreeHost() if a layer moves between trees.
     LayerTreeHost* m_layerTreeHost;
 
-    scoped_ptr<LayerAnimationController> m_layerAnimationController;
+    scoped_refptr<LayerAnimationController> m_layerAnimationController;
 
     // Layer properties.
     gfx::Size m_bounds;
@@ -351,7 +345,6 @@ private:
     gfx::PointF m_anchorPoint;
     SkColor m_backgroundColor;
     std::string m_debugName;
-    float m_opacity;
     skia::RefPtr<SkImageFilter> m_filter;
     WebKit::WebFilterOperations m_filters;
     WebKit::WebFilterOperations m_backgroundFilters;
@@ -368,7 +361,6 @@ private:
     bool m_drawCheckerboardForMissingTiles;
     bool m_forceRenderSurface;
 
-    gfx::Transform m_transform;
     gfx::Transform m_sublayerTransform;
 
     // Replica layer used for reflections.
