@@ -6,11 +6,9 @@
 #define CHROME_BROWSER_METRO_VIEWER_METRO_VIEWER_PROCESS_HOST_WIN_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
-#include "ui/base/events/event_constants.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace IPC {
@@ -24,32 +22,15 @@ class MetroViewerProcessHost : public IPC::Listener,
   explicit MetroViewerProcessHost(const std::string& ipc_channel_name);
   virtual ~MetroViewerProcessHost();
 
-  // IPC::Sender implementation.
+  // IPC::Sender implementation:
   virtual bool Send(IPC::Message* msg) OVERRIDE;
 
-  // IPC::Listener implementation.
+  // IPC::Listener implementation:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;
 
  private:
   void OnSetTargetSurface(gfx::NativeViewId target_surface);
-  void OnMouseEvent(int32 msg, WPARAM w_param, LPARAM l_param);
-  void OnMouseMoved(int32 x, int32 y, int32 flags);
-  void OnMouseButton(
-      int32 x, int32 y, int32 extra,ui::EventType type, ui::EventFlags flags);
-  void OnKeyDown(uint32 vkey,
-                 uint32 repeat_count,
-                 uint32 scan_code,
-                 uint32 flags);
-  void OnKeyUp(uint32 vkey,
-               uint32 repeat_count,
-               uint32 scan_code,
-               uint32 flags);
-  void OnChar(uint32 key_code,
-              uint32 repeat_count,
-              uint32 scan_code,
-              uint32 flags);
-  void OnVisibilityChanged(bool visible);
 
   scoped_ptr<IPC::ChannelProxy> channel_;
 

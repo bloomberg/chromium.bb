@@ -9,18 +9,16 @@
 #include <algorithm>
 
 #include "base/message_loop.h"
+#include "ipc/ipc_message.h"
+#include "ipc/ipc_sender.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/cursor/cursor_loader_win.h"
 #include "ui/base/events/event.h"
+#include "ui/base/events/event_utils.h"
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
 #include "ui/base/view_prop.h"
-
-// From metro_viewer_messages.h we only care for the enums.
 #include "ui/metro_viewer/metro_viewer_messages.h"
-
-using std::max;
-using std::min;
 
 namespace aura {
 
@@ -43,11 +41,36 @@ RemoteRootWindowHostWin* RemoteRootWindowHostWin::Create(
 }
 
 RemoteRootWindowHostWin::RemoteRootWindowHostWin(const gfx::Rect& bounds)
-    : delegate_(NULL) {
+    : delegate_(NULL), host_(NULL) {
   prop_.reset(new ui::ViewProp(NULL, kRootWindowHostWinKey, this));
 }
 
 RemoteRootWindowHostWin::~RemoteRootWindowHostWin() {
+}
+
+void RemoteRootWindowHostWin::Connected(IPC::Sender* host) {
+  CHECK(host_ == NULL);
+  host_ = host;
+}
+
+void RemoteRootWindowHostWin::Disconnected() {
+  CHECK(host_ != NULL);
+  host_ = NULL;
+}
+
+bool RemoteRootWindowHostWin::OnMessageReceived(const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(RemoteRootWindowHostWin, message)
+    IPC_MESSAGE_HANDLER(MetroViewerHostMsg_MouseMoved, OnMouseMoved)
+    IPC_MESSAGE_HANDLER(MetroViewerHostMsg_MouseButton, OnMouseButton)
+    IPC_MESSAGE_HANDLER(MetroViewerHostMsg_KeyDown, OnKeyDown)
+    IPC_MESSAGE_HANDLER(MetroViewerHostMsg_KeyUp, OnKeyUp)
+    IPC_MESSAGE_HANDLER(MetroViewerHostMsg_Character, OnChar)
+    IPC_MESSAGE_HANDLER(MetroViewerHostMsg_VisibilityChanged,
+                        OnVisibilityChanged)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;  
 }
 
 void RemoteRootWindowHostWin::SetDelegate(RootWindowHostDelegate* delegate) {

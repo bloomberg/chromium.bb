@@ -118,6 +118,12 @@
             ],
           },
         }],
+        ['OS=="win"', {
+          'dependencies': [
+            '../metro_viewer/metro_viewer.gyp:metro_viewer',
+            '../../ipc/ipc.gyp:ipc',         
+          ],
+        }],
       ],
     },
     {
