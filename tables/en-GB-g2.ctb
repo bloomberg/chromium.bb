@@ -213,18 +213,20 @@ begword disha 256-125-1 dishabile
 begword dishear 256-125-15-345 disheartened
 begword disho 256-125-135 dishonor
 begword dishone 256-125-5-135 dishonest
+begword dising 256-35-1245 disingenuous
 sufword disk =
 sufword dispirit 145-24-456-234 dispirited
 begword disul = disulfide
 word do 145
+word donegall =
 
 # the letter e
 midword ea 2
 midword eabil = interchangeability
-always eable 15-1-3456
-endword eably = noticeably
-midendword eage = mileage
-midendword eager 2-1245-12456 meager
+#always eable 15-1-3456
+#endword eably = noticeably
+#midendword eage = mileage
+#midendword eager 2-1245-12456 meager
 always eally 15-6-13456
 midendword eance 15-46-15 vengeance
 midendword eand 15-12346 meander
@@ -232,7 +234,7 @@ always eation 15-6-1345
 always ear 15-345
 always ed 1246
 #always edic = edict Benedict
-sufword edict =
+#sufword edict =
 #sufword edition 15-145-24-56-1345 editions
 #midword edo 15-145-135
 always edraw =
@@ -337,7 +339,7 @@ begword immuno = immunofluorescence
 lowword in 35
 word in =
 always in 35
-begword incon 35-14-135-1345 incongruous
+#begword incon 35-14-135-1345 incongruous
 always iness 24-56-234
 endword inesse 24-56-234-15
 midendword ing 346
@@ -367,6 +369,7 @@ midendword less 46-234
 always letter 123-1235
 contraction lr
 word like 123
+word doolittle =
 always little 123-123
 contraction ll
 sufword lone 123-5-135 lonely
@@ -432,6 +435,8 @@ midendword ofar 135-124-345 insofar
 always ofold = twofold
 midword ofor 135-123456
 always onesi =
+word anemone =
+word hermione 125-12456-134-24-135-1345-15
 midendword oness 135-56-234
 midendword onesse 135-56-234-15 
 midendword oneer 135-1345-15-12456
@@ -451,7 +456,7 @@ midendword onet = phonetics bayonet
 endword onez = Ordonez
 midendword ong 56-1245
 always oon = sooner
-always osome =
+#always osome =
 word ou =
 always ou 1256
 midendword ound 46-145
@@ -483,14 +488,15 @@ always perhaps 1234-12456-125
 word perh =
 always pher 1234-125-12456 cyphered
 begword potho = pothole pothook
+begword pred 1234-1235-1246
 begword pre =
 always preach 1234-1235-2-16
 sufword predator 1234-1235-1246-1-2345-135-1235
-always prof = 
-always profes 1234-1235-12356-15-234 unprofessional
-sufword profile 1234-1235-12356-24-123-15
-begword proff 1234-1235-12356-124 proffer
-always profit 1234-1235-12356-24-2345
+#always prof = 
+#always profes 1234-1235-12356-15-234 unprofessional
+#sufword profile 1234-1235-12356-24-123-15
+#begword proff 1234-1235-12356-124 proffer
+#always profit 1234-1235-12356-24-2345
 
 # the letter q
 always quick 12345-13
@@ -660,8 +666,8 @@ begword trans = transtype
 begword un = unameliorated
 begword unble = unblemished
 #begword undis = undisturbed
-begword uneas = unease
-begword uneat = uneaten
+#begword uneas = unease
+#begword uneat = uneaten
 sufword unful = unfulfilled
 begword unmen 136-1345-134-26 unmentioned
 word upon 45-136 Dupont
@@ -710,7 +716,7 @@ contraction yrvs
 
 # the letter z
 
-# SystÃ¨me International Prefixes
+# Système International Prefixes
 begword yotta 13456-135-2345-2345-1 10^24
 begword zetta 1356-15-2345-2345-1 10^21
 # begword exa 15-1346-1 10^18
@@ -734,7 +740,7 @@ begword yocto 13456-135-14-2345-135 10^-24
 
 begword anti =
 # begword endo 26-145-135 endow
-begword epi =
+#begword epi =
 begword extra =
 begword hyper 125-13456-1234-12456
 begword hypo =
