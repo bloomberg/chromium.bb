@@ -451,10 +451,24 @@ bool NativeViewGLSurfaceGLX::Initialize() {
   else if (g_glx_sgi_video_sync_supported)
     vsync_provider_.reset(new SGIVideoSyncVSyncProvider(window_));
 
+  glx_window_ = glXCreateWindow(
+      g_display,
+      static_cast<GLXFBConfig>(GetConfig()),
+      window_,
+      NULL);
+  if (!glx_window_) {
+    LOG(ERROR) << "glXCreateWindow failed for window " << window_ << ".";
+    return false;
+  }
+
   return true;
 }
 
 void NativeViewGLSurfaceGLX::Destroy() {
+  if (glx_window_) {
+    glXDestroyWindow(g_display, glx_window_);
+    glx_window_ = 0;
+  }
 }
 
 bool NativeViewGLSurfaceGLX::Resize(const gfx::Size& size) {
@@ -472,7 +486,7 @@ bool NativeViewGLSurfaceGLX::IsOffscreen() {
 }
 
 bool NativeViewGLSurfaceGLX::SwapBuffers() {
-  glXSwapBuffers(g_display, window_);
+  glXSwapBuffers(g_display, glx_window_);
   // For latency_tests.cc:
   UNSHIPPED_TRACE_EVENT_INSTANT0("test_gpu", "CompositorSwapBuffersComplete");
   return true;
@@ -483,7 +497,7 @@ gfx::Size NativeViewGLSurfaceGLX::GetSize() {
 }
 
 void* NativeViewGLSurfaceGLX::GetHandle() {
-  return reinterpret_cast<void*>(window_);
+  return reinterpret_cast<void*>(glx_window_);
 }
 
 std::string NativeViewGLSurfaceGLX::GetExtensions() {
@@ -512,10 +526,10 @@ void* NativeViewGLSurfaceGLX::GetConfig() {
     XWindowAttributes attributes;
     if (!XGetWindowAttributes(
         g_display,
-        reinterpret_cast<GLXDrawable>(GetHandle()),
+        window_,
         &attributes)) {
       LOG(ERROR) << "XGetWindowAttributes failed for window " <<
-          reinterpret_cast<GLXDrawable>(GetHandle()) << ".";
+          window_ << ".";
       return NULL;
     }
 
@@ -559,7 +573,7 @@ void* NativeViewGLSurfaceGLX::GetConfig() {
 bool NativeViewGLSurfaceGLX::PostSubBuffer(
     int x, int y, int width, int height) {
   DCHECK(gfx::g_driver_glx.ext.b_GLX_MESA_copy_sub_buffer);
-  glXCopySubBufferMESA(g_display, window_, x, y, width, height);
+  glXCopySubBufferMESA(g_display, glx_window_, x, y, width, height);
   return true;
 }
 
