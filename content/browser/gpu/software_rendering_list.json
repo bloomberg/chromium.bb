@@ -74,7 +74,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "4.7",
+  "version": "4.8",
   "entries": [
     {
       "id": 1,
@@ -847,14 +847,14 @@
     },
     {
       "id": 57,
-      "description": "Enable panel fitting capability on ChromeOS only on Ivy Bridge Graphics Controller.",
+      "description": "Enable panel fitting capability on ChromeOS only on IVB and SNB Graphics Controllers.",
       "exceptions": [
         {
           "os": {
             "type": "chromeos"
           },
           "vendor_id": "0x8086",
-          "device_id": ["0x0166"]
+          "device_id": ["0x0106", "0x0116", "0x0166"]
         }
       ],
       "blacklist": [
