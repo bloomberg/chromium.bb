@@ -111,6 +111,7 @@ int main(int argc, char **argv) {
   RUN_TEST(TestClockGetTime);
   RUN_TEST(TestTlsVariable);
   RUN_TEST(TestMmapAnonymous);
+  RUN_TEST(TestAtomicIncrement);
   RUN_TEST(TestUncontendedMutexLock);
   RUN_TEST(TestCondvarSignalNoOp);
   RUN_TEST(TestThreadCreateAndJoin);

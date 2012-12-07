@@ -10,6 +10,25 @@
 #include "native_client/tests/performance/perf_test_runner.h"
 
 
+// Measure the speed of an (uncontended) atomic operation so that we
+// can compare this with TestUncontendedMutexLock.
+class TestAtomicIncrement : public PerfTest {
+ public:
+  TestAtomicIncrement() {
+    // We don't particularly need to initialize var_, but it might
+    // stop memory checkers from complaining.
+    var_ = 0;
+  }
+
+  virtual void run() {
+    __sync_fetch_and_add(&var_, 1);
+  }
+
+ private:
+  int var_;
+};
+PERF_TEST_DECLARE(TestAtomicIncrement)
+
 class TestUncontendedMutexLock : public PerfTest {
  public:
   TestUncontendedMutexLock() {
