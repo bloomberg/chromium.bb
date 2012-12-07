@@ -21,6 +21,9 @@ class Vector3dF;
 class UI_EXPORT Transform {
  public:
   Transform();
+  Transform(const Transform& rhs);
+  // Initialize with the concatenation of lhs * rhs.
+  Transform(const Transform& lhs, const Transform& rhs);
   ~Transform();
 
   bool operator==(const Transform& rhs) const;
@@ -68,10 +71,12 @@ class UI_EXPORT Transform {
   void ConcatTransform(const Transform& transform);
 
   // Returns true if this is the identity matrix.
-  bool IsIdentity() const;
+  bool IsIdentity() const { return matrix_.isIdentity(); }
 
   // Returns true if the matrix is either identity or pure translation.
-  bool IsIdentityOrTranslation() const;
+  bool IsIdentityOrTranslation() const {
+    return !(matrix_.getType() & ~SkMatrix44::kTranslate_Mask);
+  }
 
   // Returns true if the matrix is either identity or pure, non-fractional
   // translation.
@@ -136,7 +141,9 @@ class UI_EXPORT Transform {
   bool Blend(const Transform& from, double progress);
 
   // Returns |this| * |other|.
-  Transform operator*(const Transform& other) const;
+  Transform operator*(const Transform& other) const {
+    return Transform(*this, other);
+  }
 
   // Sets |this| = |this| * |other|
   Transform& operator*=(const Transform& other);

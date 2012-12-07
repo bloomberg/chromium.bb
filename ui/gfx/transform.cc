@@ -34,6 +34,13 @@ double TanDegrees(double degrees) {
 Transform::Transform() {
 }
 
+Transform::Transform(const Transform& rhs) : matrix_(rhs.matrix_) {
+}
+
+Transform::Transform(const Transform& lhs, const Transform& rhs)
+    : matrix_(lhs.matrix_, rhs.matrix_) {
+}
+
 Transform::~Transform() {}
 
 bool Transform::operator==(const Transform& rhs) const {
@@ -41,7 +48,7 @@ bool Transform::operator==(const Transform& rhs) const {
 }
 
 bool Transform::operator!=(const Transform& rhs) const {
-  return !(*this == rhs);
+  return matrix_ != rhs.matrix_;
 }
 
 void Transform::MakeIdentity() {
@@ -118,59 +125,23 @@ void Transform::RotateAbout(const Vector3dF& axis, double degrees) {
 }
 
 void Transform::Scale(double x, double y) {
-  if (matrix_.isIdentity()) {
-    matrix_.setScale(SkDoubleToMScalar(x),
-                     SkDoubleToMScalar(y),
-                     SkDoubleToMScalar(1));
-  } else {
-    SkMatrix44 scale;
-    scale.setScale(SkDoubleToMScalar(x),
-                   SkDoubleToMScalar(y),
-                   SkDoubleToMScalar(1));
-    matrix_.preConcat(scale);
-  }
+  matrix_.preScale(SkDoubleToMScalar(x), SkDoubleToMScalar(y), 1);
 }
 
 void Transform::Scale3d(double x, double y, double z) {
-  if (matrix_.isIdentity()) {
-    matrix_.setScale(SkDoubleToMScalar(x),
-                     SkDoubleToMScalar(y),
-                     SkDoubleToMScalar(z));
-  } else {
-    SkMatrix44 scale;
-    scale.setScale(SkDoubleToMScalar(x),
+  matrix_.preScale(SkDoubleToMScalar(x),
                    SkDoubleToMScalar(y),
                    SkDoubleToMScalar(z));
-    matrix_.preConcat(scale);
-  }
 }
 
 void Transform::Translate(double x, double y) {
-  if (matrix_.isIdentity()) {
-    matrix_.setTranslate(SkDoubleToMScalar(x),
-                         SkDoubleToMScalar(y),
-                         SkDoubleToMScalar(0));
-  } else {
-    SkMatrix44 translate;
-    translate.setTranslate(SkDoubleToMScalar(x),
-                           SkDoubleToMScalar(y),
-                           SkDoubleToMScalar(0));
-    matrix_.preConcat(translate);
-  }
+  matrix_.preTranslate(SkDoubleToMScalar(x), SkDoubleToMScalar(y), 0);
 }
 
 void Transform::Translate3d(double x, double y, double z) {
-  if (matrix_.isIdentity()) {
-    matrix_.setTranslate(SkDoubleToMScalar(x),
-                         SkDoubleToMScalar(y),
-                         SkDoubleToMScalar(z));
-  } else {
-    SkMatrix44 translate;
-    translate.setTranslate(SkDoubleToMScalar(x),
-                           SkDoubleToMScalar(y),
-                           SkDoubleToMScalar(z));
-    matrix_.preConcat(translate);
-  }
+  matrix_.preTranslate(SkDoubleToMScalar(x),
+                       SkDoubleToMScalar(y),
+                       SkDoubleToMScalar(z));
 }
 
 void Transform::SkewX(double angle_x) {
@@ -206,46 +177,11 @@ void Transform::ApplyPerspectiveDepth(double depth) {
 }
 
 void Transform::PreconcatTransform(const Transform& transform) {
-  if (matrix_.isIdentity()) {
-    matrix_ = transform.matrix_;
-  } else if (!transform.matrix_.isIdentity()) {
-    matrix_.preConcat(transform.matrix_);
-  }
+  matrix_.preConcat(transform.matrix_);
 }
 
 void Transform::ConcatTransform(const Transform& transform) {
-  if (matrix_.isIdentity()) {
-    matrix_ = transform.matrix_;
-  } else if (!transform.matrix_.isIdentity()) {
-    matrix_.postConcat(transform.matrix_);
-  }
-}
-
-bool Transform::IsIdentity() const {
-  return matrix_.isIdentity();
-}
-
-bool Transform::IsIdentityOrTranslation() const {
-  if (matrix_.isIdentity())
-    return true;
-
-  bool has_no_perspective = !matrix_.getDouble(3, 0) &&
-                            !matrix_.getDouble(3, 1) &&
-                            !matrix_.getDouble(3, 2) &&
-                            (matrix_.getDouble(3, 3) == 1);
-
-  bool has_no_rotation_or_skew = !matrix_.getDouble(0, 1) &&
-                                 !matrix_.getDouble(0, 2) &&
-                                 !matrix_.getDouble(1, 0) &&
-                                 !matrix_.getDouble(1, 2) &&
-                                 !matrix_.getDouble(2, 0) &&
-                                 !matrix_.getDouble(2, 1);
-
-  bool has_no_scale = matrix_.getDouble(0, 0) == 1 &&
-                      matrix_.getDouble(1, 1) == 1 &&
-                      matrix_.getDouble(2, 2) == 1;
-
-  return has_no_perspective && has_no_rotation_or_skew && has_no_scale;
+  matrix_.postConcat(transform.matrix_);
 }
 
 bool Transform::IsIdentityOrIntegerTranslation() const {
@@ -261,34 +197,16 @@ bool Transform::IsIdentityOrIntegerTranslation() const {
 }
 
 bool Transform::IsScaleOrTranslation() const {
-  if (matrix_.isIdentity())
-    return true;
-
-  bool has_no_perspective = !matrix_.getDouble(3, 0) &&
-                            !matrix_.getDouble(3, 1) &&
-                            !matrix_.getDouble(3, 2) &&
-                            (matrix_.getDouble(3, 3) == 1);
-
-  bool has_no_rotation_or_skew = !matrix_.getDouble(0, 1) &&
-                                 !matrix_.getDouble(0, 2) &&
-                                 !matrix_.getDouble(1, 0) &&
-                                 !matrix_.getDouble(1, 2) &&
-                                 !matrix_.getDouble(2, 0) &&
-                                 !matrix_.getDouble(2, 1);
-
-  return has_no_perspective && has_no_rotation_or_skew;
+  int mask = SkMatrix44::kScale_Mask | SkMatrix44::kTranslate_Mask;
+  return (matrix_.getType() & ~mask) == 0;
 }
 
 bool Transform::HasPerspective() const {
-  return !matrix_.isIdentity() &&
-         (matrix_.getDouble(3, 0) ||
-          matrix_.getDouble(3, 1) ||
-          matrix_.getDouble(3, 2) ||
-          (matrix_.getDouble(3, 3) != 1));
+  return (matrix_.getType() & SkMatrix44::kPerspective_Mask) != 0;
 }
 
 bool Transform::IsInvertible() const {
-  return std::abs(matrix_.determinant()) > kTooSmallForDeterminant;
+  return matrix_.invert(NULL);
 }
 
 bool Transform::IsBackFaceVisible() const {
@@ -443,16 +361,6 @@ bool Transform::Blend(const Transform& from, double progress) {
 
   matrix_ = ComposeTransform(to_decomp).matrix();
   return true;
-}
-
-Transform Transform::operator*(const Transform& other) const {
-  if (matrix_.isIdentity())
-    return other;
-  if (other.matrix_.isIdentity())
-    return *this;
-  Transform to_return;
-  to_return.matrix_.setConcat(matrix_, other.matrix_);
-  return to_return;
 }
 
 Transform& Transform::operator*=(const Transform& other) {
