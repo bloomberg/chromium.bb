@@ -212,6 +212,12 @@ class StatisticsProviderStubImpl : public StatisticsProvider {
   virtual bool GetMachineStatistic(const std::string& name,
                                    std::string* result) OVERRIDE {
     if (name == "CHROMEOS_RELEASE_BOARD") {
+      // Note: syncer::GetSessionNameSynchronously() also uses the mechanism
+      // below to determine the CrOs release board. However, it cannot include
+      // statistics_provider.h and use this method because of the mutual
+      // dependency that creates between sync.gyp:sync and chrome.gyp:browser.
+      // TODO(rsimha): Update syncer::GetSessionNameSynchronously() if this code
+      // is ever moved into base/. See http://crbug.com/126732.
       const CommandLine* command_line = CommandLine::ForCurrentProcess();
       if (command_line->HasSwitch(chromeos::switches::kChromeOSReleaseBoard)) {
         *result = command_line->

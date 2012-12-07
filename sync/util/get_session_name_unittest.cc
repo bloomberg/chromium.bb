@@ -9,6 +9,11 @@
 #include "sync/util/get_session_name.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_CHROMEOS)
+#include "base/command_line.h"
+#include "chromeos/chromeos_switches.h"
+#endif  // OS_CHROMEOS
+
 namespace syncer {
 
 namespace {
@@ -31,6 +36,42 @@ TEST_F(GetSessionNameTest, GetSessionNameSynchronously) {
   const std::string& session_name = GetSessionNameSynchronouslyForTesting();
   EXPECT_FALSE(session_name.empty());
 }
+
+#if defined(OS_CHROMEOS)
+
+// Call GetSessionNameSynchronouslyForTesting on ChromeOS where the board type
+// is "lumpy-signed-mp-v2keys" and make sure the return value is "Chromebook".
+TEST_F(GetSessionNameTest, GetSessionNameSynchronouslyChromebook) {
+  // This test cannot be run on a real CrOs device, since it will already have a
+  // board type, and we cannot override it.
+  // TODO(rsimha): Rewrite this test once http://crbug.com/126732 is fixed.
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(chromeos::switches::kChromeOSReleaseBoard))
+    return;
+
+  command_line->AppendSwitchASCII(chromeos::switches::kChromeOSReleaseBoard,
+                                  "lumpy-signed-mp-v2keys");
+  const std::string& session_name = GetSessionNameSynchronouslyForTesting();
+  EXPECT_EQ("Chromebook", session_name);
+}
+
+// Call GetSessionNameSynchronouslyForTesting on ChromeOS where the board type
+// is "stumpy-signed-mp-v2keys" and make sure the return value is "Chromebox".
+TEST_F(GetSessionNameTest, GetSessionNameSynchronouslyChromebox) {
+  // This test cannot be run on a real CrOs device, since it will already have a
+  // board type, and we cannot override it.
+  // TODO(rsimha): Rewrite this test once http://crbug.com/126732 is fixed.
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(chromeos::switches::kChromeOSReleaseBoard))
+    return;
+
+  command_line->AppendSwitchASCII(chromeos::switches::kChromeOSReleaseBoard,
+                                  "stumpy-signed-mp-v2keys");
+  const std::string& session_name = GetSessionNameSynchronouslyForTesting();
+  EXPECT_EQ("Chromebox", session_name);
+}
+
+#endif  // OS_CHROMEOS
 
 // Calls GetSessionName and runs the message loop until it comes back
 // with a session name.  Makes sure the returned session name is equal

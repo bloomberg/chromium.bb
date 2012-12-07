@@ -27,6 +27,14 @@
         '../sql/sql.gyp:sql',
         'protocol/sync_proto.gyp:sync_proto',
       ],
+      'conditions': [
+        ['OS=="linux" and chromeos==1', {
+          # Required by get_session_name.cc on Chrome OS.
+          'dependencies': [
+            '../chromeos/chromeos.gyp:chromeos',
+          ],
+        }],
+      ],
       'export_dependent_settings': [
         # Propagate sync_proto since our headers include its generated
         # files.
@@ -894,21 +902,14 @@
         'sync_internal_api_tests',
         'sync_notifier_tests',
       ],
-      # TODO(akalin): This is needed because histogram.cc uses
-      # leak_annotations.h, which pulls this in.  Make 'base'
-      # propagate this dependency.
       'conditions': [
+        # TODO(akalin): This is needed because histogram.cc uses
+        # leak_annotations.h, which pulls this in.  Make 'base'
+        # propagate this dependency.
         ['OS=="linux" and linux_use_tcmalloc==1', {
           'dependencies': [
             '../base/allocator/allocator.gyp:allocator',
           ],
-        }],
-        ['OS=="linux" and chromeos==1', {
-            # TODO(kochi): Remove this once we get rid of dependency from
-            # get_session_name.cc.
-            'dependencies': [
-                '../chrome/chrome.gyp:browser',
-            ],
         }],
         ['OS == "android" and gtest_target_type == "shared_library"', {
           'dependencies': [

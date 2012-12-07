@@ -12,7 +12,8 @@
 #include "base/task_runner.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/system/statistics_provider.h"
+#include "base/command_line.h"
+#include "chromeos/chromeos_switches.h"
 #elif defined(OS_LINUX)
 #include "base/linux_util.h"
 #elif defined(OS_IOS)
@@ -32,13 +33,27 @@ namespace {
 std::string GetSessionNameSynchronously() {
   std::string session_name;
 #if defined(OS_CHROMEOS)
-  // TODO(kochi): This is very ad hoc and fragile. http://crbug.com/126732.
+  // The approach below is similar to that used by the CrOs implementation of
+  // StatisticsProvider::GetMachineStatistic(CHROMEOS_RELEASE_BOARD).
+  // See chrome/browser/chromeos/system/statistics_provider.{h|cc}.
+  //
+  // We cannot use StatisticsProvider here because of the mutual dependency
+  // it creates between sync.gyp:sync and chrome.gyp:browser.
+  //
+  // Even though this code is ad hoc and fragile, it remains the only means of
+  // determining the Chrome OS hardware platform so we can display the right
+  // device name in the "Other devices" section of the new tab page.
+  // TODO(rsimha): Change this once a better alternative is available.
+  // See http://crbug.com/126732.
   std::string board;
-  const char kMachineInfoBoard[] = "CHROMEOS_RELEASE_BOARD";
-  chromeos::system::StatisticsProvider* provider =
-      chromeos::system::StatisticsProvider::GetInstance();
-  if (!provider->GetMachineStatistic(kMachineInfoBoard, &board))
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(chromeos::switches::kChromeOSReleaseBoard)) {
+    board = command_line->
+        GetSwitchValueASCII(chromeos::switches::kChromeOSReleaseBoard);
+  } else {
     LOG(ERROR) << "Failed to get board information";
+  }
+
   // Currently, only "stumpy" type of board is considered Chromebox, and
   // anything else is Chromebook.  On these devices, session_name should look
   // like "stumpy-signed-mp-v2keys" etc. The information can be checked on

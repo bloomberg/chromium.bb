@@ -5,9 +5,8 @@ include_rules = [
   "+sync/protocol",
   "+sync/test/fake_encryptor.h",
 
-  # TODO(kochi): Remove this hack after "Chromebox" hack in get_session_name.cc
-  # is gone.
-  "+chrome/browser/chromeos/system",
+  # TODO(rsimha): Remove this after http://crbug.com/126732 is fixed.
+  "+chromeos/chromeos_switches.h",
 
   # TODO(zea): remove this once we don't need the cryptographer to get the set
   # of encrypted types.
