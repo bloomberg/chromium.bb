@@ -364,16 +364,15 @@ IN_PROC_BROWSER_TEST_F(PageCyclerCachedBrowserTest, MAYBE_URLNotInCache) {
   RegisterForNotifications();
   InitFilePaths(temp.path());
 
-  std::string urls_string;
-  ASSERT_TRUE(file_util::ReadFileToString(urls_file(),
-                                          &urls_string));
+  // Only use a single URL that is not in cache. That's sufficient for the test
+  // scenario, and makes things faster than needlessly cycling through all the
+  // other URLs.
 
-  urls_string.append("\n").append(kCacheMissURL);
   FilePath new_urls_file = temp.path().AppendASCII("urls");
   ASSERT_FALSE(file_util::PathExists(new_urls_file));
 
-  ASSERT_TRUE(file_util::WriteFile(new_urls_file, urls_string.c_str(),
-                                   urls_string.size()));
+  ASSERT_TRUE(file_util::WriteFile(new_urls_file, kCacheMissURL,
+                                   sizeof(kCacheMissURL)));
 
   InitPageCycler(new_urls_file, errors_file(), stats_file());
   page_cycler()->Run();
