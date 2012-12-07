@@ -1,7 +1,12 @@
-TESTS = surface-test.la client-test.la	\
+TESTS = $(module_tests) $(weston_tests)
+
+module_tests = surface-test.la client-test.la	\
 	event-test.la text-test.la	\
 	surface-global-test.la		\
-	button-test.la keyboard-test.la
+	button-test.la
+
+weston_tests =				\
+	keyboard-test
 
 TESTS_ENVIRONMENT = $(SHELL) $(top_srcdir)/tests/weston-tests-env
 
@@ -15,11 +20,12 @@ noinst_PROGRAMS =			\
 	matrix-test
 
 check_LTLIBRARIES =			\
-	$(TESTS)
+	$(module_tests)
 
 check_PROGRAMS =			\
 	test-client			\
-	test-text-client
+	test-text-client		\
+	$(weston_tests)
 
 AM_CFLAGS = $(GCC_CFLAGS)
 AM_CPPFLAGS = -I$(top_srcdir)/src -DUNIT_TEST $(COMPOSITOR_CFLAGS)
@@ -33,7 +39,6 @@ client_test_la_SOURCES = client-test.c $(test_runner_src)
 event_test_la_SOURCES = event-test.c $(test_runner_src)
 text_test_la_SOURCES = text-test.c $(test_runner_src)
 button_test_la_SOURCES = button-test.c $(test_runner_src)
-keyboard_test_la_SOURCES = keyboard-test.c $(test_runner_src)
 
 test_client_SOURCES = test-client.c
 test_client_LDADD = $(SIMPLE_CLIENT_LIBS)
@@ -49,6 +54,22 @@ weston_test_la_SOURCES =		\
 	weston-test.c			\
 	wayland-test-protocol.c		\
 	wayland-test-server-protocol.h
+
+weston_test_runner_src =		\
+	weston-test-runner.c		\
+	weston-test-runner.h
+weston_test_client_src =		\
+	weston-test-client-helper.c	\
+	weston-test-client-helper.h	\
+	wayland-test-protocol.c		\
+	wayland-test-client-protocol.h	\
+	$(weston_test_runner_src)
+weston_test_client_libs =		\
+	$(SIMPLE_CLIENT_LIBS)		\
+	../shared/libshared.la
+
+keyboard_test_SOURCES = keyboard-test.c $(weston_test_client_src)
+keyboard_test_LDADD = $(weston_test_client_libs)
 
 matrix_test_SOURCES =				\
 	matrix-test.c				\

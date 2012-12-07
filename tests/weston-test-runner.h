@@ -20,48 +20,37 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "weston-test-client-helper.h"
+#ifndef _WESTON_TEST_RUNNER_H_
+#define _WESTON_TEST_RUNNER_H_
 
-TEST(simple_keyboard_test)
-{
-	struct client *client;
-	struct surface *expect_focus = NULL;
-	struct keyboard *keyboard;
-	uint32_t expect_key = 0;
-	uint32_t expect_state = 0;
+#ifdef NDEBUG
+#error "Tests must not be built with NDEBUG defined, they rely on assert()."
+#endif
 
-	client = client_create(10, 10, 1, 1);
-	assert(client);
+struct weston_test {
+	const char *name;
+	void (*run)(void);
+	int must_fail;
+} __attribute__ ((aligned (16)));
 
-	keyboard = client->input->keyboard;
+#define TEST(name)						\
+	static void name(void);					\
+								\
+	const struct weston_test test##name			\
+		 __attribute__ ((section ("test_section"))) = {	\
+		#name, name, 0					\
+	};							\
+								\
+	static void name(void)
 
-	while(1) {
-		assert(keyboard->key == expect_key);
-		assert(keyboard->state == expect_state);
-		assert(keyboard->focus == expect_focus);
+#define FAIL_TEST(name)						\
+	static void name(void);					\
+								\
+	const struct weston_test test##name			\
+		 __attribute__ ((section ("test_section"))) = {	\
+		#name, name, 1					\
+	};							\
+								\
+	static void name(void)
 
-		if (keyboard->state == WL_KEYBOARD_KEY_STATE_PRESSED) {
-			expect_state = WL_KEYBOARD_KEY_STATE_RELEASED;
-			wl_test_send_key(client->test->wl_test, expect_key,
-				expect_state);
-			yield(client);
-		} else if (keyboard->focus) {
-			expect_focus = NULL;
-			wl_test_activate_surface(client->test->wl_test,
-						 NULL);
-			yield(client);
-		} else if (expect_key < 10) {
-			expect_key++;
-			expect_focus = client->surface;
-			expect_state = WL_KEYBOARD_KEY_STATE_PRESSED;
-			wl_test_activate_surface(client->test->wl_test,
-						 expect_focus->wl_surface);
-			yield(client);
-			wl_test_send_key(client->test->wl_test, expect_key,
-					 expect_state);
-			yield(client);
-		} else {
-			break;
-		}
-	}
-}
+#endif
