@@ -90,6 +90,7 @@ special_tests=(
   ['lib/gdata_lib_unittest.py']=skip
   ['scripts/chrome_set_ver_unittest.py']=skip
   ['scripts/check_gdata_token_unittest.py']=skip
+  ['scripts/cros_best_revision_unittest.py']=skip
   ['scripts/merge_package_status_unittest.py']=skip
   ['scripts/upload_package_status_unittest.py']=skip
 
