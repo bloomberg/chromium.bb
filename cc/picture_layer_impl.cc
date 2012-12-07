@@ -56,7 +56,7 @@ void PictureLayerImpl::appendQuads(QuadSink& quadSink,
          ++iter) {
       SkColor color;
       float width;
-      if (*iter && iter->resource_id()) {
+      if (*iter && iter->GetResourceId()) {
         color = DebugColors::TileBorderColor();
         width = DebugColors::TileBorderWidth(layerTreeHostImpl());
       } else {
@@ -77,7 +77,7 @@ void PictureLayerImpl::appendQuads(QuadSink& quadSink,
        ++iter) {
     ResourceProvider::ResourceId resource = 0;
     if (*iter)
-      resource = iter->resource_id();
+      resource = iter->GetResourceId();
 
     gfx::Rect geometry_rect = iter.geometry_rect();
 

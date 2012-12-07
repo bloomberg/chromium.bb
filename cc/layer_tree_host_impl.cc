@@ -712,6 +712,9 @@ bool LayerTreeHostImpl::prepareToDraw(FrameData& frame)
     TRACE_EVENT0("cc", "LayerTreeHostImpl::prepareToDraw");
     DCHECK(canDraw());
 
+    if (m_tileManager)
+        m_tileManager->CheckForCompletedSetPixels();
+
     frame.renderSurfaceLayerList = &m_renderSurfaceLayerList;
     frame.renderPasses.clear();
     frame.renderPassesById.clear();
@@ -758,8 +761,12 @@ void LayerTreeHostImpl::ScheduleManageTiles()
       m_client->setNeedsManageTilesOnImplThread();
 }
 
-void LayerTreeHostImpl::ScheduleRedraw()
+void LayerTreeHostImpl::ScheduleCheckForCompletedSetPixels()
 {
+    // CheckForCompletedSetPixels() should be called before we draw and
+    // preferably only once per vsync interval. For now just make sure
+    // a redraw is scheduled and call CheckForCompletedSetPixels() in
+    // prepareToDraw().
     if (m_client)
       m_client->setNeedsRedrawOnImplThread();
 }

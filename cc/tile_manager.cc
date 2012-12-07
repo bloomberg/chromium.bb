@@ -116,7 +116,8 @@ TileManager::TileManager(
     : client_(client),
       resource_pool_(ResourcePool::Create(resource_provider,
                                           Renderer::ImplPool)),
-      manage_tiles_pending_(false) {
+      manage_tiles_pending_(false),
+      check_for_completed_set_pixels_pending_(false) {
   // Initialize all threads.
   const std::string thread_name_prefix = kRasterThreadNamePrefix;
   while (raster_threads_.size() < num_raster_threads) {
@@ -173,6 +174,13 @@ void TileManager::ScheduleManageTiles() {
     return;
   client_->ScheduleManageTiles();
   manage_tiles_pending_ = true;
+}
+
+void TileManager::ScheduleCheckForCompletedSetPixels() {
+  if (check_for_completed_set_pixels_pending_)
+    return;
+  client_->ScheduleCheckForCompletedSetPixels();
+  check_for_completed_set_pixels_pending_ = true;
 }
 
 class BinComparator {
@@ -277,6 +285,29 @@ void TileManager::ManageTiles() {
 
   // Finally, kick the rasterizer.
   DispatchMoreRasterTasks();
+}
+
+void TileManager::CheckForCompletedSetPixels() {
+  check_for_completed_set_pixels_pending_ = false;
+
+  while (!tiles_with_pending_set_pixels_.empty()) {
+    Tile* tile = tiles_with_pending_set_pixels_.front();
+    DCHECK(tile->managed_state().resource);
+
+    // Set pixel tasks complete in the order they are posted.
+    if (!resource_pool_->resource_provider()->didSetPixelsComplete(
+          tile->managed_state().resource->id())) {
+      ScheduleCheckForCompletedSetPixels();
+      break;
+    }
+
+    // It's now safe to release the pixel buffer.
+    resource_pool_->resource_provider()->releasePixelBuffer(
+        tile->managed_state().resource->id());
+
+    DidFinishTileInitialization(tile);
+    tiles_with_pending_set_pixels_.pop();
+  }
 }
 
 void TileManager::renderingStats(RenderingStats* stats) {
@@ -420,16 +451,20 @@ void TileManager::OnRasterTaskCompleted(
 
   // Finish resource initialization if |can_use_gpu_memory| is true.
   if (managed_tile_state.can_use_gpu_memory) {
-    resource_pool_->resource_provider()->setPixelsFromBuffer(resource->id());
-    resource_pool_->resource_provider()->releasePixelBuffer(resource->id());
-
-    // The component order may be bgra if we uploaded bgra pixels to rgba
+    // The component order may be bgra if we're uploading bgra pixels to rgba
     // texture. Mark contents as swizzled if image component order is
     // different than texture format.
     managed_tile_state.contents_swizzled =
         !PlatformColor::sameComponentOrder(tile->format_);
 
-    DidFinishTileInitialization(tile, resource.Pass());
+    // Tile resources can't be freed until upload has completed.
+    managed_tile_state.can_be_freed = false;
+
+    resource_pool_->resource_provider()->beginSetPixels(resource->id());
+    managed_tile_state.resource = resource.Pass();
+    tiles_with_pending_set_pixels_.push(tile);
+
+    ScheduleCheckForCompletedSetPixels();
   } else {
     resource_pool_->resource_provider()->releasePixelBuffer(resource->id());
     resource_pool_->ReleaseResource(resource.Pass());
@@ -439,14 +474,11 @@ void TileManager::OnRasterTaskCompleted(
   DispatchMoreRasterTasks();
 }
 
-void TileManager::DidFinishTileInitialization(
-    Tile* tile, scoped_ptr<ResourcePool::Resource> resource) {
+void TileManager::DidFinishTileInitialization(Tile* tile) {
   ManagedTileState& managed_tile_state = tile->managed_state();
-  DCHECK(!managed_tile_state.resource);
-  managed_tile_state.resource = resource.Pass();
+  DCHECK(managed_tile_state.resource);
   managed_tile_state.resource_is_being_initialized = false;
-  // TODO(qinmin): Make this conditional on managed_tile_state.bin == NOW_BIN.
-  client_->ScheduleRedraw();
+  managed_tile_state.can_be_freed = true;
 }
 
 }

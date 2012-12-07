@@ -5,6 +5,7 @@
 #ifndef CC_TILE_MANAGER_H_
 #define CC_TILE_MANAGER_H_
 
+#include <queue>
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
@@ -23,7 +24,7 @@ struct RenderingStats;
 class CC_EXPORT TileManagerClient {
  public:
   virtual void ScheduleManageTiles() = 0;
-  virtual void ScheduleRedraw() = 0;
+  virtual void ScheduleCheckForCompletedSetPixels() = 0;
 
  protected:
   virtual ~TileManagerClient() {}
@@ -74,6 +75,7 @@ class CC_EXPORT TileManager {
   void SetGlobalState(const GlobalStateThatImpactsTilePriority& state);
 
   void ManageTiles();
+  void CheckForCompletedSetPixels();
 
   void renderingStats(RenderingStats* stats);
 
@@ -88,6 +90,7 @@ class CC_EXPORT TileManager {
   void AssignGpuMemoryToTiles();
   void FreeResourcesForTile(Tile*);
   void ScheduleManageTiles();
+  void ScheduleCheckForCompletedSetPixels();
   void DispatchMoreRasterTasks();
   void DispatchOneRasterTask(RasterThread*, scoped_refptr<Tile>);
   void OnRasterTaskCompleted(
@@ -95,11 +98,12 @@ class CC_EXPORT TileManager {
       scoped_ptr<ResourcePool::Resource>,
       scoped_refptr<PicturePileImpl>,
       RenderingStats*);
-  void DidFinishTileInitialization(Tile*, scoped_ptr<ResourcePool::Resource>);
+  void DidFinishTileInitialization(Tile*);
 
   TileManagerClient* client_;
   scoped_ptr<ResourcePool> resource_pool_;
   bool manage_tiles_pending_;
+  bool check_for_completed_set_pixels_pending_;
 
   GlobalStateThatImpactsTilePriority global_state_;
 
@@ -107,10 +111,15 @@ class CC_EXPORT TileManager {
   TileVector tiles_;
   TileVector tiles_that_need_to_be_rasterized_;
 
+  typedef std::queue<scoped_refptr<Tile> > TileQueue;
+  TileQueue tiles_with_pending_set_pixels_;
+
   typedef ScopedPtrVector<RasterThread> RasterThreadVector;
   RasterThreadVector raster_threads_;
 
   RenderingStats rendering_stats_;
+
+  DISALLOW_COPY_AND_ASSIGN(TileManager);
 };
 
 }  // namespace cc

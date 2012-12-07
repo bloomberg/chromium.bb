@@ -45,9 +45,7 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
   void set_priority(WhichTree tree, const TilePriority& priority);
 
   // Returns 0 if not drawable.
-  ResourceProvider::ResourceId resource_id() const {
-    return managed_state_.resource ? managed_state_.resource->id() : 0;
-  }
+  ResourceProvider::ResourceId GetResourceId() const;
 
   const gfx::Rect& opaque_rect() const { return opaque_rect_; }
 
