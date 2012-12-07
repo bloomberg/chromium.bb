@@ -56,6 +56,20 @@ if sys.platform.startswith('linux'):
       'CXX=g++ -m32 -static-libstdc++',
       '--build=i686-linux',
       ]
+elif sys.platform.startswith('win'):
+  # The i18n support brings in runtime dependencies on MinGW DLLs
+  # that we don't want to have to distribute alongside our binaries.
+  # So just disable it, and compiler messages will always be in US English.
+  CONFIGURE_HOST_ARCH += [
+      '--disable-nls',
+      ]
+  # There appears to be nothing we can pass at top-level configure time
+  # that will prevent the configure scripts from finding MinGW's libiconv
+  # and using it.  We have to force this variable into the environment
+  # of the sub-configure runs, which are run via make.
+  MAKE_PARALLEL_CMD += [
+      'HAVE_LIBICONV=no',
+      ]
 
 CONFIGURE_HOST_COMMON = CONFIGURE_HOST_ARCH + [
       '--prefix=',
