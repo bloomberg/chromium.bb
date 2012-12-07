@@ -11,6 +11,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/platform_file.h"
 #include "base/process_util.h"
 #include "base/stringprintf.h"
@@ -67,6 +68,33 @@ FILE* fopen_internal(const char* fname, const char* mode) {
 #else
   return fopen(fname, mode);
 #endif
+}
+
+enum UmaEntry {
+  kSequentialFileRead,
+  kSequentialFileSkip,
+  kRandomAccessFileRead,
+  kWritableFileAppend,
+  kWritableFileClose,
+  kWritableFileFlush,
+  kWritableFileSync,
+  kNewSequentialFile,
+  kNewRandomAccessFile,
+  kNewWritableFile,
+  kDeleteFile,
+  kCreateDir,
+  kDeleteDir,
+  kGetFileSize,
+  kRenamefile,
+  kLockFile,
+  kUnlockFile,
+  kGetTestDirectory,
+  kNewLogger,
+  kNumEntries
+};
+
+void LogToUMA(UmaEntry entry) {
+  UMA_HISTOGRAM_ENUMERATION("LevelDBEnv.IOError", entry, kNumEntries);
 }
 
 }  // namespace
@@ -156,6 +184,7 @@ class ChromiumSequentialFile: public SequentialFile {
       } else {
         // A partial read with an error: return a non-ok status
         s = Status::IOError(filename_, strerror(errno));
+        LogToUMA(kSequentialFileRead);
       }
     }
     return s;
@@ -163,6 +192,7 @@ class ChromiumSequentialFile: public SequentialFile {
 
   virtual Status Skip(uint64_t n) {
     if (fseek(file_, n, SEEK_CUR)) {
+      LogToUMA(kSequentialFileSkip);
       return Status::IOError(filename_, strerror(errno));
     }
     return Status::OK();
@@ -187,6 +217,7 @@ class ChromiumRandomAccessFile: public RandomAccessFile {
     if (r < 0) {
       // An error: return a non-ok status
       s = Status::IOError(filename_, "Could not perform read");
+      LogToUMA(kRandomAccessFileRead);
     }
     return s;
   }
@@ -213,6 +244,7 @@ class ChromiumWritableFile : public WritableFile {
     Status result;
     if (r != data.size()) {
       result = Status::IOError(filename_, strerror(errno));
+      LogToUMA(kWritableFileAppend);
     }
     return result;
   }
@@ -221,6 +253,7 @@ class ChromiumWritableFile : public WritableFile {
     Status result;
     if (fclose(file_) != 0) {
       result = Status::IOError(filename_, strerror(errno));
+      LogToUMA(kWritableFileClose);
     }
     file_ = NULL;
     return result;
@@ -230,6 +263,7 @@ class ChromiumWritableFile : public WritableFile {
     Status result;
     if (fflush_unlocked(file_) != 0) {
       result = Status::IOError(filename_, strerror(errno));
+      LogToUMA(kWritableFileFlush);
     }
     return result;
   }
@@ -239,6 +273,7 @@ class ChromiumWritableFile : public WritableFile {
     if ((fflush_unlocked(file_) != 0) ||
         (fdatasync(fileno(file_)) != 0)) {
       result = Status::IOError(filename_, strerror(errno));
+      LogToUMA(kWritableFileSync);
     }
     return result;
   }
@@ -261,6 +296,7 @@ class ChromiumEnv : public Env {
     FILE* f = fopen_internal(fname.c_str(), "rb");
     if (f == NULL) {
       *result = NULL;
+      LogToUMA(kNewSequentialFile);
       return Status::IOError(fname, strerror(errno));
     } else {
       *result = new ChromiumSequentialFile(fname, f);
@@ -277,6 +313,7 @@ class ChromiumEnv : public Env {
         CreateFilePath(fname), flags, &created, &error_code);
     if (error_code != ::base::PLATFORM_FILE_OK) {
       *result = NULL;
+      LogToUMA(kNewRandomAccessFile);
       return Status::IOError(fname, PlatformFileErrorString(error_code));
     }
     *result = new ChromiumRandomAccessFile(fname, file);
@@ -288,6 +325,7 @@ class ChromiumEnv : public Env {
     *result = NULL;
     FILE* f = fopen_internal(fname.c_str(), "wb");
     if (f == NULL) {
+      LogToUMA(kNewWritableFile);
       return Status::IOError(fname, strerror(errno));
     } else {
       *result = new ChromiumWritableFile(fname, f);
@@ -320,6 +358,7 @@ class ChromiumEnv : public Env {
     // TODO(jorlow): Should we assert this is a file?
     if (!::file_util::Delete(CreateFilePath(fname), false)) {
       result = Status::IOError(fname, "Could not delete file.");
+      LogToUMA(kDeleteFile);
     }
     return result;
   };
@@ -328,6 +367,7 @@ class ChromiumEnv : public Env {
     Status result;
     if (!::file_util::CreateDirectory(CreateFilePath(name))) {
       result = Status::IOError(name, "Could not create directory.");
+      LogToUMA(kCreateDir);
     }
     return result;
   };
@@ -337,6 +377,7 @@ class ChromiumEnv : public Env {
     // TODO(jorlow): Should we assert this is a directory?
     if (!::file_util::Delete(CreateFilePath(name), false)) {
       result = Status::IOError(name, "Could not delete directory.");
+      LogToUMA(kDeleteDir);
     }
     return result;
   };
@@ -347,6 +388,7 @@ class ChromiumEnv : public Env {
     if (!::file_util::GetFileSize(CreateFilePath(fname), &signed_size)) {
       *size = 0;
       s = Status::IOError(fname, "Could not determine file size.");
+      LogToUMA(kGetFileSize);
     } else {
       *size = static_cast<uint64_t>(signed_size);
     }
@@ -357,6 +399,7 @@ class ChromiumEnv : public Env {
     Status result;
     if (!::file_util::ReplaceFile(CreateFilePath(src), CreateFilePath(dst))) {
       result = Status::IOError(src, "Could not rename file.");
+      LogToUMA(kRenamefile);
     }
     return result;
   }
@@ -375,6 +418,7 @@ class ChromiumEnv : public Env {
         CreateFilePath(fname), flags, &created, &error_code);
     if (error_code != ::base::PLATFORM_FILE_OK) {
       result = Status::IOError(fname, PlatformFileErrorString(error_code));
+      LogToUMA(kLockFile);
     } else {
       ChromiumFileLock* my_lock = new ChromiumFileLock;
       my_lock->file_ = file;
@@ -388,6 +432,7 @@ class ChromiumEnv : public Env {
     Status result;
     if (!::base::ClosePlatformFile(my_lock->file_)) {
       result = Status::IOError("Could not close lock file.");
+      LogToUMA(kUnlockFile);
     }
     delete my_lock;
     return result;
@@ -416,6 +461,7 @@ class ChromiumEnv : public Env {
       if (!::file_util::CreateNewTempDirectory(kLevelDBTestDirectoryPrefix,
                                                &test_directory_)) {
         mu_.Release();
+        LogToUMA(kGetTestDirectory);
         return Status::IOError("Could not create temp directory.");
       }
     }
@@ -428,6 +474,7 @@ class ChromiumEnv : public Env {
     FILE* f = fopen_internal(fname.c_str(), "w");
     if (f == NULL) {
       *result = NULL;
+      LogToUMA(kNewLogger);
       return Status::IOError(fname, strerror(errno));
     } else {
       *result = new ChromiumLogger(f);
