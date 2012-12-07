@@ -69,10 +69,6 @@ MockLocalInputMonitor::MockLocalInputMonitor() {}
 
 MockLocalInputMonitor::~MockLocalInputMonitor() {}
 
-scoped_ptr<LocalInputMonitor> LocalInputMonitor::Create() {
-  return scoped_ptr<LocalInputMonitor>(new MockLocalInputMonitor());
-}
-
 MockClientSessionEventHandler::MockClientSessionEventHandler() {}
 
 MockClientSessionEventHandler::~MockClientSessionEventHandler() {}
