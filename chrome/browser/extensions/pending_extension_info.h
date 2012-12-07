@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_PENDING_EXTENSION_INFO_H_
 #define CHROME_BROWSER_EXTENSIONS_PENDING_EXTENSION_INFO_H_
 
+#include <string>
+
 #include "base/version.h"
 #include "chrome/common/extensions/extension.h"
 #include "googleurl/src/gurl.h"
@@ -54,6 +56,13 @@ class PendingExtensionInfo {
   bool is_from_sync() const { return is_from_sync_; }
   bool install_silently() const { return install_silently_; }
   Extension::Location install_source() const { return install_source_; }
+
+  // Returns -1, 0 or 1 if |this| has lower, equal or higher precedence than
+  // |other|, respectively. "Equal" precedence means that the version and the
+  // install source match. "Higher" precedence means that the version is newer,
+  // or the version matches but the install source has higher priority.
+  // It is only valid to invoke this when the ids match.
+  int CompareTo(const PendingExtensionInfo& other) const;
 
  private:
   std::string id_;

@@ -277,7 +277,7 @@ class CrxInstaller
 
   // If non-NULL, contains the expected version of the extension we're
   // installing.  Important for external sources, where claiming the wrong
-  // version could cause unnessisary unpacking of an extension at every
+  // version could cause unnecessary unpacking of an extension at every
   // restart.
   scoped_ptr<Version> expected_version_;
 

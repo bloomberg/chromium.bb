@@ -7,12 +7,10 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "base/version.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/pending_extension_info.h"
-#include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
+#include "googleurl/src/gurl.h"
 
 using content::BrowserThread;
 
@@ -21,6 +19,10 @@ namespace {
 // Install predicate used by AddFromExternalUpdateUrl().
 bool AlwaysInstall(const extensions::Extension& extension) {
   return true;
+}
+
+std::string GetVersionString(const Version& version) {
+  return version.IsValid() ? version.GetString() : "invalid";
 }
 
 }  // namespace
@@ -200,6 +202,14 @@ bool PendingExtensionManager::AddExtensionImpl(
     Extension::Location install_source) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  PendingExtensionInfo info(id,
+                            update_url,
+                            version,
+                            should_allow_install,
+                            is_from_sync,
+                            install_silently,
+                            install_source);
+
   if (const PendingExtensionInfo* pending = GetById(id)) {
     // Bugs in this code will manifest as sporadic incorrect extension
     // locations in situations where multiple install sources run at the
@@ -209,48 +219,27 @@ bool PendingExtensionManager::AddExtensionImpl(
     VLOG(1) << "Extension id " << id
             << " was entered for update more than once."
             << "  old location: " << pending->install_source()
-            << "  new location: " << install_source;
+            << "  new location: " << install_source
+            << "  old version: " << GetVersionString(pending->version())
+            << "  new version: " << GetVersionString(version);
 
     // Never override an existing extension with an older version. Only
     // extensions from local CRX files have a known version; extensions from an
     // update URL will get the latest version.
-    if (version.IsValid() &&
-        pending->version().IsValid() &&
-        pending->version().CompareTo(version) == 1) {
-      VLOG(1) << "Keep existing record (has a newer version).";
-      return false;
-    }
 
-    Extension::Location higher_priority_location =
-        Extension::GetHigherPriorityLocation(
-            install_source, pending->install_source());
-
-    if (higher_priority_location != install_source) {
-      VLOG(1) << "Keep existing record (has a higher priority location).";
+    // If |pending| has the same or higher precedence than |info| then don't
+    // install |info| over |pending|.
+    if (pending->CompareTo(info) >= 0)
       return false;
-    }
 
     VLOG(1) << "Overwrite existing record.";
 
     std::replace(pending_extension_list_.begin(),
                  pending_extension_list_.end(),
                  *pending,
-                 PendingExtensionInfo(id,
-                                      update_url,
-                                      version,
-                                      should_allow_install,
-                                      is_from_sync,
-                                      install_silently,
-                                      install_source));
+                 info);
   } else {
-    pending_extension_list_.push_back(
-        PendingExtensionInfo(id,
-                             update_url,
-                             version,
-                             should_allow_install,
-                             is_from_sync,
-                             install_silently,
-                             install_source));
+    pending_extension_list_.push_back(info);
   }
 
   return true;

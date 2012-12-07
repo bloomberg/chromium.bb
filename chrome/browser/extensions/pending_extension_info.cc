@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/pending_extension_info.h"
 
+#include "base/logging.h"
+
 namespace extensions {
 
 PendingExtensionInfo::PendingExtensionInfo(
@@ -32,6 +34,32 @@ PendingExtensionInfo::PendingExtensionInfo()
 
 bool PendingExtensionInfo::operator==(const PendingExtensionInfo& rhs) const {
   return id_ == rhs.id_;
+}
+
+int PendingExtensionInfo::CompareTo(const PendingExtensionInfo& other) const {
+  DCHECK_EQ(id_, other.id_);
+  if (version_.IsValid() && other.version_.IsValid()) {
+    int comparison = version_.CompareTo(other.version_);
+
+    // If the versions differ then return the version comparison result.
+    if (comparison != 0)
+      return comparison;
+  }
+
+  // The versions aren't specified, or they are the same version. Check
+  // the install source.
+  if (install_source_ == other.install_source_) {
+    // Same install source, so |this| has the same precedence as |other|.
+    return 0;
+  }
+
+  // Different install sources; |this| has higher precedence if
+  // |install_source_| is the higher priority source.
+  Extension::Location higher_priority_source =
+      Extension::GetHigherPriorityLocation(
+          install_source_, other.install_source_);
+
+  return higher_priority_source == install_source_ ? 1 : -1;
 }
 
 }  // namespace extensions

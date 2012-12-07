@@ -5304,12 +5304,13 @@ TEST_F(ExtensionServiceTest, InstallPriorityExternalLocalFile) {
   WaitForCrxInstall(kInvalidPathToCrx, INSTALL_FAILED);
 
   // Simulate an external source adding as EXTERNAL_PREF again.
-  EXPECT_TRUE(
+  // This is rejected because the version and the location are the same as
+  // the previous installation, which is still pending.
+  EXPECT_FALSE(
       service_->OnExternalExtensionFileFound(
           kGoodId, &older_version, kInvalidPathToCrx,
           Extension::EXTERNAL_PREF, kCreationFlags, kDontMarkAcknowledged));
   EXPECT_TRUE(pending->IsIdPending(kGoodId));
-  WaitForCrxInstall(kInvalidPathToCrx, INSTALL_FAILED);
 
   // Try INTERNAL again.  Should fail.
   EXPECT_FALSE(

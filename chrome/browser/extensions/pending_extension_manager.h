@@ -7,7 +7,6 @@
 
 #include <list>
 #include <string>
-#include <utility>
 
 #include "chrome/browser/extensions/pending_extension_info.h"
 #include "chrome/common/extensions/extension.h"
