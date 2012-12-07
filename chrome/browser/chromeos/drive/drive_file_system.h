@@ -132,9 +132,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
                                const FilePath& file_content_path,
                                DriveCache::FileOperationType cache_operation,
                                const FileOperationCallback& callback) OVERRIDE;
-  virtual void UpdateEntryData(scoped_ptr<google_apis::DocumentEntry> entry,
-                               const FilePath& file_content_path,
-                               const FileOperationCallback& callback) OVERRIDE;
   virtual DriveFileSystemMetadata GetMetadata() const OVERRIDE;
   virtual void Reload() OVERRIDE;
 
@@ -590,13 +587,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
       const FilePath& file_path,
       DriveFileError error,
       scoped_ptr<DriveEntryProto> entry_proto);
-
-  // Part of UpdateEntryData(). Called after RefreshFile is complete.
-  void UpdateCacheEntry(const FilePath& file_content_path,
-                        const FileOperationCallback& callback,
-                        DriveFileError error,
-                        const FilePath& drive_file_path,
-                        scoped_ptr<DriveEntryProto> entry_proto);
 
   // Part of GetEntryByResourceId and GetEntryByPath. Checks whether there is a
   // local dirty cache for the entry, and if there is, replace the

@@ -341,15 +341,6 @@ class DriveFileSystemInterface {
                                DriveCache::FileOperationType cache_operation,
                                const FileOperationCallback& callback) = 0;
 
-  // Updates the data associated with the file referenced by |entry|.
-  // The data is copied from |file_content_path|.
-  //
-  // |callback| will be called on the UI thread upon completion of operation.
-  // |callback| must not be null.
-  virtual void UpdateEntryData(scoped_ptr<google_apis::DocumentEntry> entry,
-                               const FilePath& file_content_path,
-                               const FileOperationCallback& callback) = 0;
-
   // Returns miscellaneous metadata of the file system like the largest
   // timestamp. Used in chrome:drive-internals.
   virtual DriveFileSystemMetadata GetMetadata() const = 0;

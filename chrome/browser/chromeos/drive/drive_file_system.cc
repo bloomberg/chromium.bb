@@ -1823,48 +1823,6 @@ void DriveFileSystem::AddUploadedFileToCache(
                 params.callback);
 }
 
-void DriveFileSystem::UpdateEntryData(
-    scoped_ptr<google_apis::DocumentEntry> entry,
-    const FilePath& file_content_path,
-    const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  resource_metadata_->RefreshFile(
-      entry.Pass(),
-      base::Bind(&DriveFileSystem::UpdateCacheEntry,
-                 ui_weak_ptr_,
-                 file_content_path,
-                 callback));
-}
-
-void DriveFileSystem::UpdateCacheEntry(
-    const FilePath& file_content_path,
-    const FileOperationCallback& callback,
-    DriveFileError error,
-    const FilePath& /* drive_file_path */,
-    scoped_ptr<DriveEntryProto> entry_proto) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  if (error != DRIVE_FILE_OK) {
-    callback.Run(error);
-    return;
-  }
-
-  DCHECK(entry_proto.get());
-  DCHECK(entry_proto->has_resource_id());
-  DCHECK(entry_proto->has_file_specific_info());
-  DCHECK(entry_proto->file_specific_info().has_file_md5());
-
-  // Add the file to the cache if we have uploaded a new file.
-  cache_->Store(entry_proto->resource_id(),
-                entry_proto->file_specific_info().file_md5(),
-                file_content_path,
-                DriveCache::FILE_OPERATION_MOVE,
-                callback);
-}
-
 DriveFileSystemMetadata DriveFileSystem::GetMetadata() const {
   DriveFileSystemMetadata metadata;
   metadata.largest_changestamp = resource_metadata_->largest_changestamp();
