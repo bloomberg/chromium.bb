@@ -51,9 +51,4 @@
 # bungeman@ will rebaseline this test
 crbug.com/155867 platform/chromium-linux/fast/text/chromium-linux-fontconfig-renderstyle.html [ Failure ImageOnlyFailure ]
 
-# These have been rebaselined upstream; can be removed once Chrome rolls past WebKit r136873.
-Bug(senorblanco) fast/borders/border-radius-constraints.html [ ImageOnlyFailure ]
-Bug(senorblanco) fast/borders/mixed-border-styles-radius.html [ ImageOnlyFailure ]
-webkit.org/b/23166 fast/css/background-clip-radius-values.html [ ImageOnlyFailure ]
-
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
