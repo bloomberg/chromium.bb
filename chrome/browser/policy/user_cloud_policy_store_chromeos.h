@@ -34,6 +34,7 @@ class UserCloudPolicyStoreChromeOS : public UserCloudPolicyStoreBase {
  public:
   UserCloudPolicyStoreChromeOS(
       chromeos::SessionManagerClient* session_manager_client,
+      const std::string& username,
       const FilePath& legacy_token_cache_file,
       const FilePath& legacy_policy_cache_file);
   virtual ~UserCloudPolicyStoreChromeOS();
@@ -83,6 +84,7 @@ class UserCloudPolicyStoreChromeOS : public UserCloudPolicyStoreBase {
   static void RemoveLegacyCacheDir(const FilePath& dir);
 
   chromeos::SessionManagerClient* session_manager_client_;
+  const std::string username_;
 
   base::WeakPtrFactory<UserCloudPolicyStoreChromeOS> weak_factory_;
 

@@ -188,6 +188,11 @@ class BrowserPolicyConnector : public content::NotificationObserver {
   // command line).
   static std::string GetDeviceManagementUrl();
 
+  // Check whether a user is known to be non-enterprise. Domains such as
+  // gmail.com and googlemail.com are known to not be managed. Also returns
+  // false if the username is empty.
+  static bool IsNonEnterpriseUser(const std::string& username);
+
  private:
   // content::NotificationObserver method overrides:
   virtual void Observe(int type,

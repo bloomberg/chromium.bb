@@ -8,7 +8,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "chrome/browser/chromeos/login/mock_user_manager.h"
 #include "chrome/browser/policy/cloud_policy_constants.h"
 #include "chrome/browser/policy/mock_cloud_policy_store.h"
 #include "chrome/browser/policy/policy_builder.h"
@@ -24,8 +23,8 @@ namespace em = enterprise_management;
 
 using testing::AllOf;
 using testing::Eq;
+using testing::Mock;
 using testing::Property;
-using testing::Return;
 using testing::SaveArg;
 using testing::_;
 
@@ -45,10 +44,8 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(tmp_dir_.CreateUniqueTempDir());
-    EXPECT_CALL(*user_manager_.user_manager(), IsUserLoggedIn())
-        .WillRepeatedly(Return(true));
-    user_manager_.user_manager()->SetLoggedInUser(PolicyBuilder::kFakeUsername);
     store_.reset(new UserCloudPolicyStoreChromeOS(&session_manager_client_,
+                                                  PolicyBuilder::kFakeUsername,
                                                   token_file(),
                                                   policy_file()));
     store_->AddObserver(&observer_);
@@ -80,6 +77,7 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
         .WillOnce(SaveArg<0>(&retrieve_callback));
     store_->Load();
     loop_.RunUntilIdle();
+    Mock::VerifyAndClearExpectations(&session_manager_client_);
     ASSERT_FALSE(retrieve_callback.is_null());
 
     // Run the callback.
@@ -114,7 +112,6 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   base::ScopedTempDir tmp_dir_;
-  chromeos::ScopedMockUserManagerEnabler user_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyStoreChromeOSTest);
 };
@@ -126,12 +123,13 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, Store) {
       .WillOnce(SaveArg<1>(&store_callback));
   store_->Store(policy_.policy());
   loop_.RunUntilIdle();
+  Mock::VerifyAndClearExpectations(&session_manager_client_);
+  ASSERT_FALSE(store_callback.is_null());
 
   // No policy should be present yet.
   EXPECT_FALSE(store_->policy());
   EXPECT_TRUE(store_->policy_map().empty());
   EXPECT_EQ(CloudPolicyStore::STATUS_OK, store_->status());
-  ASSERT_FALSE(store_callback.is_null());
 
   // Let the store operation complete.
   chromeos::SessionManagerClient::RetrievePolicyCallback retrieve_callback;
@@ -141,6 +139,7 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, Store) {
   loop_.RunUntilIdle();
   EXPECT_TRUE(store_->policy_map().empty());
   EXPECT_EQ(CloudPolicyStore::STATUS_OK, store_->status());
+  Mock::VerifyAndClearExpectations(&session_manager_client_);
   ASSERT_FALSE(retrieve_callback.is_null());
 
   // Finish the retrieve callback.
@@ -161,9 +160,10 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, StoreFail) {
       .WillOnce(SaveArg<1>(&store_callback));
   store_->Store(policy_.policy());
   loop_.RunUntilIdle();
+  Mock::VerifyAndClearExpectations(&session_manager_client_);
+  ASSERT_FALSE(store_callback.is_null());
 
   // Let the store operation complete.
-  ASSERT_FALSE(store_callback.is_null());
   ExpectError(CloudPolicyStore::STATUS_STORE_ERROR);
   store_callback.Run(false);
   loop_.RunUntilIdle();
@@ -183,11 +183,13 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, StoreValidationError) {
       .Times(0);
   store_->Store(policy_.policy());
   loop_.RunUntilIdle();
+  Mock::VerifyAndClearExpectations(&session_manager_client_);
 }
 
 TEST_F(UserCloudPolicyStoreChromeOSTest, Load) {
   EXPECT_CALL(observer_, OnStoreLoaded(store_.get()));
   ASSERT_NO_FATAL_FAILURE(PerformPolicyLoad(policy_.GetBlob()));
+  Mock::VerifyAndClearExpectations(&observer_);
 
   // Verify that the policy has been loaded.
   ASSERT_TRUE(store_->policy());
@@ -200,6 +202,7 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, Load) {
 TEST_F(UserCloudPolicyStoreChromeOSTest, LoadNoPolicy) {
   EXPECT_CALL(observer_, OnStoreLoaded(store_.get()));
   ASSERT_NO_FATAL_FAILURE(PerformPolicyLoad(""));
+  Mock::VerifyAndClearExpectations(&observer_);
 
   // Verify no policy has been installed.
   EXPECT_FALSE(store_->policy());
@@ -231,7 +234,6 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, LoadValidationError) {
 }
 
 TEST_F(UserCloudPolicyStoreChromeOSTest, MigrationFull) {
-  testing::Sequence seq;
   std::string data;
 
   em::DeviceCredentials credentials;
@@ -247,6 +249,7 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, MigrationFull) {
 
   EXPECT_CALL(observer_, OnStoreLoaded(store_.get()));
   ASSERT_NO_FATAL_FAILURE(PerformPolicyLoad(""));
+  Mock::VerifyAndClearExpectations(&observer_);
 
   // Verify that legacy user policy and token have been loaded.
   em::PolicyData expected_policy_data;
@@ -273,6 +276,7 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, MigrationNoToken) {
 
   EXPECT_CALL(observer_, OnStoreLoaded(store_.get()));
   ASSERT_NO_FATAL_FAILURE(PerformPolicyLoad(""));
+  Mock::VerifyAndClearExpectations(&observer_);
 
   // Verify the legacy cache has been loaded.
   em::PolicyData expected_policy_data;
@@ -287,7 +291,6 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, MigrationNoToken) {
 };
 
 TEST_F(UserCloudPolicyStoreChromeOSTest, MigrationNoPolicy) {
-  testing::Sequence seq;
   std::string data;
 
   em::DeviceCredentials credentials;
@@ -298,6 +301,7 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, MigrationNoPolicy) {
 
   EXPECT_CALL(observer_, OnStoreLoaded(store_.get()));
   ASSERT_NO_FATAL_FAILURE(PerformPolicyLoad(""));
+  Mock::VerifyAndClearExpectations(&observer_);
 
   // Verify that legacy user policy and token have been loaded.
   em::PolicyData expected_policy_data;

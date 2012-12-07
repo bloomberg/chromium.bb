@@ -61,6 +61,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
 
   void CreateManagerWithPendingFetch() {
     store_ = new MockCloudPolicyStore();
+    EXPECT_CALL(*store_, Load());
     manager_.reset(
         new UserCloudPolicyManagerChromeOS(scoped_ptr<CloudPolicyStore>(store_),
                                            true));
@@ -68,6 +69,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
     manager_->AddObserver(&observer_);
     manager_->Connect(&prefs_, &device_management_service_,
                       USER_AFFILIATION_NONE);
+    Mock::VerifyAndClearExpectations(store_);
     EXPECT_FALSE(manager_->IsInitializationComplete());
 
     // Finishing the Load() operation shouldn't set the initialized flag.

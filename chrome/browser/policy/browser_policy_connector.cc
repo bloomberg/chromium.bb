@@ -10,6 +10,7 @@
 #include "base/file_path.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/async_policy_provider.h"
 #include "chrome/browser/policy/cloud_policy_client.h"
@@ -368,11 +369,11 @@ void BrowserPolicyConnector::InitializeUserPolicy(
       device_local_account_policy_provider_->Init();
       global_user_cloud_policy_provider_.SetDelegate(
           device_local_account_policy_provider_.get());
-    } else {
+    } else if (!IsNonEnterpriseUser(user_name)) {
       scoped_ptr<CloudPolicyStore> store(
           new UserCloudPolicyStoreChromeOS(
               chromeos::DBusThreadManager::Get()->GetSessionManagerClient(),
-              policy_cache_file, token_cache_file));
+              user_name, policy_cache_file, token_cache_file));
       user_cloud_policy_manager_.reset(
           new UserCloudPolicyManagerChromeOS(store.Pass(),
                                              wait_for_policy_fetch));
@@ -527,6 +528,27 @@ std::string BrowserPolicyConnector::GetDeviceManagementUrl() {
     return command_line->GetSwitchValueASCII(switches::kDeviceManagementUrl);
   else
     return kDefaultDeviceManagementServerUrl;
+}
+
+// static
+bool BrowserPolicyConnector::IsNonEnterpriseUser(const std::string& username) {
+  if (username.empty()) {
+    // This means incognito user in case of ChromiumOS and
+    // no logged-in user in case of Chromium (SigninService).
+    return true;
+  }
+
+  static const char* kNonManagedDomains[] = {
+    "googlemail.com",
+    "gmail.com"
+  };
+  const std::string domain =
+      gaia::ExtractDomainName(gaia::CanonicalizeEmail(username));
+  for (size_t i = 0; i < arraysize(kNonManagedDomains); i++) {
+    if (domain == kNonManagedDomains[i])
+      return true;
+  }
+  return false;
 }
 
 void BrowserPolicyConnector::Observe(

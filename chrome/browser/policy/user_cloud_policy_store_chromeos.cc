@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/policy/proto/cloud_policy.pb.h"
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
 #include "chrome/browser/policy/user_policy_disk_cache.h"
@@ -148,9 +147,11 @@ CloudPolicyStore::Status LegacyPolicyCacheLoader::TranslateLoadResult(
 
 UserCloudPolicyStoreChromeOS::UserCloudPolicyStoreChromeOS(
     chromeos::SessionManagerClient* session_manager_client,
+    const std::string& username,
     const FilePath& legacy_token_cache_file,
     const FilePath& legacy_policy_cache_file)
     : session_manager_client_(session_manager_client),
+      username_(username),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       legacy_cache_dir_(legacy_token_cache_file.DirName()),
       legacy_loader_(new LegacyPolicyCacheLoader(legacy_token_cache_file,
@@ -273,8 +274,7 @@ void UserCloudPolicyStoreChromeOS::Validate(
   // Configure the validator.
   scoped_ptr<UserCloudPolicyValidator> validator =
       CreateValidator(policy.Pass());
-  validator->ValidateUsername(
-      chromeos::UserManager::Get()->GetLoggedInUser()->email());
+  validator->ValidateUsername(username_);
 
   // TODO(mnissler): Do a signature check here as well. The key is stored by
   // session_manager in the root-owned cryptohome area, which is currently

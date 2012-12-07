@@ -12,7 +12,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/rand_util.h"
-#include "base/string_util.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/cloud_policy_cache_base.h"
 #include "chrome/browser/policy/cloud_policy_constants.h"
 #include "chrome/browser/policy/cloud_policy_subsystem.h"
@@ -40,30 +40,6 @@ const int64 kPolicyRefreshErrorDelayInMilliseconds =
 
 // Default value for the policy refresh rate.
 const int kPolicyRefreshRateInMilliseconds = 3 * 60 * 60 * 1000;  // 3 hours.
-
-// Domain names that are known not to be managed.
-// We don't register the device when such a user logs in.
-const char* kNonManagedDomains[] = {
-  "@googlemail.com",
-  "@gmail.com"
-};
-
-// Checks the domain part of the given username against the list of known
-// non-managed domain names. Returns false if |username| is empty or
-// in a domain known not to be managed.
-bool CanBeInManagedDomain(const std::string& username) {
-  if (username.empty()) {
-    // This means incognito user in case of ChromiumOS and
-    // no logged-in user in case of Chromium (SigninService).
-    return false;
-  }
-  for (size_t i = 0; i < arraysize(kNonManagedDomains); i++) {
-    if (EndsWith(username, kNonManagedDomains[i], true)) {
-      return false;
-    }
-  }
-  return true;
-}
 
 // Records the UMA metric corresponding to |status|, if it represents an error.
 // Also records that a fetch response was received.
@@ -326,14 +302,14 @@ bool CloudPolicyController::ReadyToFetchToken() {
 
 void CloudPolicyController::FetchToken() {
   if (ReadyToFetchToken()) {
-    if (CanBeInManagedDomain(data_store_->user_name())) {
+    if (BrowserPolicyConnector::IsNonEnterpriseUser(data_store_->user_name())) {
+      SetState(STATE_TOKEN_UNMANAGED);
+    } else {
       // Either use an already prepopulated id or generate a new random device
       // id. (It'll only be kept if registration succeeds.)
       if (data_store_->device_id().empty())
         data_store_->set_device_id(base::GenerateGUID());
       token_fetcher_->FetchToken();
-    } else {
-      SetState(STATE_TOKEN_UNMANAGED);
     }
   } else {
     VLOG(1) << "Not ready to fetch DMToken yet, will try again later.";
