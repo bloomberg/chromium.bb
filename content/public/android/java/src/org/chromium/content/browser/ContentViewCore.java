@@ -150,15 +150,6 @@ public class ContentViewCore implements MotionEventDelegate {
 
     private boolean mAttachedToWindow = false;
 
-    // The vsync monitor is used to lock the compositor to the display refresh rate.
-    private VSyncMonitor mVSyncMonitor;
-
-    // The VSyncMonitor gives the timebase for the actual vsync, but we don't want render until
-    // we have had a chance for input events to propagate to the compositor thread. This takes
-    // 3 ms typically, so we adjust the vsync timestamps forward by a bit to give input events a
-    // chance to arrive.
-    private static final long INPUT_EVENT_LAG_FROM_VSYNC_MICROSECONDS = 3200;
-
     private ContentViewGestureHandler mContentViewGestureHandler;
     private ZoomManager mZoomManager;
 
@@ -210,23 +201,6 @@ public class ContentViewCore implements MotionEventDelegate {
 
     // Whether a physical keyboard is connected.
     private boolean mKeyboardConnected;
-
-    private final VSyncMonitor.Listener mVSyncListener = new VSyncMonitor.Listener() {
-        @Override
-        public void onVSync(VSyncMonitor monitor, long vsyncTimeMicros) {
-            TraceEvent.instant("VSync");
-            if (mNativeContentViewCore == 0 || mVSyncMonitor == null) {
-                return;
-            }
-            // Compensate for input event lag. Input events are delivered immediately on pre-JB
-            // releases, so this adjustment is only done for later versions.
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                vsyncTimeMicros += INPUT_EVENT_LAG_FROM_VSYNC_MICROSECONDS;
-            }
-            nativeUpdateVSyncParameters(mNativeContentViewCore, vsyncTimeMicros,
-                                        mVSyncMonitor.getVSyncPeriodInMicroseconds());
-        }
-    };
 
     // The AccessibilityInjector that handles loading Accessibility scripts into the web page.
     private AccessibilityInjector mAccessibilityInjector;
@@ -561,7 +535,6 @@ public class ContentViewCore implements MotionEventDelegate {
         mImeAdapter = createImeAdapter(mContext);
         mKeyboardConnected = mContainerView.getResources().getConfiguration().keyboard
                 != Configuration.KEYBOARD_NOKEYS;
-        mVSyncMonitor = new VSyncMonitor(mContext, mVSyncListener);
         TraceEvent.end();
     }
 
@@ -614,7 +587,6 @@ public class ContentViewCore implements MotionEventDelegate {
      */
     public void destroy() {
         hidePopupDialog();
-        if (mVSyncMonitor != null) mVSyncMonitor.unregisterListener();
         if (mNativeContentViewCore != 0) {
             nativeOnJavaContentViewCoreDestroyed(mNativeContentViewCore);
         }
@@ -1051,7 +1023,6 @@ public class ContentViewCore implements MotionEventDelegate {
         nativeOnHide(mNativeContentViewCore);
         setAccessibilityState(false);
         TraceEvent.end();
-        mVSyncMonitor.stop();
     }
 
     /**
@@ -1077,7 +1048,6 @@ public class ContentViewCore implements MotionEventDelegate {
         hidePopupDialog();
         setAccessibilityState(false);
         nativeOnHide(mNativeContentViewCore);
-        mVSyncMonitor.stop();
     }
 
     /**
