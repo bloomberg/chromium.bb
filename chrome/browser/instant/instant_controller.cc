@@ -540,23 +540,36 @@ void InstantController::OmniboxLostFocus(gfx::NativeView view_gaining_focus) {
   if (!extended_enabled_ && !instant_enabled_)
     return;
 
-  // If the preview isn't showing search suggestions, nothing to do. The check
-  // for GetPreviewContents() (which normally is redundant, given IsCurrent())
-  // is to handle the case when we get here during a commit.
-  if (!IsCurrent() || !GetPreviewContents()) {
+  // If the preview is showing custom NTP content, don't hide it, commit it
+  // (no matter where the user clicked) or try to recreate it.
+  if (model_.mode().is_ntp())
+    return;
+
+  // If the preview is not showing at all, recreate it if it's stale.
+  if (model_.mode().is_default()) {
     OnStaleLoader();
     return;
   }
 
+  // The preview is showing search suggestions. If GetPreviewContents() is NULL,
+  // we are in the commit path. Don't do anything.
+  if (!GetPreviewContents())
+    return;
+
 #if defined(OS_MACOSX)
+  // TODO(sreeram): See if Mac really needs this special treatment.
   if (!loader_->is_pointer_down_from_activate())
     HideLoader();
 #else
+  // If the preview was clicked, commit if it was for a search; ignore the click
+  // if it was for a URL. If the preview was not clicked, hide it.
   if (IsViewInContents(GetViewGainingFocus(view_gaining_focus),
-                       loader_->contents()))
-    CommitIfCurrent(INSTANT_COMMIT_FOCUS_LOST);
-  else
+                       loader_->contents())) {
+    if (last_match_was_search_)
+      CommitIfCurrent(INSTANT_COMMIT_FOCUS_LOST);
+  } else {
     HideLoader();
+  }
 #endif
 }
 
