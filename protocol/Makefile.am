@@ -5,4 +5,5 @@ EXTRA_DIST =					\
 	xserver.xml				\
 	text.xml				\
 	input-method.xml			\
-	workspaces.xml
+	workspaces.xml				\
+	wayland-test.xml

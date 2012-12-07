@@ -7,13 +7,22 @@ TESTS_ENVIRONMENT = $(SHELL) $(top_srcdir)/tests/weston-test
 
 export abs_builddir
 
+noinst_LTLIBRARIES =			\
+	$(weston_test)
+
+noinst_PROGRAMS =			\
+	$(setbacklight)			\
+	matrix-test
+
+check_LTLIBRARIES =			\
+	$(TESTS)
+
+check_PROGRAMS =			\
+	test-client			\
+	test-text-client
+
 AM_CFLAGS = $(GCC_CFLAGS)
 AM_CPPFLAGS = -I$(top_srcdir)/src -DUNIT_TEST $(COMPOSITOR_CFLAGS)
-
-
-check_LTLIBRARIES = $(TESTS)
-check_PROGRAMS = test-client test-text-client
-
 AM_LDFLAGS = -module -avoid-version -rpath $(libdir)
 
 test_runner_src = test-runner.c test-runner.h
@@ -32,7 +41,14 @@ test_client_LDADD = $(SIMPLE_CLIENT_LIBS)
 test_text_client_SOURCES = test-text-client.c  ../clients/text-protocol.c
 test_text_client_LDADD = $(SIMPLE_CLIENT_LIBS)
 
-noinst_PROGRAMS = $(setbacklight) matrix-test
+weston_test = weston-test.la
+weston_test_la_LIBADD = $(COMPOSITOR_LIBS)	\
+	../shared/libshared.la
+weston_test_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
+weston_test_la_SOURCES =		\
+	weston-test.c			\
+	wayland-test-protocol.c		\
+	wayland-test-server-protocol.h
 
 matrix_test_SOURCES =				\
 	matrix-test.c				\
@@ -53,3 +69,12 @@ setbacklight = setbacklight
 endif
 
 EXTRA_DIST = weston-test
+
+BUILT_SOURCES =					\
+	wayland-test-protocol.c			\
+	wayland-test-server-protocol.h		\
+	wayland-test-client-protocol.h
+
+CLEANFILES = $(BUILT_SOURCES)
+
+@wayland_scanner_rules@
