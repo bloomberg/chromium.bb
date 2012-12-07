@@ -134,10 +134,12 @@ def _CheckLinks(input_api, output_api, results):
           if line1 != line2:
             changes = ('%s\nLine %d:\n-%s\n+%s\n' %
                 (changes, i + 1, line1, line2))
-        results.append(output_api.PresubmitPromptWarning(
-            'File %s may have an old-style <a> link to an API page. Please run '
-            'docs/server2/link_converter.py to convert the link[s], or convert '
-            'them manually.\n\nSuggested changes are: %s' % (name, changes)))
+        if changes:
+          results.append(output_api.PresubmitPromptWarning(
+              'File %s may have an old-style <a> link to an API page. Please '
+              'run docs/server2/link_converter.py to convert the link[s], or '
+              'convert them manually.\n\nSuggested changes are: %s' %
+              (name, changes)))
 
 def _CheckChange(input_api, output_api):
   results = [
