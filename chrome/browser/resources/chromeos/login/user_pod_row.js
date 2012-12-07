@@ -807,6 +807,10 @@ cr.define('login', function() {
         }
       }
 
+      // Clear any error messages for previous pod.
+      if (!this.isFocused(podToFocus))
+        Oobe.clearErrors();
+
       var hadFocus = !!this.focusedPod_;
       this.focusedPod_ = podToFocus;
       if (podToFocus) {

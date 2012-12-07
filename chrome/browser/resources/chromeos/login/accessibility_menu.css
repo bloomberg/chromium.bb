@@ -4,7 +4,10 @@
  */
 
 #accessibility-menu {
-  padding: 15px 80px 25px 25px;
+  -webkit-padding-after: 25px;
+  -webkit-padding-before: 15px;
+  -webkit-padding-end: 80px;
+  -webkit-padding-start: 25px;
 }
 
 .checkboxrow {

@@ -32,6 +32,9 @@ cr.define('cr.ui', function() {
     // Anchor element for this bubble.
     anchor_: undefined,
 
+    // Whether to hide bubble when key is pressed.
+    hideOnKeyPress_: true,
+
     /** @override */
     decorate: function() {
       this.docKeyDownHandler_ = this.handleDocKeyDown_.bind(this);
@@ -46,16 +49,11 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * Whether to hide bubble when key is pressed. Default is true.
+     * Whether to hide bubble when key is pressed.
      * @type {boolean}
      */
     set hideOnKeyPress(value) {
-      if (value) {
-        this.ownerDocument.addEventListener('keydown', this.docKeyDownHandler_);
-      } else {
-        this.ownerDocument.removeEventListener('keydown',
-                                               this.docKeyDownHandler_);
-      }
+      this.hideOnKeyPress_ = value;
     },
 
     /**
@@ -75,6 +73,10 @@ cr.define('cr.ui', function() {
      * @private
      */
     handleSelfClick_: function(e) {
+      // Allow clicking on [x] button.
+      if (e.target && e.target.classList.contains('close-button'))
+        return;
+
       e.stopPropagation();
     },
 
@@ -146,11 +148,11 @@ cr.define('cr.ui', function() {
       /** @const */ var ARROW_OFFSET = 25;
       /** @const */ var DEFAULT_PADDING = 18;
 
-      if (opt_padding !== undefined)
+      if (opt_padding == undefined)
         opt_padding = DEFAULT_PADDING;
 
       var origin = cr.ui.login.DisplayManager.getPosition(el);
-      var offset = typeof opt_offset == 'undefined' ?
+      var offset = opt_offset == undefined ?
           [Math.min(ARROW_OFFSET, el.offsetWidth / 2),
            Math.min(ARROW_OFFSET, el.offsetHeight / 2)] :
           [opt_offset, opt_offset];
@@ -264,7 +266,12 @@ cr.define('cr.ui', function() {
      * @private
      */
     handleDocKeyDown_: function(e) {
-      if (!this.hidden)
+      if (this.hideOnKeyPress_ && !this.hidden) {
+        this.hide();
+        return;
+      }
+
+      if (e.keyCode == 27 && !this.hidden)
         this.hide();
     },
 

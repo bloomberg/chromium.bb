@@ -103,13 +103,6 @@ cr.define('cr.ui', function() {
     $('update-accessibility-link').addEventListener(
         'click', Oobe.handleAccessbilityLinkClick);
 
-    // TODO(nkostylev): Move OOBE/login WebUI from localStrings to loadTimeData.
-    $('high-contrast').checked =
-        localStrings.getString('highContrastEnabled') == 'on';
-    $('spoken-feedback').checked =
-        localStrings.getString('spokenFeedbackEnabled') == 'on';
-    $('screen-magnifier').checked =
-        localStrings.getString('screenMagnifierEnabled') == 'on';
     $('high-contrast').addEventListener('click', Oobe.handleHighContrastClick);
     $('spoken-feedback').addEventListener('click',
                                           Oobe.handleSpokenFeedbackClick);
@@ -288,6 +281,16 @@ cr.define('cr.ui', function() {
     $('tpm-busy').hidden = true;
     $('tpm-password').textContent = password;
     $('tpm-password').hidden = false;
+  };
+
+  /**
+   * Refreshes a11y menu state.
+   * @param {!Object} data New dictionary with a11y features state.
+   */
+  Oobe.refreshA11yInfo = function(data) {
+    $('high-contrast').checked = data.highContrastEnabled;
+    $('spoken-feedback').checked = data.spokenFeedbackEnabled;
+    $('screen-magnifier').checked = data.screenMagnifierEnabled;
   };
 
   /**

@@ -33,6 +33,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_accessibility_state.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -146,6 +147,10 @@ void EnableSpokenFeedback(bool enabled, content::WebUI* login_web_ui) {
   g_browser_process->local_state()->CommitPendingWrite();
   ExtensionAccessibilityEventRouter::GetInstance()->
       SetAccessibilityEnabled(enabled);
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK,
+      content::NotificationService::AllSources(),
+      content::Details<bool>(&enabled));
 
   Speak(l10n_util::GetStringUTF8(
       enabled ? IDS_CHROMEOS_ACC_SPOKEN_FEEDBACK_ENABLED :
@@ -207,6 +212,10 @@ void EnableHighContrast(bool enabled) {
   PrefService* pref_service = g_browser_process->local_state();
   pref_service->SetBoolean(prefs::kHighContrastEnabled, enabled);
   pref_service->CommitPendingWrite();
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE,
+      content::NotificationService::AllSources(),
+      content::Details<bool>(&enabled));
 
 #if defined(USE_ASH)
   ash::Shell::GetInstance()->high_contrast_controller()->SetEnabled(enabled);
@@ -216,6 +225,11 @@ void EnableHighContrast(bool enabled) {
 void SetMagnifier(ash::MagnifierType type) {
   if (MagnificationManager::Get())
     MagnificationManager::Get()->SetMagnifier(type);
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER,
+      content::NotificationService::AllSources(),
+      content::NotificationService::NoDetails());
 }
 
 void EnableVirtualKeyboard(bool enabled) {

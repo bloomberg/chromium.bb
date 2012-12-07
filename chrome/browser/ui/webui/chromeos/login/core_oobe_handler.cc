@@ -12,7 +12,9 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_version_info.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -38,6 +40,18 @@ CoreOobeHandler::CoreOobeHandler(OobeUI* oobe_ui)
       show_oobe_ui_(false),
       version_info_updater_(this),
       delegate_(NULL) {
+  registrar_.Add(
+      this,
+      chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE,
+      content::NotificationService::AllSources());
+  registrar_.Add(
+      this,
+      chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER,
+      content::NotificationService::AllSources());
+  registrar_.Add(
+      this,
+      chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK,
+      content::NotificationService::AllSources());
 }
 
 CoreOobeHandler::~CoreOobeHandler() {
@@ -68,19 +82,10 @@ void CoreOobeHandler::GetLocalizedStrings(
       l10n_util::GetStringUTF16(IDS_OOBE_HIGH_CONTRAST_MODE_OPTION));
   localized_strings->SetString("screenMagnifierOption",
       l10n_util::GetStringUTF16(IDS_OOBE_SCREEN_MAGNIFIER_OPTION));
-
-  // TODO(nkostylev): Move OOBE/login WebUI from localStrings to loadTimeData.
-  if (chromeos::accessibility::IsHighContrastEnabled())
-    localized_strings->SetString("highContrastEnabled", "on");
-  if (chromeos::accessibility::IsSpokenFeedbackEnabled())
-    localized_strings->SetString("spokenFeedbackEnabled", "on");
-  if (chromeos::accessibility::GetMagnifierType() !=
-      ash::MAGNIFIER_OFF) {
-    localized_strings->SetString("screenMagnifierEnabled", "on");
-  }
 }
 
 void CoreOobeHandler::Initialize() {
+  UpdateA11yState();
   UpdateOobeUIVisibility();
 #if defined(OFFICIAL_BUILD)
   version_info_updater_.StartUpdate(true);
@@ -136,7 +141,7 @@ void CoreOobeHandler::HandleEnableHighContrast(const base::ListValue* args) {
     NOTREACHED();
     return;
   }
-  chromeos::accessibility::EnableHighContrast(enabled);
+  accessibility::EnableHighContrast(enabled);
 }
 
 void CoreOobeHandler::HandleEnableScreenMagnifier(const base::ListValue* args) {
@@ -148,13 +153,13 @@ void CoreOobeHandler::HandleEnableScreenMagnifier(const base::ListValue* args) {
   // TODO(nkostylev): Add support for partial screen magnifier.
   ash::MagnifierType type = enabled ? ash::MAGNIFIER_FULL :
                                       ash::MAGNIFIER_OFF;
-  chromeos::accessibility::SetMagnifier(type);
+  accessibility::SetMagnifier(type);
 }
 
 void CoreOobeHandler::HandleEnableSpokenFeedback(const base::ListValue* args) {
   // Checkbox is initialized on page init and updates when spoken feedback
   // setting is changed so just toggle spoken feedback here.
-  chromeos::accessibility::ToggleSpokenFeedback(web_ui());
+  accessibility::ToggleSpokenFeedback(web_ui());
 }
 
 void CoreOobeHandler::ShowOobeUI(bool show) {
@@ -165,6 +170,17 @@ void CoreOobeHandler::ShowOobeUI(bool show) {
 
   if (page_is_ready())
     UpdateOobeUIVisibility();
+}
+
+void CoreOobeHandler::UpdateA11yState() {
+  base::DictionaryValue a11y_info;
+  a11y_info.SetBoolean("highContrastEnabled",
+                       accessibility::IsHighContrastEnabled());
+  a11y_info.SetBoolean("spokenFeedbackEnabled",
+                       accessibility::IsSpokenFeedbackEnabled());
+  a11y_info.SetBoolean("screenMagnifierEnabled",
+                       accessibility::GetMagnifierType() != ash::MAGNIFIER_OFF);
+  web_ui()->CallJavascriptFunction("cr.ui.Oobe.refreshA11yInfo", a11y_info);
 }
 
 void CoreOobeHandler::UpdateOobeUIVisibility() {
@@ -208,6 +224,19 @@ void CoreOobeHandler::UpdateLabel(const std::string& id,
   web_ui()->CallJavascriptFunction("cr.ui.Oobe.setLabelText",
                                    id_value,
                                    text_value);
+}
+
+void CoreOobeHandler::Observe(int type,
+                              const content::NotificationSource& source,
+                              const content::NotificationDetails& details) {
+  if (type ==
+          chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE ||
+      type == chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER ||
+      type == chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK) {
+    UpdateA11yState();
+  } else {
+    NOTREACHED() << "Unexpected notification " << type;
+  }
 }
 
 }  // namespace chromeos

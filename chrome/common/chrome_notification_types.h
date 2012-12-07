@@ -1076,6 +1076,15 @@ enum NotificationType {
   // PIN or PUK.
   NOTIFICATION_ENTER_PIN_ENDED,
 
+  // Sent when high contrast mode is toggled.
+  NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE,
+
+  // Sent when screen magnifier is toggled.
+  NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER,
+
+  // Sent when spoken feedback is toggled.
+  NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK,
+
 #endif
 
 #if defined(TOOLKIT_VIEWS)

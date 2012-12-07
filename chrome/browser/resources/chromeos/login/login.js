@@ -67,6 +67,11 @@ cr.define('cr.ui', function() {
   /**
    * Dummy Oobe functions not present with stripped login UI.
    */
+  Oobe.initializeA11yMenu = function(e) {};
+  Oobe.handleAccessbilityLinkClick = function(e) {};
+  Oobe.handleSpokenFeedbackClick = function(e) {};
+  Oobe.handleHighContrastClick = function(e) {};
+  Oobe.handleScreenMagnifierClick = function(e) {};
   Oobe.enableContinueButton = function(enable) {};
   Oobe.setUsageStats = function(checked) {};
   Oobe.setOemEulaUrl = function(oemEulaUrl) {};
@@ -76,6 +81,7 @@ cr.define('cr.ui', function() {
   Oobe.setUpdateMessage = function(message) {};
   Oobe.showUpdateCurtain = function(enable) {};
   Oobe.setTpmPassword = function(password) {};
+  Oobe.refreshA11yInfo = function(data) {};
   Oobe.reloadContent = function(data) {};
 
   /**

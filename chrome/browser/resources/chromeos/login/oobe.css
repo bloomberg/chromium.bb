@@ -165,9 +165,7 @@ hr.bottom {
 
 #header {
   -webkit-padding-start: 45px;
-  background-image: url('chrome://theme/IDR_PRODUCT_LOGO_32');
-  background-position: left center;
-  background-repeat: no-repeat;
+  background: url('chrome://theme/IDR_PRODUCT_LOGO_32') left center no-repeat;
   background-size: 32px;
   color: #666;
   display: -webkit-box;
@@ -893,6 +891,14 @@ html[oobe=old] #installation-settings {
   position: absolute;
 }
 
+#security-info a:focus,
+#eula a:focus,
+.step-extra-controls a:focus {
+  -webkit-transition: outline-color 200ms;
+  /* Note: May use 1px solid here. */
+  outline-color: rgb(77, 144, 254);
+}
+
 .step-extra-controls > *:not(:first-child) {
   -webkit-margin-start: 25px;
 }
@@ -1279,8 +1285,26 @@ html[oobe=new] .oauth-enroll-step-center {
   text-decoration: underline;
 }
 
-#close-button.visible {
-  display: inline-block;
+.close-button {
+  background: url('chrome://theme/IDR_WEB_UI_CLOSE') center no-repeat;
+  height: 14px;
+  position: absolute;
+  right: 7px;
+  top: 7px;
+  width: 14px;
+}
+
+.close-button:hover {
+  background-image: url('chrome://theme/IDR_WEB_UI_CLOSE_HOVER');
+}
+
+.close-button:active {
+  background-image: url('chrome://theme/IDR_WEB_UI_CLOSE_PRESSED');
+}
+
+html[dir=rtl] .close-button {
+  left: 10px;
+  right: auto;
 }
 
 #bubble {
@@ -1341,9 +1365,7 @@ span.bold {
 
 .error-message {
   -webkit-padding-start: 30px;
-  background-image: url('chrome://theme/IDR_WARNING');
-  background-position: left top;
-  background-repeat: no-repeat;
+  background: url('chrome://theme/IDR_WARNING') left top no-repeat;
   background-size: 24px;
 }
 

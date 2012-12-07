@@ -58,6 +58,12 @@ html[oobe=new] .no-right-panel #signin-right {
   text-decoration: none;
 }
 
+.signin-link:focus {
+  -webkit-transition: outline-color 200ms;
+  /* Note: May use 1px solid here. */
+  outline-color: rgb(77, 144, 254);
+}
+
 #signin-frame {
   height: 100%;
   width: 340px;

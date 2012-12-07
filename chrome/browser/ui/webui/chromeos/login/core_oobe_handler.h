@@ -7,6 +7,8 @@
 
 #include "chrome/browser/chromeos/login/version_info_updater.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 namespace base {
 class ListValue;
@@ -18,7 +20,8 @@ class OobeUI;
 
 // The core handler for Javascript messages related to the "oobe" view.
 class CoreOobeHandler : public BaseScreenHandler,
-                        public VersionInfoUpdater::Delegate {
+                        public VersionInfoUpdater::Delegate,
+                        public content::NotificationObserver {
  public:
   class Delegate {
    public:
@@ -64,11 +67,19 @@ class CoreOobeHandler : public BaseScreenHandler,
   void HandleSkipUpdateEnrollAfterEula(const base::ListValue* args);
   void HandleUpdateCurrentScreen(const base::ListValue* args);
 
+  // Updates a11y menu state based on the current a11y features state(on/off).
+  void UpdateA11yState();
+
   // Calls javascript to sync OOBE UI visibility with show_oobe_ui_.
   void UpdateOobeUIVisibility();
 
   // Updates label with specified id with specified text.
   void UpdateLabel(const std::string& id, const std::string& text);
+
+  // content::NotificationObserver implementation:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Owner of this handler.
   OobeUI* oobe_ui_;
@@ -80,6 +91,8 @@ class CoreOobeHandler : public BaseScreenHandler,
   VersionInfoUpdater version_info_updater_;
 
   Delegate* delegate_;
+
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(CoreOobeHandler);
 };
