@@ -169,6 +169,7 @@ void ClientSession::OnConnectionClosed(
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(connection_.get(), connection);
 
+  // If the client never authenticated then the session failed.
   if (!auth_input_filter_.enabled())
     event_handler_->OnSessionAuthenticationFailed(this);
 
@@ -181,6 +182,19 @@ void ClientSession::OnConnectionClosed(
   // Ensure that any pressed keys or buttons are released.
   input_tracker_.ReleaseAll();
 
+  // Stop components access the client, audio or video stubs, which are no
+  // longer valid once ConnectionToClient calls OnConnectionClosed().
+  if (audio_scheduler_.get()) {
+    audio_scheduler_->Stop(base::Bind(&ClientSession::OnRecorderStopped, this));
+    audio_scheduler_ = NULL;
+  }
+  if (video_scheduler_.get()) {
+    video_scheduler_->Stop(base::Bind(&ClientSession::OnRecorderStopped, this));
+    video_scheduler_ = NULL;
+  }
+  client_clipboard_factory_.InvalidateWeakPtrs();
+
+  // Notify the ChromotingHost that this client is disconnected.
   // TODO(sergeyu): Log failure reason?
   event_handler_->OnSessionClosed(this);
 }
@@ -210,29 +224,26 @@ void ClientSession::Disconnect() {
   DCHECK(connection_.get());
 
   max_duration_timer_.Stop();
+
   // This triggers OnConnectionClosed(), and the session may be destroyed
   // as the result, so this call must be the last in this method.
   connection_->Disconnect();
 }
 
-void ClientSession::Stop(const base::Closure& done_task) {
+void ClientSession::Stop(const base::Closure& stopped_task) {
   DCHECK(CalledOnValidThread());
-  DCHECK(done_task_.is_null());
+  DCHECK(stopped_task_.is_null());
+  DCHECK(!stopped_task.is_null());
+  DCHECK(audio_scheduler_.get() == NULL);
+  DCHECK(video_scheduler_.get() == NULL);
 
-  done_task_ = done_task;
-  if (audio_scheduler_.get()) {
-    audio_scheduler_->Stop(base::Bind(&ClientSession::OnRecorderStopped, this));
-    audio_scheduler_ = NULL;
-  }
+  stopped_task_ = stopped_task;
 
-  if (video_scheduler_.get()) {
-    video_scheduler_->Stop(base::Bind(&ClientSession::OnRecorderStopped, this));
-    video_scheduler_ = NULL;
-  }
-
-  if (!active_recorders_) {
+  if (active_recorders_ == 0) {
+    // |stopped_task_| may tear down the signalling layer, so tear-down
+    // |connection_| before invoking it.
     connection_.reset();
-    done_task_.Run();
+    stopped_task_.Run();
   }
 }
 
@@ -252,7 +263,7 @@ void ClientSession::SetDisableInputs(bool disable_inputs) {
 }
 
 ClientSession::~ClientSession() {
-  DCHECK(!active_recorders_);
+  DCHECK_EQ(active_recorders_, 0);
   DCHECK(audio_scheduler_.get() == NULL);
   DCHECK(video_scheduler_.get() == NULL);
 }
@@ -273,14 +284,15 @@ void ClientSession::OnRecorderStopped() {
     return;
   }
 
-  DCHECK(!done_task_.is_null());
-
   --active_recorders_;
   DCHECK_GE(active_recorders_, 0);
 
-  if (!active_recorders_) {
+  DCHECK(!stopped_task_.is_null());
+  if (active_recorders_ == 0) {
+    // |stopped_task_| may result in the signalling layer being torn down, so
+    // tear down the ConnectionToClient first.
     connection_.reset();
-    done_task_.Run();
+    stopped_task_.Run();
   }
 }
 

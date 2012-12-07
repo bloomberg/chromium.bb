@@ -120,14 +120,14 @@ class ClientSession
       const std::string& channel_name,
       const protocol::TransportRoute& route) OVERRIDE;
 
-  // Disconnects the session and destroys the transport. Event handler
-  // is guaranteed not to be called after this method is called. The object
-  // should not be used after this method returns.
+  // Disconnects the session, tears down transport resources and stops scheduler
+  // components. |event_handler_| is guaranteed not to be called after this
+  // method returns.
   void Disconnect();
 
-  // Stop all recorders asynchronously. |done_task| is executed when the session
-  // is completely stopped.
-  void Stop(const base::Closure& done_task);
+  // Stops the ClientSession, and calls |stopped_task| on |network_task_runner_|
+  // when fully stopped.
+  void Stop(const base::Closure& stopped_task);
 
   protocol::ConnectionToClient* connection() const {
     return connection_.get();
@@ -218,7 +218,6 @@ class ClientSession
   // is reached.
   base::OneShotTimer<ClientSession> max_duration_timer_;
 
-
   scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> video_encode_task_runner_;
@@ -233,8 +232,8 @@ class ClientSession
   // recorders/schedulers are asynchronously shutting down.
   int active_recorders_;
 
-  // The task to be executed when the session is completely stopped.
-  base::Closure done_task_;
+  // Task to execute once the session is completely stopped.
+  base::Closure stopped_task_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientSession);
 };

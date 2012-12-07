@@ -296,7 +296,7 @@ class ChromotingHostTest : public testing::Test {
 
   // Helper method to disconnect client 1 from the host.
   void DisconnectClient1() {
-    client1_->OnConnectionClosed(connection1_, protocol::OK);
+    NotifyClientSessionClosed(0);
   }
 
   // Notify |host_| that the authenticating client has been rejected.
@@ -306,7 +306,8 @@ class ChromotingHostTest : public testing::Test {
 
   // Notify |host_| that a client session has closed.
   void NotifyClientSessionClosed(int connection_index) {
-    host_->OnSessionClosed(get_client(connection_index));
+    get_client(connection_index)->OnConnectionClosed(
+        get_connection(connection_index), protocol::OK);
   }
 
   void SetEventHandler(protocol::Session::EventHandler* event_handler) {
