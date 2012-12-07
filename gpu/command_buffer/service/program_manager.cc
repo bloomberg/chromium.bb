@@ -307,6 +307,20 @@ void ProgramManager::ProgramInfo::Update() {
     attrib_location_to_index_map_[info.location] = ii;
   }
 
+#if !defined(NDEBUG)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableGPUServiceLoggingGPU)) {
+    DLOG(INFO) << "----: attribs for service_id: " << service_id();
+    for (size_t ii = 0; ii < attrib_infos_.size(); ++ii) {
+      const VertexAttribInfo& info = attrib_infos_[ii];
+      DLOG(INFO) << ii << ": loc = " << info.location
+                 << ", size = " << info.size
+                 << ", type = " << GLES2Util::GetStringEnum(info.type)
+                 << ", name = " << info.name;
+    }
+  }
+#endif
+
   max_len = 0;
   GLint num_uniforms = 0;
   glGetProgramiv(service_id_, GL_ACTIVE_UNIFORMS, &num_uniforms);
@@ -370,6 +384,22 @@ void ProgramManager::ProgramInfo::Update() {
           data.original_name, &next_available_index);
     }
   }
+
+#if !defined(NDEBUG)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableGPUServiceLoggingGPU)) {
+    DLOG(INFO) << "----: uniforms for service_id: " << service_id();
+    for (size_t ii = 0; ii < uniform_infos_.size(); ++ii) {
+      const UniformInfo& info = uniform_infos_[ii];
+      if (info.IsValid()) {
+        DLOG(INFO) << ii << ": loc = " << info.element_locations[0]
+                   << ", size = " << info.size
+                   << ", type = " << GLES2Util::GetStringEnum(info.type)
+                   << ", name = " << info.name;
+      }
+    }
+  }
+#endif
 
   valid_ = true;
 }

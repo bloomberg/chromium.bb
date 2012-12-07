@@ -49,6 +49,14 @@
   #define GPU_CLIENT_DCHECK_CODE_BLOCK(code)
 #endif
 
+#if defined(GPU_CLIENT_DEBUG)
+  // Set to 1 to have the client fail when a GL error is generated.
+  // This helps find bugs in the renderer since the debugger stops on the error.
+#  if 0
+#    define GL_CLIENT_FAIL_GL_ERRORS
+#  endif
+#endif
+
 // Check that destination pointers point to initialized memory.
 // When the context is lost, calling GL function has no effect so if destination
 // pointers point to initialized memory it can often lead to crash bugs. eg.
@@ -474,6 +482,14 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface {
       const char* function_name, GLuint offset, GLsizei size);
 
   const std::string& GetLogPrefix() const;
+
+#if defined(GL_CLIENT_FAIL_GL_ERRORS)
+  void CheckGLError();
+  void FailGLError(GLenum error);
+#else
+  void CheckGLError() { }
+  void FailGLError(GLenum /* error */) { }
+#endif
 
   GLES2Util util_;
   GLES2CmdHelper* helper_;

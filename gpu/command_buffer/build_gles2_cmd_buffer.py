@@ -2826,6 +2826,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
         arg.WriteClientSideValidationCode(file, func)
       file.Write("  helper_->%s(%s);\n" %
                  (func.name, func.MakeOriginalArgString("")))
+      file.Write("  CheckGLError();\n")
       self.WriteClientGLReturnLog(func, file)
       file.Write("}\n")
       file.Write("\n")
@@ -3563,6 +3564,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   if (Bind%(type)sHelper(%(arg_string)s)) {
     helper_->%(name)s(%(arg_string)s);
   }
+  CheckGLError();
 }
 
 """
@@ -3679,6 +3681,7 @@ class GENnHandler(TypeHandler):
   helper_->%(name)sImmediate(%(args)s);
   helper_->CommandBufferHelper::Flush();
 %(log_code)s
+  CheckGLError();
 }
 
 """
@@ -3931,6 +3934,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     file.Write("  helper_->%s(%s);\n" %
                (func.name, func.MakeCmdArgString("")))
     file.Write('  GPU_CLIENT_LOG("returned " << client_id);\n')
+    file.Write("  CheckGLError();\n")
     file.Write("  return client_id;\n")
     file.Write("}\n")
     file.Write("\n")
@@ -3960,6 +3964,7 @@ class DeleteHandler(TypeHandler):
         "  GPU_CLIENT_DCHECK(%s != 0);\n" % func.GetOriginalArgs()[-1].name)
     file.Write("  %sHelper(%s);\n" %
                (func.original_name, func.GetOriginalArgs()[-1].name))
+    file.Write("  CheckGLError();\n")
     file.Write("}\n")
     file.Write("\n")
 
@@ -4111,6 +4116,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs) {
       for arg in func.GetOriginalArgs():
         arg.WriteClientSideValidationCode(file, func)
       code = """  %(name)sHelper(%(args)s);
+  CheckGLError();
 }
 
 """
@@ -4294,6 +4300,7 @@ class GETnHandler(TypeHandler):
       GPU_CLIENT_LOG("  " << i << ": " << result->GetData()[i]);
     }
   });
+  CheckGLError();
 }
 """
       file.Write(code % {
@@ -4501,6 +4508,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
       arg.WriteClientSideValidationCode(file, func)
     file.Write("  helper_->%sImmediate(%s);\n" %
                (func.name, func.MakeOriginalArgString("")))
+    file.Write("  CheckGLError();\n")
     file.Write("}\n")
     file.Write("\n")
 
@@ -4764,6 +4772,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
       arg.WriteClientSideValidationCode(file, func)
     file.Write("  helper_->%sImmediate(%s);\n" %
                (func.name, func.MakeOriginalArgString("")))
+    file.Write("  CheckGLError();\n")
     file.Write("}\n")
     file.Write("\n")
 
@@ -5238,8 +5247,10 @@ TEST_F(%(test_name)s, %(name)sInvalidArgsBadSharedMemoryId) {
           "  helper_->%s(%s%sGetResultShmId(), GetResultShmOffset());\n" %
                  (func.name, arg_string, comma))
       file.Write("  WaitForCmd();\n")
-      file.Write('  GPU_CLIENT_LOG("returned " << *result);\n')
-      file.Write("  return *result;\n")
+      file.Write("  %s result_value = *result;\n" % func.return_type)
+      file.Write('  GPU_CLIENT_LOG("returned " << result_value);\n')
+      file.Write("  CheckGLError();\n")
+      file.Write("  return result_value;\n")
       file.Write("}\n")
       file.Write("\n")
 
@@ -5316,6 +5327,7 @@ class STRnHandler(TypeHandler):
   if (%(length_name)s != NULL) {
     *%(length_name)s = max_size;
   }
+  CheckGLError();
 }
 """
     args = func.GetOriginalArgs()

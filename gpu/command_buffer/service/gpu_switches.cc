@@ -26,6 +26,11 @@ const char kEnableGPUCommandLogging[]       = "enable-gpu-command-logging";
 // Turn on Calling GL Error after every command.
 const char kEnableGPUDebugging[]            = "enable-gpu-debugging";
 
+// Enable GPU service logging. Note: This is the same switch as the one in
+// gl_switches.cc. It's defined here again to avoid dependencies between
+// dlls.
+const char kEnableGPUServiceLoggingGPU[]    = "enable-gpu-service-logging";
+
 // Turn on user-defined name hashing in shaders.
 const char kEnableShaderNameHashing[]       = "enable-shader-name-hashing";
 
@@ -55,6 +60,7 @@ const char* kGpuSwitches[] = {
   kDisableGpuDriverBugWorkarounds,
   kEnableGPUCommandLogging,
   kEnableGPUDebugging,
+  kEnableGPUServiceLoggingGPU,
   kDisableGpuProgramCache,
   kEnforceGLMinimums,
   kForceGLFinishWorkaround,

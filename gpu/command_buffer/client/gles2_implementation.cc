@@ -341,11 +341,24 @@ GLenum GLES2Implementation::GetGLError() {
   return error;
 }
 
+#if defined(GL_CLIENT_FAIL_GL_ERRORS)
+void GLES2Implementation::FailGLError(GLenum error) {
+  if (error != GL_NO_ERROR) {
+    GPU_NOTREACHED() << "Error";
+  }
+}
+// NOTE: Calling GetGLError overwrites data in the result buffer.
+void GLES2Implementation::CheckGLError() {
+  FailGLError(GetGLError());
+}
+#endif  // defined(GPU_CLIENT_FAIL_GL_ERRORS)
+
 void GLES2Implementation::SetGLError(
     GLenum error, const char* function_name, const char* msg) {
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] Client Synthesized Error: "
                  << GLES2Util::GetStringError(error) << ": "
                  << function_name << ": " << msg);
+  FailGLError(error);
   if (msg) {
     last_error_ = msg;
   }
@@ -474,6 +487,7 @@ void GLES2Implementation::Disable(GLenum cap) {
   if (!state_.SetCapabilityState(cap, false, &changed) || changed) {
     helper_->Disable(cap);
   }
+  CheckGLError();
 }
 
 void GLES2Implementation::Enable(GLenum cap) {
@@ -484,6 +498,7 @@ void GLES2Implementation::Enable(GLenum cap) {
   if (!state_.SetCapabilityState(cap, true, &changed) || changed) {
     helper_->Enable(cap);
   }
+  CheckGLError();
 }
 
 GLboolean GLES2Implementation::IsEnabled(GLenum cap) {
@@ -504,6 +519,7 @@ GLboolean GLES2Implementation::IsEnabled(GLenum cap) {
   }
 
   GPU_CLIENT_LOG("returned " << state);
+  CheckGLError();
   return state;
 }
 
@@ -641,6 +657,7 @@ GLuint GLES2Implementation::GetMaxValueInBufferCHROMIUM(
   GLuint result = GetMaxValueInBufferCHROMIUMHelper(
       buffer_id, count, type, offset);
   GPU_CLIENT_LOG("returned " << result);
+  CheckGLError();
   return result;
 }
 
@@ -686,6 +703,7 @@ void GLES2Implementation::DrawElements(
   }
   helper_->DrawElements(mode, count, type, offset);
   RestoreElementAndArrayBuffers(simulated);
+  CheckGLError();
 }
 
 void GLES2Implementation::Flush() {
@@ -841,6 +859,7 @@ void GLES2Implementation::BindAttribLocation(
   SetBucketAsString(kResultBucketId, name);
   helper_->BindAttribLocationBucket(program, index, kResultBucketId);
   helper_->SetBucketSize(kResultBucketId, 0);
+  CheckGLError();
 }
 
 void GLES2Implementation::BindUniformLocationCHROMIUM(
@@ -852,6 +871,7 @@ void GLES2Implementation::BindUniformLocationCHROMIUM(
   helper_->BindUniformLocationCHROMIUMBucket(
       program, location, kResultBucketId);
   helper_->SetBucketSize(kResultBucketId, 0);
+  CheckGLError();
 }
 
 void GLES2Implementation::GetVertexAttribPointerv(
@@ -880,6 +900,7 @@ void GLES2Implementation::GetVertexAttribPointerv(
       GPU_CLIENT_LOG("  " << i << ": " << ptr[i]);
     }
   });
+  CheckGLError();
 }
 
 bool GLES2Implementation::DeleteProgramHelper(GLuint program) {
@@ -947,6 +968,7 @@ GLint GLES2Implementation::GetAttribLocation(
   GLint loc = share_group_->program_info_manager()->GetAttribLocation(
       this, program, name);
   GPU_CLIENT_LOG("returned " << loc);
+  CheckGLError();
   return loc;
 }
 
@@ -975,6 +997,7 @@ GLint GLES2Implementation::GetUniformLocation(
   GLint loc = share_group_->program_info_manager()->GetUniformLocation(
       this, program, name);
   GPU_CLIENT_LOG("returned " << loc);
+  CheckGLError();
   return loc;
 }
 
@@ -985,6 +1008,7 @@ void GLES2Implementation::UseProgram(GLuint program) {
     current_program_ = program;
     helper_->UseProgram(program);
   }
+  CheckGLError();
 }
 
 bool GLES2Implementation::GetProgramivHelper(
@@ -1004,6 +1028,7 @@ void GLES2Implementation::LinkProgram(GLuint program) {
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glLinkProgram(" << program << ")");
   helper_->LinkProgram(program);
   share_group_->program_info_manager()->CreateInfo(program);
+  CheckGLError();
 }
 
 void GLES2Implementation::ShaderBinary(
@@ -1043,6 +1068,7 @@ void GLES2Implementation::ShaderBinary(
       buffer.shm_id(),
       buffer.offset() + shader_id_size,
       length);
+  CheckGLError();
 }
 
 void GLES2Implementation::PixelStorei(GLenum pname, GLint param) {
@@ -1077,6 +1103,7 @@ void GLES2Implementation::PixelStorei(GLenum pname, GLint param) {
         break;
   }
   helper_->PixelStorei(pname, param);
+  CheckGLError();
 }
 
 
@@ -1108,6 +1135,7 @@ void GLES2Implementation::VertexAttribPointer(
   helper_->VertexAttribPointer(index, size, type, normalized, stride,
                                ToGLuint(ptr));
 #endif  // !defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
+  CheckGLError();
 }
 
 void GLES2Implementation::VertexAttribDivisorANGLE(
@@ -1119,6 +1147,7 @@ void GLES2Implementation::VertexAttribDivisorANGLE(
   // Record the info on the client side.
   vertex_array_object_manager_->SetAttribDivisor(index, divisor);
   helper_->VertexAttribDivisorANGLE(index, divisor);
+  CheckGLError();
 }
 
 void GLES2Implementation::ShaderSource(
@@ -1187,6 +1216,7 @@ void GLES2Implementation::ShaderSource(
 
   helper_->ShaderSourceBucket(shader, kResultBucketId);
   helper_->SetBucketSize(kResultBucketId, 0);
+  CheckGLError();
 }
 
 void GLES2Implementation::BufferDataHelper(
@@ -1250,6 +1280,7 @@ void GLES2Implementation::BufferDataHelper(
   // Make the buffer with BufferData then send via BufferSubData
   helper_->BufferData(target, size, 0, 0, usage);
   BufferSubDataHelperImpl(target, 0, size, data, &buffer);
+  CheckGLError();
 }
 
 void GLES2Implementation::BufferData(
@@ -1261,6 +1292,7 @@ void GLES2Implementation::BufferData(
       << static_cast<const void*>(data) << ", "
       << GLES2Util::GetStringBufferUsage(usage) << ")");
   BufferDataHelper(target, size, data, usage);
+  CheckGLError();
 }
 
 void GLES2Implementation::BufferSubDataHelper(
@@ -1330,6 +1362,7 @@ void GLES2Implementation::BufferSubData(
       << offset << ", " << size << ", "
       << static_cast<const void*>(data) << ")");
   BufferSubDataHelper(target, offset, size, data);
+  CheckGLError();
 }
 
 BufferTracker::Buffer*
@@ -1390,6 +1423,7 @@ void GLES2Implementation::CompressedTexImage2D(
   // and we don't have to wait for the result so from the client's perspective
   // it's cheap.
   helper_->SetBucketSize(kResultBucketId, 0);
+  CheckGLError();
 }
 
 void GLES2Implementation::CompressedTexSubImage2D(
@@ -1427,6 +1461,7 @@ void GLES2Implementation::CompressedTexSubImage2D(
   // and we don't have to wait for the result so from the client's perspective
   // it's cheap.
   helper_->SetBucketSize(kResultBucketId, 0);
+  CheckGLError();
 }
 
 namespace {
@@ -1500,6 +1535,7 @@ void GLES2Implementation::TexImage2D(
       helper_->TexImage2D(
           target, level, internalformat, width, height, border, format, type,
           buffer->shm_id(), buffer->shm_offset() + offset);
+    CheckGLError();
     return;
   }
 
@@ -1508,6 +1544,7 @@ void GLES2Implementation::TexImage2D(
     helper_->TexImage2D(
        target, level, internalformat, width, height, border, format, type,
        0, 0);
+    CheckGLError();
     return;
   }
 
@@ -1547,6 +1584,7 @@ void GLES2Implementation::TexImage2D(
     helper_->TexImage2D(
         target, level, internalformat, width, height, border, format, type,
         buffer.shm_id(), buffer.offset());
+    CheckGLError();
     return;
   }
 
@@ -1557,6 +1595,7 @@ void GLES2Implementation::TexImage2D(
   TexSubImage2DImpl(
       target, level, 0, 0, width, height, format, type, unpadded_row_size,
       pixels, src_padded_row_size, GL_TRUE, &buffer, padded_row_size);
+  CheckGLError();
 }
 
 void GLES2Implementation::TexSubImage2D(
@@ -1599,6 +1638,7 @@ void GLES2Implementation::TexSubImage2D(
       helper_->TexSubImage2D(
           target, level, xoffset, yoffset, width, height, format, type,
           buffer->shm_id(), buffer->shm_offset() + offset, false);
+    CheckGLError();
     return;
   }
 
@@ -1630,6 +1670,7 @@ void GLES2Implementation::TexSubImage2D(
       target, level, xoffset, yoffset, width, height, format, type,
       unpadded_row_size, pixels, src_padded_row_size, GL_FALSE, &buffer,
       padded_row_size);
+  CheckGLError();
 }
 
 static GLint ComputeNumRowsThatFitInBuffer(
@@ -1751,6 +1792,7 @@ void GLES2Implementation::GetActiveAttrib(
       GPU_CLIENT_LOG("  name: " << name);
     }
   }
+  CheckGLError();
 }
 
 bool GLES2Implementation::GetActiveUniformHelper(
@@ -1821,6 +1863,7 @@ void GLES2Implementation::GetActiveUniform(
       GPU_CLIENT_LOG("  name: " << name);
     }
   }
+  CheckGLError();
 }
 
 void GLES2Implementation::GetAttachedShaders(
@@ -1859,6 +1902,7 @@ void GLES2Implementation::GetAttachedShaders(
     }
   });
   transfer_buffer_->FreePendingToken(result, token);
+  CheckGLError();
 }
 
 void GLES2Implementation::GetShaderPrecisionFormat(
@@ -1891,6 +1935,7 @@ void GLES2Implementation::GetShaderPrecisionFormat(
       GPU_CLIENT_LOG("  min_range: " << precision[0]);
     }
   }
+  CheckGLError();
 }
 
 const GLubyte* GLES2Implementation::GetStringHelper(GLenum name) {
@@ -1944,6 +1989,7 @@ const GLubyte* GLES2Implementation::GetString(GLenum name) {
       << GLES2Util::GetStringStringType(name) << ")");
   const GLubyte* result = GetStringHelper(name);
   GPU_CLIENT_LOG("  returned " << reinterpret_cast<const char*>(result));
+  CheckGLError();
   return result;
 }
 
@@ -1969,6 +2015,7 @@ void GLES2Implementation::GetUniformfv(
       GPU_CLIENT_LOG("  " << i << ": " << result->GetData()[i]);
     }
   });
+  CheckGLError();
 }
 
 void GLES2Implementation::GetUniformiv(
@@ -1993,6 +2040,7 @@ void GLES2Implementation::GetUniformiv(
       GPU_CLIENT_LOG("  " << i << ": " << result->GetData()[i]);
     }
   });
+  CheckGLError();
 }
 
 void GLES2Implementation::ReadPixels(
@@ -2083,6 +2131,7 @@ void GLES2Implementation::ReadPixels(
     yoffset += num_rows;
     height -= num_rows;
   }
+  CheckGLError();
 }
 
 void GLES2Implementation::ActiveTexture(GLenum texture) {
@@ -2099,6 +2148,7 @@ void GLES2Implementation::ActiveTexture(GLenum texture) {
 
   active_texture_unit_ = texture_index;
   helper_->ActiveTexture(texture);
+  CheckGLError();
 }
 
 void GLES2Implementation::GenBuffersHelper(
@@ -2377,6 +2427,7 @@ void GLES2Implementation::DisableVertexAttribArray(GLuint index) {
       "[" << GetLogPrefix() << "] glDisableVertexAttribArray(" << index << ")");
   vertex_array_object_manager_->SetAttribEnable(index, false);
   helper_->DisableVertexAttribArray(index);
+  CheckGLError();
 }
 
 void GLES2Implementation::EnableVertexAttribArray(GLuint index) {
@@ -2385,6 +2436,7 @@ void GLES2Implementation::EnableVertexAttribArray(GLuint index) {
       << index << ")");
   vertex_array_object_manager_->SetAttribEnable(index, true);
   helper_->EnableVertexAttribArray(index);
+  CheckGLError();
 }
 
 void GLES2Implementation::DrawArrays(GLenum mode, GLint first, GLsizei count) {
@@ -2403,6 +2455,7 @@ void GLES2Implementation::DrawArrays(GLenum mode, GLint first, GLsizei count) {
   }
   helper_->DrawArrays(mode, first, count);
   RestoreArrayBuffer(simulated);
+  CheckGLError();
 }
 
 void GLES2Implementation::GetVertexAttribfv(
@@ -2433,6 +2486,7 @@ void GLES2Implementation::GetVertexAttribfv(
       GPU_CLIENT_LOG("  " << i << ": " << result->GetData()[i]);
     }
   });
+  CheckGLError();
 }
 
 void GLES2Implementation::GetVertexAttribiv(
@@ -2463,6 +2517,7 @@ void GLES2Implementation::GetVertexAttribiv(
       GPU_CLIENT_LOG("  " << i << ": " << result->GetData()[i]);
     }
   });
+  CheckGLError();
 }
 
 GLboolean GLES2Implementation::EnableFeatureCHROMIUM(
@@ -2536,6 +2591,7 @@ void GLES2Implementation::UnmapBufferSubDataCHROMIUM(const void* mem) {
       mb.target, mb.offset, mb.size, mb.shm_id, mb.shm_offset);
   mapped_memory_->FreePendingToken(mb.shm_memory, helper_->InsertToken());
   mapped_buffers_.erase(it);
+  CheckGLError();
 }
 
 void* GLES2Implementation::MapTexSubImage2DCHROMIUM(
@@ -2610,6 +2666,7 @@ void GLES2Implementation::UnmapTexSubImage2DCHROMIUM(const void* mem) {
       mt.format, mt.type, mt.shm_id, mt.shm_offset, GL_FALSE);
   mapped_memory_->FreePendingToken(mt.shm_memory, helper_->InsertToken());
   mapped_textures_.erase(it);
+  CheckGLError();
 }
 
 void GLES2Implementation::ResizeCHROMIUM(GLuint width, GLuint height) {
@@ -2617,6 +2674,7 @@ void GLES2Implementation::ResizeCHROMIUM(GLuint width, GLuint height) {
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glResizeCHROMIUM("
                  << width << ", " << height << ")");
   helper_->ResizeCHROMIUM(width, height);
+  CheckGLError();
 }
 
 const GLchar* GLES2Implementation::GetRequestableExtensionsCHROMIUM() {
@@ -2734,6 +2792,7 @@ void GLES2Implementation::GetMultipleIntegervCHROMIUM(
       GPU_CLIENT_LOG("  " << i << ": " << (results[i]));
     }
   });
+  CheckGLError();
 }
 
 void GLES2Implementation::GetProgramInfoCHROMIUMHelper(
@@ -2793,8 +2852,9 @@ GLuint GLES2Implementation::CreateStreamTextureCHROMIUM(GLuint texture) {
                                        GetResultShmId(),
                                        GetResultShmOffset());
   WaitForCmd();
-
-  return *result;
+  GLuint result_value = *result;
+  CheckGLError();
+  return result_value;
 }
 
 void GLES2Implementation::DestroyStreamTextureCHROMIUM(GLuint texture) {
@@ -2803,6 +2863,7 @@ void GLES2Implementation::DestroyStreamTextureCHROMIUM(GLuint texture) {
       << texture << ")");
   TRACE_EVENT0("gpu", "GLES2::DestroyStreamTextureCHROMIUM");
   helper_->DestroyStreamTextureCHROMIUM(texture);
+  CheckGLError();
 }
 
 void GLES2Implementation::PostSubBufferCHROMIUM(
@@ -2919,6 +2980,7 @@ void GLES2Implementation::BeginQueryEXT(GLenum target, GLuint id) {
   current_query_ = query;
 
   query->Begin(this);
+  CheckGLError();
 }
 
 void GLES2Implementation::EndQueryEXT(GLenum target) {
@@ -2943,6 +3005,7 @@ void GLES2Implementation::EndQueryEXT(GLenum target) {
 
   current_query_->End(this);
   current_query_ = NULL;
+  CheckGLError();
 }
 
 void GLES2Implementation::GetQueryivEXT(
@@ -2960,6 +3023,7 @@ void GLES2Implementation::GetQueryivEXT(
   *params = (current_query_ && current_query_->target() == target) ?
       current_query_->id() : 0;
   GPU_CLIENT_LOG("  " << *params);
+  CheckGLError();
 }
 
 void GLES2Implementation::GetQueryObjectuivEXT(
@@ -3009,6 +3073,7 @@ void GLES2Implementation::GetQueryObjectuivEXT(
       break;
   }
   GPU_CLIENT_LOG("  " << *params);
+  CheckGLError();
 }
 
 void GLES2Implementation::DrawArraysInstancedANGLE(
@@ -3036,6 +3101,7 @@ void GLES2Implementation::DrawArraysInstancedANGLE(
   }
   helper_->DrawArraysInstancedANGLE(mode, first, count, primcount);
   RestoreArrayBuffer(simulated);
+  CheckGLError();
 }
 
 void GLES2Implementation::DrawElementsInstancedANGLE(
@@ -3073,6 +3139,7 @@ void GLES2Implementation::DrawElementsInstancedANGLE(
   }
   helper_->DrawElementsInstancedANGLE(mode, count, type, offset, primcount);
   RestoreElementAndArrayBuffers(simulated);
+  CheckGLError();
 }
 
 void GLES2Implementation::GenMailboxCHROMIUM(
@@ -3088,6 +3155,7 @@ void GLES2Implementation::GenMailboxCHROMIUM(
   GetBucketContents(kResultBucketId, &result);
 
   std::copy(result.begin(), result.end(), mailbox);
+  CheckGLError();
 }
 
 void GLES2Implementation::PushGroupMarkerEXT(
@@ -3168,6 +3236,7 @@ void* GLES2Implementation::MapBufferCHROMIUM(GLuint target, GLenum access) {
 
   GPU_DCHECK(buffer->address());
   GPU_CLIENT_LOG("  returned " << buffer->address());
+  CheckGLError();
   return buffer->address();
 }
 
@@ -3190,7 +3259,7 @@ GLboolean GLES2Implementation::UnmapBufferCHROMIUM(GLuint target) {
     return false;
   }
   buffer->set_mapped(false);
-
+  CheckGLError();
   return true;
 }
 

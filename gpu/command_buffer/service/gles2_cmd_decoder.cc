@@ -790,6 +790,32 @@ class GLES2DecoderImpl : public GLES2Decoder {
     return program_manager()->GetProgramInfo(client_id);
   }
 
+#if defined(NDEBUG)
+  void LogClientServiceMapping(
+      const char* /* function_name */,
+      GLuint /* client_id */,
+      GLuint /* service_id */) {
+  }
+  template<typename T>
+  void LogClientServiceForInfo(
+      T* /* info */, GLuint /* client_id */, const char* /* function_name */) {
+  }
+#else
+  void LogClientServiceMapping(
+      const char* function_name, GLuint client_id, GLuint service_id) {
+    DLOG(INFO) << "[" << GetLogPrefix() << "] " << function_name
+               << ": client_id = " << client_id
+               << ", service_id = " << service_id;
+  }
+  template<typename T>
+  void LogClientServiceForInfo(
+      T* info, GLuint client_id, const char* function_name) {
+    if (service_logging_ && info) {
+      LogClientServiceMapping(function_name, client_id, info->service_id());
+    }
+  }
+#endif
+
   // Gets the program info for the given program. If it's not a program
   // generates a GL error. Returns NULL if not program.
   ProgramManager::ProgramInfo* GetProgramInfoNotShader(
@@ -803,6 +829,7 @@ class GLES2DecoderImpl : public GLES2Decoder {
         SetGLError(GL_INVALID_VALUE, function_name, "unknown program");
       }
     }
+    LogClientServiceForInfo(info, client_id, function_name);
     return info;
   }
 
@@ -835,6 +862,7 @@ class GLES2DecoderImpl : public GLES2Decoder {
             GL_INVALID_VALUE, function_name, "unknown shader");
       }
     }
+    LogClientServiceForInfo(info, client_id, function_name);
     return info;
   }
 
@@ -1580,6 +1608,9 @@ class GLES2DecoderImpl : public GLES2Decoder {
 
   bool compile_shader_always_succeeds_;
 
+  // Log extra info.
+  bool service_logging_;
+
 #if defined(OS_MACOSX)
   typedef std::map<GLuint, CFTypeRef> TextureToIOSurfaceMap;
   TextureToIOSurfaceMap texture_to_io_surface_map_;
@@ -1982,6 +2013,8 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       force_webgl_glsl_validation_(false),
       derivatives_explicitly_enabled_(false),
       compile_shader_always_succeeds_(false),
+      service_logging_(CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableGPUServiceLoggingGPU)),
       viewport_max_width_(0),
       viewport_max_height_(0),
       texture_upload_count_(0) {
@@ -3311,6 +3344,7 @@ void GLES2DecoderImpl::DoBindBuffer(GLenum target, GLuint client_id) {
       id_allocator->MarkAsUsed(client_id);
     }
   }
+  LogClientServiceForInfo(info, client_id, "glBindBuffer");
   if (info) {
     if (!buffer_manager()->SetTarget(info, target)) {
       SetGLError(GL_INVALID_OPERATION,
@@ -3436,6 +3470,7 @@ void GLES2DecoderImpl::DoBindFramebuffer(GLenum target, GLuint client_id) {
     }
     info->MarkAsValid();
   }
+  LogClientServiceForInfo(info, client_id, "glBindFramebuffer");
 
   if (target == GL_FRAMEBUFFER || target == GL_DRAW_FRAMEBUFFER_EXT) {
     state_.bound_draw_framebuffer = info;
@@ -3480,6 +3515,7 @@ void GLES2DecoderImpl::DoBindRenderbuffer(GLenum target, GLuint client_id) {
     }
     info->MarkAsValid();
   }
+  LogClientServiceForInfo(info, client_id, "glBindRenerbuffer");
   state_.bound_renderbuffer = info;
   glBindRenderbufferEXT(target, service_id);
 }
@@ -3521,6 +3557,7 @@ void GLES2DecoderImpl::DoBindTexture(GLenum target, GLuint client_id) {
                "glBindTexture", "illegal target for stream texture.");
     return;
   }
+  LogClientServiceForInfo(info, client_id, "glBindTexture");
   if (info->target() == 0) {
     texture_manager()->SetInfoTarget(info, target);
   }
@@ -4654,6 +4691,7 @@ void GLES2DecoderImpl::DoLinkProgram(GLuint program) {
     return;
   }
 
+  LogClientServiceForInfo(info, program, "glLinkProgram");
   ShaderTranslator* vertex_translator = NULL;
   ShaderTranslator* fragment_translator = NULL;
   if (use_shader_translator_) {
@@ -5135,6 +5173,7 @@ void GLES2DecoderImpl::DoUseProgram(GLuint program) {
     program_manager()->UnuseProgram(shader_manager(), state_.current_program);
   }
   state_.current_program = info;
+  LogClientServiceMapping("glUseProgram", program, service_id);
   glUseProgram(service_id);
   if (state_.current_program) {
     program_manager()->UseProgram(state_.current_program);
