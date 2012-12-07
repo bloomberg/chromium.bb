@@ -55,6 +55,8 @@ class ASH_EXPORT MouseCursorEventFilter : public ui::EventHandler {
   FRIEND_TEST_ALL_PREFIXES(MouseCursorEventFilterTest,
                            WarpMouseDifferentSizeDisplays);
   FRIEND_TEST_ALL_PREFIXES(MouseCursorEventFilterTest,
+                           WarpMouseDifferentScaleDisplays);
+  FRIEND_TEST_ALL_PREFIXES(MouseCursorEventFilterTest,
                            IndicatorBoundsTestOnRight);
   FRIEND_TEST_ALL_PREFIXES(MouseCursorEventFilterTest,
                            IndicatorBoundsTestOnLeft);

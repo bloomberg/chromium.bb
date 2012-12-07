@@ -93,7 +93,7 @@ bool MouseCursorEventFilter::WarpMouseCursorIfNecessary(
   if (Shell::GetScreen()->GetNumDisplays() <= 1 ||
       mouse_warp_mode_ == WARP_NONE)
     return false;
-  const float scale = ui::GetDeviceScaleFactor(target_root->layer());
+  const float scale_at_target = ui::GetDeviceScaleFactor(target_root->layer());
 
   aura::RootWindow* root_at_point = wm::GetRootWindowAt(point_in_screen);
   gfx::Point point_in_root = point_in_screen;
@@ -101,15 +101,27 @@ bool MouseCursorEventFilter::WarpMouseCursorIfNecessary(
   gfx::Rect root_bounds = root_at_point->bounds();
   int offset_x = 0;
   int offset_y = 0;
+
+  const float scale_at_point = ui::GetDeviceScaleFactor(root_at_point->layer());
+  // If the window is dragged from 2x display to 1x display, the
+  // pointer location is rounded by the source scale factor (2x) so
+  // it will never reach the edge (which is odd). Shrink by scale
+  // factor instead.  Only integral scale factor is supported.
+  int shrink =
+      target_root != root_at_point && scale_at_target != scale_at_point ?
+      static_cast<int>(scale_at_target) : 1;
+  // Make the bounds inclusive to detect the edge.
+  root_bounds.Inset(0, 0, shrink, shrink);
+
   if (point_in_root.x() <= root_bounds.x()) {
     // Use -2, not -1, to avoid infinite loop of pointer warp.
-    offset_x = -2 * scale;
-  } else if (point_in_root.x() >= root_bounds.right() - 1) {
-    offset_x = 2 * scale;
+    offset_x = -2 * scale_at_target;
+  } else if (point_in_root.x() >= root_bounds.right()) {
+    offset_x = 2 * scale_at_target;
   } else if (point_in_root.y() <= root_bounds.y()) {
-    offset_y = -2 * scale;
-  } else if (point_in_root.y() >= root_bounds.bottom() - 1) {
-    offset_y = 2 * scale;
+    offset_y = -2 * scale_at_target;
+  } else if (point_in_root.y() >= root_bounds.bottom()) {
+    offset_y = 2 * scale_at_target;
   } else {
     return false;
   }
