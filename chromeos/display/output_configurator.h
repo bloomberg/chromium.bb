@@ -110,23 +110,28 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
                      OutputSnapshot* one,
                      OutputSnapshot* two);
 
-  // Should be called if the internal (built-in) output didn't advertise a mode
-  // which would be capable to support mirror mode.
-  // Relies on hardware panel fitting support,
-  // returns immediately if it is not available.
-  // Tries to add the native mode of the external output to the internal output,
-  // assuming panel fitter hardware will take care of scaling and letterboxing.
-  // The RROutput IDs |output_one| and |output_two| are used
-  // to look up the modes and configure the internal output,
-  // |output_one_mode| and |output_two_mode| are the out-parameters
-  // for the modes on the two outputs which will have same resolution.
-  // Returns false if it fails to configure the internal output appropriately.
-  bool AddMirrorModeToInternalOutput(Display* display,
-                                     XRRScreenResources* screen,
-                                     RROutput output_one,
-                                     RROutput output_two,
-                                     RRMode* output_one_mode,
-                                     RRMode* output_two_mode);
+  // Looks for a mode on internal and external outputs having same resolution.
+  // |display| and |screen| parameters are needed for some XRandR calls.
+  // |internal_info| and |external_info| are used to search for the modes.
+  // |internal_output_id| is used to create a new mode, if applicable.
+  // |try_creating|=true will enable creating panel-fitting mode
+  // on the |internal_info| output instead of
+  // only searching for a matching mode. Note: it may lead to a crash,
+  // if |internal_info| is not capable of panel fitting.
+  // |preserve_aspect|=true will limit the search / creation
+  // only to the modes having the native aspect ratio of |external_info|.
+  // |internal_mirror_mode| and |external_mirror_mode| are the out-parameters
+  // for the modes on the two outputs which will have the same resolution.
+  // Returns false if no mode appropriate for mirroring has been found/created.
+  bool FindOrCreateMirrorMode(Display* display,
+                              XRRScreenResources* screen,
+                              XRROutputInfo* internal_info,
+                              XRROutputInfo* external_info,
+                              RROutput internal_output_id,
+                              bool try_creating,
+                              bool preserve_aspect,
+                              RRMode* internal_mirror_mode,
+                              RRMode* external_mirror_mode);
 
   // Tells if the output specified by |output_info| is for internal display.
   static bool IsInternalOutput(const XRROutputInfo* output_info);

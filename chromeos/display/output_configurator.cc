@@ -79,63 +79,6 @@ static XRRModeInfo* ModeInfoForID(XRRScreenResources* screen, RRMode modeID) {
   return result;
 }
 
-// Identifies the modes which will be used by the respective outputs when in a
-// mirror mode.  This means that the two modes will have the same resolution.
-// The RROutput IDs |one| and |two| are used to look up the modes and
-// |out_one_mode| and |out_two_mode| are the out-parameters for the respective
-// modes.
-// Returns false if it fails to find a compatible set of modes.
-static bool FindMirrorModeForOutputs(Display* display,
-                                     XRRScreenResources* screen,
-                                     RROutput one,
-                                     RROutput two,
-                                     RRMode* out_one_mode,
-                                     RRMode* out_two_mode) {
-  XRROutputInfo* primary = XRRGetOutputInfo(display, screen, one);
-  XRROutputInfo* secondary = XRRGetOutputInfo(display, screen, two);
-
-  int one_index = 0;
-  int two_index = 0;
-  bool found = false;
-  while (!found &&
-      (one_index < primary->nmode) &&
-      (two_index < secondary->nmode)) {
-    RRMode one_id = primary->modes[one_index];
-    RRMode two_id = secondary->modes[two_index];
-    XRRModeInfo* one_mode = ModeInfoForID(screen, one_id);
-    XRRModeInfo* two_mode = ModeInfoForID(screen, two_id);
-    if (one_mode == NULL || two_mode == NULL)
-      break;
-
-    int one_width = one_mode->width;
-    int one_height = one_mode->height;
-    int two_width = two_mode->width;
-    int two_height = two_mode->height;
-    if ((one_width == two_width) && (one_height == two_height)) {
-      *out_one_mode = one_id;
-      *out_two_mode = two_id;
-      found = true;
-    } else {
-      // The sort order of the modes is NOT by mode area but is sorted by width,
-      // then by height within each like width.
-      if (one_width > two_width) {
-        one_index += 1;
-      } else if (one_width < two_width) {
-        two_index += 1;
-      } else {
-        if (one_height > two_height) {
-          one_index += 1;
-        } else {
-          two_index += 1;
-        }
-      }
-    }
-  }
-  XRRFreeOutputInfo(primary);
-  XRRFreeOutputInfo(secondary);
-  return found;
-}
-
 // A helper to call XRRSetCrtcConfig with the given options but some of our
 // default output count and rotation arguments.
 static void ConfigureCrtc(Display* display,
@@ -857,25 +800,76 @@ int OutputConfigurator::GetDualOutputs(Display* display,
   }
 
   if (2 == found_count) {
-    // Find the mirror modes (if there are any).
-    bool mirror_mode_found = FindMirrorModeForOutputs(display,
-                                                      screen,
-                                                      one->output,
-                                                      two->output,
-                                                      &one->mirror_mode,
-                                                      &two->mirror_mode);
-    if (!mirror_mode_found) {
-      bool mirror_mode_added = AddMirrorModeToInternalOutput(display,
-                                                             screen,
-                                                             one->output,
-                                                             two->output,
-                                                             &one->mirror_mode,
-                                                             &two->mirror_mode);
-      if (!mirror_mode_added) {
-        // We can't mirror so set mirror_mode to 0.
-        one->mirror_mode = 0;
-        two->mirror_mode = 0;
+    bool one_is_internal = IsInternalOutput(one_info);
+    bool two_is_internal = IsInternalOutput(two_info);
+    int internal_outputs = (one_is_internal ? 1 : 0) +
+      (two_is_internal ? 1 : 0);
+
+    DCHECK(internal_outputs < 2);
+    LOG_IF(WARNING, internal_outputs == 2) << "Two internal outputs detected.";
+
+    bool can_mirror = false;
+
+    for (int attempt = 0; attempt < 2 && !can_mirror; attempt++) {
+      // Try preserving external output's aspect ratio on the first attempt
+      // If that fails, fall back to the highest matching resolution
+      bool preserve_aspect = attempt == 0;
+
+      if (internal_outputs == 1) {
+        if (one_is_internal) {
+          can_mirror = FindOrCreateMirrorMode(display,
+                                              screen,
+                                              one_info,
+                                              two_info,
+                                              one->output,
+                                              is_panel_fitting_enabled_,
+                                              preserve_aspect,
+                                              &one->mirror_mode,
+                                              &two->mirror_mode);
+        } else {  // if (two_is_internal)
+          can_mirror = FindOrCreateMirrorMode(display,
+                                              screen,
+                                              two_info,
+                                              one_info,
+                                              two->output,
+                                              is_panel_fitting_enabled_,
+                                              preserve_aspect,
+                                              &two->mirror_mode,
+                                              &one->mirror_mode);
+        }
+      } else {  // if (internal_outputs == 0)
+        // No panel fitting for external outputs, so fall back to exact match
+        can_mirror = FindOrCreateMirrorMode(display,
+                                            screen,
+                                            one_info,
+                                            two_info,
+                                            one->output,
+                                            false,
+                                            preserve_aspect,
+                                            &one->mirror_mode,
+                                            &two->mirror_mode);
+        if (!can_mirror && preserve_aspect) {
+          // FindOrCreateMirrorMode will try to preserve aspect ratio of
+          // what it thinks is external display, so if it didn't succeed
+          // with one, maybe it will succeed with the other.
+          // This way we will have correct aspect ratio on at least one of them.
+          can_mirror = FindOrCreateMirrorMode(display,
+                                              screen,
+                                              two_info,
+                                              one_info,
+                                              two->output,
+                                              false,
+                                              preserve_aspect,
+                                              &two->mirror_mode,
+                                              &one->mirror_mode);
+        }
       }
+    }
+
+    if (!can_mirror) {
+      // We can't mirror so set mirror_mode to None.
+      one->mirror_mode = None;
+      two->mirror_mode = None;
     }
   }
 
@@ -884,73 +878,67 @@ int OutputConfigurator::GetDualOutputs(Display* display,
   return found_count;
 }
 
-bool OutputConfigurator::AddMirrorModeToInternalOutput(
+bool OutputConfigurator::FindOrCreateMirrorMode(
     Display* display,
     XRRScreenResources* screen,
-    RROutput output_one,
-    RROutput output_two,
-    RRMode* output_one_mode,
-    RRMode* output_two_mode) {
-  // Add new mode only if panel fitting hardware will be able to display it.
-  if (!is_panel_fitting_enabled_)
+    XRROutputInfo* internal_info,
+    XRROutputInfo* external_info,
+    RROutput internal_output_id,
+    bool try_creating,
+    bool preserve_aspect,
+    RRMode* internal_mirror_mode,
+    RRMode* external_mirror_mode) {
+  RRMode internal_mode_id = GetOutputNativeMode(internal_info);
+  RRMode external_mode_id = GetOutputNativeMode(external_info);
+
+  if (internal_mode_id == None || external_mode_id == None)
     return false;
 
-  XRROutputInfo* output_one_info =
-      XRRGetOutputInfo(display, screen, output_one);
-  XRROutputInfo* output_two_info =
-      XRRGetOutputInfo(display, screen, output_two);
-  bool success = false;
+  XRRModeInfo* internal_native_mode = ModeInfoForID(screen, internal_mode_id);
+  XRRModeInfo* external_native_mode = ModeInfoForID(screen, external_mode_id);
 
-  // Both outputs should be connected in mirror mode
-  if (output_one_info->connection == RR_Connected &&
-      output_two_info->connection == RR_Connected) {
-    bool one_is_internal = IsInternalOutput(output_one_info);
-    bool two_is_internal = IsInternalOutput(output_two_info);
+  // Check if some external output resolution can be mirrored on internal.
+  // Prefer the modes in the order that X sorts them,
+  // assuming this is the order in which they look better on the monitor.
+  // If X's order is not satisfactory, we can either fix X's sorting,
+  // or implement our sorting here.
+  for (int i = 0; i < external_info->nmode; i++) {
+    external_mode_id = external_info->modes[i];
+    XRRModeInfo* external_mode = ModeInfoForID(screen, external_mode_id);
+    bool is_native_aspect_ratio =
+        external_native_mode->width * external_mode->height ==
+        external_native_mode->height * external_mode->width;
+    if (preserve_aspect && !is_native_aspect_ratio)
+      continue;  // Allow only aspect ratio preserving modes for mirroring
 
-    XRROutputInfo* internal_info = NULL;
-    XRROutputInfo* external_info = NULL;
-
-    if (one_is_internal) {
-      internal_info = output_one_info;
-      external_info = output_two_info;
-
-      VLOG_IF(1, two_is_internal) << "Two internal outputs detected.";
-      DCHECK(!two_is_internal);
-    } else if (two_is_internal) {
-      internal_info = output_two_info;
-      external_info = output_one_info;
+    // Try finding exact match
+    for (int j = 0; j < internal_info->nmode; j++) {
+      internal_mode_id = internal_info->modes[j];
+      XRRModeInfo* internal_mode = ModeInfoForID(screen, internal_mode_id);
+      if (internal_mode->width == external_mode->width &&
+          internal_mode->height == external_mode->height) {
+        *internal_mirror_mode = internal_mode_id;
+        *external_mirror_mode = external_mode_id;
+        return true;  // Mirror mode found
+      }
     }
 
-    bool internal_output_found = internal_info != NULL;
-
-    if (internal_output_found) {
-      RRMode internal_native_mode_id = GetOutputNativeMode(internal_info);
-      RRMode external_native_mode_id = GetOutputNativeMode(external_info);
-
-      if (internal_native_mode_id != None && external_native_mode_id != None) {
-        XRRModeInfo* internal_native_mode =
-            ModeInfoForID(screen, internal_native_mode_id);
-        XRRModeInfo* external_native_mode =
-            ModeInfoForID(screen, external_native_mode_id);
-
-        // Panel fitting will not work if the internal output maximal resolution
-        // is lower than that of the external output
-        if (internal_native_mode->width >= external_native_mode->width &&
-            internal_native_mode->height >= external_native_mode->height) {
-          XRRAddOutputMode(display, one_is_internal ? output_one : output_two,
-              external_native_mode_id);
-
-          *output_one_mode = *output_two_mode = external_native_mode_id;
-          success = true;
-        }
+    // Try to create a matching internal output mode by panel fitting
+    if (try_creating) {
+      // We can downscale by 1.125, and upscale indefinitely
+      // Downscaling looks ugly, so, can fit == can upscale
+      bool can_fit =
+          internal_native_mode->width >= external_mode->width &&
+          internal_native_mode->height >= external_mode->height;
+      if (can_fit) {
+        XRRAddOutputMode(display, internal_output_id, external_mode_id);
+        *internal_mirror_mode = *external_mirror_mode = external_mode_id;
+        return true;  // Mirror mode created
       }
     }
   }
 
-  XRRFreeOutputInfo(output_one_info);
-  XRRFreeOutputInfo(output_two_info);
-
-  return success;
+  return false;
 }
 
 // static
