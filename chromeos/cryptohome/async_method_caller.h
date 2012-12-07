@@ -14,11 +14,20 @@
 
 namespace cryptohome {
 
-// This class manages calls to Cryptohome service's 'async' methods.
-// Note: This class is placed in ::cryptohome instead of ::chromeos::cryptohome
+// Note: This file is placed in ::cryptohome instead of ::chromeos::cryptohome
 // since there is already a namespace ::cryptohome which holds the error code
 // enum (MountError) and referencing ::chromeos::cryptohome and ::cryptohome
 // within the same code is confusing.
+
+// Flags for the AsyncMount method.
+enum MountFlags {
+    MOUNT_FLAGS_NONE = 0,       // Used to explicitly denote that no flags are
+                                // set.
+    CREATE_IF_MISSING = 1,      // Create a cryptohome if it does not exist yet.
+    ENSURE_EPHEMERAL = 1 << 1,  // Ensure that the mount is ephemeral.
+};
+
+// This class manages calls to Cryptohome service's 'async' methods.
 class CHROMEOS_EXPORT AsyncMethodCaller {
  public:
   // A callback type which is called back on the UI thread when the results of
@@ -45,16 +54,22 @@ class CHROMEOS_EXPORT AsyncMethodCaller {
 
   // Asks cryptohomed to asynchronously try to find the cryptohome for
   // |user_email| and then mount it using |passhash| to unlock the key.
-  // |create_if_missing| controls whether or not we ask cryptohomed to
-  // create a new home dir if one does not yet exist for |user_email|.
+  // The |flags| are a combination of |MountFlags|:
+  // * CREATE_IF_MISSING Controls whether or not cryptohomed is asked to create
+  //                     a new cryptohome if one does not exist yet for
+  //                     |user_email|.
+  // * ENSURE_EPHEMERAL  If |true|, the mounted cryptohome will be backed by
+  //                     tmpfs. If |false|, the ephemeral users policy decides
+  //                     whether tmpfs or an encrypted directory is used as the
+  //                     backend.
   // |callback| will be called with status info on completion.
-  // If |create_if_missing| is false, and no cryptohome exists for |user_email|,
-  // we'll get
-  // callback.Run(false, kCryptohomeMountErrorUserDoesNotExist).
-  // Otherwise, we expect the normal range of return codes.
+  // If the |CREATE_IF_MISSING| flag is not given and no cryptohome exists
+  // for |user_email|, the expected result is
+  // callback.Run(false, kCryptohomeMountErrorUserDoesNotExist). Otherwise,
+  // the normal range of return codes is expected.
   virtual void AsyncMount(const std::string& user_email,
                           const std::string& passhash,
-                          const bool create_if_missing,
+                          int flags,
                           Callback callback) = 0;
 
   // Asks cryptohomed to asynchronously to mount a tmpfs for guest mode.

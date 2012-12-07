@@ -30,7 +30,7 @@ class MockAsyncMethodCaller : public AsyncMethodCaller {
                                      Callback callback));
   MOCK_METHOD4(AsyncMount, void(const std::string& user_email,
                                 const std::string& passhash,
-                                const bool create_if_missing,
+                                int flags,
                                 Callback callback));
   MOCK_METHOD1(AsyncMountGuest, void(Callback callback));
   MOCK_METHOD2(AsyncRemove, void(const std::string& user_email,

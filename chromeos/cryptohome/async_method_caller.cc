@@ -58,10 +58,10 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller {
 
   virtual void AsyncMount(const std::string& user_email,
                           const std::string& passhash,
-                          const bool create_if_missing,
+                          int flags,
                           Callback callback) OVERRIDE {
     DBusThreadManager::Get()->GetCryptohomeClient()->
-        AsyncMount(user_email, passhash, create_if_missing, base::Bind(
+        AsyncMount(user_email, passhash, flags, base::Bind(
             &AsyncMethodCallerImpl::RegisterAsyncCallback,
             weak_ptr_factory_.GetWeakPtr(),
             callback,

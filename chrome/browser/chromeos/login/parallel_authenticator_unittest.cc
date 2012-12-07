@@ -439,13 +439,14 @@ TEST_F(ParallelAuthenticatorTest, DriveDataResync) {
   FailOnLoginFailure();
 
   // Set up mock cryptohome library to respond successfully to a cryptohome
-  // remove attempt and a cryptohome create attempt (specified by the |true|
-  // argument to AsyncMount).
+  // remove attempt and a cryptohome create attempt (indicated by the
+  // |CREATE_IF_MISSING| flag to AsyncMount).
   mock_caller_->SetUp(true, cryptohome::MOUNT_ERROR_NONE);
   EXPECT_CALL(*mock_caller_, AsyncRemove(username_, _))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(*mock_caller_, AsyncMount(username_, hash_ascii_, true, _))
+  EXPECT_CALL(*mock_caller_, AsyncMount(username_, hash_ascii_,
+                                        cryptohome::CREATE_IF_MISSING, _))
       .Times(1)
       .RetiresOnSaturation();
 
@@ -492,7 +493,8 @@ TEST_F(ParallelAuthenticatorTest, DriveDataRecover) {
   EXPECT_CALL(*mock_caller_, AsyncMigrateKey(username_, _, hash_ascii_, _))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(*mock_caller_, AsyncMount(username_, hash_ascii_, false, _))
+  EXPECT_CALL(*mock_caller_, AsyncMount(username_, hash_ascii_,
+                                        cryptohome::MOUNT_FLAGS_NONE, _))
       .Times(1)
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_cryptohome_library_, GetSystemSalt())
@@ -568,9 +570,10 @@ TEST_F(ParallelAuthenticatorTest, DriveCreateForNewUser) {
   FailOnLoginFailure();
 
   // Set up mock cryptohome library to respond successfully to a cryptohome
-  // create attempt (specified by the |true| argument to AsyncMount).
+  // create attempt (indicated by the |CREATE_IF_MISSING| flag to AsyncMount).
   mock_caller_->SetUp(true, cryptohome::MOUNT_ERROR_NONE);
-  EXPECT_CALL(*mock_caller_, AsyncMount(username_, hash_ascii_, true, _))
+  EXPECT_CALL(*mock_caller_, AsyncMount(username_, hash_ascii_,
+                                        cryptohome::CREATE_IF_MISSING, _))
       .Times(1)
       .RetiresOnSaturation();
 

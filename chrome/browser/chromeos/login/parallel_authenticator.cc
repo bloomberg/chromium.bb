@@ -66,14 +66,14 @@ void TriggerResolveWithLoginTimeMarker(
 // Calls cryptohome's mount method.
 void Mount(AuthAttemptState* attempt,
            scoped_refptr<ParallelAuthenticator> resolver,
-           bool create_if_missing) {
+           int flags) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(
       "CryptohomeMount-Start", false);
   cryptohome::AsyncMethodCaller::GetInstance()->AsyncMount(
       attempt->username,
       attempt->ascii_hash,
-      create_if_missing,
+      flags,
       base::Bind(&TriggerResolveWithLoginTimeMarker,
                  "CryptohomeMount-End",
                  attempt,
@@ -210,13 +210,12 @@ void ParallelAuthenticator::AuthenticateToLogin(
   // Reset the verified flag.
   owner_is_verified_ = false;
 
-  const bool create_if_missing = false;
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&Mount,
                  current_state_.get(),
                  scoped_refptr<ParallelAuthenticator>(this),
-                 create_if_missing));
+                 cryptohome::MOUNT_FLAGS_NONE));
   // ClientLogin authentication check should happen immediately here.
   // We should not try OAuthLogin check until the profile loads.
   if (!using_oauth_) {
@@ -243,13 +242,12 @@ void ParallelAuthenticator::CompleteLogin(Profile* profile,
   // Reset the verified flag.
   owner_is_verified_ = false;
 
-  const bool create_if_missing = false;
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&Mount,
                  current_state_.get(),
                  scoped_refptr<ParallelAuthenticator>(this),
-                 create_if_missing));
+                 cryptohome::MOUNT_FLAGS_NONE));
 
   if (!using_oauth_) {
     // Test automation needs to disable oauth, but that leads to other
@@ -457,7 +455,7 @@ void ParallelAuthenticator::RetryAuth(Profile* profile,
 void ParallelAuthenticator::Resolve() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   bool request_pending = false;
-  bool create = false;
+  int mount_flags = cryptohome::MOUNT_FLAGS_NONE;
   ParallelAuthenticator::AuthState state = ResolveState();
   VLOG(1) << "Resolved state to: " << state;
   switch (state) {
@@ -501,7 +499,7 @@ void ParallelAuthenticator::Resolve() {
                      LoginFailure(LoginFailure::TPM_ERROR)));
       break;
     case CREATE_NEW:
-      create = true;
+      mount_flags |= cryptohome::CREATE_IF_MISSING;
     case RECOVER_MOUNT:
       current_state_->ResetCryptohomeStatus();
       BrowserThread::PostTask(
@@ -509,7 +507,7 @@ void ParallelAuthenticator::Resolve() {
           base::Bind(&Mount,
                      current_state_.get(),
                      scoped_refptr<ParallelAuthenticator>(this),
-                     create));
+                     mount_flags));
       break;
     case NEED_OLD_PW:
       BrowserThread::PostTask(

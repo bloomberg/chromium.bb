@@ -82,11 +82,13 @@ class CHROMEOS_EXPORT CryptohomeClient {
   // The original content of |salt| is lost.
   virtual bool GetSystemSalt(std::vector<uint8>* salt) = 0;
 
-  // Calls AsyncMount method.  |callback| is called after the method call
-  // succeeds.
+  // Calls the AsyncMount method to asynchronously mount the cryptohome for
+  // |username|, using |key| to unlock it. For supported |flags|, see the
+  // documentation of AsyncMethodCaller::AsyncMount().
+  // |callback| is called after the method call succeeds.
   virtual void AsyncMount(const std::string& username,
                           const std::string& key,
-                          const bool create_if_missing,
+                          int flags,
                           const AsyncMethodCallback& callback) = 0;
 
   // Calls AsyncMountGuest method.  |callback| is called after the method call
