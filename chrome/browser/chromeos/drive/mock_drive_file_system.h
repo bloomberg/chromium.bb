@@ -95,7 +95,6 @@ class MockDriveFileSystem : public DriveFileSystemInterface {
   virtual void AddUploadedFile(const FilePath& file,
                                scoped_ptr<google_apis::DocumentEntry> entry,
                                const FilePath& file_content_path,
-                               DriveCache::FileOperationType cache_operation,
                                const FileOperationCallback& callback) OVERRIDE {
   }
   MOCK_CONST_METHOD0(GetMetadata, DriveFileSystemMetadata());

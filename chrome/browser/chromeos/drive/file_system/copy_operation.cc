@@ -489,12 +489,10 @@ void CopyOperation::OnTransferCompleted(
   DCHECK(!callback.is_null());
 
   if (error == google_apis::DRIVE_UPLOAD_OK && document_entry.get()) {
-    drive_file_system_->AddUploadedFile(
-        drive_path.DirName(),
-        document_entry.Pass(),
-        file_path,
-        DriveCache::FILE_OPERATION_COPY,
-        callback);
+    drive_file_system_->AddUploadedFile(drive_path.DirName(),
+                                        document_entry.Pass(),
+                                        file_path,
+                                        callback);
   } else {
     callback.Run(DriveUploadErrorToDriveFileError(error));
   }

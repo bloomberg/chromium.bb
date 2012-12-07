@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_TEST_UTIL_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/google_apis/test_util.h"

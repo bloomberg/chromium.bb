@@ -13,7 +13,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
-#include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_file_error.h"
 #include "chrome/browser/chromeos/extensions/file_browser_event_router.h"
 #include "chrome/browser/chromeos/extensions/zip_file_creator.h"
@@ -29,6 +28,7 @@ class FileSystemContext;
 
 namespace drive {
 struct SearchResultInfo;
+class DriveCacheEntry;
 struct DriveWebAppInfo;
 class DriveWebAppsRegistry;
 }

@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_metadata.h"
 #include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
 #include "chrome/browser/google_apis/gdata_wapi_operations.h"
@@ -338,7 +337,6 @@ class DriveFileSystemInterface {
   virtual void AddUploadedFile(const FilePath& directory_path,
                                scoped_ptr<google_apis::DocumentEntry> doc_entry,
                                const FilePath& file_content_path,
-                               DriveCache::FileOperationType cache_operation,
                                const FileOperationCallback& callback) = 0;
 
   // Returns miscellaneous metadata of the file system like the largest

@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/drive/document_entry_conversion.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
+#include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_feed_loader.h"
 #include "chrome/browser/chromeos/drive/drive_feed_processor.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_observer.h"
@@ -268,19 +269,16 @@ struct DriveFileSystem::GetFileFromCacheParams {
 // DriveFileSystem::AddUploadedFileParams implementation.
 struct DriveFileSystem::AddUploadedFileParams {
   AddUploadedFileParams(const FilePath& file_content_path,
-                        DriveCache::FileOperationType cache_operation,
                         const FileOperationCallback& callback,
                         const std::string& resource_id,
                         const std::string& md5)
       : file_content_path(file_content_path),
-        cache_operation(cache_operation),
         callback(callback),
         resource_id(resource_id),
         md5(md5) {
   }
 
   FilePath file_content_path;
-  DriveCache::FileOperationType cache_operation;
   FileOperationCallback callback;
   std::string resource_id;
   std::string md5;
@@ -1779,7 +1777,6 @@ void DriveFileSystem::AddUploadedFile(
     const FilePath& directory_path,
     scoped_ptr<google_apis::DocumentEntry> doc_entry,
     const FilePath& file_content_path,
-    DriveCache::FileOperationType cache_operation,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(doc_entry.get());
@@ -1788,7 +1785,6 @@ void DriveFileSystem::AddUploadedFile(
   DCHECK(!callback.is_null());
 
   AddUploadedFileParams params(file_content_path,
-                               cache_operation,
                                callback,
                                doc_entry->resource_id(),
                                doc_entry->file_md5());
@@ -1819,7 +1815,7 @@ void DriveFileSystem::AddUploadedFileToCache(
   cache_->Store(params.resource_id,
                 params.md5,
                 params.file_content_path,
-                params.cache_operation,
+                DriveCache::FILE_OPERATION_COPY,
                 params.callback);
 }
 

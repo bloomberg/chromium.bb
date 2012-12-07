@@ -12,7 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/timer.h"
-#include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_feed_loader_observer.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system/drive_operations.h"
@@ -20,6 +19,7 @@
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
 class PrefChangeRegistrar;
+class Profile;
 
 namespace base {
 struct PlatformFileInfo;
@@ -34,6 +34,7 @@ class DriveUploaderInterface;
 
 namespace drive {
 
+class DriveCacheEntry;
 class DriveFileSystemObserver;
 class DriveFunctionRemove;
 class DriveResourceMetadata;
@@ -130,7 +131,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
   virtual void AddUploadedFile(const FilePath& directory_path,
                                scoped_ptr<google_apis::DocumentEntry> doc_entry,
                                const FilePath& file_content_path,
-                               DriveCache::FileOperationType cache_operation,
                                const FileOperationCallback& callback) OVERRIDE;
   virtual DriveFileSystemMetadata GetMetadata() const OVERRIDE;
   virtual void Reload() OVERRIDE;
