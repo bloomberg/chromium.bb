@@ -13,7 +13,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/display/display_preferences.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
@@ -291,8 +290,6 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kExternalStorageDisabled,
                              false,
                              PrefService::UNSYNCABLE_PREF);
-
-  RegisterDisplayPrefs(prefs);
 }
 
 void Preferences::InitUserPrefs(PrefService* prefs) {
@@ -396,8 +393,6 @@ void Preferences::Init(PrefService* prefs) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession)) {
     LoginUtils::Get()->SetFirstLoginPrefs(prefs);
   }
-
-  NotifyDisplayPrefChanged(prefs);
 }
 
 void Preferences::InitUserPrefsForTesting(PrefService* prefs) {

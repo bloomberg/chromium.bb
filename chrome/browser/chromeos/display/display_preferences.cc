@@ -82,17 +82,18 @@ bool IsValidUser() {
           !user_manager->IsLoggedInAsStub());
 }
 
-void NotifyDisplayLayoutChanged(PrefService* pref_service) {
+void NotifyDisplayLayoutChanged() {
+  PrefService* local_state = g_browser_process->local_state();
   ash::DisplayController* display_controller =
       ash::Shell::GetInstance()->display_controller();
 
   ash::DisplayLayout default_layout(
-      static_cast<ash::DisplayLayout::Position>(pref_service->GetInteger(
+      static_cast<ash::DisplayLayout::Position>(local_state->GetInteger(
           prefs::kSecondaryDisplayLayout)),
-      pref_service->GetInteger(prefs::kSecondaryDisplayOffset));
+      local_state->GetInteger(prefs::kSecondaryDisplayOffset));
   display_controller->SetDefaultDisplayLayout(default_layout);
 
-  const base::DictionaryValue* layouts = pref_service->GetDictionary(
+  const base::DictionaryValue* layouts = local_state->GetDictionary(
       prefs::kSecondaryDisplays);
   for (base::DictionaryValue::key_iterator it = layouts->begin_keys();
        it != layouts->end_keys(); ++it) {
@@ -146,22 +147,20 @@ void NotifyDisplayOverscans() {
 
 }  // namespace
 
-void RegisterDisplayPrefs(PrefService* pref_service) {
+void RegisterDisplayLocalStatePrefs(PrefService* local_state) {
   // The default secondary display layout.
-  pref_service->RegisterIntegerPref(prefs::kSecondaryDisplayLayout,
-                                    static_cast<int>(ash::DisplayLayout::RIGHT),
-                                    PrefService::UNSYNCABLE_PREF);
+  local_state->RegisterIntegerPref(prefs::kSecondaryDisplayLayout,
+                                   static_cast<int>(ash::DisplayLayout::RIGHT),
+                                   PrefService::UNSYNCABLE_PREF);
   // The default offset of the secondary display position from the primary
   // display.
-  pref_service->RegisterIntegerPref(prefs::kSecondaryDisplayOffset,
-                                    0,
-                                    PrefService::UNSYNCABLE_PREF);
+  local_state->RegisterIntegerPref(prefs::kSecondaryDisplayOffset,
+                                   0,
+                                   PrefService::UNSYNCABLE_PREF);
   // Per-display preference.
-  pref_service->RegisterDictionaryPref(prefs::kSecondaryDisplays,
-                                       PrefService::UNSYNCABLE_PREF);
-}
+  local_state->RegisterDictionaryPref(prefs::kSecondaryDisplays,
+                                      PrefService::UNSYNCABLE_PREF);
 
-void RegisterDisplayLocalStatePrefs(PrefService* local_state) {
   // Primary output name.
   local_state->RegisterInt64Pref(prefs::kPrimaryDisplayID,
                                  gfx::Display::kInvalidDisplayID,
@@ -172,12 +171,13 @@ void RegisterDisplayLocalStatePrefs(PrefService* local_state) {
                                       PrefService::UNSYNCABLE_PREF);
 }
 
-void SetDisplayLayoutPref(PrefService* pref_service,
-                          const gfx::Display& display,
+void SetDisplayLayoutPref(const gfx::Display& display,
                           int layout,
                           int offset) {
+  PrefService* local_state = g_browser_process->local_state();
+
   {
-    DictionaryPrefUpdate update(pref_service, prefs::kSecondaryDisplays);
+    DictionaryPrefUpdate update(local_state, prefs::kSecondaryDisplays);
     ash::DisplayLayout display_layout(
         static_cast<ash::DisplayLayout::Position>(layout), offset);
 
@@ -197,10 +197,10 @@ void SetDisplayLayoutPref(PrefService* pref_service,
       pref_data->Set(name, layout_value.release());
   }
 
-  pref_service->SetInteger(prefs::kSecondaryDisplayLayout, layout);
-  pref_service->SetInteger(prefs::kSecondaryDisplayOffset, offset);
+  local_state->SetInteger(prefs::kSecondaryDisplayLayout, layout);
+  local_state->SetInteger(prefs::kSecondaryDisplayOffset, offset);
 
-  NotifyDisplayLayoutChanged(pref_service);
+  NotifyDisplayLayoutChanged();
 }
 
 void StorePrimaryDisplayIDPref(int64 display_id) {
@@ -239,12 +239,9 @@ void SetPrimaryDisplayIDPref(int64 display_id) {
       display_id);
 }
 
-void NotifyDisplayPrefChanged(PrefService* pref_service) {
-  NotifyDisplayLayoutChanged(pref_service);
-}
-
 void NotifyDisplayLocalStatePrefChanged() {
   PrefService* local_state = g_browser_process->local_state();
+  NotifyDisplayLayoutChanged();
   ash::Shell::GetInstance()->display_controller()->SetPrimaryDisplayId(
       local_state->GetInt64(prefs::kPrimaryDisplayID));
   NotifyDisplayOverscans();

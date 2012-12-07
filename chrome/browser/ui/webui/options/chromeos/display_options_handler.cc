@@ -18,7 +18,6 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/display/display_preferences.h"
 #include "chrome/browser/chromeos/display/overscan_calibrator.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/display/output_configurator.h"
 #include "content/public/browser/web_ui.h"
@@ -193,10 +192,9 @@ void DisplayOptionsHandler::OnFadeOutForMirroringFinished(bool is_mirroring) {
 
 void DisplayOptionsHandler::OnFadeOutForDisplayLayoutFinished(
     int layout, int offset) {
-  PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
   const gfx::Display& secondary_display = ash::ScreenAsh::GetSecondaryDisplay();
   if (secondary_display.is_valid())
-    SetDisplayLayoutPref(pref_service, secondary_display, layout, offset);
+    SetDisplayLayoutPref(secondary_display, layout, offset);
 
   SendDisplayInfo();
   ash::Shell::GetInstance()->output_configurator_animation()->

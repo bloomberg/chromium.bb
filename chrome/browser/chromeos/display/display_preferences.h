@@ -15,17 +15,13 @@ class Insets;
 
 namespace chromeos {
 
-// Registers the prefs associated with display settings.
-void RegisterDisplayPrefs(PrefService* pref_service);
-
 // Registers the prefs associated with display settings and stored
 // into Local State.
 void RegisterDisplayLocalStatePrefs(PrefService* local_state);
 
 // Sets or updates the display layout data to the specified |display| and
 // |pref_service|.
-void SetDisplayLayoutPref(PrefService* pref_service,
-                          const gfx::Display& display,
+void SetDisplayLayoutPref(const gfx::Display& display,
                           int layout,
                           int offset);
 
@@ -40,10 +36,6 @@ void SetPrimaryDisplayIDPref(int64 display_id);
 // Sets or updates the overscan preference for the specified |display| to Local
 // State.
 void SetDisplayOverscan(const gfx::Display& display, const gfx::Insets& insets);
-
-// Checks the current display settings in Preferences and notifies them to the
-// system.
-void NotifyDisplayPrefChanged(PrefService* pref_service);
 
 // Checks the current display settings in Local State and notifies them to the
 // system.
