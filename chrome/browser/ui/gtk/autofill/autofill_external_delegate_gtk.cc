@@ -55,20 +55,14 @@ void AutofillExternalDelegateGtk::ApplyAutofillSuggestions(
               autofill_unique_ids);
 }
 
-void AutofillExternalDelegateGtk::SetBounds(const gfx::Rect& bounds) {
-  CreateViewIfNeeded();
-  view_->SetElementBounds(bounds);
-}
-
-void AutofillExternalDelegateGtk::CreateViewIfNeeded() {
-  if (view_.get())
-    return;
-
+void AutofillExternalDelegateGtk::CreatePopupForElement(
+    const gfx::Rect& element_bounds) {
   content::WebContents* contents = web_contents();
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   view_.reset(new AutofillPopupViewGtk(contents,
                                        GtkThemeService::GetFrom(profile),
                                        this,
+                                       element_bounds,
                                        tab_native_view_));
 
   GtkWidget* toplevel = gtk_widget_get_toplevel(tab_native_view_);

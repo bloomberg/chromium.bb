@@ -43,25 +43,20 @@ void AutofillExternalDelegateViews::HideAutofillPopupInternal() {
   popup_view_ = NULL;
 }
 
+void AutofillExternalDelegateViews::CreatePopupForElement(
+    const gfx::Rect& element_bounds) {
+  DCHECK(!popup_view_);
+  popup_view_ = new AutofillPopupViewViews(
+      web_contents(), this, element_bounds);
+}
+
 void AutofillExternalDelegateViews::ApplyAutofillSuggestions(
     const std::vector<string16>& autofill_values,
     const std::vector<string16>& autofill_labels,
     const std::vector<string16>& autofill_icons,
     const std::vector<int>& autofill_unique_ids) {
-  CreateViewIfNeeded();
-
   popup_view_->Show(autofill_values,
                     autofill_labels,
                     autofill_icons,
                     autofill_unique_ids);
-}
-
-void AutofillExternalDelegateViews::SetBounds(const gfx::Rect& bounds) {
-  CreateViewIfNeeded();
-  popup_view_->SetElementBounds(bounds);
-}
-
-void AutofillExternalDelegateViews::CreateViewIfNeeded() {
-  if (!popup_view_)
-    popup_view_ = new AutofillPopupViewViews(web_contents(), this);
 }

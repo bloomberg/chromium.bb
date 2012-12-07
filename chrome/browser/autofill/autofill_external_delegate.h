@@ -16,6 +16,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "ui/gfx/rect.h"
 
 class AutofillManager;
 
@@ -132,12 +133,15 @@ class AutofillExternalDelegate
   // Handle platform-dependent hiding.
   virtual void HideAutofillPopupInternal() = 0;
 
-  // Set the bounds of the Autofill element being worked with.
-  virtual void SetBounds(const gfx::Rect& bounds) = 0;
-
+  // Create and position the popup given the bounds of the element it is
+  // popping up for.
+  virtual void CreatePopupForElement(const gfx::Rect& element_bounds) = 0;
 
   // Return the web_contents associated with this delegate.
   content::WebContents* web_contents() { return web_contents_; }
+
+  // Return the bounds of the field currently selected.
+  const gfx::Rect& field_bounds() { return field_bounds_; }
 
   bool popup_visible() const { return popup_visible_; }
 
@@ -200,6 +204,9 @@ class AutofillExternalDelegate
 
   // Used to indicate if a popup is currently being shown or not.
   bool popup_visible_;
+
+  // The bounds of the field currently selected.
+  gfx::Rect field_bounds_;
 
   // The current data list values.
   std::vector<string16> data_list_values_;

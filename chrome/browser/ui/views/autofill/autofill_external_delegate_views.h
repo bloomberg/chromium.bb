@@ -30,6 +30,7 @@ class AutofillExternalDelegateViews : public AutofillExternalDelegate {
   // AutofillExternalDelegate implementation.
   // Make protected to allow tests to override.
   virtual void HideAutofillPopupInternal() OVERRIDE;
+  virtual void CreatePopupForElement(const gfx::Rect& element_bounds) OVERRIDE;
 
  private:
   // AutofillExternalDelegate implementation.
@@ -38,11 +39,6 @@ class AutofillExternalDelegateViews : public AutofillExternalDelegate {
       const std::vector<string16>& autofill_labels,
       const std::vector<string16>& autofill_icons,
       const std::vector<int>& autofill_unique_ids) OVERRIDE;
-  virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
-
-  // Create a valid view to display the autofill results if one doesn't
-  // currently exist.
-  void CreateViewIfNeeded();
 
   // We use a raw pointer here because even though we usually create the view,
   // its widget handles deleting it (which means it may outlive this object).

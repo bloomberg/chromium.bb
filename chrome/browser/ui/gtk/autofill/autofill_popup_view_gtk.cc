@@ -43,8 +43,9 @@ AutofillPopupViewGtk::AutofillPopupViewGtk(
     content::WebContents* web_contents,
     GtkThemeService* theme_service,
     AutofillExternalDelegate* external_delegate,
+    const gfx::Rect& element_bounds,
     GtkWidget* parent)
-    : AutofillPopupView(web_contents, external_delegate),
+    : AutofillPopupView(web_contents, external_delegate, element_bounds),
       parent_(parent),
       window_(gtk_window_new(GTK_WINDOW_POPUP)),
       theme_service_(theme_service),
@@ -84,7 +85,7 @@ void AutofillPopupViewGtk::Hide() {
 }
 
 void AutofillPopupViewGtk::ShowInternal() {
-  SetBounds();
+  SetInitialBounds();
   UpdateBoundsAndRedrawPopup();
 
   render_view_host_->AddKeyboardListener(this);
@@ -99,21 +100,21 @@ void AutofillPopupViewGtk::ShowInternal() {
 void AutofillPopupViewGtk::InvalidateRow(size_t row) {
   GdkRectangle row_rect = GetRectForRow(
       row,
-      element_bounds().width()).ToGdkRectangle();
+      popup_bounds().width()).ToGdkRectangle();
   GdkWindow* gdk_window = gtk_widget_get_window(window_);
   gdk_window_invalidate_rect(gdk_window, &row_rect, FALSE);
 }
 
 void AutofillPopupViewGtk::UpdateBoundsAndRedrawPopupInternal() {
   gtk_widget_set_size_request(window_,
-                              element_bounds().width(),
-                              element_bounds().height());
+                              popup_bounds().width(),
+                              popup_bounds().height());
   gtk_window_move(GTK_WINDOW(window_),
-                  element_bounds().x(),
-                  element_bounds().y());
+                  popup_bounds().x(),
+                  popup_bounds().y());
 
   GdkWindow* gdk_window = gtk_widget_get_window(window_);
-  GdkRectangle popup_rect = element_bounds().ToGdkRectangle();
+  GdkRectangle popup_rect = popup_bounds().ToGdkRectangle();
   if (gdk_window != NULL)
     gdk_window_invalidate_rect(gdk_window, &popup_rect, FALSE);
 }
@@ -344,7 +345,7 @@ void AutofillPopupViewGtk::DrawAutofillEntry(cairo_t* cairo_context,
   cairo_restore(cairo_context);
 }
 
-void AutofillPopupViewGtk::SetBounds() {
+void AutofillPopupViewGtk::SetInitialBounds() {
   gint origin_x, origin_y;
   gdk_window_get_origin(gtk_widget_get_window(parent_), &origin_x, &origin_y);
 
@@ -366,8 +367,8 @@ void AutofillPopupViewGtk::SetBounds() {
     top_of_popup = bottom_of_field;
   }
 
-  SetElementBounds(gfx::Rect(origin_x + element_bounds().x(),
-                             top_of_popup,
-                             GetPopupRequiredWidth(),
-                             popup_height));
+  SetPopupBounds(gfx::Rect(origin_x + element_bounds().x(),
+                           top_of_popup,
+                           GetPopupRequiredWidth(),
+                           popup_height));
 }

@@ -66,7 +66,7 @@ void AutofillExternalDelegate::OnQuery(int query_id,
   display_warning_if_disabled_ = display_warning_if_disabled;
   autofill_query_id_ = query_id;
 
-  SetBounds(bounds);
+  CreatePopupForElement(bounds);
 }
 
 void AutofillExternalDelegate::OnSuggestionsReturned(
@@ -137,14 +137,15 @@ void AutofillExternalDelegate::OnShowPasswordSuggestions(
     const std::vector<string16>& suggestions,
     const FormFieldData& field,
     const gfx::Rect& bounds) {
-  autofill_query_field_ = field;
+  if (!popup_visible_) {
+    autofill_query_field_ = field;
+    CreatePopupForElement(bounds);
+  }
 
   if (suggestions.empty()) {
     HideAutofillPopup();
     return;
   }
-
-  SetBounds(bounds);
 
   std::vector<string16> empty(suggestions.size());
   std::vector<int> password_ids(suggestions.size(),

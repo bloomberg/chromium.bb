@@ -23,7 +23,8 @@ class AutofillPopupViewViews : public views::WidgetDelegateView,
                                public KeyboardListener {
  public:
   AutofillPopupViewViews(content::WebContents* web_contents,
-                         AutofillExternalDelegateViews* external_delegate);
+                         AutofillExternalDelegateViews* external_delegate,
+                         const gfx::Rect& element_bounds);
 
   // AutofillPopupView implementation.
   virtual void Hide() OVERRIDE;
@@ -52,6 +53,13 @@ class AutofillPopupViewViews : public views::WidgetDelegateView,
   void DrawAutofillEntry(gfx::Canvas* canvas,
                          int index,
                          const gfx::Rect& entry_rect);
+
+  // Set the initial bounds of the popup to show, including the placement
+  // of it.
+  void SetInitialBounds();
+
+  // Get the size of the screen that the popup appears of, in pixels.
+  gfx::Size GetScreenSize();
 
   AutofillExternalDelegateViews* external_delegate_;  // Weak reference.
   content::WebContents* web_contents_;  // Weak reference.

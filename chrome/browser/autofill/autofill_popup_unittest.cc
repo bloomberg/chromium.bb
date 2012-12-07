@@ -8,6 +8,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAutofillClient.h"
+#include "ui/gfx/rect.h"
 
 using ::testing::_;
 using ::testing::AtLeast;
@@ -33,7 +34,7 @@ class MockAutofillExternalDelegate :
 class TestAutofillPopupView : public AutofillPopupView {
  public:
   explicit TestAutofillPopupView(AutofillExternalDelegate* external_delegate) :
-      AutofillPopupView(NULL, external_delegate) {}
+      AutofillPopupView(NULL, external_delegate, gfx::Rect()) {}
   virtual ~TestAutofillPopupView() {}
 
   // Making protected functions public for testing
@@ -84,9 +85,9 @@ TEST_F(AutofillPopupViewUnitTest, SetBounds) {
 
   EXPECT_CALL(*autofill_popup_view_, UpdateBoundsAndRedrawPopupInternal());
 
-  autofill_popup_view_->SetElementBounds(popup_bounds);
+  autofill_popup_view_->SetPopupBounds(popup_bounds);
 
-  EXPECT_EQ(popup_bounds, autofill_popup_view_->element_bounds());
+  EXPECT_EQ(popup_bounds, autofill_popup_view_->popup_bounds());
 }
 
 TEST_F(AutofillPopupViewUnitTest, ChangeSelectedLine) {

@@ -13,8 +13,11 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/display.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/screen.h"
 #include "ui/views/border.h"
 #include "ui/views/widget/widget.h"
 
@@ -31,8 +34,9 @@ const SkColor kValueTextColor = SkColorSetARGB(0xFF, 0x00, 0x00, 0x00);
 
 AutofillPopupViewViews::AutofillPopupViewViews(
     content::WebContents* web_contents,
-    AutofillExternalDelegateViews* external_delegate)
-    : AutofillPopupView(web_contents, external_delegate),
+    AutofillExternalDelegateViews* external_delegate,
+    const gfx::Rect& element_bounds)
+    : AutofillPopupView(web_contents, external_delegate, element_bounds),
       external_delegate_(external_delegate),
       web_contents_(web_contents) {
 }
@@ -123,10 +127,20 @@ void AutofillPopupViewViews::ShowInternal() {
         views::Widget::GetTopLevelWidgetForNativeView(
             web_contents_->GetView()->GetTopLevelNativeWindow());
     browser_widget->AddObserver(this);
+
+    // Allow the popup to appear anywhere on the screen, since it may need
+    // to go beyond the bounds of the window.
+    // TODO(csharp): allow the popup to still appear on the border of
+    // two screens.
+    widget->SetBounds(gfx::Rect(0,
+                                0,
+                                GetScreenSize().height(),
+                                GetScreenSize().width()));
   }
 
   set_border(views::Border::CreateSolidBorder(kBorderThickness, kBorderColor));
 
+  SetInitialBounds();
   UpdateBoundsAndRedrawPopup();
 
   web_contents_->GetRenderViewHost()->AddKeyboardListener(this);
@@ -137,8 +151,8 @@ void AutofillPopupViewViews::InvalidateRow(size_t row) {
 }
 
 void AutofillPopupViewViews::UpdateBoundsAndRedrawPopupInternal() {
-  SetBoundsRect(element_bounds());
-  SchedulePaintInRect(element_bounds());
+  SetBoundsRect(popup_bounds());
+  SchedulePaintInRect(popup_bounds());
 }
 
 void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
@@ -204,4 +218,39 @@ void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
       canvas->GetStringWidth(autofill_labels()[index], label_font()),
       entry_rect.height(),
       gfx::Canvas::TEXT_ALIGN_CENTER);
+}
+
+void AutofillPopupViewViews::SetInitialBounds() {
+  // Find the client area of the contents to find our offset.
+  gfx::Rect client_area;
+  web_contents_->GetContainerBounds(&client_area);
+
+  int bottom_of_field = client_area.y() + element_bounds().y() +
+      element_bounds().height();
+  int popup_height =  GetPopupRequiredHeight();
+
+  // Find the correct top position of the popup so that it doesn't go off
+  // the screen.
+  int top_of_popup = 0;
+  if (GetScreenSize().height() < bottom_of_field + popup_height) {
+    // The popup must appear above the field.
+    top_of_popup = element_bounds().y() - popup_height;
+  } else {
+    // The popup can appear below the field.
+    top_of_popup = bottom_of_field;
+  }
+
+  SetPopupBounds(gfx::Rect(client_area.x() + element_bounds().x(),
+                           top_of_popup,
+                           GetPopupRequiredWidth(),
+                           popup_height));
+}
+
+gfx::Size AutofillPopupViewViews::GetScreenSize() {
+  gfx::Screen* screen = gfx::Screen::GetScreenFor(
+      web_contents_->GetView()->GetTopLevelNativeWindow());
+  gfx::Display display = screen->GetDisplayNearestPoint(
+      gfx::Point(element_bounds().x(), element_bounds().y()));
+
+  return display.GetSizeInPixel();
 }

@@ -14,10 +14,15 @@ namespace content {
 class WebContents;
 }
 
+namespace gfx {
+class Rect;
+}
+
 class AutofillPopupViewAndroid : public AutofillPopupView {
  public:
   AutofillPopupViewAndroid(content::WebContents* web_contents,
-                           AutofillExternalDelegate* external_delegate);
+                           AutofillExternalDelegate* external_delegate,
+                           const gfx::Rect& element_bounds);
   virtual ~AutofillPopupViewAndroid();
 
   // --------------------------------------------------------------------------

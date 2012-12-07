@@ -42,6 +42,7 @@ void TestAutofillExternalDelegate::ApplyAutofillSuggestions(
 
 void TestAutofillExternalDelegate::HideAutofillPopupInternal() {}
 
-void TestAutofillExternalDelegate::SetBounds(const gfx::Rect& bounds) {}
+void TestAutofillExternalDelegate::CreatePopupForElement(
+    const gfx::Rect& element_bounds) {}
 
 }  // namespace autofill

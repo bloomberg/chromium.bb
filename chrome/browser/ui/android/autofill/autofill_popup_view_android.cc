@@ -20,8 +20,9 @@ using content::BrowserThread;
 
 AutofillPopupViewAndroid::AutofillPopupViewAndroid(
     content::WebContents* web_contents,
-    AutofillExternalDelegate* external_delegate)
-    : AutofillPopupView(web_contents, external_delegate),
+    AutofillExternalDelegate* external_delegate,
+    const gfx::Rect& element_bounds)
+    : AutofillPopupView(web_contents, external_delegate, element_bounds),
       web_contents_(web_contents) {
   JNIEnv* env = base::android::AttachCurrentThread();
   content::ContentViewCore* content_view_core =

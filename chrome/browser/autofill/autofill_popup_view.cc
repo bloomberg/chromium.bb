@@ -61,8 +61,10 @@ const size_t AutofillPopupView::kAutofillIconWidth = 25;
 
 AutofillPopupView::AutofillPopupView(
     content::WebContents* web_contents,
-    AutofillExternalDelegate* external_delegate)
+    AutofillExternalDelegate* external_delegate,
+    const gfx::Rect& element_bounds)
     : external_delegate_(external_delegate),
+      element_bounds_(element_bounds),
       selected_line_(kNoSelection),
       delete_icon_selected_(false) {
   if (!web_contents)
@@ -95,20 +97,19 @@ void AutofillPopupView::Show(const std::vector<string16>& autofill_values,
   ShowInternal();
 }
 
-void AutofillPopupView::SetElementBounds(const gfx::Rect& bounds) {
-  element_bounds_ = bounds;
+void AutofillPopupView::SetPopupBounds(const gfx::Rect& bounds) {
+  popup_bounds_ = bounds;
   UpdateBoundsAndRedrawPopupInternal();
 }
 
 void AutofillPopupView::ClearExternalDelegate() {
   external_delegate_ = NULL;
-
 }
 
 void AutofillPopupView::UpdateBoundsAndRedrawPopup() {
 #if !defined(OS_ANDROID)
-  element_bounds_.set_width(GetPopupRequiredWidth());
-  element_bounds_.set_height(GetPopupRequiredHeight());
+  popup_bounds_.set_width(GetPopupRequiredWidth());
+  popup_bounds_.set_height(GetPopupRequiredHeight());
 #endif
 
   UpdateBoundsAndRedrawPopupInternal();

@@ -38,6 +38,7 @@ class AutofillPopupViewGtk : public AutofillPopupView,
   AutofillPopupViewGtk(content::WebContents* web_contents,
                        GtkThemeService* theme_service,
                        AutofillExternalDelegate* external_delegate,
+                       const gfx::Rect& element_bounds,
                        GtkWidget* parent);
   virtual ~AutofillPopupViewGtk();
 
@@ -80,8 +81,9 @@ class AutofillPopupViewGtk : public AutofillPopupView,
                          size_t index,
                          const gfx::Rect& entry_rect);
 
-  // Set the bounds of the popup to show, including the placement of it.
-  void SetBounds();
+  // Set the initial bounds of the popup to show, including the placement
+  // of it.
+  void SetInitialBounds();
 
   GtkWidget* parent_;  // Weak reference.
   GtkWidget* window_;  // Strong reference.

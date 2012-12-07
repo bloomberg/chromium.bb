@@ -21,7 +21,8 @@ class AutofillExternalDelegate;
 class AutofillPopupView {
  public:
   explicit AutofillPopupView(content::WebContents* web_contents,
-                             AutofillExternalDelegate* external_delegate_);
+                             AutofillExternalDelegate* external_delegate_,
+                             const gfx::Rect& element_bounds);
   virtual ~AutofillPopupView();
 
   // Hide the popup from view. Platform-indepent work.
@@ -34,14 +35,14 @@ class AutofillPopupView {
             const std::vector<string16>& autofill_icons,
             const std::vector<int>& autofill_unique_ids);
 
-  // Update the bounds of the popup element.
-  void SetElementBounds(const gfx::Rect& bounds);
+  // Update the bounds of the popup.
+  void SetPopupBounds(const gfx::Rect& bounds);
 
   // Sets the current Autofill pointer to NULL, used when the popup can outlive
   // the delegate.
   void ClearExternalDelegate();
 
-  const gfx::Rect& element_bounds() const { return element_bounds_; }
+  const gfx::Rect& popup_bounds() { return popup_bounds_; }
 
  protected:
   // Display the autofill popup and fill it in with the values passed in.
@@ -55,6 +56,8 @@ class AutofillPopupView {
   virtual void UpdateBoundsAndRedrawPopupInternal() = 0;
 
   AutofillExternalDelegate* external_delegate() { return external_delegate_; }
+
+  const gfx::Rect& element_bounds() const { return element_bounds_; }
 
   const std::vector<string16>& autofill_values() const {
     return autofill_values_;
@@ -164,7 +167,10 @@ class AutofillPopupView {
   AutofillExternalDelegate* external_delegate_;
 
   // The bounds of the text element that is the focus of the Autofill.
-  gfx::Rect element_bounds_;
+  const gfx::Rect element_bounds_;
+
+  // The bounds of the Autofill popup.
+  gfx::Rect popup_bounds_;
 
   // The current Autofill query values.
   std::vector<string16> autofill_values_;

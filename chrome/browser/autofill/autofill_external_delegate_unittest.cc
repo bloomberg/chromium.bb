@@ -52,7 +52,7 @@ class MockAutofillExternalDelegate :
 
   MOCK_METHOD0(ClearPreviewedForm, void());
 
-  MOCK_METHOD1(SetBounds, void(const gfx::Rect& bounds));
+  MOCK_METHOD1(CreatePopupForElement, void(const gfx::Rect& element_bounds));
 
  private:
   virtual void HideAutofillPopupInternal() {};
@@ -94,10 +94,10 @@ class AutofillExternalDelegateUnitTest
     FormFieldData field;
     field.is_focusable = true;
     field.should_autocomplete = true;
-    const gfx::Rect bounds;
+    const gfx::Rect element_bounds;
 
-    EXPECT_CALL(*external_delegate_, SetBounds(bounds));
-    external_delegate_->OnQuery(query_id, form, field, bounds, false);
+    EXPECT_CALL(*external_delegate_, CreatePopupForElement(element_bounds));
+    external_delegate_->OnQuery(query_id, form, field, element_bounds, false);
   }
 
   scoped_refptr<MockAutofillManager> autofill_manager_;
@@ -254,7 +254,7 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateClearPreviewedForm) {
 // Test that the popup is hidden once we are done editing the autofill field.
 TEST_F(AutofillExternalDelegateUnitTest,
        ExternalDelegateHidePopupAfterEditing) {
-  EXPECT_CALL(*external_delegate_, SetBounds(_));
+  EXPECT_CALL(*external_delegate_, CreatePopupForElement(_));
   EXPECT_CALL(*external_delegate_, ApplyAutofillSuggestions(_, _, _, _));
 
   autofill::GenerateTestAutofillPopup(external_delegate_.get());
@@ -277,9 +277,9 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegatePasswordSuggestions) {
   FormFieldData field;
   field.is_focusable = true;
   field.should_autocomplete = true;
-  const gfx::Rect bounds;
+  const gfx::Rect element_bounds;
 
-  EXPECT_CALL(*external_delegate_, SetBounds(bounds));
+  EXPECT_CALL(*external_delegate_, CreatePopupForElement(element_bounds));
 
   // The enums must be cast to ints to prevent compile errors on linux_rel.
   EXPECT_CALL(*external_delegate_,
@@ -289,7 +289,7 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegatePasswordSuggestions) {
 
   external_delegate_->OnShowPasswordSuggestions(suggestions,
                                                 field,
-                                                bounds);
+                                                element_bounds);
   EXPECT_TRUE(external_delegate_->popup_visible());
 
   // Called by DidAutofillSuggestions, add expectation to remove warning.
