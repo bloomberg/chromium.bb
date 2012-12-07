@@ -63,7 +63,7 @@ void __pthread_initialize(void) {
 }
 
 static void nacl_irt_thread_exit(int32_t *stack_flag) {
-  struct nc_combined_tdb *tdb = get_irt_tdb(NACL_SYSCALL(second_tls_get)());
+  struct nc_combined_tdb *tdb = get_irt_tdb(__nacl_read_tp());
 
   __nc_tsd_exit();
   __nc_futex_thread_exit();
@@ -85,8 +85,7 @@ static void nacl_irt_thread_exit(int32_t *stack_flag) {
  * This is the real first entry point for new threads.
  */
 static void irt_start_thread(void) {
-  void *thread_ptr = NACL_SYSCALL(second_tls_get)();
-  struct nc_combined_tdb *tdb = get_irt_tdb(thread_ptr);
+  struct nc_combined_tdb *tdb = get_irt_tdb(__nacl_read_tp());
 
   /*
    * Fetch the user's start routine.
