@@ -22,7 +22,7 @@
 #else
 #define MAYBE_WebKitPrefsBackgroundPage WebKitPrefsBackgroundPage
 #endif
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WebKitPrefsBackgroundPage) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_WebKitPrefsBackgroundPage) {
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("good").AppendASCII("Extensions")
                     .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
