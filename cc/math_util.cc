@@ -109,15 +109,27 @@ gfx::RectF MathUtil::mapClippedRect(const gfx::Transform& transform, const gfx::
 {
     if (transform.IsIdentityOrTranslation())
         return srcRect + gfx::Vector2dF(static_cast<float>(transform.matrix().getDouble(0, 3)), static_cast<float>(transform.matrix().getDouble(1, 3)));
-
+    
     // Apply the transform, but retain the result in homogeneous coordinates.
-    gfx::QuadF q = gfx::QuadF(srcRect);
-    HomogeneousCoordinate h1 = mapHomogeneousPoint(transform, gfx::Point3F(q.p1()));
-    HomogeneousCoordinate h2 = mapHomogeneousPoint(transform, gfx::Point3F(q.p2()));
-    HomogeneousCoordinate h3 = mapHomogeneousPoint(transform, gfx::Point3F(q.p3()));
-    HomogeneousCoordinate h4 = mapHomogeneousPoint(transform, gfx::Point3F(q.p4()));
 
-    return computeEnclosingClippedRect(h1, h2, h3, h4);
+    double quad[4 * 2]; // input: 4 x 2D points
+    quad[0] = srcRect.x();
+    quad[1] = srcRect.y();
+    quad[2] = srcRect.right();
+    quad[3] = srcRect.y();
+    quad[4] = srcRect.right();
+    quad[5] = srcRect.bottom();
+    quad[6] = srcRect.x();
+    quad[7] = srcRect.bottom();
+
+    double result[4 * 4];   // output: 4 x 4D homogeneous points
+    transform.matrix().map2(quad, 4, result);
+
+    HomogeneousCoordinate hc0(result[0], result[1], result[2], result[3]);
+    HomogeneousCoordinate hc1(result[4], result[5], result[6], result[7]);
+    HomogeneousCoordinate hc2(result[8], result[9], result[10], result[11]);
+    HomogeneousCoordinate hc3(result[12], result[13], result[14], result[15]);
+    return computeEnclosingClippedRect(hc0, hc1, hc2, hc3);
 }
 
 gfx::RectF MathUtil::projectClippedRect(const gfx::Transform& transform, const gfx::RectF& srcRect)
