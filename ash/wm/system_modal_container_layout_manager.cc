@@ -138,6 +138,7 @@ void SystemModalContainerLayoutManager::OnWindowPropertyChanged(
     AddModalWindow(window);
   } else if (static_cast<ui::ModalType>(old) != ui::MODAL_TYPE_NONE) {
     RemoveModalWindow(window);
+    Shell::GetInstance()->OnModalWindowRemoved(window);
   }
 }
 
@@ -237,6 +238,7 @@ void SystemModalContainerLayoutManager::AddModalWindow(aura::Window* window) {
   }
   modal_windows_.push_back(window);
   Shell::GetInstance()->CreateModalBackground(window);
+  window->parent()->StackChildAtTop(window);
 }
 
 void SystemModalContainerLayoutManager::RemoveModalWindow(
@@ -245,8 +247,6 @@ void SystemModalContainerLayoutManager::RemoveModalWindow(
       std::find(modal_windows_.begin(), modal_windows_.end(), window);
   if (it != modal_windows_.end())
     modal_windows_.erase(it);
-
-  Shell::GetInstance()->OnModalWindowRemoved(window);
 }
 
 }  // namespace internal

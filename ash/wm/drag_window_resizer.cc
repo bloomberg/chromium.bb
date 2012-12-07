@@ -187,8 +187,7 @@ void DragWindowResizer::UpdateDragWindow(const gfx::Rect& bounds,
 
 bool DragWindowResizer::ShouldAllowMouseWarp() {
   return (details_.window_component == HTCAPTION) &&
-      (GetTarget()->GetProperty(aura::client::kModalKey) ==
-       ui::MODAL_TYPE_NONE) &&
+      !GetTarget()->transient_parent() &&
       (GetTarget()->type() == aura::client::WINDOW_TYPE_NORMAL);
 }
 

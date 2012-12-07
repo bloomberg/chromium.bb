@@ -445,6 +445,9 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDrag) {
     EXPECT_EQ(snapped_bounds.ToString(), target->bounds().ToString());
   }
 
+  gfx::Rect bounds_before_maximization = target->bounds();
+  bounds_before_maximization.Offset(0, 100);
+  target->SetBounds(bounds_before_maximization);
   old_bounds = target->bounds();
   // Maximize.
   end = location = target->GetBoundsInRootWindow().CenterPoint();

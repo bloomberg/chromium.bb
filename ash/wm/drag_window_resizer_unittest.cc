@@ -14,9 +14,11 @@
 #include "ash/wm/drag_window_controller.h"
 #include "ash/wm/shelf_layout_manager.h"
 #include "base/stringprintf.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
@@ -48,10 +50,41 @@ class DragWindowResizerTest : public test::AshTestBase {
     window_->Init(ui::LAYER_NOT_DRAWN);
     SetDefaultParentByPrimaryRootWindow(window_.get());
     window_->set_id(1);
+
+    always_on_top_window_.reset(new aura::Window(&delegate2_));
+    always_on_top_window_->SetType(aura::client::WINDOW_TYPE_NORMAL);
+    always_on_top_window_->SetProperty(aura::client::kAlwaysOnTopKey, true);
+    always_on_top_window_->Init(ui::LAYER_NOT_DRAWN);
+    SetDefaultParentByPrimaryRootWindow(always_on_top_window_.get());
+    always_on_top_window_->set_id(2);
+
+    system_modal_window_.reset(new aura::Window(&delegate3_));
+    system_modal_window_->SetType(aura::client::WINDOW_TYPE_NORMAL);
+    system_modal_window_->SetProperty(aura::client::kModalKey,
+                                      ui::MODAL_TYPE_SYSTEM);
+    system_modal_window_->Init(ui::LAYER_NOT_DRAWN);
+    SetDefaultParentByPrimaryRootWindow(system_modal_window_.get());
+    system_modal_window_->set_id(3);
+
+    transient_child_ = new aura::Window(&delegate4_);
+    transient_child_->SetType(aura::client::WINDOW_TYPE_NORMAL);
+    transient_child_->Init(ui::LAYER_NOT_DRAWN);
+    SetDefaultParentByPrimaryRootWindow(transient_child_);
+    transient_child_->set_id(4);
+
+    transient_parent_.reset(new aura::Window(&delegate5_));
+    transient_parent_->SetType(aura::client::WINDOW_TYPE_NORMAL);
+    transient_parent_->Init(ui::LAYER_NOT_DRAWN);
+    SetDefaultParentByPrimaryRootWindow(transient_parent_.get());
+    transient_parent_->AddTransientChild(transient_child_);
+    transient_parent_->set_id(5);
   }
 
   virtual void TearDown() OVERRIDE {
     window_.reset();
+    always_on_top_window_.reset();
+    system_modal_window_.reset();
+    transient_parent_.reset();
     AshTestBase::TearDown();
   }
 
@@ -78,7 +111,16 @@ class DragWindowResizerTest : public test::AshTestBase {
   }
 
   aura::test::TestWindowDelegate delegate_;
+  aura::test::TestWindowDelegate delegate2_;
+  aura::test::TestWindowDelegate delegate3_;
+  aura::test::TestWindowDelegate delegate4_;
+  aura::test::TestWindowDelegate delegate5_;
+
   scoped_ptr<aura::Window> window_;
+  scoped_ptr<aura::Window> always_on_top_window_;
+  scoped_ptr<aura::Window> system_modal_window_;
+  aura::Window* transient_child_;
+  scoped_ptr<aura::Window> transient_parent_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DragWindowResizerTest);
@@ -347,6 +389,95 @@ TEST_F(DragWindowResizerTest, CursorDeviceScaleFactor) {
     EXPECT_EQ(1.0f, cursor_test_api.GetDeviceScaleFactor());
     resizer->CompleteDrag(0);
     EXPECT_EQ(1.0f, cursor_test_api.GetDeviceScaleFactor());
+  }
+}
+
+// Verifies several kinds of windows can be moved across displays.
+TEST_F(DragWindowResizerTest, MoveWindowAcrossDisplays) {
+  // The secondary display is logically on the right, but on the system (e.g. X)
+  // layer, it's below the primary one. See UpdateDisplay() in ash_test_base.cc.
+  UpdateDisplay("400x400,400x400");
+  shelf_layout_manager()->LayoutShelf();
+
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  ASSERT_EQ(2U, root_windows.size());
+  MouseCursorEventFilter* event_filter =
+      Shell::GetInstance()->mouse_cursor_filter();
+
+  // Normal window can be moved across display.
+  {
+    aura::Window* window = window_.get();
+    window->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
+                              Shell::GetScreen()->GetPrimaryDisplay());
+    // Grab (0, 0) of the window.
+    scoped_ptr<DragWindowResizer> resizer(CreateDragWindowResizer(
+        window, gfx::Point(), HTCAPTION));
+    ASSERT_TRUE(resizer.get());
+    resizer->Drag(CalculateDragPoint(*resizer, 399, 200), 0);
+    EXPECT_TRUE(event_filter->WarpMouseCursorIfNecessary(root_windows[0],
+                                                         gfx::Point(399, 200)));
+    resizer->CompleteDrag(0);
+  }
+
+  // Always on top window can be moved across display.
+  {
+    aura::Window* window = always_on_top_window_.get();
+    window->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
+                              Shell::GetScreen()->GetPrimaryDisplay());
+    // Grab (0, 0) of the window.
+    scoped_ptr<DragWindowResizer> resizer(CreateDragWindowResizer(
+        window, gfx::Point(), HTCAPTION));
+    ASSERT_TRUE(resizer.get());
+    resizer->Drag(CalculateDragPoint(*resizer, 399, 200), 0);
+    EXPECT_TRUE(event_filter->WarpMouseCursorIfNecessary(root_windows[0],
+                                                         gfx::Point(399, 200)));
+    resizer->CompleteDrag(0);
+  }
+
+  // System modal window can be moved across display.
+  {
+    aura::Window* window = system_modal_window_.get();
+    window->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
+                              Shell::GetScreen()->GetPrimaryDisplay());
+    // Grab (0, 0) of the window.
+    scoped_ptr<DragWindowResizer> resizer(CreateDragWindowResizer(
+        window, gfx::Point(), HTCAPTION));
+    ASSERT_TRUE(resizer.get());
+    resizer->Drag(CalculateDragPoint(*resizer, 399, 200), 0);
+    EXPECT_TRUE(event_filter->WarpMouseCursorIfNecessary(root_windows[0],
+                                                         gfx::Point(399, 200)));
+    resizer->CompleteDrag(0);
+  }
+
+  // Transient window cannot be moved across display.
+  {
+    aura::Window* window = transient_child_;
+    window->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
+                              Shell::GetScreen()->GetPrimaryDisplay());
+    // Grab (0, 0) of the window.
+    scoped_ptr<DragWindowResizer> resizer(CreateDragWindowResizer(
+        window, gfx::Point(), HTCAPTION));
+    ASSERT_TRUE(resizer.get());
+    resizer->Drag(CalculateDragPoint(*resizer, 399, 200), 0);
+    EXPECT_FALSE(event_filter->WarpMouseCursorIfNecessary(
+        root_windows[0],
+        gfx::Point(399, 200)));
+    resizer->CompleteDrag(0);
+  }
+
+  // The parent of transient window can be moved across display.
+  {
+    aura::Window* window = transient_parent_.get();
+    window->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
+                              Shell::GetScreen()->GetPrimaryDisplay());
+    // Grab (0, 0) of the window.
+    scoped_ptr<DragWindowResizer> resizer(CreateDragWindowResizer(
+        window, gfx::Point(), HTCAPTION));
+    ASSERT_TRUE(resizer.get());
+    resizer->Drag(CalculateDragPoint(*resizer, 399, 200), 0);
+    EXPECT_TRUE(event_filter->WarpMouseCursorIfNecessary(root_windows[0],
+                                                         gfx::Point(399, 200)));
+    resizer->CompleteDrag(0);
   }
 }
 

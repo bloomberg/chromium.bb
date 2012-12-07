@@ -64,6 +64,12 @@ class TestWindow : public views::WidgetDelegateView {
     return widget->GetNativeView();
   }
 
+  // The window needs be closed from widget in order for
+  // aura::client::kModalKey property to be reset.
+  static void CloseTestWindow(aura::Window* window) {
+    views::Widget::GetWidgetForNativeWindow(window)->Close();
+  }
+
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE {
     return gfx::Size(50, 50);
@@ -255,7 +261,7 @@ TEST_F(SystemModalContainerLayoutManagerTest,
 
   // Now close the transient.
   transient->Hide();
-  transient.reset();
+  TestWindow::CloseTestWindow(transient.release());
 
   MessageLoopForUI::current()->RunUntilIdle();
 
@@ -376,7 +382,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, ShowNormalBackgroundOrLocked) {
   EXPECT_TRUE(AllRootWindowsHaveModalBackgrounds());
   EXPECT_FALSE(AllRootWindowsHaveLockedModalBackgrounds());
 
-  modal_window.reset();
+  TestWindow::CloseTestWindow(modal_window.release());
   EXPECT_FALSE(AllRootWindowsHaveModalBackgrounds());
   EXPECT_FALSE(AllRootWindowsHaveLockedModalBackgrounds());
 
@@ -393,7 +399,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, ShowNormalBackgroundOrLocked) {
   lock_modal_window->Show();
   EXPECT_FALSE(AllRootWindowsHaveModalBackgrounds());
   EXPECT_TRUE(AllRootWindowsHaveLockedModalBackgrounds());
-  lock_modal_window.reset();
+  TestWindow::CloseTestWindow(lock_modal_window.release());
 
   // Normal system modal window while locked, but it belongs to the normal
   // window.  Shouldn't show locked system modal background, but normal.
@@ -402,7 +408,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, ShowNormalBackgroundOrLocked) {
   modal_window2->Show();
   EXPECT_TRUE(AllRootWindowsHaveModalBackgrounds());
   EXPECT_FALSE(AllRootWindowsHaveLockedModalBackgrounds());
-  modal_window2.reset();
+  TestWindow::CloseTestWindow(modal_window2.release());
 
   // Here we should check the behavior of the locked system modal dialog when
   // unlocked, but such case isn't handled very well right now.
@@ -441,11 +447,11 @@ TEST_F(SystemModalContainerLayoutManagerTest, MultiDisplays) {
   EXPECT_EQ(container1, modal11->parent());
   EXPECT_EQ(container2, modal2->parent());
 
-  modal2.reset();
+  TestWindow::CloseTestWindow(modal2.release());
   EXPECT_TRUE(AllRootWindowsHaveModalBackgrounds());
   EXPECT_TRUE(wm::IsActiveWindow(modal11.get()));
 
-  modal11.reset();
+  TestWindow::CloseTestWindow(modal11.release());
   EXPECT_TRUE(AllRootWindowsHaveModalBackgrounds());
   EXPECT_TRUE(wm::IsActiveWindow(modal1.get()));
 
@@ -459,7 +465,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, MultiDisplays) {
 
   // No more modal screen.
   modal1->Hide();
-  modal1.reset();
+  TestWindow::CloseTestWindow(modal1.release());
   EXPECT_FALSE(AllRootWindowsHaveModalBackgrounds());
   EXPECT_TRUE(wm::IsActiveWindow(normal.get()));
 }
