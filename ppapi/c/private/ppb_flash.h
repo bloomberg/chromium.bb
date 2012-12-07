@@ -3,12 +3,11 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_flash.idl modified Tue Nov 20 10:12:16 2012. */
+/* From private/ppb_flash.idl modified Thu Dec 06 12:27:21 2012. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_FLASH_H_
 #define PPAPI_C_PRIVATE_PPB_FLASH_H_
 
-#include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/c/pp_array_output.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
@@ -21,6 +20,7 @@
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_time.h"
 #include "ppapi/c/pp_var.h"
+#include "ppapi/c/trusted/ppb_browser_font_trusted.h"
 
 #define PPB_FLASH_INTERFACE_12_4 "PPB_Flash;12.4"
 #define PPB_FLASH_INTERFACE_12_5 "PPB_Flash;12.5"
@@ -141,17 +141,18 @@ struct PPB_Flash_13_0 {
    * system settings. For this to work properly, the graphics layer that the
    * text is being drawn into must be opaque.
    */
-  PP_Bool (*DrawGlyphs)(PP_Instance instance,
-                        PP_Resource pp_image_data,
-                        const struct PP_FontDescription_Dev* font_desc,
-                        uint32_t color,
-                        const struct PP_Point* position,
-                        const struct PP_Rect* clip,
-                        const float transformation[3][3],
-                        PP_Bool allow_subpixel_aa,
-                        uint32_t glyph_count,
-                        const uint16_t glyph_indices[],
-                        const struct PP_Point glyph_advances[]);
+  PP_Bool (*DrawGlyphs)(
+      PP_Instance instance,
+      PP_Resource pp_image_data,
+      const struct PP_BrowserFont_Trusted_Description* font_desc,
+      uint32_t color,
+      const struct PP_Point* position,
+      const struct PP_Rect* clip,
+      const float transformation[3][3],
+      PP_Bool allow_subpixel_aa,
+      uint32_t glyph_count,
+      const uint16_t glyph_indices[],
+      const struct PP_Point glyph_advances[]);
   /**
    * Retrieves the proxy that will be used for the given URL. The result will
    * be a string in PAC format, or an undefined var on error.
@@ -227,17 +228,18 @@ typedef struct PPB_Flash_13_0 PPB_Flash;
 
 struct PPB_Flash_12_4 {
   void (*SetInstanceAlwaysOnTop)(PP_Instance instance, PP_Bool on_top);
-  PP_Bool (*DrawGlyphs)(PP_Instance instance,
-                        PP_Resource pp_image_data,
-                        const struct PP_FontDescription_Dev* font_desc,
-                        uint32_t color,
-                        const struct PP_Point* position,
-                        const struct PP_Rect* clip,
-                        const float transformation[3][3],
-                        PP_Bool allow_subpixel_aa,
-                        uint32_t glyph_count,
-                        const uint16_t glyph_indices[],
-                        const struct PP_Point glyph_advances[]);
+  PP_Bool (*DrawGlyphs)(
+      PP_Instance instance,
+      PP_Resource pp_image_data,
+      const struct PP_BrowserFont_Trusted_Description* font_desc,
+      uint32_t color,
+      const struct PP_Point* position,
+      const struct PP_Rect* clip,
+      const float transformation[3][3],
+      PP_Bool allow_subpixel_aa,
+      uint32_t glyph_count,
+      const uint16_t glyph_indices[],
+      const struct PP_Point glyph_advances[]);
   struct PP_Var (*GetProxyForURL)(PP_Instance instance, const char* url);
   int32_t (*Navigate)(PP_Resource request_info,
                       const char* target,
@@ -257,17 +259,18 @@ struct PPB_Flash_12_4 {
 
 struct PPB_Flash_12_5 {
   void (*SetInstanceAlwaysOnTop)(PP_Instance instance, PP_Bool on_top);
-  PP_Bool (*DrawGlyphs)(PP_Instance instance,
-                        PP_Resource pp_image_data,
-                        const struct PP_FontDescription_Dev* font_desc,
-                        uint32_t color,
-                        const struct PP_Point* position,
-                        const struct PP_Rect* clip,
-                        const float transformation[3][3],
-                        PP_Bool allow_subpixel_aa,
-                        uint32_t glyph_count,
-                        const uint16_t glyph_indices[],
-                        const struct PP_Point glyph_advances[]);
+  PP_Bool (*DrawGlyphs)(
+      PP_Instance instance,
+      PP_Resource pp_image_data,
+      const struct PP_BrowserFont_Trusted_Description* font_desc,
+      uint32_t color,
+      const struct PP_Point* position,
+      const struct PP_Rect* clip,
+      const float transformation[3][3],
+      PP_Bool allow_subpixel_aa,
+      uint32_t glyph_count,
+      const uint16_t glyph_indices[],
+      const struct PP_Point glyph_advances[]);
   struct PP_Var (*GetProxyForURL)(PP_Instance instance, const char* url);
   int32_t (*Navigate)(PP_Resource request_info,
                       const char* target,
@@ -290,17 +293,18 @@ struct PPB_Flash_12_5 {
 
 struct PPB_Flash_12_6 {
   void (*SetInstanceAlwaysOnTop)(PP_Instance instance, PP_Bool on_top);
-  PP_Bool (*DrawGlyphs)(PP_Instance instance,
-                        PP_Resource pp_image_data,
-                        const struct PP_FontDescription_Dev* font_desc,
-                        uint32_t color,
-                        const struct PP_Point* position,
-                        const struct PP_Rect* clip,
-                        const float transformation[3][3],
-                        PP_Bool allow_subpixel_aa,
-                        uint32_t glyph_count,
-                        const uint16_t glyph_indices[],
-                        const struct PP_Point glyph_advances[]);
+  PP_Bool (*DrawGlyphs)(
+      PP_Instance instance,
+      PP_Resource pp_image_data,
+      const struct PP_BrowserFont_Trusted_Description* font_desc,
+      uint32_t color,
+      const struct PP_Point* position,
+      const struct PP_Rect* clip,
+      const float transformation[3][3],
+      PP_Bool allow_subpixel_aa,
+      uint32_t glyph_count,
+      const uint16_t glyph_indices[],
+      const struct PP_Point glyph_advances[]);
   struct PP_Var (*GetProxyForURL)(PP_Instance instance, const char* url);
   int32_t (*Navigate)(PP_Resource request_info,
                       const char* target,

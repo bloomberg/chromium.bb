@@ -123,7 +123,7 @@ interface PPB_Flash {
   PP_Bool DrawGlyphs(
       [in] PP_Instance instance,
       [in] PP_Resource pp_image_data,
-      [in] PP_FontDescription_Dev font_desc,
+      [in] PP_BrowserFont_Trusted_Description font_desc,
       [in] uint32_t color,
       [in] PP_Point position,
       [in] PP_Rect clip,

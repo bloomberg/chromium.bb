@@ -12,6 +12,7 @@
 #include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/pp_rect.h"
+#include "ppapi/c/trusted/ppb_browser_font_trusted.h"
 #include "ppapi/shared_impl/var.h"
 
 #if defined(OS_NACL)
@@ -48,12 +49,38 @@ void SerializedFontDescription::SetFromPPFontDescription(
   word_spacing = desc.word_spacing;
 }
 
+void SerializedFontDescription::SetFromPPBrowserFontDescription(
+    const PP_BrowserFont_Trusted_Description& desc) {
+  StringVar* string_var = StringVar::FromPPVar(desc.face);
+  face = string_var ? string_var->value() : std::string();
+
+  family = desc.family;
+  size = desc.size;
+  weight = desc.weight;
+  italic = desc.italic;
+  small_caps = desc.small_caps;
+  letter_spacing = desc.letter_spacing;
+  word_spacing = desc.word_spacing;
+}
+
 void SerializedFontDescription::SetToPPFontDescription(
     PP_FontDescription_Dev* desc) const {
   desc->face = StringVar::StringToPPVar(face);
   desc->family = static_cast<PP_FontFamily_Dev>(family);
   desc->size = size;
   desc->weight = static_cast<PP_FontWeight_Dev>(weight);
+  desc->italic = italic;
+  desc->small_caps = small_caps;
+  desc->letter_spacing = letter_spacing;
+  desc->word_spacing = word_spacing;
+}
+
+void SerializedFontDescription::SetToPPBrowserFontDescription(
+    PP_BrowserFont_Trusted_Description* desc) const {
+  desc->face = StringVar::StringToPPVar(face);
+  desc->family = static_cast<PP_BrowserFont_Trusted_Family>(family);
+  desc->size = size;
+  desc->weight = static_cast<PP_BrowserFont_Trusted_Weight>(weight);
   desc->italic = italic;
   desc->small_caps = small_caps;
   desc->letter_spacing = letter_spacing;

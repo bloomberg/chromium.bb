@@ -16,8 +16,8 @@ struct PP_Point;
 
 namespace pp {
 
+class BrowserFontDescription;
 class DeviceRef_Dev;
-class FontDescription_Dev;
 class ImageData;
 class InstanceHandle;
 class Module;
@@ -38,7 +38,7 @@ class Flash {
                                      bool on_top);
   static bool DrawGlyphs(const InstanceHandle& instance,
                          ImageData* image,
-                         const FontDescription_Dev& font_desc,
+                         const BrowserFontDescription& font_desc,
                          uint32_t color,
                          const Point& position,
                          const Rect& clip,

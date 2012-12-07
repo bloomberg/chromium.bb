@@ -9,7 +9,6 @@
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/cpp/dev/device_ref_dev.h"
-#include "ppapi/cpp/dev/font_dev.h"
 #include "ppapi/cpp/dev/video_capture_dev.h"
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/instance_handle.h"
@@ -17,6 +16,7 @@
 #include "ppapi/cpp/module_impl.h"
 #include "ppapi/cpp/point.h"
 #include "ppapi/cpp/rect.h"
+#include "ppapi/cpp/trusted/browser_font_trusted.h"
 #include "ppapi/cpp/url_request_info.h"
 #include "ppapi/cpp/var.h"
 #include "ppapi/c/private/ppb_flash.h"
@@ -100,7 +100,7 @@ void Flash::SetInstanceAlwaysOnTop(const InstanceHandle& instance,
 // static
 bool Flash::DrawGlyphs(const InstanceHandle& instance,
                        ImageData* image,
-                       const FontDescription_Dev& font_desc,
+                       const BrowserFontDescription& font_desc,
                        uint32_t color,
                        const Point& position,
                        const Rect& clip,

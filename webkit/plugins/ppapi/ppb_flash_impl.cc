@@ -10,8 +10,8 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
-#include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/c/private/ppb_flash.h"
+#include "ppapi/c/trusted/ppb_browser_font_trusted.h"
 #include "ppapi/shared_impl/file_path.h"
 #include "ppapi/shared_impl/file_type_conversion.h"
 #include "ppapi/shared_impl/time_conversion.h"
@@ -64,17 +64,18 @@ void PPB_Flash_Impl::SetInstanceAlwaysOnTop(PP_Instance instance,
   instance_->set_always_on_top(PP_ToBool(on_top));
 }
 
-PP_Bool PPB_Flash_Impl::DrawGlyphs(PP_Instance instance,
-                                   PP_Resource pp_image_data,
-                                   const PP_FontDescription_Dev* font_desc,
-                                   uint32_t color,
-                                   const PP_Point* position,
-                                   const PP_Rect* clip,
-                                   const float transformation[3][3],
-                                   PP_Bool allow_subpixel_aa,
-                                   uint32_t glyph_count,
-                                   const uint16_t glyph_indices[],
-                                   const PP_Point glyph_advances[]) {
+PP_Bool PPB_Flash_Impl::DrawGlyphs(
+    PP_Instance instance,
+    PP_Resource pp_image_data,
+    const PP_BrowserFont_Trusted_Description* font_desc,
+    uint32_t color,
+    const PP_Point* position,
+    const PP_Rect* clip,
+    const float transformation[3][3],
+    PP_Bool allow_subpixel_aa,
+    uint32_t glyph_count,
+    const uint16_t glyph_indices[],
+    const PP_Point glyph_advances[]) {
   EnterResourceNoLock<PPB_ImageData_API> enter(pp_image_data, true);
   if (enter.failed())
     return PP_FALSE;
@@ -90,7 +91,7 @@ PP_Bool PPB_Flash_Impl::DrawGlyphs(PP_Instance instance,
   if (!face_name)
     return PP_FALSE;
   int style = SkTypeface::kNormal;
-  if (font_desc->weight >= PP_FONTWEIGHT_BOLD)
+  if (font_desc->weight >= PP_BROWSERFONT_TRUSTED_WEIGHT_BOLD)
     style |= SkTypeface::kBold;
   if (font_desc->italic)
     style |= SkTypeface::kItalic;

@@ -30,7 +30,7 @@ void SetInstanceAlwaysOnTop(PP_Instance instance, PP_Bool on_top) {
 
 PP_Bool DrawGlyphs(PP_Instance instance,
                    PP_Resource pp_image_data,
-                   const PP_FontDescription_Dev* font_desc,
+                   const PP_BrowserFont_Trusted_Description* font_desc,
                    uint32_t color,
                    const PP_Point* position,
                    const PP_Rect* clip,

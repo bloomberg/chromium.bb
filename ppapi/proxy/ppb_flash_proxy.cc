@@ -14,12 +14,12 @@
 #include "base/message_loop.h"
 #include "base/time.h"
 #include "build/build_config.h"
-#include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/c/private/ppb_flash_print.h"
+#include "ppapi/c/trusted/ppb_browser_font_trusted.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/pepper_file_messages.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
@@ -145,17 +145,18 @@ void PPB_Flash_Proxy::SetInstanceAlwaysOnTop(PP_Instance instance,
       API_ID_PPB_FLASH, instance, on_top));
 }
 
-PP_Bool PPB_Flash_Proxy::DrawGlyphs(PP_Instance instance,
-                                    PP_Resource pp_image_data,
-                                    const PP_FontDescription_Dev* font_desc,
-                                    uint32_t color,
-                                    const PP_Point* position,
-                                    const PP_Rect* clip,
-                                    const float transformation[3][3],
-                                    PP_Bool allow_subpixel_aa,
-                                    uint32_t glyph_count,
-                                    const uint16_t glyph_indices[],
-                                    const PP_Point glyph_advances[]) {
+PP_Bool PPB_Flash_Proxy::DrawGlyphs(
+    PP_Instance instance,
+    PP_Resource pp_image_data,
+    const PP_BrowserFont_Trusted_Description* font_desc,
+    uint32_t color,
+    const PP_Point* position,
+    const PP_Rect* clip,
+    const float transformation[3][3],
+    PP_Bool allow_subpixel_aa,
+    uint32_t glyph_count,
+    const uint16_t glyph_indices[],
+    const PP_Point glyph_advances[]) {
   Resource* image_data =
       PpapiGlobals::Get()->GetResourceTracker()->GetResource(pp_image_data);
   if (!image_data)
@@ -167,7 +168,7 @@ PP_Bool PPB_Flash_Proxy::DrawGlyphs(PP_Instance instance,
 
   PPBFlash_DrawGlyphs_Params params;
   params.image_data = image_data->host_resource();
-  params.font_desc.SetFromPPFontDescription(*font_desc);
+  params.font_desc.SetFromPPBrowserFontDescription(*font_desc);
   params.color = color;
   params.position = *position;
   params.clip = *clip;
@@ -500,8 +501,8 @@ void PPB_Flash_Proxy::OnHostMsgDrawGlyphs(
       params.glyph_indices.empty())
     return;
 
-  PP_FontDescription_Dev font_desc;
-  params.font_desc.SetToPPFontDescription(&font_desc);
+  PP_BrowserFont_Trusted_Description font_desc;
+  params.font_desc.SetToPPBrowserFontDescription(&font_desc);
 
   *result = enter.functions()->GetFlashAPI()->DrawGlyphs(
       0,  // Unused instance param.

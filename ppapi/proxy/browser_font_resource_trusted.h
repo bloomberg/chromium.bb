@@ -46,7 +46,7 @@ class PPAPI_PROXY_EXPORT BrowserFontResource_Trusted
   virtual ::ppapi::thunk::PPB_BrowserFont_Trusted_API*
       AsPPB_BrowserFont_Trusted_API() OVERRIDE;
 
-  // PPB_Font implementation.
+  // PPB_BrowserFont_Trusted_API implementation.
   virtual PP_Bool Describe(PP_BrowserFont_Trusted_Description* description,
                            PP_BrowserFont_Trusted_Metrics* metrics) OVERRIDE;
   virtual PP_Bool DrawTextAt(PP_Resource image_data,

@@ -21,12 +21,14 @@
 
 class Pickle;
 struct PP_FontDescription_Dev;
+struct PP_BrowserFont_Trusted_Description;
 
 namespace ppapi {
 namespace proxy {
 
-// PP_FontDescript_Dev has to be redefined with a string in place of the PP_Var
-// used for the face name.
+// PP_FontDescription_Dev/PP_BrowserFontDescription (same definition, different
+// names) has to be redefined with a string in place of the PP_Var used for the
+// face name.
 struct PPAPI_PROXY_EXPORT SerializedFontDescription {
   SerializedFontDescription();
   ~SerializedFontDescription();
@@ -36,10 +38,14 @@ struct PPAPI_PROXY_EXPORT SerializedFontDescription {
   // The reference of |face| owned by the PP_FontDescription_Dev will be
   // unchanged and the caller is responsible for freeing it.
   void SetFromPPFontDescription(const PP_FontDescription_Dev& desc);
+  void SetFromPPBrowserFontDescription(
+      const PP_BrowserFont_Trusted_Description& desc);
 
   // Converts to a PP_FontDescription_Dev. The face name will have one ref
   // assigned to it. The caller is responsible for freeing it.
   void SetToPPFontDescription(PP_FontDescription_Dev* desc) const;
+  void SetToPPBrowserFontDescription(
+      PP_BrowserFont_Trusted_Description* desc) const;
 
   std::string face;
   int32_t family;
