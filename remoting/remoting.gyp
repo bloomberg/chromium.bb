@@ -43,6 +43,12 @@
     'host_plugin_name': '<!(python <(version_py_path) -f <(branding_path) -t "@HOST_PLUGIN_FILE_NAME@")',
 
     'conditions': [
+      # Remoting host is supported only on Windows, OSX and Linux.
+      ['OS=="win" or OS=="mac" or (OS=="linux" and chromeos==0)', {
+        'enable_remoting_host': 1,
+      }, {
+        'enable_remoting_host': 0,
+      }],
       ['OS=="mac"', {
         'mac_bundle_id': '<!(python <(version_py_path) -f <(branding_path) -t "@MAC_BUNDLE_ID@")',
         'mac_creator': '<!(python <(version_py_path) -f <(branding_path) -t "@MAC_CREATOR@")',
@@ -237,6 +243,576 @@
   },
 
   'conditions': [
+    ['enable_remoting_host==1', {
+      'targets': [
+        {
+          'target_name': 'differ_block',
+          'type': 'static_library',
+          'variables': { 'enable_wexit_time_destructors': 1, },
+          'conditions': [
+            [ 'target_arch == "ia32" or target_arch == "x64"', {
+              'dependencies': [
+                'differ_block_sse2',
+              ],
+            }],
+          ],
+          'sources': [
+            'host/differ_block.cc',
+            'host/differ_block.h',
+          ],
+        }, # end of target differ_block
+
+        {
+          'target_name': 'remoting_host',
+          'type': 'static_library',
+          'variables': { 'enable_wexit_time_destructors': 1, },
+          'dependencies': [
+            'remoting_base',
+            'remoting_jingle_glue',
+            'remoting_protocol',
+            'differ_block',
+            '../crypto/crypto.gyp:crypto',
+            '../google_apis/google_apis.gyp:google_apis',
+            '../ipc/ipc.gyp:ipc',
+          ],
+          'defines': [
+            'VERSION=<(version_full)',
+          ],
+          'sources': [
+            'host/audio_capturer.cc',
+            'host/audio_capturer.h',
+            'host/audio_capturer_linux.cc',
+            'host/audio_capturer_linux.h',
+            'host/audio_capturer_mac.cc',
+            'host/audio_capturer_win.cc',
+            'host/audio_capturer_win.h',
+            'host/audio_scheduler.cc',
+            'host/audio_scheduler.h',
+            'host/capture_scheduler.cc',
+            'host/capture_scheduler.h',
+            'host/chromoting_host.cc',
+            'host/chromoting_host.h',
+            'host/chromoting_host_context.cc',
+            'host/chromoting_host_context.h',
+            'host/chromoting_messages.cc',
+            'host/chromoting_messages.h',
+            'host/client_session.cc',
+            'host/client_session.h',
+            'host/clipboard.h',
+            'host/clipboard_linux.cc',
+            'host/clipboard_mac.mm',
+            'host/clipboard_win.cc',
+            'host/constants_mac.cc',
+            'host/constants_mac.h',
+            'host/continue_window.h',
+            'host/continue_window_gtk.cc',
+            'host/continue_window_mac.mm',
+            'host/continue_window_win.cc',
+            'host/desktop_environment.cc',
+            'host/desktop_environment.h',
+            'host/desktop_environment_factory.cc',
+            'host/desktop_environment_factory.h',
+            'host/desktop_resizer.h',
+            'host/desktop_resizer_linux.cc',
+            'host/desktop_resizer_win.cc',
+            'host/desktop_resizer_mac.cc',
+            'host/desktop_session_connector.h',
+            'host/desktop_session_proxy.cc',
+            'host/desktop_session_proxy.h',
+            'host/differ.cc',
+            'host/differ.h',
+            'host/disconnect_window.h',
+            'host/disconnect_window_gtk.cc',
+            'host/disconnect_window_mac.h',
+            'host/disconnect_window_mac.mm',
+            'host/disconnect_window_win.cc',
+            'host/dns_blackhole_checker.cc',
+            'host/dns_blackhole_checker.h',
+            'host/event_executor.h',
+            'host/event_executor_fake.cc',
+            'host/event_executor_fake.h',
+            'host/event_executor_linux.cc',
+            'host/event_executor_mac.cc',
+            'host/event_executor_win.cc',
+            'host/heartbeat_sender.cc',
+            'host/heartbeat_sender.h',
+            'host/host_config.cc',
+            'host/host_config.h',
+            'host/host_exit_codes.h',
+            'host/host_key_pair.cc',
+            'host/host_key_pair.h',
+            'host/host_port_allocator.cc',
+            'host/host_port_allocator.h',
+            'host/host_secret.cc',
+            'host/host_secret.h',
+            'host/host_status_observer.h',
+            'host/host_status_service.cc',
+            'host/host_status_service.h',
+            'host/host_user_interface.cc',
+            'host/host_user_interface.h',
+            'host/in_memory_host_config.cc',
+            'host/in_memory_host_config.h',
+            'host/ipc_constants.cc',
+            'host/ipc_constants.h',
+            'host/ipc_desktop_environment_factory.cc',
+            'host/ipc_desktop_environment_factory.h',
+            'host/ipc_desktop_environment.cc',
+            'host/ipc_desktop_environment.h',
+            'host/ipc_event_executor.cc',
+            'host/ipc_event_executor.h',
+            'host/ipc_video_frame_capturer.cc',
+            'host/ipc_video_frame_capturer.h',
+            'host/it2me_host_user_interface.cc',
+            'host/it2me_host_user_interface.h',
+            'host/json_host_config.cc',
+            'host/json_host_config.h',
+            'host/linux/audio_pipe_reader.cc',
+            'host/linux/audio_pipe_reader.h',
+            'host/linux/x11_util.cc',
+            'host/linux/x11_util.h',
+            'host/linux/x_server_clipboard.cc',
+            'host/linux/x_server_clipboard.h',
+            'host/linux/x_server_pixel_buffer.cc',
+            'host/linux/x_server_pixel_buffer.h',
+            'host/local_input_monitor.h',
+            'host/local_input_monitor_linux.cc',
+            'host/local_input_monitor_mac.mm',
+            'host/local_input_monitor_thread_linux.cc',
+            'host/local_input_monitor_thread_linux.h',
+            'host/local_input_monitor_thread_win.cc',
+            'host/local_input_monitor_thread_win.h',
+            'host/local_input_monitor_win.cc',
+            'host/log_to_server.cc',
+            'host/log_to_server.h',
+            'host/mac/scoped_pixel_buffer_object.cc',
+            'host/mac/scoped_pixel_buffer_object.h',
+            'host/mouse_clamping_filter.cc',
+            'host/mouse_clamping_filter.h',
+            'host/mouse_move_observer.h',
+            'host/network_settings.h',
+            'host/pam_authorization_factory_posix.cc',
+            'host/pam_authorization_factory_posix.h',
+            'host/pin_hash.cc',
+            'host/pin_hash.h',
+            'host/policy_hack/policy_watcher.h',
+            'host/policy_hack/policy_watcher.cc',
+            'host/policy_hack/policy_watcher_linux.cc',
+            'host/policy_hack/policy_watcher_mac.mm',
+            'host/policy_hack/policy_watcher_win.cc',
+            'host/register_support_host_request.cc',
+            'host/register_support_host_request.h',
+            'host/remote_input_filter.cc',
+            'host/remote_input_filter.h',
+            'host/resizing_host_observer.cc',
+            'host/resizing_host_observer.h',
+            'host/sas_injector.h',
+            'host/sas_injector_win.cc',
+            'host/server_log_entry.cc',
+            'host/server_log_entry.h',
+            'host/service_client.cc',
+            'host/service_client.h',
+            'host/session_manager_factory.cc',
+            'host/session_manager_factory.h',
+            'host/signaling_connector.cc',
+            'host/signaling_connector.h',
+            'host/ui_strings.cc',
+            'host/ui_strings.h',
+            'host/url_request_context.cc',
+            'host/url_request_context.h',
+            'host/usage_stats_consent.h',
+            'host/usage_stats_consent_mac.cc',
+            'host/usage_stats_consent_win.cc',
+            'host/video_frame.cc',
+            'host/video_frame.h',
+            'host/video_frame_capturer.h',
+            'host/video_frame_capturer_fake.cc',
+            'host/video_frame_capturer_fake.h',
+            'host/video_frame_capturer_helper.cc',
+            'host/video_frame_capturer_helper.h',
+            'host/video_frame_capturer_linux.cc',
+            'host/video_frame_capturer_mac.mm',
+            'host/video_frame_capturer_win.cc',
+            'host/video_frame_queue.cc',
+            'host/video_frame_queue.h',
+            'host/video_scheduler.cc',
+            'host/video_scheduler.h',
+            'host/vlog_net_log.cc',
+            'host/vlog_net_log.h',
+            'host/websocket_connection.cc',
+            'host/websocket_connection.h',
+            'host/websocket_listener.cc',
+            'host/websocket_listener.h',
+            'host/win/desktop.cc',
+            'host/win/desktop.h',
+            'host/win/launch_process_with_token.cc',
+            'host/win/launch_process_with_token.h',
+            'host/win/omaha.cc',
+            'host/win/omaha.h',
+            'host/win/scoped_thread_desktop.cc',
+            'host/win/scoped_thread_desktop.h',
+            'host/win/session_desktop_environment_factory.cc',
+            'host/win/session_desktop_environment_factory.h',
+            'host/win/session_event_executor.cc',
+            'host/win/session_event_executor.h',
+          ],
+          'conditions': [
+            ['OS=="linux"', {
+              'link_settings': {
+                'libraries': [
+                  '-lX11',
+                  '-lXdamage',
+                  '-lXfixes',
+                  '-lpam',
+                  '-lXtst',
+                  '-lXext',
+                  '-lXi'
+                ],
+              },
+            }],
+            ['toolkit_uses_gtk==1', {
+              'dependencies': [
+                '../build/linux/system.gyp:gtk',
+              ],
+            }, {  # else toolkit_uses_gtk!=1
+              'sources!': [
+                '*_gtk.cc',
+              ],
+            }],
+            ['OS=="mac"', {
+              'sources': [
+                '../third_party/GTM/AppKit/GTMCarbonEvent.h',
+                '../third_party/GTM/AppKit/GTMCarbonEvent.m',
+                '../third_party/GTM/DebugUtils/GTMDebugSelectorValidation.h',
+                '../third_party/GTM/DebugUtils/GTMTypeCasting.h',
+                '../third_party/GTM/Foundation/GTMObjectSingleton.h',
+                '../third_party/GTM/GTMDefines.h',
+              ],
+              'include_dirs': [
+                '../third_party/GTM',
+                '../third_party/GTM/AppKit',
+                '../third_party/GTM/DebugUtils',
+                '../third_party/GTM/Foundation',
+              ],
+              'link_settings': {
+                'libraries': [
+                  '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
+                  'libpam.a',
+                ],
+              },
+            }],
+          ],
+        },  # end of target 'remoting_host'
+
+        {
+          'target_name': 'remoting_me2me_host',
+          'type': 'executable',
+          'variables': { 'enable_wexit_time_destructors': 1, },
+          'dependencies': [
+            'remoting_base',
+            'remoting_breakpad',
+            'remoting_host',
+            'remoting_host_event_logger',
+            'remoting_host_logging',
+            'remoting_jingle_glue',
+            '../base/base.gyp:base',
+            '../base/base.gyp:base_i18n',
+            '../media/media.gyp:media',
+            '../net/net.gyp:net',
+          ],
+          'defines': [
+            'VERSION=<(version_full)',
+          ],
+          'sources': [
+            'host/config_file_watcher.cc',
+            'host/config_file_watcher.h',
+            'host/curtain_mode.h',
+            'host/curtaining_host_observer.h',
+            'host/curtaining_host_observer.cc',
+            'host/curtain_mode_linux.cc',
+            'host/curtain_mode_mac.cc',
+            'host/curtain_mode_win.cc',
+            'host/posix/signal_handler.cc',
+            'host/posix/signal_handler.h',
+            'host/remoting_me2me_host.cc',
+          ],
+          'conditions': [
+            ['os_posix != 1', {
+              'sources/': [
+                ['exclude', '^host/posix/'],
+              ],
+            }],
+            ['OS=="mac"', {
+              'mac_bundle': 1,
+              'variables': {
+                 'host_bundle_id': '<!(python <(version_py_path) -f <(branding_path) -t "@MAC_HOST_BUNDLE_ID@")',
+              },
+              'xcode_settings': {
+                'INFOPLIST_FILE': 'host/remoting_me2me_host-Info.plist',
+                'INFOPLIST_PREPROCESS': 'YES',
+                'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'VERSION_FULL="<(version_full)" VERSION_SHORT="<(version_short)" BUNDLE_ID="<(host_bundle_id)" COPYRIGHT_INFO="<(copyright_info)"',
+              },
+              'mac_bundle_resources': [
+                'host/disconnect_window.xib',
+                'host/remoting_me2me_host.icns',
+                'host/remoting_me2me_host-Info.plist',
+              ],
+              'mac_bundle_resources!': [
+                'host/remoting_me2me_host-Info.plist',
+              ],
+              'conditions': [
+                ['mac_breakpad==1', {
+                  'variables': {
+                    # A real .dSYM is needed for dump_syms to operate on.
+                    'mac_real_dsym': 1,
+                  },
+                  'defines': ['MAC_BREAKPAD'],
+                  'copies': [
+                    {
+                      'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Resources',
+                      'files': [
+                        '<(PRODUCT_DIR)/crash_inspector',
+                        '<(PRODUCT_DIR)/crash_report_sender.app'
+                      ],
+                    },
+                  ],
+                }],  # mac_breakpad==1
+              ],  # conditions
+            }],  # OS=mac
+            ['OS=="win"', {
+              'product_name': 'remoting_host',
+              'dependencies': [
+                'remoting_version_resources',
+              ],
+              'sources': [
+                '<(SHARED_INTERMEDIATE_DIR)/remoting/host/remoting_host_messages.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/remoting/remoting_host_me2me_version.rc',
+                'host/host_ui.rc',
+              ],
+              'link_settings': {
+                'libraries': [
+                  '-lcomctl32.lib',
+                ],
+              },
+              'msvs_settings': {
+                'VCLinkerTool': {
+                  'AdditionalOptions': [
+                    "\"/manifestdependency:type='win32' "
+                        "name='Microsoft.Windows.Common-Controls' "
+                        "version='6.0.0.0' "
+                        "processorArchitecture='*' "
+                        "publicKeyToken='6595b64144ccf1df' language='*'\"",
+                  ],
+                  'conditions': [
+                    ['buildtype == "Official" and remoting_multi_process == 0', {
+                      'AdditionalOptions': [
+                        "\"/MANIFESTUAC:level='requireAdministrator' "
+                            "uiAccess='true'\"",
+                      ],
+                    }],
+                  ],
+                  'ImportLibrary': '$(OutDir)\\lib\\remoting_host_exe.lib',
+                  'OutputFile': '$(OutDir)\\remoting_host.exe',
+                  # 2 == /SUBSYSTEM:WINDOWS
+                  'SubSystem': '2',
+                },
+              },
+            }],
+          ],  # end of 'conditions'
+        },  # end of target 'remoting_me2me_host'
+
+        {
+          'target_name': 'remoting_host_keygen',
+          'type': 'executable',
+          'dependencies': [
+            'remoting_base',
+            '../base/base.gyp:base',
+            '../base/base.gyp:base_i18n',
+            '../crypto/crypto.gyp:crypto',
+          ],
+          'sources': [
+            'host/keygen_main.cc',
+          ],
+        },  # end of target 'remoting_host_keygen'
+
+        {
+          'target_name': 'remoting_host_setup_base',
+          'type': 'static_library',
+          'variables': { 'enable_wexit_time_destructors': 1, },
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../google_apis/google_apis.gyp:google_apis',
+            'remoting_host',
+          ],
+          'sources': [
+            'host/setup/daemon_controller.h',
+            'host/setup/daemon_controller_linux.cc',
+            'host/setup/daemon_controller_mac.cc',
+            'host/setup/daemon_controller_win.cc',
+            'host/setup/daemon_installer_win.cc',
+            'host/setup/daemon_installer_win.h',
+            'host/setup/host_starter.cc',
+            'host/setup/host_starter.h',
+            'host/setup/oauth_helper.cc',
+            'host/setup/oauth_helper.h',
+            'host/setup/pin_validator.cc',
+            'host/setup/pin_validator.h',
+            'host/setup/win/auth_code_getter.cc',
+            'host/setup/win/auth_code_getter.h',
+          ],
+          'conditions': [
+            ['OS=="win"', {
+              'dependencies': [
+                '../google_update/google_update.gyp:google_update',
+                'remoting_elevated_controller',
+              ],
+            }],
+          ],
+        },  # end of target 'remoting_host_setup_base'
+
+        {
+          'target_name': 'remoting_host_plugin',
+          'type': 'loadable_module',
+          'variables': { 'enable_wexit_time_destructors': 1, },
+          'product_extension': '<(host_plugin_extension)',
+          'product_prefix': '<(host_plugin_prefix)',
+          'dependencies': [
+            'remoting_base',
+            'remoting_host',
+            'remoting_host_event_logger',
+            'remoting_host_logging',
+            'remoting_host_setup_base',
+            'remoting_jingle_glue',
+            '../net/net.gyp:net',
+            '../third_party/npapi/npapi.gyp:npapi',
+          ],
+          'sources': [
+            'base/dispatch_win.h',
+            'host/host_ui_resource.h',
+            'host/plugin/host_log_handler.cc',
+            'host/plugin/host_log_handler.h',
+            'host/plugin/host_plugin.cc',
+            'host/plugin/host_plugin_utils.cc',
+            'host/plugin/host_plugin_utils.h',
+            'host/plugin/host_script_object.cc',
+            'host/plugin/host_script_object.h',
+          ],
+          'conditions': [
+            ['OS=="mac"', {
+              'mac_bundle': 1,
+              'xcode_settings': {
+                'CHROMIUM_BUNDLE_ID': '<(mac_bundle_id)',
+                'INFOPLIST_FILE': 'host/plugin/host_plugin-Info.plist',
+                'INFOPLIST_PREPROCESS': 'YES',
+                # TODO(maruel): Use INFOPLIST_PREFIX_HEADER to remove the need to
+                # duplicate string once
+                # http://code.google.com/p/gyp/issues/detail?id=243 is fixed.
+                'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'HOST_PLUGIN_MIME_TYPE="<(host_plugin_mime_type)" HOST_PLUGIN_NAME="<(host_plugin_name)" HOST_PLUGIN_DESCRIPTION="<(host_plugin_description)"',
+              },
+              # TODO(mark): Come up with a fancier way to do this.  It should
+              # only be necessary to list host_plugin-Info.plist once, not the
+              # three times it is listed here.
+              'mac_bundle_resources': [
+                'host/disconnect_window.xib',
+                'host/plugin/host_plugin-Info.plist',
+                'resources/chromoting16.png',
+                'resources/chromoting48.png',
+                'resources/chromoting128.png',
+              ],
+              'mac_bundle_resources!': [
+                'host/plugin/host_plugin-Info.plist',
+              ],
+              'conditions': [
+                ['mac_breakpad==1', {
+                  'variables': {
+                    # A real .dSYM is needed for dump_syms to operate on.
+                    'mac_real_dsym': 1,
+                  },
+                }],
+              ],  # conditions
+            }],  # OS=="mac"
+            [ 'OS=="win"', {
+              'dependencies': [
+                'remoting_elevated_controller',
+                'remoting_version_resources',
+              ],
+              'include_dirs': [
+                '<(INTERMEDIATE_DIR)',
+              ],
+              'sources': [
+                '<(SHARED_INTERMEDIATE_DIR)/remoting/remoting_host_plugin_version.rc',
+                'host/host_ui.rc',
+                'host/plugin/host_plugin.def',
+              ],
+            }],
+          ],
+        },  # end of target 'remoting_host_plugin'
+
+        {
+          'target_name': 'remoting_desktop',
+          'type': 'executable',
+          'variables': { 'enable_wexit_time_destructors': 1, },
+          'defines': [
+            'REMOTING_MULTI_PROCESS',
+          ],
+          'dependencies': [
+            'remoting_base',
+            'remoting_breakpad',
+            'remoting_host',
+            'remoting_host_logging',
+            '../base/base.gyp:base',
+            '../ipc/ipc.gyp:ipc',
+          ],
+          'sources': [
+            'host/desktop_process.cc',
+            'host/desktop_process.h',
+            'host/desktop_process_main.cc',
+            'host/desktop_session_agent.cc',
+            'host/desktop_session_agent.h',
+            'host/desktop_session_agent_posix.cc',
+            'host/desktop_session_agent_win.cc',
+          ],
+          'conditions': [
+            ['OS=="win"', {
+              'dependencies': [
+                'remoting_version_resources',
+              ],
+              'sources': [
+                'host/host_ui.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/remoting/remoting_desktop_version.rc',
+              ],
+              'link_settings': {
+                'libraries': [
+                  '-lcomctl32.lib',
+                ],
+              },
+              'msvs_settings': {
+                'VCLinkerTool': {
+                  'AdditionalOptions': [
+                    "\"/manifestdependency:type='win32' "
+                        "name='Microsoft.Windows.Common-Controls' "
+                        "version='6.0.0.0' "
+                        "processorArchitecture='*' "
+                        "publicKeyToken='6595b64144ccf1df' language='*'\"",
+                  ],
+                  'conditions': [
+                    ['buildtype == "Official"', {
+                      'AdditionalOptions': [
+                        "\"/MANIFESTUAC:level='requireAdministrator' "
+                            "uiAccess='true'\"",
+                      ],
+                    }],
+                  ],
+                  # 2 == /SUBSYSTEM:WINDOWS
+                  'SubSystem': '2',
+                },
+              },
+            }],
+          ],
+        },  # end of target 'remoting_desktop'
+
+      ],  # end of 'targets'
+    }],  # 'enable_remoting_host==1'
+
     ['OS=="linux" and chromeos==0', {
       'targets': [
         # Linux breakpad processing
@@ -1015,69 +1591,6 @@
     },  # end of target 'remoting_client_plugin'
 
     {
-      'target_name': 'remoting_desktop',
-      'type': 'executable',
-      'variables': { 'enable_wexit_time_destructors': 1, },
-      'defines': [
-        'REMOTING_MULTI_PROCESS',
-      ],
-      'dependencies': [
-        'remoting_base',
-        'remoting_breakpad',
-        'remoting_host',
-        'remoting_host_logging',
-        '../base/base.gyp:base',
-        '../ipc/ipc.gyp:ipc',
-      ],
-      'sources': [
-        'host/desktop_process.cc',
-        'host/desktop_process.h',
-        'host/desktop_process_main.cc',
-        'host/desktop_session_agent.cc',
-        'host/desktop_session_agent.h',
-        'host/desktop_session_agent_posix.cc',
-        'host/desktop_session_agent_win.cc',
-      ],
-      'conditions': [
-        ['OS=="win"', {
-          'dependencies': [
-            'remoting_version_resources',
-          ],
-          'sources': [
-            'host/host_ui.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/remoting/remoting_desktop_version.rc',
-          ],
-          'link_settings': {
-            'libraries': [
-              '-lcomctl32.lib',
-            ],
-          },
-          'msvs_settings': {
-            'VCLinkerTool': {
-              'AdditionalOptions': [
-                "\"/manifestdependency:type='win32' "
-                    "name='Microsoft.Windows.Common-Controls' "
-                    "version='6.0.0.0' "
-                    "processorArchitecture='*' "
-                    "publicKeyToken='6595b64144ccf1df' language='*'\"",
-              ],
-              'conditions': [
-                ['buildtype == "Official"', {
-                  'AdditionalOptions': [
-                    "\"/MANIFESTUAC:level='requireAdministrator' "
-                        "uiAccess='true'\"",
-                  ],
-                }],
-              ],
-              # 2 == /SUBSYSTEM:WINDOWS
-              'SubSystem': '2',
-            },
-          },
-        }],
-      ],
-    },  # end of target 'remoting_desktop'
-
-    {
       'target_name': 'remoting_host_event_logger',
       'type': 'static_library',
       'variables': { 'enable_wexit_time_destructors': 1, },
@@ -1129,119 +1642,6 @@
     },  # end of target 'remoting_host_event_logger'
 
     {
-      'target_name': 'remoting_host_setup_base',
-      'type': 'static_library',
-      'variables': { 'enable_wexit_time_destructors': 1, },
-      'dependencies': [
-        '../base/base.gyp:base',
-        '../google_apis/google_apis.gyp:google_apis',
-        'remoting_host',
-      ],
-      'sources': [
-        'host/setup/daemon_controller.h',
-        'host/setup/daemon_controller_linux.cc',
-        'host/setup/daemon_controller_mac.cc',
-        'host/setup/daemon_controller_win.cc',
-        'host/setup/daemon_installer_win.cc',
-        'host/setup/daemon_installer_win.h',
-        'host/setup/host_starter.cc',
-        'host/setup/host_starter.h',
-        'host/setup/oauth_helper.cc',
-        'host/setup/oauth_helper.h',
-        'host/setup/pin_validator.cc',
-        'host/setup/pin_validator.h',
-        'host/setup/win/auth_code_getter.cc',
-        'host/setup/win/auth_code_getter.h',
-      ],
-      'conditions': [
-        ['OS=="win"', {
-          'dependencies': [
-            '../google_update/google_update.gyp:google_update',
-            'remoting_elevated_controller',
-          ],
-        }],
-      ],
-    },  # end of target 'remoting_host_setup_base'
-
-    {
-      'target_name': 'remoting_host_plugin',
-      'type': 'loadable_module',
-      'variables': { 'enable_wexit_time_destructors': 1, },
-      'product_extension': '<(host_plugin_extension)',
-      'product_prefix': '<(host_plugin_prefix)',
-      'dependencies': [
-        'remoting_base',
-        'remoting_host',
-        'remoting_host_event_logger',
-        'remoting_host_logging',
-        'remoting_host_setup_base',
-        'remoting_jingle_glue',
-        '../net/net.gyp:net',
-        '../third_party/npapi/npapi.gyp:npapi',
-      ],
-      'sources': [
-        'base/dispatch_win.h',
-        'host/host_ui_resource.h',
-        'host/plugin/host_log_handler.cc',
-        'host/plugin/host_log_handler.h',
-        'host/plugin/host_plugin.cc',
-        'host/plugin/host_plugin_utils.cc',
-        'host/plugin/host_plugin_utils.h',
-        'host/plugin/host_script_object.cc',
-        'host/plugin/host_script_object.h',
-      ],
-      'conditions': [
-        ['OS=="mac"', {
-          'mac_bundle': 1,
-          'xcode_settings': {
-            'CHROMIUM_BUNDLE_ID': '<(mac_bundle_id)',
-            'INFOPLIST_FILE': 'host/plugin/host_plugin-Info.plist',
-            'INFOPLIST_PREPROCESS': 'YES',
-            # TODO(maruel): Use INFOPLIST_PREFIX_HEADER to remove the need to
-            # duplicate string once
-            # http://code.google.com/p/gyp/issues/detail?id=243 is fixed.
-            'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'HOST_PLUGIN_MIME_TYPE="<(host_plugin_mime_type)" HOST_PLUGIN_NAME="<(host_plugin_name)" HOST_PLUGIN_DESCRIPTION="<(host_plugin_description)"',
-          },
-          # TODO(mark): Come up with a fancier way to do this.  It should
-          # only be necessary to list host_plugin-Info.plist once, not the
-          # three times it is listed here.
-          'mac_bundle_resources': [
-            'host/disconnect_window.xib',
-            'host/plugin/host_plugin-Info.plist',
-            'resources/chromoting16.png',
-            'resources/chromoting48.png',
-            'resources/chromoting128.png',
-          ],
-          'mac_bundle_resources!': [
-            'host/plugin/host_plugin-Info.plist',
-          ],
-          'conditions': [
-            ['mac_breakpad==1', {
-              'variables': {
-                # A real .dSYM is needed for dump_syms to operate on.
-                'mac_real_dsym': 1,
-              },
-            }],
-          ],  # conditions
-        }],  # OS=="mac"
-        [ 'OS=="win"', {
-          'dependencies': [
-            'remoting_elevated_controller',
-            'remoting_version_resources',
-          ],
-          'include_dirs': [
-            '<(INTERMEDIATE_DIR)',
-          ],
-          'sources': [
-            '<(SHARED_INTERMEDIATE_DIR)/remoting/remoting_host_plugin_version.rc',
-            'host/host_ui.rc',
-            'host/plugin/host_plugin.def',
-          ],
-        }],
-      ],
-    },  # end of target 'remoting_host_plugin'
-
-    {
       'target_name': 'remoting_webapp',
       'type': 'none',
       'dependencies': [
@@ -1255,6 +1655,22 @@
         '<@(remoting_webapp_files)',
         '<@(remoting_webapp_locale_files)',
       ],
+
+      'conditions': [
+        ['enable_remoting_host==1', {
+          'variables': {
+              'plugin_path': '<(PRODUCT_DIR)/<(host_plugin_prefix)remoting_host_plugin.<(host_plugin_extension)',
+          },
+        }, {
+          'variables': {
+              'plugin_path': '',
+          },
+          'dependencies!': [
+            'remoting_host_plugin',
+          ],
+        }],
+      ],
+
       # Can't use a 'copies' because we need to manipulate
       # the manifest file to get the right plugin name.
       # Also we need to move the plugin into the me2mom
@@ -1265,15 +1681,20 @@
         {
           'action_name': 'Build Remoting WebApp',
           'output_dir': '<(PRODUCT_DIR)/remoting/remoting.webapp',
-          'plugin_path': '<(PRODUCT_DIR)/<(host_plugin_prefix)remoting_host_plugin.<(host_plugin_extension)',
           'zip_path': '<(PRODUCT_DIR)/remoting-webapp.zip',
           'inputs': [
             'webapp/build-webapp.py',
-            '<(_plugin_path)',
             '<(remoting_version_path)',
             '<(chrome_version_path)',
             '<@(remoting_webapp_files)',
             '<@(remoting_webapp_locale_files)',
+          ],
+          'conditions': [
+            ['enable_remoting_host==1', {
+              'inputs': [
+                '<(plugin_path)',
+              ],
+            }],
           ],
           'outputs': [
             '<(_output_dir)',
@@ -1286,7 +1707,7 @@
             '<(host_plugin_mime_type)',
             '<(_output_dir)',
             '<(_zip_path)',
-            '<(_plugin_path)',
+            '<(plugin_path)',
             '<@(remoting_webapp_files)',
             '--locales',
             '<@(remoting_webapp_locale_files)',
@@ -1499,247 +1920,6 @@
     },  # end of target 'remoting_base'
 
     {
-      'target_name': 'remoting_host',
-      'type': 'static_library',
-      'variables': { 'enable_wexit_time_destructors': 1, },
-      'dependencies': [
-        'remoting_base',
-        'remoting_jingle_glue',
-        'remoting_protocol',
-        'differ_block',
-        '../crypto/crypto.gyp:crypto',
-        '../google_apis/google_apis.gyp:google_apis',
-        '../ipc/ipc.gyp:ipc',
-      ],
-      'defines': [
-        'VERSION=<(version_full)',
-      ],
-      'sources': [
-        'host/audio_capturer.cc',
-        'host/audio_capturer.h',
-        'host/audio_capturer_linux.cc',
-        'host/audio_capturer_linux.h',
-        'host/audio_capturer_mac.cc',
-        'host/audio_capturer_win.cc',
-        'host/audio_capturer_win.h',
-        'host/audio_scheduler.cc',
-        'host/audio_scheduler.h',
-        'host/capture_scheduler.cc',
-        'host/capture_scheduler.h',
-        'host/chromoting_host.cc',
-        'host/chromoting_host.h',
-        'host/chromoting_host_context.cc',
-        'host/chromoting_host_context.h',
-        'host/chromoting_messages.cc',
-        'host/chromoting_messages.h',
-        'host/client_session.cc',
-        'host/client_session.h',
-        'host/clipboard.h',
-        'host/clipboard_linux.cc',
-        'host/clipboard_mac.mm',
-        'host/clipboard_win.cc',
-        'host/constants_mac.cc',
-        'host/constants_mac.h',
-        'host/continue_window.h',
-        'host/continue_window_gtk.cc',
-        'host/continue_window_mac.mm',
-        'host/continue_window_win.cc',
-        'host/desktop_environment.cc',
-        'host/desktop_environment.h',
-        'host/desktop_environment_factory.cc',
-        'host/desktop_environment_factory.h',
-        'host/desktop_resizer.h',
-        'host/desktop_resizer_linux.cc',
-        'host/desktop_resizer_win.cc',
-        'host/desktop_resizer_mac.cc',
-        'host/desktop_session_connector.h',
-        'host/desktop_session_proxy.cc',
-        'host/desktop_session_proxy.h',
-        'host/differ.cc',
-        'host/differ.h',
-        'host/disconnect_window.h',
-        'host/disconnect_window_gtk.cc',
-        'host/disconnect_window_mac.h',
-        'host/disconnect_window_mac.mm',
-        'host/disconnect_window_win.cc',
-        'host/dns_blackhole_checker.cc',
-        'host/dns_blackhole_checker.h',
-        'host/event_executor.h',
-        'host/event_executor_fake.cc',
-        'host/event_executor_fake.h',
-        'host/event_executor_linux.cc',
-        'host/event_executor_mac.cc',
-        'host/event_executor_win.cc',
-        'host/heartbeat_sender.cc',
-        'host/heartbeat_sender.h',
-        'host/host_config.cc',
-        'host/host_config.h',
-        'host/host_exit_codes.h',
-        'host/host_key_pair.cc',
-        'host/host_key_pair.h',
-        'host/host_port_allocator.cc',
-        'host/host_port_allocator.h',
-        'host/host_secret.cc',
-        'host/host_secret.h',
-        'host/host_status_observer.h',
-        'host/host_status_service.cc',
-        'host/host_status_service.h',
-        'host/host_user_interface.cc',
-        'host/host_user_interface.h',
-        'host/in_memory_host_config.cc',
-        'host/in_memory_host_config.h',
-        'host/ipc_constants.cc',
-        'host/ipc_constants.h',
-        'host/ipc_desktop_environment_factory.cc',
-        'host/ipc_desktop_environment_factory.h',
-        'host/ipc_desktop_environment.cc',
-        'host/ipc_desktop_environment.h',
-        'host/ipc_event_executor.cc',
-        'host/ipc_event_executor.h',
-        'host/ipc_video_frame_capturer.cc',
-        'host/ipc_video_frame_capturer.h',
-        'host/it2me_host_user_interface.cc',
-        'host/it2me_host_user_interface.h',
-        'host/json_host_config.cc',
-        'host/json_host_config.h',
-        'host/linux/audio_pipe_reader.cc',
-        'host/linux/audio_pipe_reader.h',
-        'host/linux/x11_util.cc',
-        'host/linux/x11_util.h',
-        'host/linux/x_server_clipboard.cc',
-        'host/linux/x_server_clipboard.h',
-        'host/linux/x_server_pixel_buffer.cc',
-        'host/linux/x_server_pixel_buffer.h',
-        'host/local_input_monitor.h',
-        'host/local_input_monitor_linux.cc',
-        'host/local_input_monitor_mac.mm',
-        'host/local_input_monitor_thread_linux.cc',
-        'host/local_input_monitor_thread_linux.h',
-        'host/local_input_monitor_thread_win.cc',
-        'host/local_input_monitor_thread_win.h',
-        'host/local_input_monitor_win.cc',
-        'host/log_to_server.cc',
-        'host/log_to_server.h',
-        'host/mac/scoped_pixel_buffer_object.cc',
-        'host/mac/scoped_pixel_buffer_object.h',
-        'host/mouse_clamping_filter.cc',
-        'host/mouse_clamping_filter.h',
-        'host/mouse_move_observer.h',
-        'host/network_settings.h',
-        'host/pam_authorization_factory_posix.cc',
-        'host/pam_authorization_factory_posix.h',
-        'host/pin_hash.cc',
-        'host/pin_hash.h',
-        'host/policy_hack/policy_watcher.h',
-        'host/policy_hack/policy_watcher.cc',
-        'host/policy_hack/policy_watcher_linux.cc',
-        'host/policy_hack/policy_watcher_mac.mm',
-        'host/policy_hack/policy_watcher_win.cc',
-        'host/register_support_host_request.cc',
-        'host/register_support_host_request.h',
-        'host/remote_input_filter.cc',
-        'host/remote_input_filter.h',
-        'host/resizing_host_observer.cc',
-        'host/resizing_host_observer.h',
-        'host/sas_injector.h',
-        'host/sas_injector_win.cc',
-        'host/server_log_entry.cc',
-        'host/server_log_entry.h',
-        'host/service_client.cc',
-        'host/service_client.h',
-        'host/session_manager_factory.cc',
-        'host/session_manager_factory.h',
-        'host/signaling_connector.cc',
-        'host/signaling_connector.h',
-        'host/ui_strings.cc',
-        'host/ui_strings.h',
-        'host/url_request_context.cc',
-        'host/url_request_context.h',
-        'host/usage_stats_consent.h',
-        'host/usage_stats_consent_mac.cc',
-        'host/usage_stats_consent_win.cc',
-        'host/video_frame.cc',
-        'host/video_frame.h',
-        'host/video_frame_capturer.h',
-        'host/video_frame_capturer_fake.cc',
-        'host/video_frame_capturer_fake.h',
-        'host/video_frame_capturer_helper.cc',
-        'host/video_frame_capturer_helper.h',
-        'host/video_frame_capturer_linux.cc',
-        'host/video_frame_capturer_mac.mm',
-        'host/video_frame_capturer_win.cc',
-        'host/video_frame_queue.cc',
-        'host/video_frame_queue.h',
-        'host/video_scheduler.cc',
-        'host/video_scheduler.h',
-        'host/vlog_net_log.cc',
-        'host/vlog_net_log.h',
-        'host/websocket_connection.cc',
-        'host/websocket_connection.h',
-        'host/websocket_listener.cc',
-        'host/websocket_listener.h',
-        'host/win/desktop.cc',
-        'host/win/desktop.h',
-        'host/win/launch_process_with_token.cc',
-        'host/win/launch_process_with_token.h',
-        'host/win/omaha.cc',
-        'host/win/omaha.h',
-        'host/win/scoped_thread_desktop.cc',
-        'host/win/scoped_thread_desktop.h',
-        'host/win/session_desktop_environment_factory.cc',
-        'host/win/session_desktop_environment_factory.h',
-        'host/win/session_event_executor.cc',
-        'host/win/session_event_executor.h',
-      ],
-      'conditions': [
-        ['OS=="linux"', {
-          'link_settings': {
-            'libraries': [
-              '-lX11',
-              '-lXdamage',
-              '-lXfixes',
-              '-lpam',
-              '-lXtst',
-              '-lXext',
-              '-lXi'
-            ],
-          },
-        }],
-        ['toolkit_uses_gtk==1', {
-          'dependencies': [
-            '../build/linux/system.gyp:gtk',
-          ],
-        }, {  # else toolkit_uses_gtk!=1
-          'sources!': [
-            '*_gtk.cc',
-          ],
-        }],
-        ['OS=="mac"', {
-          'sources': [
-            '../third_party/GTM/AppKit/GTMCarbonEvent.h',
-            '../third_party/GTM/AppKit/GTMCarbonEvent.m',
-            '../third_party/GTM/DebugUtils/GTMDebugSelectorValidation.h',
-            '../third_party/GTM/DebugUtils/GTMTypeCasting.h',
-            '../third_party/GTM/Foundation/GTMObjectSingleton.h',
-            '../third_party/GTM/GTMDefines.h',
-          ],
-          'include_dirs': [
-            '../third_party/GTM',
-            '../third_party/GTM/AppKit',
-            '../third_party/GTM/DebugUtils',
-            '../third_party/GTM/Foundation',
-          ],
-          'link_settings': {
-            'libraries': [
-              '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
-              'libpam.a',
-            ],
-          },
-        }],
-      ],
-    },  # end of target 'remoting_host'
-
-    {
       'target_name': 'remoting_host_logging',
       'type': 'static_library',
       'variables': { 'enable_wexit_time_destructors': 1, },
@@ -1788,137 +1968,6 @@
         'client/rectangle_update_decoder.h',
       ],
     },  # end of target 'remoting_client'
-
-    {
-      'target_name': 'remoting_me2me_host',
-      'type': 'executable',
-      'variables': { 'enable_wexit_time_destructors': 1, },
-      'dependencies': [
-        'remoting_base',
-        'remoting_breakpad',
-        'remoting_host',
-        'remoting_host_event_logger',
-        'remoting_host_logging',
-        'remoting_jingle_glue',
-        '../base/base.gyp:base',
-        '../base/base.gyp:base_i18n',
-        '../media/media.gyp:media',
-        '../net/net.gyp:net',
-      ],
-      'defines': [
-        'VERSION=<(version_full)',
-      ],
-      'sources': [
-        'host/config_file_watcher.cc',
-        'host/config_file_watcher.h',
-        'host/curtain_mode.h',
-        'host/curtaining_host_observer.h',
-        'host/curtaining_host_observer.cc',
-        'host/curtain_mode_linux.cc',
-        'host/curtain_mode_mac.cc',
-        'host/curtain_mode_win.cc',
-        'host/posix/signal_handler.cc',
-        'host/posix/signal_handler.h',
-        'host/remoting_me2me_host.cc',
-      ],
-      'conditions': [
-        ['os_posix != 1', {
-          'sources/': [
-            ['exclude', '^host/posix/'],
-          ],
-        }],
-        ['OS=="mac"', {
-          'mac_bundle': 1,
-          'variables': {
-             'host_bundle_id': '<!(python <(version_py_path) -f <(branding_path) -t "@MAC_HOST_BUNDLE_ID@")',
-          },
-          'xcode_settings': {
-            'INFOPLIST_FILE': 'host/remoting_me2me_host-Info.plist',
-            'INFOPLIST_PREPROCESS': 'YES',
-            'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'VERSION_FULL="<(version_full)" VERSION_SHORT="<(version_short)" BUNDLE_ID="<(host_bundle_id)" COPYRIGHT_INFO="<(copyright_info)"',
-          },
-          'mac_bundle_resources': [
-            'host/disconnect_window.xib',
-            'host/remoting_me2me_host.icns',
-            'host/remoting_me2me_host-Info.plist',
-          ],
-          'mac_bundle_resources!': [
-            'host/remoting_me2me_host-Info.plist',
-          ],
-          'conditions': [
-            ['mac_breakpad==1', {
-              'variables': {
-                # A real .dSYM is needed for dump_syms to operate on.
-                'mac_real_dsym': 1,
-              },
-              'defines': ['MAC_BREAKPAD'],
-              'copies': [
-                {
-                  'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Resources',
-                  'files': [
-                    '<(PRODUCT_DIR)/crash_inspector',
-                    '<(PRODUCT_DIR)/crash_report_sender.app'
-                  ],
-                },
-              ],
-            }],  # mac_breakpad==1
-          ],  # conditions
-        }],  # OS=mac
-        ['OS=="win"', {
-          'product_name': 'remoting_host',
-          'dependencies': [
-            'remoting_version_resources',
-          ],
-          'sources': [
-            '<(SHARED_INTERMEDIATE_DIR)/remoting/host/remoting_host_messages.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/remoting/remoting_host_me2me_version.rc',
-            'host/host_ui.rc',
-          ],
-          'link_settings': {
-            'libraries': [
-              '-lcomctl32.lib',
-            ],
-          },
-          'msvs_settings': {
-            'VCLinkerTool': {
-              'AdditionalOptions': [
-                "\"/manifestdependency:type='win32' "
-                    "name='Microsoft.Windows.Common-Controls' "
-                    "version='6.0.0.0' "
-                    "processorArchitecture='*' "
-                    "publicKeyToken='6595b64144ccf1df' language='*'\"",
-              ],
-              'conditions': [
-                ['buildtype == "Official" and remoting_multi_process == 0', {
-                  'AdditionalOptions': [
-                    "\"/MANIFESTUAC:level='requireAdministrator' "
-                        "uiAccess='true'\"",
-                  ],
-                }],
-              ],
-              'ImportLibrary': '$(OutDir)\\lib\\remoting_host_exe.lib',
-              'OutputFile': '$(OutDir)\\remoting_host.exe',
-              # 2 == /SUBSYSTEM:WINDOWS
-              'SubSystem': '2',
-            },
-          },
-        }],
-      ],  # end of 'conditions'
-    },  # end of target 'remoting_me2me_host'
-
-    {
-      'target_name': 'remoting_host_keygen',
-      'type': 'executable',
-      'dependencies': [
-        'remoting_base',
-        '../base/base.gyp:base',
-        '../base/base.gyp:base_i18n',
-        '../crypto/crypto.gyp:crypto',
-      ],
-      'sources': [
-        'host/keygen_main.cc',
-      ],
-    },  # end of target 'remoting_host_keygen'
 
     {
       'target_name': 'remoting_jingle_glue',
@@ -2059,23 +2108,6 @@
         'protocol/video_writer.h',
       ],
     },  # end of target 'remoting_protocol'
-
-    {
-      'target_name': 'differ_block',
-      'type': 'static_library',
-      'variables': { 'enable_wexit_time_destructors': 1, },
-      'conditions': [
-        [ 'target_arch == "ia32" or target_arch == "x64"', {
-          'dependencies': [
-            'differ_block_sse2',
-          ],
-        }],
-      ],
-      'sources': [
-        'host/differ_block.cc',
-        'host/differ_block.h',
-      ],
-    }, # end of target differ_block
 
     {
       'target_name': 'differ_block_sse2',
@@ -2269,6 +2301,7 @@
         ['chromeos != 0', {
           'dependencies!': [
             'remoting_host',
+            'remoting_host_setup_base',
           ],
           'sources/': [
             ['exclude', 'host/*'],

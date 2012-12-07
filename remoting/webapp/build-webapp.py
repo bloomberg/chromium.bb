@@ -145,14 +145,15 @@ def buildWebApp(buildtype, version, mimetype, destination, zip_path, plugin,
       f.write("placeholder for %s" % (name))
       f.close()
 
-  # Copy the plugin.
-  pluginName = os.path.basename(plugin)
-  newPluginPath = os.path.join(destination, pluginName)
-  if os.path.isdir(plugin):
-    # On Mac we have a directory.
-    shutil.copytree(plugin, newPluginPath)
-  else:
-    shutil.copy2(plugin, newPluginPath)
+  # Copy the plugin. On some platforms (e.g. ChromeOS) plugin compilation may be
+  # disabled, in which case we don't need to copy anything.
+  if plugin:
+    newPluginPath = os.path.join(destination, pluginName)
+    if os.path.isdir(plugin):
+      # On Mac we have a directory.
+      shutil.copytree(plugin, newPluginPath)
+    else:
+      shutil.copy2(plugin, newPluginPath)
 
   # Strip the linux build.
   if ((platform.system() == 'Linux') and (buildtype == 'Official')):
