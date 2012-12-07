@@ -176,6 +176,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   // Create default video renderer.
   scoped_refptr<media::VideoRendererBase> video_renderer =
       new media::VideoRendererBase(
+          pipeline_message_loop,
           base::Bind(&WebMediaPlayerProxy::Repaint, proxy_),
           BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::SetOpaque),
           true);

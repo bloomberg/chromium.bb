@@ -9,6 +9,7 @@
 #include "base/cpu.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
+#include "media/base/bind_to_loop.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/pipeline.h"
@@ -66,11 +67,7 @@ GpuVideoDecoder::GpuVideoDecoder(
 }
 
 void GpuVideoDecoder::Reset(const base::Closure& closure)  {
-  if (!gvd_loop_proxy_->BelongsToCurrentThread()) {
-    gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
-        &GpuVideoDecoder::Reset, this, closure));
-    return;
-  }
+  DCHECK(gvd_loop_proxy_->BelongsToCurrentThread());
 
   if (state_ == kDrainingDecoder) {
     gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
@@ -85,53 +82,39 @@ void GpuVideoDecoder::Reset(const base::Closure& closure)  {
   // Throw away any already-decoded, not-yet-delivered frames.
   ready_video_frames_.clear();
 
+  DCHECK(pending_reset_cb_.is_null());
+  pending_reset_cb_ = BindToCurrentLoop(closure);
+
   if (!vda_.get()) {
-    closure.Run();
+    base::ResetAndReturn(&pending_reset_cb_).Run();
     return;
   }
-
-  DCHECK(pending_reset_cb_.is_null());
-  DCHECK(!closure.is_null());
 
   // VideoRendererBase::Flush() can't complete while it has a pending read to
   // us, so we fulfill such a read here.
   if (!pending_read_cb_.is_null())
     EnqueueFrameAndTriggerFrameDelivery(VideoFrame::CreateEmptyFrame());
 
-  pending_reset_cb_ = closure;
   vda_loop_proxy_->PostTask(FROM_HERE, base::Bind(
       &VideoDecodeAccelerator::Reset, weak_vda_));
 }
 
 void GpuVideoDecoder::Stop(const base::Closure& closure) {
-  if (!gvd_loop_proxy_->BelongsToCurrentThread()) {
-    gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
-        &GpuVideoDecoder::Stop, this, closure));
-    return;
-  }
-  if (!vda_.get()) {
-    closure.Run();
-    return;
-  }
-  DestroyVDA();
-  closure.Run();
+  DCHECK(gvd_loop_proxy_->BelongsToCurrentThread());
+  if (vda_.get())
+    DestroyVDA();
+  BindToCurrentLoop(closure).Run();
 }
 
 void GpuVideoDecoder::Initialize(const scoped_refptr<DemuxerStream>& stream,
                                  const PipelineStatusCB& orig_status_cb,
                                  const StatisticsCB& statistics_cb) {
-  if (!gvd_loop_proxy_->BelongsToCurrentThread()) {
-    gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
-        &GpuVideoDecoder::Initialize,
-        this, stream, orig_status_cb, statistics_cb));
-    return;
-  }
-
   DCHECK(gvd_loop_proxy_->BelongsToCurrentThread());
   PipelineStatusCB status_cb = CreateUMAReportingPipelineCB(
-      "Media.GpuVideoDecoderInitializeStatus", orig_status_cb);
-
+      "Media.GpuVideoDecoderInitializeStatus",
+      BindToCurrentLoop(orig_status_cb));
   DCHECK(!demuxer_stream_);
+
   if (!stream) {
     status_cb.Run(PIPELINE_ERROR_DECODE);
     return;
@@ -216,25 +199,21 @@ void GpuVideoDecoder::DestroyVDA() {
 }
 
 void GpuVideoDecoder::Read(const ReadCB& read_cb) {
-  if (!gvd_loop_proxy_->BelongsToCurrentThread()) {
-    gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
-        &GpuVideoDecoder::Read, this, read_cb));
-    return;
-  }
+  DCHECK(gvd_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(pending_reset_cb_.is_null());
+  DCHECK(pending_read_cb_.is_null());
+  pending_read_cb_ = BindToCurrentLoop(read_cb);
 
   if (error_occured_) {
-    read_cb.Run(kDecodeError, NULL);
+    base::ResetAndReturn(&pending_read_cb_).Run(kDecodeError, NULL);
     return;
   }
 
   if (!vda_.get()) {
-    read_cb.Run(kOk, VideoFrame::CreateEmptyFrame());
+    base::ResetAndReturn(&pending_read_cb_).Run(
+        kOk, VideoFrame::CreateEmptyFrame());
     return;
   }
-
-  DCHECK(pending_reset_cb_.is_null());
-  DCHECK(pending_read_cb_.is_null());
-  pending_read_cb_ = read_cb;
 
   if (!ready_video_frames_.empty()) {
     EnqueueFrameAndTriggerFrameDelivery(NULL);
@@ -352,6 +331,7 @@ void GpuVideoDecoder::GetBufferData(int32 id, base::TimeDelta* timestamp,
 }
 
 bool GpuVideoDecoder::HasAlpha() const {
+  DCHECK(gvd_loop_proxy_->BelongsToCurrentThread());
   return true;
 }
 
@@ -460,9 +440,7 @@ void GpuVideoDecoder::EnqueueFrameAndTriggerFrameDelivery(
   if (pending_read_cb_.is_null())
     return;
 
-  gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
-      pending_read_cb_, kOk, ready_video_frames_.front()));
-  pending_read_cb_.Reset();
+  base::ResetAndReturn(&pending_read_cb_).Run(kOk, ready_video_frames_.front());
   ready_video_frames_.pop_front();
 }
 
