@@ -12,6 +12,7 @@
 
 #include <vector>
 
+#include "base/allocator/allocator_extension.h"
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/memory/scoped_ptr.h"
@@ -829,6 +830,10 @@ bool WebKitPlatformSupportImpl::processMemorySizesInBytes(
     size_t* private_bytes,
     size_t* shared_bytes) {
   return CurrentProcessMetrics()->GetMemoryBytes(private_bytes, shared_bytes);
+}
+
+bool WebKitPlatformSupportImpl::memoryAllocatorWasteInBytes(size_t* size) {
+  return base::allocator::GetAllocatorWasteSize(size);
 }
 
 void WebKitPlatformSupportImpl::SuspendSharedTimer() {
