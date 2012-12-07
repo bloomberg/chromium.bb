@@ -86,8 +86,8 @@ class UserManager {
   // Indicates that user just started incognito session.
   virtual void GuestUserLoggedIn() = 0;
 
-  // Indicates that a user just logged in as ephemeral.
-  virtual void EphemeralUserLoggedIn(const std::string& email) = 0;
+  // Indicates that a regular user just logged in as ephemeral.
+  virtual void RegularUserLoggedInAsEphemeral(const std::string& email) = 0;
 
   // Called when browser session is started i.e. after
   // browser_creator.LaunchBrowser(...) was called after user sign in.
@@ -151,8 +151,10 @@ class UserManager {
   // Returns true if current user is not existing one (hasn't signed in before).
   virtual bool IsCurrentUserNew() const = 0;
 
-  // Returns true if the current user is ephemeral.
-  virtual bool IsCurrentUserEphemeral() const = 0;
+  // Returns true if data stored or cached for the current user outside that
+  // user's cryptohome (wallpaper, avatar, OAuth token status, display name,
+  // display email) is ephemeral.
+  virtual bool IsCurrentUserNonCryptohomeDataEphemeral() const = 0;
 
   // Returns true if the current user's session can be locked (i.e. the user has
   // a password with which to unlock the session).
@@ -181,9 +183,11 @@ class UserManager {
   // or restart after crash.
   virtual bool IsSessionStarted() const = 0;
 
-  // Returns true if the user with the given email address is to be treated as
-  // ephemeral.
-  virtual bool IsEphemeralUser(const std::string& email) const = 0;
+  // Returns true if data stored or cached for the user with the given email
+  // address outside that user's cryptohome (wallpaper, avatar, OAuth token
+  // status, display name, display email) is to be treated as ephemeral.
+  virtual bool IsUserNonCryptohomeDataEphemeral(
+      const std::string& email) const = 0;
 
   virtual void AddObserver(Observer* obs) = 0;
   virtual void RemoveObserver(Observer* obs) = 0;

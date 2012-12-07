@@ -238,11 +238,6 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   // Saves wallpaper image raw |data| to |path| (absolute path) in file system.
   void SaveWallpaperInternal(const FilePath& path, const char* data, int size);
 
-  // Whether wallpaper data should be persisted for user |email|.
-  // Note: this function can not be called in SetUserWallpaperProperties. It
-  // will create a deadlock. (issue 142440)
-  bool ShouldPersistDataForUser(const std::string& email);
-
   // Starts to load wallpaper at |wallpaper_path|. If |wallpaper_path| is the
   // same as |current_wallpaper_path_|, do nothing. Must be called on UI thread.
   void StartLoad(const std::string& email,

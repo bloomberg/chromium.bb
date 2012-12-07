@@ -393,7 +393,8 @@ void WallpaperManager::SetCustomWallpaper(const std::string& username,
     return;
   }
 
-  bool is_persistent = ShouldPersistDataForUser(username);
+  bool is_persistent =
+      !UserManager::Get()->IsUserNonCryptohomeDataEphemeral(username);
 
   wallpaper.image().EnsureRepsForSupportedScaleFactors();
   scoped_ptr<gfx::ImageSkia> deep_copy(wallpaper.image().DeepCopy());
@@ -706,7 +707,7 @@ bool WallpaperManager::GetUserWallpaperInfo(const std::string& email,
                                             WallpaperInfo* info){
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (!ShouldPersistDataForUser(email)) {
+  if (UserManager::Get()->IsUserNonCryptohomeDataEphemeral(email)) {
     // Default to the values cached in memory.
     *info = current_user_wallpaper_info_;
 
@@ -859,16 +860,6 @@ void WallpaperManager::SaveWallpaperInternal(const FilePath& path,
                                              int size) {
   int written_bytes = file_util::WriteFile(path, data, size);
   DCHECK(written_bytes == size);
-}
-
-bool WallpaperManager::ShouldPersistDataForUser(const std::string& email) {
-  UserManager* user_manager = UserManager::Get();
-  // |email| is from user list in local state. We should persist data in this
-  // case.
-  if (!user_manager->IsUserLoggedIn())
-    return true;
-  return !(email == user_manager->GetLoggedInUser()->email() &&
-           user_manager->IsCurrentUserEphemeral());
 }
 
 void WallpaperManager::StartLoad(const std::string& email,

@@ -166,7 +166,7 @@ UserManagerImpl::UserManagerImpl()
       session_started_(false),
       is_current_user_owner_(false),
       is_current_user_new_(false),
-      is_current_user_ephemeral_(false),
+      is_current_user_ephemeral_regular_user_(false),
       ephemeral_users_enabled_(false),
       observed_sync_service_(NULL),
       user_image_manager_(new UserImageManagerImpl) {
@@ -220,12 +220,13 @@ void UserManagerImpl::UserLoggedIn(const std::string& email,
     return;
   }
 
-  if (IsEphemeralUser(email)) {
-    EphemeralUserLoggedIn(email);
+  EnsureUsersLoaded();
+
+  if (email != owner_email_ && !FindUserInList(email) &&
+          (AreEphemeralUsersEnabled() || browser_restart)) {
+    RegularUserLoggedInAsEphemeral(email);
     return;
   }
-
-  EnsureUsersLoaded();
 
   // Remove the user from the user list.
   logged_in_user_ = RemoveRegularUserFromList(email);
@@ -262,29 +263,26 @@ void UserManagerImpl::UserLoggedIn(const std::string& email,
 void UserManagerImpl::RetailModeUserLoggedIn() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   is_current_user_new_ = true;
-  is_current_user_ephemeral_ = true;
   logged_in_user_ = User::CreateRetailModeUser();
-  user_image_manager_->UserLoggedIn(kRetailModeUserEMail,
-                                    /* user_is_new= */ true);
+  user_image_manager_->UserLoggedIn(kRetailModeUserEMail, is_current_user_new_);
   WallpaperManager::Get()->SetInitialUserWallpaper(kRetailModeUserEMail, false);
   NotifyOnLogin();
 }
 
 void UserManagerImpl::GuestUserLoggedIn() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  is_current_user_ephemeral_ = true;
   WallpaperManager::Get()->SetInitialUserWallpaper(kGuestUserEMail, false);
   logged_in_user_ = User::CreateGuestUser();
   logged_in_user_->SetStubImage(User::kInvalidImageIndex, false);
   NotifyOnLogin();
 }
 
-void UserManagerImpl::EphemeralUserLoggedIn(const std::string& email) {
+void UserManagerImpl::RegularUserLoggedInAsEphemeral(const std::string& email) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   is_current_user_new_ = true;
-  is_current_user_ephemeral_ = true;
+  is_current_user_ephemeral_regular_user_ = true;
   logged_in_user_ = User::CreateRegularUser(email);
-  user_image_manager_->UserLoggedIn(email, /* user_is_new= */ true);
+  user_image_manager_->UserLoggedIn(email, is_current_user_new_);
   WallpaperManager::Get()->SetInitialUserWallpaper(email, false);
   NotifyOnLogin();
 }
@@ -365,8 +363,9 @@ void UserManagerImpl::SaveUserOAuthStatus(
   if (user)
     user->set_oauth_token_status(oauth_token_status);
 
-  // Do not update local store if the user is ephemeral.
-  if (IsEphemeralUser(username))
+  // Do not update local store if data stored or cached outside the user's
+  // cryptohome is to be treated as ephemeral.
+  if (IsUserNonCryptohomeDataEphemeral(username))
     return;
 
   PrefService* local_state = g_browser_process->local_state();
@@ -410,8 +409,9 @@ void UserManagerImpl::SaveUserDisplayName(const std::string& username,
 
   user->set_display_name(display_name);
 
-  // Do not update local store if the user is ephemeral.
-  if (IsEphemeralUser(username))
+  // Do not update local store if data stored or cached outside the user's
+  // cryptohome is to be treated as ephemeral.
+  if (IsUserNonCryptohomeDataEphemeral(username))
     return;
 
   PrefService* local_state = g_browser_process->local_state();
@@ -438,8 +438,9 @@ void UserManagerImpl::SaveUserDisplayEmail(const std::string& username,
 
   user->set_display_email(display_email);
 
-  // Do not update local store if the user is ephemeral.
-  if (IsEphemeralUser(username))
+  // Do not update local store if data stored or cached outside the user's
+  // cryptohome is to be treated as ephemeral.
+  if (IsUserNonCryptohomeDataEphemeral(username))
     return;
 
   PrefService* local_state = g_browser_process->local_state();
@@ -522,9 +523,10 @@ bool UserManagerImpl::IsCurrentUserNew() const {
   return is_current_user_new_;
 }
 
-bool UserManagerImpl::IsCurrentUserEphemeral() const {
+bool UserManagerImpl::IsCurrentUserNonCryptohomeDataEphemeral() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return is_current_user_ephemeral_;
+  return IsUserLoggedIn() &&
+         IsUserNonCryptohomeDataEphemeral(GetLoggedInUser()->email());
 }
 
 bool UserManagerImpl::CanCurrentUserLock() const {
@@ -571,21 +573,36 @@ bool UserManagerImpl::IsSessionStarted() const {
   return session_started_;
 }
 
-bool UserManagerImpl::IsEphemeralUser(const std::string& email) const {
-  // The guest and stub user always are ephemeral.
-  if (email == kGuestUserEMail || email == kStubUser)
+bool UserManagerImpl::IsUserNonCryptohomeDataEphemeral(
+    const std::string& email) const {
+  // Data belonging to the guest, retail mode and stub users is always
+  // ephemeral.
+  if (email == kGuestUserEMail || email == kRetailModeUserEMail ||
+      email == kStubUser) {
     return true;
+  }
 
-  // The currently logged-in user is ephemeral iff logged in as ephemeral.
-  if (logged_in_user_ && (email == logged_in_user_->email()))
-    return is_current_user_ephemeral_;
-
-  // The owner and any users found in the persistent list are never ephemeral.
-  if (email == owner_email_  || FindUserInList(email))
+  // Data belonging to the owner, anyone found on the user list and obsolete
+  // public accounts whose data has not been removed yet is not ephemeral.
+  if (email == owner_email_  || FindUserInList(email) ||
+      email == g_browser_process->local_state()->
+          GetString(kPublicAccountPendingDataRemoval)) {
     return false;
+  }
 
-  // Any other user is ephemeral when:
-  // a) Going through the regular login flow and ephemeral users are enabled.
+  // Data belonging to the currently logged-in user is ephemeral when:
+  // a) The user logged into a regular account while the ephemeral users policy
+  //    was enabled.
+  //    - or -
+  // b) The user logged into any other account type.
+  if (IsUserLoggedIn() && (email == GetLoggedInUser()->email()) &&
+      (is_current_user_ephemeral_regular_user_ || !IsLoggedInAsRegularUser())) {
+    return true;
+  }
+
+  // Data belonging to any other user is ephemeral when:
+  // a) Going through the regular login flow and the ephemeral users policy is
+  //    enabled.
   //    - or -
   // b) The browser is restarting after a crash.
   return AreEphemeralUsersEnabled() ||

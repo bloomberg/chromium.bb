@@ -293,8 +293,8 @@ void WizardController::ShowUpdateScreen() {
 }
 
 void WizardController::ShowUserImageScreen() {
-  // Skip image selection for ephemeral users.
-  if (chromeos::UserManager::Get()->IsCurrentUserEphemeral()) {
+  // Skip image selection if the user is logging in as ephemeral.
+  if (chromeos::UserManager::Get()->IsCurrentUserNonCryptohomeDataEphemeral()) {
     OnUserImageSkipped();
     return;
   }

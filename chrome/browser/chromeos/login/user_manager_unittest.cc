@@ -48,7 +48,7 @@ class UserManagerTest : public testing::Test {
     // Replace the real DeviceSettingsProvider with a stub.
     device_settings_provider_ =
         cros_settings_->GetProvider(chromeos::kReportDeviceVersionInfo);
-    EXPECT_TRUE(device_settings_provider_ != NULL);
+    EXPECT_TRUE(device_settings_provider_);
     EXPECT_TRUE(
         cros_settings_->RemoveSettingsProvider(device_settings_provider_));
     cros_settings_->AddSettingsProvider(&stub_settings_provider_);
@@ -162,15 +162,15 @@ TEST_F(UserManagerTest, RetrieveTrustedDevicePolicies) {
 }
 
 TEST_F(UserManagerTest, RemoveAllExceptOwnerFromList) {
-  UserManager::Get()->UserLoggedIn("owner@invalid.domain", true);
+  UserManager::Get()->UserLoggedIn("owner@invalid.domain", false);
   ResetUserManager();
-  UserManager::Get()->UserLoggedIn("user0@invalid.domain", true);
+  UserManager::Get()->UserLoggedIn("user0@invalid.domain", false);
   ResetUserManager();
-  UserManager::Get()->UserLoggedIn("user1@invalid.domain", true);
+  UserManager::Get()->UserLoggedIn("user1@invalid.domain", false);
   ResetUserManager();
 
   const UserList* users = &UserManager::Get()->GetUsers();
-  ASSERT_TRUE(users->size() == 3);
+  ASSERT_EQ(3U, users->size());
   EXPECT_EQ((*users)[0]->email(), "user1@invalid.domain");
   EXPECT_EQ((*users)[1]->email(), "user0@invalid.domain");
   EXPECT_EQ((*users)[2]->email(), "owner@invalid.domain");
@@ -179,21 +179,21 @@ TEST_F(UserManagerTest, RemoveAllExceptOwnerFromList) {
   RetrieveTrustedDevicePolicies();
 
   users = &UserManager::Get()->GetUsers();
-  EXPECT_TRUE(users->size() == 1);
+  EXPECT_EQ(1U, users->size());
   EXPECT_EQ((*users)[0]->email(), "owner@invalid.domain");
 }
 
-TEST_F(UserManagerTest, EphemeralUserLoggedIn) {
+TEST_F(UserManagerTest, RegularUserLoggedInAsEphemeral) {
   SetDeviceSettings(true, "owner@invalid.domain");
   RetrieveTrustedDevicePolicies();
 
-  UserManager::Get()->UserLoggedIn("owner@invalid.domain", true);
+  UserManager::Get()->UserLoggedIn("owner@invalid.domain", false);
   ResetUserManager();
-  UserManager::Get()->UserLoggedIn("user0@invalid.domain", true);
+  UserManager::Get()->UserLoggedIn("user0@invalid.domain", false);
   ResetUserManager();
 
   const UserList* users = &UserManager::Get()->GetUsers();
-  EXPECT_TRUE(users->size() == 1);
+  EXPECT_EQ(1U, users->size());
   EXPECT_EQ((*users)[0]->email(), "owner@invalid.domain");
 }
 

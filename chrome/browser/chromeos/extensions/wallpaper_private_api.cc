@@ -374,7 +374,7 @@ void WallpaperSetWallpaperFunction::SetDecodedWallpaper(
       chromeos::WallpaperManager::Get();
   wallpaper_manager->SetWallpaperFromImageSkia(*wallpaper.get(), layout_);
   bool is_persistent =
-      !chromeos::UserManager::Get()->IsCurrentUserEphemeral();
+      !chromeos::UserManager::Get()->IsCurrentUserNonCryptohomeDataEphemeral();
   chromeos::WallpaperInfo info = {
       url_,
       layout_,

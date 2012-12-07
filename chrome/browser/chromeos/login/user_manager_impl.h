@@ -46,7 +46,8 @@ class UserManagerImpl : public UserManager,
                             bool browser_restart) OVERRIDE;
   virtual void RetailModeUserLoggedIn() OVERRIDE;
   virtual void GuestUserLoggedIn() OVERRIDE;
-  virtual void EphemeralUserLoggedIn(const std::string& email) OVERRIDE;
+  virtual void RegularUserLoggedInAsEphemeral(
+      const std::string& email) OVERRIDE;
   virtual void SessionStarted() OVERRIDE;
   virtual void RemoveUser(const std::string& email,
                           RemoveUserDelegate* delegate) OVERRIDE;
@@ -68,7 +69,7 @@ class UserManagerImpl : public UserManager,
       const std::string& username) const OVERRIDE;
   virtual bool IsCurrentUserOwner() const OVERRIDE;
   virtual bool IsCurrentUserNew() const OVERRIDE;
-  virtual bool IsCurrentUserEphemeral() const OVERRIDE;
+  virtual bool IsCurrentUserNonCryptohomeDataEphemeral() const OVERRIDE;
   virtual bool CanCurrentUserLock() const OVERRIDE;
   virtual bool IsUserLoggedIn() const OVERRIDE;
   virtual bool IsLoggedInAsRegularUser() const OVERRIDE;
@@ -77,7 +78,8 @@ class UserManagerImpl : public UserManager,
   virtual bool IsLoggedInAsGuest() const OVERRIDE;
   virtual bool IsLoggedInAsStub() const OVERRIDE;
   virtual bool IsSessionStarted() const OVERRIDE;
-  virtual bool IsEphemeralUser(const std::string& email) const OVERRIDE;
+  virtual bool IsUserNonCryptohomeDataEphemeral(
+      const std::string& email) const OVERRIDE;
   virtual void AddObserver(UserManager::Observer* obs) OVERRIDE;
   virtual void RemoveObserver(UserManager::Observer* obs) OVERRIDE;
   virtual void NotifyLocalStateChanged() OVERRIDE;
@@ -173,14 +175,16 @@ class UserManagerImpl : public UserManager,
   // login.
   bool is_current_user_new_;
 
-  // Cached flag of whether the currently logged-in user is ephemeral. Storage
-  // of persistent information is avoided for such users by not adding them to
-  // the user list in local state, not downloading their custom user images and
-  // mounting their cryptohomes using tmpfs.
-  bool is_current_user_ephemeral_;
+  // Cached flag of whether the currently logged-in user is a regular user who
+  // logged in as ephemeral. Storage of persistent information is avoided for
+  // such users by not adding them to the persistent user list, not downloading
+  // their custom avatars and mounting their cryptohomes using tmpfs. Defaults
+  // to |false|.
+  bool is_current_user_ephemeral_regular_user_;
 
-  // Cached flag indicating whether ephemeral users are enabled. Defaults to
-  // |false| if the value has not been read from trusted device policy yet.
+  // Cached flag indicating whether the ephemeral user policy is enabled.
+  // Defaults to |false| if the value has not been read from trusted device
+  // policy yet.
   bool ephemeral_users_enabled_;
 
   // True if user pod row is showed at login screen.

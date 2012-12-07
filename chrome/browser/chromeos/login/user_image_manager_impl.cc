@@ -419,8 +419,9 @@ void UserImageManagerImpl::SaveUserImageInternal(const std::string& username,
 
   SetUserImage(username, image_index, image_url, user_image);
 
-  // Ignore for ephemeral users.
-  if (UserManager::Get()->IsEphemeralUser(username))
+  // Ignore if data stored or cached outside the user's cryptohome is to be
+  // treated as ephemeral.
+  if (UserManager::Get()->IsUserNonCryptohomeDataEphemeral(username))
     return;
 
   FilePath image_path = GetImagePathForUser(username);
@@ -459,8 +460,9 @@ void UserImageManagerImpl::SaveImageToLocalState(const std::string& username,
                                                  bool is_async) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // Ignore for ephemeral users.
-  if (UserManager::Get()->IsEphemeralUser(username))
+  // Ignore if data stored or cached outside the user's cryptohome is to be
+  // treated as ephemeral.
+  if (UserManager::Get()->IsUserNonCryptohomeDataEphemeral(username))
     return;
 
   // TODO(ivankr): use unique filenames for user images each time
