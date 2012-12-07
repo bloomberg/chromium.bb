@@ -18,7 +18,8 @@ RenderingStats::RenderingStats()
       totalPixelsRasterized(0),
       numImplThreadScrolls(0),
       numMainThreadScrolls(0),
-      numLayersDrawn(0) {
+      numLayersDrawn(0),
+      numMissingTiles(0) {
 }
 
 void RenderingStats::EnumerateFields(Enumerator* enumerator) const {
@@ -35,6 +36,7 @@ void RenderingStats::EnumerateFields(Enumerator* enumerator) const {
     enumerator->AddInt64("numImplThreadScrolls", numImplThreadScrolls);
     enumerator->AddInt64("numMainThreadScrolls", numMainThreadScrolls);
     enumerator->AddInt64("numLayersDrawn", numLayersDrawn);
+    enumerator->AddInt64("numMissingTiles", numMissingTiles);
 }
 
 }  // namespace cc

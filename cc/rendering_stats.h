@@ -25,6 +25,7 @@ struct CC_EXPORT RenderingStats {
     int64 numImplThreadScrolls;
     int64 numMainThreadScrolls;
     int64 numLayersDrawn;
+    int64 numMissingTiles;
     // Note: when adding new members, please remember to update enumerateFields
     // in rendering_stats.cc.
 

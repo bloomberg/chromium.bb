@@ -222,6 +222,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(const LayerTreeSettings& settings, LayerTre
     , m_numImplThreadScrolls(0)
     , m_numMainThreadScrolls(0)
     , m_cumulativeNumLayersDrawn(0)
+    , m_cumulativeNumMissingTiles(0)
 {
     DCHECK(m_proxy->isImplThread());
     didVisibilityChange(this, m_visible);
@@ -557,7 +558,8 @@ bool LayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
         if (appendQuadsData.hadOcclusionFromOutsideTargetSurface)
           targetRenderPass->has_occlusion_from_outside_target_surface = true;
 
-        if (appendQuadsData.hadMissingTiles) {
+        if (appendQuadsData.numMissingTiles) {
+            m_cumulativeNumMissingTiles += appendQuadsData.numMissingTiles;
             bool layerHasAnimatingTransform = it->screenSpaceTransformIsAnimating() || it->drawTransformIsAnimating();
             if (layerHasAnimatingTransform)
                 drawFrame = false;
@@ -1573,6 +1575,7 @@ void LayerTreeHostImpl::renderingStats(RenderingStats* stats) const
     stats->numImplThreadScrolls = m_numImplThreadScrolls;
     stats->numMainThreadScrolls = m_numMainThreadScrolls;
     stats->numLayersDrawn = m_cumulativeNumLayersDrawn;
+    stats->numMissingTiles = m_cumulativeNumMissingTiles;
 
     if (m_tileManager)
         m_tileManager->renderingStats(stats);

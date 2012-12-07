@@ -87,13 +87,13 @@ void PictureLayerImpl::appendQuads(QuadSink& quadSink,
         scoped_ptr<CheckerboardDrawQuad> quad = CheckerboardDrawQuad::Create();
         SkColor color = DebugColors::DefaultCheckerboardColor();
         quad->SetNew(sharedQuadState, geometry_rect, color);
-        appendQuadsData.hadMissingTiles |=
-            quadSink.append(quad.PassAs<DrawQuad>(), appendQuadsData);
+        if (quadSink.append(quad.PassAs<DrawQuad>(), appendQuadsData))
+            appendQuadsData.numMissingTiles++;
       } else {
         scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
         quad->SetNew(sharedQuadState, geometry_rect, backgroundColor());
-        appendQuadsData.hadMissingTiles |=
-            quadSink.append(quad.PassAs<DrawQuad>(), appendQuadsData);
+        if (quadSink.append(quad.PassAs<DrawQuad>(), appendQuadsData))
+            appendQuadsData.numMissingTiles++;
       }
       continue;
     }

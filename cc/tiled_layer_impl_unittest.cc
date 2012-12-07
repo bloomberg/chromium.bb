@@ -137,7 +137,7 @@ TEST_F(TiledLayerImplTest, checkerboarding)
         AppendQuadsData data;
         layer->appendQuads(quadCuller, data);
         EXPECT_EQ(quadCuller.quadList().size(), 4u);
-        EXPECT_FALSE(data.hadMissingTiles);
+        EXPECT_EQ(0u, data.numMissingTiles);
 
         for (size_t i = 0; i < quadCuller.quadList().size(); ++i)
             EXPECT_EQ(quadCuller.quadList()[i]->material, DrawQuad::TILED_CONTENT);
@@ -152,7 +152,7 @@ TEST_F(TiledLayerImplTest, checkerboarding)
         MockQuadCuller quadCuller;
         AppendQuadsData data;
         layer->appendQuads(quadCuller, data);
-        EXPECT_TRUE(data.hadMissingTiles);
+        EXPECT_LT(0u, data.numMissingTiles);
         EXPECT_EQ(quadCuller.quadList().size(), 4u);
         for (size_t i = 0; i < quadCuller.quadList().size(); ++i)
             EXPECT_NE(quadCuller.quadList()[i]->material, DrawQuad::TILED_CONTENT);

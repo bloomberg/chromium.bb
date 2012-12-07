@@ -5,6 +5,7 @@
 #ifndef CC_APPEND_QUADS_DATA_H_
 #define CC_APPEND_QUADS_DATA_H_
 
+#include "base/basictypes.h"
 #include "cc/render_pass.h"
 
 namespace cc {
@@ -12,14 +13,14 @@ namespace cc {
 struct AppendQuadsData {
     AppendQuadsData()
         : hadOcclusionFromOutsideTargetSurface(false)
-        , hadMissingTiles(false)
+        , numMissingTiles(0)
         , renderPassId(0, 0)
     {
     }
 
     explicit AppendQuadsData(RenderPass::Id renderPassId)
         : hadOcclusionFromOutsideTargetSurface(false)
-        , hadMissingTiles(false)
+        , numMissingTiles(0)
         , renderPassId(renderPassId)
     {
     }
@@ -27,7 +28,7 @@ struct AppendQuadsData {
     // Set by the QuadCuller.
     bool hadOcclusionFromOutsideTargetSurface;
     // Set by the layer appending quads.
-    bool hadMissingTiles;
+    int64 numMissingTiles;
     // Given to the layer appending quads.
     const RenderPass::Id renderPassId;
 };

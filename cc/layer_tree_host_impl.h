@@ -381,10 +381,12 @@ private:
     scoped_ptr<FrameRateCounter> m_fpsCounter;
     scoped_ptr<DebugRectHistory> m_debugRectHistory;
 
-    size_t m_numImplThreadScrolls;
-    size_t m_numMainThreadScrolls;
+    int64 m_numImplThreadScrolls;
+    int64 m_numMainThreadScrolls;
 
-    size_t m_cumulativeNumLayersDrawn;
+    int64 m_cumulativeNumLayersDrawn;
+
+    int64 m_cumulativeNumMissingTiles;
 
     AnimationControllerSet m_activeAnimationControllers;
 
