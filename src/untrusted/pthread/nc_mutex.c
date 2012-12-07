@@ -134,7 +134,12 @@ static int nc_thread_mutex_lock(pthread_mutex_t *mutex, int try_only) {
                                       LOCKED_WITH_WAITERS) != UNLOCKED) {
         __nc_futex_wait(&mutex->mutex_state, LOCKED_WITH_WAITERS, NULL);
       }
-      /* Try again to claim the mutex. */
+      /*
+       * Try again to claim the mutex.  On this try, we must set
+       * mutex_state to LOCKED_WITH_WAITERS rather than
+       * LOCKED_WITHOUT_WAITERS.  We could have been woken up when
+       * many threads are in the wait queue for the mutex.
+       */
       old_state = __sync_val_compare_and_swap(&mutex->mutex_state, UNLOCKED,
                                               LOCKED_WITH_WAITERS);
     } while (old_state != UNLOCKED);
@@ -182,9 +187,22 @@ int pthread_mutex_unlock(pthread_mutex_t *mutex) {
   int old_state = __sync_fetch_and_sub(&mutex->mutex_state, 1);
   if (old_state != LOCKED_WITHOUT_WAITERS) {
     if (old_state == UNLOCKED) {
-      /* Mutex was not locked. */
+      /*
+       * The mutex was not locked.  mutex_state is now -1 and the
+       * mutex is likely unusable, but that is the caller's fault for
+       * using the mutex interface incorrectly.
+       */
       return EPERM;
     }
+    /*
+     * We decremented mutex_state from LOCKED_WITH_WAITERS to
+     * LOCKED_WITHOUT_WAITERS.  We must now release the mutex fully.
+     *
+     * No further memory barrier is required for the following
+     * modification of mutex_state.  The full memory barrier from the
+     * atomic decrement acts as a release memory barrier for the
+     * following modification.
+     */
     mutex->mutex_state = UNLOCKED;
     int woken;
     __nc_futex_wake(&mutex->mutex_state, 1, &woken);
