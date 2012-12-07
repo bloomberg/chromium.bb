@@ -65,18 +65,19 @@ def load_run_test_cases_results(run_test_cases_file):
   return success, failure
 
 
-def add_verbosity(cmd):
+def add_verbosity(cmd, verbosity):
   """Adds --verbose flags to |cmd| depending on verbosity."""
-  if logging.getLogger().level < logging.ERROR:
+  if verbosity:
     cmd.append('--verbose')
-  if logging.getLogger().level < logging.INFO:
+  if verbosity > 1:
     cmd.append('--verbose')
 
 
 # This function requires 2 temporary files.
 @with_tempfile
 @with_tempfile
-def run_tests(tempfilepath_cases, tempfilepath_result, isolated, test_cases):
+def run_tests(
+    tempfilepath_cases, tempfilepath_result, isolated, test_cases, verbosity):
   """Runs all the test cases in an isolated environment."""
   with open(tempfilepath_cases, 'w') as f:
     f.write('\n'.join(test_cases))
@@ -86,7 +87,7 @@ def run_tests(tempfilepath_cases, tempfilepath_result, isolated, test_cases):
     '--isolated', isolated,
   ]
   # Make sure isolate.py is verbose.
-  add_verbosity(cmd)
+  add_verbosity(cmd, verbosity)
   cmd += [
     '--',
     # This assumes run_test_cases.py is used.
@@ -105,7 +106,7 @@ def run_tests(tempfilepath_cases, tempfilepath_result, isolated, test_cases):
     '--max-failures', '25',
   ]
   # Make sure run_test_cases.py is verbose.
-  add_verbosity(cmd)
+  add_verbosity(cmd, verbosity)
   logging.debug(cmd)
   retcode = subprocess.call(cmd)
   success, failures = load_run_test_cases_results(tempfilepath_result)
@@ -115,7 +116,7 @@ def run_tests(tempfilepath_cases, tempfilepath_result, isolated, test_cases):
 
 
 @with_tempfile
-def trace_some(tempfilepath, isolated, test_cases):
+def trace_some(tempfilepath, isolated, test_cases, verbosity):
   """Traces the test cases."""
   with open(tempfilepath, 'w') as f:
     f.write('\n'.join(test_cases))
@@ -126,12 +127,12 @@ def trace_some(tempfilepath, isolated, test_cases):
     # Do not use --run-all here, we assume the test cases will pass inside the
     # checkout.
   ]
-  add_verbosity(cmd)
+  add_verbosity(cmd, verbosity)
   logging.debug(cmd)
   return subprocess.call(cmd)
 
 
-def fix_all(isolated, all_test_cases):
+def fix_all(isolated, all_test_cases, verbosity):
   """Runs all the test cases in a gtest executable and trace the failing tests.
 
   Returns True on success.
@@ -161,7 +162,7 @@ def fix_all(isolated, all_test_cases):
     print(
         '\nTotal: %5d; Remaining: %5d' % (
           len(all_test_cases), len(remaining_test_cases)))
-    success, failures = run_tests(isolated, remaining_test_cases)
+    success, failures = run_tests(isolated, remaining_test_cases, verbosity)
     if success is None:
       if had_failure:
         print >> sys.stderr, 'Failed to run test cases'
@@ -199,7 +200,7 @@ def fix_all(isolated, all_test_cases):
 
     # Trace the test cases and update the .isolate file.
     print('\nTracing the %d failing tests.' % len(failures))
-    if trace_some(isolated, failures):
+    if trace_some(isolated, failures, verbosity):
       logging.info('The tracing itself failed.')
       return False
     previous_failures = failures
@@ -237,7 +238,7 @@ def main():
     print >> sys.stderr, 'No test case to run'
     return 1
 
-  return not fix_all(options.isolated, test_cases)
+  return not fix_all(options.isolated, test_cases, options.verbose)
 
 
 if __name__ == '__main__':
