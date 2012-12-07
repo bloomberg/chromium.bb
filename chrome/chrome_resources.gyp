@@ -15,6 +15,13 @@
       # it easier for us to reference them internally.
       'actions': [
         {
+          'action_name': 'net_internals_resources',
+          'variables': {
+            'grit_grd_file': 'browser/resources/net_internals_resources.grd',
+          },
+          'includes': [ '../build/grit_action.gypi' ],
+        },
+        {
           'action_name': 'shared_resources',
           'variables': {
             'grit_grd_file': 'browser/resources/shared_resources.grd',
@@ -47,13 +54,6 @@
               'action_name': 'component_extension_resources',
               'variables': {
                 'grit_grd_file': 'browser/resources/component_extension_resources.grd',
-              },
-              'includes': [ '../build/grit_action.gypi' ],
-            },
-            {
-              'action_name': 'net_internals_resources',
-              'variables': {
-                'grit_grd_file': 'browser/resources/net_internals_resources.grd',
               },
               'includes': [ '../build/grit_action.gypi' ],
             },
