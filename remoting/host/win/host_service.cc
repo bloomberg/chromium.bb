@@ -22,7 +22,7 @@
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/wrapped_window_proc.h"
-#include "remoting/base/auto_thread_task_runner.h"
+#include "remoting/base/auto_thread.h"
 #include "remoting/base/breakpad.h"
 #include "remoting/base/scoped_sc_handle_win.h"
 #include "remoting/base/stoppable.h"
@@ -85,10 +85,6 @@ const char* kCopiedSwitchNames[] = {
 void usage(const FilePath& program_name) {
   LOG(INFO) << StringPrintf(kUsageMessage,
                             UTF16ToWide(program_name.value()).c_str());
-}
-
-void QuitMessageLoop(MessageLoop* message_loop) {
-  message_loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
 
 }  // namespace
@@ -224,15 +220,15 @@ void HostService::CreateLauncher(
 
 void HostService::RunMessageLoop(MessageLoop* message_loop) {
   // Launch the I/O thread.
-  base::Thread io_thread(kIoThreadName);
-  base::Thread::Options io_thread_options(MessageLoop::TYPE_IO, 0);
-  if (!io_thread.StartWithOptions(io_thread_options)) {
+  scoped_refptr<AutoThreadTaskRunner> io_thread =
+      AutoThread::CreateWithType(kIoThreadName, main_task_runner_,
+                                 MessageLoop::TYPE_IO);
+  if (!io_thread) {
     LOG(FATAL) << "Failed to start the I/O thread";
     return;
   }
 
-  CreateLauncher(new AutoThreadTaskRunner(io_thread.message_loop_proxy(),
-                                          main_task_runner_));
+  CreateLauncher(io_thread);
 
   // Run the service.
   message_loop->Run();
@@ -294,7 +290,7 @@ void HostService::RunAsServiceImpl() {
   // reference is dropped QuitClosure() will be posted to the loop.
   main_task_runner_ =
       new AutoThreadTaskRunner(message_loop.message_loop_proxy(),
-                               base::Bind(&QuitMessageLoop, &message_loop));
+                               MessageLoop::QuitClosure());
 
   // Register the service control handler.
   service_status_handle_ = RegisterServiceCtrlHandlerExW(
@@ -347,7 +343,7 @@ int HostService::RunInConsole() {
   // reference is dropped, QuitClosure() will be posted to the loop.
   main_task_runner_ =
       new AutoThreadTaskRunner(message_loop.message_loop_proxy(),
-                               base::Bind(&QuitMessageLoop, &message_loop));
+                               MessageLoop::QuitClosure());
 
   int result = kInitializationFailed;
 

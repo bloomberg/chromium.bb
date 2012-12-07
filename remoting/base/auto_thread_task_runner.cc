@@ -9,45 +9,27 @@
 namespace remoting {
 
 AutoThreadTaskRunner::AutoThreadTaskRunner(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : task_runner_(task_runner) {
-}
-
-AutoThreadTaskRunner::AutoThreadTaskRunner(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    const base::Closure& stop_callback)
-    : stop_callback_(stop_callback),
+    const base::Closure& stop_task)
+    : stop_task_(stop_task),
       task_runner_(task_runner) {
-}
-
-AutoThreadTaskRunner::AutoThreadTaskRunner(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    scoped_refptr<AutoThreadTaskRunner> parent)
-    : parent_(parent),
-      task_runner_(task_runner) {
-}
-
-AutoThreadTaskRunner::AutoThreadTaskRunner(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    scoped_refptr<AutoThreadTaskRunner> parent,
-    const base::Closure& stop_callback)
-    : parent_(parent),
-      stop_callback_(stop_callback),
-      task_runner_(task_runner) {
+  DCHECK(!stop_task_.is_null());
 }
 
 bool AutoThreadTaskRunner::PostDelayedTask(
     const tracked_objects::Location& from_here,
     const base::Closure& task,
     base::TimeDelta delay) {
-  return task_runner_->PostDelayedTask(from_here, task, delay);
+  CHECK(task_runner_->PostDelayedTask(from_here, task, delay));
+  return true;
 }
 
 bool AutoThreadTaskRunner::PostNonNestableDelayedTask(
     const tracked_objects::Location& from_here,
     const base::Closure& task,
     base::TimeDelta delay) {
-  return task_runner_->PostNonNestableDelayedTask(from_here, task, delay);
+  CHECK(task_runner_->PostNonNestableDelayedTask(from_here, task, delay));
+  return true;
 }
 
 bool AutoThreadTaskRunner::RunsTasksOnCurrentThread() const {
@@ -55,8 +37,7 @@ bool AutoThreadTaskRunner::RunsTasksOnCurrentThread() const {
 }
 
 AutoThreadTaskRunner::~AutoThreadTaskRunner() {
-  if (!stop_callback_.is_null())
-    stop_callback_.Run();
+  CHECK(task_runner_->PostTask(FROM_HERE, stop_task_));
 }
 
 }  // namespace remoting
