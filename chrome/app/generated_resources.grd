@@ -7698,6 +7698,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ACCNAME_ACTION_BOX_BUTTON" desc="The accessible name for the action box button.">
         Actions
       </message>
+      <if expr="pp_ifdef('ios')">
+        <message name="IDS_ACCNAME_CLEAR_TEXT" desc="The accessibility label for the clear text button in the location bar [Length: unlimited].">
+          Clear Text
+        </message>
+        <message name="IDS_ACCNAME_VOICE_SEARCH" desc="The accessibility label for the voice search button in the location bar [Length: unlimited]">
+          Voice Search
+        </message>
+      </if>
 
       <!-- Browser Hung Plugin Detector -->
       <message name="IDS_UNKNOWN_PLUGIN_NAME" desc="Name for a plugin whose name could not be determined">
