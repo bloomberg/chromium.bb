@@ -79,7 +79,7 @@ class WEBKIT_GLUE_EXPORT WebCursor {
 #if defined(USE_AURA)
   const ui::PlatformCursor GetPlatformCursor();
 
-  void SetScaleFactor(float scale_factor);
+  void SetDeviceScaleFactor(float scale_factor);
 #elif defined(OS_WIN)
   // Returns a HCURSOR representing the current WebCursor instance.
   // The ownership of the HCURSOR (does not apply to external cursors) remains
@@ -134,11 +134,13 @@ class WEBKIT_GLUE_EXPORT WebCursor {
   // WebCore::PlatformCursor type.
   int type_;
 
+  // Hot spot in cursor image in physical image coordinate space.
   gfx::Point hotspot_;
 
   // Custom cursor data, as 32-bit RGBA.
   // Platform-inspecific because it can be serialized.
   gfx::Size custom_size_;
+  float custom_scale_;
   std::vector<char> custom_data_;
 
 #if defined(OS_WIN)
@@ -150,7 +152,7 @@ class WEBKIT_GLUE_EXPORT WebCursor {
 #if defined(USE_AURA) && defined(USE_X11)
   // Only used for custom cursors.
   ui::PlatformCursor platform_cursor_;
-  float scale_factor_;
+  float device_scale_factor_;
 #elif defined(OS_WIN)
   // A custom cursor created from custom bitmap data by Webkit.
   HCURSOR custom_cursor_;

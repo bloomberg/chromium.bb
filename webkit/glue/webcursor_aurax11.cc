@@ -26,29 +26,28 @@ const ui::PlatformCursor WebCursor::GetPlatformCursor() {
   bitmap.allocPixels();
   memcpy(bitmap.getAddr32(0, 0), custom_data_.data(), custom_data_.size());
 
-  XcursorImage* image = NULL;
-  if (scale_factor_ == 1.f) {
-    image = ui::SkBitmapToXcursorImage(&bitmap, hotspot_);
-  } else {
-    gfx::Size scaled_size = gfx::ToFlooredSize(
-        gfx::ScaleSize(custom_size_, scale_factor_));
-    SkBitmap scaled_bitmap = skia::ImageOperations::Resize(bitmap,
+  gfx::Point hotspot = hotspot_;
+  if (device_scale_factor_ != custom_scale_) {
+    float scale = device_scale_factor_ / custom_scale_;
+    gfx::Size scaled_size =
+        gfx::ToFlooredSize(gfx::ScaleSize(custom_size_, scale));
+    bitmap = skia::ImageOperations::Resize(bitmap,
         skia::ImageOperations::RESIZE_BETTER,
         scaled_size.width(),
         scaled_size.height());
-    gfx::Point hotspot_point = gfx::ToFlooredPoint(
-        gfx::ScalePoint(hotspot_, scale_factor_));
-    image = ui::SkBitmapToXcursorImage(&scaled_bitmap, hotspot_point);
+    hotspot = gfx::ToFlooredPoint(gfx::ScalePoint(hotspot, scale));
   }
+
+  XcursorImage* image = ui::SkBitmapToXcursorImage(&bitmap, hotspot);
   platform_cursor_ = ui::CreateReffedCustomXCursor(image);
   return platform_cursor_;
 }
 
-void WebCursor::SetScaleFactor(float scale_factor) {
-  if (scale_factor_ == scale_factor)
+void WebCursor::SetDeviceScaleFactor(float scale_factor) {
+  if (device_scale_factor_ == scale_factor)
     return;
 
-  scale_factor_ = scale_factor;
+  device_scale_factor_ = scale_factor;
   if (platform_cursor_)
     ui::UnrefCustomXCursor(platform_cursor_);
   platform_cursor_ = 0;
@@ -58,7 +57,7 @@ void WebCursor::SetScaleFactor(float scale_factor) {
 
 void WebCursor::InitPlatformData() {
   platform_cursor_ = 0;
-  scale_factor_ = 1.f;
+  device_scale_factor_ = 1.f;
 }
 
 bool WebCursor::SerializePlatformData(Pickle* pickle) const {
@@ -87,5 +86,5 @@ void WebCursor::CopyPlatformData(const WebCursor& other) {
   if (platform_cursor_)
     ui::RefCustomXCursor(platform_cursor_);
 
-  scale_factor_ = other.scale_factor_;
+  device_scale_factor_ = other.device_scale_factor_;
 }

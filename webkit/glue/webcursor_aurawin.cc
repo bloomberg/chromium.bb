@@ -13,7 +13,7 @@ const ui::PlatformCursor WebCursor::GetPlatformCursor() {
   return LoadCursor(NULL, IDC_ARROW);
 }
 
-void WebCursor::SetScaleFactor(float scale_factor) {
+void WebCursor::SetDeviceScaleFactor(float scale_factor) {
   // TODO(winguru): Scale the cursor.
 }
 

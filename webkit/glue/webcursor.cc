@@ -15,7 +15,8 @@ using WebKit::WebImage;
 static const int kMaxCursorDimension = 1024;
 
 WebCursor::WebCursor()
-    : type_(WebCursorInfo::TypePointer) {
+    : type_(WebCursorInfo::TypePointer),
+      custom_scale_(1) {
 #if defined(OS_WIN)
   external_cursor_ = NULL;
 #endif
@@ -63,6 +64,8 @@ void WebCursor::InitFromCursorInfo(const WebCursorInfo& cursor_info) {
   hotspot_ = cursor_info.hotSpot;
   if (IsCustom())
     SetCustomData(cursor_info.customImage);
+  custom_scale_ = cursor_info.imageScaleFactor;
+  CHECK(custom_scale_ > 0);
   ClampHotspot();
 }
 
@@ -70,6 +73,7 @@ void WebCursor::GetCursorInfo(WebCursorInfo* cursor_info) const {
   cursor_info->type = static_cast<WebCursorInfo::Type>(type_);
   cursor_info->hotSpot = hotspot_;
   ImageFromCustomData(&cursor_info->customImage);
+  cursor_info->imageScaleFactor = custom_scale_;
 
 #if defined(OS_WIN)
   cursor_info->externalHandle = external_cursor_;
@@ -78,7 +82,7 @@ void WebCursor::GetCursorInfo(WebCursorInfo* cursor_info) const {
 
 bool WebCursor::Deserialize(PickleIterator* iter) {
   int type, hotspot_x, hotspot_y, size_x, size_y, data_len;
-
+  float scale;
   const char* data;
 
   // Leave |this| unmodified unless we are going to return success.
@@ -87,12 +91,19 @@ bool WebCursor::Deserialize(PickleIterator* iter) {
       !iter->ReadInt(&hotspot_y) ||
       !iter->ReadLength(&size_x) ||
       !iter->ReadLength(&size_y) ||
+      !iter->ReadFloat(&scale) ||
       !iter->ReadData(&data, &data_len))
     return false;
 
   // Ensure the size is sane, and there is enough data.
   if (size_x > kMaxCursorDimension ||
       size_y > kMaxCursorDimension)
+    return false;
+
+  // Ensure scale isn't ridiculous, and the scaled image size is still sane.
+  if (scale < 0.01 || scale > 100 ||
+      size_x / scale > kMaxCursorDimension ||
+      size_y / scale > kMaxCursorDimension)
     return false;
 
   type_ = type;
@@ -108,6 +119,7 @@ bool WebCursor::Deserialize(PickleIterator* iter) {
       hotspot_.set_y(hotspot_y);
       custom_size_.set_width(size_x);
       custom_size_.set_height(size_y);
+      custom_scale_ = scale;
       ClampHotspot();
 
       custom_data_.clear();
@@ -125,7 +137,8 @@ bool WebCursor::Serialize(Pickle* pickle) const {
       !pickle->WriteInt(hotspot_.x()) ||
       !pickle->WriteInt(hotspot_.y()) ||
       !pickle->WriteInt(custom_size_.width()) ||
-      !pickle->WriteInt(custom_size_.height()))
+      !pickle->WriteInt(custom_size_.height()) ||
+      !pickle->WriteFloat(custom_scale_))
     return false;
 
   const char* data = NULL;
@@ -150,6 +163,7 @@ bool WebCursor::IsEqual(const WebCursor& other) const {
 
   return hotspot_ == other.hotspot_ &&
          custom_size_ == other.custom_size_ &&
+         custom_scale_ == other.custom_scale_ &&
          custom_data_ == other.custom_data_;
 }
 
@@ -198,6 +212,7 @@ void WebCursor::Clear() {
   hotspot_.set_y(0);
   custom_size_.set_width(0);
   custom_size_.set_height(0);
+  custom_scale_ = 1;
   custom_data_.clear();
   CleanupPlatformData();
 }
@@ -206,6 +221,7 @@ void WebCursor::Copy(const WebCursor& other) {
   type_ = other.type_;
   hotspot_ = other.hotspot_;
   custom_size_ = other.custom_size_;
+  custom_scale_ = other.custom_scale_;
   custom_data_ = other.custom_data_;
   CopyPlatformData(other);
 }
