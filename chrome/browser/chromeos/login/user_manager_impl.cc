@@ -212,22 +212,39 @@ void UserManagerImpl::UserLoggedIn(const std::string& email,
 
   if (email == kGuestUserEMail) {
     GuestUserLoggedIn();
-    return;
-  }
-
-  if (email == kRetailModeUserEMail) {
+  } else if (email == kRetailModeUserEMail) {
     RetailModeUserLoggedIn();
-    return;
+  } else {
+    EnsureUsersLoaded();
+
+    if (email != owner_email_ && !FindUserInList(email) &&
+            (AreEphemeralUsersEnabled() || browser_restart)) {
+      RegularUserLoggedInAsEphemeral(email);
+    } else {
+      RegularUserLoggedIn(email, browser_restart);
+    }
   }
 
-  EnsureUsersLoaded();
+  NotifyOnLogin();
+}
 
-  if (email != owner_email_ && !FindUserInList(email) &&
-          (AreEphemeralUsersEnabled() || browser_restart)) {
-    RegularUserLoggedInAsEphemeral(email);
-    return;
-  }
+void UserManagerImpl::RetailModeUserLoggedIn() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  is_current_user_new_ = true;
+  logged_in_user_ = User::CreateRetailModeUser();
+  user_image_manager_->UserLoggedIn(kRetailModeUserEMail, is_current_user_new_);
+  WallpaperManager::Get()->SetInitialUserWallpaper(kRetailModeUserEMail, false);
+}
 
+void UserManagerImpl::GuestUserLoggedIn() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  WallpaperManager::Get()->SetInitialUserWallpaper(kGuestUserEMail, false);
+  logged_in_user_ = User::CreateGuestUser();
+  logged_in_user_->SetStubImage(User::kInvalidImageIndex, false);
+}
+
+void UserManagerImpl::RegularUserLoggedIn(const std::string& email,
+                                          bool browser_restart) {
   // Remove the user from the user list.
   logged_in_user_ = RemoveRegularUserFromList(email);
 
@@ -256,25 +273,6 @@ void UserManagerImpl::UserLoggedIn(const std::string& email,
 
   // Make sure that new data is persisted to Local State.
   g_browser_process->local_state()->CommitPendingWrite();
-
-  NotifyOnLogin();
-}
-
-void UserManagerImpl::RetailModeUserLoggedIn() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  is_current_user_new_ = true;
-  logged_in_user_ = User::CreateRetailModeUser();
-  user_image_manager_->UserLoggedIn(kRetailModeUserEMail, is_current_user_new_);
-  WallpaperManager::Get()->SetInitialUserWallpaper(kRetailModeUserEMail, false);
-  NotifyOnLogin();
-}
-
-void UserManagerImpl::GuestUserLoggedIn() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  WallpaperManager::Get()->SetInitialUserWallpaper(kGuestUserEMail, false);
-  logged_in_user_ = User::CreateGuestUser();
-  logged_in_user_->SetStubImage(User::kInvalidImageIndex, false);
-  NotifyOnLogin();
 }
 
 void UserManagerImpl::RegularUserLoggedInAsEphemeral(const std::string& email) {
@@ -284,7 +282,6 @@ void UserManagerImpl::RegularUserLoggedInAsEphemeral(const std::string& email) {
   logged_in_user_ = User::CreateRegularUser(email);
   user_image_manager_->UserLoggedIn(email, is_current_user_new_);
   WallpaperManager::Get()->SetInitialUserWallpaper(email, false);
-  NotifyOnLogin();
 }
 
 void UserManagerImpl::SessionStarted() {
