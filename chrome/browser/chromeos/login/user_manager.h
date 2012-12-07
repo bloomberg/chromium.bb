@@ -86,6 +86,9 @@ class UserManager {
   // Indicates that user just started incognito session.
   virtual void GuestUserLoggedIn() = 0;
 
+  // Indicates that a user just logged into a public account.
+  virtual void PublicAccountUserLoggedIn(User* user) = 0;
+
   // Indicates that a regular user just logged in.
   virtual void RegularUserLoggedIn(const std::string& email,
                                    bool browser_restart) = 0;

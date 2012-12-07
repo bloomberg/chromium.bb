@@ -46,6 +46,7 @@ class UserManagerImpl : public UserManager,
                             bool browser_restart) OVERRIDE;
   virtual void RetailModeUserLoggedIn() OVERRIDE;
   virtual void GuestUserLoggedIn() OVERRIDE;
+  virtual void PublicAccountUserLoggedIn(User* user) OVERRIDE;
   virtual void RegularUserLoggedIn(const std::string& email,
                                    bool browser_restart) OVERRIDE;
   virtual void RegularUserLoggedInAsEphemeral(

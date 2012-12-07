@@ -217,8 +217,14 @@ void UserManagerImpl::UserLoggedIn(const std::string& email,
   } else {
     EnsureUsersLoaded();
 
-    if (email != owner_email_ && !FindUserInList(email) &&
-            (AreEphemeralUsersEnabled() || browser_restart)) {
+    User* user = const_cast<User*>(FindUserInList(email));
+    if (user && user->GetType() == User::USER_TYPE_PUBLIC_ACCOUNT) {
+      PublicAccountUserLoggedIn(user);
+    } else if (browser_restart && email == g_browser_process->local_state()->
+                   GetString(kPublicAccountPendingDataRemoval)) {
+      PublicAccountUserLoggedIn(User::CreatePublicAccountUser(email));
+    } else if (email != owner_email_ && !user &&
+               (AreEphemeralUsersEnabled() || browser_restart)) {
       RegularUserLoggedInAsEphemeral(email);
     } else {
       RegularUserLoggedIn(email, browser_restart);
@@ -241,6 +247,12 @@ void UserManagerImpl::GuestUserLoggedIn() {
   WallpaperManager::Get()->SetInitialUserWallpaper(kGuestUserEMail, false);
   logged_in_user_ = User::CreateGuestUser();
   logged_in_user_->SetStubImage(User::kInvalidImageIndex, false);
+}
+
+void UserManagerImpl::PublicAccountUserLoggedIn(User* user) {
+  logged_in_user_ = user;
+  user_image_manager_->UserLoggedIn(user->email(), is_current_user_new_);
+  WallpaperManager::Get()->EnsureLoggedInUserWallpaperLoaded();
 }
 
 void UserManagerImpl::RegularUserLoggedIn(const std::string& email,
@@ -846,15 +858,12 @@ bool UserManagerImpl::UpdateAndCleanUpPublicAccounts(
   std::set<std::string> new_public_accounts_set;
   if (!ParseUserList(public_accounts, regular_users, logged_in_user_email,
                      &new_public_accounts, &new_public_accounts_set) &&
-      IsUserLoggedIn()) {
-    User* user = GetLoggedInUser();
+      IsLoggedInAsPublicAccount()) {
     // If the user is currently logged into a public account that has been
     // removed from the list, mark the account's data as pending removal after
     // logout.
-    if (user->GetType() == User::USER_TYPE_PUBLIC_ACCOUNT) {
-      local_state->SetString(kPublicAccountPendingDataRemoval,
-                             logged_in_user_email);
-    }
+    local_state->SetString(kPublicAccountPendingDataRemoval,
+                           logged_in_user_email);
   }
 
   // Persist the new list of public accounts in a pref.
@@ -878,7 +887,8 @@ bool UserManagerImpl::UpdateAndCleanUpPublicAccounts(
   // Remove the old public accounts from the user list.
   for (UserList::iterator it = users_.begin(); it != users_.end(); ) {
     if ((*it)->GetType() == User::USER_TYPE_PUBLIC_ACCOUNT) {
-      delete *it;
+      if (*it != GetLoggedInUser())
+        delete *it;
       it = users_.erase(it);
     } else {
       ++it;
@@ -889,7 +899,10 @@ bool UserManagerImpl::UpdateAndCleanUpPublicAccounts(
   for (std::vector<std::string>::const_reverse_iterator
            it = new_public_accounts.rbegin();
        it != new_public_accounts.rend(); ++it) {
-    users_.insert(users_.begin(), User::CreatePublicAccountUser(*it));
+    if (IsLoggedInAsPublicAccount() && *it == logged_in_user_email)
+      users_.insert(users_.begin(), GetLoggedInUser());
+    else
+      users_.insert(users_.begin(), User::CreatePublicAccountUser(*it));
   }
 
   user_image_manager_->LoadUserImages(

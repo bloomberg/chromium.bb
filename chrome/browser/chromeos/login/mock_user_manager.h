@@ -10,6 +10,7 @@
 #include "base/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/mock_user_image_manager.h"
+#include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_image.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -26,6 +27,7 @@ class MockUserManager : public UserManager {
   MOCK_METHOD2(UserLoggedIn, void(const std::string&, bool));
   MOCK_METHOD0(RetailModeUserLoggedIn, void(void));
   MOCK_METHOD0(GuestUserLoggedIn, void(void));
+  MOCK_METHOD1(PublicAccountUserLoggedIn, void(User*));
   MOCK_METHOD2(RegularUserLoggedIn, void(const std::string&, bool));
   MOCK_METHOD1(RegularUserLoggedInAsEphemeral, void(const std::string&));
   MOCK_METHOD0(SessionStarted, void(void));
