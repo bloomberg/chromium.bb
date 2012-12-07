@@ -16,7 +16,9 @@
             android:background="#FFF"
             android:padding="5dp"
             android:textSize="18sp"
-            android:textColor="#000"/>
+            android:textColor="#000"
+            android:ellipsize="end"
+            android:singleLine="true"/>
   <TextView android:id="@+id/autofill_label"
             android:layout_alignParentRight="true"
             android:layout_width="wrap_content"
@@ -24,5 +26,7 @@
             android:padding="5dp"
             android:textSize="18sp"
             android:background="#FFF"
-            android:textColor="#CCC"/>
+            android:textColor="#CCC"
+            android:ellipsize="end"
+            android:singleLine="true"/>
 </RelativeLayout>

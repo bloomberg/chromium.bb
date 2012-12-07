@@ -86,6 +86,9 @@ void AutofillPopupView::Show(const std::vector<string16>& autofill_values,
   autofill_icons_ = autofill_icons;
   autofill_unique_ids_ = autofill_unique_ids;
 
+#if !defined(OS_ANDROID)
+  // Android displays the long text with ellipsis using the view attributes.
+
   // TODO(csharp): Fix crbug.com/156163 and use better logic when clipping.
   for (size_t i = 0; i < autofill_values_.size(); ++i) {
     if (autofill_values_[i].length() > 15)
@@ -93,6 +96,7 @@ void AutofillPopupView::Show(const std::vector<string16>& autofill_values,
     if (autofill_labels[i].length() > 15)
       autofill_labels_[i].erase(15);
   }
+#endif
 
   ShowInternal();
 }
@@ -365,4 +369,3 @@ bool AutofillPopupView::HasAutofillEntries() {
        autofill_unique_ids_[0] == WebAutofillClient::MenuItemIDPasswordEntry ||
        autofill_unique_ids_[0] == WebAutofillClient::MenuItemIDDataListEntry);
 }
-
