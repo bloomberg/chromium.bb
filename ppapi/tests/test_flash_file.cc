@@ -94,8 +94,6 @@ void TestFlashFile::RunTests(const std::string& filter) {
 }
 
 std::string TestFlashFile::TestCreateTemporaryFile() {
-  ASSERT_TRUE(FileModuleLocal::IsCreateTemporaryFileAvailable());
-
   // Make sure that the root directory exists.
   FileModuleLocal::CreateDir(instance_, std::string());
 

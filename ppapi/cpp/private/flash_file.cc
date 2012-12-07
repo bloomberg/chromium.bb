@@ -20,10 +20,6 @@ template <> const char* interface_name<PPB_Flash_File_ModuleLocal_3_0>() {
   return PPB_FLASH_FILE_MODULELOCAL_INTERFACE_3_0;
 }
 
-template <> const char* interface_name<PPB_Flash_File_ModuleLocal_2_0>() {
-  return PPB_FLASH_FILE_MODULELOCAL_INTERFACE_2_0;
-}
-
 }  // namespace
 
 namespace flash {
@@ -35,34 +31,7 @@ static FileModuleLocal::DirEntry ConvertDirEntry(const PP_DirEntry_Dev& entry) {
 
 // static
 bool FileModuleLocal::IsAvailable() {
-  return has_interface<PPB_Flash_File_ModuleLocal_3_0>() ||
-      has_interface<PPB_Flash_File_ModuleLocal_2_0>();
-}
-
-// static
-bool FileModuleLocal::CreateThreadAdapterForInstance(
-    const InstanceHandle& instance) {
-  bool rv = false;
-  if (has_interface<PPB_Flash_File_ModuleLocal_3_0>()) {
-    rv = get_interface<PPB_Flash_File_ModuleLocal_3_0>()->
-        CreateThreadAdapterForInstance(instance.pp_instance());
-  } else if (has_interface<PPB_Flash_File_ModuleLocal_2_0>()) {
-    rv = get_interface<PPB_Flash_File_ModuleLocal_2_0>()->
-        CreateThreadAdapterForInstance( instance.pp_instance());
-  }
-  return rv;
-}
-
-// static
-void FileModuleLocal::ClearThreadAdapterForInstance(
-    const InstanceHandle& instance) {
-  if (has_interface<PPB_Flash_File_ModuleLocal_3_0>()) {
-    get_interface<PPB_Flash_File_ModuleLocal_3_0>()->
-        ClearThreadAdapterForInstance(instance.pp_instance());
-  } else if (has_interface<PPB_Flash_File_ModuleLocal_2_0>()) {
-    get_interface<PPB_Flash_File_ModuleLocal_2_0>()->
-        ClearThreadAdapterForInstance(instance.pp_instance());
-  }
+  return has_interface<PPB_Flash_File_ModuleLocal_3_0>();
 }
 
 // static
@@ -73,9 +42,6 @@ PP_FileHandle FileModuleLocal::OpenFile(const InstanceHandle& instance,
   int32_t result = PP_ERROR_FAILED;
   if (has_interface<PPB_Flash_File_ModuleLocal_3_0>()) {
     result = get_interface<PPB_Flash_File_ModuleLocal_3_0>()->
-        OpenFile(instance.pp_instance(), path.c_str(), mode, &file_handle);
-  } else if (has_interface<PPB_Flash_File_ModuleLocal_2_0>()) {
-    result = get_interface<PPB_Flash_File_ModuleLocal_2_0>()->
         OpenFile(instance.pp_instance(), path.c_str(), mode, &file_handle);
   }
   return (result == PP_OK) ? file_handle : PP_kInvalidFileHandle;
@@ -88,9 +54,6 @@ bool FileModuleLocal::RenameFile(const InstanceHandle& instance,
   int32_t result = PP_ERROR_FAILED;
   if (has_interface<PPB_Flash_File_ModuleLocal_3_0>()) {
     result = get_interface<PPB_Flash_File_ModuleLocal_3_0>()->
-        RenameFile(instance.pp_instance(), path_from.c_str(), path_to.c_str());
-  } else if (has_interface<PPB_Flash_File_ModuleLocal_2_0>()) {
-    result = get_interface<PPB_Flash_File_ModuleLocal_2_0>()->
         RenameFile(instance.pp_instance(), path_from.c_str(), path_to.c_str());
   }
   return result == PP_OK;
@@ -105,10 +68,6 @@ bool FileModuleLocal::DeleteFileOrDir(const InstanceHandle& instance,
     result = get_interface<PPB_Flash_File_ModuleLocal_3_0>()->
         DeleteFileOrDir(instance.pp_instance(), path.c_str(),
                         PP_FromBool(recursive));
-  } else if (has_interface<PPB_Flash_File_ModuleLocal_2_0>()) {
-    result = get_interface<PPB_Flash_File_ModuleLocal_2_0>()->
-        DeleteFileOrDir(instance.pp_instance(), path.c_str(),
-                        PP_FromBool(recursive));
   }
   return result == PP_OK;
 }
@@ -119,9 +78,6 @@ bool FileModuleLocal::CreateDir(const InstanceHandle& instance,
   int32_t result = PP_ERROR_FAILED;
   if (has_interface<PPB_Flash_File_ModuleLocal_3_0>()) {
     result = get_interface<PPB_Flash_File_ModuleLocal_3_0>()->
-        CreateDir(instance.pp_instance(), path.c_str());
-  } else if (has_interface<PPB_Flash_File_ModuleLocal_2_0>()) {
-    result = get_interface<PPB_Flash_File_ModuleLocal_2_0>()->
         CreateDir(instance.pp_instance(), path.c_str());
   }
   return result == PP_OK;
@@ -134,9 +90,6 @@ bool FileModuleLocal::QueryFile(const InstanceHandle& instance,
   int32_t result = PP_ERROR_FAILED;
   if (has_interface<PPB_Flash_File_ModuleLocal_3_0>()) {
     result = get_interface<PPB_Flash_File_ModuleLocal_3_0>()->
-        QueryFile(instance.pp_instance(), path.c_str(), info);
-  } else if (has_interface<PPB_Flash_File_ModuleLocal_2_0>()) {
-    result = get_interface<PPB_Flash_File_ModuleLocal_2_0>()->
         QueryFile(instance.pp_instance(), path.c_str(), info);
   }
   return result == PP_OK;
@@ -162,25 +115,8 @@ bool FileModuleLocal::GetDirContents(
         get_interface<PPB_Flash_File_ModuleLocal_3_0>()->
             FreeDirContents(instance.pp_instance(), contents);
     }
-  } else if (has_interface<PPB_Flash_File_ModuleLocal_2_0>()) {
-    PP_DirContents_Dev* contents = NULL;
-    result = get_interface<PPB_Flash_File_ModuleLocal_2_0>()->
-        GetDirContents(instance.pp_instance(), path.c_str(), &contents);
-    if (result == PP_OK && contents) {
-      for (int32_t i = 0; i < contents->count; i++)
-        dir_contents->push_back(ConvertDirEntry(contents->entries[i]));
-    }
-    if (contents) {
-        get_interface<PPB_Flash_File_ModuleLocal_2_0>()->
-            FreeDirContents(instance.pp_instance(), contents);
-    }
   }
   return result == PP_OK;
-}
-
-// static
-bool FileModuleLocal::IsCreateTemporaryFileAvailable() {
-  return has_interface<PPB_Flash_File_ModuleLocal_3_0>();
 }
 
 // static
