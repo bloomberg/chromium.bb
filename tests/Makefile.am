@@ -1,12 +1,13 @@
 TESTS = $(module_tests) $(weston_tests)
 
 module_tests = surface-test.la client-test.la	\
-	event-test.la text-test.la	\
+	text-test.la			\
 	surface-global-test.la		\
 	button-test.la
 
 weston_tests =				\
-	keyboard-test
+	keyboard-test			\
+	event-test
 
 TESTS_ENVIRONMENT = $(SHELL) $(top_srcdir)/tests/weston-tests-env
 
@@ -36,7 +37,6 @@ test_runner_src = test-runner.c test-runner.h
 surface_global_test_la_SOURCES = surface-global-test.c $(test_runner_src)
 surface_test_la_SOURCES = surface-test.c $(test_runner_src)
 client_test_la_SOURCES = client-test.c $(test_runner_src)
-event_test_la_SOURCES = event-test.c $(test_runner_src)
 text_test_la_SOURCES = text-test.c $(test_runner_src)
 button_test_la_SOURCES = button-test.c $(test_runner_src)
 
@@ -70,6 +70,9 @@ weston_test_client_libs =		\
 
 keyboard_test_SOURCES = keyboard-test.c $(weston_test_client_src)
 keyboard_test_LDADD = $(weston_test_client_libs)
+
+event_test_SOURCES = event-test.c $(weston_test_client_src)
+event_test_LDADD = $(weston_test_client_libs)
 
 matrix_test_SOURCES =				\
 	matrix-test.c				\

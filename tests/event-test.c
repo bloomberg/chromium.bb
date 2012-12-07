@@ -20,326 +20,329 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <sys/socket.h>
-#include <assert.h>
-#include <unistd.h>
-#include <string.h>
-
-#include "test-runner.h"
-
-struct state {
-	int px; /* pointer x */
-	int py; /* pointer y */
-	int sx; /* surface x */
-	int sy; /* surface y */
-	int sw; /* surface width */
-	int sh; /* surface height */
-};
-
-static size_t state_size = sizeof(struct state);
-
-struct context {
-	struct weston_layer *layer;
-	struct weston_seat *seat;
-	struct weston_surface *surface;
-	int pointer_x; /* server pointer x */
-	int pointer_y; /* server pointer y */
-	size_t index;
-	struct wl_array states;
-};
+#include "weston-test-client-helper.h"
 
 static void
-resize(struct context *context, int w, int h)
+check_pointer(struct client *client, int x, int y)
 {
-	/* resize the surface only if the width or height is different */
-	if (context->surface->geometry.width != w ||
-	    context->surface->geometry.height != h) {
+	int sx, sy;
 
-		weston_surface_configure(context->surface,
-					 context->surface->geometry.x,
-					 context->surface->geometry.y,
-					 w, h);
-		weston_surface_update_transform(context->surface);
-		weston_surface_damage(context->surface);
+	/* check that the client got the global pointer update */
+	assert(client->test->pointer_x == x);
+	assert(client->test->pointer_y == y);
 
-		fprintf(stderr, "resize surface: %d %d\n",
-			context->surface->geometry.width,
-			context->surface->geometry.height);
+	/* Does global pointer map onto the surface? */
+	if (surface_contains(client->surface, x, y)) {
+		/* check that the surface has the pointer focus */
+		assert(client->input->pointer->focus == client->surface);
+
+		/*
+		 * check that the local surface pointer maps
+		 * to the global pointer.
+		 */
+		sx = client->input->pointer->x + client->surface->x;
+		sy = client->input->pointer->y + client->surface->y;
+		assert(sx == x);
+		assert(sy == y);
+	} else {
+		/*
+		 * The global pointer does not map onto surface.  So
+		 * check that it doesn't have the pointer focus.
+		 */
+		assert(client->input->pointer->focus == NULL);
 	}
 }
 
 static void
-move(struct context *context, int x, int y)
+check_pointer_move(struct client *client, int x, int y)
 {
-	/* move the surface only if x or y is different */
-	if (context->surface->geometry.x != x ||
-	    context->surface->geometry.y != y) {
+	move_pointer(client, x, y);
+	check_pointer(client, x, y);
+}
 
-		weston_surface_configure(context->surface,
-					 x, y,
-					 context->surface->geometry.width,
-					 context->surface->geometry.height);
-		weston_surface_update_transform(context->surface);
-		weston_surface_damage(context->surface);
+TEST(test_pointer_top_left)
+{
+	struct client *client;
+	int x, y;
 
-		fprintf(stderr, "move surface: %f %f\n",
-			context->surface->geometry.x,
-			context->surface->geometry.y);
-	}
+	client = client_create(46, 76, 111, 134);
+	assert(client);
+
+	/* move pointer outside top left */
+	x = client->surface->x - 1;
+	y = client->surface->y - 1;
+	assert(!surface_contains(client->surface, x, y));
+	check_pointer_move(client, x, y);
+
+	/* move pointer on top left */
+	x += 1; y += 1;
+	assert(surface_contains(client->surface, x, y));
+	check_pointer_move(client, x, y);
+
+	/* move pointer outside top left */
+	x -= 1; y -= 1;
+	assert(!surface_contains(client->surface, x, y));
+	check_pointer_move(client, x, y);
+}
+
+TEST(test_pointer_bottom_left)
+{
+	struct client *client;
+	int x, y;
+
+	client = client_create(99, 100, 100, 98);
+	assert(client);
+
+	/* move pointer outside bottom left */
+	x = client->surface->x - 1;
+	y = client->surface->y + client->surface->height;
+	assert(!surface_contains(client->surface, x, y));
+	check_pointer_move(client, x, y);
+
+	/* move pointer on bottom left */
+	x += 1; y -= 1;
+	assert(surface_contains(client->surface, x, y));
+	check_pointer_move(client, x, y);
+
+	/* move pointer outside bottom left */
+	x -= 1; y += 1;
+	assert(!surface_contains(client->surface, x, y));
+	check_pointer_move(client, x, y);
+}
+
+TEST(test_pointer_top_right)
+{
+	struct client *client;
+	int x, y;
+
+	client = client_create(48, 100, 67, 100);
+	assert(client);
+
+	/* move pointer outside top right */
+	x = client->surface->x + client->surface->width;
+	y = client->surface->y - 1;
+	assert(!surface_contains(client->surface, x, y));
+	check_pointer_move(client, x, y);
+
+	/* move pointer on top right */
+	x -= 1; y += 1;
+	assert(surface_contains(client->surface, x, y));
+	check_pointer_move(client, x, y);
+
+	/* move pointer outside top right */
+	x += 1; y -= 1;
+	assert(!surface_contains(client->surface, x, y));
+	check_pointer_move(client, x, y);
+}
+
+TEST(test_pointer_bottom_right)
+{
+	struct client *client;
+	int x, y;
+
+	client = client_create(100, 123, 100, 69);
+	assert(client);
+
+	/* move pointer outside bottom right */
+	x = client->surface->x + client->surface->width;
+	y = client->surface->y + client->surface->height;
+	assert(!surface_contains(client->surface, x, y));
+	check_pointer_move(client, x, y);
+
+	/* move pointer on bottom right */
+	x -= 1; y -= 1;
+	assert(surface_contains(client->surface, x, y));
+	check_pointer_move(client, x, y);
+
+	/* move pointer outside bottom right */
+	x += 1; y += 1;
+	assert(!surface_contains(client->surface, x, y));
+	check_pointer_move(client, x, y);
+}
+
+TEST(test_pointer_top_center)
+{
+	struct client *client;
+	int x, y;
+
+	client = client_create(100, 201, 100, 50);
+	assert(client);
+
+	/* move pointer outside top center */
+	x = client->surface->x + client->surface->width/2;
+	y = client->surface->y - 1;
+	assert(!surface_contains(client->surface, x, y));
+	check_pointer_move(client, x, y);
+
+	/* move pointer on top center */
+	y += 1;
+	assert(surface_contains(client->surface, x, y));
+	check_pointer_move(client, x, y);
+
+	/* move pointer outside top center */
+	y -= 1;
+	assert(!surface_contains(client->surface, x, y));
+	check_pointer_move(client, x, y);
+}
+
+TEST(test_pointer_bottom_center)
+{
+	struct client *client;
+	int x, y;
+
+	client = client_create(100, 45, 67, 100);
+	assert(client);
+
+	/* move pointer outside bottom center */
+	x = client->surface->x + client->surface->width/2;
+	y = client->surface->y + client->surface->height;
+	assert(!surface_contains(client->surface, x, y));
+	check_pointer_move(client, x, y);
+
+	/* move pointer on bottom center */
+	y -= 1;
+	assert(surface_contains(client->surface, x, y));
+	check_pointer_move(client, x, y);
+
+	/* move pointer outside bottom center */
+	y += 1;
+	assert(!surface_contains(client->surface, x, y));
+	check_pointer_move(client, x, y);
+}
+
+TEST(test_pointer_left_center)
+{
+	struct client *client;
+	int x, y;
+
+	client = client_create(167, 45, 78, 100);
+	assert(client);
+
+	/* move pointer outside left center */
+	x = client->surface->x - 1;
+	y = client->surface->y + client->surface->height/2;
+	assert(!surface_contains(client->surface, x, y));
+	check_pointer_move(client, x, y);
+
+	/* move pointer on left center */
+	x += 1;
+	assert(surface_contains(client->surface, x, y));
+	check_pointer_move(client, x, y);
+
+	/* move pointer outside left center */
+	x -= 1;
+	assert(!surface_contains(client->surface, x, y));
+	check_pointer_move(client, x, y);
+}
+
+TEST(test_pointer_right_center)
+{
+	struct client *client;
+	int x, y;
+
+	client = client_create(110, 37, 100, 46);
+	assert(client);
+
+	/* move pointer outside right center */
+	x = client->surface->x + client->surface->width;
+	y = client->surface->y + client->surface->height/2;
+	assert(!surface_contains(client->surface, x, y));
+	check_pointer_move(client, x, y);
+
+	/* move pointer on right center */
+	x -= 1;
+	assert(surface_contains(client->surface, x, y));
+	check_pointer_move(client, x, y);
+
+	/* move pointer outside right center */
+	x += 1;
+	assert(!surface_contains(client->surface, x, y));
+	check_pointer_move(client, x, y);
+}
+
+TEST(test_pointer_surface_move)
+{
+	struct client *client;
+
+	client = client_create(100, 100, 100, 100);
+	assert(client);
+
+	/* move pointer outside of client */
+	assert(!surface_contains(client->surface, 50, 50));
+	check_pointer_move(client, 50, 50);
+
+	/* move client center to pointer */
+	move_client(client, 0, 0);
+	assert(surface_contains(client->surface, 50, 50));
+	check_pointer(client, 50, 50);
 }
 
 static int
-contains(struct context *context, int x, int y)
+output_contains_client(struct client *client)
 {
-	/* test whether a global x,y point is contained in the surface */
-	int sx = context->surface->geometry.x;
-	int sy = context->surface->geometry.y;
-	int sw = context->surface->geometry.width;
-	int sh = context->surface->geometry.height;
-	return x >= sx && y >= sy && x < sx + sw && y < sy + sh;
+	struct output *output = client->output;
+	struct surface *surface = client->surface;
+
+	return !(output->x >= surface->x + surface->width
+		|| output->x + output->width <= surface->x
+		|| output->y >= surface->y + surface->height
+		|| output->y + output->height <= surface->y);
 }
 
 static void
-move_pointer(struct context *context, int x, int y)
+check_client_move(struct client *client, int x, int y)
 {
-	if (contains(context, context->pointer_x, context->pointer_y)) {
-		/* pointer is currently on the surface */
-		notify_motion(context->seat, 100,
-			      wl_fixed_from_int(x), wl_fixed_from_int(y));
+	move_client(client, x, y);
+
+	if (output_contains_client(client)) {
+		assert(client->surface->output == client->output);
 	} else {
-		/* pointer is not currently on the surface */
-		notify_pointer_focus(context->seat, context->surface->output,
-				     wl_fixed_from_int(x),
-				     wl_fixed_from_int(y));
-	}
-
-	/* update server expected pointer location */
-	context->pointer_x = x;
-	context->pointer_y = y;
-
-	fprintf(stderr, "move pointer: %d %d\n", x, y);
-}
-
-static void
-check_pointer(struct context *context, int cx, int cy)
-{
-	/*
-	 * Check whether the client reported pointer position matches
-	 * the server expected pointer position.  The client
-	 * reports -1,-1 when the pointer is not on its surface and
-	 * a surface relative x,y otherwise.
-	 */
-	int gx = context->surface->geometry.x + cx;
-	int gy = context->surface->geometry.y + cy;
-	if (!contains(context, gx, gy)) {
-		assert(!contains(context, context->pointer_x,
-				 context->pointer_y));
-	} else {
-		assert(gx == context->pointer_x);
-		assert(gy == context->pointer_y);
+		assert(client->surface->output == NULL);
 	}
 }
 
-static void
-check_visible(struct context *context, int visible)
+TEST(test_surface_output)
 {
-	/*
-	 * Check whether the client reported surface visibility matches
-	 * the servers expected surface visibility
-	 */
-	int ow = context->surface->output->width;
-	int oh = context->surface->output->height;
-	int sx = context->surface->geometry.x;
-	int sy = context->surface->geometry.y;
-	int sw = context->surface->geometry.width;
-	int sh = context->surface->geometry.height;
+	struct client *client;
+	int x, y;
 
-	const int expect = sx < ow && sy < oh && sx + sw > 0 && sy + sh > 0;
+	client = client_create(100, 100, 100, 100);
+	assert(client);
 
-	assert(visible == expect);
-}
-
-static void
-handle_state(struct test_client *);
-
-static void
-set_state(struct test_client *client)
-{
-	struct state* state;
-	struct context *context = client->data;
-
-	if (context->index < context->states.size) {
-		state = context->states.data + context->index;
-		resize(context, state->sw, state->sh);
-		move(context, state->sx, state->sy);
-		move_pointer(context, state->px, state->py);
-		context->index += state_size;
-
-		test_client_send(client, "send-state\n");
-		client->handle = handle_state;
-	} else {
-		test_client_send(client, "bye\n");
-		client->handle = NULL;
-	}
-}
-
-static void
-handle_state(struct test_client *client)
-{
-	struct context *context = client->data;
-	wl_fixed_t x, y;
-	int visible;
-
-	assert(sscanf(client->buf, "%d %d %d", &x, &y, &visible) == 3);
-
-	check_pointer(context, wl_fixed_to_int(x), wl_fixed_to_int(y));
-	check_visible(context, visible);
-
-	set_state(client);
-}
-
-static void
-add_state(struct context *context, int px, int py, int sx, int sy,
-	  int sw, int sh)
-{
-	struct state *state = wl_array_add(&context->states,
-					   sizeof(struct state));
-
-	assert(state);
-
-	state->px = px;
-	state->py = py;
-	state->sx = sx;
-	state->sy = sy;
-	state->sw = sw;
-	state->sh = sh;
-}
-
-static void
-initialize_states(struct test_client *client)
-{
-	struct context *context = client->data;
-	struct weston_surface *surface = context->surface;
-
-	int x = surface->geometry.x;
-	int y = surface->geometry.y;
-	int w = surface->geometry.width;
-	int h = surface->geometry.height;
-
-	wl_array_init(&context->states);
-
-	/* move pointer outside top left */
-	add_state(context, x - 1, y - 1, x, y, w, h);
-	/* move pointer on top left */
-	add_state(context, x, y, x, y, w, h);
-	/* move pointer outside bottom left */
-	add_state(context, x - 1, y + h, x, y, w, h);
-	/* move pointer on bottom left */
-	add_state(context, x, y + h - 1, x, y, w, h);
-	/* move pointer outside top right */
-	add_state(context, x + w, y - 1, x, y, w, h);
-	/* move pointer on top right */
-	add_state(context, x + w - 1, y, x, y, w, h);
-	/* move pointer outside bottom right */
-	add_state(context, x + w, y + h, x, y, w, h);
-	/* move pointer on bottom right */
-	add_state(context, x + w - 1, y + h - 1, x, y, w, h);
-
-	/* move pointer outside top center */
-	add_state(context, x + w/2, y - 1, x, y, w, h);
-	/* move pointer on top center */
-	add_state(context, x + w/2, y, x, y, w, h);
-	/* move pointer outside bottom center */
-	add_state(context, x + w/2, y + h, x, y, w, h);
-	/* move pointer on bottom center */
-	add_state(context, x + w/2, y + h - 1, x, y, w, h);
-	/* move pointer outside left center */
-	add_state(context, x - 1, y + h/2, x, y, w, h);
-	/* move pointer on left center */
-	add_state(context, x, y + h/2, x, y, w, h);
-	/* move pointer outside right center */
-	add_state(context, x + w, y + h/2, x, y, w, h);
-	/* move pointer on right center */
-	add_state(context, x + w - 1, y + h/2, x, y, w, h);
-
-	/* move pointer outside of client */
-	add_state(context, 50, 50, x, y, w, h);
-	/* move client center to pointer */
-	add_state(context, 50, 50, 0, 0, w, h);
+	assert(output_contains_client(client));
 
 	/* not visible */
-	add_state(context, 0, 0, 0, -h, w, h);
+	x = 0;
+	y = -client->surface->height;
+	check_client_move(client, x, y);
+
 	/* visible */
-	add_state(context, 0, 0, 0, -h+1, w, h);
+	check_client_move(client, x, ++y);
+
 	/* not visible */
-	add_state(context, 0, 0, 0, context->surface->output->height, w, h);
+	x = -client->surface->width;
+	y = 0;
+	check_client_move(client, x, y);
+
 	/* visible */
-	add_state(context, 0, 0, 0, context->surface->output->height - 1, w, h);
+	check_client_move(client, ++x, y);
+
 	/* not visible */
-	add_state(context, 0, 0, -w, 0, w, h);
+	x = client->output->width;
+	y = 0;
+	check_client_move(client, x, y);
+
 	/* visible */
-	add_state(context, 0, 0, -w+1, 0, w, h);
+	check_client_move(client, --x, y);
+	assert(output_contains_client(client));
+
 	/* not visible */
-	add_state(context, 0, 0, context->surface->output->width, 0, w, h);
+	x = 0;
+	y = client->output->height;
+	check_client_move(client, x, y);
+	assert(!output_contains_client(client));
+
 	/* visible */
-	add_state(context, 0, 0, context->surface->output->width - 1, 0, w, h);
-
-	set_state(client);
-}
-
-static void
-handle_surface(struct test_client *client)
-{
-	uint32_t id;
-	struct context *context = client->data;
-	struct wl_resource *resource;
-	struct wl_list *seat_list;
-
-	assert(sscanf(client->buf, "surface %u", &id) == 1);
-	fprintf(stderr, "server: got surface id %u\n", id);
-	resource = wl_client_get_object(client->client, id);
-	assert(resource);
-	assert(strcmp(resource->object.interface->name, "wl_surface") == 0);
-
-	context->surface = (struct weston_surface *) resource;
-	weston_surface_set_color(context->surface, 0.0, 0.0, 0.0, 1.0);
-
-	context->layer = malloc(sizeof *context->layer);
-	assert(context->layer);
-	weston_layer_init(context->layer,
-			  &client->compositor->cursor_layer.link);
-	wl_list_insert(&context->layer->surface_list,
-		       &context->surface->layer_link);
-
-	seat_list = &client->compositor->seat_list;
-	assert(wl_list_length(seat_list) == 1);
-	context->seat = container_of(seat_list->next, struct weston_seat, link);
-
-	client->compositor->focus = 1; /* Make it work even if pointer is
-					* outside X window. */
-
-	resize(context, 100, 100);
-	move(context, 100, 100);
-	move_pointer(context, 150, 150);
-
-	test_client_send(client, "send-state\n");
-	client->handle = initialize_states;
-}
-
-TEST(event_test)
-{
-	struct context *context;
-	struct test_client *client;
-
-	client = test_client_launch(compositor, "test-client");
-	client->terminate = 1;
-
-	test_client_send(client, "create-surface\n");
-	client->handle = handle_surface;
-
-	context = calloc(1, sizeof *context);
-	assert(context);
-	client->data = context;
+	check_client_move(client, x, --y);
+	assert(output_contains_client(client));
 }
