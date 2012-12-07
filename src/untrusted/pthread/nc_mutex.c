@@ -88,31 +88,7 @@ int pthread_mutex_destroy(pthread_mutex_t *mutex) {
   return 0;
 }
 
-static int nc_thread_mutex_lock(pthread_mutex_t *mutex, int try_only) {
-  /*
-   * Checking mutex's owner thread id without synchronization is safe:
-   * - We are checking whether the owner's id is equal to the current thread id,
-   * and this can happen only if the current thread is actually the owner,
-   * otherwise the owner id will hold an illegal value or an id of a different
-   * thread.
-   * - The value we read from the owner id cannot be a combination of two
-   * values, since properly aligned 32-bit values are updated
-   * by a single machine instruction, so the current thread can only read
-   * a value that it or some other thread wrote.
-   * - Cache is not an issue since a thread will always update its own cache
-   * when unlocking a mutex (see pthread_mutex_unlock implementation).
-   */
-  if ((mutex->mutex_type != PTHREAD_MUTEX_FAST_NP) &&
-      (pthread_self() == mutex->owner_thread_id)) {
-    if (mutex->mutex_type == PTHREAD_MUTEX_ERRORCHECK_NP) {
-      return EDEADLK;
-    } else {
-      /* This thread already owns the mutex. */
-      ++mutex->recursion_counter;
-      return 0;
-    }
-  }
-
+static int mutex_lock_nonrecursive(pthread_mutex_t *mutex, int try_only) {
   /*
    * Try to claim the mutex.  This compare-and-swap executes the full
    * memory barrier that pthread_mutex_lock() is required to execute.
@@ -144,19 +120,51 @@ static int nc_thread_mutex_lock(pthread_mutex_t *mutex, int try_only) {
                                               LOCKED_WITH_WAITERS);
     } while (old_state != UNLOCKED);
   }
+  return 0;
+}
 
-  mutex->owner_thread_id = pthread_self();
+static int mutex_lock(pthread_mutex_t *mutex, int try_only) {
+  if (mutex->mutex_type == PTHREAD_MUTEX_FAST_NP) {
+    return mutex_lock_nonrecursive(mutex, try_only);
+  }
+
+  /*
+   * Checking mutex's owner_thread_id without synchronization is safe:
+   * - We are checking whether the owner's id is equal to the current thread id,
+   * and this can happen only if the current thread is actually the owner,
+   * otherwise the owner id will hold an illegal value or an id of a different
+   * thread.
+   * - The value we read from the owner id cannot be a combination of two
+   * values, since properly aligned 32-bit values are updated
+   * by a single machine instruction, so the current thread can only read
+   * a value that it or some other thread wrote.
+   * - Cache is not an issue since a thread will always update its own cache
+   * when unlocking a mutex (see pthread_mutex_unlock implementation).
+   */
+  pthread_t self = pthread_self();
+  if (mutex->owner_thread_id == self) {
+    if (mutex->mutex_type == PTHREAD_MUTEX_ERRORCHECK_NP) {
+      return EDEADLK;
+    } else {
+      /* This thread already owns the mutex. */
+      ++mutex->recursion_counter;
+      return 0;
+    }
+  }
+  int err = mutex_lock_nonrecursive(mutex, try_only);
+  if (err != 0)
+    return err;
+  mutex->owner_thread_id = self;
   mutex->recursion_counter = 1;
-
   return 0;
 }
 
 int pthread_mutex_trylock(pthread_mutex_t *mutex) {
-  return nc_thread_mutex_lock(mutex, 1);
+  return mutex_lock(mutex, 1);
 }
 
 int pthread_mutex_lock(pthread_mutex_t *mutex) {
-  return nc_thread_mutex_lock(mutex, 0);
+  return mutex_lock(mutex, 0);
 }
 
 int pthread_mutex_unlock(pthread_mutex_t *mutex) {
@@ -175,9 +183,9 @@ int pthread_mutex_unlock(pthread_mutex_t *mutex) {
       /* Error - releasing a mutex that's free or owned by another thread. */
       return EPERM;
     }
+    mutex->owner_thread_id = NACL_PTHREAD_ILLEGAL_THREAD_ID;
+    mutex->recursion_counter = 0;
   }
-  mutex->owner_thread_id = NACL_PTHREAD_ILLEGAL_THREAD_ID;
-  mutex->recursion_counter = 0;
 
   /*
    * Release the mutex.  This atomic decrement executes the full
