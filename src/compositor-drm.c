@@ -213,11 +213,11 @@ drm_fb_destroy_callback(struct gbm_bo *bo, void *data)
 }
 
 static struct drm_fb *
-drm_fb_get_from_bo(struct gbm_bo *bo, struct drm_compositor *compositor,
-		   uint32_t override_format)
+drm_fb_get_from_bo(struct gbm_bo *bo,
+		   struct drm_compositor *compositor, uint32_t format)
 {
 	struct drm_fb *fb = gbm_bo_get_user_data(bo);
-	uint32_t width, height, stride, handle, format;
+	uint32_t width, height, stride, handle;
 	uint32_t handles[4], pitches[4], offsets[4];
 	int ret;
 
@@ -243,11 +243,6 @@ drm_fb_get_from_bo(struct gbm_bo *bo, struct drm_compositor *compositor,
 	}
 
 	ret = -1;
-
-	if (override_format)
-		format = override_format;
-	else
-		format = gbm_bo_get_format(bo);
 
 	if (format && !compositor->no_addfb2) {
 		handles[0] = handle;
@@ -292,19 +287,19 @@ drm_fb_set_buffer(struct drm_fb *fb, struct wl_buffer *buffer)
 	weston_buffer_reference(&fb->buffer_ref, buffer);
 }
 
-static int
+static uint32_t
 drm_output_check_scanout_format(struct drm_output *output,
 				struct weston_surface *es, struct gbm_bo *bo)
 {
-	int ret = 0;
 	uint32_t format;
 	pixman_region32_t r;
 
 	format = gbm_bo_get_format(bo);
 
-	if (format == GBM_FORMAT_XRGB8888)
-		ret = 1;
-	else if (format == GBM_FORMAT_ARGB8888) {
+	switch (format) {
+	case GBM_FORMAT_XRGB8888:
+		return format;
+	case GBM_FORMAT_ARGB8888:
 		/* We can only scanout an ARGB buffer if the surface's
 		 * opaque region covers the whole output */
 		pixman_region32_init(&r);
@@ -312,12 +307,16 @@ drm_output_check_scanout_format(struct drm_output *output,
 					 &es->opaque);
 
 		if (!pixman_region32_not_empty(&r))
-			ret = 1;
+			format = GBM_FORMAT_XRGB8888;
+		else
+			format = 0;
 
 		pixman_region32_fini(&r);
-	}
 
-	return ret;
+		return format;
+	default:
+		return 0;
+	}
 }
 
 static struct weston_plane *
@@ -329,6 +328,7 @@ drm_output_prepare_scanout_surface(struct weston_output *_output,
 		(struct drm_compositor *) output->base.compositor;
 	struct wl_buffer *buffer = es->buffer_ref.buffer;
 	struct gbm_bo *bo;
+	uint32_t format;
 
 	if (es->geometry.x != output->base.x ||
 	    es->geometry.y != output->base.y ||
@@ -346,12 +346,13 @@ drm_output_prepare_scanout_surface(struct weston_output *_output,
 	if (!bo)
 		return NULL;
 
-	if (!drm_output_check_scanout_format(output, es, bo)) {
+	format = drm_output_check_scanout_format(output, es, bo);
+	if (format == 0) {
 		gbm_bo_destroy(bo);
 		return NULL;
 	}
 
-	output->next = drm_fb_get_from_bo(bo, c, 0);
+	output->next = drm_fb_get_from_bo(bo, c, format);
 	if (!output->next) {
 		gbm_bo_destroy(bo);
 		return NULL;
@@ -380,7 +381,7 @@ drm_output_render(struct drm_output *output, pixman_region32_t *damage)
 		return;
 	}
 
-	output->next = drm_fb_get_from_bo(bo, c, 0);
+	output->next = drm_fb_get_from_bo(bo, c, GBM_FORMAT_XRGB8888);
 	if (!output->next) {
 		weston_log("failed to get drm_fb for bo\n");
 		gbm_surface_release_buffer(output->surface, bo);
@@ -523,14 +524,30 @@ page_flip_handler(int fd, unsigned int frame,
 	}
 }
 
-static int
-drm_surface_format_supported(struct drm_sprite *s, uint32_t format)
+static uint32_t
+drm_output_check_sprite_format(struct drm_sprite *s,
+			       struct weston_surface *es, struct gbm_bo *bo)
 {
-	uint32_t i;
+	uint32_t i, format;
+
+	format = gbm_bo_get_format(bo);
+
+	if (format == GBM_FORMAT_ARGB8888) {
+		pixman_region32_t r;
+
+		pixman_region32_init(&r);
+		pixman_region32_subtract(&r, &es->transform.boundingbox,
+					 &es->transform.opaque);
+
+		if (!pixman_region32_not_empty(&r))
+			format = GBM_FORMAT_XRGB8888;
+
+		pixman_region32_fini(&r);
+	}
 
 	for (i = 0; i < s->count_formats; i++)
 		if (s->formats[i] == format)
-			return 1;
+			return format;
 
 	return 0;
 }
@@ -620,22 +637,8 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 	if (!bo)
 		return NULL;
 
-	format = gbm_bo_get_format(bo);
-
-	if (format == GBM_FORMAT_ARGB8888) {
-		pixman_region32_t r;
-
-		pixman_region32_init(&r);
-		pixman_region32_subtract(&r, &es->transform.boundingbox,
-					 &es->transform.opaque);
-
-		if (!pixman_region32_not_empty(&r))
-			format = GBM_FORMAT_XRGB8888;
-
-		pixman_region32_fini(&r);
-	}
-
-	if (!drm_surface_format_supported(s, format)) {
+	format = drm_output_check_sprite_format(s, es, bo);
+	if (format == 0) {
 		gbm_bo_destroy(bo);
 		return NULL;
 	}
