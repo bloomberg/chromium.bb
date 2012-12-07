@@ -1364,10 +1364,6 @@ const char kVisitURLs[]                     = "visit-urls";
 const char kWebIntentsNativeServicesEnabled[] =
     "web-intents-native-services-enabled";
 
-// Enable invocation of web intents from web content.
-const char kWebIntentsInvocationEnabled[] =
-    "enable-web-intents-invocation";
-
 // Adds the given extension ID to all the permission whitelists.
 const char kWhitelistedExtensionID[]        = "whitelisted-extension-id";
 

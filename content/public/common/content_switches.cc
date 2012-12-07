@@ -678,6 +678,9 @@ const char kWaitForDebuggerChildren[]       = "wait-for-debugger-children";
 // Logging.cpp in WebKit's WebCore for a list of available channels.
 const char kWebCoreLogChannels[]            = "webcore-log-channels";
 
+// Enable invocation of web intents from web content.
+const char kWebIntentsInvocationEnabled[]   = "enable-web-intents-invocation";
+
 // Causes the process to run as a worker subprocess.
 const char kWorkerProcess[]                 = "worker";
 

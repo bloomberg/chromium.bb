@@ -685,6 +685,9 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   WebRuntimeFeatures::enableExperimentalContentSecurityPolicyFeatures(
       command_line.HasSwitch(switches::kEnableExperimentalWebKitFeatures));
 
+  WebRuntimeFeatures::enableWebIntents(
+      command_line.HasSwitch(switches::kWebIntentsInvocationEnabled));
+
   FOR_EACH_OBSERVER(RenderProcessObserver, observers_, WebKitInitialized());
 
   devtools_agent_message_filter_ = new DevToolsAgentFilter();

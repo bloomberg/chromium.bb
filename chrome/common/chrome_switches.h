@@ -362,7 +362,6 @@ extern const char kVersion[];
 extern const char kViewerConnection[];
 extern const char kVisitURLs[];
 extern const char kWebIntentsNativeServicesEnabled[];
-extern const char kWebIntentsInvocationEnabled[];
 extern const char kWhitelistedExtensionID[];
 extern const char kWindowPosition[];
 extern const char kWindowSize[];
