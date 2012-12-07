@@ -316,8 +316,6 @@
         'browser/bookmarks/base_bookmark_model_observer.h',
         'browser/bookmarks/bookmark_codec.cc',
         'browser/bookmarks/bookmark_codec.h',
-        'browser/bookmarks/bookmark_drop_info.cc',
-        'browser/bookmarks/bookmark_drop_info.h',
         'browser/bookmarks/bookmark_editor.cc',
         'browser/bookmarks/bookmark_editor.h',
         'browser/bookmarks/bookmark_expanded_state_tracker.cc',
@@ -2755,7 +2753,6 @@
             'browser/web_resource/notification_promo_mobile_ntp.h',
           ],
           'sources!': [
-            'browser/bookmarks/bookmark_drop_info.cc',
             # Bookmark export/import are handled via the BookmarkColumns
             # ContentProvider.
             'browser/bookmarks/bookmark_html_writer.cc',
@@ -2820,7 +2817,6 @@
         ['OS=="mac"', {
           'sources!': [
             'browser/automation/automation_provider_list_generic.cc',
-            'browser/bookmarks/bookmark_drop_info.cc',
             'browser/first_run/upgrade_util.cc',
             'browser/importer/nss_decryptor_system_nss.cc',
             'browser/importer/nss_decryptor_system_nss.h',
@@ -2936,7 +2932,6 @@
             # GTK build only
             ['toolkit_uses_gtk==1', {
               'sources/': [
-                ['exclude', '^browser/bookmarks/bookmark_drop_info.cc'],
                 ['exclude', '^browser/lifetime/application_lifetime_stub.cc'],
                 ['include', '^browser/printing/print_dialog_gtk.cc'],
                 ['include', '^browser/printing/print_dialog_gtk.h'],
