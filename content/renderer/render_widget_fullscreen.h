@@ -22,7 +22,7 @@ class RenderWidgetFullscreen : public RenderWidget {
 
   virtual WebKit::WebWidget* CreateWebWidget();
 
-  void Init(int32 opener_id);
+  bool Init(int32 opener_id);
 };
 
 }  // namespace content

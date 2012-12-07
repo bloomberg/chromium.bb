@@ -141,8 +141,10 @@ RenderWidget* RenderWidget::Create(int32 opener_id,
   DCHECK(opener_id != MSG_ROUTING_NONE);
   scoped_refptr<RenderWidget> widget(
       new RenderWidget(popup_type, screen_info, false));
-  widget->Init(opener_id);  // adds reference
-  return widget;
+  if (widget->Init(opener_id)) {  // adds reference on success.
+    return widget;
+  }
+  return NULL;
 }
 
 // static
@@ -163,14 +165,14 @@ WebWidget* RenderWidget::CreateWebWidget(RenderWidget* render_widget) {
   return NULL;
 }
 
-void RenderWidget::Init(int32 opener_id) {
-  DoInit(opener_id,
-         RenderWidget::CreateWebWidget(this),
-         new ViewHostMsg_CreateWidget(opener_id, popup_type_,
-                                      &routing_id_, &surface_id_));
+bool RenderWidget::Init(int32 opener_id) {
+  return DoInit(opener_id,
+                RenderWidget::CreateWebWidget(this),
+                new ViewHostMsg_CreateWidget(opener_id, popup_type_,
+                                             &routing_id_, &surface_id_));
 }
 
-void RenderWidget::DoInit(int32 opener_id,
+bool RenderWidget::DoInit(int32 opener_id,
                           WebWidget* web_widget,
                           IPC::SyncMessage* create_widget_message) {
   DCHECK(!webwidget_);
@@ -186,8 +188,10 @@ void RenderWidget::DoInit(int32 opener_id,
     // Take a reference on behalf of the RenderThread.  This will be balanced
     // when we receive ViewMsg_Close.
     AddRef();
+    return true;
   } else {
-    DCHECK(false);
+    // The above Send can fail when the tab is closing.
+    return false;
   }
 }
 

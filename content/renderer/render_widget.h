@@ -205,10 +205,10 @@ class CONTENT_EXPORT RenderWidget
 
   // Initializes this view with the given opener.  CompleteInit must be called
   // later.
-  void Init(int32 opener_id);
+  bool Init(int32 opener_id);
 
   // Called by Init and subclasses to perform initialization.
-  void DoInit(int32 opener_id,
+  bool DoInit(int32 opener_id,
               WebKit::WebWidget* web_widget,
               IPC::SyncMessage* create_widget_message);
 
