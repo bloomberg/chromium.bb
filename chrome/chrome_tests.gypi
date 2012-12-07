@@ -1325,6 +1325,7 @@
         ['disable_nacl==0', {
           'sources':[
             'browser/extensions/extension_nacl_browsertest.cc',
+            'browser/nacl_host/test/gdb_debug_stub_browsertest.cc',
           ],
           'conditions': [
             ['disable_nacl_untrusted==0', {
@@ -1349,6 +1350,12 @@
               ],
             }],
             ['OS=="win"', {
+              # TODO(halyavin) NaCl on Windows can't open debug stub socket
+              # in browser process as needed by this test. 
+              # See http://crbug.com/157312.
+              'sources!': [
+                'browser/nacl_host/test/gdb_debug_stub_browsertest.cc',
+              ],
               'dependencies': [
                 'chrome.gyp:chrome_nacl_win64',
               ],

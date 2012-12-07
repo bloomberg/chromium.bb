@@ -52,6 +52,16 @@ class NaClBrowser {
   // Returns whether NaCl application with this manifest URL should be debugged.
   bool URLMatchesDebugPatterns(GURL manifest_url);
 
+  // Methods for testing GDB debug stub in browser. If test adds debug stub
+  // port listener, Chrome will allocate a currently-unused TCP port number for
+  // debug stub server instead of a fixed one.
+
+  // Notify listener that new debug stub TCP port is allocated.
+  void FireGdbDebugStubPortOpened(int port);
+  bool HasGdbDebugStubPortListener();
+  void SetGdbDebugStubPortListener(base::Callback<void(int)> listener);
+  void ClearGdbDebugStubPortListener();
+
   bool ValidationCacheIsEnabled() const {
     return validation_cache_is_enabled_;
   }
@@ -111,6 +121,7 @@ class NaClBrowser {
   bool validation_cache_is_enabled_;
   bool validation_cache_is_modified_;
   NaClResourceState validation_cache_state_;
+  base::Callback<void(int)> debug_stub_port_listener_;
 
   bool ok_;
 

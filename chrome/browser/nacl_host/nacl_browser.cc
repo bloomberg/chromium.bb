@@ -258,6 +258,26 @@ bool NaClBrowser::URLMatchesDebugPatterns(GURL manifest_url) {
   }
 }
 
+void NaClBrowser::FireGdbDebugStubPortOpened(int port) {
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(debug_stub_port_listener_, port));
+}
+
+bool NaClBrowser::HasGdbDebugStubPortListener() {
+  return !debug_stub_port_listener_.is_null();
+}
+
+void NaClBrowser::SetGdbDebugStubPortListener(
+    base::Callback<void(int)> listener) {
+  debug_stub_port_listener_ = listener;
+}
+
+void NaClBrowser::ClearGdbDebugStubPortListener() {
+  debug_stub_port_listener_.Reset();
+}
+
 void NaClBrowser::InitValidationCacheFilePath() {
   // Determine where the validation cache resides in the file system.  It
   // exists in Chrome's cache directory and is not tied to any specific
