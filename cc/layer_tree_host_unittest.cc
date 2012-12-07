@@ -1376,7 +1376,8 @@ private:
     scoped_refptr<ContentLayer> m_childLayer;
 };
 
-TEST_F(LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers, runMultiThread)
+// http://crbug.com/164851.
+TEST_F(LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers, FLAKY_runMultiThread)
 {
     runTest(true);
 }
