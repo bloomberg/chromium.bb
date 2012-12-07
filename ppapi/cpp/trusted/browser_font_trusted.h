@@ -14,7 +14,7 @@
 namespace pp {
 
 class ImageData;
-class Instance;
+class InstanceHandle;
 class Point;
 class Rect;
 
@@ -109,14 +109,14 @@ class BrowserFont_Trusted : public Resource {
   BrowserFont_Trusted();
 
   explicit BrowserFont_Trusted(PP_Resource resource);
-  BrowserFont_Trusted(Instance* instance,
+  BrowserFont_Trusted(const InstanceHandle& instance,
                       const BrowserFontDescription& description);
   BrowserFont_Trusted(const BrowserFont_Trusted& other);
 
   BrowserFont_Trusted& operator=(const BrowserFont_Trusted& other);
 
   // PPB_Font methods:
-  static Var GetFontFamilies(Instance* instance);
+  static Var GetFontFamilies(const InstanceHandle& instance);
   bool Describe(BrowserFontDescription* description,
                 PP_BrowserFont_Trusted_Metrics* metrics) const;
   bool DrawTextAt(ImageData* dest,

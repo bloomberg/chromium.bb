@@ -8,7 +8,7 @@
 
 #include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/cpp/image_data.h"
-#include "ppapi/cpp/instance.h"
+#include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/point.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/module_impl.h"
@@ -131,15 +131,15 @@ BrowserFont_Trusted::BrowserFont_Trusted(PP_Resource resource)
 }
 
 BrowserFont_Trusted::BrowserFont_Trusted(
-    Instance* instance,
+    const InstanceHandle& instance,
     const BrowserFontDescription& description) {
   if (has_interface<PPB_BrowserFont_Trusted_1_0>()) {
     PassRefFromConstructor(get_interface<PPB_BrowserFont_Trusted_1_0>()->Create(
-        instance->pp_instance(),
+        instance.pp_instance(),
         &description.pp_font_description()));
   } else if (!has_interface<PPB_Font_Dev_0_6>()) {
     PassRefFromConstructor(get_interface<PPB_Font_Dev_0_6>()->Create(
-        instance->pp_instance(),
+        instance.pp_instance(),
         BrowserFontDescToFontDesc(&description.pp_font_description())));
   }
 }
@@ -155,12 +155,12 @@ BrowserFont_Trusted& BrowserFont_Trusted::operator=(
 }
 
 // static
-Var BrowserFont_Trusted::GetFontFamilies(Instance* instance) {
+Var BrowserFont_Trusted::GetFontFamilies(const InstanceHandle& instance) {
   if (!has_interface<PPB_Font_Dev_0_6>())
     return Var();
   return Var(PASS_REF,
              get_interface<PPB_Font_Dev_0_6>()->GetFontFamilies(
-                 instance->pp_instance()));
+                 instance.pp_instance()));
 }
 
 bool BrowserFont_Trusted::Describe(
