@@ -119,7 +119,7 @@ std::string GetJSON(const ChromeToMobileService::JobData& data) {
     case ChromeToMobileService::IOS:
       // TODO(chenyu|msw): Currently only sends an alert; include the url here?
       json.SetString("aps.alert.body", "A print job is available");
-      json.SetString("aps.alert.loc-key", "IDS_CHROME_TO_DEVICE_SNAPSHOTS_IOS");
+      json.SetString("aps.alert.loc-key", "IDS_CHROME_TO_DEVICE_SNAPSHOTS");
       break;
     default:
       NOTREACHED() << "Unknown mobile_os " << data.mobile_os;
