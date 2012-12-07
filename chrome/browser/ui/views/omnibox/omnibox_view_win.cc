@@ -1936,11 +1936,20 @@ void OmniboxViewWin::OnPaint(HDC bogus_hdc) {
   memory_dc.SelectBitmap(old_bitmap);
   edit_hwnd = old_edit_hwnd;
 
-  // This needs to be called regardless of the current state of the caret, even
-  // if reaffirming a current state (hidden or shown). This is because the
-  // underlying edit control will automatically re-create the caret when it
-  // receives certain events that trigger repaints, e.g. window resize events.
-  ApplyCaretVisibility();
+  // If textfield has focus, reaffirm its caret visibility (without focus, a new
+  // caret could be created and confuse the user as to where the focus is). This
+  // needs to be called regardless of the current visibility of the caret. This
+  // is because the underlying edit control will automatically re-create the
+  // caret when it receives certain events that trigger repaints, e.g. window
+  // resize events. This also checks for the existence of selected text, in
+  // which case there shouldn't be a recreated caret since this would create
+  // both a highlight and a blinking caret.
+  if (model()->has_focus()) {
+    CHARRANGE sel;
+    GetSel(sel);
+    if (sel.cpMin == sel.cpMax)
+      ApplyCaretVisibility();
+  }
 }
 
 void OmniboxViewWin::OnPaste() {
