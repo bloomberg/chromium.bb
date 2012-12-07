@@ -741,6 +741,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
             }
         }
 
+        mLongPressDetector.cancelLongPressIfNeeded(event);
         mLongPressDetector.startLongPressTimerIfNeeded(event);
 
         // Use the framework's GestureDetector to detect pans and zooms not already

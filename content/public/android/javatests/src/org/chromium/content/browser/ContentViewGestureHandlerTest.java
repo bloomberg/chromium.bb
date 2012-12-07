@@ -366,6 +366,49 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
     }
 
     /**
+     * Verifies that a single tap doesn't cause a long press event to be sent.
+     * @throws Exception
+     */
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testNoLongPressIsSentForSingleTapOutOfTouchHandler() throws Exception {
+        final long downTime = SystemClock.uptimeMillis();
+        final long eventTime = SystemClock.uptimeMillis();
+
+        MotionEvent event = motionEvent(MotionEvent.ACTION_DOWN, downTime, downTime);
+
+        mGestureHandler.hasTouchEventHandlers(true);
+
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertEquals(1, mGestureHandler.getNumberOfPendingMotionEvents());
+        assertTrue("Should not have a pending gesture", mMockGestureDetector.mLastEvent == null);
+        assertFalse("Should not have a pending LONG_PRESS", mLongPressDetector.hasPendingMessage());
+
+        event = motionEvent(MotionEvent.ACTION_UP, downTime, eventTime + 5);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertEquals(2, mGestureHandler.getNumberOfPendingMotionEvents());
+
+        mGestureHandler.confirmTouchEvent(
+                ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+
+        assertEquals(1, mGestureHandler.getNumberOfPendingMotionEvents());
+        assertEquals("The down touch event should have been sent to the Gesture Detector",
+                event.getDownTime(), mMockGestureDetector.mLastEvent.getEventTime());
+        assertEquals("The next event should be ACTION_UP",
+                MotionEvent.ACTION_UP,
+                mGestureHandler.peekFirstInPendingMotionEvents().getActionMasked());
+
+        mGestureHandler.confirmTouchEvent(
+                ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+
+        assertEquals(0, mGestureHandler.getNumberOfPendingMotionEvents());
+        assertEquals("The up touch event should have been sent to the Gesture Detector",
+                event.getEventTime(), mMockGestureDetector.mLastEvent.getEventTime());
+
+        assertFalse("Should not have a pending LONG_PRESS", mLongPressDetector.hasPendingMessage());
+    }
+
+    /**
      * Verify that a DOWN followed by a MOVE will trigger fling (but not LONG).
      * @throws Exception
      */
