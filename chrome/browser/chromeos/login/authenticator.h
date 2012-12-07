@@ -54,7 +54,10 @@ class Authenticator : public base::RefCountedThreadSafe<Authenticator> {
   // Initiates incognito ("browse without signing in") login.
   virtual void LoginOffTheRecord() = 0;
 
-  // Initiates a retail mode login.
+  // Initiates login into the public account identified by |username|.
+  virtual void LoginAsPublicAccount(const std::string& username) = 0;
+
+  // Completes retail mode login.
   virtual void OnRetailModeLoginSuccess() = 0;
 
   // |request_pending| is true if we still plan to call consumer_ with the

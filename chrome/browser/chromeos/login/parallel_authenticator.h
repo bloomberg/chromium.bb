@@ -63,6 +63,7 @@ class ParallelAuthenticator : public Authenticator,
     UNLOCK,          // Screen unlock succeeded.
     ONLINE_FAILED,   // Online login disallowed, but offline succeeded.
     GUEST_LOGIN,     // Logged in guest mode.
+    PUBLIC_ACCOUNT_LOGIN,  // Logged into a public account.
     LOGIN_FAILED,    // Login denied.
     OWNER_REQUIRED   // Login is restricted to the owner only.
   };
@@ -119,6 +120,11 @@ class ParallelAuthenticator : public Authenticator,
   // Initiates incognito ("browse without signing in") login.
   // Mounts tmpfs and notifies consumer on the success/failure.
   virtual void LoginOffTheRecord() OVERRIDE;
+
+  // Initiates login into the public account identified by |username|.
+  // Mounts an ephemeral cryptohome and notifies consumer on the
+  // success/failure.
+  virtual void LoginAsPublicAccount(const std::string& username) OVERRIDE;
 
   // These methods must be called on the UI thread, as they make DBus calls
   // and also call back to the login UI.

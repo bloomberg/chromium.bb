@@ -74,6 +74,9 @@ class SigninScreenHandlerDelegate {
   // Sign in into guest session.
   virtual void LoginAsGuest() = 0;
 
+  // Sign in into the public account identified by |username|.
+  virtual void LoginAsPublicAccount(const std::string& username) = 0;
+
   // Signs out if the screen is currently locked.
   virtual void Signout() = 0;
 

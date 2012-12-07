@@ -134,9 +134,14 @@ void LoginPerformer::OnLoginSuccess(
     bool pending_requests,
     bool using_oauth) {
   content::RecordAction(UserMetricsAction("Login_Success"));
-  // 0 - Login success offline and online. It's a new user. or it's an
-  //     existing user and offline auth took longer than online auth.
-  // 1 - Login success offline only. It's an existing user login.
+  // The value of |pending_requests| indicates:
+  // 0 - New regular user, login success offline and online.
+  //     - or -
+  //     Existing regular user, login success offline and online, offline
+  //     authentication took longer than online authentication.
+  //     - or -
+  //     Public account user, login successful.
+  // 1 - Existing regular user, login success offline only.
   UMA_HISTOGRAM_ENUMERATION("Login.SuccessReason", pending_requests, 2);
 
   VLOG(1) << "LoginSuccess, pending_requests " << pending_requests;
@@ -322,6 +327,17 @@ void LoginPerformer::LoginOffTheRecord() {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&Authenticator::LoginOffTheRecord, authenticator_.get()));
+}
+
+void LoginPerformer::LoginAsPublicAccount(const std::string& username) {
+  // TODO(bartfab): Ensure that policy is available for the account. Refuse to
+  // log in otherwise.
+
+  authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&Authenticator::LoginAsPublicAccount, authenticator_.get(),
+                 username));
 }
 
 void LoginPerformer::RecoverEncryptedData(const std::string& old_password) {

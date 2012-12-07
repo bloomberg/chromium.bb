@@ -2362,6 +2362,9 @@ Battery full
   <message name="IDS_CHROMEOS_ACC_LOGIN_SIGNIN_DEMOUSER" desc="Status when signing in the demo user.">
     Entering Demo.
   </message>
+  <message name="IDS_CHROMEOS_ACC_LOGIN_SIGNIN_PUBLIC_ACCOUNT" desc="Status when signing in into a public account.">
+    Entering public account.
+  </message>
   <message name="IDS_CHROMEOS_ACC_ACCOUNT_PICTURE" desc="Tooltip for the take account picture button.">
     Take picture.
   </message>

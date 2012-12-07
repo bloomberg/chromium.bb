@@ -57,6 +57,9 @@ class LoginDisplay : public RemoveUserDelegate {
     // Sign in into guest session.
     virtual void LoginAsGuest() = 0;
 
+    // Sign in into the public account identified by |username|.
+    virtual void LoginAsPublicAccount(const std::string& username) = 0;
+
     // Sign out the currently signed in user.
     // Used when the lock screen is being displayed.
     virtual void Signout() = 0;

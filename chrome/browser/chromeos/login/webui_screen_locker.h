@@ -67,6 +67,7 @@ class WebUIScreenLocker : public WebUILoginView,
                      const std::string& password) OVERRIDE;
   virtual void LoginAsRetailModeUser() OVERRIDE;
   virtual void LoginAsGuest() OVERRIDE;
+  virtual void LoginAsPublicAccount(const std::string& username) OVERRIDE;
   virtual void Signout() OVERRIDE;
   virtual void OnUserSelected(const std::string& username) OVERRIDE;
   virtual void OnStartEnterpriseEnrollment() OVERRIDE;

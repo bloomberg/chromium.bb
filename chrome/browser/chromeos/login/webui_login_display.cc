@@ -212,6 +212,12 @@ void WebUILoginDisplay::LoginAsGuest() {
     delegate_->LoginAsGuest();
 }
 
+void WebUILoginDisplay::LoginAsPublicAccount(const std::string& username) {
+  DCHECK(delegate_);
+  if (delegate_)
+    delegate_->LoginAsPublicAccount(username);
+}
+
 void WebUILoginDisplay::Signout() {
   delegate_->Signout();
 }

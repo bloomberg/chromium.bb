@@ -104,6 +104,9 @@ class LoginPerformer : public LoginStatusConsumer,
   // Performs actions to prepare guest mode login.
   void LoginOffTheRecord();
 
+  // Performs a login into the public account identified by |username|.
+  void LoginAsPublicAccount(const std::string& username);
+
   // Migrates cryptohome using |old_password| specified.
   void RecoverEncryptedData(const std::string& old_password);
 

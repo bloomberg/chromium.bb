@@ -205,6 +205,10 @@ void WebUIScreenLocker::LoginAsGuest() {
   NOTREACHED();
 }
 
+void WebUIScreenLocker::LoginAsPublicAccount(const std::string& username) {
+  NOTREACHED();
+}
+
 void WebUIScreenLocker::Signout() {
   chromeos::ScreenLocker::default_screen_locker()->Signout();
 }

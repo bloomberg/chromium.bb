@@ -307,6 +307,17 @@ void ParallelAuthenticator::LoginOffTheRecord() {
              scoped_refptr<ParallelAuthenticator>(this));
 }
 
+void ParallelAuthenticator::LoginAsPublicAccount(const std::string& username) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  current_state_.reset(new AuthAttemptState(username, "", "", "", "",
+                                            User::USER_TYPE_PUBLIC_ACCOUNT,
+                                            false));
+  ephemeral_mount_attempted_ = true;
+  Mount(current_state_.get(),
+        scoped_refptr<ParallelAuthenticator>(this),
+        cryptohome::CREATE_IF_MISSING | cryptohome::ENSURE_EPHEMERAL);
+}
+
 void ParallelAuthenticator::OnRetailModeLoginSuccess() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   VLOG(1) << "Retail mode login success";
@@ -604,6 +615,12 @@ void ParallelAuthenticator::Resolve() {
           BrowserThread::UI, FROM_HERE,
           base::Bind(&ParallelAuthenticator::OnOffTheRecordLoginSuccess, this));
       break;
+    case PUBLIC_ACCOUNT_LOGIN:
+      using_oauth_ = false;
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          base::Bind(&ParallelAuthenticator::OnLoginSuccess, this, false));
+      break;
     case LOGIN_FAILED:
       current_state_->ResetCryptohomeStatus();
       BrowserThread::PostTask(BrowserThread::UI,
@@ -755,6 +772,8 @@ ParallelAuthenticator::ResolveCryptohomeSuccessState() {
     return GUEST_LOGIN;
   if (current_state_->user_type == User::USER_TYPE_RETAIL_MODE)
     return DEMO_LOGIN;
+  if (current_state_->user_type == User::USER_TYPE_PUBLIC_ACCOUNT)
+    return PUBLIC_ACCOUNT_LOGIN;
 
   if (!VerifyOwner())
     return CONTINUE;

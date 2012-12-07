@@ -470,6 +470,49 @@ void ExistingUserController::LoginAsGuest() {
       l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_LOGIN_SIGNIN_OFFRECORD));
 }
 
+void ExistingUserController::LoginAsPublicAccount(
+    const std::string& username) {
+  // Disable clicking on other windows.
+  login_display_->SetUIEnabled(false);
+
+  CrosSettingsProvider::TrustedStatus status =
+      cros_settings_->PrepareTrustedValues(
+          base::Bind(&ExistingUserController::LoginAsPublicAccount,
+                     weak_factory_.GetWeakPtr(),
+                     username));
+  // If device policy is permanently unavailable, logging into public accounts
+  // is not possible.
+  if (status == CrosSettingsProvider::PERMANENTLY_UNTRUSTED) {
+    login_display_->ShowError(IDS_LOGIN_ERROR_OWNER_KEY_LOST, 1,
+                              HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
+    // Re-enable clicking on other windows.
+    login_display_->SetUIEnabled(true);
+    return;
+  }
+
+  // If device policy is not verified yet, this function will be called again
+  // when verification finishes.
+  if (status != CrosSettingsProvider::TRUSTED)
+    return;
+
+  // If there is no public account with the given |username|, logging in is not
+  // possible.
+  const User* user = UserManager::Get()->FindUser(username);
+  if (!user || user->GetType() != User::USER_TYPE_PUBLIC_ACCOUNT) {
+    // Re-enable clicking on other windows.
+    login_display_->SetUIEnabled(true);
+    return;
+  }
+
+  // Only one instance of LoginPerformer should exist at a time.
+  login_performer_.reset(NULL);
+  login_performer_.reset(new LoginPerformer(this));
+  is_login_in_progress_ = true;
+  login_performer_->LoginAsPublicAccount(username);
+  accessibility::MaybeSpeak(
+      l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_LOGIN_SIGNIN_PUBLIC_ACCOUNT));
+}
+
 void ExistingUserController::Signout() {
   NOTREACHED();
 }
@@ -610,13 +653,9 @@ void ExistingUserController::OnLoginSuccess(
   is_login_in_progress_ = false;
   offline_failed_ = false;
   bool known_user = UserManager::Get()->IsKnownUser(username);
-  // TODO(ivankr): remove this as soon as .forget_usernames is removed.
-  bool login_only =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kLoginScreen) == WizardController::kLoginScreenName;
   bool skip_image_screen =
       WizardController::default_controller()->skip_user_image_selection();
-  ready_for_browser_launch_ = known_user || login_only || skip_image_screen;
+  ready_for_browser_launch_ = known_user || skip_image_screen;
 
   bool has_cookies =
       login_performer_->auth_mode() == LoginPerformer::AUTH_MODE_EXTENSION;

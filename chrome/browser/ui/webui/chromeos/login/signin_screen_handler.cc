@@ -637,7 +637,15 @@ void SigninScreenHandler::HandleLaunchIncognito(const base::ListValue* args) {
 
 void SigninScreenHandler::HandleLaunchPublicAccount(
     const base::ListValue* args) {
-  // TODO(bartfab): Wire this with real public account signin.
+  if (!delegate_)
+    return;
+
+  std::string username;
+  if (!args->GetString(0, &username)) {
+    NOTREACHED();
+    return;
+  }
+  delegate_->LoginAsPublicAccount(username);
 }
 
 void SigninScreenHandler::HandleOfflineLogin(const base::ListValue* args) {

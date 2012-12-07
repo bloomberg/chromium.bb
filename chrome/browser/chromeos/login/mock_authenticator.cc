@@ -46,6 +46,10 @@ void MockAuthenticator::LoginRetailMode() {
   consumer_->OnRetailModeLoginSuccess();
 }
 
+void MockAuthenticator::LoginAsPublicAccount(const std::string& username) {
+  consumer_->OnLoginSuccess(expected_username_, "", false, false);
+}
+
 void MockAuthenticator::LoginOffTheRecord() {
   consumer_->OnOffTheRecordLoginSuccess();
 }
