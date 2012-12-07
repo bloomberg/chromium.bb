@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_METRO_VIEWER_METRO_VIEWER_PROCESS_HOST_WIN_H_
 #define CHROME_BROWSER_METRO_VIEWER_METRO_VIEWER_PROCESS_HOST_WIN_H_
 
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "ipc/ipc_listener.h"
