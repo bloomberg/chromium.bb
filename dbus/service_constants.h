@@ -894,15 +894,15 @@ const char kErrorInProgress[] = "org.bluez.Error.InProgress";
 const char kErrorAlreadyExists[] = "org.bluez.Error.AlreadyExists";
 const char kErrorConnectionAttemptFailed[] =
     "org.bluez.Error.ConnectionAttemptFailed";
+const char kErrorAuthenticationCanceled[] =
+    "org.bluez.Error.AuthenticationCanceled";
+const char kErrorAuthenticationFailed[] =
+    "org.bluez.Error.AuthenticationFailed";
+const char kErrorAuthenticationRejected[] =
+    "org.bluez.Error.AuthenticationRejected";
 const char kErrorAuthenticationTimeout[] =
     "org.bluez.Error.AuthenticationTimeout";
 const char kErrorRepeatedAttempts[] = "org.bluez.Error.RepeatedAttempts";
-const char kErrorAuthenticationRejected[] =
-    "org,bluez.Error.AuthenticationRejected";
-const char kErrorAuthenticationCanceled[] =
-    "org,bluez.Error.AuthenticationCanceled";
-const char kErrorAuthenticationFailed[] =
-    "org,bluez.Error.AuthenticationFailed";
 }  // namespace bluetooth_adapter
 
 namespace bluetooth_agent {
@@ -1001,8 +1001,13 @@ const char kGetProperties[] = "GetProperties";
 // Bluetooth Input signals.
 const char kPropertyChangedSignal[] = "PropertyChanged";
 
-// Bluetoooth Input properties.
+// Bluetooth Input properties.
 const char kConnectedProperty[] = "Connected";
+
+// Bluetooth Input errors.
+const char kErrorAlreadyConnected[] = "org.bluez.Error.AlreadyConnected";
+const char kErrorConnectionAttemptFailed[] =
+    "org.bluez.Error.ConnectionAttemptFailed";
 }  // namespace bluetooth_input
 
 namespace bluetooth_outofband {
