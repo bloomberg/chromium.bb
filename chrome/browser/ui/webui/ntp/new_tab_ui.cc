@@ -299,7 +299,8 @@ bool NewTabUI::ShouldShowApps() {
   // Android does not have apps.
   return false;
 #else
-  return true;
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kShowAppListShortcut);
 #endif
 }
 
