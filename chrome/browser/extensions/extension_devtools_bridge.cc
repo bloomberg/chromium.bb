@@ -108,10 +108,11 @@ void ExtensionDevToolsBridge::InspectedContentsClosing() {
   // event in extensions.
   scoped_ptr<base::ListValue> arguments(new base::ListValue());
   arguments->Set(0, new base::DictionaryValue());
+  scoped_ptr<extensions::Event> event(new extensions::Event(
+      on_tab_close_event_name_, arguments.Pass()));
+  event->restrict_to_profile = profile_;
   extensions::ExtensionSystem::Get(profile_)->event_router()->
-      DispatchEventToRenderers(
-          on_tab_close_event_name_, arguments.Pass(), profile_, GURL(),
-          extensions::EventFilteringInfo());
+      BroadcastEvent(event.Pass());
 
   // This may result in this object being destroyed.
   extension_devtools_manager_->BridgeClosingForTab(tab_id_);
@@ -126,10 +127,11 @@ void ExtensionDevToolsBridge::DispatchOnInspectorFrontend(
     arguments->Append(base::JSONReader::Read(data));
   }
 
+  scoped_ptr<extensions::Event> event(new extensions::Event(
+      on_page_event_name_, arguments.Pass()));
+  event->restrict_to_profile = profile_;
   extensions::ExtensionSystem::Get(profile_)->event_router()->
-      DispatchEventToRenderers(
-          on_page_event_name_, arguments.Pass(), profile_, GURL(),
-          extensions::EventFilteringInfo());
+      BroadcastEvent(event.Pass());
 }
 
 void ExtensionDevToolsBridge::ContentsReplaced(WebContents* new_contents) {

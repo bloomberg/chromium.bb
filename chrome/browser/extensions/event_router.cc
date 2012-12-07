@@ -334,68 +334,6 @@ bool EventRouter::HasEventListenerImpl(const ListenerMap& listener_map,
   return false;
 }
 
-void EventRouter::DispatchEventToRenderers(const std::string& event_name,
-                                           scoped_ptr<ListValue> event_args,
-                                           Profile* restrict_to_profile,
-                                           const GURL& event_url,
-                                           EventFilteringInfo info) {
-  linked_ptr<Event> event(new Event(event_name, event_args.Pass(),
-                                    scoped_ptr<ListValue>(),
-                                    restrict_to_profile, event_url,
-                                    USER_GESTURE_UNKNOWN, info));
-  DispatchEventImpl("", event);
-}
-
-void EventRouter::DispatchEventToRenderers(const std::string& event_name,
-                                           scoped_ptr<ListValue> event_args,
-                                           Profile* restrict_to_profile,
-                                           const GURL& event_url) {
-  DispatchEventToRenderers(event_name, event_args.Pass(), restrict_to_profile,
-                           event_url, EventFilteringInfo());
-}
-
-void EventRouter::DispatchEventToRenderers(const std::string& event_name,
-                                           scoped_ptr<ListValue> event_args,
-                                           Profile* restrict_to_profile,
-                                           const GURL& event_url,
-                                           UserGestureState user_gesture) {
-  EventFilteringInfo info;
-  linked_ptr<Event> event(new Event(event_name, event_args.Pass(),
-                                    scoped_ptr<ListValue>(),
-                                    restrict_to_profile, event_url,
-                                    user_gesture, info));
-  DispatchEventImpl("", event);
-}
-
-void EventRouter::DispatchEventToExtension(const std::string& extension_id,
-                                           const std::string& event_name,
-                                           scoped_ptr<ListValue> event_args,
-                                           Profile* restrict_to_profile,
-                                           const GURL& event_url) {
-  DCHECK(!extension_id.empty());
-  linked_ptr<Event> event(new Event(event_name, event_args.Pass(),
-                                    scoped_ptr<ListValue>(),
-                                    restrict_to_profile, event_url,
-                                    USER_GESTURE_UNKNOWN,
-                                    EventFilteringInfo()));
-  DispatchEventImpl(extension_id, event);
-}
-
-void EventRouter::DispatchEventToExtension(const std::string& extension_id,
-                                           const std::string& event_name,
-                                           scoped_ptr<ListValue> event_args,
-                                           Profile* restrict_to_profile,
-                                           const GURL& event_url,
-                                           UserGestureState user_gesture) {
-  DCHECK(!extension_id.empty());
-  linked_ptr<Event> event(new Event(event_name, event_args.Pass(),
-                                    scoped_ptr<ListValue>(),
-                                    restrict_to_profile, event_url,
-                                    user_gesture,
-                                    EventFilteringInfo()));
-  DispatchEventImpl(extension_id, event);
-}
-
 void EventRouter::BroadcastEvent(scoped_ptr<Event> event) {
   DispatchEventImpl("", linked_ptr<Event>(event.release()));
 }

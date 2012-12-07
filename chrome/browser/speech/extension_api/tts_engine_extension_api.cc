@@ -218,24 +218,20 @@ void ExtensionTtsEngineSpeak(Utterance* utterance,
   args->Set(1, options);
   args->Set(2, Value::CreateIntegerValue(utterance->id()));
 
+  scoped_ptr<extensions::Event> event(new extensions::Event(
+      tts_engine_events::kOnSpeak, args.Pass()));
+  event->restrict_to_profile = utterance->profile();
   extensions::ExtensionSystem::Get(utterance->profile())->event_router()->
-      DispatchEventToExtension(
-          extension->id(),
-          tts_engine_events::kOnSpeak,
-          args.Pass(),
-          utterance->profile(),
-          GURL());
+      DispatchEventToExtension(utterance->extension_id(), event.Pass());
 }
 
 void ExtensionTtsEngineStop(Utterance* utterance) {
   scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<extensions::Event> event(new extensions::Event(
+      tts_engine_events::kOnStop, args.Pass()));
+  event->restrict_to_profile = utterance->profile();
   extensions::ExtensionSystem::Get(utterance->profile())->event_router()->
-      DispatchEventToExtension(
-          utterance->extension_id(),
-          tts_engine_events::kOnStop,
-          args.Pass(),
-          utterance->profile(),
-          GURL());
+      DispatchEventToExtension(utterance->extension_id(), event.Pass());
 }
 
 bool ExtensionTtsEngineSendTtsEventFunction::RunImpl() {

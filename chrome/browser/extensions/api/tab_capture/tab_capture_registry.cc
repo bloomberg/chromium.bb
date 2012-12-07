@@ -81,8 +81,10 @@ void TabCaptureRegistry::HandleRequestUpdateOnUIThread(
 
   scoped_ptr<base::ListValue> args(new ListValue());
   args->Append(info->ToValue().release());
-  router->DispatchEventToExtension(request_info.extension_id,
-      events::kOnTabCaptureStatusChanged, args.Pass(), profile_, GURL());
+  scoped_ptr<Event> event(new Event(
+      events::kOnTabCaptureStatusChanged, args.Pass()));
+  event->restrict_to_profile = profile_;
+  router->DispatchEventToExtension(request_info.extension_id, event.Pass());
 }
 
 const TabCaptureRegistry::CaptureRequestList

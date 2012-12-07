@@ -9,6 +9,16 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 
+static void BroadcastEvent(Profile* profile, const std::string& event_name) {
+  if (profile && extensions::ExtensionSystem::Get(profile)->event_router()) {
+    scoped_ptr<ListValue> args(new ListValue());
+    scoped_ptr<extensions::Event> event(new extensions::Event(
+        event_name, args.Pass()));
+    extensions::ExtensionSystem::Get(profile)->event_router()->
+        BroadcastEvent(event.Pass());
+  }
+}
+
 ExtensionMediaPlayerEventRouter::ExtensionMediaPlayerEventRouter()
     : profile_(NULL) {
 }
@@ -23,37 +33,17 @@ void ExtensionMediaPlayerEventRouter::Init(Profile* profile) {
 }
 
 void ExtensionMediaPlayerEventRouter::NotifyNextTrack() {
-  if (profile_ && extensions::ExtensionSystem::Get(profile_)->event_router()) {
-    scoped_ptr<ListValue> args(new ListValue());
-    extensions::ExtensionSystem::Get(profile_)->event_router()->
-        DispatchEventToRenderers("mediaPlayerPrivate.onNextTrack", args.Pass(),
-                                 NULL, GURL());
-  }
+  BroadcastEvent(profile_, "mediaPlayerPrivate.onNextTrack");
 }
 
 void ExtensionMediaPlayerEventRouter::NotifyPlaylistChanged() {
-  if (profile_ && extensions::ExtensionSystem::Get(profile_)->event_router()) {
-    scoped_ptr<ListValue> args(new ListValue());
-    extensions::ExtensionSystem::Get(profile_)->event_router()->
-        DispatchEventToRenderers("mediaPlayerPrivate.onPlaylistChanged",
-                                 args.Pass(), NULL, GURL());
-  }
+  BroadcastEvent(profile_, "mediaPlayerPrivate.onPlaylistChanged");
 }
 
 void ExtensionMediaPlayerEventRouter::NotifyPrevTrack() {
-  if (profile_ && extensions::ExtensionSystem::Get(profile_)->event_router()) {
-    scoped_ptr<ListValue> args(new ListValue());
-    extensions::ExtensionSystem::Get(profile_)->event_router()->
-        DispatchEventToRenderers("mediaPlayerPrivate.onPrevTrack", args.Pass(),
-                                 NULL, GURL());
-  }
+  BroadcastEvent(profile_, "mediaPlayerPrivate.onPrevTrack");
 }
 
 void ExtensionMediaPlayerEventRouter::NotifyTogglePlayState() {
-  if (profile_ && extensions::ExtensionSystem::Get(profile_)->event_router()) {
-    scoped_ptr<ListValue> args(new ListValue());
-    extensions::ExtensionSystem::Get(profile_)->event_router()->
-        DispatchEventToRenderers("mediaPlayerPrivate.onTogglePlayState",
-                                 args.Pass(), NULL, GURL());
-  }
+  BroadcastEvent(profile_, "mediaPlayerPrivate.onTogglePlayState");
 }

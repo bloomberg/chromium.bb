@@ -675,14 +675,20 @@ void MenuManager::ExecuteCommand(Profile* profile,
         active_tab_permission_granter()->GrantIfRequested(extension);
   }
 
-  event_router->DispatchEventToExtension(
-      item->extension_id(), event_names::kOnContextMenus,
-      scoped_ptr<ListValue>(args->DeepCopy()), profile, GURL(),
-      EventRouter::USER_GESTURE_ENABLED);
-  event_router->DispatchEventToExtension(
-      item->extension_id(), event_names::kOnContextMenuClicked,
-      args.Pass(), profile, GURL(),
-      EventRouter::USER_GESTURE_ENABLED);
+  {
+    scoped_ptr<Event> event(new Event(event_names::kOnContextMenus,
+                                      scoped_ptr<ListValue>(args->DeepCopy())));
+    event->restrict_to_profile = profile;
+    event->user_gesture = EventRouter::USER_GESTURE_ENABLED;
+    event_router->DispatchEventToExtension(item->extension_id(), event.Pass());
+  }
+  {
+    scoped_ptr<Event> event(new Event(event_names::kOnContextMenuClicked,
+                                      args.Pass()));
+    event->restrict_to_profile = profile;
+    event->user_gesture = EventRouter::USER_GESTURE_ENABLED;
+    event_router->DispatchEventToExtension(item->extension_id(), event.Pass());
+  }
 }
 
 void MenuManager::SanitizeRadioList(const MenuItem::List& item_list) {

@@ -132,8 +132,10 @@ void CookiesEventRouter::DispatchEvent(
       extensions::ExtensionSystem::Get(profile)->event_router() : NULL;
   if (!router)
     return;
-  router->DispatchEventToRenderers(event_name, event_args.Pass(), profile,
-                                   cookie_domain);
+  scoped_ptr<Event> event(new Event(event_name, event_args.Pass()));
+  event->restrict_to_profile = profile;
+  event->event_url = cookie_domain;
+  router->BroadcastEvent(event.Pass());
 }
 
 bool CookiesFunction::ParseUrl(const std::string& url_string, GURL* url,

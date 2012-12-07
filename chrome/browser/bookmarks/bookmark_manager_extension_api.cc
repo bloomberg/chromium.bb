@@ -176,9 +176,10 @@ void BookmarkManagerExtensionEventRouter::DispatchEvent(
   if (!extensions::ExtensionSystem::Get(profile_)->event_router())
     return;
 
+  scoped_ptr<extensions::Event> event(new extensions::Event(
+      event_name, args.Pass()));
   extensions::ExtensionSystem::Get(profile_)->event_router()->
-      DispatchEventToRenderers(event_name, args.Pass(), NULL, GURL(),
-                               extensions::EventFilteringInfo());
+      BroadcastEvent(event.Pass());
 }
 
 void BookmarkManagerExtensionEventRouter::DispatchDragEvent(

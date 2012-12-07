@@ -486,9 +486,11 @@ void DispatchEventInternal(
     scoped_ptr<base::ListValue> event_args) {
   if (!extensions::ExtensionSystem::Get(target_profile)->event_router())
     return;
+  scoped_ptr<extensions::Event> event(new extensions::Event(
+      event_name, event_args.Pass()));
+  event->restrict_to_profile = target_profile;
   extensions::ExtensionSystem::Get(target_profile)->event_router()->
-      DispatchEventToRenderers(event_name, event_args.Pass(), target_profile,
-                               GURL(), extensions::EventFilteringInfo());
+      BroadcastEvent(event.Pass());
   ExtensionDownloadsEventRouter::DownloadsNotificationSource
     notification_source;
   notification_source.event_name = event_name;

@@ -453,7 +453,7 @@ void SpeechInputExtensionManager::OnSoundEnd(int session_id) {
 }
 
 void SpeechInputExtensionManager::DispatchEventToExtension(
-    const std::string& extension_id, const std::string& event,
+    const std::string& extension_id, const std::string& event_name,
     scoped_ptr<ListValue> event_args) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -462,9 +462,11 @@ void SpeechInputExtensionManager::DispatchEventToExtension(
     return;
 
   if (profile_ && extensions::ExtensionSystem::Get(profile_)->event_router()) {
+    scoped_ptr<extensions::Event> event(new extensions::Event(
+        event_name, event_args.Pass()));
+    event->restrict_to_profile = profile_;
     extensions::ExtensionSystem::Get(profile_)->event_router()->
-        DispatchEventToExtension(extension_id, event, event_args.Pass(),
-                                 profile_, GURL());
+        DispatchEventToExtension(extension_id, event.Pass());
   }
 }
 

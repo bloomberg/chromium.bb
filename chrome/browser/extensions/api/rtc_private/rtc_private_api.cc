@@ -91,12 +91,10 @@ void GetContactIntentData(const Contact& contact,
 void RtcPrivateEventRouter::DispatchLaunchEvent(
     Profile* profile, LaunchAction action, const Contact* contact) {
   if (action == RtcPrivateEventRouter::LAUNCH_ACTIVATE) {
-    extensions::ExtensionSystem::Get(profile)->event_router()->
-        DispatchEventToRenderers(
-            kOnLaunchEvent,
-            scoped_ptr<ListValue>(new ListValue()),
-            profile,
-            GURL());
+    scoped_ptr<Event> event(new Event(
+        kOnLaunchEvent, make_scoped_ptr(new ListValue())));
+    event->restrict_to_profile = profile;
+    ExtensionSystem::Get(profile)->event_router()->BroadcastEvent(event.Pass());
   } else {
     DCHECK(contact);
     extensions::api::rtc_private::LaunchData launch_data;
@@ -104,12 +102,10 @@ void RtcPrivateEventRouter::DispatchLaunchEvent(
     GetContactIntentData(*contact,
                          &launch_data.intent.data.additional_properties);
     launch_data.intent.type = kMimeTypeJson;
-    extensions::ExtensionSystem::Get(profile)->event_router()->
-        DispatchEventToRenderers(
-            kOnLaunchEvent,
-            extensions::api::rtc_private::OnLaunch::Create(launch_data),
-            profile,
-            GURL());
+    scoped_ptr<Event> event(new Event(
+        kOnLaunchEvent, api::rtc_private::OnLaunch::Create(launch_data)));
+    event->restrict_to_profile = profile;
+    ExtensionSystem::Get(profile)->event_router()->BroadcastEvent(event.Pass());
   }
 }
 

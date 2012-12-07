@@ -470,9 +470,10 @@ void ProcessesEventRouter::ProcessClosedEvent(
 void ProcessesEventRouter::DispatchEvent(const char* event_name,
                                          scoped_ptr<ListValue> event_args) {
   if (extensions::ExtensionSystem::Get(profile_)->event_router()) {
+    scoped_ptr<extensions::Event> event(new extensions::Event(
+        event_name, event_args.Pass()));
     extensions::ExtensionSystem::Get(profile_)->event_router()->
-        DispatchEventToRenderers(event_name, event_args.Pass(), NULL, GURL(),
-                                 extensions::EventFilteringInfo());
+        BroadcastEvent(event.Pass());
   }
 }
 

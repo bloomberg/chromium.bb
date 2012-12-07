@@ -125,6 +125,17 @@ bool ReadMenuItems(
   return true;
 }
 
+static void DispatchEventToExtension(Profile* profile,
+                                     const std::string& extension_id,
+                                     const std::string& event_name,
+                                     scoped_ptr<ListValue> args) {
+  scoped_ptr<extensions::Event> event(new extensions::Event(
+      event_name, args.Pass()));
+  event->restrict_to_profile = profile;
+  extensions::ExtensionSystem::Get(profile)->event_router()->
+      DispatchEventToExtension(extension_id, event.Pass());
+}
+
 }  // namespace
 
 namespace events {
@@ -159,9 +170,8 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
     scoped_ptr<base::ListValue> args(new ListValue());
     args->Append(Value::CreateStringValue(engine_id));
 
-    extensions::ExtensionSystem::Get(profile_)->event_router()->
-        DispatchEventToExtension(extension_id_, events::kOnActivate,
-                                 args.Pass(), profile_, GURL());
+    DispatchEventToExtension(profile_, extension_id_,
+                             events::kOnActivate, args.Pass());
   }
 
   virtual void OnDeactivated(const std::string& engine_id) OVERRIDE {
@@ -171,9 +181,8 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
     scoped_ptr<base::ListValue> args(new ListValue());
     args->Append(Value::CreateStringValue(engine_id));
 
-    extensions::ExtensionSystem::Get(profile_)->event_router()->
-        DispatchEventToExtension(extension_id_, events::kOnDeactivated,
-                                 args.Pass(), profile_, GURL());
+    DispatchEventToExtension(profile_, extension_id_,
+                             events::kOnDeactivated, args.Pass());
   }
 
   virtual void OnFocus(
@@ -188,9 +197,8 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
     scoped_ptr<base::ListValue> args(new ListValue());
     args->Append(dict);
 
-    extensions::ExtensionSystem::Get(profile_)->event_router()->
-        DispatchEventToExtension(extension_id_, events::kOnFocus,
-                                 args.Pass(), profile_, GURL());
+    DispatchEventToExtension(profile_, extension_id_,
+                             events::kOnFocus, args.Pass());
   }
 
   virtual void OnBlur(int context_id) OVERRIDE {
@@ -200,9 +208,8 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
     scoped_ptr<base::ListValue> args(new ListValue());
     args->Append(Value::CreateIntegerValue(context_id));
 
-    extensions::ExtensionSystem::Get(profile_)->event_router()->
-        DispatchEventToExtension(extension_id_, events::kOnBlur,
-                                 args.Pass(), profile_, GURL());
+    DispatchEventToExtension(profile_, extension_id_,
+                             events::kOnBlur, args.Pass());
   }
 
   virtual void OnInputContextUpdate(
@@ -217,9 +224,8 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
     scoped_ptr<base::ListValue> args(new ListValue());
     args->Append(dict);
 
-    extensions::ExtensionSystem::Get(profile_)->event_router()->
-        DispatchEventToExtension(extension_id_, events::kOnInputContextUpdate,
-                                 args.Pass(), profile_, GURL());
+    DispatchEventToExtension(profile_, extension_id_,
+                             events::kOnInputContextUpdate, args.Pass());
   }
 
   virtual void OnKeyEvent(
@@ -245,9 +251,8 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
     args->Append(Value::CreateStringValue(engine_id));
     args->Append(dict);
 
-    extensions::ExtensionSystem::Get(profile_)->event_router()->
-        DispatchEventToExtension(extension_id_, events::kOnKeyEvent,
-                                 args.Pass(), profile_, GURL());
+    DispatchEventToExtension(profile_, extension_id_,
+                             events::kOnKeyEvent, args.Pass());
   }
 
   virtual void OnCandidateClicked(
@@ -276,9 +281,8 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
         break;
     }
 
-    extensions::ExtensionSystem::Get(profile_)->event_router()->
-        DispatchEventToExtension(extension_id_, events::kOnCandidateClicked,
-                                 args.Pass(), profile_, GURL());
+    DispatchEventToExtension(profile_, extension_id_,
+                             events::kOnCandidateClicked, args.Pass());
   }
 
   virtual void OnMenuItemActivated(const std::string& engine_id,
@@ -290,9 +294,8 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
     args->Append(Value::CreateStringValue(engine_id));
     args->Append(Value::CreateStringValue(menu_id));
 
-    extensions::ExtensionSystem::Get(profile_)->event_router()->
-        DispatchEventToExtension(extension_id_, events::kOnMenuItemActivated,
-                                 args.Pass(), profile_, GURL());
+    DispatchEventToExtension(profile_, extension_id_,
+                             events::kOnMenuItemActivated, args.Pass());
   }
 
  private:

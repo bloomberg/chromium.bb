@@ -47,9 +47,9 @@ class ApiResourceEventNotifier
 
   virtual ~ApiResourceEventNotifier();
 
-  void DispatchEvent(const std::string &extension, DictionaryValue* event);
-  void DispatchEventOnUIThread(const std::string& extension,
-                               DictionaryValue* event);
+  void DispatchEvent(const std::string& event_name, DictionaryValue* args);
+  void DispatchEventOnUIThread(const std::string& event_name,
+                               DictionaryValue* args);
   DictionaryValue* CreateApiResourceEvent(ApiResourceEventType event_type);
 
   EventRouter* router_;

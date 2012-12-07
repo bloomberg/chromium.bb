@@ -109,22 +109,25 @@ void Utterance::OnTtsEvent(TtsEventType event_type,
   if (src_id_ < 0)
     return;
 
-  DictionaryValue* event = new DictionaryValue();
+  DictionaryValue* details = new DictionaryValue();
   if (char_index != kInvalidCharIndex)
-    event->SetInteger(constants::kCharIndexKey, char_index);
-  event->SetString(constants::kEventTypeKey, event_type_string);
+    details->SetInteger(constants::kCharIndexKey, char_index);
+  details->SetString(constants::kEventTypeKey, event_type_string);
   if (event_type == TTS_EVENT_ERROR) {
-    event->SetString(constants::kErrorMessageKey, error_message);
+    details->SetString(constants::kErrorMessageKey, error_message);
   }
-  event->SetInteger(constants::kSrcIdKey, src_id_);
-  event->SetBoolean(constants::kIsFinalEventKey, finished_);
+  details->SetInteger(constants::kSrcIdKey, src_id_);
+  details->SetBoolean(constants::kIsFinalEventKey, finished_);
 
   scoped_ptr<ListValue> arguments(new ListValue());
-  arguments->Set(0, event);
+  arguments->Set(0, details);
 
+  scoped_ptr<extensions::Event> event(new extensions::Event(
+      events::kOnEvent, arguments.Pass()));
+  event->restrict_to_profile = profile_;
+  event->event_url = src_url_;
   extensions::ExtensionSystem::Get(profile_)->event_router()->
-      DispatchEventToExtension(src_extension_id_, events::kOnEvent,
-                               arguments.Pass(), profile_, src_url_);
+      DispatchEventToExtension(src_extension_id_, event.Pass());
 }
 
 void Utterance::Finish() {

@@ -112,16 +112,14 @@ void EventRouterForwarder::CallEventRouter(Profile* profile,
   if (!extensions::ExtensionSystem::Get(profile)->event_router())
     return;
 
+  scoped_ptr<Event> event(new Event(event_name, event_args.Pass()));
+  event->restrict_to_profile = restrict_to_profile;
+  event->event_url = event_url;
   if (extension_id.empty()) {
-    extensions::ExtensionSystem::Get(profile)->event_router()->
-        DispatchEventToRenderers(
-            event_name, event_args.Pass(), restrict_to_profile, event_url,
-            EventFilteringInfo());
+    ExtensionSystem::Get(profile)->event_router()->BroadcastEvent(event.Pass());
   } else {
-    extensions::ExtensionSystem::Get(profile)->event_router()->
-        DispatchEventToExtension(
-            extension_id,
-            event_name, event_args.Pass(), restrict_to_profile, event_url);
+    ExtensionSystem::Get(profile)->event_router()->
+        DispatchEventToExtension(extension_id, event.Pass());
   }
 }
 

@@ -48,9 +48,11 @@ void ExtensionInputMethodEventRouter::InputMethodChanged(
   args->Append(input_method_name);
 
   // The router will only send the event to extensions that are listening.
-  router->DispatchEventToRenderers(
-      extensions::event_names::kOnInputMethodChanged, args.Pass(), profile,
-      GURL());
+  scoped_ptr<extensions::Event> event(new extensions::Event(
+      extensions::event_names::kOnInputMethodChanged, args.Pass()));
+  event->restrict_to_profile = profile;
+  extensions::ExtensionSystem::Get(profile)->event_router()->
+      BroadcastEvent(event.Pass());
 }
 
 std::string ExtensionInputMethodEventRouter::GetInputMethodForXkb(

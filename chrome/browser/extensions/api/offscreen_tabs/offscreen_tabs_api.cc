@@ -265,10 +265,11 @@ void OffscreenTab::Observe(int type,
   // event.
   Profile* profile = Profile::FromBrowserContext(
       parent_tab_->web_contents()->GetBrowserContext());
+  scoped_ptr<extensions::Event> event(new extensions::Event(
+      events::kOnOffscreenTabUpdated, args.Pass()));
+  event->restrict_to_profile = profile;
   extensions::ExtensionSystem::Get(profile)->event_router()->
-      DispatchEventToRenderers(
-          events::kOnOffscreenTabUpdated, args.Pass(), profile, GURL(),
-          extensions::EventFilteringInfo());
+      BroadcastEvent(event.Pass());
 }
 
 ParentTab::ParentTab() : web_contents_(NULL) {}

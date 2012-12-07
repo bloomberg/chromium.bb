@@ -128,9 +128,9 @@ void DispatchEventToExtensions(
       }
 
       scoped_ptr<ListValue> args_copy(args->DeepCopy());
-      router->DispatchEventToExtension(
-          extension_id, event_name, args_copy.Pass(), restrict_to_profile,
-          GURL());
+      scoped_ptr<Event> event(new Event(event_name, args_copy.Pass()));
+      event->restrict_to_profile = restrict_to_profile;
+      router->DispatchEventToExtension(extension_id, event.Pass());
     }
   }
 }

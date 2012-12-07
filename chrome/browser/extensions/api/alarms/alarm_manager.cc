@@ -40,8 +40,9 @@ class DefaultAlarmDelegate : public AlarmManager::Delegate {
                        const Alarm& alarm) {
     scoped_ptr<ListValue> args(new ListValue());
     args->Append(alarm.js_alarm->ToValue().release());
+    scoped_ptr<Event> event(new Event(kOnAlarmEvent, args.Pass()));
     ExtensionSystem::Get(profile_)->event_router()->DispatchEventToExtension(
-        extension_id, kOnAlarmEvent, args.Pass(), NULL, GURL());
+        extension_id, event.Pass());
   }
 
  private:

@@ -173,11 +173,12 @@ void PermissionsUpdater::DispatchEvent(
 
   scoped_ptr<ListValue> value(new ListValue());
   scoped_ptr<api::permissions::Permissions> permissions =
-    PackPermissionSet(changed_permissions);
+      PackPermissionSet(changed_permissions);
   value->Append(permissions->ToValue().release());
-  extensions::ExtensionSystem::Get(profile_)->event_router()->
-      DispatchEventToExtension(extension_id, event_name, value.Pass(),
-                               profile_, GURL());
+  scoped_ptr<Event> event(new Event(event_name, value.Pass()));
+  event->restrict_to_profile = profile_;
+  ExtensionSystem::Get(profile_)->event_router()->
+      DispatchEventToExtension(extension_id, event.Pass());
 }
 
 void PermissionsUpdater::NotifyPermissionsUpdated(

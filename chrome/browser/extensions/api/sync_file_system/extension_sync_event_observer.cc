@@ -139,17 +139,18 @@ void ExtensionSyncEventObserver::BroadcastOrDispatchEvent(
   EventRouter* event_router = ExtensionSystem::Get(profile_)->event_router();
   DCHECK(event_router);
 
+  scoped_ptr<Event> event(new Event(event_name, values.Pass()));
+  event->restrict_to_profile = profile_;
+
   // No app_origin, broadcast to all listening extensions for this event name.
   if (broadcast_mode) {
-    event_router->DispatchEventToRenderers(event_name, values.Pass(), profile_,
-                                           GURL());
+    event_router->BroadcastEvent(event.Pass());
     return;
   }
 
   // Dispatch to single extension ID.
   const std::string extension_id = GetExtensionId(app_origin);
-  event_router->DispatchEventToExtension(extension_id, event_name,
-                                         values.Pass(), profile_, GURL());
+  event_router->DispatchEventToExtension(extension_id, event.Pass());
 }
 
 }  // namespace extensions

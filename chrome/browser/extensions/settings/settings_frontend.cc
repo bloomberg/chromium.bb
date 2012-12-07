@@ -48,9 +48,10 @@ class DefaultObserver : public SettingsObserver {
     args->Append(base::JSONReader::Read(change_json));
     args->Append(Value::CreateStringValue(settings_namespace::ToString(
         settings_namespace)));
-    extensions::ExtensionSystem::Get(profile_)->event_router()->
-        DispatchEventToExtension(extension_id, event_names::kOnSettingsChanged,
-                                 args.Pass(), NULL, GURL());
+    scoped_ptr<Event> event(new Event(
+        event_names::kOnSettingsChanged, args.Pass()));
+    ExtensionSystem::Get(profile_)->event_router()->
+        DispatchEventToExtension(extension_id, event.Pass());
   }
 
  private:

@@ -69,8 +69,8 @@ static void DispatchOnStartupEventImpl(
   }
 
   scoped_ptr<base::ListValue> event_args(new ListValue());
-  system->event_router()->DispatchEventToExtension(
-      extension_id, kOnStartupEvent, event_args.Pass(), NULL, GURL());
+  scoped_ptr<Event> event(new Event(kOnStartupEvent, event_args.Pass()));
+  system->event_router()->DispatchEventToExtension(extension_id, event.Pass());
 }
 
 }  // namespace
@@ -109,8 +109,8 @@ void RuntimeEventRouter::DispatchOnInstalledEvent(
   }
   DCHECK(system->event_router());
   system->event_router()->AddLazyEventListener(kOnInstalledEvent, extension_id);
-  system->event_router()->DispatchEventToExtension(
-      extension_id, kOnInstalledEvent, event_args.Pass(), NULL, GURL());
+  scoped_ptr<Event> event(new Event(kOnInstalledEvent, event_args.Pass()));
+  system->event_router()->DispatchEventToExtension(extension_id, event.Pass());
   system->event_router()->RemoveLazyEventListener(kOnInstalledEvent,
                                                   extension_id);
 }
@@ -127,8 +127,8 @@ void RuntimeEventRouter::DispatchOnUpdateAvailableEvent(
   scoped_ptr<ListValue> args(new ListValue);
   args->Append(manifest->DeepCopy());
   DCHECK(system->event_router());
-  system->event_router()->DispatchEventToExtension(
-      extension_id, kOnUpdateAvailableEvent, args.Pass(), NULL, GURL());
+  scoped_ptr<Event> event(new Event(kOnUpdateAvailableEvent, args.Pass()));
+  system->event_router()->DispatchEventToExtension(extension_id, event.Pass());
 }
 
 bool RuntimeGetBackgroundPageFunction::RunImpl() {

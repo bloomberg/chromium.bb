@@ -190,9 +190,11 @@ void HistoryExtensionEventRouter::DispatchEvent(
     const char* event_name,
     scoped_ptr<ListValue> event_args) {
   if (profile && extensions::ExtensionSystem::Get(profile)->event_router()) {
+    scoped_ptr<extensions::Event> event(new extensions::Event(
+        event_name, event_args.Pass()));
+    event->restrict_to_profile = profile;
     extensions::ExtensionSystem::Get(profile)->event_router()->
-        DispatchEventToRenderers(event_name, event_args.Pass(), profile, GURL(),
-                                 extensions::EventFilteringInfo());
+        BroadcastEvent(event.Pass());
   }
 }
 

@@ -49,8 +49,10 @@ void DefaultEventDelegate::OnStateChanged(const std::string& extension_id,
                                           IdleState new_state) {
   scoped_ptr<ListValue> args(new ListValue());
   args->Append(IdleManager::CreateIdleValue(new_state));
+  scoped_ptr<Event> event(new Event(keys::kOnStateChanged, args.Pass()));
+  event->restrict_to_profile = profile_;
   ExtensionSystem::Get(profile_)->event_router()->DispatchEventToExtension(
-      extension_id, keys::kOnStateChanged, args.Pass(), profile_, GURL());
+      extension_id, event.Pass());
 }
 
 void DefaultEventDelegate::RegisterObserver(

@@ -104,12 +104,11 @@ void PushMessagingEventRouter::OnMessage(const std::string& extension_id,
   message.payload = payload;
 
   scoped_ptr<base::ListValue> args(glue::OnMessage::Create(message));
+  scoped_ptr<extensions::Event> event(new extensions::Event(
+      event_names::kOnPushMessage, args.Pass()));
+  event->restrict_to_profile = profile_;
   ExtensionSystem::Get(profile_)->event_router()->DispatchEventToExtension(
-      extension_id,
-      event_names::kOnPushMessage,
-      args.Pass(),
-      profile_,
-      GURL());
+      extension_id, event.Pass());
 }
 
 void PushMessagingEventRouter::Observe(

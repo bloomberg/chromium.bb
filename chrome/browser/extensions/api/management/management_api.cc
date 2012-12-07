@@ -649,9 +649,10 @@ void ExtensionManagementEventRouter::Observe(
     args->Append(info->ToValue().release());
   }
 
+  scoped_ptr<extensions::Event> event(new extensions::Event(
+      event_name, args.Pass()));
   extensions::ExtensionSystem::Get(profile)->event_router()->
-      DispatchEventToRenderers(event_name, args.Pass(), NULL, GURL(),
-                               extensions::EventFilteringInfo());
+      BroadcastEvent(event.Pass());
 }
 
 ExtensionManagementAPI::ExtensionManagementAPI(Profile* profile)

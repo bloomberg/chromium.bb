@@ -149,8 +149,10 @@ void MediaGalleriesPrivateEventRouter::DispatchEvent(
       extensions::ExtensionSystem::Get(profile_)->event_router();
   if (!router)
     return;
-  router->DispatchEventToRenderers(event_name, event_args.Pass(), profile_,
-                                   GURL());
+  scoped_ptr<extensions::Event> event(new extensions::Event(
+      event_name, event_args.Pass()));
+  event->restrict_to_profile = profile_;
+  router->BroadcastEvent(event.Pass());
 }
 
 }  // namespace extensions

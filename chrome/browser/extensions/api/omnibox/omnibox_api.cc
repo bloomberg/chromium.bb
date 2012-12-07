@@ -45,10 +45,11 @@ const char kDescriptionStylesLength[] = "length";
 // static
 void ExtensionOmniboxEventRouter::OnInputStarted(
     Profile* profile, const std::string& extension_id) {
-  scoped_ptr<ListValue> event_args(new ListValue());
-  extensions::ExtensionSystem::Get(profile)->event_router()->
-      DispatchEventToExtension(extension_id, events::kOnInputStarted,
-                               event_args.Pass(), profile, GURL());
+  scoped_ptr<Event> event(new Event(
+      events::kOnInputStarted, make_scoped_ptr(new ListValue())));
+  event->restrict_to_profile = profile;
+  ExtensionSystem::Get(profile)->event_router()->
+      DispatchEventToExtension(extension_id, event.Pass());
 }
 
 // static
@@ -63,9 +64,10 @@ bool ExtensionOmniboxEventRouter::OnInputChanged(
   args->Set(0, Value::CreateStringValue(input));
   args->Set(1, Value::CreateIntegerValue(suggest_id));
 
-  extensions::ExtensionSystem::Get(profile)->event_router()->
-      DispatchEventToExtension(extension_id, events::kOnInputChanged,
-                               args.Pass(), profile, GURL());
+  scoped_ptr<Event> event(new Event(events::kOnInputChanged, args.Pass()));
+  event->restrict_to_profile = profile;
+  ExtensionSystem::Get(profile)->event_router()->
+      DispatchEventToExtension(extension_id, event.Pass());
   return true;
 }
 
@@ -87,9 +89,10 @@ void ExtensionOmniboxEventRouter::OnInputEntered(
   scoped_ptr<ListValue> args(new ListValue());
   args->Set(0, Value::CreateStringValue(input));
 
-  extensions::ExtensionSystem::Get(profile)->event_router()->
-      DispatchEventToExtension(extension_id, events::kOnInputEntered,
-                               args.Pass(), profile, GURL());
+  scoped_ptr<Event> event(new Event(events::kOnInputEntered, args.Pass()));
+  event->restrict_to_profile = profile;
+  ExtensionSystem::Get(profile)->event_router()->
+      DispatchEventToExtension(extension_id, event.Pass());
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_OMNIBOX_INPUT_ENTERED,
@@ -100,10 +103,11 @@ void ExtensionOmniboxEventRouter::OnInputEntered(
 // static
 void ExtensionOmniboxEventRouter::OnInputCancelled(
     Profile* profile, const std::string& extension_id) {
-  scoped_ptr<ListValue> args(new ListValue());
-  extensions::ExtensionSystem::Get(profile)->event_router()->
-      DispatchEventToExtension(extension_id, events::kOnInputCancelled,
-                               args.Pass(), profile, GURL());
+  scoped_ptr<Event> event(new Event(
+      events::kOnInputCancelled, make_scoped_ptr(new ListValue())));
+  event->restrict_to_profile = profile;
+  ExtensionSystem::Get(profile)->event_router()->
+      DispatchEventToExtension(extension_id, event.Pass());
 }
 
 bool OmniboxSendSuggestionsFunction::RunImpl() {

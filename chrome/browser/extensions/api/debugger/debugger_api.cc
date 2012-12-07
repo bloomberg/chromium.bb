@@ -283,9 +283,11 @@ void ExtensionDevToolsClientHost::SendDetachedEvent() {
     debuggee.tab_id = tab_id_;
     scoped_ptr<base::ListValue> args(OnDetach::Create(debuggee,
                                                       detach_reason_));
+    scoped_ptr<extensions::Event> event(new extensions::Event(
+        keys::kOnDetach, args.Pass()));
+    event->restrict_to_profile = profile;
     extensions::ExtensionSystem::Get(profile)->event_router()->
-        DispatchEventToExtension(extension_id_, keys::kOnDetach, args.Pass(),
-                                 profile, GURL());
+        DispatchEventToExtension(extension_id_, event.Pass());
   }
 }
 
@@ -338,9 +340,11 @@ void ExtensionDevToolsClientHost::DispatchOnInspectorFrontend(
       params.additional_properties.Swap(params_value);
 
     scoped_ptr<ListValue> args(OnEvent::Create(debuggee, method_name, params));
+    scoped_ptr<extensions::Event> event(new extensions::Event(
+        keys::kOnEvent, args.Pass()));
+    event->restrict_to_profile = profile;
     extensions::ExtensionSystem::Get(profile)->event_router()->
-        DispatchEventToExtension(extension_id_, keys::kOnEvent, args.Pass(),
-                                 profile, GURL());
+        DispatchEventToExtension(extension_id_, event.Pass());
   } else {
     SendCommandDebuggerFunction* function = pending_requests_[id];
     if (!function)

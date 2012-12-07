@@ -58,10 +58,10 @@ void NotifyProcessOutput(Profile* profile,
 
   if (profile &&
       extensions::ExtensionSystem::Get(profile)->event_router()) {
+    scoped_ptr<extensions::Event> event(new extensions::Event(
+        extensions::event_names::kOnTerminalProcessOutput, args.Pass()));
     extensions::ExtensionSystem::Get(profile)->event_router()->
-        DispatchEventToExtension(extension_id,
-            extensions::event_names::kOnTerminalProcessOutput, args.Pass(),
-            NULL, GURL());
+        DispatchEventToExtension(extension_id, event.Pass());
   }
 }
 

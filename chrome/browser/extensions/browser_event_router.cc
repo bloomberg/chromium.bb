@@ -362,9 +362,10 @@ void BrowserEventRouter::DispatchEvent(
       !extensions::ExtensionSystem::Get(profile)->event_router())
     return;
 
-  extensions::ExtensionSystem::Get(profile)->event_router()->
-      DispatchEventToRenderers(event_name, args.Pass(), profile, GURL(),
-                               user_gesture);
+  scoped_ptr<Event> event(new Event(event_name, args.Pass()));
+  event->restrict_to_profile = profile;
+  event->user_gesture = user_gesture;
+  ExtensionSystem::Get(profile)->event_router()->BroadcastEvent(event.Pass());
 }
 
 void BrowserEventRouter::DispatchEventToExtension(
@@ -377,9 +378,11 @@ void BrowserEventRouter::DispatchEventToExtension(
       !extensions::ExtensionSystem::Get(profile)->event_router())
     return;
 
-  extensions::ExtensionSystem::Get(profile)->event_router()->
-      DispatchEventToExtension(extension_id, event_name, event_args.Pass(),
-                               profile, GURL(), user_gesture);
+  scoped_ptr<Event> event(new Event(event_name, event_args.Pass()));
+  event->restrict_to_profile = profile;
+  event->user_gesture = user_gesture;
+  ExtensionSystem::Get(profile)->event_router()->
+      DispatchEventToExtension(extension_id, event.Pass());
 }
 
 void BrowserEventRouter::DispatchSimpleBrowserEvent(

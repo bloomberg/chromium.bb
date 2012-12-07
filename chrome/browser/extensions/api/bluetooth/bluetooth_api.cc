@@ -199,12 +199,10 @@ void BluetoothGetDevicesFunction::FinishDeviceSearch() {
   info->SetInteger("expectedEventCount", device_events_sent_);
   args->Append(info.release());
 
+  scoped_ptr<extensions::Event> event(new extensions::Event(
+      extensions::event_names::kBluetoothOnDeviceSearchFinished, args.Pass()));
   extensions::ExtensionSystem::Get(profile())->event_router()->
-      DispatchEventToRenderers(
-          extensions::event_names::kBluetoothOnDeviceSearchFinished,
-          args.Pass(),
-          NULL,
-          GURL());
+      BroadcastEvent(event.Pass());
 
   SendResponse(true);
 }

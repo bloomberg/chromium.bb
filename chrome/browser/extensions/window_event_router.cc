@@ -149,8 +149,9 @@ void WindowEventRouter::OnActiveWindowChanged(
 void WindowEventRouter::DispatchEvent(const char* event_name,
                                       Profile* profile,
                                       scoped_ptr<base::ListValue> args) {
-  ExtensionSystem::Get(profile)->event_router()->
-      DispatchEventToRenderers(event_name, args.Pass(), profile, GURL());
+  scoped_ptr<Event> event(new Event(event_name, args.Pass()));
+  event->restrict_to_profile = profile;
+  ExtensionSystem::Get(profile)->event_router()->BroadcastEvent(event.Pass());
 }
 
 }  // namespace extensions

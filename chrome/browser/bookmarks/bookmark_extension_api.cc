@@ -151,9 +151,8 @@ void BookmarkExtensionEventRouter::DispatchEvent(
     const char* event_name,
     scoped_ptr<ListValue> event_args) {
   if (extensions::ExtensionSystem::Get(profile)->event_router()) {
-    extensions::ExtensionSystem::Get(profile)->event_router()->
-        DispatchEventToRenderers(event_name, event_args.Pass(), NULL, GURL(),
-                                 extensions::EventFilteringInfo());
+    extensions::ExtensionSystem::Get(profile)->event_router()->BroadcastEvent(
+        make_scoped_ptr(new extensions::Event(event_name, event_args.Pass())));
   }
 }
 

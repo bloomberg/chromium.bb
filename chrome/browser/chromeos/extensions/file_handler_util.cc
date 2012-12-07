@@ -994,9 +994,10 @@ void ExtensionTaskExecutor::SetupPermissionsAndDispatchEvent(
 
   details->SetInteger("tab_id", tab_id_);
 
-  event_router->DispatchEventToExtension(
-      extension_id(), std::string("fileBrowserHandler.onExecute"),
-      event_args.Pass(), profile(), GURL());
+  scoped_ptr<extensions::Event> event(new extensions::Event(
+      "fileBrowserHandler.onExecute", event_args.Pass()));
+  event->restrict_to_profile = profile();
+  event_router->DispatchEventToExtension(extension_id(), event.Pass());
   ExecuteDoneOnUIThread(true);
 }
 

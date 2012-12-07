@@ -19,6 +19,8 @@
 #include "googleurl/src/gurl.h"
 #include "webkit/glue/web_intent_data.h"
 
+namespace extensions {
+
 namespace {
 
 const char kIntentIdKey[] = "intentId";
@@ -42,15 +44,14 @@ void DispatchOnLaunchedEventImpl(const std::string& extension_id,
   // ignored (but an app that doesn't listen for the onLaunched event doesn't
   // make sense anyway).
   system->event_router()->AddLazyEventListener(kOnLaunchedEvent, extension_id);
-  system->event_router()->DispatchEventToExtension(
-      extension_id, kOnLaunchedEvent, args.Pass(), profile, GURL());
+  scoped_ptr<Event> event(new Event(kOnLaunchedEvent, args.Pass()));
+  event->restrict_to_profile = profile;
+  system->event_router()->DispatchEventToExtension(extension_id, event.Pass());
   system->event_router()->RemoveLazyEventListener(kOnLaunchedEvent,
                                                   extension_id);
 }
 
 }  // anonymous namespace
-
-namespace extensions {
 
 // static.
 void AppEventRouter::DispatchOnLaunchedEvent(
@@ -63,9 +64,10 @@ void AppEventRouter::DispatchOnLaunchedEvent(
 void AppEventRouter::DispatchOnRestartedEvent(
     Profile* profile, const Extension* extension) {
   scoped_ptr<ListValue> arguments(new ListValue());
+  scoped_ptr<Event> event(new Event(kOnRestartedEvent, arguments.Pass()));
+  event->restrict_to_profile = profile;
   extensions::ExtensionSystem::Get(profile)->event_router()->
-      DispatchEventToExtension(extension->id(), kOnRestartedEvent,
-                               arguments.Pass(), profile, GURL());
+      DispatchEventToExtension(extension->id(), event.Pass());
 }
 
 // static.

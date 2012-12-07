@@ -122,8 +122,8 @@ void ExtensionBluetoothEventRouter::DispatchDeviceEvent(
     const char* event_name, const extensions::api::bluetooth::Device& device) {
   scoped_ptr<ListValue> args(new ListValue());
   args->Append(device.ToValue().release());
-  extensions::ExtensionSystem::Get(profile_)->event_router()->
-      DispatchEventToRenderers(event_name, args.Pass(), NULL, GURL());
+  scoped_ptr<Event> event(new Event(event_name, args.Pass()));
+  ExtensionSystem::Get(profile_)->event_router()->BroadcastEvent(event.Pass());
 }
 
 void ExtensionBluetoothEventRouter::AdapterPresentChanged(
@@ -207,8 +207,8 @@ void ExtensionBluetoothEventRouter::DispatchBooleanValueEvent(
     const char* event_name, bool value) {
   scoped_ptr<ListValue> args(new ListValue());
   args->Append(Value::CreateBooleanValue(value));
-  extensions::ExtensionSystem::Get(profile_)->event_router()->
-      DispatchEventToRenderers(event_name, args.Pass(), NULL, GURL());
+  scoped_ptr<Event> event(new Event(event_name, args.Pass()));
+  ExtensionSystem::Get(profile_)->event_router()->BroadcastEvent(event.Pass());
 }
 
 }  // namespace extensions

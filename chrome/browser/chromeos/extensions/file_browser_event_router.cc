@@ -370,10 +370,11 @@ void FileBrowserEventRouter::OnNetworkManagerChanged(
     NOTREACHED();
     return;
   }
+  scoped_ptr<extensions::Event> event(new extensions::Event(
+      extensions::event_names::kOnFileBrowserNetworkConnectionChanged,
+      scoped_ptr<ListValue>(new ListValue())));
   extensions::ExtensionSystem::Get(profile_)->event_router()->
-      DispatchEventToRenderers(
-          extensions::event_names::kOnFileBrowserNetworkConnectionChanged,
-          scoped_ptr<ListValue>(new ListValue()), NULL, GURL());
+      BroadcastEvent(event.Pass());
 }
 
 void FileBrowserEventRouter::OnExternalStorageDisabledChanged() {
@@ -400,10 +401,11 @@ void FileBrowserEventRouter::OnFileBrowserPrefsChanged() {
     return;
   }
 
+  scoped_ptr<extensions::Event> event(new extensions::Event(
+      extensions::event_names::kOnFileBrowserPreferencesChanged,
+      scoped_ptr<ListValue>(new ListValue())));
   extensions::ExtensionSystem::Get(profile_)->event_router()->
-      DispatchEventToRenderers(
-          extensions::event_names::kOnFileBrowserPreferencesChanged,
-          scoped_ptr<ListValue>(new ListValue()), NULL, GURL());
+      BroadcastEvent(event.Pass());
 }
 
 void FileBrowserEventRouter::OnProgressUpdate(
@@ -418,12 +420,10 @@ void FileBrowserEventRouter::OnProgressUpdate(
 
   scoped_ptr<ListValue> args(new ListValue());
   args->Append(event_list.release());
-
+  scoped_ptr<extensions::Event> event(new extensions::Event(
+      extensions::event_names::kOnFileTransfersUpdated, args.Pass()));
   extensions::ExtensionSystem::Get(profile_)->event_router()->
-      DispatchEventToExtension(
-          std::string(kFileBrowserDomain),
-          extensions::event_names::kOnFileTransfersUpdated, args.Pass(), NULL,
-          GURL());
+      DispatchEventToExtension(std::string(kFileBrowserDomain), event.Pass());
 }
 
 void FileBrowserEventRouter::OnDirectoryChanged(
@@ -439,11 +439,10 @@ void FileBrowserEventRouter::OnDocumentFeedFetched(
   scoped_ptr<ListValue> args(new ListValue());
   args->Append(base::Value::CreateIntegerValue(num_accumulated_entries));
 
+  scoped_ptr<extensions::Event> event(new extensions::Event(
+      extensions::event_names::kOnDocumentFeedFetched, args.Pass()));
   extensions::ExtensionSystem::Get(profile_)->event_router()->
-      DispatchEventToExtension(
-          std::string(kFileBrowserDomain),
-          extensions::event_names::kOnDocumentFeedFetched, args.Pass(), NULL,
-          GURL());
+      DispatchEventToExtension(std::string(kFileBrowserDomain), event.Pass());
 }
 
 void FileBrowserEventRouter::OnFileSystemMounted() {
@@ -522,13 +521,10 @@ void FileBrowserEventRouter::DispatchDirectoryChangeEvent(
     ListValue* watch_info_entries = new ListValue();
     watch_info->Set("changedEntries", watch_info_entries);
 
+    scoped_ptr<extensions::Event> event(new extensions::Event(
+        extensions::event_names::kOnDirectoryChanged, args.Pass()));
     extensions::ExtensionSystem::Get(profile_)->event_router()->
-        DispatchEventToExtension(
-            iter->first,
-            extensions::event_names::kOnDirectoryChanged,
-            args.Pass(),
-            NULL,
-            GURL());
+        DispatchEventToExtension(iter->first, event.Pass());
   }
 }
 
@@ -548,10 +544,10 @@ void FileBrowserEventRouter::DispatchDiskEvent(
   DictionaryValue* disk_info = DiskToDictionaryValue(disk);
   mount_info->Set("volumeInfo", disk_info);
 
+  scoped_ptr<extensions::Event> event(new extensions::Event(
+      extensions::event_names::kOnFileBrowserDiskChanged, args.Pass()));
   extensions::ExtensionSystem::Get(profile_)->event_router()->
-      DispatchEventToRenderers(
-          extensions::event_names::kOnFileBrowserDiskChanged, args.Pass(), NULL,
-          GURL());
+      BroadcastEvent(event.Pass());
 }
 
 void FileBrowserEventRouter::DispatchMountEvent(
@@ -604,10 +600,10 @@ void FileBrowserEventRouter::DispatchMountEvent(
     }
   }
 
+  scoped_ptr<extensions::Event> extension_event(new extensions::Event(
+      extensions::event_names::kOnFileBrowserMountCompleted, args.Pass()));
   extensions::ExtensionSystem::Get(profile_)->event_router()->
-      DispatchEventToRenderers(
-          extensions::event_names::kOnFileBrowserMountCompleted, args.Pass(),
-          NULL, GURL());
+      BroadcastEvent(extension_event.Pass());
 
   // Do not attempt to open File Manager while the login is in progress or
   // the screen is locked.

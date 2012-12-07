@@ -33,6 +33,17 @@ class MessageSender : public content::NotificationObserver {
     return arguments.Pass();
   }
 
+  static scoped_ptr<extensions::Event> BuildEvent(
+      scoped_ptr<ListValue> event_args,
+      Profile* profile,
+      GURL event_url) {
+    scoped_ptr<extensions::Event> event(new extensions::Event(
+        "test.onMessage", event_args.Pass()));
+    event->restrict_to_profile = profile;
+    event->event_url = event_url;
+    return event.Pass();
+  }
+
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) {
@@ -42,26 +53,22 @@ class MessageSender : public content::NotificationObserver {
 
     // Sends four messages to the extension. All but the third message sent
     // from the origin http://b.com/ are supposed to arrive.
-    event_router->DispatchEventToRenderers("test.onMessage",
+    event_router->BroadcastEvent(BuildEvent(
         BuildEventArguments(false, "no restriction"),
         content::Source<Profile>(source).ptr(),
-        GURL(),
-        extensions::EventFilteringInfo());
-    event_router->DispatchEventToRenderers("test.onMessage",
+        GURL()));
+    event_router->BroadcastEvent(BuildEvent(
         BuildEventArguments(false, "http://a.com/"),
         content::Source<Profile>(source).ptr(),
-        GURL("http://a.com/"),
-        extensions::EventFilteringInfo());
-    event_router->DispatchEventToRenderers("test.onMessage",
+        GURL("http://a.com/")));
+    event_router->BroadcastEvent(BuildEvent(
         BuildEventArguments(false, "http://b.com/"),
         content::Source<Profile>(source).ptr(),
-        GURL("http://b.com/"),
-        extensions::EventFilteringInfo());
-    event_router->DispatchEventToRenderers("test.onMessage",
+        GURL("http://b.com/")));
+    event_router->BroadcastEvent(BuildEvent(
         BuildEventArguments(true, "last message"),
         content::Source<Profile>(source).ptr(),
-        GURL(),
-        extensions::EventFilteringInfo());
+        GURL()));
   }
 
   content::NotificationRegistrar registrar_;

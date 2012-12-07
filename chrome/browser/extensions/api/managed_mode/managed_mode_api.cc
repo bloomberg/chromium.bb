@@ -61,9 +61,9 @@ void ManagedModeEventRouter::OnInManagedModeChanged() {
 
   extensions::EventRouter* event_router =
       extensions::ExtensionSystem::Get(profile_)->event_router();
-  event_router->DispatchEventToRenderers(kChangeEventName, args.Pass(), NULL,
-                                         GURL(),
-                                         extensions::EventFilteringInfo());
+  scoped_ptr<extensions::Event> event(new extensions::Event(
+      kChangeEventName, args.Pass()));
+  event_router->BroadcastEvent(event.Pass());
 }
 
 GetManagedModeFunction::~GetManagedModeFunction() { }
