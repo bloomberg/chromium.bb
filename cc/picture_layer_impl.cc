@@ -14,6 +14,7 @@
 #include "cc/quad_sink.h"
 #include "cc/solid_color_draw_quad.h"
 #include "cc/tile_draw_quad.h"
+#include "ui/gfx/quad_f.h"
 
 namespace cc {
 

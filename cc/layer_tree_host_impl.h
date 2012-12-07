@@ -11,7 +11,6 @@
 #include "cc/animation_events.h"
 #include "cc/cc_export.h"
 #include "cc/input_handler.h"
-#include "cc/layer_sorter.h"
 #include "cc/layer_tree_impl.h"
 #include "cc/render_pass.h"
 #include "cc/render_pass_sink.h"
@@ -365,8 +364,6 @@ private:
 
     // This is used for ticking animations slowly when hidden.
     scoped_ptr<LayerTreeHostImplTimeSourceAdapter> m_timeSourceClientAdapter;
-
-    LayerSorter m_layerSorter;
 
     // List of visible layers for the most recently prepared frame. Used for
     // rendering and input event hit testing.

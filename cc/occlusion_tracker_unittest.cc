@@ -278,11 +278,10 @@ protected:
     {
         DCHECK(root == m_root.get());
         int dummyMaxTextureSize = 512;
-        LayerSorter layerSorter;
 
         DCHECK(!root->renderSurface());
 
-        LayerTreeHostCommon::calculateDrawProperties(root, root->bounds(), 1, 1, &layerSorter, dummyMaxTextureSize, m_renderSurfaceLayerListImpl);
+        LayerTreeHostCommon::calculateDrawProperties(root, root->bounds(), 1, 1, dummyMaxTextureSize, m_renderSurfaceLayerListImpl);
 
         m_layerIterator = m_layerIteratorBegin = Types::TestLayerIterator::begin(&m_renderSurfaceLayerListImpl);
     }

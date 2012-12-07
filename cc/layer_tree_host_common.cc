@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/debug/trace_event.h"
 #include "cc/layer.h"
 #include "cc/layer_impl.h"
 #include "cc/layer_iterator.h"
@@ -25,6 +26,18 @@ ScrollAndScaleSet::ScrollAndScaleSet()
 
 ScrollAndScaleSet::~ScrollAndScaleSet()
 {
+}
+
+static void sortLayers(std::vector<Layer*>::iterator first, std::vector<Layer*>::iterator end, LayerSorter* layerSorter)
+{
+    NOTREACHED();
+}
+
+static void sortLayers(std::vector<LayerImpl*>::iterator first, std::vector<LayerImpl*>::iterator end, LayerSorter* layerSorter)
+{
+    DCHECK(layerSorter);
+    TRACE_EVENT0("cc", "layer_tree_host_common::sortLayers");
+    layerSorter->sort(first, end);
 }
 
 gfx::Rect LayerTreeHostCommon::calculateVisibleRect(const gfx::Rect& targetSurfaceRect, const gfx::Rect& layerBoundRect, const gfx::Transform& transform)
@@ -390,7 +403,7 @@ static inline void updateLayerContentsScale(Layer* layer, const gfx::Transform& 
 
 // Recursively walks the layer tree starting at the given node and computes all the
 // necessary transformations, clipRects, render surfaces, etc.
-template<typename LayerType, typename LayerList, typename RenderSurfaceType, typename LayerSorter>
+template<typename LayerType, typename LayerList, typename RenderSurfaceType>
 static void calculateDrawPropertiesInternal(LayerType* layer, const gfx::Transform& parentMatrix,
     const gfx::Transform& fullHierarchyMatrix, const gfx::Transform& currentScrollCompensationMatrix,
     const gfx::Rect& clipRectFromAncestor, bool ancestorClipsSubtree,
@@ -696,9 +709,9 @@ static void calculateDrawPropertiesInternal(LayerType* layer, const gfx::Transfo
     for (size_t i = 0; i < layer->children().size(); ++i) {
         LayerType* child = LayerTreeHostCommon::getChildAsRawPtr(layer->children(), i);
         gfx::Rect drawableContentRectOfChildSubtree;
-        calculateDrawPropertiesInternal<LayerType, LayerList, RenderSurfaceType, LayerSorter>(child, sublayerMatrix, nextHierarchyMatrix, nextScrollCompensationMatrix,
-                                                                                              clipRectForSubtree, subtreeShouldBeClipped, nearestAncestorThatMovesPixels,
-                                                                                              renderSurfaceLayerList, descendants, layerSorter, maxTextureSize, deviceScaleFactor, pageScaleFactor, drawableContentRectOfChildSubtree);
+        calculateDrawPropertiesInternal<LayerType, LayerList, RenderSurfaceType>(child, sublayerMatrix, nextHierarchyMatrix, nextScrollCompensationMatrix,
+                                                                                 clipRectForSubtree, subtreeShouldBeClipped, nearestAncestorThatMovesPixels,
+                                                                                 renderSurfaceLayerList, descendants, layerSorter, maxTextureSize, deviceScaleFactor, pageScaleFactor, drawableContentRectOfChildSubtree);
         if (!drawableContentRectOfChildSubtree.IsEmpty()) {
             accumulatedDrawableContentRectOfChildren.Union(drawableContentRectOfChildSubtree);
             if (child->renderSurface())
@@ -816,7 +829,7 @@ static void calculateDrawPropertiesInternal(LayerType* layer, const gfx::Transfo
     // If preserves-3d then sort all the descendants in 3D so that they can be
     // drawn from back to front. If the preserves-3d property is also set on the parent then
     // skip the sorting as the parent will sort all the descendants anyway.
-    if (descendants.size() && layer->preserves3D() && (!layer->parent() || !layer->parent()->preserves3D()))
+    if (layerSorter && descendants.size() && layer->preserves3D() && (!layer->parent() || !layer->parent()->preserves3D()))
         sortLayers(descendants.begin() + sortingStartIndex, descendants.end(), layerSorter);
 
     if (layer->renderSurface())
@@ -843,7 +856,7 @@ void LayerTreeHostCommon::calculateDrawProperties(Layer* rootLayer, const gfx::S
     // This function should have received a root layer.
     DCHECK(isRootLayer(rootLayer));
 
-    cc::calculateDrawPropertiesInternal<Layer, std::vector<scoped_refptr<Layer> >, RenderSurface, void>(
+    cc::calculateDrawPropertiesInternal<Layer, std::vector<scoped_refptr<Layer> >, RenderSurface>(
         rootLayer, deviceScaleTransform, identityMatrix, identityMatrix,
         deviceViewportRect, subtreeShouldBeClipped, 0, renderSurfaceLayerList,
         dummyLayerList, 0, maxTextureSize,
@@ -855,14 +868,15 @@ void LayerTreeHostCommon::calculateDrawProperties(Layer* rootLayer, const gfx::S
     DCHECK(rootLayer->renderSurface());
 }
 
-void LayerTreeHostCommon::calculateDrawProperties(LayerImpl* rootLayer, const gfx::Size& deviceViewportSize, float deviceScaleFactor, float pageScaleFactor, LayerSorter* layerSorter, int maxTextureSize, std::vector<LayerImpl*>& renderSurfaceLayerList)
+void LayerTreeHostCommon::calculateDrawProperties(LayerImpl* rootLayer, const gfx::Size& deviceViewportSize, float deviceScaleFactor, float pageScaleFactor, int maxTextureSize, std::vector<LayerImpl*>& renderSurfaceLayerList)
 {
     gfx::Rect totalDrawableContentRect;
     gfx::Transform identityMatrix;
     gfx::Transform deviceScaleTransform;
     deviceScaleTransform.Scale(deviceScaleFactor, deviceScaleFactor);
     std::vector<LayerImpl*> dummyLayerList;
-
+    LayerSorter layerSorter;
+    
     // The root layer's renderSurface should receive the deviceViewport as the initial clipRect.
     bool subtreeShouldBeClipped = true;
     gfx::Rect deviceViewportRect(gfx::Point(), deviceViewportSize);
@@ -870,10 +884,10 @@ void LayerTreeHostCommon::calculateDrawProperties(LayerImpl* rootLayer, const gf
     // This function should have received a root layer.
     DCHECK(isRootLayer(rootLayer));
 
-    cc::calculateDrawPropertiesInternal<LayerImpl, std::vector<LayerImpl*>, RenderSurfaceImpl, LayerSorter>(
+    cc::calculateDrawPropertiesInternal<LayerImpl, std::vector<LayerImpl*>, RenderSurfaceImpl>(
         rootLayer, deviceScaleTransform, identityMatrix, identityMatrix,
         deviceViewportRect, subtreeShouldBeClipped, 0, renderSurfaceLayerList,
-        dummyLayerList, layerSorter, maxTextureSize,
+        dummyLayerList, &layerSorter, maxTextureSize,
         deviceScaleFactor, pageScaleFactor, totalDrawableContentRect);
 
     // The dummy layer list should not have been used.

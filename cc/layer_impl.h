@@ -29,7 +29,6 @@
 
 namespace cc {
 
-class LayerSorter;
 class LayerTreeHostImpl;
 class QuadSink;
 class Renderer;
@@ -398,8 +397,6 @@ private:
 
     DISALLOW_COPY_AND_ASSIGN(LayerImpl);
 };
-
-void sortLayers(std::vector<LayerImpl*>::iterator first, std::vector<LayerImpl*>::iterator end, LayerSorter*);
 
 }
 

@@ -5,13 +5,13 @@
 #include "cc/damage_tracker.h"
 
 #include "cc/layer_impl.h"
-#include "cc/layer_sorter.h"
 #include "cc/layer_tree_host_common.h"
 #include "cc/math_util.h"
 #include "cc/single_thread_proxy.h"
 #include "cc/test/geometry_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
+#include "ui/gfx/quad_f.h"
 #include <public/WebFilterOperation.h>
 #include <public/WebFilterOperations.h>
 
@@ -23,7 +23,6 @@ namespace {
 
 void executeCalculateDrawProperties(LayerImpl* root, std::vector<LayerImpl*>& renderSurfaceLayerList)
 {
-    LayerSorter layerSorter;
     int dummyMaxTextureSize = 512;
 
     // Sanity check: The test itself should create the root layer's render surface, so
@@ -32,7 +31,7 @@ void executeCalculateDrawProperties(LayerImpl* root, std::vector<LayerImpl*>& re
     ASSERT_TRUE(root->renderSurface());
     ASSERT_FALSE(renderSurfaceLayerList.size());
 
-    LayerTreeHostCommon::calculateDrawProperties(root, root->bounds(), 1, 1, &layerSorter, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(root, root->bounds(), 1, 1, dummyMaxTextureSize, renderSurfaceLayerList);
 }
 
 void clearDamageForAllSurfaces(LayerImpl* layer)

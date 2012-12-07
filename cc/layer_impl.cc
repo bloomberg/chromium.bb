@@ -8,7 +8,6 @@
 #include "base/stringprintf.h"
 #include "cc/debug_border_draw_quad.h"
 #include "cc/debug_colors.h"
-#include "cc/layer_sorter.h"
 #include "cc/layer_tree_host_impl.h"
 #include "cc/math_util.h"
 #include "cc/proxy.h"
@@ -314,12 +313,6 @@ void LayerImpl::dumpLayerProperties(std::string* str, int indent) const
 
     str->append(indentStr);
     base::StringAppendF(str, "drawsContent: %s\n", m_drawsContent ? "yes" : "no");
-}
-
-void sortLayers(std::vector<LayerImpl*>::iterator first, std::vector<LayerImpl*>::iterator end, LayerSorter* layerSorter)
-{
-    TRACE_EVENT0("cc", "LayerImpl::sortLayers");
-    layerSorter->sort(first, end);
 }
 
 std::string LayerImpl::layerTreeAsText() const

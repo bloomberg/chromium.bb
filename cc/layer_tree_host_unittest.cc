@@ -7,6 +7,7 @@
 #include "base/synchronization/lock.h"
 #include "cc/content_layer.h"
 #include "cc/content_layer_client.h"
+#include "cc/layer_impl.h"
 #include "cc/layer_tree_host_impl.h"
 #include "cc/output_surface.h"
 #include "cc/single_thread_proxy.h"
