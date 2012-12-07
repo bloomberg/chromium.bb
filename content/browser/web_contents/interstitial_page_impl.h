@@ -20,7 +20,6 @@
 namespace content {
 class NavigationEntry;
 class RenderViewHostImpl;
-class RenderWidgetHostView;
 class WebContentsView;
 class WebContentsImpl;
 
@@ -68,8 +67,6 @@ class CONTENT_EXPORT InterstitialPageImpl
   // Focus the first (last if reverse is true) element in the interstitial page.
   // Called when tab traversing.
   void FocusThroughTabTraversal(bool reverse);
-
-  RenderWidgetHostView* GetView();
 
   // See description above field.
   void set_reload_on_dont_proceed(bool value) {

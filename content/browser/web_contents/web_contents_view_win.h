@@ -20,6 +20,7 @@ class HWNDMessageFilter;
 }
 
 namespace content {
+class RenderWidgetHostViewWin;
 class WebContentsDragWin;
 class WebContentsImpl;
 class WebContentsViewDelegate;
@@ -56,6 +57,7 @@ class CONTENT_EXPORT WebContentsViewWin
   virtual void CreateView(const gfx::Size& initial_size) OVERRIDE;
   virtual RenderWidgetHostView* CreateViewForWidget(
       RenderWidgetHost* render_widget_host) OVERRIDE;
+  virtual void SetView(RenderWidgetHostView* view) OVERRIDE;
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
   virtual gfx::NativeView GetContentNativeView() const OVERRIDE;
   virtual gfx::NativeWindow GetTopLevelNativeWindow() const OVERRIDE;
@@ -125,6 +127,8 @@ class CONTENT_EXPORT WebContentsViewWin
 
   // The WebContentsImpl whose contents we display.
   WebContentsImpl* web_contents_;
+
+  RenderWidgetHostViewWin* view_;
 
   scoped_ptr<WebContentsViewDelegate> delegate_;
 

@@ -37,6 +37,12 @@ class CONTENT_EXPORT WebContentsView {
   virtual RenderWidgetHostView* CreateViewForWidget(
       RenderWidgetHost* render_widget_host) = 0;
 
+  // This is required because some WebContentsView cache the
+  // RenderWidgetHostView created by the above method. In that case, when the
+  // view created by the above method is destroyed, the old one needs to be set
+  // again.
+  virtual void SetView(RenderWidgetHostView* view) = 0;
+
   // Returns the native widget that contains the contents of the tab.
   virtual gfx::NativeView GetNativeView() const = 0;
 
