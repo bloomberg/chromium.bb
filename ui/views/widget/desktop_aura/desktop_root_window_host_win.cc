@@ -665,22 +665,14 @@ bool DesktopRootWindowHostWin::HandleMouseEvent(const ui::MouseEvent& event) {
 }
 
 bool DesktopRootWindowHostWin::HandleKeyEvent(const ui::KeyEvent& event) {
-  // We must return false here so HWNDMessageHandler::DispatchKeyEventPostIME()
-  // marks the message as not handled. This enables win32 to map things like an
-  // alt key press to a WM_SYSCHAR for showing a menu.
-  // NOTE: we get here because HandleIMEMessage() below returns false. We need
-  // not do anything as HandleIMEMessage already processed the message.
   return false;
 }
 
 bool DesktopRootWindowHostWin::HandleUntranslatedKeyEvent(
     const ui::KeyEvent& event) {
   scoped_ptr<ui::KeyEvent> duplicate_event(event.Copy());
-  static_cast<aura::RootWindowHostDelegate*>(root_window_)->OnHostKeyEvent(
-      duplicate_event.get());
-  // We must return false here so that HWNDMessageHandler invokes
-  // HandleKeyEvent(). See comment in HandleKeyEvent as to why it's important.
-  return false;
+  return static_cast<aura::RootWindowHostDelegate*>(root_window_)->
+      OnHostKeyEvent(duplicate_event.get());
 }
 
 bool DesktopRootWindowHostWin::HandleIMEMessage(UINT message,

@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "ui/base/events/event.h"
 #include "ui/views/focus/focus_manager.h"
 
 using content::NativeWebKeyboardEvent;
@@ -52,10 +53,12 @@ void UnhandledKeyboardEventHandler::HandleKeyboardEvent(
     ignore_next_char_event_ = false;
   }
 
-#if defined(OS_WIN) && !defined(USE_AURA)
   // Any unhandled keyboard/character messages should be defproced.
   // This allows stuff like F10, etc to work correctly.
-  DefWindowProc(event.os_event.hwnd, event.os_event.message,
-                event.os_event.wParam, event.os_event.lParam);
+#if defined(USE_AURA)
+  const MSG& message(event.os_event->native_event());
+#else
+  const MSG& message(event.os_event);
 #endif
+  DefWindowProc(message.hwnd, message.message, message.wParam, message.lParam);
 }
