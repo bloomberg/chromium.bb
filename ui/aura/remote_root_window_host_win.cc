@@ -26,6 +26,9 @@ namespace {
 
 const char* kRootWindowHostWinKey = "__AURA_REMOTE_ROOT_WINDOW_HOST_WIN__";
 
+// The touch id to be used for touch events coming in from Windows Ash.
+const int kRemoteWindowTouchId = 10;
+
 }  // namespace
 
 RemoteRootWindowHostWin* g_instance = NULL;
@@ -68,6 +71,12 @@ bool RemoteRootWindowHostWin::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_Character, OnChar)
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_VisibilityChanged,
                         OnVisibilityChanged)
+    IPC_MESSAGE_HANDLER(MetroViewerHostMsg_TouchDown,
+                        OnTouchDown)
+    IPC_MESSAGE_HANDLER(MetroViewerHostMsg_TouchUp,
+                        OnTouchUp)
+    IPC_MESSAGE_HANDLER(MetroViewerHostMsg_TouchMoved,
+                        OnTouchMoved)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;  
@@ -225,6 +234,32 @@ void RemoteRootWindowHostWin::OnChar(uint32 key_code,
 void RemoteRootWindowHostWin::OnVisibilityChanged(bool visible) {
   if (visible)
     delegate_->OnHostActivated();
+}
+
+void RemoteRootWindowHostWin::OnTouchDown(int32 x, int32 y, uint64 timestamp) {
+  ui::TouchEvent event(ui::ET_TOUCH_PRESSED,
+                       gfx::Point(x, y),
+                       kRemoteWindowTouchId,
+                       base::TimeDelta::FromMicroseconds(timestamp));
+  delegate_->OnHostTouchEvent(&event);
+}
+
+void RemoteRootWindowHostWin::OnTouchUp(int32 x, int32 y, uint64 timestamp) {
+  ui::TouchEvent event(ui::ET_TOUCH_RELEASED,
+                       gfx::Point(x, y),
+                       kRemoteWindowTouchId,
+                       base::TimeDelta::FromMicroseconds(timestamp));
+  delegate_->OnHostTouchEvent(&event);
+}
+
+void RemoteRootWindowHostWin::OnTouchMoved(int32 x,
+                                           int32 y,
+                                           uint64 timestamp) {
+  ui::TouchEvent event(ui::ET_TOUCH_MOVED,
+                       gfx::Point(x, y),
+                       kRemoteWindowTouchId,
+                       base::TimeDelta::FromMicroseconds(timestamp));
+  delegate_->OnHostTouchEvent(&event);
 }
 
 }  // namespace aura

@@ -144,7 +144,10 @@ WebKit::WebKeyboardEvent MakeWebKeyboardEvent(ui::KeyEvent* event) {
 WebKit::WebGestureEvent MakeWebGestureEvent(ui::GestureEvent* event) {
   WebKit::WebGestureEvent gesture_event;
 #if defined(OS_WIN)
-  gesture_event = MakeWebGestureEventFromNativeEvent(event->native_event());
+  if (event->HasNativeEvent())
+    gesture_event = MakeWebGestureEventFromNativeEvent(event->native_event());
+  else
+    gesture_event = MakeWebGestureEventFromUIEvent(*event);
 #else
   gesture_event = MakeWebGestureEventFromUIEvent(*event);
 #endif

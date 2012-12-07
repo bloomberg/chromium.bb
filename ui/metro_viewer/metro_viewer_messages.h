@@ -51,3 +51,15 @@ IPC_MESSAGE_CONTROL4(MetroViewerHostMsg_Character,
 // Informs the browser that the visibiliy of the viewer has changed.
 IPC_MESSAGE_CONTROL1(MetroViewerHostMsg_VisibilityChanged,
                      bool          /* visible */);
+IPC_MESSAGE_CONTROL3(MetroViewerHostMsg_TouchDown,
+                     int32,           /* x-coordinate */
+                     int32,           /* y-coordinate */
+                     uint64)          /* timestamp */
+IPC_MESSAGE_CONTROL3(MetroViewerHostMsg_TouchUp,
+                     int32,           /* x-coordinate */
+                     int32,           /* y-coordinate */
+                     uint64)          /* timestamp */
+IPC_MESSAGE_CONTROL3(MetroViewerHostMsg_TouchMoved,
+                     int32,           /* x-coordinate */
+                     int32,           /* y-coordinate */
+                     uint64)          /* timestamp */

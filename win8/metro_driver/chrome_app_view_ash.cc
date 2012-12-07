@@ -94,7 +94,8 @@ class PointerInfoHandler {
       x_(0),
       y_(0),
       wheel_delta_(0),
-      update_kind_(winui::Input::PointerUpdateKind_Other) {};
+      update_kind_(winui::Input::PointerUpdateKind_Other),
+      timestamp_(0) {}
 
   HRESULT Init(winui::Core::IPointerEventArgs* args) {
     HRESULT hr = args->get_CurrentPoint(&pointer_point_);
@@ -121,15 +122,24 @@ class PointerInfoHandler {
 
     x_ = point.X;
     y_ = point.Y;
+    pointer_point_->get_Timestamp(&timestamp_);
     return S_OK;
   }
 
-  bool IsMouse() const {
+  bool IsType(windevs::Input::PointerDeviceType type) const {
     mswr::ComPtr<windevs::Input::IPointerDevice> pointer_device;
     CheckHR(pointer_point_->get_PointerDevice(&pointer_device));
     windevs::Input::PointerDeviceType device_type;
     CheckHR(pointer_device->get_PointerDeviceType(&device_type));
-    return  (device_type == windevs::Input::PointerDeviceType_Mouse);
+    return  (device_type == type);
+  }
+
+  bool IsMouse() const {
+    return IsType(windevs::Input::PointerDeviceType_Mouse);
+  }
+
+  bool IsTouch() const {
+    return IsType(windevs::Input::PointerDeviceType_Touch);
   }
 
   int32 wheel_delta() const {
@@ -158,12 +168,15 @@ class PointerInfoHandler {
   int x() const { return x_; }
   int y() const { return y_; }
 
+  uint64 timestamp() const { return timestamp_; }
+
  private:
   int x_;
   int y_;
   int wheel_delta_;
   winui::Input::PointerUpdateKind update_kind_;
   mswr::ComPtr<winui::Input::IPointerPoint> pointer_point_;
+  uint64 timestamp_;
 };
 
 void RunMessageLoop(winui::Core::ICoreDispatcher* dispatcher) {
@@ -360,8 +373,6 @@ HRESULT ChromeAppViewAsh::OnActivate(
 
   globals.core_window =
       winrt_utils::FindCoreWindow(globals.main_thread_id, 10);
-
-  DVLOG(1) << "CoreWindow found: " << std::hex << globals.core_window;
   return S_OK;
 }
 
@@ -371,11 +382,17 @@ HRESULT ChromeAppViewAsh::OnPointerMoved(winui::Core::ICoreWindow* sender,
   HRESULT hr = pointer.Init(args);
   if (FAILED(hr))
     return hr;
-  DCHECK(pointer.IsMouse());
 
-  ui_channel_->Send(new MetroViewerHostMsg_MouseMoved(pointer.x(),
-                                                      pointer.y(),
-                                                      mouse_down_flags_));
+  if (pointer.IsMouse()) {
+    ui_channel_->Send(new MetroViewerHostMsg_MouseMoved(pointer.x(),
+                                                        pointer.y(),
+                                                        mouse_down_flags_));
+  } else {
+    DCHECK(pointer.IsTouch());
+    ui_channel_->Send(new MetroViewerHostMsg_TouchMoved(pointer.x(),
+                                                        pointer.y(),
+                                                        pointer.timestamp()));
+  }
   return S_OK;
 }
 
@@ -391,13 +408,20 @@ HRESULT ChromeAppViewAsh::OnPointerPressed(
   HRESULT hr = pointer.Init(args);
   if (FAILED(hr))
     return hr;
-  DCHECK(pointer.IsMouse());
 
-  mouse_down_flags_ = pointer.flags();
-  ui_channel_->Send(new MetroViewerHostMsg_MouseButton(pointer.x(), pointer.y(),
-                                                       0,
-                                                       ui::ET_MOUSE_PRESSED,
-                                                       mouse_down_flags_));
+  if (pointer.IsMouse()) {
+    mouse_down_flags_ = pointer.flags();
+    ui_channel_->Send(new MetroViewerHostMsg_MouseButton(pointer.x(),
+                                                         pointer.y(),
+                                                         0,
+                                                         ui::ET_MOUSE_PRESSED,
+                                                         mouse_down_flags_));
+  } else {
+    DCHECK(pointer.IsTouch());
+    ui_channel_->Send(new MetroViewerHostMsg_TouchDown(pointer.x(),
+                                                       pointer.y(),
+                                                       pointer.timestamp()));
+  }
   return S_OK;
 }
 
@@ -408,13 +432,20 @@ HRESULT ChromeAppViewAsh::OnPointerReleased(
   HRESULT hr = pointer.Init(args);
   if (FAILED(hr))
     return hr;
-  DCHECK(pointer.IsMouse());
 
-  mouse_down_flags_ = ui::EF_NONE;
-  ui_channel_->Send(new MetroViewerHostMsg_MouseButton(pointer.x(), pointer.y(),
-                                                       0,
-                                                       ui::ET_MOUSE_RELEASED,
-                                                       pointer.flags()));
+  if (pointer.IsMouse()) {
+    mouse_down_flags_ = ui::EF_NONE;
+    ui_channel_->Send(new MetroViewerHostMsg_MouseButton(pointer.x(),
+                                                         pointer.y(),
+                                                         0,
+                                                         ui::ET_MOUSE_RELEASED,
+                                                         pointer.flags()));
+  } else {
+    DCHECK(pointer.IsTouch());
+    ui_channel_->Send(new MetroViewerHostMsg_TouchUp(pointer.x(),
+                                                     pointer.y(),
+                                                     pointer.timestamp()));
+  }
   return S_OK;
 }
 

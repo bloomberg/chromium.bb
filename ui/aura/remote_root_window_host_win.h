@@ -62,6 +62,9 @@ class AURA_EXPORT RemoteRootWindowHostWin : public RootWindowHost {
               uint32 scan_code,
               uint32 flags);
   void OnVisibilityChanged(bool visible);
+  void OnTouchDown(int32 x, int32 y, uint64 timestamp);
+  void OnTouchUp(int32 x, int32 y, uint64 timestamp);
+  void OnTouchMoved(int32 x, int32 y, uint64 timestamp);
 
   // RootWindowHost overrides:
   virtual void SetDelegate(RootWindowHostDelegate* delegate) OVERRIDE;
