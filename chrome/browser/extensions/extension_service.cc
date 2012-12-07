@@ -376,7 +376,6 @@ ExtensionService::ExtensionService(Profile* profile,
       event_routers_initialized_(false),
       update_once_all_providers_are_ready_(false),
       browser_terminating_(false),
-      wipeout_is_active_(false),
       app_sync_bundle_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       extension_sync_bundle_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       app_shortcut_manager_(profile) {
@@ -450,10 +449,6 @@ ExtensionService::ExtensionService(Profile* profile,
   extension_action_storage_manager_.reset(
       new extensions::ExtensionActionStorageManager(profile_));
 #endif
-
-  // Before loading any extensions, determine whether Sideload Wipeout is on.
-  wipeout_is_active_ = FeatureSwitch::sideload_wipeout()->IsEnabled() &&
-                       !extension_prefs_->GetSideloadWipeoutDone();
 
   // How long is the path to the Extensions directory?
   UMA_HISTOGRAM_CUSTOM_COUNTS("Extensions.ExtensionRootPathLength",
@@ -634,7 +629,7 @@ void ExtensionService::Init() {
 
   // The Sideload Wipeout effort takes place during load (see above), so once
   // that is done the flag can be set so that we don't have to check again.
-  if (wipeout_is_active_)
+  if (FeatureSwitch::sideload_wipeout()->IsEnabled())
     extension_prefs_->SetSideloadWipeoutDone();
 
   // If we are running in the import process, don't bother initializing the
@@ -2347,30 +2342,28 @@ void ExtensionService::InitializePermissions(const Extension* extension) {
 
 void ExtensionService::MaybeWipeout(
     const extensions::Extension* extension) {
-  if (!wipeout_is_active_)
+  if (!FeatureSwitch::sideload_wipeout()->IsEnabled())
     return;
 
-  if (extension->GetType() != Extension::TYPE_EXTENSION)
+  bool done = extension_prefs_->GetSideloadWipeoutDone() ||
+      extension_prefs_->IsExternalExtensionExcludedFromWipeout(extension->id());
+  if (done)
     return;
 
-  Extension::Location location = extension->location();
-  bool wipable = location == Extension::EXTERNAL_REGISTRY ||
-                 (location == Extension::INTERNAL &&
-                     !extension->UpdatesFromGallery());
-  if (!wipable)
-    return;
-
-  if (extension_prefs_->IsExternalExtensionExcludedFromWipeout(extension->id()))
-    return;
-
+  Extension::Type type = extension->GetType();
   int disable_reasons = extension_prefs_->GetDisableReasons(extension->id());
-  if (disable_reasons == Extension::DISABLE_NONE) {
-    extension_prefs_->SetExtensionState(extension->id(), Extension::DISABLED);
-    extension_prefs_->AddDisableReason(
-        extension->id(),
-        static_cast<Extension::DisableReason>(
-        Extension::DISABLE_SIDELOAD_WIPEOUT));
-    UMA_HISTOGRAM_BOOLEAN("DisabledExtension.ExtensionWipedStatus", true);
+  if (disable_reasons == Extension::DISABLE_NONE &&
+      type == Extension::TYPE_EXTENSION) {
+    Extension::Location location = extension->location();
+    if (location == Extension::EXTERNAL_REGISTRY ||
+        (location == Extension::INTERNAL && !extension->UpdatesFromGallery())) {
+      extension_prefs_->SetExtensionState(extension->id(), Extension::DISABLED);
+      extension_prefs_->AddDisableReason(
+          extension->id(),
+          static_cast<Extension::DisableReason>(
+          Extension::DISABLE_SIDELOAD_WIPEOUT));
+      UMA_HISTOGRAM_BOOLEAN("DisabledExtension.ExtensionWipedStatus", true);
+    }
   }
 }
 

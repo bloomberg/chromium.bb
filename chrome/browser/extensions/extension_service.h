@@ -1002,9 +1002,6 @@ class ExtensionService
   // decide to abort.
   bool browser_terminating_;
 
-  // Whether any extension should be considered for wipeout.
-  bool wipeout_is_active_;
-
   NaClModuleInfoList nacl_module_list_;
 
   extensions::AppSyncBundle app_sync_bundle_;
