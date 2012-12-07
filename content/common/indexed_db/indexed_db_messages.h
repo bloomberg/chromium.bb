@@ -48,6 +48,8 @@ IPC_STRUCT_BEGIN(IndexedDBHostMsg_FactoryOpen_Params)
   IPC_STRUCT_MEMBER(string16, origin)
   // The name of the database.
   IPC_STRUCT_MEMBER(string16, name)
+  // The transaction id used if a database upgrade is needed.
+  IPC_STRUCT_MEMBER(int64, transaction_id)
   // The requested version of the database.
   IPC_STRUCT_MEMBER(int64, version)
 IPC_STRUCT_END()
@@ -191,7 +193,6 @@ IPC_STRUCT_BEGIN(IndexedDBMsg_CallbacksSuccessCursorPrefetch_Params)
   IPC_STRUCT_MEMBER(std::vector<content::IndexedDBKey>, primary_keys)
   IPC_STRUCT_MEMBER(std::vector<content::SerializedScriptValue>, values)
 IPC_STRUCT_END()
-
 
 // Used to count within an IndexedDB object store.
 IPC_STRUCT_BEGIN(IndexedDBHostMsg_ObjectStoreCount_Params)
@@ -339,6 +340,10 @@ IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_FactoryGetDatabaseNames,
 
 // WebIDBFactory::open() message.
 IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_FactoryOpen,
+                     IndexedDBHostMsg_FactoryOpen_Params)
+
+// WebIDBFactory::open() message.
+IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_FactoryOpenOld,
                      IndexedDBHostMsg_FactoryOpen_Params)
 
 // WebIDBFactory::deleteDatabase() message.

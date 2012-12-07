@@ -37,6 +37,15 @@ class RendererWebIDBFactoryImpl : public WebKit::WebIDBFactory {
       const WebKit::WebSecurityOrigin& origin,
       WebKit::WebFrame* web_frame,
       const WebKit::WebString& data_dir);
+  virtual void open(
+      const WebKit::WebString& name,
+      long long version,
+      long long transaction_id,
+      WebKit::WebIDBCallbacks* callbacks,
+      WebKit::WebIDBDatabaseCallbacks* databaseCallbacks,
+      const WebKit::WebSecurityOrigin& origin,
+      WebKit::WebFrame* web_frame,
+      const WebKit::WebString& data_dir);
   virtual void deleteDatabase(
       const WebKit::WebString& name,
       WebKit::WebIDBCallbacks* callbacks,

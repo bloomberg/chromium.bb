@@ -73,6 +73,15 @@ class CONTENT_EXPORT IndexedDBDispatcher
       const string16& origin,
       WebKit::WebFrame* web_frame);
 
+  void RequestIDBFactoryOpen(
+      const string16& name,
+      int64 version,
+      int64 transaction_id,
+      WebKit::WebIDBCallbacks* callbacks,
+      WebKit::WebIDBDatabaseCallbacks* database_callbacks,
+      const string16& origin,
+      WebKit::WebFrame* web_frame);
+
   void RequestIDBFactoryDeleteDatabase(
       const string16& name,
       WebKit::WebIDBCallbacks* callbacks,

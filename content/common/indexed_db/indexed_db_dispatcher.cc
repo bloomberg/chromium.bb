@@ -224,6 +224,36 @@ void IndexedDBDispatcher::RequestIDBFactoryOpen(
       database_callbacks.release());
   params.origin = origin;
   params.name = name;
+  params.transaction_id = 0;
+  params.version = version;
+  Send(new IndexedDBHostMsg_FactoryOpen(params));
+}
+
+void IndexedDBDispatcher::RequestIDBFactoryOpen(
+    const string16& name,
+    int64 version,
+    int64 transaction_id,
+    WebIDBCallbacks* callbacks_ptr,
+    WebIDBDatabaseCallbacks* database_callbacks_ptr,
+    const string16& origin,
+    WebFrame* web_frame) {
+  ResetCursorPrefetchCaches();
+  scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
+  scoped_ptr<WebIDBDatabaseCallbacks>
+      database_callbacks(database_callbacks_ptr);
+
+  if (!CurrentWorkerId() &&
+      !ChildThread::current()->IsWebFrameValid(web_frame))
+    return;
+
+  IndexedDBHostMsg_FactoryOpen_Params params;
+  params.ipc_thread_id = CurrentWorkerId();
+  params.ipc_response_id = pending_callbacks_.Add(callbacks.release());
+  params.ipc_database_response_id = pending_database_callbacks_.Add(
+      database_callbacks.release());
+  params.origin = origin;
+  params.name = name;
+  params.transaction_id = transaction_id;
   params.version = version;
   Send(new IndexedDBHostMsg_FactoryOpen(params));
 }

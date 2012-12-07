@@ -85,6 +85,7 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
   void OnIDBFactoryGetDatabaseNames(
       const IndexedDBHostMsg_FactoryGetDatabaseNames_Params& p);
   void OnIDBFactoryOpen(const IndexedDBHostMsg_FactoryOpen_Params& p);
+  void OnIDBFactoryOpenOld(const IndexedDBHostMsg_FactoryOpen_Params& p);
 
   void OnIDBFactoryDeleteDatabase(
       const IndexedDBHostMsg_FactoryDeleteDatabase_Params& p);

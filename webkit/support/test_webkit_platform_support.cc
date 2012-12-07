@@ -379,6 +379,19 @@ class TestWebIDBFactory : public WebKit::WebIDBFactory {
                    dataDir.isEmpty() ? data_dir_ : dataDir);
   }
 
+  virtual void open(const WebString& name,
+                    long long version,
+                    long long transaction_id,
+                    WebKit::WebIDBCallbacks* callbacks,
+                    WebKit::WebIDBDatabaseCallbacks* databaseCallbacks,
+                    const WebKit::WebSecurityOrigin& origin,
+                    WebKit::WebFrame* frame,
+                    const WebString& dataDir) {
+      factory_->open(name, version, transaction_id, callbacks,
+                     databaseCallbacks, origin, frame,
+                     dataDir.isEmpty() ? data_dir_ : dataDir);
+  }
+
   virtual void deleteDatabase(const WebString& name,
                               WebKit::WebIDBCallbacks* callbacks,
                               const WebKit::WebSecurityOrigin& origin,
