@@ -55,7 +55,6 @@ GpuChildThread::GpuChildThread(GpuWatchdogThread* watchdog_thread,
   watchdog_thread_ = watchdog_thread;
 #if defined(OS_WIN)
   target_services_ = NULL;
-  collecting_dx_diagnostics_ = false;
 #endif
 }
 
@@ -64,7 +63,6 @@ GpuChildThread::GpuChildThread(const std::string& channel_id)
       dead_on_arrival_(false) {
 #if defined(OS_WIN)
   target_services_ = NULL;
-  collecting_dx_diagnostics_ = false;
 #endif
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess) ||
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessGPU)) {
@@ -178,23 +176,22 @@ void GpuChildThread::OnCollectGraphicsInfo() {
   GetContentClient()->SetGpuInfo(gpu_info_);
 
 #if defined(OS_WIN)
-  if (!collecting_dx_diagnostics_) {
-    // Prevent concurrent collection of DirectX diagnostics.
-    collecting_dx_diagnostics_ = true;
+  // This is slow, but it's the only thing the unsandboxed GPU process does,
+  // and GpuDataManager prevents us from sending multiple collecting requests,
+  // so it's OK to be blocking.
+  gpu_info_collector::GetDxDiagnostics(&gpu_info_.dx_diagnostics);
+  gpu_info_.finalized = true;
+#endif  // OS_WIN
 
-    // Asynchronously collect the DirectX diagnostics because this can take a
-    // couple of seconds.
-    if (!base::WorkerPool::PostTask(
-        FROM_HERE, base::Bind(&GpuChildThread::CollectDxDiagnostics, this),
-        true)) {
-      // Flag GPU info as complete if the DirectX diagnostics cannot be
-      // collected.
-      collecting_dx_diagnostics_ = false;
-      gpu_info_.finalized = true;
-    }
+  Send(new GpuHostMsg_GraphicsInfoCollected(gpu_info_));
+
+#if defined(OS_WIN)
+  if (!command_line->HasSwitch(switches::kSingleProcess) &&
+      !command_line->HasSwitch(switches::kInProcessGPU)) {
+    // The unsandboxed GPU process fulfilled its duty.  Rest in peace.
+    MessageLoop::current()->Quit();
   }
 #endif  // OS_WIN
-  Send(new GpuHostMsg_GraphicsInfoCollected(gpu_info_));
 }
 
 void GpuChildThread::OnGetVideoMemoryUsageStats() {
@@ -242,29 +239,6 @@ void GpuChildThread::OnDisableWatchdog() {
     watchdog_thread_->Stop();
   }
 }
-
-#if defined(OS_WIN)
-
-// Runs on a worker thread. The GPU process never terminates voluntarily so
-// it is safe to assume that its message loop is valid.
-void GpuChildThread::CollectDxDiagnostics(GpuChildThread* thread) {
-  DxDiagNode node;
-  gpu_info_collector::GetDxDiagnostics(&node);
-
-  thread->message_loop()->PostTask(
-      FROM_HERE, base::Bind(&GpuChildThread::SetDxDiagnostics, thread, node));
-}
-
-// Runs on the main thread.
-void GpuChildThread::SetDxDiagnostics(GpuChildThread* thread,
-                                      const DxDiagNode& node) {
-  thread->gpu_info_.dx_diagnostics = node;
-  thread->gpu_info_.finalized = true;
-  thread->collecting_dx_diagnostics_ = false;
-  thread->Send(new GpuHostMsg_GraphicsInfoCollected(thread->gpu_info_));
-}
-
-#endif
 
 }  // namespace content
 
