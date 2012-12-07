@@ -145,6 +145,7 @@ bool DownloadDatabase::DropDownloadTable() {
 
 void DownloadDatabase::QueryDownloads(
     std::vector<DownloadRow>* results) {
+  DCHECK(results);
   results->clear();
   if (next_db_handle_ < 1)
     next_db_handle_ = 1;

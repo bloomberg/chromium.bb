@@ -68,8 +68,7 @@ class FakeHistoryAdapter : public DownloadHistory::HistoryAdapter {
       const HistoryService::DownloadQueryCallback& callback) {
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     CHECK(expect_query_downloads_.get());
-    callback.Run(expect_query_downloads_.get());
-    expect_query_downloads_.reset();
+    callback.Run(expect_query_downloads_.Pass());
   }
 
   void set_slow_create_download(bool slow) { slow_create_download_ = slow; }

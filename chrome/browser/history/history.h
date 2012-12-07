@@ -462,31 +462,30 @@ class HistoryService : public CancelableRequestProvider,
 
   // Begins a history request to create a new row for a download. 'info'
   // contains all the download's creation state, and 'callback' runs when the
-  // history service request is complete.
-  Handle CreateDownload(
+  // history service request is complete. The callback is called on the thread
+  // that calls CreateDownload().
+  void CreateDownload(
       const history::DownloadRow& info,
-      CancelableRequestConsumerBase* consumer,
       const DownloadCreateCallback& callback);
 
   // Implemented by the caller of 'GetNextDownloadId' below.
   typedef base::Callback<void(int)> DownloadNextIdCallback;
 
-  // Runs the callback with the next available download id.
-  Handle GetNextDownloadId(CancelableRequestConsumerBase* consumer,
-                           const DownloadNextIdCallback& callback);
+  // Runs the callback with the next available download id. The callback is
+  // called on the thread that calls GetNextDownloadId().
+  void GetNextDownloadId(const DownloadNextIdCallback& callback);
 
   // Implemented by the caller of 'QueryDownloads' below, and is called when the
   // history service has retrieved a list of all download state. The call
   typedef base::Callback<void(
-      std::vector<history::DownloadRow>*)>
+      scoped_ptr<std::vector<history::DownloadRow> >)>
           DownloadQueryCallback;
 
   // Begins a history request to retrieve the state of all downloads in the
   // history db. 'callback' runs when the history service request is complete,
-  // at which point 'info' contains an array of history::DownloadRow, one
-  // per download.
-  Handle QueryDownloads(CancelableRequestConsumerBase* consumer,
-                        const DownloadQueryCallback& callback);
+  // at which point 'info' contains an array of history::DownloadRow, one per
+  // download. The callback is called on the thread that calls QueryDownloads().
+  void QueryDownloads(const DownloadQueryCallback& callback);
 
   // Begins a request to clean up entries that has been corrupted (because of
   // the crash, for example).

@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/download/all_download_item_notifier.h"
 #include "chrome/browser/history/history.h"
 #include "content/public/browser/download_item.h"
@@ -47,7 +46,6 @@ class DownloadHistory : public AllDownloadItemNotifier::Observer {
 
    private:
     HistoryService* history_;
-    CancelableRequestConsumer consumer_;
     DISALLOW_COPY_AND_ASSIGN(HistoryAdapter);
   };
 
@@ -95,7 +93,7 @@ class DownloadHistory : public AllDownloadItemNotifier::Observer {
   // Callback from |history_| containing all entries in the downloads database
   // table.
   void QueryCallback(
-      std::vector<history::DownloadRow>* infos);
+      scoped_ptr<std::vector<history::DownloadRow> > infos);
 
   // May add |item| to |history_|.
   void MaybeAddToHistory(content::DownloadItem* item);

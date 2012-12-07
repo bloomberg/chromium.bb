@@ -175,11 +175,9 @@ class FindInPageControllerTest : public InProcessBrowserTest {
   }
 
   void FlushHistoryService() {
-    CancelableRequestConsumer history_consumer;
     HistoryServiceFactory::GetForProfile(
         browser()->profile(), Profile::IMPLICIT_ACCESS)->
-        GetNextDownloadId(&history_consumer,
-                          base::Bind(&HistoryServiceQueried));
+        GetNextDownloadId(base::Bind(&HistoryServiceQueried));
     content::RunMessageLoop();
   }
 };

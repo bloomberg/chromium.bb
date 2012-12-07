@@ -60,20 +60,6 @@ typedef CancelableRequest<HistoryService::ThumbnailDataCallback>
 typedef CancelableRequest<FaviconService::FaviconResultsCallback>
     GetFaviconRequest;
 
-// Downloads ------------------------------------------------------------------
-
-typedef CancelableRequest1<HistoryService::DownloadNextIdCallback,
-                           int/*next_id*/>
-    DownloadNextIdRequest;
-
-
-typedef CancelableRequest1<HistoryService::DownloadQueryCallback,
-                           std::vector<DownloadRow> >
-    DownloadQueryRequest;
-
-typedef CancelableRequest<HistoryService::DownloadCreateCallback>
-    DownloadCreateRequest;
-
 // Segment usage --------------------------------------------------------------
 
 typedef CancelableRequest1<HistoryService::SegmentQueryCallback,

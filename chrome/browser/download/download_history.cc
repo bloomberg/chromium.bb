@@ -26,12 +26,6 @@
 // ChromeDownloadManagerDelegate owns DownloadHistory, and deletes it in
 // Shutdown(), which is called by DownloadManagerImpl::Shutdown() after all
 // DownloadItems are destroyed.
-//
-// Strictly speaking, the weak pointers in the callbacks from the history system
-// are redundant with the CancelableRequestConsumer.
-// TODO(benjhayden) Use PostTaskAndReply with the weak pointers instead of
-// CancelableRequestConsumer. This requires modifying the downloads-related
-// portion of the HistoryService interface.
 
 #include "chrome/browser/download/download_history.h"
 
@@ -148,13 +142,13 @@ DownloadHistory::HistoryAdapter::~HistoryAdapter() {}
 
 void DownloadHistory::HistoryAdapter::QueryDownloads(
     const HistoryService::DownloadQueryCallback& callback) {
-  history_->QueryDownloads(&consumer_, callback);
+  history_->QueryDownloads(callback);
 }
 
 void DownloadHistory::HistoryAdapter::CreateDownload(
     const history::DownloadRow& info,
     const HistoryService::DownloadCreateCallback& callback) {
-  history_->CreateDownload(info, &consumer_, callback);
+  history_->CreateDownload(info, callback);
 }
 
 void DownloadHistory::HistoryAdapter::UpdateDownload(
@@ -211,7 +205,7 @@ void DownloadHistory::RemoveObserver(DownloadHistory::Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void DownloadHistory::QueryCallback(InfoVector* infos) {
+void DownloadHistory::QueryCallback(scoped_ptr<InfoVector> infos) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   // ManagerGoingDown() may have happened before the history loaded.
   if (!notifier_.GetManager())

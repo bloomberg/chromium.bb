@@ -1261,53 +1261,35 @@ void HistoryBackend::GetMostRecentKeywordSearchTerms(
 
 // Downloads -------------------------------------------------------------------
 
-void HistoryBackend::GetNextDownloadId(
-    scoped_refptr<DownloadNextIdRequest> request) {
-  if (request->canceled()) return;
-  if (db_.get()) {
-    request->value = db_->next_download_id();
-  } else {
-    request->value = 0;
-  }
-  request->ForwardResult(request->value);
+void HistoryBackend::GetNextDownloadId(int* id) {
+  if (db_.get())
+    *id = db_->next_download_id();
 }
 
 // Get all the download entries from the database.
-void HistoryBackend::QueryDownloads(
-    scoped_refptr<DownloadQueryRequest> request) {
-  if (request->canceled())
-    return;
+void HistoryBackend::QueryDownloads(std::vector<DownloadRow>* rows) {
   if (db_.get())
-    db_->QueryDownloads(&request->value);
-  request->ForwardResult(&request->value);
+    db_->QueryDownloads(rows);
 }
 
 // Clean up entries that has been corrupted (because of the crash, for example).
 void HistoryBackend::CleanUpInProgressEntries() {
-  if (db_.get()) {
-    // If some "in progress" entries were not updated when Chrome exited, they
-    // need to be cleaned up.
+  // If some "in progress" entries were not updated when Chrome exited, they
+  // need to be cleaned up.
+  if (db_.get())
     db_->CleanUpInProgressEntries();
-  }
 }
 
 // Update a particular download entry.
-void HistoryBackend::UpdateDownload(
-    const history::DownloadRow& data) {
+void HistoryBackend::UpdateDownload(const history::DownloadRow& data) {
   if (db_.get())
     db_->UpdateDownload(data);
 }
 
-// Create a new download entry and pass back the db_handle to it.
-void HistoryBackend::CreateDownload(
-    scoped_refptr<DownloadCreateRequest> request,
-    const history::DownloadRow& history_info) {
-  int64 db_handle = 0;
-  if (!request->canceled()) {
-    if (db_.get())
-      db_handle = db_->CreateDownload(history_info);
-    request->ForwardResult(db_handle);
-  }
+void HistoryBackend::CreateDownload(const history::DownloadRow& history_info,
+                                    int64* db_handle) {
+  if (db_.get())
+    *db_handle = db_->CreateDownload(history_info);
 }
 
 void HistoryBackend::RemoveDownloads(const std::set<int64>& handles) {

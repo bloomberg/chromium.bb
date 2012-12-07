@@ -89,6 +89,18 @@ std::string DeleteDirectiveToString(
   return str;
 }
 
+void DerefDownloadDbHandle(
+    const HistoryService::DownloadCreateCallback& callback,
+    int64* db_handle) {
+  callback.Run(*db_handle);
+}
+
+void DerefDownloadId(
+    const HistoryService::DownloadNextIdCallback& callback,
+    int* id) {
+  callback.Run(*id);
+}
+
 }  // namespace
 
 // Sends messages from the backend to us on the main thread. This must be a
@@ -691,32 +703,54 @@ HistoryService::Handle HistoryService::QueryURL(
 
 // Handle creation of a download by creating an entry in the history service's
 // 'downloads' table.
-HistoryService::Handle HistoryService::CreateDownload(
+void HistoryService::CreateDownload(
     const history::DownloadRow& create_info,
-    CancelableRequestConsumerBase* consumer,
     const HistoryService::DownloadCreateCallback& callback) {
+  DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
-  return Schedule(PRIORITY_NORMAL, &HistoryBackend::CreateDownload, consumer,
-                  new history::DownloadCreateRequest(callback),
-                  create_info);
+  LoadBackendIfNecessary();
+  int64* db_handle = new int64(
+      history::DownloadDatabase::kUninitializedHandle);
+  thread_->message_loop_proxy()->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&HistoryBackend::CreateDownload,
+                 history_backend_.get(),
+                 create_info,
+                 db_handle),
+      base::Bind(&DerefDownloadDbHandle, callback, base::Owned(db_handle)));
 }
 
-HistoryService::Handle HistoryService::GetNextDownloadId(
-    CancelableRequestConsumerBase* consumer,
-    const DownloadNextIdCallback& callback) {
+void HistoryService::GetNextDownloadId(const DownloadNextIdCallback& callback) {
+  DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
-  return Schedule(PRIORITY_NORMAL, &HistoryBackend::GetNextDownloadId, consumer,
-                  new history::DownloadNextIdRequest(callback));
+  LoadBackendIfNecessary();
+  int* id = new int(history::DownloadDatabase::kUninitializedHandle);
+  thread_->message_loop_proxy()->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&HistoryBackend::GetNextDownloadId,
+                 history_backend_.get(),
+                 id),
+      base::Bind(&DerefDownloadId, callback, base::Owned(id)));
 }
 
 // Handle queries for a list of all downloads in the history database's
 // 'downloads' table.
-HistoryService::Handle HistoryService::QueryDownloads(
-    CancelableRequestConsumerBase* consumer,
+void HistoryService::QueryDownloads(
     const DownloadQueryCallback& callback) {
+  DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
-  return Schedule(PRIORITY_NORMAL, &HistoryBackend::QueryDownloads, consumer,
-                  new history::DownloadQueryRequest(callback));
+  LoadBackendIfNecessary();
+  std::vector<history::DownloadRow>* rows =
+    new std::vector<history::DownloadRow>();
+  scoped_ptr<std::vector<history::DownloadRow> > scoped_rows(rows);
+  // Beware! The first Bind() does not simply |scoped_rows.get()| because
+  // base::Passed(&scoped_rows) nullifies |scoped_rows|, and compilers do not
+  // guarantee that the first Bind's arguments are evaluated before the second
+  // Bind's arguments.
+  thread_->message_loop_proxy()->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&HistoryBackend::QueryDownloads, history_backend_.get(), rows),
+      base::Bind(callback, base::Passed(&scoped_rows)));
 }
 
 // Changes all IN_PROGRESS in the database entries to CANCELED.
