@@ -79,12 +79,6 @@
 #include "chrome/common/descriptors_android.h"
 #endif
 
-#if defined(TOOLKIT_GTK)
-#include <gdk/gdk.h>
-#include <glib.h>
-#include <gtk/gtk.h>
-#endif
-
 #if defined(USE_X11)
 #include <stdlib.h>
 #include <string.h>
