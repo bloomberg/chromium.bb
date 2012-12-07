@@ -1,124 +1,201 @@
 <!DOCTYPE html>
 <html i18n-values="dir:textdirection">
 <head>
-<title i18n-content="title"></title>
-<style type="text/css">
+  <meta charset="utf-8">
+  <title i18n-content="title"></title>
+  <style type="text/css">
 
-html {
-  background-color: rgb(92, 0, 0);
-  background-image: url("ssl_roadblock_background.png");
-  background-repeat: repeat-x;
-  height: 100%;
-}
-
-body {
-  font-family: Helvetica, Arial, sans-serif;
-  margin: 0;
-}
-
-.cell {
-  padding: 40px;
-}
-
-.box {
-  -webkit-box-shadow: 3px 3px 8px #200;
-  background-color: white;
-  border-radius: 5px;
-  color: black;
-  font-size: 10pt;
-  line-height: 16pt;
-  min-width: 500px;
-  max-width: 800px;
-  padding: 20px;
-  position: relative;
-  text-align: start;
-  width: 80%;
-}
-
-#twisty_closed {
-  display: inline;
-}
-
-html[dir='rtl'] #twisty_closed {
-  -webkit-transform: scaleX(-1);
-}
-
-.icon {
-  position:absolute;
-}
-
-.title {
-  color: #660000;
-  font-size: 18pt;
-  font-weight: bold;
-  line-height: 140%;
-  margin: 0 77px 6pt;
-}
-
-.main {
-  margin: 1em 80px;
-}
-
-.example {
-  border-top: 1px solid #ccc;
-  margin: 0 80px;
-  padding-top: 6px;
-}
-
-.moreinfotitle {
-  margin-left: 5px;
-  margin-right: 5px;
-}
-
-</style>
-
-<script>
-  function $(o) {return document.getElementById(o);}
-
-  function sendCommand(cmd) {
-    window.domAutomationController.setAutomationId(1);
-    window.domAutomationController.send(cmd);
+  html {
+    background-color: rgb(92, 0, 0);
+    background-image: url(ssl_roadblock_background.png);
+    background-repeat: repeat-x;
+    height: 100%;
+  }
+  
+  html[dir='rtl'] #twisty-closed {
+    -webkit-transform: scaleX(-1);
   }
 
-  function toggleMoreInfo(collapse) {
-    $('more_info_long').hidden = collapse;
-    $('more_info_short').hidden = !collapse;
+  body {
+    font-family: Helvetica, Arial, sans-serif;
+    margin: 0;
   }
-</script>
+
+  .box {
+    -webkit-box-shadow: 3px 3px 8px #200;
+    background-color: white;
+    border-radius: 5px;
+    color: black;
+    font-size: 10pt;
+    line-height: 16pt;
+    margin: 40px auto auto auto;
+    max-width: 800px;
+    min-width: 500px;
+    padding: 20px;
+    position: relative;
+    width: 80%;
+  }
+
+  .icon {
+    position:absolute;
+  }
+  
+  .main {
+    margin: 1em 80px;
+  }
+
+  .more {
+    border-top: 1px solid #ccc;
+    margin: 0 80px;
+    padding-top: 6px;
+  }
+
+  .more-info-title {
+    margin-left: 5px;
+    margin-right: 5px;
+  }
+
+  .more-link {
+    color: #0000FF;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+
+  .title {
+    color: #660000;
+    font-size: 18pt;
+    font-weight: bold;
+    line-height: 140%;
+    margin: 0 77px 6pt;
+  }
+
+  .twisty {
+    display: inline;
+  }
+  </style>
+
+  <script>
+    // Should match SSLBlockingPageCommands in ssl_blocking_page.cc.
+    var CMD_DONT_PROCEED = 0;
+    var CMD_PROCEED = 1;
+    var CMD_FOCUS = 2;
+    var CMD_MORE = 3;
+    
+    var showedMore = false;
+    var keyPressState = 0;
+    var gainFocus = false;
+
+    function $(o) {
+      return document.getElementById(o);
+    }
+
+    function sendCommand(cmd) {
+      window.domAutomationController.setAutomationId(1);
+      window.domAutomationController.send(cmd);
+    }
+
+    function toggleMoreInfo(collapse) {
+      $('more-info-long').hidden = collapse;
+      $('more-info-short').hidden = !collapse;
+      if (!collapse && !showedMore) {
+        sendCommand(CMD_MORE);
+        showedMore = true;
+      }
+    }
+
+    // This allows errors to be skippped by typing "proceed" into the page.
+    function keyPressHandler(e) {
+      var sequence = 'proceed';
+      if (sequence.charCodeAt(keyPressState) == e.keyCode) {
+        keyPressState++;
+        if (keyPressState == sequence.length) {
+          sendCommand(CMD_PROCEED);
+          keyPressState = 0;
+        }
+      } else {
+        keyPressState = 0;
+      }
+    }
+
+    // Supports UMA timing, which starts after the warning is first viewed.
+    function handleFocusEvent() {
+      if (gainFocus == false) {
+        sendCommand(CMD_FOCUS);
+        gainFocus = true;
+      }
+    }
+
+    // UI modifications and event listeners that take place after load.
+    function setupEvents() {
+      if ($('error-type').textContent != '') {
+        // This is the blocking page you can click through.
+        $('proceed-button').hidden = false;
+        $('proceed-button').addEventListener('click', function() {
+          sendCommand(CMD_PROCEED);
+        });
+      } else {
+        document.addEventListener('keypress', keyPressHandler);
+      }
+
+      if ($('more-info-title').textContent == '') {
+        // Malware warning currently doesn't have more info.
+        $('more-info-short').hidden = true;
+        $('more-info-long').hidden = true;
+        $('twisty-closed').style.display = 'none';
+      } else {
+        $('more-info-short').addEventListener('click', function() {
+          toggleMoreInfo(false);
+        });
+        $('more-info-long').addEventListener('click', function() {
+          toggleMoreInfo(true);
+        });
+      }
+
+      $('exit-button').addEventListener('click', function() {
+        sendCommand(CMD_DONT_PROCEED); 
+      });
+
+      document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+      });
+    }
+
+    window.addEventListener('focus', handleFocusEvent);
+    document.addEventListener('DOMContentLoaded', setupEvents);
+  </script>
 </head>
-<body oncontextmenu="return false;">
-<table width="100%" cellspacing="0" cellpadding="0">
-  <td class="cell" valign="middle" align="center">
-    <div class="box">
-      <div class="icon"><img src="ssl_roadblock_icon.png" alt="SSL Error Icon"
-          onmousedown="return false;"></div>
-      <div class="title" i18n-content="headLine"></div>
-      <div class="main" i18n-values=".innerHTML:description;dir:textdirection"></div>
-      <div class="main" i18n-values=".innerHTML:shouldNotProceed"></div>
-      <div class="main">
-        <button i18n-content="proceed" onclick="sendCommand(1);">
-        </button>
-        <button i18n-content="exit" onclick="sendCommand(0);">
-        </button>
-      </div>
-      <div class="example" id="more_info_short">
-        <a href="#" onclick="toggleMoreInfo(false); return false;"
-            onmousedown="return false;">
-            <img id="twisty_closed" src="twisty_closed.png" border="0"><span i18n-content="moreInfoTitle" class="moreinfotitle"></span>
-        </a>
-      </div>
-      <div class="example" id="more_info_long" hidden>
-        <a href="#" onclick="toggleMoreInfo(true); return false;"
-            onmousedown="return false;">
-            <img src="twisty_open.png" border="0"><span i18n-content="moreInfoTitle" class="moreinfotitle"></span>
-        </a>
-        <p i18n-values=".innerHTML:moreInfo1"></p>
-        <p i18n-values=".innerHTML:moreInfo2"></p>
-        <p i18n-values=".innerHTML:moreInfo3"></p>
-        <p i18n-values=".innerHTML:moreInfo4"></p>
-        <p i18n-values=".innerHTML:moreInfo5"></p>
-      </div>
-  </td>
+<body>
+  <div class="box">
+    <div class="icon">
+      <img src="ssl_roadblock_icon.png" alt="SSL Error Icon">
+    </div>
+    <div class="title" i18n-content="headLine"></div>
+    <div class="main" i18n-values=".innerHTML:description;dir:textdirection"></div>
+    <div class="main" i18n-values=".innerHTML:reasonForNotProceeding"></div>
+    <div class="main">
+      <button i18n-content="proceed" id="proceed-button" hidden></button>
+      <button i18n-content="exit" id="exit-button"></button>
+    </div>
+    <div class="more" id="more-info-short">
+      <span class="more-link">
+        <img id="twisty-closed" class="twisty" src="twisty_closed.png" 
+            border="0"><span i18n-content="moreInfoTitle" id="more-info-title"
+            class="show-more-info-title"></span>
+      </span>
+    </div>
+    <div class="more" id="more-info-long" hidden>
+      <span class="more-link">
+        <img class="twisty" src="twisty_open.png" border="0"><span 
+            i18n-content="moreInfoTitle" class="more-info-title"></span>
+      </span>
+      <p i18n-values=".innerHTML:moreInfo1"></p>
+      <p i18n-values=".innerHTML:moreInfo2"></p>
+      <p i18n-values=".innerHTML:moreInfo3"></p>
+      <p i18n-values=".innerHTML:moreInfo4"></p>
+      <p i18n-values=".innerHTML:moreInfo5"></p>
+    </div>
+  </div>
+  <span id="error-type" i18n-content="errorType" hidden></span>
 </table>
 </body>
 </html>

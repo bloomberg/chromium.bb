@@ -37,6 +37,20 @@ using content::InterstitialPage;
 using content::NavigationController;
 using content::NavigationEntry;
 
+#define HISTOGRAM_INTERSTITIAL_SMALL_TIME(name, sample) \
+    UMA_HISTOGRAM_CUSTOM_TIMES( \
+        name, \
+        sample, \
+        base::TimeDelta::FromMilliseconds(400), \
+        base::TimeDelta::FromMinutes(15), 75);
+
+#define HISTOGRAM_INTERSTITIAL_LARGE_TIME(name, sample) \
+    UMA_HISTOGRAM_CUSTOM_TIMES( \
+        name, \
+        sample, \
+        base::TimeDelta::FromMilliseconds(400), \
+        base::TimeDelta::FromMinutes(20), 50);
+
 namespace {
 
 // kMalware1 is the SHA1 SPKI hash of a key used by a piece of malware that MS
@@ -87,33 +101,94 @@ bool IsSpecialCaseCertError(const net::SSLInfo& ssl_info,
   return false;
 }
 
+// These represent the commands sent by ssl_roadblock.html.
+enum SSLBlockingPageCommands {
+  CMD_DONT_PROCEED,
+  CMD_PROCEED,
+  CMD_FOCUS,
+  CMD_MORE,
+};
+
+// Events for UMA.
 enum SSLBlockingPageEvent {
-  SHOW,
-  PROCEED,
-  DONT_PROCEED,
-  UNUSED_ENUM,
+  SHOW_ALL,
+  SHOW_OVERRIDABLE,
+  PROCEED_OVERRIDABLE,
+  PROCEED_NAME,
+  PROCEED_DATE,
+  PROCEED_AUTHORITY,
+  DONT_PROCEED_OVERRIDABLE,
+  DONT_PROCEED_NAME,
+  DONT_PROCEED_DATE,
+  DONT_PROCEED_AUTHORITY,
+  MORE,
+  UNUSED_BLOCKING_PAGE_EVENT,
 };
 
 void RecordSSLBlockingPageEventStats(SSLBlockingPageEvent event) {
-  UMA_HISTOGRAM_ENUMERATION("interstial.ssl", event, UNUSED_ENUM);
+  UMA_HISTOGRAM_ENUMERATION("interstitial.ssl",
+                            event,
+                            UNUSED_BLOCKING_PAGE_EVENT);
 }
 
 void RecordSSLBlockingPageTimeStats(
     bool proceed,
     int cert_error,
+    bool overridable,
     const base::TimeTicks& start_time,
     const base::TimeTicks& end_time) {
-  UMA_HISTOGRAM_ENUMERATION("interstial.ssl_error_type",
+  UMA_HISTOGRAM_ENUMERATION("interstitial.ssl_error_type",
      SSLErrorInfo::NetErrorToErrorType(cert_error), SSLErrorInfo::END_OF_ENUM);
+  if (start_time.is_null() || !overridable) {
+    // A null start time will occur if the page never came into focus and the
+    // user quit without seeing it. If so, we don't record the time.
+    // The user might not have an option except to turn back; that happens
+    // if overridable is true.  If so, the time/outcome isn't meaningful.
+    return;
+  }
   base::TimeDelta delta = end_time - start_time;
   if (proceed) {
-    UMA_HISTOGRAM_CUSTOM_TIMES("interstial.ssl_accept_time", delta,
-        base::TimeDelta::FromMilliseconds(30),
-        base::TimeDelta::FromMinutes(30), 50);
-  } else {
-    UMA_HISTOGRAM_CUSTOM_TIMES("interstial.ssl_reject_time", delta,
-        base::TimeDelta::FromMilliseconds(30),
-        base::TimeDelta::FromMinutes(30), 50);
+    RecordSSLBlockingPageEventStats(PROCEED_OVERRIDABLE);
+    HISTOGRAM_INTERSTITIAL_LARGE_TIME("interstitial.ssl_accept_time", delta);
+  } else if (!proceed) {
+    RecordSSLBlockingPageEventStats(DONT_PROCEED_OVERRIDABLE);
+    HISTOGRAM_INTERSTITIAL_LARGE_TIME("interstitial.ssl_reject_time", delta);
+  }
+  SSLErrorInfo::ErrorType type = SSLErrorInfo::NetErrorToErrorType(cert_error);
+  switch (type) {
+    case SSLErrorInfo::CERT_COMMON_NAME_INVALID: {
+      HISTOGRAM_INTERSTITIAL_SMALL_TIME(
+          "interstitial.common_name_invalid_time",
+          delta);
+      if (proceed)
+        RecordSSLBlockingPageEventStats(PROCEED_NAME);
+      else
+        RecordSSLBlockingPageEventStats(DONT_PROCEED_NAME);
+      break;
+    }
+    case SSLErrorInfo::CERT_DATE_INVALID: {
+      HISTOGRAM_INTERSTITIAL_SMALL_TIME(
+          "interstitial.date_invalid_time",
+          delta);
+      if (proceed)
+        RecordSSLBlockingPageEventStats(PROCEED_DATE);
+      else
+        RecordSSLBlockingPageEventStats(DONT_PROCEED_DATE);
+      break;
+    }
+    case SSLErrorInfo::CERT_AUTHORITY_INVALID: {
+      HISTOGRAM_INTERSTITIAL_SMALL_TIME(
+          "interstitial.authority_invalid_time",
+          delta);
+      if (proceed)
+        RecordSSLBlockingPageEventStats(PROCEED_AUTHORITY);
+      else
+        RecordSSLBlockingPageEventStats(DONT_PROCEED_AUTHORITY);
+      break;
+    }
+    default: {
+      break;
+    }
   }
 }
 
@@ -136,10 +211,13 @@ SSLBlockingPage::SSLBlockingPage(
       request_url_(request_url),
       overridable_(overridable),
       strict_enforcement_(strict_enforcement) {
-  RecordSSLBlockingPageEventStats(SHOW);
+  RecordSSLBlockingPageEventStats(SHOW_ALL);
+  if (overridable_ && !strict_enforcement_)
+    RecordSSLBlockingPageEventStats(SHOW_OVERRIDABLE);
+
   interstitial_page_ = InterstitialPage::Create(
       web_contents_, true, request_url, this);
-  display_start_time_ = base::TimeTicks::Now();
+  display_start_time_ = TimeTicks();
   interstitial_page_->Show();
 }
 
@@ -179,6 +257,16 @@ std::string SSLBlockingPage::GetHTMLContents() {
       overridable_ = true;
       strict_enforcement_ = false;
     }
+
+    // The malware warning doesn't have any "more info" at the moment;
+    // putting placeholders, and ssl_roadblock will conditionally
+    // hide the twisty & the empty places.
+    strings.SetString("moreInfoTitle", "");
+    strings.SetString("moreInfo1", "");
+    strings.SetString("moreInfo2", "");
+    strings.SetString("moreInfo3", "");
+    strings.SetString("moreInfo4", "");
+    strings.SetString("moreInfo5", "");
   } else {
     SSLErrorInfo error_info = SSLErrorInfo::CreateError(
         SSLErrorInfo::NetErrorToErrorType(cert_error_), ssl_info_.cert,
@@ -186,36 +274,38 @@ std::string SSLBlockingPage::GetHTMLContents() {
 
     strings.SetString("headLine", error_info.title());
     strings.SetString("description", error_info.details());
-
+    strings.SetString("moreInfoTitle",
+        l10n_util::GetStringUTF16(IDS_CERT_ERROR_EXTRA_INFO_TITLE));
     SetExtraInfo(&strings, error_info.extra_information());
   }
 
-  strings.SetString("moreInfoTitle",
-                    l10n_util::GetStringUTF16(IDS_CERT_ERROR_EXTRA_INFO_TITLE));
+  strings.SetString("exit",
+                    l10n_util::GetStringUTF16(IDS_SSL_BLOCKING_PAGE_EXIT));
 
-  int resource_id;
+  int resource_id = IDR_SSL_ROAD_BLOCK_HTML;
   if (overridable_ && !strict_enforcement_) {
-    resource_id = IDR_SSL_ROAD_BLOCK_HTML;
     strings.SetString("title",
                       l10n_util::GetStringUTF16(IDS_SSL_BLOCKING_PAGE_TITLE));
     strings.SetString("proceed",
                       l10n_util::GetStringUTF16(IDS_SSL_BLOCKING_PAGE_PROCEED));
-    strings.SetString("exit",
-                      l10n_util::GetStringUTF16(IDS_SSL_BLOCKING_PAGE_EXIT));
-    strings.SetString("shouldNotProceed",
+    strings.SetString("reasonForNotProceeding",
                       l10n_util::GetStringUTF16(
                           IDS_SSL_BLOCKING_PAGE_SHOULD_NOT_PROCEED));
+    // The value of errorType doesn't matter; we actually just check if it's
+    // empty or not in ssl_roadblock.
+    strings.SetString("errorType",
+                      l10n_util::GetStringUTF16(IDS_SSL_BLOCKING_PAGE_TITLE));
   } else {
-    resource_id = IDR_SSL_ERROR_HTML;
     strings.SetString("title",
                       l10n_util::GetStringUTF16(IDS_SSL_ERROR_PAGE_TITLE));
-    strings.SetString("back",
-                      l10n_util::GetStringUTF16(IDS_SSL_ERROR_PAGE_BACK));
     if (strict_enforcement_) {
-      strings.SetString("cannotProceed",
+      strings.SetString("reasonForNotProceeding",
                         l10n_util::GetStringUTF16(
                             IDS_SSL_ERROR_PAGE_CANNOT_PROCEED));
+    } else {
+      strings.SetString("reasonForNotProceeding", "");
     }
+    strings.SetString("errorType", "");
   }
 
   strings.SetString("textdirection", base::i18n::IsRTL() ? "rtl" : "ltr");
@@ -242,11 +332,18 @@ void SSLBlockingPage::OverrideEntry(NavigationEntry* entry) {
       content::NotificationService::NoDetails());
 }
 
+// Matches events defined in ssl_error.html and ssl_roadblock.html.
 void SSLBlockingPage::CommandReceived(const std::string& command) {
-  if (command == "1") {
-    interstitial_page_->Proceed();
-  } else {
+  int cmd = atoi(command.c_str());
+  if (cmd == CMD_DONT_PROCEED) {
     interstitial_page_->DontProceed();
+  } else if (cmd == CMD_PROCEED) {
+    interstitial_page_->Proceed();
+  } else if (cmd == CMD_FOCUS) {
+    // Start recording the time when the page is first in focus
+    display_start_time_ = base::TimeTicks::Now();
+  } else if (cmd == CMD_MORE) {
+    RecordSSLBlockingPageEventStats(MORE);
   }
 }
 
@@ -258,18 +355,18 @@ void SSLBlockingPage::OverrideRendererPrefs(
 }
 
 void SSLBlockingPage::OnProceed() {
-  RecordSSLBlockingPageTimeStats(true, cert_error_, display_start_time_,
+  RecordSSLBlockingPageTimeStats(true, cert_error_,
+      overridable_ && !strict_enforcement_, display_start_time_,
       base::TimeTicks::Now());
-  RecordSSLBlockingPageEventStats(PROCEED);
 
   // Accepting the certificate resumes the loading of the page.
   NotifyAllowCertificate();
 }
 
 void SSLBlockingPage::OnDontProceed() {
-  RecordSSLBlockingPageTimeStats(false, cert_error_, display_start_time_,
-      base::TimeTicks::Now());
-  RecordSSLBlockingPageEventStats(DONT_PROCEED);
+  RecordSSLBlockingPageTimeStats(false, cert_error_,
+    overridable_ && !strict_enforcement_, display_start_time_,
+    base::TimeTicks::Now());
 
   NotifyDenyCertificate();
 }

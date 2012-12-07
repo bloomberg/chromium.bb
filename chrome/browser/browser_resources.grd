@@ -49,7 +49,6 @@
         <structure name="IDR_OOBE_HTML" file="resources\chromeos\login\oobe.html" flattenhtml="true" type="chrome_html" />
       </if>
       <structure name="IDR_READER_OUT_OF_DATE_HTML" file="resources\reader_out_of_date.html" flattenhtml="true" type="chrome_html" />
-      <structure name="IDR_SSL_ERROR_HTML" file="resources\ssl_error.html" flattenhtml="true" type="chrome_html" />
       <structure name="IDR_SSL_ROAD_BLOCK_HTML" file="resources\ssl_roadblock.html" flattenhtml="true" type="chrome_html" />
       <structure name="IDR_SAFE_BROWSING_MALWARE_BLOCK_V2" file="resources\safe_browsing\malware_block_v2.html" flattenhtml="true" type="chrome_html" />
     </structures>
