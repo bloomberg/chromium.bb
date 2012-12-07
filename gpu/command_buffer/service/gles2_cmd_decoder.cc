@@ -719,8 +719,9 @@ class GLES2DecoderImpl : public GLES2Decoder {
       GLsizei width,
       GLsizei height);
 
-  // Wrapper for TexImage2D commands.
-  error::Error DoTexImage2D(
+  // Validation for TexImage2D commands.
+  bool ValidateTexImage2D(
+      const char* function_name,
       GLenum target,
       GLint level,
       GLenum internal_format,
@@ -732,8 +733,35 @@ class GLES2DecoderImpl : public GLES2Decoder {
       const void* pixels,
       uint32 pixels_size);
 
+  // Wrapper for TexImage2D commands.
+  void DoTexImage2D(
+      GLenum target,
+      GLint level,
+      GLenum internal_format,
+      GLsizei width,
+      GLsizei height,
+      GLint border,
+      GLenum format,
+      GLenum type,
+      const void* pixels,
+      uint32 pixels_size);
+
+  // Validation for TexSubImage2D.
+  bool ValidateTexSubImage2D(
+      error::Error* error,
+      const char* function_name,
+      GLenum target,
+      GLint level,
+      GLint xoffset,
+      GLint yoffset,
+      GLsizei width,
+      GLsizei height,
+      GLenum format,
+      GLenum type,
+      const void * data);
+
   // Wrapper for TexSubImage2D.
-  void DoTexSubImage2D(
+  error::Error DoTexSubImage2D(
       GLenum target,
       GLint level,
       GLint xoffset,
@@ -7401,66 +7429,84 @@ bool GLES2DecoderImpl::ValidateTextureParameters(
   return true;
 }
 
-error::Error GLES2DecoderImpl::DoTexImage2D(
-  GLenum target,
-  GLint level,
-  GLenum internal_format,
-  GLsizei width,
-  GLsizei height,
-  GLint border,
-  GLenum format,
-  GLenum type,
-  const void* pixels,
-  uint32 pixels_size) {
+bool GLES2DecoderImpl::ValidateTexImage2D(
+    const char* function_name,
+    GLenum target,
+    GLint level,
+    GLenum internal_format,
+    GLsizei width,
+    GLsizei height,
+    GLint border,
+    GLenum format,
+    GLenum type,
+    const void* pixels,
+    uint32 pixels_size) {
   if (!validators_->texture_target.IsValid(target)) {
-    SetGLErrorInvalidEnum("glTexImage2D", target, "target");
-    return error::kNoError;
+    SetGLErrorInvalidEnum(function_name, target, "target");
+    return false;
   }
   if (!validators_->texture_format.IsValid(internal_format)) {
-    SetGLErrorInvalidEnum("glTexImage2D", internal_format, "internal_format");
-    return error::kNoError;
+    SetGLErrorInvalidEnum(function_name, internal_format, "internal_format");
+    return false;
   }
   if (!validators_->texture_format.IsValid(format)) {
-    SetGLErrorInvalidEnum("glTexImage2D", format, "format");
-    return error::kNoError;
+    SetGLErrorInvalidEnum(function_name, format, "format");
+    return false;
   }
   if (!validators_->pixel_type.IsValid(type)) {
-    SetGLErrorInvalidEnum("glTexImage2D", type, "type");
-    return error::kNoError;
+    SetGLErrorInvalidEnum(function_name, type, "type");
+    return false;
   }
   if (format != internal_format) {
     SetGLError(GL_INVALID_OPERATION,
-               "glTexImage2D", "format != internalFormat");
-    return error::kNoError;
+               function_name, "format != internalFormat");
+    return false;
   }
-  if (!ValidateTextureParameters("glTexImage2D", target, format, type, level)) {
-    return error::kNoError;
+  if (!ValidateTextureParameters(function_name, target, format, type, level)) {
+    return false;
   }
   if (!texture_manager()->ValidForTarget(target, level, width, height, 1) ||
       border != 0) {
-    SetGLError(GL_INVALID_VALUE, "glTexImage2D", "dimensions out of range");
-    return error::kNoError;
+    SetGLError(GL_INVALID_VALUE, function_name, "dimensions out of range");
+    return false;
   }
   if ((GLES2Util::GetChannelsForFormat(format) &
        (GLES2Util::kDepth | GLES2Util::kStencil)) != 0 && pixels) {
     SetGLError(
         GL_INVALID_OPERATION,
-        "glTexImage2D", "can not supply data for depth or stencil textures");
-    return error::kNoError;
+        function_name, "can not supply data for depth or stencil textures");
+    return false;
   }
   TextureManager::TextureInfo* info = GetTextureInfoForTarget(target);
   if (!info) {
     SetGLError(GL_INVALID_OPERATION,
-               "glTexImage2D", "unknown texture for target");
-    return error::kNoError;
+               function_name, "unknown texture for target");
+    return false;
   }
-
   if (info->IsImmutable()) {
     SetGLError(GL_INVALID_OPERATION,
-               "glTexImage2D", "texture is immutable");
-    return error::kNoError;
+               function_name, "texture is immutable");
+    return false;
   }
+  return true;
+}
 
+void GLES2DecoderImpl::DoTexImage2D(
+    GLenum target,
+    GLint level,
+    GLenum internal_format,
+    GLsizei width,
+    GLsizei height,
+    GLint border,
+    GLenum format,
+    GLenum type,
+    const void* pixels,
+    uint32 pixels_size) {
+  if (!ValidateTexImage2D("glTexImage2D", target, level, internal_format,
+      width, height, border, format, type, pixels, pixels_size)) {
+    return;
+  }
+  TextureManager::TextureInfo* info = GetTextureInfoForTarget(target);
   GLsizei tex_width = 0;
   GLsizei tex_height = 0;
   GLenum tex_type = 0;
@@ -7478,7 +7524,7 @@ error::Error GLES2DecoderImpl::DoTexImage2D(
         target, level, internal_format, width, height, 1, border, format, type,
         false);
     tex_image_2d_failed_ = false;
-    return error::kNoError;
+    return;
   }
 
   if (info->IsAttachedToFramebuffer()) {
@@ -7492,7 +7538,7 @@ error::Error GLES2DecoderImpl::DoTexImage2D(
     glTexSubImage2D(target, level, 0, 0, width, height, format, type, pixels);
     texture_manager()->SetLevelCleared(info, target, level);
     tex_image_2d_failed_ = false;
-    return error::kNoError;
+    return;
   }
 
   CopyRealGLErrorsToWrapper();
@@ -7507,7 +7553,7 @@ error::Error GLES2DecoderImpl::DoTexImage2D(
         pixels != NULL);
     tex_image_2d_failed_ = false;
   }
-  return error::kNoError;
+  return;
 }
 
 error::Error GLES2DecoderImpl::HandleTexImage2D(
@@ -7538,9 +7584,11 @@ error::Error GLES2DecoderImpl::HandleTexImage2D(
       return error::kOutOfBounds;
     }
   }
-  return DoTexImage2D(
+
+  DoTexImage2D(
       target, level, internal_format, width, height, border, format, type,
       pixels, pixels_size);
+  return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleTexImage2DImmediate(
@@ -7838,54 +7886,97 @@ void GLES2DecoderImpl::DoCopyTexSubImage2D(
   }
 }
 
-void GLES2DecoderImpl::DoTexSubImage2D(
-  GLenum target,
-  GLint level,
-  GLint xoffset,
-  GLint yoffset,
-  GLsizei width,
-  GLsizei height,
-  GLenum format,
-  GLenum type,
-  const void * data) {
+bool GLES2DecoderImpl::ValidateTexSubImage2D(
+    error::Error* error,
+    const char* function_name,
+    GLenum target,
+    GLint level,
+    GLint xoffset,
+    GLint yoffset,
+    GLsizei width,
+    GLsizei height,
+    GLenum format,
+    GLenum type,
+    const void * data) {
+  (*error) = error::kNoError;
+  if (!validators_->texture_target.IsValid(target)) {
+    SetGLErrorInvalidEnum(function_name, target, "target");
+    return false;
+  }
+  if (width < 0) {
+    SetGLError(GL_INVALID_VALUE, function_name, "width < 0");
+    return false;
+  }
+  if (height < 0) {
+    SetGLError(GL_INVALID_VALUE, function_name, "height < 0");
+    return false;
+  }
+  if (!validators_->texture_format.IsValid(format)) {
+    SetGLErrorInvalidEnum(function_name, format, "format");
+    return false;
+  }
+  if (!validators_->pixel_type.IsValid(type)) {
+    SetGLErrorInvalidEnum(function_name, type, "type");
+    return false;
+  }
   TextureManager::TextureInfo* info = GetTextureInfoForTarget(target);
   if (!info) {
     SetGLError(GL_INVALID_OPERATION,
-               "glTexSubImage2D", "unknown texture for target");
-    return;
+               function_name, "unknown texture for target");
+    return false;
   }
   GLenum current_type = 0;
   GLenum internal_format = 0;
   if (!info->GetLevelType(target, level, &current_type, &internal_format)) {
     SetGLError(
-        GL_INVALID_OPERATION, "glTexSubImage2D", "level does not exist.");
-    return;
+        GL_INVALID_OPERATION, function_name, "level does not exist.");
+    return false;
   }
   if (format != internal_format) {
     SetGLError(GL_INVALID_OPERATION,
-               "glTexSubImage2D", "format does not match internal format.");
-    return;
+               function_name, "format does not match internal format.");
+    return false;
   }
   if (type != current_type) {
     SetGLError(GL_INVALID_OPERATION,
-               "glTexSubImage2D", "type does not match type of texture.");
-    return;
+               function_name, "type does not match type of texture.");
+    return false;
   }
-
   if (!info->ValidForTexture(
           target, level, xoffset, yoffset, width, height, format, type)) {
-    SetGLError(GL_INVALID_VALUE, "glTexSubImage2D", "bad dimensions.");
-    return;
+    SetGLError(GL_INVALID_VALUE, function_name, "bad dimensions.");
+    return false;
   }
-
   if ((GLES2Util::GetChannelsForFormat(format) &
        (GLES2Util::kDepth | GLES2Util::kStencil)) != 0) {
     SetGLError(
         GL_INVALID_OPERATION,
-        "glTexSubImage2D", "can not supply data for depth or stencil textures");
-    return;
+        function_name, "can not supply data for depth or stencil textures");
+    return false;
   }
+  if (data == NULL) {
+    (*error) = error::kOutOfBounds;
+    return false;
+  }
+  return true;
+}
 
+error::Error GLES2DecoderImpl::DoTexSubImage2D(
+    GLenum target,
+    GLint level,
+    GLint xoffset,
+    GLint yoffset,
+    GLsizei width,
+    GLsizei height,
+    GLenum format,
+    GLenum type,
+    const void * data) {
+  error::Error error = error::kNoError;
+  if (!ValidateTexSubImage2D(&error, "glTexSubImage2D", target, level,
+      xoffset, yoffset, width, height, format, type, data)) {
+    return error;
+  }
+  TextureManager::TextureInfo* info = GetTextureInfoForTarget(target);
   GLsizei tex_width = 0;
   GLsizei tex_height = 0;
   bool ok = info->GetLevelSize(target, level, &tex_width, &tex_height);
@@ -7894,12 +7985,12 @@ void GLES2DecoderImpl::DoTexSubImage2D(
       width != tex_width || height != tex_height) {
     if (!texture_manager()->ClearTextureLevel(this, info, target, level)) {
       SetGLError(GL_OUT_OF_MEMORY, "glTexSubImage2D", "dimensions too big");
-      return;
+      return error::kNoError;
     }
     ScopedTextureUploadTimer timer(this);
     glTexSubImage2D(
         target, level, xoffset, yoffset, width, height, format, type, data);
-    return;
+    return error::kNoError;
   }
 
   if (teximage2d_faster_than_texsubimage2d_ && !info->IsImmutable()) {
@@ -7914,6 +8005,7 @@ void GLES2DecoderImpl::DoTexSubImage2D(
         target, level, xoffset, yoffset, width, height, format, type, data);
   }
   texture_manager()->SetLevelCleared(info, target, level);
+  return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleTexSubImage2D(
@@ -7939,32 +8031,8 @@ error::Error GLES2DecoderImpl::HandleTexSubImage2D(
   }
   const void* pixels = GetSharedMemoryAs<const void*>(
       c.pixels_shm_id, c.pixels_shm_offset, data_size);
-  if (!validators_->texture_target.IsValid(target)) {
-    SetGLErrorInvalidEnum("glTexSubImage2D", target, "target");
-    return error::kNoError;
-  }
-  if (width < 0) {
-    SetGLError(GL_INVALID_VALUE, "glTexSubImage2D", "width < 0");
-    return error::kNoError;
-  }
-  if (height < 0) {
-    SetGLError(GL_INVALID_VALUE, "glTexSubImage2D", "height < 0");
-    return error::kNoError;
-  }
-  if (!validators_->texture_format.IsValid(format)) {
-    SetGLErrorInvalidEnum("glTexSubImage2D", format, "format");
-    return error::kNoError;
-  }
-  if (!validators_->pixel_type.IsValid(type)) {
-    SetGLErrorInvalidEnum("glTexSubImage2D", type, "type");
-    return error::kNoError;
-  }
-  if (pixels == NULL) {
-    return error::kOutOfBounds;
-  }
-  DoTexSubImage2D(
+  return DoTexSubImage2D(
       target, level, xoffset, yoffset, width, height, format, type, pixels);
-  return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleTexSubImage2DImmediate(
@@ -7989,32 +8057,8 @@ error::Error GLES2DecoderImpl::HandleTexSubImage2DImmediate(
   }
   const void* pixels = GetImmediateDataAs<const void*>(
       c, data_size, immediate_data_size);
-  if (!validators_->texture_target.IsValid(target)) {
-    SetGLErrorInvalidEnum("glTexSubImage2D", target, "target");
-    return error::kNoError;
-  }
-  if (width < 0) {
-    SetGLError(GL_INVALID_VALUE, "glTexSubImage2D", "width < 0");
-    return error::kNoError;
-  }
-  if (height < 0) {
-    SetGLError(GL_INVALID_VALUE, "glTexSubImage2D", "height < 0");
-    return error::kNoError;
-  }
-  if (!validators_->texture_format.IsValid(format)) {
-    SetGLErrorInvalidEnum("glTexSubImage2D", format, "format");
-    return error::kNoError;
-  }
-  if (!validators_->pixel_type.IsValid(type)) {
-    SetGLErrorInvalidEnum("glTexSubImage2D", type, "type");
-    return error::kNoError;
-  }
-  if (pixels == NULL) {
-    return error::kOutOfBounds;
-  }
-  DoTexSubImage2D(
+  return DoTexSubImage2D(
       target, level, xoffset, yoffset, width, height, format, type, pixels);
-  return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleGetVertexAttribPointerv(
@@ -9571,9 +9615,10 @@ error::Error GLES2DecoderImpl::HandleAsyncTexImage2DCHROMIUM(
   }
 
   // TODO(epenner): Do this via an async task.
-  return DoTexImage2D(
+  DoTexImage2D(
       target, level, internal_format, width, height, border, format, type,
       pixels, pixels_size);
+  return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleAsyncTexSubImage2DCHROMIUM(
@@ -9598,34 +9643,13 @@ error::Error GLES2DecoderImpl::HandleAsyncTexSubImage2DCHROMIUM(
   }
   const void* pixels = GetSharedMemoryAs<const void*>(
       c.data_shm_id, c.data_shm_offset, data_size);
-  if (!validators_->texture_target.IsValid(target)) {
-    SetGLErrorInvalidEnum("glTexSubImage2D", target, "target");
-    return error::kNoError;
-  }
-  if (width < 0) {
-    SetGLError(GL_INVALID_VALUE, "glTexSubImage2D", "width < 0");
-    return error::kNoError;
-  }
-  if (height < 0) {
-    SetGLError(GL_INVALID_VALUE, "glTexSubImage2D", "height < 0");
-    return error::kNoError;
-  }
-  if (!validators_->texture_format.IsValid(format)) {
-    SetGLErrorInvalidEnum("glTexSubImage2D", format, "format");
-    return error::kNoError;
-  }
-  if (!validators_->pixel_type.IsValid(type)) {
-    SetGLErrorInvalidEnum("glTexSubImage2D", type, "type");
-    return error::kNoError;
-  }
   if (pixels == NULL) {
     return error::kOutOfBounds;
   }
 
   // TODO(epenner): Do this via an async task.
-  DoTexSubImage2D(
+  return DoTexSubImage2D(
       target, level, xoffset, yoffset, width, height, format, type, pixels);
-  return error::kNoError;
 }
 
 // Include the auto-generated part of this file. We split this because it means
