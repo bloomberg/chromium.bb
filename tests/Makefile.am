@@ -3,7 +3,7 @@ TESTS = surface-test.la client-test.la	\
 	surface-global-test.la		\
 	button-test.la keyboard-test.la
 
-TESTS_ENVIRONMENT = $(SHELL) $(top_srcdir)/tests/weston-test
+TESTS_ENVIRONMENT = $(SHELL) $(top_srcdir)/tests/weston-tests-env
 
 export abs_builddir
 
@@ -68,7 +68,7 @@ if BUILD_SETBACKLIGHT
 setbacklight = setbacklight
 endif
 
-EXTRA_DIST = weston-test
+EXTRA_DIST = weston-tests-env
 
 BUILT_SOURCES =					\
 	wayland-test-protocol.c			\
