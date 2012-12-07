@@ -4,7 +4,6 @@
 
 #include "cc/layer_tree_host.h"
 
-#include "base/base_paths.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
@@ -15,6 +14,7 @@
 #include "cc/solid_color_layer.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/layer_tree_test_common.h"
+#include "cc/test/paths.h"
 
 namespace cc {
 namespace {
@@ -240,12 +240,11 @@ class LayerTreeHostPerfTestJsonReader : public LayerTreeHostPerfTest {
 
   void readTestFile(std::string name) {
     test_name_ = name;
-    FilePath filepath;
-    ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &filepath));
-    filepath = filepath.AppendASCII("cc").AppendASCII("test")
-                       .AppendASCII("data").AppendASCII(name + ".json");
+    FilePath test_data_dir;
+    ASSERT_TRUE(PathService::Get(cc::test::DIR_TEST_DATA, &test_data_dir));
+    FilePath json_file = test_data_dir.AppendASCII(name + ".json");
     std::string json;
-    ASSERT_TRUE(file_util::ReadFileToString(filepath, &json));
+    ASSERT_TRUE(file_util::ReadFileToString(json_file, &json));
     tree_.reset(base::JSONReader::Read(json));
     ASSERT_TRUE(tree_);
   }

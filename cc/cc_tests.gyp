@@ -16,6 +16,7 @@
       'float_quad_unittest.cc',
       'frame_rate_controller_unittest.cc',
       'gl_renderer_unittest.cc',
+      'gl_renderer_pixeltest.cc',
       'hash_pair_unittest.cc',
       'heads_up_display_unittest.cc',
       'keyframed_animation_curve_unittest.cc',
@@ -86,6 +87,10 @@
       'test/mock_quad_culler.cc',
       'test/mock_quad_culler.h',
       'test/occlusion_tracker_test_common.h',
+      'test/paths.cc',
+      'test/paths.h',
+      'test/pixel_test_output_surface.cc',
+      'test/pixel_test_output_surface.h',
       'test/render_pass_test_common.cc',
       'test/render_pass_test_common.h',
       'test/scheduler_test_common.cc',
@@ -105,11 +110,14 @@
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../ui/ui.gyp:ui',
+        '../webkit/support/webkit_support.gyp:webkit_gpu',
         'cc.gyp:cc',
         'cc_test_support',
+        'cc_test_utils',
       ],
       'sources': [
         'test/run_all_unittests.cc',
+        'test/cc_test_suite.cc',
         '<@(cc_unit_tests_source_files)',
       ],
       'include_dirs': [
@@ -141,6 +149,7 @@
       'sources': [
         'layer_tree_host_perftest.cc',
         'test/run_all_unittests.cc',
+        'test/cc_test_suite.cc',
       ],
       'include_dirs': [
         'test',
@@ -165,14 +174,30 @@
         '../third_party/WebKit/Source/Platform/chromium',
       ],
       'dependencies': [
-        '../ui/gl/gl.gyp:gl',
-        '../testing/gtest.gyp:gtest',
-        '../testing/gmock.gyp:gmock',
         '../skia/skia.gyp:skia',
+        '../testing/gmock.gyp:gmock',
+        '../testing/gtest.gyp:gtest',
         '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
+        '../third_party/mesa/mesa.gyp:osmesa',
+        '../ui/gl/gl.gyp:gl',
       ],
       'sources': [
         '<@(cc_tests_support_files)',
+      ],
+    },
+    {
+      'target_name': 'cc_test_utils',
+      'type': 'static_library',
+      'include_dirs': [
+        '..'
+      ],
+      'sources': [
+        'test/pixel_test_utils.cc',
+        'test/pixel_test_utils.h',
+      ],
+      'dependencies': [
+        '../skia/skia.gyp:skia',
+        '../ui/ui.gyp:ui',  # for png_codec
       ],
     },
   ],
@@ -193,10 +218,6 @@
           },
           'includes': [ '../build/apk_test.gypi' ],
         },
-      ],
-    }],
-    ['OS == "android" and gtest_target_type == "shared_library"', {
-      'targets': [
         {
           'target_name': 'cc_perftests_apk',
           'type': 'none',

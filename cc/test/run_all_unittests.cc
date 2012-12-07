@@ -4,12 +4,12 @@
 
 #include "base/message_loop.h"
 #include "base/test/test_suite.h"
+#include "cc/test/cc_test_suite.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 int main(int argc, char** argv) {
   ::testing::InitGoogleMock(&argc, argv);
-  TestSuite test_suite(argc, argv);
-  MessageLoop message_loop;
+  cc::test::CCTestSuite test_suite(argc, argv);
   int result = test_suite.Run();
 
   return result;

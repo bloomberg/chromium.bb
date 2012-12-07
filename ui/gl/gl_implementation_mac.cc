@@ -49,6 +49,10 @@ bool InitializeGLBindings(GLImplementation implementation) {
         return false;
       }
       FilePath bundle_path = base::mac::GetAppBundlePath(exe_path);
+      // Some unit test targets depend on osmesa but aren't built as app
+      // bundles. In that case, the .so is next to the executable.
+      if (bundle_path.empty())
+        bundle_path = exe_path;
       FilePath build_dir_path = bundle_path.DirName();
       FilePath osmesa_path = build_dir_path.Append("osmesa.so");
 
