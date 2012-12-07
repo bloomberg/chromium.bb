@@ -50,6 +50,7 @@ static bool isTextureFormatSupportedForStorage(GLenum format)
 ResourceProvider::Resource::Resource()
     : glId(0)
     , glPixelBufferId(0)
+    , glUploadQueryId(0)
     , pixels(0)
     , pixelBuffer(0)
     , pool(0)
@@ -58,6 +59,7 @@ ResourceProvider::Resource::Resource()
     , external(false)
     , exported(false)
     , markedForDeletion(false)
+    , pendingSetPixels(false)
     , size()
     , format(0)
     , filter(0)
@@ -68,6 +70,7 @@ ResourceProvider::Resource::Resource()
 ResourceProvider::Resource::Resource(unsigned textureId, int pool, const gfx::Size& size, GLenum format, GLenum filter)
     : glId(textureId)
     , glPixelBufferId(0)
+    , glUploadQueryId(0)
     , pixels(0)
     , pixelBuffer(0)
     , pool(pool)
@@ -76,6 +79,7 @@ ResourceProvider::Resource::Resource(unsigned textureId, int pool, const gfx::Si
     , external(false)
     , exported(false)
     , markedForDeletion(false)
+    , pendingSetPixels(false)
     , size(size)
     , format(format)
     , filter(filter)
@@ -86,6 +90,7 @@ ResourceProvider::Resource::Resource(unsigned textureId, int pool, const gfx::Si
 ResourceProvider::Resource::Resource(uint8_t* pixels, int pool, const gfx::Size& size, GLenum format, GLenum filter)
     : glId(0)
     , glPixelBufferId(0)
+    , glUploadQueryId(0)
     , pixels(pixels)
     , pixelBuffer(0)
     , pool(pool)
@@ -94,6 +99,7 @@ ResourceProvider::Resource::Resource(uint8_t* pixels, int pool, const gfx::Size&
     , external(false)
     , exported(false)
     , markedForDeletion(false)
+    , pendingSetPixels(false)
     , size(size)
     , format(format)
     , filter(filter)
@@ -240,6 +246,11 @@ void ResourceProvider::deleteResourceInternal(ResourceMap::iterator it)
         WebGraphicsContext3D* context3d = m_outputSurface->context3D();
         DCHECK(context3d);
         GLC(context3d, context3d->deleteTexture(resource->glId));
+    }
+    if (resource->glUploadQueryId) {
+        WebGraphicsContext3D* context3d = m_outputSurface->context3D();
+        DCHECK(context3d);
+        GLC(context3d, context3d->deleteQueryEXT(resource->glUploadQueryId));
     }
     if (resource->glPixelBufferId) {
         WebGraphicsContext3D* context3d = m_outputSurface->context3D();
@@ -866,6 +877,75 @@ void ResourceProvider::bindForSampling(ResourceProvider::ResourceId resourceId, 
         GLC(context3d, context3d->texParameteri(target, GL_TEXTURE_MAG_FILTER, filter));
         resource->filter = filter;
     }
+}
+
+void ResourceProvider::beginSetPixels(ResourceId id)
+{
+    DCHECK(m_threadChecker.CalledOnValidThread());
+    ResourceMap::iterator it = m_resources.find(id);
+    CHECK(it != m_resources.end());
+    Resource* resource = &it->second;
+    DCHECK(!resource->pendingSetPixels);
+
+    lockForWrite(id);
+
+    if (resource->glId) {
+        WebGraphicsContext3D* context3d = m_outputSurface->context3D();
+        DCHECK(context3d);
+        DCHECK(resource->glPixelBufferId);
+        context3d->bindTexture(GL_TEXTURE_2D, resource->glId);
+        context3d->bindBuffer(
+            GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM,
+            resource->glPixelBufferId);
+        if (!resource->glUploadQueryId)
+            resource->glUploadQueryId = context3d->createQueryEXT();
+        context3d->beginQueryEXT(
+            GL_ASYNC_PIXEL_TRANSFERS_COMPLETED_CHROMIUM,
+            resource->glUploadQueryId);
+        context3d->asyncTexSubImage2DCHROMIUM(GL_TEXTURE_2D,
+                                              0, /* level */
+                                              0, /* x */
+                                              0, /* y */
+                                              resource->size.width(),
+                                              resource->size.height(),
+                                              resource->format,
+                                              GL_UNSIGNED_BYTE,
+                                              NULL);
+        context3d->endQueryEXT(GL_ASYNC_PIXEL_TRANSFERS_COMPLETED_CHROMIUM);
+        context3d->bindBuffer(GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM, 0);
+    }
+
+    if (resource->pixels)
+      setPixelsFromBuffer(id);
+
+    resource->pendingSetPixels = true;
+}
+
+bool ResourceProvider::didSetPixelsComplete(ResourceId id) {
+    DCHECK(m_threadChecker.CalledOnValidThread());
+    ResourceMap::iterator it = m_resources.find(id);
+    CHECK(it != m_resources.end());
+    Resource* resource = &it->second;
+    DCHECK(resource->lockedForWrite);
+    DCHECK(resource->pendingSetPixels);
+
+    if (resource->glId) {
+        WebGraphicsContext3D* context3d = m_outputSurface->context3D();
+        DCHECK(context3d);
+        DCHECK(resource->glUploadQueryId);
+        unsigned complete = 1;
+        context3d->getQueryObjectuivEXT(
+            resource->glUploadQueryId,
+            GL_QUERY_RESULT_AVAILABLE_EXT,
+            &complete);
+        if (!complete)
+            return false;
+    }
+
+    resource->pendingSetPixels = false;
+    unlockForWrite(id);
+
+    return true;
 }
 
 }  // namespace cc

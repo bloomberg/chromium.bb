@@ -222,6 +222,10 @@ public:
     // Update pixels from acquired pixel buffer.
     void setPixelsFromBuffer(ResourceId id);
 
+    // Asynchronously update pixels from acquired pixel buffer.
+    void beginSetPixels(ResourceId id);
+    bool didSetPixelsComplete(ResourceId id);
+
 private:
     struct Resource {
         Resource();
@@ -231,6 +235,8 @@ private:
         unsigned glId;
         // Pixel buffer used for set pixels without unnecessary copying.
         unsigned glPixelBufferId;
+        // Query used to determine when asynchronous set pixels complete.
+        unsigned glUploadQueryId;
         Mailbox mailbox;
         uint8_t* pixels;
         uint8_t* pixelBuffer;
@@ -240,6 +246,7 @@ private:
         bool external;
         bool exported;
         bool markedForDeletion;
+        bool pendingSetPixels;
         gfx::Size size;
         GLenum format;
         // TODO(skyostil): Use a separate sampler object for filter state.
