@@ -137,10 +137,21 @@ def VerifyTarball(tarball, dir_struct):
   _VerifyDirectoryIterables(normalized, expected)
 
 
+def _walk_mro_stacking(obj, attr, reverse=False):
+  iterator = iter if reverse else reversed
+  methods = (getattr(x, attr, None) for x in iterator(obj.__class__.__mro__))
+  seen = set()
+  for x in filter(None, methods):
+    x = getattr(x, 'im_func', x)
+    if x not in seen:
+      seen.add(x)
+      yield x
+
+
 def _stacked_setUp(self):
   self.__test_was_run__ = False
   try:
-    for target in self.__setUp_stack__:
+    for target in _walk_mro_stacking(self, '__raw_setUp__'):
       target(self)
   except:
     # TestCase doesn't trigger tearDowns if setUp failed; thus
@@ -156,7 +167,7 @@ def _stacked_setUp(self):
 
 def _stacked_tearDown(self):
   exc_info = None
-  for target in self.__tearDown_stack__:
+  for target in _walk_mro_stacking(self, '__raw_tearDown__', True):
     #pylint: disable=W0702
     try:
       target(self)
@@ -190,29 +201,13 @@ class StackedSetup(type):
   rather than just a scope mutator, all derivative classes derive from this
   metaclass; thus all derivative TestCase classes get automatic stacking."""
   def __new__(mcs, name, bases, scope):
+    if 'setUp' in scope:
+      scope['__raw_setUp__'] = scope.pop('setUp')
+    scope['setUp'] = _stacked_setUp
 
-    def stack_methods(method_name, default, bases=bases):
-      storage = '__%s_stack__' % method_name
-      chain = []
-      for base in bases:
-        chain.extend(getattr(base, storage, []))
-        # We grab the classes setUp/tearDown (if existent) since one of the
-        # parents may be a mixin, meaning untouched/unseen by this metaclass.
-        chain.append(getattr(base, method_name, default))
-      chain.append(scope.pop(method_name, default))
-      # We do not want the default integrated in; it would result in invoking
-      # setup/teardown individual methods multiple of times; filter it.
-      # Note to do this filtering, we unwind any instance/static/classmethod
-      # wrapping in place; this is what 'im_func' is on descriptor protocol
-      # methods.
-      chain = [getattr(x, 'im_func', x) for x in chain]
-      scope[storage] = tuple(x for x in chain if x is not default)
-      scope[method_name] = default
-
-    stack_methods('setUp', _stacked_setUp)
-    # Note, we walk teardown in reverse for classes- this is to match
-    # what people would expect considering the stack aspect of this class.
-    stack_methods('tearDown', _stacked_tearDown, bases=reversed(bases))
+    if 'tearDown' in scope:
+      scope['__raw_tearDown__'] = scope.pop('tearDown')
+    scope['tearDown'] = _stacked_tearDown
 
     return type.__new__(mcs, name, bases, scope)
 
