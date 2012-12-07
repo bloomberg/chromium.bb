@@ -2835,9 +2835,6 @@ Battery full
   <message name="IDS_KEYBOARD_OVERLAY_FOCUS_PREVIOUS_PANE" desc="The text in the keyboard overlay to explain the shortcut (switch focus to the previous keyboard-accessible pane).">
     Focus previous pane
   </message>
-  <message name="IDS_KEYBOARD_OVERLAY_FOCUS_STATUS_ICON" desc="The text in the keyboard overlay to explain the shortcut.">
-    Focus status icon
-  </message>
   <message name="IDS_KEYBOARD_OVERLAY_FOCUS_TOOLBAR" desc="The text in the keyboard overlay to explain the shortcut.">
     Focus toolbar
   </message>
@@ -2969,6 +2966,9 @@ Battery full
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_SELECT_WORD_AT_A_TIME" desc="The text in the keyboard overlay to explain the shortcut.">
     Select "word at a time"
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_SHOW_STATUS_MENU" desc="The text in the keyboard overlay to explain the shortcut (show the status menu).">
+    Show status menu
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_SIGN_OUT" desc="The text in the keyboard overlay to explain the shortcut.">
     Sign out
