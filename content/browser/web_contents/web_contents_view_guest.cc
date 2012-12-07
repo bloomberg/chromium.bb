@@ -55,9 +55,6 @@ RenderWidgetHostView* WebContentsViewGuest::CreateViewForWidget(
   return view;
 }
 
-void WebContentsViewGuest::SetView(RenderWidgetHostView* view) {
-}
-
 gfx::NativeView WebContentsViewGuest::GetNativeView() const {
   return NULL;
 }

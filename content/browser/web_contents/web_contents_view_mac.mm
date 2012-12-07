@@ -141,9 +141,6 @@ RenderWidgetHostView* WebContentsViewMac::CreateViewForWidget(
   return view;
 }
 
-void WebContentsViewMac::SetView(RenderWidgetHostView* view) {
-}
-
 gfx::NativeView WebContentsViewMac::GetNativeView() const {
   return cocoa_view_.get();
 }

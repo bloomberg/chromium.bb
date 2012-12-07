@@ -50,9 +50,6 @@ RenderWidgetHostView* TestWebContentsView::CreateViewForWidget(
   return NULL;
 }
 
-void TestWebContentsView::SetView(RenderWidgetHostView* view) {
-}
-
 gfx::NativeView TestWebContentsView::GetNativeView() const {
   return gfx::NativeView();
 }
