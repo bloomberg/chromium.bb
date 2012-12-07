@@ -12,7 +12,6 @@
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/webstore_install_helper.h"
 #include "chrome/browser/extensions/webstore_installer.h"
-#include "chrome/browser/gpu_feature_checker.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -23,6 +22,8 @@ class ProfileSyncService;
 namespace content {
 class GpuDataManager;
 }
+
+class GPUFeatureChecker;
 
 namespace extensions {
 

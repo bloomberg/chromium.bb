@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GPU_FEATURE_CHECKER_H_
-#define CHROME_BROWSER_GPU_FEATURE_CHECKER_H_
+#ifndef CHROME_BROWSER_GPU_GPU_FEATURE_CHECKER_H_
+#define CHROME_BROWSER_GPU_GPU_FEATURE_CHECKER_H_
 
 #include "base/callback.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
@@ -43,4 +43,4 @@ class GPUFeatureChecker : public base::RefCountedThreadSafe<GPUFeatureChecker>,
   DISALLOW_COPY_AND_ASSIGN(GPUFeatureChecker);
 };
 
-#endif  // CHROME_BROWSER_GPU_FEATURE_CHECKER_H_
+#endif  // CHROME_BROWSER_GPU_GPU_FEATURE_CHECKER_H_

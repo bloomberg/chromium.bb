@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/webstore_installer.h"
+#include "chrome/browser/gpu/gpu_feature_checker.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/token_service.h"

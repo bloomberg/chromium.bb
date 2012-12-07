@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/gpu_feature_checker.h"
+#include "chrome/browser/gpu/gpu_feature_checker.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/manifest.h"
