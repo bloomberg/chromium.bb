@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
+#include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/browser_process.h"
@@ -331,15 +332,21 @@ Value* ChromeNetworkDelegate::HistoricNetworkStatsInfoToValue() {
   int64 total_original = prefs->GetInt64(prefs::kHttpOriginalContentLength);
 
   DictionaryValue* dict = new DictionaryValue();
-  dict->SetInteger("historic_received_content_length", total_received);
-  dict->SetInteger("historic_original_content_length", total_original);
+  // Use strings to avoid overflow.  base::Value only supports 32-bit integers.
+  dict->SetString("historic_received_content_length",
+                  base::Int64ToString(total_received));
+  dict->SetString("historic_original_content_length",
+                  base::Int64ToString(total_original));
   return dict;
 }
 
 Value* ChromeNetworkDelegate::SessionNetworkStatsInfoToValue() const {
   DictionaryValue* dict = new DictionaryValue();
-  dict->SetInteger("session_received_content_length", received_content_length_);
-  dict->SetInteger("session_original_content_length", original_content_length_);
+  // Use strings to avoid overflow.  base::Value only supports 32-bit integers.
+  dict->SetString("session_received_content_length",
+                  base::Int64ToString(received_content_length_));
+  dict->SetString("session_original_content_length",
+                  base::Int64ToString(original_content_length_));
   return dict;
 }
 
