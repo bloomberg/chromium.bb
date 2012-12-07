@@ -5,8 +5,6 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_IMAGE_TRANSPORT_FACTORY_H_
 #define CONTENT_BROWSER_RENDERER_HOST_IMAGE_TRANSPORT_FACTORY_H_
 
-#include <string>
-
 #include "base/memory/ref_counted.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -75,7 +73,7 @@ class ImageTransportFactory {
   virtual scoped_refptr<ui::Texture> CreateTransportClient(
       const gfx::Size& size,
       float device_scale_factor,
-      const std::string& mailbox_name) = 0;
+      uint64 transport_handle) = 0;
 
   // Variant of CreateTransportClient() that deletes the texture on the GPU when
   // the returned value is deleted.

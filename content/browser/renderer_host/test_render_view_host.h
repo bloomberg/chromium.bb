@@ -167,6 +167,12 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   virtual void SetScrollOffsetPinning(
       bool is_pinned_to_left, bool is_pinned_to_right) OVERRIDE { }
 
+#if defined(USE_AURA)
+  virtual void AcceleratedSurfaceNew(
+      int32 width, int32 height, uint64 surface_id) OVERRIDE { }
+  virtual void AcceleratedSurfaceRelease(uint64 surface_id) OVERRIDE { }
+#endif
+
 #if defined(TOOLKIT_GTK)
   virtual void CreatePluginContainer(gfx::PluginWindowHandle id) OVERRIDE { }
   virtual void DestroyPluginContainer(gfx::PluginWindowHandle id) OVERRIDE { }

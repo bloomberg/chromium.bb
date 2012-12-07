@@ -244,9 +244,8 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
   virtual void AcceleratedSurfaceNew(
       int32 width_in_pixel,
       int32 height_in_pixel,
-      uint64 surface_id,
-      const std::string& mailbox_name) {}
-  virtual void AcceleratedSurfaceRelease() {}
+      uint64 surface_id) {}
+  virtual void AcceleratedSurfaceRelease(uint64 surface_id) {}
 
 #if defined(TOOLKIT_GTK)
   virtual void CreatePluginContainer(gfx::PluginWindowHandle id) = 0;

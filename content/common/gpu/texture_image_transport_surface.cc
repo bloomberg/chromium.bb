@@ -16,19 +16,17 @@
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
-#include "gpu/command_buffer/service/texture_definition.h"
+#include "gpu/command_buffer/service/texture_manager.h"
 
 using gpu::gles2::ContextGroup;
-using gpu::gles2::MailboxManager;
-using gpu::gles2::MailboxName;
-using gpu::gles2::TextureDefinition;
 using gpu::gles2::TextureManager;
+typedef TextureManager::TextureInfo TextureInfo;
 
 namespace content {
 
 TextureImageTransportSurface::Texture::Texture()
-    : service_id(0),
-      surface_handle(0) {
+    : client_id(0),
+      sent_to_client(false) {
 }
 
 TextureImageTransportSurface::Texture::~Texture() {
@@ -39,12 +37,17 @@ TextureImageTransportSurface::TextureImageTransportSurface(
     GpuCommandBufferStub* stub,
     const gfx::GLSurfaceHandle& handle)
       : fbo_id_(0),
+        front_(0),
         stub_destroyed_(false),
         backbuffer_suggested_allocation_(true),
         frontbuffer_suggested_allocation_(true),
+        frontbuffer_is_protected_(true),
+        protection_state_id_(0),
         handle_(handle),
+        parent_stub_(NULL),
         is_swap_buffers_pending_(false),
-        did_unschedule_(false) {
+        did_unschedule_(false),
+        did_flip_(false) {
   helper_.reset(new ImageTransportHelper(this,
                                          manager,
                                          stub,
@@ -57,12 +60,39 @@ TextureImageTransportSurface::~TextureImageTransportSurface() {
 }
 
 bool TextureImageTransportSurface::Initialize() {
-  mailbox_manager_ =
-      helper_->stub()->decoder()->GetContextGroup()->mailbox_manager();
-
-  backbuffer_.surface_handle = 1;
-
   GpuChannelManager* manager = helper_->manager();
+  GpuChannel* parent_channel = manager->LookupChannel(handle_.parent_client_id);
+  if (!parent_channel)
+    return false;
+
+  parent_stub_ = parent_channel->LookupCommandBuffer(handle_.parent_context_id);
+  if (!parent_stub_)
+    return false;
+
+  parent_stub_->AddDestructionObserver(this);
+  TextureManager* texture_manager =
+      parent_stub_->decoder()->GetContextGroup()->texture_manager();
+  DCHECK(texture_manager);
+
+  for (int i = 0; i < 2; ++i) {
+    Texture& texture = textures_[i];
+    texture.client_id = handle_.parent_texture_id[i];
+    texture.info = texture_manager->GetTextureInfo(texture.client_id);
+    if (!texture.info)
+      return false;
+
+    if (!texture.info->target())
+      texture_manager->SetInfoTarget(texture.info, GL_TEXTURE_2D);
+    texture_manager->SetParameter(
+        texture.info, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    texture_manager->SetParameter(
+        texture.info, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    texture_manager->SetParameter(
+        texture.info, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    texture_manager->SetParameter(
+        texture.info, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  }
+
   surface_ = manager->GetDefaultOffscreenSurface();
   if (!surface_.get())
     return false;
@@ -70,17 +100,19 @@ bool TextureImageTransportSurface::Initialize() {
   if (!helper_->Initialize())
     return false;
 
-  GpuChannel* parent_channel = manager->LookupChannel(handle_.parent_client_id);
-  if (parent_channel) {
-    const CommandLine* command_line = CommandLine::ForCurrentProcess();
-    if (command_line->HasSwitch(switches::kUIPrioritizeInGpuProcess))
-      helper_->SetPreemptByCounter(parent_channel->MessagesPendingCount());
-  }
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kUIPrioritizeInGpuProcess))
+    helper_->SetPreemptByCounter(parent_channel->MessagesPendingCount());
 
   return true;
 }
 
 void TextureImageTransportSurface::Destroy() {
+  if (parent_stub_) {
+    parent_stub_->decoder()->MakeCurrent();
+    ReleaseParentStub();
+  }
+
   if (surface_.get())
     surface_ = NULL;
 
@@ -117,23 +149,10 @@ bool TextureImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
     return true;
   }
 
-  if (!context_.get()) {
-    DCHECK(helper_->stub());
-    context_ = helper_->stub()->decoder()->GetGLContext();
-  }
-
   if (!fbo_id_) {
     glGenFramebuffersEXT(1, &fbo_id_);
     glBindFramebufferEXT(GL_FRAMEBUFFER, fbo_id_);
-    current_size_ = gfx::Size(1, 1);
-    helper_->stub()->AddDestructionObserver(this);
-  }
-
-  // We could be receiving non-deferred GL commands, that is anything that does
-  // not need a framebuffer.
-  if (!backbuffer_.service_id && !is_swap_buffers_pending_ &&
-      backbuffer_suggested_allocation_) {
-    CreateBackTexture();
+    CreateBackTexture(gfx::Size(1, 1));
 
 #ifndef NDEBUG
     GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER);
@@ -144,7 +163,10 @@ bool TextureImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
       return false;
     }
 #endif
+    DCHECK(helper_->stub());
+    helper_->stub()->AddDestructionObserver(this);
   }
+
   return true;
 }
 
@@ -158,11 +180,15 @@ void TextureImageTransportSurface::SetBackbufferAllocation(bool allocation) {
      return;
   backbuffer_suggested_allocation_ = allocation;
 
+  if (!helper_->MakeCurrent())
+    return;
+
   if (backbuffer_suggested_allocation_) {
-    DCHECK(!backbuffer_.service_id);
-    CreateBackTexture();
+    DCHECK(!textures_[back()].info->service_id() ||
+           !textures_[back()].sent_to_client);
+    CreateBackTexture(textures_[back()].size);
   } else {
-    ReleaseBackTexture();
+    ReleaseTexture(back());
   }
 }
 
@@ -170,10 +196,22 @@ void TextureImageTransportSurface::SetFrontbufferAllocation(bool allocation) {
   if (frontbuffer_suggested_allocation_ == allocation)
     return;
   frontbuffer_suggested_allocation_ = allocation;
+  AdjustFrontBufferAllocation();
+}
 
-  if (!frontbuffer_suggested_allocation_) {
-    GpuHostMsg_AcceleratedSurfaceRelease_Params params;
-    helper_->SendAcceleratedSurfaceRelease(params);
+void TextureImageTransportSurface::AdjustFrontBufferAllocation() {
+  if (!helper_->MakeCurrent())
+    return;
+
+  if (!frontbuffer_suggested_allocation_ && !frontbuffer_is_protected_ &&
+      textures_[front()].info->service_id()) {
+    ReleaseTexture(front());
+    if (textures_[front()].sent_to_client) {
+      GpuHostMsg_AcceleratedSurfaceRelease_Params params;
+      params.identifier = textures_[front()].client_id;
+      helper_->SendAcceleratedSurfaceRelease(params);
+      textures_[front()].sent_to_client = false;
+    }
   }
 }
 
@@ -190,47 +228,50 @@ void* TextureImageTransportSurface::GetConfig() {
 }
 
 void TextureImageTransportSurface::OnResize(gfx::Size size) {
-  current_size_ = size;
-  CreateBackTexture();
+  CreateBackTexture(size);
 }
 
 void TextureImageTransportSurface::OnWillDestroyStub(
     GpuCommandBufferStub* stub) {
-  DCHECK(stub == helper_->stub());
-  stub->RemoveDestructionObserver(this);
+  if (stub == parent_stub_) {
+    ReleaseParentStub();
+    helper_->SetPreemptByCounter(NULL);
+  } else {
+    DCHECK(stub == helper_->stub());
+    stub->RemoveDestructionObserver(this);
 
-  GpuHostMsg_AcceleratedSurfaceRelease_Params params;
-  helper_->SendAcceleratedSurfaceRelease(params);
+    // We are losing the stub owning us, this is our last chance to clean up the
+    // resources we allocated in the stub's context.
+    if (fbo_id_) {
+      glDeleteFramebuffersEXT(1, &fbo_id_);
+      CHECK_GL_ERROR();
+      fbo_id_ = 0;
+    }
 
-  ReleaseBackTexture();
-
-  // We are losing the stub owning us, this is our last chance to clean up the
-  // resources we allocated in the stub's context.
-  if (fbo_id_) {
-    glDeleteFramebuffersEXT(1, &fbo_id_);
-    CHECK_GL_ERROR();
-    fbo_id_ = 0;
+    stub_destroyed_ = true;
   }
-
-  stub_destroyed_ = true;
 }
 
 bool TextureImageTransportSurface::SwapBuffers() {
   DCHECK(backbuffer_suggested_allocation_);
-  if (!frontbuffer_suggested_allocation_)
+  if (!frontbuffer_suggested_allocation_ || !frontbuffer_is_protected_)
     return true;
+  if (!parent_stub_) {
+    LOG(ERROR) << "SwapBuffers failed because no parent stub.";
+    return false;
+  }
 
   glFlush();
-  ProduceTexture(backbuffer_);
+  front_ = back();
+  previous_damage_rect_ = gfx::Rect(textures_[front()].size);
 
-  // Do not allow destruction while we are still waiting for a swap ACK,
-  // so we do not leak a texture in the mailbox.
-  AddRef();
+  DCHECK(textures_[front()].client_id != 0);
 
-  DCHECK(backbuffer_.size == current_size_);
   GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
-  params.surface_handle = backbuffer_.surface_handle;
-  params.size = backbuffer_.size;
+  params.surface_handle = textures_[front()].client_id;
+  params.size = textures_[front()].size;
+  params.protection_state_id = protection_state_id_;
+  params.skip_ack = false;
   helper_->SendAcceleratedSurfaceBuffersSwapped(params);
 
   DCHECK(!is_swap_buffers_pending_);
@@ -241,31 +282,68 @@ bool TextureImageTransportSurface::SwapBuffers() {
 bool TextureImageTransportSurface::PostSubBuffer(
     int x, int y, int width, int height) {
   DCHECK(backbuffer_suggested_allocation_);
-  if (!frontbuffer_suggested_allocation_)
+  DCHECK(textures_[back()].info->service_id());
+  if (!frontbuffer_suggested_allocation_ || !frontbuffer_is_protected_)
     return true;
+  // If we are recreating the frontbuffer with this swap, make sure we are
+  // drawing a full frame.
+  DCHECK(textures_[front()].info->service_id() ||
+         (!x && !y && gfx::Size(width, height) == textures_[back()].size));
+  if (!parent_stub_) {
+    LOG(ERROR) << "PostSubBuffer failed because no parent stub.";
+    return false;
+  }
+
   const gfx::Rect new_damage_rect(x, y, width, height);
-  DCHECK(gfx::Rect(gfx::Point(), current_size_).Contains(new_damage_rect));
 
   // An empty damage rect is a successful no-op.
   if (new_damage_rect.IsEmpty())
     return true;
 
+  int back_texture_service_id = textures_[back()].info->service_id();
+  int front_texture_service_id = textures_[front()].info->service_id();
+
+  gfx::Size expected_size = textures_[back()].size;
+  bool surfaces_same_size = textures_[front()].size == expected_size;
+
+  if (surfaces_same_size) {
+    std::vector<gfx::Rect> regions_to_copy;
+    GetRegionsToCopy(previous_damage_rect_, new_damage_rect, &regions_to_copy);
+
+    ScopedFrameBufferBinder fbo_binder(fbo_id_);
+    glFramebufferTexture2DEXT(GL_FRAMEBUFFER,
+        GL_COLOR_ATTACHMENT0,
+        GL_TEXTURE_2D,
+        front_texture_service_id,
+        0);
+    ScopedTextureBinder texture_binder(back_texture_service_id);
+
+    for (size_t i = 0; i < regions_to_copy.size(); ++i) {
+      const gfx::Rect& region_to_copy = regions_to_copy[i];
+      if (!region_to_copy.IsEmpty()) {
+        glCopyTexSubImage2D(GL_TEXTURE_2D, 0, region_to_copy.x(),
+            region_to_copy.y(), region_to_copy.x(), region_to_copy.y(),
+            region_to_copy.width(), region_to_copy.height());
+      }
+    }
+  } else if (!surfaces_same_size && did_flip_) {
+    DCHECK(new_damage_rect == gfx::Rect(expected_size));
+  }
+
   glFlush();
-  ProduceTexture(backbuffer_);
+  front_ = back();
+  previous_damage_rect_ = new_damage_rect;
 
-  // Do not allow destruction while we are still waiting for a swap ACK,
-  // so we do not leak a texture in the mailbox.
-  AddRef();
-
-  DCHECK(current_size_ == backbuffer_.size);
+  DCHECK(textures_[front()].client_id);
 
   GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params params;
-  params.surface_handle = backbuffer_.surface_handle;
-  params.surface_size = backbuffer_.size;
+  params.surface_handle = textures_[front()].client_id;
+  params.surface_size = textures_[front()].size;
   params.x = x;
   params.y = y;
   params.width = width;
   params.height = height;
+  params.protection_state_id = protection_state_id_;
   helper_->SendAcceleratedSurfacePostSubBuffer(params);
 
   DCHECK(!is_swap_buffers_pending_);
@@ -282,7 +360,7 @@ std::string TextureImageTransportSurface::GetExtensions() {
 }
 
 gfx::Size TextureImageTransportSurface::GetSize() {
-  gfx::Size size = current_size_;
+  gfx::Size size = textures_[back()].size;
 
   // OSMesa expects a non-zero size.
   return gfx::Size(size.width() == 0 ? 1 : size.width(),
@@ -297,60 +375,70 @@ unsigned TextureImageTransportSurface::GetFormat() {
   return surface_.get() ? surface_->GetFormat() : 0;
 }
 
-void TextureImageTransportSurface::OnBufferPresented(uint64 surface_handle,
+void TextureImageTransportSurface::OnSetFrontSurfaceIsProtected(
+    bool is_protected, uint32 protection_state_id) {
+  protection_state_id_ = protection_state_id;
+  if (frontbuffer_is_protected_ == is_protected)
+    return;
+  frontbuffer_is_protected_ = is_protected;
+  AdjustFrontBufferAllocation();
+
+  // If surface is set to protected, and we haven't actually released it yet,
+  // we can set the ui surface handle now just by sending a swap message.
+  if (is_protected && textures_[front()].info->service_id() &&
+      textures_[front()].sent_to_client) {
+    GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
+    params.surface_handle = textures_[front()].client_id;
+    params.size = textures_[front()].size;
+    params.protection_state_id = protection_state_id_;
+    params.skip_ack = true;
+    helper_->SendAcceleratedSurfaceBuffersSwapped(params);
+  }
+}
+
+void TextureImageTransportSurface::OnBufferPresented(bool presented,
                                                      uint32 sync_point) {
   if (sync_point == 0) {
-    BufferPresentedImpl(surface_handle);
+    BufferPresentedImpl(presented);
   } else {
     helper_->manager()->sync_point_manager()->AddSyncPointCallback(
         sync_point,
         base::Bind(&TextureImageTransportSurface::BufferPresentedImpl,
-                   this,
-                   surface_handle));
+                   this->AsWeakPtr(),
+                   presented));
   }
-
-  // Careful, we might get deleted now if we were only waiting for
-  // a final swap ACK.
-  Release();
 }
 
-void TextureImageTransportSurface::BufferPresentedImpl(uint64 surface_handle) {
-  DCHECK(!backbuffer_.service_id);
-  if (surface_handle) {
-    DCHECK(surface_handle == 1 || surface_handle == 2);
-    backbuffer_.surface_handle = surface_handle;
-    ConsumeTexture(backbuffer_);
-  } else {
-    // We didn't get back a texture, so allocate 'the other' buffer.
-    backbuffer_.surface_handle = (backbuffer_.surface_handle == 1) ? 2 : 1;
-    mailbox_name(backbuffer_.surface_handle) = MailboxName();
-  }
-
-  if (stub_destroyed_ && backbuffer_.service_id) {
-    // TODO(sievers): Remove this after changes to the mailbox to take ownership
-    // of the service ids.
-    DCHECK(context_.get() && surface_.get());
-    if (context_->MakeCurrent(surface_.get()))
-      glDeleteTextures(1, &backbuffer_.service_id);
-
-    return;
-  }
-
+void TextureImageTransportSurface::BufferPresentedImpl(bool presented) {
   DCHECK(is_swap_buffers_pending_);
   is_swap_buffers_pending_ = false;
 
-  // We should not have allowed the backbuffer to be discarded while the ack
-  // was pending.
-  DCHECK(backbuffer_suggested_allocation_);
+  if (presented) {
+    // If we had not flipped, the two frame damage tracking is inconsistent.
+    // So conservatively take the whole frame.
+    if (!did_flip_)
+      previous_damage_rect_ = gfx::Rect(textures_[front()].size);
+  } else {
+    front_ = back();
+    previous_damage_rect_ = gfx::Rect(0, 0, 0, 0);
+  }
+
+  did_flip_ = presented;
 
   // We're relying on the fact that the parent context is
   // finished with it's context when it inserts the sync point that
   // triggers this callback.
   if (helper_->MakeCurrent()) {
-    if (backbuffer_.size != current_size_ || !backbuffer_.service_id)
-      CreateBackTexture();
-    else
+    if ((presented && textures_[front()].size != textures_[back()].size) ||
+        !textures_[back()].info->service_id() ||
+        !textures_[back()].sent_to_client) {
+      // We may get an ACK from a stale swap just to reschedule.  In that case,
+      // we may not have a backbuffer suggestion and should not recreate one.
+      if (backbuffer_suggested_allocation_)
+        CreateBackTexture(textures_[front()].size);
+    } else {
       AttachBackTextureToFBO();
+    }
   }
 
   // Even if MakeCurrent fails, schedule anyway, to trigger the lost context
@@ -365,69 +453,94 @@ void TextureImageTransportSurface::OnResizeViewACK() {
   NOTREACHED();
 }
 
-void TextureImageTransportSurface::ReleaseBackTexture() {
-  if (!backbuffer_.service_id)
+void TextureImageTransportSurface::ReleaseTexture(int id) {
+  if (!parent_stub_)
     return;
+  Texture& texture = textures_[id];
+  TextureInfo* info = texture.info;
+  DCHECK(info);
 
-  glDeleteTextures(1, &backbuffer_.service_id);
-  backbuffer_.service_id = 0;
-  mailbox_name(backbuffer_.surface_handle) = MailboxName();
+  GLuint service_id = info->service_id();
+  if (!service_id)
+    return;
+  info->SetServiceId(0);
+
+  {
+    ScopedFrameBufferBinder fbo_binder(fbo_id_);
+    glDeleteTextures(1, &service_id);
+  }
   glFlush();
   CHECK_GL_ERROR();
 }
 
-void TextureImageTransportSurface::CreateBackTexture() {
-  // If |is_swap_buffers_pending| we are waiting for our backbuffer
-  // in the mailbox, so we shouldn't be reallocating it now.
-  DCHECK(!is_swap_buffers_pending_);
+void TextureImageTransportSurface::CreateBackTexture(const gfx::Size& size) {
+  if (!parent_stub_)
+    return;
+  Texture& texture = textures_[back()];
+  TextureInfo* info = texture.info;
+  DCHECK(info);
 
-  if (backbuffer_.service_id && backbuffer_.size == current_size_)
+  GLuint service_id = info->service_id();
+
+  if (service_id && texture.size == size && texture.sent_to_client)
     return;
 
-  if (!backbuffer_.service_id) {
-    MailboxName new_mailbox_name;
-    MailboxName& name = mailbox_name(backbuffer_.surface_handle);
-    // This slot should be uninitialized.
-    DCHECK(!memcmp(&name, &new_mailbox_name, sizeof(MailboxName)));
-    mailbox_manager_->GenerateMailboxName(&new_mailbox_name);
-    name = new_mailbox_name;
-    glGenTextures(1, &backbuffer_.service_id);
+  if (!service_id) {
+    glGenTextures(1, &service_id);
+    info->SetServiceId(service_id);
   }
 
-  backbuffer_.size = current_size_;
+  if (size != texture.size) {
+    texture.size = size;
+    TextureManager* texture_manager =
+        parent_stub_->decoder()->GetContextGroup()->texture_manager();
+    texture_manager->SetLevelInfo(
+        info,
+        GL_TEXTURE_2D,
+        0,
+        GL_RGBA,
+        size.width(),
+        size.height(),
+        1,
+        0,
+        GL_RGBA,
+        GL_UNSIGNED_BYTE,
+        true);
+  }
 
   {
-    ScopedTextureBinder texture_binder(backbuffer_.service_id);
+    ScopedTextureBinder texture_binder(service_id);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
-        current_size_.width(), current_size_.height(), 0,
+        size.width(), size.height(), 0,
         GL_RGBA, GL_UNSIGNED_BYTE, NULL);
     CHECK_GL_ERROR();
   }
 
   AttachBackTextureToFBO();
 
-  const MailboxName& name = mailbox_name(backbuffer_.surface_handle);
-
   GpuHostMsg_AcceleratedSurfaceNew_Params params;
-  params.width = current_size_.width();
-  params.height = current_size_.height();
-  params.surface_handle = backbuffer_.surface_handle;
-  params.mailbox_name.append(
-      reinterpret_cast<const char*>(&name), sizeof(name));
+  params.width = size.width();
+  params.height = size.height();
+  params.surface_handle = texture.client_id;
   helper_->SendAcceleratedSurfaceNew(params);
+  texture.sent_to_client = true;
 }
 
 void TextureImageTransportSurface::AttachBackTextureToFBO() {
-  DCHECK(backbuffer_.service_id);
+  if (!parent_stub_)
+    return;
+  TextureInfo* info = textures_[back()].info;
+  DCHECK(info);
+
   ScopedFrameBufferBinder fbo_binder(fbo_id_);
   glFramebufferTexture2DEXT(GL_FRAMEBUFFER,
       GL_COLOR_ATTACHMENT0,
       GL_TEXTURE_2D,
-      backbuffer_.service_id,
+      info->service_id(),
       0);
   glFlush();
   CHECK_GL_ERROR();
@@ -435,58 +548,24 @@ void TextureImageTransportSurface::AttachBackTextureToFBO() {
 #ifndef NDEBUG
   GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER);
   if (status != GL_FRAMEBUFFER_COMPLETE) {
-    DLOG(FATAL) << "Framebuffer incomplete: " << status;
+    DLOG(ERROR) << "Framebuffer incomplete.";
   }
 #endif
 }
 
-void TextureImageTransportSurface::ConsumeTexture(Texture& texture) {
-  DCHECK(!texture.service_id);
-  DCHECK(texture.surface_handle == 1 || texture.surface_handle == 2);
-
-  scoped_ptr<TextureDefinition> definition(mailbox_manager_->ConsumeTexture(
-      GL_TEXTURE_2D, mailbox_name(texture.surface_handle)));
-  if (definition.get()) {
-    texture.service_id = definition->ReleaseServiceId();
-    texture.size = gfx::Size(definition->level_infos()[0][0].width,
-                             definition->level_infos()[0][0].height);
+void TextureImageTransportSurface::ReleaseParentStub() {
+  DCHECK(parent_stub_);
+  parent_stub_->RemoveDestructionObserver(this);
+  for (int i = 0; i < 2; ++i) {
+    Texture& texture = textures_[i];
+    texture.info = NULL;
+    if (!texture.sent_to_client)
+      continue;
+    GpuHostMsg_AcceleratedSurfaceRelease_Params params;
+    params.identifier = texture.client_id;
+    helper_->SendAcceleratedSurfaceRelease(params);
   }
-}
-
-void TextureImageTransportSurface::ProduceTexture(Texture& texture) {
-  DCHECK(texture.service_id);
-  DCHECK(texture.surface_handle == 1 || texture.surface_handle == 2);
-  TextureManager* texture_manager =
-      helper_->stub()->decoder()->GetContextGroup()->texture_manager();
-  DCHECK(texture.size.width() > 0 && texture.size.height() > 0);
-  TextureDefinition::LevelInfo info(
-      GL_TEXTURE_2D, GL_RGBA, texture.size.width(), texture.size.height(), 1,
-      0, GL_RGBA, GL_UNSIGNED_BYTE, true);
-
-  TextureDefinition::LevelInfos level_infos;
-  level_infos.resize(1);
-  level_infos[0].resize(texture_manager->MaxLevelsForTarget(GL_TEXTURE_2D));
-  level_infos[0][0] = info;
-  scoped_ptr<TextureDefinition> definition(new TextureDefinition(
-      GL_TEXTURE_2D,
-      texture.service_id,
-      GL_LINEAR,
-      GL_LINEAR,
-      GL_CLAMP_TO_EDGE,
-      GL_CLAMP_TO_EDGE,
-      GL_NONE,
-      true,
-      level_infos));
-  // Pass NULL as |owner| here to avoid errors from glConsumeTextureCHROMIUM()
-  // when the renderer context group goes away before the RWHV handles a pending
-  // ACK. We avoid leaking a texture in the mailbox by waiting for the final ACK
-  // at which point we consume the correct texture back.
-  mailbox_manager_->ProduceTexture(
-      GL_TEXTURE_2D,
-      mailbox_name(texture.surface_handle),
-      definition.release(),
-      NULL);
-  texture.service_id = 0;
+  parent_stub_ = NULL;
 }
 
 }  // namespace content

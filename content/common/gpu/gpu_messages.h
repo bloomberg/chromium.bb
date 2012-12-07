@@ -46,7 +46,6 @@ IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceNew_Params)
   IPC_STRUCT_MEMBER(int32, width)
   IPC_STRUCT_MEMBER(int32, height)
   IPC_STRUCT_MEMBER(uint64, surface_handle)
-  IPC_STRUCT_MEMBER(std::string, mailbox_name)
   IPC_STRUCT_MEMBER(int32, route_id)
 #if defined(OS_MACOSX)
   IPC_STRUCT_MEMBER(gfx::PluginWindowHandle, window)
@@ -64,6 +63,8 @@ IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params)
 #if defined(OS_MACOSX)
   IPC_STRUCT_MEMBER(gfx::PluginWindowHandle, window)
 #endif
+  IPC_STRUCT_MEMBER(uint32, protection_state_id)
+  IPC_STRUCT_MEMBER(bool, skip_ack)
 IPC_STRUCT_END()
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT
@@ -80,10 +81,12 @@ IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params)
 #if defined(OS_MACOSX)
   IPC_STRUCT_MEMBER(gfx::PluginWindowHandle, window)
 #endif
+  IPC_STRUCT_MEMBER(uint32, protection_state_id)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceRelease_Params)
   IPC_STRUCT_MEMBER(int32, surface_id)
+  IPC_STRUCT_MEMBER(uint64, identifier)
   IPC_STRUCT_MEMBER(int32, route_id)
 #if defined(OS_MACOSX)
   IPC_STRUCT_MEMBER(gfx::PluginWindowHandle, window)
@@ -194,6 +197,10 @@ IPC_STRUCT_TRAITS_BEGIN(gfx::GLSurfaceHandle)
   IPC_STRUCT_TRAITS_MEMBER(transport)
   IPC_STRUCT_TRAITS_MEMBER(parent_gpu_process_id)
   IPC_STRUCT_TRAITS_MEMBER(parent_client_id)
+  IPC_STRUCT_TRAITS_MEMBER(parent_context_id)
+  IPC_STRUCT_TRAITS_MEMBER(parent_texture_id[0])
+  IPC_STRUCT_TRAITS_MEMBER(parent_texture_id[1])
+  IPC_STRUCT_TRAITS_MEMBER(sync_point)
 IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS(content::CauseForGpuLaunch)
@@ -273,12 +280,16 @@ IPC_MESSAGE_CONTROL1(GpuMsg_SetVideoMemoryWindowCount,
 // view.
 IPC_MESSAGE_ROUTED0(AcceleratedSurfaceMsg_ResizeViewACK)
 
+// Tells the GPU process if it's worth suggesting release of the front surface.
+IPC_MESSAGE_ROUTED2(AcceleratedSurfaceMsg_SetFrontSurfaceIsProtected,
+                    bool /* is_protected */,
+                    uint32 /* protection_state_id */)
+
 // Tells the GPU process that the browser process has handled the swap
 // buffers or post sub-buffer request. A non-zero sync point means
-// that we should wait for the sync point. The surface_handle identifies
-// that buffer that has finished presented, i.e. the buffer being returned.
+// that we should wait for the sync point.
 IPC_MESSAGE_ROUTED2(AcceleratedSurfaceMsg_BufferPresented,
-                    uint64 /* surface_handle */,
+                    bool /* presented */,
                     uint32 /* sync_point */)
 
 // Tells the GPU process to remove all contexts.

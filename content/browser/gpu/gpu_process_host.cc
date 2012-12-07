@@ -100,7 +100,7 @@ void SendGpuProcessMessage(GpuProcessHost::GpuProcessKind kind,
 void AcceleratedSurfaceBuffersSwappedCompletedForGPU(int host_id,
                                                      int route_id,
                                                      bool alive,
-                                                     uint64 surface_handle) {
+                                                     bool did_swap) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO,
@@ -109,7 +109,7 @@ void AcceleratedSurfaceBuffersSwappedCompletedForGPU(int host_id,
                    host_id,
                    route_id,
                    alive,
-                   surface_handle));
+                   did_swap));
     return;
   }
 
@@ -117,7 +117,7 @@ void AcceleratedSurfaceBuffersSwappedCompletedForGPU(int host_id,
   if (host) {
     if (alive)
       host->Send(new AcceleratedSurfaceMsg_BufferPresented(
-          route_id, surface_handle, 0));
+          route_id, did_swap, 0));
     else
       host->ForceShutdown();
   }
@@ -159,12 +159,11 @@ void AcceleratedSurfaceBuffersSwappedCompletedForRenderer(
 void AcceleratedSurfaceBuffersSwappedCompleted(int host_id,
                                                int route_id,
                                                int surface_id,
-                                               uint64 surface_handle,
                                                bool alive,
                                                base::TimeTicks timebase,
                                                base::TimeDelta interval) {
   AcceleratedSurfaceBuffersSwappedCompletedForGPU(host_id, route_id,
-                                                  alive, surface_handle);
+                                                  alive, true /* presented */);
   AcceleratedSurfaceBuffersSwappedCompletedForRenderer(surface_id, timebase,
                                                        interval);
 }
@@ -705,7 +704,7 @@ void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
   base::ScopedClosureRunner scoped_completion_runner(
       base::Bind(&AcceleratedSurfaceBuffersSwappedCompletedForGPU,
                  host_id_, params.route_id,
-                 true /* alive */, params.surface_handle));
+                 true /* alive */, false /* presented */));
 
   int render_process_id = 0;
   int render_widget_id = 0;
@@ -740,8 +739,8 @@ void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
 
   base::ScopedClosureRunner scoped_completion_runner(
       base::Bind(&AcceleratedSurfaceBuffersSwappedCompleted,
-          host_id_, params.route_id, params.surface_id, params.surface_handle,
-          true, base::TimeTicks(), base::TimeDelta()));
+                 host_id_, params.route_id, params.surface_id,
+                 true, base::TimeTicks(), base::TimeDelta()));
 
   gfx::PluginWindowHandle handle =
       GpuSurfaceTracker::Get()->GetSurfaceWindowHandle(params.surface_id);
@@ -773,8 +772,7 @@ void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
       base::Bind(&AcceleratedSurfaceBuffersSwappedCompleted,
                  host_id_,
                  params.route_id,
-                 params.surface_id,
-                 params.surface_handle));
+                 params.surface_id));
 }
 
 void GpuProcessHost::OnAcceleratedSurfacePostSubBuffer(

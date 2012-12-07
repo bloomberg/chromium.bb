@@ -57,7 +57,7 @@ class IOSurfaceImageTransportSurface : public gfx::NoOpGLSurfaceCGL,
 
  protected:
   // ImageTransportSurface implementation
-  virtual void OnBufferPresented(uint64 surface_handle,
+  virtual void OnBufferPresented(bool presented,
                                  uint32 sync_point) OVERRIDE;
   virtual void OnResizeViewACK() OVERRIDE;
   virtual void OnResize(gfx::Size size) OVERRIDE;
@@ -268,7 +268,7 @@ gfx::Size IOSurfaceImageTransportSurface::GetSize() {
   return size_;
 }
 
-void IOSurfaceImageTransportSurface::OnBufferPresented(uint64 surface_handle,
+void IOSurfaceImageTransportSurface::OnBufferPresented(bool presented,
                                                        uint32 sync_point) {
   DCHECK(is_swap_buffers_pending_);
   is_swap_buffers_pending_ = false;

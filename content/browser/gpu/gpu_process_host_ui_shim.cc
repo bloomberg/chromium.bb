@@ -31,11 +31,6 @@
 #include <gdk/gdkx.h>  // NOLINT
 #endif
 
-// From gl2/gl2ext.h.
-#ifndef GL_MAILBOX_SIZE_CHROMIUM
-#define GL_MAILBOX_SIZE_CHROMIUM 64
-#endif
-
 namespace content {
 
 namespace {
@@ -307,14 +302,8 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceNew(
       params.surface_id);
   if (!view)
     return;
-
-  if (params.mailbox_name.length() &&
-      params.mailbox_name.length() != GL_MAILBOX_SIZE_CHROMIUM)
-    return;
-
   view->AcceleratedSurfaceNew(
-      params.width, params.height, params.surface_handle,
-      params.mailbox_name);
+      params.width, params.height, params.surface_handle);
 }
 
 static base::TimeDelta GetSwapDelay() {
@@ -334,9 +323,7 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
 
   ScopedSendOnIOThread delayed_send(
       host_id_,
-      new AcceleratedSurfaceMsg_BufferPresented(params.route_id,
-                                                params.surface_handle,
-                                                0));
+      new AcceleratedSurfaceMsg_BufferPresented(params.route_id, false, 0));
 
   RenderWidgetHostViewPort* view = GetRenderWidgetHostViewFromSurfaceID(
       params.surface_id);
@@ -360,9 +347,7 @@ void GpuProcessHostUIShim::OnAcceleratedSurfacePostSubBuffer(
 
   ScopedSendOnIOThread delayed_send(
       host_id_,
-      new AcceleratedSurfaceMsg_BufferPresented(params.route_id,
-                                                params.surface_handle,
-                                                0));
+      new AcceleratedSurfaceMsg_BufferPresented(params.route_id, false, 0));
 
   RenderWidgetHostViewPort* view =
       GetRenderWidgetHostViewFromSurfaceID(params.surface_id);
@@ -393,7 +378,7 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceRelease(
       params.surface_id);
   if (!view)
     return;
-  view->AcceleratedSurfaceRelease();
+  view->AcceleratedSurfaceRelease(params.identifier);
 }
 
 void GpuProcessHostUIShim::OnVideoMemoryUsageStatsReceived(

@@ -5,8 +5,6 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_ANDROID_H_
 #define CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_ANDROID_H_
 
-#include <map>
-
 #include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/scoped_ptr.h"
@@ -103,12 +101,6 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
       const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params,
       int gpu_host_id) OVERRIDE;
   virtual void AcceleratedSurfaceSuspend() OVERRIDE;
-  virtual void AcceleratedSurfaceNew(
-      int32 width_in_pixel,
-      int32 height_in_pixel,
-      uint64 surface_id,
-      const std::string& mailbox_name) OVERRIDE;
-  virtual void AcceleratedSurfaceRelease() OVERRIDE;
   virtual bool HasAcceleratedSurface(const gfx::Size& desired_size) OVERRIDE;
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
   virtual void CopyFromCompositingSurface(
@@ -200,12 +192,6 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
 
   // Used for image transport when needing to share resources across threads.
   scoped_ptr<SurfaceTextureTransportClient> surface_texture_transport_;
-
-  typedef std::map<uint64, std::string> MailboxMap;
-  MailboxMap id_to_mailbox_;
-
-  // The identifier of the previously received frame
-  uint64 current_buffer_id_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAndroid);
 };

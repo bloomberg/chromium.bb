@@ -11,7 +11,6 @@
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
-#include "third_party/khronos/GLES2/gl2.h"
 #include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
 
 namespace content {
@@ -31,16 +30,6 @@ class DirectGLImageTransportFactory : public ImageTransportFactoryAndroid {
   virtual void DestroySharedSurfaceHandle(
       const gfx::GLSurfaceHandle& handle) OVERRIDE {}
   virtual uint32_t InsertSyncPoint() OVERRIDE { return 0; }
-  virtual uint32_t CreateTexture() OVERRIDE {
-    return context_->createTexture();
-  }
-  virtual void DeleteTexture(uint32_t id) OVERRIDE {
-    context_->deleteTexture(id);
-  }
-  virtual void AcquireTexture(
-      uint32 texture_id, const signed char* mailbox_name) OVERRIDE {}
-  virtual void ReleaseTexture(
-      uint32 texture_id, const signed char* mailbox_name) OVERRIDE {}
   virtual WebKit::WebGraphicsContext3D* GetContext3D() OVERRIDE {
     return context_.get();
   }
@@ -75,12 +64,6 @@ class CmdBufferImageTransportFactory : public ImageTransportFactoryAndroid {
   virtual void DestroySharedSurfaceHandle(
       const gfx::GLSurfaceHandle& handle) OVERRIDE;
   virtual uint32_t InsertSyncPoint() OVERRIDE;
-  virtual uint32_t CreateTexture() OVERRIDE;
-  virtual void DeleteTexture(uint32_t id) OVERRIDE;
-  virtual void AcquireTexture(
-      uint32 texture_id, const signed char* mailbox_name) OVERRIDE;
-  virtual void ReleaseTexture(
-      uint32 texture_id, const signed char* mailbox_name) OVERRIDE;
   virtual WebKit::WebGraphicsContext3D* GetContext3D() OVERRIDE {
     return context_.get();
   }
@@ -122,6 +105,11 @@ CmdBufferImageTransportFactory::CreateSharedSurfaceHandle() {
   gfx::GLSurfaceHandle handle = gfx::GLSurfaceHandle(
       gfx::kNullPluginWindow, true);
   handle.parent_gpu_process_id = context_->GetGPUProcessID();
+  handle.parent_client_id = context_->GetChannelID();
+  handle.parent_context_id = context_->GetContextID();
+  handle.parent_texture_id[0] = context_->createTexture();
+  handle.parent_texture_id[1] = context_->createTexture();
+  handle.sync_point = context_->insertSyncPoint();
   context_->flush();
   return handle;
 }
@@ -132,31 +120,14 @@ void CmdBufferImageTransportFactory::DestroySharedSurfaceHandle(
     NOTREACHED() << "Failed to make shared graphics context current";
     return;
   }
+
+  context_->deleteTexture(handle.parent_texture_id[0]);
+  context_->deleteTexture(handle.parent_texture_id[1]);
+  context_->finish();
 }
 
 uint32_t CmdBufferImageTransportFactory::InsertSyncPoint() {
   return context_->insertSyncPoint();
-}
-
-uint32_t CmdBufferImageTransportFactory::CreateTexture() {
-  return context_->createTexture();
-}
-
-void CmdBufferImageTransportFactory::DeleteTexture(uint32_t id) {
-  context_->deleteTexture(id);
-}
-
-void CmdBufferImageTransportFactory::AcquireTexture(
-    uint32 texture_id, const signed char* mailbox_name) {
-  context_->bindTexture(GL_TEXTURE_2D, texture_id);
-  context_->consumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox_name);
-  context_->flush();
-}
-
-void CmdBufferImageTransportFactory::ReleaseTexture(
-    uint32 texture_id, const signed char* mailbox_name) {
-  context_->bindTexture(GL_TEXTURE_2D, texture_id);
-  context_->produceTextureCHROMIUM(GL_TEXTURE_2D, mailbox_name);
 }
 
 GLHelper* CmdBufferImageTransportFactory::GetGLHelper() {

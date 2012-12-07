@@ -18,6 +18,7 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
     const gfx::GLSurfaceHandle& handle) {
   scoped_refptr<gfx::GLSurface> surface;
   if (!handle.handle && handle.transport) {
+    DCHECK(handle.parent_client_id);
     surface = new TextureImageTransportSurface(manager, stub, handle);
   } else if (handle.handle == gfx::kDummyPluginWindow && !handle.transport) {
     DCHECK(GpuSurfaceLookup::GetInstance());

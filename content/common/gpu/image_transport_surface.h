@@ -60,9 +60,11 @@ class ImageTransportSurface {
  public:
   ImageTransportSurface();
 
-  virtual void OnBufferPresented(uint64 surface_handle, uint32 sync_point) = 0;
+  virtual void OnBufferPresented(bool presented, uint32 sync_point) = 0;
   virtual void OnResizeViewACK() = 0;
   virtual void OnResize(gfx::Size size) = 0;
+  virtual void OnSetFrontSurfaceIsProtected(bool is_protected,
+                                            uint32 protection_state_id);
 
   // Creates the appropriate surface depending on the GL implementation.
   static scoped_refptr<gfx::GLSurface>
@@ -141,8 +143,10 @@ class ImageTransportHelper
   gpu::gles2::GLES2Decoder* Decoder();
 
   // IPC::Message handlers.
-  void OnBufferPresented(uint64 surface_handle, uint32 sync_point);
+  void OnBufferPresented(bool presented, uint32 sync_point);
   void OnResizeViewACK();
+  void OnSetFrontSurfaceIsProtected(bool is_protected,
+                                    uint32 protection_state_id);
 
   // Backbuffer resize callback.
   void Resize(gfx::Size size);
@@ -177,7 +181,7 @@ class PassThroughImageTransportSurface
   virtual bool OnMakeCurrent(gfx::GLContext* context) OVERRIDE;
 
   // ImageTransportSurface implementation.
-  virtual void OnBufferPresented(uint64 surface_handle,
+  virtual void OnBufferPresented(bool presented,
                                  uint32 sync_point) OVERRIDE;
   virtual void OnResizeViewACK() OVERRIDE;
   virtual void OnResize(gfx::Size size) OVERRIDE;

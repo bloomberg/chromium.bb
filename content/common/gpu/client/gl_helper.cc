@@ -17,7 +17,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
-#include "third_party/skia/include/core/SkRegion.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "ui/gl/gl_bindings.h"
@@ -790,32 +789,6 @@ void GLHelper::InitCopyTextToImpl() {
                                                       context_for_thread_,
                                                       this));
 
-}
-
-void GLHelper::CopySubBufferDamage(WebKit::WebGLId texture,
-                                   WebKit::WebGLId previous_texture,
-                                   const SkRegion& new_damage,
-                                   const SkRegion& old_damage) {
-  SkRegion region(old_damage);
-  if (region.op(new_damage, SkRegion::kDifference_Op)) {
-    ScopedFramebuffer dst_framebuffer(context_, context_->createFramebuffer());
-    ScopedFramebufferBinder<GL_FRAMEBUFFER> framebuffer_binder(
-        context_, dst_framebuffer);
-    ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(context_, texture);
-    context_->framebufferTexture2D(GL_FRAMEBUFFER,
-                                   GL_COLOR_ATTACHMENT0,
-                                   GL_TEXTURE_2D,
-                                   previous_texture,
-                                   0);
-    for (SkRegion::Iterator it(region); !it.done(); it.next()) {
-      const SkIRect& rect = it.rect();
-      context_->copyTexSubImage2D(GL_TEXTURE_2D, 0,
-                                  rect.x(), rect.y(),
-                                  rect.x(), rect.y(),
-                                  rect.width(), rect.height());
-    }
-    context_->flush();
-  }
 }
 
 }  // namespace content
