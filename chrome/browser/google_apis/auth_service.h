@@ -81,10 +81,6 @@ class AuthService : public content::NotificationObserver {
   static bool CanAuthenticate(Profile* profile);
 
  private:
-  // Helper function for StartAuthentication() call.
-  void StartAuthenticationOnUIThread(OperationRegistry* registry,
-                                     const AuthStatusCallback& callback);
-
   // Callback for AuthOperation (InternalAuthStatusCallback).
   void OnAuthCompleted(const AuthStatusCallback& callback,
                        GDataErrorCode error,

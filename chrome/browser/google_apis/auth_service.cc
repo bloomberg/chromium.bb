@@ -13,7 +13,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/google_apis/auth_service_observer.h"
 #include "chrome/browser/google_apis/base_operations.h"
-#include "chrome/browser/google_apis/task_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
@@ -172,35 +171,26 @@ AuthService::~AuthService() {
 
 void AuthService::StartAuthentication(OperationRegistry* registry,
                                       const AuthStatusCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   scoped_refptr<base::MessageLoopProxy> relay_proxy(
       base::MessageLoopProxy::current());
 
   if (HasAccessToken()) {
+    // We already have access token. Give it back to the caller asynchronously.
     relay_proxy->PostTask(FROM_HERE,
          base::Bind(callback, HTTP_SUCCESS, access_token_));
   } else if (HasRefreshToken()) {
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&AuthService::StartAuthenticationOnUIThread,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   registry,
-                   CreateRelayCallback(
+    // We have refresh token, let's get an access token.
+    (new AuthOperation(registry,
                        base::Bind(&AuthService::OnAuthCompleted,
                                   weak_ptr_factory_.GetWeakPtr(),
-                                  callback))));
+                                  callback),
+                       scopes_,
+                       refresh_token_))->Start();
   } else {
     relay_proxy->PostTask(FROM_HERE,
         base::Bind(callback, GDATA_NOT_READY, std::string()));
   }
-}
-
-void AuthService::StartAuthenticationOnUIThread(
-    OperationRegistry* registry,
-    const AuthStatusCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // We have refresh token, let's gets authenticated.
-  (new AuthOperation(registry, callback, scopes_, refresh_token_))->Start();
 }
 
 void AuthService::OnAuthCompleted(const AuthStatusCallback& callback,
