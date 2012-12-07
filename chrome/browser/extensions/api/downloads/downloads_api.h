@@ -167,7 +167,7 @@ class DownloadsShowFunction : public AsyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsShowFunction);
 };
 
-class DownloadsOpenFunction : public AsyncExtensionFunction {
+class DownloadsOpenFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("downloads.open");
   DownloadsOpenFunction();

@@ -815,7 +815,68 @@ const char HTML5FileWriter::kHTML5FileWritten[] = "html5_file_written";
 const char HTML5FileWriter::kURLRequestContextToreDown[] =
   "url_request_context_tore_down";
 
+// While an object of this class exists, it will mock out download
+// opening for all downloads created on the specified download manager.
+class MockDownloadOpeningObserver : public DownloadManager::Observer {
+ public:
+  explicit MockDownloadOpeningObserver(DownloadManager* manager)
+      : download_manager_(manager) {
+    download_manager_->AddObserver(this);
+  }
+
+  ~MockDownloadOpeningObserver() {
+    download_manager_->RemoveObserver(this);
+  }
+
+  virtual void OnDownloadCreated(
+      DownloadManager* manager, DownloadItem* item) OVERRIDE {
+    item->MockDownloadOpenForTesting();
+  }
+
+ private:
+  DownloadManager* download_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockDownloadOpeningObserver);
+};
+
 }  // namespace
+
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
+                       DownloadExtensionTest_Open) {
+  EXPECT_STREQ(download_extension_errors::kInvalidOperationError,
+               RunFunctionAndReturnError(
+                   new DownloadsOpenFunction(),
+                   "[-42]").c_str());
+
+  MockDownloadOpeningObserver mock_open_observer(GetCurrentManager());
+  DownloadItem* download_item = CreateSlowTestDownload();
+  ASSERT_TRUE(download_item);
+  EXPECT_FALSE(download_item->GetOpened());
+  EXPECT_FALSE(download_item->GetOpenWhenComplete());
+  ASSERT_TRUE(WaitFor(events::kOnDownloadCreated,
+      base::StringPrintf("[{\"danger\": \"safe\","
+                         "  \"incognito\": false,"
+                         "  \"mime\": \"application/octet-stream\","
+                         "  \"paused\": false,"
+                         "  \"url\": \"%s\"}]",
+                         download_item->GetURL().spec().c_str())));
+  EXPECT_STREQ(download_extension_errors::kInvalidOperationError,
+               RunFunctionAndReturnError(
+                   new DownloadsOpenFunction(),
+                   DownloadItemIdAsArgList(download_item)).c_str());
+
+  FinishPendingSlowDownloads();
+  EXPECT_FALSE(download_item->GetOpened());
+  EXPECT_TRUE(RunFunction(new DownloadsOpenFunction(),
+                          DownloadItemIdAsArgList(download_item)));
+  EXPECT_TRUE(download_item->GetOpened());
+  ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
+      base::StringPrintf("[{\"id\": %d,"
+                         "  \"opened\": {"
+                         "    \"previous\": false,"
+                         "    \"current\": true}}]",
+                         download_item->GetId())));
+}
 
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                        DownloadExtensionTest_PauseResumeCancel) {

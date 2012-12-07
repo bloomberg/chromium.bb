@@ -358,8 +358,14 @@ namespace downloads {
                             optional GetFileIconOptions options,
                             GetFileIconCallback callback);
 
-    // Erase matching $ref:DownloadItem from
-    // history
+    // Open the downloaded file now if the $ref:DownloadItem is complete;
+    // returns an error through $ref:runtime.lastError otherwise. An
+    // $ref:onChanged event will fire when the item is opened for the first
+    // time.
+    // |downloadId|: The identifier for the downloaded file.
+    static void open(long downloadId);
+
+    // Erase matching $ref:DownloadItem from history
     [nodoc] static void erase(DownloadQuery query,
                               optional EraseCallback callback);
 
@@ -373,9 +379,6 @@ namespace downloads {
 
     // Show the downloaded file in its folder in a file manager.
     [nodoc] static void show(long downloadId);
-
-    // Open the downloaded file.
-    [nodoc] static void open(long downloadId);
 
     // Initiate dragging the file to another application.
     [nodoc] static void drag(long downloadId);
