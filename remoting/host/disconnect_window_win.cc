@@ -8,24 +8,18 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/process_util.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_hdc.h"
 #include "base/win/scoped_select_object.h"
-#include "remoting/host/chromoting_host.h"
 #include "remoting/host/host_ui_resource.h"
 #include "remoting/host/ui_strings.h"
 
 // TODO(garykac): Lots of duplicated code in this file and
 // continue_window_win.cc. If we need to expand this then we should
 // create a class with the shared code.
-
-// HMODULE from DllMain/WinMain. This is needed to find our dialog resource.
-// This is defined in:
-//   Plugin: host_plugin.cc
-//   SimpleHost: simple_host_process.cc
-extern HMODULE g_hModule;
 
 namespace {
 
@@ -42,7 +36,7 @@ class DisconnectWindowWin : public DisconnectWindow {
   DisconnectWindowWin();
   virtual ~DisconnectWindowWin();
 
-  virtual void Show(ChromotingHost* host,
+  virtual void Show(const UiStrings& ui_strings,
                     const DisconnectCallback& disconnect_callback,
                     const std::string& username) OVERRIDE;
   virtual void Hide() OVERRIDE;
@@ -156,18 +150,18 @@ BOOL DisconnectWindowWin::OnDialogMessage(HWND hwnd, UINT msg,
   return FALSE;
 }
 
-void DisconnectWindowWin::Show(ChromotingHost* host,
+void DisconnectWindowWin::Show(const UiStrings& ui_strings,
                                const DisconnectCallback& disconnect_callback,
                                const std::string& username) {
   CHECK(!hwnd_);
   disconnect_callback_ = disconnect_callback;
 
   // Load the dialog resource so that we can modify the RTL flags if necessary.
-  // This is taken from chrome/default_plugin/install_dialog.cc
+  HMODULE module = base::GetModuleFromAddress(&DialogProc);
   HRSRC dialog_resource =
-      FindResource(g_hModule, MAKEINTRESOURCE(IDD_DISCONNECT), RT_DIALOG);
+      FindResource(module, MAKEINTRESOURCE(IDD_DISCONNECT), RT_DIALOG);
   CHECK(dialog_resource);
-  HGLOBAL dialog_template = LoadResource(g_hModule, dialog_resource);
+  HGLOBAL dialog_template = LoadResource(module, dialog_resource);
   CHECK(dialog_template);
   DLGTEMPLATE* dialog_pointer =
       reinterpret_cast<DLGTEMPLATE*>(LockResource(dialog_template));
@@ -177,9 +171,9 @@ void DisconnectWindowWin::Show(ChromotingHost* host,
   // standard headers, so we treat it as a generic pointer and manipulate the
   // correct offsets explicitly.
   scoped_ptr<unsigned char> rtl_dialog_template;
-  if (host->ui_strings().direction == UiStrings::RTL) {
+  if (ui_strings.direction == UiStrings::RTL) {
     unsigned long dialog_template_size =
-        SizeofResource(g_hModule, dialog_resource);
+        SizeofResource(module, dialog_resource);
     rtl_dialog_template.reset(new unsigned char[dialog_template_size]);
     memcpy(rtl_dialog_template.get(), dialog_pointer, dialog_template_size);
     DWORD* rtl_dwords = reinterpret_cast<DWORD*>(rtl_dialog_template.get());
@@ -187,7 +181,7 @@ void DisconnectWindowWin::Show(ChromotingHost* host,
     dialog_pointer = reinterpret_cast<DLGTEMPLATE*>(rtl_dwords);
   }
 
-  hwnd_ = CreateDialogIndirectParam(g_hModule, dialog_pointer, NULL,
+  hwnd_ = CreateDialogIndirectParam(module, dialog_pointer, NULL,
                                     (DLGPROC)DialogProc, (LPARAM)this);
   CHECK(hwnd_);
 
@@ -197,7 +191,7 @@ void DisconnectWindowWin::Show(ChromotingHost* host,
     has_hotkey_ = true;
   }
 
-  SetStrings(host->ui_strings(), username);
+  SetStrings(ui_strings, username);
   SetDialogPosition();
   ShowWindow(hwnd_, SW_SHOW);
 }
@@ -220,20 +214,20 @@ static int GetControlTextWidth(HWND control) {
   return rect.right;
 }
 
-void DisconnectWindowWin::SetStrings(const UiStrings& strings,
+void DisconnectWindowWin::SetStrings(const UiStrings& ui_strings,
                                      const std::string& username) {
-  SetWindowText(hwnd_, strings.product_name.c_str());
+  SetWindowText(hwnd_, ui_strings.product_name.c_str());
 
   HWND hwndButton = GetDlgItem(hwnd_, IDC_DISCONNECT);
   CHECK(hwndButton);
   int button_old_required_width = GetControlTextWidth(hwndButton);
-  SetWindowText(hwndButton, strings.disconnect_button_text.c_str());
+  SetWindowText(hwndButton, ui_strings.disconnect_button_text.c_str());
   int button_new_required_width = GetControlTextWidth(hwndButton);
 
   HWND hwndSharingWith = GetDlgItem(hwnd_, IDC_DISCONNECT_SHARINGWITH);
   CHECK(hwndSharingWith);
   string16 text = ReplaceStringPlaceholders(
-      strings.disconnect_message, UTF8ToUTF16(username), NULL);
+      ui_strings.disconnect_message, UTF8ToUTF16(username), NULL);
   int label_old_required_width = GetControlTextWidth(hwndSharingWith);
   SetWindowText(hwndSharingWith, text.c_str());
   int label_new_required_width = GetControlTextWidth(hwndSharingWith);

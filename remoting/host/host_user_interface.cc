@@ -136,7 +136,7 @@ void HostUserInterface::ShowDisconnectWindow(bool show,
 
   if (show) {
     disconnect_window_->Show(
-        host_,
+        host_->ui_strings(),
         base::Bind(&HostUserInterface::OnDisconnectCallback, weak_ptr_),
         username);
   } else {

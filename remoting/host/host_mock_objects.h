@@ -17,6 +17,7 @@
 #include "remoting/host/event_executor.h"
 #include "remoting/host/host_status_observer.h"
 #include "remoting/host/local_input_monitor.h"
+#include "remoting/host/ui_strings.h"
 #include "remoting/proto/control.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -58,7 +59,7 @@ class MockDisconnectWindow : public DisconnectWindow {
   MockDisconnectWindow();
   virtual ~MockDisconnectWindow();
 
-  MOCK_METHOD3(Show, void(remoting::ChromotingHost* host,
+  MOCK_METHOD3(Show, void(const UiStrings& ui_strings,
                           const DisconnectCallback& disconnect_callback,
                           const std::string& username));
   MOCK_METHOD0(Hide, void());

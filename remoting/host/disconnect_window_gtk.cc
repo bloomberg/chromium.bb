@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "remoting/host/chromoting_host.h"
 #include "remoting/host/ui_strings.h"
 #include "ui/base/gtk/gtk_signal.h"
 
@@ -22,7 +21,7 @@ class DisconnectWindowGtk : public DisconnectWindow {
   DisconnectWindowGtk();
   virtual ~DisconnectWindowGtk();
 
-  virtual void Show(ChromotingHost* host,
+  virtual void Show(const UiStrings& ui_strings,
                     const DisconnectCallback& disconnect_callback,
                     const std::string& username) OVERRIDE;
   virtual void Hide() OVERRIDE;
@@ -129,14 +128,14 @@ void DisconnectWindowGtk::CreateWindow(const UiStrings& ui_strings) {
   gtk_widget_show_all(disconnect_window_);
 }
 
-void DisconnectWindowGtk::Show(ChromotingHost* host,
-                                 const DisconnectCallback& disconnect_callback,
-                                 const std::string& username) {
+void DisconnectWindowGtk::Show(const UiStrings& ui_strings,
+                               const DisconnectCallback& disconnect_callback,
+                               const std::string& username) {
   disconnect_callback_ = disconnect_callback;
-  CreateWindow(host->ui_strings());
+  CreateWindow(ui_strings);
 
   string16 text = ReplaceStringPlaceholders(
-      host->ui_strings().disconnect_message, UTF8ToUTF16(username), NULL);
+      ui_strings.disconnect_message, UTF8ToUTF16(username), NULL);
   gtk_label_set_text(GTK_LABEL(message_), UTF16ToUTF8(text).c_str());
   gtk_window_present(GTK_WINDOW(disconnect_window_));
 }

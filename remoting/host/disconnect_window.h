@@ -12,7 +12,7 @@
 
 namespace remoting {
 
-class ChromotingHost;
+struct UiStrings;
 
 class DisconnectWindow {
  public:
@@ -27,8 +27,8 @@ class DisconnectWindow {
 
   virtual ~DisconnectWindow() {}
 
-  // Show the disconnect window allowing the user to shut down |host|.
-  virtual void Show(ChromotingHost* host,
+  // Show the disconnect window allowing the user to shut down the host.
+  virtual void Show(const UiStrings& ui_strings,
                     const DisconnectCallback& disconnect_callback,
                     const std::string& username) = 0;
 
