@@ -70,9 +70,10 @@ TEST_F(VertexArrayObjectManagerTest, Basic) {
 TEST_F(VertexArrayObjectManagerTest, UnbindBuffer) {
   const GLuint kBufferToUnbind = 123;
   const GLuint kBufferToRemain = 456;
+  const GLuint kElementArray = 789;
   bool changed = false;
   GLuint ids[2] = { 1, 3, };
-  manager_->GenVertexArrays(2, ids);
+  manager_->GenVertexArrays(arraysize(ids), ids);
   // Bind buffers to attribs on 2 vaos.
   for (size_t ii = 0; ii < arraysize(ids); ++ii) {
     EXPECT_TRUE(manager_->BindVertexArray(ids[ii], &changed));
@@ -87,17 +88,22 @@ TEST_F(VertexArrayObjectManagerTest, UnbindBuffer) {
     for (size_t jj = 0; jj < 4u; ++jj) {
       manager_->SetAttribEnable(jj, true);
     }
+    manager_->BindElementArray(kElementArray);
   }
   EXPECT_FALSE(manager_->HaveEnabledClientSideBuffers());
   EXPECT_TRUE(manager_->BindVertexArray(ids[0], &changed));
   // Unbind the buffer.
   manager_->UnbindBuffer(kBufferToUnbind);
+  manager_->UnbindBuffer(kElementArray);
   // The attribs are still enabled but their buffer is 0.
   EXPECT_TRUE(manager_->HaveEnabledClientSideBuffers());
   // Check the status of the bindings.
-  uint32 expected[][4] = {
+  static const uint32 expected[][4] = {
     { 0, kBufferToRemain, 0, kBufferToRemain, },
     { kBufferToUnbind, kBufferToRemain, kBufferToUnbind, kBufferToRemain, },
+  };
+  static const GLuint expected_element_array[] = {
+    0, kElementArray,
   };
   for (size_t ii = 0; ii < arraysize(ids); ++ii) {
     EXPECT_TRUE(manager_->BindVertexArray(ids[ii], &changed));
@@ -108,7 +114,10 @@ TEST_F(VertexArrayObjectManagerTest, UnbindBuffer) {
       EXPECT_EQ(expected[ii][jj], param)
           << "id: " << ids[ii] << ", attrib: " << jj;
     }
+    EXPECT_EQ(expected_element_array[ii],
+              manager_->bound_element_array_buffer());
   }
+
   // The vao that was not bound still has all service side bufferws.
   EXPECT_FALSE(manager_->HaveEnabledClientSideBuffers());
 }
@@ -168,7 +177,7 @@ TEST_F(VertexArrayObjectManagerTest, HaveEnabledClientSideArrays) {
 TEST_F(VertexArrayObjectManagerTest, BindElementArray) {
   bool changed = false;
   GLuint ids[2] = { 1, 3, };
-  manager_->GenVertexArrays(2, ids);
+  manager_->GenVertexArrays(arraysize(ids), ids);
 
   // Check the default element array is 0.
   EXPECT_EQ(0u, manager_->bound_element_array_buffer());
@@ -208,7 +217,7 @@ TEST_F(VertexArrayObjectManagerTest, GenBindDelete) {
   EXPECT_FALSE(changed);
 
   GLuint ids[2] = { 1, 3, };
-  manager_->GenVertexArrays(2, ids);
+  manager_->GenVertexArrays(arraysize(ids), ids);
   // Check Genned arrays succeed.
   EXPECT_TRUE(manager_->BindVertexArray(1, &changed));
   EXPECT_TRUE(changed);

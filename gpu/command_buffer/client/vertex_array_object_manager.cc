@@ -209,6 +209,9 @@ void VertexArrayObject::UnbindBuffer(GLuint id) {
       }
     }
   }
+  if (bound_element_array_buffer_id_ == id) {
+    bound_element_array_buffer_id_ = 0;
+  }
 }
 
 bool VertexArrayObject::BindElementArray(GLuint id) {
