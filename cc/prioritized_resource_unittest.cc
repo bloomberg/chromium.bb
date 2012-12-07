@@ -12,8 +12,6 @@
 #include "cc/test/tiled_layer_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using namespace WebKitTests;
-
 namespace cc {
 
 class PrioritizedResourceTest : public testing::Test {

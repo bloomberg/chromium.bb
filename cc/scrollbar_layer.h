@@ -21,7 +21,7 @@ class ScrollbarThemeComposite;
 
 class CC_EXPORT ScrollbarLayer : public ContentsScalingLayer {
 public:
-    virtual scoped_ptr<LayerImpl> createLayerImpl() OVERRIDE;
+    virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeHostImpl* hostImpl) OVERRIDE;
 
     static scoped_refptr<ScrollbarLayer> create(scoped_ptr<WebKit::WebScrollbar>, WebKit::WebScrollbarThemePainter, scoped_ptr<WebKit::WebScrollbarThemeGeometry>, int scrollLayerId);
 

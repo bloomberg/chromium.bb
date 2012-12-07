@@ -42,9 +42,9 @@ class CC_EXPORT LayerImpl {
 public:
     typedef ScopedPtrVector<LayerImpl> LayerList;
 
-    static scoped_ptr<LayerImpl> create(int id)
+    static scoped_ptr<LayerImpl> create(LayerTreeHostImpl* hostImpl, int id)
     {
-        return make_scoped_ptr(new LayerImpl(id));
+        return make_scoped_ptr(new LayerImpl(hostImpl, id));
     }
 
     virtual ~LayerImpl();
@@ -72,7 +72,6 @@ public:
     bool replicaHasMask() const { return m_replicaLayer && (m_maskLayer || m_replicaLayer->m_maskLayer); }
 
     LayerTreeHostImpl* layerTreeHostImpl() const { return m_layerTreeHostImpl; }
-    void setLayerTreeHostImpl(LayerTreeHostImpl* hostImpl);
 
     scoped_ptr<SharedQuadState> createSharedQuadState() const;
     // willDraw must be called before appendQuads. If willDraw is called,
@@ -276,7 +275,7 @@ public:
     gfx::Rect layerRectToContentRect(const gfx::RectF& layerRect) const;
 
 protected:
-    explicit LayerImpl(int);
+    LayerImpl(LayerTreeHostImpl* hostImpl, int);
 
     // Get the color and size of the layer's debug border.
     virtual void getDebugBorderProperties(SkColor*, float* width) const;

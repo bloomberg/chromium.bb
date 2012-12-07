@@ -8,6 +8,8 @@
 #include "cc/layer_tree_host_common.h"
 #include "cc/math_util.h"
 #include "cc/single_thread_proxy.h"
+#include "cc/test/fake_impl_proxy.h"
+#include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/geometry_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
@@ -63,106 +65,115 @@ void emulateDrawingOneFrame(LayerImpl* root)
     root->resetAllChangeTrackingForSubtree();
 }
 
-scoped_ptr<LayerImpl> createTestTreeWithOneSurface()
-{
-    scoped_ptr<LayerImpl> root = LayerImpl::create(1);
-    scoped_ptr<LayerImpl> child = LayerImpl::create(2);
-
-    root->setPosition(gfx::PointF());
-    root->setAnchorPoint(gfx::PointF());
-    root->setBounds(gfx::Size(500, 500));
-    root->setContentBounds(gfx::Size(500, 500));
-    root->setDrawsContent(true);
-    root->createRenderSurface();
-    root->renderSurface()->setContentRect(gfx::Rect(gfx::Point(), gfx::Size(500, 500)));
-
-    child->setPosition(gfx::PointF(100, 100));
-    child->setAnchorPoint(gfx::PointF());
-    child->setBounds(gfx::Size(30, 30));
-    child->setContentBounds(gfx::Size(30, 30));
-    child->setDrawsContent(true);
-    root->addChild(child.Pass());
-
-    return root.Pass();
-}
-
-scoped_ptr<LayerImpl> createTestTreeWithTwoSurfaces()
-{
-    // This test tree has two render surfaces: one for the root, and one for
-    // child1. Additionally, the root has a second child layer, and child1 has two
-    // children of its own.
-
-    scoped_ptr<LayerImpl> root = LayerImpl::create(1);
-    scoped_ptr<LayerImpl> child1 = LayerImpl::create(2);
-    scoped_ptr<LayerImpl> child2 = LayerImpl::create(3);
-    scoped_ptr<LayerImpl> grandChild1 = LayerImpl::create(4);
-    scoped_ptr<LayerImpl> grandChild2 = LayerImpl::create(5);
-
-    root->setPosition(gfx::PointF());
-    root->setAnchorPoint(gfx::PointF());
-    root->setBounds(gfx::Size(500, 500));
-    root->setContentBounds(gfx::Size(500, 500));
-    root->setDrawsContent(true);
-    root->createRenderSurface();
-    root->renderSurface()->setContentRect(gfx::Rect(gfx::Point(), gfx::Size(500, 500)));
-
-    child1->setPosition(gfx::PointF(100, 100));
-    child1->setAnchorPoint(gfx::PointF());
-    child1->setBounds(gfx::Size(30, 30));
-    child1->setContentBounds(gfx::Size(30, 30));
-    child1->setOpacity(0.5); // with a child that drawsContent, this will cause the layer to create its own renderSurface.
-    child1->setDrawsContent(false); // this layer does not draw, but is intended to create its own renderSurface.
-    child1->setForceRenderSurface(true);
-
-    child2->setPosition(gfx::PointF(11, 11));
-    child2->setAnchorPoint(gfx::PointF());
-    child2->setBounds(gfx::Size(18, 18));
-    child2->setContentBounds(gfx::Size(18, 18));
-    child2->setDrawsContent(true);
-
-    grandChild1->setPosition(gfx::PointF(200, 200));
-    grandChild1->setAnchorPoint(gfx::PointF());
-    grandChild1->setBounds(gfx::Size(6, 8));
-    grandChild1->setContentBounds(gfx::Size(6, 8));
-    grandChild1->setDrawsContent(true);
-
-    grandChild2->setPosition(gfx::PointF(190, 190));
-    grandChild2->setAnchorPoint(gfx::PointF());
-    grandChild2->setBounds(gfx::Size(6, 8));
-    grandChild2->setContentBounds(gfx::Size(6, 8));
-    grandChild2->setDrawsContent(true);
-
-    child1->addChild(grandChild1.Pass());
-    child1->addChild(grandChild2.Pass());
-    root->addChild(child1.Pass());
-    root->addChild(child2.Pass());
-
-    return root.Pass();
-}
-
-scoped_ptr<LayerImpl> createAndSetUpTestTreeWithOneSurface()
-{
-    scoped_ptr<LayerImpl> root = createTestTreeWithOneSurface();
-
-    // Setup includes going past the first frame which always damages everything, so
-    // that we can actually perform specific tests.
-    emulateDrawingOneFrame(root.get());
-
-    return root.Pass();
-}
-
-scoped_ptr<LayerImpl> createAndSetUpTestTreeWithTwoSurfaces()
-{
-    scoped_ptr<LayerImpl> root = createTestTreeWithTwoSurfaces();
-
-    // Setup includes going past the first frame which always damages everything, so
-    // that we can actually perform specific tests.
-    emulateDrawingOneFrame(root.get());
-
-    return root.Pass();
-}
-
 class DamageTrackerTest : public testing::Test {
+public:
+    DamageTrackerTest()
+        : m_hostImpl(&m_proxy)
+    {
+    }
+
+    scoped_ptr<LayerImpl> createTestTreeWithOneSurface()
+    {
+        scoped_ptr<LayerImpl> root = LayerImpl::create(&m_hostImpl, 1);
+        scoped_ptr<LayerImpl> child = LayerImpl::create(&m_hostImpl, 2);
+
+        root->setPosition(gfx::PointF());
+        root->setAnchorPoint(gfx::PointF());
+        root->setBounds(gfx::Size(500, 500));
+        root->setContentBounds(gfx::Size(500, 500));
+        root->setDrawsContent(true);
+        root->createRenderSurface();
+        root->renderSurface()->setContentRect(gfx::Rect(gfx::Point(), gfx::Size(500, 500)));
+
+        child->setPosition(gfx::PointF(100, 100));
+        child->setAnchorPoint(gfx::PointF());
+        child->setBounds(gfx::Size(30, 30));
+        child->setContentBounds(gfx::Size(30, 30));
+        child->setDrawsContent(true);
+        root->addChild(child.Pass());
+
+        return root.Pass();
+    }
+
+    scoped_ptr<LayerImpl> createTestTreeWithTwoSurfaces()
+    {
+        // This test tree has two render surfaces: one for the root, and one for
+        // child1. Additionally, the root has a second child layer, and child1 has two
+        // children of its own.
+
+        scoped_ptr<LayerImpl> root = LayerImpl::create(&m_hostImpl, 1);
+        scoped_ptr<LayerImpl> child1 = LayerImpl::create(&m_hostImpl, 2);
+        scoped_ptr<LayerImpl> child2 = LayerImpl::create(&m_hostImpl, 3);
+        scoped_ptr<LayerImpl> grandChild1 = LayerImpl::create(&m_hostImpl, 4);
+        scoped_ptr<LayerImpl> grandChild2 = LayerImpl::create(&m_hostImpl, 5);
+
+        root->setPosition(gfx::PointF());
+        root->setAnchorPoint(gfx::PointF());
+        root->setBounds(gfx::Size(500, 500));
+        root->setContentBounds(gfx::Size(500, 500));
+        root->setDrawsContent(true);
+        root->createRenderSurface();
+        root->renderSurface()->setContentRect(gfx::Rect(gfx::Point(), gfx::Size(500, 500)));
+
+        child1->setPosition(gfx::PointF(100, 100));
+        child1->setAnchorPoint(gfx::PointF());
+        child1->setBounds(gfx::Size(30, 30));
+        child1->setContentBounds(gfx::Size(30, 30));
+        child1->setOpacity(0.5); // with a child that drawsContent, this will cause the layer to create its own renderSurface.
+        child1->setDrawsContent(false); // this layer does not draw, but is intended to create its own renderSurface.
+        child1->setForceRenderSurface(true);
+
+        child2->setPosition(gfx::PointF(11, 11));
+        child2->setAnchorPoint(gfx::PointF());
+        child2->setBounds(gfx::Size(18, 18));
+        child2->setContentBounds(gfx::Size(18, 18));
+        child2->setDrawsContent(true);
+
+        grandChild1->setPosition(gfx::PointF(200, 200));
+        grandChild1->setAnchorPoint(gfx::PointF());
+        grandChild1->setBounds(gfx::Size(6, 8));
+        grandChild1->setContentBounds(gfx::Size(6, 8));
+        grandChild1->setDrawsContent(true);
+
+        grandChild2->setPosition(gfx::PointF(190, 190));
+        grandChild2->setAnchorPoint(gfx::PointF());
+        grandChild2->setBounds(gfx::Size(6, 8));
+        grandChild2->setContentBounds(gfx::Size(6, 8));
+        grandChild2->setDrawsContent(true);
+
+        child1->addChild(grandChild1.Pass());
+        child1->addChild(grandChild2.Pass());
+        root->addChild(child1.Pass());
+        root->addChild(child2.Pass());
+
+        return root.Pass();
+    }
+
+    scoped_ptr<LayerImpl> createAndSetUpTestTreeWithOneSurface()
+    {
+        scoped_ptr<LayerImpl> root = createTestTreeWithOneSurface();
+
+        // Setup includes going past the first frame which always damages everything, so
+        // that we can actually perform specific tests.
+        emulateDrawingOneFrame(root.get());
+
+        return root.Pass();
+    }
+
+    scoped_ptr<LayerImpl> createAndSetUpTestTreeWithTwoSurfaces()
+    {
+        scoped_ptr<LayerImpl> root = createTestTreeWithTwoSurfaces();
+
+        // Setup includes going past the first frame which always damages everything, so
+        // that we can actually perform specific tests.
+        emulateDrawingOneFrame(root.get());
+
+        return root.Pass();
+    }
+
+protected:
+    FakeImplProxy m_proxy;
+    FakeLayerTreeHostImpl m_hostImpl;
 };
 
 TEST_F(DamageTrackerTest, sanityCheckTestTreeWithOneSurface)
@@ -525,7 +536,7 @@ TEST_F(DamageTrackerTest, verifyDamageForAddingAndRemovingLayer)
     //
     clearDamageForAllSurfaces(root.get());
     {
-        scoped_ptr<LayerImpl> child2 = LayerImpl::create(3);
+        scoped_ptr<LayerImpl> child2 = LayerImpl::create(&m_hostImpl, 3);
         child2->setPosition(gfx::PointF(400, 380));
         child2->setAnchorPoint(gfx::PointF());
         child2->setBounds(gfx::Size(6, 8));
@@ -565,7 +576,7 @@ TEST_F(DamageTrackerTest, verifyDamageForNewUnchangedLayer)
 
     clearDamageForAllSurfaces(root.get());
     {
-        scoped_ptr<LayerImpl> child2 = LayerImpl::create(3);
+        scoped_ptr<LayerImpl> child2 = LayerImpl::create(&m_hostImpl, 3);
         child2->setPosition(gfx::PointF(400, 380));
         child2->setAnchorPoint(gfx::PointF());
         child2->setBounds(gfx::Size(6, 8));
@@ -595,7 +606,7 @@ TEST_F(DamageTrackerTest, verifyDamageForMultipleLayers)
     // In this test we don't want the above tree manipulation to be considered part of the same frame.
     clearDamageForAllSurfaces(root.get());
     {
-        scoped_ptr<LayerImpl> child2 = LayerImpl::create(3);
+        scoped_ptr<LayerImpl> child2 = LayerImpl::create(&m_hostImpl, 3);
         child2->setPosition(gfx::PointF(400, 380));
         child2->setAnchorPoint(gfx::PointF());
         child2->setBounds(gfx::Size(6, 8));
@@ -816,7 +827,7 @@ TEST_F(DamageTrackerTest, verifyDamageForReplica)
     // contentBounds of the surface.
     grandChild2->setPosition(gfx::PointF(180, 180));
     {
-        scoped_ptr<LayerImpl> grandChild3 = LayerImpl::create(6);
+        scoped_ptr<LayerImpl> grandChild3 = LayerImpl::create(&m_hostImpl, 6);
         grandChild3->setPosition(gfx::PointF(240, 240));
         grandChild3->setAnchorPoint(gfx::PointF());
         grandChild3->setBounds(gfx::Size(10, 10));
@@ -831,7 +842,7 @@ TEST_F(DamageTrackerTest, verifyDamageForReplica)
     //
     clearDamageForAllSurfaces(root.get());
     {
-        scoped_ptr<LayerImpl> grandChild1Replica = LayerImpl::create(7);
+        scoped_ptr<LayerImpl> grandChild1Replica = LayerImpl::create(&m_hostImpl, 7);
         grandChild1Replica->setPosition(gfx::PointF());
         grandChild1Replica->setAnchorPoint(gfx::PointF());
         gfx::Transform reflection;
@@ -899,7 +910,7 @@ TEST_F(DamageTrackerTest, verifyDamageForMask)
 
     // Set up the mask layer.
     {
-        scoped_ptr<LayerImpl> maskLayer = LayerImpl::create(3);
+        scoped_ptr<LayerImpl> maskLayer = LayerImpl::create(&m_hostImpl, 3);
         maskLayer->setPosition(child->position());
         maskLayer->setAnchorPoint(gfx::PointF());
         maskLayer->setBounds(child->bounds());
@@ -911,7 +922,7 @@ TEST_F(DamageTrackerTest, verifyDamageForMask)
     // Add opacity and a grandChild so that the render surface persists even after we remove the mask.
     child->setOpacity(0.5);
     {
-        scoped_ptr<LayerImpl> grandChild = LayerImpl::create(4);
+        scoped_ptr<LayerImpl> grandChild = LayerImpl::create(&m_hostImpl, 4);
         grandChild->setPosition(gfx::PointF(2, 2));
         grandChild->setAnchorPoint(gfx::PointF());
         grandChild->setBounds(gfx::Size(2, 2));
@@ -984,7 +995,7 @@ TEST_F(DamageTrackerTest, verifyDamageForReplicaMask)
 
     // Create a reflection about the left edge of grandChild1.
     {
-        scoped_ptr<LayerImpl> grandChild1Replica = LayerImpl::create(6);
+        scoped_ptr<LayerImpl> grandChild1Replica = LayerImpl::create(&m_hostImpl, 6);
         grandChild1Replica->setPosition(gfx::PointF());
         grandChild1Replica->setAnchorPoint(gfx::PointF());
         gfx::Transform reflection;
@@ -996,7 +1007,7 @@ TEST_F(DamageTrackerTest, verifyDamageForReplicaMask)
 
     // Set up the mask layer on the replica layer
     {
-        scoped_ptr<LayerImpl> replicaMaskLayer = LayerImpl::create(7);
+        scoped_ptr<LayerImpl> replicaMaskLayer = LayerImpl::create(&m_hostImpl, 7);
         replicaMaskLayer->setPosition(gfx::PointF());
         replicaMaskLayer->setAnchorPoint(gfx::PointF());
         replicaMaskLayer->setBounds(grandChild1->bounds());
@@ -1046,7 +1057,7 @@ TEST_F(DamageTrackerTest, verifyDamageForReplicaMaskWithAnchor)
     grandChild1->setAnchorPoint(gfx::PointF(1, 0)); // This is not exactly the anchor being tested, but by convention its expected to be the same as the replica's anchor point.
 
     {
-        scoped_ptr<LayerImpl> grandChild1Replica = LayerImpl::create(6);
+        scoped_ptr<LayerImpl> grandChild1Replica = LayerImpl::create(&m_hostImpl, 6);
         grandChild1Replica->setPosition(gfx::PointF());
         grandChild1Replica->setAnchorPoint(gfx::PointF(1, 0)); // This is the anchor being tested.
         gfx::Transform reflection;
@@ -1058,7 +1069,7 @@ TEST_F(DamageTrackerTest, verifyDamageForReplicaMaskWithAnchor)
 
     // Set up the mask layer on the replica layer
     {
-        scoped_ptr<LayerImpl> replicaMaskLayer = LayerImpl::create(7);
+        scoped_ptr<LayerImpl> replicaMaskLayer = LayerImpl::create(&m_hostImpl, 7);
         replicaMaskLayer->setPosition(gfx::PointF());
         replicaMaskLayer->setAnchorPoint(gfx::PointF()); // note, this is not the anchor being tested.
         replicaMaskLayer->setBounds(grandChild1->bounds());
@@ -1112,7 +1123,7 @@ TEST_F(DamageTrackerTest, verifyDamageForEmptyLayerList)
     // Though it should never happen, its a good idea to verify that the damage tracker
     // does not crash when it receives an empty layerList.
 
-    scoped_ptr<LayerImpl> root = LayerImpl::create(1);
+    scoped_ptr<LayerImpl> root = LayerImpl::create(&m_hostImpl, 1);
     root->createRenderSurface();
 
     ASSERT_TRUE(root == root->renderTarget());

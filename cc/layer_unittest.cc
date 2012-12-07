@@ -10,9 +10,11 @@
 #include "cc/layer_tree_host.h"
 #include "cc/math_util.h"
 #include "cc/single_thread_proxy.h"
-#include "cc/thread.h"
+#include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_client.h"
+#include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/geometry_test_utils.h"
+#include "cc/thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/transform.h"
@@ -63,6 +65,7 @@ public:
 class LayerTest : public testing::Test {
 public:
     LayerTest()
+        : m_hostImpl(&m_proxy)
     {
     }
 
@@ -136,8 +139,17 @@ protected:
         verifyTestTreeInitialState();
     }
 
+    FakeImplProxy m_proxy;
+    FakeLayerTreeHostImpl m_hostImpl;
+
     scoped_ptr<StrictMock<MockLayerImplTreeHost> > m_layerTreeHost;
-    scoped_refptr<Layer> m_parent, m_child1, m_child2, m_child3, m_grandChild1, m_grandChild2, m_grandChild3;
+    scoped_refptr<Layer> m_parent;
+    scoped_refptr<Layer> m_child1;
+    scoped_refptr<Layer> m_child2;
+    scoped_refptr<Layer> m_child3;
+    scoped_refptr<Layer> m_grandChild1;
+    scoped_refptr<Layer> m_grandChild2;
+    scoped_refptr<Layer> m_grandChild3;
 };
 
 TEST_F(LayerTest, basicCreateAndDestroy)
@@ -547,7 +559,7 @@ TEST_F(LayerTest, checkPropertyChangeCausesCorrectBehavior)
 TEST_F(LayerTest, verifyPushPropertiesAccumulatesUpdateRect)
 {
     scoped_refptr<Layer> testLayer = Layer::create();
-    scoped_ptr<LayerImpl> implLayer = LayerImpl::create(1);
+    scoped_ptr<LayerImpl> implLayer = LayerImpl::create(&m_hostImpl, 1);
 
     testLayer->setNeedsDisplayRect(gfx::RectF(gfx::PointF(), gfx::SizeF(5, 5)));
     testLayer->pushPropertiesTo(implLayer.get());

@@ -6,8 +6,10 @@
 
 #include "cc/layer_tree_host.h"
 #include "cc/single_thread_proxy.h"
-#include "cc/texture_layer_impl.h"
+#include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_client.h"
+#include "cc/test/fake_layer_tree_host_impl.h"
+#include "cc/texture_layer_impl.h"
 #include "cc/thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -39,6 +41,7 @@ private:
 class TextureLayerTest : public testing::Test {
 public:
     TextureLayerTest()
+        : m_hostImpl(&m_proxy)
     {
     }
 
@@ -59,7 +62,8 @@ protected:
     }
 
     scoped_ptr<MockLayerImplTreeHost> m_layerTreeHost;
-private:
+    FakeImplProxy m_proxy;
+    FakeLayerTreeHostImpl m_hostImpl;
 };
 
 TEST_F(TextureLayerTest, syncImplWhenChangingTextureId)
@@ -96,7 +100,7 @@ TEST_F(TextureLayerTest, syncImplWhenDrawing)
     scoped_refptr<TextureLayer> testLayer = TextureLayer::create(0);
     ASSERT_TRUE(testLayer);
     scoped_ptr<TextureLayerImpl> implLayer;
-    implLayer = TextureLayerImpl::create(1);
+    implLayer = TextureLayerImpl::create(&m_hostImpl, 1);
     ASSERT_TRUE(implLayer);
 
     EXPECT_CALL(*m_layerTreeHost, acquireLayerTextures()).Times(AnyNumber());

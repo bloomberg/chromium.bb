@@ -18,11 +18,11 @@
 
 namespace cc {
 
-PictureLayerImpl::PictureLayerImpl(int id) :
-    LayerImpl(id),
-    tilings_(this),
-    pile_(PicturePileImpl::Create()),
-    last_update_time_(0) {
+PictureLayerImpl::PictureLayerImpl(LayerTreeHostImpl* host, int id)
+    : LayerImpl(host, id),
+      tilings_(this),
+      pile_(PicturePileImpl::Create()),
+      last_update_time_(0) {
 }
 
 PictureLayerImpl::~PictureLayerImpl() {

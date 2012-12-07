@@ -7,6 +7,8 @@
 #include "cc/draw_quad.h"
 #include "cc/prioritized_resource_manager.h"
 #include "cc/resource_provider.h"
+#include "cc/test/fake_impl_proxy.h"
+#include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_web_compositor_output_surface.h"
 #include "cc/test/fake_web_graphics_context_3d.h"
 #include "cc/test/render_pass_test_common.h"
@@ -57,9 +59,10 @@ private:
 class FakeRendererClient : public RendererClient {
 public:
     FakeRendererClient()
-        : m_setFullRootLayerDamageCount(0)
+        : m_hostImpl(&m_proxy)
+        , m_setFullRootLayerDamageCount(0)
         , m_lastCallWasSetVisibility(0)
-        , m_rootLayer(LayerImpl::create(1))
+        , m_rootLayer(LayerImpl::create(&m_hostImpl, 1))
         , m_memoryAllocationLimitBytes(PrioritizedResourceManager::defaultMemoryAllocationLimit())
     {
         m_rootLayer->createRenderSurface();
@@ -91,6 +94,8 @@ public:
     size_t memoryAllocationLimitBytes() const { return m_memoryAllocationLimitBytes; }
 
 private:
+    FakeImplProxy m_proxy;
+    FakeLayerTreeHostImpl m_hostImpl;
     int m_setFullRootLayerDamageCount;
     bool* m_lastCallWasSetVisibility;
     scoped_ptr<LayerImpl> m_rootLayer;

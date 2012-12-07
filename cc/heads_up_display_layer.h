@@ -20,7 +20,7 @@ public:
 
     void setFontAtlas(scoped_ptr<FontAtlas>);
 
-    virtual scoped_ptr<LayerImpl> createLayerImpl() OVERRIDE;
+    virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeHostImpl* hostImpl) OVERRIDE;
     virtual void pushPropertiesTo(LayerImpl*) OVERRIDE;
 
     bool hasFontAtlas() const { return m_hasFontAtlas; }

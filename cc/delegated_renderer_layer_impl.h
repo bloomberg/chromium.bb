@@ -13,7 +13,7 @@ namespace cc {
 
 class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
 public:
-    static scoped_ptr<DelegatedRendererLayerImpl> create(int id) { return make_scoped_ptr(new DelegatedRendererLayerImpl(id)); }
+    static scoped_ptr<DelegatedRendererLayerImpl> create(LayerTreeHostImpl* hostImpl, int id) { return make_scoped_ptr(new DelegatedRendererLayerImpl(hostImpl, id)); }
     virtual ~DelegatedRendererLayerImpl();
 
     virtual int descendantsDrawContent() OVERRIDE;
@@ -32,7 +32,7 @@ public:
     virtual void appendQuads(QuadSink&, AppendQuadsData&) OVERRIDE;
 
 private:
-    explicit DelegatedRendererLayerImpl(int);
+    DelegatedRendererLayerImpl(LayerTreeHostImpl* hostImpl, int id);
 
     RenderPass::Id convertDelegatedRenderPassId(RenderPass::Id delegatedRenderPassId) const;
 

@@ -19,9 +19,9 @@ class QuadSink;
 class CC_EXPORT PictureLayerImpl : public LayerImpl,
                                    public PictureLayerTilingClient {
 public:
-  static scoped_ptr<PictureLayerImpl> create(int id)
+  static scoped_ptr<PictureLayerImpl> create(LayerTreeHostImpl* host, int id)
   {
-      return make_scoped_ptr(new PictureLayerImpl(id));
+      return make_scoped_ptr(new PictureLayerImpl(host, id));
   }
   virtual ~PictureLayerImpl();
 
@@ -39,7 +39,7 @@ public:
   void SyncFromActiveLayer(const PictureLayerImpl* other);
 
 protected:
-  PictureLayerImpl(int id);
+  PictureLayerImpl(LayerTreeHostImpl* host, int id);
 
   PictureLayerTilingSet tilings_;
   scoped_refptr<PicturePileImpl> pile_;

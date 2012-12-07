@@ -22,9 +22,9 @@ namespace {
 
 class MockLayerImpl : public LayerImpl {
 public:
-    static scoped_ptr<MockLayerImpl> create(int layerId)
+    static scoped_ptr<MockLayerImpl> create(LayerTreeHostImpl* hostImpl, int layerId)
     {
-        return make_scoped_ptr(new MockLayerImpl(layerId));
+        return make_scoped_ptr(new MockLayerImpl(hostImpl, layerId));
     }
     virtual ~MockLayerImpl()
     {
@@ -35,8 +35,8 @@ public:
     void setLayerImplDestructionList(std::vector<int>* list) { m_layerImplDestructionList = list; }
 
 private:
-    MockLayerImpl(int layerId)
-        : LayerImpl(layerId)
+    MockLayerImpl(LayerTreeHostImpl* hostImpl, int layerId)
+        : LayerImpl(hostImpl, layerId)
         , m_layerImplDestructionList(0)
     {
     }
@@ -51,9 +51,9 @@ public:
         return make_scoped_refptr(new MockLayer(layerImplDestructionList));
     }
 
-    virtual scoped_ptr<LayerImpl> createLayerImpl() OVERRIDE
+    virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeHostImpl* hostImpl) OVERRIDE
     {
-        return MockLayerImpl::create(m_layerId).PassAs<LayerImpl>();
+        return MockLayerImpl::create(hostImpl, m_layerId).PassAs<LayerImpl>();
     }
 
     virtual void pushPropertiesTo(LayerImpl* layerImpl) OVERRIDE

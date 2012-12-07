@@ -13,7 +13,7 @@ using cc::RenderingStats;
 using cc::ResourceUpdate;
 using cc::ResourceUpdateQueue;
 
-namespace WebKitTests {
+namespace cc {
 
 FakeLayerUpdater::Resource::Resource(FakeLayerUpdater* layer, scoped_ptr<PrioritizedResource> texture)
     : LayerUpdater::Resource(texture.Pass())
@@ -73,8 +73,8 @@ scoped_ptr<LayerUpdater::Resource> FakeLayerUpdater::createResource(PrioritizedR
     return scoped_ptr<LayerUpdater::Resource>(new Resource(this, PrioritizedResource::create(manager)));
 }
 
-FakeTiledLayerImpl::FakeTiledLayerImpl(int id)
-    : TiledLayerImpl(id)
+FakeTiledLayerImpl::FakeTiledLayerImpl(LayerTreeHostImpl* hostImpl, int id)
+    : TiledLayerImpl(hostImpl, id)
 {
 }
 

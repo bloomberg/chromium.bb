@@ -8,6 +8,8 @@
 
 #include "cc/append_quads_data.h"
 #include "cc/single_thread_proxy.h"
+#include "cc/test/fake_impl_proxy.h"
+#include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_test_common.h"
 #include "cc/test/mock_quad_culler.h"
@@ -37,7 +39,9 @@ TEST(NinePatchLayerImplTest, verifyDrawQuads)
     gfx::Rect apertureRect(20, 30, 40, 50);
     gfx::Rect scaledApertureNonUniform(20, 30, 340, 350);
 
-    scoped_ptr<NinePatchLayerImpl> layer = NinePatchLayerImpl::create(1);
+    FakeImplProxy proxy;
+    FakeLayerTreeHostImpl hostImpl(&proxy);
+    scoped_ptr<NinePatchLayerImpl> layer = NinePatchLayerImpl::create(&hostImpl, 1);
     layer->drawProperties().visible_content_rect = visibleContentRect;
     layer->setBounds(layerSize);
     layer->setContentBounds(layerSize);
@@ -96,7 +100,9 @@ TEST(NinePatchLayerImplTest, verifyDrawQuadsForSqueezedLayer)
     gfx::Rect visibleContentRect(gfx::Point(), layerSize);
     gfx::Rect apertureRect(20, 30, 40, 45); // rightWidth: 40, botHeight: 25
 
-    scoped_ptr<NinePatchLayerImpl> layer = NinePatchLayerImpl::create(1);
+    FakeImplProxy proxy;
+    FakeLayerTreeHostImpl hostImpl(&proxy);
+    scoped_ptr<NinePatchLayerImpl> layer = NinePatchLayerImpl::create(&hostImpl, 1);
     layer->drawProperties().visible_content_rect = visibleContentRect;
     layer->setBounds(layerSize);
     layer->setContentBounds(layerSize);

@@ -44,12 +44,12 @@ void TreeSynchronizer::collectExistingLayerImplRecursive(ScopedPtrLayerImplMap& 
     oldLayers.set(id, layerImpl.Pass());
 }
 
-scoped_ptr<LayerImpl> TreeSynchronizer::reuseOrCreateLayerImpl(RawPtrLayerImplMap& newLayers, ScopedPtrLayerImplMap& oldLayers, Layer* layer)
+scoped_ptr<LayerImpl> TreeSynchronizer::reuseOrCreateLayerImpl(RawPtrLayerImplMap& newLayers, ScopedPtrLayerImplMap& oldLayers, Layer* layer, LayerTreeHostImpl* hostImpl)
 {
     scoped_ptr<LayerImpl> layerImpl = oldLayers.take(layer->id());
 
     if (!layerImpl)
-        layerImpl = layer->createLayerImpl();
+        layerImpl = layer->createLayerImpl(hostImpl);
 
     newLayers[layer->id()] = layerImpl.get();
     return layerImpl.Pass();
@@ -60,7 +60,7 @@ scoped_ptr<LayerImpl> TreeSynchronizer::synchronizeTreeRecursive(RawPtrLayerImpl
     if (!layer)
         return scoped_ptr<LayerImpl>();
 
-    scoped_ptr<LayerImpl> layerImpl = reuseOrCreateLayerImpl(newLayers, oldLayers, layer);
+    scoped_ptr<LayerImpl> layerImpl = reuseOrCreateLayerImpl(newLayers, oldLayers, layer, hostImpl);
 
     layerImpl->clearChildList();
     const std::vector<scoped_refptr<Layer> >& children = layer->children();
@@ -71,7 +71,6 @@ scoped_ptr<LayerImpl> TreeSynchronizer::synchronizeTreeRecursive(RawPtrLayerImpl
     layerImpl->setReplicaLayer(synchronizeTreeRecursive(newLayers, oldLayers, layer->replicaLayer(), hostImpl));
 
     layer->pushPropertiesTo(layerImpl.get());
-    layerImpl->setLayerTreeHostImpl(hostImpl);
 
     // Remove all dangling pointers. The pointers will be setup later in updateScrollbarLayerPointersRecursive phase
     if (ScrollbarAnimationController* scrollbarController = layerImpl->scrollbarAnimationController()) {

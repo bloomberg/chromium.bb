@@ -10,6 +10,8 @@
 #include "cc/occlusion_tracker.h"
 #include "cc/overdraw_metrics.h"
 #include "cc/single_thread_proxy.h"
+#include "cc/test/fake_impl_proxy.h"
+#include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/tile_draw_quad.h"
 #include "cc/tiled_layer_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -36,52 +38,65 @@ private:
 
 typedef LayerIterator<LayerImpl, std::vector<LayerImpl*>, RenderSurfaceImpl, LayerIteratorActions::FrontToBack> LayerIteratorType;
 
-static scoped_ptr<TiledLayerImpl> makeLayer(TiledLayerImpl* parent, const gfx::Transform& drawTransform, const gfx::Rect& layerRect, float opacity, bool opaque, const gfx::Rect& layerOpaqueRect, std::vector<LayerImpl*>& surfaceLayerList)
+class QuadCullerTest : public testing::Test
 {
-    scoped_ptr<TiledLayerImpl> layer = TiledLayerImpl::create(1);
-    scoped_ptr<LayerTilingData> tiler = LayerTilingData::create(gfx::Size(100, 100), LayerTilingData::NoBorderTexels);
-    tiler->setBounds(layerRect.size());
-    layer->setTilingData(*tiler);
-    layer->setSkipsDraw(false);
-    layer->drawProperties().target_space_transform = drawTransform;
-    layer->drawProperties().screen_space_transform = drawTransform;
-    layer->drawProperties().visible_content_rect = layerRect;
-    layer->drawProperties().opacity = opacity;
-    layer->setContentsOpaque(opaque);
-    layer->setBounds(layerRect.size());
-    layer->setContentBounds(layerRect.size());
-
-    ResourceProvider::ResourceId resourceId = 1;
-    for (int i = 0; i < tiler->numTilesX(); ++i)
-        for (int j = 0; j < tiler->numTilesY(); ++j) {
-          gfx::Rect tileOpaqueRect = opaque ? tiler->tileBounds(i, j) : gfx::IntersectRects(tiler->tileBounds(i, j), layerOpaqueRect);
-            layer->pushTileProperties(i, j, resourceId++, tileOpaqueRect, false);
-        }
-
-    gfx::Rect rectInTarget = MathUtil::mapClippedRect(layer->drawTransform(), layer->visibleContentRect());
-    if (!parent) {
-        layer->createRenderSurface();
-        surfaceLayerList.push_back(layer.get());
-        layer->renderSurface()->layerList().push_back(layer.get());
-    } else {
-        layer->drawProperties().render_target = parent->renderTarget();
-        parent->renderSurface()->layerList().push_back(layer.get());
-        rectInTarget.Union(MathUtil::mapClippedRect(parent->drawTransform(), parent->visibleContentRect()));
+public:
+    QuadCullerTest()
+        : m_hostImpl(&m_proxy)
+    {
     }
-    layer->drawProperties().drawable_content_rect = rectInTarget;
 
-    return layer.Pass();
-}
+    scoped_ptr<TiledLayerImpl> makeLayer(TiledLayerImpl* parent, const gfx::Transform& drawTransform, const gfx::Rect& layerRect, float opacity, bool opaque, const gfx::Rect& layerOpaqueRect, std::vector<LayerImpl*>& surfaceLayerList)
+    {
+        scoped_ptr<TiledLayerImpl> layer = TiledLayerImpl::create(&m_hostImpl, 1);
+        scoped_ptr<LayerTilingData> tiler = LayerTilingData::create(gfx::Size(100, 100), LayerTilingData::NoBorderTexels);
+        tiler->setBounds(layerRect.size());
+        layer->setTilingData(*tiler);
+        layer->setSkipsDraw(false);
+        layer->drawProperties().target_space_transform = drawTransform;
+        layer->drawProperties().screen_space_transform = drawTransform;
+        layer->drawProperties().visible_content_rect = layerRect;
+        layer->drawProperties().opacity = opacity;
+        layer->setContentsOpaque(opaque);
+        layer->setBounds(layerRect.size());
+        layer->setContentBounds(layerRect.size());
 
-static void appendQuads(QuadList& quadList, SharedQuadStateList& sharedStateList, TiledLayerImpl* layer, LayerIteratorType& it, OcclusionTrackerImpl& occlusionTracker)
-{
-    occlusionTracker.enterLayer(it);
-    QuadCuller quadCuller(quadList, sharedStateList, layer, occlusionTracker, false, false);
-    AppendQuadsData data;
-    layer->appendQuads(quadCuller, data);
-    occlusionTracker.leaveLayer(it);
-    ++it;
-}
+        ResourceProvider::ResourceId resourceId = 1;
+        for (int i = 0; i < tiler->numTilesX(); ++i)
+            for (int j = 0; j < tiler->numTilesY(); ++j) {
+              gfx::Rect tileOpaqueRect = opaque ? tiler->tileBounds(i, j) : gfx::IntersectRects(tiler->tileBounds(i, j), layerOpaqueRect);
+                layer->pushTileProperties(i, j, resourceId++, tileOpaqueRect, false);
+            }
+
+        gfx::Rect rectInTarget = MathUtil::mapClippedRect(layer->drawTransform(), layer->visibleContentRect());
+        if (!parent) {
+            layer->createRenderSurface();
+            surfaceLayerList.push_back(layer.get());
+            layer->renderSurface()->layerList().push_back(layer.get());
+        } else {
+            layer->drawProperties().render_target = parent->renderTarget();
+            parent->renderSurface()->layerList().push_back(layer.get());
+            rectInTarget.Union(MathUtil::mapClippedRect(parent->drawTransform(), parent->visibleContentRect()));
+        }
+        layer->drawProperties().drawable_content_rect = rectInTarget;
+
+        return layer.Pass();
+    }
+
+    void appendQuads(QuadList& quadList, SharedQuadStateList& sharedStateList, TiledLayerImpl* layer, LayerIteratorType& it, OcclusionTrackerImpl& occlusionTracker)
+    {
+        occlusionTracker.enterLayer(it);
+        QuadCuller quadCuller(quadList, sharedStateList, layer, occlusionTracker, false, false);
+        AppendQuadsData data;
+        layer->appendQuads(quadCuller, data);
+        occlusionTracker.leaveLayer(it);
+        ++it;
+    }
+
+protected:
+    FakeImplProxy m_proxy;
+    FakeLayerTreeHostImpl m_hostImpl;
+};
 
 #define DECLARE_AND_INITIALIZE_TEST_QUADS               \
     QuadList quadList;                                  \
@@ -93,7 +108,7 @@ static void appendQuads(QuadList& quadList, SharedQuadStateList& sharedStateList
     gfx::Size childSize = gfx::Size(200, 200);          \
     gfx::Rect childRect = gfx::Rect(childSize);
 
-TEST(QuadCullerTest, verifyNoCulling)
+TEST_F(QuadCullerTest, verifyNoCulling)
 {
     DECLARE_AND_INITIALIZE_TEST_QUADS
 
@@ -110,7 +125,7 @@ TEST(QuadCullerTest, verifyNoCulling)
     EXPECT_NEAR(occlusionTracker.overdrawMetrics().pixelsCulledForDrawing(), 0, 1);
 }
 
-TEST(QuadCullerTest, verifyCullChildLinesUpTopLeft)
+TEST_F(QuadCullerTest, verifyCullChildLinesUpTopLeft)
 {
     DECLARE_AND_INITIALIZE_TEST_QUADS
 
@@ -127,7 +142,7 @@ TEST(QuadCullerTest, verifyCullChildLinesUpTopLeft)
     EXPECT_NEAR(occlusionTracker.overdrawMetrics().pixelsCulledForDrawing(), 40000, 1);
 }
 
-TEST(QuadCullerTest, verifyCullWhenChildOpacityNotOne)
+TEST_F(QuadCullerTest, verifyCullWhenChildOpacityNotOne)
 {
     DECLARE_AND_INITIALIZE_TEST_QUADS
 
@@ -144,7 +159,7 @@ TEST(QuadCullerTest, verifyCullWhenChildOpacityNotOne)
     EXPECT_NEAR(occlusionTracker.overdrawMetrics().pixelsCulledForDrawing(), 0, 1);
 }
 
-TEST(QuadCullerTest, verifyCullWhenChildOpaqueFlagFalse)
+TEST_F(QuadCullerTest, verifyCullWhenChildOpaqueFlagFalse)
 {
     DECLARE_AND_INITIALIZE_TEST_QUADS
 
@@ -161,7 +176,7 @@ TEST(QuadCullerTest, verifyCullWhenChildOpaqueFlagFalse)
     EXPECT_NEAR(occlusionTracker.overdrawMetrics().pixelsCulledForDrawing(), 0, 1);
 }
 
-TEST(QuadCullerTest, verifyCullCenterTileOnly)
+TEST_F(QuadCullerTest, verifyCullCenterTileOnly)
 {
     DECLARE_AND_INITIALIZE_TEST_QUADS
 
@@ -196,7 +211,7 @@ TEST(QuadCullerTest, verifyCullCenterTileOnly)
     EXPECT_NEAR(occlusionTracker.overdrawMetrics().pixelsCulledForDrawing(), 30000, 1);
 }
 
-TEST(QuadCullerTest, verifyCullCenterTileNonIntegralSize1)
+TEST_F(QuadCullerTest, verifyCullCenterTileNonIntegralSize1)
 {
     DECLARE_AND_INITIALIZE_TEST_QUADS
 
@@ -224,7 +239,7 @@ TEST(QuadCullerTest, verifyCullCenterTileNonIntegralSize1)
     EXPECT_NEAR(occlusionTracker.overdrawMetrics().pixelsCulledForDrawing(), 0, 1);
 }
 
-TEST(QuadCullerTest, verifyCullCenterTileNonIntegralSize2)
+TEST_F(QuadCullerTest, verifyCullCenterTileNonIntegralSize2)
 {
     DECLARE_AND_INITIALIZE_TEST_QUADS
 
@@ -252,7 +267,7 @@ TEST(QuadCullerTest, verifyCullCenterTileNonIntegralSize2)
     EXPECT_NEAR(occlusionTracker.overdrawMetrics().pixelsCulledForDrawing(), 0, 1);
 }
 
-TEST(QuadCullerTest, verifyCullChildLinesUpBottomRight)
+TEST_F(QuadCullerTest, verifyCullChildLinesUpBottomRight)
 {
     DECLARE_AND_INITIALIZE_TEST_QUADS
 
@@ -271,7 +286,7 @@ TEST(QuadCullerTest, verifyCullChildLinesUpBottomRight)
     EXPECT_NEAR(occlusionTracker.overdrawMetrics().pixelsCulledForDrawing(), 40000, 1);
 }
 
-TEST(QuadCullerTest, verifyCullSubRegion)
+TEST_F(QuadCullerTest, verifyCullSubRegion)
 {
     DECLARE_AND_INITIALIZE_TEST_QUADS
 
@@ -291,7 +306,7 @@ TEST(QuadCullerTest, verifyCullSubRegion)
     EXPECT_NEAR(occlusionTracker.overdrawMetrics().pixelsCulledForDrawing(), 10000, 1);
 }
 
-TEST(QuadCullerTest, verifyCullSubRegion2)
+TEST_F(QuadCullerTest, verifyCullSubRegion2)
 {
     DECLARE_AND_INITIALIZE_TEST_QUADS
 
@@ -311,7 +326,7 @@ TEST(QuadCullerTest, verifyCullSubRegion2)
     EXPECT_NEAR(occlusionTracker.overdrawMetrics().pixelsCulledForDrawing(), 15000, 1);
 }
 
-TEST(QuadCullerTest, verifyCullSubRegionCheckOvercull)
+TEST_F(QuadCullerTest, verifyCullSubRegionCheckOvercull)
 {
     DECLARE_AND_INITIALIZE_TEST_QUADS
 
@@ -331,7 +346,7 @@ TEST(QuadCullerTest, verifyCullSubRegionCheckOvercull)
     EXPECT_NEAR(occlusionTracker.overdrawMetrics().pixelsCulledForDrawing(), 10000, 1);
 }
 
-TEST(QuadCullerTest, verifyNonAxisAlignedQuadsDontOcclude)
+TEST_F(QuadCullerTest, verifyNonAxisAlignedQuadsDontOcclude)
 {
     DECLARE_AND_INITIALIZE_TEST_QUADS
 
@@ -356,7 +371,7 @@ TEST(QuadCullerTest, verifyNonAxisAlignedQuadsDontOcclude)
 // tile parent layer is rotated by 1 degree. Of the four tiles the child would
 // normally occlude, three will move (slightly) out from under the child layer, and
 // one moves further under the child. Only this last tile should be culled.
-TEST(QuadCullerTest, verifyNonAxisAlignedQuadsSafelyCulled)
+TEST_F(QuadCullerTest, verifyNonAxisAlignedQuadsSafelyCulled)
 {
     DECLARE_AND_INITIALIZE_TEST_QUADS
 
@@ -377,7 +392,7 @@ TEST(QuadCullerTest, verifyNonAxisAlignedQuadsSafelyCulled)
     EXPECT_NEAR(occlusionTracker.overdrawMetrics().pixelsCulledForDrawing(), 29400, 1);
 }
 
-TEST(QuadCullerTest, verifyCullOutsideScissorOverTile)
+TEST_F(QuadCullerTest, verifyCullOutsideScissorOverTile)
 {
     DECLARE_AND_INITIALIZE_TEST_QUADS
 
@@ -394,7 +409,7 @@ TEST(QuadCullerTest, verifyCullOutsideScissorOverTile)
     EXPECT_NEAR(occlusionTracker.overdrawMetrics().pixelsCulledForDrawing(), 120000, 1);
 }
 
-TEST(QuadCullerTest, verifyCullOutsideScissorOverCulledTile)
+TEST_F(QuadCullerTest, verifyCullOutsideScissorOverCulledTile)
 {
     DECLARE_AND_INITIALIZE_TEST_QUADS
 
@@ -411,7 +426,7 @@ TEST(QuadCullerTest, verifyCullOutsideScissorOverCulledTile)
     EXPECT_NEAR(occlusionTracker.overdrawMetrics().pixelsCulledForDrawing(), 120000, 1);
 }
 
-TEST(QuadCullerTest, verifyCullOutsideScissorOverPartialTiles)
+TEST_F(QuadCullerTest, verifyCullOutsideScissorOverPartialTiles)
 {
     DECLARE_AND_INITIALIZE_TEST_QUADS
 
@@ -428,7 +443,7 @@ TEST(QuadCullerTest, verifyCullOutsideScissorOverPartialTiles)
     EXPECT_NEAR(occlusionTracker.overdrawMetrics().pixelsCulledForDrawing(), 90000, 1);
 }
 
-TEST(QuadCullerTest, verifyCullOutsideScissorOverNoTiles)
+TEST_F(QuadCullerTest, verifyCullOutsideScissorOverNoTiles)
 {
     DECLARE_AND_INITIALIZE_TEST_QUADS
 
@@ -445,7 +460,7 @@ TEST(QuadCullerTest, verifyCullOutsideScissorOverNoTiles)
     EXPECT_NEAR(occlusionTracker.overdrawMetrics().pixelsCulledForDrawing(), 130000, 1);
 }
 
-TEST(QuadCullerTest, verifyWithoutMetrics)
+TEST_F(QuadCullerTest, verifyWithoutMetrics)
 {
     DECLARE_AND_INITIALIZE_TEST_QUADS
 

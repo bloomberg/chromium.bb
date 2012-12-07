@@ -11,8 +11,8 @@
 
 namespace cc {
 
-NinePatchLayerImpl::NinePatchLayerImpl(int id)
-    : LayerImpl(id)
+NinePatchLayerImpl::NinePatchLayerImpl(LayerTreeHostImpl* hostImpl, int id)
+    : LayerImpl(hostImpl, id)
     , m_resourceId(0)
 {
 }

@@ -24,7 +24,8 @@ public:
 
   // Implement Layer interface
   virtual bool drawsContent() const OVERRIDE;
-  virtual scoped_ptr<LayerImpl> createLayerImpl() OVERRIDE;
+  virtual scoped_ptr<LayerImpl> createLayerImpl(
+      LayerTreeHostImpl* host) OVERRIDE;
   virtual void pushPropertiesTo(LayerImpl*) OVERRIDE;
   virtual void setNeedsDisplayRect(const gfx::RectF& layerRect) OVERRIDE;
   virtual void update(ResourceUpdateQueue&, const OcclusionTracker*,

@@ -2617,7 +2617,7 @@ public:
     virtual void update(ResourceUpdateQueue&, const OcclusionTracker*, RenderingStats&) OVERRIDE;
     virtual bool drawsContent() const OVERRIDE { return true; }
 
-    virtual scoped_ptr<LayerImpl> createLayerImpl() OVERRIDE;
+    virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeHostImpl* hostImpl) OVERRIDE;
     virtual void pushPropertiesTo(LayerImpl*) OVERRIDE;
     virtual void setTexturePriorities(const PriorityCalculator&) OVERRIDE;
 
@@ -2642,9 +2642,9 @@ private:
 
 class EvictionTestLayerImpl : public LayerImpl {
 public:
-    static scoped_ptr<EvictionTestLayerImpl> create(int id)
+    static scoped_ptr<EvictionTestLayerImpl> create(LayerTreeHostImpl* hostImpl, int id)
     {
-        return make_scoped_ptr(new EvictionTestLayerImpl(id));
+        return make_scoped_ptr(new EvictionTestLayerImpl(hostImpl, id));
     }
     virtual ~EvictionTestLayerImpl() { }
 
@@ -2657,8 +2657,8 @@ public:
     void setHasTexture(bool hasTexture) { m_hasTexture = hasTexture; }
 
 private:
-    explicit EvictionTestLayerImpl(int id)
-        : LayerImpl(id)
+    EvictionTestLayerImpl(LayerTreeHostImpl* hostImpl, int id)
+        : LayerImpl(hostImpl, id)
         , m_hasTexture(false) { }
 
     bool m_hasTexture;
@@ -2684,9 +2684,9 @@ void EvictionTestLayer::update(ResourceUpdateQueue& queue, const OcclusionTracke
     queue.appendFullUpload(upload);
 }
 
-scoped_ptr<LayerImpl> EvictionTestLayer::createLayerImpl()
+scoped_ptr<LayerImpl> EvictionTestLayer::createLayerImpl(LayerTreeHostImpl* hostImpl)
 {
-    return EvictionTestLayerImpl::create(m_layerId).PassAs<LayerImpl>();
+    return EvictionTestLayerImpl::create(hostImpl, m_layerId).PassAs<LayerImpl>();
 }
 
 void EvictionTestLayer::pushPropertiesTo(LayerImpl* layerImpl)

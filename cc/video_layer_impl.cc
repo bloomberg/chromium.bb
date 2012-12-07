@@ -19,9 +19,9 @@
 
 namespace cc {
 
-VideoLayerImpl::VideoLayerImpl(int id, WebKit::WebVideoFrameProvider* provider,
+VideoLayerImpl::VideoLayerImpl(LayerTreeHostImpl* hostImpl, int id, WebKit::WebVideoFrameProvider* provider,
                                const FrameUnwrapper& unwrapper)
-    : LayerImpl(id)
+    : LayerImpl(hostImpl, id)
     , m_provider(provider)
     , m_unwrapper(unwrapper)
     , m_webFrame(0)

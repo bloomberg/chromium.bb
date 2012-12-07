@@ -9,8 +9,8 @@
 
 namespace cc {
 
-SolidColorLayerImpl::SolidColorLayerImpl(int id)
-    : LayerImpl(id)
+SolidColorLayerImpl::SolidColorLayerImpl(LayerTreeHostImpl* hostImpl, int id)
+    : LayerImpl(hostImpl, id)
     , m_tileSize(256)
 {
 }

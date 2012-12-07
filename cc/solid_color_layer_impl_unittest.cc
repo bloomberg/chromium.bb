@@ -8,6 +8,8 @@
 #include "cc/single_thread_proxy.h"
 #include "cc/solid_color_draw_quad.h"
 #include "cc/solid_color_layer.h"
+#include "cc/test/fake_impl_proxy.h"
+#include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/layer_test_common.h"
 #include "cc/test/mock_quad_culler.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -24,7 +26,9 @@ TEST(SolidColorLayerImplTest, verifyTilingCompleteAndNoOverlap)
     gfx::Size layerSize = gfx::Size(800, 600);
     gfx::Rect visibleContentRect = gfx::Rect(gfx::Point(), layerSize);
 
-    scoped_ptr<SolidColorLayerImpl> layer = SolidColorLayerImpl::create(1);
+    FakeImplProxy proxy;
+    FakeLayerTreeHostImpl hostImpl(&proxy);
+    scoped_ptr<SolidColorLayerImpl> layer = SolidColorLayerImpl::create(&hostImpl, 1);
     layer->drawProperties().visible_content_rect = visibleContentRect;
     layer->setBounds(layerSize);
     layer->setContentBounds(layerSize);
@@ -45,7 +49,9 @@ TEST(SolidColorLayerImplTest, verifyCorrectBackgroundColorInQuad)
     gfx::Size layerSize = gfx::Size(100, 100);
     gfx::Rect visibleContentRect = gfx::Rect(gfx::Point(), layerSize);
 
-    scoped_ptr<SolidColorLayerImpl> layer = SolidColorLayerImpl::create(1);
+    FakeImplProxy proxy;
+    FakeLayerTreeHostImpl hostImpl(&proxy);
+    scoped_ptr<SolidColorLayerImpl> layer = SolidColorLayerImpl::create(&hostImpl, 1);
     layer->drawProperties().visible_content_rect = visibleContentRect;
     layer->setBounds(layerSize);
     layer->setContentBounds(layerSize);
@@ -68,7 +74,9 @@ TEST(SolidColorLayerImplTest, verifyCorrectOpacityInQuad)
     gfx::Size layerSize = gfx::Size(100, 100);
     gfx::Rect visibleContentRect = gfx::Rect(gfx::Point(), layerSize);
 
-    scoped_ptr<SolidColorLayerImpl> layer = SolidColorLayerImpl::create(1);
+    FakeImplProxy proxy;
+    FakeLayerTreeHostImpl hostImpl(&proxy);
+    scoped_ptr<SolidColorLayerImpl> layer = SolidColorLayerImpl::create(&hostImpl, 1);
     layer->drawProperties().visible_content_rect = visibleContentRect;
     layer->setBounds(layerSize);
     layer->setContentBounds(layerSize);
@@ -85,6 +93,9 @@ TEST(SolidColorLayerImplTest, verifyCorrectOpacityInQuad)
 
 TEST(SolidColorLayerImplTest, verifyOpaqueRect)
 {
+    FakeImplProxy proxy;
+    FakeLayerTreeHostImpl hostImpl(&proxy);
+
     scoped_refptr<SolidColorLayer> layer = SolidColorLayer::create();
     gfx::Size layerSize = gfx::Size(100, 100);
     gfx::Rect visibleContentRect = gfx::Rect(gfx::Point(), layerSize);
@@ -99,7 +110,7 @@ TEST(SolidColorLayerImplTest, verifyOpaqueRect)
     EXPECT_TRUE(layer->contentsOpaque());
 
     {
-        scoped_ptr<SolidColorLayerImpl> layerImpl = SolidColorLayerImpl::create(layer->id());
+        scoped_ptr<SolidColorLayerImpl> layerImpl = SolidColorLayerImpl::create(&hostImpl, layer->id());
         layer->pushPropertiesTo(layerImpl.get());
 
         // The impl layer should call itself opaque as well.
@@ -121,7 +132,7 @@ TEST(SolidColorLayerImplTest, verifyOpaqueRect)
     EXPECT_FALSE(layer->contentsOpaque());
 
     {
-        scoped_ptr<SolidColorLayerImpl> layerImpl = SolidColorLayerImpl::create(layer->id());
+        scoped_ptr<SolidColorLayerImpl> layerImpl = SolidColorLayerImpl::create(&hostImpl, layer->id());
         layer->pushPropertiesTo(layerImpl.get());
 
         // The impl layer should callnot itself opaque anymore.

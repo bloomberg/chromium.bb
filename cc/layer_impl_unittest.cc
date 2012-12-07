@@ -5,6 +5,8 @@
 #include "cc/layer_impl.h"
 
 #include "cc/single_thread_proxy.h"
+#include "cc/test/fake_impl_proxy.h"
+#include "cc/test/fake_layer_tree_host_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
@@ -57,10 +59,12 @@ TEST(LayerImplTest, verifyLayerChangesAreTrackedProperly)
 
     // The constructor on this will fake that we are on the correct thread.
     // Create a simple LayerImpl tree:
-    scoped_ptr<LayerImpl> root = LayerImpl::create(1);
-    root->addChild(LayerImpl::create(2));
+    FakeImplProxy proxy;
+    FakeLayerTreeHostImpl hostImpl(&proxy);
+    scoped_ptr<LayerImpl> root = LayerImpl::create(&hostImpl, 1);
+    root->addChild(LayerImpl::create(&hostImpl, 2));
     LayerImpl* child = root->children()[0];
-    child->addChild(LayerImpl::create(3));
+    child->addChild(LayerImpl::create(&hostImpl, 3));
     LayerImpl* grandChild = child->children()[0];
 
     // Adding children is an internal operation and should not mark layers as changed.
@@ -93,10 +97,10 @@ TEST(LayerImplTest, verifyLayerChangesAreTrackedProperly)
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setFilters(arbitraryFilters));
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setFilters(WebFilterOperations()));
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setFilter(arbitraryFilter));
-    EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setMaskLayer(LayerImpl::create(4)));
+    EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setMaskLayer(LayerImpl::create(&hostImpl, 4)));
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setMasksToBounds(true));
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setContentsOpaque(true));
-    EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setReplicaLayer(LayerImpl::create(5)));
+    EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setReplicaLayer(LayerImpl::create(&hostImpl, 5)));
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setPosition(arbitraryPointF));
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setPreserves3D(true));
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setDoubleSided(false)); // constructor initializes it to "true".

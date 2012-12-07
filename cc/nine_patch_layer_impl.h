@@ -15,9 +15,9 @@ namespace cc {
 
 class CC_EXPORT NinePatchLayerImpl : public LayerImpl {
 public:
-    static scoped_ptr<NinePatchLayerImpl> create(int id)
+    static scoped_ptr<NinePatchLayerImpl> create(LayerTreeHostImpl* hostImpl, int id)
     {
-        return make_scoped_ptr(new NinePatchLayerImpl(id));
+        return make_scoped_ptr(new NinePatchLayerImpl(hostImpl, id));
     }
     virtual ~NinePatchLayerImpl();
 
@@ -32,7 +32,7 @@ public:
     virtual void didLoseOutputSurface() OVERRIDE;
 
 protected:
-    explicit NinePatchLayerImpl(int id);
+    NinePatchLayerImpl(LayerTreeHostImpl* hostImpl, int id);
 
 private:
     virtual const char* layerTypeAsString() const OVERRIDE;

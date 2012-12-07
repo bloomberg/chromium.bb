@@ -13,9 +13,9 @@ namespace cc {
 
 class CC_EXPORT IOSurfaceLayerImpl : public LayerImpl {
 public:
-    static scoped_ptr<IOSurfaceLayerImpl> create(int id)
+    static scoped_ptr<IOSurfaceLayerImpl> create(LayerTreeHostImpl* hostImpl, int id)
     {
-        return make_scoped_ptr(new IOSurfaceLayerImpl(id));
+        return make_scoped_ptr(new IOSurfaceLayerImpl(hostImpl, id));
     }
     virtual ~IOSurfaceLayerImpl();
 
@@ -29,7 +29,7 @@ public:
     virtual void dumpLayerProperties(std::string*, int indent) const OVERRIDE;
 
 private:
-    explicit IOSurfaceLayerImpl(int);
+    IOSurfaceLayerImpl(LayerTreeHostImpl* hostImpl, int id);
 
     virtual const char* layerTypeAsString() const OVERRIDE;
 

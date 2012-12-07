@@ -16,7 +16,7 @@ public:
 
     void setIOSurfaceProperties(uint32_t ioSurfaceId, const gfx::Size&);
 
-    virtual scoped_ptr<LayerImpl> createLayerImpl() OVERRIDE;
+    virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeHostImpl* hostImpl) OVERRIDE;
     virtual bool drawsContent() const OVERRIDE;
     virtual void pushPropertiesTo(LayerImpl*) OVERRIDE;
 

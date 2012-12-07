@@ -17,7 +17,7 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
-namespace WebKitTests {
+namespace cc {
 
 class FakeTiledLayer;
 
@@ -71,7 +71,7 @@ private:
 
 class FakeTiledLayerImpl : public cc::TiledLayerImpl {
 public:
-    explicit FakeTiledLayerImpl(int id);
+    FakeTiledLayerImpl(LayerTreeHostImpl* hostImpl, int id);
     virtual ~FakeTiledLayerImpl();
 
     using cc::TiledLayerImpl::hasTileAt;

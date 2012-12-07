@@ -15,6 +15,8 @@
 #include "cc/overdraw_metrics.h"
 #include "cc/single_thread_proxy.h"
 #include "cc/test/animation_test_common.h"
+#include "cc/test/fake_impl_proxy.h"
+#include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/occlusion_tracker_test_common.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -59,8 +61,8 @@ private:
 
 class TestContentLayerImpl : public LayerImpl {
 public:
-    TestContentLayerImpl(int id)
-        : LayerImpl(id)
+    TestContentLayerImpl(LayerTreeHostImpl* hostImpl, int id)
+        : LayerImpl(hostImpl, id)
         , m_overrideOpaqueContentsRect(false)
     {
         setDrawsContent(true);
@@ -119,6 +121,7 @@ private:
 
 struct OcclusionTrackerTestMainThreadTypes {
     typedef Layer LayerType;
+    typedef LayerTreeHost HostType;
     typedef RenderSurface RenderSurfaceType;
     typedef TestContentLayer ContentLayerType;
     typedef scoped_refptr<Layer> LayerPtrType;
@@ -126,11 +129,11 @@ struct OcclusionTrackerTestMainThreadTypes {
     typedef LayerIterator<Layer, std::vector<scoped_refptr<Layer> >, RenderSurface, LayerIteratorActions::FrontToBack> TestLayerIterator;
     typedef OcclusionTracker OcclusionTrackerType;
 
-    static LayerPtrType createLayer()
+    static LayerPtrType createLayer(HostType*)
     {
         return Layer::create();
     }
-    static ContentLayerPtrType createContentLayer() { return make_scoped_refptr(new ContentLayerType()); }
+    static ContentLayerPtrType createContentLayer(HostType*) { return make_scoped_refptr(new ContentLayerType()); }
 
     static LayerPtrType passLayerPtr(ContentLayerPtrType& layer)
     {
@@ -154,6 +157,7 @@ struct OcclusionTrackerTestMainThreadTypes {
 
 struct OcclusionTrackerTestImplThreadTypes {
     typedef LayerImpl LayerType;
+    typedef LayerTreeHostImpl HostType;
     typedef RenderSurfaceImpl RenderSurfaceType;
     typedef TestContentLayerImpl ContentLayerType;
     typedef scoped_ptr<LayerImpl> LayerPtrType;
@@ -161,8 +165,8 @@ struct OcclusionTrackerTestImplThreadTypes {
     typedef LayerIterator<LayerImpl, std::vector<LayerImpl*>, RenderSurfaceImpl, LayerIteratorActions::FrontToBack> TestLayerIterator;
     typedef OcclusionTrackerImpl OcclusionTrackerType;
 
-    static LayerPtrType createLayer() { return LayerImpl::create(nextLayerImplId++); }
-    static ContentLayerPtrType createContentLayer() { return make_scoped_ptr(new ContentLayerType(nextLayerImplId++)); }
+    static LayerPtrType createLayer(HostType* host) { return LayerImpl::create(host, nextLayerImplId++); }
+    static ContentLayerPtrType createContentLayer(HostType* host) { return make_scoped_ptr(new ContentLayerType(host, nextLayerImplId++)); }
     static int nextLayerImplId;
 
     static LayerPtrType passLayerPtr(LayerPtrType& layer)
@@ -187,8 +191,10 @@ template<typename Types>
 class OcclusionTrackerTest : public testing::Test {
 protected:
     OcclusionTrackerTest(bool opaqueLayers)
-        : m_opaqueLayers(opaqueLayers)
-    { }
+        : m_hostImpl(&m_proxy)
+        , m_opaqueLayers(opaqueLayers)
+    {
+    }
 
     virtual void runMyTest() = 0;
 
@@ -202,9 +208,11 @@ protected:
         LayerTreeHost::setNeedsFilterContext(false);
     }
 
+    typename Types::HostType* getHost();
+
     typename Types::ContentLayerType* createRoot(const gfx::Transform& transform, const gfx::PointF& position, const gfx::Size& bounds)
     {
-        typename Types::ContentLayerPtrType layer(Types::createContentLayer());
+        typename Types::ContentLayerPtrType layer(Types::createContentLayer(getHost()));
         typename Types::ContentLayerType* layerPtr = layer.get();
         setProperties(layerPtr, transform, position, bounds);
 
@@ -215,7 +223,7 @@ protected:
 
     typename Types::LayerType* createLayer(typename Types::LayerType* parent, const gfx::Transform& transform, const gfx::PointF& position, const gfx::Size& bounds)
     {
-        typename Types::LayerPtrType layer(Types::createLayer());
+        typename Types::LayerPtrType layer(Types::createLayer(getHost()));
         typename Types::LayerType* layerPtr = layer.get();
         setProperties(layerPtr, transform, position, bounds);
         parent->addChild(Types::passLayerPtr(layer));
@@ -233,7 +241,7 @@ protected:
 
     typename Types::ContentLayerType* createDrawingLayer(typename Types::LayerType* parent, const gfx::Transform& transform, const gfx::PointF& position, const gfx::Size& bounds, bool opaque)
     {
-        typename Types::ContentLayerPtrType layer(Types::createContentLayer());
+        typename Types::ContentLayerPtrType layer(Types::createContentLayer(getHost()));
         typename Types::ContentLayerType* layerPtr = layer.get();
         setProperties(layerPtr, transform, position, bounds);
 
@@ -253,7 +261,7 @@ protected:
 
     typename Types::LayerType* createReplicaLayer(typename Types::LayerType* owningLayer, const gfx::Transform& transform, const gfx::PointF& position, const gfx::Size& bounds)
     {
-        typename Types::ContentLayerPtrType layer(Types::createContentLayer());
+        typename Types::ContentLayerPtrType layer(Types::createContentLayer(getHost()));
         typename Types::ContentLayerType* layerPtr = layer.get();
         setProperties(layerPtr, transform, position, bounds);
         setReplica(owningLayer, Types::passLayerPtr(layer));
@@ -262,7 +270,7 @@ protected:
 
     typename Types::LayerType* createMaskLayer(typename Types::LayerType* owningLayer, const gfx::Size& bounds)
     {
-        typename Types::ContentLayerPtrType layer(Types::createContentLayer());
+        typename Types::ContentLayerPtrType layer(Types::createContentLayer(getHost()));
         typename Types::ContentLayerType* layerPtr = layer.get();
         setProperties(layerPtr, identityMatrix, gfx::PointF(), bounds);
         setMask(owningLayer, Types::passLayerPtr(layer));
@@ -399,6 +407,8 @@ private:
         owningLayer->setMaskLayer(layer.Pass());
     }
 
+    FakeImplProxy m_proxy;
+    FakeLayerTreeHostImpl m_hostImpl;
     bool m_opaqueLayers;
     // These hold ownership of the layers for the duration of the test.
     typename Types::LayerPtrType m_root;
@@ -410,6 +420,18 @@ private:
     std::vector<scoped_refptr<Layer> > m_replicaLayers;
     std::vector<scoped_refptr<Layer> > m_maskLayers;
 };
+
+template<>
+LayerTreeHost* OcclusionTrackerTest<OcclusionTrackerTestMainThreadTypes>::getHost()
+{
+    return 0;
+}
+
+template<>
+LayerTreeHostImpl* OcclusionTrackerTest<OcclusionTrackerTestImplThreadTypes>::getHost()
+{
+    return &m_hostImpl;
+}
 
 #define RUN_TEST_MAIN_THREAD_OPAQUE_LAYERS(ClassName) \
     class ClassName##MainThreadOpaqueLayers : public ClassName<OcclusionTrackerTestMainThreadTypes> { \

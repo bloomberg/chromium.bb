@@ -46,8 +46,8 @@ static inline SkPaint createPaint()
     return paint;
 }
 
-HeadsUpDisplayLayerImpl::HeadsUpDisplayLayerImpl(int id)
-    : LayerImpl(id)
+HeadsUpDisplayLayerImpl::HeadsUpDisplayLayerImpl(LayerTreeHostImpl* hostImpl, int id)
+    : LayerImpl(hostImpl, id)
     , m_averageFPS(0)
     , m_minFPS(0)
     , m_maxFPS(0)

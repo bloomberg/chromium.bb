@@ -10,6 +10,8 @@
 #include "cc/scoped_ptr_vector.h"
 #include "cc/shared_quad_state.h"
 #include "cc/single_thread_proxy.h"
+#include "cc/test/fake_impl_proxy.h"
+#include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/mock_quad_culler.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -35,7 +37,9 @@ TEST(RenderSurfaceTest, verifySurfaceChangesAreTrackedProperly)
     // This test checks that surfacePropertyChanged() has the correct behavior.
     //
 
-    scoped_ptr<LayerImpl> owningLayer = LayerImpl::create(1);
+    FakeImplProxy proxy;
+    FakeLayerTreeHostImpl hostImpl(&proxy);
+    scoped_ptr<LayerImpl> owningLayer = LayerImpl::create(&hostImpl, 1);
     owningLayer->createRenderSurface();
     ASSERT_TRUE(owningLayer->renderSurface());
     RenderSurfaceImpl* renderSurface = owningLayer->renderSurface();
@@ -55,7 +59,7 @@ TEST(RenderSurfaceTest, verifySurfaceChangesAreTrackedProperly)
     EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(renderSurface->setClipRect(testRect));
     EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(renderSurface->setContentRect(testRect));
 
-    scoped_ptr<LayerImpl> dummyMask = LayerImpl::create(1);
+    scoped_ptr<LayerImpl> dummyMask = LayerImpl::create(&hostImpl, 1);
     gfx::Transform dummyMatrix;
     dummyMatrix.Translate(1.0, 2.0);
 
@@ -69,9 +73,11 @@ TEST(RenderSurfaceTest, verifySurfaceChangesAreTrackedProperly)
 
 TEST(RenderSurfaceTest, sanityCheckSurfaceCreatesCorrectSharedQuadState)
 {
-    scoped_ptr<LayerImpl> rootLayer = LayerImpl::create(1);
+    FakeImplProxy proxy;
+    FakeLayerTreeHostImpl hostImpl(&proxy);
+    scoped_ptr<LayerImpl> rootLayer = LayerImpl::create(&hostImpl, 1);
 
-    scoped_ptr<LayerImpl> owningLayer = LayerImpl::create(2);
+    scoped_ptr<LayerImpl> owningLayer = LayerImpl::create(&hostImpl, 2);
     owningLayer->createRenderSurface();
     ASSERT_TRUE(owningLayer->renderSurface());
     owningLayer->drawProperties().render_target = owningLayer.get();
@@ -119,9 +125,11 @@ private:
 
 TEST(RenderSurfaceTest, sanityCheckSurfaceCreatesCorrectRenderPass)
 {
-    scoped_ptr<LayerImpl> rootLayer = LayerImpl::create(1);
+    FakeImplProxy proxy;
+    FakeLayerTreeHostImpl hostImpl(&proxy);
+    scoped_ptr<LayerImpl> rootLayer = LayerImpl::create(&hostImpl, 1);
 
-    scoped_ptr<LayerImpl> owningLayer = LayerImpl::create(2);
+    scoped_ptr<LayerImpl> owningLayer = LayerImpl::create(&hostImpl, 2);
     owningLayer->createRenderSurface();
     ASSERT_TRUE(owningLayer->renderSurface());
     owningLayer->drawProperties().render_target = owningLayer.get();

@@ -18,12 +18,12 @@
 
 namespace cc {
 
-LayerImpl::LayerImpl(int id)
+LayerImpl::LayerImpl(LayerTreeHostImpl* hostImpl, int id)
     : m_parent(0)
     , m_maskLayerId(-1)
     , m_replicaLayerId(-1)
     , m_layerId(id)
-    , m_layerTreeHostImpl(0)
+    , m_layerTreeHostImpl(hostImpl)
     , m_anchorPoint(0.5, 0.5)
     , m_anchorPointZ(0)
     , m_contentsScaleX(1.0)
@@ -52,7 +52,9 @@ LayerImpl::LayerImpl(int id)
     , m_layerAnimationController(LayerAnimationController::create())
 {
     DCHECK(m_layerId > 0);
+    DCHECK(m_layerTreeHostImpl);
     m_layerAnimationController->setId(m_layerId);
+    m_layerAnimationController->setAnimationRegistrar(hostImpl);
 }
 
 LayerImpl::~LayerImpl()
@@ -65,6 +67,7 @@ LayerImpl::~LayerImpl()
 void LayerImpl::addChild(scoped_ptr<LayerImpl> child)
 {
     child->setParent(this);
+    DCHECK_EQ(layerTreeHostImpl(), child->layerTreeHostImpl());
     m_children.append(child.Pass());
 }
 
@@ -115,12 +118,6 @@ int LayerImpl::descendantsDrawContent()
     return result;
 }
 
-void LayerImpl::setLayerTreeHostImpl(LayerTreeHostImpl* hostImpl)
-{
-    m_layerTreeHostImpl = hostImpl;
-    m_layerAnimationController->setAnimationRegistrar(hostImpl);
-}
-
 scoped_ptr<SharedQuadState> LayerImpl::createSharedQuadState() const
 {
   scoped_ptr<SharedQuadState> state = SharedQuadState::Create();
@@ -152,8 +149,6 @@ void LayerImpl::didDraw(ResourceProvider*)
 
 bool LayerImpl::showDebugBorders() const
 {
-    if (!m_layerTreeHostImpl)
-        return false;
     return m_layerTreeHostImpl->debugState().showDebugBorders;
 }
 
@@ -436,6 +431,8 @@ void LayerImpl::setBounds(const gfx::Size& bounds)
 
 void LayerImpl::setMaskLayer(scoped_ptr<LayerImpl> maskLayer)
 {
+    if (maskLayer)
+        DCHECK_EQ(layerTreeHostImpl(), maskLayer->layerTreeHostImpl());
     m_maskLayer = maskLayer.Pass();
 
     int newLayerId = m_maskLayer ? m_maskLayer->id() : -1;
@@ -448,6 +445,8 @@ void LayerImpl::setMaskLayer(scoped_ptr<LayerImpl> maskLayer)
 
 void LayerImpl::setReplicaLayer(scoped_ptr<LayerImpl> replicaLayer)
 {
+    if (replicaLayer)
+        DCHECK_EQ(layerTreeHostImpl(), replicaLayer->layerTreeHostImpl());
     m_replicaLayer = replicaLayer.Pass();
 
     int newLayerId = m_replicaLayer ? m_replicaLayer->id() : -1;

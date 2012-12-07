@@ -7,6 +7,8 @@
 #include "cc/layer_impl.h"
 #include "cc/math_util.h"
 #include "cc/single_thread_proxy.h"
+#include "cc/test/fake_impl_proxy.h"
+#include "cc/test/fake_layer_tree_host_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/transform.h"
 
@@ -197,11 +199,14 @@ TEST(LayerSorterTest, verifyExistingOrderingPreservedWhenNoZDiff)
     //    - 3 and 4 do not have a 3d z difference, and therefore their relative ordering should be retained.
     //    - 3 and 4 should be re-sorted so they are in front of 1, 2, and 5.
 
-    scoped_ptr<LayerImpl> layer1 = LayerImpl::create(1);
-    scoped_ptr<LayerImpl> layer2 = LayerImpl::create(2);
-    scoped_ptr<LayerImpl> layer3 = LayerImpl::create(3);
-    scoped_ptr<LayerImpl> layer4 = LayerImpl::create(4);
-    scoped_ptr<LayerImpl> layer5 = LayerImpl::create(5);
+    FakeImplProxy proxy;
+    FakeLayerTreeHostImpl hostImpl(&proxy);
+
+    scoped_ptr<LayerImpl> layer1 = LayerImpl::create(&hostImpl, 1);
+    scoped_ptr<LayerImpl> layer2 = LayerImpl::create(&hostImpl, 2);
+    scoped_ptr<LayerImpl> layer3 = LayerImpl::create(&hostImpl, 3);
+    scoped_ptr<LayerImpl> layer4 = LayerImpl::create(&hostImpl, 4);
+    scoped_ptr<LayerImpl> layer5 = LayerImpl::create(&hostImpl, 5);
 
     gfx::Transform BehindMatrix;
     BehindMatrix.Translate3d(0, 0, 2);

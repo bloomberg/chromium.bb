@@ -14,13 +14,13 @@ using WebKit::WebScrollbar;
 
 namespace cc {
 
-scoped_ptr<ScrollbarLayerImpl> ScrollbarLayerImpl::create(int id)
+scoped_ptr<ScrollbarLayerImpl> ScrollbarLayerImpl::create(LayerTreeHostImpl* hostImpl, int id)
 {
-    return make_scoped_ptr(new ScrollbarLayerImpl(id));
+    return make_scoped_ptr(new ScrollbarLayerImpl(hostImpl, id));
 }
 
-ScrollbarLayerImpl::ScrollbarLayerImpl(int id)
-    : LayerImpl(id)
+ScrollbarLayerImpl::ScrollbarLayerImpl(LayerTreeHostImpl* hostImpl, int id)
+    : LayerImpl(hostImpl, id)
     , m_scrollbar(this)
     , m_backTrackResourceId(0)
     , m_foreTrackResourceId(0)

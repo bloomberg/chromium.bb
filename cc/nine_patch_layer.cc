@@ -25,9 +25,9 @@ NinePatchLayer::~NinePatchLayer()
 {
 }
 
-scoped_ptr<LayerImpl> NinePatchLayer::createLayerImpl()
+scoped_ptr<LayerImpl> NinePatchLayer::createLayerImpl(LayerTreeHostImpl* hostImpl)
 {
-    return NinePatchLayerImpl::create(id()).PassAs<LayerImpl>();
+    return NinePatchLayerImpl::create(hostImpl, id()).PassAs<LayerImpl>();
 }
 
 void NinePatchLayer::setTexturePriorities(const PriorityCalculator& priorityCalc)

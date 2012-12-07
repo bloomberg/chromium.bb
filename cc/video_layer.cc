@@ -27,9 +27,9 @@ VideoLayer::~VideoLayer()
 {
 }
 
-scoped_ptr<LayerImpl> VideoLayer::createLayerImpl()
+scoped_ptr<LayerImpl> VideoLayer::createLayerImpl(LayerTreeHostImpl* hostImpl)
 {
-    return VideoLayerImpl::create(m_layerId, m_provider, m_unwrapper).PassAs<LayerImpl>();
+    return VideoLayerImpl::create(hostImpl, m_layerId, m_provider, m_unwrapper).PassAs<LayerImpl>();
 }
 
 }  // namespace cc

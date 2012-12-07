@@ -12,6 +12,7 @@
 #include "cc/single_thread_proxy.h"
 #include "cc/solid_color_draw_quad.h"
 #include "cc/solid_color_layer_impl.h"
+#include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_proxy.h"
 #include "cc/test/fake_web_compositor_output_surface.h"
@@ -101,10 +102,10 @@ public:
     DelegatedRendererLayerImplTestSimple()
         : DelegatedRendererLayerImplTest()
     {
-        scoped_ptr<LayerImpl> rootLayer = SolidColorLayerImpl::create(1).PassAs<LayerImpl>();
-        scoped_ptr<LayerImpl> layerBefore = SolidColorLayerImpl::create(2).PassAs<LayerImpl>();
-        scoped_ptr<LayerImpl> layerAfter = SolidColorLayerImpl::create(3).PassAs<LayerImpl>();
-        scoped_ptr<DelegatedRendererLayerImpl> delegatedRendererLayer = DelegatedRendererLayerImpl::create(4);
+        scoped_ptr<LayerImpl> rootLayer = SolidColorLayerImpl::create(m_hostImpl.get(), 1).PassAs<LayerImpl>();
+        scoped_ptr<LayerImpl> layerBefore = SolidColorLayerImpl::create(m_hostImpl.get(), 2).PassAs<LayerImpl>();
+        scoped_ptr<LayerImpl> layerAfter = SolidColorLayerImpl::create(m_hostImpl.get(), 3).PassAs<LayerImpl>();
+        scoped_ptr<DelegatedRendererLayerImpl> delegatedRendererLayer = DelegatedRendererLayerImpl::create(m_hostImpl.get(), 4);
 
         m_hostImpl->setViewportSize(gfx::Size(100, 100), gfx::Size(100, 100));
         rootLayer->setBounds(gfx::Size(100, 100));
@@ -421,8 +422,8 @@ public:
     DelegatedRendererLayerImplTestSharedData()
         : DelegatedRendererLayerImplTest()
     {
-        scoped_ptr<LayerImpl> rootLayer = LayerImpl::create(1);
-        scoped_ptr<DelegatedRendererLayerImpl> delegatedRendererLayer = DelegatedRendererLayerImpl::create(2);
+        scoped_ptr<LayerImpl> rootLayer = LayerImpl::create(m_hostImpl.get(), 1);
+        scoped_ptr<DelegatedRendererLayerImpl> delegatedRendererLayer = DelegatedRendererLayerImpl::create(m_hostImpl.get(), 2);
 
         m_hostImpl->setViewportSize(gfx::Size(100, 100), gfx::Size(100, 100));
         rootLayer->setBounds(gfx::Size(100, 100));

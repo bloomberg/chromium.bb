@@ -6,19 +6,27 @@
 
 #include "cc/scrollbar_layer_impl.h"
 #include "cc/single_thread_proxy.h"
+#include "cc/test/fake_impl_proxy.h"
+#include "cc/test/fake_layer_tree_host_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
 namespace {
 
 class ScrollbarAnimationControllerLinearFadeTest : public testing::Test {
+public:
+    ScrollbarAnimationControllerLinearFadeTest()
+        : m_hostImpl(&m_proxy)
+    {
+    }
+
 protected:
     virtual void SetUp()
     {
-        m_scrollLayer = LayerImpl::create(1);
-        m_scrollLayer->addChild(LayerImpl::create(2));
+        m_scrollLayer = LayerImpl::create(&m_hostImpl, 1);
+        m_scrollLayer->addChild(LayerImpl::create(&m_hostImpl, 2));
         m_contentLayer = m_scrollLayer->children()[0];
-        m_scrollbarLayer = ScrollbarLayerImpl::create(3);
+        m_scrollbarLayer = ScrollbarLayerImpl::create(&m_hostImpl, 3);
 
         m_scrollLayer->setMaxScrollOffset(gfx::Vector2d(50, 50));
         m_contentLayer->setBounds(gfx::Size(50, 50));
@@ -27,6 +35,8 @@ protected:
         m_scrollbarController->setHorizontalScrollbarLayer(m_scrollbarLayer.get());
     }
 
+    FakeImplProxy m_proxy;
+    FakeLayerTreeHostImpl m_hostImpl;
     scoped_ptr<ScrollbarAnimationControllerLinearFade> m_scrollbarController;
     scoped_ptr<LayerImpl> m_scrollLayer;
     LayerImpl* m_contentLayer;

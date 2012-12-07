@@ -43,8 +43,8 @@ private:
     DISALLOW_COPY_AND_ASSIGN(DrawableTile);
 };
 
-TiledLayerImpl::TiledLayerImpl(int id)
-    : LayerImpl(id)
+TiledLayerImpl::TiledLayerImpl(LayerTreeHostImpl* hostImpl, int id)
+    : LayerImpl(hostImpl, id)
     , m_skipsDraw(true)
 {
 }

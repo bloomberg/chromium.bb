@@ -7,6 +7,8 @@
 #include "cc/scrollbar_animation_controller.h"
 #include "cc/scrollbar_layer_impl.h"
 #include "cc/single_thread_proxy.h"
+#include "cc/test/fake_impl_proxy.h"
+#include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_web_scrollbar_theme_geometry.h"
 #include "cc/test/layer_tree_test_common.h"
 #include "cc/tree_synchronizer.h"
@@ -43,6 +45,8 @@ public:
 
 TEST(ScrollbarLayerTest, resolveScrollLayerPointer)
 {
+    FakeImplProxy proxy;
+    FakeLayerTreeHostImpl hostImpl(&proxy);
     WebKit::WebScrollbarThemePainter painter;
 
     {
@@ -53,7 +57,7 @@ TEST(ScrollbarLayerTest, resolveScrollLayerPointer)
         layerTreeRoot->addChild(child1);
         layerTreeRoot->addChild(child2);
 
-        scoped_ptr<LayerImpl> layerImplTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), scoped_ptr<LayerImpl>(), 0);
+        scoped_ptr<LayerImpl> layerImplTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), scoped_ptr<LayerImpl>(), &hostImpl);
 
         LayerImpl* ccChild1 = layerImplTreeRoot->children()[0];
         ScrollbarLayerImpl* ccChild2 = static_cast<ScrollbarLayerImpl*>(layerImplTreeRoot->children()[1]);
@@ -70,7 +74,7 @@ TEST(ScrollbarLayerTest, resolveScrollLayerPointer)
         layerTreeRoot->addChild(child1);
         layerTreeRoot->addChild(child2);
 
-        scoped_ptr<LayerImpl> layerImplTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), scoped_ptr<LayerImpl>(), 0);
+        scoped_ptr<LayerImpl> layerImplTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), scoped_ptr<LayerImpl>(), &hostImpl);
 
         ScrollbarLayerImpl* ccChild1 = static_cast<ScrollbarLayerImpl*>(layerImplTreeRoot->children()[0]);
         LayerImpl* ccChild2 = layerImplTreeRoot->children()[1];
@@ -82,6 +86,8 @@ TEST(ScrollbarLayerTest, resolveScrollLayerPointer)
 
 TEST(ScrollbarLayerTest, scrollOffsetSynchronization)
 {
+    FakeImplProxy proxy;
+    FakeLayerTreeHostImpl hostImpl(&proxy);
     WebKit::WebScrollbarThemePainter painter;
 
     scoped_ptr<WebKit::WebScrollbar> scrollbar(FakeWebScrollbar::create());
@@ -95,7 +101,7 @@ TEST(ScrollbarLayerTest, scrollOffsetSynchronization)
     layerTreeRoot->setMaxScrollOffset(gfx::Vector2d(30, 50));
     contentLayer->setBounds(gfx::Size(100, 200));
 
-    scoped_ptr<LayerImpl> layerImplTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), scoped_ptr<LayerImpl>(), 0);
+    scoped_ptr<LayerImpl> layerImplTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), scoped_ptr<LayerImpl>(), &hostImpl);
 
     ScrollbarLayerImpl* ccScrollbarLayer = static_cast<ScrollbarLayerImpl*>(layerImplTreeRoot->children()[1]);
 
@@ -108,7 +114,7 @@ TEST(ScrollbarLayerTest, scrollOffsetSynchronization)
     contentLayer->setBounds(gfx::Size(1000, 2000));
 
     ScrollbarAnimationController* scrollbarController = layerImplTreeRoot->scrollbarAnimationController();
-    layerImplTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), layerImplTreeRoot.Pass(), 0);
+    layerImplTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), layerImplTreeRoot.Pass(), &hostImpl);
     EXPECT_EQ(scrollbarController, layerImplTreeRoot->scrollbarAnimationController());
 
     EXPECT_EQ(100, ccScrollbarLayer->currentPos());

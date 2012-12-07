@@ -12,8 +12,8 @@
 
 namespace cc {
 
-DelegatedRendererLayerImpl::DelegatedRendererLayerImpl(int id)
-    : LayerImpl(id)
+DelegatedRendererLayerImpl::DelegatedRendererLayerImpl(LayerTreeHostImpl* hostImpl, int id)
+    : LayerImpl(hostImpl, id)
 {
 }
 

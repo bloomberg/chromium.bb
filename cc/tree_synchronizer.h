@@ -29,7 +29,7 @@ private:
     typedef base::hash_map<int, LayerImpl*> RawPtrLayerImplMap;
 
     // Declared as static member functions so they can access functions on Layer as a friend class.
-    static scoped_ptr<LayerImpl> reuseOrCreateLayerImpl(RawPtrLayerImplMap& newLayers, ScopedPtrLayerImplMap& oldLayers, Layer*);
+    static scoped_ptr<LayerImpl> reuseOrCreateLayerImpl(RawPtrLayerImplMap& newLayers, ScopedPtrLayerImplMap& oldLayers, Layer*, LayerTreeHostImpl*);
     static void collectExistingLayerImplRecursive(ScopedPtrLayerImplMap& oldLayers, scoped_ptr<LayerImpl>);
     static scoped_ptr<LayerImpl> synchronizeTreeRecursive(RawPtrLayerImplMap& newLayers, ScopedPtrLayerImplMap& oldLayers, Layer*, LayerTreeHostImpl*);
     static void updateScrollbarLayerPointersRecursive(const RawPtrLayerImplMap& newLayers, Layer*);
