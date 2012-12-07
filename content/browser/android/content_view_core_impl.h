@@ -39,6 +39,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   ContentViewCoreImpl(JNIEnv* env,
                       jobject obj,
                       bool hardware_accelerated,
+                      bool input_events_delivered_at_vsync,
                       WebContents* web_contents,
                       ui::WindowAndroid* window_android);
 
@@ -265,6 +266,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   float DpiScale() const;
   WebKit::WebGestureEvent MakeGestureEvent(WebKit::WebInputEvent::Type type,
                                            long time_ms, int x, int y) const;
+  void UpdateVSyncFlagOnInputEvent(WebKit::WebInputEvent& event) const;
 
   void DeleteScaledSnapshotTexture();
 
@@ -285,6 +287,9 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   // Whether the renderer backing this ContentViewCore has crashed.
   bool tab_crashed_;
+
+  // Whether input events will be consistently delivered at vsync time.
+  bool input_events_delivered_at_vsync_;
 
   float dpi_scale_;
 

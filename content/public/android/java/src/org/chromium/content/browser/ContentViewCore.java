@@ -464,9 +464,14 @@ public class ContentViewCore implements MotionEventDelegate {
         // move this check into onAttachedToWindow(), where we can test for
         // HW support directly.
         mHardwareAccelerated = hasHardwareAcceleration(mContext);
+
+        // Input events are delivered at vsync time on JB+.
+        boolean inputEventsDeliveredAtVSync =
+                (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN);
+
         mContainerView = containerView;
-        mNativeContentViewCore = nativeInit(mHardwareAccelerated, nativeWebContents,
-                nativeWindow.getNativePointer());
+        mNativeContentViewCore = nativeInit(mHardwareAccelerated, inputEventsDeliveredAtVSync,
+                nativeWebContents, nativeWindow.getNativePointer());
         mContentSettings = new ContentSettings(
                 this, mNativeContentViewCore, isAccessFromFileURLsGrantedByDefault);
         initializeContainerView(internalDispatcher);
@@ -2320,8 +2325,8 @@ public class ContentViewCore implements MotionEventDelegate {
         }
     }
 
-    private native int nativeInit(boolean hardwareAccelerated, int webContentsPtr,
-            int windowAndroidPtr);
+    private native int nativeInit(boolean hardwareAccelerated, boolean inputEventsDeliveredAtVSync,
+            int webContentsPtr, int windowAndroidPtr);
 
     private native void nativeOnJavaContentViewCoreDestroyed(int nativeContentViewCoreImpl);
 

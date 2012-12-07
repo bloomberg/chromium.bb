@@ -143,12 +143,14 @@ ContentViewCore* ContentViewCore::GetNativeContentViewCore(JNIEnv* env,
 
 ContentViewCoreImpl::ContentViewCoreImpl(JNIEnv* env, jobject obj,
                                          bool hardware_accelerated,
+                                         bool input_events_delivered_at_vsync,
                                          WebContents* web_contents,
                                          ui::WindowAndroid* window_android)
     : java_ref_(env, obj),
       web_contents_(static_cast<WebContentsImpl*>(web_contents)),
       root_layer_(cc::Layer::create()),
       tab_crashed_(false),
+      input_events_delivered_at_vsync_(input_events_delivered_at_vsync),
       window_android_(window_android) {
   CHECK(web_contents) <<
       "A ContentViewCoreImpl should be created with a valid WebContents.";
@@ -761,6 +763,7 @@ jboolean ContentViewCoreImpl::SendTouchEvent(JNIEnv* env,
     using WebKit::WebTouchEvent;
     WebKit::WebTouchEvent event;
     TouchPoint::BuildWebTouchEvent(env, type, time_ms, pts, event);
+    UpdateVSyncFlagOnInputEvent(event);
     rwhv->SendTouchEvent(event);
     return true;
   }
@@ -828,7 +831,18 @@ WebGestureEvent ContentViewCoreImpl::MakeGestureEvent(WebInputEvent::Type type,
   event.x = x / DpiScale();
   event.y = y / DpiScale();
   event.timeStampSeconds = time_ms / 1000.0;
+  UpdateVSyncFlagOnInputEvent(event);
   return event;
+}
+
+void ContentViewCoreImpl::UpdateVSyncFlagOnInputEvent(
+    WebKit::WebInputEvent& event) const {
+  if (!input_events_delivered_at_vsync_)
+    return;
+  if (event.type == WebInputEvent::GestureScrollUpdate ||
+      event.type == WebInputEvent::GesturePinchUpdate ||
+      event.type == WebInputEvent::TouchMove)
+    event.modifiers |= WebInputEvent::IsLastInputEventForCurrentVSync;
 }
 
 void ContentViewCoreImpl::ScrollBegin(JNIEnv* env, jobject obj, jlong time_ms,
@@ -1228,11 +1242,12 @@ void ContentViewCoreImpl::SetUseDesktopUserAgent(
 
 // This is called for each ContentView.
 jint Init(JNIEnv* env, jobject obj,
+          jboolean input_events_delivered_at_vsync,
           jboolean hardware_accelerated,
           jint native_web_contents,
           jint native_window) {
   ContentViewCoreImpl* view = new ContentViewCoreImpl(
-      env, obj, hardware_accelerated,
+      env, obj, input_events_delivered_at_vsync, hardware_accelerated,
       reinterpret_cast<WebContents*>(native_web_contents),
       reinterpret_cast<ui::WindowAndroid*>(native_window));
   return reinterpret_cast<jint>(view);
