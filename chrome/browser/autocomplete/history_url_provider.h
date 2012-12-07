@@ -136,6 +136,13 @@ struct HistoryURLProviderParams {
 // component of the history system.  See comments above.
 class HistoryURLProvider : public HistoryProvider {
  public:
+  // Various values used in scoring, made public so other providers
+  // can insert results in appropriate ranges relative to these.
+  static const int kScoreForBestInlineableResult;
+  static const int kScoreForUnvisitedIntranetResult;
+  static const int kScoreForWhatYouTypedResult;
+  static const int kBaseScoreForNonInlineableResult;
+
   HistoryURLProvider(AutocompleteProviderListener* listener, Profile* profile);
 
 #ifdef UNIT_TEST
