@@ -471,7 +471,8 @@ def ArchiveTestResults(buildroot, test_results_dir, prefix):
         '========================================================')
 
 
-def RunHWTestSuite(build, suite, board, pool, num, file_bugs, debug):
+def RunHWTestSuite(build, suite, board, pool, num, file_bugs, wait_for_results,
+                   debug):
   """Run the test suite in the Autotest lab.
 
   Args:
@@ -483,6 +484,7 @@ def RunHWTestSuite(build, suite, board, pool, num, file_bugs, debug):
     num: Maximum number of devices to use when scheduling tests in the
          hardware test lab.
     file_bugs: File bugs on test failures for this suite run.
+    wait_for_results: If True, wait for autotest results before returning.
     debug: Whether we are in debug mode.
   """
   # TODO(scottz): RPC client option names are misnomers crosbug.com/26445.
@@ -494,7 +496,8 @@ def RunHWTestSuite(build, suite, board, pool, num, file_bugs, debug):
          '-b', board,
          '-p', pool,
          '-u', str(num),
-         '-f', str(file_bugs)]
+         '-f', str(file_bugs),
+         '-n', str(not wait_for_results)]
   if debug:
     cros_build_lib.Info('RunHWTestSuite would run: %s' % ' '.join(cmd))
   else:

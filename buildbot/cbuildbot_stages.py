@@ -1299,6 +1299,7 @@ class HWTestStage(BoardSpecificBuilderStage):
     self._suite = suite
     # Bind this early so derived classes can override it.
     self._timeout = build_config['hw_tests_timeout']
+    self.wait_for_results = True
 
   def _PrintFile(self, filename):
     with open(filename) as f:
@@ -1349,6 +1350,7 @@ class HWTestStage(BoardSpecificBuilderStage):
                                 self._build_config['hw_tests_pool'],
                                 self._build_config['hw_tests_num'],
                                 self._build_config['hw_tests_file_bugs'],
+                                self.wait_for_results,
                                 debug)
 
         if self._build_config['hw_copy_perf_results']:
@@ -1365,18 +1367,7 @@ class ASyncHWTestStage(HWTestStage, BoardSpecificBuilderStage,
   def __init__(self, options, build_config, board, archive_stage, suite):
     super(ASyncHWTestStage, self).__init__(self, options, build_config, board,
                                            archive_stage, suite)
-    # TODO(sosa):  Major hack alert!!! This is intended to be used to verify
-    # test suites work and monitor them on the lab side without adversly
-    # affecting a build. Ideally we'd use a fire-and-forget script but none
-    # currently exists.
-    self._timeout = 60
-
-
-  # Disable use of calling parents _HandleExceptionAsWarning class.
-  # pylint: disable=W0212
-  def _HandleExceptionAsWarning(self, exception):
-    """Override and treat timeout's as success."""
-    return self._HandleExceptionAsSuccess(exception)
+    self.wait_for_results = False
 
 
 class SDKPackageStage(bs.BuilderStage):
