@@ -736,4 +736,23 @@ static NSString* UnusedLegalNameForNewDropFile(NSURL* saveLocation,
   }
 }
 
+- (BOOL)hideFocusState {
+  return hideFocusState_;
+}
+
+- (void)setHideFocusState:(BOOL)hideFocusState
+                   ofView:(AutocompleteTextField*)controlView {
+  if (hideFocusState_ == hideFocusState)
+    return;
+  hideFocusState_ = hideFocusState;
+  [controlView setNeedsDisplay:YES];
+  NSTextView* fieldEditor =
+      base::mac::ObjCCastStrict<NSTextView>([controlView currentEditor]);
+  [fieldEditor updateInsertionPointStateAndRestartTimer:YES];
+}
+
+- (BOOL)showsFirstResponder {
+  return [super showsFirstResponder] && !hideFocusState_;
+}
+
 @end

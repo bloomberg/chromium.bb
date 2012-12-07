@@ -45,6 +45,11 @@ BOOL ThePasteboardIsTooDamnBig() {
 
 @implementation AutocompleteTextFieldEditor
 
+- (BOOL)shouldDrawInsertionPoint {
+  return [super shouldDrawInsertionPoint] &&
+         ![[[self delegate] cell] hideFocusState];
+}
+
 - (id)initWithFrame:(NSRect)frameRect {
   if ((self = [super initWithFrame:frameRect])) {
     dropHandler_.reset([[URLDropTargetHandler alloc] initWithView:self]);

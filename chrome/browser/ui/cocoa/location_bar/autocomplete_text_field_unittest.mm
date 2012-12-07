@@ -4,6 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/mac/foundation_util.h"
 #include "base/memory/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_cell.h"
@@ -118,6 +119,11 @@ class AutocompleteTextFieldTest : public CocoaTest {
       // on.
       return NSZeroRect;
     }
+  }
+
+  AutocompleteTextFieldEditor* FieldEditor() {
+    return base::mac::ObjCCastStrict<AutocompleteTextFieldEditor>(
+        [field_ currentEditor]);
   }
 
   AutocompleteTextField* field_;
@@ -733,6 +739,26 @@ TEST_F(AutocompleteTextFieldTest, EditorGetsCorrectUndoManager) {
   NSTextView* editor = static_cast<NSTextView*>([field_ currentEditor]);
   EXPECT_TRUE(editor);
   EXPECT_EQ([field_ undoManagerForTextView:editor], [editor undoManager]);
+}
+
+// Verify that hideFocusState correctly hides the focus ring and insertion
+// pointer.
+TEST_F(AutocompleteTextFieldTest, HideFocusState) {
+  [test_window() makePretendKeyWindowAndSetFirstResponder:field_];
+  [[field_ cell] setShowsFirstResponder:YES];
+
+  EXPECT_TRUE([[field_ cell] showsFirstResponder]);
+  EXPECT_TRUE([FieldEditor() shouldDrawInsertionPoint]);
+
+  [[field_ cell] setHideFocusState:YES
+                            ofView:field_];
+  EXPECT_FALSE([[field_ cell] showsFirstResponder]);
+  EXPECT_FALSE([FieldEditor() shouldDrawInsertionPoint]);
+
+  [[field_ cell] setHideFocusState:NO
+                            ofView:field_];
+  EXPECT_TRUE([[field_ cell] showsFirstResponder]);
+  EXPECT_TRUE([FieldEditor() shouldDrawInsertionPoint]);
 }
 
 TEST_F(AutocompleteTextFieldObserverTest, SendsEditingMessages) {

@@ -22,6 +22,10 @@ class LocationBarDecoration;
   // from outside in.  Decorations are owned by |LocationBarViewMac|.
   std::vector<LocationBarDecoration*> leftDecorations_;
   std::vector<LocationBarDecoration*> rightDecorations_;
+
+  // If YES then the text field will not draw a focus ring or show the insertion
+  // pointer.
+  BOOL hideFocusState_;
 }
 
 // Clear |leftDecorations_| and |rightDecorations_|.
@@ -84,5 +88,11 @@ class LocationBarDecoration;
 // |-addToolTip:forRect:|.
 - (void)updateToolTipsInRect:(NSRect)cellFrame
                       ofView:(AutocompleteTextField*)controlView;
+
+// Gets and sets |hideFocusState|. This allows the text field to have focus but
+// to appear unfocused.
+- (BOOL)hideFocusState;
+- (void)setHideFocusState:(BOOL)hideFocusState
+                   ofView:(AutocompleteTextField*)controlView;
 
 @end

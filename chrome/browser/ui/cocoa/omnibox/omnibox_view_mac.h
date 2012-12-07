@@ -98,6 +98,8 @@ class OmniboxViewMac : public OmniboxView,
   // Otherwise return the PNG image from the resource bundle.
   static NSImage* ImageForResource(int resource_id);
 
+  AutocompleteTextField* field() const { return field_; }
+
  private:
   // Called when the user hits backspace in |field_|.  Checks whether
   // keyword search is being terminated.  Returns true if the

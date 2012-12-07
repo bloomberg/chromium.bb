@@ -13,6 +13,7 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/cocoa/event_utils.h"
+#include "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_cell.h"
 #include "chrome/browser/ui/cocoa/omnibox/omnibox_popup_view_mac.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
@@ -360,11 +361,13 @@ void OmniboxViewMac::CloseOmniboxPopup() {
 }
 
 void OmniboxViewMac::SetFocus() {
+  model()->SetCaretVisibility(true);
+  FocusLocation(false);
 }
 
 void OmniboxViewMac::ApplyCaretVisibility() {
-  // TODO(mathp): implement for Mac.
-  NOTIMPLEMENTED();
+  [[field_ cell] setHideFocusState:!model()->is_caret_visible()
+                            ofView:field_];
 }
 
 void OmniboxViewMac::SetText(const string16& display_text) {
