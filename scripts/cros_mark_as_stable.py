@@ -271,8 +271,7 @@ def main(argv):
         keys.insert(0, k)
         break
 
-  cache_queue = multiprocessing.Queue()
-  with parallel.BackgroundTaskRunner(cache_queue, portage_utilities.RegenCache):
+  with parallel.BackgroundTaskRunner(portage_utilities.RegenCache) as queue:
     for overlay in keys:
       ebuilds = overlays[overlay]
       if not os.path.isdir(overlay):
@@ -320,7 +319,7 @@ def main(argv):
         if cros_build_lib.IsInsideChroot():
           # Regenerate caches if need be.  We do this all the time to
           # catch when users make changes without updating cache files.
-          cache_queue.put([overlay])
+          queue.put([overlay])
 
   if command == 'commit':
     if cros_build_lib.IsInsideChroot():

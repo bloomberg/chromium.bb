@@ -37,7 +37,6 @@ class CrashTriager(object):
   def __init__(self, start_date, chrome_branch, all_programs, list_all, jobs):
     self.start_date = start_date
     self.chrome_branch = chrome_branch
-    self.config_queue = multiprocessing.Queue()
     self.crash_triage_queue = multiprocessing.Queue()
     self.stack_trace_queue = multiprocessing.Queue()
     self.stack_traces = collections.defaultdict(list)
@@ -108,11 +107,11 @@ class CrashTriager(object):
   @contextlib.contextmanager
   def _ProcessCrashListInBackground(self):
     """Create a worker process for processing crash lists."""
-    with parallel.BackgroundTaskRunner(self.config_queue,
-                                       self._ProcessCrashListForBot, self.jobs):
+    with parallel.BackgroundTaskRunner(self._ProcessCrashListForBot,
+                                       processes=self.jobs) as queue:
       for bot_id, build_config in cbuildbot_config.config.iteritems():
         if build_config['vm_tests']:
-          self.config_queue.put((bot_id, build_config))
+          queue.put((bot_id, build_config))
       yield
 
   def _GetStackTrace(self, crash_report_url):
@@ -143,8 +142,9 @@ class CrashTriager(object):
   @contextlib.contextmanager
   def _DownloadCrashesInBackground(self):
     """Create a worker process for downloading stack traces."""
-    queue, task = self.crash_triage_queue, self._DownloadStackTrace
-    with parallel.BackgroundTaskRunner(queue, task, self.jobs):
+    with parallel.BackgroundTaskRunner(self._DownloadStackTrace,
+                                       queue=self.crash_triage_queue,
+                                       processes=self.jobs):
       yield
 
   def _ProcessStackTrace(self, program, date, url, output):
@@ -204,8 +204,9 @@ class CrashTriager(object):
 
   @contextlib.contextmanager
   def _PrintStackTracesInBackground(self):
-    queue, task = self.stack_trace_queue, self._ProcessStackTrace
-    with parallel.BackgroundTaskRunner(queue, task, processes=1,
+    with parallel.BackgroundTaskRunner(self._ProcessStackTrace,
+                                       queue=self.stack_trace_queue,
+                                       processes=1,
                                        onexit=self._PrintStackTraces):
       yield
 

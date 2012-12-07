@@ -403,9 +403,8 @@ class SimpleBuilder(Builder):
 
       # Set up a process pool to run test/archive stages in the background.
       # This process runs task(board) for each board added to the queue.
-      queue = multiprocessing.Queue()
       task = self._RunBackgroundStagesForBoard
-      with parallel.BackgroundTaskRunner(queue, task):
+      with parallel.BackgroundTaskRunner(task) as queue:
         for board in self.build_config['boards']:
           # Run BuildTarget in the foreground.
           archive_stage = self.archive_stages[board]

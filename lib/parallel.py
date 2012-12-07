@@ -247,7 +247,7 @@ def _TaskRunner(queue, task, onexit=None):
 
 
 @contextlib.contextmanager
-def BackgroundTaskRunner(queue, task, processes=None, onexit=None):
+def BackgroundTaskRunner(task, queue=None, processes=None, onexit=None):
   """Run the specified task on each queued input in a pool of processes.
 
   This context manager starts a set of workers in the background, who each
@@ -269,21 +269,23 @@ def BackgroundTaskRunner(queue, task, processes=None, onexit=None):
     def somefunc(arg1, arg2):
       ...
     ...
-    myqueue = multiprocessing.Queue()
-    with BackgroundTaskRunner(myqueue, somefunc):
+    with BackgroundTaskRunner(somefunc) as queue:
       ... do random stuff ...
-      myqueue.put(['small', 'cow'])
+      queue.put(['small', 'cow'])
       ... do more random stuff ...
     # Exiting the with statement will block until all calls have completed.
 
   Args:
-    queue: A queue of tasks to run. Add tasks to this queue, and they will
-      be run in the background.
     task: Function to run on each queued input.
+    queue: A queue of tasks to run. Add tasks to this queue, and they will
+      be run in the background.  If None, one will be created on the fly.
     processes: Number of processes to launch.
     onexit: Function to run in each background process after all inputs are
       processed.
   """
+
+  if queue is None:
+    queue = multiprocessing.Queue()
 
   if not processes:
     processes = multiprocessing.cpu_count()
@@ -291,7 +293,7 @@ def BackgroundTaskRunner(queue, task, processes=None, onexit=None):
   steps = [functools.partial(_TaskRunner, queue, task, onexit)] * processes
   with _ParallelSteps(steps):
     try:
-      yield
+      yield queue
     finally:
       for _ in xrange(processes):
         queue.put(_AllTasksComplete())
@@ -337,7 +339,6 @@ def RunTasksInProcessPool(task, inputs, processes=None, onexit=None):
   if not processes:
     processes = min(multiprocessing.cpu_count(), len(inputs))
 
-  queue = multiprocessing.Queue()
-  with BackgroundTaskRunner(queue, task, processes, onexit):
+  with BackgroundTaskRunner(task, processes=processes, onexit=onexit) as queue:
     for x in inputs:
       queue.put(x)

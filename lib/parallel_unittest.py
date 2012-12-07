@@ -89,7 +89,13 @@ class TestHelloWorld(TestBackgroundWrapper):
   def _ParallelHelloWorld(self):
     """Write 'hello world' to stdout using multiple processes."""
     queue = multiprocessing.Queue()
-    with parallel.BackgroundTaskRunner(queue, self._HelloWorld):
+    with parallel.BackgroundTaskRunner(self._HelloWorld, queue=queue):
+      queue.put([])
+      self.printed_hello.wait()
+
+  def VerifyDefaultQueue(self):
+    """Verify that BackgroundTaskRunner will create a queue on it's own."""
+    with parallel.BackgroundTaskRunner(self._HelloWorld) as queue:
       queue.put([])
       self.printed_hello.wait()
 

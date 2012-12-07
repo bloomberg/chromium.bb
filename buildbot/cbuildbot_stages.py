@@ -1916,10 +1916,10 @@ class ArchiveStage(BoardSpecificBuilderStage):
 
     def ArchiveArtifactsForHWTesting(num_upload_processes=6):
       """Archives artifacts required for HWTest stage."""
-      queue = hw_test_upload_queue
       success = False
       try:
-        with bg_task_runner(queue, UploadArtifact, num_upload_processes):
+        with bg_task_runner(UploadArtifact, queue=hw_test_upload_queue,
+                            processes=num_upload_processes):
           steps = [ArchiveAutotestTarballs, ArchivePayloads]
           parallel.RunParallelSteps(steps)
         success = True
@@ -1988,8 +1988,8 @@ class ArchiveStage(BoardSpecificBuilderStage):
                           sign_types=sign_types)
 
     def ArchiveReleaseArtifacts(num_upload_processes=10):
-      with bg_task_runner(release_upload_queue, UploadArtifact,
-                          num_upload_processes):
+      with bg_task_runner(UploadArtifact, queue=release_upload_queue,
+                          processes=num_upload_processes):
         steps = [ArchiveDebugSymbols, BuildAndArchiveAllImages,
                  ArchiveFirmwareImages]
         parallel.RunParallelSteps(steps)
@@ -2003,8 +2003,10 @@ class ArchiveStage(BoardSpecificBuilderStage):
         steps.extend([ArchiveStrippedChrome, BuildAndArchiveChromeSysroot,
                       ArchiveImageScripts])
 
-      with bg_task_runner(upload_symbols_queue, UploadSymbols, 1):
-        with bg_task_runner(upload_queue, UploadArtifact, num_upload_processes):
+      with bg_task_runner(UploadSymbols, queue=upload_symbols_queue,
+                          processes=1):
+        with bg_task_runner(UploadArtifact, queue=upload_queue,
+                            processes=num_upload_processes):
           parallel.RunParallelSteps(steps)
 
     def MarkAsLatest():
