@@ -228,31 +228,23 @@ static void nc_release_tls_node(nc_thread_memory_block_t *block,
 }
 
 /* Initialize a newly allocated TDB to some default values. */
-static int nc_tdb_init(nc_thread_descriptor_t *tdb,
-                       nc_basic_thread_data_t *basic_data) {
+static void nc_tdb_init(nc_thread_descriptor_t *tdb,
+                        nc_basic_thread_data_t *basic_data) {
   tdb->tls_base = tdb;
-  tdb->basic_data = basic_data;
-  basic_data->tdb = tdb;
-  tdb->basic_data->retval = 0;
-  tdb->basic_data->status = THREAD_RUNNING;
-
   tdb->joinable = PTHREAD_CREATE_JOINABLE;
   tdb->join_waiting = 0;
-
-  tdb->tls_node = NULL;
   tdb->stack_node = NULL;
-
+  tdb->tls_node = NULL;
   tdb->start_func = NULL;
   tdb->state = NULL;
-
   tdb->irt_thread_data = NULL;
+  tdb->basic_data = basic_data;
 
-  /*
-   * Imitate PTHREAD_COND_INITIALIZER - we cannot use it directly here,
-   * since this is not variable initialization.
-   */
-  nc_pthread_condvar_ctor(&basic_data->join_condvar);
-  return 0;
+  basic_data->retval = NULL;
+  basic_data->status = THREAD_RUNNING;
+  if (pthread_cond_init(&basic_data->join_condvar, NULL) != 0)
+    nc_abort();
+  basic_data->tdb = tdb;
 }
 
 /* Initializes all globals except for the initial thread structure. */
@@ -287,26 +279,10 @@ void __nc_initialize_globals(void) {
  * This is used by the IRT for user threads.  We initialize all fields
  * so that we get predictable behaviour in case some IRT code does an
  * unsupported pthread operation on a user thread.
- *
- * We avoid using nc_tdb_init() because it creates a condvar which we
- * do not need.
  */
 void __nc_initialize_unjoinable_thread(struct nc_combined_tdb *tdb) {
-  tdb->tdb.tls_base = tdb;
+  nc_tdb_init(&tdb->tdb, &tdb->basic_data);
   tdb->tdb.joinable = 0;
-  tdb->tdb.join_waiting = 0;
-  tdb->tdb.stack_node = NULL;
-  tdb->tdb.tls_node = NULL;
-  tdb->tdb.start_func = NULL;
-  tdb->tdb.state = NULL;
-  tdb->tdb.irt_thread_data = NULL;
-  tdb->basic_data.retval = NULL;
-  tdb->basic_data.status = THREAD_RUNNING;
-  pthread_cond_t condvar_init = PTHREAD_COND_INITIALIZER;
-  tdb->basic_data.join_condvar = condvar_init;
-
-  tdb->tdb.basic_data = &tdb->basic_data;
-  tdb->basic_data.tdb = &tdb->tdb;
 }
 
 #else

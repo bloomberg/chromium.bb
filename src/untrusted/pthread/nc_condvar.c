@@ -107,8 +107,3 @@ int pthread_cond_timedwait_abs(pthread_cond_t *cond,
     return 0;
   }
 }
-
-int nc_pthread_condvar_ctor(pthread_cond_t *cond) {
-  pthread_cond_init(cond, NULL);
-  return 1;
-}

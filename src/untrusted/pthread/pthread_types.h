@@ -18,8 +18,6 @@
 extern "C" {
 #endif
 
-int nc_pthread_condvar_ctor(pthread_cond_t *cond);
-
 typedef enum {
   THREAD_RUNNING,
   THREAD_TERMINATED
