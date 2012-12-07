@@ -42,6 +42,21 @@
 // user has changed the mode to something other than "Chrome Remote Desktop
 // client size". It doesn't make the code significantly more complex.
 
+namespace {
+
+int PixelsToMillimeters(int pixels, int dpi) {
+  DCHECK(dpi != 0);
+
+  const double kMillimetersPerInch = 25.4;
+
+  // (pixels / dpi) is the length in inches. Multiplying by
+  // kMillimetersPerInch converts to mm. Multiplication is done first to
+  // avoid integer division.
+  return static_cast<int>(kMillimetersPerInch * pixels / dpi);
+}
+
+}  // namespace
+
 namespace remoting {
 
 // Wrapper class for the XRRScreenResources struct.
@@ -230,9 +245,15 @@ void DesktopResizerLinux::SetSize(const SkISize& size) {
   // seems safe to do it regardless).
   LOG(INFO) << "Changing desktop size to " << size.width()
             << "x" << size.height();
+
+  // TODO(lambroslambrou): Use the DPI from client size information.
+  const int kDPI = 96;
+  int width_mm = PixelsToMillimeters(size.width(), kDPI);
+  int height_mm = PixelsToMillimeters(size.height(), kDPI);
   CreateMode(kTempModeName, size.width(), size.height());
   SwitchToMode(NULL);
-  XRRSetScreenSize(display_, root_, size.width(), size.height(), -1, -1);
+  XRRSetScreenSize(display_, root_, size.width(), size.height(), width_mm,
+                   height_mm);
   SwitchToMode(kTempModeName);
   DeleteMode(kModeName);
   CreateMode(kModeName, size.width(), size.height());
