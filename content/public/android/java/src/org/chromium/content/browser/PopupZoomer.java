@@ -110,9 +110,15 @@ class PopupZoomer extends View {
     private GestureDetector mGestureDetector;
 
     private static float getOverlayCornerRadius(Context context) {
-        if (sOverlayCornerRadius == 0)
-            sOverlayCornerRadius = context.getResources().getDimension(
-                    R.dimen.link_preview_overlay_radius);
+        if (sOverlayCornerRadius == 0) {
+            try {
+                sOverlayCornerRadius = context.getResources().getDimension(
+                        R.dimen.link_preview_overlay_radius);
+            } catch (Resources.NotFoundException e) {
+                Log.w(LOGTAG, "No corner radius resource for PopupZoomer overlay found.");
+                sOverlayCornerRadius = 1.0f;
+            }
+        }
         return sOverlayCornerRadius;
     }
 
