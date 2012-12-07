@@ -84,6 +84,16 @@ enum FileWriteResult {
   NUM_FILE_WRITE_RESULTS,
 };
 
+#define RETRY_HISTOGRAM(name, retry_count, url) \
+    if ((url).DomainIs("google.com")) \
+      UMA_HISTOGRAM_CUSTOM_COUNTS( \
+          "Extension." name "RetryCountGoogleUrl", retry_count, 1, \
+          kMaxRetries, kMaxRetries+1); \
+    else \
+      UMA_HISTOGRAM_CUSTOM_COUNTS( \
+          "Extension." name "RetryCountOtherUrl", retry_count, 1, \
+          kMaxRetries, kMaxRetries+1)
+
 void RecordFileUpdateHistogram(FileWriteResult file_write_result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   UMA_HISTOGRAM_ENUMERATION("Extensions.UpdaterWriteCrxAsFile",
@@ -455,6 +465,8 @@ void ExtensionDownloader::OnManifestFetchComplete(
   // available, we want to fire off requests to fetch those updates.
   if (status.status() == net::URLRequestStatus::SUCCESS &&
       (response_code == 200 || (url.SchemeIsFile() && data.length() > 0))) {
+    RETRY_HISTOGRAM("ManifestFetchSuccess",
+                    manifests_queue_.active_request_failure_count(), url);
     VLOG(2) << "beginning manifest parse for " << url;
     scoped_refptr<SafeManifestParser> safe_parser(
         new SafeManifestParser(
@@ -470,6 +482,8 @@ void ExtensionDownloader::OnManifestFetchComplete(
         manifests_queue_.active_request_failure_count() < kMaxRetries) {
       manifests_queue_.RetryRequest(backoff_delay);
     } else {
+      RETRY_HISTOGRAM("ManifestFetchFailure",
+                      manifests_queue_.active_request_failure_count(), url);
       NotifyExtensionsDownloadFailed(
           manifests_queue_.active_request()->extension_ids(),
           manifests_queue_.active_request()->request_ids(),
@@ -693,6 +707,8 @@ void ExtensionDownloader::OnCRXFetchComplete(
         id, ExtensionDownloaderDelegate::CRX_FETCH_FAILED, ping, request_ids);
   } else if (status.status() == net::URLRequestStatus::SUCCESS &&
       (response_code == 200 || url.SchemeIsFile())) {
+    RETRY_HISTOGRAM("CrxFetchSuccess",
+                    extensions_queue_.active_request_failure_count(), url);
     if (id == kBlacklistAppID) {
       std::string data;
       source->GetResponseAsString(&data);
@@ -717,6 +733,8 @@ void ExtensionDownloader::OnCRXFetchComplete(
         extensions_queue_.active_request_failure_count() < kMaxRetries) {
       extensions_queue_.RetryRequest(backoff_delay);
     } else {
+      RETRY_HISTOGRAM("CrxFetchFailure",
+                      extensions_queue_.active_request_failure_count(), url);
       delegate_->OnExtensionDownloadFailed(
           id, ExtensionDownloaderDelegate::CRX_FETCH_FAILED, ping, request_ids);
     }
