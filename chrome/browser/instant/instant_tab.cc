@@ -38,6 +38,10 @@ void InstantTab::SendAutocompleteResults(
   client_.SendAutocompleteResults(results);
 }
 
+void InstantTab::SetDisplayInstantResults(bool display_instant_results) {
+  client_.SetDisplayInstantResults(display_instant_results);
+}
+
 void InstantTab::UpOrDownKeyPressed(int count) {
   client_.UpOrDownKeyPressed(count);
 }

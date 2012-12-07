@@ -612,6 +612,8 @@ void InstantController::SetInstantEnabled(bool instant_enabled) {
   loader_.reset();
   if (extended_enabled_ || instant_enabled_)
     CreateDefaultLoader();
+  if (instant_tab_)
+    instant_tab_->SetDisplayInstantResults(instant_enabled_);
 }
 
 void InstantController::ThemeChanged(const ThemeBackgroundInfo& theme_info) {
@@ -833,6 +835,7 @@ void InstantController::ResetInstantTab() {
     if (!instant_tab_ || active_tab != instant_tab_->contents()) {
       instant_tab_.reset(new InstantTab(this, active_tab));
       instant_tab_->Init();
+      instant_tab_->SetDisplayInstantResults(instant_enabled_);
     }
 
     // Hide the |loader_| since we are now using |instant_tab_| instead.

@@ -42,6 +42,7 @@ class InstantTab : public InstantClient::Delegate {
   void Submit(const string16& text);
   void SendAutocompleteResults(
       const std::vector<InstantAutocompleteResult>& results);
+  void SetDisplayInstantResults(bool display_instant_results);
   void UpOrDownKeyPressed(int count);
 
  private:

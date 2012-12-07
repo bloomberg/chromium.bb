@@ -456,7 +456,8 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetDisplayInstantResults(
 
   bool display_instant_results =
       SearchBox::Get(render_view)->display_instant_results();
-  DVLOG(1) << "GetDisplayInstantResults: " << display_instant_results;
+  DVLOG(1) << render_view << " "
+           << "GetDisplayInstantResults: " << display_instant_results;
   return v8::Boolean::New(display_instant_results);
 }
 

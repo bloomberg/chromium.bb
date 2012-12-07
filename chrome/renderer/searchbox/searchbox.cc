@@ -240,5 +240,7 @@ void SearchBox::Reset() {
   mode_ = chrome::search::Mode();
   theme_info_ = ThemeBackgroundInfo();
   theme_area_height_ = 0;
-  display_instant_results_ = false;
+  // Don't reset display_instant_results_ to prevent clearing it on committed
+  // results pages in extended mode. Otherwise resetting it is a no-op because
+  // a new loader is created when it changes; see crbug.com/164662.
 }
