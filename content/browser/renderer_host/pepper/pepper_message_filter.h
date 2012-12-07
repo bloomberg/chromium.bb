@@ -225,6 +225,11 @@ class PepperMessageFilter
                          PP_Resource socket_resource,
                          const PP_NetAddress_Private& addr,
                          int32_t backlog);
+  void DoHostResolverResolve(int32 routing_id,
+                             uint32 plugin_dispatcher_id,
+                             uint32 host_resolver_id,
+                             const ppapi::HostPortPair& host_port,
+                             const PP_HostResolver_Private_Hint& hint);
 
   void OnX509CertificateParseDER(const std::vector<char>& der,
                                  bool* succeeded,

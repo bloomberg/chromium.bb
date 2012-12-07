@@ -128,7 +128,8 @@ void PepperMessageFilter::OverrideThreadForMessage(
       message.type() == PpapiHostMsg_PPBTCPSocket_Connect::ID ||
       message.type() == PpapiHostMsg_PPBTCPSocket_ConnectWithNetAddress::ID ||
       message.type() == PpapiHostMsg_PPBUDPSocket_Bind::ID ||
-      message.type() == PpapiHostMsg_PPBUDPSocket_SendTo::ID) {
+      message.type() == PpapiHostMsg_PPBUDPSocket_SendTo::ID ||
+      message.type() == PpapiHostMsg_PPBHostResolver_Resolve::ID) {
     *thread = BrowserThread::UI;
   }
 }
@@ -583,10 +584,32 @@ void PepperMessageFilter::OnHostResolverResolve(
     uint32 host_resolver_id,
     const ppapi::HostPortPair& host_port,
     const PP_HostResolver_Private_Hint& hint) {
-  // Allow any Pepper plugin to resolve host names. This should be OK, since
-  // a page can already resolve host names by doing an XHR to an accessible
-  // and cooperative server.
-  // TODO(bbudge) Use permissions to restrict this when they handle this.
+  // Allow all process types except NaCl, unless the plugin is whitelisted for
+  // using socket APIs.
+  // TODO(bbudge) use app permissions when they are ready.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  content::SocketPermissionRequest request(
+      content::SocketPermissionRequest::NONE, "", 0);
+  if (process_type_ == NACL && !CanUseSocketAPIs(routing_id, request))
+    return;
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&PepperMessageFilter::DoHostResolverResolve,
+                 this,
+                 routing_id,
+                 plugin_dispatcher_id,
+                 host_resolver_id,
+                 host_port,
+                 hint));
+}
+
+void PepperMessageFilter::DoHostResolverResolve(
+    int32 routing_id,
+    uint32 plugin_dispatcher_id,
+    uint32 host_resolver_id,
+    const ppapi::HostPortPair& host_port,
+    const PP_HostResolver_Private_Hint& hint) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   net::HostResolver::RequestInfo request_info(
       net::HostPortPair(host_port.host, host_port.port));
