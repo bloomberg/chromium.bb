@@ -9,6 +9,8 @@
 # For Windows it assumes being run from a MinGW shell with Visual Studio
 # environment (i.e., lib.exe and editbin.exe are in $PATH).
 #
+# For MIPS it assumes that cross-toolchain bin directory is in $PATH.
+#
 # Instructions for setting up a MinGW/MSYS shell can be found here:
 # http://src.chromium.org/viewvc/chrome/trunk/deps/third_party/mingw/README.chromium
 
@@ -16,11 +18,13 @@ if [ "$3" = "" -o "$4" != "" ]; then
   echo "Usage:"
   echo "  $0 [TARGET_OS] [TARGET_ARCH] [path/to/third_party/ffmpeg]"
   echo
-  echo "Valid combinations are linux [ia32|x64|arm|arm-neon]"
+  echo "Valid combinations are linux [ia32|x64|mipsel|arm|arm-neon]"
   echo "                       win   [ia32]"
   echo "                       mac   [ia32|x64]"
   echo
   echo " linux ia32/x64 - script can be run on a normal Ubuntu box."
+  echo " linux mipsel - script can be run on a normal Ubuntu box with MIPS"
+  echo " cross-toolchain in \$PATH."
   echo " linux arm/arm-neon should be run inside of CrOS chroot."
   echo " mac and win have to be run on Mac and Windows 7 (under mingw)."
   echo
@@ -321,6 +325,18 @@ if [ "$TARGET_OS" = "linux" ]; then
     add_flag_common --extra-cflags=-mfpu=neon
     # NOTE: softfp/hardfp selected at gyp time.
     add_flag_common --extra-cflags=-mfloat-abi=softfp
+  elif [ "$TARGET_ARCH" = "mipsel" ]; then
+    add_flag_common --enable-cross-compile
+    add_flag_common --cross-prefix=mips-linux-gnu-
+    add_flag_common --target-os=linux
+    add_flag_common --arch=mips
+    add_flag_common --extra-cflags=-mips32
+    add_flag_common --extra-cflags=-EL
+    add_flag_common --extra-ldflags=-mips32
+    add_flag_common --extra-ldflags=-EL
+    add_flag_common --disable-mipsfpu
+    add_flag_common --disable-mipsdspr1
+    add_flag_common --disable-mipsdspr2
   else
     echo "Error: Unknown TARGET_ARCH=$TARGET_ARCH for TARGET_OS=$TARGET_OS!"
     exit 1

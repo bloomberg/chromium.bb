@@ -46,6 +46,10 @@
       }, {
         'ffmpeg_config%': '<(target_arch)',
       }],
+      ['target_arch == "mipsel"', {
+        'asm_sources': [
+        ],
+      }],
       ['OS == "mac" or OS == "win" or OS == "openbsd"', {
         'os_config%': '<(OS)',
       }, {  # all other Unix OS's use the linux config
@@ -104,7 +108,7 @@
             '-fomit-frame-pointer',
           ],
           'conditions': [
-            ['target_arch != "arm"', {
+            ['target_arch != "arm" and target_arch != "mipsel"', {
               'dependencies': [
                 'ffmpeg_yasm',
               ],
@@ -205,6 +209,12 @@
                 }],
               ],
             }],
+            ['target_arch == "mipsel"', {
+              'cflags': [
+                '-mips32',
+                '-EL -Wl,-EL',
+              ],
+            }],  # target_arch == "mipsel"
             ['os_posix == 1 and OS != "mac"', {
               'defines': [
                 '_ISOC99_SOURCE',
