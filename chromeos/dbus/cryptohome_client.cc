@@ -133,10 +133,9 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendString(username);
     writer.AppendString(key);
     writer.AppendBool(flags & cryptohome::CREATE_IF_MISSING);
-    writer.AppendBool(false);  // deprecated_replace_tracked_subdirectories
+    writer.AppendBool(flags & cryptohome::ENSURE_EPHEMERAL);
     // deprecated_tracked_subdirectories
     writer.AppendArrayOfStrings(std::vector<std::string>());
-    writer.AppendBool(flags & cryptohome::ENSURE_EPHEMERAL);
     proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                        base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
                                   weak_ptr_factory_.GetWeakPtr(),
