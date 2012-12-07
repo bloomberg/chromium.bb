@@ -6,10 +6,10 @@
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "gpu/command_buffer/common/gl_mock.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gl/gl_mock.h"
 
 using ::testing::Pointee;
 using ::testing::_;

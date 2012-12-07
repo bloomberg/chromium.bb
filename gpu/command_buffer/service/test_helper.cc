@@ -9,11 +9,11 @@
 
 #include "base/string_number_conversions.h"
 #include "base/string_tokenizer.h"
-#include "gpu/command_buffer/common/gl_mock.h"
 #include "gpu/command_buffer/common/types.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/program_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gl/gl_mock.h"
 
 using ::testing::_;
 using ::testing::DoAll;

@@ -5,8 +5,8 @@
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
 
 #include <set>
-#include "gpu/command_buffer/common/gl_mock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gl/gl_mock.h"
 
 namespace gpu {
 namespace gles2 {

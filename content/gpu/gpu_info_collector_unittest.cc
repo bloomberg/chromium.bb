@@ -5,10 +5,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/gpu/gpu_info_collector.h"
 #include "content/public/common/gpu_info.h"
-#include "gpu/command_buffer/common/gl_mock.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_mock.h"
 
 using ::gfx::MockGLInterface;
 using ::testing::Return;

@@ -4,12 +4,12 @@
 
 #include "gpu/command_buffer/service/memory_program_cache.h"
 
-#include "gpu/command_buffer/common/gl_mock.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/shader_translator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_mock.h"
 
 using ::testing::_;
 using ::testing::ElementsAreArray;

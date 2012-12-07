@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "gpu/command_buffer/common/debug_marker_manager.h"
-#include "gpu/command_buffer/common/gl_mock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gl/gl_mock.h"
 
 namespace gpu {
 namespace gles2 {

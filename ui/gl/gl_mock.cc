@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/command_buffer/common/gl_mock.h"
+#include "ui/gl/gl_mock.h"
 
 namespace gfx {
 

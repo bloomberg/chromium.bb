@@ -5,10 +5,10 @@
 #include "gpu/command_buffer/service/context_group.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "gpu/command_buffer/common/gl_mock.h"
 #include "gpu/command_buffer/service/test_helper.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gl/gl_mock.h"
 
 using ::gfx::MockGLInterface;
 using ::testing::_;

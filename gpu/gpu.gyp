@@ -257,14 +257,12 @@
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../third_party/khronos/khronos.gyp:khronos_headers',
-        '../ui/gl/gl.gyp:gl',
+        '../ui/gl/gl.gyp:gl_unittest_utils',
       ],
       'include_dirs': [
         '..',
       ],
       'sources': [
-        'command_buffer/common/gl_mock.h',
-        'command_buffer/common/gl_mock.cc',
         'command_buffer/service/gles2_cmd_decoder_mock.cc',
         'command_buffer/service/gles2_cmd_decoder_mock.cc',
       ],

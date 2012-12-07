@@ -5,9 +5,9 @@
 #include "gpu/command_buffer/service/shader_manager.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "gpu/command_buffer/common/gl_mock.h"
 #include "gpu/command_buffer/service/mocks.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gl/gl_mock.h"
 
 using ::testing::Return;
 using ::testing::ReturnRef;
