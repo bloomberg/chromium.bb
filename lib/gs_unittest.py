@@ -6,6 +6,7 @@
 
 """Unittests for the gs.py module."""
 
+import functools
 import mock
 import os
 import sys
@@ -16,6 +17,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import gs
+from chromite.lib import osutils
 from chromite.lib import partial_mock
 
 
@@ -123,7 +125,7 @@ class CopyTest(AbstractGSContextTest):
     """GSContextException is raised properly."""
     self.gs_mock.AddCmdResult(
         partial_mock.In('cp'), returncode=1,
-        output=self.gs_mock.GSResponsePreconditionFailed)
+        error=self.gs_mock.GSResponsePreconditionFailed)
     self.assertRaises(gs.GSContextException, self.Copy)
 
 
@@ -202,7 +204,7 @@ class GSContextTest(AbstractGSContextTest):
       ctx.Copy('/blah', 'gs://foon')
       cmd = [self.ctx.gsutil_bin, 'cp', '--', '/blah', 'gs://foon']
       cros_build_lib.RetryCommand.assert_called_once_with(
-          mock.ANY, retries, cmd, sleep=sleep,
+          mock.ANY, retries, cmd, sleep=sleep, redirect_stderr=True,
           extra_env={'BOTO_CONFIG': mock.ANY})
 
   def testDoCommandDefault(self):
@@ -230,6 +232,49 @@ class GSContextTest(AbstractGSContextTest):
     ctx.SetACL('gs://abc/1')
     self.gs_mock.assertCommandContains(['setacl', '/my/file/acl',
                                         'gs://abc/1'])
+
+
+class InitBotoTest(AbstractGSContextTest):
+  """Test boto file interactive initialization."""
+
+  GS_LS_ERROR = """\
+You are attempting to access protected data with no configured credentials.
+Please see http://code.google.com/apis/storage/docs/signup.html for
+details about activating the Google Cloud Storage service and then run the
+"gsutil config" command to configure gsutil to use these credentials."""
+
+  GS_LS_BENIGN = """\
+"GSResponseError: status=400, code=MissingSecurityHeader, reason=Bad Request,
+detail=A nonempty x-goog-project-id header is required for this request."""
+
+  def testInitGSLsSkippableError(self):
+    """Benign GS error."""
+    self.gs_mock.AddCmdResult(['ls'], returncode=1, error=self.GS_LS_BENIGN)
+    self.ctx._InitBoto()
+
+  def _WriteBotoFile(self, contents, *_args, **_kwargs):
+    osutils.WriteFile(self.ctx.boto_file, contents)
+
+  def testInitGSLsFailButSuccess(self):
+    """Invalid GS Config, but we config properly."""
+    self.gs_mock.AddCmdResult(['ls'], returncode=1, error=self.GS_LS_ERROR)
+    self.ctx._InitBoto()
+
+  def _AddLsConfigResult(self, side_effect=None):
+    self.gs_mock.AddCmdResult(['ls'], returncode=1, error=self.GS_LS_ERROR)
+    self.gs_mock.AddCmdResult(['config'], returncode=1, side_effect=side_effect)
+
+  def testGSLsFailAndConfigError(self):
+    """Invalid GS Config, and we fail to config."""
+    self._AddLsConfigResult(
+        side_effect=functools.partial(self._WriteBotoFile, 'monkeys'))
+    self.assertRaises(cros_build_lib.RunCommandError, self.ctx._InitBoto)
+
+  def testGSLsFailAndEmptyConfigFile(self):
+    """Invalid GS Config, and we raise error on empty config file."""
+    self._AddLsConfigResult(
+        side_effect=functools.partial(self._WriteBotoFile, ''))
+    self.assertRaises(gs.GSContextException, self.ctx._InitBoto)
 
 
 if __name__ == '__main__':

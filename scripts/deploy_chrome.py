@@ -29,6 +29,7 @@ from chromite.buildbot import constants
 from chromite.lib import chrome_util
 from chromite.lib import cros_build_lib
 from chromite.lib import commandline
+from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import remote_access as remote
 from chromite.lib import sudo
@@ -56,26 +57,6 @@ DebugRunCommandCaptureOutput = functools.partial(
 
 DebugSudoRunCommand = functools.partial(
     cros_build_lib.SudoRunCommand, debug_level=logging.DEBUG)
-
-
-def _TestGSLs(gs_bin):
-  """Quick test of gsutil functionality."""
-  result = DebugRunCommandCaptureOutput([gs_bin, 'ls'], error_code_ok=True)
-  return not result.returncode
-
-
-def _SetupBotoConfig(gs_bin):
-  """Make sure we can access protected bits in GS."""
-  boto_path = os.path.expanduser('~/.boto')
-  if os.path.isfile(boto_path) or _TestGSLs(gs_bin):
-    return
-
-  logging.info('Configuring gsutil. Please use your @google.com account.')
-  try:
-    cros_build_lib.RunCommand([gs_bin, 'config'], print_cmd=False)
-  finally:
-    if os.path.exists(boto_path) and not os.path.getsize(boto_path):
-      os.remove(boto_path)
 
 
 def _UrlBaseName(url):
@@ -317,15 +298,11 @@ def _FetchChromePackage(tempdir, gs_path):
 
   Returns: Path to the fetched chrome tarball.
   """
-  logging.info('Fetching gsutil.')
-  gsutil_tar = os.path.join(tempdir, 'gsutil.tar.gz')
-  cros_build_lib.RunCurl([GSUTIL_URL, '-o', gsutil_tar],
-                         debug_level=logging.DEBUG)
-  DebugRunCommand(['tar', '-xzf', gsutil_tar], cwd=tempdir)
-  gs_bin = os.path.join(tempdir, 'gsutil', 'gsutil')
-  _SetupBotoConfig(gs_bin)
-  cmd = [gs_bin, 'ls', gs_path]
-  files = DebugRunCommandCaptureOutput(cmd).output.splitlines()
+
+  gs_bin = gs.FetchGSUtil(tempdir)
+  os.path.join(tempdir, 'gsutil', 'gsutil')
+  ctx = gs.GSContext(gsutil_bin=gs_bin, init_boto=True)
+  files = ctx.LS(gs_path).output.splitlines()
   files = [found for found in files if
            _UrlBaseName(found).startswith('%s-' % constants.CHROME_PN)]
   if not files:
@@ -344,8 +321,7 @@ def _FetchChromePackage(tempdir, gs_path):
 
   filename = _UrlBaseName(files[0])
   logging.info('Fetching %s.', filename)
-  cros_build_lib.RunCommand([gs_bin, 'cp', files[0], tempdir],
-                            print_cmd=False)
+  ctx.Copy(files[0], tempdir, print_cmd=False)
   chrome_path = os.path.join(tempdir, filename)
   assert os.path.exists(chrome_path)
   return chrome_path
