@@ -76,7 +76,6 @@ class GL_EXPORT NativeViewGLSurfaceGLX : public GLSurfaceGLX {
   virtual ~NativeViewGLSurfaceGLX();
 
   gfx::AcceleratedWidget window_;
-  XID glx_window_;
 
  private:
   void* config_;

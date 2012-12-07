@@ -49,25 +49,85 @@ bool GLContextGLX::Initialize(
   GLXContext share_handle = static_cast<GLXContext>(
       share_group() ? share_group()->GetHandle() : NULL);
 
-  std::vector<int> attribs;
   if (GLSurfaceGLX::IsCreateContextRobustnessSupported()) {
     DVLOG(1) << "GLX_ARB_create_context_robustness supported.";
+
+    std::vector<int> attribs;
     attribs.push_back(GLX_CONTEXT_RESET_NOTIFICATION_STRATEGY_ARB);
     attribs.push_back(GLX_LOSE_CONTEXT_ON_RESET_ARB);
+    attribs.push_back(0);
+    context_ = glXCreateContextAttribsARB(
+        display_,
+        static_cast<GLXFBConfig>(compatible_surface->GetConfig()),
+        share_handle,
+        True,
+        &attribs.front());
+    if (context_) {
+      DVLOG(1) << "  Successfully allocated "
+               << (compatible_surface->IsOffscreen() ?
+                   "offscreen" : "onscreen")
+               << " GL context with LOSE_CONTEXT_ON_RESET_ARB";
+    } else {
+      // TODO(kbr): it is not expected that things will work properly
+      // in this case, since we will likely allocate our offscreen
+      // contexts with this bit set and the onscreen contexts without,
+      // and won't be able to put them in the same share group.
+      // Consider what to do here; force loss of all contexts and
+      // reallocation without ARB_robustness?
+      LOG(ERROR) <<
+          "  FAILED to allocate GL context with LOSE_CONTEXT_ON_RESET_ARB";
+    }
   }
-  attribs.push_back(0);
-  context_ = glXCreateContextAttribsARB(
-      display_,
-      static_cast<GLXFBConfig>(compatible_surface->GetConfig()),
-      share_handle,
-      True,
-      &attribs.front());
-  if (context_) {
-    DVLOG(1) << "  Successfully allocated "
-             << (compatible_surface->IsOffscreen() ?
-                 "offscreen" : "onscreen")
-             << " GL context with LOSE_CONTEXT_ON_RESET_ARB";
-  } else {
+
+  if (!context_) {
+    // The means by which the context is created depends on whether
+    // the drawable type works reliably with GLX 1.3. If it does not
+    // then fall back to GLX 1.2.
+    if (compatible_surface->IsOffscreen()) {
+      context_ = glXCreateNewContext(
+          display_,
+          static_cast<GLXFBConfig>(compatible_surface->GetConfig()),
+          GLX_RGBA_TYPE,
+          share_handle,
+          True);
+    } else {
+      // Get the visuals for the X drawable.
+      XWindowAttributes attributes;
+      if (!XGetWindowAttributes(
+          display_,
+          reinterpret_cast<GLXDrawable>(compatible_surface->GetHandle()),
+          &attributes)) {
+        LOG(ERROR) << "XGetWindowAttributes failed for window " <<
+            reinterpret_cast<GLXDrawable>(
+                compatible_surface->GetHandle()) << ".";
+        return false;
+      }
+
+      XVisualInfo visual_info_template;
+      visual_info_template.visualid = XVisualIDFromVisual(attributes.visual);
+
+      int visual_info_count = 0;
+      scoped_ptr_malloc<XVisualInfo, ScopedPtrXFree> visual_info_list(
+          XGetVisualInfo(display_, VisualIDMask,
+                         &visual_info_template,
+                         &visual_info_count));
+
+      DCHECK(visual_info_list.get());
+      if (visual_info_count == 0) {
+        LOG(ERROR) << "No visual info for visual ID.";
+        return false;
+      }
+
+      // Attempt to create a context with each visual in turn until one works.
+      context_ = glXCreateContext(
+          display_,
+          visual_info_list.get(),
+          share_handle,
+          True);
+    }
+  }
+
+  if (!context_) {
     LOG(ERROR) << "Couldn't create GL context.";
     return false;
   }
@@ -96,9 +156,8 @@ bool GLContextGLX::MakeCurrent(GLSurface* surface) {
     return true;
 
   TRACE_EVENT0("gpu", "GLContextGLX::MakeCurrent");
-  if (!glXMakeContextCurrent(
+  if (!glXMakeCurrent(
       display_,
-      reinterpret_cast<GLXDrawable>(surface->GetHandle()),
       reinterpret_cast<GLXDrawable>(surface->GetHandle()),
       static_cast<GLXContext>(context_))) {
     LOG(ERROR) << "Couldn't make context current with X drawable.";
@@ -129,7 +188,7 @@ void GLContextGLX::ReleaseCurrent(GLSurface* surface) {
     return;
 
   SetCurrent(NULL, NULL);
-  if (!glXMakeContextCurrent(display_, 0, 0, 0))
+  if (!glXMakeCurrent(display_, 0, 0))
     LOG(ERROR) << "glXMakeCurrent failed in ReleaseCurrent";
 }
 
