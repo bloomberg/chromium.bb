@@ -56,9 +56,11 @@ class ExtensionWebUI : public content::WebUIController {
   static void RegisterUserPrefs(PrefService* prefs);
 
   // Get the favicon for the extension by getting an icon from the manifest.
-  static void GetFaviconForURL(Profile* profile,
-                               FaviconService::GetFaviconRequest* request,
-                               const GURL& page_url);
+  // Note. |callback| is always run asynchronously.
+  static void GetFaviconForURL(
+      Profile* profile,
+      const GURL& page_url,
+      const FaviconService::FaviconResultsCallback2& callback);
 
  private:
   // Unregister the specified override, and if it's the currently active one,

@@ -4,7 +4,10 @@
 
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/location.h"
+#include "base/message_loop_proxy.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
@@ -422,6 +425,16 @@ struct PossibleTestSingletonTraits : public DefaultSingletonTraits<Type> {
   }
 };
 
+void RunFaviconCallbackAsync(
+    const FaviconService::FaviconResultsCallback2& callback,
+    const std::vector<history::FaviconBitmapResult>* results,
+    const history::IconURLSizesMap* size_map) {
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&FaviconService::FaviconResultsCallbackRunner,
+                 callback, base::Owned(results), base::Owned(size_map)));
+}
+
 }  // namespace
 
 WebUI::TypeID ChromeWebUIControllerFactory::GetWebUIType(
@@ -482,9 +495,9 @@ WebUIController* ChromeWebUIControllerFactory::CreateWebUIControllerForURL(
 
 void ChromeWebUIControllerFactory::GetFaviconForURL(
     Profile* profile,
-    FaviconService::GetFaviconRequest* request,
     const GURL& page_url,
-    const std::vector<ui::ScaleFactor>& scale_factors) const {
+    const std::vector<ui::ScaleFactor>& scale_factors,
+    const FaviconService::FaviconResultsCallback2& callback) const {
   // Before determining whether page_url is an extension url, we must handle
   // overrides. This changes urls in |kChromeUIScheme| to extension urls, and
   // allows to use ExtensionWebUI::GetFaviconForURL.
@@ -496,44 +509,50 @@ void ChromeWebUIControllerFactory::GetFaviconForURL(
   if (url.SchemeIs(extensions::kExtensionScheme) &&
       url.host() != extension_misc::kBookmarkManagerId) {
 #if defined(ENABLE_EXTENSIONS)
-    ExtensionWebUI::GetFaviconForURL(profile, request, url);
+    ExtensionWebUI::GetFaviconForURL(profile, url, callback);
+#else
+    RunFaviconCallbackAsync(callback,
+                            new std::vector<history::FaviconBitmapResult>(),
+                            new history::IconURLSizesMap());
 #endif
-  } else {
-    std::vector<history::FaviconBitmapResult> favicon_bitmap_results;
-    for (size_t i = 0; i < scale_factors.size(); ++i) {
-      scoped_refptr<base::RefCountedMemory> bitmap(GetFaviconResourceBytes(
-            url, scale_factors[i]));
-      if (bitmap.get() && bitmap->size()) {
-        history::FaviconBitmapResult bitmap_result;
-        bitmap_result.bitmap_data = bitmap;
-        // Leave |bitmap_result|'s icon URL as the default of GURL().
-        bitmap_result.icon_type = history::FAVICON;
-        favicon_bitmap_results.push_back(bitmap_result);
-
-        // Assume that |bitmap| is |gfx::kFaviconSize| x |gfx::kFaviconSize|
-        // DIP.
-        float scale = ui::GetScaleFactorScale(scale_factors[i]);
-        int edge_pixel_size =
-            static_cast<int>(gfx::kFaviconSize * scale + 0.5f);
-        bitmap_result.pixel_size = gfx::Size(edge_pixel_size, edge_pixel_size);
-      }
-    }
-
-    // Populate IconURLSizesMap such that the requirement that all the icon URLs
-    // in |favicon_bitmap_results| be present in |icon_url_sizes| holds.
-    // Populate the favicon sizes with the pixel sizes of the bitmaps available
-    // for |url|.
-    history::IconURLSizesMap icon_url_sizes;
-    for (size_t i = 0; i < favicon_bitmap_results.size(); ++i) {
-      const history::FaviconBitmapResult& bitmap_result =
-          favicon_bitmap_results[i];
-      const GURL& icon_url = bitmap_result.icon_url;
-      icon_url_sizes[icon_url].push_back(bitmap_result.pixel_size);
-    }
-
-    request->ForwardResultAsync(request->handle(), favicon_bitmap_results,
-                                icon_url_sizes);
+    return;
   }
+
+  std::vector<history::FaviconBitmapResult>* favicon_bitmap_results =
+      new std::vector<history::FaviconBitmapResult>();
+  history::IconURLSizesMap* icon_url_sizes = new history::IconURLSizesMap();
+
+  for (size_t i = 0; i < scale_factors.size(); ++i) {
+    scoped_refptr<base::RefCountedMemory> bitmap(GetFaviconResourceBytes(
+          url, scale_factors[i]));
+    if (bitmap.get() && bitmap->size()) {
+      history::FaviconBitmapResult bitmap_result;
+      bitmap_result.bitmap_data = bitmap;
+      // Leave |bitmap_result|'s icon URL as the default of GURL().
+      bitmap_result.icon_type = history::FAVICON;
+      favicon_bitmap_results->push_back(bitmap_result);
+
+      // Assume that |bitmap| is |gfx::kFaviconSize| x |gfx::kFaviconSize|
+      // DIP.
+      float scale = ui::GetScaleFactorScale(scale_factors[i]);
+      int edge_pixel_size =
+          static_cast<int>(gfx::kFaviconSize * scale + 0.5f);
+      bitmap_result.pixel_size = gfx::Size(edge_pixel_size, edge_pixel_size);
+    }
+  }
+
+  // Populate IconURLSizesMap such that the requirement that all the icon URLs
+  // in |favicon_bitmap_results| be present in |icon_url_sizes| holds.
+  // Populate the favicon sizes with the pixel sizes of the bitmaps available
+  // for |url|.
+  for (size_t i = 0; i < favicon_bitmap_results->size(); ++i) {
+    const history::FaviconBitmapResult& bitmap_result =
+        (*favicon_bitmap_results)[i];
+    const GURL& icon_url = bitmap_result.icon_url;
+    (*icon_url_sizes)[icon_url].push_back(bitmap_result.pixel_size);
+  }
+
+  RunFaviconCallbackAsync(callback, favicon_bitmap_results, icon_url_sizes);
 }
 
 // static

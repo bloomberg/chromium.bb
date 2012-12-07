@@ -105,9 +105,9 @@ class HistoryMenuBridgeTest : public CocoaProfileTest {
   }
 
   void GotFaviconData(
-      FaviconService::Handle handle,
+      HistoryMenuBridge::HistoryItem* item,
       const history::FaviconImageResult& image_result) {
-    bridge_->GotFaviconData(handle, image_result);
+    bridge_->GotFaviconData(item, image_result);
   }
 
   CancelableRequestConsumerTSimple<HistoryMenuBridge::HistoryItem*>&
@@ -332,15 +332,9 @@ TEST_F(HistoryMenuBridgeTest, GetFaviconForHistoryItem) {
   // Request the icon.
   GetFaviconForHistoryItem(&item);
 
-  // Make sure that there is ClientData for the request.
-  std::vector<HistoryMenuBridge::HistoryItem*> data;
-  favicon_consumer().GetAllClientData(&data);
-  ASSERT_EQ(data.size(), 1U);
-  EXPECT_EQ(&item, data[0]);
-
   // Make sure the item was modified properly.
   EXPECT_TRUE(item.icon_requested);
-  EXPECT_GT(item.icon_handle, 0);
+  EXPECT_NE(CancelableTaskTracker::kBadTaskId, item.icon_task_id);
 }
 
 TEST_F(HistoryMenuBridgeTest, GotFaviconData) {
@@ -358,7 +352,7 @@ TEST_F(HistoryMenuBridgeTest, GotFaviconData) {
   // Pretend to be called back.
   history::FaviconImageResult image_result;
   image_result.image = gfx::Image(bitmap);
-  GotFaviconData(item.icon_handle, image_result);
+  GotFaviconData(&item, image_result);
 
   // Make sure the callback works.
   EXPECT_FALSE(item.icon_requested);

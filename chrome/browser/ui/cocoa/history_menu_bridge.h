@@ -18,6 +18,7 @@
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
 #import "chrome/browser/ui/cocoa/main_menu_item.h"
+#include "chrome/common/cancelable_task_tracker.h"
 #include "content/public/browser/notification_observer.h"
 
 class NotificationRegistrar;
@@ -75,11 +76,11 @@ class HistoryMenuBridge : public content::NotificationObserver,
     scoped_nsobject<NSImage> icon;
 
     // If the icon is being requested from the FaviconService, |icon_requested|
-    // will be true and |icon_handle| will be non-NULL. If this is false, then
-    // |icon_handle| will be NULL.
+    // will be true and |icon_task_id| will be valid. If this is false, then
+    // |icon_task_id| will be CancelableTaskTracker::kBadTaskId.
     bool icon_requested;
     // The Handle given to us by the FaviconService for the icon fetch request.
-    FaviconService::Handle icon_handle;
+    CancelableTaskTracker::TaskId icon_task_id;
 
     // The pointer to the item after it has been created. Strong; NSMenu also
     // retains this. During a rebuild flood (if the user closes a lot of tabs
@@ -190,9 +191,8 @@ class HistoryMenuBridge : public content::NotificationObserver,
   // request it. This decodes the raw data, updates the HistoryItem, and then
   // sets the image on the menu. Called on the same same thread that
   // GetFaviconForHistoryItem() was called on (UI thread).
-  void GotFaviconData(
-      FaviconService::Handle handle,
-      const history::FaviconImageResult& image_result);
+  void GotFaviconData(HistoryItem* item,
+                      const history::FaviconImageResult& image_result);
 
   // Cancels a favicon load request for a given HistoryItem, if one is in
   // progress.
@@ -210,6 +210,7 @@ class HistoryMenuBridge : public content::NotificationObserver,
 
   content::NotificationRegistrar registrar_;
   CancelableRequestConsumer cancelable_request_consumer_;
+  CancelableTaskTracker cancelable_task_tracker_;
 
   // Mapping of NSMenuItems to HistoryItems. This owns the HistoryItems until
   // they are removed and deleted via ClearMenuSection().

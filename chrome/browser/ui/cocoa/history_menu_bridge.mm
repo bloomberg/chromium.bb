@@ -56,6 +56,7 @@ const unsigned int kRecentlyClosedCount = 10;
 
 HistoryMenuBridge::HistoryItem::HistoryItem()
    : icon_requested(false),
+     icon_task_id(CancelableTaskTracker::kBadTaskId),
      menu_item(nil),
      session_id(0) {
 }
@@ -64,6 +65,7 @@ HistoryMenuBridge::HistoryItem::HistoryItem(const HistoryItem& copy)
    : title(copy.title),
      url(copy.url),
      icon_requested(false),
+     icon_task_id(CancelableTaskTracker::kBadTaskId),
      menu_item(nil),
      session_id(copy.session_id) {
 }
@@ -456,28 +458,28 @@ HistoryMenuBridge::HistoryItem* HistoryMenuBridge::HistoryItemForTab(
 void HistoryMenuBridge::GetFaviconForHistoryItem(HistoryItem* item) {
   FaviconService* service =
       FaviconServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
-  FaviconService::Handle handle = service->GetFaviconImageForURL(
-      FaviconService::FaviconForURLParams(profile_, item->url, history::FAVICON,
-          gfx::kFaviconSize, &favicon_consumer_),
-      base::Bind(&HistoryMenuBridge::GotFaviconData, base::Unretained(this)));
-  favicon_consumer_.SetClientData(service, handle, item);
-  item->icon_handle = handle;
+  CancelableTaskTracker::TaskId task_id = service->GetFaviconImageForURL(
+      FaviconService::FaviconForURLParams(profile_,
+                                          item->url,
+                                          history::FAVICON,
+                                          gfx::kFaviconSize),
+      base::Bind(&HistoryMenuBridge::GotFaviconData,
+                 base::Unretained(this),
+                 item),
+      &cancelable_task_tracker_);
+  item->icon_task_id = task_id;
   item->icon_requested = true;
 }
 
 void HistoryMenuBridge::GotFaviconData(
-    FaviconService::Handle handle,
+    HistoryItem* item,
     const history::FaviconImageResult& image_result) {
   // Since we're going to do Cocoa-y things, make sure this is the main thread.
   DCHECK([NSThread isMainThread]);
 
-  HistoryItem* item =
-      favicon_consumer_.GetClientData(
-          FaviconServiceFactory::GetForProfile(
-              profile_, Profile::EXPLICIT_ACCESS), handle);
   DCHECK(item);
   item->icon_requested = false;
-  item->icon_handle = 0;
+  item->icon_task_id = CancelableTaskTracker::kBadTaskId;
 
   NSImage* image = image_result.image.AsNSImage();
   if (image) {
@@ -489,10 +491,8 @@ void HistoryMenuBridge::GotFaviconData(
 void HistoryMenuBridge::CancelFaviconRequest(HistoryItem* item) {
   DCHECK(item);
   if (item->icon_requested) {
-    FaviconService* service = FaviconServiceFactory::GetForProfile(
-      profile_, Profile::EXPLICIT_ACCESS);
-    service->CancelRequest(item->icon_handle);
+    cancelable_task_tracker_.TryCancel(item->icon_task_id);
     item->icon_requested = false;
-    item->icon_handle = 0;
+    item->icon_task_id = CancelableTaskTracker::kBadTaskId;
   }
 }

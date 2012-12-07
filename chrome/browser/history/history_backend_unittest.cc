@@ -2031,11 +2031,12 @@ TEST_F(HistoryBackendTest, MergeFaviconShowsUpInGetFaviconsForURLResult) {
 
   // Request favicon bitmaps for both 1x and 2x to simulate request done by
   // BookmarkModel::GetFavicon().
-  backend_->GetFaviconsForURL(request, page_url, FAVICON, kSmallSize.width(),
-      GetScaleFactors1x2x());
+  std::vector<history::FaviconBitmapResult> favicon_bitmap_results;
+  IconURLSizesMap size_map;
+  backend_->GetFaviconsForURL(page_url, FAVICON, kSmallSize.width(),
+                              GetScaleFactors1x2x(),
+                              &favicon_bitmap_results, &size_map);
 
-  const std::vector<history::FaviconBitmapResult> favicon_bitmap_results =
-      get_favicon_bitmap_results();
   EXPECT_EQ(2u, favicon_bitmap_results.size());
   const FaviconBitmapResult& first_result = favicon_bitmap_results[0];
   const FaviconBitmapResult& result = first_result.pixel_size == kSmallSize ?
@@ -2295,9 +2296,9 @@ TEST_F(HistoryBackendTest, GetFaviconsFromDBExpired) {
   EXPECT_TRUE(bitmap_results_out[0].expired);
 }
 
-// Check that GetFaviconsForURL() and UpdateFaviconMappingsAndFetch() call back
-// to the UI when there is no valid thumbnail database.
-TEST_F(HistoryBackendTest, GetFaviconsNoDB) {
+// Check that UpdateFaviconMappingsAndFetch() call back to the UI when there is
+// no valid thumbnail database.
+TEST_F(HistoryBackendTest, UpdateFaviconMappingsAndFetchNoDB) {
   // Make the thumbnail database invalid.
   backend_->thumbnail_db_.reset();
 
@@ -2310,15 +2311,6 @@ TEST_F(HistoryBackendTest, GetFaviconsNoDB) {
   EXPECT_TRUE(cancellable_request.HasPendingRequests());
   backend_->UpdateFaviconMappingsAndFetch(request1, GURL(), std::vector<GURL>(),
       FAVICON, kSmallSize.width(), GetScaleFactors1x2x());
-  EXPECT_FALSE(cancellable_request.HasPendingRequests());
-
-  scoped_refptr<GetFaviconRequest> request2(new GetFaviconRequest(
-      base::Bind(&HistoryBackendTest::OnFaviconResults,
-                 base::Unretained(this))));
-  cancellable_request.MockScheduleOfRequest<GetFaviconRequest>(request2);
-  EXPECT_TRUE(cancellable_request.HasPendingRequests());
-  backend_->GetFaviconsForURL(request2, GURL(), FAVICON, kSmallSize.width(),
-                              GetScaleFactors1x2x());
   EXPECT_FALSE(cancellable_request.HasPendingRequests());
 }
 

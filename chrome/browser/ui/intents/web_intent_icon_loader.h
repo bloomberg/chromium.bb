@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_UI_INTENTS_WEB_INTENT_ICON_LOADER_H_
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/favicon/favicon_service.h"
+#include "chrome/common/cancelable_task_tracker.h"
 
 class Profile;
 class WebIntentPickerModel;
@@ -31,10 +31,8 @@ class IconLoader {
 
  private:
   // Called when a favicon is returned from the FaviconService.
-  void OnFaviconDataAvailable(
-      const GURL& url,
-      FaviconService::Handle handle,
-      const history::FaviconImageResult& image_result);
+  void OnFaviconDataAvailable(const GURL& url,
+                              const history::FaviconImageResult& image_result);
 
   // Called when a suggested extension's icon is fetched.
   void OnExtensionIconURLFetchComplete(const std::string& extension_id,
@@ -50,8 +48,8 @@ class IconLoader {
   // A weak pointer to the model being updated.
   WebIntentPickerModel* model_;
 
-  // Request consumer used when asynchronously loading favicons.
-  CancelableRequestConsumer favicon_consumer_;
+  // Used to asynchronously load favicons.
+  CancelableTaskTracker cancelable_task_tracker_;
 
   // Factory for weak pointers used in callbacks for async calls to load icon.
   base::WeakPtrFactory<IconLoader> weak_ptr_factory_;

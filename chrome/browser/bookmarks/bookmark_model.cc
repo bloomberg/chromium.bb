@@ -139,7 +139,7 @@ void BookmarkNode::Initialize(int64 id) {
   type_ = url_.is_empty() ? FOLDER : URL;
   date_added_ = Time::Now();
   favicon_state_ = INVALID_FAVICON;
-  favicon_load_handle_ = 0;
+  favicon_load_task_id_ = CancelableTaskTracker::kBadTaskId;
   meta_info_str_.clear();
 }
 
@@ -884,14 +884,10 @@ BookmarkPermanentNode* BookmarkModel::CreatePermanentNode(
 }
 
 void BookmarkModel::OnFaviconDataAvailable(
-    FaviconService::Handle handle,
+    BookmarkNode* node,
     const history::FaviconImageResult& image_result) {
-  BookmarkNode* node =
-      load_consumer_.GetClientData(
-          FaviconServiceFactory::GetForProfile(
-              profile_, Profile::EXPLICIT_ACCESS), handle);
   DCHECK(node);
-  node->set_favicon_load_handle(0);
+  node->set_favicon_load_task_id(CancelableTaskTracker::kBadTaskId);
   node->set_favicon_state(BookmarkNode::LOADED_FAVICON);
   if (!image_result.image.IsEmpty()) {
     node->set_favicon(image_result.image);
@@ -910,12 +906,14 @@ void BookmarkModel::LoadFavicon(BookmarkNode* node) {
   if (!favicon_service)
     return;
   FaviconService::Handle handle = favicon_service->GetFaviconImageForURL(
-      FaviconService::FaviconForURLParams(profile_, node->url(),
-          history::FAVICON, gfx::kFaviconSize, &load_consumer_),
+      FaviconService::FaviconForURLParams(profile_,
+                                          node->url(),
+                                          history::FAVICON,
+                                          gfx::kFaviconSize),
       base::Bind(&BookmarkModel::OnFaviconDataAvailable,
-                 base::Unretained(this)));
-  load_consumer_.SetClientData(favicon_service, handle, node);
-  node->set_favicon_load_handle(handle);
+                 base::Unretained(this), node),
+      &cancelable_task_tracker_);
+  node->set_favicon_load_task_id(handle);
 }
 
 void BookmarkModel::FaviconLoaded(const BookmarkNode* node) {
@@ -924,12 +922,9 @@ void BookmarkModel::FaviconLoaded(const BookmarkNode* node) {
 }
 
 void BookmarkModel::CancelPendingFaviconLoadRequests(BookmarkNode* node) {
-  if (node->favicon_load_handle()) {
-    FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
-        profile_, Profile::EXPLICIT_ACCESS);
-    if (favicon_service)
-      favicon_service->CancelRequest(node->favicon_load_handle());
-    node->set_favicon_load_handle(0);
+  if (node->favicon_load_task_id() != CancelableTaskTracker::kBadTaskId) {
+    cancelable_task_tracker_.TryCancel(node->favicon_load_task_id());
+    node->set_favicon_load_task_id(CancelableTaskTracker::kBadTaskId);
   }
 }
 

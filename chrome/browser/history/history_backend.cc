@@ -1879,23 +1879,17 @@ void HistoryBackend::GetFavicons(
 }
 
 void HistoryBackend::GetFaviconsForURL(
-    scoped_refptr<GetFaviconRequest> request,
     const GURL& page_url,
     int icon_types,
     int desired_size_in_dip,
-    const std::vector<ui::ScaleFactor>& desired_scale_factors) {
-  if (request->canceled())
-    return;
+    const std::vector<ui::ScaleFactor>& desired_scale_factors,
+    std::vector<history::FaviconBitmapResult>* bitmap_results,
+    IconURLSizesMap* size_map) {
+  DCHECK(bitmap_results);
+  DCHECK(size_map);
 
-  std::vector<FaviconBitmapResult> favicon_bitmap_results;
-  IconURLSizesMap icon_url_sizes;
-
-  // Get results from DB.
   GetFaviconsFromDB(page_url, icon_types, desired_size_in_dip,
-      desired_scale_factors, &favicon_bitmap_results, &icon_url_sizes);
-
-  request->ForwardResult(request->handle(), favicon_bitmap_results,
-                         icon_url_sizes);
+      desired_scale_factors, bitmap_results, size_map);
 }
 
 void HistoryBackend::GetFaviconForID(scoped_refptr<GetFaviconRequest> request,

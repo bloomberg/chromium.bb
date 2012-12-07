@@ -11,6 +11,7 @@
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sync/glue/synced_session.h"
+#include "chrome/common/cancelable_task_tracker.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/models/simple_menu_model.h"
 
@@ -71,7 +72,7 @@ class RecentTabsSubMenuModel : public ui::SimpleMenuModel,
   void AddDeviceFavicon(int index_in_menu,
                         browser_sync::SyncedSession::DeviceType device_type);
   void AddTabFavicon(int model_index, int command_id, const GURL& url);
-  void OnFaviconDataAvailable(FaviconService::Handle handle,
+  void OnFaviconDataAvailable(int command_id,
                               const history::FaviconImageResult& image_result);
   browser_sync::SessionModelAssociator* GetModelAssociator();
 
@@ -90,7 +91,7 @@ class RecentTabsSubMenuModel : public ui::SimpleMenuModel,
 
   gfx::Image default_favicon_;
 
-  CancelableRequestConsumerTSimple<int> favicon_consumer_;
+  CancelableTaskTracker cancelable_task_tracker_;
 
   base::WeakPtrFactory<RecentTabsSubMenuModel> weak_ptr_factory_;
 

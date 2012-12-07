@@ -136,6 +136,16 @@ class HistoryRequestHandler {
   HistoryRequestHandler(const GURL& page_url,
                         const GURL& icon_url,
                         int icon_type,
+                        const FaviconService::FaviconResultsCallback2& callback)
+    : page_url_(page_url),
+      icon_url_(icon_url),
+      icon_type_(icon_type),
+      callback2_(callback) {
+  }
+
+  HistoryRequestHandler(const GURL& page_url,
+                        const GURL& icon_url,
+                        int icon_type,
                         const std::vector<unsigned char>& bitmap_data,
                         const FaviconService::FaviconResultsCallback& callback)
     : page_url_(page_url),
@@ -154,6 +164,7 @@ class HistoryRequestHandler {
   const std::vector<unsigned char> bitmap_data_;
   std::vector<history::FaviconBitmapResult> history_results_;
   FaviconService::FaviconResultsCallback callback_;
+  FaviconService::FaviconResultsCallback2 callback2_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HistoryRequestHandler);
@@ -265,8 +276,8 @@ class TestFaviconHandler : public FaviconHandler {
   virtual void GetFaviconForURL(
       const GURL& page_url,
       int icon_types,
-      CancelableRequestConsumerBase* consumer,
-      const FaviconService::FaviconResultsCallback& callback) OVERRIDE {
+      const FaviconService::FaviconResultsCallback2& callback,
+      CancelableTaskTracker* tracker) OVERRIDE {
     history_handler_.reset(new HistoryRequestHandler(page_url, GURL(),
                                                      icon_types, callback));
   }
@@ -314,7 +325,7 @@ class TestFaviconHandler : public FaviconHandler {
 namespace {
 
 void HistoryRequestHandler::InvokeCallback() {
-  if (!callback_.is_null()) {
+  if (!callback_.is_null() || !callback2_.is_null()) {
     history::IconURLSizesMap icon_url_sizes;
     // Build IconURLSizesMap such that the requirement that all the icon URLs
     // in |history_results_| be present in |icon_url_sizes| holds.
@@ -326,7 +337,10 @@ void HistoryRequestHandler::InvokeCallback() {
       icon_url_sizes[icon_url].push_back(bitmap_result.pixel_size);
     }
 
-    callback_.Run(0, history_results_, icon_url_sizes);
+    if (!callback_.is_null())
+      callback_.Run(0, history_results_, icon_url_sizes);
+    if (!callback2_.is_null())
+      callback2_.Run(history_results_, icon_url_sizes);
   }
 }
 

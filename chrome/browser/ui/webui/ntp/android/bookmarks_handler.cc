@@ -354,22 +354,22 @@ void BookmarksHandler::HandleCreateHomeScreenBookmarkShortcut(
 
     FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
         profile, Profile::EXPLICIT_ACCESS);
-    FaviconService::Handle handle = favicon_service->GetRawFaviconForURL(
+    favicon_service->GetRawFaviconForURL(
         FaviconService::FaviconForURLParams(
             profile,
             node->url(),
             history::FAVICON | history::TOUCH_ICON,
-            gfx::kFaviconSize,
-            &cancelable_consumer_),
+            gfx::kFaviconSize),
         ui::SCALE_FACTOR_100P,
         base::Bind(&BookmarksHandler::OnShortcutFaviconDataAvailable,
-                   base::Unretained(this)));
-    cancelable_consumer_.SetClientData(favicon_service, handle, node);
+                   base::Unretained(this),
+                   node),
+        &cancelable_task_tracker_);
   }
 }
 
 void BookmarksHandler::OnShortcutFaviconDataAvailable(
-    FaviconService::Handle handle,
+    const BookmarkNode* node,
     const history::FaviconBitmapResult& bitmap_result) {
   SkColor color = SK_ColorWHITE;
   SkBitmap favicon_bitmap;
@@ -379,13 +379,6 @@ void BookmarksHandler::OnShortcutFaviconDataAvailable(
                           bitmap_result.bitmap_data->size(),
                           &favicon_bitmap);
   }
-
-  Profile* profile = Profile::FromBrowserContext(
-      web_ui()->GetWebContents()->GetBrowserContext());
-  const BookmarkNode* node = cancelable_consumer_.GetClientData(
-      FaviconServiceFactory::GetForProfile(profile, Profile::EXPLICIT_ACCESS),
-      handle);
-
   TabAndroid* tab = TabAndroid::FromWebContents(
       web_ui()->GetWebContents());
   if (tab) {

@@ -264,11 +264,12 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                    const std::vector<ui::ScaleFactor>& desired_scale_factors);
 
   void GetFaviconsForURL(
-      scoped_refptr<GetFaviconRequest> request,
       const GURL& page_url,
       int icon_types,
       int desired_size_in_dip,
-      const std::vector<ui::ScaleFactor>& desired_scale_factors);
+      const std::vector<ui::ScaleFactor>& desired_scale_factors,
+      std::vector<history::FaviconBitmapResult>* bitmap_results,
+      IconURLSizesMap* size_map);
 
   void GetFaviconForID(
       scoped_refptr<GetFaviconRequest> request,
@@ -530,7 +531,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, GetFaviconsFromDBSingleIconURL);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, GetFaviconsFromDBIconType);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, GetFaviconsFromDBExpired);
-  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, GetFaviconsNoDB);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest,
+                           UpdateFaviconMappingsAndFetchNoDB);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest,
                            CloneFaviconIsRestrictedToSameDomain);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, QueryFilteredURLs);

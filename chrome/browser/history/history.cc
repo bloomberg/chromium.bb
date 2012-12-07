@@ -55,7 +55,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/profile_error_dialog.h"
 #include "chrome/browser/visitedlink/visitedlink_master.h"
-#include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -579,15 +578,29 @@ void HistoryService::GetFavicons(
            icon_urls, icon_types, desired_size_in_dip, desired_scale_factors);
 }
 
-void HistoryService::GetFaviconsForURL(
-    FaviconService::GetFaviconRequest* request,
+CancelableTaskTracker::TaskId HistoryService::GetFaviconsForURL(
     const GURL& page_url,
     int icon_types,
     int desired_size_in_dip,
-    const std::vector<ui::ScaleFactor>& desired_scale_factors) {
+    const std::vector<ui::ScaleFactor>& desired_scale_factors,
+    const FaviconService::FaviconResultsCallback2& callback,
+    CancelableTaskTracker* tracker) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  Schedule(PRIORITY_NORMAL, &HistoryBackend::GetFaviconsForURL, NULL, request,
-           page_url, icon_types, desired_size_in_dip, desired_scale_factors);
+  LoadBackendIfNecessary();
+
+  std::vector<history::FaviconBitmapResult>* bitmap_results =
+      new std::vector<history::FaviconBitmapResult>();
+  history::IconURLSizesMap* size_map = new history::IconURLSizesMap();
+
+  return tracker->PostTaskAndReply(
+      thread_->message_loop_proxy(),
+      FROM_HERE,
+      base::Bind(&HistoryBackend::GetFaviconsForURL,
+                 history_backend_.get(), page_url, icon_types,
+                 desired_size_in_dip, desired_scale_factors,
+                 bitmap_results, size_map),
+      base::Bind(&FaviconService::FaviconResultsCallbackRunner,
+                 callback, base::Owned(bitmap_results), base::Owned(size_map)));
 }
 
 void HistoryService::GetFaviconForID(FaviconService::GetFaviconRequest* request,

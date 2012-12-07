@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "chrome/common/cancelable_task_tracker.h"
 #include "ui/gfx/favicon_size.h"
 
 class Profile;
@@ -80,6 +81,10 @@ class FaviconSource : public ChromeURLDataManager::DataSource {
 
   // Called when favicon data is available from the history backend.
   void OnFaviconDataAvailable(
+      const IconRequest& request,
+      const history::FaviconBitmapResult& bitmap_result);
+  // TODO(kaiwang): Remove after refactor GetRawFavicon.
+  void OnFaviconDataAvailableHelper(
       FaviconService::Handle request_handle,
       const history::FaviconBitmapResult& bitmap_result);
 
@@ -87,6 +92,7 @@ class FaviconSource : public ChromeURLDataManager::DataSource {
   void SendDefaultResponse(const IconRequest& request);
 
   CancelableRequestConsumerTSimple<IconRequest> cancelable_consumer_;
+  CancelableTaskTracker cancelable_task_tracker_;
 
   // Raw PNG representations of favicons of each size to show when the favicon
   // database doesn't have a favicon for a webpage. Indexed by IconSize values.

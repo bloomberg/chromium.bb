@@ -11,6 +11,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/common/cancelable_task_tracker.h"
 #include "content/public/browser/notification_registrar.h"
 #include "net/base/file_stream.h"
 
@@ -65,7 +66,6 @@ class BookmarkFaviconFetcher: public content::NotificationObserver {
   // Favicon fetch callback. After all favicons are fetched executes
   // html output on the file thread.
   void OnFaviconDataAvailable(
-      FaviconService::Handle handle,
       const history::FaviconBitmapResult& bitmap_result);
 
   // The Profile object used for accessing FaviconService, bookmarks model.
@@ -75,8 +75,8 @@ class BookmarkFaviconFetcher: public content::NotificationObserver {
   // for each of them. After favicon is fetched top url is removed from list.
   std::list<std::string> bookmark_urls_;
 
-  // Consumer for requesting favicons.
-  CancelableRequestConsumer favicon_consumer_;
+  // Tracks favicon tasks.
+  CancelableTaskTracker cancelable_task_tracker_;
 
   // Map that stores favicon per URL.
   scoped_ptr<URLFaviconMap> favicons_map_;

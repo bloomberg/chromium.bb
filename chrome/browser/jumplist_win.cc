@@ -488,7 +488,7 @@ bool UpdateJumpList(const wchar_t* app_id,
 JumpList::JumpList()
     : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
       profile_(NULL),
-      handle_(NULL) {
+      task_id_(CancelableTaskTracker::kBadTaskId) {
 }
 
 JumpList::~JumpList() {
@@ -575,11 +575,9 @@ void JumpList::RemoveObserver() {
 }
 
 void JumpList::CancelPendingUpdate() {
-  if (handle_) {
-    FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
-        profile_, Profile::EXPLICIT_ACCESS);
-    favicon_service->CancelRequest(handle_);
-    handle_ = NULL;
+  if (task_id_ != CancelableTaskTracker::kBadTaskId) {
+    cancelable_task_tracker_.TryCancel(task_id_);
+    task_id_ = CancelableTaskTracker::kBadTaskId;
   }
 }
 
@@ -708,18 +706,21 @@ void JumpList::StartLoadingFavicon() {
   }
   FaviconService* favicon_service =
       FaviconServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
-  handle_ = favicon_service->GetFaviconImageForURL(
-      FaviconService::FaviconForURLParams(profile_, url, history::FAVICON,
-          gfx::kFaviconSize, &favicon_consumer_),
-      base::Bind(&JumpList::OnFaviconDataAvailable, base::Unretained(this)));
+  task_id_ = favicon_service->GetFaviconImageForURL(
+      FaviconService::FaviconForURLParams(profile_,
+                                          url,
+                                          history::FAVICON,
+                                          gfx::kFaviconSize),
+      base::Bind(&JumpList::OnFaviconDataAvailable,
+                 base::Unretained(this)),
+      &cancelable_task_tracker_);
 }
 
 void JumpList::OnFaviconDataAvailable(
-    FaviconService::Handle handle,
     const history::FaviconImageResult& image_result) {
   // If there is currently a favicon request in progress, it is now outdated,
   // as we have received another, so nullify the handle from the old request.
-  handle_ = NULL;
+  task_id_ = CancelableTaskTracker::kBadTaskId;
   // lock the list to set icon data and pop the url
   {
     base::AutoLock auto_lock(list_lock_);

@@ -112,25 +112,22 @@ void FaviconWebUIHandler::HandleGetFaviconDominantColor(const ListValue* args) {
   }
 
   dom_id_map_[id_] = dom_id;
-  FaviconService::Handle handle = favicon_service->GetRawFaviconForURL(
+  favicon_service->GetRawFaviconForURL(
       FaviconService::FaviconForURLParams(
           Profile::FromWebUI(web_ui()),
           url,
           history::FAVICON,
-          gfx::kFaviconSize,
-          &consumer_),
+          gfx::kFaviconSize),
       ui::SCALE_FACTOR_100P,
       base::Bind(&FaviconWebUIHandler::OnFaviconDataAvailable,
-                 base::Unretained(this)));
-  consumer_.SetClientData(favicon_service, handle, id_++);
+                 base::Unretained(this),
+                 id_++),
+      &cancelable_task_tracker_);
 }
 
 void FaviconWebUIHandler::OnFaviconDataAvailable(
-    FaviconService::Handle request_handle,
+    int id,
     const history::FaviconBitmapResult& bitmap_result) {
-  FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
-      Profile::FromWebUI(web_ui()), Profile::EXPLICIT_ACCESS);
-  int id = consumer_.GetClientData(favicon_service, request_handle);
   scoped_ptr<StringValue> color_value;
 
   if (bitmap_result.is_valid())

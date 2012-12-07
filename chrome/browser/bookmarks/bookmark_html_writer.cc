@@ -462,11 +462,12 @@ bool BookmarkFaviconFetcher::FetchNextFavicon() {
       FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
           profile_, Profile::EXPLICIT_ACCESS);
       favicon_service->GetRawFaviconForURL(
-          FaviconService::FaviconForURLParams(profile_, GURL(url),
-              history::FAVICON, gfx::kFaviconSize, &favicon_consumer_),
+          FaviconService::FaviconForURLParams(
+              profile_, GURL(url), history::FAVICON, gfx::kFaviconSize),
           ui::SCALE_FACTOR_100P,
           base::Bind(&BookmarkFaviconFetcher::OnFaviconDataAvailable,
-                     base::Unretained(this)));
+                     base::Unretained(this)),
+          &cancelable_task_tracker_);
       return true;
     } else {
       bookmark_urls_.pop_front();
@@ -476,7 +477,6 @@ bool BookmarkFaviconFetcher::FetchNextFavicon() {
 }
 
 void BookmarkFaviconFetcher::OnFaviconDataAvailable(
-    FaviconService::Handle handle,
     const history::FaviconBitmapResult& bitmap_result) {
   GURL url;
   if (!bookmark_urls_.empty()) {

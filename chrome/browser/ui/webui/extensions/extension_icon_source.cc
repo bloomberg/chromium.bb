@@ -204,25 +204,18 @@ void ExtensionIconSource::LoadFaviconImage(int request_id) {
   }
 
   GURL favicon_url = GetData(request_id)->extension->GetFullLaunchURL();
-  FaviconService::Handle handle = favicon_service->GetRawFaviconForURL(
+  favicon_service->GetRawFaviconForURL(
       FaviconService::FaviconForURLParams(
-          profile_,
-          favicon_url,
-          history::FAVICON,
-          gfx::kFaviconSize,
-          &cancelable_consumer_),
+          profile_, favicon_url, history::FAVICON, gfx::kFaviconSize),
       ui::SCALE_FACTOR_100P,
       base::Bind(&ExtensionIconSource::OnFaviconDataAvailable,
-                 base::Unretained(this)));
-  cancelable_consumer_.SetClientData(favicon_service, handle, request_id);
+                 base::Unretained(this), request_id),
+      &cancelable_task_tracker_);
 }
 
 void ExtensionIconSource::OnFaviconDataAvailable(
-    FaviconService::Handle request_handle,
+    int request_id,
     const history::FaviconBitmapResult& bitmap_result) {
-  int request_id = cancelable_consumer_.GetClientData(
-      FaviconServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS),
-      request_handle);
   ExtensionIconRequest* request = GetData(request_id);
 
   // Fallback to the default icon if there wasn't a favicon.

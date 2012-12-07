@@ -54,7 +54,6 @@ void FaviconSource::StartDataRequest(const std::string& path,
   int size_in_dip = gfx::kFaviconSize;
   ui::ScaleFactor scale_factor = ui::SCALE_FACTOR_100P;
 
-  FaviconService::Handle handle;
   if (path.size() > 8 &&
       (path.substr(0, 8) == "iconurl/" || path.substr(0, 8) == "iconurl@")) {
     size_t prefix_length = 8;
@@ -67,14 +66,21 @@ void FaviconSource::StartDataRequest(const std::string& path,
     }
     // TODO(michaelbai): Change GetRawFavicon to support combination of
     // IconType.
-    handle = favicon_service->GetRawFavicon(
+    FaviconService::Handle handle = favicon_service->GetRawFavicon(
         GURL(path.substr(prefix_length)),
         history::FAVICON,
         size_in_dip,
         scale_factor,
         &cancelable_consumer_,
-        base::Bind(&FaviconSource::OnFaviconDataAvailable,
+        base::Bind(&FaviconSource::OnFaviconDataAvailableHelper,
                    base::Unretained(this)));
+
+    // Attach the ChromeURLDataManager request ID to the history request.
+    cancelable_consumer_.SetClientData(favicon_service,
+                                       handle,
+                                       IconRequest(request_id,
+                                                   size_in_dip,
+                                                   scale_factor));
   } else {
     GURL url;
     if (path.size() > 5 && path.substr(0, 5) == "size/") {
@@ -123,24 +129,15 @@ void FaviconSource::StartDataRequest(const std::string& path,
       }
     }
 
-    handle = favicon_service->GetRawFaviconForURL(
+    favicon_service->GetRawFaviconForURL(
         FaviconService::FaviconForURLParams(
-            profile_,
-            url,
-            icon_types_,
-            size_in_dip,
-            &cancelable_consumer_),
+            profile_, url, icon_types_, size_in_dip),
         scale_factor,
         base::Bind(&FaviconSource::OnFaviconDataAvailable,
-                   base::Unretained(this)));
+                   base::Unretained(this),
+                   IconRequest(request_id, size_in_dip, scale_factor)),
+        &cancelable_task_tracker_);
   }
-
-  // Attach the ChromeURLDataManager request ID to the history request.
-  cancelable_consumer_.SetClientData(favicon_service,
-                                     handle,
-                                     IconRequest(request_id,
-                                                 size_in_dip,
-                                                 scale_factor));
 }
 
 std::string FaviconSource::GetMimeType(const std::string&) const {
@@ -156,6 +153,17 @@ bool FaviconSource::ShouldReplaceExistingSource() const {
 }
 
 void FaviconSource::OnFaviconDataAvailable(
+    const IconRequest& request,
+    const history::FaviconBitmapResult& bitmap_result) {
+  if (bitmap_result.is_valid()) {
+    // Forward the data along to the networking system.
+    SendResponse(request.request_id, bitmap_result.bitmap_data);
+  } else {
+    SendDefaultResponse(request);
+  }
+}
+
+void FaviconSource::OnFaviconDataAvailableHelper(
     FaviconService::Handle request_handle,
     const history::FaviconBitmapResult& bitmap_result) {
   FaviconService* favicon_service =
@@ -163,13 +171,7 @@ void FaviconSource::OnFaviconDataAvailable(
   const IconRequest& request =
       cancelable_consumer_.GetClientData(favicon_service,
                                          request_handle);
-
-  if (bitmap_result.is_valid()) {
-    // Forward the data along to the networking system.
-    SendResponse(request.request_id, bitmap_result.bitmap_data);
-  } else {
-    SendDefaultResponse(request);
-  }
+  OnFaviconDataAvailable(request, bitmap_result);
 }
 
 void FaviconSource::SendDefaultResponse(const IconRequest& icon_request) {

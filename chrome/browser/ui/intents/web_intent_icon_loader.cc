@@ -90,15 +90,11 @@ void IconLoader::LoadFavicon(const GURL& url) {
 
   favicon_service->GetFaviconImageForURL(
       FaviconService::FaviconForURLParams(
-          profile_,
-          url,
-          history::FAVICON,
-          gfx::kFaviconSize,
-          &favicon_consumer_),
+          profile_, url, history::FAVICON, gfx::kFaviconSize),
       base::Bind(
           &IconLoader::OnFaviconDataAvailable,
-          weak_ptr_factory_.GetWeakPtr(),
-          url));
+          weak_ptr_factory_.GetWeakPtr(), url),
+      &cancelable_task_tracker_);
 }
 
 void IconLoader::LoadExtensionIcon(const GURL& url,
@@ -121,7 +117,6 @@ void IconLoader::LoadExtensionIcon(const GURL& url,
 
 void IconLoader::OnFaviconDataAvailable(
     const GURL& url,
-    FaviconService::Handle,
     const history::FaviconImageResult& image_result) {
   if (!image_result.image.IsEmpty())
     model_->UpdateFaviconForServiceWithURL(url, image_result.image);

@@ -25,6 +25,7 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/search_engines/template_url_id.h"
+#include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/ref_counted_util.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -38,7 +39,6 @@
 #endif
 
 class BookmarkService;
-class CancelableTaskTracker;
 class FilePath;
 class GURL;
 class HistoryURLProvider;
@@ -737,12 +737,13 @@ class HistoryService : public CancelableRequestProvider,
   // there will be less results. If |icon_types| has several types, results for
   // only a single type will be returned in the priority of
   // TOUCH_PRECOMPOSED_ICON, TOUCH_ICON, and FAVICON.
-  void GetFaviconsForURL(
-      FaviconService::GetFaviconRequest* request,
+  CancelableTaskTracker::TaskId GetFaviconsForURL(
       const GURL& page_url,
       int icon_types,
       int desired_size_in_dip,
-      const std::vector<ui::ScaleFactor>& desired_scale_factors);
+      const std::vector<ui::ScaleFactor>& desired_scale_factors,
+      const FaviconService::FaviconResultsCallback2& callback,
+      CancelableTaskTracker* tracker);
 
   // Used by the FaviconService to get the favicon bitmap which most closely
   // matches |desired_size_in_dip| and |desired_scale_factor| from the favicon

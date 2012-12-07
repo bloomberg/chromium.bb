@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -105,7 +106,7 @@ class ExtensionIconSource : public ChromeURLDataManager::DataSource {
 
   // FaviconService callback
   void OnFaviconDataAvailable(
-      FaviconService::Handle request_handle,
+      int request_id,
       const history::FaviconBitmapResult& bitmap_result);
 
   // ImageLoader callback
@@ -152,7 +153,7 @@ class ExtensionIconSource : public ChromeURLDataManager::DataSource {
 
   scoped_ptr<SkBitmap> default_extension_data_;
 
-  CancelableRequestConsumerT<int, 0> cancelable_consumer_;
+  CancelableTaskTracker cancelable_task_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionIconSource);
 };

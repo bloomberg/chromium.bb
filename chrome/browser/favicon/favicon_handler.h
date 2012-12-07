@@ -13,6 +13,7 @@
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
+#include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/ref_counted_util.h"
 #include "content/public/common/favicon_url.h"
 #include "googleurl/src/gurl.h"
@@ -142,8 +143,8 @@ class FaviconHandler {
   virtual void GetFaviconForURL(
       const GURL& page_url,
       int icon_types,
-      CancelableRequestConsumerBase* consumer,
-      const FaviconService::FaviconResultsCallback& callback);
+      const FaviconService::FaviconResultsCallback2& callback,
+      CancelableTaskTracker* tracker);
 
   virtual void SetHistoryFavicons(
       const GURL& page_url,
@@ -191,9 +192,8 @@ class FaviconHandler {
 
   // See description above class for details.
   void OnFaviconDataForInitialURL(
-      FaviconService::Handle handle,
-      std::vector<history::FaviconBitmapResult> favicon_bitmap_results,
-      history::IconURLSizesMap icon_url_sizes);
+      const std::vector<history::FaviconBitmapResult>& favicon_bitmap_results,
+      const history::IconURLSizesMap& icon_url_sizes);
 
   // If the favicon has expired, asks the renderer to download the favicon.
   // Otherwise asks history to update the mapping between page url and icon
@@ -249,8 +249,9 @@ class FaviconHandler {
     return icon_types_ == history::FAVICON ? gfx::kFaviconSize : 0;
   }
 
-  // Used for history requests.
+  // Used for FaviconService requests.
   CancelableRequestConsumer cancelable_consumer_;
+  CancelableTaskTracker cancelable_task_tracker_;
 
   // URL of the page we're requesting the favicon for.
   GURL url_;

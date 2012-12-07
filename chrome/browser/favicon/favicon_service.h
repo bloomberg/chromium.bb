@@ -12,6 +12,7 @@
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
+#include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/ref_counted_util.h"
 #include "ui/base/layout.h"
 
@@ -36,20 +37,16 @@ class FaviconService : public CancelableRequestProvider,
     FaviconForURLParams(Profile* profile,
                         const GURL& page_url,
                         int icon_types,
-                        int desired_size_in_dip,
-                        CancelableRequestConsumerBase* consumer)
+                        int desired_size_in_dip)
         : profile(profile),
           page_url(page_url),
           icon_types(icon_types),
-          desired_size_in_dip(desired_size_in_dip),
-          consumer(consumer) {
-    }
+          desired_size_in_dip(desired_size_in_dip) {}
 
     Profile* profile;
     GURL page_url;
     int icon_types;
     int desired_size_in_dip;
-    CancelableRequestConsumerBase* consumer;
   };
 
   // Callback for GetFaviconImage() and GetFaviconImageForURL().
@@ -63,6 +60,8 @@ class FaviconService : public CancelableRequestProvider,
   // icon URLs.
   typedef base::Callback<void(Handle, const history::FaviconImageResult&)>
       FaviconImageCallback;
+  typedef base::Callback<void(const history::FaviconImageResult&)>
+      FaviconImageCallback2;
 
   // Callback for GetRawFavicon() and GetRawFaviconForURL().
   // FaviconBitmapResult::bitmap_data is the bitmap in the thumbnail database
@@ -71,6 +70,8 @@ class FaviconService : public CancelableRequestProvider,
   // invalid history::FaviconBitmapResult if there are no matches.
   typedef base::Callback<void(Handle, const history::FaviconBitmapResult&)>
       FaviconRawCallback;
+  typedef base::Callback<void(const history::FaviconBitmapResult&)>
+      FaviconRawCallback2;
 
   // Callback for GetFavicon() and GetFaviconForURL().
   //
@@ -99,6 +100,18 @@ class FaviconService : public CancelableRequestProvider,
       FaviconResultsCallback;
 
   typedef CancelableRequest<FaviconResultsCallback> GetFaviconRequest;
+
+  typedef base::Callback<
+      void(const std::vector<history::FaviconBitmapResult>&,
+           const history::IconURLSizesMap&)>
+      FaviconResultsCallback2;
+
+  // We usually pass parameters with pointer to avoid copy. This function is a
+  // helper to run FaviconResultsCallback2 with pointer parameters.
+  static void FaviconResultsCallbackRunner(
+      const FaviconResultsCallback2& callback,
+      const std::vector<history::FaviconBitmapResult>* results,
+      const history::IconURLSizesMap* size_map);
 
   // Requests the favicon at |icon_url| of |icon_type| whose size most closely
   // matches |desired_size_in_dip|. If |desired_size_in_dip| is 0, the largest
@@ -158,23 +171,29 @@ class FaviconService : public CancelableRequestProvider,
   // Requests the favicons of any of |icon_types| whose pixel sizes most
   // closely match |desired_size_in_dip| and desired scale factors for a web
   // page URL. If |desired_size_in_dip| is 0, the largest favicon for the web
-  // page URL is returned. |consumer| is notified when the bits have been
-  // fetched. |icon_types| can be any combination of IconType value, but only
-  // one icon will be returned in the priority of TOUCH_PRECOMPOSED_ICON,
-  // TOUCH_ICON and FAVICON. Each of the three methods below differs in the
-  // format of the callback and the requested scale factors. All of the scale
-  // factors supported by the current platform (eg MacOS) are requested for
+  // page URL is returned. |callback| is run when the bits have been fetched.
+  // |icon_types| can be any combination of IconType value, but only one icon
+  // will be returned in the priority of TOUCH_PRECOMPOSED_ICON, TOUCH_ICON and
+  // FAVICON. Each of the three methods below differs in the format of the
+  // callback and the requested scale factors. All of the scale factors
+  // supported by the current platform (eg MacOS) are requested for
   // GetFaviconImageForURL().
-  Handle GetFaviconImageForURL(const FaviconForURLParams& params,
-                               const FaviconImageCallback& callback);
-
-  Handle GetRawFaviconForURL(const FaviconForURLParams& params,
-                             ui::ScaleFactor desired_scale_factor,
-                             const FaviconRawCallback& callback);
-
-  Handle GetFaviconForURL(
+  // Note. |callback| is always run asynchronously.
+  CancelableTaskTracker::TaskId GetFaviconImageForURL(
       const FaviconForURLParams& params,
-      const FaviconResultsCallback& callback);
+      const FaviconImageCallback2& callback,
+      CancelableTaskTracker* tracker);
+
+  CancelableTaskTracker::TaskId GetRawFaviconForURL(
+      const FaviconForURLParams& params,
+      ui::ScaleFactor desired_scale_factor,
+      const FaviconRawCallback2& callback,
+      CancelableTaskTracker* tracker);
+
+  CancelableTaskTracker::TaskId GetFaviconForURL(
+      const FaviconForURLParams& params,
+      const FaviconResultsCallback2& callback,
+      CancelableTaskTracker* tracker);
 
   // Used to request a bitmap for the favicon with |favicon_id| which is not
   // resized from the size it is stored at in the database. If there are
@@ -230,37 +249,55 @@ class FaviconService : public CancelableRequestProvider,
  private:
   HistoryService* history_service_;
 
-  // Helper to forward an empty result if we cannot get the history service.
-  void ForwardEmptyResultAsync(GetFaviconRequest* request);
-
   // Helper function for GetFaviconImageForURL(), GetRawFaviconForURL() and
   // GetFaviconForURL().
-  Handle GetFaviconForURLImpl(
+  CancelableTaskTracker::TaskId GetFaviconForURLImpl(
       const FaviconForURLParams& params,
       const std::vector<ui::ScaleFactor>& desired_scale_factors,
-      GetFaviconRequest* request);
+      const FaviconResultsCallback2& callback,
+      CancelableTaskTracker* tracker);
 
   // Intermediate callback for GetFaviconImage() and GetFaviconImageForURL()
   // so that history service can deal solely with FaviconResultsCallback.
   // Builds history::FaviconImageResult from |favicon_bitmap_results| and runs
   // |callback|.
-  void GetFaviconImageCallback(
-      int desired_size_in_dip,
+  void RunFaviconImageCallbackWithBitmapResults(
       FaviconImageCallback callback,
+      int desired_size_in_dip,
       Handle handle,
       std::vector<history::FaviconBitmapResult> favicon_bitmap_results,
       history::IconURLSizesMap icon_url_sizes_map);
+  void RunFaviconImageCallbackWithBitmapResults2(
+      const FaviconImageCallback2& callback,
+      int desired_size_in_dip,
+      const std::vector<history::FaviconBitmapResult>& favicon_bitmap_results,
+      const history::IconURLSizesMap& icon_url_sizes_map);
 
   // Intermediate callback for GetRawFavicon() and GetRawFaviconForURL()
   // so that history service can deal solely with FaviconResultsCallback.
   // Resizes history::FaviconBitmapResult if necessary and runs |callback|.
-  void GetRawFaviconCallback(
+  void RunFaviconRawCallbackWithBitmapResults(
+      FaviconRawCallback callback,
       int desired_size_in_dip,
       ui::ScaleFactor desired_scale_factor,
-      FaviconRawCallback callback,
       Handle handle,
       std::vector<history::FaviconBitmapResult> favicon_bitmap_results,
       history::IconURLSizesMap icon_url_sizes_map);
+  void RunFaviconRawCallbackWithBitmapResults2(
+      const FaviconRawCallback2& callback,
+      int desired_size_in_dip,
+      ui::ScaleFactor desired_scale_factor,
+      const std::vector<history::FaviconBitmapResult>& favicon_bitmap_results,
+      const history::IconURLSizesMap& icon_url_sizes_map);
+
+  // Helper to forward an empty result if we cannot get the history service.
+  void ForwardEmptyResultAsync(GetFaviconRequest* request);
+
+  // Helper to run callback with empty results if we cannot get the history
+  // service.
+  CancelableTaskTracker::TaskId RunWithEmptyResultAsync(
+      const FaviconResultsCallback2& callback,
+      CancelableTaskTracker* tracker);
 
   DISALLOW_COPY_AND_ASSIGN(FaviconService);
 };

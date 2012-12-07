@@ -683,11 +683,15 @@ void AppLauncherHandler::HandleGenerateAppForLink(const ListValue* args) {
   install_info->app_url = launch_url;
   install_info->page_ordinal = page_ordinal;
 
-  FaviconService::Handle h = favicon_service->GetFaviconImageForURL(
-      FaviconService::FaviconForURLParams(profile, launch_url, history::FAVICON,
-          gfx::kFaviconSize, &favicon_consumer_),
-      base::Bind(&AppLauncherHandler::OnFaviconForApp, base::Unretained(this)));
-  favicon_consumer_.SetClientData(favicon_service, h, install_info.release());
+  favicon_service->GetFaviconImageForURL(
+      FaviconService::FaviconForURLParams(profile,
+                                          launch_url,
+                                          history::FAVICON,
+                                          gfx::kFaviconSize),
+      base::Bind(&AppLauncherHandler::OnFaviconForApp,
+                 base::Unretained(this),
+                 base::Passed(&install_info)),
+      &cancelable_task_tracker_);
 }
 
 void AppLauncherHandler::HandleRecordAppLaunchByUrl(
@@ -735,10 +739,8 @@ void AppLauncherHandler::HandleSetNotificationsDisabled(
 }
 
 void AppLauncherHandler::OnFaviconForApp(
-    FaviconService::Handle handle,
+    scoped_ptr<AppInstallInfo> install_info,
     const history::FaviconImageResult& image_result) {
-  scoped_ptr<AppInstallInfo> install_info(
-      favicon_consumer_.GetClientDataForCurrentRequest());
   scoped_ptr<WebApplicationInfo> web_app(new WebApplicationInfo());
   web_app->is_bookmark_app = install_info->is_bookmark_app;
   web_app->title = install_info->title;

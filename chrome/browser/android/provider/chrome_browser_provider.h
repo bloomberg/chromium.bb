@@ -12,6 +12,7 @@
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/android/android_history_types.h"
+#include "chrome/common/cancelable_task_tracker.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -195,6 +196,8 @@ class ChromeBrowserProvider : public BaseBookmarkModelObserver,
   // is fixed.
   CancelableRequestConsumer android_history_consumer_;
   CancelableRequestConsumer favicon_consumer_;
+
+  CancelableTaskTracker cancelable_task_tracker_;
 
   // Used to register/unregister notification observer.
   content::NotificationRegistrar notification_registrar_;

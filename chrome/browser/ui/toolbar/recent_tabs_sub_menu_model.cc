@@ -416,24 +416,24 @@ void RecentTabsSubMenuModel::AddTabFavicon(int model_index,
       browser_->profile(), Profile::EXPLICIT_ACCESS);
   if (!favicon_service)
     return;
-  FaviconService::Handle handle = favicon_service->GetFaviconImageForURL(
-      FaviconService::FaviconForURLParams(browser_->profile(), url,
-          history::FAVICON, gfx::kFaviconSize, &favicon_consumer_),
+
+  favicon_service->GetFaviconImageForURL(
+      FaviconService::FaviconForURLParams(browser_->profile(),
+                                          url,
+                                          history::FAVICON,
+                                          gfx::kFaviconSize),
       base::Bind(&RecentTabsSubMenuModel::OnFaviconDataAvailable,
-                 weak_ptr_factory_.GetWeakPtr()));
-  favicon_consumer_.SetClientData(favicon_service, handle, command_id);
+                 weak_ptr_factory_.GetWeakPtr(),
+                 command_id),
+      &cancelable_task_tracker_);
 }
 
 void RecentTabsSubMenuModel::OnFaviconDataAvailable(
-    FaviconService::Handle handle,
+    int command_id,
     const history::FaviconImageResult& image_result) {
   if (image_result.image.IsEmpty())
     return;
   DCHECK(!model_.empty());
-  int command_id = favicon_consumer_.GetClientData(
-      FaviconServiceFactory::GetForProfile(browser_->profile(),
-                                           Profile::EXPLICIT_ACCESS),
-      handle);
   int index_in_menu = GetIndexOfCommandId(command_id);
   DCHECK(index_in_menu != -1);
   SetIcon(index_in_menu, image_result.image);

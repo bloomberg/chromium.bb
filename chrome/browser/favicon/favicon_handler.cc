@@ -224,6 +224,7 @@ FaviconHandler::~FaviconHandler() {
 
 void FaviconHandler::FetchFavicon(const GURL& url) {
   cancelable_consumer_.CancelAllRequests();
+  cancelable_task_tracker_.TryCancelAll();
 
   url_ = url;
 
@@ -234,9 +235,12 @@ void FaviconHandler::FetchFavicon(const GURL& url) {
   // renderer is going to notify us (well WebContents) when the favicon url is
   // available.
   if (GetFaviconService()) {
-    GetFaviconForURL(url_, icon_types_, &cancelable_consumer_,
+    GetFaviconForURL(
+        url_,
+        icon_types_,
         base::Bind(&FaviconHandler::OnFaviconDataForInitialURL,
-                   base::Unretained(this)));
+                   base::Unretained(this)),
+        &cancelable_task_tracker_);
   }
 }
 
@@ -455,12 +459,13 @@ void FaviconHandler::GetFavicon(
 void FaviconHandler::GetFaviconForURL(
     const GURL& page_url,
     int icon_types,
-    CancelableRequestConsumerBase* consumer,
-    const FaviconService::FaviconResultsCallback& callback) {
+    const FaviconService::FaviconResultsCallback2& callback,
+    CancelableTaskTracker* tracker) {
   GetFaviconService()->GetFaviconForURL(
-      FaviconService::FaviconForURLParams(profile_, page_url, icon_types,
-                                          preferred_icon_size(), consumer),
-      callback);
+      FaviconService::FaviconForURLParams(
+          profile_, page_url, icon_types, preferred_icon_size()),
+      callback,
+      tracker);
 }
 
 void FaviconHandler::SetHistoryFavicons(const GURL& page_url,
@@ -481,9 +486,8 @@ bool FaviconHandler::ShouldSaveFavicon(const GURL& url) {
 }
 
 void FaviconHandler::OnFaviconDataForInitialURL(
-    FaviconService::Handle handle,
-    std::vector<history::FaviconBitmapResult> favicon_bitmap_results,
-    history::IconURLSizesMap icon_url_sizes) {
+    const std::vector<history::FaviconBitmapResult>& favicon_bitmap_results,
+    const history::IconURLSizesMap& icon_url_sizes) {
   NavigationEntry* entry = GetEntry();
   if (!entry)
     return;

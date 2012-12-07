@@ -79,12 +79,15 @@ void UnregisterAndReplaceOverrideForWebContents(
       content::PAGE_TRANSITION_RELOAD, std::string());
 }
 
-// Forwards the result of the request. If no favicon was available then
-// |image| will be empty. Once the result has been forwarded the instance is
-// deleted.
-void ForwardFaviconResult(FaviconService::GetFaviconRequest* request,
-                          const gfx::Image& image) {
-  std::vector<history::FaviconBitmapResult> favicon_bitmap_results;
+// Run favicon callbck with image result. If no favicon was available then
+// |image| will be empty.
+void RunFaviconCallbackAsync(
+    const FaviconService::FaviconResultsCallback2& callback,
+    const gfx::Image& image) {
+  std::vector<history::FaviconBitmapResult>* favicon_bitmap_results =
+      new std::vector<history::FaviconBitmapResult>();
+  history::IconURLSizesMap* icon_url_sizes = new history::IconURLSizesMap();
+
   const std::vector<gfx::ImageSkiaRep>& image_reps =
       image.AsImageSkia().image_reps();
   for (size_t i = 0; i < image_reps.size(); ++i) {
@@ -101,7 +104,7 @@ void ForwardFaviconResult(FaviconService::GetFaviconRequest* request,
       // Leave |bitmap_result|'s icon URL as the default of GURL().
       bitmap_result.icon_type = history::FAVICON;
 
-      favicon_bitmap_results.push_back(bitmap_result);
+      favicon_bitmap_results->push_back(bitmap_result);
     } else {
       NOTREACHED() << "Could not encode extension favicon";
     }
@@ -111,16 +114,19 @@ void ForwardFaviconResult(FaviconService::GetFaviconRequest* request,
   // |favicon_bitmap_results| are present in |icon_url_sizes|.
   // Populate the favicon sizes with the relevant pixel sizes in the
   // extension's icon set.
-  history::IconURLSizesMap icon_url_sizes;
-  for (size_t i = 0; i < favicon_bitmap_results.size(); ++i) {
+  for (size_t i = 0; i < favicon_bitmap_results->size(); ++i) {
     const history::FaviconBitmapResult& bitmap_result =
-        favicon_bitmap_results[i];
+        (*favicon_bitmap_results)[i];
     const GURL& icon_url = bitmap_result.icon_url;
-    icon_url_sizes[icon_url].push_back(bitmap_result.pixel_size);
+    (*icon_url_sizes)[icon_url].push_back(bitmap_result.pixel_size);
   }
 
-  request->ForwardResultAsync(request->handle(), favicon_bitmap_results,
-                              icon_url_sizes);
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&FaviconService::FaviconResultsCallbackRunner,
+                 callback,
+                 base::Owned(favicon_bitmap_results),
+                 base::Owned(icon_url_sizes)));
 }
 
 }  // namespace
@@ -399,18 +405,20 @@ void ExtensionWebUI::UnregisterChromeURLOverrides(
 }
 
 // static
-void ExtensionWebUI::GetFaviconForURL(Profile* profile,
-    FaviconService::GetFaviconRequest* request, const GURL& page_url) {
+void ExtensionWebUI::GetFaviconForURL(
+    Profile* profile,
+    const GURL& page_url,
+    const FaviconService::FaviconResultsCallback2& callback) {
   // Even when the extensions service is enabled by default, it's still
   // disabled in incognito mode.
   ExtensionService* service = profile->GetExtensionService();
   if (!service) {
-    ForwardFaviconResult(request, gfx::Image());
+    RunFaviconCallbackAsync(callback, gfx::Image());
     return;
   }
   const Extension* extension = service->extensions()->GetByID(page_url.host());
   if (!extension) {
-    ForwardFaviconResult(request, gfx::Image());
+    RunFaviconCallbackAsync(callback, gfx::Image());
     return;
   }
 
@@ -436,8 +444,8 @@ void ExtensionWebUI::GetFaviconForURL(Profile* profile,
             scale_factors[i]));
   }
 
+  // LoadImagesAsync actually can run callback synchronously. We want to force
+  // async.
   extensions::ImageLoader::Get(profile)->LoadImagesAsync(
-      extension, info_list,
-      base::Bind(&ForwardFaviconResult,
-                 scoped_refptr<FaviconService::GetFaviconRequest>(request)));
+      extension, info_list, base::Bind(&RunFaviconCallbackAsync, callback));
 }
