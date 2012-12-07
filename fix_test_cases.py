@@ -154,7 +154,7 @@ def fix_all(isolated, all_test_cases, verbosity):
     print >> sys.stderr, 'Didn\'t find any test case to run'
     return 1
 
-  previous_failures = []
+  previous_failures = set()
   had_failure = False
   while remaining_test_cases:
     # pylint is confused about with_tempfile.
@@ -185,7 +185,9 @@ def fix_all(isolated, all_test_cases, verbosity):
       print('I\'m done. Have a nice day!')
       return True
 
-    if previous_failures == failures:
+    previous_failures.difference_update(success)
+    # If all the failures had already failed at least once.
+    if previous_failures.issuperset(failures):
       print('The last trace didn\'t help, aborting.')
       return False
 
@@ -203,7 +205,7 @@ def fix_all(isolated, all_test_cases, verbosity):
     if trace_some(isolated, failures, verbosity):
       logging.info('The tracing itself failed.')
       return False
-    previous_failures = failures
+    previous_failures.update(failures)
 
 
 def main():
