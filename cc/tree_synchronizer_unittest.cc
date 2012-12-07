@@ -15,8 +15,6 @@
 #include "cc/test/fake_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using namespace WebKitTests;
-
 namespace cc {
 namespace {
 

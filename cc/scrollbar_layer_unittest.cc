@@ -128,7 +128,7 @@ TEST(ScrollbarLayerTest, scrollOffsetSynchronization)
     EXPECT_EQ(300, ccScrollbarLayer->maximum());
 }
 
-class ScrollbarLayerTestMaxTextureSize : public WebKitTests::ThreadedTest {
+class ScrollbarLayerTestMaxTextureSize : public ThreadedTest {
 public:
     ScrollbarLayerTestMaxTextureSize() {}
 

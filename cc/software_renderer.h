@@ -9,23 +9,20 @@
 #include "cc/cc_export.h"
 #include "cc/direct_renderer.h"
 
-namespace WebKit {
-class WebCompositorSoftwareOutputDevice;
-}
-
 namespace cc {
 
 class DebugBorderDrawQuad;
 class RendererClient;
+class RenderPassDrawQuad;
 class ResourceProvider;
+class SoftwareOutputDevice;
 class SolidColorDrawQuad;
 class TextureDrawQuad;
 class TileDrawQuad;
-class RenderPassDrawQuad;
 
 class CC_EXPORT SoftwareRenderer : public DirectRenderer {
 public:
-    static scoped_ptr<SoftwareRenderer> create(RendererClient*, ResourceProvider*, WebKit::WebCompositorSoftwareOutputDevice*);
+    static scoped_ptr<SoftwareRenderer> create(RendererClient*, ResourceProvider*, SoftwareOutputDevice*);
     virtual ~SoftwareRenderer();
 
     virtual const RendererCapabilities& capabilities() const OVERRIDE;
@@ -56,7 +53,7 @@ protected:
     virtual void ensureScissorTestDisabled() OVERRIDE;
 
 private:
-    SoftwareRenderer(RendererClient*, ResourceProvider*, WebKit::WebCompositorSoftwareOutputDevice*);
+    SoftwareRenderer(RendererClient*, ResourceProvider*, SoftwareOutputDevice*);
 
     bool isSoftwareResource(ResourceProvider::ResourceId) const;
 
@@ -70,7 +67,7 @@ private:
     RendererCapabilities m_capabilities;
     bool m_visible;
 
-    WebKit::WebCompositorSoftwareOutputDevice* m_outputDevice;
+    SoftwareOutputDevice* m_outputDevice;
     scoped_ptr<SkCanvas> m_skRootCanvas;
     SkCanvas* m_skCurrentCanvas;
     SkPaint m_skCurrentPaint;

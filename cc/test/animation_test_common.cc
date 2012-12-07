@@ -70,7 +70,7 @@ int addAnimatedTransform(Target& target, double duration, int deltaX, int deltaY
 
 } // namespace
 
-namespace WebKitTests {
+namespace cc {
 
 FakeFloatAnimationCurve::FakeFloatAnimationCurve()
     : m_duration(1)
@@ -185,4 +185,4 @@ int addAnimatedTransformToLayer(cc::LayerImpl& layer, double duration, int delta
     return addAnimatedTransform(*layer.layerAnimationController(), duration, deltaX, deltaY);
 }
 
-} // namespace WebKitTests
+}  // namespace cc

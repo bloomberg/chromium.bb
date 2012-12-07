@@ -9,7 +9,7 @@
 #include "cc/input_handler.h"
 #include "cc/layer_tree_host.h"
 #include "cc/test/compositor_fake_web_graphics_context_3d.h"
-#include "cc/test/fake_web_compositor_output_surface.h"
+#include "cc/test/fake_output_surface.h"
 
 namespace cc {
 
@@ -26,7 +26,7 @@ public:
     virtual void layout() OVERRIDE { }
     virtual void applyScrollAndScale(gfx::Vector2d scrollDelta, float pageScale) OVERRIDE { }
 
-    virtual scoped_ptr<WebKit::WebCompositorOutputSurface> createOutputSurface() OVERRIDE;
+    virtual scoped_ptr<OutputSurface> createOutputSurface() OVERRIDE;
     virtual void didRecreateOutputSurface(bool success) OVERRIDE { }
     virtual scoped_ptr<InputHandler> createInputHandler() OVERRIDE;
     virtual void willCommit() OVERRIDE { }

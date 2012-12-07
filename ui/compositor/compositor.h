@@ -60,7 +60,7 @@ class COMPOSITOR_EXPORT ContextFactory {
   // Creates an output surface for the given compositor. The factory may keep
   // per-compositor data (e.g. a shared context), that needs to be cleaned up
   // by calling RemoveCompositor when the compositor gets destroyed.
-  virtual WebKit::WebCompositorOutputSurface* CreateOutputSurface(
+  virtual cc::OutputSurface* CreateOutputSurface(
       Compositor* compositor) = 0;
 
   // Creates a context used for offscreen rendering. This context can be shared
@@ -78,7 +78,7 @@ class COMPOSITOR_EXPORT DefaultContextFactory : public ContextFactory {
   virtual ~DefaultContextFactory();
 
   // ContextFactory implementation
-  virtual WebKit::WebCompositorOutputSurface* CreateOutputSurface(
+  virtual cc::OutputSurface* CreateOutputSurface(
       Compositor* compositor) OVERRIDE;
   virtual WebKit::WebGraphicsContext3D* CreateOffscreenContext() OVERRIDE;
   virtual void RemoveCompositor(Compositor* compositor) OVERRIDE;
@@ -250,7 +250,7 @@ class COMPOSITOR_EXPORT Compositor
   virtual void layout() OVERRIDE;
   virtual void applyScrollAndScale(gfx::Vector2d scrollDelta,
                                    float pageScale) OVERRIDE;
-  virtual scoped_ptr<WebKit::WebCompositorOutputSurface>
+  virtual scoped_ptr<cc::OutputSurface>
       createOutputSurface() OVERRIDE;
   virtual void didRecreateOutputSurface(bool success) OVERRIDE;
   virtual scoped_ptr<cc::InputHandler> createInputHandler() OVERRIDE;

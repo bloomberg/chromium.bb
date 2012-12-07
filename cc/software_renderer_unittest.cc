@@ -9,8 +9,8 @@
 #include "cc/render_pass_draw_quad.h"
 #include "cc/solid_color_draw_quad.h"
 #include "cc/test/animation_test_common.h"
-#include "cc/test/fake_web_compositor_output_surface.h"
-#include "cc/test/fake_web_compositor_software_output_device.h"
+#include "cc/test/fake_output_surface.h"
+#include "cc/test/fake_software_output_device.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/render_pass_test_common.h"
 #include "cc/tile_draw_quad.h"
@@ -26,13 +26,13 @@ namespace {
 class SoftwareRendererTest : public testing::Test, public RendererClient {
 public:
     void initializeRenderer() {
-        m_outputSurface = FakeWebCompositorOutputSurface::createSoftware(scoped_ptr<WebKit::WebCompositorSoftwareOutputDevice>(new FakeWebCompositorSoftwareOutputDevice));
+        m_outputSurface = FakeOutputSurface::CreateSoftware(scoped_ptr<SoftwareOutputDevice>(new FakeSoftwareOutputDevice));
         m_resourceProvider = ResourceProvider::create(m_outputSurface.get());
         m_renderer = SoftwareRenderer::create(this, resourceProvider(), softwareDevice());
     }
 
-    WebCompositorSoftwareOutputDevice* softwareDevice() const { return m_outputSurface->softwareDevice(); }
-    FakeWebCompositorOutputSurface* outputSurface() const { return m_outputSurface.get(); }
+    SoftwareOutputDevice* softwareDevice() const { return m_outputSurface->SoftwareDevice(); }
+    FakeOutputSurface* outputSurface() const { return m_outputSurface.get(); }
     ResourceProvider* resourceProvider() const { return m_resourceProvider.get(); }
     SoftwareRenderer* renderer() const { return m_renderer.get(); }
     void setViewportSize(gfx::Size viewportSize) { m_viewportSize = viewportSize; }
@@ -48,7 +48,7 @@ public:
     virtual bool hasImplThread() const OVERRIDE { return false; }
 
 protected:
-    scoped_ptr<FakeWebCompositorOutputSurface> m_outputSurface;
+    scoped_ptr<FakeOutputSurface> m_outputSurface;
     scoped_ptr<ResourceProvider> m_resourceProvider;
     scoped_ptr<SoftwareRenderer> m_renderer;
     gfx::Size m_viewportSize;

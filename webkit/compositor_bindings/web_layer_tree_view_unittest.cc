@@ -8,7 +8,6 @@
 #include "cc/proxy.h"
 #include "cc/thread_impl.h"
 #include "cc/test/compositor_fake_web_graphics_context_3d.h"
-#include "cc/test/fake_web_compositor_output_surface.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayer.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeViewClient.h"

@@ -236,9 +236,10 @@ void WebLayerTreeViewImpl::applyScrollAndScale(gfx::Vector2d scrollDelta, float 
     m_client->applyScrollAndScale(scrollDelta, pageScale);
 }
 
-scoped_ptr<WebCompositorOutputSurface> WebLayerTreeViewImpl::createOutputSurface()
+scoped_ptr<cc::OutputSurface> WebLayerTreeViewImpl::createOutputSurface()
 {
-    return scoped_ptr<WebCompositorOutputSurface>(m_client->createOutputSurface());
+    WebKit::WebCompositorOutputSurface* web = m_client->createOutputSurface();
+    return make_scoped_ptr(static_cast<cc::OutputSurface*>(web));
 }
 
 void WebLayerTreeViewImpl::didRecreateOutputSurface(bool success)

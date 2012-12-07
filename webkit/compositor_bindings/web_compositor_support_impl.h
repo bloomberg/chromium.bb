@@ -13,6 +13,11 @@ namespace base {
 class MessageLoopProxy;
 }
 
+namespace WebKit {
+class WebCompositorOutputSurface;
+class WebGraphicsContext3D;
+}
+
 namespace webkit {
 
 class WebCompositorSupportImpl : public WebKit::WebCompositorSupport {
@@ -26,6 +31,9 @@ class WebCompositorSupportImpl : public WebKit::WebCompositorSupport {
   virtual WebKit::WebLayerTreeView* createLayerTreeView(
       WebKit::WebLayerTreeViewClient* client, const WebKit::WebLayer& root,
       const WebKit::WebLayerTreeView::Settings& settings);
+  virtual WebKit::WebCompositorOutputSurface* createOutputSurfaceFor3D(
+      WebKit::WebGraphicsContext3D* context);
+  virtual WebKit::WebCompositorOutputSurface* createOutputSurfaceForSoftware();
   virtual WebKit::WebLayer* createLayer();
   virtual WebKit::WebContentLayer* createContentLayer(
       WebKit::WebContentLayerClient* client);

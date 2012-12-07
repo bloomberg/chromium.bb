@@ -5,8 +5,8 @@
 #include "cc/resource_update_controller.h"
 
 #include "cc/single_thread_proxy.h" // For DebugScopedSetImplThread
+#include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_proxy.h"
-#include "cc/test/fake_web_compositor_output_surface.h"
 #include "cc/test/fake_web_graphics_context_3d.h"
 #include "cc/test/scheduler_test_common.h"
 #include "cc/test/tiled_layer_test_common.h"
@@ -121,7 +121,7 @@ public:
 protected:
     virtual void SetUp()
     {
-        m_outputSurface = FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new WebGraphicsContext3DForUploadTest(this)));
+        m_outputSurface = FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(new WebGraphicsContext3DForUploadTest(this)));
         m_bitmap.setConfig(SkBitmap::kARGB_8888_Config, 300, 150);
         m_bitmap.allocPixels();
 

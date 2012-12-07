@@ -19,11 +19,12 @@ class PixelTestOutputSurface : public OutputSurface {
   virtual ~PixelTestOutputSurface();
 
   // OutputSurface overrides.
-  virtual bool bindToClient(WebKit::WebCompositorOutputSurfaceClient*) OVERRIDE;
-  virtual const WebKit::WebCompositorOutputSurface::Capabilities& capabilities() const OVERRIDE;
-  virtual WebKit::WebGraphicsContext3D* context3D() const OVERRIDE;
-  virtual void sendFrameToParentCompositor(
-      const WebKit::WebCompositorFrame&) OVERRIDE { }
+  virtual bool BindToClient(OutputSurfaceClient*) OVERRIDE;
+  virtual const struct OutputSurface::Capabilities& Capabilities() const
+      OVERRIDE;
+  virtual WebKit::WebGraphicsContext3D* Context3D() const OVERRIDE;
+  virtual SoftwareOutputDevice* SoftwareDevice() const OVERRIDE;
+  virtual void SendFrameToParentCompositor(const CompositorFrame&) OVERRIDE {}
 
  private:
   PixelTestOutputSurface();

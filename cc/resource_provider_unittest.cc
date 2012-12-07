@@ -9,7 +9,7 @@
 #include "cc/scoped_ptr_deque.h"
 #include "cc/scoped_ptr_hash_map.h"
 #include "cc/test/compositor_fake_web_graphics_context_3d.h"
-#include "cc/test/fake_web_compositor_output_surface.h"
+#include "cc/test/fake_output_surface.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
@@ -272,13 +272,13 @@ class ResourceProviderTest : public testing::TestWithParam<ResourceProvider::Res
 public:
     ResourceProviderTest()
         : m_sharedData(ContextSharedData::create())
-        , m_outputSurface(FakeWebCompositorOutputSurface::create(ResourceProviderContext::create(m_sharedData.get()).PassAs<WebKit::WebGraphicsContext3D>().PassAs<WebKit::WebGraphicsContext3D>()))
+        , m_outputSurface(FakeOutputSurface::Create3d(ResourceProviderContext::create(m_sharedData.get()).PassAs<WebKit::WebGraphicsContext3D>().PassAs<WebKit::WebGraphicsContext3D>()))
         , m_resourceProvider(ResourceProvider::create(m_outputSurface.get()))
     {
         m_resourceProvider->setDefaultResourceType(GetParam());
     }
 
-    ResourceProviderContext* context() { return static_cast<ResourceProviderContext*>(m_outputSurface->context3D()); }
+    ResourceProviderContext* context() { return static_cast<ResourceProviderContext*>(m_outputSurface->Context3D()); }
 
     void getResourcePixels(ResourceProvider::ResourceId id, const gfx::Size& size, WGC3Denum format, uint8_t* pixels)
     {
@@ -417,7 +417,7 @@ TEST_P(ResourceProviderTest, TransferResources)
     if (GetParam() != ResourceProvider::GLTexture)
         return;
 
-    scoped_ptr<OutputSurface> childOutputSurface(FakeWebCompositorOutputSurface::create(ResourceProviderContext::create(m_sharedData.get()).PassAs<WebKit::WebGraphicsContext3D>()));
+    scoped_ptr<OutputSurface> childOutputSurface(FakeOutputSurface::Create3d(ResourceProviderContext::create(m_sharedData.get()).PassAs<WebKit::WebGraphicsContext3D>()));
     scoped_ptr<ResourceProvider> childResourceProvider(ResourceProvider::create(childOutputSurface.get()));
 
     gfx::Size size(1, 1);
@@ -493,7 +493,7 @@ TEST_P(ResourceProviderTest, TransferResources)
     EXPECT_FALSE(childResourceProvider->inUseByConsumer(id1));
     EXPECT_FALSE(childResourceProvider->inUseByConsumer(id2));
 
-    ResourceProviderContext* childContext3D = static_cast<ResourceProviderContext*>(childOutputSurface->context3D());
+    ResourceProviderContext* childContext3D = static_cast<ResourceProviderContext*>(childOutputSurface->Context3D());
     {
         ResourceProvider::ScopedReadLockGL lock(childResourceProvider.get(), id1);
         ASSERT_NE(0U, lock.textureId());
@@ -534,7 +534,7 @@ TEST_P(ResourceProviderTest, DeleteTransferredResources)
     if (GetParam() != ResourceProvider::GLTexture)
         return;
 
-    scoped_ptr<OutputSurface> childOutputSurface(FakeWebCompositorOutputSurface::create(ResourceProviderContext::create(m_sharedData.get()).PassAs<WebKit::WebGraphicsContext3D>()));
+    scoped_ptr<OutputSurface> childOutputSurface(FakeOutputSurface::Create3d(ResourceProviderContext::create(m_sharedData.get()).PassAs<WebKit::WebGraphicsContext3D>()));
     scoped_ptr<ResourceProvider> childResourceProvider(ResourceProvider::create(childOutputSurface.get()));
 
     gfx::Size size(1, 1);
@@ -595,8 +595,8 @@ TEST_P(ResourceProviderTest, ScopedSampler)
     if (GetParam() != ResourceProvider::GLTexture)
         return;
 
-    scoped_ptr<OutputSurface> outputSurface(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new TextureStateTrackingContext)));
-    TextureStateTrackingContext* context = static_cast<TextureStateTrackingContext*>(outputSurface->context3D());
+    scoped_ptr<OutputSurface> outputSurface(FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(new TextureStateTrackingContext)));
+    TextureStateTrackingContext* context = static_cast<TextureStateTrackingContext*>(outputSurface->Context3D());
     scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(outputSurface.get()));
 
     gfx::Size size(1, 1);

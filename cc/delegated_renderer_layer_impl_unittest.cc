@@ -15,7 +15,6 @@
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_proxy.h"
-#include "cc/test/fake_web_compositor_output_surface.h"
 #include "cc/test/fake_web_graphics_context_3d.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/mock_quad_culler.h"
@@ -23,7 +22,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/transform.h"
 
-using WebKit::FakeWebCompositorOutputSurface;
 using WebKit::FakeWebGraphicsContext3D;
 
 using namespace WebKitTests;

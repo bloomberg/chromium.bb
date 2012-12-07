@@ -13,13 +13,13 @@
 #include "cc/cc_export.h"
 #include "cc/input_handler.h"
 #include "cc/layer_tree_impl.h"
+#include "cc/output_surface_client.h"
 #include "cc/render_pass.h"
 #include "cc/render_pass_sink.h"
 #include "cc/renderer.h"
 #include "cc/tile_manager.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/rect.h"
-#include <public/WebCompositorOutputSurfaceClient.h>
 
 namespace cc {
 
@@ -115,7 +115,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
                                     public TileManagerClient,
                                     public LayerTreeImplClient,
                                     public AnimationRegistrar,
-                                    public NON_EXPORTED_BASE(WebKit::WebCompositorOutputSurfaceClient) {
+                                    public OutputSurfaceClient {
     typedef std::vector<LayerImpl*> LayerList;
     typedef base::hash_set<LayerAnimationController*> AnimationControllerSet;
 
@@ -179,8 +179,9 @@ public:
     virtual void ScheduleManageTiles() OVERRIDE;
     virtual void ScheduleCheckForCompletedSetPixels() OVERRIDE;
 
-    // WebCompositorOutputSurfaceClient implementation.
-    virtual void onVSyncParametersChanged(double monotonicTimebase, double intervalInSeconds) OVERRIDE;
+    // OutputSurfaceClient implementation.
+    virtual void OnVSyncParametersChanged(base::TimeTicks timebase, base::TimeDelta interval) OVERRIDE;
+    virtual void OnSendFrameToParentCompositorAck(const CompositorFrameAck&) OVERRIDE;
 
     // LayerTreeImplClient implementation.
     virtual void OnCanDrawStateChangedForTree(LayerTreeImpl*) OVERRIDE;

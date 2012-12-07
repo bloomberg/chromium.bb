@@ -31,7 +31,7 @@ IOSurfaceLayerImpl::~IOSurfaceLayerImpl()
 
     OutputSurface* outputSurface = layerTreeHostImpl()->outputSurface();
     // FIXME: Implement this path for software compositing.
-    WebKit::WebGraphicsContext3D* context3d = outputSurface->context3D();
+    WebKit::WebGraphicsContext3D* context3d = outputSurface->Context3D();
     if (context3d)
         context3d->deleteTexture(m_ioSurfaceTextureId);
 }

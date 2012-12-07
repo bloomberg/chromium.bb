@@ -4,14 +4,13 @@
 
 #include "cc/software_renderer.h"
 
-#include <public/WebCompositorSoftwareOutputDevice.h>
 #include <public/WebImage.h>
-#include <public/WebSize.h>
 
 #include "base/debug/trace_event.h"
 #include "cc/debug_border_draw_quad.h"
 #include "cc/math_util.h"
 #include "cc/render_pass_draw_quad.h"
+#include "cc/software_output_device.h"
 #include "cc/solid_color_draw_quad.h"
 #include "cc/texture_draw_quad.h"
 #include "cc/tile_draw_quad.h"
@@ -23,9 +22,6 @@
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
-
-using WebKit::WebCompositorSoftwareOutputDevice;
-using WebKit::WebSize;
 
 namespace cc {
 
@@ -56,12 +52,12 @@ bool isScaleAndTranslate(const SkMatrix& matrix)
 
 } // anonymous namespace
 
-scoped_ptr<SoftwareRenderer> SoftwareRenderer::create(RendererClient* client, ResourceProvider* resourceProvider, WebCompositorSoftwareOutputDevice* outputDevice)
+scoped_ptr<SoftwareRenderer> SoftwareRenderer::create(RendererClient* client, ResourceProvider* resourceProvider, SoftwareOutputDevice* outputDevice)
 {
     return make_scoped_ptr(new SoftwareRenderer(client, resourceProvider, outputDevice));
 }
 
-SoftwareRenderer::SoftwareRenderer(RendererClient* client, ResourceProvider* resourceProvider, WebCompositorSoftwareOutputDevice* outputDevice)
+SoftwareRenderer::SoftwareRenderer(RendererClient* client, ResourceProvider* resourceProvider, SoftwareOutputDevice* outputDevice)
     : DirectRenderer(client, resourceProvider)
     , m_visible(true)
     , m_outputDevice(outputDevice)
@@ -89,13 +85,13 @@ const RendererCapabilities& SoftwareRenderer::capabilities() const
 
 void SoftwareRenderer::viewportChanged()
 {
-    m_outputDevice->didChangeViewportSize(WebSize(viewportSize().width(), viewportSize().height()));
+    m_outputDevice->DidChangeViewportSize(viewportSize());
 }
 
 void SoftwareRenderer::beginDrawingFrame(DrawingFrame& frame)
 {
     TRACE_EVENT0("cc", "SoftwareRenderer::beginDrawingFrame");
-    m_skRootCanvas = make_scoped_ptr(new SkCanvas(m_outputDevice->lock(true)->getSkBitmap()));
+    m_skRootCanvas = make_scoped_ptr(new SkCanvas(m_outputDevice->Lock(true)->getSkBitmap()));
 }
 
 void SoftwareRenderer::finishDrawingFrame(DrawingFrame& frame)
@@ -104,7 +100,7 @@ void SoftwareRenderer::finishDrawingFrame(DrawingFrame& frame)
     m_currentFramebufferLock.reset();
     m_skCurrentCanvas = 0;
     m_skRootCanvas.reset();
-    m_outputDevice->unlock();
+    m_outputDevice->Unlock();
 }
 
 bool SoftwareRenderer::flippedFramebuffer() const
@@ -370,12 +366,12 @@ bool SoftwareRenderer::swapBuffers()
 void SoftwareRenderer::getFramebufferPixels(void *pixels, const gfx::Rect& rect)
 {
     TRACE_EVENT0("cc", "SoftwareRenderer::getFramebufferPixels");
-    SkBitmap fullBitmap = m_outputDevice->lock(false)->getSkBitmap();
+    SkBitmap fullBitmap = m_outputDevice->Lock(false)->getSkBitmap();
     SkBitmap subsetBitmap;
     SkIRect invertRect = SkIRect::MakeXYWH(rect.x(), viewportSize().height() - rect.bottom(), rect.width(), rect.height());
     fullBitmap.extractSubset(&subsetBitmap, invertRect);
     subsetBitmap.copyPixelsTo(pixels, rect.width() * rect.height() * 4, rect.width() * 4);
-    m_outputDevice->unlock();
+    m_outputDevice->Unlock();
 }
 
 void SoftwareRenderer::setVisible(bool visible)

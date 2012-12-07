@@ -21,7 +21,7 @@ namespace {
 
 static const int kTimeLimitMillis = 2000;
 
-class LayerTreeHostPerfTest : public WebKitTests::ThreadedTest {
+class LayerTreeHostPerfTest : public ThreadedTest {
  public:
   LayerTreeHostPerfTest()
       : num_draws_(0) {

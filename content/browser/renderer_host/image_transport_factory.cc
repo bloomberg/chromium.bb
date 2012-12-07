@@ -12,6 +12,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
+#include "cc/output_surface.h"
+#include "cc/output_surface_client.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -24,8 +26,6 @@
 #include "content/common/webkitplatformsupport_impl.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/ipc/command_buffer_proxy.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebCompositorOutputSurface.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebCompositorOutputSurfaceClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGraphicsContext3D.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_setup.h"
@@ -270,10 +270,10 @@ class BrowserCompositorOutputSurfaceProxy :
 
 
 // Adapts a WebGraphicsContext3DCommandBufferImpl into a
-// WebCompositorOutputSurface that also handles vsync parameter updates
+// cc::OutputSurface that also handles vsync parameter updates
 // arriving from the GPU process.
 class BrowserCompositorOutputSurface :
-    public WebKit::WebCompositorOutputSurface,
+    public cc::OutputSurface,
     public base::NonThreadSafe {
  public:
   explicit BrowserCompositorOutputSurface(
@@ -294,8 +294,8 @@ class BrowserCompositorOutputSurface :
     output_surface_proxy_->RemoveSurface(surface_id_);
   }
 
-  virtual bool bindToClient(
-      WebKit::WebCompositorOutputSurfaceClient* client) OVERRIDE {
+  virtual bool BindToClient(
+      cc::OutputSurfaceClient* client) OVERRIDE {
     DCHECK(CalledOnValidThread());
     DCHECK(client);
     DCHECK(!client_);
@@ -309,36 +309,37 @@ class BrowserCompositorOutputSurface :
     return true;
   }
 
-  virtual const Capabilities& capabilities() const OVERRIDE {
+  virtual const struct Capabilities& Capabilities() const OVERRIDE {
     DCHECK(CalledOnValidThread());
     return capabilities_;
   }
 
-  virtual WebKit::WebGraphicsContext3D* context3D() const OVERRIDE {
+  virtual WebKit::WebGraphicsContext3D* Context3D() const OVERRIDE {
     DCHECK(CalledOnValidThread());
     return context3D_.get();
   }
 
-  virtual void sendFrameToParentCompositor(
-      const WebKit::WebCompositorFrame&) OVERRIDE {
+  virtual cc::SoftwareOutputDevice* SoftwareDevice() const OVERRIDE {
+    DCHECK(CalledOnValidThread());
+    return NULL;
+  }
+
+  virtual void SendFrameToParentCompositor(
+      const cc::CompositorFrame&) OVERRIDE {
   }
 
   void OnUpdateVSyncParameters(
       base::TimeTicks timebase, base::TimeDelta interval) {
     DCHECK(CalledOnValidThread());
     DCHECK(client_);
-    double monotonicTimebase = timebase.ToInternalValue() /
-      static_cast<double>(base::Time::kMicrosecondsPerSecond);
-    double intervalInSeconds = interval.ToInternalValue() /
-      static_cast<double>(base::Time::kMicrosecondsPerSecond);
-    client_->onVSyncParametersChanged(monotonicTimebase, intervalInSeconds);
+    client_->OnVSyncParametersChanged(timebase, interval);
   }
 
  private:
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context3D_;
   int surface_id_;
-  Capabilities capabilities_;
-  WebKit::WebCompositorOutputSurfaceClient* client_;
+  struct Capabilities capabilities_;
+  cc::OutputSurfaceClient* client_;
   scoped_refptr<BrowserCompositorOutputSurfaceProxy> output_surface_proxy_;
 };
 
@@ -369,7 +370,7 @@ class GpuProcessTransportFactory :
     return CreateContextCommon(swap_client, 0);
   }
 
-  virtual WebKit::WebCompositorOutputSurface* CreateOutputSurface(
+  virtual cc::OutputSurface* CreateOutputSurface(
       ui::Compositor* compositor) OVERRIDE {
     PerCompositorData* data = per_compositor_data_[compositor];
     if (!data)

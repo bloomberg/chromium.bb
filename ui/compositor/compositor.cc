@@ -16,9 +16,9 @@
 #include "cc/input_handler.h"
 #include "cc/layer.h"
 #include "cc/layer_tree_host.h"
+#include "cc/output_surface.h"
 #include "cc/thread_impl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebCompositorOutputSurface.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/compositor/dip_util.h"
@@ -52,9 +52,9 @@ ui::ContextFactory* g_context_factory = NULL;
 
 const int kCompositorLockTimeoutMs = 67;
 
-// Adapts a pure WebGraphicsContext3D into a WebCompositorOutputSurface.
+// Adapts a pure WebGraphicsContext3D into a cc::OutputSurface.
 class WebGraphicsContextToOutputSurfaceAdapter
-    : public WebKit::WebCompositorOutputSurface {
+    : public cc::OutputSurface {
  public:
   explicit WebGraphicsContextToOutputSurfaceAdapter(
       WebKit::WebGraphicsContext3D* context)
@@ -62,8 +62,8 @@ class WebGraphicsContextToOutputSurfaceAdapter
         client_(NULL) {
   }
 
-  virtual bool bindToClient(
-      WebKit::WebCompositorOutputSurfaceClient* client) OVERRIDE {
+  virtual bool BindToClient(
+      cc::OutputSurfaceClient* client) OVERRIDE {
     DCHECK(client);
     if (!context3D_->makeContextCurrent())
       return false;
@@ -71,22 +71,26 @@ class WebGraphicsContextToOutputSurfaceAdapter
     return true;
   }
 
-  virtual const Capabilities& capabilities() const OVERRIDE {
+  virtual const struct Capabilities& Capabilities() const OVERRIDE {
     return capabilities_;
   }
 
-  virtual WebKit::WebGraphicsContext3D* context3D() const OVERRIDE {
+  virtual WebKit::WebGraphicsContext3D* Context3D() const OVERRIDE {
     return context3D_.get();
   }
 
-  virtual void sendFrameToParentCompositor(
-      const WebKit::WebCompositorFrame&) OVERRIDE {
+  virtual cc::SoftwareOutputDevice* SoftwareDevice() const OVERRIDE {
+    return NULL;
+  }
+
+  virtual void SendFrameToParentCompositor(
+      const cc::CompositorFrame&) OVERRIDE {
   }
 
  private:
   scoped_ptr<WebKit::WebGraphicsContext3D> context3D_;
-  Capabilities capabilities_;
-  WebKit::WebCompositorOutputSurfaceClient* client_;
+  struct Capabilities capabilities_;
+  cc::OutputSurfaceClient* client_;
 };
 
 class PendingSwap {
@@ -149,7 +153,7 @@ bool DefaultContextFactory::Initialize() {
   return true;
 }
 
-WebKit::WebCompositorOutputSurface* DefaultContextFactory::CreateOutputSurface(
+cc::OutputSurface* DefaultContextFactory::CreateOutputSurface(
     Compositor* compositor) {
   return new WebGraphicsContextToOutputSurfaceAdapter(
       CreateContextCommon(compositor, false));
@@ -497,16 +501,15 @@ void Compositor::applyScrollAndScale(gfx::Vector2d scrollDelta,
                                      float pageScale) {
 }
 
-scoped_ptr<WebKit::WebCompositorOutputSurface>
-Compositor::createOutputSurface() {
+scoped_ptr<cc::OutputSurface> Compositor::createOutputSurface() {
   if (test_compositor_enabled) {
     ui::TestWebGraphicsContext3D* test_context =
       new ui::TestWebGraphicsContext3D();
     test_context->Initialize();
-    return scoped_ptr<WebKit::WebCompositorOutputSurface>(
+    return scoped_ptr<cc::OutputSurface>(
         new WebGraphicsContextToOutputSurfaceAdapter(test_context));
   } else {
-    return scoped_ptr<WebKit::WebCompositorOutputSurface>(
+    return scoped_ptr<cc::OutputSurface>(
         ContextFactory::GetInstance()->CreateOutputSurface(this));
   }
 }

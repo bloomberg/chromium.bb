@@ -10,9 +10,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/non_thread_safe.h"
+#include "cc/software_output_device.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebImage.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebCompositorSoftwareOutputDevice.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "ui/gfx/size.h"
 
@@ -21,17 +21,17 @@ namespace content {
 // This class can be created only on the main thread, but then becomes pinned
 // to a fixed thread when bindToClient is called.
 class CompositorSoftwareOutputDeviceGLAdapter
-    : NON_EXPORTED_BASE(public WebKit::WebCompositorSoftwareOutputDevice),
+    : NON_EXPORTED_BASE(public cc::SoftwareOutputDevice),
       NON_EXPORTED_BASE(public base::NonThreadSafe) {
 public:
   CompositorSoftwareOutputDeviceGLAdapter(
       WebKit::WebGraphicsContext3D* context3d);
   virtual ~CompositorSoftwareOutputDeviceGLAdapter();
 
-  virtual WebKit::WebImage* lock(bool forWrite) OVERRIDE;
-  virtual void unlock() OVERRIDE;
-
-  virtual void didChangeViewportSize(WebKit::WebSize size) OVERRIDE;
+  // cc::SoftwareOutputDevice implementation
+  virtual WebKit::WebImage* Lock(bool forWrite) OVERRIDE;
+  virtual void Unlock() OVERRIDE;
+  virtual void DidChangeViewportSize(gfx::Size size) OVERRIDE;
 
 private:
   void Initialize();

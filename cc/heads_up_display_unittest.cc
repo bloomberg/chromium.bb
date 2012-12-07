@@ -7,8 +7,6 @@
 #include "cc/layer_tree_host.h"
 #include "cc/test/layer_tree_test_common.h"
 
-using namespace WebKitTests;
-
 namespace cc {
 namespace {
 

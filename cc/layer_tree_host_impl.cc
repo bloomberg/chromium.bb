@@ -793,16 +793,19 @@ void LayerTreeHostImpl::setManagedMemoryPolicy(const ManagedMemoryPolicy& policy
     m_client->setNeedsCommitOnImplThread();
 }
 
-void LayerTreeHostImpl::onVSyncParametersChanged(double monotonicTimebase, double intervalInSeconds)
+void LayerTreeHostImpl::OnVSyncParametersChanged(base::TimeTicks timebase, base::TimeDelta interval)
 {
-    base::TimeTicks timebase = base::TimeTicks::FromInternalValue(monotonicTimebase * base::Time::kMicrosecondsPerSecond);
-    base::TimeDelta interval = base::TimeDelta::FromMicroseconds(intervalInSeconds * base::Time::kMicrosecondsPerSecond);
     m_client->onVSyncParametersChanged(timebase, interval);
+}
+
+void LayerTreeHostImpl::OnSendFrameToParentCompositorAck(const CompositorFrameAck&)
+{
+    // TODO(danakj): Implement this.
 }
 
 void LayerTreeHostImpl::OnCanDrawStateChangedForTree(LayerTreeImpl*)
 {
-  m_client->onCanDrawStateChanged(canDraw());
+    m_client->onCanDrawStateChanged(canDraw());
 }
 
 void LayerTreeHostImpl::drawLayers(FrameData& frame)
@@ -958,7 +961,7 @@ bool LayerTreeHostImpl::initializeRenderer(scoped_ptr<OutputSurface> outputSurfa
     m_resourceProvider.reset();
     m_outputSurface.reset();
 
-    if (!outputSurface->bindToClient(this))
+    if (!outputSurface->BindToClient(this))
         return false;
 
     scoped_ptr<ResourceProvider> resourceProvider = ResourceProvider::create(outputSurface.get());
@@ -968,10 +971,10 @@ bool LayerTreeHostImpl::initializeRenderer(scoped_ptr<OutputSurface> outputSurfa
     if (m_settings.implSidePainting)
       m_tileManager.reset(new TileManager(this, resourceProvider.get(), m_settings.numRasterThreads));
 
-    if (outputSurface->context3D())
+    if (outputSurface->Context3D())
         m_renderer = GLRenderer::create(this, resourceProvider.get());
-    else if (outputSurface->softwareDevice())
-        m_renderer = SoftwareRenderer::create(this, resourceProvider.get(), outputSurface->softwareDevice());
+    else if (outputSurface->SoftwareDevice())
+        m_renderer = SoftwareRenderer::create(this, resourceProvider.get(), outputSurface->SoftwareDevice());
     if (!m_renderer)
         return false;
 

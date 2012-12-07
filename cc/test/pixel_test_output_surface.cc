@@ -18,19 +18,22 @@ PixelTestOutputSurface::PixelTestOutputSurface() {
 PixelTestOutputSurface::~PixelTestOutputSurface() {
 }
 
-bool PixelTestOutputSurface::bindToClient(
-    WebKit::WebCompositorOutputSurfaceClient*) {
+bool PixelTestOutputSurface::BindToClient(OutputSurfaceClient*) {
   return context_->makeContextCurrent();
 }
 
-const WebKit::WebCompositorOutputSurface::Capabilities&
-    PixelTestOutputSurface::capabilities() const {
-  static WebKit::WebCompositorOutputSurface::Capabilities capabilities;
+const struct OutputSurface::Capabilities& PixelTestOutputSurface::Capabilities()
+    const {
+  static struct OutputSurface::Capabilities capabilities;
   return capabilities;
 }
 
-WebKit::WebGraphicsContext3D* PixelTestOutputSurface::context3D() const {
+WebKit::WebGraphicsContext3D* PixelTestOutputSurface::Context3D() const {
   return context_.get();
+}
+
+SoftwareOutputDevice* PixelTestOutputSurface::SoftwareDevice() const {
+  return NULL;
 }
 
 }  // namespace cc

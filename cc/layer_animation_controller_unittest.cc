@@ -11,8 +11,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/transform.h"
 
-using namespace WebKitTests;
-
 namespace cc {
 namespace {
 

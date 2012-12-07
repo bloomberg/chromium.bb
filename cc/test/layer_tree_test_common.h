@@ -23,7 +23,7 @@ class LayerTreeHostImpl;
 class Thread;
 }
 
-namespace WebKitTests {
+namespace cc {
 
 // Used by test stubs to notify the test when something interesting happens.
 class TestHooks : public WebKit::WebAnimationDelegate {
@@ -48,7 +48,7 @@ public:
     virtual void notifyAnimationStarted(double time) OVERRIDE { }
     virtual void notifyAnimationFinished(double time) OVERRIDE { }
 
-    virtual scoped_ptr<WebKit::WebCompositorOutputSurface> createOutputSurface();
+    virtual scoped_ptr<OutputSurface> createOutputSurface();
 };
 
 class TimeoutTask;

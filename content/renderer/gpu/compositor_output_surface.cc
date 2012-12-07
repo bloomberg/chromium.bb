@@ -5,15 +5,15 @@
 #include "content/renderer/gpu/compositor_output_surface.h"
 
 #include "base/message_loop_proxy.h"
+#include "cc/output_surface_client.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_thread_impl.h"
 #include "ipc/ipc_forwarding_message_filter.h"
 #include "ipc/ipc_sync_channel.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebCompositorOutputSurfaceClient.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 
+using cc::SoftwareOutputDevice;
 using WebKit::WebGraphicsContext3D;
-using WebKit::WebCompositorSoftwareOutputDevice;
 
 namespace content {
 
@@ -32,7 +32,7 @@ IPC::ForwardingMessageFilter* CompositorOutputSurface::CreateFilter(
 CompositorOutputSurface::CompositorOutputSurface(
     int32 routing_id,
     WebGraphicsContext3D* context3D,
-    WebCompositorSoftwareOutputDevice* software_device)
+    cc::SoftwareOutputDevice* software_device)
     : output_surface_filter_(
           RenderThreadImpl::current()->compositor_output_surface_filter()),
       client_(NULL),
@@ -40,7 +40,7 @@ CompositorOutputSurface::CompositorOutputSurface(
       context3D_(context3D),
       software_device_(software_device) {
   DCHECK(output_surface_filter_);
-  capabilities_.hasParentCompositor = false;
+  capabilities_.has_parent_compositor = false;
   DetachFromThread();
 }
 
@@ -52,14 +52,14 @@ CompositorOutputSurface::~CompositorOutputSurface() {
   output_surface_filter_->RemoveRoute(routing_id_);
 }
 
-const WebKit::WebCompositorOutputSurface::Capabilities&
-    CompositorOutputSurface::capabilities() const {
+const struct cc::OutputSurface::Capabilities&
+    CompositorOutputSurface::Capabilities() const {
   DCHECK(CalledOnValidThread());
   return capabilities_;
 }
 
-bool CompositorOutputSurface::bindToClient(
-    WebKit::WebCompositorOutputSurfaceClient* client) {
+bool CompositorOutputSurface::BindToClient(
+    cc::OutputSurfaceClient* client) {
   DCHECK(CalledOnValidThread());
   DCHECK(!client_);
   if (context3D_.get()) {
@@ -78,18 +78,17 @@ bool CompositorOutputSurface::bindToClient(
   return true;
 }
 
-WebGraphicsContext3D* CompositorOutputSurface::context3D() const {
+WebGraphicsContext3D* CompositorOutputSurface::Context3D() const {
   DCHECK(CalledOnValidThread());
   return context3D_.get();
 }
 
-WebCompositorSoftwareOutputDevice* CompositorOutputSurface::softwareDevice()
-    const {
+cc::SoftwareOutputDevice* CompositorOutputSurface::SoftwareDevice() const {
   return software_device_.get();
 }
 
-void CompositorOutputSurface::sendFrameToParentCompositor(
-    const WebKit::WebCompositorFrame&) {
+void CompositorOutputSurface::SendFrameToParentCompositor(
+    const cc::CompositorFrame&) {
   DCHECK(CalledOnValidThread());
   NOTREACHED();
 }
@@ -104,15 +103,10 @@ void CompositorOutputSurface::OnMessageReceived(const IPC::Message& message) {
 }
 
 void CompositorOutputSurface::OnUpdateVSyncParameters(
-    base::TimeTicks timebase,
-    base::TimeDelta interval) {
+    base::TimeTicks timebase, base::TimeDelta interval) {
   DCHECK(CalledOnValidThread());
   DCHECK(client_);
-  double monotonicTimebase = timebase.ToInternalValue() /
-      static_cast<double>(base::Time::kMicrosecondsPerSecond);
-  double intervalInSeconds = interval.ToInternalValue() /
-      static_cast<double>(base::Time::kMicrosecondsPerSecond);
-  client_->onVSyncParametersChanged(monotonicTimebase, intervalInSeconds);
+  client_->OnVSyncParametersChanged(timebase, interval);
 }
 
 }  // namespace content

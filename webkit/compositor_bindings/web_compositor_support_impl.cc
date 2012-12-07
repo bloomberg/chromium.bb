@@ -8,6 +8,8 @@
 #include "base/message_loop_proxy.h"
 #include "cc/thread_impl.h"
 #include "webkit/compositor_bindings/web_animation_impl.h"
+#include "webkit/compositor_bindings/web_compositor_support_output_surface.h"
+#include "webkit/compositor_bindings/web_compositor_support_software_output_device.h"
 #include "webkit/compositor_bindings/web_content_layer_impl.h"
 #include "webkit/compositor_bindings/web_delegated_renderer_layer_impl.h"
 #include "webkit/compositor_bindings/web_external_texture_layer_impl.h"
@@ -21,6 +23,7 @@
 #include "webkit/compositor_bindings/web_transform_animation_curve_impl.h"
 #include "webkit/compositor_bindings/web_video_layer_impl.h"
 #include "webkit/glue/webthread_impl.h"
+#include "webkit/support/webkit_support.h"
 
 using WebKit::WebAnimation;
 using WebKit::WebAnimationCurve;
@@ -90,6 +93,22 @@ WebLayerTreeView* WebCompositorSupportImpl::createLayerTreeView(
     return NULL;
   layerTreeViewImpl->setRootLayer(root);
   return layerTreeViewImpl.release();
+}
+
+WebKit::WebCompositorOutputSurface*
+    WebCompositorSupportImpl::createOutputSurfaceFor3D(
+        WebKit::WebGraphicsContext3D* context) {
+  scoped_ptr<WebKit::WebGraphicsContext3D> context3d = make_scoped_ptr(context);
+  return WebCompositorSupportOutputSurface::Create3d(
+      context3d.Pass()).release();
+}
+
+WebKit::WebCompositorOutputSurface*
+    WebCompositorSupportImpl::createOutputSurfaceForSoftware() {
+  scoped_ptr<WebCompositorSupportSoftwareOutputDevice> software_device =
+      make_scoped_ptr(new WebCompositorSupportSoftwareOutputDevice);
+  return WebCompositorSupportOutputSurface::CreateSoftware(
+      software_device.PassAs<cc::SoftwareOutputDevice>()).release();
 }
 
 WebLayer* WebCompositorSupportImpl::createLayer() {

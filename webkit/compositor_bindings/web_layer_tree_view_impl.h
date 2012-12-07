@@ -61,7 +61,7 @@ public:
     virtual void animate(double monotonicFrameBeginTime) OVERRIDE;
     virtual void layout() OVERRIDE;
     virtual void applyScrollAndScale(gfx::Vector2d scrollDelta, float pageScale) OVERRIDE;
-    virtual scoped_ptr<WebCompositorOutputSurface> createOutputSurface() OVERRIDE;
+    virtual scoped_ptr<cc::OutputSurface> createOutputSurface() OVERRIDE;
     virtual void didRecreateOutputSurface(bool success) OVERRIDE;
     virtual scoped_ptr<cc::InputHandler> createInputHandler() OVERRIDE;
     virtual void willCommit() OVERRIDE;

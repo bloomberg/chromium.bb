@@ -17,7 +17,7 @@
 #include "cc/single_thread_proxy.h"
 #include "cc/thread_impl.h"
 #include "cc/test/animation_test_common.h"
-#include "cc/test/fake_web_compositor_output_surface.h"
+#include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_web_graphics_context_3d.h"
 #include "cc/test/occlusion_tracker_test_common.h"
 #include "cc/test/tiled_layer_test_common.h"
@@ -26,17 +26,9 @@
 #include <public/WebFilterOperation.h>
 #include <public/WebFilterOperations.h>
 
-using cc::FontAtlas;
-using cc::InputHandler;
-using cc::Layer;
-using cc::LayerTreeHostImplClient;
-using cc::LayerTreeSettings;
-using cc::Proxy;
-using cc::ScopedThreadProxy;
-
 using namespace WebKit;
 
-namespace WebKitTests {
+namespace cc {
 
 scoped_ptr<CompositorFakeWebGraphicsContext3DWithTextureTracking> CompositorFakeWebGraphicsContext3DWithTextureTracking::create(Attributes attrs)
 {
@@ -87,9 +79,9 @@ bool TestHooks::prepareToDrawOnThread(cc::LayerTreeHostImpl*)
     return true;
 }
 
-scoped_ptr<WebCompositorOutputSurface> TestHooks::createOutputSurface()
+scoped_ptr<OutputSurface> TestHooks::createOutputSurface()
 {
-    return FakeWebCompositorOutputSurface::create(CompositorFakeWebGraphicsContext3DWithTextureTracking::create(WebGraphicsContext3D::Attributes()).PassAs<WebKit::WebGraphicsContext3D>()).PassAs<WebKit::WebCompositorOutputSurface>();
+    return FakeOutputSurface::Create3d(CompositorFakeWebGraphicsContext3DWithTextureTracking::create(WebGraphicsContext3D::Attributes()).PassAs<WebKit::WebGraphicsContext3D>()).PassAs<OutputSurface>();
 }
 
 scoped_ptr<MockLayerTreeHostImpl> MockLayerTreeHostImpl::create(TestHooks* testHooks, const LayerTreeSettings& settings, LayerTreeHostImplClient* client, Proxy* proxy)
@@ -227,7 +219,7 @@ public:
         m_testHooks->applyScrollAndScale(scrollDelta, scale);
     }
 
-    virtual scoped_ptr<WebCompositorOutputSurface> createOutputSurface() OVERRIDE
+    virtual scoped_ptr<OutputSurface> createOutputSurface() OVERRIDE
     {
         return m_testHooks->createOutputSurface();
     }
@@ -503,4 +495,4 @@ void ThreadedTest::runTest(bool threaded)
     afterTest();
 }
 
-}  // namespace WebKitTests
+}  // namespace cc

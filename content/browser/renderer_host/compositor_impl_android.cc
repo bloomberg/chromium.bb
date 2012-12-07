@@ -15,6 +15,7 @@
 #include "cc/input_handler.h"
 #include "cc/layer.h"
 #include "cc/layer_tree_host.h"
+#include "cc/output_surface.h"
 #include "cc/thread_impl.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
@@ -26,7 +27,6 @@
 #include "content/public/common/content_switches.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebCompositorOutputSurface.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "webkit/glue/webthread_impl.h"
@@ -42,46 +42,43 @@ static bool g_initialized = false;
 static webkit_glue::WebThreadImpl* g_impl_thread = NULL;
 static bool g_use_direct_gl = false;
 
-// Adapts a pure WebGraphicsContext3D into a WebCompositorOutputSurface.
-class WebGraphicsContextToOutputSurfaceAdapter :
-    public WebKit::WebCompositorOutputSurface {
-public:
-    explicit WebGraphicsContextToOutputSurfaceAdapter(
-        WebKit::WebGraphicsContext3D* context)
-        : m_context3D(context)
-        , m_client(0)
-    {
-    }
+// Adapts a pure WebGraphicsContext3D into a cc::OutputSurface.
+class WebGraphicsContextToOutputSurfaceAdapter : public cc::OutputSurface {
+ public:
+  explicit WebGraphicsContextToOutputSurfaceAdapter(
+      WebKit::WebGraphicsContext3D* context)
+      : context3d_(context),
+        client_(0) {
+  }
 
-    virtual bool bindToClient(
-        WebKit::WebCompositorOutputSurfaceClient* client) OVERRIDE
-    {
-        DCHECK(client);
-        if (!m_context3D->makeContextCurrent())
-            return false;
-        m_client = client;
-        return true;
-    }
+  virtual bool BindToClient(cc::OutputSurfaceClient* client) OVERRIDE {
+    DCHECK(client);
+    if (!context3d_->makeContextCurrent())
+      return false;
+    client_ = client;
+    return true;
+  }
 
-    virtual const Capabilities& capabilities() const OVERRIDE
-    {
-        return m_capabilities;
-    }
+  virtual const struct Capabilities& Capabilities() const OVERRIDE {
+    return capabilities_;
+  }
 
-    virtual WebKit::WebGraphicsContext3D* context3D() const OVERRIDE
-    {
-        return m_context3D.get();
-    }
+  virtual WebKit::WebGraphicsContext3D* Context3D() const OVERRIDE {
+    return context3d_.get();
+  }
 
-    virtual void sendFrameToParentCompositor(
-        const WebKit::WebCompositorFrame&) OVERRIDE
-    {
-    }
+  virtual cc::SoftwareOutputDevice* SoftwareDevice() const OVERRIDE {
+    return NULL;
+  }
 
-private:
-    scoped_ptr<WebKit::WebGraphicsContext3D> m_context3D;
-    Capabilities m_capabilities;
-    WebKit::WebCompositorOutputSurfaceClient* m_client;
+  virtual void SendFrameToParentCompositor(
+      const cc::CompositorFrame&) OVERRIDE {
+  }
+
+ private:
+  scoped_ptr<WebKit::WebGraphicsContext3D> context3d_;
+  struct Capabilities capabilities_;
+  cc::OutputSurfaceClient* client_;
 };
 
 } // anonymous namespace
@@ -278,8 +275,7 @@ void CompositorImpl::applyScrollAndScale(gfx::Vector2d scrollDelta,
                                          float pageScale) {
 }
 
-scoped_ptr<WebKit::WebCompositorOutputSurface>
-    CompositorImpl::createOutputSurface() {
+scoped_ptr<cc::OutputSurface> CompositorImpl::createOutputSurface() {
   if (g_use_direct_gl) {
     WebKit::WebGraphicsContext3D::Attributes attrs;
     attrs.shareResources = false;
@@ -289,7 +285,7 @@ scoped_ptr<WebKit::WebCompositorOutputSurface>
             attrs,
             window_,
             NULL));
-    return scoped_ptr<WebKit::WebCompositorOutputSurface>(
+    return scoped_ptr<cc::OutputSurface>(
         new WebGraphicsContextToOutputSurfaceAdapter(context.release()));
   } else {
     DCHECK(window_ && surface_id_);
@@ -308,9 +304,9 @@ scoped_ptr<WebKit::WebCompositorOutputSurface>
         false,
         CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE)) {
       LOG(ERROR) << "Failed to create 3D context for compositor.";
-      return scoped_ptr<WebKit::WebCompositorOutputSurface>();
+      return scoped_ptr<cc::OutputSurface>();
     }
-    return scoped_ptr<WebKit::WebCompositorOutputSurface>(
+    return scoped_ptr<cc::OutputSurface>(
         new WebGraphicsContextToOutputSurfaceAdapter(context.release()));
   }
 }

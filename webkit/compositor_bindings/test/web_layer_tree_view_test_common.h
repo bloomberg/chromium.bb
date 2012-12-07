@@ -6,7 +6,7 @@
 #define WebLayerTreeViewTestCommon_h
 
 #include "cc/test/compositor_fake_web_graphics_context_3d.h"
-#include "cc/test/fake_web_compositor_output_surface.h"
+#include "cc/test/fake_output_surface.h"
 #include <gmock/gmock.h>
 #include <public/WebLayerTreeViewClient.h>
 
@@ -21,9 +21,9 @@ public:
     virtual void layout() OVERRIDE { }
     virtual void applyScrollAndScale(const WebSize& scrollDelta, float scaleFactor) OVERRIDE { }
 
-    virtual WebCompositorOutputSurface* createOutputSurface() OVERRIDE
+    virtual cc::OutputSurface* createOutputSurface() OVERRIDE
     {
-        return FakeWebCompositorOutputSurface::create(CompositorFakeWebGraphicsContext3D::create(WebGraphicsContext3D::Attributes()).PassAs<WebKit::WebGraphicsContext3D>()).release();
+      return cc::FakeOutputSurface::Create3d(CompositorFakeWebGraphicsContext3D::create(WebGraphicsContext3D::Attributes()).PassAs<WebKit::WebGraphicsContext3D>()).release();
     }
     virtual void didRecreateOutputSurface(bool) OVERRIDE { }
 

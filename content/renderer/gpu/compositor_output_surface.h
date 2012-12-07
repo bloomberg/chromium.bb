@@ -11,8 +11,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebCompositorOutputSurface.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebCompositorSoftwareOutputDevice.h"
+#include "cc/output_surface.h"
+#include "cc/software_output_device.h"
 
 namespace base {
 class TaskRunner;
@@ -28,25 +28,24 @@ namespace content {
 // This class can be created only on the main thread, but then becomes pinned
 // to a fixed thread when bindToClient is called.
 class CompositorOutputSurface
-    : NON_EXPORTED_BASE(public WebKit::WebCompositorOutputSurface), 
-    NON_EXPORTED_BASE(public base::NonThreadSafe) {
+    : NON_EXPORTED_BASE(public cc::OutputSurface),
+      NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
   static IPC::ForwardingMessageFilter* CreateFilter(
       base::TaskRunner* target_task_runner);
 
   CompositorOutputSurface(int32 routing_id,
                           WebKit::WebGraphicsContext3D* context3d,
-                          WebKit::WebCompositorSoftwareOutputDevice* software);
+                          cc::SoftwareOutputDevice* software);
   virtual ~CompositorOutputSurface();
 
-  // WebCompositorOutputSurface implementation.
-  virtual bool bindToClient(
-      WebKit::WebCompositorOutputSurfaceClient* client) OVERRIDE;
-  virtual const Capabilities& capabilities() const OVERRIDE;
-  virtual WebKit::WebGraphicsContext3D* context3D() const OVERRIDE;
-  virtual WebKit::WebCompositorSoftwareOutputDevice* softwareDevice() const;
-  virtual void sendFrameToParentCompositor(
-      const WebKit::WebCompositorFrame&) OVERRIDE;
+  // cc::OutputSurface implementation.
+  virtual bool BindToClient(cc::OutputSurfaceClient* client) OVERRIDE;
+  virtual const struct Capabilities& Capabilities() const OVERRIDE;
+  virtual WebKit::WebGraphicsContext3D* Context3D() const OVERRIDE;
+  virtual cc::SoftwareOutputDevice* SoftwareDevice() const OVERRIDE;
+  virtual void SendFrameToParentCompositor(
+      const cc::CompositorFrame&) OVERRIDE;
 
  private:
   class CompositorOutputSurfaceProxy :
@@ -74,12 +73,12 @@ class CompositorOutputSurface
       base::TimeTicks timebase, base::TimeDelta interval);
 
   scoped_refptr<IPC::ForwardingMessageFilter> output_surface_filter_;
-  WebKit::WebCompositorOutputSurfaceClient* client_;
+  cc::OutputSurfaceClient* client_;
   scoped_refptr<CompositorOutputSurfaceProxy> output_surface_proxy_;
   int routing_id_;
-  Capabilities capabilities_;
+  struct Capabilities capabilities_;
   scoped_ptr<WebKit::WebGraphicsContext3D> context3D_;
-  scoped_ptr<WebKit::WebCompositorSoftwareOutputDevice> software_device_;
+  scoped_ptr<cc::SoftwareOutputDevice> software_device_;
 };
 
 }  // namespace content

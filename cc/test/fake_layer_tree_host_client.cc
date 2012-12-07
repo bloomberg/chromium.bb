@@ -6,14 +6,14 @@
 
 namespace cc {
 
-scoped_ptr<WebKit::WebCompositorOutputSurface> FakeLayerImplTreeHostClient::createOutputSurface()
+scoped_ptr<OutputSurface> FakeLayerImplTreeHostClient::createOutputSurface()
 {
     if (m_useSoftwareRendering) {
-        return WebKit::FakeWebCompositorOutputSurface::createSoftware(make_scoped_ptr(new WebKit::FakeWebCompositorSoftwareOutputDevice).PassAs<WebKit::WebCompositorSoftwareOutputDevice>()).PassAs<WebKit::WebCompositorOutputSurface>();
+        return FakeOutputSurface::CreateSoftware(make_scoped_ptr(new FakeSoftwareOutputDevice).PassAs<SoftwareOutputDevice>()).PassAs<OutputSurface>();
     }
 
     WebKit::WebGraphicsContext3D::Attributes attrs;
-    return WebKit::FakeWebCompositorOutputSurface::create(WebKit::CompositorFakeWebGraphicsContext3D::create(attrs).PassAs<WebKit::WebGraphicsContext3D>()).PassAs<WebKit::WebCompositorOutputSurface>();
+    return FakeOutputSurface::Create3d(WebKit::CompositorFakeWebGraphicsContext3D::create(attrs).PassAs<WebKit::WebGraphicsContext3D>()).PassAs<OutputSurface>();
 }
 
 scoped_ptr<InputHandler> FakeLayerImplTreeHostClient::createInputHandler()

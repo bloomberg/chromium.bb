@@ -13,8 +13,8 @@
 #include "cc/single_thread_proxy.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_layer_tree_host_client.h"
+#include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_proxy.h"
-#include "cc/test/fake_web_compositor_output_surface.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_tree_test_common.h"
 #include "cc/test/occlusion_tracker_test_common.h"
@@ -1403,7 +1403,7 @@ public:
 
     virtual void commitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE
     {
-        CompositorFakeWebGraphicsContext3DWithTextureTracking* context = static_cast<CompositorFakeWebGraphicsContext3DWithTextureTracking*>(impl->outputSurface()->context3D());
+        CompositorFakeWebGraphicsContext3DWithTextureTracking* context = static_cast<CompositorFakeWebGraphicsContext3DWithTextureTracking*>(impl->outputSurface()->Context3D());
 
         switch (impl->activeTree()->source_frame_number()) {
         case 0:
@@ -1437,7 +1437,7 @@ public:
 
     virtual void drawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE
     {
-        CompositorFakeWebGraphicsContext3DWithTextureTracking* context = static_cast<CompositorFakeWebGraphicsContext3DWithTextureTracking*>(impl->outputSurface()->context3D());
+        CompositorFakeWebGraphicsContext3DWithTextureTracking* context = static_cast<CompositorFakeWebGraphicsContext3DWithTextureTracking*>(impl->outputSurface()->Context3D());
 
         // Number of textures used for draw should always be one.
         EXPECT_EQ(1, context->numUsedTextures());
@@ -1507,7 +1507,7 @@ public:
 
     virtual void commitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE
     {
-        CompositorFakeWebGraphicsContext3DWithTextureTracking* context = static_cast<CompositorFakeWebGraphicsContext3DWithTextureTracking*>(impl->outputSurface()->context3D());
+        CompositorFakeWebGraphicsContext3DWithTextureTracking* context = static_cast<CompositorFakeWebGraphicsContext3DWithTextureTracking*>(impl->outputSurface()->Context3D());
 
         switch (impl->activeTree()->source_frame_number()) {
         case 0:
@@ -1559,7 +1559,7 @@ public:
 
     virtual void drawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE
     {
-        CompositorFakeWebGraphicsContext3DWithTextureTracking* context = static_cast<CompositorFakeWebGraphicsContext3DWithTextureTracking*>(impl->outputSurface()->context3D());
+        CompositorFakeWebGraphicsContext3DWithTextureTracking* context = static_cast<CompositorFakeWebGraphicsContext3DWithTextureTracking*>(impl->outputSurface()->Context3D());
 
         // Number of textures used for drawing should two except for frame 4
         // where the viewport only contains one layer.
@@ -2960,9 +2960,9 @@ public:
             m_children.push_back(ContentLayerWithUpdateTracking::create(&m_client));
     }
 
-    virtual scoped_ptr<WebKit::WebCompositorOutputSurface> createOutputSurface()
+    virtual scoped_ptr<OutputSurface> createOutputSurface()
     {
-        return FakeWebCompositorOutputSurface::create(CompositorFakeWebGraphicsContext3DWithEndQueryCausingLostContext::create(WebGraphicsContext3D::Attributes()).PassAs<WebKit::WebGraphicsContext3D>()).PassAs<WebKit::WebCompositorOutputSurface>();
+        return FakeOutputSurface::Create3d(CompositorFakeWebGraphicsContext3DWithEndQueryCausingLostContext::create(WebGraphicsContext3D::Attributes()).PassAs<WebKit::WebGraphicsContext3D>()).PassAs<OutputSurface>();
     }
 
     virtual void beginTest()

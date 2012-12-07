@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/time.h"
 #include "base/memory/scoped_ptr.h"
-#include <public/WebCompositorOutputSurface.h>
 #include "cc/cc_export.h"
 
 namespace gfx {

@@ -39,20 +39,20 @@ CompositorSoftwareOutputDeviceGLAdapter::
   Destroy();
 }
 
-WebImage* CompositorSoftwareOutputDeviceGLAdapter::lock(bool forWrite) {
+WebImage* CompositorSoftwareOutputDeviceGLAdapter::Lock(bool forWrite) {
   locked_for_write_ = forWrite;
   image_ = device_->accessBitmap(forWrite);
   return &image_;
 }
 
-void CompositorSoftwareOutputDeviceGLAdapter::unlock() {
+void CompositorSoftwareOutputDeviceGLAdapter::Unlock() {
   if (locked_for_write_)
     Draw(device_->accessBitmap(false).pixelRef()->pixels());
   image_.reset();
 }
 
-void CompositorSoftwareOutputDeviceGLAdapter::didChangeViewportSize(
-    WebSize size) {
+void CompositorSoftwareOutputDeviceGLAdapter::DidChangeViewportSize(
+    gfx::Size size) {
   if (!initialized_)
     Initialize();
 

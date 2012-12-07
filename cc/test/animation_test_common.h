@@ -14,7 +14,7 @@ class LayerImpl;
 class Layer;
 }
 
-namespace WebKitTests {
+namespace cc {
 
 class FakeFloatAnimationCurve : public cc::FloatAnimationCurve {
 public:
@@ -69,6 +69,6 @@ int addOpacityTransitionToLayer(cc::LayerImpl&, double duration, float startOpac
 int addAnimatedTransformToLayer(cc::Layer&, double duration, int deltaX, int deltaY);
 int addAnimatedTransformToLayer(cc::LayerImpl&, double duration, int deltaX, int deltaY);
 
-} // namespace WebKitTests
+}  // namespace cc
 
 #endif  // CC_TEST_ANIMATION_TEST_COMMON_H_
