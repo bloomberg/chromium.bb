@@ -1224,6 +1224,7 @@ void ProfileSyncService::SetSetupInProgress(bool setup_in_progress) {
       ReconfigureDatatypeManager();
     }
   }
+  NotifyObservers();
 }
 
 bool ProfileSyncService::sync_initialized() const {

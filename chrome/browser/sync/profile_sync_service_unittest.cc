@@ -156,6 +156,19 @@ class ProfileSyncServiceTestHarness {
   content::TestBrowserThread io_thread_;
 };
 
+class TestProfileSyncServiceObserver : public ProfileSyncServiceObserver {
+ public:
+  explicit TestProfileSyncServiceObserver(ProfileSyncService* service)
+      : service_(service), first_setup_in_progress_(false) {}
+  virtual void OnStateChanged() OVERRIDE {
+    first_setup_in_progress_ = service_->FirstSetupInProgress();
+  }
+  bool first_setup_in_progress() const { return first_setup_in_progress_; }
+ private:
+  ProfileSyncService* service_;
+  bool first_setup_in_progress_;
+};
+
 class ProfileSyncServiceTest : public testing::Test {
  protected:
   virtual void SetUp() {
@@ -184,6 +197,20 @@ TEST_F(ProfileSyncServiceTest, InitialState) {
         ProfileSyncService::kSyncServerUrl ||
       harness_.service->sync_service_url().spec() ==
         ProfileSyncService::kDevServerUrl);
+}
+
+// Tests that the sync service doesn't forget to notify observers about
+// setup state.
+TEST(ProfileSyncServiceTestBasic, SetupInProgress) {
+  ProfileSyncService service(
+      NULL, NULL, NULL, ProfileSyncService::MANUAL_START);
+  TestProfileSyncServiceObserver observer(&service);
+  service.AddObserver(&observer);
+  service.SetSetupInProgress(true);
+  EXPECT_TRUE(observer.first_setup_in_progress());
+  service.SetSetupInProgress(false);
+  EXPECT_FALSE(observer.first_setup_in_progress());
+  service.RemoveObserver(&observer);
 }
 
 TEST_F(ProfileSyncServiceTest, DisabledByPolicy) {
