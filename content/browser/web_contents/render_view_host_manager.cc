@@ -13,6 +13,7 @@
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/site_instance_impl.h"
+#include "content/browser/web_contents/interstitial_page_impl.h"
 #include "content/browser/web_contents/navigation_controller_impl.h"
 #include "content/browser/web_contents/navigation_entry_impl.h"
 #include "content/browser/webui/web_ui_impl.h"
@@ -89,6 +90,8 @@ RenderViewHostImpl* RenderViewHostManager::pending_render_view_host() const {
 }
 
 RenderWidgetHostView* RenderViewHostManager::GetRenderWidgetHostView() const {
+  if (interstitial_page_)
+    return interstitial_page_->GetView();
   if (!render_view_host_)
     return NULL;
   return render_view_host_->GetView();

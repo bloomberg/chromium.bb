@@ -328,7 +328,6 @@ WebContentsViewAura::WebContentsViewAura(
     WebContentsImpl* web_contents,
     WebContentsViewDelegate* delegate)
     : web_contents_(web_contents),
-      view_(NULL),
       delegate_(delegate),
       current_drag_op_(WebKit::WebDragOperationNone),
       drag_dest_delegate_(NULL),
@@ -421,7 +420,7 @@ void WebContentsViewAura::PrepareContentWindowForOverscroll() {
 }
 
 void WebContentsViewAura::ResetOverscrollTransform() {
-  if (!view_)
+  if (!web_contents_->GetRenderWidgetHostView())
     return;
   aura::Window* target = GetWindowToAnimateForOverscroll();
   ui::ScopedLayerAnimationSettings settings(target->layer()->GetAnimator());
@@ -432,12 +431,12 @@ void WebContentsViewAura::ResetOverscrollTransform() {
 }
 
 void WebContentsViewAura::CompleteOverscrollNavigation(OverscrollMode mode) {
+  if (!web_contents_->GetRenderWidgetHostView())
+    return;
+
   // Animate out the current view first. Navigate to the requested history at
   // the end of the animation.
   if (current_overscroll_gesture_ == OVERSCROLL_NONE)
-    return;
-
-  if (!view_)
     return;
 
   completed_overscroll_gesture_ = mode;
@@ -447,7 +446,8 @@ void WebContentsViewAura::CompleteOverscrollNavigation(OverscrollMode mode) {
   settings.SetTweenType(ui::Tween::EASE_OUT);
   settings.AddObserver(this);
   gfx::Transform transform;
-  int content_width = view_->GetViewBounds().width();
+  int content_width =
+      web_contents_->GetRenderWidgetHostView()->GetViewBounds().width();
   transform.Translate(mode == OVERSCROLL_WEST ? -content_width : content_width,
                       0);
   target->SetTransform(transform);
@@ -533,13 +533,14 @@ RenderWidgetHostView* WebContentsViewAura::CreateViewForWidget(
     return render_widget_host->GetView();
   }
 
-  view_ = RenderWidgetHostView::CreateViewForWidget(render_widget_host);
-  view_->InitAsChild(NULL);
-  GetNativeView()->AddChild(view_->GetNativeView());
-  view_->Show();
+  RenderWidgetHostView* view =
+      RenderWidgetHostView::CreateViewForWidget(render_widget_host);
+  view->InitAsChild(NULL);
+  GetNativeView()->AddChild(view->GetNativeView());
+  view->Show();
 
   // We listen to drag drop events in the newly created view's window.
-  aura::client::SetDragDropDelegate(view_->GetNativeView(), this);
+  aura::client::SetDragDropDelegate(view->GetNativeView(), this);
 
   RenderWidgetHostImpl* host_impl =
       RenderWidgetHostImpl::From(render_widget_host);
@@ -547,11 +548,7 @@ RenderWidgetHostView* WebContentsViewAura::CreateViewForWidget(
       web_contents_->GetDelegate()->CanOverscrollContent())
     host_impl->overscroll_controller()->set_delegate(this);
 
-  return view_;
-}
-
-void WebContentsViewAura::SetView(RenderWidgetHostView* view) {
-  view_ = view;
+  return view;
 }
 
 gfx::NativeView WebContentsViewAura::GetNativeView() const {
@@ -559,7 +556,8 @@ gfx::NativeView WebContentsViewAura::GetNativeView() const {
 }
 
 gfx::NativeView WebContentsViewAura::GetContentNativeView() const {
-  return view_->GetNativeView();
+  RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
+  return rwhv ? rwhv->GetNativeView() : NULL;
 }
 
 gfx::NativeWindow WebContentsViewAura::GetTopLevelNativeWindow() const {
@@ -576,7 +574,6 @@ void WebContentsViewAura::SetPageTitle(const string16& title) {
 
 void WebContentsViewAura::OnTabCrashed(base::TerminationStatus status,
                                        int error_code) {
-  view_ = NULL;
   // Set the focus to the parent because neither the view window nor this
   // window can handle key events.
   if (window_->HasFocus() && window_->parent())
@@ -690,7 +687,7 @@ void WebContentsViewAura::StartDragging(
   // updates while in the system DoDragDrop loop.
   int result_op = 0;
   {
-    gfx::NativeView content_native_view = view_? GetContentNativeView() : NULL;
+    gfx::NativeView content_native_view = GetContentNativeView();
     MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
     result_op = aura::client::GetDragDropClient(root_window)->StartDragAndDrop(
         data, root_window, content_native_view,
@@ -846,9 +843,9 @@ bool WebContentsViewAura::ShouldDescendIntoChildForEventHandling(
 }
 
 bool WebContentsViewAura::CanFocus() {
-  // Do not take the focus if |view_| is gone because neither the view window
-  // nor this window can handle key events.
-  return view_ != NULL;
+  // Do not take the focus if the render widget host view is gone because
+  // neither the view window nor this window can handle key events.
+  return web_contents_->GetRenderWidgetHostView() != NULL;
 }
 
 void WebContentsViewAura::OnCaptureLost() {

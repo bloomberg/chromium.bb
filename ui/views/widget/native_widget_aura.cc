@@ -670,7 +670,8 @@ void NativeWidgetAura::OnBoundsChanged(const gfx::Rect& old_bounds,
 void NativeWidgetAura::OnFocus(aura::Window* old_focused_window) {
   // In aura, it is possible for child native widgets to take input and focus,
   // this differs from the behavior on windows.
-  GetWidget()->GetInputMethod()->OnFocus();
+  if (GetWidget()->GetInputMethod())  // Null in tests.
+    GetWidget()->GetInputMethod()->OnFocus();
   delegate_->OnNativeFocus(old_focused_window);
 }
 
@@ -682,10 +683,12 @@ void NativeWidgetAura::OnBlur() {
   // and doesn't expect a blur).  OnBlur() shouldn't be called during
   // destruction unless WIDGET_OWNS_NATIVE_WIDGET is set (which is just the case
   // in tests).
-  if (!destroying_)
-    GetWidget()->GetInputMethod()->OnBlur();
-  else
+  if (!destroying_) {
+    if (GetWidget()->GetInputMethod())
+      GetWidget()->GetInputMethod()->OnBlur();
+  } else {
     DCHECK_EQ(ownership_, Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET);
+  }
 
   delegate_->OnNativeBlur(
       aura::client::GetFocusClient(window_)->GetFocusedWindow());

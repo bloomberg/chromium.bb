@@ -250,9 +250,6 @@ void InterstitialPageImpl::Hide() {
     // already showing. That would result in bad things (unparented HWND on
     // Windows for example) happening.
     old_view->Show();
-    // WebContentsView implementations cached a pointer to the interstitial view
-    // when we created it, so set the old original back.
-    web_contents_->GetView()->SetView(old_view);
   }
 
   // If the focus was on the interstitial, let's keep it to the page.
@@ -625,6 +622,10 @@ void InterstitialPageImpl::FocusThroughTabTraversal(bool reverse) {
   if (!enabled())
     return;
   render_view_host_->SetInitialFocus(reverse);
+}
+
+RenderWidgetHostView* InterstitialPageImpl::GetView() {
+  return render_view_host_->GetView();
 }
 
 RenderViewHost* InterstitialPageImpl::GetRenderViewHostForTesting() const {

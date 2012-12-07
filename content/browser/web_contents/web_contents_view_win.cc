@@ -90,7 +90,6 @@ void AddFilterToParentHwndSubclass(HWND hwnd, ui::HWNDMessageFilter* filter) {
 WebContentsViewWin::WebContentsViewWin(WebContentsImpl* web_contents,
                                        WebContentsViewDelegate* delegate)
     : web_contents_(web_contents),
-      view_(NULL),
       delegate_(delegate),
       hwnd_message_filter_(new PositionChangedMessageFilter) {
 }
@@ -131,16 +130,12 @@ RenderWidgetHostView* WebContentsViewWin::CreateViewForWidget(
     return render_widget_host->GetView();
   }
 
-  view_ = static_cast<RenderWidgetHostViewWin*>(
+  RenderWidgetHostViewWin* view = static_cast<RenderWidgetHostViewWin*>(
       RenderWidgetHostView::CreateViewForWidget(render_widget_host));
-  view_->CreateWnd(GetNativeView());
-  view_->ShowWindow(SW_SHOW);
-  view_->SetSize(initial_size_);
-  return view_;
-}
-
-void WebContentsViewWin::SetView(RenderWidgetHostView* view) {
-  view_ = static_cast<RenderWidgetHostViewWin*>(view);
+  view->CreateWnd(GetNativeView());
+  view->ShowWindow(SW_SHOW);
+  view->SetSize(initial_size_);
+  return view;
 }
 
 gfx::NativeView WebContentsViewWin::GetNativeView() const {
@@ -173,9 +168,6 @@ void WebContentsViewWin::SetPageTitle(const string16& title) {
 
 void WebContentsViewWin::OnTabCrashed(base::TerminationStatus status,
                                       int error_code) {
-  // TODO(avi): No other TCV implementation does anything in this callback. Can
-  // this be moved elsewhere so that |OnTabCrashed| can be removed everywhere?
-  view_ = NULL;
 }
 
 void WebContentsViewWin::SizeContents(const gfx::Size& size) {
