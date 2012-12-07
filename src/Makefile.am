@@ -4,7 +4,8 @@ bin_PROGRAMS = weston				\
 AM_CPPFLAGS =					\
 	-DDATADIR='"$(datadir)"'		\
 	-DMODULEDIR='"$(moduledir)"'		\
-	-DLIBEXECDIR='"$(libexecdir)"'
+	-DLIBEXECDIR='"$(libexecdir)"'		\
+	-DIN_WESTON
 
 weston_LDFLAGS = -export-dynamic
 weston_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
@@ -35,6 +36,8 @@ weston_SOURCES =				\
 	gl-renderer.h				\
 	gl-renderer.c				\
 	noop-renderer.c				\
+	../shared/matrix.c			\
+	../shared/matrix.h			\
 	weston-launch.h				\
 	weston-egl-ext.h
 

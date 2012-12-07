@@ -123,7 +123,7 @@ clickdot_LDADD = $(toolkit_libs)
 transformed_SOURCES = transformed.c
 transformed_LDADD = $(toolkit_libs)
 
-calibrator_SOURCES = calibrator.c
+calibrator_SOURCES = calibrator.c ../shared/matrix.c ../shared/matrix.h
 calibrator_LDADD = $(toolkit_libs)
 
 editor_SOURCES = 				\

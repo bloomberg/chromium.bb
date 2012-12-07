@@ -24,7 +24,12 @@
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
+
+#ifdef IN_WESTON
 #include <wayland-server.h>
+#else
+#define WL_EXPORT
+#endif
 
 #include "matrix.h"
 
