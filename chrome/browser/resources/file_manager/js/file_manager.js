@@ -862,6 +862,10 @@ DialogType.isModal = function(type) {
     this.rootsList_ = this.dialogDom_.querySelector('#roots-list');
     cr.ui.List.decorate(this.rootsList_);
 
+    // Overriding default role 'list' set by cr.ui.List.decorate() to 'listbox'
+    // role for better accessibility on ChromeOS.
+    this.rootsList_.setAttribute('role', 'listbox');
+
     var self = this;
     this.rootsList_.itemConstructor = function(entry) {
       return self.renderRoot_(entry.fullPath);
@@ -1647,6 +1651,7 @@ DialogType.isModal = function(type) {
   FileManager.prototype.renderRoot_ = function(path) {
     var li = this.document_.createElement('li');
     li.className = 'root-item';
+    li.setAttribute('role', 'option');
     var dm = this.directoryModel_;
     var handleClick = function() {
       if (li.selected && path !== dm.getCurrentDirPath()) {
