@@ -5,6 +5,7 @@
 #ifndef CHROME_COMMON_EXTENSIONS_FILE_BROWSER_HANDLER_H_
 #define CHROME_COMMON_EXTENSIONS_FILE_BROWSER_HANDLER_H_
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -18,6 +19,10 @@ class URLPattern;
 // FileBrowserHandler encapsulates the state of a file browser action.
 class FileBrowserHandler {
  public:
+  // Returns true iff the extension with id |extension_id| is allowed to use
+  // MIME type filters.
+  static bool ExtensionWhitelistedForMIMETypes(const std::string& extension_id);
+
   FileBrowserHandler();
   ~FileBrowserHandler();
 
@@ -42,6 +47,11 @@ class FileBrowserHandler {
   void AddPattern(const URLPattern& pattern);
   bool MatchesURL(const GURL& url) const;
   void ClearPatterns();
+
+  // Adds a MIME type filter to the handler.
+  void AddMIMEType(const std::string& mime_type);
+  // Tests if the handler has registered a filter for the MIME type.
+  bool CanHandleMIMEType(const std::string& mime_type) const;
 
   // Action icon path.
   const std::string icon_path() const { return default_icon_path_; }
@@ -76,6 +86,8 @@ class FileBrowserHandler {
 
   // A list of file filters.
   extensions::URLPatternSet url_set_;
+  // A list of MIME type filters.
+  std::set<std::string> mime_type_set_;
 };
 
 #endif  // CHROME_COMMON_EXTENSIONS_FILE_BROWSER_HANDLER_H_

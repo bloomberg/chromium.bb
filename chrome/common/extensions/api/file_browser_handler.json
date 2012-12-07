@@ -43,6 +43,23 @@
             "description": "File handler execute event details."
           }
         ]
+      },
+      {
+        "name": "onExecuteContentHandler",
+        "type": "function",
+        "description": "Fired when a resource is fetched which matches a mime type handled by this extension. The resource request is cancelled, and the extension is expected to handle the request. The event is restricted to a small number of white-listed fileBrowserHandlers.",
+        "parameters": [
+          {
+            "name": "mime_type",
+            "type": "string",
+            "description": "The MIME type of the intercepted URL request."
+          },
+          {
+            "name": "content_url",
+            "type": "string",
+            "description": "The intercepted URL request. The handler should fetch and handle data referenced by the URL."
+          }
+        ]
       }
     ],
 
@@ -50,7 +67,7 @@
       {
         "name": "selectFile",
         "type": "function",
-        "description": "Prompts user to select file path under which file should be saved. When the file is selected, file access permission required to use the file (read, write and create) are granted to the caller. The file will not actually get created during the functin call, so function caller must ensure its existance before using it. The function has to be invoked with a user gesture.",
+        "description": "Prompts user to select file path under which file should be saved. When the file is selected, file access permission required to use the file (read, write and create) are granted to the caller. The file will not actually get created during the function call, so function caller must ensure its existence before using it. The function has to be invoked with a user gesture.",
         "parameters": [
           {
             "name": "selectionParams",

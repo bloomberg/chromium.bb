@@ -3107,14 +3107,14 @@ FileBrowserHandler* Extension::LoadFileBrowserHandler(
   scoped_ptr<FileBrowserHandler> result(new FileBrowserHandler());
   result->set_extension_id(id());
 
-  std::string id;
+  std::string handler_id;
   // Read the file action |id| (mandatory).
   if (!file_browser_handler->HasKey(keys::kPageActionId) ||
-      !file_browser_handler->GetString(keys::kPageActionId, &id)) {
+      !file_browser_handler->GetString(keys::kPageActionId, &handler_id)) {
     *error = ASCIIToUTF16(errors::kInvalidPageActionId);
     return NULL;
   }
-  result->set_id(id);
+  result->set_id(handler_id);
 
   // Read the page action title from |default_title| (mandatory).
   std::string title;
@@ -3152,16 +3152,16 @@ FileBrowserHandler* Extension::LoadFileBrowserHandler(
   // Initialize file filters (mandatory, unless "create" access is specified,
   // in which case is ignored).
   if (!result->HasCreateAccessPermission()) {
-    const ListValue* list_value = NULL;
+    const ListValue* file_filters = NULL;
     if (!file_browser_handler->HasKey(keys::kFileFilters) ||
-        !file_browser_handler->GetList(keys::kFileFilters, &list_value) ||
-        list_value->empty()) {
+        !file_browser_handler->GetList(keys::kFileFilters, &file_filters) ||
+        file_filters->empty()) {
       *error = ASCIIToUTF16(errors::kInvalidFileFiltersList);
       return NULL;
     }
-    for (size_t i = 0; i < list_value->GetSize(); ++i) {
+    for (size_t i = 0; i < file_filters->GetSize(); ++i) {
       std::string filter;
-      if (!list_value->GetString(i, &filter)) {
+      if (!file_filters->GetString(i, &filter)) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
             errors::kInvalidFileFilterValue, base::IntToString(i));
         return NULL;
@@ -3193,6 +3193,35 @@ FileBrowserHandler* Extension::LoadFileBrowserHandler(
         return NULL;
       }
       result->AddPattern(pattern);
+    }
+
+    // Initialize MIME type filters (optional).
+    // NOTE: This is only used by QuickOffice extension to register MIME types
+    // it can handle by directly downloading them. It will *not* be used in File
+    // Manager UI. This is why file filters are mandatory even when MIME type
+    // filters are specified.
+    const ListValue* mime_type_filters = NULL;
+    if (file_browser_handler->HasKey(keys::kMIMETypes)) {
+      if (!FileBrowserHandler::ExtensionWhitelistedForMIMETypes(id())) {
+        *error = ASCIIToUTF16(
+            errors::kNoPermissionForFileBrowserHandlerMIMETypes);
+        return NULL;
+      }
+
+      if (!file_browser_handler->GetList(keys::kMIMETypes,
+                                         &mime_type_filters)) {
+        *error = ASCIIToUTF16(errors::kInvalidFileBrowserHandlerMIMETypes);
+        return NULL;
+      }
+
+      for (size_t i = 0; i < mime_type_filters->GetSize(); ++i) {
+        std::string filter;
+        if (!mime_type_filters->GetString(i, &filter)) {
+          *error = ASCIIToUTF16(errors::kInvalidFileBrowserHandlerMIMETypes);
+          return NULL;
+        }
+        result->AddMIMEType(filter);
+      }
     }
   }
 

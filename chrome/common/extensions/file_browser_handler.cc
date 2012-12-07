@@ -5,6 +5,7 @@
 #include "chrome/common/extensions/file_browser_handler.h"
 
 #include "base/logging.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "extensions/common/url_pattern.h"
 #include "googleurl/src/gurl.h"
 
@@ -30,8 +31,22 @@ unsigned int GetAccessPermissionFlagFromString(const std::string& access_str) {
   return kInvalidPermission;
 }
 
-}
+const char* const kMIMETypeHandlersWhitelist[] = {
+  extension_misc::kQuickOfficeExtensionId,
+  extension_misc::kQuickOfficeDevExtensionId
+};
 
+}  // namespace
+
+// static
+bool FileBrowserHandler::ExtensionWhitelistedForMIMETypes(
+    const std::string& extension_id) {
+  for (size_t i = 0; i < arraysize(kMIMETypeHandlersWhitelist); ++i) {
+    if (extension_id == kMIMETypeHandlersWhitelist[i])
+      return true;
+  }
+  return false;
+}
 
 FileBrowserHandler::FileBrowserHandler()
     : file_access_permission_flags_(kPermissionsNotDefined) {
@@ -50,6 +65,15 @@ void FileBrowserHandler::ClearPatterns() {
 
 bool FileBrowserHandler::MatchesURL(const GURL& url) const {
   return url_set_.MatchesURL(url);
+}
+
+void FileBrowserHandler::AddMIMEType(const std::string& mime_type) {
+  DCHECK(ExtensionWhitelistedForMIMETypes(extension_id()));
+  mime_type_set_.insert(mime_type);
+}
+
+bool FileBrowserHandler::CanHandleMIMEType(const std::string& mime_type) const {
+  return mime_type_set_.find(mime_type) != mime_type_set_.end();
 }
 
 bool FileBrowserHandler::AddFileAccessPermission(

@@ -74,6 +74,7 @@ namespace extension_manifest_keys {
   extern const char kLayouts[];
   extern const char kManifestVersion[];
   extern const char kMatches[];
+  extern const char kMIMETypes[];
   extern const char kMinimumChromeVersion[];
   extern const char kNaClModules[];
   extern const char kNaClModulesMIMEType[];
@@ -211,6 +212,7 @@ namespace extension_manifest_errors {
   extern const char kInvalidFileAccessList[];
   extern const char kInvalidFileAccessValue[];
   extern const char kInvalidFileBrowserHandler[];
+  extern const char kInvalidFileBrowserHandlerMIMETypes[];
   extern const char kInvalidFileFiltersList[];
   extern const char kInvalidFileFilterValue[];
   extern const char kInvalidFileHandlers[];
@@ -335,6 +337,7 @@ namespace extension_manifest_errors {
   extern const char kManifestUnreadable[];
   extern const char kMissingFile[];
   extern const char kMultipleOverrides[];
+  extern const char kNoPermissionForFileBrowserHandlerMIMETypes[];
   extern const char kNoWildCardsInPaths[];
   extern const char kPermissionNotAllowed[];
   extern const char kPermissionNotAllowedInManifest[];
