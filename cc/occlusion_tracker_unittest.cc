@@ -134,12 +134,16 @@ struct OcclusionTrackerTestMainThreadTypes {
 
     static LayerPtrType passLayerPtr(ContentLayerPtrType& layer)
     {
-        return layer.release();
+        LayerPtrType ref(layer);
+        layer = NULL;
+        return ref;
     }
 
     static LayerPtrType passLayerPtr(LayerPtrType& layer)
     {
-        return layer.release();
+        LayerPtrType ref(layer);
+        layer = NULL;
+        return ref;
     }
 
     static void destroyLayer(LayerPtrType& layer)
