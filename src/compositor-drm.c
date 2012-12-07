@@ -213,7 +213,8 @@ drm_fb_destroy_callback(struct gbm_bo *bo, void *data)
 }
 
 static struct drm_fb *
-drm_fb_get_from_bo(struct gbm_bo *bo, struct drm_compositor *compositor)
+drm_fb_get_from_bo(struct gbm_bo *bo, struct drm_compositor *compositor,
+		   uint32_t override_format)
 {
 	struct drm_fb *fb = gbm_bo_get_user_data(bo);
 	uint32_t width, height, stride, handle, format;
@@ -243,7 +244,10 @@ drm_fb_get_from_bo(struct gbm_bo *bo, struct drm_compositor *compositor)
 
 	ret = -1;
 
-	format = gbm_bo_get_format(bo);
+	if (override_format)
+		format = override_format;
+	else
+		format = gbm_bo_get_format(bo);
 
 	if (format && !compositor->no_addfb2) {
 		handles[0] = handle;
@@ -347,7 +351,7 @@ drm_output_prepare_scanout_surface(struct weston_output *_output,
 		return NULL;
 	}
 
-	output->next = drm_fb_get_from_bo(bo, c);
+	output->next = drm_fb_get_from_bo(bo, c, 0);
 	if (!output->next) {
 		gbm_bo_destroy(bo);
 		return NULL;
@@ -376,7 +380,7 @@ drm_output_render(struct drm_output *output, pixman_region32_t *damage)
 		return;
 	}
 
-	output->next = drm_fb_get_from_bo(bo, c);
+	output->next = drm_fb_get_from_bo(bo, c, 0);
 	if (!output->next) {
 		weston_log("failed to get drm_fb for bo\n");
 		gbm_surface_release_buffer(output->surface, bo);
@@ -618,12 +622,25 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 
 	format = gbm_bo_get_format(bo);
 
+	if (format == GBM_FORMAT_ARGB8888) {
+		pixman_region32_t r;
+
+		pixman_region32_init(&r);
+		pixman_region32_subtract(&r, &es->transform.boundingbox,
+					 &es->transform.opaque);
+
+		if (!pixman_region32_not_empty(&r))
+			format = GBM_FORMAT_XRGB8888;
+
+		pixman_region32_fini(&r);
+	}
+
 	if (!drm_surface_format_supported(s, format)) {
 		gbm_bo_destroy(bo);
 		return NULL;
 	}
 
-	s->next = drm_fb_get_from_bo(bo, c);
+	s->next = drm_fb_get_from_bo(bo, c, format);
 	if (!s->next) {
 		gbm_bo_destroy(bo);
 		return NULL;
