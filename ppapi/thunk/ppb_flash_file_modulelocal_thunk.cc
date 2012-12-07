@@ -100,6 +100,18 @@ int32_t CreateTemporaryFile(PP_Instance instance, PP_FileHandle* file) {
   return enter.functions()->GetFlashAPI()->CreateTemporaryFile(instance, file);
 }
 
+const PPB_Flash_File_ModuleLocal_2_0 g_ppb_flash_file_modulelocal_thunk_2_0 = {
+  &CreateThreadAdapterForInstance,
+  &ClearThreadAdapterForInstance,
+  &OpenFile,
+  &RenameFile,
+  &DeleteFileOrDir,
+  &CreateDir,
+  &QueryFile,
+  &GetDirContents,
+  &FreeDirContents
+};
+
 const PPB_Flash_File_ModuleLocal_3_0 g_ppb_flash_file_modulelocal_thunk_3_0 = {
   &CreateThreadAdapterForInstance,
   &ClearThreadAdapterForInstance,
@@ -114,6 +126,11 @@ const PPB_Flash_File_ModuleLocal_3_0 g_ppb_flash_file_modulelocal_thunk_3_0 = {
 };
 
 }  // namespace
+
+const PPB_Flash_File_ModuleLocal_2_0*
+    GetPPB_Flash_File_ModuleLocal_2_0_Thunk() {
+  return &g_ppb_flash_file_modulelocal_thunk_2_0;
+}
 
 const PPB_Flash_File_ModuleLocal_3_0*
     GetPPB_Flash_File_ModuleLocal_3_0_Thunk() {
