@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
+#include "base/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/google/google_util.h"
@@ -112,8 +113,11 @@ string16 UIThreadSearchTermsData::GetRlzParameterValue() const {
 std::string UIThreadSearchTermsData::InstantEnabledParam() const {
   DCHECK(!BrowserThread::IsWellKnownThread(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (chrome::search::IsInstantExtendedAPIEnabled(profile_))
-    return std::string(google_util::kInstantExtendedAPIParam) + "=1&";
+  uint32 instant_extended_api_version =
+      chrome::search::EmbeddedSearchPageVersion(profile_);
+  if (instant_extended_api_version != 0)
+    return std::string(google_util::kInstantExtendedAPIParam) + "=" +
+        base::Uint64ToString(instant_extended_api_version) + "&";
   if (chrome::BrowserInstantController::IsInstantEnabled(profile_))
     return "ion=1&";
   return std::string();
