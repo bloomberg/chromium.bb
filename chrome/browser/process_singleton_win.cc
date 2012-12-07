@@ -316,8 +316,6 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
   if (lock_file_ == INVALID_HANDLE_VALUE && !remote_window_) {
     return LOCK_ERROR;
   } else if (!remote_window_) {
-    g_browser_process->PlatformSpecificCommandLineProcessing(
-        *CommandLine::ForCurrentProcess());
     return PROCESS_NONE;
   }
 
@@ -431,6 +429,9 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessOrCreate(
     result = NotifyOtherProcess();
     if (result == PROCESS_NONE)
       result = PROFILE_IN_USE;
+  } else {
+    g_browser_process->PlatformSpecificCommandLineProcessing(
+        *CommandLine::ForCurrentProcess());
   }
   return result;
 }
