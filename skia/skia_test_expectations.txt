@@ -48,7 +48,4 @@
 #
 # START OVERRIDES HERE
 
-# bungeman@ will rebaseline this test
-crbug.com/155867 platform/chromium-linux/fast/text/chromium-linux-fontconfig-renderstyle.html [ Failure ImageOnlyFailure ]
-
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
