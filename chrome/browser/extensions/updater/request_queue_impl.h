@@ -96,12 +96,19 @@ void RequestQueue<T>::StartNextRequest() {
     return;
   }
 
-  active_backoff_entry_.reset(
-      pending_requests_.front().backoff_entry.release());
-  active_request_.reset(pending_requests_.front().request.release());
-
+  // pop_heap swaps the first and last elements of pending_requests_, and after
+  // that assures that the rest of pending_requests_ (excluding the
+  // now last/formerly first element) forms a proper heap. After pop_heap
+  // [begin, end-1) is a valid heap, and *(end - 1) contains the element that
+  // used to be at the top of the heap. Since no elements are actually
+  // removed from the container it is safe to read the entry being removed after
+  // pop_heap is called (but before pop_back is called).
   std::pop_heap(pending_requests_.begin(), pending_requests_.end(),
                 CompareRequests);
+
+  active_backoff_entry_.reset(pending_requests_.back().backoff_entry.release());
+  active_request_.reset(pending_requests_.back().request.release());
+
   pending_requests_.pop_back();
 
   start_request_callback_.Run();
