@@ -64,6 +64,23 @@ bool StringToTime(std::string time, base::Time* output) {
   return true;
 }
 
+// Try to get the URL for the RenderViewHost if the host does not correspond to
+// an incognito profile (we don't store URLs from incognito sessions). Returns
+// true if url has been populated, and false otherwise.
+bool MaybeGetURLFromRenderView(const content::RenderViewHost* view,
+                               std::string* url) {
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderViewHost(view);
+
+  if (Profile::FromBrowserContext(
+          web_contents->GetBrowserContext())->IsOffTheRecord()) {
+    return false;
+  }
+
+  *url = web_contents->GetURL().spec();
+  return true;
+}
+
 }  // namespace
 
 namespace performance_monitor {
@@ -500,8 +517,8 @@ void PerformanceMonitor::Observe(int type,
       content::RenderWidgetHost* widget =
           content::Source<content::RenderWidgetHost>(source).ptr();
       if (widget->IsRenderView()) {
-        url = content::WebContents::FromRenderViewHost(
-            content::RenderViewHost::From(widget))->GetURL().spec();
+        content::RenderViewHost* view = content::RenderViewHost::From(widget);
+        MaybeGetURLFromRenderView(view, &url);
       }
       AddEvent(util::CreateRendererFailureEvent(base::Time::Now(),
                                                 EVENT_RENDERER_HANG,
@@ -588,7 +605,7 @@ void PerformanceMonitor::AddRendererClosedEvent(
   // A RenderProcessHost may contain multiple render views - for each valid
   // render view, extract the url, and append it to the string, comma-separating
   // the entries.
-  std::string url;
+  std::string url_list;
   for (; !iter.IsAtEnd(); iter.Advance()) {
     const content::RenderWidgetHost* widget = iter.GetCurrentValue();
     DCHECK(widget);
@@ -599,13 +616,17 @@ void PerformanceMonitor::AddRendererClosedEvent(
         content::RenderViewHost::From(
             const_cast<content::RenderWidgetHost*>(widget));
 
-    if (!url.empty())
-      url += ", ";
+    std::string url;
+    if (!MaybeGetURLFromRenderView(view, &url))
+      continue;
 
-    url += content::WebContents::FromRenderViewHost(view)->GetURL().spec();
+    if (!url_list.empty())
+      url_list += ", ";
+
+    url_list += url;
   }
 
-  AddEvent(util::CreateRendererFailureEvent(base::Time::Now(), type, url));
+  AddEvent(util::CreateRendererFailureEvent(base::Time::Now(), type, url_list));
 }
 
 }  // namespace performance_monitor

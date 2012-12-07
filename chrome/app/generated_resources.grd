@@ -7046,7 +7046,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Enable performance monitoring
       </message>
       <message name="IDS_FLAGS_PERFORMANCE_MONITOR_GATHERING_DESCRIPTION" desc="Description for the flag to enable Performance Monitor.">
-        Enable passive gathering of performance-related metrics and events and provide the option to view this data in a graphical fashion.
+        Enable passive gathering of performance-related metrics and events and provide the option to view this data in a graphical fashion. To view data, visit chrome://performance.
       </message>
 
       <!-- Crashes -->
