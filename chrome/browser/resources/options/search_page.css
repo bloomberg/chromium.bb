@@ -31,7 +31,7 @@
   width: 100px;
 }
 
-/* Provides the border around the bubble (has to be behind :after). */
+/* Provides the border around the bubble (has to be behind ::after). */
 .search-bubble-innards::before {
   border: 1px solid rgb(220, 198, 72);
   border-radius: 2px;

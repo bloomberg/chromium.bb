@@ -449,6 +449,25 @@ div,a {
     div, span,
     div,a {""")
 
+  def testCssPseudoElementDoubleColon(self):
+    self.VerifyContentsProducesOutput("""
+a:href,
+br::after,
+::-webkit-scrollbar-thumb,
+a:not([empty]):hover:focus:active, /* shouldn't catch here and above */
+abbr:after,
+.tree-label:empty:after,
+b:before,
+:-webkit-scrollbar {
+  rule: value;
+}""", """
+- Pseudo-elements should use double colon (i.e. ::after).
+    :after (should be ::after)
+    :after (should be ::after)
+    :before (should be ::before)
+    :-webkit-scrollbar (should be ::-webkit-scrollbar)
+    """)
+
   def testCssRgbIfNotGray(self):
     self.VerifyContentsProducesOutput("""
 #abc,

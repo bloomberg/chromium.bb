@@ -88,7 +88,7 @@ list > [selected]:hover {
   padding: 0 12px;
 }
 
-.table-header-sort-image-desc:after {
+.table-header-sort-image-desc::after {
   -webkit-padding-start: 5px;
   color: #888;
   content: '\25be'; /* BLACK DOWN-POINTING SMALL TRIANGLE */
@@ -96,7 +96,7 @@ list > [selected]:hover {
   top: -2px;
 }
 
-.table-header-sort-image-asc:after {
+.table-header-sort-image-asc::after {
   -webkit-padding-start: 5px;
   color: #888;
   content: '\25b4'; /* BLACK UP-POINTING SMALL TRIANGLE */

@@ -65,7 +65,7 @@ menu > :not(hr)[selected]:active {
   color: #fff;
 }
 
-menu > [checked]:before {
+menu > [checked]::before {
   content: url('../images/checkbox_black.png');
   display: inline-block;
   height: 9px;
@@ -78,14 +78,14 @@ menu > [checked] {
   -webkit-padding-start: 0;
 }
 
-menu > [selected][checked]:active:before {
+menu > [selected][checked]:active::before {
   content: url('../images/checkbox_white.png');
 }
 
-/* TODO(zvorygin) menu > [shortcutText]:after - this selector is much better,
- * but it's buggy in current webkit revision, so I have to use [showShortcuts]
+/* TODO(zvorygin) menu > [shortcutText]::after - this selector is much better,
+ * but it's buggy in current webkit revision, so I have to use [showShortcuts].
  */
-menu[showShortcuts] > :after {
+menu[showShortcuts] > ::after {
   -webkit-padding-start: 30px;
   color: #999;
   content: attr(shortcutText);

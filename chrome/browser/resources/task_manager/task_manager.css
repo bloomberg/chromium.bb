@@ -68,7 +68,7 @@ body {
 }
 
 /* Bullets on the left of row. */
-.table-row > .table-row-cell:first-child:before {
+.table-row > .table-row-cell:first-child::before {
   -webkit-border-radius: 3px;
   background: #ccc;
   content: '';

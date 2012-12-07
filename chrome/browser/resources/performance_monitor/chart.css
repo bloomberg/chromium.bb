@@ -70,7 +70,7 @@ summary:focus {
   outline: 0;
 }
 
-summary:after {
+summary::after {
   background: white;
   content: '';
   height: 32px;
@@ -84,7 +84,7 @@ summary:hover {
   color: rgb(70, 78, 90);
 }
 
-details[open] summary:after {
+details[open] summary::after {
   background: #555;
 }
 

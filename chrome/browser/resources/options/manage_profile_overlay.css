@@ -85,9 +85,9 @@
   padding: 2px;
 }
 
-/* Adds a grey horizontal line below content area  */
-#create-profile-content:after,
-#manage-profile-content:after {
+/* Adds a grey horizontal line below content area.  */
+#create-profile-content::after,
+#manage-profile-content::after {
   background: #c0c0c0;
   content: '';
   display: block;

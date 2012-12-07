@@ -76,13 +76,13 @@ list > .folder > .label {
 }
 
 /* We need to ensure that even empty labels take up space */
-list > * > .label:empty:after,
-list > * > .url:empty:after {
+list > * > .label:empty::after,
+list > * > .url:empty::after {
   content: ' ';
   white-space: pre;
 }
 
-list > .folder > .url:empty:after {
+list > .folder > .url:empty::after {
   content: '';
 }
 

@@ -3,8 +3,7 @@
  * found in the LICENSE file. */
 
 /* This file contains "borrowed" copy of standard styles. To simplify merging,
- * when altering, please preserve original property value by adding comments.
- */
+ * when altering, please preserve original property value by adding comments. */
 input.common[type='checkbox'],
 input.common[type='radio'] {
   -webkit-appearance: none;
@@ -43,7 +42,7 @@ input.common[type='checkbox'].white {
   border: none;
 }
 
-input.common[type='checkbox'].white:not(:checked):after {
+input.common[type='checkbox'].white:not(:checked)::after {
   background-image: -webkit-image-set(
     url('../images/common/checkbox_white_unchecked.png') 1x,
     url('../images/common/2x/checkbox_white_unchecked.png') 2x);
@@ -308,7 +307,7 @@ menu.chrome-menu > :not(hr)[checked] {
   background-position: 2px center;
 }
 
-menu.chrome-menu > [checked]:before {
+menu.chrome-menu > [checked]::before {
   display: none;
 }
 

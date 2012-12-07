@@ -366,7 +366,7 @@ div.root-eject:hover {
   -webkit-margin-start: 5px;
 }
 
-.breadcrumbs > [collapsed]:before {
+.breadcrumbs > [collapsed]::before {
   content: '...';
 }
 
@@ -501,20 +501,20 @@ div.root-eject:hover {
     url('../images/files/ui/2x/search_clear_pressed.png') 2x);
 }
 
-button#detail-view:before {
+button#detail-view::before {
   background-image: -webkit-image-set(
     url('../images/files/ui/view_list_black.png') 1x,
     url('../images/files/ui/2x/view_list_black.png') 2x);
 }
 
-button#thumbnail-view:before {
+button#thumbnail-view::before {
   background-image: -webkit-image-set(
     url('../images/files/ui/view_thumbs_black.png') 1x,
     url('../images/files/ui/2x/view_thumbs_black.png') 2x);
 }
 
-button#detail-view:before,
-button#thumbnail-view:before {
+button#detail-view::before,
+button#thumbnail-view::before {
   background-position: center;
   background-repeat: no-repeat;
   bottom: 0;
@@ -526,13 +526,13 @@ button#thumbnail-view:before {
   top: 0;
 }
 
-button#detail-view[disabled]:before,
-button#thumbnail-view[disabled]:before {
+button#detail-view[disabled]::before,
+button#thumbnail-view[disabled]::before {
   opacity: 0.75;
 }
 
-button#detail-view:hover:before,
-button#thumbnail-view:hover:before {
+button#detail-view:hover::before,
+button#thumbnail-view:hover::before {
   opacity: 1;
 }
 
@@ -1411,7 +1411,7 @@ body:not([ctrl-pressing]) [required_attr='ctrl-pressing'] {
   display: none;
 }
 
-#gdata-settings:before {
+#gdata-settings::before {
   background-image: url('../images/files/ui/settings.svg');
   background-position: 20px center;
   background-repeat: no-repeat;
@@ -1424,7 +1424,7 @@ body:not([ctrl-pressing]) [required_attr='ctrl-pressing'] {
   top: 0;
 }
 
-#gdata-settings:hover:before {
+#gdata-settings:hover::before {
   opacity: 1;
 }
 
@@ -1491,8 +1491,8 @@ body:not([ctrl-pressing]) [required_attr='ctrl-pressing'] {
   z-index: 15;
 }
 
-.tooltip:after,
-.tooltip:before {
+.tooltip::after,
+.tooltip::before {
   border-left: 5px solid transparent;
   border-right: 5px solid transparent;
   border-top: transparent;
@@ -1504,11 +1504,11 @@ body:not([ctrl-pressing]) [required_attr='ctrl-pressing'] {
   top: -5px;
 }
 
-.tooltip:after {
+.tooltip::after {
   border-bottom: 5px solid #2d2d2d;
 }
 
-.tooltip:before {
+.tooltip::before {
   border-bottom: 5px solid rgba(255, 255, 255, 0.5);
 }
 

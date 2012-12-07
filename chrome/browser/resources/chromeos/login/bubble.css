@@ -16,7 +16,7 @@
   position: absolute;
 }
 
-.bubble:before {
+.bubble::before {
   border-style: solid;
   border-width: 8px;
   content: '';
@@ -24,47 +24,47 @@
   position: absolute;
 }
 
-.bubble-top:before {
+.bubble-top::before {
   border-color: rgba(0, 0, 0, 0.25) transparent transparent transparent;
   bottom: -16px;
 }
 
-html[dir=ltr] .bubble-top:before {
+html[dir=ltr] .bubble-top::before {
   left: 17px;
 }
 
-html[dir=rtl] .bubble-top:before {
+html[dir=rtl] .bubble-top::before {
   right: 17px;
 }
 
-html[dir=ltr] .bubble-right:before,
-html[dir=rtl] .bubble-left:before {
+html[dir=ltr] .bubble-right::before,
+html[dir=rtl] .bubble-left::before {
   border-color: transparent rgba(0, 0, 0, 0.25) transparent transparent;
   left: -16px;
   top: 17px;
 }
 
-.bubble-bottom:before {
+.bubble-bottom::before {
   border-color: transparent transparent rgba(0, 0, 0, 0.25) transparent;
   top: -16px;
 }
 
-html[dir=ltr] .bubble-bottom:before {
+html[dir=ltr] .bubble-bottom::before {
   left: 17px;
 }
 
-html[dir=rtl] .bubble-bottom:before {
+html[dir=rtl] .bubble-bottom::before {
   right: 17px;
 }
 
-html[dir=ltr] .bubble-left:before,
-html[dir=rtl] .bubble-right:before {
+html[dir=ltr] .bubble-left::before,
+html[dir=rtl] .bubble-right::before {
   border-color: transparent transparent transparent rgba(0, 0, 0, 0.25);
   right: -16px;
   top: 17px;
 }
 
-.bubble:after {
+.bubble::after {
   border-style: solid;
   border-width: 8px;
   content: '';
@@ -72,41 +72,41 @@ html[dir=rtl] .bubble-right:before {
   position: absolute;
 }
 
-.bubble-top:after {
+.bubble-top::after {
   border-color: white transparent transparent transparent;
   bottom: -15px;
 }
 
-html[dir=ltr] .bubble-top:after {
+html[dir=ltr] .bubble-top::after {
   left: 17px;
 }
 
-html[dir=rtl] .bubble-top:after {
+html[dir=rtl] .bubble-top::after {
   right: 17px;
 }
 
-html[dir=ltr] .bubble-right:after,
-html[dir=rtl] .bubble-left:after {
+html[dir=ltr] .bubble-right::after,
+html[dir=rtl] .bubble-left::after {
   border-color: transparent white transparent transparent;
   left: -15px;
   top: 17px;
 }
 
-.bubble-bottom:after {
+.bubble-bottom::after {
   border-color: transparent transparent white transparent;
   top: -15px;
 }
 
-html[dir=ltr] .bubble-bottom:after {
+html[dir=ltr] .bubble-bottom::after {
   left: 17px;
 }
 
-html[dir=rtl] .bubble-bottom:after {
+html[dir=rtl] .bubble-bottom::after {
   right: 17px;
 }
 
-html[dir=ltr] .bubble-left:after,
-html[dir=rtl] .bubble-right:after {
+html[dir=ltr] .bubble-left::after,
+html[dir=rtl] .bubble-right::after {
   border-color: transparent transparent transparent white;
   right: -15px;
   top: 17px;

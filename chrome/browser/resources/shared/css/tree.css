@@ -149,7 +149,7 @@ tree[icon-visibility=parent] .tree-row[has-children=false] > .tree-label {
 }
 
 /* We need to ensure that even empty labels take up space */
-.tree-label:empty:after {
+.tree-label:empty::after {
   content: ' ';
   white-space: pre;
 }

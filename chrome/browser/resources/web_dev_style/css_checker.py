@@ -10,7 +10,7 @@ http://www.chromium.org/developers/web-development-style-guide for the rules
 we're checking against here.
 """
 
-# TODO(dbeam): Real CSS parser? pycss? http://code.google.com/p/pycss/
+# TODO(dbeam): Real CSS parser? https://github.com/danbeam/css-py/tree/css3
 
 class CSSChecker(object):
   def __init__(self, input_api, output_api, file_filter=None):
@@ -47,6 +47,9 @@ class CSSChecker(object):
       else:
         r, g, b = s[0:2], s[2:4], s[4:6]
       return int(r, base=16), int(g, base=16), int(b, base=16)
+
+    def _strip_prefix(s):
+      return re.sub(r'^-(?:o|ms|moz|khtml|webkit)-', '', s)
 
     def alphabetize_props(contents):
       errors = []
@@ -97,6 +100,73 @@ class CSSChecker(object):
     def one_rule_per_line(line):
       return re.search(r'[_a-zA-Z0-9-](?<!data):(?!//)[^;]+;\s*[^ }]\s*', line)
 
+    pseudo_elements = ['after',
+                       'before',
+                       'calendar-picker-indicator',
+                       'color-swatch',
+                       'color-swatch-wrapper',
+                       'date-and-time-container',
+                       'date-and-time-value',
+                       'datetime-edit',
+                       'datetime-edit-ampm-field',
+                       'datetime-edit-day-field',
+                       'datetime-edit-hour-field',
+                       'datetime-edit-millisecond-field',
+                       'datetime-edit-minute-field',
+                       'datetime-edit-month-field',
+                       'datetime-edit-second-field',
+                       'datetime-edit-text',
+                       'datetime-edit-week-field',
+                       'datetime-edit-year-field',
+                       'details-marker',
+                       'file-upload-button',
+                       'first-letter',
+                       'first-line',
+                       'inner-spin-button',
+                       'input-placeholder',
+                       'input-speech-button',
+                       'keygen-select',
+                       'media-slider-container',
+                       'media-slider-thumb',
+                       'meter-bar',
+                       'meter-even-less-good-value',
+                       'meter-inner-element',
+                       'meter-optimum-value',
+                       'meter-suboptimum-value',
+                       'progress-bar',
+                       'progress-inner-element',
+                       'progress-value',
+                       'resizer',
+                       'scrollbar',
+                       'scrollbar-button',
+                       'scrollbar-corner',
+                       'scrollbar-thumb',
+                       'scrollbar-track',
+                       'scrollbar-track-piece',
+                       'search-cancel-button',
+                       'search-decoration',
+                       'search-results-button',
+                       'search-results-decoration',
+                       'selection',
+                       'slider-container',
+                       'slider-runnable-track',
+                       'slider-thumb',
+                       'textfield-decoration-container',
+                       'validation-bubble',
+                       'validation-bubble-arrow',
+                       'validation-bubble-arrow-clipper',
+                       'validation-bubble-heading',
+                       'validation-bubble-message',
+                       'validation-bubble-text-block']
+    pseudo_reg = r'(?<!:):([a-z-]+)(?=[^{}]+?{)'
+    def pseudo_elements_double_colon(contents):
+      errors = []
+      for p in re.finditer(re.compile(pseudo_reg, re.MULTILINE), contents):
+        pseudo = p.group(1).strip().splitlines()[0]
+        if _strip_prefix(pseudo) in pseudo_elements:
+          errors.append('    :%s (should be ::%s)' % (pseudo, pseudo))
+      return errors
+
     any_reg = re.compile(r':(?:-webkit-)?any\(.*?\)', re.DOTALL)
     multi_sels = re.compile(r'(?:}[\n\s]*)?([^,]+,(?=[^{}]+?{).*[,{])\s*$',
                             re.MULTILINE)
@@ -135,6 +205,8 @@ class CSSChecker(object):
           errors.append('    ' + first_line)
       return errors
 
+    # NOTE: Currently multi-line checks don't support 'after'. Instead, add
+    # suggestions while parsing the file so another pass isn't necessary.
     added_or_modified_files_checks = [
         { 'desc': 'Alphabetize properties and list vendor specific (i.e. '
                   '-webkit) above standard.',
@@ -166,7 +238,7 @@ class CSSChecker(object):
           'test': milliseconds_for_small_times,
           'after': suggest_ms_from_s,
         },
-        { 'desc': 'Don\'t use data URIs in source files. Use grit instead.',
+        { 'desc': "Don't use data URIs in source files. Use grit instead.",
           'test': no_data_uris_in_source_files,
         },
         { 'desc': 'One rule per line (what not to do: color: red; margin: 0;).',
@@ -174,6 +246,10 @@ class CSSChecker(object):
         },
         { 'desc': 'One selector per line (what not to do: a, b {}).',
           'test': one_selector_per_line,
+          'multiline': True,
+        },
+        { 'desc': 'Pseudo-elements should use double colon (i.e. ::after).',
+          'test': pseudo_elements_double_colon,
           'multiline': True,
         },
         { 'desc': 'Use rgb() over #hex when not a shade of gray (like #333).',
@@ -205,9 +281,9 @@ class CSSChecker(object):
         # back a list of things wrong. If the check isn't multiline, we pass it
         # each line and the check returns something truthy if there's an issue.
         if ('multiline' in check and check['multiline']):
+          assert not 'after' in check
           check_errors = check['test'](f[1])
           if len(check_errors) > 0:
-            # There are currently no multiline checks with ['after'].
             file_errors.append('- %s\n%s' %
                 (check['desc'], '\n'.join(check_errors).rstrip()))
         else:

@@ -30,7 +30,7 @@ body {
   white-space: nowrap;
 }
 
-.label:after {
+.label::after {
   content: ':';
 }
 

@@ -200,9 +200,9 @@ html[oobe=new] #header {
   position: relative;
 }
 
-.header-section:before {
+.header-section::before {
   /* Divider in header between product name and title,
-     like "[Product name] > [step header]"  */
+   * like "[Product name] > [step header]". */
   content: '\00A0\203A\00A0\00A0';
 }
 
