@@ -10,6 +10,7 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
@@ -439,10 +440,12 @@ void PluginInstallerInfoBarDelegate::ReplaceWithInfoBar(
 PluginMetroModeInfoBarDelegate::PluginMetroModeInfoBarDelegate(
     InfoBarService* infobar_service,
     const string16& message,
-    const string16& ok_label)
+    const string16& ok_label,
+    bool show_dont_ask_again_button)
     : ConfirmInfoBarDelegate(infobar_service),
       message_(message),
-      ok_label_(ok_label) {
+      ok_label_(ok_label),
+      show_dont_ask_again_button_(show_dont_ask_again_button) {
 }
 
 PluginMetroModeInfoBarDelegate::~PluginMetroModeInfoBarDelegate() {
@@ -458,29 +461,48 @@ string16 PluginMetroModeInfoBarDelegate::GetMessageText() const {
 }
 
 int PluginMetroModeInfoBarDelegate::GetButtons() const {
-  return BUTTON_OK;
+  int buttons = BUTTON_OK;
+  if (show_dont_ask_again_button_)
+    buttons |= BUTTON_CANCEL;
+  return buttons;
 }
 
 string16 PluginMetroModeInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
-  DCHECK_EQ(BUTTON_OK, button);
-  return ok_label_;
+  if (button == BUTTON_OK)
+    return ok_label_;
+  if (button == BUTTON_CANCEL) {
+    DCHECK(show_dont_ask_again_button_);
+    return l10n_util::GetStringUTF16(IDS_DONT_ASK_AGAIN_INFOBAR_BUTTON_LABEL);
+  }
+  NOTREACHED();
+  return string16();
 }
 
 bool PluginMetroModeInfoBarDelegate::Accept() {
-  content::WebContents* web_contents = owner()->GetWebContents();
-  if (!web_contents)
-    return false;
-  // Note that empty urls are not valid.
-  if (!web_contents->GetURL().is_valid())
-    return false;
-  std::string url(web_contents->GetURL().spec());
   browser::AttemptRestartWithModeSwitch();
   return true;
 }
 
+bool PluginMetroModeInfoBarDelegate::Cancel() {
+  DCHECK(show_dont_ask_again_button_);
+  content::WebContents* web_contents = owner()->GetWebContents();
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  HostContentSettingsMap* content_settings =
+      profile->GetHostContentSettingsMap();
+  GURL url = web_contents->GetURL();
+  content_settings->SetContentSetting(
+      ContentSettingsPattern::FromURL(url),
+      ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTINGS_TYPE_METRO_SWITCH_TO_DESKTOP,
+      std::string(),
+      CONTENT_SETTING_BLOCK);
+  return true;
+}
+
 string16 PluginMetroModeInfoBarDelegate::GetLinkText() const {
-  return l10n_util::GetStringUTF16(IDS_METRO_SWITCH_WHY_LINK);
+  return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 
 bool PluginMetroModeInfoBarDelegate::LinkClicked(

@@ -189,7 +189,8 @@ class PluginMetroModeInfoBarDelegate : public ConfirmInfoBarDelegate {
   // want to use the plugin.
   PluginMetroModeInfoBarDelegate(InfoBarService* infobar_service,
                                  const string16& plugin_name,
-                                 const string16& ok_label);
+                                 const string16& ok_label,
+                                 bool show_dont_ask_again_button);
  private:
   virtual ~PluginMetroModeInfoBarDelegate();
 
@@ -199,11 +200,13 @@ class PluginMetroModeInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual int GetButtons() const OVERRIDE;
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
   virtual bool Accept() OVERRIDE;
+  virtual bool Cancel() OVERRIDE;
   virtual string16 GetLinkText() const OVERRIDE;
   virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
 
   string16 message_;
   string16 ok_label_;
+  bool show_dont_ask_again_button_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginMetroModeInfoBarDelegate);
 };

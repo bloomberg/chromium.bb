@@ -309,7 +309,6 @@ const ContentSettingsHandler::ExContentSettingsTypeNameEntry
   {CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE, "auto-select-certificate"},
   {CONTENT_SETTINGS_TYPE_FULLSCREEN, "fullscreen"},
   {CONTENT_SETTINGS_TYPE_MOUSELOCK, "mouselock"},
-  {CONTENT_SETTINGS_TYPE_MIXEDSCRIPT, "mixed-script"},
   {CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS, "register-protocol-handler"},
   {EX_CONTENT_SETTINGS_TYPE_PEPPER_FLASH_CAMERAMIC, "pepper-flash-cameramic"},
   {CONTENT_SETTINGS_TYPE_MEDIASTREAM, "media-stream"},
@@ -707,14 +706,6 @@ void ContentSettingsHandler::UpdateHandlersEnabledRadios() {
 void ContentSettingsHandler::UpdateAllExceptionsViewsFromModel() {
   for (int type = CONTENT_SETTINGS_TYPE_DEFAULT + 1;
        type < EX_CONTENT_SETTINGS_NUM_TYPES; ++type) {
-    // The content settings type CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE
-    // is supposed to be set by policy only. Hence there is no user facing UI
-    // for this content type and we skip it here.
-    if (type == CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE)
-      continue;
-    // The RPH settings are retrieved separately.
-    if (type == CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS)
-      continue;
     UpdateExceptionsViewFromModel(ExContentSettingsType(type));
   }
 }
@@ -746,12 +737,20 @@ void ContentSettingsHandler::UpdateExceptionsViewFromModel(
       // We don't yet support exceptions for mixed scripting.
       break;
     case CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE:
+      // The content settings type CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE
+      // is supposed to be set by policy only. Hence there is no user facing UI
+      // for this content type and we skip it here.
       break;
     case CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS:
+      // The RPH settings are retrieved separately.
       break;
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
       UpdateMediaSettingsView();
       break;
+#if defined(OS_WIN)
+    case CONTENT_SETTINGS_TYPE_METRO_SWITCH_TO_DESKTOP:
+      break;
+#endif
     default:
       UpdateExceptionsViewFromHostContentSettingsMap(
           type.ToContentSettingsType());
@@ -767,6 +766,9 @@ void ContentSettingsHandler::UpdateOTRExceptionsViewFromModel(
     case CONTENT_SETTINGS_TYPE_INTENTS:
     case CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE:
     case CONTENT_SETTINGS_TYPE_MIXEDSCRIPT:
+#if defined(OS_WIN)
+    case CONTENT_SETTINGS_TYPE_METRO_SWITCH_TO_DESKTOP:
+#endif
     case EX_CONTENT_SETTINGS_TYPE_PEPPER_FLASH_CAMERAMIC:
       break;
     default:
@@ -1366,10 +1368,6 @@ void ContentSettingsHandler::RefreshFlashSettingsCache(bool force) {
 ContentSettingsHandler::ExContentSettingsType
     ContentSettingsHandler::ExContentSettingsTypeFromGroupName(
         const std::string& name) {
-  COMPILE_ASSERT(arraysize(kExContentSettingsTypeGroupNames) ==
-                     EX_CONTENT_SETTINGS_NUM_TYPES,
-                 MISSING_CONTENT_SETTINGS_TYPE);
-
   for (size_t i = 0; i < arraysize(kExContentSettingsTypeGroupNames); ++i) {
     if (name == kExContentSettingsTypeGroupNames[i].name)
       return ExContentSettingsType(kExContentSettingsTypeGroupNames[i].type);

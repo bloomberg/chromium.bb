@@ -299,7 +299,8 @@ void PluginObserver::OnFindMissingPlugin(int placeholder_id,
           infobar_helper,
           l10n_util::GetStringFUTF16(IDS_METRO_MISSING_PLUGIN_PROMPT,
                                      plugin_metadata->name()),
-          l10n_util::GetStringUTF16(IDS_WIN8_DESKTOP_RESTART)) :
+          l10n_util::GetStringUTF16(IDS_WIN8_DESKTOP_RESTART),
+          false) :
       PluginInstallerInfoBarDelegate::Create(
           infobar_helper, installer, plugin_metadata.Pass(), callback);
 #endif
@@ -356,9 +357,18 @@ void PluginObserver::OnCouldNotLoadPlugin(const FilePath& plugin_path) {
 
 void PluginObserver::OnNPAPINotSupported(const std::string& identifier) {
 #if defined(OS_WIN) && defined(ENABLE_PLUGIN_INSTALLATION)
+  DCHECK(base::win::IsMetroProcess());
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   if (profile->IsOffTheRecord())
+    return;
+  HostContentSettingsMap* content_settings =
+      profile->GetHostContentSettingsMap();
+  if (content_settings->GetContentSetting(
+      web_contents()->GetURL(),
+      web_contents()->GetURL(),
+      CONTENT_SETTINGS_TYPE_METRO_SWITCH_TO_DESKTOP,
+      std::string()) == CONTENT_SETTING_BLOCK)
     return;
 
   scoped_ptr<PluginMetadata> plugin;
@@ -375,7 +385,8 @@ void PluginObserver::OnNPAPINotSupported(const std::string& identifier) {
           infobar_helper,
           l10n_util::GetStringFUTF16(IDS_METRO_NPAPI_PLUGIN_PROMPT,
                                      plugin->name()),
-          l10n_util::GetStringUTF16(IDS_WIN8_RESTART)));
+          l10n_util::GetStringUTF16(IDS_WIN8_RESTART),
+          true));
 #else
   NOTREACHED();
 #endif

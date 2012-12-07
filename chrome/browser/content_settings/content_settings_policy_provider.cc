@@ -40,6 +40,9 @@ const char* kPrefToManageType[] = {
   prefs::kManagedDefaultMediaStreamSetting,
   NULL,  // No policy for default value of protocol handlers
   NULL,  // No policy for default value of PPAPI broker
+#if defined(OS_WIN)
+  NULL,  // No policy for default value of "switch to desktop"
+#endif
 };
 COMPILE_ASSERT(arraysize(kPrefToManageType) == CONTENT_SETTINGS_NUM_TYPES,
                managed_content_settings_pref_names_array_size_incorrect);

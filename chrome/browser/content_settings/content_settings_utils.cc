@@ -38,6 +38,9 @@ const char* kTypeNames[] = {
   "media-stream",
   "register-protocol-handler",
   "ppapi-broker",
+#if defined(OS_WIN)
+  "metro-switch-to-desktop",
+#endif
 };
 COMPILE_ASSERT(arraysize(kTypeNames) == CONTENT_SETTINGS_NUM_TYPES,
                type_names_incorrect_size);
