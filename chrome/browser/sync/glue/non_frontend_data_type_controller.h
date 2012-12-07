@@ -33,7 +33,6 @@ namespace browser_sync {
 class AssociatorInterface;
 class ChangeProcessor;
 
-// TODO(zea): Rename frontend to UI (http://crbug.com/78833).
 // Implementation for datatypes that do not reside on the frontend thread
 // (UI thread). This is the same thread we perform initialization
 // on, so we don't have to worry about thread safety. The main start/stop

@@ -23,9 +23,9 @@ ExtensionSettingDataTypeController::ExtensionSettingDataTypeController(
     ProfileSyncComponentsFactory* profile_sync_factory,
     Profile* profile,
     ProfileSyncService* profile_sync_service)
-    : NewNonFrontendDataTypeController(profile_sync_factory,
-                                       profile,
-                                       profile_sync_service),
+    : NonUIDataTypeController(profile_sync_factory,
+                              profile,
+                              profile_sync_service),
       type_(type),
       profile_(profile),
       profile_sync_service_(profile_sync_service) {

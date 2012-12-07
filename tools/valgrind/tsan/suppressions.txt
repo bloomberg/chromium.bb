@@ -987,19 +987,6 @@
   fun:base::internal::RunnableAdapter::Run
 }
 {
-   bug_138691
-   ThreadSanitizer:Race
-   ...
-   fun:testing::internal::UntypedFunctionMockerBase::UntypedInvokeWith
-   fun:testing::internal::FunctionMockerBase::InvokeWith
-   fun:testing::internal::FunctionMocker::Invoke
-   fun:browser_sync::NewNonFrontendDataTypeControllerMock::RecordUnrecoverableError
-   fun:browser_sync::::NewNonFrontendDataTypeControllerFake::RecordUnrecoverableError
-   fun:browser_sync::NonFrontendDataTypeController::StartFailed
-   fun:browser_sync::NewNonFrontendDataTypeController::StartAssociationWithSharedChangeProcessor
-   fun:base::internal::RunnableAdapter::Run
-}
-{
   bug_144894
   ThreadSanitizer:Race
   fun:av_parser_close

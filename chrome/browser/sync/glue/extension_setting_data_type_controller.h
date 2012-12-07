@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/sync/glue/new_non_frontend_data_type_controller.h"
+#include "chrome/browser/sync/glue/non_ui_data_type_controller.h"
 
 class Profile;
 class ProfileSyncComponentsFactory;
@@ -25,7 +25,7 @@ class SettingsFrontend;
 namespace browser_sync {
 
 class ExtensionSettingDataTypeController
-    : public NewNonFrontendDataTypeController {
+    : public NonUIDataTypeController {
  public:
   ExtensionSettingDataTypeController(
       // Either EXTENSION_SETTINGS or APP_SETTINGS.

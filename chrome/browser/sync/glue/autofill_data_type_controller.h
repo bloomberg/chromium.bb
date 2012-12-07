@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/sync/glue/new_non_frontend_data_type_controller.h"
+#include "chrome/browser/sync/glue/non_ui_data_type_controller.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -19,7 +19,7 @@ class WebDataService;
 namespace browser_sync {
 
 // A class that manages the startup and shutdown of autofill sync.
-class AutofillDataTypeController : public NewNonFrontendDataTypeController,
+class AutofillDataTypeController : public NonUIDataTypeController,
                                    public content::NotificationObserver {
  public:
   AutofillDataTypeController(
@@ -27,7 +27,7 @@ class AutofillDataTypeController : public NewNonFrontendDataTypeController,
       Profile* profile,
       ProfileSyncService* sync_service);
 
-  // NewNonFrontendDataTypeController implementation.
+  // NonUIDataTypeController implementation.
   virtual syncer::ModelType type() const OVERRIDE;
   virtual syncer::ModelSafeGroup model_safe_group() const OVERRIDE;
 
@@ -43,7 +43,7 @@ class AutofillDataTypeController : public NewNonFrontendDataTypeController,
  protected:
   virtual ~AutofillDataTypeController();
 
-  // NewNonFrontendDataTypeController implementation.
+  // NonUIDataTypeController implementation.
   virtual bool PostTaskOnBackendThread(
       const tracked_objects::Location& from_here,
       const base::Closure& task) OVERRIDE;

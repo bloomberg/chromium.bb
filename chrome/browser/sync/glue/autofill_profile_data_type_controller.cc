@@ -28,9 +28,9 @@ AutofillProfileDataTypeController::AutofillProfileDataTypeController(
     ProfileSyncComponentsFactory* profile_sync_factory,
     Profile* profile,
     ProfileSyncService* sync_service)
-    : NewNonFrontendDataTypeController(profile_sync_factory,
-                                       profile,
-                                       sync_service),
+    : NonUIDataTypeController(profile_sync_factory,
+                              profile,
+                              sync_service),
       personal_data_(NULL) {
 }
 

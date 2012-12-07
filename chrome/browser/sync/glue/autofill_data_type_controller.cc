@@ -27,7 +27,7 @@ AutofillDataTypeController::AutofillDataTypeController(
     ProfileSyncComponentsFactory* profile_sync_factory,
     Profile* profile,
     ProfileSyncService* sync_service)
-    : NewNonFrontendDataTypeController(
+    : NonUIDataTypeController(
         profile_sync_factory, profile, sync_service) {
 }
 
@@ -102,7 +102,7 @@ void AutofillDataTypeController::StartAssociating(
           &AutofillDataTypeController::UpdateAutofillCullingSettings,
           this,
           cull_expired_entries));
-  NewNonFrontendDataTypeController::StartAssociating(start_callback);
+  NonUIDataTypeController::StartAssociating(start_callback);
 }
 
 void AutofillDataTypeController::UpdateAutofillCullingSettings(

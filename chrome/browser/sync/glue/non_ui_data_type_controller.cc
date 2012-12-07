@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/glue/new_non_frontend_data_type_controller.h"
+#include "chrome/browser/sync/glue/non_ui_data_type_controller.h"
 
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/shared_change_processor_ref.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -13,37 +14,40 @@
 #include "sync/api/sync_error.h"
 #include "sync/api/syncable_service.h"
 #include "sync/internal_api/public/base/model_type.h"
+#include "sync/util/data_type_histogram.h"
 
 using content::BrowserThread;
 
 namespace browser_sync {
 
-NewNonFrontendDataTypeController::NewNonFrontendDataTypeController(
+NonUIDataTypeController::NonUIDataTypeController(
     ProfileSyncComponentsFactory* profile_sync_factory,
     Profile* profile,
     ProfileSyncService* sync_service)
-    : NonFrontendDataTypeController(profile_sync_factory,
-                                    profile,
-                                    sync_service) {}
+    : profile_sync_factory_(profile_sync_factory),
+      profile_(profile),
+      sync_service_(sync_service),
+      state_(NOT_RUNNING) {
+}
 
-void NewNonFrontendDataTypeController::LoadModels(
+void NonUIDataTypeController::LoadModels(
     const ModelLoadCallback& model_load_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!model_load_callback.is_null());
   if (state() != NOT_RUNNING) {
     model_load_callback.Run(type(), syncer::SyncError(FROM_HERE,
-                                              "Model already running",
-                                              type()));
+                                                      "Model already running",
+                                                      type()));
     return;
   }
 
-  set_state(MODEL_STARTING);
+  state_ = MODEL_STARTING;
 
   // Since we can't be called multiple times before Stop() is called,
   // |shared_change_processor_| must be NULL here.
   DCHECK(!shared_change_processor_.get());
   shared_change_processor_ =
-      profile_sync_factory()->CreateSharedChangeProcessor();
+      profile_sync_factory_->CreateSharedChangeProcessor();
   DCHECK(shared_change_processor_.get());
 
   model_load_callback_ = model_load_callback;
@@ -57,24 +61,35 @@ void NewNonFrontendDataTypeController::LoadModels(
   OnModelLoaded();
 }
 
-void NewNonFrontendDataTypeController::OnModelLoaded() {
+void NonUIDataTypeController::OnModelLoaded() {
   DCHECK_EQ(state_, MODEL_STARTING);
   DCHECK(!model_load_callback_.is_null());
-  set_state(MODEL_LOADED);
+  state_ = MODEL_LOADED;
 
   ModelLoadCallback model_load_callback = model_load_callback_;
   model_load_callback_.Reset();
   model_load_callback.Run(type(), syncer::SyncError());
 }
 
-void NewNonFrontendDataTypeController::StartAssociating(
+bool NonUIDataTypeController::StartModels() {
+  DCHECK_EQ(state_, MODEL_STARTING);
+  // By default, no additional services need to be started before we can proceed
+  // with model association.
+  return true;
+}
+
+void NonUIDataTypeController::StopModels() {
+  // Do nothing by default.
+}
+
+void NonUIDataTypeController::StartAssociating(
     const StartCallback& start_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!start_callback.is_null());
   DCHECK_EQ(state_, MODEL_LOADED);
-  set_state(ASSOCIATING);
+  state_ = ASSOCIATING;
 
-  set_start_callback(start_callback);
+  start_callback_ = start_callback;
   if (!StartAssociationAsync()) {
     syncer::SyncError error(
         FROM_HERE, "Failed to post StartAssociation", type());
@@ -90,7 +105,7 @@ void NewNonFrontendDataTypeController::StartAssociating(
   }
 }
 
-void NewNonFrontendDataTypeController::Stop() {
+void NonUIDataTypeController::Stop() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (state() == NOT_RUNNING) {
     // Stop() should never be called for datatypes that are already stopped.
@@ -106,11 +121,11 @@ void NewNonFrontendDataTypeController::Stop() {
   // If we haven't finished starting, we need to abort the start.
   switch (state()) {
     case MODEL_STARTING:
-      set_state(STOPPING);
-      AbortModelStarting();
+      state_ = STOPPING;
+      AbortModelLoad();
       return;  // The datatype was never activated, we're done.
     case ASSOCIATING:
-      set_state(STOPPING);
+      state_ = STOPPING;
       StartDoneImpl(ABORTED,
                     NOT_RUNNING,
                     syncer::SyncMergeResult(type()),
@@ -121,34 +136,57 @@ void NewNonFrontendDataTypeController::Stop() {
       // If we're disabled we never succeded associating and never activated the
       // datatype. We would have already stopped the local service in
       // StartDoneImpl(..).
-      set_state(NOT_RUNNING);
+      state_ = NOT_RUNNING;
       StopModels();
       return;
     default:
       // Datatype was fully started. Need to deactivate and stop the local
       // service.
       DCHECK_EQ(state(), RUNNING);
-      set_state(STOPPING);
+      state_ = STOPPING;
       StopModels();
       break;
   }
 
   // Deactivate the DataType on the UI thread. We dont want to listen
   // for any more changes or process them from the server.
-  profile_sync_service()->DeactivateDataType(type());
+  sync_service_->DeactivateDataType(type());
 
   // Stop the local service and release our references to it and the
   // shared change processor (posts a task to the datatype's thread).
   StopLocalServiceAsync();
 
-  set_state(NOT_RUNNING);
+  state_ = NOT_RUNNING;
 }
 
-NewNonFrontendDataTypeController::NewNonFrontendDataTypeController() {}
+std::string NonUIDataTypeController::name() const {
+  // For logging only.
+  return syncer::ModelTypeToString(type());
+}
 
-NewNonFrontendDataTypeController::~NewNonFrontendDataTypeController() {}
+DataTypeController::State NonUIDataTypeController::state() const {
+  return state_;
+}
 
-void NewNonFrontendDataTypeController::StartDone(
+void NonUIDataTypeController::OnSingleDatatypeUnrecoverableError(
+    const tracked_objects::Location& from_here, const std::string& message) {
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
+  RecordUnrecoverableError(from_here, message);
+  BrowserThread::PostTask(BrowserThread::UI, from_here,
+      base::Bind(&NonUIDataTypeController::DisableImpl,
+                 this,
+                 from_here,
+                 message));
+}
+
+NonUIDataTypeController::NonUIDataTypeController()
+    : profile_sync_factory_(NULL),
+      profile_(NULL),
+      sync_service_(NULL) {}
+
+NonUIDataTypeController::~NonUIDataTypeController() {}
+
+void NonUIDataTypeController::StartDone(
     DataTypeController::StartResult start_result,
     const syncer::SyncMergeResult& local_merge_result,
     const syncer::SyncMergeResult& syncer_merge_result) {
@@ -162,16 +200,15 @@ void NewNonFrontendDataTypeController::StartDone(
   }
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      base::Bind(
-          &NewNonFrontendDataTypeController::StartDoneImpl,
-          this,
-          start_result,
-          new_state,
-          local_merge_result,
-          syncer_merge_result));
+      base::Bind(&NonUIDataTypeController::StartDoneImpl,
+                 this,
+                 start_result,
+                 new_state,
+                 local_merge_result,
+                 syncer_merge_result));
 }
 
-void NewNonFrontendDataTypeController::StartDoneImpl(
+void NonUIDataTypeController::StartDoneImpl(
     DataTypeController::StartResult start_result,
     DataTypeController::State new_state,
     const syncer::SyncMergeResult& local_merge_result,
@@ -188,30 +225,72 @@ void NewNonFrontendDataTypeController::StartDoneImpl(
     StopLocalServiceAsync();
   }
 
-  NonFrontendDataTypeController::StartDoneImpl(start_result,
-                                               new_state,
-                                               local_merge_result,
-                                               syncer_merge_result);
+  // It's possible to have StartDoneImpl called first from the UI thread
+  // (due to Stop being called) and then posted from the non-UI thread. In
+  // this case, we drop the second call because we've already been stopped.
+  if (state_ == NOT_RUNNING) {
+    DCHECK(start_callback_.is_null());
+    return;
+  }
+
+  state_ = new_state;
+  if (state_ != RUNNING) {
+    // Start failed.
+    StopModels();
+    RecordStartFailure(start_result);
+  }
+
+  // We have to release the callback before we call it, since it's possible
+  // invoking the callback will trigger a call to STOP(), which will get
+  // confused by the non-NULL start_callback_.
+  StartCallback callback = start_callback_;
+  start_callback_.Reset();
+  callback.Run(start_result, local_merge_result, syncer_merge_result);
 }
 
-void NewNonFrontendDataTypeController::AbortModelStarting() {
-  set_state(NOT_RUNNING);
+void NonUIDataTypeController::RecordAssociationTime(base::TimeDelta time) {
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
+#define PER_DATA_TYPE_MACRO(type_str) \
+    UMA_HISTOGRAM_TIMES("Sync." type_str "AssociationTime", time);
+  SYNC_DATA_TYPE_HISTOGRAM(type());
+#undef PER_DATA_TYPE_MACRO
+}
+
+void NonUIDataTypeController::RecordStartFailure(StartResult result) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeStartFailures", type(),
+                            syncer::MODEL_TYPE_COUNT);
+#define PER_DATA_TYPE_MACRO(type_str) \
+    UMA_HISTOGRAM_ENUMERATION("Sync." type_str "StartFailure", result, \
+                              MAX_START_RESULT);
+  SYNC_DATA_TYPE_HISTOGRAM(type());
+#undef PER_DATA_TYPE_MACRO
+}
+
+void NonUIDataTypeController::AbortModelLoad() {
+  state_ = NOT_RUNNING;
   StopModels();
   ModelLoadCallback model_load_callback = model_load_callback_;
   model_load_callback_.Reset();
   model_load_callback.Run(type(), syncer::SyncError(FROM_HERE,
-                                            "ABORTED",
-                                            type()));
+                                                    "ABORTED",
+                                                    type()));
 }
 
-bool NewNonFrontendDataTypeController::StartAssociationAsync() {
+void NonUIDataTypeController::DisableImpl(
+    const tracked_objects::Location& from_here,
+    const std::string& message) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  sync_service_->DisableBrokenDatatype(type(), from_here, message);
+}
+
+bool NonUIDataTypeController::StartAssociationAsync() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(state(), ASSOCIATING);
   return PostTaskOnBackendThread(
       FROM_HERE,
       base::Bind(
-          &NewNonFrontendDataTypeController::
-              StartAssociationWithSharedChangeProcessor,
+          &NonUIDataTypeController::StartAssociationWithSharedChangeProcessor,
           this,
           shared_change_processor_));
 }
@@ -221,7 +300,7 @@ bool NewNonFrontendDataTypeController::StartAssociationAsync() {
 // must either have no side effects outside of the DTC or must be protected
 // by |shared_change_processor|, which is guaranteed to have been Disconnected
 // if the syncer shut down.
-void NewNonFrontendDataTypeController::
+void NonUIDataTypeController::
     StartAssociationWithSharedChangeProcessor(
         const scoped_refptr<SharedChangeProcessor>& shared_change_processor) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -237,8 +316,8 @@ void NewNonFrontendDataTypeController::
   // disconnected at this point, so all our accesses to the syncer from this
   // point on are through it.
   local_service_ = shared_change_processor->Connect(
-      profile_sync_factory(),
-      profile_sync_service(),
+      profile_sync_factory_,
+      sync_service_,
       this,
       type(),
       weak_ptr_factory.GetWeakPtr());
@@ -302,7 +381,7 @@ void NewNonFrontendDataTypeController::
   syncer_merge_result.set_num_items_after_association(
       shared_change_processor->GetSyncCount());
 
-  // If we've been disconnected, profile_sync_service() may return an invalid
+  // If we've been disconnected, sync_service_ may return an invalid
   // pointer, but |shared_change_processor| protects us from attempting to
   // access it.
   // Note: This must be done on the datatype's thread to ensure local_service_
@@ -314,7 +393,7 @@ void NewNonFrontendDataTypeController::
             syncer_merge_result);
 }
 
-void NewNonFrontendDataTypeController::ClearSharedChangeProcessor() {
+void NonUIDataTypeController::ClearSharedChangeProcessor() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // |shared_change_processor_| can already be NULL if Stop() is
   // called after StartDoneImpl(_, DISABLED, _).
@@ -324,22 +403,18 @@ void NewNonFrontendDataTypeController::ClearSharedChangeProcessor() {
   }
 }
 
-void NewNonFrontendDataTypeController::StopLocalServiceAsync() {
+void NonUIDataTypeController::StopLocalServiceAsync() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   PostTaskOnBackendThread(
       FROM_HERE,
-      base::Bind(&NewNonFrontendDataTypeController::StopLocalService, this));
+      base::Bind(&NonUIDataTypeController::StopLocalService, this));
 }
 
-void NewNonFrontendDataTypeController::StopLocalService() {
+void NonUIDataTypeController::StopLocalService() {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (local_service_.get())
     local_service_->StopSyncing(type());
   local_service_.reset();
-}
-
-void NewNonFrontendDataTypeController::CreateSyncComponents() {
-  NOTIMPLEMENTED();
 }
 
 }  // namepsace browser_sync
