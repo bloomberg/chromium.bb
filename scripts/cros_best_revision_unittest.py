@@ -8,9 +8,7 @@
 
 import mox
 import os
-import shutil
 import sys
-import tempfile
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__)))))
@@ -22,37 +20,33 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import gclient
 from chromite.lib import gs
+from chromite.lib import osutils
 
 from chromite.scripts import cros_best_revision
 
 
 # pylint: disable=W0212,E1101,E1120
-class ChromeCommitterTester(cros_test_lib.MoxTestCase):
+class ChromeCommitterTester(cros_test_lib.MoxTempDirTestCase):
   def setUp(self):
     """Common set up method for all tests."""
     self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
-    self.checkout_dir = tempfile.mkdtemp(prefix='cbr_chrome_checkout')
-    self.committer = cros_best_revision.ChromeCommitter(self.checkout_dir,
+    self.mox.StubOutWithMock(cros_build_lib, 'TreeOpen')
+    self.committer = cros_best_revision.ChromeCommitter(self.tempdir,
                                                         False)
     self.old_lkgm = '2098.0.0'
-
-  def tearDown(self):
-    shutil.rmtree(self.checkout_dir)
 
   def testCheckoutChromeLKGM(self):
     "Tests that we can read/obtain the old LKGM from mocked out SVN."
     cros_build_lib.RunCommand(mox.In('%s/%s' % (gclient.CHROME_COMMITTER_URL,
                                                 constants.PATH_TO_CHROME_LKGM)))
     cros_build_lib.RunCommand(mox.In(constants.CHROME_LKGM_FILE),
-                              cwd=self.checkout_dir)
+                              cwd=self.tempdir)
 
     self.mox.ReplayAll()
 
     # Write out an old lkgm file as if we got it from svn update.
-    lkgm_file = os.path.join(self.checkout_dir, constants.CHROME_LKGM_FILE)
-    with open(lkgm_file, 'w') as fh:
-      fh.write(self.old_lkgm)
-
+    lkgm_file = os.path.join(self.tempdir, constants.CHROME_LKGM_FILE)
+    osutils.WriteFile(lkgm_file, self.old_lkgm)
     self.committer.CheckoutChromeLKGM()
     self.assertTrue(self.committer._old_lkgm, self.old_lkgm)
 
@@ -149,21 +143,17 @@ class ChromeCommitterTester(cros_test_lib.MoxTestCase):
     for canary in canaries:
       if canary in ['a-release', 'b-release']:
         manifest_version.BuildSpecsManager.GetBuildStatus(
-            canary, '4.0.0', retries=0).MultipleTimes().AndReturn(
+            canary, '4.0.0', retries=0).InAnyOrder().AndReturn(
+                pass_status)
+        manifest_version.BuildSpecsManager.GetBuildStatus(
+            canary, '3.0.0', retries=0).InAnyOrder().AndReturn(
                 pass_status)
       else:
         manifest_version.BuildSpecsManager.GetBuildStatus(
-            canary, '4.0.0', retries=0).MultipleTimes().AndReturn(
+            canary, '4.0.0', retries=0).InAnyOrder().AndReturn(
                 fail_status)
-
-    for canary in canaries:
-      if canary in ['a-release', 'b-release']:
         manifest_version.BuildSpecsManager.GetBuildStatus(
-            canary, '3.0.0', retries=0).MultipleTimes().AndReturn(
-                pass_status)
-      else:
-        manifest_version.BuildSpecsManager.GetBuildStatus(
-            canary, '3.0.0', retries=0).MultipleTimes().AndReturn(None)
+            canary, '3.0.0', retries=0).InAnyOrder().AndReturn(None)
 
     self.mox.ReplayAll()
     self.committer.FindNewLKGM()
@@ -172,19 +162,21 @@ class ChromeCommitterTester(cros_test_lib.MoxTestCase):
   def testCommitNewLKGM(self):
     """Tests that we can commit a new LKGM file."""
     self.committer._lkgm = '4.0.0'
+    cros_build_lib.TreeOpen(
+        gclient.STATUS_URL,
+        cros_best_revision.ChromeCommitter._SLEEP_TIMEOUT).AndReturn(True)
 
     cros_build_lib.RunCommand(mox.In(constants.CHROME_LKGM_FILE),
-                              cwd=self.checkout_dir)
+                              cwd=self.tempdir)
     cros_build_lib.RunCommand(mox.In('commit'),
-                              cwd=self.checkout_dir)
+                              cwd=self.tempdir)
 
     self.mox.ReplayAll()
     self.committer.CommitNewLKGM()
 
     # Check the file was actually written out correctly.
-    lkgm_file = os.path.join(self.checkout_dir, constants.CHROME_LKGM_FILE)
-    with open(lkgm_file) as fh:
-      self.assertEqual(fh.read(), self.committer._lkgm)
+    lkgm_file = os.path.join(self.tempdir, constants.CHROME_LKGM_FILE)
+    self.assertEqual(osutils.ReadFile(lkgm_file), self.committer._lkgm)
 
 
 if __name__ == '__main__':

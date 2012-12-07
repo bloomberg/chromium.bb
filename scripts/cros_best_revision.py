@@ -20,6 +20,7 @@ from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import gclient
 from chromite.lib import gs
+from chromite.lib import osutils
 
 
 class LKGMNotFound(Exception):
@@ -57,9 +58,8 @@ class ChromeCommitter(object):
     cros_build_lib.RunCommand(['svn', 'update', constants.CHROME_LKGM_FILE],
                               cwd=self._checkout_dir)
 
-    with open(os.path.join(self._checkout_dir,
-                           constants.CHROME_LKGM_FILE)) as fh:
-      self._old_lkgm = fh.read()
+    self._old_lkgm = osutils.ReadFile(
+        os.path.join(self._checkout_dir, constants.CHROME_LKGM_FILE))
 
   def _GetLatestCanaryVersions(self):
     """Returns the latest CANDIDATES_TO_CONSIDER canary versions."""
@@ -121,9 +121,9 @@ class ChromeCommitter(object):
       raise LKGMNotFound('No valid LKGM found. Did you run FindNewLKGM?')
 
     # Add the new versioned file.
-    with open(os.path.join(self._checkout_dir,
-                           constants.CHROME_LKGM_FILE), 'w') as fh:
-      fh.write(self._lkgm)
+    osutils.WriteFile(
+        os.path.join(self._checkout_dir, constants.CHROME_LKGM_FILE),
+        self._lkgm)
 
     add_cmd = ['svn', 'add', constants.CHROME_LKGM_FILE]
     cros_build_lib.RunCommand(add_cmd, cwd=self._checkout_dir)
