@@ -814,13 +814,16 @@ WebKit::WebThemeEngine* GetThemeEngine() {
 
 #endif
 
-// DevTools
+// DevTools frontend path for inspector LayoutTests.
 WebURL GetDevToolsPathAsURL() {
   FilePath dirExe;
   if (!PathService::Get(base::DIR_EXE, &dirExe)) {
       DCHECK(false);
       return WebURL();
   }
+#if defined(OS_MACOSX)
+  dirExe = dirExe.AppendASCII("../../..");
+#endif
   FilePath devToolsPath = dirExe.AppendASCII(
       "resources/inspector/devtools.html");
   return net::FilePathToFileURL(devToolsPath);
