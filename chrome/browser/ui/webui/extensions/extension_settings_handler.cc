@@ -136,6 +136,8 @@ DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
       extension_service_->terminated_extensions()->Contains(extension->id()));
   extension_data->SetBoolean("enabledIncognito",
       extension_service_->IsIncognitoEnabled(extension->id()));
+  extension_data->SetBoolean("incognitoCanBeEnabled",
+                             extension->can_be_incognito_enabled());
   extension_data->SetBoolean("wantsFileAccess", extension->wants_file_access());
   extension_data->SetBoolean("allowFileAccess",
                              extension_service_->AllowFileAccess(extension));

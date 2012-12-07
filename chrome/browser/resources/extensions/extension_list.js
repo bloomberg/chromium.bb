@@ -124,16 +124,19 @@ cr.define('options', function() {
       }
 
       // The 'allow in incognito' checkbox.
-      var incognito = node.querySelector('.incognito-control');
+      var incognito = node.querySelector('.incognito-control input');
+      incognito.disabled = !extension.incognitoCanBeEnabled;
+      incognito.checked = extension.enabledIncognito;
+      if (!incognito.disabled) {
+        incognito.addEventListener('change', function(e) {
+          var checked = e.target.checked;
+          butterBarVisibility[extension.id] = checked;
+          butterBar.hidden = !checked || extension.is_hosted_app;
+          chrome.send('extensionSettingsEnableIncognito',
+                      [extension.id, String(checked)]);
+        });
+      }
       var butterBar = node.querySelector('.butter-bar');
-      incognito.addEventListener('click', function(e) {
-        var checked = e.target.checked;
-        butterBarVisibility[extension.id] = checked;
-        butterBar.hidden = !checked || extension.is_hosted_app;
-        chrome.send('extensionSettingsEnableIncognito',
-                    [extension.id, String(checked)]);
-      });
-      incognito.querySelector('input').checked = extension.enabledIncognito;
       butterBar.hidden = !butterBarVisibility[extension.id];
 
       // The 'allow file:// access' checkbox.

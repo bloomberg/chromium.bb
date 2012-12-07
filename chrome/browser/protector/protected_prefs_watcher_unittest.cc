@@ -125,8 +125,8 @@ TEST_F(ProtectedPrefsWatcherTest, ExtensionPrefChange) {
   EXPECT_FALSE(IsSignatureValid());
 
   // Flip another pref value of that extension.
-  extension_prefs->SetIsIncognitoEnabled(
-      sample_id, !extension_prefs->IsIncognitoEnabled(sample_id));
+  extension_prefs->SetExtensionRunning(
+      sample_id, !extension_prefs->IsExtensionRunning(sample_id));
 
   // No changes to the backup and signature.
   EXPECT_FALSE(IsSignatureValid());

@@ -156,30 +156,6 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, CreateAndCloseShellWindow) {
   CloseShellWindow(window);
 }
 
-// Tests that platform apps can be launched in incognito mode without crashing.
-// Times out on ChromeOS: http://crbug.com/159392
-#if defined(OS_CHROMEOS)
-#define MAYBE_LaunchAppIncognito DISABLED_LaunchAppIncognito
-#else
-#define MAYBE_LaunchAppIncognito LaunchAppIncognito
-#endif
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_LaunchAppIncognito) {
-  Browser* browser_incognito = ui_test_utils::OpenURLOffTheRecord(
-      browser()->profile(), GURL("about:blank"));
-
-  ExtensionTestMessageListener launched_listener("Launched", false);
-
-  const Extension* extension = LoadExtensionIncognito(
-      test_data_dir_.AppendASCII("platform_apps").AppendASCII("minimal"));
-  EXPECT_TRUE(extension);
-
-  application_launch::OpenApplication(application_launch::LaunchParams(
-          browser_incognito->profile(), extension, extension_misc::LAUNCH_NONE,
-          NEW_WINDOW));
-
-  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
-}
-
 // Tests that platform apps received the "launch" event when launched.
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, OnLaunchedEvent) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/launch")) << message_;

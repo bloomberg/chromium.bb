@@ -1630,9 +1630,11 @@ bool ExtensionService::ProcessExtensionSyncDataHelper(
 
 bool ExtensionService::IsIncognitoEnabled(
     const std::string& extension_id) const {
+  const Extension* extension = GetInstalledExtension(extension_id);
+  if (extension && !extension->can_be_incognito_enabled())
+    return false;
   // If this is an existing component extension we always allow it to
   // work in incognito mode.
-  const Extension* extension = GetInstalledExtension(extension_id);
   if (extension && extension->location() == Extension::COMPONENT)
     return true;
 
@@ -1643,6 +1645,8 @@ bool ExtensionService::IsIncognitoEnabled(
 void ExtensionService::SetIsIncognitoEnabled(
     const std::string& extension_id, bool enabled) {
   const Extension* extension = GetInstalledExtension(extension_id);
+  if (extension && !extension->can_be_incognito_enabled())
+    return;
   if (extension && extension->location() == Extension::COMPONENT) {
     // This shouldn't be called for component extensions unless they are
     // syncable.
