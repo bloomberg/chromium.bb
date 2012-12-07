@@ -1118,13 +1118,21 @@ void DriveFileSyncService::DidPrepareForProcessRemoteChange(
   if (param->drive_metadata.conflicted()) {
     if (missing_local_file) {
       if (remote_file_change.IsAddOrUpdate()) {
+        // Resolve conflict to remote change automatically.
         DVLOG(1) << "ProcessRemoteChange for " << url.DebugString()
                  << (param->drive_metadata.conflicted() ? " (conflicted)" : " ")
                  << (missing_local_file ? " (missing local file)" : " ")
                  << " remote_change: " << remote_file_change.DebugString()
                  << " ==> operation: ResolveConflictToRemoteChange";
-        NOTIMPLEMENTED() << "ResolveConflictToRemoteChange()";
-        AbortRemoteSync(param.Pass(), fileapi::SYNC_STATUS_FAILED);
+
+        const fileapi::FileSystemURL& url = param->remote_change.url;
+        param->drive_metadata.set_conflicted(false);
+        param->drive_metadata.set_to_be_fetched(true);
+        metadata_store_->UpdateEntry(
+            url, drive_metadata, base::Bind(&EmptyStatusCallback));
+
+        param->operation_result = fileapi::SYNC_OPERATION_ADDED;
+        DownloadForRemoteSync(param.Pass());
         return;
       }
 
