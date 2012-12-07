@@ -7,3 +7,4 @@ wayland-test-protocol.c
 wayland-test-server-protocol.h
 keyboard-test
 event-test
+button-test

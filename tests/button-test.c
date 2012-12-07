@@ -20,119 +20,35 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <sys/socket.h>
-#include <assert.h>
-#include <unistd.h>
-#include <string.h>
 #include <linux/input.h>
+#include "weston-test-client-helper.h"
 
-#include "test-runner.h"
-
-struct context {
-	struct weston_layer *layer;
-	struct weston_seat *seat;
-	struct weston_surface *surface;
-};
-
-static void
-handle_button_up(struct test_client *);
-
-static void
-handle_button_down(struct test_client *client)
+TEST(simple_button_test)
 {
-	struct context *context = client->data;
-	uint32_t mask;
+	struct client *client;
+	struct pointer *pointer;
 
-	assert(sscanf(client->buf, "%u", &mask) == 1);
-	
-	assert(mask == 1);
+	client = client_create(100, 100, 100, 100);
+	assert(client);
 
-	notify_button(context->seat, 100, BTN_LEFT,
-		      WL_POINTER_BUTTON_STATE_RELEASED);
+	pointer = client->input->pointer;
 
-	test_client_send(client, "send-button-state\n");
-	client->handle = handle_button_up;
-}
+	assert(pointer->button == 0);
+	assert(pointer->state == 0);
 
-static void
-handle_button_up(struct test_client *client)
-{
-	struct context *context = client->data;
-	static int once = 0;
-	uint32_t mask;
+	move_pointer(client, 150, 150);
+	assert(pointer->x == 50);
+	assert(pointer->y == 50);
 
-	assert(sscanf(client->buf, "%u", &mask) == 1);
-	
-	assert(mask == 0);
+	wl_test_send_button(client->test->wl_test, BTN_LEFT,
+			    WL_POINTER_BUTTON_STATE_PRESSED);
+	yield(client);
+	assert(pointer->button == BTN_LEFT);
+	assert(pointer->state == WL_POINTER_BUTTON_STATE_PRESSED);
 
-	if (!once++) {
-		notify_button(context->seat, 100, BTN_LEFT,
-			      WL_POINTER_BUTTON_STATE_PRESSED);
-
-		test_client_send(client, "send-button-state\n");
-		client->handle = handle_button_down;
-	} else {
-		test_client_send(client, "bye\n");
-		client->handle = NULL;
-	}
-}
-
-static void
-handle_surface(struct test_client *client)
-{
-	uint32_t id;
-	struct context *context = client->data;
-	struct wl_resource *resource;
-	struct wl_list *seat_list;
-
-	assert(sscanf(client->buf, "surface %u", &id) == 1);
-	fprintf(stderr, "server: got surface id %u\n", id);
-	resource = wl_client_get_object(client->client, id);
-	assert(resource);
-	assert(strcmp(resource->object.interface->name, "wl_surface") == 0);
-
-	context->surface = (struct weston_surface *) resource;
-	weston_surface_set_color(context->surface, 0.0, 0.0, 0.0, 1.0);
-
-	context->layer = malloc(sizeof *context->layer);
-	assert(context->layer);
-	weston_layer_init(context->layer,
-			  &client->compositor->cursor_layer.link);
-	wl_list_insert(&context->layer->surface_list,
-		       &context->surface->layer_link);
-
-	seat_list = &client->compositor->seat_list;
-	assert(wl_list_length(seat_list) == 1);
-	context->seat = container_of(seat_list->next, struct weston_seat, link);
-
-	client->compositor->focus = 1; /* Make it work even if pointer is
-					* outside X window. */
-
-	weston_surface_configure(context->surface, 100, 100, 100, 100);
-	weston_surface_update_transform(context->surface);
-	weston_surface_damage(context->surface);
-
-	notify_pointer_focus(context->seat, context->surface->output,
-			     wl_fixed_from_int(150), wl_fixed_from_int(150));
-
-	test_client_send(client, "send-button-state\n");
-	client->handle = handle_button_up;
-}
-
-TEST(button_test)
-{
-	struct context *context;
-	struct test_client *client;
-
-	client = test_client_launch(compositor, "test-client");
-	client->terminate = 1;
-
-	test_client_send(client, "create-surface\n");
-	client->handle = handle_surface;
-
-	context = calloc(1, sizeof *context);
-	assert(context);
-	client->data = context;
+	wl_test_send_button(client->test->wl_test, BTN_LEFT,
+			    WL_POINTER_BUTTON_STATE_RELEASED);
+	yield(client);
+	assert(pointer->button == BTN_LEFT);
+	assert(pointer->state == WL_POINTER_BUTTON_STATE_RELEASED);
 }
