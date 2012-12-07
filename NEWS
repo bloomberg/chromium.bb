@@ -12,7 +12,9 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
     - Korean table thanks to Joseph Lee
 
 ** Braille Table Improvements
-   - da-gk-g2.ctb, fixes for transposed â, å, æ, ä, ø  and ö, corrected/improved harness tests.
+   - da-gk-g2.ctb, fixes for transposed â, å, æ, ä, ø  and ö,
+     corrected/improved harness tests.
+   - Corrections for en-GB-g2.ctb thanks to Paul Wood
 
  
 * Noteworthy changes in release 2.5.1 (2012-9-24)
