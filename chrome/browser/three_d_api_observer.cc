@@ -15,9 +15,6 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(ThreeDAPIObserver)
 
 // ThreeDAPIInfoBarDelegate ---------------------------------------------
 
-// TODO(kbr): write a "learn more" article about the issues associated
-// with client 3D APIs and GPU resets, and override GetLinkText(), etc.
-
 class ThreeDAPIInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   ThreeDAPIInfoBarDelegate(
@@ -35,6 +32,8 @@ class ThreeDAPIInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
+  virtual string16 GetLinkText() const OVERRIDE;
+  virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
 
   GURL url_;
   content::ThreeDAPIType requester_;
@@ -101,6 +100,20 @@ bool ThreeDAPIInfoBarDelegate::Cancel() {
   content::GpuDataManager::GetInstance()->UnblockDomainFrom3DAPIs(url_);
   owner()->GetWebContents()->GetController().Reload(true);
   return true;
+}
+
+string16 ThreeDAPIInfoBarDelegate::GetLinkText() const {
+  return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
+}
+
+bool ThreeDAPIInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
+  owner()->GetWebContents()->OpenURL(content::OpenURLParams(
+      GURL("https://support.google.com/chrome/?p=ib_webgl"),
+      content::Referrer(),
+      (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
+      content::PAGE_TRANSITION_LINK,
+      false));
+  return false;
 }
 
 
