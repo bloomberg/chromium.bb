@@ -965,7 +965,8 @@ bool BrowserPlugin::acceptsInputEvents() {
 
 bool BrowserPlugin::handleInputEvent(const WebKit::WebInputEvent& event,
                                      WebKit::WebCursorInfo& cursor_info) {
-  if (guest_crashed_ || !navigate_src_sent_)
+  if (guest_crashed_ || !navigate_src_sent_ ||
+      event.type == WebKit::WebInputEvent::ContextMenu)
     return false;
   IPC::Message* message =
       new BrowserPluginHostMsg_HandleInputEvent(
