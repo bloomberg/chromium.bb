@@ -385,7 +385,8 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   // We've downloaded an updated .crx file for the extension, but are waiting
   // for idle time to install it.
   void SetIdleInstallInfo(const Extension* extension,
-                          Extension::State initial_state);
+                          Extension::State initial_state,
+                          const syncer::StringOrdinal& page_ordinal);
 
   // Removes any idle install information we have for the given |extension_id|.
   // Returns true if there was info to remove; false otherwise.
@@ -606,6 +607,25 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   ExtensionIdList GetExtensionPrefAsVector(const char* pref);
   void SetExtensionPrefFromVector(const char* pref,
                                   const ExtensionIdList& extension_ids);
+
+  // Helper function to populate |extension_dict| with the values needed
+  // by a newly installed extension. Work is broken up between this
+  // function and FinishExtensionInfoPrefs() to accomodate delayed
+  // installations.
+  void PopulateExtensionInfoPrefs(const Extension* extension,
+                                  const base::Time install_time,
+                                  Extension::State initial_state,
+                                  DictionaryValue* extension_dict);
+
+  // Helper function to complete initialization of the values in
+  // |extension_dict| for an extension install. Also see
+  // PopulateExtensionInfoPrefs().
+  void FinishExtensionInfoPrefs(
+      const std::string& extension_id,
+      const base::Time install_time,
+      bool needs_sort_ordinal,
+      const syncer::StringOrdinal& suggested_page_ordinal,
+      DictionaryValue* extension_dict);
 
   // The pref service specific to this set of extension prefs. Owned by profile.
   PrefService* prefs_;

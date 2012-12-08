@@ -2470,7 +2470,8 @@ void ExtensionService::OnExtensionInstalled(
   if (ShouldDelayExtensionUpdate(id, wait_for_idle)) {
     extension_prefs_->SetIdleInstallInfo(
         extension,
-        initial_enable ? Extension::ENABLED : Extension::DISABLED);
+        initial_enable ? Extension::ENABLED : Extension::DISABLED,
+        page_ordinal);
 
     // Transfer ownership of |extension|.
     pending_extension_updates_.Insert(extension);

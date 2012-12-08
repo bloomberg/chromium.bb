@@ -119,6 +119,9 @@ const char kExtensionsBlacklistUpdate[] = "extensions.blacklistupdate";
 // Path for the idle install info dictionary preference.
 const char kIdleInstallInfo[] = "idle_install_info";
 
+// Path for the suggested page ordinal of a delayed extension install.
+const char kPrefSuggestedPageOrdinal[] = "suggested_page_ordinal";
+
 // A preference that, if true, will allow this extension to run in incognito
 // mode.
 const char kPrefIncognitoEnabled[] = "incognito";
@@ -1448,57 +1451,14 @@ void ExtensionPrefs::OnExtensionInstalled(
     const Extension* extension,
     Extension::State initial_state,
     const syncer::StringOrdinal& page_ordinal) {
-  const std::string& id = extension->id();
-  CHECK(Extension::IdIsValid(id));
-  ScopedExtensionPrefUpdate update(prefs_, id);
+  ScopedExtensionPrefUpdate update(prefs_, extension->id());
   DictionaryValue* extension_dict = update.Get();
   const base::Time install_time = time_provider_->GetCurrentTime();
-
-  // Leave the state blank for component extensions so that old chrome versions
-  // loading new profiles do not fail in GetInstalledExtensionInfo. Older
-  // Chrome versions would only check for an omitted state.
-  if (initial_state != Extension::ENABLED_COMPONENT)
-    extension_dict->Set(kPrefState, Value::CreateIntegerValue(initial_state));
-
-  extension_dict->Set(kPrefLocation,
-                      Value::CreateIntegerValue(extension->location()));
-  extension_dict->Set(kPrefCreationFlags,
-                      Value::CreateIntegerValue(extension->creation_flags()));
-  extension_dict->Set(kPrefFromWebStore,
-                      Value::CreateBooleanValue(extension->from_webstore()));
-  extension_dict->Set(kPrefFromBookmark,
-                      Value::CreateBooleanValue(extension->from_bookmark()));
-  extension_dict->Set(kPrefWasInstalledByDefault,
-      Value::CreateBooleanValue(extension->was_installed_by_default()));
-  extension_dict->Set(kPrefInstallTime,
-                      Value::CreateStringValue(
-                          base::Int64ToString(install_time.ToInternalValue())));
-  extension_dict->Set(kPrefPreferences, new DictionaryValue());
-  extension_dict->Set(kPrefIncognitoPreferences, new DictionaryValue());
-  extension_dict->Set(kPrefRegularOnlyPreferences, new DictionaryValue());
-  extension_dict->Set(kPrefContentSettings, new ListValue());
-  extension_dict->Set(kPrefIncognitoContentSettings, new ListValue());
-
-  FilePath::StringType path = MakePathRelative(install_directory_,
-      extension->path());
-  extension_dict->Set(kPrefPath, Value::CreateStringValue(path));
-  // We store prefs about LOAD extensions, but don't cache their manifest
-  // since it may change on disk.
-  if (extension->location() != Extension::LOAD) {
-    extension_dict->Set(kPrefManifest,
-                        extension->manifest()->value()->DeepCopy());
-  }
-
-  // Clear state that may be registered from a previous install.
-  extension_dict->Remove(kRegisteredEvents, NULL);
-
-  if (extension->RequiresSortOrdinal())
-    extension_sorting_->EnsureValidOrdinals(extension->id(), page_ordinal);
-
-  extension_pref_value_map_->RegisterExtension(
-      id, install_time, initial_state == Extension::ENABLED);
-  content_settings_store_->RegisterExtension(
-      id, install_time, initial_state == Extension::ENABLED);
+  PopulateExtensionInfoPrefs(extension, install_time, initial_state,
+                             extension_dict);
+  FinishExtensionInfoPrefs(extension->id(), install_time,
+                           extension->RequiresSortOrdinal(),
+                           page_ordinal, extension_dict);
 }
 
 void ExtensionPrefs::OnExtensionUninstalled(const std::string& extension_id,
@@ -1717,29 +1677,19 @@ scoped_ptr<ExtensionPrefs::ExtensionsInfo>
 
 void ExtensionPrefs::SetIdleInstallInfo(
     const Extension* extension,
-    Extension::State initial_state) {
-  const base::Time install_time = time_provider_->GetCurrentTime();
+    Extension::State initial_state,
+    const syncer::StringOrdinal& page_ordinal) {
   DictionaryValue* extension_dict = new DictionaryValue();
-  extension_dict->Set(kPrefState, Value::CreateIntegerValue(initial_state));
-  extension_dict->Set(kPrefLocation,
-                      Value::CreateIntegerValue(extension->location()));
-  extension_dict->Set(kPrefCreationFlags,
-                      Value::CreateIntegerValue(extension->creation_flags()));
-  extension_dict->Set(kPrefFromWebStore,
-                      Value::CreateBooleanValue(extension->from_webstore()));
-  extension_dict->Set(kPrefFromBookmark,
-                      Value::CreateBooleanValue(extension->from_bookmark()));
-  extension_dict->Set(kPrefWasInstalledByDefault,
-      Value::CreateBooleanValue(extension->was_installed_by_default()));
-  extension_dict->Set(kPrefInstallTime,
-                      Value::CreateStringValue(
-                          base::Int64ToString(install_time.ToInternalValue())));
+  PopulateExtensionInfoPrefs(extension, time_provider_->GetCurrentTime(),
+                             initial_state, extension_dict);
 
-  FilePath::StringType path = MakePathRelative(install_directory_,
-      extension->path());
-  extension_dict->Set(kPrefPath, Value::CreateStringValue(path));
-  extension_dict->Set(kPrefManifest,
-                      extension->manifest()->value()->DeepCopy());
+  // Add transient data that is needed by FinishIdleInstallInfo(), but
+  // should not be in the final extension prefs. All entries here should have
+  // a corresponding Remove() call in FinishIdleInstallInfo().
+  if (extension->RequiresSortOrdinal()) {
+    extension_dict->SetString(kPrefSuggestedPageOrdinal,
+                              page_ordinal.ToInternalValue());
+  }
 
   UpdateExtensionPref(extension->id(), kIdleInstallInfo, extension_dict);
 }
@@ -1756,34 +1706,32 @@ bool ExtensionPrefs::FinishIdleInstallInfo(const std::string& extension_id) {
   CHECK(Extension::IdIsValid(extension_id));
   ScopedExtensionPrefUpdate update(prefs_, extension_id);
   DictionaryValue* extension_dict = update.Get();
-  DictionaryValue* update_dict;
-  if (!extension_dict->GetDictionary(kIdleInstallInfo, &update_dict))
+  DictionaryValue* pending_install_dict = NULL;
+  if (!extension_dict->GetDictionary(kIdleInstallInfo, &pending_install_dict))
     return false;
 
-  const base::Time install_time = time_provider_->GetCurrentTime();
-  extension_dict->MergeDictionary(update_dict);
-  extension_dict->Set(kPrefInstallTime,
-                      Value::CreateStringValue(
-                          base::Int64ToString(install_time.ToInternalValue())));
-  extension_dict->Set(kPrefPreferences, new DictionaryValue());
-  extension_dict->Set(kPrefIncognitoPreferences, new DictionaryValue());
-  extension_dict->Set(kPrefRegularOnlyPreferences, new DictionaryValue());
-  extension_dict->Set(kPrefContentSettings, new ListValue());
-  extension_dict->Set(kPrefIncognitoContentSettings, new ListValue());
-
-  // Clear state that may be registered from a previous install.
-  extension_dict->Remove(kRegisteredEvents, NULL);
-
-  // Remove pending update information
-  extension_dict->Remove(kIdleInstallInfo, NULL);
-
-  int initial_state;
-  if (extension_dict->GetInteger(kPrefState, &initial_state)) {
-    extension_pref_value_map_->RegisterExtension(
-        extension_id, install_time, initial_state == Extension::ENABLED);
-    content_settings_store_->RegisterExtension(
-        extension_id, install_time, initial_state == Extension::ENABLED);
+  // Retrieve and clear transient values populated by SetIdleInstallInfo(). Also
+  // do any other data cleanup that makes sense.
+  std::string serialized_ordinal;
+  syncer::StringOrdinal suggested_page_ordinal;
+  bool needs_sort_ordinal = false;
+  if (pending_install_dict->GetString(kPrefSuggestedPageOrdinal,
+                                      &serialized_ordinal)) {
+    suggested_page_ordinal = syncer::StringOrdinal(serialized_ordinal);
+    needs_sort_ordinal = true;
+    pending_install_dict->Remove(kPrefSuggestedPageOrdinal, NULL);
   }
+
+  const base::Time install_time = time_provider_->GetCurrentTime();
+  pending_install_dict->Set(
+      kPrefInstallTime,
+      Value::CreateStringValue(
+          base::Int64ToString(install_time.ToInternalValue())));
+
+  // Commit the delayed install data.
+  extension_dict->MergeDictionary(pending_install_dict);
+  FinishExtensionInfoPrefs(extension_id, install_time, needs_sort_ordinal,
+                           suggested_page_ordinal, extension_dict);
   return true;
 }
 
@@ -2313,6 +2261,84 @@ void ExtensionPrefs::SetExtensionPrefFromVector(
   for (ExtensionIdList::const_iterator iter = strings.begin();
        iter != strings.end(); ++iter)
     list_of_values->Append(new StringValue(*iter));
+}
+
+void ExtensionPrefs::PopulateExtensionInfoPrefs(
+    const Extension* extension,
+    const base::Time install_time,
+    Extension::State initial_state,
+    DictionaryValue* extension_dict) {
+  // Leave the state blank for component extensions so that old chrome versions
+  // loading new profiles do not fail in GetInstalledExtensionInfo. Older
+  // Chrome versions would only check for an omitted state.
+  if (initial_state != Extension::ENABLED_COMPONENT)
+    extension_dict->Set(kPrefState, Value::CreateIntegerValue(initial_state));
+
+  extension_dict->Set(kPrefLocation,
+                      Value::CreateIntegerValue(extension->location()));
+  extension_dict->Set(kPrefCreationFlags,
+                      Value::CreateIntegerValue(extension->creation_flags()));
+  extension_dict->Set(kPrefFromWebStore,
+                      Value::CreateBooleanValue(extension->from_webstore()));
+  extension_dict->Set(kPrefFromBookmark,
+                      Value::CreateBooleanValue(extension->from_bookmark()));
+  extension_dict->Set(kPrefWasInstalledByDefault,
+      Value::CreateBooleanValue(extension->was_installed_by_default()));
+  extension_dict->Set(kPrefInstallTime,
+                      Value::CreateStringValue(
+                          base::Int64ToString(install_time.ToInternalValue())));
+
+  FilePath::StringType path = MakePathRelative(install_directory_,
+      extension->path());
+  extension_dict->Set(kPrefPath, Value::CreateStringValue(path));
+  // We store prefs about LOAD extensions, but don't cache their manifest
+  // since it may change on disk.
+  if (extension->location() != Extension::LOAD) {
+    extension_dict->Set(kPrefManifest,
+                        extension->manifest()->value()->DeepCopy());
+  }
+}
+
+void ExtensionPrefs::FinishExtensionInfoPrefs(
+    const std::string& extension_id,
+    const base::Time install_time,
+    bool needs_sort_ordinal,
+    const syncer::StringOrdinal& suggested_page_ordinal,
+    DictionaryValue* extension_dict) {
+  // Reinitializes various preferences with empty dictionaries.
+  extension_dict->Set(kPrefPreferences, new DictionaryValue());
+  extension_dict->Set(kPrefIncognitoPreferences, new DictionaryValue());
+  extension_dict->Set(kPrefRegularOnlyPreferences, new DictionaryValue());
+  extension_dict->Set(kPrefContentSettings, new ListValue());
+  extension_dict->Set(kPrefIncognitoContentSettings, new ListValue());
+
+  // If this point has been reached, any pending installs should be considered
+  // out of date.
+  extension_dict->Remove(kIdleInstallInfo, NULL);
+
+  // Clear state that may be registered from a previous install.
+  extension_dict->Remove(kRegisteredEvents, NULL);
+
+  // FYI, all code below here races on sudden shutdown because
+  // |extension_dict|, |extension_sorting_|, |extension_pref_value_map_|,
+  // and |content_settings_store_| are updated non-transactionally. This is
+  // probably not fixable without nested transactional updates to pref
+  // dictionaries.
+  if (needs_sort_ordinal) {
+    extension_sorting_->EnsureValidOrdinals(extension_id,
+                                            suggested_page_ordinal);
+  }
+
+  bool is_enabled = false;
+  int initial_state;
+  if (extension_dict->GetInteger(kPrefState, &initial_state)) {
+    is_enabled = initial_state == Extension::ENABLED;
+  }
+
+  extension_pref_value_map_->RegisterExtension(extension_id, install_time,
+                                               is_enabled);
+  content_settings_store_->RegisterExtension(extension_id, install_time,
+                                             is_enabled);
 }
 
 }  // namespace extensions

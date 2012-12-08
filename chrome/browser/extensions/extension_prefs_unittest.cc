@@ -608,7 +608,8 @@ class ExtensionPrefsIdleInstallInfo : public ExtensionPrefsTest {
         path, Extension::INTERNAL, manifest, Extension::NO_FLAGS, id, &errors);
     ASSERT_TRUE(extension) << errors;
     ASSERT_EQ(id, extension->id());
-    prefs()->SetIdleInstallInfo(extension.get(), Extension::ENABLED);
+    prefs()->SetIdleInstallInfo(extension.get(), Extension::ENABLED,
+                                syncer::StringOrdinal());
   }
 
   // Verifies that we get back expected idle install information previously
