@@ -40,7 +40,16 @@ _FULL_BINHOST = 'FULL_BINHOST'
 _PORTAGE_BINHOST = 'PORTAGE_BINHOST'
 _CROS_ARCHIVE_URL = 'CROS_ARCHIVE_URL'
 _PRINT_INTERVAL = 1
+_VM_TEST_ERROR_MSG = """
+!!!VMTests failed!!!
 
+Logs are uploaded in the corresponding test_results.tgz. This can be found by
+clicking on the artifacts link in the "Report" Stage. Specifically look
+for the test_harness/failed for the failing tests. For more
+particulars, please refer to which test failed i.e. above see the
+individual test that failed -- or if an update failed, check the
+corresponding update directory.
+"""
 
 class NonHaltingBuilderStage(bs.BuilderStage):
   """Build stage that fails a build but finishes the other steps."""
@@ -1192,6 +1201,10 @@ class ChromeTestStage(BoardSpecificBuilderStage):
 
       self._archive_stage.TestResultsReady(test_tarball)
 
+  def _HandleStageException(self, exception):
+    cros_build_lib.Error(_VM_TEST_ERROR_MSG)
+    return super(ChromeTestStage, self)._HandleStageException(exception)
+
   def HandleSkip(self):
     self._archive_stage.TestResultsReady(None)
 
@@ -1269,6 +1282,10 @@ class VMTestStage(BoardSpecificBuilderStage):
                                                    prefix='')
 
       self._archive_stage.TestResultsReady(test_tarball)
+
+  def _HandleStageException(self, exception):
+    cros_build_lib.Error(_VM_TEST_ERROR_MSG)
+    return super(VMTestStage, self)._HandleStageException(exception)
 
   def HandleSkip(self):
     self._archive_stage.TestResultsReady(None)
