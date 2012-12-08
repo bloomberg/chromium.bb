@@ -118,6 +118,11 @@ typedef base::Callback<void(const std::string&,
                             scoped_array<uint8>,
                             int)> OnNeedKeyCB;
 
+static void LogMediaSourceError(const scoped_refptr<media::MediaLog>& media_log,
+                                const std::string& error) {
+  media_log->AddEvent(media_log->CreateMediaSourceErrorEvent(error));
+}
+
 WebMediaPlayerImpl::WebMediaPlayerImpl(
     WebKit::WebFrame* frame,
     WebKit::WebMediaPlayerClient* client,
@@ -274,7 +279,8 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url, CORSMode cors_mode) {
   if (!url.isEmpty() && url == GetClient()->sourceURL()) {
     chunk_demuxer_ = new media::ChunkDemuxer(
         BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnDemuxerOpened),
-        BIND_TO_RENDER_LOOP_2(&WebMediaPlayerImpl::OnNeedKey, "", ""));
+        BIND_TO_RENDER_LOOP_2(&WebMediaPlayerImpl::OnNeedKey, "", ""),
+        base::Bind(&LogMediaSourceError, media_log_));
 
     BuildMediaSourceCollection(chunk_demuxer_,
                                message_loop,
