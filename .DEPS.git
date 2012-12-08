@@ -334,7 +334,7 @@ deps_os = {
         'src/third_party/cros_system_api':
             Var('git_url') + '/chromiumos/platform/system_api.git@59dafd34a6eb3b6eee63b59f7cc6cd01e4fda770',
         'src/third_party/gold':
-            Var('git_url') + '/chromium/deps/gold.git@95d154e7955e8d84a72e65407a46332240062b39',
+            Var('git_url') + '/chromium/deps/gold.git@74c34c19eadc0135b189318e393e78ca1dd431aa',
         'src/third_party/libmtp':
             Var('git_url') + '/chromium/deps/libmtp.git@090792ce3774bfdd515c4de7ae68957e5fa64e2c',
         'src/third_party/lss':
