@@ -31,12 +31,11 @@ class PnaclUrls {
   static bool UsePnaclExtension(const Plugin* plugin);
   static nacl::string GetBaseUrl(bool use_extension);
   static bool IsPnaclComponent(const nacl::string& full_url);
-  static nacl::string StripPnaclComponentPrefix(const nacl::string& full_url);
+  static nacl::string PnaclComponentURLToFilename(
+      const nacl::string& full_url);
   static const nacl::string GetLlcUrl() { return nacl::string(kLlcUrl); }
   static const nacl::string GetLdUrl() { return nacl::string(kLdUrl); }
  private:
-  static const char kExtensionOrigin[];
-  static const char kPnaclComponentID[];
   static const char kLlcUrl[];
   static const char kLdUrl[];
 };

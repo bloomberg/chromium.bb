@@ -104,11 +104,6 @@ void RegisterComponentsForUpdate(const CommandLine& command_line) {
   if (!command_line.HasSwitch(switches::kDisableCRLSets))
     g_browser_process->crl_set_fetcher()->StartInitialLoad(cus);
 
-  // This developer version of Pnacl should only be installed for developers.
-  if (command_line.HasSwitch(switches::kEnablePnacl)) {
-    RegisterPnaclComponent(cus);
-  }
-
   cus->Start();
 }
 

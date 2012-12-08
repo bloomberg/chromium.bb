@@ -527,13 +527,9 @@ def PPAPIBrowserTester(env,
   for extension in extensions:
     command.extend(['--extension', extension])
   if env.Bit('bitcode'):
-    # TODO(jvoung): remove this --extension once we have --pnacl-dir working.
-    command.extend(['--extension', env.GetPnaclExtensionNode().abspath])
     # Enable the installed version of pnacl, and point to a custom install
     # directory for testing purposes.
     browser_flags.append('--enable-pnacl')
-    browser_flags.append('--pnacl-dir=%s' %
-                         env.GetPnaclExtensionRootNode().abspath)
   for dest_path, dep_file in map_files:
     command.extend(['--map_file', dest_path, dep_file])
   for file_ext, mime_type in mime_types:

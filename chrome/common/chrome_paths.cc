@@ -300,13 +300,16 @@ bool PathProvider(int key, FilePath* result) {
         return false;
       cur = cur.Append(kInternalNaClPluginFileName);
       break;
+    // PNaCl is currenly installable via the component updater or by being
+    // simply built-in, but only the builtin path is currently enabled.
+    // If PNaCl ends up using the component updater, it will need the version
+    // encoded in the path, and these will need to be split.
     case chrome::DIR_PNACL_BASE:
-      if (!PathService::Get(chrome::DIR_USER_DATA, &cur))
-        return false;
-      cur = cur.Append(FILE_PATH_LITERAL("Pnacl"));
-      break;
     case chrome::DIR_PNACL_COMPONENT:
-      return false;
+      if (!PathService::Get(base::DIR_MODULE, &cur))
+        return false;
+      cur = cur.Append(FILE_PATH_LITERAL("pnacl"));
+      break;
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
     case chrome::FILE_NACL_HELPER:
       if (!PathService::Get(base::DIR_MODULE, &cur))

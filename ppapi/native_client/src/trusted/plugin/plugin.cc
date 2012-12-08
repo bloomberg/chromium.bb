@@ -1498,15 +1498,21 @@ void Plugin::ProcessNaClManifest(const nacl::string& manifest_json) {
     // Inform JavaScript that we found a nexe URL to load.
     EnqueueProgressEvent(kProgressEventProgress);
     if (is_portable) {
-      pp::CompletionCallback translate_callback =
-          callback_factory_.NewCallback(&Plugin::BitcodeDidTranslate);
-      // Will always call the callback on success or failure.
-      pnacl_coordinator_.reset(
-          PnaclCoordinator::BitcodeToNative(this,
-                                            program_url,
-                                            cache_identity,
-                                            translate_callback));
-      return;
+      if (this->nacl_interface()->IsPnaclEnabled()) {
+        pp::CompletionCallback translate_callback =
+            callback_factory_.NewCallback(&Plugin::BitcodeDidTranslate);
+        // Will always call the callback on success or failure.
+        pnacl_coordinator_.reset(
+            PnaclCoordinator::BitcodeToNative(this,
+                                              program_url,
+                                              cache_identity,
+                                              translate_callback));
+        return;
+      } else {
+        error_info.SetReport(ERROR_UNKNOWN,
+                             "PNaCl has not been enabled (e.g., by setting "
+                             "the --enable-pnacl flag).");
+      }
     } else {
       pp::CompletionCallback open_callback =
           callback_factory_.NewCallback(&Plugin::NexeFileDidOpen);
