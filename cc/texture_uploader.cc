@@ -12,6 +12,7 @@
 #include "base/metrics/histogram.h"
 #include "cc/prioritized_resource.h"
 #include "cc/resource.h"
+#include "cc/util.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "ui/gfx/rect.h"
@@ -31,11 +32,6 @@ static const double defaultEstimatedTexturesPerSecond = 48.0 * 60.0;
 
 // Flush interval when performing texture uploads.
 const int textureUploadFlushPeriod = 4;
-
-unsigned int RoundUp(unsigned int n, unsigned int mul)
-{
-  return (((n - 1) / mul) * mul) + mul;
-}
 
 } // anonymous namespace
 
@@ -237,7 +233,7 @@ void TextureUploader::uploadWithTexSubImage(const uint8* image,
     // Use 4-byte row alignment (OpenGL default) for upload performance.
     // Assuming that GL_UNPACK_ALIGNMENT has not changed from default.
     unsigned int upload_image_stride =
-        RoundUp(bytes_per_pixel * source_rect.width(), 4);
+        RoundUp(bytes_per_pixel * source_rect.width(), 4u);
 
     if (upload_image_stride == image_rect.width() * bytes_per_pixel && !offset.x()) {
         pixel_source = &image[image_rect.width() * bytes_per_pixel * offset.y()];
@@ -307,7 +303,7 @@ void TextureUploader::uploadWithMapTexSubImage(const uint8* image,
     // Use 4-byte row alignment (OpenGL default) for upload performance.
     // Assuming that GL_UNPACK_ALIGNMENT has not changed from default.
     unsigned int upload_image_stride =
-        RoundUp(bytes_per_pixel * source_rect.width(), 4);
+        RoundUp(bytes_per_pixel * source_rect.width(), 4u);
 
     // Upload tile data via a mapped transfer buffer
     uint8* pixel_dest = static_cast<uint8*>(

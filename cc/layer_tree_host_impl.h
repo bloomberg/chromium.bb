@@ -255,6 +255,11 @@ public:
 
     void updateRootScrollLayerImplTransform();
 
+    void sendManagedMemoryStats(
+       size_t memoryVisibleBytes,
+       size_t memoryVisibleAndNearbyBytes,
+       size_t memoryUseBytes);
+
     FrameRateCounter* fpsCounter() const { return m_fpsCounter.get(); }
     DebugRectHistory* debugRectHistory() const { return m_debugRectHistory.get(); }
     ResourceProvider* resourceProvider() const { return m_resourceProvider.get(); }
@@ -394,6 +399,10 @@ private:
 #if !defined(NDEBUG)
     AnimationControllerSet m_allAnimationControllers;
 #endif
+
+    size_t m_lastSentMemoryVisibleBytes;
+    size_t m_lastSentMemoryVisibleAndNearbyBytes;
+    size_t m_lastSentMemoryUseBytes;
 
     DISALLOW_COPY_AND_ASSIGN(LayerTreeHostImpl);
 };

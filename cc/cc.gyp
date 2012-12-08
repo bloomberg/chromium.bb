@@ -265,6 +265,7 @@
       'transferable_resource.h',
       'tree_synchronizer.cc',
       'tree_synchronizer.h',
+      'util.h',
       'video_layer.cc',
       'video_layer.h',
       'video_layer_impl.cc',

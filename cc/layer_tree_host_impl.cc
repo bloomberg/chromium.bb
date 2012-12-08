@@ -34,6 +34,7 @@
 #include "cc/software_renderer.h"
 #include "cc/solid_color_draw_quad.h"
 #include "cc/texture_uploader.h"
+#include "cc/util.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/vector2d_conversions.h"
 
@@ -224,6 +225,9 @@ LayerTreeHostImpl::LayerTreeHostImpl(const LayerTreeSettings& settings, LayerTre
     , m_numMainThreadScrolls(0)
     , m_cumulativeNumLayersDrawn(0)
     , m_cumulativeNumMissingTiles(0)
+    , m_lastSentMemoryVisibleBytes(0)
+    , m_lastSentMemoryVisibleAndNearbyBytes(0)
+    , m_lastSentMemoryUseBytes(0)
 {
     DCHECK(m_proxy->isImplThread());
     didVisibilityChange(this, m_visible);
@@ -1589,6 +1593,34 @@ void LayerTreeHostImpl::renderingStats(RenderingStats* stats) const
 
     if (m_tileManager)
         m_tileManager->renderingStats(stats);
+}
+
+void LayerTreeHostImpl::sendManagedMemoryStats(
+    size_t memoryVisibleBytes,
+    size_t memoryVisibleAndNearbyBytes,
+    size_t memoryUseBytes)
+{
+    if (!renderer())
+      return;
+
+    // Round the numbers being sent up to the next 8MB, to throttle the rate
+    // at which we spam the GPU process.
+    static const size_t roundingStep = 8 * 1024 * 1024;
+    memoryVisibleBytes = RoundUp(memoryVisibleBytes, roundingStep);
+    memoryVisibleAndNearbyBytes = RoundUp(memoryVisibleAndNearbyBytes, roundingStep);
+    memoryUseBytes = RoundUp(memoryUseBytes, roundingStep);
+    if (m_lastSentMemoryVisibleBytes == memoryVisibleBytes &&
+        m_lastSentMemoryVisibleAndNearbyBytes == memoryVisibleAndNearbyBytes &&
+        m_lastSentMemoryUseBytes == memoryUseBytes) {
+        return;
+    }
+    m_lastSentMemoryVisibleBytes = memoryVisibleBytes;
+    m_lastSentMemoryVisibleAndNearbyBytes = memoryVisibleAndNearbyBytes;
+    m_lastSentMemoryUseBytes = memoryUseBytes;
+
+    renderer()->sendManagedMemoryStats(m_lastSentMemoryVisibleBytes,
+                                       m_lastSentMemoryVisibleAndNearbyBytes,
+                                       m_lastSentMemoryUseBytes);
 }
 
 void LayerTreeHostImpl::animateScrollbars(base::TimeTicks time)

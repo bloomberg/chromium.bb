@@ -297,12 +297,10 @@ void SingleThreadProxy::sendManagedMemoryStats()
     DCHECK(Proxy::isImplThread());
     if (!m_layerTreeHostImpl.get())
         return;
-    if (!m_layerTreeHostImpl->renderer())
-        return;
     if (!m_layerTreeHost->contentsTextureManager())
         return;
 
-    m_layerTreeHostImpl->renderer()->sendManagedMemoryStats(
+    m_layerTreeHostImpl->sendManagedMemoryStats(
         m_layerTreeHost->contentsTextureManager()->memoryVisibleBytes(),
         m_layerTreeHost->contentsTextureManager()->memoryVisibleAndNearbyBytes(),
         m_layerTreeHost->contentsTextureManager()->memoryUseBytes());
