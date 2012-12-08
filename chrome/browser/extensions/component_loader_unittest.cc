@@ -220,7 +220,7 @@ TEST_F(ComponentLoaderTest, LoadAll) {
   EXPECT_EQ(0u, extension_service_.extensions()->size());
 
   // Use LoadAll() to load the default extensions.
-  component_loader_.AddDefaultComponentExtensions();
+  component_loader_.AddDefaultComponentExtensions(false);
   component_loader_.LoadAll();
   unsigned int default_count = extension_service_.extensions()->size();
 
@@ -233,7 +233,7 @@ TEST_F(ComponentLoaderTest, LoadAll) {
 }
 
 TEST_F(ComponentLoaderTest, EnterpriseWebStore) {
-  component_loader_.AddDefaultComponentExtensions();
+  component_loader_.AddDefaultComponentExtensions(false);
   component_loader_.LoadAll();
   unsigned int default_count = extension_service_.extensions()->size();
 
@@ -247,7 +247,7 @@ TEST_F(ComponentLoaderTest, EnterpriseWebStore) {
   extension_service_.set_ready(false);
   extension_service_.clear_extensions();
   component_loader_.ClearAllRegistered();
-  component_loader_.AddDefaultComponentExtensions();
+  component_loader_.AddDefaultComponentExtensions(false);
   component_loader_.LoadAll();
   EXPECT_EQ(default_count + 1, extension_service_.extensions()->size());
 
@@ -259,7 +259,7 @@ TEST_F(ComponentLoaderTest, EnterpriseWebStore) {
 
 TEST_F(ComponentLoaderTest, AddOrReplace) {
   EXPECT_EQ(0u, component_loader_.registered_extensions_count());
-  component_loader_.AddDefaultComponentExtensions();
+  component_loader_.AddDefaultComponentExtensions(false);
   size_t const default_count = component_loader_.registered_extensions_count();
   FilePath known_extension = GetBasePath()
       .AppendASCII("override_component_extension");

@@ -48,6 +48,10 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user_manager.h"
+#endif
+
 using content::BrowserThread;
 
 namespace extensions {
@@ -146,7 +150,13 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
     RegisterManagementPolicyProviders();
   }
 
-  extension_service_->component_loader()->AddDefaultComponentExtensions();
+  bool skip_session_extensions = false;
+#if defined(OS_CHROMEOS)
+  // Skip loading session extensions if we are not in a user session.
+  skip_session_extensions = !chromeos::UserManager::Get()->IsUserLoggedIn();
+#endif
+  extension_service_->component_loader()->AddDefaultComponentExtensions(
+      skip_session_extensions);
   if (command_line->HasSwitch(switches::kLoadComponentExtension)) {
     CommandLine::StringType path_list = command_line->GetSwitchValueNative(
         switches::kLoadComponentExtension);

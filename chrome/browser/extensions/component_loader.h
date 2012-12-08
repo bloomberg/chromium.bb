@@ -69,8 +69,11 @@ class ComponentLoader {
   // background pages for testing, which could otherwise interfere with tests.
   static void EnableBackgroundExtensionsForTesting();
 
-  // Adds the default component extensions.
-  void AddDefaultComponentExtensions();
+  // Adds the default component extensions. If |skip_session_components|
+  // the loader will skip loading component extensions that weren't supposed to
+  // be loaded unless we are in signed user session (ChromeOS). For all other
+  // platforms this |skip_session_components| is expected to be unset.
+  void AddDefaultComponentExtensions(bool skip_session_components);
 
   static void RegisterUserPrefs(PrefService* prefs);
 
@@ -106,7 +109,8 @@ class ComponentLoader {
   // Loads a registered component extension.
   const Extension* Load(const ComponentExtensionInfo& info);
 
-  void AddDefaultComponentExtensionsWithBackgroundPages();
+  void AddDefaultComponentExtensionsWithBackgroundPages(
+      bool skip_session_components);
   void AddFileManagerExtension();
 
 #if defined(OS_CHROMEOS)

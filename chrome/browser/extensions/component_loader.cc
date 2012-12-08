@@ -310,36 +310,16 @@ void ComponentLoader::EnableBackgroundExtensionsForTesting() {
   enable_background_extensions_during_testing = true;
 }
 
-void ComponentLoader::AddDefaultComponentExtensions() {
+void ComponentLoader::AddDefaultComponentExtensions(
+    bool skip_session_components) {
   // Do not add component extensions that have background pages here -- add them
   // to AddDefaultComponentExtensionsWithBackgroundPages.
-
-#if defined(OS_CHROMEOS)
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kGuestSession))
-    Add(IDR_BOOKMARKS_MANIFEST,
-        FilePath(FILE_PATH_LITERAL("bookmark_manager")));
-#else
-  Add(IDR_BOOKMARKS_MANIFEST, FilePath(FILE_PATH_LITERAL("bookmark_manager")));
-#endif
-
 #if defined(OS_CHROMEOS)
   Add(IDR_MOBILE_MANIFEST,
       FilePath(FILE_PATH_LITERAL("/usr/share/chromeos-assets/mobile")));
 
-  Add(IDR_CROSH_BUILTIN_MANIFEST, FilePath(FILE_PATH_LITERAL(
-      "/usr/share/chromeos-assets/crosh_builtin")));
-
-  AddGaiaAuthExtension();
-
-  // TODO(gauravsh): Only include echo extension on official builds.
-  FilePath echo_extension_path(FILE_PATH_LITERAL(
-      "/usr/share/chromeos-assets/echo"));
-  if (command_line->HasSwitch(switches::kEchoExtensionPath)) {
-    echo_extension_path =
-        command_line->GetSwitchValuePath(switches::kEchoExtensionPath);
-  }
-  Add(IDR_ECHO_MANIFEST, echo_extension_path);
+  if (skip_session_components)
+    AddGaiaAuthExtension();
 
 #if defined(OFFICIAL_BUILD)
   if (browser_defaults::enable_help_app) {
@@ -347,29 +327,52 @@ void ComponentLoader::AddDefaultComponentExtensions() {
         FilePath(FILE_PATH_LITERAL("/usr/share/chromeos-assets/helpapp")));
   }
 #endif
-#endif  // !defined(OS_CHROMEOS)
 
-  Add(IDR_WEBSTORE_MANIFEST, FilePath(FILE_PATH_LITERAL("web_store")));
+  // Skip all other extensions that require user session presence.
+  if (!skip_session_components) {
+    const CommandLine* command_line = CommandLine::ForCurrentProcess();
+    if (!command_line->HasSwitch(switches::kGuestSession))
+      Add(IDR_BOOKMARKS_MANIFEST,
+          FilePath(FILE_PATH_LITERAL("bookmark_manager")));
 
-#if !defined(OS_CHROMEOS)
+    Add(IDR_CROSH_BUILTIN_MANIFEST, FilePath(FILE_PATH_LITERAL(
+        "/usr/share/chromeos-assets/crosh_builtin")));
+
+    // TODO(gauravsh): Only include echo extension on official builds.
+    FilePath echo_extension_path(FILE_PATH_LITERAL(
+        "/usr/share/chromeos-assets/echo"));
+    if (command_line->HasSwitch(switches::kEchoExtensionPath)) {
+      echo_extension_path =
+          command_line->GetSwitchValuePath(switches::kEchoExtensionPath);
+    }
+    Add(IDR_ECHO_MANIFEST, echo_extension_path);
+  }
+#else  // !defined(OS_CHROMEOS)
+  DCHECK(!skip_session_components);
+  Add(IDR_BOOKMARKS_MANIFEST, FilePath(FILE_PATH_LITERAL("bookmark_manager")));
   // Cloud Print component app. Not required on Chrome OS.
   Add(IDR_CLOUDPRINT_MANIFEST, FilePath(FILE_PATH_LITERAL("cloud_print")));
 #endif
 
-  // If a URL for the enterprise webstore has been specified, load the
-  // component extension. This extension might also be loaded later, because
-  // it is specified by policy, and on ChromeOS policies are loaded after
-  // the browser process has started.
-  AddOrReloadEnterpriseWebStore();
+  if (!skip_session_components) {
+    Add(IDR_WEBSTORE_MANIFEST, FilePath(FILE_PATH_LITERAL("web_store")));
+
+    // If a URL for the enterprise webstore has been specified, load the
+    // component extension. This extension might also be loaded later, because
+    // it is specified by policy, and on ChromeOS policies are loaded after
+    // the browser process has started.
+    AddOrReloadEnterpriseWebStore();
 
 #if defined(USE_ASH)
-  AddChromeApp();
+    AddChromeApp();
 #endif
+  }
 
-  AddDefaultComponentExtensionsWithBackgroundPages();
+  AddDefaultComponentExtensionsWithBackgroundPages(skip_session_components);
 }
 
-void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages() {
+void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
+    bool skip_session_components) {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
 
   // Component extensions with background pages are not enabled during tests
@@ -379,22 +382,25 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages() {
     return;
   }
 
-  // Apps Debugger
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kAppsDebugger)) {
-    Add(IDR_APPS_DEBUGGER_MANIFEST,
-        FilePath(FILE_PATH_LITERAL("apps_debugger")));
+  if (!skip_session_components) {
+    // Apps Debugger
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kAppsDebugger)) {
+      Add(IDR_APPS_DEBUGGER_MANIFEST,
+          FilePath(FILE_PATH_LITERAL("apps_debugger")));
+    }
+
+    AddFileManagerExtension();
+
+#if defined(ENABLE_SETTINGS_APP)
+    Add(IDR_SETTINGS_APP_MANIFEST, FilePath(FILE_PATH_LITERAL("settings_app")));
+#endif
   }
 
-  AddFileManagerExtension();
-
 #if defined(OS_CHROMEOS)
-  Add(IDR_WALLPAPERMANAGER_MANIFEST,
-      FilePath(FILE_PATH_LITERAL("chromeos/wallpaper_manager")));
-
-  if (command_line->HasSwitch(switches::kEnableBackgroundLoader)) {
-    Add(IDR_BACKLOADER_MANIFEST,
-        FilePath(FILE_PATH_LITERAL("backloader")));
+  if (!skip_session_components) {
+      Add(IDR_WALLPAPERMANAGER_MANIFEST,
+          FilePath(FILE_PATH_LITERAL("chromeos/wallpaper_manager")));
   }
 
   // Load ChromeVox extension now if spoken feedback is enabled.
@@ -404,9 +410,6 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages() {
   }
 #endif
 
-#if defined(ENABLE_SETTINGS_APP)
-  Add(IDR_SETTINGS_APP_MANIFEST, FilePath(FILE_PATH_LITERAL("settings_app")));
-#endif
 }
 
 // static
