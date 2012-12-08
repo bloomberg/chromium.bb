@@ -13,6 +13,7 @@
 #include "ash/system/brightness/brightness_control_delegate.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/shell_test_api.h"
 #include "ash/test/test_launcher_delegate.h"
 #include "ash/volume_control_delegate.h"
 #include "ash/wm/gestures/long_press_affordance_handler.h"
@@ -134,7 +135,7 @@ class SystemGestureEventFilterTest : public AshTestBase {
   virtual ~SystemGestureEventFilterTest() {}
 
   internal::LongPressAffordanceHandler* GetLongPressAffordance() {
-    Shell::TestApi shell_test(Shell::GetInstance());
+    ShellTestApi shell_test(Shell::GetInstance());
     return shell_test.system_gesture_event_filter()->
         long_press_affordance_.get();
   }
@@ -185,7 +186,7 @@ ui::GestureEvent* CreateGesture(ui::EventType type,
 TEST_F(SystemGestureEventFilterTest, TapOutsideRootWindow) {
   aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
 
-  Shell::TestApi shell_test(Shell::GetInstance());
+  test::ShellTestApi shell_test(Shell::GetInstance());
 
   const int kTouchId = 5;
 

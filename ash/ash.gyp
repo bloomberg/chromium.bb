@@ -476,6 +476,8 @@
         'test/launcher_view_test_api.h',
         'test/display_manager_test_api.cc',
         'test/display_manager_test_api.h',
+        'test/shell_test_api.cc',
+        'test/shell_test_api.h',
         'test/test_activation_delegate.cc',
         'test/test_activation_delegate.h',
         'test/test_launcher_delegate.cc',

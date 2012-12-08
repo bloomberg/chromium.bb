@@ -115,6 +115,10 @@ class TouchObserverHUD;
 class WorkspaceController;
 }
 
+namespace test {
+class ShellTestApi;
+}
+
 // Shell is a singleton object that presents the Shell API and implements the
 // RootWindow's delegate interface.
 //
@@ -129,23 +133,6 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate,
   enum Direction {
     FORWARD,
     BACKWARD
-  };
-
-  // Accesses private data from a Shell for testing.
-  class ASH_EXPORT TestApi {
-   public:
-    explicit TestApi(Shell* shell);
-
-    internal::RootWindowLayoutManager* root_window_layout();
-    views::corewm::InputMethodEventFilter* input_method_event_filter();
-    internal::SystemGestureEventFilter* system_gesture_event_filter();
-    internal::WorkspaceController* workspace_controller();
-    internal::ScreenPositionController* screen_position_controller();
-
-   private:
-    Shell* shell_;  // not owned
-
-    DISALLOW_COPY_AND_ASSIGN(TestApi);
   };
 
   // A shell must be explicitly created so that it can call |Init()| with the
@@ -428,6 +415,7 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate,
   FRIEND_TEST_ALL_PREFIXES(WindowManagerTest, MouseEventCursors);
   FRIEND_TEST_ALL_PREFIXES(WindowManagerTest, TransformActivate);
   friend class internal::RootWindowController;
+  friend class test::ShellTestApi;
 
   typedef std::pair<aura::Window*, gfx::Rect> WindowAndBoundsPair;
 

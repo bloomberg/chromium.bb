@@ -5,6 +5,7 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/shell_test_api.h"
 #include "ash/test/test_activation_delegate.h"
 #include "ash/wm/activation_controller.h"
 #include "ash/wm/cursor_manager.h"
@@ -109,7 +110,7 @@ class HitTestWindowDelegate : public aura::test::TestWindowDelegate {
 TEST_F(WindowManagerTest, Focus) {
   // The IME event filter interferes with the basic key event propagation we
   // attempt to do here, so we remove it.
-  Shell::TestApi shell_test(Shell::GetInstance());
+  test::ShellTestApi shell_test(Shell::GetInstance());
   Shell::GetInstance()->RemovePreTargetHandler(
       shell_test.input_method_event_filter());
 
@@ -556,7 +557,7 @@ TEST_F(WindowManagerTest, MAYBE_TransformActivate) {
 TEST_F(WindowManagerTest, AdditionalFilters) {
   // The IME event filter interferes with the basic key event propagation we
   // attempt to do here, so we remove it.
-  Shell::TestApi shell_test(Shell::GetInstance());
+  test::ShellTestApi shell_test(Shell::GetInstance());
   Shell::GetInstance()->RemovePreTargetHandler(
       shell_test.input_method_event_filter());
 

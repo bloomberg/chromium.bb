@@ -185,34 +185,6 @@ Shell* Shell::instance_ = NULL;
 bool Shell::initially_hide_cursor_ = false;
 
 ////////////////////////////////////////////////////////////////////////////////
-// Shell::TestApi
-
-Shell::TestApi::TestApi(Shell* shell) : shell_(shell) {}
-
-internal::RootWindowLayoutManager* Shell::TestApi::root_window_layout() {
-  return shell_->GetPrimaryRootWindowController()->root_window_layout();
-}
-
-views::corewm::InputMethodEventFilter*
-    Shell::TestApi::input_method_event_filter() {
-  return shell_->input_method_filter_.get();
-}
-
-internal::SystemGestureEventFilter*
-    Shell::TestApi::system_gesture_event_filter() {
-  return shell_->system_gesture_filter_.get();
-}
-
-internal::WorkspaceController* Shell::TestApi::workspace_controller() {
-  return shell_->GetPrimaryRootWindowController()->workspace_controller();
-}
-
-internal::ScreenPositionController*
-    Shell::TestApi::screen_position_controller() {
-  return shell_->screen_position_controller_.get();
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // Shell, public:
 
 Shell::Shell(ShellDelegate* delegate)

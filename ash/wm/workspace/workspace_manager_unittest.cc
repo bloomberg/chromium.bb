@@ -11,6 +11,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/shell_test_api.h"
 #include "ash/wm/activation_controller.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/shelf_layout_manager.h"
@@ -126,7 +127,7 @@ class WorkspaceManagerTest : public test::AshTestBase {
   virtual void SetUp() OVERRIDE {
     test::AshTestBase::SetUp();
     WorkspaceControllerTestHelper workspace_helper(
-        Shell::TestApi(Shell::GetInstance()).workspace_controller());
+        test::ShellTestApi(Shell::GetInstance()).workspace_controller());
     manager_ = workspace_helper.workspace_manager();
   }
 

@@ -7,6 +7,7 @@
 #include "ash/display/display_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/shell_test_api.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -36,7 +37,7 @@ void SetSecondaryDisplayLayout(DisplayLayout::Position position) {
 }
 
 internal::ScreenPositionController* GetScreenPositionController() {
-  Shell::TestApi test_api(Shell::GetInstance());
+  ShellTestApi test_api(Shell::GetInstance());
   return test_api.screen_position_controller();
 }
 
