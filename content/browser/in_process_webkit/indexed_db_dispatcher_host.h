@@ -77,6 +77,8 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
 
   WebKit::WebIDBCursor* GetCursorFromId(int32 ipc_cursor_id);
 
+  int64 HostTransactionId(int64 transaction_id);
+
  private:
   virtual ~IndexedDBDispatcherHost();
 

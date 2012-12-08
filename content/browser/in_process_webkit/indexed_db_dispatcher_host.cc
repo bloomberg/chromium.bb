@@ -200,6 +200,19 @@ int32 IndexedDBDispatcherHost::Add(WebIDBTransaction* idb_transaction,
   return id;
 }
 
+int64 IndexedDBDispatcherHost::HostTransactionId(int64 transaction_id) {
+  // Inject the renderer process id into the transaction id, to
+  // uniquely identify this transaction, and effectively bind it to
+  // the renderer that initiated it. The lower 32 bits of
+  // transaction_id are guaranteed to be unique within that renderer.
+  base::ProcessId pid = base::GetProcId(peer_handle());
+  DCHECK(!(transaction_id >> 32)) << "Transaction ids can only be 32 bits";
+  COMPILE_ASSERT(sizeof(base::ProcessId) <= sizeof(int32),
+                 Process_ID_must_fit_in_32_bits);
+
+  return transaction_id |= (static_cast<uint64>(pid) << 32);
+}
+
 WebIDBCursor* IndexedDBDispatcherHost::GetCursorFromId(int32 ipc_cursor_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   return cursor_dispatcher_host_->map_.Lookup(ipc_cursor_id);
@@ -253,12 +266,14 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
 
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
 
+  int64 transaction_id = HostTransactionId(params.transaction_id);
+
   // TODO(dgrogan): Don't let a non-existing database be opened (and therefore
   // created) if this origin is already over quota.
   Context()->GetIDBFactory()->open(
       params.name,
       params.version,
-      params.transaction_id,
+      transaction_id,
       new IndexedDBCallbacksDatabase(this, params.ipc_thread_id,
                                      params.ipc_response_id, origin_url),
       new IndexedDBDatabaseCallbacks(this, params.ipc_thread_id,
@@ -450,16 +465,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateTransaction(
   for (size_t i = 0; i < object_store_ids.size(); ++i)
       object_stores[i] = object_store_ids[i];
 
-  // Inject the renderer process id into the transaction id, to
-  // uniquely identify this transaction, and effectively bind it to
-  // the renderer that initiated it. The lower 32 bits of
-  // transaction_id are guaranteed to be unique within that renderer.
-  base::ProcessId pid = base::GetProcId(parent_->peer_handle());
-  DCHECK(!(transaction_id >> 32)) << "Transaction ids can only be 32 bits";
-  COMPILE_ASSERT(sizeof(base::ProcessId) <= sizeof(int32),
-                 Process_ID_must_fit_in_32_bits);
-
-  transaction_id |= (uint64(pid) << 32);
+  transaction_id = parent_->HostTransactionId(transaction_id);
 
   WebIDBTransaction* transaction = database->createTransaction(
       transaction_id, object_stores, mode);
