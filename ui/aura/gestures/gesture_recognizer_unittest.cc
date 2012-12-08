@@ -481,6 +481,10 @@ base::TimeDelta GetTime() {
   return base::Time::NowFromSystemTime() - base::Time();
 }
 
+base::TimeDelta AbsTime(int timeInMillis) {
+  return base::TimeDelta::FromMilliseconds(timeInMillis);
+}
+
 void SendScrollEvents(RootWindow* root_window,
                       int x_start,
                       int y_start,
@@ -856,8 +860,6 @@ TEST_F(GestureRecognizerTest, GestureEventScroll) {
                   ui::ET_GESTURE_SCROLL_UPDATE);
   EXPECT_EQ(29, delegate->scroll_x());
   EXPECT_EQ(29, delegate->scroll_y());
-  EXPECT_EQ(0, delegate->scroll_velocity_x());
-  EXPECT_EQ(0, delegate->scroll_velocity_y());
   EXPECT_EQ(gfx::Point(1, 1).ToString(),
             delegate->scroll_begin_position().ToString());
 
@@ -885,7 +887,7 @@ TEST_F(GestureRecognizerTest, GestureEventScroll) {
                              base::TimeDelta::FromMilliseconds(50));
   root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
   EXPECT_2_EVENTS(delegate->events(),
-                  ui::ET_GESTURE_SCROLL_END,
+                  ui::ET_SCROLL_FLING_START,
                   ui::ET_GESTURE_END);
   EXPECT_TRUE(delegate->bounding_box().IsEmpty());
 }
@@ -1006,7 +1008,6 @@ TEST_F(GestureRecognizerTest, GestureEventVerticalRailFling) {
   EXPECT_EQ(20, delegate->scroll_y());
   EXPECT_EQ(0, delegate->scroll_x());
   EXPECT_EQ(0, delegate->scroll_velocity_x());
-  EXPECT_EQ(0, delegate->scroll_velocity_y());
 
   // Get a high y velocity, while still staying on the rail
   SendScrollEvents(root_window(), 1, 1, press.time_stamp(),
@@ -1275,8 +1276,6 @@ TEST_F(GestureRecognizerTest, GestureEventHorizontalRailScroll) {
   EXPECT_EQ(5, delegate->scroll_x());
   // y shouldn't change, as we're on a horizontal rail.
   EXPECT_EQ(0, delegate->scroll_y());
-  EXPECT_EQ(0, delegate->scroll_velocity_x());
-  EXPECT_EQ(0, delegate->scroll_velocity_y());
 
   // Send enough information that a velocity can be calculated for the gesture,
   // and we can break the rail
@@ -1324,7 +1323,6 @@ TEST_F(GestureRecognizerTest, GestureEventVerticalRailScroll) {
   // x shouldn't change, as we're on a vertical rail.
   EXPECT_EQ(0, delegate->scroll_x());
   EXPECT_EQ(0, delegate->scroll_velocity_x());
-  EXPECT_EQ(0, delegate->scroll_velocity_y());
 
   // Send enough information that a velocity can be calculated for the gesture,
   // and we can break the rail
@@ -1678,7 +1676,7 @@ TEST_F(GestureRecognizerTest, GestureEventPinchFromScroll) {
 
   delegate->Reset();
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
-                           kTouchId1, GetTime());
+                           kTouchId1, AbsTime(0));
   root->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
   EXPECT_2_EVENTS(delegate->events(),
                   ui::ET_GESTURE_BEGIN,
@@ -1688,7 +1686,7 @@ TEST_F(GestureRecognizerTest, GestureEventPinchFromScroll) {
   // should generate both SCROLL_BEGIN and SCROLL_UPDATE gestures.
   delegate->Reset();
   ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(130, 301),
-                          kTouchId1, GetTime());
+                          kTouchId1, AbsTime(10));
   root->AsRootWindowHostDelegate()->OnHostTouchEvent(&move);
   EXPECT_3_EVENTS(delegate->events(),
                   ui::ET_GESTURE_TAP_CANCEL,
@@ -1699,7 +1697,7 @@ TEST_F(GestureRecognizerTest, GestureEventPinchFromScroll) {
   // transition to two finger tap here because the touch points are far enough.
   delegate->Reset();
   ui::TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(10, 10),
-                            kTouchId2, GetTime());
+                            kTouchId2, AbsTime(20));
   root->AsRootWindowHostDelegate()->OnHostTouchEvent(&press2);
   EXPECT_2_EVENTS(delegate->events(),
                  ui::ET_GESTURE_BEGIN,
@@ -1710,7 +1708,7 @@ TEST_F(GestureRecognizerTest, GestureEventPinchFromScroll) {
   // Move the first finger.
   delegate->Reset();
   ui::TouchEvent move3(ui::ET_TOUCH_MOVED, gfx::Point(95, 201),
-                           kTouchId1, GetTime());
+                           kTouchId1, AbsTime(30));
   root->AsRootWindowHostDelegate()->OnHostTouchEvent(&move3);
   EXPECT_2_EVENTS(delegate->events(),
                   ui::ET_GESTURE_PINCH_UPDATE,
@@ -1721,7 +1719,7 @@ TEST_F(GestureRecognizerTest, GestureEventPinchFromScroll) {
   // Now move the second finger.
   delegate->Reset();
   ui::TouchEvent move4(ui::ET_TOUCH_MOVED, gfx::Point(55, 15),
-                           kTouchId2, GetTime());
+                           kTouchId2, AbsTime(40));
   root->AsRootWindowHostDelegate()->OnHostTouchEvent(&move4);
   EXPECT_2_EVENTS(delegate->events(),
                   ui::ET_GESTURE_PINCH_UPDATE,
@@ -1732,8 +1730,7 @@ TEST_F(GestureRecognizerTest, GestureEventPinchFromScroll) {
   // Release the first finger. This should end pinch.
   delegate->Reset();
   ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
-                             kTouchId1, press.time_stamp() +
-                             base::TimeDelta::FromMilliseconds(50));
+                             kTouchId1, AbsTime(50));
   root->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
   EXPECT_2_EVENTS(delegate->events(),
                  ui::ET_GESTURE_PINCH_END,
@@ -1744,7 +1741,7 @@ TEST_F(GestureRecognizerTest, GestureEventPinchFromScroll) {
   // Move the second finger. This should still generate a scroll.
   delegate->Reset();
   ui::TouchEvent move5(ui::ET_TOUCH_MOVED, gfx::Point(25, 10),
-                           kTouchId2, GetTime());
+                           kTouchId2, AbsTime(60));
   root->AsRootWindowHostDelegate()->OnHostTouchEvent(&move5);
   EXPECT_1_EVENT(delegate->events(), ui::ET_GESTURE_SCROLL_UPDATE);
   EXPECT_TRUE(delegate->bounding_box().IsEmpty());
@@ -2262,7 +2259,8 @@ TEST_F(GestureRecognizerTest, TwoFingerTap) {
   EXPECT_FALSE(delegate->double_tap());
   EXPECT_FALSE(delegate->scroll_begin());
   EXPECT_FALSE(delegate->scroll_update());
-  EXPECT_TRUE(delegate->scroll_end());
+  EXPECT_FALSE(delegate->scroll_end());
+  EXPECT_TRUE(delegate->fling());
   EXPECT_FALSE(delegate->two_finger_tap());
 }
 
@@ -2777,7 +2775,9 @@ TEST_F(GestureRecognizerTest, GestureEventScrollTouchMovePartialConsumed) {
   EXPECT_FALSE(delegate->double_tap());
   EXPECT_FALSE(delegate->scroll_begin());
   EXPECT_FALSE(delegate->scroll_update());
-  EXPECT_TRUE(delegate->scroll_end());
+  EXPECT_FALSE(delegate->scroll_end());
+  // Moves arrive without delays and hence have high velocity.
+  EXPECT_TRUE(delegate->fling());
 }
 
 // Check that appropriate touch events generate double tap gesture events.
