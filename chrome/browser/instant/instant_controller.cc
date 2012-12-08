@@ -433,6 +433,7 @@ bool InstantController::CommitIfCurrent(InstantCommitType type) {
   if (instant_tab_) {
     if (last_match_was_search_ && type == INSTANT_COMMIT_PRESSED_ENTER) {
       instant_tab_->Submit(last_omnibox_text_);
+      instant_tab_->contents()->Focus();
       return true;
     }
     return false;
