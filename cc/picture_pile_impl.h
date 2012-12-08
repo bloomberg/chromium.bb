@@ -34,7 +34,7 @@ public:
   // It is assumed that contentsScale has already been applied to this canvas.
   void Raster(
       SkCanvas* canvas,
-      gfx::Rect rect,
+      gfx::Rect content_rect,
       float contents_scale,
       RenderingStats* stats);
 

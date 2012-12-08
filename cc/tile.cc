@@ -13,13 +13,13 @@ Tile::Tile(TileManager* tile_manager,
            PicturePileImpl* picture_pile,
            gfx::Size tile_size,
            GLenum format,
-           gfx::Rect rect_inside_picture,
+           gfx::Rect content_rect,
            float contents_scale)
   : tile_manager_(tile_manager),
     picture_pile_(picture_pile),
     tile_size_(tile_size),
     format_(format),
-    rect_inside_picture_(rect_inside_picture),
+    content_rect_(content_rect),
     contents_scale_(contents_scale) {
   tile_manager_->RegisterTile(this);
 }

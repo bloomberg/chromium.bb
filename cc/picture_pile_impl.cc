@@ -7,6 +7,7 @@
 #include "cc/rendering_stats.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkSize.h"
+#include "ui/gfx/rect_conversions.h"
 
 namespace cc {
 
@@ -45,21 +46,27 @@ scoped_refptr<PicturePileImpl> PicturePileImpl::CloneForDrawing() const {
 
 void PicturePileImpl::Raster(
     SkCanvas* canvas,
-    gfx::Rect rect,
+    gfx::Rect content_rect,
     float contents_scale,
     RenderingStats* stats) {
   base::TimeTicks rasterizeBeginTime = base::TimeTicks::Now();
 
   // TODO(enne): do this more efficiently, i.e. top down with Skia clips
   canvas->save();
-  canvas->translate(-rect.x(), -rect.y());
-  SkRect layer_skrect = SkRect::MakeXYWH(rect.x(), rect.y(),
-                                         rect.width(), rect.height());
+  canvas->translate(-content_rect.x(), -content_rect.y());
+  SkRect layer_skrect = SkRect::MakeXYWH(
+      content_rect.x(),
+      content_rect.y(),
+      content_rect.width(),
+      content_rect.height());
   canvas->clipRect(layer_skrect);
   canvas->scale(contents_scale, contents_scale);
+
+  gfx::Rect layer_rect = gfx::ToEnclosedRect(gfx::ScaleRect(gfx::RectF(content_rect), 1 / contents_scale));
+
   for (PicturePile::Pile::const_iterator i = pile_.begin();
        i != pile_.end(); ++i) {
-    if (!(*i)->LayerRect().Intersects(rect))
+    if (!(*i)->LayerRect().Intersects(layer_rect))
       continue;
     (*i)->Raster(canvas);
 

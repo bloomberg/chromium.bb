@@ -62,8 +62,8 @@ void Picture::Record(ContentLayerClient* painter,
                                          layer_rect_.y(),
                                          layer_rect_.width(),
                                          layer_rect_.height());
-  canvas->drawRect(layer_skrect, paint);
   canvas->clipRect(layer_skrect);
+  canvas->drawRect(layer_skrect, paint);
 
   gfx::RectF opaque_layer_rect;
   base::TimeTicks beginPaintTime = base::TimeTicks::Now();

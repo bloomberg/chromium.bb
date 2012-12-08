@@ -413,7 +413,7 @@ void TileManager::DispatchOneRasterTask(
       FROM_HERE,
       picture_pile_clone.get(),
       resource_pool_->resource_provider()->mapPixelBuffer(resource_id),
-      tile->rect_inside_picture_,
+      tile->content_rect_,
       tile->contents_scale(),
       stats,
       base::Bind(&TileManager::OnRasterTaskCompleted,
