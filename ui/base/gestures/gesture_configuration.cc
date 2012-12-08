@@ -24,16 +24,15 @@ double GestureConfiguration::min_distance_for_pinch_scroll_in_pixels_ = 20;
 double GestureConfiguration::min_flick_speed_squared_ = 550.f * 550.f;
 double GestureConfiguration::min_pinch_update_distance_in_pixels_ = 5;
 double GestureConfiguration::min_rail_break_velocity_ = 200;
-double GestureConfiguration::min_scroll_delta_squared_ = 4 * 4;
-int GestureConfiguration::min_scroll_successive_velocity_events_ = 3;
-float GestureConfiguration::min_scroll_velocity_ = 30.0f;
+double GestureConfiguration::min_scroll_delta_squared_ = 5 * 5;
 double GestureConfiguration::min_swipe_speed_ = 20;
 double
   GestureConfiguration::min_touch_down_duration_in_seconds_for_click_ = 0.01;
 
 // The number of points used in the linear regression which determines
-// touch velocity. Velocity is reported for 2 or more touch move events.
-int GestureConfiguration::points_buffered_for_velocity_ = 8;
+// touch velocity. If fewer than this number of points have been seen,
+// velocity is reported as 0.
+int GestureConfiguration::points_buffered_for_velocity_ = 3;
 double GestureConfiguration::rail_break_proportion_ = 15;
 double GestureConfiguration::rail_start_proportion_ = 2;
 

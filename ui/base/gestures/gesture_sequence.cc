@@ -846,8 +846,9 @@ bool GestureSequence::ScrollStart(const TouchEvent& event,
                                   GesturePoint& point,
                                   Gestures* gestures) {
   DCHECK(state_ == GS_PENDING_SYNTHETIC_CLICK);
-  if (!point.IsConsistentScrollingActionUnderway() &&
-      !point.IsInScrollWindow(event))
+  if (point.IsInClickWindow(event) ||
+      !point.IsInScrollWindow(event) ||
+      !point.HasEnoughDataToEstablishRail())
     return false;
   AppendScrollGestureBegin(point, point.first_touch_position(), gestures);
   if (point.IsInHorizontalRailWindow())
@@ -1066,8 +1067,8 @@ bool GestureSequence::MaybeSwipe(const TouchEvent& event,
 
   velocity_x = points_[i].XVelocity();
   velocity_y = points_[i].YVelocity();
-  sign_x = velocity_x < 0.f ? -1 : 1;
-  sign_y = velocity_y < 0.f ? -1 : 1;
+  sign_x = velocity_x < 0 ? -1 : 1;
+  sign_y = velocity_y < 0 ? -1 : 1;
 
   for (++i; i < kMaxGesturePoints; ++i) {
     if (!points_[i].in_use())
