@@ -156,17 +156,17 @@ public:
         return MockLayerTreeHostImpl::create(m_testHooks, settings(), client, proxy()).PassAs<cc::LayerTreeHostImpl>();
     }
 
+    virtual void didAddAnimation() OVERRIDE
+    {
+        LayerTreeHost::didAddAnimation();
+        m_testHooks->didAddAnimation();
+    }
+
     virtual void setNeedsCommit() OVERRIDE
     {
         if (!m_testStarted)
             return;
         LayerTreeHost::setNeedsCommit();
-    }
-
-    virtual void DidActivateAnimationController(cc::LayerAnimationController* controller) OVERRIDE
-    {
-        LayerTreeHost::DidActivateAnimationController(controller);
-        m_testHooks->didAddAnimation();
     }
 
     void setTestStarted(bool started) { m_testStarted = started; }
@@ -335,6 +335,11 @@ void ThreadedTest::postSetVisibleToMainThread(bool visible)
     m_mainThreadProxy->postTask(FROM_HERE, base::Bind(&ThreadedTest::dispatchSetVisible, base::Unretained(this), visible));
 }
 
+void ThreadedTest::postDidAddAnimationToMainThread()
+{
+    m_mainThreadProxy->postTask(FROM_HERE, base::Bind(&ThreadedTest::dispatchDidAddAnimation, base::Unretained(this)));
+}
+
 void ThreadedTest::doBeginTest()
 {
     m_client = ThreadedMockLayerTreeHostClient::create(this);
@@ -462,6 +467,17 @@ void ThreadedTest::dispatchComposite()
     m_scheduled = false;
     if (m_layerTreeHost.get() && !m_finished)
         m_layerTreeHost->composite();
+}
+
+void ThreadedTest::dispatchDidAddAnimation()
+{
+    DCHECK(!proxy() || proxy()->isMainThread());
+
+    if (m_finished)
+        return;
+
+    if (m_layerTreeHost.get())
+        m_layerTreeHost->didAddAnimation();
 }
 
 void ThreadedTest::runTest(bool threaded)

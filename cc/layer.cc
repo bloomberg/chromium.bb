@@ -32,7 +32,7 @@ Layer::Layer()
     , m_layerId(s_nextLayerId++)
     , m_parent(0)
     , m_layerTreeHost(0)
-    , m_layerAnimationController(LayerAnimationController::create())
+    , m_layerAnimationController(LayerAnimationController::create(this))
     , m_scrollable(false)
     , m_shouldScrollOnMainThread(false)
     , m_haveWheelEventHandlers(false)
@@ -40,6 +40,7 @@ Layer::Layer()
     , m_touchEventHandlerRegionChanged(false)
     , m_anchorPoint(0.5, 0.5)
     , m_backgroundColor(0)
+    , m_opacity(1.0)
     , m_anchorPointZ(0)
     , m_isContainerForFixedPositionLayers(false)
     , m_fixedToContainerLayer(false)
@@ -63,7 +64,6 @@ Layer::Layer()
         s_nextLayerId = 1;
         m_layerId = s_nextLayerId++;
     }
-    m_layerAnimationController->setId(m_layerId);
 }
 
 Layer::~Layer()
@@ -96,7 +96,9 @@ void Layer::setLayerTreeHost(LayerTreeHost* host)
     if (m_replicaLayer)
         m_replicaLayer->setLayerTreeHost(host);
 
-    m_layerAnimationController->setAnimationRegistrar(host);
+    // If this layer already has active animations, the host needs to be notified.
+    if (host && m_layerAnimationController->hasActiveAnimation())
+        host->didAddAnimation();
 }
 
 void Layer::setNeedsCommit()
@@ -356,14 +358,10 @@ bool Layer::needsDisplay() const
 
 void Layer::setOpacity(float opacity)
 {
-    if (!m_layerAnimationController->setOpacity(opacity))
+    if (m_opacity == opacity)
         return;
+    m_opacity = opacity;
     setNeedsCommit();
-}
-
-float Layer::opacity() const
-{
-    return m_layerAnimationController->opacity();
 }
 
 bool Layer::opacityIsAnimating() const
@@ -397,14 +395,10 @@ void Layer::setSublayerTransform(const gfx::Transform& sublayerTransform)
 
 void Layer::setTransform(const gfx::Transform& transform)
 {
-    if (!m_layerAnimationController->setTransform(transform))
+    if (m_transform == transform)
         return;
+    m_transform = transform;
     setNeedsCommit();
-}
-
-const gfx::Transform& Layer::transform() const
-{
-    return m_layerAnimationController->transform();
 }
 
 bool Layer::transformIsAnimating() const
@@ -589,6 +583,8 @@ void Layer::pushPropertiesTo(LayerImpl* layer)
         m_touchEventHandlerRegionChanged = false;
     }
     layer->setContentsOpaque(m_contentsOpaque);
+    if (!opacityIsAnimating())
+        layer->setOpacity(m_opacity);
     layer->setPosition(m_position);
     layer->setIsContainerForFixedPositionLayers(m_isContainerForFixedPositionLayers);
     layer->setFixedToContainerLayer(m_fixedToContainerLayer);
@@ -597,6 +593,8 @@ void Layer::pushPropertiesTo(LayerImpl* layer)
     layer->setScrollOffset(m_scrollOffset);
     layer->setMaxScrollOffset(m_maxScrollOffset);
     layer->setSublayerTransform(m_sublayerTransform);
+    if (!transformIsAnimating())
+        layer->setTransform(m_transform);
 
     // If the main thread commits multiple times before the impl thread actually draws, then damage tracking
     // will become incorrect if we simply clobber the updateRect here. The LayerImpl's updateRect needs to
@@ -720,6 +718,32 @@ int Layer::id() const
     return m_layerId;
 }
 
+float Layer::opacity() const
+{
+    return m_opacity;
+}
+
+void Layer::setOpacityFromAnimation(float opacity)
+{
+    // This is called due to an ongoing accelerated animation. Since this animation is
+    // also being run on the impl thread, there is no need to request a commit to push
+    // this value over, so set the value directly rather than calling setOpacity.
+    m_opacity = opacity;
+}
+
+const gfx::Transform& Layer::transform() const
+{
+    return m_transform;
+}
+
+void Layer::setTransformFromAnimation(const gfx::Transform& transform)
+{
+    // This is called due to an ongoing accelerated animation. Since this animation is
+    // also being run on the impl thread, there is no need to request a commit to push
+    // this value over, so set this value directly rather than calling setTransform.
+    m_transform = transform;
+}
+
 bool Layer::addAnimation(scoped_ptr <ActiveAnimation> animation)
 {
     // WebCore currently assumes that accelerated animations will start soon
@@ -739,7 +763,10 @@ bool Layer::addAnimation(scoped_ptr <ActiveAnimation> animation)
 #endif
 
     m_layerAnimationController->addAnimation(animation.Pass());
+    if (m_layerTreeHost) {
+        m_layerTreeHost->didAddAnimation();
         setNeedsCommit();
+    }
     return true;
 }
 
@@ -767,24 +794,21 @@ void Layer::resumeAnimations(double monotonicTime)
     setNeedsCommit();
 }
 
-void Layer::setLayerAnimationController(scoped_refptr<LayerAnimationController> layerAnimationController)
+void Layer::setLayerAnimationController(scoped_ptr<LayerAnimationController> layerAnimationController)
 {
-    m_layerAnimationController = layerAnimationController;
+    m_layerAnimationController = layerAnimationController.Pass();
     if (m_layerAnimationController) {
-        m_layerAnimationController->setId(id());
+        m_layerAnimationController->setClient(this);
         m_layerAnimationController->setForceSync();
     }
     setNeedsCommit();
 }
 
-scoped_refptr<LayerAnimationController> Layer::releaseLayerAnimationController()
+scoped_ptr<LayerAnimationController> Layer::releaseLayerAnimationController()
 {
-    scoped_refptr<LayerAnimationController> toReturn = m_layerAnimationController;
-    m_layerAnimationController = LayerAnimationController::create();
-    m_layerAnimationController->setId(id());
-    m_layerAnimationController->setTransform(toReturn->transform());
-    m_layerAnimationController->setOpacity(toReturn->opacity());
-    return toReturn;
+    scoped_ptr<LayerAnimationController> toReturn = m_layerAnimationController.Pass();
+    m_layerAnimationController = LayerAnimationController::create(this);
+    return toReturn.Pass();
 }
 
 bool Layer::hasActiveAnimation() const

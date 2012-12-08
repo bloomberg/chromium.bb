@@ -42,7 +42,7 @@ class Layer;
 
 struct AppendQuadsData;
 
-class CC_EXPORT LayerImpl {
+class CC_EXPORT LayerImpl : public LayerAnimationControllerClient {
 public:
     typedef ScopedPtrVector<LayerImpl> LayerList;
 
@@ -53,7 +53,12 @@ public:
 
     virtual ~LayerImpl();
 
-    int id() const;
+    // LayerAnimationControllerClient implementation.
+    virtual int id() const OVERRIDE;
+    virtual void setOpacityFromAnimation(float) OVERRIDE;
+    virtual float opacity() const OVERRIDE;
+    virtual void setTransformFromAnimation(const gfx::Transform&) OVERRIDE;
+    virtual const gfx::Transform& transform() const OVERRIDE;
 
     // Tree structure.
     LayerImpl* parent() { return m_parent; }
@@ -129,7 +134,6 @@ public:
     bool contentsOpaque() const { return m_contentsOpaque; }
 
     void setOpacity(float);
-    float opacity() const;
     bool opacityIsAnimating() const;
 
     void setPosition(const gfx::PointF&);
@@ -238,7 +242,6 @@ public:
     void setDoubleSided(bool);
 
     void setTransform(const gfx::Transform&);
-    const gfx::Transform& transform() const;
     bool transformIsAnimating() const;
 
     const gfx::RectF& updateRect() const { return m_updateRect; }
@@ -344,11 +347,13 @@ private:
 
     bool m_masksToBounds;
     bool m_contentsOpaque;
+    float m_opacity;
     gfx::PointF m_position;
     bool m_preserves3D;
     bool m_useParentBackfaceVisibility;
     bool m_drawCheckerboardForMissingTiles;
     gfx::Transform m_sublayerTransform;
+    gfx::Transform m_transform;
     bool m_useLCDText;
 
     bool m_drawsContent;
@@ -385,7 +390,7 @@ private:
     gfx::RectF m_updateRect;
 
     // Manages animations for this layer.
-    scoped_refptr<LayerAnimationController> m_layerAnimationController;
+    scoped_ptr<LayerAnimationController> m_layerAnimationController;
 
     // Manages scrollbars for this layer
     scoped_ptr<ScrollbarAnimationController> m_scrollbarAnimationController;

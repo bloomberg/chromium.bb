@@ -150,6 +150,40 @@ float FakeFloatTransition::getValue(double time) const
     return (1 - time) * m_from + time * m_to;
 }
 
+FakeLayerAnimationControllerClient::FakeLayerAnimationControllerClient()
+    : m_opacity(0)
+{
+}
+
+FakeLayerAnimationControllerClient::~FakeLayerAnimationControllerClient()
+{
+}
+
+int FakeLayerAnimationControllerClient::id() const
+{
+    return 0;
+}
+
+void FakeLayerAnimationControllerClient::setOpacityFromAnimation(float opacity)
+{
+    m_opacity = opacity;
+}
+
+float FakeLayerAnimationControllerClient::opacity() const
+{
+    return m_opacity;
+}
+
+void FakeLayerAnimationControllerClient::setTransformFromAnimation(const gfx::Transform& transform)
+{
+    m_transform = transform;
+}
+
+const gfx::Transform& FakeLayerAnimationControllerClient::transform() const
+{
+    return m_transform;
+}
+
 scoped_ptr<cc::AnimationCurve> FakeFloatTransition::clone() const
 {
     return make_scoped_ptr(new FakeFloatTransition(*this)).PassAs<cc::AnimationCurve>();

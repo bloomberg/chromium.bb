@@ -9,7 +9,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "cc/animation_events.h"
-#include "cc/animation_registrar.h"
 #include "cc/cc_export.h"
 #include "cc/input_handler.h"
 #include "cc/layer_tree_impl.h"
@@ -114,10 +113,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
                                     public RendererClient,
                                     public TileManagerClient,
                                     public LayerTreeImplClient,
-                                    public AnimationRegistrar,
                                     public OutputSurfaceClient {
     typedef std::vector<LayerImpl*> LayerList;
-    typedef base::hash_set<LayerAnimationController*> AnimationControllerSet;
 
 public:
     static scoped_ptr<LayerTreeHostImpl> create(const LayerTreeSettings&, LayerTreeHostImplClient*, Proxy*);
@@ -248,7 +245,9 @@ public:
 
     bool hasTransparentBackground() const { return m_hasTransparentBackground; }
     void setHasTransparentBackground(bool transparent) { m_hasTransparentBackground = transparent; }
-    bool needsAnimateLayers() const { return !m_activeAnimationControllers.empty(); }
+
+    bool needsAnimateLayers() const { return m_needsAnimateLayers; }
+    void setNeedsAnimateLayers() { m_needsAnimateLayers = true; }
 
     void setNeedsRedraw();
 
@@ -343,14 +342,7 @@ private:
 
     void dumpRenderSurfaces(std::string*, int indent, const LayerImpl*) const;
 
-    // AnimationRegistar implementation.
-    virtual void DidActivateAnimationController(LayerAnimationController*) OVERRIDE;
-    virtual void DidDeactivateAnimationController(LayerAnimationController*) OVERRIDE;
-    virtual void RegisterAnimationController(LayerAnimationController*) OVERRIDE;
-    virtual void UnregisterAnimationController(LayerAnimationController*) OVERRIDE;
-
     scoped_ptr<OutputSurface> m_outputSurface;
-
     scoped_ptr<ResourceProvider> m_resourceProvider;
     scoped_ptr<Renderer> m_renderer;
     scoped_ptr<TileManager> m_tileManager;
@@ -371,6 +363,7 @@ private:
     bool m_hasTransparentBackground;
 
     // If this is true, it is necessary to traverse the layer tree ticking the animators.
+    bool m_needsAnimateLayers;
     bool m_pinchGestureActive;
     gfx::Point m_previousPinchAnchor;
 
@@ -394,12 +387,6 @@ private:
     int64 m_cumulativeNumLayersDrawn;
 
     int64 m_cumulativeNumMissingTiles;
-
-    AnimationControllerSet m_activeAnimationControllers;
-
-#if !defined(NDEBUG)
-    AnimationControllerSet m_allAnimationControllers;
-#endif
 
     size_t m_lastSentMemoryVisibleBytes;
     size_t m_lastSentMemoryVisibleAndNearbyBytes;

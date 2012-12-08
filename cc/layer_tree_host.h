@@ -14,7 +14,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "cc/animation_events.h"
-#include "cc/animation_registrar.h"
 #include "cc/cc_export.h"
 #include "cc/layer_tree_host_client.h"
 #include "cc/layer_tree_host_common.h"
@@ -33,15 +32,6 @@ namespace BASE_HASH_NAMESPACE {
 template<>
 struct hash<WebKit::WebGraphicsContext3D*> {
   size_t operator()(WebKit::WebGraphicsContext3D* ptr) const {
-    return hash<size_t>()(reinterpret_cast<size_t>(ptr));
-  }
-};
-} // namespace BASE_HASH_NAMESPACE
-
-namespace BASE_HASH_NAMESPACE {
-template<>
-struct hash<cc::LayerAnimationController*> {
-  size_t operator()(cc::LayerAnimationController* ptr) const {
     return hash<size_t>()(reinterpret_cast<size_t>(ptr));
   }
 };
@@ -123,8 +113,7 @@ struct CC_EXPORT RendererCapabilities {
     int maxTextureSize;
 };
 
-class CC_EXPORT LayerTreeHost : public RateLimiterClient,
-                                public AnimationRegistrar {
+class CC_EXPORT LayerTreeHost : public RateLimiterClient {
 public:
     static scoped_ptr<LayerTreeHost> create(LayerTreeHostClient*, const LayerTreeSettings&, scoped_ptr<Thread> implThread);
     virtual ~LayerTreeHost();
@@ -201,6 +190,7 @@ public:
     bool commitRequested() const;
 
     void setAnimationEvents(scoped_ptr<AnimationEventsVector>, base::Time wallClockTime);
+    virtual void didAddAnimation();
 
     Layer* rootLayer() { return m_rootLayer.get(); }
     const Layer* rootLayer() const { return m_rootLayer.get(); }
@@ -258,15 +248,8 @@ protected:
     bool initialize(scoped_ptr<Thread> implThread);
     bool initializeForTesting(scoped_ptr<Proxy> proxyForTesting);
 
-    // AnimationRegistar implementation.
-    virtual void DidActivateAnimationController(LayerAnimationController*) OVERRIDE;
-    virtual void DidDeactivateAnimationController(LayerAnimationController*) OVERRIDE;
-    virtual void RegisterAnimationController(LayerAnimationController*) OVERRIDE;
-    virtual void UnregisterAnimationController(LayerAnimationController*) OVERRIDE;
-
 private:
     typedef std::vector<scoped_refptr<Layer> > LayerList;
-    typedef base::hash_set<LayerAnimationController*> AnimationControllerSet;
 
     bool initializeProxy(scoped_ptr<Proxy> proxy);
     void initializeRenderer();
@@ -288,6 +271,7 @@ private:
     void setAnimationEventsRecursive(const AnimationEventsVector&, Layer*, base::Time wallClockTime);
 
     bool m_animating;
+    bool m_needsAnimateLayers;
     bool m_needsFullTreeSync;
 
     base::CancelableClosure m_prepaintCallback;
@@ -333,12 +317,6 @@ private:
     size_t m_partialTextureUpdateRequests;
 
     static bool s_needsFilterContext;
-
-    AnimationControllerSet m_activeAnimationControllers;
-
-#if !defined(NDEBUG)
-    AnimationControllerSet m_allAnimationControllers;
-#endif
 
     DISALLOW_COPY_AND_ASSIGN(LayerTreeHost);
 };

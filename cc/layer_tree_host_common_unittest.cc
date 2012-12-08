@@ -1702,10 +1702,23 @@ TEST(LayerTreeHostCommonTest, verifyAnimationsForRenderSurfaceHierarchy)
     renderSurface1->setForceRenderSurface(true);
     renderSurface2->setForceRenderSurface(true);
 
+    // Put an animated opacity on the render surface.
+    addOpacityTransitionToController(*renderSurface1->layerAnimationController(), 10, 1, 0, false);
+
+    // Also put an animated opacity on a layer without descendants.
+    addOpacityTransitionToController(*grandChildOfRoot->layerAnimationController(), 10, 1, 0, false);
+
     gfx::Transform layerTransform;
     layerTransform.Translate(1, 1);
     gfx::Transform sublayerTransform;
     sublayerTransform.Scale3d(10, 1, 1);
+
+    // Put a transform animation on the render surface.
+    addAnimatedTransformToController(*renderSurface2->layerAnimationController(), 10, 30, 0);
+
+    // Also put transform animations on grandChildOfRoot, and grandChildOfRS2
+    addAnimatedTransformToController(*grandChildOfRoot->layerAnimationController(), 10, 30, 0);
+    addAnimatedTransformToController(*grandChildOfRS2->layerAnimationController(), 10, 30, 0);
 
     setLayerPropertiesForTesting(parent.get(), layerTransform, sublayerTransform, gfx::PointF(0.25, 0), gfx::PointF(2.5, 0), gfx::Size(10, 10), false);
     setLayerPropertiesForTesting(renderSurface1.get(), layerTransform, sublayerTransform, gfx::PointF(0.25, 0), gfx::PointF(2.5, 0), gfx::Size(10, 10), false);
@@ -1716,19 +1729,6 @@ TEST(LayerTreeHostCommonTest, verifyAnimationsForRenderSurfaceHierarchy)
     setLayerPropertiesForTesting(grandChildOfRoot.get(), layerTransform, sublayerTransform, gfx::PointF(0.25, 0), gfx::PointF(2.5, 0), gfx::Size(10, 10), false);
     setLayerPropertiesForTesting(grandChildOfRS1.get(), layerTransform, sublayerTransform, gfx::PointF(0.25, 0), gfx::PointF(2.5, 0), gfx::Size(10, 10), false);
     setLayerPropertiesForTesting(grandChildOfRS2.get(), layerTransform, sublayerTransform, gfx::PointF(0.25, 0), gfx::PointF(2.5, 0), gfx::Size(10, 10), false);
-
-    // Put an animated opacity on the render surface.
-    addOpacityTransitionToController(*renderSurface1->layerAnimationController(), 10, 1, 0, false);
-
-    // Also put an animated opacity on a layer without descendants.
-    addOpacityTransitionToController(*grandChildOfRoot->layerAnimationController(), 10, 1, 0, false);
-
-    // Put a transform animation on the render surface.
-    addAnimatedTransformToController(*renderSurface2->layerAnimationController(), 10, 30, 0);
-
-    // Also put transform animations on grandChildOfRoot, and grandChildOfRS2
-    addAnimatedTransformToController(*grandChildOfRoot->layerAnimationController(), 10, 30, 0);
-    addAnimatedTransformToController(*grandChildOfRS2->layerAnimationController(), 10, 30, 0);
 
     executeCalculateDrawProperties(parent.get());
 
