@@ -58,6 +58,7 @@ class SearchBox : public content::RenderViewObserver,
  private:
   // Overridden from content::RenderViewObserver:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void DidClearWindowObject(WebKit::WebFrame* frame) OVERRIDE;
 
   void OnChange(const string16& query,
                 bool verbatim,

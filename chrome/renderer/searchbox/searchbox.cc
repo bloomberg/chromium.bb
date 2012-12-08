@@ -123,6 +123,10 @@ bool SearchBox::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
+void SearchBox::DidClearWindowObject(WebKit::WebFrame* frame) {
+  extensions_v8::SearchBoxExtension::DispatchOnWindowReady(frame);
+}
+
 void SearchBox::OnChange(const string16& query,
                          bool verbatim,
                          size_t selection_start,

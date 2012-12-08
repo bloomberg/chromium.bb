@@ -7,6 +7,15 @@ if (!chrome)
   chrome = {};
 if (!chrome.searchBox) {
   chrome.searchBox = new function() {
+    var safeObjects = {};
+    chrome.searchBoxOnWindowReady = function() {
+      // |searchBoxOnWindowReady| is used for initializing window context and
+      // should be called only once per context.
+      safeObjects.ShadowRoot = window.WebKitShadowRoot;
+      safeObjects.defineProperty = Object.defineProperty;
+      delete window.chrome.searchBoxOnWindowReady;
+    };
+
     // =========================================================================
     //                                  Constants
     // =========================================================================
@@ -46,7 +55,7 @@ if (!chrome.searchBox) {
     // Returns the |restrictedText| wrapped in a ShadowDOM.
     function SafeWrap(restrictedText) {
       var node = document.createElement('div');
-      var nodeShadow = new WebKitShadowRoot(node);
+      var nodeShadow = new safeObjects.ShadowRoot(node);
       nodeShadow.applyAuthorStyles = true;
       // The fonts specified here are as follows:
       //  Segoe UI - WIndows 7
@@ -64,6 +73,7 @@ if (!chrome.searchBox) {
           '            text-overflow:ellipsis!important">' +
           '  <nobr>' + restrictedText + '</nobr>' +
           '</div>';
+      safeObjects.defineProperty(node, 'webkitShadowRoot', { value: null });
       return node;
     }
 

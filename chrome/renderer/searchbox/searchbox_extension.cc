@@ -111,6 +111,16 @@ static const char kSupportsInstantScript[] =
     "}";
 
 // Extended API.
+
+// Per-context initialization.
+static const char kDispatchOnWindowReady[] =
+    "if (window.chrome &&"
+    "    window.chrome.searchBox &&"
+    "    window.chrome.searchBoxOnWindowReady &&"
+    "    typeof window.chrome.searchBoxOnWindowReady == 'function') {"
+    "  window.chrome.searchBoxOnWindowReady();"
+    "}";
+
 static const char kDispatchAutocompleteResultsEventScript[] =
     "if (window.chrome &&"
     "    window.chrome.searchBox &&"
@@ -748,6 +758,11 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::Show(
   SearchBox::Get(render_view)->ShowInstantPreview(reason, height, units);
 
   return v8::Undefined();
+}
+
+// static
+void SearchBoxExtension::DispatchOnWindowReady(WebKit::WebFrame* frame) {
+  Dispatch(frame, kDispatchOnWindowReady);
 }
 
 // static
