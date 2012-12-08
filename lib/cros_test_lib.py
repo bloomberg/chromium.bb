@@ -11,6 +11,7 @@ import collections
 import contextlib
 import cStringIO
 import exceptions
+import mock
 import mox
 import os
 import re
@@ -752,6 +753,61 @@ class MoxTempDirTestCase(TempDirTestCase, MoxTestCase):
 
 class MoxOutputTestCase(OutputTestCase, MoxTestCase):
   """Conevenience class mixing OutputTestCase and MoxTestCase."""
+
+
+def SafeRun(functors, combine_exceptions=False):
+  """Executes a list of functors, continuing on exceptions.
+
+  Arguments:
+    functors: An iterable of functors to call.
+    combine_exceptions: If set, and multipole exceptions are encountered,
+      SafeRun will raise a RuntimeError containing a list of all the exceptions.
+      If only one exception is encountered, then the default behavior of
+      re-raising the original exception with unmodified stack trace will be
+      kept.
+
+  Raises:
+    The first exception encountered, with corresponding backtrace, unless
+    |combine_exceptions| is specified and there is more than one exception
+    encountered, in which case a RuntimeError containing a list of all the
+    exceptions that were encountered is raised.
+  """
+  errors = []
+
+  for f in functors:
+    try:
+      f()
+    except Exception as e:
+      # Append the exception object and the traceback.
+      errors.append((e, sys.exc_info()[2]))
+
+  if errors:
+    if len(errors) == 1 or not combine_exceptions:
+      # To preserve the traceback.
+      inst, tb = errors[0]
+      raise inst, None, tb
+    else:
+      raise RuntimeError([e[0] for e in errors])
+
+
+class MockTestCase(TestCase):
+  """Python-mock based test case; compatible with StackedSetup"""
+  def setUp(self):
+    self._patchers = []
+
+  def tearDown(self):
+    # We can't just run stopall() by itself, and need to stop our patchers
+    # manually since stopall() doesn't handle repatching.
+    SafeRun([p.stop for p in self._patchers] + [mock.patch.stopall])
+
+  def StartPatcher(self, patcher):
+    """Call start() on the patcher, and stop() in tearDown."""
+    patcher.start()
+    self._patchers.append(patcher)
+
+
+class MockTempDirTestCase(TempDirTestCase, MockTestCase):
+  """Convenience class mixing TempDir and Mock"""
 
 
 def FindTests(directory, module_namespace=''):

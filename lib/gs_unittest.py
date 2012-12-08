@@ -19,11 +19,15 @@ from chromite.lib import gs
 from chromite.lib import partial_mock
 
 
+def PatchGS(*args, **kwargs):
+  """Convenience method for patching GSContext."""
+  return mock.patch.object(gs.GSContext, *args, **kwargs)
+
+
 class GSContextMock(partial_mock.PartialCmdMock):
   """Used to mock out the GSContext class."""
   TARGET = 'chromite.lib.gs.GSContext'
-  ATTRS = ('_DoCommand', 'DEFAULT_BOTO_FILE', 'DEFAULT_GSUTIL_BIN',
-           'DEFAULT_SLEEP_TIME', 'DEFAULT_RETRIES')
+  ATTRS = ('_DoCommand', '__init__', 'DEFAULT_SLEEP_TIME', 'DEFAULT_RETRIES')
   DEFAULT_ATTR = '_DoCommand'
 
   GSResponsePreconditionFailed = """
@@ -34,33 +38,12 @@ class GSContextMock(partial_mock.PartialCmdMock):
   DEFAULT_SLEEP_TIME = 0
   DEFAULT_RETRIES = 2
 
-  def __init__(self, **kwargs):
-    partial_mock.PartialCmdMock.__init__(self, create_tempdir=True)
-    self.overrides = [(key, kwargs.pop(key)) for key in list(kwargs)
-                      if key.startswith("DEFAULT_")]
-    self.boto_file = None
-    self.gsutil_bin = None
-    self.acl_file = None
-
   def PreStart(self):
-    # Note we derive on the fly here so we can ensure that
-    # there always is a valid fallback for boto_file; we
-    # do so in a way that allows us to also check that
-    # behaviour when the default is missing.
-    file_list = ['gsutil_bin', 'boto_file', 'acl_file']
-    cros_test_lib.CreateOnDiskHierarchy(self.tempdir, file_list)
-
-    for f in file_list:
-      setattr(self, f, os.path.join(self.tempdir, f))
-
-    defaults = {
-        'DEFAULT_BOTO_FILE': self.boto_file,
-        'DEFAULT_GSUTIL_BIN': self.gsutil_bin}
-    defaults.update(self.overrides)
-    # Protect ourselves from preexisting BOTO_CONFIG env settings.
-    # Environment variables are restored during Stop().
     os.environ.pop("BOTO_CONFIG", None)
-    self.__dict__.update(defaults)
+
+  def _target__init__(self, *args, **kwargs):
+    with PatchGS('_CheckFile', return_value=True):
+      self.backup['__init__'](*args, **kwargs)
 
   def _DoCommand(self, inst, gsutil_cmd, **kwargs):
     result = self._results['_DoCommand'].LookupResult(
@@ -75,7 +58,7 @@ class GSContextMock(partial_mock.PartialCmdMock):
       return self.backup['_DoCommand'](inst, gsutil_cmd, **kwargs)
 
 
-class AbstractGSContextTest(cros_test_lib.TempDirTestCase):
+class AbstractGSContextTest(cros_test_lib.MockTempDirTestCase):
   """Base class for GSContext tests."""
 
   def setUp(self):
@@ -84,7 +67,7 @@ class AbstractGSContextTest(cros_test_lib.TempDirTestCase):
     self.ctx = gs.GSContext()
 
   def tearDown(self):
-    if self.gs_mock:
+    if hasattr(self, 'gs_mock'):
       self.gs_mock.Stop()
 
 
@@ -93,6 +76,8 @@ class CopyTest(AbstractGSContextTest):
 
   LOCAL_PATH = '/tmp/file'
   GIVEN_REMOTE = EXPECTED_REMOTE = 'gs://test/path/file'
+  ACL_FILE = '/my/file/acl'
+  ACL_FILE2 = '/my/file/other'
 
   def _Copy(self, ctx, src, dst, **kwargs):
     return ctx.Copy(src, dst, **kwargs)
@@ -110,20 +95,20 @@ class CopyTest(AbstractGSContextTest):
 
   def testWithACLFile(self):
     """ACL specified during init."""
-    ctx = gs.GSContext(acl_file=self.gs_mock.acl_file)
+    ctx = gs.GSContext(acl_file=self.ACL_FILE)
     self.Copy(ctx=ctx)
-    self.gs_mock.assertCommandContains(['cp', '-a', self.gs_mock.acl_file])
+    self.gs_mock.assertCommandContains(['cp', '-a', self.ACL_FILE])
 
   def testWithACLFile2(self):
     """ACL specified during invocation."""
-    self.Copy(acl=self.gs_mock.gsutil_bin)
-    self.gs_mock.assertCommandContains(['cp', '-a', self.gs_mock.gsutil_bin])
+    self.Copy(acl=self.ACL_FILE)
+    self.gs_mock.assertCommandContains(['cp', '-a', self.ACL_FILE])
 
   def testWithACLFile3(self):
     """ACL specified during invocation that overrides init."""
-    ctx = gs.GSContext(acl_file=self.gs_mock.gsutil_bin)
-    self.Copy(ctx=ctx, acl=self.gs_mock.acl_file)
-    self.gs_mock.assertCommandContains(['cp', '-a', self.gs_mock.acl_file])
+    ctx = gs.GSContext(acl_file=self.ACL_FILE)
+    self.Copy(ctx=ctx, acl=self.ACL_FILE2)
+    self.gs_mock.assertCommandContains(['cp', '-a', self.ACL_FILE2])
 
   def testVersion(self):
     """Test version field."""
@@ -157,34 +142,42 @@ class CopyIntoTest(CopyTest):
 
 
 #pylint: disable=E1101,W0212
-class GSContextTest(AbstractGSContextTest):
-  """Tests for GSContext()"""
+class GSContextInitTest(cros_test_lib.MockTempDirTestCase):
+  """Tests GSContext.__init__() functionality."""
+
   def setUp(self):
+    os.environ.pop("BOTO_CONFIG", None)
     self.bad_path = os.path.join(self.tempdir, 'nonexistent')
+
+    file_list = ['gsutil_bin', 'boto_file', 'acl_file']
+    cros_test_lib.CreateOnDiskHierarchy(self.tempdir, file_list)
+    for f in file_list:
+      setattr(self, f, os.path.join(self.tempdir, f))
+    self.StartPatcher(PatchGS('DEFAULT_BOTO_FILE', new=self.boto_file))
+    self.StartPatcher(PatchGS('DEFAULT_GSUTIL_BIN', new=self.gsutil_bin))
 
   def testInitGsutilBin(self):
     """Test we use the given gsutil binary, erroring where appropriate."""
-    self.assertEquals(gs.GSContext().gsutil_bin, self.gs_mock.gsutil_bin)
-    self.assertRaises(gs.GSContextException, gs.GSContext,
-                      gsutil_bin=self.bad_path)
+    self.assertEquals(gs.GSContext().gsutil_bin, self.gsutil_bin)
+    self.assertRaises(gs.GSContextException,
+                      gs.GSContext, gsutil_bin=self.bad_path)
 
   def testBadGSUtilBin(self):
     """Test exception thrown for bad gsutil paths."""
-    self.gs_mock.Stop()
-    with GSContextMock(DEFAULT_GSUTIL_BIN=self.bad_path):
+    with PatchGS('DEFAULT_GSUTIL_BIN', new=self.bad_path):
       self.assertRaises(gs.GSContextException, gs.GSContext)
 
   def testInitBotoFileEnv(self):
-    os.environ['BOTO_CONFIG'] = self.gs_mock.gsutil_bin
-    self.assertTrue(gs.GSContext().boto_file, self.gs_mock.gsutil_bin)
-    self.assertEqual(gs.GSContext(boto_file=self.gs_mock.acl_file).boto_file,
-                     self.gs_mock.acl_file)
+    os.environ['BOTO_CONFIG'] = self.gsutil_bin
+    self.assertTrue(gs.GSContext().boto_file, self.gsutil_bin)
+    self.assertEqual(gs.GSContext(boto_file=self.acl_file).boto_file,
+                     self.acl_file)
     self.assertRaises(gs.GSContextException, gs.GSContext,
                       boto_file=self.bad_path)
 
   def testInitBotoFileEnvError(self):
     """Boto file through env var error."""
-    self.assertEquals(gs.GSContext().boto_file, self.gs_mock.boto_file)
+    self.assertEquals(gs.GSContext().boto_file, self.boto_file)
     # Check env usage next; no need to cleanup, teardown handles it,
     # and we want the env var to persist for the next part of this test.
     os.environ['BOTO_CONFIG'] = self.bad_path
@@ -192,17 +185,20 @@ class GSContextTest(AbstractGSContextTest):
 
   def testInitBotoFileError(self):
     """Test bad boto file."""
-    self.gs_mock.Stop()
-    with GSContextMock(DEFAULT_BOTO_FILE=self.bad_path):
+    with PatchGS('DEFAULT_GSUTIL_BIN', self.bad_path):
       self.assertRaises(gs.GSContextException, gs.GSContext)
 
   def testInitAclFile(self):
     """Test ACL selection logic in __init__."""
     self.assertEqual(gs.GSContext().acl_file, None)
-    self.assertEqual(gs.GSContext(acl_file=self.gs_mock.acl_file).acl_file,
-                     self.gs_mock.acl_file)
+    self.assertEqual(gs.GSContext(acl_file=self.acl_file).acl_file,
+                     self.acl_file)
     self.assertRaises(gs.GSContextException, gs.GSContext,
                       acl_file=self.bad_path)
+
+
+class GSContextTest(AbstractGSContextTest):
+  """Tests for GSContext()"""
 
   def _testDoCommand(self, ctx, retries, sleep):
     with mock.patch.object(cros_build_lib, 'RetryCommand', autospec=True):
@@ -210,7 +206,7 @@ class GSContextTest(AbstractGSContextTest):
       cmd = [self.ctx.gsutil_bin, 'cp', '--', '/blah', 'gs://foon']
       cros_build_lib.RetryCommand.assert_called_once_with(
           mock.ANY, retries, cmd, sleep=sleep,
-          extra_env={'BOTO_CONFIG': self.gs_mock.boto_file})
+          extra_env={'BOTO_CONFIG': mock.ANY})
 
   def testDoCommandDefault(self):
     """Verify the internal DoCommand function works correctly."""
@@ -233,9 +229,9 @@ class GSContextTest(AbstractGSContextTest):
 
   def testSetAcl(self):
     """Base ACL setting functionality."""
-    ctx = gs.GSContext(acl_file=self.gs_mock.acl_file)
+    ctx = gs.GSContext(acl_file='/my/file/acl')
     ctx.SetACL('gs://abc/1')
-    self.gs_mock.assertCommandContains(['setacl', self.gs_mock.acl_file,
+    self.gs_mock.assertCommandContains(['setacl', '/my/file/acl',
                                         'gs://abc/1'])
 
 

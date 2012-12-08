@@ -13,6 +13,7 @@ import os
 import re
 
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 
 
@@ -396,8 +397,7 @@ class PartialMock(object):
       raise
 
   def _Stop(self):
-    for patcher in self.patchers.itervalues():
-      patcher.stop()
+    cros_test_lib.SafeRun([p.stop for p in self.patchers.itervalues()])
 
   def Stop(self):
     """Restores namespace to the unmocked state."""
@@ -407,8 +407,7 @@ class PartialMock(object):
         osutils.SetEnvironment(self.__saved_env__)
 
       if self.started:
-        self.PreStop()
-        self._Stop()
+        cros_test_lib.SafeRun([self.PreStop, self._Stop])
     finally:
       self.started = False
       if getattr(self, 'tempdir', None):
