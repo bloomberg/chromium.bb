@@ -1230,3 +1230,32 @@ util.loadImage = function(image, url) {
   image.src = url;
   return null;
 };
+
+/**
+ * Finds proerty descriptor in the object prototype chain.
+ * @param {Object} object The object.
+ * @param {string} propertyName The property name.
+ * @return {Object} Property descriptor.
+ */
+util.findPropertyDescriptor = function(object, propertyName) {
+  for (var p = object; p; p = Object.getPrototypeOf(p)) {
+    var d = Object.getOwnPropertyDescriptor(p, propertyName);
+    if (d)
+      return d;
+  }
+  return null;
+};
+
+/**
+ * Calls inherited property setter (useful when property is
+ * overriden).
+ * @param {Object} object The object.
+ * @param {string} propertyName The property name.
+ * @param {*} value Value to set.
+ */
+util.callInheritedSetter = function(object, propertyName, value) {
+  var d = util.findPropertyDescriptor(Object.getPrototypeOf(object),
+                                      propertyName);
+  d.set.call(object, value);
+};
+

@@ -81,6 +81,10 @@ function MetadataCache() {
    * @private
    */
   this.lastBatchStart_ = new Date();
+
+  // Holds the directories known to contain files with stale metadata
+  // as URL to bool map.
+  this.directoriesWithStaleMetadata_ = {};
 }
 
 /**
@@ -508,6 +512,38 @@ MetadataCache.prototype.mergeProperties_ = function(url, data) {
   }
 };
 
+/**
+ * Ask the GData service to re-fetch the metadata. Ignores sequential requests.
+ * @param {string} url Directory URL.
+ */
+MetadataCache.prototype.refreshDirectory = function(url) {
+  // Skip if the current directory is now being refreshed.
+  if (this.directoriesWithStaleMetadata_[url] || !FileType.isOnGDrive(url))
+    return;
+
+  this.directoriesWithStaleMetadata_[url] = true;
+  chrome.fileBrowserPrivate.requestDirectoryRefresh(url);
+};
+
+/**
+ * Ask the GData service to re-fetch the metadata.
+ * @param {string} fileURL File URL.
+ */
+MetadataCache.prototype.refreshFileMetadata = function(fileURL) {
+  if (!FileType.isOnGDrive(fileURL))
+    return;
+  // TODO(kaznacheev) This does not really work with GData search.
+  var url = imageURL.substr(0, fileURL.lastIndexOf('/'));
+  metadataCache.refreshDirectory(url);
+};
+
+/**
+ * Resumes refreshes by resreshDirectory.
+ * @param {string} url Directory URL.
+ */
+MetadataCache.prototype.resumeRefresh = function(url) {
+  delete this.directoriesWithStaleMetadata_[url];
+};
 
 /**
  * Base class for metadata providers.

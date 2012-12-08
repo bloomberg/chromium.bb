@@ -434,8 +434,9 @@ FileTasks.prototype.openGallery = function(urls) {
       pageState: this.params_,
       onClose: onClose,
       allowMosaic: fm.isOnGData(),
-      onThumbnailError:
-          fm.fileWatcher_.requestMetadataRefresh.bind(fm.fileWatcher_),
+      onThumbnailError: function(imageURL) {
+        fm.metadataCache_.refreshFileMetadata(imageURL);
+      },
       displayStringFunction: strf
     };
     galleryFrame.contentWindow.Gallery.open(context, allUrls, urls);

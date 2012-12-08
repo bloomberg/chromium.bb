@@ -176,8 +176,6 @@ SelectionHandler.prototype.onSelectionChanged = function(event) {
   if (this.selection) this.selection.cancelComputing_();
   var selection = this.selection = new Selection(this.fileManager_, indexes);
 
-  this.updateSelectionCheckboxes_(event);
-
   if (this.fileManager_.dialogType == DialogType.SELECT_SAVEAS_FILE) {
     // If this is a save-as dialog, copy the selected file into the filename
     // input text box.
@@ -237,66 +235,6 @@ SelectionHandler.prototype.clearUI = function() {
   this.hideCalculating_();
   this.taskItems_.hidden = true;
   this.okButton_.disabled = true;
-};
-
-/**
- * Update the selection checkboxes.
- * @param {Event} event The event.
- * @private
- */
-SelectionHandler.prototype.updateSelectionCheckboxes_ = function(event) {
-  var fm = this.fileManager_;
-  if (!fm.showCheckboxes_)
-    return;
-
-  if (event && event.changes) {
-    for (var i = 0; i < event.changes.length; i++) {
-      // Turn off any checkboxes for items that are no longer selected.
-      var selectedIndex = event.changes[i].index;
-      var listItem = fm.currentList_.getListItemByIndex(selectedIndex);
-      if (!listItem) {
-        // When changing directories, we get notified about list items
-        // that are no longer there.
-        continue;
-      }
-
-      if (!event.changes[i].selected) {
-        var checkbox = listItem.querySelector('input[type="checkbox"]');
-        checkbox.checked = false;
-      }
-    }
-  } else {
-    var checkboxes = fm.currentList_.querySelectorAll('input[type="checkbox"]');
-    for (var i = 0; i < checkboxes.length; i++) {
-      checkboxes[i].checked = false;
-    }
-  }
-
-  for (var i = 0; i < this.selection.entries.length; i++) {
-    var selectedIndex = this.selection.indexes[i];
-    var listItem = fm.currentList_.getListItemByIndex(selectedIndex);
-    if (listItem)
-      listItem.querySelector('input[type="checkbox"]').checked = true;
-  }
-
-  this.updateSelectAllCheckboxState();
-};
-
-/**
- * Update check and disable states of the 'Select all' checkbox.
- * @param {HTMLInputElement=} opt_checkbox The checkbox. If not passed, using
- *     the default one.
- */
-SelectionHandler.prototype.updateSelectAllCheckboxState = function(
-    opt_checkbox) {
-  var checkbox = opt_checkbox ||
-      this.fileManager_.document_.getElementById('select-all-checkbox');
-  if (!checkbox) return;
-
-  var dm = this.fileManager_.getFileList();
-  checkbox.checked = this.selection && dm.length > 0 &&
-                     dm.length == this.selection.totalCount;
-  checkbox.disabled = dm.length == 0;
 };
 
 /**
@@ -577,14 +515,15 @@ SelectionHandler.prototype.showPreviewThumbnails_ = function(selection) {
       selection.tasks.executeDefault();
   }
 
+  var doc = this.fileManager_.document_;
   for (var i = 0; i < selection.entries.length; i++) {
     var entry = selection.entries[i];
 
     if (thumbnailCount < SelectionHandler.MAX_PREVIEW_THUMBNAIL_COUNT) {
-      var box = this.fileManager_.document_.createElement('div');
+      var box = doc.createElement('div');
       box.className = 'thumbnail';
       if (thumbnailCount == 0) {
-        var zoomed = this.fileManager_.document_.createElement('div');
+        var zoomed = doc.createElement('div');
         zoomed.hidden = true;
         thumbnails.push(zoomed);
         function onFirstThumbnailLoaded(img, transform) {
@@ -594,12 +533,10 @@ SelectionHandler.prototype.showPreviewThumbnails_ = function(selection) {
           }
           onThumbnailLoaded();
         }
-        var thumbnail = this.fileManager_.renderThumbnailBox_(
-            entry, true, onFirstThumbnailLoaded);
+        var thumbnail = this.renderThumbnail_(entry, onFirstThumbnailLoaded);
         zoomed.addEventListener('click', thumbnailClickHandler);
       } else {
-        var thumbnail = this.fileManager_.renderThumbnailBox_(
-            entry, true, onThumbnailLoaded);
+        var thumbnail = this.renderThumbnail_(entry, onThumbnailLoaded);
       }
       thumbnailCount++;
       box.appendChild(thumbnail);
@@ -613,6 +550,20 @@ SelectionHandler.prototype.showPreviewThumbnails_ = function(selection) {
   forcedShowTimeout = setTimeout(showThumbnails,
       FileManager.THUMBNAIL_SHOW_DELAY);
   onThumbnailLoaded();
+};
+
+/**
+ * Renders a thumbnail for the buttom panel.
+ * @param {Entry} entry Entry to render for.
+ * @param {Function} callback Callend when image loaded.
+ * @return {HTMLDivElement} Created element.
+ * @private
+ */
+SelectionHandler.prototype.renderThumbnail_ = function(entry, callback) {
+  var thumbnail = this.fileManager_.document_.createElement('div');
+  FileGrid.decorateThumbnailBox(thumbnail, entry,
+      this.fileManager_.metadataCache_, true, callback);
+  return thumbnail;
 };
 
 /**

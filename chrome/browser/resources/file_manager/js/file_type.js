@@ -140,11 +140,19 @@ FileType.GDRIVE_URL_PATTERN =
     new RegExp('^filesystem:[^/]*://[^/]*/[^/]*/drive/(.*)');
 
 /**
- * @param {string} url The url.
+ * Pattern for file paths pointing to Google Drive files.
+ */
+FileType.GDRIVE_PATH_PATTERN =
+    new RegExp('^/drive/');
+
+/**
+ * @param {string|Entry} file The url string or entry.
  * @return {boolean} Whether this provider supports the url.
  */
-FileType.isOnGDrive = function(url) {
-  return FileType.GDRIVE_URL_PATTERN.test(url);
+FileType.isOnGDrive = function(file) {
+  return typeof file == 'string' ?
+      FileType.GDRIVE_URL_PATTERN.test(file) :
+      FileType.GDRIVE_PATH_PATTERN.test(file.fullPath);
 };
 
 
