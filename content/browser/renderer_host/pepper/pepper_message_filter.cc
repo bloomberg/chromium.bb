@@ -749,22 +749,27 @@ void PepperMessageFilter::GetFontFamiliesComplete(
     IPC::Message* reply_msg,
     scoped_ptr<base::ListValue> result) {
   std::string output;
-  for (size_t i = 0; i < result->GetSize(); i++) {
-    base::ListValue* cur_font;
-    if (!result->GetList(i, &cur_font))
-      continue;
+  // If this is a NaCl plugin without private permission, we return an empty
+  // string in |output|. We must reply to the message.
+  if (process_type_ != NACL ||
+      permissions_.HasPermission(ppapi::PERMISSION_PRIVATE)) {
+    for (size_t i = 0; i < result->GetSize(); i++) {
+      base::ListValue* cur_font;
+      if (!result->GetList(i, &cur_font))
+        continue;
 
-    // Each entry in the list is actually a list of (font name, localized name).
-    // We only care about the regular name.
-    std::string font_name;
-    if (!cur_font->GetString(0, &font_name))
-      continue;
+      // Each entry is actually a list of (font name, localized name).
+      // We only care about the regular name.
+      std::string font_name;
+      if (!cur_font->GetString(0, &font_name))
+        continue;
 
-    // Font names are separated with nulls. We also want an explicit null at
-    // the end of the string (Pepper strings aren't null terminated so since
-    // we specify there will be a null, it should actually be in the string).
-    output.append(font_name);
-    output.push_back(0);
+      // Font names are separated with nulls. We also want an explicit null at
+      // the end of the string (Pepper strings aren't null terminated so since
+      // we specify there will be a null, it should actually be in the string).
+      output.append(font_name);
+      output.push_back(0);
+    }
   }
 
   PpapiHostMsg_PPBInstance_GetFontFamilies::WriteReplyParams(reply_msg, output);

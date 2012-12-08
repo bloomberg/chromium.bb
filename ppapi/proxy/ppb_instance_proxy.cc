@@ -155,11 +155,8 @@ bool PPB_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnHostMsgCancelCompositionText)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_UpdateSurroundingText,
                         OnHostMsgUpdateSurroundingText)
-#endif  // !defined(OS_NACL)
-    // This message is needed to implement PPB_Testing_Dev.
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_GetDocumentURL,
                         OnHostMsgGetDocumentURL)
-#if !defined(OS_NACL)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_ResolveRelativeToDocument,
                         OnHostMsgResolveRelativeToDocument)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_DocumentCanRequest,
@@ -779,7 +776,7 @@ void PPB_Instance_Proxy::CancelCompositionText(PP_Instance instance) {
 
 void PPB_Instance_Proxy::SelectionChanged(PP_Instance instance) {
   // The "right" way to do this is to send the message to the host. However,
-  // all it will do it call RequestSurroundingText with a hardcoded number of
+  // all it will do is call RequestSurroundingText with a hardcoded number of
   // characters in response, which is an entire IPC round-trip.
   //
   // We can avoid this round-trip by just implementing the
@@ -815,6 +812,8 @@ void PPB_Instance_Proxy::UpdateSurroundingText(PP_Instance instance,
 void PPB_Instance_Proxy::OnHostMsgGetWindowObject(
     PP_Instance instance,
     SerializedVarReturnValue result) {
+  if (!dispatcher()->permissions().HasPermission(PERMISSION_PRIVATE))
+    return;
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded())
     result.Return(dispatcher(), enter.functions()->GetWindowObject(instance));
@@ -823,6 +822,8 @@ void PPB_Instance_Proxy::OnHostMsgGetWindowObject(
 void PPB_Instance_Proxy::OnHostMsgGetOwnerElementObject(
     PP_Instance instance,
     SerializedVarReturnValue result) {
+  if (!dispatcher()->permissions().HasPermission(PERMISSION_PRIVATE))
+    return;
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded()) {
     result.Return(dispatcher(),
@@ -867,6 +868,8 @@ void PPB_Instance_Proxy::OnHostMsgExecuteScript(
     SerializedVarReceiveInput script,
     SerializedVarOutParam out_exception,
     SerializedVarReturnValue result) {
+  if (!dispatcher()->permissions().HasPermission(PERMISSION_PRIVATE))
+    return;
   EnterInstanceNoLock enter(instance);
   if (enter.failed())
     return;
@@ -885,6 +888,8 @@ void PPB_Instance_Proxy::OnHostMsgExecuteScript(
 void PPB_Instance_Proxy::OnHostMsgGetDefaultCharSet(
     PP_Instance instance,
     SerializedVarReturnValue result) {
+  if (!dispatcher()->permissions().HasPermission(PERMISSION_DEV))
+    return;
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded())
     result.Return(dispatcher(), enter.functions()->GetDefaultCharSet(instance));
@@ -956,12 +961,13 @@ void PPB_Instance_Proxy::OnHostMsgUnlockMouse(PP_Instance instance) {
   if (enter.succeeded())
     enter.functions()->UnlockMouse(instance);
 }
-#endif  // !defined(OS_NACL)
 
 void PPB_Instance_Proxy::OnHostMsgGetDocumentURL(
     PP_Instance instance,
     PP_URLComponents_Dev* components,
     SerializedVarReturnValue result) {
+  if (!dispatcher()->permissions().HasPermission(PERMISSION_DEV))
+    return;
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded()) {
     PP_Var document_url = enter.functions()->GetDocumentURL(instance,
@@ -970,11 +976,12 @@ void PPB_Instance_Proxy::OnHostMsgGetDocumentURL(
   }
 }
 
-#if !defined(OS_NACL)
 void PPB_Instance_Proxy::OnHostMsgResolveRelativeToDocument(
     PP_Instance instance,
     SerializedVarReceiveInput relative,
     SerializedVarReturnValue result) {
+  if (!dispatcher()->permissions().HasPermission(PERMISSION_DEV))
+    return;
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded()) {
     result.Return(dispatcher(),
@@ -987,6 +994,8 @@ void PPB_Instance_Proxy::OnHostMsgDocumentCanRequest(
     PP_Instance instance,
     SerializedVarReceiveInput url,
     PP_Bool* result) {
+  if (!dispatcher()->permissions().HasPermission(PERMISSION_DEV))
+    return;
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded()) {
     *result = enter.functions()->DocumentCanRequest(instance,
@@ -997,6 +1006,8 @@ void PPB_Instance_Proxy::OnHostMsgDocumentCanRequest(
 void PPB_Instance_Proxy::OnHostMsgDocumentCanAccessDocument(PP_Instance active,
                                                             PP_Instance target,
                                                             PP_Bool* result) {
+  if (!dispatcher()->permissions().HasPermission(PERMISSION_DEV))
+    return;
   EnterInstanceNoLock enter(active);
   if (enter.succeeded())
     *result = enter.functions()->DocumentCanAccessDocument(active, target);
@@ -1005,6 +1016,8 @@ void PPB_Instance_Proxy::OnHostMsgDocumentCanAccessDocument(PP_Instance active,
 void PPB_Instance_Proxy::OnHostMsgGetPluginInstanceURL(
     PP_Instance instance,
     SerializedVarReturnValue result) {
+  if (!dispatcher()->permissions().HasPermission(PERMISSION_DEV))
+    return;
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded()) {
     result.Return(dispatcher(),
@@ -1016,6 +1029,8 @@ void PPB_Instance_Proxy::OnHostMsgNeedKey(PP_Instance instance,
                                           SerializedVarReceiveInput key_system,
                                           SerializedVarReceiveInput session_id,
                                           SerializedVarReceiveInput init_data) {
+  if (!dispatcher()->permissions().HasPermission(PERMISSION_PRIVATE))
+    return;
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded()) {
     enter.functions()->NeedKey(instance,
@@ -1029,6 +1044,8 @@ void PPB_Instance_Proxy::OnHostMsgKeyAdded(
     PP_Instance instance,
     SerializedVarReceiveInput key_system,
     SerializedVarReceiveInput session_id) {
+  if (!dispatcher()->permissions().HasPermission(PERMISSION_PRIVATE))
+    return;
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded()) {
     enter.functions()->KeyAdded(instance,
@@ -1043,6 +1060,8 @@ void PPB_Instance_Proxy::OnHostMsgKeyMessage(
     SerializedVarReceiveInput session_id,
     PP_Resource message,
     SerializedVarReceiveInput default_url) {
+  if (!dispatcher()->permissions().HasPermission(PERMISSION_PRIVATE))
+    return;
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded()) {
     enter.functions()->KeyMessage(instance,
@@ -1059,6 +1078,8 @@ void PPB_Instance_Proxy::OnHostMsgKeyError(
     SerializedVarReceiveInput session_id,
     int32_t media_error,
     int32_t system_error) {
+  if (!dispatcher()->permissions().HasPermission(PERMISSION_PRIVATE))
+    return;
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded()) {
     enter.functions()->KeyError(instance,
@@ -1073,6 +1094,8 @@ void PPB_Instance_Proxy::OnHostMsgDeliverBlock(
     PP_Instance instance,
     PP_Resource decrypted_block,
     const std::string& serialized_block_info) {
+  if (!dispatcher()->permissions().HasPermission(PERMISSION_PRIVATE))
+    return;
   PP_DecryptedBlockInfo block_info;
   if (!DeserializeBlockInfo(serialized_block_info, &block_info))
     return;
@@ -1087,6 +1110,8 @@ void PPB_Instance_Proxy::OnHostMsgDecoderInitializeDone(
     PP_DecryptorStreamType decoder_type,
     uint32_t request_id,
     PP_Bool success) {
+  if (!dispatcher()->permissions().HasPermission(PERMISSION_PRIVATE))
+    return;
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded()) {
     enter.functions()->DecoderInitializeDone(instance,
@@ -1100,6 +1125,8 @@ void PPB_Instance_Proxy::OnHostMsgDecoderDeinitializeDone(
     PP_Instance instance,
     PP_DecryptorStreamType decoder_type,
     uint32_t request_id) {
+  if (!dispatcher()->permissions().HasPermission(PERMISSION_PRIVATE))
+    return;
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded())
     enter.functions()->DecoderDeinitializeDone(instance,
@@ -1111,6 +1138,8 @@ void PPB_Instance_Proxy::OnHostMsgDecoderResetDone(
     PP_Instance instance,
     PP_DecryptorStreamType decoder_type,
     uint32_t request_id) {
+  if (!dispatcher()->permissions().HasPermission(PERMISSION_PRIVATE))
+    return;
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded())
     enter.functions()->DecoderResetDone(instance, decoder_type, request_id);
@@ -1120,6 +1149,8 @@ void PPB_Instance_Proxy::OnHostMsgDeliverFrame(
     PP_Instance instance,
     PP_Resource decrypted_frame,
     const std::string& serialized_frame_info) {
+  if (!dispatcher()->permissions().HasPermission(PERMISSION_PRIVATE))
+    return;
   PP_DecryptedFrameInfo frame_info;
   if (!DeserializeBlockInfo(serialized_frame_info, &frame_info))
     return;
@@ -1133,6 +1164,8 @@ void PPB_Instance_Proxy::OnHostMsgDeliverSamples(
     PP_Instance instance,
     PP_Resource audio_frames,
     const std::string& serialized_block_info) {
+  if (!dispatcher()->permissions().HasPermission(PERMISSION_PRIVATE))
+    return;
   PP_DecryptedBlockInfo block_info;
   if (!DeserializeBlockInfo(serialized_block_info, &block_info))
     return;
@@ -1147,6 +1180,8 @@ void  PPB_Instance_Proxy::OnHostMsgSetCursor(
     int32_t type,
     const ppapi::HostResource& custom_image,
     const PP_Point& hot_spot) {
+  if (!dispatcher()->permissions().HasPermission(PERMISSION_DEV))
+    return;
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded()) {
     enter.functions()->SetCursor(
@@ -1157,6 +1192,8 @@ void  PPB_Instance_Proxy::OnHostMsgSetCursor(
 
 void PPB_Instance_Proxy::OnHostMsgSetTextInputType(PP_Instance instance,
                                                    PP_TextInput_Type type) {
+  if (!dispatcher()->permissions().HasPermission(PERMISSION_DEV))
+    return;
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded())
     enter.functions()->SetTextInputType(instance, type);
@@ -1166,6 +1203,8 @@ void PPB_Instance_Proxy::OnHostMsgUpdateCaretPosition(
     PP_Instance instance,
     const PP_Rect& caret,
     const PP_Rect& bounding_box) {
+  if (!dispatcher()->permissions().HasPermission(PERMISSION_DEV))
+    return;
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded())
     enter.functions()->UpdateCaretPosition(instance, caret, bounding_box);
@@ -1173,6 +1212,8 @@ void PPB_Instance_Proxy::OnHostMsgUpdateCaretPosition(
 
 void PPB_Instance_Proxy::OnHostMsgCancelCompositionText(PP_Instance instance) {
   EnterInstanceNoLock enter(instance);
+  if (!dispatcher()->permissions().HasPermission(PERMISSION_DEV))
+    return;
   if (enter.succeeded())
     enter.functions()->CancelCompositionText(instance);
 }
@@ -1182,6 +1223,8 @@ void PPB_Instance_Proxy::OnHostMsgUpdateSurroundingText(
     const std::string& text,
     uint32_t caret,
     uint32_t anchor) {
+  if (!dispatcher()->permissions().HasPermission(PERMISSION_DEV))
+    return;
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded()) {
     enter.functions()->UpdateSurroundingText(instance, text.c_str(), caret,
