@@ -50,7 +50,8 @@ void AutofillExternalDelegateAndroid::HideAutofillPopupInternal() {
 
 void AutofillExternalDelegateAndroid::CreatePopupForElement(
     const gfx::Rect& element_bounds) {
-  DCHECK(!view_.get());
+  // TODO(aurimas): remove temporary fix for crbug.com/164900
+  HideAutofillPopupInternal();
 
   content::WebContents* contents = web_contents();
   view_.reset(new AutofillPopupViewAndroid(contents, this, element_bounds));

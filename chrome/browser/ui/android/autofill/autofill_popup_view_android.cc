@@ -40,6 +40,7 @@ AutofillPopupViewAndroid::~AutofillPopupViewAndroid() {
 
 void AutofillPopupViewAndroid::ShowInternal() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  UpdateBoundsAndRedrawPopup();
 
   // We need an array of AutofillSuggestion.
   JNIEnv* env = base::android::AttachCurrentThread();
