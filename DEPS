@@ -623,6 +623,15 @@ hooks = [
     ],
   },
   {
+    # Download arm sysroot image to src/arm-sysroot. This image updates
+    # at about the same rate that the chrome build deps change.
+    # This script is a no-op except for linux users who have
+    # target_arch=arm in thier GYP_DEFINES.
+    "pattern": ".",
+    "action": ["python", "src/build/linux/install-arm-sysroot.py",
+               "--linux-only"],
+  },
+  {
     # Pull clang on mac. If nothing changed, or on non-mac platforms, this takes
     # zero seconds to run. If something changed, it downloads a prebuilt clang,
     # which takes ~20s, but clang speeds up builds by more than 20s.
