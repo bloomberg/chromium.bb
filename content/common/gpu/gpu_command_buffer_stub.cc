@@ -642,7 +642,7 @@ void GpuCommandBufferStub::OnRescheduled() {
     ReportState();
 }
 
-void GpuCommandBufferStub::OnCreateTransferBuffer(int32 size,
+void GpuCommandBufferStub::OnCreateTransferBuffer(uint32 size,
                                                   int32 id_request,
                                                   IPC::Message* reply_message) {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnCreateTransferBuffer");
@@ -658,7 +658,7 @@ void GpuCommandBufferStub::OnCreateTransferBuffer(int32 size,
 
 void GpuCommandBufferStub::OnRegisterTransferBuffer(
     base::SharedMemoryHandle transfer_buffer,
-    size_t size,
+    uint32 size,
     int32 id_request,
     IPC::Message* reply_message) {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnRegisterTransferBuffer");

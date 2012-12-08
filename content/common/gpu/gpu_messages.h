@@ -529,7 +529,7 @@ IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_ConsoleMsg,
 // Create a shared memory transfer buffer. Returns an id that can be used to
 // identify the transfer buffer from a comment.
 IPC_SYNC_MESSAGE_ROUTED2_1(GpuCommandBufferMsg_CreateTransferBuffer,
-                           int32 /* size */,
+                           uint32 /* size */,
                            int32 /* id_request (-1 means any) */,
                            int32 /* id */)
 
@@ -537,7 +537,7 @@ IPC_SYNC_MESSAGE_ROUTED2_1(GpuCommandBufferMsg_CreateTransferBuffer,
 // used to identify the transfer buffer from a command buffer.
 IPC_SYNC_MESSAGE_ROUTED3_1(GpuCommandBufferMsg_RegisterTransferBuffer,
                            base::SharedMemoryHandle /* transfer_buffer */,
-                           size_t /* size */,
+                           uint32 /* size */,
                            int32 /* id_request (-1 means any) */,
                            int32 /* id */)
 
@@ -649,7 +649,7 @@ IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_SignalSyncPointAck,
 IPC_MESSAGE_ROUTED3(AcceleratedVideoDecoderMsg_Decode,
                     base::SharedMemoryHandle, /* input_buffer_handle */
                     int32, /* bitstream_buffer_id */
-                    int32) /* size */
+                    uint32) /* size */
 
 // Sent from Renderer process to the GPU process to give the texture IDs for
 // the textures the decoder will use for output.

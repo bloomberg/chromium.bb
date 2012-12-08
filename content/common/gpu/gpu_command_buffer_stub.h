@@ -152,11 +152,11 @@ class GpuCommandBufferStub
   void OnAsyncFlush(int32 put_offset, uint32 flush_count);
   void OnEcho(const IPC::Message& message);
   void OnRescheduled();
-  void OnCreateTransferBuffer(int32 size,
+  void OnCreateTransferBuffer(uint32 size,
                               int32 id_request,
                               IPC::Message* reply_message);
   void OnRegisterTransferBuffer(base::SharedMemoryHandle transfer_buffer,
-                                size_t size,
+                                uint32 size,
                                 int32 id_request,
                                 IPC::Message* reply_message);
   void OnDestroyTransferBuffer(int32 id, IPC::Message* reply_message);

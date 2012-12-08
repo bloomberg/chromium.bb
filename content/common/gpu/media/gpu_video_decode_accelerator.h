@@ -61,7 +61,7 @@ class GpuVideoDecodeAccelerator
 
  private:
   // Handlers for IPC messages.
-  void OnDecode(base::SharedMemoryHandle handle, int32 id, int32 size);
+  void OnDecode(base::SharedMemoryHandle handle, int32 id, uint32 size);
   void OnAssignPictureBuffers(
       const std::vector<int32>& buffer_ids,
       const std::vector<uint32>& texture_ids,
