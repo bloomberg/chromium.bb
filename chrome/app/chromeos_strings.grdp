@@ -709,7 +709,7 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_EXPLANATION" desc="In the settings tab, this text explains the accessibiliy features.">
     Enable the accessibility features you need.
   </message>
-  <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_DESCRIPTION" desc="In the settings tab, the text next to the checkbox for spoken feedback.">
+  <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SPOKEN_FEEDBACK_DESCRIPTION" desc="In the settings tab, the text next to the checkbox for spoken feedback.">
     Enable spoken feedback
   </message>
   <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_HIGH_CONTRAST_DESCRIPTION" desc="In the settings tab, the text next to the checkbox for high contrast mode.">
@@ -2087,7 +2087,7 @@ Press any key to continue exploring.
     Accessibility features are enabled.
   </message>
   <message name="IDS_STATUSBAR_DISABLE_SPOKEN_FEEDBACK" desc="The menu option to disable spoken feedback accessibility feature.">
-    Disable Spoken Feedback
+    Disable spoken feedback
   </message>
   <message name="IDS_STATUSBAR_NETWORK_LOCKED" desc="Message displayed while access to network devices is temporarily locked due to mobile network activation">
     Please wait while we set up your mobile network.

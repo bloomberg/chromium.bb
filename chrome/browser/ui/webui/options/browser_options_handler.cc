@@ -295,7 +295,7 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
     { "accessibilityScreenMagnifierPartial",
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SCREEN_MAGNIFIER_PARTIAL },
     { "accessibilitySpokenFeedback",
-      IDS_OPTIONS_SETTINGS_ACCESSIBILITY_DESCRIPTION },
+      IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SPOKEN_FEEDBACK_DESCRIPTION },
     { "accessibilityTitle",
       IDS_OPTIONS_SETTINGS_SECTION_TITLE_ACCESSIBILITY },
     { "accessibilityVirtualKeyboard",
