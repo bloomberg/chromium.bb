@@ -123,6 +123,13 @@ static void CreateFrameBuffer(Display* display,
                               int width,
                               int height) {
   VLOG(1) << "CreateFrameBuffer " << width << " by " << height;
+
+  // Don't do anything if the framebuffer is already the right size.
+  // This speeds up modesetting and suspend/resume.
+  if (width == DisplayWidth(display, DefaultScreen (display)) &&
+      height == DisplayHeight(display, DefaultScreen (display)))
+    return;
+
   // Note that setting the screen size fails if any CRTCs are currently
   // pointing into it so disable them all.
   for (int i = 0; i < screen->ncrtc; ++i) {
