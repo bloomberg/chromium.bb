@@ -220,18 +220,18 @@ TEST_F(CallbackResourceTest, AbortOnNoRef) {
   // Kill resource #1, spin the message loop to run posted calls, and check that
   // things are in the expected states.
   resource_tracker->ReleaseResource(resource_1_id);
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   resource_1->CheckFinalState();
   resource_2->CheckIntermediateState();
 
   // Kill resource #2.
   resource_tracker->ReleaseResource(resource_2_id);
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   resource_1->CheckFinalState();
   resource_2->CheckFinalState();
 
   // This shouldn't be needed, but make sure there are no stranded tasks.
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 }
 
 // Test that "resurrecting" a resource (getting a new ID for a |Resource|)
@@ -247,21 +247,21 @@ TEST_F(CallbackResourceTest, Resurrection) {
   // Unref it, spin the message loop to run posted calls, and check that things
   // are in the expected states.
   resource_tracker->ReleaseResource(resource_id);
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   resource->CheckFinalState();
 
   // "Resurrect" it and check that the callbacks are still dead.
   PP_Resource new_resource_id = resource->GetReference();
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   resource->CheckFinalState();
 
   // Unref it again and do the same.
   resource_tracker->ReleaseResource(new_resource_id);
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   resource->CheckFinalState();
 
   // This shouldn't be needed, but make sure there are no stranded tasks.
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 }
 
 }  // namespace ppapi
