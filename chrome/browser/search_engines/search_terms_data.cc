@@ -68,6 +68,10 @@ std::string SearchTermsData::InstantEnabledParam() const {
   return std::string();
 }
 
+std::string SearchTermsData::InstantExtendedEnabledParam() const {
+  return std::string();
+}
+
 // static
 std::string* UIThreadSearchTermsData::google_base_url_ = NULL;
 
@@ -126,13 +130,27 @@ std::string UIThreadSearchTermsData::GetSearchClient() const {
 std::string UIThreadSearchTermsData::InstantEnabledParam() const {
   DCHECK(!BrowserThread::IsWellKnownThread(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::UI));
-  uint32 instant_extended_api_version =
-      chrome::search::EmbeddedSearchPageVersion(profile_);
-  if (instant_extended_api_version != 0)
-    return std::string(google_util::kInstantExtendedAPIParam) + "=" +
-        base::Uint64ToString(instant_extended_api_version) + "&";
-  if (chrome::BrowserInstantController::IsInstantEnabled(profile_))
-    return "ion=1&";
+  if (profile_) {
+    uint32 instant_extended_api_version =
+        chrome::search::EmbeddedSearchPageVersion(profile_);
+    if (instant_extended_api_version == 0 &&
+        chrome::BrowserInstantController::IsInstantEnabled(profile_))
+      return "ion=1&";
+  }
+  return std::string();
+}
+
+std::string UIThreadSearchTermsData::InstantExtendedEnabledParam() const {
+  DCHECK(!BrowserThread::IsWellKnownThread(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (profile_) {
+    uint32 instant_extended_api_version =
+        chrome::search::EmbeddedSearchPageVersion(profile_);
+    if (instant_extended_api_version != 0) {
+      return std::string(google_util::kInstantExtendedAPIParam) + "=" +
+          base::Uint64ToString(instant_extended_api_version) + "&";
+    }
+  }
   return std::string();
 }
 

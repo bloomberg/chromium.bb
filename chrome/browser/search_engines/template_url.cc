@@ -55,6 +55,8 @@ const char kGoogleBaseSuggestURLParameter[] = "google:baseSuggestURL";
 const char kGoogleBaseSuggestURLParameterFull[] = "{google:baseSuggestURL}";
 
 const char kGoogleInstantEnabledParameter[] = "google:instantEnabledParameter";
+const char kGoogleInstantExtendedEnabledParameter[] =
+    "google:instantExtendedEnabledParameter";
 const char kGoogleOriginalQueryForSuggestionParameter[] =
     "google:originalQueryForSuggestion";
 const char kGoogleRLZParameter[] = "google:RLZ";
@@ -299,6 +301,10 @@ std::string TemplateURLRef::ReplaceSearchTermsUsingTermsData(
 
       case GOOGLE_INSTANT_ENABLED:
         url.insert(i->index, search_terms_data.InstantEnabledParam());
+        break;
+
+      case GOOGLE_INSTANT_EXTENDED_ENABLED:
+        url.insert(i->index, search_terms_data.InstantExtendedEnabledParam());
         break;
 
       case GOOGLE_ORIGINAL_QUERY_FOR_SUGGESTION:
@@ -554,6 +560,9 @@ bool TemplateURLRef::ParseParameter(size_t start,
     replacements->push_back(Replacement(GOOGLE_BASE_SUGGEST_URL, start));
   } else if (parameter == kGoogleInstantEnabledParameter) {
     replacements->push_back(Replacement(GOOGLE_INSTANT_ENABLED, start));
+  } else if (parameter == kGoogleInstantExtendedEnabledParameter) {
+    replacements->push_back(Replacement(GOOGLE_INSTANT_EXTENDED_ENABLED,
+                                        start));
   } else if (parameter == kGoogleOriginalQueryForSuggestionParameter) {
     replacements->push_back(Replacement(GOOGLE_ORIGINAL_QUERY_FOR_SUGGESTION,
                                         start));

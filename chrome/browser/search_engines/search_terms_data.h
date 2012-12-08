@@ -42,11 +42,18 @@ class SearchTermsData {
 
   // Returns a string indicating whether Instant (in the visible-preview mode)
   // is enabled, suitable for adding as a query string param to the homepage
-  // (instant_url) request. Returns an empty string if Instant is disabled,
-  // or if it's only active in a hidden field trial mode. Determining this
-  // requires accessing the Profile, so this can only ever be non-empty for
+  // (instant_url) request. Returns an empty string if Instant is disabled, or
+  // if it's only active in a hidden field trial mode, or if InstantExtended is
+  // enabled (since that supercedes regular Instant). Determining this requires
+  // accessing the Profile, so this can only ever be non-empty for
   // UIThreadSearchTermsData.
   virtual std::string InstantEnabledParam() const;
+
+  // Returns a string indicating whether InstantExtended is enabled, suitable
+  // for adding as a query string param to the homepage or search requests.
+  // Returns an empty string otherwise.  Determining this requires accessing the
+  // Profile, so this can only ever be non-empty for UIThreadSearchTermsData.
+  virtual std::string InstantExtendedEnabledParam() const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SearchTermsData);
@@ -56,7 +63,8 @@ class SearchTermsData {
 class UIThreadSearchTermsData : public SearchTermsData {
  public:
   // If |profile_| is NULL, the Google base URL accessors will return default
-  // values, and InstantEnabledParam() will return the empty string.
+  // values, and InstantEnabledParam() and InstantExtendedEnabledParam() will
+  // return the empty string.
   explicit UIThreadSearchTermsData(Profile* profile);
 
   virtual std::string GoogleBaseURLValue() const OVERRIDE;
@@ -64,6 +72,7 @@ class UIThreadSearchTermsData : public SearchTermsData {
   virtual string16 GetRlzParameterValue() const OVERRIDE;
   virtual std::string GetSearchClient() const OVERRIDE;
   virtual std::string InstantEnabledParam() const OVERRIDE;
+  virtual std::string InstantExtendedEnabledParam() const OVERRIDE;
 
   // Used by tests to override the value for the Google base URL.  Passing the
   // empty string cancels this override.
