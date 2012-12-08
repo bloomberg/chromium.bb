@@ -141,7 +141,6 @@ class Preferences {
       language_prefs::kNumMozcMultipleChoicePrefs];
   IntegerPrefMember mozc_integer_prefs_[
       language_prefs::kNumMozcIntegerPrefs];
-  BooleanPrefMember search_key_acts_as_function_key_;
   BooleanPrefMember xkb_auto_repeat_enabled_;
   IntegerPrefMember xkb_auto_repeat_delay_pref_;
   IntegerPrefMember xkb_auto_repeat_interval_pref_;
