@@ -87,11 +87,11 @@ enum FileWriteResult {
 #define RETRY_HISTOGRAM(name, retry_count, url) \
     if ((url).DomainIs("google.com")) \
       UMA_HISTOGRAM_CUSTOM_COUNTS( \
-          "Extension." name "RetryCountGoogleUrl", retry_count, 1, \
+          "Extensions." name "RetryCountGoogleUrl", retry_count, 1, \
           kMaxRetries, kMaxRetries+1); \
     else \
       UMA_HISTOGRAM_CUSTOM_COUNTS( \
-          "Extension." name "RetryCountOtherUrl", retry_count, 1, \
+          "Extensions." name "RetryCountOtherUrl", retry_count, 1, \
           kMaxRetries, kMaxRetries+1)
 
 void RecordFileUpdateHistogram(FileWriteResult file_write_result) {
