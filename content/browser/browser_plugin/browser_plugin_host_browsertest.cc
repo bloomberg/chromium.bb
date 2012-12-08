@@ -342,8 +342,8 @@ class BrowserPluginHostTest : public ContentBrowserTest {
 
 // This test loads a guest that has a busy loop, and therefore it hangs the
 // guest.
-// Disabled on Windows since it is flaky http://crbug.com/164812.
-#if defined(OS_WIN)
+// Disabled on Windows and Linux since it is flaky http://crbug.com/164812.
+#if defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_GuestUnresponsive DISABLED_GuestUnresponsive
 #else
 #define MAYBE_GuestUnresponsive GuestUnresponsive
