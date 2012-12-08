@@ -60,9 +60,6 @@
     # Set ARM float abi compilation flag.
     'arm_float_abi%': 'softfp',
 
-    # The system root for cross-compiles. Default: none.
-    'sysroot%': '',
-
     # Version of the mac sdk to use.
     'mac_sdk%': '10.6',
 
@@ -118,6 +115,13 @@
             '<!(uname -m | sed -e "s/i.86/ia32/;s/x86_64/x64/;s/amd64/x64/;s/arm.*/ia32/")'
         }, {  # OS!="linux"
           'target_arch%': 'ia32',
+        }],
+
+        # The system root for cross-compiles. Default: none.
+        # If we are building in chrome we want to rely on chrome's default, which
+        # means we can't set a default here.
+        ['nacl_standalone!=0', {
+          'sysroot%': '',
         }],
       ],
 
