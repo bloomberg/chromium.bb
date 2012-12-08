@@ -63,7 +63,11 @@ PanelManager* PanelManager::GetInstance() {
 // static
 bool PanelManager::ShouldUsePanels(const std::string& extension_id) {
 #if defined(TOOLKIT_GTK)
-  // Panels are only supported on a white list of window managers for Linux.
+  // If --enable-panels is on, always use panels on Linux.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePanels))
+    return true;
+
+  // Otherwise, panels are only supported on tested window managers.
   ui::WindowManagerName wm_type = ui::GuessWindowManager();
   if (wm_type != ui::WM_COMPIZ &&
       wm_type != ui::WM_ICE_WM &&
