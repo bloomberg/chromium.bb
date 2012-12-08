@@ -23,20 +23,27 @@ SIGTERM_EXIT_CODE=143
 MIN_PERMANENT_ERROR_EXIT_CODE=100
 MAX_PERMANENT_ERROR_EXIT_CODE=105
 
+# Constants controlling the host process relaunch throttling.
+MINIMUM_RELAUNCH_INTERVAL=60
+MAXIMUM_HOST_FAILURES=10
+
 HOST_PID=0
 SIGNAL_WAS_TRAPPED=0
+
+# This script works as a proxy between launchd and the host. Signals of
+# interest to the host must be forwarded.
+SIGNAL_LIST="SIGHUP SIGINT SIGQUIT SIGILL SIGTRAP SIGABRT SIGEMT \
+      SIGFPE SIGKILL SIGBUS SIGSEGV SIGSYS SIGPIPE SIGALRM SIGTERM SIGURG \
+      SIGSTOP SIGTSTP SIGCONT SIGCHLD SIGTTIN SIGTTOU SIGIO SIGXCPU SIGXFSZ \
+      SIGVTALRM SIGPROF SIGWINCH SIGINFO SIGUSR1 SIGUSR2"
 
 handle_signal() {
   SIGNAL_WAS_TRAPPED=1
 }
 
 run_host() {
-  # This script works as a proxy between launchd and the host. Signals of
-  # interest to the host must be forwarded.
-  trap "handle_signal" SIGHUP SIGINT SIGQUIT SIGILL SIGTRAP SIGABRT SIGEMT \
-      SIGFPE SIGKILL SIGBUS SIGSEGV SIGSYS SIGPIPE SIGALRM SIGTERM SIGURG \
-      SIGSTOP SIGTSTP SIGCONT SIGCHLD SIGTTIN SIGTTOU SIGIO SIGXCPU SIGXFSZ \
-      SIGVTALRM SIGPROF SIGWINCH SIGINFO SIGUSR1 SIGUSR2
+  local host_failure_count=0
+  local host_start_time=0
 
   while true; do
     if [[ ! -f "$ENABLED_FILE" ]]; then
@@ -44,7 +51,32 @@ run_host() {
       exit 0
     fi
 
-    # Execute the host asynchronously
+    # If this is not the first time the host has run, make sure we don't
+    # relaunch it too soon.
+    if [[ "$host_start_time" -gt 0 ]]; then
+      local host_lifetime=$(($(date +%s) - $host_start_time))
+      echo "Host ran for ${host_lifetime}s"
+      if [[ "$host_lifetime" -lt "$MINIMUM_RELAUNCH_INTERVAL" ]]; then
+        # If the host didn't run for very long, assume it crashed. Relaunch only
+        # after a suitable delay and increase the failure count.
+        host_failure_count=$(($host_failure_count + 1))
+        echo "Host failure count $host_failure_count/$MAXIMUM_HOST_FAILURES"
+        if [[ "$host_failure_count" -ge "$MAXIMUM_HOST_FAILURES" ]]; then
+          echo "Too many host failures. Giving up."
+          exit 1
+        fi
+        local relaunch_in=$(($MINIMUM_RELAUNCH_INTERVAL - $host_lifetime))
+        echo "Relaunching in ${relaunch_in}s"
+        sleep "$relaunch_in"
+      else
+        # If the host ran for long enough, reset the crash counter.
+        host_failure_count=0
+      fi
+    fi
+
+    # Execute the host asynchronously and forward signals to it.
+    trap "handle_signal" $SIGNAL_LIST
+    host_start_time=$(date +%s)
     "$HOST_EXE" --host-config="$CONFIG_FILE" &
     HOST_PID="$!"
 
@@ -76,8 +108,13 @@ run_host() {
         fi
         exit "$EXIT_CODE"
       else
-        # Ignore non-permanent error-code and launch host again.
+        # Ignore non-permanent error-code and launch host again. Stop handling
+        # signals temporarily in case the script has to sleep to throttle host
+        # relaunches. While throttling, there is no host process to which to
+        # forward the signal, so the default behaviour should be restored.
         echo "Host returned non-permanent exit code $EXIT_CODE"
+        trap - $SIGNAL_LIST
+        HOST_PID=0
         break
       fi
     done
