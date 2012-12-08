@@ -327,6 +327,16 @@ void OSExchangeDataProviderWin::SetFilename(const FilePath& path) {
   data_->contents_.push_back(info);
 }
 
+void OSExchangeDataProviderWin::SetFilenames(
+    const std::vector<OSExchangeData::FileInfo>& filenames) {
+  for (size_t i = 0; i < filenames.size(); ++i) {
+    STGMEDIUM* storage = GetStorageForFileName(filenames[i].path);
+    DataObjectImpl::StoredDataInfo* info =
+        new DataObjectImpl::StoredDataInfo(CF_HDROP, storage);
+    data_->contents_.push_back(info);
+  }
+}
+
 void OSExchangeDataProviderWin::SetPickledData(CLIPFORMAT format,
                                                const Pickle& data) {
   STGMEDIUM* storage = GetStorageForBytes(static_cast<const char*>(data.data()),
@@ -392,6 +402,18 @@ bool OSExchangeDataProviderWin::GetFilename(FilePath* path) const {
   bool success = ClipboardUtil::GetFilenames(source_object_, &filenames);
   if (success)
     *path = FilePath(filenames[0]);
+  return success;
+}
+
+bool OSExchangeDataProviderWin::GetFilenames(
+    std::vector<OSExchangeData::FileInfo>* filenames) const {
+  std::vector<string16> filenames_local;
+  bool success = ClipboardUtil::GetFilenames(source_object_, &filenames_local);
+  if (success) {
+    for (size_t i = 0; i < filenames_local.size(); ++i)
+      filenames->push_back(
+          OSExchangeData::FileInfo(FilePath(filenames_local[i]), FilePath()));
+  }
   return success;
 }
 

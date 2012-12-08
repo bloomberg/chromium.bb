@@ -7,6 +7,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "ui/aura/client/activation_delegate.h"
+#include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/views/ime/input_method_delegate.h"
 #include "ui/views/widget/native_widget_private.h"
@@ -26,6 +27,7 @@ class InputMethodEventFilter;
 }
 
 class DesktopRootWindowHost;
+class DropHelper;
 class NativeWidgetAuraWindowObserver;
 
 // TODO(erg): May also need to be a DragDropDelegate
@@ -33,7 +35,8 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
     : public internal::NativeWidgetPrivate,
       public aura::WindowDelegate,
       public aura::client::ActivationDelegate,
-      public views::internal::InputMethodDelegate {
+      public views::internal::InputMethodDelegate,
+      public aura::client::DragDropDelegate {
  public:
   explicit DesktopNativeWidgetAura(internal::NativeWidgetDelegate* delegate);
   virtual ~DesktopNativeWidgetAura();
@@ -180,6 +183,12 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   // Overridden from views::internal::InputMethodDelegate:
   virtual void DispatchKeyEventPostIME(const ui::KeyEvent& key) OVERRIDE;
 
+  // Overridden from aura::client::DragDropDelegate:
+  virtual void OnDragEntered(const ui::DropTargetEvent& event) OVERRIDE;
+  virtual int OnDragUpdated(const ui::DropTargetEvent& event) OVERRIDE;
+  virtual void OnDragExited() OVERRIDE;
+  virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE;
+
  private:
   // See class documentation for Widget in widget.h for a note about ownership.
   Widget::InitParams::Ownership ownership_;
@@ -208,6 +217,9 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   corewm::CompoundEventFilter* root_window_event_filter_;
 
   scoped_ptr<corewm::InputMethodEventFilter> input_method_event_filter_;
+
+  scoped_ptr<DropHelper> drop_helper_;
+  int last_drop_operation_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopNativeWidgetAura);
 };

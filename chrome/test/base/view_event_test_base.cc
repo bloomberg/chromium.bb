@@ -8,12 +8,14 @@
 #include "base/bind_helpers.h"
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
+#include "chrome/browser/ui/views/chrome_views_delegate.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/ime/text_input_test_support.h"
 #include "ui/compositor/test/compositor_test_support.h"
 #include "ui/ui_controls/ui_controls.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/desktop_aura/desktop_screen.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_ASH)
@@ -88,7 +90,16 @@ void ViewEventTestBase::SetUp() {
   ui::TextInputTestSupport::Initialize();
   ui::CompositorTestSupport::Initialize();
 #if defined(USE_ASH)
+#if defined(OS_WIN)
+  // http://crbug.com/154081 use ash::Shell code path below on win_ash bots when
+  // interactive_ui_tests is brought up on that platform.
+  views::ViewsDelegate::views_delegate = new ChromeViewsDelegate;
+
+  gfx::Screen::SetScreenInstance(
+      gfx::SCREEN_TYPE_NATIVE, views::CreateDesktopScreen());
+#else
   ash::Shell::CreateInstance(new ash::test::TestShellDelegate());
+#endif
 #endif
   window_ = views::Widget::CreateWindow(this);
 }
@@ -104,7 +115,12 @@ void ViewEventTestBase::TearDown() {
     window_ = NULL;
   }
 #if defined(USE_ASH)
+#if defined(OS_WIN)
+  delete views::ViewsDelegate::views_delegate;
+  views::ViewsDelegate::views_delegate = NULL;
+#else
   ash::Shell::DeleteInstance();
+#endif
 #endif
 #if defined(USE_AURA)
   aura::Env::DeleteInstance();
@@ -144,8 +160,14 @@ void ViewEventTestBase::StartMessageLoopAndRunTest() {
   window_->Show();
   // Make sure the window is the foreground window, otherwise none of the
   // mouse events are going to be targeted correctly.
-#if defined(OS_WIN) && !defined(USE_AURA)
-  SetForegroundWindow(window_->GetNativeWindow());
+#if defined(OS_WIN)
+#if defined(USE_AURA)
+  HWND window =
+      window_->GetNativeWindow()->GetRootWindow()->GetAcceleratedWidget();
+#else
+  HWND window = window_->GetNativeWindow();
+#endif
+  SetForegroundWindow(window);
 #endif
 
   // Flush any pending events to make sure we start with a clean slate.

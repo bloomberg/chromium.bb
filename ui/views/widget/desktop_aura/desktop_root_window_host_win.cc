@@ -26,8 +26,10 @@
 #include "ui/views/widget/desktop_aura/desktop_activation_client.h"
 #include "ui/views/widget/desktop_aura/desktop_cursor_client.h"
 #include "ui/views/widget/desktop_aura/desktop_dispatcher_client.h"
+#include "ui/views/widget/desktop_aura/desktop_drag_drop_client_win.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/widget/desktop_aura/desktop_screen_position_client.h"
+#include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/widget/widget_hwnd_utils.h"
 #include "ui/views/win/fullscreen_handler.h"
@@ -130,12 +132,15 @@ aura::RootWindow* DesktopRootWindowHostWin::Init(
   cursor_client_.reset(new DesktopCursorClient(root_window_));
   aura::client::SetCursorClient(root_window_, cursor_client_.get());
 
-
   position_client_.reset(new DesktopScreenPositionClient());
   aura::client::SetScreenPositionClient(root_window_,
                                         position_client_.get());
 
   desktop_native_widget_aura_->InstallInputMethodEventFilter(root_window_);
+
+  drag_drop_client_.reset(new DesktopDragDropClientWin(root_window_,
+                                                       GetHWND()));
+  aura::client::SetDragDropClient(root_window_, drag_drop_client_.get());
 
   focus_client_->FocusWindow(content_window_, NULL);
   root_window_->SetProperty(kContentWindowForRootWindow, content_window_);
@@ -373,7 +378,9 @@ void DesktopRootWindowHostWin::SetBounds(const gfx::Rect& bounds) {
 }
 
 gfx::Point DesktopRootWindowHostWin::GetLocationOnNativeScreen() const {
-  return gfx::Point(1, 1);
+  RECT r;
+  GetWindowRect(GetHWND(), &r);
+  return gfx::Point(r.left, r.top);
 }
 
 void DesktopRootWindowHostWin::SetCapture() {
@@ -588,11 +595,11 @@ void DesktopRootWindowHostWin::HandleCreate() {
 
   // 1. Window property association
   // 2. MouseWheel.
-  // 3. Drop target.
-  // 4. Tooltip Manager.
+  // 3. Tooltip Manager.
 }
 
 void DesktopRootWindowHostWin::HandleDestroying() {
+  drag_drop_client_->OnNativeWidgetDestroying(GetHWND());
   native_widget_delegate_->OnNativeWidgetDestroying();
 }
 

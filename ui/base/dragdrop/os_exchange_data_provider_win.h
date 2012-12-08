@@ -161,9 +161,7 @@ class UI_EXPORT OSExchangeDataProviderWin : public OSExchangeData::Provider {
   virtual void SetURL(const GURL& url, const string16& title);
   virtual void SetFilename(const FilePath& path);
   virtual void SetFilenames(
-      const std::vector<OSExchangeData::FileInfo>& filenames) {
-    NOTREACHED();
-  }
+      const std::vector<OSExchangeData::FileInfo>& filenames);
   virtual void SetPickledData(OSExchangeData::CustomFormat format,
                               const Pickle& data);
   virtual void SetFileContents(const FilePath& filename,
@@ -174,10 +172,7 @@ class UI_EXPORT OSExchangeDataProviderWin : public OSExchangeData::Provider {
   virtual bool GetURLAndTitle(GURL* url, string16* title) const;
   virtual bool GetFilename(FilePath* path) const;
   virtual bool GetFilenames(
-      std::vector<OSExchangeData::FileInfo>* filenames) const {
-    NOTREACHED();
-    return false;
-  }
+      std::vector<OSExchangeData::FileInfo>* filenames) const;
   virtual bool GetPickledData(OSExchangeData::CustomFormat format,
                               Pickle* data) const;
   virtual bool GetFileContents(FilePath* filename,

@@ -14,8 +14,7 @@ namespace aura {
 namespace {
 class UIControlsWin : public ui_controls::UIControlsAura {
  public:
-  UIControlsWin(RootWindow* root_window) : root_window_(root_window) {
-  }
+  UIControlsWin() {}
 
   // UIControlsAura overrides:
   virtual bool SendKeyPress(gfx::NativeWindow native_window,
@@ -43,7 +42,6 @@ class UIControlsWin : public ui_controls::UIControlsAura {
   }
   virtual bool SendMouseMove(long x, long y) {
     gfx::Point point(x, y);
-    root_window_->ConvertPointToNativeScreen(&point);
     return ui_controls::internal::SendMouseMoveImpl(
         point.x(), point.y(), base::Closure());
   }
@@ -51,7 +49,6 @@ class UIControlsWin : public ui_controls::UIControlsAura {
                                            long y,
                                            const base::Closure& task) {
     gfx::Point point(x, y);
-    root_window_->ConvertPointToNativeScreen(&point);
     return ui_controls::internal::SendMouseMoveImpl(point.x(), point.y(), task);
   }
   virtual bool SendMouseEvents(ui_controls::MouseButton type, int state) {
@@ -72,14 +69,13 @@ class UIControlsWin : public ui_controls::UIControlsAura {
   }
 
  private:
-  RootWindow* root_window_;
   DISALLOW_COPY_AND_ASSIGN(UIControlsWin);
 };
 
 }  // namespace
 
 ui_controls::UIControlsAura* CreateUIControlsAura(RootWindow* root_window) {
-  return new UIControlsWin(root_window);
+  return new UIControlsWin();
 }
 
 }  // namespace aura

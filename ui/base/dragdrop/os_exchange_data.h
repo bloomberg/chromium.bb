@@ -49,12 +49,12 @@ class UI_EXPORT OSExchangeData {
  public:
   // CustomFormats are used for non-standard data types. For example, bookmark
   // nodes are written using a CustomFormat.
-#if defined(USE_AURA)
+#if defined(OS_WIN)
+  typedef CLIPFORMAT CustomFormat;
+#elif defined(USE_AURA)
   // Use the same type as the clipboard (why do we want two different
   // definitions of this on other platforms?).
   typedef Clipboard::FormatType CustomFormat;
-#elif defined(OS_WIN)
-  typedef CLIPFORMAT CustomFormat;
 #elif defined(TOOLKIT_GTK)
   typedef GdkAtom CustomFormat;
 #else
@@ -139,6 +139,9 @@ class UI_EXPORT OSExchangeData {
 #endif
   };
 
+  // Creates the platform specific Provider.
+  static Provider* CreateProvider();
+
   OSExchangeData();
   // Creates an OSExchangeData with the specified provider. OSExchangeData
   // takes ownership of the supplied provider.
@@ -222,9 +225,6 @@ class UI_EXPORT OSExchangeData {
 #endif
 
  private:
-  // Creates the platform specific Provider.
-  static Provider* CreateProvider();
-
   // Provides the actual data.
   scoped_ptr<Provider> provider_;
 

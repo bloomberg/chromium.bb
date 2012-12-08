@@ -33,15 +33,20 @@
 #include "ui/aura/window_observer.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/dragdrop/drag_utils.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
-#include "ui/base/dragdrop/os_exchange_data_provider_aura.h"
 #include "ui/base/events/event.h"
 #include "ui/base/events/event_utils.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/screen.h"
 #include "webkit/glue/webdropdata.h"
+
+#if defined(OS_WIN)
+#include "ui/base/clipboard/clipboard_util_win.h"
+#endif
 
 namespace content {
 WebContentsView* CreateWebContentsView(
@@ -128,9 +133,9 @@ class WebDragSourceAura : public MessageLoopForUI::Observer,
   DISALLOW_COPY_AND_ASSIGN(WebDragSourceAura);
 };
 
-// Utility to fill a ui::OSExchangeDataProviderAura object from WebDropData.
+// Utility to fill a ui::OSExchangeDataProvider object from WebDropData.
 void PrepareDragData(const WebDropData& drop_data,
-                     ui::OSExchangeDataProviderAura* provider) {
+                     ui::OSExchangeData::Provider* provider) {
   if (!drop_data.text.string().empty())
     provider->SetString(drop_data.text.string());
   if (drop_data.url.is_valid())
@@ -152,8 +157,13 @@ void PrepareDragData(const WebDropData& drop_data,
   if (!drop_data.custom_data.empty()) {
     Pickle pickle;
     ui::WriteCustomDataToPickle(drop_data.custom_data, &pickle);
+#if defined(OS_WIN)
+    provider->SetPickledData(
+        ui::ClipboardUtil::GetWebCustomDataFormat()->cfFormat, pickle);
+#else
     provider->SetPickledData(ui::Clipboard::GetWebCustomDataFormatType(),
                              pickle);
+#endif
   }
 }
 
@@ -193,8 +203,13 @@ void PrepareWebDropData(WebDropData* drop_data,
   }
 
   Pickle pickle;
+#if defined(OS_WIN)
+  if (data.GetPickledData(ui::ClipboardUtil::GetWebCustomDataFormat()->cfFormat,
+                          &pickle))
+#else
   if (data.GetPickledData(ui::Clipboard::GetWebCustomDataFormatType(),
                           &pickle))
+#endif
     ui::ReadCustomDataIntoMap(pickle.data(), pickle.size(),
                               &drop_data->custom_data);
 }
@@ -672,13 +687,15 @@ void WebContentsViewAura::StartDragging(
   if (!aura::client::GetDragDropClient(root_window))
     return;
 
-  ui::OSExchangeDataProviderAura* provider = new ui::OSExchangeDataProviderAura;
+  ui::OSExchangeData::Provider* provider = ui::OSExchangeData::CreateProvider();
   PrepareDragData(drop_data, provider);
-  if (!image.isNull()) {
-    provider->set_drag_image(image);
-    provider->set_drag_image_offset(image_offset);
-  }
+
   ui::OSExchangeData data(provider);  // takes ownership of |provider|.
+
+  if (!image.isNull()) {
+    drag_utils::SetDragImageOnDataObject(image,
+        gfx::Size(image.width(), image.height()), image_offset, &data);
+  }
 
   scoped_ptr<WebDragSourceAura> drag_source(
       new WebDragSourceAura(GetNativeView(), web_contents_));

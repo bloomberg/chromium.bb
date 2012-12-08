@@ -16,8 +16,8 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/dragdrop/drag_utils.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
-#include "ui/base/dragdrop/os_exchange_data_provider_aura.h"
 #include "ui/base/events/event.h"
 #include "ui/base/gestures/gesture_types.h"
 #include "ui/base/ui_base_switches.h"
@@ -73,12 +73,13 @@ class DragTestView : public views::View {
 
   void WriteDragData(const gfx::Point& p, OSExchangeData* data) OVERRIDE {
     data->SetString(UTF8ToUTF16("I am being dragged"));
-    ui::OSExchangeDataProviderAura& provider =
-        static_cast<ui::OSExchangeDataProviderAura&>(data->provider());
     gfx::ImageSkiaRep* image = new gfx::ImageSkiaRep(
         gfx::Size(10, 20), ui::SCALE_FACTOR_100P);
     gfx::ImageSkia* image_skia = new gfx::ImageSkia(*image);
-    provider.set_drag_image(*image_skia);
+
+    drag_utils::SetDragImageOnDataObject(
+        *image_skia, gfx::Size(image_skia->width(), image_skia->height()),
+        gfx::Vector2d(), data);
   }
 
   bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {

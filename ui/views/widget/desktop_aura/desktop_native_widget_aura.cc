@@ -17,10 +17,13 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/corewm/compound_event_filter.h"
 #include "ui/views/corewm/input_method_event_filter.h"
+#include "ui/views/drag_utils.h"
 #include "ui/views/ime/input_method.h"
 #include "ui/views/ime/input_method_bridge.h"
 #include "ui/views/widget/desktop_aura/desktop_root_window_host.h"
+#include "ui/views/widget/drop_helper.h"
 #include "ui/views/widget/native_widget_aura_window_observer.h"
+#include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_aura_utils.h"
 
@@ -133,6 +136,9 @@ void DesktopNativeWidgetAura::InitNativeWidget(
       desktop_root_window_host_->Init(window_, params));
   stacking_client_.reset(
       new DesktopNativeWidgetAuraStackingClient(root_window_.get()));
+  drop_helper_.reset(new DropHelper(
+      static_cast<internal::RootView*>(GetWidget()->GetRootView())));
+  aura::client::SetDragDropDelegate(window_, this);
 
   aura::client::SetActivationDelegate(window_, this);
 }
@@ -394,11 +400,13 @@ bool DesktopNativeWidgetAura::IsAccessibleWidget() const {
   return false;
 }
 
-void DesktopNativeWidgetAura::RunShellDrag(View* view,
-                            const ui::OSExchangeData& data,
-                            const gfx::Point& location,
-                            int operation,
-                            ui::DragDropTypes::DragEventSource source) {
+void DesktopNativeWidgetAura::RunShellDrag(
+    View* view,
+    const ui::OSExchangeData& data,
+    const gfx::Point& location,
+    int operation,
+    ui::DragDropTypes::DragEventSource source) {
+  views::RunShellDrag(window_, data, location, operation, source);
 }
 
 void DesktopNativeWidgetAura::SchedulePaintInRect(const gfx::Rect& rect) {
@@ -522,7 +530,7 @@ void DesktopNativeWidgetAura::OnWindowDestroyed() {
   window_ = NULL;
   native_widget_delegate_->OnNativeWidgetDestroyed();
   if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
-    delete this;
+  delete this;
 }
 
 void DesktopNativeWidgetAura::OnWindowTargetVisibilityChanged(bool visible) {
@@ -631,6 +639,33 @@ void DesktopNativeWidgetAura::DispatchKeyEventPostIME(const ui::KeyEvent& key) {
   if (native_widget_delegate_->OnKeyEvent(key) || !focus_manager)
     return;
   focus_manager->OnKeyEvent(key);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// DesktopNativeWidgetAura, aura::WindowDragDropDelegate implementation:
+
+void DesktopNativeWidgetAura::OnDragEntered(const ui::DropTargetEvent& event) {
+  DCHECK(drop_helper_.get() != NULL);
+  last_drop_operation_ = drop_helper_->OnDragOver(event.data(),
+      event.location(), event.source_operations());
+}
+
+int DesktopNativeWidgetAura::OnDragUpdated(const ui::DropTargetEvent& event) {
+  DCHECK(drop_helper_.get() != NULL);
+  last_drop_operation_ = drop_helper_->OnDragOver(event.data(),
+      event.location(), event.source_operations());
+  return last_drop_operation_;
+}
+
+void DesktopNativeWidgetAura::OnDragExited() {
+  DCHECK(drop_helper_.get() != NULL);
+  drop_helper_->OnDragExit();
+}
+
+int DesktopNativeWidgetAura::OnPerformDrop(const ui::DropTargetEvent& event) {
+  DCHECK(drop_helper_.get() != NULL);
+  return drop_helper_->OnDrop(event.data(), event.location(),
+      last_drop_operation_);
 }
 
 }  // namespace views

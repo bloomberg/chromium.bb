@@ -546,7 +546,7 @@ class BookmarkBarViewTest5 : public BookmarkBarViewEventTestBase {
     // Drop the item so that it's now the second item.
     views::MenuItemView* target_menu =
         bb_view_->GetMenu()->GetSubmenu()->GetMenuItemAt(1);
-    gfx::Point loc(1, target_menu->height() - 1);
+    gfx::Point loc(1, target_menu->height() - 2);
     views::View::ConvertPointToScreen(target_menu, &loc);
     ui_controls::SendMouseMove(loc.x(), loc.y());
 

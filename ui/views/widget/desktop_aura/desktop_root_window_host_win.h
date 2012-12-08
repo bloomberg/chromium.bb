@@ -22,6 +22,7 @@ namespace views {
 class DesktopActivationClient;
 class DesktopCursorClient;
 class DesktopDispatcherClient;
+class DesktopDragDropClientWin;
 class HWNDMessageHandler;
 
 class VIEWS_EXPORT DesktopRootWindowHostWin
@@ -223,6 +224,8 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
 
   // A simple cursor client which just forwards events to the RootWindow.
   scoped_ptr<DesktopCursorClient> cursor_client_;
+
+  scoped_ptr<DesktopDragDropClientWin> drag_drop_client_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopRootWindowHostWin);
 };

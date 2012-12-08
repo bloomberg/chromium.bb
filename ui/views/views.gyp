@@ -358,6 +358,10 @@
         'widget/desktop_aura/desktop_cursor_client.h',
         'widget/desktop_aura/desktop_dispatcher_client.cc',
         'widget/desktop_aura/desktop_dispatcher_client.h',
+        'widget/desktop_aura/desktop_drag_drop_client_win.cc',
+        'widget/desktop_aura/desktop_drag_drop_client_win.h',
+        'widget/desktop_aura/desktop_drop_target_win.cc',
+        'widget/desktop_aura/desktop_drop_target_win.h',
         'widget/desktop_aura/desktop_layout_manager.cc',
         'widget/desktop_aura/desktop_layout_manager.h',
         'widget/desktop_aura/desktop_native_widget_aura.cc',
@@ -474,9 +478,9 @@
             ['OS=="win"', {
               'sources/': [
                 ['include', 'widget/desktop_aura/desktop_screen_win.cc'],
-                ['include', 'widget/desktop_aura/desktop_screen_win.h'],
+                ['include', 'widget/desktop_aura/desktop_drag_drop_client_win.cc'],
+                ['include', 'widget/desktop_aura/desktop_drop_target_win.cc'],
                 ['include', 'widget/desktop_aura/desktop_root_window_host_win.cc'],
-                ['include', 'widget/desktop_aura/desktop_root_window_host_win.h'],
               ],
             }],
           ],

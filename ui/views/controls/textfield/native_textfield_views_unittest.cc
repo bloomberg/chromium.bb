@@ -873,11 +873,7 @@ TEST_F(NativeTextfieldViewsTest, DragAndDrop_AcceptDrop) {
   ui::OSExchangeData bad_data;
   bad_data.SetFilename(FilePath(FILE_PATH_LITERAL("x")));
 #if defined(OS_WIN)
-#if defined(USE_AURA)
-  ui::OSExchangeData::CustomFormat fmt = ui::Clipboard::GetBitmapFormatType();
-#else
   ui::OSExchangeData::CustomFormat fmt = CF_BITMAP;
-#endif
   bad_data.SetPickledData(fmt, Pickle());
   bad_data.SetFileContents(FilePath(L"x"), "x");
   bad_data.SetHtml(string16(ASCIIToUTF16("x")), GURL("x.org"));

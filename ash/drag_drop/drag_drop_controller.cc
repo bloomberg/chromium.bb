@@ -106,6 +106,17 @@ int DragDropController::StartDragAndDrop(
   if (IsDragDropInProgress())
     return 0;
 
+#if defined(OS_WIN)
+  // TODO(win_ash): need to figure out how this will work in Metro, since
+  // OSExchangeDataProviderAura isn't used in Windows builds. Two alternatives:
+  // 1) Use OSExchangeDataProviderAura in Ash and OSExchangeDataProviderWin
+  //    elsewhere. This will complicate creating an ui::OSExchangeData to pass
+  //    in more context.
+  // 2) Add methods to get the image and offset in the base interface of these
+  //    implementations to get to this data here.
+  NOTIMPLEMENTED();
+  return 0;
+#else
   const ui::OSExchangeDataProviderAura& provider =
       static_cast<const ui::OSExchangeDataProviderAura&>(data.provider());
   // We do not support touch drag/drop without a drag image.
@@ -180,6 +191,7 @@ int DragDropController::StartDragAndDrop(
       drag_source_window_->RemoveObserver(this);
     drag_source_window_ = NULL;
   }
+#endif
 
   return drag_operation_;
 }
