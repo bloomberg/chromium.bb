@@ -1020,7 +1020,7 @@ int CompactLangDetImpl::CheapSqueezeInplace(char* isrc,
       }
       // "len" can be negative in some cases
       if (len > 0) {
-        memcpy(dst, src, len);
+        memmove(dst, src, len);
         dst += len;
       }
     }
