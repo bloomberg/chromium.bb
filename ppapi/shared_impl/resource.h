@@ -36,6 +36,7 @@
   F(PPB_Find_API) \
   F(PPB_Flash_Clipboard_API) \
   F(PPB_Flash_DeviceID_API) \
+  F(PPB_Flash_File_API) \
   F(PPB_Flash_FontFile_API) \
   F(PPB_Flash_Fullscreen_API) \
   F(PPB_Flash_Functions_API) \

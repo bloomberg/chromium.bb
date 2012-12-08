@@ -108,16 +108,17 @@ bool PluginResource::SendResourceCall(
       new PpapiHostMsg_ResourceCall(call_params, nested_msg));
 }
 
-int32_t PluginResource::GenericSyncCall(Destination dest,
-                                        const IPC::Message& msg,
-                                        IPC::Message* reply) {
+int32_t PluginResource::GenericSyncCall(
+    Destination dest,
+    const IPC::Message& msg,
+    IPC::Message* reply,
+    ResourceMessageReplyParams* reply_params) {
   ResourceMessageCallParams params(pp_resource(), GetNextSequence());
   params.set_has_callback();
-  ResourceMessageReplyParams reply_params;
   bool success = GetSender(dest)->Send(new PpapiHostMsg_ResourceSyncCall(
-      params, msg, &reply_params, reply));
+      params, msg, reply_params, reply));
   if (success)
-    return reply_params.result();
+    return reply_params->result();
   return PP_ERROR_FAILED;
 }
 

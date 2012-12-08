@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
-#include "content/browser/renderer_host/pepper/pepper_message_filter.h"
 
+#include "content/browser/renderer_host/pepper/pepper_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "ipc/ipc_message_macros.h"
@@ -20,8 +20,14 @@ BrowserPpapiHost* BrowserPpapiHost::CreateExternalPluginProcess(
     net::HostResolver* host_resolver,
     int render_process_id,
     int render_view_id) {
+  // TODO(raymes): Figure out how to plumb plugin_name and
+  // profile_data_directory through for NaCl. They are currently only needed for
+  // PPB_Flash_File interfaces so it doesn't matter.
+  std::string plugin_name;
+  FilePath profile_data_directory;
   BrowserPpapiHostImpl* browser_ppapi_host =
-      new BrowserPpapiHostImpl(sender, permissions);
+      new BrowserPpapiHostImpl(sender, permissions, plugin_name,
+                               profile_data_directory);
   browser_ppapi_host->set_plugin_process_handle(plugin_child_process);
 
   channel->AddFilter(
@@ -37,9 +43,13 @@ BrowserPpapiHost* BrowserPpapiHost::CreateExternalPluginProcess(
 
 BrowserPpapiHostImpl::BrowserPpapiHostImpl(
     IPC::Sender* sender,
-    const ppapi::PpapiPermissions& permissions)
+    const ppapi::PpapiPermissions& permissions,
+    const std::string& plugin_name,
+    const FilePath& profile_data_directory)
     : ppapi_host_(sender, permissions),
-      plugin_process_handle_(base::kNullProcessHandle) {
+      plugin_process_handle_(base::kNullProcessHandle),
+      plugin_name_(plugin_name),
+      profile_data_directory_(profile_data_directory) {
   message_filter_ = new HostMessageFilter(&ppapi_host_);
   ppapi_host_.AddHostFactoryFilter(scoped_ptr<ppapi::host::HostFactory>(
       new ContentBrowserPepperHostFactory(this)));
@@ -78,6 +88,14 @@ bool BrowserPpapiHostImpl::GetRenderViewIDsForInstance(
   *render_process_id = found->second.process_id;
   *render_view_id = found->second.view_id;
   return true;
+}
+
+const std::string& BrowserPpapiHostImpl::GetPluginName() {
+  return plugin_name_;
+}
+
+const FilePath& BrowserPpapiHostImpl::GetProfileDataDirectory() {
+  return profile_data_directory_;
 }
 
 void BrowserPpapiHostImpl::AddInstanceForView(PP_Instance instance,

@@ -9,14 +9,14 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
-#include "ppapi/shared_impl/ppb_flash_shared.h"
+#include "ppapi/thunk/ppb_flash_api.h"
 
 namespace webkit {
 namespace ppapi {
 
 class PluginInstance;
 
-class PPB_Flash_Impl : public ::ppapi::PPB_Flash_Shared {
+class PPB_Flash_Impl : public ::ppapi::thunk::PPB_Flash_API {
  public:
   explicit PPB_Flash_Impl(PluginInstance* instance);
   virtual ~PPB_Flash_Impl();
@@ -50,34 +50,6 @@ class PPB_Flash_Impl : public ::ppapi::PPB_Flash_Shared {
                                 const PP_Rect* rect) OVERRIDE;
   virtual PP_Var GetSetting(PP_Instance instance,
                             PP_FlashSetting setting) OVERRIDE;
-  virtual bool CreateThreadAdapterForInstance(PP_Instance instance) OVERRIDE;
-  virtual void ClearThreadAdapterForInstance(PP_Instance instance) OVERRIDE;
-  virtual int32_t OpenFile(PP_Instance instance,
-                           const char* path,
-                           int32_t mode,
-                           PP_FileHandle* file) OVERRIDE;
-  virtual int32_t RenameFile(PP_Instance instance,
-                             const char* path_from,
-                             const char* path_to) OVERRIDE;
-  virtual int32_t DeleteFileOrDir(PP_Instance instance,
-                                  const char* path,
-                                  PP_Bool recursive) OVERRIDE;
-  virtual int32_t CreateDir(PP_Instance instance, const char* path) OVERRIDE;
-  virtual int32_t QueryFile(PP_Instance instance,
-                            const char* path,
-                            PP_FileInfo* info) OVERRIDE;
-  virtual int32_t GetDirContents(PP_Instance instance,
-                                 const char* path,
-                                 PP_DirContents_Dev** contents) OVERRIDE;
-  virtual int32_t CreateTemporaryFile(PP_Instance instance,
-                                      PP_FileHandle* file) OVERRIDE;
-  virtual int32_t OpenFileRef(PP_Instance instance,
-                              PP_Resource file_ref,
-                              int32_t mode,
-                              PP_FileHandle* file) OVERRIDE;
-  virtual int32_t QueryFileRef(PP_Instance instance,
-                               PP_Resource file_ref,
-                               PP_FileInfo* info) OVERRIDE;
 
  private:
   PluginInstance* instance_;

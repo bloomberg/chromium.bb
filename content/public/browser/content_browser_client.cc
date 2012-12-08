@@ -250,10 +250,6 @@ bool ContentBrowserClient::AllowPepperSocketAPI(
   return false;
 }
 
-bool ContentBrowserClient::AllowPepperPrivateFileAPI() {
-  return false;
-}
-
 FilePath ContentBrowserClient::GetHyphenDictionaryDirectory() {
   return FilePath();
 }

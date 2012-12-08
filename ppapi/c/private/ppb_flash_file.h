@@ -31,18 +31,9 @@ struct PP_DirContents_Dev {
 // Module-local file paths are '/'-separated UTF-8 strings, relative to a
 // module-specific root.
 struct PPB_Flash_File_ModuleLocal_3_0 {
-  // Does initialization necessary for proxying this interface on background
-  // threads. You must always call this function before using any other
-  // function in this interface for a given instance ID.
-  //
-  // Returns true if multithreaded access is supported. In this case you can
-  // use the rest of the functions from background threads. You may not call
-  // GetInterface or do any other PPAPI operations on background threads at
-  // this time.
+  // Deprecated. Returns true.
   bool (*CreateThreadAdapterForInstance)(PP_Instance instance);
-
-  // Call when an instance is destroyed when you've previously called
-  // CreateThreadAdapterForInstance.
+  // Deprecated. Does nothing.
   void (*ClearThreadAdapterForInstance)(PP_Instance instance);
 
   // Opens a file, returning a file descriptor (posix) or a HANDLE (win32) into
