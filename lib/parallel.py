@@ -228,7 +228,6 @@ def _TaskRunner(queue, task, onexit=None):
     x = queue.get()
     if isinstance(x, _AllTasksComplete):
       # All tasks are complete, so we should exit.
-      queue.put(x)
       break
 
     # If no tasks failed yet, process the remaining tasks.
@@ -294,7 +293,8 @@ def BackgroundTaskRunner(queue, task, processes=None, onexit=None):
     try:
       yield
     finally:
-      queue.put(_AllTasksComplete())
+      for _ in xrange(processes):
+        queue.put(_AllTasksComplete())
 
 
 def RunTasksInProcessPool(task, inputs, processes=None, onexit=None):
