@@ -1,4 +1,4 @@
-#!/usr/bin/python2.6
+#!/usr/bin/python
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -105,8 +105,9 @@ class Upgrader(object):
   CROS_OVERLAY_NAME = 'chromiumos-overlay'
   CATEGORIES_FILE = 'profiles/categories'
   HOST_BOARD = 'amd64-host'
-  OPT_SLOTS = ['amend', 'csv_file', 'force', 'no_upstream_cache', 'rdeps',
-               'upgrade', 'upgrade_deep', 'upstream', 'unstable_ok', 'verbose']
+  OPT_SLOTS = ('amend', 'csv_file', 'force', 'no_upstream_cache', 'rdeps',
+               'upgrade', 'upgrade_deep', 'upstream', 'unstable_ok', 'verbose',
+               'local_only')
 
   EQUERY_CMD = 'equery'
   EMERGE_CMD = 'emerge'
@@ -122,6 +123,7 @@ class Upgrader(object):
                '_csv_file',     # File path for writing csv output
                '_deps_graph',   # Dependency graph from portage
                '_force',        # Force upgrade even when version already exists
+               '_local_only',   # Skip network traffic
                '_missing_eclass_re',# Regexp for missing eclass in equery
                '_outdated_eclass_re',# Regexp for outdated eclass in equery
                '_emptydir',     # Path to temporary empty directory
@@ -1514,17 +1516,25 @@ class Upgrader(object):
         osutils.RmDir(self._upstream_repo, ignore_missing=True)
 
       if os.path.exists(self._upstream_repo):
-        # Recheck the pathway; it's possible in switching off alternates,
-        # this was converted down to a depth=1 repo.
+        if self._local_only:
+          oper.Notice('Using upstream cache as-is (no network) %s.' %
+                      self._upstream_repo)
+        else:
+          # Recheck the pathway; it's possible in switching off alternates,
+          # this was converted down to a depth=1 repo.
 
-        oper.Notice('Updating previously created upstream cache at %s.' %
-                    self._upstream_repo)
-        self._RunGit(self._upstream_repo, ['remote', 'set-url', 'origin',
-                                           self.PORTAGE_GIT_URL])
-        self._RunGit(self._upstream_repo, ['remote', 'update'])
-        self._RunGit(self._upstream_repo, ['checkout', self.ORIGIN_GENTOO],
-                     redirect_stdout=True, combine_stdout_stderr=True)
+          oper.Notice('Updating previously created upstream cache at %s.' %
+                      self._upstream_repo)
+          self._RunGit(self._upstream_repo, ['remote', 'set-url', 'origin',
+                                             self.PORTAGE_GIT_URL])
+          self._RunGit(self._upstream_repo, ['remote', 'update'])
+          self._RunGit(self._upstream_repo, ['checkout', self.ORIGIN_GENTOO],
+                       redirect_stdout=True, combine_stdout_stderr=True)
       else:
+        if self._local_only:
+          oper.Die('--local-only specified, but no local cache exists. '
+                   'Re-run w/out --local-only to create cache automatically.')
+
         root = os.path.dirname(self._upstream_repo)
         osutils.SafeMakedirs(root)
         # Create local copy of upstream gentoo.
@@ -1879,6 +1889,8 @@ def _CreateOptParser():
   parser.add_option('--verbose', dest='verbose', action='store_true',
                     default=False,
                     help='Enable verbose output (for debugging)')
+  parser.add_option('-l', '--local-only', action='store_true', default=False,
+                    help='Do not attempt to update local portage cache')
 
   return parser
 
