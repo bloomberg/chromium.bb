@@ -76,12 +76,13 @@ host_triplet = @host@
 
 # These are good warnings to be treated as errors
 @GCC_TRUE@am__append_2 = \
-@GCC_TRUE@	-Werror=non-virtual-dtor \
-@GCC_TRUE@	-Werror=vla \
-@GCC_TRUE@	-Werror=unused-variable \
 @GCC_TRUE@	-Werror=missing-braces \
+@GCC_TRUE@	-Werror=non-virtual-dtor \
 @GCC_TRUE@	-Werror=overloaded-virtual \
-@GCC_TRUE@	-Werror=sign-compare
+@GCC_TRUE@	-Werror=reorder \
+@GCC_TRUE@	-Werror=sign-compare \
+@GCC_TRUE@	-Werror=unused-variable \
+@GCC_TRUE@	-Werror=vla
 
 
 # Build as PIC on Linux, for linux_client_unittest_shlib

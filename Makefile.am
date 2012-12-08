@@ -46,12 +46,13 @@ endif
 if GCC
 # These are good warnings to be treated as errors
 AM_CXXFLAGS += \
-	-Werror=non-virtual-dtor \
-	-Werror=vla \
-	-Werror=unused-variable \
 	-Werror=missing-braces \
+	-Werror=non-virtual-dtor \
 	-Werror=overloaded-virtual \
-	-Werror=sign-compare
+	-Werror=reorder \
+	-Werror=sign-compare \
+	-Werror=unused-variable \
+	-Werror=vla
 endif
 
 if LINUX_HOST

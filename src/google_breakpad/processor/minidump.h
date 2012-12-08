@@ -908,6 +908,16 @@ class Minidump {
 
   virtual const MDRawHeader* header() const { return valid_ ? &header_ : NULL; }
 
+  // Reads the CPU information from the system info stream and generates the
+  // appropriate CPU flags.  The returned context_cpu_flags are the same as
+  // if the CPU type bits were set in the context_flags of a context record.
+  // On success, context_cpu_flags will have the flags that identify the CPU.
+  // If a system info stream is missing, context_cpu_flags will be 0.
+  // Returns true if the current position in the stream was not changed.
+  // Returns false when the current location in the stream was changed and the
+  // attempt to restore the original position failed.
+  bool GetContextCPUFlagsFromSystemInfo(u_int32_t* context_cpu_flags);
+
   // Reads the minidump file's header and top-level stream directory.
   // The minidump is expected to be positioned at the beginning of the
   // header.  Read() sets up the stream list and map, and validates the
