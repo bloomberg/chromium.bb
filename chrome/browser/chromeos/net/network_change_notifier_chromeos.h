@@ -81,6 +81,9 @@ class NetworkChangeNotifierChromeos
   static net::NetworkChangeNotifier::ConnectionType GetNetworkConnectionType(
       const chromeos::Network* network);
 
+  // Get parameters for calculating new combined signal.
+  static NetworkChangeCalculatorParams NetworkChangeCalculatorParamsChromeos();
+
   // True if we previously had an active network around.
   bool has_active_network_;
   // Current active network's connection state.

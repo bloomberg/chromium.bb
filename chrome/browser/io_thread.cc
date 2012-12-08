@@ -235,26 +235,31 @@ int GetSwitchValueAsInt(const CommandLine& command_line,
 
 class IOThread::LoggingNetworkChangeObserver
     : public net::NetworkChangeNotifier::IPAddressObserver,
-      public net::NetworkChangeNotifier::ConnectionTypeObserver {
+      public net::NetworkChangeNotifier::ConnectionTypeObserver,
+      public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
   // |net_log| must remain valid throughout our lifetime.
   explicit LoggingNetworkChangeObserver(net::NetLog* net_log)
       : net_log_(net_log) {
     net::NetworkChangeNotifier::AddIPAddressObserver(this);
     net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
+    net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
   }
 
   ~LoggingNetworkChangeObserver() {
     net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
     net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
+    net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
   }
 
+  // NetworkChangeNotifier::IPAddressObserver implementation.
   virtual void OnIPAddressChanged() OVERRIDE {
     VLOG(1) << "Observed a change to the network IP addresses";
 
     net_log_->AddGlobalEntry(net::NetLog::TYPE_NETWORK_IP_ADDRESSES_CHANGED);
   }
 
+  // NetworkChangeNotifier::ConnectionTypeObserver implementation.
   virtual void OnConnectionTypeChanged(
       net::NetworkChangeNotifier::ConnectionType type) OVERRIDE {
     std::string type_as_string =
@@ -265,6 +270,19 @@ class IOThread::LoggingNetworkChangeObserver
 
     net_log_->AddGlobalEntry(
         net::NetLog::TYPE_NETWORK_CONNECTIVITY_CHANGED,
+        net::NetLog::StringCallback("new_connection_type", &type_as_string));
+  }
+
+  // NetworkChangeNotifier::NetworkChangeObserver implementation.
+  virtual void OnNetworkChanged(
+      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE {
+    std::string type_as_string =
+        net::NetworkChangeNotifier::ConnectionTypeToString(type);
+
+    VLOG(1) << "Observed a network change to state " << type_as_string;
+
+    net_log_->AddGlobalEntry(
+        net::NetLog::TYPE_NETWORK_CHANGED,
         net::NetLog::StringCallback("new_connection_type", &type_as_string));
   }
 

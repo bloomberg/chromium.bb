@@ -52,7 +52,8 @@ class NetworkChangeNotifierChromeos::DnsConfigServiceChromeos
 };
 
 NetworkChangeNotifierChromeos::NetworkChangeNotifierChromeos()
-    : has_active_network_(false),
+    : NetworkChangeNotifier(NetworkChangeCalculatorParamsChromeos()),
+      has_active_network_(false),
       connection_state_(chromeos::STATE_UNKNOWN),
       connection_type_(CONNECTION_NONE),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
@@ -331,6 +332,19 @@ NetworkChangeNotifierChromeos::GetNetworkConnectionType(
       break;
   }
   return net::NetworkChangeNotifier::CONNECTION_UNKNOWN;
+}
+
+// static
+net::NetworkChangeNotifier::NetworkChangeCalculatorParams
+NetworkChangeNotifierChromeos::NetworkChangeCalculatorParamsChromeos() {
+  NetworkChangeCalculatorParams params;
+  // Delay values arrived at by simple experimentation and adjusted so as to
+  // produce a single signal when switching between network connections.
+  params.ip_address_offline_delay_ = base::TimeDelta::FromMilliseconds(4000);
+  params.ip_address_online_delay_ = base::TimeDelta::FromMilliseconds(1000);
+  params.connection_type_offline_delay_ = base::TimeDelta::FromMilliseconds(0);
+  params.connection_type_online_delay_ = base::TimeDelta::FromMilliseconds(0);
+  return params;
 }
 
 }  // namespace chromeos
