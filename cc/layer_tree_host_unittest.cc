@@ -2960,11 +2960,6 @@ public:
             m_children.push_back(ContentLayerWithUpdateTracking::create(&m_client));
     }
 
-    virtual scoped_ptr<OutputSurface> createOutputSurface()
-    {
-        return FakeOutputSurface::Create3d(CompositorFakeWebGraphicsContext3DWithEndQueryCausingLostContext::create(WebGraphicsContext3D::Attributes()).PassAs<WebKit::WebGraphicsContext3D>()).PassAs<OutputSurface>();
-    }
-
     virtual void beginTest()
     {
         m_layerTreeHost->setRootLayer(m_parent);
@@ -3335,7 +3330,8 @@ TEST(LayerTreeHostTest, LimitPartialUpdates)
 TEST(LayerTreeHostTest, PartialUpdatesWithGLRenderer)
 {
     bool useSoftwareRendering = false;
-    FakeLayerImplTreeHostClient client(useSoftwareRendering);
+    bool useDelegatingRenderer = false;
+    FakeLayerImplTreeHostClient client(useSoftwareRendering, useDelegatingRenderer);
 
     LayerTreeSettings settings;
     settings.maxPartialTextureUpdates = 4;
@@ -3348,7 +3344,8 @@ TEST(LayerTreeHostTest, PartialUpdatesWithGLRenderer)
 TEST(LayerTreeHostTest, PartialUpdatesWithSoftwareRenderer)
 {
     bool useSoftwareRendering = true;
-    FakeLayerImplTreeHostClient client(useSoftwareRendering);
+    bool useDelegatingRenderer = false;
+    FakeLayerImplTreeHostClient client(useSoftwareRendering, useDelegatingRenderer);
 
     LayerTreeSettings settings;
     settings.maxPartialTextureUpdates = 4;
@@ -3356,6 +3353,34 @@ TEST(LayerTreeHostTest, PartialUpdatesWithSoftwareRenderer)
     scoped_ptr<LayerTreeHost> host = LayerTreeHost::create(&client, settings, scoped_ptr<Thread>());
     EXPECT_TRUE(host->initializeRendererIfNeeded());
     EXPECT_EQ(4u, host->settings().maxPartialTextureUpdates);
+}
+
+TEST(LayerTreeHostTest, PartialUpdatesWithDelegatingRendererAndGLContent)
+{
+    bool useSoftwareRendering = false;
+    bool useDelegatingRenderer = true;
+    FakeLayerImplTreeHostClient client(useSoftwareRendering, useDelegatingRenderer);
+
+    LayerTreeSettings settings;
+    settings.maxPartialTextureUpdates = 4;
+
+    scoped_ptr<LayerTreeHost> host = LayerTreeHost::create(&client, settings, scoped_ptr<Thread>());
+    EXPECT_TRUE(host->initializeRendererIfNeeded());
+    EXPECT_EQ(0u, host->settings().maxPartialTextureUpdates);
+}
+
+TEST(LayerTreeHostTest, PartialUpdatesWithDelegatingRendererAndSoftwareContent)
+{
+    bool useSoftwareRendering = true;
+    bool useDelegatingRenderer = true;
+    FakeLayerImplTreeHostClient client(useSoftwareRendering, useDelegatingRenderer);
+
+    LayerTreeSettings settings;
+    settings.maxPartialTextureUpdates = 4;
+
+    scoped_ptr<LayerTreeHost> host = LayerTreeHost::create(&client, settings, scoped_ptr<Thread>());
+    EXPECT_TRUE(host->initializeRendererIfNeeded());
+    EXPECT_EQ(0u, host->settings().maxPartialTextureUpdates);
 }
 
 }  // namespace

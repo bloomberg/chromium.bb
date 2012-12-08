@@ -7,13 +7,15 @@
 namespace cc {
 
 FakeOutputSurface::FakeOutputSurface(
-    scoped_ptr<WebKit::WebGraphicsContext3D> context3d) {
+    scoped_ptr<WebKit::WebGraphicsContext3D> context3d, bool has_parent) {
   context3d_ = context3d.Pass();
+  capabilities_.has_parent_compositor = has_parent;
 }
 
 FakeOutputSurface::FakeOutputSurface(
-    scoped_ptr<SoftwareOutputDevice> software_device) {
+    scoped_ptr<SoftwareOutputDevice> software_device, bool has_parent) {
   software_device_ = software_device.Pass();
+  capabilities_.has_parent_compositor = has_parent;
 }
 
 FakeOutputSurface::~FakeOutputSurface() {}

@@ -207,10 +207,7 @@ public:
     void pinchZoomPanViewportAndScrollBoundaryTest(const float deviceScaleFactor);
 
 protected:
-    scoped_ptr<OutputSurface> createOutputSurface()
-    {
-        return FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(new FakeWebGraphicsContext3D)).PassAs<OutputSurface>();
-    }
+    virtual scoped_ptr<OutputSurface> createOutputSurface() { return createFakeOutputSurface(); }
 
     FakeProxy m_proxy;
     DebugScopedSetImplThread m_alwaysImplThread;
@@ -4890,6 +4887,45 @@ TEST_P(LayerTreeHostImplTest, pinchZoomPanViewportAndScrollBoundaryWithDeviceSca
 TEST_P(LayerTreeHostImplTest, pinchZoomPanViewportAndScrollBoundaryWithDeviceScaleFactor2)
 {
     pinchZoomPanViewportAndScrollBoundaryTest(2);
+}
+
+class LayerTreeHostImplTestWithDelegatingRenderer : public LayerTreeHostImplTest {
+protected:
+    virtual scoped_ptr<OutputSurface> createOutputSurface()
+    {
+        // Creates an output surface with a parent to use a delegating renderer.
+        WebKit::WebGraphicsContext3D::Attributes attrs;
+        return FakeOutputSurface::CreateDelegating3d(WebKit::CompositorFakeWebGraphicsContext3D::create(attrs).PassAs<WebKit::WebGraphicsContext3D>()).PassAs<OutputSurface>();
+    }
+
+    void drawFrameAndTestDamage(const gfx::RectF& expectedDamage) {
+        LayerTreeHostImpl::FrameData frame;
+        EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
+        ASSERT_EQ(1u, frame.renderPasses.size());
+
+        // Verify the damage rect for the root render pass.
+        const RenderPass* rootRenderPass = frame.renderPasses.back();
+        EXPECT_RECT_EQ(expectedDamage, rootRenderPass->damage_rect);
+
+        // Verify the root layer's quad is generated and not being culled.
+        ASSERT_EQ(1u, rootRenderPass->quad_list.size());
+        gfx::Rect expectedVisibleRect(m_hostImpl->rootLayer()->contentBounds());
+        EXPECT_RECT_EQ(expectedVisibleRect, rootRenderPass->quad_list[0]->visible_rect);
+
+        m_hostImpl->drawLayers(frame);
+        m_hostImpl->didDrawAllLayers(frame);
+    }
+};
+
+TEST_P(LayerTreeHostImplTestWithDelegatingRenderer, FrameIncludesDamageRect)
+{
+    // Draw a frame. In the first frame, the entire viewport should be damaged.
+    gfx::Rect fullFrameDamage = gfx::Rect(m_hostImpl->deviceViewportSize());
+    drawFrameAndTestDamage(fullFrameDamage);
+
+    // The second frame should have no damage, but the quads should still be generated.
+    gfx::Rect noDamage = gfx::Rect(m_hostImpl->deviceViewportSize());
+    drawFrameAndTestDamage(noDamage);
 }
 
 INSTANTIATE_TEST_CASE_P(LayerTreeHostImplTests,

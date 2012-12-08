@@ -13,6 +13,7 @@
 #include "cc/damage_tracker.h"
 #include "cc/debug_rect_history.h"
 #include "cc/delay_based_time_source.h"
+#include "cc/delegating_renderer.h"
 #include "cc/frame_rate_counter.h"
 #include "cc/gl_renderer.h"
 #include "cc/heads_up_display_layer_impl.h"
@@ -975,7 +976,9 @@ bool LayerTreeHostImpl::initializeRenderer(scoped_ptr<OutputSurface> outputSurfa
     if (m_settings.implSidePainting)
       m_tileManager.reset(new TileManager(this, resourceProvider.get(), m_settings.numRasterThreads));
 
-    if (outputSurface->Context3D())
+    if (outputSurface->Capabilities().has_parent_compositor)
+        m_renderer = DelegatingRenderer::Create(this, resourceProvider.get());
+    else if (outputSurface->Context3D())
         m_renderer = GLRenderer::create(this, resourceProvider.get());
     else if (outputSurface->SoftwareDevice())
         m_renderer = SoftwareRenderer::create(this, resourceProvider.get(), outputSurface->SoftwareDevice());

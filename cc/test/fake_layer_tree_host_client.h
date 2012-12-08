@@ -15,8 +15,9 @@ namespace cc {
 
 class FakeLayerImplTreeHostClient : public LayerTreeHostClient {
 public:
-    FakeLayerImplTreeHostClient(bool useSoftwareRendering = false)
+    FakeLayerImplTreeHostClient(bool useSoftwareRendering = false, bool useDelegatingRenderer = false)
         : m_useSoftwareRendering(useSoftwareRendering)
+        , m_useDelegatingRenderer(useDelegatingRenderer)
     {
     }
 
@@ -41,6 +42,7 @@ public:
 
 private:
     bool m_useSoftwareRendering;
+    bool m_useDelegatingRenderer;
 };
 
 }

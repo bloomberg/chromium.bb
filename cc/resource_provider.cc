@@ -12,6 +12,7 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "cc/gl_renderer.h" // For the GLC() macro.
+#include "cc/platform_color.h"
 #include "cc/texture_uploader.h"
 #include "cc/transferable_resource.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -499,6 +500,7 @@ ResourceProvider::ResourceProvider(OutputSurface* context)
     , m_useTextureUsageHint(false)
     , m_useShallowFlush(false)
     , m_maxTextureSize(0)
+    , m_bestTextureFormat(0)
 {
 }
 
@@ -508,6 +510,7 @@ bool ResourceProvider::initialize()
     WebGraphicsContext3D* context3d = m_outputSurface->Context3D();
     if (!context3d) {
         m_maxTextureSize = INT_MAX / 2;
+        m_bestTextureFormat = GL_RGBA;
         return true;
     }
     if (!context3d->makeContextCurrent())
@@ -518,6 +521,7 @@ bool ResourceProvider::initialize()
     base::SplitString(extensionsString, ' ', &extensions);
     bool useMapSub = false;
     bool useBindUniform = false;
+    bool useBGRA = false;
     for (size_t i = 0; i < extensions.size(); ++i) {
         if (extensions[i] == "GL_EXT_texture_storage")
             m_useTextureStorageExt = true;
@@ -529,12 +533,15 @@ bool ResourceProvider::initialize()
             m_useShallowFlush = true;
         else if (extensions[i] == "GL_CHROMIUM_bind_uniform_location")
             useBindUniform = true;
+        else if (extensions[i] == "GL_EXT_texture_format_BGRA8888")
+          useBGRA = true;
     }
 
     m_textureCopier = AcceleratedTextureCopier::create(context3d, useBindUniform);
 
     m_textureUploader = TextureUploader::create(context3d, useMapSub, m_useShallowFlush);
     GLC(context3d, context3d->getIntegerv(GL_MAX_TEXTURE_SIZE, &m_maxTextureSize));
+    m_bestTextureFormat = PlatformColor::bestTextureFormat(context3d, useBGRA);
     return true;
 }
 

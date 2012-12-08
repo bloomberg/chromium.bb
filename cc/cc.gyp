@@ -46,6 +46,8 @@
       'delegated_renderer_layer.h',
       'delegated_renderer_layer_impl.cc',
       'delegated_renderer_layer_impl.h',
+      'delegating_renderer.cc',
+      'delegating_renderer.h',
       'direct_renderer.cc',
       'direct_renderer.h',
       'draw_properties.h',

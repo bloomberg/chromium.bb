@@ -13,7 +13,6 @@
 #include "cc/geometry_binding.h"
 #include "cc/layer_quad.h"
 #include "cc/math_util.h"
-#include "cc/platform_color.h"
 #include "cc/priority_calculator.h"
 #include "cc/proxy.h"
 #include "cc/render_pass.h"
@@ -123,8 +122,8 @@ bool GLRenderer::initialize()
 
     m_capabilities.usingEglImage = extensions.count("GL_OES_EGL_image_external");
 
-    GLC(m_context, m_context->getIntegerv(GL_MAX_TEXTURE_SIZE, &m_capabilities.maxTextureSize));
-    m_capabilities.bestTextureFormat = PlatformColor::bestTextureFormat(m_context, extensions.count("GL_EXT_texture_format_BGRA8888"));
+    m_capabilities.maxTextureSize = m_resourceProvider->maxTextureSize();
+    m_capabilities.bestTextureFormat = m_resourceProvider->bestTextureFormat();
 
     // The updater can access textures while the GLRenderer is using them.
     m_capabilities.allowPartialTextureUpdates = true;

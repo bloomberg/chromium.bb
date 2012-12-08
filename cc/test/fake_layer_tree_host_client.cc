@@ -9,10 +9,16 @@ namespace cc {
 scoped_ptr<OutputSurface> FakeLayerImplTreeHostClient::createOutputSurface()
 {
     if (m_useSoftwareRendering) {
+        if (m_useDelegatingRenderer)
+            return FakeOutputSurface::CreateDelegatingSoftware(make_scoped_ptr(new FakeSoftwareOutputDevice).PassAs<SoftwareOutputDevice>()).PassAs<OutputSurface>();
+
         return FakeOutputSurface::CreateSoftware(make_scoped_ptr(new FakeSoftwareOutputDevice).PassAs<SoftwareOutputDevice>()).PassAs<OutputSurface>();
     }
 
     WebKit::WebGraphicsContext3D::Attributes attrs;
+    if (m_useDelegatingRenderer)
+        return FakeOutputSurface::CreateDelegating3d(WebKit::CompositorFakeWebGraphicsContext3D::create(attrs).PassAs<WebKit::WebGraphicsContext3D>()).PassAs<OutputSurface>();
+
     return FakeOutputSurface::Create3d(WebKit::CompositorFakeWebGraphicsContext3D::create(attrs).PassAs<WebKit::WebGraphicsContext3D>()).PassAs<OutputSurface>();
 }
 

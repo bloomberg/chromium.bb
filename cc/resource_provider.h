@@ -53,6 +53,7 @@ public:
     WebKit::WebGraphicsContext3D* graphicsContext3D();
     TextureCopier* textureCopier() const { return m_textureCopier.get(); }
     int maxTextureSize() const { return m_maxTextureSize; }
+    GLenum bestTextureFormat() const { return m_bestTextureFormat; }
     unsigned numResources() const { return m_resources.size(); }
 
     // Checks whether a resource is in use by a consumer.
@@ -289,6 +290,7 @@ private:
     scoped_ptr<TextureUploader> m_textureUploader;
     scoped_ptr<AcceleratedTextureCopier> m_textureCopier;
     int m_maxTextureSize;
+    GLenum m_bestTextureFormat;
 
     base::ThreadChecker m_threadChecker;
 
