@@ -400,6 +400,17 @@ IPC_MESSAGE_CONTROL3(GpuHostMsg_UpdateVSyncParameters,
                      base::TimeTicks /* timebase */,
                      base::TimeDelta /* interval */)
 
+IPC_MESSAGE_CONTROL1(GpuHostMsg_DidCreateOffscreenContext,
+                     GURL /* url */)
+
+IPC_MESSAGE_CONTROL3(GpuHostMsg_DidLoseContext,
+                     bool /* offscreen */,
+                     gpu::error::ContextLostReason /* reason */,
+                     GURL /* url */)
+
+IPC_MESSAGE_CONTROL1(GpuHostMsg_DidDestroyOffscreenContext,
+                     GURL /* url */)
+
 //------------------------------------------------------------------------------
 // GPU Channel Messages
 // These are messages from a renderer process to the GPU process.

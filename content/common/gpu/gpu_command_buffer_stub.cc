@@ -301,6 +301,12 @@ bool GpuCommandBufferStub::MakeCurrent() {
 }
 
 void GpuCommandBufferStub::Destroy() {
+  if (handle_.is_null() && !active_url_.is_empty()) {
+    GpuChannelManager* gpu_channel_manager = channel_->gpu_channel_manager();
+    gpu_channel_manager->Send(new GpuHostMsg_DidDestroyOffscreenContext(
+        active_url_));
+  }
+
   GetMemoryManager()->RemoveClient(this);
 
   while (!sync_points_.empty())
@@ -507,6 +513,12 @@ void GpuCommandBufferStub::OnInitialize(
 
   GpuCommandBufferMsg_Initialize::WriteReplyParams(reply_message, true);
   Send(reply_message);
+
+  if (handle_.is_null() && !active_url_.is_empty()) {
+    GpuChannelManager* gpu_channel_manager = channel_->gpu_channel_manager();
+    gpu_channel_manager->Send(new GpuHostMsg_DidCreateOffscreenContext(
+        active_url_));
+  }
 }
 
 void GpuCommandBufferStub::OnSetGetBuffer(
@@ -583,6 +595,13 @@ void GpuCommandBufferStub::OnParseError() {
       route_id_, state.context_lost_reason);
   msg->set_unblock(true);
   Send(msg);
+
+  // Tell the browser about this context loss as well, so it can
+  // determine whether client APIs like WebGL need to be immediately
+  // blocked from automatically running.
+  GpuChannelManager* gpu_channel_manager = channel_->gpu_channel_manager();
+  gpu_channel_manager->Send(new GpuHostMsg_DidLoseContext(
+      handle_.is_null(), state.context_lost_reason, active_url_));
 }
 
 void GpuCommandBufferStub::OnGetStateFast(IPC::Message* reply_message) {

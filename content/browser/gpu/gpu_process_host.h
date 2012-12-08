@@ -7,6 +7,7 @@
 
 #include <map>
 #include <queue>
+#include <set>
 #include <string>
 
 #include "base/callback.h"
@@ -18,6 +19,8 @@
 #include "content/public/browser/browser_child_process_host_delegate.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/gpu_info.h"
+#include "googleurl/src/gurl.h"
+#include "gpu/command_buffer/common/constants.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sender.h"
 #include "ui/gfx/native_widget_types.h"
@@ -141,7 +144,11 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   void OnCommandBufferCreated(const int32 route_id);
   void OnDestroyCommandBuffer(int32 surface_id);
   void OnImageCreated(const gfx::Size size);
-
+  void OnDidCreateOffscreenContext(const GURL& url);
+  void OnDidLoseContext(bool offscreen,
+                        gpu::error::ContextLostReason reason,
+                        const GURL& url);
+  void OnDidDestroyOffscreenContext(const GURL& url);
 #if defined(OS_MACOSX)
   void OnAcceleratedSurfaceBuffersSwapped(
       const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params);
@@ -169,6 +176,8 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
                                 int32 route_id);
   void CreateImageError(const CreateImageCallback& callback,
                         const gfx::Size size);
+
+  void BlockLiveOffscreenContexts();
 
   // The serial number of the GpuProcessHost / GpuProcessHostUIShim pair.
   int host_id_;
@@ -225,6 +234,13 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   static bool hardware_gpu_enabled_;
 
   scoped_ptr<BrowserChildProcessHostImpl> process_;
+
+  // Track the URLs of the pages which have live offscreen contexts,
+  // assumed to be associated with untrusted content such as WebGL.
+  // For best robustness, when any context lost notification is
+  // received, assume all of these URLs are guilty, and block
+  // automatic execution of 3D content from those domains.
+  std::multiset<GURL> urls_with_live_offscreen_contexts_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuProcessHost);
 };

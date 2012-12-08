@@ -429,6 +429,11 @@ GpuProcessHost::~GpuProcessHost() {
   if (g_gpu_process_hosts[kind_] == this)
     g_gpu_process_hosts[kind_] = NULL;
 
+  // If there are any remaining offscreen contexts at the point the
+  // GPU process exits, assume something went wrong, and block their
+  // URLs from accessing client 3D APIs without prompting.
+  BlockLiveOffscreenContexts();
+
   BrowserThread::PostTask(BrowserThread::UI,
                           FROM_HERE,
                           base::Bind(&GpuProcessHostUIShim::Destroy, host_id_));
@@ -507,6 +512,11 @@ bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(GpuHostMsg_CommandBufferCreated, OnCommandBufferCreated)
     IPC_MESSAGE_HANDLER(GpuHostMsg_DestroyCommandBuffer, OnDestroyCommandBuffer)
     IPC_MESSAGE_HANDLER(GpuHostMsg_ImageCreated, OnImageCreated)
+    IPC_MESSAGE_HANDLER(GpuHostMsg_DidCreateOffscreenContext,
+                        OnDidCreateOffscreenContext)
+    IPC_MESSAGE_HANDLER(GpuHostMsg_DidLoseContext, OnDidLoseContext)
+    IPC_MESSAGE_HANDLER(GpuHostMsg_DidDestroyOffscreenContext,
+                        OnDidDestroyOffscreenContext)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
                         OnAcceleratedSurfaceBuffersSwapped)
@@ -684,6 +694,54 @@ void GpuProcessHost::OnImageCreated(const gfx::Size size) {
     create_image_requests_.pop();
     callback.Run(size);
   }
+}
+
+void GpuProcessHost::OnDidCreateOffscreenContext(
+    const GURL& url) {
+  urls_with_live_offscreen_contexts_.insert(url);
+}
+
+void GpuProcessHost::OnDidLoseContext(bool offscreen,
+                                      gpu::error::ContextLostReason reason,
+                                      const GURL& url) {
+  // TODO(kbr): would be nice to see the "offscreen" flag too.
+  TRACE_EVENT2("gpu", "GpuProcessHost::OnDidLoseContext",
+               "reason", reason,
+               "url",
+               url.possibly_invalid_spec());
+
+  if (!offscreen || url.is_empty()) {
+    // Assume that the loss of the compositor's or accelerated canvas'
+    // context is a serious event and blame the loss on all live
+    // offscreen contexts. This more robustly handles situations where
+    // the GPU process may not actually detect the context loss in the
+    // offscreen context.
+    BlockLiveOffscreenContexts();
+    return;
+  }
+
+  // Initialization only needed because compiler is stupid.
+  GpuDataManagerImpl::DomainGuilt guilt =
+      GpuDataManagerImpl::DOMAIN_GUILT_UNKNOWN;
+
+  switch (reason) {
+    case gpu::error::kGuilty:
+      guilt = GpuDataManagerImpl::DOMAIN_GUILT_KNOWN;
+      break;
+    case gpu::error::kUnknown:
+      guilt = GpuDataManagerImpl::DOMAIN_GUILT_UNKNOWN;
+      break;
+    case gpu::error::kInnocent:
+      return;
+  }
+
+  GpuDataManagerImpl::GetInstance()->BlockDomainFrom3DAPIs(
+      url, guilt);
+}
+
+void GpuProcessHost::OnDidDestroyOffscreenContext(
+    const GURL& url) {
+  urls_with_live_offscreen_contexts_.erase(url);
 }
 
 #if defined(OS_MACOSX)
@@ -986,6 +1044,15 @@ void GpuProcessHost::CreateCommandBufferError(
 void GpuProcessHost::CreateImageError(
     const CreateImageCallback& callback, const gfx::Size size) {
   callback.Run(size);
+}
+
+void GpuProcessHost::BlockLiveOffscreenContexts() {
+  for (std::multiset<GURL>::iterator iter =
+           urls_with_live_offscreen_contexts_.begin();
+       iter != urls_with_live_offscreen_contexts_.end(); ++iter) {
+    GpuDataManagerImpl::GetInstance()->BlockDomainFrom3DAPIs(
+        *iter, GpuDataManagerImpl::DOMAIN_GUILT_UNKNOWN);
+  }
 }
 
 }  // namespace content

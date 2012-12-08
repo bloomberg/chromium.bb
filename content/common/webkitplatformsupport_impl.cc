@@ -9,6 +9,7 @@
 #include "content/common/webkitplatformsupport_impl.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "googleurl/src/gurl.h"
 #include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
 
 namespace content {
@@ -68,10 +69,9 @@ WebKitPlatformSupportImpl::createOffscreenGraphicsContext3D(
     return webkit::gpu::WebGraphicsContext3DInProcessImpl::CreateForWebView(
             attributes, false);
   } else {
-    // Intentionally blank URL provided for offscreen contexts -- blank URLs are
-    // ignored in the GPU process for crash reporting.
     return WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
-        GetGpuChannelHostFactory(), attributes, GURL());
+        GetGpuChannelHostFactory(), attributes,
+        GURL(attributes.topDocumentURL));
   }
 }
 
