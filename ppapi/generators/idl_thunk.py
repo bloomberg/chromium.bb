@@ -35,12 +35,19 @@ class ThunkBodyMetadata(object):
   """Metadata about thunk body. Used for selecting which headers to emit."""
   def __init__(self):
     self._apis = set()
+    self._includes = set()
 
   def AddApi(self, api):
     self._apis.add(api)
 
   def Apis(self):
     return self._apis
+
+  def AddInclude(self, include):
+    self._includes.add(include)
+
+  def Includes(self):
+    return self._includes
 
 
 def _GetBaseFileName(filenode):
@@ -192,6 +199,7 @@ def _MakeNormalMemberBody(filenode, node, member, rtype, args, meta):
 
   if is_callback_func:
     call_args = args[:-1] + [('', 'enter.callback()', '', '')]
+    meta.AddInclude('ppapi/c/pp_completion_callback.h')
   else:
     call_args = args
 
@@ -318,6 +326,8 @@ class TGen(GeneratorByFile):
     includes.append(_GetHeaderFileName(filenode))
     for api in meta.Apis():
       includes.append('ppapi/thunk/%s.h' % api.lower())
+    for i in meta.Includes():
+      includes.append(i)
     for include in sorted(includes):
       out.Write('#include "%s"\n' % include)
     out.Write('\n')

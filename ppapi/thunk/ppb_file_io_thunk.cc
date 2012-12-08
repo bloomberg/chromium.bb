@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_file_io.idl modified Thu Dec  6 12:40:23 2012.
+// From ppb_file_io.idl modified Fri Dec  7 08:38:35 2012.
 
+#include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_file_io.h"
 #include "ppapi/shared_impl/tracked_callback.h"

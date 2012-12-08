@@ -7,6 +7,8 @@
  * This file defines the API to create a file system associated with a file.
  */
 
+[generate_thunk]
+
 label Chrome {
   M14 = 1.0
 };
@@ -74,6 +76,7 @@ interface PPB_FileSystem {
    * is not a valid file system. It is valid to call this function even before
    * Open() completes.
    */
+  [on_failure=PP_FILESYSTEMTYPE_INVALID]
   PP_FileSystemType GetType([in] PP_Resource file_system);
 };
 
