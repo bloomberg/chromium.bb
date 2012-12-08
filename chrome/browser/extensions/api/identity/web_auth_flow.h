@@ -10,6 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -66,7 +67,8 @@ class WebAuthFlow : public content::NotificationObserver,
               const std::string& extension_id,
               const GURL& provider_url,
               Mode mode,
-              const gfx::Rect& initial_bounds);
+              const gfx::Rect& initial_bounds,
+              chrome::HostDesktopType host_desktop_type);
   virtual ~WebAuthFlow();
 
   // Starts the flow.
@@ -110,6 +112,7 @@ class WebAuthFlow : public content::NotificationObserver,
   GURL provider_url_;
   Mode mode_;
   gfx::Rect initial_bounds_;
+  chrome::HostDesktopType host_desktop_type_;
   bool popup_shown_;
   // List of valid redirect URL prefixes.
   std::vector<std::string> valid_prefixes_;

@@ -52,12 +52,14 @@ WebAuthFlow::WebAuthFlow(
     const std::string& extension_id,
     const GURL& provider_url,
     Mode mode,
-    const gfx::Rect& initial_bounds)
+    const gfx::Rect& initial_bounds,
+    chrome::HostDesktopType host_desktop_type)
     : delegate_(delegate),
       profile_(profile),
       provider_url_(provider_url),
       mode_(mode),
       initial_bounds_(initial_bounds),
+      host_desktop_type_(host_desktop_type),
       popup_shown_(false),
       contents_(NULL) {
   InitValidRedirectUrlPrefixes(extension_id);
@@ -109,7 +111,8 @@ WebContents* WebAuthFlow::CreateWebContents() {
 }
 
 void WebAuthFlow::ShowAuthFlowPopup() {
-  Browser::CreateParams browser_params(Browser::TYPE_POPUP, profile_);
+  Browser::CreateParams browser_params(Browser::TYPE_POPUP, profile_,
+                                       host_desktop_type_);
   browser_params.initial_bounds = initial_bounds_;
   Browser* browser = new Browser(browser_params);
   chrome::NavigateParams params(browser, contents_);

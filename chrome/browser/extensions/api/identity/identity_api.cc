@@ -228,8 +228,13 @@ bool IdentityLaunchWebAuthFlowFunction::RunImpl() {
     initial_bounds.set_y(*details.top);
 
   AddRef();  // Balanced in OnAuthFlowSuccess/Failure.
+
+  Browser* current_browser = this->GetCurrentBrowser();
+  chrome::HostDesktopType host_desktop_type = current_browser ?
+      current_browser->host_desktop_type() : chrome::GetActiveDesktop();
   auth_flow_.reset(new WebAuthFlow(
-      this, profile(), GetExtension()->id(), auth_url, mode, initial_bounds));
+      this, profile(), GetExtension()->id(), auth_url, mode, initial_bounds,
+      host_desktop_type));
   auth_flow_->Start();
   return true;
 }

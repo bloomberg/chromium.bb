@@ -4,6 +4,7 @@
 
 #include "base/message_loop.h"
 #include "chrome/browser/extensions/api/identity/web_auth_flow.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
@@ -43,7 +44,8 @@ class MockWebAuthFlow : public WebAuthFlow {
            extension_id,
            provider_url,
            interactive ? WebAuthFlow::INTERACTIVE : WebAuthFlow::SILENT,
-           gfx::Rect()),
+           gfx::Rect(),
+           chrome::GetActiveDesktop()),
        profile_(profile),
        web_contents_(NULL),
        window_shown_(false) { }
