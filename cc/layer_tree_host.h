@@ -117,7 +117,7 @@ struct CC_EXPORT RendererCapabilities {
     bool usingSetVisibility;
     bool usingSwapCompleteCallback;
     bool usingGpuMemoryManager;
-    bool usingDiscardFramebuffer;
+    bool usingDiscardBackbuffer;
     bool usingEglImage;
     bool allowPartialTextureUpdates;
     int maxTextureSize;

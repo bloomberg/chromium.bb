@@ -68,7 +68,7 @@ protected:
 
     static void debugGLCall(WebKit::WebGraphicsContext3D*, const char* command, const char* file, int line);
 
-    bool isFramebufferDiscarded() const { return m_isFramebufferDiscarded; }
+    bool isBackbufferDiscarded() const { return m_isBackbufferDiscarded; }
     bool initialize();
 
     const gfx::QuadF& sharedGeometryQuad() const { return m_sharedGeometryQuad; }
@@ -130,8 +130,8 @@ private:
 
     // WebKit::WebGraphicsContext3D::WebGraphicsMemoryAllocationChangedCallbackCHROMIUM implementation.
     virtual void onMemoryAllocationChanged(WebKit::WebGraphicsMemoryAllocation) OVERRIDE;
-    void discardFramebuffer();
-    void ensureFramebuffer();
+    void discardBackbuffer();
+    void ensureBackbuffer();
     void enforceMemoryPolicy();
 
     // WebGraphicsContext3D::WebGraphicsContextLostCallback implementation.
@@ -222,8 +222,8 @@ private:
     gfx::Rect m_swapBufferRect;
     gfx::Rect m_scissorRect;
     bool m_isViewportChanged;
-    bool m_isFramebufferDiscarded;
-    bool m_discardFramebufferWhenNotVisible;
+    bool m_isBackbufferDiscarded;
+    bool m_discardBackbufferWhenNotVisible;
     bool m_isUsingBindUniform;
     bool m_visible;
     bool m_isScissorEnabled;

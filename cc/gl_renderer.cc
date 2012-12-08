@@ -74,8 +74,8 @@ GLRenderer::GLRenderer(RendererClient* client, ResourceProvider* resourceProvide
     , m_sharedGeometryQuad(gfx::RectF(-0.5f, -0.5f, 1.0f, 1.0f))
     , m_context(resourceProvider->graphicsContext3D())
     , m_isViewportChanged(false)
-    , m_isFramebufferDiscarded(false)
-    , m_discardFramebufferWhenNotVisible(false)
+    , m_isBackbufferDiscarded(false)
+    , m_discardBackbufferWhenNotVisible(false)
     , m_isUsingBindUniform(false)
     , m_visible(true)
     , m_isScissorEnabled(false)
@@ -119,7 +119,7 @@ bool GLRenderer::initialize()
     if (m_capabilities.usingGpuMemoryManager)
         m_context->setMemoryAllocationChangedCallbackCHROMIUM(this);
 
-    m_capabilities.usingDiscardFramebuffer = extensions.count("GL_CHROMIUM_discard_framebuffer");
+    m_capabilities.usingDiscardBackbuffer = extensions.count("GL_CHROMIUM_discard_backbuffer");
 
     m_capabilities.usingEglImage = extensions.count("GL_OES_EGL_image_external");
 
@@ -188,7 +188,7 @@ void GLRenderer::sendManagedMemoryStats(size_t bytesVisible, size_t bytesVisible
     stats.bytesVisible = bytesVisible;
     stats.bytesVisibleAndNearby = bytesVisibleAndNearby;
     stats.bytesAllocated = bytesAllocated;
-    stats.backbufferRequested = !m_isFramebufferDiscarded;
+    stats.backbufferRequested = !m_isBackbufferDiscarded;
     m_context->sendManagedMemoryStatsCHROMIUM(&stats);
 }
 
@@ -218,8 +218,8 @@ void GLRenderer::clearFramebuffer(DrawingFrame& frame)
 
 void GLRenderer::beginDrawingFrame(DrawingFrame& frame)
 {
-    // FIXME: Remove this once framebuffer is automatically recreated on first use
-    ensureFramebuffer();
+    // FIXME: Remove this once backbuffer is automatically recreated on first use
+    ensureBackbuffer();
 
     if (viewportSize().IsEmpty())
         return;
@@ -1242,7 +1242,7 @@ void GLRenderer::finish()
 bool GLRenderer::swapBuffers()
 {
     DCHECK(m_visible);
-    DCHECK(!m_isFramebufferDiscarded);
+    DCHECK(!m_isBackbufferDiscarded);
 
     TRACE_EVENT0("cc", "GLRenderer::swapBuffers");
     // We're done! Time to swapbuffers!
@@ -1286,11 +1286,11 @@ void GLRenderer::onMemoryAllocationChanged(WebGraphicsMemoryAllocation allocatio
             m_client->setManagedMemoryPolicy(policy);
     }
 
-    bool oldDiscardFramebufferWhenNotVisible = m_discardFramebufferWhenNotVisible;
-    m_discardFramebufferWhenNotVisible = !allocation.suggestHaveBackbuffer;
+    bool oldDiscardBackbufferWhenNotVisible = m_discardBackbufferWhenNotVisible;
+    m_discardBackbufferWhenNotVisible = !allocation.suggestHaveBackbuffer;
     enforceMemoryPolicy();
     if (allocation.enforceButDoNotKeepAsPolicy)
-        m_discardFramebufferWhenNotVisible = oldDiscardFramebufferWhenNotVisible;
+        m_discardBackbufferWhenNotVisible = oldDiscardBackbufferWhenNotVisible;
 }
 
 int GLRenderer::priorityCutoffValue(WebKit::WebGraphicsMemoryAllocation::PriorityCutoff priorityCutoff)
@@ -1314,38 +1314,37 @@ void GLRenderer::enforceMemoryPolicy()
     if (!m_visible) {
         TRACE_EVENT0("cc", "GLRenderer::enforceMemoryPolicy dropping resources");
         releaseRenderPassTextures();
-        if (m_discardFramebufferWhenNotVisible)
-            discardFramebuffer();
+        if (m_discardBackbufferWhenNotVisible)
+            discardBackbuffer();
         GLC(m_context, m_context->flush());
     }
 }
 
-void GLRenderer::discardFramebuffer()
+void GLRenderer::discardBackbuffer()
 {
-    if (m_isFramebufferDiscarded)
+    if (m_isBackbufferDiscarded)
         return;
 
-    if (!m_capabilities.usingDiscardFramebuffer)
+    if (!m_capabilities.usingDiscardBackbuffer)
         return;
 
-    // FIXME: Update attachments argument to appropriate values once they are no longer ignored.
-    m_context->discardFramebufferEXT(GL_TEXTURE_2D, 0, 0);
-    m_isFramebufferDiscarded = true;
+    m_context->discardBackbufferCHROMIUM();
+    m_isBackbufferDiscarded = true;
 
     // Damage tracker needs a full reset every time framebuffer is discarded.
     m_client->setFullRootLayerDamage();
 }
 
-void GLRenderer::ensureFramebuffer()
+void GLRenderer::ensureBackbuffer()
 {
-    if (!m_isFramebufferDiscarded)
+    if (!m_isBackbufferDiscarded)
         return;
 
-    if (!m_capabilities.usingDiscardFramebuffer)
+    if (!m_capabilities.usingDiscardBackbuffer)
         return;
 
-    m_context->ensureFramebufferCHROMIUM();
-    m_isFramebufferDiscarded = false;
+    m_context->ensureBackbufferCHROMIUM();
+    m_isBackbufferDiscarded = false;
 }
 
 void GLRenderer::onContextLost()

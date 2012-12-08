@@ -40,7 +40,7 @@ public:
     virtual WebString getString(WebKit::WGC3Denum name)
     {
         if (name == GL_EXTENSIONS)
-            return WebString("GL_CHROMIUM_set_visibility GL_CHROMIUM_gpu_memory_manager GL_CHROMIUM_discard_framebuffer");
+            return WebString("GL_CHROMIUM_set_visibility GL_CHROMIUM_gpu_memory_manager GL_CHROMIUM_discard_backbuffer");
         return WebString();
     }
 
@@ -112,7 +112,7 @@ public:
 
     // Changing visibility to public.
     using GLRenderer::initialize;
-    using GLRenderer::isFramebufferDiscarded;
+    using GLRenderer::isBackbufferDiscarded;
     using GLRenderer::drawQuad;
     using GLRenderer::beginDrawingFrame;
     using GLRenderer::finishDrawingQuadList;
@@ -150,20 +150,20 @@ protected:
     FakeRendererGL m_renderer;
 };
 
-// Test GLRenderer discardFramebuffer functionality:
+// Test GLRenderer discardBackbuffer functionality:
 // Suggest recreating framebuffer when one already exists.
 // Expected: it does nothing.
 TEST_F(GLRendererTest, SuggestBackbufferYesWhenItAlreadyExistsShouldDoNothing)
 {
     context()->setMemoryAllocation(m_suggestHaveBackbufferYes);
     EXPECT_EQ(0, m_mockClient.setFullRootLayerDamageCount());
-    EXPECT_FALSE(m_renderer.isFramebufferDiscarded());
+    EXPECT_FALSE(m_renderer.isBackbufferDiscarded());
 
     swapBuffers();
     EXPECT_EQ(1, context()->frameCount());
 }
 
-// Test GLRenderer discardFramebuffer functionality:
+// Test GLRenderer discardBackbuffer functionality:
 // Suggest discarding framebuffer when one exists and the renderer is not visible.
 // Expected: it is discarded and damage tracker is reset.
 TEST_F(GLRendererTest, SuggestBackbufferNoShouldDiscardBackbufferAndDamageRootLayerWhileNotVisible)
@@ -171,10 +171,10 @@ TEST_F(GLRendererTest, SuggestBackbufferNoShouldDiscardBackbufferAndDamageRootLa
     m_renderer.setVisible(false);
     context()->setMemoryAllocation(m_suggestHaveBackbufferNo);
     EXPECT_EQ(1, m_mockClient.setFullRootLayerDamageCount());
-    EXPECT_TRUE(m_renderer.isFramebufferDiscarded());
+    EXPECT_TRUE(m_renderer.isBackbufferDiscarded());
 }
 
-// Test GLRenderer discardFramebuffer functionality:
+// Test GLRenderer discardBackbuffer functionality:
 // Suggest discarding framebuffer when one exists and the renderer is visible.
 // Expected: the allocation is ignored.
 TEST_F(GLRendererTest, SuggestBackbufferNoDoNothingWhenVisible)
@@ -182,11 +182,11 @@ TEST_F(GLRendererTest, SuggestBackbufferNoDoNothingWhenVisible)
     m_renderer.setVisible(true);
     context()->setMemoryAllocation(m_suggestHaveBackbufferNo);
     EXPECT_EQ(0, m_mockClient.setFullRootLayerDamageCount());
-    EXPECT_FALSE(m_renderer.isFramebufferDiscarded());
+    EXPECT_FALSE(m_renderer.isBackbufferDiscarded());
 }
 
 
-// Test GLRenderer discardFramebuffer functionality:
+// Test GLRenderer discardBackbuffer functionality:
 // Suggest discarding framebuffer when one does not exist.
 // Expected: it does nothing.
 TEST_F(GLRendererTest, SuggestBackbufferNoWhenItDoesntExistShouldDoNothing)
@@ -194,26 +194,26 @@ TEST_F(GLRendererTest, SuggestBackbufferNoWhenItDoesntExistShouldDoNothing)
     m_renderer.setVisible(false);
     context()->setMemoryAllocation(m_suggestHaveBackbufferNo);
     EXPECT_EQ(1, m_mockClient.setFullRootLayerDamageCount());
-    EXPECT_TRUE(m_renderer.isFramebufferDiscarded());
+    EXPECT_TRUE(m_renderer.isBackbufferDiscarded());
 
     context()->setMemoryAllocation(m_suggestHaveBackbufferNo);
     EXPECT_EQ(1, m_mockClient.setFullRootLayerDamageCount());
-    EXPECT_TRUE(m_renderer.isFramebufferDiscarded());
+    EXPECT_TRUE(m_renderer.isBackbufferDiscarded());
 }
 
-// Test GLRenderer discardFramebuffer functionality:
+// Test GLRenderer discardBackbuffer functionality:
 // Begin drawing a frame while a framebuffer is discarded.
 // Expected: will recreate framebuffer.
 TEST_F(GLRendererTest, DiscardedBackbufferIsRecreatedForScopeDuration)
 {
     m_renderer.setVisible(false);
     context()->setMemoryAllocation(m_suggestHaveBackbufferNo);
-    EXPECT_TRUE(m_renderer.isFramebufferDiscarded());
+    EXPECT_TRUE(m_renderer.isBackbufferDiscarded());
     EXPECT_EQ(1, m_mockClient.setFullRootLayerDamageCount());
 
     m_renderer.setVisible(true);
     m_renderer.drawFrame(m_mockClient.renderPassesInDrawOrder(), m_mockClient.renderPasses());
-    EXPECT_FALSE(m_renderer.isFramebufferDiscarded());
+    EXPECT_FALSE(m_renderer.isBackbufferDiscarded());
 
     swapBuffers();
     EXPECT_EQ(1, context()->frameCount());
@@ -223,15 +223,15 @@ TEST_F(GLRendererTest, FramebufferDiscardedAfterReadbackWhenNotVisible)
 {
     m_renderer.setVisible(false);
     context()->setMemoryAllocation(m_suggestHaveBackbufferNo);
-    EXPECT_TRUE(m_renderer.isFramebufferDiscarded());
+    EXPECT_TRUE(m_renderer.isBackbufferDiscarded());
     EXPECT_EQ(1, m_mockClient.setFullRootLayerDamageCount());
 
     char pixels[4];
     m_renderer.drawFrame(m_mockClient.renderPassesInDrawOrder(), m_mockClient.renderPasses());
-    EXPECT_FALSE(m_renderer.isFramebufferDiscarded());
+    EXPECT_FALSE(m_renderer.isBackbufferDiscarded());
 
     m_renderer.getFramebufferPixels(pixels, gfx::Rect(0, 0, 1, 1));
-    EXPECT_TRUE(m_renderer.isFramebufferDiscarded());
+    EXPECT_TRUE(m_renderer.isBackbufferDiscarded());
     EXPECT_EQ(2, m_mockClient.setFullRootLayerDamageCount());
 }
 
@@ -457,7 +457,7 @@ public:
     virtual WebString getString(WebKit::WGC3Denum name)
     {
         if (name == GL_EXTENSIONS)
-            return WebString("GL_CHROMIUM_set_visibility GL_CHROMIUM_gpu_memory_manager GL_CHROMIUM_discard_framebuffer");
+            return WebString("GL_CHROMIUM_set_visibility GL_CHROMIUM_gpu_memory_manager GL_CHROMIUM_discard_backbuffer");
         return WebString();
     }
 

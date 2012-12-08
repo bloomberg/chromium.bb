@@ -745,7 +745,10 @@ void WebGraphicsContext3DInProcessImpl::discardFramebufferEXT(
     WGC3Denum target, WGC3Dsizei numAttachments, const WGC3Denum* attachments) {
 }
 
-void WebGraphicsContext3DInProcessImpl::ensureFramebufferCHROMIUM() {
+void WebGraphicsContext3DInProcessImpl::discardBackbufferCHROMIUM() {
+}
+
+void WebGraphicsContext3DInProcessImpl::ensureBackbufferCHROMIUM() {
 }
 
 void WebGraphicsContext3DInProcessImpl::copyTextureToParentTextureCHROMIUM(
