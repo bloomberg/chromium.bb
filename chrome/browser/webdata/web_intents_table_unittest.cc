@@ -81,7 +81,8 @@ TEST_F(WebIntentsTableTest, ActionIntents) {
   std::vector<WebIntentServiceData> services;
 
   // By default, no intent services exist.
-  EXPECT_TRUE(IntentsTable()->GetWebIntentServices(test_action, &services));
+  EXPECT_TRUE(IntentsTable()->GetWebIntentServicesForAction(test_action,
+                                                            &services));
   EXPECT_EQ(0U, services.size());
 
   // Now adding one.
@@ -90,7 +91,8 @@ TEST_F(WebIntentsTableTest, ActionIntents) {
   EXPECT_TRUE(IntentsTable()->SetWebIntentService(service));
 
   // Make sure that service can now be fetched
-  EXPECT_TRUE(IntentsTable()->GetWebIntentServices(test_action, &services));
+  EXPECT_TRUE(IntentsTable()->GetWebIntentServicesForAction(test_action,
+                                                            &services));
   ASSERT_EQ(1U, services.size());
   EXPECT_EQ(service, services[0]);
 
@@ -99,7 +101,8 @@ TEST_F(WebIntentsTableTest, ActionIntents) {
 
   // Should now be gone.
   services.clear();
-  EXPECT_TRUE(IntentsTable()->GetWebIntentServices(test_action, &services));
+  EXPECT_TRUE(IntentsTable()->GetWebIntentServicesForAction(test_action,
+                                                            &services));
   EXPECT_EQ(0U, services.size());
 }
 
@@ -164,7 +167,8 @@ TEST_F(WebIntentsTableTest, SetMultipleIntents) {
   EXPECT_TRUE(IntentsTable()->SetWebIntentService(service));
 
   // Recover stored intent services from DB.
-  EXPECT_TRUE(IntentsTable()->GetWebIntentServices(test_action, &services));
+  EXPECT_TRUE(IntentsTable()->GetWebIntentServicesForAction(test_action,
+                                                            &services));
   ASSERT_EQ(2U, services.size());
 
   // WebIntentsTable does not guarantee order, so ensure order here.

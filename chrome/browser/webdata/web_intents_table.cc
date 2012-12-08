@@ -155,7 +155,7 @@ bool WebIntentsTable::MigrateToVersion46AddSchemeColumn() {
   return true;
 }
 
-bool WebIntentsTable::GetWebIntentServices(
+bool WebIntentsTable::GetWebIntentServicesForAction(
     const string16& action,
     std::vector<WebIntentServiceData>* services) {
   DCHECK(services);

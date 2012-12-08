@@ -655,7 +655,7 @@ TEST_F(WebDataServiceAutofillTest, AutofillRemoveModifiedBetween) {
 TEST_F(WebDataServiceTest, WebIntents) {
   WebIntentsConsumer consumer;
 
-  wds_->GetWebIntentServices(ASCIIToUTF16("share"), &consumer);
+  wds_->GetWebIntentServicesForAction(ASCIIToUTF16("share"), &consumer);
   WaitUntilCalled();
   EXPECT_EQ(0U, consumer.services_.size());
 
@@ -672,7 +672,7 @@ TEST_F(WebDataServiceTest, WebIntents) {
   service.type = ASCIIToUTF16("video/*");
   wds_->AddWebIntentService(service);
 
-  wds_->GetWebIntentServices(ASCIIToUTF16("share"), &consumer);
+  wds_->GetWebIntentServicesForAction(ASCIIToUTF16("share"), &consumer);
   WaitUntilCalled();
   ASSERT_EQ(2U, consumer.services_.size());
 
@@ -689,7 +689,7 @@ TEST_F(WebDataServiceTest, WebIntents) {
   service.type = ASCIIToUTF16("image/*");
   wds_->RemoveWebIntentService(service);
 
-  wds_->GetWebIntentServices(ASCIIToUTF16("share"), &consumer);
+  wds_->GetWebIntentServicesForAction(ASCIIToUTF16("share"), &consumer);
   WaitUntilCalled();
   ASSERT_EQ(1U, consumer.services_.size());
 

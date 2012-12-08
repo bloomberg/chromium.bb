@@ -278,7 +278,7 @@ void WebDataService::RemoveWebIntentService(
                                this, request));
 }
 
-WebDataService::Handle WebDataService::GetWebIntentServices(
+WebDataService::Handle WebDataService::GetWebIntentServicesForAction(
     const string16& action,
     WebDataServiceConsumer* consumer) {
   DCHECK(consumer);
@@ -921,10 +921,10 @@ void WebDataService::GetWebIntentServicesImpl(
   InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled(NULL)) {
     std::vector<WebIntentServiceData> result;
-    db_->GetWebIntentsTable()->GetWebIntentServices(request->arg(), &result);
-    request->SetResult(
-        new WDResult<std::vector<WebIntentServiceData> >(
-            WEB_INTENTS_RESULT, result));
+    db_->GetWebIntentsTable()->GetWebIntentServicesForAction(request->arg(),
+                                                             &result);
+    request->SetResult(new WDResult<std::vector<WebIntentServiceData> >(
+        WEB_INTENTS_RESULT, result));
   }
   request->RequestComplete();
 }

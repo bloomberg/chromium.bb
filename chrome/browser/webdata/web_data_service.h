@@ -299,8 +299,8 @@ class WebDataService
 
   // Get all web intent services registered for the specified |action|.
   // |consumer| must not be NULL.
-  Handle GetWebIntentServices(const string16& action,
-                              WebDataServiceConsumer* consumer);
+  Handle GetWebIntentServicesForAction(const string16& action,
+                                       WebDataServiceConsumer* consumer);
 
   // Get all web intent services registered using the specified |service_url|.
   // |consumer| must not be NULL.

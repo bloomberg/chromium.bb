@@ -354,7 +354,7 @@ void WebIntentsRegistry::GetIntentServices(
       callback);
 
   QueryAdapter* query = new QueryAdapter(this, handler);
-  query->query_handle_ = wds_->GetWebIntentServices(action, query);
+  query->query_handle_ = wds_->GetWebIntentServicesForAction(action, query);
 }
 
 void WebIntentsRegistry::GetAllIntentServices(
