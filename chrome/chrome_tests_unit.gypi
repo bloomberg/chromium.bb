@@ -533,6 +533,7 @@
         'browser/chromeos/cros/onc_network_parser_unittest.cc',
         'browser/chromeos/customization_document_unittest.cc',
         'browser/chromeos/dbus/cros_dbus_service_unittest.cc',
+        'browser/chromeos/dbus/printer_service_provider_unittest.cc',
         'browser/chromeos/dbus/proxy_resolution_service_provider_unittest.cc',
         'browser/chromeos/dbus/service_provider_test_helper.cc',
         'browser/chromeos/dbus/service_provider_test_helper.h',
