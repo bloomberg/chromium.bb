@@ -15,7 +15,6 @@ class Browser;
 class BrowserTabstripTabContentsCreator;
 class InstantLoader;
 class Profile;
-class TabStripModel;
 class TestTabStripModelDelegate;
 
 namespace prerender {
@@ -51,7 +50,6 @@ class TabContents : public content::WebContentsObserver {
     friend class prerender::PrerenderContents;
     // See crbug.com/153587
     friend class TabAndroid;
-    friend class TabStripModel;
     friend class TestTabStripModelDelegate;
 
     static TabContents* CreateTabContents(content::WebContents* contents);
