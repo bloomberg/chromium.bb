@@ -12,6 +12,7 @@
     '../third_party/icu/icu.gyp:icuuc',
     '../ui/ui.gyp:ui',
     '../webkit/support/webkit_support.gyp:user_agent',
+    'content_components_tracing.gyp:tracing',
   ],
   'include_dirs': [
     '..',
@@ -140,8 +141,6 @@
     'common/child_process_sandbox_support_impl_shm_linux.cc',
     'common/child_thread.cc',
     'common/child_thread.h',
-    'common/child_trace_message_filter.cc',
-    'common/child_trace_message_filter.h',
     'common/clipboard_messages.cc',
     'common/clipboard_messages.h',
     'common/content_constants_internal.cc',

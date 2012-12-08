@@ -5,7 +5,7 @@
 #ifndef GPU_COMMAND_BUFFER_COMMON_TRACE_EVENT_H_
 #define GPU_COMMAND_BUFFER_COMMON_TRACE_EVENT_H_
 
-#if !defined(__native_client__)
+#if defined(NACL_PPAPI_IPC_PROXY) || !defined(__native_client__)
 
 #include "base/debug/trace_event.h"
 

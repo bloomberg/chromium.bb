@@ -72,25 +72,6 @@ IPC_MESSAGE_CONTROL1(ChildProcessMsg_SetIPCLoggingEnabled,
                      bool /* on or off */)
 #endif
 
-// Sent to all child processes to enable trace event recording.
-IPC_MESSAGE_CONTROL2(ChildProcessMsg_BeginTracing,
-                     std::vector<std::string> /* included_categories */,
-                     std::vector<std::string> /* excluded_categories */)
-
-// Sent to all child processes to disable trace event recording.
-IPC_MESSAGE_CONTROL0(ChildProcessMsg_EndTracing)
-
-// Sent to all child processes to get trace buffer fullness.
-IPC_MESSAGE_CONTROL0(ChildProcessMsg_GetTraceBufferPercentFull)
-
-// Sent to all child processes to set watch event.
-IPC_MESSAGE_CONTROL2(ChildProcessMsg_SetWatchEvent,
-                     std::string /* category_name */,
-                     std::string /* event_name */)
-
-// Sent to all child processes to clear watch event.
-IPC_MESSAGE_CONTROL0(ChildProcessMsg_CancelWatchEvent)
-
 // Tell the child process to enable or disable the profiler status.
 IPC_MESSAGE_CONTROL1(ChildProcessMsg_SetProfilerStatus,
                      tracked_objects::ThreadData::Status /* profiler status */)
@@ -116,25 +97,6 @@ IPC_MESSAGE_CONTROL0(ChildProcessMsg_GetTcmallocStats)
 // Messages sent from the child process to the browser.
 
 IPC_MESSAGE_CONTROL0(ChildProcessHostMsg_ShutdownRequest)
-
-// Notify the browser that this child process supports tracing.
-IPC_MESSAGE_CONTROL0(ChildProcessHostMsg_ChildSupportsTracing)
-
-// Reply from child processes acking ChildProcessMsg_TraceChangeStatus(false).
-IPC_MESSAGE_CONTROL1(ChildProcessHostMsg_EndTracingAck,
-                     std::vector<std::string> /* known_categories */)
-
-// Sent if the trace buffer becomes full.
-IPC_MESSAGE_CONTROL1(ChildProcessHostMsg_TraceNotification,
-                     int /* base::debug::TraceLog::Notification */)
-
-// Child processes send trace data back in JSON chunks.
-IPC_MESSAGE_CONTROL1(ChildProcessHostMsg_TraceDataCollected,
-                     std::string /*json trace data*/)
-
-// Reply to ChildProcessMsg_GetTraceBufferPercentFull.
-IPC_MESSAGE_CONTROL1(ChildProcessHostMsg_TraceBufferPercentFullReply,
-                     float /*trace buffer percent full*/)
 
 // Send back profiler data (ThreadData in tracked_objects).
 IPC_MESSAGE_CONTROL2(ChildProcessHostMsg_ChildProfilerData,

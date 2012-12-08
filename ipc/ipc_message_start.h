@@ -71,6 +71,7 @@ enum IPCMessageStart {
   MetroViewerMsgStart,
   CCMsgStart,
   MediaPlayerMsgStart,
+  TracingMsgStart,
   LastIPCMsgStart      // Must come last.
 };
 

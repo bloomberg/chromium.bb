@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
 
 #include "content/browser/renderer_host/pepper/pepper_message_filter.h"
+#include "content/browser/trace_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "ipc/ipc_message_macros.h"
@@ -37,6 +38,7 @@ BrowserPpapiHost* BrowserPpapiHost::CreateExternalPluginProcess(
                               render_process_id,
                               render_view_id));
   channel->AddFilter(browser_ppapi_host->message_filter());
+  channel->AddFilter(new TraceMessageFilter());
 
   return browser_ppapi_host;
 }

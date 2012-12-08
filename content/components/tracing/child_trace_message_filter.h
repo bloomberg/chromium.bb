@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_CHILD_TRACE_MESSAGE_FILTER_H_
-#define CONTENT_COMMON_CHILD_TRACE_MESSAGE_FILTER_H_
+#ifndef CONTENT_COMPONENTS_TRACING_CHILD_TRACE_MESSAGE_FILTER_H_
+#define CONTENT_COMPONENTS_TRACING_CHILD_TRACE_MESSAGE_FILTER_H_
 
-#include <string>
-
-#include "base/debug/trace_event.h"
-#include "base/process.h"
 #include "ipc/ipc_channel_proxy.h"
+
+namespace base {
+class MessageLoopProxy;
+}
 
 namespace content {
 
 // This class sends and receives trace messages on child processes.
 class ChildTraceMessageFilter : public IPC::ChannelProxy::MessageFilter {
  public:
-  ChildTraceMessageFilter();
+  explicit ChildTraceMessageFilter(base::MessageLoopProxy* ipc_message_loop);
 
   // IPC::ChannelProxy::MessageFilter implementation.
   virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE;
@@ -29,7 +29,8 @@ class ChildTraceMessageFilter : public IPC::ChannelProxy::MessageFilter {
  private:
   // Message handlers.
   void OnBeginTracing(const std::vector<std::string>& included_categories,
-                      const std::vector<std::string>& excluded_categories);
+                      const std::vector<std::string>& excluded_categories,
+                      base::TimeTicks browser_time);
   void OnEndTracing();
   void OnGetTraceBufferPercentFull();
   void OnSetWatchEvent(const std::string& category_name,
@@ -42,10 +43,11 @@ class ChildTraceMessageFilter : public IPC::ChannelProxy::MessageFilter {
   void OnTraceNotification(int notification);
 
   IPC::Channel* channel_;
+  base::MessageLoopProxy* ipc_message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildTraceMessageFilter);
 };
 
-}  // namespace content
+} // namespace content
 
-#endif  // CONTENT_COMMON_CHILD_TRACE_MESSAGE_FILTER_H_
+#endif  // CONTENT_COMPONENTS_TRACING_CHILD_TRACE_MESSAGE_FILTER_H_

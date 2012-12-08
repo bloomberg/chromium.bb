@@ -14,6 +14,7 @@
 #include "base/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
+#include "content/components/tracing/child_trace_message_filter.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_message.h"
@@ -104,6 +105,8 @@ PpapiDispatcher::PpapiDispatcher(scoped_refptr<base::MessageLoopProxy> io_loop)
   IPC::ChannelHandle channel_handle(
       "NaCl IPC", base::FileDescriptor(NACL_IPC_FD, false));
   InitWithChannel(this, channel_handle, false);  // Channel is server.
+  channel()->AddFilter(
+      new content::ChildTraceMessageFilter(message_loop_));
 }
 
 base::MessageLoopProxy* PpapiDispatcher::GetIPCMessageLoop() {

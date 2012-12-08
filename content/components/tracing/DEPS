@@ -1,0 +1,9 @@
+include_rules = [
+  "+base",
+  "+ipc",
+
+  # This component will be compiled into NaCl, so it shouldn't depend on
+  # anything else in content.
+  "-content",
+  "+content/components/tracing",
+]
