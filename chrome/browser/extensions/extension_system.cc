@@ -215,9 +215,19 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
       extension_service_->InitEventRouters();
     }
   }
+
+  extension_warning_service_.reset(new ExtensionWarningService(profile_));
+  extension_warning_badge_service_.reset(
+      new ExtensionWarningBadgeService(profile_));
+  extension_warning_service_->AddObserver(
+      extension_warning_badge_service_.get());
 }
 
 void ExtensionSystemImpl::Shared::Shutdown() {
+  if (extension_warning_service_.get()) {
+    extension_warning_service_->RemoveObserver(
+        extension_warning_badge_service_.get());
+  }
   if (extension_service_.get())
     extension_service_->Shutdown();
 }
@@ -262,6 +272,10 @@ EventRouter* ExtensionSystemImpl::Shared::event_router() {
   return event_router_.get();
 }
 
+ExtensionWarningService* ExtensionSystemImpl::Shared::warning_service() {
+  return extension_warning_service_.get();
+}
+
 Blacklist* ExtensionSystemImpl::Shared::blacklist() {
   return blacklist_.get();
 }
@@ -289,10 +303,6 @@ ExtensionSystemImpl::~ExtensionSystemImpl() {
 
 void ExtensionSystemImpl::Shutdown() {
   extension_process_manager_.reset();
-  if (extension_warning_service_.get()) {  // NULL for OTRProfile.
-    extension_warning_service_->RemoveObserver(
-        extension_warning_badge_service_.get());
-  }
 }
 
 void ExtensionSystemImpl::InitForRegularProfile(bool extensions_enabled) {
@@ -321,12 +331,6 @@ void ExtensionSystemImpl::InitForRegularProfile(bool extensions_enabled) {
 
   rules_registry_service_.reset(new RulesRegistryService(profile_));
   rules_registry_service_->RegisterDefaultRulesRegistries();
-
-  extension_warning_service_.reset(new ExtensionWarningService(profile_));
-  extension_warning_badge_service_.reset(
-      new ExtensionWarningBadgeService(profile_));
-  extension_warning_service_->AddObserver(
-      extension_warning_badge_service_.get());
 
   shared_->Init(extensions_enabled);
 }
@@ -411,7 +415,7 @@ ExtensionSystemImpl::usb_device_resource_manager() {
 }
 
 ExtensionWarningService* ExtensionSystemImpl::warning_service() {
-  return extension_warning_service_.get();
+  return shared_->warning_service();
 }
 
 Blacklist* ExtensionSystemImpl::blacklist() {

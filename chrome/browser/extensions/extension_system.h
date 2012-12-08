@@ -218,6 +218,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
     LazyBackgroundTaskQueue* lazy_background_task_queue();
     MessageService* message_service();
     EventRouter* event_router();
+    ExtensionWarningService* warning_service();
 
    private:
     Profile* profile_;
@@ -244,6 +245,8 @@ class ExtensionSystemImpl : public ExtensionSystem {
     scoped_ptr<ManagementPolicy> management_policy_;
     // extension_info_map_ needs to outlive extension_process_manager_.
     scoped_refptr<ExtensionInfoMap> extension_info_map_;
+    scoped_ptr<ExtensionWarningService> extension_warning_service_;
+    scoped_ptr<ExtensionWarningBadgeService> extension_warning_badge_service_;
   };
 
   Profile* profile_;
@@ -264,8 +267,6 @@ class ExtensionSystemImpl : public ExtensionSystem {
                UsbDeviceResource> > usb_device_resource_manager_;
   scoped_ptr<RulesRegistryService> rules_registry_service_;
 
-  scoped_ptr<ExtensionWarningService> extension_warning_service_;
-  scoped_ptr<ExtensionWarningBadgeService> extension_warning_badge_service_;
   DISALLOW_COPY_AND_ASSIGN(ExtensionSystemImpl);
 };
 
