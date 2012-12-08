@@ -353,6 +353,8 @@
         'browser/extensions/api/web_navigation/web_navigation_api.h',
         'browser/extensions/api/web_navigation/web_navigation_api_constants.cc',
         'browser/extensions/api/web_navigation/web_navigation_api_constants.h',
+        'browser/extensions/api/web_navigation/web_navigation_api_factory.cc',
+        'browser/extensions/api/web_navigation/web_navigation_api_factory.h',
         'browser/extensions/api/web_navigation/web_navigation_api_helpers.cc',
         'browser/extensions/api/web_navigation/web_navigation_api_helpers.h',
         'browser/extensions/api/web_request/form_data_parser.cc',

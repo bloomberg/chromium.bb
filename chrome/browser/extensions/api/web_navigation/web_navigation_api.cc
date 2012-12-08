@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api_constants.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api_helpers.h"
 #include "chrome/browser/extensions/event_router.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/retargeting_details.h"
@@ -734,6 +735,41 @@ bool GetAllFramesFunction::RunImpl() {
   }
   results_ = GetAllFrames::Results::Create(result_list);
   return true;
+}
+
+WebNavigationAPI::WebNavigationAPI(Profile* profile)
+    : profile_(profile) {
+  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+      this, keys::kOnBeforeNavigate);
+  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+      this, keys::kOnCommitted);
+  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+      this, keys::kOnCompleted);
+  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+      this, keys::kOnCreatedNavigationTarget);
+  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+      this, keys::kOnDOMContentLoaded);
+  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+      this, keys::kOnHistoryStateUpdated);
+  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+      this, keys::kOnErrorOccurred);
+  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+      this, keys::kOnReferenceFragmentUpdated);
+  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+      this, keys::kOnTabReplaced);
+}
+
+WebNavigationAPI::~WebNavigationAPI() {
+}
+
+void WebNavigationAPI::Shutdown() {
+  ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
+}
+
+void WebNavigationAPI::OnListenerAdded(
+    const extensions::EventListenerInfo& details) {
+  web_navigation_event_router_.reset(new WebNavigationEventRouter(profile_));
+  ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
 }
 
 }  // namespace extensions

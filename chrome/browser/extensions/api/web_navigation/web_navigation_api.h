@@ -13,8 +13,10 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/api/web_navigation/frame_navigation_state.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/notification_observer.h"
@@ -209,6 +211,26 @@ class GetAllFramesFunction : public SyncExtensionFunction {
   virtual ~GetAllFramesFunction() {}
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("webNavigation.getAllFrames")
+};
+
+class WebNavigationAPI : public ProfileKeyedService,
+                   public extensions::EventRouter::Observer {
+ public:
+  explicit WebNavigationAPI(Profile* profile);
+  virtual ~WebNavigationAPI();
+
+  // ProfileKeyedService implementation.
+  virtual void Shutdown() OVERRIDE;
+
+  // EventRouter::Observer implementation.
+  virtual void OnListenerAdded(const extensions::EventListenerInfo& details)
+      OVERRIDE;
+
+ private:
+  Profile* profile_;
+
+  // Created lazily upon OnListenerAdded.
+  scoped_ptr<WebNavigationEventRouter> web_navigation_event_router_;
 };
 
 }  // namespace extensions

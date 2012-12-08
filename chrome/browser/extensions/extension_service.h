@@ -76,7 +76,6 @@ class PendingExtensionManager;
 class PreferenceEventRouter;
 class PushMessagingEventRouter;
 class SettingsFrontend;
-class WebNavigationEventRouter;
 class WindowEventRouter;
 }
 
@@ -975,8 +974,6 @@ class ExtensionService
 
   scoped_ptr<extensions::PushMessagingEventRouter>
       push_messaging_event_router_;
-
-  scoped_ptr<extensions::WebNavigationEventRouter> web_navigation_event_router_;
 
   scoped_ptr<extensions::FontSettingsEventRouter> font_settings_event_router_;
 

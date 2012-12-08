@@ -40,7 +40,6 @@
 #include "chrome/browser/extensions/api/preference/preference_api.h"
 #include "chrome/browser/extensions/api/push_messaging/push_messaging_api.h"
 #include "chrome/browser/extensions/api/runtime/runtime_api.h"
-#include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/extensions/app_notification_manager.h"
 #include "chrome/browser/extensions/app_sync_data.h"
 #include "chrome/browser/extensions/browser_event_router.h"
@@ -544,8 +543,6 @@ void ExtensionService::InitEventRouters() {
       new extensions::PreferenceEventRouter(profile_));
   bookmark_event_router_.reset(new BookmarkExtensionEventRouter(
       BookmarkModelFactory::GetForProfile(profile_)));
-  web_navigation_event_router_.reset(
-      new extensions::WebNavigationEventRouter(profile_));
   font_settings_event_router_.reset(
       new extensions::FontSettingsEventRouter(profile_));
   push_messaging_event_router_.reset(

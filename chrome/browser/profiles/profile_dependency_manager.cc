@@ -23,6 +23,7 @@
 #include "chrome/browser/extensions/api/management/management_api_factory.h"
 #include "chrome/browser/extensions/api/processes/processes_api_factory.h"
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry_factory.h"
+#include "chrome/browser/extensions/api/web_navigation/web_navigation_api_factory.h"
 #include "chrome/browser/extensions/app_restore_service_factory.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
@@ -232,6 +233,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   extensions::ProcessesAPIFactory::GetInstance();
   extensions::SuggestedLinksRegistryFactory::GetInstance();
   extensions::TabCaptureRegistryFactory::GetInstance();
+  extensions::WebNavigationAPIFactory::GetInstance();
   ExtensionManagementAPIFactory::GetInstance();
 #endif
   FaviconServiceFactory::GetInstance();
