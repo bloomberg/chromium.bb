@@ -980,7 +980,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_ActivatePanelOrTabbedWindow) {
 }
 
 // TODO(jianli): To be enabled for other platforms.
-#if defined(OS_WIN)
+// http://crbug.com/164976 for USE_AURA.
+#if defined(OS_WIN) && !defined(USE_AURA)
 #define MAYBE_ActivateDeactivateBasic ActivateDeactivateBasic
 #else
 #define MAYBE_ActivateDeactivateBasic DISABLED_ActivateDeactivateBasic
@@ -1002,7 +1003,6 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_ActivateDeactivateBasic) {
   // This test does not reactivate the panel because the panel might not be
   // reactivated programmatically once it is deactivated.
 }
-
 
 // http://crbug.com/143247
 #if !defined(OS_WIN)
