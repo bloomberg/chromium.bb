@@ -136,35 +136,40 @@ class DriveFileSyncServiceTest : public testing::Test {
   }
 
  protected:
-  DriveFileSyncService::SyncOperationType ResolveSyncOperationType(
+  DriveFileSyncService::LocalSyncOperationType ResolveLocalSyncOperationType(
       const fileapi::FileChange& local_change,
       const fileapi::FileSystemURL& url) {
-    return sync_service_->ResolveSyncOperationType(local_change, url);
+    return sync_service_->ResolveLocalSyncOperationType(local_change, url);
   }
 
-  bool IsSyncOperationUploadNewFile(
-      DriveFileSyncService::SyncOperationType type) {
-    return type == DriveFileSyncService::SYNC_OPERATION_UPLOAD_NEW_FILE;
+  bool IsLocalSyncOperationAdd(
+      DriveFileSyncService::LocalSyncOperationType type) {
+    return type == DriveFileSyncService::LOCAL_SYNC_OPERATION_ADD;
   }
 
-  bool IsSyncOperationUploadExistingFile(
-      DriveFileSyncService::SyncOperationType type) {
-    return type == DriveFileSyncService::SYNC_OPERATION_UPLOAD_EXISTING_FILE;
+  bool IsLocalSyncOperationUpdate(
+      DriveFileSyncService::LocalSyncOperationType type) {
+    return type == DriveFileSyncService::LOCAL_SYNC_OPERATION_UPDATE;
   }
 
-  bool IsSyncOperationDeleteFile(
-      DriveFileSyncService::SyncOperationType type) {
-    return type == DriveFileSyncService::SYNC_OPERATION_DELETE_FILE;
+  bool IsLocalSyncOperationDelete(
+      DriveFileSyncService::LocalSyncOperationType type) {
+    return type == DriveFileSyncService::LOCAL_SYNC_OPERATION_DELETE;
   }
 
-  bool IsSyncOperationIgnore(
-      DriveFileSyncService::SyncOperationType type) {
-    return type == DriveFileSyncService::SYNC_OPERATION_IGNORE;
+  bool IsLocalSyncOperationNone(
+      DriveFileSyncService::LocalSyncOperationType type) {
+    return type == DriveFileSyncService::LOCAL_SYNC_OPERATION_NONE;
   }
 
-  bool IsSyncOperationConflict(
-      DriveFileSyncService::SyncOperationType type) {
-    return type == DriveFileSyncService::SYNC_OPERATION_CONFLICT;
+  bool IsLocalSyncOperationConflict(
+      DriveFileSyncService::LocalSyncOperationType type) {
+    return type == DriveFileSyncService::LOCAL_SYNC_OPERATION_CONFLICT;
+  }
+
+  bool IsLocalSyncOperationResolveToRemote(
+      DriveFileSyncService::LocalSyncOperationType type) {
+    return type == DriveFileSyncService::LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE;
   }
 
   void AddRemoteChange(int64 changestamp,
@@ -642,7 +647,7 @@ TEST_F(DriveFileSyncServiceTest, UnregisterOrigin) {
   EXPECT_TRUE(pending_changes().empty());
 }
 
-TEST_F(DriveFileSyncServiceTest, ResolveSyncOperationType) {
+TEST_F(DriveFileSyncServiceTest, ResolveLocalSyncOperationType) {
   const fileapi::FileSystemURL url = fileapi::CreateSyncableFileSystemURL(
       GURL("chrome-extension://example/"),
       DriveFileSyncService::kServiceName,
@@ -676,10 +681,10 @@ TEST_F(DriveFileSyncServiceTest, ResolveSyncOperationType) {
       fileapi::SYNC_FILE_TYPE_FILE);
 
   // There is no pending remote change and no metadata in DriveMetadataStore.
-  EXPECT_TRUE(IsSyncOperationUploadNewFile(
-      ResolveSyncOperationType(local_add_or_update_change, url)));
-  EXPECT_TRUE(IsSyncOperationIgnore(
-      ResolveSyncOperationType(local_delete_change, url)));
+  EXPECT_TRUE(IsLocalSyncOperationAdd(
+      ResolveLocalSyncOperationType(local_add_or_update_change, url)));
+  EXPECT_TRUE(IsLocalSyncOperationNone(
+      ResolveLocalSyncOperationType(local_delete_change, url)));
 
   // Add metadata for the file identified by |url|.
   DriveMetadata metadata;
@@ -693,34 +698,42 @@ TEST_F(DriveFileSyncServiceTest, ResolveSyncOperationType) {
   message_loop()->RunUntilIdle();
 
   // There is no pending remote change, but metadata in DriveMetadataStore.
-  EXPECT_TRUE(IsSyncOperationUploadExistingFile(
-      ResolveSyncOperationType(local_add_or_update_change, url)));
-  EXPECT_TRUE(IsSyncOperationDeleteFile(
-      ResolveSyncOperationType(local_delete_change, url)));
+  EXPECT_TRUE(IsLocalSyncOperationUpdate(
+      ResolveLocalSyncOperationType(local_add_or_update_change, url)));
+  EXPECT_TRUE(IsLocalSyncOperationDelete(
+      ResolveLocalSyncOperationType(local_delete_change, url)));
 
-  // Add an ADD_OR_UPDATE change for the file identified by |url| to the
-  // pending change queue.
+  // Add an ADD_OR_UPDATE change for the file to the pending change queue.
   AddRemoteChange(
       kChangestamp, kResourceId, url,
       fileapi::FileChange(fileapi::FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                           fileapi::SYNC_FILE_TYPE_FILE));
 
-  EXPECT_TRUE(IsSyncOperationConflict(
-      ResolveSyncOperationType(local_add_or_update_change, url)));
-  EXPECT_TRUE(IsSyncOperationIgnore(
-      ResolveSyncOperationType(local_delete_change, url)));
+  EXPECT_TRUE(IsLocalSyncOperationConflict(
+      ResolveLocalSyncOperationType(local_add_or_update_change, url)));
+  EXPECT_TRUE(IsLocalSyncOperationNone(
+      ResolveLocalSyncOperationType(local_delete_change, url)));
 
-  // Add a DELETE change for the file identified by |url| to the pending
-  // change queue.
+  // Add a DELETE change for the file to the pending change queue.
   AddRemoteChange(
       kChangestamp, kResourceId, url,
       fileapi::FileChange(fileapi::FileChange::FILE_CHANGE_DELETE,
                           fileapi::SYNC_FILE_TYPE_FILE));
 
-  EXPECT_TRUE(IsSyncOperationUploadNewFile(
-      ResolveSyncOperationType(local_add_or_update_change, url)));
-  EXPECT_TRUE(IsSyncOperationIgnore(
-      ResolveSyncOperationType(local_delete_change, url)));
+  EXPECT_TRUE(IsLocalSyncOperationAdd(
+      ResolveLocalSyncOperationType(local_add_or_update_change, url)));
+  EXPECT_TRUE(IsLocalSyncOperationNone(
+      ResolveLocalSyncOperationType(local_delete_change, url)));
+
+  // Mark the file as conflicted so that the conflict resolution will occur.
+  metadata.set_conflicted(true);
+  metadata_store()->UpdateEntry(url, metadata,
+                                base::Bind(&DidEntryOperation));
+
+  EXPECT_TRUE(IsLocalSyncOperationNone(
+      ResolveLocalSyncOperationType(local_add_or_update_change, url)));
+  EXPECT_TRUE(IsLocalSyncOperationResolveToRemote(
+      ResolveLocalSyncOperationType(local_delete_change, url)));
 }
 
 TEST_F(DriveFileSyncServiceTest, RemoteChange_NoChange) {

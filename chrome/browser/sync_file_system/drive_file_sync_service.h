@@ -158,13 +158,14 @@ class DriveFileSyncService
     TASK_TYPE_DATABASE,
   };
 
-  enum SyncOperationType {
-    SYNC_OPERATION_UPLOAD_NEW_FILE,
-    SYNC_OPERATION_UPLOAD_EXISTING_FILE,
-    SYNC_OPERATION_DELETE_FILE,
-    SYNC_OPERATION_IGNORE,
-    SYNC_OPERATION_CONFLICT,
-    SYNC_OPERATION_FAILED,
+  enum LocalSyncOperationType {
+    LOCAL_SYNC_OPERATION_ADD,
+    LOCAL_SYNC_OPERATION_UPDATE,
+    LOCAL_SYNC_OPERATION_DELETE,
+    LOCAL_SYNC_OPERATION_NONE,
+    LOCAL_SYNC_OPERATION_CONFLICT,
+    LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE,
+    LOCAL_SYNC_OPERATION_FAIL,
   };
 
   DriveFileSyncService(const FilePath& base_dir,
@@ -187,7 +188,7 @@ class DriveFileSyncService
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::DocumentEntry> entry);
 
-  SyncOperationType ResolveSyncOperationType(
+  LocalSyncOperationType ResolveLocalSyncOperationType(
       const fileapi::FileChange& local_file_change,
       const fileapi::FileSystemURL& url);
 
@@ -196,6 +197,10 @@ class DriveFileSyncService
                            const google_apis::GDataErrorCode error,
                            const fileapi::SyncStatusCallback& callback,
                            fileapi::SyncStatusCode status);
+
+  void FinalizeLocalSync(scoped_ptr<TaskToken> token,
+                         const fileapi::SyncStatusCallback& callback,
+                         fileapi::SyncStatusCode status);
 
   void DidUploadNewFile(scoped_ptr<TaskToken> token,
                         const fileapi::FileSystemURL& url,
@@ -257,12 +262,14 @@ class DriveFileSyncService
       fileapi::SyncStatusCode status,
       const fileapi::SyncFileMetadata& metadata,
       const fileapi::FileChangeList& changes);
-  void ResolveConflictToLocalChange(
-      RemoteChangeProcessor* processor,
-      const fileapi::FileSystemURL& url,
-      const fileapi::SyncStatusCallback& callback);
   void DidResolveConflictToLocalChange(
       scoped_ptr<ProcessRemoteChangeParam> param,
+      fileapi::SyncStatusCode status);
+  void DidResolveConflictToRemoteChange(
+      scoped_ptr<TaskToken> token,
+      const fileapi::FileSystemURL& url,
+      const std::string& resource_id,
+      const fileapi::SyncStatusCallback& callback,
       fileapi::SyncStatusCode status);
   void DownloadForRemoteSync(
       scoped_ptr<ProcessRemoteChangeParam> param);

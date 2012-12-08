@@ -455,15 +455,15 @@ void DriveFileSyncService::ApplyLocalChange(
     return;
   }
 
-  DriveFileSyncService::SyncOperationType operation =
-      ResolveSyncOperationType(local_file_change, url);
+  DriveFileSyncService::LocalSyncOperationType operation =
+      ResolveLocalSyncOperationType(local_file_change, url);
 
   DVLOG(1) << "ApplyLocalChange for " << url.DebugString()
            << " local_change:" << local_file_change.DebugString()
            << " ==> operation:" << operation;
 
   switch (operation) {
-    case SYNC_OPERATION_UPLOAD_NEW_FILE: {
+    case LOCAL_SYNC_OPERATION_ADD: {
       sync_client_->UploadNewFile(
           metadata_store_->GetResourceIdForOrigin(url.origin()),
           local_file_path,
@@ -473,7 +473,7 @@ void DriveFileSyncService::ApplyLocalChange(
                      AsWeakPtr(), base::Passed(&token), url, callback));
       return;
     }
-    case SYNC_OPERATION_UPLOAD_EXISTING_FILE: {
+    case LOCAL_SYNC_OPERATION_UPDATE: {
       DriveMetadata metadata;
       const fileapi::SyncStatusCode status =
           metadata_store_->ReadEntry(url, &metadata);
@@ -487,7 +487,7 @@ void DriveFileSyncService::ApplyLocalChange(
                      AsWeakPtr(), base::Passed(&token), url, callback));
       return;
     }
-    case SYNC_OPERATION_DELETE_FILE: {
+    case LOCAL_SYNC_OPERATION_DELETE: {
       DriveMetadata metadata;
       const fileapi::SyncStatusCode status =
           metadata_store_->ReadEntry(url, &metadata);
@@ -500,14 +500,11 @@ void DriveFileSyncService::ApplyLocalChange(
                      base::Passed(&token), url, callback));
       return;
     }
-    case SYNC_OPERATION_IGNORE: {
-      // We cannot call DidApplyLocalChange here since we should not cancel
-      // the remote pending change.
-      NotifyTaskDone(fileapi::SYNC_STATUS_OK, token.Pass());
-      callback.Run(fileapi::SYNC_STATUS_OK);
+    case LOCAL_SYNC_OPERATION_NONE: {
+      FinalizeLocalSync(token.Pass(), callback, fileapi::SYNC_STATUS_OK);
       return;
     }
-    case SYNC_OPERATION_CONFLICT: {
+    case LOCAL_SYNC_OPERATION_CONFLICT: {
       // Mark the file as conflicted.
       DriveMetadata metadata;
       const fileapi::SyncStatusCode status =
@@ -530,15 +527,28 @@ void DriveFileSyncService::ApplyLocalChange(
                      google_apis::HTTP_CONFLICT, callback));
       return;
     }
-    case SYNC_OPERATION_FAILED: {
-      DidApplyLocalChange(token.Pass(), url, google_apis::GDATA_OTHER_ERROR,
-                          callback, fileapi::SYNC_STATUS_FAILED);
+    case LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE: {
+      // Mark the file as to-be-fetched.
+      DriveMetadata metadata;
+      const fileapi::SyncStatusCode status =
+          metadata_store_->ReadEntry(url, &metadata);
+      DCHECK_EQ(fileapi::SYNC_STATUS_OK, status);
+      metadata.set_conflicted(false);
+      metadata.set_to_be_fetched(true);
+      metadata_store_->UpdateEntry(
+          url, metadata,
+          base::Bind(&DriveFileSyncService::DidResolveConflictToRemoteChange,
+                     AsWeakPtr(), base::Passed(&token), url,
+                     metadata.resource_id(), callback));
+      return;
+    }
+    case LOCAL_SYNC_OPERATION_FAIL: {
+      FinalizeLocalSync(token.Pass(), callback, fileapi::SYNC_STATUS_FAILED);
       return;
     }
   }
   NOTREACHED();
-  DidApplyLocalChange(token.Pass(), url, google_apis::GDATA_OTHER_ERROR,
-                      callback, fileapi::SYNC_STATUS_FAILED);
+  FinalizeLocalSync(token.Pass(), callback, fileapi::SYNC_STATUS_FAILED);
 }
 
 void DriveFileSyncService::OnAuthenticated() {
@@ -903,12 +913,23 @@ void DriveFileSyncService::DidGetRemoteFileMetadata(
                                          entry->updated_time()));
 }
 
-DriveFileSyncService::SyncOperationType
-DriveFileSyncService::ResolveSyncOperationType(
+DriveFileSyncService::LocalSyncOperationType
+DriveFileSyncService::ResolveLocalSyncOperationType(
     const fileapi::FileChange& local_file_change,
     const fileapi::FileSystemURL& url) {
-  // TODO(nhiroki): check metadata.conflicted() flag before checking the pending
-  // change queue (http://crbug.com/162798).
+  DriveMetadata metadata;
+  const bool has_metadata =
+      (metadata_store_->ReadEntry(url, &metadata) == fileapi::SYNC_STATUS_OK);
+
+  if (has_metadata && metadata.conflicted()) {
+    // The file has been marked as conflicted.
+    if (local_file_change.IsAddOrUpdate())
+      return LOCAL_SYNC_OPERATION_NONE;
+    else if (local_file_change.IsDelete())
+      return LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE;
+    NOTREACHED();
+    return LOCAL_SYNC_OPERATION_FAIL;
+  }
 
   RemoteChange remote_change;
   const bool has_remote_change = GetPendingChangeForFileSystemURL(
@@ -921,44 +942,37 @@ DriveFileSyncService::ResolveSyncOperationType(
 
     // (RemoteChange) + (LocalChange) -> (Operation Type)
     // AddOrUpdate    + AddOrUpdate   -> CONFLICT
-    // AddOrUpdate    + Delete        -> IGNORE
-    // Delete         + AddOrUpdate   -> UPLOAD_NEW_FILE
-    // Delete         + Delete        -> IGNORE
+    // AddOrUpdate    + Delete        -> NONE
+    // Delete         + AddOrUpdate   -> ADD
+    // Delete         + Delete        -> NONE
 
-    if (remote_file_change.IsAddOrUpdate() &&
-        local_file_change.IsAddOrUpdate())
-      return SYNC_OPERATION_CONFLICT;
-    else if (remote_file_change.IsDelete() &&
-              local_file_change.IsAddOrUpdate())
-      return SYNC_OPERATION_UPLOAD_NEW_FILE;
+    if (remote_file_change.IsAddOrUpdate() && local_file_change.IsAddOrUpdate())
+      return LOCAL_SYNC_OPERATION_CONFLICT;
+    else if (remote_file_change.IsDelete() && local_file_change.IsAddOrUpdate())
+      return LOCAL_SYNC_OPERATION_ADD;
     else if (local_file_change.IsDelete())
-      return SYNC_OPERATION_IGNORE;
+      return LOCAL_SYNC_OPERATION_NONE;
     NOTREACHED();
-    return SYNC_OPERATION_FAILED;
+    return LOCAL_SYNC_OPERATION_FAIL;
   }
 
-  DriveMetadata metadata;
-  if (metadata_store_->ReadEntry(url, &metadata) == fileapi::SYNC_STATUS_OK) {
+  if (has_metadata) {
     // The remote file identified by |url| exists on Drive.
-    switch (local_file_change.change()) {
-      case fileapi::FileChange::FILE_CHANGE_ADD_OR_UPDATE:
-        return SYNC_OPERATION_UPLOAD_EXISTING_FILE;
-      case fileapi::FileChange::FILE_CHANGE_DELETE:
-        return SYNC_OPERATION_DELETE_FILE;
-    }
+    if (local_file_change.IsAddOrUpdate())
+      return LOCAL_SYNC_OPERATION_UPDATE;
+    else if (local_file_change.IsDelete())
+      return LOCAL_SYNC_OPERATION_DELETE;
     NOTREACHED();
-    return SYNC_OPERATION_FAILED;
+    return LOCAL_SYNC_OPERATION_FAIL;
   }
 
   // The remote file identified by |url| does not exist on Drive.
-  switch (local_file_change.change()) {
-    case fileapi::FileChange::FILE_CHANGE_ADD_OR_UPDATE:
-      return SYNC_OPERATION_UPLOAD_NEW_FILE;
-    case fileapi::FileChange::FILE_CHANGE_DELETE:
-      return SYNC_OPERATION_IGNORE;
-  }
+  if (local_file_change.IsAddOrUpdate())
+    return LOCAL_SYNC_OPERATION_ADD;
+  else if (local_file_change.IsDelete())
+    return LOCAL_SYNC_OPERATION_NONE;
   NOTREACHED();
-  return SYNC_OPERATION_FAILED;
+  return LOCAL_SYNC_OPERATION_FAIL;
 }
 
 void DriveFileSyncService::DidApplyLocalChange(
@@ -969,10 +983,15 @@ void DriveFileSyncService::DidApplyLocalChange(
     fileapi::SyncStatusCode status) {
   if (status == fileapi::SYNC_STATUS_OK) {
     RemoveRemoteChange(url);
-    NotifyTaskDone(GDataErrorCodeToSyncStatusCodeWrapper(error), token.Pass());
-    callback.Run(GDataErrorCodeToSyncStatusCodeWrapper(error));
-    return;
+    status = GDataErrorCodeToSyncStatusCodeWrapper(error);
   }
+  FinalizeLocalSync(token.Pass(), callback, status);
+}
+
+void DriveFileSyncService::FinalizeLocalSync(
+    scoped_ptr<TaskToken> token,
+    const fileapi::SyncStatusCallback& callback,
+    fileapi::SyncStatusCode status) {
   NotifyTaskDone(status, token.Pass());
   callback.Run(status);
 }
@@ -1165,8 +1184,10 @@ void DriveFileSyncService::DidPrepareForProcessRemoteChange(
     param->clear_local_changes = false;
 
     RemoteChangeProcessor* processor = param->processor;
-    ResolveConflictToLocalChange(
-        processor, url,
+    processor->RecordFakeLocalChange(
+        url,
+        fileapi::FileChange(fileapi::FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                            fileapi::SYNC_FILE_TYPE_FILE),
         base::Bind(&DriveFileSyncService::DidResolveConflictToLocalChange,
                    AsWeakPtr(), base::Passed(&param)));
     return;
@@ -1241,16 +1262,6 @@ void DriveFileSyncService::DidPrepareForProcessRemoteChange(
     DeleteMetadataForRemoteSync(param.Pass());
 }
 
-void DriveFileSyncService::ResolveConflictToLocalChange(
-    RemoteChangeProcessor* processor,
-    const fileapi::FileSystemURL& url,
-    const fileapi::SyncStatusCallback& callback) {
-  const fileapi::FileChange file_change(
-      fileapi::FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-      fileapi::SYNC_FILE_TYPE_FILE);
-  processor->RecordFakeLocalChange(url, file_change, callback);
-}
-
 void DriveFileSyncService::DidResolveConflictToLocalChange(
     scoped_ptr<ProcessRemoteChangeParam> param,
     fileapi::SyncStatusCode status) {
@@ -1264,6 +1275,20 @@ void DriveFileSyncService::DidResolveConflictToLocalChange(
       url,
       base::Bind(&DriveFileSyncService::CompleteRemoteSync,
                  AsWeakPtr(), base::Passed(&param)));
+}
+
+void DriveFileSyncService::DidResolveConflictToRemoteChange(
+    scoped_ptr<TaskToken> token,
+    const fileapi::FileSystemURL& url,
+    const std::string& resource_id,
+    const fileapi::SyncStatusCallback& callback,
+    fileapi::SyncStatusCode status) {
+  if (status != fileapi::SYNC_STATUS_OK)
+    FinalizeLocalSync(token.Pass(), callback, status);
+  const bool result =
+      AppendFetchChange(url.origin(), url.path(), resource_id);
+  DCHECK(result);
+  FinalizeLocalSync(token.Pass(), callback, status);
 }
 
 void DriveFileSyncService::DownloadForRemoteSync(
