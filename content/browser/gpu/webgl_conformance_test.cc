@@ -54,6 +54,8 @@ class WebGLConformanceTest : public ContentBrowserTest {
   void RunTest(const std::string& url) {
     std::string test_name =
         testing::UnitTest::GetInstance()->current_test_info()->name();
+    if (StartsWithASCII(test_name, "MANUAL_", true))
+      test_name = test_name.substr(strlen("MANUAL_"));
     int32 expectation =
         test_expectations_.GetTestExpectation(test_name, bot_config_);
     if (expectation != GPUTestExpectationsParser::kGpuTestPass) {
