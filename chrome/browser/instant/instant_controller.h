@@ -77,12 +77,12 @@ class InstantController {
   // The preview WebContents. May be NULL. InstantController retains ownership.
   content::WebContents* GetPreviewContents() const;
 
-  // Returns true if the Instant preview can be committed now.
-  bool IsCurrent() const;
+  // Returns true if the Instant preview is showing a search results preview.
+  bool IsPreviewingSearchResults() const;
 
   // If the preview is showing search results, commits the preview, calling
   // CommitInstant() on the browser, and returns true. Else, returns false.
-  bool CommitIfCurrent(InstantCommitType type);
+  bool CommitIfPossible(InstantCommitType type);
 
   // The omnibox has lost focus. Commit or discard the preview accordingly.
   void OmniboxLostFocus(gfx::NativeView view_gaining_focus);

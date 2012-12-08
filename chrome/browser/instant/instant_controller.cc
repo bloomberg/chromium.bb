@@ -140,6 +140,10 @@ bool IsViewInContents(gfx::NativeView view, content::WebContents* contents) {
   return false;
 }
 
+bool IsFullHeight(const InstantModel& model) {
+  return model.height() == 100 && model.height_units() == INSTANT_SIZE_PERCENT;
+}
+
 }  // namespace
 
 InstantController::InstantController(chrome::BrowserInstantController* browser,
@@ -416,15 +420,16 @@ content::WebContents* InstantController::GetPreviewContents() const {
   return loader_ ? loader_->contents() : NULL;
 }
 
-bool InstantController::IsCurrent() const {
-  return model_.mode().is_search_suggestions() && last_match_was_search_;
+bool InstantController::IsPreviewingSearchResults() const {
+  return model_.mode().is_search_suggestions() && last_match_was_search_ &&
+         IsFullHeight(model_);
 }
 
-bool InstantController::CommitIfCurrent(InstantCommitType type) {
+bool InstantController::CommitIfPossible(InstantCommitType type) {
   if (!extended_enabled_ && !instant_enabled_)
     return false;
 
-  DVLOG(1) << "CommitIfCurrent: type=" << type << " last_omnibox_text_='"
+  DVLOG(1) << "CommitIfPossible: type=" << type << " last_omnibox_text_='"
            << last_omnibox_text_ << "' last_match_was_search_="
            << last_match_was_search_ << " instant_tab_=" << instant_tab_;
 
@@ -439,7 +444,7 @@ bool InstantController::CommitIfCurrent(InstantCommitType type) {
     return false;
   }
 
-  if (!IsCurrent())
+  if (!IsPreviewingSearchResults())
     return false;
 
   if (type == INSTANT_COMMIT_FOCUS_LOST)
@@ -562,15 +567,11 @@ void InstantController::OmniboxLostFocus(gfx::NativeView view_gaining_focus) {
   if (!loader_->is_pointer_down_from_activate())
     HideLoader();
 #else
-  // If the preview was clicked, commit if it was for a search; ignore the click
-  // if it was for a URL. If the preview was not clicked, hide it.
   if (IsViewInContents(GetViewGainingFocus(view_gaining_focus),
-                       loader_->contents())) {
-    if (last_match_was_search_)
-      CommitIfCurrent(INSTANT_COMMIT_FOCUS_LOST);
-  } else {
+                       loader_->contents()))
+    CommitIfPossible(INSTANT_COMMIT_FOCUS_LOST);
+  else
     HideLoader();
-  }
 #endif
 }
 
@@ -951,10 +952,8 @@ void InstantController::ShowLoader(InstantShownReason reason,
   // - The page wants to show custom NTP content.
   // - The page is over a website other than search or an NTP, and is not
   //   already showing at 100% height.
-  bool is_full_height = model_.height() == 100 &&
-                        model_.height_units() == INSTANT_SIZE_PERCENT;
   if (!instant_enabled_ || reason == INSTANT_SHOWN_CUSTOM_NTP_CONTENT ||
-      (search_mode_.is_origin_default() && !is_full_height))
+      (search_mode_.is_origin_default() && !IsFullHeight(model_)))
     model_.SetPreviewState(search_mode_, height, units);
   else
     model_.SetPreviewState(search_mode_, 100, INSTANT_SIZE_PERCENT);

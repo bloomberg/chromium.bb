@@ -81,7 +81,7 @@ bool BrowserInstantController::OpenInstant(WindowOpenDisposition disposition) {
   DCHECK(disposition == CURRENT_TAB ||
          disposition == NEW_FOREGROUND_TAB) << disposition;
 
-  return instant_.CommitIfCurrent(disposition == CURRENT_TAB ?
+  return instant_.CommitIfPossible(disposition == CURRENT_TAB ?
       INSTANT_COMMIT_PRESSED_ENTER : INSTANT_COMMIT_PRESSED_ALT_ENTER);
 }
 

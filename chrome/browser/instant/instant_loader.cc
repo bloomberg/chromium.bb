@@ -158,7 +158,7 @@ bool InstantLoader::WebContentsDelegateImpl::OnGoToEntryOffset(int offset) {
 void InstantLoader::WebContentsDelegateImpl::MaybeCommitFromPointerRelease() {
   if (loader_->is_pointer_down_from_activate_) {
     loader_->is_pointer_down_from_activate_ = false;
-    loader_->controller_->CommitIfCurrent(INSTANT_COMMIT_FOCUS_LOST);
+    loader_->controller_->CommitIfPossible(INSTANT_COMMIT_FOCUS_LOST);
   }
 }
 

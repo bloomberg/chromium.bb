@@ -1889,7 +1889,7 @@ willAnimateFromState:(BookmarkBar::State)oldState
 - (void)commitInstant {
   if (chrome::BrowserInstantController* controller =
           browser_->instant_controller())
-    controller->instant()->CommitIfCurrent(INSTANT_COMMIT_FOCUS_LOST);
+    controller->instant()->CommitIfPossible(INSTANT_COMMIT_FOCUS_LOST);
 }
 
 - (BOOL)isInstantTabShowing {

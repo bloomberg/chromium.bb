@@ -3192,7 +3192,7 @@ void TestingAutomationProvider::GetInstantInfo(Browser* browser,
     InstantController* instant = browser->instant_controller()->instant();
     info->SetBoolean("enabled", true);
     info->SetBoolean("active", (instant->GetPreviewContents() != NULL));
-    info->SetBoolean("current", instant->IsCurrent());
+    info->SetBoolean("current", instant->IsPreviewingSearchResults());
     if (instant->GetPreviewContents()) {
       WebContents* contents = instant->GetPreviewContents();
       info->SetBoolean("loading", contents->IsLoading());

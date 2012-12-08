@@ -240,7 +240,7 @@ bool OmniboxEditModel::CommitSuggestedText(bool skip_inline_autocomplete) {
 
 bool OmniboxEditModel::AcceptCurrentInstantPreview() {
   return controller_->GetInstant() &&
-      controller_->GetInstant()->CommitIfCurrent(INSTANT_COMMIT_PRESSED_ENTER);
+      controller_->GetInstant()->CommitIfPossible(INSTANT_COMMIT_PRESSED_ENTER);
 }
 
 void OmniboxEditModel::OnChanged() {
