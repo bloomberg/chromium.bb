@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import re
+
 from SCons.Errors import UserError
 
 Import('env')
@@ -164,8 +166,8 @@ if generate:
     def InjectGeneratedFileHeader(target, source, env):
       source_filename = source[0].get_abspath()
       target_filename = target[0].get_abspath()
-      architecture = {'x86_32': 'ia32',
-                      'x86_64': 'x86-64'}[target_filename[-8:-2]]
+
+      architecture = {'32': 'ia32', '64': 'x86-64'}[bits]
 
       with open(source_filename, 'r') as source_file:
         comment, sep, rest = source_file.read().partition('*/')
@@ -266,7 +268,10 @@ if generate:
          '-I..',
          env.File('unreviewed/one_instruction_x86_%s.rl' % bits),
          '-o', '${TARGET}'],
-        extra_deps=[one_valid_instr_rl])
+        extra_deps=[
+            one_valid_instr_rl,
+            'unreviewed/parse_instruction.rl',
+            '%s/byte_machines.rl' % rl_src_dir])
 
     check_decoder = env.AutoDepsCommand(
         'check_decoder_test_results_%s' % bits,

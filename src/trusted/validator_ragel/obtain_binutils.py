@@ -40,13 +40,20 @@ def Command(cmd):
   result = os.system(cmd)
   if result != 0:
     print 'Command returned', result
-    exit(result)
+    sys.exit(1)
 
 
 def main():
   if len(sys.argv) != 3:
     print __doc__
     sys.exit(1)
+
+  # These are required to make binutils,
+  # and when they are missing binutils's make
+  # error messages are cryptic, so we better fail early.
+  Command('flex --version')
+  Command('bison --version')
+  Command('makeinfo --version')
 
   if os.path.exists(CHECKOUT_DIR):
     shutil.rmtree(CHECKOUT_DIR)
@@ -57,12 +64,6 @@ def main():
     old_dir = os.getcwd()
     os.chdir(CHECKOUT_DIR)
     Command('git checkout %s' % BINUTILS_REVISION)
-
-    # They both are required to make binutils,
-    # and when they are missing binutils's make
-    # error messages are cryptic.
-    Command('flex --version')
-    Command('bison --version')
 
     Command('./configure')
     Command('make')
