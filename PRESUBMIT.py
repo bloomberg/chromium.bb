@@ -123,7 +123,6 @@ def GetPreferredTrySlaves(_, change):
       'nacl-lucid64_newlib_dbg',
       'nacl-lucid64_newlib_opt',
       'nacl-lucid64_glibc_opt',
-      'nacl-lucid64_validator_opt',
       'nacl-lucid64_newlib_dbg_valgrind',
       'nacl-lucid64_glibc_dbg_valgrind',
       'nacl-mac10.6_newlib_opt',
