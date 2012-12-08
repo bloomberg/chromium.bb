@@ -191,6 +191,7 @@ public:
     OutputSurface* outputSurface() const;
 
     std::string layerTreeAsText() const;
+    std::string layerTreeAsJson() const;
 
     void finishAllRendering();
     int sourceAnimationFrameNumber() const;

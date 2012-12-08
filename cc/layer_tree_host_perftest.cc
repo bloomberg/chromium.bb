@@ -60,21 +60,21 @@ class LayerTreeHostPerfTest : public ThreadedTest {
     return layer;
   }
 
-  scoped_refptr<ContentLayer> CreateContentLayer(float x, float y, int width, int height) {
+  scoped_refptr<ContentLayer> CreateContentLayer(float x, float y, int width, int height, bool drawable=true) {
     scoped_refptr<ContentLayer> layer = ContentLayer::create(&fake_delegate_);
     layer->setAnchorPoint(gfx::Point());
     layer->setPosition(gfx::PointF(x, y));
     layer->setBounds(gfx::Size(width, height));
-    layer->setIsDrawable(true);
+    layer->setIsDrawable(drawable);
     return layer;
   }
 
-  scoped_refptr<SolidColorLayer> CreateColorLayer(float x, float y, int width, int height) {
+  scoped_refptr<SolidColorLayer> CreateColorLayer(float x, float y, int width, int height, bool drawable=true) {
     scoped_refptr<SolidColorLayer> layer = SolidColorLayer::create();
     layer->setAnchorPoint(gfx::Point());
     layer->setPosition(gfx::PointF(x, y));
     layer->setBounds(gfx::Size(width, height));
-    layer->setIsDrawable(true);
+    layer->setIsDrawable(drawable);
     return layer;
   }
 
@@ -82,12 +82,12 @@ class LayerTreeHostPerfTest : public ThreadedTest {
     return CreateDecorationLayer(x, y, width, height, gfx::Rect(0, 0, width, height));
   }
 
-  scoped_refptr<NinePatchLayer> CreateDecorationLayer(float x, float y, int width, int height, gfx::Rect aperture) {
+  scoped_refptr<NinePatchLayer> CreateDecorationLayer(float x, float y, int width, int height, gfx::Rect aperture, bool drawable=true) {
     scoped_refptr<NinePatchLayer> layer = NinePatchLayer::create();
     layer->setAnchorPoint(gfx::Point());
     layer->setPosition(gfx::PointF(x, y));
     layer->setBounds(gfx::Size(width, height));
-    layer->setIsDrawable(true);
+    layer->setIsDrawable(drawable);
 
     SkBitmap bitmap;
     bitmap.setConfig(SkBitmap::kARGB_8888_Config, 1, 1);
@@ -265,11 +265,14 @@ class LayerTreeHostPerfTestJsonReader : public LayerTreeHostPerfTest {
     success &= list->GetDouble(0, &position_x);
     success &= list->GetDouble(1, &position_y);
 
+    bool draws_content;
+    success &= dict->GetBoolean("DrawsContent", &draws_content);
+
     scoped_refptr<Layer> new_layer;
     if (layer_type == "SolidColorLayer") {
-      new_layer = CreateColorLayer(position_x, position_y, width, height);
+      new_layer = CreateColorLayer(position_x, position_y, width, height, draws_content);
     } else if (layer_type == "ContentLayer") {
-      new_layer = CreateContentLayer(position_x, position_y, width, height);
+      new_layer = CreateContentLayer(position_x, position_y, width, height, draws_content);
     } else if (layer_type == "NinePatchLayer") {
       success &= dict->GetList("ImageAperture", &list);
       int aperture_x, aperture_y, aperture_width, aperture_height;
@@ -280,11 +283,16 @@ class LayerTreeHostPerfTestJsonReader : public LayerTreeHostPerfTest {
 
       new_layer = CreateDecorationLayer(
           position_x, position_y, width, height,
-          gfx::Rect(aperture_x, aperture_y, aperture_width, aperture_height));
+          gfx::Rect(aperture_x, aperture_y, aperture_width, aperture_height),
+          draws_content);
 
     } else { // Type "Layer" or "unknown"
       new_layer = CreateLayer(position_x, position_y, width, height);
     }
+
+    double opacity;
+    if (dict->GetDouble("Opacity", &opacity))
+      new_layer->setOpacity(opacity);
 
     success &= dict->GetList("DrawTransform", &list);
     double transform[16];

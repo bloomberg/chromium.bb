@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/debug/trace_event.h"
+#include "base/json/json_writer.h"
 #include "base/stl_util.h"
 #include "cc/append_quads_data.h"
 #include "cc/damage_tracker.h"
@@ -1564,6 +1565,17 @@ std::string LayerTreeHostImpl::layerTreeAsText() const
         str = rootLayer()->layerTreeAsText();
         str +=  "RenderSurfaces:\n";
         dumpRenderSurfaces(&str, 1, rootLayer());
+    }
+    return str;
+}
+
+std::string LayerTreeHostImpl::layerTreeAsJson() const
+{
+    std::string str;
+    if (rootLayer()) {
+        scoped_ptr<base::Value> json(rootLayer()->layerTreeAsJson());
+        base::JSONWriter::WriteWithOptions(
+            json.get(), base::JSONWriter::OPTIONS_PRETTY_PRINT, &str);
     }
     return str;
 }

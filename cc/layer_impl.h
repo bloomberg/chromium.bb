@@ -27,6 +27,10 @@
 #include "ui/gfx/rect_f.h"
 #include "ui/gfx/transform.h"
 
+namespace base {
+class DictionaryValue;
+}
+
 namespace cc {
 
 class LayerTreeHostImpl;
@@ -241,6 +245,7 @@ public:
     void setUpdateRect(const gfx::RectF& updateRect) { m_updateRect = updateRect; }
 
     std::string layerTreeAsText() const;
+    virtual base::DictionaryValue* layerTreeAsJson() const;
 
     void setStackingOrderChanged(bool);
 

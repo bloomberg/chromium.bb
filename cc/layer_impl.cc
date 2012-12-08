@@ -6,6 +6,7 @@
 
 #include "base/debug/trace_event.h"
 #include "base/stringprintf.h"
+#include "base/values.h"
 #include "cc/debug_border_draw_quad.h"
 #include "cc/debug_colors.h"
 #include "cc/layer_tree_host_impl.h"
@@ -340,6 +341,41 @@ void LayerImpl::dumpLayer(std::string* str, int indent) const
     }
     for (size_t i = 0; i < m_children.size(); ++i)
         m_children[i]->dumpLayer(str, indent+1);
+}
+
+base::DictionaryValue* LayerImpl::layerTreeAsJson() const
+{
+    base::ListValue* list;
+    base::DictionaryValue* result = new base::DictionaryValue;
+    result->SetString("LayerType", layerTypeAsString());
+
+    list = new base::ListValue;
+    list->AppendInteger(bounds().width());
+    list->AppendInteger(bounds().height());
+    result->Set("Bounds", list);
+
+    list = new base::ListValue;
+    list->AppendDouble(m_position.x());
+    list->AppendDouble(m_position.y());
+    result->Set("Position", list);
+
+    const gfx::Transform& gfxTransform = m_drawProperties.target_space_transform;
+    double transform[16];
+    gfxTransform.matrix().asColMajord(transform);
+    list = new base::ListValue;
+    for (int i = 0; i < 16; ++i)
+      list->AppendDouble(transform[i]);
+    result->Set("DrawTransform", list);
+
+    result->SetBoolean("DrawsContent", m_drawsContent);
+    result->SetDouble("Opacity", opacity());
+
+    list = new base::ListValue;
+    for (size_t i = 0; i < m_children.size(); ++i)
+        list->Append(m_children[i]->layerTreeAsJson());
+    result->Set("Children", list);
+
+    return result;
 }
 
 void LayerImpl::setStackingOrderChanged(bool stackingOrderChanged)

@@ -5,6 +5,7 @@
 #include "nine_patch_layer_impl.h"
 
 #include "base/stringprintf.h"
+#include "base/values.h"
 #include "cc/quad_sink.h"
 #include "cc/texture_draw_quad.h"
 #include "ui/gfx/rect_f.h"
@@ -161,6 +162,20 @@ void NinePatchLayerImpl::dumpLayerProperties(std::string* str, int indent) const
     str->append(indentString(indent));
     base::StringAppendF(str, "imageAperture: %s\n", m_imageAperture.ToString().c_str());
     LayerImpl::dumpLayerProperties(str, indent);
+}
+
+base::DictionaryValue* NinePatchLayerImpl::layerTreeAsJson() const
+{
+    base::DictionaryValue* result = LayerImpl::layerTreeAsJson();
+
+    base::ListValue* list = new base::ListValue;
+    list->AppendInteger(m_imageAperture.origin().x());
+    list->AppendInteger(m_imageAperture.origin().y());
+    list->AppendInteger(m_imageAperture.size().width());
+    list->AppendInteger(m_imageAperture.size().height());
+    result->Set("ImageAperture", list);
+
+    return result;
 }
 
 }

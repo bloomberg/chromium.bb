@@ -11,6 +11,10 @@
 #include "ui/gfx/size.h"
 #include "ui/gfx/rect.h"
 
+namespace base {
+class DictionaryValue;
+}
+
 namespace cc {
 
 class CC_EXPORT NinePatchLayerImpl : public LayerImpl {
@@ -30,6 +34,8 @@ public:
     virtual ResourceProvider::ResourceId contentsResourceId() const OVERRIDE;
     virtual void dumpLayerProperties(std::string*, int indent) const OVERRIDE;
     virtual void didLoseOutputSurface() OVERRIDE;
+
+    virtual base::DictionaryValue* layerTreeAsJson() const OVERRIDE;
 
 protected:
     NinePatchLayerImpl(LayerTreeHostImpl* hostImpl, int id);
