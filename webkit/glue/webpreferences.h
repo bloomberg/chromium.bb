@@ -125,7 +125,6 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   bool enable_scroll_animator;
   bool visual_word_movement_enabled;
   bool css_sticky_position_enabled;
-  bool css_regions_enabled;
   bool css_shaders_enabled;
   bool css_variables_enabled;
   bool css_grid_layout_enabled;
