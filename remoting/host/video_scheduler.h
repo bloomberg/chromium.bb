@@ -77,7 +77,7 @@ class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
   // |video_stub| and |client_stub|, which must remain valid until Stop() is
   // called. |capturer| is used to capture frames and must remain valid until
   // the |done_task| supplied to Stop() is executed.
-  VideoScheduler(
+  static scoped_refptr<VideoScheduler> Create(
       scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
@@ -107,6 +107,15 @@ class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
 
  private:
   friend class base::RefCountedThreadSafe<VideoScheduler>;
+
+  VideoScheduler(
+      scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
+      VideoFrameCapturer* capturer,
+      scoped_ptr<VideoEncoder> encoder,
+      protocol::ClientStub* client_stub,
+      protocol::VideoStub* video_stub);
   virtual ~VideoScheduler();
 
   // Capturer thread ----------------------------------------------------------

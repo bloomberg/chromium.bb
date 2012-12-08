@@ -84,7 +84,7 @@ class VideoSchedulerTest : public testing::Test {
   }
 
   void StartVideoScheduler() {
-    scheduler_ = new VideoScheduler(
+    scheduler_ = VideoScheduler::Create(
         message_loop_.message_loop_proxy(),
         message_loop_.message_loop_proxy(),
         message_loop_.message_loop_proxy(),

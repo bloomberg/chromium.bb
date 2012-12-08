@@ -33,7 +33,7 @@ class AudioScheduler : public base::RefCountedThreadSafe<AudioScheduler> {
   // |audio_task_runner|. |audio_stub| tasks are dispatched via the
   // |network_task_runner|. The caller must ensure that the |audio_capturer| and
   // |audio_stub| exist until the scheduler is stopped using Stop() method.
-  AudioScheduler(
+  static scoped_refptr<AudioScheduler> Create(
       scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
       AudioCapturer* audio_capturer,
@@ -50,6 +50,13 @@ class AudioScheduler : public base::RefCountedThreadSafe<AudioScheduler> {
 
  private:
   friend class base::RefCountedThreadSafe<AudioScheduler>;
+
+  AudioScheduler(
+      scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
+      AudioCapturer* audio_capturer,
+      scoped_ptr<AudioEncoder> audio_encoder,
+      protocol::AudioStub* audio_stub);
   virtual ~AudioScheduler();
 
   // Called on the audio thread to start capturing.

@@ -30,32 +30,28 @@ namespace remoting {
 // TODO(hclam): Move this value to CaptureScheduler.
 static const int kMaxPendingCaptures = 2;
 
-VideoScheduler::VideoScheduler(
+// static
+scoped_refptr<VideoScheduler> VideoScheduler::Create(
     scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
     VideoFrameCapturer* capturer,
     scoped_ptr<VideoEncoder> encoder,
     protocol::ClientStub* client_stub,
-    protocol::VideoStub* video_stub)
-    : capture_task_runner_(capture_task_runner),
-      encode_task_runner_(encode_task_runner),
-      network_task_runner_(network_task_runner),
-      capturer_(capturer),
-      encoder_(encoder.Pass()),
-      cursor_stub_(client_stub),
-      video_stub_(video_stub),
-      pending_captures_(0),
-      did_skip_frame_(false),
-      is_paused_(false),
-      sequence_number_(0) {
-  DCHECK(network_task_runner_->BelongsToCurrentThread());
-  DCHECK(capturer_);
-  DCHECK(cursor_stub_);
-  DCHECK(video_stub_);
+    protocol::VideoStub* video_stub) {
+  DCHECK(network_task_runner->BelongsToCurrentThread());
+  DCHECK(capturer);
+  DCHECK(encoder);
+  DCHECK(client_stub);
+  DCHECK(video_stub);
 
-  capture_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VideoScheduler::StartOnCaptureThread, this));
+  scoped_refptr<VideoScheduler> scheduler = new VideoScheduler(
+      capture_task_runner, encode_task_runner, network_task_runner,
+      capturer, encoder.Pass(), client_stub, video_stub);
+  capture_task_runner->PostTask(
+      FROM_HERE, base::Bind(&VideoScheduler::StartOnCaptureThread, scheduler));
+
+  return scheduler;
 }
 
 // Public methods --------------------------------------------------------------
@@ -131,6 +127,27 @@ void VideoScheduler::UpdateSequenceNumber(int64 sequence_number) {
 }
 
 // Private methods -----------------------------------------------------------
+
+VideoScheduler::VideoScheduler(
+    scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
+    VideoFrameCapturer* capturer,
+    scoped_ptr<VideoEncoder> encoder,
+    protocol::ClientStub* client_stub,
+    protocol::VideoStub* video_stub)
+    : capture_task_runner_(capture_task_runner),
+      encode_task_runner_(encode_task_runner),
+      network_task_runner_(network_task_runner),
+      capturer_(capturer),
+      encoder_(encoder.Pass()),
+      cursor_stub_(client_stub),
+      video_stub_(video_stub),
+      pending_captures_(0),
+      did_skip_frame_(false),
+      is_paused_(false),
+      sequence_number_(0) {
+}
 
 VideoScheduler::~VideoScheduler() {
 }

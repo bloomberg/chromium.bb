@@ -134,20 +134,21 @@ void ClientSession::OnConnectionChannelsConnected(
       CreateVideoEncoder(connection_->session()->config());
 
   // Create a VideoScheduler to pump frames from the capturer to the client.
-  video_scheduler_ = new VideoScheduler(video_capture_task_runner_,
-                                        video_encode_task_runner_,
-                                        network_task_runner_,
-                                        desktop_environment_->video_capturer(),
-                                        video_encoder.Pass(),
-                                        connection_->client_stub(),
-                                        connection_->video_stub());
+  video_scheduler_ = VideoScheduler::Create(
+      video_capture_task_runner_,
+      video_encode_task_runner_,
+      network_task_runner_,
+      desktop_environment_->video_capturer(),
+      video_encoder.Pass(),
+      connection_->client_stub(),
+      connection_->video_stub());
   ++active_recorders_;
 
   // Create an AudioScheduler if audio is enabled, to pump audio samples.
   if (connection_->session()->config().is_audio_enabled()) {
     scoped_ptr<AudioEncoder> audio_encoder =
         CreateAudioEncoder(connection_->session()->config());
-    audio_scheduler_ = new AudioScheduler(
+    audio_scheduler_ = AudioScheduler::Create(
         audio_task_runner_,
         network_task_runner_,
         desktop_environment_->audio_capturer(),

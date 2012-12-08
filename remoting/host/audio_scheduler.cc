@@ -16,25 +16,25 @@
 
 namespace remoting {
 
-AudioScheduler::AudioScheduler(
+// static
+scoped_refptr<AudioScheduler> AudioScheduler::Create(
     scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
     AudioCapturer* audio_capturer,
     scoped_ptr<AudioEncoder> audio_encoder,
-    protocol::AudioStub* audio_stub)
-    : audio_task_runner_(audio_task_runner),
-      network_task_runner_(network_task_runner),
-      audio_capturer_(audio_capturer),
-      audio_encoder_(audio_encoder.Pass()),
-      audio_stub_(audio_stub),
-      network_stopped_(false),
-      enabled_(true) {
-  DCHECK(network_task_runner_->BelongsToCurrentThread());
-  DCHECK(audio_capturer_);
-  DCHECK(audio_stub_);
+    protocol::AudioStub* audio_stub) {
+  DCHECK(network_task_runner->BelongsToCurrentThread());
+  DCHECK(audio_capturer);
+  DCHECK(audio_encoder);
+  DCHECK(audio_stub);
 
-  audio_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&AudioScheduler::StartOnAudioThread, this));
+  scoped_refptr<AudioScheduler> scheduler = new AudioScheduler(
+      audio_task_runner, network_task_runner,
+      audio_capturer, audio_encoder.Pass(), audio_stub);
+  audio_task_runner->PostTask(
+      FROM_HERE, base::Bind(&AudioScheduler::StartOnAudioThread, scheduler));
+
+  return scheduler;
 }
 
 void AudioScheduler::Stop(const base::Closure& done_task) {
@@ -48,6 +48,21 @@ void AudioScheduler::Stop(const base::Closure& done_task) {
   audio_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&AudioScheduler::StopOnAudioThread, this, done_task));
+}
+
+AudioScheduler::AudioScheduler(
+    scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
+    AudioCapturer* audio_capturer,
+    scoped_ptr<AudioEncoder> audio_encoder,
+    protocol::AudioStub* audio_stub)
+    : audio_task_runner_(audio_task_runner),
+      network_task_runner_(network_task_runner),
+      audio_capturer_(audio_capturer),
+      audio_encoder_(audio_encoder.Pass()),
+      audio_stub_(audio_stub),
+      network_stopped_(false),
+      enabled_(true) {
 }
 
 AudioScheduler::~AudioScheduler() {
