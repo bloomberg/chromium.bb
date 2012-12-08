@@ -1166,6 +1166,7 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableOverscrollHistoryNavigation)
   },
 #endif
+
   {
     "enable-touch-drag-drop",
     IDS_FLAGS_ENABLE_TOUCH_DRAG_DROP_NAME,
@@ -1173,6 +1174,13 @@ const Experiment kExperiments[] = {
     kOsWin | kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kEnableTouchDragDrop)
   },
+  {
+    "load-cloud-policy-on-signin",
+    IDS_FLAGS_DESKTOP_CLOUD_POLICY_NAME,
+    IDS_FLAGS_DESKTOP_CLOUD_POLICY_DESCRIPTION,
+    kOsWin | kOsMac | kOsLinux,
+    SINGLE_VALUE_TYPE(switches::kLoadCloudPolicyOnSignin)
+  }
 };
 
 const Experiment* experiments = kExperiments;
