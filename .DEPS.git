@@ -431,6 +431,16 @@ hooks = [
     'action':
          [
     'python',
+    'src/build/linux/install-arm-sysroot.py',
+    '--linux-only'
+],
+    'pattern':
+         '.'
+},
+    {
+    'action':
+         [
+    'python',
     'src/tools/clang/scripts/update.py',
     '--mac-only'
 ],
