@@ -32,6 +32,7 @@
 #include "content/browser/trace_controller_impl.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/browser_shutdown.h"
+#include "content/public/browser/compositor_util.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_switches.h"
@@ -465,23 +466,6 @@ void BrowserMainLoop::CreateThreads() {
   if (parts_.get())
     parts_->PreMainMessageLoopRun();
 
-#if !defined(OS_IOS)
-  // When running the GPU thread in-process, avoid optimistically starting it
-  // since creating the GPU thread races against creation of the one-and-only
-  // ChildProcess instance which is created by the renderer thread.
-  if (GpuDataManagerImpl::GetInstance()->GpuAccessAllowed() &&
-      !parsed_command_line_.HasSwitch(switches::kDisableGpuProcessPrelaunch) &&
-      !parsed_command_line_.HasSwitch(switches::kSingleProcess) &&
-      !parsed_command_line_.HasSwitch(switches::kInProcessGPU)) {
-    TRACE_EVENT_INSTANT0("gpu", "Post task to launch GPU process");
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE, base::Bind(
-            base::IgnoreResult(&GpuProcessHost::Get),
-            GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
-            CAUSE_FOR_GPU_LAUNCH_BROWSER_STARTUP));
-  }
-#endif  // !defined(OS_IOS)
-
   // If the UI thread blocks, the whole UI is unresponsive.
   // Do not allow disk IO from the UI thread.
   base::ThreadRestrictions::SetIOAllowed(false);
@@ -695,6 +679,22 @@ void BrowserMainLoop::BrowserThreadsStarted() {
   allowed_clipboard_threads.push_back(io_thread_->thread_id());
 #endif
   ui::Clipboard::SetAllowedThreads(allowed_clipboard_threads);
+
+  // When running the GPU thread in-process, avoid optimistically starting it
+  // since creating the GPU thread races against creation of the one-and-only
+  // ChildProcess instance which is created by the renderer thread.
+  if (GpuDataManagerImpl::GetInstance()->GpuAccessAllowed() &&
+      content::IsForceCompositingModeEnabled() &&
+      !parsed_command_line_.HasSwitch(switches::kDisableGpuProcessPrelaunch) &&
+      !parsed_command_line_.HasSwitch(switches::kSingleProcess) &&
+      !parsed_command_line_.HasSwitch(switches::kInProcessGPU)) {
+    TRACE_EVENT_INSTANT0("gpu", "Post task to launch GPU process");
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE, base::Bind(
+            base::IgnoreResult(&GpuProcessHost::Get),
+            GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
+            CAUSE_FOR_GPU_LAUNCH_BROWSER_STARTUP));
+  }
 #endif  // !defined(OS_IOS)
 }
 
