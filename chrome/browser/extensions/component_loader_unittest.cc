@@ -232,6 +232,23 @@ TEST_F(ComponentLoaderTest, LoadAll) {
   EXPECT_EQ(default_count + 1, extension_service_.extensions()->size());
 }
 
+TEST_F(ComponentLoaderTest, RemoveAll) {
+  extension_service_.set_ready(true);
+  EXPECT_EQ(0u, extension_service_.extensions()->size());
+  // Use LoadAll() to load the default extensions.
+  component_loader_.AddDefaultComponentExtensions();
+  unsigned int default_count = extension_service_.extensions()->size();
+
+  // And add one more just to make sure there is anything in there in case
+  // there are no defaults for this platform.
+  component_loader_.Add(manifest_contents_, extension_path_);
+  EXPECT_EQ(default_count + 1, extension_service_.extensions()->size());
+
+  // Remove all default extensions.
+  component_loader_.RemoveAll();
+  EXPECT_EQ(0u, extension_service_.extensions()->size());
+}
+
 TEST_F(ComponentLoaderTest, EnterpriseWebStore) {
   component_loader_.AddDefaultComponentExtensions(false);
   component_loader_.LoadAll();

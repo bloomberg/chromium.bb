@@ -195,6 +195,14 @@ const Extension* ComponentLoader::Load(const ComponentExtensionInfo& info) {
   return extension;
 }
 
+void ComponentLoader::RemoveAll() {
+  RegisteredComponentExtensions::iterator it = component_extensions_.begin();
+  for (; it != component_extensions_.end(); ++it)
+    UnloadComponent(&(*it));
+
+  component_extensions_.clear();
+}
+
 void ComponentLoader::Remove(const FilePath& root_directory) {
   // Find the ComponentExtensionInfo for the extension.
   RegisteredComponentExtensions::iterator it = component_extensions_.begin();
@@ -210,11 +218,8 @@ void ComponentLoader::Remove(const std::string& id) {
   RegisteredComponentExtensions::iterator it = component_extensions_.begin();
   for (; it != component_extensions_.end(); ++it) {
     if (it->extension_id == id) {
-      delete it->manifest;
+      UnloadComponent(&(*it));
       it = component_extensions_.erase(it);
-      if (extension_service_->is_ready())
-        extension_service_->
-            UnloadExtension(id, extension_misc::UNLOAD_REASON_DISABLE);
       break;
     }
   }
@@ -410,6 +415,15 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
   }
 #endif
 
+}
+
+void ComponentLoader::UnloadComponent(ComponentExtensionInfo* component) {
+  delete component->manifest;
+  if (extension_service_->is_ready()) {
+    extension_service_->
+        UnloadExtension(component->extension_id,
+                        extension_misc::UNLOAD_REASON_DISABLE);
+  }
 }
 
 // static
