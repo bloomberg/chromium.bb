@@ -32,11 +32,13 @@ class SearchTermsData {
   // "en" and thus should be overridden where the result is actually meaningful.
   virtual std::string GetApplicationLocale() const;
 
-#if defined(ENABLE_RLZ)
   // Returns the value for the Chrome Omnibox rlz.  This implementation returns
   // the empty string.
   virtual string16 GetRlzParameterValue() const;
-#endif
+
+  // The optional client parameter passed with Google search requests.  This
+  // implementation returns the empty string.
+  virtual std::string GetSearchClient() const;
 
   // Returns a string indicating whether Instant (in the visible-preview mode)
   // is enabled, suitable for adding as a query string param to the homepage
@@ -59,9 +61,8 @@ class UIThreadSearchTermsData : public SearchTermsData {
 
   virtual std::string GoogleBaseURLValue() const OVERRIDE;
   virtual std::string GetApplicationLocale() const OVERRIDE;
-#if defined(ENABLE_RLZ)
   virtual string16 GetRlzParameterValue() const OVERRIDE;
-#endif
+  virtual std::string GetSearchClient() const OVERRIDE;
   virtual std::string InstantEnabledParam() const OVERRIDE;
 
   // Used by tests to override the value for the Google base URL.  Passing the

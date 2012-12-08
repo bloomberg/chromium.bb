@@ -45,20 +45,26 @@ const char kOutputEncodingParameter[] = "outputEncoding";
 
 const char kGoogleAcceptedSuggestionParameter[] = "google:acceptedSuggestion";
 const char kGoogleAssistedQueryStatsParameter[] = "google:assistedQueryStats";
+
 // Host/Domain Google searches are relative to.
 const char kGoogleBaseURLParameter[] = "google:baseURL";
 const char kGoogleBaseURLParameterFull[] = "{google:baseURL}";
+
 // Like google:baseURL, but for the Search Suggest capability.
 const char kGoogleBaseSuggestURLParameter[] = "google:baseSuggestURL";
 const char kGoogleBaseSuggestURLParameterFull[] = "{google:baseSuggestURL}";
+
 const char kGoogleInstantEnabledParameter[] = "google:instantEnabledParameter";
 const char kGoogleOriginalQueryForSuggestionParameter[] =
     "google:originalQueryForSuggestion";
 const char kGoogleRLZParameter[] = "google:RLZ";
-// Same as kSearchTermsParameter, with no escaping.
+const char kGoogleSearchClient[] = "google:searchClient";
 const char kGoogleSearchFieldtrialParameter[] =
     "google:searchFieldtrialParameter";
+const char kGoogleSourceIdParameter[] = "google:sourceId";
 const char kGoogleSuggestAPIKeyParameter[] = "google:suggestAPIKeyParameter";
+
+// Same as kSearchTermsParameter, with no escaping.
 const char kGoogleUnescapedSearchTermsParameter[] =
     "google:unescapedSearchTerms";
 const char kGoogleUnescapedSearchTermsParameterFull[] =
@@ -308,12 +314,17 @@ std::string TemplateURLRef::ReplaceSearchTermsUsingTermsData(
         // to happen so that we replace the RLZ template with the
         // empty string.  (If we don't handle this case, we hit a
         // NOTREACHED below.)
-#if defined(ENABLE_RLZ)
         string16 rlz_string = search_terms_data.GetRlzParameterValue();
         if (!rlz_string.empty()) {
           url.insert(i->index, "rlz=" + UTF16ToUTF8(rlz_string) + "&");
         }
-#endif
+        break;
+      }
+
+      case GOOGLE_SEARCH_CLIENT: {
+        std::string client = search_terms_data.GetSearchClient();
+        if (!client.empty())
+          url.insert(i->index, "client=" + client + "&");
         break;
       }
 
@@ -548,11 +559,19 @@ bool TemplateURLRef::ParseParameter(size_t start,
                                         start));
   } else if (parameter == kGoogleRLZParameter) {
     replacements->push_back(Replacement(GOOGLE_RLZ, start));
+  } else if (parameter == kGoogleSearchClient) {
+    replacements->push_back(Replacement(GOOGLE_SEARCH_CLIENT, start));
   } else if (parameter == kGoogleSearchFieldtrialParameter) {
     replacements->push_back(Replacement(GOOGLE_SEARCH_FIELDTRIAL_GROUP, start));
   } else if (parameter == kGoogleSuggestAPIKeyParameter) {
     url->insert(start,
                 net::EscapeQueryParamValue(google_apis::GetAPIKey(), false));
+  } else if (parameter == kGoogleSourceIdParameter) {
+#if defined(OS_ANDROID)
+    url->insert(start, "sourceid=chrome-mobile&");
+#else
+    url->insert(start, "sourceid=chrome&");
+#endif
   } else if (parameter == kGoogleUnescapedSearchTermsParameter) {
     replacements->push_back(Replacement(GOOGLE_UNESCAPED_SEARCH_TERMS, start));
   } else if (!prepopulated_) {

@@ -15,6 +15,10 @@
 #include "chrome/browser/google/google_util.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/search_engines/search_terms_data_android.h"
+#endif
+
 // TestSearchTermsData --------------------------------------------------------
 
 // Simple implementation of SearchTermsData.
@@ -475,6 +479,10 @@ TEST_F(TemplateURLTest, RLZ) {
       !google_util::IsOrganic(brand)) {
     RLZTracker::GetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, &rlz_string);
   }
+#elif defined(OS_ANDROID)
+  SearchTermsDataAndroid::rlz_parameter_value_.Get() =
+      ASCIIToUTF16("android_test");
+  rlz_string = SearchTermsDataAndroid::rlz_parameter_value_.Get();
 #endif
 
   TemplateURLData data;
@@ -639,6 +647,34 @@ TEST_F(TemplateURLTest, ParseURLNestedParameter) {
   EXPECT_EQ(TemplateURLRef::SEARCH_TERMS, replacements[0].type);
   EXPECT_TRUE(valid);
 }
+
+#if defined(OS_ANDROID)
+TEST_F(TemplateURLTest, SearchClient) {
+  const std::string base_url_str("http://google.com/?");
+  const std::string terms_str("{searchTerms}&{google:searchClient}");
+  const std::string full_url_str = base_url_str + terms_str;
+  const string16 terms(ASCIIToUTF16(terms_str));
+  UIThreadSearchTermsData::SetGoogleBaseURL(base_url_str);
+
+  TemplateURLData data;
+  data.SetURL(full_url_str);
+  TemplateURL url(NULL, data);
+  EXPECT_TRUE(url.url_ref().IsValid());
+  ASSERT_TRUE(url.url_ref().SupportsReplacement());
+  TemplateURLRef::SearchTermsArgs search_terms_args(ASCIIToUTF16("foobar"));
+
+  // Check that the URL is correct when a client is not present.
+  GURL result(url.url_ref().ReplaceSearchTerms(search_terms_args));
+  ASSERT_TRUE(result.is_valid());
+  EXPECT_EQ("http://google.com/?foobar&", result.spec());
+
+  // Check that the URL is correct when a client is present.
+  SearchTermsDataAndroid::search_client_.Get() = "android_test";
+  GURL result_2(url.url_ref().ReplaceSearchTerms(search_terms_args));
+  ASSERT_TRUE(result_2.is_valid());
+  EXPECT_EQ("http://google.com/?foobar&client=android_test&", result_2.spec());
+}
+#endif
 
 TEST_F(TemplateURLTest, GetURLNoInstantURL) {
   TemplateURLData data;

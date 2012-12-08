@@ -1741,6 +1741,8 @@
         'browser/search_engines/search_provider_install_data.h',
         'browser/search_engines/search_provider_install_state_message_filter.cc',
         'browser/search_engines/search_provider_install_state_message_filter.h',
+        'browser/search_engines/search_terms_data_android.cc',
+        'browser/search_engines/search_terms_data_android.h',
         'browser/search_engines/search_terms_data.cc',
         'browser/search_engines/search_terms_data.h',
         'browser/search_engines/template_url.cc',

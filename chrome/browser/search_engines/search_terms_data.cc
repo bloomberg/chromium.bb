@@ -17,7 +17,6 @@
 #include "googleurl/src/gurl.h"
 
 #if defined(ENABLE_RLZ)
-#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/rlz/rlz.h"
 #endif
 
@@ -57,11 +56,13 @@ std::string SearchTermsData::GetApplicationLocale() const {
   return "en";
 }
 
-#if defined(ENABLE_RLZ)
 string16 SearchTermsData::GetRlzParameterValue() const {
   return string16();
 }
-#endif
+
+std::string SearchTermsData::GetSearchClient() const {
+  return std::string();
+}
 
 std::string SearchTermsData::InstantEnabledParam() const {
   return std::string();
@@ -73,12 +74,12 @@ std::string* UIThreadSearchTermsData::google_base_url_ = NULL;
 UIThreadSearchTermsData::UIThreadSearchTermsData(Profile* profile)
     : profile_(profile) {
   DCHECK(!BrowserThread::IsWellKnownThread(BrowserThread::UI) ||
-         BrowserThread::CurrentlyOn(BrowserThread::UI));
+      BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 std::string UIThreadSearchTermsData::GoogleBaseURLValue() const {
   DCHECK(!BrowserThread::IsWellKnownThread(BrowserThread::UI) ||
-         BrowserThread::CurrentlyOn(BrowserThread::UI));
+      BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (google_base_url_)
     return *google_base_url_;
   return profile_ ? GoogleURLTracker::GoogleURL(profile_).spec() :
@@ -87,15 +88,17 @@ std::string UIThreadSearchTermsData::GoogleBaseURLValue() const {
 
 std::string UIThreadSearchTermsData::GetApplicationLocale() const {
   DCHECK(!BrowserThread::IsWellKnownThread(BrowserThread::UI) ||
-         BrowserThread::CurrentlyOn(BrowserThread::UI));
+      BrowserThread::CurrentlyOn(BrowserThread::UI));
   return g_browser_process->GetApplicationLocale();
 }
 
-#if defined(ENABLE_RLZ)
+// Android implementations are located in search_terms_data_android.cc.
+#if !defined(OS_ANDROID)
 string16 UIThreadSearchTermsData::GetRlzParameterValue() const {
   DCHECK(!BrowserThread::IsWellKnownThread(BrowserThread::UI) ||
-         BrowserThread::CurrentlyOn(BrowserThread::UI));
+      BrowserThread::CurrentlyOn(BrowserThread::UI));
   string16 rlz_string;
+#if defined(ENABLE_RLZ)
   // For organic brandcodes do not use rlz at all. Empty brandcode usually
   // means a chromium install. This is ok.
   std::string brand;
@@ -106,7 +109,17 @@ string16 UIThreadSearchTermsData::GetRlzParameterValue() const {
     // search might not send the RLZ data but this is not really a problem.
     RLZTracker::GetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, &rlz_string);
   }
+#endif
   return rlz_string;
+}
+
+// We can enable this on non-Android if other platforms ever want a non-empty
+// search client string.  There is already a unit test in place for Android
+// called TemplateURLTest::SearchClient.
+std::string UIThreadSearchTermsData::GetSearchClient() const {
+  DCHECK(!BrowserThread::IsWellKnownThread(BrowserThread::UI) ||
+      BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return std::string();
 }
 #endif
 
