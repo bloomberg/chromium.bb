@@ -112,16 +112,18 @@ void NaClAppThreadTeardown(struct NaClAppThread *natp) {
 #if NACL_WINDOWS
   nacl_thread_ids[thread_idx] = 0;
 #endif
+  if (NULL != nap->debug_stub_callbacks) {
+    NaClLog(3, " notifying the debug stub of the thread exit\n");
+    /* This must happen before deallocating the ID natp->thread_num. */
+    nap->debug_stub_callbacks->thread_exit_hook(natp);
+  }
   NaClLog(3, " removing thread from thread table\n");
+  /* Deallocate the ID natp->thread_num. */
   NaClRemoveThreadMu(nap, natp->thread_num);
   NaClLog(3, " unlocking thread\n");
   NaClXMutexUnlock(&natp->mu);
   NaClLog(3, " unlocking thread table\n");
   NaClXMutexUnlock(&nap->threads_mu);
-  if (NULL != nap->debug_stub_callbacks) {
-    NaClLog(3, " notifying the debug stub of the thread exit\n");
-    nap->debug_stub_callbacks->thread_exit_hook(natp);
-  }
   NaClLog(3, " unregistering signal stack\n");
   NaClSignalStackUnregister();
   NaClLog(3, " freeing thread object\n");
