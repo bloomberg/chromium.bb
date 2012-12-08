@@ -142,23 +142,27 @@ $(IT).gcc.opt.x8664: $(SRC) $(CPPSRC)
 # BUG=http://code.google.com/p/chromium/issues/detail?id=38909
 # BUG=http://code.google.com/p/nativeclient/issues/detail?id=135
 #########################################################################
-ifneq ($(wildcard /etc/debian_chroot),)
-ARM_GCC=armv7a-cros-linux-gnueabi-gcc
-else
-ARM_GCC=$(ARM_ROOT)/arm-2009q3/bin/arm-none-linux-gnueabi-gcc
-endif
-LOCAL_CROSS_GCC=$(ARM_GCC)
 
-# straight arm gcc (code sourcery)
+ifndef ARM_GCC
+ARM_GCC = arm-linux-gnueabi-gcc
+endif
+
+ifndef ARM_ARCH_FLAGS
+ARM_ARCH_FLAGS = -march=armv7-a -mcpu=cortex-a8 -mfpu=neon -marm
+endif
+
+ifndef ARM_LINK_FLAGS
+ARM_LINK_FLAGS = -lstdc++ -lm -static
+endif
+
+# straight arm gcc
 $(IT).gcc.arm: $(SRC) $(CPPSRC)
-	$(LOCAL_CROSS_GCC) -O0 -march=armv6 $(CFLAGS) \
-		$^ -static -lstdc++ -lm  -o $@
+	$(ARM_GCC) -O0 $(CFLAGS) $^ $(ARM_ARCH_FLAGS) $(ARM_LINK_FLAGS) -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
-# optimized x86 gcc (code sourcery)
+# optimized arm gcc
 $(IT).gcc.opt.arm: $(SRC) $(CPPSRC)
-	$(LOCAL_CROSS_GCC) -O3 -march=armv6 $(CFLAGS) \
-		$^ -static -lstdc++ -lm  -o $@
+	$(ARM_GCC) -O3 $(CFLAGS) $^ $(ARM_ARCH_FLAGS) $(ARM_LINK_FLAGS) -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 ######################################################################

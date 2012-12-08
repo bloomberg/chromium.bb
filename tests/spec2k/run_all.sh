@@ -361,10 +361,18 @@ SetupPnaclTranslatorFastX8632Opt() {
 
 #@
 #@ SetupGccArm
-#@   use CS cross compiler
+#@   use gcc cross compiler
 SetupGccArm() {
   PREFIX="${QEMU_TOOL}"
   SUFFIX=gcc.arm
+}
+
+#@
+#@ SetupGccArmOpt
+#@   use gcc cross compiler
+SetupGccArmOpt() {
+  PREFIX="${QEMU_TOOL}"
+  SUFFIX=gcc.opt.arm
 }
 
 
