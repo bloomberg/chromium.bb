@@ -53,6 +53,7 @@ public:
     virtual bool drawsContent() const OVERRIDE;
     virtual void update(ResourceUpdateQueue&, const OcclusionTracker*, RenderingStats&) OVERRIDE;
     virtual void pushPropertiesTo(LayerImpl*) OVERRIDE;
+    virtual bool blocksPendingCommit() const OVERRIDE;
 
 protected:
     explicit TextureLayer(TextureLayerClient*);

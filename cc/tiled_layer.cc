@@ -219,6 +219,11 @@ void TiledLayer::pushPropertiesTo(LayerImpl* layer)
         m_tiler->takeTile((*iter)->i(), (*iter)->j());
 }
 
+bool TiledLayer::blocksPendingCommit() const
+{
+    return true;
+}
+
 PrioritizedResourceManager* TiledLayer::resourceManager() const
 {
     if (!layerTreeHost())

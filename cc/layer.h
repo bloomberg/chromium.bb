@@ -277,6 +277,11 @@ public:
 
     gfx::Rect layerRectToContentRect(const gfx::RectF& layerRect) const;
 
+    // In impl-side painting, this returns true if this layer type is not
+    // compatible with the main thread running freely, such as a double-buffered
+    // canvas that doesn't want to be triple-buffered across all three trees.
+    virtual bool blocksPendingCommit() const;
+
 protected:
     friend class LayerImpl;
     friend class TreeSynchronizer;

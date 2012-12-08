@@ -21,6 +21,8 @@ public:
 
     virtual void pushPropertiesTo(LayerImpl*) OVERRIDE;
 
+    virtual bool blocksPendingCommit() const OVERRIDE;
+
     virtual bool drawsContent() const OVERRIDE;
 
     virtual void setNeedsDisplayRect(const gfx::RectF&) OVERRIDE;

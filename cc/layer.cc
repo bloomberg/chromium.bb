@@ -120,6 +120,11 @@ gfx::Rect Layer::layerRectToContentRect(const gfx::RectF& layerRect) const
     return gfx::ToEnclosingRect(contentRect);
 }
 
+bool Layer::blocksPendingCommit() const
+{
+    return false;
+}
+
 void Layer::setParent(Layer* layer)
 {
     DCHECK(!layer || !layer->hasAncestor(this));
