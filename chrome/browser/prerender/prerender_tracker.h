@@ -7,11 +7,13 @@
 
 #include <map>
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/non_thread_safe.h"
+#include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "googleurl/src/gurl.h"
 
@@ -23,17 +25,17 @@ struct RenderViewInfo;
 // PrerenderTracker is responsible for keeping track of all prerendering
 // RenderViews and their statuses.  Its list is guaranteed to be up to date
 // and can be modified on any thread.
-class PrerenderTracker {
+class PrerenderTracker : public base::NonThreadSafe,
+                         public PrerenderContents::Observer {
  public:
   PrerenderTracker();
-  ~PrerenderTracker();
+  virtual ~PrerenderTracker();
 
   // Attempts to set the status of the specified RenderViewHost to
   // FINAL_STATUS_USED.  Returns true on success.  Returns false if it has
   // already been cancelled for any reason or is no longer prerendering.
   // Can only be called only on the IO thread.  This method will not call
-  // PrerenderContents::set_final_status() on the corresponding
-  // PrerenderContents.
+  // PrerenderContents::SetFinalStatus() on the corresponding PrerenderContents.
   //
   // If it returns true, all subsequent calls to TryCancel and TryUse for the
   // RenderView will return false.
@@ -81,15 +83,9 @@ class PrerenderTracker {
   // Set of child/route id pairs that may be prerendering.
   typedef std::set<ChildRouteIdPair> PossiblyPrerenderingChildRouteIdPairs;
 
-  // Must be called when a RenderView starts prerendering, before the first
-  // navigation starts to avoid any races.
-  void OnPrerenderingStarted(int child_id, int route_id,
-                             PrerenderManager* prerender_manager);
-
-  // Must be called when a RenderView stops prerendering, either because the
-  // RenderView was used or prerendering was cancelled and it is being
-  // destroyed.
-  void OnPrerenderingFinished(int child_id, int route_id);
+  // From PrerenderContents::Observer:
+  virtual void OnPrerenderStart(PrerenderContents* prerender_contents) OVERRIDE;
+  virtual void OnPrerenderStop(PrerenderContents* prerender_contents) OVERRIDE;
 
   // Attempts to set the FinalStatus of the specified RenderView to
   // |desired_final_status|.  If non-NULL, |actual_final_status| is set to the

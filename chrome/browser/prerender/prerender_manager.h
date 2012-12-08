@@ -181,7 +181,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   static const char* GetModeString();
   static bool IsPrerenderingPossible();
   static bool ActuallyPrerendering();
-  static bool IsControlGroup();
+  static bool IsControlGroup(uint8 experiment_id);
   static bool IsNoUseGroup();
 
   // Query the list of current prerender pages to see if the given web contents

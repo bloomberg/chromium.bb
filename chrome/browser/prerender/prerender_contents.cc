@@ -73,10 +73,10 @@ void InformRenderProcessAboutPrerender(const GURL& url,
 class PrerenderContentsFactoryImpl : public PrerenderContents::Factory {
  public:
   virtual PrerenderContents* CreatePrerenderContents(
-      PrerenderManager* prerender_manager, PrerenderTracker* prerender_tracker,
-      Profile* profile, const GURL& url, const content::Referrer& referrer,
+      PrerenderManager* prerender_manager, Profile* profile,
+      const GURL& url, const content::Referrer& referrer,
       Origin origin, uint8 experiment_id) OVERRIDE {
-    return new PrerenderContents(prerender_manager, prerender_tracker, profile,
+    return new PrerenderContents(prerender_manager, profile,
                                  url, referrer, origin, experiment_id);
   }
 };
@@ -167,6 +167,12 @@ class PrerenderContents::TabContentsDelegateImpl
   PrerenderContents* prerender_contents_;
 };
 
+PrerenderContents::Observer::Observer() {
+}
+
+PrerenderContents::Observer::~Observer() {
+}
+
 PrerenderContents::PendingPrerenderInfo::PendingPrerenderInfo(
     base::WeakPtr<PrerenderHandle> weak_prerender_handle,
     Origin origin,
@@ -202,7 +208,6 @@ void PrerenderContents::StartPendingPrerenders() {
 
 PrerenderContents::PrerenderContents(
     PrerenderManager* prerender_manager,
-    PrerenderTracker* prerender_tracker,
     Profile* profile,
     const GURL& url,
     const content::Referrer& referrer,
@@ -210,7 +215,6 @@ PrerenderContents::PrerenderContents(
     uint8 experiment_id)
     : prerendering_has_started_(false),
       prerender_manager_(prerender_manager),
-      prerender_tracker_(prerender_tracker),
       prerender_url_(url),
       referrer_(referrer),
       profile_(profile),
@@ -260,8 +264,7 @@ PrerenderContents::Factory* PrerenderContents::CreateFactory() {
 void PrerenderContents::StartPrerendering(
     int creator_child_id,
     const gfx::Size& size,
-    SessionStorageNamespace* session_storage_namespace,
-    bool is_control_group) {
+    SessionStorageNamespace* session_storage_namespace) {
   DCHECK(profile_ != NULL);
   DCHECK(!size.IsEmpty());
   DCHECK(!prerendering_has_started_);
@@ -283,7 +286,7 @@ void PrerenderContents::StartPrerendering(
   // Everything after this point sets up the WebContents object and associated
   // RenderView for the prerender page. Don't do this for members of the
   // control group.
-  if (is_control_group)
+  if (prerender_manager_->IsControlGroup(experiment_id()))
     return;
 
   prerendering_has_started_ = true;
@@ -309,10 +312,8 @@ void PrerenderContents::StartPrerendering(
   // RenderViewHost. This must be done before the Navigate message to catch all
   // resource requests, but as it is on the same thread as the Navigate message
   // (IO) there is no race condition.
-  prerender_tracker_->OnPrerenderingStarted(
-      child_id_,
-      route_id_,
-      prerender_manager_);
+  AddObserver(prerender_manager()->prerender_tracker());
+  NotifyPrerenderStart();
 
   // Close ourselves when the application is shutting down.
   notification_registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
@@ -365,27 +366,28 @@ bool PrerenderContents::GetRouteId(int* route_id) const {
   return route_id_ != -1;
 }
 
-void PrerenderContents::set_final_status(FinalStatus final_status) {
+void PrerenderContents::SetFinalStatus(FinalStatus final_status) {
   DCHECK(final_status >= FINAL_STATUS_USED && final_status < FINAL_STATUS_MAX);
   DCHECK(final_status_ == FINAL_STATUS_MAX);
 
   final_status_ = final_status;
+
+  if (!prerender_manager_->IsControlGroup(experiment_id()) &&
+      prerendering_has_started()) {
+    NotifyPrerenderStop();
+  }
 }
 
 PrerenderContents::~PrerenderContents() {
-  DCHECK(final_status_ != FINAL_STATUS_MAX);
-  DCHECK(prerendering_has_been_cancelled_ ||
-         final_status_ == FINAL_STATUS_USED);
-  DCHECK(origin_ != ORIGIN_MAX);
+  DCHECK_NE(FINAL_STATUS_MAX, final_status());
+  DCHECK(
+      prerendering_has_been_cancelled() || final_status() == FINAL_STATUS_USED);
+  DCHECK_NE(ORIGIN_MAX, origin());
 
   prerender_manager_->RecordFinalStatusWithMatchCompleteStatus(
-      origin_,
-      experiment_id_,
-      match_complete_status_,
-      final_status_);
+      origin(), experiment_id(), match_complete_status(), final_status());
 
   if (child_id_ != -1 && route_id_ != -1) {
-    prerender_tracker_->OnPrerenderingFinished(child_id_, route_id_);
     for (std::vector<GURL>::const_iterator it = alias_urls_.begin();
          it != alias_urls_.end();
          ++it) {
@@ -397,6 +399,11 @@ PrerenderContents::~PrerenderContents() {
   // destroy it.
   if (prerender_contents_.get())
     delete ReleasePrerenderContents();
+}
+
+void PrerenderContents::AddObserver(Observer* observer) {
+  DCHECK_EQ(FINAL_STATUS_MAX, final_status_);
+  observer_list_.AddObserver(observer);
 }
 
 void PrerenderContents::Observe(int type,
@@ -481,6 +488,17 @@ WebContents* PrerenderContents::CreateWebContents(
   session_storage_namespace_map[""] = session_storage_namespace;
   return  WebContents::CreateWithSessionStorage(
       profile_, NULL, MSG_ROUTING_NONE, NULL, session_storage_namespace_map);
+}
+
+void PrerenderContents::NotifyPrerenderStart() {
+  DCHECK_EQ(FINAL_STATUS_MAX, final_status_);
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnPrerenderStart(this));
+}
+
+void PrerenderContents::NotifyPrerenderStop() {
+  DCHECK_NE(FINAL_STATUS_MAX, final_status_);
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnPrerenderStop(this));
+  observer_list_.Clear();
 }
 
 void PrerenderContents::DidUpdateFaviconURL(
@@ -579,18 +597,18 @@ void PrerenderContents::Destroy(FinalStatus final_status) {
     // because destroy may be called directly from the UI thread without calling
     // TryCancel().  This is difficult to completely avoid, since prerendering
     // can be cancelled before a RenderView is created.
-    bool is_cancelled = prerender_tracker_->TryCancel(
+    bool is_cancelled = prerender_manager()->prerender_tracker()->TryCancel(
         child_id_, route_id_, final_status);
     CHECK(is_cancelled);
 
     // A different final status may have been set already from another thread.
     // If so, use it instead.
-    if (!prerender_tracker_->GetFinalStatus(child_id_, route_id_,
-                                            &final_status)) {
+    if (!prerender_manager()->prerender_tracker()->
+            GetFinalStatus(child_id_, route_id_, &final_status)) {
       NOTREACHED();
     }
   }
-  set_final_status(final_status);
+  SetFinalStatus(final_status);
 
   prerendering_has_been_cancelled_ = true;
   prerender_manager_->AddToHistory(this);

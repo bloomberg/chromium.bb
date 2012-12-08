@@ -48,8 +48,8 @@ class DummyPrerenderContents : public PrerenderContents {
   virtual void StartPrerendering(
       int ALLOW_UNUSED creator_child_id,
       const gfx::Size& ALLOW_UNUSED size,
-      content::SessionStorageNamespace* ALLOW_UNUSED session_storage_namespace,
-      bool is_control_group) OVERRIDE;
+      content::SessionStorageNamespace* ALLOW_UNUSED session_storage_namespace)
+      OVERRIDE;
 
   virtual bool GetChildId(int* child_id) const OVERRIDE {
     // Having a default child_id of -1 forces pending prerenders not to fail
@@ -59,7 +59,7 @@ class DummyPrerenderContents : public PrerenderContents {
   }
 
   virtual bool GetRouteId(int* route_id) const OVERRIDE {
-    *route_id = 0;
+    *route_id = route_id_;
     return true;
   }
 
@@ -70,9 +70,14 @@ class DummyPrerenderContents : public PrerenderContents {
   }
 
  private:
+  static int g_next_route_id_;
+  int route_id_;
+
   UnitTestPrerenderManager* test_prerender_manager_;
   FinalStatus expected_final_status_;
 };
+
+int DummyPrerenderContents::g_next_route_id_ = 0;
 
 const gfx::Size kSize(640, 480);
 
@@ -129,7 +134,7 @@ class UnitTestPrerenderManager : public PrerenderManager {
     PrerenderContents* prerender_contents = prerender_data->ReleaseContents();
     active_prerenders_.erase(to_erase);
 
-    prerender_contents->set_final_status(FINAL_STATUS_USED);
+    prerender_contents->SetFinalStatus(FINAL_STATUS_USED);
     prerender_contents->StartPendingPrerenders();
     return prerender_contents;
   }
@@ -244,9 +249,10 @@ DummyPrerenderContents::DummyPrerenderContents(
     const GURL& url,
     Origin origin,
     FinalStatus expected_final_status)
-    : PrerenderContents(test_prerender_manager, prerender_tracker,
+    : PrerenderContents(test_prerender_manager,
                         NULL, url, Referrer(), origin,
                         PrerenderManager::kNoExperiment),
+      route_id_(g_next_route_id_++),
       test_prerender_manager_(test_prerender_manager),
       expected_final_status_(expected_final_status) {
 }
@@ -254,15 +260,16 @@ DummyPrerenderContents::DummyPrerenderContents(
 void DummyPrerenderContents::StartPrerendering(
     int ALLOW_UNUSED creator_child_id,
     const gfx::Size& ALLOW_UNUSED size,
-    content::SessionStorageNamespace* ALLOW_UNUSED session_storage_namespace,
-    bool is_control_group) {
+    content::SessionStorageNamespace* ALLOW_UNUSED session_storage_namespace) {
   // In the base PrerenderContents implementation, StartPrerendering will
   // be called even when the PrerenderManager is part of the control group,
   // but it will early exit before actually creating a new RenderView if
   // |is_control_group| is true;
-  if (!is_control_group)
-    prerendering_has_started_ = true;
   load_start_time_ = test_prerender_manager_->GetCurrentTimeTicks();
+  if (!test_prerender_manager_->IsControlGroup(experiment_id())) {
+    prerendering_has_started_ = true;
+    NotifyPrerenderStart();
+  }
 }
 
 class PrerenderTest : public testing::Test {

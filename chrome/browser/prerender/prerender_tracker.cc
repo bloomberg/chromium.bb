@@ -48,14 +48,15 @@ struct RenderViewInfo {
 };
 
 PrerenderTracker::PrerenderTracker() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 PrerenderTracker::~PrerenderTracker() {
+  DCHECK(final_status_map_.empty());
 }
 
 bool PrerenderTracker::TryUse(int child_id, int route_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
+  DCHECK(CalledOnValidThread());
   return SetFinalStatus(child_id, route_id, FINAL_STATUS_USED, NULL);
 }
 
@@ -77,7 +78,8 @@ bool PrerenderTracker::TryCancelOnIOThread(
     int route_id,
     FinalStatus final_status) {
   DCHECK_NE(FINAL_STATUS_USED, final_status);
-  DCHECK(final_status >= 0 && final_status < FINAL_STATUS_MAX);
+  DCHECK_LE(0, final_status);
+  DCHECK_GT(FINAL_STATUS_MAX, final_status);
 
   if (!IsPrerenderingOnIOThread(child_id, route_id))
     return false;
@@ -91,38 +93,44 @@ bool PrerenderTracker::GetFinalStatus(int child_id, int route_id,
   base::AutoLock lock(final_status_map_lock_);
   FinalStatusMap::const_iterator final_status_it =
       final_status_map_.find(child_route_id_pair);
-  if (final_status_map_.end() == final_status_map_.find(child_route_id_pair))
+  if (final_status_it == final_status_map_.end())
     return false;
   *final_status = final_status_it->second.final_status;
   return true;
 }
 
-void PrerenderTracker::OnPrerenderingStarted(
-    int child_id, int route_id, PrerenderManager* prerender_manager) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_GE(child_id, 0);
-  DCHECK_GE(route_id, 0);
+void PrerenderTracker::OnPrerenderStart(
+    PrerenderContents* prerender_contents) {
+  DCHECK(CalledOnValidThread());
+  int child_id, route_id;
+  bool got_child_id = prerender_contents->GetChildId(&child_id);
+  DCHECK(got_child_id);
+  bool got_route_id = prerender_contents->GetRouteId(&route_id);
+  DCHECK(got_route_id);
 
   ChildRouteIdPair child_route_id_pair(child_id, route_id);
-
-  // The RenderView should not already be prerendering.
-  DCHECK(final_status_map_.end() ==
-         final_status_map_.find(child_route_id_pair));
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&AddPrerenderOnIOThreadTask, child_route_id_pair));
 
   base::AutoLock lock(final_status_map_lock_);
+  // The RenderView should not already be prerendering.
+  DCHECK_EQ(0u, final_status_map_.count(child_route_id_pair));
 
   final_status_map_.insert(
-      std::make_pair(child_route_id_pair, RenderViewInfo(prerender_manager)));
+      std::make_pair(child_route_id_pair,
+                     RenderViewInfo(prerender_contents->prerender_manager())));
 }
 
-void PrerenderTracker::OnPrerenderingFinished(int child_id, int route_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_GE(child_id, 0);
-  DCHECK_GE(route_id, 0);
+void PrerenderTracker::OnPrerenderStop(
+    PrerenderContents* prerender_contents) {
+  DCHECK(CalledOnValidThread());
+  int child_id, route_id;
+  bool got_child_id = prerender_contents->GetChildId(&child_id);
+  DCHECK(got_child_id);
+  bool got_route_id = prerender_contents->GetRouteId(&route_id);
+  DCHECK(got_route_id);
 
   ChildRouteIdPair child_route_id_pair(child_id, route_id);
 
@@ -178,8 +186,7 @@ bool PrerenderTracker::IsPrerenderingOnIOThread(int child_id,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   ChildRouteIdPair child_route_id_pair(child_id, route_id);
-  return possibly_prerendering_io_thread_set_.end() !=
-         possibly_prerendering_io_thread_set_.find(child_route_id_pair);
+  return possibly_prerendering_io_thread_set_.count(child_route_id_pair) > 0;
 }
 
 void PrerenderTracker::AddPrerenderOnIOThread(

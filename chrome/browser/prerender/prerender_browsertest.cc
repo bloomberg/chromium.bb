@@ -208,7 +208,6 @@ class TestPrerenderContents : public PrerenderContents {
  public:
   TestPrerenderContents(
       PrerenderManager* prerender_manager,
-      PrerenderTracker* prerender_tracker,
       Profile* profile,
       const GURL& url,
       const content::Referrer& referrer,
@@ -216,7 +215,7 @@ class TestPrerenderContents : public PrerenderContents {
       int expected_number_of_loads,
       FinalStatus expected_final_status,
       bool prerender_should_wait_for_ready_title)
-      : PrerenderContents(prerender_manager, prerender_tracker, profile, url,
+      : PrerenderContents(prerender_manager, profile, url,
                           referrer, origin, PrerenderManager::kNoExperiment),
         number_of_loads_(0),
         expected_number_of_loads_(expected_number_of_loads),
@@ -440,7 +439,6 @@ class WaitForLoadPrerenderContentsFactory : public PrerenderContents::Factory {
 
   virtual PrerenderContents* CreatePrerenderContents(
       PrerenderManager* prerender_manager,
-      PrerenderTracker* prerender_tracker,
       Profile* profile,
       const GURL& url,
       const content::Referrer& referrer,
@@ -454,7 +452,7 @@ class WaitForLoadPrerenderContentsFactory : public PrerenderContents::Factory {
     VLOG(1) << "Creating prerender contents for " << url.path() <<
                " with expected final status " << expected_final_status;
     VLOG(1) << expected_final_status_queue_.size() << " left in the queue.";
-    return new TestPrerenderContents(prerender_manager, prerender_tracker,
+    return new TestPrerenderContents(prerender_manager,
                                      profile, url, referrer, origin,
                                      expected_number_of_loads_,
                                      expected_final_status,

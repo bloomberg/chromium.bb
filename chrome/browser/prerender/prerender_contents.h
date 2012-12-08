@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
@@ -45,7 +46,6 @@ namespace prerender {
 class PrerenderHandle;
 class PrerenderManager;
 class PrerenderRenderViewHostObserver;
-class PrerenderTracker;
 
 class PrerenderContents : public content::NotificationObserver,
                           public content::WebContentsObserver {
@@ -61,7 +61,6 @@ class PrerenderContents : public content::NotificationObserver,
     // prerender_tracker, and profile are stored as weak pointers.
     virtual PrerenderContents* CreatePrerenderContents(
         PrerenderManager* prerender_manager,
-        PrerenderTracker* prerender_tracker,
         Profile* profile,
         const GURL& url,
         const content::Referrer& referrer,
@@ -70,6 +69,19 @@ class PrerenderContents : public content::NotificationObserver,
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Factory);
+  };
+
+  class Observer {
+   public:
+    // Signals that the prerender has started running.
+    virtual void OnPrerenderStart(PrerenderContents* contents) = 0;
+
+    // Signals that the prerender has stopped running.
+    virtual void OnPrerenderStop(PrerenderContents* contents) = 0;
+
+   protected:
+    Observer();
+    virtual ~Observer() = 0;
   };
 
   // A container for extra data on pending prerenders.
@@ -116,6 +128,10 @@ class PrerenderContents : public content::NotificationObserver,
 
   virtual ~PrerenderContents();
 
+  // All observers of a PrerenderContents are removed after the OnPrerenderStop
+  // event is sent, so there is no need for a RemoveObserver() method.
+  void AddObserver(Observer* observer);
+
   // For MatchComplete correctness, create a dummy replacement prerender
   // contents to stand in for this prerender contents that (which we are about
   // to destroy).
@@ -137,8 +153,7 @@ class PrerenderContents : public content::NotificationObserver,
   virtual void StartPrerendering(
       int creator_child_id,
       const gfx::Size& size,
-      content::SessionStorageNamespace* session_storage_namespace,
-      bool is_control_group);
+      content::SessionStorageNamespace* session_storage_namespace);
 
   // Verifies that the prerendering is not using too many resources, and kills
   // it if not.
@@ -146,6 +161,8 @@ class PrerenderContents : public content::NotificationObserver,
 
   content::RenderViewHost* GetRenderViewHostMutable();
   const content::RenderViewHost* GetRenderViewHost() const;
+
+  PrerenderManager* prerender_manager() { return prerender_manager_; }
 
   string16 title() const { return title_; }
   int32 page_id() const { return page_id_; }
@@ -173,7 +190,7 @@ class PrerenderContents : public content::NotificationObserver,
   // Set the final status for how the PrerenderContents was used. This
   // should only be called once, and should be called before the prerender
   // contents are destroyed.
-  void set_final_status(FinalStatus final_status);
+  void SetFinalStatus(FinalStatus final_status);
   FinalStatus final_status() const { return final_status_; }
 
   Origin origin() const { return origin_; }
@@ -256,12 +273,16 @@ class PrerenderContents : public content::NotificationObserver,
 
  protected:
   PrerenderContents(PrerenderManager* prerender_manager,
-                    PrerenderTracker* prerender_tracker,
                     Profile* profile,
                     const GURL& url,
                     const content::Referrer& referrer,
                     Origin origin,
                     uint8 experiment_id);
+
+  // These call out to methods on our Observers, using our observer_list_. Note
+  // that NotifyPrerenderStop() also clears the observer list.
+  void NotifyPrerenderStart();
+  void NotifyPrerenderStop();
 
   // Called whenever a RenderViewHost is created for prerendering.  Only called
   // once the RenderViewHost has a RenderView and RenderWidgetHostView.
@@ -302,11 +323,10 @@ class PrerenderContents : public content::NotificationObserver,
   // Returns the ProcessMetrics for the render process, if it exists.
   base::ProcessMetrics* MaybeGetProcessMetrics();
 
+  ObserverList<Observer> observer_list_;
+
   // The prerender manager owning this object.
   PrerenderManager* prerender_manager_;
-
-  // The prerender tracker tracking prerenders.
-  PrerenderTracker* prerender_tracker_;
 
   // The URL being prerendered.
   GURL prerender_url_;

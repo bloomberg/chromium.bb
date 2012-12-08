@@ -420,7 +420,7 @@ bool PrerenderManager::MaybeUsePrerenderedPage(WebContents* web_contents,
   histograms_->RecordPerSessionCount(prerender_contents->origin(),
                                      ++prerenders_per_session_count_);
   histograms_->RecordUsedPrerender(prerender_contents->origin());
-  prerender_contents->set_final_status(FINAL_STATUS_USED);
+  prerender_contents->SetFinalStatus(FINAL_STATUS_USED);
 
   RenderViewHost* new_render_view_host =
       prerender_contents->prerender_contents()->web_contents()->
@@ -626,12 +626,13 @@ bool PrerenderManager::IsPrerenderingPossible() {
 
 // static
 bool PrerenderManager::ActuallyPrerendering() {
-  return IsPrerenderingPossible() && !IsControlGroup();
+  return IsPrerenderingPossible() && !IsControlGroup(kNoExperiment);
 }
 
 // static
-bool PrerenderManager::IsControlGroup() {
-  return GetMode() == PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP;
+bool PrerenderManager::IsControlGroup(uint8 experiment_id) {
+  return GetMode() == PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP ||
+      IsControlGroupExperiment(experiment_id);
 }
 
 // static
@@ -806,7 +807,7 @@ DictionaryValue* PrerenderManager::GetAsValue() const {
   dict_value->SetBoolean("omnibox_enabled", IsOmniboxEnabled(profile_));
   // If prerender is disabled via a flag this method is not even called.
   std::string enabled_note;
-  if (IsControlGroup())
+  if (IsControlGroup(kNoExperiment))
     enabled_note += "(Control group: Not actually prerendering) ";
   if (IsNoUseGroup())
     enabled_note += "(No-use group: Not swapping in prerendered pages) ";
@@ -1016,9 +1017,7 @@ PrerenderHandle* PrerenderManager::AddPrerender(
   GURL url = url_arg;
   GURL alias_url;
   uint8 experiment = GetQueryStringBasedExperiment(url_arg);
-  bool control_group_behavior =
-      IsControlGroup() || IsControlGroupExperiment(experiment);
-  if (control_group_behavior &&
+  if (IsControlGroup(experiment) &&
       MaybeGetQueryStringBasedAliasURL(url, &alias_url)) {
     url = alias_url;
   }
@@ -1083,9 +1082,9 @@ PrerenderHandle* PrerenderManager::AddPrerender(
       size.IsEmpty() ? config_.default_tab_bounds.size() : size;
 
   prerender_contents->StartPrerendering(process_id, contents_size,
-                                        session_storage_namespace,
-                                        control_group_behavior);
-  DCHECK(control_group_behavior ||
+                                        session_storage_namespace);
+
+  DCHECK(IsControlGroup(experiment) ||
          prerender_contents->prerendering_has_started());
 
   while (active_prerenders_.size() > config_.max_concurrency) {
@@ -1184,7 +1183,7 @@ PrerenderContents* PrerenderManager::CreatePrerenderContents(
     uint8 experiment_id) {
   DCHECK(CalledOnValidThread());
   return prerender_contents_factory_->CreatePrerenderContents(
-      this, prerender_tracker_, profile_, url, referrer, origin, experiment_id);
+      this, profile_, url, referrer, origin, experiment_id);
 }
 
 void PrerenderManager::SortActivePrerenders() {
