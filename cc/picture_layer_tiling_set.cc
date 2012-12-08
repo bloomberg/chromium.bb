@@ -48,6 +48,11 @@ void PictureLayerTilingSet::AddTiling(float contents_scale,
   tilings_.last()->SetLayerBounds(layer_bounds_);
 }
 
+void PictureLayerTilingSet::Reset() {
+  for (size_t i = 0; i < tilings_.size(); ++i)
+    tilings_[i]->Reset();
+}
+
 PictureLayerTilingSet::Iterator::Iterator(PictureLayerTilingSet* set,
                                           float contents_scale,
                                           gfx::Rect content_rect)

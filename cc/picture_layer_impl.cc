@@ -128,12 +128,16 @@ void PictureLayerImpl::dumpLayerProperties(std::string*, int indent) const {
 }
 
 void PictureLayerImpl::didUpdateTransforms() {
-  tilings_.SetLayerBounds(bounds());
-  // TODO(enne): Add more tilings during pinch zoom.
-  if (!tilings_.num_tilings()) {
-    gfx::Size tile_size = layerTreeHostImpl()->settings().defaultTileSize;
-    tilings_.AddTiling(contentsScaleX(), tile_size);
-    // TODO(enne): handle invalidations, create new tiles
+  if (drawsContent()) {
+    tilings_.SetLayerBounds(bounds());
+    // TODO(enne): Add more tilings during pinch zoom.
+    if (!tilings_.num_tilings()) {
+      gfx::Size tile_size = layerTreeHostImpl()->settings().defaultTileSize;
+      tilings_.AddTiling(contentsScaleX(), tile_size);
+      // TODO(enne): handle invalidations, create new tiles
+    }
+  } else {
+    tilings_.Reset();
   }
 
   gfx::Transform  current_screen_space_transform = screenSpaceTransform();

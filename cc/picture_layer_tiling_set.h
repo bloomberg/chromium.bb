@@ -28,6 +28,8 @@ class CC_EXPORT PictureLayerTilingSet {
   void AddTiling(float contents_scale, gfx::Size tile_size);
   size_t num_tilings() const { return tilings_.size(); }
 
+  void Reset();
+
   void UpdateTilePriorities(const gfx::Size& device_viewport,
                             float layer_content_scale_x,
                             float layer_content_scale_y,
