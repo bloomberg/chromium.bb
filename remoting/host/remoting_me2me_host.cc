@@ -49,7 +49,6 @@
 #include "remoting/host/host_config.h"
 #include "remoting/host/host_event_logger.h"
 #include "remoting/host/host_exit_codes.h"
-#include "remoting/host/host_status_service.h"
 #include "remoting/host/host_user_interface.h"
 #include "remoting/host/ipc_constants.h"
 #include "remoting/host/ipc_desktop_environment_factory.h"
@@ -104,9 +103,6 @@ const char kVersionSwitchName[] = "version";
 // The command line switch used to pass name of the pipe to capture audio on
 // linux.
 const char kAudioPipeSwitchName[] = "audio-pipe-name";
-
-// The command line switch used to enable host status service.
-const char kEnableStatusServiceSwitchName[] = "enable-status-service";
 
 void QuitMessageLoop(MessageLoop* message_loop) {
   message_loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
@@ -276,7 +272,6 @@ class HostProcess
   HostState state_;
 
   scoped_ptr<ConfigFileWatcher> config_watcher_;
-  scoped_ptr<HostStatusService> status_service_;
 
   std::string host_id_;
   protocol::SharedSecretHash host_secret_hash_;
@@ -461,11 +456,6 @@ void HostProcess::OnConfigWatcherError() {
 
 void HostProcess::StartOnNetworkThread() {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          kEnableStatusServiceSwitchName)) {
-    status_service_.reset(new HostStatusService());
-  }
 
 #if !defined(REMOTING_MULTI_PROCESS)
   // Start watching the host configuration file.
@@ -938,9 +928,6 @@ void HostProcess::StartHost() {
         host_, base::Bind(&HostProcess::OnDisconnectRequested, this));
   }
 
-  if (status_service_)
-    status_service_->SetHostIsUp(host_id_);
-
   host_->Start(xmpp_login_);
 
   CreateAuthenticatorFactory();
@@ -997,8 +984,6 @@ void HostProcess::ShutdownHost(int exit_code) {
 
     case HOST_STARTED:
       state_ = HOST_STOPPING;
-      if (status_service_)
-        status_service_->SetHostIsDown();
       host_->Shutdown(base::Bind(&HostProcess::ShutdownOnNetworkThread, this));
       break;
 
@@ -1038,7 +1023,6 @@ void HostProcess::ShutdownOnNetworkThread() {
     }
 
     config_watcher_.reset();
-    status_service_.reset();
 
     // Complete the rest of shutdown on the main thread.
     context_->ui_task_runner()->PostTask(
