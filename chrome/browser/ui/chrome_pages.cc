@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/chrome_pages.h"
 
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
@@ -19,7 +18,7 @@
 #include "chrome/browser/ui/webui/options/content_settings_handler.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
-#include "chrome/common/chrome_switches.h"
+#include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "chrome/common/net/url_util.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/user_metrics.h"
@@ -188,8 +187,7 @@ void ShowSyncSetup(Browser* browser, SyncPromoUI::Source source) {
   if (service->HasSyncSetupCompleted()) {
     ShowSettings(browser);
   } else {
-    const bool use_web_flow = CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kUseWebBasedSigninFlow);
+    const bool use_web_flow = SyncPromoUI::UseWebBasedSigninFlow();
     const bool show_promo =
         SyncPromoUI::ShouldShowSyncPromo(browser->profile());
 

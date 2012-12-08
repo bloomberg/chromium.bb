@@ -109,11 +109,6 @@ void StartSync(Browser* browser,
                             one_click_signin::HISTOGRAM_MAX);
 }
 
-bool UseWebBasedSigninFlow() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kUseWebBasedSigninFlow);
-}
-
 // Determines the source of the sign in.  Its either one of the known sign in
 // access point (first run, NTP, menu, settings) or its an implicit sign in
 // via another Google property.  In the former case, "service" is also
@@ -445,7 +440,7 @@ bool OneClickSigninHelper::CanOffer(content::WebContents* web_contents,
       }
     }
 
-    if (!UseWebBasedSigninFlow()) {
+    if (!SyncPromoUI::UseWebBasedSigninFlow()) {
       // If we're about to show a one-click infobar but the user has started
       // a concurrent signin flow (perhaps via the promo), we may not have yet
       // established an authenticated username but we still shouldn't move
@@ -486,7 +481,7 @@ OneClickSigninHelper::Offer OneClickSigninHelper::CanOfferOnIOThreadImpl(
   if (!io_data)
     return DONT_OFFER;
 
-  if (!UseWebBasedSigninFlow())
+  if (!SyncPromoUI::UseWebBasedSigninFlow())
     return DONT_OFFER;
 
   // Don't offer if the source is known, as that means it's an explicit sign
@@ -577,8 +572,10 @@ void OneClickSigninHelper::ShowInfoBarIfPossible(net::URLRequest* request,
           << " g-a-s='" << google_accounts_signin_value << "'"
           << " g-c-s='" << google_chrome_signin_value << "'";
 
-  if (!UseWebBasedSigninFlow() && google_accounts_signin_value.empty())
+  if (!SyncPromoUI::UseWebBasedSigninFlow() &&
+      google_accounts_signin_value.empty()) {
     return;
+  }
 
   if (!gaia::IsGaiaSignonRealm(request->original_url().GetOrigin()))
     return;
@@ -603,7 +600,7 @@ void OneClickSigninHelper::ShowInfoBarIfPossible(net::URLRequest* request,
   // Later in the chain of this request, we'll need to check the email address
   // in the IO thread (see CanOfferOnIOThread).  So save the email address as
   // user data on the request (only for web-based flow).
-  if (UseWebBasedSigninFlow() && !email.empty())
+  if (SyncPromoUI::UseWebBasedSigninFlow() && !email.empty())
     OneClickSigninRequestUserData::AssociateWithRequest(request, email);
 
   VLOG(1) << "OneClickSigninHelper::ShowInfoBarIfPossible:"
@@ -613,7 +610,7 @@ void OneClickSigninHelper::ShowInfoBarIfPossible(net::URLRequest* request,
   // Parse Google-Chrome-SignIn.
   AutoAccept auto_accept = NO_AUTO_ACCEPT;
   SyncPromoUI::Source source = SyncPromoUI::SOURCE_UNKNOWN;
-  if (UseWebBasedSigninFlow()) {
+  if (SyncPromoUI::UseWebBasedSigninFlow()) {
     std::vector<std::string> tokens;
     base::SplitString(google_chrome_signin_value, ',', &tokens);
     for (size_t i = 0; i < tokens.size(); ++i) {

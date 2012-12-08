@@ -187,11 +187,6 @@ bool IsKeystoreEncryptionEnabled() {
       switches::kSyncKeystoreEncryption);
 }
 
-bool UseWebBasedSigninFlow() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kUseWebBasedSigninFlow);
-}
-
 void BringTabToFront(WebContents* web_contents) {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   if (browser) {
@@ -502,7 +497,7 @@ void SyncSetupHandler::DisplayConfigureSync(bool show_advanced,
   web_ui()->CallJavascriptFunction(
       "SyncSetupOverlay.showSyncSetupPage", page, args);
 
-  if (UseWebBasedSigninFlow()) {
+  if (SyncPromoUI::UseWebBasedSigninFlow()) {
     // Make sure the tab used for the Gaia sign in does not cover the settings
     // tab.
     FocusUI();
@@ -583,23 +578,13 @@ SigninManager* SyncSetupHandler::GetSignin() const {
 }
 
 void SyncSetupHandler::DisplayGaiaLogin(bool fatal_error) {
-  if (UseWebBasedSigninFlow()) {
-    DCHECK(!active_gaia_signin_tab_);
-
+  if (SyncPromoUI::UseWebBasedSigninFlow()) {
     // Advanced options are no longer being configured if the login screen is
     // visible. If the user exits the signin wizard after this without
     // configuring sync, CloseSyncSetup() will ensure they are logged out.
     configuring_sync_ = false;
 
-    GURL url(SyncPromoUI::GetSyncPromoURL(GURL(),
-        SyncPromoUI::SOURCE_SETTINGS, false));
-    Browser* browser = chrome::FindBrowserWithWebContents(
-        web_ui()->GetWebContents());
-    active_gaia_signin_tab_ = browser->OpenURL(
-        content::OpenURLParams(url, content::Referrer(), SINGLETON_TAB,
-                                content::PAGE_TRANSITION_AUTO_BOOKMARK,
-                                false));
-    content::WebContentsObserver::Observe(active_gaia_signin_tab_);
+    DisplayGaiaLoginInNewTab();
     signin_tracker_.reset(
         new SigninTracker(GetProfile(), this,
                           SigninTracker::WAITING_FOR_GAIA_VALIDATION));
@@ -607,6 +592,19 @@ void SyncSetupHandler::DisplayGaiaLogin(bool fatal_error) {
     retry_on_signin_failure_ = true;
     DisplayGaiaLoginWithErrorMessage(string16(), fatal_error);
   }
+}
+
+void SyncSetupHandler::DisplayGaiaLoginInNewTab() {
+  DCHECK(!active_gaia_signin_tab_);
+  GURL url(SyncPromoUI::GetSyncPromoURL(GURL(),
+      SyncPromoUI::SOURCE_SETTINGS, false));
+  Browser* browser = chrome::FindBrowserWithWebContents(
+      web_ui()->GetWebContents());
+  active_gaia_signin_tab_ = browser->OpenURL(
+      content::OpenURLParams(url, content::Referrer(), SINGLETON_TAB,
+                              content::PAGE_TRANSITION_AUTO_BOOKMARK,
+                              false));
+  content::WebContentsObserver::Observe(active_gaia_signin_tab_);
 }
 
 void SyncSetupHandler::DisplayGaiaLoginWithErrorMessage(
@@ -741,7 +739,7 @@ void SyncSetupHandler::DisplayGaiaSuccessAndClose() {
 
 void SyncSetupHandler::DisplayGaiaSuccessAndSettingUp() {
   RecordSignin();
-  if (UseWebBasedSigninFlow())
+  if (SyncPromoUI::UseWebBasedSigninFlow())
     CloseGaiaSigninPage();
 
   web_ui()->CallJavascriptFunction("SyncSetupOverlay.showSuccessAndSettingUp");
@@ -842,7 +840,7 @@ void SyncSetupHandler::SigninFailed(const GoogleServiceAuthError& error) {
 
   // If using web-based sign in flow, don't show the gaia sign in page again
   // since there is no way to show the user an error message.
-  if (UseWebBasedSigninFlow()) {
+  if (SyncPromoUI::UseWebBasedSigninFlow()) {
     CloseSyncSetup();
   } else if (retry_on_signin_failure_) {
     // Got a failed signin - this is either just a typical auth error, or a
@@ -1115,7 +1113,7 @@ void SyncSetupHandler::OpenSyncSetup(bool force_login) {
     DisplayConfigureSync(true, false);
   }
 
-  if (!UseWebBasedSigninFlow())
+  if (!SyncPromoUI::UseWebBasedSigninFlow())
     ShowSetupUI();
 }
 
@@ -1129,8 +1127,8 @@ void SyncSetupHandler::OpenConfigureSync() {
 
 void SyncSetupHandler::FocusUI() {
   DCHECK(IsActiveLogin());
-  if (UseWebBasedSigninFlow() && signin_tracker_) {
-      BringTabToFront(active_gaia_signin_tab_);
+  if (SyncPromoUI::UseWebBasedSigninFlow() && signin_tracker_) {
+    BringTabToFront(active_gaia_signin_tab_);
   } else {
     WebContents* web_contents = web_ui()->GetWebContents();
     web_contents->GetDelegate()->ActivateContents(web_contents);

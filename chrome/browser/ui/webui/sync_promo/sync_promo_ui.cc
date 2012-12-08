@@ -71,13 +71,6 @@ bool AllowPromoAtStartupForCurrentBrand() {
   return true;
 }
 
-bool UseWebBasedSigninFlow() {
-  const bool use_web_based_singin_flow =
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUseWebBasedSigninFlow);
-  return use_web_based_singin_flow;
-}
-
 // The Web UI data source for the sync promo page.
 class SyncPromoUIHTMLSource : public ChromeWebUIDataSource {
  public:
@@ -302,4 +295,14 @@ bool SyncPromoUI::GetAutoCloseForSyncPromoURL(const GURL& url) {
     return (source == 1);
   }
   return false;
+}
+
+// static
+bool SyncPromoUI::UseWebBasedSigninFlow() {
+#if defined(ENABLE_ONE_CLICK_SIGNIN)
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kUseClientLoginSigninFlow);
+#else
+  return false;
+#endif
 }

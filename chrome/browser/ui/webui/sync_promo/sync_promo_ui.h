@@ -67,6 +67,11 @@ class SyncPromoUI : public content::WebUIController {
   // Returns whether the given sync URL contains auto_close parameter.
   static bool GetAutoCloseForSyncPromoURL(const GURL& url);
 
+  // Returns true if chrome should use the web-based sign in flow, false if
+  // chrome should use the ClientLogin flow.  This function will return true
+  // only for platforms where |ENABLE_ONE_CLICK_SIGNIN| is defined.
+  static bool UseWebBasedSigninFlow();
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncPromoUI);
 };

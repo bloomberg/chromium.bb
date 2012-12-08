@@ -215,10 +215,6 @@ OneClickSigninHelperTest::OneClickSigninHelperTest()
 }
 
 void OneClickSigninHelperTest::SetUp() {
-  // Make sure web flow is enabled for tests.
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kUseWebBasedSigninFlow);
-
   TestingProfile* testing_profile = new TestingProfile();
   browser_context_.reset(testing_profile);
 

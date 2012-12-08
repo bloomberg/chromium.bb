@@ -34,6 +34,7 @@
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
+#include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -532,8 +533,7 @@ void FirstRunBubbleLauncher::Observe(
   content::WebContents* contents = chrome::GetActiveWebContents(browser);
 
   // Suppress the first run bubble if a Gaia sign in page is showing.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUseWebBasedSigninFlow) &&
+  if (SyncPromoUI::UseWebBasedSigninFlow() &&
       gaia::IsGaiaSignonRealm(contents->GetURL().GetOrigin())) {
       return;
   }

@@ -950,8 +950,7 @@ void StartupBrowserCreatorImpl::AddStartupURLs(
   // of the list.
   if (SyncPromoUI::ShouldShowSyncPromoAtStartup(profile_, is_first_run_)) {
     GURL continue_url;
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kUseWebBasedSigninFlow)) {
+    if (!SyncPromoUI::UseWebBasedSigninFlow()) {
       continue_url = GURL(chrome::kChromeUINewTabURL);
     }
 

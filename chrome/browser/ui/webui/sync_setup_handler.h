@@ -83,6 +83,8 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
   FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, UnsuccessfullySetPassphrase);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, SubmitAuthWithInvalidUsername);
 
+  bool is_configuring_sync() const { return configuring_sync_; }
+  bool have_signin_tracker() const { return signin_tracker_; }
 
   // Subclasses must implement this to show the setup UI that's appropriate
   // for the page this is contained in.
@@ -138,6 +140,10 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
   // Displays the GAIA login form. If |fatal_error| is true, displays the fatal
   // error UI.
   void DisplayGaiaLogin(bool fatal_error);
+
+  // When web-flow is enabled, displays the Gaia login form in a new tab.
+  // This function is virtual so that tests can override.
+  virtual void DisplayGaiaLoginInNewTab();
 
   // Displays the GAIA login form with a custom error message (used for errors
   // like "email address already in use by another profile"). No message

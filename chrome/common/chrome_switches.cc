@@ -1342,8 +1342,8 @@ const char kMaxSpdyConcurrentStreams[]      = "max-spdy-concurrent-streams";
 // all of its state.
 const char kUserDataDir[]                   = "user-data-dir";
 
-// Uses the GAIA web-based signin flow instead of the native UI signin flow.
-const char kUseWebBasedSigninFlow[]         = "use-web-based-signin-flow";
+// Uses the /ClientLogin signin flow instead of the web-based signin flow.
+const char kUseClientLoginSigninFlow[]         = "use-client-login-signin-flow";
 
 // Specifies a custom URL for the server which reports variation data to the
 // client. See variations_service.cc.
