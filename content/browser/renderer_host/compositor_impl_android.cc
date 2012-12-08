@@ -221,7 +221,7 @@ WebKit::WebGLId CompositorImpl::GenerateTexture(gfx::JavaBitmap& bitmap) {
                       format,
                       type,
                       bitmap.pixels());
-  context->flush();
+  context->shallowFlushCHROMIUM();
   DCHECK(context->getError() == GL_NO_ERROR);
   return texture_id;
 }
@@ -242,7 +242,7 @@ WebKit::WebGLId CompositorImpl::GenerateCompressedTexture(gfx::Size& size,
                                 0,
                                 data_size,
                                 data);
-  context->flush();
+  context->shallowFlushCHROMIUM();
   DCHECK(context->getError() == GL_NO_ERROR);
   return texture_id;
 }
@@ -253,7 +253,7 @@ void CompositorImpl::DeleteTexture(WebKit::WebGLId texture_id) {
   if (context->isContextLost())
     return;
   context->deleteTexture(texture_id);
-  context->flush();
+  context->shallowFlushCHROMIUM();
   DCHECK(context->getError() == GL_NO_ERROR);
 }
 
