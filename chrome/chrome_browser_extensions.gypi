@@ -642,6 +642,8 @@
         'browser/extensions/startup_helper.h',
         'browser/extensions/state_store.cc',
         'browser/extensions/state_store.h',
+        'browser/extensions/suggest_permission_util.h',
+        'browser/extensions/suggest_permission_util.cc',
         'browser/extensions/system/system_api.cc',
         'browser/extensions/system/system_api.h',
         'browser/extensions/system_info_provider.h',

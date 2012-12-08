@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/shell_window_geometry_cache.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
+#include "chrome/browser/extensions/suggest_permission_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/file_select_helper.h"
@@ -316,8 +317,12 @@ void ShellWindow::HandleKeyboardEvent(
 void ShellWindow::RequestToLockMouse(WebContents* web_contents,
                                      bool user_gesture,
                                      bool last_unlocked_by_target) {
-  web_contents->GotResponseToLockMouseRequest(
-      extension_->HasAPIPermission(extensions::APIPermission::kPointerLock));
+  bool has_permission = IsExtensionWithPermissionOrSuggestInConsole(
+      APIPermission::kPointerLock,
+      extension_,
+      web_contents->GetRenderViewHost());
+
+  web_contents->GotResponseToLockMouseRequest(has_permission);
 }
 
 void ShellWindow::OnNativeClose() {

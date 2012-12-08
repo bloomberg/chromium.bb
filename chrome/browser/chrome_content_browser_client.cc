@@ -36,6 +36,7 @@
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/extensions/extension_webkit_preferences.h"
 #include "chrome/browser/extensions/message_handler.h"
+#include "chrome/browser/extensions/suggest_permission_util.h"
 #include "chrome/browser/geolocation/chrome_access_token_store.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
@@ -1361,10 +1362,10 @@ void ChromeContentBrowserClient::RequestDesktopNotificationPermission(
   const Extension* extension = !service ? NULL :
       service->extensions()->GetExtensionOrAppByURL(ExtensionURLInfo(
           source_origin));
-  if (extension &&
-      extension->HasAPIPermission(APIPermission::kNotification)) {
-    RenderViewHost* rvh =
-        RenderViewHost::FromID(render_process_id, render_view_id);
+  RenderViewHost* rvh =
+      RenderViewHost::FromID(render_process_id, render_view_id);
+  if (IsExtensionWithPermissionOrSuggestInConsole(
+      APIPermission::kNotification, extension, rvh)) {
     if (rvh)
       rvh->DesktopNotificationPermissionRequestDone(callback_context);
     return;

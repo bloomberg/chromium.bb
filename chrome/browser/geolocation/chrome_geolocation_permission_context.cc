@@ -14,6 +14,7 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/suggest_permission_util.h"
 #include "chrome/browser/geolocation/geolocation_infobar_queue_controller.h"
 #include "chrome/browser/geolocation/geolocation_permission_request_id.h"
 #include "chrome/browser/profiles/profile.h"
@@ -26,6 +27,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 
+using extensions::APIPermission;
 
 ChromeGeolocationPermissionContext::ChromeGeolocationPermissionContext(
     Profile* profile)
@@ -64,8 +66,9 @@ void ChromeGeolocationPermissionContext::RequestGeolocationPermission(
             ExtensionURLInfo(WebKit::WebSecurityOrigin::createFromString(
                                  UTF8ToUTF16(requesting_frame.spec())),
                              requesting_frame));
-    if (extension &&
-        extension->HasAPIPermission(extensions::APIPermission::kGeolocation)) {
+    if (IsExtensionWithPermissionOrSuggestInConsole(APIPermission::kGeolocation,
+                                                    extension,
+                                                    profile_)) {
       // Make sure the extension is in the calling process.
       if (extension_service->process_map()->Contains(extension->id(),
                                                      id.render_process_id())) {
