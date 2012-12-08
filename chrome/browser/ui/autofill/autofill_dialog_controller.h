@@ -84,6 +84,7 @@ class AutofillDialogController {
 
   // Called by the view.
   string16 DialogTitle() const;
+  string16 SecurityWarning() const;
   string16 SiteLabel() const;
   string16 IntroText() const;
   string16 LabelForSection(DialogSection section) const;
@@ -112,6 +113,9 @@ class AutofillDialogController {
 
   // Whether or not the current request wants credit info back.
   bool RequestingCreditCardInfo() const;
+
+  // Whether or not the view should show a security warning.
+  bool ShouldShowSecurityWarning() const;
 
   // Initializes |suggested_email_| et al.
   void GenerateComboboxModels();

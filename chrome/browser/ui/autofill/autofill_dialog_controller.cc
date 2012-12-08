@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
 
-#include "base/command_line.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_country.h"
@@ -14,7 +13,6 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/form_data.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
@@ -173,19 +171,6 @@ void AutofillDialogController::Show() {
     return;
   }
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAllowInsecureInteractiveAutocomplete)) {
-    // Requests for credit info must be secure with no minor or major errors.
-    if (RequestingCreditCardInfo() &&
-        (!source_url_.SchemeIs(chrome::kHttpsScheme) ||
-         net::IsCertStatusError(ssl_status_.cert_status) ||
-         net::IsCertStatusMinorError(ssl_status_.cert_status))) {
-      callback_.Run(NULL);
-      delete this;
-      return;
-    }
-  }
-
   int row_id = 0;
 
   const DetailInput kEmailInputs[] = {
@@ -254,6 +239,12 @@ string16 AutofillDialogController::DialogTitle() const {
   return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_TITLE);
 }
 
+string16 AutofillDialogController::SecurityWarning() const {
+  return ShouldShowSecurityWarning() ?
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SECURITY_WARNING) :
+      string16();
+}
+
 string16 AutofillDialogController::SiteLabel() const {
   return UTF8ToUTF16(source_url_.host());
 }
@@ -313,6 +304,13 @@ bool AutofillDialogController::RequestingCreditCardInfo() const {
   }
 
   return false;
+}
+
+bool AutofillDialogController::ShouldShowSecurityWarning() const {
+  return RequestingCreditCardInfo() &&
+         (!source_url_.SchemeIs(chrome::kHttpsScheme) ||
+          net::IsCertStatusError(ssl_status_.cert_status) ||
+          net::IsCertStatusMinorError(ssl_status_.cert_status));
 }
 
 const DetailInputs& AutofillDialogController::RequestedFieldsForSection(

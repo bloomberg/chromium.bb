@@ -7,6 +7,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/combobox/combobox.h"
@@ -195,6 +196,23 @@ void AutofillDialogViews::InitChildViews() {
                         views::GridLayout::USE_PREF,
                         0,
                         0);
+
+  string16 security_warning(controller_->SecurityWarning());
+  if (!security_warning.empty()) {
+    layout->StartRow(0, single_column_set);
+
+    views::Label* label = new views::Label(security_warning);
+    label->SetAutoColorReadabilityEnabled(false);
+    label->SetEnabledColor(SK_ColorRED);
+    label->SetFont(label->font().DeriveFont(0, gfx::Font::BOLD));
+    label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    label->set_border(views::Border::CreateEmptyBorder(0, 0, 10, 0));
+
+    // TODO(dbeam): make this wrap when long. Just label->SetMultiline(true);
+    // didn't seem to be enough.
+
+    layout->AddView(label);
+  }
 
   layout->StartRow(0, single_column_set);
   layout->AddView(CreateIntroContainer());

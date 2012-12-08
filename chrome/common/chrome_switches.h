@@ -27,7 +27,6 @@ extern const char kActionBox[];
 extern const char kAllowCrossOriginAuthPrompt[];
 extern const char kAllowFileAccess[];
 extern const char kAllowHTTPBackgroundPage[];
-extern const char kAllowInsecureInteractiveAutocomplete[];
 extern const char kAllowLegacyExtensionManifests[];
 extern const char kAllowNaClSocketAPI[];
 extern const char kAllowOutdatedPlugins[];

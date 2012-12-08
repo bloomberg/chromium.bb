@@ -32,10 +32,6 @@ const char kAllowFileAccess[]               = "allow-file-access";
 // Allows non-https URL for background_page for hosted apps.
 const char kAllowHTTPBackgroundPage[]       = "allow-http-background-page";
 
-// Allow non-encrypted interactive autocomplete requests for credit card info.
-const char kAllowInsecureInteractiveAutocomplete[] =
-    "allow-insecure-interactive-autocomplete";
-
 // Allows the browser to load extensions that lack a modern manifest when that
 // would otherwise be forbidden.
 const char kAllowLegacyExtensionManifests[] =
