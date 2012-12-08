@@ -5,10 +5,10 @@
 #include "chrome/test/ui/ui_test.h"
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 #include "chrome/browser/ui/webui/test_web_dialog_delegate.h"
 #include "chrome/common/url_constants.h"
@@ -27,18 +27,18 @@ class ConstrainedWebDialogBrowserTestObserver
  public:
   explicit ConstrainedWebDialogBrowserTestObserver(WebContents* contents)
       : content::WebContentsObserver(contents),
-        tab_destroyed_(false) {
+        contents_destroyed_(false) {
   }
   virtual ~ConstrainedWebDialogBrowserTestObserver() {}
 
-  bool tab_destroyed() { return tab_destroyed_; }
+  bool contents_destroyed() { return contents_destroyed_; }
 
  private:
   virtual void WebContentsDestroyed(WebContents* tab) OVERRIDE {
-    tab_destroyed_ = true;
+    contents_destroyed_ = true;
   }
 
-  bool tab_destroyed_;
+  bool contents_destroyed_;
 };
 
 }  // namespace
@@ -69,13 +69,13 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogBrowserTest, BasicTest) {
                                  NULL,
                                  web_contents);
   ASSERT_TRUE(dialog_delegate);
-  EXPECT_TRUE(dialog_delegate->window());
+  EXPECT_TRUE(dialog_delegate->GetWindow());
   EXPECT_EQ(1U, GetConstrainedWindowCount(web_contents));
 }
 
-// Tests that ReleaseTabContentsOnDialogClose() works.
+// Tests that ReleaseWebContentsOnDialogClose() works.
 IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogBrowserTest,
-                       ReleaseTabContentsOnDialogClose) {
+                       ReleaseWebContentsOnDialogClose) {
   // The delegate deletes itself.
   WebDialogDelegate* delegate = new test::TestWebDialogDelegate(
       GURL(chrome::kChromeUIConstrainedHTMLTestURL));
@@ -88,16 +88,16 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogBrowserTest,
                                  NULL,
                                  web_contents);
   ASSERT_TRUE(dialog_delegate);
-  scoped_ptr<TabContents> new_tab(dialog_delegate->tab());
+  scoped_ptr<WebContents> new_tab(dialog_delegate->GetWebContents());
   ASSERT_TRUE(new_tab.get());
   ASSERT_EQ(1U, GetConstrainedWindowCount(web_contents));
 
-  ConstrainedWebDialogBrowserTestObserver observer(new_tab->web_contents());
-  dialog_delegate->ReleaseTabContentsOnDialogClose();
+  ConstrainedWebDialogBrowserTestObserver observer(new_tab.get());
+  dialog_delegate->ReleaseWebContentsOnDialogClose();
   dialog_delegate->OnDialogCloseFromWebUI();
 
-  ASSERT_FALSE(observer.tab_destroyed());
+  ASSERT_FALSE(observer.contents_destroyed());
   EXPECT_EQ(0U, GetConstrainedWindowCount(web_contents));
   new_tab.reset();
-  EXPECT_TRUE(observer.tab_destroyed());
+  EXPECT_TRUE(observer.contents_destroyed());
 }

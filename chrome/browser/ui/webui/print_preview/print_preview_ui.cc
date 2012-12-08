@@ -303,7 +303,7 @@ void PrintPreviewUI::OnHidePreviewTab() {
   ConstrainedWebDialogDelegate* delegate = GetConstrainedDelegate();
   if (!delegate)
     return;
-  delegate->ReleaseTabContentsOnDialogClose();
+  delegate->ReleaseWebContentsOnDialogClose();
   background_printing_manager->OwnPrintPreviewTab(preview_tab);
   OnClosePrintPreviewTab();
 }

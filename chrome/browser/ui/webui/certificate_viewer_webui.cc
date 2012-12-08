@@ -11,7 +11,6 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/certificate_viewer.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/certificate_dialogs.h"
 #include "chrome/browser/ui/constrained_window.h"
@@ -73,13 +72,11 @@ void CertificateViewerDialog::Show(WebContents* web_contents,
                                    gfx::NativeWindow parent) {
   // TODO(bshe): UI tweaks needed for Aura HTML Dialog, such as adding padding
   // on the title for Aura ConstrainedWebDialogUI.
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
   window_ = CreateConstrainedWebDialog(
-      profile,
+      web_contents->GetBrowserContext(),
       this,
       NULL,
-      web_contents)->window()->GetNativeWindow();
+      web_contents)->GetWindow()->GetNativeWindow();
 }
 
 ui::ModalType CertificateViewerDialog::GetDialogModalType() const {

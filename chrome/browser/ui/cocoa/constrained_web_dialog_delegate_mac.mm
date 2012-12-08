@@ -9,7 +9,6 @@
 #include "base/memory/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac2.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/size.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
@@ -26,7 +25,7 @@ class ConstrainedWebDialogDelegateMac :
 
  public:
   ConstrainedWebDialogDelegateMac(
-      Profile* profile,
+      content::BrowserContext* browser_context,
       WebDialogDelegate* delegate,
       WebDialogWebContentsDelegate* tab_delegate,
       content::WebContents* web_contents);
@@ -43,14 +42,14 @@ class ConstrainedWebDialogDelegateMac :
   virtual void OnDialogCloseFromWebUI() OVERRIDE {
     return impl_->OnDialogCloseFromWebUI();
   }
-  virtual void ReleaseTabContentsOnDialogClose() OVERRIDE {
-    return impl_->ReleaseTabContentsOnDialogClose();
+  virtual void ReleaseWebContentsOnDialogClose() OVERRIDE {
+    return impl_->ReleaseWebContentsOnDialogClose();
   }
-  virtual ConstrainedWindow* window() OVERRIDE {
-    return impl_->window();
+  virtual ConstrainedWindow* GetWindow() OVERRIDE {
+    return impl_->GetWindow();
   }
-  virtual TabContents* tab() OVERRIDE {
-    return impl_->tab();
+  virtual WebContents* GetWebContents() OVERRIDE {
+    return impl_->GetWebContents();
   }
 
   // ConstrainedWindowMacDelegate2 interface
@@ -70,11 +69,11 @@ class ConstrainedWebDialogDelegateMac :
 };
 
 ConstrainedWebDialogDelegateMac::ConstrainedWebDialogDelegateMac(
-    Profile* profile,
+    content::BrowserContext* browser_context,
     WebDialogDelegate* delegate,
     WebDialogWebContentsDelegate* tab_delegate,
     content::WebContents* web_contents)
-    : impl_(new ConstrainedWebDialogDelegateBase(profile,
+    : impl_(new ConstrainedWebDialogDelegateBase(browser_context,
                                                  delegate,
                                                  tab_delegate)) {
   // Create a window to hold web_contents in the constrained sheet:
@@ -84,8 +83,8 @@ ConstrainedWebDialogDelegateMac::ConstrainedWebDialogDelegateMac(
 
   window_.reset(
       [[ConstrainedWindowCustomWindow alloc] initWithContentRect:frame]);
-  [tab()->web_contents()->GetNativeView() setFrame:frame];
-  [[window_ contentView] addSubview:tab()->web_contents()->GetNativeView()];
+  [GetWebContents()->GetNativeView() setFrame:frame];
+  [[window_ contentView] addSubview:GetWebContents()->GetNativeView()];
 
   constrained_window_.reset(new ConstrainedWindowMac2(
       this, web_contents, window_));
@@ -93,13 +92,13 @@ ConstrainedWebDialogDelegateMac::ConstrainedWebDialogDelegateMac(
 }
 
 ConstrainedWebDialogDelegate* CreateConstrainedWebDialog(
-        Profile* profile,
+        content::BrowserContext* browser_context,
         WebDialogDelegate* delegate,
         WebDialogWebContentsDelegate* tab_delegate,
         content::WebContents* web_contents) {
   // Deleted when the dialog closes.
   ConstrainedWebDialogDelegateMac* constrained_delegate =
       new ConstrainedWebDialogDelegateMac(
-          profile, delegate, tab_delegate, web_contents);
+          browser_context, delegate, tab_delegate, web_contents);
   return constrained_delegate;
 }

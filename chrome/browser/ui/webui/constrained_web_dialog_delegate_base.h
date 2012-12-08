@@ -6,10 +6,13 @@
 #define CHROME_BROWSER_UI_WEBUI_CONSTRAINED_WEB_DIALOG_DELEGATE_BASE_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 #include "ui/web_dialogs/web_dialog_web_contents_delegate.h"
+
+namespace content {
+class BrowserContext;
+}
 
 namespace ui {
 class WebDialogDelegate;
@@ -21,7 +24,7 @@ class ConstrainedWebDialogDelegateBase
       public ui::WebDialogWebContentsDelegate {
  public:
   ConstrainedWebDialogDelegateBase(
-      Profile* profile,
+      content::BrowserContext* browser_context,
       ui::WebDialogDelegate* delegate,
       WebDialogWebContentsDelegate* tab_delegate);
   virtual ~ConstrainedWebDialogDelegateBase();
@@ -34,9 +37,9 @@ class ConstrainedWebDialogDelegateBase
       GetWebDialogDelegate() const OVERRIDE;
   virtual ui::WebDialogDelegate* GetWebDialogDelegate() OVERRIDE;
   virtual void OnDialogCloseFromWebUI() OVERRIDE;
-  virtual void ReleaseTabContentsOnDialogClose() OVERRIDE;
-  virtual ConstrainedWindow* window() OVERRIDE;
-  virtual TabContents* tab() OVERRIDE;
+  virtual void ReleaseWebContentsOnDialogClose() OVERRIDE;
+  virtual ConstrainedWindow* GetWindow() OVERRIDE;
+  virtual content::WebContents* GetWebContents() OVERRIDE;
 
   // WebDialogWebContentsDelegate interface.
   virtual void HandleKeyboardEvent(
@@ -54,14 +57,14 @@ class ConstrainedWebDialogDelegateBase
   ConstrainedWindow* window_;
 
   // Holds the HTML to display in the constrained dialog.
-  scoped_ptr<TabContents> tab_;
+  scoped_ptr<content::WebContents> web_contents_;
 
   // Was the dialog closed from WebUI (in which case |web_dialog_delegate_|'s
   // OnDialogClosed() method has already been called)?
   bool closed_via_webui_;
 
-  // If true, release |tab_| on close instead of destroying it.
-  bool release_tab_on_close_;
+  // If true, release |web_contents_| on close instead of destroying it.
+  bool release_contents_on_close_;
 
   scoped_ptr<WebDialogWebContentsDelegate> override_tab_delegate_;
 

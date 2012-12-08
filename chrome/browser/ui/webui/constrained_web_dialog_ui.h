@@ -9,10 +9,9 @@
 #include "content/public/browser/web_ui_controller.h"
 
 class ConstrainedWindow;
-class Profile;
-class TabContents;
 
 namespace content {
+class BrowserContext;
 class RenderViewHost;
 class WebContents;
 }
@@ -31,18 +30,16 @@ class ConstrainedWebDialogDelegate {
   // message from WebUI.
   virtual void OnDialogCloseFromWebUI() = 0;
 
-  // If called, on dialog closure, the dialog will release its TabContents
+  // If called, on dialog closure, the dialog will release its WebContents
   // instead of destroying it. After which point, the caller will own the
-  // released TabContents.
-  virtual void ReleaseTabContentsOnDialogClose() = 0;
+  // released WebContents.
+  virtual void ReleaseWebContentsOnDialogClose() = 0;
 
   // Returns the ConstrainedWindow.
-  // TODO: fix this function name and the one below to conform to the style
-  // guide (i.e. GetWindow, GetTab).
-  virtual ConstrainedWindow* window() = 0;
+  virtual ConstrainedWindow* GetWindow() = 0;
 
-  // Returns the TabContents owned by the constrained window.
-  virtual TabContents* tab() = 0;
+  // Returns the WebContents owned by the constrained window.
+  virtual content::WebContents* GetWebContents() = 0;
 
  protected:
   virtual ~ConstrainedWebDialogDelegate() {}
@@ -85,7 +82,8 @@ class ConstrainedWebDialogUI
 // Create a constrained HTML dialog. The actual object that gets created
 // is a ConstrainedWebDialogDelegate, which later triggers construction of a
 // ConstrainedWebDialogUI object.
-// |profile| is used to construct the constrained HTML dialog's WebContents.
+// |browser_context| is used to construct the constrained HTML dialog's
+//                   WebContents.
 // |delegate| controls the behavior of the dialog.
 // |tab_delegate| is optional, pass one in to use a custom
 //                WebDialogWebContentsDelegate with the dialog, or NULL to
@@ -93,7 +91,7 @@ class ConstrainedWebDialogUI
 //                |tab_delegate|.
 // |overshadowed| is the tab being overshadowed by the dialog.
 ConstrainedWebDialogDelegate* CreateConstrainedWebDialog(
-    Profile* profile,
+    content::BrowserContext* browser_context,
     ui::WebDialogDelegate* delegate,
     ui::WebDialogWebContentsDelegate* tab_delegate,
     content::WebContents* overshadowed);

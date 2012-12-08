@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/webui/constrained_web_dialog_delegate_base.h"
 
 #include "chrome/browser/ui/gtk/constrained_window_gtk.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -23,7 +22,7 @@ class ConstrainedWebDialogDelegateGtk : public ConstrainedWindowGtkDelegate,
                                         public ConstrainedWebDialogDelegate {
  public:
   ConstrainedWebDialogDelegateGtk(
-      Profile* profile,
+      content::BrowserContext* browser_context,
       WebDialogDelegate* delegate,
       WebDialogWebContentsDelegate* tab_delegate);
 
@@ -44,22 +43,22 @@ class ConstrainedWebDialogDelegateGtk : public ConstrainedWindowGtkDelegate,
   virtual void OnDialogCloseFromWebUI() OVERRIDE {
     return impl_->OnDialogCloseFromWebUI();
   }
-  virtual void ReleaseTabContentsOnDialogClose() OVERRIDE {
-    return impl_->ReleaseTabContentsOnDialogClose();
+  virtual void ReleaseWebContentsOnDialogClose() OVERRIDE {
+    return impl_->ReleaseWebContentsOnDialogClose();
   }
-  virtual ConstrainedWindow* window() OVERRIDE {
-    return impl_->window();
+  virtual ConstrainedWindow* GetWindow() OVERRIDE {
+    return impl_->GetWindow();
   }
-  virtual TabContents* tab() OVERRIDE {
-    return impl_->tab();
+  virtual WebContents* GetWebContents() OVERRIDE {
+    return impl_->GetWebContents();
   }
 
   // ConstrainedWindowGtkDelegate interface
   virtual GtkWidget* GetWidgetRoot() OVERRIDE {
-    return tab()->web_contents()->GetView()->GetNativeView();
+    return GetWebContents()->GetView()->GetNativeView();
   }
   virtual GtkWidget* GetFocusWidget() OVERRIDE {
-    return tab()->web_contents()->GetContentNativeView();
+    return GetWebContents()->GetContentNativeView();
   }
   virtual void DeleteDelegate() OVERRIDE {
     if (!impl_->closed_via_webui())
@@ -78,11 +77,11 @@ class ConstrainedWebDialogDelegateGtk : public ConstrainedWindowGtkDelegate,
 };
 
 ConstrainedWebDialogDelegateGtk::ConstrainedWebDialogDelegateGtk(
-    Profile* profile,
+    content::BrowserContext* browser_context,
     WebDialogDelegate* delegate,
     WebDialogWebContentsDelegate* tab_delegate)
     : impl_(new ConstrainedWebDialogDelegateBase(
-                    profile, delegate, tab_delegate)) {
+                    browser_context, delegate, tab_delegate)) {
   gfx::Size dialog_size;
   delegate->GetDialogSize(&dialog_size);
   gtk_widget_set_size_request(GTK_WIDGET(GetWidgetRoot()),
@@ -93,12 +92,13 @@ ConstrainedWebDialogDelegateGtk::ConstrainedWebDialogDelegateGtk(
 }
 
 ConstrainedWebDialogDelegate* CreateConstrainedWebDialog(
-      Profile* profile,
+      content::BrowserContext* browser_context,
       WebDialogDelegate* delegate,
       WebDialogWebContentsDelegate* tab_delegate,
       content::WebContents* web_contents) {
   ConstrainedWebDialogDelegateGtk* constrained_delegate =
-      new ConstrainedWebDialogDelegateGtk(profile, delegate, tab_delegate);
+      new ConstrainedWebDialogDelegateGtk(
+          browser_context, delegate, tab_delegate);
   ConstrainedWindow* constrained_window =
       new ConstrainedWindowGtk(web_contents, constrained_delegate);
   constrained_delegate->set_window(constrained_window);

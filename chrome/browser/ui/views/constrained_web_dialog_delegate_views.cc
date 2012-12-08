@@ -5,8 +5,6 @@
 #include "chrome/browser/ui/webui/constrained_web_dialog_delegate_base.h"
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/browser/ui/views/unhandled_keyboard_event_handler.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -28,13 +26,14 @@ class ConstrainedWebDialogDelegateViews
     : public ConstrainedWebDialogDelegateBase {
  public:
   ConstrainedWebDialogDelegateViews(
-      Profile* profile,
+      content::BrowserContext* browser_context,
       WebDialogDelegate* delegate,
       WebDialogWebContentsDelegate* tab_delegate,
       views::WebView* view)
-      : ConstrainedWebDialogDelegateBase(profile, delegate, tab_delegate),
+      : ConstrainedWebDialogDelegateBase(
+            browser_context, delegate, tab_delegate),
         view_(view) {
-    WebContents* web_contents = tab()->web_contents();
+    WebContents* web_contents = GetWebContents();
     if (tab_delegate) {
       set_override_tab_delegate(tab_delegate);
       web_contents->SetDelegate(tab_delegate);
@@ -47,7 +46,7 @@ class ConstrainedWebDialogDelegateViews
 
   // WebDialogWebContentsDelegate interface.
   virtual void CloseContents(WebContents* source) OVERRIDE {
-    window()->CloseConstrainedWindow();
+    GetWindow()->CloseConstrainedWindow();
   }
 
   // contents::WebContentsDelegate
@@ -75,7 +74,7 @@ class ConstrainedWebDialogDelegateViewViews
       public views::WidgetDelegate {
  public:
   ConstrainedWebDialogDelegateViewViews(
-      Profile* profile,
+      content::BrowserContext* browser_context,
       WebDialogDelegate* delegate,
       WebDialogWebContentsDelegate* tab_delegate);
   virtual ~ConstrainedWebDialogDelegateViewViews();
@@ -95,14 +94,14 @@ class ConstrainedWebDialogDelegateViewViews
   virtual void OnDialogCloseFromWebUI() OVERRIDE {
     return impl_->OnDialogCloseFromWebUI();
   }
-  virtual void ReleaseTabContentsOnDialogClose() OVERRIDE {
-    return impl_->ReleaseTabContentsOnDialogClose();
+  virtual void ReleaseWebContentsOnDialogClose() OVERRIDE {
+    return impl_->ReleaseWebContentsOnDialogClose();
   }
-  virtual ConstrainedWindow* window() OVERRIDE {
-    return impl_->window();
+  virtual ConstrainedWindow* GetWindow() OVERRIDE {
+    return impl_->GetWindow();
   }
-  virtual TabContents* tab() OVERRIDE {
-    return impl_->tab();
+  virtual WebContents* GetWebContents() OVERRIDE {
+    return impl_->GetWebContents();
   }
 
   // views::WidgetDelegate interface.
@@ -152,7 +151,7 @@ class ConstrainedWebDialogDelegateViewViews
       const ui::Accelerator& accelerator) OVERRIDE {
     // Pressing ESC closes the dialog.
     DCHECK_EQ(ui::VKEY_ESCAPE, accelerator.key_code());
-    window()->CloseConstrainedWindow();
+    GetWindow()->CloseConstrainedWindow();
     return true;
   }
   virtual gfx::Size GetPreferredSize() OVERRIDE {
@@ -173,15 +172,15 @@ class ConstrainedWebDialogDelegateViewViews
 };
 
 ConstrainedWebDialogDelegateViewViews::ConstrainedWebDialogDelegateViewViews(
-    Profile* profile,
+    content::BrowserContext* browser_context,
     WebDialogDelegate* delegate,
     WebDialogWebContentsDelegate* tab_delegate)
-    : views::WebView(profile),
-      impl_(new ConstrainedWebDialogDelegateViews(profile,
+    : views::WebView(browser_context),
+      impl_(new ConstrainedWebDialogDelegateViews(browser_context,
                                                   delegate,
                                                   tab_delegate,
                                                   this)) {
-  SetWebContents(tab()->web_contents());
+  SetWebContents(GetWebContents());
 
   // Pressing ESC closes the dialog.
   set_allow_accelerators(true);
@@ -192,13 +191,13 @@ ConstrainedWebDialogDelegateViewViews::~ConstrainedWebDialogDelegateViewViews() 
 }
 
 ConstrainedWebDialogDelegate* CreateConstrainedWebDialog(
-    Profile* profile,
+    content::BrowserContext* browser_context,
     WebDialogDelegate* delegate,
     WebDialogWebContentsDelegate* tab_delegate,
     content::WebContents* web_contents) {
   ConstrainedWebDialogDelegateViewViews* constrained_delegate =
       new ConstrainedWebDialogDelegateViewViews(
-          profile, delegate, tab_delegate);
+          browser_context, delegate, tab_delegate);
   ConstrainedWindow* constrained_window =
       new ConstrainedWindowViews(web_contents,
                                  constrained_delegate,

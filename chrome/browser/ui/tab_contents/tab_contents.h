@@ -13,7 +13,6 @@
 
 class Browser;
 class BrowserTabstripTabContentsCreator;
-class ConstrainedWebDialogDelegateBase;
 class InstantLoader;
 class Profile;
 class TabStripModel;
@@ -48,7 +47,6 @@ class TabContents : public content::WebContentsObserver {
 
     friend class Browser;
     friend class BrowserTabstripTabContentsCreator;
-    friend class ConstrainedWebDialogDelegateBase;
     friend class InstantLoader;
     friend class prerender::PrerenderContents;
     // See crbug.com/153587

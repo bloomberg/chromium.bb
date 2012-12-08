@@ -6,9 +6,7 @@
 
 #include <string>
 
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/constrained_window.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "content/public/browser/web_contents.h"
 #include "ipc/ipc_message.h"
@@ -21,36 +19,36 @@ using ui::WebDialogDelegate;
 using ui::WebDialogWebContentsDelegate;
 
 ConstrainedWebDialogDelegateBase::ConstrainedWebDialogDelegateBase(
-    Profile* profile,
+    content::BrowserContext* browser_context,
     WebDialogDelegate* delegate,
     WebDialogWebContentsDelegate* tab_delegate)
-    : WebDialogWebContentsDelegate(profile, new ChromeWebContentsHandler),
+    : WebDialogWebContentsDelegate(browser_context,
+                                   new ChromeWebContentsHandler),
       web_dialog_delegate_(delegate),
       window_(NULL),
       closed_via_webui_(false),
-      release_tab_on_close_(false) {
+      release_contents_on_close_(false) {
   CHECK(delegate);
-  WebContents* web_contents =
-      WebContents::Create(profile, NULL, MSG_ROUTING_NONE, NULL);
-  tab_.reset(TabContents::Factory::CreateTabContents(web_contents));
+  web_contents_.reset(
+      WebContents::Create(browser_context, NULL, MSG_ROUTING_NONE, NULL));
   if (tab_delegate) {
     override_tab_delegate_.reset(tab_delegate);
-    web_contents->SetDelegate(tab_delegate);
+    web_contents_->SetDelegate(tab_delegate);
   } else {
-    web_contents->SetDelegate(this);
+    web_contents_->SetDelegate(this);
   }
   // Set |this| as a delegate so the ConstrainedWebDialogUI can retrieve it.
-  ConstrainedWebDialogUI::SetConstrainedDelegate(web_contents, this);
+  ConstrainedWebDialogUI::SetConstrainedDelegate(web_contents_.get(), this);
 
-  web_contents->GetController().LoadURL(delegate->GetDialogContentURL(),
-                                        content::Referrer(),
-                                        content::PAGE_TRANSITION_AUTO_TOPLEVEL,
-                                        std::string());
+  web_contents_->GetController().LoadURL(delegate->GetDialogContentURL(),
+                                         content::Referrer(),
+                                         content::PAGE_TRANSITION_AUTO_TOPLEVEL,
+                                         std::string());
 }
 
 ConstrainedWebDialogDelegateBase::~ConstrainedWebDialogDelegateBase() {
-  if (release_tab_on_close_)
-    ignore_result(tab_.release());
+  if (release_contents_on_close_)
+    ignore_result(web_contents_.release());
 }
 
 const WebDialogDelegate*
@@ -81,16 +79,16 @@ bool ConstrainedWebDialogDelegateBase::closed_via_webui() const {
   return closed_via_webui_;
 }
 
-void ConstrainedWebDialogDelegateBase::ReleaseTabContentsOnDialogClose() {
-  release_tab_on_close_ = true;
+void ConstrainedWebDialogDelegateBase::ReleaseWebContentsOnDialogClose() {
+  release_contents_on_close_ = true;
 }
 
-ConstrainedWindow* ConstrainedWebDialogDelegateBase::window() {
+ConstrainedWindow* ConstrainedWebDialogDelegateBase::GetWindow() {
   return window_;
 }
 
-TabContents* ConstrainedWebDialogDelegateBase::tab() {
-  return tab_.get();
+WebContents* ConstrainedWebDialogDelegateBase::GetWebContents() {
+  return web_contents_.get();
 }
 
 void ConstrainedWebDialogDelegateBase::HandleKeyboardEvent(

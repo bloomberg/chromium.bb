@@ -54,7 +54,7 @@ TabModalConfirmDialogWebUI::TabModalConfirmDialogWebUI(
 
   constrained_web_dialog_delegate_ =
       CreateConstrainedWebDialog(profile, this, NULL, web_contents);
-  delegate_->set_window(constrained_web_dialog_delegate_->window());
+  delegate_->set_window(constrained_web_dialog_delegate_->GetWindow());
 }
 
 ui::ModalType TabModalConfirmDialogWebUI::GetDialogModalType() const {
