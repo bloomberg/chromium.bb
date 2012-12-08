@@ -113,6 +113,8 @@ void PPB_Buffer_Proxy::OnMsgCreate(
   HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
   if (!dispatcher)
     return;
+  if (!dispatcher->permissions().HasPermission(ppapi::PERMISSION_DEV))
+    return;
 
   thunk::EnterResourceCreation enter(instance);
   if (enter.failed())
