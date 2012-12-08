@@ -798,9 +798,13 @@ void LayerTreeHostImpl::OnVSyncParametersChanged(base::TimeTicks timebase, base:
     m_client->onVSyncParametersChanged(timebase, interval);
 }
 
-void LayerTreeHostImpl::OnSendFrameToParentCompositorAck(const CompositorFrameAck&)
+void LayerTreeHostImpl::OnSendFrameToParentCompositorAck(const CompositorFrameAck& ack)
 {
-    // TODO(danakj): Implement this.
+    if (!m_renderer)
+        return;
+
+    // TODO(piman): We may need to do some validation on this ack before processing it.
+    m_renderer->receiveCompositorFrameAck(ack);
 }
 
 void LayerTreeHostImpl::OnCanDrawStateChangedForTree(LayerTreeImpl*)

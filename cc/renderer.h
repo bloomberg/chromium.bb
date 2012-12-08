@@ -13,6 +13,7 @@
 
 namespace cc {
 
+class CompositorFrameAck;
 class ScopedResource;
 
 class CC_EXPORT RendererClient {
@@ -49,6 +50,7 @@ public:
     int viewportHeight() { return viewportSize().height(); }
 
     virtual void viewportChanged() { }
+    virtual void receiveCompositorFrameAck(const CompositorFrameAck&) { }
 
     virtual void decideRenderPassAllocationsForFrame(const RenderPassList&) { }
     virtual bool haveCachedResourcesForRenderPassId(RenderPass::Id) const;
