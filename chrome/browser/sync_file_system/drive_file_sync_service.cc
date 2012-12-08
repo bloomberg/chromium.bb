@@ -1259,12 +1259,9 @@ void DriveFileSyncService::DidResolveConflictToLocalChange(
     return;
   }
 
-  const DriveMetadata& metadata = param->drive_metadata;
-  param->drive_metadata.set_conflicted(false);
   const fileapi::FileSystemURL& url = param->remote_change.url;
-
-  metadata_store_->UpdateEntry(
-      url, metadata,
+  metadata_store_->DeleteEntry(
+      url,
       base::Bind(&DriveFileSyncService::CompleteRemoteSync,
                  AsWeakPtr(), base::Passed(&param)));
 }

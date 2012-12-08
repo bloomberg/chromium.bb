@@ -147,7 +147,8 @@ void LocalFileChangeTracker::ClearChangesForURL(const FileSystemURL& url) {
   ClearDirtyOnDatabase(url);
 
   FileChangeMap::iterator found = changes_.find(url);
-  DCHECK(found != changes_.end());
+  if (found == changes_.end())
+    return;
   change_seqs_.erase(found->second.change_seq);
   changes_.erase(found);
   UpdateNumChanges();
