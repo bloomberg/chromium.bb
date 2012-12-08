@@ -87,6 +87,23 @@ void InputMethodWin::DispatchKeyEvent(
   DispatchKeyEventPostIME(native_key_event);
 }
 
+void InputMethodWin::DispatchFabricatedKeyEvent(const ui::KeyEvent& event) {
+  // TODO(ananta)
+  // Support IMEs and RTL layout in Windows 8 metro Ash. The code below won't
+  // work with IMEs.
+  // Bug: https://code.google.com/p/chromium/issues/detail?id=164964
+  if (event.is_char()) {
+    if (GetTextInputClient()) {
+      GetTextInputClient()->InsertChar(event.key_code(),
+                                       ui::GetModifiersFromKeyState());
+      return;
+    }
+  }
+  DispatchFabricatedKeyEventPostIME(event.type(),
+                                    event.key_code(),
+                                    event.flags());
+}
+
 void InputMethodWin::OnTextInputTypeChanged(const TextInputClient* client) {
   if (IsTextInputClientFocused(client)) {
     ime_input_.CancelIME(hwnd_);
