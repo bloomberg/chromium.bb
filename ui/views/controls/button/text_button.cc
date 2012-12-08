@@ -54,6 +54,10 @@ const int kMinWidthDLUs = 50;
 const int kMinHeightDLUs = 14;
 #endif
 
+// The default hot and pushed button image IDs; normal has none by default.
+const int kHotImages[] = IMAGE_GRID(IDR_TEXTBUTTON_HOVER);
+const int kPushedImages[] = IMAGE_GRID(IDR_TEXTBUTTON_PRESSED);
+
 }  // namespace
 
 // static
@@ -99,12 +103,10 @@ const TextButtonBorder* TextButtonBorder::AsTextButtonBorder() const {
 
 TextButtonDefaultBorder::TextButtonDefaultBorder()
     : vertical_padding_(kPreferredPaddingVertical) {
-  set_hot_set(BorderImages(BorderImages::kHot));
-  set_pushed_set(BorderImages(BorderImages::kPushed));
-  SetInsets(gfx::Insets(vertical_padding_,
-                        kPreferredPaddingHorizontal,
-                        vertical_padding_,
-                        kPreferredPaddingHorizontal));
+  set_hot_painter(Painter::CreateImageGridPainter(kHotImages));
+  set_pushed_painter(Painter::CreateImageGridPainter(kPushedImages));
+  SetInsets(gfx::Insets(vertical_padding_, kPreferredPaddingHorizontal,
+                        vertical_padding_, kPreferredPaddingHorizontal));
 }
 
 TextButtonDefaultBorder::~TextButtonDefaultBorder() {
@@ -119,22 +121,23 @@ void TextButtonDefaultBorder::Paint(const View& view, gfx::Canvas* canvas) {
   const TextButton* button = static_cast<const TextButton*>(&view);
   int state = button->state();
 
-  BorderImages* set = &normal_set_;
+  Painter* painter = normal_painter_.get();
   if (button->show_multiple_icon_states() &&
       ((state == TextButton::STATE_HOVERED) ||
        (state == TextButton::STATE_PRESSED))) {
-    set = (state == TextButton::STATE_HOVERED) ? &hot_set_ : &pushed_set_;
+    painter = (state == TextButton::STATE_HOVERED) ?
+        hot_painter_.get() : pushed_painter_.get();
   }
-  if (!set->IsEmpty()) {
+  if (painter) {
     if (button->GetAnimation()->is_animating()) {
       // TODO(pkasting): Really this should crossfade between states so it could
       // handle the case of having a non-NULL |normal_set_|.
       canvas->SaveLayerAlpha(static_cast<uint8>(
           button->GetAnimation()->CurrentValueBetween(0, 255)));
-      set->Paint(canvas, view.size());
+      painter->Paint(canvas, view.size());
       canvas->Restore();
     } else {
-      set->Paint(canvas, view.size());
+      painter->Paint(canvas, view.size());
     }
   }
 }

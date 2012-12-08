@@ -201,8 +201,7 @@ LocationBarView::LocationBarView(Browser* browser,
             *ui::ResourceBundle::GetSharedInstance().GetImageNamed(
                 IDR_LOCATION_BAR_BORDER).ToImageSkia(),
             gfx::Insets(kBorderRoundCornerHeight, kBorderRoundCornerWidth,
-                kBorderRoundCornerHeight, kBorderRoundCornerWidth),
-            true));
+                        kBorderRoundCornerHeight, kBorderRoundCornerWidth)));
   }
 
   edit_bookmarks_enabled_.Init(

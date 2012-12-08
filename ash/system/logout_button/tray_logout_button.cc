@@ -15,7 +15,6 @@
 #include "grit/ash_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/border.h"
-#include "ui/views/controls/button/border_images.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/button/label_button.h"
@@ -25,7 +24,7 @@
 
 namespace {
 
-const int kLogoutButtonBorderNormalImages[] = {
+const int kLogoutButtonNormalImages[] = {
   IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_NORMAL_TOP_LEFT,
   IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_NORMAL_TOP,
   IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_NORMAL_TOP_RIGHT,
@@ -36,7 +35,7 @@ const int kLogoutButtonBorderNormalImages[] = {
   IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_NORMAL_BOTTOM,
   IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_NORMAL_BOTTOM_RIGHT
 };
-const int kLogoutButtonBorderHotImages[] = {
+const int kLogoutButtonHotImages[] = {
   IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_HOT_TOP_LEFT,
   IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_HOT_TOP,
   IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_HOT_TOP_RIGHT,
@@ -47,7 +46,7 @@ const int kLogoutButtonBorderHotImages[] = {
   IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_HOT_BOTTOM,
   IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_HOT_BOTTOM_RIGHT
 };
-const int kLogoutButtonBorderPushedImages[] = {
+const int kLogoutButtonPushedImages[] = {
   IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_PUSHED_TOP_LEFT,
   IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_PUSHED_TOP,
   IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_PUSHED_TOP_RIGHT,
@@ -86,12 +85,12 @@ class LogoutButton : public views::View,
     }
     button_->SetFont(button_->GetFont().DeriveFont(1));
     views::LabelButtonBorder* border = new views::LabelButtonBorder();
-    border->SetImages(views::CustomButton::STATE_NORMAL,
-                      views::BorderImages(kLogoutButtonBorderNormalImages));
-    border->SetImages(views::CustomButton::STATE_HOVERED,
-                      views::BorderImages(kLogoutButtonBorderHotImages));
-    border->SetImages(views::CustomButton::STATE_PRESSED,
-                      views::BorderImages(kLogoutButtonBorderPushedImages));
+    border->SetPainter(views::CustomButton::STATE_NORMAL,
+        views::Painter::CreateImageGridPainter(kLogoutButtonNormalImages));
+    border->SetPainter(views::CustomButton::STATE_HOVERED,
+        views::Painter::CreateImageGridPainter(kLogoutButtonHotImages));
+    border->SetPainter(views::CustomButton::STATE_PRESSED,
+        views::Painter::CreateImageGridPainter(kLogoutButtonPushedImages));
     button_->set_border(border);
     AddChildView(button_);
     OnLoginStatusChanged(status);

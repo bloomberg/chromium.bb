@@ -8,14 +8,15 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/border.h"
-#include "ui/views/controls/button/border_images.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/native_theme_delegate.h"
+#include "ui/views/painter.h"
 
 namespace views {
 
@@ -64,24 +65,19 @@ class VIEWS_EXPORT TextButtonDefaultBorder : public TextButtonBorder {
   TextButtonDefaultBorder();
   virtual ~TextButtonDefaultBorder();
 
-  // By default STATE_NORMAL is drawn with no border.  Call this to instead draw
-  // it with the same border as the "hot" state.
-  // TODO(pkasting): You should also call set_animate_on_state_change(false) on
-  // the button in this case... we should fix this.
-  void copy_normal_set_to_hot_set() { set_normal_set(hot_set_); }
-
  protected:
-  void set_normal_set(const BorderImages& set) { normal_set_ = set; }
-  void set_hot_set(const BorderImages& set) { hot_set_ = set; }
-  void set_pushed_set(const BorderImages& set) { pushed_set_ = set; }
+  // TextButtonDefaultBorder takes and retains ownership of these |painter|s.
+  void set_normal_painter(Painter* painter) { normal_painter_.reset(painter); }
+  void set_hot_painter(Painter* painter) { hot_painter_.reset(painter); }
+  void set_pushed_painter(Painter* painter) { pushed_painter_.reset(painter); }
 
  private:
-  // Border:
+  // Implementation of Border:
   virtual void Paint(const View& view, gfx::Canvas* canvas) OVERRIDE;
 
-  BorderImages normal_set_;
-  BorderImages hot_set_;
-  BorderImages pushed_set_;
+  scoped_ptr<Painter> normal_painter_;
+  scoped_ptr<Painter> hot_painter_;
+  scoped_ptr<Painter> pushed_painter_;
 
   int vertical_padding_;
 

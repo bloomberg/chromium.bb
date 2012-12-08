@@ -11,6 +11,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
@@ -72,95 +73,91 @@ class GradientPainter : public Painter {
   DISALLOW_COPY_AND_ASSIGN(GradientPainter);
 };
 
-
-class ImagePainter : public Painter {
+// ImagePainter stores and paints nine images as a scalable grid.
+class VIEWS_EXPORT ImagePainter : public Painter {
  public:
-  ImagePainter(const gfx::ImageSkia& image,
-               const gfx::Insets& insets,
-               bool paint_center)
-      : image_(image),
-        insets_(insets),
-        paint_center_(paint_center) {
-    DCHECK(image.width() > insets.width() &&
-           image.height() > insets.height());
-  }
+  // Construct an ImagePainter with the specified image resource ids.
+  // See CreateImageGridPainter()'s comment regarding image ID count and order.
+  explicit ImagePainter(const int image_ids[]);
+  // Construct an ImagePainter with the specified image and insets.
+  ImagePainter(const gfx::ImageSkia& image, const gfx::Insets& insets);
 
-  // Paints the images.
-  virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) OVERRIDE {
-    if (size.width() == image_.width() && size.height() == image_.height()) {
-      // Early out if the size we're to render at equals the size of the image.
-      canvas->DrawImageInt(image_, 0, 0);
-      return;
-    }
-    // Upper left.
-    canvas->DrawImageInt(image_, 0, 0, insets_.left(), insets_.top(),
-                         0, 0, insets_.left(), insets_.top(), true);
-    // Top edge.
-    canvas->DrawImageInt(
-        image_,
-        insets_.left(), 0, image_.width() - insets_.width(), insets_.top(),
-        insets_.left(), 0, size.width() - insets_.width(), insets_.top(), true);
-    // Upper right.
-    canvas->DrawImageInt(
-        image_,
-        image_.width() - insets_.right(), 0, insets_.right(), insets_.top(),
-        size.width() - insets_.right(), 0, insets_.right(), insets_.top(),
-        true);
-    // Right edge.
-    canvas->DrawImageInt(
-        image_,
-        image_.width() - insets_.right(), insets_.top(),
-        insets_.right(), image_.height() - insets_.height(),
-        size.width() - insets_.right(), insets_.top(), insets_.right(),
-        size.height() - insets_.height(), true);
-    // Bottom right.
-    canvas->DrawImageInt(
-        image_,
-        image_.width() - insets_.right(), image_.height() - insets_.bottom(),
-        insets_.right(), insets_.bottom(),
-        size.width() - insets_.right(),
-        size.height() - insets_.bottom(), insets_.right(),
-        insets_.bottom(), true);
-    // Bottom edge.
-    canvas->DrawImageInt(
-        image_,
-        insets_.left(), image_.height() - insets_.bottom(),
-        image_.width() - insets_.width(), insets_.bottom(),
-        insets_.left(), size.height() - insets_.bottom(),
-        size.width() - insets_.width(),
-        insets_.bottom(), true);
-    // Bottom left.
-    canvas->DrawImageInt(
-        image_,
-        0, image_.height() - insets_.bottom(), insets_.left(),
-        insets_.bottom(),
-        0, size.height() - insets_.bottom(), insets_.left(), insets_.bottom(),
-        true);
-    // Left.
-    canvas->DrawImageInt(
-        image_,
-        0, insets_.top(), insets_.left(), image_.height() - insets_.height(),
-        0, insets_.top(), insets_.left(), size.height() - insets_.height(),
-        true);
-    // Center.
-    if (paint_center_) {
-      canvas->DrawImageInt(
-          image_,
-          insets_.left(), insets_.top(),
-          image_.width() - insets_.width(), image_.height() - insets_.height(),
-          insets_.left(), insets_.top(),
-          size.width() - insets_.width(), size.height() - insets_.height(),
-          true);
-    }
-  }
+  virtual ~ImagePainter();
+
+  // Returns true if the images are empty.
+  bool IsEmpty() const;
+
+  // Overridden from Painter:
+  virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) OVERRIDE;
 
  private:
-  const gfx::ImageSkia image_;
-  const gfx::Insets insets_;
-  bool paint_center_;
+  // Images must share widths by column and heights by row as depicted below.
+  // Coordinates along the X and Y axes are used for construction and painting.
+  //     x0   x1   x2   x3
+  // y0__|____|____|____|
+  // y1__|_i0_|_i1_|_i2_|
+  // y2__|_i3_|_i4_|_i5_|
+  // y3__|_i6_|_i7_|_i8_|
+  gfx::ImageSkia images_[9];
 
   DISALLOW_COPY_AND_ASSIGN(ImagePainter);
 };
+
+ImagePainter::ImagePainter(const int image_ids[]) {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  for (size_t i = 0; i < 9; ++i)
+    images_[i] = *rb.GetImageSkiaNamed(image_ids[i]);
+}
+
+ImagePainter::ImagePainter(const gfx::ImageSkia& image,
+                           const gfx::Insets& insets) {
+  DCHECK_GE(image.width(), insets.width());
+  DCHECK_GE(image.height(), insets.height());
+
+  // Extract subsets of the original image to match the |images_| format.
+  const int x[] =
+      { 0, insets.left(), image.width() - insets.right(), image.width() };
+  const int y[] =
+      { 0, insets.top(), image.height() - insets.bottom(), image.height() };
+
+  for (size_t j = 0; j < 3; ++j) {
+    for (size_t i = 0; i < 3; ++i) {
+      images_[i + j * 3] = gfx::ImageSkiaOperations::ExtractSubset(image,
+          gfx::Rect(x[i], y[j], x[i + 1] - x[i], y[j + 1] - y[j]));
+    }
+  }
+}
+
+ImagePainter::~ImagePainter() {
+}
+
+bool ImagePainter::IsEmpty() const {
+  return images_[0].isNull();
+}
+
+void ImagePainter::Paint(gfx::Canvas* canvas, const gfx::Size& size) {
+  if (IsEmpty())
+    return;
+
+  // Paint image subsets in accordance with the |images_| format.
+  const gfx::Rect rect(size);
+  const int x[] = { rect.x(), rect.x() + images_[0].width(),
+                    rect.right() - images_[2].width(), rect.right() };
+  const int y[] = { rect.y(), rect.y() + images_[0].height(),
+                    rect.bottom() - images_[6].height(), rect.bottom() };
+
+  canvas->DrawImageInt(images_[0], x[0], y[0]);
+  canvas->TileImageInt(images_[1], x[1], y[0], x[2] - x[1], y[1] - y[0]);
+  canvas->DrawImageInt(images_[2], x[2], y[0]);
+  canvas->TileImageInt(images_[3], x[0], y[1], x[1] - x[0], y[2] - y[1]);
+  canvas->DrawImageInt(
+      images_[4], 0, 0, images_[4].width(), images_[4].height(),
+      x[1], y[1], x[2] - x[1], y[2] - y[1], false);
+  canvas->TileImageInt(images_[5], x[2], y[1], x[3] - x[2], y[2] - y[1]);
+  canvas->DrawImageInt(images_[6], 0, y[2]);
+  canvas->TileImageInt(images_[7], x[1], y[2], x[2] - x[1], y[3] - y[2]);
+  canvas->DrawImageInt(images_[8], x[2], y[2]);
+}
 
 }  // namespace
 
@@ -202,9 +199,13 @@ Painter* Painter::CreateVerticalMultiColorGradient(SkColor* colors,
 
 // static
 Painter* Painter::CreateImagePainter(const gfx::ImageSkia& image,
-                                     const gfx::Insets& insets,
-                                     bool paint_center) {
-  return new ImagePainter(image, insets, paint_center);
+                                     const gfx::Insets& insets) {
+  return new ImagePainter(image, insets);
+}
+
+// static
+Painter* Painter::CreateImageGridPainter(const int image_ids[]) {
+  return new ImagePainter(image_ids);
 }
 
 HorizontalPainter::HorizontalPainter(const int image_resource_names[]) {

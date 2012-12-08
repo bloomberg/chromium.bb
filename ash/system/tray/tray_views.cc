@@ -22,7 +22,6 @@
 #include "ui/gfx/vector2d.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/border.h"
-#include "ui/views/controls/button/border_images.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -393,14 +392,18 @@ void FixedSizedScrollView::OnPaintFocusBorder(gfx::Canvas* canvas) {
 // TrayPopupLabelButtonBorder
 
 TrayPopupLabelButtonBorder::TrayPopupLabelButtonBorder() {
-  SetImages(views::CustomButton::STATE_NORMAL,
-            views::BorderImages(kTrayPopupLabelButtonBorderImagesNormal));
-  SetImages(views::CustomButton::STATE_DISABLED,
-            views::BorderImages(kTrayPopupLabelButtonBorderImagesNormal));
-  SetImages(views::CustomButton::STATE_HOVERED,
-            views::BorderImages(kTrayPopupLabelButtonBorderImagesHovered));
-  SetImages(views::CustomButton::STATE_PRESSED,
-            views::BorderImages(kTrayPopupLabelButtonBorderImagesHovered));
+  SetPainter(views::CustomButton::STATE_NORMAL,
+             views::Painter::CreateImageGridPainter(
+                 kTrayPopupLabelButtonBorderImagesNormal));
+  SetPainter(views::CustomButton::STATE_DISABLED,
+             views::Painter::CreateImageGridPainter(
+                 kTrayPopupLabelButtonBorderImagesNormal));
+  SetPainter(views::CustomButton::STATE_HOVERED,
+             views::Painter::CreateImageGridPainter(
+                 kTrayPopupLabelButtonBorderImagesHovered));
+  SetPainter(views::CustomButton::STATE_PRESSED,
+             views::Painter::CreateImageGridPainter(
+                 kTrayPopupLabelButtonBorderImagesHovered));
 }
 
 TrayPopupLabelButtonBorder::~TrayPopupLabelButtonBorder() {}

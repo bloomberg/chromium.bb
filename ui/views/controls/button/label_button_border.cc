@@ -5,6 +5,7 @@
 #include "ui/views/controls/button/label_button_border.h"
 
 #include "base/logging.h"
+#include "grit/ui_resources.h"
 #include "ui/base/animation/animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/rect.h"
@@ -24,15 +25,19 @@ static const int kPreferredPaddingVertical = 5;
 static const int kPreferredNativeThemePaddingHorizontal = 12;
 static const int kPreferredNativeThemePaddingVertical = 5;
 
-views::CustomButton::ButtonState GetButtonState(ui::NativeTheme::State state) {
+// The default hot and pushed button image IDs; normal has none by default.
+const int kHotImages[] = IMAGE_GRID(IDR_TEXTBUTTON_HOVER);
+const int kPushedImages[] = IMAGE_GRID(IDR_TEXTBUTTON_PRESSED);
+
+CustomButton::ButtonState GetButtonState(ui::NativeTheme::State state) {
   switch(state) {
-    case ui::NativeTheme::kDisabled: return views::CustomButton::STATE_DISABLED;
-    case ui::NativeTheme::kHovered:  return views::CustomButton::STATE_HOVERED;
-    case ui::NativeTheme::kNormal:   return views::CustomButton::STATE_NORMAL;
-    case ui::NativeTheme::kPressed:  return views::CustomButton::STATE_PRESSED;
+    case ui::NativeTheme::kDisabled: return CustomButton::STATE_DISABLED;
+    case ui::NativeTheme::kHovered:  return CustomButton::STATE_HOVERED;
+    case ui::NativeTheme::kNormal:   return CustomButton::STATE_NORMAL;
+    case ui::NativeTheme::kPressed:  return CustomButton::STATE_PRESSED;
     case ui::NativeTheme::kMaxState: NOTREACHED() << "Unknown state: " << state;
   }
-  return views::CustomButton::STATE_NORMAL;
+  return CustomButton::STATE_NORMAL;
 }
 
 // A helper function to paint the native theme or images as appropriate.
@@ -46,14 +51,16 @@ void PaintHelper(LabelButtonBorder* border,
   if (border->native_theme())
     theme->Paint(canvas->sk_canvas(), part, state, rect, extra);
   else
-    border->GetImages(GetButtonState(state))->Paint(canvas, rect.size());
+    border->GetPainter(GetButtonState(state))->Paint(canvas, rect.size());
 }
 
 }  // namespace
 
 LabelButtonBorder::LabelButtonBorder() : native_theme_(false) {
-  SetImages(CustomButton::STATE_HOVERED, BorderImages(BorderImages::kHot));
-  SetImages(CustomButton::STATE_PRESSED, BorderImages(BorderImages::kPushed));
+  SetPainter(CustomButton::STATE_HOVERED,
+             Painter::CreateImageGridPainter(kHotImages));
+  SetPainter(CustomButton::STATE_PRESSED,
+             Painter::CreateImageGridPainter(kPushedImages));
 }
 
 LabelButtonBorder::~LabelButtonBorder() {}
@@ -101,13 +108,13 @@ gfx::Insets LabelButtonBorder::GetInsets() const {
   }
 }
 
-BorderImages* LabelButtonBorder::GetImages(CustomButton::ButtonState state) {
-  return &images_[state];
+Painter* LabelButtonBorder::GetPainter(CustomButton::ButtonState state) {
+  return painters_[state].get();
 }
 
-void LabelButtonBorder::SetImages(CustomButton::ButtonState state,
-                                  const BorderImages& set) {
-  images_[state] = set;
+void LabelButtonBorder::SetPainter(CustomButton::ButtonState state,
+                                  Painter* painter) {
+  painters_[state].reset(painter);
 }
 
 }  // namespace views

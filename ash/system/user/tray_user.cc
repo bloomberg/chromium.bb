@@ -41,7 +41,6 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/tray_bubble_view.h"
-#include "ui/views/controls/button/border_images.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/image_view.h"
@@ -49,6 +48,7 @@
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/painter.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -461,12 +461,15 @@ void UserView::AddLogoutButton(ash::user::LoginStatus login) {
   if (login == ash::user::LOGGED_IN_PUBLIC) {
     TrayPopupLabelButtonBorder* border =
         static_cast<TrayPopupLabelButtonBorder*>(logout_button_->border());
-    border->SetImages(views::CustomButton::STATE_NORMAL, views::BorderImages(
-        kPublicAccountLogoutButtonBorderImagesNormal));
-    border->SetImages(views::CustomButton::STATE_HOVERED, views::BorderImages(
-        kPublicAccountLogoutButtonBorderImagesHovered));
-    border->SetImages(views::CustomButton::STATE_PRESSED, views::BorderImages(
-        kPublicAccountLogoutButtonBorderImagesHovered));
+    border->SetPainter(views::CustomButton::STATE_NORMAL,
+                       views::Painter::CreateImageGridPainter(
+                           kPublicAccountLogoutButtonBorderImagesNormal));
+    border->SetPainter(views::CustomButton::STATE_HOVERED,
+                       views::Painter::CreateImageGridPainter(
+                           kPublicAccountLogoutButtonBorderImagesHovered));
+    border->SetPainter(views::CustomButton::STATE_PRESSED,
+                       views::Painter::CreateImageGridPainter(
+                           kPublicAccountLogoutButtonBorderImagesHovered));
   }
   AddChildView(logout_button_);
 }

@@ -18,6 +18,11 @@ class Rect;
 class Size;
 }
 
+// A macro to define arrays of IDR constants used with CreateImageGridPainter.
+#define IMAGE_GRID(x) { x ## _TOP_LEFT,    x ## _TOP,    x ## _TOP_RIGHT, \
+                        x ## _LEFT,        x ## _CENTER, x ## _RIGHT, \
+                        x ## _BOTTOM_LEFT, x ## _BOTTOM, x ## _BOTTOM_RIGHT, }
+
 namespace views {
 
 // Painter, as the name implies, is responsible for painting in a particular
@@ -44,14 +49,19 @@ class VIEWS_EXPORT Painter {
                                                    size_t count);
 
   // Creates a painter that divides |image| into nine regions. The four corners
-  // are rendered at the size specified in insets (for example, the upper
-  // left corners is rendered at 0x0 with a size of
-  // insets.left()xinsets.right()). The four edges are stretched to fill the
-  // destination size.
-  // Ownership is passed to the caller.
+  // are rendered at the size specified in insets (eg. the upper-left corner is
+  // rendered at 0 x 0 with a size of insets.left() x insets.top()). The four
+  // edges are tiled and the center is stretched to fill the destination size.
   static Painter* CreateImagePainter(const gfx::ImageSkia& image,
-                                     const gfx::Insets& insets,
-                                     bool paint_center);
+                                     const gfx::Insets& insets);
+
+  // Creates a painter that paints nine images as a scalable grid. The four
+  // corners are rendered in their full sizes (they are assumed to share widths
+  // by column and heights by row). The four edges are tiled and the center is
+  // stretched to fill the destination size.
+  // |image_ids| must contain nine image IDs specified in this order: Top-Left,
+  // Top, Top-Right, Left, Center, Right, Bottom-Left, Bottom, Bottom-Right.
+  static Painter* CreateImageGridPainter(const int image_ids[]);
 
   virtual ~Painter() {}
 
