@@ -154,6 +154,7 @@ class VIEWS_EXPORT DesktopRootWindowHostLinux
   virtual bool QueryMouseLocation(gfx::Point* location_return) OVERRIDE;
   virtual bool ConfineCursorToRootWindow() OVERRIDE;
   virtual void UnConfineCursor() OVERRIDE;
+  virtual void OnCursorVisibilityChanged(bool show) OVERRIDE;
   virtual void MoveCursorTo(const gfx::Point& location) OVERRIDE;
   virtual void SetFocusWhenShown(bool focus_when_shown) OVERRIDE;
   virtual bool CopyAreaToSkCanvas(const gfx::Rect& source_bounds,

@@ -35,6 +35,7 @@
 #include "ui/base/touch/touch_factory.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/view_prop.h"
+#include "ui/base/x/device_list_cache_x.h"
 #include "ui/base/x/valuators.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/compositor/dip_util.h"
@@ -70,6 +71,9 @@ const char* kAtomsToCache[] = {
   "_NET_WM_PING",
   "_NET_WM_PID",
   "WM_S0",
+#if defined(OS_CHROMEOS)
+  "Tap Paused", // Defined in the gestures library.
+#endif
   NULL
 };
 
@@ -603,6 +607,34 @@ void RootWindowHostLinux::UnConfineCursor() {
     XFixesDestroyPointerBarrier(xdisplay_, pointer_barriers_[2]);
     XFixesDestroyPointerBarrier(xdisplay_, pointer_barriers_[3]);
     pointer_barriers_.reset();
+  }
+#endif
+}
+
+void RootWindowHostLinux::OnCursorVisibilityChanged(bool show) {
+#if defined(OS_CHROMEOS)
+  // Temporarily pause tap-to-click when the cursor is hidden.
+  Atom prop = atom_cache_.GetAtom("Tap Paused");
+  unsigned char value = !show;
+  XIDeviceList dev_list =
+      ui::DeviceListCacheX::GetInstance()->GetXI2DeviceList(xdisplay_);
+
+  // Only slave pointer devices could possibly have tap-paused property.
+  for (int i = 0; i < dev_list.count; i++) {
+    if (dev_list[i].use == XISlavePointer) {
+      Atom old_type;
+      int old_format;
+      unsigned long old_nvalues, bytes;
+      unsigned char* data;
+      int result = XIGetProperty(xdisplay_, dev_list[i].deviceid, prop, 0, 0,
+                                 False, AnyPropertyType, &old_type, &old_format,
+                                 &old_nvalues, &bytes, &data);
+      if (result != Success)
+        continue;
+      XFree(data);
+      XIChangeProperty(xdisplay_, dev_list[i].deviceid, prop, XA_INTEGER, 8,
+                       PropModeReplace, &value, 1);
+    }
   }
 #endif
 }

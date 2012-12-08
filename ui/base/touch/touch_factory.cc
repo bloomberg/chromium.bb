@@ -18,6 +18,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/base/x/device_list_cache_x.h"
 #include "ui/base/x/x11_util.h"
 
 namespace {
@@ -108,7 +109,6 @@ void TouchFactory::SetTouchDeviceListFromCommandLine() {
 
 void TouchFactory::UpdateDeviceList(Display* display) {
   // Detect touch devices.
-  int count = 0;
   touch_device_available_ = false;
   touch_device_lookup_.reset();
   touch_device_list_.clear();
@@ -120,19 +120,18 @@ void TouchFactory::UpdateDeviceList(Display* display) {
   // If XInput2 is not supported, this will return null (with count of -1) so
   // we assume there cannot be any touch devices.
   // With XI2.1 or older, we allow only single touch devices.
-  XDeviceInfo* devlist = XListInputDevices(display, &count);
-  for (int i = 0; i < count; i++) {
-    if (devlist[i].type) {
-      XScopedString devtype(XGetAtomName(display, devlist[i].type));
+  XDeviceList dev_list =
+      DeviceListCacheX::GetInstance()->GetXDeviceList(display);
+  for (int i = 0; i < dev_list.count; i++) {
+    if (dev_list[i].type) {
+      XScopedString devtype(XGetAtomName(display, dev_list[i].type));
       if (devtype.string() && !strcmp(devtype.string(), XI_TOUCHSCREEN)) {
-        touch_device_lookup_[devlist[i].id] = true;
-        touch_device_list_[devlist[i].id] = false;
+        touch_device_lookup_[dev_list[i].id] = true;
+        touch_device_list_[dev_list[i].id] = false;
         touch_device_available_ = true;
       }
     }
   }
-  if (devlist)
-    XFreeDeviceList(devlist);
 #endif
 
   // Instead of asking X for the list of devices all the time, let's maintain a
@@ -148,9 +147,10 @@ void TouchFactory::UpdateDeviceList(Display* display) {
   // floating device is not connected to a master device. So it is necessary to
   // also select on the floating devices.
   pointer_device_lookup_.reset();
-  XIDeviceInfo* devices = XIQueryDevice(display, XIAllDevices, &count);
-  for (int i = 0; i < count; i++) {
-    XIDeviceInfo* devinfo = devices + i;
+  XIDeviceList xi_dev_list =
+      DeviceListCacheX::GetInstance()->GetXI2DeviceList(display);
+  for (int i = 0; i < xi_dev_list.count; i++) {
+    XIDeviceInfo* devinfo = xi_dev_list.devices + i;
     if (devinfo->use == XIFloatingSlave || devinfo->use == XIMasterPointer) {
 #if defined(USE_XI2_MT)
       for (int k = 0; k < devinfo->num_classes; ++k) {
@@ -170,8 +170,6 @@ void TouchFactory::UpdateDeviceList(Display* display) {
       pointer_device_lookup_[devinfo->deviceid] = true;
     }
   }
-  if (devices)
-    XIFreeDeviceInfo(devices);
 }
 
 bool TouchFactory::ShouldProcessXI2Event(XEvent* xev) {

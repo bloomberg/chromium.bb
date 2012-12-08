@@ -19,6 +19,7 @@
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
 #include "ui/base/touch/touch_factory.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/base/x/device_list_cache_x.h"
 #include "ui/base/x/valuators.h"
 #include "ui/base/x/x11_atom_cache.h"
 #include "ui/base/x/x11_util.h"
@@ -98,20 +99,16 @@ class CMTEventData {
     device_to_valuators_.clear();
 
 #if defined(USE_XI2_MT)
-    int count = 0;
-
     // Find all the touchpad devices.
-    XDeviceInfo* dev_list = XListInputDevices(display, &count);
+    XDeviceList dev_list =
+        ui::DeviceListCacheX::GetInstance()->GetXDeviceList(display);
     Atom xi_touchpad = XInternAtom(display, XI_TOUCHPAD, false);
-    for (int i = 0; i < count; ++i) {
-      XDeviceInfo* dev = dev_list + i;
-      if (dev->type == xi_touchpad)
+    for (int i = 0; i < dev_list.count; ++i)
+      if (dev_list[i].type == xi_touchpad)
         touchpads_[dev_list[i].id] = true;
-    }
-    if (dev_list)
-      XFreeDeviceList(dev_list);
 
-    XIDeviceInfo* info_list = XIQueryDevice(display, XIAllDevices, &count);
+    XIDeviceList info_list =
+        ui::DeviceListCacheX::GetInstance()->GetXI2DeviceList(display);
     Atom x_axis = atom_cache_.GetAtom(AXIS_LABEL_PROP_REL_HWHEEL);
     Atom y_axis = atom_cache_.GetAtom(AXIS_LABEL_PROP_REL_WHEEL);
     Atom start_time = atom_cache_.GetAtom(AXIS_LABEL_PROP_ABS_START_TIME);
@@ -126,8 +123,8 @@ class CMTEventData {
     Atom fling_state = atom_cache_.GetAtom(AXIS_LABEL_PROP_ABS_FLING_STATE);
     Atom finger_count = atom_cache_.GetAtom(AXIS_LABEL_PROP_ABS_FINGER_COUNT);
 
-    for (int i = 0; i < count; ++i) {
-      XIDeviceInfo* info = info_list + i;
+    for (int i = 0; i < info_list.count; ++i) {
+      XIDeviceInfo* info = info_list.devices + i;
 
       if (info->use != XISlavePointer && info->use != XIFloatingSlave)
         continue;
@@ -199,8 +196,6 @@ class CMTEventData {
         cmt_devices_[info->deviceid] = true;
       }
     }
-    if (info_list)
-      XIFreeDeviceInfo(info_list);
 #endif  // defined(USE_XI2_MT)
   }
 
@@ -704,6 +699,7 @@ namespace ui {
 
 void UpdateDeviceList() {
   Display* display = GetXDisplay();
+  DeviceListCacheX::GetInstance()->UpdateDeviceList(display);
   CMTEventData::GetInstance()->UpdateDeviceList(display);
   TouchFactory::GetInstance()->UpdateDeviceList(display);
   ValuatorTracker::GetInstance()->SetupValuator();

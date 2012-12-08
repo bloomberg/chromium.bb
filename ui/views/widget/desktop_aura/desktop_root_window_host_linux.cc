@@ -758,6 +758,10 @@ void DesktopRootWindowHostLinux::UnConfineCursor() {
   NOTIMPLEMENTED();
 }
 
+void DesktopRootWindowHostLinux::OnCursorVisibilityChanged(bool show) {
+  NOTIMPLEMENTED();
+}
+
 void DesktopRootWindowHostLinux::MoveCursorTo(const gfx::Point& location) {
   NOTIMPLEMENTED();
 }

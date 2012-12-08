@@ -8,6 +8,7 @@
 
 #include "base/memory/singleton.h"
 #include "ui/base/touch/touch_factory.h"
+#include "ui/base/x/device_list_cache_x.h"
 #include "ui/base/x/x11_util.h"
 
 namespace {
@@ -158,12 +159,12 @@ void ValuatorTracker::SetupValuator() {
   memset(last_seen_valuator_, 0, sizeof(last_seen_valuator_));
 
   Display* display = GetXDisplay();
-  int ndevice;
-  XIDeviceInfo* info_list = XIQueryDevice(display, XIAllDevices, &ndevice);
+  XIDeviceList info_list =
+      DeviceListCacheX::GetInstance()->GetXI2DeviceList(display);
   TouchFactory* factory = TouchFactory::GetInstance();
 
-  for (int i = 0; i < ndevice; i++) {
-    XIDeviceInfo* info = info_list + i;
+  for (int i = 0; i < info_list.count; i++) {
+    XIDeviceInfo* info = info_list.devices + i;
 
     if (!factory->IsTouchDevice(info->deviceid))
       continue;
@@ -178,9 +179,6 @@ void ValuatorTracker::SetupValuator() {
       }
     }
   }
-
-  if (info_list)
-    XIFreeDeviceInfo(info_list);
 }
 
 }  // namespace ui

@@ -158,6 +158,10 @@ bool RemoteRootWindowHostWin::GrabSnapshot(
 void RemoteRootWindowHostWin::UnConfineCursor() {
 }
 
+void RemoteRootWindowHostWin::OnCursorVisibilityChanged(bool show) {
+  NOTIMPLEMENTED();
+}
+
 void RemoteRootWindowHostWin::MoveCursorTo(const gfx::Point& location) {
 }
 
