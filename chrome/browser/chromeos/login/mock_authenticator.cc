@@ -113,8 +113,9 @@ std::string TestLoginUtils::GetOffTheRecordCommandLine(
   return std::string();
 }
 
-void TestLoginUtils::TransferDefaultCookies(Profile* default_profile,
-                                            Profile* new_profile) {
+void TestLoginUtils::TransferDefaultCookiesAndServerBoundCerts(
+    Profile* default_profile,
+    Profile* new_profile) {
 }
 
 void TestLoginUtils::TransferDefaultAuthCache(Profile* default_profile,

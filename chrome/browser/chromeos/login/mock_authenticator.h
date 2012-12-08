@@ -115,8 +115,9 @@ class TestLoginUtils : public LoginUtils {
       const CommandLine& base_command_line,
       CommandLine* command_line) OVERRIDE;
 
-  virtual void TransferDefaultCookies(Profile* default_profile,
-                                      Profile* new_profile) OVERRIDE;
+  virtual void TransferDefaultCookiesAndServerBoundCerts(
+      Profile* default_profile,
+      Profile* new_profile) OVERRIDE;
 
   virtual void TransferDefaultAuthCache(Profile* default_profile,
                                         Profile* new_profile) OVERRIDE;

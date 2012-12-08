@@ -105,12 +105,13 @@ class LoginUtils {
       Profile* profile,
       const GaiaAuthConsumer::ClientLoginResult& credentials) = 0;
 
-  // Transfers cookies from the |default_profile| into the |new_profile|.
-  // If authentication was performed by an extension, then
+  // Transfers cookies and server bound certs from the |default_profile| into
+  // the |new_profile|.  If authentication was performed by an extension, then
   // the set of cookies that was acquired through such that process will be
   // automatically transfered into the profile.
-  virtual void TransferDefaultCookies(Profile* default_profile,
-                                      Profile* new_profile) = 0;
+  virtual void TransferDefaultCookiesAndServerBoundCerts(
+      Profile* default_profile,
+      Profile* new_profile) = 0;
 
   // Transfers HTTP authentication cache from the |default_profile|
   // into the |new_profile|. If user was required to authenticate with a proxy

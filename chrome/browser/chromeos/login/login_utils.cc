@@ -81,6 +81,8 @@
 #include "googleurl/src/gurl.h"
 #include "media/base/media_switches.h"
 #include "net/base/network_change_notifier.h"
+#include "net/base/server_bound_cert_service.h"
+#include "net/base/server_bound_cert_store.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_auth_cache.h"
@@ -157,6 +159,21 @@ void TransferDefaultCookiesOnIOThread(
   net::CookieMonster* default_monster = default_store->GetCookieMonster();
   default_monster->SetKeepExpiredCookies();
   default_monster->GetAllCookiesAsync(helper.callback());
+}
+
+void TransferDefaultServerBoundCertsIOThread(
+    net::URLRequestContextGetter* auth_context,
+    net::URLRequestContextGetter* new_context) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  net::ServerBoundCertService* default_service =
+      auth_context->GetURLRequestContext()->server_bound_cert_service();
+
+  net::ServerBoundCertStore::ServerBoundCertList server_bound_certs;
+  default_service->GetCertStore()->GetAllServerBoundCerts(&server_bound_certs);
+
+  net::ServerBoundCertService* new_service =
+      new_context->GetURLRequestContext()->server_bound_cert_service();
+  new_service->GetCertStore()->InitializeFrom(server_bound_certs);
 }
 
 void TransferDefaultAuthCacheOnIOThread(
@@ -275,8 +292,9 @@ class LoginUtilsImpl
   virtual void StartSignedInServices(
       Profile* profile,
       const GaiaAuthConsumer::ClientLoginResult& credentials) OVERRIDE;
-  virtual void TransferDefaultCookies(Profile* default_profile,
-                                      Profile* new_profile) OVERRIDE;
+  virtual void TransferDefaultCookiesAndServerBoundCerts(
+      Profile* default_profile,
+      Profile* new_profile) OVERRIDE;
   virtual void TransferDefaultAuthCache(Profile* default_profile,
                                         Profile* new_profile) OVERRIDE;
   virtual void StopBackgroundFetchers() OVERRIDE;
@@ -579,13 +597,13 @@ void LoginUtilsImpl::OnProfileCreated(
 
     // Transfer cookies when user signs in using extension.
     if (has_cookies_) {
-      // Transfer cookies from the profile that was used for authentication.
-      // This profile contains cookies that auth extension should have already
-      // put in place that will ensure that the newly created session is
-      // authenticated for the websites that work with the used authentication
-      // schema.
-      TransferDefaultCookies(authenticator_->authentication_profile(),
-                             user_profile);
+      // Transfer cookies and server bound certs from the profile that was used
+      // for authentication.  This profile contains cookies that auth extension
+      // should have already put in place that will ensure that the newly
+      // created session is authenticated for the websites that work with the
+      // used authentication schema.
+      TransferDefaultCookiesAndServerBoundCerts(
+          authenticator_->authentication_profile(), user_profile);
     }
     // Transfer proxy authentication cache.
     TransferDefaultAuthCache(authenticator_->authentication_profile(),
@@ -1021,11 +1039,17 @@ void LoginUtilsImpl::KickStartAuthentication(Profile* user_profile) {
     VerifyOAuth1AccessToken(user_profile, oauth1_token, oauth1_secret);
 }
 
-void LoginUtilsImpl::TransferDefaultCookies(Profile* default_profile,
-                                            Profile* profile) {
+void LoginUtilsImpl::TransferDefaultCookiesAndServerBoundCerts(
+    Profile* default_profile,
+    Profile* profile) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&TransferDefaultCookiesOnIOThread,
+                 make_scoped_refptr(default_profile->GetRequestContext()),
+                 make_scoped_refptr(profile->GetRequestContext())));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&TransferDefaultServerBoundCertsIOThread,
                  make_scoped_refptr(default_profile->GetRequestContext()),
                  make_scoped_refptr(profile->GetRequestContext())));
 }

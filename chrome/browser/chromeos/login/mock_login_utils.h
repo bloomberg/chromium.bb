@@ -43,7 +43,8 @@ class MockLoginUtils : public LoginUtils {
   MOCK_METHOD1(StartTokenServices, void(Profile*));
   MOCK_METHOD2(StartSignedInServices,
                void(Profile*, const GaiaAuthConsumer::ClientLoginResult&));
-  MOCK_METHOD2(TransferDefaultCookies, void(Profile*, Profile*));
+  MOCK_METHOD2(TransferDefaultCookiesAndServerBoundCerts,
+               void(Profile*, Profile*));
   MOCK_METHOD2(TransferDefaultAuthCache, void(Profile*, Profile*));
   MOCK_METHOD0(StopBackgroundFetchers, void(void));
   MOCK_METHOD3(GetOffTheRecordCommandLine,
