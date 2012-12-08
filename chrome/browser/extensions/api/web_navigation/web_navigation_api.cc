@@ -16,7 +16,6 @@
 #include "chrome/browser/tab_contents/retargeting_details.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/api/web_navigation.h"
@@ -180,12 +179,9 @@ void WebNavigationEventRouter::Retargeting(const RetargetingDetails* details) {
   if (!frame_navigation_state.CanSendEvents(frame_id))
     return;
 
-  // If the WebContents was created as a response to an IPC from a renderer
-  // (and therefore doesn't yet have a TabContents), or if it isn't yet inserted
-  // into a tab strip, we need to delay the extension event until the
-  // WebContents is fully initialized.
-  if (TabContents::FromWebContents(details->target_web_contents) == NULL ||
-      details->not_yet_in_tabstrip) {
+  // If the WebContents isn't yet inserted into a tab strip, we need to delay
+  // the extension event until the WebContents is fully initialized.
+  if (details->not_yet_in_tabstrip) {
     pending_web_contents_[details->target_web_contents] =
         PendingWebContents(
             details->source_web_contents,
