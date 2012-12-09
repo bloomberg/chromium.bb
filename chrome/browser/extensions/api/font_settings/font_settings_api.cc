@@ -210,6 +210,13 @@ void FontSettingsEventRouter::OnFontPrefChanged(
       pref_name);
 }
 
+FontSettingsAPI::FontSettingsAPI(Profile* profile)
+    : font_settings_event_router_(new FontSettingsEventRouter(profile)) {
+}
+
+FontSettingsAPI::~FontSettingsAPI() {
+}
+
 bool ClearFontFunction::RunImpl() {
   if (profile_->IsOffTheRecord()) {
     error_ = kSetFromIncognitoError;

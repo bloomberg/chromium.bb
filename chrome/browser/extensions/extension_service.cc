@@ -35,7 +35,6 @@
 #include "chrome/browser/extensions/api/app_runtime/app_runtime_api.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
 #include "chrome/browser/extensions/api/extension_action/extension_actions_api.h"
-#include "chrome/browser/extensions/api/font_settings/font_settings_api.h"
 #include "chrome/browser/extensions/api/media_galleries_private/media_galleries_private_event_router.h"
 #include "chrome/browser/extensions/api/preference/preference_api.h"
 #include "chrome/browser/extensions/api/push_messaging/push_messaging_api.h"
@@ -548,8 +547,6 @@ void ExtensionService::InitEventRouters() {
       new extensions::PreferenceEventRouter(profile_));
   bookmark_event_router_.reset(new BookmarkExtensionEventRouter(
       BookmarkModelFactory::GetForProfile(profile_)));
-  font_settings_event_router_.reset(
-      new extensions::FontSettingsEventRouter(profile_));
   push_messaging_event_router_.reset(
       new extensions::PushMessagingEventRouter(profile_));
   media_galleries_private_event_router_.reset(

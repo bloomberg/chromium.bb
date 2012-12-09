@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/api/commands/command_service_factory.h"
 #include "chrome/browser/extensions/api/cookies/cookies_api_factory.h"
 #include "chrome/browser/extensions/api/discovery/suggested_links_registry_factory.h"
+#include "chrome/browser/extensions/api/font_settings/font_settings_api_factory.h"
 #include "chrome/browser/extensions/api/idle/idle_manager_factory.h"
 #include "chrome/browser/extensions/api/managed_mode/managed_mode_api_factory.h"
 #include "chrome/browser/extensions/api/management/management_api_factory.h"
@@ -228,6 +229,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   extensions::CommandServiceFactory::GetInstance();
   extensions::CookiesAPIFactory::GetInstance();
   extensions::ExtensionSystemFactory::GetInstance();
+  extensions::FontSettingsAPIFactory::GetInstance();
   extensions::IdleManagerFactory::GetInstance();
   extensions::ManagedModeAPIFactory::GetInstance();
   extensions::ProcessesAPIFactory::GetInstance();

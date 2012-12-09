@@ -10,9 +10,13 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/prefs/public/pref_change_registrar.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
+
+class Profile;
 
 namespace extensions {
 
@@ -60,6 +64,16 @@ class FontSettingsEventRouter {
   Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(FontSettingsEventRouter);
+};
+
+// The profile-keyed service that manages the font_settings extension API.
+class FontSettingsAPI : public ProfileKeyedService {
+ public:
+  explicit FontSettingsAPI(Profile* profile);
+  virtual ~FontSettingsAPI();
+
+ private:
+  scoped_ptr<FontSettingsEventRouter> font_settings_event_router_;
 };
 
 // fontSettings.clearFont API function.

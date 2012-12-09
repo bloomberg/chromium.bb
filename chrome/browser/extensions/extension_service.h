@@ -70,7 +70,6 @@ class ExtensionActionStorageManager;
 class ExtensionSyncData;
 class ExtensionSystem;
 class ExtensionUpdater;
-class FontSettingsEventRouter;
 class MediaGalleriesPrivateEventRouter;
 class PendingExtensionManager;
 class PreferenceEventRouter;
@@ -978,8 +977,6 @@ class ExtensionService
 
   scoped_ptr<extensions::PushMessagingEventRouter>
       push_messaging_event_router_;
-
-  scoped_ptr<extensions::FontSettingsEventRouter> font_settings_event_router_;
 
 #if defined(OS_CHROMEOS)
   scoped_ptr<chromeos::ExtensionInputMethodEventRouter>
