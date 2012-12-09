@@ -415,6 +415,8 @@ TEST_P(LayerTreeHostImplTest, clearRootRenderSurfaceAndScroll)
     // We should be able to scroll even if the root layer loses its render surface after the most
     // recent render.
     m_hostImpl->rootLayer()->clearRenderSurface();
+    m_hostImpl->setNeedsUpdateDrawProperties();
+
     EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
 }
 
@@ -1931,7 +1933,6 @@ TEST_P(LayerTreeHostImplTest, viewportCovered)
         LayerTreeHostImpl::FrameData frame;
         EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
         ASSERT_EQ(1u, frame.renderPasses.size());
-        m_hostImpl->didDrawAllLayers(frame);
 
         size_t numGutterQuads = 0;
         for (size_t i = 0; i < frame.renderPasses[0]->quad_list.size(); ++i)
@@ -2050,8 +2051,8 @@ TEST_P(LayerTreeHostImplTest, partialSwapReceivesDamageRect)
     layerTreeHostImpl->initializeRenderer(outputSurface.Pass());
     layerTreeHostImpl->setViewportSize(gfx::Size(500, 500), gfx::Size(500, 500));
 
-    scoped_ptr<LayerImpl> root = FakeDrawableLayerImpl::create(m_hostImpl.get(), 1);
-    scoped_ptr<LayerImpl> child = FakeDrawableLayerImpl::create(m_hostImpl.get(), 2);
+    scoped_ptr<LayerImpl> root = FakeDrawableLayerImpl::create(layerTreeHostImpl.get(), 1);
+    scoped_ptr<LayerImpl> child = FakeDrawableLayerImpl::create(layerTreeHostImpl.get(), 2);
     child->setPosition(gfx::PointF(12, 13));
     child->setAnchorPoint(gfx::PointF(0, 0));
     child->setBounds(gfx::Size(14, 15));

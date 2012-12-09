@@ -219,6 +219,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(const LayerTreeSettings& settings, LayerTre
     , m_backgroundColor(0)
     , m_hasTransparentBackground(false)
     , m_needsAnimateLayers(false)
+    , m_needsUpdateDrawProperties(false)
     , m_pinchGestureActive(false)
     , m_fpsCounter(FrameRateCounter::create(m_proxy->hasImplThread()))
     , m_debugRectHistory(DebugRectHistory::create())
@@ -254,6 +255,14 @@ void LayerTreeHostImpl::beginCommit()
 void LayerTreeHostImpl::commitComplete()
 {
     TRACE_EVENT0("cc", "LayerTreeHostImpl::commitComplete");
+
+    // Impl-side painting needs an update immediately post-commit to have the
+    // opportunity to create tilings.  Other paths can call updateDrawProperties
+    // more lazily when needed prior to drawing.
+    setNeedsUpdateDrawProperties();
+    if (m_settings.implSidePainting)
+        updateDrawProperties();
+
     // Recompute max scroll position; must be after layer content bounds are
     // updated.
     updateMaxScrollOffset();
@@ -331,6 +340,7 @@ void LayerTreeHostImpl::startPageScaleAnimation(gfx::Vector2d targetOffset, bool
         m_pageScaleAnimation->zoomTo(scaledTargetOffset, pageScale, duration.InSecondsF());
     }
 
+    setNeedsUpdateDrawProperties();
     m_client->setNeedsRedrawOnImplThread();
     m_client->setNeedsCommitOnImplThread();
 }
@@ -376,20 +386,31 @@ void LayerTreeHostImpl::updateRootScrollLayerImplTransform()
     }
 }
 
+void LayerTreeHostImpl::updateDrawProperties()
+{
+    if (!needsUpdateDrawProperties())
+        return;
+
+    m_renderSurfaceLayerList.clear();
+    m_needsUpdateDrawProperties = false;
+
+    if (!rootLayer())
+        return;
+
+    calculateRenderSurfaceLayerList(m_renderSurfaceLayerList);
+}
+
 void LayerTreeHostImpl::calculateRenderSurfaceLayerList(LayerList& renderSurfaceLayerList)
 {
     DCHECK(renderSurfaceLayerList.empty());
     DCHECK(rootLayer());
     DCHECK(m_renderer); // For maxTextureSize.
-
     {
         updateRootScrollLayerImplTransform();
 
         TRACE_EVENT0("cc", "LayerTreeHostImpl::calcDrawEtc");
         float pageScaleFactor = m_pinchZoomViewport.pageScaleFactor();
         LayerTreeHostCommon::calculateDrawProperties(rootLayer(), deviceViewportSize(), m_deviceScaleFactor, pageScaleFactor, rendererCapabilities().maxTextureSize, renderSurfaceLayerList);
-
-        trackDamageForAllSurfaces(rootLayer(), renderSurfaceLayerList);
     }
 }
 
@@ -489,7 +510,8 @@ bool LayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
 {
     DCHECK(frame.renderPasses.empty());
 
-    calculateRenderSurfaceLayerList(*frame.renderSurfaceLayerList);
+    updateDrawProperties();
+    trackDamageForAllSurfaces(rootLayer(), *frame.renderSurfaceLayerList);
 
     TRACE_EVENT1("cc", "LayerTreeHostImpl::calculateRenderPasses", "renderSurfaceLayerList.size()", static_cast<long long unsigned>(frame.renderSurfaceLayerList->size()));
 
@@ -535,6 +557,7 @@ bool LayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
             if (occlusionTracker.occluded(it->renderTarget(), it->visibleContentRect(), it->drawTransform(), implDrawTransformIsUnknown, it->drawableContentRect(), &hasOcclusionFromOutsideTargetSurface))
                 appendQuadsData.hadOcclusionFromOutsideTargetSurface |= hasOcclusionFromOutsideTargetSurface;
             else {
+                DCHECK_EQ(this, it->layerTreeHostImpl());
                 it->willDraw(m_resourceProvider.get());
                 frame.willDrawLayers.push_back(*it);
 
@@ -750,7 +773,6 @@ bool LayerTreeHostImpl::prepareToDraw(FrameData& frame)
     frame.renderSurfaceLayerList = &m_renderSurfaceLayerList;
     frame.renderPasses.clear();
     frame.renderPassesById.clear();
-    frame.renderSurfaceLayerList->clear();
     frame.willDrawLayers.clear();
 
     if (!calculateRenderPasses(frame))
@@ -952,14 +974,16 @@ static LayerImpl* findScrollLayerForContentLayer(LayerImpl* layerImpl)
 
 void LayerTreeHostImpl::setRootLayer(scoped_ptr<LayerImpl> layer)
 {
-  m_activeTree->SetRootLayer(layer.Pass());
+    m_activeTree->SetRootLayer(layer.Pass());
+    setNeedsUpdateDrawProperties();
 }
 
 scoped_ptr<LayerImpl> LayerTreeHostImpl::detachLayerTree()
 {
-  scoped_ptr<LayerImpl> layer = m_activeTree->DetachLayerTree();
-  m_renderSurfaceLayerList.clear();
-  return layer.Pass();
+    scoped_ptr<LayerImpl> layer = m_activeTree->DetachLayerTree();
+    m_renderSurfaceLayerList.clear();
+    setNeedsUpdateDrawProperties();
+    return layer.Pass();
 }
 
 void LayerTreeHostImpl::setVisible(bool visible)
@@ -1094,10 +1118,8 @@ void LayerTreeHostImpl::setPageScaleFactorAndLimits(float pageScaleFactor, float
     float pageScaleChange = pageScaleFactor / m_pinchZoomViewport.pageScaleFactor();
     m_pinchZoomViewport.setPageScaleFactorAndLimits(pageScaleFactor, minPageScaleFactor, maxPageScaleFactor);
 
-    if (!m_settings.pageScalePinchZoomEnabled) {
-        if (pageScaleChange != 1)
-            adjustScrollsForPageScaleChange(rootScrollLayer(), pageScaleChange);
-    }
+    if (!m_settings.pageScalePinchZoomEnabled && pageScaleChange != 1)
+        adjustScrollsForPageScaleChange(rootScrollLayer(), pageScaleChange);
 
     // Clamp delta to limits and refresh display matrix.
     setPageScaleDelta(m_pinchZoomViewport.pageScaleDelta() / m_pinchZoomViewport.sentPageScaleDelta());
@@ -1152,6 +1174,9 @@ void LayerTreeHostImpl::setNeedsRedraw()
 
 bool LayerTreeHostImpl::ensureRenderSurfaceLayerList()
 {
+    // TODO(enne): See http://crbug.com/164949.  This function should really
+    // just call updateDrawProperties(), but that breaks a number of
+    // impl transform tests that don't expect the tree to be updated.
     if (!rootLayer())
         return false;
     if (!m_renderer)
@@ -1165,8 +1190,8 @@ bool LayerTreeHostImpl::ensureRenderSurfaceLayerList()
     // If we are called after setRootLayer() but before prepareToDraw(), we need
     // to recalculate the visible layers. This prevents being unable to scroll
     // during part of a commit.
-    m_renderSurfaceLayerList.clear();
-    calculateRenderSurfaceLayerList(m_renderSurfaceLayerList);
+    setNeedsUpdateDrawProperties();
+    updateDrawProperties();
 
     return m_renderSurfaceLayerList.size();
 }
@@ -1219,6 +1244,7 @@ InputHandlerClient::ScrollStatus LayerTreeHostImpl::scrollBegin(gfx::Point viewp
         // events are already in local layer coordinates so we can just apply them directly.
         m_scrollDeltaIsInViewportSpace = (type == Gesture);
         m_numImplThreadScrolls++;
+        setNeedsUpdateDrawProperties();
         return ScrollStarted;
     }
     return ScrollIgnored;
@@ -1333,6 +1359,7 @@ bool LayerTreeHostImpl::scrollBy(const gfx::Point& viewportPoint,
     if (didScroll) {
         m_client->setNeedsCommitOnImplThread();
         m_client->setNeedsRedrawOnImplThread();
+        setNeedsUpdateDrawProperties();
     }
     return didScroll;
 }
@@ -1387,6 +1414,7 @@ void LayerTreeHostImpl::pinchGestureUpdate(float magnifyDelta, gfx::Point anchor
 
     m_client->setNeedsCommitOnImplThread();
     m_client->setNeedsRedrawOnImplThread();
+    setNeedsUpdateDrawProperties();
 }
 
 void LayerTreeHostImpl::pinchGestureEnd()
@@ -1523,6 +1551,7 @@ void LayerTreeHostImpl::animatePageScale(base::TimeTicks time)
         nextScroll.Scale(m_pinchZoomViewport.pageScaleFactor());
     rootScrollLayer()->scrollBy(nextScroll - scrollTotal);
     m_client->setNeedsRedrawOnImplThread();
+    setNeedsUpdateDrawProperties();
 
     if (m_pageScaleAnimation->isAnimationCompleteAtTime(monotonicTime)) {
         m_pageScaleAnimation.reset();
@@ -1545,8 +1574,10 @@ void LayerTreeHostImpl::animateLayers(base::TimeTicks monotonicTime, base::Time 
     if (!events->empty())
         m_client->postAnimationEventsToMainThreadOnImplThread(events.Pass(), wallClockTime);
 
-    if (didAnimate)
+    if (didAnimate) {
         m_client->setNeedsRedrawOnImplThread();
+        setNeedsUpdateDrawProperties();
+    }
 
     setBackgroundTickingEnabled(!m_visible && m_needsAnimateLayers);
 }
@@ -1580,6 +1611,7 @@ void LayerTreeHostImpl::clearRenderSurfaces()
 {
     clearRenderSurfacesOnLayerImplRecursive(rootLayer());
     m_renderSurfaceLayerList.clear();
+    setNeedsUpdateDrawProperties();
 }
 
 std::string LayerTreeHostImpl::layerTreeAsText() const

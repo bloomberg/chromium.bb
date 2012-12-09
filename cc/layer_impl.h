@@ -163,6 +163,9 @@ public:
 
     bool showDebugBorders() const;
 
+    // These invalidate the host's render surface layer list.  The caller
+    // is responsible for calling setNeedsUpdateDrawProperties on the host
+    // so that its list can be recreated.
     void createRenderSurface();
     void clearRenderSurface() { m_drawProperties.render_surface.reset(); }
 
@@ -298,6 +301,8 @@ private:
     friend class TreeSynchronizer;
     void clearChildList(); // Warning: This does not preserve tree structure invariants and so is only exposed to the tree synchronizer.
 
+    void noteLayerSurfacePropertyChanged();
+    void noteLayerPropertyChanged();
     void noteLayerPropertyChangedForSubtree();
 
     // Note carefully this does not affect the current layer.

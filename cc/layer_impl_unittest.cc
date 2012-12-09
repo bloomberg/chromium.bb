@@ -51,6 +51,18 @@ namespace {
     EXPECT_FALSE(grandChild->layerPropertyChanged());                   \
     EXPECT_TRUE(root->layerSurfacePropertyChanged())
 
+#define VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(codeToTest)                 \
+    root->resetAllChangeTrackingForSubtree();                           \
+    hostImpl.resetNeedsUpdateDrawPropertiesForTesting();                \
+    codeToTest;                                                         \
+    EXPECT_TRUE(hostImpl.needsUpdateDrawProperties());
+
+#define VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(codeToTest)              \
+    root->resetAllChangeTrackingForSubtree();                           \
+    hostImpl.resetNeedsUpdateDrawPropertiesForTesting();                \
+    codeToTest;                                                         \
+    EXPECT_FALSE(hostImpl.needsUpdateDrawProperties());
+
 TEST(LayerImplTest, verifyLayerChangesAreTrackedProperly)
 {
     //
@@ -152,6 +164,88 @@ TEST(LayerImplTest, verifyLayerChangesAreTrackedProperly)
     EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setDrawsContent(true));
     EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setSublayerTransform(arbitraryTransform));
     EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setBounds(arbitrarySize));
+}
+
+TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties)
+{
+    FakeImplProxy proxy;
+    FakeLayerTreeHostImpl hostImpl(&proxy);
+    scoped_ptr<LayerImpl> root = LayerImpl::create(&hostImpl, 1);
+
+    gfx::PointF arbitraryPointF = gfx::PointF(0.125f, 0.25f);
+    float arbitraryNumber = 0.352f;
+    gfx::Size arbitrarySize = gfx::Size(111, 222);
+    gfx::Point arbitraryPoint = gfx::Point(333, 444);
+    gfx::Vector2d arbitraryVector2d = gfx::Vector2d(111, 222);
+    gfx::Vector2d largeVector2d = gfx::Vector2d(1000, 1000);
+    gfx::Rect arbitraryRect = gfx::Rect(arbitraryPoint, arbitrarySize);
+    gfx::RectF arbitraryRectF = gfx::RectF(arbitraryPointF, gfx::SizeF(1.234f, 5.678f));
+    SkColor arbitraryColor = SkColorSetRGB(10, 20, 30);
+    gfx::Transform arbitraryTransform;
+    arbitraryTransform.Scale3d(0.1, 0.2, 0.3);
+    WebFilterOperations arbitraryFilters;
+    arbitraryFilters.append(WebFilterOperation::createOpacityFilter(0.5));
+    skia::RefPtr<SkImageFilter> arbitraryFilter = skia::AdoptRef(new SkBlurImageFilter(SK_Scalar1, SK_Scalar1));
+
+    // Related filter functions.
+    VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->setFilters(arbitraryFilters));
+    VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->setFilters(arbitraryFilters));
+    VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->setFilters(WebFilterOperations()));
+    VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->setFilter(arbitraryFilter));
+    VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->setFilter(arbitraryFilter));
+
+    // Related scrolling functions.
+    VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->setMaxScrollOffset(largeVector2d));
+    VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->setMaxScrollOffset(largeVector2d));
+    VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->scrollBy(arbitraryVector2d));
+    VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->scrollBy(gfx::Vector2d()));
+    root->setScrollDelta(gfx::Vector2d(0, 0));
+    hostImpl.resetNeedsUpdateDrawPropertiesForTesting();
+    VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->setScrollDelta(arbitraryVector2d));
+    VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->setScrollDelta(arbitraryVector2d));
+    VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->setScrollOffset(arbitraryVector2d));
+    VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->setScrollOffset(arbitraryVector2d));
+
+    // Unrelated functions, always set to new values, always set needs update.
+    VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->setAnchorPointZ(arbitraryNumber));
+    VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->setMaskLayer(LayerImpl::create(&hostImpl, 4)));
+    VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->setMasksToBounds(true));
+    VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->setContentsOpaque(true));
+    VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->setReplicaLayer(LayerImpl::create(&hostImpl, 5)));
+    VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->setPosition(arbitraryPointF));
+    VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->setPreserves3D(true));
+    VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->setDoubleSided(false)); // constructor initializes it to "true".
+    VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->setImplTransform(arbitraryTransform));
+    VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->setContentBounds(arbitrarySize));
+    VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->setContentsScale(arbitraryNumber, arbitraryNumber));
+    VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->setDrawsContent(true));
+    VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->setBackgroundColor(SK_ColorGRAY));
+    VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->setBackgroundFilters(arbitraryFilters));
+    VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->setOpacity(arbitraryNumber));
+    VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->setTransform(arbitraryTransform));
+    VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->setSublayerTransform(arbitraryTransform));
+    VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->setBounds(arbitrarySize));
+
+    // Unrelated functions, set to the same values, no needs update.
+    VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->setAnchorPointZ(arbitraryNumber));
+    VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->setFilter(arbitraryFilter));
+    VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->setMaskLayer(LayerImpl::create(&hostImpl, 4)));
+    VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->setMasksToBounds(true));
+    VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->setContentsOpaque(true));
+    VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->setReplicaLayer(LayerImpl::create(&hostImpl, 5)));
+    VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->setPosition(arbitraryPointF));
+    VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->setPreserves3D(true));
+    VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->setDoubleSided(false)); // constructor initializes it to "true".
+    VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->setImplTransform(arbitraryTransform));
+    VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->setContentBounds(arbitrarySize));
+    VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->setContentsScale(arbitraryNumber, arbitraryNumber));
+    VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->setDrawsContent(true));
+    VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->setBackgroundColor(SK_ColorGRAY));
+    VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->setBackgroundFilters(arbitraryFilters));
+    VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->setOpacity(arbitraryNumber));
+    VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->setTransform(arbitraryTransform));
+    VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->setSublayerTransform(arbitraryTransform));
+    VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->setBounds(arbitrarySize));
 }
 
 }  // namespace

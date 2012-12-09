@@ -249,6 +249,9 @@ public:
     bool needsAnimateLayers() const { return m_needsAnimateLayers; }
     void setNeedsAnimateLayers() { m_needsAnimateLayers = true; }
 
+    bool needsUpdateDrawProperties() const { return m_needsUpdateDrawProperties; }
+    void setNeedsUpdateDrawProperties() { m_needsUpdateDrawProperties = true; }
+
     void setNeedsRedraw();
 
     void renderingStats(RenderingStats*) const;
@@ -304,8 +307,11 @@ protected:
     void animatePageScale(base::TimeTicks monotonicTime);
     void animateScrollbars(base::TimeTicks monotonicTime);
 
+    void updateDrawProperties();
+
     // Exposed for testing.
     void calculateRenderSurfaceLayerList(LayerList&);
+    void resetNeedsUpdateDrawPropertiesForTesting() { m_needsUpdateDrawProperties = false; }
 
     // Virtual for testing.
     virtual void animateLayers(base::TimeTicks monotonicTime, base::Time wallClockTime);
@@ -364,6 +370,7 @@ private:
 
     // If this is true, it is necessary to traverse the layer tree ticking the animators.
     bool m_needsAnimateLayers;
+    bool m_needsUpdateDrawProperties;
     bool m_pinchGestureActive;
     gfx::Point m_previousPinchAnchor;
 

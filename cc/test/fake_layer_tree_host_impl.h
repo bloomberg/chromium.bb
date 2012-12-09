@@ -16,6 +16,8 @@ class FakeLayerTreeHostImpl : public LayerTreeHostImpl {
   FakeLayerTreeHostImpl(Proxy* proxy);
   virtual ~FakeLayerTreeHostImpl();
 
+  using LayerTreeHostImpl::resetNeedsUpdateDrawPropertiesForTesting;
+
  private:
   FakeLayerTreeHostImplClient client_;
   LayerTreeSettings settings_;

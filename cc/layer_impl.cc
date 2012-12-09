@@ -69,6 +69,7 @@ void LayerImpl::addChild(scoped_ptr<LayerImpl> child)
     child->setParent(this);
     DCHECK_EQ(layerTreeHostImpl(), child->layerTreeHostImpl());
     m_children.append(child.Pass());
+    m_layerTreeHostImpl->setNeedsUpdateDrawProperties();
 }
 
 void LayerImpl::removeFromParent()
@@ -81,6 +82,8 @@ void LayerImpl::removeFromParent()
 
     for (size_t i = 0; i < parent->m_children.size(); ++i) {
         if (parent->m_children[i] == this) {
+            m_layerTreeHostImpl->setNeedsUpdateDrawProperties();
+            // This remove call deletes |this|, so don't touch it anymore.
             parent->m_children.remove(i);
             return;
         }
@@ -95,7 +98,11 @@ void LayerImpl::removeAllChildren()
 
 void LayerImpl::clearChildList()
 {
+    if (m_children.isEmpty())
+        return;
+
     m_children.clear();
+    m_layerTreeHostImpl->setNeedsUpdateDrawProperties();
 }
 
 void LayerImpl::createRenderSurface()
@@ -404,14 +411,27 @@ bool LayerImpl::layerSurfacePropertyChanged() const
     return false;
 }
 
-void LayerImpl::noteLayerPropertyChangedForSubtree()
+void LayerImpl::noteLayerSurfacePropertyChanged()
+{
+    m_layerSurfacePropertyChanged = true;
+    m_layerTreeHostImpl->setNeedsUpdateDrawProperties();
+}
+
+void LayerImpl::noteLayerPropertyChanged()
 {
     m_layerPropertyChanged = true;
+    m_layerTreeHostImpl->setNeedsUpdateDrawProperties();
+}
+
+void LayerImpl::noteLayerPropertyChangedForSubtree()
+{
+    noteLayerPropertyChanged();
     noteLayerPropertyChangedForDescendants();
 }
 
 void LayerImpl::noteLayerPropertyChangedForDescendants()
 {
+    m_layerTreeHostImpl->setNeedsUpdateDrawProperties();
     for (size_t i = 0; i < m_children.size(); ++i)
         m_children[i]->noteLayerPropertyChangedForSubtree();
 }
@@ -481,7 +501,7 @@ void LayerImpl::setBounds(const gfx::Size& bounds)
     if (masksToBounds())
         noteLayerPropertyChangedForSubtree();
     else
-        m_layerPropertyChanged = true;
+        noteLayerPropertyChanged();
 }
 
 void LayerImpl::setMaskLayer(scoped_ptr<LayerImpl> maskLayer)
@@ -518,7 +538,7 @@ void LayerImpl::setDrawsContent(bool drawsContent)
         return;
 
     m_drawsContent = drawsContent;
-    m_layerPropertyChanged = true;
+    noteLayerPropertyChanged();
 }
 
 void LayerImpl::setAnchorPoint(const gfx::PointF& anchorPoint)
@@ -545,7 +565,7 @@ void LayerImpl::setBackgroundColor(SkColor backgroundColor)
         return;
 
     m_backgroundColor = backgroundColor;
-    m_layerPropertyChanged = true;
+    noteLayerPropertyChanged();
 }
 
 void LayerImpl::setFilters(const WebKit::WebFilterOperations& filters)
@@ -564,7 +584,7 @@ void LayerImpl::setBackgroundFilters(const WebKit::WebFilterOperations& backgrou
         return;
 
     m_backgroundFilters = backgroundFilters;
-    m_layerPropertyChanged = true;
+    noteLayerPropertyChanged();
 }
 
 void LayerImpl::setFilter(const skia::RefPtr<SkImageFilter>& filter)
@@ -601,7 +621,7 @@ void LayerImpl::setOpacity(float opacity)
         return;
 
     m_opacity = opacity;
-    m_layerSurfacePropertyChanged = true;
+    noteLayerSurfacePropertyChanged();
 }
 
 bool LayerImpl::opacityIsAnimating() const
@@ -643,7 +663,7 @@ void LayerImpl::setTransform(const gfx::Transform& transform)
         return;
 
     m_transform = transform;
-    m_layerSurfacePropertyChanged = true;
+    noteLayerSurfacePropertyChanged();
 }
 
 bool LayerImpl::transformIsAnimating() const
@@ -657,7 +677,7 @@ void LayerImpl::setContentBounds(const gfx::Size& contentBounds)
         return;
 
     m_contentBounds = contentBounds;
-    m_layerPropertyChanged = true;
+    noteLayerPropertyChanged();
 }
 
 void LayerImpl::setContentsScale(float contentsScaleX, float contentsScaleY)
@@ -667,7 +687,7 @@ void LayerImpl::setContentsScale(float contentsScaleX, float contentsScaleY)
 
     m_contentsScaleX = contentsScaleX;
     m_contentsScaleY = contentsScaleY;
-    m_layerPropertyChanged = true;
+    noteLayerPropertyChanged();
 }
 
 void LayerImpl::setScrollOffset(gfx::Vector2d scrollOffset)
@@ -719,7 +739,11 @@ void LayerImpl::didLoseOutputSurface()
 
 void LayerImpl::setMaxScrollOffset(gfx::Vector2d maxScrollOffset)
 {
+    if (m_maxScrollOffset == maxScrollOffset)
+        return;
     m_maxScrollOffset = maxScrollOffset;
+
+    m_layerTreeHostImpl->setNeedsUpdateDrawProperties();
 
     if (!m_scrollbarAnimationController)
         return;
