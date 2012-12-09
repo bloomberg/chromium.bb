@@ -49,6 +49,7 @@
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/options/options_util.h"
+#include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
@@ -393,10 +394,17 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
       l10n_util::GetStringFUTF16(IDS_SEARCH_PREF_EXPLANATION, omnibox_url));
 
   string16 instant_learn_more_url = ASCIIToUTF16(chrome::kInstantLearnMoreURL);
+  int instant_message_id = IDS_INSTANT_PREF_WITH_WARNING;
+  if (chrome::search::IsInstantExtendedAPIEnabled(
+      Profile::FromWebUI(web_ui()))) {
+    instant_message_id = IDS_INSTANT_EXTENDED_PREF_WITH_WARNING;
+    values->SetString("instant_enabled", "instant_extended.enabled");
+  } else {
+    values->SetString("instant_enabled", "instant.enabled");
+  }
   values->SetString(
       "instantPrefAndWarning",
-      l10n_util::GetStringFUTF16(IDS_INSTANT_PREF_WITH_WARNING,
-                                 instant_learn_more_url));
+      l10n_util::GetStringFUTF16(instant_message_id, instant_learn_more_url));
   values->SetString("instantLearnMoreLink", instant_learn_more_url);
 
 #if defined(OS_CHROMEOS)

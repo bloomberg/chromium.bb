@@ -487,6 +487,9 @@ const char kInstantConfirmDialogShown[] = "instant.confirm_dialog_shown";
 // Boolean pref indicating if instant is enabled.
 const char kInstantEnabled[] = "instant.enabled";
 
+// Boolean pref indicating if instant is enabled for instant extended.
+const char kInstantExtendedEnabled[] = "instant_extended.enabled";
+
 // Prefix URL for the experimental Instant ZeroSuggest provider.
 const char kInstantUIZeroSuggestUrlPrefix[] =
     "instant_ui.zero_suggest_url_prefix";

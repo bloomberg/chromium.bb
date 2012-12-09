@@ -25,6 +25,12 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/sys_color_change_listener.h"
 
+namespace {
+const char* GetInstantPrefName(Profile* profile) {
+  return chrome::search::IsInstantExtendedAPIEnabled(profile) ?
+      prefs::kInstantExtendedEnabled : prefs::kInstantEnabled;
+}
+}
 
 namespace chrome {
 
@@ -40,7 +46,7 @@ BrowserInstantController::BrowserInstantController(Browser* browser)
       theme_area_height_(0) {
   profile_pref_registrar_.Init(browser_->profile()->GetPrefs());
   profile_pref_registrar_.Add(
-      prefs::kInstantEnabled,
+      GetInstantPrefName(browser_->profile()),
       base::Bind(&BrowserInstantController::ResetInstant,
                  base::Unretained(this)));
   ResetInstant();
@@ -60,11 +66,13 @@ BrowserInstantController::~BrowserInstantController() {
 
 bool BrowserInstantController::IsInstantEnabled(Profile* profile) {
   return profile && !profile->IsOffTheRecord() && profile->GetPrefs() &&
-         profile->GetPrefs()->GetBoolean(prefs::kInstantEnabled);
+         profile->GetPrefs()->GetBoolean(GetInstantPrefName(profile));
 }
 
 void BrowserInstantController::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kInstantConfirmDialogShown, false,
+                             PrefService::SYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kInstantExtendedEnabled, true,
                              PrefService::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kInstantEnabled, false,
                              PrefService::SYNCABLE_PREF);

@@ -2285,7 +2285,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
                desc="This is necessary for every language. This is the default for all the numbers NOT covered by special cases (singular, dual/two, few, many) some languages need. For CJK, Vietnamese, Turkish and Kannada, this is the only string necessary. For languages with singular-plural distinction, this is the generic plural. For Lithuanian, NUMBER_DEFAULT is 11 .. 19.">
         <ph name="NUMBER_DEFAULT"><ex>37</ex>#</ph> seconds
       </message>
-      
+
       <if expr="lang not in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
       <message name="IDS_TIME_DURATION_LONG_SEC_SINGULAR"
                desc="NUMBER_ONE is one or one-like numbers : 1 (many European and most Indian languages), 1 and 0 (French, Brazilian Portuguese and Hindi), 1,21,31, .. (Russian, Ukrainian, Croatian, Serbian, Latvian, Lithuanian), or 1, 101, 201, .. (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada">
@@ -2407,7 +2407,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         NA
       </message>
       </if>
-      
+
       <if expr="lang == 'ar'">
       <message name="IDS_TIME_DURATION_LONG_MINS_MANY"
                desc="NUMBER_MANY is 11 through 99 in Arabic. For all other languages, do NOT translate.">
@@ -7099,6 +7099,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_OMNIBOX_LEARN_MORE_URL" desc="URL of help center page explaining what the omnibox is">
         http://support.google.com/chrome/bin/answer.py?answer=95440&amp;hl=[GRITLANGCODE]
+      </message>
+      <message name="IDS_INSTANT_EXTENDED_PREF_WITH_WARNING" desc="Preference for enabling instant when the instant extended flag is set.">
+        Allow your search engine to provide Instant results (omnibox input may be <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>logged<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>)
       </message>
       <message name="IDS_INSTANT_PREF_WITH_WARNING" desc="Preference for enabling instant, along with the warning that used to be displayed beneath it.">
         Enable Instant for faster searching (omnibox input may be <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>logged<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>)

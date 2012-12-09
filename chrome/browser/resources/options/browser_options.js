@@ -158,6 +158,12 @@ cr.define('options', function() {
       };
       $('default-search-engine').addEventListener('change',
           this.setDefaultSearchEngine_);
+      if (loadTimeData.getValue('instant_enabled') ==
+          'instant_extended.enabled') {
+        // We don't want to see the confirm dialog for instant extended.
+        $('instant-enabled-control').removeAttribute('dialog-pref');
+        $('instant-enabled-indicator').removeAttribute('dialog-pref');
+      }
 
       // Users section.
       if (loadTimeData.valueExists('profilesInfo')) {
