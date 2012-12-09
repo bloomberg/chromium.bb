@@ -67,7 +67,7 @@ class SSLClientCertificateSelectorTest : public InProcessBrowserTest {
     content::WaitForLoadStop(
         browser()->tab_strip_model()->GetActiveWebContents());
     selector_ = new SSLClientCertificateSelector(
-        browser()->tab_strip_model()->GetActiveTabContents(),
+        browser()->tab_strip_model()->GetActiveWebContents(),
         auth_requestor_->http_network_session_,
         auth_requestor_->cert_request_info_,
         base::Bind(&SSLClientAuthRequestorMock::CertificateSelected,
@@ -157,14 +157,14 @@ class SSLClientCertificateSelectorMultiTabTest
     content::WaitForLoadStop(browser()->tab_strip_model()->GetWebContentsAt(2));
 
     selector_1_ = new SSLClientCertificateSelector(
-        browser()->tab_strip_model()->GetTabContentsAt(1),
+        browser()->tab_strip_model()->GetWebContentsAt(1),
         auth_requestor_1_->http_network_session_,
         auth_requestor_1_->cert_request_info_,
         base::Bind(&SSLClientAuthRequestorMock::CertificateSelected,
                    auth_requestor_1_));
     selector_1_->Init();
     selector_2_ = new SSLClientCertificateSelector(
-        browser()->tab_strip_model()->GetTabContentsAt(2),
+        browser()->tab_strip_model()->GetWebContentsAt(2),
         auth_requestor_2_->http_network_session_,
         auth_requestor_2_->cert_request_info_,
         base::Bind(&SSLClientAuthRequestorMock::CertificateSelected,
@@ -233,7 +233,7 @@ class SSLClientCertificateSelectorMultiProfileTest
     SSLClientCertificateSelectorTest::SetUpOnMainThread();
 
     selector_1_ = new SSLClientCertificateSelector(
-        browser_1_->tab_strip_model()->GetActiveTabContents(),
+        browser_1_->tab_strip_model()->GetActiveWebContents(),
         auth_requestor_1_->http_network_session_,
         auth_requestor_1_->cert_request_info_,
         base::Bind(&SSLClientAuthRequestorMock::CertificateSelected,

@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/certificate_viewer.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -29,6 +28,7 @@
 #include "ui/views/window/dialog_client_view.h"
 
 using content::BrowserThread;
+using content::WebContents;
 
 namespace {
 
@@ -89,13 +89,13 @@ void CertificateSelectorTableModel::SetObserver(
 // SSLClientCertificateSelector:
 
 SSLClientCertificateSelector::SSLClientCertificateSelector(
-    TabContents* tab_contents,
+    WebContents* web_contents,
     const net::HttpNetworkSession* network_session,
     net::SSLCertRequestInfo* cert_request_info,
     const chrome::SelectCertificateCallback& callback)
     : SSLClientAuthObserver(network_session, cert_request_info, callback),
       model_(new CertificateSelectorTableModel(cert_request_info)),
-      tab_contents_(tab_contents),
+      web_contents_(web_contents),
       window_(NULL),
       table_(NULL),
       view_cert_button_(NULL),
@@ -141,9 +141,8 @@ void SSLClientCertificateSelector::Init() {
 
   StartObserving();
 
-  window_ = new ConstrainedWindowViews(
-      tab_contents_->web_contents(), this, false,
-      ConstrainedWindowViews::DEFAULT_INSETS);
+  window_ = new ConstrainedWindowViews(web_contents_, this, false,
+                                       ConstrainedWindowViews::DEFAULT_INSETS);
 
   // Select the first row automatically.  This must be done after the dialog has
   // been created.
@@ -239,10 +238,9 @@ void SSLClientCertificateSelector::ButtonPressed(
   if (sender == view_cert_button_) {
     net::X509Certificate* cert = GetSelectedCert();
     if (cert)
-      ShowCertificateViewer(
-          tab_contents_->web_contents(),
-          tab_contents_->web_contents()->GetView()->GetTopLevelNativeWindow(),
-          cert);
+      ShowCertificateViewer(web_contents_,
+                            web_contents_->GetView()->GetTopLevelNativeWindow(),
+                            cert);
   }
 }
 
@@ -299,9 +297,8 @@ void ShowSSLClientCertificateSelector(
     const chrome::SelectCertificateCallback& callback) {
   DVLOG(1) << __FUNCTION__ << " " << contents;
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  TabContents* tab_contents = TabContents::FromWebContents(contents);
   (new SSLClientCertificateSelector(
-       tab_contents, network_session, cert_request_info, callback))->Init();
+       contents, network_session, cert_request_info, callback))->Init();
 }
 
 }  // namespace chrome
