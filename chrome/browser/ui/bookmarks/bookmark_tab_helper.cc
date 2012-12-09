@@ -32,18 +32,19 @@ bool CanShowBookmarkBar(content::WebUI* ui) {
 BookmarkTabHelper::BookmarkTabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       is_starred_(false),
+      bookmark_model_(NULL),
       delegate_(NULL),
       bookmark_drag_(NULL) {
-  // Register for notifications about URL starredness changing on any profile.
-  registrar_.Add(this, chrome::NOTIFICATION_URLS_STARRED,
-                 content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this, chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED,
-                 content::NotificationService::AllBrowserContextsAndSources());
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  bookmark_model_= BookmarkModelFactory::GetForProfile(profile);
+  if (bookmark_model_)
+    bookmark_model_->AddObserver(this);
 }
 
 BookmarkTabHelper::~BookmarkTabHelper() {
-  // We don't want any notifications while we're running our destructor.
-  registrar_.RemoveAll();
+  if (bookmark_model_)
+    bookmark_model_->RemoveObserver(this);
 }
 
 bool BookmarkTabHelper::ShouldShowBookmarkBar() {
@@ -71,30 +72,6 @@ void BookmarkTabHelper::DidNavigateMainFrame(
   UpdateStarredStateForCurrentURL();
 }
 
-void BookmarkTabHelper::Observe(int type,
-                                const content::NotificationSource& source,
-                                const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED:
-      // BookmarkModel finished loading, fall through to update starred state.
-    case chrome::NOTIFICATION_URLS_STARRED: {
-      // Somewhere, a URL has been starred.
-      // Ignore notifications for profiles other than our current one.
-      Profile* source_profile = content::Source<Profile>(source).ptr();
-      Profile* this_profile =
-          Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-      if (!source_profile || !source_profile->IsSameProfile(this_profile))
-        return;
-
-      UpdateStarredStateForCurrentURL();
-      break;
-    }
-
-    default:
-      NOTREACHED();
-  }
-}
-
 void BookmarkTabHelper::SetBookmarkDragDelegate(
     BookmarkTabHelper::BookmarkDrag* bookmark_drag) {
   bookmark_drag_ = bookmark_drag;
@@ -106,12 +83,35 @@ BookmarkTabHelper::BookmarkDrag*
 }
 
 void BookmarkTabHelper::UpdateStarredStateForCurrentURL() {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile);
   const bool old_state = is_starred_;
-  is_starred_ = (model && model->IsBookmarked(web_contents()->GetURL()));
+  is_starred_ = (bookmark_model_ &&
+                 bookmark_model_->IsBookmarked(web_contents()->GetURL()));
 
   if (is_starred_ != old_state && delegate())
     delegate()->URLStarredChanged(web_contents(), is_starred_);
+}
+
+void BookmarkTabHelper::BookmarkModelChanged() {
+}
+
+void BookmarkTabHelper::Loaded(BookmarkModel* model, bool ids_reassigned) {
+  UpdateStarredStateForCurrentURL();
+}
+
+void BookmarkTabHelper::BookmarkNodeAdded(BookmarkModel* model,
+                                          const BookmarkNode* parent,
+                                          int index) {
+  UpdateStarredStateForCurrentURL();
+}
+
+void BookmarkTabHelper::BookmarkNodeRemoved(BookmarkModel* model,
+                                            const BookmarkNode* parent,
+                                            int old_index,
+                                            const BookmarkNode* node) {
+  UpdateStarredStateForCurrentURL();
+}
+
+void BookmarkTabHelper::BookmarkNodeChanged(BookmarkModel* model,
+                                            const BookmarkNode* node) {
+  UpdateStarredStateForCurrentURL();
 }

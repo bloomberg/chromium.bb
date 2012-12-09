@@ -356,12 +356,6 @@ enum NotificationType {
 
   // Bookmarks ---------------------------------------------------------------
 
-  // Sent when the starred state of a URL changes. A URL is starred if there
-  // is at least one bookmark for it. The source is a Profile and the details
-  // is history::URLsStarredDetails that contains the list of URLs and
-  // whether they were starred or unstarred.
-  NOTIFICATION_URLS_STARRED,
-
   // Sent when the bookmark bar model finishes loading. This source is the
   // Profile, and the details aren't used.
   NOTIFICATION_BOOKMARK_MODEL_LOADED,

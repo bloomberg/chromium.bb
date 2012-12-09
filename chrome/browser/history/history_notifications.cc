@@ -22,12 +22,6 @@ URLsDeletedDetails::URLsDeletedDetails()
 
 URLsDeletedDetails::~URLsDeletedDetails() {}
 
-URLsStarredDetails::URLsStarredDetails(bool being_starred)
-    : starred(being_starred) {
-}
-
-URLsStarredDetails::~URLsStarredDetails() {}
-
 FaviconChangeDetails::FaviconChangeDetails() {}
 
 FaviconChangeDetails::~FaviconChangeDetails() {}

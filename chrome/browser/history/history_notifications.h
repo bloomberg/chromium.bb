@@ -65,19 +65,6 @@ struct URLsDeletedDetails : public HistoryDetails {
   URLRows rows;
 };
 
-// Details for NOTIFY_URLS_STARRED.
-struct URLsStarredDetails : public HistoryDetails {
-  explicit URLsStarredDetails(bool being_starred);
-  virtual ~URLsStarredDetails();
-
-  // The new starred state of the list of URLs. True when they are being
-  // starred, false when they are being unstarred.
-  bool starred;
-
-  // The list of URLs that are changing.
-  std::set<GURL> changed_urls;
-};
-
 // Details for NOTIFY_FAVICON_CHANGED.
 struct FaviconChangeDetails : public HistoryDetails {
   FaviconChangeDetails();

@@ -760,21 +760,21 @@ void BookmarkModel::RemoveAndDeleteNode(BookmarkNode* delete_me) {
   DCHECK(parent);
   int index = parent->GetIndexOf(node.get());
   parent->Remove(node.get());
-  history::URLsStarredDetails details(false);
+  std::set<GURL> changed_urls;
   {
     base::AutoLock url_lock(url_lock_);
-    RemoveNode(node.get(), &details.changed_urls);
+    RemoveNode(node.get(), &changed_urls);
 
     // RemoveNode adds an entry to changed_urls for each node of type URL. As we
     // allow duplicates we need to remove any entries that are still bookmarked.
-    for (std::set<GURL>::iterator i = details.changed_urls.begin();
-         i != details.changed_urls.end(); ) {
+    for (std::set<GURL>::iterator i = changed_urls.begin();
+         i != changed_urls.end(); ) {
       if (IsBookmarkedNoLock(*i)) {
         // When we erase the iterator pointing at the erasee is
         // invalidated, so using i++ here within the "erase" call is
         // important as it advances the iterator before passing the
         // old value through to erase.
-        details.changed_urls.erase(i++);
+        changed_urls.erase(i++);
       } else {
         ++i;
       }
@@ -787,7 +787,7 @@ void BookmarkModel::RemoveAndDeleteNode(BookmarkNode* delete_me) {
   FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
                     BookmarkNodeRemoved(this, parent, index, node.get()));
 
-  if (details.changed_urls.empty()) {
+  if (changed_urls.empty()) {
     // No point in sending out notification if the starred state didn't change.
     return;
   }
@@ -797,13 +797,8 @@ void BookmarkModel::RemoveAndDeleteNode(BookmarkNode* delete_me) {
         HistoryServiceFactory::GetForProfile(profile_,
                                              Profile::EXPLICIT_ACCESS);
     if (history)
-      history->URLsNoLongerBookmarked(details.changed_urls);
+      history->URLsNoLongerBookmarked(changed_urls);
   }
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_URLS_STARRED,
-      content::Source<content::BrowserContext>(profile_),
-      content::Details<history::URLsStarredDetails>(&details));
 }
 
 BookmarkNode* BookmarkModel::AddNode(BookmarkNode* parent,
@@ -820,14 +815,6 @@ BookmarkNode* BookmarkModel::AddNode(BookmarkNode* parent,
 
   index_->Add(node);
 
-  if (node->is_url() && !was_bookmarked) {
-    history::URLsStarredDetails details(true);
-    details.changed_urls.insert(node->url());
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_URLS_STARRED,
-        content::Source<Profile>(profile_),
-        content::Details<history::URLsStarredDetails>(&details));
-  }
   return node;
 }
 
