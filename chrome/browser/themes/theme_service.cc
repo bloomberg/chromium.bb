@@ -224,14 +224,6 @@ void ThemeService::Init(Profile* profile) {
   DCHECK(CalledOnValidThread());
   profile_ = profile;
 
-  // Listen to EXTENSION_LOADED instead of EXTENSION_INSTALLED because
-  // the extension cannot yet be found via GetExtensionById() if it is
-  // installed but not loaded (which may confuse listeners to
-  // BROWSER_THEME_CHANGED).
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_LOADED,
-                 content::Source<Profile>(profile_));
-
   LoadThemePrefs();
 
   theme_syncable_service_.reset(new ThemeSyncableService(profile_, this));
@@ -348,6 +340,12 @@ void ThemeService::SetTheme(const Extension* extension) {
 
   DCHECK(extension);
   DCHECK(extension->is_theme());
+  if (DCHECK_IS_ON()) {
+    ExtensionService* service =
+        extensions::ExtensionSystem::Get(profile_)->extension_service();
+    DCHECK(service);
+    DCHECK(service->GetExtensionById(extension->id(), false));
+  }
 
   BuildFromExtension(extension);
   SaveThemeID(extension->id());
@@ -655,17 +653,6 @@ void ThemeService::FreePlatformCaches() {
   // Views (Skia) has no platform image cache to clear.
 }
 #endif
-
-void ThemeService::Observe(int type,
-                           const content::NotificationSource& source,
-                           const content::NotificationDetails& details) {
-  DCHECK(type == chrome::NOTIFICATION_EXTENSION_LOADED);
-  const Extension* extension = content::Details<const Extension>(details).ptr();
-  if (!extension->is_theme()) {
-    return;
-  }
-  SetTheme(extension);
-}
 
 void ThemeService::SavePackName(const FilePath& pack_path) {
   profile_->GetPrefs()->SetFilePath(
