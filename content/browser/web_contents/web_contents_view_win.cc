@@ -101,7 +101,8 @@ WebContentsViewWin::~WebContentsViewWin() {
     DestroyWindow(hwnd());
 }
 
-void WebContentsViewWin::CreateView(const gfx::Size& initial_size) {
+void WebContentsViewWin::CreateView(
+    const gfx::Size& initial_size, gfx::NativeView context) {
   initial_size_ = initial_size;
 
   set_window_style(WS_VISIBLE | WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);

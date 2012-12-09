@@ -143,7 +143,7 @@ ExtensionHost::ExtensionHost(const Extension* extension,
       extension_host_type_(host_type),
       associated_web_contents_(NULL) {
   host_contents_.reset(WebContents::Create(
-      profile_, site_instance, MSG_ROUTING_NONE, NULL));
+      WebContents::CreateParams(profile_, site_instance))),
   content::WebContentsObserver::Observe(host_contents_.get());
   host_contents_->SetDelegate(this);
   chrome::SetViewType(host_contents_.get(), host_type);

@@ -30,7 +30,8 @@ class WebContentsViewAndroid : public WebContentsView,
 
   // WebContentsView implementation --------------------------------------------
 
-  virtual void CreateView(const gfx::Size& initial_size) OVERRIDE;
+  virtual void CreateView(
+      const gfx::Size& initial_size, gfx::NativeView context) OVERRIDE;
   virtual RenderWidgetHostView* CreateViewForWidget(
       RenderWidgetHost* render_widget_host) OVERRIDE;
   virtual gfx::NativeView GetNativeView() const OVERRIDE;

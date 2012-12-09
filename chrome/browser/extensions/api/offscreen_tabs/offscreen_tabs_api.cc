@@ -218,7 +218,7 @@ void OffscreenTab::Init(const GURL& url,
                         ParentTab* parent_tab) {
   // Create the offscreen tab.
   web_contents_.reset(
-      WebContents::Create(profile, NULL, MSG_ROUTING_NONE, NULL));
+      WebContents::Create(WebContents::CreateParams(profile)));
   extensions::TabHelper::CreateForWebContents(web_contents_.get());
 
   // Setting the size starts the renderer.

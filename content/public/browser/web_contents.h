@@ -50,14 +50,25 @@ class WebContents : public PageNavigator,
                     public IPC::Sender,
                     public base::SupportsUserData {
  public:
-  // |base_web_contents| is used if we want to size the new WebContents's view
-  // based on the view of an existing WebContents.  This can be NULL if not
-  // needed.
-  CONTENT_EXPORT static WebContents* Create(
-      BrowserContext* browser_context,
-      SiteInstance* site_instance,
-      int routing_id,
-      const WebContents* base_web_contents);
+  struct CONTENT_EXPORT CreateParams {
+    explicit CreateParams(BrowserContext* context);
+    CreateParams(BrowserContext* context, SiteInstance* site);
+
+    BrowserContext* browser_context;
+    SiteInstance* site_instance;
+    int routing_id;
+
+    // Used if we want to size the new WebContents's view based on the view of
+    // an existing WebContents.  This can be NULL if not needed.
+    const WebContents* base_web_contents;
+
+    // Used to specify the location context which display the new view should
+    // belong. This can be NULL if not needed.
+    gfx::NativeView context;
+  };
+
+  // Creates a new WebContents.
+  CONTENT_EXPORT static WebContents* Create(const CreateParams& params);
 
   // Similar to Create() above but should be used when you need to prepopulate
   // the SessionStorageNamespaceMap of the WebContents. This can happen if
@@ -70,10 +81,7 @@ class WebContents : public PageNavigator,
   // they should not be shared by multiple WebContents, and what bad things
   // can happen if you share the object.
   CONTENT_EXPORT static WebContents* CreateWithSessionStorage(
-      BrowserContext* browser_context,
-      SiteInstance* site_instance,
-      int routing_id,
-      const WebContents* base_web_contents,
+      const CreateParams& params,
       const SessionStorageNamespaceMap& session_storage_namespace_map);
 
   // Returns a WebContents that wraps the RenderViewHost, or NULL if the

@@ -34,12 +34,10 @@ class WebContentsDelegateTest : public RenderViewHostImplTestHarness {
 };
 
 TEST_F(WebContentsDelegateTest, UnregisterInDestructor) {
-  scoped_ptr<WebContentsImpl> contents_a(
-      WebContentsImpl::Create(browser_context_.get(), NULL, MSG_ROUTING_NONE,
-                              NULL));
-  scoped_ptr<WebContentsImpl> contents_b(
-      WebContentsImpl::Create(browser_context_.get(), NULL, MSG_ROUTING_NONE,
-                              NULL));
+  scoped_ptr<WebContentsImpl> contents_a(static_cast<WebContentsImpl*>(
+      WebContents::Create(WebContents::CreateParams(browser_context_.get()))));
+  scoped_ptr<WebContentsImpl> contents_b(static_cast<WebContentsImpl*>(
+      WebContents::Create(WebContents::CreateParams(browser_context_.get()))));
   EXPECT_EQ(NULL, contents_a->GetDelegate());
   EXPECT_EQ(NULL, contents_b->GetDelegate());
 

@@ -512,7 +512,8 @@ gfx::Vector2d WebContentsViewAura::GetTranslationForOverscroll(int delta_x,
 ////////////////////////////////////////////////////////////////////////////////
 // WebContentsViewAura, WebContentsView implementation:
 
-void WebContentsViewAura::CreateView(const gfx::Size& initial_size) {
+void WebContentsViewAura::CreateView(
+    const gfx::Size& initial_size, gfx::NativeView context) {
   // NOTE: we ignore |initial_size| since in some cases it's wrong (such as
   // if the bookmark bar is not shown and you create a new tab). The right
   // value is set shortly after this, so its safe to ignore.
@@ -522,8 +523,10 @@ void WebContentsViewAura::CreateView(const gfx::Size& initial_size) {
   window_->SetType(aura::client::WINDOW_TYPE_CONTROL);
   window_->SetTransparent(false);
   window_->Init(ui::LAYER_NOT_DRAWN);
-  // TODO(erg): Do something else here later.
-  window_->SetDefaultParentByRootWindow(NULL, gfx::Rect());
+  // TODO(mukai, erg): Should use a non-NULL value later when the DCHECK is
+  // turned on in SetDefaultParentByRootWindow().
+  aura::RootWindow* target_root = context ? context->GetRootWindow() : NULL;
+  window_->SetDefaultParentByRootWindow(target_root, gfx::Rect());
   window_->layer()->SetMasksToBounds(true);
   window_->SetName("WebContentsViewAura");
 

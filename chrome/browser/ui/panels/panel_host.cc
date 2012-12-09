@@ -49,9 +49,9 @@ void PanelHost::Init(const GURL& url) {
   if (url.is_empty())
     return;
 
-  web_contents_.reset(content::WebContents::Create(
-      profile_, content::SiteInstance::CreateForURL(profile_, url),
-      MSG_ROUTING_NONE, NULL));
+  content::WebContents::CreateParams create_params(
+      profile_, content::SiteInstance::CreateForURL(profile_, url));
+  web_contents_.reset(content::WebContents::Create(create_params));
   chrome::SetViewType(web_contents_.get(), chrome::VIEW_TYPE_PANEL);
   web_contents_->SetDelegate(this);
   content::WebContentsObserver::Observe(web_contents_.get());

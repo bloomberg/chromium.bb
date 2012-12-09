@@ -113,9 +113,8 @@ void ShellWindow::Init(const GURL& url,
                        const ShellWindow::CreateParams& params) {
   window_type_ = params.window_type;
 
-  web_contents_.reset(WebContents::Create(
-      profile(), SiteInstance::CreateForURL(profile(), url), MSG_ROUTING_NONE,
-      NULL));
+  web_contents_.reset(WebContents::Create(WebContents::CreateParams(
+      profile(), SiteInstance::CreateForURL(profile(), url))));
   ConstrainedWindowTabHelper::CreateForWebContents(web_contents_.get());
   FaviconTabHelper::CreateForWebContents(web_contents_.get());
   WebIntentPickerController::CreateForWebContents(web_contents_.get());

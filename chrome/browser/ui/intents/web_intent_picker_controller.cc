@@ -44,7 +44,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_intents_dispatcher.h"
-#include "ipc/ipc_message.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image.h"
 
@@ -331,9 +330,8 @@ void WebIntentPickerController::OnServiceChosen(
 
     case webkit_glue::WebIntentServiceData::DISPOSITION_WINDOW: {
       content::WebContents* contents = content::WebContents::Create(
-          profile_,
-          tab_util::GetSiteInstanceForNewTab(profile_, url),
-          MSG_ROUTING_NONE, NULL);
+          content::WebContents::CreateParams(
+              profile_, tab_util::GetSiteInstanceForNewTab(profile_, url)));
       WebIntentPickerController::CreateForWebContents(contents);
 
       // Let the controller for the target WebContents know that it is hosting a
@@ -374,10 +372,10 @@ void WebIntentPickerController::OnServiceChosen(
 content::WebContents*
 WebIntentPickerController::CreateWebContentsForInlineDisposition(
     Profile* profile, const GURL& url) {
+  content::WebContents::CreateParams create_params(
+      profile, tab_util::GetSiteInstanceForNewTab(profile, url));
   content::WebContents* web_contents = content::WebContents::Create(
-      profile,
-      tab_util::GetSiteInstanceForNewTab(profile, url),
-      MSG_ROUTING_NONE, NULL);
+      create_params);
   intents_dispatcher_->DispatchIntent(web_contents);
   return web_contents;
 }

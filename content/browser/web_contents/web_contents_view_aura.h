@@ -78,7 +78,8 @@ class CONTENT_EXPORT WebContentsViewAura
   gfx::Vector2d GetTranslationForOverscroll(int delta_x, int delta_y);
 
   // Overridden from WebContentsView:
-  virtual void CreateView(const gfx::Size& initial_size) OVERRIDE;
+  virtual void CreateView(
+      const gfx::Size& initial_size, gfx::NativeView context) OVERRIDE;
   virtual RenderWidgetHostView* CreateViewForWidget(
       RenderWidgetHost* render_widget_host) OVERRIDE;
   virtual gfx::NativeView GetNativeView() const OVERRIDE;

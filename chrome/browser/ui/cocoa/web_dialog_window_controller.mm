@@ -340,7 +340,7 @@ void WebDialogWindowDelegateBridge::HandleKeyboardEvent(
 
 - (void)loadDialogContents {
   webContents_.reset(WebContents::Create(
-      delegate_->browser_context(), NULL, MSG_ROUTING_NONE, NULL));
+      WebContents::CreateParams(delegate_->browser_context())));
   [[self window] setContentView:webContents_->GetNativeView()];
   webContents_->SetDelegate(delegate_.get());
 

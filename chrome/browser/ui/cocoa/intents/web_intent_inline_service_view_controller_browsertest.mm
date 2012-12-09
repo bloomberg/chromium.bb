@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/web_contents.h"
-#include "ipc/ipc_message.h"
 #import "testing/gtest_mac.h"
 
 namespace {
@@ -91,11 +90,11 @@ IN_PROC_BROWSER_TEST_F(WebIntentInlineServiceViewControllerTest, WebView) {
   [view_controller_ setServiceName:kTitle];
 
   GURL url("about:blank");
-  content::WebContents* web_contents = content::WebContents::Create(
+  content::WebContents::CreateParams create_params(
       browser()->profile(),
-      tab_util::GetSiteInstanceForNewTab(browser()->profile(), url),
-      MSG_ROUTING_NONE,
-      NULL);
+      tab_util::GetSiteInstanceForNewTab(browser()->profile(), url));
+  content::WebContents* web_contents = content::WebContents::Create(
+      create_params);
 
   // Create a web view
   EXPECT_CALL(delegate_,
@@ -126,11 +125,11 @@ IN_PROC_BROWSER_TEST_F(WebIntentInlineServiceViewControllerTest, UnsetWebView) {
   ASSERT_FALSE([view_controller_ webContents]);
 
   GURL url("about:blank");
-  content::WebContents* web_contents = content::WebContents::Create(
+  content::WebContents::CreateParams create_params(
       browser()->profile(),
-      tab_util::GetSiteInstanceForNewTab(browser()->profile(), url),
-      MSG_ROUTING_NONE,
-      NULL);
+      tab_util::GetSiteInstanceForNewTab(browser()->profile(), url));
+  content::WebContents* web_contents = content::WebContents::Create(
+      create_params);
   EXPECT_CALL(delegate_,
               CreateWebContentsForInlineDisposition(testing::_, testing::_))
       .WillOnce(testing::Return(web_contents));

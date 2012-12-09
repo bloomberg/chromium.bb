@@ -91,6 +91,7 @@
 #endif
 
 #if defined(USE_AURA) && defined(USE_X11)
+#include "ui/aura/window.h"
 #include "ui/base/touch/touch_factory.h"
 #endif // defined (USE_AURA) && defined(USE_X11)
 
@@ -263,23 +264,15 @@ int GetSwitchValueAsInt(
 
 }  // namespace
 
-WebContents* WebContents::Create(
-    BrowserContext* browser_context,
-    SiteInstance* site_instance,
-    int routing_id,
-    const WebContents* base_web_contents) {
-  return WebContentsImpl::Create(
-      browser_context, site_instance, routing_id,
-      static_cast<const WebContentsImpl*>(base_web_contents));
+WebContents* WebContents::Create(const WebContents::CreateParams& params) {
+  return WebContentsImpl::CreateWithOpener(params, NULL);
 }
 
 WebContents* WebContents::CreateWithSessionStorage(
-    BrowserContext* browser_context,
-    SiteInstance* site_instance,
-    int routing_id,
-    const WebContents* base_web_contents,
+    const WebContents::CreateParams& params,
     const SessionStorageNamespaceMap& session_storage_namespace_map) {
-  WebContentsImpl* new_contents = new WebContentsImpl(browser_context, NULL);
+  WebContentsImpl* new_contents = new WebContentsImpl(
+      params.browser_context, NULL);
 
   for (SessionStorageNamespaceMap::const_iterator it =
            session_storage_namespace_map.begin();
@@ -289,8 +282,7 @@ WebContents* WebContents::CreateWithSessionStorage(
                                                              it->second);
   }
 
-  new_contents->Init(browser_context, site_instance, routing_id,
-                     static_cast<const WebContentsImpl*>(base_web_contents));
+  new_contents->Init(params);
   return new_contents;
 }
 
@@ -385,25 +377,13 @@ WebContentsImpl::~WebContentsImpl() {
   SetDelegate(NULL);
 }
 
-WebContentsImpl* WebContentsImpl::Create(
-    BrowserContext* browser_context,
-    SiteInstance* site_instance,
-    int routing_id,
-    const WebContentsImpl* base_web_contents) {
-  return CreateWithOpener(browser_context, site_instance, routing_id,
-                          base_web_contents, NULL);
-}
-
 WebContentsImpl* WebContentsImpl::CreateWithOpener(
-    BrowserContext* browser_context,
-    SiteInstance* site_instance,
-    int routing_id,
-    const WebContentsImpl* base_web_contents,
+    const WebContents::CreateParams& params,
     WebContentsImpl* opener) {
-  WebContentsImpl* new_contents = new WebContentsImpl(browser_context, opener);
+  WebContentsImpl* new_contents = new WebContentsImpl(
+      params.browser_context, opener);
 
-  new_contents->Init(browser_context, site_instance, routing_id,
-                     static_cast<const WebContentsImpl*>(base_web_contents));
+  new_contents->Init(params);
   return new_contents;
 }
 
@@ -423,7 +403,7 @@ WebContentsImpl* WebContentsImpl::CreateGuest(
         new_contents,
         params));
 
-  new_contents->Init(browser_context, site_instance, MSG_ROUTING_NONE, NULL);
+  new_contents->Init(WebContents::CreateParams(browser_context, site_instance));
   new_contents->browser_plugin_guest_->InstallHelper(
       new_contents->GetRenderViewHost());
 
@@ -1107,9 +1087,9 @@ WebContents* WebContentsImpl::Clone() {
   // We use our current SiteInstance since the cloned entry will use it anyway.
   // We pass |this| for the |base_web_contents| to size the view correctly, and
   // our own opener so that the cloned page can access it if it was before.
-  WebContentsImpl* tc = CreateWithOpener(GetBrowserContext(),
-                                         GetSiteInstance(), MSG_ROUTING_NONE,
-                                         this, opener_);
+  CreateParams create_params(GetBrowserContext(), GetSiteInstance());
+  create_params.base_web_contents = this;
+  WebContentsImpl* tc = CreateWithOpener(create_params, opener_);
   tc->GetController().CopyStateFrom(controller_);
   FOR_EACH_OBSERVER(WebContentsObserver,
                     observers_,
@@ -1156,11 +1136,9 @@ void WebContentsImpl::Observe(int type,
   }
 }
 
-void WebContentsImpl::Init(BrowserContext* browser_context,
-                           SiteInstance* site_instance,
-                           int routing_id,
-                           const WebContents* base_web_contents) {
-  render_manager_.Init(browser_context, site_instance, routing_id);
+void WebContentsImpl::Init(const WebContents::CreateParams& params) {
+  render_manager_.Init(
+      params.browser_context, params.site_instance, params.routing_id);
 
   view_.reset(GetContentClient()->browser()->
       OverrideCreateWebContentsView(this, &render_view_host_delegate_view_));
@@ -1187,8 +1165,9 @@ void WebContentsImpl::Init(BrowserContext* browser_context,
 
   // We have the initial size of the view be based on the size of the view of
   // the passed in WebContents.
-  view_->CreateView(base_web_contents ?
-      base_web_contents->GetView()->GetContainerSize() : gfx::Size());
+  gfx::Size initial_size = params.base_web_contents ?
+      params.base_web_contents->GetView()->GetContainerSize() : gfx::Size();
+  view_->CreateView(initial_size, params.context);
 
   // Listen for whether our opener gets destroyed.
   if (opener_) {
@@ -1354,7 +1333,10 @@ void WebContentsImpl::CreateNewWindow(
   new_contents->GetController().SetSessionStorageNamespace(
       partition_id,
       session_storage_namespace);
-  new_contents->Init(GetBrowserContext(), site_instance, route_id, this);
+  CreateParams create_params(GetBrowserContext(), site_instance);
+  create_params.routing_id = route_id;
+  create_params.base_web_contents = this;
+  new_contents->Init(create_params);
 
   new_contents->set_opener_web_ui_type(GetWebUITypeForCurrentState());
 

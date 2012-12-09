@@ -15,7 +15,6 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_utils.h"
-#include "ipc/ipc_message.h"
 #include "testing/gtest_mac.h"
 #include "ui/base/accelerators/platform_accelerator_cocoa.h"
 
@@ -67,7 +66,7 @@ class FullscreenExitBubbleControllerTest : public CocoaProfileTest {
 
   void AppendTabToStrip() {
     WebContents* web_contents = WebContents::Create(
-        profile(), site_instance_, MSG_ROUTING_NONE, NULL);
+        content::WebContents::CreateParams(profile(), site_instance_));
     browser()->tab_strip_model()->AppendWebContents(
         web_contents, /*foreground=*/true);
   }

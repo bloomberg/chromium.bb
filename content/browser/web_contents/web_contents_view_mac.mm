@@ -92,7 +92,8 @@ WebContentsViewMac::~WebContentsViewMac() {
   [cocoa_view_ clearWebContentsView];
 }
 
-void WebContentsViewMac::CreateView(const gfx::Size& initial_size) {
+void WebContentsViewMac::CreateView(
+    const gfx::Size& initial_size, gfx::NativeView context) {
   WebContentsViewCocoa* view =
       [[WebContentsViewCocoa alloc] initWithWebContentsViewMac:this];
   cocoa_view_.reset(view);

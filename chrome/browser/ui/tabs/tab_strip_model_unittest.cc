@@ -114,15 +114,13 @@ class TabStripModelTest : public ChromeRenderViewHostTestHarness {
   }
 
   WebContents* CreateWebContents() {
-    return WebContents::Create(profile(), NULL, MSG_ROUTING_NONE, NULL);
+    return WebContents::Create(WebContents::CreateParams(profile()));
   }
 
   WebContents* CreateWebContentsWithSharedRPH(WebContents* web_contents) {
-    WebContents* retval = WebContents::Create(
-        profile(),
-        web_contents->GetRenderViewHost()->GetSiteInstance(),
-        MSG_ROUTING_NONE,
-        NULL);
+    WebContents::CreateParams create_params(
+        profile(), web_contents->GetRenderViewHost()->GetSiteInstance());
+    WebContents* retval = WebContents::Create(create_params);
     EXPECT_EQ(retval->GetRenderProcessHost(),
               web_contents->GetRenderProcessHost());
     return retval;

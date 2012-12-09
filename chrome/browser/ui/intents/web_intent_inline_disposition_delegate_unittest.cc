@@ -30,7 +30,7 @@ class WebIntentInlineDispositionBrowserTest
     BrowserWithTestWindowTest::SetUp();
 
     web_contents_.reset(content::WebContents::Create(
-        browser()->profile(), NULL, MSG_ROUTING_NONE, NULL));
+        content::WebContents::CreateParams(browser()->profile())));
     delegate_.reset(new WebIntentInlineDispositionDelegate(
         &mock_, web_contents_.get(), browser()));
   }

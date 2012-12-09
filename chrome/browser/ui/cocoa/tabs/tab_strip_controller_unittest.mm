@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/tabs/test_tab_strip_model_delegate.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
-#include "ipc/ipc_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -103,7 +102,7 @@ class TabStripControllerTest : public CocoaProfileTest {
   TabView* CreateTab() {
     SiteInstance* instance = SiteInstance::Create(profile());
     WebContents* web_contents = WebContents::Create(
-        profile(), instance, MSG_ROUTING_NONE, NULL);
+        content::WebContents::CreateParams(profile(), instance));
     model_->AppendWebContents(web_contents, true);
     const NSUInteger tab_count = [controller_.get() viewsCount];
     return static_cast<TabView*>([controller_.get() viewAtIndex:tab_count - 1]);

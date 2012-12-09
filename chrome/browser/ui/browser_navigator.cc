@@ -37,6 +37,10 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 
+#if defined(USE_AURA)
+#include "ui/aura/window.h"
+#endif
+
 using content::GlobalRequestID;
 using content::WebContents;
 
@@ -474,11 +478,18 @@ void Navigate(NavigateParams* params) {
     }
 
     if (params->disposition != CURRENT_TAB) {
-      params->target_contents = WebContents::Create(
+      WebContents::CreateParams create_params(
           params->browser->profile(),
-          tab_util::GetSiteInstanceForNewTab(params->browser->profile(), url),
-          MSG_ROUTING_NONE,
-          params->source_contents);
+          tab_util::GetSiteInstanceForNewTab(params->browser->profile(), url));
+      create_params.base_web_contents = params->source_contents;
+#if defined(USE_AURA)
+      if (params->browser->window() &&
+          params->browser->window()->GetNativeWindow()) {
+        create_params.context =
+            params->browser->window()->GetNativeWindow();
+      }
+#endif
+      params->target_contents = WebContents::Create(create_params);
       // New tabs can have WebUI URLs that will make calls back to arbitrary
       // tab helpers, so the entire set of tab helpers needs to be set up
       // immediately.

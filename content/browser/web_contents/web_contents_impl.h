@@ -81,17 +81,8 @@ class CONTENT_EXPORT WebContentsImpl
  public:
   virtual ~WebContentsImpl();
 
-  static WebContentsImpl* Create(
-      BrowserContext* browser_context,
-      SiteInstance* site_instance,
-      int routing_id,
-      const WebContentsImpl* base_web_contents);
-
   static WebContentsImpl* CreateWithOpener(
-      BrowserContext* browser_context,
-      SiteInstance* site_instance,
-      int routing_id,
-      const WebContentsImpl* base_web_contents,
+      const WebContents::CreateParams& params,
       WebContentsImpl* opener);
 
   // Creates a WebContents to be used as a browser plugin guest.
@@ -113,10 +104,7 @@ class CONTENT_EXPORT WebContentsImpl
 
   // Complex initialization here. Specifically needed to avoid having
   // members call back into our virtual functions in the constructor.
-  virtual void Init(BrowserContext* browser_context,
-                    SiteInstance* site_instance,
-                    int routing_id,
-                    const WebContents* base_web_contents);
+  virtual void Init(const WebContents::CreateParams& params);
 
   // Returns the SavePackage which manages the page saving job. May be NULL.
   SavePackage* save_package() const { return save_package_.get(); }

@@ -133,10 +133,7 @@ void BalloonHost::OnRequest(const ExtensionHostMsg_Request_Params& params) {
 void BalloonHost::Init() {
   DCHECK(!web_contents_.get()) << "BalloonViewHost already initialized.";
   web_contents_.reset(WebContents::Create(
-      balloon_->profile(),
-      site_instance_.get(),
-      MSG_ROUTING_NONE,
-      NULL));
+      WebContents::CreateParams(balloon_->profile(), site_instance_.get())));
   chrome::SetViewType(web_contents_.get(), chrome::VIEW_TYPE_NOTIFICATION);
   web_contents_->SetDelegate(this);
   Observe(web_contents_.get());

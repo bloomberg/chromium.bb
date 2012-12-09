@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/cocoa/tab_contents/instant_preview_controller_mac.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/web_contents.h"
-#include "ipc/ipc_message.h"
 #import "testing/gtest_mac.h"
 
 class PreviewableContentsControllerTest : public InProcessBrowserTest {
@@ -22,7 +21,7 @@ class PreviewableContentsControllerTest : public InProcessBrowserTest {
 
   virtual void SetUpOnMainThread() OVERRIDE {
     web_contents_.reset(content::WebContents::Create(
-        browser()->profile(), NULL, MSG_ROUTING_NONE, NULL));
+        content::WebContents::CreateParams(browser()->profile())));
     instant_model_.SetPreviewContents(web_contents_.get());
 
     controller_.reset([[PreviewableContentsController alloc]

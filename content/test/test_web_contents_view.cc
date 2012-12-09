@@ -42,7 +42,8 @@ void TestWebContentsView::GotFocus() {
 void TestWebContentsView::TakeFocus(bool reverse) {
 }
 
-void TestWebContentsView::CreateView(const gfx::Size& initial_size) {
+void TestWebContentsView::CreateView(const gfx::Size& initial_size,
+                                     gfx::NativeView context) {
 }
 
 RenderWidgetHostView* TestWebContentsView::CreateViewForWidget(

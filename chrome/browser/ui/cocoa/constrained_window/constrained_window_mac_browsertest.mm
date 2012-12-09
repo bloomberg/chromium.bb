@@ -16,7 +16,6 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
-#include "ipc/ipc_message.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using ::testing::NiceMock;
@@ -91,7 +90,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, ShowInInactiveTab) {
 // a tab works correctly.
 IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, ShowInUninitializedTab) {
   scoped_ptr<content::WebContents> web_contents(content::WebContents::Create(
-      browser()->profile(), NULL, MSG_ROUTING_NONE, NULL));
+      content::WebContents::CreateParams(browser()->profile())));
   bool was_blocked = false;
   chrome::AddWebContents(browser(), NULL, web_contents.release(),
                          NEW_BACKGROUND_TAB, gfx::Rect(), false, &was_blocked);

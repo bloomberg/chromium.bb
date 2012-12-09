@@ -163,6 +163,7 @@
     'public/browser/trace_subscriber.h',
     'public/browser/user_metrics.h',
     'public/browser/utility_process_host.h',
+    'public/browser/web_contents.cc',
     'public/browser/web_contents.h',
     'public/browser/web_contents_delegate.cc',
     'public/browser/web_contents_delegate.h',

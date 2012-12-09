@@ -9,7 +9,6 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
-#include "ipc/ipc_message.h"
 
 using content::BrowserContext;
 using content::WebContents;
@@ -43,7 +42,7 @@ content::BrowserContext* AwBrowserDependencyFactoryImpl::GetBrowserContext(
 
 WebContents* AwBrowserDependencyFactoryImpl::CreateWebContents(bool incognito) {
   return content::WebContents::Create(
-      GetBrowserContext(incognito), 0, MSG_ROUTING_NONE, 0);
+      content::WebContents::CreateParams(GetBrowserContext(incognito)));
 }
 
 }  // namespace android_webview

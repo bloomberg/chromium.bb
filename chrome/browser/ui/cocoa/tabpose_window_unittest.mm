@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
-#include "ipc/ipc_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::SiteInstance;
@@ -27,7 +26,7 @@ class TabposeWindowTest : public CocoaProfileTest {
 
   void AppendTabToStrip() {
     content::WebContents* web_contents = content::WebContents::Create(
-        profile(), site_instance_, MSG_ROUTING_NONE, NULL);
+        content::WebContents::CreateParams(profile(), site_instance_));
     browser()->tab_strip_model()->AppendWebContents(
         web_contents, /*foreground=*/true);
   }

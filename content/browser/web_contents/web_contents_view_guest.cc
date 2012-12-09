@@ -32,7 +32,8 @@ WebContentsViewGuest::WebContentsViewGuest(
 WebContentsViewGuest::~WebContentsViewGuest() {
 }
 
-void WebContentsViewGuest::CreateView(const gfx::Size& initial_size) {
+void WebContentsViewGuest::CreateView(const gfx::Size& initial_size,
+                                      gfx::NativeView context) {
   requested_size_ = initial_size;
 }
 

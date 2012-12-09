@@ -35,7 +35,7 @@ TestWebContents::TestWebContents(BrowserContext* browser_context)
 TestWebContents* TestWebContents::Create(BrowserContext* browser_context,
                                          SiteInstance* instance) {
   TestWebContents* test_web_contents = new TestWebContents(browser_context);
-  test_web_contents->Init(browser_context, instance, MSG_ROUTING_NONE, NULL);
+  test_web_contents->Init(WebContents::CreateParams(browser_context, instance));
   return test_web_contents;
 }
 

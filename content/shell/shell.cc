@@ -114,11 +114,10 @@ Shell* Shell::CreateNewWindow(BrowserContext* browser_context,
                               SiteInstance* site_instance,
                               int routing_id,
                               WebContents* base_web_contents) {
-  WebContents* web_contents = WebContents::Create(
-      browser_context,
-      site_instance,
-      routing_id,
-      base_web_contents);
+  WebContents::CreateParams create_params(browser_context, site_instance);
+  create_params.routing_id = routing_id;
+  create_params.base_web_contents = base_web_contents;
+  WebContents* web_contents = WebContents::Create(create_params);
   Shell* shell = CreateShell(web_contents);
   if (!url.is_empty())
     shell->LoadURL(url);

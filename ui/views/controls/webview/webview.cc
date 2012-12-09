@@ -251,10 +251,9 @@ content::WebContents* WebView::CreateWebContents(
   }
 
   if (!contents) {
-    return content::WebContents::Create(browser_context,
-                                        site_instance,
-                                        MSG_ROUTING_NONE,
-                                        NULL);
+    content::WebContents::CreateParams create_params(
+        browser_context, site_instance);
+    return content::WebContents::Create(create_params);
   }
 
   return contents;

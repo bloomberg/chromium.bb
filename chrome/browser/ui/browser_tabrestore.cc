@@ -17,7 +17,6 @@
 #include "content/public/browser/session_storage_namespace.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
-#include "ipc/ipc_message.h"
 
 using content::WebContents;
 using content::NavigationController;
@@ -52,11 +51,13 @@ WebContents* CreateRestoredTab(
   // into the map.
   content::SessionStorageNamespaceMap session_storage_namespace_map;
   session_storage_namespace_map[""] = session_storage_namespace;
-  WebContents* web_contents = content::WebContents::CreateWithSessionStorage(
+  WebContents::CreateParams create_params(
       browser->profile(),
-      tab_util::GetSiteInstanceForNewTab(browser->profile(), restore_url),
-      MSG_ROUTING_NONE,
-      browser->tab_strip_model()->GetActiveWebContents(),
+      tab_util::GetSiteInstanceForNewTab(browser->profile(), restore_url));
+  create_params.base_web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  WebContents* web_contents = content::WebContents::CreateWithSessionStorage(
+      create_params,
       session_storage_namespace_map);
   extensions::TabHelper::CreateForWebContents(web_contents);
   extensions::TabHelper::FromWebContents(web_contents)->

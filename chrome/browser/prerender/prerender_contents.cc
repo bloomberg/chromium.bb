@@ -487,7 +487,7 @@ WebContents* PrerenderContents::CreateWebContents(
   content::SessionStorageNamespaceMap session_storage_namespace_map;
   session_storage_namespace_map[""] = session_storage_namespace;
   return  WebContents::CreateWithSessionStorage(
-      profile_, NULL, MSG_ROUTING_NONE, NULL, session_storage_namespace_map);
+      WebContents::CreateParams(profile_), session_storage_namespace_map);
 }
 
 void PrerenderContents::NotifyPrerenderStart() {

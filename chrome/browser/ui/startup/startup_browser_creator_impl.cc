@@ -95,12 +95,6 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
 
-#if defined(USE_ASH)
-#include "ash/launcher/launcher_types.h"
-#include "ash/shell.h"
-#include "ui/aura/window.h"
-#endif
-
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
 #include "chrome/browser/ui/cocoa/keystone_infobar_delegate.h"
@@ -806,20 +800,6 @@ Browser* StartupBrowserCreatorImpl::OpenTabsInBrowser(Browser* browser,
 #endif
   }
 
-#if defined(OS_CHROMEOS)
-  if (ash::Shell::HasInstance()) {
-    // Set the browser's root window to be an active root window now so
-    // that that web contents can determine correct scale factor for the
-    // renderer. This is a short term fix for crbug.com/155201.  Without
-    // this, the renderer may use wrong scale factor first, then
-    // switched to the correct scale factor, which can cause race
-    // condition and lead to the results rendered at wrong scale factor.
-    // Long term fix is tracked in crbug.com/155443.
-    ash::Shell::GetInstance()->set_active_root_window(
-        browser->window()->GetNativeWindow()->GetRootWindow());
-  }
-#endif
-
   // In kiosk mode, we want to always be fullscreen, so switch to that now.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode))
     chrome::ToggleFullscreenMode(browser);
@@ -1048,4 +1028,3 @@ bool StartupBrowserCreatorImpl::OpenStartupURLsInExistingBrowser(
   return false;
 }
 #endif
-

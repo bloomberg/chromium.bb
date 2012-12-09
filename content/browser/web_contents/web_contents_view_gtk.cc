@@ -108,7 +108,8 @@ WebContentsViewGtk::~WebContentsViewGtk() {
   expanded_.Destroy();
 }
 
-void WebContentsViewGtk::CreateView(const gfx::Size& initial_size) {
+void WebContentsViewGtk::CreateView(
+    const gfx::Size& initial_size, gfx::NativeView context) {
   requested_size_ = initial_size;
 }
 

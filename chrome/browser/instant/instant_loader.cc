@@ -187,8 +187,11 @@ InstantLoader::~InstantLoader() {
 }
 
 void InstantLoader::InitContents(const content::WebContents* active_tab) {
+  content::WebContents::CreateParams create_params(
+      active_tab->GetBrowserContext());
+  create_params.base_web_contents = active_tab;
   contents_.reset(content::WebContents::CreateWithSessionStorage(
-      active_tab->GetBrowserContext(), NULL, MSG_ROUTING_NONE, active_tab,
+      create_params,
       active_tab->GetController().GetSessionStorageNamespaceMap()));
   // Not a leak. TabContents will delete itself when the WebContents is gone.
   TabContents::Factory::CreateTabContents(contents());

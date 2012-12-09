@@ -129,15 +129,9 @@ void CloseWebContents(Browser* browser, content::WebContents* contents) {
 }
 
 TabContents* TabContentsFactory(
-    Profile* profile,
-    content::SiteInstance* site_instance,
-    int routing_id,
-    const content::WebContents* base_web_contents) {
+    const content::WebContents::CreateParams& create_params) {
   return BrowserTabstripTabContentsCreator::CreateTabContents(
-      content::WebContents::Create(profile,
-      site_instance,
-      routing_id,
-      base_web_contents));
+      content::WebContents::Create(create_params));
 }
 
 }  // namespace chrome

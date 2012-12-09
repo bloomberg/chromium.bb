@@ -67,7 +67,7 @@ WebContents* WebContentsTester::CreateTestWebContentsCountSetFocusToLocationBar(
     SiteInstance* instance) {
   TestWebContentsCountSetFocusToLocationBar* web_contents =
       new TestWebContentsCountSetFocusToLocationBar(browser_context);
-  web_contents->Init(browser_context, instance, MSG_ROUTING_NONE, NULL);
+  web_contents->Init(WebContents::CreateParams(browser_context, instance));
   return web_contents;
 }
 
@@ -77,7 +77,7 @@ WebContents* WebContentsTester::CreateTestWebContentsCountFocus(
     SiteInstance* instance) {
   TestWebContentsCountFocus* web_contents =
       new TestWebContentsCountFocus(browser_context);
-  web_contents->Init(browser_context, instance, MSG_ROUTING_NONE, NULL);
+  web_contents->Init(WebContents::CreateParams(browser_context, instance));
   return web_contents;
 }
 

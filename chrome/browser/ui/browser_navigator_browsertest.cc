@@ -91,11 +91,9 @@ Browser* BrowserNavigatorTest::CreateEmptyBrowserForApp(Browser::Type type,
 }
 
 WebContents* BrowserNavigatorTest::CreateWebContents() {
-  return WebContents::Create(
-      browser()->profile(),
-      NULL,
-      MSG_ROUTING_NONE,
-      chrome::GetActiveWebContents(browser()));
+  content::WebContents::CreateParams create_params(browser()->profile());
+  create_params.base_web_contents = chrome::GetActiveWebContents(browser());
+  return WebContents::Create(create_params);
 }
 
 void BrowserNavigatorTest::RunSuppressTest(WindowOpenDisposition disposition) {

@@ -54,7 +54,8 @@ void WebContentsViewAndroid::SetContentViewCore(
   }
 }
 
-void WebContentsViewAndroid::CreateView(const gfx::Size& initial_size) {
+void WebContentsViewAndroid::CreateView(
+    const gfx::Size& initial_size, gfx::NativeView context) {
 }
 
 RenderWidgetHostView* WebContentsViewAndroid::CreateViewForWidget(

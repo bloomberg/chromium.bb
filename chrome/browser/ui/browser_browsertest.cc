@@ -874,7 +874,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, TabClosingWhenRemovingExtension) {
   ui_test_utils::NavigateToURL(browser(), url);
 
   WebContents* app_contents = WebContents::Create(
-      browser()->profile(), NULL, MSG_ROUTING_NONE, NULL);
+      WebContents::CreateParams(browser()->profile()));
   extensions::TabHelper::CreateForWebContents(app_contents);
   extensions::TabHelper* extensions_tab_helper =
       extensions::TabHelper::FromWebContents(app_contents);
@@ -997,7 +997,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
   const Extension* extension_app = GetExtension();
   ui_test_utils::NavigateToURL(browser(), url);
   WebContents* app_contents = WebContents::Create(
-      browser()->profile(), NULL, MSG_ROUTING_NONE, NULL);
+      WebContents::CreateParams(browser()->profile()));
   extensions::TabHelper::CreateForWebContents(app_contents);
   extensions::TabHelper* extensions_tab_helper =
       extensions::TabHelper::FromWebContents(app_contents);

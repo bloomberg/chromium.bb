@@ -250,9 +250,9 @@ TEST_F(SiteInstanceTest, SiteInstanceDestructor) {
                                                &site_delete_counter,
                                                &browsing_delete_counter);
   {
-    scoped_ptr<WebContentsImpl> web_contents(
-        WebContentsImpl::Create(browser_context.get(), instance,
-                                MSG_ROUTING_NONE, NULL));
+    scoped_ptr<WebContentsImpl> web_contents(static_cast<WebContentsImpl*>(
+        WebContents::Create(WebContents::CreateParams(
+            browser_context.get(), instance))));
     EXPECT_EQ(1, site_delete_counter);
     EXPECT_EQ(1, browsing_delete_counter);
   }

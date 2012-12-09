@@ -1926,9 +1926,8 @@ TEST_F(NavigationControllerTest, RestoreNavigate) {
   const base::Time timestamp = base::Time::Now();
   entry->SetTimestamp(timestamp);
   entries.push_back(entry);
-  scoped_ptr<WebContentsImpl> our_contents(
-      WebContentsImpl::Create(browser_context(), NULL, MSG_ROUTING_NONE,
-                              NULL));
+  scoped_ptr<WebContentsImpl> our_contents(static_cast<WebContentsImpl*>(
+      WebContents::Create(WebContents::CreateParams(browser_context()))));
   NavigationControllerImpl& our_controller = our_contents->GetController();
   our_controller.Restore(
       0,
@@ -2004,9 +2003,8 @@ TEST_F(NavigationControllerTest, RestoreNavigateAfterFailure) {
   entry->SetTitle(ASCIIToUTF16("Title"));
   entry->SetContentState("state");
   entries.push_back(entry);
-  scoped_ptr<WebContentsImpl> our_contents(
-      WebContentsImpl::Create(browser_context(), NULL, MSG_ROUTING_NONE,
-                              NULL));
+  scoped_ptr<WebContentsImpl> our_contents(static_cast<WebContentsImpl*>(
+      WebContents::Create(WebContents::CreateParams(browser_context()))));
   NavigationControllerImpl& our_controller = our_contents->GetController();
   our_controller.Restore(
       0, NavigationController::RESTORE_LAST_SESSION_EXITED_CLEANLY, &entries);

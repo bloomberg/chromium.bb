@@ -189,8 +189,8 @@ DevToolsWindow* DevToolsWindow::Create(
     DevToolsDockSide dock_side,
     bool shared_worker_frontend) {
   // Create TabContents with devtools.
-  TabContents* tab_contents =
-      chrome::TabContentsFactory(profile, NULL, MSG_ROUTING_NONE, NULL);
+  TabContents* tab_contents = chrome::TabContentsFactory(
+      content::WebContents::CreateParams(profile));
   tab_contents->web_contents()->GetRenderViewHost()->AllowBindings(
       content::BINDINGS_POLICY_WEB_UI);
   tab_contents->web_contents()->GetController().LoadURL(

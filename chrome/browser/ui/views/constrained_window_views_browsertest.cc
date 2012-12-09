@@ -230,7 +230,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, TabSwitchTest) {
   // Open a new tab. The constrained window should hide itself.
   browser()->tab_strip_model()->AppendWebContents(
       content::WebContents::Create(
-          browser()->profile(), NULL, MSG_ROUTING_NONE, NULL),
+          content::WebContents::CreateParams(browser()->profile())),
       true);
   EXPECT_FALSE(window->IsVisible());
 

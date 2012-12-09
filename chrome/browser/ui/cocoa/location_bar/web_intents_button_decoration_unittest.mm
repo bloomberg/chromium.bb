@@ -10,7 +10,6 @@
 #include "chrome/browser/ui/intents/web_intent_picker_controller.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_intents_dispatcher.h"
-#include "ipc/ipc_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/web_intent_data.h"
 #include "webkit/glue/web_intent_reply_data.h"
@@ -34,8 +33,9 @@ class WebIntentsButtonDecorationTest : public CocoaProfileTest {
 TEST_F(WebIntentsButtonDecorationTest, IdentifiesWebIntentService) {
   scoped_refptr<content::SiteInstance> instance =
       content::SiteInstance::Create(profile());
+  content::WebContents::CreateParams create_params(profile(), instance.get());
   scoped_ptr<content::WebContents> contents(content::WebContents::Create(
-      profile(), instance.get(), MSG_ROUTING_NONE, NULL));
+      create_params));
   WebIntentPickerController::CreateForWebContents(contents.get());
 
   decoration_.Update(contents.get());

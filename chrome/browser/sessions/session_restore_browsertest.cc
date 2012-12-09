@@ -889,7 +889,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, SessionStorageAfterTabReplace) {
         controller->GetDefaultSessionStorageNamespace();
     scoped_ptr<content::WebContents> web_contents(
         content::WebContents::CreateWithSessionStorage(
-            browser()->profile(), NULL, MSG_ROUTING_NONE, NULL,
+            content::WebContents::CreateParams(browser()->profile()),
             session_storage_namespace_map));
 
     TabStripModel* tab_strip_model = browser()->tab_strip_model();

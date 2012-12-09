@@ -30,7 +30,7 @@ ConstrainedWebDialogDelegateBase::ConstrainedWebDialogDelegateBase(
       release_contents_on_close_(false) {
   CHECK(delegate);
   web_contents_.reset(
-      WebContents::Create(browser_context, NULL, MSG_ROUTING_NONE, NULL));
+      WebContents::Create(WebContents::CreateParams(browser_context)));
   if (tab_delegate) {
     override_tab_delegate_.reset(tab_delegate);
     web_contents_->SetDelegate(tab_delegate);

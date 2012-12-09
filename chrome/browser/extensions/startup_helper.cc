@@ -127,8 +127,8 @@ bool StartupHelper::InstallFromWebstore(const CommandLine& cmd_line,
 
   // TODO(asargent) - it would be nice not to need a WebContents just to
   // use the standalone installer. (crbug.com/149039)
-  scoped_ptr<content::WebContents> web_contents(
-      content::WebContents::Create(profile, NULL, MSG_ROUTING_NONE, NULL));
+  scoped_ptr<content::WebContents> web_contents(content::WebContents::Create(
+      content::WebContents::CreateParams(profile)));
 
   AppInstallHelper helper;
   WebstoreStandaloneInstaller::Callback callback =

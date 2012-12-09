@@ -195,8 +195,7 @@ bool ExternalTabContainerWin::Init(Profile* profile,
   if (existing_contents) {
     existing_contents->GetController().SetBrowserContext(profile);
   } else {
-    existing_contents =
-        WebContents::Create(profile, NULL, MSG_ROUTING_NONE, NULL);
+    existing_contents = WebContents::Create(WebContents::CreateParams(profile));
     existing_contents->GetRenderViewHost()->AllowBindings(
         content::BINDINGS_POLICY_EXTERNAL_HOST);
   }

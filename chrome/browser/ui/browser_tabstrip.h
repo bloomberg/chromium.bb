@@ -7,6 +7,7 @@
 
 #include "content/public/common/page_transition_types.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/web_contents.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class Browser;
@@ -16,7 +17,6 @@ class TabContents;
 
 namespace content {
 class SiteInstance;
-class WebContents;
 }
 
 namespace gfx {
@@ -56,10 +56,7 @@ void CloseWebContents(Browser* browser, content::WebContents* contents);
 // Centralized methods for creating a TabContents, configuring and
 // installing all its supporting objects and observers.
 TabContents* TabContentsFactory(
-    Profile* profile,
-    content::SiteInstance* site_instance,
-    int routing_id,
-    const content::WebContents* base_web_contents);
+    const content::WebContents::CreateParams& create_params);
 
 }  // namespace chrome
 

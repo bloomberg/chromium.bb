@@ -65,7 +65,7 @@ class TranslationInfoBarTest : public CocoaProfileTest {
   virtual void SetUp() {
     CocoaProfileTest::SetUp();
     web_contents_.reset(
-        WebContents::Create(profile(), NULL, MSG_ROUTING_NONE, NULL));
+        WebContents::Create(WebContents::CreateParams(profile())));
     InfoBarTabHelper::CreateForWebContents(web_contents_.get());
     CreateInfoBar();
   }
