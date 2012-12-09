@@ -604,7 +604,9 @@ bool CreateWindowFunction::RunImpl() {
 #endif
 
   // Create a new BrowserWindow.
-  Browser::CreateParams create_params(window_type, window_profile);
+  chrome::HostDesktopType host_desktop_type = chrome::GetActiveDesktop();
+  Browser::CreateParams create_params(window_type, window_profile,
+                                      host_desktop_type);
   if (extension_id.empty()) {
     create_params.initial_bounds = window_bounds;
   } else {

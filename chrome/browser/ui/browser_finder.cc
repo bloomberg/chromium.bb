@@ -143,7 +143,7 @@ Browser* FindOrCreateTabbedBrowser(Profile* profile,
                                    chrome::HostDesktopType type) {
   Browser* browser = FindTabbedBrowser(profile, false, type);
   if (!browser)
-    browser = new Browser(Browser::CreateParams(profile));
+    browser = new Browser(Browser::CreateParams(profile, type));
   return browser;
 }
 

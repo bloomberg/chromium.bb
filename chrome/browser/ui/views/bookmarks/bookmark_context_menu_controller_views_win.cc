@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
@@ -45,7 +46,8 @@ class NewBrowserPageNavigator : public content::PageNavigator {
     if (!browser_) {
       Profile* profile = (params.disposition == OFF_THE_RECORD) ?
           profile_->GetOffTheRecordProfile() : profile_;
-      browser_ = new Browser(Browser::CreateParams(profile));
+      browser_ = new Browser(Browser::CreateParams(profile,
+                                                   chrome::GetActiveDesktop()));
     }
 
     OpenURLParams forward_params = params;

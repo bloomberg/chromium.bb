@@ -231,12 +231,13 @@ void ExtensionTabUtil::CreateTab(WebContents* web_contents,
                                  bool user_gesture) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  chrome::HostDesktopType active_desktop = chrome::GetActiveDesktop();
   Browser* browser = browser::FindTabbedBrowser(profile,
                                                 false,
-                                                chrome::GetActiveDesktop());
+                                                active_desktop);
   const bool browser_created = !browser;
   if (!browser)
-    browser = new Browser(Browser::CreateParams(profile));
+    browser = new Browser(Browser::CreateParams(profile, active_desktop));
   chrome::NavigateParams params(browser, web_contents);
 
   // The extension_app_id parameter ends up as app_name in the Browser

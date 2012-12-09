@@ -143,7 +143,8 @@ WebContents* GetOrCloneTabForDisposition(Browser* browser,
     }
     case NEW_WINDOW: {
       current_tab = current_tab->Clone();
-      Browser* b = new Browser(Browser::CreateParams(browser->profile()));
+      Browser* b = new Browser(Browser::CreateParams(
+          browser->profile(), browser->host_desktop_type()));
       b->tab_strip_model()->AddWebContents(
           current_tab, -1, content::PAGE_TRANSITION_LINK,
           TabStripModel::ADD_ACTIVE);
@@ -583,7 +584,8 @@ WebContents* DuplicateTabAt(Browser* browser, int index) {
                                               browser->profile()));
     } else if (browser->is_type_popup()) {
       browser = new Browser(
-          Browser::CreateParams(Browser::TYPE_POPUP, browser->profile()));
+          Browser::CreateParams(Browser::TYPE_POPUP, browser->profile(),
+                                browser->host_desktop_type()));
     }
 
     // Preserve the size of the original window. The new window has already
@@ -619,7 +621,8 @@ void ConvertPopupToTabbedBrowser(Browser* browser) {
   content::RecordAction(UserMetricsAction("ShowAsTab"));
   WebContents* contents =
       browser->tab_strip_model()->DetachWebContentsAt(browser->active_index());
-  Browser* b = new Browser(Browser::CreateParams(browser->profile()));
+  Browser* b = new Browser(Browser::CreateParams(browser->profile(),
+                                                 browser->host_desktop_type()));
   b->tab_strip_model()->AppendWebContents(contents, true);
   b->window()->Show();
 }
@@ -1015,7 +1018,8 @@ void ViewSource(Browser* browser,
         add_types);
   } else {
     Browser* b = new Browser(
-        Browser::CreateParams(Browser::TYPE_TABBED, browser->profile()));
+        Browser::CreateParams(Browser::TYPE_TABBED, browser->profile(),
+                              browser->host_desktop_type()));
 
     // Preserve the size of the original window. The new window has already
     // been given an offset by the OS, so we shouldn't copy the old bounds.

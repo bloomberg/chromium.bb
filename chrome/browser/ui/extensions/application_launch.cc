@@ -91,10 +91,9 @@ WebContents* OpenApplicationWindow(
     window_bounds = override_bounds;
   }
 
-  Browser::CreateParams params(type, profile);
+  Browser::CreateParams params(type, profile, chrome::GetActiveDesktop());
   params.app_name = app_name;
   params.initial_bounds = window_bounds;
-  params.host_desktop_type = chrome::GetActiveDesktop();
 
 #if defined(USE_ASH)
   if (extension &&

@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/status_bubble.h"
@@ -62,7 +63,8 @@ Browser* GetOrCreateBrowser(Profile* profile,
                             chrome::HostDesktopType host_desktop_type) {
   Browser* browser =
       browser::FindTabbedBrowser(profile, false, host_desktop_type);
-  return browser ? browser : new Browser(Browser::CreateParams(profile));
+  return browser ? browser : new Browser(
+      Browser::CreateParams(profile, host_desktop_type));
 }
 
 // Change some of the navigation parameters based on the particular URL.
@@ -149,7 +151,8 @@ Browser* GetBrowserForDisposition(chrome::NavigateParams* params) {
         }
       }
       if (app_name.empty()) {
-        Browser::CreateParams browser_params(Browser::TYPE_POPUP, profile);
+        Browser::CreateParams browser_params(
+            Browser::TYPE_POPUP, profile, params->host_desktop_type);
         browser_params.initial_bounds = params->window_bounds;
         return new Browser(browser_params);
       }
@@ -159,7 +162,8 @@ Browser* GetBrowserForDisposition(chrome::NavigateParams* params) {
     }
     case NEW_WINDOW: {
       // Make a new normal browser window.
-      return new Browser(Browser::CreateParams(profile));
+      return new Browser(Browser::CreateParams(profile,
+                                               params->host_desktop_type));
     }
     case OFF_THE_RECORD:
       // Make or find an incognito window.

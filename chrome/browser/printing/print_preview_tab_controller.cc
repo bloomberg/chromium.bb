@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
@@ -399,8 +400,11 @@ WebContents* PrintPreviewTabController::CreatePrintPreviewTab(
   Profile* profile =
       Profile::FromBrowserContext(initiator_tab->GetBrowserContext());
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kChromeFrame)) {
+    // Chrome Frame only ever runs on the native desktop, so it is safe to
+    // create the popup on the native desktop.
     Browser* current_browser = new Browser(
-        Browser::CreateParams(Browser::TYPE_POPUP, profile));
+        Browser::CreateParams(Browser::TYPE_POPUP, profile,
+                              chrome::HOST_DESKTOP_TYPE_NATIVE));
     if (!current_browser) {
       NOTREACHED() << "Failed to create popup browser window";
       return NULL;

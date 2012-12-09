@@ -54,7 +54,8 @@ Browser* BrowserTabStripModelDelegate::CreateNewStripWithContents(
     dock_info.AdjustOtherWindowBounds();
 
   // Create an empty new browser window the same size as the old one.
-  Browser::CreateParams params(browser_->profile());
+  Browser::CreateParams params(browser_->profile(),
+                               browser_->host_desktop_type());
   params.initial_bounds = new_window_bounds;
   params.initial_show_state =
       maximize ? ui::SHOW_STATE_MAXIMIZED : ui::SHOW_STATE_NORMAL;

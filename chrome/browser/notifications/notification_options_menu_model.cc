@@ -251,12 +251,14 @@ void NotificationOptionsMenuModel::ExecuteCommand(int command_id) {
       break;
     }
     case kOpenContentSettingsCommand: {
+      chrome::HostDesktopType active_desktop = chrome::GetActiveDesktop();
       Browser* browser = chrome::FindLastActiveWithProfile(
-          balloon_->profile(), chrome::GetActiveDesktop());
+          balloon_->profile(), active_desktop);
       if (!browser) {
         // It is possible that there is no browser window (e.g. when there are
         // background pages, or for a chrome frame process on windows).
-        browser = new Browser(Browser::CreateParams(balloon_->profile()));
+        browser = new Browser(Browser::CreateParams(balloon_->profile(),
+                                                    active_desktop));
       }
       chrome::ShowContentSettings(browser, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
       break;
