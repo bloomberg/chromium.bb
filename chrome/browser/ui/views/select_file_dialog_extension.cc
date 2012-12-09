@@ -266,7 +266,7 @@ void SelectFileDialogExtension::SelectFileImpl(
   // window has been supplied, this is running from a background page and should
   // be associated with the last active browser.
   Browser* owner_browser = owner_window ?
-      browser::FindBrowserWithWindow(owner_window) :
+      chrome::FindBrowserWithWindow(owner_window) :
       chrome::FindLastActiveWithHostDesktopType(chrome::GetActiveDesktop());
   if (owner_browser) {
     base_window = owner_browser->window();

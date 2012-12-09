@@ -181,7 +181,7 @@ class SpellCheckRenderViewObserver : public content::RenderViewHostObserver {
   if (gotUnhandledWheelEvent_ &&
       [NSEvent isSwipeTrackingFromScrollEventsEnabled] &&
       [theEvent phase] == NSEventPhaseChanged) {
-    Browser* browser = browser::FindBrowserWithWindow([theEvent window]);
+    Browser* browser = chrome::FindBrowserWithWindow([theEvent window]);
     totalScrollDelta_.width += [theEvent scrollingDeltaX];
     totalScrollDelta_.height += [theEvent scrollingDeltaY];
 
@@ -262,7 +262,7 @@ class SpellCheckRenderViewObserver : public content::RenderViewHostObserver {
 
           // |gestureAmount| obeys -[NSEvent isDirectionInvertedFromDevice]
           // automatically.
-          Browser* browser = browser::FindBrowserWithWindow(
+          Browser* browser = chrome::FindBrowserWithWindow(
               historyOverlay.view.window);
           if (ended && browser) {
             if (goForward)

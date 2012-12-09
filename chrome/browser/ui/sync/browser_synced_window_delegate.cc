@@ -32,7 +32,7 @@ const std::set<browser_sync::SyncedWindowDelegate*>
 const browser_sync::SyncedWindowDelegate*
     browser_sync::SyncedWindowDelegate::FindSyncedWindowDelegateWithId(
         SessionID::id_type id) {
-  Browser* browser = browser::FindBrowserWithID(id);
+  Browser* browser = chrome::FindBrowserWithID(id);
   // In case we don't find the browser (e.g. for Developer Tools).
   return browser ? browser->synced_window_delegate() : NULL;
 }

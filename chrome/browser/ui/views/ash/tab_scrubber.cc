@@ -122,7 +122,7 @@ Browser* TabScrubber::GetActiveBrowser() {
   if (!active_window)
     return NULL;
 
-  Browser* browser = browser::FindBrowserWithWindow(active_window);
+  Browser* browser = chrome::FindBrowserWithWindow(active_window);
   if (!browser || browser->type() != Browser::TYPE_TABBED)
     return NULL;
 

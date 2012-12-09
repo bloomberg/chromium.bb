@@ -497,7 +497,7 @@ void ChromeToMobileService::SnapshotFileCreated(
   snapshots_.insert(path);
 
   // Generate the snapshot and callback SnapshotGenerated, or signal failure.
-  Browser* browser = browser::FindBrowserWithID(browser_id);
+  Browser* browser = chrome::FindBrowserWithID(browser_id);
   if (!path.empty() && browser && chrome::GetActiveWebContents(browser)) {
     chrome::GetActiveWebContents(browser)->GenerateMHTML(path,
         base::Bind(&ChromeToMobileService::SnapshotGenerated,

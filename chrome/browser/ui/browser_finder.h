@@ -52,16 +52,16 @@ Browser* FindAnyBrowser(Profile* profile,
 Browser* FindBrowserWithProfile(Profile* profile,
                                 chrome::HostDesktopType type);
 
+}  // namespace browser
+
+namespace chrome {
+
 // Find an existing browser with the provided ID. Returns NULL if no such
 // browser currently exists.
 Browser* FindBrowserWithID(SessionID::id_type desired_id);
 
 // Find the browser represented by |window| or NULL if not found.
 Browser* FindBrowserWithWindow(gfx::NativeWindow window);
-
-}  // namespace browser
-
-namespace chrome {
 
 // Find the browser containing |web_contents| or NULL if none is found.
 // |web_contents| must not be NULL.

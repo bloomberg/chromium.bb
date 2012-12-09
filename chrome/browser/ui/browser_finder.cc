@@ -161,6 +161,10 @@ Browser* FindBrowserWithProfile(Profile* profile,
   return FindBrowserWithTabbedOrAnyType(profile, desktop_type, false, false);
 }
 
+}  // namespace browser
+
+namespace chrome {
+
 Browser* FindBrowserWithID(SessionID::id_type desired_id) {
   for (BrowserList::const_iterator i = BrowserList::begin();
        i != BrowserList::end(); ++i) {
@@ -179,10 +183,6 @@ Browser* FindBrowserWithWindow(gfx::NativeWindow window) {
   }
   return NULL;
 }
-
-}  // namespace browser
-
-namespace chrome {
 
 Browser* FindBrowserWithWebContents(const WebContents* web_contents) {
   DCHECK(web_contents);

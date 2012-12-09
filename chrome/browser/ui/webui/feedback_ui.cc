@@ -445,7 +445,7 @@ bool FeedbackHandler::Init() {
     if (session_id == -1)
       return false;
 
-    Browser* browser = browser::FindBrowserWithID(session_id);
+    Browser* browser = chrome::FindBrowserWithID(session_id);
     // Sanity checks.
     if (!browser || index >= browser->tab_count())
       return false;

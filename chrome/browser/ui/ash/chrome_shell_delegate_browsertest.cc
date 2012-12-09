@@ -29,7 +29,7 @@ IN_PROC_BROWSER_TEST_F(ChromeShellDelegateBrowserTest, ToggleMaximized) {
 
   // When in fullscreen ShellDelegate::ToggleMaximized gets out of fullscreen.
   EXPECT_FALSE(ash::wm::IsWindowFullscreen(window));
-  Browser* browser = browser::FindBrowserWithWindow(window);
+  Browser* browser = chrome::FindBrowserWithWindow(window);
   ASSERT_TRUE(browser);
   chrome::ToggleFullscreenMode(browser);
   EXPECT_TRUE(ash::wm::IsWindowFullscreen(window));

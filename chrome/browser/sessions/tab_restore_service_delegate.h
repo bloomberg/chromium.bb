@@ -70,7 +70,7 @@ class TabRestoreServiceDelegate {
   static TabRestoreServiceDelegate* FindDelegateForWebContents(
       const content::WebContents* contents);
 
-  // see browser::FindBrowserWithID
+  // see chrome::FindBrowserWithID
   static TabRestoreServiceDelegate* FindDelegateWithID(
       SessionID::id_type desired_id);
 

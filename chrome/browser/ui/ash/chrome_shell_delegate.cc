@@ -66,7 +66,7 @@ namespace {
 
 // Returns the browser that should handle accelerators.
 Browser* GetTargetBrowser() {
-  Browser* browser = browser::FindBrowserWithWindow(ash::wm::GetActiveWindow());
+  Browser* browser = chrome::FindBrowserWithWindow(ash::wm::GetActiveWindow());
   if (browser)
     return browser;
   return browser::FindOrCreateTabbedBrowser(
@@ -211,7 +211,7 @@ void ChromeShellDelegate::OpenFileManager(bool as_dialog) {
 #if defined(OS_CHROMEOS)
   if (as_dialog) {
     Browser* browser =
-        browser::FindBrowserWithWindow(ash::wm::GetActiveWindow());
+        chrome::FindBrowserWithWindow(ash::wm::GetActiveWindow());
     // Open the select file dialog only if there is an active browser where the
     // selected file is displayed.
     if (browser) {
@@ -277,7 +277,7 @@ bool ChromeShellDelegate::RotatePaneFocus(ash::Shell::Direction direction) {
   if (!window)
     return false;
 
-  Browser* browser = browser::FindBrowserWithWindow(window);
+  Browser* browser = chrome::FindBrowserWithWindow(window);
   if (!browser)
     return false;
 
