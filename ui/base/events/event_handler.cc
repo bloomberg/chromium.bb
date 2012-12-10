@@ -9,13 +9,15 @@
 
 namespace ui {
 
-EventHandler::EventHandler()
-    : dispatcher_(NULL) {
+EventHandler::EventHandler() {
 }
 
 EventHandler::~EventHandler() {
-  if (dispatcher_)
-    dispatcher_->OnHandlerDestroyed(this);
+  while (!dispatchers_.empty()) {
+    EventDispatcher* dispatcher = dispatchers_.top();
+    dispatchers_.pop();
+    dispatcher->OnHandlerDestroyed(this);
+  }
 }
 
 void EventHandler::OnEvent(Event* event) {

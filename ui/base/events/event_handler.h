@@ -5,6 +5,7 @@
 #ifndef UI_BASE_EVENTS_EVENT_HANDLER_H_
 #define UI_BASE_EVENTS_EVENT_HANDLER_H_
 
+#include <stack>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -48,9 +49,9 @@ class UI_EXPORT EventHandler {
  private:
   friend class EventDispatcher;
 
-  // The |dispatcher_| is set by the dispatcher itself when the event handler
-  // gets into the list of handlers, and reset appropriately.
-  EventDispatcher* dispatcher_;
+  // EventDispatcher pushes itself on the top of this stack while dispatching
+  // events to this then pops itself off when done.
+  std::stack<EventDispatcher*> dispatchers_;
 
   DISALLOW_COPY_AND_ASSIGN(EventHandler);
 };

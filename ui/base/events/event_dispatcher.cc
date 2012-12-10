@@ -114,8 +114,8 @@ void EventDispatcher::OnDispatcherDelegateDestroyed() {
 void EventDispatcher::DispatchEventToEventHandlers(EventHandlerList& list,
                                                    Event* event) {
   for (EventHandlerList::const_iterator it = list.begin(),
-          end = list.end(); it != end; ++it) {
-    (*it)->dispatcher_ = this;
+           end = list.end(); it != end; ++it) {
+    (*it)->dispatchers_.push(this);
   }
 
   while (!list.empty()) {
@@ -126,7 +126,8 @@ void EventDispatcher::DispatchEventToEventHandlers(EventHandlerList& list,
     if (!list.empty() && *list.begin() == handler) {
       // The handler has not been destroyed (because if it were, then it would
       // have been removed from the list).
-      handler->dispatcher_ = NULL;
+      CHECK(handler->dispatchers_.top() == this);
+      handler->dispatchers_.pop();
       list.erase(list.begin());
     }
   }
