@@ -60,13 +60,8 @@ class WEBKIT_STORAGE_EXPORT SandboxMountPointProvider
     virtual bool HasFileSystemType(FileSystemType type) const = 0;
   };
 
-  // The legacy [pre-obfuscation] FileSystem directory name, kept around for
-  // migration and migration testing.
-  static const FilePath::CharType kOldFileSystemDirectory[];
   // The FileSystem directory name.
-  static const FilePath::CharType kNewFileSystemDirectory[];
-  // Where we move the old filesystem directory if migration fails.
-  static const FilePath::CharType kRenamedOldFileSystemDirectory[];
+  static const FilePath::CharType kFileSystemDirectory[];
 
   static bool CanHandleType(FileSystemType type);
 
@@ -114,10 +109,6 @@ class WEBKIT_STORAGE_EXPORT SandboxMountPointProvider
       FileSystemType type,
       FileSystemContext* context,
       const DeleteFileSystemCallback& callback) OVERRIDE;
-
-  FilePath old_base_path() const;
-  FilePath new_base_path() const;
-  FilePath renamed_old_base_path() const;
 
   // Returns an origin enumerator of this provider.
   // This method can only be called on the file thread.
@@ -195,9 +186,6 @@ class WEBKIT_STORAGE_EXPORT SandboxMountPointProvider
       const GURL& origin_url,
       FileSystemType type,
       base::PlatformFileError* error_out);
-
-  FilePath OldCreateFileSystemRootPath(
-      const GURL& origin_url, FileSystemType type);
 
   // Returns true if the given |url|'s scheme is allowed to access
   // filesystem.

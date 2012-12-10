@@ -246,7 +246,7 @@ class FileSystemMountPointProviderTest : public testing::Test {
   FilePath data_path() const { return data_dir_.path(); }
   FilePath file_system_path() const {
     return data_dir_.path().Append(
-        SandboxMountPointProvider::kNewFileSystemDirectory);
+        SandboxMountPointProvider::kFileSystemDirectory);
   }
   FileSystemContext* file_system_context() const {
     return file_system_context_.get();

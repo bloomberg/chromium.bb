@@ -92,8 +92,6 @@ void TouchDirectory(FileSystemDirectoryDatabase* db, FileId dir_id) {
     NOTREACHED();
 }
 
-const FilePath::CharType kLegacyDataDirectory[] = FILE_PATH_LITERAL("Legacy");
-
 const FilePath::CharType kTemporaryDirectoryName[] = FILE_PATH_LITERAL("t");
 const FilePath::CharType kPersistentDirectoryName[] = FILE_PATH_LITERAL("p");
 const FilePath::CharType kSyncableDirectoryName[] = FILE_PATH_LITERAL("s");
@@ -987,78 +985,6 @@ bool ObfuscatedFileUtil::DeleteDirectoryForOriginAndType(
   if (!file_util::Delete(origin_path, true /* recursive */))
     return false;
 
-  return true;
-}
-
-bool ObfuscatedFileUtil::MigrateFromOldSandbox(
-    const GURL& origin_url, FileSystemType type, const FilePath& src_root) {
-  if (!DestroyDirectoryDatabase(origin_url, type))
-    return false;
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
-  FilePath dest_root = GetDirectoryForOriginAndType(origin_url, type, true,
-                                                    &error);
-  if (error != base::PLATFORM_FILE_OK)
-    return false;
-  FileSystemDirectoryDatabase* db = GetDirectoryDatabase(
-      origin_url, type, true);
-  if (!db)
-    return false;
-
-  file_util::FileEnumerator file_enum(src_root, true,
-      file_util::FileEnumerator::FILES |
-      file_util::FileEnumerator::DIRECTORIES);
-  FilePath src_full_path;
-  size_t root_path_length = src_root.value().length() + 1;  // +1 for the slash
-  while (!(src_full_path = file_enum.Next()).empty()) {
-    file_util::FileEnumerator::FindInfo info;
-    file_enum.GetFindInfo(&info);
-    FilePath relative_virtual_path =
-        FilePath(src_full_path.value().substr(root_path_length));
-    if (relative_virtual_path.empty()) {
-      LOG(WARNING) << "Failed to convert path to relative: " <<
-          src_full_path.value();
-      return false;
-    }
-    FileId file_id;
-    if (db->GetFileWithPath(relative_virtual_path, &file_id)) {
-      NOTREACHED();  // File already exists.
-      return false;
-    }
-    if (!db->GetFileWithPath(relative_virtual_path.DirName(), &file_id)) {
-      NOTREACHED();  // Parent doesn't exist.
-      return false;
-    }
-
-    FileInfo file_info;
-    file_info.name = VirtualPath::BaseName(src_full_path).value();
-    if (file_util::FileEnumerator::IsDirectory(info)) {
-#if defined(OS_WIN)
-      file_info.modification_time =
-          base::Time::FromFileTime(info.ftLastWriteTime);
-#elif defined(OS_POSIX)
-      file_info.modification_time = base::Time::FromTimeT(info.stat.st_mtime);
-#endif
-    } else {
-      file_info.data_path =
-          FilePath(kLegacyDataDirectory).Append(relative_virtual_path);
-    }
-    file_info.parent_id = file_id;
-    if (!db->AddFileInfo(file_info, &file_id)) {
-      NOTREACHED();
-      return false;
-    }
-  }
-  // TODO(ericu): Should we adjust the mtime of the root directory to match as
-  // well?
-  FilePath legacy_dest_dir = dest_root.Append(kLegacyDataDirectory);
-
-  if (!file_util::Move(src_root, legacy_dest_dir)) {
-    LOG(WARNING) <<
-        "The final step of a migration failed; I'll try to clean up.";
-    db = NULL;
-    DestroyDirectoryDatabase(origin_url, type);
-    return false;
-  }
   return true;
 }
 
