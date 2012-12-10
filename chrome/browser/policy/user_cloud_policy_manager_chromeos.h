@@ -59,8 +59,9 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
 
  private:
   // Completion handler for the explicit policy fetch triggered on startup in
-  // case |wait_for_policy_fetch_| is true.
-  void OnInitialPolicyFetchComplete();
+  // case |wait_for_policy_fetch_| is true. |success| is true if the fetch was
+  // successful.
+  void OnInitialPolicyFetchComplete(bool success);
 
   // Owns the store, note that CloudPolicyManager just keeps a plain pointer.
   scoped_ptr<CloudPolicyStore> store_;

@@ -58,7 +58,7 @@ DeviceLocalAccountPolicyBroker* DeviceLocalAccountPolicyProvider::GetBroker() {
   return service_->GetBrokerForAccount(account_id_);
 }
 
-void DeviceLocalAccountPolicyProvider::ReportPolicyRefresh() {
+void DeviceLocalAccountPolicyProvider::ReportPolicyRefresh(bool success) {
   waiting_for_policy_refresh_ = false;
   UpdateFromBroker();
 }

@@ -116,8 +116,10 @@ void BrowserPolicyConnector::Init() {
   DCHECK(!is_initialized()) << "BrowserPolicyConnector::Init() called twice.";
   platform_provider_.reset(CreatePlatformProvider());
 
-  device_management_service_.reset(
-      new DeviceManagementService(GetDeviceManagementUrl()));
+  if (!device_management_service_.get()) {
+    device_management_service_.reset(
+        new DeviceManagementService(GetDeviceManagementUrl()));
+  }
 
 #if defined(OS_CHROMEOS)
   chromeos::CryptohomeLibrary* cryptohome =
@@ -511,6 +513,11 @@ NetworkConfigurationUpdater*
 #else
   return NULL;
 #endif
+}
+
+void BrowserPolicyConnector::SetDeviceManagementServiceForTesting(
+    scoped_ptr<DeviceManagementService> service) {
+  device_management_service_ = service.Pass();
 }
 
 // static

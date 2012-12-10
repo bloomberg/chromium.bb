@@ -55,7 +55,7 @@ class CloudPolicyManager : public ConfigurationPolicyProvider,
 
  private:
   // Completion handler for policy refresh operations.
-  void OnRefreshComplete();
+  void OnRefreshComplete(bool success);
 
   CloudPolicyCore core_;
 

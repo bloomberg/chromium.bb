@@ -117,7 +117,8 @@ void UserCloudPolicyManagerChromeOS::OnClientError(
   CancelWaitForPolicyFetch();
 }
 
-void UserCloudPolicyManagerChromeOS::OnInitialPolicyFetchComplete() {
+void UserCloudPolicyManagerChromeOS::OnInitialPolicyFetchComplete(
+    bool success) {
   CancelWaitForPolicyFetch();
 }
 

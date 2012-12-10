@@ -41,10 +41,10 @@ std::string CloudPolicyService::ManagedBy() const {
   return std::string();
 }
 
-void CloudPolicyService::RefreshPolicy(const base::Closure& callback) {
+void CloudPolicyService::RefreshPolicy(const RefreshPolicyCallback& callback) {
   // If the client is not registered, bail out.
   if (!client_->is_registered()) {
-    callback.Run();
+    callback.Run(false);
     return;
   }
 
@@ -56,7 +56,7 @@ void CloudPolicyService::RefreshPolicy(const base::Closure& callback) {
 
 void CloudPolicyService::OnPolicyFetched(CloudPolicyClient* client) {
   if (client_->status() != DM_STATUS_SUCCESS) {
-    RefreshCompleted();
+    RefreshCompleted(false);
     return;
   }
 
@@ -66,7 +66,7 @@ void CloudPolicyService::OnPolicyFetched(CloudPolicyClient* client) {
       refresh_state_ = REFRESH_POLICY_STORE;
     store_->Store(*policy);
   } else {
-    RefreshCompleted();
+    RefreshCompleted(false);
   }
 }
 
@@ -75,7 +75,7 @@ void CloudPolicyService::OnRegistrationStateChanged(CloudPolicyClient* client) {
 
 void CloudPolicyService::OnClientError(CloudPolicyClient* client) {
   if (refresh_state_ == REFRESH_POLICY_FETCH)
-    RefreshCompleted();
+    RefreshCompleted(false);
 }
 
 void CloudPolicyService::OnStoreLoaded(CloudPolicyStore* store) {
@@ -113,14 +113,14 @@ void CloudPolicyService::OnStoreLoaded(CloudPolicyStore* store) {
   }
 
   if (refresh_state_ == REFRESH_POLICY_STORE)
-    RefreshCompleted();
+    RefreshCompleted(true);
 
   CheckInitializationCompleted();
 }
 
 void CloudPolicyService::OnStoreError(CloudPolicyStore* store) {
   if (refresh_state_ == REFRESH_POLICY_STORE)
-    RefreshCompleted();
+    RefreshCompleted(false);
   CheckInitializationCompleted();
 }
 
@@ -131,17 +131,17 @@ void CloudPolicyService::CheckInitializationCompleted() {
   }
 }
 
-void CloudPolicyService::RefreshCompleted() {
+void CloudPolicyService::RefreshCompleted(bool success) {
   // Clear state and |refresh_callbacks_| before actually invoking them, s.t.
   // triggering new policy fetches behaves as expected.
-  std::vector<base::Closure> callbacks;
+  std::vector<RefreshPolicyCallback> callbacks;
   callbacks.swap(refresh_callbacks_);
   refresh_state_ = REFRESH_NONE;
 
-  for (std::vector<base::Closure>::iterator callback(callbacks.begin());
+  for (std::vector<RefreshPolicyCallback>::iterator callback(callbacks.begin());
        callback != callbacks.end();
        ++callback) {
-    callback->Run();
+    callback->Run(success);
   }
 }
 

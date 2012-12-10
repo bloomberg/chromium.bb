@@ -24,6 +24,10 @@ namespace policy {
 class CloudPolicyService : public CloudPolicyClient::Observer,
                            public CloudPolicyStore::Observer {
  public:
+  // Callback invoked once the policy refresh attempt has completed. Passed
+  // bool parameter is true if the refresh was successful (no error).
+  typedef base::Callback<void(bool)> RefreshPolicyCallback;
+
   class Observer {
    public:
     // Invoked when CloudPolicyService has finished initializing (any initial
@@ -43,7 +47,7 @@ class CloudPolicyService : public CloudPolicyClient::Observer,
 
   // Refreshes policy. |callback| will be invoked after the operation completes
   // or aborts because of errors.
-  void RefreshPolicy(const base::Closure& callback);
+  void RefreshPolicy(const RefreshPolicyCallback& callback);
 
   // Adds/Removes an Observer for this object.
   void AddObserver(Observer* observer);
@@ -65,8 +69,9 @@ class CloudPolicyService : public CloudPolicyClient::Observer,
   // which is responsible for notifying observers.
   void CheckInitializationCompleted();
 
-  // Invokes the refresh callbacks and clears refresh state.
-  void RefreshCompleted();
+  // Invokes the refresh callbacks and clears refresh state. The |success| flag
+  // is passed through to the refresh callbacks.
+  void RefreshCompleted(bool success);
 
   // The client used to talk to the cloud.
   CloudPolicyClient* client_;
@@ -85,7 +90,7 @@ class CloudPolicyService : public CloudPolicyClient::Observer,
   } refresh_state_;
 
   // Callbacks to invoke upon policy refresh.
-  std::vector<base::Closure> refresh_callbacks_;
+  std::vector<RefreshPolicyCallback> refresh_callbacks_;
 
   // Set to true once the service is initialized (initial policy load/refresh
   // is complete).

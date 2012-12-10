@@ -41,7 +41,8 @@ class DeviceLocalAccountPolicyProvider
   DeviceLocalAccountPolicyBroker* GetBroker();
 
   // Handles completion of policy refreshes and triggers the update callback.
-  void ReportPolicyRefresh();
+  // |success| is true if the policy refresh was successful.
+  void ReportPolicyRefresh(bool success);
 
   // Unless |waiting_for_policy_refresh_|, calls UpdatePolicy(), using the
   // policy from the broker if available or keeping the current policy.

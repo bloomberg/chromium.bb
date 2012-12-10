@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/run_loop.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/policy/mock_device_management_service.h"
 #include "chrome/browser/policy/mock_user_cloud_policy_store.h"
 #include "chrome/browser/policy/user_cloud_policy_manager.h"
 #include "chrome/browser/policy/user_policy_signin_service.h"
@@ -17,6 +19,7 @@
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service.h"
@@ -27,11 +30,15 @@
 #include "content/public/test/test_browser_thread.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "net/url_request/test_url_fetcher_factory.h"
+#include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace em = enterprise_management;
+
 using testing::AnyNumber;
 using testing::Mock;
+using testing::_;
 
 namespace policy {
 
@@ -45,7 +52,14 @@ class UserPolicySigninServiceTest : public testing::Test {
         file_thread_(content::BrowserThread::FILE, &loop_),
         io_thread_(content::BrowserThread::IO, &loop_) {}
 
+  MOCK_METHOD1(OnPolicyRefresh, void(bool));
+
   virtual void SetUp() OVERRIDE {
+    device_management_service_ = new MockDeviceManagementService();
+    g_browser_process->browser_policy_connector()->
+        SetDeviceManagementServiceForTesting(
+            scoped_ptr<DeviceManagementService>(device_management_service_));
+
     g_browser_process->browser_policy_connector()->Init();
 
     local_state_.reset(new TestingPrefService);
@@ -53,11 +67,17 @@ class UserPolicySigninServiceTest : public testing::Test {
     static_cast<TestingBrowserProcess*>(g_browser_process)->SetLocalState(
         local_state_.get());
 
-    // Create a testing profile and bring up a UserCloudPolicyManager with a
-    // MockUserCloudPolicyStore.
-    profile_.reset(new TestingProfile());
+    // Create a testing profile with cloud-policy-on-signin enabled, and bring
+    // up a UserCloudPolicyManager with a MockUserCloudPolicyStore.
+    scoped_ptr<TestingPrefService> prefs(new TestingPrefService());
+    Profile::RegisterUserPrefs(prefs.get());
+    chrome::RegisterUserPrefs(prefs.get());
+    prefs->SetUserPref(prefs::kLoadCloudPolicyOnSignin,
+                       Value::CreateBooleanValue(true));
+    TestingProfile::Builder builder;
+    builder.SetPrefService(scoped_ptr<PrefService>(prefs.Pass()));
+    profile_ = builder.Build().Pass();
     profile_->CreateRequestContext();
-    profile_->GetPrefs()->SetBoolean(prefs::kLoadCloudPolicyOnSignin, true);
 
     mock_store_ = new MockUserCloudPolicyStore();
     EXPECT_CALL(*mock_store_, Load()).Times(AnyNumber());
@@ -101,6 +121,10 @@ class UserPolicySigninServiceTest : public testing::Test {
   content::TestBrowserThread io_thread_;
 
   net::TestURLFetcherFactory url_factory_;
+
+  // Weak ptr to the MockDeviceManagementService (object is owned by the
+  // BrowserPolicyConnector).
+  MockDeviceManagementService* device_management_service_;
 
   scoped_ptr<TestingPrefService> local_state_;
 };
@@ -274,6 +298,78 @@ TEST_F(UserPolicySigninServiceTest, SignOutAfterInit) {
 
   // UserCloudPolicyManager should be shut down.
   ASSERT_FALSE(manager_->core()->service());
+}
+
+TEST_F(UserPolicySigninServiceTest, FetchPolicyFailure) {
+  // Set the user as signed in.
+  SigninManagerFactory::GetForProfile(profile_.get())->SetAuthenticatedUsername(
+      "testuser@test.com");
+
+  UserPolicySigninService* signin_service =
+      UserPolicySigninServiceFactory::GetForProfile(profile_.get());
+  EXPECT_CALL(*this, OnPolicyRefresh(_)).Times(0);
+  signin_service->FetchPolicyForSignedInUser(
+      "mock_token",
+      base::Bind(&UserPolicySigninServiceTest::OnPolicyRefresh,
+                 base::Unretained(this)));
+  Mock::VerifyAndClearExpectations(this);
+
+  // UserCloudPolicyManager should be initialized.
+  ASSERT_TRUE(manager_->core()->service());
+  ASSERT_TRUE(IsRequestActive());
+
+  // Cause the fetch to fail - callback should be invoked.
+  EXPECT_CALL(*this, OnPolicyRefresh(false)).Times(1);
+  net::TestURLFetcher* fetcher = url_factory_.GetFetcherByID(0);
+  fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::FAILED, -1));
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+}
+
+TEST_F(UserPolicySigninServiceTest, FetchPolicySuccess) {
+  // Set the user as signed in.
+  SigninManagerFactory::GetForProfile(profile_.get())->SetAuthenticatedUsername(
+      "testuser@test.com");
+
+  UserPolicySigninService* signin_service =
+      UserPolicySigninServiceFactory::GetForProfile(profile_.get());
+  EXPECT_CALL(*this, OnPolicyRefresh(true)).Times(0);
+  signin_service->FetchPolicyForSignedInUser(
+      "mock_token",
+      base::Bind(&UserPolicySigninServiceTest::OnPolicyRefresh,
+                 base::Unretained(this)));
+
+  // UserCloudPolicyManager should be initialized.
+  ASSERT_TRUE(manager_->core()->service());
+  ASSERT_TRUE(IsRequestActive());
+
+  // Mimic successful client registration - this should kick off a policy
+  // fetch.
+  MockDeviceManagementJob* fetch_request = NULL;
+  EXPECT_CALL(*device_management_service_,
+              CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH))
+      .WillOnce(device_management_service_->CreateAsyncJob(&fetch_request));
+  EXPECT_CALL(*device_management_service_, StartJob(_, _, _, _, _, _, _))
+        .Times(1);
+  manager_->core()->client()->SetupRegistration("dm_token", "client_id");
+  ASSERT_TRUE(fetch_request);
+  Mock::VerifyAndClearExpectations(this);
+
+  // Make the policy fetch succeed - this should result in a write to the
+  // store and ultimately result in a call to OnPolicyRefresh().
+  EXPECT_CALL(*mock_store_, Store(_));
+  EXPECT_CALL(*this, OnPolicyRefresh(true)).Times(1);
+  // Create a fake policy blob to deliver to the client.
+  em::DeviceManagementResponse policy_blob;
+  em::PolicyData policy_data;
+  em::PolicyFetchResponse* policy_response =
+      policy_blob.mutable_policy_response()->add_response();
+  ASSERT_TRUE(policy_data.SerializeToString(
+      policy_response->mutable_policy_data()));
+  fetch_request->SendResponse(DM_STATUS_SUCCESS, policy_blob);
+
+  // Complete the store which should cause the policy fetch callback to be
+  // invoked.
+  mock_store_->NotifyStoreLoaded();
 }
 
 }  // namespace

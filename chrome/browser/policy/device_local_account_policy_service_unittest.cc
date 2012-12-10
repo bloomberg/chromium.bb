@@ -74,7 +74,7 @@ class DeviceLocalAccountPolicyServiceTest
     Mock::VerifyAndClearExpectations(&service_observer_);
   }
 
-  MOCK_METHOD0(OnRefreshDone, void(void));
+  MOCK_METHOD1(OnRefreshDone, void(bool));
 
   PolicyMap expected_policy_map_;
   UserPolicyBuilder device_local_account_policy_;
@@ -304,7 +304,7 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, RefreshPolicy) {
   EXPECT_CALL(mock_device_management_service_, CreateJob(_))
       .WillOnce(mock_device_management_service_.SucceedJob(response));
   EXPECT_CALL(mock_device_management_service_, StartJob(_, _, _, _, _, _, _));
-  EXPECT_CALL(*this, OnRefreshDone()).Times(1);
+  EXPECT_CALL(*this, OnRefreshDone(true)).Times(1);
   EXPECT_CALL(service_observer_, OnPolicyUpdated(PolicyBuilder::kFakeUsername));
   broker->core()->service()->RefreshPolicy(
       base::Bind(&DeviceLocalAccountPolicyServiceTest::OnRefreshDone,

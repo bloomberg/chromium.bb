@@ -175,6 +175,11 @@ class BrowserPolicyConnector : public content::NotificationObserver {
   }
 #endif
 
+  // Allows setting a DeviceManagementService (for injecting mocks in
+  // unit tests).
+  void SetDeviceManagementServiceForTesting(
+      scoped_ptr<DeviceManagementService> service);
+
   // Sets a |provider| that will be included in PolicyServices returned by
   // CreatePolicyService. This is a static method because local state is
   // created immediately after the connector, and tests don't have a chance to

@@ -30,7 +30,7 @@ class UserCloudPolicyManager : public CloudPolicyManager {
 
   // Initializes the cloud connection. |local_state| and
   // |device_management_service| must stay valid until this object is deleted or
-  // ShutdownAndRemovePolicy() gets called. Virtual for mocking.
+  // DisconnectAndRemovePolicy() gets called. Virtual for mocking.
   virtual void Connect(PrefService* local_state,
                        DeviceManagementService* device_management_service);
 

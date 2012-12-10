@@ -46,7 +46,7 @@ void CloudPolicyManager::RefreshPolicies() {
         base::Bind(&CloudPolicyManager::OnRefreshComplete,
                    base::Unretained(this)));
   } else {
-    OnRefreshComplete();
+    OnRefreshComplete(false);
   }
 }
 
@@ -69,7 +69,7 @@ void CloudPolicyManager::CheckAndPublishPolicy() {
   }
 }
 
-void CloudPolicyManager::OnRefreshComplete() {
+void CloudPolicyManager::OnRefreshComplete(bool success) {
   waiting_for_policy_refresh_ = false;
   CheckAndPublishPolicy();
 }
