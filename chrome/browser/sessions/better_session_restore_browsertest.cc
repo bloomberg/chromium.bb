@@ -22,6 +22,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/net_util.h"
 #include "net/base/upload_bytes_element_reader.h"
@@ -131,6 +132,21 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
     EXPECT_EQ(title_storing_, final_title);
   }
 
+  void NavigateAndCheckStoredData(const std::string& filename) {
+    // Navigate to a page which has previously stored data; check that the
+    // stored data can be accessed.
+    content::WebContents* web_contents =
+        chrome::GetActiveWebContents(browser());
+    content::TitleWatcher title_watcher(web_contents, title_pass_);
+    title_watcher.AlsoWaitForTitle(title_storing_);
+    title_watcher.AlsoWaitForTitle(title_error_write_failed_);
+    title_watcher.AlsoWaitForTitle(title_error_empty_);
+    ui_test_utils::NavigateToURL(
+        browser(), GURL(fake_server_address_ + test_path_ + filename));
+    string16 final_title = title_watcher.WaitAndGetTitle();
+    EXPECT_EQ(title_pass_, final_title);
+  }
+
   void CheckReloadedPageRestored() {
     CheckTitle(title_pass_);
   }
@@ -218,13 +234,16 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
 };
 
 class ContinueWhereILeftOffTest : public BetterSessionRestoreTest {
+ public:
+  virtual void SetUpOnMainThread() OVERRIDE {
+    SessionStartupPref::SetStartupPref(
+        browser()->profile(), SessionStartupPref(SessionStartupPref::LAST));
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, PRE_SessionCookies) {
   // Set the startup preference to "continue where I left off" and visit a page
   // which stores a session cookie.
-  SessionStartupPref::SetStartupPref(
-      browser()->profile(), SessionStartupPref(SessionStartupPref::LAST));
   StoreDataWithPage("session_cookies.html");
 }
 
@@ -235,8 +254,6 @@ IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, SessionCookies) {
 }
 
 IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, PRE_SessionStorage) {
-  SessionStartupPref::SetStartupPref(
-      browser()->profile(), SessionStartupPref(SessionStartupPref::LAST));
   StoreDataWithPage("session_storage.html");
 }
 
@@ -246,8 +263,6 @@ IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, SessionStorage) {
 
 IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest,
                        PRE_PRE_LocalStorageClearedOnExit) {
-  SessionStartupPref::SetStartupPref(
-      browser()->profile(), SessionStartupPref(SessionStartupPref::LAST));
   StoreDataWithPage("local_storage.html");
 }
 
@@ -273,8 +288,6 @@ IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest,
 
 IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest,
                        PRE_PRE_CookiesClearedOnExit) {
-  SessionStartupPref::SetStartupPref(
-      browser()->profile(), SessionStartupPref(SessionStartupPref::LAST));
   StoreDataWithPage("cookies.html");
 }
 
@@ -291,8 +304,6 @@ IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, CookiesClearedOnExit) {
 }
 
 IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, PRE_Post) {
-  SessionStartupPref::SetStartupPref(
-      browser()->profile(), SessionStartupPref(SessionStartupPref::LAST));
   PostFormWithPage("post.html", false);
 }
 
@@ -301,8 +312,6 @@ IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, Post) {
 }
 
 IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, PRE_PostWithPassword) {
-  SessionStartupPref::SetStartupPref(
-      browser()->profile(), SessionStartupPref(SessionStartupPref::LAST));
   PostFormWithPage("post_with_password.html", true);
 }
 
@@ -391,4 +400,78 @@ IN_PROC_BROWSER_TEST_F(RestartTest, PRE_PostWithPassword) {
 IN_PROC_BROWSER_TEST_F(RestartTest, PostWithPassword) {
   // The form data contained passwords, so it's removed completely.
   CheckFormRestored(false, false);
+}
+
+// These tests ensure that the Better Session Restore features are not triggered
+// when they shouldn't be.
+class NoSessionRestoreTest : public BetterSessionRestoreTest {
+ public:
+  virtual void SetUpOnMainThread() OVERRIDE {
+    SessionStartupPref::SetStartupPref(
+        browser()->profile(), SessionStartupPref(SessionStartupPref::DEFAULT));
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest, PRE_SessionCookies) {
+  StoreDataWithPage("session_cookies.html");
+}
+
+IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest, SessionCookies) {
+  content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  EXPECT_EQ(std::string(chrome::kAboutBlankURL), web_contents->GetURL().spec());
+  // When we navigate to the page again, it doens't see the data previously
+  // stored.
+  StoreDataWithPage("session_cookies.html");
+}
+
+IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest, PRE_SessionStorage) {
+  StoreDataWithPage("session_storage.html");
+}
+
+IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest, SessionStorage) {
+  content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  EXPECT_EQ(std::string(chrome::kAboutBlankURL), web_contents->GetURL().spec());
+  StoreDataWithPage("session_storage.html");
+}
+
+IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest,
+                       PRE_PRE_LocalStorageClearedOnExit) {
+  StoreDataWithPage("local_storage.html");
+}
+
+IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest, PRE_LocalStorageClearedOnExit) {
+  // Normally localStorage is persisted.
+  content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  EXPECT_EQ(std::string(chrome::kAboutBlankURL), web_contents->GetURL().spec());
+  NavigateAndCheckStoredData("local_storage.html");
+  // ... but not if it's set to clear on exit.
+  CookieSettings::Factory::GetForProfile(browser()->profile())->
+      SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
+}
+
+// See flakiness comment above.
+IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest, MAYBE_LocalStorageClearedOnExit) {
+  content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  EXPECT_EQ(std::string(chrome::kAboutBlankURL), web_contents->GetURL().spec());
+  StoreDataWithPage("local_storage.html");
+}
+
+IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest, PRE_PRE_CookiesClearedOnExit) {
+  StoreDataWithPage("cookies.html");
+}
+
+IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest, PRE_CookiesClearedOnExit) {
+  // Normally cookies are restored.
+  content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  EXPECT_EQ(std::string(chrome::kAboutBlankURL), web_contents->GetURL().spec());
+  NavigateAndCheckStoredData("cookies.html");
+  // ... but not if the content setting is set to clear on exit.
+  CookieSettings::Factory::GetForProfile(browser()->profile())->
+      SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
+}
+
+IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest, CookiesClearedOnExit) {
+  content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  EXPECT_EQ(std::string(chrome::kAboutBlankURL), web_contents->GetURL().spec());
+  StoreDataWithPage("local_storage.html");
 }
