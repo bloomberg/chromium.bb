@@ -363,10 +363,6 @@ void BrowserPluginGuest::SetCompositingBufferData(int gpu_process_id,
   surface_handle_ = gfx::GLSurfaceHandle(gfx::kNullPluginWindow, true);
   surface_handle_.parent_gpu_process_id = gpu_process_id;
   surface_handle_.parent_client_id = client_id;
-  surface_handle_.parent_context_id = context_id;
-  surface_handle_.parent_texture_id[0] = texture_id_0;
-  surface_handle_.parent_texture_id[1] = texture_id_1;
-  surface_handle_.sync_point = sync_point;
 }
 
 bool BrowserPluginGuest::InAutoSizeBounds(const gfx::Size& size) const {

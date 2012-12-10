@@ -1590,7 +1590,7 @@ void RenderProcessHostImpl::OnCompositorSurfaceBuffersSwappedNoHost(
                "RenderWidgetHostImpl::OnCompositorSurfaceBuffersSwappedNoHost");
   RenderWidgetHostImpl::AcknowledgeBufferPresent(route_id,
                                                  gpu_process_host_id,
-                                                 false,
+                                                 surface_handle,
                                                  0);
 }
 

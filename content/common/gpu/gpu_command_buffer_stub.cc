@@ -136,8 +136,6 @@ GpuCommandBufferStub::GpuCommandBufferStub(
         new GpuCommandBufferMemoryTracker(channel),
         true);
   }
-  if (handle_.sync_point)
-    OnWaitSyncPoint(handle_.sync_point);
 }
 
 GpuCommandBufferStub::~GpuCommandBufferStub() {

@@ -278,30 +278,19 @@ struct GLSurfaceHandle {
       : handle(kNullPluginWindow),
         transport(false),
         parent_gpu_process_id(0),
-        parent_client_id(0),
-        parent_context_id(0),
-        sync_point(0) {
-    parent_texture_id[0] = 0;
-    parent_texture_id[1] = 0;
+        parent_client_id(0) {
   }
   GLSurfaceHandle(PluginWindowHandle handle_, bool transport_)
       : handle(handle_),
         transport(transport_),
         parent_gpu_process_id(0),
-        parent_client_id(0),
-        parent_context_id(0),
-        sync_point(0) {
-    parent_texture_id[0] = 0;
-    parent_texture_id[1] = 0;
+        parent_client_id(0) {
   }
   bool is_null() const { return handle == kNullPluginWindow && !transport; }
   PluginWindowHandle handle;
   bool transport;
   int parent_gpu_process_id;
   uint32 parent_client_id;
-  uint32 parent_context_id;
-  uint32 parent_texture_id[2];
-  uint32 sync_point;
 };
 
 // AcceleratedWidget provides a surface to compositors to paint pixels.

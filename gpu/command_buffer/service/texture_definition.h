@@ -19,7 +19,7 @@ namespace gles2 {
 // context using the same GLShareGroup with the corresponding service ID.
 class GPU_EXPORT TextureDefinition {
  public:
-  struct LevelInfo {
+  struct GPU_EXPORT LevelInfo {
     LevelInfo(GLenum target,
               GLenum internal_format,
               GLsizei width,
@@ -29,6 +29,8 @@ class GPU_EXPORT TextureDefinition {
               GLenum format,
               GLenum type,
               bool cleared);
+    LevelInfo();
+
     GLenum target;
     GLenum internal_format;
     GLsizei width;

@@ -12,13 +12,16 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/renderer_host/image_transport_factory.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/content_export.h"
+#include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/client/activation_delegate.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/ime/text_input_client.h"
+#include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/gfx/display_observer.h"
 #include "ui/gfx/rect.h"
@@ -121,11 +124,11 @@ class RenderWidgetHostViewAura
       int gpu_host_id) OVERRIDE;
   virtual void AcceleratedSurfaceSuspend() OVERRIDE;
   virtual bool HasAcceleratedSurface(const gfx::Size& desired_size) OVERRIDE;
-  virtual void AcceleratedSurfaceNew(
-      int32 width_in_pixel,
-      int32 height_in_pixel,
-      uint64 surface_id) OVERRIDE;
-  virtual void AcceleratedSurfaceRelease(uint64 surface_id) OVERRIDE;
+  virtual void AcceleratedSurfaceNew(int32 width_in_pixel,
+                                     int32 height_in_pixel,
+                                     uint64 surface_id,
+                                     const std::string& mailbox_name) OVERRIDE;
+  virtual void AcceleratedSurfaceRelease() OVERRIDE;
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE;
   virtual gfx::Rect GetBoundsInRootWindow() OVERRIDE;
   virtual void ProcessAckedTouchEvent(
@@ -231,7 +234,7 @@ class RenderWidgetHostViewAura
   virtual ~RenderWidgetHostViewAura();
 
   void UpdateCursorIfOverSelf();
-  bool ShouldFastACK(uint64 surface_id);
+  bool ShouldSkipFrame(const gfx::Size& size);
   void UpdateExternalTexture();
   ui::InputMethod* GetInputMethod() const;
 
@@ -255,14 +258,23 @@ class RenderWidgetHostViewAura
   bool ShouldMoveToCenter();
 
   // Run the compositing callbacks.
-  void RunCompositingDidCommitCallbacks(ui::Compositor* compositor);
+  void RunCompositingDidCommitCallbacks();
+
+  struct BufferPresentedParams {
+    BufferPresentedParams(int route_id,
+                          int gpu_host_id,
+                          uint64 surface_handle);
+    ~BufferPresentedParams();
+
+    int32 route_id;
+    int gpu_host_id;
+    uint64 surface_handle;
+    scoped_refptr<ui::Texture> texture_to_produce;
+  };
 
   // Insert a sync point into the compositor's command stream and acknowledge
   // that we have presented the accelerated surface buffer.
-  static void InsertSyncPointAndACK(int32 route_id,
-                                    int gpu_host_id,
-                                    bool presented,
-                                    ui::Compositor* compositor);
+  static void InsertSyncPointAndACK(const BufferPresentedParams& params);
 
   // Called when window_ gets added to a new window tree.
   void AddingToRootWindow();
@@ -270,15 +282,9 @@ class RenderWidgetHostViewAura
   // Called when window_ is removed from the window tree.
   void RemovingFromRootWindow();
 
-  // After clearing |current_surface_|, and waiting for the compositor to finish
-  // using it, call this to inform the gpu process.
-  void SetSurfaceNotInUseByCompositor(ui::Compositor* compositor);
-
-  // This is called every time |current_surface_| usage changes (by thumbnailer,
-  // compositor draws, and tab visibility). Every time usage of current surface
-  // changes between "may be used" and "certain to not be used" by the ui, we
-  // inform the gpu process.
-  void AdjustSurfaceProtection();
+  // Called after commit for the last reference to the texture going away
+  // after it was released as the frontbuffer.
+  void SetSurfaceNotInUseByCompositor(scoped_refptr<ui::Texture>);
 
   // Called after async thumbnailer task completes.  Used to call
   // AdjustSurfaceProtection.
@@ -294,6 +300,12 @@ class RenderWidgetHostViewAura
 
   // Converts |rect| from window coordinate to screen coordinate.
   gfx::Rect ConvertRectToScreen(const gfx::Rect& rect);
+
+  bool SwapBuffersPrepare(const gfx::Rect& surface_rect,
+                          const gfx::Rect& damage_rect,
+                          BufferPresentedParams* params);
+
+  void SwapBuffersCompleted(const BufferPresentedParams& params);
 
   // The model object.
   RenderWidgetHostImpl* host_;
@@ -347,27 +359,25 @@ class RenderWidgetHostViewAura
   // The scale factor of the display the renderer is currently on.
   float device_scale_factor_;
 
-  std::vector< base::Callback<void(ui::Compositor*)> >
-      on_compositing_did_commit_callbacks_;
+  std::vector<base::Closure> on_compositing_did_commit_callbacks_;
 
-  std::map<uint64, scoped_refptr<ui::Texture> >
-      image_transport_clients_;
+  std::map<uint64, scoped_refptr<ui::Texture> > image_transport_clients_;
 
+  // The identifier of the current frontbuffer.
   uint64 current_surface_;
 
-  // Protected means that the |current_surface_| may be in use by ui and cannot
-  // be safely discarded. Things to consider are thumbnailer, compositor draw,
-  // and tab visibility.
-  bool current_surface_is_protected_;
-  bool current_surface_in_use_by_compositor_;
+  // The damage in the previously presented buffer.
+  SkRegion previous_damage_;
+
+  // Pending damage from previous frames that we skipped.
+  SkRegion skipped_damage_;
+
+  // The size of the last frame that was swapped (even if we skipped it).
+  // Used to determine when the skipped_damage_ needs to be reset due to
+  // size changes between front- and backbuffer.
+  gfx::Size last_swapped_surface_size_;
 
   int pending_thumbnail_tasks_;
-
-  // This id increments every time surface_is_protected changes. We tag IPC
-  // messages which rely on protection state with this id to stay in sync.
-  uint32 protection_state_id_;
-
-  int32 surface_route_id_;
 
   gfx::GLSurfaceHandle shared_surface_handle_;
 

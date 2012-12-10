@@ -56,7 +56,8 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       content_view_core_(NULL),
       ime_adapter_android_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       cached_background_color_(SK_ColorWHITE),
-      texture_id_in_layer_(0) {
+      texture_id_in_layer_(0),
+      current_buffer_id_(0) {
   if (CompositorImpl::UsesDirectGL()) {
     surface_texture_transport_.reset(new SurfaceTextureTransportClient());
     layer_ = surface_texture_transport_->Initialize();
@@ -77,6 +78,10 @@ RenderWidgetHostViewAndroid::~RenderWidgetHostViewAndroid() {
   if (!shared_surface_.is_null()) {
     ImageTransportFactoryAndroid::GetInstance()->DestroySharedSurfaceHandle(
         shared_surface_);
+  }
+  if (texture_id_in_layer_) {
+    ImageTransportFactoryAndroid::GetInstance()->DeleteTexture(
+        texture_id_in_layer_);
   }
 }
 
@@ -388,19 +393,42 @@ void RenderWidgetHostViewAndroid::OnAcceleratedCompositingStateChange() {
 void RenderWidgetHostViewAndroid::AcceleratedSurfaceBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
     int gpu_host_id) {
-  texture_layer_->setTextureId(params.surface_handle);
-  DCHECK(texture_layer_ == layer_);
-  layer_->setBounds(params.size);
-  texture_id_in_layer_ = params.surface_handle;
-  texture_size_in_layer_ = params.size;
+  ImageTransportFactoryAndroid* factory =
+      ImageTransportFactoryAndroid::GetInstance();
 
   // TODO(sievers): When running the impl thread in the browser we
-  // need to delay the ACK until after commit.
+  // need to delay the ACK until after commit and use more than a single
+  // texture.
   DCHECK(!CompositorImpl::IsThreadingEnabled());
+
+  uint64 previous_buffer = current_buffer_id_;
+  if (previous_buffer && texture_id_in_layer_) {
+    DCHECK(id_to_mailbox_.find(previous_buffer) != id_to_mailbox_.end());
+    ImageTransportFactoryAndroid::GetInstance()->ReleaseTexture(
+        texture_id_in_layer_,
+        reinterpret_cast<const signed char*>(
+            id_to_mailbox_[previous_buffer].c_str()));
+  }
+
+  current_buffer_id_ = params.surface_handle;
+  if (!texture_id_in_layer_) {
+    texture_id_in_layer_ = factory->CreateTexture();
+    texture_layer_->setTextureId(texture_id_in_layer_);
+  }
+
+  DCHECK(id_to_mailbox_.find(current_buffer_id_) != id_to_mailbox_.end());
+  ImageTransportFactoryAndroid::GetInstance()->AcquireTexture(
+      texture_id_in_layer_,
+      reinterpret_cast<const signed char*>(
+          id_to_mailbox_[current_buffer_id_].c_str()));
+  texture_layer_->setNeedsDisplay();
+  texture_layer_->setBounds(params.size);
+  texture_size_in_layer_ = params.size;
+
   uint32 sync_point =
       ImageTransportFactoryAndroid::GetInstance()->InsertSyncPoint();
   RenderWidgetHostImpl::AcknowledgeBufferPresent(
-      params.route_id, gpu_host_id, true, sync_point);
+      params.route_id, gpu_host_id, previous_buffer, sync_point);
 }
 
 void RenderWidgetHostViewAndroid::AcceleratedSurfacePostSubBuffer(
@@ -411,6 +439,23 @@ void RenderWidgetHostViewAndroid::AcceleratedSurfacePostSubBuffer(
 
 void RenderWidgetHostViewAndroid::AcceleratedSurfaceSuspend() {
   NOTREACHED();
+}
+
+void RenderWidgetHostViewAndroid::AcceleratedSurfaceNew(
+    int32 width_in_pixel, int32 height_in_pixel, uint64 surface_id,
+    const std::string& mailbox_name) {
+  DCHECK(surface_id == 1 || surface_id == 2);
+  id_to_mailbox_[surface_id] = mailbox_name;
+}
+
+void RenderWidgetHostViewAndroid::AcceleratedSurfaceRelease() {
+  // This tells us we should free the frontbuffer.
+  if (texture_id_in_layer_) {
+    texture_layer_->setTextureId(0);
+    ImageTransportFactoryAndroid::GetInstance()->DeleteTexture(
+        texture_id_in_layer_);
+    texture_id_in_layer_ = 0;
+  }
 }
 
 bool RenderWidgetHostViewAndroid::HasAcceleratedSurface(

@@ -24,10 +24,6 @@ ImageTransportSurface::ImageTransportSurface() {}
 
 ImageTransportSurface::~ImageTransportSurface() {}
 
-void ImageTransportSurface::OnSetFrontSurfaceIsProtected(
-    bool is_protected, uint32 protection_state_id) {
-}
-
 void ImageTransportSurface::GetRegionsToCopy(
     const gfx::Rect& previous_damage_rect,
     const gfx::Rect& new_damage_rect,
@@ -100,8 +96,6 @@ bool ImageTransportHelper::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(ImageTransportHelper, message)
     IPC_MESSAGE_HANDLER(AcceleratedSurfaceMsg_BufferPresented,
                         OnBufferPresented)
-    IPC_MESSAGE_HANDLER(AcceleratedSurfaceMsg_SetFrontSurfaceIsProtected,
-                        OnSetFrontSurfaceIsProtected)
     IPC_MESSAGE_HANDLER(AcceleratedSurfaceMsg_ResizeViewACK, OnResizeViewACK);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -212,14 +206,9 @@ gpu::gles2::GLES2Decoder* ImageTransportHelper::Decoder() {
   return stub_->decoder();
 }
 
-void ImageTransportHelper::OnSetFrontSurfaceIsProtected(
-    bool is_protected, uint32 protection_state_id) {
-  surface_->OnSetFrontSurfaceIsProtected(is_protected, protection_state_id);
-}
-
-void ImageTransportHelper::OnBufferPresented(bool presented,
+void ImageTransportHelper::OnBufferPresented(uint64 surface_handle,
                                              uint32 sync_point) {
-  surface_->OnBufferPresented(presented, sync_point);
+  surface_->OnBufferPresented(surface_handle, sync_point);
 }
 
 void ImageTransportHelper::OnResizeViewACK() {
@@ -322,7 +311,7 @@ bool PassThroughImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
 }
 
 void PassThroughImageTransportSurface::OnBufferPresented(
-    bool /* presented */,
+    uint64 /* surface_handle */,
     uint32 /* sync_point */) {
   DCHECK(transport_);
   helper_->SetScheduled(true);
