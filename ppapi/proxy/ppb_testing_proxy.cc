@@ -156,6 +156,9 @@ const InterfaceProxy::Info* PPB_Testing_Proxy::GetInfo() {
 }
 
 bool PPB_Testing_Proxy::OnMessageReceived(const IPC::Message& msg) {
+  if (!dispatcher()->permissions().HasPermission(PERMISSION_TESTING))
+    return false;
+
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPB_Testing_Proxy, msg)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTesting_ReadImageData,

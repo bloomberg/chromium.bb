@@ -95,10 +95,10 @@ PP_NaClResult LaunchSelLdr(PP_Instance instance,
   // Conditionally block 'Dev' interfaces. We do this for the NaCl process, so
   // it's clearer to developers when they are using 'Dev' inappropriately. We
   // must also check on the trusted side of the proxy.
-  // TODO(bbudge) verify we're blocking 'Dev' interfaces on the trusted side.
   if (enable_ppapi_dev)
     perm_bits |= ppapi::PERMISSION_DEV;
-  instance_info.permissions = ppapi::PpapiPermissions(perm_bits);
+  instance_info.permissions =
+      ppapi::PpapiPermissions::GetForCommandLine(perm_bits);
 
   if (!sender->Send(new ChromeViewHostMsg_LaunchNaCl(
           instance_info.url,

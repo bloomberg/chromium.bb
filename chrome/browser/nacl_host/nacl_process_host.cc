@@ -115,6 +115,14 @@ bool ShareHandleToSelLdr(
   return true;
 }
 
+ppapi::PpapiPermissions GetNaClPermissions(uint32 permission_bits) {
+  // Only allow NaCl plugins to request certain permissions. We don't want
+  // a compromised renderer to be able to start a nacl plugin with e.g. Flash
+  // permissions which may expand the surface area of the sandbox.
+  uint32 masked_bits = permission_bits & ppapi::PERMISSION_DEV;
+  return ppapi::PpapiPermissions::GetForCommandLine(masked_bits);
+}
+
 }  // namespace
 
 struct NaClProcessHost::NaClInternal {
@@ -138,7 +146,7 @@ NaClProcessHost::NaClProcessHost(const GURL& manifest_url,
                                  uint32 permission_bits,
                                  bool off_the_record)
     : manifest_url_(manifest_url),
-      permissions_(ppapi::PpapiPermissions::GetForCommandLine(permission_bits)),
+      permissions_(GetNaClPermissions(permission_bits)),
 #if defined(OS_WIN)
       process_launched_by_broker_(false),
 #elif defined(OS_LINUX)
