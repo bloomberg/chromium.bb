@@ -215,6 +215,10 @@ RenderThreadImpl::HistogramCustomizer::~HistogramCustomizer() {}
 
 void RenderThreadImpl::HistogramCustomizer::RenderViewNavigatedToHost(
     const std::string& host, size_t view_count) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableHistogramCustomizer)) {
+    return;
+  }
   // Check if all RenderViews are displaying a page from the same host. If there
   // is only one RenderView, the common host is this view's host. If there are
   // many, check if this one shares the common host of the other

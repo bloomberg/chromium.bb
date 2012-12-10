@@ -141,6 +141,9 @@ const char kEnableGpuSandbox[]              = "enable-gpu-sandbox";
 // Manager can be used to terminate the offending process in this case.
 const char kDisableHangMonitor[]            = "disable-hang-monitor";
 
+// Disable the RenderThread's HistogramCustomizer.
+const char kDisableHistogramCustomizer[]    = "disable-histogram-customizer";
+
 // Disable the use of an ImageTransportSurface. This means the GPU process
 // will present the rendered page rather than the browser process.
 const char kDisableImageTransportSurface[]  = "disable-image-transport-surface";
