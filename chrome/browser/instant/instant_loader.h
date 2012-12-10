@@ -115,6 +115,7 @@ class InstantLoader : public InstantClient::Delegate,
   virtual void StartCapturingKeyStrokes() OVERRIDE;
   virtual void StopCapturingKeyStrokes() OVERRIDE;
   virtual void RenderViewGone() OVERRIDE;
+  virtual void AboutToNavigateMainFrame(const GURL& url) OVERRIDE;
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,

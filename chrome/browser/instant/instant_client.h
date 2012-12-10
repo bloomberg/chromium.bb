@@ -61,6 +61,9 @@ class InstantClient : public content::WebContentsObserver {
     // Called when the underlying RenderView crashes.
     virtual void RenderViewGone() = 0;
 
+    // Called when the page is about to navigate.
+    virtual void AboutToNavigateMainFrame(const GURL& url) = 0;
+
    protected:
     virtual ~Delegate();
   };
@@ -127,6 +130,12 @@ class InstantClient : public content::WebContentsObserver {
       content::RenderViewHost* render_view_host) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
+  virtual void DidCommitProvisionalLoadForFrame(
+      int64 frame_id,
+      bool is_main_frame,
+      const GURL& url,
+      content::PageTransition transition_type,
+      content::RenderViewHost* render_view_host) OVERRIDE;
 
   void SetSuggestions(int page_id,
                       const std::vector<InstantSuggestion>& suggestions);

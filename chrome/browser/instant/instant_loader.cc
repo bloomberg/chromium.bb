@@ -5,6 +5,7 @@
 #include "chrome/browser/instant/instant_loader.h"
 
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/history/history_tab_helper.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/safe_browsing/safe_browsing_tab_observer.h"
@@ -71,6 +72,9 @@ class InstantLoader::WebContentsDelegateImpl
   virtual void HandleGestureEnd() OVERRIDE;
   virtual void DragEnded() OVERRIDE;
   virtual bool OnGoToEntryOffset(int offset) OVERRIDE;
+  virtual content::WebContents* OpenURLFromTab(
+      content::WebContents* source,
+      const content::OpenURLParams& params) OVERRIDE;
 
   void MaybeCommitFromPointerRelease();
 
@@ -154,6 +158,15 @@ void InstantLoader::WebContentsDelegateImpl::DragEnded() {
 
 bool InstantLoader::WebContentsDelegateImpl::OnGoToEntryOffset(int offset) {
   return false;
+}
+
+content::WebContents* InstantLoader::WebContentsDelegateImpl::OpenURLFromTab(
+    content::WebContents* source,
+    const content::OpenURLParams& params) {
+  content::WebContents* preview = loader_->contents_.get();
+  if (loader_->controller_->CommitIfPossible(INSTANT_COMMIT_NAVIGATED))
+    return preview->GetDelegate()->OpenURLFromTab(source, params);
+  return NULL;
 }
 
 void InstantLoader::WebContentsDelegateImpl::MaybeCommitFromPointerRelease() {
@@ -297,6 +310,10 @@ void InstantLoader::RenderViewGone() {
   controller_->InstantLoaderRenderViewGone();
 }
 
+void InstantLoader::AboutToNavigateMainFrame(const GURL& url) {
+  controller_->InstantLoaderAboutToNavigateMainFrame(url);
+}
+
 void InstantLoader::Observe(int type,
                             const content::NotificationSource& source,
                             const content::NotificationDetails& details) {
@@ -339,6 +356,9 @@ void InstantLoader::SetupPreviewContents() {
   // Tab helpers used when committing a preview.
   chrome::search::SearchTabHelper::CreateForWebContents(contents());
   HistoryTabHelper::CreateForWebContents(contents());
+
+  // Observers.
+  extensions::WebNavigationTabObserver::CreateForWebContents(contents());
 
   // And some flat-out paranoia.
   safe_browsing::SafeBrowsingTabObserver::CreateForWebContents(contents());

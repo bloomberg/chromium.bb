@@ -83,3 +83,7 @@ void InstantTab::StopCapturingKeyStrokes() {
 void InstantTab::RenderViewGone() {
   // For a commit page, a crash should not be handled differently.
 }
+
+void InstantTab::AboutToNavigateMainFrame(const GURL& url) {
+  // The client is a committed tab, navigations will happen as expected.
+}

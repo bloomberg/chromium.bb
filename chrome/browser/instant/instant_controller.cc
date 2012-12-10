@@ -444,12 +444,12 @@ bool InstantController::CommitIfPossible(InstantCommitType type) {
     return false;
   }
 
-  if (!IsPreviewingSearchResults())
+  if (!IsPreviewingSearchResults() && type != INSTANT_COMMIT_NAVIGATED)
     return false;
 
   if (type == INSTANT_COMMIT_FOCUS_LOST)
     loader_->Cancel(last_omnibox_text_);
-  else
+  else if (type != INSTANT_COMMIT_NAVIGATED)
     loader_->Submit(last_omnibox_text_);
 
   content::WebContents* preview = loader_->ReleaseContents();
@@ -487,7 +487,15 @@ bool InstantController::CommitIfPossible(InstantCommitType type) {
       loader_->last_navigation();
   if (!last_navigation.url.is_empty()) {
     content::NavigationEntry* entry = preview->GetController().GetActiveEntry();
-    DCHECK_EQ(last_navigation.url, entry->GetURL());
+
+    // The last navigation should be the same as the active entry if the loader
+    // is in search mode. During navigation, the active entry could have
+    // changed since DidCommitProvisionalLoadForFrame is called after the entry
+    // is changed.
+    // TODO(shishir): Should we commit the last navigation for
+    // INSTANT_COMMIT_NAVIGATED.
+    DCHECK(type == INSTANT_COMMIT_NAVIGATED ||
+           last_navigation.url == entry->GetURL());
 
     // Add the page to history.
     HistoryTabHelper* history_tab_helper =
@@ -790,6 +798,16 @@ void InstantController::InstantLoaderRenderViewGone() {
   // Delay deletion as we have gotten here from an InstantLoader method.
   MessageLoop::current()->DeleteSoon(FROM_HERE, loader_.release());
   CreateDefaultLoader();
+}
+
+void InstantController::InstantLoaderAboutToNavigateMainFrame(const GURL& url) {
+  GURL instant_url(loader_->instant_url());
+
+  // Don't commit if the URL being navigated to has the same host and path as
+  // the instant URL. This enables the instant page to change the query
+  // parameters and fragments of the URL without it navigating.
+  if (url.host() != instant_url.host() || url.path() != instant_url.path())
+    CommitIfPossible(INSTANT_COMMIT_NAVIGATED);
 }
 
 bool InstantController::ResetLoader(const TemplateURL* template_url,

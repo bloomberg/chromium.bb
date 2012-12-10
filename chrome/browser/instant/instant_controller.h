@@ -145,6 +145,9 @@ class InstantController {
   // Invoked by the InstantLoader when its RenderView crashes.
   void InstantLoaderRenderViewGone();
 
+  // Invoked by InstantLoader when the instant page is about to navigate.
+  void InstantLoaderAboutToNavigateMainFrame(const GURL& url);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(InstantTest, OmniboxFocusLoadsInstant);
   FRIEND_TEST_ALL_PREFIXES(InstantTest, NonInstantSearchProvider);

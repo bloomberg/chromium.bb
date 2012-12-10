@@ -17,6 +17,9 @@ enum InstantCommitType {
   // The commit is due to the omnibox losing focus, usually due to the user
   // clicking on the preview.
   INSTANT_COMMIT_FOCUS_LOST,
+
+  // The commit is due to the instant page navigating.
+  INSTANT_COMMIT_NAVIGATED,
 };
 
 #endif  // CHROME_BROWSER_INSTANT_INSTANT_COMMIT_TYPE_H_

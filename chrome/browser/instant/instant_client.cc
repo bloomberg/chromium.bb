@@ -101,6 +101,17 @@ void InstantClient::RenderViewGone(base::TerminationStatus status) {
   delegate_->RenderViewGone();
 }
 
+void InstantClient::DidCommitProvisionalLoadForFrame(
+    int64 frame_id,
+    bool is_main_frame,
+    const GURL& url,
+    content::PageTransition transition_type,
+    content::RenderViewHost* render_view_host) {
+  if (!is_main_frame)
+    return;
+  delegate_->AboutToNavigateMainFrame(url);
+}
+
 void InstantClient::SetSuggestions(
     int page_id,
     const std::vector<InstantSuggestion>& suggestions) {
