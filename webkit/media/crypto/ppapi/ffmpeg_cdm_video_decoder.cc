@@ -106,7 +106,6 @@ static void CdmVideoDecoderConfigToAVCodecContext(
     codec_context->extradata = NULL;
     codec_context->extradata_size = 0;
   }
-
 }
 
 static void CopyPlane(const uint8_t* source,
@@ -275,19 +274,20 @@ bool FFmpegCdmVideoDecoder::CopyAvFrameTo(cdm::VideoFrame* cdm_video_frame) {
   const int uv_size = y_size / 2;
   const int space_required = y_size + (uv_size * 2);
 
-  DCHECK(!cdm_video_frame->frame_buffer());
-  cdm_video_frame->set_frame_buffer(allocator_->Allocate(space_required));
-  if (!cdm_video_frame->frame_buffer()) {
+  DCHECK(!cdm_video_frame->FrameBuffer());
+  cdm_video_frame->SetFrameBuffer(allocator_->Allocate(space_required));
+  if (!cdm_video_frame->FrameBuffer()) {
     LOG(ERROR) << "CopyAvFrameTo() cdm::Allocator::Allocate failed.";
     return false;
   }
+  cdm_video_frame->FrameBuffer()->SetSize(space_required);
 
   CopyPlane(av_frame_->base[cdm::VideoFrame::kYPlane],
             av_frame_->linesize[cdm::VideoFrame::kYPlane],
             av_frame_->width,
             av_frame_->height,
             av_frame_->width,
-            cdm_video_frame->frame_buffer()->data());
+            cdm_video_frame->FrameBuffer()->Data());
 
   const int uv_stride = av_frame_->width / 2;
   const int uv_rows = av_frame_->height / 2;
@@ -296,33 +296,33 @@ bool FFmpegCdmVideoDecoder::CopyAvFrameTo(cdm::VideoFrame* cdm_video_frame) {
             uv_stride,
             uv_rows,
             uv_stride,
-            cdm_video_frame->frame_buffer()->data() + y_size);
+            cdm_video_frame->FrameBuffer()->Data() + y_size);
 
   CopyPlane(av_frame_->base[cdm::VideoFrame::kVPlane],
             av_frame_->linesize[cdm::VideoFrame::kVPlane],
             uv_stride,
             uv_rows,
             uv_stride,
-            cdm_video_frame->frame_buffer()->data() + y_size + uv_size);
+            cdm_video_frame->FrameBuffer()->Data() + y_size + uv_size);
 
   PixelFormat format = static_cast<PixelFormat>(av_frame_->format);
-  cdm_video_frame->set_format(PixelFormatToCdmVideoFormat(format));
+  cdm_video_frame->SetFormat(PixelFormatToCdmVideoFormat(format));
 
   cdm::Size video_frame_size;
   video_frame_size.width = av_frame_->width;
   video_frame_size.height = av_frame_->height;
-  cdm_video_frame->set_size(video_frame_size);
+  cdm_video_frame->SetSize(video_frame_size);
 
-  cdm_video_frame->set_plane_offset(cdm::VideoFrame::kYPlane, 0);
-  cdm_video_frame->set_plane_offset(cdm::VideoFrame::kUPlane, y_size);
-  cdm_video_frame->set_plane_offset(cdm::VideoFrame::kVPlane,
+  cdm_video_frame->SetPlaneOffset(cdm::VideoFrame::kYPlane, 0);
+  cdm_video_frame->SetPlaneOffset(cdm::VideoFrame::kUPlane, y_size);
+  cdm_video_frame->SetPlaneOffset(cdm::VideoFrame::kVPlane,
                                     y_size + uv_size);
 
-  cdm_video_frame->set_stride(cdm::VideoFrame::kYPlane, av_frame_->width);
-  cdm_video_frame->set_stride(cdm::VideoFrame::kUPlane, uv_stride);
-  cdm_video_frame->set_stride(cdm::VideoFrame::kVPlane, uv_stride);
+  cdm_video_frame->SetStride(cdm::VideoFrame::kYPlane, av_frame_->width);
+  cdm_video_frame->SetStride(cdm::VideoFrame::kUPlane, uv_stride);
+  cdm_video_frame->SetStride(cdm::VideoFrame::kVPlane, uv_stride);
 
-  cdm_video_frame->set_timestamp(av_frame_->reordered_opaque);
+  cdm_video_frame->SetTimestamp(av_frame_->reordered_opaque);
 
   return true;
 }

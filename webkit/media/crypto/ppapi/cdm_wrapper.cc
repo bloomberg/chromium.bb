@@ -30,19 +30,6 @@
 
 namespace {
 
-// This must be consistent with MediaKeyError defined in the spec:
-// http://goo.gl/rbdnR
-// TODO(xhwang): Add PP_MediaKeyError enum to avoid later static_cast in
-// PluginInstance.
-enum MediaKeyError {
-  kUnknownError = 1,
-  kClientError,
-  kServiceError,
-  kOutputError,
-  kHardwareChangeError,
-  kDomainError
-};
-
 bool IsMainThread() {
   return pp::Module::Get()->core()->IsMainThread();
 }
@@ -206,34 +193,44 @@ namespace webkit_media {
 // pp::Buffer_Dev and PPB_Buffer_Dev.
 class PpbBuffer : public cdm::Buffer {
  public:
-  static PpbBuffer* Create(const pp::Buffer_Dev& buffer,
-                           uint32_t buffer_id,
-                           int32_t size) {
-    PP_DCHECK(buffer_id);
+  static PpbBuffer* Create(const pp::Buffer_Dev& buffer, uint32_t buffer_id) {
     PP_DCHECK(buffer.data());
     PP_DCHECK(buffer.size());
-    PP_DCHECK(buffer.size() >= static_cast<uint32_t>(size));
-    return new PpbBuffer(buffer, buffer_id, size);
+    PP_DCHECK(buffer_id);
+    return new PpbBuffer(buffer, buffer_id);
   }
 
   // cdm::Buffer implementation.
   virtual void Destroy() OVERRIDE { delete this; }
 
-  virtual uint8_t* data() OVERRIDE {
+  virtual int32_t Capacity() const OVERRIDE { return buffer_.size(); }
+
+  virtual uint8_t* Data() OVERRIDE {
     return static_cast<uint8_t*>(buffer_.data());
   }
 
-  virtual int32_t size() const OVERRIDE { return size_; }
+  virtual void SetSize(int32_t size) OVERRIDE {
+    PP_DCHECK(size >= 0);
+    PP_DCHECK(size < Capacity());
+    if (size < 0 || size > Capacity()) {
+      size_ = 0;
+      return;
+    }
+
+    size_ = size;
+  }
+
+  virtual int32_t Size() const OVERRIDE { return size_; }
 
   pp::Buffer_Dev buffer_dev() const { return buffer_; }
 
   uint32_t buffer_id() const { return buffer_id_; }
 
  private:
-  PpbBuffer(pp::Buffer_Dev buffer, uint32_t buffer_id, int32_t size)
+  PpbBuffer(pp::Buffer_Dev buffer, uint32_t buffer_id)
       : buffer_(buffer),
         buffer_id_(buffer_id),
-        size_(size) {}
+        size_(0) {}
   virtual ~PpbBuffer() {}
 
   pp::Buffer_Dev buffer_;
@@ -251,7 +248,7 @@ class PpbBufferAllocator : public cdm::Allocator {
   virtual ~PpbBufferAllocator() {}
 
   // cdm::Allocator implementation.
-  virtual cdm::Buffer* Allocate(int32_t size) OVERRIDE;
+  virtual cdm::Buffer* Allocate(int32_t capacity) OVERRIDE;
 
   // Releases the buffer with |buffer_id|. A buffer can be recycled after
   // it is released.
@@ -269,7 +266,7 @@ class PpbBufferAllocator : public cdm::Allocator {
   // Maximum number of free buffers we can keep when allocating new buffers.
   static const int kFreeLimit = 3;
 
-  pp::Buffer_Dev AllocateNewBuffer(int size);
+  pp::Buffer_Dev AllocateNewBuffer(int capacity);
 
   pp::Instance* const instance_;
   uint32_t next_buffer_id_;
@@ -279,19 +276,21 @@ class PpbBufferAllocator : public cdm::Allocator {
   DISALLOW_COPY_AND_ASSIGN(PpbBufferAllocator);
 };
 
-cdm::Buffer* PpbBufferAllocator::Allocate(int32_t size) {
-  PP_DCHECK(size > 0);
+cdm::Buffer* PpbBufferAllocator::Allocate(int32_t capacity) {
   PP_DCHECK(IsMainThread());
+
+  if (capacity <= 0)
+    return NULL;
 
   pp::Buffer_Dev buffer;
   uint32_t buffer_id = 0;
 
-  // Reuse a buffer in the free list if there is one that fits |size|.
+  // Reuse a buffer in the free list if there is one that fits |capacity|.
   // Otherwise, create a new one.
-  FreeBufferMap::iterator found = free_buffers_.lower_bound(size);
+  FreeBufferMap::iterator found = free_buffers_.lower_bound(capacity);
   if (found == free_buffers_.end()) {
     // TODO(xhwang): Report statistics about how many new buffers are allocated.
-    buffer = AllocateNewBuffer(size);
+    buffer = AllocateNewBuffer(capacity);
     if (buffer.is_null())
       return NULL;
     buffer_id = next_buffer_id_++;
@@ -303,7 +302,7 @@ cdm::Buffer* PpbBufferAllocator::Allocate(int32_t size) {
 
   allocated_buffers_.insert(std::make_pair(buffer_id, buffer));
 
-  return PpbBuffer::Create(buffer, buffer_id, size);
+  return PpbBuffer::Create(buffer, buffer_id);
 }
 
 void PpbBufferAllocator::Release(uint32_t buffer_id) {
@@ -321,7 +320,7 @@ void PpbBufferAllocator::Release(uint32_t buffer_id) {
   allocated_buffers_.erase(found);
 }
 
-pp::Buffer_Dev PpbBufferAllocator::AllocateNewBuffer(int32_t size) {
+pp::Buffer_Dev PpbBufferAllocator::AllocateNewBuffer(int32_t capacity) {
   // Destroy the smallest buffer before allocating a new bigger buffer if the
   // number of free buffers exceeds a limit. This mechanism helps avoid ending
   // up with too many small buffers, which could happen if the size to be
@@ -331,69 +330,23 @@ pp::Buffer_Dev PpbBufferAllocator::AllocateNewBuffer(int32_t size) {
 
   // Creation of pp::Buffer_Dev is expensive! It involves synchronous IPC calls.
   // That's why we try to avoid AllocateNewBuffer() as much as we can.
-  return pp::Buffer_Dev(instance_, size + kBufferPadding);
+  return pp::Buffer_Dev(instance_, capacity + kBufferPadding);
 }
-
-class KeyMessageImpl : public cdm::KeyMessage {
- public:
-  KeyMessageImpl() : message_(NULL) {}
-  virtual ~KeyMessageImpl() {
-    if (message_)
-      message_->Destroy();
-  }
-
-  // cdm::KeyMessage methods.
-  virtual void set_session_id(const char* session_id, int32_t length) OVERRIDE {
-    session_id_.assign(session_id, length);
-  }
-  virtual const char* session_id() const OVERRIDE {
-    return session_id_.c_str();
-  }
-  virtual int32_t session_id_length() const OVERRIDE {
-    return session_id_.length();
-  }
-
-  virtual void set_message(cdm::Buffer* message) OVERRIDE {
-    message_ = static_cast<PpbBuffer*>(message);
-  }
-  virtual cdm::Buffer* message() OVERRIDE { return message_; }
-
-  virtual void set_default_url(const char* default_url,
-                               int32_t length) OVERRIDE {
-    default_url_.assign(default_url, length);
-  }
-  virtual const char* default_url() const OVERRIDE {
-    return default_url_.c_str();
-  }
-  virtual int32_t default_url_length() const OVERRIDE {
-    return default_url_.length();
-  }
-
-  std::string session_id_string() const { return session_id_; }
-  std::string default_url_string() const { return default_url_; }
-
- private:
-  PpbBuffer* message_;
-  std::string session_id_;
-  std::string default_url_;
-
-  DISALLOW_COPY_AND_ASSIGN(KeyMessageImpl);
-};
 
 class DecryptedBlockImpl : public cdm::DecryptedBlock {
  public:
   DecryptedBlockImpl() : buffer_(NULL), timestamp_(0) {}
   virtual ~DecryptedBlockImpl() { if (buffer_) buffer_->Destroy(); }
 
-  virtual void set_buffer(cdm::Buffer* buffer) OVERRIDE {
+  virtual void SetDecryptedBuffer(cdm::Buffer* buffer) OVERRIDE {
     buffer_ = static_cast<PpbBuffer*>(buffer);
   }
-  virtual cdm::Buffer* buffer() OVERRIDE { return buffer_; }
+  virtual cdm::Buffer* DecryptedBuffer() OVERRIDE { return buffer_; }
 
-  virtual void set_timestamp(int64_t timestamp) OVERRIDE {
+  virtual void SetTimestamp(int64_t timestamp) OVERRIDE {
     timestamp_ = timestamp;
   }
-  virtual int64_t timestamp() const OVERRIDE { return timestamp_; }
+  virtual int64_t Timestamp() const OVERRIDE { return timestamp_; }
 
  private:
   PpbBuffer* buffer_;
@@ -407,43 +360,43 @@ class VideoFrameImpl : public cdm::VideoFrame {
   VideoFrameImpl();
   virtual ~VideoFrameImpl();
 
-  virtual void set_format(cdm::VideoFormat format) OVERRIDE {
+  virtual void SetFormat(cdm::VideoFormat format) OVERRIDE {
     format_ = format;
   }
-  virtual cdm::VideoFormat format() const OVERRIDE { return format_; }
+  virtual cdm::VideoFormat Format() const OVERRIDE { return format_; }
 
-  virtual void set_size(cdm::Size size) OVERRIDE { size_ = size; }
-  virtual cdm::Size size() const OVERRIDE { return size_; }
+  virtual void SetSize(cdm::Size size) OVERRIDE { size_ = size; }
+  virtual cdm::Size Size() const OVERRIDE { return size_; }
 
-  virtual void set_frame_buffer(cdm::Buffer* frame_buffer) OVERRIDE {
+  virtual void SetFrameBuffer(cdm::Buffer* frame_buffer) OVERRIDE {
     frame_buffer_ = static_cast<PpbBuffer*>(frame_buffer);
   }
-  virtual cdm::Buffer* frame_buffer() OVERRIDE { return frame_buffer_; }
+  virtual cdm::Buffer* FrameBuffer() OVERRIDE { return frame_buffer_; }
 
-  virtual void set_plane_offset(cdm::VideoFrame::VideoPlane plane,
-                                int32_t offset) OVERRIDE {
+  virtual void SetPlaneOffset(cdm::VideoFrame::VideoPlane plane,
+                              int32_t offset) OVERRIDE {
     PP_DCHECK(0 <= plane && plane < kMaxPlanes);
     PP_DCHECK(offset >= 0);
     plane_offsets_[plane] = offset;
   }
-  virtual int32_t plane_offset(VideoPlane plane) OVERRIDE {
+  virtual int32_t PlaneOffset(VideoPlane plane) OVERRIDE {
     PP_DCHECK(0 <= plane && plane < kMaxPlanes);
     return plane_offsets_[plane];
   }
 
-  virtual void set_stride(VideoPlane plane, int32_t stride) OVERRIDE {
+  virtual void SetStride(VideoPlane plane, int32_t stride) OVERRIDE {
     PP_DCHECK(0 <= plane && plane < kMaxPlanes);
     strides_[plane] = stride;
   }
-  virtual int32_t stride(VideoPlane plane) OVERRIDE {
+  virtual int32_t Stride(VideoPlane plane) OVERRIDE {
     PP_DCHECK(0 <= plane && plane < kMaxPlanes);
     return strides_[plane];
   }
 
-  virtual void set_timestamp(int64_t timestamp) OVERRIDE {
+  virtual void SetTimestamp(int64_t timestamp) OVERRIDE {
     timestamp_ = timestamp;
   }
-  virtual int64_t timestamp() const OVERRIDE { return timestamp_; }
+  virtual int64_t Timestamp() const OVERRIDE { return timestamp_; }
 
  private:
   // The video buffer format.
@@ -493,10 +446,10 @@ class AudioFramesImpl : public cdm::AudioFrames {
   }
 
   // AudioFrames implementation.
-  virtual void set_buffer(cdm::Buffer* buffer) OVERRIDE {
+  virtual void SetFrameBuffer(cdm::Buffer* buffer) OVERRIDE {
     buffer_ = static_cast<PpbBuffer*>(buffer);
   }
-  virtual cdm::Buffer* buffer() OVERRIDE {
+  virtual cdm::Buffer* FrameBuffer() OVERRIDE {
     return buffer_;
   }
 
@@ -510,7 +463,7 @@ class AudioFramesImpl : public cdm::AudioFrames {
 // Content Decryption Module (CDM).
 class CdmWrapper : public pp::Instance,
                    public pp::ContentDecryptor_Private,
-                   public cdm::CdmHost {
+                   public cdm::Host {
  public:
   CdmWrapper(PP_Instance instance, pp::Module* module);
   virtual ~CdmWrapper();
@@ -548,13 +501,20 @@ class CdmWrapper : public pp::Instance,
       pp::Buffer_Dev encrypted_buffer,
       const PP_EncryptedBlockInfo& encrypted_block_info) OVERRIDE;
 
-  // CdmHost implementation.
-  virtual void SetTimer(int64_t delay_ms) OVERRIDE;
+  // cdm::Host implementation.
+  virtual void SetTimer(int64_t delay_ms, void* context) OVERRIDE;
   virtual double GetCurrentWallTimeInSeconds() OVERRIDE;
+  virtual void SendKeyMessage(
+      const char* session_id, int32_t session_id_length,
+      const char* message, int32_t message_length,
+      const char* default_url, int32_t default_url_length) OVERRIDE;
+  virtual void SendKeyError(const char* session_id,
+                            int32_t session_id_length,
+                            cdm::MediaKeyError error_code,
+                            uint32_t system_code) OVERRIDE;
 
  private:
   typedef linked_ptr<DecryptedBlockImpl> LinkedDecryptedBlock;
-  typedef linked_ptr<KeyMessageImpl> LinkedKeyMessage;
   typedef linked_ptr<VideoFrameImpl> LinkedVideoFrame;
   typedef linked_ptr<AudioFramesImpl> LinkedAudioFrames;
 
@@ -562,8 +522,14 @@ class CdmWrapper : public pp::Instance,
   // <code>callback_factory_</code> to ensure that calls into
   // <code>PPP_ContentDecryptor_Private</code> are asynchronous.
   void KeyAdded(int32_t result, const std::string& session_id);
-  void KeyMessage(int32_t result, const LinkedKeyMessage& message);
-  void KeyError(int32_t result, const std::string& session_id);
+  void KeyMessage(int32_t result,
+                  const std::string& session_id,
+                  const std::string& message,
+                  const std::string& default_url);
+  void KeyError(int32_t result,
+                const std::string& session_id,
+                cdm::MediaKeyError error_code,
+                uint32_t system_code);
   void DeliverBlock(int32_t result,
                     const cdm::Status& status,
                     const LinkedDecryptedBlock& decrypted_block,
@@ -588,10 +554,10 @@ class CdmWrapper : public pp::Instance,
                       const PP_DecryptTrackingInfo& tracking_info);
 
   // Helper function to fire KeyError event on the main thread.
-  void FireKeyError(const std::string& session_id);
+  void SendUnknownKeyError(const std::string& session_id);
 
   // Helper for SetTimer().
-  void TimerExpired(int32_t result);
+  void TimerExpired(int32_t result, void* context);
 
   bool IsValidVideoFrame(const LinkedVideoFrame& video_frame);
 
@@ -619,39 +585,27 @@ CdmWrapper::~CdmWrapper() {
 void CdmWrapper::GenerateKeyRequest(const std::string& key_system,
                                     const std::string& type,
                                     pp::VarArrayBuffer init_data) {
-  PP_DCHECK(!key_system.empty());
+  PP_DCHECK(key_system_.empty() || key_system_ == key_system);
 
   if (!cdm_) {
     cdm_ = CreateCdmInstance(key_system.data(), key_system.size(),
                              &allocator_, this);
     PP_DCHECK(cdm_);
     if (!cdm_) {
-      FireKeyError("");
+      SendUnknownKeyError("");
       return;
     }
   }
 
-  LinkedKeyMessage key_request(new KeyMessageImpl());
   cdm::Status status = cdm_->GenerateKeyRequest(
       type.data(), type.size(),
       static_cast<const uint8_t*>(init_data.Map()),
-      init_data.ByteLength(),
-      key_request.get());
+      init_data.ByteLength());
   PP_DCHECK(status == cdm::kSuccess || status == cdm::kSessionError);
-  if (status != cdm::kSuccess) {
-    FireKeyError("");
+  if (status != cdm::kSuccess)
     return;
-  }
 
-  // TODO(xhwang): Remove unnecessary CallOnMain calls here and below once we
-  // only support out-of-process.
-  // If running out-of-process, PPB calls will always behave asynchronously
-  // since IPC is involved. In that case, if we are already on main thread,
-  // we don't need to use CallOnMain to help us call PPB call on main thread,
-  // or to help call PPB asynchronously.
   key_system_ = key_system;
-  CallOnMain(callback_factory_.NewCallback(&CdmWrapper::KeyMessage,
-                                           key_request));
 }
 
 void CdmWrapper::AddKey(const std::string& session_id,
@@ -659,7 +613,7 @@ void CdmWrapper::AddKey(const std::string& session_id,
                         pp::VarArrayBuffer init_data) {
   PP_DCHECK(cdm_);  // GenerateKeyRequest() should have succeeded.
   if (!cdm_) {
-    FireKeyError(session_id);
+    SendUnknownKeyError(session_id);
     return;
   }
 
@@ -669,7 +623,7 @@ void CdmWrapper::AddKey(const std::string& session_id,
   int init_data_size = init_data.ByteLength();
 
   if (!key_ptr || key_size <= 0 || !init_data_ptr || init_data_size <= 0) {
-    FireKeyError(session_id);
+    SendUnknownKeyError(session_id);
     return;
   }
 
@@ -678,7 +632,7 @@ void CdmWrapper::AddKey(const std::string& session_id,
                                     init_data_ptr, init_data_size);
   PP_DCHECK(status == cdm::kSuccess || status == cdm::kSessionError);
   if (status != cdm::kSuccess) {
-    FireKeyError(session_id);
+    SendUnknownKeyError(session_id);
     return;
   }
 
@@ -688,7 +642,7 @@ void CdmWrapper::AddKey(const std::string& session_id,
 void CdmWrapper::CancelKeyRequest(const std::string& session_id) {
   PP_DCHECK(cdm_);  // GenerateKeyRequest() should have succeeded.
   if (!cdm_) {
-    FireKeyError(session_id);
+    SendUnknownKeyError(session_id);
     return;
   }
 
@@ -696,7 +650,7 @@ void CdmWrapper::CancelKeyRequest(const std::string& session_id) {
                                               session_id.size());
   PP_DCHECK(status == cdm::kSuccess || status == cdm::kSessionError);
   if (status != cdm::kSuccess)
-    FireKeyError(session_id);
+    SendUnknownKeyError(session_id);
 }
 
 // Note: In the following decryption/decoding related functions, errors are NOT
@@ -719,6 +673,9 @@ void CdmWrapper::Decrypt(pp::Buffer_Dev encrypted_buffer,
     ConfigureInputBuffer(encrypted_buffer, encrypted_block_info, &subsamples,
                          &input_buffer);
     status = cdm_->Decrypt(input_buffer, decrypted_block.get());
+    PP_DCHECK(status != cdm::kSuccess ||
+              (decrypted_block->DecryptedBuffer() &&
+               decrypted_block->DecryptedBuffer()->Size()));
   }
 
   CallOnMain(callback_factory_.NewCallback(
@@ -863,33 +820,50 @@ void CdmWrapper::DecryptAndDecode(
   }
 }
 
-void CdmWrapper::FireKeyError(const std::string& session_id) {
-  CallOnMain(callback_factory_.NewCallback(&CdmWrapper::KeyError, session_id));
+void CdmWrapper::SendUnknownKeyError(const std::string& session_id) {
+  CallOnMain(callback_factory_.NewCallback(
+      &CdmWrapper::KeyError, session_id, cdm::kUnknownError, 0));
 }
 
-void CdmWrapper::SetTimer(int64_t delay_ms) {
+void CdmWrapper::SetTimer(int64_t delay_ms, void* context) {
   // NOTE: doesn't really need to run on the main thread; could just as well run
   // on a helper thread if |cdm_| were thread-friendly and care was taken.  We
   // only use CallOnMainThread() here to get delayed-execution behavior.
   pp::Module::Get()->core()->CallOnMainThread(
       delay_ms,
-      callback_factory_.NewCallback(&CdmWrapper::TimerExpired),
+      callback_factory_.NewCallback(&CdmWrapper::TimerExpired, context),
       PP_OK);
 }
 
-void CdmWrapper::TimerExpired(int32_t result) {
+void CdmWrapper::TimerExpired(int32_t result, void* context) {
   PP_DCHECK(result == PP_OK);
-  bool populated;
-  LinkedKeyMessage key_message(new KeyMessageImpl());
-  cdm_->TimerExpired(key_message.get(), &populated);
-  if (!populated)
-    return;
-  CallOnMain(callback_factory_.NewCallback(&CdmWrapper::KeyMessage,
-                                           key_message));
+  cdm_->TimerExpired(context);
 }
 
 double CdmWrapper::GetCurrentWallTimeInSeconds() {
   return pp::Module::Get()->core()->GetTime();
+}
+
+void CdmWrapper::SendKeyMessage(
+    const char* session_id, int32_t session_id_length,
+    const char* message, int32_t message_length,
+    const char* default_url, int32_t default_url_length) {
+  CallOnMain(callback_factory_.NewCallback(
+      &CdmWrapper::KeyMessage,
+      std::string(session_id, session_id_length),
+      std::string(message, message_length),
+      std::string(default_url, default_url_length)));
+}
+
+void CdmWrapper::SendKeyError(const char* session_id,
+                              int32_t session_id_length,
+                              cdm::MediaKeyError error_code,
+                              uint32_t system_code) {
+  CallOnMain(callback_factory_.NewCallback(
+      &CdmWrapper::KeyError,
+      std::string(session_id, session_id_length),
+      error_code,
+      system_code));
 }
 
 void CdmWrapper::KeyAdded(int32_t result, const std::string& session_id) {
@@ -898,44 +872,32 @@ void CdmWrapper::KeyAdded(int32_t result, const std::string& session_id) {
 }
 
 void CdmWrapper::KeyMessage(int32_t result,
-                            const LinkedKeyMessage& key_message) {
+                            const std::string& session_id,
+                            const std::string& message,
+                            const std::string& default_url) {
   PP_DCHECK(result == PP_OK);
 
   pp::Buffer_Dev message_buffer;
 
-  if (key_message->message()) {
-    // pp::ContentDecryptor_Private::KeyMessage() does not pass the buffer ID
-    // and real data size to the renderer side right now. Make a new
-    // pp::Buffer_Dev with the correct size to work around this.
-    PpbBuffer* ppb_buffer = static_cast<PpbBuffer*>(key_message->message());
-    PP_DCHECK(ppb_buffer->data());
-    PP_DCHECK(ppb_buffer->size());
-    message_buffer = pp::Buffer_Dev(this, ppb_buffer->size());
-    PP_DCHECK(message_buffer.size() ==
-              static_cast<uint32_t>(ppb_buffer->size()));
-    memcpy(message_buffer.data(), ppb_buffer->data(), ppb_buffer->size());
-
-    // Since we pass the new pp::Buffer_Dev to the renderer, the old one can
-    // be released now.
-    PP_DCHECK(ppb_buffer->buffer_id());
-    allocator_.Release(ppb_buffer->buffer_id());
+  if (!message.empty()) {
+    message_buffer = pp::Buffer_Dev(this, message.size());
+    PP_DCHECK(message_buffer.size() == message.size());
+    memcpy(message_buffer.data(), message.data(), message.size());
   }
 
   pp::ContentDecryptor_Private::KeyMessage(
-      key_system_,
-      key_message->session_id_string(),
-      message_buffer,
-      key_message->default_url_string());
+      key_system_, session_id, message_buffer, default_url);
 }
 
 // TODO(xhwang): Support MediaKeyError (see spec: http://goo.gl/rbdnR) in CDM
 // interface and in this function.
-void CdmWrapper::KeyError(int32_t result, const std::string& session_id) {
+void CdmWrapper::KeyError(int32_t result,
+                          const std::string& session_id,
+                          cdm::MediaKeyError error_code,
+                          uint32_t system_code) {
   PP_DCHECK(result == PP_OK);
-  pp::ContentDecryptor_Private::KeyError(key_system_,
-                                         session_id,
-                                         kUnknownError,
-                                         0);
+  pp::ContentDecryptor_Private::KeyError(
+      key_system_, session_id, error_code, system_code);
 }
 
 void CdmWrapper::DeliverBlock(int32_t result,
@@ -945,7 +907,7 @@ void CdmWrapper::DeliverBlock(int32_t result,
   PP_DCHECK(result == PP_OK);
   PP_DecryptedBlockInfo decrypted_block_info;
   decrypted_block_info.tracking_info = tracking_info;
-  decrypted_block_info.tracking_info.timestamp = decrypted_block->timestamp();
+  decrypted_block_info.tracking_info.timestamp = decrypted_block->Timestamp();
   decrypted_block_info.tracking_info.buffer_id = 0;
   decrypted_block_info.data_size = 0;
   decrypted_block_info.result = CdmStatusToPpDecryptResult(status);
@@ -953,16 +915,16 @@ void CdmWrapper::DeliverBlock(int32_t result,
   pp::Buffer_Dev buffer;
 
   if (decrypted_block_info.result == PP_DECRYPTRESULT_SUCCESS) {
-    PP_DCHECK(decrypted_block.get() && decrypted_block->buffer());
-    if (!decrypted_block.get() || !decrypted_block->buffer()) {
+    PP_DCHECK(decrypted_block.get() && decrypted_block->DecryptedBuffer());
+    if (!decrypted_block.get() || !decrypted_block->DecryptedBuffer()) {
       PP_NOTREACHED();
       decrypted_block_info.result = PP_DECRYPTRESULT_DECRYPT_ERROR;
     } else {
       PpbBuffer* ppb_buffer =
-          static_cast<PpbBuffer*>(decrypted_block->buffer());
+          static_cast<PpbBuffer*>(decrypted_block->DecryptedBuffer());
       buffer = ppb_buffer->buffer_dev();
       decrypted_block_info.tracking_info.buffer_id = ppb_buffer->buffer_id();
-      decrypted_block_info.data_size = ppb_buffer->size();
+      decrypted_block_info.data_size = ppb_buffer->Size();
     }
   }
 
@@ -1011,28 +973,28 @@ void CdmWrapper::DeliverFrame(
       decrypted_frame_info.result = PP_DECRYPTRESULT_DECODE_ERROR;
     } else {
       PpbBuffer* ppb_buffer =
-          static_cast<PpbBuffer*>(video_frame->frame_buffer());
+          static_cast<PpbBuffer*>(video_frame->FrameBuffer());
 
       buffer = ppb_buffer->buffer_dev();
 
-      decrypted_frame_info.tracking_info.timestamp = video_frame->timestamp();
+      decrypted_frame_info.tracking_info.timestamp = video_frame->Timestamp();
       decrypted_frame_info.tracking_info.buffer_id = ppb_buffer->buffer_id();
       decrypted_frame_info.format =
-          CdmVideoFormatToPpDecryptedFrameFormat(video_frame->format());
-      decrypted_frame_info.width = video_frame->size().width;
-      decrypted_frame_info.height = video_frame->size().height;
+          CdmVideoFormatToPpDecryptedFrameFormat(video_frame->Format());
+      decrypted_frame_info.width = video_frame->Size().width;
+      decrypted_frame_info.height = video_frame->Size().height;
       decrypted_frame_info.plane_offsets[PP_DECRYPTEDFRAMEPLANES_Y] =
-          video_frame->plane_offset(cdm::VideoFrame::kYPlane);
+          video_frame->PlaneOffset(cdm::VideoFrame::kYPlane);
       decrypted_frame_info.plane_offsets[PP_DECRYPTEDFRAMEPLANES_U] =
-          video_frame->plane_offset(cdm::VideoFrame::kUPlane);
+          video_frame->PlaneOffset(cdm::VideoFrame::kUPlane);
       decrypted_frame_info.plane_offsets[PP_DECRYPTEDFRAMEPLANES_V] =
-          video_frame->plane_offset(cdm::VideoFrame::kVPlane);
+          video_frame->PlaneOffset(cdm::VideoFrame::kVPlane);
       decrypted_frame_info.strides[PP_DECRYPTEDFRAMEPLANES_Y] =
-          video_frame->stride(cdm::VideoFrame::kYPlane);
+          video_frame->Stride(cdm::VideoFrame::kYPlane);
       decrypted_frame_info.strides[PP_DECRYPTEDFRAMEPLANES_U] =
-          video_frame->stride(cdm::VideoFrame::kUPlane);
+          video_frame->Stride(cdm::VideoFrame::kUPlane);
       decrypted_frame_info.strides[PP_DECRYPTEDFRAMEPLANES_V] =
-          video_frame->stride(cdm::VideoFrame::kVPlane);
+          video_frame->Stride(cdm::VideoFrame::kVPlane);
     }
   }
   pp::ContentDecryptor_Private::DeliverFrame(buffer, decrypted_frame_info);
@@ -1054,15 +1016,16 @@ void CdmWrapper::DeliverSamples(int32_t result,
   pp::Buffer_Dev buffer;
 
   if (decrypted_block_info.result == PP_DECRYPTRESULT_SUCCESS) {
-    PP_DCHECK(audio_frames.get() && audio_frames->buffer());
-    if (!audio_frames.get() || !audio_frames->buffer()) {
+    PP_DCHECK(audio_frames.get() && audio_frames->FrameBuffer());
+    if (!audio_frames.get() || !audio_frames->FrameBuffer()) {
       PP_NOTREACHED();
       decrypted_block_info.result = PP_DECRYPTRESULT_DECRYPT_ERROR;
     } else {
-      PpbBuffer* ppb_buffer = static_cast<PpbBuffer*>(audio_frames->buffer());
+      PpbBuffer* ppb_buffer =
+          static_cast<PpbBuffer*>(audio_frames->FrameBuffer());
       buffer = ppb_buffer->buffer_dev();
       decrypted_block_info.tracking_info.buffer_id = ppb_buffer->buffer_id();
-      decrypted_block_info.data_size = ppb_buffer->size();
+      decrypted_block_info.data_size = ppb_buffer->Size();
     }
   }
 
@@ -1071,21 +1034,21 @@ void CdmWrapper::DeliverSamples(int32_t result,
 
 bool CdmWrapper::IsValidVideoFrame(const LinkedVideoFrame& video_frame) {
   if (!video_frame.get() ||
-      !video_frame->frame_buffer() ||
-      (video_frame->format() != cdm::kI420 &&
-       video_frame->format() != cdm::kYv12)) {
+      !video_frame->FrameBuffer() ||
+      (video_frame->Format() != cdm::kI420 &&
+       video_frame->Format() != cdm::kYv12)) {
     return false;
   }
 
-  PpbBuffer* ppb_buffer = static_cast<PpbBuffer*>(video_frame->frame_buffer());
+  PpbBuffer* ppb_buffer = static_cast<PpbBuffer*>(video_frame->FrameBuffer());
 
   for (int i = 0; i < cdm::VideoFrame::kMaxPlanes; ++i) {
     int plane_height = (i == cdm::VideoFrame::kYPlane) ?
-        video_frame->size().height : (video_frame->size().height + 1) / 2;
+        video_frame->Size().height : (video_frame->Size().height + 1) / 2;
     cdm::VideoFrame::VideoPlane plane =
         static_cast<cdm::VideoFrame::VideoPlane>(i);
-    if (ppb_buffer->size() < video_frame->plane_offset(plane) +
-                             plane_height * video_frame->stride(plane)) {
+    if (ppb_buffer->Size() < video_frame->PlaneOffset(plane) +
+                             plane_height * video_frame->Stride(plane)) {
       return false;
     }
   }
@@ -1103,7 +1066,7 @@ class CdmWrapperModule : public pp::Module {
     INITIALIZE_CDM_MODULE();
   }
   virtual ~CdmWrapperModule() {
-    DeInitializeCdmModule();
+    DeinitializeCdmModule();
   }
 
   virtual pp::Instance* CreateInstance(PP_Instance instance) {

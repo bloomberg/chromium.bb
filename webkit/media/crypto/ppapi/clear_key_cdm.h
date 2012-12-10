@@ -34,20 +34,19 @@ class FFmpegCdmAudioDecoder;
 // Clear key implementation of the cdm::ContentDecryptionModule interface.
 class ClearKeyCdm : public cdm::ContentDecryptionModule {
  public:
-  ClearKeyCdm(cdm::Allocator* allocator, cdm::CdmHost* cdm_host);
+  ClearKeyCdm(cdm::Allocator* allocator, cdm::Host* host);
   virtual ~ClearKeyCdm();
 
   // ContentDecryptionModule implementation.
   virtual cdm::Status GenerateKeyRequest(
       const char* type, int type_size,
-      const uint8_t* init_data, int init_data_size,
-      cdm::KeyMessage* key_request) OVERRIDE;
+      const uint8_t* init_data, int init_data_size) OVERRIDE;
   virtual cdm::Status AddKey(const char* session_id, int session_id_size,
                              const uint8_t* key, int key_size,
                              const uint8_t* key_id, int key_id_size) OVERRIDE;
   virtual cdm::Status CancelKeyRequest(const char* session_id,
                                        int session_id_size) OVERRIDE;
-  virtual void TimerExpired(cdm::KeyMessage* msg, bool* populated) OVERRIDE;
+  virtual void TimerExpired(void* context) OVERRIDE;
   virtual cdm::Status Decrypt(const cdm::InputBuffer& encrypted_buffer,
                               cdm::DecryptedBlock* decrypted_block) OVERRIDE;
   virtual cdm::Status InitializeAudioDecoder(
@@ -108,6 +107,9 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule {
     std::string default_url_;
   };
 
+  // Prepares next heartbeat message and sets a timer for it.
+  void ScheduleNextHeartBeat();
+
   // Decrypts the |encrypted_buffer| and puts the result in |decrypted_buffer|.
   // Returns cdm::kSuccess if decryption succeeded. The decrypted result is
   // put in |decrypted_buffer|. If |encrypted_buffer| is empty, the
@@ -142,11 +144,12 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule {
   base::Lock client_lock_;
 
   cdm::Allocator* const allocator_;
-  cdm::CdmHost* cdm_host_;
+  cdm::Host* host_;
 
-  std::string latest_session_id_;
+  std::string heartbeat_session_id_;
+  std::string next_heartbeat_message_;
 
-  // Timer delay in milliseconds for the next cdm_host_->SetTimer() call.
+  // Timer delay in milliseconds for the next host_->SetTimer() call.
   int64 timer_delay_ms_;
 
   // Indicates whether a timer has been set to prevent multiple timers from

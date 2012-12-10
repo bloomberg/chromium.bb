@@ -54,7 +54,7 @@ static bool InitializeFFmpegLibraries() {
   return true;
 }
 
-static bool g_cdm_module_initialized = InitializeFFmpegLibraries();
+static bool g_ffmpeg_lib_initialized = InitializeFFmpegLibraries();
 #endif  // CLEAR_KEY_CDM_USE_FFMPEG_DECODER
 
 static const char kClearKeyCdmVersion[] = "0.1.0.1";
@@ -113,27 +113,20 @@ class ScopedResetter {
   Type* const object_;
 };
 
-template<typename Type>
-static Type* AllocateAndCopy(const Type* data, int size) {
-  COMPILE_ASSERT(sizeof(Type) == 1, type_size_is_not_one);
-  Type* copy = new Type[size];
-  memcpy(copy, data, size);
-  return copy;
-}
-
 void INITIALIZE_CDM_MODULE() {
 #if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
+  DVLOG(2) << "FFmpeg libraries initialized: " << g_ffmpeg_lib_initialized;
   av_register_all();
 #endif  // CLEAR_KEY_CDM_USE_FFMPEG_DECODER
 }
 
-void DeInitializeCdmModule() {
+void DeinitializeCdmModule() {
 }
 
 cdm::ContentDecryptionModule* CreateCdmInstance(const char* key_system_arg,
                                                 int key_system_size,
                                                 cdm::Allocator* allocator,
-                                                cdm::CdmHost* host) {
+                                                cdm::Host* host) {
   DVLOG(1) << "CreateCdmInstance()";
   DCHECK_EQ(std::string(key_system_arg, key_system_size), kExternalClearKey);
   return new webkit_media::ClearKeyCdm(allocator, host);
@@ -195,10 +188,10 @@ void ClearKeyCdm::Client::NeedKey(const std::string& key_system,
   NOTREACHED();
 }
 
-ClearKeyCdm::ClearKeyCdm(cdm::Allocator* allocator, cdm::CdmHost* cdm_host)
+ClearKeyCdm::ClearKeyCdm(cdm::Allocator* allocator, cdm::Host* host)
     : decryptor_(&client_),
       allocator_(allocator),
-      cdm_host_(cdm_host),
+      host_(host),
       timer_delay_ms_(kInitialTimerDelayMs),
       timer_set_(false) {
   DCHECK(allocator_);
@@ -215,8 +208,7 @@ ClearKeyCdm::~ClearKeyCdm() {}
 
 cdm::Status ClearKeyCdm::GenerateKeyRequest(const char* type, int type_size,
                                             const uint8_t* init_data,
-                                            int init_data_size,
-                                            cdm::KeyMessage* key_request) {
+                                            int init_data_size) {
   DVLOG(1) << "GenerateKeyRequest()";
   base::AutoLock auto_lock(client_lock_);
   ScopedResetter<Client> auto_resetter(&client_);
@@ -224,28 +216,18 @@ cdm::Status ClearKeyCdm::GenerateKeyRequest(const char* type, int type_size,
                                 std::string(type, type_size),
                                 init_data, init_data_size);
 
-  if (client_.status() != Client::kKeyMessage)
+  if (client_.status() != Client::kKeyMessage) {
+    host_->SendKeyError(NULL, 0, cdm::kUnknownError, 0);
     return cdm::kSessionError;
-
-  DCHECK(key_request);
-  key_request->set_session_id(client_.session_id().data(),
-                              client_.session_id().size());
-  latest_session_id_ = client_.session_id();
-
-  DCHECK(!key_request->message());
-  if (!client_.key_message().empty()) {
-    // TODO(tomfinegan): Get rid of this copy.
-    key_request->set_message(
-        allocator_->Allocate(client_.key_message().size()));
-    DCHECK(key_request->message());
-    DCHECK_EQ(static_cast<size_t>(key_request->message()->size()),
-              client_.key_message().size());
-    memcpy(key_request->message()->data(),
-           client_.key_message().data(), client_.key_message().size());
   }
 
-  key_request->set_default_url(client_.default_url().data(),
-                               client_.default_url().size());
+  host_->SendKeyMessage(
+      client_.session_id().data(), client_.session_id().size(),
+      client_.key_message().data(), client_.key_message().size(),
+      client_.default_url().data(), client_.default_url().size());
+
+  // Only save the latest session ID for heartbeat messages.
+  heartbeat_session_id_ = client_.session_id();
 
   return cdm::kSuccess;
 }
@@ -266,7 +248,7 @@ cdm::Status ClearKeyCdm::AddKey(const char* session_id,
     return cdm::kSessionError;
 
   if (!timer_set_) {
-    cdm_host_->SetTimer(timer_delay_ms_);
+    ScheduleNextHeartBeat();
     timer_set_ = true;
   }
 
@@ -282,25 +264,19 @@ cdm::Status ClearKeyCdm::CancelKeyRequest(const char* session_id,
   return cdm::kSuccess;
 }
 
-void ClearKeyCdm::TimerExpired(cdm::KeyMessage* msg, bool* populated) {
-  std::ostringstream msg_stream;
-  msg_stream << kHeartBeatHeader << " from ClearKey CDM at time "
-             << cdm_host_->GetCurrentWallTimeInSeconds() << ".";
-  std::string msg_string = msg_stream.str();
+void ClearKeyCdm::TimerExpired(void* context) {
+  std::string heartbeat_message =
+      (!next_heartbeat_message_.empty() &&
+       context == &next_heartbeat_message_[0]) ?
+          next_heartbeat_message_ :
+          "ERROR: Invalid timer context found!";
 
-  msg->set_message(allocator_->Allocate(msg_string.length()));
-  memcpy(msg->message()->data(), msg_string.data(), msg_string.length());
-  msg->set_session_id(latest_session_id_.data(), latest_session_id_.length());
-  msg->set_default_url(NULL, 0);
+  host_->SendKeyMessage(
+      heartbeat_session_id_.data(), heartbeat_session_id_.size(),
+      heartbeat_message.data(), heartbeat_message.size(),
+      NULL, 0);
 
-  *populated = true;
-
-  cdm_host_->SetTimer(timer_delay_ms_);
-
-  // Use a smaller timer delay at start-up to facilitate testing. Increase the
-  // timer delay up to a limit to avoid message spam.
-  if (timer_delay_ms_ < kMaxTimerDelayMs)
-    timer_delay_ms_ = std::min(2 * timer_delay_ms_, kMaxTimerDelayMs);
+  ScheduleNextHeartBeat();
 }
 
 static void CopyDecryptResults(
@@ -325,11 +301,13 @@ cdm::Status ClearKeyCdm::Decrypt(
     return status;
 
   DCHECK(buffer->GetData());
-  decrypted_block->set_buffer(allocator_->Allocate(buffer->GetDataSize()));
-  memcpy(reinterpret_cast<void*>(decrypted_block->buffer()->data()),
+  decrypted_block->SetDecryptedBuffer(
+      allocator_->Allocate(buffer->GetDataSize()));
+  memcpy(reinterpret_cast<void*>(decrypted_block->DecryptedBuffer()->Data()),
          buffer->GetData(),
          buffer->GetDataSize());
-  decrypted_block->set_timestamp(buffer->GetTimestamp().InMicroseconds());
+  decrypted_block->DecryptedBuffer()->SetSize(buffer->GetDataSize());
+  decrypted_block->SetTimestamp(buffer->GetTimestamp().InMicroseconds());
 
   return cdm::kSuccess;
 }
@@ -458,6 +436,21 @@ cdm::Status ClearKeyCdm::DecryptAndDecodeSamples(
 #endif  // CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER
 }
 
+void ClearKeyCdm::ScheduleNextHeartBeat() {
+  // Prepare the next heartbeat message and set timer.
+  std::ostringstream msg_stream;
+  msg_stream << kHeartBeatHeader << " from ClearKey CDM set at time "
+             << host_->GetCurrentWallTimeInSeconds() << ".";
+  next_heartbeat_message_ = msg_stream.str();
+
+  host_->SetTimer(timer_delay_ms_, &next_heartbeat_message_[0]);
+
+  // Use a smaller timer delay at start-up to facilitate testing. Increase the
+  // timer delay up to a limit to avoid message spam.
+  if (timer_delay_ms_ < kMaxTimerDelayMs)
+    timer_delay_ms_ = std::min(2 * timer_delay_ms_, kMaxTimerDelayMs);
+}
+
 cdm::Status ClearKeyCdm::DecryptToMediaDecoderBuffer(
     const cdm::InputBuffer& encrypted_buffer,
     scoped_refptr<media::DecoderBuffer>* decrypted_buffer) {
@@ -511,8 +504,8 @@ int ClearKeyCdm::GenerateFakeAudioFramesFromDuration(
   int64 timestamp = CurrentTimeStampInMicroseconds();
 
   const int kHeaderSize = sizeof(timestamp) + sizeof(frame_size);
-  audio_frames->set_buffer(allocator_->Allocate(kHeaderSize + frame_size));
-  uint8_t* data = audio_frames->buffer()->data();
+  audio_frames->SetFrameBuffer(allocator_->Allocate(kHeaderSize + frame_size));
+  uint8_t* data = audio_frames->FrameBuffer()->Data();
 
   memcpy(data, &timestamp, sizeof(timestamp));
   data += sizeof(timestamp);
@@ -521,6 +514,8 @@ int ClearKeyCdm::GenerateFakeAudioFramesFromDuration(
   // You won't hear anything because we have all zeros here. But the video
   // should play just fine!
   memset(data, 0, frame_size);
+
+  audio_frames->FrameBuffer()->SetSize(kHeaderSize + frame_size);
 
   return samples_to_generate;
 }

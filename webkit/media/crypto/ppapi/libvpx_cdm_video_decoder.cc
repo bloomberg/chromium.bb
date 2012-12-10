@@ -149,7 +149,7 @@ cdm::Status LibvpxCdmVideoDecoder::DecodeFrame(
     LOG(ERROR) << "DecodeFrameLibvpx() invalid output timestamp.";
     return cdm::kDecodeError;
   }
-  decoded_frame->set_timestamp(timestamp);
+  decoded_frame->SetTimestamp(timestamp);
 
   if (!CopyVpxImageTo(decoded_frame)) {
     LOG(ERROR) << "DecodeFrameLibvpx() could not copy vpx image to output "
@@ -158,7 +158,6 @@ cdm::Status LibvpxCdmVideoDecoder::DecodeFrame(
   }
 
   return cdm::kSuccess;
-
 }
 
 bool LibvpxCdmVideoDecoder::CopyVpxImageTo(cdm::VideoFrame* cdm_video_frame) {
@@ -172,19 +171,20 @@ bool LibvpxCdmVideoDecoder::CopyVpxImageTo(cdm::VideoFrame* cdm_video_frame) {
   const int uv_size = y_size / 2;
   const int space_required = y_size + (uv_size * 2);
 
-  DCHECK(!cdm_video_frame->frame_buffer());
-  cdm_video_frame->set_frame_buffer(allocator_->Allocate(space_required));
-  if (!cdm_video_frame->frame_buffer()) {
+  DCHECK(!cdm_video_frame->FrameBuffer());
+  cdm_video_frame->SetFrameBuffer(allocator_->Allocate(space_required));
+  if (!cdm_video_frame->FrameBuffer()) {
     LOG(ERROR) << "CopyVpxImageTo() cdm::Allocator::Allocate failed.";
     return false;
   }
+  cdm_video_frame->FrameBuffer()->SetSize(space_required);
 
   CopyPlane(vpx_image_->planes[VPX_PLANE_Y],
             vpx_image_->stride[VPX_PLANE_Y],
             vpx_image_->d_w,
             vpx_image_->d_h,
             vpx_image_->d_w,
-            cdm_video_frame->frame_buffer()->data());
+            cdm_video_frame->FrameBuffer()->Data());
 
   const int uv_stride = vpx_image_->d_w / 2;
   const int uv_rows = vpx_image_->d_h / 2;
@@ -193,30 +193,30 @@ bool LibvpxCdmVideoDecoder::CopyVpxImageTo(cdm::VideoFrame* cdm_video_frame) {
             uv_stride,
             uv_rows,
             uv_stride,
-            cdm_video_frame->frame_buffer()->data() + y_size);
+            cdm_video_frame->FrameBuffer()->Data() + y_size);
 
   CopyPlane(vpx_image_->planes[VPX_PLANE_V],
             vpx_image_->stride[VPX_PLANE_V],
             uv_stride,
             uv_rows,
             uv_stride,
-            cdm_video_frame->frame_buffer()->data() + y_size + uv_size);
+            cdm_video_frame->FrameBuffer()->Data() + y_size + uv_size);
 
-  cdm_video_frame->set_format(cdm::kYv12);
+  cdm_video_frame->SetFormat(cdm::kYv12);
 
   cdm::Size video_frame_size;
   video_frame_size.width = vpx_image_->d_w;
   video_frame_size.height = vpx_image_->d_h;
-  cdm_video_frame->set_size(video_frame_size);
+  cdm_video_frame->SetSize(video_frame_size);
 
-  cdm_video_frame->set_plane_offset(cdm::VideoFrame::kYPlane, 0);
-  cdm_video_frame->set_plane_offset(cdm::VideoFrame::kUPlane, y_size);
-  cdm_video_frame->set_plane_offset(cdm::VideoFrame::kVPlane,
+  cdm_video_frame->SetPlaneOffset(cdm::VideoFrame::kYPlane, 0);
+  cdm_video_frame->SetPlaneOffset(cdm::VideoFrame::kUPlane, y_size);
+  cdm_video_frame->SetPlaneOffset(cdm::VideoFrame::kVPlane,
                                     y_size + uv_size);
 
-  cdm_video_frame->set_stride(cdm::VideoFrame::kYPlane, vpx_image_->d_w);
-  cdm_video_frame->set_stride(cdm::VideoFrame::kUPlane, uv_stride);
-  cdm_video_frame->set_stride(cdm::VideoFrame::kVPlane, uv_stride);
+  cdm_video_frame->SetStride(cdm::VideoFrame::kYPlane, vpx_image_->d_w);
+  cdm_video_frame->SetStride(cdm::VideoFrame::kUPlane, uv_stride);
+  cdm_video_frame->SetStride(cdm::VideoFrame::kVPlane, uv_stride);
 #else
   const int y_size = vpx_image_->stride[VPX_PLANE_Y] * vpx_image_->d_h;
   const int uv_rows = vpx_image_->d_h / 2;
@@ -224,40 +224,41 @@ bool LibvpxCdmVideoDecoder::CopyVpxImageTo(cdm::VideoFrame* cdm_video_frame) {
   const int v_size = vpx_image_->stride[VPX_PLANE_V] * uv_rows;
   const int space_required = y_size + u_size + v_size;
 
-  DCHECK(!cdm_video_frame->frame_buffer());
-  cdm_video_frame->set_frame_buffer(allocator_->Allocate(space_required));
-  if (!cdm_video_frame->frame_buffer()) {
+  DCHECK(!cdm_video_frame->FrameBuffer());
+  cdm_video_frame->SetFrameBuffer(allocator_->Allocate(space_required));
+  if (!cdm_video_frame->FrameBuffer()) {
     LOG(ERROR) << "CopyVpxImageTo() cdm::Allocator::Allocate failed.";
     return false;
   }
+  cdm_video_frame->FrameBuffer()->SetSize(space_required);
 
-  memcpy(cdm_video_frame->frame_buffer()->data(),
+  memcpy(cdm_video_frame->FrameBuffer()->Data(),
          vpx_image_->planes[VPX_PLANE_Y],
          y_size);
-  memcpy(cdm_video_frame->frame_buffer()->data() + y_size,
+  memcpy(cdm_video_frame->FrameBuffer()->Data() + y_size,
          vpx_image_->planes[VPX_PLANE_U],
          u_size);
-  memcpy(cdm_video_frame->frame_buffer()->data() + y_size + u_size,
+  memcpy(cdm_video_frame->FrameBuffer()->Data() + y_size + u_size,
          vpx_image_->planes[VPX_PLANE_V],
          v_size);
 
-  cdm_video_frame->set_format(cdm::kYv12);
+  cdm_video_frame->SetFormat(cdm::kYv12);
 
   cdm::Size video_frame_size;
   video_frame_size.width = vpx_image_->d_w;
   video_frame_size.height = vpx_image_->d_h;
-  cdm_video_frame->set_size(video_frame_size);
+  cdm_video_frame->SetSize(video_frame_size);
 
-  cdm_video_frame->set_plane_offset(cdm::VideoFrame::kYPlane, 0);
-  cdm_video_frame->set_plane_offset(cdm::VideoFrame::kUPlane, y_size);
-  cdm_video_frame->set_plane_offset(cdm::VideoFrame::kVPlane,
+  cdm_video_frame->SetPlaneOffset(cdm::VideoFrame::kYPlane, 0);
+  cdm_video_frame->SetPlaneOffset(cdm::VideoFrame::kUPlane, y_size);
+  cdm_video_frame->SetPlaneOffset(cdm::VideoFrame::kVPlane,
                                     y_size + u_size);
 
-  cdm_video_frame->set_stride(cdm::VideoFrame::kYPlane,
+  cdm_video_frame->SetStride(cdm::VideoFrame::kYPlane,
                               vpx_image_->stride[VPX_PLANE_Y]);
-  cdm_video_frame->set_stride(cdm::VideoFrame::kUPlane,
+  cdm_video_frame->SetStride(cdm::VideoFrame::kUPlane,
                               vpx_image_->stride[VPX_PLANE_U]);
-  cdm_video_frame->set_stride(cdm::VideoFrame::kVPlane,
+  cdm_video_frame->SetStride(cdm::VideoFrame::kVPlane,
                               vpx_image_->stride[VPX_PLANE_V]);
 #endif  // USE_COPYPLANE_WITH_LIBVPX
 

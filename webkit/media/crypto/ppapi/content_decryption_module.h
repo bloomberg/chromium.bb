@@ -19,24 +19,24 @@ typedef __int64 int64_t;
 // The version number must be rolled when this file is updated!
 // If the CDM and the plugin use different versions of this file, the plugin
 // will fail to load or crash!
-#define INITIALIZE_CDM_MODULE InitializeCdmModule_2
+#define INITIALIZE_CDM_MODULE InitializeCdmModule_3
 
 namespace cdm {
 class Allocator;
-class CdmHost;
 class ContentDecryptionModule;
+class Host;
 }
 
 extern "C" {
 CDM_EXPORT void INITIALIZE_CDM_MODULE();
-CDM_EXPORT void DeInitializeCdmModule();
+CDM_EXPORT void DeinitializeCdmModule();
 // Caller retains ownership of arguments, which must outlive the call to
 // DestroyCdmInstance below.
 CDM_EXPORT cdm::ContentDecryptionModule* CreateCdmInstance(
     const char* key_system,
     int key_system_size,
     cdm::Allocator* allocator,
-    cdm::CdmHost* host);
+    cdm::Host* host);
 CDM_EXPORT void DestroyCdmInstance(cdm::ContentDecryptionModule* instance);
 CDM_EXPORT const char* GetCdmVersion();
 }
@@ -46,7 +46,6 @@ namespace cdm {
 class AudioFrames;
 class Buffer;
 class DecryptedBlock;
-class KeyMessage;
 class VideoFrame;
 
 enum Status {
@@ -56,6 +55,17 @@ enum Status {
   kSessionError,  // Session management error.
   kDecryptError,  // Decryption failed.
   kDecodeError  // Error decoding audio or video.
+};
+
+// This must be consistent with MediaKeyError defined in the spec:
+// http://goo.gl/rbdnR
+enum MediaKeyError {
+  kUnknownError = 1,
+  kClientError,
+  kServiceError,
+  kOutputError,
+  kHardwareChangeError,
+  kDomainError
 };
 
 // An input buffer can be split into several continuous subsamples.
@@ -146,8 +156,7 @@ struct AudioDecoderConfig {
   int32_t extra_data_size;
 };
 
-// Surface formats based on FOURCC labels, see:
-// http://www.fourcc.org/yuv.php
+// Surface formats based on FOURCC labels, see: http://www.fourcc.org/yuv.php
 enum VideoFormat {
   kUnknownVideoFormat = 0,  // Unknown format value.  Used for error reporting.
   kYv12,  // 12bpp YVU planar 1x1 Y, 2x2 VU samples.
@@ -216,16 +225,15 @@ class ContentDecryptionModule {
  public:
   // Generates a |key_request| given |type| and |init_data|.
   //
-  // Returns kSuccess if the key request was successfully generated,
-  // in which case the callee should have allocated memory for the output
-  // parameters (e.g |session_id| in |key_request|) and passed the ownership
-  // to the caller.
-  // Returns kSessionError if any error happened, in which case the
-  // |key_request| should not be used by the caller.
+  // Returns kSuccess if the key request was successfully generated, in which
+  // case the CDM must send the key message by calling Host::SendKeyMessage().
+  // Returns kSessionError if any error happened, in which case the CDM must
+  // send a key error by calling Host::SendKeyError().
+  // TODO(xhwang): A CDM may support multiple key systems. Pass in key system
+  // in this and other calls to support that.
   virtual Status GenerateKeyRequest(
       const char* type, int type_size,
-      const uint8_t* init_data, int init_data_size,
-      KeyMessage* key_request) = 0;
+      const uint8_t* init_data, int init_data_size) = 0;
 
   // Adds the |key| to the CDM to be associated with |key_id|.
   //
@@ -243,8 +251,8 @@ class ContentDecryptionModule {
   virtual Status CancelKeyRequest(
       const char* session_id, int session_id_size) = 0;
 
-  // Optionally populates |*msg| and indicates so in |*populated|.
-  virtual void TimerExpired(KeyMessage* msg, bool* populated) = 0;
+  // Performs scheduled operation with |context| when the timer fires.
+  virtual void TimerExpired(void* context) = 0;
 
   // Decrypts the |encrypted_buffer|.
   //
@@ -342,14 +350,10 @@ class Buffer {
   // Destroys the buffer in the same context as it was created.
   virtual void Destroy() = 0;
 
-  virtual uint8_t* data() = 0;
-
-  // TODO(xhwang): It is legitimate for the CDM to request a Buffer with a
-  // capacity larger than the real size it needs. For example, to avoid any
-  // memcpy, the CDM may request a Buffer with a capacity not less than the
-  // maximum possible output size and let the decoder to decode directly into
-  // that Buffer. Add capacity() and set_size() calls to support this.
-  virtual int32_t size() const = 0;
+  virtual int32_t Capacity() const = 0;
+  virtual uint8_t* Data() = 0;
+  virtual void SetSize(int32_t size) = 0;
+  virtual int32_t Size() const = 0;
 
  protected:
   Buffer() {}
@@ -365,58 +369,48 @@ class Allocator {
  public:
   // Returns a Buffer* containing non-zero members upon success, or NULL on
   // failure. The caller owns the Buffer* after this call. The buffer is not
-  // guaranteed to be zero initialized.
-  virtual Buffer* Allocate(int32_t size) = 0;
+  // guaranteed to be zero initialized. The capacity of the allocated Buffer
+  // is guaranteed to be not less than |capacity|.
+  virtual Buffer* Allocate(int32_t capacity) = 0;
 
  protected:
   Allocator() {}
   virtual ~Allocator() {}
 };
 
-class CdmHost {
+class Host {
  public:
-  CdmHost() {}
-  virtual ~CdmHost() {}
+  Host() {}
+  virtual ~Host() {}
 
   // Requests the host to call ContentDecryptionModule::TimerFired() |delay_ms|
-  // from now.
-  virtual void SetTimer(int64_t delay_ms) = 0;
+  // from now with |context|.
+  virtual void SetTimer(int64_t delay_ms, void* context) = 0;
 
   // Returns the current epoch wall time in seconds.
   virtual double GetCurrentWallTimeInSeconds() = 0;
-};
 
-// Represents a key message sent by the CDM.
-class KeyMessage {
- public:
-  virtual void set_session_id(const char* session_id, int32_t length) = 0;
-  virtual const char* session_id() const = 0;
-  virtual int32_t session_id_length() const = 0;
+  virtual void SendKeyMessage(
+      const char* session_id, int32_t session_id_length,
+      const char* message, int32_t message_length,
+      const char* default_url, int32_t default_url_length) = 0;
 
-  virtual void set_message(Buffer* message) = 0;
-  // TODO(xhwang): Key messages are usually small. Treat them the same way as
-  // session ID and default URL.
-  virtual Buffer* message() = 0;
-
-  virtual void set_default_url(const char* default_url, int32_t length) = 0;
-  virtual const char* default_url() const = 0;
-  virtual int32_t default_url_length() const = 0;
-
- protected:
-  KeyMessage() {}
-  virtual ~KeyMessage() {}
+  virtual void SendKeyError(const char* session_id,
+                            int32_t session_id_length,
+                            MediaKeyError error_code,
+                            uint32_t system_code) = 0;
 };
 
 // Represents a decrypted block that has not been decoded.
 class DecryptedBlock {
  public:
-  virtual void set_buffer(Buffer* buffer) = 0;
-  virtual Buffer* buffer() = 0;
+  virtual void SetDecryptedBuffer(Buffer* buffer) = 0;
+  virtual Buffer* DecryptedBuffer() = 0;
 
   // TODO(tomfinegan): Figure out if timestamp is really needed. If it is not,
   // we can just pass Buffer pointers around.
-  virtual void set_timestamp(int64_t timestamp) = 0;
-  virtual int64_t timestamp() const = 0;
+  virtual void SetTimestamp(int64_t timestamp) = 0;
+  virtual int64_t Timestamp() const = 0;
 
  protected:
   DecryptedBlock() {}
@@ -432,23 +426,23 @@ class VideoFrame {
     kMaxPlanes = 3,
   };
 
-  virtual void set_format(VideoFormat format) = 0;
-  virtual VideoFormat format() const = 0;
+  virtual void SetFormat(VideoFormat format) = 0;
+  virtual VideoFormat Format() const = 0;
 
-  virtual void set_size(cdm::Size size) = 0;
-  virtual cdm::Size size() const = 0;
+  virtual void SetSize(cdm::Size size) = 0;
+  virtual cdm::Size Size() const = 0;
 
-  virtual void set_frame_buffer(Buffer* frame_buffer) = 0;
-  virtual Buffer* frame_buffer() = 0;
+  virtual void SetFrameBuffer(Buffer* frame_buffer) = 0;
+  virtual Buffer* FrameBuffer() = 0;
 
-  virtual void set_plane_offset(VideoPlane plane, int32_t offset) = 0;
-  virtual int32_t plane_offset(VideoPlane plane) = 0;
+  virtual void SetPlaneOffset(VideoPlane plane, int32_t offset) = 0;
+  virtual int32_t PlaneOffset(VideoPlane plane) = 0;
 
-  virtual void set_stride(VideoPlane plane, int32_t stride) = 0;
-  virtual int32_t stride(VideoPlane plane) = 0;
+  virtual void SetStride(VideoPlane plane, int32_t stride) = 0;
+  virtual int32_t Stride(VideoPlane plane) = 0;
 
-  virtual void set_timestamp(int64_t timestamp) = 0;
-  virtual int64_t timestamp() const = 0;
+  virtual void SetTimestamp(int64_t timestamp) = 0;
+  virtual int64_t Timestamp() const = 0;
 
  protected:
   VideoFrame() {}
@@ -468,8 +462,8 @@ class VideoFrame {
 // | audio buffer 0 | audio buffer 1 | audio buffer 2 |
 class AudioFrames {
  public:
-  virtual void set_buffer(Buffer* buffer) = 0;
-  virtual Buffer* buffer() = 0;
+  virtual void SetFrameBuffer(Buffer* buffer) = 0;
+  virtual Buffer* FrameBuffer() = 0;
 
  protected:
   AudioFrames() {}

@@ -67,21 +67,23 @@ cdm::Status FakeCdmVideoDecoder::DecodeFrame(const uint8_t* compressed_frame,
   int u_offset = v_offset + uv_stride * uv_rows + kPlanePadding;
   int frame_size = u_offset + uv_stride * uv_rows + kPlanePadding;
 
-  decoded_frame->set_format(cdm::kYv12);
-  decoded_frame->set_size(video_size_);
-  decoded_frame->set_frame_buffer(allocator_->Allocate(frame_size));
-  decoded_frame->set_plane_offset(cdm::VideoFrame::kYPlane, y_offset);
-  decoded_frame->set_plane_offset(cdm::VideoFrame::kVPlane, v_offset);
-  decoded_frame->set_plane_offset(cdm::VideoFrame::kUPlane, u_offset);
-  decoded_frame->set_stride(cdm::VideoFrame::kYPlane, y_stride);
-  decoded_frame->set_stride(cdm::VideoFrame::kVPlane, uv_stride);
-  decoded_frame->set_stride(cdm::VideoFrame::kUPlane, uv_stride);
-  decoded_frame->set_timestamp(timestamp);
+  decoded_frame->SetFrameBuffer(allocator_->Allocate(frame_size));
+  decoded_frame->FrameBuffer()->SetSize(frame_size);
+
+  decoded_frame->SetFormat(cdm::kYv12);
+  decoded_frame->SetSize(video_size_);
+  decoded_frame->SetPlaneOffset(cdm::VideoFrame::kYPlane, y_offset);
+  decoded_frame->SetPlaneOffset(cdm::VideoFrame::kVPlane, v_offset);
+  decoded_frame->SetPlaneOffset(cdm::VideoFrame::kUPlane, u_offset);
+  decoded_frame->SetStride(cdm::VideoFrame::kYPlane, y_stride);
+  decoded_frame->SetStride(cdm::VideoFrame::kVPlane, uv_stride);
+  decoded_frame->SetStride(cdm::VideoFrame::kUPlane, uv_stride);
+  decoded_frame->SetTimestamp(timestamp);
 
   static unsigned char color = 0;
   color += 10;
 
-  memset(reinterpret_cast<void*>(decoded_frame->frame_buffer()->data()),
+  memset(reinterpret_cast<void*>(decoded_frame->FrameBuffer()->Data()),
          color, frame_size);
 
   return cdm::kSuccess;
