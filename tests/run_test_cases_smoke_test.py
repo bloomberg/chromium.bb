@@ -31,10 +31,17 @@ def RunTest(arguments):
   proc = subprocess.Popen(
       cmd,
       stdout=subprocess.PIPE,
-      stderr=subprocess.PIPE,
-      universal_newlines=True)
-    # pylint is confused.
+      stderr=subprocess.PIPE)
+  # pylint is confused.
   out, err = proc.communicate() or ('', '')
+  if sys.platform == 'win32':
+    # Downgrade CRLF to LF.
+    out = out.replace('\r\n', '\n')
+    err = err.replace('\r\n', '\n')
+
+  # Upgrade CR to LF.
+  out = out.replace('\r', '\n')
+  err = err.replace('\r', '\n')
 
   return (out, err, proc.returncode)
 
@@ -94,7 +101,11 @@ class RunTestCases(unittest.TestCase):
       line = lines.pop(0)
       self.assertTrue(
           re.match('^%s$' % expected_out_re[index], line),
-          (index, repr(expected_out_re[index]), repr(line)))
+          '%d\n%r\n%r\n%s' % (
+           index,
+           expected_out_re[index],
+           line,
+           '\n'.join(lines[index:index+5])))
     self.assertEqual([], lines)
     self.assertEqual('', err)
 
@@ -116,11 +127,14 @@ class RunTestCases(unittest.TestCase):
     for (entry_name, entry_count) in test_cases:
       self.assertTrue(entry_name in actual['test_cases'])
       self.assertEqual(
-          entry_count, len(actual['test_cases'][entry_name]), entry_name)
+          entry_count,
+          len(actual['test_cases'][entry_name]),
+          (entry_count, len(actual['test_cases'][entry_name]), entry_name))
 
   def test_simple_pass(self):
     out, err, return_code = RunTest(
         [
+          '--jobs', '3',
           '--result', self.filename,
           os.path.join(ROOT_DIR, 'tests', 'gtest_fake', 'gtest_fake_pass.py'),
         ])
@@ -150,9 +164,60 @@ class RunTestCases(unittest.TestCase):
         success=sorted([u'Foo.Bar1', u'Foo.Bar2', u'Foo.Bar/3']),
         test_cases=test_cases)
 
+  def test_simple_pass_verbose(self):
+    # We take verbosity seriously so test it.
+    out, err, return_code = RunTest(
+        [
+          # Linearize execution.
+          '--jobs', '1',
+          '--verbose',
+          '--result', self.filename,
+          os.path.join(ROOT_DIR, 'tests', 'gtest_fake', 'gtest_fake_pass.py'),
+        ])
+
+    self.assertEqual(0, return_code)
+
+    expected_out_re = []
+    test_cases = (
+      'Foo.Bar2',
+      'Foo.Bar1',
+      'Foo.Bar/3',
+    )
+
+    for index, name in enumerate(test_cases):
+      expected_out_re.append(
+          r'\[%d/\d\]   \d\.\d\ds ' % (index + 1) + re.escape(name) + ' .+')
+      expected_out_re.append(re.escape('Note: Google Test filter = ' + name))
+      expected_out_re.append('')
+      expected_out_re.extend(
+          re.escape(l) for l in
+            gtest_fake_base.get_test_output(name).splitlines())
+      expected_out_re.append('')
+      expected_out_re.extend(
+          re.escape(l) for l in gtest_fake_base.get_footer(1, 1).splitlines())
+      expected_out_re.append('')
+      expected_out_re.append('')
+
+    expected_out_re.extend([
+      re.escape('Summary:'),
+      re.escape('  Success:    3 100.00%') + r' +\d+\.\d\ds',
+      re.escape('    Flaky:    0   0.00%') + r' +\d+\.\d\ds',
+      re.escape('     Fail:    0   0.00%') + r' +\d+\.\d\ds',
+      r'  \d+\.\d\ds Done running 3 tests with 3 executions. \d+\.\d\d test/s',
+    ])
+    self._check_results(expected_out_re, out, '')
+    # Test 'err' manually.
+    self.assertTrue(
+        re.match(
+            r'INFO  run_test_cases\(\d+\)\: Found 3 test cases in \S+ '
+            r'\S+gtest_fake_pass.py',
+            err.strip()),
+        err)
+
   def test_simple_fail(self):
     out, err, return_code = RunTest(
         [
+          '--jobs', '1',
           '--result', self.filename,
           os.path.join(ROOT_DIR, 'tests', 'gtest_fake', 'gtest_fake_fail.py'),
         ])
@@ -160,12 +225,13 @@ class RunTestCases(unittest.TestCase):
     self.assertEqual(1, return_code)
 
     expected_out_re = [
-      r'\[\d/\d\]   \d\.\d\ds .+',
-      r'\[\d/\d\]   \d\.\d\ds .+',
-      r'\[\d/\d\]   \d\.\d\ds .+',
-      r'\[\d/\d\]   \d\.\d\ds .+',
-      r'\[\d/\d\]   \d\.\d\ds .+',
-      r'\[\d/\d\]   \d\.\d\ds .+',
+      r'\[1/\d\]   \d\.\d\ds .+',
+      r'\[2/\d\]   \d\.\d\ds .+',
+      r'\[3/\d\]   \d\.\d\ds .+',
+      r'\[4/\d\]   \d\.\d\ds .+',
+      # Retries
+      r'\[5/\d\]   \d\.\d\ds .+ retry \#1',
+      r'\[6/\d\]   \d\.\d\ds .+ retry \#2',
       re.escape('Note: Google Test filter = Baz.Fail'),
       r'',
     ] + [
@@ -177,6 +243,7 @@ class RunTestCases(unittest.TestCase):
       re.escape(l) for l in gtest_fake_base.get_footer(1, 1).splitlines()
     ] + [
       '',
+      '',
       re.escape('Failed tests:'),
       re.escape('  Baz.Fail'),
       re.escape('Summary:'),
@@ -187,6 +254,73 @@ class RunTestCases(unittest.TestCase):
     ]
     self._check_results(expected_out_re, out, err)
 
+    test_cases = [
+        ('Foo.Bar1', 1),
+        ('Foo.Bar2', 1),
+        ('Foo.Bar3', 1),
+        ('Baz.Fail', 3)
+    ]
+    self._check_results_file(
+        fail=['Baz.Fail'],
+        flaky=[],
+        success=[u'Foo.Bar1', u'Foo.Bar2', u'Foo.Bar3'],
+        test_cases=test_cases)
+
+  def test_simple_fail_verbose(self):
+    # We take verbosity seriously so test it.
+    out, err, return_code = RunTest(
+        [
+          # Linearize execution.
+          '--jobs', '1',
+          '--verbose',
+          '--result', self.filename,
+          os.path.join(ROOT_DIR, 'tests', 'gtest_fake', 'gtest_fake_fail.py'),
+        ])
+
+    self.assertEqual(1, return_code)
+
+    expected_out_re = []
+    test_cases = (
+      'Foo.Bar3',
+      'Foo.Bar1',
+      'Foo.Bar2',
+      'Baz.Fail',
+      'Baz.Fail',
+      'Baz.Fail',
+    )
+
+    for index, name in enumerate(test_cases):
+      expected_out_re.append(
+          r'\[%d/\d\]   \d\.\d\ds ' % (index + 1) + re.escape(name) + ' .+')
+      expected_out_re.append(re.escape('Note: Google Test filter = ' + name))
+      expected_out_re.append('')
+      expected_out_re.extend(
+          re.escape(l) for l in
+            gtest_fake_base.get_test_output(name).splitlines())
+      expected_out_re.append('')
+      expected_out_re.extend(
+          re.escape(l) for l in gtest_fake_base.get_footer(1, 1).splitlines())
+      expected_out_re.append('')
+      expected_out_re.append('')
+
+    expected_out_re.extend([
+      re.escape('Failed tests:'),
+      re.escape('  Baz.Fail'),
+      re.escape('Summary:'),
+      re.escape('  Success:    3  75.00%') + r' +\d+\.\d\ds',
+      re.escape('    Flaky:    0   0.00%') + r' +\d+\.\d\ds',
+      re.escape('     Fail:    1  25.00%') + r' +\d+\.\d\ds',
+      r'  \d+\.\d\ds Done running 4 tests with 6 executions. \d+\.\d\d test/s',
+    ])
+    self._check_results(expected_out_re, out, '')
+
+    # Test 'err' manually.
+    self.assertTrue(
+        re.match(
+            r'INFO  run_test_cases\(\d+\)\: Found 4 test cases in \S+ '
+            r'\S+gtest_fake_fail.py',
+            err.strip()),
+        err)
     test_cases = [
         ('Foo.Bar1', 1),
         ('Foo.Bar2', 1),
@@ -237,6 +371,8 @@ class RunTestCases(unittest.TestCase):
     self.assertEqual(0, return_code)
 
   def test_flaky_stop_early(self):
+    # gtest_fake_flaky.py has Foo.Bar[1-9]. Each of the test fails once and
+    # succeeds on the second pass.
     tempdir = tempfile.mkdtemp(prefix='run_test_cases')
     try:
       out, err, return_code = RunTest(
@@ -256,13 +392,13 @@ class RunTestCases(unittest.TestCase):
       self.assertEqual('', err)
       # The order is determined by the test shuffling.
       test_cases = [
-          ('Foo.Bar1', 2),
+          ('Foo.Bar1', 1),
           ('Foo.Bar4', 1),
-          ('Foo.Bar5', 2),
+          ('Foo.Bar5', 1),
       ]
       self._check_results_file(
-          fail=[u'Foo.Bar4'],
-          flaky=[u'Foo.Bar1', u'Foo.Bar5'],
+          fail=[u'Foo.Bar1', u'Foo.Bar4', u'Foo.Bar5'],
+          flaky=[],
           success=[],
           test_cases=test_cases)
     finally:

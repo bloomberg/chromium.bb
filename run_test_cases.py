@@ -263,6 +263,11 @@ class Progress(object):
     self.queued_lines = Queue.Queue()
 
   def update_item(self, name, index=True, size=False):
+    """Queue information to print out.
+
+    |index| notes that the index should be incremented.
+    |size| note that the total size should be incremented.
+    """
     self.queued_lines.put((name, index, size))
 
   def print_update(self):
@@ -544,70 +549,70 @@ class RunAll(object):
 
 
 class Runner(object):
-  def __init__(self, cmd, cwd_dir, timeout, progress, retry_count, decider,
-               verbose):
-    # Constants
+  """Immutable settings to run many test cases in a loop."""
+  def __init__(
+      self, cmd, cwd_dir, timeout, progress, retries, decider, verbose,
+      add_task):
     self.cmd = cmd[:]
     self.cwd_dir = cwd_dir
     self.timeout = timeout
     self.progress = progress
-    self.retry_count = retry_count
+    # The number of retries. For example if 2, the test case will be tried 3
+    # times in total.
+    self.retries = retries
+    self.decider = decider
+    self.verbose = verbose
+    self.add_task = add_task
     # It is important to remove the shard environment variables since it could
     # conflict with --gtest_filter.
     self.env = setup_gtest_env()
-    self.decider = decider
-    self.verbose = verbose
 
-  def map(self, test_case):
-    """Traces a single test case and returns its output."""
-    cmd = self.cmd[:]
-    cmd.append('--gtest_filter=%s' % test_case)
-    out = []
-    for retry in range(self.retry_count + 1):
-      if self.decider.should_stop():
-        break
+  def map(self, test_case, try_count):
+    """Traces a single test case and returns its output.
 
-      start = time.time()
-      output, returncode = call_with_timeout(
-          cmd,
-          self.timeout,
-          cwd=self.cwd_dir,
-          stderr=subprocess.STDOUT,
-          env=self.env)
-      duration = time.time() - start
-      data = {
-        'test_case': test_case,
-        'returncode': returncode,
-        'duration': duration,
-        # It needs to be valid utf-8 otherwise it can't be store.
-        'output': output.decode('ascii', 'ignore').encode('utf-8'),
-      }
-      if '[ RUN      ]' not in output:
-        # Can't find gtest marker, mark it as invalid.
-        returncode = returncode or 1
-      self.decider.got_result(not bool(returncode))
-      out.append(data)
-      if sys.platform == 'win32':
-        output = output.replace('\r\n', '\n')
-      size = returncode and retry != self.retry_count
-      if retry:
-        self.progress.update_item(
-            '%s (%.2fs) - retry #%d' % (test_case, duration, retry),
-            True,
-            size)
-      else:
-        self.progress.update_item(
-            '%s (%.2fs)' % (test_case, duration), True, size)
-      if self.verbose:
-        self.progress.update_item(output, False, False)
-      if not returncode:
-        break
+    try_count is 0 based, the original try is 0.
+    """
+    if self.decider.should_stop():
+      return []
+
+    start = time.time()
+    output, returncode = call_with_timeout(
+        self.cmd + ['--gtest_filter=%s' % test_case],
+        self.timeout,
+        cwd=self.cwd_dir,
+        stderr=subprocess.STDOUT,
+        env=self.env)
+    duration = time.time() - start
+    data = {
+      'test_case': test_case,
+      'returncode': returncode,
+      'duration': duration,
+      # It needs to be valid utf-8 otherwise it can't be store.
+      'output': output.decode('ascii', 'ignore').encode('utf-8'),
+    }
+    if '[ RUN      ]' not in output:
+      # Can't find gtest marker, mark it as invalid.
+      returncode = returncode or 1
+    self.decider.got_result(not bool(returncode))
+    if sys.platform == 'win32':
+      output = output.replace('\r\n', '\n')
+    need_to_retry = returncode and try_count < self.retries
+
+    if try_count:
+      line = '%s (%.2fs) - retry #%d' % (test_case, duration, try_count)
     else:
-      # The test failed. Print its output. No need to print it if verbose
-      # since it was already printed above.
-      if not self.verbose:
-        self.progress.update_item(output, False, False)
-    return out
+      line = '%s (%.2fs)' % (test_case, duration)
+    if self.verbose or (not need_to_retry and returncode):
+      # Print output in one of two cases:
+      #   --verbose was specified
+      #   If can't retry but failed.
+      line += '\n' + output
+    self.progress.update_item(line, True, need_to_retry)
+
+    if need_to_retry:
+      # The test failed and needs to be retried..
+      self.add_task(self.map, test_case, try_count + 1)
+    return [data]
 
 
 def get_test_cases(cmd, cwd, whitelist, blacklist, index, shards, seed):
@@ -738,12 +743,14 @@ def run_test_cases(
         return 1
 
     with ThreadPool(jobs, len(test_cases)) as pool:
-      function = Runner(
-          cmd, cwd, timeout, pool.tasks.progress, retries, decider, verbose).map
+      runner = Runner(
+          cmd, cwd, timeout, pool.tasks.progress, retries, decider, verbose,
+          pool.add_task)
+      function = runner.map
       logging.debug('Adding tests to ThreadPool')
       pool.tasks.progress.use_cr_only = not no_cr
       for test_case in test_cases:
-        pool.add_task(function, test_case)
+        pool.add_task(function, test_case, 0)
       logging.debug('All tests added to the ThreadPool')
       results = pool.join()
       duration = time.time() - pool.tasks.progress.start
@@ -773,7 +780,12 @@ def run_test_cases(
     if tempdir:
       shutil.rmtree(tempdir)
 
-  results = dict((item[0]['test_case'], item) for item in results if item)
+  cleaned = {}
+  for item in results:
+    if item:
+      cleaned.setdefault(item[0]['test_case'], []).extend(item)
+  results = cleaned
+
   # Total time taken to run each test case.
   test_case_duration = dict(
       (test_case, sum(i.get('duration', 0) for i in item))
