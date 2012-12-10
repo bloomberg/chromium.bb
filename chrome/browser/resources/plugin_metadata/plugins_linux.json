@@ -110,49 +110,6 @@
     "url": "https://launchpad.net/lightspark",
     "group_name_matcher": "*Shockwave Flash*"
   },
-  "redhat-icetea-java": {
-    "mime_types": [
-    ],
-    "versions": [
-      {
-        "version": "1.8.13",
-        "status": "requires_authorization",
-        "reference": "http://blog.fuseyism.com/index.php/2012/02/15/security-icedtea6-1-8-13-1-9-13-1-10-6-and-icedtea-2-0-1-released/"
-      },
-      {
-        "version": "1.9",
-        "status": "out_of_date"
-      },
-      {
-        "version": "1.9.13",
-        "status": "requires_authorization",
-        "reference": "http://blog.fuseyism.com/index.php/2012/02/15/security-icedtea6-1-8-13-1-9-13-1-10-6-and-icedtea-2-0-1-released/"
-      },
-      {
-        "version": "1.10",
-        "status": "out_of_date"
-      },
-      {
-        "version": "1.10.6",
-        "status": "requires_authorization",
-        "reference": "http://blog.fuseyism.com/index.php/2012/02/15/security-icedtea6-1-8-13-1-9-13-1-10-6-and-icedtea-2-0-1-released/"
-      },
-      {
-        "version": "2",
-        "status": "out_of_date"
-      },
-      {
-        "version": "2.0.1",
-        "status": "requires_authorization",
-        "reference": "http://blog.fuseyism.com/index.php/2012/02/15/security-icedtea6-1-8-13-1-9-13-1-10-6-and-icedtea-2-0-1-released/"
-      }
-    ],
-    "lang": "en-US",
-    "name": "IcedTea",
-    "url": "http://icedtea.classpath.org/",
-    "displayurl": true,
-    "group_name_matcher": "*IcedTea*"
-  },
   "google-chrome-pdf": {
     "mime_types": [
     ],
