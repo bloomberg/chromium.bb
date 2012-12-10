@@ -248,6 +248,7 @@
       ],
       'include_dirs': [
         '..',
+        '<(SHARED_INTERMEDIATE_DIR)',  # Needed by key_systems_unittest.cc.
       ],
       'sources': [
         'browser/accessibility/browser_accessibility_mac_unittest.mm',
@@ -455,6 +456,7 @@
         '../webkit/media/buffered_data_source_unittest.cc',
         '../webkit/media/buffered_resource_loader_unittest.cc',
         '../webkit/media/cache_util_unittest.cc',
+        '../webkit/media/crypto/key_systems_unittest.cc',
         '../webkit/media/crypto/proxy_decryptor_unittest.cc',
         '../webkit/media/test_response_generator.cc',
         '../webkit/media/test_response_generator.h',

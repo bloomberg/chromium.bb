@@ -38,6 +38,11 @@ struct KeySystemPluginTypePair {
   const char* plugin_type;
 };
 
+// TODO(xhwang): Remove this and ifdefs after fixing http://crbug.com/123421.
+#define DECRYPT_ONLY_AUDIO_NOT_SUPPORTED
+// TODO(ddorwin): Automatically support parent systems: http://crbug.com/164303.
+static const char kWidevineBaseKeySystem[] = "com.widevine";
+
 // Specifies the container and codec combinations supported by individual
 // key systems. Each line is a container-codecs combination and the key system
 // that supports it. Multiple codecs can be listed. A trailing commas in
@@ -47,11 +52,19 @@ struct KeySystemPluginTypePair {
 static const MediaFormatAndKeySystem
 supported_format_key_system_combinations[] = {
   // Clear Key.
+#if defined(DECRYPT_ONLY_AUDIO_NOT_SUPPORTED)
+  { "video/webm", "vp8,vp8.0,", kClearKeyKeySystem },
+#else
   { "video/webm", "vorbis,vp8,vp8.0,", kClearKeyKeySystem },
   { "audio/webm", "vorbis,", kClearKeyKeySystem },
+#endif
 #if defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
+#if defined(DECRYPT_ONLY_AUDIO_NOT_SUPPORTED)
+  { "video/mp4", "avc1,", kClearKeyKeySystem },
+#else
   { "video/mp4", "avc1,mp4a,", kClearKeyKeySystem },
   { "audio/mp4", "mp4a,", kClearKeyKeySystem },
+#endif
 #endif
 
   // External Clear Key (used for testing).
@@ -66,6 +79,16 @@ supported_format_key_system_combinations[] = {
   // Widevine.
   { "video/webm", "vorbis,vp8,vp8.0,", kWidevineKeySystem },
   { "audio/webm", "vorbis,", kWidevineKeySystem },
+  { "video/webm", "vorbis,vp8,vp8.0,", kWidevineBaseKeySystem },
+  { "audio/webm", "vorbis,", kWidevineBaseKeySystem },
+#if defined(WIDEVINE_CDM_CENC_SUPPORT_AVAILABLE)
+#if defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
+  { "video/mp4", "avc1,mp4a,", kWidevineKeySystem },
+  { "audio/mp4", "mp4a,", kWidevineKeySystem },
+  { "video/mp4", "avc1,mp4a,", kWidevineBaseKeySystem },
+  { "audio/mp4", "mp4a,", kWidevineBaseKeySystem },
+#endif
+#endif
 #endif  // WIDEVINE_CDM_AVAILABLE
 };
 
@@ -141,10 +164,6 @@ KeySystems::KeySystems() {
 bool KeySystems::IsSupportedKeySystem(const std::string& key_system) {
   bool is_supported = key_system_map_.find(key_system) != key_system_map_.end();
 
-  DCHECK_EQ(is_supported,
-            (CanUseAesDecryptor(key_system) ||
-             !GetPluginType(key_system).empty()))
-      << "key_system_map_ & key_system_to_plugin_type_mapping are inconsistent";
   return is_supported;
 }
 
