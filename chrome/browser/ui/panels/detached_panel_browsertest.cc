@@ -110,8 +110,8 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest,
   PanelManager::GetInstance()->CloseAll();
 }
 
-// http://crbug.com/143247
-#if !defined(OS_WIN)
+// http://crbug.com/143247 and http://crbug.com/164976 for USE_AURA.
+#if !defined(OS_WIN) || defined(USE_AURA)
 #define MAYBE_DrawAttentionResetOnActivate DISABLED_DrawAttentionResetOnActivate
 #else
 #define MAYBE_DrawAttentionResetOnActivate DrawAttentionResetOnActivate
