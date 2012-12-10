@@ -1104,12 +1104,7 @@ class BookmarkBarViewTest12 : public BookmarkBarViewEventTestBase {
   void Step4() {
     // Press tab to give focus to the cancel button.
     ui_controls::SendKeyPress(
-#if defined(OS_CHROMEOS)
-        NULL,
-#else
-        window_->GetNativeWindow(),
-#endif
-        ui::VKEY_TAB, false, false, false, false);
+        window_->GetNativeWindow(), ui::VKEY_TAB, false, false, false, false);
 
     // For some reason return isn't processed correctly unless we delay.
     MessageLoop::current()->PostDelayedTask(FROM_HERE,
@@ -1120,12 +1115,7 @@ class BookmarkBarViewTest12 : public BookmarkBarViewEventTestBase {
   void Step5() {
     // And press enter so that the cancel button is selected.
     ui_controls::SendKeyPressNotifyWhenDone(
-#if defined(OS_CHROMEOS)
-        NULL,
-#else
-        window_->GetNativeWindow(),
-#endif
-        ui::VKEY_RETURN, false, false, false, false,
+        window_->GetNativeWindow(), ui::VKEY_RETURN, false, false, false, false,
         CreateEventTask(this, &BookmarkBarViewTest12::Step6));
   }
 
