@@ -383,7 +383,7 @@ void DeviceSettingsProvider::DecodeLoginPolicies(
 
   base::ListValue* account_list = new base::ListValue();
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableLocalAccounts)) {
+  if (!command_line->HasSwitch(switches::kDisableLocalAccounts)) {
     const RepeatedPtrField<em::DeviceLocalAccountInfoProto>& accounts =
         policy.device_local_accounts().account();
     RepeatedPtrField<em::DeviceLocalAccountInfoProto>::const_iterator entry;

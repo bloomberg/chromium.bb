@@ -136,7 +136,7 @@ void BrowserPolicyConnector::Init() {
         new DeviceCloudPolicyManagerChromeOS(
             device_cloud_policy_store.Pass(),
             install_attributes_.get()));
-    if (command_line->HasSwitch(switches::kEnableLocalAccounts)) {
+    if (!command_line->HasSwitch(switches::kDisableLocalAccounts)) {
       device_local_account_policy_service_.reset(
           new DeviceLocalAccountPolicyService(
               chromeos::DBusThreadManager::Get()->GetSessionManagerClient(),
