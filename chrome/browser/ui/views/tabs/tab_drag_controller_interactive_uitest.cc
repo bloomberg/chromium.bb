@@ -186,7 +186,7 @@ int GetDetachY(TabStrip* tab_strip) {
 }
 
 bool GetTrackedByWorkspace(Browser* browser) {
-#if !defined(USE_ASH)
+#if !defined(USE_ASH) || defined(OS_WIN)  // TODO(win_ash)
   return true;
 #else
   return ash::GetTrackedByWorkspace(browser->window()->GetNativeWindow());
@@ -206,7 +206,7 @@ class DetachToBrowserTabDragControllerTest
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
-#if defined(USE_ASH)
+#if defined(USE_ASH) && !defined(OS_WIN)  // TODO(win_ash)
     event_generator_.reset(new aura::test::EventGenerator(
                                ash::Shell::GetPrimaryRootWindow()));
 #endif
@@ -225,7 +225,7 @@ class DetachToBrowserTabDragControllerTest
           ui_test_utils::SendMouseEventsSync(
               ui_controls::LEFT, ui_controls::DOWN);
     }
-#if defined(USE_ASH)
+#if defined(USE_ASH)  && !defined(OS_WIN)  // TODO(win_ash)
     event_generator_->set_current_location(location);
     event_generator_->PressTouch();
 #else
@@ -237,7 +237,7 @@ class DetachToBrowserTabDragControllerTest
   bool DragInputTo(const gfx::Point& location) {
     if (input_source() == INPUT_SOURCE_MOUSE)
       return ui_test_utils::SendMouseMoveSync(location);
-#if defined(USE_ASH)
+#if defined(USE_ASH) && !defined(OS_WIN)  // TODO(win_ash)
     event_generator_->MoveTouch(location);
 #else
     NOTREACHED();
@@ -248,7 +248,7 @@ class DetachToBrowserTabDragControllerTest
   bool DragInputToAsync(const gfx::Point& location) {
     if (input_source() == INPUT_SOURCE_MOUSE)
       return ui_controls::SendMouseMove(location.x(), location.y());
-#if defined(USE_ASH)
+#if defined(USE_ASH) && !defined(OS_WIN)  // TODO(win_ash)
     event_generator_->MoveTouch(location);
 #else
     NOTREACHED();
@@ -261,7 +261,7 @@ class DetachToBrowserTabDragControllerTest
                                  const base::Closure& task) {
     if (input_source() == INPUT_SOURCE_MOUSE)
       return ui_controls::SendMouseMoveNotifyWhenDone(x, y, task);
-#if defined(USE_ASH)
+#if defined(USE_ASH) && !defined(OS_WIN)  // TODO(win_ash)
     MessageLoop::current()->PostTask(FROM_HERE, task);
     event_generator_->MoveTouch(gfx::Point(x, y));
 #else
@@ -275,7 +275,7 @@ class DetachToBrowserTabDragControllerTest
       return ui_test_utils::SendMouseEventsSync(
               ui_controls::LEFT, ui_controls::UP);
     }
-#if defined(USE_ASH)
+#if defined(USE_ASH) && !defined(OS_WIN)  // TODO(win_ash)
     event_generator_->ReleaseTouch();
 #else
     NOTREACHED();
@@ -310,7 +310,7 @@ class DetachToBrowserTabDragControllerTest
   Browser* browser() const { return InProcessBrowserTest::browser(); }
 
  private:
-#if defined(USE_ASH)
+#if defined(USE_ASH) && !defined(OS_WIN)  // TODO(win_ash)
   scoped_ptr<aura::test::EventGenerator> event_generator_;
 #endif
 
@@ -401,7 +401,7 @@ void DetachToOwnWindowStep2(DetachToBrowserTabDragControllerTest* test) {
     ASSERT_TRUE(test->ReleaseInput());
 }
 
-#if defined(USE_ASH)
+#if defined(USE_ASH) && !defined(OS_WIN)  // TODO(win_ash)
 bool IsWindowPositionManaged(aura::Window* window) {
   return ash::wm::IsWindowPositionManaged(window);
 }
@@ -952,7 +952,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   }
 }
 
-#if defined(USE_ASH)
+#if defined(USE_ASH) && !defined(OS_WIN)  // TODO(win_ash)
 
 namespace {
 
@@ -1395,7 +1395,7 @@ IN_PROC_BROWSER_TEST_F(
 
 #endif
 
-#if defined(USE_ASH)
+#if defined(USE_ASH) && !defined(OS_WIN)  // TODO(win_ash)
 INSTANTIATE_TEST_CASE_P(TabDragging,
                         DetachToBrowserInSeparateDisplayTabDragControllerTest,
                         ::testing::Values("mouse", "touch"));
