@@ -288,6 +288,22 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithVersion123456Schema,
   EXPECT_NE(original_size, new_size);
 }
 
+class IndexedDBBrowserTestWithVersion987654SSVData : public
+    IndexedDBBrowserTestWithPreexistingLevelDB {
+  virtual std::string EnclosingLevelDBDir() {
+    return "ssv_version_987654";
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithVersion987654SSVData,
+                       DestroyTest) {
+  int64 original_size = RequestDiskUsage();
+  EXPECT_GT(original_size, 0);
+  SimpleTest(GetTestUrl("indexeddb", "open_bad_db.html"));
+  int64 new_size = RequestDiskUsage();
+  EXPECT_NE(original_size, new_size);
+}
+
 class IndexedDBBrowserTestWithCorruptLevelDB : public
     IndexedDBBrowserTestWithPreexistingLevelDB {
   virtual std::string EnclosingLevelDBDir() {
