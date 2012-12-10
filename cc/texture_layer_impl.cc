@@ -45,12 +45,7 @@ void TextureLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQu
     gfx::Rect opaqueRect(contentsOpaque() ? quadRect : gfx::Rect());
     scoped_ptr<TextureDrawQuad> quad = TextureDrawQuad::Create();
     quad->SetNew(sharedQuadState, quadRect, opaqueRect, m_externalTextureResource, m_premultipliedAlpha, m_uvRect, m_flipped);
-
-    // Perform explicit clipping on a quad to avoid setting a scissor later.
-    if (sharedQuadState->is_clipped && quad->PerformClipping())
-        sharedQuadState->is_clipped = false;
-    if (!quad->rect.IsEmpty())
-        quadSink.append(quad.PassAs<DrawQuad>(), appendQuadsData);
+    quadSink.append(quad.PassAs<DrawQuad>(), appendQuadsData);
 }
 
 void TextureLayerImpl::didDraw(ResourceProvider* resourceProvider)

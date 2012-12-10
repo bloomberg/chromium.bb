@@ -40,8 +40,6 @@ class CC_EXPORT TextureDrawQuad : public DrawQuad {
   bool flipped;
 
   static const TextureDrawQuad* MaterialCast(const DrawQuad*);
-
-  bool PerformClipping();
  private:
   TextureDrawQuad();
 };
