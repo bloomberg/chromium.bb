@@ -182,7 +182,8 @@ const char* kPredefinedAllowedSocketOrigins[] = {
   "cabapfdbkniadpollkckdnedaanlciaj",  // see crbug.com/134099
   "mapljbgnjledlpdmlchihnmeclmefbba",  // see crbug.com/134099
   "ghbfeebgmiidnnmeobbbaiamklmpbpii",  // see crbug.com/134099
-  "jdfhpkjeckflbbleddjlpimecpbjdeep"   // see crbug.com/142514
+  "jdfhpkjeckflbbleddjlpimecpbjdeep",  // see crbug.com/142514
+  "iabmpiboiopbgfabjmgeedhcmjenhbla"   // see crbug.com/165080
 };
 
 // Returns a copy of the given url with its host set to given host and path set
