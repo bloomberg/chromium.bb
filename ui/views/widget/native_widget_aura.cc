@@ -108,11 +108,14 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
 
   gfx::Rect window_bounds = params.bounds;
   gfx::NativeView parent = params.parent;
+  gfx::NativeView context = params.context;
   if (!params.child) {
     // Set up the transient child before the window is added. This way the
     // LayoutManager knows the window has a transient parent.
     if (parent && parent->type() != aura::client::WINDOW_TYPE_UNKNOWN) {
       parent->AddTransientChild(window_);
+      if (!context)
+        context = parent;
       parent = NULL;
     }
     // SetAlwaysOnTop before SetParent so that always-on-top container is used.
@@ -138,8 +141,7 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
 
     // TODO(erg): Remove this NULL check once we've made everything in views
     // actually pass us a context.
-    aura::RootWindow* root_window =
-        params.context ? params.context->GetRootWindow() : NULL;
+    aura::RootWindow* root_window = context ? context->GetRootWindow() : NULL;
     window_->SetDefaultParentByRootWindow(root_window, window_bounds);
   }
 
