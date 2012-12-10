@@ -63,8 +63,8 @@ class DriveFileSyncClient
   typedef base::Callback<void(google_apis::GDataErrorCode error,
                               int64 changestamp)> ChangeStampCallback;
   typedef base::Callback<void(google_apis::GDataErrorCode error,
-                              scoped_ptr<google_apis::DocumentFeed> feed)>
-      DocumentFeedCallback;
+                              scoped_ptr<google_apis::ResourceList> feed)>
+      ResourceListCallback;
   typedef base::Callback<void(google_apis::GDataErrorCode error,
                               scoped_ptr<google_apis::ResourceEntry> entry)>
       ResourceEntryCallback;
@@ -110,7 +110,7 @@ class DriveFileSyncClient
   // to call ContunueListing with the result of GetNextFeedURL to get complete
   // list of files.
   void ListFiles(const std::string& directory_resource_id,
-                 const DocumentFeedCallback& callback);
+                 const ResourceListCallback& callback);
 
   // Lists changes that happened after |start_changestamp|.
   // Upon completion, invokes |callback|.
@@ -118,12 +118,12 @@ class DriveFileSyncClient
   // to call ContunueListing with the result of GetNextFeedURL to get complete
   // list of changes.
   void ListChanges(int64 start_changestamp,
-                   const DocumentFeedCallback& callback);
+                   const ResourceListCallback& callback);
 
-  // Fetches the next chunk of DocumentFeed identified by |feed_url|.
+  // Fetches the next chunk of ResourceList identified by |feed_url|.
   // Upon completion, invokes |callback|.
   void ContinueListing(const GURL& feed_url,
-                       const DocumentFeedCallback& callback);
+                       const ResourceListCallback& callback);
 
   // Downloads the file identified by |resource_id| from Drive to
   // |local_file_path|.
@@ -199,7 +199,7 @@ class DriveFileSyncClient
                        const std::string& directory_name,
                        const ResourceIdCallback& callback,
                        google_apis::GDataErrorCode error,
-                       scoped_ptr<google_apis::DocumentFeed> feed);
+                       scoped_ptr<google_apis::ResourceList> feed);
 
   void DidGetParentDirectoryForCreateDirectory(
       const FilePath::StringType& directory_name,
@@ -213,13 +213,13 @@ class DriveFileSyncClient
 
   void SearchFilesInDirectory(const std::string& directory_resource_id,
                               const std::string& search_query,
-                              const DocumentFeedCallback& callback);
+                              const ResourceListCallback& callback);
 
   void DidGetAccountMetadata(const ChangeStampCallback& callback,
                              google_apis::GDataErrorCode error,
                              scoped_ptr<base::Value> data);
 
-  void DidGetDocumentFeedData(const DocumentFeedCallback& callback,
+  void DidGetResourceListData(const ResourceListCallback& callback,
                               google_apis::GDataErrorCode error,
                               scoped_ptr<base::Value> data);
 

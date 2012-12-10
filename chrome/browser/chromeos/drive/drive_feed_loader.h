@@ -22,7 +22,7 @@ class Value;
 }
 
 namespace google_apis {
-class DocumentFeed;
+class ResourceList;
 }
 
 namespace drive {
@@ -35,7 +35,7 @@ class DriveWebAppsRegistryInterface;
 
 // Callback run as a response to SearchFromServer and LoadDirectoryFromServer.
 typedef base::Callback<
-    void(const ScopedVector<google_apis::DocumentFeed>& feed_list,
+    void(const ScopedVector<google_apis::ResourceList>& feed_list,
          DriveFileError error)> LoadFeedListCallback;
 
 // DriveFeedLoader is used to load feeds from WAPI (codename for
@@ -89,7 +89,7 @@ class DriveFeedLoader {
   // |is_delta_feed| and |root_feed_changestamp|.
   // |root_resource_id| is used for Drive API.
   // |update_finished_callback| must not be null.
-  void UpdateFromFeed(const ScopedVector<google_apis::DocumentFeed>& feed_list,
+  void UpdateFromFeed(const ScopedVector<google_apis::ResourceList>& feed_list,
                       bool is_delta_feed,
                       int64 root_feed_changestamp,
                       const std::string& root_resource_id,
@@ -135,7 +135,7 @@ class DriveFeedLoader {
   // started FindEntryByPath() request.
   void UpdateMetadataFromFeedAfterLoadFromServer(
       const UpdateMetadataParams& params,
-      const ScopedVector<google_apis::DocumentFeed>& feed_list,
+      const ScopedVector<google_apis::ResourceList>& feed_list,
       DriveFileError error);
 
   // Callback for handling response from |GDataWapiService::GetResourceList|.
@@ -149,7 +149,7 @@ class DriveFeedLoader {
   // Callback for handling results of feed parse.
   void OnParseFeed(scoped_ptr<LoadFeedParams> params,
                    base::TimeTicks start_time,
-                   scoped_ptr<google_apis::DocumentFeed> current_feed);
+                   scoped_ptr<google_apis::ResourceList> current_feed);
 
   // Callback for handling response from |DriveAPIService::GetResourceList|.
   // Invokes |callback| when done.
@@ -163,7 +163,7 @@ class DriveFeedLoader {
   void SaveFileSystem();
 
   // Callback for handling UI updates caused by feed fetching.
-  void OnNotifyDocumentFeedFetched(
+  void OnNotifyResourceListFetched(
       base::WeakPtr<GetResourceListUiState> ui_state);
 
   // Callback for DriveFeedProcessor::ApplyFeeds.

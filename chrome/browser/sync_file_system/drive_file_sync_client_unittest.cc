@@ -22,7 +22,7 @@ using ::testing::StrictMock;
 using ::testing::_;
 
 using google_apis::ResourceEntry;
-using google_apis::DocumentFeed;
+using google_apis::ResourceList;
 using google_apis::DriveServiceInterface;
 using google_apis::DriveUploaderInterface;
 using google_apis::GDataErrorCode;
@@ -254,11 +254,11 @@ void DidGetLargestChangeStamp(bool* done_out,
   *largest_changestamp_out = largest_changestamp;
 }
 
-void DidGetDocumentFeed(bool* done_out,
+void DidGetResourceList(bool* done_out,
                         GDataErrorCode* error_out,
-                        scoped_ptr<DocumentFeed>* document_feed_out,
+                        scoped_ptr<ResourceList>* document_feed_out,
                         GDataErrorCode error,
-                        scoped_ptr<DocumentFeed> document_feed) {
+                        scoped_ptr<ResourceList> document_feed) {
   EXPECT_FALSE(*done_out);
   *done_out = true;
   *error_out = error;
@@ -507,9 +507,9 @@ TEST_F(DriveFileSyncClientTest, ListFiles) {
 
   bool done = false;
   GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
-  scoped_ptr<DocumentFeed> document_feed;
+  scoped_ptr<ResourceList> document_feed;
   sync_client()->ListFiles(kDirectoryResourceId,
-                           base::Bind(&DidGetDocumentFeed,
+                           base::Bind(&DidGetResourceList,
                                       &done, &error, &document_feed));
   message_loop()->RunUntilIdle();
 
@@ -521,7 +521,7 @@ TEST_F(DriveFileSyncClientTest, ListFiles) {
   error = google_apis::GDATA_OTHER_ERROR;
   document_feed.reset();
   sync_client()->ContinueListing(kFeedURL,
-                                 base::Bind(&DidGetDocumentFeed,
+                                 base::Bind(&DidGetResourceList,
                                             &done, &error, &document_feed));
   message_loop()->RunUntilIdle();
 
@@ -568,9 +568,9 @@ TEST_F(DriveFileSyncClientTest, ListChanges) {
 
   bool done = false;
   GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
-  scoped_ptr<DocumentFeed> document_feed;
+  scoped_ptr<ResourceList> document_feed;
   sync_client()->ListFiles(kDirectoryResourceId,
-                           base::Bind(&DidGetDocumentFeed,
+                           base::Bind(&DidGetResourceList,
                                       &done, &error, &document_feed));
   message_loop()->RunUntilIdle();
 
@@ -582,7 +582,7 @@ TEST_F(DriveFileSyncClientTest, ListChanges) {
   error = google_apis::GDATA_OTHER_ERROR;
   document_feed.reset();
   sync_client()->ListChanges(kStartChangestamp,
-                             base::Bind(&DidGetDocumentFeed,
+                             base::Bind(&DidGetResourceList,
                                         &done, &error, &document_feed));
   message_loop()->RunUntilIdle();
 

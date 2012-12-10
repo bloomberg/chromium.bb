@@ -139,12 +139,12 @@ bool LoadChangeFeed(const std::string& relative_path,
   if (document->GetType() != Value::TYPE_DICTIONARY)
     return false;
 
-  scoped_ptr<google_apis::DocumentFeed> document_feed(
-      google_apis::DocumentFeed::ExtractAndParse(*document));
+  scoped_ptr<google_apis::ResourceList> document_feed(
+      google_apis::ResourceList::ExtractAndParse(*document));
   if (!document_feed.get())
     return false;
 
-  ScopedVector<google_apis::DocumentFeed> feed_list;
+  ScopedVector<google_apis::ResourceList> feed_list;
   feed_list.push_back(document_feed.release());
 
   file_system->feed_loader()->UpdateFromFeed(

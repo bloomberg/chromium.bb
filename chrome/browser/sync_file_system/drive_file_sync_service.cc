@@ -862,7 +862,7 @@ void DriveFileSyncService::DidGetDirectoryContentForBatchSync(
     const GURL& origin,
     int64 largest_changestamp,
     google_apis::GDataErrorCode error,
-    scoped_ptr<google_apis::DocumentFeed> feed) {
+    scoped_ptr<google_apis::ResourceList> feed) {
   if (error != google_apis::HTTP_SUCCESS) {
     pending_batch_sync_origins_.insert(origin);
     // TODO(tzik): Refine this error code.
@@ -1594,7 +1594,7 @@ void DriveFileSyncService::DidFetchChangesForIncrementalSync(
     scoped_ptr<TaskToken> token,
     bool has_new_changes,
     google_apis::GDataErrorCode error,
-    scoped_ptr<google_apis::DocumentFeed> changes) {
+    scoped_ptr<google_apis::ResourceList> changes) {
   if (error != google_apis::HTTP_SUCCESS) {
     NotifyTaskDone(GDataErrorCodeToSyncStatusCodeWrapper(error), token.Pass());
     return;

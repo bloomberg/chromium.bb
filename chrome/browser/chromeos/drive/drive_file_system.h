@@ -27,7 +27,7 @@ class SequencedTaskRunner;
 }
 
 namespace google_apis {
-class DocumentFeed;
+class ResourceList;
 class DriveServiceInterface;
 class DriveUploaderInterface;
 }
@@ -142,7 +142,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // DriveFeedLoader::Observer overrides.
   // Used to propagate events from DriveFeedLoader.
   virtual void OnDirectoryChanged(const FilePath& directory_path) OVERRIDE;
-  virtual void OnDocumentFeedFetched(int num_accumulated_entries) OVERRIDE;
+  virtual void OnResourceListFetched(int num_accumulated_entries) OVERRIDE;
   virtual void OnFeedFromServerLoaded() OVERRIDE;
 
   // Used in tests to load the root feed from the cache.
@@ -239,7 +239,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // |feed_list| is the document feed for content search.
   // |error| is the error code returned by DriveFeedLoader.
   void OnSearch(const SearchCallback& callback,
-                const ScopedVector<google_apis::DocumentFeed>& feed_list,
+                const ScopedVector<google_apis::ResourceList>& feed_list,
                 DriveFileError error);
 
   // Callback for DriveResourceMetadata::RefreshFile, from OnSearch.
@@ -547,7 +547,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   void OnRequestDirectoryRefresh(
       const std::string& directory_resource_id,
       const FilePath& directory_path,
-      const ScopedVector<google_apis::DocumentFeed>& feed_list,
+      const ScopedVector<google_apis::ResourceList>& feed_list,
       DriveFileError error);
   void GetAvailableSpaceOnUIThread(const GetAvailableSpaceCallback& callback);
 
