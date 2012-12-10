@@ -89,20 +89,6 @@ class DriveUploaderInterface {
       const UploadCompletionCallback& completion_callback,
       const UploaderReadyCallback& ready_callback) = 0;
 
-  // Stream data to an existing file.
-  // Returns the upload_id.
-  //
-  // See comments at UploadNewFile() about common parameters.
-  virtual int StreamExistingFile(
-      const GURL& upload_location,
-      const FilePath& drive_file_path,
-      const FilePath& local_file_path,
-      const std::string& content_type,
-      int64 content_length,
-      int64 file_size,
-      const UploadCompletionCallback& completion_callback,
-      const UploaderReadyCallback& ready_callback) = 0;
-
   // Uploads an existing file (a file that already exists on Drive).
   //
   // See comments at UploadNewFile() about common parameters.
@@ -135,15 +121,6 @@ class DriveUploader : public DriveUploaderInterface {
       const FilePath& drive_file_path,
       const FilePath& local_file_path,
       const std::string& title,
-      const std::string& content_type,
-      int64 content_length,
-      int64 file_size,
-      const UploadCompletionCallback& completion_callback,
-      const UploaderReadyCallback& ready_callback) OVERRIDE;
-  virtual int StreamExistingFile(
-      const GURL& upload_location,
-      const FilePath& drive_file_path,
-      const FilePath& local_file_path,
       const std::string& content_type,
       int64 content_length,
       int64 file_size,

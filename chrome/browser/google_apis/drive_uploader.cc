@@ -98,43 +98,6 @@ int DriveUploader::UploadNewFile(
   return StartUploadFile(upload_file_info.Pass());
 }
 
-int DriveUploader::StreamExistingFile(
-    const GURL& upload_location,
-    const FilePath& drive_file_path,
-    const FilePath& local_file_path,
-    const std::string& content_type,
-    int64 content_length,
-    int64 file_size,
-    const UploadCompletionCallback& completion_callback,
-    const UploaderReadyCallback& ready_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!upload_location.is_empty());
-  DCHECK(!drive_file_path.empty());
-  DCHECK(!local_file_path.empty());
-  DCHECK(!content_type.empty());
-  DCHECK(!completion_callback.is_null());
-  // ready_callback may be null.
-
-  scoped_ptr<UploadFileInfo> upload_file_info(new UploadFileInfo);
-  upload_file_info->upload_mode = UPLOAD_EXISTING_FILE;
-  upload_file_info->initial_upload_location = upload_location;
-  upload_file_info->drive_path = drive_file_path;
-  upload_file_info->file_path = local_file_path;
-  upload_file_info->content_type = content_type;
-  upload_file_info->content_length = content_length;
-  upload_file_info->file_size = file_size;
-  upload_file_info->all_bytes_present = content_length == file_size;
-  upload_file_info->completion_callback = completion_callback;
-  upload_file_info->ready_callback = ready_callback;
-
-  // When uploading a new file, we should retry file open as the file may
-  // not yet be ready. See comments in OpenCompletionCallback.
-  // TODO(satorux): The retry should be done only when we are uploading
-  // while downloading files from web sites (i.e. saving files to Drive).
-  upload_file_info->should_retry_file_open = true;
-  return StartUploadFile(upload_file_info.Pass());
-}
-
 int DriveUploader::StartUploadFile(
     scoped_ptr<UploadFileInfo> upload_file_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

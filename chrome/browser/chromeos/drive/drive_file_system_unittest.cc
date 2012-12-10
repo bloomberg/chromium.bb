@@ -155,19 +155,6 @@ class FakeDriveUploader : public google_apis::DriveUploaderInterface {
     return kUploadId;
   }
 
-  virtual int StreamExistingFile(
-      const GURL& upload_location,
-      const FilePath& drive_file_path,
-      const FilePath& local_file_path,
-      const std::string& content_type,
-      int64 content_length,
-      int64 file_size,
-      const google_apis::UploadCompletionCallback& completion_callback,
-      const google_apis::UploaderReadyCallback& ready_callback) OVERRIDE {
-    NOTREACHED();
-    return 0;
-  }
-
   // Pretends that an existing file ("drive/File 1.txt") was uploaded
   // successfully, and returns an entry for the file in
   // "gdata/root_feed.json" to the caller.
