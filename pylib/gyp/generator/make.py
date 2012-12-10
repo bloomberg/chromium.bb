@@ -259,7 +259,7 @@ all_deps :=
 #   export LINK=g++
 #
 # This will allow make to invoke N linker processes as specified in -jN.
-LINK ?= %(flock)s $(builddir)/linker.lock $(CXX)
+LINK ?= %(flock)s $(builddir)/linker.lock $(CXX.target)
 
 CC.target ?= %(CC.target)s
 CFLAGS.target ?= $(CFLAGS)
