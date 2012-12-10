@@ -5,6 +5,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
+#include "ui/base/layout.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_png_rep.h"
 #include "ui/gfx/image/image_skia.h"
@@ -235,14 +236,26 @@ TEST_F(ImageTest, MultiResolutionPNGToPlatform) {
   const int kSize2x = 50;
 
   scoped_refptr<base::RefCountedBytes> bytes1x = gt::CreatePNGBytes(kSize1x);
+  scoped_refptr<base::RefCountedBytes> bytes2x = gt::CreatePNGBytes(kSize2x);
   std::vector<gfx::ImagePNGRep> image_png_reps;
   image_png_reps.push_back(gfx::ImagePNGRep(bytes1x, ui::SCALE_FACTOR_100P));
-  image_png_reps.push_back(gfx::ImagePNGRep(
-      gt::CreatePNGBytes(kSize2x), ui::SCALE_FACTOR_200P));
+  image_png_reps.push_back(gfx::ImagePNGRep(bytes2x, ui::SCALE_FACTOR_200P));
 
   gfx::Image from_png(image_png_reps);
   gfx::Image from_platform(gt::CopyPlatformType(from_png));
+#if defined(OS_IOS)
+  // On iOS the platform type (UIImage) only supports one resolution.
+  std::vector<ui::ScaleFactor> scale_factors = ui::GetSupportedScaleFactors();
+  EXPECT_EQ(scale_factors.size(), 1U);
+  if (scale_factors[0] == ui::SCALE_FACTOR_100P)
+    EXPECT_TRUE(gt::IsEqual(bytes1x, from_platform.AsBitmap()));
+  else if (scale_factors[0] == ui::SCALE_FACTOR_200P)
+    EXPECT_TRUE(gt::IsEqual(bytes2x, from_platform.AsBitmap()));
+  else
+    ADD_FAILURE() << "Unexpected platform scale factor.";
+#else
   EXPECT_TRUE(gt::IsEqual(bytes1x, from_platform.AsBitmap()));
+#endif  // defined(OS_IOS)
 }
 
 
