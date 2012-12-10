@@ -14,6 +14,13 @@ var decodingTimesMs = [];
 var isDone = false;
 var img;
 
+var now = (function() {
+  if (window.performance)
+    return (window.performance.now ||
+            window.performance.webkitNow).bind(window.performance);
+  return Date.now.bind(window);
+})();
+
 getImageFormat = function() {
   if (document.location.search) {
     return document.location.search.substr(1);
@@ -33,7 +40,7 @@ prepareImageElement = function() {
               " ms and at least " + minIterations + " times.");
   document.getElementById('status').innerHTML = "Benchmark running.";
   setStatus(getImageFormat().toUpperCase() + " benchmark running.");
-  benchmarkStartTimeMs = window.performance.now();
+  benchmarkStartTimeMs = now();
 }
 
 setStatus = function(status) {
@@ -51,7 +58,7 @@ var iteration = (new Date).getTime();
 startLoadingImage = function() {
   img.setAttribute('onload', '');
   img.setAttribute('src', '');
-  loadStartTimeMs = window.performance.now();
+  loadStartTimeMs = now();
   img.addEventListener('load', onImageLoaded);
   // Use a unique URL for each test iteration to work around image caching.
   img.setAttribute('src', 'droids.' + getImageFormat() + '?' + iteration);
@@ -70,12 +77,12 @@ var requestAnimationFrame = (function() {
 })().bind(window);
 
 onImageLoaded = function(img) {
-  var now = window.performance.now();
-  var decodingTimeMs = now - loadStartTimeMs;
-  if (now - benchmarkStartTimeMs >= warmUpTimeMs) {
+  var nowMs = now();
+  var decodingTimeMs = nowMs - loadStartTimeMs;
+  if (nowMs - benchmarkStartTimeMs >= warmUpTimeMs) {
     decodingTimesMs.push(decodingTimeMs);
   }
-  if (now - benchmarkStartTimeMs < minTotalTimeMs ||
+  if (nowMs - benchmarkStartTimeMs < minTotalTimeMs ||
       decodingTimesMs.length < minIterations) {
     requestAnimationFrame(startLoadingImage);
   } else {
