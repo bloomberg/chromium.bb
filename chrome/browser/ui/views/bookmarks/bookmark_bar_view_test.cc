@@ -1130,7 +1130,9 @@ class BookmarkBarViewTest12 : public BookmarkBarViewEventTestBase {
   }
 };
 
+#if !defined(OS_CHROMEOS)  // http://crbug.com/165198
 VIEW_TEST(BookmarkBarViewTest12, CloseWithModalDialog)
+#endif
 
 // Tests clicking on the separator of a context menu (this is for coverage of
 // bug 17862).
