@@ -16,61 +16,61 @@
 namespace drive {
 
 DriveEntryProto ConvertResourceEntryToDriveEntryProto(
-    const google_apis::ResourceEntry& entry) {
+    const google_apis::ResourceEntry& doc) {
   DriveEntryProto entry_proto;
 
   // For regular files, the 'filename' and 'title' attribute in the metadata
   // may be different (e.g. due to rename). To be consistent with the web
   // interface and other client to use the 'title' attribute, instead of
   // 'filename', as the file name in the local snapshot.
-  entry_proto.set_title(UTF16ToUTF8(entry.title()));
+  entry_proto.set_title(UTF16ToUTF8(doc.title()));
   entry_proto.set_base_name(util::EscapeUtf8FileName(entry_proto.title()));
 
-  entry_proto.set_resource_id(entry.resource_id());
-  entry_proto.set_content_url(entry.content_url().spec());
+  entry_proto.set_resource_id(doc.resource_id());
+  entry_proto.set_content_url(doc.content_url().spec());
 
   const google_apis::Link* edit_link =
-      entry.GetLinkByType(google_apis::Link::LINK_EDIT);
+      doc.GetLinkByType(google_apis::Link::LINK_EDIT);
   if (edit_link)
     entry_proto.set_edit_url(edit_link->href().spec());
 
   const google_apis::Link* parent_link =
-      entry.GetLinkByType(google_apis::Link::LINK_PARENT);
+      doc.GetLinkByType(google_apis::Link::LINK_PARENT);
   if (parent_link) {
     entry_proto.set_parent_resource_id(
         util::ExtractResourceIdFromUrl(parent_link->href()));
   }
 
-  entry_proto.set_deleted(entry.deleted());
-  entry_proto.set_kind(entry.kind());
+  entry_proto.set_deleted(doc.deleted());
+  entry_proto.set_kind(doc.kind());
 
   PlatformFileInfoProto* file_info = entry_proto.mutable_file_info();
 
-  file_info->set_last_modified(entry.updated_time().ToInternalValue());
+  file_info->set_last_modified(doc.updated_time().ToInternalValue());
   // If the file has never been viewed (last_viewed_time().is_null() == true),
   // then we will set the last_accessed field in the protocol buffer to 0.
-  file_info->set_last_accessed(entry.last_viewed_time().ToInternalValue());
-  file_info->set_creation_time(entry.published_time().ToInternalValue());
+  file_info->set_last_accessed(doc.last_viewed_time().ToInternalValue());
+  file_info->set_creation_time(doc.published_time().ToInternalValue());
 
-  if (entry.is_file() || entry.is_hosted_document()) {
+  if (doc.is_file() || doc.is_hosted_document()) {
     DriveFileSpecificInfo* file_specific_info =
         entry_proto.mutable_file_specific_info();
-    if (entry.is_file()) {
-      file_info->set_size(entry.file_size());
-      file_specific_info->set_file_md5(entry.file_md5());
+    if (doc.is_file()) {
+      file_info->set_size(doc.file_size());
+      file_specific_info->set_file_md5(doc.file_md5());
 
       // The resumable-edit-media link should only be present for regular
       // files as hosted documents are not uploadable.
-      const google_apis::Link* upload_link = entry.GetLinkByType(
+      const google_apis::Link* upload_link = doc.GetLinkByType(
           google_apis::Link::LINK_RESUMABLE_EDIT_MEDIA);
       if (upload_link && upload_link->href().is_valid())
         entry_proto.set_upload_url(upload_link->href().spec());
-    } else if (entry.is_hosted_document()) {
+    } else if (doc.is_hosted_document()) {
       // Attach .g<something> extension to hosted documents so we can special
       // case their handling in UI.
       // TODO(satorux): Figure out better way how to pass entry info like kind
       // to UI through the File API stack.
-      const std::string document_extension = entry.GetHostedDocumentExtension();
+      const std::string document_extension = doc.GetHostedDocumentExtension();
       file_specific_info->set_document_extension(document_extension);
       entry_proto.set_base_name(
           util::EscapeUtf8FileName(entry_proto.title() + document_extension));
@@ -80,31 +80,31 @@ DriveEntryProto ConvertResourceEntryToDriveEntryProto(
       file_info->set_size(0);
     }
     file_info->set_is_directory(false);
-    file_specific_info->set_content_mime_type(entry.content_mime_type());
-    file_specific_info->set_is_hosted_document(entry.is_hosted_document());
+    file_specific_info->set_content_mime_type(doc.content_mime_type());
+    file_specific_info->set_is_hosted_document(doc.is_hosted_document());
 
-    const google_apis::Link* thumbnail_link = entry.GetLinkByType(
+    const google_apis::Link* thumbnail_link = doc.GetLinkByType(
         google_apis::Link::LINK_THUMBNAIL);
     if (thumbnail_link)
       file_specific_info->set_thumbnail_url(thumbnail_link->href().spec());
 
-    const google_apis::Link* alternate_link = entry.GetLinkByType(
+    const google_apis::Link* alternate_link = doc.GetLinkByType(
         google_apis::Link::LINK_ALTERNATE);
     if (alternate_link)
       file_specific_info->set_alternate_url(alternate_link->href().spec());
 
-    const google_apis::Link* share_link = entry.GetLinkByType(
+    const google_apis::Link* share_link = doc.GetLinkByType(
         google_apis::Link::LINK_SHARE);
     if (share_link)
       file_specific_info->set_share_url(share_link->href().spec());
-  } else if (entry.is_folder()) {
+  } else if (doc.is_folder()) {
     file_info->set_is_directory(true);
-    const google_apis::Link* upload_link = entry.GetLinkByType(
+    const google_apis::Link* upload_link = doc.GetLinkByType(
         google_apis::Link::LINK_RESUMABLE_CREATE_MEDIA);
     if (upload_link)
       entry_proto.set_upload_url(upload_link->href().spec());
   } else {
-    // Some resource entries don't map into files (i.e. sites).
+    // Some document entries don't map into files (i.e. sites).
     return DriveEntryProto();
   }
 

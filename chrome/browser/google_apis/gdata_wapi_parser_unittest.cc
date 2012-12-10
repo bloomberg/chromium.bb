@@ -57,13 +57,13 @@ class GDataWAPIParserTest : public testing::Test {
 // TODO(nhiroki): Move json files to out of 'chromeos' directory
 // (http://crbug.com/149788).
 // Test document feed parsing.
-TEST_F(GDataWAPIParserTest, ResourceListJsonParser) {
+TEST_F(GDataWAPIParserTest, DocumentFeedJsonParser) {
   std::string error;
   scoped_ptr<Value> document =
       test_util::LoadJSONFile("gdata/basic_feed.json");
   ASSERT_TRUE(document.get());
   ASSERT_EQ(Value::TYPE_DICTIONARY, document->GetType());
-  scoped_ptr<ResourceList> feed(ResourceList::ExtractAndParse(*document));
+  scoped_ptr<DocumentFeed> feed(DocumentFeed::ExtractAndParse(*document));
   ASSERT_TRUE(feed.get());
 
   base::Time update_time;

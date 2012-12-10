@@ -51,7 +51,7 @@ DriveFeedProcessor::~DriveFeedProcessor() {
 }
 
 void DriveFeedProcessor::ApplyFeeds(
-    const ScopedVector<google_apis::ResourceList>& feed_list,
+    const ScopedVector<google_apis::DocumentFeed>& feed_list,
     bool is_delta_feed,
     int64 root_feed_changestamp,
     const base::Closure& on_complete_callback) {
@@ -295,14 +295,14 @@ void DriveFeedProcessor::NotifyForRefreshEntryProto(
 }
 
 void DriveFeedProcessor::FeedToEntryProtoMap(
-    const ScopedVector<google_apis::ResourceList>& feed_list,
+    const ScopedVector<google_apis::DocumentFeed>& feed_list,
     int64* feed_changestamp,
     FeedToEntryProtoMapUMAStats* uma_stats) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   Clear();
 
   for (size_t i = 0; i < feed_list.size(); ++i) {
-    const google_apis::ResourceList* feed = feed_list[i];
+    const google_apis::DocumentFeed* feed = feed_list[i];
 
     // Get upload url from the root feed. Links for all other collections will
     // be handled in ConvertResourceEntryToDriveEntryProto.
@@ -317,9 +317,8 @@ void DriveFeedProcessor::FeedToEntryProtoMap(
     }
 
     for (size_t j = 0; j < feed->entries().size(); ++j) {
-      const google_apis::ResourceEntry* entry = feed->entries()[j];
-      DriveEntryProto entry_proto =
-          ConvertResourceEntryToDriveEntryProto(*entry);
+      const google_apis::ResourceEntry* doc = feed->entries()[j];
+      DriveEntryProto entry_proto = ConvertResourceEntryToDriveEntryProto(*doc);
       // Some document entries don't map into files (i.e. sites).
       if (entry_proto.resource_id().empty())
         continue;

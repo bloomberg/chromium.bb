@@ -49,7 +49,7 @@ class DriveFeedProcessor {
   // TODO(achuith): Change the type of on_complete_callback to
   // FileOperationCallback instead.
   void ApplyFeeds(
-      const ScopedVector<google_apis::ResourceList>& feed_list,
+      const ScopedVector<google_apis::DocumentFeed>& feed_list,
       bool is_delta_feed,
       int64 root_feed_changestamp,
       const base::Closure& on_complete_callback);
@@ -58,7 +58,7 @@ class DriveFeedProcessor {
   // DriveEntryProtoMap. |feed_changestamp| and/or |uma_stats| may be NULL.
   // entry_proto_map_ and root_upload_url_ are updated as side effects.
   void FeedToEntryProtoMap(
-    const ScopedVector<google_apis::ResourceList>& feed_list,
+    const ScopedVector<google_apis::DocumentFeed>& feed_list,
     int64* feed_changestamp,
     FeedToEntryProtoMapUMAStats* uma_stats);
 

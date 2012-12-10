@@ -24,7 +24,7 @@
 #include "webkit/fileapi/syncable/sync_callbacks.h"
 
 namespace google_apis {
-class ResourceList;
+class DocumentFeed;
 }
 
 namespace tracked_objects {
@@ -251,7 +251,7 @@ class DriveFileSyncService
       const GURL& origin,
       int64 largest_changestamp,
       google_apis::GDataErrorCode error,
-      scoped_ptr<google_apis::ResourceList> feed);
+      scoped_ptr<google_apis::DocumentFeed> feed);
   void DidRemoveOriginOnMetadataStore(
       scoped_ptr<TaskToken> token,
       const fileapi::SyncStatusCallback& callback,
@@ -330,7 +330,7 @@ class DriveFileSyncService
       scoped_ptr<TaskToken> token,
       bool has_new_changes,
       google_apis::GDataErrorCode error,
-      scoped_ptr<google_apis::ResourceList> changes);
+      scoped_ptr<google_apis::DocumentFeed> changes);
   bool GetOriginForEntry(const google_apis::ResourceEntry& entry, GURL* origin);
   void SchedulePolling();
 

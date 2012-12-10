@@ -136,10 +136,10 @@ bool UseLevelDB() {
   return false;
 }
 
-// Parses a google_apis::ResourceList from |data|.
-scoped_ptr<google_apis::ResourceList> ParseFeedOnBlockingPool(
+// Parses a google_apis::DocumentFeed from |data|.
+scoped_ptr<google_apis::DocumentFeed> ParseFeedOnBlockingPool(
     scoped_ptr<base::Value> data) {
-  return google_apis::ResourceList::ExtractAndParse(*data);
+  return google_apis::DocumentFeed::ExtractAndParse(*data);
 }
 
 }  // namespace
@@ -181,7 +181,7 @@ struct DriveFeedLoader::LoadFeedParams {
   GURL feed_to_load;
   bool load_subsequent_feeds;
   const LoadFeedListCallback feed_load_callback;
-  ScopedVector<google_apis::ResourceList> feed_list;
+  ScopedVector<google_apis::DocumentFeed> feed_list;
   scoped_ptr<GetResourceListUiState> ui_state;
 };
 
@@ -221,7 +221,7 @@ struct DriveFeedLoader::UpdateMetadataParams {
   const FileOperationCallback callback;
 };
 
-// Defines set of parameters sent to callback OnNotifyResourceListFetched().
+// Defines set of parameters sent to callback OnNotifyDocumentFeedFetched().
 // This is a trick to update the number of fetched documents frequently on
 // UI. Due to performance reason, we need to fetch a number of files at
 // a time. However, it'll take long time, and a user has no way to know
@@ -456,7 +456,7 @@ void DriveFeedLoader::SearchFromServer(
 
 void DriveFeedLoader::UpdateMetadataFromFeedAfterLoadFromServer(
     const UpdateMetadataParams& params,
-    const ScopedVector<google_apis::ResourceList>& feed_list,
+    const ScopedVector<google_apis::DocumentFeed>& feed_list,
     DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!params.callback.is_null());
@@ -512,7 +512,7 @@ void DriveFeedLoader::OnGetResourceList(scoped_ptr<LoadFeedParams> params,
 void DriveFeedLoader::OnParseFeed(
     scoped_ptr<LoadFeedParams> params,
     base::TimeTicks start_time,
-    scoped_ptr<google_apis::ResourceList> current_feed) {
+    scoped_ptr<google_apis::DocumentFeed> current_feed) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!current_feed) {
@@ -548,7 +548,7 @@ void DriveFeedLoader::OnParseFeed(
       // Currently the UI update is stopped. Start UI periodic callback.
       base::MessageLoopProxy::current()->PostTask(
           FROM_HERE,
-          base::Bind(&DriveFeedLoader::OnNotifyResourceListFetched,
+          base::Bind(&DriveFeedLoader::OnNotifyDocumentFeedFetched,
                      weak_ptr_factory_.GetWeakPtr(),
                      ui_state->weak_ptr_factory.GetWeakPtr()));
     }
@@ -574,7 +574,7 @@ void DriveFeedLoader::OnParseFeed(
 
   // Notify the observers that all document feeds are fetched.
   FOR_EACH_OBSERVER(DriveFeedLoaderObserver, observers_,
-                    OnResourceListFetched(num_accumulated_entries));
+                    OnDocumentFeedFetched(num_accumulated_entries));
 
   UMA_HISTOGRAM_TIMES("Drive.EntireFeedLoadTime",
                       base::TimeTicks::Now() - start_time);
@@ -628,8 +628,8 @@ void DriveFeedLoader::OnGetChangelist(scoped_ptr<LoadFeedParams> params,
 #endif
 
   // Add the current feed to the list of collected feeds for this directory.
-  scoped_ptr<google_apis::ResourceList> feed =
-      google_apis::ResourceList::CreateFromChangeList(*current_feed);
+  scoped_ptr<google_apis::DocumentFeed> feed =
+      google_apis::DocumentFeed::CreateFromChangeList(*current_feed);
   params->feed_list.push_back(feed.release());
 
   // Compute and notify the number of entries fetched so far.
@@ -652,7 +652,7 @@ void DriveFeedLoader::OnGetChangelist(scoped_ptr<LoadFeedParams> params,
       // Currently the UI update is stopped. Start UI periodic callback.
       base::MessageLoopProxy::current()->PostTask(
           FROM_HERE,
-          base::Bind(&DriveFeedLoader::OnNotifyResourceListFetched,
+          base::Bind(&DriveFeedLoader::OnNotifyDocumentFeedFetched,
                      weak_ptr_factory_.GetWeakPtr(),
                      ui_state->weak_ptr_factory.GetWeakPtr()));
     }
@@ -677,7 +677,7 @@ void DriveFeedLoader::OnGetChangelist(scoped_ptr<LoadFeedParams> params,
 
   // Notify the observers that all document feeds are fetched.
   FOR_EACH_OBSERVER(DriveFeedLoaderObserver, observers_,
-                    OnResourceListFetched(num_accumulated_entries));
+                    OnDocumentFeedFetched(num_accumulated_entries));
 
   UMA_HISTOGRAM_TIMES("Drive.EntireFeedLoadTime",
                       base::TimeTicks::Now() - start_time);
@@ -686,7 +686,7 @@ void DriveFeedLoader::OnGetChangelist(scoped_ptr<LoadFeedParams> params,
   params->RunFeedLoadCallback(error);
 }
 
-void DriveFeedLoader::OnNotifyResourceListFetched(
+void DriveFeedLoader::OnNotifyDocumentFeedFetched(
     base::WeakPtr<GetResourceListUiState> ui_state) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -703,7 +703,7 @@ void DriveFeedLoader::OnNotifyResourceListFetched(
       ui_state->num_fetched_documents) {
     ui_state->num_showing_documents += kFetchUiUpdateStep;
     FOR_EACH_OBSERVER(DriveFeedLoaderObserver, observers_,
-                      OnResourceListFetched(ui_state->num_showing_documents));
+                      OnDocumentFeedFetched(ui_state->num_showing_documents));
 
     int num_remaining_ui_updates =
         (ui_state->num_fetched_documents - ui_state->num_showing_documents)
@@ -722,7 +722,7 @@ void DriveFeedLoader::OnNotifyResourceListFetched(
 
       base::MessageLoopProxy::current()->PostDelayedTask(
           FROM_HERE,
-          base::Bind(&DriveFeedLoader::OnNotifyResourceListFetched,
+          base::Bind(&DriveFeedLoader::OnNotifyDocumentFeedFetched,
                      weak_ptr_factory_.GetWeakPtr(),
                      ui_state->weak_ptr_factory.GetWeakPtr()),
           interval);
@@ -825,7 +825,7 @@ void DriveFeedLoader::SaveFileSystem() {
 }
 
 void DriveFeedLoader::UpdateFromFeed(
-    const ScopedVector<google_apis::ResourceList>& feed_list,
+    const ScopedVector<google_apis::DocumentFeed>& feed_list,
     bool is_delta_feed,
     int64 root_feed_changestamp,
     const std::string& root_resource_id,

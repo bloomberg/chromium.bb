@@ -643,7 +643,7 @@ void ResourceEntry::RegisterJSONConverter(
       kFeedLinkField, &ResourceEntry::feed_links_);
   converter->RegisterNestedField(kContentField, &ResourceEntry::content_);
 
-  // File properties.  If the resource type is not a normal file, then
+  // File properties.  If the document type is not a normal file, then
   // that's no problem because those feed must not have these fields
   // themselves, which does not report errors.
   converter->RegisterStringField(kFileNameField, &ResourceEntry::filename_);
@@ -783,7 +783,7 @@ scoped_ptr<ResourceEntry> ResourceEntry::CreateFrom(const base::Value& value) {
   base::JSONValueConverter<ResourceEntry> converter;
   scoped_ptr<ResourceEntry> entry(new ResourceEntry());
   if (!converter.Convert(value, entry.get())) {
-    DVLOG(1) << "Invalid resource entry!";
+    DVLOG(1) << "Invalid document entry!";
     return scoped_ptr<ResourceEntry>();
   }
 
@@ -969,40 +969,40 @@ std::string ResourceEntry::GetEntryNodeName() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ResourceList implementation
+// DocumentFeed implementation
 
-ResourceList::ResourceList()
+DocumentFeed::DocumentFeed()
     : start_index_(0),
       items_per_page_(0),
       largest_changestamp_(0) {
 }
 
-ResourceList::~ResourceList() {
+DocumentFeed::~DocumentFeed() {
 }
 
 // static
-void ResourceList::RegisterJSONConverter(
-    base::JSONValueConverter<ResourceList>* converter) {
+void DocumentFeed::RegisterJSONConverter(
+    base::JSONValueConverter<DocumentFeed>* converter) {
   // inheritance
   FeedEntry::RegisterJSONConverter(
       reinterpret_cast<base::JSONValueConverter<FeedEntry>*>(converter));
   // TODO(zelidrag): Once we figure out where these will be used, we should
   // check for valid start_index_ and items_per_page_ values.
   converter->RegisterCustomField<int>(
-      kStartIndexField, &ResourceList::start_index_, &base::StringToInt);
+      kStartIndexField, &DocumentFeed::start_index_, &base::StringToInt);
   converter->RegisterCustomField<int>(
-      kItemsPerPageField, &ResourceList::items_per_page_, &base::StringToInt);
-  converter->RegisterStringField(kTitleTField, &ResourceList::title_);
-  converter->RegisterRepeatedMessage(kEntryField, &ResourceList::entries_);
+      kItemsPerPageField, &DocumentFeed::items_per_page_, &base::StringToInt);
+  converter->RegisterStringField(kTitleTField, &DocumentFeed::title_);
+  converter->RegisterRepeatedMessage(kEntryField, &DocumentFeed::entries_);
   converter->RegisterCustomField<int64>(
-     kLargestChangestampField, &ResourceList::largest_changestamp_,
+     kLargestChangestampField, &DocumentFeed::largest_changestamp_,
      &base::StringToInt64);
 }
 
-bool ResourceList::Parse(const base::Value& value) {
-  base::JSONValueConverter<ResourceList> converter;
+bool DocumentFeed::Parse(const base::Value& value) {
+  base::JSONValueConverter<DocumentFeed> converter;
   if (!converter.Convert(value, this)) {
-    DVLOG(1) << "Invalid resource list!";
+    DVLOG(1) << "Invalid document feed!";
     return false;
   }
 
@@ -1016,32 +1016,32 @@ bool ResourceList::Parse(const base::Value& value) {
 }
 
 // static
-scoped_ptr<ResourceList> ResourceList::ExtractAndParse(
+scoped_ptr<DocumentFeed> DocumentFeed::ExtractAndParse(
     const base::Value& value) {
   const base::DictionaryValue* as_dict = NULL;
   const base::DictionaryValue* feed_dict = NULL;
   if (value.GetAsDictionary(&as_dict) &&
       as_dict->GetDictionary(kFeedField, &feed_dict)) {
-    return ResourceList::CreateFrom(*feed_dict);
+    return DocumentFeed::CreateFrom(*feed_dict);
   }
-  return scoped_ptr<ResourceList>(NULL);
+  return scoped_ptr<DocumentFeed>(NULL);
 }
 
 // static
-scoped_ptr<ResourceList> ResourceList::CreateFrom(const base::Value& value) {
-  scoped_ptr<ResourceList> feed(new ResourceList());
+scoped_ptr<DocumentFeed> DocumentFeed::CreateFrom(const base::Value& value) {
+  scoped_ptr<DocumentFeed> feed(new DocumentFeed());
   if (!feed->Parse(value)) {
-    DVLOG(1) << "Invalid resource list!";
-    return scoped_ptr<ResourceList>(NULL);
+    DVLOG(1) << "Invalid document feed!";
+    return scoped_ptr<DocumentFeed>(NULL);
   }
 
   return feed.Pass();
 }
 
 // static
-scoped_ptr<ResourceList> ResourceList::CreateFromChangeList(
+scoped_ptr<DocumentFeed> DocumentFeed::CreateFromChangeList(
     const ChangeList& changelist) {
-  scoped_ptr<ResourceList> feed(new ResourceList());
+  scoped_ptr<DocumentFeed> feed(new DocumentFeed());
   int64 largest_changestamp = 0;
   ScopedVector<ChangeResource>::const_iterator iter =
       changelist.items().begin();
@@ -1056,7 +1056,7 @@ scoped_ptr<ResourceList> ResourceList::CreateFromChangeList(
   return feed.Pass();
 }
 
-bool ResourceList::GetNextFeedURL(GURL* url) const {
+bool DocumentFeed::GetNextFeedURL(GURL* url) const {
   DCHECK(url);
   for (size_t i = 0; i < links_.size(); ++i) {
     if (links_[i]->type() == Link::LINK_NEXT) {
@@ -1067,7 +1067,7 @@ bool ResourceList::GetNextFeedURL(GURL* url) const {
   return false;
 }
 
-void ResourceList::ReleaseEntries(std::vector<ResourceEntry*>* entries) {
+void DocumentFeed::ReleaseEntries(std::vector<ResourceEntry*>* entries) {
   entries_.release(entries);
 }
 

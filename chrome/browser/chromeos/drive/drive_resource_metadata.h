@@ -148,11 +148,11 @@ class DriveResourceMetadata {
   // Sets root directory resource ID and put root to ResourceMap.
   void InitializeRootEntry(const std::string& id);
 
-  // Add |entry| to directory with path |directory_path| and invoke the
+  // Add |doc entry| to directory with path |directory_path| and invoke the
   // callback asynchronously.
   // |callback| must not be null.
   void AddEntryToDirectory(const FilePath& directory_path,
-                           scoped_ptr<google_apis::ResourceEntry> entry,
+                           scoped_ptr<google_apis::ResourceEntry> doc_entry,
                            const FileMoveCallback& callback);
 
   // Add |entry_proto| to the metadata tree, based on its parent_resource_id.
@@ -211,11 +211,11 @@ class DriveResourceMetadata {
   void RefreshEntryProto(const DriveEntryProto& entry_proto,
                          const GetEntryInfoWithFilePathCallback& callback);
 
-  // Refresh a drive entry with resource_id that matches that of |entry|,
-  // with |entry|.
+  // Refresh a drive entry with resource_id that matches that of |doc_entry|,
+  // with |doc_entry|.
   // |callback| must not be null.
   // TODO(achuith): Deprecate this in favor of RefreshEntryProto above.
-  void RefreshFile(scoped_ptr<google_apis::ResourceEntry> entry,
+  void RefreshFile(scoped_ptr<google_apis::ResourceEntry> doc_entry,
                    const GetEntryInfoWithFilePathCallback& callback);
 
   // Removes all child files of |directory| and replaces them with

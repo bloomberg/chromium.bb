@@ -80,7 +80,7 @@ class Link {
   // this class.
   static void RegisterJSONConverter(base::JSONValueConverter<Link>* converter);
 
-  // Creates a link entry from parsed XML.
+  // Creates document entry from parsed XML.
   static Link* CreateFromXml(XmlReader* xml_reader);
 
   // Type of the link.
@@ -227,7 +227,7 @@ class Category {
   DISALLOW_COPY_AND_ASSIGN(Category);
 };
 
-// Content details of a resource: mime-type, url, and so on.
+// Content details of a document: mime-type, url, and so on.
 class Content {
  public:
   Content();
@@ -297,8 +297,7 @@ class AppIcon {
   DISALLOW_COPY_AND_ASSIGN(AppIcon);
 };
 
-// Base class for feed entries. This class defines fields commonly used by
-// various feeds.
+// Base class for feed entries.
 class FeedEntry {
  public:
   FeedEntry();
@@ -338,8 +337,7 @@ class FeedEntry {
   DISALLOW_COPY_AND_ASSIGN(FeedEntry);
 };
 
-// This class represents a resource entry. A resource is a generic term which
-// refers to a file and a directory.
+// Document feed entry.
 class ResourceEntry : public FeedEntry {
  public:
   virtual ~ResourceEntry();
@@ -357,21 +355,21 @@ class ResourceEntry : public FeedEntry {
   // The caller should delete the returned object.
   static scoped_ptr<ResourceEntry> ExtractAndParse(const base::Value& value);
 
-  // Creates resource entry from parsed JSON Value.  You should call
+  // Creates document entry from parsed JSON Value.  You should call
   // this instead of instantiating JSONValueConverter by yourself
   // because this method does some post-process for some fields.  See
   // FillRemainingFields comment and implementation for the details.
   static scoped_ptr<ResourceEntry> CreateFrom(const base::Value& value);
 
-  // Creates resource entry from parsed XML.
+  // Creates document entry from parsed XML.
   static scoped_ptr<ResourceEntry> CreateFromXml(XmlReader* xml_reader);
 
-  // Creates resource entry from FileResource.
+  // Creates document entry from FileResource.
   // TODO(kochi): This should go away soon. http://crbug.com/142293
   static scoped_ptr<ResourceEntry> CreateFromFileResource(
       const FileResource& file);
 
-  // Creates resource entry from ChangeResource.
+  // Creates document entry from ChangeResource.
   // Todo(Kochi): This should go away soon. http://crbug.com/142293
   static scoped_ptr<ResourceEntry> CreateFromChangeResource(
       const ChangeResource& change);
@@ -396,53 +394,56 @@ class ResourceEntry : public FeedEntry {
   // Returns true if |file| has one of the hosted document extensions.
   static bool HasHostedDocumentExtension(const FilePath& file);
 
-  // The resource ID is used to identify a resource, which looks like:
-  // file:d41d8cd98f00b204e9800998ecf8
+  // Document entry resource id.
   const std::string& resource_id() const { return resource_id_; }
 
-  // This is a URL looks like:
-  // https://docs.google.com/feeds/id/file%3Ad41d8cd98f00b204e9800998ecf8.
-  // The URL is currently not used.
+  // Document entry id.
   const std::string& id() const { return id_; }
 
+  // Document entry kind.
   DriveEntryKind kind() const { return kind_; }
+
+  // Document entry title.
   const string16& title() const { return title_; }
+
+  // Document entry published time.
   base::Time published_time() const { return published_time_; }
+
+  // Document entry last viewed time.
   base::Time last_viewed_time() const { return last_viewed_time_; }
+
+  // List of document feed labels.
   const std::vector<string16>& labels() const { return labels_; }
 
-  // Content URL is the main URL of a resource, used to perform
-  // non-destructive operations like downloading a file. Search for
-  // 'content_url' in gdata_wapi_operations.h for details.
+  // Document entry content URL.
   const GURL& content_url() const { return content_.url(); }
 
+  // Document entry MIME type.
   const std::string& content_mime_type() const { return content_.mime_type(); }
 
-  // The feed links contain extra links for revisions and access control,
-  // etc.  Note that links() contain more basic links like edit URL,
-  // alternatie URL, etc.
+  // List of document feed links.
   const ScopedVector<FeedLink>& feed_links() const { return feed_links_; }
 
-  // File name (exists only for kinds FILE and PDF).
+  // Document feed file name (exists only for kinds FILE and PDF).
   const string16& filename() const { return filename_; }
 
-  // Suggested file name (exists only for kinds FILE and PDF).
+  // Document feed suggested file name (exists only for kinds FILE and PDF).
   const string16& suggested_filename() const { return suggested_filename_; }
 
-  // File content MD5 (exists only for kinds FILE and PDF).
+  // Document feed file content MD5 (exists only for kinds FILE and PDF).
   const std::string& file_md5() const { return file_md5_; }
 
-  // File size (exists only for kinds FILE and PDF).
+  // Document feed file size (exists only for kinds FILE and PDF).
   int64 file_size() const { return file_size_; }
 
-  // True if the file or directory is deleted (applicable to change list only).
+  // True if the file or directory is deleted (applicable to change feeds only).
   bool deleted() const { return deleted_ || removed_; }
 
   // Changestamp (exists only for change query results).
   // If not exists, defaults to 0.
   int64 changestamp() const { return changestamp_; }
 
-  // Text version of resource entry kind. Returns an empty string for
+  // Text version of document entry kind. Returns an empty string for
   // unknown entry kind.
   std::string GetEntryKindText() const;
 
@@ -450,27 +451,27 @@ class ResourceEntry : public FeedEntry {
   // a hosted document, this call returns an empty string.
   std::string GetHostedDocumentExtension() const;
 
-  // True if resource entry is remotely hosted.
+  // True if document entry is remotely hosted.
   bool is_hosted_document() const {
     return (ClassifyEntryKind(kind_) & KIND_OF_HOSTED_DOCUMENT) > 0;
   }
-  // True if resource entry hosted by Google Documents.
+  // True if document entry hosted by Google Documents.
   bool is_google_document() const {
     return (ClassifyEntryKind(kind_) & KIND_OF_GOOGLE_DOCUMENT) > 0;
   }
-  // True if resource entry is hosted by an external application.
+  // True if document entry is hosted by an external application.
   bool is_external_document() const {
     return (ClassifyEntryKind(kind_) & KIND_OF_EXTERNAL_DOCUMENT) > 0;
   }
-  // True if resource entry is a folder (collection).
+  // True if document entry is a folder (collection).
   bool is_folder() const {
     return (ClassifyEntryKind(kind_) & KIND_OF_FOLDER) > 0;
   }
-  // True if resource entry is regular file.
+  // True if document entry is regular file.
   bool is_file() const {
     return (ClassifyEntryKind(kind_) & KIND_OF_FILE) > 0;
   }
-  // True if resource entry can't be mapped to the file system.
+  // True if document entry can't be mapped to the file system.
   bool is_special() const {
     return !is_file() && !is_folder() && !is_hosted_document();
   }
@@ -495,7 +496,7 @@ class ResourceEntry : public FeedEntry {
 
  private:
   friend class base::internal::RepeatedMessageConverter<ResourceEntry>;
-  friend class ResourceList;
+  friend class DocumentFeed;
   friend class ResumeUploadOperation;
 
   ResourceEntry();
@@ -530,13 +531,12 @@ class ResourceEntry : public FeedEntry {
   DISALLOW_COPY_AND_ASSIGN(ResourceEntry);
 };
 
-// This class represents a list of resource entries with some extra metadata
-// such as the root upload URL. The feed is paginated and the rest of the
-// feed can be fetched by retrieving the remaining parts of the feed from
-// URLs provided by GetNextFeedURL() method.
-class ResourceList : public FeedEntry {
+// Document feed represents a list of entries. The feed is paginated and
+// the rest of the feed can be fetched by retrieving the remaining parts of the
+// feed from URLs provided by GetNextFeedURL() method.
+class DocumentFeed : public FeedEntry {
  public:
-  virtual ~ResourceList();
+  virtual ~DocumentFeed();
 
   // Extracts "feed" dictionary from the JSON value, and parse the contents,
   // using CreateFrom(). Returns NULL on failure. The input JSON data, coming
@@ -547,50 +547,50 @@ class ResourceList : public FeedEntry {
   //   "feed": { ... },   // This function will extract this and parse.
   //   "version": "1.0"
   // }
-  static scoped_ptr<ResourceList> ExtractAndParse(const base::Value& value);
+  static scoped_ptr<DocumentFeed> ExtractAndParse(const base::Value& value);
 
   // Creates feed from parsed JSON Value.  You should call this
   // instead of instantiating JSONValueConverter by yourself because
   // this method does some post-process for some fields.  See
   // FillRemainingFields comment and implementation in ResourceEntry
   // class for the details.
-  static scoped_ptr<ResourceList> CreateFrom(const base::Value& value);
+  static scoped_ptr<DocumentFeed> CreateFrom(const base::Value& value);
   // Variant of CreateFrom() above, creates feed from parsed ChangeList.
   // TODO(kochi): This should go away soon. http://crbug.com/142293
-  static scoped_ptr<ResourceList> CreateFromChangeList(
+  static scoped_ptr<DocumentFeed> CreateFromChangeList(
       const ChangeList& changelist);
 
   // Registers the mapping between JSON field names and the members in
   // this class.
   static void RegisterJSONConverter(
-      base::JSONValueConverter<ResourceList>* converter);
+      base::JSONValueConverter<DocumentFeed>* converter);
 
   // Returns true and passes|url| of the next feed if the current entry list
   // does not completed this feed.
   bool GetNextFeedURL(GURL* url) const;
 
-  // List of resource entries.
+  // List of document entries.
   const ScopedVector<ResourceEntry>& entries() const { return entries_; }
 
   // Releases entries_ into |entries|. This is a transfer of ownership, so the
   // caller is responsible for deleting the elements of |entries|.
   void ReleaseEntries(std::vector<ResourceEntry*>* entries);
 
-  // Start index of the resource entry list.
+  // Start index of the document entry list.
   int start_index() const { return start_index_; }
 
-  // Number of items per feed of the resource entry list.
+  // Number of items per feed of the document entry list.
   int items_per_page() const { return items_per_page_; }
 
-  // The largest changestamp. Next time the resource list should be fetched
+  // The largest changestamp. Next time the documents should be fetched
   // from this changestamp.
   int64 largest_changestamp() const { return largest_changestamp_; }
 
-  // Resource entry list title.
+  // Document entry list title.
   const std::string& title() { return title_; }
 
  private:
-  ResourceList();
+  DocumentFeed();
 
   // Parses and initializes data members from content of |value|.
   // Return false if parsing fails.
@@ -602,7 +602,7 @@ class ResourceList : public FeedEntry {
   std::string title_;
   int64 largest_changestamp_;
 
-  DISALLOW_COPY_AND_ASSIGN(ResourceList);
+  DISALLOW_COPY_AND_ASSIGN(DocumentFeed);
 };
 
 // Metadata representing installed Google Drive application.

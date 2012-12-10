@@ -236,12 +236,12 @@ void DriveResourceMetadata::ClearRoot() {
 
 void DriveResourceMetadata::AddEntryToDirectory(
     const FilePath& directory_path,
-    scoped_ptr<google_apis::ResourceEntry> entry,
+    scoped_ptr<google_apis::ResourceEntry> doc_entry,
     const FileMoveCallback& callback) {
   DCHECK(!directory_path.empty());
   DCHECK(!callback.is_null());
 
-  if (!entry.get()) {
+  if (!doc_entry.get()) {
     PostFileMoveCallbackError(callback, DRIVE_FILE_ERROR_FAILED);
     return;
   }
@@ -260,7 +260,7 @@ void DriveResourceMetadata::AddEntryToDirectory(
 
   AddEntryToDirectoryInternal(
       directory,
-      ConvertResourceEntryToDriveEntryProto(*entry),
+      ConvertResourceEntryToDriveEntryProto(*doc_entry),
       callback);
 }
 
@@ -499,19 +499,19 @@ void DriveResourceMetadata::GetEntryInfoPairByPaths(
 }
 
 void DriveResourceMetadata::RefreshFile(
-    scoped_ptr<google_apis::ResourceEntry> entry,
+    scoped_ptr<google_apis::ResourceEntry> doc_entry,
     const GetEntryInfoWithFilePathCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (!entry.get()) {
+  if (!doc_entry.get()) {
     PostGetEntryInfoWithFilePathCallbackError(
         callback, DRIVE_FILE_ERROR_FAILED);
     return;
   }
 
   RefreshEntryProto(ConvertResourceEntryToDriveEntryProto(
-      *entry), callback);
+      *doc_entry), callback);
 }
 
 void DriveResourceMetadata::RefreshEntryProto(
