@@ -8,7 +8,6 @@
 #include "base/bind_helpers.h"
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
-#include "chrome/browser/ui/views/chrome_views_delegate.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/ime/text_input_test_support.h"
@@ -27,6 +26,7 @@
 #include "ui/aura/client/event_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/test/test_stacking_client.h"
 #endif
 
 namespace {
@@ -93,8 +93,6 @@ void ViewEventTestBase::SetUp() {
 #if defined(OS_WIN)
   // http://crbug.com/154081 use ash::Shell code path below on win_ash bots when
   // interactive_ui_tests is brought up on that platform.
-  views::ViewsDelegate::views_delegate = new ChromeViewsDelegate;
-
   gfx::Screen::SetScreenInstance(
       gfx::SCREEN_TYPE_NATIVE, views::CreateDesktopScreen());
 #else
@@ -102,6 +100,10 @@ void ViewEventTestBase::SetUp() {
 #endif
 #endif
   window_ = views::Widget::CreateWindow(this);
+#if defined(USE_AURA)
+  stacking_client_.reset(new aura::test::TestStackingClient(
+      window_->GetNativeWindow()->GetRootWindow()));
+#endif
 }
 
 void ViewEventTestBase::TearDown() {
@@ -116,13 +118,12 @@ void ViewEventTestBase::TearDown() {
   }
 #if defined(USE_ASH)
 #if defined(OS_WIN)
-  delete views::ViewsDelegate::views_delegate;
-  views::ViewsDelegate::views_delegate = NULL;
 #else
   ash::Shell::DeleteInstance();
 #endif
 #endif
 #if defined(USE_AURA)
+  stacking_client_.reset();
   aura::Env::DeleteInstance();
 #endif
   ui::CompositorTestSupport::Terminate();

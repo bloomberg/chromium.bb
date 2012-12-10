@@ -23,6 +23,12 @@
 #include "ui/base/win/scoped_ole_initializer.h"
 #endif
 
+namespace aura {
+namespace test {
+class TestStackingClient;
+}
+}
+
 namespace gfx {
 class Size;
 }
@@ -141,6 +147,10 @@ class ViewEventTestBase : public views::WidgetDelegate,
 
 #if defined(OS_WIN)
   ui::ScopedOleInitializer ole_initializer_;
+#endif
+
+#if defined(USE_AURA)
+  scoped_ptr<aura::test::TestStackingClient> stacking_client_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ViewEventTestBase);
