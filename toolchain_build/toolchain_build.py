@@ -15,7 +15,7 @@ import command
 import toolchain_main
 
 GIT_REVISIONS = {
-    'binutils': 'd5184a59ba2b8777e55377cad46459e40e5f5ee1',
+    'binutils': '9738dec752712199e6f15e5654a2cdcd565c6ad2',
     'gcc': '7f9c2344511c5cc59180604be1e54cae4f8323ac',
     'newlib': '5feee65e182c08a7e89fbffc3223c57e4335420f',
     }
@@ -276,11 +276,8 @@ def HostTools(target):
                   CONFIGURE_HOST_TOOL +
                   ConfigureTargetArgs(target) + [
                       '--enable-deterministic-archives',
+                      '--enable-gold',
                       ] + ([] if sys.platform == 'win32' else [
-                          # TODO(mcgrathr): The gold test suite fails in
-                          # the Windows build.  Build it again on Windows
-                          # when that is sorted out.
-                          '--enable-gold',
                           '--enable-plugins',
                           ])),
               command.Command(MAKE_PARALLEL_CMD),
