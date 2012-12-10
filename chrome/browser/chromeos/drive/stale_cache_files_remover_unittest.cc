@@ -166,7 +166,7 @@ TEST_F(StaleCacheFilesRemoverTest, RemoveStaleCacheFiles) {
 
   // Verify that the corresponding file entry doesn't exist.
   EXPECT_CALL(*mock_drive_service_, GetAccountMetadata(_)).Times(2);
-  EXPECT_CALL(*mock_drive_service_, GetDocuments(Eq(GURL()), _, "", _, _, _))
+  EXPECT_CALL(*mock_drive_service_, GetResourceList(Eq(GURL()), _, "", _, _, _))
       .Times(2);
   EXPECT_CALL(*mock_webapps_registry_, UpdateFromFeed(_)).Times(1);
 

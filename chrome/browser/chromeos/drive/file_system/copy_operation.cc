@@ -20,7 +20,7 @@
 #include "net/base/mime_util.h"
 
 using content::BrowserThread;
-using google_apis::DocumentEntry;
+using google_apis::ResourceEntry;
 using google_apis::GDataErrorCode;
 
 namespace drive {
@@ -64,7 +64,7 @@ DriveFileError GetLocalFileInfoOnBlockingPool(
 std::string GetDocumentResourceIdOnBlockingPool(
     const FilePath& local_file_path) {
   std::string result;
-  if (DocumentEntry::HasHostedDocumentExtension(local_file_path)) {
+  if (ResourceEntry::HasHostedDocumentExtension(local_file_path)) {
     std::string error;
     DictionaryValue* dict_value = NULL;
     JSONFileValueSerializer serializer(local_file_path);
@@ -212,7 +212,7 @@ void CopyOperation::TransferRegularFile(
                  base::Owned(content_type)));
 }
 
-void CopyOperation::CopyDocumentToDirectory(
+void CopyOperation::CopyHostedDocumentToDirectory(
     const FilePath& dir_path,
     const std::string& resource_id,
     const FilePath::StringType& new_name,
@@ -220,16 +220,16 @@ void CopyOperation::CopyDocumentToDirectory(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  drive_service_->CopyDocument(
+  drive_service_->CopyHostedDocument(
       resource_id,
       new_name,
-      base::Bind(&CopyOperation::OnCopyDocumentCompleted,
+      base::Bind(&CopyOperation::OnCopyHostedDocumentCompleted,
                  weak_ptr_factory_.GetWeakPtr(),
                  dir_path,
                  callback));
 }
 
-void CopyOperation::OnCopyDocumentCompleted(
+void CopyOperation::OnCopyHostedDocumentCompleted(
     const FilePath& dir_path,
     const FileOperationCallback& callback,
     GDataErrorCode status,
@@ -248,7 +248,7 @@ void CopyOperation::OnCopyDocumentCompleted(
   // destination directory by MoveEntryFromRootDirectory().
   metadata_->AddEntryToDirectory(
       FilePath(kDriveRootDirectory),
-      scoped_ptr<DocumentEntry>(DocumentEntry::ExtractAndParse(*data)),
+      scoped_ptr<ResourceEntry>(ResourceEntry::ExtractAndParse(*data)),
       base::Bind(&CopyOperation::MoveEntryFromRootDirectory,
                  weak_ptr_factory_.GetWeakPtr(),
                  dir_path,
@@ -379,12 +379,12 @@ void CopyOperation::CopyAfterGetEntryInfoPair(
   }
 
   if (src_file_proto->file_specific_info().is_hosted_document()) {
-    CopyDocumentToDirectory(dest_file_path.DirName(),
-                            src_file_proto->resource_id(),
-                            // Drop the document extension, which should not be
-                            // in the document title.
-                            dest_file_path.BaseName().RemoveExtension().value(),
-                            callback);
+    CopyHostedDocumentToDirectory(
+        dest_file_path.DirName(),
+        src_file_proto->resource_id(),
+        // Drop the document extension, which should not be in the title.
+        dest_file_path.BaseName().RemoveExtension().value(),
+        callback);
     return;
   }
 
@@ -484,13 +484,13 @@ void CopyOperation::OnTransferCompleted(
     google_apis::DriveUploadError error,
     const FilePath& drive_path,
     const FilePath& file_path,
-    scoped_ptr<DocumentEntry> document_entry) {
+    scoped_ptr<ResourceEntry> resource_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (error == google_apis::DRIVE_UPLOAD_OK && document_entry.get()) {
+  if (error == google_apis::DRIVE_UPLOAD_OK && resource_entry.get()) {
     drive_file_system_->AddUploadedFile(drive_path.DirName(),
-                                        document_entry.Pass(),
+                                        resource_entry.Pass(),
                                         file_path,
                                         callback);
   } else {
@@ -546,7 +546,7 @@ void CopyOperation::TransferFileForResourceId(
 
   // Otherwise, copy the document on the server side and add the new copy
   // to the destination directory (collection).
-  CopyDocumentToDirectory(
+  CopyHostedDocumentToDirectory(
       remote_dest_file_path.DirName(),
       resource_id,
       // Drop the document extension, which should not be

@@ -58,14 +58,14 @@ class DriveAPIService : public google_apis::DriveServiceInterface,
       const OVERRIDE;
   virtual bool HasAccessToken() const OVERRIDE;
   virtual bool HasRefreshToken() const OVERRIDE;
-  virtual void GetDocuments(
+  virtual void GetResourceList(
       const GURL& feed_url,
       int64 start_changestamp,
       const std::string& search_query,
       bool shared_with_me,
       const std::string& directory_resource_id,
       const google_apis::GetDataCallback& callback) OVERRIDE;
-  virtual void GetDocumentEntry(
+  virtual void GetResourceEntry(
       const std::string& resource_id,
       const google_apis::GetDataCallback& callback) OVERRIDE;
 
@@ -73,10 +73,10 @@ class DriveAPIService : public google_apis::DriveServiceInterface,
       const google_apis::GetDataCallback& callback) OVERRIDE;
   virtual void GetApplicationInfo(
       const google_apis::GetDataCallback& callback) OVERRIDE;
-  virtual void DeleteDocument(
-      const GURL& document_url,
+  virtual void DeleteResource(
+      const GURL& edit_url,
       const google_apis::EntryActionCallback& callback) OVERRIDE;
-  virtual void DownloadDocument(
+  virtual void DownloadHostedDocument(
       const FilePath& virtual_path,
       const FilePath& local_cache_path,
       const GURL& content_url,
@@ -88,17 +88,17 @@ class DriveAPIService : public google_apis::DriveServiceInterface,
       const GURL& content_url,
       const google_apis::DownloadActionCallback& download_action_callback,
       const google_apis::GetContentCallback& get_content_callback) OVERRIDE;
-  virtual void CopyDocument(
+  virtual void CopyHostedDocument(
       const std::string& resource_id,
       const FilePath::StringType& new_name,
       const google_apis::GetDataCallback& callback) OVERRIDE;
   virtual void RenameResource(
-      const GURL& document_url,
+      const GURL& edit_url,
       const FilePath::StringType& new_name,
       const google_apis::EntryActionCallback& callback) OVERRIDE;
   virtual void AddResourceToDirectory(
       const GURL& parent_content_url,
-      const GURL& resource_url,
+      const GURL& edit_url,
       const google_apis::EntryActionCallback& callback) OVERRIDE;
   virtual void RemoveResourceFromDirectory(
       const GURL& parent_content_url,
@@ -115,7 +115,7 @@ class DriveAPIService : public google_apis::DriveServiceInterface,
       const google_apis::ResumeUploadParams& params,
       const google_apis::ResumeUploadCallback& callback) OVERRIDE;
   virtual void AuthorizeApp(
-      const GURL& resource_url,
+      const GURL& edit_url,
       const std::string& app_id,
       const google_apis::GetDataCallback& callback) OVERRIDE;
 

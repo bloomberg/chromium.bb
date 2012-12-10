@@ -93,7 +93,7 @@ DriveAPIService::GetProgressStatusList() const {
   return operation_registry()->GetProgressStatusList();
 }
 
-void DriveAPIService::GetDocuments(
+void DriveAPIService::GetResourceList(
     const GURL& url,
     int64 start_changestamp,
     const std::string& search_query,
@@ -143,7 +143,7 @@ void DriveAPIService::GetChangelist(
                                               callback));
 }
 
-void DriveAPIService::GetDocumentEntry(
+void DriveAPIService::GetResourceEntry(
     const std::string& resource_id,
     const google_apis::GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -178,10 +178,10 @@ void DriveAPIService::GetApplicationInfo(
                                            callback));
 }
 
-void DriveAPIService::DownloadDocument(
+void DriveAPIService::DownloadHostedDocument(
     const FilePath& virtual_path,
     const FilePath& local_cache_path,
-    const GURL& document_url,
+    const GURL& content_url,
     google_apis::DocumentExportFormat format,
     const google_apis::DownloadActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -194,7 +194,7 @@ void DriveAPIService::DownloadDocument(
 void DriveAPIService::DownloadFile(
       const FilePath& virtual_path,
       const FilePath& local_cache_path,
-      const GURL& document_url,
+      const GURL& content_url,
       const google_apis::DownloadActionCallback& download_action_callback,
       const google_apis::GetContentCallback& get_content_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -205,8 +205,8 @@ void DriveAPIService::DownloadFile(
   NOTREACHED();
 }
 
-void DriveAPIService::DeleteDocument(
-    const GURL& document_url,
+void DriveAPIService::DeleteResource(
+    const GURL& edit_url,
     const google_apis::EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -226,7 +226,7 @@ void DriveAPIService::AddNewDirectory(
   NOTREACHED();
 }
 
-void DriveAPIService::CopyDocument(
+void DriveAPIService::CopyHostedDocument(
     const std::string& resource_id,
     const FilePath::StringType& new_name,
     const google_apis::GetDataCallback& callback) {
@@ -238,7 +238,7 @@ void DriveAPIService::CopyDocument(
 }
 
 void DriveAPIService::RenameResource(
-    const GURL& resource_url,
+    const GURL& edit_url,
     const FilePath::StringType& new_name,
     const google_apis::EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -250,7 +250,7 @@ void DriveAPIService::RenameResource(
 
 void DriveAPIService::AddResourceToDirectory(
     const GURL& parent_content_url,
-    const GURL& resource_url,
+    const GURL& edit_url,
     const google_apis::EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -291,7 +291,7 @@ void DriveAPIService::ResumeUpload(
 }
 
 void DriveAPIService::AuthorizeApp(
-    const GURL& resource_url,
+    const GURL& edit_url,
     const std::string& app_ids,
     const google_apis::GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

@@ -73,7 +73,7 @@ void RemoveOperation::RemoveAfterGetEntryInfo(
     return;
   }
 
-  drive_service_->DeleteDocument(
+  drive_service_->DeleteResource(
       GURL(entry_proto->edit_url()),
       base::Bind(&RemoveOperation::RemoveResourceLocally,
                  weak_ptr_factory_.GetWeakPtr(),

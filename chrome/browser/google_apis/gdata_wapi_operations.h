@@ -20,7 +20,7 @@ class URLRequestContextGetter;
 namespace google_apis {
 
 class GDataWapiUrlGenerator;
-class DocumentEntry;
+class ResourceEntry;
 
 //============================ GetResourceListOperation ========================
 
@@ -126,8 +126,8 @@ class GetAccountMetadataOperation : public GetDataOperation {
 
 //============================ DownloadFileOperation ===========================
 
-// Callback type for DownloadDocument/DownloadFile DocumentServiceInterface
-// calls.
+// Callback type for DownloadHostedDocument/DownloadFile
+// DocumentServiceInterface calls.
 typedef base::Callback<void(GDataErrorCode error,
                             const FilePath& temp_file)> DownloadActionCallback;
 
@@ -531,7 +531,7 @@ struct ResumeUploadParams {
 // Callback type for DocumentServiceInterface::ResumeUpload.
 typedef base::Callback<void(
     const ResumeUploadResponse& response,
-    scoped_ptr<DocumentEntry> new_entry)> ResumeUploadCallback;
+    scoped_ptr<ResourceEntry> new_entry)> ResumeUploadCallback;
 
 // This class performs the operation for resuming the upload of a file.
 // More specifically, this operation uploads a chunk of data carried in |buf|

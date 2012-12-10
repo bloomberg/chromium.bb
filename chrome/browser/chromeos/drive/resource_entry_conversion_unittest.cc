@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/document_entry_conversion.h"
+#include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 
 #include "base/file_path.h"
 #include "base/values.h"
@@ -14,17 +14,17 @@
 
 namespace drive {
 
-TEST(DocumentEntryConversionTest, ConvertDocumentEntryToDriveEntryProto_File) {
+TEST(ResourceEntryConversionTest, ConvertResourceEntryToDriveEntryProto_File) {
   scoped_ptr<base::Value> value =
       google_apis::test_util::LoadJSONFile("gdata/file_entry.json");
   ASSERT_TRUE(value.get());
 
-  scoped_ptr<google_apis::DocumentEntry> document_entry(
-      google_apis::DocumentEntry::ExtractAndParse(*value));
-  ASSERT_TRUE(document_entry.get());
+  scoped_ptr<google_apis::ResourceEntry> resource_entry(
+      google_apis::ResourceEntry::ExtractAndParse(*value));
+  ASSERT_TRUE(resource_entry.get());
 
   DriveEntryProto entry_proto =
-      ConvertDocumentEntryToDriveEntryProto(*document_entry);
+      ConvertResourceEntryToDriveEntryProto(*resource_entry);
 
   EXPECT_EQ("File 1.mp3",  entry_proto.title());
   EXPECT_EQ("File 1.mp3",  entry_proto.base_name());
@@ -75,18 +75,18 @@ TEST(DocumentEntryConversionTest, ConvertDocumentEntryToDriveEntryProto_File) {
   EXPECT_FALSE(entry_proto.file_info().is_directory());
 }
 
-TEST(DocumentEntryConversionTest,
-     ConvertDocumentEntryToDriveEntryProto_HostedDocument) {
+TEST(ResourceEntryConversionTest,
+     ConvertResourceEntryToDriveEntryProto_HostedDocument) {
   scoped_ptr<base::Value> value =
       google_apis::test_util::LoadJSONFile("gdata/hosted_document_entry.json");
   ASSERT_TRUE(value.get());
 
-  scoped_ptr<google_apis::DocumentEntry> document_entry(
-      google_apis::DocumentEntry::ExtractAndParse(*value));
-  ASSERT_TRUE(document_entry.get());
+  scoped_ptr<google_apis::ResourceEntry> resource_entry(
+      google_apis::ResourceEntry::ExtractAndParse(*value));
+  ASSERT_TRUE(resource_entry.get());
 
   DriveEntryProto entry_proto =
-      ConvertDocumentEntryToDriveEntryProto(*document_entry);
+      ConvertResourceEntryToDriveEntryProto(*resource_entry);
 
   EXPECT_EQ("Document 1",  entry_proto.title());
   EXPECT_EQ("Document 1.gdoc",  entry_proto.base_name());  // The suffix added.
@@ -159,18 +159,18 @@ TEST(DocumentEntryConversionTest,
   EXPECT_FALSE(entry_proto.file_info().is_directory());
 }
 
-TEST(DocumentEntryConversionTest,
-     ConvertDocumentEntryToDriveEntryProto_Directory) {
+TEST(ResourceEntryConversionTest,
+     ConvertResourceEntryToDriveEntryProto_Directory) {
   scoped_ptr<base::Value> value =
       google_apis::test_util::LoadJSONFile("gdata/directory_entry.json");
   ASSERT_TRUE(value.get());
 
-  scoped_ptr<google_apis::DocumentEntry> document_entry(
-      google_apis::DocumentEntry::ExtractAndParse(*value));
-  ASSERT_TRUE(document_entry.get());
+  scoped_ptr<google_apis::ResourceEntry> resource_entry(
+      google_apis::ResourceEntry::ExtractAndParse(*value));
+  ASSERT_TRUE(resource_entry.get());
 
   DriveEntryProto entry_proto =
-      ConvertDocumentEntryToDriveEntryProto(*document_entry);
+      ConvertResourceEntryToDriveEntryProto(*resource_entry);
 
   EXPECT_EQ("Sub Directory Folder",  entry_proto.title());
   EXPECT_EQ("Sub Directory Folder",  entry_proto.base_name());
@@ -236,19 +236,19 @@ TEST(DocumentEntryConversionTest,
   EXPECT_TRUE(entry_proto.file_info().is_directory());
 }
 
-TEST(DocumentEntryConversionTest,
-     ConvertDocumentEntryToDriveEntryProto_DeletedHostedDocument) {
+TEST(ResourceEntryConversionTest,
+     ConvertResourceEntryToDriveEntryProto_DeletedHostedDocument) {
   scoped_ptr<base::Value> value =
       google_apis::test_util::LoadJSONFile(
           "gdata/deleted_hosted_document_entry.json");
   ASSERT_TRUE(value.get());
 
-  scoped_ptr<google_apis::DocumentEntry> document_entry(
-      google_apis::DocumentEntry::ExtractAndParse(*value));
-  ASSERT_TRUE(document_entry.get());
+  scoped_ptr<google_apis::ResourceEntry> resource_entry(
+      google_apis::ResourceEntry::ExtractAndParse(*value));
+  ASSERT_TRUE(resource_entry.get());
 
   DriveEntryProto entry_proto =
-      ConvertDocumentEntryToDriveEntryProto(*document_entry);
+      ConvertResourceEntryToDriveEntryProto(*resource_entry);
 
   EXPECT_EQ("Deleted document",  entry_proto.title());
   EXPECT_EQ("Deleted document.gdoc",  entry_proto.base_name());

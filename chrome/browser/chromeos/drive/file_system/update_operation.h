@@ -91,7 +91,7 @@ class UpdateOperation {
       google_apis::DriveUploadError error,
       const FilePath& gdata_path,
       const FilePath& file_path,
-      scoped_ptr<google_apis::DocumentEntry> document_entry);
+      scoped_ptr<google_apis::ResourceEntry> resource_entry);
 
   // Part of UpdateFileByResourceId().
   // |callback| must not be null.

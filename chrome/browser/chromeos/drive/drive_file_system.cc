@@ -14,7 +14,6 @@
 #include "base/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/drive/document_entry_conversion.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_feed_loader.h"
@@ -25,6 +24,7 @@
 #include "chrome/browser/chromeos/drive/file_system/copy_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/move_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/remove_operation.h"
+#include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/drive_api_util.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
@@ -959,14 +959,14 @@ void DriveFileSystem::OnGetFileFromCache(
   // - if we have enough space, start downloading the file from the server
   GetFileFromCacheParams params(in_params);
   params.cache_file_path = cache_file_path;
-  drive_service_->GetDocumentEntry(
+  drive_service_->GetResourceEntry(
       params.resource_id,
-      base::Bind(&DriveFileSystem::OnGetDocumentEntry,
+      base::Bind(&DriveFileSystem::OnGetResourceEntry,
                  ui_weak_ptr_,
                  params));
 }
 
-void DriveFileSystem::OnGetDocumentEntry(const GetFileFromCacheParams& params,
+void DriveFileSystem::OnGetResourceEntry(const GetFileFromCacheParams& params,
                                          google_apis::GDataErrorCode status,
                                          scoped_ptr<base::Value> data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -981,13 +981,13 @@ void DriveFileSystem::OnGetDocumentEntry(const GetFileFromCacheParams& params,
     return;
   }
 
-  scoped_ptr<google_apis::DocumentEntry> doc_entry;
+  scoped_ptr<google_apis::ResourceEntry> doc_entry;
   if (!google_apis::util::IsDriveV2ApiEnabled()) {
-    doc_entry = google_apis::DocumentEntry::ExtractAndParse(*data);
+    doc_entry = google_apis::ResourceEntry::ExtractAndParse(*data);
   } else {
     scoped_ptr<google_apis::FileResource> file_resource =
         google_apis::FileResource::CreateFrom(*data);
-    doc_entry = google_apis::DocumentEntry::CreateFromFileResource(
+    doc_entry = google_apis::ResourceEntry::CreateFromFileResource(
         *file_resource);
   }
 
@@ -1376,8 +1376,8 @@ void DriveFileSystem::AddNewDirectory(
 
   resource_metadata_->AddEntryToDirectory(
       params.created_directory_path.DirName(),
-      scoped_ptr<google_apis::DocumentEntry>(
-          google_apis::DocumentEntry::ExtractAndParse(*data)),
+      scoped_ptr<google_apis::ResourceEntry>(
+          google_apis::ResourceEntry::ExtractAndParse(*data)),
       base::Bind(&DriveFileSystem::ContinueCreateDirectory,
                  ui_weak_ptr_,
                  params));
@@ -1440,7 +1440,7 @@ void DriveFileSystem::OnSearch(
   const base::Closure callback = base::Bind(
       search_callback, DRIVE_FILE_OK, next_feed, base::Passed(&result_vec));
 
-  const ScopedVector<google_apis::DocumentEntry>& entries = feed->entries();
+  const ScopedVector<google_apis::ResourceEntry>& entries = feed->entries();
   if (entries.empty()) {
     callback.Run();
     return;
@@ -1453,7 +1453,7 @@ void DriveFileSystem::OnSearch(
     // Run the callback if this is the last iteration of the loop.
     const bool should_run_callback = (i + 1 == entries.size());
     resource_metadata_->RefreshEntryProto(
-        ConvertDocumentEntryToDriveEntryProto(*entries[i]),
+        ConvertResourceEntryToDriveEntryProto(*entries[i]),
         base::Bind(&DriveFileSystem::AddToSearchResults,
                    ui_weak_ptr_,
                    results,
@@ -1775,7 +1775,7 @@ void DriveFileSystem::ContinueFindFirstMissingParentDirectory(
 
 void DriveFileSystem::AddUploadedFile(
     const FilePath& directory_path,
-    scoped_ptr<google_apis::DocumentEntry> doc_entry,
+    scoped_ptr<google_apis::ResourceEntry> doc_entry,
     const FilePath& file_content_path,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

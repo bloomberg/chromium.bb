@@ -22,7 +22,7 @@ class SequencedTaskRunner;
 }
 
 namespace google_apis {
-class DocumentEntry;
+class ResourceEntry;
 }
 
 namespace drive {
@@ -152,7 +152,7 @@ class DriveResourceMetadata {
   // callback asynchronously.
   // |callback| must not be null.
   void AddEntryToDirectory(const FilePath& directory_path,
-                           scoped_ptr<google_apis::DocumentEntry> doc_entry,
+                           scoped_ptr<google_apis::ResourceEntry> doc_entry,
                            const FileMoveCallback& callback);
 
   // Add |entry_proto| to the metadata tree, based on its parent_resource_id.
@@ -215,7 +215,7 @@ class DriveResourceMetadata {
   // with |doc_entry|.
   // |callback| must not be null.
   // TODO(achuith): Deprecate this in favor of RefreshEntryProto above.
-  void RefreshFile(scoped_ptr<google_apis::DocumentEntry> doc_entry,
+  void RefreshFile(scoped_ptr<google_apis::ResourceEntry> doc_entry,
                    const GetEntryInfoWithFilePathCallback& callback);
 
   // Removes all child files of |directory| and replaces them with

@@ -124,7 +124,7 @@ GetResourceListOperation::GetResourceListOperation(
 GetResourceListOperation::~GetResourceListOperation() {}
 
 GURL GetResourceListOperation::GetURL() const {
-  return url_generator_.GenerateDocumentListUrl(override_url_,
+  return url_generator_.GenerateResourceListUrl(override_url_,
                                                 start_changestamp_,
                                                 search_string_,
                                                 shared_with_me_,
@@ -148,7 +148,7 @@ GetResourceEntryOperation::GetResourceEntryOperation(
 GetResourceEntryOperation::~GetResourceEntryOperation() {}
 
 GURL GetResourceEntryOperation::GetURL() const {
-  return url_generator_.GenerateDocumentEntryUrl(resource_id_);
+  return url_generator_.GenerateResourceEntryUrl(resource_id_);
 }
 
 //========================= GetAccountMetadataOperation ========================
@@ -290,7 +290,7 @@ GURL CreateDirectoryOperation::GetURL() const {
   if (!parent_content_url_.is_empty())
     return GDataWapiUrlGenerator::AddStandardUrlParams(parent_content_url_);
 
-  return url_generator_.GenerateDocumentListRootUrl();
+  return url_generator_.GenerateResourceListRootUrl();
 }
 
 URLFetcher::RequestType
@@ -346,7 +346,7 @@ URLFetcher::RequestType CopyHostedDocumentOperation::GetRequestType() const {
 }
 
 GURL CopyHostedDocumentOperation::GetURL() const {
-  return url_generator_.GenerateDocumentListRootUrl();
+  return url_generator_.GenerateResourceListRootUrl();
 }
 
 bool CopyHostedDocumentOperation::GetContentData(
@@ -474,11 +474,11 @@ void AuthorizeAppOperation::ParseResponse(
     const std::string& data) {
   // Parse entry XML.
   XmlReader xml_reader;
-  scoped_ptr<DocumentEntry> entry;
+  scoped_ptr<ResourceEntry> entry;
   if (xml_reader.Load(data)) {
     while (xml_reader.Read()) {
-      if (xml_reader.NodeName() == DocumentEntry::GetEntryNodeName()) {
-        entry = DocumentEntry::CreateFromXml(&xml_reader);
+      if (xml_reader.NodeName() == ResourceEntry::GetEntryNodeName()) {
+        entry = ResourceEntry::CreateFromXml(&xml_reader);
         break;
       }
     }
@@ -540,7 +540,7 @@ GURL AddResourceToDirectoryOperation::GetURL() const {
   if (!parent_content_url_.is_empty())
     return GDataWapiUrlGenerator::AddStandardUrlParams(parent_content_url_);
 
-  return url_generator_.GenerateDocumentListRootUrl();
+  return url_generator_.GenerateResourceListRootUrl();
 }
 
 URLFetcher::RequestType
@@ -737,7 +737,7 @@ void ResumeUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
   net::HttpResponseHeaders* hdrs = source->GetResponseHeaders();
   int64 start_range_received = -1;
   int64 end_range_received = -1;
-  scoped_ptr<DocumentEntry> entry;
+  scoped_ptr<ResourceEntry> entry;
 
   if (code == HTTP_RESUME_INCOMPLETE) {
     // Retrieve value of the first "Range" header.
@@ -769,8 +769,8 @@ void ResumeUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
     XmlReader xml_reader;
     if (xml_reader.Load(response_content)) {
       while (xml_reader.Read()) {
-        if (xml_reader.NodeName() == DocumentEntry::GetEntryNodeName()) {
-          entry = DocumentEntry::CreateFromXml(&xml_reader);
+        if (xml_reader.NodeName() == ResourceEntry::GetEntryNodeName()) {
+          entry = ResourceEntry::CreateFromXml(&xml_reader);
           break;
         }
       }
@@ -807,7 +807,7 @@ void ResumeUploadOperation::NotifySuccessToOperationRegistry() {
 }
 
 void ResumeUploadOperation::RunCallbackOnPrematureFailure(GDataErrorCode code) {
-  scoped_ptr<DocumentEntry> entry;
+  scoped_ptr<ResourceEntry> entry;
   callback_.Run(ResumeUploadResponse(code, 0, 0), entry.Pass());
 }
 

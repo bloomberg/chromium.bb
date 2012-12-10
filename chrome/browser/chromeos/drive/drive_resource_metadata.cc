@@ -11,9 +11,9 @@
 #include "base/sequenced_task_runner.h"
 #include "base/string_number_conversions.h"
 #include "base/tracked_objects.h"
-#include "chrome/browser/chromeos/drive/document_entry_conversion.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_files.h"
+#include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/time_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -236,7 +236,7 @@ void DriveResourceMetadata::ClearRoot() {
 
 void DriveResourceMetadata::AddEntryToDirectory(
     const FilePath& directory_path,
-    scoped_ptr<google_apis::DocumentEntry> doc_entry,
+    scoped_ptr<google_apis::ResourceEntry> doc_entry,
     const FileMoveCallback& callback) {
   DCHECK(!directory_path.empty());
   DCHECK(!callback.is_null());
@@ -260,7 +260,7 @@ void DriveResourceMetadata::AddEntryToDirectory(
 
   AddEntryToDirectoryInternal(
       directory,
-      ConvertDocumentEntryToDriveEntryProto(*doc_entry),
+      ConvertResourceEntryToDriveEntryProto(*doc_entry),
       callback);
 }
 
@@ -499,7 +499,7 @@ void DriveResourceMetadata::GetEntryInfoPairByPaths(
 }
 
 void DriveResourceMetadata::RefreshFile(
-    scoped_ptr<google_apis::DocumentEntry> doc_entry,
+    scoped_ptr<google_apis::ResourceEntry> doc_entry,
     const GetEntryInfoWithFilePathCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -510,7 +510,7 @@ void DriveResourceMetadata::RefreshFile(
     return;
   }
 
-  RefreshEntryProto(ConvertDocumentEntryToDriveEntryProto(
+  RefreshEntryProto(ConvertResourceEntryToDriveEntryProto(
       *doc_entry), callback);
 }
 

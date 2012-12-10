@@ -14,7 +14,7 @@
 #include "chrome/browser/google_apis/gdata_wapi_operations.h"
 
 namespace google_apis {
-class DocumentEntry;
+class ResourceEntry;
 }
 
 namespace drive {
@@ -335,7 +335,7 @@ class DriveFileSystemInterface {
   // |callback| will be called on the UI thread upon completion of operation.
   // |callback| must not be null.
   virtual void AddUploadedFile(const FilePath& directory_path,
-                               scoped_ptr<google_apis::DocumentEntry> doc_entry,
+                               scoped_ptr<google_apis::ResourceEntry> doc_entry,
                                const FilePath& file_content_path,
                                const FileOperationCallback& callback) = 0;
 

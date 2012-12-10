@@ -93,7 +93,7 @@ class MockDriveFileSystem : public DriveFileSystemInterface {
                void(const GetAvailableSpaceCallback& callback));
   // This function is not mockable by gmock because scoped_ptr is not supported.
   virtual void AddUploadedFile(const FilePath& file,
-                               scoped_ptr<google_apis::DocumentEntry> entry,
+                               scoped_ptr<google_apis::ResourceEntry> entry,
                                const FilePath& file_content_path,
                                const FileOperationCallback& callback) OVERRIDE {
   }

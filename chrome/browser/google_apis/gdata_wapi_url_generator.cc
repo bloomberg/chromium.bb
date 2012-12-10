@@ -13,21 +13,21 @@
 namespace google_apis {
 namespace {
 
-// URL requesting documents list that belong to the authenticated user only
+// URL requesting resource list that belong to the authenticated user only
 // (handled with '/-/mine' part).
-const char kGetDocumentListURLForAllDocuments[] =
+const char kGetResourceListURLForAllDocuments[] =
     "/feeds/default/private/full/-/mine";
 
-// URL requesting documents list in a particular directory specified by "%s"
+// URL requesting resource list in a particular directory specified by "%s"
 // that belong to the authenticated user only (handled with '/-/mine' part).
-const char kGetDocumentListURLForDirectoryFormat[] =
+const char kGetResourceListURLForDirectoryFormat[] =
     "/feeds/default/private/full/%s/contents/-/mine";
 
-// URL requesting single document entry whose resource id is specified by "%s".
-const char kGetDocumentEntryURLFormat[] = "/feeds/default/private/full/%s";
+// URL requesting single resource entry whose resource id is specified by "%s".
+const char kGetResourceEntryURLFormat[] = "/feeds/default/private/full/%s";
 
-// Root document list url.
-const char kDocumentListRootURL[] = "/feeds/default/private/full";
+// Root resource list url.
+const char kResourceListRootURL[] = "/feeds/default/private/full";
 
 // Metadata feed with things like user quota.
 const char kAccountMetadataURL[] = "/feeds/metadata/default";
@@ -44,7 +44,7 @@ const int kMaxDocumentsPerSearchFeed = 50;
 #endif
 
 // URL requesting documents list that shared to the authenticated user only
-const char kGetDocumentListURLForSharedWithMe[] =
+const char kGetResourceListURLForSharedWithMe[] =
     "/feeds/default/private/full/-/shared-with-me";
 
 // URL requesting documents list of changes to documents collections.
@@ -116,7 +116,7 @@ GDataWapiUrlGenerator::GDataWapiUrlGenerator(const GURL& base_url)
 GDataWapiUrlGenerator::~GDataWapiUrlGenerator() {
 }
 
-GURL GDataWapiUrlGenerator::GenerateDocumentListUrl(
+GURL GDataWapiUrlGenerator::GenerateResourceListUrl(
     const GURL& override_url,
     int start_changestamp,
     const std::string& search_string,
@@ -130,32 +130,32 @@ GURL GDataWapiUrlGenerator::GenerateDocumentListUrl(
   if (!override_url.is_empty()) {
     url = override_url;
   } else if (shared_with_me) {
-    url = base_url_.Resolve(kGetDocumentListURLForSharedWithMe);
+    url = base_url_.Resolve(kGetResourceListURLForSharedWithMe);
   } else if (start_changestamp > 0) {
     // The start changestamp shouldn't be used for a search.
     DCHECK(search_string.empty());
     url = base_url_.Resolve(kGetChangesListURL);
   } else if (!directory_resource_id.empty()) {
     url = base_url_.Resolve(
-        base::StringPrintf(kGetDocumentListURLForDirectoryFormat,
+        base::StringPrintf(kGetResourceListURLForDirectoryFormat,
                            net::EscapePath(
                                directory_resource_id).c_str()));
   } else {
-    url = base_url_.Resolve(kGetDocumentListURLForAllDocuments);
+    url = base_url_.Resolve(kGetResourceListURLForAllDocuments);
   }
   return AddFeedUrlParams(url, max_docs, start_changestamp, search_string);
 }
 
-GURL GDataWapiUrlGenerator::GenerateDocumentEntryUrl(
+GURL GDataWapiUrlGenerator::GenerateResourceEntryUrl(
     const std::string& resource_id) const {
   GURL result = base_url_.Resolve(
-      base::StringPrintf(kGetDocumentEntryURLFormat,
+      base::StringPrintf(kGetResourceEntryURLFormat,
                          net::EscapePath(resource_id).c_str()));
   return AddStandardUrlParams(result);
 }
 
-GURL GDataWapiUrlGenerator::GenerateDocumentListRootUrl() const {
-  return AddStandardUrlParams(base_url_.Resolve(kDocumentListRootURL));
+GURL GDataWapiUrlGenerator::GenerateResourceListRootUrl() const {
+  return AddStandardUrlParams(base_url_.Resolve(kResourceListRootURL));
 }
 
 GURL GDataWapiUrlGenerator::GenerateAccountMetadataUrl() const {

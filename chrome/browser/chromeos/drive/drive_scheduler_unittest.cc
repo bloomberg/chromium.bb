@@ -62,12 +62,12 @@ class FakeDriveService : public DriveServiceInterface {
     return true;
   }
 
-  virtual void GetDocuments(const GURL& feed_url,
-                            int64 start_changestamp,
-                            const std::string& search_query,
-                            bool shared_with_me,
-                            const std::string& directory_resource_id,
-                            const GetDataCallback& callback) {
+  virtual void GetResourceList(const GURL& feed_url,
+                               int64 start_changestamp,
+                               const std::string& search_query,
+                               bool shared_with_me,
+                               const std::string& directory_resource_id,
+                               const GetDataCallback& callback) {
     // TODO: Make this more flexible.
     if (feed_url == GURL("http://example.com/gdata/root_feed.json")) {
       // Make some sample data.
@@ -91,7 +91,7 @@ class FakeDriveService : public DriveServiceInterface {
     }
   }
 
-  virtual void GetDocumentEntry(const std::string& resource_id,
+  virtual void GetResourceEntry(const std::string& resource_id,
                                 const GetDataCallback& callback) {
   }
 
@@ -113,29 +113,29 @@ class FakeDriveService : public DriveServiceInterface {
     GetAccountMetadata(callback);
   }
 
-  virtual void DeleteDocument(const GURL& document_url,
+  virtual void DeleteResource(const GURL& edit_url,
                               const EntryActionCallback& callback) {
   }
 
-  virtual void DownloadDocument(const FilePath& virtual_path,
-                                const FilePath& local_cache_path,
-                                const GURL& content_url,
-                                DocumentExportFormat format,
-                                const DownloadActionCallback& callback) {
+  virtual void DownloadHostedDocument(const FilePath& virtual_path,
+                                      const FilePath& local_cache_path,
+                                      const GURL& content_url,
+                                      DocumentExportFormat format,
+                                      const DownloadActionCallback& callback) {
   }
 
-  virtual void CopyDocument(const std::string& resource_id,
-                            const FilePath::StringType& new_name,
-                            const GetDataCallback& callback) {
+  virtual void CopyHostedDocument(const std::string& resource_id,
+                                  const FilePath::StringType& new_name,
+                                  const GetDataCallback& callback) {
   }
 
-  virtual void RenameResource(const GURL& resource_url,
+  virtual void RenameResource(const GURL& edit_url,
                               const FilePath::StringType& new_name,
                               const EntryActionCallback& callback) {
   }
 
   virtual void AddResourceToDirectory(const GURL& parent_content_url,
-                                      const GURL& resource_url,
+                                      const GURL& edit_url,
                                       const EntryActionCallback& callback) {
   }
 
@@ -166,7 +166,7 @@ class FakeDriveService : public DriveServiceInterface {
                             const ResumeUploadCallback& callback) {
   }
 
-  virtual void AuthorizeApp(const GURL& resource_url,
+  virtual void AuthorizeApp(const GURL& edit_url,
                             const std::string& app_id,
                             const GetDataCallback& callback) {
   }
@@ -425,13 +425,13 @@ TEST_F(DriveSchedulerTest, GetAccountMetadata) {
 }
 
 
-TEST_F(DriveSchedulerTest, GetDocuments) {
+TEST_F(DriveSchedulerTest, GetResourceList) {
   ConnectToWifi();
 
   google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
   scoped_ptr<base::Value> value;
 
-  scheduler_->GetDocuments(
+  scheduler_->GetResourceList(
       GURL("http://example.com/gdata/root_feed.json"),
       0,
       std::string(),

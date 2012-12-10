@@ -69,13 +69,13 @@ TEST_F(GDataWapiUrlGeneratorTest, AddFeedUrlParams) {
                                                  ).spec());
 }
 
-TEST_F(GDataWapiUrlGeneratorTest, GenerateDocumentListUrl) {
-  // This is the very basic URL for the GetDocuments operation.
+TEST_F(GDataWapiUrlGeneratorTest, GenerateResourceListUrl) {
+  // This is the very basic URL for the GetResourceList operation.
   EXPECT_EQ(
       "https://docs.google.com/feeds/default/private/full/-/mine"
       "?v=3&alt=json&showfolders=true&max-results=500"
       "&include-installed-apps=true",
-      url_generator_.GenerateDocumentListUrl(GURL(),  // override_url,
+      url_generator_.GenerateResourceListUrl(GURL(),  // override_url,
                                              0,  // start_changestamp,
                                              "",  // search_string,
                                              false, // shared_with_me,
@@ -88,7 +88,7 @@ TEST_F(GDataWapiUrlGeneratorTest, GenerateDocumentListUrl) {
       "http://localhost/"
       "?v=3&alt=json&showfolders=true&max-results=500"
       "&include-installed-apps=true",
-      url_generator_.GenerateDocumentListUrl(
+      url_generator_.GenerateResourceListUrl(
           GURL("http://localhost/"),  // override_url,
           0,  // start_changestamp,
           "",  // search_string,
@@ -103,7 +103,7 @@ TEST_F(GDataWapiUrlGeneratorTest, GenerateDocumentListUrl) {
       "?v=3&alt=json&showfolders=true&max-results=500"
       "&include-installed-apps=true"
       "&start-index=100",
-      url_generator_.GenerateDocumentListUrl(GURL(),  // override_url,
+      url_generator_.GenerateResourceListUrl(GURL(),  // override_url,
                                              100,  // start_changestamp,
                                              "",  // search_string,
                                              false, // shared_with_me,
@@ -116,7 +116,7 @@ TEST_F(GDataWapiUrlGeneratorTest, GenerateDocumentListUrl) {
       "https://docs.google.com/feeds/default/private/full/-/mine"
       "?v=3&alt=json&showfolders=true&max-results=50"
       "&include-installed-apps=true&q=foo",
-      url_generator_.GenerateDocumentListUrl(GURL(),  // override_url,
+      url_generator_.GenerateResourceListUrl(GURL(),  // override_url,
                                              0,  // start_changestamp,
                                              "foo",  // search_string,
                                              false, // shared_with_me,
@@ -129,7 +129,7 @@ TEST_F(GDataWapiUrlGeneratorTest, GenerateDocumentListUrl) {
       "https://docs.google.com/feeds/default/private/full/-/shared-with-me"
       "?v=3&alt=json&showfolders=true&max-results=500"
       "&include-installed-apps=true",
-      url_generator_.GenerateDocumentListUrl(GURL(),  // override_url,
+      url_generator_.GenerateResourceListUrl(GURL(),  // override_url,
                                              0,  // start_changestamp,
                                              "",  // search_string,
                                              true, // shared_with_me,
@@ -142,7 +142,7 @@ TEST_F(GDataWapiUrlGeneratorTest, GenerateDocumentListUrl) {
       "https://docs.google.com/feeds/default/private/full/XXX/contents/-/mine"
       "?v=3&alt=json&showfolders=true&max-results=500"
       "&include-installed-apps=true",
-      url_generator_.GenerateDocumentListUrl(GURL(),  // override_url,
+      url_generator_.GenerateResourceListUrl(GURL(),  // override_url,
                                              0,  // start_changestamp,
                                              "",  // search_string,
                                              false, // shared_with_me,
@@ -150,16 +150,16 @@ TEST_F(GDataWapiUrlGeneratorTest, GenerateDocumentListUrl) {
                                              ).spec());
 }
 
-TEST_F(GDataWapiUrlGeneratorTest, GenerateDocumentEntryUrl) {
+TEST_F(GDataWapiUrlGeneratorTest, GenerateResourceEntryUrl) {
   EXPECT_EQ(
       "https://docs.google.com/feeds/default/private/full/XXX?v=3&alt=json",
-      url_generator_.GenerateDocumentEntryUrl("XXX").spec());
+      url_generator_.GenerateResourceEntryUrl("XXX").spec());
 }
 
-TEST_F(GDataWapiUrlGeneratorTest, GenerateDocumentListRootUrl) {
+TEST_F(GDataWapiUrlGeneratorTest, GenerateResourceListRootUrl) {
   EXPECT_EQ(
       "https://docs.google.com/feeds/default/private/full?v=3&alt=json",
-      url_generator_.GenerateDocumentListRootUrl().spec());
+      url_generator_.GenerateResourceListRootUrl().spec());
 }
 
 TEST_F(GDataWapiUrlGeneratorTest, GenerateAccountMetadataUrl) {

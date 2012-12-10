@@ -62,9 +62,6 @@ class DriveServiceObserver {
 //
 // All functions must be called on UI thread. DriveService is built on top of
 // URLFetcher that runs on UI thread.
-//
-// TODO(zel,benchan): Make the terminology/naming convention (e.g. file vs
-// document vs resource, directory vs collection) more consistent and precise.
 class DriveServiceInterface {
  public:
   virtual ~DriveServiceInterface() {}
@@ -103,10 +100,11 @@ class DriveServiceInterface {
 
   // Document access:
 
-  // Fetches the document feed from |feed_url| with |start_changestamp|. If this
-  // URL is empty, the call will fetch the default root or change document feed.
-  // |start_changestamp| specifies the starting point from change feeds only.
-  // Value different than 0, it would trigger delta feed fetching.
+  // Fetches a feed from |feed_url|. If this URL is empty, the call will fetch
+  // from the default URL. When |start_changestamp| is 0, the default behavior
+  // is to fetch the resource list feed containing the list of all entries. If
+  // |start_changestamp| > 0, the default is to fetch the change list feed
+  // containing the updates from the specified changestamp.
   //
   // |search_query| specifies search query to be sent to the server. It will be
   // used only if |start_changestamp| is 0. If empty string is passed,
@@ -119,18 +117,18 @@ class DriveServiceInterface {
   // Upon completion, invokes |callback| with results on the calling thread.
   // TODO(haruki): Refactor this function: crbug.com/160932
   // |callback| must not be null.
-  virtual void GetDocuments(const GURL& feed_url,
-                            int64 start_changestamp,
-                            const std::string& search_query,
-                            bool shared_with_me,
-                            const std::string& directory_resource_id,
-                            const GetDataCallback& callback) = 0;
+  virtual void GetResourceList(const GURL& feed_url,
+                               int64 start_changestamp,
+                               const std::string& search_query,
+                               bool shared_with_me,
+                               const std::string& directory_resource_id,
+                               const GetDataCallback& callback) = 0;
 
   // Fetches single entry metadata from server. The entry's resource id equals
   // |resource_id|.
   // Upon completion, invokes |callback| with results on the calling thread.
   // |callback| must not be null.
-  virtual void GetDocumentEntry(const std::string& resource_id,
+  virtual void GetResourceEntry(const std::string& resource_id,
                                 const GetDataCallback& callback) = 0;
 
   // Gets the account metadata from the server using the default account
@@ -144,46 +142,46 @@ class DriveServiceInterface {
   // |callback| must not be null.
   virtual void GetApplicationInfo(const GetDataCallback& callback) = 0;
 
-  // Deletes a document identified by its 'self' |url| and |etag|.
+  // Deletes a resource identified by its |edit_url|.
   // Upon completion, invokes |callback| with results on the calling thread.
   // |callback| must not be null.
-  virtual void DeleteDocument(const GURL& document_url,
+  virtual void DeleteResource(const GURL& edit_url,
                               const EntryActionCallback& callback) = 0;
 
   // Downloads a document identified by its |content_url| in a given |format|.
   // Upon completion, invokes |callback| with results on the calling thread.
   // |callback| must not be null.
-  virtual void DownloadDocument(const FilePath& virtual_path,
-                                const FilePath& local_cache_path,
-                                const GURL& content_url,
-                                DocumentExportFormat format,
-                                const DownloadActionCallback& callback) = 0;
+  virtual void DownloadHostedDocument(
+      const FilePath& virtual_path,
+      const FilePath& local_cache_path,
+      const GURL& content_url,
+      DocumentExportFormat format,
+      const DownloadActionCallback& callback) = 0;
 
-  // Makes a copy of a document identified by its |resource_id|.
+  // Makes a copy of a hosted document identified by its |resource_id|.
   // The copy is named as the UTF-8 encoded |new_name| and is not added to any
   // collection. Use AddResourceToDirectory() to add the copy to a collection
   // when needed. Upon completion, invokes |callback| with results on the
   // calling thread.
   // |callback| must not be null.
-  virtual void CopyDocument(const std::string& resource_id,
-                            const FilePath::StringType& new_name,
-                            const GetDataCallback& callback) = 0;
+  virtual void CopyHostedDocument(const std::string& resource_id,
+                                  const FilePath::StringType& new_name,
+                                  const GetDataCallback& callback) = 0;
 
-  // Renames a document or collection identified by its 'self' link
-  // |document_url| to the UTF-8 encoded |new_name|. Upon completion,
+  // Renames a document or collection identified by its |edit_url|
+  // to the UTF-8 encoded |new_name|. Upon completion,
   // invokes |callback| with results on the calling thread.
   // |callback| must not be null.
-  virtual void RenameResource(const GURL& resource_url,
+  virtual void RenameResource(const GURL& edit_url,
                               const FilePath::StringType& new_name,
                               const EntryActionCallback& callback) = 0;
 
   // Adds a resource (document, file, or collection) identified by its
-  // 'self' link |resource_url| to a collection with a content link
-  // |parent_content_url|. Upon completion, invokes |callback| with
-  // results on the calling thread.
+  // |edit_url| to a collection with a content link |parent_content_url|.
+  // Upon completion, invokes |callback| with results on the calling thread.
   // |callback| must not be null.
   virtual void AddResourceToDirectory(const GURL& parent_content_url,
-                                      const GURL& resource_url,
+                                      const GURL& edit_url,
                                       const EntryActionCallback& callback) = 0;
 
   // Removes a resource (document, file, collection) identified by its
@@ -236,7 +234,7 @@ class DriveServiceInterface {
   // Authorizes a Drive app with the id |app_id| to open the given document.
   // Upon completion, invokes |callback| with results on the calling thread.
   // |callback| must not be null.
-  virtual void AuthorizeApp(const GURL& resource_url,
+  virtual void AuthorizeApp(const GURL& edit_url,
                             const std::string& app_id,
                             const GetDataCallback& callback) = 0;
 };

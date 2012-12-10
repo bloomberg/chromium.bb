@@ -194,7 +194,7 @@ class EntryActionOperation : public UrlFetchOperationBase {
 
 //============================== GetDataOperation ==============================
 
-// Callback type for DocumentServiceInterface::GetDocuments.
+// Callback type for DocumentServiceInterface::GetResourceList.
 // Note: feed_data argument should be passed using base::Passed(&feed_data), not
 // feed_data.Pass().
 typedef base::Callback<void(GDataErrorCode error,

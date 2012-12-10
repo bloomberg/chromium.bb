@@ -104,22 +104,22 @@ class CopyOperation {
                                         const std::string& unused_mime_type,
                                         DriveFileType file_type);
 
-  // Copies a document with |resource_id| to the directory at |dir_path|
+  // Copies a hosted document with |resource_id| to the directory at |dir_path|
   // and names the copied document as |new_name|.
   //
   // Can be called from UI thread. |callback| is run on the calling thread.
   // |callback| must not be null.
-  void CopyDocumentToDirectory(const FilePath& dir_path,
-                               const std::string& resource_id,
-                               const FilePath::StringType& new_name,
-                               const FileOperationCallback& callback);
+  void CopyHostedDocumentToDirectory(const FilePath& dir_path,
+                                     const std::string& resource_id,
+                                     const FilePath::StringType& new_name,
+                                     const FileOperationCallback& callback);
 
   // Callback for handling document copy attempt.
   // |callback| must not be null.
-  void OnCopyDocumentCompleted(const FilePath& dir_path,
-                               const FileOperationCallback& callback,
-                               google_apis::GDataErrorCode status,
-                               scoped_ptr<base::Value> data);
+  void OnCopyHostedDocumentCompleted(const FilePath& dir_path,
+                                     const FileOperationCallback& callback,
+                                     google_apis::GDataErrorCode status,
+                                     scoped_ptr<base::Value> data);
 
   // Moves a file or directory at |file_path| in the root directory to
   // another directory at |dir_path|. This function does nothing if
@@ -194,7 +194,7 @@ class CopyOperation {
       google_apis::DriveUploadError error,
       const FilePath& drive_path,
       const FilePath& file_path,
-      scoped_ptr<google_apis::DocumentEntry> document_entry);
+      scoped_ptr<google_apis::ResourceEntry> resource_entry);
 
   // Part of TransferFileFromLocalToRemote(). Called after
   // GetEntryInfoByPath() is complete.

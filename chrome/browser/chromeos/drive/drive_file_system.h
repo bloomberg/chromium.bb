@@ -129,7 +129,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   virtual void GetAvailableSpace(
       const GetAvailableSpaceCallback& callback) OVERRIDE;
   virtual void AddUploadedFile(const FilePath& directory_path,
-                               scoped_ptr<google_apis::DocumentEntry> doc_entry,
+                               scoped_ptr<google_apis::ResourceEntry> doc_entry,
                                const FilePath& file_content_path,
                                const FileOperationCallback& callback) OVERRIDE;
   virtual DriveFileSystemMetadata GetMetadata() const OVERRIDE;
@@ -426,16 +426,16 @@ class DriveFileSystem : public DriveFileSystemInterface,
                           DriveFileError error,
                           const FilePath& cache_file_path);
 
-  // Callback for |drive_service_->GetDocumentEntry|.
-  // It is called before file download. If GetDocumentEntry was successful,
+  // Callback for |drive_service_->GetResourceEntry|.
+  // It is called before file download. If GetResourceEntry was successful,
   // file download procedure is started for the file. The file is downloaded
   // from the content url extracted from the fetched metadata.
-  void OnGetDocumentEntry(const GetFileFromCacheParams& params,
+  void OnGetResourceEntry(const GetFileFromCacheParams& params,
                           google_apis::GDataErrorCode status,
                           scoped_ptr<base::Value> data);
 
   // Check available space using file size from the fetched metadata. Called
-  // from OnGetDocumentEntry after RefreshFile is complete.
+  // from OnGetResourceEntry after RefreshFile is complete.
   void CheckForSpaceBeforeDownload(
       const GetFileFromCacheParams& params,
       int64 file_size,

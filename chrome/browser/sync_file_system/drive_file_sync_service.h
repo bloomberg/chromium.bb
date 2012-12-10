@@ -186,7 +186,7 @@ class DriveFileSyncService
   void DidGetRemoteFileMetadata(
       const fileapi::SyncFileMetadataCallback& callback,
       google_apis::GDataErrorCode error,
-      scoped_ptr<google_apis::DocumentEntry> entry);
+      scoped_ptr<google_apis::ResourceEntry> entry);
 
   LocalSyncOperationType ResolveLocalSyncOperationType(
       const fileapi::FileChange& local_file_change,
@@ -299,7 +299,7 @@ class DriveFileSyncService
 
   // Returns true if |pending_changes_| was updated.
   bool AppendRemoteChange(const GURL& origin,
-                          const google_apis::DocumentEntry& entry,
+                          const google_apis::ResourceEntry& entry,
                           int64 changestamp,
                           RemoteSyncType sync_type);
   bool AppendFetchChange(const GURL& origin,
@@ -331,7 +331,7 @@ class DriveFileSyncService
       bool has_new_changes,
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::DocumentFeed> changes);
-  bool GetOriginForEntry(const google_apis::DocumentEntry& entry, GURL* origin);
+  bool GetOriginForEntry(const google_apis::ResourceEntry& entry, GURL* origin);
   void SchedulePolling();
 
   scoped_ptr<DriveMetadataStore> metadata_store_;

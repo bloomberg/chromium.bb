@@ -182,7 +182,7 @@ struct DriveFeedLoader::LoadFeedParams {
   bool load_subsequent_feeds;
   const LoadFeedListCallback feed_load_callback;
   ScopedVector<google_apis::DocumentFeed> feed_list;
-  scoped_ptr<GetDocumentsUiState> ui_state;
+  scoped_ptr<GetResourceListUiState> ui_state;
 };
 
 // Defines set of parameters sent to callback OnProtoLoaded().
@@ -228,8 +228,8 @@ struct DriveFeedLoader::UpdateMetadataParams {
 // the current update state. In order to make users comfortable,
 // we increment the number of fetched documents with more frequent but smaller
 // steps than actual fetching.
-struct DriveFeedLoader::GetDocumentsUiState {
-  explicit GetDocumentsUiState(base::TimeTicks start_time)
+struct DriveFeedLoader::GetResourceListUiState {
+  explicit GetResourceListUiState(base::TimeTicks start_time)
       : num_fetched_documents(0),
         num_showing_documents(0),
         start_time(start_time),
@@ -248,7 +248,7 @@ struct DriveFeedLoader::GetDocumentsUiState {
   // Time elapsed since the feed fetching was started.
   base::TimeDelta feed_fetching_elapsed_time;
 
-  base::WeakPtrFactory<GetDocumentsUiState> weak_ptr_factory;
+  base::WeakPtrFactory<GetResourceListUiState> weak_ptr_factory;
 };
 
 DriveFeedLoader::DriveFeedLoader(
@@ -405,7 +405,7 @@ void DriveFeedLoader::LoadFromServer(scoped_ptr<LoadFeedParams> params) {
   // base::Passed() may get evaluated first, so get a pointer to params.
   LoadFeedParams* params_ptr = params.get();
   if (google_apis::util::IsDriveV2ApiEnabled()) {
-    scheduler_->GetDocuments(
+    scheduler_->GetResourceList(
         params_ptr->feed_to_load,
         params_ptr->start_changestamp,
         std::string(),  // No search query.
@@ -416,13 +416,13 @@ void DriveFeedLoader::LoadFromServer(scoped_ptr<LoadFeedParams> params) {
                    base::Passed(&params),
                    start_time));
   } else {
-    scheduler_->GetDocuments(
+    scheduler_->GetResourceList(
         params_ptr->feed_to_load,
         params_ptr->start_changestamp,
         params_ptr->search_query,
         params_ptr->shared_with_me,
         params_ptr->directory_resource_id,
-        base::Bind(&DriveFeedLoader::OnGetDocuments,
+        base::Bind(&DriveFeedLoader::OnGetResourceList,
                    weak_ptr_factory_.GetWeakPtr(),
                    base::Passed(&params),
                    start_time));
@@ -477,10 +477,10 @@ void DriveFeedLoader::UpdateMetadataFromFeedAfterLoadFromServer(
                             params.callback));
 }
 
-void DriveFeedLoader::OnGetDocuments(scoped_ptr<LoadFeedParams> params,
-                                     base::TimeTicks start_time,
-                                     google_apis::GDataErrorCode status,
-                                     scoped_ptr<base::Value> data) {
+void DriveFeedLoader::OnGetResourceList(scoped_ptr<LoadFeedParams> params,
+                                        base::TimeTicks start_time,
+                                        google_apis::GDataErrorCode status,
+                                        scoped_ptr<base::Value> data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (params->feed_list.empty()) {
@@ -536,9 +536,9 @@ void DriveFeedLoader::OnParseFeed(
   // Check if we need to collect more data to complete the directory list.
   if (has_next_feed_url && !next_feed_url.is_empty()) {
     // Post an UI update event to make the UI smoother.
-    GetDocumentsUiState* ui_state = params->ui_state.get();
+    GetResourceListUiState* ui_state = params->ui_state.get();
     if (ui_state == NULL) {
-      ui_state = new GetDocumentsUiState(base::TimeTicks::Now());
+      ui_state = new GetResourceListUiState(base::TimeTicks::Now());
       params->ui_state.reset(ui_state);
     }
     DCHECK(ui_state);
@@ -559,13 +559,13 @@ void DriveFeedLoader::OnParseFeed(
     // pointer so we can use it bellow.
     LoadFeedParams* params_ptr = params.get();
     // Kick off the remaining part of the feeds.
-    scheduler_->GetDocuments(
+    scheduler_->GetResourceList(
         next_feed_url,
         params_ptr->start_changestamp,
         params_ptr->search_query,
         params_ptr->shared_with_me,
         params_ptr->directory_resource_id,
-        base::Bind(&DriveFeedLoader::OnGetDocuments,
+        base::Bind(&DriveFeedLoader::OnGetResourceList,
                    weak_ptr_factory_.GetWeakPtr(),
                    base::Passed(&params),
                    start_time));
@@ -640,9 +640,9 @@ void DriveFeedLoader::OnGetChangelist(scoped_ptr<LoadFeedParams> params,
   // Check if we need to collect more data to complete the directory list.
   if (has_next_feed) {
     // Post an UI update event to make the UI smoother.
-    GetDocumentsUiState* ui_state = params->ui_state.get();
+    GetResourceListUiState* ui_state = params->ui_state.get();
     if (ui_state == NULL) {
-      ui_state = new GetDocumentsUiState(base::TimeTicks::Now());
+      ui_state = new GetResourceListUiState(base::TimeTicks::Now());
       params->ui_state.reset(ui_state);
     }
     DCHECK(ui_state);
@@ -662,7 +662,7 @@ void DriveFeedLoader::OnGetChangelist(scoped_ptr<LoadFeedParams> params,
     // Kick off the remaining part of the feeds.
     // Extract the pointer so we can use it bellow.
     LoadFeedParams* params_ptr = params.get();
-    scheduler_->GetDocuments(
+    scheduler_->GetResourceList(
         current_feed->next_link(),
         params_ptr->start_changestamp,
         std::string(),  // No search query.
@@ -687,7 +687,7 @@ void DriveFeedLoader::OnGetChangelist(scoped_ptr<LoadFeedParams> params,
 }
 
 void DriveFeedLoader::OnNotifyDocumentFeedFetched(
-    base::WeakPtr<GetDocumentsUiState> ui_state) {
+    base::WeakPtr<GetResourceListUiState> ui_state) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!ui_state) {

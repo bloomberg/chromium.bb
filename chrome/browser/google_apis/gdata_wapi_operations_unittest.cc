@@ -77,9 +77,9 @@ void CopyResultFromInitiateUploadCallbackAndQuit(
 // Copies the result from ResumeUploadCallback and quit the message loop.
 void CopyResultFromResumeUploadCallbackAndQuit(
     ResumeUploadResponse* out_response,
-    scoped_ptr<DocumentEntry>* out_new_entry,
+    scoped_ptr<ResourceEntry>* out_new_entry,
     const ResumeUploadResponse& response,
-    scoped_ptr<DocumentEntry> new_entry) {
+    scoped_ptr<ResourceEntry> new_entry) {
   *out_response = response;
   *out_new_entry = new_entry.Pass();
   MessageLoop::current()->Quit();
@@ -942,7 +942,7 @@ TEST_F(GDataWapiOperationsTest, UploadNewFile) {
       FilePath::FromUTF8Unsafe("drive/newfile.txt"));
 
   ResumeUploadResponse response;
-  scoped_ptr<DocumentEntry> new_entry;
+  scoped_ptr<ResourceEntry> new_entry;
 
   ResumeUploadOperation* resume_operation = new ResumeUploadOperation(
       &operation_registry_,
@@ -1053,7 +1053,7 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
         FilePath::FromUTF8Unsafe("drive/newfile.txt"));
 
     ResumeUploadResponse response;
-    scoped_ptr<DocumentEntry> new_entry;
+    scoped_ptr<ResourceEntry> new_entry;
 
     ResumeUploadOperation* resume_operation = new ResumeUploadOperation(
         &operation_registry_,
@@ -1163,7 +1163,7 @@ TEST_F(GDataWapiOperationsTest, UploadNewEmptyFile) {
       FilePath::FromUTF8Unsafe("drive/newfile.txt"));
 
   ResumeUploadResponse response;
-  scoped_ptr<DocumentEntry> new_entry;
+  scoped_ptr<ResourceEntry> new_entry;
 
   ResumeUploadOperation* resume_operation = new ResumeUploadOperation(
       &operation_registry_,
@@ -1256,7 +1256,7 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFile) {
       FilePath::FromUTF8Unsafe("drive/existingfile.txt"));
 
   ResumeUploadResponse response;
-  scoped_ptr<DocumentEntry> new_entry;
+  scoped_ptr<ResourceEntry> new_entry;
 
   ResumeUploadOperation* resume_operation = new ResumeUploadOperation(
       &operation_registry_,

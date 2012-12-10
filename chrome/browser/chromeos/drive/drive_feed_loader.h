@@ -99,7 +99,7 @@ class DriveFeedLoader {
   bool refreshing() const { return refreshing_; }
 
  private:
-  struct GetDocumentsUiState;
+  struct GetResourceListUiState;
   struct LoadFeedParams;
   struct LoadRootFeedParams;
   struct UpdateMetadataParams;
@@ -138,20 +138,20 @@ class DriveFeedLoader {
       const ScopedVector<google_apis::DocumentFeed>& feed_list,
       DriveFileError error);
 
-  // Callback for handling response from |GDataWapiService::GetDocuments|.
+  // Callback for handling response from |GDataWapiService::GetResourceList|.
   // Invokes |callback| when done.
   // |callback| must not be null.
-  void OnGetDocuments(scoped_ptr<LoadFeedParams> params,
-                      base::TimeTicks start_time,
-                      google_apis::GDataErrorCode status,
-                      scoped_ptr<base::Value> data);
+  void OnGetResourceList(scoped_ptr<LoadFeedParams> params,
+                         base::TimeTicks start_time,
+                         google_apis::GDataErrorCode status,
+                         scoped_ptr<base::Value> data);
 
   // Callback for handling results of feed parse.
   void OnParseFeed(scoped_ptr<LoadFeedParams> params,
                    base::TimeTicks start_time,
                    scoped_ptr<google_apis::DocumentFeed> current_feed);
 
-  // Callback for handling response from |DriveAPIService::GetDocuments|.
+  // Callback for handling response from |DriveAPIService::GetResourceList|.
   // Invokes |callback| when done.
   // |callback| must not be null.
   void OnGetChangelist(scoped_ptr<LoadFeedParams> params,
@@ -162,8 +162,9 @@ class DriveFeedLoader {
   // Save filesystem to disk.
   void SaveFileSystem();
 
-  // Callback for handling UI updates caused by document fetching.
-  void OnNotifyDocumentFeedFetched(base::WeakPtr<GetDocumentsUiState> ui_state);
+  // Callback for handling UI updates caused by feed fetching.
+  void OnNotifyDocumentFeedFetched(
+      base::WeakPtr<GetResourceListUiState> ui_state);
 
   // Callback for DriveFeedProcessor::ApplyFeeds.
   void NotifyDirectoryChanged(bool should_notify,

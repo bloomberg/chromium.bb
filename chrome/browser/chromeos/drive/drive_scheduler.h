@@ -36,7 +36,7 @@ class DriveScheduler
     TYPE_GET_ACCOUNT_METADATA,
     TYPE_GET_APPLICATION_INFO,
     TYPE_COPY,
-    TYPE_GET_DOCUMENTS,
+    TYPE_GET_RESOURCE_LIST,
     TYPE_MOVE,
     TYPE_REMOVE,
     TYPE_TRANSFER_LOCAL_TO_REMOTE,
@@ -102,14 +102,14 @@ class DriveScheduler
             const FilePath& dest_file_path,
             const FileOperationCallback& callback);
 
-  // Adds a GetDocuments operation to the queue.
+  // Adds a GetResourceList operation to the queue.
   // |callback| must not be null.
-  void GetDocuments(const GURL& feed_url,
-                    int64 start_changestamp,
-                    const std::string& search_query,
-                    bool shared_with_me,
-                    const std::string& directory_resource_id,
-                    const google_apis::GetDataCallback& callback);
+  void GetResourceList(const GURL& feed_url,
+                       int64 start_changestamp,
+                       const std::string& search_query,
+                       bool shared_with_me,
+                       const std::string& directory_resource_id,
+                       const google_apis::GetDataCallback& callback);
 
   // Adds a transfer operation to the queue.
   // |callback| must not be null.
@@ -176,9 +176,9 @@ class DriveScheduler
     //   TYPE_REMOVE
     bool is_recursive;
 
-    // Parameters for GetDocuments().
+    // Parameters for GetResourceList().
     // Used by:
-    //   TYPE_GET_DOCUMENTS
+    //   TYPE_GET_RESOURCE_LIST
     GURL feed_url;
     int64 start_changestamp;
     std::string search_query;
@@ -189,7 +189,7 @@ class DriveScheduler
     // Used by:
     //   TYPE_GET_ACCOUNT_METADATA,
     //   TYPE_GET_APPLICATION_INFO,
-    //   TYPE_GET_DOCUMENTS
+    //   TYPE_GET_RESOURCE_LIST
     google_apis::GetDataCallback get_data_callback;
   };
 

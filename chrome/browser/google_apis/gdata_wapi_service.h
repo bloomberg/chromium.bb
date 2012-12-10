@@ -59,22 +59,22 @@ class GDataWapiService : public DriveServiceInterface,
   virtual OperationProgressStatusList GetProgressStatusList() const OVERRIDE;
   virtual bool HasAccessToken() const OVERRIDE;
   virtual bool HasRefreshToken() const OVERRIDE;
-  virtual void GetDocuments(const GURL& feed_url,
-                            int64 start_changestamp,
-                            const std::string& search_query,
-                            bool shared_with_me,
-                            const std::string& directory_resource_id,
-                            const GetDataCallback& callback) OVERRIDE;
-  virtual void GetDocumentEntry(const std::string& resource_id,
+  virtual void GetResourceList(const GURL& feed_url,
+                               int64 start_changestamp,
+                               const std::string& search_query,
+                               bool shared_with_me,
+                               const std::string& directory_resource_id,
+                               const GetDataCallback& callback) OVERRIDE;
+  virtual void GetResourceEntry(const std::string& resource_id,
                                 const GetDataCallback& callback) OVERRIDE;
   virtual void GetAccountMetadata(const GetDataCallback& callback) OVERRIDE;
   virtual void GetApplicationInfo(const GetDataCallback& callback) OVERRIDE;
-  virtual void DeleteDocument(const GURL& document_url,
+  virtual void DeleteResource(const GURL& edit_url,
                               const EntryActionCallback& callback) OVERRIDE;
-  virtual void DownloadDocument(
+  virtual void DownloadHostedDocument(
       const FilePath& virtual_path,
       const FilePath& local_cache_path,
-      const GURL& content_url,
+      const GURL& edit_url,
       DocumentExportFormat format,
       const DownloadActionCallback& callback) OVERRIDE;
   virtual void DownloadFile(
@@ -83,17 +83,17 @@ class GDataWapiService : public DriveServiceInterface,
       const GURL& content_url,
       const DownloadActionCallback& download_action_callback,
       const GetContentCallback& get_content_callback) OVERRIDE;
-  virtual void CopyDocument(
+  virtual void CopyHostedDocument(
       const std::string& resource_id,
       const FilePath::StringType& new_name,
       const GetDataCallback& callback) OVERRIDE;
   virtual void RenameResource(
-      const GURL& document_url,
+      const GURL& edit_url,
       const FilePath::StringType& new_name,
       const EntryActionCallback& callback) OVERRIDE;
   virtual void AddResourceToDirectory(
       const GURL& parent_content_url,
-      const GURL& resource_url,
+      const GURL& edit_url,
       const EntryActionCallback& callback) OVERRIDE;
   virtual void RemoveResourceFromDirectory(
       const GURL& parent_content_url,
@@ -110,7 +110,7 @@ class GDataWapiService : public DriveServiceInterface,
       const ResumeUploadParams& params,
       const ResumeUploadCallback& callback) OVERRIDE;
   virtual void AuthorizeApp(
-      const GURL& resource_url,
+      const GURL& edit_url,
       const std::string& app_id,
       const GetDataCallback& callback) OVERRIDE;
 

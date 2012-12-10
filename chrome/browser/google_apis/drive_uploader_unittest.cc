@@ -83,15 +83,15 @@ class MockDriveServiceBase : public DriveServiceInterface {
     NOTREACHED();
     return false;
   }
-  virtual void GetDocuments(const GURL& feed_url,
-                            int64 start_changestamp,
-                            const std::string& search_query,
-                            bool shared_with_me,
-                            const std::string& directory_resource_id,
-                            const GetDataCallback& callback) OVERRIDE {
+  virtual void GetResourceList(const GURL& feed_url,
+                               int64 start_changestamp,
+                               const std::string& search_query,
+                               bool shared_with_me,
+                               const std::string& directory_resource_id,
+                               const GetDataCallback& callback) OVERRIDE {
     NOTREACHED();
   }
-  virtual void GetDocumentEntry(const std::string& resource_id,
+  virtual void GetResourceEntry(const std::string& resource_id,
                                 const GetDataCallback& callback) OVERRIDE {
     NOTREACHED();
   }
@@ -101,11 +101,11 @@ class MockDriveServiceBase : public DriveServiceInterface {
   virtual void GetApplicationInfo(const GetDataCallback& callback) OVERRIDE {
     NOTREACHED();
   }
-  virtual void DeleteDocument(const GURL& document_url,
+  virtual void DeleteResource(const GURL& edit_url,
                               const EntryActionCallback& callback) OVERRIDE {
     NOTREACHED();
   }
-  virtual void DownloadDocument(
+  virtual void DownloadHostedDocument(
       const FilePath& virtual_path,
       const FilePath& local_cache_path,
       const GURL& content_url,
@@ -113,19 +113,19 @@ class MockDriveServiceBase : public DriveServiceInterface {
       const DownloadActionCallback& callback) OVERRIDE {
     NOTREACHED();
   }
-  virtual void CopyDocument(const std::string& resource_id,
-                            const FilePath::StringType& new_name,
-                            const GetDataCallback& callback) OVERRIDE {
+  virtual void CopyHostedDocument(const std::string& resource_id,
+                                  const FilePath::StringType& new_name,
+                                  const GetDataCallback& callback) OVERRIDE {
     NOTREACHED();
   }
-  virtual void RenameResource(const GURL& resource_url,
+  virtual void RenameResource(const GURL& edit_url,
                               const FilePath::StringType& new_name,
                               const EntryActionCallback& callback) OVERRIDE {
     NOTREACHED();
   }
   virtual void AddResourceToDirectory(
       const GURL& parent_content_url,
-      const GURL& resource_url,
+      const GURL& edit_url,
       const EntryActionCallback& callback) OVERRIDE {
     NOTREACHED();
   }
@@ -148,7 +148,7 @@ class MockDriveServiceBase : public DriveServiceInterface {
       const GetContentCallback& get_content_callback) OVERRIDE {
     NOTREACHED();
   }
-  virtual void AuthorizeApp(const GURL& resource_url,
+  virtual void AuthorizeApp(const GURL& edit_url,
                             const std::string& app_id,
                             const GetDataCallback& callback) OVERRIDE {
     NOTREACHED();
@@ -228,7 +228,7 @@ class MockDriveServiceWithUploadExpectation : public MockDriveServiceBase {
 
     // Callback with response.
     ResumeUploadResponse response;
-    scoped_ptr<DocumentEntry> entry;
+    scoped_ptr<ResourceEntry> entry;
     if (received_bytes_ == params.content_length) {
       response = ResumeUploadResponse(
           params.upload_mode == UPLOAD_NEW_FILE ? HTTP_CREATED : HTTP_SUCCESS,
@@ -236,7 +236,7 @@ class MockDriveServiceWithUploadExpectation : public MockDriveServiceBase {
 
       base::DictionaryValue dict;
       dict.Set("id.$t", new base::StringValue(kTestDummyId));
-      entry = DocumentEntry::CreateFrom(dict);
+      entry = ResourceEntry::CreateFrom(dict);
     } else {
       response = ResumeUploadResponse(HTTP_RESUME_INCOMPLETE, 0,
                                       params.end_range);
@@ -282,7 +282,7 @@ class MockDriveServiceNoConnectionAtResume : public MockDriveServiceBase {
     MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(callback,
                    ResumeUploadResponse(GDATA_NO_CONNECTION, -1, -1),
-                   base::Passed(scoped_ptr<DocumentEntry>())));
+                   base::Passed(scoped_ptr<ResourceEntry>())));
   }
 };
 
@@ -320,7 +320,7 @@ struct UploadCompletionCallbackResult {
   DriveUploadError error;
   FilePath drive_path;
   FilePath file_path;
-  scoped_ptr<DocumentEntry> document_entry;
+  scoped_ptr<ResourceEntry> resource_entry;
 };
 
 // Copies the result from UploadCompletionCallback and quit the message loop.
@@ -329,11 +329,11 @@ void CopyResultsFromUploadCompletionCallbackAndQuit(
     DriveUploadError error,
     const FilePath& drive_path,
     const FilePath& file_path,
-    scoped_ptr<DocumentEntry> document_entry) {
+    scoped_ptr<ResourceEntry> resource_entry) {
   out->error = error;
   out->drive_path = drive_path;
   out->file_path = file_path;
-  out->document_entry = document_entry.Pass();
+  out->resource_entry = resource_entry.Pass();
   MessageLoop::current()->Quit();
 }
 
@@ -363,8 +363,8 @@ TEST_F(DriveUploaderTest, UploadExisting0KB) {
   EXPECT_EQ(DRIVE_UPLOAD_OK, out.error);
   EXPECT_EQ(FilePath::FromUTF8Unsafe(kTestDrivePath), out.drive_path);
   EXPECT_EQ(local_path, out.file_path);
-  ASSERT_TRUE(out.document_entry);
-  EXPECT_EQ(kTestDummyId, out.document_entry->id());
+  ASSERT_TRUE(out.resource_entry);
+  EXPECT_EQ(kTestDummyId, out.resource_entry->id());
 }
 
 TEST_F(DriveUploaderTest, UploadExisting512KB) {
@@ -392,8 +392,8 @@ TEST_F(DriveUploaderTest, UploadExisting512KB) {
   EXPECT_EQ(DRIVE_UPLOAD_OK, out.error);
   EXPECT_EQ(FilePath::FromUTF8Unsafe(kTestDrivePath), out.drive_path);
   EXPECT_EQ(local_path, out.file_path);
-  ASSERT_TRUE(out.document_entry);
-  EXPECT_EQ(kTestDummyId, out.document_entry->id());
+  ASSERT_TRUE(out.resource_entry);
+  EXPECT_EQ(kTestDummyId, out.resource_entry->id());
 }
 
 TEST_F(DriveUploaderTest, UploadExisting1234KB) {
@@ -421,8 +421,8 @@ TEST_F(DriveUploaderTest, UploadExisting1234KB) {
   EXPECT_EQ(DRIVE_UPLOAD_OK, out.error);
   EXPECT_EQ(FilePath::FromUTF8Unsafe(kTestDrivePath), out.drive_path);
   EXPECT_EQ(local_path, out.file_path);
-  ASSERT_TRUE(out.document_entry);
-  EXPECT_EQ(kTestDummyId, out.document_entry->id());
+  ASSERT_TRUE(out.resource_entry);
+  EXPECT_EQ(kTestDummyId, out.resource_entry->id());
 }
 
 TEST_F(DriveUploaderTest, UploadNew1234KB) {
@@ -456,8 +456,8 @@ TEST_F(DriveUploaderTest, UploadNew1234KB) {
   EXPECT_EQ(DRIVE_UPLOAD_OK, out.error);
   EXPECT_EQ(FilePath::FromUTF8Unsafe(kTestDrivePath), out.drive_path);
   EXPECT_EQ(local_path, out.file_path);
-  ASSERT_TRUE(out.document_entry);
-  EXPECT_EQ(kTestDummyId, out.document_entry->id());
+  ASSERT_TRUE(out.resource_entry);
+  EXPECT_EQ(kTestDummyId, out.resource_entry->id());
 }
 
 TEST_F(DriveUploaderTest, InitiateUploadFail) {

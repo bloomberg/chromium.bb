@@ -34,7 +34,7 @@ typedef base::Callback<void(
     DriveUploadError error,
     const FilePath& drive_path,
     const FilePath& file_path,
-    scoped_ptr<DocumentEntry> document_entry)>
+    scoped_ptr<ResourceEntry> resource_entry)>
     UploadCompletionCallback;
 
 // Callback to be invoked once the uploader is ready to upload.
@@ -227,7 +227,7 @@ class DriveUploader : public DriveUploaderInterface {
     int num_file_open_tries;  // Number of times we've tried to open this file.
 
     // Will be set once the upload is complete.
-    scoped_ptr<DocumentEntry> entry;
+    scoped_ptr<ResourceEntry> entry;
 
     // Callback to be invoked once the uploader is ready to upload.
     UploaderReadyCallback ready_callback;
@@ -275,7 +275,7 @@ class DriveUploader : public DriveUploaderInterface {
   void OnResumeUploadResponseReceived(
       int upload_id,
       const ResumeUploadResponse& response,
-      scoped_ptr<DocumentEntry> entry);
+      scoped_ptr<ResourceEntry> entry);
 
   // Initiate the upload.
   void InitiateUpload(UploadFileInfo* uploader_file_info);

@@ -145,7 +145,7 @@ void UpdateOperation::OnUpdatedFileUploaded(
     google_apis::DriveUploadError error,
     const FilePath& drive_path,
     const FilePath& file_path,
-    scoped_ptr<google_apis::DocumentEntry> document_entry) {
+    scoped_ptr<google_apis::ResourceEntry> resource_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -156,7 +156,7 @@ void UpdateOperation::OnUpdatedFileUploaded(
   }
 
   metadata_->RefreshFile(
-      document_entry.Pass(),
+      resource_entry.Pass(),
       base::Bind(&UpdateOperation::OnUpdatedFileRefreshed,
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }

@@ -54,7 +54,7 @@ class RemoveOperation {
       DriveFileError error,
       scoped_ptr<DriveEntryProto> entry_proto);
 
-  // Callback for DriveServiceInterface::DeleteDocument. Removes the entry with
+  // Callback for DriveServiceInterface::DeleteResource. Removes the entry with
   // |resource_id| from the local snapshot of the filesystem and the cache.
   // |callback| must not be null.
   void RemoveResourceLocally(

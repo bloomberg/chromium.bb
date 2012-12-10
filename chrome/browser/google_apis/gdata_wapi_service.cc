@@ -134,7 +134,7 @@ OperationProgressStatusList GDataWapiService::GetProgressStatusList() const {
   return operation_registry()->GetProgressStatusList();
 }
 
-void GDataWapiService::GetDocuments(
+void GDataWapiService::GetResourceList(
     const GURL& url,
     int64 start_changestamp,
     const std::string& search_query,
@@ -158,7 +158,7 @@ void GDataWapiService::GetDocuments(
                                    callback));
 }
 
-void GDataWapiService::GetDocumentEntry(
+void GDataWapiService::GetResourceEntry(
     const std::string& resource_id,
     const GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -189,10 +189,10 @@ void GDataWapiService::GetApplicationInfo(
   GetAccountMetadata(callback);
 }
 
-void GDataWapiService::DownloadDocument(
+void GDataWapiService::DownloadHostedDocument(
     const FilePath& virtual_path,
     const FilePath& local_cache_path,
-    const GURL& document_url,
+    const GURL& edit_url,
     DocumentExportFormat format,
     const DownloadActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -201,7 +201,7 @@ void GDataWapiService::DownloadDocument(
   DownloadFile(
       virtual_path,
       local_cache_path,
-      chrome_common_net::AppendQueryParameter(document_url,
+      chrome_common_net::AppendQueryParameter(edit_url,
                                               "exportFormat",
                                               GetExportFormatParam(format)),
       callback,
@@ -211,7 +211,7 @@ void GDataWapiService::DownloadDocument(
 void GDataWapiService::DownloadFile(
     const FilePath& virtual_path,
     const FilePath& local_cache_path,
-    const GURL& document_url,
+    const GURL& content_url,
     const DownloadActionCallback& download_action_callback,
     const GetContentCallback& get_content_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -222,13 +222,14 @@ void GDataWapiService::DownloadFile(
       new DownloadFileOperation(operation_registry(),
                                 url_request_context_getter_,
                                 download_action_callback,
-                                get_content_callback, document_url,
+                                get_content_callback,
+                                content_url,
                                 virtual_path,
                                 local_cache_path));
 }
 
-void GDataWapiService::DeleteDocument(
-    const GURL& document_url,
+void GDataWapiService::DeleteResource(
+    const GURL& edit_url,
     const EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -237,7 +238,7 @@ void GDataWapiService::DeleteDocument(
       new DeleteResourceOperation(operation_registry(),
                                   url_request_context_getter_,
                                   callback,
-                                  document_url));
+                                  edit_url));
 }
 
 void GDataWapiService::AddNewDirectory(
@@ -256,7 +257,7 @@ void GDataWapiService::AddNewDirectory(
                                    directory_name));
 }
 
-void GDataWapiService::CopyDocument(
+void GDataWapiService::CopyHostedDocument(
     const std::string& resource_id,
     const FilePath::StringType& new_name,
     const GetDataCallback& callback) {
@@ -273,7 +274,7 @@ void GDataWapiService::CopyDocument(
 }
 
 void GDataWapiService::RenameResource(
-    const GURL& resource_url,
+    const GURL& edit_url,
     const FilePath::StringType& new_name,
     const EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -283,13 +284,13 @@ void GDataWapiService::RenameResource(
       new RenameResourceOperation(operation_registry(),
                                   url_request_context_getter_,
                                   callback,
-                                  resource_url,
+                                  edit_url,
                                   new_name));
 }
 
 void GDataWapiService::AddResourceToDirectory(
     const GURL& parent_content_url,
-    const GURL& resource_url,
+    const GURL& edit_url,
     const EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -300,7 +301,7 @@ void GDataWapiService::AddResourceToDirectory(
                                           url_generator_,
                                           callback,
                                           parent_content_url,
-                                          resource_url));
+                                          edit_url));
 }
 
 void GDataWapiService::RemoveResourceFromDirectory(
@@ -348,7 +349,7 @@ void GDataWapiService::ResumeUpload(const ResumeUploadParams& params,
                                 params));
 }
 
-void GDataWapiService::AuthorizeApp(const GURL& resource_url,
+void GDataWapiService::AuthorizeApp(const GURL& edit_url,
                                     const std::string& app_id,
                                     const GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -358,7 +359,7 @@ void GDataWapiService::AuthorizeApp(const GURL& resource_url,
       new AuthorizeAppOperation(operation_registry(),
                                 url_request_context_getter_,
                                 callback,
-                                resource_url,
+                                edit_url,
                                 app_id));
 }
 

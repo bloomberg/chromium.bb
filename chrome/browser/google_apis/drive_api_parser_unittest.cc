@@ -254,8 +254,8 @@ TEST(DriveAPIParserTest, ChangeListParser) {
   EXPECT_EQ("1Pc8jzfU1ErbN_eucMMqdqzY3eBm0v8sxXm_1CtLxABC", change1.file_id());
   EXPECT_EQ(change1.file_id(), change1.file().file_id());
 
-  scoped_ptr<DocumentEntry> entry1(
-      DocumentEntry::CreateFromChangeResource(change1));
+  scoped_ptr<ResourceEntry> entry1(
+      ResourceEntry::CreateFromChangeResource(change1));
   EXPECT_EQ(change1.file_id(), entry1->resource_id());
   EXPECT_EQ(change1.is_deleted(), entry1->deleted());
 
@@ -265,8 +265,8 @@ TEST(DriveAPIParserTest, ChangeListParser) {
   EXPECT_EQ("0B4v7G8yEYAWHUmRrU2lMS2hLABC", change2.file_id());
   EXPECT_EQ(change2.file_id(), change2.file().file_id());
 
-  scoped_ptr<DocumentEntry> entry2(
-      DocumentEntry::CreateFromChangeResource(change2));
+  scoped_ptr<ResourceEntry> entry2(
+      ResourceEntry::CreateFromChangeResource(change2));
   EXPECT_EQ(change2.file_id(), entry2->resource_id());
   EXPECT_EQ(change2.is_deleted(), entry2->deleted());
 
@@ -276,8 +276,8 @@ TEST(DriveAPIParserTest, ChangeListParser) {
   EXPECT_EQ("0B4v7G8yEYAWHYW1OcExsUVZLABC", change3.file_id());
   EXPECT_EQ(change3.file_id(), change3.file().file_id());
 
-  scoped_ptr<DocumentEntry> entry3(
-      DocumentEntry::CreateFromChangeResource(change3));
+  scoped_ptr<ResourceEntry> entry3(
+      ResourceEntry::CreateFromChangeResource(change3));
   EXPECT_EQ(change3.file_id(), entry3->resource_id());
   EXPECT_EQ(change3.is_deleted(), entry3->deleted());
 
@@ -287,8 +287,8 @@ TEST(DriveAPIParserTest, ChangeListParser) {
   EXPECT_EQ("ABCv7G8yEYAWHc3Y5X0hMSkJYXYZ", change4.file_id());
   EXPECT_TRUE(change4.is_deleted());
 
-  scoped_ptr<DocumentEntry> entry4(
-      DocumentEntry::CreateFromChangeResource(change4));
+  scoped_ptr<ResourceEntry> entry4(
+      ResourceEntry::CreateFromChangeResource(change4));
   EXPECT_EQ(change4.file_id(), entry4->resource_id());
   EXPECT_EQ(change4.is_deleted(), entry4->deleted());
 }

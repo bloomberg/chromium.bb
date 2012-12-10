@@ -66,8 +66,8 @@ class DriveFileSyncClient
                               scoped_ptr<google_apis::DocumentFeed> feed)>
       DocumentFeedCallback;
   typedef base::Callback<void(google_apis::GDataErrorCode error,
-                              scoped_ptr<google_apis::DocumentEntry> entry)>
-      DocumentEntryCallback;
+                              scoped_ptr<google_apis::ResourceEntry> entry)>
+      ResourceEntryCallback;
 
   explicit DriveFileSyncClient(Profile* profile);
   virtual ~DriveFileSyncClient();
@@ -99,10 +99,10 @@ class DriveFileSyncClient
   // Upon completion, invokes |callback|.
   void GetLargestChangeStamp(const ChangeStampCallback& callback);
 
-  // Fetches the document entry for the file identified by |resource_id|.
+  // Fetches the resource entry for the file identified by |resource_id|.
   // Upon completion, invokes |callback|.
-  void GetDocumentEntry(const std::string& resource_id,
-                        const DocumentEntryCallback& callback);
+  void GetResourceEntry(const std::string& resource_id,
+                        const ResourceEntryCallback& callback);
 
   // Lists files in the directory identified by |resource_id|.
   // Upon completion, invokes |callback|.
@@ -223,7 +223,7 @@ class DriveFileSyncClient
                               google_apis::GDataErrorCode error,
                               scoped_ptr<base::Value> data);
 
-  void DidGetDocumentEntryData(const DocumentEntryCallback& callback,
+  void DidGetResourceEntryData(const ResourceEntryCallback& callback,
                                google_apis::GDataErrorCode error,
                                scoped_ptr<base::Value> data);
 
@@ -231,7 +231,7 @@ class DriveFileSyncClient
                             const FilePath& local_file_path,
                             const DownloadFileCallback& callback,
                             google_apis::GDataErrorCode error,
-                            scoped_ptr<google_apis::DocumentEntry> entry);
+                            scoped_ptr<google_apis::ResourceEntry> entry);
 
   void DidDownloadFile(const std::string& downloaded_file_md5,
                        const DownloadFileCallback& callback,
@@ -244,7 +244,7 @@ class DriveFileSyncClient
       int64 file_size,
       const UploadFileCallback& callback,
       google_apis::GDataErrorCode error,
-      scoped_ptr<google_apis::DocumentEntry> parent_directory_entry);
+      scoped_ptr<google_apis::ResourceEntry> parent_directory_entry);
 
   void UploadExistingFileInternal(
       const std::string& remote_file_md5,
@@ -252,18 +252,18 @@ class DriveFileSyncClient
       int64 file_size,
       const UploadFileCallback& callback,
       google_apis::GDataErrorCode error,
-      scoped_ptr<google_apis::DocumentEntry> entry);
+      scoped_ptr<google_apis::ResourceEntry> entry);
 
   void DidUploadFile(const UploadFileCallback& callback,
                      google_apis::DriveUploadError error,
                      const FilePath& drive_path,
                      const FilePath& file_path,
-                     scoped_ptr<google_apis::DocumentEntry> entry);
+                     scoped_ptr<google_apis::ResourceEntry> entry);
 
   void DeleteFileInternal(const std::string& remote_file_md5,
                           const GDataErrorCallback& callback,
                           google_apis::GDataErrorCode error,
-                          scoped_ptr<google_apis::DocumentEntry> entry);
+                          scoped_ptr<google_apis::ResourceEntry> entry);
 
   void DidDeleteFile(const GDataErrorCallback& callback,
                      google_apis::GDataErrorCode error);

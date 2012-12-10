@@ -415,7 +415,7 @@ void DriveFileSyncService::GetRemoteFileMetadata(
       metadata_store_->ReadEntry(url, &metadata);
   if (status != fileapi::SYNC_STATUS_OK)
     callback.Run(status, fileapi::SyncFileMetadata());
-  sync_client_->GetDocumentEntry(
+  sync_client_->GetResourceEntry(
       metadata.resource_id(),
       base::Bind(&DriveFileSyncService::DidGetRemoteFileMetadata,
                  AsWeakPtr(), callback));
@@ -870,7 +870,7 @@ void DriveFileSyncService::DidGetDirectoryContentForBatchSync(
     return;
   }
 
-  typedef ScopedVector<google_apis::DocumentEntry>::const_iterator iterator;
+  typedef ScopedVector<google_apis::ResourceEntry>::const_iterator iterator;
   for (iterator itr = feed->entries().begin();
        itr != feed->entries().end(); ++itr) {
     AppendRemoteChange(origin, **itr, largest_changestamp,
@@ -901,7 +901,7 @@ void DriveFileSyncService::DidRemoveOriginOnMetadataStore(
 void DriveFileSyncService::DidGetRemoteFileMetadata(
     const fileapi::SyncFileMetadataCallback& callback,
     google_apis::GDataErrorCode error,
-    scoped_ptr<google_apis::DocumentEntry> entry) {
+    scoped_ptr<google_apis::ResourceEntry> entry) {
   fileapi::SyncFileType file_type = fileapi::SYNC_FILE_TYPE_UNKNOWN;
   if (entry->is_file())
     file_type = fileapi::SYNC_FILE_TYPE_FILE;
@@ -1462,7 +1462,7 @@ void DriveFileSyncService::FinalizeRemoteSync(
 
 bool DriveFileSyncService::AppendRemoteChange(
     const GURL& origin,
-    const google_apis::DocumentEntry& entry,
+    const google_apis::ResourceEntry& entry,
     int64 changestamp,
     RemoteSyncType sync_type) {
   // TODO(tzik): Normalize the path here.
@@ -1600,10 +1600,10 @@ void DriveFileSyncService::DidFetchChangesForIncrementalSync(
     return;
   }
 
-  typedef ScopedVector<google_apis::DocumentEntry>::const_iterator iterator;
+  typedef ScopedVector<google_apis::ResourceEntry>::const_iterator iterator;
   for (iterator itr = changes->entries().begin();
        itr != changes->entries().end(); ++itr) {
-    const google_apis::DocumentEntry& entry = **itr;
+    const google_apis::ResourceEntry& entry = **itr;
     GURL origin;
     if (!GetOriginForEntry(entry, &origin))
       continue;
@@ -1641,7 +1641,7 @@ void DriveFileSyncService::DidFetchChangesForIncrementalSync(
 }
 
 bool DriveFileSyncService::GetOriginForEntry(
-    const google_apis::DocumentEntry& entry,
+    const google_apis::ResourceEntry& entry,
     GURL* origin_out) {
   typedef ScopedVector<google_apis::Link>::const_iterator iterator;
   for (iterator itr = entry.links().begin();

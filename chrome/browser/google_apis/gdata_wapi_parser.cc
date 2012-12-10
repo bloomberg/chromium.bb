@@ -588,9 +588,9 @@ void FeedEntry::RegisterJSONConverter(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DocumentEntry implementation
+// ResourceEntry implementation
 
-DocumentEntry::DocumentEntry()
+ResourceEntry::ResourceEntry()
     : kind_(ENTRY_KIND_UNKNOWN),
       file_size_(0),
       deleted_(false),
@@ -598,16 +598,16 @@ DocumentEntry::DocumentEntry()
       changestamp_(0) {
 }
 
-DocumentEntry::~DocumentEntry() {
+ResourceEntry::~ResourceEntry() {
 }
 
-bool DocumentEntry::HasFieldPresent(const base::Value* value,
+bool ResourceEntry::HasFieldPresent(const base::Value* value,
                                     bool* result) {
   *result = (value != NULL);
   return true;
 }
 
-bool DocumentEntry::ParseChangestamp(const base::Value* value,
+bool ResourceEntry::ParseChangestamp(const base::Value* value,
                                      int64* result) {
   DCHECK(result);
   if (!value) {
@@ -624,46 +624,46 @@ bool DocumentEntry::ParseChangestamp(const base::Value* value,
 }
 
 // static
-void DocumentEntry::RegisterJSONConverter(
-    base::JSONValueConverter<DocumentEntry>* converter) {
+void ResourceEntry::RegisterJSONConverter(
+    base::JSONValueConverter<ResourceEntry>* converter) {
   // Inherit the parent registrations.
   FeedEntry::RegisterJSONConverter(
       reinterpret_cast<base::JSONValueConverter<FeedEntry>*>(converter));
   converter->RegisterStringField(
-      kResourceIdField, &DocumentEntry::resource_id_);
-  converter->RegisterStringField(kIDField, &DocumentEntry::id_);
-  converter->RegisterStringField(kTitleTField, &DocumentEntry::title_);
+      kResourceIdField, &ResourceEntry::resource_id_);
+  converter->RegisterStringField(kIDField, &ResourceEntry::id_);
+  converter->RegisterStringField(kTitleTField, &ResourceEntry::title_);
   converter->RegisterCustomField<base::Time>(
-      kPublishedField, &DocumentEntry::published_time_,
+      kPublishedField, &ResourceEntry::published_time_,
       &util::GetTimeFromString);
   converter->RegisterCustomField<base::Time>(
-      kLastViewedField, &DocumentEntry::last_viewed_time_,
+      kLastViewedField, &ResourceEntry::last_viewed_time_,
       &util::GetTimeFromString);
   converter->RegisterRepeatedMessage(
-      kFeedLinkField, &DocumentEntry::feed_links_);
-  converter->RegisterNestedField(kContentField, &DocumentEntry::content_);
+      kFeedLinkField, &ResourceEntry::feed_links_);
+  converter->RegisterNestedField(kContentField, &ResourceEntry::content_);
 
   // File properties.  If the document type is not a normal file, then
   // that's no problem because those feed must not have these fields
   // themselves, which does not report errors.
-  converter->RegisterStringField(kFileNameField, &DocumentEntry::filename_);
-  converter->RegisterStringField(kMD5Field, &DocumentEntry::file_md5_);
+  converter->RegisterStringField(kFileNameField, &ResourceEntry::filename_);
+  converter->RegisterStringField(kMD5Field, &ResourceEntry::file_md5_);
   converter->RegisterCustomField<int64>(
-      kSizeField, &DocumentEntry::file_size_, &base::StringToInt64);
+      kSizeField, &ResourceEntry::file_size_, &base::StringToInt64);
   converter->RegisterStringField(
-      kSuggestedFileNameField, &DocumentEntry::suggested_filename_);
+      kSuggestedFileNameField, &ResourceEntry::suggested_filename_);
   // Deleted are treated as 'trashed' items on web client side. Removed files
   // are gone for good. We treat both cases as 'deleted' for this client.
   converter->RegisterCustomValueField<bool>(
-      kDeletedField, &DocumentEntry::deleted_, &DocumentEntry::HasFieldPresent);
+      kDeletedField, &ResourceEntry::deleted_, &ResourceEntry::HasFieldPresent);
   converter->RegisterCustomValueField<bool>(
-      kRemovedField, &DocumentEntry::removed_, &DocumentEntry::HasFieldPresent);
+      kRemovedField, &ResourceEntry::removed_, &ResourceEntry::HasFieldPresent);
   converter->RegisterCustomValueField<int64>(
-      kChangestampField, &DocumentEntry::changestamp_,
-      &DocumentEntry::ParseChangestamp);
+      kChangestampField, &ResourceEntry::changestamp_,
+      &ResourceEntry::ParseChangestamp);
 }
 
-std::string DocumentEntry::GetHostedDocumentExtension() const {
+std::string ResourceEntry::GetHostedDocumentExtension() const {
   for (size_t i = 0; i < arraysize(kEntryKindMap); i++) {
     if (kEntryKindMap[i].kind == kind_) {
       if (kEntryKindMap[i].extension)
@@ -676,7 +676,7 @@ std::string DocumentEntry::GetHostedDocumentExtension() const {
 }
 
 // static
-bool DocumentEntry::HasHostedDocumentExtension(const FilePath& file) {
+bool ResourceEntry::HasHostedDocumentExtension(const FilePath& file) {
 #if defined(OS_WIN)
   std::string file_extension = WideToUTF8(file.Extension());
 #else
@@ -691,7 +691,7 @@ bool DocumentEntry::HasHostedDocumentExtension(const FilePath& file) {
 }
 
 // static
-DriveEntryKind DocumentEntry::GetEntryKindFromTerm(
+DriveEntryKind ResourceEntry::GetEntryKindFromTerm(
     const std::string& term) {
   if (!StartsWithASCII(term, kTermPrefix, false)) {
     DVLOG(1) << "Unexpected term prefix term " << term;
@@ -708,7 +708,7 @@ DriveEntryKind DocumentEntry::GetEntryKindFromTerm(
 }
 
 // static
-int DocumentEntry::ClassifyEntryKind(DriveEntryKind kind) {
+int ResourceEntry::ClassifyEntryKind(DriveEntryKind kind) {
   int classes = 0;
 
   // All DriveEntryKind members are listed here, so the compiler catches if a
@@ -752,7 +752,7 @@ int DocumentEntry::ClassifyEntryKind(DriveEntryKind kind) {
   return classes;
 }
 
-void DocumentEntry::FillRemainingFields() {
+void ResourceEntry::FillRemainingFields() {
   // Set |kind_| and |labels_| based on the |categories_| in the class.
   // JSONValueConverter does not have the ability to catch an element in a list
   // based on a predicate.  Thus we need to iterate over |categories_| and
@@ -767,24 +767,24 @@ void DocumentEntry::FillRemainingFields() {
 }
 
 // static
-scoped_ptr<DocumentEntry> DocumentEntry::ExtractAndParse(
+scoped_ptr<ResourceEntry> ResourceEntry::ExtractAndParse(
     const base::Value& value) {
   const base::DictionaryValue* as_dict = NULL;
   const base::DictionaryValue* entry_dict = NULL;
   if (value.GetAsDictionary(&as_dict) &&
       as_dict->GetDictionary(kEntryField, &entry_dict)) {
-    return DocumentEntry::CreateFrom(*entry_dict);
+    return ResourceEntry::CreateFrom(*entry_dict);
   }
-  return scoped_ptr<DocumentEntry>();
+  return scoped_ptr<ResourceEntry>();
 }
 
 // static
-scoped_ptr<DocumentEntry> DocumentEntry::CreateFrom(const base::Value& value) {
-  base::JSONValueConverter<DocumentEntry> converter;
-  scoped_ptr<DocumentEntry> entry(new DocumentEntry());
+scoped_ptr<ResourceEntry> ResourceEntry::CreateFrom(const base::Value& value) {
+  base::JSONValueConverter<ResourceEntry> converter;
+  scoped_ptr<ResourceEntry> entry(new ResourceEntry());
   if (!converter.Convert(value, entry.get())) {
     DVLOG(1) << "Invalid document entry!";
-    return scoped_ptr<DocumentEntry>();
+    return scoped_ptr<ResourceEntry>();
   }
 
   entry->FillRemainingFields();
@@ -792,11 +792,11 @@ scoped_ptr<DocumentEntry> DocumentEntry::CreateFrom(const base::Value& value) {
 }
 
 // static.
-scoped_ptr<DocumentEntry> DocumentEntry::CreateFromXml(XmlReader* xml_reader) {
+scoped_ptr<ResourceEntry> ResourceEntry::CreateFromXml(XmlReader* xml_reader) {
   if (xml_reader->NodeName() != kEntryNode)
-    return scoped_ptr<DocumentEntry>();
+    return scoped_ptr<ResourceEntry>();
 
-  scoped_ptr<DocumentEntry> entry(new DocumentEntry);
+  scoped_ptr<ResourceEntry> entry(new ResourceEntry);
   xml_reader->NodeAttribute(kETagAttr, &entry->etag_);
 
   if (!xml_reader->Read())
@@ -883,11 +883,11 @@ scoped_ptr<DocumentEntry> DocumentEntry::CreateFromXml(XmlReader* xml_reader) {
 }
 
 // static
-scoped_ptr<DocumentEntry> DocumentEntry::CreateFromFileResource(
+scoped_ptr<ResourceEntry> ResourceEntry::CreateFromFileResource(
     const FileResource& file) {
-  scoped_ptr<DocumentEntry> entry(new DocumentEntry());
+  scoped_ptr<ResourceEntry> entry(new ResourceEntry());
 
-  // DocumentEntry
+  // ResourceEntry
   entry->resource_id_ = file.file_id();
   entry->id_ = file.file_id();
   entry->kind_ = file.GetKind();
@@ -952,9 +952,9 @@ scoped_ptr<DocumentEntry> DocumentEntry::CreateFromFileResource(
 }
 
 // static
-scoped_ptr<DocumentEntry> DocumentEntry::CreateFromChangeResource(
+scoped_ptr<ResourceEntry> ResourceEntry::CreateFromChangeResource(
     const ChangeResource& change) {
-  scoped_ptr<DocumentEntry> entry = CreateFromFileResource(change.file());
+  scoped_ptr<ResourceEntry> entry = CreateFromFileResource(change.file());
 
   entry->resource_id_ = change.file_id();
   // If |is_deleted()| returns true, the file is removed from Drive.
@@ -964,7 +964,7 @@ scoped_ptr<DocumentEntry> DocumentEntry::CreateFromChangeResource(
 }
 
 // static
-std::string DocumentEntry::GetEntryNodeName() {
+std::string ResourceEntry::GetEntryNodeName() {
   return kEntryNode;
 }
 
@@ -1006,9 +1006,9 @@ bool DocumentFeed::Parse(const base::Value& value) {
     return false;
   }
 
-  ScopedVector<DocumentEntry>::iterator iter = entries_.begin();
+  ScopedVector<ResourceEntry>::iterator iter = entries_.begin();
   while (iter != entries_.end()) {
-    DocumentEntry* entry = (*iter);
+    ResourceEntry* entry = (*iter);
     entry->FillRemainingFields();
     ++iter;
   }
@@ -1049,7 +1049,7 @@ scoped_ptr<DocumentFeed> DocumentFeed::CreateFromChangeList(
     const ChangeResource& change = **iter;
     largest_changestamp = std::max(largest_changestamp, change.change_id());
     feed->entries_.push_back(
-        DocumentEntry::CreateFromChangeResource(change).release());
+        ResourceEntry::CreateFromChangeResource(change).release());
     ++iter;
   }
   feed->largest_changestamp_ = largest_changestamp;
@@ -1067,7 +1067,7 @@ bool DocumentFeed::GetNextFeedURL(GURL* url) const {
   return false;
 }
 
-void DocumentFeed::ReleaseEntries(std::vector<DocumentEntry*>* entries) {
+void DocumentFeed::ReleaseEntries(std::vector<ResourceEntry*>* entries) {
   entries_.release(entries);
 }
 

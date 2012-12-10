@@ -489,7 +489,7 @@ void DriveUploader::ResumeUpload(int upload_id) {
 void DriveUploader::OnResumeUploadResponseReceived(
     int upload_id,
     const ResumeUploadResponse& response,
-    scoped_ptr<DocumentEntry> entry) {
+    scoped_ptr<ResourceEntry> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   UploadFileInfo* upload_file_info = GetUploadFileInfo(upload_id);

@@ -143,14 +143,14 @@ ACTION_P2(MockCreateDirectoryCallback, status, value) {
       base::Bind(arg2, status, base::Passed(value)));
 }
 
-// Action used to set mock expecteations for GetDocuments.
-ACTION_P2(MockGetDocumentsCallback, status, value) {
+// Action used to set mock expectations for GetResourceList.
+ACTION_P2(MockGetResourceListCallback, status, value) {
   base::MessageLoopProxy::current()->PostTask(FROM_HERE,
       base::Bind(arg5, status, base::Passed(value)));
 }
 
-// Action used to mock expectations fo GetDocumentEntry.
-ACTION_P2(MockGetDocumentEntryCallback, status, value) {
+// Action used to mock expectations for GetResourceEntry.
+ACTION_P2(MockGetResourceEntryCallback, status, value) {
   base::MessageLoopProxy::current()->PostTask(FROM_HERE,
       base::Bind(arg1, status, base::Passed(value)));
 }
@@ -390,9 +390,9 @@ IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest,
   // Remote filesystem should first request root feed from gdata server.
   scoped_ptr<base::Value> documents_value(LoadJSONFile(kTestRootFeed));
   EXPECT_CALL(*mock_drive_service_,
-              GetDocuments(_, _, _, _, _, _))
-      .WillOnce(MockGetDocumentsCallback(google_apis::HTTP_SUCCESS,
-                                         &documents_value));
+              GetResourceList(_, _, _, _, _, _))
+      .WillOnce(MockGetResourceListCallback(google_apis::HTTP_SUCCESS,
+                                            &documents_value));
 
   // When file browser tries to read the file, remote filesystem should detect
   // that the cached file is not present on the disk and download it. Mocked
@@ -404,12 +404,12 @@ IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest,
   scoped_ptr<base::Value> document_to_download_value(
       LoadJSONFile(kTestDocumentToDownloadEntry));
   EXPECT_CALL(*mock_drive_service_,
-              GetDocumentEntry("file:1_file_resource_id", _))
-      .WillOnce(MockGetDocumentEntryCallback(google_apis::HTTP_SUCCESS,
+              GetResourceEntry("file:1_file_resource_id", _))
+      .WillOnce(MockGetResourceEntryCallback(google_apis::HTTP_SUCCESS,
                                              &document_to_download_value));
 
   // We expect to download url defined in document entry returned by
-  // GetDocumentEntry mock implementation.
+  // GetResourceEntry mock implementation.
   EXPECT_CALL(*mock_drive_service_,
               DownloadFile(_, _, GURL("https://file_content_url_changed"),
                            _, _))
@@ -430,9 +430,9 @@ IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest, ContentSearch) {
   // First, test will get drive root directory, to init file system.
   scoped_ptr<base::Value> documents_value(LoadJSONFile(kTestRootFeed));
   EXPECT_CALL(*mock_drive_service_,
-              GetDocuments(_, _, "", _, _, _))
-      .WillOnce(MockGetDocumentsCallback(google_apis::HTTP_SUCCESS,
-                                         &documents_value));
+              GetResourceList(_, _, "", _, _, _))
+      .WillOnce(MockGetResourceListCallback(google_apis::HTTP_SUCCESS,
+                                            &documents_value));
 
   // Search results will be returned in two parts:
   // 1. Search will be given empty initial feed url. The returned feed will
@@ -448,26 +448,26 @@ IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest, ContentSearch) {
       AddNextFeedURLToFeedValue("https://next_feed", first_search_value.get()));
 
   EXPECT_CALL(*mock_drive_service_,
-              GetDocuments(GURL(), _, "foo", _, _, _))
-      .WillOnce(MockGetDocumentsCallback(google_apis::HTTP_SUCCESS,
-                                         &first_search_value));
+              GetResourceList(GURL(), _, "foo", _, _, _))
+      .WillOnce(MockGetResourceListCallback(google_apis::HTTP_SUCCESS,
+                                            &first_search_value));
 
   scoped_ptr<base::Value> second_search_value(LoadJSONFile(kTestRootFeed));
   EXPECT_CALL(*mock_drive_service_,
-              GetDocuments(GURL("https://next_feed"), _, "foo", _, _, _))
-      .WillOnce(MockGetDocumentsCallback(google_apis::HTTP_SUCCESS,
-                                         &second_search_value));
+              GetResourceList(GURL("https://next_feed"), _, "foo", _, _, _))
+      .WillOnce(MockGetResourceListCallback(google_apis::HTTP_SUCCESS,
+                                            &second_search_value));
 
   // Test will try to create a snapshot of the returned file.
   scoped_ptr<base::Value> document_to_download_value(
       LoadJSONFile(kTestDocumentToDownloadEntry));
   EXPECT_CALL(*mock_drive_service_,
-              GetDocumentEntry("file:1_file_resource_id", _))
-      .WillOnce(MockGetDocumentEntryCallback(google_apis::HTTP_SUCCESS,
+              GetResourceEntry("file:1_file_resource_id", _))
+      .WillOnce(MockGetResourceEntryCallback(google_apis::HTTP_SUCCESS,
                                              &document_to_download_value));
 
   // We expect to download url defined in document entry returned by
-  // GetDocumentEntry mock implementation.
+  // GetResourceEntry mock implementation.
   EXPECT_CALL(*mock_drive_service_,
               DownloadFile(_, _, GURL("https://file_content_url_changed"),
                            _, _))

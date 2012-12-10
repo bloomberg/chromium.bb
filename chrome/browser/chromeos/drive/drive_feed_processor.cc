@@ -5,10 +5,10 @@
 #include <utility>
 
 #include "base/metrics/histogram.h"
-#include "chrome/browser/chromeos/drive/document_entry_conversion.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_feed_processor.h"
 #include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
+#include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -305,7 +305,7 @@ void DriveFeedProcessor::FeedToEntryProtoMap(
     const google_apis::DocumentFeed* feed = feed_list[i];
 
     // Get upload url from the root feed. Links for all other collections will
-    // be handled in ConvertDocumentEntryToDriveEntryProto.
+    // be handled in ConvertResourceEntryToDriveEntryProto.
     if (i == 0) {
       const google_apis::Link* root_feed_upload_link = feed->GetLinkByType(
           google_apis::Link::LINK_RESUMABLE_CREATE_MEDIA);
@@ -317,8 +317,8 @@ void DriveFeedProcessor::FeedToEntryProtoMap(
     }
 
     for (size_t j = 0; j < feed->entries().size(); ++j) {
-      const google_apis::DocumentEntry* doc = feed->entries()[j];
-      DriveEntryProto entry_proto = ConvertDocumentEntryToDriveEntryProto(*doc);
+      const google_apis::ResourceEntry* doc = feed->entries()[j];
+      DriveEntryProto entry_proto = ConvertResourceEntryToDriveEntryProto(*doc);
       // Some document entries don't map into files (i.e. sites).
       if (entry_proto.resource_id().empty())
         continue;

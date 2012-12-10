@@ -122,7 +122,7 @@ void DriveScheduler::Copy(const FilePath& src_file_path,
   StartJobLoop();
 }
 
-void DriveScheduler::GetDocuments(
+void DriveScheduler::GetResourceList(
     const GURL& feed_url,
     int64 start_changestamp,
     const std::string& search_query,
@@ -133,7 +133,7 @@ void DriveScheduler::GetDocuments(
   DCHECK(!callback.is_null());
 
   scoped_ptr<QueueEntry> new_job(
-      new QueueEntry(TYPE_GET_DOCUMENTS, FilePath()));
+      new QueueEntry(TYPE_GET_RESOURCE_LIST, FilePath()));
   new_job->feed_url = feed_url;
   new_job->start_changestamp = start_changestamp;
   new_job->search_query = search_query;
@@ -297,8 +297,8 @@ void DriveScheduler::DoJobLoop() {
     }
     break;
 
-    case TYPE_GET_DOCUMENTS: {
-      drive_service_->GetDocuments(
+    case TYPE_GET_RESOURCE_LIST: {
+      drive_service_->GetResourceList(
           queue_entry->feed_url,
           queue_entry->start_changestamp,
           queue_entry->search_query,

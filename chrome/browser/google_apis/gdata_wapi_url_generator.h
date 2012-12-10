@@ -44,7 +44,7 @@ class GDataWapiUrlGenerator {
                                int changestamp,
                                const std::string& search_string);
 
-  // Generates a URL for getting the documents list feed.
+  // Generates a URL for getting the resource list feed.
   //
   // override_url:
   //   By default, a hard-coded base URL of the WAPI server is used.
@@ -67,20 +67,20 @@ class GDataWapiUrlGenerator {
   //   If |directory_resource_id| is non-empty, a URL for fetching documents in
   //   a particular directory is generated.
   //
-  GURL GenerateDocumentListUrl(
+  GURL GenerateResourceListUrl(
       const GURL& override_url,
       int start_changestamp,
       const std::string& search_string,
       bool shared_with_me,
       const std::string& directory_resource_id) const;
 
-  // Generates a URL for getting the document entry of the given resource ID.
-  GURL GenerateDocumentEntryUrl(const std::string& resource_id) const;
+  // Generates a URL for getting the resource entry of the given resource ID.
+  GURL GenerateResourceEntryUrl(const std::string& resource_id) const;
 
-  // Generates a URL for getting the root document list feed.
+  // Generates a URL for getting the root resource list feed.
   // Used to make changes in the root directory (ex. create a directory in the
   // root directory)
-  GURL GenerateDocumentListRootUrl() const;
+  GURL GenerateResourceListRootUrl() const;
 
   // Generates a URL for getting the account metadata feed.
   GURL GenerateAccountMetadataUrl() const;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/document_entry_conversion.h"
+#include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 
 #include "base/logging.h"
 #include "base/string_util.h"
@@ -15,8 +15,8 @@
 
 namespace drive {
 
-DriveEntryProto ConvertDocumentEntryToDriveEntryProto(
-    const google_apis::DocumentEntry& doc) {
+DriveEntryProto ConvertResourceEntryToDriveEntryProto(
+    const google_apis::ResourceEntry& doc) {
   DriveEntryProto entry_proto;
 
   // For regular files, the 'filename' and 'title' attribute in the metadata
