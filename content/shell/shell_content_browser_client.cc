@@ -114,6 +114,19 @@ WebContentsViewDelegate* ShellContentBrowserClient::GetWebContentsViewDelegate(
   return NULL;
 }
 
+bool ShellContentBrowserClient::CanCreateWindow(
+    const GURL& opener_url,
+    const GURL& origin,
+    WindowContainerType container_type,
+    ResourceContext* context,
+    int render_process_id,
+    bool* no_javascript_access) {
+  *no_javascript_access = false;
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
+    return true;
+  return WebKitTestController::Get()->CanOpenWindows();
+}
+
 #if defined(OS_ANDROID)
 void ShellContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     const CommandLine& command_line,

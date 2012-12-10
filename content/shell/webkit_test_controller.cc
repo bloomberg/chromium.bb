@@ -120,7 +120,7 @@ WebKitTestController* WebKitTestController::instance_ = NULL;
 
 // static
 WebKitTestController* WebKitTestController::Get() {
-  DCHECK(!instance_ || instance_->CalledOnValidThread());
+  DCHECK(instance_);
   return instance_;
 }
 
@@ -181,6 +181,10 @@ bool WebKitTestController::ResetAfterLayoutTest() {
   should_stay_on_page_after_handling_before_unload_ = false;
   wait_until_done_ = false;
   prefs_ = ShellWebPreferences();
+  {
+    base::AutoLock lock(lock_);
+    can_open_windows_ = false;
+  }
   watchdog_.Cancel();
   if (main_window_) {
     Observe(NULL);
@@ -192,11 +196,18 @@ bool WebKitTestController::ResetAfterLayoutTest() {
 }
 
 void WebKitTestController::RendererUnresponsive() {
+  DCHECK(CalledOnValidThread());
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTimeout))
     printer_->AddErrorMessage("#PROCESS UNRESPONSIVE - renderer");
 }
 
+bool WebKitTestController::CanOpenWindows() const {
+  base::AutoLock lock(lock_);
+  return can_open_windows_;
+}
+
 bool WebKitTestController::OnMessageReceived(const IPC::Message& message) {
+  DCHECK(CalledOnValidThread());
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(WebKitTestController, message)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_DidFinishLoad, OnDidFinishLoad)
@@ -214,6 +225,7 @@ bool WebKitTestController::OnMessageReceived(const IPC::Message& message) {
         ShellViewHostMsg_SetShouldStayOnPageAfterHandlingBeforeUnload,
         OnSetShouldStayOnPageAfterHandlingBeforeUnload)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_WaitUntilDone, OnWaitUntilDone)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_CanOpenWindows, OnCanOpenWindows)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_NotImplemented, OnNotImplemented)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -222,15 +234,18 @@ bool WebKitTestController::OnMessageReceived(const IPC::Message& message) {
 }
 
 void WebKitTestController::PluginCrashed(const FilePath& plugin_path) {
+  DCHECK(CalledOnValidThread());
   printer_->AddErrorMessage("#CRASHED - plugin");
 }
 
 void WebKitTestController::RenderViewCreated(RenderViewHost* render_view_host) {
+  DCHECK(CalledOnValidThread());
   render_view_host->Send(new ShellViewMsg_SetCurrentWorkingDirectory(
       render_view_host->GetRoutingID(), current_working_directory_));
 }
 
 void WebKitTestController::RenderViewGone(base::TerminationStatus status) {
+  DCHECK(CalledOnValidThread());
   if (status == base::TERMINATION_STATUS_PROCESS_CRASHED ||
       status == base::TERMINATION_STATUS_ABNORMAL_TERMINATION) {
     printer_->AddErrorMessage("#CRASHED - renderer");
@@ -238,6 +253,7 @@ void WebKitTestController::RenderViewGone(base::TerminationStatus status) {
 }
 
 void WebKitTestController::WebContentsDestroyed(WebContents* web_contents) {
+  DCHECK(CalledOnValidThread());
   main_window_ = NULL;
   printer_->AddErrorMessage("FAIL: main window was destroyed");
 }
@@ -263,6 +279,7 @@ void WebKitTestController::CaptureDump() {
 }
 
 void WebKitTestController::TimeoutHandler() {
+  DCHECK(CalledOnValidThread());
   printer_->AddErrorMessage(
       "FAIL: Timed out waiting for notifyDone to be called");
 }
@@ -373,6 +390,11 @@ void WebKitTestController::OnWaitUntilDone() {
         base::TimeDelta::FromMilliseconds(kTestTimeoutMilliseconds));
   }
   wait_until_done_ = true;
+}
+
+void WebKitTestController::OnCanOpenWindows() {
+  base::AutoLock lock(lock_);
+  can_open_windows_ = true;
 }
 
 void WebKitTestController::OnNotImplemented(

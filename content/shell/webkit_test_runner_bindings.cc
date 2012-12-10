@@ -44,6 +44,16 @@ v8::Handle<v8::Value> NotifyDone(const v8::Arguments& args) {
   return v8::Undefined();
 }
 
+v8::Handle<v8::Value> SetCanOpenWindows(const v8::Arguments& args) {
+  WebKitTestRunner* runner =
+      ShellRenderProcessObserver::GetInstance()->main_test_runner();
+  if (!runner)
+    return v8::Undefined();
+
+  runner->CanOpenWindows();
+  return v8::Undefined();
+}
+
 v8::Handle<v8::Value> SetDumpAsText(const v8::Arguments& args) {
   WebKitTestRunner* runner =
       ShellRenderProcessObserver::GetInstance()->main_test_runner();
@@ -151,6 +161,8 @@ WebKitTestRunnerBindings::GetNativeFunction(v8::Handle<v8::String> name) {
     return v8::FunctionTemplate::New(Display);
   if (name->Equals(v8::String::New("NotifyDone")))
     return v8::FunctionTemplate::New(NotifyDone);
+  if (name->Equals(v8::String::New("SetCanOpenWindows")))
+    return v8::FunctionTemplate::New(SetCanOpenWindows);
   if (name->Equals(v8::String::New("SetDumpAsText")))
     return v8::FunctionTemplate::New(SetDumpAsText);
   if (name->Equals(v8::String::New("SetDumpChildFramesAsText")))

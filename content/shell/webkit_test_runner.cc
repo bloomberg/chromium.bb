@@ -306,6 +306,10 @@ void WebKitTestRunner::WaitUntilDone() {
   Send(new ShellViewHostMsg_WaitUntilDone(routing_id()));
 }
 
+void WebKitTestRunner::CanOpenWindows() {
+  Send(new ShellViewHostMsg_CanOpenWindows(routing_id()));
+}
+
 void WebKitTestRunner::NotImplemented(const char* object, const char* method) {
   Send(new ShellViewHostMsg_NotImplemented(routing_id(), object, method));
 }

@@ -67,6 +67,7 @@ class WebKitTestRunner : public RenderViewObserver,
   void SetPrinting();
   void SetShouldStayOnPageAfterHandlingBeforeUnload(bool should_stay_on_page);
   void WaitUntilDone();
+  void CanOpenWindows();
   void NotImplemented(const char* object, const char* method);
 
   void set_proxy(WebTestRunner::WebTestProxyBase* proxy) { proxy_ = proxy; }

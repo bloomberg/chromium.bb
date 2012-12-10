@@ -10,6 +10,7 @@
 
 #include "base/cancelable_callback.h"
 #include "base/file_path.h"
+#include "base/synchronization/lock.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/public/browser/render_view_host_observer.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -90,6 +91,9 @@ class WebKitTestController : public base::NonThreadSafe,
     return should_stay_on_page_after_handling_before_unload_;
   }
 
+  // This method can be invoked on any thread.
+  bool CanOpenWindows() const;
+
   // WebContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void PluginCrashed(const FilePath& plugin_path) OVERRIDE;
@@ -115,6 +119,7 @@ class WebKitTestController : public base::NonThreadSafe,
   void OnSetPrinting();
   void OnSetShouldStayOnPageAfterHandlingBeforeUnload(bool should_stay_on_page);
   void OnWaitUntilDone();
+  void OnCanOpenWindows();
 
   void OnNotImplemented(const std::string& object_name,
                         const std::string& method_name);
@@ -138,6 +143,10 @@ class WebKitTestController : public base::NonThreadSafe,
   ShellWebPreferences prefs_;
 
   base::CancelableClosure watchdog_;
+
+  // Access to the following variables needs to be guarded by |lock_|.
+  mutable base::Lock lock_;
+  bool can_open_windows_;
 
   DISALLOW_COPY_AND_ASSIGN(WebKitTestController);
 };
