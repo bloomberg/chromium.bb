@@ -63,9 +63,9 @@ public class ContentShellTestBase extends ActivityInstrumentationTestCase2<Conte
      * loading pages. Instead it should be used more for test initialization. The proper way
      * to wait is to use a TestCallbackHelperContainer after the initial load is completed.
      * @return Whether or not the Shell was actually finished loading.
-     * @throws Exception
+     * @throws InterruptedException
      */
-    protected boolean waitForActiveShellToBeDoneLoading() throws Exception {
+    protected boolean waitForActiveShellToBeDoneLoading() throws InterruptedException {
         final ContentShellActivity activity = getActivity();
 
         // Wait for the Content Shell to be initialized.

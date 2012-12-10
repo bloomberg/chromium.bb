@@ -545,7 +545,25 @@ public class ContentViewCore implements MotionEventDelegate {
 
     private void initPopupZoomer(Context context){
         mPopupZoomer = new PopupZoomer(context);
-        mContainerView.addView(mPopupZoomer);
+        mPopupZoomer.setOnVisibilityChangedListener(new PopupZoomer.OnVisibilityChangedListener() {
+            @Override
+            public void onPopupZoomerShown(PopupZoomer zoomer) {
+                if (mContainerView.indexOfChild(zoomer) == -1) {
+                    mContainerView.addView(zoomer);
+                } else {
+                    assert false : "PopupZoomer should never be shown without being hidden";
+                }
+            }
+
+            @Override
+            public void onPopupZoomerHidden(PopupZoomer zoomer) {
+                if (mContainerView.indexOfChild(zoomer) != -1) {
+                    mContainerView.removeView(zoomer);
+                } else {
+                    assert false : "PopupZoomer should never be hidden without being shown";
+                }
+            }
+        });
         PopupZoomer.OnTapListener listener = new PopupZoomer.OnTapListener() {
             @Override
             public boolean onSingleTap(View v, MotionEvent e) {

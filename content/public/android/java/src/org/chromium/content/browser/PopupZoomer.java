@@ -55,6 +55,16 @@ class PopupZoomer extends View {
 
     private OnTapListener mOnTapListener = null;
 
+    /**
+     * Interface to be implemented to add and remove PopupZoomer to/from the view hierarchy.
+     */
+    public static interface OnVisibilityChangedListener {
+        public void onPopupZoomerShown(PopupZoomer zoomer);
+        public void onPopupZoomerHidden(PopupZoomer zoomer);
+    }
+
+    private OnVisibilityChangedListener mOnVisibilityChangedListener = null;
+
     // Cached drawable used to frame the zooming popup.
     // TODO(tonyg): This should be marked purgeable so that if the system wants to recover this
     // memory, we can just reload it from the resource ID next time it is needed.
@@ -76,6 +86,9 @@ class PopupZoomer extends View {
     // This is used in the case that the zoomer is cancelled while it is still animating outwards,
     // to avoid having it jump to full size then animate closed.
     private long mTimeLeft = 0;
+
+    // initDimensions() needs to be called in onDraw().
+    private boolean mNeedsToInitDimensions;
 
     // Available view area after accounting for ZOOM_BOUNDS_MARGIN.
     private RectF mViewClipRect;
@@ -219,6 +232,13 @@ class PopupZoomer extends View {
     }
 
     /**
+     * Sets the OnVisibilityChangedListener.
+     */
+    public void setOnVisibilityChangedListener(OnVisibilityChangedListener listener) {
+        mOnVisibilityChangedListener = listener;
+    }
+
+    /**
      * Sets the bitmap to be used for the zoomed view.
      */
     public void setBitmap(Bitmap bitmap) {
@@ -227,6 +247,7 @@ class PopupZoomer extends View {
             mZoomedBitmap = null;
         }
         mZoomedBitmap = bitmap;
+
         // Round the corners of the bitmap so it doesn't stick out around the overlay.
         Canvas canvas = new Canvas(mZoomedBitmap);
         Path path = new Path();
@@ -252,7 +273,10 @@ class PopupZoomer extends View {
         mTimeLeft = 0;
         if (show) {
             setVisibility(VISIBLE);
-            initDimensions();
+            mNeedsToInitDimensions = true;
+            if (mOnVisibilityChangedListener != null) {
+                mOnVisibilityChangedListener.onPopupZoomerShown(this);
+            }
         } else {
             long endTime = mAnimationStartTime + ANIMATION_DURATION;
             mTimeLeft = endTime - SystemClock.uptimeMillis();
@@ -266,6 +290,9 @@ class PopupZoomer extends View {
         mAnimating = false;
         mShowing = false;
         mTimeLeft = 0;
+        if (mOnVisibilityChangedListener != null) {
+            mOnVisibilityChangedListener.onPopupZoomerHidden(this);
+        }
         setVisibility(INVISIBLE);
         mZoomedBitmap.recycle();
         mZoomedBitmap = null;
@@ -287,10 +314,6 @@ class PopupZoomer extends View {
     }
 
     private void setTargetBounds(Rect rect) {
-        mViewClipRect = new RectF(ZOOM_BOUNDS_MARGIN,
-                ZOOM_BOUNDS_MARGIN,
-                getWidth() - ZOOM_BOUNDS_MARGIN,
-                getHeight() - ZOOM_BOUNDS_MARGIN);
         mTargetBounds = rect;
     }
 
@@ -307,6 +330,11 @@ class PopupZoomer extends View {
         mClipRect = new RectF(l, t, r, b);
         int width = getWidth();
         int height = getHeight();
+
+        mViewClipRect = new RectF(ZOOM_BOUNDS_MARGIN,
+                ZOOM_BOUNDS_MARGIN,
+                width - ZOOM_BOUNDS_MARGIN,
+                height - ZOOM_BOUNDS_MARGIN);
 
         // Ensure it stays inside the bounds of the view.  First shift it around to see if it
         // can fully fit in the view, then clip it to the padding section of the view to
@@ -375,9 +403,23 @@ class PopupZoomer extends View {
         mPopupScrollY = constrain(mPopupScrollY, mMinScrollY, mMaxScrollY);
     }
 
+    /*
+     * Tests override it as the PopupZoomer is never attached to the view hierarchy.
+     */
+    protected boolean acceptZeroSizeView() {
+        return false;
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
         if (!isShowing() || mZoomedBitmap == null) return;
+        if (!acceptZeroSizeView() && (getWidth() == 0 || getHeight() == 0)) return;
+
+        if (mNeedsToInitDimensions) {
+            mNeedsToInitDimensions = false;
+            initDimensions();
+        }
+
         canvas.save();
         // Calculate the elapsed fraction of animation.
         float time = (SystemClock.uptimeMillis() - mAnimationStartTime + mTimeLeft) /

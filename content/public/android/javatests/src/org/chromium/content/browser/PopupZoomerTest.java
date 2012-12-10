@@ -42,6 +42,12 @@ public class PopupZoomerTest extends InstrumentationTestCase {
             super.onDraw(c);
         }
 
+        // Test doesn't attach PopupZoomer to the view hierarchy,
+        // but onDraw() should still go on.
+        protected boolean acceptZeroSizeView() {
+            return true;
+        }
+
         public void finishPendingDraws() {
             // Finish all pending draw calls. A draw call may change mPendingDraws.
             while (mPendingDraws > 0) {
