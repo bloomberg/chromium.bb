@@ -24,7 +24,6 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
-#include "chrome/browser/policy/cloud_policy_data_store.h"
 #include "chrome/browser/policy/policy_service.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -39,7 +38,6 @@
 #include "chromeos/dbus/mock_dbus_thread_manager.h"
 #include "chromeos/dbus/mock_session_manager_client.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
@@ -357,12 +355,9 @@ class LoginUtilsTest : public testing::Test,
     EXPECT_CALL(*cryptohome_, InstallAttributesIsFirstInstall())
         .WillOnce(Return(true))
         .WillRepeatedly(Return(false));
-    policy::CloudPolicyDataStore* device_data_store =
-        connector_->GetDeviceCloudPolicyDataStore();
-    device_data_store->set_device_mode(policy::DEVICE_MODE_ENTERPRISE);
-    device_data_store->set_device_id(kDeviceId);
     EXPECT_EQ(policy::EnterpriseInstallAttributes::LOCK_SUCCESS,
-              connector_->LockDevice(username));
+              connector_->GetInstallAttributes()->LockDevice(
+                  username, policy::DEVICE_MODE_ENTERPRISE, kDeviceId));
     RunUntilIdle();
   }
 
@@ -515,59 +510,6 @@ TEST_F(LoginUtilsTest, EnterpriseLoginDoesntBlockForNormalUser) {
   EXPECT_EQ(kUsernameOtherDomain, user_manager->GetLoggedInUser()->email());
 }
 
-TEST_F(LoginUtilsTest, OAuth1TokenFetchFailureUnblocksRefreshPolicies) {
-  // 0. Check that a user is not logged in yet.
-  UserManager* user_manager = UserManager::Get();
-  ASSERT_TRUE(!user_manager->IsUserLoggedIn());
-  EXPECT_FALSE(connector_->IsEnterpriseManaged());
-  EXPECT_FALSE(prepared_profile_);
-
-  // 1. Fake sign-in.
-  // The profile will be created without waiting for a policy.
-  content::WindowedNotificationObserver profile_creation_observer(
-      chrome::NOTIFICATION_PROFILE_CREATED,
-      content::NotificationService::AllSources());
-  PrepareProfile(kUsername);
-  // Wait until the profile is fully initialized. This makes sure the async
-  // prefs init has finished, and the OnProfileCreated() callback has been
-  // invoked.
-  profile_creation_observer.Wait();
-  EXPECT_TRUE(prepared_profile_);
-  ASSERT_TRUE(user_manager->IsUserLoggedIn());
-  EXPECT_EQ(kUsername, user_manager->GetLoggedInUser()->email());
-
-  // 2. Get the pending oauth1 access token fetcher.
-  net::TestURLFetcher* fetcher =
-      PrepareOAuthFetcher(GaiaUrls::GetInstance()->get_oauth_token_url());
-  ASSERT_TRUE(fetcher);
-
-  // 3. Issuing a RefreshPolicies() now blocks waiting for the oauth token.
-  bool refresh_policies_completed = false;
-  browser_process_->policy_service()->RefreshPolicies(
-      base::Bind(SetFlag, &refresh_policies_completed));
-  RunUntilIdle();
-  ASSERT_FALSE(refresh_policies_completed);
-
-  // 4. Now make the fetcher fail. RefreshPolicies() should unblock.
-  // The OAuth1TokenFetcher retries up to 5 times with a 3 second delay;
-  // just invoke the callback directly to avoid waiting for that.
-  // The |mock_fetcher| is passed instead of the original because the original
-  // is deleted by the GaiaOAuthFetcher after the first callback.
-  net::URLFetcherDelegate* delegate = fetcher->delegate();
-  ASSERT_TRUE(delegate);
-  net::TestURLFetcher mock_fetcher(fetcher->id(),
-                                   fetcher->GetOriginalURL(),
-                                   delegate);
-  mock_fetcher.set_status(net::URLRequestStatus());
-  mock_fetcher.set_response_code(404);
-  for (int i = 0; i < 6; ++i) {
-    ASSERT_FALSE(refresh_policies_completed);
-    delegate->OnURLFetchComplete(&mock_fetcher);
-    RunUntilIdle();
-  }
-  EXPECT_TRUE(refresh_policies_completed);
-}
-
 TEST_P(LoginUtilsBlockingLoginTest, EnterpriseLoginBlocksForEnterpriseUser) {
   UserManager* user_manager = UserManager::Get();
   ASSERT_TRUE(!user_manager->IsUserLoggedIn());
@@ -639,6 +581,7 @@ TEST_P(LoginUtilsBlockingLoginTest, EnterpriseLoginBlocksForEnterpriseUser) {
     fetcher = PrepareDMPolicyFetcher();
     ASSERT_TRUE(fetcher);
     fetcher->delegate()->OnURLFetchComplete(fetcher);
+    RunUntilIdle();
   } while (0);
 
   if (steps < 5) {

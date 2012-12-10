@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/base_paths.h"
-#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -107,6 +106,11 @@ std::string GetTestPolicy() {
 }
 
 #if defined(OS_CHROMEOS)
+void SetUpOldStackBeforeCreatingBrowser() {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  command_line->AppendSwitch(switches::kDisableCloudPolicyService);
+}
+
 void SetUpOldStackAfterCreatingBrowser(Browser* browser) {
   // Flush the token cache loading.
   content::RunAllPendingInMessageLoop(content::BrowserThread::FILE);
@@ -122,7 +126,6 @@ void SetUpOldStackAfterCreatingBrowser(Browser* browser) {
 
 void SetUpNewStackBeforeCreatingBrowser() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  command_line->AppendSwitch(switches::kEnableCloudPolicyService);
   command_line->AppendSwitch(switches::kLoadCloudPolicyOnSignin);
 }
 
@@ -132,7 +135,6 @@ void SetUpNewStackAfterCreatingBrowser(Browser* browser) {
   connector->ScheduleServiceInitialization(0);
 
 #if defined(OS_CHROMEOS)
-  connector->InitializeUserPolicy(GetTestUser(), false, true);
   UserCloudPolicyManagerChromeOS* policy_manager =
       connector->GetUserCloudPolicyManager();
   ASSERT_TRUE(policy_manager);
@@ -263,7 +265,8 @@ INSTANTIATE_TEST_CASE_P(
     OldStackCloudPolicyTest,
     CloudPolicyTest,
     testing::Values(
-        TestSetup(base::DoNothing, SetUpOldStackAfterCreatingBrowser)));
+        TestSetup(SetUpOldStackBeforeCreatingBrowser,
+                  SetUpOldStackAfterCreatingBrowser)));
 #endif
 
 INSTANTIATE_TEST_CASE_P(

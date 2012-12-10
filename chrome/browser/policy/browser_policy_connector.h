@@ -173,6 +173,9 @@ class BrowserPolicyConnector : public content::NotificationObserver {
   DeviceLocalAccountPolicyService* GetDeviceLocalAccountPolicyService() {
     return device_local_account_policy_service_.get();
   }
+  EnterpriseInstallAttributes* GetInstallAttributes() {
+    return install_attributes_.get();
+  }
 #endif
 
   // Allows setting a DeviceManagementService (for injecting mocks in

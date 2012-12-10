@@ -290,6 +290,9 @@ const char kDisableBookmarkAutocompleteProvider[] =
 const char kDisableClientSidePhishingDetection[] =
     "disable-client-side-phishing-detection";
 
+// Disables the new cloud policy stack.
+const char kDisableCloudPolicyService[]     = "disable-cloud-policy-service";
+
 const char kDisableComponentUpdate[]        = "disable-component-update";
 
 // Disables establishing certificate revocation information by downloading a
@@ -470,9 +473,6 @@ const char kEnableBenchmarking[]            = "enable-benchmarking";
 
 // Enables the bundled PPAPI version of Flash.
 const char kEnableBundledPpapiFlash[]       = "enable-bundled-ppapi-flash";
-
-// Enables the new cloud policy stack.
-const char kEnableCloudPolicyService[]      = "enable-cloud-policy-service";
 
 // This applies only when the process type is "service". Enables the Cloud
 // Print Proxy component within the service process.

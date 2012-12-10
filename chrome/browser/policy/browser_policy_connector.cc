@@ -127,7 +127,7 @@ void BrowserPolicyConnector::Init() {
   install_attributes_.reset(new EnterpriseInstallAttributes(cryptohome));
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableCloudPolicyService)) {
+  if (!command_line->HasSwitch(switches::kDisableCloudPolicyService)) {
     scoped_ptr<DeviceCloudPolicyStoreChromeOS> device_cloud_policy_store(
         new DeviceCloudPolicyStoreChromeOS(
             chromeos::DeviceSettingsService::Get(),
@@ -208,7 +208,9 @@ scoped_ptr<PolicyService> BrowserPolicyConnector::CreatePolicyService(
     Profile* profile) {
   DCHECK(profile);
   ConfigurationPolicyProvider* user_cloud_policy_provider = NULL;
-#if !defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
+  user_cloud_policy_provider = user_cloud_policy_manager_.get();
+#else
   user_cloud_policy_provider =
       UserCloudPolicyManagerFactory::GetForProfile(profile);
 #endif
@@ -332,11 +334,11 @@ void BrowserPolicyConnector::InitializeUserPolicy(
   GetNetworkConfigurationUpdater()->set_allow_web_trust(
       GetUserAffiliation(user_name) == USER_AFFILIATION_MANAGED);
 
-  if (user_cloud_policy_manager_.get()) {
-    global_user_cloud_policy_provider_.SetDelegate(NULL);
-    user_cloud_policy_manager_->Shutdown();
-    user_cloud_policy_manager_.reset();
-  }
+  // Re-initializing user policy is disallowed for two reasons:
+  // (a) Existing profiles may hold pointers to |user_cloud_policy_manager_|.
+  // (b) Implementing UserCloudPolicyManager::IsInitializationComplete()
+  //     correctly is impossible for re-initialization.
+  CHECK(!user_cloud_policy_manager_.get());
 #endif
 
   // Throw away the old backend.
@@ -361,8 +363,9 @@ void BrowserPolicyConnector::InitializeUserPolicy(
   const FilePath policy_cache_file = policy_dir.Append(kPolicyCacheFile);
   const FilePath token_cache_file = policy_dir.Append(kTokenCacheFile);
 
-  if (command_line->HasSwitch(switches::kEnableCloudPolicyService)) {
+  if (!command_line->HasSwitch(switches::kDisableCloudPolicyService)) {
 #if defined(OS_CHROMEOS)
+    device_management_service_->ScheduleInitialization(startup_delay);
     if (is_public_account && device_local_account_policy_service_.get()) {
       device_local_account_policy_provider_.reset(
           new DeviceLocalAccountPolicyProvider(
@@ -587,7 +590,7 @@ void BrowserPolicyConnector::InitializeDevicePolicy() {
   device_data_store_.reset();
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kEnableCloudPolicyService)) {
+  if (command_line->HasSwitch(switches::kDisableCloudPolicyService)) {
     device_data_store_.reset(CloudPolicyDataStore::CreateForDevicePolicies());
     DevicePolicyCache* device_policy_cache =
         new DevicePolicyCache(device_data_store_.get(),
@@ -711,7 +714,7 @@ scoped_ptr<PolicyService>
     if (device_cloud_policy_manager_.get())
       providers.push_back(device_cloud_policy_manager_.get());
     if (!user_cloud_policy_provider)
-    user_cloud_policy_provider = &global_user_cloud_policy_provider_;
+      user_cloud_policy_provider = &global_user_cloud_policy_provider_;
 #endif
 
     if (user_cloud_policy_provider)
