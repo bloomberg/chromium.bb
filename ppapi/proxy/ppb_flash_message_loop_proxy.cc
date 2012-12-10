@@ -118,6 +118,8 @@ bool PPB_Flash_MessageLoop_Proxy::OnMessageReceived(const IPC::Message& msg) {
 
 void PPB_Flash_MessageLoop_Proxy::OnMsgCreate(PP_Instance instance,
                                               HostResource* result) {
+  if (!dispatcher()->permissions().HasPermission(PERMISSION_FLASH))
+    return;
   thunk::EnterResourceCreation enter(instance);
   if (enter.succeeded()) {
     result->SetHostResource(
@@ -128,6 +130,9 @@ void PPB_Flash_MessageLoop_Proxy::OnMsgCreate(PP_Instance instance,
 void PPB_Flash_MessageLoop_Proxy::OnMsgRun(
     const HostResource& flash_message_loop,
     IPC::Message* reply) {
+  if (!dispatcher()->permissions().HasPermission(PERMISSION_FLASH))
+    return;
+
   PPB_Flash_MessageLoop_API::RunFromHostProxyCallback callback =
       base::Bind(&PPB_Flash_MessageLoop_Proxy::WillQuitSoon, AsWeakPtr(),
                  base::Passed(scoped_ptr<IPC::Message>(reply)));
