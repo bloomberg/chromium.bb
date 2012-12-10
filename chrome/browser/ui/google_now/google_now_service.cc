@@ -4,20 +4,25 @@
 
 #include "chrome/browser/ui/google_now/google_now_service.h"
 
+#include "content/public/browser/geolocation.h"
 #include "content/public/common/geoposition.h"
 
+using base::Bind;
 using base::TimeDelta;
 using content::Geoposition;
 using net::URLRequest;
 
 namespace {
+// TODO(vadimt): Figure out the values of the constants.
+
 // Period for polling for Google Now cards to use when the period from the
 // server is not available.
-// TODO(vadimt): Figure out the value.
-// TODO(vadimt): Figure out the consequences for LBS.
+// TODO(vadimt): Figure out the consequences for LBS and battery.
 // TODO(vadimt): Consider triggers other than the timer for refreshing the
 // position, such as waking from sleep.
 const int kDefaultPollingPeriodMs = 300000; // 5 minutes
+// Time allocated to a geolocation request.
+const int kGeolocationRequestTimeoutMs = 60000; // 1 minute
 }  // namespace
 
 struct GoogleNowService::ServerResponse {
@@ -26,7 +31,8 @@ struct GoogleNowService::ServerResponse {
 };
 
 GoogleNowService::GoogleNowService(Profile* profile)
-    : profile_(profile) {
+    : profile_(profile),
+      ALLOW_THIS_IN_INITIALIZER_LIST(geolocation_request_weak_factory_(this)) {
   DCHECK(profile_);
 }
 
@@ -63,20 +69,43 @@ void GoogleNowService::StartWaitingForNextUpdate(TimeDelta delay) {
 void GoogleNowService::OnWaitingForNextUpdateEnds() {
   DCHECK(IsGoogleNowEnabled());
   DCHECK(!next_update_timer_.IsRunning());
+  DCHECK(!geolocation_request_timer_.IsRunning());
+  DCHECK(!geolocation_request_weak_factory_.HasWeakPtrs());
 
   UpdateCards();
 }
 
 void GoogleNowService::StartObtainingGeolocation() {
-  // TODO(vadimt): Implement via making a geolocation request.
-  OnLocationObtained(Geoposition());
+  DCHECK(!geolocation_request_weak_factory_.HasWeakPtrs());
+  content::RequestLocationUpdate(Bind(
+      &GoogleNowService::OnLocationObtained,
+      geolocation_request_weak_factory_.GetWeakPtr()));
+
+  DCHECK(!geolocation_request_timer_.IsRunning());
+  geolocation_request_timer_.Start(FROM_HERE,
+      TimeDelta::FromMilliseconds(kGeolocationRequestTimeoutMs),
+      this, &GoogleNowService::OnLocationRequestTimeout);
 }
 
 void GoogleNowService::OnLocationObtained(const Geoposition& position) {
   DCHECK(IsGoogleNowEnabled());
   DCHECK(!next_update_timer_.IsRunning());
+  DCHECK(geolocation_request_timer_.IsRunning());
+  DCHECK(geolocation_request_weak_factory_.HasWeakPtrs());
 
+  geolocation_request_weak_factory_.InvalidateWeakPtrs();
+  geolocation_request_timer_.Stop();
   StartServerRequest(position);
+}
+
+void GoogleNowService::OnLocationRequestTimeout() {
+  DCHECK(IsGoogleNowEnabled());
+  DCHECK(!next_update_timer_.IsRunning());
+  DCHECK(!geolocation_request_timer_.IsRunning());
+  DCHECK(geolocation_request_weak_factory_.HasWeakPtrs());
+
+  geolocation_request_weak_factory_.InvalidateWeakPtrs();
+  StartServerRequest(Geoposition());
 }
 
 void GoogleNowService::StartServerRequest(
@@ -89,6 +118,10 @@ void GoogleNowService::OnServerRequestCompleted(URLRequest* request,
                                                 int num_bytes) {
   DCHECK(IsGoogleNowEnabled());
   DCHECK(!next_update_timer_.IsRunning());
+  DCHECK(!geolocation_request_timer_.IsRunning());
+  // TODO(vadimt): Uncomment the check below once OnServerRequestCompleted is
+  // called asynchronously.
+  // DCHECK(!geolocation_request_weak_factory_.HasWeakPtrs());
 
   ServerResponse server_response;
   // TODO(vadimt): Check request's status.

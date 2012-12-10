@@ -52,6 +52,7 @@ class GoogleNowService : public ProfileKeyedService {
   // Starts obtaining location of the machine.
   void StartObtainingGeolocation();
   void OnLocationObtained(const content::Geoposition& position);
+  void OnLocationRequestTimeout();
 
   // Starts downloading cards from the server.
   void StartServerRequest(const content::Geoposition& position);
@@ -69,6 +70,11 @@ class GoogleNowService : public ProfileKeyedService {
   Profile* const profile_;
   // Timer to schedule next cards update.
   base::OneShotTimer<GoogleNowService> next_update_timer_;
+  // Timer to cancel geolocation requests that take too long.
+  base::OneShotTimer<GoogleNowService> geolocation_request_timer_;
+  // Weak factory for the geolocation request callback. Used to ensure
+  // geolocation request callback is not run after this object is destroyed.
+  base::WeakPtrFactory<GoogleNowService> geolocation_request_weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GoogleNowService);
 };
