@@ -73,6 +73,7 @@
 #include "ppapi/thunk/ppb_tcp_server_socket_private_api.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
@@ -161,10 +162,16 @@ class HostDispatcherWrapper
     // isn't true for browser tag support.
     if (host) {
       RenderView* render_view = host->GetRenderViewForInstance(instance);
+      webkit::ppapi::PluginInstance* plugin_instance =
+          host->GetPluginInstance(instance);
       render_view->Send(new ViewHostMsg_DidCreateOutOfProcessPepperInstance(
           plugin_child_id_,
           instance,
-          render_view->GetRoutingID(),
+          PepperRendererInstanceData(
+              0,  // The render process id will be supplied in the browser.
+              render_view->GetRoutingID(),
+              plugin_instance->container()->element().document().url(),
+              plugin_instance->plugin_url()),
           is_external_));
     }
   }

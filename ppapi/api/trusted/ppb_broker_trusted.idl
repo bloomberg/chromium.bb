@@ -9,7 +9,8 @@
  */
 
 label Chrome {
-  M14 = 0.2
+  M14 = 0.2,
+  M25 = 0.3
 };
 
 /**
@@ -61,5 +62,16 @@ interface PPB_BrokerTrusted {
    * before connect has completed will return PP_ERROR_FAILED.
    */
   int32_t GetHandle([in] PP_Resource broker, [out] int32_t handle);
+
+  /**
+   * Returns PP_TRUE if the plugin has permission to launch the broker. A user
+   * must explicitly grant permission to launch the broker for a particular
+   * website. This is done through an infobar that is displayed when |Connect|
+   * is called. This function returns PP_TRUE if the user has already granted
+   * permission to launch the broker for the website containing this plugin
+   * instance. Returns PP_FALSE otherwise.
+   */
+  [version=0.3]
+  PP_Bool IsAllowed([in] PP_Resource broker);
 };
 

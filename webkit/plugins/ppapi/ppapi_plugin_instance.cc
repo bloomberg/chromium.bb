@@ -308,14 +308,17 @@ scoped_array<const char*> StringVectorToArgArray(
 
 // static
 PluginInstance* PluginInstance::Create(PluginDelegate* delegate,
-                                       PluginModule* module) {
+                                       PluginModule* module,
+                                       WebPluginContainer* container,
+                                       const GURL& plugin_url) {
   base::Callback<const void*(const char*)> get_plugin_interface_func =
       base::Bind(&PluginModule::GetPluginInterface, module);
   PPP_Instance_Combined* ppp_instance_combined =
       PPP_Instance_Combined::Create(get_plugin_interface_func);
   if (!ppp_instance_combined)
     return NULL;
-  return new PluginInstance(delegate, module, ppp_instance_combined);
+  return new PluginInstance(delegate, module, ppp_instance_combined, container,
+                            plugin_url);
 }
 
 PluginInstance::GamepadImpl::GamepadImpl(PluginDelegate* delegate)
@@ -337,12 +340,15 @@ void PluginInstance::GamepadImpl::Sample(PP_GamepadsSampleData* data) {
 PluginInstance::PluginInstance(
     PluginDelegate* delegate,
     PluginModule* module,
-    ::ppapi::PPP_Instance_Combined* instance_interface)
+    ::ppapi::PPP_Instance_Combined* instance_interface,
+    WebPluginContainer* container,
+    const GURL& plugin_url)
     : delegate_(delegate),
       module_(module),
       instance_interface_(instance_interface),
       pp_instance_(0),
-      container_(NULL),
+      container_(container),
+      plugin_url_(plugin_url),
       full_frame_(false),
       sent_initial_did_change_view_(false),
       view_change_weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
@@ -560,13 +566,9 @@ static void SetGPUHistogram(const ::ppapi::Preferences& prefs,
 #endif
 }
 
-bool PluginInstance::Initialize(WebPluginContainer* container,
-                                const std::vector<std::string>& arg_names,
+bool PluginInstance::Initialize(const std::vector<std::string>& arg_names,
                                 const std::vector<std::string>& arg_values,
-                                const GURL& plugin_url,
                                 bool full_frame) {
-  container_ = container;
-  plugin_url_ = plugin_url;
   full_frame_ = full_frame;
 
   UpdateTouchEventRequest();
@@ -2130,8 +2132,9 @@ PP_Bool PluginInstance::GetScreenSize(PP_Instance instance, PP_Size* size) {
 ::ppapi::Resource* PluginInstance::GetSingletonResource(
     PP_Instance instance,
     ::ppapi::SingletonResourceID id) {
-  // Flash APIs aren't implemented in-process.
+  // Flash APIs and some others aren't implemented in-process.
   switch (id) {
+    case ::ppapi::BROKER_SINGLETON_ID:
     case ::ppapi::FLASH_CLIPBOARD_SINGLETON_ID:
     case ::ppapi::FLASH_FILE_SINGLETON_ID:
     case ::ppapi::FLASH_FULLSCREEN_SINGLETON_ID:

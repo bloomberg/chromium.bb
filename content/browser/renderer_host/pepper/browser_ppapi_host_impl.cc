@@ -6,6 +6,7 @@
 
 #include "content/browser/renderer_host/pepper/pepper_message_filter.h"
 #include "content/browser/trace_message_filter.h"
+#include "content/common/pepper_renderer_instance_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "ipc/ipc_message_macros.h"
@@ -73,22 +74,22 @@ base::ProcessHandle BrowserPpapiHostImpl::GetPluginProcessHandle() const {
 }
 
 bool BrowserPpapiHostImpl::IsValidInstance(PP_Instance instance) const {
-  return instance_to_view_.find(instance) != instance_to_view_.end();
+  return instance_map_.find(instance) != instance_map_.end();
 }
 
 bool BrowserPpapiHostImpl::GetRenderViewIDsForInstance(
     PP_Instance instance,
     int* render_process_id,
     int* render_view_id) const {
-  InstanceToViewMap::const_iterator found = instance_to_view_.find(instance);
-  if (found == instance_to_view_.end()) {
+  InstanceMap::const_iterator found = instance_map_.find(instance);
+  if (found == instance_map_.end()) {
     *render_process_id = 0;
     *render_view_id = 0;
     return false;
   }
 
-  *render_process_id = found->second.process_id;
-  *render_view_id = found->second.view_id;
+  *render_process_id = found->second.render_process_id;
+  *render_view_id = found->second.render_view_id;
   return true;
 }
 
@@ -100,24 +101,34 @@ const FilePath& BrowserPpapiHostImpl::GetProfileDataDirectory() {
   return profile_data_directory_;
 }
 
-void BrowserPpapiHostImpl::AddInstanceForView(PP_Instance instance,
-                                              int render_process_id,
-                                              int render_view_id) {
-  DCHECK(instance_to_view_.find(instance) == instance_to_view_.end());
-
-  RenderViewIDs ids;
-  ids.process_id = render_process_id;
-  ids.view_id = render_view_id;
-  instance_to_view_[instance] = ids;
+GURL BrowserPpapiHostImpl::GetDocumentURLForInstance(PP_Instance instance) {
+  InstanceMap::const_iterator found = instance_map_.find(instance);
+  if (found == instance_map_.end())
+    return GURL();
+  return found->second.document_url;
 }
 
-void BrowserPpapiHostImpl::DeleteInstanceForView(PP_Instance instance) {
-  InstanceToViewMap::iterator found = instance_to_view_.find(instance);
-  if (found == instance_to_view_.end()) {
+GURL BrowserPpapiHostImpl::GetPluginURLForInstance(PP_Instance instance) {
+  InstanceMap::const_iterator found = instance_map_.find(instance);
+  if (found == instance_map_.end())
+    return GURL();
+  return found->second.plugin_url;
+}
+
+void BrowserPpapiHostImpl::AddInstance(
+    PP_Instance instance,
+    const PepperRendererInstanceData& instance_data) {
+  DCHECK(instance_map_.find(instance) == instance_map_.end());
+  instance_map_[instance] = instance_data;
+}
+
+void BrowserPpapiHostImpl::DeleteInstance(PP_Instance instance) {
+  InstanceMap::iterator found = instance_map_.find(instance);
+  if (found == instance_map_.end()) {
     NOTREACHED();
     return;
   }
-  instance_to_view_.erase(found);
+  instance_map_.erase(found);
 }
 
 bool BrowserPpapiHostImpl::HostMessageFilter::OnMessageReceived(

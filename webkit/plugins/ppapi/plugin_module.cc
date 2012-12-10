@@ -533,8 +533,12 @@ bool PluginModule::SupportsInterface(const char* name) {
   return !!InternalGetInterface(name);
 }
 
-PluginInstance* PluginModule::CreateInstance(PluginDelegate* delegate) {
-  PluginInstance* instance = PluginInstance::Create(delegate, this);
+PluginInstance* PluginModule::CreateInstance(
+    PluginDelegate* delegate,
+    WebKit::WebPluginContainer* container,
+    const GURL& plugin_url) {
+  PluginInstance* instance = PluginInstance::Create(delegate, this, container,
+                                                    plugin_url);
   if (!instance) {
     LOG(WARNING) << "Plugin doesn't support instance interface, failing.";
     return NULL;

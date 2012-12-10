@@ -321,6 +321,8 @@
     'common/pepper_messages.h',
     'common/pepper_plugin_registry.cc',
     'common/pepper_plugin_registry.h',
+    'common/pepper_renderer_instance_data.cc',
+    'common/pepper_renderer_instance_data.h',
     'common/plugin_carbon_interpose_constants_mac.cc',
     'common/plugin_carbon_interpose_constants_mac.h',
     'common/plugin_messages.h',

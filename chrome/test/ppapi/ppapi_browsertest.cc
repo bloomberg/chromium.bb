@@ -143,10 +143,14 @@ IN_PROC_BROWSER_TEST_F(PPAPIBrokerInfoBarTest, Accept) {
   InfoBarObserver observer;
   observer.ExpectInfoBarAndAccept(true);
 
-  GURL url = GetTestFileUrl("Broker_ConnectPermissionGranted");
-  RunTestURL(url);
+  // PPB_Broker_Trusted::IsAllowed should return false before the infobar is
+  // popped and true after the infobar is popped.
+  RunTest("Broker_IsAllowedPermissionDenied");
+  RunTest("Broker_ConnectPermissionGranted");
+  RunTest("Broker_IsAllowedPermissionGranted");
 
   // It should also set a content settings exception for the site.
+  GURL url = GetTestFileUrl("Broker_ConnectPermissionGranted");
   HostContentSettingsMap* content_settings =
       browser()->profile()->GetHostContentSettingsMap();
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
@@ -159,10 +163,14 @@ IN_PROC_BROWSER_TEST_F(PPAPIBrokerInfoBarTest, Deny) {
   InfoBarObserver observer;
   observer.ExpectInfoBarAndAccept(false);
 
-  GURL url = GetTestFileUrl("Broker_ConnectPermissionDenied");
-  RunTestURL(url);
+  // PPB_Broker_Trusted::IsAllowed should return false before and after the
+  // infobar is popped.
+  RunTest("Broker_IsAllowedPermissionDenied");
+  RunTest("Broker_ConnectPermissionDenied");
+  RunTest("Broker_IsAllowedPermissionDenied");
 
   // It should also set a content settings exception for the site.
+  GURL url = GetTestFileUrl("Broker_ConnectPermissionDenied");
   HostContentSettingsMap* content_settings =
       browser()->profile()->GetHostContentSettingsMap();
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
@@ -179,6 +187,7 @@ IN_PROC_BROWSER_TEST_F(PPAPIBrokerInfoBarTest, Blocked) {
   InfoBarObserver observer;
 
   RunTest("Broker_ConnectPermissionDenied");
+  RunTest("Broker_IsAllowedPermissionDenied");
 }
 
 IN_PROC_BROWSER_TEST_F(PPAPIBrokerInfoBarTest, Allowed) {
@@ -190,6 +199,7 @@ IN_PROC_BROWSER_TEST_F(PPAPIBrokerInfoBarTest, Allowed) {
   InfoBarObserver observer;
 
   RunTest("Broker_ConnectPermissionGranted");
+  RunTest("Broker_IsAllowedPermissionGranted");
 }
 
 TEST_PPAPI_IN_PROCESS(Core)

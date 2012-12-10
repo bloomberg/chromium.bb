@@ -19,6 +19,7 @@
 #include "base/shared_memory.h"
 #include "base/string16.h"
 #include "build/build_config.h"
+#include "content/common/pepper_renderer_instance_data.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/common/three_d_api_types.h"
 #include "media/base/channel_layout.h"
@@ -167,10 +168,11 @@ class RenderMessageFilter : public BrowserMessageFilter {
                              IPC::Message* reply_msg);
   void OnOpenChannelToPepperPlugin(const FilePath& path,
                                    IPC::Message* reply_msg);
-  void OnDidCreateOutOfProcessPepperInstance(int plugin_child_id,
-                                             int32 pp_instance,
-                                             int render_view_id,
-                                             bool is_external);
+  void OnDidCreateOutOfProcessPepperInstance(
+      int plugin_child_id,
+      int32 pp_instance,
+      PepperRendererInstanceData instance_data,
+      bool is_external);
   void OnDidDeleteOutOfProcessPepperInstance(int plugin_child_id,
                                              int32 pp_instance,
                                              bool is_external);

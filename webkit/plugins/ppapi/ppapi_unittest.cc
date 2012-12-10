@@ -86,7 +86,7 @@ void PpapiUnittest::SetUp() {
   ASSERT_TRUE(module_->InitAsInternalPlugin(entry_points));
 
   // Initialize the mock instance.
-  instance_ = PluginInstance::Create(delegate_.get(), module());
+  instance_ = PluginInstance::Create(delegate_.get(), module(), NULL, GURL());
 }
 
 void PpapiUnittest::TearDown() {

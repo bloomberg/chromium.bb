@@ -83,14 +83,14 @@ bool WebPluginImpl::initialize(WebPluginContainer* container) {
   if (!init_data_->delegate)
     return false;
 
-  instance_ = init_data_->module->CreateInstance(init_data_->delegate);
+  instance_ = init_data_->module->CreateInstance(init_data_->delegate,
+                                                 container,
+                                                 init_data_->url);
   if (!instance_)
     return false;
 
-  bool success = instance_->Initialize(container,
-                                       init_data_->arg_names,
+  bool success = instance_->Initialize(init_data_->arg_names,
                                        init_data_->arg_values,
-                                       init_data_->url,
                                        full_frame_);
   if (!success) {
     instance_->Delete();

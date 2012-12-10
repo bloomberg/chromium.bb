@@ -222,10 +222,14 @@ void TestBroker::RunTests(const std::string& filter) {
 
   RUN_TEST(ConnectPermissionDenied, filter);
   RUN_TEST(ConnectPermissionGranted, filter);
+  RUN_TEST(IsAllowedPermissionDenied, filter);
+  RUN_TEST(IsAllowedPermissionGranted, filter);
 }
 
 std::string TestBroker::TestCreate() {
   // Very simplistic test to make sure we can create a broker interface.
+  // TODO(raymes): All of the resources created in this file are leaked. Write
+  // a C++ wrapper for PPB_Broker_Trusted to avoid these leaks.
   PP_Resource broker = broker_interface_->CreateTrusted(
       instance_->pp_instance());
   ASSERT_TRUE(broker);
@@ -317,3 +321,20 @@ std::string TestBroker::TestConnectPermissionGranted() {
   PASS();
 }
 
+std::string TestBroker::TestIsAllowedPermissionDenied() {
+  PP_Resource broker = broker_interface_->CreateTrusted(
+      instance_->pp_instance());
+  ASSERT_TRUE(broker);
+  ASSERT_EQ(PP_FALSE, broker_interface_->IsAllowed(broker));
+
+  PASS();
+}
+
+std::string TestBroker::TestIsAllowedPermissionGranted() {
+  PP_Resource broker = broker_interface_->CreateTrusted(
+      instance_->pp_instance());
+  ASSERT_TRUE(broker);
+  ASSERT_EQ(PP_TRUE, broker_interface_->IsAllowed(broker));
+
+  PASS();
+}

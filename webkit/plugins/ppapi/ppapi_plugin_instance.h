@@ -104,7 +104,10 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   // version of PPP_Instance possible by querying the given get_plugin_interface
   // function. If the plugin does not support any valid PPP_Instance interface,
   // returns NULL.
-  static PluginInstance* Create(PluginDelegate* delegate, PluginModule* module);
+  static PluginInstance* Create(PluginDelegate* delegate,
+                                PluginModule* module,
+                                WebKit::WebPluginContainer* container,
+                                const GURL& plugin_url);
   // Delete should be called by the WebPlugin before this destructor.
   virtual ~PluginInstance();
 
@@ -163,10 +166,8 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   const ::ppapi::ViewData& view_data() const { return view_data_; }
 
   // PPP_Instance and PPP_Instance_Private pass-through.
-  bool Initialize(WebKit::WebPluginContainer* container,
-                  const std::vector<std::string>& arg_names,
+  bool Initialize(const std::vector<std::string>& arg_names,
                   const std::vector<std::string>& arg_values,
-                  const GURL& plugin_url,
                   bool full_frame);
   bool HandleDocumentLoad(PPB_URLLoader_Impl* loader);
   bool HandleInputEvent(const WebKit::WebInputEvent& event,
@@ -478,7 +479,9 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   // initialization.
   PluginInstance(PluginDelegate* delegate,
                  PluginModule* module,
-                 ::ppapi::PPP_Instance_Combined* instance_interface);
+                 ::ppapi::PPP_Instance_Combined* instance_interface,
+                 WebKit::WebPluginContainer* container,
+                 const GURL& plugin_url);
 
   bool LoadFindInterface();
   bool LoadInputEventInterface();

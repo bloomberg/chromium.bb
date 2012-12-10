@@ -12,6 +12,7 @@
 #include "content/common/content_param_traits.h"
 #include "content/common/edit_command.h"
 #include "content/common/navigation_gesture.h"
+#include "content/common/pepper_renderer_instance_data.h"
 #include "content/common/view_message_enums.h"
 #include "content/port/common/input_event_ack_state.h"
 #include "content/public/common/common_param_traits.h"
@@ -325,6 +326,13 @@ IPC_STRUCT_TRAITS_BEGIN(content::FrameNavigateParams)
   IPC_STRUCT_TRAITS_MEMBER(password_form)
   IPC_STRUCT_TRAITS_MEMBER(contents_mime_type)
   IPC_STRUCT_TRAITS_MEMBER(socket_address)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(content::PepperRendererInstanceData)
+  IPC_STRUCT_TRAITS_MEMBER(render_process_id)
+  IPC_STRUCT_TRAITS_MEMBER(render_view_id)
+  IPC_STRUCT_TRAITS_MEMBER(document_url)
+  IPC_STRUCT_TRAITS_MEMBER(plugin_url)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::RendererPreferences)
@@ -1953,21 +1961,25 @@ IPC_SYNC_MESSAGE_CONTROL1_2(ViewHostMsg_OpenChannelToPepperPlugin,
                             int /* plugin_child_id */)
 
 // Notification that a plugin has created a new plugin instance. The parameters
-// indicate the plugin process ID that we're creating the instance for, and the
-// routing ID of the render view that the plugin instance is associated with.
-// This allows us to create a mapping in the browser process for what objects a
-// given PP_Instance is associated with.
+// indicate:
+// -The plugin process ID that we're creating the instance for.
+// -The instance ID of the instance being created.
+// -A PepperRendererInstanceData struct which contains properties from the
+// renderer which are associated with the plugin instance. This includes the
+// routing ID of the associated render view and the URL of plugin.
+// -Whether the plugin we're creating an instance for is external or internal.
 //
 // This message must be sync even though it returns no parameters to avoid
 // a race condition with the plugin process. The plugin process sends messages
 // to the browser that assume the browser knows about the instance. We need to
 // make sure that the browser actually knows about the instance before we tell
 // the plugin to run.
-IPC_SYNC_MESSAGE_CONTROL4_0(ViewHostMsg_DidCreateOutOfProcessPepperInstance,
-                            int /* plugin_child_id */,
-                            int32 /* pp_instance */,
-                            int /* view_routing_id */,
-                            bool /* is_external */)
+IPC_SYNC_MESSAGE_CONTROL4_0(
+    ViewHostMsg_DidCreateOutOfProcessPepperInstance,
+    int /* plugin_child_id */,
+    int32 /* pp_instance */,
+    content::PepperRendererInstanceData /* creation_data */,
+    bool /* is_external */)
 
 // Notification that a plugin has destroyed an instance. This is the opposite of
 // the "DidCreate" message above.

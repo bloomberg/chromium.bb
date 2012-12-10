@@ -33,6 +33,10 @@ class CallbackTracker;
 class WebKitForwarding;
 }  // namespace ppapi
 
+namespace WebKit {
+class WebPluginContainer;
+}  // namespace WebKit
+
 namespace webkit {
 namespace ppapi {
 
@@ -135,7 +139,9 @@ class WEBKIT_PLUGINS_EXPORT PluginModule :
   const FilePath& path() const { return path_; }
   const ::ppapi::PpapiPermissions& permissions() const { return permissions_; }
 
-  PluginInstance* CreateInstance(PluginDelegate* delegate);
+  PluginInstance* CreateInstance(PluginDelegate* delegate,
+                                 WebKit::WebPluginContainer* container,
+                                 const GURL& plugin_url);
 
   // Returns "some" plugin instance associated with this module. This is not
   // guaranteed to be any one in particular. This is normally used to execute

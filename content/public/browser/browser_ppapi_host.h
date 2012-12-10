@@ -10,6 +10,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
+#include "googleurl/src/gurl.h"
 #include "ppapi/c/pp_instance.h"
 
 namespace IPC {
@@ -72,11 +73,16 @@ class CONTENT_EXPORT BrowserPpapiHost {
   virtual bool GetRenderViewIDsForInstance(PP_Instance instance,
                                            int* render_process_id,
                                            int* render_view_id) const = 0;
+
   // Returns the name of the plugin.
   virtual const std::string& GetPluginName() = 0;
 
   // Returns the user's profile data directory.
   virtual const FilePath& GetProfileDataDirectory() = 0;
+
+  // Get the Document/Plugin URLs for the given PP_Instance.
+  virtual GURL GetDocumentURLForInstance(PP_Instance instance) = 0;
+  virtual GURL GetPluginURLForInstance(PP_Instance instance) = 0;
 };
 
 }  // namespace content

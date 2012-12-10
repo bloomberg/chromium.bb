@@ -711,7 +711,7 @@ void RenderMessageFilter::OnOpenChannelToPepperPlugin(
 void RenderMessageFilter::OnDidCreateOutOfProcessPepperInstance(
     int plugin_child_id,
     int32 pp_instance,
-    int render_view_id,
+    PepperRendererInstanceData instance_data,
     bool is_external) {
   // It's important that we supply the render process ID ourselves based on the
   // channel the message arrived on. We use the
@@ -719,16 +719,18 @@ void RenderMessageFilter::OnDidCreateOutOfProcessPepperInstance(
   // mapping to decide how to handle messages received from the (untrusted)
   // plugin, so an exploited renderer must not be able to insert fake mappings
   // that may allow it access to other render processes.
+  DCHECK(instance_data.render_process_id == 0);
+  instance_data.render_process_id = render_process_id_;
   if (is_external) {
     // We provide the BrowserPpapiHost to the embedder, so it's safe to cast.
     BrowserPpapiHostImpl* host = static_cast<BrowserPpapiHostImpl*>(
         GetContentClient()->browser()->GetExternalBrowserPpapiHost(
             plugin_child_id));
     if (host)
-      host->AddInstanceForView(pp_instance, render_process_id_, render_view_id);
+      host->AddInstance(pp_instance, instance_data);
   } else {
     PpapiPluginProcessHost::DidCreateOutOfProcessInstance(
-        plugin_child_id, pp_instance, render_process_id_, render_view_id);
+        plugin_child_id, pp_instance, instance_data);
   }
 }
 
@@ -742,7 +744,7 @@ void RenderMessageFilter::OnDidDeleteOutOfProcessPepperInstance(
         GetContentClient()->browser()->GetExternalBrowserPpapiHost(
             plugin_child_id));
     if (host)
-      host->DeleteInstanceForView(pp_instance);
+      host->DeleteInstance(pp_instance);
   } else {
     PpapiPluginProcessHost::DidDeleteOutOfProcessInstance(
         plugin_child_id, pp_instance);

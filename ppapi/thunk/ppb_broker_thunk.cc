@@ -42,17 +42,44 @@ int32_t GetHandle(PP_Resource resource, int32_t* handle) {
   return enter.object()->GetHandle(handle);
 }
 
-const PPB_BrokerTrusted g_ppb_broker_thunk = {
+PP_Bool IsAllowed(PP_Resource resource) {
+  // TODO(raymes): This is a hack. See the note in ppb_broker_api.h.
+  PP_Instance instance = 0;
+  {
+    EnterResource<PPB_Broker_API> enter_resource(resource, true);
+    if (enter_resource.failed())
+      return PP_FALSE;
+    instance = enter_resource.resource()->pp_instance();
+  }
+  EnterInstanceAPI<PPB_Broker_Instance_API> enter_instance(instance);
+  if (enter_instance.failed())
+    return PP_FALSE;
+  return enter_instance.functions()->IsAllowed();
+}
+
+const PPB_BrokerTrusted_0_2 g_ppb_broker_0_2_thunk = {
   &CreateTrusted,
   &IsBrokerTrusted,
   &Connect,
   &GetHandle,
 };
 
+const PPB_BrokerTrusted_0_3 g_ppb_broker_0_3_thunk = {
+  &CreateTrusted,
+  &IsBrokerTrusted,
+  &Connect,
+  &GetHandle,
+  &IsAllowed,
+};
+
 }  // namespace
 
 const PPB_BrokerTrusted_0_2* GetPPB_BrokerTrusted_0_2_Thunk() {
-  return &g_ppb_broker_thunk;
+  return &g_ppb_broker_0_2_thunk;
+}
+
+const PPB_BrokerTrusted_0_3* GetPPB_BrokerTrusted_0_3_Thunk() {
+  return &g_ppb_broker_0_3_thunk;
 }
 
 }  // namespace thunk

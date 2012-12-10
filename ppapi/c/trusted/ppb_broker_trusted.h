@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From trusted/ppb_broker_trusted.idl modified Wed Oct  5 14:06:02 2011. */
+/* From trusted/ppb_broker_trusted.idl modified Mon Dec  3 11:10:40 2012. */
 
 #ifndef PPAPI_C_TRUSTED_PPB_BROKER_TRUSTED_H_
 #define PPAPI_C_TRUSTED_PPB_BROKER_TRUSTED_H_
@@ -16,7 +16,8 @@
 #include "ppapi/c/pp_stdint.h"
 
 #define PPB_BROKER_TRUSTED_INTERFACE_0_2 "PPB_BrokerTrusted;0.2"
-#define PPB_BROKER_TRUSTED_INTERFACE PPB_BROKER_TRUSTED_INTERFACE_0_2
+#define PPB_BROKER_TRUSTED_INTERFACE_0_3 "PPB_BrokerTrusted;0.3"
+#define PPB_BROKER_TRUSTED_INTERFACE PPB_BROKER_TRUSTED_INTERFACE_0_3
 
 /**
  * @file
@@ -40,7 +41,7 @@
  * handle is closed. The handle should be closed before the resource is
  * released.
  */
-struct PPB_BrokerTrusted_0_2 {
+struct PPB_BrokerTrusted_0_3 {
   /**
    * Returns a trusted broker resource.
    */
@@ -74,9 +75,26 @@ struct PPB_BrokerTrusted_0_2 {
    * before connect has completed will return PP_ERROR_FAILED.
    */
   int32_t (*GetHandle)(PP_Resource broker, int32_t* handle);
+  /**
+   * Returns PP_TRUE if the plugin has permission to launch the broker. A user
+   * must explicitly grant permission to launch the broker for a particular
+   * website. This is done through an infobar that is displayed when |Connect|
+   * is called. This function returns PP_TRUE if the user has already granted
+   * permission to launch the broker for the website containing this plugin
+   * instance. Returns PP_FALSE otherwise.
+   */
+  PP_Bool (*IsAllowed)(PP_Resource broker);
 };
 
-typedef struct PPB_BrokerTrusted_0_2 PPB_BrokerTrusted;
+typedef struct PPB_BrokerTrusted_0_3 PPB_BrokerTrusted;
+
+struct PPB_BrokerTrusted_0_2 {
+  PP_Resource (*CreateTrusted)(PP_Instance instance);
+  PP_Bool (*IsBrokerTrusted)(PP_Resource resource);
+  int32_t (*Connect)(PP_Resource broker,
+                     struct PP_CompletionCallback connect_callback);
+  int32_t (*GetHandle)(PP_Resource broker, int32_t* handle);
+};
 /**
  * @}
  */

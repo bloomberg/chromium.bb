@@ -78,14 +78,15 @@ class PpapiPluginProcessHost : public BrowserChildProcessHostDelegate,
   static PpapiPluginProcessHost* CreateBrokerHost(
       const PepperPluginInfo& info);
 
-  // Notification that a PP_Instance has been created for the given
-  // RenderView/Process pair for the given plugin. This is necessary so that
-  // when the plugin calls us with a PP_Instance we can find the RenderView
-  // associated with it without trusting the plugin.
-  static void DidCreateOutOfProcessInstance(int plugin_process_id,
-                                            int32 pp_instance,
-                                            int render_process_id,
-                                            int render_view_id);
+  // Notification that a PP_Instance has been created and the associated
+  // renderer related data including the RenderView/Process pair for the given
+  // plugin. This is necessary so that when the plugin calls us with a
+  // PP_Instance we can find the RenderView associated with it without trusting
+  // the plugin.
+  static void DidCreateOutOfProcessInstance(
+      int plugin_process_id,
+      int32 pp_instance,
+      const PepperRendererInstanceData& instance_data);
 
   // The opposite of DIdCreate... above.
   static void DidDeleteOutOfProcessInstance(int plugin_process_id,

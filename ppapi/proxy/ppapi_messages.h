@@ -1443,6 +1443,14 @@ IPC_SYNC_MESSAGE_CONTROL2_2(PpapiHostMsg_ResourceSyncCall,
 //-----------------------------------------------------------------------------
 // Messages for resources using call/reply above.
 
+// Broker ----------------------------------------------------------------------
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_Broker_Create)
+
+// Queries whether the plugin has permission to connect to the Pepper broker.
+// The response is contained in the error value of the
+// ResourceMessageReplyParams in the reply message.
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_Broker_IsAllowed)
+
 // File chooser.
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_FileChooser_Create)
 IPC_MESSAGE_CONTROL4(PpapiHostMsg_FileChooser_Show,

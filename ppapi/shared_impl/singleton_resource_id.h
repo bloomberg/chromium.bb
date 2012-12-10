@@ -10,6 +10,10 @@ namespace ppapi {
 // These IDs are used to access singleton resource objects using
 // PPB_Instance_API.GetSingletonResource.
 enum SingletonResourceID {
+  // TODO(raymes): The broker resource isn't really a singleton. This is only
+  // a hack until PPB_Broker trusted has been fully refactored to the new
+  // resource model.
+  BROKER_SINGLETON_ID,
   FLASH_CLIPBOARD_SINGLETON_ID,
   FLASH_FILE_SINGLETON_ID,
   FLASH_FULLSCREEN_SINGLETON_ID,

@@ -101,14 +101,12 @@ PpapiPluginProcessHost* PpapiPluginProcessHost::CreateBrokerHost(
 void PpapiPluginProcessHost::DidCreateOutOfProcessInstance(
     int plugin_process_id,
     int32 pp_instance,
-    int render_process_id,
-    int render_view_id) {
+    const PepperRendererInstanceData& instance_data) {
   for (PpapiPluginProcessHostIterator iter; !iter.Done(); ++iter) {
     if (iter->process_.get() &&
         iter->process_->GetData().id == plugin_process_id) {
       // Found the plugin.
-      iter->host_impl_->AddInstanceForView(pp_instance,
-                                           render_process_id, render_view_id);
+      iter->host_impl_->AddInstance(pp_instance, instance_data);
       return;
     }
   }
@@ -130,7 +128,7 @@ void PpapiPluginProcessHost::DidDeleteOutOfProcessInstance(
     if (iter->process_.get() &&
         iter->process_->GetData().id == plugin_process_id) {
       // Found the plugin.
-      iter->host_impl_->DeleteInstanceForView(pp_instance);
+      iter->host_impl_->DeleteInstance(pp_instance);
       return;
     }
   }

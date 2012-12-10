@@ -14,6 +14,7 @@
 #include "ppapi/c/ppb_messaging.h"
 #include "ppapi/c/ppb_mouse_lock.h"
 #include "ppapi/c/private/pp_content_decryptor.h"
+#include "ppapi/proxy/broker_resource.h"
 #include "ppapi/proxy/content_decryptor_private_serializer.h"
 #include "ppapi/proxy/enter_proxy.h"
 #include "ppapi/proxy/flash_clipboard_resource.h"
@@ -372,6 +373,9 @@ Resource* PPB_Instance_Proxy::GetSingletonResource(PP_Instance instance,
   Connection connection(PluginGlobals::Get()->GetBrowserSender(), dispatcher());
 
   switch (id) {
+    case BROKER_SINGLETON_ID:
+      new_singleton = new BrokerResource(connection, instance);
+      break;
     case GAMEPAD_SINGLETON_ID:
       new_singleton = new GamepadResource(connection, instance);
       break;

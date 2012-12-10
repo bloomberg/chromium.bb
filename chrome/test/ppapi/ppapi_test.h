@@ -139,7 +139,7 @@ class PPAPINaClTestDisallowedSockets : public PPAPITestBase {
                                  const std::string& test_case) OVERRIDE;
 };
 
-class PPAPIBrokerInfoBarTest : public PPAPITest {
+class PPAPIBrokerInfoBarTest : public OutOfProcessPPAPITest {
  public:
   // PPAPITestBase override:
   virtual void SetUpOnMainThread() OVERRIDE;

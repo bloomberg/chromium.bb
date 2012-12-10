@@ -159,6 +159,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Messaging_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_MouseLock_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioTrusted_0_6;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_BrokerTrusted_0_2;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_BrokerTrusted_0_3;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_BrowserFont_Trusted_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_BufferTrusted_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_CharSet_Trusted_1_0;
@@ -1280,6 +1281,40 @@ int32_t Pnacl_M14_PPB_BrokerTrusted_GetHandle(PP_Resource broker, int32_t* handl
 }
 
 /* End wrapper methods for PPB_BrokerTrusted_0_2 */
+
+/* Begin wrapper methods for PPB_BrokerTrusted_0_3 */
+
+static __attribute__((pnaclcall))
+PP_Resource Pnacl_M25_PPB_BrokerTrusted_CreateTrusted(PP_Instance instance) {
+  const struct PPB_BrokerTrusted_0_3 *iface = Pnacl_WrapperInfo_PPB_BrokerTrusted_0_3.real_iface;
+  return iface->CreateTrusted(instance);
+}
+
+static __attribute__((pnaclcall))
+PP_Bool Pnacl_M25_PPB_BrokerTrusted_IsBrokerTrusted(PP_Resource resource) {
+  const struct PPB_BrokerTrusted_0_3 *iface = Pnacl_WrapperInfo_PPB_BrokerTrusted_0_3.real_iface;
+  return iface->IsBrokerTrusted(resource);
+}
+
+static __attribute__((pnaclcall))
+int32_t Pnacl_M25_PPB_BrokerTrusted_Connect(PP_Resource broker, struct PP_CompletionCallback connect_callback) {
+  const struct PPB_BrokerTrusted_0_3 *iface = Pnacl_WrapperInfo_PPB_BrokerTrusted_0_3.real_iface;
+  return iface->Connect(broker, connect_callback);
+}
+
+static __attribute__((pnaclcall))
+int32_t Pnacl_M25_PPB_BrokerTrusted_GetHandle(PP_Resource broker, int32_t* handle) {
+  const struct PPB_BrokerTrusted_0_3 *iface = Pnacl_WrapperInfo_PPB_BrokerTrusted_0_3.real_iface;
+  return iface->GetHandle(broker, handle);
+}
+
+static __attribute__((pnaclcall))
+PP_Bool Pnacl_M25_PPB_BrokerTrusted_IsAllowed(PP_Resource broker) {
+  const struct PPB_BrokerTrusted_0_3 *iface = Pnacl_WrapperInfo_PPB_BrokerTrusted_0_3.real_iface;
+  return iface->IsAllowed(broker);
+}
+
+/* End wrapper methods for PPB_BrokerTrusted_0_3 */
 
 /* Begin wrapper methods for PPB_BrowserFont_Trusted_1_0 */
 
@@ -3692,6 +3727,14 @@ struct PPB_BrokerTrusted_0_2 Pnacl_Wrappers_PPB_BrokerTrusted_0_2 = {
     .GetHandle = (int32_t (*)(PP_Resource broker, int32_t* handle))&Pnacl_M14_PPB_BrokerTrusted_GetHandle
 };
 
+struct PPB_BrokerTrusted_0_3 Pnacl_Wrappers_PPB_BrokerTrusted_0_3 = {
+    .CreateTrusted = (PP_Resource (*)(PP_Instance instance))&Pnacl_M25_PPB_BrokerTrusted_CreateTrusted,
+    .IsBrokerTrusted = (PP_Bool (*)(PP_Resource resource))&Pnacl_M25_PPB_BrokerTrusted_IsBrokerTrusted,
+    .Connect = (int32_t (*)(PP_Resource broker, struct PP_CompletionCallback connect_callback))&Pnacl_M25_PPB_BrokerTrusted_Connect,
+    .GetHandle = (int32_t (*)(PP_Resource broker, int32_t* handle))&Pnacl_M25_PPB_BrokerTrusted_GetHandle,
+    .IsAllowed = (PP_Bool (*)(PP_Resource broker))&Pnacl_M25_PPB_BrokerTrusted_IsAllowed
+};
+
 struct PPB_BrowserFont_Trusted_1_0 Pnacl_Wrappers_PPB_BrowserFont_Trusted_1_0 = {
     .GetFontFamilies = (struct PP_Var (*)(PP_Instance instance))&Pnacl_M19_PPB_BrowserFont_Trusted_GetFontFamilies,
     .Create = (PP_Resource (*)(PP_Instance instance, const struct PP_BrowserFont_Trusted_Description* description))&Pnacl_M19_PPB_BrowserFont_Trusted_Create,
@@ -4483,6 +4526,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_BrokerTrusted_0_2 = {
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_BrokerTrusted_0_3 = {
+  .iface_macro = PPB_BROKER_TRUSTED_INTERFACE_0_3,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_BrokerTrusted_0_3,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_BrowserFont_Trusted_1_0 = {
   .iface_macro = PPB_BROWSERFONT_TRUSTED_INTERFACE_1_0,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_BrowserFont_Trusted_1_0,
@@ -5071,6 +5120,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_WebSocket_1_0,
   &Pnacl_WrapperInfo_PPB_AudioTrusted_0_6,
   &Pnacl_WrapperInfo_PPB_BrokerTrusted_0_2,
+  &Pnacl_WrapperInfo_PPB_BrokerTrusted_0_3,
   &Pnacl_WrapperInfo_PPB_BrowserFont_Trusted_1_0,
   &Pnacl_WrapperInfo_PPB_BufferTrusted_0_1,
   &Pnacl_WrapperInfo_PPB_CharSet_Trusted_1_0,

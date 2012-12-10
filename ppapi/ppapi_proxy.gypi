@@ -23,6 +23,8 @@
           'proxy/audio_input_resource.h',
           'proxy/broker_dispatcher.cc',
           'proxy/broker_dispatcher.h',
+          'proxy/broker_resource.cc',
+          'proxy/broker_resource.h',
           'proxy/browser_font_resource_trusted.cc',
           'proxy/browser_font_resource_trusted.h',
           'proxy/connection.h',
