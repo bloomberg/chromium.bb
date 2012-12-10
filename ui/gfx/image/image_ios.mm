@@ -24,7 +24,7 @@ namespace {
 // Returns a 16x16 red UIImage to visually show when a UIImage cannot be
 // created from PNG data. Logs error as well.
 // Caller takes ownership of returned UIImage.
-UIImage* GetErrorUIImage(float scale) {
+UIImage* CreateErrorUIImage(float scale) {
   LOG(ERROR) << "Unable to decode PNG into UIImage.";
   base::mac::ScopedCFTypeRef<CGColorSpaceRef> color_space(
       CGColorSpaceCreateDeviceRGB());
@@ -41,9 +41,9 @@ UIImage* GetErrorUIImage(float scale) {
   CGContextFillRect(context, CGRectMake(0.0, 0.0, 16, 16));
   base::mac::ScopedCFTypeRef<CGImageRef> cg_image(
       CGBitmapContextCreateImage(context));
-  return [UIImage imageWithCGImage:cg_image.get()
-                             scale:scale
-                       orientation:UIImageOrientationUp];
+  return [[UIImage imageWithCGImage:cg_image.get()
+                              scale:scale
+                        orientation:UIImageOrientationUp] retain];
 }
 
 // Converts from ImagePNGRep to UIImage.
@@ -53,7 +53,7 @@ UIImage* CreateUIImageFromImagePNGRep(const gfx::ImagePNGRep& image_png_rep) {
   CHECK(png.get());
   NSData* data = [NSData dataWithBytes:png->front() length:png->size()];
   UIImage* image = [[UIImage alloc] initWithData:data scale:scale];
-  return image ? image : GetErrorUIImage(scale);
+  return image ? image : CreateErrorUIImage(scale);
 }
 
 }  // namespace
@@ -78,7 +78,7 @@ UIImage* CreateUIImageFromPNG(
   float ideal_scale = ui::GetScaleFactorScale(ideal_scale_factor);
 
   if (image_png_reps.empty())
-    return GetErrorUIImage(ideal_scale);
+    return CreateErrorUIImage(ideal_scale);
 
   // Find best match for |ideal_scale_factor|.
   float smallest_diff = std::numeric_limits<float>::max();
