@@ -202,6 +202,9 @@ if sys.platform == 'win32':
       raise ValueError(
           'get_native_path_case(%r): Require an absolute path' % p, p)
 
+    # Make sure it is normalized to os.path.sep. Do not do it here to keep the
+    # function fast
+    assert '/' not in p, p
     suffix = ''
     count = p.count(':')
     if count > 1:

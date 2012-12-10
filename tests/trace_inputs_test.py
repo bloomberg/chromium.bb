@@ -122,6 +122,10 @@ class TraceInputs(unittest.TestCase):
       # string case.
       path = os.path.expanduser(u'~')
       self.assertTrue(os.path.isdir(path))
+      path = path.replace('/', os.path.sep)
+      if sys.platform == 'win32':
+        # Make sure the drive letter is upper case for consistency.
+        path = path[0].upper() + path[1:]
       # This test assumes the variable is in the native path case on disk, this
       # should be the case. Verify this assumption:
       self.assertEquals(path, trace_inputs.get_native_path_case(path))
@@ -135,6 +139,7 @@ class TraceInputs(unittest.TestCase):
       non_existing = os.path.join(
           'trace_input_test_this_dir_should_not_exist', 'really not', '')
       path = os.path.expanduser(os.path.join(u'~', non_existing))
+      path = path.replace('/', os.path.sep)
       self.assertFalse(os.path.exists(path))
       lower = trace_inputs.get_native_path_case(path.lower())
       upper = trace_inputs.get_native_path_case(path.upper())

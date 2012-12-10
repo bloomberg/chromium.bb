@@ -36,8 +36,9 @@ class RunIsolatedTest(unittest.TestCase):
     os.chdir(self.tempdir)
 
   def tearDown(self):
-    shutil.rmtree(self.tempdir)
     os.chdir(ROOT_DIR)
+    shutil.rmtree(self.tempdir)
+    super(RunIsolatedTest, self).tearDown()
 
   def test_load_isolated_empty(self):
     m = run_isolated.load_isolated('{}')

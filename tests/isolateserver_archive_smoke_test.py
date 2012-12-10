@@ -19,8 +19,6 @@ ISOLATE_SERVER = 'https://isolateserver.appspot.com/'
 # The directory containing the test data files.
 TEST_DATA_DIR = os.path.join(ROOT_DIR, 'tests', 'isolateserver_archive')
 
-# Some basic binary data stored as a byte string.
-BINARY_DATA = (chr(0) + chr(57) + chr(128) + chr(255)) * 2
 
 class IsolateServerArchiveSmokeTest(unittest.TestCase):
   def setUp(self):
@@ -37,12 +35,11 @@ class IsolateServerArchiveSmokeTest(unittest.TestCase):
         '--outdir', ISOLATE_SERVER,
         '--namespace', self.namespace
     ]
+    if '-v' in sys.argv:
+      args.append('--verbose')
     args.extend(os.path.join(TEST_DATA_DIR, filename) for filename in files)
 
-    process = subprocess.Popen(args)
-    process.wait()
-
-    return process.returncode
+    return subprocess.call(args)
 
   def test_archive_empty_file(self):
     self.assertEqual(0, self._archive_given_files(['empty_file.txt']))
@@ -51,17 +48,23 @@ class IsolateServerArchiveSmokeTest(unittest.TestCase):
     self.assertEqual(0, self._archive_given_files(['small_file.txt']))
 
   def test_archive_huge_file(self):
-    huge_file = None
+    # Create a file over 2gbs.
+    filepath = None
     try:
-      # Create a file over 2gbs.
-      huge_file = tempfile.NamedTemporaryFile(delete=False)
-      huge_file.write(BINARY_DATA * int(128 * 1024 * 1024 * 2.1))
-      huge_file.close()
+      try:
+        handle, filepath = tempfile.mkstemp(prefix='isolateserver')
+        # Write 2.1gb.
+        chunk = chr(0) + chr(57) + chr(128) + chr(255)
+        chunk1mb = chunk * (1024 * 1024 / len(chunk))
+        for _ in xrange(1280):
+          os.write(handle, chunk1mb)
+      finally:
+        os.close(handle)
 
-      self.assertEqual(0, self._archive_given_files([huge_file.name]))
+      self.assertEqual(0, self._archive_given_files([filepath]))
     finally:
-      if huge_file:
-        os.remove(huge_file.name)
+      if filepath:
+        os.remove(filepath)
 
 
 if __name__ == '__main__':

@@ -91,6 +91,19 @@ def gen_url_request(url, payload, content_type='application/octet-stream'):
   return request
 
 
+def sha1_file(filepath):
+  """Calculates the SHA-1 of a file without reading it all in memory at once."""
+  digest = hashlib.sha1()
+  with open(filepath, 'rb') as f:
+    while True:
+      # Read in 1mb chunks.
+      chunk = f.read(1024*1024)
+      if not chunk:
+        break
+      digest.update(chunk)
+  return digest.hexdigest()
+
+
 def url_open(url, data, content_type='application/octet-stream'):
   """Opens the given url with the given data, repeating up to
   MAX_UPLOAD_ATTEMPTS times if it encounters an error.
@@ -324,7 +337,7 @@ def main():
         f,
         {
           's': os.stat(f).st_size,
-          'h': hashlib.sha1(open(f, 'rb').read()).hexdigest(),
+          'h': sha1_file(f),
         }
       )
       for f in files)
