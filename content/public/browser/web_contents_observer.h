@@ -95,11 +95,6 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   virtual void DidGetIgnoredUIEvent() {}
   virtual void StopNavigation() {}
 
-  virtual void DidOpenURL(const GURL& url,
-                          const Referrer& referrer,
-                          WindowOpenDisposition disposition,
-                          PageTransition transition) {}
-
   virtual void DidOpenRequestedURL(WebContents* new_contents,
                                    const GURL& url,
                                    const Referrer& referrer,

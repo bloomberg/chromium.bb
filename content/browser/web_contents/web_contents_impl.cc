@@ -1541,10 +1541,6 @@ WebContents* WebContentsImpl::OpenURL(const OpenURLParams& params) {
     return NULL;
 
   WebContents* new_contents = delegate_->OpenURLFromTab(this, params);
-  // Notify observers.
-  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                    DidOpenURL(params.url, params.referrer,
-                               params.disposition, params.transition));
   return new_contents;
 }
 
