@@ -4607,7 +4607,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         'Chrome did not reopen the testing channel after login as guest.'
     self.SetUp()
 
-  def Login(self, username, password):
+  def Login(self, username, password, timeout=120 * 1000):
     """Login to chromeos.
 
     Waits until logged in and browser is ready.
@@ -4616,6 +4616,11 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     Note that in case of webui auth-extension-based login, gaia auth errors
     will not be noticed here, because the browser has no knowledge of it. In
     this case the GetNextEvent automation command will always time out.
+
+    Args:
+      username: the username to log in as.
+      password: the user's password.
+      timeout: timeout in ms; defaults to two minutes.
 
     Returns:
       An error string if an error occured.
@@ -4634,9 +4639,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     self._GetResultFromJSONRequest(cmd_dict, windex=None)
     self.AddDomEventObserver('loginfail', automation_id=4444)
     try:
-      # TODO(craigdh): Add login failure events once PyAuto switches to mocked
-      # GAIA authentication.
-      if self.GetNextEvent().get('name') == 'loginfail':
+      if self.GetNextEvent(timeout=timeout).get('name') == 'loginfail':
         raise JSONInterfaceError('Login denied by auth server.')
     except JSONInterfaceError as e:
       raise JSONInterfaceError('Login failed. Perhaps Chrome crashed, '
