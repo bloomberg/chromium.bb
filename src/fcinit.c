@@ -83,7 +83,7 @@ FcInitLoadConfig (void)
 	prefix = FcConfigXdgCacheHome ();
 	if (!prefix)
 	    goto bail;
-	plen = prefix ? strlen ((const char *)prefix) : 0;
+	plen = strlen ((const char *)prefix);
 	p = realloc (prefix, plen + 12);
 	if (!p)
 	    goto bail;
