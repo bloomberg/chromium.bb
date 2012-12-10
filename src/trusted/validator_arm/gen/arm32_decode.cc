@@ -48,13 +48,17 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , ForbiddenCondDecoder_instance_()
   , InstructionBarrier_instance_()
   , LdrImmediateOp_instance_()
+  , Load2RegisterImm8DoubleOp_instance_()
+  , Load2RegisterImm8Op_instance_()
+  , Load3RegisterDoubleOp_instance_()
+  , Load3RegisterOp_instance_()
   , LoadBasedImmedMemory_instance_()
-  , LoadBasedImmedMemoryDouble_instance_()
   , LoadBasedMemory_instance_()
   , LoadBasedMemoryDouble_instance_()
   , LoadBasedOffsetMemory_instance_()
-  , LoadBasedOffsetMemoryDouble_instance_()
   , LoadMultiple_instance_()
+  , LoadRegisterImm8DoubleOp_instance_()
+  , LoadRegisterImm8Op_instance_()
   , LoadVectorRegister_instance_()
   , LoadVectorRegisterList_instance_()
   , MaskedBinary2RegisterImmediateOp_instance_()
@@ -66,12 +70,14 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , PreloadRegisterImm12Op_instance_()
   , PreloadRegisterPairOp_instance_()
   , Store2RegisterImm12OpRnNotRtOnWriteback_instance_()
+  , Store2RegisterImm8DoubleOp_instance_()
+  , Store2RegisterImm8Op_instance_()
+  , Store3RegisterDoubleOp_instance_()
+  , Store3RegisterOp_instance_()
   , StoreBasedImmedMemory_instance_()
-  , StoreBasedImmedMemoryDouble_instance_()
   , StoreBasedMemoryDoubleRtBits0To3_instance_()
   , StoreBasedMemoryRtBits0To3_instance_()
   , StoreBasedOffsetMemory_instance_()
-  , StoreBasedOffsetMemoryDouble_instance_()
   , StoreRegisterList_instance_()
   , StoreVectorRegister_instance_()
   , StoreVectorRegisterList_instance_()
@@ -791,80 +797,79 @@ const ClassDecoder& Arm32DecoderState::decode_extra_load_store_instructions(
   if ((inst.Bits() & 0x00000060) == 0x00000020 /* op2(6:5)=01 */ &&
       (inst.Bits() & 0x00500000) == 0x00000000 /* op1(24:20)=xx0x0 */ &&
       (inst.Bits() & 0x00000F00) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx */) {
-    return StoreBasedOffsetMemory_instance_;
+    return Store3RegisterOp_instance_;
   }
 
   if ((inst.Bits() & 0x00000060) == 0x00000020 /* op2(6:5)=01 */ &&
       (inst.Bits() & 0x00500000) == 0x00400000 /* op1(24:20)=xx1x0 */) {
-    return StoreBasedImmedMemory_instance_;
+    return Store2RegisterImm8Op_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000060) == 0x00000020 /* op2(6:5)=01 */ &&
+      (inst.Bits() & 0x00500000) == 0x00500000 /* op1(24:20)=xx1x1 */ &&
+      (inst.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16)=1111 */) {
+    return LoadRegisterImm8Op_instance_;
   }
 
   if ((inst.Bits() & 0x00000060) == 0x00000040 /* op2(6:5)=10 */ &&
       (inst.Bits() & 0x00500000) == 0x00000000 /* op1(24:20)=xx0x0 */ &&
       (inst.Bits() & 0x00000F00) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx */) {
-    return LoadBasedOffsetMemoryDouble_instance_;
+    return Load3RegisterDoubleOp_instance_;
   }
 
   if ((inst.Bits() & 0x00000060) == 0x00000040 /* op2(6:5)=10 */ &&
       (inst.Bits() & 0x00500000) == 0x00100000 /* op1(24:20)=xx0x1 */ &&
       (inst.Bits() & 0x00000F00) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx */) {
-    return LoadBasedOffsetMemory_instance_;
+    return Load3RegisterOp_instance_;
   }
 
   if ((inst.Bits() & 0x00000060) == 0x00000040 /* op2(6:5)=10 */ &&
       (inst.Bits() & 0x00500000) == 0x00400000 /* op1(24:20)=xx1x0 */ &&
       (inst.Bits() & 0x000F0000) != 0x000F0000 /* Rn(19:16)=~1111 */) {
-    return LoadBasedImmedMemoryDouble_instance_;
+    return Load2RegisterImm8DoubleOp_instance_;
   }
 
   if ((inst.Bits() & 0x00000060) == 0x00000040 /* op2(6:5)=10 */ &&
       (inst.Bits() & 0x00500000) == 0x00400000 /* op1(24:20)=xx1x0 */ &&
       (inst.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16)=1111 */ &&
       (inst.Bits() & 0x01200000) == 0x01000000 /* $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx */) {
-    return LoadBasedImmedMemoryDouble_instance_;
+    return LoadRegisterImm8DoubleOp_instance_;
   }
 
   if ((inst.Bits() & 0x00000060) == 0x00000040 /* op2(6:5)=10 */ &&
       (inst.Bits() & 0x00500000) == 0x00500000 /* op1(24:20)=xx1x1 */ &&
       (inst.Bits() & 0x000F0000) != 0x000F0000 /* Rn(19:16)=~1111 */) {
-    return LoadBasedImmedMemory_instance_;
-  }
-
-  if ((inst.Bits() & 0x00000060) == 0x00000040 /* op2(6:5)=10 */ &&
-      (inst.Bits() & 0x00500000) == 0x00500000 /* op1(24:20)=xx1x1 */ &&
-      (inst.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16)=1111 */ &&
-      (inst.Bits() & 0x01200000) == 0x01000000 /* $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx */) {
-    return LoadBasedImmedMemory_instance_;
+    return Load2RegisterImm8Op_instance_;
   }
 
   if ((inst.Bits() & 0x00000060) == 0x00000060 /* op2(6:5)=11 */ &&
       (inst.Bits() & 0x00500000) == 0x00000000 /* op1(24:20)=xx0x0 */ &&
       (inst.Bits() & 0x00000F00) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx */) {
-    return StoreBasedOffsetMemoryDouble_instance_;
+    return Store3RegisterDoubleOp_instance_;
   }
 
   if ((inst.Bits() & 0x00000060) == 0x00000060 /* op2(6:5)=11 */ &&
       (inst.Bits() & 0x00500000) == 0x00400000 /* op1(24:20)=xx1x0 */) {
-    return StoreBasedImmedMemoryDouble_instance_;
+    return Store2RegisterImm8DoubleOp_instance_;
   }
 
   if ((inst.Bits() & 0x00000020) == 0x00000020 /* op2(6:5)=x1 */ &&
       (inst.Bits() & 0x00500000) == 0x00100000 /* op1(24:20)=xx0x1 */ &&
       (inst.Bits() & 0x00000F00) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx */) {
-    return LoadBasedOffsetMemory_instance_;
+    return Load3RegisterOp_instance_;
   }
 
   if ((inst.Bits() & 0x00000020) == 0x00000020 /* op2(6:5)=x1 */ &&
       (inst.Bits() & 0x00500000) == 0x00500000 /* op1(24:20)=xx1x1 */ &&
       (inst.Bits() & 0x000F0000) != 0x000F0000 /* Rn(19:16)=~1111 */) {
-    return LoadBasedImmedMemory_instance_;
+    return Load2RegisterImm8Op_instance_;
   }
 
-  if ((inst.Bits() & 0x00000020) == 0x00000020 /* op2(6:5)=x1 */ &&
+  if ((inst.Bits() & 0x00000040) == 0x00000040 /* op2(6:5)=1x */ &&
       (inst.Bits() & 0x00500000) == 0x00500000 /* op1(24:20)=xx1x1 */ &&
       (inst.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16)=1111 */ &&
       (inst.Bits() & 0x01200000) == 0x01000000 /* $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx */) {
-    return LoadBasedImmedMemory_instance_;
+    return LoadRegisterImm8Op_instance_;
   }
 
   // Catch any attempt to fall though ...

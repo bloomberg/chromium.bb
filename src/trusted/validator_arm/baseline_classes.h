@@ -838,6 +838,70 @@ class LoadExclusive2RegisterDoubleOp : public LoadExclusive2RegisterOp {
   NACL_DISALLOW_COPY_AND_ASSIGN(LoadExclusive2RegisterDoubleOp);
 };
 
+// Models a (PC relative) load 8-bit immediate operation of form:
+// Op<c> <Rt>, <label>
+// +--------+------+--+--+--+--+----------+--------+--------+--------+--------+
+// |31302928|272625|24|23|22|21|2019181716|15141312|1110 9 8| 7 6 5 4| 3 2 1 0|
+// +--------+------+--+--+--+--+----------+--------+--------+--------+--------+
+// |  cond  |      | P| U|  | W|          |   Rt   |  imm4H |        |  imm4L |
+// +--------+------+--+--+--+--+----------+--------+--------+--------+--------+
+//  imm32 := ZeroExtend(imm4H:imm4L, 32);
+//  add := U=1;
+//  base := Align(PC, 4);
+//  address := base + imm32 if add else base - imm32;
+//  defs := {Rt};
+//  uses := {Pc};
+//  is_literal_load := true;
+//  safety := P=0 & W=1 => DECODER_ERROR &
+//            P == W => UNPREDICTABLE &
+//            Rt == Pc => UNPREDICTABLE &
+//            # TODO(karl) Missing check:
+//            # (ArchVersion() < 7) &
+//            # not (UnalignedSupport() | address(0)=0) => UNKNOWN
+class LoadRegisterImm8Op : public ClassDecoder {
+ public:
+  static const Imm4Bits0To3Interface imm4L;
+  static const Imm4Bits8To11Interface imm4H;
+  static const RegBits12To15Interface t;
+  static const WritesBit21Interface writes;
+  static const AddOffsetBit23Interface direction;
+  static const PrePostIndexingBit24Interface indexing;
+  static const ConditionBits28To31Interface cond;
+
+  LoadRegisterImm8Op() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual Register base_address_register(Instruction i) const;
+  virtual bool is_literal_load(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadRegisterImm8Op);
+};
+
+// Defines a (PC-relative) load 8-bit immediate operation that
+// has destination registers Rt and Rt2.
+// Rt2 := Rt + 1;
+// base := Align(PC, 4);
+// address := base + imm32 if add else base - imm32;
+// base := Pc;
+// defs := {Rt, Rt2};
+// uses := {Pc};
+// is_literal_load := true;
+// safety := Rt(0)=1 => UNPREDICTABLE &
+//           Rt2 == Pc => UNPREDICTABLE;
+class LoadRegisterImm8DoubleOp : public LoadRegisterImm8Op {
+ public:
+  static const RegBits12To15Plus1Interface t2;
+
+  LoadRegisterImm8DoubleOp() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadRegisterImm8DoubleOp);
+};
+
 // Models a 2-register load/store 8-bit immediate operation of the forms:
 // Op<c> <Rt>, [<Rn>{, #+/-<imm8>}]
 // Op<c> <Rt>, [<Rn>], #+/-<imm8>
@@ -892,6 +956,7 @@ class Load2RegisterImm8Op : public LoadStore2RegisterImm8Op {
   }
   virtual RegisterList defs(Instruction i) const;
   virtual bool is_literal_load(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Load2RegisterImm8Op);
@@ -903,6 +968,7 @@ class Store2RegisterImm8Op : public LoadStore2RegisterImm8Op {
   Store2RegisterImm8Op() : LoadStore2RegisterImm8Op(false) {
   }
   virtual RegisterList defs(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
 
  protected:
   NACL_DISALLOW_COPY_AND_ASSIGN(Store2RegisterImm8Op);
@@ -937,6 +1003,7 @@ class Load2RegisterImm8DoubleOp
   }
   virtual RegisterList defs(Instruction i) const;
   virtual bool is_literal_load(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Load2RegisterImm8DoubleOp);
@@ -1620,6 +1687,7 @@ class Load3RegisterDoubleOp : public LoadStore3RegisterDoubleOp {
   Load3RegisterDoubleOp() : LoadStore3RegisterDoubleOp(true) {
   }
   virtual RegisterList defs(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Load3RegisterDoubleOp);
@@ -1631,6 +1699,7 @@ class Store3RegisterDoubleOp : public LoadStore3RegisterDoubleOp {
   Store3RegisterDoubleOp() : LoadStore3RegisterDoubleOp(false) {
   }
   virtual RegisterList defs(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Store3RegisterDoubleOp);

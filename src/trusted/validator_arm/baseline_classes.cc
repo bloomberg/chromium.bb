@@ -532,11 +532,49 @@ RegisterList LoadExclusive2RegisterDoubleOp::defs(Instruction i) const {
   return RegisterList(t.reg(i)).Add(t2.reg(i));
 }
 
+// LoadRegisterImm8Op
+SafetyLevel LoadRegisterImm8Op::safety(Instruction i) const {
+  if (indexing.IsPostIndexing(i) && writes.IsDefined(i)) return DECODER_ERROR;
+  if (indexing.IsDefined(i) == writes.IsDefined(i)) return UNPREDICTABLE;
+  if (t.reg(i).Equals(Register::Pc())) return UNPREDICTABLE;
+  return MAY_BE_SAFE;
+}
+
+Register LoadRegisterImm8Op::base_address_register(Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return Register::Pc();
+}
+
+bool LoadRegisterImm8Op::is_literal_load(Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return true;
+}
+
+RegisterList LoadRegisterImm8Op::defs(Instruction i) const {
+  return RegisterList(t.reg(i));
+}
+
+RegisterList LoadRegisterImm8Op::uses(Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return RegisterList(Register::Pc());
+}
+
+// LoadRegisterImm8DoubleOp
+SafetyLevel LoadRegisterImm8DoubleOp::safety(Instruction i) const {
+  if (!t.IsEven(i)) return UNPREDICTABLE;
+  if (t2.reg(i).Equals(Register::Pc())) return UNPREDICTABLE;
+  return MAY_BE_SAFE;
+}
+
+RegisterList LoadRegisterImm8DoubleOp::defs(Instruction i) const {
+  return RegisterList(t.reg(i)).Add(t2.reg(i));
+}
+
 // LoadStore2RegisterImm8Op
 SafetyLevel LoadStore2RegisterImm8Op::safety(Instruction i) const {
   // Arm restrictions for this instruction.
   if (t.reg(i).Equals(Register::Pc())) {
-    return UNPREDICTABLE;
+    return FORBIDDEN_OPERANDS;
   }
 
   if (HasWriteBack(i) &&
@@ -585,9 +623,17 @@ bool Load2RegisterImm8Op::is_literal_load(Instruction i) const {
   return base_address_register(i).Equals(Register::Pc());
 }
 
+RegisterList Load2RegisterImm8Op::uses(Instruction i) const {
+  return RegisterList(n.reg(i));
+}
+
 // Store2RegisterImm8Op
 RegisterList Store2RegisterImm8Op::defs(Instruction i) const {
   return RegisterList(base_small_writeback_register(i));
+}
+
+RegisterList Store2RegisterImm8Op::uses(Instruction i) const {
+  return RegisterList(t.reg(i)).Add(n.reg(i));
 }
 
 // LoadStore2RegisterImm8DoubleOp
@@ -625,6 +671,10 @@ RegisterList Load2RegisterImm8DoubleOp::defs(Instruction i) const {
 bool Load2RegisterImm8DoubleOp::is_literal_load(Instruction i) const {
   UNREFERENCED_PARAMETER(i);
   return base_address_register(i).Equals(Register::Pc());
+}
+
+RegisterList Load2RegisterImm8DoubleOp::uses(Instruction i) const {
+  return RegisterList(n.reg(i));
 }
 
 // Store2RegisterImm8DoubleOp
@@ -946,7 +996,8 @@ SafetyLevel LoadStore3RegisterOp::safety(Instruction i) const {
     return UNPREDICTABLE;
   }
 
-  // TODO(jfb) if ArchVersion() < 6 && wback && m == n then UNPREDICTABLE;
+  if ((ArchVersion() < 6) && HasWriteBack(i) && m.reg(i).Equals(n.reg(i)))
+    return UNPREDICTABLE;
 
   // Don't let addressing writeback alter PC (NaCl constraint).
   if (defs(i).Contains(Register::Pc())) return FORBIDDEN_OPERANDS;
@@ -990,13 +1041,15 @@ SafetyLevel LoadStore3RegisterDoubleOp::safety(Instruction i) const {
     return UNPREDICTABLE;
   }
 
-  // NOTE: The manual states that that it is also unpredictable
-  // when HasWriteBack(i) and Rn=Rt2. However, the compilers
-  // may not check for this. For the moment, we are changing
-  // the code to ignore this case for stores.
-  // TODO(karl): Should we not allow this?
-  // TODO(jfb) Fix this.
-  if (is_load_ && HasWriteBack(i) && n.reg(i).Equals(t2.reg(i))) {
+  if (HasWriteBack(i) &&
+      (n.reg(i).Equals(Register::Pc()) ||
+       // NOTE: The manual states that that it is also unpredictable
+       // when HasWriteBack(i) and Rn=Rt2. However, the compilers
+       // may not check for this. For the moment, we are changing
+       // the code to ignore this case for stores.
+       // TODO(karl): Should we not allow this?
+       // TODO(jfb) Fix this.
+       (is_load_ && n.reg(i).Equals(t2.reg(i))))) {
     return UNPREDICTABLE;
   }
 
@@ -1063,6 +1116,10 @@ RegisterList Load3RegisterDoubleOp::defs(Instruction i) const {
   return defines;
 }
 
+RegisterList Load3RegisterDoubleOp::uses(Instruction i) const {
+  return RegisterList().Add(n.reg(i)).Add(m.reg(i));
+}
+
 // Store3RegisterDoubleOp
 RegisterList Store3RegisterDoubleOp::defs(Instruction i) const {
   RegisterList defines;
@@ -1070,6 +1127,11 @@ RegisterList Store3RegisterDoubleOp::defs(Instruction i) const {
     defines.Add(n.reg(i));
   }
   return defines;
+}
+
+RegisterList Store3RegisterDoubleOp::uses(Instruction i) const {
+  return RegisterList().Add(t.reg(i)).Add(t2.reg(i)).
+      Add(n.reg(i)).Add(m.reg(i));
 }
 
 // LoadStore3RegisterImm5Op

@@ -1046,6 +1046,67 @@ class LoadExclusive2RegisterDoubleOpTester
   NACL_DISALLOW_COPY_AND_ASSIGN(LoadExclusive2RegisterDoubleOpTester);
 };
 
+// Defines a tester for class LoadRegisterImm8Op.
+// Op<c> <Rt>, <label>
+// +--------+------+--+--+--+--+----------+--------+--------+--------+--------+
+// |31302928|272625|24|23|22|21|2019181716|15141312|1110 9 8| 7 6 5 4| 3 2 1 0|
+// +--------+------+--+--+--+--+----------+--------+--------+--------+--------+
+// |  cond  |      | P| U|  | W|          |   Rt   |  imm4H |        |  imm4L |
+// +--------+------+--+--+--+--+----------+--------+--------+--------+--------+
+//  imm32 := ZeroExtend(imm4H:imm4L, 32);
+//  add := U=1;
+//  base := Align(PC, 4);
+//  address := base + imm32 if add else base - imm32;
+//  defs := {Rt};
+//  uses := {Pc};
+//  safety := P=0 & W=1 => DECODER_ERROR &
+//            P == W => UNPREDICTABLE &
+//            Rt == Pc => UNPREDICTABLE &
+//            # TODO(karl) Missing check:
+//            # (ArchVersion() < 7) &
+//            # not (UnalignedSupport() | address(0)=0) => UNKNOWN
+class LoadRegisterImm8OpTester : public CondDecoderTester {
+ public:
+  explicit LoadRegisterImm8OpTester(const NamedClassDecoder& decoder)
+      : CondDecoderTester(decoder) {}
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ protected:
+  nacl_arm_dec::LoadRegisterImm8Op expected_decoder_;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadRegisterImm8OpTester);
+};
+
+// Defines a tester for class LoadRegisterImm8DoubleOp
+// Defines a (PC-relative) load 8-bit immediate operation that
+// has destination registers Rt and Rt2.
+// Rt2 := Rt + 1;
+// base := Align(PC, 4);
+// address := base + imm32 if add else base - imm32;
+// base := Pc;
+// defs := {Rt, Rt2};
+// uses := {Pc};
+// is_literal_load := true;
+// safety := Rt(0)=1 => UNPREDICTABLE &
+//           Rt2 == Pc => UNPREDICTABLE;
+class LoadRegisterImm8DoubleOpTester : public LoadRegisterImm8OpTester {
+ public:
+  explicit LoadRegisterImm8DoubleOpTester(const NamedClassDecoder& decoder)
+      : LoadRegisterImm8OpTester(decoder) {}
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ protected:
+  nacl_arm_dec::LoadRegisterImm8DoubleOp expected_decoder_;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadRegisterImm8DoubleOpTester);
+};
+
 // Models a 2-register load/store immediate operation of the forms:
 // Op<c> <Rt>, [<Rn>{, #+/-<imm8>}]
 // Op<c> <Rt>, [<Rn>], #+/-<imm8>

@@ -1095,6 +1095,39 @@ ApplySanityChecks(Instruction inst,
   return true;
 }
 
+// LoadRegisterImm8OpTester
+bool LoadRegisterImm8OpTester::ApplySanityChecks(
+    Instruction inst, const NamedClassDecoder& decoder) {
+  NC_PRECOND(CondDecoderTester::ApplySanityChecks(inst, decoder));
+
+  // Test fields
+  EXPECT_EQ(expected_decoder_.imm4L.value(inst), inst.Bits(3, 0));
+  EXPECT_EQ(expected_decoder_.imm4H.value(inst), inst.Bits(11, 8));
+  EXPECT_TRUE(expected_decoder_.t.reg(inst).Equals(inst.Reg(15, 12)));
+  EXPECT_EQ(expected_decoder_.writes.IsDefined(inst), inst.Bit(21));
+  EXPECT_EQ(expected_decoder_.direction.IsAdd(inst), inst.Bit(23));
+  EXPECT_EQ(expected_decoder_.indexing.IsDefined(inst), inst.Bit(24));
+
+  return true;
+}
+
+// LoadRegisterImm8DoubleOpTester
+bool LoadRegisterImm8DoubleOpTester::ApplySanityChecks(
+    Instruction inst, const NamedClassDecoder& decoder) {
+  NC_PRECOND(LoadRegisterImm8OpTester::ApplySanityChecks(inst, decoder));
+
+  // Test fields.
+  EXPECT_EQ(expected_decoder_.t.number(inst) + 1,
+            expected_decoder_.t2.number(inst));
+
+  // Other ARM constraints about this instruction.
+  EXPECT_TRUE(expected_decoder_.t.IsEven(inst));
+  EXPECT_FALSE(expected_decoder_.t2.reg(inst).Equals(Register::Pc()))
+      << "Expected UNPREDICTABLE for " << InstContents();
+
+  return true;
+}
+
 // LoadStore2RegisterImm8OpTester
 LoadStore2RegisterImm8OpTester::LoadStore2RegisterImm8OpTester(
     const NamedClassDecoder& decoder)

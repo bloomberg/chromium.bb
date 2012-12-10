@@ -116,6 +116,8 @@
 #       base register (missing implies false).
 # immediate: True if the instruction does a read/write
 #       as "base + immediate". (missing implies false).
+# is_literal_load: Checks whether the instruction is a PC-relative
+#       load plus immediate.
 # pool_head: Defines instruction to start a literal pool.
 #       (missing implies false).
 # relative: Defines if the instruction is a direct relative
@@ -765,8 +767,165 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
                      rule := SMULBB_SMULBT_SMULTB_SMULTT;
 +--
 
-# TODO(karl): Add uses to corresponding classes.
 +-- extra_load_store_instructions (See Section A5.2.8)
+*RtImm
+  {cond(31:28), P(24), U(23), W(21), Rt(15:12), imm4H(11:8), imm4L(3:0)}
+  imm32 := ZeroExtend(imm4H:imm4L, 32);
+  add := U=1; 
+*LdrRtImm *RtImm
+  baseline := LoadRegisterImm8Op;
+  # Note: There is a problem here. The ARM manual defines 'base' as follows:
+  #   base := Align(PC, 4);
+  #   address := base + imm32 if add else base - imm32;
+  # However, 'base' is used as the name of a NaCl virtual, and hence, they
+  # conflict. As a result, the above two definitions are commented out.
+  # This doesn't create a problem in that they aren't used elsewhere within
+  # the table.
+  # TODO(karl): Find a way to deal with this problem so that we can fully
+  #    specify the ARM code.
+  base := Pc;
+  defs := {Rt};
+  uses := {Pc};
+  is_literal_load := true;
+  safety := P=0 & W=1 => DECODER_ERROR &
+            P == W => UNPREDICTABLE &
+            Rt == Pc => UNPREDICTABLE;
+*LdrRtRt2Imm *LdrRtImm
+  baseline := LoadRegisterImm8DoubleOp;
+  Rt2 := Rt + 1;
+  defs := {Rt, Rt2};
+  safety := Rt(0)=1 => UNPREDICTABLE &
+            Rt2 == Pc => UNPREDICTABLE;
+  arch := v5TE;
+
+*RtRnImm *RtImm
+  {cond(31:28), P(24), U(23), W(21), Rn(19:16), Rt(15:12), imm4H(11:8), imm4L(3:0)}
+  index := P=1; wback := (P=0) | (W=1);
+  offset_addr := Rn + imm32 if add else Rn - imm32;
+  address := offset_addr if index else Rn;
+  base := Rn;
+  small_imm_base_wb := wback;
+*LdrRtRnImm *RtRnImm
+  baseline := Load2RegisterImm8Op;
+  defs := {Rt, base if wback else None};
+  uses := {Rn};
+  safety := Rn=1111 => DECODER_ERROR &
+            P=0 & W=1 => DECODER_ERROR &
+            Rt == Pc | (wback & Rn==Rt) => UNPREDICTABLE &
+            Rt == Pc => FORBIDDEN_OPERANDS;
+*LdrRtRt2RnImm *LdrRtRnImm
+  baseline := Load2RegisterImm8DoubleOp;
+  Rt2 := Rt + 1;
+  defs := {Rt, Rt2, base if wback else None};
+  safety := Rn=1111 => DECODER_ERROR &
+            Rt(0)=1 => UNPREDICTABLE &
+            P=0 & W=1 => UNPREDICTABLE &
+            wback & (Rn == Rt | Rn == Rt2) => UNPREDICTABLE &
+            Rt2 == Pc => UNPREDICTABLE;
+  arch := v5TE;
+*StrRtRnImm *RtRnImm
+  baseline := Store2RegisterImm8Op;
+  defs := {base if wback else None};
+  uses := {Rt, Rn};
+  safety := P=0 & W=1 => DECODER_ERROR &
+            Rt == Pc => UNPREDICTABLE &
+            # wback & (Rn == Pc | Rn == Rt) => UNPREDICTABLE &
+            # NOTE: The manual states the above. However, the
+            # compilers may not check for this when "wback & Rn==Rt".
+            # For the moment, we are changing the test to ignore this
+            # case (for stores).
+            # TODO(karl) Fix this. See issue 2816.
+            wback & (Rn == Pc) => UNPREDICTABLE;
+*StrRtRt2RnImm *StrRtRnImm
+  baseline := Store2RegisterImm8DoubleOp;
+  Rt2 := Rt + 1;
+  uses := {Rt, Rt2, Rn};
+  safety := Rt(0)=1 => UNPREDICTABLE &
+            P=0 & W=1 => UNPREDICTABLE &
+            # wback & (Rn == Pc | Rn == Rt) => UNPREDICTABLE &
+            # NOTE: The manual states the above. However, the
+            # compilers may not check for this when "wback & Rn==Rt".
+            # For the moment, we are changing the test to ignore this
+            # case (for stores).
+            # TODO(karl) Fix this. See issue 2816.
+            wback & (Rn == Pc) => UNPREDICTABLE &
+            Rt2 == Pc => UNPREDICTABLE;
+
+*RtRnRm
+  {cond(31:28), P(24), U(23), W(21), Rn(19:16), Rt(15:12), Rm(3:0) }
+  index := P=1; add := U=1; wback := (P=0) | (W=1);
+  base := Rn;
+*LdrRtRt2RnRm *RtRnRm
+  baseline := Load3RegisterDoubleOp;
+  Rt2 := Rt + 1;
+  defs := {Rt, Rt2, base if wback else None};
+  uses := {Rn, Rm};
+  safety := Rt(0)=1 => UNPREDICTABLE &
+            P=0 & W=1 => UNPREDICTABLE &
+            Rt2 == Pc | Rm == Pc | Rm == Rt | Rm == Rt2 => UNPREDICTABLE &
+            # wback & (Rn == Pc | Rn == Rt | Rn == Rt2) => UNPREDICTABLE &
+            # NOTE: The manual states the above. However, the
+            # compilers may not check for this when "wback & Rn==Rt".
+            # For the moment, we are changing the test to ignore this
+            # case (for stores).
+            # TODO(karl) Fix this. See issue 2816.
+            wback & (Rn == Pc) => UNPREDICTABLE &
+            ArchVersion() < 6 & wback & Rm == Rn => UNPREDICTABLE &
+            # If indexing, load is computed as the sum of two registers,
+            # which NaCl doesn't allow.
+            index => FORBIDDEN;
+  arch := v5TE;
+*StrRtRt2RnRm *RtRnRm
+  baseline := Store3RegisterDoubleOp;
+  Rt2 := Rt + 1;
+  defs := {base if wback else None};
+  uses := {Rt, Rt2, Rn, Rm};
+  safety := Rt(0)=1 => UNPREDICTABLE &
+            P=0 & W=1 => UNPREDICTABLE &
+            Rt2 == Pc | Rm == Pc => UNPREDICTABLE &
+            # wback & (Rn == Pc | Rn == Rt | Rn == Rt2) => UNPREDICTABLE &
+            # NOTE: The manual states the above. However, the
+            # compilers may not check for this when "wback & Rn==Rt".
+            # For the moment, we are changing the test to ignore this
+            # case (for stores).
+            # TODO(karl) Fix this. See issue 2816.
+            wback & (Rn == Pc) => UNPREDICTABLE &
+            ArchVersion() < 6 & wback & Rm == Rn => UNPREDICTABLE &
+            # If indexing, load is computed as the sum of two registers,
+            # which NaCl doesn't allow.
+            index => FORBIDDEN;
+
+*RtRnRmSh *RtRnRm
+  shift_t := SRType_LSL(); shift_n := 0;
+*LdrRtRnRmSh *RtRnRmSh
+  baseline := Load3RegisterOp;
+  defs := {Rt, base if wback else None};
+  uses := {Rn, Rm};
+  safety := P=0 & W=1 => DECODER_ERROR &
+            Pc in {Rt, Rm} => UNPREDICTABLE &
+            wback & (Rn == Pc | Rn == Rt) => UNPREDICTABLE &
+            ArchVersion() < 6 & wback & Rm == Rn => UNPREDICTABLE &
+            # If indexing, load is computed as the sum of two registers,
+            # which NaCl doesn't allow.
+            index => FORBIDDEN;
+*StrRtRnRmSh *RtRnRmSh
+  baseline := Store3RegisterOp;
+  defs := {base if wback else None};
+  uses := {Rt, Rn, Rm};
+  safety := P=0 & W=1 => DECODER_ERROR &
+            Pc in {Rt, Rm} => UNPREDICTABLE &
+            # wback & (Rn == Pc | Rn == Rt) => UNPREDICTABLE &
+            # NOTE: The manual states the above. However, the
+            # compilers may not check for this when "wback & Rn==Rt".
+            # For the moment, we are changing the test to ignore this
+            # case (for stores).
+            # TODO(karl) Fix this. See issue 2816.
+            wback & (Rn == Pc) => UNPREDICTABLE &
+            ArchVersion() < 6 & wback & Rm == Rn => UNPREDICTABLE &
+            # If indexing, load is computed as the sum of two registers,
+            # which NaCl doesn't allow.
+            index => FORBIDDEN;
++--
 | op2(6:5) op1(24:20) Rn(19:16)
 # Note the following encodings which lead to a different table and aren't
 # handled in this table.
@@ -775,66 +934,54 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 # -        0xx11      -         "
 # 0x       0xx10      -         "
 #
-| 01       xx0x0      -         = Store3RegisterOp => StoreBasedOffsetMemory
-                                  Strh_Rule_208_A1_P412
-                                  cccc000pu0w0nnnntttt00001011mmmm
-| "        xx0x1      -         = Load3RegisterOp => LoadBasedOffsetMemory
-                                  Ldrh_Rule_76_A1_P156
-                                  cccc000pu0w1nnnntttt00001011mmmm
-| "        xx1x0      -         = Store2RegisterImm8Op
-                                  => StoreBasedImmedMemory
-                                  Strh_Rule_207_A1_P410
-                                  cccc000pu1w0nnnnttttiiii1011iiii
-| "        xx1x1      ~1111     = Load2RegisterImm8Op
-                                  => LoadBasedImmedMemory
-                                  Ldrh_Rule_74_A1_P152
-                                  cccc000pu1w1nnnnttttiiii1011iiii
-| "        "          1111      = Load2RegisterImm8Op
-                                  => LoadBasedImmedMemory
-                                  Ldrh_Rule_75_A1_P154
-                                  cccc0001u1011111ttttiiii1011iiii
-| 10       xx0x0      -         = Load3RegisterDoubleOp
-                                  => LoadBasedOffsetMemoryDouble
-                                  Ldrd_Rule_68_A1_P140
-                                  cccc000pu0w0nnnntttt00001101mmmm (v5TE)
-| "        xx0x1      -         = Load3RegisterOp => LoadBasedOffsetMemory
-                                  Ldrsb_Rule_80_A1_P164
-                                  cccc000pu0w1nnnntttt00001101mmmm
-| "        xx1x0      ~1111     = Load2RegisterImm8DoubleOp
-                                  => LoadBasedImmedMemoryDouble
-                                  Ldrd_Rule_66_A1_P136
-                                  cccc000pu1w0nnnnttttiiii1101iiii (v5TE)
-| "        "          1111      = Load2RegisterImm8DoubleOp
-                                  => LoadBasedImmedMemoryDouble
-                                  Ldrd_Rule_67_A1_P138
-                                  cccc0001u1001111ttttiiii1101iiii (v5TE)
-| "        xx1x1      ~1111     = Load2RegisterImm8Op
-                                  => LoadBasedImmedMemory
-                                  Ldrsb_Rule_78_A1_P160
-                                  cccc000pu1w1nnnnttttiiii1101iiii
-| "        "          1111      = Load2RegisterImm8Op
-                                  => LoadBasedImmedMemory
-                                  ldrsb_Rule_79_A1_162
-                                  cccc0001u1011111ttttiiii1101iiii
-| 11       xx0x0      -         = Store3RegisterDoubleOp
-                                  => StoreBasedOffsetMemoryDouble
-                                  Strd_Rule_201_A1_P398
-                                  cccc000pu0w0nnnntttt00001111mmmm
-| "        xx0x1      -         = Load3RegisterOp => LoadBasedOffsetMemory
-                                  Ldrsh_Rule_84_A1_P172
-                                  cccc000pu0w1nnnntttt00001111mmmm
-| "        xx1x0      -         = Store2RegisterImm8DoubleOp
-                                  => StoreBasedImmedMemoryDouble
-                                  Strd_Rule_200_A1_P396
-                                  cccc000pu1w0nnnnttttiiii1111iiii
-| "        xx1x1      ~1111     = Load2RegisterImm8Op
-                                  => LoadBasedImmedMemory
-                                  Ldrsh_Rule_82_A1_P168
-                                  cccc000pu1w1nnnnttttiiii1111iiii
-| "        "          1111      = Load2RegisterImm8Op
-                                  => LoadBasedImmedMemory
-                                  Ldrsh_Rule_83_A1_P170
-                                  cccc0001u1011111ttttiiii1111iiii
+| 01       xx0x0      -         = *StrRtRnRmSh
+                                  pattern := cccc000pu0w0nnnntttt00001011mmmm;
+                                  rule := STRH_register;
+| "        xx0x1      -         = *LdrRtRnRmSh
+                                  pattern := cccc000pu0w1nnnntttt00001011mmmm;
+                                  rule := LDRH_register;
+| "        xx1x0      -         = *StrRtRnImm
+                                  pattern := cccc000pu1w0nnnnttttiiii1011iiii;
+                                  rule := STRH_immediate;
+| "        xx1x1      ~1111     = *LdrRtRnImm
+                                  pattern := cccc000pu1w1nnnnttttiiii1011iiii;
+                                  rule := LDRH_immediate;
+| "        "          1111      = *LdrRtImm
+                                  pattern := cccc000pu1w11111ttttiiii1011iiii;
+                                  rule := LDRH_literal;
+| 10       xx0x0      -         = *LdrRtRt2RnRm
+                                  pattern := cccc000pu0w0nnnntttt00001101mmmm;
+                                  rule := LDRD_register;
+| "        xx0x1      -         = *LdrRtRnRmSh
+                                  pattern := cccc000pu0w1nnnntttt00001101mmmm;
+                                  rule := LDRSB_register;
+| "        xx1x0      ~1111     = *LdrRtRt2RnImm
+                                  pattern := cccc000pu1w0nnnnttttiiii1101iiii;
+                                  rule := LDRD_immediate;
+| "        "          1111      = *LdrRtRt2Imm
+                                  pattern := cccc0001u1001111ttttiiii1101iiii;
+                                  rule := LDRD_literal;
+| "        xx1x1      ~1111     = *LdrRtRnImm
+                                  pattern := cccc000pu1w1nnnnttttiiii1101iiii;
+                                  rule := LDRSB_immediate;
+| "        "          1111      = *LdrRtImm
+                                  pattern := cccc0001u1011111ttttiiii1101iiii;
+                                  rule := LDRSB_literal;
+| 11       xx0x0      -         = *StrRtRt2RnRm
+                                   pattern := cccc000pu0w0nnnntttt00001111mmmm;
+                                   rule := STRD_register;
+| "        xx0x1      -         = *LdrRtRnRmSh
+                                  pattern := cccc000pu0w1nnnntttt00001111mmmm;
+                                  rule := LDRSH_register;
+| "        xx1x0      -         = *StrRtRt2RnImm
+                                   pattern := cccc000pu1w0nnnnttttiiii1111iiii;
+                                   rule := STRD_immediate;
+| "        xx1x1      ~1111     = *LdrRtRnImm
+                                   pattern := cccc000pu1w1nnnnttttiiii1111iiii;
+                                   rule := LDRSH_immediate;
+| "        "          1111      = *LdrRtImm
+                                   pattern := cccc0001u1011111ttttiiii1111iiii;
+                                   rule := LDRSB_literal;
 +--
 
 # TODO(karl): Add uses to corresponding classes.

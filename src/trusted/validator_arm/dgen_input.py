@@ -538,7 +538,10 @@ class Parser(object):
   def _decoder_action(self, starred_actions):
     """decoder_action ::= '=" decoder_defn"""
     self._read_token('=')
-    return self._decoder_defn(starred_actions)
+    action = self._decoder_defn(starred_actions)
+    if not action.baseline():
+      self._unexpected("No baseline class defined for row")
+    return action
 
   def _decoder_defn(self, starred_actions):
     """decoder_defnn ::=  (decoder (fields? action_option* |
@@ -564,8 +567,6 @@ class Parser(object):
         self._define('safety', [other_restrictions], action)
       if self._next_token().kind == '(':
         self._define('arch', self._arch(), action)
-    if not action.baseline():
-      self._unexpected("No baseline class defined for row")
     return action
 
   def _decoder_action_extend(self, starred_actions):
@@ -606,6 +607,8 @@ class Parser(object):
     self._read_token('else')
     self._read_token(':')
     action = self._action(starred_actions, last_action)
+    if not action.baseline():
+      self._unexpected("No baseline class defined for row")
     if not table.add_default_row(action):
       self._unexpected('Unable to install row default')
     return (None, action)
