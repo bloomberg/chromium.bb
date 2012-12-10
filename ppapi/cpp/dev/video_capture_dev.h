@@ -29,6 +29,8 @@ class VideoCapture_Dev : public Resource {
   int32_t EnumerateDevices(
       const CompletionCallbackWithOutput<std::vector<DeviceRef_Dev> >&
           callback);
+  int32_t MonitorDeviceChange(PP_MonitorDeviceChangeCallback callback,
+                              void* user_data);
   int32_t Open(const DeviceRef_Dev& device_ref,
                const PP_VideoCaptureDeviceInfo_Dev& requested_info,
                uint32_t buffer_count,

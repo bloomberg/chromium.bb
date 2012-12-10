@@ -15,7 +15,6 @@
 
 namespace ppapi {
 
-struct DeviceRefData;
 class TrackedCallback;
 
 namespace thunk {
@@ -24,8 +23,13 @@ class PPB_VideoCapture_API {
  public:
   virtual ~PPB_VideoCapture_API() {}
 
-  virtual int32_t EnumerateDevices(PP_Resource* devices,
+  virtual int32_t EnumerateDevices0_2(
+      PP_Resource* devices,
+      scoped_refptr<TrackedCallback> callback) = 0;
+  virtual int32_t EnumerateDevices(const PP_ArrayOutput& output,
                                    scoped_refptr<TrackedCallback> callback) = 0;
+  virtual int32_t MonitorDeviceChange(PP_MonitorDeviceChangeCallback callback,
+                                      void* user_data) = 0;
   virtual int32_t Open(const std::string& device_id,
                        const PP_VideoCaptureDeviceInfo_Dev& requested_info,
                        uint32_t buffer_count,

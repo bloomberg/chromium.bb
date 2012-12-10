@@ -40,6 +40,7 @@ class PPAPI_PROXY_EXPORT DeviceEnumerationResourceHelper
                               scoped_refptr<TrackedCallback> callback);
   int32_t EnumerateDevices(const PP_ArrayOutput& output,
                            scoped_refptr<TrackedCallback> callback);
+  int32_t EnumerateDevicesSync(const PP_ArrayOutput& output);
   int32_t MonitorDeviceChange(PP_MonitorDeviceChangeCallback callback,
                               void* user_data);
 
@@ -63,6 +64,9 @@ class PPAPI_PROXY_EXPORT DeviceEnumerationResourceHelper
   void OnPluginMsgNotifyDeviceChange(const ResourceMessageReplyParams& params,
                                      uint32_t callback_id,
                                      const std::vector<DeviceRefData>& devices);
+
+  int32_t WriteToArrayOutput(const std::vector<DeviceRefData>& devices,
+                             const PP_ArrayOutput& output);
 
   // Not owned by this object.
   PluginResource* owner_;

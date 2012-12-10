@@ -13,18 +13,14 @@
 #include "ppapi/thunk/ppb_buffer_api.h"
 #include "webkit/plugins/ppapi/host_globals.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
-#include "webkit/plugins/ppapi/resource_helper.h"
 
-using ppapi::DeviceRefData;
 using ppapi::HostResource;
 using ppapi::TrackedCallback;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_Buffer_API;
 using ppapi::thunk::PPB_BufferTrusted_API;
 using webkit::ppapi::HostGlobals;
-using webkit::ppapi::ResourceHelper;
 using webkit::ppapi::PPB_Buffer_Impl;
-using webkit::ppapi::PluginInstance;
 
 namespace {
 
@@ -41,7 +37,9 @@ PepperVideoCaptureHost::PepperVideoCaptureHost(RendererPpapiHost* host,
     : ResourceHost(host->GetPpapiHost(), instance, resource),
       renderer_ppapi_host_(host),
       buffer_count_hint_(0),
-      status_(PP_VIDEO_CAPTURE_STATUS_STOPPED) {
+      status_(PP_VIDEO_CAPTURE_STATUS_STOPPED),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          enumeration_helper_(this, this, PP_DEVICETYPE_DEV_VIDEOCAPTURE)) {
 }
 
 PepperVideoCaptureHost::~PepperVideoCaptureHost() {
@@ -49,17 +47,17 @@ PepperVideoCaptureHost::~PepperVideoCaptureHost() {
 }
 
 bool PepperVideoCaptureHost::Init() {
-  PluginInstance* instance = GetPluginInstance();
-  return !!instance;
+  return !!GetPluginDelegate();
 }
 
 int32_t PepperVideoCaptureHost::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
+  int32_t result = PP_ERROR_FAILED;
+  if (enumeration_helper_.HandleResourceMessage(msg, context, &result))
+    return result;
+
   IPC_BEGIN_MESSAGE_MAP(PepperVideoCaptureHost, msg)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
-        PpapiHostMsg_VideoCapture_EnumerateDevices,
-        OnEnumerateDevices)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(
         PpapiHostMsg_VideoCapture_Open,
         OnOpen)
@@ -241,22 +239,12 @@ void PepperVideoCaptureHost::OnDeviceInfoReceived(
           info, buffer_host_resources, size)));
 }
 
-PluginInstance* PepperVideoCaptureHost::GetPluginInstance() const {
-  return renderer_ppapi_host_->GetPluginInstance(pp_instance());
-}
-
-int32_t PepperVideoCaptureHost::OnEnumerateDevices(
-    ppapi::host::HostMessageContext* context) {
-  PluginInstance* instance = GetPluginInstance();
-  if (!instance)
-    return PP_ERROR_FAILED;
-
-  enum_reply_context_ = context->MakeReplyMessageContext();
-  instance->delegate()->EnumerateDevices(
-      PP_DEVICETYPE_DEV_VIDEOCAPTURE,
-      base::Bind(&PepperVideoCaptureHost::EnumerateDevicesCallbackFunc,
-                 AsWeakPtr()));
-  return PP_OK_COMPLETIONPENDING;
+webkit::ppapi::PluginDelegate* PepperVideoCaptureHost::GetPluginDelegate() {
+  webkit::ppapi::PluginInstance* instance =
+      renderer_ppapi_host_->GetPluginInstance(pp_instance());
+  if (instance)
+    return instance->delegate();
+  return NULL;
 }
 
 int32_t PepperVideoCaptureHost::OnOpen(
@@ -267,14 +255,14 @@ int32_t PepperVideoCaptureHost::OnOpen(
   if (platform_video_capture_.get())
     return PP_ERROR_FAILED;
 
-  PluginInstance* instance = GetPluginInstance();
-  if (!instance)
+  webkit::ppapi::PluginDelegate* plugin_delegate = GetPluginDelegate();
+  if (!plugin_delegate)
     return PP_ERROR_FAILED;
 
   SetRequestedInfo(requested_info, buffer_count);
 
   platform_video_capture_ =
-      instance->delegate()->CreateVideoCapture(device_id, this);
+      plugin_delegate->CreateVideoCapture(device_id, this);
 
   open_reply_context_ = context->MakeReplyMessageContext();
 
@@ -377,27 +365,6 @@ void PepperVideoCaptureHost::DetachPlatformVideoCapture() {
   if (platform_video_capture_.get()) {
     platform_video_capture_->DetachEventHandler();
     platform_video_capture_ = NULL;
-  }
-}
-
-void PepperVideoCaptureHost::EnumerateDevicesCallbackFunc(
-    int request_id,
-    bool succeeded,
-    const std::vector<ppapi::DeviceRefData>& devices) {
-  PluginInstance* instance = GetPluginInstance();
-  if (instance)
-    instance->delegate()->StopEnumerateDevices(request_id);
-
-  if (succeeded) {
-    enum_reply_context_.params.set_result(PP_OK);
-    host()->SendReply(enum_reply_context_,
-                      PpapiPluginMsg_VideoCapture_EnumerateDevicesReply(
-                          devices));
-  } else {
-    enum_reply_context_.params.set_result(PP_ERROR_FAILED);
-    host()->SendReply(enum_reply_context_,
-                      PpapiPluginMsg_VideoCapture_EnumerateDevicesReply(
-                          std::vector<DeviceRefData>()));
   }
 }
 

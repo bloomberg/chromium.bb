@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "ppapi/c/dev/ppp_video_capture_dev.h"
+#include "ppapi/proxy/device_enumeration_resource_helper.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/thunk/ppb_video_capture_api.h"
 
@@ -28,9 +29,15 @@ class VideoCaptureResource
   }
 
   // PPB_VideoCapture_API implementation.
-  virtual int32_t EnumerateDevices(
+  virtual int32_t EnumerateDevices0_2(
       PP_Resource* devices,
       scoped_refptr<TrackedCallback> callback) OVERRIDE;
+  virtual int32_t EnumerateDevices(
+      const PP_ArrayOutput& output,
+      scoped_refptr<TrackedCallback> callback) OVERRIDE;
+  virtual int32_t MonitorDeviceChange(
+      PP_MonitorDeviceChangeCallback callback,
+      void* user_data) OVERRIDE;
   virtual int32_t Open(const std::string& device_id,
                        const PP_VideoCaptureDeviceInfo_Dev& requested_info,
                        uint32_t buffer_count,
@@ -40,6 +47,10 @@ class VideoCaptureResource
   virtual int32_t StopCapture() OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual int32_t EnumerateDevicesSync(const PP_ArrayOutput& devices) OVERRIDE;
+
+ protected:
+  // Resource override.
+  virtual void LastPluginRefWasDeleted() OVERRIDE;
 
  private:
   enum OpenState {
@@ -64,11 +75,6 @@ class VideoCaptureResource
                                 uint32_t buffer);
 
   void OnPluginMsgOpenReply(const ResourceMessageReplyParams& params);
-  void OnPluginMsgEnumerateDevicesReply(
-      PP_Resource* devices_output,
-      scoped_refptr<TrackedCallback> callback,
-      const ResourceMessageReplyParams& params,
-      const std::vector<DeviceRefData>& devices);
 
   void SetBufferInUse(uint32_t buffer_index);
 
@@ -82,7 +88,7 @@ class VideoCaptureResource
   scoped_refptr<TrackedCallback> open_callback_;
   OpenState open_state_;
 
-  bool has_pending_enum_devices_callback_;
+  DeviceEnumerationResourceHelper enumeration_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureResource);
 };

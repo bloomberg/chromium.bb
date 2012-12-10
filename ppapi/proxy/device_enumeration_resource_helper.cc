@@ -71,6 +71,21 @@ int32_t DeviceEnumerationResourceHelper::EnumerateDevices(
   return PP_OK_COMPLETIONPENDING;
 }
 
+int32_t DeviceEnumerationResourceHelper::EnumerateDevicesSync(
+    const PP_ArrayOutput& output) {
+  std::vector<DeviceRefData> devices;
+  int32_t result =
+      owner_->SyncCall<PpapiPluginMsg_DeviceEnumeration_EnumerateDevicesReply>(
+          PluginResource::RENDERER,
+          PpapiHostMsg_DeviceEnumeration_EnumerateDevices(),
+          &devices);
+
+  if (result == PP_OK)
+    result = WriteToArrayOutput(devices, output);
+
+  return result;
+}
+
 int32_t DeviceEnumerationResourceHelper::MonitorDeviceChange(
     PP_MonitorDeviceChangeCallback callback,
     void* user_data) {
@@ -148,22 +163,10 @@ void DeviceEnumerationResourceHelper::OnPluginMsgEnumerateDevicesReply(
     return;
 
   int32_t result = params.result();
-  if (result == PP_OK) {
-    ArrayWriter writer(output);
-    if (writer.is_valid()) {
-      std::vector<scoped_refptr<Resource> > device_resources;
-      for (size_t i = 0; i < devices.size(); ++i) {
-        device_resources.push_back(new PPB_DeviceRef_Shared(
-            OBJECT_IS_PROXY, owner_->pp_instance(), devices[i]));
-      }
-      if (!writer.StoreResourceVector(device_resources))
-        result = PP_ERROR_FAILED;
-    } else {
-      result = PP_ERROR_BADARGUMENT;
-    }
-  }
+  if (result == PP_OK)
+    result = WriteToArrayOutput(devices, output);
 
-  callback->Run(params.result());
+  callback->Run(result);
 }
 
 void DeviceEnumerationResourceHelper::OnPluginMsgNotifyDeviceChange(
@@ -194,6 +197,24 @@ void DeviceEnumerationResourceHelper::OnPluginMsgNotifyDeviceChange(
                                elements.get()));
   for (size_t index = 0; index < size; ++index)
     PpapiGlobals::Get()->GetResourceTracker()->ReleaseResource(elements[index]);
+}
+
+int32_t DeviceEnumerationResourceHelper::WriteToArrayOutput(
+    const std::vector<DeviceRefData>& devices,
+    const PP_ArrayOutput& output) {
+  ArrayWriter writer(output);
+  if (!writer.is_valid())
+    return PP_ERROR_BADARGUMENT;
+
+  std::vector<scoped_refptr<Resource> > device_resources;
+  for (size_t i = 0; i < devices.size(); ++i) {
+    device_resources.push_back(new PPB_DeviceRef_Shared(
+        OBJECT_IS_PROXY, owner_->pp_instance(), devices[i]));
+  }
+  if (!writer.StoreResourceVector(device_resources))
+    return PP_ERROR_FAILED;
+
+  return PP_OK;
 }
 
 }  // namespace proxy

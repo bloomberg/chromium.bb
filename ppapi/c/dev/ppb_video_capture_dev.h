@@ -3,12 +3,14 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_video_capture_dev.idl modified Tue Oct 30 17:39:32 2012. */
+/* From dev/ppb_video_capture_dev.idl modified Wed Dec 05 13:18:10 2012. */
 
 #ifndef PPAPI_C_DEV_PPB_VIDEO_CAPTURE_DEV_H_
 #define PPAPI_C_DEV_PPB_VIDEO_CAPTURE_DEV_H_
 
 #include "ppapi/c/dev/pp_video_capture_dev.h"
+#include "ppapi/c/dev/ppb_device_ref_dev.h"
+#include "ppapi/c/pp_array_output.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_instance.h"
@@ -17,7 +19,8 @@
 #include "ppapi/c/pp_stdint.h"
 
 #define PPB_VIDEOCAPTURE_DEV_INTERFACE_0_2 "PPB_VideoCapture(Dev);0.2"
-#define PPB_VIDEOCAPTURE_DEV_INTERFACE PPB_VIDEOCAPTURE_DEV_INTERFACE_0_2
+#define PPB_VIDEOCAPTURE_DEV_INTERFACE_0_3 "PPB_VideoCapture(Dev);0.3"
+#define PPB_VIDEOCAPTURE_DEV_INTERFACE PPB_VIDEOCAPTURE_DEV_INTERFACE_0_3
 
 /**
  * @file
@@ -58,7 +61,7 @@
  * 4:2:0, one byte per pixel, tightly packed (width x height Y values, then
  * width/2 x height/2 U values, then width/2 x height/2 V values).
  */
-struct PPB_VideoCapture_Dev_0_2 {
+struct PPB_VideoCapture_Dev_0_3 {
   /**
    * Creates a new VideoCapture.
    */
@@ -68,21 +71,43 @@ struct PPB_VideoCapture_Dev_0_2 {
    */
   PP_Bool (*IsVideoCapture)(PP_Resource video_capture);
   /**
-   * Enumerates video capture devices. Once the operation is completed
-   * successfully, |devices| will be set to a PPB_ResourceArray_Dev resource,
-   * which holds a list of PPB_DeviceRef_Dev resources.
+   * Enumerates video capture devices.
    *
-   * Please note that:
-   * - this method ignores the previous value pointed to by |devices| (won't
-   *   release reference even if it is not 0);
-   * - |devices| must be valid until |callback| is called, if the method
-   *   returns PP_OK_COMPLETIONPENDING;
-   * - the ref count of the returned |devices| has already been increased by 1
-   *   for the caller.
+   * @param[in] video_capture A <code>PP_Resource</code> corresponding to a
+   * video capture resource.
+   * @param[in] output An output array which will receive
+   * <code>PPB_DeviceRef_Dev</code> resources on success. Please note that the
+   * ref count of those resources has already been increased by 1 for the
+   * caller.
+   * @param[in] callback A <code>PP_CompletionCallback</code> to run on
+   * completion.
+   *
+   * @return An error code from <code>pp_errors.h</code>.
    */
   int32_t (*EnumerateDevices)(PP_Resource video_capture,
-                              PP_Resource* devices,
+                              struct PP_ArrayOutput output,
                               struct PP_CompletionCallback callback);
+  /**
+   * Requests device change notifications.
+   *
+   * @param[in] video_capture A <code>PP_Resource</code> corresponding to a
+   * video capture resource.
+   * @param[in] callback The callback to receive notifications. If not NULL, it
+   * will be called once for the currently available devices, and then every
+   * time the list of available devices changes. All calls will happen on the
+   * same thread as the one on which MonitorDeviceChange() is called. It will
+   * receive notifications until <code>video_capture</code> is destroyed or
+   * <code>MonitorDeviceChange()</code> is called to set a new callback for
+   * <code>video_capture</code>. You can pass NULL to cancel sending
+   * notifications.
+   * @param[inout] user_data An opaque pointer that will be passed to
+   * <code>callback</code>.
+   *
+   * @return An error code from <code>pp_errors.h</code>.
+   */
+  int32_t (*MonitorDeviceChange)(PP_Resource video_capture,
+                                 PP_MonitorDeviceChangeCallback callback,
+                                 void* user_data);
   /**
    * Opens a video capture device. |device_ref| identifies a video capture
    * device. It could be one of the resource in the array returned by
@@ -134,7 +159,24 @@ struct PPB_VideoCapture_Dev_0_2 {
   void (*Close)(PP_Resource video_capture);
 };
 
-typedef struct PPB_VideoCapture_Dev_0_2 PPB_VideoCapture_Dev;
+typedef struct PPB_VideoCapture_Dev_0_3 PPB_VideoCapture_Dev;
+
+struct PPB_VideoCapture_Dev_0_2 {
+  PP_Resource (*Create)(PP_Instance instance);
+  PP_Bool (*IsVideoCapture)(PP_Resource video_capture);
+  int32_t (*EnumerateDevices)(PP_Resource video_capture,
+                              PP_Resource* devices,
+                              struct PP_CompletionCallback callback);
+  int32_t (*Open)(PP_Resource video_capture,
+                  PP_Resource device_ref,
+                  const struct PP_VideoCaptureDeviceInfo_Dev* requested_info,
+                  uint32_t buffer_count,
+                  struct PP_CompletionCallback callback);
+  int32_t (*StartCapture)(PP_Resource video_capture);
+  int32_t (*ReuseBuffer)(PP_Resource video_capture, uint32_t buffer);
+  int32_t (*StopCapture)(PP_Resource video_capture);
+  void (*Close)(PP_Resource video_capture);
+};
 /**
  * @}
  */

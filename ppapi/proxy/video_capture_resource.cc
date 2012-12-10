@@ -12,7 +12,6 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_buffer_proxy.h"
 #include "ppapi/proxy/resource_message_params.h"
-#include "ppapi/shared_impl/array_writer.h"
 #include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 
@@ -25,7 +24,7 @@ VideoCaptureResource::VideoCaptureResource(
     PluginDispatcher* dispatcher)
     : PluginResource(connection, instance),
       open_state_(BEFORE_OPEN),
-      has_pending_enum_devices_callback_(false) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(enumeration_helper_(this)) {
   SendCreate(RENDERER, PpapiHostMsg_VideoCapture_Create());
 
   ppp_video_capture_impl_ = static_cast<const PPP_VideoCapture_Dev*>(
@@ -38,6 +37,9 @@ VideoCaptureResource::~VideoCaptureResource() {
 void VideoCaptureResource::OnReplyReceived(
     const ResourceMessageReplyParams& params,
     const IPC::Message& msg) {
+  if (enumeration_helper_.HandleReply(params, msg))
+    return;
+
   if (params.sequence()) {
     PluginResource::OnReplyReceived(params, msg);
     return;
@@ -60,22 +62,22 @@ void VideoCaptureResource::OnReplyReceived(
   IPC_END_MESSAGE_MAP()
 }
 
-int32_t VideoCaptureResource::EnumerateDevices(
+int32_t VideoCaptureResource::EnumerateDevices0_2(
     PP_Resource* devices,
     scoped_refptr<TrackedCallback> callback) {
-  if (has_pending_enum_devices_callback_)
-    return PP_ERROR_INPROGRESS;
+  return enumeration_helper_.EnumerateDevices0_2(devices, callback);
+}
 
-  has_pending_enum_devices_callback_ = true;
+int32_t VideoCaptureResource::EnumerateDevices(
+    const PP_ArrayOutput& output,
+    scoped_refptr<TrackedCallback> callback) {
+  return enumeration_helper_.EnumerateDevices(output, callback);
+}
 
-  Call<PpapiPluginMsg_VideoCapture_EnumerateDevicesReply>(
-      RENDERER,
-      PpapiHostMsg_VideoCapture_EnumerateDevices(),
-      base::Bind(&VideoCaptureResource::OnPluginMsgEnumerateDevicesReply,
-                 this,
-                 devices,
-                 callback));
-  return PP_OK_COMPLETIONPENDING;
+int32_t VideoCaptureResource::MonitorDeviceChange(
+    PP_MonitorDeviceChangeCallback callback,
+    void* user_data) {
+  return enumeration_helper_.MonitorDeviceChange(callback, user_data);
 }
 
 int32_t VideoCaptureResource::Open(
@@ -102,7 +104,6 @@ int32_t VideoCaptureResource::StartCapture() {
   if (open_state_ != OPENED)
     return PP_ERROR_FAILED;
 
-  buffer_in_use_.clear();
   Post(RENDERER, PpapiHostMsg_VideoCapture_StartCapture());
   return PP_OK;
 }
@@ -136,28 +137,11 @@ void VideoCaptureResource::Close() {
 
 int32_t VideoCaptureResource::EnumerateDevicesSync(
     const PP_ArrayOutput& devices) {
-  ArrayWriter output;
-  output.set_pp_array_output(devices);
-  if (!output.is_valid())
-    return PP_ERROR_BADARGUMENT;
+  return enumeration_helper_.EnumerateDevicesSync(devices);
+}
 
-  std::vector<ppapi::DeviceRefData> device_ref_data;
-  int32_t result = SyncCall<PpapiPluginMsg_VideoCapture_EnumerateDevicesReply>(
-      RENDERER,
-      PpapiHostMsg_VideoCapture_EnumerateDevices(),
-      &device_ref_data);
-
-  std::vector<scoped_refptr<Resource> > device_resources;
-  for (size_t i = 0; i < device_ref_data.size(); ++i) {
-    scoped_refptr<Resource> resource(new PPB_DeviceRef_Shared(
-        OBJECT_IS_PROXY, pp_instance(), device_ref_data[i]));
-    device_resources.push_back(resource);
-  }
-
-  if (!output.StoreResourceVector(device_resources))
-    return PP_ERROR_FAILED;
-
-  return result;
+void VideoCaptureResource::LastPluginRefWasDeleted() {
+  enumeration_helper_.LastPluginRefWasDeleted();
 }
 
 void VideoCaptureResource::OnPluginMsgOnDeviceInfo(
@@ -247,29 +231,8 @@ void VideoCaptureResource::OnPluginMsgOpenReply(
     open_callback_->Run(params.result());
 }
 
-void VideoCaptureResource::OnPluginMsgEnumerateDevicesReply(
-    PP_Resource* devices_output,
-    scoped_refptr<TrackedCallback> callback,
-    const ResourceMessageReplyParams& params,
-    const std::vector<DeviceRefData>& devices) {
-  if (!TrackedCallback::IsPending(callback))
-    return;
-
-  DCHECK(has_pending_enum_devices_callback_);
-  has_pending_enum_devices_callback_ = false;
-
-  if (params.result() == PP_OK && devices_output) {
-    // devices_output points to the resource array of PP_ArrayOutput.  In C++,
-    // it's typically allocated in VideoCapture_Dev.
-    *devices_output = PPB_DeviceRef_Shared::CreateResourceArray(
-        OBJECT_IS_PROXY, pp_instance(), devices);
-  }
-
-  callback->Run(params.result());
-}
-
 void VideoCaptureResource::SetBufferInUse(uint32_t buffer_index) {
-  DCHECK(buffer_index < buffer_in_use_.size());
+  CHECK(buffer_index < buffer_in_use_.size());
   buffer_in_use_[buffer_index] = true;
 }
 

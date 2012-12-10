@@ -33,18 +33,18 @@ TEST_F(FlashResourceTest, EnumerateVideoCaptureDevices) {
   // Set up a sync call handler that should return this message.
   std::vector<ppapi::DeviceRefData> reply_device_ref_data;
   int32_t expected_result = PP_OK;
-  PpapiPluginMsg_VideoCapture_EnumerateDevicesReply reply_msg(
+  PpapiPluginMsg_DeviceEnumeration_EnumerateDevicesReply reply_msg(
       reply_device_ref_data);
   ResourceSyncCallHandler enumerate_video_devices_handler(
       &sink(),
-      PpapiHostMsg_VideoCapture_EnumerateDevices::ID,
+      PpapiHostMsg_DeviceEnumeration_EnumerateDevices::ID,
       expected_result,
       reply_msg);
   sink().AddFilter(&enumerate_video_devices_handler);
 
   // Set up the arguments to the call.
   ScopedPPResource video_capture(ScopedPPResource::PassRef(),
-      ::ppapi::thunk::GetPPB_VideoCapture_Dev_0_2_Thunk()->Create(
+      ::ppapi::thunk::GetPPB_VideoCapture_Dev_0_3_Thunk()->Create(
           pp_instance()));
   std::vector<PP_Resource> unused;
   PP_ArrayOutput output;
@@ -59,9 +59,9 @@ TEST_F(FlashResourceTest, EnumerateVideoCaptureDevices) {
   // Check the result is as expected.
   EXPECT_EQ(expected_result, actual_result);
 
-  // Should have sent an "VideoCapture_EnumerateDevices" message.
+  // Should have sent an "DeviceEnumeration_EnumerateDevices" message.
   ASSERT_TRUE(enumerate_video_devices_handler.last_handled_msg().type() ==
-      PpapiHostMsg_VideoCapture_EnumerateDevices::ID);
+      PpapiHostMsg_DeviceEnumeration_EnumerateDevices::ID);
 
   // Remove the filter or it will be destroyed before the sink() is destroyed.
   sink().RemoveFilter(&enumerate_video_devices_handler);

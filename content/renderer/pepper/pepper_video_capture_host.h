@@ -8,12 +8,12 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
+#include "content/renderer/pepper/pepper_device_enumeration_host_helper.h"
 #include "media/video/capture/video_capture.h"
 #include "media/video/capture/video_capture_types.h"
 #include "ppapi/c/dev/ppp_video_capture_dev.h"
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/host/resource_host.h"
-#include "ppapi/shared_impl/ppb_device_ref_shared.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/ppb_buffer_impl.h"
 
@@ -22,7 +22,7 @@ namespace content {
 class PepperVideoCaptureHost
   : public ppapi::host::ResourceHost,
     public webkit::ppapi::PluginDelegate::PlatformVideoCaptureEventHandler,
-    public base::SupportsWeakPtr<PepperVideoCaptureHost> {
+    public PepperDeviceEnumerationHostHelper::Delegate {
  public:
   PepperVideoCaptureHost(RendererPpapiHost* host,
                          PP_Instance instance,
@@ -51,11 +51,10 @@ class PepperVideoCaptureHost
       media::VideoCapture* capture,
       const media::VideoCaptureParams& device_info) OVERRIDE;
 
- private:
-  webkit::ppapi::PluginInstance* GetPluginInstance() const;
+  // PepperDeviceEnumerationHostHelper::Delegate implementation.
+  virtual webkit::ppapi::PluginDelegate* GetPluginDelegate() OVERRIDE;
 
-  int32_t OnEnumerateDevices(
-      ppapi::host::HostMessageContext* context);
+ private:
   int32_t OnOpen(ppapi::host::HostMessageContext* context,
                  const std::string& device_id,
                  const PP_VideoCaptureDeviceInfo_Dev& requested_info,
@@ -75,11 +74,6 @@ class PepperVideoCaptureHost
                         uint32_t buffer_count);
 
   void DetachPlatformVideoCapture();
-
-  void EnumerateDevicesCallbackFunc(
-      int request_id,
-      bool succeeded,
-      const std::vector<ppapi::DeviceRefData>& devices);
 
   bool SetStatus(PP_VideoCaptureStatus_Dev status, bool forced);
 
@@ -106,7 +100,8 @@ class PepperVideoCaptureHost
   PP_VideoCaptureStatus_Dev status_;
 
   ppapi::host::ReplyMessageContext open_reply_context_;
-  ppapi::host::ReplyMessageContext enum_reply_context_;
+
+  PepperDeviceEnumerationHostHelper enumeration_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperVideoCaptureHost);
 };

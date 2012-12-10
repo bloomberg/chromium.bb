@@ -1704,9 +1704,6 @@ IPC_MESSAGE_CONTROL0(PpapiHostMsg_VideoCapture_StopCapture)
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_VideoCapture_Close)
 
 // VideoCapture_Dev, plugin -> host -> plugin
-IPC_MESSAGE_CONTROL0(PpapiHostMsg_VideoCapture_EnumerateDevices)
-IPC_MESSAGE_CONTROL1(PpapiPluginMsg_VideoCapture_EnumerateDevicesReply,
-                     std::vector<ppapi::DeviceRefData> /* devices */)
 IPC_MESSAGE_CONTROL3(PpapiHostMsg_VideoCapture_Open,
                      std::string /* device_id */,
                      PP_VideoCaptureDeviceInfo_Dev /* requested_info */,
