@@ -22,12 +22,14 @@
 namespace chromeos {
 class InputMethodEngineIBus;
 namespace input_method {
+class InputMethodDelegate;
 
 // The implementation of InputMethodManager.
 class InputMethodManagerImpl : public InputMethodManager,
                                public CandidateWindowController::Observer,
                                public IBusController::Observer {
  public:
+  explicit InputMethodManagerImpl(scoped_ptr<InputMethodDelegate> delegate);
   virtual ~InputMethodManagerImpl();
 
   // InputMethodManager override:
@@ -80,14 +82,8 @@ class InputMethodManagerImpl : public InputMethodManager,
   // Sets |xkeyboard_|.
   void SetXKeyboardForTesting(XKeyboard* xkeyboard);
 
-  // Creates a new instance of this class. The caller has to delete the returned
-  // object. The caller also have to set a mock CandidateWindowController,
-  // IBusController, and XKeyboard. See the setters above.
-  static InputMethodManagerImpl* GetInstanceForTesting();
-
  private:
   friend class InputMethodManager;
-  InputMethodManagerImpl();
 
   // IBusController overrides:
   virtual void PropertyChanged() OVERRIDE;
@@ -134,6 +130,8 @@ class InputMethodManagerImpl : public InputMethodManager,
 
   void ChangeInputMethodInternal(const std::string& input_method_id,
                                  bool show_message);
+
+  scoped_ptr<InputMethodDelegate> delegate_;
 
   // The current browser status.
   State state_;

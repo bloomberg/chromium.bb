@@ -4,11 +4,12 @@
 
 #include "chrome/browser/chromeos/input_method/browser_state_monitor.h"
 
-#include "chrome/browser/api/prefs/pref_member.h"
+#include <string>
+
+#include "base/basictypes.h"
+#include "chrome/browser/chromeos/input_method/mock_input_method_delegate.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/pref_names.h"
-#include "chrome/test/base/testing_pref_service.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,74 +18,23 @@ namespace chromeos {
 namespace input_method {
 namespace {
 
-void RegisterTestPrefs(PrefService* prefs) {
-  prefs->RegisterStringPref(prefs::kLanguagePreviousInputMethod,
-                            "",
-                            PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterStringPref(prefs::kLanguageCurrentInputMethod,
-                            "",
-                            PrefService::UNSYNCABLE_PREF);
-}
-
 class TestableBrowserStateMonitor : public BrowserStateMonitor {
  public:
   using BrowserStateMonitor::InputMethodChanged;
   using BrowserStateMonitor::Observe;
 
-  explicit TestableBrowserStateMonitor(InputMethodManager* manager)
-      : BrowserStateMonitor(manager) {
-    ResetCounters();
+  TestableBrowserStateMonitor(InputMethodManager* manager,
+                              InputMethodDelegate* delegate)
+      : BrowserStateMonitor(manager, delegate) {
   }
-
-  virtual ~TestableBrowserStateMonitor() {
-  }
-
-  void ResetCounters() {
-    update_local_state_count_ = 0;
-    last_local_state_.clear();
-    update_user_pref_count_ = 0;
-    last_user_pref_.clear();
-  }
-
-  int update_local_state_count() const { return update_local_state_count_; }
-  const std::string& last_local_state() const { return last_local_state_; }
-  int update_user_pref_count() const { return update_user_pref_count_; }
-  const std::string& last_user_pref() const { return last_user_pref_; }
-
- protected:
-  virtual void UpdateLocalState(
-      const std::string& current_input_method) OVERRIDE {
-    ++update_local_state_count_;
-    last_local_state_ = current_input_method;
-    // Do not call the parent class' method since it depends on the global
-    // browser object which is a bit difficult to mock. This should be okay
-    // since the method is really simple.
-  }
-
-  virtual void UpdateUserPreferences(
-      const std::string& current_input_method) OVERRIDE {
-    ++update_user_pref_count_;
-    last_user_pref_ = current_input_method;
-    BrowserStateMonitor::UpdateUserPreferences(current_input_method);
-  }
-
- private:
-  int update_local_state_count_;
-  std::string last_local_state_;
-  int update_user_pref_count_;
-  std::string last_user_pref_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestableBrowserStateMonitor);
 };
 
 }  // anonymous namespace
 
-TEST(BrowserStateMonitorTest, TestConstruction) {
-  TestingPrefService prefs;
-  RegisterTestPrefs(&prefs);
+TEST(BrowserStateMonitorLifetimeTest, TestConstruction) {
   MockInputMethodManager mock_manager;
-  TestableBrowserStateMonitor monitor(&mock_manager);
-  monitor.SetPrefServiceForTesting(&prefs);
+  MockInputMethodDelegate mock_delegate;
+  TestableBrowserStateMonitor monitor(&mock_manager, &mock_delegate);
 
   // Check the initial state of the |mock_manager| and |monitor| objects.
   EXPECT_EQ(1, mock_manager.add_observer_count_);
@@ -93,283 +43,235 @@ TEST(BrowserStateMonitorTest, TestConstruction) {
   EXPECT_EQ(InputMethodManager::STATE_LOGIN_SCREEN, monitor.state());
 }
 
-TEST(BrowserStateMonitorTest, TestDestruction) {
-  TestingPrefService prefs;
-  RegisterTestPrefs(&prefs);
+TEST(BrowserStateMonitorLifetimeTest, TestDestruction) {
   MockInputMethodManager mock_manager;
+  MockInputMethodDelegate mock_delegate;
   {
-    TestableBrowserStateMonitor monitor(&mock_manager);
-    monitor.SetPrefServiceForTesting(&prefs);
+    TestableBrowserStateMonitor monitor(&mock_manager, &mock_delegate);
   }
   EXPECT_EQ(1, mock_manager.remove_observer_count_);
 }
 
-TEST(BrowserStateMonitorTest, TestObserveLoginUserChanged) {
-  TestingPrefService prefs;
-  RegisterTestPrefs(&prefs);
-  MockInputMethodManager mock_manager;
-  TestableBrowserStateMonitor monitor(&mock_manager);
-  monitor.SetPrefServiceForTesting(&prefs);
+namespace {
 
-  EXPECT_EQ(1, mock_manager.set_state_count_);
-  monitor.Observe(chrome::NOTIFICATION_LOGIN_USER_CHANGED,
-                  content::NotificationService::AllSources(),
-                  content::NotificationService::NoDetails());
+class BrowserStateMonitorTest :  public testing::Test {
+ public:
+  BrowserStateMonitorTest()
+      : monitor_(&mock_manager_, &mock_delegate_) {
+  }
 
-  // Check if the state of the |mock_manager| as well as the |monitor| are both
+ protected:
+  MockInputMethodManager mock_manager_;
+  MockInputMethodDelegate mock_delegate_;
+  TestableBrowserStateMonitor monitor_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BrowserStateMonitorTest);
+};
+
+}  // anonymous namespace
+
+TEST_F(BrowserStateMonitorTest, TestObserveLoginUserChanged) {
+  EXPECT_EQ(1, mock_manager_.set_state_count_);
+  monitor_.Observe(chrome::NOTIFICATION_LOGIN_USER_CHANGED,
+                   content::NotificationService::AllSources(),
+                   content::NotificationService::NoDetails());
+
+  // Check if the state of the |mock_manager_| as well as the |monitor| are both
   // changed.
-  EXPECT_EQ(2, mock_manager.set_state_count_);
-  EXPECT_EQ(InputMethodManager::STATE_BROWSER_SCREEN, mock_manager.last_state_);
-  EXPECT_EQ(InputMethodManager::STATE_BROWSER_SCREEN, monitor.state());
+  EXPECT_EQ(2, mock_manager_.set_state_count_);
+  EXPECT_EQ(InputMethodManager::STATE_BROWSER_SCREEN,
+            mock_manager_.last_state_);
+  EXPECT_EQ(InputMethodManager::STATE_BROWSER_SCREEN, monitor_.state());
 }
 
-TEST(BrowserStateMonitorTest, TestObserveSessionStarted) {
-  TestingPrefService prefs;
-  RegisterTestPrefs(&prefs);
-  MockInputMethodManager mock_manager;
-  TestableBrowserStateMonitor monitor(&mock_manager);
-  monitor.SetPrefServiceForTesting(&prefs);
+TEST_F(BrowserStateMonitorTest, TestObserveSessionStarted) {
+  EXPECT_EQ(1, mock_manager_.set_state_count_);
+  monitor_.Observe(chrome::NOTIFICATION_SESSION_STARTED,
+                   content::NotificationService::AllSources(),
+                   content::NotificationService::NoDetails());
 
-  EXPECT_EQ(1, mock_manager.set_state_count_);
-  monitor.Observe(chrome::NOTIFICATION_SESSION_STARTED,
-                  content::NotificationService::AllSources(),
-                  content::NotificationService::NoDetails());
-
-  // Check if the state of the |mock_manager| as well as the |monitor| are both
+  // Check if the state of the |mock_manager_| as well as the |monitor| are both
   // changed.
-  EXPECT_EQ(2, mock_manager.set_state_count_);
-  EXPECT_EQ(InputMethodManager::STATE_BROWSER_SCREEN, mock_manager.last_state_);
-  EXPECT_EQ(InputMethodManager::STATE_BROWSER_SCREEN, monitor.state());
+  EXPECT_EQ(2, mock_manager_.set_state_count_);
+  EXPECT_EQ(InputMethodManager::STATE_BROWSER_SCREEN,
+            mock_manager_.last_state_);
+  EXPECT_EQ(InputMethodManager::STATE_BROWSER_SCREEN, monitor_.state());
 }
 
-TEST(BrowserStateMonitorTest, TestObserveLoginUserChangedThenSessionStarted) {
-  TestingPrefService prefs;
-  RegisterTestPrefs(&prefs);
-  MockInputMethodManager mock_manager;
-  TestableBrowserStateMonitor monitor(&mock_manager);
-  monitor.SetPrefServiceForTesting(&prefs);
+TEST_F(BrowserStateMonitorTest, TestObserveLoginUserChangedThenSessionStarted) {
+  EXPECT_EQ(1, mock_manager_.set_state_count_);
+  monitor_.Observe(chrome::NOTIFICATION_LOGIN_USER_CHANGED,
+                   content::NotificationService::AllSources(),
+                   content::NotificationService::NoDetails());
 
-  EXPECT_EQ(1, mock_manager.set_state_count_);
-  monitor.Observe(chrome::NOTIFICATION_LOGIN_USER_CHANGED,
-                  content::NotificationService::AllSources(),
-                  content::NotificationService::NoDetails());
-
-  // Check if the state of the |mock_manager| as well as the |monitor| are both
+  // Check if the state of the |mock_manager_| as well as the |monitor| are both
   // changed.
-  EXPECT_EQ(2, mock_manager.set_state_count_);
-  EXPECT_EQ(InputMethodManager::STATE_BROWSER_SCREEN, mock_manager.last_state_);
-  EXPECT_EQ(InputMethodManager::STATE_BROWSER_SCREEN, monitor.state());
+  EXPECT_EQ(2, mock_manager_.set_state_count_);
+  EXPECT_EQ(InputMethodManager::STATE_BROWSER_SCREEN,
+            mock_manager_.last_state_);
+  EXPECT_EQ(InputMethodManager::STATE_BROWSER_SCREEN, monitor_.state());
 
-  monitor.Observe(chrome::NOTIFICATION_SESSION_STARTED,
-                  content::NotificationService::AllSources(),
-                  content::NotificationService::NoDetails());
+  monitor_.Observe(chrome::NOTIFICATION_SESSION_STARTED,
+                   content::NotificationService::AllSources(),
+                   content::NotificationService::NoDetails());
 
   // The second notification should be nop.
-  EXPECT_EQ(2, mock_manager.set_state_count_);
-  EXPECT_EQ(InputMethodManager::STATE_BROWSER_SCREEN, mock_manager.last_state_);
-  EXPECT_EQ(InputMethodManager::STATE_BROWSER_SCREEN, monitor.state());
+  EXPECT_EQ(2, mock_manager_.set_state_count_);
+  EXPECT_EQ(InputMethodManager::STATE_BROWSER_SCREEN,
+            mock_manager_.last_state_);
+  EXPECT_EQ(InputMethodManager::STATE_BROWSER_SCREEN, monitor_.state());
 }
 
-TEST(BrowserStateMonitorTest, TestObserveScreenLockUnlock) {
-  TestingPrefService prefs;
-  RegisterTestPrefs(&prefs);
-  MockInputMethodManager mock_manager;
-  TestableBrowserStateMonitor monitor(&mock_manager);
-  monitor.SetPrefServiceForTesting(&prefs);
-
-  EXPECT_EQ(1, mock_manager.set_state_count_);
-  monitor.Observe(chrome::NOTIFICATION_LOGIN_USER_CHANGED,
-                  content::NotificationService::AllSources(),
-                  content::NotificationService::NoDetails());
-  EXPECT_EQ(2, mock_manager.set_state_count_);
-  monitor.Observe(chrome::NOTIFICATION_SESSION_STARTED,
-                  content::NotificationService::AllSources(),
-                  content::NotificationService::NoDetails());
-  EXPECT_EQ(2, mock_manager.set_state_count_);
+TEST_F(BrowserStateMonitorTest, TestObserveScreenLockUnlock) {
+  EXPECT_EQ(1, mock_manager_.set_state_count_);
+  monitor_.Observe(chrome::NOTIFICATION_LOGIN_USER_CHANGED,
+                   content::NotificationService::AllSources(),
+                   content::NotificationService::NoDetails());
+  EXPECT_EQ(2, mock_manager_.set_state_count_);
+  monitor_.Observe(chrome::NOTIFICATION_SESSION_STARTED,
+                   content::NotificationService::AllSources(),
+                   content::NotificationService::NoDetails());
+  EXPECT_EQ(2, mock_manager_.set_state_count_);
   bool locked = true;
-  monitor.Observe(chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
-                  content::NotificationService::AllSources(),
-                  content::Details<bool>(&locked));
-  EXPECT_EQ(3, mock_manager.set_state_count_);
-  EXPECT_EQ(InputMethodManager::STATE_LOCK_SCREEN, mock_manager.last_state_);
-  EXPECT_EQ(InputMethodManager::STATE_LOCK_SCREEN, monitor.state());
+  monitor_.Observe(chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
+                   content::NotificationService::AllSources(),
+                   content::Details<bool>(&locked));
+  EXPECT_EQ(3, mock_manager_.set_state_count_);
+  EXPECT_EQ(InputMethodManager::STATE_LOCK_SCREEN,
+            mock_manager_.last_state_);
+  EXPECT_EQ(InputMethodManager::STATE_LOCK_SCREEN, monitor_.state());
 
   // When the screen is locked, the monitor should ignore input method changes.
-  monitor.InputMethodChanged(&mock_manager, false);
-  EXPECT_EQ(0, monitor.update_local_state_count());
-  EXPECT_EQ(0, monitor.update_user_pref_count());
+  monitor_.InputMethodChanged(&mock_manager_, false);
+  EXPECT_EQ(0, mock_delegate_.update_system_input_method_count());
+  EXPECT_EQ(0, mock_delegate_.update_user_input_method_count());
 
   locked = false;
-  monitor.Observe(chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
-                  content::NotificationService::AllSources(),
-                  content::Details<bool>(&locked));
-  EXPECT_EQ(4, mock_manager.set_state_count_);
-  EXPECT_EQ(InputMethodManager::STATE_BROWSER_SCREEN, mock_manager.last_state_);
-  EXPECT_EQ(InputMethodManager::STATE_BROWSER_SCREEN, monitor.state());
+  monitor_.Observe(chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
+                   content::NotificationService::AllSources(),
+                   content::Details<bool>(&locked));
+  EXPECT_EQ(4, mock_manager_.set_state_count_);
+  EXPECT_EQ(InputMethodManager::STATE_BROWSER_SCREEN,
+            mock_manager_.last_state_);
+  EXPECT_EQ(InputMethodManager::STATE_BROWSER_SCREEN, monitor_.state());
 
-  monitor.InputMethodChanged(&mock_manager, false);
-  EXPECT_EQ(0, monitor.update_local_state_count());
-  EXPECT_EQ(1, monitor.update_user_pref_count());
+  monitor_.InputMethodChanged(&mock_manager_, false);
+  EXPECT_EQ(0, mock_delegate_.update_system_input_method_count());
+  EXPECT_EQ(1, mock_delegate_.update_user_input_method_count());
 }
 
-TEST(BrowserStateMonitorTest, TestObserveAppTerminating) {
-  TestingPrefService prefs;
-  RegisterTestPrefs(&prefs);
-  MockInputMethodManager mock_manager;
-  TestableBrowserStateMonitor monitor(&mock_manager);
-  monitor.SetPrefServiceForTesting(&prefs);
+TEST_F(BrowserStateMonitorTest, TestObserveAppTerminating) {
+  EXPECT_EQ(1, mock_manager_.set_state_count_);
+  monitor_.Observe(chrome::NOTIFICATION_APP_TERMINATING,
+                   content::NotificationService::AllSources(),
+                   content::NotificationService::NoDetails());
 
-  EXPECT_EQ(1, mock_manager.set_state_count_);
-  monitor.Observe(chrome::NOTIFICATION_APP_TERMINATING,
-                  content::NotificationService::AllSources(),
-                  content::NotificationService::NoDetails());
-
-  // Check if the state of the |mock_manager| as well as the |monitor| are both
+  // Check if the state of the |mock_manager_| as well as the |monitor| are both
   // changed.
-  EXPECT_EQ(2, mock_manager.set_state_count_);
+  EXPECT_EQ(2, mock_manager_.set_state_count_);
   EXPECT_EQ(InputMethodManager::STATE_TERMINATING,
-            mock_manager.last_state_);
-  EXPECT_EQ(InputMethodManager::STATE_TERMINATING, monitor.state());
+            mock_manager_.last_state_);
+  EXPECT_EQ(InputMethodManager::STATE_TERMINATING, monitor_.state());
 
   // In the terminating state, the monitor should ignore input method changes.
-  monitor.InputMethodChanged(&mock_manager, false);
-  EXPECT_EQ(0, monitor.update_local_state_count());
-  EXPECT_EQ(0, monitor.update_user_pref_count());
+  monitor_.InputMethodChanged(&mock_manager_, false);
+  EXPECT_EQ(0, mock_delegate_.update_system_input_method_count());
+  EXPECT_EQ(0, mock_delegate_.update_user_input_method_count());
 }
 
-TEST(BrowserStateMonitorTest, TestUpdatePrefOnLoginScreen) {
-  TestingPrefService prefs;
-  RegisterTestPrefs(&prefs);
-  MockInputMethodManager mock_manager;
-  TestableBrowserStateMonitor monitor(&mock_manager);
-  monitor.SetPrefServiceForTesting(&prefs);
-
-  EXPECT_EQ(InputMethodManager::STATE_LOGIN_SCREEN, monitor.state());
-  monitor.InputMethodChanged(&mock_manager, false);
-  EXPECT_EQ(1, monitor.update_local_state_count());
-  EXPECT_EQ(0, monitor.update_user_pref_count());
-  monitor.InputMethodChanged(&mock_manager, false);
-  EXPECT_EQ(2, monitor.update_local_state_count());
-  EXPECT_EQ(0, monitor.update_user_pref_count());
+TEST_F(BrowserStateMonitorTest, TestUpdatePrefOnLoginScreen) {
+  EXPECT_EQ(InputMethodManager::STATE_LOGIN_SCREEN, monitor_.state());
+  monitor_.InputMethodChanged(&mock_manager_, false);
+  EXPECT_EQ(1, mock_delegate_.update_system_input_method_count());
+  EXPECT_EQ(0, mock_delegate_.update_user_input_method_count());
+  monitor_.InputMethodChanged(&mock_manager_, false);
+  EXPECT_EQ(2, mock_delegate_.update_system_input_method_count());
+  EXPECT_EQ(0, mock_delegate_.update_user_input_method_count());
 }
 
-TEST(BrowserStateMonitorTest, TestUpdatePrefOnBrowserScreen) {
-  TestingPrefService prefs;
-  RegisterTestPrefs(&prefs);
-  MockInputMethodManager mock_manager;
-  TestableBrowserStateMonitor monitor(&mock_manager);
-  monitor.SetPrefServiceForTesting(&prefs);
+TEST_F(BrowserStateMonitorTest, TestUpdatePrefOnBrowserScreen) {
+  monitor_.Observe(chrome::NOTIFICATION_LOGIN_USER_CHANGED,
+                   content::NotificationService::AllSources(),
+                   content::NotificationService::NoDetails());
+  EXPECT_EQ(InputMethodManager::STATE_BROWSER_SCREEN, monitor_.state());
 
-  monitor.Observe(chrome::NOTIFICATION_LOGIN_USER_CHANGED,
-                  content::NotificationService::AllSources(),
-                  content::NotificationService::NoDetails());
-  EXPECT_EQ(InputMethodManager::STATE_BROWSER_SCREEN, monitor.state());
+  monitor_.InputMethodChanged(&mock_manager_, false);
+  EXPECT_EQ(0, mock_delegate_.update_system_input_method_count());
+  EXPECT_EQ(1, mock_delegate_.update_user_input_method_count());
+  monitor_.InputMethodChanged(&mock_manager_, false);
+  EXPECT_EQ(0, mock_delegate_.update_system_input_method_count());
+  EXPECT_EQ(2, mock_delegate_.update_user_input_method_count());
 
-  monitor.InputMethodChanged(&mock_manager, false);
-  EXPECT_EQ(0, monitor.update_local_state_count());
-  EXPECT_EQ(1, monitor.update_user_pref_count());
-  monitor.InputMethodChanged(&mock_manager, false);
-  EXPECT_EQ(0, monitor.update_local_state_count());
-  EXPECT_EQ(2, monitor.update_user_pref_count());
+  monitor_.Observe(chrome::NOTIFICATION_SESSION_STARTED,
+                   content::NotificationService::AllSources(),
+                   content::NotificationService::NoDetails());
+  EXPECT_EQ(InputMethodManager::STATE_BROWSER_SCREEN, monitor_.state());
 
-  monitor.Observe(chrome::NOTIFICATION_SESSION_STARTED,
-                  content::NotificationService::AllSources(),
-                  content::NotificationService::NoDetails());
-  EXPECT_EQ(InputMethodManager::STATE_BROWSER_SCREEN, monitor.state());
-
-  monitor.InputMethodChanged(&mock_manager, false);
-  EXPECT_EQ(0, monitor.update_local_state_count());
-  EXPECT_EQ(3, monitor.update_user_pref_count());
-  monitor.InputMethodChanged(&mock_manager, false);
-  EXPECT_EQ(0, monitor.update_local_state_count());
-  EXPECT_EQ(4, monitor.update_user_pref_count());
+  monitor_.InputMethodChanged(&mock_manager_, false);
+  EXPECT_EQ(0, mock_delegate_.update_system_input_method_count());
+  EXPECT_EQ(3, mock_delegate_.update_user_input_method_count());
+  monitor_.InputMethodChanged(&mock_manager_, false);
+  EXPECT_EQ(0, mock_delegate_.update_system_input_method_count());
+  EXPECT_EQ(4, mock_delegate_.update_user_input_method_count());
 }
 
-TEST(BrowserStateMonitorTest, TestUpdatePrefOnLoginScreenDetails) {
-  TestingPrefService prefs;
-  RegisterTestPrefs(&prefs);
-  MockInputMethodManager mock_manager;
-  TestableBrowserStateMonitor monitor(&mock_manager);
-  monitor.SetPrefServiceForTesting(&prefs);
-
-  EXPECT_EQ(InputMethodManager::STATE_LOGIN_SCREEN, monitor.state());
+TEST_F(BrowserStateMonitorTest, TestUpdatePrefOnLoginScreenDetails) {
+  EXPECT_EQ(InputMethodManager::STATE_LOGIN_SCREEN, monitor_.state());
   std::string input_method_id = "xkb:us:dvorak:eng";
-  mock_manager.SetCurrentInputMethodId(input_method_id);
-  monitor.InputMethodChanged(&mock_manager, false);
-  EXPECT_EQ(1, monitor.update_local_state_count());
-  EXPECT_EQ(0, monitor.update_user_pref_count());
-  EXPECT_EQ(input_method_id, monitor.last_local_state());
+  mock_manager_.SetCurrentInputMethodId(input_method_id);
+  monitor_.InputMethodChanged(&mock_manager_, false);
+  EXPECT_EQ(1, mock_delegate_.update_system_input_method_count());
+  EXPECT_EQ(0, mock_delegate_.update_user_input_method_count());
+  EXPECT_EQ(input_method_id, mock_delegate_.system_input_method());
   input_method_id = "xkb:us:colemak:eng";
-  mock_manager.SetCurrentInputMethodId(input_method_id);
-  monitor.InputMethodChanged(&mock_manager, false);
-  EXPECT_EQ(2, monitor.update_local_state_count());
-  EXPECT_EQ(0, monitor.update_user_pref_count());
-  EXPECT_EQ(input_method_id, monitor.last_local_state());
+  mock_manager_.SetCurrentInputMethodId(input_method_id);
+  monitor_.InputMethodChanged(&mock_manager_, false);
+  EXPECT_EQ(2, mock_delegate_.update_system_input_method_count());
+  EXPECT_EQ(0, mock_delegate_.update_user_input_method_count());
+  EXPECT_EQ(input_method_id, mock_delegate_.system_input_method());
 }
 
-TEST(BrowserStateMonitorTest, TestUpdatePrefOnBrowserScreenDetails) {
-  TestingPrefService prefs;
-  RegisterTestPrefs(&prefs);
-  MockInputMethodManager mock_manager;
-  TestableBrowserStateMonitor monitor(&mock_manager);
-  monitor.SetPrefServiceForTesting(&prefs);
-
-  StringPrefMember previous;
-  previous.Init(prefs::kLanguagePreviousInputMethod, &prefs);
-  EXPECT_EQ("", previous.GetValue());
-  StringPrefMember current;
-  current.Init(prefs::kLanguageCurrentInputMethod, &prefs);
-  EXPECT_EQ("", current.GetValue());
-
-  monitor.Observe(chrome::NOTIFICATION_LOGIN_USER_CHANGED,
-                  content::NotificationService::AllSources(),
-                  content::NotificationService::NoDetails());
-  EXPECT_EQ(InputMethodManager::STATE_BROWSER_SCREEN, monitor.state());
-  monitor.Observe(chrome::NOTIFICATION_SESSION_STARTED,
-                  content::NotificationService::AllSources(),
-                  content::NotificationService::NoDetails());
-  EXPECT_EQ(InputMethodManager::STATE_BROWSER_SCREEN, monitor.state());
+TEST_F(BrowserStateMonitorTest, TestUpdatePrefOnBrowserScreenDetails) {
+  monitor_.Observe(chrome::NOTIFICATION_LOGIN_USER_CHANGED,
+                   content::NotificationService::AllSources(),
+                   content::NotificationService::NoDetails());
+  EXPECT_EQ(InputMethodManager::STATE_BROWSER_SCREEN, monitor_.state());
+  monitor_.Observe(chrome::NOTIFICATION_SESSION_STARTED,
+                   content::NotificationService::AllSources(),
+                   content::NotificationService::NoDetails());
+  EXPECT_EQ(InputMethodManager::STATE_BROWSER_SCREEN, monitor_.state());
 
   const std::string input_method_id = "xkb:us:dvorak:eng";
-  mock_manager.SetCurrentInputMethodId(input_method_id);
-  monitor.InputMethodChanged(&mock_manager, false);
-  EXPECT_EQ(0, monitor.update_local_state_count());
-  EXPECT_EQ(1, monitor.update_user_pref_count());
-  EXPECT_EQ(input_method_id, monitor.last_user_pref());
-  EXPECT_EQ("", previous.GetValue());
-  EXPECT_EQ(input_method_id, current.GetValue());
+  mock_manager_.SetCurrentInputMethodId(input_method_id);
+  monitor_.InputMethodChanged(&mock_manager_, false);
+  EXPECT_EQ(0, mock_delegate_.update_system_input_method_count());
+  EXPECT_EQ(1, mock_delegate_.update_user_input_method_count());
+  EXPECT_EQ(input_method_id, mock_delegate_.user_input_method());
 
-  monitor.InputMethodChanged(&mock_manager, false);
-  EXPECT_EQ(0, monitor.update_local_state_count());
-  EXPECT_EQ(2, monitor.update_user_pref_count());
-  EXPECT_EQ(input_method_id, monitor.last_user_pref());
-  EXPECT_EQ("", previous.GetValue());
-  EXPECT_EQ(input_method_id, current.GetValue());
+  monitor_.InputMethodChanged(&mock_manager_, false);
+  EXPECT_EQ(0, mock_delegate_.update_system_input_method_count());
+  EXPECT_EQ(2, mock_delegate_.update_user_input_method_count());
+  EXPECT_EQ(input_method_id, mock_delegate_.user_input_method());
 
   const std::string input_method_id_2 = "xkb:us:colemak:eng";
-  mock_manager.SetCurrentInputMethodId(input_method_id_2);
-  monitor.InputMethodChanged(&mock_manager, false);
-  EXPECT_EQ(0, monitor.update_local_state_count());
-  EXPECT_EQ(3, monitor.update_user_pref_count());
-  EXPECT_EQ(input_method_id_2, monitor.last_user_pref());
-  EXPECT_EQ(input_method_id, previous.GetValue());
-  EXPECT_EQ(input_method_id_2, current.GetValue());
+  mock_manager_.SetCurrentInputMethodId(input_method_id_2);
+  monitor_.InputMethodChanged(&mock_manager_, false);
+  EXPECT_EQ(0, mock_delegate_.update_system_input_method_count());
+  EXPECT_EQ(3, mock_delegate_.update_user_input_method_count());
+  EXPECT_EQ(input_method_id_2, mock_delegate_.user_input_method());
 
   const std::string input_method_id_3 = "xkb:us::eng";
-  mock_manager.SetCurrentInputMethodId(input_method_id_3);
-  monitor.InputMethodChanged(&mock_manager, false);
-  EXPECT_EQ(0, monitor.update_local_state_count());
-  EXPECT_EQ(4, monitor.update_user_pref_count());
-  EXPECT_EQ(input_method_id_3, monitor.last_user_pref());
-  EXPECT_EQ(input_method_id_2, previous.GetValue());
-  EXPECT_EQ(input_method_id_3, current.GetValue());
+  mock_manager_.SetCurrentInputMethodId(input_method_id_3);
+  monitor_.InputMethodChanged(&mock_manager_, false);
+  EXPECT_EQ(0, mock_delegate_.update_system_input_method_count());
+  EXPECT_EQ(4, mock_delegate_.update_user_input_method_count());
+  EXPECT_EQ(input_method_id_3, mock_delegate_.user_input_method());
 
-  monitor.InputMethodChanged(&mock_manager, false);
-  EXPECT_EQ(0, monitor.update_local_state_count());
-  EXPECT_EQ(5, monitor.update_user_pref_count());
-  EXPECT_EQ(input_method_id_3, monitor.last_user_pref());
-  EXPECT_EQ(input_method_id_2, previous.GetValue());
-  EXPECT_EQ(input_method_id_3, current.GetValue());
+  monitor_.InputMethodChanged(&mock_manager_, false);
+  EXPECT_EQ(0, mock_delegate_.update_system_input_method_count());
+  EXPECT_EQ(5, mock_delegate_.update_user_input_method_count());
+  EXPECT_EQ(input_method_id_3, mock_delegate_.user_input_method());
 }
 
 }  // namespace input_method

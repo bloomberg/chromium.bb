@@ -8,6 +8,7 @@
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/input_method/input_method_whitelist.h"
+#include "chrome/browser/chromeos/input_method/mock_input_method_delegate.h"
 #include "chrome/browser/chromeos/input_method/mock_xkeyboard.h"
 
 namespace chromeos {
@@ -66,6 +67,10 @@ class MockInputMethodManager : public InputMethodManager {
     current_input_method_id_ = input_method_id;
   }
 
+  // Set values that will be provided to the InputMethodUtil.
+  void set_application_locale(const std::string& value);
+  void set_hardware_keyboard_layout(const std::string& value);
+
   // TODO(yusukes): Add more variables for counting the numbers of the API calls
   int add_observer_count_;
   int remove_observer_count_;
@@ -77,6 +82,7 @@ class MockInputMethodManager : public InputMethodManager {
   std::string current_input_method_id_;
 
   InputMethodWhitelist whitelist_;
+  MockInputMethodDelegate delegate_;  // used by util_
   InputMethodUtil util_;
   MockXKeyboard xkeyboard_;
 

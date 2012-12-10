@@ -6,10 +6,13 @@
 
 #include <algorithm>
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/input_method/mock_candidate_window_controller.h"
 #include "chrome/browser/chromeos/input_method/mock_ibus_controller.h"
+#include "chrome/browser/chromeos/input_method/mock_input_method_delegate.h"
 #include "chrome/browser/chromeos/input_method/mock_xkeyboard.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -25,13 +28,17 @@ namespace {
 class InputMethodManagerImplTest :  public testing::Test {
  public:
   InputMethodManagerImplTest()
-      : controller_(NULL),
-        candidate_window_controller_(NULL) {
+      : delegate_(NULL),
+        controller_(NULL),
+        candidate_window_controller_(NULL),
+        xkeyboard_(NULL) {
   }
   virtual ~InputMethodManagerImplTest() {}
 
-  virtual void SetUp() {
-    manager_.reset(InputMethodManagerImpl::GetInstanceForTesting());
+  virtual void SetUp() OVERRIDE {
+    delegate_ = new MockInputMethodDelegate();
+    manager_.reset(new InputMethodManagerImpl(
+        scoped_ptr<InputMethodDelegate>(delegate_)));
     controller_ = new MockIBusController;
     manager_->SetIBusControllerForTesting(controller_);
     candidate_window_controller_ = new MockCandidateWindowController;
@@ -41,20 +48,17 @@ class InputMethodManagerImplTest :  public testing::Test {
     manager_->SetXKeyboardForTesting(xkeyboard_);
   }
 
-  virtual void TearDown() {
-    manager_.reset();
+  virtual void TearDown() OVERRIDE {
+    delegate_ = NULL;
     controller_ = NULL;
     candidate_window_controller_ = NULL;
     xkeyboard_ = NULL;
-  }
-
-  void SetHardwareKeyboardLayout(const std::string& input_method_id) {
-    manager_->GetInputMethodUtil()->SetHardwareInputMethodIdForTesting(
-        input_method_id);
+    manager_.reset();
   }
 
  protected:
   scoped_ptr<InputMethodManagerImpl> manager_;
+  MockInputMethodDelegate* delegate_;
   MockIBusController* controller_;
   MockCandidateWindowController* candidate_window_controller_;
   MockXKeyboard* xkeyboard_;
@@ -118,11 +122,6 @@ class TestCandidateWindowObserver
 TEST_F(InputMethodManagerImplTest, TestGetXKeyboard) {
   EXPECT_TRUE(manager_->GetXKeyboard());
   EXPECT_EQ(xkeyboard_, manager_->GetXKeyboard());
-}
-
-TEST_F(InputMethodManagerImplTest, TestGetInputMethodUtil) {
-  EXPECT_TRUE(manager_->GetInputMethodUtil());
-  SetHardwareKeyboardLayout("xkb:fr::fra");  // check this does not crash.
 }
 
 TEST_F(InputMethodManagerImplTest, TestCandidateWindowObserver) {
@@ -221,11 +220,11 @@ TEST_F(InputMethodManagerImplTest, TestEnableLayouts) {
 
 TEST_F(InputMethodManagerImplTest, TestEnableLayoutsNonUsHardwareKeyboard) {
   // The physical layout is French.
-  SetHardwareKeyboardLayout("xkb:fr::fra");
+  delegate_->set_hardware_keyboard_layout("xkb:fr::fra");
   manager_->EnableLayouts("en-US", "");
   EXPECT_EQ(6U, manager_->GetNumActiveInputMethods());  // 5 + French
   // The physical layout is Japanese.
-  SetHardwareKeyboardLayout("xkb:jp::jpn");
+  delegate_->set_hardware_keyboard_layout("xkb:jp::jpn");
   manager_->EnableLayouts("ja", "");
   // "xkb:us::eng" is not needed, hence 1.
   EXPECT_EQ(1U, manager_->GetNumActiveInputMethods());

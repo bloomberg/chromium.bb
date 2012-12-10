@@ -4,32 +4,20 @@
 
 #include "chrome/browser/chromeos/input_method/browser_state_monitor.h"
 
-#include "chrome/browser/browser_process.h"
+#include "base/logging.h"
+#include "chrome/browser/chromeos/input_method/input_method_delegate.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
-#include "chrome/browser/chromeos/language_preferences.h"
-#include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 
 namespace chromeos {
 namespace input_method {
-namespace {
 
-PrefService* GetPrefService() {
-  Profile* profile = ProfileManager::GetDefaultProfile();
-  if (profile)
-    return profile->GetPrefs();
-  return NULL;
-}
-
-}  // namespace
-
-BrowserStateMonitor::BrowserStateMonitor(InputMethodManager* manager)
+BrowserStateMonitor::BrowserStateMonitor(InputMethodManager* manager,
+                                         InputMethodDelegate* delegate)
     : manager_(manager),
-      state_(InputMethodManager::STATE_LOGIN_SCREEN),
-      pref_service_(NULL) {
+      delegate_(delegate),
+      state_(InputMethodManager::STATE_LOGIN_SCREEN) {
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_LOGIN_USER_CHANGED,
                               content::NotificationService::AllSources());
@@ -53,41 +41,6 @@ BrowserStateMonitor::~BrowserStateMonitor() {
   manager_->RemoveObserver(this);
 }
 
-void BrowserStateMonitor::SetPrefServiceForTesting(PrefService* pref_service) {
-  pref_service_ = pref_service;
-}
-
-void BrowserStateMonitor::UpdateLocalState(
-    const std::string& current_input_method) {
-  if (!g_browser_process || !g_browser_process->local_state())
-    return;
-  g_browser_process->local_state()->SetString(
-      language_prefs::kPreferredKeyboardLayout,
-      current_input_method);
-}
-
-void BrowserStateMonitor::UpdateUserPreferences(
-    const std::string& current_input_method) {
-  PrefService* pref_service = pref_service_ ? pref_service_ : GetPrefService();
-  DCHECK(pref_service);
-
-  // Even though we're DCHECK'ing to catch this on debug builds, we don't
-  // want to crash a release build in case the pref service is no longer
-  // available.
-  if (!pref_service)
-    return;
-
-  const std::string current_input_method_on_pref =
-      pref_service->GetString(prefs::kLanguageCurrentInputMethod);
-  if (current_input_method_on_pref == current_input_method)
-    return;
-
-  pref_service->SetString(prefs::kLanguagePreviousInputMethod,
-                          current_input_method_on_pref);
-  pref_service->SetString(prefs::kLanguageCurrentInputMethod,
-                          current_input_method);
-}
-
 void BrowserStateMonitor::InputMethodChanged(InputMethodManager* manager,
                                              bool show_message) {
   DCHECK_EQ(manager_, manager);
@@ -101,10 +54,10 @@ void BrowserStateMonitor::InputMethodChanged(InputMethodManager* manager,
                  << current_input_method;
         return;
       }
-      UpdateLocalState(current_input_method);
+      delegate_->SetSystemInputMethod(current_input_method);
       return;
     case InputMethodManager::STATE_BROWSER_SCREEN:
-      UpdateUserPreferences(current_input_method);
+      delegate_->SetUserInputMethod(current_input_method);
       return;
     case InputMethodManager::STATE_LOCK_SCREEN:
       // We use a special set of input methods on the screen. Do not update.

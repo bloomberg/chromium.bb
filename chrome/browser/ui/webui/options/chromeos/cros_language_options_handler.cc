@@ -172,8 +172,10 @@ ListValue* CrosLanguageOptionsHandler::GetLanguageList(
   // Build the list of display names, and build the language map.
   for (std::set<std::string>::const_iterator iter = language_codes.begin();
        iter != language_codes.end(); ++iter) {
+    input_method::InputMethodUtil* input_method_util =
+        input_method::InputMethodManager::GetInstance()->GetInputMethodUtil();
     const string16 display_name =
-        input_method::InputMethodUtil::GetLanguageDisplayNameFromCode(*iter);
+        input_method_util->GetLanguageDisplayNameFromCode(*iter);
     const string16 native_display_name =
         input_method::InputMethodUtil::GetLanguageNativeDisplayNameFromCode(
             *iter);

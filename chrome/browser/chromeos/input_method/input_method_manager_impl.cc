@@ -12,6 +12,7 @@
 #include "base/stringprintf.h"
 #include "chrome/browser/chromeos/input_method/browser_state_monitor.h"
 #include "chrome/browser/chromeos/input_method/candidate_window_controller.h"
+#include "chrome/browser/chromeos/input_method/input_method_delegate.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine_ibus.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
@@ -32,9 +33,11 @@ bool Contains(const std::vector<std::string>& container,
 
 }  // namespace
 
-InputMethodManagerImpl::InputMethodManagerImpl()
-    : state_(STATE_LOGIN_SCREEN),
-      util_(GetSupportedInputMethods()) {
+InputMethodManagerImpl::InputMethodManagerImpl(
+    scoped_ptr<InputMethodDelegate> delegate)
+    : delegate_(delegate.Pass()),
+      state_(STATE_LOGIN_SCREEN),
+      util_(delegate_.get(), GetSupportedInputMethods()) {
 }
 
 InputMethodManagerImpl::~InputMethodManagerImpl() {
@@ -579,7 +582,7 @@ void InputMethodManagerImpl::OnDisconnected() {
 void InputMethodManagerImpl::Init() {
   DCHECK(!ibus_controller_.get());
 
-  browser_state_monitor_.reset(new BrowserStateMonitor(this));
+  browser_state_monitor_.reset(new BrowserStateMonitor(this, delegate_.get()));
   ibus_controller_.reset(IBusController::Create());
   xkeyboard_.reset(XKeyboard::Create(util_));
   ibus_controller_->AddObserver(this);
@@ -680,11 +683,6 @@ void InputMethodManagerImpl::MaybeInitializeCandidateWindowController() {
     candidate_window_controller_->AddObserver(this);
   else
     DVLOG(1) << "Failed to initialize the candidate window controller";
-}
-
-// static
-InputMethodManagerImpl* InputMethodManagerImpl::GetInstanceForTesting() {
-  return new InputMethodManagerImpl;
 }
 
 }  // namespace input_method

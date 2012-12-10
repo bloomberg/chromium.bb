@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 
+#include "chrome/browser/chromeos/input_method/input_method_delegate_impl.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager_impl.h"
 
 namespace chromeos {
@@ -16,7 +17,8 @@ InputMethodManager* g_input_method_manager = NULL;
 // static
 void InputMethodManager::Initialize() {
   DCHECK(!g_input_method_manager);
-  InputMethodManagerImpl* impl = new InputMethodManagerImpl;
+  InputMethodManagerImpl* impl = new InputMethodManagerImpl(
+      scoped_ptr<InputMethodDelegate>(new InputMethodDelegateImpl));
   impl->Init();
   g_input_method_manager = impl;
   DVLOG(1) << "InputMethodManager initialized";

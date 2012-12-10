@@ -13,6 +13,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/input_method/input_method_whitelist.h"
+#include "chrome/browser/chromeos/input_method/mock_input_method_delegate.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/x/x11_util.h"
@@ -29,7 +30,7 @@ namespace {
 class XKeyboardTest : public testing::Test {
  public:
   XKeyboardTest()
-      : util_(whitelist_.GetSupportedInputMethods()),
+      : util_(&delegate_, whitelist_.GetSupportedInputMethods()),
         ui_thread_(BrowserThread::UI, &message_loop_) {
   }
 
@@ -41,6 +42,7 @@ class XKeyboardTest : public testing::Test {
     xkey_.reset();
   }
 
+  MockInputMethodDelegate delegate_;
   InputMethodWhitelist whitelist_;
   InputMethodUtil util_;
   scoped_ptr<XKeyboard> xkey_;

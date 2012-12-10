@@ -7,38 +7,32 @@
 
 #include <string>
 
-#include "chrome/browser/api/prefs/pref_member.h"
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
 
-class PrefService;
-
 namespace chromeos {
 namespace input_method {
+
+class InputMethodDelegate;
 
 // A class which monitors a notification from the browser to keep track of the
 // browser state (not logged in, logged in, etc.) and notify the current state
 // to the input method manager. The class also updates the appropriate Chrome
-// prefs (~/Local\ State or ~/Preferences) depending on the current browser
-// state.
+// prefs via the InputMethodDelegate, depending on the current browser state.
 class BrowserStateMonitor : public content::NotificationObserver,
                             public InputMethodManager::Observer {
  public:
-  explicit BrowserStateMonitor(InputMethodManager* manager);
+  BrowserStateMonitor(InputMethodManager* manager,
+                      InputMethodDelegate* delegate);
   virtual ~BrowserStateMonitor();
 
   InputMethodManager::State state() const { return state_; }
 
-  void SetPrefServiceForTesting(PrefService* pref_service);
-
  protected:
-  // Updates ~/Local\ State file. protected: for testing.
-  virtual void UpdateLocalState(const std::string& current_input_method);
-  // Updates ~/Preferences file. protected: for testing.
-  virtual void UpdateUserPreferences(const std::string& current_input_method);
-
   // InputMethodManager::Observer overrides:
   virtual void InputMethodChanged(InputMethodManager* manager,
                                   bool show_message) OVERRIDE;
@@ -51,16 +45,13 @@ class BrowserStateMonitor : public content::NotificationObserver,
 
  private:
   void SetState(InputMethodManager::State new_state);
-  void InitializePrefMembers();
 
   InputMethodManager* manager_;
+  InputMethodDelegate* delegate_;
   InputMethodManager::State state_;
 
   // This is used to register this object to some browser notifications.
   content::NotificationRegistrar notification_registrar_;
-
-  // For testing.
-  PrefService* pref_service_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserStateMonitor);
 };

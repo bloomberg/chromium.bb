@@ -10,6 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_whitelist.h"
+#include "chrome/browser/chromeos/input_method/mock_input_method_delegate.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -24,8 +25,9 @@ namespace {
 
 class TestableInputMethodUtil : public InputMethodUtil {
  public:
-  explicit TestableInputMethodUtil(scoped_ptr<InputMethodDescriptors> methods)
-      : InputMethodUtil(methods.Pass()) {
+  explicit TestableInputMethodUtil(InputMethodDelegate* delegate,
+                                   scoped_ptr<InputMethodDescriptors> methods)
+      : InputMethodUtil(delegate, methods.Pass()) {
   }
   // Change access rights.
   using InputMethodUtil::StringIsSupported;
@@ -39,7 +41,8 @@ class TestableInputMethodUtil : public InputMethodUtil {
 
 class InputMethodUtilTest : public testing::Test {
  public:
-  InputMethodUtilTest() : util_(whitelist_.GetSupportedInputMethods()) {
+  InputMethodUtilTest()
+      : util_(&delegate_, whitelist_.GetSupportedInputMethods()) {
   }
 
   InputMethodDescriptor GetDesc(const std::string& id,
@@ -52,6 +55,7 @@ class InputMethodUtilTest : public testing::Test {
                                  false);
   }
 
+  MockInputMethodDelegate delegate_;
   InputMethodWhitelist whitelist_;
   TestableInputMethodUtil util_;
 };
@@ -373,13 +377,13 @@ TEST_F(InputMethodUtilTest, TestGetLanguageNativeDisplayNameFromCode) {
 TEST_F(InputMethodUtilTest, TestSortLanguageCodesByNames) {
   std::vector<std::string> language_codes;
   // Check if this function can handle an empty list.
-  TestableInputMethodUtil::SortLanguageCodesByNames(&language_codes);
+  util_.SortLanguageCodesByNames(&language_codes);
 
   language_codes.push_back("ja");
   language_codes.push_back("fr");
   // For "t", see the comment in NormalizeLanguageCode test.
   language_codes.push_back("t");
-  TestableInputMethodUtil::SortLanguageCodesByNames(&language_codes);
+  util_.SortLanguageCodesByNames(&language_codes);
   ASSERT_EQ(3U, language_codes.size());
   ASSERT_EQ("fr", language_codes[0]);  // French
   ASSERT_EQ("ja", language_codes[1]);  // Japanese
@@ -387,7 +391,7 @@ TEST_F(InputMethodUtilTest, TestSortLanguageCodesByNames) {
 
   // Add a duplicate entry and see if it works.
   language_codes.push_back("ja");
-  TestableInputMethodUtil::SortLanguageCodesByNames(&language_codes);
+  util_.SortLanguageCodesByNames(&language_codes);
   ASSERT_EQ(4U, language_codes.size());
   ASSERT_EQ("fr", language_codes[0]);  // French
   ASSERT_EQ("ja", language_codes[1]);  // Japanese
@@ -534,13 +538,6 @@ TEST_F(InputMethodUtilTest, TestGetLanguageCodesFromInputMethodIds) {
   EXPECT_EQ("en-US", language_codes[0]);
   EXPECT_EQ("ja", language_codes[1]);
   EXPECT_EQ("fr", language_codes[2]);
-}
-
-TEST_F(InputMethodUtilTest, TestSetHardwareInputMethodId) {
-  util_.SetHardwareInputMethodIdForTesting("xkb:fr::fra");
-  EXPECT_EQ("xkb:fr::fra", util_.GetHardwareInputMethodId());
-  // Reset to the default behavior just in case.
-  util_.SetHardwareInputMethodIdForTesting("");
 }
 
 // Test all supported descriptors to detect a typo in ibus_input_methods.txt.

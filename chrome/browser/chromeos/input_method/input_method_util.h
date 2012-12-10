@@ -18,6 +18,8 @@
 namespace chromeos {
 namespace input_method {
 
+class InputMethodDelegate;
+
 // The list of language that do not have associated input methods in IBus.
 // For these languages, we associate input methods here.
 struct ExtraLanguage {
@@ -38,8 +40,8 @@ class InputMethodUtil {
   // |supported_input_methods| is a list of all input methods supported,
   // including ones not active. The list is used to initialize member variables
   // in this class.
-  explicit InputMethodUtil(
-      scoped_ptr<InputMethodDescriptors> supported_input_methods);
+  InputMethodUtil(InputMethodDelegate* delegate,
+                  scoped_ptr<InputMethodDescriptors> supported_input_methods);
   ~InputMethodUtil();
 
   // Converts a string sent from IBus IME engines, which is written in English,
@@ -129,9 +131,6 @@ class InputMethodUtil {
   // changed, so that the internal maps of this library is reloaded.
   void OnLocaleChanged();
 
-  // Sets an input method ID of the hardware keyboard for testing.
-  void SetHardwareInputMethodIdForTesting(const std::string& input_method_id);
-
   // Returns true if the given input method id is supported.
   bool IsValidInputMethodId(const std::string& input_method_id) const;
 
@@ -146,7 +145,7 @@ class InputMethodUtil {
   // internally.
   // Examples: "fi"    => "Finnish"
   //           "en-US" => "English (United States)"
-  static string16 GetLanguageDisplayNameFromCode(
+  string16 GetLanguageDisplayNameFromCode(
       const std::string& language_code);
 
   // Converts a language code to a language native display name.
@@ -175,7 +174,7 @@ class InputMethodUtil {
   // Sorts the given language codes by their corresponding language names, using
   // the unicode string comparator. Uses unstable sorting. protected: for unit
   // testing as well.
-  static void SortLanguageCodesByNames(
+  void SortLanguageCodesByNames(
       std::vector<std::string>* language_codes);
 
   // All input methods that are supported, including ones not active.
@@ -202,7 +201,9 @@ class InputMethodUtil {
   typedef base::hash_map<std::string, int> HashType;
   HashType english_to_resource_id_;
 
-  std::string hardware_input_method_id_for_testing_;
+  InputMethodDelegate* delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(InputMethodUtil);
 };
 
 }  // namespace input_method
