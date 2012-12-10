@@ -940,32 +940,6 @@ class AndroidMkWriter(object):
     return path
 
 
-def WriteAutoRegenerationRule(params, root_makefile, makefile_name,
-                              build_files):
-  """Write the target to regenerate the Makefile."""
-  options = params['options']
-  # Sort to avoid non-functional changes to makefile.
-  build_files = sorted([os.path.join('$(LOCAL_PATH)', f) for f in build_files])
-  build_files_args = [gyp.common.RelativePath(filename, options.toplevel_dir)
-                      for filename in params['build_files_arg']]
-  build_files_args = [os.path.join('$(PRIVATE_LOCAL_PATH)', f)
-                      for f in build_files_args]
-  gyp_binary = gyp.common.FixIfRelativePath(params['gyp_binary'],
-                                            options.toplevel_dir)
-  makefile_path = os.path.join('$(LOCAL_PATH)', makefile_name)
-  if not gyp_binary.startswith(os.sep):
-    gyp_binary = os.path.join('.', gyp_binary)
-  root_makefile.write('GYP_FILES := \\\n  %s\n\n' %
-                      '\\\n  '.join(map(Sourceify, build_files)))
-  root_makefile.write('%s: PRIVATE_LOCAL_PATH := $(LOCAL_PATH)\n' %
-                      makefile_path)
-  root_makefile.write('%s: $(GYP_FILES)\n' % makefile_path)
-  root_makefile.write('\techo ACTION Regenerating $@\n\t%s\n\n' %
-      gyp.common.EncodePOSIXShellList([gyp_binary, '-fandroid'] +
-                                      gyp.RegenerateFlags(options) +
-                                      build_files_args))
-
-
 def GenerateOutput(target_list, target_dicts, data, params):
   options = params['options']
   generator_flags = params.get('generator_flags', {})
@@ -1083,9 +1057,6 @@ def GenerateOutput(target_list, target_dicts, data, params):
   for include_file in sorted(include_list):
     root_makefile.write('include $(LOCAL_PATH)/' + include_file + '\n')
   root_makefile.write('\n')
-
-  if generator_flags.get('auto_regeneration', True):
-    WriteAutoRegenerationRule(params, root_makefile, makefile_name, build_files)
 
   root_makefile.write(SHARED_FOOTER)
 
