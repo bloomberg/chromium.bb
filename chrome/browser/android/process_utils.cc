@@ -33,11 +33,12 @@ void CloseIdleConnectionsForProfile(
   }
 
   net::URLRequestContext* context = context_getter->GetURLRequestContext();
-  DCHECK(context->http_transaction_factory());
+  if (!context)
+    return;
   net::HttpNetworkSession* session =
       context->http_transaction_factory()->GetSession();
-  DCHECK(session);
-  session->CloseIdleConnections();
+  if (session)
+    session->CloseIdleConnections();
 }
 
 // Only accessed from the JNI thread by ToggleWebKitSharedTimers() which is
