@@ -56,6 +56,9 @@ void DesktopStackingClient::CreateNULLParent() {
 
   capture_client_.reset(
       new aura::client::DefaultCaptureClient(null_parent_.get()));
+
+  // Hide the window so we don't attempt to draw to it and what not.
+  null_parent_->Hide();
 }
 
 }  // namespace views
