@@ -6,17 +6,31 @@
 
 #include <string>
 
+#include "base/command_line.h"
+#include "base/file_path.h"
 #include "base/logging.h"
+#include "remoting/host/config_file_watcher.h"
+#include "remoting/host/json_host_config.h"
 
 namespace remoting {
 
 bool GetUsageStatsConsent(bool* allowed, bool* set_by_policy) {
   *set_by_policy = false;
-
-  // For now, leave Breakpad disabled.
-  // TODO(lambroslambrou): Enable it for users who have given consent.
   *allowed = false;
-  return true;
+
+  // Normally, the ConfigFileWatcher class would be used for retrieving config
+  // settings, but this code needs to execute before Breakpad is initialised,
+  // which itself should happen as early as possible during startup.
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(kHostConfigSwitchName)) {
+    FilePath config_file_path =
+        command_line->GetSwitchValuePath(kHostConfigSwitchName);
+    JsonHostConfig host_config(config_file_path);
+    if (host_config.Read()) {
+      return host_config.GetBoolean(kUsageStatsConsentConfigPath, allowed);
+    }
+  }
+  return false;
 }
 
 bool IsUsageStatsAllowed() {

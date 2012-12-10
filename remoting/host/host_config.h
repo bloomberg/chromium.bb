@@ -36,6 +36,8 @@ extern const char kHostNameConfigPath[];
 extern const char kHostSecretHashConfigPath[];
 // Private keys used for host authentication.
 extern const char kPrivateKeyConfigPath[];
+// Whether consent is given for usage stats reporting.
+extern const char kUsageStatsConsentConfigPath[];
 
 // HostConfig interace provides read-only access to host configuration.
 class HostConfig {

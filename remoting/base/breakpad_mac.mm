@@ -56,8 +56,7 @@ void InitializeCrashReporting() {
                         forKey:@BREAKPAD_REPORT_INTERVAL];
   }
   if (![breakpad_config objectForKey:@BREAKPAD_URL]) {
-    // TODO(lambroslambrou): Use the production URL once permission is granted.
-    [breakpad_config setObject:@"https://clients2.google.com/cr/staging_report"
+    [breakpad_config setObject:@"https://clients2.google.com/cr/report"
                         forKey:@BREAKPAD_URL];
   }
 
