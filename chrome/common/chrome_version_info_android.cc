@@ -30,7 +30,7 @@ VersionInfo::Channel VersionInfo::GetChannel() {
 
   if (!strcmp(bi->package_name(), "com.android.chrome"))
     return CHANNEL_STABLE;
-  if (!strcmp(bi->package_name(), "com.google.android.apps.chrome_beta"))
+  if (!strcmp(bi->package_name(), "com.chrome.beta"))
     return CHANNEL_BETA;
   if (!strcmp(bi->package_name(), "com.google.android.apps.chrome_dev"))
     return CHANNEL_DEV;
