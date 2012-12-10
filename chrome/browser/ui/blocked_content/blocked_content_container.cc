@@ -54,7 +54,10 @@ void BlockedContentContainer::AddWebContents(content::WebContents* web_contents,
   blocked_contents_.push_back(
       BlockedContent(web_contents, disposition, bounds, user_gesture));
   web_contents->SetDelegate(this);
+
+  BlockedContentTabHelper::CreateForWebContents(web_contents);
   BlockedContentTabHelper::FromWebContents(web_contents)->set_delegate(this);
+
   // Since the new web_contents will not be shown, call WasHidden to change
   // its status on both RenderViewHost and RenderView.
   web_contents->WasHidden();
