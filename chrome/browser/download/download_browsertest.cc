@@ -21,6 +21,7 @@
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_history.h"
+#include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_service.h"
@@ -161,7 +162,7 @@ bool WasAutoOpened(DownloadItem* item) {
 
 // Called when a download starts. Marks the download as hidden.
 void SetHiddenDownloadCallback(DownloadItem* item, net::Error error) {
-  download_util::SetShouldShowInShelf(item, false);
+  DownloadItemModel(item).SetShouldShowInShelf(false);
 }
 
 }  // namespace

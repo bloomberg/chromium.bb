@@ -198,12 +198,6 @@ void RecordDownloadCount(ChromeDownloadCountTypes type);
 // Record initiation of a download from a specific source.
 void RecordDownloadSource(ChromeDownloadSource source);
 
-// Check whether a download should be displayed in the download shelf.
-bool ShouldShowInShelf(content::DownloadItem* item);
-
-// Set whether a download should be displayed in the download shelf.
-void SetShouldShowInShelf(content::DownloadItem* item, bool should_show);
-
 }  // namespace download_util
 
 #endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_UTIL_H_

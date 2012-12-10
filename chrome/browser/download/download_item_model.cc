@@ -7,9 +7,10 @@
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/rtl.h"
 #include "base/string16.h"
+#include "base/supports_user_data.h"
 #include "base/sys_string_conversions.h"
-#include "base/utf_string_conversions.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/common/time_format.h"
 #include "content/public/browser/download_danger_type.h"
@@ -25,6 +26,60 @@ using base::TimeDelta;
 using content::DownloadItem;
 
 namespace {
+
+// Per DownloadItem data used by DownloadItemModel. The model doesn't keep any
+// state since there could be multiple models associated with a single
+// DownloadItem, and the lifetime of the model is shorter than the DownloadItem.
+class DownloadItemModelData : public base::SupportsUserData::Data {
+ public:
+  // Get the DownloadItemModelData object for |download|. Returns NULL if
+  // there's no model data.
+  static const DownloadItemModelData* Get(const DownloadItem* download);
+
+  // Get the DownloadItemModelData object for |download|. Creates a model data
+  // object if not found. Always returns a non-NULL pointer, unless OOM.
+  static DownloadItemModelData* GetOrCreate(DownloadItem* download);
+
+  bool should_show_in_shelf() const { return should_show_in_shelf_; }
+  void set_should_show_in_shelf(bool should_show_in_shelf) {
+    should_show_in_shelf_ = should_show_in_shelf;
+  }
+
+ private:
+  DownloadItemModelData();
+  virtual ~DownloadItemModelData() {}
+
+  static const char kKey[];
+
+  // Whether the download should be displayed in the download shelf. True by
+  // default.
+  bool should_show_in_shelf_;
+};
+
+// static
+const char DownloadItemModelData::kKey[] = "DownloadItemModelData key";
+
+// static
+const DownloadItemModelData* DownloadItemModelData::Get(
+    const DownloadItem* download) {
+  return static_cast<const DownloadItemModelData*>(download->GetUserData(kKey));
+}
+
+// static
+DownloadItemModelData* DownloadItemModelData::GetOrCreate(
+    DownloadItem* download) {
+  DownloadItemModelData* data =
+      static_cast<DownloadItemModelData*>(download->GetUserData(kKey));
+  if (data == NULL) {
+    data = new DownloadItemModelData();
+    download->SetUserData(kKey, data);
+  }
+  return data;
+}
+
+DownloadItemModelData::DownloadItemModelData()
+    : should_show_in_shelf_(true) {
+}
 
 string16 InterruptReasonStatusMessage(int reason) {
   int string_id = 0;
@@ -167,6 +222,15 @@ void DownloadItemModel::CancelTask() {
   download_->Cancel(true /* update history service */);
 }
 
+string16 DownloadItemModel::GetInterruptReasonText() const {
+  if (download_->GetState() != DownloadItem::INTERRUPTED ||
+      download_->GetLastReason() ==
+      content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED) {
+    return string16();
+  }
+  return InterruptReasonMessage(download_->GetLastReason());
+}
+
 string16 DownloadItemModel::GetStatusText() const {
   string16 status_text;
   switch (download_->GetState()) {
@@ -203,15 +267,6 @@ string16 DownloadItemModel::GetStatusText() const {
   return status_text;
 }
 
-string16 DownloadItemModel::GetInterruptReasonText() const {
-  if (download_->GetState() != DownloadItem::INTERRUPTED ||
-      download_->GetLastReason() ==
-      content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED) {
-    return string16();
-  }
-  return InterruptReasonMessage(download_->GetLastReason());
-}
-
 string16 DownloadItemModel::GetTooltipText(const gfx::Font& font,
                                            int max_width) const {
   string16 tooltip = ui::ElideFilename(
@@ -224,13 +279,6 @@ string16 DownloadItemModel::GetTooltipText(const gfx::Font& font,
                              font, max_width, ui::ELIDE_AT_END);
   }
   return tooltip;
-}
-
-// TODO(asanka,rdsmith): Once 'open' moves exclusively to the
-//     ChromeDownloadManagerDelegate, we should calculate the percentage here
-//     instead of calling into the DownloadItem.
-int DownloadItemModel::PercentComplete() const {
-  return download_->PercentComplete();
 }
 
 string16 DownloadItemModel::GetWarningText(const gfx::Font& font,
@@ -284,6 +332,26 @@ string16 DownloadItemModel::GetWarningConfirmButtonText() const {
   }
 }
 
+int64 DownloadItemModel::GetCompletedBytes() const {
+  return download_->GetReceivedBytes();
+}
+
+int64 DownloadItemModel::GetTotalBytes() const {
+  return download_->AllDataSaved() ? download_->GetReceivedBytes() :
+                                     download_->GetTotalBytes();
+}
+
+// TODO(asanka,rdsmith): Once 'open' moves exclusively to the
+//     ChromeDownloadManagerDelegate, we should calculate the percentage here
+//     instead of calling into the DownloadItem.
+int DownloadItemModel::PercentComplete() const {
+  return download_->PercentComplete();
+}
+
+bool DownloadItemModel::IsDangerous() const {
+  return download_->GetSafetyState() == DownloadItem::DANGEROUS;
+}
+
 bool DownloadItemModel::IsMalicious() const {
   if (!IsDangerous())
     return false;
@@ -306,17 +374,14 @@ bool DownloadItemModel::IsMalicious() const {
   return false;
 }
 
-bool DownloadItemModel::IsDangerous() const {
-  return download_->GetSafetyState() == DownloadItem::DANGEROUS;
+bool DownloadItemModel::ShouldShowInShelf() const {
+  const DownloadItemModelData* data = DownloadItemModelData::Get(download_);
+  return !data || data->should_show_in_shelf();
 }
 
-int64 DownloadItemModel::GetTotalBytes() const {
-  return download_->AllDataSaved() ? download_->GetReceivedBytes() :
-                                     download_->GetTotalBytes();
-}
-
-int64 DownloadItemModel::GetCompletedBytes() const {
-  return download_->GetReceivedBytes();
+void DownloadItemModel::SetShouldShowInShelf(bool should_show) {
+  DownloadItemModelData* data = DownloadItemModelData::GetOrCreate(download_);
+  data->set_should_show_in_shelf(should_show);
 }
 
 string16 DownloadItemModel::GetProgressSizesString() const {

@@ -33,17 +33,17 @@ class DownloadItemModel {
   // Constructs a DownloadItemModel. The caller must ensure that |download|
   // outlives this object.
   explicit DownloadItemModel(content::DownloadItem* download);
-  virtual ~DownloadItemModel();
+  ~DownloadItemModel();
 
   // Cancel the task corresponding to the item.
   void CancelTask();
 
-  // Returns a short one-line status string for the download.
-  string16 GetStatusText() const;
-
   // Returns a long descriptive string for a download that's in the INTERRUPTED
   // state. For other downloads, the returned string will be empty.
   string16 GetInterruptReasonText() const;
+
+  // Returns a short one-line status string for the download.
+  string16 GetStatusText() const;
 
   // Returns a string suitable for use as a tooltip. For a regular download, the
   // tooltip is the filename. For an interrupted download, the string states the
@@ -56,9 +56,6 @@ class DownloadItemModel {
   // |max_width|. The tooltip will be at most 2 lines.
   string16 GetTooltipText(const gfx::Font& font, int max_width) const;
 
-  // Rough percent complete. Returns -1 if the progress is unknown.
-  int PercentComplete() const;
-
   // Get the warning text to display for a dangerous download. The |base_width|
   // is the maximum width of an embedded filename (if there is one). The metrics
   // for the filename will be based on |font|. Should only be called if
@@ -69,18 +66,29 @@ class DownloadItemModel {
   // warning.
   string16 GetWarningConfirmButtonText() const;
 
-  // Is this considered a malicious download? Implies IsDangerous().
-  bool IsMalicious() const;
+  // Get the number of bytes that has completed so far. Virtual for testing.
+  int64 GetCompletedBytes() const;
+
+  // Get the total number of bytes for this download. Should return 0 if the
+  // total size of the download is not known. Virual for testing.
+  int64 GetTotalBytes() const;
+
+  // Rough percent complete. Returns -1 if the progress is unknown.
+  int PercentComplete() const;
 
   // Is this considered a dangerous download?
   bool IsDangerous() const;
 
-  // Get the total number of bytes for this download. Should return 0 if the
-  // total size of the download is not known. Virual for testing.
-  virtual int64 GetTotalBytes() const;
+  // Is this considered a malicious download? Implies IsDangerous().
+  bool IsMalicious() const;
 
-  // Get the number of bytes that has completed so far. Virtual for testing.
-  virtual int64 GetCompletedBytes() const;
+  // Returns |true| if this download should be displayed in the downloads shelf.
+  bool ShouldShowInShelf() const;
+
+  // Change whether the download should be displayed on the downloads
+  // shelf. Setting this is only effective if the download hasn't already been
+  // displayed in the shelf.
+  void SetShouldShowInShelf(bool should_show);
 
   content::DownloadItem* download() { return download_; }
 

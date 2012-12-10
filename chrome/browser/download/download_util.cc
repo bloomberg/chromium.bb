@@ -75,21 +75,6 @@
 
 namespace {
 
-// Key used to attach ShowInShelfData to a DownloadItem.
-const char kShowInShelfKey[] = "chrome.download_util.show_in_shelf";
-
-// Class that tracks the "show in download shelf" setting for a download item.
-class ShowInShelfData : public base::SupportsUserData::Data {
- public:
-  explicit ShowInShelfData(bool should_show) : should_show_(should_show) {
-  }
-
-  bool should_show() const { return should_show_; }
-
- private:
-  const bool should_show_;
-};
-
 // Get the opacity based on |animation_progress|, with values in [0.0, 1.0].
 // Range of return value is [0, 255].
 int GetOpacity(double animation_progress) {
@@ -514,16 +499,6 @@ void RecordDownloadCount(ChromeDownloadCountTypes type) {
 void RecordDownloadSource(ChromeDownloadSource source) {
   UMA_HISTOGRAM_ENUMERATION(
       "Download.SourcesChrome", source, CHROME_DOWNLOAD_SOURCE_LAST_ENTRY);
-}
-
-bool ShouldShowInShelf(content::DownloadItem* item) {
-  ShowInShelfData* data =
-      static_cast<ShowInShelfData*>(item->GetUserData(kShowInShelfKey));
-  return !data || data->should_show();
-}
-
-void SetShouldShowInShelf(content::DownloadItem* item, bool should_show) {
-  item->SetUserData(kShowInShelfKey, new ShowInShelfData(should_show));
 }
 
 }  // namespace download_util

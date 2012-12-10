@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/download/download_util.h"
+#include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/platform_app_launcher.h"
@@ -476,7 +476,7 @@ void WebIntentPickerController::OnClosing() {
 void WebIntentPickerController::OnExtensionDownloadStarted(
     const std::string& id,
     content::DownloadItem* item) {
-  download_util::SetShouldShowInShelf(item, false);
+  DownloadItemModel(item).SetShouldShowInShelf(false);
   download_id_ = item->GetGlobalId();
   picker_model_->UpdateExtensionDownloadState(item);
 }

@@ -41,20 +41,20 @@ char kInterruptReasonCounter[] = {
 };
 const size_t kInterruptReasonCount = ARRAYSIZE_UNSAFE(kInterruptReasonCounter);
 
-// DownloadItemModel with mocks several methods.
-class TestDownloadItemModel : public DownloadItemModel {
- public:
-  explicit TestDownloadItemModel(content::DownloadItem* download)
-      : DownloadItemModel(download) {
-  }
+// Default target path for a mock download item in DownloadItemModelTest.
+const FilePath::CharType kDefaultTargetFilePath[] =
+    FILE_PATH_LITERAL("/foo/bar/foo.bar");
 
-  MOCK_CONST_METHOD0(GetTotalBytes, int64());
-  MOCK_CONST_METHOD0(GetCompletedBytes, int64());
-};
+const FilePath::CharType kDefaultDisplayFileName[] =
+    FILE_PATH_LITERAL("foo.bar");
+
+// Default URL for a mock download item in DownloadItemModelTest.
+const char kDefaultURL[] = "http://example.com/foo.bar";
 
 class DownloadItemModelTest : public testing::Test {
  public:
-  DownloadItemModelTest() {}
+  DownloadItemModelTest()
+      : model_(&item_) {}
 
   virtual ~DownloadItemModelTest() {
   }
@@ -74,20 +74,15 @@ class DownloadItemModelTest : public testing::Test {
     ON_CALL(item_, GetState())
         .WillByDefault(Return(content::DownloadItem::IN_PROGRESS));
     ON_CALL(item_, GetURL())
-        .WillByDefault(ReturnRefOfCopy(GURL("http://example.com/foo.bar")));
+        .WillByDefault(ReturnRefOfCopy(GURL(kDefaultURL)));
     ON_CALL(item_, GetFileNameToReportUser())
-        .WillByDefault(Return(FilePath(FILE_PATH_LITERAL("foo.bar"))));
+        .WillByDefault(Return(FilePath(kDefaultDisplayFileName)));
+    ON_CALL(item_, GetTargetFilePath())
+        .WillByDefault(ReturnRefOfCopy(FilePath(kDefaultTargetFilePath)));
     ON_CALL(item_, GetTargetDisposition())
         .WillByDefault(
             Return(content::DownloadItem::TARGET_DISPOSITION_OVERWRITE));
     ON_CALL(item_, IsPaused()).WillByDefault(Return(false));
-
-    // Setup the model:
-    model_.reset(new NiceMock<TestDownloadItemModel>(&item_));
-    ON_CALL(*model_.get(), GetTotalBytes())
-        .WillByDefault(Return(2));
-    ON_CALL(*model_.get(), GetCompletedBytes())
-        .WillByDefault(Return(1));
   }
 
   void SetupInterruptedDownloadItem(content::DownloadInterruptReason reason) {
@@ -106,14 +101,13 @@ class DownloadItemModelTest : public testing::Test {
     return item_;
   }
 
-  TestDownloadItemModel& model() {
-    return *model_;
+  DownloadItemModel& model() {
+    return model_;
   }
 
  private:
-  scoped_ptr<TestDownloadItemModel> model_;
-
   NiceMock<content::MockDownloadItem> item_;
+  DownloadItemModel model_;
 };
 
 }  // namespace
@@ -328,9 +322,9 @@ TEST_F(DownloadItemModelTest, InProgressStatus) {
     TestCase& test_case = kTestCases[i];
     Mock::VerifyAndClearExpectations(&item());
     Mock::VerifyAndClearExpectations(&model());
-    EXPECT_CALL(model(), GetCompletedBytes())
+    EXPECT_CALL(item(), GetReceivedBytes())
         .WillRepeatedly(Return(test_case.received_bytes));
-    EXPECT_CALL(model(), GetTotalBytes())
+    EXPECT_CALL(item(), GetTotalBytes())
         .WillRepeatedly(Return(test_case.total_bytes));
     EXPECT_CALL(item(), TimeRemaining(_))
         .WillRepeatedly(testing::DoAll(
@@ -344,4 +338,18 @@ TEST_F(DownloadItemModelTest, InProgressStatus) {
     EXPECT_STREQ(test_case.expected_status,
                  UTF16ToUTF8(model().GetStatusText()).c_str());
   }
+}
+
+TEST_F(DownloadItemModelTest, ShouldShowInShelf) {
+  SetupDownloadItemDefaults();
+
+  // By default the download item should be displayable on the shelf.
+  EXPECT_TRUE(model().ShouldShowInShelf());
+
+  // Once explicitly set, ShouldShowInShelf() should return the explicit value.
+  model().SetShouldShowInShelf(false);
+  EXPECT_FALSE(model().ShouldShowInShelf());
+
+  model().SetShouldShowInShelf(true);
+  EXPECT_TRUE(model().ShouldShowInShelf());
 }
