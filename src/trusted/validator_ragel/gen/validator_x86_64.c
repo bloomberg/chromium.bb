@@ -2246,11 +2246,11 @@ tr0:
     SET_MODRM_SCALE(0);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	{
-    process_0_operands(&restricted_register, &instruction_info_collected);
+    Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -2283,8 +2283,8 @@ tr7:
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -2322,11 +2322,11 @@ tr8:
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	{
-    process_0_operands(&restricted_register, &instruction_info_collected);
+    Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -2358,11 +2358,11 @@ tr13:
     SET_DISP_PTR(current_position - 3);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	{
-    process_0_operands(&restricted_register, &instruction_info_collected);
+    Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -2394,11 +2394,11 @@ tr14:
     SET_DISP_PTR(current_position);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	{
-    process_0_operands(&restricted_register, &instruction_info_collected);
+    Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -2431,9 +2431,9 @@ tr17:
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    process_1_operand_zero_extends(&restricted_register,
-                                   &instruction_info_collected, rex_prefix,
-                                   operand_states);
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -2474,12 +2474,12 @@ tr18:
     SET_MODRM_SCALE(0);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -2512,8 +2512,8 @@ tr25:
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -2551,12 +2551,12 @@ tr26:
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -2588,12 +2588,12 @@ tr31:
     SET_DISP_PTR(current_position - 3);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -2625,12 +2625,12 @@ tr32:
     SET_DISP_PTR(current_position);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -2671,13 +2671,13 @@ tr35:
     SET_MODRM_SCALE(0);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	{
-    process_1_operand_zero_extends(&restricted_register,
-                                   &instruction_info_collected, rex_prefix,
-                                   operand_states);
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -2710,9 +2710,9 @@ tr42:
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    process_1_operand_zero_extends(&restricted_register,
-                                   &instruction_info_collected, rex_prefix,
-                                   operand_states);
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -2750,13 +2750,13 @@ tr43:
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	{
-    process_1_operand_zero_extends(&restricted_register,
-                                   &instruction_info_collected, rex_prefix,
-                                   operand_states);
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -2788,13 +2788,13 @@ tr48:
     SET_DISP_PTR(current_position - 3);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	{
-    process_1_operand_zero_extends(&restricted_register,
-                                   &instruction_info_collected, rex_prefix,
-                                   operand_states);
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -2826,13 +2826,13 @@ tr49:
     SET_DISP_PTR(current_position);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	{
-    process_1_operand_zero_extends(&restricted_register,
-                                   &instruction_info_collected, rex_prefix,
-                                   operand_states);
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -2864,8 +2864,8 @@ tr52:
     SET_IMM_PTR(current_position);
   }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -2897,9 +2897,9 @@ tr56:
     SET_IMM_PTR(current_position - 3);
   }
 	{
-    process_1_operand_zero_extends(&restricted_register,
-                                   &instruction_info_collected, rex_prefix,
-                                   operand_states);
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -2927,7 +2927,7 @@ tr56:
 	goto st891;
 tr59:
 	{
-    process_0_operands(&restricted_register, &instruction_info_collected);
+    Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -2956,7 +2956,7 @@ tr59:
 tr61:
 	{ SET_CPU_FEATURE(CPUFeature_3DNOW);     }
 	{
-    process_0_operands(&restricted_register, &instruction_info_collected);
+    Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -2985,7 +2985,7 @@ tr61:
 tr69:
 	{ SET_CPU_FEATURE(CPUFeature_TSC);       }
 	{
-    process_0_operands(&restricted_register, &instruction_info_collected);
+    Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -3014,7 +3014,7 @@ tr69:
 tr78:
 	{ SET_CPU_FEATURE(CPUFeature_MMX);       }
 	{
-    process_0_operands(&restricted_register, &instruction_info_collected);
+    Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -3048,8 +3048,8 @@ tr96:
   }
 	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -3080,8 +3080,8 @@ tr100:
 	{  SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	{ SET_OPERAND_NAME(0, REG_RDX); }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -3112,8 +3112,8 @@ tr101:
 	{  SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	{ SET_OPERAND_NAME(0, REG_RCX); }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -3142,7 +3142,7 @@ tr101:
 tr102:
 	{ SET_CPU_FEATURE(CPUFeature_FXSR);      }
 	{
-    process_0_operands(&restricted_register, &instruction_info_collected);
+    Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -3179,7 +3179,7 @@ tr103:
     SET_MODRM_SCALE(0);
   }
 	{
-    process_0_operands(&restricted_register, &instruction_info_collected);
+    Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -3217,7 +3217,7 @@ tr110:
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
-    process_0_operands(&restricted_register, &instruction_info_collected);
+    Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -3249,7 +3249,7 @@ tr115:
     SET_DISP_PTR(current_position - 3);
   }
 	{
-    process_0_operands(&restricted_register, &instruction_info_collected);
+    Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -3281,7 +3281,7 @@ tr116:
     SET_DISP_PTR(current_position);
   }
 	{
-    process_0_operands(&restricted_register, &instruction_info_collected);
+    Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -3313,7 +3313,7 @@ tr127:
   }
 	{ SET_CPU_FEATURE(CPUFeature_E3DNOW);    }
 	{
-    process_0_operands(&restricted_register, &instruction_info_collected);
+    Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -3345,7 +3345,7 @@ tr128:
   }
 	{ SET_CPU_FEATURE(CPUFeature_3DNOW);     }
 	{
-    process_0_operands(&restricted_register, &instruction_info_collected);
+    Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -3382,11 +3382,11 @@ tr138:
     SET_MODRM_SCALE(0);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	{
-    process_0_operands(&restricted_register, &instruction_info_collected);
+    Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -3415,7 +3415,7 @@ tr138:
 tr145:
 	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	{
-    process_0_operands(&restricted_register, &instruction_info_collected);
+    Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -3452,7 +3452,7 @@ tr146:
     SET_MODRM_SCALE(0);
   }
 	{
-    process_0_operands(&restricted_register, &instruction_info_collected);
+    Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -3488,7 +3488,7 @@ tr153:
     SET_MODRM_SCALE(0);
   }
 	{
-    process_0_operands(&restricted_register, &instruction_info_collected);
+    Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -3520,7 +3520,7 @@ tr172:
     SET_IMM_PTR(current_position);
   }
 	{
-    process_0_operands(&restricted_register, &instruction_info_collected);
+    Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -3548,11 +3548,11 @@ tr172:
 	goto st891;
 tr186:
 	{
-    rel32_operand(current_position + 1, data, jump_dests, size,
-                  &instruction_info_collected);
+    Rel32Operand(current_position + 1, data, jump_dests, size,
+                 &instruction_info_collected);
   }
 	{
-    process_0_operands(&restricted_register, &instruction_info_collected);
+    Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -3589,11 +3589,11 @@ tr188:
     SET_MODRM_SCALE(0);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	{
-    process_0_operands(&restricted_register, &instruction_info_collected);
+    Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -3630,11 +3630,11 @@ tr191:
     SET_MODRM_SCALE(0);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	{
-    process_0_operands(&restricted_register, &instruction_info_collected);
+    Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -3663,7 +3663,7 @@ tr191:
 tr202:
 	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
 	{
-    process_0_operands(&restricted_register, &instruction_info_collected);
+    Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -3692,7 +3692,7 @@ tr202:
 tr203:
 	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE);   }
 	{
-    process_0_operands(&restricted_register, &instruction_info_collected);
+    Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -3730,8 +3730,8 @@ tr204:
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    process_2_operands(&restricted_register, &instruction_info_collected,
-                       rex_prefix, operand_states);
+    Process2Operands(&restricted_register, &instruction_info_collected,
+                     rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -3769,9 +3769,9 @@ tr206:
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    process_2_operands_zero_extends(&restricted_register,
-                                    &instruction_info_collected, rex_prefix,
-                                    operand_states);
+    Process2OperandsZeroExtends(&restricted_register,
+                                &instruction_info_collected, rex_prefix,
+                                operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -3808,11 +3808,11 @@ tr216:
     SET_MODRM_SCALE(0);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	{
-    process_0_operands(&restricted_register, &instruction_info_collected);
+    Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -3844,8 +3844,8 @@ tr226:
     SET_IMM_PTR(current_position - 3);
   }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -3873,11 +3873,11 @@ tr226:
 	goto st891;
 tr230:
 	{
-    rel8_operand(current_position + 1, data, jump_dests, size,
-                 &instruction_info_collected);
+    Rel8Operand(current_position + 1, data, jump_dests, size,
+                &instruction_info_collected);
   }
 	{
-    process_0_operands(&restricted_register, &instruction_info_collected);
+    Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -3909,7 +3909,7 @@ tr234:
     SET_IMM_PTR(current_position - 3);
   }
 	{
-    process_0_operands(&restricted_register, &instruction_info_collected);
+    Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -3943,8 +3943,8 @@ tr244:
   }
 	{  SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -3972,7 +3972,7 @@ tr244:
 	goto st891;
 tr256:
 	{
-    process_0_operands(&restricted_register, &instruction_info_collected);
+    Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
     SET_OPERAND_NAME(0, RegFromOpcode(*current_position) |
@@ -3983,9 +3983,9 @@ tr256:
 	{ SET_OPERAND_TYPE(1, OPERAND_TYPE_32_BIT); }
 	{ SET_OPERAND_NAME(1, REG_RAX); }
 	{
-    process_2_operands_zero_extends(&restricted_register,
-                                    &instruction_info_collected, rex_prefix,
-                                    operand_states);
+    Process2OperandsZeroExtends(&restricted_register,
+                                &instruction_info_collected, rex_prefix,
+                                operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -4021,9 +4021,9 @@ tr257:
 	{ SET_OPERAND_TYPE(1, OPERAND_TYPE_32_BIT); }
 	{ SET_OPERAND_NAME(1, REG_RAX); }
 	{
-    process_2_operands_zero_extends(&restricted_register,
-                                    &instruction_info_collected, rex_prefix,
-                                    operand_states);
+    Process2OperandsZeroExtends(&restricted_register,
+                                &instruction_info_collected, rex_prefix,
+                                operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -4052,7 +4052,7 @@ tr257:
 tr258:
 	{ SET_CPU_FEATURE(CPUFeature_x87);       }
 	{
-    process_0_operands(&restricted_register, &instruction_info_collected);
+    Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -4084,9 +4084,9 @@ tr305:
     SET_IMM_PTR(current_position);
   }
 	{
-    process_1_operand_zero_extends(&restricted_register,
-                                   &instruction_info_collected, rex_prefix,
-                                   operand_states);
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -4127,9 +4127,9 @@ tr344:
     SET_MODRM_SCALE(0);
   }
 	{
-    process_1_operand_zero_extends(&restricted_register,
-                                   &instruction_info_collected, rex_prefix,
-                                   operand_states);
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -4167,9 +4167,9 @@ tr351:
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
-    process_1_operand_zero_extends(&restricted_register,
-                                   &instruction_info_collected, rex_prefix,
-                                   operand_states);
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -4201,9 +4201,9 @@ tr356:
     SET_DISP_PTR(current_position - 3);
   }
 	{
-    process_1_operand_zero_extends(&restricted_register,
-                                   &instruction_info_collected, rex_prefix,
-                                   operand_states);
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -4235,9 +4235,9 @@ tr357:
     SET_DISP_PTR(current_position);
   }
 	{
-    process_1_operand_zero_extends(&restricted_register,
-                                   &instruction_info_collected, rex_prefix,
-                                   operand_states);
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -4271,8 +4271,8 @@ tr360:
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -4306,8 +4306,8 @@ tr377:
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -4341,8 +4341,8 @@ tr378:
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -4379,11 +4379,11 @@ tr379:
     SET_MODRM_SCALE(0);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	{
-    process_0_operands(&restricted_register, &instruction_info_collected);
+    Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -4412,7 +4412,7 @@ tr379:
 tr386:
 	{ SET_CPU_FEATURE(CPUFeature_CMOVx87);   }
 	{
-    process_0_operands(&restricted_register, &instruction_info_collected);
+    Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -4443,8 +4443,8 @@ tr387:
 	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
 	{ SET_OPERAND_NAME(0, REG_RAX); }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -4472,11 +4472,11 @@ tr387:
 	goto st891;
 tr391:
 	{
-    rel32_operand(current_position + 1, data, jump_dests, size,
-                  &instruction_info_collected);
+    Rel32Operand(current_position + 1, data, jump_dests, size,
+                 &instruction_info_collected);
   }
 	{
-    process_0_operands(&restricted_register, &instruction_info_collected);
+    Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
       if (((current_position - data) & kBundleMask) != kBundleMask)
@@ -4514,9 +4514,9 @@ tr392:
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    process_1_operand_zero_extends(&restricted_register,
-                                   &instruction_info_collected, rex_prefix,
-                                   operand_states);
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -4552,8 +4552,8 @@ tr405:
 	{ SET_OPERAND_TYPE(1, OPERAND_TYPE_64_BIT); }
 	{ SET_OPERAND_NAME(1, REG_RAX); }
 	{
-    process_2_operands(&restricted_register, &instruction_info_collected,
-                       rex_prefix, operand_states);
+    Process2Operands(&restricted_register, &instruction_info_collected,
+                     rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -4587,8 +4587,8 @@ tr420:
   }
 	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -4625,11 +4625,11 @@ tr424:
     SET_MODRM_SCALE(0);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	{
-    process_0_operands(&restricted_register, &instruction_info_collected);
+    Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -4657,7 +4657,7 @@ tr424:
 	goto st891;
 tr466:
 	{
-    process_0_operands(&restricted_register, &instruction_info_collected);
+    Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
        instruction_info_collected |= SPECIAL_INSTRUCTION;
@@ -4701,8 +4701,8 @@ tr467:
     SET_MODRM_SCALE(0);
   }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -4740,8 +4740,8 @@ tr474:
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -4773,8 +4773,8 @@ tr479:
     SET_DISP_PTR(current_position - 3);
   }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -4806,8 +4806,8 @@ tr480:
     SET_DISP_PTR(current_position);
   }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -4839,8 +4839,8 @@ tr490:
     SET_IMM_PTR(current_position - 7);
   }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -4874,8 +4874,8 @@ tr492:
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -5011,8 +5011,8 @@ tr544:
   }
 	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -5048,8 +5048,8 @@ tr555:
 	{ SET_OPERAND_TYPE(1, OPERAND_TYPE_16_BIT); }
 	{ SET_OPERAND_NAME(1, REG_RAX); }
 	{
-    process_2_operands(&restricted_register, &instruction_info_collected,
-                       rex_prefix, operand_states);
+    Process2Operands(&restricted_register, &instruction_info_collected,
+                     rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -5081,8 +5081,8 @@ tr565:
     SET_IMM_PTR(current_position - 1);
   }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -5113,7 +5113,7 @@ tr587:
     SET_DATA16_PREFIX(FALSE);
   }
 	{
-    process_0_operands(&restricted_register, &instruction_info_collected);
+    Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -5145,7 +5145,7 @@ tr626:
     SET_IMM_PTR(current_position - 1);
   }
 	{
-    process_0_operands(&restricted_register, &instruction_info_collected);
+    Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -5179,8 +5179,8 @@ tr662:
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -5347,7 +5347,7 @@ tr769:
     instruction_info_collected |= LAST_BYTE_IS_NOT_IMMEDIATE;
   }
 	{
-    process_0_operands(&restricted_register, &instruction_info_collected);
+    Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -5388,12 +5388,12 @@ tr877:
     SET_MODRM_SCALE(0);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -5426,8 +5426,8 @@ tr880:
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -5456,7 +5456,7 @@ tr880:
 tr882:
 	{ SET_CPU_FEATURE(CPUFeature_LWP);       }
 	{
-    process_0_operands(&restricted_register, &instruction_info_collected);
+    Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -5491,8 +5491,8 @@ tr883:
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -5533,12 +5533,12 @@ tr886:
     SET_MODRM_SCALE(0);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -5571,8 +5571,8 @@ tr889:
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -5607,8 +5607,8 @@ tr891:
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -5640,7 +5640,7 @@ tr996:
     SET_IMM_PTR(current_position);
   }
 	{
-    process_0_operands(&restricted_register, &instruction_info_collected);
+    Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -5677,11 +5677,11 @@ tr1084:
     SET_MODRM_SCALE(0);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	{
-    process_0_operands(&restricted_register, &instruction_info_collected);
+    Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -5710,7 +5710,7 @@ tr1084:
 tr1087:
 	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
 	{
-    process_0_operands(&restricted_register, &instruction_info_collected);
+    Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -5751,12 +5751,12 @@ tr1226:
     SET_MODRM_SCALE(0);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -5789,8 +5789,8 @@ tr1229:
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -5831,12 +5831,12 @@ tr1231:
     SET_MODRM_SCALE(0);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -5869,8 +5869,8 @@ tr1234:
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -5901,7 +5901,7 @@ tr1299:
     SET_REPZ_PREFIX(FALSE);
   }
 	{
-    process_0_operands(&restricted_register, &instruction_info_collected);
+    Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -7439,8 +7439,8 @@ tr455:
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st29;
 tr460:
@@ -7449,8 +7449,8 @@ tr460:
     SET_DISP_PTR(current_position - 3);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st29;
 tr461:
@@ -7459,8 +7459,8 @@ tr461:
     SET_DISP_PTR(current_position);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st29;
 tr187:
@@ -7508,8 +7508,8 @@ tr448:
     SET_MODRM_SCALE(0);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st29;
 tr315:
@@ -7604,8 +7604,8 @@ tr288:
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st30;
 tr293:
@@ -7614,8 +7614,8 @@ tr293:
     SET_DISP_PTR(current_position - 3);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st30;
 tr294:
@@ -7624,8 +7624,8 @@ tr294:
     SET_DISP_PTR(current_position);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st30;
 tr323:
@@ -7666,8 +7666,8 @@ tr280:
     SET_MODRM_SCALE(0);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st30;
 tr376:
@@ -7707,7 +7707,7 @@ tr57:
                                 UNRECOGNIZED_INSTRUCTION, callback_data);
         /*
          * Process the next bundle: “continue” here is for the “for” cycle in
-         * the ValidateChunkIA32 function.
+         * the ValidateChunkAMD64 function.
          *
          * It does not affect the case which we really care about (when code
          * is validatable), but makes it possible to detect more errors in one
@@ -7943,8 +7943,8 @@ tr119:
     SET_MODRM_SCALE(0);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st46;
 tr129:
@@ -7959,8 +7959,8 @@ tr129:
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st46;
 tr134:
@@ -7969,8 +7969,8 @@ tr134:
     SET_DISP_PTR(current_position - 3);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st46;
 tr135:
@@ -7979,8 +7979,8 @@ tr135:
     SET_DISP_PTR(current_position);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st46;
 st46:
@@ -8458,8 +8458,8 @@ tr164:
     SET_MODRM_SCALE(0);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st64;
 tr173:
@@ -8474,8 +8474,8 @@ tr173:
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st64;
 tr178:
@@ -8484,8 +8484,8 @@ tr178:
     SET_DISP_PTR(current_position - 3);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st64;
 tr179:
@@ -8494,8 +8494,8 @@ tr179:
     SET_DISP_PTR(current_position);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st64;
 tr207:
@@ -8509,8 +8509,8 @@ tr207:
     SET_MODRM_SCALE(0);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st64;
 tr361:
@@ -8526,8 +8526,8 @@ tr361:
     SET_MODRM_SCALE(0);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st64;
 tr613:
@@ -8556,8 +8556,8 @@ tr604:
     SET_MODRM_SCALE(0);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st64;
 tr615:
@@ -8574,8 +8574,8 @@ tr615:
     SET_MODRM_SCALE(0);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st64;
 tr622:
@@ -8598,8 +8598,8 @@ tr1093:
     SET_MODRM_SCALE(0);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st64;
 tr1290:
@@ -9209,8 +9209,8 @@ tr439:
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st88;
 tr444:
@@ -9219,8 +9219,8 @@ tr444:
     SET_DISP_PTR(current_position - 3);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st88;
 tr445:
@@ -9229,8 +9229,8 @@ tr445:
     SET_DISP_PTR(current_position);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st88;
 tr324:
@@ -9260,8 +9260,8 @@ tr431:
     SET_MODRM_SCALE(0);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st88;
 tr395:
@@ -9359,8 +9359,8 @@ tr316:
     SET_MODRM_SCALE(0);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st96;
 tr325:
@@ -9375,8 +9375,8 @@ tr325:
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st96;
 tr330:
@@ -9385,8 +9385,8 @@ tr330:
     SET_DISP_PTR(current_position - 3);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st96;
 tr331:
@@ -9395,8 +9395,8 @@ tr331:
     SET_DISP_PTR(current_position);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st96;
 tr369:
@@ -9412,8 +9412,8 @@ tr369:
     SET_MODRM_SCALE(0);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st96;
 tr899:
@@ -9430,8 +9430,8 @@ tr896:
     SET_MODRM_SCALE(0);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st96;
 st96:
@@ -9659,8 +9659,8 @@ tr306:
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st112;
 tr311:
@@ -9669,8 +9669,8 @@ tr311:
     SET_DISP_PTR(current_position - 3);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st112;
 tr312:
@@ -9679,8 +9679,8 @@ tr312:
     SET_DISP_PTR(current_position);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st112;
 tr334:
@@ -9706,8 +9706,8 @@ tr297:
     SET_MODRM_SCALE(0);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st112;
 st112:
@@ -10091,9 +10091,9 @@ tr336:
     SET_IMM_PTR(current_position);
   }
 	{
-    process_1_operand_zero_extends(&restricted_register,
-                                   &instruction_info_collected, rex_prefix,
-                                   operand_states);
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -10172,9 +10172,9 @@ tr341:
     SET_IMM_PTR(current_position);
   }
 	{
-    process_1_operand_zero_extends(&restricted_register,
-                                   &instruction_info_collected, rex_prefix,
-                                   operand_states);
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -10245,9 +10245,9 @@ tr342:
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    process_1_operand_zero_extends(&restricted_register,
-                                   &instruction_info_collected, rex_prefix,
-                                   operand_states);
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -10280,9 +10280,9 @@ tr512:
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    process_1_operand_zero_extends(&restricted_register,
-                                   &instruction_info_collected, rex_prefix,
-                                   operand_states);
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -11526,8 +11526,8 @@ tr502:
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -11598,9 +11598,9 @@ tr505:
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    process_1_operand_zero_extends(&restricted_register,
-                                   &instruction_info_collected, rex_prefix,
-                                   operand_states);
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -11633,9 +11633,9 @@ tr1363:
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    process_1_operand_zero_extends(&restricted_register,
-                                   &instruction_info_collected, rex_prefix,
-                                   operand_states);
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -11724,8 +11724,8 @@ tr508:
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -11833,9 +11833,9 @@ tr343:
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    process_1_operand_zero_extends(&restricted_register,
-                                   &instruction_info_collected, rex_prefix,
-                                   operand_states);
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -11868,9 +11868,9 @@ tr513:
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    process_1_operand_zero_extends(&restricted_register,
-                                   &instruction_info_collected, rex_prefix,
-                                   operand_states);
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -11959,8 +11959,8 @@ tr516:
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -12370,8 +12370,8 @@ tr636:
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st268;
 tr641:
@@ -12380,8 +12380,8 @@ tr641:
     SET_DISP_PTR(current_position - 3);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st268;
 tr642:
@@ -12390,8 +12390,8 @@ tr642:
     SET_DISP_PTR(current_position);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st268;
 tr628:
@@ -12409,8 +12409,8 @@ tr628:
     SET_MODRM_SCALE(0);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st268;
 tr538:
@@ -12671,8 +12671,8 @@ tr645:
     SET_MODRM_SCALE(0);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st289;
 tr653:
@@ -12687,8 +12687,8 @@ tr653:
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st289;
 tr658:
@@ -12697,8 +12697,8 @@ tr658:
     SET_DISP_PTR(current_position - 3);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st289;
 tr659:
@@ -12707,8 +12707,8 @@ tr659:
     SET_DISP_PTR(current_position);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st289;
 tr663:
@@ -12724,8 +12724,8 @@ tr663:
     SET_MODRM_SCALE(0);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st289;
 st289:
@@ -13467,9 +13467,9 @@ tr698:
     SET_IMM_PTR(current_position);
   }
 	{
-    process_1_operand_zero_extends(&restricted_register,
-                                   &instruction_info_collected, rex_prefix,
-                                   operand_states);
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -13537,8 +13537,8 @@ tr700:
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -13857,9 +13857,9 @@ tr712:
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    process_1_operand_zero_extends(&restricted_register,
-                                   &instruction_info_collected, rex_prefix,
-                                   operand_states);
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -13892,9 +13892,9 @@ tr724:
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    process_1_operand_zero_extends(&restricted_register,
-                                   &instruction_info_collected, rex_prefix,
-                                   operand_states);
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -13983,8 +13983,8 @@ tr716:
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -14055,9 +14055,9 @@ tr719:
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    process_1_operand_zero_extends(&restricted_register,
-                                   &instruction_info_collected, rex_prefix,
-                                   operand_states);
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -14090,9 +14090,9 @@ tr1339:
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    process_1_operand_zero_extends(&restricted_register,
-                                   &instruction_info_collected, rex_prefix,
-                                   operand_states);
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -14181,8 +14181,8 @@ tr722:
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -14262,9 +14262,9 @@ tr713:
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    process_1_operand_zero_extends(&restricted_register,
-                                   &instruction_info_collected, rex_prefix,
-                                   operand_states);
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -14297,9 +14297,9 @@ tr725:
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    process_1_operand_zero_extends(&restricted_register,
-                                   &instruction_info_collected, rex_prefix,
-                                   operand_states);
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -14388,8 +14388,8 @@ tr728:
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -14752,8 +14752,8 @@ tr810:
     SET_MODRM_SCALE(0);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st399;
 tr768:
@@ -14768,8 +14768,8 @@ tr768:
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st399;
 tr776:
@@ -14778,8 +14778,8 @@ tr776:
     SET_DISP_PTR(current_position - 3);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st399;
 tr771:
@@ -14788,8 +14788,8 @@ tr771:
     SET_DISP_PTR(current_position);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st399;
 st399:
@@ -17383,8 +17383,8 @@ tr1126:
     SET_MODRM_SCALE(0);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st564;
 tr995:
@@ -17399,8 +17399,8 @@ tr995:
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st564;
 tr1003:
@@ -17409,8 +17409,8 @@ tr1003:
     SET_DISP_PTR(current_position - 3);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st564;
 tr998:
@@ -17419,8 +17419,8 @@ tr998:
     SET_DISP_PTR(current_position);
   }
 	{
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 	goto st564;
 st564:
@@ -21849,9 +21849,9 @@ tr1341:
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    process_1_operand_zero_extends(&restricted_register,
-                                   &instruction_info_collected, rex_prefix,
-                                   operand_states);
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -21884,9 +21884,9 @@ tr1348:
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    process_1_operand_zero_extends(&restricted_register,
-                                   &instruction_info_collected, rex_prefix,
-                                   operand_states);
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -21975,8 +21975,8 @@ tr1344:
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -22191,8 +22191,8 @@ tr1351:
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -22641,9 +22641,9 @@ tr1365:
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    process_1_operand_zero_extends(&restricted_register,
-                                   &instruction_info_collected, rex_prefix,
-                                   operand_states);
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -22676,9 +22676,9 @@ tr1371:
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    process_1_operand_zero_extends(&restricted_register,
-                                   &instruction_info_collected, rex_prefix,
-                                   operand_states);
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -22767,8 +22767,8 @@ tr1368:
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -22983,8 +22983,8 @@ tr1375:
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -23098,8 +23098,8 @@ tr1380:
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -23227,8 +23227,8 @@ tr1386:
                         RegisterExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -23468,8 +23468,8 @@ tr1392:
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
 	{
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
 	{
        if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
@@ -25493,7 +25493,7 @@ case 890:
                                 UNRECOGNIZED_INSTRUCTION, callback_data);
         /*
          * Process the next bundle: “continue” here is for the “for” cycle in
-         * the ValidateChunkIA32 function.
+         * the ValidateChunkAMD64 function.
          *
          * It does not affect the case which we really care about (when code
          * is validatable), but makes it possible to detect more errors in one

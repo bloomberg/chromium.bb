@@ -57,8 +57,8 @@
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
   # rel8 actions are used in relative jumps with 8-bit offset.
   action rel8_operand {
-    rel8_operand(current_position + 1, data, jump_dests, size,
-                 &instruction_info_collected);
+    Rel8Operand(current_position + 1, data, jump_dests, size,
+                &instruction_info_collected);
   }
   # rel16 actions are used in relative jums with 16-bit offset.
   #
@@ -70,8 +70,8 @@
   }
   # rel32 actions are used in relative calls and jumps with 32-bit offset.
   action rel32_operand {
-    rel32_operand(current_position + 1, data, jump_dests, size,
-                  &instruction_info_collected);
+    Rel32Operand(current_position + 1, data, jump_dests, size,
+                 &instruction_info_collected);
   }
   include relative_fields_parsing
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";

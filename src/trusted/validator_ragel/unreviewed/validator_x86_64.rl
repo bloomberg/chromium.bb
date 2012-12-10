@@ -59,8 +59,8 @@
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
   # rel8 actions are used in relative jumps with 8-bit offset.
   action rel8_operand {
-    rel8_operand(current_position + 1, data, jump_dests, size,
-                 &instruction_info_collected);
+    Rel8Operand(current_position + 1, data, jump_dests, size,
+                &instruction_info_collected);
   }
   # rel16 actions are used in relative jumps with 16-bit offset.
   #
@@ -72,8 +72,8 @@
   }
   # rel32 actions are used in relative calls and jumps with 32-bit offset.
   action rel32_operand {
-    rel32_operand(current_position + 1, data, jump_dests, size,
-                  &instruction_info_collected);
+    Rel32Operand(current_position + 1, data, jump_dests, size,
+                 &instruction_info_collected);
   }
   include relative_fields_parsing
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
@@ -81,8 +81,8 @@
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
 
   action check_access {
-    check_access(instruction_start - data, base, index, restricted_register,
-                 valid_targets, &instruction_info_collected);
+    CheckAccess(instruction_start - data, base, index, restricted_register,
+                valid_targets, &instruction_info_collected);
   }
 
   # Action which marks last byte as not immediate.  Most 3DNow! instructions,
@@ -98,25 +98,25 @@
   }
 
   action process_0_operands {
-    process_0_operands(&restricted_register, &instruction_info_collected);
+    Process0Operands(&restricted_register, &instruction_info_collected);
   }
   action process_1_operand {
-    process_1_operand(&restricted_register, &instruction_info_collected,
-                      rex_prefix, operand_states);
+    Process1Operand(&restricted_register, &instruction_info_collected,
+                    rex_prefix, operand_states);
   }
   action process_1_operand_zero_extends {
-    process_1_operand_zero_extends(&restricted_register,
-                                   &instruction_info_collected, rex_prefix,
-                                   operand_states);
+    Process1OperandZeroExtends(&restricted_register,
+                               &instruction_info_collected, rex_prefix,
+                               operand_states);
   }
   action process_2_operands {
-    process_2_operands(&restricted_register, &instruction_info_collected,
-                       rex_prefix, operand_states);
+    Process2Operands(&restricted_register, &instruction_info_collected,
+                     rex_prefix, operand_states);
   }
   action process_2_operands_zero_extends {
-    process_2_operands_zero_extends(&restricted_register,
-                                    &instruction_info_collected, rex_prefix,
-                                    operand_states);
+    Process2OperandsZeroExtends(&restricted_register,
+                                &instruction_info_collected, rex_prefix,
+                                operand_states);
   }
 
   include decode_x86_64 "validator_x86_64_instruction.rl";
@@ -633,7 +633,7 @@
                                 UNRECOGNIZED_INSTRUCTION, callback_data);
         /*
          * Process the next bundle: “continue” here is for the “for” cycle in
-         * the ValidateChunkIA32 function.
+         * the ValidateChunkAMD64 function.
          *
          * It does not affect the case which we really care about (when code
          * is validatable), but makes it possible to detect more errors in one
