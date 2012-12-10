@@ -72,28 +72,23 @@ void LayerImpl::addChild(scoped_ptr<LayerImpl> child)
     m_layerTreeHostImpl->setNeedsUpdateDrawProperties();
 }
 
-void LayerImpl::removeFromParent()
+scoped_ptr<LayerImpl> LayerImpl::removeChild(LayerImpl* child)
 {
-    if (!m_parent)
-        return;
-
-    LayerImpl* parent = m_parent;
-    m_parent = 0;
-
-    for (size_t i = 0; i < parent->m_children.size(); ++i) {
-        if (parent->m_children[i] == this) {
+    for (size_t i = 0; i < m_children.size(); ++i) {
+        if (m_children[i] == child) {
+            scoped_ptr<LayerImpl> ret = m_children.take(i);
+            m_children.remove(i);
             m_layerTreeHostImpl->setNeedsUpdateDrawProperties();
-            // This remove call deletes |this|, so don't touch it anymore.
-            parent->m_children.remove(i);
-            return;
+            return ret.Pass();
         }
     }
+    return scoped_ptr<LayerImpl>();
 }
 
 void LayerImpl::removeAllChildren()
 {
-    while (m_children.size())
-        m_children[0]->removeFromParent();
+    m_children.clear();
+    m_layerTreeHostImpl->setNeedsUpdateDrawProperties();
 }
 
 void LayerImpl::clearChildList()

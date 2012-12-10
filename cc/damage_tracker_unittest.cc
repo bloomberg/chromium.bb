@@ -561,7 +561,8 @@ TEST_F(DamageTrackerTest, verifyDamageForAddingAndRemovingLayer)
     EXPECT_TRUE(root->renderSurface()->damageTracker()->currentDamageRect().IsEmpty());
 
     // Then, test removing child1.
-    child1->removeFromParent();
+    root->removeChild(child1);
+    child1 = NULL;
     emulateDrawingOneFrame(root.get());
     rootDamageRect = root->renderSurface()->damageTracker()->currentDamageRect();
     EXPECT_FLOAT_RECT_EQ(gfx::RectF(100, 100, 30, 30), rootDamageRect);

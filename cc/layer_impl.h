@@ -65,7 +65,7 @@ public:
     const LayerImpl* parent() const { return m_parent; }
     const LayerList& children() const { return m_children; }
     void addChild(scoped_ptr<LayerImpl>);
-    void removeFromParent();
+    scoped_ptr<LayerImpl> removeChild(LayerImpl* child);
     void removeAllChildren();
 
     void setMaskLayer(scoped_ptr<LayerImpl>);
