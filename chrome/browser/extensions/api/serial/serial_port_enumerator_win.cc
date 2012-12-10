@@ -44,7 +44,7 @@ SerialPortEnumerator::GenerateValidSerialPortNames() {
   // to refactor this interface to make it more platform-independent.
   for (int port_number = 0; port_number < max_port_number; ++port_number) {
     string16 device_string16;
-    device_string16 = base::StringPrintf(L"\\\\.\\COM%d", port_number);
+    device_string16 = base::StringPrintf(L"COM%d", port_number);
     if (PassesCommConfigTest(device_string16)) {
       // Keep looking for new ports as long as we're finding them.
       int new_max_port_number = (port_number + 1) * 2;
