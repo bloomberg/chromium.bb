@@ -70,6 +70,44 @@ void AutofillPopupViewViews::OnPaint(gfx::Canvas* canvas) {
   }
 }
 
+void AutofillPopupViewViews::OnMouseCaptureLost() {
+  ClearSelectedLine();
+}
+
+bool AutofillPopupViewViews::OnMouseDragged(const ui::MouseEvent& event) {
+  if (HitTestPoint(gfx::Point(event.x(), event.y()))) {
+    SetSelectedPosition(event.x(), event.y());
+
+    // We must return true in order to get future OnMouseDragged and
+    // OnMouseReleased events.
+    return true;
+  }
+
+  // If we move off of the popup, we lose the selection.
+  ClearSelectedLine();
+  return false;
+}
+
+void AutofillPopupViewViews::OnMouseExited(const ui::MouseEvent& event) {
+  ClearSelectedLine();
+}
+
+void AutofillPopupViewViews::OnMouseMoved(const ui::MouseEvent& event) {
+  SetSelectedPosition(event.x(), event.y());
+}
+
+bool AutofillPopupViewViews::OnMousePressed(const ui::MouseEvent& event) {
+  // We must return true in order to get the OnMouseReleased event later.
+  return true;
+}
+
+void AutofillPopupViewViews::OnMouseReleased(const ui::MouseEvent& event) {
+  // We only care about the left click.
+  if (event.IsOnlyLeftMouseButton() &&
+      HitTestPoint(gfx::Point(event.x(), event.y())))
+    AcceptSelectedPosition(event.x(), event.y());
+}
+
 void AutofillPopupViewViews::OnWidgetBoundsChanged(
     views::Widget* widget,
     const gfx::Rect& new_bounds) {

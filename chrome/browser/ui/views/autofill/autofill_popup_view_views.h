@@ -38,6 +38,12 @@ class AutofillPopupViewViews : public views::WidgetDelegateView,
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
   // views::WidgetObserver implementation.
+  virtual void OnMouseCaptureLost() OVERRIDE;
+  virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseMoved(const ui::MouseEvent& event) OVERRIDE;
+  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnWidgetBoundsChanged(views::Widget* widget,
                                      const gfx::Rect& new_bounds) OVERRIDE;
 
