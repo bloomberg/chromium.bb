@@ -117,6 +117,8 @@
         'shell/shell_web_contents_view_delegate_mac.mm',
         'shell/shell_web_contents_view_delegate_win.cc',
         'shell/shell_web_contents_view_delegate.h',
+        'shell/webkit_test_controller.cc',
+        'shell/webkit_test_controller.h',
         'shell/webkit_test_platform_support.h',
         'shell/webkit_test_platform_support_android.cc',
         'shell/webkit_test_platform_support_linux.cc',
@@ -126,8 +128,6 @@
         'shell/webkit_test_runner.h',
         'shell/webkit_test_runner_bindings.cc',
         'shell/webkit_test_runner_bindings.h',
-        'shell/webkit_test_runner_host.cc',
-        'shell/webkit_test_runner_host.h',
       ],
       'msvs_settings': {
         'VCLinkerTool': {

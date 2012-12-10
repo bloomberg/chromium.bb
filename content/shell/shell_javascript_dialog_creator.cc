@@ -11,7 +11,7 @@
 #include "content/public/browser/web_contents_view.h"
 #include "content/shell/shell_javascript_dialog.h"
 #include "content/shell/shell_switches.h"
-#include "content/shell/webkit_test_runner_host.h"
+#include "content/shell/webkit_test_controller.h"
 #include "net/base/net_util.h"
 
 namespace content {

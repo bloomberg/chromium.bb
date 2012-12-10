@@ -21,7 +21,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/shell/shell.h"
 #include "content/shell/shell_switches.h"
-#include "content/shell/webkit_test_runner_host.h"
+#include "content/shell/webkit_test_controller.h"
 #include "content/test/content_browser_test_utils.h"
 #include "content/test/layout_test_http_server.h"
 #include "net/base/net_util.h"

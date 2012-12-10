@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_SHELL_WEBKIT_TEST_RUNNER_HOST_H_
-#define CONTENT_SHELL_WEBKIT_TEST_RUNNER_HOST_H_
+#ifndef CONTENT_SHELL_WEBKIT_TEST_CONTROLLER_H_
+#define CONTENT_SHELL_WEBKIT_TEST_CONTROLLER_H_
 
 #include <ostream>
 #include <string>
@@ -86,29 +86,9 @@ class WebKitTestController : public base::NonThreadSafe,
     printer_.reset(printer);
   }
   const ShellWebPreferences& web_preferences() const { return prefs_; }
-
-  // Interface for WebKitTestRunnerHost.
-  void NotifyDone();
-  void WaitUntilDone();
-  void NotImplemented(const std::string& object_name,
-                      const std::string& method_name);
-
   bool should_stay_on_page_after_handling_before_unload() const {
     return should_stay_on_page_after_handling_before_unload_;
   }
-  void set_should_stay_on_page_after_handling_before_unload(
-      bool should_stay_on_page_after_handling_before_unload) {
-    should_stay_on_page_after_handling_before_unload_ =
-        should_stay_on_page_after_handling_before_unload;
-  }
-  bool dump_as_text() const { return dump_as_text_; }
-  void set_dump_as_text(bool dump_as_text) { dump_as_text_ = dump_as_text; }
-  bool dump_child_frames() const { return dump_child_frames_; }
-  void set_dump_child_frames(bool dump_child_frames) {
-    dump_child_frames_ = dump_child_frames;
-  }
-  bool is_printing() const { return is_printing_; }
-  void set_is_printing(bool is_printing) { is_printing_ = is_printing; }
 
   // WebContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -129,6 +109,15 @@ class WebKitTestController : public base::NonThreadSafe,
   void OnTextDump(const std::string& dump);
   void OnPrintMessage(const std::string& message);
   void OnOverridePreferences(const ShellWebPreferences& prefs);
+  void OnNotifyDone();
+  void OnDumpAsText();
+  void OnDumpChildFramesAsText();
+  void OnSetPrinting();
+  void OnSetShouldStayOnPageAfterHandlingBeforeUnload(bool should_stay_on_page);
+  void OnWaitUntilDone();
+
+  void OnNotImplemented(const std::string& object_name,
+                        const std::string& method_name);
 
   scoped_ptr<WebKitTestResultPrinter> printer_;
 
@@ -153,29 +142,6 @@ class WebKitTestController : public base::NonThreadSafe,
   DISALLOW_COPY_AND_ASSIGN(WebKitTestController);
 };
 
-class WebKitTestRunnerHost : public RenderViewHostObserver {
- public:
-  explicit WebKitTestRunnerHost(RenderViewHost* render_view_host);
-  virtual ~WebKitTestRunnerHost();
-
-  // RenderViewHostObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-
- private:
-  // testRunner handlers.
-  void OnNotifyDone();
-  void OnDumpAsText();
-  void OnDumpChildFramesAsText();
-  void OnSetPrinting();
-  void OnSetShouldStayOnPageAfterHandlingBeforeUnload(bool should_stay_on_page);
-  void OnWaitUntilDone();
-
-  void OnNotImplemented(const std::string& object_name,
-                        const std::string& method_name);
-
-  DISALLOW_COPY_AND_ASSIGN(WebKitTestRunnerHost);
-};
-
 }  // namespace content
 
-#endif  // CONTENT_SHELL_WEBKIT_TEST_RUNNER_HOST_H_
+#endif  // CONTENT_SHELL_WEBKIT_TEST_CONTROLLER_H_

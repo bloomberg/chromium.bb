@@ -26,7 +26,7 @@
 #include "content/shell/shell_javascript_dialog_creator.h"
 #include "content/shell/shell_messages.h"
 #include "content/shell/shell_switches.h"
-#include "content/shell/webkit_test_runner_host.h"
+#include "content/shell/webkit_test_controller.h"
 #include "ui/gfx/size.h"
 
 // Content area size for newly created windows.

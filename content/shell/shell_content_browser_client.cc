@@ -18,7 +18,7 @@
 #include "content/shell/shell_resource_dispatcher_host_delegate.h"
 #include "content/shell/shell_switches.h"
 #include "content/shell/shell_web_contents_view_delegate_creator.h"
-#include "content/shell/webkit_test_runner_host.h"
+#include "content/shell/webkit_test_controller.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/glue/webpreferences.h"
 
@@ -77,13 +77,6 @@ void ShellContentBrowserClient::RenderProcessHostCreated(
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
     return;
   host->Send(new ShellViewMsg_SetWebKitSourceDir(webkit_source_dir_));
-}
-
-void ShellContentBrowserClient::RenderViewHostCreated(
-    RenderViewHost* render_view_host) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
-    return;
-  new WebKitTestRunnerHost(render_view_host);
 }
 
 void ShellContentBrowserClient::AppendExtraCommandLineSwitches(

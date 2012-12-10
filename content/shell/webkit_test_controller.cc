@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/webkit_test_runner_host.h"
+#include "content/shell/webkit_test_controller.h"
 
 #include <iostream>
 
@@ -196,35 +196,6 @@ void WebKitTestController::RendererUnresponsive() {
     printer_->AddErrorMessage("#PROCESS UNRESPONSIVE - renderer");
 }
 
-void WebKitTestController::NotifyDone() {
-  if (!wait_until_done_)
-    return;
-  watchdog_.Cancel();
-  CaptureDump();
-}
-
-void WebKitTestController::WaitUntilDone() {
-  if (wait_until_done_)
-    return;
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTimeout)) {
-    watchdog_.Reset(base::Bind(&WebKitTestController::TimeoutHandler,
-                               base::Unretained(this)));
-    MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        watchdog_.callback(),
-        base::TimeDelta::FromMilliseconds(kTestTimeoutMilliseconds));
-  }
-  wait_until_done_ = true;
-}
-
-void WebKitTestController::NotImplemented(
-    const std::string& object_name,
-    const std::string& property_name) {
-  printer_->AddErrorMessage(
-      std::string("FAIL: NOT IMPLEMENTED: ") +
-      object_name + "." + property_name);
-}
-
 bool WebKitTestController::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(WebKitTestController, message)
@@ -234,6 +205,16 @@ bool WebKitTestController::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_ImageDump, OnImageDump)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_OverridePreferences,
                         OnOverridePreferences)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_NotifyDone, OnNotifyDone)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_DumpAsText, OnDumpAsText)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_DumpChildFramesAsText,
+                        OnDumpChildFramesAsText)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_SetPrinting, OnSetPrinting)
+    IPC_MESSAGE_HANDLER(
+        ShellViewHostMsg_SetShouldStayOnPageAfterHandlingBeforeUnload,
+        OnSetShouldStayOnPageAfterHandlingBeforeUnload)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_WaitUntilDone, OnWaitUntilDone)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_NotImplemented, OnNotImplemented)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -356,67 +337,50 @@ void WebKitTestController::OnOverridePreferences(
   prefs_ = prefs;
 }
 
-// WebKitTestRunnerHost -------------------------------------------------------
-
-WebKitTestRunnerHost::WebKitTestRunnerHost(
-    RenderViewHost* render_view_host)
-    : RenderViewHostObserver(render_view_host) {
+void WebKitTestController::OnNotifyDone() {
+  if (!wait_until_done_)
+    return;
+  watchdog_.Cancel();
+  CaptureDump();
 }
 
-WebKitTestRunnerHost::~WebKitTestRunnerHost() {
+void WebKitTestController::OnDumpAsText() {
+  dump_as_text_ = true;
 }
 
-bool WebKitTestRunnerHost::OnMessageReceived(
-    const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(WebKitTestRunnerHost, message)
-    IPC_MESSAGE_HANDLER(ShellViewHostMsg_NotifyDone, OnNotifyDone)
-    IPC_MESSAGE_HANDLER(ShellViewHostMsg_DumpAsText, OnDumpAsText)
-    IPC_MESSAGE_HANDLER(ShellViewHostMsg_DumpChildFramesAsText,
-                        OnDumpChildFramesAsText)
-    IPC_MESSAGE_HANDLER(ShellViewHostMsg_SetPrinting, OnSetPrinting)
-    IPC_MESSAGE_HANDLER(
-        ShellViewHostMsg_SetShouldStayOnPageAfterHandlingBeforeUnload,
-        OnSetShouldStayOnPageAfterHandlingBeforeUnload)
-    IPC_MESSAGE_HANDLER(ShellViewHostMsg_WaitUntilDone, OnWaitUntilDone)
-    IPC_MESSAGE_HANDLER(ShellViewHostMsg_NotImplemented, OnNotImplemented)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-
-  return handled;
+void WebKitTestController::OnSetPrinting() {
+  is_printing_ = true;
 }
 
-void WebKitTestRunnerHost::OnNotifyDone() {
-  WebKitTestController::Get()->NotifyDone();
-}
-
-void WebKitTestRunnerHost::OnDumpAsText() {
-  WebKitTestController::Get()->set_dump_as_text(true);
-}
-
-void WebKitTestRunnerHost::OnSetPrinting() {
-  WebKitTestController::Get()->set_is_printing(true);
-}
-
-void WebKitTestRunnerHost::OnSetShouldStayOnPageAfterHandlingBeforeUnload(
+void WebKitTestController::OnSetShouldStayOnPageAfterHandlingBeforeUnload(
     bool should_stay_on_page) {
-  WebKitTestController* controller = WebKitTestController::Get();
-  controller->set_should_stay_on_page_after_handling_before_unload(
-      should_stay_on_page);
+  should_stay_on_page_after_handling_before_unload_ = should_stay_on_page;
 }
 
-void WebKitTestRunnerHost::OnDumpChildFramesAsText() {
-  WebKitTestController::Get()->set_dump_child_frames(true);
+void WebKitTestController::OnDumpChildFramesAsText() {
+  dump_child_frames_ = true;
 }
 
-void WebKitTestRunnerHost::OnWaitUntilDone() {
-  WebKitTestController::Get()->WaitUntilDone();
+void WebKitTestController::OnWaitUntilDone() {
+  if (wait_until_done_)
+    return;
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTimeout)) {
+    watchdog_.Reset(base::Bind(&WebKitTestController::TimeoutHandler,
+                               base::Unretained(this)));
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        watchdog_.callback(),
+        base::TimeDelta::FromMilliseconds(kTestTimeoutMilliseconds));
+  }
+  wait_until_done_ = true;
 }
 
-void WebKitTestRunnerHost::OnNotImplemented(
+void WebKitTestController::OnNotImplemented(
     const std::string& object_name,
     const std::string& property_name) {
-  WebKitTestController::Get()->NotImplemented(object_name, property_name);
+  printer_->AddErrorMessage(
+      std::string("FAIL: NOT IMPLEMENTED: ") +
+      object_name + "." + property_name);
 }
 
 }  // namespace content
