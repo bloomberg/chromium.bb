@@ -35,6 +35,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/escape.h"
+#include "net/base/network_change_notifier.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::WebContents;
@@ -124,6 +125,10 @@ bool SyncPromoUI::ShouldShowSyncPromo(Profile* profile) {
   // into sync already.
   return false;
 #endif
+
+  // Don't bother if we don't have any kind of network connection.
+  if (net::NetworkChangeNotifier::IsOffline())
+    return false;
 
   // Honor the sync policies.
   if (!profile->GetOriginalProfile()->IsSyncAccessible())
