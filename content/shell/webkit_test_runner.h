@@ -8,7 +8,6 @@
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/render_view_observer.h"
-#include "content/public/renderer/render_view_observer_tracker.h"
 #include "content/shell/shell_webpreferences.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestDelegate.h"
 
@@ -26,7 +25,6 @@ namespace content {
 
 // This is the renderer side of the webkit test runner.
 class WebKitTestRunner : public RenderViewObserver,
-                         public RenderViewObserverTracker<WebKitTestRunner>,
                          public WebTestRunner::WebTestDelegate {
  public:
   explicit WebKitTestRunner(RenderView* render_view);
@@ -63,6 +61,13 @@ class WebKitTestRunner : public RenderViewObserver,
   void Reset();
   void Display();
   void SetXSSAuditorEnabled(bool enabled);
+  void NotifyDone();
+  void DumpAsText();
+  void DumpChildFramesAsText();
+  void SetPrinting();
+  void SetShouldStayOnPageAfterHandlingBeforeUnload(bool should_stay_on_page);
+  void WaitUntilDone();
+  void NotImplemented(const char* object, const char* method);
 
   void set_proxy(WebTestRunner::WebTestProxyBase* proxy) { proxy_ = proxy; }
 

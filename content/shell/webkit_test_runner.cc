@@ -144,8 +144,7 @@ void CopyCanvasToBitmap(SkCanvas* canvas,  SkBitmap* snapshot) {
 }  // namespace
 
 WebKitTestRunner::WebKitTestRunner(RenderView* render_view)
-    : RenderViewObserver(render_view),
-      RenderViewObserverTracker<WebKitTestRunner>(render_view) {
+    : RenderViewObserver(render_view) {
 }
 
 WebKitTestRunner::~WebKitTestRunner() {
@@ -279,6 +278,36 @@ void WebKitTestRunner::SetXSSAuditorEnabled(bool enabled) {
   prefs_.Apply(&prefs);
   render_view()->SetWebkitPreferences(prefs);
   Send(new ShellViewHostMsg_OverridePreferences(routing_id(), prefs_));
+}
+
+void WebKitTestRunner::NotifyDone() {
+  Send(new ShellViewHostMsg_NotifyDone(routing_id()));
+}
+
+void WebKitTestRunner::DumpAsText() {
+  Send(new ShellViewHostMsg_DumpAsText(routing_id()));
+}
+
+void WebKitTestRunner::DumpChildFramesAsText() {
+  Send(new ShellViewHostMsg_DumpChildFramesAsText(routing_id()));
+}
+
+void WebKitTestRunner::SetPrinting() {
+  Send(new ShellViewHostMsg_SetPrinting(routing_id()));
+}
+
+void WebKitTestRunner::SetShouldStayOnPageAfterHandlingBeforeUnload(
+    bool should_stay_on_page) {
+  Send(new ShellViewHostMsg_SetShouldStayOnPageAfterHandlingBeforeUnload(
+      routing_id(), should_stay_on_page));
+}
+
+void WebKitTestRunner::WaitUntilDone() {
+  Send(new ShellViewHostMsg_WaitUntilDone(routing_id()));
+}
+
+void WebKitTestRunner::NotImplemented(const char* object, const char* method) {
+  Send(new ShellViewHostMsg_NotImplemented(routing_id(), object, method));
 }
 
 void WebKitTestRunner::Reset() {

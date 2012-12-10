@@ -37,6 +37,7 @@ ShellRenderProcessObserver* ShellRenderProcessObserver::GetInstance() {
 
 ShellRenderProcessObserver::ShellRenderProcessObserver()
     : main_render_view_(NULL),
+      main_test_runner_(NULL),
       test_delegate_(NULL) {
   CHECK(!g_instance);
   g_instance = this;
@@ -57,10 +58,12 @@ ShellRenderProcessObserver::~ShellRenderProcessObserver() {
 
 void ShellRenderProcessObserver::SetMainWindow(
     RenderView* view,
+    WebKitTestRunner* test_runner,
     WebTestDelegate* delegate) {
   test_interfaces_->setDelegate(delegate);
   test_interfaces_->setWebView(view->GetWebView());
   main_render_view_ = view;
+  main_test_runner_ = test_runner;
   test_delegate_ = delegate;
 }
 
@@ -99,7 +102,7 @@ bool ShellRenderProcessObserver::OnControlMessageReceived(
 void ShellRenderProcessObserver::OnResetAll() {
   test_interfaces_->resetAll();
   if (main_render_view_) {
-    WebKitTestRunner::Get(main_render_view_)->Reset();
+    main_test_runner_->Reset();
     WebTestingSupport::resetInternalsObject(
         main_render_view_->GetWebView()->mainFrame());
   }

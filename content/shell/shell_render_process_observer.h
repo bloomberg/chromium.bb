@@ -23,6 +23,7 @@ class WebTestInterfaces;
 namespace content {
 
 class RenderView;
+class WebKitTestRunner;
 
 class ShellRenderProcessObserver : public RenderProcessObserver {
  public:
@@ -32,6 +33,7 @@ class ShellRenderProcessObserver : public RenderProcessObserver {
   virtual ~ShellRenderProcessObserver();
 
   void SetMainWindow(RenderView* view,
+                     WebKitTestRunner* test_runner,
                      WebTestRunner::WebTestDelegate* delegate);
   void BindTestRunnersToWindow(WebKit::WebFrame* frame);
 
@@ -45,6 +47,7 @@ class ShellRenderProcessObserver : public RenderProcessObserver {
   WebTestRunner::WebTestInterfaces* test_interfaces() const {
     return test_interfaces_.get();
   }
+  WebKitTestRunner* main_test_runner() const { return main_test_runner_; }
   const FilePath& webkit_source_dir() const { return webkit_source_dir_; }
 
  private:
@@ -54,6 +57,7 @@ class ShellRenderProcessObserver : public RenderProcessObserver {
 
   scoped_ptr<WebTestRunner::WebTestInterfaces> test_interfaces_;
   RenderView* main_render_view_;
+  WebKitTestRunner* main_test_runner_;
   WebTestRunner::WebTestDelegate* test_delegate_;
 
   FilePath webkit_source_dir_;

@@ -100,6 +100,7 @@ void ShellContentRendererClient::WebTestProxyCreated(RenderView* render_view,
   WebKitTestRunner* test_runner = new WebKitTestRunner(render_view);
   if (!ShellRenderProcessObserver::GetInstance()->test_delegate()) {
     ShellRenderProcessObserver::GetInstance()->SetMainWindow(render_view,
+                                                             test_runner,
                                                              test_runner);
   }
   test_runner->set_proxy(proxy);

@@ -4,18 +4,15 @@
 
 #include "content/shell/webkit_test_runner_bindings.h"
 
+#include "base/logging.h"
 #include "base/string_piece.h"
 #include "content/public/renderer/render_view.h"
-#include "content/shell/shell_messages.h"
+#include "content/shell/shell_render_process_observer.h"
 #include "content/shell/webkit_test_runner.h"
 #include "grit/shell_resources.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWorkerInfo.h"
 #include "ui/base/resource/resource_bundle.h"
 
-using WebKit::WebFrame;
-using WebKit::WebView;
 using WebKit::WebWorkerInfo;
 
 namespace content {
@@ -27,101 +24,87 @@ base::StringPiece GetStringResource(int resource_id) {
       resource_id);
 }
 
-RenderView* GetCurrentRenderView() {
-  WebFrame* frame = WebFrame::frameForCurrentContext();
-  DCHECK(frame);
-  if (!frame)
-    return NULL;
-
-  WebView* view = frame->view();
-  if (!view)
-    return NULL;  // can happen during closing.
-
-  RenderView* render_view = RenderView::FromWebView(view);
-  DCHECK(render_view);
-  return render_view;
-}
-
 v8::Handle<v8::Value> Display(const v8::Arguments& args) {
-  RenderView* view = GetCurrentRenderView();
-  if (!view)
-    return v8::Undefined();
-  WebKitTestRunner* runner = WebKitTestRunner::Get(view);
+  WebKitTestRunner* runner =
+      ShellRenderProcessObserver::GetInstance()->main_test_runner();
   if (!runner)
     return v8::Undefined();
+
   runner->Display();
   return v8::Undefined();
 }
 
 v8::Handle<v8::Value> NotifyDone(const v8::Arguments& args) {
-  RenderView* view = GetCurrentRenderView();
-  if (!view)
+  WebKitTestRunner* runner =
+      ShellRenderProcessObserver::GetInstance()->main_test_runner();
+  if (!runner)
     return v8::Undefined();
 
-  view->Send(new ShellViewHostMsg_NotifyDone(view->GetRoutingID()));
+  runner->NotifyDone();
   return v8::Undefined();
 }
 
 v8::Handle<v8::Value> SetDumpAsText(const v8::Arguments& args) {
-  RenderView* view = GetCurrentRenderView();
-  if (!view)
+  WebKitTestRunner* runner =
+      ShellRenderProcessObserver::GetInstance()->main_test_runner();
+  if (!runner)
     return v8::Undefined();
 
-  view->Send(new ShellViewHostMsg_DumpAsText(view->GetRoutingID()));
+  runner->DumpAsText();
   return v8::Undefined();
 }
 
 v8::Handle<v8::Value> SetDumpChildFramesAsText(const v8::Arguments& args) {
-  RenderView* view = GetCurrentRenderView();
-  if (!view)
+  WebKitTestRunner* runner =
+      ShellRenderProcessObserver::GetInstance()->main_test_runner();
+  if (!runner)
     return v8::Undefined();
 
-  view->Send(new ShellViewHostMsg_DumpChildFramesAsText(view->GetRoutingID()));
+  runner->DumpChildFramesAsText();
   return v8::Undefined();
 }
 
 v8::Handle<v8::Value> SetPrinting(const v8::Arguments& args) {
-  RenderView* view = GetCurrentRenderView();
-  if (!view)
+  WebKitTestRunner* runner =
+      ShellRenderProcessObserver::GetInstance()->main_test_runner();
+  if (!runner)
     return v8::Undefined();
 
-  view->Send(new ShellViewHostMsg_SetPrinting(view->GetRoutingID()));
+  runner->SetPrinting();
   return v8::Undefined();
 }
 
 v8::Handle<v8::Value> SetShouldStayOnPageAfterHandlingBeforeUnload(
     const v8::Arguments& args) {
-  RenderView* view = GetCurrentRenderView();
-  if (!view)
-    return v8::Undefined();
-
   if (args.Length() != 1 || !args[0]->IsBoolean())
     return v8::Undefined();
 
-  view->Send(new ShellViewHostMsg_SetShouldStayOnPageAfterHandlingBeforeUnload(
-      view->GetRoutingID(), args[0]->BooleanValue()));
+  WebKitTestRunner* runner =
+      ShellRenderProcessObserver::GetInstance()->main_test_runner();
+  if (!runner)
+    return v8::Undefined();
+
+  runner->SetShouldStayOnPageAfterHandlingBeforeUnload(args[0]->BooleanValue());
   return v8::Undefined();
 }
 
 v8::Handle<v8::Value> SetWaitUntilDone(const v8::Arguments& args) {
-  RenderView* view = GetCurrentRenderView();
-  if (!view)
+  WebKitTestRunner* runner =
+      ShellRenderProcessObserver::GetInstance()->main_test_runner();
+  if (!runner)
     return v8::Undefined();
 
-  view->Send(new ShellViewHostMsg_WaitUntilDone(view->GetRoutingID()));
+  runner->WaitUntilDone();
   return v8::Undefined();
 }
 
 v8::Handle<v8::Value> SetXSSAuditorEnabled(
     const v8::Arguments& args) {
-  RenderView* view = GetCurrentRenderView();
-  if (!view)
-    return v8::Undefined();
-
   if (args.Length() != 1 || !args[0]->IsBoolean())
     return v8::Undefined();
 
-  WebKitTestRunner* runner = WebKitTestRunner::Get(view);
+  WebKitTestRunner* runner =
+      ShellRenderProcessObserver::GetInstance()->main_test_runner();
   if (!runner)
     return v8::Undefined();
 
@@ -130,25 +113,20 @@ v8::Handle<v8::Value> SetXSSAuditorEnabled(
 }
 
 v8::Handle<v8::Value> GetWorkerThreadCount(const v8::Arguments& args) {
-  RenderView* view = GetCurrentRenderView();
-  if (!view)
-    return v8::Undefined();
-
   return v8::Integer::NewFromUnsigned(WebWorkerInfo::dedicatedWorkerCount());
 }
 
 v8::Handle<v8::Value> NotImplemented(const v8::Arguments& args) {
-  RenderView* view = GetCurrentRenderView();
-  if (!view)
-    return v8::Undefined();
-
   if (args.Length() != 2 || !args[0]->IsString() || !args[1]->IsString())
     return v8::Undefined();
 
-  view->Send(new ShellViewHostMsg_NotImplemented(
-      view->GetRoutingID(),
-      *v8::String::AsciiValue(args[0]),
-      *v8::String::AsciiValue(args[1])));
+  WebKitTestRunner* runner =
+      ShellRenderProcessObserver::GetInstance()->main_test_runner();
+  if (!runner)
+    return v8::Undefined();
+
+  runner->NotImplemented(*v8::String::AsciiValue(args[0]),
+                         *v8::String::AsciiValue(args[1]));
   return v8::Undefined();
 }
 
