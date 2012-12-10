@@ -26,7 +26,7 @@ math < 126								# 60
 math = 123456							# 61
 math > 345								# 62
 punctuation ? 1456				# 63
-sign @ 47									# 64
+sign @ 2346								# 64
 
 include latinLetterDef6Dots.uti
 
@@ -48,7 +48,7 @@ sign \x00A3 4-123					# 163 £ pounds sign
 
 sign \x00A5 4-13456				#	165 ¥ yen sign
 
-sign § 4-234-3					# 167 section sign \x00A7
+sign § 4-234-3						# 167 section sign \x00A7
 
 sign \x00A9 2356-6-14-2356 # 169	© copyright sign
 
