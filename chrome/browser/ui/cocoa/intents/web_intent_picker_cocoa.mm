@@ -13,7 +13,6 @@
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_picker_view_controller.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 
 // static

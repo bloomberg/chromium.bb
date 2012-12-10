@@ -168,7 +168,7 @@ class WebContents;
 // current placeholder.
 - (void)moveTabFromIndex:(NSInteger)from;
 
-// Drop a given TabContents at the location of the current placeholder.
+// Drop a given WebContents at the location of the current placeholder.
 // If there is no placeholder, it will go at the end. Used when dragging from
 // another window when we don't have access to the WebContents as part of our
 // strip. |frame| is in the coordinate system of the tab strip view and
@@ -177,7 +177,7 @@ class WebContents;
 // its previous window, setting |pinned| to YES will propagate that state to the
 // new window. Mini-tabs are either app or pinned tabs; the app state is stored
 // by the |contents|, but the |pinned| state is the caller's responsibility.
-- (void)dropTabContents:(TabContents*)contents
+- (void)dropWebContents:(content::WebContents*)contents
               withFrame:(NSRect)frame
             asPinnedTab:(BOOL)pinned;
 

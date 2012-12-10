@@ -11,7 +11,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/web_contents.h"
@@ -103,8 +102,7 @@ using content::WebContents;
 - (void)showDevToolsContainer {
   NSArray* subviews = [splitView_ subviews];
   DCHECK_EQ([subviews count], 1u);
-  WebContents* devToolsContents =
-      devToolsWindow_->tab_contents()->web_contents();
+  WebContents* devToolsContents = devToolsWindow_->web_contents();
 
   // |devToolsView| is a TabContentsViewCocoa object, whose ViewID was
   // set to VIEW_ID_TAB_CONTAINER initially, so we need to change it to

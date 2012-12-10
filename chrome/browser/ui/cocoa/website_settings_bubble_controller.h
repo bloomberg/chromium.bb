@@ -80,7 +80,7 @@ class WebContents;
 }
 
 // Designated initializer. The controller will release itself when the bubble
-// is closed. |parentWindow| cannot be nil. |tabContents| may be nil for
+// is closed. |parentWindow| cannot be nil. |webContents| may be nil for
 // testing purposes.
 - (id)initWithParentWindow:(NSWindow*)parentWindow
    websiteSettingsUIBridge:(WebsiteSettingsUIBridge*)bridge

@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/debugger/devtools_file_helper.h"
 #include "chrome/browser/debugger/devtools_toggle_action.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/devtools_client_host.h"
 #include "content/public/browser/devtools_frontend_host_delegate.h"
 #include "content/public/browser/notification_observer.h"
@@ -84,6 +85,7 @@ class DevToolsWindow : private content::NotificationObserver,
 
   void Show(DevToolsToggleAction action);
 
+  content::WebContents* web_contents() { return tab_contents_->web_contents(); }
   TabContents* tab_contents() { return tab_contents_; }
   Browser* browser() { return browser_; }  // For tests.
   DevToolsDockSide dock_side() { return dock_side_; }

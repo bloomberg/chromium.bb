@@ -10,7 +10,6 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 
-class TabContents;
 class TabStripModel;
 
 namespace content {

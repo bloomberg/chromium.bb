@@ -7,7 +7,6 @@
 #include "base/mac/mac_util.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"

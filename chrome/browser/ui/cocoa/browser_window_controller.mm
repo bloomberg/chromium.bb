@@ -64,7 +64,6 @@
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/dock_info.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
@@ -1231,8 +1230,8 @@ enum {
     if (!isBrowser) return;
     BrowserWindowController* dragBWC = (BrowserWindowController*)dragController;
     int index = [dragBWC->tabStripController_ modelIndexForTabView:view];
-    TabContents* contents =
-        dragBWC->browser_->tab_strip_model()->GetTabContentsAt(index);
+    WebContents* contents =
+        dragBWC->browser_->tab_strip_model()->GetWebContentsAt(index);
     // The tab contents may have gone away if given a window.close() while it
     // is being dragged. If so, bail, we've got nothing to drop.
     if (!contents)
@@ -1263,7 +1262,7 @@ enum {
     // Deposit it into our model at the appropriate location (it already knows
     // where it should go from tracking the drag). Doing this sets the tab's
     // delegate to be the Browser.
-    [tabStripController_ dropTabContents:contents
+    [tabStripController_ dropWebContents:contents
                                withFrame:destinationFrame
                              asPinnedTab:isPinned];
   } else {
@@ -1310,7 +1309,7 @@ enum {
 
   // Fetch the tab contents for the tab being dragged.
   int index = [tabStripController_ modelIndexForTabView:tabView];
-  TabContents* contents = browser_->tab_strip_model()->GetTabContentsAt(index);
+  WebContents* contents = browser_->tab_strip_model()->GetWebContentsAt(index);
 
   // Set the window size. Need to do this before we detach the tab so it's
   // still in the window. We have to flip the coordinates as that's what
@@ -1345,7 +1344,7 @@ enum {
   // dragged.
   DockInfo dockInfo;
   TabStripModelDelegate::NewStripContents item;
-  item.web_contents = contents->web_contents();
+  item.web_contents = contents;
   item.add_types = TabStripModel::ADD_ACTIVE |
                    (isPinned ? TabStripModel::ADD_PINNED
                              : TabStripModel::ADD_NONE);

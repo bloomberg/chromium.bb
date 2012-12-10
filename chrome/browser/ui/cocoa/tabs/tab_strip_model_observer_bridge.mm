@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/cocoa/tabs/tab_strip_model_observer_bridge.h"
 
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 
 using content::WebContents;
 

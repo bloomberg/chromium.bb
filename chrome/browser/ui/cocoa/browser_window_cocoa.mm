@@ -40,7 +40,6 @@
 #import "chrome/browser/ui/cocoa/web_dialog_window_controller.h"
 #import "chrome/browser/ui/cocoa/website_settings_bubble_controller.h"
 #include "chrome/browser/ui/page_info_bubble.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -616,12 +615,12 @@ bool BrowserWindowCocoa::GetConstrainedWindowTopY(int* top_y) {
 
 extensions::ActiveTabPermissionGranter*
     BrowserWindowCocoa::GetActiveTabPermissionGranter() {
-  TabContents* tab_contents =
-      browser_->tab_strip_model()->GetActiveTabContents();
-  if (!tab_contents)
+  WebContents* web_contents =
+      browser_->tab_strip_model()->GetActiveWebContents();
+  if (!web_contents)
     return NULL;
   extensions::TabHelper* tab_helper =
-      extensions::TabHelper::FromWebContents(tab_contents->web_contents());
+      extensions::TabHelper::FromWebContents(web_contents);
   return tab_helper ? tab_helper->active_tab_permission_granter() : NULL;
 }
 

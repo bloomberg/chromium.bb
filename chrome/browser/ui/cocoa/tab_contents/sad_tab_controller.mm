@@ -44,7 +44,7 @@ void RemoveSadTab(SadTabController* sad_tab) {
 }
 
 - (void)awakeFromNib {
-  // If tab_contents_ is nil, ask view to remove link.
+  // If webContents_ is nil, ask view to remove link.
   if (!webContents_) {
     SadTabView* sad_view = static_cast<SadTabView*>([self view]);
     [sad_view removeHelpText];

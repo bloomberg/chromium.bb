@@ -48,7 +48,6 @@
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
@@ -315,7 +314,7 @@ private:
 #pragma mark -
 
 // In general, there is a one-to-one correspondence between TabControllers,
-// TabViews, TabContentsControllers, and the TabContents in the
+// TabViews, TabContentsControllers, and the WebContents in the
 // TabStripModel. In the steady-state, the indices line up so an index coming
 // from the model is directly mapped to the same index in the parallel arrays
 // holding our views and controllers. This is also true when new tabs are
@@ -1676,7 +1675,7 @@ private:
   tabStripModel_->MoveWebContentsAt(from, toIndex, true);
 }
 
-// Drop a given TabContents at the location of the current placeholder.
+// Drop a given WebContents at the location of the current placeholder.
 // If there is no placeholder, it will go at the end. Used when dragging from
 // another window when we don't have access to the WebContents as part of our
 // strip. |frame| is in the coordinate system of the tab strip view and
@@ -1685,7 +1684,7 @@ private:
 // its previous window, setting |pinned| to YES will propagate that state to the
 // new window. Mini-tabs are either app or pinned tabs; the app state is stored
 // by the |contents|, but the |pinned| state is the caller's responsibility.
-- (void)dropTabContents:(TabContents*)contents
+- (void)dropWebContents:(WebContents*)contents
               withFrame:(NSRect)frame
             asPinnedTab:(BOOL)pinned {
   int modelIndex = [self indexOfPlaceholder];
@@ -1697,7 +1696,7 @@ private:
   // Insert it into this tab strip. We want it in the foreground and to not
   // inherit the current tab's group.
   tabStripModel_->InsertWebContentsAt(
-      modelIndex, contents->web_contents(),
+      modelIndex, contents,
       TabStripModel::ADD_ACTIVE | (pinned ? TabStripModel::ADD_PINNED : 0));
 }
 
