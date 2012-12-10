@@ -8,7 +8,15 @@ OS="$(uname -s)"
 THIS_DIR="$(dirname "${0}")"
 
 if [ "${OS}" = "Linux" ]; then
-  exec "${THIS_DIR}/ninja-linux64" "$@"
+  machine=$(getconf LONG_BIT)
+  if [[ "$machine" = "64" ]]; then
+    exec "${THIS_DIR}/ninja-linux64" "$@"
+  elif [[ "$machine" = "32" ]]; then
+    exec "${THIS_DIR}/ninja-linux32" "$@"
+  else
+    echo Unknown architecture \($machine\) -- unable to run ninja.
+    exit 1
+  fi
 elif [ "${OS}" = "Darwin" ]; then
   exec "${THIS_DIR}/ninja-mac" "$@"
 elif [[ ${OS} == CYGWIN* ]]; then
