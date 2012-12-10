@@ -5,14 +5,15 @@
 #include "chrome/browser/instant/instant_loader.h"
 
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/history/history_tab_helper.h"
 #include "chrome/browser/instant/instant_controller.h"
-#include "chrome/browser/thumbnails/thumbnail_tab_helper.h"
+#include "chrome/browser/safe_browsing/safe_browsing_tab_observer.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/constrained_window_tab_helper_delegate.h"
+#include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -193,8 +194,6 @@ void InstantLoader::InitContents(const content::WebContents* active_tab) {
   contents_.reset(content::WebContents::CreateWithSessionStorage(
       create_params,
       active_tab->GetController().GetSessionStorageNamespaceMap()));
-  // Not a leak. TabContents will delete itself when the WebContents is gone.
-  TabContents::Factory::CreateTabContents(contents());
   SetupPreviewContents();
 
   // This HTTP header and value are set on loads that originate from Instant.
@@ -317,23 +316,32 @@ void InstantLoader::SetupPreviewContents() {
   contents_->SetUserData(&kUserDataKey, new InstantLoaderUserData(this));
   contents_->SetDelegate(delegate_.get());
 
-  // Disable popups and such (mainly to avoid losing focus and reverting the
-  // preview prematurely).
-  if (BlockedContentTabHelper* blocked_content_tab_helper =
-          BlockedContentTabHelper::FromWebContents(contents()))
-    blocked_content_tab_helper->SetAllContentsBlocked(true);
-  if (ConstrainedWindowTabHelper* constrained_window_tab_helper =
-          ConstrainedWindowTabHelper::FromWebContents(contents()))
-    constrained_window_tab_helper->set_delegate(delegate_.get());
-  if (TabSpecificContentSettings* tab_specific_content_settings =
-          TabSpecificContentSettings::FromWebContents(contents()))
-    tab_specific_content_settings->SetPopupsBlocked(true);
-  if (CoreTabHelper* core_tab_helper =
-          CoreTabHelper::FromWebContents(contents()))
-    core_tab_helper->set_delegate(delegate_.get());
-  if (ThumbnailTabHelper* thumbnail_tab_helper =
-          ThumbnailTabHelper::FromWebContents(contents()))
-    thumbnail_tab_helper->set_enabled(false);
+  // Set up various tab helpers. The rest will get attached when (if) the
+  // contents is added to the tab strip.
+
+  // Tab helpers to control popups.
+  BlockedContentTabHelper::CreateForWebContents(contents());
+  BlockedContentTabHelper::FromWebContents(contents())->
+      SetAllContentsBlocked(true);
+  TabSpecificContentSettings::CreateForWebContents(contents());
+  TabSpecificContentSettings::FromWebContents(contents())->
+      SetPopupsBlocked(true);
+
+  // A tab helper to control constrained windows.
+  ConstrainedWindowTabHelper::CreateForWebContents(contents());
+  ConstrainedWindowTabHelper::FromWebContents(contents())->
+      set_delegate(delegate_.get());
+
+  // A tab helper to catch prerender content swapping shenanigans.
+  CoreTabHelper::CreateForWebContents(contents());
+  CoreTabHelper::FromWebContents(contents())->set_delegate(delegate_.get());
+
+  // Tab helpers used when committing a preview.
+  chrome::search::SearchTabHelper::CreateForWebContents(contents());
+  HistoryTabHelper::CreateForWebContents(contents());
+
+  // And some flat-out paranoia.
+  safe_browsing::SafeBrowsingTabObserver::CreateForWebContents(contents());
 
 #if defined(OS_MACOSX)
   // If |contents_| doesn't yet have a RWHV, SetTakesFocusOnlyOnMouseDown() will
@@ -352,21 +360,17 @@ void InstantLoader::CleanupPreviewContents() {
   contents_->RemoveUserData(&kUserDataKey);
   contents_->SetDelegate(NULL);
 
-  if (BlockedContentTabHelper* blocked_content_tab_helper =
-          BlockedContentTabHelper::FromWebContents(contents()))
-    blocked_content_tab_helper->SetAllContentsBlocked(false);
-  if (ConstrainedWindowTabHelper* constrained_window_tab_helper =
-          ConstrainedWindowTabHelper::FromWebContents(contents()))
-    constrained_window_tab_helper->set_delegate(NULL);
-  if (TabSpecificContentSettings* tab_specific_content_settings =
-          TabSpecificContentSettings::FromWebContents(contents()))
-    tab_specific_content_settings->SetPopupsBlocked(false);
-  if (CoreTabHelper* core_tab_helper =
-          CoreTabHelper::FromWebContents(contents()))
-    core_tab_helper->set_delegate(NULL);
-  if (ThumbnailTabHelper* thumbnail_tab_helper =
-          ThumbnailTabHelper::FromWebContents(contents()))
-    thumbnail_tab_helper->set_enabled(true);
+  // Undo tab helper work done in SetupPreviewContents().
+
+  BlockedContentTabHelper::FromWebContents(contents())->
+      SetAllContentsBlocked(false);
+  TabSpecificContentSettings::FromWebContents(contents())->
+      SetPopupsBlocked(false);
+
+  ConstrainedWindowTabHelper::FromWebContents(contents())->
+      set_delegate(NULL);
+
+  CoreTabHelper::FromWebContents(contents())->set_delegate(NULL);
 
 #if defined(OS_MACOSX)
   if (content::RenderWidgetHostView* rwhv =

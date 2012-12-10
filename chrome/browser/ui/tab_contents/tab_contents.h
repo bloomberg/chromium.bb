@@ -13,7 +13,6 @@
 
 class Browser;
 class BrowserTabstripTabContentsCreator;
-class InstantLoader;
 class Profile;
 class TestTabStripModelDelegate;
 
@@ -46,7 +45,6 @@ class TabContents : public content::WebContentsObserver {
 
     friend class Browser;
     friend class BrowserTabstripTabContentsCreator;
-    friend class InstantLoader;
     friend class prerender::PrerenderContents;
     // See crbug.com/153587
     friend class TabAndroid;
