@@ -174,11 +174,15 @@ class UI_EXPORT Event {
   // Immediately stops the propagation of the event. This must be called only
   // from an EventHandler during an event-dispatch. Any event handler that may
   // be in the list will not receive the event after this is called.
-  // Note that StopPropagation() or SetHandled() must not be called for
-  // cancelable events.
+  // Note that StopPropagation() can be called only for cancelable events.
   void StopPropagation();
   bool stopped_propagation() const { return !!(result_ & ui::ER_CONSUMED); }
 
+  // Marks the event as having been handled. A handled event does not reach the
+  // next event phase. For example, if an event is handled during the pre-target
+  // phase, then the event is dispatched to all pre-target handlers, but not to
+  // the target or post-target handlers.
+  // Note that SetHandled() can be called only for cancelable events.
   void SetHandled();
   bool handled() const { return result_ != ui::ER_UNHANDLED; }
 

@@ -250,10 +250,12 @@ TEST(EventDispatcherTest, EventDispatchOrder) {
   EXPECT_FALSE(mouse.stopped_propagation());
   EXPECT_FALSE(mouse.handled());
 
-  int expected[] = { 1, 2, 3, 4, 5, 6, 7, 8 };
-  EXPECT_EQ(
-      std::vector<int>(expected, expected + sizeof(expected) / sizeof(int)),
-      child.handler_list());
+  {
+    int expected[] = { 1, 2, 3, 4, 5, 6, 7, 8 };
+    EXPECT_EQ(
+        std::vector<int>(expected, expected + sizeof(expected) / sizeof(int)),
+        child.handler_list());
+  }
 
   child.Reset();
   event_mod.set_phase(EP_PREDISPATCH);
@@ -264,15 +266,21 @@ TEST(EventDispatcherTest, EventDispatchOrder) {
   EXPECT_EQ(EP_POSTDISPATCH, mouse.phase());
   EXPECT_FALSE(mouse.stopped_propagation());
   EXPECT_TRUE(mouse.handled());
-  EXPECT_EQ(
-      std::vector<int>(expected, expected + sizeof(expected) / sizeof(int)),
-      child.handler_list());
+  {
+    // |h1| marks the event as handled. So only the pre-target handlers should
+    // receive the event.
+    int expected[] = { 1, 2, 3, 4 };
+    EXPECT_EQ(
+        std::vector<int>(expected, expected + sizeof(expected) / sizeof(int)),
+        child.handler_list());
+  }
 
   child.Reset();
   event_mod.set_phase(EP_PREDISPATCH);
   event_mod.set_result(ER_UNHANDLED);
 
   int nexpected[] = { 1, 2, 3, 4, 5 };
+  h1.set_event_result(ER_UNHANDLED);
   h5.set_event_result(ER_CONSUMED);
   dispatcher.ProcessEvent(&child, &mouse);
   EXPECT_EQ(EP_POSTDISPATCH, mouse.phase());

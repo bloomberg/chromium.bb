@@ -80,7 +80,7 @@ void EventDispatcher::ProcessEvent(EventTarget* target, Event* event) {
 
   dispatch_helper.set_phase(EP_PRETARGET);
   DispatchEventToEventHandlers(handler_list_, event);
-  if (event->stopped_propagation())
+  if (event->handled())
     return;
 
   // If the event hasn't been consumed, trigger the default handler. Note that
@@ -91,7 +91,7 @@ void EventDispatcher::ProcessEvent(EventTarget* target, Event* event) {
   if (delegate_ && delegate_->CanDispatchToTarget(target)) {
     dispatch_helper.set_phase(EP_TARGET);
     DispatchEvent(target, event);
-    if (event->stopped_propagation())
+    if (event->handled())
       return;
   }
 
