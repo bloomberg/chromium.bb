@@ -137,6 +137,8 @@
         'browser',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',
+        'chrome_resources.gyp:packed_extra_resources',
+        'chrome_resources.gyp:packed_resources',
         'common/extensions/api/api.gyp:api',
         'debugger',
         'renderer',
