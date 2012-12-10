@@ -327,7 +327,7 @@ PP_Resource ResourceCreationProxy::CreateFlashDeviceID(PP_Instance instance) {
 
 PP_Resource ResourceCreationProxy::CreateFlashFontFile(
     PP_Instance instance,
-    const PP_FontDescription_Dev* description,
+    const PP_BrowserFont_Trusted_Description* description,
     PP_PrivateFontCharset charset) {
   return (new FlashFontFileResource(
       GetConnection(), instance, description, charset))->GetReference();

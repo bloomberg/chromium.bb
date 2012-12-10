@@ -151,7 +151,7 @@ class ResourceCreationAPI {
   virtual PP_Resource CreateFlashDeviceID(PP_Instance instance) = 0;
   virtual PP_Resource CreateFlashFontFile(
       PP_Instance instance,
-      const PP_FontDescription_Dev* description,
+      const PP_BrowserFont_Trusted_Description* description,
       PP_PrivateFontCharset charset) = 0;
   virtual PP_Resource CreateFlashMenu(PP_Instance instance,
                                       const PP_Flash_Menu* menu_data) = 0;

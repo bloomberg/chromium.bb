@@ -17,7 +17,7 @@ interface PPB_Flash_FontFile {
    */
   PP_Resource Create(
       [in] PP_Instance instance,
-      [in] PP_FontDescription_Dev description,
+      [in] PP_BrowserFont_Trusted_Description description,
       [in] PP_PrivateFontCharset charset);
 
   /* Determines if a given resource is Flash font file.

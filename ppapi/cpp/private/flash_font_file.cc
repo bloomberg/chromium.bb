@@ -7,6 +7,7 @@
 #include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/c/private/ppb_flash_font_file.h"
 #include "ppapi/c/private/ppb_pdf.h"
+#include "ppapi/c/trusted/ppb_browser_font_trusted.h"
 #include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/module_impl.h"
 
@@ -32,14 +33,18 @@ FontFile::FontFile() {
 }
 
 FontFile::FontFile(const InstanceHandle& instance,
-                   const PP_FontDescription_Dev* description,
+                   const PP_BrowserFont_Trusted_Description* description,
                    PP_PrivateFontCharset charset) {
   if (has_interface<PPB_Flash_FontFile_0_1>()) {
     PassRefFromConstructor(get_interface<PPB_Flash_FontFile_0_1>()->Create(
         instance.pp_instance(), description, charset));
   } else if (has_interface<PPB_PDF>()) {
+    // PP_Font_Description_Dev and PP_BrowserFont_Trusted_Description are the
+    // same struct so we can call this old interface by casting.
     PassRefFromConstructor(get_interface<PPB_PDF>()->GetFontFileWithFallback(
-        instance.pp_instance(), description, charset));
+        instance.pp_instance(),
+        reinterpret_cast<const PP_FontDescription_Dev*>(description),
+        charset));
   }
 }
 

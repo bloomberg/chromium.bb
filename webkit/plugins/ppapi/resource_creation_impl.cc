@@ -107,7 +107,7 @@ PP_Resource ResourceCreationImpl::CreateFlashDeviceID(PP_Instance instance) {
 
 PP_Resource ResourceCreationImpl::CreateFlashFontFile(
     PP_Instance instance,
-    const PP_FontDescription_Dev* description,
+    const PP_BrowserFont_Trusted_Description* description,
     PP_PrivateFontCharset charset) {
   return 0;  // Not supported in-process.
 }

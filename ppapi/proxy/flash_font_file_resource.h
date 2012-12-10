@@ -16,7 +16,7 @@
 #include "ppapi/proxy/serialized_structs.h"
 #include "ppapi/thunk/ppb_flash_font_file_api.h"
 
-struct PP_FontDescription_Dev;
+struct PP_BrowserFont_Trusted_Description;
 
 namespace ppapi {
 namespace proxy {
@@ -27,7 +27,7 @@ class FlashFontFileResource : public PluginResource,
  public:
   FlashFontFileResource(Connection connection,
                         PP_Instance instance,
-                        const PP_FontDescription_Dev* description,
+                        const PP_BrowserFont_Trusted_Description* description,
                         PP_PrivateFontCharset charset);
   virtual ~FlashFontFileResource();
 

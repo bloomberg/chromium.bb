@@ -8,7 +8,7 @@
 #include "ppapi/c/private/pp_private_font_charset.h"
 #include "ppapi/cpp/resource.h"
 
-struct PP_FontDescription_Dev;
+struct PP_BrowserFont_Trusted_Description;
 
 namespace pp {
 
@@ -21,7 +21,7 @@ class FontFile : public Resource {
   // Default constructor for making an is_null() FontFile resource.
   FontFile();
   FontFile(const InstanceHandle& instance,
-           const PP_FontDescription_Dev* description,
+           const PP_BrowserFont_Trusted_Description* description,
            PP_PrivateFontCharset charset);
   virtual ~FontFile();
 

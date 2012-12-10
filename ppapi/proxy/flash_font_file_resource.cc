@@ -16,11 +16,11 @@ namespace proxy {
 FlashFontFileResource::FlashFontFileResource(
     Connection connection,
     PP_Instance instance,
-    const PP_FontDescription_Dev* description,
+    const PP_BrowserFont_Trusted_Description* description,
     PP_PrivateFontCharset charset)
     : PluginResource(connection, instance),
       charset_(charset) {
-  description_.SetFromPPFontDescription(*description);
+  description_.SetFromPPBrowserFontDescription(*description);
 }
 
 FlashFontFileResource::~FlashFontFileResource() {
