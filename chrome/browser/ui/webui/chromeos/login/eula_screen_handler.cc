@@ -61,7 +61,7 @@ void EulaScreenHandler::GetLocalizedStrings(
   localized_strings->SetString("acceptAgreement",
       l10n_util::GetStringUTF16(IDS_EULA_ACCEPT_AND_CONTINUE_BUTTON));
   localized_strings->SetString("eulaSystemInstallationSettings",
-      l10n_util::GetStringUTF16(IDS_EULA_SYSTEM_INSTALLATION_SETTINGS));
+      l10n_util::GetStringUTF16(IDS_EULA_SYSTEM_SECURITY_SETTING));
   localized_strings->SetString("eulaTpmDesc",
       l10n_util::GetStringUTF16(IDS_EULA_TPM_DESCRIPTION));
   localized_strings->SetString("eulaTpmKeyDesc",
@@ -121,7 +121,7 @@ void EulaScreenHandler::OnPasswordFetched(const std::string& tpm_password) {
 }
 
 void EulaScreenHandler::HandleOnExit(const base::ListValue* args) {
-  DCHECK(args->GetSize() == 3);
+  DCHECK(args->GetSize() == 2);
 
   bool accepted = false;
   if (!args->GetBoolean(0, &accepted))
@@ -131,14 +131,10 @@ void EulaScreenHandler::HandleOnExit(const base::ListValue* args) {
   if (!args->GetBoolean(1, &usage_stats_enabled))
     NOTREACHED();
 
-  bool rlz_enabled = false;
-  if (!args->GetBoolean(2, &rlz_enabled))
-    NOTREACHED();
-
   if (!delegate_)
     return;
 
-  delegate_->OnExit(accepted, usage_stats_enabled, rlz_enabled);
+  delegate_->OnExit(accepted, usage_stats_enabled);
 }
 
 void EulaScreenHandler::HandleOnLearnMore(const base::ListValue* args) {

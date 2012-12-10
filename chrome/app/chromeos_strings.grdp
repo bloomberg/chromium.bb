@@ -1383,6 +1383,9 @@ Press any key to continue exploring.
   <message name="IDS_EULA_ACCEPT_AND_CONTINUE_BUTTON" desc="Accept button text below EULA terms of service">
     Accept and continue
   </message>
+  <message name="IDS_EULA_SYSTEM_SECURITY_SETTING" desc="Link from the EULA wizard screen and title of the TPM info dialog">
+    System security setting
+  </message>
   <message name="IDS_EULA_SYSTEM_INSTALLATION_SETTINGS" desc="Link from the EULA wizard screen and title of the TPM and RLZ info dialog">
     System installation settings
   </message>

@@ -66,11 +66,8 @@ GURL EulaScreen::GetOemEulaUrl() const {
   return GURL();
 }
 
-void EulaScreen::OnExit(bool accepted,
-                        bool usage_stats_enabled,
-                        bool rlz_enabled) {
+void EulaScreen::OnExit(bool accepted, bool usage_stats_enabled) {
   get_screen_observer()->SetUsageStatisticsReporting(usage_stats_enabled);
-  get_screen_observer()->SetRlzEnabled(rlz_enabled);
   get_screen_observer()->OnExit(accepted
                    ? ScreenObserver::EULA_ACCEPTED
                    : ScreenObserver::EULA_BACK);

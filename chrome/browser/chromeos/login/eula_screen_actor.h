@@ -27,9 +27,7 @@ class EulaScreenActor {
 
     // Called when screen is exited. |accepted| indicates if EULA was
     // accepted or not.
-    virtual void OnExit(bool accepted,
-                        bool usage_stats_enabled,
-                        bool rlz_enabled) = 0;
+    virtual void OnExit(bool accepted, bool usage_stats_enabled) = 0;
 
     // Initiate TPM password fetch. Will call actor's OnPasswordFetched() when
     // done.

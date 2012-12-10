@@ -71,8 +71,7 @@ cr.define('oobe', function() {
       backButton.id = 'back-button';
       backButton.textContent = localStrings.getString('back');
       backButton.addEventListener('click', function(e) {
-        chrome.send('eulaOnExit',
-                    [false, $('usage-stats').checked, $('rlz-enable').checked]);
+        chrome.send('eulaOnExit', [false, $('usage-stats').checked]);
         e.stopPropagation();
       });
       buttons.push(backButton);
@@ -82,8 +81,7 @@ cr.define('oobe', function() {
       acceptButton.textContent = localStrings.getString('acceptAgreement');
       acceptButton.addEventListener('click', function(e) {
         $('eula').classList.add('loading');  // Mark EULA screen busy.
-        chrome.send('eulaOnExit',
-                    [true, $('usage-stats').checked, $('rlz-enable').checked]);
+        chrome.send('eulaOnExit', [true, $('usage-stats').checked]);
         e.stopPropagation();
       });
       buttons.push(acceptButton);

@@ -147,7 +147,6 @@ WizardController::WizardController(chromeos::LoginDisplayHost* host,
       host_(host),
       oobe_display_(oobe_display),
       usage_statistics_reporting_(true),
-      rlz_enabled_(false),
       skip_update_enroll_after_eula_(false),
       login_screen_started_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
@@ -423,8 +422,6 @@ void WizardController::RegisterPrefs(PrefService* local_state) {
   local_state->RegisterBooleanPref(prefs::kFactoryResetRequested, false);
   local_state->RegisterStringPref(prefs::kRLZBrand, std::string(),
                                   PrefService::UNSYNCABLE_PREF);
-  local_state->RegisterBooleanPref(prefs::kRLZEnabled, false,
-                                   PrefService::UNSYNCABLE_PREF);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -480,14 +477,12 @@ void WizardController::OnEulaAccepted() {
 #endif
   }
 
-  // TODO(ivankr): post-AU action when |kRLZEnabled| is unset.
+  // TODO(ivankr): post-AU action when |kRLZBrand| is unset.
 #if defined(ENABLE_RLZ)
-  SaveBoolPreferenceForced(prefs::kRLZEnabled, rlz_enabled_);
+  LoadBrandCodeFromFile();
+#else
+  OnEulaBlockingTasksDone();
 #endif
-  if (rlz_enabled_)
-    LoadBrandCodeFromFile();
-  else
-    OnEulaBlockingTasksDone();
 }
 
 void WizardController::LoadBrandCodeFromFile() {
@@ -850,16 +845,6 @@ void WizardController::SetUsageStatisticsReporting(bool val) {
 
 bool WizardController::GetUsageStatisticsReporting() const {
   return usage_statistics_reporting_;
-}
-
-void WizardController::SetRlzEnabled(bool val) {
-#if defined(ENABLE_RLZ)
-  rlz_enabled_ = val;
-#endif
-}
-
-bool WizardController::GetRlzEnabled() const {
-  return rlz_enabled_;
 }
 
 // static

@@ -4530,8 +4530,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     cmd_dict = { 'command': 'AcceptOOBENetworkScreen' }
     return self._GetResultFromJSONRequest(cmd_dict, windex=None)
 
-  def AcceptOOBEEula(self, accepted, usage_stats_reporting=False,
-                     rlz_enabled=False):
+  def AcceptOOBEEula(self, accepted, usage_stats_reporting=False):
     """Accepts OOBE EULA and advances to the next screen.
 
     Assumes that we're already at the OOBE EULA screen.
@@ -4539,7 +4538,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     Args:
       accepted: Boolean indicating whether the EULA should be accepted.
       usage_stats_reporting: Boolean indicating whether UMA should be enabled.
-      rlz_enabled: Boolean indicating whether RLZ should be enabled.
 
     Returns:
       A dictionary with the following keys:
@@ -4551,8 +4549,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     """
     cmd_dict = { 'command': 'AcceptOOBEEula',
                  'accepted': accepted,
-                 'usage_stats_reporting': usage_stats_reporting,
-                 'rlz_enabled': rlz_enabled }
+                 'usage_stats_reporting': usage_stats_reporting }
     return self._GetResultFromJSONRequest(cmd_dict, windex=None)
 
   def CancelOOBEUpdate(self):

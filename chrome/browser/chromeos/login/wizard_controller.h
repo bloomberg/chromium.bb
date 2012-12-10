@@ -215,8 +215,6 @@ class WizardController : public ScreenObserver {
                                      const std::string& password) OVERRIDE;
   virtual void SetUsageStatisticsReporting(bool val) OVERRIDE;
   virtual bool GetUsageStatisticsReporting() const OVERRIDE;
-  virtual void SetRlzEnabled(bool val) OVERRIDE;
-  virtual bool GetRlzEnabled() const OVERRIDE;
 
   // Switches from one screen to another.
   void SetCurrentScreen(WizardScreen* screen);
@@ -280,9 +278,6 @@ class WizardController : public ScreenObserver {
   // State of Usage stat/error reporting checkbox on EULA screen
   // during wizard lifetime.
   bool usage_statistics_reporting_;
-
-  // Whether RLZ tracking is enabled.
-  bool rlz_enabled_;
 
   // If true then update check is cancelled and enrollment is started after
   // EULA is accepted.

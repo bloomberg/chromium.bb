@@ -1087,15 +1087,6 @@ html[oobe=new] #oem-eula {
   text-align: center;
 }
 
-html[rlz=disabled] #rlz-settings {
-  display: none;
-}
-
-#rlz-enable {
-  -webkit-margin-end: 10px;
-  -webkit-margin-start: 20px;
-}
-
 [hidden] {
   display: none !important;
 }
