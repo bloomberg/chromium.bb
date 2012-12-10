@@ -159,7 +159,7 @@ class Daemon::PIDFile {
  public:
   static bool Create(const std::string& path, scoped_ptr<PIDFile>* pid_file) {
     int pid_file_fd = HANDLE_EINTR(
-        open(path.c_str(), O_CREAT | O_WRONLY, 0600));
+        open(path.c_str(), O_CREAT | O_WRONLY, 0666));
     if (pid_file_fd < 0) {
       PError("open()");
       return false;
