@@ -576,12 +576,10 @@ void DriveFileSystemProxy::OnGetEntryInfoByPath(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (error != DRIVE_FILE_OK || !entry_proto.get()) {
-    MessageLoopProxy::current()->PostTask(FROM_HERE,
-         base::Bind(callback,
-                    base::PLATFORM_FILE_ERROR_NOT_FOUND,
-                    base::PlatformFileInfo(),
-                    FilePath(),
-                    scoped_refptr<ShareableFileReference>(NULL)));
+    callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND,
+                 base::PlatformFileInfo(),
+                 FilePath(),
+                 scoped_refptr<ShareableFileReference>(NULL));
     return;
   }
 
