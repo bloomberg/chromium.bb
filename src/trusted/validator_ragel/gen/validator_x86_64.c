@@ -103,7 +103,8 @@ Bool ValidateChunkAMD64(const uint8_t *data, size_t size,
     uint32_t operand_states = 0;
     enum OperandName base = NO_REG;
     enum OperandName index = NO_REG;
-    enum OperandName restricted_register = NO_REG;
+    enum OperandName restricted_register =
+      RESTRICTED_REGISTER_INITIAL_VALUE(options);
     uint8_t rex_prefix = FALSE;
     /* Top three bits of VEX2 are inverted: see AMD/Intel manual.  */
     uint8_t vex_prefix2 = VEX_R | VEX_X | VEX_B;

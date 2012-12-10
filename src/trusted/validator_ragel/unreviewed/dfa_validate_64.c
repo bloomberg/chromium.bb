@@ -35,9 +35,8 @@ static NaClValidationStatus ApplyDfaValidator_x86_64(
   UNREFERENCED_PARAMETER(guest_addr);
   UNREFERENCED_PARAMETER(cache);
 
-  if (stubout_mode) {
+  if (stubout_mode)
     return NaClValidationFailedNotImplemented;
-  }
   if (!NaClArchSupportedX86(cpu_features))
     return NaClValidationFailedCpuNotSupported;
   if (size & kBundleMask)
@@ -48,10 +47,9 @@ static NaClValidationStatus ApplyDfaValidator_x86_64(
                            StubOutCPUUnsupportedInstruction,
                          &status))
     return NaClValidationSucceeded;
-  else if (errno == ENOMEM)
+  if (errno == ENOMEM)
     return NaClValidationFailedOutOfMemory;
-  else
-    return status;
+  return status;
 }
 
 
@@ -67,19 +65,17 @@ static NaClValidationStatus ValidatorCodeCopy_x86_64(
   struct CodeCopyCallbackData callback_data;
   UNREFERENCED_PARAMETER(guest_addr);
 
-  if (size & kBundleMask) {
+  if (size & kBundleMask)
     return NaClValidationFailed;
-  }
   callback_data.copy_func = copy_func;
   callback_data.delta = data_existing - data_new;
   if (ValidateChunkAMD64(data_new, size, CALL_USER_CALLBACK_ON_EACH_INSTRUCTION,
                          cpu_features, ProcessCodeCopyInstruction,
                          &callback_data))
     return NaClValidationSucceeded;
-  else if (errno == ENOMEM)
+  if (errno == ENOMEM)
     return NaClValidationFailedOutOfMemory;
-  else
-    return NaClValidationFailed;
+  return NaClValidationFailed;
 }
 
 
@@ -96,43 +92,48 @@ static Bool ProcessCodeReplacementInstruction(const uint8_t *begin_new,
   CHECK(instruction_length <= MAX_INSTRUCTION_LENGTH);
 
   /* Unsupported instruction must have been replaced with HLTs.  */
-  if ((info & VALIDATION_ERRORS_MASK) == CPUID_UNSUPPORTED_INSTRUCTION) {
+  if ((info & VALIDATION_ERRORS_MASK) == CPUID_UNSUPPORTED_INSTRUCTION)
     return CodeReplacementIsStubouted(begin_existing, instruction_length);
+
   /* If we have jump which jumps out of it's range...  */
-  } else if (info & DIRECT_JUMP_OUT_OF_RANGE) {
+  if (info & DIRECT_JUMP_OUT_OF_RANGE) {
     /* then everything is fine if it's the only error and jump is unchanged!  */
-    if ((info & (VALIDATION_ERRORS_MASK & ~DIRECT_JUMP_OUT_OF_RANGE)) ||
-        memcmp(begin_new, begin_existing, instruction_length) != 0)
-      return FALSE;
-  /* If instruction is not accepted then we have nothing to do here.  */
-  } else if (info & (VALIDATION_ERRORS_MASK | BAD_JUMP_TARGET)) {
-    return FALSE;
-  /* Instruction is untouched: we are done.  */
-  } else if (memcmp(begin_new, begin_existing, instruction_length) == 0) {
-    return TRUE;
-  /* Only some instructions can be modified.  */
-  } else if (!(info & MODIFIABLE_INSTRUCTION)) {
-    return FALSE;
-  /* Instruction with two-bit immediate can only change these two bits.  */
-  } else if ((info & IMMEDIATE_2BIT) == IMMEDIATE_2BIT) {
-    if (memcmp(begin_new, begin_existing,
-                 instruction_length - (info & IMMEDIATES_SIZE_MASK) - 1) != 0 ||
-        (*end_new & 0xfc) != (*end_existing & 0xfc)) {
-      return FALSE;
-    }
-  /* Instruction's last byte is not immediate, thus it must be unchanged.  */
-  } else if (info & LAST_BYTE_IS_NOT_IMMEDIATE) {
-    if (memcmp(begin_new, begin_existing,
-                 instruction_length - (info & IMMEDIATES_SIZE_MASK) - 1) != 0 ||
-        (*end_new) != (*end_existing)) {
-      return FALSE;
-    }
-  /* Normal instruction can only change an immediate.  */
-  } else if (memcmp(begin_new, begin_existing,
-                     instruction_length - (info & IMMEDIATES_SIZE_MASK)) != 0) {
+    if ((info & VALIDATION_ERRORS_MASK) == DIRECT_JUMP_OUT_OF_RANGE &&
+        memcmp(begin_new, begin_existing, instruction_length) == 0)
+      return TRUE;
     return FALSE;
   }
-  return TRUE;
+
+  /* If instruction is not accepted then we have nothing to do here.  */
+  if (info & (VALIDATION_ERRORS_MASK | BAD_JUMP_TARGET))
+    return FALSE;
+
+  /* Instruction is untouched: we are done.  */
+  if (memcmp(begin_new, begin_existing, instruction_length) == 0)
+    return TRUE;
+
+  /* Only some instructions can be modified.  */
+  if (!(info & MODIFIABLE_INSTRUCTION))
+    return FALSE;
+
+  /*
+   * Instruction with two-bit immediate can only change these these two bits and
+   * immediate/displacement.
+   */
+  if ((info & IMMEDIATE_2BIT) == IMMEDIATE_2BIT)
+    return memcmp(begin_new, begin_existing,
+                  instruction_length - INFO_IMMEDIATES_SIZE(info) - 1) == 0 &&
+           (*end_new & 0xfc) == (*end_existing & 0xfc);
+
+  /* Instruction's last byte is not immediate, thus it must be unchanged.  */
+  if (info & LAST_BYTE_IS_NOT_IMMEDIATE)
+    return memcmp(begin_new, begin_existing,
+                  instruction_length - INFO_IMMEDIATES_SIZE(info) - 1) == 0 &&
+           (*end_new) == (*end_existing);
+
+  /* Normal instruction can only change an immediate.  */
+  return memcmp(begin_new, begin_existing,
+                instruction_length - INFO_IMMEDIATES_SIZE(info)) == 0;
 }
 
 static NaClValidationStatus ValidatorCodeReplacement_x86_64(
@@ -145,17 +146,15 @@ static NaClValidationStatus ValidatorCodeReplacement_x86_64(
   NaClCPUFeaturesX86 *cpu_features = (NaClCPUFeaturesX86 *) f;
   UNREFERENCED_PARAMETER(guest_addr);
 
-  if (size & kBundleMask) {
+  if (size & kBundleMask)
     return NaClValidationFailed;
-  }
   if (ValidateChunkAMD64(data_new, size, CALL_USER_CALLBACK_ON_EACH_INSTRUCTION,
                          cpu_features, ProcessCodeReplacementInstruction,
                          (void *)(data_existing - data_new)))
     return NaClValidationSucceeded;
-  else if (errno == ENOMEM)
+  if (errno == ENOMEM)
     return NaClValidationFailedOutOfMemory;
-  else
-    return NaClValidationFailed;
+  return NaClValidationFailed;
 }
 
 static const struct NaClValidatorInterface validator = {

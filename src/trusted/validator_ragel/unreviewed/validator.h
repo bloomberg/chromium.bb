@@ -20,16 +20,20 @@ enum validation_callback_info {
   IMMEDIATE_16BIT               = 0x00000002,
   IMMEDIATE_32BIT               = 0x00000004,
   IMMEDIATE_64BIT               = 0x00000008,
+  /* Second immediate present bit — included in SECOND_IMMEDIATE_XXBIT, too.  */
+  SECOND_IMMEDIATE_PRESENT      = 0x00000010,
   /* Second 8bit immediate is only used in "extrq/insertq" instructions.  */
   SECOND_IMMEDIATE_8BIT         = 0x00000011,
   /* Second 16bit immediate is only used in "enter" instruction.  */
   SECOND_IMMEDIATE_16BIT        = 0x00000012,
   /* Displacement sizes (displacements come at the end - before immediates).  */
   DISPLACEMENT_SIZE_MASK        = 0x00000060,
+  DISPLACEMENT_SIZE_SHIFT       =          5,
   DISPLACEMENT_8BIT             = 0x00000021,
   DISPLACEMENT_16BIT            = 0x00000042,
   DISPLACEMENT_32BIT            = 0x00000064,
   /* Relative size (relative fields always come at the end if instriction).  */
+  RELATIVE_PRESENT              = 0x00000080,
   RELATIVE_8BIT                 = 0x00000081,
   RELATIVE_16BIT                = 0x00000082,
   RELATIVE_32BIT                = 0x00000084,
@@ -79,15 +83,35 @@ enum validation_callback_info {
   BAD_JUMP_TARGET               = 0x40000000
 };
 
+#define INFO_IMMEDIATES_SIZE(info) \
+  ((info) & IMMEDIATES_SIZE_MASK)
+#define INFO_DISPLACEMENT_SIZE(info) \
+  ((1 << (((info) & DISPLACEMENT_SIZE_MASK) >> DISPLACEMENT_SIZE_SHIFT)) >> 1)
+#define INFO_RELATIVE_SIZE(info) \
+  ((info) & RELATIVE_PRESENT ? INFO_IMMEDIATES_SIZE(info) : 0)
+#define INFO_SECOND_IMMEDIATE_SIZE(info) \
+  ((info) & IMMEDIATE_2BIT == SECOND_IMMEDIATE_PRESENT ? \
+    INFO_IMMEDIATES_SIZE(info) - 1 : 0)
+#define INFO_IMMEDIATE_SIZE(info) \
+  INFO_IMMEDIATES_SIZE(info) - \
+  INFO_DISPLACEMENT_SIZE(info) - \
+  INFO_RELATIVE_SIZE(info) - \
+  INFO_SECOND_IMMEDIATE_SIZE(info)
+
 #define kBundleSize 32
 #define kBundleMask 31
 
 enum ValidationOptions {
+  /* Restricted register initial value.  */
+  RESTRICTED_REGISTER_INITIAL_VALUE_MASK = 0x000000ff,
   /* Call process_error function on instruction.  */
-  CALL_USER_CALLBACK_ON_EACH_INSTRUCTION = 0x00000001,
+  CALL_USER_CALLBACK_ON_EACH_INSTRUCTION = 0x00000100,
   /* Process all instruction as a contiguous stream.  */
-  PROCESS_CHUNK_AS_A_CONTIGUOUS_STREAM   = 0x00000002
+  PROCESS_CHUNK_AS_A_CONTIGUOUS_STREAM   = 0x00000200
 };
+
+#define RESTRICTED_REGISTER_INITIAL_VALUE(option) \
+  (((option) & RESTRICTED_REGISTER_INITIAL_VALUE_MASK) ^ NO_REG)
 
 /*
  * Callback is invoked by ValidateChunk* for all erroneous instructions

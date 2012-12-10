@@ -34,22 +34,19 @@ NaClValidationStatus ApplyDfaValidator_x86_32(
   UNREFERENCED_PARAMETER(guest_addr);
   UNREFERENCED_PARAMETER(cache);
 
-  if (stubout_mode) {
+  if (stubout_mode)
     return NaClValidationFailedNotImplemented;
-  }
-  if (!NaClArchSupportedX86(cpu_features)) {
+  if (!NaClArchSupportedX86(cpu_features))
     return NaClValidationFailedCpuNotSupported;
-  }
   if (ValidateChunkIA32(data, size, 0 /*options*/, cpu_features,
                         readonly_text ?
                           ProcessError :
                           StubOutCPUUnsupportedInstruction,
                         &status))
     return NaClValidationSucceeded;
-  else if (errno == ENOMEM)
+  if (errno == ENOMEM)
     return NaClValidationFailedOutOfMemory;
-  else
-    return status;
+  return status;
 }
 
 
@@ -65,19 +62,17 @@ static NaClValidationStatus ValidatorCopy_x86_32(
   struct CodeCopyCallbackData callback_data;
   UNREFERENCED_PARAMETER(guest_addr);
 
-  if (size & kBundleMask) {
+  if (size & kBundleMask)
     return NaClValidationFailed;
-  }
   callback_data.copy_func = copy_func;
   callback_data.delta = data_existing - data_new;
   if (ValidateChunkIA32(data_new, size, CALL_USER_CALLBACK_ON_EACH_INSTRUCTION,
                         cpu_features, ProcessCodeCopyInstruction,
                         &callback_data))
     return NaClValidationSucceeded;
-  else if (errno == ENOMEM)
+  if (errno == ENOMEM)
     return NaClValidationFailedOutOfMemory;
-  else
-    return NaClValidationFailed;
+  return NaClValidationFailed;
 }
 
 /* This structure is used by callbacks ProcessCodeReplacementInstruction
@@ -116,28 +111,36 @@ static INLINE Bool ProcessCodeReplacementInstructionInfoFlags(
                     (begin_new - data->data_new) & kBundleMask,
                     instruction_length);
       return TRUE;
-    } else {
-      return FALSE;
     }
-  /* If we have jump which jumps out of it's range...  */
-  } else if (info & DIRECT_JUMP_OUT_OF_RANGE) {
-    /* then everything is fine if it's the only error and jump is unchanged!  */
-    if ((info & (VALIDATION_ERRORS_MASK & ~DIRECT_JUMP_OUT_OF_RANGE)) ||
-        memcmp(begin_new, begin_existing, instruction_length) != 0)
-      return FALSE;
-  /* If instruction is not accepted then we have nothing to do here.  */
-  } else if (info & (VALIDATION_ERRORS_MASK | BAD_JUMP_TARGET)) {
     return FALSE;
-  /* Instruction is untouched: we are done.  */
-  } if (memcmp(begin_new, begin_existing, instruction_length) == 0) {
-    return TRUE;
-  /* Return failure if code replacement attempts to modify a special instruction
-   * such as naclcall or nacljmp.  */
-  } else if (info & SPECIAL_INSTRUCTION) {
-    return FALSE;
-  } else {
-    return TRUE;
   }
+
+  /* If we have jump which jumps out of it's range...  */
+  if (info & DIRECT_JUMP_OUT_OF_RANGE) {
+    /* then everything is fine if it's the only error and jump is unchanged!  */
+    if ((info & VALIDATION_ERRORS_MASK) == DIRECT_JUMP_OUT_OF_RANGE &&
+        memcmp(begin_new, begin_existing, instruction_length) == 0)
+      return TRUE;
+    return FALSE;
+  }
+
+  /* If instruction is not accepted then we have nothing to do here.  */
+  if (info & (VALIDATION_ERRORS_MASK | BAD_JUMP_TARGET))
+    return FALSE;
+
+  /* Instruction is untouched: we are done.  */
+  if (memcmp(begin_new, begin_existing, instruction_length) == 0)
+    return TRUE;
+
+  /*
+   * Return failure if code replacement attempts to modify a special instruction
+   * such as naclcall or nacljmp.
+   */
+  if (info & SPECIAL_INSTRUCTION)
+    return FALSE;
+
+  /* No problems found.  */
+  return TRUE;
 }
 
 static Bool ProcessOriginalCodeInstruction(const uint8_t *begin_existing,
@@ -199,10 +202,11 @@ static Bool ProcessCodeReplacementInstruction(const uint8_t *begin_new,
       data->instruction_boundaries_existing = 1;
       data->instruction_boundaries_new = 1;
     }
+
     return TRUE;
-  } else {
-    return FALSE;
   }
+
+  return FALSE;
 }
 
 static NaClValidationStatus ValidatorCodeReplacement_x86_32(
@@ -216,9 +220,8 @@ static NaClValidationStatus ValidatorCodeReplacement_x86_32(
   struct CodeReplacementCallbackData callback_data;
   UNREFERENCED_PARAMETER(guest_addr);
 
-  if (size & kBundleMask) {
+  if (size & kBundleMask)
     return NaClValidationFailed;
-  }
    /* Pre-mark first boundaries. */
   callback_data.instruction_boundaries_existing = 1;
   callback_data.instruction_boundaries_new = 1;
@@ -230,10 +233,9 @@ static NaClValidationStatus ValidatorCodeReplacement_x86_32(
                         cpu_features, ProcessCodeReplacementInstruction,
                         &callback_data))
     return NaClValidationSucceeded;
-  else if (errno == ENOMEM)
+  if (errno == ENOMEM)
     return NaClValidationFailedOutOfMemory;
-  else
-    return NaClValidationFailed;
+  return NaClValidationFailed;
 }
 
 static const struct NaClValidatorInterface validator = {
