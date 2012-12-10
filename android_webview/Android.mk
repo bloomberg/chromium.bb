@@ -49,7 +49,7 @@ include $(BUILD_STATIC_JAVA_LIBRARY)
 include $(CLEAR_VARS)
 LOCAL_MODULE := webviewchromium_pak
 LOCAL_MODULE_STEM := webviewchromium
-LOCAL_BUILT_MODULE_STEM := android_webview/assets/webviewichromium.pak
+LOCAL_BUILT_MODULE_STEM := android_webview/assets/webviewchromium.pak
 include $(LOCAL_PATH)/webview_pak.mk
 
 # TODO(benm): remove when we get all our strings from java.
