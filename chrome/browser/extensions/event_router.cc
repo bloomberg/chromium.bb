@@ -440,18 +440,16 @@ void EventRouter::DispatchEventToProcess(const std::string& extension_id,
     return;
   }
 
-  ListValue* event_args = NULL;
-  if (!CanDispatchEventToProfile(listener_profile, extension,
-                                 event, &event_args)) {
+  if (!CanDispatchEventToProfile(listener_profile, extension, event))
     return;
-  }
 
   if (!event->will_dispatch_callback.is_null()) {
-    event->will_dispatch_callback.Run(listener_profile, extension, event_args);
+    event->will_dispatch_callback.Run(listener_profile, extension,
+                                      event->event_args.get());
   }
 
   DispatchExtensionMessage(process, extension_id,
-                           event->event_name, event_args,
+                           event->event_name, event->event_args.get(),
                            event->event_url, event->user_gesture,
                            event->filter_info);
   IncrementInFlightEvents(listener_profile, extension);
@@ -459,11 +457,7 @@ void EventRouter::DispatchEventToProcess(const std::string& extension_id,
 
 bool EventRouter::CanDispatchEventToProfile(Profile* profile,
                                             const Extension* extension,
-                                            const linked_ptr<Event>& event,
-                                            ListValue** event_args) {
-  if (event_args)
-    *event_args = event->event_args.get();
-
+                                            const linked_ptr<Event>& event) {
   // Is this event from a different profile than the renderer (ie, an
   // incognito tab event sent to a normal process, or vice versa).
   bool cross_incognito =
@@ -471,12 +465,7 @@ bool EventRouter::CanDispatchEventToProfile(Profile* profile,
   if (cross_incognito &&
       !extensions::ExtensionSystem::Get(profile)->extension_service()->
           CanCrossIncognito(extension)) {
-    if (!event->cross_incognito_args.get())
-      return false;
-    // Send the event with different arguments to extensions that can't
-    // cross incognito.
-    if (event_args)
-      *event_args = event->cross_incognito_args.get();
+    return false;
   }
 
   return true;
@@ -486,7 +475,7 @@ bool EventRouter::MaybeLoadLazyBackgroundPageToDispatchEvent(
     Profile* profile,
     const Extension* extension,
     const linked_ptr<Event>& event) {
-  if (!CanDispatchEventToProfile(profile, extension, event, NULL))
+  if (!CanDispatchEventToProfile(profile, extension, event))
     return false;
 
   LazyBackgroundTaskQueue* queue =
@@ -639,7 +628,6 @@ Event::Event(const std::string& event_name,
              scoped_ptr<base::ListValue> event_args)
     : event_name(event_name),
       event_args(event_args.Pass()),
-      cross_incognito_args(NULL),
       restrict_to_profile(NULL),
       user_gesture(EventRouter::USER_GESTURE_UNKNOWN) {
   DCHECK(this->event_args.get());
@@ -647,14 +635,12 @@ Event::Event(const std::string& event_name,
 
 Event::Event(const std::string& event_name,
              scoped_ptr<ListValue> event_args,
-             scoped_ptr<ListValue> cross_incognito_args,
              Profile* restrict_to_profile,
              const GURL& event_url,
              EventRouter::UserGestureState user_gesture,
              const EventFilteringInfo& filter_info)
     : event_name(event_name),
       event_args(event_args.Pass()),
-      cross_incognito_args(cross_incognito_args.Pass()),
       restrict_to_profile(restrict_to_profile),
       event_url(event_url),
       user_gesture(user_gesture),
@@ -667,9 +653,6 @@ Event::~Event() {}
 Event* Event::DeepCopy() {
   Event* copy = new Event(event_name,
                           scoped_ptr<base::ListValue>(event_args->DeepCopy()),
-                          scoped_ptr<base::ListValue>(
-                              cross_incognito_args.get() ?
-                                  cross_incognito_args->DeepCopy() : NULL),
                           restrict_to_profile,
                           event_url,
                           user_gesture,

@@ -194,8 +194,7 @@ class EventRouter : public content::NotificationObserver,
   // the event crosses the incognito boundary.
   bool CanDispatchEventToProfile(Profile* profile,
                                  const Extension* extension,
-                                 const linked_ptr<Event>& event,
-                                 base::ListValue** event_args);
+                                 const linked_ptr<Event>& event);
 
   // Possibly loads given extension's background page in preparation to
   // dispatch an event.  Returns true if the event was queued for subsequent
@@ -243,16 +242,6 @@ struct Event {
   // Arguments to send to the event listener.
   scoped_ptr<base::ListValue> event_args;
 
-  // This is used in the case of sending one event to extensions that have
-  // incognito access, and another event to extensions that don't (here),
-  // in order to avoid sending 2 events to "spanning" extensions.
-  // If this is non-NULL, these arguments are used in place of event_args
-  // when an event is dispatched across incognito to an extension that can't
-  // cross incognito.
-  // TODO(mpcomplete): figure out a way to clean this up. It's only used in 1
-  // place.
-  scoped_ptr<base::ListValue> cross_incognito_args;
-
   // If non-NULL, then the event will not be sent to other profiles unless the
   // extension has permission (e.g. incognito tab update -> normal profile only
   // works if extension is allowed incognito access).
@@ -280,7 +269,6 @@ struct Event {
 
   Event(const std::string& event_name,
         scoped_ptr<base::ListValue> event_args,
-        scoped_ptr<base::ListValue> cross_incognito_args,
         Profile* restrict_to_profile,
         const GURL& event_url,
         EventRouter::UserGestureState user_gesture,
