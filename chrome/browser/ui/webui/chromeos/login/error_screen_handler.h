@@ -128,6 +128,7 @@ class ErrorScreenHandler
   void HandleShowCaptivePortal(const base::ListValue* args);
   void HandleHideCaptivePortal(const base::ListValue* args);
   void HandleErrorScreenUpdate(const base::ListValue* args);
+  void HandleShowLoadingTimeoutError(const base::ListValue* args);
   void HandleUpdateGaiaIsLocal(const base::ListValue* args);
 
   // WebUIMessageHandler implementation:

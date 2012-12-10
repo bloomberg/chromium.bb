@@ -222,16 +222,6 @@ cr.define('login', function() {
         }
       }
     },
-
-    // Request network state update with loading timeout as reason.
-    showLoadingTimeoutError: function() {
-      // Shows error message if it is not shown already.
-      if (this.classList.contains('hidden')) {
-        chrome.send('loginRequestNetworkState',
-                    ['login.ErrorMessageScreen.updateState',
-                     ERROR_REASONS.LOADING_TIMEOUT]);
-      }
-    }
   };
 
   /**

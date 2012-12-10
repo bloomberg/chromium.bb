@@ -128,7 +128,7 @@ cr.define('login', function() {
     onLoadingTimeOut_: function() {
       this.loadingTimer_ = undefined;
       this.clearRetry_();
-      $('error-message').showLoadingTimeoutError();
+      chrome.send('showLoadingTimeoutError');
     },
 
     /**

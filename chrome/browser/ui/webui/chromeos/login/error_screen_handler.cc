@@ -327,6 +327,15 @@ void ErrorScreenHandler::HandleErrorScreenUpdate(const base::ListValue* args) {
                       false);
 }
 
+void ErrorScreenHandler::HandleShowLoadingTimeoutError(
+    const base::ListValue* args) {
+  UpdateStateInternal(network_state_informer_->state(),
+                      network_state_informer_->network_name(),
+                      kErrorReasonLoadingTimeout,
+                      network_state_informer_->last_network_type(),
+                      false);
+}
+
 void ErrorScreenHandler::HandleUpdateGaiaIsLocal(const base::ListValue* args) {
   DCHECK(args && args->GetSize() == 1);
 
@@ -348,6 +357,9 @@ void ErrorScreenHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("errorScreenUpdate",
       base::Bind(&ErrorScreenHandler::HandleErrorScreenUpdate,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("showLoadingTimeoutError",
+      base::Bind(&ErrorScreenHandler::HandleShowLoadingTimeoutError,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("updateGaiaIsLocal",
       base::Bind(&ErrorScreenHandler::HandleUpdateGaiaIsLocal,
