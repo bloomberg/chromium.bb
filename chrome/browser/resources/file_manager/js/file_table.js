@@ -237,21 +237,8 @@ FileTable.prototype.updateSize_ = function(div, entry, filesystemProps) {
 FileTable.prototype.renderType_ = function(entry, columnId, table) {
   var div = this.ownerDocument.createElement('div');
   div.className = 'type';
-  div.textContent = this.getFileTypeString_(entry);
+  div.textContent = FileType.getTypeString(entry);
   return div;
-};
-
-/**
- * @param {Entry} entry File or directory entry.
- * @return {string} Localized string representation of file type.
- * @private
- */
-FileTable.prototype.getFileTypeString_ = function(entry) {
-  var fileType = FileType.getType(entry);
-  if (fileType.subtype)
-    return strf(fileType.name, fileType.subtype);
-  else
-    return str(fileType.name);
 };
 
 /**
@@ -455,8 +442,8 @@ FileTable.prototype.compareType_ = function(a, b) {
   if (a.isDirectory != b.isDirectory)
     return Number(b.isDirectory) - Number(a.isDirectory);
 
-  var aType = this.getFileTypeString_(a);
-  var bType = this.getFileTypeString_(b);
+  var aType = FileType.getTypeString(a);
+  var bType = FileType.getTypeString(b);
 
   var result = this.collator_.compare(aType, bType);
   if (result != 0)

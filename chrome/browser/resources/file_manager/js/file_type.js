@@ -134,6 +134,19 @@ FileType.getType = function(file) {
 };
 
 /**
+ * @param {string|Entry} file Reference to the file.
+ *     Can be a name, a path, a url or a File API Entry.
+ * @return {string} Localized string representation of file type.
+ */
+FileType.getTypeString = function(file) {
+  var fileType = FileType.getType(file);
+  if (fileType.subtype)
+    return strf(fileType.name, fileType.subtype);
+  else
+    return str(fileType.name);
+};
+
+/**
  * Pattern for urls pointing to Google Drive files.
  */
 FileType.GDRIVE_URL_PATTERN =

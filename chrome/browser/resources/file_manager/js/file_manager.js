@@ -967,7 +967,7 @@ DialogType.isModal = function(type) {
         // See if all the extensions in the group have the same description.
         for (var j = 0; j != fileType.extensions.length; j++) {
           var currentDescription =
-              this.getFileTypeString_('.' + fileType.extensions[j]);
+              FileType.getTypeString('.' + fileType.extensions[j]);
           if (!description)  // Set the first time.
             description = currentDescription;
           else if (description != currentDescription) {
