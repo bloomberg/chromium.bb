@@ -37,7 +37,7 @@ namespace app.window {
     // Y coordinate of the window. (Deprecated; use 'bounds'.)
     [nodoc] long? top;
 
-    // Minimium width of the window.
+    // Minimum width of the window.
     long? minWidth;
 
     // Minimum height of the window.
