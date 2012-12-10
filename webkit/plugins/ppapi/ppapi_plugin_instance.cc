@@ -1500,8 +1500,17 @@ void PluginInstance::UpdateFlashFullscreenState(bool flash_fullscreen) {
   bool old_plugin_focus = PluginHasFocus();
   flash_fullscreen_ = flash_fullscreen;
   if (is_mouselock_pending && !delegate()->IsMouseLocked(this)) {
-    if (!delegate()->LockMouse(this))
-      lock_mouse_callback_->Run(PP_ERROR_FAILED);
+    if (!IsProcessingUserGesture() &&
+        !module_->permissions().HasPermission(
+            ::ppapi::PERMISSION_BYPASS_USER_GESTURE)) {
+      lock_mouse_callback_->Run(PP_ERROR_NO_USER_GESTURE);
+    } else {
+      // Open a user gesture here so the Webkit user gesture checks will succeed
+      // for out-of-process plugins.
+      WebScopedUserGesture user_gesture;
+      if (!delegate()->LockMouse(this))
+        lock_mouse_callback_->Run(PP_ERROR_FAILED);
+    }
   }
 
   if (PluginHasFocus() != old_plugin_focus)
@@ -2244,9 +2253,15 @@ int32_t PluginInstance::LockMouse(PP_Instance instance,
   if (!CanAccessMainFrame())
     return PP_ERROR_NOACCESS;
 
+  if (!IsProcessingUserGesture())
+    return PP_ERROR_NO_USER_GESTURE;
+
   // Attempt mouselock only if Flash isn't waiting on fullscreen, otherwise
   // we wait and call LockMouse() in UpdateFlashFullscreenState().
   if (!FlashIsFullscreenOrPending() || flash_fullscreen()) {
+    // Open a user gesture here so the Webkit user gesture checks will succeed
+    // for out-of-process plugins.
+    WebScopedUserGesture user_gesture;
     if (!delegate()->LockMouse(this))
       return PP_ERROR_FAILED;
   }
