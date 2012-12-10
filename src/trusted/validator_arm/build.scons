@@ -18,8 +18,9 @@ if not env.Bit('android'):
 )
 
 # ------------------------------------------------------------------
-# Source generation is controlled by command line directives.
-# The two directives are:
+# Source generation is controlled by command line directives. To update
+# source generation, you must add one of the following arguments:
+#
 #   valclean : Delete the existing versions of the generated files.
 #       This step should be done whenever ANY change may effect
 #       the generated sources.
@@ -113,6 +114,7 @@ if generate:
     gen_env.Alias('valclean', action=[Delete(x) for x in GEN_LIST]))
 
 def _generate_source(filename, TABLE=None):
+  if not generate: return  # i.e. don't add source dependency.
   table_arg = '--table=' + TABLE if TABLE else ''
   env.Command(target=_gen_file(filename),
               source=['armv7.table',
