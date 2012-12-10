@@ -21,8 +21,10 @@ chromeHidden.registerCustomHook('tabCapture',
       };
 
       var options = {};
-      options.video = response.videoConstraints;
-      options.audio = response.audioConstraints;
+      if (response.audioConstraints)
+        options.audio = response.audioConstraints;
+      if (response.videoConstraints)
+        options.video = response.videoConstraints;
 
       navigator.webkitGetUserMedia(options, successFunc, errorFunc);
     } else {

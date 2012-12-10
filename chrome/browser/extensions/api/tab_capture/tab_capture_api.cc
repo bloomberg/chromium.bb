@@ -16,12 +16,14 @@
 #include "chrome/browser/extensions/extension_tab_id_map.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/feature_switch.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+
+using extensions::api::tab_capture::MediaStreamConstraint;
 
 namespace TabCapture = extensions::api::tab_capture;
 namespace GetCapturedTabs = TabCapture::GetCapturedTabs;
@@ -30,10 +32,10 @@ namespace extensions {
 
 namespace {
 
-const char kPermissionError[] =
-    "Extension does not have permission for tab capture.";
-const char kErrorTabIdNotFound[] = "Could not find the specified tab.";
 const char kCapturingSameTab[] = "Cannot capture a tab with an active stream.";
+const char kFindingTabError[] = "Error finding tab to capture.";
+const char kNoAudioOrVideo[] = "Capture failed. No audio or video requested.";
+const char kPermissionError[] = "Tab Capture API flag is not enabled.";
 
 // Keys/values for media stream constraints.
 const char kMediaStreamSource[] = "chromeMediaSource";
@@ -43,8 +45,7 @@ const char kMediaStreamSourceTab[] = "tab";
 }  // namespace
 
 bool TabCaptureCaptureFunction::RunImpl() {
-  if (!GetExtension()->HasAPIPermission(APIPermission::kTabCapture) ||
-      !FeatureSwitch::tab_capture()->IsEnabled()) {
+  if (!FeatureSwitch::tab_capture()->IsEnabled()) {
     error_ = kPermissionError;
     return false;
   }
@@ -53,66 +54,62 @@ bool TabCaptureCaptureFunction::RunImpl() {
       TabCapture::Capture::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  int render_process_id = -1;
-  int routing_id = -1;
-  int tab_id = *params->tab_id.get();
-  bool found_tab = false;
-
-  for (BrowserList::const_iterator iter = BrowserList::begin();
-       iter != BrowserList::end(); ++iter) {
-    Browser* target_browser = *iter;
-    TabStripModel* target_tab_strip = target_browser->tab_strip_model();
-
-    for (int i = 0; i < target_tab_strip->count(); ++i) {
-      TabContents* target_contents = target_tab_strip->GetTabContentsAt(i);
-      SessionTabHelper* session_tab_helper =
-          SessionTabHelper::FromWebContents(target_contents->web_contents());
-      if (session_tab_helper->session_id().id() == tab_id) {
-        found_tab = true;
-        content::RenderViewHost* const rvh =
-            target_contents->web_contents()->GetRenderViewHost();
-        routing_id = rvh->GetRoutingID();
-        render_process_id = rvh->GetProcess()->GetID();
-        break;
-      }
-    }
-  }
-
-  if (!found_tab) {
-    error_ = kErrorTabIdNotFound;
-    SetResult(base::Value::CreateIntegerValue(0));
+  // Figure out the active WebContents and retrieve the needed id's.
+  Browser* target_browser = browser::FindAnyBrowser(profile(),
+                                                    include_incognito(),
+                                                    chrome::GetActiveDesktop());
+  if (!target_browser) {
+    error_ = kFindingTabError;
     return false;
   }
 
+  content::WebContents* target_contents =
+      target_browser->tab_strip_model()->GetActiveWebContents();
+  if (!target_contents) {
+    error_ = kFindingTabError;
+    return false;
+  }
+
+  content::RenderViewHost* const rvh = target_contents->GetRenderViewHost();
+  int render_process_id = rvh->GetProcess()->GetID();
+  int routing_id = rvh->GetRoutingID();
+  int tab_id = SessionTabHelper::FromWebContents(target_contents)->
+                   session_id().id();
+
+  // Create a constraints vector. We will modify all the constraints in this
+  // vector to append our chrome specific constraints.
+  std::vector<MediaStreamConstraint*> constraints;
+  bool has_audio = params->options.audio.get() && *params->options.audio.get();
+  bool has_video = params->options.video.get() && *params->options.video.get();
+
+  if (!has_audio && !has_video) {
+    error_ = kNoAudioOrVideo;
+    return false;
+  }
+
+  if (has_audio) {
+    if (!params->options.audio_constraints.get())
+      params->options.audio_constraints.reset(new MediaStreamConstraint);
+
+    constraints.push_back(params->options.audio_constraints.get());
+  }
+  if (has_video) {
+    if (!params->options.video_constraints.get())
+      params->options.video_constraints.reset(new MediaStreamConstraint);
+
+    constraints.push_back(params->options.video_constraints.get());
+  }
+
+  // Device id we use for Tab Capture.
   std::string device_id =
       base::StringPrintf("%i:%i", render_process_id, routing_id);
 
-  bool audio = false;
-  bool video = false;
-  if (params->options.get()) {
-    if (params->options->audio.get())
-      audio = *params->options->audio.get();
-    if (params->options->video.get())
-      video = *params->options->video.get();
-  }
-
-  base::DictionaryValue* result = new base::DictionaryValue();
-  if (video) {
-    result->SetString(std::string("videoConstraints.mandatory.") +
-        kMediaStreamSource, kMediaStreamSourceTab);
-    result->SetString(std::string("videoConstraints.mandatory.") +
-        kMediaStreamSourceId, device_id);
-  } else {
-    result->SetBoolean(std::string("videoConstraints"), false);
-  }
-
-  if (audio) {
-    result->SetString(std::string("audioConstraints.mandatory.") +
-        kMediaStreamSource, kMediaStreamSourceTab);
-    result->SetString(std::string("audioConstraints.mandatory.") +
-        kMediaStreamSourceId, device_id);
-  } else {
-    result->SetBoolean(std::string("audioConstraints"), false);
+  // Append chrome specific tab constraints.
+  for (std::vector<MediaStreamConstraint*>::iterator it = constraints.begin();
+       it != constraints.end(); ++it) {
+    base::DictionaryValue* constraint = &(*it)->mandatory.additional_properties;
+    constraint->SetString(kMediaStreamSource, kMediaStreamSourceTab);
+    constraint->SetString(kMediaStreamSourceId, device_id);
   }
 
   extensions::TabCaptureRegistry* registry =
@@ -123,17 +120,21 @@ bool TabCaptureCaptureFunction::RunImpl() {
               GetExtension()->id(), tab_id,
               tab_capture::TAB_CAPTURE_TAB_CAPTURE_STATE_NONE))) {
     error_ = kCapturingSameTab;
-    SetResult(base::Value::CreateIntegerValue(0));
     return false;
   }
+
+  // Copy the result from our modified input parameters. This will be
+  // intercepted by custom bindings which will build and send the special
+  // WebRTC user media request.
+  base::DictionaryValue* result = new base::DictionaryValue();
+  result->MergeDictionary(params->options.ToValue().get());
 
   SetResult(result);
   return true;
 }
 
 bool TabCaptureGetCapturedTabsFunction::RunImpl() {
-  if (!GetExtension()->HasAPIPermission(APIPermission::kTabCapture) ||
-      !FeatureSwitch::tab_capture()->IsEnabled()) {
+  if (!FeatureSwitch::tab_capture()->IsEnabled()) {
     error_ = kPermissionError;
     return false;
   }
@@ -146,7 +147,7 @@ bool TabCaptureGetCapturedTabsFunction::RunImpl() {
 
   base::ListValue *list = new base::ListValue();
   for (TabCaptureRegistry::CaptureRequestList::const_iterator it =
-       captured_tabs.begin(); it != captured_tabs.end(); it++) {
+       captured_tabs.begin(); it != captured_tabs.end(); ++it) {
     scoped_ptr<tab_capture::CaptureInfo> info(new tab_capture::CaptureInfo());
     info->tab_id = it->tab_id;
     info->status = it->status;

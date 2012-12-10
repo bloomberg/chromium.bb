@@ -5,20 +5,7 @@
 var tabCapture = chrome.tabCapture;
 
 chrome.test.runTests([
-
-  function captureInvalidTab() {
-    var tabMediaRequestCallback = function(stream) {
-      chrome.test.assertEq(undefined, stream);
-      chrome.test.assertLastError('Could not find the specified tab.');
-      chrome.test.succeed();
-    };
-
-    tabCapture.capture(-1, {audio: true, video: true},
-      tabMediaRequestCallback);
-  },
-
   function captureTabAndVerifyStateTransitions() {
-    var tabId = -1;
     // Tab capture events in the order they happen.
     var tabCaptureEvents = [];
 
@@ -28,7 +15,6 @@ chrome.test.runTests([
     };
 
     var tabCaptureListener = function(info) {
-      chrome.test.assertEq(tabId, info.tabId);
       console.log(info.status);
       if (info.status == 'stopped') {
         chrome.test.assertEq('active', tabCaptureEvents.pop());
@@ -43,29 +29,20 @@ chrome.test.runTests([
 
     tabCapture.onStatusChanged.addListener(tabCaptureListener);
 
-    var gotTabId = function(tab) {
-      tabId = tab[0].id;
-      console.log('using tab: ' + tabId);
-      tabCapture.capture(tabId, {audio: true, video: true},
-        tabMediaRequestCallback);
-    };
-    chrome.tabs.query({active: true}, gotTabId);
+    tabCapture.capture({audio: true, video: true}, tabMediaRequestCallback);
   },
 
   function getCapturedTabs() {
-    var tabId = -1;
     var activeStream = null;
 
     var capturedTabsAfterClose = function(infos) {
       chrome.test.assertEq(1, infos.length);
-      chrome.test.assertEq(tabId, infos[0].tabId);
       chrome.test.assertEq('stopped', infos[0].status);
       chrome.test.succeed();
     }
 
     var capturedTabsAfterOpen = function(infos) {
       chrome.test.assertEq(1, infos.length);
-      chrome.test.assertEq(tabId, infos[0].tabId);
       chrome.test.assertEq('active', infos[0].status);
       activeStream.stop();
       tabCapture.getCapturedTabs(capturedTabsAfterClose);
@@ -77,17 +54,10 @@ chrome.test.runTests([
       tabCapture.getCapturedTabs(capturedTabsAfterOpen);
     };
 
-    var gotTabId = function(tab) {
-      tabId = tab[0].id;
-      console.log('using tab: ' + tabId);
-      tabCapture.capture(tabId, {audio: true, video: true},
-        tabMediaRequestCallback);
-    };
-    chrome.tabs.query({active: true}, gotTabId);
+    tabCapture.capture({audio: true, video: true}, tabMediaRequestCallback);
   },
 
   function captureSameTab() {
-    var tabId = -1;
     var stream1 = null;
 
     var tabMediaRequestCallback2 = function(stream) {
@@ -101,17 +71,58 @@ chrome.test.runTests([
     var tabMediaRequestCallback = function(stream) {
       chrome.test.assertTrue(stream !== undefined);
       stream1 = stream;
-      tabCapture.capture(tabId, {audio: true, video: true},
-        tabMediaRequestCallback2);
+      tabCapture.capture({audio: true, video: true}, tabMediaRequestCallback2);
     };
 
-    var gotTabId = function(tab) {
-      tabId = tab[0].id;
-      console.log('using tab: ' + tabId);
-      tabCapture.capture(tabId, {audio: true, video: true},
-        tabMediaRequestCallback);
-    };
-    chrome.tabs.query({active: true}, gotTabId);
+    tabCapture.capture({audio: true, video: true}, tabMediaRequestCallback);
   },
+
+  function supportsMediaConstraints() {
+    var tabMediaRequestCallback = function(stream) {
+      chrome.test.assertTrue(stream !== null);
+      chrome.test.succeed();
+    };
+
+    tabCapture.capture({video: true, audio: true,
+                        videoConstraints: {
+                            mandatory: {
+                              maxWidth: 1000,
+                              minWidth: 300
+                            }
+                        },
+                        audioConstraints: {
+                            mandatory: {
+                              minFrameRate: 60
+                            }
+                        }}, tabMediaRequestCallback);
+  },
+
+  function onlyVideo() {
+    var tabMediaRequestCallback = function(stream) {
+      chrome.test.assertTrue(stream !== null);
+      chrome.test.succeed();
+    };
+
+    tabCapture.capture({video: true}, tabMediaRequestCallback);
+  },
+
+  function onlyAudio() {
+    var tabMediaRequestCallback = function(stream) {
+      chrome.test.assertTrue(stream !== null);
+      chrome.test.succeed();
+    };
+
+    tabCapture.capture({audio: true}, tabMediaRequestCallback);
+  },
+
+  function noAudioOrVideoRequested() {
+    var tabMediaRequestCallback = function(stream) {
+      chrome.test.assertTrue(stream === undefined);
+      chrome.test.succeed();
+    };
+
+    // If not specified, video is not requested.
+    tabCapture.capture({audio: false}, tabMediaRequestCallback);
+  }
 
 ]);

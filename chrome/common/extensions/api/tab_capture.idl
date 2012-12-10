@@ -22,25 +22,33 @@ namespace tabCapture {
     TabCaptureState status;
   };
 
+  // MediaTrackConstraints for the media streams that will be passed to WebRTC.
+  // See section on MediaTrackConstraints:
+  // http://dev.w3.org/2011/webrtc/editor/getusermedia.html
+  dictionary MediaStreamConstraint {
+    object mandatory;
+  };
+
+  // Whether we are requesting tab video and/or audio and the
+  // MediaTrackConstraints that should be set for these streams.
   dictionary CaptureOptions {
     boolean? audio;
     boolean? video;
+    MediaStreamConstraint? audioConstraints;
+    MediaStreamConstraint? videoConstraints;
   };
 
   callback GetTabMediaCallback =
-      void ([instanceOf=LocalMediaStream] optional object stream);
+      void ([instanceOf=LocalMediaStream] object stream);
 
-  callback GetCapturedTabsCallback =
-      void (CaptureInfo[] result);
+  callback GetCapturedTabsCallback = void (CaptureInfo[] result);
 
   interface Functions {
-    // Captures the visible area of the tab with the given tabId.
+    // Captures the visible area of the currently active tab.
     // Extensions must have the "tabCapture" permission to use this method.
-    // |tabId| : The tabId of the tab to capture.  Defaults to the active tab.
     // |options| : Configures the returned media stream.
     // |callback| : Callback with either the stream returned or null.
-    static void capture(optional long tabId,
-                        optional CaptureOptions options,
+    static void capture(CaptureOptions options,
                         GetTabMediaCallback callback);
 
     // Returns a list of tabs that have requested capture or are being
@@ -49,7 +57,6 @@ namespace tabCapture {
     // tab capture that would prevent a new tab capture from succeeding (or
     // to prevent redundant requests for the same tab).
     static void getCapturedTabs(GetCapturedTabsCallback callback);
-
   };
 
   interface Events {
