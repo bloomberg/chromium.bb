@@ -176,12 +176,21 @@ RootWindowController::~RootWindowController() {
 }
 
 // static
-internal::RootWindowController*
-RootWindowController::ForLauncher(aura::Window* window) {
+RootWindowController* RootWindowController::ForLauncher(aura::Window* window) {
   if (Shell::IsLauncherPerDisplayEnabled())
     return GetRootWindowController(window->GetRootWindow());
   else
     return Shell::GetPrimaryRootWindowController();
+}
+
+// static
+RootWindowController* RootWindowController::ForWindow(aura::Window* window) {
+  return GetRootWindowController(window->GetRootWindow());
+}
+
+// static
+RootWindowController* RootWindowController::ForActiveRootWindow() {
+  return GetRootWindowController(Shell::GetActiveRootWindow());
 }
 
 void RootWindowController::Shutdown() {
@@ -221,7 +230,7 @@ RootWindowController::GetSystemModalLayoutManager(aura::Window* window) {
       container = GetContainer(kShellWindowId_SystemModalContainer);
     }
   } else {
-    user::LoginStatus login = Shell::GetInstance()->status_area_widget() ?
+    user::LoginStatus login = Shell::GetInstance()->tray_delegate() ?
         Shell::GetInstance()->tray_delegate()->GetUserLoginStatus() :
         user::LOGGED_IN_NONE;
     int modal_window_id = (login == user::LOGGED_IN_LOCKED ||
@@ -440,6 +449,14 @@ void RootWindowController::MoveWindowsTo(aura::RootWindow* dst) {
   } else if (active && tracker.Contains(active) && dst->Contains(active)) {
     activation_client->ActivateWindow(active);
   }
+}
+
+SystemTray* RootWindowController::GetSystemTray() {
+  // We assume in throughout the code that this will not return NULL. If code
+  // triggers this for valid reasons, it should test status_area_widget first.
+  internal::StatusAreaWidget* status_area = status_area_widget();
+  CHECK(status_area);
+  return status_area->system_tray();
 }
 
 void RootWindowController::ShowContextMenu(

@@ -670,7 +670,14 @@ void Shell::OnLockStateChanged(bool locked) {
 }
 
 void Shell::CreateLauncher() {
-  GetPrimaryRootWindowController()->CreateLauncher();
+  if (IsLauncherPerDisplayEnabled()) {
+    RootWindowControllerList controllers = GetAllRootWindowControllers();
+    for (RootWindowControllerList::iterator iter = controllers.begin();
+         iter != controllers.end(); ++iter)
+      (*iter)->CreateLauncher();
+  } else {
+    GetPrimaryRootWindowController()->CreateLauncher();
+  }
 }
 
 void Shell::ShowLauncher() {
@@ -753,16 +760,12 @@ WebNotificationTray* Shell::GetWebNotificationTray() {
       web_notification_tray();
 }
 
-internal::StatusAreaWidget* Shell::status_area_widget() {
-  return GetPrimaryRootWindowController()->status_area_widget();
+bool Shell::HasPrimaryStatusArea() {
+  return !!GetPrimaryRootWindowController()->status_area_widget();
 }
 
-SystemTray* Shell::system_tray() {
-  // We assume in throughout the code that this will not return NULL. If code
-  // triggers this for valid reasons, it should test status_area_widget first.
-  internal::StatusAreaWidget* status_area = status_area_widget();
-  CHECK(status_area);
-  return status_area->system_tray();
+SystemTray* Shell::GetPrimarySystemTray() {
+  return GetPrimaryRootWindowController()->GetSystemTray();
 }
 
 void Shell::InitRootWindowForSecondaryDisplay(aura::RootWindow* root) {

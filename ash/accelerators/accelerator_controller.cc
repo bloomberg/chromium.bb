@@ -633,10 +633,15 @@ bool AcceleratorController::PerformAction(int action,
         return true;
       }
       break;
-    case SHOW_SYSTEM_TRAY_BUBBLE:
-      if (!shell->system_tray()->HasSystemBubble())
-        shell->system_tray()->ShowDefaultView(BUBBLE_CREATE_NEW);
+    case SHOW_SYSTEM_TRAY_BUBBLE: {
+      internal::RootWindowController* controller =
+          Shell::IsLauncherPerDisplayEnabled() ?
+          internal::RootWindowController::ForActiveRootWindow() :
+          Shell::GetPrimaryRootWindowController();
+      if (!controller->GetSystemTray()->HasSystemBubble())
+        controller->GetSystemTray()->ShowDefaultView(BUBBLE_CREATE_NEW);
       break;
+    }
     case SHOW_TASK_MANAGER:
       Shell::GetInstance()->delegate()->ShowTaskManager();
       return true;

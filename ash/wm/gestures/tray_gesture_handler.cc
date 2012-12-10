@@ -21,7 +21,8 @@ namespace internal {
 TrayGestureHandler::TrayGestureHandler()
     : widget_(NULL),
       gesture_drag_amount_(0) {
-  SystemTray* tray = Shell::GetInstance()->system_tray();
+  // TODO(oshima): Support multiple display case.
+  SystemTray* tray = Shell::GetInstance()->GetPrimarySystemTray();
   tray->ShowDefaultView(BUBBLE_CREATE_NEW);
   SystemTrayBubble* bubble = tray->GetSystemBubble();
   if (!bubble)
@@ -93,7 +94,7 @@ void TrayGestureHandler::CompleteGestureDrag(const ui::GestureEvent& event) {
     widget_->Close();
   } else {
     SystemTrayBubble* bubble =
-        Shell::GetInstance()->system_tray()->GetSystemBubble();
+        Shell::GetInstance()->GetPrimarySystemTray()->GetSystemBubble();
     if (bubble)
       bubble->bubble_view()->set_gesture_dragging(false);
   }

@@ -148,9 +148,11 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate,
   static void DeleteInstance();
 
   // Returns the root window controller for the primary root window.
+  // TODO(oshima): move this to |RootWindowController|
   static internal::RootWindowController* GetPrimaryRootWindowController();
 
   // Returns all root window controllers.
+  // TODO(oshima): move this to |RootWindowController|
   static RootWindowControllerList GetAllRootWindowControllers();
 
   // Returns the primary RootWindow. The primary RootWindow is the one
@@ -358,13 +360,11 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate,
   // Returns WebNotificationTray on the primary root window.
   WebNotificationTray* GetWebNotificationTray();
 
-  // Convenience accessor for members of StatusAreaWidget.
-  // NOTE: status_area_widget() may return NULL during shutdown;
-  // tray_delegate() and system_tray() will crash if called after
-  // status_area_widget() has been destroyed; check status_area_widget()
-  // before calling these in destructors.
-  internal::StatusAreaWidget* status_area_widget();
-  SystemTray* system_tray();
+  // Does the primary display have status area?
+  bool HasPrimaryStatusArea();
+
+  // Returns the system tray on primary display.
+  SystemTray* GetPrimarySystemTray();
 
   // TODO(stevenjb): Rename to system_tray_delegate().
   SystemTrayDelegate* tray_delegate() {

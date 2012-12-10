@@ -49,10 +49,11 @@ void StepWidgetLayerAnimatorToEnd(views::Widget* widget) {
 }
 
 ShelfLayoutManager* GetShelfLayoutManager() {
-  aura::Window* window = Shell::GetContainer(
-      Shell::GetPrimaryRootWindow(),
-      internal::kShellWindowId_LauncherContainer);
-  return static_cast<ShelfLayoutManager*>(window->layout_manager());
+  return Shell::GetPrimaryRootWindowController()->shelf();
+}
+
+SystemTray* GetSystemTray() {
+  return Shell::GetPrimaryRootWindowController()->GetSystemTray();
 }
 
 class ShelfLayoutObserverTest : public ShelfLayoutManager::Observer {
@@ -80,7 +81,7 @@ class ShelfLayoutObserverTest : public ShelfLayoutManager::Observer {
 class TestItem : public SystemTrayItem {
  public:
   TestItem()
-      : SystemTrayItem(Shell::GetInstance()->system_tray()),
+      : SystemTrayItem(GetSystemTray()),
         tray_view_(NULL),
         default_view_(NULL),
         detailed_view_(NULL),
@@ -152,10 +153,6 @@ class TestItem : public SystemTrayItem {
 class ShelfLayoutManagerTest : public ash::test::AshTestBase {
  public:
   ShelfLayoutManagerTest() {}
-
-  ShelfLayoutManager* shelf_layout_manager() {
-    return Shell::GetPrimaryRootWindowController()->shelf();
-  }
 
   void SetState(ShelfLayoutManager* shelf,
                 ShelfVisibilityState state) {
@@ -510,7 +507,7 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfVisibleState) {
   Shell* shell = Shell::GetInstance();
   internal::RootWindowController* controller =
       Shell::GetPrimaryRootWindowController();
-  ShelfLayoutManager* shelf = shelf_layout_manager();
+  ShelfLayoutManager* shelf = GetShelfLayoutManager();
   shelf->LayoutShelf();
   controller->SetShelfAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
 
@@ -537,7 +534,7 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfVisibleState) {
 // toggling app list won't change shelf visibility state.
 TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfAutoHideState) {
   Shell* shell = Shell::GetInstance();
-  ShelfLayoutManager* shelf = shelf_layout_manager();
+  ShelfLayoutManager* shelf = GetShelfLayoutManager();
   internal::RootWindowController* controller =
       Shell::GetPrimaryRootWindowController();
   shelf->LayoutShelf();
@@ -573,7 +570,7 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfAutoHideState) {
 // state, and toggling app list won't change shelf visibility state.
 TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfHiddenState) {
   Shell* shell = Shell::GetInstance();
-  ShelfLayoutManager* shelf = shelf_layout_manager();
+  ShelfLayoutManager* shelf = GetShelfLayoutManager();
   // For shelf to be visible, app list is not open in initial state.
   shelf->LayoutShelf();
 
@@ -601,7 +598,7 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfHiddenState) {
 
 // Tests SHELF_ALIGNMENT_LEFT and SHELF_ALIGNMENT_RIGHT.
 TEST_F(ShelfLayoutManagerTest, SetAlignment) {
-  ShelfLayoutManager* shelf = shelf_layout_manager();
+  ShelfLayoutManager* shelf = GetShelfLayoutManager();
   // Force an initial layout.
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
   shelf->LayoutShelf();
@@ -620,8 +617,7 @@ TEST_F(ShelfLayoutManagerTest, SetAlignment) {
   EXPECT_GE(
       launcher_bounds.width(),
       shelf->launcher_widget()->GetContentsView()->GetPreferredSize().width());
-  EXPECT_EQ(SHELF_ALIGNMENT_LEFT,
-            Shell::GetInstance()->system_tray()->shelf_alignment());
+  EXPECT_EQ(SHELF_ALIGNMENT_LEFT, GetSystemTray()->shelf_alignment());
   StatusAreaWidget* status_area_widget = shelf->status_area_widget();
   gfx::Rect status_bounds(status_area_widget->GetWindowBoundsInScreen());
   EXPECT_GE(status_bounds.width(),
@@ -650,8 +646,7 @@ TEST_F(ShelfLayoutManagerTest, SetAlignment) {
             display.GetWorkAreaInsets().right());
   EXPECT_GE(launcher_bounds.width(),
       shelf->launcher_widget()->GetContentsView()->GetPreferredSize().width());
-  EXPECT_EQ(SHELF_ALIGNMENT_RIGHT,
-            Shell::GetInstance()->system_tray()->shelf_alignment());
+  EXPECT_EQ(SHELF_ALIGNMENT_RIGHT, GetSystemTray()->shelf_alignment());
   status_bounds = gfx::Rect(status_area_widget->GetWindowBoundsInScreen());
   EXPECT_GE(status_bounds.width(),
             status_area_widget->GetContentsView()->GetPreferredSize().width());
@@ -777,7 +772,7 @@ TEST_F(ShelfLayoutManagerTest, GestureRevealsTrayBubble) {
   shelf->LayoutShelf();
 
   aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
-  SystemTray* tray = Shell::GetInstance()->system_tray();
+  SystemTray* tray = GetSystemTray();
 
   // First, make sure the shelf is visible.
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
@@ -827,7 +822,7 @@ TEST_F(ShelfLayoutManagerTest, ShelfFlickerOnTrayActivation) {
       SHOW_SYSTEM_TRAY_BUBBLE, ui::Accelerator());
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->auto_hide_state());
-  EXPECT_TRUE(Shell::GetInstance()->system_tray()->HasSystemBubble());
+  EXPECT_TRUE(GetSystemTray()->HasSystemBubble());
 
   // Now activate the tray (using the keyboard, instead of using the mouse to
   // make sure the mouse does not alter the auto-hide state in the shelf).
@@ -838,7 +833,7 @@ TEST_F(ShelfLayoutManagerTest, ShelfFlickerOnTrayActivation) {
   aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
   generator.PressKey(ui::VKEY_SPACE, 0);
   generator.ReleaseKey(ui::VKEY_SPACE, 0);
-  EXPECT_TRUE(Shell::GetInstance()->system_tray()->HasSystemBubble());
+  EXPECT_TRUE(GetSystemTray()->HasSystemBubble());
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->auto_hide_state());
   EXPECT_FALSE(observer.changed_auto_hide_state());
@@ -901,7 +896,7 @@ TEST_F(ShelfLayoutManagerTest, WorkAreaChangeWorkspace) {
 // Confirm that the shelf is dimmed only when content is maximized and
 // shelf is not autohidden.
 TEST_F(ShelfLayoutManagerTest, Dimming) {
-  shelf_layout_manager()->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
+  GetShelfLayoutManager()->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
   scoped_ptr<aura::Window> w1(CreateTestWindow());
   w1->Show();
   wm::ActivateWindow(w1.get());
@@ -924,7 +919,7 @@ TEST_F(ShelfLayoutManagerTest, Dimming) {
   EXPECT_TRUE(launcher->GetDimsShelf());
 
   // Changing shelf to autohide stops dimming.
-  shelf_layout_manager()->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  GetShelfLayoutManager()->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   EXPECT_FALSE(launcher->GetDimsShelf());
 }
 
@@ -934,7 +929,7 @@ TEST_F(ShelfLayoutManagerTest, BubbleEnlargesShelfMouseHitArea) {
   ShelfLayoutManager* shelf = GetShelfLayoutManager();
   StatusAreaWidget* status_area_widget =
       Shell::GetPrimaryRootWindowController()->status_area_widget();
-  SystemTray* tray = Shell::GetInstance()->system_tray();
+  SystemTray* tray = GetSystemTray();
 
   shelf->LayoutShelf();
   aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());

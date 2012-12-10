@@ -142,8 +142,10 @@ WebUILoginView::WebUILoginView()
 }
 
 WebUILoginView::~WebUILoginView() {
-  if (ash::Shell::GetInstance()->status_area_widget())
-    ash::Shell::GetInstance()->system_tray()->SetNextFocusableView(NULL);
+  if (ash::Shell::GetInstance()->HasPrimaryStatusArea()) {
+    ash::Shell::GetInstance()->GetPrimarySystemTray()->
+        SetNextFocusableView(NULL);
+  }
 }
 
 void WebUILoginView::Init(views::Widget* login_window) {
@@ -242,8 +244,8 @@ void WebUILoginView::OnPostponedShow() {
 }
 
 void WebUILoginView::SetStatusAreaVisible(bool visible) {
-  if (ash::Shell::GetInstance()->status_area_widget()) {
-    ash::SystemTray* tray = ash::Shell::GetInstance()->system_tray();
+  if (ash::Shell::GetInstance()->HasPrimaryStatusArea()) {
+    ash::SystemTray* tray = ash::Shell::GetInstance()->GetPrimarySystemTray();
     if (visible) {
       // Tray may have been initialized being hidden.
       tray->SetVisible(visible);
@@ -256,7 +258,7 @@ void WebUILoginView::SetStatusAreaVisible(bool visible) {
 
 void WebUILoginView::SetUIEnabled(bool enabled) {
   forward_keyboard_event_ = enabled;
-  ash::Shell::GetInstance()->system_tray()->SetEnabled(enabled);
+  ash::Shell::GetInstance()->GetPrimarySystemTray()->SetEnabled(enabled);
 }
 
 // WebUILoginView protected: ---------------------------------------------------
@@ -334,7 +336,7 @@ bool WebUILoginView::IsPopupOrPanel(const WebContents* source) const {
 }
 
 bool WebUILoginView::TakeFocus(content::WebContents* source, bool reverse) {
-  ash::SystemTray* tray = ash::Shell::GetInstance()->system_tray();
+  ash::SystemTray* tray = ash::Shell::GetInstance()->GetPrimarySystemTray();
   if (tray && tray->GetWidget()->IsVisible()) {
     tray->SetNextFocusableView(this);
     ash::Shell::GetInstance()->RotateFocus(reverse ? ash::Shell::BACKWARD :

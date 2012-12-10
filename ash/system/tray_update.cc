@@ -108,7 +108,7 @@ class UpdateNagger : public ui::LayerAnimationObserver {
 
   virtual ~UpdateNagger() {
     internal::StatusAreaWidget* status_area =
-        ash::Shell::GetInstance()->status_area_widget();
+        Shell::GetPrimaryRootWindowController()->status_area_widget();
     if (status_area) {
       status_area->system_tray()->GetWidget()->GetNativeView()->layer()->
           GetAnimator()->RemoveObserver(this);

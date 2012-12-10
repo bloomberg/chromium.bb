@@ -577,7 +577,7 @@ TEST_F(ExtendedDesktopTest, ConvertPoint) {
 
 TEST_F(ExtendedDesktopTest, OpenSystemTray) {
   UpdateDisplay("500x600,600x400");
-  SystemTray* tray = ash::Shell::GetInstance()->system_tray();
+  SystemTray* tray = ash::Shell::GetInstance()->GetPrimarySystemTray();
   ASSERT_FALSE(tray->HasSystemBubble());
 
   // Opens the tray by a dummy click event and makes sure that adding/removing

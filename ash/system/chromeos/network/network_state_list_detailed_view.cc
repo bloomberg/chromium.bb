@@ -4,6 +4,7 @@
 
 #include "ash/system/chromeos/network/network_state_list_detailed_view.h"
 
+#include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/chromeos/network/network_icon.h"
@@ -218,7 +219,8 @@ void NetworkStateListDetailedView::ClickedOn(views::View* sender) {
   ResetInfoBubble();
 
   if (sender == footer()->content()) {
-    Shell::GetInstance()->system_tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
+    RootWindowController::ForWindow(GetWidget()->GetNativeView())->
+        GetSystemTray()->ShowDefaultView(BUBBLE_USE_EXISTING);
     return;
   }
 

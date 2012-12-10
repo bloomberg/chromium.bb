@@ -32,6 +32,7 @@ class RootWindowEventFilter;
 
 namespace ash {
 class Launcher;
+class SystemTray;
 class ToplevelWindowEventHandler;
 
 namespace internal {
@@ -62,6 +63,12 @@ class ASH_EXPORT RootWindowController {
   // RootWindowController otherwise.
   static RootWindowController* ForLauncher(aura::Window* window);
 
+  // Returns a RootWindowController of the window's root window.
+  static RootWindowController* ForWindow(aura::Window* window);
+
+  // Returns the RootWindowController of the active root window.
+  static internal::RootWindowController* ForActiveRootWindow();
+
   aura::RootWindow* root_window() { return root_window_.get(); }
 
   RootWindowLayoutManager* root_window_layout() { return root_window_layout_; }
@@ -76,9 +83,14 @@ class ASH_EXPORT RootWindowController {
 
   ShelfLayoutManager* shelf() const { return shelf_; }
 
-  StatusAreaWidget* status_area_widget() const {
+  StatusAreaWidget* status_area_widget() {
     return status_area_widget_;
   }
+
+  // Returns the system tray on this root window. Note that
+  // calling this on the root window that doesn't have a launcher will
+  // lead to a crash.
+  SystemTray* GetSystemTray();
 
   // Shows context menu at the |location_in_screen|. This uses
   // |ShellDelegate::CreateContextMenu| to define the content of the menu.

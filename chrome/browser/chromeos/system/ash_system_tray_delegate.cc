@@ -775,8 +775,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
  private:
-  ash::SystemTray* GetSystemTray() {
-    return ash::Shell::GetInstance()->system_tray();
+  ash::SystemTray* GetPrimarySystemTray() {
+    return ash::Shell::GetInstance()->GetPrimarySystemTray();
   }
 
   ash::SystemTrayNotifier* GetSystemTrayNotifier() {
@@ -1004,7 +1004,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     RefreshNetworkObserver(crosnet);
     RefreshNetworkDeviceObserver(crosnet);
     data_promo_notification_->ShowOptionalMobileDataPromoNotification(
-        crosnet, GetSystemTray(), this);
+        crosnet, GetPrimarySystemTray(), this);
 
     NotifyRefreshNetwork();
   }
