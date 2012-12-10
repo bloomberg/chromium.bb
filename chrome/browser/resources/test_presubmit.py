@@ -458,14 +458,14 @@ a:not([empty]):hover:focus:active, /* shouldn't catch here and above */
 abbr:after,
 .tree-label:empty:after,
 b:before,
-:-webkit-scrollbar {
+:-WebKit-ScrollBar {
   rule: value;
 }""", """
 - Pseudo-elements should use double colon (i.e. ::after).
     :after (should be ::after)
     :after (should be ::after)
     :before (should be ::before)
-    :-webkit-scrollbar (should be ::-webkit-scrollbar)
+    :-WebKit-ScrollBar (should be ::-WebKit-ScrollBar)
     """)
 
   def testCssRgbIfNotGray(self):

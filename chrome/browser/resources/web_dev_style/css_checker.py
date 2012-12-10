@@ -32,14 +32,22 @@ class CSSChecker(object):
       return _remove_grit(_remove_ats(_remove_comments(s)))
 
     def _remove_ats(s):
-      return re.sub(re.compile(r'@\w+.*?{(.*{.*?})+.*?}', re.DOTALL), '\\1', s)
+      at_reg = re.compile(r"""
+          @\w+.*?{    # @at-keyword selector junk {
+          (.*{.*?})+  # inner { curly } blocks, rules, and selector junk
+          .*?}        # stuff up to the first end curly }""",
+          re.DOTALL | re.VERBOSE)
+      return at_reg.sub('\\1', s)
 
     def _remove_comments(s):
       return re.sub(re.compile(r'/\*.*?\*/', re.DOTALL), '', s)
 
     def _remove_grit(s):
-      grit_reg = r'<if[^>]+>.*?<\s*/\s*if[^>]*>|<include[^>]+>'
-      return re.sub(re.compile(grit_reg, re.DOTALL), '', s)
+      grit_reg = re.compile(r"""
+          <if[^>]+>.*?<\s*/\s*if[^>]*>|  # <if> contents </if>
+          <include[^>]+>                 # <include>""",
+          re.DOTALL | re.VERBOSE)
+      return re.sub(grit_reg, '', s)
 
     def _rgb_from_hex(s):
       if len(s) == 3:
@@ -62,127 +70,171 @@ class CSSChecker(object):
       return errors
 
     def braces_have_space_before_and_nothing_after(line):
-      return re.search(r'(?:^|\S){|{\s*\S+\s*$', line)
+      brace_space_reg = re.compile(r"""
+          (?:^|\S){|  # selector{ or selector\n{ or
+          {\s*\S+\s*  # selector { with stuff after it
+          $           # must be at the end of a line""",
+          re.VERBOSE)
+      return brace_space_reg.search(line)
 
     def classes_use_dashes(line):
       # Intentionally dumbed down version of CSS 2.1 grammar for class without
       # non-ASCII, escape chars, or whitespace.
-      m = re.search(r'\.(-?[_a-zA-Z0-9-]+).*[,{]\s*$', line)
-      return (m and (m.group(1).lower() != m.group(1) or
-                     m.group(1).find('_') >= 0))
+      class_reg = re.compile(r"""
+          \.(-?[\w-]+).*  # ., then maybe -, then alpha numeric and -
+          [,{]\s*$        # selectors should end with a , or {""",
+          re.VERBOSE)
+      m = class_reg.search(line)
+      if not m:
+        return False
+      class_name = m.group(1)
+      return class_name.lower() != class_name or '_' in class_name
 
-    # Ignore single frames in a @keyframe, i.e. 0% { margin: 50px; }
-    frame_reg = r'\s*\d+%\s*{\s*[_a-zA-Z0-9-]+:(\s*[_a-zA-Z0-9-]+)+\s*;\s*}\s*'
     def close_brace_on_new_line(line):
-      return (line.find('}') >= 0 and re.search(r'[^ }]', line) and
-              not re.match(frame_reg, line))
+      # Ignore single frames in a @keyframe, i.e. 0% { margin: 50px; }
+      frame_reg = re.compile(r"""
+          \s*\d+%\s*{       # 50% {
+          \s*[\w-]+:        # rule:
+          (\s*[\w-]+)+\s*;  # value;
+          \s*}\s*           # }""",
+          re.VERBOSE)
+      return ('}' in line and re.search(r'[^ }]', line) and
+              not frame_reg.match(line))
 
     def colons_have_space_after(line):
-      return re.search(r'(?<!data):(?!//)\S[^;]+;\s*', line)
+      colon_space_reg = re.compile(r"""
+          (?<!data)    # ignore data URIs
+          :(?!//)      # ignore url(http://), etc.
+          \S[^;]+;\s*  # only catch one-line rules for now""",
+          re.VERBOSE)
+      return colon_space_reg.search(line)
 
     def favor_single_quotes(line):
-      return line.find('"') >= 0
+      return '"' in line
 
     # Shared between hex_could_be_shorter and rgb_if_not_gray.
-    hex_reg = (r'#([a-fA-F0-9]{3}|[a-fA-F0-9]{6})(?=[^_a-zA-Z0-9-]|$)'
-               r'(?!.*(?:{.*|,\s*)$)')
+    hex_reg = re.compile(r"""
+        \#([a-fA-F0-9]{3}|[a-fA-F0-9]{6})  # pound followed by 3 or 6 hex digits
+        (?=[^\w-]|$)                       # no more alphanum chars or at EOL
+        (?!.*(?:{.*|,\s*)$)                # not in a selector""",
+        re.VERBOSE)
+
     def hex_could_be_shorter(line):
-      m = re.search(hex_reg, line)
+      m = hex_reg.search(line)
       return (m and _is_gray(m.group(1)) and _collapseable_hex(m.group(1)))
 
-    small_seconds = r'(?:^|[^_a-zA-Z0-9-])(0?\.[0-9]+)s(?!-?[_a-zA-Z0-9-])'
+    def rgb_if_not_gray(line):
+      m = hex_reg.search(line)
+      return (m and not _is_gray(m.group(1)))
+
+    small_seconds_reg = re.compile(r"""
+        (?:^|[^\w-])   # start of a line or a non-alphanumeric char
+        (0?\.[0-9]+)s  # 1.0s
+        (?!-?[\w-])    # no following - or alphanumeric chars""",
+        re.VERBOSE)
+
     def milliseconds_for_small_times(line):
-      return re.search(small_seconds, line)
+      return small_seconds_reg.search(line)
+
+    def suggest_ms_from_s(line):
+      ms = int(float(small_seconds_reg.search(line).group(1)) * 1000)
+      return ' (replace with %dms)' % ms
 
     def no_data_uris_in_source_files(line):
       return re.search(r'\(\s*\'?\s*data:', line)
 
     def one_rule_per_line(line):
-      return re.search(r'[_a-zA-Z0-9-](?<!data):(?!//)[^;]+;\s*[^ }]\s*', line)
+      one_rule_reg = re.compile(r"""
+          [\w-](?<!data):  # a rule: but no data URIs
+          (?!//)[^;]+;     # value; ignoring colons in protocols://
+          \s*[^ }]\s*      # any non-space after the end colon""",
+          re.VERBOSE)
+      return one_rule_reg.search(line)
 
-    pseudo_elements = ['after',
-                       'before',
-                       'calendar-picker-indicator',
-                       'color-swatch',
-                       'color-swatch-wrapper',
-                       'date-and-time-container',
-                       'date-and-time-value',
-                       'datetime-edit',
-                       'datetime-edit-ampm-field',
-                       'datetime-edit-day-field',
-                       'datetime-edit-hour-field',
-                       'datetime-edit-millisecond-field',
-                       'datetime-edit-minute-field',
-                       'datetime-edit-month-field',
-                       'datetime-edit-second-field',
-                       'datetime-edit-text',
-                       'datetime-edit-week-field',
-                       'datetime-edit-year-field',
-                       'details-marker',
-                       'file-upload-button',
-                       'first-letter',
-                       'first-line',
-                       'inner-spin-button',
-                       'input-placeholder',
-                       'input-speech-button',
-                       'keygen-select',
-                       'media-slider-container',
-                       'media-slider-thumb',
-                       'meter-bar',
-                       'meter-even-less-good-value',
-                       'meter-inner-element',
-                       'meter-optimum-value',
-                       'meter-suboptimum-value',
-                       'progress-bar',
-                       'progress-inner-element',
-                       'progress-value',
-                       'resizer',
-                       'scrollbar',
-                       'scrollbar-button',
-                       'scrollbar-corner',
-                       'scrollbar-thumb',
-                       'scrollbar-track',
-                       'scrollbar-track-piece',
-                       'search-cancel-button',
-                       'search-decoration',
-                       'search-results-button',
-                       'search-results-decoration',
-                       'selection',
-                       'slider-container',
-                       'slider-runnable-track',
-                       'slider-thumb',
-                       'textfield-decoration-container',
-                       'validation-bubble',
-                       'validation-bubble-arrow',
-                       'validation-bubble-arrow-clipper',
-                       'validation-bubble-heading',
-                       'validation-bubble-message',
-                       'validation-bubble-text-block']
-    pseudo_reg = r'(?<!:):([a-z-]+)(?=[^{}]+?{)'
     def pseudo_elements_double_colon(contents):
+      pseudo_elements = ['after',
+                         'before',
+                         'calendar-picker-indicator',
+                         'color-swatch',
+                         'color-swatch-wrapper',
+                         'date-and-time-container',
+                         'date-and-time-value',
+                         'datetime-edit',
+                         'datetime-edit-ampm-field',
+                         'datetime-edit-day-field',
+                         'datetime-edit-hour-field',
+                         'datetime-edit-millisecond-field',
+                         'datetime-edit-minute-field',
+                         'datetime-edit-month-field',
+                         'datetime-edit-second-field',
+                         'datetime-edit-text',
+                         'datetime-edit-week-field',
+                         'datetime-edit-year-field',
+                         'details-marker',
+                         'file-upload-button',
+                         'first-letter',
+                         'first-line',
+                         'inner-spin-button',
+                         'input-placeholder',
+                         'input-speech-button',
+                         'keygen-select',
+                         'media-slider-container',
+                         'media-slider-thumb',
+                         'meter-bar',
+                         'meter-even-less-good-value',
+                         'meter-inner-element',
+                         'meter-optimum-value',
+                         'meter-suboptimum-value',
+                         'progress-bar',
+                         'progress-inner-element',
+                         'progress-value',
+                         'resizer',
+                         'scrollbar',
+                         'scrollbar-button',
+                         'scrollbar-corner',
+                         'scrollbar-thumb',
+                         'scrollbar-track',
+                         'scrollbar-track-piece',
+                         'search-cancel-button',
+                         'search-decoration',
+                         'search-results-button',
+                         'search-results-decoration',
+                         'selection',
+                         'slider-container',
+                         'slider-runnable-track',
+                         'slider-thumb',
+                         'textfield-decoration-container',
+                         'validation-bubble',
+                         'validation-bubble-arrow',
+                         'validation-bubble-arrow-clipper',
+                         'validation-bubble-heading',
+                         'validation-bubble-message',
+                         'validation-bubble-text-block']
+      pseudo_reg = re.compile(r"""
+          (?<!:):       # a single colon, i.e. :after but not ::after
+          ([a-zA-Z-]+)  # a pseudo element, class, or function
+          (?=[^{}]+?{)  # make sure a selector, not inside { rules }""",
+          re.MULTILINE | re.VERBOSE)
       errors = []
-      for p in re.finditer(re.compile(pseudo_reg, re.MULTILINE), contents):
+      for p in re.finditer(pseudo_reg, contents):
         pseudo = p.group(1).strip().splitlines()[0]
-        if _strip_prefix(pseudo) in pseudo_elements:
+        if _strip_prefix(pseudo.lower()) in pseudo_elements:
           errors.append('    :%s (should be ::%s)' % (pseudo, pseudo))
       return errors
 
-    any_reg = re.compile(r':(?:-webkit-)?any\(.*?\)', re.DOTALL)
-    multi_sels = re.compile(r'(?:}[\n\s]*)?([^,]+,(?=[^{}]+?{).*[,{])\s*$',
-                            re.MULTILINE)
     def one_selector_per_line(contents):
+      any_reg = re.compile(r"""
+          :(?:-webkit-)?any\(.*?\)  # :-webkit-any(a, b, i) selector""",
+          re.DOTALL | re.VERBOSE)
+      multi_sels_reg = re.compile(r"""
+          (?:}\s*)?            # ignore 0% { blah: blah; }, from @keyframes
+          ([^,]+,(?=[^{}]+?{)  # selector junk {, not in a { rule }
+          .*[,{])\s*$          # has to end with , or {""",
+          re.MULTILINE | re.VERBOSE)
       errors = []
-      for b in re.finditer(multi_sels, re.sub(any_reg, '', contents)):
+      for b in re.finditer(multi_sels_reg, re.sub(any_reg, '', contents)):
         errors.append('    ' + b.group(1).strip().splitlines()[-1:][0])
       return errors
-
-    def rgb_if_not_gray(line):
-      m = re.search(hex_reg, line)
-      return (m and not _is_gray(m.group(1)))
-
-    def suggest_ms_from_s(line):
-      ms = int(float(re.search(small_seconds, line).group(1)) * 1000)
-      return ' (replace with %dms)' % ms
 
     def suggest_rgb_from_hex(line):
       suggestions = ['rgb(%d, %d, %d)' % _rgb_from_hex(h.group(1))
@@ -190,18 +242,26 @@ class CSSChecker(object):
       return ' (replace with %s)' % ', '.join(suggestions)
 
     def suggest_short_hex(line):
-      h = re.search(hex_reg, line).group(1)
+      h = hex_reg.search(line).group(1)
       return ' (replace with #%s)' % (h[0] + h[2] + h[4])
 
-    hsl = r'hsl\([^\)]*(?:[, ]|(?<=\())(?:0?\.?)?0%'
-    zeros = (r'^.*(?:^|\D)'
-             r'(?:\.0|0(?:\.0?|px|em|%|in|cm|mm|pc|pt|ex|deg|g?rad|m?s|k?hz))'
-             r'(?:\D|$)(?=[^{}]+?}).*$')
     def zero_length_values(contents):
+      hsl_reg = re.compile(r"""
+          hsl\([^\)]*       # hsl(<maybe stuff>
+          (?:[, ]|(?<=\())  # a comma or space not followed by a (
+          (?:0?\.?)?0%      # some equivalent to 0%""",
+          re.VERBOSE)
+      zeros_reg = re.compile(r"""
+          ^.*(?:^|\D)                                      # start/non-number
+          (?:\.0|0(?:\.0?                                  # .0, 0, or 0.0
+          |px|em|%|in|cm|mm|pc|pt|ex|deg|g?rad|m?s|k?hz))  # a length unit
+          (?:\D|$)                                         # non-number/end
+          (?=[^{}]+?}).*$                                  # only { rules }""",
+          re.MULTILINE | re.VERBOSE)
       errors = []
-      for z in re.finditer(re.compile(zeros, re.MULTILINE), contents):
+      for z in re.finditer(zeros_reg, contents):
         first_line = z.group(0).strip().splitlines()[0]
-        if not re.search(hsl, first_line):
+        if not hsl_reg.search(first_line):
           errors.append('    ' + first_line)
       return errors
 
@@ -289,8 +349,7 @@ class CSSChecker(object):
         else:
           check_errors = []
           lines = f[1].splitlines()
-          for lnum in range(0, len(lines)):
-            line = lines[lnum]
+          for lnum, line in enumerate(lines):
             if check['test'](line):
               error = '    ' + line.strip()
               if 'after' in check:
