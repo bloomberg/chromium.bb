@@ -675,7 +675,6 @@ chrome_pfq = internal_chromium_pfq.derive(
   important=True,
   overlays=constants.BOTH_OVERLAYS,
   description='Preflight Chrome build (internal)',
-  upload_hw_test_artifacts=True,
 )
 
 chrome_pfq.add_config('alex-chrome-pfq',
@@ -715,6 +714,7 @@ chromium_info = chromium_pfq.derive(
   important=False,
   manifest_version=False,
   vm_tests=constants.SMOKE_SUITE_TEST_TYPE,
+  upload_hw_test_artifacts=False,
 )
 
 chrome_info = chromium_info.derive(
