@@ -40,7 +40,7 @@ static const string::size_type kUpdateStatementBufferSize = 2048;
 
 // Increment this version whenever updating DB tables.
 extern const int32 kCurrentDBVersion;  // Global visibility for our unittest.
-const int32 kCurrentDBVersion = 83;
+const int32 kCurrentDBVersion = 84;
 
 // Iterate over the fields of |entry| and bind each to |statement| for
 // updating.  Returns the number of args bound.
@@ -362,6 +362,12 @@ bool DirectoryBackingStore::InitializeTables() {
   if (version_on_disk == 82) {
     if (MigrateVersion82To83())
       version_on_disk = 83;
+  }
+
+  // Version 84 migration added deleted_metas table.
+  if (version_on_disk == 83) {
+    if (MigrateVersion83To84())
+      version_on_disk = 84;
   }
 
   // If one of the migrations requested it, drop columns that aren't current.
@@ -1091,6 +1097,17 @@ bool DirectoryBackingStore::MigrateVersion82To83() {
   return true;
 }
 
+bool DirectoryBackingStore::MigrateVersion83To84() {
+  // Version 84 added deleted_metas table to store deleted metas until we know
+  // for sure that the deletions are persisted in native models.
+  string query = "CREATE TABLE deleted_metas ";
+  query.append(ComposeCreateTableColumnSpecs());
+  if (!db_->Execute(query.c_str()))
+    return false;
+  SetVersion(84);
+  return true;
+}
+
 bool DirectoryBackingStore::CreateTables() {
   DVLOG(1) << "First run, creating tables";
   // Create two little tables share_version and share_info
@@ -1169,9 +1186,17 @@ bool DirectoryBackingStore::CreateTables() {
 }
 
 bool DirectoryBackingStore::CreateMetasTable(bool is_temporary) {
-  const char* name = is_temporary ? "temp_metas" : "metas";
   string query = "CREATE TABLE ";
-  query.append(name);
+  query.append(is_temporary ? "temp_metas" : "metas");
+  query.append(ComposeCreateTableColumnSpecs());
+  if (!db_->Execute(query.c_str()))
+    return false;
+
+  // Create a deleted_metas table to save copies of deleted metas until the
+  // deletions are persisted. For simplicity, don't try to migrate existing
+  // data because it's rarely used.
+  SafeDropTable("deleted_metas");
+  query = "CREATE TABLE deleted_metas ";
   query.append(ComposeCreateTableColumnSpecs());
   return db_->Execute(query.c_str());
 }
