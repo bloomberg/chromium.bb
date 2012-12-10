@@ -137,7 +137,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_MouseInputEvent_1_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_WheelInputEvent_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_KeyboardInputEvent_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TouchInputEvent_1_0;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Instance_0_5;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Instance_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_MessageLoop_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Messaging_1_0;
@@ -808,34 +807,6 @@ struct PP_TouchPoint Pnacl_M13_PPB_TouchInputEvent_GetTouchById(PP_Resource reso
 }
 
 /* End wrapper methods for PPB_TouchInputEvent_1_0 */
-
-/* Begin wrapper methods for PPB_Instance_0_5 */
-
-static __attribute__((pnaclcall))
-struct PP_Var Pnacl_M13_PPB_Instance_GetWindowObject(PP_Instance instance) {
-  const struct PPB_Instance_0_5 *iface = Pnacl_WrapperInfo_PPB_Instance_0_5.real_iface;
-  return iface->GetWindowObject(instance);
-}
-
-static __attribute__((pnaclcall))
-struct PP_Var Pnacl_M13_PPB_Instance_GetOwnerElementObject(PP_Instance instance) {
-  const struct PPB_Instance_0_5 *iface = Pnacl_WrapperInfo_PPB_Instance_0_5.real_iface;
-  return iface->GetOwnerElementObject(instance);
-}
-
-static __attribute__((pnaclcall))
-PP_Bool Pnacl_M13_PPB_Instance_BindGraphics(PP_Instance instance, PP_Resource device) {
-  const struct PPB_Instance_0_5 *iface = Pnacl_WrapperInfo_PPB_Instance_0_5.real_iface;
-  return iface->BindGraphics(instance, device);
-}
-
-static __attribute__((pnaclcall))
-PP_Bool Pnacl_M13_PPB_Instance_IsFullFrame(PP_Instance instance) {
-  const struct PPB_Instance_0_5 *iface = Pnacl_WrapperInfo_PPB_Instance_0_5.real_iface;
-  return iface->IsFullFrame(instance);
-}
-
-/* End wrapper methods for PPB_Instance_0_5 */
 
 /* Not generating wrapper methods for PPB_Instance_1_0 */
 
@@ -3661,13 +3632,6 @@ struct PPB_TouchInputEvent_1_0 Pnacl_Wrappers_PPB_TouchInputEvent_1_0 = {
     .GetTouchById = (struct PP_TouchPoint (*)(PP_Resource resource, PP_TouchListType list, uint32_t touch_id))&Pnacl_M13_PPB_TouchInputEvent_GetTouchById
 };
 
-struct PPB_Instance_0_5 Pnacl_Wrappers_PPB_Instance_0_5 = {
-    .GetWindowObject = (struct PP_Var (*)(PP_Instance instance))&Pnacl_M13_PPB_Instance_GetWindowObject,
-    .GetOwnerElementObject = (struct PP_Var (*)(PP_Instance instance))&Pnacl_M13_PPB_Instance_GetOwnerElementObject,
-    .BindGraphics = (PP_Bool (*)(PP_Instance instance, PP_Resource device))&Pnacl_M13_PPB_Instance_BindGraphics,
-    .IsFullFrame = (PP_Bool (*)(PP_Instance instance))&Pnacl_M13_PPB_Instance_IsFullFrame
-};
-
 /* Not generating wrapper interface for PPB_Instance_1_0 */
 
 struct PPB_MessageLoop_1_0 Pnacl_Wrappers_PPB_MessageLoop_1_0 = {
@@ -4465,12 +4429,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TouchInputEvent_1_0 = {
   .real_iface = NULL
 };
 
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Instance_0_5 = {
-  .iface_macro = PPB_INSTANCE_INTERFACE_0_5,
-  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_Instance_0_5,
-  .real_iface = NULL
-};
-
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Instance_1_0 = {
   .iface_macro = PPB_INSTANCE_INTERFACE_1_0,
   .wrapped_iface = NULL /* Still need slot for real_iface */,
@@ -5181,7 +5139,6 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_WheelInputEvent_1_0,
   &Pnacl_WrapperInfo_PPB_KeyboardInputEvent_1_0,
   &Pnacl_WrapperInfo_PPB_TouchInputEvent_1_0,
-  &Pnacl_WrapperInfo_PPB_Instance_0_5,
   &Pnacl_WrapperInfo_PPB_Instance_1_0,
   &Pnacl_WrapperInfo_PPB_MessageLoop_1_0,
   &Pnacl_WrapperInfo_PPB_Messaging_1_0,

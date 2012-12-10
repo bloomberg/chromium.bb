@@ -10,7 +10,6 @@
  */
 
 label Chrome {
-  M13 = 0.5,
   M14 = 1.0
  };
 
@@ -19,14 +18,6 @@ label Chrome {
  * related to the module instance on a web page.
  */
 interface PPB_Instance {
-  /** Deprecated in 1.0 */
-  [deprecate=1.0]
-  PP_Var GetWindowObject([in] PP_Instance instance);
-
-  /** Deprecated in 1.0 */
-  [deprecate=1.0]
-  PP_Var GetOwnerElementObject([in] PP_Instance instance);
-
   /**
    * BindGraphics() binds the given graphics as the current display surface.
    * The contents of this device is what will be displayed in the instance's
@@ -72,11 +63,5 @@ interface PPB_Instance {
    */
   PP_Bool IsFullFrame(
       [in] PP_Instance instance);
-
-  /** Deprecated in 0.5 */
-  [deprecate=0.5]
-  PP_Var ExecuteScript([in] PP_Instance instance,
-                       [in] PP_Var script,
-                       [out] PP_Var exception);
 };
 

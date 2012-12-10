@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_instance.idl modified Wed Oct  5 14:06:02 2011. */
+/* From ppb_instance.idl modified Fri Dec 07 12:57:46 2012. */
 
 #ifndef PPAPI_C_PPB_INSTANCE_H_
 #define PPAPI_C_PPB_INSTANCE_H_
@@ -13,9 +13,7 @@
 #include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
-#include "ppapi/c/pp_var.h"
 
-#define PPB_INSTANCE_INTERFACE_0_5 "PPB_Instance;0.5"
 #define PPB_INSTANCE_INTERFACE_1_0 "PPB_Instance;1.0"
 #define PPB_INSTANCE_INTERFACE PPB_INSTANCE_INTERFACE_1_0
 
@@ -80,13 +78,6 @@ struct PPB_Instance_1_0 {
 };
 
 typedef struct PPB_Instance_1_0 PPB_Instance;
-
-struct PPB_Instance_0_5 {
-  struct PP_Var (*GetWindowObject)(PP_Instance instance);
-  struct PP_Var (*GetOwnerElementObject)(PP_Instance instance);
-  PP_Bool (*BindGraphics)(PP_Instance instance, PP_Resource device);
-  PP_Bool (*IsFullFrame)(PP_Instance instance);
-};
 /**
  * @}
  */
