@@ -17,6 +17,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="7128196614940529818">Chromium Frame je že nameščen in na voljo vsem uporabnikom tega računalnika. Če želite namestiti vtičnik Chromium Frame na ravni uporabnika, morate najprej odstraniti različico na ravni sistema, ki jo je namestil skrbnik.</translation>
 <translation id="731644333568559921">Posodobi sistem &amp;Chromium OS</translation>
 <translation id="7421823331379285070">Chromium zahteva Windows XP ali novejši. Nekatere funkcije morda ne bodo delovale.</translation>
+<translation id="3549345495227188780">Začnite uporabljati Chromium OS</translation>
 <translation id="4330297532943865716">V sistemu je bila odkrita namestitev Chromiuma ali vtičnika Chromium Frame, ki je v sporu. Odstranite ga in poskusite znova.</translation>
 <translation id="6953661834318318668">Orodna vrstica Chromium</translation>
 <translation id="7097100943370017396">Za Chromium ni več posodobitev, ker je operacijski sistem zastarel.</translation>
@@ -58,6 +59,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="3197823471738295152">Naprava ima najnovejšo različico.</translation>
 <translation id="8551886023433311834">Posodobitev je skoraj končana. Znova zaženite napravo.</translation>
 <translation id="8353224596138547809">Želite, da Chromium shrani geslo za to spletno mesto?</translation>
+<translation id="7339898014177206373">Novo okno</translation>
 <translation id="3026202950002788510">Pojdite v
           <ph name="BEGIN_BOLD"/>
           Programi &gt; Sistemske nastavitve &gt; Omrežje &gt; Dodatno &gt; Proxyji
@@ -69,7 +71,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="9191268552238695869">Skrbnik je v tem sistemu namestil Chromium, ki je na voljo vsem uporabnikom. Chromium na ravni sistema bo nadomestil vašo različico na ravni uporabnika.</translation>
 <translation id="3509308970982693815">Zaprite vsa okna Chromiuma in poskusite znova.</translation>
 <translation id="4077262827416206768">Zaprite vsa okna Chromiuma in ga zaženite znova, da bo ta sprememba začela veljati.</translation>
-<translation id="9119843944749246249">Copyright © 2006–2012 Ustvarjalci Chromiuma. Vse pravice pridržane.</translation>
 <translation id="6944967875980567883">Moduli, naloženi v Chromium</translation>
 <translation id="118298050220780080">Poskusili ste odpreti &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, vendar ima strežnik potrdilo, ki ga je izdala oseba, ki ji operacijski sistem računalnika ne zaupa. To morda pomeni, da je strežnik ustvaril svoje varnostne poverilnice, s katerimi Chromium ne more preveriti identitete, ali pa vašo komunikacijo poskuša prestreči napadalec.</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
@@ -91,6 +92,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="2881203820889150661">Chromium ne more ustvariti bližnjic do aplikacij, ker ne more določiti trenutnega okolja namizja.</translation>
 <translation id="4886158514168859177">Ta računalnik že ima novejšo različico vtičnika Chromium Frame. Če programska oprema ne deluje, odstranite vtičnik Chromium Frame in poskusite znova.</translation>
 <translation id="911206726377975832">Ali želite izbrisati tudi podatke brskanja?</translation>
+<translation id="1699664235656412242">Zaprite vsa okna Chromiuma (tudi tista v načinu Windows 8) in poskusite znova.</translation>
 <translation id="6734080038664603509">Posodobi &amp;Chromium</translation>
 <translation id="8862326446509486874">Nimate ustreznih pravic za namestitev na ravni sistema. Poskusite znova zagnati namestitveni program kot skrbnik.</translation>
 <translation id="1774152462503052664">Naj se Chromium izvaja v ozadju</translation>
@@ -127,7 +129,9 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="6717134281241384636">Vašega profila ni mogoče uporabiti, ker je iz novejše različice Chromiuma.
 
 Nekatere funkcije morda ne bodo na voljo. Določite drug imenik profila ali uporabite novejšo različico Chromiuma.</translation>
+<translation id="4499972362520386277">Copyright 2012 Ustvarjalci Chromiuma. Vse pravice pridržane.</translation>
 <translation id="2712549016134575851">Zaznan je bil spor z drugim nameščenim programom.</translation>
+<translation id="4881709374218686648">Prijavljeni ste bili z drugim računom. Če se prijavite, se bodo podatki združili. Priporočljivo je, da za svojo vsebino v Chromiumu na <ph name="BEGIN_LINK"/>strani z nastavitvami<ph name="END_LINK"/> ustvarite novega uporabnika Chromiuma.</translation>
 <translation id="9013087743919948559">Dodaj v Chromium</translation>
 <translation id="6212496753309875659">Ta računalnik že ima novejšo različico Chromiuma. Če programska oprema ne deluje, odstranite Chromium in poskusite znova.</translation>
 <translation id="3014684866565908571">Chromium Utility</translation>

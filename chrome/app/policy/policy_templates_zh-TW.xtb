@@ -10,6 +10,7 @@
 <translation id="9150416707757015439">這項政策已被取代，請改用 IncognitoModeAvailability。在「<ph name="PRODUCT_NAME"/>」中啟用無痕模式。如果這項設定已啟用或尚未設定，使用者皆可在無痕模式中開啟網頁。如果這項設定已停用，使用者就無法在無痕模式中開啟網頁。如果未設定這項政策，系統會啟用這項設定，且使用者可以使用無痕模式。</translation>
 <translation id="7614663184588396421">停用的通訊協定機制清單</translation>
 <translation id="2309390639296060546">預設地理位置設定</translation>
+<translation id="7261507082507286116">透過行動網路連線時，停用 Google 雲端硬碟</translation>
 <translation id="7443616896860707393">跨原始來源的 HTTP 基本驗證提示</translation>
 <translation id="2337466621458842053">允許您設定網址模式清單，指定可以顯示圖片的網站。如果未設定這項政策，系統會從「DefaultImagesSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
 <translation id="4680961954980851756">啟用自動填入</translation>
@@ -82,6 +83,9 @@
 <translation id="4668325077104657568">預設圖片設定</translation>
 <translation id="7161193985878519056">無痕模式已停用。</translation>
 <translation id="2524379983318108884">允許擷取音訊</translation>
+<translation id="7978961945071764766">如果您設為「Ture」，就會在使用行動網路連線時停用 Google 雲端硬碟同步功能。這種情形下，系統只有在連上 WiFi 或乙太網路連線時才會將資料同步處理至 Google 雲端硬碟。
+
+          如果您設為「False」或未設定，使用者即可透過行動網路連線將檔案傳輸至 Google 雲端硬碟。</translation>
 <translation id="4492287494009043413">停用螢幕畫面擷取功能</translation>
 <translation id="6368403635025849609">允許這些網站的 JavaScript</translation>
 <translation id="6074963268421707432">不允許任何網站顯示桌面通知</translation>
@@ -91,11 +95,6 @@
 <translation id="2906874737073861391">AppPack 擴充功能清單</translation>
 <translation id="3758249152301468420">停用開發人員工具</translation>
 <translation id="8665076741187546529">設定強制安裝的擴充程式清單</translation>
-<translation id="2505112041294615513">設定 <ph name="PRODUCT_FRAME_NAME"/> 要用來儲存使用者資料的目錄。
-
-      如果您設定這項政策，<ph name="PRODUCT_FRAME_NAME"/> 會使用提供的目錄。
-
-      如果您未調整這項設定，系統會使用預設的設定檔目錄。</translation>
 <translation id="8818173863808665831">回報裝置的地理位置。
 
       如果未設定這項政策，或將其設定為 False，系統將不會回報位置。</translation>
@@ -109,6 +108,13 @@
 <translation id="2565967352111237512">啟用向 Google 匿名回報「<ph name="PRODUCT_NAME"/>」使用狀況和相關當機資料的功能，並禁止使用者變更這項設定。如果您啟用這項設定，系統會以匿名方式傳送使用狀況和相關當機資料給 Google。如果您停用這項設定，系統永遠都不會將這些報告傳送給 Google。不論您啟用或停用這項設定，使用者都無法在 「<ph name="PRODUCT_NAME"/>」變更或覆寫這項設定。如果未設定這項政策，系統會執行使用者在安裝/初次執行時選擇的設定。</translation>
 <translation id="9135033364005346124">啟用 <ph name="CLOUD_PRINT_NAME"/> Proxy</translation>
 <translation id="6943577887654905793">Mac/Linux 偏好設定名稱：</translation>
+<translation id="6925212669267783763">設定 <ph name="PRODUCT_FRAME_NAME"/> 會用來儲存使用者資料的目錄。
+
+      如果設定這項政策，<ph name="PRODUCT_FRAME_NAME"/> 就會使用提供的目錄。
+
+      如需可用變數的清單，請參閱 http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables。
+
+      如果尚未調整這項設定，系統會使用預設的設定檔目錄。</translation>
 <translation id="8906768759089290519">啟用訪客模式</translation>
 <translation id="838870586332499308">啟用數據漫遊</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME"/> 可以透過 Google 網路服務來解決拼字錯誤。如果您啟用這項設定，系統就會一律使用這項服務；如果您停用這項設定，則系統將絕不使用這項服務。
@@ -118,6 +124,9 @@
       如果您並未設置這項設定，則使用者可自行選擇是否要使用拼字檢查服務。</translation>
 <translation id="254524874071906077">將 Chrome 設為預設瀏覽器</translation>
 <translation id="8764119899999036911">指定是否要根據標準 DNS 名稱或輸入的原始名稱來產生 Kerberos SPN。如果啟用這項設定，系統會略過 CNAME 查詢，並且使用先前輸入的伺服器名稱。如果您停用或未調整這項設定，伺服器的標準名稱會透過 CNAME 查詢決定。</translation>
+<translation id="5711323964690760562">指定企業線上應用程式商店的網址。啟用這項設定後，應用程式會顯示在新分頁上，使用者只要按一下應用程式，就會前往指定的網址。如果確實要允許系統從指定的網站安裝擴充功能，您必須將 ExtensionInstallSources 政策設為允許從適當的擴充功能下載網址執行安裝。如要設定這項政策，請一併設定 EnterpriseWebStoreName。
+
+      如果停用這項設定，新分頁上就不會顯示任何企業線上應用程式商店應用程式。</translation>
 <translation id="4377599627073874279">允許所有網站顯示所有圖片</translation>
 <translation id="3915395663995367577">Proxy .pac 檔案的網址</translation>
 <translation id="1022361784792428773">使用者應避免安裝的擴充功能 ID (使用星號 (*) 排除所有擴充功能)</translation>
@@ -131,6 +140,13 @@
 <translation id="8987262643142408725">停用 SSL 記錄分割</translation>
 <translation id="4529945827292143461">自訂網址模式清單，其中的網址模式應一律由主機瀏覽器轉譯。如果未設定這項政策，所有網站都會使用「ChromeFrameRendererSettings」政策指定的預設轉譯器。如需模式範例，請參閱 http://www.chromium.org/developers/how-tos/chrome-frame-getting-started。</translation>
 <translation id="8044493735196713914">回報裝置啟動模式</translation>
+<translation id="2746016768603629042">這項政策已被取代，請改用 DefaultJavaScriptSetting。
+
+      可讓您在 <ph name="PRODUCT_NAME"/> 中停用 JavaScript。
+
+      如果這項設定已停用，所有的網頁都無法使用 JavaScript，使用者也無法變更這項設定。
+
+      如果這項設定已啟用或並未指定，網頁就能使用 JavaScript，但使用者可以變更這項設定。</translation>
 <translation id="1942957375738056236">您可以在這裡指定 Proxy 伺服器的網址。只有當您在「選擇如何指定 Proxy 伺服器設定」中選取手動 Proxy 設定時，這項政策才會生效。如果您已選取任何其他模式來設定 Proxy 政策，則不需設定這項政策。如需更多選項或詳例，請造訪：<ph name="PROXY_HELP_URL"/></translation>
 <translation id="8642088216849640113">啟用「<ph name="PRODUCT_NAME"/>」的「安全瀏覽」功能，並且禁止使用者變更這項設定。如果啟用這項設定，系統會一律啟動「安全瀏覽」功能。如果停用這項設定，系統就不會啟用「安全瀏覽」功能。不論啟用或停用這項設定，使用者都無法在「<ph name="PRODUCT_NAME"/>」中變更或覆寫這項設定。如果未設定這項政策，系統會啟用這項功能，不過使用者可以變更設定。</translation>
 <translation id="6076008833763548615">停用外部儲存裝置掛載功能。
@@ -157,6 +173,9 @@
 <translation id="2312509925391670075">每當有任何網站要使用我的攝影機和/或麥克風時詢問我</translation>
 <translation id="1426410128494586442">是</translation>
 <translation id="4962195944157514011">指定執行預設搜尋時使用的搜尋引擎網址。網址應包含「<ph name="SEARCH_TERM_MARKER"/>」字串，使用者搜尋時輸入的文字會取代這條字串。啟用「DefaultSearchProviderEnabled」政策時，則必須設定這個選項，並且只有在這個情況下，系統才會遵循這項政策。</translation>
+<translation id="3343454696188645600">如果您設為「True」，就會停用 Google 雲端硬碟同步功能。這種情形下，系統不會將任何資料上傳至 Google 雲端硬碟。
+
+         如果您設為「False」或未設定，使用者即可將檔案傳輸至 Google 雲端硬碟。</translation>
 <translation id="6009903244351574348">允許「<ph name="PRODUCT_FRAME_NAME"/>」處理列出的內容類型。如果未設定這項政策，所有網站都會使用「ChromeFrameRendererSettings」政策指定的預設轉譯器。</translation>
 <translation id="3381968327636295719">根據預設使用主機瀏覽器</translation>
 <translation id="3627678165642179114">啟用或停用拼字檢查網路服務</translation>
@@ -187,6 +206,17 @@
 <translation id="6786747875388722282">擴充功能</translation>
 <translation id="8947415621777543415">回報裝置位置</translation>
 <translation id="1655229863189977773">設定磁碟快取大小 (以位元組為單位)</translation>
+<translation id="6376842084200599664">允許您指定採用背景安裝方式 (不需與使用者互動) 的擴充功能清單。
+
+          每個清單項目都是一條字串，包含以分號 (<ph name="SEMICOLON"/>) 分隔的一個擴充功能 ID 和一個更新網址。擴充功能 ID 為 32 個字元的字串，如需查看範例，請在開發人員模式下前往 <ph name="CHROME_EXTENSIONS_LINK"/>。更新網址應指向更新資訊清單 XML 文件 (如 <ph name="LINK_TO_EXTENSION_DOC1"/> 所述)。請注意，這項政策中設定的更新網址只可用於初次安裝，後續的擴充功能更新將會使用擴充功能資訊清單中指定的更新網址。
+
+          <ph name="PRODUCT_NAME"/> 會為每個項目從指定更新網址的更新服務中，擷取以擴充功能 ID 指定的擴充功能，並以無訊息方式在背景中進行安裝程序。
+
+          舉例來說，<ph name="EXTENSION_POLICY_EXAMPLE"/> 會從標準 Chrome 線上應用程式商店的更新網址安裝 <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/> 擴充功能。如要進一步瞭解如何管理擴充功能，請參閱：<ph name="LINK_TO_EXTENSION_DOC2"/>。
+
+          使用者無法解除安裝本政策所指定的擴充功能。如果您從清單中移除一個擴充功能，<ph name="PRODUCT_NAME"/> 會自動解除安裝該擴充功能。清單中指定的擴充功能會自動列入安裝許可清單；即使擴充功能列入 ExtensionsInstallBlacklist 也不會有影響。
+
+          如果設定這項政策，使用者即可解除安裝 <ph name="PRODUCT_NAME"/> 中的任何擴充功能。</translation>
 <translation id="6899705656741990703">自動偵測 Proxy 設定</translation>
 <translation id="7003334574344702284">如果啟用這項政策，則會強制從之前的預設瀏覽器匯入儲存的密碼，並影響匯入對話方塊。如果停用這項政策，則不會匯入儲存的密碼。如果未設定這項政策，系統會自動匯入儲存的密碼，或詢問使用者是否要匯入儲存的密碼。</translation>
 <translation id="6258193603492867656">指定產生的 Kerberos SPN 是否應該包含非標準的通訊埠。如果您啟用這項設定並輸入非標準通訊埠 (例如 80 或 443 之外的通訊埠)，那麼產生的 Kerberos SPN 就會包含該通訊埠。如果您停用或未調整這項設定，那麼不論在任何情況下，產生的 Kerberos SPN 都不會包含通訊埠。</translation>
@@ -200,12 +230,26 @@
       時區值格式均依照「時區信息資料庫」中訂定的時區名稱所設 (請參閱：「http://en.wikipedia.org/wiki/List_of_tz_database_time」)。具體上，大部分時區均是依照「洲/大城市」或「洋/大城市」的格式定名。</translation>
 <translation id="8992176907758534924">不允許任何網站顯示圖片</translation>
 <translation id="262740370354162807">啟用「<ph name="CLOUD_PRINT_NAME"/>」文件提交功能</translation>
+<translation id="5182055907976889880">設定在 <ph name="PRODUCT_OS_NAME"/> 中使用 Google 雲端硬碟。</translation>
 <translation id="8704831857353097849">停用的外掛程式清單</translation>
 <translation id="8391419598427733574">回報註冊裝置的作業系統和韌體版本。
 
       如果這個項目設定為 True，則註冊的裝置會定期回報作業系統和韌體版本。如果這個項目設定為 False，系統就不會回報版本資訊。</translation>
 <translation id="467449052039111439">開啟網址清單</translation>
 <translation id="5883015257301027298">預設 Cookie 設定</translation>
+<translation id="5017500084427291117">禁止存取黑名單中的網址。
+
+      這項政策會禁止使用者從黑名單所列網址載入網頁。
+
+      網址格式為「通訊協定://主機:通訊埠/路徑」。
+      「通訊協定」這項非必要項目可為 http、https 或 ftp，但只有所列出的這個通訊協定才會受到封鎖；如果不指定通訊協定，則會封鎖所有通訊協定。
+      「主機」可為主機名稱或 IP 位址。封鎖某個主機名稱時，也會一併封鎖其子網域。如果不想封鎖子網域，則可在主機名稱前加上「.」。如果使用特殊主機名稱「*」，則會封鎖所有網域。
+      「通訊埠」這項非必要項目可為 1 到 65535 中的有效埠號。如果未指定，則會封鎖所有通訊埠。
+      如果指定「路徑」這項非必要項目，則只會封鎖帶有該字首的路徑。
+
+      您可以在網址許可清單政策中定義例外情況，不過最多只能指定 1000 項例外，之後加入的項目將遭到略過。
+
+      如未設定這項政策，瀏覽器就不會將任何網址列入黑名單。</translation>
 <translation id="8955719471735800169">返回頁首</translation>
 <translation id="2534584045044686957">設定 <ph name="PRODUCT_NAME"/> 在磁碟上儲存快取媒體檔案時所使用的快取大小。
 
@@ -223,8 +267,6 @@
       這項政策的目的是為了在以下情況中產生嚴格的外掛程式黑名單設定：如果「DisabledPlugins」清單中以萬用字元設定了某些黑名單項目 (例如以「*」停用所有外掛程式、以「*Java*」停用所有 Java 外掛程式) ，但管理員希望啟用某些特定的版本 (例如「IcedTea Java 2.3」)，即可在這項政策中指定要允許的版本。
 
       如果您未設定這項政策，則系統將鎖定並停用任何與「DisabledPlugins」中的模式相符的外掛程式，且使用者將無法加以啟用。</translation>
-<translation id="8170882486743832400">設定 GData 選項</translation>
-<translation id="2322733497952278056">允許存取所列網址，這些網址是網址黑名單的例外情況。本清單項目的格式請參閱網址黑名單政策的說明。這項政策可用來對限制性的黑名單開放例外情況。例如，黑名單中可列出「*」來封鎖所有要求，但您可使用這項政策開放存取少數的網址。您也可使用這項政策對特定通訊協定、其他網域的子網域、通訊埠或特定路徑開放例外情況。最明確的篩選政策會判斷某個網址是否受到封鎖或允許。許可清單比黑名單具備更高的優先順序。這項政策僅限 100 項內容，之後的項目將遭到略過。如果未設定這項政策，則「URLBlacklist」政策的黑名單不會有例外情況。</translation>
 <translation id="5316405756476735914">允許您設定是否讓網站設定本機資料。您可以允許或禁止所有網站設定本機資料。如果未設定這項政策，系統會使用「AllowCookies」，不過使用者可以變更設定。</translation>
 <translation id="4250680216510889253">否</translation>
 <translation id="1522425503138261032">允許網站追蹤使用者的實際位置</translation>
@@ -256,12 +298,8 @@
       如果未設定這項政策，使用者就可以變更啟動器中的固定應用程式清單。</translation>
 <translation id="7625444193696794922">指定裝置的固定發佈頻道。</translation>
 <translation id="2552966063069741410">時區</translation>
-<translation id="3088288048720661397">如果您設為「Ture」，就會在使用行動網路連線時停用 Google 文件同步功能。這種情形下，系統只有在連上 Wi-Fi 或乙太網路連線時才會將資料同步處理至 Google 文件。
-
-          如果您設為「False」或未設定，使用者即可透過行動網路連線將檔案傳輸至 Google 文件。</translation>
 <translation id="2240879329269430151">允許您設定是否要讓網站顯示彈出式視窗。您可以允許或禁止所有網站顯示彈出式視窗。如果未設定這項政策，系統會使用「BlockPopups」，不過使用者可以變更設定。</translation>
 <translation id="2529700525201305165">限制可登入 <ph name="PRODUCT_NAME"/> 的使用者</translation>
-<translation id="5289914968905023866">禁止存取黑名單中的網址。這項政策會禁止使用者從黑名單所列網址載入網頁。網址格式為「通訊協定://主機:通訊埠/路徑」。「通訊協定」這項非必要項目可為 http、https 或 ftp，但只有所列出的這個通訊協定才會受到封鎖；如果不指定通訊協定，則會封鎖所有通訊協定。「主機」可為主機名稱或 IP 位址。封鎖某個主機名稱時，也會一併封鎖其子網域。如果不想封鎖子網域，則可在主機名稱前加上「.」。如果使用特殊主機名稱「*」，則會封鎖所有網域。「通訊埠」這項非必要項目可為 1 到 65535 中的有效埠號。如果未指定，則會封鎖所有通訊埠。如果指定「路徑」這項非必要項目，則只會封鎖帶有該字首的路徑。您可以在網址許可清單政策中定義例外情況，不過這些政策僅限 100 項，之後的項目將遭到略過。如果未設定這項政策，瀏覽器就不會將任何網址列入黑名單。</translation>
 <translation id="3864818549971490907">預設外掛程式設定</translation>
 <translation id="7151201297958662315">決定是否在上次瀏覽器視窗關閉時，要在 OS 登入期間啟用 <ph name="PRODUCT_NAME"/> 處理程序，允許背景應用程式持續啟用。背景處理程序會在系統匣顯示圖示，並起一律從系統匣關閉。
 
@@ -275,12 +313,24 @@
 
           如果未設定這項政策，系統會使用預設命令列。</translation>
 <translation id="2646290749315461919">允許您設定是否要讓網站追蹤使用者的實際位置。您可以直接預設為允許或不允許追蹤使用者的實際位置，或讓網站每次要求實際位置時都詢問使用者一次。如果未設定這項政策，系統會使用「AskGeolocation」，不過使用者可以變更設定。</translation>
+<translation id="3309789488678647282">停用雲端硬碟</translation>
 <translation id="5770738360657678870">開發頻道 (可能不穩定)</translation>
 <translation id="2959898425599642200">Proxy 略過規則</translation>
 <translation id="1098794473340446990">回報裝置活動時間
 
       如果這個項目設定為 True，則註冊的裝置會回報使用者在裝置上活動的時段。如果這個項目設定為 False，系統就不會記錄或回報裝置活動時間。</translation>
 <translation id="896575211736907134">強制使用無痕模式。</translation>
+<translation id="817455428376641507">允許存取所列網址，這些網址是網址黑名單的例外情況。
+
+      請參閱網址黑名單政策的說明以瞭解本清單項目的格式。
+
+      這項政策可用來對限制性的黑名單開放例外情況。例如，當您在黑名單中使用「*」封鎖所有要求時，仍可使用這項政策開放存取少數的網址。您也可使用這項政策對特定通訊協定、其他網域的子網域、通訊埠或特定路徑開放例外情況。
+
+      系統會根據先最明確的篩選政策來判斷某個網址是否受到封鎖或允許，而許可清單的優先順序比黑名單更高。
+
+      這項政策最多可以讓您指定 1000 個例外項目，之後加入的項目將遭到略過。
+
+      如未設定這項政策，則「URLBlacklist」政策的黑名單不會有例外情況。</translation>
 <translation id="6177482277304066047">設定自動更新的目標版本。
 
       指定 <ph name="PRODUCT_OS_NAME"/> 應更新的目標版本前置碼。如果裝置執行的本比指定前置碼更舊，就會更新至含有指定前置碼的最新版本。如果裝置已安裝最新版本，則不會有任何效果 (例如執行降級動作)，裝置也會保持為目前版本。前置碼格式需按部分逐一指定，如下列範例所示：
@@ -321,6 +371,13 @@
 
       如果您停用或未設定這項政策，則儲存網站資料的政策會改由 DefaultCookiesSetting 政策決定。</translation>
 <translation id="2824715612115726353">啟用無痕模式</translation>
+<translation id="1057535219415338480">啟用 <ph name="PRODUCT_NAME"/> 的網路預測功能，並且禁止使用者變更這項設定。
+
+      除了 DNS 預先擷取之外，這項設定還可控制 TCP 和 SSL 預先連線及網頁預先轉譯。政策名稱中出現「DNS Prefetching」是為了沿用過去的名稱。
+
+      不論您是否啟用或這個政策，使用者都無法在 <ph name="PRODUCT_NAME"/> 中變更或覆寫這項設定。
+
+      如未設定這項政策，系統會啟用這項功能，不過使用者可自行變更此一設定。</translation>
 <translation id="1757688868319862958">允許 <ph name="PRODUCT_NAME"/> 執行需要驗證的外掛程式。如果您啟用這項設定，系統會繼續執行版本過舊的外掛程式。如果停用或略過這項設定，使用者則必須具備相關權限，才能執行需要驗證的外掛程式。這些外掛程式可能造成系統出現安全性漏洞。</translation>
 <translation id="6392973646875039351">啟用「<ph name="PRODUCT_NAME"/>」的「自動填入」功能，並允許使用者使用先前儲存的地址或信用卡資料等資訊自動填寫網路表單。如果您停用這項設定，使用者就無法使用「自動填入」功能。如果您啟用這項設定或未設定任何值，使用者就能掌控「自動填入」功能。這允許使用者設定「自動填入」設定檔，並可自行決定是否要開啟「自動填入」功能。</translation>
 <translation id="6157537876488211233">以逗號間隔的 Proxy 略過規則清單</translation>
@@ -330,9 +387,6 @@
 <translation id="2021307518684405078">不允許任何網站使用我的攝影機和麥克風</translation>
 <translation id="8870318296973696995">首頁</translation>
 <translation id="1240643596769627465">指定用來提供即時搜尋結果的搜尋引擎網址。網址應包含 <ph name="SEARCH_TERM_MARKER"/> 字串，使用者輸入的查詢文字會取代這個字串。這項政策是選擇性的，如果未設定，系統就不會提供即時搜尋結果。只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>
-<translation id="4126767310980686012">如果您設為「True」，就會停用 Google 文件同步功能。這種情形下，系統不會將任何資料上傳至 Google 文件。
-
-          如果您設為「False」或未設定，使用者即可將檔案傳輸至 Google 文件。</translation>
 <translation id="6693751878507293182">如果您將這項設定調整為啟用，則系統會停用「<ph name="PRODUCT_NAME"/>」中的自動搜尋功能，且缺漏的外掛程式也不會自動安裝。如果將這個選項設為停用，或未調整這項設定，即可啟動外掛程式尋找工具。</translation>
 <translation id="8238143662496081361">在工作階段期間保留 Cookie。</translation>
 <translation id="7880891067740158163">允許您指定可指定網站的網址模式清單，在網站要求憑證時，「<ph name="PRODUCT_NAME"/>」應為清單自動選取用戶端憑證。如果未設定這項政策，沒有任何網站可以執行自動選取。</translation>
@@ -372,9 +426,7 @@
 <translation id="267596348720209223">指定搜尋引擎支援的字元編碼。編碼就是 UTF-8、GB2312 和 ISO-8859-1 等字碼頁名稱。系統會以提供的順序來測試。這項政策是選擇性的，如果未設定，預設會使用的是 UTF-8。只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>
 <translation id="1454846751303307294">允許您設定網址模式清單，指定不可以執行 JavaScript 的網站。如果未設定這項政策，系統會從「DefaultJavaScriptSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
 <translation id="538108065117008131">允許 <ph name="PRODUCT_FRAME_NAME"/> 處理下列內容類型。</translation>
-<translation id="717221064259627503">設定「<ph name="PRODUCT_NAME"/>」用來在磁碟中儲存快取檔案的目錄。如果設定這項政策，則不論使用者是否指定「--disk-cache-dir」參數，「<ph name="PRODUCT_NAME"/>」都會使用提供的目錄。如果未設定這項政策，系統會使用預設的快取目錄，而且使用者可以用「--disk-cache-dir」命令列參數加以覆寫。</translation>
 <translation id="2312134445771258233">允許您設定起始時載入的網頁。系統會略過 [起始時開啟的網址] 網頁清單內容，除非您在 [起始動作] 中選取 [開啟網址清單]。</translation>
-<translation id="2538628396238281971">設定「<ph name="PRODUCT_NAME"/>」會用來下載檔案的目錄。如果設定這項政策，則不論使用者是否指定政策或啟用每次都要提示下載位置的參數，「<ph name="PRODUCT_NAME"/>」會使用提供的目錄。如果未設定這項政策，系統會使用預設的下載目錄，不過使用者可以變更設定。</translation>
 <translation id="7750991880413385988">開啟新分頁</translation>
 <translation id="741903087521737762">允許您指定起始動作。
 
@@ -407,7 +459,6 @@
 <translation id="6699880231565102694">為遠端存取主機啟用雙重驗證機制</translation>
 <translation id="2030905906517501646">預設搜尋引擎關鍵字</translation>
 <translation id="3072045631333522102">在零售模式下登入畫面所使用的螢幕保護程式</translation>
-<translation id="7393895128271703858">這項政策已被取代，請改用 DefaultJavaScriptSetting。在「<ph name="PRODUCT_NAME"/>」中啟用 JavaScript，並且禁止使用者變更這項設定。如果這項設定已啟用或尚未設定，網頁都能使用 JavaScript。如果這項設定已停用，網頁就無法使用 JavaScript。如果未設定這項政策，系統會使用已啟用的預設值並啟用這項設定，但使用者可以加以變更。</translation>
 <translation id="8079569179819932120">指定要列入整合驗證許可清單的伺服器。只有當 Proxy 或許可清單上的伺服器傳送驗證要求給「<ph name="PRODUCT_NAME"/>」時，才會啟用整合驗證。請以逗號間隔數個伺服器名稱，並且允許使用萬用字元 (*)。如果您未設定這項政策，任何伺服器都能參與整合驗證。</translation>
 <translation id="350797926066071931">啟用翻譯</translation>
 <translation id="4010738624545340900">允許調用檔案選項對話方塊</translation>
@@ -459,9 +510,15 @@
 <translation id="4983201894483989687">允許執行過舊的外掛程式</translation>
 <translation id="443665821428652897">瀏覽器關閉時清除網站資料 (已淘汰)</translation>
 <translation id="3823029528410252878">停用「<ph name="PRODUCT_NAME"/>」的瀏覽記錄儲存功能，並且禁止使用者變更這項設定。如果這項設定已啟用，系統就不會儲存瀏覽記錄。如果這項設定已停用或尚未設定，系統就會儲存瀏覽記錄。</translation>
+<translation id="3844092002200215574">設定 <ph name="PRODUCT_NAME"/> 用來在磁碟中儲存快取檔案的目錄。
+
+      如果設定這項政策，則不論使用者是否指定「--disk-cache-dir」參數，<ph name="PRODUCT_NAME"/> 都會使用提供的目錄。
+
+      如需可用變數的清單，請參閱 http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables。
+
+      如未設定這項政策，系統會使用預設的快取目錄，而且使用者可以用「--disk-cache-dir」命令列參數加以覆寫。</translation>
 <translation id="7202926611616207807">允許所有網站設定本機資料。</translation>
 <translation id="3034580675120919256">允許您設定是否要讓網站執行 JavaScript。您可以允許或禁止所有網站執行 JavaScript。如果未設定這項政策，系統會使用「AllowJavaScript」，不過使用者可以變更設定。</translation>
-<translation id="7459381849362539054">設定 <ph name="PRODUCT_OS_NAME"/> 的 GData。</translation>
 <translation id="3195451902035818945">指定是否應停用 SSL 記錄分割功能。記錄分割功能是解決 SSL 3.0 和 TLS 1.0 弱點的方法，但可能會造成與某些 HTTPS 伺服器和 Proxy 的相容性問題。
 
       如果尚未設定這項政策，或設定為 False，則記錄分割功能會用於使用 CBC 加密套件的 SSL/TLS 連線。</translation>
@@ -470,7 +527,6 @@
       決定在啟用示範工作階段時，要載入的網址組。這項政策會覆寫任何其他機制，設定起始網址，因此只可以套用至與特定使用者無關的工作階段。</translation>
 <translation id="5868414965372171132">使用者層級網路設定</translation>
 <translation id="1221359380862872747">在示範登入時載入指定的網址</translation>
-<translation id="6771644447620682565">停用 GData</translation>
 <translation id="5493552890659553833">啟用「<ph name="PRODUCT_NAME"/>」網址列的搜尋建議，並且禁止使用者變更這項設定。如果您啟用這項設定，系統會使用搜尋建議。如果您停用這項設定，系統就不會使用搜尋建議。不論您啟用或停用這項設定，使用者都無法變更或覆寫「<ph name="PRODUCT_NAME"/>」中的這項設定。如果未設定這項政策，系統會使用這項設定，不過使用者可以加以變更。</translation>
 <translation id="2431811512983100641">指定是否要啟用 TLS 網域專屬憑證擴充功能。
 
@@ -484,13 +540,17 @@
 <translation id="3547954654003013442">Proxy 設定</translation>
 <translation id="4482640907922304445">顯示「<ph name="PRODUCT_NAME"/>」工具列上的 [首頁] 按鈕。如果您啟用這項設定，系統會顯示 [首頁] 按鈕。如果您停用這項設定，系統就不會顯示 [首頁] 按鈕。不論您啟用或停用這項設定，使用者都無法變更或覆寫「<ph name="PRODUCT_NAME"/>」中的這項設定。如果您不設定這項政策，使用者就能選擇是否要顯示 [首頁] 按鈕。</translation>
 <translation id="2518231489509538392">允許播放音訊</translation>
+<translation id="7301543427086558500">指定替代網址清單，以供系統從搜尋引擎擷取搜尋字詞。網址中必須包含「<ph name="SEARCH_TERM_MARKER"/>」字串，才能擷取搜尋字詞。
+
+          您不一定要設定這項政策。在未設定的情況下，系統不會使用任何替代網址擷取搜尋字詞。
+
+          只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>
 <translation id="7547044444554936129">啟用「<ph name="PRODUCT_NAME"/>」的「互動智慧搜尋」功能，並且禁止使用者變更這項設定。如果您啟用這項設定，系統會啟用「<ph name="PRODUCT_NAME"/>」的「互動智慧搜尋」。如果您停用這項設定，系統會停用「<ph name="PRODUCT_NAME"/>」的「互動智慧搜尋」。不論您啟用或停用這項設定，使用者都無法變更或覆寫這項設定。如果您未調整這項設定，使用者可決定是否要使用這項功能。</translation>
 <translation id="3264793472749429012">預設搜尋引擎編碼</translation>
 <translation id="8101760444435022591">由於軟失敗線上撤銷檢查不會提供有效的安全性效益，因此在 <ph name="PRODUCT_NAME"/> 版本 19 和更新版本中，根據預設這些檢查已停用。將這項政策設定為 True，系統會還原先前行為，並且會執行線上 OCSP/CRL 檢查。
 
       如果您沒有設定這項政策，或將政策設定為 False，則 Chrome 不會在 Chrome 19 和更新版本中執行線上撤銷檢查。</translation>
 <translation id="5469484020713359236">允許您設定網址模式清單，指定可以設定 Cookie 的網站。如果未設定這項政策，系統會從「DefaultCookiesSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
-<translation id="3664573135939978914">透過手機連線停用 GData</translation>
 <translation id="930930237275114205">設定 <ph name="PRODUCT_FRAME_NAME"/> 使用者資料目錄</translation>
 <translation id="5208240613060747912">允許您設定網址模式清單，指定不可以展示通知的網站。如果未設定這項政策，系統會從「DefaultNotificationsSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
 <translation id="8592105098257899882">設定「<ph name="PRODUCT_NAME"/>」用來在磁碟上儲存快取檔案的快取大小。如果您設定這項政策，則不論使用者是否指定「--disk-cache-size」參數，「<ph name="PRODUCT_NAME"/>」都會使用提供的快取大小。如果這項政策的值是 0，系統會使用預設快取大小，不過使用者無法加以變更。如果未設定這項政策，系統會使用預設大小，且使用者可以用 --disk-cache-size 參數覆寫預設大小。</translation>
@@ -528,7 +588,6 @@
 <translation id="8908294717014659003">讓您設定網站是否允許網站存取媒體擷取裝置。根據預設，系統允許網站存取媒體擷取裝置，您也可設為每當網站要存取媒體擷取裝置時詢問使用者。
 
           如果您未設定這項政策，系統就會使用「PromptOnAccess」，使用者可自行變更。</translation>
-<translation id="9191982992032190929">指定企業線上應用程式商店的網址。啟用這項設定後，應用程式會顯示在新分頁上，使用者只要按一下應用程式，就會前往指定的網址。系統不用另外警告使用者，即可從這個網頁安裝擴充功能和應用程式。如果設定這項政策，也應設定 EnterpriseWebStoreName。如果停用這項政策，就沒有企業線上應用程式商店應用程式會顯示在新分頁上。</translation>
 <translation id="8889026535261486875">「<ph name="PRODUCT_NAME"/>」要委任的伺服器。用逗號隔開多個伺服器的名稱，並且可以使用萬用字元 (*)。如果未設定這項政策，任何伺服器都無法參與整合驗證。</translation>
 <translation id="2299220924812062390">指定停用的外掛程式清單</translation>
 <translation id="924557436754151212">第一次執行時從預設瀏覽器匯入已儲存的密碼</translation>
@@ -540,7 +599,6 @@
 <translation id="922540222991413931">設定擴充功能、應用程式和使用者指令碼安裝來源</translation>
 <translation id="7323896582714668701"><ph name="PRODUCT_NAME"/> 額外命令列參數</translation>
 <translation id="6931242315485576290">停用 Google 資料同步處理功能</translation>
-<translation id="36674322972891584">啟用「<ph name="PRODUCT_NAME"/>」的網路預測功能，並且禁止使用者變更這項設定。不論您啟用或停用這項設定，使用者都無法變更或覆寫「<ph name="PRODUCT_NAME"/>」中的這項設定。如果未設定這項政策，系統會啟用這項功能，不過使用者也能加以變更。</translation>
 <translation id="7006788746334555276">內容設定</translation>
 <translation id="5142301680741828703">一律轉譯下列 <ph name="PRODUCT_FRAME_NAME"/> 中的網址模式</translation>
 <translation id="4625915093043961294">設定擴充功能安裝許可清單</translation>
@@ -556,6 +614,13 @@
 <translation id="3428247105888806363">啟用網路預測功能</translation>
 <translation id="6145799962557135888">允許您設定網址模式清單，指定可以執行 JavaScript 的網站。如果未設定這項政策，系統會從「DefaultJavaScriptSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
 <translation id="7053678646221257043">如果啟用的話，這項政策會強迫系統從目前預設的瀏覽器匯入書籤，並且會影響匯入對話方塊。如果停用的話，系統不會匯入任何書籤。如果未設定的話，系統會自動匯入書籤，或詢問使用者是否要匯入書籤。</translation>
+<translation id="5757829681942414015">設定 <ph name="PRODUCT_NAME"/> 會用來儲存使用者資料的目錄。
+
+      如果您設定這項政策，則不論使用者是否指定「--user-data-dir」參數，<ph name="PRODUCT_NAME"/> 都會使用提供的目錄。
+
+      您可以上網查詢可用變數有哪些，網址為：http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables。
+
+      如未設定這項政策，系統會使用預設的設定檔路徑，而且使用者還可用「--user-data-dir」命令列參數加以覆寫。</translation>
 <translation id="5067143124345820993">登入使用者許可清單</translation>
 <translation id="3612784419634427880">可使用無痕模式。</translation>
 <translation id="2514328368635166290">指定預設搜尋引擎的最愛圖示網址。這項政策是選擇性的，如果未設定，系統就不會顯示搜尋引擎的圖示。只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>
@@ -597,6 +662,8 @@
 <translation id="4121350739760194865">阻止應用程式宣傳資訊在新分頁上顯示</translation>
 <translation id="2127599828444728326">允許這些網站的通知</translation>
 <translation id="7635471475589566552">設定「<ph name="PRODUCT_NAME"/>」的應用程式語言代碼，並且禁止使用者變更語言代碼。如果您啟用這項設定，「<ph name="PRODUCT_NAME"/>」就會使用指定的語言代碼。如果設定的語言代碼不受支援，就會改用「en-US」。如果停用或尚未調整這項設定，「<ph name="PRODUCT_NAME"/>」就會使用使用者指定的偏好語言代碼 (如果已設定)、系統語言代碼或備用語言代碼「en-US」。</translation>
+<translation id="1681852583119028071">預設搜尋提供者的替代網址清單。</translation>
+<translation id="7842869978353666042">設定 Google 雲端硬碟選項</translation>
 <translation id="718956142899066210">允許進行更新的連線類型</translation>
 <translation id="6985168562472482191">企業線上應用程式商店的名稱會顯示在新分頁中的應用程式圖示下方。只有在設定 EnterpriseWebStoreURL 時，這項設定才會生效。如果停用這項設定，企業線上應用程式商店應用程式 (如果有的話) 會標上自己的網址。</translation>
 <translation id="1734716591049455502">設定遠端存取選項</translation>
@@ -606,7 +673,13 @@
       除非安裝「遠端存取」網路應用程式，否則這些功能會遭到略過。</translation>
 <translation id="1310699457130669094">您可以在這裡為 Proxy .pac 檔案指定網址。只有當您在「選擇如何指定 Proxy 伺服器設定」中選取手動 Proxy 設定，這項政策才會生效。如果您已選取任何其他模式來設定 Proxy 政策，則不需設定這項政策。如需詳細範例，請造訪：<ph name="PROXY_HELP_URL"/></translation>
 <translation id="3406810703404235731">企業線上應用程式商店網址</translation>
-<translation id="7782879802219764346">設定「<ph name="PRODUCT_NAME"/>」會用來儲存使用者資料的目錄。如果您設定這項政策，則不論使用者是否指定「--user-data-dir」參數，「<ph name="PRODUCT_NAME"/>」都會使用提供的目錄。如果未設定這項政策，系統會使用預設的設定檔路徑，而且使用者還可用「--user-data-dir」命令列參數加以覆寫。</translation>
+<translation id="7690740696284155549">設定 <ph name="PRODUCT_NAME"/> 會用來下載檔案的目錄。
+
+      如果設定這項政策，則不論使用者是否指定政策或啟用每次都要提示下載位置的參數，<ph name="PRODUCT_NAME"/> 都會使用提供的目錄。
+
+      如需可用變數的清單，請參閱 http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables。
+
+      如未設定這項政策，系統會使用預設的下載目錄，使用者之後可以自行變更這個目錄。</translation>
 <translation id="7381326101471547614">停用 <ph name="PRODUCT_NAME"/> 中的 SPDY 通訊協定。如果啟用這項政策，SPDY 通訊協定就不會支援 <ph name="PRODUCT_NAME"/>。停用這項政策即可使用 SPDY。如果未設定這項政策，即可使用 SPDY。</translation>
 <translation id="1583248206450240930">根據預設使用 <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="1047128214168693844">不允許任何網站追蹤使用者的實際位置</translation>
@@ -623,17 +696,6 @@
 <translation id="6658245400435704251">指定裝置可以任意延遲下載某項更新的秒數上限 (以該項更新初次被推送到伺服器的時間為準)。您可以將這項裝置等待時間的其中一部分設定為等待的時間長度，剩下的部分則設定為檢查更新的次數。不論採取哪種方式，分散時間皆不得超過固定時間長度，這樣就可以避免裝置由於持續等待下載某項更新而停止回應。</translation>
 <translation id="1948757837129151165">HTTP 驗證政策</translation>
 <translation id="5946082169633555022">測試頻道</translation>
-<translation id="145467868108778033">讓您指定要以無訊息方式安裝的擴充功能清單，所指定的擴充功能在安裝時不需與使用者互動。
-
-          每個清單項目都是一條字串，包含擴充功能 ID 和一個更新網址 (兩者以分號「<ph name="SEMICOLON"/>」分隔)。擴充功能 ID 為 32 個字元的字串，如需查看範例，請在開發人員模式下前往 <ph name="CHROME_EXTENSIONS_LINK"/>。更新網址應指向更新資訊清單 XML 文件 (如 <ph name="LINK_TO_EXTENSION_DOC1"/> 所述)。請注意，這項政策中設定的更新網址只可用於初次安裝，後續的擴充功能更新將會使用擴充功能資訊清單中指定的更新網址。
-
-          「<ph name="PRODUCT_NAME"/>」會為每個項目從指定的更新網址中擷取以 ID 指定的擴充功能，並以無訊息方式加以安裝。
-
-          例如，「<ph name="EXTENSION_POLICY_EXAMPLE"/>」會從 Chrome 線上應用程式商店標準版的更新網址安裝 <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/> 擴充功能。如要進一步瞭解如何管理擴充功能，請參閱：<ph name="LINK_TO_EXTENSION_DOC2"/>。
-
-          使用者無法解除安裝這項政策所指定的擴充功能；但如果您從清單中移除某個擴充功能，「<ph name="PRODUCT_NAME"/>」會自動將其解除安裝。
-
-          如未設定這項政策，使用者即可解除安裝「<ph name="PRODUCT_NAME"/>」中的任何擴充功能。</translation>
 <translation id="8303314579975657113">指定 HTTP 驗證要用的 GSSAPI 資料庫。您可以設定資料庫名稱或完整路徑。如果沒有提供任何設定，「<ph name="PRODUCT_NAME"/>」會回復為預設資料庫名稱。</translation>
 <translation id="7749402620209366169">為遠端存取主機啟用雙重驗證機制，而不採用使用者指定的 PIN。
 

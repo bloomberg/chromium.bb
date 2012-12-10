@@ -37,6 +37,7 @@
 <translation id="8398145039500709259">Использовать этот аккаунт Google для синхронизации данных из Chrome?</translation>
 <translation id="1779550429052479749">В системе установлена конфликтующая версия Google Chrome или Google Chrome Frame. Удалите ее и повторите попытку.</translation>
 <translation id="3555616473548901994">Удаление завершено.</translation>
+<translation id="4987308747895123092">Закройте все окна Google Chrome (включая открытые в режиме Windows 8) и повторите попытку.</translation>
 <translation id="568643307450491754">Закладки можно найти в меню Chrome или на панели закладок.</translation>
 <translation id="8556340503434111824">Доступна новая версия Google Chrome, которая стала еще быстрее.</translation>
 <translation id="4728575227883772061">Установка не удалась из-за неизвестной ошибки. Закройте все окна Google Chrome и повторите попытку снова.</translation>
@@ -68,6 +69,7 @@
 <translation id="3889417619312448367">Удалить Google Chrome</translation>
 <translation id="8551886023433311834">Обновление почти завершено. Перезагрузите устройство.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="7339898014177206373">Новое окно</translation>
 <translation id="3026202950002788510">Выберите
           <ph name="BEGIN_BOLD"/>
           Программы &gt; Системные настройки &gt; Сеть &gt; Дополнительно &gt; Прокси
@@ -148,6 +150,7 @@
           <ph name="END_BOLD"/>
           присутствует, нажмите на нее и убедитесь, что в конфигурации выбрано непосредственное подключение.</translation>
 <translation id="3612333635265770873">Известно, что модуль с таким названием конфликтует с Google Chrome.</translation>
+<translation id="824729746779295798">© Google Inc., 2012 г. Все права защищены.</translation>
 <translation id="61852838583753520">Обновить &amp;Chrome OS</translation>
 <translation id="6650142020817594541">Для просмотра этого сайта рекомендуется использовать Google Chrome Frame (уже установлено).</translation>
 <translation id="2712549016134575851">Обнаружен конфликт с другим установленным приложением.</translation>
@@ -158,6 +161,7 @@
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="870251953148363156">Обновить &amp;Google Chrome</translation>
 <translation id="130631256467250065">Изменения вступят в силу после перезагрузки устройства.</translation>
+<translation id="163860049029591106">Начало работы с Chrome OS</translation>
 <translation id="1399397803214730675">На компьютере уже установлена последняя версия браузера Google Chrome. Если он не работает, удалите его и установите снова.</translation>
 <translation id="576822117893741893">Открыть меню Chrome</translation>
 <translation id="3444832043240812445">Информация о недавних сбоях отображается на этой странице только при <ph name="BEGIN_LINK"/>включенной функции отчетов о сбоях<ph name="END_LINK"/>.</translation>
@@ -170,8 +174,8 @@
 <translation id="2680623880102270805">Google Chrome не удается создать ярлык приложения, поскольку невозможно определить текущее окружение рабочего стола.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Веб-браузер</translation>
+<translation id="5244325494201350962">Так как ранее был выполнен вход под другим аккаунтом, вход под этим аккаунтом сейчас приведет к объединению данных. Рекомендуем создать для работы с Chrome новый аккаунт пользователя на <ph name="BEGIN_LINK"/>странице настроек<ph name="END_LINK"/>.</translation>
 <translation id="2189123953385179981">Google Chrome OS не поддерживает запуск внешних приложений для обработки ссылок типа <ph name="SCHEME"/>. Запрошенная ссылка: <ph name="PROTOLINK"/>.</translation>
-<translation id="711654979569750606">© Google Inc., 2006–2012. Все права защищены.</translation>
 <translation id="8205111949707227942">(Необязательно) Помогите улучшить Chrome OS, разрешив автоматическую отправку статистики использования и отчетов о сбоях в Google.</translation>
 <translation id="7253415505590551024">Идет загрузка. Отменить ее и закрыть Google Chrome?</translation>
 <translation id="7196020411877309443">Что это?</translation>

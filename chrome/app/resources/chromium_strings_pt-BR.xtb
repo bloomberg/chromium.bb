@@ -15,6 +15,7 @@
 <translation id="7128196614940529818">O Chromium Frame já está instalado e disponível para todos os usuários deste computador. Se você deseja instalar o Chromium Frame no nível de usuário, deve primeiro desinstalar a versão do sistema instalada por um administrador.</translation>
 <translation id="731644333568559921">Atualizar o &amp;Chromium OS</translation>
 <translation id="7421823331379285070">O Chromium requer Windows XP ou posterior. Alguns recursos podem não funcionar.</translation>
+<translation id="3549345495227188780">Primeiros passos com o Chromium OS</translation>
 <translation id="4330297532943865716">Uma instalação conflitante do Chromium ou Chromium Frame foi encontrada no sistema. Desinstale-a e tente novamente.</translation>
 <translation id="6953661834318318668">Barra de ferramentas do Chromium</translation>
 <translation id="7097100943370017396">O Chromium não está mais sendo atualizado porque seu sistema operacional está obsoleto.</translation>
@@ -56,6 +57,7 @@ e desmarque a caixa de seleção &quot;Usar um servidor proxy para a rede local&
 <translation id="3197823471738295152">O dispositivo está atualizado.</translation>
 <translation id="8551886023433311834">Atualização quase concluída! Reinicie seu dispositivo para concluir a atualização.</translation>
 <translation id="8353224596138547809">Deseja que o Chromium salve sua senha para este site?</translation>
+<translation id="7339898014177206373">Nova janela</translation>
 <translation id="3026202950002788510">Vá para
           <ph name="BEGIN_BOLD"/>
           Aplicativos &gt; Preferências do Sistema &gt; Rede &gt; Avançado &gt; Proxies
@@ -67,7 +69,6 @@ e desmarque a caixa de seleção &quot;Usar um servidor proxy para a rede local&
 <translation id="9191268552238695869">Um administrador instalou o Chromium neste sistema, e ele está disponível para todos os usuários. O Chromium do sistema substituirá a instalação do usuário agora.</translation>
 <translation id="3509308970982693815">Feche todas as janelas do Chromium e tente novamente.</translation>
 <translation id="4077262827416206768">Feche todas as janelas do Chromium e reinicie o Chromium para que a alteração entre em vigor.</translation>
-<translation id="9119843944749246249">Copyright © 2006-2012 Autores do Chromium. Todos os direitos reservados.</translation>
 <translation id="6944967875980567883">Módulos carregados no Chromium</translation>
 <translation id="118298050220780080">Você tentou acessar &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mas o servidor apresentou um certificado emitido por uma entidade na qual o sistema operacional de seu computador não confia. Isso pode significar que o servidor gerou suas próprias credenciais de segurança, nas quais o Chromium não pode confiar quanto às informações de identificação, ou que um invasor pode estar tentando interceptar suas comunicações.</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
@@ -87,6 +88,7 @@ e desmarque a caixa de seleção &quot;Usar um servidor proxy para a rede local&
 <translation id="2881203820889150661">O Chromium não pode criar um atalho do aplicativo, porque não consegue determinar o ambiente de área de trabalho atual.</translation>
 <translation id="4886158514168859177">Este computador já tem uma versão mais recente do Chromium Frame. Se o software não estiver funcionando, desinstale o Chromium Frame e tente novamente.</translation>
 <translation id="911206726377975832">Excluir também dados de navegação?</translation>
+<translation id="1699664235656412242">Feche todas as janelas do Chromium, (incluindo as que estejam no modo Windows 8) e tente novamente.</translation>
 <translation id="6734080038664603509">Atualizar o &amp;Chromium</translation>
 <translation id="8862326446509486874">Você não tem os direitos adequados para instalação no nível do sistema. Tente executar o instalador novamente como administrador.</translation>
 <translation id="1774152462503052664">Permitir que o Chromium seja executado em segundo plano</translation>
@@ -120,7 +122,9 @@ Se isso não resolver o problema, recomendamos selecionar essa opção novamente
 <translation id="8678787945719392857">Usar esta Conta do Google para sincronizar todos os seus dados do Chromium?</translation>
 <translation id="8621669128220841554">Falha na instalação devido a um erro não especificado. Faça o download do Chromium novamente.</translation>
 <translation id="6717134281241384636">Seu perfil não pode ser usado porque é de uma versão mais recente do Chromium. Alguns recursos podem não estar disponíveis. Especifique outro diretório de perfil ou use uma versão mais recente do Chromium.</translation>
+<translation id="4499972362520386277">Copyright 2012 Autores do Chromium. Todos os direitos reservados.</translation>
 <translation id="2712549016134575851">Foi detectado um conflito com outro aplicativo instalado.</translation>
+<translation id="4881709374218686648">Anteriormente, você fez login em uma conta diferente. O login mesclará seus dados. Você pode criar um novo usuário do Chromium na <ph name="BEGIN_LINK"/>página de configurações<ph name="END_LINK"/> para suas coisas do Chromium.</translation>
 <translation id="9013087743919948559">Adicionar ao Chromium</translation>
 <translation id="6212496753309875659">Este computador já tem uma versão mais recente do Chromium. Se o software não estiver funcionando, desinstale o Chromium e tente novamente.</translation>
 <translation id="3014684866565908571">Utilitário do Chromium</translation>

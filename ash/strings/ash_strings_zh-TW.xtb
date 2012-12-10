@@ -18,6 +18,8 @@
 <translation id="6459472438155181876">正在擴充 <ph name="DISPLAY_NAME"/> 畫面</translation>
 <translation id="8206859287963243715">手機</translation>
 <translation id="6596816719288285829">IP 位址</translation>
+<translation id="1812696562331527143">您的輸入法已變更為 <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>第三方<ph name="END_LINK"/>)。
+按下 Shift + Alt 鍵即可切換。</translation>
 <translation id="5233638681132016545">新分頁</translation>
 <translation id="3846575436967432996">沒有可用的網路資訊</translation>
 <translation id="3026237328237090306">設定行動數據</translation>
@@ -26,19 +28,22 @@
 <translation id="3126069444801937830">重新啟用即可更新</translation>
 <translation id="3294437725009624529">訪客</translation>
 <translation id="8190698733819146287">自訂語言與輸入法...</translation>
-<translation id="5182671122927417841">停用擴充功能</translation>
 <translation id="598295083618286569">已連線至藍牙</translation>
 <translation id="5222676887888702881">登出</translation>
-<translation id="2091132388437059185">視窗最大化時自動隱藏啟動器</translation>
 <translation id="2964193600955408481">停用 WiFi</translation>
 <translation id="811680302244032017">新增裝置...</translation>
 <translation id="2509468283778169019">大寫鍵已啟用</translation>
+<translation id="3892641579809465218">內部畫面</translation>
 <translation id="7823564328645135659">同步處理您的設定後，系統已將語言從「<ph name="FROM_LOCALE"/>」變更為「<ph name="TO_LOCALE"/>」。</translation>
+<translation id="5825747213122829519">您的輸入法已變更為 <ph name="INPUT_METHOD_ID"/>。
+按下 Shift + Alt 鍵即可切換。</translation>
+<translation id="2562916301614567480">私人網路</translation>
 <translation id="6426039856985689743">停用行動數據</translation>
 <translation id="3087734570205094154">置底</translation>
+<translation id="5271016907025319479">尚未設定 VPN。</translation>
 <translation id="3232695630852378748">藍牙設定...</translation>
 <translation id="1480041086352807611">示範模式</translation>
-<translation id="4186384497305035875">這個畫面刻意保留空白</translation>
+<translation id="3626637461649818317">剩餘電量：<ph name="PERCENTAGE"/>%</translation>
 <translation id="9089416786594320554">輸入法</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
 <translation id="2570059561924004903">停用互動朗讀</translation>
@@ -52,6 +57,7 @@
 <translation id="1346748346194534595">順時針旋轉</translation>
 <translation id="8528322925433439945">行動服務 ...</translation>
 <translation id="8428213095426709021">設定</translation>
+<translation id="2472320577759310817">藍牙已關閉。</translation>
 <translation id="2372145515558759244">正在同步處理應用程式...</translation>
 <translation id="4479639480957787382">乙太網路</translation>
 <translation id="1467432559032391204">逆時針旋轉</translation>
@@ -65,21 +71,19 @@
 <translation id="1850504506766569011">Wi-Fi 已關閉。</translation>
 <translation id="2872961005593481000">關閉</translation>
 <translation id="7052914147756339792">設定桌布...</translation>
-<translation id="80942317552162138">目前電量：<ph name="PERCENTAGE"/>%</translation>
-<translation id="5746825509052394497">您的輸入法已變更為 <ph name="INPUT_METHOD_ID"/>。
-按下 Shift + Alt 鍵即可切換。</translation>
+<translation id="2739500853984626550">找不到藍牙裝置</translation>
 <translation id="1602076796624386989">啟用行動數據</translation>
 <translation id="3157931365184549694">還原</translation>
+<translation id="225680501294068881">正在掃描裝置...</translation>
 <translation id="5597451508971090205"><ph name="DATE"/><ph name="SHORT_WEEKDAY"/></translation>
 <translation id="7029814467594812963">結束工作階段</translation>
 <translation id="8454013096329229812">Wi-Fi 已開啟。</translation>
 <translation id="4872237917498892622">Alt + 搜尋鍵或 Shift 鍵</translation>
 <translation id="2983818520079887040">設定...</translation>
 <translation id="2712866615167520691">協助工具功能已啟用。按下 Ctrl+Alt+Z 即可取消。</translation>
+<translation id="5467313780247887226">解析度不合，無法在連接的螢幕上顯示相同的圖片。</translation>
 <translation id="2792498699870441125">Alt + 搜尋鍵</translation>
 <translation id="8660803626959853127">正在同步處理 <ph name="COUNT"/> 個檔案</translation>
-<translation id="1837166567415282700">您的輸入法已變更為 <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>第三方<ph name="END_LINK"/>)。
-按下 Shift + Alt 鍵即可切換。</translation>
 <translation id="639644700271529076">大寫鍵已關閉</translation>
 <translation id="4101192585425716296">郵件中心</translation>
 <translation id="4864165860509564259">啟動器位置</translation>
@@ -88,9 +92,6 @@
 <translation id="3050422059534974565">大寫鍵已啟用。
 按下搜尋鍵或 Shift 鍵即可取消。</translation>
 <translation id="397105322502079400">計算中…</translation>
-<translation id="6362354186508391853">Ctrl +</translation>
-<translation id="477782898153505579">您沒有任何通知，放輕鬆！</translation>
-<translation id="7457942297256758195">全部清除</translation>
 <translation id="3573179567135747900">改回「<ph name="FROM_LOCALE"/>」(需要重新啟動)</translation>
 <translation id="8103386449138765447">簡訊數：<ph name="MESSAGE_COUNT"/></translation>
 <translation id="5045002648206642691">Google 雲端硬碟設定...</translation>
@@ -101,6 +102,5 @@
 <translation id="6911468394164995108">加入其他網路...</translation>
 <translation id="6843725295806269523">忽略的項目</translation>
 <translation id="412065659894267608">尚需 <ph name="HOUR"/> 小時 <ph name="MINUTE"/> 分鐘才能充滿電</translation>
-<translation id="4469842253116033348">停用 <ph name="SITE"/> 的通知</translation>
 <translation id="6359806961507272919">來自 <ph name="PHONE_NUMBER"/> 的簡訊</translation>
 </translationbundle>

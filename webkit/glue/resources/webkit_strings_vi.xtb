@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
+<translation id="5843503607508392247">Khác...</translation>
 <translation id="248395913932153421">Ngày</translation>
 <translation id="6015796118275082299">Năm</translation>
 <translation id="9186171386827445984">Đang tải tài liệu: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> trang...</translation>
@@ -10,7 +11,9 @@
 <translation id="5048533449481078685">đánh dấu danh sách</translation>
 <translation id="4202807286478387388">chuyển</translation>
 <translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
+<translation id="8199524924445686405">yyyy</translation>
 <translation id="795667975304826397">Không có tệp nào được chọn</translation>
+<translation id="1758486001363313524">Khác...</translation>
 <translation id="8141602879876242471">Đây là chỉ mục có thể tìm kiếm. Nhập từ khóa tìm kiếm vào:</translation>
 <translation id="370665806235115550">Đang tải...</translation>
 <translation id="6845533974506654842">nhấn</translation>
@@ -19,11 +22,13 @@
 <translation id="2548326553472216322">Không có tìm kiếm nào gần đây</translation>
 <translation id="7263440858009898357">Vui lòng chọn một mục trong danh sách.</translation>
 <translation id="5164977714490026579">Giá trị phải lớn hơn hoặc bằng <ph name="MINIMUM"/>.</translation>
+<translation id="2247351761944213033">Tuần <ph name="WEEKNUMBER"/>, <ph name="YEAR"/></translation>
 <translation id="5944544982112848342">2048 (Cấp độ cao)</translation>
 <translation id="3040011195152428237">liên kết</translation>
 <translation id="1014825444426747588">trống</translation>
 <translation id="4522570452068850558">Chi tiết</translation>
 <translation id="8451268428117625855">Vui lòng chọn một tệp.</translation>
+<translation id="8117451130807776954">Tuần này</translation>
 <translation id="5966707198760109579">Tuần</translation>
 <translation id="2674318244760992338">chân trang</translation>
 <translation id="8987927404178983737">Tháng</translation>
@@ -38,10 +43,12 @@
 <translation id="5476505524087279545">bỏ chọn</translation>
 <translation id="2148716181193084225">Hôm nay</translation>
 <translation id="2507943997699731163">Vui lòng điền vào trường này.</translation>
+<translation id="739024184232394898">Khác...</translation>
 <translation id="5919473608089529604">Không thể tải trình cắm.</translation>
 <translation id="6663448176199120256">Tìm kiếm Gần đây</translation>
 <translation id="2597378329261239068">Tài liệu này được bảo vệ bằng mật khẩu. Vui lòng nhập mật khẩu.</translation>
 <translation id="5466621249238537318">Vui lòng chọn một hoặc nhiều tệp.</translation>
+<translation id="9132465097189459683">Khác...</translation>
 <translation id="8750798805984357768">Vui lòng chọn một trong các tùy chọn sau.</translation>
 <translation id="7740050170769002709">Nội dung HTML</translation>
 <translation id="6692633176391053278">điều khiển tăng/giảm</translation>
@@ -50,11 +57,13 @@
 <translation id="1639239467298939599">Đang tải</translation>
 <translation id="2908441821576996758">Vui lòng nhập danh sách địa chỉ email được phân cách bằng dấu phẩy.</translation>
 <translation id="5939518447894949180">Đặt lại</translation>
+<translation id="1921819250265091946">dd</translation>
 <translation id="835897206747267392">Giá trị không hợp lệ.</translation>
 <translation id="1842960171412779397">chọn</translation>
 <translation id="7673697353781729403">Giờ</translation>
 <translation id="3450233048674729344">Giá trị phải nhỏ hơn hoặc bằng <ph name="MAXIMUM"/>.</translation>
 <translation id="668171684555832681">Khác...</translation>
+<translation id="1591562245178063882">Tháng này</translation>
 <translation id="6119846243427417423">kích hoạt</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> tệp</translation>
 <translation id="6643016212128521049">Xóa</translation>
@@ -62,4 +71,5 @@
 <translation id="3934680773876859118">Không thể tải tài liệu PDF</translation>
 <translation id="8597182159515967513">đầu đề</translation>
 <translation id="2653659639078652383">Gửi</translation>
+<translation id="3732799496749320381">mm</translation>
 </translationbundle>

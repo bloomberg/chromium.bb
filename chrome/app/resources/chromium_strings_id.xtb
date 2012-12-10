@@ -15,6 +15,7 @@
 <translation id="7128196614940529818">Chromium Frame sudah terpasang dan tersedia untuk semua pengguna komputer ini. Jika Anda ingin memasang Chromium Frame pada tingkat pengguna, Anda harus mencopot pemasangan versi tingkat sistem yang tadinya dipasang oleh administrator.</translation>
 <translation id="731644333568559921">Pembaruan &amp;Chromium OS</translation>
 <translation id="7421823331379285070">Chromium memerlukan Windows XP atau yang lebih baru. Sebagian fitur mungkin tidak berfungsi.</translation>
+<translation id="3549345495227188780">Memulai dengan Chromium OS</translation>
 <translation id="4330297532943865716">Ditemukan pemasangan Chromium atau Chromium Frame yang bentrok di sistem. Copot pemasangannya dan coba lagi.</translation>
 <translation id="6953661834318318668">Bilah Alat Chromium</translation>
 <translation id="7097100943370017396">Chromium tidak lagi diperbarui karena sistem operasi Anda sudah usang.</translation>
@@ -56,6 +57,7 @@
 <translation id="3197823471738295152">Perangkat Anda sudah diperbarui.</translation>
 <translation id="8551886023433311834">Hampir selesai diperbarui! Nyalakan ulang perangkat untuk menyelesaikan pembaruan.</translation>
 <translation id="8353224596138547809">Ingin Chromium menyimpan sandi untuk situs ini?</translation>
+<translation id="7339898014177206373">Jendela baru</translation>
 <translation id="3026202950002788510">Buka
           <ph name="BEGIN_BOLD"/>
           Aplikasi &gt; Preferensi Sistem &gt; Jaringan &gt; Lanjutan &gt; Proxy
@@ -67,7 +69,6 @@
 <translation id="9191268552238695869">Administrator telah memasang Chromium pada sistem ini, dan tersedia untuk semua pengguna. Chromium tingkat sistem akan menggantikan pemasangan tingkat pengguna Anda sekarang.</translation>
 <translation id="3509308970982693815">Tutup semua jendela Chromium dan coba lagi.</translation>
 <translation id="4077262827416206768">Tutup semua jendela Chromium dan luncurkan ulang Chromium agar perubahan ini diterapkan.</translation>
-<translation id="9119843944749246249">Hak Cipta © 2006-2012 Penulis Chromium. Semua Hak Dilindungi.</translation>
 <translation id="6944967875980567883">Modul dimuat ke dalam Chromium</translation>
 <translation id="118298050220780080">Anda mencoba menjangkau &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, namun server menampilkan sertifikat yang diterbitkan oleh entitas yang tidak dipercayai sistem operasi komputer Anda. Artinya server telah membuat kredensial keamanannya sendiri, yang tidak dapat diandalkan oleh Chromium perihal informasi identitas, atau penyerang mungkin mencoba menghentikan komunikasi Anda.</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
@@ -89,6 +90,7 @@
 <translation id="2881203820889150661">Chromium tidak dapat membuat pintasan aplikasi karena tidak dapat menentukan lingkungan desktop saat ini.</translation>
 <translation id="4886158514168859177">Komputer ini sudah memiliki Chromium Frame versi yang lebih anyar. Jika perangkat lunak tidak bekerja, copot Chromium Frame dan coba lagi.</translation>
 <translation id="911206726377975832">Hapus juga data rambanan Anda?</translation>
+<translation id="1699664235656412242">Tutup semua jendela Chromium (termasuk semua jendela dalam mode Windows 8) dan coba lagi.</translation>
 <translation id="6734080038664603509">Pembaruan &amp;Chromium</translation>
 <translation id="8862326446509486874">Anda tidak memiliki hak yang diperlukan untuk pemasangan tingkat sistem. Coba jalankan lagi pemasang saat masuk sebagai Administrator.</translation>
 <translation id="1774152462503052664">Jalankan Chromium di latar belakang</translation>
@@ -125,7 +127,9 @@
 <translation id="6717134281241384636">Profil Anda tidak dapat digunakan karena berasal dari Chromium versi yang lebih baru.
 
 Sebagian fitur mungkin tidak tersedia. Tentukan direktori profil yang berbeda atau gunakan versi Chromium yang lebih baru.</translation>
+<translation id="4499972362520386277">Hak Cipta 2012 Penulis Chromium. Semua hak dilindungi.</translation>
 <translation id="2712549016134575851">Terdeteksi konflik dengan aplikasi terinstal lain.</translation>
+<translation id="4881709374218686648">Sebelumnya Anda masuk dengan akun berbeda, dengan masuk, data Anda akan digabungkan. Pertimbangkan untuk membuat pengguna Chromium baru melalui <ph name="BEGIN_LINK"/>laman setelan<ph name="END_LINK"/> untuk barang Chromium Anda.</translation>
 <translation id="9013087743919948559">Tambahkan ke Chromium</translation>
 <translation id="6212496753309875659">Komputer ini sudah memiliki Chromium versi yang lebih anyar. Jika perangkat lunak tidak bekerja, copot Chromium dan coba lagi.</translation>
 <translation id="3014684866565908571">Utilitas Chromium</translation>
@@ -184,7 +188,7 @@ Sebagian fitur mungkin tidak tersedia. Tentukan direktori profil yang berbeda at
 <translation id="8616882682724010661">Lihat <ph name="BEGIN_LINK"/>manfaat lain<ph name="END_LINK"/> dengan masuk ke Chromium.</translation>
 <translation id="378917192836375108">Chromium memungkinkan Anda mengeklik nomor telepon pada web dan menghubunginya melalui Skype!</translation>
 <translation id="8724049448828509830">Unduhan saat ini sedang berlangsung. Anda ingin keluar dari Chromium dan membatalkan unduhan?</translation>
-<translation id="3360567213983886831">Binari Chromium</translation>
+<translation id="3360567213983886831">Biner Chromium</translation>
 <translation id="7503101070699687603">Host Plugin Chromium</translation>
 <translation id="2739631515503418643">Unduhan saat ini sedang berlangsung. Anda ingin keluar dari Chromium dan membatalkan unduhan?</translation>
 <translation id="9013262824292842194">Chromium memerlukan Windows Vista atau Windows XP dengan SP2 atau yang lebih baru.</translation>

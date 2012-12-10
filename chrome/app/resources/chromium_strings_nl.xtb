@@ -17,6 +17,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="7128196614940529818">Chromium Frame is reeds geïnstalleerd en beschikbaar voor alle gebruikers van deze computer. Als u Chromium Frame op gebruikersniveau wilt installeren, moet u eerst de versie op systeemniveau verwijderen die is geïnstalleerd door een beheerder.</translation>
 <translation id="731644333568559921">&amp;Chromium OS bijwerken</translation>
 <translation id="7421823331379285070">Voor Chromium is Windows XP of hoger vereist. Sommige functies werken mogelijk niet.</translation>
+<translation id="3549345495227188780">Aan de slag met Chromium OS</translation>
 <translation id="4330297532943865716">Er is een conflicterende versie van Chromium of Chromium Frame gevonden op het systeem. Verwijder deze en probeer het opnieuw.</translation>
 <translation id="6953661834318318668">Chromium-werkbalk</translation>
 <translation id="7097100943370017396">Chromium wordt niet langer bijgewerkt omdat uw besturingssysteem verouderd is.</translation>
@@ -58,6 +59,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="3197823471738295152">Het apparaat is bijgewerkt.</translation>
 <translation id="8551886023433311834">Bijna bijgewerkt! Start uw apparaat opnieuw op om de update te voltooien.</translation>
 <translation id="8353224596138547809">Wilt u dat Chromium uw wachtwoord voor deze site opslaat?</translation>
+<translation id="7339898014177206373">Nieuw venster</translation>
 <translation id="3026202950002788510">Ga naar
           <ph name="BEGIN_BOLD"/>
           Applicaties &gt; Systeemvoorkeuren &gt; Netwerk &gt; Geavanceerd &gt; Proxy's
@@ -69,7 +71,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="9191268552238695869">Een beheerder heeft Chromium op dit systeem geïnstalleerd. Chromium is beschikbaar voor alle gebruikers. De versie van Chromium op systeemniveau vervangt vanaf dit moment uw installatie op gebruikersniveau.</translation>
 <translation id="3509308970982693815">Sluit alle Chromium-vensters en probeer het opnieuw.</translation>
 <translation id="4077262827416206768">Sluit alle Chromium-vensters en start Chromium opnieuw om de wijziging toe te passen.</translation>
-<translation id="9119843944749246249">Copyright © 2006-2012 De auteurs van Chromium. Alle rechten voorbehouden.</translation>
 <translation id="6944967875980567883">Modules die in Chromium zijn geladen</translation>
 <translation id="118298050220780080">U probeert &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; te bereiken, maar de server heeft een certificaat gepresenteerd dat werd geleverd door een entiteit die niet wordt vertrouwd door het besturingssysteem van uw computer. Dit kan betekenen dat de server eigen aanmeldingsgegevens voor beveiliging heeft gemaakt, waar Chromium niet op kan vertrouwen voor identiteitsinformatie, of dat een aanvaller probeert uw communicatie te onderscheppen.</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
@@ -91,6 +92,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="2881203820889150661">Chromium kan geen applicatiesnelkoppeling maken omdat de huidige bureaubladomgeving niet kan worden vastgesteld.</translation>
 <translation id="4886158514168859177">Deze computer beschikt al over een recentere versie van Chromium Frame. Als de software niet werkt, moet u Chromium Frame verwijderen en het opnieuw proberen.</translation>
 <translation id="911206726377975832">Ook browsegegevens wissen?</translation>
+<translation id="1699664235656412242">Sluit alle Chromium-vensters (inclusief de vensters in Windows 8-modus) en probeer het opnieuw.</translation>
 <translation id="6734080038664603509">&amp;Chromium bijwerken</translation>
 <translation id="8862326446509486874">U heeft geen rechten om op systeemniveau te installeren. Meld u aan als beheerder en voer het installatieprogramma opnieuw uit.</translation>
 <translation id="1774152462503052664">Chromium laten uitvoeren op de achtergrond</translation>
@@ -127,7 +129,9 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="6717134281241384636">Uw profiel kan niet worden gebruikt, omdat dit is gemaakt in een recentere versie van Chromium.
 
 Sommige functies zijn mogelijk niet beschikbaar. Geef een andere profieldirectory op of gebruik een recentere versie van Chromium.</translation>
+<translation id="4499972362520386277">Copyright 2012 De auteurs van Chromium. Alle rechten voorbehouden.</translation>
 <translation id="2712549016134575851"/>
+<translation id="4881709374218686648">U heeft zich eerder aangemeld met een ander account. Als u zich aanmeldt, worden uw gegevens samengevoegd. U kunt voor uw Chromium-items een nieuwe Chromium-gebruiker maken via de <ph name="BEGIN_LINK"/>pagina 'Instellingen'<ph name="END_LINK"/>.</translation>
 <translation id="9013087743919948559">Toevoegen aan Chromium</translation>
 <translation id="6212496753309875659">Deze computer beschikt al over een recentere versie van Chromium. Als de software niet werkt, moet u Chromium verwijderen en het opnieuw proberen.</translation>
 <translation id="3014684866565908571">Chromium Utility</translation>

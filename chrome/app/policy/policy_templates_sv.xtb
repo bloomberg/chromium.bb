@@ -21,6 +21,7 @@
       Om policyn inte ställs in aktiveras inställningen och användaren kan använda inkognitoläge.</translation>
 <translation id="7614663184588396421">Lista över inaktiverade protokollscheman</translation>
 <translation id="2309390639296060546">Standardinställning för geografisk plats</translation>
+<translation id="7261507082507286116">Inaktiverar Google Drive via mobilanslutningar</translation>
 <translation id="7443616896860707393">Frågor vid korsursprungs-HTTP med basauktorisering</translation>
 <translation id="2337466621458842053">Policyn gör att du kan ställa in en lista med adressmönster som anger webbplatser som får visa bilder.
 
@@ -150,6 +151,9 @@
 <translation id="4668325077104657568">Standardinställning för bilder</translation>
 <translation id="7161193985878519056">Inkognitoläget är inaktiverat.</translation>
 <translation id="2524379983318108884">Tillåta ljudinspelning</translation>
+<translation id="7978961945071764766">Inaktiverar synkronisering med Google Drive via en mobilanslutning om inställningen är True. I så fall synkroniseras data bara till Google Drive via WiFi- eller Ethernet-anslutningar.
+
+          Om policyn inte är inställd eller om den är inställd på False kan användarna överföra filer till Google Drive via mobilanslutningar.</translation>
 <translation id="4492287494009043413">Inaktivera tagning av skärmdumpar</translation>
 <translation id="6368403635025849609">Tillåt JavaScript på dessa webbplatser</translation>
 <translation id="6074963268421707432">Tillåt inte att någon webbplats visar aviseringar på skrivbordet</translation>
@@ -159,11 +163,6 @@
 <translation id="2906874737073861391">Lista över tillägg i AppPack</translation>
 <translation id="3758249152301468420">Inaktivera utvecklarverktygen</translation>
 <translation id="8665076741187546529">Konfigurera listan med tillägg som måste installeras</translation>
-<translation id="2505112041294615513">Anger i vilken katalog som <ph name="PRODUCT_FRAME_NAME"/> ska spara användardata.
-
-      Om du anger den här policyn använder <ph name="PRODUCT_FRAME_NAME"/> den katalog som du anger.
-
-      Om den här inställningen inte anges används profilens standardkatalog.</translation>
 <translation id="8818173863808665831">Rapportera enhetens geografiska plats.
 
       Om policyn inte är inställd eller inte är aktiverad rapporteras inte platsen.</translation>
@@ -189,6 +188,13 @@
       Om du inte ställer in policyn kan användaren välja inställningen när programmet installeras eller körs första gången.</translation>
 <translation id="9135033364005346124">Aktivera <ph name="CLOUD_PRINT_NAME"/>-proxy</translation>
 <translation id="6943577887654905793">Namn för Mac/Linux-inställning:</translation>
+<translation id="6925212669267783763">Konfigurerar vilken katalog som <ph name="PRODUCT_FRAME_NAME"/> ska använda för att spara användardata.
+
+      Om du anger den här policyn använder <ph name="PRODUCT_FRAME_NAME"/> den katalog som anges.
+
+      En lista med variabler som kan användas finns på http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
+
+      Om inställningen inte anges används profilens standardkatalog.</translation>
 <translation id="8906768759089290519">Aktivera gästläge</translation>
 <translation id="838870586332499308">Aktivera dataroaming</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME"/> kan använda en webbtjänst från Google för att åtgärda stavfel. Om inställningen aktiveras används alltid den här tjänsten. Om den inaktiveras används tjänsten aldrig.
@@ -202,6 +208,9 @@
           Om du aktiverar inställningen hoppas CNAME-sökningen över och servernamnet som angavs används.
 
           Om du inaktiverar inställningen eller inte anger den avgörs serverns kanoniska namn av en CNAME-sökning.</translation>
+<translation id="5711323964690760562">Anger webbadressen till webbutiken för företag. När inställningen är aktiverad visas en app på sidan Ny flik. När användaren klickar på appen öppnas den angivna webbadressen. För att tillägg faktiskt ska tillåtas från den konfigurerade webbplatsen måste policyn ExtensionInstallSources konfigureras för att tillåta installation från rätt webbadresser för tilläggshämtning. Om policyn ställs in ska även inställningen EnterpriseWebStoreName anges.
+
+      Om inställningen är inaktiverad visas ingen app för webbutiken för företag på sidan Ny flik.</translation>
 <translation id="4377599627073874279">Tillåt att alla bilder visas på alla webbplatser</translation>
 <translation id="3915395663995367577">Webbadress till en PAC-proxyfil</translation>
 <translation id="1022361784792428773">Tilläggs-ID:n som användaren inte får installera (eller * om det gäller alla)</translation>
@@ -219,6 +228,13 @@
 
           Exempel på mönster finns på http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8044493735196713914">Rapportera omstartsläge för enhet</translation>
+<translation id="2746016768603629042">Den här policyn har fasats ut. Använd DefaultJavaScriptSetting istället.
+
+      Kan användas för att inaktivera JavaScript i <ph name="PRODUCT_NAME"/>.
+
+      Om den här inställningen är inaktiverad kan inte JavaScript användas på webbsidor och inställningen kan inte ändras av användaren.
+
+      Om inställningen är aktiverad eller inte inställd kan JavaScript användas på webbsidor, men inställningen kan inte ändras av användaren.</translation>
 <translation id="1942957375738056236">Här kan du ange proxyserverns webbadress.
 
           Den här policyn används bara om du har valt manuella proxyinställningar under Välj hur inställningar för proxyserver ska anges.
@@ -262,6 +278,9 @@
 <translation id="4962195944157514011">Policyn anger webbadressen till sökmotorn som används för standardsökning. Webbadressen ska innehålla strängen <ph name="SEARCH_TERM_MARKER"/>, som ersätts av användarens sökord när sökningen utförs.
 
           Alternativet måste anges om policyn DefaultSearchProviderEnabled är aktiverad och används bara om så är fallet.</translation>
+<translation id="3343454696188645600">Inaktiverar synkronisering med Google Drive när inställningen är True. I så fall överförs inga data till Google Drive.
+
+          Om policyn inte anges eller om inställningen är False kan användarna överföra filer till Google Drive.</translation>
 <translation id="6009903244351574348">Policyn tillåter att <ph name="PRODUCT_FRAME_NAME"/> hanterar de innehållstyper som anges.
 
           Om den här policyn inte ställs in används standardrenderaren för alla webbplatser enligt specifikationen i policyn ChromeFrameRendererSettings.</translation>
@@ -314,6 +333,17 @@
 <translation id="6786747875388722282">Tillägg</translation>
 <translation id="8947415621777543415">Rapportera enhetsplats</translation>
 <translation id="1655229863189977773">Ange enhetens cachestorlek i byte</translation>
+<translation id="6376842084200599664">Gör att du kan ange en lista med tillägg som installeras utan att det märks och utan att användaren behöver göra något.
+
+          Varje objekt i listan är en sträng som innehåller ett tilläggs-ID och en uppdateringsadress, avgränsade med semikolon (<ph name="SEMICOLON"/>). Tilläggs-ID:t är en sträng med 32 bokstäver, till exempel den som finns på <ph name="CHROME_EXTENSIONS_LINK"/> i utvecklarläge. Uppdateringsadressen ska peka på ett XML-manifestdokument för uppdatering enligt beskrivningen på <ph name="LINK_TO_EXTENSION_DOC1"/>. Observera att uppdateringsadressen som anges i den här policyn bara används för den ursprungliga installationen. För senare uppdateringar av tillägget används den uppdateringsadress som anges i tilläggets manifest.
+
+          För varje objekt hämtar <ph name="PRODUCT_NAME"/> det tillägg som anges av tilläggs-ID:t från uppdateringstjänsten på den uppdateringsadress som anges och installerar det utan att det märks.
+
+          Exempel: <ph name="EXTENSION_POLICY_EXAMPLE"/> installerar tillägget <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/> från standarduppdateringsadressen för Chrome Web Store. Mer information om värdservrar för tillägg finns på: <ph name="LINK_TO_EXTENSION_DOC2"/>.
+
+          Användarna kan inte avinstallera tillägg som anges av den här policyn. Om du tar bort ett tillägg från listan avinstalleras det automatiskt av <ph name="PRODUCT_NAME"/>. Tillägg som anges i listan godkänns också automatiskt för installation. De påverkas inte av ExtensionsInstallBlacklist.
+
+          Om den här policyn inte ställs in kan användaren avinstallera alla tillägg i <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="6899705656741990703">Identifiera proxyinställningar automatiskt</translation>
 <translation id="7003334574344702284">När den här policyn är aktiverad tvingas import av sparade lösenord från standardwebbläsaren. Policyn påverkar också dialogrutan för import.
 
@@ -335,10 +365,24 @@
       Formatvärdet följer namnen på tidszonerna i databasen IANA Time Zone Database (besök http://en.wikipedia.org/wiki/List_of_tz_database_time). Det går att hänvisa till de flesta tidszoner som &quot;continent/large_city&quot; eller &quot;ocean/large_city&quot;.</translation>
 <translation id="8992176907758534924">Tillåt inte att bilder visas på någon webbplats</translation>
 <translation id="262740370354162807">Aktivera sändning av dokument till <ph name="CLOUD_PRINT_NAME"/></translation>
+<translation id="5182055907976889880">Konfigurera Google Drive i <ph name="PRODUCT_OS_NAME"/>.</translation>
 <translation id="8704831857353097849">Lista med inaktiverade plugin-program</translation>
 <translation id="8391419598427733574">Rapportera version av operativsystem och fast programvara för registrerade enheter. Om inställningen är False kommer registrerade enheter regelbundet att rapportera versionen av operativsystemet och den fasta programvaran. Om inställningen inte är angiven eller inställd på False kommer versionsinformationen inte att rapporteras.</translation>
 <translation id="467449052039111439">Öppna följande sidor</translation>
 <translation id="5883015257301027298">Standardinställning för cookies</translation>
+<translation id="5017500084427291117">Policyn blockerar åtkomst till de angivna webbadresserna.
+
+      Policyn förhindrar att användaren läser in webbsidor från svartlistade webbadresser.
+
+      En webbadress har formatet scheme://host:port/path.
+      Det valfria schemat kan vara http, https eller ftp. Endast det här schemat kommer att blockeras. Om inget anges blockeras alla scheman.
+      Värden kan vara ett värdnamn eller en IP-adress. Underdomänerna till ett värdnamn blockeras också. Om du vill förhindra att underdomäner blockeras lägger du till en punkt (.) före värdnamnet. Det särskilda värdnamnet (*) blockerar alla domäner.
+      Den valfria porten är ett giltigt portnummer från 1 till 65535. Om inget anges blockeras alla portar.
+      Om den valfria sökvägen är angiven kommer endast sökvägar med det prefixet att blockeras.
+
+      Undantag kan anges i policyn för listan över godkända webbadresser. Dessa policyer är begränsade till 1 000 poster. Efterföljande poster kommer att ignoreras.
+
+      Om policyn inte anges svartlistas inga webbadresser i webbläsaren.</translation>
 <translation id="8955719471735800169">Tillbaka till början</translation>
 <translation id="2534584045044686957">Policyn konfigurerar storleken på det cacheminne som används i <ph name="PRODUCT_NAME"/> för att spara cachelagrade mediefiler på hårddisken.
 
@@ -356,18 +400,6 @@
       Policyn är avsedd att tillåta strikt svartlistning av plugin-program genom att listan DisabledPlugins innehåller jokerposter som inaktiverar alla plugin-program (*) eller inaktiverar alla Java-plugin-program (*Java*) men administratören vill aktivera vissa specifika versioner som IcedTea Java 2.3. Dessa specifika versioner kan anges i den här policyn.
 
       Om policyn inte anges låses alla plugin-program som matchar mönstren i DisabledPlugins och användaren kan inte aktivera dem.</translation>
-<translation id="8170882486743832400">Konfigurera GData-alternativ</translation>
-<translation id="2322733497952278056">Policyn ger åtkomst till de webbadresser som anges, som undantag till de svartlistade webbadresserna.
-
-      Listposternas format beskrivs i beskrivningen av svartlistepolicyn för webbadresser.
-
-      Den här policyn kan användas för att öppna undantag i restriktiva svartlistor. Du kan till exempel svartlista * för att blockera alla förfrågningar och använda den här policyn för att ge åtkomst till en begränsad lista med webbadresser. Den kan användas för att öppna undantag för vissa scheman, underdomäner till andra domäner, portar eller specifika sökvägar.
-
-      Det mest specifika filtret avgör om en webbadress är blockerad eller inte. Vitlistan har företräde över svartlistan.
-
-      Policyn är begränsad till 100 poster. Om du anger fler gäller de inte.
-
-      Om du inte anger den här policyn finns inga undantag till svartlistan i policyn URLBlacklist.</translation>
 <translation id="5316405756476735914">Policyn gör att du kan ange om webbplatser får spara data lokalt. Att spara data lokalt kan vara tillåtet för alla webbplatser eller otillåtet för alla webbplatser.
 
           Om policyn inte har angetts används policyn AllowCookies och användaren kan ändra inställningen.</translation>
@@ -409,28 +441,10 @@
       Om den här policyn inte ställs in kan användaren ändra listan med fasta appar i startfältet.</translation>
 <translation id="7625444193696794922">Policyn anger vilken versionskanal som enheten ska låsas till.</translation>
 <translation id="2552966063069741410">Tidszon</translation>
-<translation id="3088288048720661397">Inaktiverar synkronisering av Google Dokument när en mobildataanslutning används och värdet är sant.
-
-          Data synkroniseras bara med Google Dokument om det finns en Wi-Fi- eller Ethernet-anslutning
-
-          Om policyn inte har angetts eller om värdet är falskt kan användarna överföra filer till Google Dokument via mobildataanslutningar.</translation>
 <translation id="2240879329269430151">Gör att du kan ange om webbplatser får visa popup-fönster. Du kan tillåta popup-fönster för alla webbplatser eller blockera popup-fönster för alla webbplatser.
 
           Om du inte anger policyn används BlockPopups och inställningen kan ändras av användaren.</translation>
 <translation id="2529700525201305165">Begränsa vilka användare som får logga in på <ph name="PRODUCT_NAME"/>.</translation>
-<translation id="5289914968905023866">Policyn blockerar åtkomst till de angivna webbadresserna.
-
-      Policyn förhindrar att användaren läser in webbsidor från svartlistade webbadresser.
-
-      En webbadress har formatet scheme://host:port/path.
-      Det valfria schemat kan vara http, https eller ftp. Endast det här schemat kommer att blockeras. Om inget anges blockeras alla scheman.
-      Värden kan vara ett värdnamn eller en IP-adress. Underdomänerna till ett värdnamn blockeras också. Om du vill förhindra att underdomäner blockeras lägger du till en punkt (.) före värdnamnet. Det särskilda värdnamnet (*) blockerar alla domäner.
-      Den valfria porten är ett giltigt portnummer från 1 till 65535. Om inget anges blockeras alla portar.
-      Om den valfria sökvägen är angiven kommer endast sökvägar med det prefixet att blockeras.
-
-      Undantag kan anges i policyn för listan över godkända webbadresser. Dessa policyer är begränsade till 100 poster. Efterföljande poster kommer att ignoreras.
-
-      Om policyn inte anges svartlistas inga webbadresser i webbläsaren.</translation>
 <translation id="3864818549971490907">Standardinställning för plugin-program</translation>
 <translation id="7151201297958662315">Avgör om en <ph name="PRODUCT_NAME"/>-process startas när användaren loggar in i operativsystemet och fortsätter köras när det sista webbläsarfönstret stängs så att bakgrundsappar kan fortsätta vara aktiva. Bakgrundsprocessen visas som en ikon i systemfältet och kan alltid stängas därifrån.
 
@@ -446,10 +460,22 @@
 <translation id="2646290749315461919">Policyn gör att du kan ställa in om webbplatser får spåra användarnas fysiska plats. Att spåra användarnas fysiska plats kan vara tillåtet som standard, inte tillåtet som standard eller användaren kan bli tillfrågad varje gång en webbplats efterfrågar den fysiska platsen.
 
           Om policyn inte har angetts används AskGeolocation och användaren kan ändra inställningen.</translation>
+<translation id="3309789488678647282">Inaktiverar Drive</translation>
 <translation id="5770738360657678870">Kanal för utvecklare (kan vara instabil)</translation>
 <translation id="2959898425599642200">Regler för proxybypass</translation>
 <translation id="1098794473340446990">Rapportera aktivitetstider för enhet. Om inställningen är True kommer registrerade enheter att rapportera tidsperioder när en användare är aktiv på enheten. Om inställningen inte är angiven eller inställd på False kommer enhetens aktivitetstider inte att registreras eller rapporteras.</translation>
 <translation id="896575211736907134">Tvingat inkognitoläge.</translation>
+<translation id="817455428376641507">Tillåter åtkomst till de webbadresser som anges, som undantag till svartlistan för webbadresser.
+
+      Formatet för poster i listan beskrivs i policyn för svartlistade webbadresser.
+
+      Den här policyn kan användas som undantag till restriktiva svartlistor. Du kan till exempel svartlista * för att blockera alla begäranden och sedan tillåta åtkomst till ett begränsat antal webbadresser med den här policyn. Den kan användas för att öppna undantag till vissa scheman, underdomäner till andra domäner, portar eller specifika sökvägar.
+
+      Det mest specifika filtret avgör om en webbadress är blockerad eller tillåten. Vitlistan har företräde framför svartlistan.
+
+      Den här policyn är begränsad till 1 000 poster. Efterföljande poster ignoreras.
+
+      Om den här policyn inte anges görs inga undantag från policyn URLBlacklist.</translation>
 <translation id="6177482277304066047">Anger en målversion för automatiska uppdateringar.
 
       Anger prefix för en målversion som <ph name="PRODUCT_OS_NAME"/> ska uppdateras till. Om enheten har en version som är äldre än det angivna prefixet uppdateras den till den senaste versionen med det angivna prefixet. Om enheten redan har en nyare version händer ingenting (ingen nedgradering görs) och enhetens befintliga version påverkas inte. Prefixformatet fungerar per komponent som i följande exempel:
@@ -501,6 +527,13 @@
 
       Om policyn inaktiveras eller inte konfigureras avgörs policyn för lagring av webbplatsdata av policyn DefaultCookiesSetting.</translation>
 <translation id="2824715612115726353">Aktivera inkognitoläge</translation>
+<translation id="1057535219415338480">Aktiverar nätverksförutsägelse i <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar inställningen.
+
+      Detta styr inte bara DNS-förhämtning utan också TCP- och SSL-föranslutning och förrendering av webbsidor. Policyns namn refererar till DNS-förhämtning av historiska skäl.
+
+      Om du aktiverar eller inaktiverar den här inställningen kan användarna inte ändra eller åsidosätta den i <ph name="PRODUCT_NAME"/>.
+
+      Om policyn inte ställs in är funktionen aktiverad, men den kan ändras av användarna.</translation>
 <translation id="1757688868319862958">Tillåter att <ph name="PRODUCT_NAME"/> kör pluginprogram som kräver auktorisering.
 
       Om du aktiverar den här inställningen kan pluginprogram som inte är föråldrade alltid köras.
@@ -522,9 +555,6 @@
           Policyn är valfri. Om den inte anges visas inget direktresultat.
 
           Policyn används bara om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
-<translation id="4126767310980686012">Inaktiverar synkroniseringen av Google Dokument om värdet är sant. I detta fall överförs inga data till Google Dokument.
-
-          Om inget värde har angetts eller om det är falskt kommer användare att kunna överföra filer till Google Dokument.</translation>
 <translation id="6693751878507293182">Om inställningen är aktiverad inaktiveras automatisk sökning efter och installation av plugin-program som saknas i <ph name="PRODUCT_NAME"/>.
 
       Om inställningen är inaktiverad eller inte anges används pluginsökaren.</translation>
@@ -604,19 +634,9 @@
 
           Om policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från policyn DefaultJavaScriptSetting om den har ställts in. Annars används användarens personliga konfiguration.</translation>
 <translation id="538108065117008131">Tillåt att <ph name="PRODUCT_FRAME_NAME"/> hanterar följande innehållstyper.</translation>
-<translation id="717221064259627503">Policyn konfigurerar den katalog som <ph name="PRODUCT_NAME"/> ska använda för att spara cachelagrade filer på hårddisken.
-
-      Om du anger den här policyn använder <ph name="PRODUCT_NAME"/> den katalog som anges oavsett om användaren har angett flaggan --disk-cache-dir eller inte.
-
-      Om policyn inte ställs in används standardkatalogen för cacheminnet och användaren kan åsidosätta den med kommandoradsflaggan --disk-cache-dir.</translation>
 <translation id="2312134445771258233">Innebär att du kan konfigurera sidorna som läses in vid start.
 
       Innehållet på listan &quot;Webbadresser att öppna vid start&quot; ignoreras om du inte väljer &quot;Öppna följande sidor&quot; i &quot;Vid start&quot;.</translation>
-<translation id="2538628396238281971">Policyn konfigurerar den katalog som <ph name="PRODUCT_NAME"/> ska använda för att hämta filer.
-
-      Om du anger den här policyn använder <ph name="PRODUCT_NAME"/> den katalog som anges oavsett om användaren har angett en eller aktiverat flaggan om att bli frågad om hämtning varje gång.
-
-      Om den här policyn inte anges används standardkatalogen för hämtning och användaren kan ändra inställningen.</translation>
 <translation id="7750991880413385988">Öppna sidan Ny flik</translation>
 <translation id="741903087521737762">Innebär att du kan ange beteende vid start.
 
@@ -653,17 +673,6 @@
 <translation id="6699880231565102694">Aktivera tvåstegsverifiering för fjärråtkomstvärdar</translation>
 <translation id="2030905906517501646">Sökord för standardsökleverantör</translation>
 <translation id="3072045631333522102">Skärmsläckare att använda på inloggningsskärmen i återförsäljarläge</translation>
-<translation id="7393895128271703858">Den här policyn är föråldrad. Använd DefaultJavaScriptSetting istället.
-
-      Aktiverar JavaScript i <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar inställningen.
-
-      Om inställningen är aktiverad eller inte konfigurerad får JavaScript användas på webbsidor.
-
-      Om inställningen är inaktiverad kan JavaScript inte köras på webbsidor.
-
-      Om policyn inte ställs in används standardvärdet, som är aktiverat. Användaren kan ändra inställningen.
-
-      Om policyn inte anges är den aktiverad men kan ändras av användaren.</translation>
 <translation id="8079569179819932120">Policyn anger vilka servrar som ska vitlistas för integrerad autentisering. Integrerad autentisering aktiveras bara när <ph name="PRODUCT_NAME"/> får en autentiseringsutmaning från en proxy eller en server som finns i denna tillståndslista.
 
           Avgränsa flera servernamn med komma. Jokertecken (*) får användas.
@@ -757,11 +766,17 @@
       Om inställningen är aktiverad sparas ingen webbhistorik.
 
       Om inställningen är inaktiverad eller inte har angetts sparas webbhistorik.</translation>
+<translation id="3844092002200215574">Konfigurerar vilken katalog som ska användas av <ph name="PRODUCT_NAME"/> för att spara cachefiler på disken.
+
+      Om du ställer in den här policyn används den katalog som du angav av <ph name="PRODUCT_NAME"/> oavsett om användaren har ställt in flaggan --disk-cache-dir eller inte.
+
+      En lista med variabler som kan användas finns på http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
+
+      Om policyn inte ställs in används standardkatalogen för cacheminnet och användaren kan åsidosätta den med kommandoradsflaggan --disk-cache-dir.</translation>
 <translation id="7202926611616207807">Tillåt alla webbplatser att ange lokala data.</translation>
 <translation id="3034580675120919256">Policyn gör att du kan ange om webbplatser får köra JavaScript. Du kan tillåta JavaScript på alla webbplatser eller blockera JavaScript på alla webbplatser.
 
           Om policyn inte anges används AllowJavaScript och användaren kan ändra inställningen.</translation>
-<translation id="7459381849362539054">Konfigurera GData i <ph name="PRODUCT_OS_NAME"/>.</translation>
 <translation id="3195451902035818945">Anger om delade SSL-poster ska inaktiveras. Delade poster är ett sätt att komma runt en svaghet i SSL 3.0 och TLS 1.0, men funktionen kan orsaka kompatibilitetsproblem med vissa HTTPS-servrar och proxyservrar.
 
       Om policyn inte är angiven eller inställd på False kommer delade poster att användas på SSL/TLS-anslutningar som använder CBC-krypteringsmetoder.</translation>
@@ -770,7 +785,6 @@
       Policyn avgör om webbadresser ska läsas in när demosessionen startas. Policyn ersätter andra funktioner som anger startadresser och kan därför bara användas i sessioner som inte är kopplade till någon enskild användare.</translation>
 <translation id="5868414965372171132">Nätverkskonfiguration på användarnivå</translation>
 <translation id="1221359380862872747">Läs in angivna webbadresser vid demoinloggning</translation>
-<translation id="6771644447620682565">Inaktiverar GData</translation>
 <translation id="5493552890659553833">Policyn aktiverar sökförslag i adressfältet i <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar inställningen.
 
       Om du aktiverar inställningen används sökförslag.
@@ -804,6 +818,11 @@
 
       Om du inte anger policyn kan användaren välja om knappen Startsida ska visas.</translation>
 <translation id="2518231489509538392">Tillåta uppspelning av ljud</translation>
+<translation id="7301543427086558500">Anger en lista med alternativa webbadresser som kan användas för att extrahera sökord från sökmotorn. Webbadresserna ska innehålla strängen <ph name="SEARCH_TERM_MARKER"/>, som används för att extrahera sökorden.
+
+          Policyn är valfri. Om den inte anges används inga alternativa webbadresser för att extrahera sökord.
+
+          Den här policyn gäller bara om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
 <translation id="7547044444554936129">Policyn aktiverar funktionen Instant i <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar inställningen.
 
       Om du aktiverar inställningen aktiveras <ph name="PRODUCT_NAME"/> Instant.
@@ -820,7 +839,6 @@
 <translation id="5469484020713359236">Policyn gör att du kan ange en lista med webbadressmönster som anger webbplatser som får spara cookies.
 
           Om policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från policyn DefaultCookiesSetting om den har angetts eller användarens personliga konfiguration om den inte har det.</translation>
-<translation id="3664573135939978914">Inaktiverar GData via mobildataanslutningar</translation>
 <translation id="930930237275114205">Ange katalog för användardata i <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="5208240613060747912">Policyn gör att du kan ange en lista med webbadressmönster som inte får visa meddelanden.
 
@@ -876,9 +894,6 @@
 <translation id="8908294717014659003">Gör att du kan ange om webbplatser ska kunna komma åt medieenheter. Åtkomst till medieenheter kan tillåtas som standard eller så kan användaren få en fråga varje gång en webbplats vill komma åt dem.
 
          Om du inte anger någon policy kommer PromptOnAccess att användas och användaren kommer att kunna ändra den.</translation>
-<translation id="9191982992032190929">Policyn anger webbadressen för företagets webbutik. När den här inställningen är aktiverad visas en app på sidan Ny flik. När användaren klickar på appen öppnas den webbadress som angetts. Tillägg och appar kan installeras från sidan utan att några extra varningar visas för användaren. Om policyn anges ska även EnterpriseWebStoreName anges.
-
-      Om inställningen är inaktiverad visas ingen app för företagets webbutik på sidan Ny flik.</translation>
 <translation id="8889026535261486875">Servrar som <ph name="PRODUCT_NAME"/> kan delegera till.
 
           Avgränsa flera servernamn med komma. Jokertecken (*) får användas.
@@ -894,11 +909,6 @@
 <translation id="922540222991413931">Konfigurera installationskällor för tillägg, appar och användarskript</translation>
 <translation id="7323896582714668701">Ytterligare kommandoradsparametrar för <ph name="PRODUCT_NAME"/></translation>
 <translation id="6931242315485576290">Inaktivera synkronisering av data med Google</translation>
-<translation id="36674322972891584">Policyn aktiverar nätverksförslag i <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar inställningen.
-
-      Om du aktiverar eller inaktiverar inställningen kan användarna inte ändra eller åsidosätta inställningen i <ph name="PRODUCT_NAME"/>.
-
-      Om policyn inte anges är inställningen aktiverad men kan ändras av användaren.</translation>
 <translation id="7006788746334555276">Innehållsinställningar</translation>
 <translation id="5142301680741828703">Rendera alltid följande webbadressmönster i <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="4625915093043961294">Konfigurera vitlista för tilläggsinstallation</translation>
@@ -930,6 +940,13 @@
       Om policyn är inaktiverad importeras inga bokmärken.
 
       Om policyn inte har angetts kan användaren få välja om importen ska göras, eller så utförs importen automatiskt.</translation>
+<translation id="5757829681942414015">Konfigurerar vilken katalog som används för att spara användardata i <ph name="PRODUCT_NAME"/>.
+
+      Om du ställer in policyn används den katalog du anger av <ph name="PRODUCT_NAME"/> oavsett om användaren har angett flaggan --user-data-dir eller inte.
+
+      En lista med variabler som kan användas finns på http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
+
+      Om den här policyn inte ställs in används profilens standardsökväg och användaren kan åsidosätta den med kommandoradsflaggan --user-data-dir.</translation>
 <translation id="5067143124345820993">Vitlista för användarinloggning</translation>
 <translation id="3612784419634427880">Inkognitoläget är tillgängligt.</translation>
 <translation id="2514328368635166290">Policyn anger önskad ikonadress för standardsökleverantören.
@@ -994,6 +1011,8 @@
       Om du aktiverar den här inställningen används den angivna språkversionen av <ph name="PRODUCT_NAME"/>. Om den språkversion som anges inte stöds används en-US istället.
 
       Om inställningen inaktiveras eller inte är konfigurerad använder <ph name="PRODUCT_NAME"/> antingen den språkversion som användaren anger (om den är konfigurerad), samma språk som datorn eller standardversionen en-US.</translation>
+<translation id="1681852583119028071">Lista över alternativa webbadresser för standardsökleverantören.</translation>
+<translation id="7842869978353666042">Konfigurera alternativ för Google Drive</translation>
 <translation id="718956142899066210">Anslutningstyper som tillåts för uppdateringar</translation>
 <translation id="6985168562472482191">Namnet på företagets webbutik, som visas under appikonen på sidan Ny flik. Den här inställningen har ingen effekt om inte EnterpriseWebStoreURL har ställts in.
 
@@ -1016,11 +1035,13 @@
           Detaljerade exempel finns på:
           <ph name="PROXY_HELP_URL"/></translation>
 <translation id="3406810703404235731">Webbadress för företagets webbutik</translation>
-<translation id="7782879802219764346">Policyn konfigurerar den katalog som <ph name="PRODUCT_NAME"/> använder för att spara användardata.
+<translation id="7690740696284155549">Konfigurerar vilken katalog som ska användas av <ph name="PRODUCT_NAME"/> för att hämta filer.
 
-      Om du anger den här policyn använder <ph name="PRODUCT_NAME"/> den angivna katalogen oavsett om användaren har angett flaggan --user-data-dir eller inte.
+      Om du ställer in den här policyn används den angivna katalogen av <ph name="PRODUCT_NAME"/> oavsett om användaren har angett en katalog eller aktiverat flaggan för att bli tillfrågad om hämtningsplats varje gång.
 
-      Om den här policyn inte anges används standardprofilens sökväg och användaren kan åsidosätta den med kommandoradsflaggan --user-data-dir.</translation>
+      En lista med variabler som kan användas finns på http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
+
+      Om policyn inte anges används standardhämtningsplatsen. Inställningen kan ändras av användaren.</translation>
 <translation id="7381326101471547614">Inaktiverar användning av SPDY-protokollet i <ph name="PRODUCT_NAME"/>.
 
       Om den här policyn är aktiverad är SPDY-protokollet inte tillgängligt i <ph name="PRODUCT_NAME"/>.
@@ -1078,17 +1099,6 @@
 <translation id="6658245400435704251">Anger hur många sekunder en hämtning av en uppdatering via en enhet får försenas slumpmässigt från den tidpunkt då uppdateringen först skickades till servern. Enheten kan hållas i vänteläge dels under en vanlig tidsperiod, dels beroende på antalet uppdateringskontroller. Spridningen är alltid bunden till en övre tidsgräns så att en enhet aldrig fastnar för gott medan en uppdatering håller på att hämtas.</translation>
 <translation id="1948757837129151165">Policy för HTTP-autentisering</translation>
 <translation id="5946082169633555022">Betakanal</translation>
-<translation id="145467868108778033">Gör det möjligt att ange en lista över tillägg som installeras utan någon åtgärd från användare.
-
-          Varje post i listan är en sträng som innehåller ett tilläggs-ID och en uppdateringsadress som avgränsas av ett semikolon (<ph name="SEMICOLON"/>). Tilläggs-ID:t är strängen med 32 tecken i till exempel <ph name="CHROME_EXTENSIONS_LINK"/> i utvecklarläget. Uppdateringsadressen ska leda till ett XML-dokument för uppdatering av manifest enligt vad som beskrivs på <ph name="LINK_TO_EXTENSION_DOC1"/>. Observera att uppdateringsadressen som anges i policyn endast används för den initiala installationen. För senare uppdateringar av tillägget används uppdateringsadressen i tilläggsmanifestet.
-
-          För varje post får <ph name="PRODUCT_NAME"/> det tillägg som anges i tilläggs-ID:t från uppdateringstjänsten på den angivna uppdateringsadressen och installerar det automatiskt.
-
-          Till exempel installerar <ph name="EXTENSION_POLICY_EXAMPLE"/> tillägget <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/> från standarduppdateringsadressen från Chrome Web Store. Mer information om värdtillägg hittar du på: <ph name="LINK_TO_EXTENSION_DOC2"/>.
-
-          Användare kommer inte att kunna avinstallera tillägg som anges av den här policyn. Om du tar bort ett tillägg från listan avinstalleras det automatiskt av <ph name="PRODUCT_NAME"/>.
-
-          Om den här policyn inte anges kan användaren avinstallera tillägg i <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="8303314579975657113">Policyn anger vilket GSSAPI-bibliotek som ska användas för HTTP-autentisering. Du kan ange bara ett biblioteksnamn eller en fullständig sökväg.
 
       Om du inte anger något använder <ph name="PRODUCT_NAME"/> ett standardbiblioteksnamn.</translation>

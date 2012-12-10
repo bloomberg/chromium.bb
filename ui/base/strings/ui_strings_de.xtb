@@ -14,6 +14,7 @@
 <translation id="3660179305079774227">Aufwärtspfeil</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY"/> MB/s</translation>
 <translation id="3990502903496589789">Rechter Rand</translation>
+<translation id="5182671122927417841">Erweiterung deaktivieren</translation>
 <translation id="932327136139879170">Startseite</translation>
 <translation id="3909791450649380159">&amp;Ausschneiden</translation>
 <translation id="688711909580084195">Unbenannte Webseite</translation>
@@ -50,9 +51,10 @@
 <translation id="1293699935367580298">Esc</translation>
 <translation id="815598010540052116">Nach unten blättern</translation>
 <translation id="3157931365184549694">Wiederherstellen</translation>
-<translation id="8179976553408161302">Los geht's</translation>
+<translation id="8179976553408161302">Enter</translation>
 <translation id="9170848237812810038">&amp;Rückgängig</translation>
 <translation id="520299402983819650"><ph name="QUANTITY"/> PB</translation>
+<translation id="2983818520079887040">Einstellungen...</translation>
 <translation id="6845383723252244143">Ordner auswählen</translation>
 <translation id="5583640892426849032">Rücktaste</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY"/> GB/s</translation>
@@ -60,10 +62,13 @@
 <translation id="2297836609126180313"><ph name="QUANTITY"/> TB/s</translation>
 <translation id="6040143037577758943">Schließen</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY"/> Byte/s</translation>
+<translation id="477782898153505579">Sie haben keine Benachrichtigungen.</translation>
+<translation id="7457942297256758195">Alle löschen</translation>
 <translation id="8400147561352026160">Umschalt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="6907759265145635167"><ph name="QUANTITY"/> PB/s</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="5941711191222866238">Verkleinern</translation>
+<translation id="4469842253116033348">Benachrichtigungen von <ph name="SITE"/> deaktivieren</translation>
 <translation id="3036649622769666520">Dateien öffnen</translation>
 <translation id="8328145009876646418">Linker Rand</translation>
 </translationbundle>

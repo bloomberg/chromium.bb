@@ -21,6 +21,7 @@
       Hvis denne retningslinjen ikke angis, vil dette aktiveres, og brukeren vil kunne bruke inkognitomodus.</translation>
 <translation id="7614663184588396421">Liste over deaktiverte protokollsystemer</translation>
 <translation id="2309390639296060546">Standardinnstilling for geoposisjonering</translation>
+<translation id="7261507082507286116">Deaktiverer Google Disk via mobiltilkobling</translation>
 <translation id="7443616896860707393">Opphavsuavhengig HTTP Basic Auth-forespørsler</translation>
 <translation id="2337466621458842053">Gjør at du kan angi en liste over nettadressemønstre for nettsteder som kan vise bilder. Hvis denne retningslinjen ikke angis, blir den globale standardverdien brukt for alle nettsteder, enten fra retningslinjen DefaultImagesSetting hvis den er angitt, eller fra brukerens egen konfigurasjon hvis nevnte retningslinje ikke er angitt.</translation>
 <translation id="4680961954980851756">Aktiver Autofyll</translation>
@@ -127,6 +128,9 @@
 <translation id="4668325077104657568">Standardinnstilling for bilder</translation>
 <translation id="7161193985878519056">Inkognitomodus er deaktivert.</translation>
 <translation id="2524379983318108884">Tillat fanging av lyd</translation>
+<translation id="7978961945071764766">Deaktiverer Google Disk-synkronisering over mobilnettverk når angitt som Sann. I slike tilfeller blir data synkronisert bare med Google Disk når tilkoblet via Wi-Fi eller Ethernet.
+
+          Hvis innstillingen ikke er angitt eller angitt som Usann, kan brukere overføre filer til Google Disk via mobiltilkobling.</translation>
 <translation id="4492287494009043413">Deaktiver mulighet til å ta skjermdumper</translation>
 <translation id="6368403635025849609">Tillat JavaScript på disse nettstedene</translation>
 <translation id="6074963268421707432">Ikke tillat noen nettsteder å vise skrivebordsvarslinger</translation>
@@ -136,11 +140,6 @@
 <translation id="2906874737073861391">Liste over AppPack-utvidelser</translation>
 <translation id="3758249152301468420">Deaktiver utviklerverktøy</translation>
 <translation id="8665076741187546529">Konfigurer listen over tvangsinstallerte utvidelser</translation>
-<translation id="2505112041294615513">Konfigurerer katalogen <ph name="PRODUCT_FRAME_NAME"/> bruker for lagring av brukerdata.
-
-      Hvis du angir denne retningslinjen, bruker <ph name="PRODUCT_FRAME_NAME"/> katalogen tildelt for dette.
-
-      Standard profilkatalog brukes om ikke annet spesifisert.</translation>
 <translation id="8818173863808665831">Rapportering av enhetens geografiske posisjon.
 
       Hvis denne innstillingen ikke er angitt, eller er satt til «false», blir ikke posisjonen rapportert.</translation>
@@ -163,6 +162,13 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
      Hvis denne retningslinjen ikke angis, blir blir gjeldende innstilling det samme som brukeren velger ved installasjon / første kjøring.</translation>
 <translation id="9135033364005346124">Aktiver mellomtjener for <ph name="CLOUD_PRINT_NAME"/></translation>
 <translation id="6943577887654905793">Innstillingsnavn for Mac/Linux:</translation>
+<translation id="6925212669267783763">Konfigurerer katalogen <ph name="PRODUCT_FRAME_NAME"/> bruker til lagring av brukerdata. 
+
+       Hvis du angir denne retningslinjen, bruker <ph name="PRODUCT_FRAME_NAME"/> den oppgitte katalogen.
+
+      Gå til http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for å se en liste over variabler som kan brukes.
+
+     Hvis denne innstillingen ikke angis, brukes standard profilkatalog.</translation>
 <translation id="8906768759089290519">Aktiver gjestemodus</translation>
 <translation id="838870586332499308">Aktiver datastreifing</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME"/> kan bruke en Google-nett-tjeneste for å få bukt med stavefeil. Hvis denne innstillingen er aktivert, så blir denne tjenesten alltid brukt. Hvis innstillinger er deaktivert, forblir tjenesten ubrukt.
@@ -172,6 +178,9 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
       Hvis denne innstillingen ikke er konfigurert, kan brukere velge om tjenesten for stavekontroll skal eller ikke skal brukes.</translation>
 <translation id="254524874071906077">Angi Chrome som standardnettleser</translation>
 <translation id="8764119899999036911">Angir om generert Kerberos-SPN er basert på det kanoniske DNS-navnet eller på det angitte originalnavnet. Hvis du aktiverer denne innstillingen, droppes CNAME-oppslag, og tjenernavnet brukes som angitt. Hvis du deaktiverer denne innstillingen eller ikke angir den, bestemmes tjenerens kanoniske navn ved hjelp av CNAME-oppslag.</translation>
+<translation id="5711323964690760562">Angir nettadressen til en nettbutikk. Når denne innstillingen er aktivert, vises det en app på siden Ny fane, som omdirigerer brukeren til den angitte nettadressen når den blir klikkes på. For å kunne tillate installasjon av utvidelser fra det konfigurerte nettstedet, må ExtensionInstallSources-retningslinjene være konfigurerte til å tillate installasjon fra de aktuelle nettadressene for nedlasting av utvidelser.Hvis denne retningslinjen er angitt, bør innstillingen EnterpriseWebStoreName være angitt. 
+
+      Hvis denne innstillingen er deaktivert, vises det ikke noe nettbutikk-app på Ny fane-siden.</translation>
 <translation id="4377599627073874279">La alle nettsteder vise alle bilder</translation>
 <translation id="3915395663995367577">Nettadresse til en .pac-fil for mellomtjener</translation>
 <translation id="1022361784792428773">Utvidelses-ID-er brukeren skal hindres i å installere (eller * for alle)</translation>
@@ -187,6 +196,13 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 
           Se http://www.chromium.org/developers/how-tos/chrome-frame-getting-started for eksempelmønstre.</translation>
 <translation id="8044493735196713914">Rapportering av oppstartsmodus for enhet</translation>
+<translation id="2746016768603629042">Denne retningslinjen er foreldet. Bruk DefaultJavaScriptSetting i stedet.
+
+     Kan brukes for å deaktivere JavaScript i <ph name="PRODUCT_NAME"/>.
+
+     Hvis denne innstillingen er deaktivert, kan ikke nettsidene bruke JavaScript og brukeren kan ikke endre innstillingen.
+
+      Hvis denne innstillingen er aktivert eller ikke angitt, kan nettsider bruke JavaScript, men brukeren kan endre innstillingen.</translation>
 <translation id="1942957375738056236">Du kan angi nettadressen til proxytjeneren her.
 
           Denne retningslinjen iverksettes bare hvis du har valgt manuelle proxytjenerinnstillinger under «Velg hvordan proxytjenerinnstillinger skal angis».
@@ -226,6 +242,9 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 <translation id="4962195944157514011">Angir nettadressen til søkemotoren som brukes til et standard søk. Nettadressen skal inneholde strengen <ph name="SEARCH_TERM_MARKER"/>, som erstattes når søket utføres av termene brukeren søker etter.
 
           Dette alternativet må angis når retningslinjen DefaultSearchProviderEnabled er aktivert, og respekteres bare hvis dette er tilfellet.</translation>
+<translation id="3343454696188645600">Deaktiverer Google Disk-synkronisering når angitt som Sann. I slike tilfeller lastes det ikke opp noe data til Google Disk.
+
+          Hvis innstillingen ikke er angitt eller satt til Usann, kan brukere overføre filer til Google Disk.</translation>
 <translation id="6009903244351574348">La <ph name="PRODUCT_FRAME_NAME"/> håndtere de oppførte innholdstypene.
 
           Hvis denne retningslinjen ikke er angitt, brukes standard gjengivelse for alle nettsteder som angitt av retningslinjen ChromeFrameRendererSettings.</translation>
@@ -274,6 +293,17 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 <translation id="6786747875388722282">Utvidelser</translation>
 <translation id="8947415621777543415">Rapportering av enhetsposisjonen</translation>
 <translation id="1655229863189977773">Angi størrelse på diskbuffer i byte</translation>
+<translation id="6376842084200599664">Gjør at du kan angi en liste over utvidelser som installeres av seg selv uten samhandling med brukeren.
+
+          Hvert element i listen er en streng som inneholder en utvidelses-ID og en nettadresse for oppdatering, adskilt med et semikolon (<ph name="SEMICOLON"/>). Utvidelsen er strengen på 32 bokstaver som du finner på <ph name="CHROME_EXTENSIONS_LINK"/> ved bruk av utviklermodus. Oppdateringsnettadressen skal lede til et Update Manifest XML-dokument beskrevet på <ph name="LINK_TO_EXTENSION_DOC1"/>. Vær oppmerksom på at oppdateringsnettadressen angitt i disse retningslinjene bare brukes for den første installasjonen – senere oppdateringer av utvidelsen bruker oppdateringsnettadressen angitt i utvidelsesmanifestet.
+
+          For hvert element henter <ph name="PRODUCT_NAME"/> utvidelsen som er angitt av ID-en fra den spesifiserte nettadressen, og installerer den av seg selv.
+
+          For eksempel installerer <ph name="EXTENSION_POLICY_EXAMPLE"/> <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/>-utvidelsen fra standardnettadressen for oppdateringer fra Chrome Nettmarked. For mer informasjon om å være vert for utvidelser, se: <ph name="LINK_TO_EXTENSION_DOC2"/>.
+
+          Brukerne kan ikke avinstallere utvidelser som er angitt av denne retningslinjen. Hvis du fjerner alle utvidelser fra denne listen, avinstalleres den automatisk av <ph name="PRODUCT_NAME"/>. Utvidelser angitt i denne listen er også automatisk godkjente for installasjon – svartelisten ExtensionsInstallBlacklist påvirker dem ikke.
+
+         Hvis denne retningslinjen ikke angis, kan brukeren avinstallere alle utvidelser i <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="6899705656741990703">Gjenkjenn mellomtjenerinnstillinger automatisk</translation>
 <translation id="7003334574344702284">Denne retningslinjen tvinger import av de lagrede passordene fra forrige standardnettleser hvis den er aktivert. Hvis den er aktivert, påvirker retningslinjen også importeringsdialogen.
 
@@ -295,10 +325,23 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
       Formatet på verdien følger navnene på tidssoner i tidssonedatabasen «IANA Time Zone Database» (les mer her: http://en.wikipedia.org/wiki/List_of_tz_database_time). De fleste tidssoner kan refereres til som «kontinent/stor_by» eller «hav/stor_by».</translation>
 <translation id="8992176907758534924">Ikke la noen nettsteder vise bilder</translation>
 <translation id="262740370354162807">Aktiver sending av dokumenter til <ph name="CLOUD_PRINT_NAME"/></translation>
+<translation id="5182055907976889880">Konfigurer Google Disk i <ph name="PRODUCT_OS_NAME"/>.</translation>
 <translation id="8704831857353097849">Liste over deaktiverte programtillegg</translation>
 <translation id="8391419598427733574">Operativsystem for rapportering og fastvareversjon for registrerte enheter. Hvis denne innstillingen er aktivert, rapporterer registrerte enheter om eget operativsystem og fastvareversjon med jevne mellomrom. Hvis denne innstillingen ikke er angitt eller deaktivert, blir ikke versjonsinformasjon rapportert.</translation>
 <translation id="467449052039111439">Åpne en liste over nettadresser</translation>
 <translation id="5883015257301027298">Standardinnstilling for informasjonskapsler</translation>
+<translation id="5017500084427291117">Blokkerer tilgang til de angitte nettadressene. 
+
+Denne retningslinjen hindrer brukeren i å laste inn nettsider fra nettadresser som er svartelistet.
+
+En nettadresse har formatet scheme://host:port/path. Det valgfrie skjemaet kan være http, https eller ftp. Bare dette skjemaet blokkeres, og hvis ingenting angis, blokkeres alle skjemaer. 
+Verten kan være et vertsnavn eller en IP-adresse. Underdomener til et vertsnavn blokkeres også. Hvis du vil forhindre blokkering av underdomener, legger du til et punktum (.) før vertsnavnet. Det spesielle vertsnavnet * blokkerer alle domener.
+Den valgfrie porten er et gyldig portnummer fra 1 til 65535. 
+Hvis ingenting angis, blokkeres alle porter. Hvis den valgfrie banen angis, blokkeres bare baner med det aktuelle prefikset.
+
+Det kan gis unntak i retningslinjenene for nettadressenes godkjenningsliste. Disse retningslinjene er begrenset til 1000 oppføringer. Oppføringer etter de første 1000 blir ignorert.
+
+Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettleseren.</translation>
 <translation id="8955719471735800169">Tilbake til toppen</translation>
 <translation id="2534584045044686957">Konfigurerer bufferstørrelsen som <ph name="PRODUCT_NAME"/> bruker for lagring av bufrede mediefiler på disken.
 
@@ -316,17 +359,6 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
       Denne retningslinjen er på plass for å tillate streng sperrelisting av programtillegg i tilfeller der DisabledPlugins-listen inneholder oppføringer av jokertegn – eksempelvis deaktiver alle programtillegg (*) eller deaktiver alle Java-programtillegg (*Java*), men der administratoren ønsker å aktivere en bestemt versjon, som for eksempel IcedTea Java 2.3. Disse spesifikke versjonene kan angis i denne retningslinjen.
 
       Hvis denne retningslinjen ikke tilordnes et valg, kommer ethvert programtillegg som matcher mønstrene i DisabledPlugins, til å låses som deaktivert, og bruker kan ikke gjøre noe med dette.</translation>
-<translation id="8170882486743832400">Konfigurer GData-alternativer</translation>
-<translation id="2322733497952278056">Gir tilgang til de oppførte nettadressene, som unntak for nettadressene på svartelisten.
-
-      Se beskrivelsen av nettadressesvartelistens retningslinjer for formatet på oppføringer i listen.
-      Denne retningslinjen kan brukes til å åpne for unntak i strenge svartelister. Tegnet * kan for eksempel svartelistes for å blokkere alle forespørsler, og denne retningslinjen kan brukes til å tillate tilgang til en begrenset liste over nettadresser. Den kan brukes til åpne for unntak for enkelte skjemaer, underdomener til andre domener, porter eller spesifikke baner.
-
-      Det mest spesifikke filteret avgjør om en nettadresse blokkeres eller tillates. Godkjenningslisten prioriteres over svartelisten.
-
-      Denne retningslinjen er begrenset til 100 oppføringer. Oppføringer etter de 100 første blir ignorert.
-
-      Hvis denne retningslinjen ikke angis, vil det ikke være noen unntak fra retningslinjen URLBlacklist.</translation>
 <translation id="5316405756476735914">Gjør at du kan bestemme hvorvidt nettsteder tillates å angi lokale data. Å angi lokale data kan enten tillates for alle nettsteder, eller nektes for alle nettsteder.
           Hvis denne retningslinjen ikke angis, brukes AllowCookies, og brukeren kan endre på dette.</translation>
 <translation id="4250680216510889253">Nei</translation>
@@ -365,12 +397,8 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
       Hvis denne innstillingen ikke angis, kan brukeren endre listen over programmer som er festet i programlisten.</translation>
 <translation id="7625444193696794922">Angir den frigivende kanalen som denne enheten skal låses til.</translation>
 <translation id="2552966063069741410">Tidssone</translation>
-<translation id="3088288048720661397">Deaktiverer Google Disk-synkronisering over mobilnettverk når angitt som Sann. I slike tilfeller blir data synkronisert bare med Google Disk når tilkoblet via Wi-Fi eller Ethernet.
-
-          Hvis innstillingen ikke er angitt eller angitt som Usann, kan brukere overføre filer til Google Disk via tilkoblinger over mobilnettverk.</translation>
 <translation id="2240879329269430151">Gjør at du kan angi om nettsteder tillates å vise forgrunnsvinduer. Visning av forgrunnsvinduer kan enten tillates for alle nettsteder, eller nektes for alle nettsteder. Hvis denne retningslinjen ikke angis, brukes BlockPopups, og brukeren har mulighet til å endre på dette.</translation>
 <translation id="2529700525201305165">Begrens hvilke brukere som kan logge seg på <ph name="PRODUCT_NAME"/></translation>
-<translation id="5289914968905023866">Blokkerer tilgang til de angitte nettadressene. Denne retningslinjen hindrer brukeren i å laste inn nettsider fra nettadresser som er svartelistet. En nettadresse har formatet scheme://host:port/path. Det valgfrie skjemaet kan være http, https eller ftp. Bare dette skjemaet vil bli blokkert, og hvis ingenting angis, blokkeres alle skjemaer. Verten kan være et vertsnavn eller en IP-adresse. Underdomener til et vertsnavn vil også bli blokkert. Hvis du vil forhindre blokkering av underdomener, legger du til et punktum (.) før vertsnavnet. Det spesielle vertsnavnet * vil blokkere alle domener. Den valgfrie porten er et gyldig portnummer fra 1 til 65535. Hvis ingenting angis, blokkeres alle porter. Hvis den valgfrie banen angis, vil bare baner med det aktuelle prefikset blokkeres. Det kan angis unntak i retningslinjenene for nettadressenes godkjenningsliste. Disse retningslinjene er begrenset til 100 oppføringer. Oppføringer etter de første 100 blir ignorert. Hvis denne retningslinjen ikke angis, vil ingen nettadresser svartelistes i nettleseren.</translation>
 <translation id="3864818549971490907">Standardinnstilling for programtillegg</translation>
 <translation id="7151201297958662315">Avgjør om en <ph name="PRODUCT_NAME"/>-prosess er startet ved pålogging til operativsystemet og fortsetter å kjøre når det siste nettleservinduet er lukket, og lar bakgrunnsprogrammer forbli aktive. Bakgrunnsprosessen viser et ikon i systemstatusfeltet og kan alltid lukkes derifra.
 
@@ -384,10 +412,22 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 
           Hvis denne tillatelsen ikke er angitt, blir standardkommandolinjen brukt.</translation>
 <translation id="2646290749315461919">Gjør at du kan angi om nettsteder tillates å spore brukernes fysiske posisjon. Sporing av brukernes fysiske posisjon kan tillates som standard, nektes som standard, eller brukeren kan blir spurt hver gang et nettsted ber om den fysiske posisjonen. Hvis denne retningslinjen ikke angis, brukes AskGeolocation, og brukeren kan endre på dette.</translation>
+<translation id="3309789488678647282">Deaktiverer Disk</translation>
 <translation id="5770738360657678870">Utviklerkanal (kan være ustabil)</translation>
 <translation id="2959898425599642200">Regler for å omgå mellomtjener</translation>
 <translation id="1098794473340446990">Rapportér aktivitetstider for enhet. Hvis denne innstillingen er aktivert, rapporterer registrerte enheter om hvilke tidsperioder en bruker er aktiv på enheten. Hvis denne innstillingen ikke er angitt eller deaktivert, blir ikke aktivitetstider registrert eller rapportert.</translation>
 <translation id="896575211736907134">Tvungen inkognitomodus.</translation>
+<translation id="817455428376641507">Gir tilgang til de oppførte nettadressene, som unntak for nettadressene på svartelisten. 
+
+      Se beskrivelsen av nettadressesvartelistens retningslinjer for formatet på oppføringer i listen.
+
+      Denne retningslinjen kan brukes til å åpne for unntak i strenge svartelister. Tegnet * kan for eksempel svartelistes for å blokkere alle forespørsler, og denne retningslinjen kan brukes til å tillate tilgang til en begrenset liste over nettadresser. Den kan brukes til åpne for unntak for enkelte skjemaer, underdomener til andre domener, porter eller spesifikke baner.
+
+      Det mest spesifikke filteret avgjør om en nettadresse blokkeres eller tillates. Godkjenningslisten prioriteres over svartelisten.
+
+       Denne retningslinjen er begrenset til 1000 oppføringer. Oppføringer etter de 1000 første blir ignorert. 
+
+      Hvis denne retningslinjen ikke angis, er det ingen unntak fra retningslinjen URLBlacklist.</translation>
 <translation id="6177482277304066047">Angir en målversjon for automatiske oppdateringer.
 
       Spesifiserer prefikset for en målversjon som <ph name="PRODUCT_OS_NAME"/> skal oppdateres til. Hvis enheten kjører en versjon som er en forløper til det spesifiserte prefikset, oppdateres enheten til den siste versjonen med det gitte prefikset. Hvis enheten allerede bruker en nyere versjon, skjer det ikke noe (enheten blir med andre ord ikke nedgradert), og enheten beholder den nåværende versjonen. Prefiksformatet fungerer komponentvis, som demonstrert i det følgende eksemplet:
@@ -428,6 +468,12 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 
       Hvis denne retningslinjen er deaktivert eller ikke konfigurert, avgjøres retningslinjen for lagring av nettsteddata av DefaultCookiesSetting-retningslinjen.</translation>
 <translation id="2824715612115726353">Aktiver inkognitomodus</translation>
+<translation id="1057535219415338480">Aktiverer nettverksforslag i <ph name="PRODUCT_NAME"/> og hindrer brukerne i å endre denne innstillingen.
+
+      Dette kontrollerer både DNS-forhåndshenting og TCP- samt SSl-forhåndstilkobling og forhåndsgjengivelse av nettsteder. Navnet på retningslinjene viser til DNS-forhåndshenting av historiske grunner.
+      Hvis du aktiverer eller deaktiverer denne innstillingen, kan ikke brukerne endre eller overstyre denne innstillingen i <ph name="PRODUCT_NAME"/>.
+
+      Hvis denne retningslinjen ikke angis, aktiveres dette, men brukeren kan endre på det.</translation>
 <translation id="1757688868319862958">Lar <ph name="PRODUCT_NAME"/> kjøre programtillegg som krever godkjenning. Hvis du aktiverer denne innstillingen, kjører alltid programtillegg som ikke er foreldede. Hvis denne innstillingen er deaktivert eller ikke angitt, blir brukerne bedt om tillatelse til å kjøre programtillegg som krever godkjenning. Dette er programtillegg som kan sette sikkerheten på spill.</translation>
 <translation id="6392973646875039351">Aktiverer autofyll-funksjonen til <ph name="PRODUCT_NAME"/>, og gjør at brukerne kan autofullføre nettskjemaer ved hjelp av tidligere lagret informasjon, som adresser eller kredittkortinformasjon.
 
@@ -441,9 +487,6 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 <translation id="2021307518684405078">Forby nettsteder fra å bruke kameraet og/eller mikrofonen min</translation>
 <translation id="8870318296973696995">Startside</translation>
 <translation id="1240643596769627465">Angir nettadressen til søkemotoren som brukes til å gi umiddelbare resultater. Nettadressen skal inneholde strengen <ph name="SEARCH_TERM_MARKER"/>, som blir erstattet av teksten brukeren har skrevet inn, når søket utføres. Denne retningslinjen er valgfri. Hvis den ikke er aktivert, brukes det ingen forslagsnettadresse. Denne retningslinjen gjelder bare hvis retningslinjen DefaultSearchProviderEnabled er aktivert.</translation>
-<translation id="4126767310980686012">Deaktiverer Google Disk-synkronisering når satt til Sann. I slike tilfeller lastes det ikke opp noe data til Google Disk.
-
-          Hvis innstillingen ikke er angitt eller satt til Usann, så kan brukere overføre filer til Google Disk.</translation>
 <translation id="6693751878507293182">Hvis du aktiverer denne innstillingen, deaktiveres automatisk søk og installering av manglende programtillegg i <ph name="PRODUCT_NAME"/>.
 
       Hvis dette alternativet deaktiveres eller ikke angis, vil programtilleggsøket være aktivt.</translation>
@@ -516,17 +559,7 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 
           Hvis denne retningslinjen ikke angis, brukes den globale standardverdien for alle nettsteder, enten fra retningslinjen DefaultJavaScriptSetting hvis den er angitt, eller fra brukerens egen konfigurasjon hvis nevnte retningslinje ikke er angitt.</translation>
 <translation id="538108065117008131">Gi <ph name="PRODUCT_FRAME_NAME"/> tillatelse til å håndtere følgende innholdstyper.</translation>
-<translation id="717221064259627503">Konfigurerer katalogen som <ph name="PRODUCT_NAME"/> vil bruke for lagring av bufrede filer på disken.
-
-      Hvis du angir denne retningslinjen, bruker <ph name="PRODUCT_NAME"/> den oppgitte katalogen uansett om brukeren har angitt «--disk-cache-dir»-flagget eller ikke.
-
-      Hvis denne retningslinjen ikke angis, brukes standard bufferkatalog, og brukeren kan overstyre den med kommandolinjeflagget «--disk-cache-dir».</translation>
 <translation id="2312134445771258233">Lar deg konfigurere sidene som lastes inn ved oppstart. Innholdet i listen «Nettadresser som skal åpnes ved oppstart» ignoreres, med mindre du velger «Åpne en liste over nettadresser» i «Handling ved oppstart».</translation>
-<translation id="2538628396238281971">Konfigurerer katalogen som <ph name="PRODUCT_NAME"/> vil bruke for å laste ned filer.
-
-      Hvis du angir denne retningslinjen, bruker <ph name="PRODUCT_NAME"/> den oppgitte katalogen uansett om brukeren har angitt en eller aktivert flagget for å bli med om nedlastingsposisjon hver gang.
-
-      Hvis denne retningslinjen ikke angis, brukes standard nedlastingskatalog, og brukeren kan endre på dette.</translation>
 <translation id="7750991880413385988">Åpne Ny fane-siden</translation>
 <translation id="741903087521737762">Lar deg angi atferden ved oppstart.
 
@@ -563,17 +596,6 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 <translation id="6699880231565102694">Aktiver to-delt autentisering for verter med ekstern adgang</translation>
 <translation id="2030905906517501646">Søkeord for standard søkeleverandør</translation>
 <translation id="3072045631333522102">Skjermsparer som skal brukes på påloggingssiden i detaljistmodus</translation>
-<translation id="7393895128271703858">Denne retningslinjen er foreldet. Bruk DefaultJavaScriptSetting i stedet.
-
-      Aktiverer JavaScript i <ph name="PRODUCT_NAME"/> og hindrer brukerne i å endre denne innstillingen.
-
-      Hvis denne innstillingen er aktivert eller ikke konfigurert, kan nettsidene bruke JavaScript.
-
-      Hvis denne innstillingen er deaktivert, kan ikke nettsidene bruke JavaScript.
-
-      Hvis denne retningslinjen ikke angis, brukes den aktiverte standardverdien, og brukeren kan endre på dette.
-
-     Hvis denne retningslinjen ikke angis, vil dette være aktivert, men brukeren kan endre på dette.</translation>
 <translation id="8079569179819932120">Angir hvilke tjenere som skal settes på godkjenningslisten for integrert autentisering. Integrert autentisering er bare aktivert når <ph name="PRODUCT_NAME"/> får en autentiseringsutfordring fra en mellomtjener eller en tjener som står oppført på denne godkjenningslisten.
 
           Flere tjenernavn skal adskilles med komma. Jokertegn (*) er tillatt.
@@ -660,17 +682,22 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
      Hvis denne innstillingen er aktivert, lagres ikke nettleserloggen.
 
       Hvis denne innstillingen er deaktivert, lagres nettleserloggen.</translation>
+<translation id="3844092002200215574">Konfigurerer katalogen som <ph name="PRODUCT_NAME"/> skal bruke til lagring av bufrede filer på disken.
+
+      Hvis du angir denne retningslinjen, bruker <ph name="PRODUCT_NAME"/> den angitte katalogen uansett om brukeren har spesifisert flagget «--disk-cache-dir» eller ikke.
+
+      Gå til http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for å se en liste over variabler som kan brukes.
+
+      Hvis denne retningslinjen ikke angis, brukes standard bufferkatalog, og brukeren kan overstyre den med kommandolinjeflagget «--disk-cache-dir».</translation>
 <translation id="7202926611616207807">Lar alle nettsteder angi lokale data.</translation>
 <translation id="3034580675120919256">Gjør at du kan angi om nettsteder får kjøre JavaScript. Kjøring av JavaScript kan tillates for alle nettsteder, eller nektes for alle nettsteder.
           Hvis denne retningslinjen ikke angis, brukes AllowJavaScript, og brukeren kan endre på dette.</translation>
-<translation id="7459381849362539054">Konfigurer GData i <ph name="PRODUCT_OS_NAME"/>.</translation>
 <translation id="3195451902035818945">Angir hvorvidt splitting av SSL-oppføringer skal være deaktivert. Splitting av oppføringer er en problemløsning for en svakhet i SSL 3.0 og TLS 1.0, men kan føre til kompatibilitetsproblemer med enkelte HTTPS-tjenere og mellomtjenere. Hvis disse retningslinjene ikke angis, eller er deaktivert, blir splitting av oppføringer tatt i bruk for SSL/TLS-tilkoblinger som bruker «CBC ciphersuites» (kombinasjonssystem for sikkerhet).</translation>
 <translation id="6903814433019432303">Denne retningslinjen er aktiv bare i detaljistmodus.
 
       Avgjør hvilket sett av nettadresser som blir lastet inn når demo-økten startes. Denne retningslinjen overstyrer enhver annen mekanisme for angivelse av den første nettadressen og kan således brukes bare for en økt som ikke er tilknyttet en viss bruker.</translation>
 <translation id="5868414965372171132">Nettverkskonfigurasjon på brukernivå</translation>
 <translation id="1221359380862872747">Last inn angitte nettadresser ved demo-pålogging</translation>
-<translation id="6771644447620682565">Deaktiverer GData</translation>
 <translation id="5493552890659553833">Aktiverer søkeforslag i søkefeltet til <ph name="PRODUCT_NAME"/>, og hindrer brukerne i å endre på dette.
 
       Hvis du aktiverer denne innstillingen, brukes søkeforslagene.
@@ -704,6 +731,11 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 
       Hvis denne retningslinjen ikke angis, kan brukeren velge om denne knappen skal vises.</translation>
 <translation id="2518231489509538392">Tillat avspilling av lyd</translation>
+<translation id="7301543427086558500">Angir en liste over alternative nettadresser som kan brukes til å hente ut søkeord fra søkemotoren. Nettadressene skal inneholde strengen <ph name="SEARCH_TERM_MARKER"/>, som brukes til å hente ut søkeordene.
+
+      Denne retningslinjen er valgfri. Hvis den ikke er angitt, brukes alternative nettadresser til å hente ut søkeordene.
+
+         Denne retningslinjen gjelder bare hvis retningslinjen DefaultSearchProviderEnabled er aktivert.</translation>
 <translation id="7547044444554936129">Aktiverer Instant-funksjonen i <ph name="PRODUCT_NAME"/>, og hindrer brukerne i å endre denne innstillingen.
 
       Hvis du aktiverer denne innstillingen, aktiveres Instant i <ph name="PRODUCT_NAME"/>.
@@ -718,7 +750,6 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 <translation id="5469484020713359236">Gjør at du kan angi en liste over nettadressemønstre som spesifiserer hvilke nettsteder som får angi informasjonskapsler.
 
           Hvis denne retningslinjen ikke angis, brukes den globale standardverdien for alle nettsteder, enten fra retningslinjen DefaultCookiesSetting hvis den er angitt, eller fra brukerens egen konfigurasjon hvis den nevnte retningslinjen ikke er angitt.</translation>
-<translation id="3664573135939978914">Deaktiverer GData over mobilnettet-tilkoblinger</translation>
 <translation id="930930237275114205">Angi <ph name="PRODUCT_FRAME_NAME"/>-katalog for brukerdata</translation>
 <translation id="5208240613060747912">Gjør at du kan angi en liste over nettadressemønstre som spesifiserer hvilke nettsteder som ikke får vise varsler.
 
@@ -772,8 +803,6 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 <translation id="8908294717014659003">Lar deg angi om nettsteder skal gis tillatelse til å bruke digitaliseringsenhetene dine. Bruk av digitaliseringsenheter kan tillates som standard, eller angis slik at brukeren blir spurt om tillatelse hver gang et nettsted ønsker å bruke slike enheter.
 
           Hvis denne retningslinjen ikke er angitt, brukes PromptOnAccess, og brukeren kan ikke endre denne innstillingen.</translation>
-<translation id="9191982992032190929">Angir nettadressen til en nettbutikk. Når denne innstillingen er aktivert, vises det et program på siden Ny fane, som omdirigerer brukeren til den angitte nettadressen når den blir klikkes på. Utvidelser og programmer kan installeres fra denne siden uten at det presenteres ekstra advarsler for brukeren. Hvis denne retningslinjen er angitt, bør innstillingen EnterpriseWebStoreName være angitt.
-      Hvis denne innstillingen er deaktivert, vil det ikke vises noe nettbutikk-program på siden Ny fane.</translation>
 <translation id="8889026535261486875">Tjenere <ph name="PRODUCT_NAME"/> kan delegere til.
           Flere tjenernavn skal adskilles med komma. Jokertegn (*) er tillatt.
 
@@ -788,11 +817,6 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 <translation id="922540222991413931">Konfigurering av installeringskilder for utvidelser, programmer og brukerskript</translation>
 <translation id="7323896582714668701">Ytterligere kommandolinjeparametere for <ph name="PRODUCT_NAME"/></translation>
 <translation id="6931242315485576290">Deaktiver synkronisering av data med Google</translation>
-<translation id="36674322972891584">Aktiverer nettverksforslag i <ph name="PRODUCT_NAME"/>, og hindrer brukerne i å endre denne innstillingen.
-
-      Hvis du aktiverer eller deaktiverer denne innstillingen, kan ikke brukerne endre eller overstyre denne innstillingen i <ph name="PRODUCT_NAME"/>.
-
-      Hvis denne retningslinjen ikke angis, vil den være aktivert, men brukeren kan endre på det.</translation>
 <translation id="7006788746334555276">Innstillinger for innhold</translation>
 <translation id="5142301680741828703">Alltid gjengi følgende nettadressemønstre i <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="4625915093043961294">Konfigurer godkjenningslisten for installasjon av utvidelser</translation>
@@ -818,6 +842,13 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 
           Hvis denne retningslinjen ikke angis, brukes den globale standardverdien for alle nettsteder, enten fra retningslinjen DefaultJavaScriptSetting hvis denne er angitt, eller fra brukerens egen konfigurasjoner hvis den nevnte retningslinjen ikke er angitt.</translation>
 <translation id="7053678646221257043">Denne retningslinjen fremtvinger import av bokmerker fra gjeldende standard nettleser, hvis den er aktivert. Hvis den er aktivert, påvirker denne retningslinjen også importeringsdialogen. Hvis den er deaktivert, kan det hende brukeren blir spurt om vedkommende vil importere, eller så kan importen skje automatisk.</translation>
+<translation id="5757829681942414015">Konfigurerer katalogen <ph name="PRODUCT_NAME"/> bruker til lagring av brukerdata.
+
+      Hvis du angir denne retningslinjen, bruker <ph name="PRODUCT_NAME"/> den oppgitte katalogen uansett om brukeren har angitt  «--user-data-dir»-flagget eller ikke. 
+
+      Gå til http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for å se en liste over variabler som kan brukes.
+
+        Hvis denne retningslinjen ikke angis, brukes standard profilbane, og brukeren kan overstyre det med «--user-data-dir»-kommandolinjeflagget.</translation>
 <translation id="5067143124345820993">Godkjenningsliste for brukerpålogging</translation>
 <translation id="3612784419634427880">Inkognitomodus er tilgjengelig.</translation>
 <translation id="2514328368635166290">Angir nettadresse til favorittikonet til standard søkeleverandør.
@@ -872,6 +903,8 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
       Hvis du aktiverer denne innstillingen, bruker <ph name="PRODUCT_NAME"/> det angitte språket. Hvis det konfigurerte språket ikke håndteres, brukes språket en-US i stedet.
 
       Hvis denne innstillingen er deakivert eller ikke angis, bruker <ph name="PRODUCT_NAME"/> enten det brukerspesifikke foretrukne språket (hvis dette er konfiguert), systemspråket eller, som siste mulighet, en-US.</translation>
+<translation id="1681852583119028071">Liste over alternative nettadresser for standard søkeleverandør.</translation>
+<translation id="7842869978353666042">Konfigurer Google Disk-alternativer</translation>
 <translation id="718956142899066210">Tilkoblingstyper som tillates for oppdateringer</translation>
 <translation id="6985168562472482191">Navnet på nettbutikken, som vises under program-ikonet på siden Ny fane. Denne innstillingen har ingen effekt hvis EnterpriseWebStoreURL ikke er angitt. Hvis denne innstillingen er deaktivert, merkes nettbutikk-programmet (hvis dette foreligger) med sin egen nettadresse.</translation>
 <translation id="1734716591049455502">Konfigurer eksterne tilgangsalternativer</translation>
@@ -886,11 +919,13 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
           Hvis du vil ha detaljerte eksempler, kan du gå hit:
           <ph name="PROXY_HELP_URL"/></translation>
 <translation id="3406810703404235731">Nettadresse til nettbutikk</translation>
-<translation id="7782879802219764346">Konfigurerer katalogen som <ph name="PRODUCT_NAME"/> vil bruke til lagring av brukerdata.
+<translation id="7690740696284155549">Konfigurerer katalogen <ph name="PRODUCT_NAME"/> bruker for å laste ned filer. 
 
-      Hvis du angir denne retningslinjen, bruker <ph name="PRODUCT_NAME"/> den oppgitte katalogen uansett om brukeren har angitt  «--user-data-dir»-flagget eller ikke.
+      Hvis du angir denne retningslinjen, bruker <ph name="PRODUCT_NAME"/> den oppgitte katalogen uansett om brukeren har angitt en eller aktivert flagget for å bli med om nedlastingsposisjon hver gang.
 
-      Hvis denne retningslinjen ikke angis, brukes standard profilbane, og brukeren kan overstyre det med «--user-data-dir»-kommandolinjeflagget.</translation>
+      Gå til http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for å se en liste over variabler som kan brukes.
+
+        Hvis denne retningslinjen ikke angis, brukes standard nedlastingskatalog, og brukeren kan endre på dette.</translation>
 <translation id="7381326101471547614">Deaktiverer bruk av SPDY-protokollen i <ph name="PRODUCT_NAME"/>.
 
       Hvis disse retningslinjene er aktivert, blir ikke SPDY-protokollen tilgjengelig i <ph name="PRODUCT_NAME"/>.
@@ -942,17 +977,6 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 <translation id="6658245400435704251">Angir grensen for hvor mange sekunder en enhet tilfeldig kan utsette nedlastingen av en oppdatering, fra tidspunktet oppdateringen første ble sendt til tjeneren. Enheten kan sette av en del av denne tiden i form av faktisk ventetid, og den gjenværende delen i form av antall oppdateringer som skal kontrolleres. I alle tilfelle er det den øvre grensen for spredning knyttet til en konstant tidsmengde, slik at enheten aldri blir stående fast og vente på å laste ned en oppdatering for alltid.</translation>
 <translation id="1948757837129151165">Retningslinjer for HTTP-autentisering</translation>
 <translation id="5946082169633555022">Betakanal</translation>
-<translation id="145467868108778033">Med denne retningslinjen kan du angi en liste over utvidelser som skal installeres stille, uten brukermedvirkning.
-
-          Hvert element i listen er en streng som inneholder en utvidelses-ID og en oppdateringsnettadresse med semikolon som skilletegn (<ph name="SEMICOLON"/>). Utvidelses-ID-en er en streng på 32 bokstaver som kan befinne seg på f.eks <ph name="CHROME_EXTENSIONS_LINK"/> når du bruker utviklermodus. Oppdateringsnettadressen bør peke til et oppdateringsmanifest i form av et XML-dokument, som beskrevet i <ph name="LINK_TO_EXTENSION_DOC1"/>. Vær oppmerksom på at oppdateringsnettadressen som angis i denne retningslinjen bare brukes for den første installeringen. Senere oppdateringer av utvidelsen bruker oppdateringsnettadressen som angis i utvidelsens manifest.
-
-          For hvert element henter <ph name="PRODUCT_NAME"/> utvidelsen som angis av utvidelses-ID-en fra oppdateringstjenesten på den bestemte oppdateringsnettadressen, og gjennomfører en stille installering.
-
-          <ph name="EXTENSION_POLICY_EXAMPLE"/> installerer for eksempel utvidelsen <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/> fra oppdateringsnettadressen som er angitt som standard for Chrome Nettmarked. Her kan du finne ut mer om bruk av verter for utvidelser: <ph name="LINK_TO_EXTENSION_DOC2"/>.
-
-          Brukere kan ikke avinstallere utvidelser som angis av denne retningslinjen. Hvis du fjerner en utvidelse fra denne listen, blir den automatisk avinstallert av <ph name="PRODUCT_NAME"/>.
-
-          Hvis denne retningslinjen ikke angis, kan brukeren avinstallere utvidelser i <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="8303314579975657113">Angir hvilket GSSAPI-bibliotek som skal brukes for HTTP-autentisering. Du kan angi enten et biblioteksnavn eller en fullstendig bane.
 
           Hvis ingen innstillinger oppgis, går <ph name="PRODUCT_NAME"/> tilbake til å bruke et standard biblioteknavn.</translation>

@@ -15,6 +15,7 @@
 <translation id="7128196614940529818">Chromium Frame ist bereits installiert und steht allen Nutzern dieses Computers zur Verfügung. Falls Sie Chromium Frame auf Nutzerebene installieren möchten, müssen Sie vorher die Version auf Systemebene deinstallieren, die von einem Administrator installiert wurde.</translation>
 <translation id="731644333568559921">&amp;Chromium OS aktualisieren</translation>
 <translation id="7421823331379285070">Für Chromium ist Windows XP oder höher erforderlich. Einige Funktionen sind möglicherweise nicht verfügbar.</translation>
+<translation id="3549345495227188780">Erste Schritte mit Chromium OS</translation>
 <translation id="4330297532943865716">Auf dem System wurde eine Installation von Chromium oder Chromium Frame gefunden, die einen Konflikt verursacht. Deinstallieren Sie sie bitte und versuchen Sie es erneut.</translation>
 <translation id="6953661834318318668">Chromium-Toolbar</translation>
 <translation id="7097100943370017396">Chromium wird nicht mehr aktualisiert, da Ihr Betriebssystem veraltet ist.</translation>
@@ -56,6 +57,7 @@
 <translation id="3197823471738295152">Ihr Gerät ist auf dem neuesten Stand.</translation>
 <translation id="8551886023433311834">Fast fertig! Starten Sie Ihr Gerät neu, um die Aktualisierung abzuschließen.</translation>
 <translation id="8353224596138547809">Soll Chromium Ihr Passwort für diese Website speichern?</translation>
+<translation id="7339898014177206373">Neues Fenster</translation>
 <translation id="3026202950002788510">Gehen Sie zu
           <ph name="BEGIN_BOLD"/>
           Anwendungen &gt; Systemeinstellungen &gt; Netzwerk &gt; Erweitert &gt; Proxies
@@ -67,7 +69,6 @@
 <translation id="9191268552238695869">Ein Administrator hat Chromium auf diesem System installiert. Es ist für alle Nutzer verfügbar. Durch die Installation von Chromium auf Systemebene wird Ihre Installation auf Nutzerebene jetzt ersetzt.</translation>
 <translation id="3509308970982693815">Schließen Sie bitte alle Chromium-Fenster und versuchen Sie es erneut.</translation>
 <translation id="4077262827416206768">Schließen Sie bitte alle Chromium-Fenster und starten Sie Chromium neu, damit diese Änderung wirksam wird.</translation>
-<translation id="9119843944749246249">Copyright © 2006-2012 Die Chromium-Autoren. Alle Rechte vorbehalten.</translation>
 <translation id="6944967875980567883">In Chromium geladene Module</translation>
 <translation id="118298050220780080">Sie haben versucht, auf &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; zuzugreifen, der Server hat sich jedoch mit einem Zertifikat ausgewiesen, das von einem Aussteller herausgegeben wurde, dem das Betriebssystem des Computers nicht vertraut. Dies bedeutet möglicherweise, dass der Server seine eigenen Sicherheitsinformationen erzeugt hat, auf die Chromium als Identitätsangabe nicht vertrauen kann, oder dass ein Hacker versucht, Ihre Kommunikation abzufangen.</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
@@ -89,11 +90,12 @@
 <translation id="2881203820889150661">Chromium kann keine Anwendungsverknüpfung erstellen, da die aktuelle Desktop-Umgebung nicht erkannt wird.</translation>
 <translation id="4886158514168859177">Auf diesem Computer befindet sich bereits eine neuere Version von Chromium Frame. Falls die Software nicht funktioniert, deinstallieren Sie Chromium Frame bitte und versuchen Sie es erneut.</translation>
 <translation id="911206726377975832">Auch die Browserdaten löschen?</translation>
+<translation id="1699664235656412242">Schließen Sie alle Chromium-Fenster einschließlich der Fenster im Windows 8-Modus und versuchen Sie es erneut.</translation>
 <translation id="6734080038664603509">&amp;Chromium aktualisieren</translation>
 <translation id="8862326446509486874">Sie verfügen nicht über die erforderlichen Rechte für eine systemweite Installation. Starten Sie das Installationsprogramm als Administrator.</translation>
 <translation id="1774152462503052664">Chromium im Hintergrund ausführen</translation>
 <translation id="9022552996538154597">In Chromium anmelden</translation>
-<translation id="4365115785552740256">Chromium wird durch das Open Source-Projekt <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> und andere <ph name="BEGIN_LINK_OSS"/>Open-Source-Software<ph name="END_LINK_OSS"/> ermöglicht.</translation>
+<translation id="4365115785552740256">Chromium wird durch das Open-Source-Projekt <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> und andere <ph name="BEGIN_LINK_OSS"/>Open-Source-Software<ph name="END_LINK_OSS"/> ermöglicht.</translation>
 <translation id="6248213926982192922">Chromium als Standardbrowser verwenden</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="3069161343438701711">Chromium Worker</translation>
@@ -125,7 +127,9 @@
 <translation id="6717134281241384636">Ihr Profil kann nicht verwendet werden, da es aus einer neueren Version von Chromium stammt.
 
 Einige Funktionen stehen möglicherweise nicht zur Verfügung. Geben Sie bitte ein anderes Profilverzeichnis an oder verwenden Sie eine neuere Version von Chromium.</translation>
+<translation id="4499972362520386277">Copyright 2012 Die Chromium-Autoren. Alle Rechte vorbehalten.</translation>
 <translation id="2712549016134575851">Ein Konflikt mit einer anderen installierten Anwendung wurde erkannt.</translation>
+<translation id="4881709374218686648">Sie waren zuletzt mit einem anderen Konto angemeldet. Wenn Sie sich anmelden, werden Ihre Daten zusammengeführt. Unter Umständen sollten Sie für Ihre Chromium-Daten einen neuen Chromium-Nutzer über die <ph name="BEGIN_LINK"/>Einstellungsseite<ph name="END_LINK"/> erstellen.</translation>
 <translation id="9013087743919948559">Zu Chromium hinzufügen</translation>
 <translation id="6212496753309875659">Auf diesem Computer befindet sich bereits eine neuere Version von Chromium. Falls die Software nicht funktioniert, deinstallieren Sie Chromium bitte und versuchen Sie es erneut.</translation>
 <translation id="3014684866565908571">Chromium-Dienstprogramm</translation>

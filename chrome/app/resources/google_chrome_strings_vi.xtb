@@ -38,6 +38,7 @@
 <translation id="8398145039500709259">Sử dụng tài khoản Google này để đồng bộ hóa tất cả nội dung trên Chrome của bạn?</translation>
 <translation id="1779550429052479749">Đã phát hiện cài đặt Google Chrome hoặc Google Chrome Frame xung đột trên hệ thống. Vui lòng gỡ cài đặt và thử lại.</translation>
 <translation id="3555616473548901994">Quá trình gỡ cài đặt đã hoàn tất.</translation>
+<translation id="4987308747895123092">Hãy đóng tất cả cửa sổ Google Chrome (bao gồm cả những cửa sổ trong chế độ Windows 8) và thử lại.</translation>
 <translation id="568643307450491754">Tìm dấu trang của bạn trong trình đơn Chrome hoặc trên thanh dấu trang.</translation>
 <translation id="8556340503434111824">Hiện đã có phiên bản mới của Google Chrome và phiên bản này nhanh hơn bao giờ hết.</translation>
 <translation id="4728575227883772061">Không cài đặt được do lỗi chưa xác định. Nếu Google Chrome hiện đang chạy, vui lòng đóng Google Chrome và thử lại.</translation>
@@ -71,6 +72,7 @@
 <translation id="3889417619312448367">Gỡ cài đặt Google Chrome</translation>
 <translation id="8551886023433311834">Gần như cập nhật! Khởi động lại thiết bị của bạn để hoàn tất cập nhật.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="7339898014177206373">Cửa sổ mới</translation>
 <translation id="3026202950002788510">Đi tới
           <ph name="BEGIN_BOLD"/>
           Ứng dụng &gt; Tùy chọn hệ thống &gt; Mạng &gt; Nâng cao &gt; Proxy
@@ -153,6 +155,7 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
           <ph name="END_BOLD"/>), nhấp vào nút đó và đảm bảo cấu hình của bạn
           được đặt thành &quot;Trực tiếp&quot;.</translation>
 <translation id="3612333635265770873">Một mô-đun có cùng tên đã được xác định là xung đột với Google Chrome.</translation>
+<translation id="824729746779295798">Bản quyền 2012 Google Inc. Mọi quyền được bảo lưu.</translation>
 <translation id="61852838583753520">Cập nhật &amp;hệ điều hành Chrome</translation>
 <translation id="6650142020817594541">Trang web này khuyến nghị Google Chrome Frame (đã được cài đặt).</translation>
 <translation id="2712549016134575851">Đã phát hiện thấy xung đột với một ứng dụng đã cài đặt khác.</translation>
@@ -163,6 +166,7 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="8669527147644353129">Trình trợ giúp của Google Chrome</translation>
 <translation id="870251953148363156">Cập nhật &amp;Google Chrome</translation>
 <translation id="130631256467250065">Thay đổi của bạn sẽ có hiệu lực vào lần tiếp theo bạn khởi động lại thiết bị của mình.</translation>
+<translation id="163860049029591106">Bắt đầu với Chrome OS</translation>
 <translation id="1399397803214730675">Máy tính này đã có phiên bản Google Chrome mới hơn. Nếu phần mềm hiện không hoạt động, vui lòng gỡ cài đặt Google Chrome và thử lại.</translation>
 <translation id="576822117893741893">Hiển thị trình đơn Chrome</translation>
 <translation id="3444832043240812445">Trang này chỉ hiển thị thông tin về các sự cố gần đây của bạn nếu bạn <ph name="BEGIN_LINK"/>bật báo cáo sự cố<ph name="END_LINK"/>.</translation>
@@ -175,8 +179,8 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="2680623880102270805">Google Chrome không thể tạo lối tắt ứng dụng do Google Chrome không thể xác định môi trường màn hình hiện tại.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Trình duyệt Internet</translation>
+<translation id="5244325494201350962">Trước đó bạn đã đăng nhập bằng tài khoản khác, việc đăng nhập sẽ kết hợp dữ liệu của bạn. Hãy xem xét tạo người dùng Chrome mới qua <ph name="BEGIN_LINK"/>trang cài đặt<ph name="END_LINK"/> cho nội dung trên Chrome của bạn.</translation>
 <translation id="2189123953385179981">Hệ điều hành Google ChromeOS không hỗ trợ khởi chạy ứng dụng ngoài để xử lý các liên kết <ph name="SCHEME"/>. Liên kết được yêu cầu là <ph name="PROTOLINK"/>.</translation>
-<translation id="711654979569750606">Bản quyền © 2006-2012 Google Inc. Mọi quyền được bảo lưu.</translation>
 <translation id="8205111949707227942">Tùy chọn: Giúp cải thiện Hệ điều hành Chrome bằng cách tự động gửi về Google thống kê sử dụng và báo cáo sự cố.</translation>
 <translation id="7253415505590551024">Quá trình tải xuống hiện đang diễn ra. Bạn có muốn thoát Google Chrome và hủy tải xuống không?</translation>
 <translation id="7196020411877309443">Tại sao tôi nhìn thấy thông báo này?</translation>

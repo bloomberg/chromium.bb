@@ -38,6 +38,7 @@
 <translation id="8398145039500709259">Gunakan Akaun Google ini untuk menyegerakkan semua barangan Chome anda?</translation>
 <translation id="1779550429052479749">Pemasangan Google Chrome atau Google Chrome Frame yang bercanggah dijumpai pada sistem. Sila nyahpasangnya dan cuba semula.</translation>
 <translation id="3555616473548901994">Selesai nyahpasang.</translation>
+<translation id="4987308747895123092">Sila tutup semua tetingkap Google Chrome (termasuk yang di dalam mod Windows 8) dan cuba lagi.</translation>
 <translation id="568643307450491754">Cari penanda halaman anda dalam menu Chromium atau pada bar penanda halaman.</translation>
 <translation id="8556340503434111824">Terdapat versi baharu Google Chrome yang tersedia, dan ia lebih pantas daripada biasa.</translation>
 <translation id="4728575227883772061">Pemasangan gagal disebabkan ralat tidak dinyatakan. Jika Google Chrome kini dijalankan, sila tutupnya dan cuba semula.</translation>
@@ -69,6 +70,7 @@
 <translation id="3889417619312448367">Nyahpasang Google Chrome</translation>
 <translation id="8551886023433311834">Hampir terkini! Mulakan semula peranti anda untuk melengkapkan pengemaskinian.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="7339898014177206373">Tetingkap baharu</translation>
 <translation id="3026202950002788510">Pergi ke
           <ph name="BEGIN_BOLD"/>
           Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies
@@ -150,6 +152,7 @@
           ) ada, klik pada butang tersebut dan pastikan konfigurasi anda
           ditetapkan kepada &quot;Langsung&quot;.</translation>
 <translation id="3612333635265770873">Modul dengan nama yang sama telah diketahui bercanggah dengan Google Chrome.</translation>
+<translation id="824729746779295798">Hak Cipta 2012 Google Inc. Hak cipta terpelihara.</translation>
 <translation id="61852838583753520">Kemas kini &amp;Chrome OS</translation>
 <translation id="6650142020817594541">Tapak ini mencadangkan Google Chrome Frame (sudah dipasang).</translation>
 <translation id="2712549016134575851">Percanggahan dengan aplikasi lain yang dipasang telah dikesan.</translation>
@@ -160,6 +163,7 @@
 <translation id="8669527147644353129">Pembantu Google Chrome</translation>
 <translation id="870251953148363156">Kemas kini &amp;Google Chrome</translation>
 <translation id="130631256467250065">Perubahan anda akan dilaksanakan apabila anda memulakan semula peranti anda pada masa akan datang.</translation>
+<translation id="163860049029591106">Bermula dengan OS Chrome</translation>
 <translation id="1399397803214730675">Komputer ini mempunyai versi Google Chrome paling terkini. Jika perisian tidak berfungsi, sila nyahpasang Google Chrome dan cuba semula.</translation>
 <translation id="576822117893741893">Paparkan menu Chrome</translation>
 <translation id="3444832043240812445">Halaman ini hanya menunjukkan maklumat mengenai nahas terkini anda jika anda <ph name="BEGIN_LINK"/>mendayakan laporan nahas<ph name="END_LINK"/>.</translation>
@@ -172,8 +176,8 @@
 <translation id="2680623880102270805">Google Chrome tidak dapat membuat pintasan aplikasi kerana ia tidak dapat menentukan persekitaran semasa desktop.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Penyemak Imbas Internet</translation>
+<translation id="5244325494201350962">Sebelum ini, anda telah log masuk menggunakan akaun yang berbeza, log masuk akan menggabungkan data anda. Pertimbangkan untuk membuat pengguna Chrome baharu melalui <ph name="BEGIN_LINK"/>halaman tetapan<ph name="END_LINK"/> untuk bahan Chrome anda.</translation>
 <translation id="2189123953385179981">Google ChromeOS tidak menyokong pelancaran aplikasi dalaman untuk mengendalikan pautan <ph name="SCHEME"/>. Pautan yang diminta adalah <ph name="PROTOLINK"/>.</translation>
-<translation id="711654979569750606">Hak Cipta © 2006-2011 Google Inc. Hak Cipta Terpelihara.</translation>
 <translation id="8205111949707227942">Pilihan: Bantu jadikan OS Chrome lebih baik dengan menghantar laporan statistik penggunaan dan nahas secara automatik ke Google.</translation>
 <translation id="7253415505590551024">Muat turun sedang dijalankan. Adakah anda ingin keluar dari Google Chrome dan membatalkan muat turun?</translation>
 <translation id="7196020411877309443">Mengapakah halaman ini yang saya lihat?</translation>

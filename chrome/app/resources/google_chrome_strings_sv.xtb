@@ -41,6 +41,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="8398145039500709259">Vill du synkronisera allt du har i Chrome med det här Google-kontot?</translation>
 <translation id="1779550429052479749">Det finns en annan installation av Google Chrome eller Google Chrome Frame på datorn. Avinstallera den och försök igen.</translation>
 <translation id="3555616473548901994">Avinstallation slutförd.</translation>
+<translation id="4987308747895123092">Stäng alla Google Chrome-fönster (inklusive i Windows 8-läge) och försök igen.</translation>
 <translation id="568643307450491754">Hitta dina bokmärken på Chrome-menyn eller i bokmärkesfältet.</translation>
 <translation id="8556340503434111824">Det finns en ny version av Google Chrome och den är snabbare än någonsin.</translation>
 <translation id="4728575227883772061">Installationen misslyckades på grund av ett ospecificerat fel. Stäng Google Chrome, om det är igång, och försök sedan igen.</translation>
@@ -74,6 +75,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="3889417619312448367">Avinstallera Google Chrome</translation>
 <translation id="8551886023433311834">Uppdateringen är nästan klar! Slutför den genom att starta om enheten.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="7339898014177206373">Nytt fönster</translation>
 <translation id="3026202950002788510">Öppna
           <ph name="BEGIN_BOLD"/>
           Program &gt; Systeminställningar &gt; Nätverk &gt; Avancerat &gt; Proxyservrar
@@ -156,6 +158,7 @@ Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog om d
           <ph name="END_BOLD"/>
           ) visas klickar du på den och kontrollerar att inställningen Direkt har angetts.</translation>
 <translation id="3612333635265770873">En modul med samma namn har tidigare varit i konflikt med Google Chrome.</translation>
+<translation id="824729746779295798">Upphovsrätt 2012 Google Inc. Med ensamrätt.</translation>
 <translation id="61852838583753520">Uppdatera &amp;Chrome OS</translation>
 <translation id="6650142020817594541">Webbplatsen rekommenderar Google Chrome Frame (redan installerat)</translation>
 <translation id="2712549016134575851">En konflikt med ett annat installerat program har upptäckts.</translation>
@@ -166,6 +169,7 @@ Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog om d
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="870251953148363156">Uppdatera &amp;Google Chrome</translation>
 <translation id="130631256467250065">Dina ändringar börjar gälla nästa gång du startar om enheten.</translation>
+<translation id="163860049029591106">Komma igång med Chrome OS</translation>
 <translation id="1399397803214730675">Det finns redan en senare version av Google Chrome på den här datorn. Om programmet inte fungerar avinstallerar du Google Chrome och försöker igen.</translation>
 <translation id="576822117893741893">Visa Chrome-menyn</translation>
 <translation id="3444832043240812445">Du måste <ph name="BEGIN_LINK"/>aktivera kraschrapportering<ph name="END_LINK"/> för att information om de senaste krascherna ska visas på den här sidan.</translation>
@@ -178,8 +182,8 @@ Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog om d
 <translation id="2680623880102270805">Det går inte att skapa en genväg till programmet i Google Chrome eftersom den aktuella skrivbordsmiljön inte kan fastställas.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Webbläsare</translation>
+<translation id="5244325494201350962">Du var tidigare inloggad med ett annat konto. Om du loggar in slås dina data ihop. Du kan välja att skapa en ny Chrome-användare via <ph name="BEGIN_LINK"/>sidan Inställningar<ph name="END_LINK"/> för Chrome.</translation>
 <translation id="2189123953385179981">Google ChromeOS stöder inte att ett externt program startas för att hantera <ph name="SCHEME"/>-länkar. Den begärda länken är <ph name="PROTOLINK"/>.</translation>
-<translation id="711654979569750606">Upphovsrätt 2006–2012 Google Inc. Med ensamrätt.</translation>
 <translation id="8205111949707227942">Valfritt: Hjälp till att göra Chrome bättre genom att automatiskt skicka användningsstatistik och kraschrapporter till Google.</translation>
 <translation id="7253415505590551024">Hämtningar pågår. Vill du avsluta Google Chrome och avbryta hämtningarna?</translation>
 <translation id="7196020411877309443">Varför visas det här?</translation>

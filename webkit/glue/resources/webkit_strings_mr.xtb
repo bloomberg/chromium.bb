@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="mr">
+<translation id="5843503607508392247">अन्य...</translation>
 <translation id="248395913932153421">दिवस</translation>
 <translation id="6015796118275082299">वर्ष</translation>
 <translation id="9186171386827445984">दस्तऐवज लोड करत आहे: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> पृष्ठे...</translation>
@@ -10,7 +11,9 @@
 <translation id="5048533449481078685">सूची चिन्हक</translation>
 <translation id="4202807286478387388">जंप करा</translation>
 <translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
+<translation id="8199524924445686405">yyyy</translation>
 <translation id="795667975304826397">कोणतीही फाइल निवडलेली नाही</translation>
+<translation id="1758486001363313524">अन्य...</translation>
 <translation id="8141602879876242471">ही शोध घेण्यायोग्य अनुक्रमणिका आहे. शोध कीवर्ड प्रविष्ट करा:</translation>
 <translation id="370665806235115550">लोड करीत आहे...</translation>
 <translation id="6845533974506654842">दाबा</translation>
@@ -19,11 +22,13 @@
 <translation id="2548326553472216322">अलीकडील शोध नाहीत</translation>
 <translation id="7263440858009898357">कृपया सूचीमधील आयटम निवडा.</translation>
 <translation id="5164977714490026579">मूल्य <ph name="MINIMUM"/> पेक्षा मोठे किंवा समान असावे.</translation>
+<translation id="2247351761944213033">आठवडा <ph name="WEEKNUMBER"/>, <ph name="YEAR"/></translation>
 <translation id="5944544982112848342">2048 (उच्च ग्रेड)</translation>
 <translation id="3040011195152428237">दुवा</translation>
 <translation id="1014825444426747588">रिक्त</translation>
 <translation id="4522570452068850558">तपशील</translation>
 <translation id="8451268428117625855">कृपया एखादी फाइल निवडा.</translation>
+<translation id="8117451130807776954">या आठवड्यात</translation>
 <translation id="5966707198760109579">आठवडा</translation>
 <translation id="2674318244760992338">अधोलेख</translation>
 <translation id="8987927404178983737">महिना</translation>
@@ -38,10 +43,12 @@
 <translation id="5476505524087279545">अनचेक</translation>
 <translation id="2148716181193084225">आज</translation>
 <translation id="2507943997699731163">कृपया हे फील्ड भरा.</translation>
+<translation id="739024184232394898">अन्य...</translation>
 <translation id="5919473608089529604">प्लग-इन लोड करणे शक्य झाले नाही.</translation>
 <translation id="6663448176199120256">अलीकडील शोध</translation>
 <translation id="2597378329261239068">हा दस्तऐवज संकेतशब्द संरक्षित आहे. कृपया संकेतशब्द प्रविष्ट करा.</translation>
 <translation id="5466621249238537318">कृपया एक किंवा अधिक फायली निवडा.</translation>
+<translation id="9132465097189459683">अन्य...</translation>
 <translation id="8750798805984357768">कृपया या पर्यायांपैकी एक निवडा.</translation>
 <translation id="7740050170769002709">HTML सामुग्री</translation>
 <translation id="6692633176391053278">stepper</translation>
@@ -50,11 +57,13 @@
 <translation id="1639239467298939599">लोड करीत आहे</translation>
 <translation id="2908441821576996758">कृपया ईमेल पत्त्यांची स्वल्पविरामाद्वारे विभक्त सूची प्रविष्ट करा.</translation>
 <translation id="5939518447894949180">रीसेट करा</translation>
+<translation id="1921819250265091946">dd</translation>
 <translation id="835897206747267392">अवैध मूल्य.</translation>
 <translation id="1842960171412779397">निवडा</translation>
 <translation id="7673697353781729403">तास</translation>
 <translation id="3450233048674729344">मूल्य <ph name="MAXIMUM"/> पेक्षा कमी किंवा समान असावे.</translation>
 <translation id="668171684555832681">अन्य...</translation>
+<translation id="1591562245178063882">या महिन्यात</translation>
 <translation id="6119846243427417423">सक्रिय करा</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> फायली</translation>
 <translation id="6643016212128521049">साफ करा</translation>
@@ -62,4 +71,5 @@
 <translation id="3934680773876859118">PDF दस्तऐवज लोड करणे अयशस्वी</translation>
 <translation id="8597182159515967513">शीर्षलेख</translation>
 <translation id="2653659639078652383">सबमिट करा</translation>
+<translation id="3732799496749320381">mm</translation>
 </translationbundle>

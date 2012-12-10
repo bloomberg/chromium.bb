@@ -14,6 +14,7 @@
 <translation id="3660179305079774227">Up Arrow</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY"/> MB/s</translation>
 <translation id="3990502903496589789">ডান প্রান্ত</translation>
+<translation id="5182671122927417841">এক্সটেনশান অক্ষম করুন</translation>
 <translation id="932327136139879170">হোম</translation>
 <translation id="3909791450649380159">ছেদ&amp;ন</translation>
 <translation id="688711909580084195">শিরোনামহীন ওয়েবপৃষ্ঠা</translation>
@@ -36,7 +37,7 @@
 <translation id="1398853756734560583">বড় করুন</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY"/> GB</translation>
 <translation id="1901303067676059328">&amp;সকল নির্বাচন করুন</translation>
-<translation id="2168039046890040389">পৃষ্ঠা নিচে</translation>
+<translation id="2168039046890040389">পৃষ্ঠা নীচে</translation>
 <translation id="3183922693828471536">এখান পর্যন্ত স্ক্রোল করুন</translation>
 <translation id="4552416320897244156">PgDwn</translation>
 <translation id="7052633198403197513">F1</translation>
@@ -53,6 +54,7 @@
 <translation id="8179976553408161302">প্রবেশ করুন</translation>
 <translation id="9170848237812810038">&amp;পূর্বাবস্থায় ফিরুন</translation>
 <translation id="520299402983819650"><ph name="QUANTITY"/> PB</translation>
+<translation id="2983818520079887040">সেটিংস...</translation>
 <translation id="6845383723252244143">ফোল্ডার নির্বাচন করুন</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY"/> GB/s</translation>
@@ -60,10 +62,13 @@
 <translation id="2297836609126180313"><ph name="QUANTITY"/> TB/s</translation>
 <translation id="6040143037577758943">বন্ধ</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY"/> B/s</translation>
+<translation id="477782898153505579">আপনার কাছে কোনো বিজ্ঞপ্তি নেই৷ আরাম করুন!</translation>
+<translation id="7457942297256758195">সমস্ত সাফ করুন</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="6907759265145635167"><ph name="QUANTITY"/> PB/s</translation>
 <translation id="6965382102122355670">ওকে</translation>
 <translation id="5941711191222866238">ছোট করুন</translation>
+<translation id="4469842253116033348"><ph name="SITE"/>-এর থেকে বিজ্ঞপ্তি অক্ষম করুন</translation>
 <translation id="3036649622769666520">খোলা ফাইল</translation>
 <translation id="8328145009876646418">বাম প্রান্ত</translation>
 </translationbundle>

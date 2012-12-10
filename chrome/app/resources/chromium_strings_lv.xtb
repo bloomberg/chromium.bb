@@ -15,6 +15,7 @@
 <translation id="7128196614940529818">Chromium Frame jau ir instalēta un pieejama visiem šī datora lietotājiem. Ja vēlaties instalēt Chromium Frame lietotāja līmenī, vispirms atinstalējiet sistēmas līmeņa versiju, kuru instalējis administrators.</translation>
 <translation id="731644333568559921">Atjaunināt &amp;Chromium OS</translation>
 <translation id="7421823331379285070">Chromium darbībai nepieciešams Windows XP vai jaunāka operētājsistēma. Dažas funkcijas var nedarboties.</translation>
+<translation id="3549345495227188780">Darba sākšana operētājsistēmā Chromium OS</translation>
 <translation id="4330297532943865716">Sistēmā tika atrasta konfliktējoša Chromium vai Chromium Frame instalācija. Atinstalējiet to un mēģiniet vēlreiz.</translation>
 <translation id="6953661834318318668">Chromium rīkjosla</translation>
 <translation id="7097100943370017396">Chromium vairs netiek atjaunināts, jo jūsu operētājsistēma ir novecojusi.</translation>
@@ -45,6 +46,7 @@
 <translation id="3197823471738295152">Ierīce ir atjaunināta.</translation>
 <translation id="8551886023433311834">Atjaunināšana ir gandrīz pabeigta. Restartējiet ierīci, lai pabeigtu atjaunināšanu.</translation>
 <translation id="8353224596138547809">Vai vēlaties, lai produktā Chromium tiek saglabāta parole šai vietnei?</translation>
+<translation id="7339898014177206373">Jauns logs</translation>
 <translation id="3026202950002788510">Atveriet
           <ph name="BEGIN_BOLD"/>
           Lietojumprogrammas &gt; Sistēmas preferences &gt; Tīkls &gt; Papildu &gt; Starpniekserveri
@@ -56,7 +58,6 @@
 <translation id="9191268552238695869">Administrators šajā sistēmā ir instalējis Chromium, un tas ir pieejams visiem lietotājiem. Sistēmas līmeņa Chromium tūlīt aizstās lietotāja līmeņa instalāciju.</translation>
 <translation id="3509308970982693815">Aizveriet visus Chromium logus un mēģiniet vēlreiz.</translation>
 <translation id="4077262827416206768">Aizveriet visus Chromium logus un atkārtoti palaidiet Chromium, lai šīs izmaiņas stātos spēkā.</translation>
-<translation id="9119843944749246249">Autortiesības © 2006-2012 Chromium autori. Visas tiesības paturētas.</translation>
 <translation id="6944967875980567883">Pārlūkā Chromium ielādētie moduļi</translation>
 <translation id="118298050220780080">Jūs mēģinājāt sasniegt vietni &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, bet serveris uzrādīja sertifikātu, ko izsniegusi iestāde, kurai neuzticas jūsu datora operētājsistēma. Tas var nozīmēt, ka serveris ir ģenerējis savus drošības akreditācijas datus, kam pārlūks Chromium nevar uzticēties, lai noteiktu identitātes informāciju, vai uzbrucējs, iespējams, mēģina pārķert jūsu saziņu.</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
@@ -78,6 +79,7 @@
 <translation id="2881203820889150661">Pārlūks Chromium nevar izveidot lietojumprogrammas saīsni, jo tas nevar noteikt pašreizējo darbvirsmas vidi.</translation>
 <translation id="4886158514168859177">Šim datoram jau ir jaunākā Chromium Frame versija. Ja programmatūra nedarbojas, atinstalējiet Chromium Frame un mēģiniet vēlreiz.</translation>
 <translation id="911206726377975832">Vai dzēst arī pārlūkošanas datus?</translation>
+<translation id="1699664235656412242">Lūdzu, aizveriet visus Chromium logus (tostarp Windows 8 režīmā atvērtos) un mēģiniet vēlreiz.</translation>
 <translation id="6734080038664603509">Atjaunināt &amp;Chromium</translation>
 <translation id="8862326446509486874">Jums nav vajadzīgo tiesību, lai instalētu sistēmas līmenī. Mēģiniet vēlreiz palaist instalēšanas programmu kā administrators.</translation>
 <translation id="1774152462503052664">Ļaut Chromium darboties fonā</translation>
@@ -106,7 +108,9 @@
 <translation id="6717134281241384636">Jūsu profilu nevar izmantot, jo tas ir no jaunākas Chromium versijas.
 
 Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai izmantojiet jaunāku Chromium versiju.</translation>
+<translation id="4499972362520386277">Autortiesības 2012 Chromium autori. Visas tiesības paturētas.</translation>
 <translation id="2712549016134575851">Atklāts konflikts ar citu instalētu lietojumprogrammu.</translation>
+<translation id="4881709374218686648">Jūs iepriekš pierakstījāties, izmantojot citu kontu. Pierakstoties tiks apvienoti dati. Ieteicams <ph name="BEGIN_LINK"/>iestatījumu lapā<ph name="END_LINK"/> izveidot jaunu Chromium lietotāja kontu Chromium datu sinhronizēšanai.</translation>
 <translation id="9013087743919948559">Pievienot pārlūkam Chromium</translation>
 <translation id="6212496753309875659">Šim datoram jau ir jaunākā Chromium versija. Ja programmatūra nedarbojas, atinstalējiet pārlūku Chromium un mēģiniet vēlreiz.</translation>
 <translation id="3014684866565908571">Chromium utilītprogramma</translation>

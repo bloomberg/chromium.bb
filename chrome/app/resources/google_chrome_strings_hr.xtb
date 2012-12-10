@@ -38,6 +38,7 @@
 <translation id="8398145039500709259">Upotrijebiti ovaj Google račun za sinkronizaciju svih vaših stvari na pregledniku Chrome?</translation>
 <translation id="1779550429052479749">Na sustavu je pronađena konfliktna instalacija aplikacije Google Chrome ili Google Chrome Frame. Deinstalirajte je i pokušajte ponovo.</translation>
 <translation id="3555616473548901994">Deinstalacija dovršena.</translation>
+<translation id="4987308747895123092">Zatvorite sve prozore preglednika Google Chrome (uključujući i one u načinu sustava Windows 8) i pokušajte ponovo.</translation>
 <translation id="568643307450491754">Pronađite oznake u izborniku Chrome ili na traci oznaka.</translation>
 <translation id="8556340503434111824">Dostupna je nova verzija preglednika Google Chrome, brža no ikad.</translation>
 <translation id="4728575227883772061">Instalacija nije uspjela zbog nepoznate pogreške. Ako je program Google Chrome trenutno otvoren, zatvorite ga i pokušajte ponovno.</translation>
@@ -69,6 +70,7 @@
 <translation id="3889417619312448367">Deinstaliranje preglednika Google Chrome</translation>
 <translation id="8551886023433311834">Gotovo ažurno! Ponovo pokrenite uređaj da biste dovršili ažuriranje.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="7339898014177206373">Novi prozor</translation>
 <translation id="3026202950002788510">Idite na
           <ph name="BEGIN_BOLD"/>
           Aplikacije &gt; Postavke sustava &gt; Mreža &gt; Napredno &gt; Proxy poslužitelji
@@ -150,6 +152,7 @@
           ), kliknite ga i provjerite je li konfiguracija
           postavljena na &quot;izravno&quot;.</translation>
 <translation id="3612333635265770873">Modul s tim nazivom već je bio u konfliktu s preglednikom Google Chrome.</translation>
+<translation id="824729746779295798">Autorska prava 2012 Google Inc. Sva prava pridržana.</translation>
 <translation id="61852838583753520">Ažuriraj OS &amp;Chrome</translation>
 <translation id="6650142020817594541">Ova web-lokacija preporučuje Google Chrome Frame (već instaliran).</translation>
 <translation id="2712549016134575851">Otkriven je sukob s drugom instaliranom aplikacijom.</translation>
@@ -160,6 +163,7 @@
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="870251953148363156">Ažuriranje preglednika Google Chrome</translation>
 <translation id="130631256467250065">Promjene će početi vrijediti sljedeći put kad ponovo pokrenete uređaj.</translation>
+<translation id="163860049029591106">Počnite s upotrebom OS-a Chrome</translation>
 <translation id="1399397803214730675">Na ovom računalu već postoji novija verzija programa Google Chrome. Ako softver ne radi, deinstalirajte Google Chrome i pokušajte ponovo.</translation>
 <translation id="576822117893741893">Prikaz izbornika Chrome</translation>
 <translation id="3444832043240812445">Ova stranica prikazuje samo informacije o vašim nedavnim padovima ako <ph name="BEGIN_LINK"/>omogućite izvješćivanja o padu<ph name="END_LINK"/>.</translation>
@@ -172,8 +176,8 @@
 <translation id="2680623880102270805">Google Chrome ne može stvoriti prečac aplikacije jer se ne može odrediti trenutačno računalno okruženje.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Internetski preglednik</translation>
+<translation id="5244325494201350962">Prethodno ste bili prijavljeni s drugim računom; prijavom će se spojiti vaši podaci. Razmislite o otvaranju novog korisnika sustava Chrome na <ph name="BEGIN_LINK"/>stranici s postavkama<ph name="END_LINK"/> za svoje aktivnosti u sustavu Chrome.</translation>
 <translation id="2189123953385179981">Google ChromeOS ne podržava pokretanje vanjske aplikacije za obradu veza na web-lokaciju <ph name="SCHEME"/>. Zatražena veza je <ph name="PROTOLINK"/>.</translation>
-<translation id="711654979569750606">Autorska prava © 2006. – 2012. Google Inc. Sva prava pridržana.</translation>
 <translation id="8205111949707227942">Dodatno: Pomozite nam da poboljšamo OS Chrome automatskim slanjem statistike o upotrebi i izvješća o padu sustava Googleu.</translation>
 <translation id="7253415505590551024">Preuzimanja su u tijeku. Želite li napustiti Google Chrome i otkazati ta preuzimanja?</translation>
 <translation id="7196020411877309443">Zašto vidim ovo?</translation>

@@ -29,6 +29,7 @@ Seleziona <ph name="BEGIN_BOLD"/>il menu Chrome &gt; <ph name="SETTINGS_TITLE"/>
 <translation id="8398145039500709259">Utilizzare questo account Google per sincronizzare tutti i tuoi contenuti Chrome?</translation>
 <translation id="1779550429052479749">Nel sistema è stata rilevata un'installazione di Google Chrome o di Google Chrome Frame in conflitto. Disinstallala e riprova.</translation>
 <translation id="3555616473548901994">Disinstallazione completa.</translation>
+<translation id="4987308747895123092">Chiudi tutte le finestre di Google Chrome (incluse quelle in modalità Windows 8) e riprova.</translation>
 <translation id="568643307450491754">Trova i tuoi Preferiti nel menu Chrome o sulla barra dei Preferiti.</translation>
 <translation id="8556340503434111824">È disponibile una nuova versione di Google Chrome con una velocità senza precedenti.</translation>
 <translation id="4728575227883772061">Installazione non riuscita a causa di un errore non specificato. Se Google Chrome è attivo, chiudilo e riprova.</translation>
@@ -51,6 +52,7 @@ Seleziona <ph name="BEGIN_BOLD"/>il menu Chrome &gt; <ph name="SETTINGS_TITLE"/>
 <translation id="3889417619312448367">Disinstalla Google Chrome</translation>
 <translation id="8551886023433311834">Aggiornamento quasi completato. Riavvia il dispositivo per terminare l'aggiornamento.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="7339898014177206373">Nuova finestra</translation>
 <translation id="3026202950002788510">Seleziona
           <ph name="BEGIN_BOLD"/>
           Applicazioni &gt; Preferenze di Sistema &gt; Network &gt; Avanzate &gt; Proxy
@@ -104,6 +106,7 @@ Seleziona <ph name="BEGIN_BOLD"/>il menu Chrome &gt; <ph name="SETTINGS_TITLE"/>
 <translation id="4561051373932531560">Google Chrome ti permette di scegliere un numero di telefono sul Web e di chiamarlo con Skype.</translation>
 <translation id="4270804660370715583">Seleziona <ph name="BEGIN_BOLD"/>il menu Chrome &gt; <ph name="SETTINGS_TITLE"/> &gt; <ph name="INTERNET_TITLE"/> &gt; &quot;<ph name="OPTIONS_BUTTON"/>&quot; <ph name="END_BOLD"/>(per la rete corrente). Se è visualizzato il pulsante <ph name="BEGIN_BOLD"/>&quot;<ph name="PROXY_BUTTON"/>&quot;<ph name="END_BOLD"/> (nella scheda <ph name="BEGIN_BOLD"/><ph name="NETWORK_TAB"/><ph name="END_BOLD"/>), fai clic sul pulsante e assicurati che la configurazione sia impostata su &quot;Diretta&quot;.</translation>
 <translation id="3612333635265770873">Un modulo con lo stesso nome risulta in conflitto con Google Chrome.</translation>
+<translation id="824729746779295798">Copyright 2012 Google Inc. Tutti i diritti riservati.</translation>
 <translation id="61852838583753520">Aggiorna &amp;Chrome OS</translation>
 <translation id="6650142020817594541">Questo sito consiglia Google Chrome Frame (già installato).</translation>
 <translation id="2712549016134575851">È stato rilevato un conflitto con un'altra applicazione installata.</translation>
@@ -114,6 +117,7 @@ Seleziona <ph name="BEGIN_BOLD"/>il menu Chrome &gt; <ph name="SETTINGS_TITLE"/>
 <translation id="8669527147644353129">Supporto Google Chrome</translation>
 <translation id="870251953148363156">Aggiorna &amp;Google Chrome</translation>
 <translation id="130631256467250065">Le modifiche verranno applicate al successivo riavvio del dispositivo.</translation>
+<translation id="163860049029591106">Inizia a utilizzare Chrome OS</translation>
 <translation id="1399397803214730675">Su questo computer è già installata una versione più recente di Google Chrome. Se il software non funziona, disinstalla Google Chrome e riprova.</translation>
 <translation id="576822117893741893">Consente di visualizzare il menu Chrome</translation>
 <translation id="3444832043240812445">Questa pagina mostra solo informazioni sugli arresti anomali recenti se <ph name="BEGIN_LINK"/>attivi la segnalazione degli arresti anomali<ph name="END_LINK"/>.</translation>
@@ -126,8 +130,8 @@ Seleziona <ph name="BEGIN_BOLD"/>il menu Chrome &gt; <ph name="SETTINGS_TITLE"/>
 <translation id="2680623880102270805">Impossibile creare una scorciatoia applicazione in Google Chrome perché non è possibile determinare l'attuale ambiente desktop.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Browser Internet</translation>
+<translation id="5244325494201350962">In precedenza hai eseguito l'accesso con un altro account; l'accesso unirà i tuoi dati. Considera l'idea di creare un nuovo utente Chrome tramite la <ph name="BEGIN_LINK"/>pagina delle impostazioni<ph name="END_LINK"/> per i tuoi contenuti Chrome.</translation>
 <translation id="2189123953385179981">Google Chrome OS non supporta l'avvio di un'applicazione esterna per la gestione dei link <ph name="SCHEME"/>. Il link richiesto è <ph name="PROTOLINK"/>.</translation>
-<translation id="711654979569750606">Copyright © 2006-2012 Google Inc. Tutti i diritti riservati.</translation>
 <translation id="8205111949707227942">Facoltativo: aiutaci a migliorare Google Chrome OS inviando automaticamente a Google le statistiche sull'utilizzo e segnalazioni sugli arresti anomali.</translation>
 <translation id="7253415505590551024">Sono in corso dei download. Vuoi uscire da Google Chrome e annullare i download?</translation>
 <translation id="7196020411877309443">Perché visualizzo questo avviso?</translation>

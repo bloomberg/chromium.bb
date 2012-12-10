@@ -37,6 +37,7 @@
 <translation id="8398145039500709259">Да се използва ли този профил в Google за синхронизиране на всичките ви неща в Chrome?</translation>
 <translation id="1779550429052479749">В системата бе намерена несъвместима инсталация на Google Chrome или Google Chrome Frame. Моля, деинсталирайте я и опитайте отново.</translation>
 <translation id="3555616473548901994">Деинсталирането завърши.</translation>
+<translation id="4987308747895123092">Моля, затворете всички прозорци на Google Chrome (включително тези в режим за Windows 8) и опитайте отново.</translation>
 <translation id="568643307450491754">Намерете отметките си в менюто на Chrome или в лентата на отметките.</translation>
 <translation id="8556340503434111824">Налице е нова версия на Google Chrome, която е по-бърза от всякога.</translation>
 <translation id="4728575227883772061">Инсталирането не бе успешно поради неизвестна грешка. Ако Google Chrome понастоящем работи, моля, затворете го и опитайте отново.</translation>
@@ -70,6 +71,7 @@
 <translation id="3889417619312448367">Деинсталиране на Google Chrome</translation>
 <translation id="8551886023433311834">Почти актуално! Рестартирайте устройството си, за да завършите актуализирането.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="7339898014177206373">Нов прозорец</translation>
 <translation id="3026202950002788510">Отворете
           <ph name="BEGIN_BOLD"/>
           „Applications“ &gt; „System Preferences“ &gt; „Network“ &gt; „Advanced“ &gt; „Proxies“
@@ -150,6 +152,7 @@ LAN настройки
 <ph name="END_BOLD"/>)
 е налице, кликнете върху него, за да се уверите, че за конфигурацията ви е зададено „Директно“.</translation>
 <translation id="3612333635265770873">Известно е, че модул със същото име влиза в конфликт с Google Chrome.</translation>
+<translation id="824729746779295798">Авторски права 2012 Google Inc. Всички права запазени.</translation>
 <translation id="61852838583753520">Актуализиране на &amp;Chrome OS</translation>
 <translation id="6650142020817594541">Този сайт препоръчва Google Chrome Frame (вече е инсталиран).</translation>
 <translation id="2712549016134575851">Установен е конфликт с друго инсталирано приложение.</translation>
@@ -160,6 +163,7 @@ LAN настройки
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="870251953148363156">Актуализиране на &amp;Google Chrome</translation>
 <translation id="130631256467250065">Промените ви ще влязат в сила следващия път, когато рестартирате устройството си.</translation>
+<translation id="163860049029591106">Първи стъпки с Chrome OS</translation>
 <translation id="1399397803214730675">На този компютър вече има по-нова версия на Google Chrome. Ако софтуерът не работи, моля, деинсталирайте Google Chrome и опитайте отново.</translation>
 <translation id="576822117893741893">Показване на менюто на Chrome</translation>
 <translation id="3444832043240812445">В тази страница се показва информация за скорошните сривове само ако сте <ph name="BEGIN_LINK"/>активирали изпращането на сигнали за сривове<ph name="END_LINK"/>.</translation>
@@ -172,9 +176,9 @@ LAN настройки
 <translation id="2680623880102270805">Google Chrome не може да създаде пряк път към приложението, защото не може да определи текущата среда на настолния компютър.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Интернет браузър</translation>
+<translation id="5244325494201350962">По-рано бяхте влезли с друг профил. Влизането ще обедини данните ви. Обмислете създаването на нов потребител за нещата си в Chrome чрез страницата <ph name="BEGIN_LINK"/>Настройки<ph name="END_LINK"/>.</translation>
 <translation id="2189123953385179981">Google ChromeOS не поддържа стартирането на външно приложение за работа с връзки от тип <ph name="SCHEME"/>.
 Заявената връзка е <ph name="PROTOLINK"/>.</translation>
-<translation id="711654979569750606">Авторски права © 2006–2012 Google Inc. Всички права запазени.</translation>
 <translation id="8205111949707227942">По избор: Помогнете ни да подобрим Chrome OS, като автоматично изпращате на Google статистически данни за използването му и сигнали за сривове.</translation>
 <translation id="7253415505590551024">Понастоящем се извършват изтегляния. Искате ли да излезете от Google Chrome и да ги анулирате?</translation>
 <translation id="7196020411877309443">Защо се показва това?</translation>

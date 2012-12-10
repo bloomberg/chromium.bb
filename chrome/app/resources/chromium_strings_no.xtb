@@ -15,6 +15,7 @@
 <translation id="7128196614940529818">Chromium Frame er allerede installert og tilgjengelig for alle brukere av denne datamaskinen. Hvis du ønsker å installere Chromium Frame på brukernivå, må du først avinstallere versjonen på systemnivå, som ble installert av en administrator.</translation>
 <translation id="731644333568559921">Oppdater &amp;Chromium OS</translation>
 <translation id="7421823331379285070">Chromium krever Windows XP eller nyere. Enkelte funksjoner vil kanskje ikke fungere.</translation>
+<translation id="3549345495227188780">Kom i gang med Chromium OS</translation>
 <translation id="4330297532943865716">Det ble funnet en konfliktskapende installasjon av Chromium eller Chromium Frame på systemet. Avinstaller den og prøv på nytt.</translation>
 <translation id="6953661834318318668">Chromium-verktøylinjen</translation>
 <translation id="7097100943370017396">Chromium oppdateres ikke lenger, fordi operativsystemet ditt er foreldet.</translation>
@@ -56,6 +57,7 @@
 <translation id="3197823471738295152">Enheten er oppdatert.</translation>
 <translation id="8551886023433311834">Nesten oppdatert! Start enheten på nytt for å fullføre oppdateringen.</translation>
 <translation id="8353224596138547809">Vil du at Chromium skal lagre passordet du bruker på dette nettstedet?</translation>
+<translation id="7339898014177206373">Nytt vindu</translation>
 <translation id="3026202950002788510">Gå til
           <ph name="BEGIN_BOLD"/>
           Programmer &gt; Systeminnstillinger &gt; Nettverk &gt; Avansert &gt; Mellomtjenere
@@ -67,7 +69,6 @@
 <translation id="9191268552238695869">En administrator har installert Chromium på dette systemet, og nettleseren er tilgjengelig for alle brukere. Chromium på systemnivå erstatter installasjonene du har på brukernivå.</translation>
 <translation id="3509308970982693815">Lukk alle Chromium-vinduer og prøv på nytt.</translation>
 <translation id="4077262827416206768">Lukk alle Chromium-vinduer og start Chromium på nytt for at denne endringen skal tre i kraft.</translation>
-<translation id="9119843944749246249">Copyright © 2006–2012, The Chromium Authors. Med enerett.</translation>
 <translation id="6944967875980567883">Moduler lastet inn i Chromium</translation>
 <translation id="118298050220780080">Du prøvde å åpne &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, men tjeneren oppga et sertifikat utstedt av en enhet som operativsystemet på datamaskinen din ikke anser som pålitelig. Dette kan bety at tjeneren har generert sine egne sikkerhetslegitimasjoner, som Chromium ikke kan stole på for identitetsinformasjon, eller at en angriper prøver å fange opp kommunikasjonen din.</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
@@ -89,6 +90,7 @@
 <translation id="2881203820889150661">Chromium kan ikke opprette en programsnarvei. Dette skyldes at Chromium ikke kan fastslå det gjeldende skrivebordsmiljøet.</translation>
 <translation id="4886158514168859177">Denne datamaskinen har allerede en nyere versjon av Chromium Frame. Hvis programvaren ikke fungerer, må du avinstallere Chromium Frame og prøve på nytt.</translation>
 <translation id="911206726377975832">Vil du slette all nettleserdata også?</translation>
+<translation id="1699664235656412242">Lukk alle Chromium-vinduene (inkludert de i Windows 8-modus) og prøv på nytt.</translation>
 <translation id="6734080038664603509">Oppdater &amp;Chromium</translation>
 <translation id="8862326446509486874">Du har ikke de nødvendige rettighetene for å installere på systemnivå. Prøv å kjøre installasjonsprogrammet som administrator.</translation>
 <translation id="1774152462503052664">La Chromium kjøre i bakgrunnen</translation>
@@ -125,7 +127,9 @@
 <translation id="6717134281241384636">Profilen din kan ikke brukes fordi den kommer fra en nyere versjon av Chromium.
 
 Det er mulig at enkelte funksjoner ikke er tilgjengelige. Angi en annen profilkatalog eller bruk en nyere versjon av Chromium.</translation>
+<translation id="4499972362520386277">Copyright 2012 – The Chromium Authors. Med enerett.</translation>
 <translation id="2712549016134575851">Det er registrert en konflikt med et annet installert program.</translation>
+<translation id="4881709374218686648">Du tidligere har logget deg på med en annen konto, og pålogging slår sammen dataene dine. Vurder å opprette en ny Chromium-bruker via <ph name="BEGIN_LINK"/>innstillingssiden<ph name="END_LINK"/> for Chromium-tingene dine.</translation>
 <translation id="9013087743919948559">Legg til i Chromium</translation>
 <translation id="6212496753309875659">Denne datamaskinen har allerede en nyere versjon av Chromium. Hvis programvaren ikke fungerer, må du avinstallere Chromium og prøve på nytt.</translation>
 <translation id="3014684866565908571">Chromium-verktøy</translation>

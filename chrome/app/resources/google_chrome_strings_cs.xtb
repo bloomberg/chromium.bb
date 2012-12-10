@@ -42,6 +42,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="8398145039500709259">Použít tento účet k synchronizaci všech položek z Chromu?</translation>
 <translation id="1779550429052479749">V systému byla nalezena konfliktní instalace prohlížeče Google Chrome nebo pluginu Google Chrome Frame. Odinstalujte tuto instanci a zkuste to znovu.</translation>
 <translation id="3555616473548901994">Odinstalace byla dokončena.</translation>
+<translation id="4987308747895123092">Zavřete všechna okna prohlížeče Google Chrome (včetně oken v režimu Windows 8) a zkuste to znovu.</translation>
 <translation id="568643307450491754">Záložky naleznete v nabídce Chromium nebo na liště záložek.</translation>
 <translation id="8556340503434111824">Je k dispozici nová verze prohlížeče Google Chrome, ještě rychlejší než ty předchozí.</translation>
 <translation id="4728575227883772061">Došlo k nespecifikované chybě, instalace se nezdařila. Pokud je Google Chrome právě spuštěný, zavřete jej prosím a zkuste to znovu.</translation>
@@ -75,6 +76,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="3889417619312448367">Odinstalovat Google Chrome</translation>
 <translation id="8551886023433311834">Aktualizace je téměř hotova! Dokončíte ji restartováním zařízení.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="7339898014177206373">Nové okno</translation>
 <translation id="3026202950002788510">Přejděte do nabídky
           <ph name="BEGIN_BOLD"/>
           Aplikace &gt; Nastavení systému &gt; Síť &gt; Rozšířená nastavení &gt; Servery proxy
@@ -158,6 +160,7 @@ Některé funkce mohou být nedostupné. Zadejte prosím jiný adresář profilu
           klikněte na ně a zkontrolujte, zda je konfigurace nastavena
           na možnost Přímé.</translation>
 <translation id="3612333635265770873">Je známo, že s aplikací Google Chrome koliduje modul se stejným názvem.</translation>
+<translation id="824729746779295798">Copyright 2012 Google Inc. Všechna práva vyhrazena.</translation>
 <translation id="61852838583753520">Aktualizace operačního systému &amp;Chrome</translation>
 <translation id="6650142020817594541">Tento web doporučuje plugin Google Chrome Frame, který je již nainstalovaný.</translation>
 <translation id="2712549016134575851">Byl zjištěn konflikt s jinou nainstalovanou aplikací.</translation>
@@ -168,6 +171,7 @@ Některé funkce mohou být nedostupné. Zadejte prosím jiný adresář profilu
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="870251953148363156">Aktualizace aplikace &amp;Google Chrome</translation>
 <translation id="130631256467250065">Změny se projeví po příštím restartu zařízení.</translation>
+<translation id="163860049029591106">Začínáme se systémem Chrome OS</translation>
 <translation id="1399397803214730675">V tomto počítači je již nainstalována novější verze prohlížeče Google Chrome. Jestliže software nefunguje, odinstalujte prosím prohlížeč Google Chrome a zkuste to znovu.</translation>
 <translation id="576822117893741893">Zobrazit nabídku Chrome</translation>
 <translation id="3444832043240812445">Pokud zvolíte možnost <ph name="BEGIN_LINK"/>povolit zprávy o selhání<ph name="END_LINK"/>, tato stránka bude zobrazovat jen informace o posledních selháních.</translation>
@@ -180,8 +184,8 @@ Některé funkce mohou být nedostupné. Zadejte prosím jiný adresář profilu
 <translation id="2680623880102270805">Google Chrome nemůže vytvořit zástupce aplikace, protože nedokáže zjistit aktuální prostředí pracovní plochy.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Internetový prohlížeč</translation>
+<translation id="5244325494201350962">Dříve jste již byli přihlášeni s jiným účtem, po přihlášení tedy dojde ke sloučení dat. Doporučujeme vytvořit pro údaje prohlížeče Chrome nový uživatelský účet na stránce <ph name="BEGIN_LINK"/>Nastavení<ph name="END_LINK"/>.</translation>
 <translation id="2189123953385179981">Google ChromeOS nepodporuje spouštění externích aplikací pro práci s odkazy typu <ph name="SCHEME"/>. Požadovaný odkaz je <ph name="PROTOLINK"/>.</translation>
-<translation id="711654979569750606">Copyright © 2006–2011 Google Inc. Všechna práva vyhrazena.</translation>
 <translation id="8205111949707227942">Volitelné: Pomozte zlepšit operační systém Chrome OS tím, že budete společnosti Google automaticky zasílat statistiky využití a zprávy o selhání.</translation>
 <translation id="7253415505590551024">Probíhá stahování. Chcete Google Chrome ukončit a stahování zrušit?</translation>
 <translation id="7196020411877309443">Proč je zobrazeno toto dialogové okno?</translation>

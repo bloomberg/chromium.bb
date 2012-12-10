@@ -42,6 +42,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="8398145039500709259">Voulez-vous utiliser ce compte Google pour synchroniser toutes vos données sur Google Chrome ?</translation>
 <translation id="1779550429052479749">Une installation incompatible de Google Chrome ou Google Chrome Frame a été détectée sur le système. Désinstallez-la et réessayez.</translation>
 <translation id="3555616473548901994">Désinstallation terminée</translation>
+<translation id="4987308747895123092">Veuillez fermer toutes les fenêtres de Google Chrome (y compris celles en mode Windows 8), puis réessayer.</translation>
 <translation id="568643307450491754">Retrouvez vos favoris dans le menu Chrome ou dans la barre de favoris.</translation>
 <translation id="8556340503434111824">Une nouvelle version de Google Chrome encore plus rapide est disponible.</translation>
 <translation id="4728575227883772061">Échec de l'installation suite à une erreur non spécifiée. Si Google Chrome est en cours d'exécution, fermez-le puis réessayez.</translation>
@@ -76,6 +77,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="3889417619312448367">Désinstaller Google Chrome</translation>
 <translation id="8551886023433311834">Mise à jour presque terminée. Pour la finaliser, veuillez redémarrer votre appareil.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="7339898014177206373">Nouvelle fenêtre</translation>
 <translation id="3026202950002788510">Sélectionnez
           <ph name="BEGIN_BOLD"/>
           Applications &gt; Préférences système &gt; Réseau &gt; Avancé &gt; Proxys
@@ -160,6 +162,7 @@ Certaines fonctionnalités peuvent être indisponibles. Veuillez spécifier un r
           s'affiche, cliquez sur celui-ci et assurez-vous
           que vos paramètres sont définis sur &quot;Direct&quot;.</translation>
 <translation id="3612333635265770873">Nous avons constaté qu'un module du même nom crée des conflits avec Google Chrome.</translation>
+<translation id="824729746779295798">Copyright Google Inc. 2012. Tous droits réservés.</translation>
 <translation id="61852838583753520">Mettre à jour &amp;Chrome OS</translation>
 <translation id="6650142020817594541">Ce site recommande Google Chrome Frame (déjà installé).</translation>
 <translation id="2712549016134575851">Détection d'un conflit avec une autre application installée.</translation>
@@ -170,6 +173,7 @@ Certaines fonctionnalités peuvent être indisponibles. Veuillez spécifier un r
 <translation id="8669527147644353129">Application d'aide de Google Chrome</translation>
 <translation id="870251953148363156">Mettre à jour &amp;Google Chrome</translation>
 <translation id="130631256467250065">Vos modifications seront prises en compte au prochain démarrage de l'appareil.</translation>
+<translation id="163860049029591106">Premiers pas avec Google Chrome OS</translation>
 <translation id="1399397803214730675">Une version plus récente de Google Chrome est déjà installée sur cet ordinateur. Si celle-ci ne fonctionne pas, désinstallez Google Chrome, puis réessayez.</translation>
 <translation id="576822117893741893">Afficher le menu Chrome</translation>
 <translation id="3444832043240812445">Cette page affiche uniquement des informations sur les erreurs récentes si vous <ph name="BEGIN_LINK"/>activez l'envoi de rapports d'erreur<ph name="END_LINK"/>.</translation>
@@ -182,8 +186,8 @@ Certaines fonctionnalités peuvent être indisponibles. Veuillez spécifier un r
 <translation id="2680623880102270805">Impossible de créer le raccourci d'application dans Google Chrome, car l'environnement actuellement utilisé n'a pas pu être déterminé.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Navigateur Internet</translation>
+<translation id="5244325494201350962">Vous vous êtes déjà connecté avec un compte différent. Si vous vous connectez, vos données seront fusionnées. Vous pouvez créer un nouvel utilisateur Google Chrome depuis la page des <ph name="BEGIN_LINK"/>paramètres<ph name="END_LINK"/> pour vos contenus Google Chrome.</translation>
 <translation id="2189123953385179981">Google Chrome OS ne permet pas de lancer une application externe qui gère les liens <ph name="SCHEME"/>. Le lien demandé est <ph name="PROTOLINK"/>.</translation>
-<translation id="711654979569750606">Copyright © Google Inc 2006-2011. Tous droits réservés.</translation>
 <translation id="8205111949707227942">Facultatif : Aidez-nous à améliorer Google Chrome OS en envoyant automatiquement des statistiques d'utilisation et des rapports d'erreur à Google.</translation>
 <translation id="7253415505590551024">Des téléchargements sont actuellement en cours. Voulez-vous quitter Google Chrome et annuler les téléchargements ?</translation>
 <translation id="7196020411877309443">Pourquoi ce message s'affiche-t-il ?</translation>

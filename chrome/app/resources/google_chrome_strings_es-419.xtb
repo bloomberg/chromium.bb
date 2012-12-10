@@ -28,6 +28,7 @@
 <translation id="8398145039500709259">¿Utilizas esta cuenta de Google para sincronizar todo lo que tienes en Chrome?</translation>
 <translation id="1779550429052479749">Se encontró una instalación conflictiva de Google Chrome o Google Chrome Frame en el sistema. Desinstálala e intenta nuevamente.</translation>
 <translation id="3555616473548901994">Desinstalación finalizada</translation>
+<translation id="4987308747895123092">Cierra todas las ventanas de Google Chrome (incluidas las que están en modo Windows 8) e inténtalo nuevamente.</translation>
 <translation id="568643307450491754">Busca tus marcadores en el menú de Chrome o en la barra de marcadores.</translation>
 <translation id="8556340503434111824">Hay una nueva versión de Google Chrome disponible, y es más rápida que nunca.</translation>
 <translation id="4728575227883772061">No se pudo completar la instalación debido a un error no identificado. Si Google Chrome se está ejecutando en este momento, ciérrelo e intente nuevamente.</translation>
@@ -50,6 +51,7 @@
 <translation id="3889417619312448367">Desinstalar Google Chrome</translation>
 <translation id="8551886023433311834">El dispositivo está casi actualizado. Reinícialo para completar la actualización.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="7339898014177206373">Nueva ventana</translation>
 <translation id="3026202950002788510">Ve a 
           <ph name="BEGIN_BOLD"/>
           Applications (Aplicaciones) &gt; System Preferences (Preferencias del sistema) &gt; Network (Red) &gt; Advanced (Avanzada) &gt; Proxies
@@ -103,6 +105,7 @@
 <translation id="4561051373932531560">Google Chrome te permite hacer clic en un número de teléfono en la web y ¡llamarlo por Skype!</translation>
 <translation id="4270804660370715583">Accede al <ph name="BEGIN_BOLD"/> menú de Chrome &gt; <ph name="SETTINGS_TITLE"/> &gt; <ph name="INTERNET_TITLE"/> &gt; &quot;<ph name="OPTIONS_BUTTON"/>&quot; <ph name="END_BOLD"/> (para la red actual). Si el <ph name="BEGIN_BOLD"/> botón &quot;<ph name="PROXY_BUTTON"/>&quot; <ph name="END_BOLD"/> (en la <ph name="BEGIN_BOLD"/> pestaña <ph name="NETWORK_TAB"/> <ph name="END_BOLD"/>) está presente, haz clic en él y asegúrate de que la configuración sea &quot;Directa&quot;.</translation>
 <translation id="3612333635265770873">Un módulo con el mismo nombre ha interferido con Google Chrome.</translation>
+<translation id="824729746779295798">Copyright 2012 Google Inc. Todos los derechos reservados</translation>
 <translation id="61852838583753520">Actualizar el &amp;sistema operativo de Chrome</translation>
 <translation id="6650142020817594541">Este sitio recomienda Google Chrome Frame (ya instalado).</translation>
 <translation id="2712549016134575851">Se detectó un conflicto con otra aplicación instalada.</translation>
@@ -113,6 +116,7 @@
 <translation id="8669527147644353129">Ayuda de Google Chrome</translation>
 <translation id="870251953148363156">Actualizar &amp;Google Chrome</translation>
 <translation id="130631256467250065">Los cambios se aplicarán la próxima vez que reinicies el dispositivo.</translation>
+<translation id="163860049029591106">Introducción al Sistema operativo de Chrome</translation>
 <translation id="1399397803214730675">Este equipo ya cuenta con una versión más reciente de Google Chrome. Si el software no funciona, desinstala Google Chrome y descárgalo nuevamente.</translation>
 <translation id="576822117893741893">Mostrar el menú de Chrome</translation>
 <translation id="3444832043240812445">Esta página sólo muestra información sobre fallas recientes si se <ph name="BEGIN_LINK"/>activan los informes sobre fallas<ph name="END_LINK"/>.</translation>
@@ -125,8 +129,8 @@
 <translation id="2680623880102270805">Google Chrome no puede crear un acceso directo a la aplicación porque no puede determinar el entorno de escritorio actual.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Navegador de Internet</translation>
+<translation id="5244325494201350962">Anteriormente, accediste con una cuenta diferente; si accedes ahora se combinarán tus datos. Considera crear un nuevo usuario de Chrome en la <ph name="BEGIN_LINK"/>página de configuración<ph name="END_LINK"/> para tus datos de Chrome.</translation>
 <translation id="2189123953385179981">Google ChromeOS no admite lanzar una aplicación externa para manejar vínculos <ph name="SCHEME"/>. El vínculo solicitado es <ph name="PROTOLINK"/>.</translation>
-<translation id="711654979569750606">Copyright © 2006-2012 Google Inc. Todos los derechos reservados.</translation>
 <translation id="8205111949707227942">Opcional: Ayúdanos a mejorar Chrome SO enviando automáticamente estadísticas de uso e informes sobre fallos a Google.</translation>
 <translation id="7253415505590551024">Actualmente hay descargas en curso. ¿Quieres salir de Google Chrome y cancelarlas?</translation>
 <translation id="7196020411877309443">¿Por qué estoy viendo esto?</translation>

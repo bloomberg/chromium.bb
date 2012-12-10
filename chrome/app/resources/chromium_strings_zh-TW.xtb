@@ -15,6 +15,7 @@
 <translation id="7128196614940529818">Chromium Frame 已安裝，並且支援這台電腦的所有使用者。如果您要安裝使用者等級的 Chromium 頁框，首先必須解除安裝管理員安裝的系統等級版本。</translation>
 <translation id="731644333568559921">更新 Chromium 作業系統(&amp;C)</translation>
 <translation id="7421823331379285070">Chromium 需要 Windows XP 或更新版本的作業系統，否則部分功能無法正確運作。</translation>
+<translation id="3549345495227188780">開始使用 Chromium 作業系統</translation>
 <translation id="4330297532943865716">系統在安裝 Chromium 或 Chromium 頁框時發生衝突問題，請先解除安裝，然後再試一次。</translation>
 <translation id="6953661834318318668">Chromium 工具列</translation>
 <translation id="7097100943370017396">您的作業系統版本過舊，因此 Chromium 無法繼續更新。 </translation>
@@ -56,6 +57,7 @@
 <translation id="3197823471738295152">您的裝置已更新。</translation>
 <translation id="8551886023433311834">即將完成！請重新啟動裝置以完成更新。</translation>
 <translation id="8353224596138547809">您要讓 Chromium 儲存您在這個網站的密碼嗎？</translation>
+<translation id="7339898014177206373">新視窗</translation>
 <translation id="3026202950002788510">請依序前往
           
           [應用程式] &gt; [系統偏好設定] &gt; [網路] &gt; [進階] &gt; [Proxy]，
@@ -67,7 +69,6 @@
 <translation id="9191268552238695869">管理員已為這個系統安裝了 Chromium，而且 Chromium 支援所有使用者。系統等級的 Chromium 會取代您目前安裝的使用者等級版本。</translation>
 <translation id="3509308970982693815">請關閉所有 Chromium 視窗，然後再試一次。</translation>
 <translation id="4077262827416206768">請關閉所有 Chromium 視窗，並且重新啟用 Chromium，這項變更即會生效。</translation>
-<translation id="9119843944749246249">Copyright © 2006-2012 The Chromium Authors。保留所有權利。</translation>
 <translation id="6944967875980567883">已載入 Chromium 的模組</translation>
 <translation id="118298050220780080">您嘗試前往 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但伺服器提供的憑證，電腦作業系統不信任的實體簽署。這可能表示伺服器自行產生安全性憑證，因此 Chromium 無法藉以辨認身分；或者有攻擊者試圖攔截您的通訊。</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
@@ -89,6 +90,7 @@
 <translation id="2881203820889150661">由於 Chromium 無法判斷目前的桌面環境，因此無法建立應用程式捷徑。</translation>
 <translation id="4886158514168859177">這台電腦已安裝較新的 Chromium 頁框版本。如果軟體無法順利運作，請解除安裝 Chromium 頁框，然後再試一次。</translation>
 <translation id="911206726377975832">您要一併刪除瀏覽資料嗎？</translation>
+<translation id="1699664235656412242">請將所有 Chromium 視窗 (包括在 Windows 8 模式中的視窗) 關閉，然後再試一次。</translation>
 <translation id="6734080038664603509">更新 Chromium(&amp;C)</translation>
 <translation id="8862326446509486874">您沒有在系統層級進行安裝的權限，請以管理員的身分執行安裝檔。</translation>
 <translation id="1774152462503052664">讓 Chromium 在背景執行</translation>
@@ -125,7 +127,9 @@
 <translation id="6717134281241384636">由於您的設定檔是來自較新版本的 Chromium，所以系統無法使用該檔案。
 
 這表示您可能無法使用部分功能。請指定另一個設定檔目錄，或使用較新版本的 Chromium。</translation>
+<translation id="4499972362520386277">Copyright 2012 The Chromium Authors. 版權所有。</translation>
 <translation id="2712549016134575851">偵測到與其他已安裝的應用程式互相衝突。</translation>
+<translation id="4881709374218686648">您先前已使用其他帳戶登入，如果繼續使用這個帳戶登入，您的資料將會匯整至目前登入的帳戶中。建議您透過<ph name="BEGIN_LINK"/>設定網頁<ph name="END_LINK"/>為 Chromium 內容建立新的 Chromium 使用者。</translation>
 <translation id="9013087743919948559">新增至 Chromium</translation>
 <translation id="6212496753309875659">這台電腦已安裝較新的 Chromium 版本。如果軟體無法順利運作，請解除安裝 Chromium，然後再試一次。</translation>
 <translation id="3014684866565908571">Chromium Utility</translation>

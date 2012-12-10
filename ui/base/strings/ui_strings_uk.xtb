@@ -14,6 +14,7 @@
 <translation id="3660179305079774227">Курсор угору</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY"/> Мб/сек.</translation>
 <translation id="3990502903496589789">Правий край</translation>
+<translation id="5182671122927417841">Вимкнути розширення</translation>
 <translation id="932327136139879170">Home</translation>
 <translation id="3909791450649380159">Вирізат&amp;и</translation>
 <translation id="688711909580084195">Веб-сторінка без назви</translation>
@@ -53,6 +54,7 @@
 <translation id="8179976553408161302">Увійти</translation>
 <translation id="9170848237812810038">&amp;Скасувати</translation>
 <translation id="520299402983819650"><ph name="QUANTITY"/> Пб</translation>
+<translation id="2983818520079887040">Налаштування...</translation>
 <translation id="6845383723252244143">Вибір папки</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY"/> Гб/сек.</translation>
@@ -60,10 +62,13 @@
 <translation id="2297836609126180313"><ph name="QUANTITY"/> Тб/сек.</translation>
 <translation id="6040143037577758943">Закрити</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY"/> б/сек.</translation>
+<translation id="477782898153505579">У вас немає сповіщень. Зробіть перепочинок!</translation>
+<translation id="7457942297256758195">Очистити все</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="6907759265145635167"><ph name="QUANTITY"/> Пб/сек.</translation>
 <translation id="6965382102122355670">ОК</translation>
 <translation id="5941711191222866238">Зменшити</translation>
+<translation id="4469842253116033348">Вимкнути сповіщення від <ph name="SITE"/></translation>
 <translation id="3036649622769666520">Відкрити файли</translation>
 <translation id="8328145009876646418">Лівий край</translation>
 </translationbundle>

@@ -38,6 +38,7 @@
 <translation id="8398145039500709259">Voleu fer servir aquest compte de Google per sincronitzar totes les vostres coses de Chrome?</translation>
 <translation id="1779550429052479749">S'ha trobat una instal·lació conflictiva de Google Chrome o de Google Chrome Frame al sistema. Desinstal·leu l'aplicació i torneu-ho a provar.</translation>
 <translation id="3555616473548901994">S'ha completat la desinstal·lació.</translation>
+<translation id="4987308747895123092">Tanqueu totes les finestres de Google Chrome (incloses les del mode Windows 8) i torneu-ho a provar.</translation>
 <translation id="568643307450491754">Trobareu els marcadors al menú de Chrome o a la barra de marcadors.</translation>
 <translation id="8556340503434111824">Hi ha disponible una nova versió de Google Chrome, i és més ràpida que mai.</translation>
 <translation id="4728575227883772061">S'ha produït un error no especificat durant la instal·lació. Si Google Chrome s'està executant en aquests moments, tanca'l i torna-ho a provar.</translation>
@@ -69,6 +70,7 @@
 <translation id="3889417619312448367">Desinstal·la Google Chrome</translation>
 <translation id="8551886023433311834">L'actualització està a punt d'acabar. Reinicieu el dispositiu per completar-la.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="7339898014177206373">Finestra nova</translation>
 <translation id="3026202950002788510">Aneu a
           <ph name="BEGIN_BOLD"/>
           Aplicacions &gt; Preferències del sistema &gt; Xarxa &gt; Opcions avançades &gt; Servidors intermediaris
@@ -150,6 +152,7 @@
           feu-hi clic i assegureu-vos que la configuració
           està definida com a &quot;Directa&quot;.</translation>
 <translation id="3612333635265770873">Se sap que un mòdul amb el mateix nom entra en conflicte amb Google Chrome.</translation>
+<translation id="824729746779295798">Copyright 2012 Google Inc. Tots els drets reservats.</translation>
 <translation id="61852838583753520">Actualitza &amp;SO Chrome</translation>
 <translation id="6650142020817594541">Aquest lloc recomana Google Chrome Frame (ja instal·lat).</translation>
 <translation id="2712549016134575851">S'ha detectat un conflicte amb una altra aplicació instal·lada.</translation>
@@ -160,6 +163,7 @@
 <translation id="8669527147644353129">Aplicació auxiliar de Google Chrome</translation>
 <translation id="870251953148363156">Actualitza &amp;Google Chrome</translation>
 <translation id="130631256467250065">Els canvis es faran efectius la propera vegada que reinicieu el dispositiu.</translation>
+<translation id="163860049029591106">Introducció a Chrome OS</translation>
 <translation id="1399397803214730675">Aquest equip ja disposa d'una versió més recent de Google Chrome. Si el programari no funciona, desinstal·leu Google Chrome i torneu-ho a provar.</translation>
 <translation id="576822117893741893">Mostra el menú de Chrome</translation>
 <translation id="3444832043240812445">Aquesta pàgina només mostrarà informació sobre els bloqueigs recents si <ph name="BEGIN_LINK"/>activeu la creació d'informes de bloqueig<ph name="END_LINK"/>.</translation>
@@ -172,8 +176,8 @@
 <translation id="2680623880102270805">Google Chrome no pot crear una drecera a l'aplicació perquè no pot determinar l'entorn actual de l'escriptori.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Navegador d'Internet</translation>
+<translation id="5244325494201350962">Anteriorment heu iniciat la sessió amb un compte diferent; si inicieu la sessió, les dades es barrejaran. Podeu crear un usuari de Chrome nou a la <ph name="BEGIN_LINK"/>pàgina de configuració<ph name="END_LINK"/> de les coses de Chrome.</translation>
 <translation id="2189123953385179981">Google ChromeOS no és compatible amb l'inici d'una aplicació externa per gestionar els enllaços <ph name="SCHEME"/>. L'enllaç sol·licitat és <ph name="PROTOLINK"/>.</translation>
-<translation id="711654979569750606">Copyright © 2006-2012 Google Inc. Tots els drets reservats.</translation>
 <translation id="8205111949707227942">Opcional: ajudeu a millorar Chrome OS; envieu-nos automàticament les estadístiques d'ús i els informes de bloqueig a Google.</translation>
 <translation id="7253415505590551024">En aquests moments hi ha baixades en curs. Voleu sortir de Google Chrome i cancel·lar les baixades?</translation>
 <translation id="7196020411877309443">Per què veig aquest missatge?</translation>

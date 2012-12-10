@@ -14,6 +14,7 @@
 <translation id="3660179305079774227">Phím mũi tên Lên</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY"/> MB/giây</translation>
 <translation id="3990502903496589789">Cạnh bên Phải</translation>
+<translation id="5182671122927417841">Tắt tiện ích mở rộng</translation>
 <translation id="932327136139879170">Trang chủ</translation>
 <translation id="3909791450649380159">Cắ&amp;t</translation>
 <translation id="688711909580084195">Trang web không có tiêu đề</translation>
@@ -53,6 +54,7 @@
 <translation id="8179976553408161302">Vào</translation>
 <translation id="9170848237812810038">H&amp;oàn tác</translation>
 <translation id="520299402983819650"><ph name="QUANTITY"/> PB</translation>
+<translation id="2983818520079887040">Cài đặt...</translation>
 <translation id="6845383723252244143">Chọn Thư mục</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY"/> GB/giây</translation>
@@ -60,10 +62,13 @@
 <translation id="2297836609126180313"><ph name="QUANTITY"/> TB/giây</translation>
 <translation id="6040143037577758943">Đóng</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY"/> B/giây</translation>
+<translation id="477782898153505579">Bạn không có thông báo nào. Hãy thư giãn!</translation>
+<translation id="7457942297256758195">Xóa tất cả</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="6907759265145635167"><ph name="QUANTITY"/> PB/giây</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="5941711191222866238">Thu nhỏ</translation>
+<translation id="4469842253116033348">Vô hiệu hóa thông báo từ <ph name="SITE"/></translation>
 <translation id="3036649622769666520">Mở Tệp</translation>
 <translation id="8328145009876646418">Cạnh Bên trái</translation>
 </translationbundle>

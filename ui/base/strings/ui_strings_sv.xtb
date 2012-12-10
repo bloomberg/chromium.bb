@@ -14,6 +14,7 @@
 <translation id="3660179305079774227">Uppil</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY"/> MB/sek</translation>
 <translation id="3990502903496589789">Högerkant</translation>
+<translation id="5182671122927417841">Inaktivera tillägg</translation>
 <translation id="932327136139879170">Startsida</translation>
 <translation id="3909791450649380159">&amp;Klipp ut</translation>
 <translation id="688711909580084195">Namnlös webbsida</translation>
@@ -53,6 +54,7 @@
 <translation id="8179976553408161302">Start</translation>
 <translation id="9170848237812810038">&amp;Ångra</translation>
 <translation id="520299402983819650"><ph name="QUANTITY"/> PB</translation>
+<translation id="2983818520079887040">Inställningar...</translation>
 <translation id="6845383723252244143">Välj mapp</translation>
 <translation id="5583640892426849032">Backsteg</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY"/> GB/sek</translation>
@@ -60,10 +62,13 @@
 <translation id="2297836609126180313"><ph name="QUANTITY"/> TB/sek</translation>
 <translation id="6040143037577758943">Stäng</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY"/> B/sek</translation>
+<translation id="477782898153505579">Ta det lugnt! Du har inga meddelanden.</translation>
+<translation id="7457942297256758195">Ta bort alla</translation>
 <translation id="8400147561352026160">Skift+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="6907759265145635167"><ph name="QUANTITY"/> PB/sek</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="5941711191222866238">Minimera</translation>
+<translation id="4469842253116033348">Inaktivera meddelanden från <ph name="SITE"/></translation>
 <translation id="3036649622769666520">Öppna filer</translation>
 <translation id="8328145009876646418">Vänsterkant</translation>
 </translationbundle>

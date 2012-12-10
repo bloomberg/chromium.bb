@@ -17,6 +17,7 @@
 <translation id="7128196614940529818">Chromium ክፈፍ አስቀድሞ የተጫነ እና ለሁሉም የዚህ ኮምፒውተር ተጠቃሚዎች የሚገኝ ነው። Chromium ክፈፍ በተጠቃሚ ደረጃ ላይ መጫን ከፈለጉ መጀመሪያ በአስተዳዳሪው የተጫነውን የስርዓት-ደረጃ ስሪት ማራገፍ አለብዎት።</translation>
 <translation id="731644333568559921">&amp;Chromium OSን አዘምን</translation>
 <translation id="7421823331379285070">Chromium Windows XP ወይም ከዚያ በኋላ ይፈልጋል። አንዳንድ ባህሪያት ላይሰሩ ይችላሉ።</translation>
+<translation id="3549345495227188780">በChromium OS ይጀምሩ</translation>
 <translation id="4330297532943865716">በስርዓቱ ላይ የሚጋጭ የChromium እና Chromium Frame ጭነት ተገኝቷል። እባክዎ ያራግፉት እና እንደገና ይሞክሩ።</translation>
 <translation id="6953661834318318668">Chromium የመሣሪያ አሞሌ</translation>
 <translation id="7097100943370017396">የስርዓተ ክወናዎ አገልግሎት የማይሰጥ ጊዜ ያለፈት ስለሆነ Chromium ከአሁን በኋላ አይዘምንም ያለው።</translation>
@@ -58,6 +59,7 @@
 <translation id="3197823471738295152">መሣሪያዎ የተዘመነ ነው።</translation>
 <translation id="8551886023433311834">የተዘመነ ለመሆን ጥቂት ብቻ ቀርቷል! ዝማኔውን ለማጠናቀቅ መሣሪያዎን ዳግም ያስጀምሩት።</translation>
 <translation id="8353224596138547809">Chromium የዚህ ጣቢያ ይለፍ ቃልዎን እንዲያስቀምጥልዎ ይፈልጋሉ?</translation>
+<translation id="7339898014177206373">አዲሰ መስኮት</translation>
 <translation id="3026202950002788510">ወደ
           <ph name="BEGIN_BOLD"/>
           መተግበሪያዎች &gt; የስርዓት ምርጫዎች &gt; አውታረ መረብ &gt; የላቁ &gt; ተኪዎች
@@ -69,7 +71,6 @@
 <translation id="9191268552238695869">አንድ አስተዳዳሪ በዚህ ስርዓት ላይ Chromiumን ጭኗል፣ እና ለሁሉም ተጠቃሚዎች ይገኛል። የስርዓት-ደረጃ Chromium የተጠቃሚ-ደረጃ ጭነትዎን አሁን ይተካዋል።</translation>
 <translation id="3509308970982693815">እባክዎ ሁሉንም የChromium መስኮቶችን ይዝጉና እንደገና ይሞክሩ።</translation>
 <translation id="4077262827416206768">ይህ ለውጥ እንዲተገበር እባክዎ የChromium መስኮቶችን ይዝጉና Chromiumን ዳግም ያስጀምሩ።</translation>
-<translation id="9119843944749246249">የቅጂ መብት © 2006-2012 የChromium ደራሲያን። ሁሉም መብቶች የተጠበቁ ናቸው።</translation>
 <translation id="6944967875980567883">Chromium ላይ የተጫኑ ሞዱሎች</translation>
 <translation id="118298050220780080">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;ን ለመድረስ ሞክረዋል፣ ግን አገልጋዩ በኮምፒውተርዎ ስርዓተ ክወና የማይታመን አካል የተሰጠ የእውቅና ማረጋገጫ ነው ያሳየው። ይሄ ማለት አገልጋዩ የራሱ የደህንነት ምስክርነቶች አመንጭቷል ማለት ነው፣ Chromium ደግሞ ለማንነት መረጃን ለማወቅ ሊተማመንበት አይችልም ወይም አንድ አጥቂ ግንኙነቶችዎን ለመጥለፍ እየሞከረ ሊሆን ይችላል።</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
@@ -79,7 +80,7 @@
 <translation id="2407806170074302369">ስለChromium ክፈፍ...</translation>
 <translation id="5405650547142096840">ከChromium አስወግድ</translation>
 <translation id="7747138024166251722">ጫኝው ጊዜያዊ ማውጫ መፍጠር አልቻለም። እባክዎ ነፃ የዲስክ ቦታ እና ሶፍትዌር የመጫን ፍቃድ እንዳለ ይፈትሹ።</translation>
-<translation id="3258596308407688501">Chromium የውሂብ ማውጫው ላይ ማንበብ እና መጻፍ አይችልም፦
+<translation id="3258596308407688501">Chromium የውሂብ አቃፊው ላይ ማንበብ እና መጻፍ አይችልም፦
 
 <ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="4932687624772039103">Chromium <ph name="OS_NAME"/>ን አይደግፍም።</translation>
@@ -91,6 +92,7 @@
 <translation id="2881203820889150661">Chromium የአሁኑ የዴስክቶፕ ምህዳሩን ማወቅ ስላልቻለ የመተግበሪያ አቋራጭ መፍጠር አይችልም።</translation>
 <translation id="4886158514168859177">ይህ ኮምፒውተር አስቀድሞ ይበልጥ የቅርብ ጊዜ የChromium ክፍለ ገጸ ድር ስሪት አለው። ስፍትዌሩ የማይሰራ ከሆነ እባክዎ Chromium ክፍለ ገጸ ድርን ያራግፉና እንደገና ይሞክሩ።</translation>
 <translation id="911206726377975832">የአሰሳ ውሂብዎም ይሰረዝ?</translation>
+<translation id="1699664235656412242">እባክዎ ሁሉንም የChromium መስኮቶችን (በWindows 8 ሁነታ ላይ ያሉትንም ጨምሮ) ይዝጉና እንደገና ይሞክሩ።</translation>
 <translation id="6734080038664603509">&amp;Chromiumን አዘምን</translation>
 <translation id="8862326446509486874">ለስርዓተ-ደረጃ ጭነት ተገቢ መብቶች የሉዎትም። ጫኚውን እንደ አስተዳዳሪ በማሄድ እንደገና ይሞክሩ።</translation>
 <translation id="1774152462503052664">Chromium ጀርባ ላይ ይሂድ</translation>
@@ -126,7 +128,9 @@
 <translation id="6717134281241384636">መገለጫዎ ከአዲስ የChromium ስሪት ስለሆነ የመጣው ስራ ላይ ሊውል አይችልም።
 
 አንዳንድ ባህሪያት ላይገኙ ይችላሉ። እባክዎ የተለየ የመገለጫ አቃፊ ይግለጹ ወይም ይበልጥ አዲስ የሆነ የChromium ስሪት ይጠቀሙ።</translation>
+<translation id="4499972362520386277">የቅጂ መብት 2012 የChromium ደራሲያን። ሁሉም መብቶች የተጠበቁ ናቸው።</translation>
 <translation id="2712549016134575851">ከሌላ የተጫነ መተግበሪያ ጋር አለመግባባት ተፈጥሯል።</translation>
+<translation id="4881709374218686648">ከዚህ ቀደም በተለየ መለያ ገብተው ነበር፣ መግባት ሁሉንም ውሂብዎን ያዋህደዋል። ለChromium ነገሮችዎ አዲስ የChromium ተጠቃሚ በ<ph name="BEGIN_LINK"/>ቅንብሮች ገጽ<ph name="END_LINK"/> በኩል መፍጠሩን ያስቡበት።</translation>
 <translation id="9013087743919948559">ወደ Chromium ያክሉ</translation>
 <translation id="6212496753309875659">ይህ ኮምፒውተር አስቀድሞ ይበልጥ አዲስ የሆነ የChromium ስሪት አለው። ሶፍትዌሩ የማይሰራ ከሆነ እባክዎ Chromiumን ያራግፉና እንደገና ይሞክሩ።</translation>
 <translation id="3014684866565908571">Chromium መገልገያ</translation>

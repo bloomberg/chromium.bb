@@ -17,6 +17,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="7128196614940529818">„Chromium“ rėmelis jau įdiegtas ir pasiekiamas visiems šio kompiuterio naudotojams. Jei norite „Chromium“ rėmelį įdiegti naudotojo lygiu, pirmiausia turite pašalinti administratoriaus įdiegtą sistemos lygio versiją.</translation>
 <translation id="731644333568559921">&amp;„Chromium“ OS naujinys</translation>
 <translation id="7421823331379285070">„Chromium“ reikalinga „Windows XP“ ar naujesnė versija. Kai kurios funkcijos gali neveikti.</translation>
+<translation id="3549345495227188780">Darbo su „Chromium“ OS pradžia</translation>
 <translation id="4330297532943865716">Sistemoje rastas prieštaringas „Chromium“ ar „Chromium“ rėmelio diegimas. Pašalinkite ir bandykite dar kartą.</translation>
 <translation id="6953661834318318668">„Chromium“ įrankių juosta</translation>
 <translation id="7097100943370017396">„Chromium“ nebeatnaujinama, nes operacinė sistema yra pasenusi.</translation>
@@ -58,6 +59,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="3197823471738295152">Įrenginyje naudojate naujausią programinės įrangos versiją.</translation>
 <translation id="8551886023433311834">Beveik įdiegta naujausia versija! Paleiskite įrenginį iš naujo, kad būtų užbaigtas naujinimas.</translation>
 <translation id="8353224596138547809">Ar norite, kad „Chromium“ išsaugotų šios svetainės slaptažodį?</translation>
+<translation id="7339898014177206373">Naujas langas</translation>
 <translation id="3026202950002788510">Eikite į
           <ph name="BEGIN_BOLD"/>
           Programos &gt; Sistemos nuostatos &gt; Tinklas &gt; Išplėstinis &gt; Įgaliotieji serveriai
@@ -69,7 +71,6 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="9191268552238695869">Administratorius įdiegė „Chromium“ sistemoje ir ji pasiekiama visiems naudotojams. Sistemos lygio „Chromium“ nuo šiol pakeis naudotojo lygio diegimą.</translation>
 <translation id="3509308970982693815">Uždarykite visus „Chromium“ langus ir bandykite dar kartą.</translation>
 <translation id="4077262827416206768">Uždarykite visus „Chromium“ langus ir iš naujo paleiskite „Chromium“, kad šis pakeitimas pradėtų galioti.</translation>
-<translation id="9119843944749246249">© „Chromium“ autoriai, 2006–2012 m. Visos teisės saugomos.</translation>
 <translation id="6944967875980567883">Į „Chromium“ įkelti moduliai</translation>
 <translation id="118298050220780080">Bandėte pasiekti &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, bet serveris pateikė sertifikatą, išduotą subjekto, kuris nėra patikimas kompiuterio operacinės sistemos subjektas. Tai gali reikšti, kad serveris sugeneravo savo saugos kredencialus, kuriais „Chromium“ negali pasikliauti dėl tapatybės informacijos, arba gali būti, kad užgrobėjas bando perimti ryšius.</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
@@ -91,6 +92,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="2881203820889150661">„Chromium“ negali sukurti programos šaukinio, nes negali nustatyti dabartinės darbalaukio aplinkos.</translation>
 <translation id="4886158514168859177">Šiame kompiuteryje jau yra naujesnės versijos „Chromium“ rėmelis. Jei programinė įranga neveikia, pašalinkite „Chromium“ rėmelį ir bandykite dar kartą.</translation>
 <translation id="911206726377975832">Ar ištrinti naršymo duomenis?</translation>
+<translation id="1699664235656412242">Uždarykite visus „Chromium“ langus (įskaitant atidarytus veikiant „Windows 8“ režimui) ir bandykite dar kartą.</translation>
 <translation id="6734080038664603509">&amp;„Chromium“ naujinys</translation>
 <translation id="8862326446509486874">Neturite reikiamų teisių sistemai įdiegti. Pamėginkite įdiegimo priemonę dar kartą paleisti kaip administratorius.</translation>
 <translation id="1774152462503052664">Paleisti „Chromium“ fone</translation>
@@ -127,7 +129,9 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="6717134281241384636">Jūsų profilis nenaudojamas, nes jis iš naujesnės versijos „Chromium“.
 
 Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalogą arba naudokite naujesnės versijos „Chromium“.</translation>
+<translation id="4499972362520386277">Autorių teisės priklauso „Chromium“ autoriams, 2012 m. Visos teisės saugomos.</translation>
 <translation id="2712549016134575851">Aptiktas prieštaravimas su kita įdiegta programa.</translation>
+<translation id="4881709374218686648">Anksčiau buvote prisijungę per kitą paskyrą. Jei prisijungsite, bus susieti jūsų duomenys. Apsvarstykite galimybę susikurti naujo „Chromium“ naudotojo paskyrą „Chromium“ <ph name="BEGIN_LINK"/>nustatymų puslapyje<ph name="END_LINK"/>.</translation>
 <translation id="9013087743919948559">Pridėti prie „Chromium“</translation>
 <translation id="6212496753309875659">Šiame kompiuteryje jau yra naujesnės versijos „Chromium“. Jei programinė įranga neveikia, pašalinkite „Chromium“ ir bandykite dar kartą.</translation>
 <translation id="3014684866565908571">„Chromium“ paslaugų programa</translation>

@@ -15,6 +15,7 @@
 <translation id="7128196614940529818">此计算机已安装了 Chromium 内嵌框架以供所有用户使用。如果您要安装用户级 Chromium 内嵌框架，就必须先卸载由管理员安装的系统级版本。</translation>
 <translation id="731644333568559921">更新 Chromium 操作系统(&amp;C)</translation>
 <translation id="7421823331379285070">您需要在 Windows XP 或更高版本的操作系统中运行 Chromium，否则可能无法正常使用某些功能。</translation>
+<translation id="3549345495227188780">Chromium 操作系统使用入门</translation>
 <translation id="4330297532943865716">在系统中安装 Chromium 或 Chromium 内嵌框架时发现已存在冲突的版本，请先卸载然后重试。</translation>
 <translation id="6953661834318318668">Chromium 工具栏</translation>
 <translation id="7097100943370017396">您的操作系统已过期，因此 Chromium 将不再更新。</translation>
@@ -56,6 +57,7 @@
 <translation id="3197823471738295152">您的设备已更新到最新版本。</translation>
 <translation id="8551886023433311834">即将更新到最新版本！请重新启动您的设备，以完成更新。</translation>
 <translation id="8353224596138547809">您希望 Chromium 保存您在此网站上使用的密码吗？</translation>
+<translation id="7339898014177206373">新建窗口</translation>
 <translation id="3026202950002788510">转到
           <ph name="BEGIN_BOLD"/>
           应用 &gt; 系统偏好设置 &gt; 网络 &gt; 高级 &gt; 代理
@@ -67,7 +69,6 @@
 <translation id="9191268552238695869">管理员已在此系统上安装了 Chromium 以供所有用户使用。系统级 Chromium 将替换您安装的用户级版本。</translation>
 <translation id="3509308970982693815">请关闭所有 Chromium 窗口并重试。</translation>
 <translation id="4077262827416206768">请关闭所有 Chromium 窗口，然后重新启动 Chromium，以便让此更改生效。</translation>
-<translation id="9119843944749246249">版权所有 © 2006-2012 The Chromium Authors。保留所有权利。</translation>
 <translation id="6944967875980567883">模块已加载到 Chromium 中</translation>
 <translation id="118298050220780080">您尝试访问的是 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但服务器出示的证书是由您计算机操作系统不信任的实体发布的。这可能意味着该服务器自行生成了安全凭据，Chromium 无法依据这些凭据确定身份信息，也可能是某个攻击者尝试拦截您的通信内容。</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
@@ -89,6 +90,7 @@
 <translation id="2881203820889150661">Chromium 无法确定当前的桌面环境，因此无法创建应用快捷方式。</translation>
 <translation id="4886158514168859177">此计算机已安装了更高版本的 Chromium 内嵌框架。如果软件无法正常运行，请卸载 Chromium 内嵌框架并重试。</translation>
 <translation id="911206726377975832">同时删除您的浏览数据吗？</translation>
+<translation id="1699664235656412242">请关闭所有 Chromium 窗口（包括 Windows 8 模式下的窗口），然后重试。</translation>
 <translation id="6734080038664603509">更新 Chromium(&amp;C)</translation>
 <translation id="8862326446509486874">您的权限不足，无法进行系统级安装。请尝试以管理员身份再次运行安装程序。</translation>
 <translation id="1774152462503052664">让 Chromium 在后台运行</translation>
@@ -125,7 +127,9 @@
 <translation id="6717134281241384636">无法使用您的配置文件，因为该文件来自更高版本的 Chromium。
 
 某些功能可能会无法使用。请指定其他配置文件目录或使用更高版本的 Chromium。</translation>
+<translation id="4499972362520386277">版权所有 2012 The Chromium Authors。保留所有权利。</translation>
 <translation id="2712549016134575851">检测到与另一个已安装的应用存在冲突。</translation>
+<translation id="4881709374218686648">您之前使用其他帐户登录过，如果继续使用目前这个帐户登录，您的数据将会合并到目前登录的帐户中。请考虑通过<ph name="BEGIN_LINK"/>设置<ph name="END_LINK"/>页为您的 Chromium 数据创建一个新的 Chromium 用户。</translation>
 <translation id="9013087743919948559">添加到 Chromium</translation>
 <translation id="6212496753309875659">此计算机已安装了更高版本的 Chromium。如果软件无法正常运行，请卸载 Chromium 并重试。</translation>
 <translation id="3014684866565908571">Chromium 实用工具</translation>

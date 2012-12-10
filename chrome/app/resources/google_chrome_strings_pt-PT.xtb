@@ -38,6 +38,7 @@
 <translation id="8398145039500709259">Utilize esta Conta Google para sincronizar todos os seus itens do Chrome?</translation>
 <translation id="1779550429052479749">Foi encontrada uma instalação do Google Chrome ou Google Chrome Frame em conflito no sistema. Desinstale-a e tente novamente.</translation>
 <translation id="3555616473548901994">Desinstalação concluída.</translation>
+<translation id="4987308747895123092">Feche todas as janelas do Google Chrome (incluindo as que estiverem no modo Windows 8) e tente novamente.</translation>
 <translation id="568643307450491754">Encontre os seus marcadores no menu Chrome ou na barra de marcadores.</translation>
 <translation id="8556340503434111824">Está disponível uma nova versão do Google Chrome, mais rápida do que nunca.</translation>
 <translation id="4728575227883772061">Houve uma falha na instalação devido a um erro não especificado. Se o Google Chrome estiver actualmente em execução, feche-o e tente de novo.</translation>
@@ -69,6 +70,7 @@
 <translation id="3889417619312448367">Desinstalar o Google Chrome</translation>
 <translation id="8551886023433311834">Quase atualizado! Reinicie o dispositivo para concluir a atualização.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="7339898014177206373">Nova janela</translation>
 <translation id="3026202950002788510">Aceda a
           <ph name="BEGIN_BOLD"/>
           Aplicações &gt; Preferências do sistema &gt; Rede &gt; Avançadas &gt; Proxies
@@ -150,6 +152,7 @@
           ) estiver presente, clique sobre o mesmo e certifique-se de que a sua configuração
           está definida como &quot;Direta&quot;.</translation>
 <translation id="3612333635265770873">É conhecido um módulo com o mesmo nome que entra em conflito com o Google Chrome.</translation>
+<translation id="824729746779295798">Copyright 2012 Google Inc. Todos os direitos reservados.</translation>
 <translation id="61852838583753520">Atualizar o SO &amp;Chrome</translation>
 <translation id="6650142020817594541">Este Web site recomenda o Google Chrome Frame (já instalado).</translation>
 <translation id="2712549016134575851">Foi detectado um conflito com outra aplicação instalada.</translation>
@@ -160,6 +163,7 @@
 <translation id="8669527147644353129">Ajudante do Google Chrome</translation>
 <translation id="870251953148363156">Atualizar o &amp;Google Chrome</translation>
 <translation id="130631256467250065">As alterações terão efeito da próxima vez que reiniciar o dispositivo.</translation>
+<translation id="163860049029591106">Introdução ao SO Chrome</translation>
 <translation id="1399397803214730675">Este computador já tem uma versão mais recente do Google Chrome. Se o software não estiver a funcionar, desinstale o Google Chrome e tente novamente.</translation>
 <translation id="576822117893741893">Mostrar o menu Chrome</translation>
 <translation id="3444832043240812445">Esta página mostra informações sobre falhas recentes apenas se <ph name="BEGIN_LINK"/>ativar relatórios de falha<ph name="END_LINK"/>.</translation>
@@ -172,8 +176,8 @@
 <translation id="2680623880102270805">O Google Chrome não pode criar um atalho da aplicação, porque não consegue determinar o ambiente de trabalho atual.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Browser da Internet</translation>
+<translation id="5244325494201350962">Iniciou sessão com outra conta anteriormente; iniciar sessão irá unir os seus dados. Considere criar um novo utilizador do Chrome através da <ph name="BEGIN_LINK"/>página de definições<ph name="END_LINK"/> para os seus itens do Chrome.</translation>
 <translation id="2189123953385179981">O Google ChromeOS não suporta a inicialização de uma aplicação externa para processar links de <ph name="SCHEME"/>. O link solicitado é <ph name="PROTOLINK"/>.</translation>
-<translation id="711654979569750606">Copyright © 2006-2012 Google Inc. Todos os Direitos Reservados.</translation>
 <translation id="8205111949707227942">Opcional: Ajude a melhorar o Chrome OS enviando automaticamente estatísticas de utilização e relatórios de falhas para a Google.</translation>
 <translation id="7253415505590551024">As transferências estão atualmente em curso. Pretende sair do Google Chrome e cancelar as transferências?</translation>
 <translation id="7196020411877309443">Por que motivo estou a ver esta caixa de diálogo?</translation>

@@ -42,6 +42,7 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="8398145039500709259">Да ли желите да користите овај Google налог за синхронизацију свих Chrome садржаја?</translation>
 <translation id="1779550429052479749">У систему је пронађена некомпатибилна инсталација Google Chrome прегледача или Google Chrome Frame-а. Деинсталирајте је и покушајте поново.</translation>
 <translation id="3555616473548901994">Деинсталација је довршена.</translation>
+<translation id="4987308747895123092">Затворите све Google Chrome прозоре (укључујући оне у режиму Windows 8) и покушајте поново.</translation>
 <translation id="568643307450491754">Пронађите обележиваче у Chrome менију или на траци са обележивачима.</translation>
 <translation id="8556340503434111824">Доступна је нова верзија Google Chrome прегледача, бржа него икад пре.</translation>
 <translation id="4728575227883772061">Инсталација није успела због неодређене грешке. Ако је Google Chrome тренутно отворен, затворите га и покушајте поново.</translation>
@@ -75,6 +76,7 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="3889417619312448367">Деинсталирај Google Chrome</translation>
 <translation id="8551886023433311834">Ажурирање је скоро готово! Покрените поново уређај да бисте довршили ажурирање.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> – Google Chrome</translation>
+<translation id="7339898014177206373">Нови прозор</translation>
 <translation id="3026202950002788510">Идите на
           <ph name="BEGIN_BOLD"/>
           Applications (Апликације) &gt; System Preferences (Подешавања система) &gt; Network (Мрежа) &gt; Advanced (Више опција) &gt; Proxies (Проксији)
@@ -158,6 +160,7 @@ Google Chrome не може да врати подешавања.</translation>
           ) присутно, кликните на њега и проверите да ли је конфигурација
           подешена на „Директно“.</translation>
 <translation id="3612333635265770873">Модул истог назива се већ сукобљавао са Google Chrome прегледачем.</translation>
+<translation id="824729746779295798">Ауторска права 2012. Google Inc. Сва права задржана.</translation>
 <translation id="61852838583753520">Ажурирај &amp;Chrome ОС</translation>
 <translation id="6650142020817594541">Овај сајт препоручује Google Chrome Frame (већ је инсталиран).</translation>
 <translation id="2712549016134575851">Откривено је сукобљавање са другом инсталираном апликацијом.</translation>
@@ -168,6 +171,7 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="8669527147644353129">Google Chrome помоћник</translation>
 <translation id="870251953148363156">Ажурирај &amp;Google Chrome</translation>
 <translation id="130631256467250065">Промене ће ступити на снагу када следећи пут поново покренете уређај.</translation>
+<translation id="163860049029591106">Почетни кораци за Chrome ОС</translation>
 <translation id="1399397803214730675">Овај рачунар већ има новију верзију Google Chrome прегледача. Ако софтвер не функционише, деинсталирајте Google Chrome и покушајте поново.</translation>
 <translation id="576822117893741893">Приказивање Chrome менија</translation>
 <translation id="3444832043240812445">Ова страница приказује информације о недавним отказивањима само уколико <ph name="BEGIN_LINK"/>омогућите извештавање о отказивањима<ph name="END_LINK"/>.</translation>
@@ -180,8 +184,8 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="2680623880102270805">Google Chrome не може да направи пречицу апликације јер не може да одреди тренутно рачунарско окружење.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Интернет прегледач</translation>
+<translation id="5244325494201350962">Претходно сте се пријавили помоћу другог налога. Пријављивање ће објединити податке. Размислите о прављењу новог Chrome корисника помоћу <ph name="BEGIN_LINK"/>странице подешавања<ph name="END_LINK"/> за Chrome садржај.</translation>
 <translation id="2189123953385179981">Google ChromeOS не подржава покретање спољних апликација ради обраде <ph name="SCHEME"/> веза. Потребна веза је <ph name="PROTOLINK"/>.</translation>
-<translation id="711654979569750606">Ауторска права © 2006–2012. Google Inc. Сва права задржана.</translation>
 <translation id="8205111949707227942">Опционално: Помозите да побољшамо Chrome ОС аутоматским слањем статистике о коришћењу и извештаја о отказивању Google-у.</translation>
 <translation id="7253415505590551024">Преузимања су у току. Да ли желите да изађете из Google Chrome-а и откажете преузимања?</translation>
 <translation id="7196020411877309443">Зашто видим ово?</translation>
@@ -201,7 +205,7 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="2246246234298806438">Google Chrome не може да покаже приказ пре штампања када недостаје уграђени PDF приказивач.</translation>
 <translation id="6626317981028933585">Нажалост, није могуће приступити подешавањима за Mozilla Firefox док се тај прегледач користи. Да бисте увезли ова подешавања у Google Chrome, сачувајте оно што се урадили и затворите све прозоре Firefox прегледача. Затим кликните на „Настави“.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="1698376642261615901">Google Chrome је веб прегледач који веб странице и апликације покреће брзином светлости. Он је брз, стабилан и лак за коришћење. Још безбедније прегледајте Веб уз помоћ заштите од малвера и „пецања“ која је уграђена у Google Chrome.</translation>
+<translation id="1698376642261615901">Google Chrome је веб прегледач који веб-странице и апликације покреће брзином светлости. Он је брз, стабилан и лак за коришћење. Још безбедније прегледајте Веб уз помоћ заштите од малвера и „пецања“ која је уграђена у Google Chrome.</translation>
 <translation id="3419750618886995598">Ажурирање Chrome Frame-а.</translation>
 <translation id="3336524238463733095">Google Chrome или Google Chrome Frame не могу да се ажурирају због недоследних подешавања групних смерница за Google ажурирање. Користите уређивач групних смерница да бисте подесили замену смерница ажурирања за апликацију Google Chrome Binaries и покушајте поново; више детаља потражите на адреси http://goo.gl/uJ9gV.</translation>
 <translation id="6049075767726609708">Администратор је инсталирао Google Chrome на овај систем и програм је доступан свим корисницима. Google Chrome са приступом на нивоу система ће сада заменити вашу инсталацију са приступом на нивоу корисника.</translation>

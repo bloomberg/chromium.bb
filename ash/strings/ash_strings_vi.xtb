@@ -18,6 +18,8 @@
 <translation id="6459472438155181876">Đang mở rộng màn hình tới <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Di động</translation>
 <translation id="6596816719288285829">Địa chỉ IP</translation>
+<translation id="1812696562331527143">Phương thức nhập của bạn đã thay đổi thành <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>bên thứ ba<ph name="END_LINK"/>).
+Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="5233638681132016545">Tab mới</translation>
 <translation id="3846575436967432996">Không có thông tin mạng</translation>
 <translation id="3026237328237090306">Thiết lập dữ liệu di động</translation>
@@ -26,19 +28,22 @@
 <translation id="3126069444801937830">Khởi động lại để cập nhật</translation>
 <translation id="3294437725009624529">Khách</translation>
 <translation id="8190698733819146287">Tùy chỉnh ngôn ngữ và dữ liệu nhập...</translation>
-<translation id="5182671122927417841">Tắt tiện ích mở rộng</translation>
 <translation id="598295083618286569">Đã kết nối bluetooth</translation>
 <translation id="5222676887888702881">Đăng xuất</translation>
-<translation id="2091132388437059185">Tự động ẩn trình khởi chạy khi phóng to</translation>
 <translation id="2964193600955408481">Tắt Wi-Fi</translation>
 <translation id="811680302244032017">Thêm thiết bị...</translation>
 <translation id="2509468283778169019">Đang bật CAPS LOCK</translation>
+<translation id="3892641579809465218">Màn hình nội bộ</translation>
 <translation id="7823564328645135659">Ngôn ngữ đã chuyển từ &quot;<ph name="FROM_LOCALE"/>&quot; thành &quot;<ph name="TO_LOCALE"/>&quot; sau khi đồng bộ hóa cài đặt của bạn.</translation>
+<translation id="5825747213122829519">Phương thức nhập của bạn đã thay đổi thành <ph name="INPUT_METHOD_ID"/>.
+Nhấn Shift + Alt để chuyển đổi.</translation>
+<translation id="2562916301614567480">Mạng riêng</translation>
 <translation id="6426039856985689743">Tắt dữ liệu di động</translation>
 <translation id="3087734570205094154">Bên dưới</translation>
+<translation id="5271016907025319479">Mạng riêng ảo không được định cấu hình.</translation>
 <translation id="3232695630852378748">Cài đặt bluetooth...</translation>
 <translation id="1480041086352807611">Chế độ trình diễn</translation>
-<translation id="4186384497305035875">Màn hình này được cố tình để trống</translation>
+<translation id="3626637461649818317">Còn lại <ph name="PERCENTAGE"/>%</translation>
 <translation id="9089416786594320554">Phương thức nhập</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
 <translation id="2570059561924004903">Tắt tính năng phản hồi bằng giọng nói</translation>
@@ -52,6 +57,7 @@
 <translation id="1346748346194534595">Phải</translation>
 <translation id="8528322925433439945">Di động ...</translation>
 <translation id="8428213095426709021">Cài đặt</translation>
+<translation id="2472320577759310817">Bluetooth tắt.</translation>
 <translation id="2372145515558759244">Đang đồng bộ hóa ứng dụng...</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="1467432559032391204">Trái</translation>
@@ -65,11 +71,10 @@
 <translation id="1850504506766569011">Wi-Fi đang tắt.</translation>
 <translation id="2872961005593481000">Tắt</translation>
 <translation id="7052914147756339792">Đặt hình nền...</translation>
-<translation id="80942317552162138">Đầy <ph name="PERCENTAGE"/>%</translation>
-<translation id="5746825509052394497">Phương thức nhập của bạn đã thay đổi thành <ph name="INPUT_METHOD_ID"/>.
-        Nhấn Shift + Alt để chuyển đổi.</translation>
+<translation id="2739500853984626550">Hiện không có thiết bị Bluetooth nào</translation>
 <translation id="1602076796624386989">Bật dữ liệu di động</translation>
 <translation id="3157931365184549694">Khôi phục</translation>
+<translation id="225680501294068881">Đang quét tìm thiết bị...</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
 <translation id="7029814467594812963">Thoát khỏi phiên</translation>
 <translation id="8454013096329229812">Wi-Fi đang bật.</translation>
@@ -77,10 +82,9 @@
 <translation id="2983818520079887040">Cài đặt...</translation>
 <translation id="2712866615167520691">Các tính năng truy cập đã được bật.
 Nhấn Ctrl+Alt+Z để hủy.</translation>
+<translation id="5467313780247887226">Không thể sao chép hình ảnh trên màn hình đính kèm. Không tìm thấy độ phân giải phù hợp.</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
 <translation id="8660803626959853127">Đang đồng bộ hóa <ph name="COUNT"/> tệp</translation>
-<translation id="1837166567415282700">Phương thức nhập của bạn đã thay đổi thành <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>bên thứ ba<ph name="END_LINK"/>).
-        Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="639644700271529076">CAPS LOCK tắt</translation>
 <translation id="4101192585425716296">Trung tâm thông báo</translation>
 <translation id="4864165860509564259">Vị trí trình khởi chạy</translation>
@@ -89,9 +93,6 @@ Nhấn Ctrl+Alt+Z để hủy.</translation>
 <translation id="3050422059534974565">CAPS LOCK đang bật.
 Nhấn Search hoặc Shift để hủy.</translation>
 <translation id="397105322502079400">Đang tính...</translation>
-<translation id="6362354186508391853">Ctrl +</translation>
-<translation id="477782898153505579">Bạn không có thông báo nào. Hãy thư giãn!</translation>
-<translation id="7457942297256758195">Xóa tất cả</translation>
 <translation id="3573179567135747900">Thay đổi lại thành &quot;<ph name="FROM_LOCALE"/>&quot; (yêu cầu khởi động lại)</translation>
 <translation id="8103386449138765447">Tin nhắn SMS: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="5045002648206642691">Cài đặt Google Drive...</translation>
@@ -102,6 +103,5 @@ Nhấn Alt+Search hoặc Shift để hủy.</translation>
 <translation id="6911468394164995108">Tham gia mạng khác...</translation>
 <translation id="6843725295806269523">tắt tiếng</translation>
 <translation id="412065659894267608"><ph name="HOUR"/>g <ph name="MINUTE"/>p cho đến khi đầy</translation>
-<translation id="4469842253116033348">Vô hiệu hóa thông báo từ <ph name="SITE"/></translation>
 <translation id="6359806961507272919">SMS từ <ph name="PHONE_NUMBER"/></translation>
 </translationbundle>

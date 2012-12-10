@@ -38,6 +38,7 @@
 <translation id="8398145039500709259">Χρησιμοποιήστε αυτόν τον Λογαριασμό Google για το συγχρονισμό όλων των στοιχείων που διαθέτετε στο Chrome;</translation>
 <translation id="1779550429052479749">Εντοπίστηκε στο σύστημα μια εγκατάσταση σε διένεξη του Google Chrome ή του Google Chrome Frame. Καταργήστε την εγκατάσταση και προσπαθήστε ξανά.</translation>
 <translation id="3555616473548901994">Η κατάργηση εγκατάστασης ολοκληρώθηκε.</translation>
+<translation id="4987308747895123092">Κλείστε όλα τα παράθυρα του Google Chrome (περιλαμβανομένων όσων βρίσκονται σε λειτουργία Windows 8) και δοκιμάστε ξανά.</translation>
 <translation id="568643307450491754">Βρείτε τους σελιδοδείκτες σας στο μενού του Chrome ή στη γραμμή σελιδοδεικτών.</translation>
 <translation id="8556340503434111824">Υπάρχει μια νέα έκδοση του Google Chrome και είναι ταχύτερη από ποτέ.</translation>
 <translation id="4728575227883772061">Η εγκατάσταση απέτυχε λόγω απροσδιόριστου σφάλματος. Αν το Google Chrome εκτελείται αυτήν τη στιγμή, κλείστε το και δοκιμάστε ξανά.</translation>
@@ -71,6 +72,7 @@
 <translation id="3889417619312448367">Κατάργηση εγκατάστασης Google Chrome</translation>
 <translation id="8551886023433311834">Η ενημέρωση σχεδόν πραγματοποιήθηκε! Επανεκκινήστε τη συσκευή σας για να ολοκληρωθεί η ενημέρωση.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="7339898014177206373">Νέο παράθυρο</translation>
 <translation id="3026202950002788510">Μεταβείτε στο
           <ph name="BEGIN_BOLD"/>
           Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies
@@ -154,6 +156,7 @@
           ), κάντε κλικ σε αυτό και βεβαιωθείτε ότι η διαμόρφωσή σας
           είναι ρυθμισμένη στην επιλογή &quot;Άμεση&quot;.</translation>
 <translation id="3612333635265770873">Έχει διαπιστωθεί ότι μια λειτουργική μονάδα με το ίδιο όνομα βρίσκεται σε διένεξη με το Google Chrome.</translation>
+<translation id="824729746779295798">Πνευματικά δικαιώματα 2012 Google Inc. Με επιφύλαξη παντός δικαιώματος.</translation>
 <translation id="61852838583753520">&amp;Ενημέρωση του Chrome OS</translation>
 <translation id="6650142020817594541">Αυτός ο ιστότοπος προτείνει το Google Chrome Frame (ήδη εγκατεστημένο).</translation>
 <translation id="2712549016134575851">Εντοπίστηκε διένεξη με άλλη εγκατεστημένη εφαρμογή.</translation>
@@ -164,6 +167,7 @@
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="870251953148363156">Ενημέρωση &amp;του Google Chrome</translation>
 <translation id="130631256467250065">Οι αλλαγές σας θα εφαρμοστούν την επόμενη φορά που θα επανεκκινήσετε τη συσκευή σας.</translation>
+<translation id="163860049029591106">Έναρξη χρήσης του Chrome OS</translation>
 <translation id="1399397803214730675">Αυτός ο υπολογιστής διαθέτει ήδη μια πιο πρόσφατη έκδοση του Google Chrome. Αν το λογισμικό δεν λειτουργεί, καταργήστε την εγκατάσταση του Google Chrome και δοκιμάστε ξανά.</translation>
 <translation id="576822117893741893">Εμφάνιση του μενού του Chrome</translation>
 <translation id="3444832043240812445">Αυτή η σελίδα εμφανίζει μόνο πληροφορίες για τα σφάλματα που παρουσιάστηκαν πρόσφατα εφόσον <ph name="BEGIN_LINK"/>έχετε ενεργοποιημένη την αναφορά σφαλμάτων<ph name="END_LINK"/>.</translation>
@@ -176,8 +180,8 @@
 <translation id="2680623880102270805">Το Google Chrome δεν είναι δυνατό να δημιουργήσει μια συντόμευση εφαρμογής, επειδή δεν μπορεί να καθορίσει το τρέχον περιβάλλον επιφάνειας εργασίας.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Πρόγραμμα περιήγησης Διαδικτύου</translation>
+<translation id="5244325494201350962">Την προηγούμενη φορά συνδεθήκατε με διαφορετικό λογαριασμό, αν συνδεθείτε, θα γίνει συγχώνευση των δεδομένων σας. Συνιστάται να δημιουργήσετε ένα νέο χρήστη Chrome μέσω της <ph name="BEGIN_LINK"/>σελίδας ρυθμίσεων<ph name="END_LINK"/> για το περιεχόμενό σας στο Chrome.</translation>
 <translation id="2189123953385179981">Το Google ChromeOS δεν υποστηρίζει την εκκίνηση εξωτερικής εφαρμογής για το χειρισμό συνδέσμων <ph name="SCHEME"/>. Ο σύνδεσμος που ζητήθηκε είναι <ph name="PROTOLINK"/>.</translation>
-<translation id="711654979569750606">Πνευματικά δικαιώματα © 2006-2011 Google Inc. Με την επιφύλαξη παντός δικαιώματος.</translation>
 <translation id="8205111949707227942">Προαιρετικό: Συμβάλετε στη βελτίωση του Chrome OS στέλνοντας αυτόματα στην Google στατιστικά στοιχεία χρήσης και αναφορές σφαλμάτων.</translation>
 <translation id="7253415505590551024">Αυτήν τη στιγμή, βρίσκονται σε εξέλιξη λήψεις. Θέλετε να κλείσετε το Google Chrome και να ακυρώσετε τις λήψεις;</translation>
 <translation id="7196020411877309443">Γιατί το βλέπω αυτό;</translation>

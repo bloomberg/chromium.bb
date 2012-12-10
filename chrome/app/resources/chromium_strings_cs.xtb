@@ -17,6 +17,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="7128196614940529818">Plugin Chromium Frame je již nainstalován a je přístupný pro všechny uživatele tohoto počítače. Chcete-li nainstalovat Chromium Frame na úrovni uživatele, musíte nejprve odinstalovat správcem nainstalovanou verzi na úrovni systému.</translation>
 <translation id="731644333568559921">Aktualizovat &amp;Chromium OS</translation>
 <translation id="7421823331379285070">Chromium vyžaduje operační systém Windows XP nebo novější. Některé funkce možná nebudou dostupné.</translation>
+<translation id="3549345495227188780">Začínáme se systémem Chromium OS</translation>
 <translation id="4330297532943865716">V systému byla nalezena konfliktní instalace prohlížeče Chromium. Odinstalujte prosím tuto instanci a zkuste to znovu.</translation>
 <translation id="6953661834318318668">Panel nástrojů Chromium</translation>
 <translation id="7097100943370017396">Chromium se již neaktualizuje, protože váš operační systém je zastaralý.</translation>
@@ -58,6 +59,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="3197823471738295152">Zařízení bylo aktualizováno.</translation>
 <translation id="8551886023433311834">Aktualizace je téměř hotova! Dokončíte ji restartováním zařízení.</translation>
 <translation id="8353224596138547809">Přejete si, aby aplikace Chromium uložila vaše heslo pro tyto stránky?</translation>
+<translation id="7339898014177206373">Nové okno</translation>
 <translation id="3026202950002788510">Přejděte do nabídky
           <ph name="BEGIN_BOLD"/>
           Aplikace &gt; Nastavení systému &gt; Síť &gt; Rozšířená nastavení &gt; Servery proxy
@@ -69,7 +71,6 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="9191268552238695869">Správce do tohoto počítače nainstaloval prohlížeč Chromium, který je přístupný všem uživatelům. Vaši instalaci prohlížeče Chromium na úrovni uživatele nyní nahradí instalace na systémové úrovni.</translation>
 <translation id="3509308970982693815">Zavřete prosím všechna okna prohlížeče Chromium a zkuste to znovu.</translation>
 <translation id="4077262827416206768">Aby se změny projevily, zavřete prosím všechna okna prohlížeče Chromium a spusťte jej znovu.</translation>
-<translation id="9119843944749246249">Copyright © 2006–2012 Autoři prohlížeče Chromium. Všechna práva vyhrazena.</translation>
 <translation id="6944967875980567883">Moduly načtené do prohlížeče Chromium</translation>
 <translation id="118298050220780080">Pokusili jste se přejít na server &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ale server předložil certifikát vydaný subjektem, kterému operační systém vašeho počítače nedůvěřuje. To může znamenat, že server generoval vlastní bezpečnostní záruky, u nichž aplikace Chromium nemůže spoléhat na informace o identitě, nebo že se vaši komunikaci pokouší zachytit útočník.</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
@@ -91,6 +92,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="2881203820889150661">Chromium nemůže vytvořit zástupce aplikace, protože nedokáže zjistit aktuální prostředí pracovní plochy.</translation>
 <translation id="4886158514168859177">V tomto počítači je již nainstalována novější verze pluginu Chromium Frame. Jestliže tento software nefunguje, odinstalujte Chromium Frame a zkuste to znovu.</translation>
 <translation id="911206726377975832">Vymazat také všechna data procházení?</translation>
+<translation id="1699664235656412242">Zavřete všechna okna prohlížeče Chromium (včetně oken v režimu Windows 8) a zkuste to znovu.</translation>
 <translation id="6734080038664603509">Aktualizovat &amp;Chromium</translation>
 <translation id="8862326446509486874">Nemáte práva nutná k provádění instalací na úrovni systému. Zkuste spustit instalační program jako správce.</translation>
 <translation id="1774152462503052664">Nechat prohlížeč Chromium spuštěný na pozadí</translation>
@@ -127,7 +129,9 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="6717134281241384636">Nelze použít váš profil, protože byl vytvořen v novější verzi prohlížeče Chromium.
 
 Některé funkce mohou být nedostupné. Zadejte prosím jiný adresář profilu, nebo používejte novější verzi prohlížeče Chromium.</translation>
+<translation id="4499972362520386277">Copyright 2012 Autoři prohlížeče Chromium. Všechna práva vyhrazena.</translation>
 <translation id="2712549016134575851">Byl zjištěn konflikt s jinou nainstalovanou aplikací.</translation>
+<translation id="4881709374218686648">Dříve jste již byli přihlášeni s jiným účtem, po přihlášení tedy dojde ke sloučení dat. Doporučujeme vytvořit pro údaje prohlížeče Chromium nový uživatelský účet na stránce <ph name="BEGIN_LINK"/>Nastavení<ph name="END_LINK"/>.</translation>
 <translation id="9013087743919948559">Přidat do prohlížeče Chromium</translation>
 <translation id="6212496753309875659">V tomto počítači je již nainstalována novější verze prohlížeče Chromium. Jestliže tento software nefunguje, odinstalujte Chromium a zkuste to znovu.</translation>
 <translation id="3014684866565908571">Chromium Utility</translation>

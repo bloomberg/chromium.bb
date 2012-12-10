@@ -38,6 +38,7 @@
 <translation id="8398145039500709259">Alle Ihre Chrome-Inhalte mit diesem Google-Konto synchronisieren?</translation>
 <translation id="1779550429052479749">Auf dem System wurde eine Installation von Google Chrome bzw. Google Chrome Frame gefunden, die einen Konflikt verursacht. Deinstallieren Sie sie und versuchen Sie es erneut.</translation>
 <translation id="3555616473548901994">Deinstallation ist abgeschlossen.</translation>
+<translation id="4987308747895123092">Schließen Sie alle Google Chrome-Fenster einschließlich der Fenster im Windows 8-Modus und versuchen Sie es erneut.</translation>
 <translation id="568643307450491754">Ihre Lesezeichen finden Sie im Chrome-Menü oder in der Lesezeichenleiste.</translation>
 <translation id="8556340503434111824">Es gibt eine neue Version von Google Chrome, die schneller ist, als anderen zuvor.</translation>
 <translation id="4728575227883772061">Installation aufgrund von unbekanntem Fehler fehlgeschlagen. Falls Google Chrome bereits ausgeführt wird, schließen Sie es und versuchen Sie es erneut.</translation>
@@ -69,6 +70,7 @@
 <translation id="3889417619312448367">Google Chrome deinstallieren</translation>
 <translation id="8551886023433311834">Fast fertig! Starten Sie Ihr Gerät neu, um die Aktualisierung abzuschließen.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="7339898014177206373">Neues Fenster</translation>
 <translation id="3026202950002788510">Gehen Sie zu
           <ph name="BEGIN_BOLD"/>
           Anwendungen &gt; Systemeinstellungen &gt; Netzwerk &gt; Erweitert &gt; Proxies
@@ -150,6 +152,7 @@
            sofern diese angezeigt wird, und vergewissern Sie sich,
           dass die Einstellung für Ihre Konfiguration auf &quot;Direkt&quot; festgelegt ist.</translation>
 <translation id="3612333635265770873">Es ist bekannt, dass ein Modul mit dem gleichen Namen in Konflikt mit Google Chrome steht.</translation>
+<translation id="824729746779295798">Copyright 2012 Google Inc. Alle Rechte vorbehalten.</translation>
 <translation id="61852838583753520">&amp;Chrome OS aktualisieren</translation>
 <translation id="6650142020817594541">Diese Website empfiehlt Google Chrome Frame (bereits installiert).</translation>
 <translation id="2712549016134575851">Ein Konflikt mit einer anderen installierten Anwendung wurde erkannt.</translation>
@@ -160,6 +163,7 @@
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="870251953148363156">&amp;Google Chrome aktualisieren</translation>
 <translation id="130631256467250065">Ihre Änderungen werden beim nächsten Neustart wirksam.</translation>
+<translation id="163860049029591106">Erste Schritte mit Chrome OS</translation>
 <translation id="1399397803214730675">Auf diesem Computer befindet sich bereits eine neuere Version von Google Chrome. Falls die Software nicht funktioniert, deinstallieren Sie Google Chrome und versuchen Sie es erneut.</translation>
 <translation id="576822117893741893">Chrome-Menü anzeigen</translation>
 <translation id="3444832043240812445">Diese Seite zeigt nur Informationen zu Ihren letzten Abstürzen, wenn Sie die <ph name="BEGIN_LINK"/>Absturzberichtsfunktion aktivieren<ph name="END_LINK"/>.</translation>
@@ -172,8 +176,8 @@
 <translation id="2680623880102270805">Google Chrome kann keine Anwendungsverknüpfung erstellen, da die aktuelle Desktop-Umgebung nicht erkannt wird.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Internetbrowser</translation>
+<translation id="5244325494201350962">Sie waren zuletzt mit einem anderen Konto angemeldet. Wenn Sie sich anmelden, werden Ihre Daten zusammengeführt. Unter Umständen sollten Sie für Ihre Chrome-Daten einen neuen Chrome-Nutzer über die <ph name="BEGIN_LINK"/>Einstellungsseite<ph name="END_LINK"/> erstellen.</translation>
 <translation id="2189123953385179981">Google Chrome OS unterstützt keine externe Anwendung zur Verarbeitung von <ph name="SCHEME"/>-Links. Der angeforderte Link ist <ph name="PROTOLINK"/>.</translation>
-<translation id="711654979569750606">Copyright © 2006-2012 Google Inc. Alle Rechte vorbehalten.</translation>
 <translation id="8205111949707227942">Optional: Nutzungsstatistiken und Absturzberichte zur Verbesserung von Chrome OS automatisch an Google senden</translation>
 <translation id="7253415505590551024">Momentan werden Downloads durchgeführt. Möchten Sie Google Chrome beenden und die Downloads abbrechen?</translation>
 <translation id="7196020411877309443">Warum wird diese Meldung angezeigt?</translation>

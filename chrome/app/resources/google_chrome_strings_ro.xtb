@@ -37,6 +37,7 @@
 <translation id="8398145039500709259">Utilizaţi acest Cont Google pentru a sincroniza toate elementele din Chrome?</translation>
 <translation id="1779550429052479749">A fost găsită o instalare conflictuală a Google Chrome sau Google Chrome Frame în sistem. Dezinstalaţi-o şi încercaţi din nou.</translation>
 <translation id="3555616473548901994">Dezinstalare finalizată.</translation>
+<translation id="4987308747895123092">Închideţi toate ferestrele Google Chrome (inclusiv pe cele în modul Windows 8) şi încercaţi din nou.</translation>
 <translation id="568643307450491754">Găsiţi marcajele în meniul Chrome sau în bara de marcaje.</translation>
 <translation id="8556340503434111824">Este disponibilă o nouă versiune de Google Chrome, iar aceasta este mai rapidă ca oricând.</translation>
 <translation id="4728575227883772061">Instalarea a eșuat din cauza unei erori necunoscute. Dacă Google Chrome rulează în acest moment, închideți-l și încercați din nou.</translation>
@@ -68,6 +69,7 @@
 <translation id="3889417619312448367">Dezinstalați Google Chrome</translation>
 <translation id="8551886023433311834">Actualizare aproape efectuată! Reporniţi dispozitivul pentru a finaliza actualizarea.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="7339898014177206373">Fereastră nouă</translation>
 <translation id="3026202950002788510">Accesaţi
           <ph name="BEGIN_BOLD"/>
           Applications (Aplicaţii) &gt; System Preferences (Preferinţe de sistem) &gt; Network (Reţea) &gt; Advanced (Avansat) &gt; Proxies (Servere proxy)
@@ -148,6 +150,7 @@
           <ph name="END_BOLD"/>
           ), daţi clic pe acesta şi asiguraţi-vă că aveţi configuraţia setată la „Direct”.</translation>
 <translation id="3612333635265770873">Un modul cu acelaşi nume este cunoscut ca având conflicte cu Google Chrome.</translation>
+<translation id="824729746779295798">Copyright 2012 Google Inc. Toate drepturile rezervate.</translation>
 <translation id="61852838583753520">Actualizaţi sistemul de operare &amp;Chrome</translation>
 <translation id="6650142020817594541">Acest site recomandă Google Chrome Frame (deja instalat).</translation>
 <translation id="2712549016134575851">S-a detectat un conflict cu o altă aplicație instalată.</translation>
@@ -158,6 +161,7 @@
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="870251953148363156">Actualizaţi &amp;Google Chrome</translation>
 <translation id="130631256467250065">Modificările dvs. se vor aplica următoarea dată când reporniţi dispozitivul.</translation>
+<translation id="163860049029591106">Noţiuni introductive despre sistemul de operare Chrome</translation>
 <translation id="1399397803214730675">Acest computer are deja o versiune mai recentă de Google Chrome. Dacă software-ul nu funcționează, dezinstalați Google Chrome și încercaţi din nou.</translation>
 <translation id="576822117893741893">Afişaţi meniul Chrome</translation>
 <translation id="3444832043240812445">Această pagină afişează informaţii cu privire la recentele opriri cu eroare numai dacă <ph name="BEGIN_LINK"/>activaţi raportarea opririlor cu eroare<ph name="END_LINK"/>.</translation>
@@ -170,8 +174,8 @@
 <translation id="2680623880102270805">Google Chrome nu poate crea o comandă rapidă pentru o aplicaţie, deoarece nu poate stabili mediul de desktop curent.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Browser de Internet</translation>
+<translation id="5244325494201350962">Anterior, v-aţi conectat cu un alt cont de utilizator. Dacă vă conectaţi, datele vor fi îmbinate. Vă recomandăm să creaţi un alt utilizator Chrome de pe <ph name="BEGIN_LINK"/>pagina de setări<ph name="END_LINK"/> pentru conţinuturile Chrome.</translation>
 <translation id="2189123953385179981">Google ChromeOS nu acceptă lansarea unei aplicații externe pentru a gestiona linkurile <ph name="SCHEME"/>. Linkul solicitat este <ph name="PROTOLINK"/>.</translation>
-<translation id="711654979569750606">Copyright © 2006-2012 Google Inc. Toate drepturile rezervate.</translation>
 <translation id="8205111949707227942">Opţional: ajutaţi la îmbunătăţirea SO Chrome prin trimiterea automată de statistici privind utilizarea şi rapoarte de avarie la Google.</translation>
 <translation id="7253415505590551024">Mai multe descărcări sunt în desfăşurare. Doriţi să ieşiţi din Google Chrome şi să anulaţi descărcările?</translation>
 <translation id="7196020411877309443">De ce primesc această notificare?</translation>

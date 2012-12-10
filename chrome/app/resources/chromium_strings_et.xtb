@@ -15,6 +15,7 @@
 <translation id="7128196614940529818">Chromium Frame on juba installitud ja arvutis kõikidele kasutajatele saadaval. Kui soovite installida Chromium Frame'i kasutaja tasemel, siis tuleb teil esmalt desinstallida süsteemi taseme versioon, mille on installinud administraator.</translation>
 <translation id="731644333568559921">Värskenda &amp;Chromium OS-i</translation>
 <translation id="7421823331379285070">Chromium nõuab Windows XP-d või uuemat operatsioonisüsteemi. Mõni funktsioon ei pruugi töötada.</translation>
+<translation id="3549345495227188780">Alustamine Chromium OS-iga</translation>
 <translation id="4330297532943865716">Süsteemist leiti Chromiumi või Chromium Frame'i vastuoluline install. Desinstallige see ja proovige uuesti.</translation>
 <translation id="6953661834318318668">Chromiumi tööriistariba</translation>
 <translation id="7097100943370017396">Chromium ei ole enam ajakohane, kuna teie operatsioonisüsteem on aegunud.</translation>
@@ -56,6 +57,7 @@
 <translation id="3197823471738295152">Teie seade on ajakohane.</translation>
 <translation id="8551886023433311834">Seade on peaaegu ajakohane. Täienduse lõpuleviimiseks taaskäivitage seade.</translation>
 <translation id="8353224596138547809">Kas soovite, et Chromium salvestaks parooli, mida selle saidi jaoks kasutate?</translation>
+<translation id="7339898014177206373">Uus aken</translation>
 <translation id="3026202950002788510">Minge siia:
           <ph name="BEGIN_BOLD"/>
           Rakendused &gt; Süsteemieelistused &gt; Võrk &gt; Täpsem &gt; Puhverserverid
@@ -67,7 +69,6 @@
 <translation id="9191268552238695869">Administraator on installinud teie süsteemi Chromiumi ja see on kõikidele kasutajatele saadava. Süsteemi taseme Chromium asendab nüüd kasutaja taseme installi.</translation>
 <translation id="3509308970982693815">Sulgege kõik Chromiumi aknad ja proovige uuesti.</translation>
 <translation id="4077262827416206768">Muudatuse rakendamiseks sulgege kõik Chromiumi aknad ja taaskäivitage Chromium.</translation>
-<translation id="9119843944749246249">Autoriõigus © 2006-2012 The Chromium Authors. Kõik õigused kaitstud.</translation>
 <translation id="6944967875980567883">Chromiumi laaditud moodulid</translation>
 <translation id="118298050220780080">Üritasite jõuda domeenile &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, kuid server esitas sertifikaadi, mille väljastajat arvuti operatsioonisüsteem ei usalda. See võib tähendada, et server lõi ise turbemandaadid, mille identiteediteabele Chromium ei saa tugineda, või ründaja üritab teie sidet häirida.</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
@@ -89,6 +90,7 @@
 <translation id="2881203820889150661">Chromium ei saa luua rakenduse otseteed, kuna praegust töölauakeskkonda ei saa määrata.</translation>
 <translation id="4886158514168859177">Arvutis on juba Chromium Frame'i uuem versioon. Kui tarkvara ei tööta, siis desinstallige Chromium Frame ja proovige uuesti.</translation>
 <translation id="911206726377975832">Kas kustutada ka teie sirvimisandmed?</translation>
+<translation id="1699664235656412242">Sulgege kõik Chromiumi aknad (ka Windows 8 režiimis) ja proovige uuesti.</translation>
 <translation id="6734080038664603509">Värskenda &amp;Chromiumi</translation>
 <translation id="8862326446509486874">Teil ei ole süsteemi tasemel installimiseks sobivaid õigusi. Proovige installijat administraatorina uuesti käivitada.</translation>
 <translation id="1774152462503052664">Luba Chromiumil taustal töötada</translation>
@@ -125,7 +127,9 @@
 <translation id="6717134281241384636">Teie profiili ei saa kasutada, kuna see pärineb Chromiumi uuemast versioonist.
 
 On võimalik, et mõni funktsioon ei ole saadaval. Määrake muu profiilikataloog või kasutage Chromiumi uuemat versiooni.</translation>
+<translation id="4499972362520386277">Autoriõigus © 2012 The Chromium Authors. Kõik õigused kaitstud.</translation>
 <translation id="2712549016134575851">Tuvastatud on konflikt teise installitud rakendusega.</translation>
+<translation id="4881709374218686648">Olite varem sisse logitud teise kontoga. Sisselogimine ühendab andmed. Kaaluge oma Chromiumi kraami jaoks uue Chromiumi kasutaja loomist <ph name="BEGIN_LINK"/>seadete lehel<ph name="END_LINK"/>.</translation>
 <translation id="9013087743919948559">Chromiumi lisamine</translation>
 <translation id="6212496753309875659">Arvutis on juba Chromiumi uuem versioon. Kui tarkvara ei tööta, siis desinstallige Chromium ja proovige uuesti.</translation>
 <translation id="3014684866565908571">Chromium Utility</translation>

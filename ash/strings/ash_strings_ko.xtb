@@ -18,6 +18,8 @@
 <translation id="6459472438155181876">화면을 <ph name="DISPLAY_NAME"/>(으)로 확장</translation>
 <translation id="8206859287963243715">휴대전화</translation>
 <translation id="6596816719288285829">IP 주소</translation>
+<translation id="1812696562331527143">입력 방법이 <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>타사<ph name="END_LINK"/>)(으)로 변경되었습니다.
+전환하려면 Shift+Alt를 누르세요.</translation>
 <translation id="5233638681132016545">새 탭</translation>
 <translation id="3846575436967432996">네트워크 정보 없음</translation>
 <translation id="3026237328237090306">모바일 데이터 설정</translation>
@@ -26,19 +28,22 @@
 <translation id="3126069444801937830">업데이트하려면 다시 시작</translation>
 <translation id="3294437725009624529">손님</translation>
 <translation id="8190698733819146287">언어 및 입력 설정...</translation>
-<translation id="5182671122927417841">확장 프로그램 사용 중지</translation>
 <translation id="598295083618286569">블루투스가 연결됨</translation>
 <translation id="5222676887888702881">로그아웃</translation>
-<translation id="2091132388437059185">최대화 상태에서 실행기 자동으로 숨기기</translation>
 <translation id="2964193600955408481">Wi-Fi 사용 안 함</translation>
 <translation id="811680302244032017">기기 추가...</translation>
 <translation id="2509468283778169019">CAPS LOCK이 켜져 있습니다.</translation>
+<translation id="3892641579809465218">내부 디스플레이</translation>
 <translation id="7823564328645135659">설정을 동기화한 뒤 Chrome의 언어가 '<ph name="FROM_LOCALE"/>'에서 '<ph name="TO_LOCALE"/>'(으)로 변경되었습니다.</translation>
+<translation id="5825747213122829519">입력 방법이 <ph name="INPUT_METHOD_ID"/>(으)로 변경되었습니다.
+전환하려면 Shift+Alt를 누르세요.</translation>
+<translation id="2562916301614567480">사설 네트워크</translation>
 <translation id="6426039856985689743">모바일 데이터 사용 안함</translation>
 <translation id="3087734570205094154">맨 아래</translation>
+<translation id="5271016907025319479">VPN이 구성되지 않았습니다.</translation>
 <translation id="3232695630852378748">블루투스 설정</translation>
 <translation id="1480041086352807611">데모 모드</translation>
-<translation id="4186384497305035875">이 화면은 의도적으로 비워 둡니다.</translation>
+<translation id="3626637461649818317"><ph name="PERCENTAGE"/>% 남음</translation>
 <translation id="9089416786594320554">입력 방법</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
 <translation id="2570059561924004903">음성 피드백 사용 중지</translation>
@@ -52,6 +57,7 @@
 <translation id="1346748346194534595">오른쪽</translation>
 <translation id="8528322925433439945">모바일 ...</translation>
 <translation id="8428213095426709021">설정</translation>
+<translation id="2472320577759310817">블루투스가 꺼져 있습니다.</translation>
 <translation id="2372145515558759244">앱 동기화...</translation>
 <translation id="4479639480957787382">이더넷</translation>
 <translation id="1467432559032391204">왼쪽</translation>
@@ -65,11 +71,10 @@
 <translation id="1850504506766569011">Wi-Fi가 꺼져 있습니다.</translation>
 <translation id="2872961005593481000">종료</translation>
 <translation id="7052914147756339792">배경화면 설정...</translation>
-<translation id="80942317552162138"><ph name="PERCENTAGE"/>% 남음</translation>
-<translation id="5746825509052394497">입력 방법이 <ph name="INPUT_METHOD_ID"/>(으)로 변경되었습니다.
-        Shift+Alt를 눌러 전환합니다.</translation>
+<translation id="2739500853984626550">사용 가능한 블루투스 기기가 없습니다.</translation>
 <translation id="1602076796624386989">모바일 데이터 사용</translation>
 <translation id="3157931365184549694">복구</translation>
+<translation id="225680501294068881">기기 검색 중...</translation>
 <translation id="5597451508971090205"><ph name="DATE"/> <ph name="SHORT_WEEKDAY"/></translation>
 <translation id="7029814467594812963">세션 종료</translation>
 <translation id="8454013096329229812">Wi-Fi가 켜져 있습니다.</translation>
@@ -77,10 +82,9 @@
 <translation id="2983818520079887040">설정...</translation>
 <translation id="2712866615167520691">접근성 기능이 사용하도록 설정되었습니다.
 취소하려면 Ctrl+Alt+Z 키를 누르세요.</translation>
+<translation id="5467313780247887226">연결된 모니터에 이미지를 복제할 수 없습니다. 일치하는 해상도가 없습니다.</translation>
 <translation id="2792498699870441125">Alt+검색 키</translation>
 <translation id="8660803626959853127">파일 <ph name="COUNT"/>개를 동기화 중</translation>
-<translation id="1837166567415282700">입력 방법이 <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>타사<ph name="END_LINK"/>)(으)로 변경되었습니다.
-        Shift+Alt를 눌러 전환합니다.</translation>
 <translation id="639644700271529076">CAPS LOCK이 꺼져 있음</translation>
 <translation id="4101192585425716296">메시지 센터</translation>
 <translation id="4864165860509564259">실행기 위치</translation>
@@ -89,9 +93,6 @@
 <translation id="3050422059534974565">CAPS LOCK이 켜져 있습니다.
 취소하려면 검색 또는 Shift 키를 누릅니다.</translation>
 <translation id="397105322502079400">계산 중...</translation>
-<translation id="6362354186508391853">Ctrl +</translation>
-<translation id="477782898153505579">알림이 없습니다.</translation>
-<translation id="7457942297256758195">모두 지우기</translation>
 <translation id="3573179567135747900">'<ph name="FROM_LOCALE"/>'(으)로 다시 변경(다시 시작해야 함)</translation>
 <translation id="8103386449138765447">SMS 메시지: <ph name="MESSAGE_COUNT"/>개</translation>
 <translation id="5045002648206642691">Google 문서함 설정...</translation>
@@ -102,6 +103,5 @@
 <translation id="6911468394164995108">다른 네트워크에 연결</translation>
 <translation id="6843725295806269523">음소거</translation>
 <translation id="412065659894267608">충전 완료까지 <ph name="HOUR"/>시간 <ph name="MINUTE"/>분 남음</translation>
-<translation id="4469842253116033348"><ph name="SITE"/>의 알림을 표시 안함</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER"/>에서 전송된 SMS</translation>
 </translationbundle>

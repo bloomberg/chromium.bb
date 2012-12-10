@@ -38,6 +38,7 @@
 <translation id="8398145039500709259">Vil du bruge denne Google-konto til at synkronisere alle dine ting i Chrome?</translation>
 <translation id="1779550429052479749">Der er registreret en modstridende installation af Google Chrome eller Google Chrome Frame i dit system. Du skal afinstallere denne og prøve igen.</translation>
 <translation id="3555616473548901994">Afinstallationen blev fuldført.</translation>
+<translation id="4987308747895123092">Luk alle Google Chrome-vinduer (herunder dem i Windows 8-tilstand), og prøv igen.</translation>
 <translation id="568643307450491754">Find dine bogmærker i Chrome-menuen eller på bogmærkelinjen.</translation>
 <translation id="8556340503434111824">Der findes en ny version af Google Chrome, som er hurtigere end nogensinde før.</translation>
 <translation id="4728575227883772061">Installationen mislykkedes på grund af en ikke-specificeret fejl. Hvis Google Chrome kører, bedes du lukke programmet og prøve igen.</translation>
@@ -69,6 +70,7 @@
 <translation id="3889417619312448367">Afinstaller Google Chrome</translation>
 <translation id="8551886023433311834">Den er næsten opdateret. Genstart din enhed for at fuldføre opdateringen.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> – Google Chrome</translation>
+<translation id="7339898014177206373">Nyt vindue</translation>
 <translation id="3026202950002788510">Gå til
           <ph name="BEGIN_BOLD"/>
           Programmer &gt; Systemindstillinger &gt; Netværk &gt; Avanceret &gt; Proxy,
@@ -150,6 +152,7 @@
           ) vises, skal du klikke på den og sørge for, at din konfiguration
           er indstillet til &quot;Direkte&quot;.</translation>
 <translation id="3612333635265770873">Et modul med samme navn konflikter med Google Chrome.</translation>
+<translation id="824729746779295798">Copyright 2012 Google Inc. Alle rettigheder forbeholdes.</translation>
 <translation id="61852838583753520">Opdater &amp;Chrome OS</translation>
 <translation id="6650142020817594541">Dette website anbefaler Google Chrome Frame (installeret).</translation>
 <translation id="2712549016134575851">Der er opstået en konflikt med et andet installeret program.</translation>
@@ -160,6 +163,7 @@
 <translation id="8669527147644353129">Hjælp til Google Chrome</translation>
 <translation id="870251953148363156">Opdater &amp;Google Chrome</translation>
 <translation id="130631256467250065">Dine ændringer træder i kraft, næste gang du genstarter din enhed.</translation>
+<translation id="163860049029591106">Kom godt i gang med Chrome OS</translation>
 <translation id="1399397803214730675">Denne computer har allerede en nyere version af Google Chrome. Hvis programmet ikke virker, skal du afinstallere Google Chrome og prøve igen.</translation>
 <translation id="576822117893741893">Vis Chrome-menuen</translation>
 <translation id="3444832043240812445">Denne side viser kun oplysninger om dine seneste nedbrud, hvis du <ph name="BEGIN_LINK"/>aktiverer rapportering af nedbrud<ph name="END_LINK"/>.</translation>
@@ -172,8 +176,8 @@
 <translation id="2680623880102270805">Google Chrome kan ikke oprette en genvej til en applikation, fordi det aktuelle computermiljø ikke kan fastslås.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Internetbrowser</translation>
+<translation id="5244325494201350962">Du har tidligere været logget ind med en anden konto, og hvis du logger ind, flettes dine data. Overvej at oprette en ny Chrome-bruger til dine Chrome-opgaver via <ph name="BEGIN_LINK"/>siden Indstillinger<ph name="END_LINK"/>.</translation>
 <translation id="2189123953385179981">Google ChromeOS understøtter ikke start af eksterne programmer, som håndterer <ph name="SCHEME"/>-links. Det anmodede link er <ph name="PROTOLINK"/>.</translation>
-<translation id="711654979569750606">Copyright © 2006-2011 Google Inc. Alle rettigheder forbeholdes.</translation>
 <translation id="8205111949707227942">Valgfrit: Vær med til at gøre Chrome OS bedre ved automatisk at sende brugsstatistikker og rapporter om nedbrud til Google.</translation>
 <translation id="7253415505590551024">Downloads er i øjeblikket i gang. Vil du afslutte Google Chrome og annullere disse downloads?</translation>
 <translation id="7196020411877309443">Hvorfor får jeg vist dette?</translation>

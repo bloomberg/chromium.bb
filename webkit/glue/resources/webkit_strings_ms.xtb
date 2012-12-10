@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ms">
+<translation id="5843503607508392247">Lain-lain...</translation>
 <translation id="248395913932153421">Hari</translation>
 <translation id="6015796118275082299">Tahun</translation>
 <translation id="9186171386827445984">Memuatkan dokumen: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> halaman...</translation>
@@ -10,7 +11,9 @@
 <translation id="5048533449481078685">penanda senarai</translation>
 <translation id="4202807286478387388">lompat</translation>
 <translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
+<translation id="8199524924445686405">yyyy</translation>
 <translation id="795667975304826397">Tiada fail dipilih</translation>
+<translation id="1758486001363313524">Lain-lain...</translation>
 <translation id="8141602879876242471">Ini adalah indeks boleh dicari. Masukkan kata kunci carian:</translation>
 <translation id="370665806235115550">Memuatkan...</translation>
 <translation id="6845533974506654842">tekan</translation>
@@ -19,11 +22,13 @@
 <translation id="2548326553472216322">Tiada carian baru-baru ini</translation>
 <translation id="7263440858009898357">Sila pilih item dalam senarai.</translation>
 <translation id="5164977714490026579">Nilai mesti lebih besar daripada atau sama dengan <ph name="MINIMUM"/>.</translation>
+<translation id="2247351761944213033">Minggu <ph name="WEEKNUMBER"/>, <ph name="YEAR"/></translation>
 <translation id="5944544982112848342">2048 (Gred Tinggi)</translation>
 <translation id="3040011195152428237">pautan</translation>
 <translation id="1014825444426747588">kosong</translation>
 <translation id="4522570452068850558">Butiran</translation>
 <translation id="8451268428117625855">Sila pilih fail.</translation>
+<translation id="8117451130807776954">Minggu ini</translation>
 <translation id="5966707198760109579">Minggu</translation>
 <translation id="2674318244760992338">pembawah</translation>
 <translation id="8987927404178983737">Bulan</translation>
@@ -38,10 +43,12 @@
 <translation id="5476505524087279545">nyahpilih</translation>
 <translation id="2148716181193084225">Hari ini</translation>
 <translation id="2507943997699731163">Sila isikan medan ini.</translation>
+<translation id="739024184232394898">Lain-lain...</translation>
 <translation id="5919473608089529604">Tidak dapat memuatkan pemalam.</translation>
 <translation id="6663448176199120256">Carian Baru-baru Ini</translation>
 <translation id="2597378329261239068">Dokumen ini dilindungi kata laluan.  Sila masukkan kata laluan.</translation>
 <translation id="5466621249238537318">Sila pilih satu fail atau lebih.</translation>
+<translation id="9132465097189459683">Lain-lain...</translation>
 <translation id="8750798805984357768">Sila pilih salah satu pilihan ini.</translation>
 <translation id="7740050170769002709">Kandungan HTML</translation>
 <translation id="6692633176391053278">pelangkah</translation>
@@ -50,11 +57,13 @@
 <translation id="1639239467298939599">Memuatkan</translation>
 <translation id="2908441821576996758">Sila masukkan senarai alamat e-mel yang dipisahkan dengan koma.</translation>
 <translation id="5939518447894949180">Tetapkan semula</translation>
+<translation id="1921819250265091946">dd</translation>
 <translation id="835897206747267392">Nilai tidak sah.</translation>
 <translation id="1842960171412779397">pilih</translation>
 <translation id="7673697353781729403">Jam</translation>
 <translation id="3450233048674729344">Nilai mestilah kurang daripada atau sama dengan <ph name="MAXIMUM"/>.</translation>
 <translation id="668171684555832681">Lain-lain...</translation>
+<translation id="1591562245178063882">Bulan ini</translation>
 <translation id="6119846243427417423">aktifkan</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> fail</translation>
 <translation id="6643016212128521049">Kosongkan</translation>
@@ -62,4 +71,5 @@
 <translation id="3934680773876859118">Gagal untuk memuatkan dokumen PDF</translation>
 <translation id="8597182159515967513">tajuk</translation>
 <translation id="2653659639078652383">Serah</translation>
+<translation id="3732799496749320381">mm</translation>
 </translationbundle>

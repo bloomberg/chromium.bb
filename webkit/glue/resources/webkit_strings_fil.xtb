@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fil">
+<translation id="5843503607508392247">Iba pa...</translation>
 <translation id="248395913932153421">Araw</translation>
 <translation id="6015796118275082299">Taon</translation>
 <translation id="9186171386827445984">Nilo-load ang dokumento: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> (na) pahina...</translation>
@@ -10,7 +11,9 @@
 <translation id="5048533449481078685">Ilista ang marker</translation>
 <translation id="4202807286478387388">tumalon</translation>
 <translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
+<translation id="8199524924445686405">yyyy</translation>
 <translation id="795667975304826397">Walang napiling file</translation>
+<translation id="1758486001363313524">Iba pa...</translation>
 <translation id="8141602879876242471">Isa itong paghahanap ng index. Ipasok ang paghahanap sa mga keyword:</translation>
 <translation id="370665806235115550">Kumakarga...</translation>
 <translation id="6845533974506654842">pindutin</translation>
@@ -19,11 +22,13 @@
 <translation id="2548326553472216322">Walang kamakailang mga paghahanap</translation>
 <translation id="7263440858009898357">Mangyaring pumili ng item sa listahan.</translation>
 <translation id="5164977714490026579">Dapat mas mataas kaysa sa o katumbas ng <ph name="MINIMUM"/> ang halaga.</translation>
+<translation id="2247351761944213033">Linggo <ph name="WEEKNUMBER"/>, <ph name="YEAR"/></translation>
 <translation id="5944544982112848342">2048 (Pinakamataas na Marka)</translation>
 <translation id="3040011195152428237">link</translation>
 <translation id="1014825444426747588">blangko</translation>
 <translation id="4522570452068850558">Mga Detalye</translation>
 <translation id="8451268428117625855">Mangyaring pumili ng file.</translation>
+<translation id="8117451130807776954">Linggong ito</translation>
 <translation id="5966707198760109579">Linggo</translation>
 <translation id="2674318244760992338">footer</translation>
 <translation id="8987927404178983737">Buwan</translation>
@@ -38,10 +43,12 @@
 <translation id="5476505524087279545">i-uncheck</translation>
 <translation id="2148716181193084225">Ngayon</translation>
 <translation id="2507943997699731163">Pakipunan ang field na ito.</translation>
+<translation id="739024184232394898">Iba pa...</translation>
 <translation id="5919473608089529604">Hindi ma-load ang plug-in.</translation>
 <translation id="6663448176199120256">Kasalukuyang Mga Paghahanap</translation>
 <translation id="2597378329261239068">Protektado ng password ang dokumentong ito.  Mangyaring magpasok ng password.</translation>
 <translation id="5466621249238537318">Mangyaring pumili ng isa o higit pang mga file.</translation>
+<translation id="9132465097189459683">Iba pa...</translation>
 <translation id="8750798805984357768">Mangyaring pumili ng isa sa mga opsyong ito.</translation>
 <translation id="7740050170769002709">HTML na nilalaman</translation>
 <translation id="6692633176391053278">stepper</translation>
@@ -50,11 +57,13 @@
 <translation id="1639239467298939599">Naglo-load</translation>
 <translation id="2908441821576996758">Mangyaring magpasok ng listahan ng email address na pinaghihiwalay ng kuwit.</translation>
 <translation id="5939518447894949180">I-reset</translation>
+<translation id="1921819250265091946">dd</translation>
 <translation id="835897206747267392">Di-wastong halaga.</translation>
 <translation id="1842960171412779397">piliin</translation>
 <translation id="7673697353781729403">Oras</translation>
 <translation id="3450233048674729344">Dapat mas mababa kaysa sa o katumbas ng <ph name="MAXIMUM"/> ang halaga.</translation>
 <translation id="668171684555832681">Iba pa...</translation>
+<translation id="1591562245178063882">Buwang ito</translation>
 <translation id="6119846243427417423">isaaktibo</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> mga file</translation>
 <translation id="6643016212128521049">I-clear</translation>
@@ -62,4 +71,5 @@
 <translation id="3934680773876859118">Nabigong i-load ang dokumentong PDF</translation>
 <translation id="8597182159515967513">heading</translation>
 <translation id="2653659639078652383">Isumite</translation>
+<translation id="3732799496749320381">mm</translation>
 </translationbundle>

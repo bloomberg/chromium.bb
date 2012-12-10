@@ -40,6 +40,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="8398145039500709259">使用這個 Google 帳戶同步處理所有 Chrome 內容？</translation>
 <translation id="1779550429052479749">系統在安裝 Google Chrome 或「Google Chrome 內嵌框架」時發生衝突問題，請先解除安裝，然後再試一次。</translation>
 <translation id="3555616473548901994">解除安裝已完成。</translation>
+<translation id="4987308747895123092">請將所有 Google Chrome 視窗 (包括在 Windows 8 模式中的視窗) 關閉，然後再試一次。</translation>
 <translation id="568643307450491754">您的書籤會顯示在 Chrome 選單中或書籤列上。</translation>
 <translation id="8556340503434111824">Google Chrome 推出全新版本，速度更勝以往。</translation>
 <translation id="4728575227883772061">安裝因不明錯誤而失敗。如果 Google Chrome 目前正在執行中，請將其關閉然後再試一次。</translation>
@@ -71,6 +72,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="3889417619312448367">解除安裝 Google Chrome</translation>
 <translation id="8551886023433311834">即將完成！請重新啟動裝置以完成更新。</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="7339898014177206373">新視窗</translation>
 <translation id="3026202950002788510">請依序前往
           
           [應用程式] &gt; [系統偏好設定] &gt; [網路] &gt; [進階] &gt; [Proxy]，
@@ -152,6 +154,7 @@ Google Chrome 無法復原您的設定。</translation>
           按鈕，請按一下該按鈕，將您的設定
           調整為 [直接]。</translation>
 <translation id="3612333635265770873">依據名稱判斷，這個模組可能會與 Google Chrome 衝突。</translation>
+<translation id="824729746779295798">Copyright 2012 Google Inc. 版權所有。</translation>
 <translation id="61852838583753520">更新 Chrome 作業系統(&amp;C)</translation>
 <translation id="6650142020817594541">建議您使用「Google Chrome 內嵌框架」(已安裝) 瀏覽這個網站。</translation>
 <translation id="2712549016134575851">偵測到與其他已安裝的應用程式互相衝突。</translation>
@@ -162,6 +165,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="8669527147644353129">Google Chrome 小幫手</translation>
 <translation id="870251953148363156">更新 Google Chrome(&amp;G)</translation>
 <translation id="130631256467250065">您的變更會在下次重新啟動裝置時生效。</translation>
+<translation id="163860049029591106">開始使用 Chrome 作業系統</translation>
 <translation id="1399397803214730675">這台電腦已安裝較新的 Google Chrome 版本，如果軟體無法順利運作，請解除安裝 Google Chrome，然後再試一次。</translation>
 <translation id="576822117893741893">顯示 Chrome 選單</translation>
 <translation id="3444832043240812445">如果您<ph name="BEGIN_LINK"/>啟用當機報告功能<ph name="END_LINK"/>，這個頁面僅會顯示最近的當機資訊。</translation>
@@ -174,8 +178,8 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="2680623880102270805">由於 Google Chrome 無法判斷目前的桌面環境，因此無法建立應用程式捷徑。</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">網際網路瀏覽器</translation>
+<translation id="5244325494201350962">您先前已使用其他帳戶登入，如果繼續使用這個帳戶登入，您的資料將會匯整至目前登入的帳戶中。建議您透過<ph name="BEGIN_LINK"/>設定網頁<ph name="END_LINK"/>為 Chrome 內容建立新的 Chrome 使用者。</translation>
 <translation id="2189123953385179981">「Google Chrome 作業系統」未支援啟動外部應用程式以處理 <ph name="SCHEME"/> 連結；要求的連結為 <ph name="PROTOLINK"/>。</translation>
-<translation id="711654979569750606">版權所有 © 2006-2011 Google Inc. 保留所有權利。</translation>
 <translation id="8205111949707227942">選擇性：把使用統計資料及當機報告自動傳送給 Google，將有助於 Chrome OS 更臻完美。</translation>
 <translation id="7253415505590551024">目前正在進行下載，您要結束 Google Chrome 並取消下載嗎？</translation>
 <translation id="7196020411877309443">為何出現這個對話框？</translation>

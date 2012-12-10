@@ -37,6 +37,7 @@
 <translation id="8398145039500709259">আপনার সকল Chrome স্টাফ সিঙ্ক করতে Google অ্যাকাউন্ট ব্যবহার করুন?</translation>
 <translation id="1779550429052479749">সিস্টেমে Google Chrome-এর একটি বিবাদমূলক ইনস্টলেশন খুঁজে পাওয়া গেছে৷ দয়া করে এটি আনইনস্টল করুন এবং পুনরায় চেষ্টা করুন৷</translation>
 <translation id="3555616473548901994">আনইনস্টলেশন সম্পূর্ণ৷</translation>
+<translation id="4987308747895123092">দয়া করে সমস্ত Google Chrome উইন্ডোগুলি (Windows 8 মোডে যেগুলি আছে সেগুলি সহ) বন্ধ করুন এবং আবার চেষ্টা করুন৷</translation>
 <translation id="568643307450491754">Chrome মেনুতে বা বুকমার্ক দণ্ডে আপনার বুকমার্ক খুঁজুন৷</translation>
 <translation id="8556340503434111824">Google Chrome-এর একটি নতুন সংস্করণ উপলব্ধ এবং এটি আগের তুলনায় দ্রুততর৷</translation>
 <translation id="4728575227883772061">অনির্দিষ্ট ত্রুটির জন্য ইনস্টলেশন ব্যর্থ হয়েছে৷ যদি Google Chrome বর্তমানে চলতে থাকে তবে দয়া করে এটি বন্ধ করে আবার চেষ্টা করুন৷</translation>
@@ -70,6 +71,7 @@
 <translation id="3889417619312448367">Google Chrome আনইনস্টল করুন</translation>
 <translation id="8551886023433311834">প্রায় আপ-টু-ডেট! আপডেট সমাপ্ত করতে আপনার ডিভাইস পুনরারম্ভ করুন৷</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="7339898014177206373">নতুন উইন্ডো</translation>
 <translation id="3026202950002788510"><ph name="BEGIN_BOLD"/>
           Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies এ যান           <ph name="END_BOLD"/>
           এবং নির্বাচিত থাকা যে কোনও প্রক্সি চেকমুক্ত করুন৷</translation>
@@ -149,6 +151,7 @@
           ট্যাবে) উপস্থিত থাকে তাহলে, সেটিতে ক্লিক করুন এবং আপনার কনফিগারেশন
           &quot;সরাসরি&quot;তে সেট আছে কি না নিশ্চিত করুন৷</translation>
 <translation id="3612333635265770873">একই নামের একটি মডিউল Google Chrome-এর সাথে বিবাদ করছে বলে জানা গেছে৷</translation>
+<translation id="824729746779295798">কপিরাইট 2012 Google Inc৷ সর্বস্বত্ব সংরক্ষিত৷</translation>
 <translation id="61852838583753520">&amp;Chrome OS আপডেট</translation>
 <translation id="6650142020817594541">এই সাইটটি Google Chrome Frame(ইতিমধ্যে ইনস্টল আছে)-এর পরামর্শ দেয়৷</translation>
 <translation id="2712549016134575851">অন্য একটি ইনস্টল থাকা প্রয়োগের সাথে বিরোধ সনাক্ত করা হয়েছে৷</translation>
@@ -159,6 +162,7 @@
 <translation id="8669527147644353129">Google Chrome সহায়তাকারী</translation>
 <translation id="870251953148363156">&amp;Google Chrome আপডেট</translation>
 <translation id="130631256467250065">পরের বার আপনি আপনার ডিভাইস পুনরারম্ভ করলে আপনার পরিবর্তনগুলি প্রভাবী হবে৷</translation>
+<translation id="163860049029591106">Chrome OS দিয়ে শুরু করুন</translation>
 <translation id="1399397803214730675">এই কম্পিউটারটিতে ইতিমধ্যে Google Chrome -এর অতি সাম্প্রতিক সংস্করণ রয়েছে৷ যদি সফ্টওয়্যারটি কাজ না করে তবে দয়া করে Google Chrome আনইনস্টল করুন এবং এটি আবার ডাউনলোড করুন৷</translation>
 <translation id="576822117893741893">Chrome মেনু দেখান</translation>
 <translation id="3444832043240812445">যদি আপনি <ph name="BEGIN_LINK"/>ক্র্যাশ প্রতিবেদন সক্ষম করেন<ph name="END_LINK"/> তাহলে এই পৃষ্ঠাটি কেবল আপনার সাম্প্রতিক ক্র্যাশগুলির তথ্য দেখায়৷</translation>
@@ -171,8 +175,8 @@
 <translation id="2680623880102270805">Google Chrome শর্টকাট অ্যাপ্লিকেশন তৈরি করতে পারে না কারণ এটি সাম্প্রতিক ডেক্সটপ পরিবেশকে নির্ধারণ করতে পারে না৷</translation>
 <translation id="9171640504251796339"><ph name="GRITLANGCODE_1"/>http://www.google.com/support/chrome/bin/answer.py?answer=161796</translation>
 <translation id="8865765905101981392">ইন্টারনেট ব্রাউজার</translation>
+<translation id="5244325494201350962">আপনি পূর্বে আলাদা একটি অ্যাকাউন্ট থেকে সাইন ইন করেছিলেন, সাইন ইন আপনার ডেটাকে একত্র করে দেবে৷ আপনার Chromium উপাদানের জন্য <ph name="BEGIN_LINK"/>সেটিংস পৃষ্ঠার<ph name="END_LINK"/> মাধ্যমে একটি নতুন Chrome ব্যবহারকারী তৈরির কথা বিবেচনা করুন৷</translation>
 <translation id="2189123953385179981"><ph name="SCHEME"/> লিঙ্কগুলিকে পরিচালনা করার জন্য Google ChromeOS কোন বাইরের অ্যাপ্লিকেশন সমর্থন করে না৷ অনুরোধ করা লিঙ্কটি হল <ph name="PROTOLINK"/>৷</translation>
-<translation id="711654979569750606">কপিরাইট © 2006-2012 Google Inc৷ সর্বস্বত্ব সংরক্ষিত৷</translation>
 <translation id="8205111949707227942">ঐচ্ছিক: Google-এ ব্যবহার পরিসংখ্যান এবং ক্র্যাশ প্রতিবেদন স্বয়ংক্রিয়ভাবে পাঠিয়ে  Chrome-কে সর্বোত্তম করে তুলতে সাহায্য করুন৷</translation>
 <translation id="7253415505590551024">ডাউনলোডগুলি বর্তমানে চলছে৷ আপনি কি Google Chrome থেকে প্রস্থান আর ডাউনলোড বাতিল করতে চান?</translation>
 <translation id="7196020411877309443">আমি এটা কেন দেখছি?</translation>

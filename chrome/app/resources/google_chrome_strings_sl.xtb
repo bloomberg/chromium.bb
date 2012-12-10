@@ -42,6 +42,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="8398145039500709259">Želite uporabiti ta Google Račun za sinhroniziranje vseh nastavitev Google Chroma?</translation>
 <translation id="1779550429052479749">V sistemu je bila odkrita namestitev Google Chroma ali vtičnika Google Chrome Frame, ki je v sporu. Odstranite ga in poskusite znova.</translation>
 <translation id="3555616473548901994">Odstranitev je končana.</translation>
+<translation id="4987308747895123092">Zaprite vsa brskalnika Google Chrome (tudi tista v načinu Windows 8) in poskusite znova.</translation>
 <translation id="568643307450491754">Poiščite svoje zaznamke v meniju Chroma ali v vrstici z zaznamki.</translation>
 <translation id="8556340503434111824">Na voljo je nova različica Google Chroma, ki je najhitrejša doslej.</translation>
 <translation id="4728575227883772061">Namestitev ni bila izvedena zaradi nedoločene napake. Če je Google Chrome trenutno vklopljen, ga zaprite in poskusite znova.</translation>
@@ -75,6 +76,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="3889417619312448367">Odstrani Google Chrome</translation>
 <translation id="8551886023433311834">Posodobitev je skoraj končana. Znova zaženite napravo.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> – Google Chrome</translation>
+<translation id="7339898014177206373">Novo okno</translation>
 <translation id="3026202950002788510">Pojdite v
           <ph name="BEGIN_BOLD"/>
           Programi &gt; Sistemske nastavitve &gt; Omrežje &gt; Dodatno &gt; Proxyji
@@ -158,6 +160,7 @@ Nekatere funkcije morda ne bodo na voljo. Navedite drug imenik profila ali upora
           ), ga kliknite in poskrbite, da je konfiguracija nastavljena
           na »Neposredno«.</translation>
 <translation id="3612333635265770873">Modul z istim imenom je že bil v sporu z Google Chromom.</translation>
+<translation id="824729746779295798">Copyright 2012 Google Inc. Vse pravice pridržane.</translation>
 <translation id="61852838583753520">Posodobitev &amp;sistema Chrome OS</translation>
 <translation id="6650142020817594541">To spletno mesto priporoča vtičnik Google Chrome Frame (že nameščen).</translation>
 <translation id="2712549016134575851">Zaznan je bil spor z drugim nameščenim programom.</translation>
@@ -168,6 +171,7 @@ Nekatere funkcije morda ne bodo na voljo. Navedite drug imenik profila ali upora
 <translation id="8669527147644353129">Pomočnik za Google Chrome</translation>
 <translation id="870251953148363156">Posodabljanje &amp;Google Chroma</translation>
 <translation id="130631256467250065">Spremembe bodo uveljavljene pri naslednjem vnovičnem zagonu naprave.</translation>
+<translation id="163860049029591106">Začnite uporabljati Chrome OS</translation>
 <translation id="1399397803214730675">V tem računalniku je že nameščena novejša različica Google Chroma. Če programska oprema ne deluje, odstranite Google Chrome in poskusite znova.</translation>
 <translation id="576822117893741893">Prikaz menija Chroma</translation>
 <translation id="3444832043240812445">Ta stran prikazuje informacije o zadnjih zrušitvah, samo če <ph name="BEGIN_LINK"/>omogočite poročanje o zrušitvah<ph name="END_LINK"/>.</translation>
@@ -180,8 +184,8 @@ Nekatere funkcije morda ne bodo na voljo. Navedite drug imenik profila ali upora
 <translation id="2680623880102270805">Google Chrome ne more ustvariti bližnjice do programa, ker ne more določiti trenutnega okolja namizja.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Internetni brskalnik</translation>
+<translation id="5244325494201350962">Prijavljeni ste bili z drugim računom. Če se prijavite, se bodo podatki združili. Priporočljivo je, da za svojo vsebino v Chromu na <ph name="BEGIN_LINK"/>strani z nastavitvami<ph name="END_LINK"/> ustvarite drugega uporabnika Chroma.</translation>
 <translation id="2189123953385179981">Google ChromeOS ne podpira zagona zunanjega programa za obdelavo povezav <ph name="SCHEME"/>. Zahtevana povezava je <ph name="PROTOLINK"/>.</translation>
-<translation id="711654979569750606">Copyright © 2006-2012 Google Inc. Vse pravice pridržane.</translation>
 <translation id="8205111949707227942">Izbirno: Pomagajte nam narediti Chrome OS boljši, tako da Googlu samodejno pošiljate statistične podatke o uporabi in poročila o zrušitvah.</translation>
 <translation id="7253415505590551024">Trenutno potekajo prenosi. Ali želite zapreti Google Chrome in preklicati prenose?</translation>
 <translation id="7196020411877309443">Zakaj je to prikazano?</translation>

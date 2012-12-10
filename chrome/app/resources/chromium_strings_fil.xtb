@@ -17,6 +17,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="7128196614940529818">Naka-install at available na ang Chromium Frame sa lahat ng user ng computer na ito. Kung nais mong i-install ang Chromium Frame sa antas ng user, dapat mo munang i-uninstall ang bersyon sa antas ng system na na-install ng administrator.</translation>
 <translation id="731644333568559921">I-update ang &amp;Chromium OS</translation>
 <translation id="7421823331379285070">Nangangailangan ang Chromium ng Windows XP o mas bago. Maaaring hindi gumana ang ilang tampok.</translation>
+<translation id="3549345495227188780">Magsimula sa Chromium OS</translation>
 <translation id="4330297532943865716">May nakitang sumasalungat na pag-install ng Chromium o Chromium Frame sa system. Mangyaring i-uninstall ito at subukang muli.</translation>
 <translation id="6953661834318318668">Toolbar ng Chromium</translation>
 <translation id="7097100943370017396">Hindi na nag-a-update ang Chromium dahil wala na ang iyong operating system.</translation>
@@ -58,6 +59,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="3197823471738295152">Napapanahon ang iyong device.</translation>
 <translation id="8551886023433311834">Halos napapanahon na! I-restart ang iyong device upang tapusin ang pag-update.</translation>
 <translation id="8353224596138547809">Nais mo bang i-save ng Chromium ang iyong password para sa site na ito?</translation>
+<translation id="7339898014177206373">Bagong window</translation>
 <translation id="3026202950002788510">Pumunta sa
           <ph name="BEGIN_BOLD"/>
           Mga Application &gt; Mga Kagustuhan ng System &gt; Network &gt;Advanced &gt; Mga Proxy
@@ -69,7 +71,6 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="9191268552238695869">Nag-install ang administrator ng Chromium sa system na ito, at available ito para sa lahat ng user. Papalitan ng Chromium sa antas ng system ang iyong pag-install sa antas ng user ngayon.</translation>
 <translation id="3509308970982693815">Pakisara ang lahat ng window sa Chromium at subukang muli.</translation>
 <translation id="4077262827416206768">Pakisara ang lahat ng window sa Chromium at muling ilunsad ang Chromium upang magkabisa ang pagbabagong ito.</translation>
-<translation id="9119843944749246249">Copyright © 2006-2012 Ang Mga May-akda ng Chromium. Nakalaan ang Lahat ng Karapatan.</translation>
 <translation id="6944967875980567883">Mga module na nai-load sa Chromium</translation>
 <translation id="118298050220780080">Tinangka mong marating ang &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ngunit nagpakita ang server ng certificate na mula sa entity na hindi pinagkakatiwalaan ng operating system ng iyong computer. Maaari itong mangahulugan na bumuo ang server ng sarili nitong mga panseguridad na kredensyal, na hindi maaasahan ng Chromium para sa impormasyon ng pagkakakilanlan, o maaaring may isang umaatake na sinusubukang humadlang sa iyong mga pakikipag-ugnayan.</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
@@ -91,6 +92,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="2881203820889150661">Hindi makakalikha ang Chromium ng shortcut ng application dahil hindi nito matukoy ang kasalukuyang environment ng desktop.</translation>
 <translation id="4886158514168859177">May mas bagong bersyon ng Chromium Frame na ang computer na ito. Kung hindi gumagana ang software, mangyaring i-uninstall ang Chromium Frame at subukang muli.</translation>
 <translation id="911206726377975832">Tatanggalin din ang iyong data sa pag-browse?</translation>
+<translation id="1699664235656412242">Pakisara ang lahat ng window ng Chromium (kasama ang mga nasa mode na Windows 8) at subukang muli.</translation>
 <translation id="6734080038664603509">I-update ang &amp;Chromium</translation>
 <translation id="8862326446509486874">Wala kang naaangkop na mga karapatan para sa pag-install sa antas ng system. Subukan muling patakbuhin ang installer bilang Administrator.</translation>
 <translation id="1774152462503052664">Hayaang tumakbo ang Chromium sa background</translation>
@@ -127,7 +129,9 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="6717134281241384636">Hindi maaaring gamitin ang iyong profile dahil mula ito sa isang mas bagong bersyon ng Chromium.
 
 Maaaring hindi available ang ilang tampok. Mangyaring tumukoy ng ibang direktoryo ng profile o gumamit ng mas bagong bersyon ng Chromium.</translation>
+<translation id="4499972362520386277">Copyright 2012 The Chromium Authors. Nakalaan ang lahat ng karapatan.</translation>
 <translation id="2712549016134575851">May nakitang salungatan sa isa pang naka-install na application.</translation>
+<translation id="4881709374218686648">Naka-sign in ka dati gamit ang ibang account, pagsasamahin ng pag-sign in ang iyong data. Isaalang-alang ang paglikha ng bagong user ng Chromium sa pamamagitan ng <ph name="BEGIN_LINK"/>pahina ng mga setting<ph name="END_LINK"/> para sa iyong mga bagay sa Chromium.</translation>
 <translation id="9013087743919948559">Idagdag sa Chromium</translation>
 <translation id="6212496753309875659">May mas bagong bersyon ng Chromium na ang computer na ito. Kung hindi gumagana ang software, mangyaring i-uninstall ang Chromium at subukang muli.</translation>
 <translation id="3014684866565908571">Utility ng Chromium</translation>

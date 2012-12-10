@@ -42,6 +42,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="8398145039500709259">Gamitin ang Google Account na ito upang i-sync ang lahat ng iyong bagay sa Chrome?</translation>
 <translation id="1779550429052479749">May nakitang sumasalungat na pag-install ng Google Chrome o Google Chrome Frame sa system. Paki-uninstall ito at subukang muli.</translation>
 <translation id="3555616473548901994">Kumpleto na ang pag-uninstall.</translation>
+<translation id="4987308747895123092">Pakisara ang lahat ng window ng Google Chrome (kasama ang mga nasa mode na Windows 8) at subukang muli.</translation>
 <translation id="568643307450491754">Hanapin ang iyong mga bookmark sa Chrome menu o sa bookmarks bar.</translation>
 <translation id="8556340503434111824">May available na bagong bersyon ng Google Chrome, at mas mabilis ito kaysa sa dati.</translation>
 <translation id="4728575227883772061">Nabigo ang pag-install dahil sa hindi natukoy na error. Kung kasalukuyang tumatakbo ang Google Chrome, paki-sara ito at subukang muli.</translation>
@@ -75,6 +76,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="3889417619312448367">I-uninstall ang Google Chrome</translation>
 <translation id="8551886023433311834">Halos napapanahon na! I-restart ang iyong device upang tapusin ang pag-update.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="7339898014177206373">Bagong window</translation>
 <translation id="3026202950002788510">Pumunta sa
           <ph name="BEGIN_BOLD"/>
           Mga Application &gt; Mga Kagustuhan ng System &gt; Network &gt;Advanced &gt; Mga Proxy
@@ -158,6 +160,7 @@ Maaaring hindi available ang ilang tampok. Mangyaring tumukoy ng ibang direktory
           ), i-click iyon at tiyaking nakatakda ang iyong configuration
           sa &quot;Direkta&quot;.</translation>
 <translation id="3612333635265770873">Ang module na may parehong pangalan ay kilalang salungat sa Google Chrome.</translation>
+<translation id="824729746779295798">Copyright 2012 Google Inc. Nakalaan ang lahat ng karapatan.</translation>
 <translation id="61852838583753520">I-update ang &amp;Chrome OS</translation>
 <translation id="6650142020817594541">Inirerekumenda ng site na ito ang Google Chrome Frame (naka-install na).</translation>
 <translation id="2712549016134575851">May nakitang salungatan sa isa pang naka-install na application.</translation>
@@ -168,6 +171,7 @@ Maaaring hindi available ang ilang tampok. Mangyaring tumukoy ng ibang direktory
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="870251953148363156">I-update ang &amp;Google Chrome</translation>
 <translation id="130631256467250065">Magkakabisa ang iyong mga pagbabago sa susunod na i-restart ang iyong device.</translation>
+<translation id="163860049029591106">Magsimula sa Chrome OS</translation>
 <translation id="1399397803214730675">Mayroon nang mas bagong bersyon ng Google Chrome ang computer na ito. Kung hindi gumagana ang software, mangyaring i-uninstall ang Google Chrome at subukang muli.</translation>
 <translation id="576822117893741893">Ipakita ang Chrome menu</translation>
 <translation id="3444832043240812445">Ipinapakita lang ng pahinang ito ang impormasyon ng iyong kamakailang mga pag-crash kung <ph name="BEGIN_LINK"/>papaganahin mo ang pag-uulat ng pag-crash<ph name="END_LINK"/>.</translation>
@@ -180,8 +184,8 @@ Maaaring hindi available ang ilang tampok. Mangyaring tumukoy ng ibang direktory
 <translation id="2680623880102270805">Hindi makakalikha ang Google Chrome ng isang shortcut sa application dahil hindi nito matukoy ang kasalukuyang kapaligiran ng desktop.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Internet Browser</translation>
+<translation id="5244325494201350962">Naka-sign in ka dati gamit ang ibang account, pagsasamahin ng pag-sign in ang iyong data. Isaalang-alang ang paglikha ng bagong Chrome user sa pamamagitan ng <ph name="BEGIN_LINK"/>pahina ng mga setting<ph name="END_LINK"/> para sa iyong mga bagay sa Chrome.</translation>
 <translation id="2189123953385179981">Hindi sinusuportahan ng Google ChromeOS ang paglunsad ng isang panlabas na application upang pamahalaan ang mga <ph name="SCHEME"/> na link. Ang hiniling na link ay <ph name="PROTOLINK"/>.</translation>
-<translation id="711654979569750606">Copyright © 2006-2012 Google Inc. Nakalaan ang Lahat ng Karapatan.</translation>
 <translation id="8205111949707227942">Opsyonal: Tulungang mapagbuti ang Chrome OS sa pamamagitan ng awtomatikong pagpapadala ng mga istatistika ng paggamit at mga ulat ng pag-crash sa Google.</translation>
 <translation id="7253415505590551024">Kasalukuyang ginagawa ang pag-download. Nais mo bang lumabas ng Chromium at kanselahin ang mga pag-download?</translation>
 <translation id="7196020411877309443">Bakit ko nakikita ito?</translation>

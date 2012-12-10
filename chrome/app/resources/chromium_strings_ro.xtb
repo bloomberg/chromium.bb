@@ -15,6 +15,7 @@
 <translation id="7128196614940529818">Chromium Frame este instalat deja şi disponibil pentru toţi utilizatorii de pe acest computer. Dacă doriţi să instalaţi Chromium Frame la nivel de utilizator, trebuie să dezinstalaţi mai întâi versiunea la nivel de sistem, instalată de un administrator.</translation>
 <translation id="731644333568559921">Actualizaţi sistemul de operare &amp;Chromium</translation>
 <translation id="7421823331379285070">Chromium necesită Windows XP sau o versiune ulterioară. Este posibil ca unele funcţii să nu fie disponibile.</translation>
+<translation id="3549345495227188780">Noţiuni introductive despre sistemul de operare Chromium</translation>
 <translation id="4330297532943865716">În sistem a fost găsită o instalare conflictuală a uneia dintre aplicaţiile Chromium sau Chromium Frame. Dezinstalaţi aplicaţia şi încercaţi din nou.</translation>
 <translation id="6953661834318318668">Bara de instrumente Chromium</translation>
 <translation id="7097100943370017396">Chromium nu se mai actualizează, deoarece sistemul de operare este învechit.</translation>
@@ -56,6 +57,7 @@
 <translation id="3197823471738295152">Dispozitivul dvs. este actualizat.</translation>
 <translation id="8551886023433311834">Actualizare aproape efectuată! Reporniţi dispozitivul pentru a finaliza actualizarea.</translation>
 <translation id="8353224596138547809">Doriţi ca parola pentru acest site să fie salvată de Chromium?</translation>
+<translation id="7339898014177206373">Fereastră nouă</translation>
 <translation id="3026202950002788510">Accesaţi
           <ph name="BEGIN_BOLD"/>
           Applications (Aplicaţii) &gt; System Preferences (Preferinţe de sistem) &gt; Network (Reţea) &gt; Advanced (Avansat) &gt; Proxies (Servere proxy)
@@ -67,7 +69,6 @@
 <translation id="9191268552238695869">Un administrator a instalat Chromium pe acest sistem, iar acesta este disponibil pentru toţi utilizatorii. Chromium instalat la nivel de sistem va înlocui acum instalarea la nivel de utilizator.</translation>
 <translation id="3509308970982693815">Închideţi toate ferestrele Chromium şi încercaţi din nou.</translation>
 <translation id="4077262827416206768">Închideţi toate ferestrele Chromium şi reporniţi sistemul de operare pentru ca această modificare să aibă efect.</translation>
-<translation id="9119843944749246249">Copyright © 2006-2012 The Chromium Authors. Toate drepturile rezervate.</translation>
 <translation id="6944967875980567883">Module încărcate în Chromium</translation>
 <translation id="118298050220780080">Aţi încercat să accesaţi &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, dar serverul a furnizat un certificat emis de către o entitate care nu este de încredere pentru sistemul de operare al computerului dvs. Acest lucru poate însemna că serverul a generat propriile sale acreditări de securitate, pe care Chromium nu se poate baza pentru informaţii de identitate sau este posibil ca un atacator să încerce să intercepteze comunicaţiile dvs.</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
@@ -89,6 +90,7 @@
 <translation id="2881203820889150661">Chromium nu poate crea o comandă rapidă pentru o aplicaţie, deoarece nu poate detecta mediul de desktop curent.</translation>
 <translation id="4886158514168859177">Acest computer are deja o versiune mai recentă a aplicaţiei Chromium Frame. Dacă software-ul nu funcţionează, dezinstalaţi Chromium Frame şi încercaţi din nou.</translation>
 <translation id="911206726377975832">Ștergeți și datele de navigare?</translation>
+<translation id="1699664235656412242">Închideţi toate ferestrele Chromium (inclusiv pe cele în modul Windows 8) şi încercaţi din nou.</translation>
 <translation id="6734080038664603509">Actualizaţi &amp;Chromium</translation>
 <translation id="8862326446509486874">Nu aveți drepturile adecvate pentru instalarea la nivel de sistem. Încercați să rulați din nou programul de instalare ca Administrator.</translation>
 <translation id="1774152462503052664">Permiteţi Chromium să ruleze în fundal</translation>
@@ -124,7 +126,9 @@
 <translation id="6717134281241384636">Profilul dvs. nu poate fi utilizat, deoarece provine de la o versiune mai nouă a sistemului de operare Chromium.
 
 Este posibil ca unele funcţii să nu fie disponibile. Specificaţi un director de profil diferit sau utilizaţi o versiune mai nouă de Chromium.</translation>
+<translation id="4499972362520386277">Copyright 2012 The Chromium Authors. Toate drepturile rezervate.</translation>
 <translation id="2712549016134575851">S-a detectat un conflict cu o altă aplicație instalată.</translation>
+<translation id="4881709374218686648">Anterior, v-aţi conectat cu un alt cont de utilizator. Dacă vă conectaţi, datele vor fi îmbinate. Vă recomandăm să creaţi un alt utilizator Chromium de pe <ph name="BEGIN_LINK"/>pagina de setări<ph name="END_LINK"/> pentru conţinuturile Chromium.</translation>
 <translation id="9013087743919948559">Adăugaţi la Chromium</translation>
 <translation id="6212496753309875659">Acest computer are deja o versiune mai recentă de Chromium. Dacă software-ul nu funcţionează, dezinstalaţi Chromium şi încercaţi din nou.</translation>
 <translation id="3014684866565908571">Chromium Utility</translation>

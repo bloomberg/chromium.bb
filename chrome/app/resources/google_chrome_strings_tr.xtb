@@ -38,6 +38,7 @@
 <translation id="8398145039500709259">Tüm Chrome öğelerinizi senkronize etmek için bu Google Hesabı kullanılsın mı?</translation>
 <translation id="1779550429052479749">Sistemde çakışan bir Google Chrome veya Google Chrome Frame yüklemesi bulundu. Lütfen yüklemeyi kaldırıp tekrar deneyin.</translation>
 <translation id="3555616473548901994">Kaldırma işlemi tamamlandı.</translation>
+<translation id="4987308747895123092">Lütfen, (Windows 8 modunda olanlar dahil) Google Chrome pencerelerinin tümünü kapatın ve tekrar deneyin.</translation>
 <translation id="568643307450491754">Yer işaretlerinizi Chrome menüsünde veya yer işaretleri çubuğunda bulabilirsiniz.</translation>
 <translation id="8556340503434111824">Kullanabileceğiniz yeni bir Google Chrome sürümü var ve bu sürüm, her zamankinden daha hızlı.</translation>
 <translation id="4728575227883772061">Belirlenemeyen bir hata nedeniyle yükleme başarısız oldu. Google Chrome şu anda çalışır durumdaysa, kapatıp yeniden deneyin.</translation>
@@ -69,6 +70,7 @@
 <translation id="3889417619312448367">Google Chrome'u Kaldır</translation>
 <translation id="8551886023433311834">Güncelleme neredeyse tamamlandı! Güncellemenin tamamlanması için cihazınızı yeniden başlatın.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="7339898014177206373">Yeni pencere</translation>
 <translation id="3026202950002788510"><ph name="BEGIN_BOLD"/>
           Uygulamalar &gt; Sistem Tercihleri &gt; Ağ &gt; Gelişmiş &gt; Proxy'ler
           <ph name="END_BOLD"/>
@@ -151,6 +153,7 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
           sekmesinde) mevcutsa, bu düğmeyi tıklayın ve yapılandırmanızın
           &quot;Doğrudan&quot; olarak ayarlandığından emin olun.</translation>
 <translation id="3612333635265770873">Aynı isme sahip bir modülün Google Chrome'la çakıştığı bilinmektedir.</translation>
+<translation id="824729746779295798">Telif Hakkı 2012 Google Inc. Tüm hakları saklıdır.</translation>
 <translation id="61852838583753520">&amp;Chrome OS'u güncelle</translation>
 <translation id="6650142020817594541">Bu site, Google Chrome Frame kullanmanızı tavsiye eder (zaten yüklü).</translation>
 <translation id="2712549016134575851">Yüklü başka bir uygulamayla çakışma tespit edildi.</translation>
@@ -161,6 +164,7 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="870251953148363156">&amp;Google Chrome'u güncelle</translation>
 <translation id="130631256467250065">Yaptığınız değişiklikler cihazı yeniden başlattığınızda etkinleşecektir.</translation>
+<translation id="163860049029591106">Chrome OS'yi Kullanmaya Başlayın</translation>
 <translation id="1399397803214730675">Bu bilgisayarda Google Chrome'un daha yeni bir sürümü zaten var. Yazılım çalışmıyorsa, lütfen Google Chrome'un yüklemesini kaldırın ve tekrar deneyin.</translation>
 <translation id="576822117893741893">Chrome menüsünü göster</translation>
 <translation id="3444832043240812445"><ph name="BEGIN_LINK"/>Kilitlenme bildirmeyi etkinleştirdiyseniz<ph name="END_LINK"/>, bu sayfada yalnızca, karşılaştığınız son kilitlenme olayları hakkında bilgiler gösterilir.</translation>
@@ -173,8 +177,8 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="2680623880102270805">Google Chrome geçerli masaüstü ortamını belirleyemediğinden bir uygulama kısayolu oluşturamıyor.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">İnternet Tarayıcı</translation>
+<translation id="5244325494201350962">Önceden farklı bir hesapla oturum açmıştınız, oturum açtığınızda verileriniz birleştirilecektir. Chrome öğeleriniz için <ph name="BEGIN_LINK"/>ayarlar sayfasından<ph name="END_LINK"/> yeni bir Chrome kullanıcısı oluşturabilirsiniz.</translation>
 <translation id="2189123953385179981">Google ChromeOS, <ph name="SCHEME"/> bağlantılarını kullanmak için bir dış uygulamanın başlatılmasını desteklemez. İstenen bağlantı:  <ph name="PROTOLINK"/>.</translation>
-<translation id="711654979569750606">Telif Hakkı © 2006-2012 Google Inc. Tüm Hakları Saklıdır.</translation>
 <translation id="8205111949707227942">İsteğe Bağlı: Kullanıcı istatistiklerini ve çökme raporlarını Google'a otomatik olarak göndererek Chrome OS'in iyileştirilmesine yardımcı olun.</translation>
 <translation id="7253415505590551024">Şu anda devam eden indirme işlemleri var. Google Chrome'dan çıkmak ve indirme işlemlerini iptal etmek istiyor musunuz?</translation>
 <translation id="7196020411877309443">Neden bunu görüyorum?</translation>

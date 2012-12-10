@@ -15,9 +15,11 @@
 <translation id="6979158407327259162">Google ドライブ</translation>
 <translation id="2297568595583585744">ステータス トレイ</translation>
 <translation id="2946640296642327832">Bluetooth を有効にする</translation>
-<translation id="6459472438155181876"><ph name="DISPLAY_NAME"/> へ画面を拡張</translation>
+<translation id="6459472438155181876"><ph name="DISPLAY_NAME"/> へ画面を拡張しています</translation>
 <translation id="8206859287963243715">携帯電話</translation>
 <translation id="6596816719288285829">IP アドレス</translation>
+<translation id="1812696562331527143">入力方法を <ph name="INPUT_METHOD_ID"/>*（<ph name="BEGIN_LINK"/>サードパーティ<ph name="END_LINK"/>）に変更しました。
+切り替えるには Shift+Alt キーを押します。</translation>
 <translation id="5233638681132016545">新しいタブ</translation>
 <translation id="3846575436967432996">利用可能なネットワーク情報がありません</translation>
 <translation id="3026237328237090306">モバイル データをセットアップ</translation>
@@ -26,19 +28,22 @@
 <translation id="3126069444801937830">再起動して更新</translation>
 <translation id="3294437725009624529">ゲスト</translation>
 <translation id="8190698733819146287">言語と入力方法をカスタマイズ...</translation>
-<translation id="5182671122927417841">拡張機能を無効にする</translation>
 <translation id="598295083618286569">Bluetooth に接続済み</translation>
 <translation id="5222676887888702881">ログアウト</translation>
-<translation id="2091132388437059185">最大化したときにランチャーを自動的に隠す</translation>
 <translation id="2964193600955408481">Wi-Fi を無効にする</translation>
 <translation id="811680302244032017">デバイスを追加...</translation>
 <translation id="2509468283778169019">Caps Lock がオンになっています</translation>
+<translation id="3892641579809465218">内蔵ディスプレイ</translation>
 <translation id="7823564328645135659">設定の同期後に言語が「<ph name="FROM_LOCALE"/>」から「<ph name="TO_LOCALE"/>」に変更されました。</translation>
+<translation id="5825747213122829519">入力方法を <ph name="INPUT_METHOD_ID"/> に変更しました。
+切り替えるには Shift+Alt キーを押します。</translation>
+<translation id="2562916301614567480">プライベート ネットワーク</translation>
 <translation id="6426039856985689743">モバイル データを無効にする</translation>
 <translation id="3087734570205094154">一番下</translation>
+<translation id="5271016907025319479">VPN が設定されていません。</translation>
 <translation id="3232695630852378748">Bluetooth の設定...</translation>
 <translation id="1480041086352807611">デモ モード</translation>
-<translation id="4186384497305035875">この画面は意図的に空白になっています</translation>
+<translation id="3626637461649818317">残り <ph name="PERCENTAGE"/>%</translation>
 <translation id="9089416786594320554">入力方法</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
 <translation id="2570059561924004903">音声フィードバックを無効にする</translation>
@@ -52,6 +57,7 @@
 <translation id="1346748346194534595">右</translation>
 <translation id="8528322925433439945">モバイル...</translation>
 <translation id="8428213095426709021">設定</translation>
+<translation id="2472320577759310817">Bluetooth が無効です。</translation>
 <translation id="2372145515558759244">アプリの同期...</translation>
 <translation id="4479639480957787382">イーサネット</translation>
 <translation id="1467432559032391204">左</translation>
@@ -60,26 +66,24 @@
 <translation id="1398853756734560583">最大化</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME"/> へミラーリング</translation>
 <translation id="3784455785234192852">ロック</translation>
-<translation id="2805756323405976993">アプリケーション</translation>
+<translation id="2805756323405976993">アプリ</translation>
 <translation id="2482878487686419369">通知</translation>
 <translation id="1850504506766569011">Wi-Fi が無効になりました。</translation>
 <translation id="2872961005593481000">終了</translation>
 <translation id="7052914147756339792">壁紙を設定...</translation>
-<translation id="80942317552162138">バッテリー残量: <ph name="PERCENTAGE"/>%</translation>
-<translation id="5746825509052394497">入力方法を <ph name="INPUT_METHOD_ID"/> に変更しました。
-        切り替えるには Shift+Alt キーを押します。</translation>
+<translation id="2739500853984626550">使用できる Bluetooth デバイスはありません</translation>
 <translation id="1602076796624386989">モバイル データを有効にする</translation>
 <translation id="3157931365184549694">復元</translation>
+<translation id="225680501294068881">デバイスをスキャンしています...</translation>
 <translation id="5597451508971090205"><ph name="DATE"/>、<ph name="SHORT_WEEKDAY"/></translation>
 <translation id="7029814467594812963">セッションを終了</translation>
 <translation id="8454013096329229812">Wi-Fi が有効になりました。</translation>
 <translation id="4872237917498892622">Alt+ 検索/Shift</translation>
 <translation id="2983818520079887040">設定...</translation>
 <translation id="2712866615167520691">アクセシビリティ機能が有効になっています。キャンセルするには Ctrl+Alt+Z キーを押してください。</translation>
+<translation id="5467313780247887226">接続されているモニターでは画像を複製できません。対応する解像度が見つかりませんでした。</translation>
 <translation id="2792498699870441125">Alt+ 検索</translation>
 <translation id="8660803626959853127"><ph name="COUNT"/> 個のファイルを同期中</translation>
-<translation id="1837166567415282700">入力方法を <ph name="INPUT_METHOD_ID"/>*（<ph name="BEGIN_LINK"/>サードパーティ<ph name="END_LINK"/>）に変更しました。
-        切り替えるには Shift+Alt キーを押します。</translation>
 <translation id="639644700271529076">CapsLock 機能はオフになっています</translation>
 <translation id="4101192585425716296">メッセージ センター</translation>
 <translation id="4864165860509564259">ランチャーの位置</translation>
@@ -88,9 +92,6 @@
 <translation id="3050422059534974565">CapsLock がオンになっています。
 検索/Shift キーを押すと解除されます。</translation>
 <translation id="397105322502079400">計算しています...</translation>
-<translation id="6362354186508391853">Ctrl+</translation>
-<translation id="477782898153505579">通知はありません。</translation>
-<translation id="7457942297256758195">すべて消去</translation>
 <translation id="3573179567135747900">「<ph name="FROM_LOCALE"/>」に戻します（再起動が必要です）</translation>
 <translation id="8103386449138765447">SMS メッセージ: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="5045002648206642691">Google ドライブの設定...</translation>
@@ -101,6 +102,5 @@ Alt+ 検索/Shift キーを押すと解除されます。</translation>
 <translation id="6911468394164995108">他のネットワークに接続...</translation>
 <translation id="6843725295806269523">ミュート</translation>
 <translation id="412065659894267608">フル充電まで <ph name="HOUR"/> 時間 <ph name="MINUTE"/> 分</translation>
-<translation id="4469842253116033348"><ph name="SITE"/> からの通知を無効にする</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER"/> の SMS</translation>
 </translationbundle>

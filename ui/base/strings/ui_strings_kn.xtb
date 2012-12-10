@@ -14,6 +14,7 @@
 <translation id="3660179305079774227">ಮೇಲಿನ ಬಾಣದ ಗುರುತು</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY"/> MB/s</translation>
 <translation id="3990502903496589789">ಬಲ ತುದಿ</translation>
+<translation id="5182671122927417841">ವಿಸ್ತರಣೆಯನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="932327136139879170">ಮುಖಪುಟ</translation>
 <translation id="3909791450649380159">ಕತ್ತರಿ&amp;ಸು</translation>
 <translation id="688711909580084195">ಶೀರ್ಷಿಕೆರಹಿತ ವೆಬ್‌ಪುಟ</translation>
@@ -53,6 +54,7 @@
 <translation id="8179976553408161302">ನಮೂದಿಸಿ</translation>
 <translation id="9170848237812810038">&amp;ರದ್ದುಮಾಡು</translation>
 <translation id="520299402983819650"><ph name="QUANTITY"/> PB</translation>
+<translation id="2983818520079887040">ಸೆಟ್ಟಿಂಗ್‌ಗಳು...</translation>
 <translation id="6845383723252244143">ಫೋಲ್ಡರ್ ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY"/> GB/s</translation>
@@ -60,10 +62,13 @@
 <translation id="2297836609126180313"><ph name="QUANTITY"/> TB/s</translation>
 <translation id="6040143037577758943">ಮುಚ್ಚು</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY"/> B/s</translation>
+<translation id="477782898153505579">ನೀವು ಯಾವುದೇ ಅಧಿಸೂಚನೆಗಳನ್ನು ಹೊಂದಿಲ್ಲ. ವಿರಮಿಸಿ!</translation>
+<translation id="7457942297256758195">ಎಲ್ಲವನ್ನೂ ತೆರವುಗೊಳಿಸಿ</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="6907759265145635167"><ph name="QUANTITY"/> PB/s</translation>
 <translation id="6965382102122355670">ಸರಿ</translation>
 <translation id="5941711191222866238">ಕುಗ್ಗಿಸು</translation>
+<translation id="4469842253116033348"><ph name="SITE"/> ನಿಂದ ಪ್ರಕಟಣೆ‌ಗಳನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="3036649622769666520">ಫೈಲ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="8328145009876646418">ಎಡ ಬದಿ</translation>
 </translationbundle>

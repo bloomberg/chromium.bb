@@ -14,6 +14,7 @@
 <translation id="3660179305079774227">ลูกศรขึ้น</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY"/> MB/วินาที</translation>
 <translation id="3990502903496589789">ขอบขวา</translation>
+<translation id="5182671122927417841">ปิดใช้งานส่วนขยาย</translation>
 <translation id="932327136139879170">Home</translation>
 <translation id="3909791450649380159">&amp;ตัด</translation>
 <translation id="688711909580084195">หน้าเว็บที่ไม่มีชื่อ</translation>
@@ -53,6 +54,7 @@
 <translation id="8179976553408161302">เข้าใช้</translation>
 <translation id="9170848237812810038">เ&amp;ลิกทำ</translation>
 <translation id="520299402983819650"><ph name="QUANTITY"/> PB</translation>
+<translation id="2983818520079887040">การตั้งค่า...</translation>
 <translation id="6845383723252244143">เลือกโฟลเดอร์</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY"/> GB/วินาที</translation>
@@ -60,10 +62,13 @@
 <translation id="2297836609126180313"><ph name="QUANTITY"/> TB/วินาที</translation>
 <translation id="6040143037577758943">ปิด</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY"/> B/วินาที</translation>
+<translation id="477782898153505579">คุณไม่มีการแจ้งเตือนใดๆ สบายใจได้!</translation>
+<translation id="7457942297256758195">ล้างทั้งหมด</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="6907759265145635167"><ph name="QUANTITY"/> PB/วินาที</translation>
 <translation id="6965382102122355670">ตกลง</translation>
 <translation id="5941711191222866238">ย่อ</translation>
+<translation id="4469842253116033348">ปิดการใช้งานการแจ้งเตือนจาก <ph name="SITE"/></translation>
 <translation id="3036649622769666520">เปิดไฟล์</translation>
 <translation id="8328145009876646418">ขอบซ้าย</translation>
 </translationbundle>

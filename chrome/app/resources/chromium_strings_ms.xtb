@@ -15,6 +15,7 @@
 <translation id="7128196614940529818">Chromium Frame telah dipasang dan tersedia untuk semua pengguna komputer ini. Jika anda ingin memasang Chromium Frame pada tahap pengguna, mula-mula anda mesti menyahpasang versi tahap sistem yang dipasang oleh pihak pentadbir.</translation>
 <translation id="731644333568559921">Kemas kini &amp;Chromium OS</translation>
 <translation id="7421823331379285070">Chromium memerlukan Windows XP atau yang lebih baharu. Beberapa ciri mungkin tidak berfungsi.</translation>
+<translation id="3549345495227188780">Bermula dengan OS Chromium</translation>
 <translation id="4330297532943865716">Pemasangan Chromium atau Chromium Frame yang bercanggah telah dijumpai pada sistem. Sila nyahpasang dan cuba lagi.</translation>
 <translation id="6953661834318318668">Bar Alat Chromium</translation>
 <translation id="7097100943370017396">Chromium tidak lagi dikemas kini kerana sistem pengendalian anda usang.</translation>
@@ -56,6 +57,7 @@
 <translation id="3197823471738295152">Peranti anda telah dikemas kini.</translation>
 <translation id="8551886023433311834">Hampir terkini! Mulakan semula peranti anda untuk melengkapkan pengemaskinian.</translation>
 <translation id="8353224596138547809">Adakah anda mahu Chromium menyimpan kata laluan anda untuk tapak ini?</translation>
+<translation id="7339898014177206373">Tetingkap baharu</translation>
 <translation id="3026202950002788510">Pergi ke
           <ph name="BEGIN_BOLD"/>
           Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies
@@ -67,7 +69,6 @@
 <translation id="9191268552238695869">Pentadbir telah memasang Chromium pada sistem ini dan tersedia untuk semua pengguna. Chromium tahap sistem kini akan menggantikan pemasangan tahap pengguna anda.</translation>
 <translation id="3509308970982693815">Sila tutup semua tetingkap Chromium dan cuba lagi.</translation>
 <translation id="4077262827416206768">Sila tutup semua tetingkap Chromium dan lancarkan semula Chromium agar perubahan ini boleh dilaksanakan.</translation>
-<translation id="9119843944749246249">Hak Cipta © 2006-2012 Pengarang Chromium. Hak Cipta Terpelihara.</translation>
 <translation id="6944967875980567883">Modul yang dimuatkan dalam Chromium</translation>
 <translation id="118298050220780080">Anda cuba mencapai &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, tetapi pelayan menyampaikan sijil yang dikeluarkan oleh entiti yang tidak dipercayai oleh sistem pengendalian komputer anda. Ini mungkin bermakna pelayan tersebut telah menghasilkan bukti kelayakannya sendiri yang tidak dipercayai oleh Chromium untuk mendapatkan maklumat identiti atau penyerang mungkin cuba memintas komunikasi anda.</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
@@ -89,6 +90,7 @@
 <translation id="2881203820889150661">Chromium tidak dapat membuat pintasan aplikasi kerana ia tidak dapat menentukan persekitaran semasa desktop. </translation>
 <translation id="4886158514168859177">Komputer ini telah mempunyai versi Chromium Frame yang lebih baharu. Jika perisian tidak berfungsi, sila nyahpasang Chromium Frame dan cuba lagi.</translation>
 <translation id="911206726377975832">Padamkan juga data menyemak imbas anda?</translation>
+<translation id="1699664235656412242">Sila tutup semua tetingkap Chromium (termasuk yang di dalam mod Windows 8) dan cuba lagi.</translation>
 <translation id="6734080038664603509">Kemas kini &amp;Chromium</translation>
 <translation id="8862326446509486874">Anda tidak mempunyai hak wajar untuk pemasangan peringkat sistem. Cuba jalankan pemasang semula sebagai Pentadbir.</translation>
 <translation id="1774152462503052664">Benarkan Chromium dijalankan dalam latar belakang</translation>
@@ -125,7 +127,9 @@
 <translation id="6717134281241384636">Profil anda tidak boleh digunakan kerana profil anda dihasilkan dari versi Chromium yang lebih baharu.
 
 Beberapa ciri mungkin tidak tersedia. Sila nyatakan direktori profil yang berbeza atau gunakan versi Chromium yang lebih baharu.</translation>
+<translation id="4499972362520386277">Hak Cipta 2012 Pengarang Chromium. Hak cipta terpelihara.</translation>
 <translation id="2712549016134575851">Percanggahan dengan aplikasi lain yang dipasang telah dikesan.</translation>
+<translation id="4881709374218686648">Sebelum ini, anda telah log masuk menggunakan akaun yang berbeza, log masuk akan menggabungkan data anda. Pertimbangkan untuk membuat pengguna Chromium baharu melalui <ph name="BEGIN_LINK"/>halaman tetapan<ph name="END_LINK"/> untuk bahan Chromium anda.</translation>
 <translation id="9013087743919948559">Tambah ke Chromium</translation>
 <translation id="6212496753309875659">Komputer ini telah mempunyai versi Chromium yang lebih baharu. Jika perisian tidak berfungsi, sila nyahpasang Chromium dan cuba lagi.</translation>
 <translation id="3014684866565908571">Utiliti Chromium</translation>

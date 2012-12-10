@@ -37,6 +37,7 @@
 <translation id="8398145039500709259">आपने सभी Chrome उत्‍पादों को समन्‍वयित करने के लिए इस Google खाते का उपयोग करें?</translation>
 <translation id="1779550429052479749">Google Chrome या Google Chrome Frame का एक विरोधपूर्ण इंस्टॉलेशन सिस्टम पर मिला. कृपया इसे अनइंस्टॉल करें और पुनः प्रयास करें.</translation>
 <translation id="3555616473548901994">विस्थापना पूर्ण.</translation>
+<translation id="4987308747895123092">कृपया सभी Google Chrome windows (Windows 8 मोड वाले भी) बंद कर दें और पुनः प्रयास करें.</translation>
 <translation id="568643307450491754">Chrome मेनू में या बुकमार्क बार पर अपने बुकमार्क ढूंढें.</translation>
 <translation id="8556340503434111824">Google Chrome का एक नया संस्‍करण उपलब्‍ध है, और यह अब तक का सबसे तेज़ है.</translation>
 <translation id="4728575227883772061">अनिर्दिष्ट कारण से स्थापना विफल हुई. यदि Google Chrome अभी खुला हुआ है, तो कृपया उसे बंद करें और पुनः प्रयास करें.</translation>
@@ -67,6 +68,7 @@
 <translation id="3889417619312448367">Google Chrome को विस्थापित करें</translation>
 <translation id="8551886023433311834">लगभग अद्यतित! अपडेट करना पूर्ण करने के लिए अपना उपकरण पुन: प्रारंभ करें.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="7339898014177206373">नई विंडो</translation>
 <translation id="3026202950002788510">          <ph name="BEGIN_BOLD"/>
           Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies
           <ph name="END_BOLD"/>
@@ -147,6 +149,7 @@
           टैब में है) मौजूद हो, तो उस पर क्लिक करें और सुनिश्चित करें कि आपका कॉन्फ़िगरेशन
           &quot;प्रत्यक्ष&quot; पर सेट है.</translation>
 <translation id="3612333635265770873">इसी नाम के एक मॉड्यूल को Google Chrome का विरोध करने के लिए जाना जाता है.</translation>
+<translation id="824729746779295798">कॉपीराइट 2012 Google Inc. सर्वाधिकार सुरक्षित.</translation>
 <translation id="61852838583753520">&amp;Chrome OS को अपडेट करें</translation>
 <translation id="6650142020817594541">यह साइट Google Chrome Frame (पहले से इंस्टॉल किया गया) की अनुशंसा करती है.</translation>
 <translation id="2712549016134575851">किसी अन्य स्थापित एप्लिकेशन के साथ विरोधाभास पाया गया है.</translation>
@@ -157,6 +160,7 @@
 <translation id="8669527147644353129">Google Chrome सहायक</translation>
 <translation id="870251953148363156">&amp;Google Chrome को अपडेट करें</translation>
 <translation id="130631256467250065">अगली बार अपना उपकरण पुन: प्रारंभ करने पर आपके परिवर्तन प्रभावी हो जाएंगे.</translation>
+<translation id="163860049029591106">Chrome OS के साथ आरंभ करना</translation>
 <translation id="1399397803214730675">इस कंप्यूटर में Google Chrome का अधिक नवीन संस्करण पहले से मौजूद है. यदि सॉफ्टवेयर काम नहीं कर रहा है, तो कृपया Google Chrome अनइंस्‍टॉल करें और पुनः प्रयास करें.</translation>
 <translation id="576822117893741893">Chrome मेनू दिखाएं</translation>
 <translation id="3444832043240812445">यदि आप <ph name="BEGIN_LINK"/>क्रैश रिपोर्टिंग सक्षम<ph name="END_LINK"/> करते हैं तो यह पृष्‍ठ केवल आपके हाल ही के क्रैश की जानकारी प्रदर्शित करेगा.</translation>
@@ -169,8 +173,8 @@
 <translation id="2680623880102270805">Google Chrome एप्लिकेशन शॉर्टकट नहीं बना सकता क्‍योंकि वह वर्तमान डेस्‍कटॉप वातावरण का निर्धारण नहीं कर सकता.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">इंटरनेट ब्राउज़र</translation>
+<translation id="5244325494201350962">आपने पहले भिन्न खाते से साइन इन किया था, साइन इन करने से आपका डेटा मर्ज हो जाएगा. अपनी Chrome सामग्री के लिए <ph name="BEGIN_LINK"/>सेटिंग पृष्ठ<ph name="END_LINK"/> के माध्यम से नया Chrome उपयोगकर्ता बनाने का प्रयास करें.</translation>
 <translation id="2189123953385179981">Google ChromeOS <ph name="SCHEME"/> लिंक को प्रबंधित करने के लिए किसी बाह्य एप्लिकेशन को लॉन्च करने का समर्थन नहीं करता है. अनुरोध किया गया लिंक <ph name="PROTOLINK"/> है.</translation>
-<translation id="711654979569750606">कॉपीराइट © 2006-2011 Google Inc. सर्वाधिकार सुरक्षित.</translation>
 <translation id="8205111949707227942">वैकल्पिक: अपने आप उपयोग के आंकड़े और क्रैश रिपोर्ट भेजकर Chrome OS को बेहतर बनाने में सहायता करें.</translation>
 <translation id="7253415505590551024">डाउनलोड वर्तमान में चल रहे हैं. क्या आप Google Chrome से बाहर निकलना और डाउनलोड को रद्द करना चाहते हैं?</translation>
 <translation id="7196020411877309443">मैं यह क्यों देख रहा/रही हूं?</translation>

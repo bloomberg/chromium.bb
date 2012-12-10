@@ -10,6 +10,7 @@
 <translation id="9150416707757015439">Această politică este învechită. Puteţi să utilizaţi IncognitoModeAvailability. Activaţi modul incognito în <ph name="PRODUCT_NAME"/>. Dacă această setare este activată sau nu este configurată, utilizatorii pot deschide pagini web în modul incognito. Dacă această setare este dezactivată, utilizatorii nu pot deschide pagini web în modul incognito. Dacă această politică rămâne nesetată, setarea va fi activată, dar utilizatorul va putea folosi modul incognito.</translation>
 <translation id="7614663184588396421">Lista schemelor de protocol dezactivate</translation>
 <translation id="2309390639296060546">Setare prestabilită pentru localizarea geografică</translation>
+<translation id="7261507082507286116">Dezactivează Google Drive prin intermediul conexiunilor mobile</translation>
 <translation id="7443616896860707393">Mesaje de solicitare pentru autentificarea HTTP de bază indiferent de sursă</translation>
 <translation id="2337466621458842053">Vă permite să setaţi o listă de modele pentru adresele URL care specifică site-urile care au permisiunea să afişeze imagini. Dacă această politică rămâne nesetată, valoarea prestabilită la nivel global va fi folosită pentru toate site-urile, fie din politica „DefaultImagesSetting”, în cazul în care politica este setată, fie din configuraţia personală a utilizatorului, în caz contrar.</translation>
 <translation id="4680961954980851756">Activaţi completarea automată</translation>
@@ -82,6 +83,9 @@
 <translation id="4668325077104657568">Setare pentru imagini prestabilite</translation>
 <translation id="7161193985878519056">Modul incognito a fost dezactivat.</translation>
 <translation id="2524379983318108884">Permiteţi înregistrarea conţinutului audio</translation>
+<translation id="7978961945071764766">Dacă este activată, dezactivează sincronizarea Google Drive la utilizarea unei conexiuni mobile. În acest caz, datele sunt sincronizate cu Google Drive numai când gadgetul este conectat prin WiFi sau Ethernet.
+
+          Dacă politica nu este activată sau nu este configurată, utilizatorii vor putea să transfere fişiere în Google Drive prin intermediul conexiunilor mobile.</translation>
 <translation id="4492287494009043413">Dezactivaţi capturile de ecran</translation>
 <translation id="6368403635025849609">Permiteţi JavaScript pe aceste site-uri</translation>
 <translation id="6074963268421707432">Nu permiteţi niciunui site să afişeze notificări pe desktop</translation>
@@ -91,11 +95,6 @@
 <translation id="2906874737073861391">Lista extensiilor din pachetul de aplicaţii</translation>
 <translation id="3758249152301468420">Dezactivaţi instrumentele pentru dezvoltatori</translation>
 <translation id="8665076741187546529">Configurează lista extensiilor cu instalare forţată</translation>
-<translation id="2505112041294615513">Această politică configurează directorul pe care <ph name="PRODUCT_FRAME_NAME"/> îl va utiliza pentru stocarea datelor de utilizator.
-
-      Dacă setaţi această politică, <ph name="PRODUCT_FRAME_NAME"/> va utiliza directorul furnizat.
-
-      Dacă această setare nu este setată, va fi utilizat directorul profilului prestabilit.</translation>
 <translation id="8818173863808665831">Raportează locaţia geografică a dispozitivului.
 
           Dacă politica nu este setată sau nu este activată, locaţia nu va fi raportată.</translation>
@@ -109,6 +108,13 @@
 <translation id="2565967352111237512">Permite raportarea anonimă la Google a datelor despre utilizare şi blocări referitoare la <ph name="PRODUCT_NAME"/> şi împiedică utilizatorii să modifice această setare. Dacă activaţi această setare, raportarea anonimă a datelor despre utilizare şi blocări sunt trimise la Google. Dacă dezactivaţi această setare, raportarea anonimă a datelor despre utilizare şi blocări nu se trimise niciodată la Google. Dacă activaţi sau dezactivaţi această setare, utilizatorii nu o pot modifica sau anula în <ph name="PRODUCT_NAME"/>. Dacă această politică este nesetată, setarea va fi ceea ce utilizatorul poate alege la instalare sau la prima rulare.</translation>
 <translation id="9135033364005346124">Activaţi proxy-ul <ph name="CLOUD_PRINT_NAME"/></translation>
 <translation id="6943577887654905793">Nume preferinţă Mac/Linux:</translation>
+<translation id="6925212669267783763">Configurează directorul pe care <ph name="PRODUCT_FRAME_NAME"/> îl va utiliza pentru stocarea datelor de utilizator.
+
+      Dacă setaţi această politică, <ph name="PRODUCT_FRAME_NAME"/> va utiliza directorul furnizat.
+
+      Pentru o listă a variabilelor care pot fi utilizate, accesaţi http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
+
+      Dacă această setare nu este configurată, va fi utilizat directorul profilului prestabilit.</translation>
 <translation id="8906768759089290519">Activaţi modul pentru invitaţi</translation>
 <translation id="838870586332499308">Activaţi roamingul de date</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME"/> poate utiliza un serviciu web Google pentru a ajuta la soluţionarea greşelilor de ortografie. Dacă setarea este activată, atunci se va utiliza întotdeauna acest serviciu. Dacă setarea este dezactivată, atunci acest serviciu nu va fi utilizat niciodată.
@@ -118,6 +124,9 @@
       Dacă această setare nu este configurată, atunci utilizatorii pot alege dacă se va utiliza sau nu serviciul de verificare a ortografiei.</translation>
 <translation id="254524874071906077">Setaţi Chrome ca browser prestabilit</translation>
 <translation id="8764119899999036911">Specifică dacă numele SPN generat în protocolul Kerberos are la bază numele DNS canonic sau numele iniţial introdus. Dacă activaţi această setare, căutarea CNAME va fi ignorată, iar numele serverului va fi utilizat aşa cum este introdus. Dacă dezactivaţi această setare sau o lăsaţi nesetată, numele canonic al serverului va fi determinat prin intermediul căutării CNAME.</translation>
+<translation id="5711323964690760562">Specifică adresa URL pentru magazinul web pentru întreprinderi. Când această setare este activată, în pagina Filă nouă va apărea o aplicaţie care, atunci când primeşte un clic, îl va direcţiona pe utilizator la adresa URL specificată. Pentru a permite efectiv instalarea extensiilor de pe site-ul web configurat, politica ExtensionInstallSources trebuie să fie configurată pentru a permite instalarea de la adresele URL de descărcare corespunzătoare pentru extensii. Dacă această politică este setată, setarea EnterpriseWebStoreName trebuie să fie, de asemenea, setată.
+
+      Dacă această setare este dezactivată, în pagina Filă nouă nu va apărea nicio aplicaţie Magazin web pentru întreprinderi.</translation>
 <translation id="4377599627073874279">Permiteţi tuturor site-urilor să afişeze toate imaginile</translation>
 <translation id="3915395663995367577">Adresa URL a unui fişier .pac pentru proxy</translation>
 <translation id="1022361784792428773">ID-urile extensiilor particulare pe care utilizatorul nu are permisiunea să le instaleze (sau * pentru toate)</translation>
@@ -131,6 +140,13 @@
 <translation id="8987262643142408725">Dezactivaţi divizarea înregistrărilor SSL</translation>
 <translation id="4529945827292143461">Personalizaţi lista cu modele pentru adresele URL care trebuie să fie întotdeauna afişate de browserul gazdă. Dacă această politică nu este setată, programul de redare prestabilit va fi folosit pentru toate site-urile aşa cum se specifică în politica „ChromeFrameRendererSettings”. Pentru exemple de modele, accesaţi http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8044493735196713914">Raportaţi modul de pornire al dispozitivului</translation>
+<translation id="2746016768603629042">Această politică este învechită. Utilizaţi, în schimb, DefaultJavaScriptSetting.
+
+      Poate fi utilizată pentru a dezactiva JavaScript în <ph name="PRODUCT_NAME"/>.
+
+      Dacă această setare este dezactivată, paginile web nu pot utiliza JavaScript, iar utilizatorii nu pot modifica această setare.
+
+      Dacă această setare este activată sau nu este configurată, paginile web pot utiliza JavaScript, dar utilizatorul poate schimba această setare.</translation>
 <translation id="1942957375738056236">Puteţi să specificaţi aici adresa URL a serverului proxy. Această politică are efect numai dacă aţi selectat manual setările pentru proxy la „Alegeţi cum să specificaţi setările pentru serverul proxy”. Trebuie să lăsaţi această politică nesetată dacă aţi selectat orice alt mod pentru setarea politicilor de proxy. Pentru mai multe opţiuni şi exemple detaliate, accesaţi: <ph name="PROXY_HELP_URL"/></translation>
 <translation id="8642088216849640113">Activează funcţia Navigare sigură din <ph name="PRODUCT_NAME"/> şi împiedică utilizatorii să schimbe această setare. Dacă activaţi această setare, Navigarea sigură este întotdeauna activată. Dacă dezactivaţi această setare, Navigarea sigură nu este niciodată activată. Dacă activaţi sau dezactivaţi această setare, utilizatorii nu o pot modifica sau anula în <ph name="PRODUCT_NAME"/>. Dacă această politică este lăsată nesetată, funcţia va fi activată, dar utilizatorul va putea să o schimbe.</translation>
 <translation id="6076008833763548615">Dezactivaţi conectarea dispozitivelor de stocare externe.
@@ -157,6 +173,9 @@
 <translation id="2312509925391670075">Doresc să fiu întrebat(ă) de fiecare dată când un site încearcă să îmi acceseze camera şi/sau microfonul</translation>
 <translation id="1426410128494586442">Da</translation>
 <translation id="4962195944157514011">Specifică adresa URL a motorului de căutare utilizat la efectuarea unei căutări prestabilite. Adresa URL trebuie să conţină şirul „<ph name="SEARCH_TERM_MARKER"/>”, care va fi înlocuit în momentul interogării cu termenii căutaţi de către utilizator. Această opţiune trebuie setată dacă este activată politica „DefaultSearchProviderEnabled” şi va fi respectată numai în cazul acesta.</translation>
+<translation id="3343454696188645600">Dacă este activată, dezactivează sincronizarea Google Drive. În acest caz, nu se încarcă date în Google Drive.
+
+          Dacă politica nu este configurată sau este dezactivată, atunci utilizatorii vor putea să transfere fişiere în Google Drive.</translation>
 <translation id="6009903244351574348">Permiteţi ca <ph name="PRODUCT_FRAME_NAME"/> să gestioneze tipurile de conţinut enumerate. Dacă această politică nu este setată, programul de redare prestabilit va fi folosit pentru toate site-urile aşa cum se specifică în politica „ChromeFrameRendererSettings”.</translation>
 <translation id="3381968327636295719">Utilizaţi în mod prestabilit browserul gazdă</translation>
 <translation id="3627678165642179114">Activaţi sau dezactivaţi serviciul web de verificare a ortografiei</translation>
@@ -187,6 +206,17 @@
 <translation id="6786747875388722282">Extensii</translation>
 <translation id="8947415621777543415">Raportaţi locaţia dispozitivului</translation>
 <translation id="1655229863189977773">Setaţi dimensiunea în octeţi a memoriei cache pe disc</translation>
+<translation id="6376842084200599664">Vă permite să specificaţi o listă de extensii care vor fi instalate în fundal, fără intervenţia utilizatorului.
+
+          Fiecare element din listă este un şir care conţine un ID al extensiei şi o adresă URL pentru actualizare, delimitate prin punct şi virgulă (<ph name="SEMICOLON"/>). Codul de extensie este şirul alcătuit din 32 de litere, disponibil, de exemplu, la <ph name="CHROME_EXTENSIONS_LINK"/> când vă aflaţi în modul pentru dezvoltatori. Adresa URL pentru actualizare trebuie să trimită la un document XML cu manifestul de actualizare, conform descrierii de la <ph name="LINK_TO_EXTENSION_DOC1"/>. Reţineţi că adresa URL pentru actualizare setată în această politică este utilizată numai la instalarea iniţială; actualizările ulterioare ale extensiei vor utiliza adresa URL pentru actualizare indicată în manifestul extensiei.
+
+          Pentru fiecare element, <ph name="PRODUCT_NAME"/> va prelua extensia specificată de codul extensiei de la serviciul de actualizare de la adresa URL indicată şi o va instala în fundal.
+
+          De exemplu, <ph name="EXTENSION_POLICY_EXAMPLE"/> instalează extensia <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/> de la adresa URL standard de actualizare a Magazinului web Chrome. Pentru informaţii suplimentare despre găzduirea extensiilor, accesaţi: <ph name="LINK_TO_EXTENSION_DOC2"/>.
+
+          Utilizatorii nu vor putea dezinstala extensiile specificate de această politică. Dacă ştergeţi o extensie din această listă, aceasta va fi în mod automat dezinstalată de <ph name="PRODUCT_NAME"/>. Extensiile specificate pe această listă sunt trecute automat pe lista albă pentru instalare; ExtensionsInstallBlacklist nu le afectează.
+
+          Dacă această politică nu este setată, utilizatorul nu poate dezinstala nicio extensie din <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="6899705656741990703">Detectare automată a setărilor proxy</translation>
 <translation id="7003334574344702284">Dacă este activată, această politică forţează importarea parolelor salvate din browserul prestabilit anterior. Dacă este activată, această politică afectează, de asemenea, caseta de dialog de importare. Dacă este dezactivată, parolele salvate nu sunt importate. În cazul în care nu este setată, utilizatorul poate fi întrebat dacă doreşte importarea sau aceasta poate avea loc în mod automat.</translation>
 <translation id="6258193603492867656">Specifică dacă în protocolul Kerberos numele SPN generate ar trebui să includă un port non-standard. Dacă activaţi această setare şi este introdus un port non-standard (de exemplu, un alt port decât 80 sau 443), acesta va fi inclus în numele SPN generate în protocolul Kerberos. Dacă dezactivaţi această setare sau o lăsaţi nesetată, codurile SPN generate în Kerberos nu vor include un port.</translation>
@@ -200,10 +230,24 @@
       Formatul valorii respectă denumirile fusurilor orare din „Baza de date de fusuri orare IANA” (accesaţi „http://en.wikipedia.org/wiki/List_of_tz_database_time”). Mai exact, majoritatea fusurilor orare sunt denumite după „continent/oraş_mare” sau „ocean/oraş_mare”.</translation>
 <translation id="8992176907758534924">Nu permiteţi niciunui site să afişeze imagini</translation>
 <translation id="262740370354162807">Activează trimiterea documentelor la <ph name="CLOUD_PRINT_NAME"/></translation>
+<translation id="5182055907976889880">Configuraţi Google Drive în <ph name="PRODUCT_OS_NAME"/>.</translation>
 <translation id="8704831857353097849">Lista pluginurilor dezactivate</translation>
 <translation id="8391419598427733574">Raportează versiunea sistemului de operare şi versiunea firmware ale dispozitivelor înscrise. În cazul în care această setare este activată, dispozitivele înscrise vor raporta periodic versiunea sistemului de operare şi versiunea firmware. Dacă această setare nu este configurată sau nu este activată, nu vor fi raportate informaţii privind versiunea.</translation>
 <translation id="467449052039111439">Deschideţi o listă de adrese URL</translation>
 <translation id="5883015257301027298">Setare prestabilită pentru cookie-uri</translation>
+<translation id="5017500084427291117">Blochează accesul la adresele URL incluse pe listă.
+
+      Politica împiedică utilizatorul să încarce pagini web de la adresele URL incluse pe lista neagră.
+
+      O adresă URL are formatul „scheme://host:port/path”.
+      Schema opţională poate fi http, https sau ftp. Numai această schemă va fi blocată; dacă nu se specifică nicio schemă, toate schemele vor fi blocate.
+      Gazda poate fi un nume de gazdă sau o adresă IP. Subdomeniile unui nume de gazdă vor fi, de asemenea, blocate. Pentru a împiedica blocarea subdomeniilor, includeţi un semn „.” înainte de numele gazdei. Numele de gazdă special „*” va bloca toate domeniile.
+      Portul opţional este un număr de port valid, de la 1 la 65535. Dacă nu este specificat niciun port, toate porturile sunt blocate.
+      Dacă este specificată calea opţională, numai căile cu prefixul respectiv vor fi blocate.
+
+      Excepţiile pot fi definite în politica privind lista albă de adrese URL. Aceste politici sunt limitate la 1000 de intrări; intrările suplimentare vor fi ignorate.
+
+      Dacă această politică nu este setată, în browser nu va fi trecută pe lista neagră nicio adresă URL.</translation>
 <translation id="8955719471735800169">Înapoi sus</translation>
 <translation id="2534584045044686957">Configurează dimensiunea memoriei cache pe care <ph name="PRODUCT_NAME"/> o va utiliza pentru stocarea fişierelor media în memoria cache de pe disc.
 
@@ -221,8 +265,6 @@
       Această politică este menită să permită trecerea strictă pe lista neagră a pluginurilor, atunci când lista „DisabledPlugins” conţine intrări cu metacaractere, cum ar fi „*” pentru dezactivarea tuturor pluginurilor sau „*Java*” pentru dezactivarea tuturor pluginurilor Java, dar administratorul doreşte să permită o anumită versiune, de exemplu, „IcedTea Java 2.3”. Respectiva versiune poate fi specificată în această politică.
 
       Dacă această politică nu este setată, pluginurile care se potrivesc cu modelele din „DisabledPlugins” vor fi blocate ca dezactivate, iar utilizatorul nu va putea să le activeze.</translation>
-<translation id="8170882486743832400">Configuraţi opţiunile GData</translation>
-<translation id="2322733497952278056">Permite accesul la adresele URL enumerate, ca excepţii de la lista neagră cu adrese URL. Consultaţi descrierea politicii pentru lista neagră cu adrese URL pentru formatul intrărilor din această listă. Această politică poate fi folosită pentru a deschide excepţii pentru listele negre limitative. De exemplu, „*” poate fi trecut pe lista neagră pentru a bloca toate cererile, iar această politică poate fi folosită pentru a permite accesul la un număr limitat de adrese URL. Politica poate fi folosită pentru a deschide excepţii de la anumite scheme, subdomenii ale altor domenii, porturi sau căi specifice. Filtrul cel mai precis va determina dacă o adresă URL este blocată sau permisă. Lista albă are prioritate faţă de lista neagră. Această politică este limitată la 100 de intrări, iar intrările ulterioare vor fi ignorate. Dacă această politică nu este setată, nu vor exista excepţii de la lista neagră din politica „URLBlacklist”.</translation>
 <translation id="5316405756476735914">Vă permite să setaţi dacă site-urile web au sau nu permisiunea de a seta datele locale. Setarea datelor locale poate fi permisă sau refuzată în bloc pentru toate site-urile web. Dacă această politică nu este setată, va fi utilizată politica „AllowCookies”, dar utilizatorul o va putea schimba.</translation>
 <translation id="4250680216510889253">Nu</translation>
 <translation id="1522425503138261032">Permiteţi site-urilor să urmărească locaţia fizică a utilizatorilor</translation>
@@ -252,12 +294,8 @@
       Dacă această politică este lăsată nesetată, utilizatorul poate modifica lista cu aplicaţii fixate din lansator.</translation>
 <translation id="7625444193696794922">Specifică un canal de lansare la care ar trebui să fie blocat acest dispozitiv.</translation>
 <translation id="2552966063069741410">Fus orar</translation>
-<translation id="3088288048720661397">Când politica este activată, dezactivează sincronizarea Google Docs atunci când se utilizează o conexiune mobilă. În acest caz, datele sunt sincronizate cu Google Docs numai când dispozitivul este conectat prin WiFi sau Ethernet.
-
-          Dacă politica nu este activată sau nu este configurată, utilizatorii vor putea să transfere fişiere în Google Docs prin intermediul conexiunilor mobile.</translation>
 <translation id="2240879329269430151">Vă permite să setaţi dacă site-urile web au permisiunea să afişeze ferestre de tip pop-up. Afişarea ferestrelor de tip pop-up poate fi permisă sau refuzată în bloc pentru toate site-urile web. Dacă această politică este lăsată nesetată, va fi utilizată politica „BlockPopups”, dar utilizatorul va putea să o schimbe.</translation>
 <translation id="2529700525201305165">Restricţionaţi utilizatorii care au permisiunea de a se conecta la <ph name="PRODUCT_NAME"/>.</translation>
-<translation id="5289914968905023866">Blochează accesul la adresele URL incluse în listă. Politica împiedică utilizatorul să încarce pagini web din adresele URL incluse în lista neagră. O adresă URL are formatul „scheme://host:port/path”. Schema opţională poate fi http, https sau ftp. Numai această schemă va fi blocată; dacă nu se specifică nicio schemă, toate schemele vor fi blocate. Gazda poate fi un nume de gazdă sau o adresă IP. Subdomeniile unui nume de gazdă vor fi, de asemenea, blocate. Pentru a împiedica blocarea subdomeniilor, includeţi un semn „.” înainte de numele gazdei. Numele de gazdă special „*” va bloca toate domeniile. Portul opţional este un număr de port valid, de la 1 la 65535. Dacă nu este specificat niciun port, toate porturile sunt blocate. Dacă este specificată calea opţională, numai căile cu prefixul respectiv vor fi blocate. Excepţiile pot fi definite în politica privind lista albă de adrese URL. Aceste politici sunt limitate la 100 de intrări; intrările suplimentare vor fi ignorate. Dacă această politică nu este setată, în browser nu va fi trecută pe lista neagră nicio adresă URL.</translation>
 <translation id="3864818549971490907">Setare prestabilită pentru pluginuri</translation>
 <translation id="7151201297958662315">Stabileşte dacă un proces <ph name="PRODUCT_NAME"/> este pornit la conectarea sistemului de operare şi continuă să funcţioneze atunci când ultima fereastră a browserului este închisă, permiţând aplicaţiilor din fundal să rămână active. Procesul din fundal afişează o pictogramă în bara de sistem şi poate fi întotdeauna închis de acolo.
 
@@ -271,10 +309,22 @@
 
           Dacă această politică nu este setată, va fi utilizată linia de comandă prestabilită.</translation>
 <translation id="2646290749315461919">Vă permite să setaţi dacă site-urile web au permisiunea să urmărească locaţia fizică a utilizatorilor. Urmărirea locaţiei fizice a utilizatorilor poate fi permisă în mod prestabilit, refuzată în mod prestabilit sau utilizatorul poate fi întrebat de fiecare dată când un site web solicită locaţia fizică. Dacă politica este lăsată nesetată, va fi utilizată politica „AskGeolocation”, dar utilizatorul va putea să o schimbe.</translation>
+<translation id="3309789488678647282">Dezactivează Google Drive</translation>
 <translation id="5770738360657678870">Canalul pentru dezvoltatori (poate fi instabil)</translation>
 <translation id="2959898425599642200">Reguli de ocolire a proxy-ului</translation>
 <translation id="1098794473340446990">Raportează perioadele de activitate ale dispozitivului. Dacă această setare este activată, dispozitivele înscrise vor raporta perioadele de timp când un utilizator este activ pe acest dispozitiv. Dacă setarea nu este configurată sau nu este activată, perioadele de activitate ale dispozitivului nu vor fi înregistrate sau raportate.</translation>
 <translation id="896575211736907134">Modul incognito a fost impus.</translation>
+<translation id="817455428376641507">Permite accesul la adresele URL enumerate, ca excepţii de la lista neagră cu adrese URL.
+
+      Consultaţi descrierea politicii pentru lista neagră cu adrese URL pentru formatul intrărilor din această listă.
+
+      Această politică poate fi folosită pentru a deschide excepţii pentru listele negre limitative. De exemplu, „*” poate fi trecut pe lista neagră pentru a bloca toate cererile, iar această politică poate fi folosită pentru a permite accesul la un număr limitat de adrese URL. Politica poate fi folosită pentru a deschide excepţii de la anumite scheme, subdomenii ale altor domenii, porturi sau căi specifice.
+
+      Filtrul cel mai precis va determina dacă o adresă URL este blocată sau permisă. Lista albă are prioritate faţă de lista neagră.
+
+      Această politică este limitată la 1000 de intrări, iar intrările ulterioare vor fi ignorate.
+
+      Dacă această politică nu este setată, nu vor exista excepţii de la lista neagră din politica „URLBlacklist”.</translation>
 <translation id="6177482277304066047">Setează o versiune ţintă pentru actualizări automate.
 
       Specifică prefixul unei versiuni ţintă la care <ph name="PRODUCT_OS_NAME"/> trebuie să se actualizeze. Dacă dispozitivul rulează o versiune care este inferioară prefixului specificat, actualizarea se va face la cea mai recentă versiune care are prefixul dat. Dacă pe dispozitiv este instalată deja o versiune superioară, nu se întâmplă nimic (adică nu se face trecerea la o versiune inferioară), iar dispozitivul va rămâne la versiunea curentă. Formatul prefixului reflectă structura componentelor, ca în următorul exemplu:
@@ -315,6 +365,13 @@
 
       Dacă această politică este dezactivată sau neconfigurată, politica pentru stocarea datelor site-urilor este determinată de politica DefaultCookiesSetting.</translation>
 <translation id="2824715612115726353">Activaţi modul incognito</translation>
+<translation id="1057535219415338480">Activează predicţia reţelei în <ph name="PRODUCT_NAME"/> şi împiedică modificarea acestei setări de către utilizatori.
+
+      Aceasta controlează atât preluarea anticipată a datelor DNS, cât şi conectarea anticipată TCP şi SSL şi încărcarea anticipată a paginilor web. Numele politicii se referă la preluarea anticipată a datelor DNS din motive de consecvenţă.
+
+      Dacă activaţi sau dezactivaţi această setare, utilizatorii nu o pot modifica sau anula în <ph name="PRODUCT_NAME"/>.
+
+      Dacă această politică nu este setată, această setare va fi activată, dar utilizatorul va putea să o schimbe.</translation>
 <translation id="1757688868319862958">Permite <ph name="PRODUCT_NAME"/> să ruleze pluginuri care necesită autorizarea. Dacă activaţi această setare, pluginurile care nu sunt învechite rulează întotdeauna. Dacă această setare este dezactivată sau nu este setată, utilizatorilor li se va solicita permisiunea pentru a rula pluginuri care necesită autorizarea. Acestea sunt pluginuri care pot compromite securitatea.</translation>
 <translation id="6392973646875039351">Activează funcţia de Completare automată din <ph name="PRODUCT_NAME"/> şi permite utilizatorilor să completeze în mod automat formularele web folosind informaţiile stocate anterior, cum ar fi informaţiile adresei fizice sau ale cardului de credit. Dacă dezactivaţi această setare, Completarea automată va fi inaccesibilă pentru utilizatori. Dacă activaţi această setare sau nu configuraţi o valoare, Completarea automată va rămâne sub controlul utilizatorului. Acest lucru va permite utilizatorilor să configureze profiluri pentru Completarea automată şi să activeze sau să dezactiveze funcţia Completare automată după cum doresc.</translation>
 <translation id="6157537876488211233">Lista de valori separate prin virgulă a regulilor de ocolire a proxy-ului</translation>
@@ -324,9 +381,6 @@
 <translation id="2021307518684405078">Nu permite niciunui site să îmi acceseze camera şi microfonul</translation>
 <translation id="8870318296973696995">Pagina de pornire</translation>
 <translation id="1240643596769627465">Specifică adresa URL a motorului de căutare utilizat pentru a oferi rezultate instantanee. Adresa URL trebuie să conţină şirul <ph name="SEARCH_TERM_MARKER"/>, care va fi înlocuit în momentul interogării cu textul pe care utilizatorul l-a introdus până atunci. Această politică este opţională. Dacă nu este setată, nu vor fi furnizate rezultate ale căutării instantanee. Această politică este urmată numai în cazul în care este activată politica „DefaultSearchProviderEnabled”.</translation>
-<translation id="4126767310980686012">Dacă este activată, dezactivează sincronizarea Google Docs. În acest caz, nu se încarcă date în Google Docs.
-
-          Dacă politica nu este configurată sau este dezactivată, atunci utilizatorii vor putea să transfere fişiere în Google Docs.</translation>
 <translation id="6693751878507293182">Dacă activaţi această setare, căutarea automată şi instalarea pluginurilor care lipsesc vor fi dezactivate în <ph name="PRODUCT_NAME"/>. Dacă dezactivaţi această opţiune sau nu o setaţi, instrumentul de găsire de pluginuri va fi activ.</translation>
 <translation id="8238143662496081361">Păstraţi cookie-urile pe durata sesiunii.</translation>
 <translation id="7880891067740158163">Vă permite să specificaţi o listă de modele pentru adresele URL ce indică site-urile pentru care <ph name="PRODUCT_NAME"/> ar trebui să selecteze în mod automat un certificat de client, în cazul în care site-ul solicită un certificat. Dacă această politică nu este setată, nu se va realiza selectarea automată pentru niciun site.</translation>
@@ -366,9 +420,7 @@
 <translation id="267596348720209223">Specifică codificările de caractere acceptate de furnizorul de căutare. Codificările reprezintă nume ale paginilor cu coduri cum ar fi UTF-8, GB2312 şi ISO-8859-1. Acestea sunt încercate în ordinea furnizată. Politica este opţională. Dacă nu este setată, va fi utilizată codificarea standard, care este UTF-8. Această politică este urmată numai în cazul în care este activată politica „DefaultSearchProviderEnabled”.</translation>
 <translation id="1454846751303307294">Vă permite să setaţi o listă de modele pentru adresele URL ce specifică site-urile care nu au permisiunea de a rula JavaScript. Dacă această politică nu este setată, va fi utilizată valoarea prestabilită la nivel global pentru toate site-urile, fie din politica „DefaultJavaScriptSetting”, dacă aceasta este setată, fie din configuraţia personală a utilizatorului, în caz contrar.</translation>
 <translation id="538108065117008131">Permite <ph name="PRODUCT_FRAME_NAME"/> să gestioneze următoarele tipuri de conţinut.</translation>
-<translation id="717221064259627503">Configurează directorul pe care <ph name="PRODUCT_NAME"/> îl va utiliza pentru a stoca pe disc fişierele memorate în cache. Dacă setaţi această politică, <ph name="PRODUCT_NAME"/> va utiliza directorul furnizat, indiferent dacă utilizatorul a specificat sau nu semnalizatorul „--disk-cache-dir”. Dacă această politică nu este setată, va fi utilizat directorul prestabilit pentru memoria cache, dar utilizatorul îl va putea suprascrie folosind semnalizatorul de linie de comandă „--disk-cache-dir”.</translation>
 <translation id="2312134445771258233">Vă permite să configuraţi paginile încărcate la pornire. Conţinutul listei „Adrese URL care se deschid la pornire” este ignorat, cu excepţia cazului în care selectaţi „Deschideţi o listă cu adrese URL” în „Acţiune la pornire”.</translation>
-<translation id="2538628396238281971">Configurează directorul pe care <ph name="PRODUCT_NAME"/> îl va utiliza pentru descărcarea fişierelor. Dacă setaţi această politică, <ph name="PRODUCT_NAME"/> va folosi directorul furnizat, indiferent dacă utilizatorul a specificat unul sau a activat opţiunea de a fi întrebat de fiecare dată în privinţa locaţiei descărcării. Dacă această politică este lăsată nesetată, va fi utilizat directorul prestabilit pentru descărcare, dar utilizatorul îl va putea schimba.</translation>
 <translation id="7750991880413385988">Deschideţi pagina Filă nouă</translation>
 <translation id="741903087521737762">Vă permite să specificaţi comportamentul la pornire.
 
@@ -399,7 +451,6 @@
 <translation id="6699880231565102694">Activaţi autentificarea cu doi factori pentru gazdele de acces la distanţă</translation>
 <translation id="2030905906517501646">Cuvânt cheie pentru furnizorul de căutare prestabilit</translation>
 <translation id="3072045631333522102">Screen saver setat pentru ecranul de conectare în modul Vânzare</translation>
-<translation id="7393895128271703858">Această politică este învechită şi trebuie să utilizaţi DefaultJavaScriptSetting. Activează JavaScript în <ph name="PRODUCT_NAME"/> şi împiedică utilizatorii să schimbe această setare. Dacă această setare este activată sau nu este configurată, paginile web pot utiliza JavaScript. Dacă această setare este dezactivată, paginile web nu pot utiliza JavaScript. Dacă această politică nu este setată, va fi utilizată valoarea prestabilită care este activată, dar utilizatorul va putea să o schimbe. Dacă această politică este lăsată nesetată, această setare va fi activată, dar utilizatorul va putea să o schimbe.</translation>
 <translation id="8079569179819932120">Specifică serverele care ar trebui să fie introduse pe lista albă pentru autentificarea integrată. Autentificarea integrată este activată numai când <ph name="PRODUCT_NAME"/> primeşte un cod de verificare pentru autentificare de la un proxy sau de la un server care se află în această listă cu servere permise. Dacă introduceţi mai multe nume de servere, separaţi-le prin virgulă. Metacaracterele (*) sunt permise. Dacă lăsaţi această politică nesetată, nu va fi acceptat niciun server pentru autentificare integrată.</translation>
 <translation id="350797926066071931">Activaţi serviciul Google Traducere</translation>
 <translation id="4010738624545340900">Permiteţi invocarea casetelor de dialog pentru selectarea fişierelor</translation>
@@ -451,16 +502,21 @@
 <translation id="4983201894483989687">Permiteţi rularea pluginurilor învechite</translation>
 <translation id="443665821428652897">Ştergeţi datele site-urilor la închiderea browserului (învechită)</translation>
 <translation id="3823029528410252878">Dezactivează istoricul salvărilor din browser în <ph name="PRODUCT_NAME"/> şi împiedică modificarea acestei setări de către utilizatori. Dacă această setare este activată, istoricul navigării nu este salvat. Dacă această setare este dezactivată sau nu este setată, istoricul navigării este salvat.</translation>
+<translation id="3844092002200215574">Configurează directorul pe care <ph name="PRODUCT_NAME"/> îl va utiliza pentru a stoca pe disc fişierele memorate în cache.
+
+      Dacă setaţi această politică, <ph name="PRODUCT_NAME"/> va utiliza directorul furnizat, indiferent dacă utilizatorul a specificat sau nu semnalizatorul „--disk-cache-dir”.
+
+      Pentru o listă a variabilelor care pot fi utilizate, accesaţi http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
+
+      Dacă această politică nu este setată, va fi utilizat directorul prestabilit pentru memoria cache, dar utilizatorul îl va putea suprascrie folosind semnalizatorul de linie de comandă „--disk-cache-dir”.</translation>
 <translation id="7202926611616207807">Permiteţi tuturor site-urilor să seteze date locale.</translation>
 <translation id="3034580675120919256">Vă permite să setaţi dacă site-urile web au permisiunea de a rula JavaScript. Rularea JavaScript poate fi permisă sau refuzată în bloc pentru toate site-urile web. Dacă această politică este lăsată nesetată, va fi utilizată politica „AllowJavaScript”, dar utilizatorul va putea să o schimbe.</translation>
-<translation id="7459381849362539054">Configurează GData în <ph name="PRODUCT_OS_NAME"/>.</translation>
 <translation id="3195451902035818945">Specifică dacă trebuie dezactivată divizarea înregistrărilor SSL. Divizarea înregistrărilor este o soluţie pentru o vulnerabilitate din SSL 3.0 şi TLS 1.0, dar poate provoca probleme de compatibilitate cu unele servere şi proxy-uri HTTPS. Dacă politica nu este setată sau nu este activată, atunci divizarea înregistrărilor va fi utilizată pentru conexiuni SSL/TLS care utilizează combinaţii de algoritmi de criptare CBC.</translation>
 <translation id="6903814433019432303">Această politică este activă numai în modul Vânzare. 
 
       Stabileşte setul de adrese URL de încărcat la pornirea sesiunii demonstrative. Această politică va înlocui orice alte mecanisme de stabilire a adresei URL iniţiale şi astfel poate fi aplicată unei sesiuni care nu este asociată cu un anumit utilizator.</translation>
 <translation id="5868414965372171132">Configuraţie de reţea la nivel de utilizator</translation>
 <translation id="1221359380862872747">Încărcaţi adrese URL specificate la conectarea demonstrativă</translation>
-<translation id="6771644447620682565">Dezactivează GData</translation>
 <translation id="5493552890659553833">Activează sugestiile de căutare în caseta polivalentă din <ph name="PRODUCT_NAME"/> şi împiedică modificarea acestei setări de către utilizatori. Dacă activaţi această setare, sunt oferite sugestii de căutare. Dacă dezactivaţi această setare, nu sunt oferite niciodată sugestii de căutare. Dacă activaţi sau dezactivaţi această setare, utilizatorii nu o pot modifica sau anula în <ph name="PRODUCT_NAME"/>. Dacă această politică nu este setată, această setare va fi activată, dar utilizatorul va putea să o schimbe.</translation>
 <translation id="2431811512983100641">Această politică specifică dacă trebuie activată extensia pentru certificatele TLS legate la domeniu.
 
@@ -474,13 +530,17 @@
 <translation id="3547954654003013442">Setări proxy</translation>
 <translation id="4482640907922304445">Afişează butonul Pagină de pornire în bara de instrumente din <ph name="PRODUCT_NAME"/>. Dacă activaţi această setare, butonul Pagina de pornire este întotdeauna afişat. Dacă dezactivaţi această setare, butonul Pagina de pornire nu este afişat. Dacă activaţi sau dezactivaţi această setare, utilizatorii nu o pot modifica sau anula în <ph name="PRODUCT_NAME"/>. Dacă lăsaţi această politică nesetată, acest lucru va permite utilizatorului să aleagă dacă să afişeze sau nu butonul Pagină de pornire.</translation>
 <translation id="2518231489509538392">Permiteţi redarea audio</translation>
+<translation id="7301543427086558500">Specifică o listă de adrese URL alternative care pot fi utilizate pentru a extrage termenii de căutare din motorul de căutare. Adresele URL trebuie să conţină şirul <ph name="SEARCH_TERM_MARKER"/>, care va fi folosit pentru a extrage termenii de căutare.
+
+          Această politică este opţională. Dacă nu este setată, nu vor fi utilizate adrese URL alternative pentru a extrage termenii de căutare.
+
+          Această politică este respectată numai dacă este activată politica „DefaultSearchProviderEnabled”.</translation>
 <translation id="7547044444554936129">Activează funcţia Instant din <ph name="PRODUCT_NAME"/> şi împiedică modificarea acestei setări de către utilizatori. Dacă activaţi această setare, <ph name="PRODUCT_NAME"/> Instant este activat. Dacă dezactivaţi această setare, <ph name="PRODUCT_NAME"/> Instant este dezactivat. Dacă activaţi sau dezactivaţi această setare, utilizatorii nu o pot modifica sau anula. Dacă această setare este lăsată nesetată, utilizatorul poate decide dacă foloseşte sau nu această funcţie.</translation>
 <translation id="3264793472749429012">Codificări pentru furnizorul de căutare prestabilit</translation>
 <translation id="8101760444435022591">Deoarece software-ul poate eşua, verificările de revocare online nu oferă avantaje de securitate clare, acestea fiind dezactivate în mod prestabilit în <ph name="PRODUCT_NAME"/> versiunea 19 şi versiunile ulterioare. Prin activarea acestei politici, comportamentul anterior este restabilit şi sunt efectuate verificări OCSP/CRL online.
 
       Dacă politica nu este setată sau nu este activată, atunci Chrome nu va efectua verificări de revocare online în Chrome 19 şi versiunile ulterioare.</translation>
 <translation id="5469484020713359236">Vă permite să setaţi o listă cu modele pentru adresele URL ce specifică site-urile care nu sunt autorizate să seteze cookie-uri. Dacă această politică nu este setată, valoarea prestabilită la nivel global va fi folosită pentru toate site-urile, fie din politica „DefaultCookiesSetting”, în cazul în care este setată, fie din configuraţia personală a utilizatorului, în caz contrar.</translation>
-<translation id="3664573135939978914">Dezactivează GData pentru conexiunile mobile</translation>
 <translation id="930930237275114205">Setaţi directorul <ph name="PRODUCT_FRAME_NAME"/> pentru datele utilizatorului</translation>
 <translation id="5208240613060747912">Vă permite să setaţi o listă de modele pentru adresele URL ce specifică site-urile care nu au permisiunea să afişeze notificări. Dacă această politică nu este setată, valoarea prestabilită la nivel global va fi folosită pentru toate site-urile, fie din politica „DefaultNotificationsSetting”, în cazul în care aceasta este setată, fie din configuraţia personală a utilizatorului, în caz contrar.</translation>
 <translation id="8592105098257899882">Configurează dimensiunea memoriei cache pe care <ph name="PRODUCT_NAME"/> o va folosi pentru stocarea fişierelor memorate în cache pe disc. Dacă setaţi această politică, <ph name="PRODUCT_NAME"/> va utiliza dimensiunea specificată pentru memoria cache, indiferent dacă utilizatorul a specificat sau nu semnalizatorul „--disc-cache-size”. În cazul în care valoarea acestei politici este 0, va fi utilizată dimensiunea prestabilită pentru memoria cache, iar utilizatorul nu va putea să o schimbe. Dacă această politică nu este setată, va fi utilizată dimensiunea prestabilită, dar utilizatorul va putea să o suprascrie folosind semnalizatorul „--disc-cache-size”.</translation>
@@ -518,7 +578,6 @@
 <translation id="8908294717014659003">Vă permite să stabiliţi dacă site-urile web au acces la dispozitivele de captură media. Accesul la dispozitivele de captură media poate fi permis în mod prestabilit sau se poate solicita confirmarea utilizatorului de fiecare dată când un site web doreşte acces la dispozitivele de captură media.
 
           Dacă această politică nu este setată, se va utiliza „PromptOnAccess”, iar utilizatorul va putea să o schimbe.</translation>
-<translation id="9191982992032190929">Specifică adresa URL pentru magazinul web pentru întreprinderi. Când această setare este activată, în pagina Filă nouă va apărea o aplicaţie care, atunci când primeşte un clic, îl va direcţiona pe utilizator la adresa URL specificată. Extensiile şi aplicaţiile pot fi instalate din această pagină fără avertismente suplimentare afişate pentru utilizator. Dacă această politică este setată, setarea EnterpriseWebStoreName trebuie să fie, de asemenea, setată. Dacă această setare este dezactivată, în pagina Filă nouă nu va apărea nicio aplicaţie Magazin web pentru întreprinderi.</translation>
 <translation id="8889026535261486875">Servere la care <ph name="PRODUCT_NAME"/> poate delega. Dacă există mai multe nume de server, separaţi-le prin virgulă. Sunt permise metacaracterele (*). Dacă nu setaţi această politică, serverele vor fi acceptate pentru autentificarea integrată.</translation>
 <translation id="2299220924812062390">Specificaţi o listă cu pluginuri activate</translation>
 <translation id="924557436754151212">Importaţi parolele salvate din browserul prestabilit, la prima rulare</translation>
@@ -530,7 +589,6 @@
 <translation id="922540222991413931">Configuraţi sursele pentru instalarea extensiilor, a aplicaţiilor şi a scripturilor de utilizator</translation>
 <translation id="7323896582714668701">Parametri de linie de comandă suplimentari pentru <ph name="PRODUCT_NAME"/></translation>
 <translation id="6931242315485576290">Dezactivaţi sincronizarea datelor cu Google</translation>
-<translation id="36674322972891584">Activează predicţia reţelei în <ph name="PRODUCT_NAME"/> şi împiedică modificarea acestei setări de către utilizatori. Dacă activaţi sau dezactivaţi această setare, utilizatorii nu o pot modifica sau anula în <ph name="PRODUCT_NAME"/>. Dacă această politică nu este setată, această setare va fi activată, dar utilizatorul va putea să o schimbe.</translation>
 <translation id="7006788746334555276">Setări privind conţinutul</translation>
 <translation id="5142301680741828703">Redaţi întotdeauna următoarele modele pentru adresele URL în <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="4625915093043961294">Configuraţi lista albă pentru instalarea extensiilor</translation>
@@ -546,6 +604,13 @@
 <translation id="3428247105888806363">Activaţi predicţia reţelei</translation>
 <translation id="6145799962557135888">Vă permite să setaţi o listă de modele pentru adresele URL ce specifică site-urile care au permisiunea de a rula JavaScript. Dacă această politică este lăsată nesetată, va fi utilizată valoarea prestabilită la nivel global pentru toate site-urile, fie din politica „DefaultJavaScriptSetting”, dacă aceasta este setată, fie din configuraţia personală a utilizatorului, în caz contrar.</translation>
 <translation id="7053678646221257043">Dacă este activată, această politică forţează importarea marcajelor din browserul prestabilit. Dacă este activată, această politică afectează, de asemenea, caseta de dialog de importare. Dacă este dezactivată, marcajele nu sunt importate. Dacă nu este setată, utilizatorul poate fi întrebat dacă doreşte importarea sau aceasta poate avea loc în mod automat.</translation>
+<translation id="5757829681942414015">Configurează directorul pe care <ph name="PRODUCT_NAME"/> îl va utiliza pentru stocarea datelor de utilizator.
+
+      Dacă setaţi această politică, <ph name="PRODUCT_NAME"/> va utiliza directorul furnizat indiferent dacă utilizatorul a specificat sau nu semnalizatorul „--user-data-dir”.
+
+      Pentru o listă a variabilelor care pot fi utilizate, accesaţi http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
+
+      Dacă această politică nu este setată, va fi utilizată calea prestabilită pentru profil, iar utilizatorul va putea să o suprascrie cu semnalizatorul de linie de comandă „--user-data-dir”.</translation>
 <translation id="5067143124345820993">Lista albă a utilizatorilor cu permisiuni de conectare</translation>
 <translation id="3612784419634427880">Modul incognito este disponibil.</translation>
 <translation id="2514328368635166290">Specifică adresa URL a pictogramei preferate pentru furnizorul de căutare prestabilit. Această politică este opţională. Dacă nu este setată, nu va apărea nicio pictogramă pentru furnizorul de căutare. Această politică este urmată numai în cazul în care este activată politica „DefaultSearchProviderEnabled”.</translation>
@@ -587,6 +652,8 @@
 <translation id="4121350739760194865">Împiedicaţi promoţiile aplicaţiilor să apară în pagina Filă nouă</translation>
 <translation id="2127599828444728326">Permiteţi notificări pentru aceste site-uri</translation>
 <translation id="7635471475589566552">Configurează limba aplicaţiei din <ph name="PRODUCT_NAME"/> şi împiedică modificarea limbii de către utilizatori. Dacă activaţi această setare, <ph name="PRODUCT_NAME"/> utilizează limba indicată. Dacă limba configurată nu este acceptată, este utilizată „en-US”. Dacă această setare este dezactivată sau nu este configurată, <ph name="PRODUCT_NAME"/> utilizează limba preferată specificată de utilizator (dacă este configurată), limba sistemului sau limba „en-US” alternativă.</translation>
+<translation id="1681852583119028071">Lista adreselor URL alternative pentru furnizorul de căutare prestabilit.</translation>
+<translation id="7842869978353666042">Configuraţi opţiunile pentru Google Drive</translation>
 <translation id="718956142899066210">Tipuri de conexiune permise pentru actualizări</translation>
 <translation id="6985168562472482191">Numele magazinului web pentru întreprinderi, care va apărea sub pictograma de aplicaţie în pagina Filă nouă. Această setare nu are niciun efect dacă politica EnterpriseWebStoreURL nu este setată. Dacă această setare este dezactivată, aplicaţia magazin web pentru întreprinderi (dacă există) va fi etichetată cu adresa sa URL.</translation>
 <translation id="1734716591049455502">Configuraţi opţiunile de acces la distanţă</translation>
@@ -594,7 +661,13 @@
 <translation id="2629448496147630947">Configuraţi opţiunile de acces la distanţă în <ph name="PRODUCT_NAME"/>. Aceste funcţii sunt ignorate, cu excepţia cazului în care este instalată aplicaţia web de acces la distanţă.</translation>
 <translation id="1310699457130669094">Aici puteţi specifica adresa URL a unui fişier .pac pentru proxy. Această politică are efect numai dacă aţi selectat manual setările proxy la „Alegeţi modul de specificare a setărilor serverului proxy”. Trebuie să lăsaţi această politică nesetată dacă aţi selectat alt mod pentru setarea politicilor de proxy. Pentru mai multe opţiuni şi exemple detaliate, accesaţi: <ph name="PROXY_HELP_URL"/></translation>
 <translation id="3406810703404235731">Adresa URL a magazinului web pentru întreprinderi</translation>
-<translation id="7782879802219764346">Configurează directorul pe care <ph name="PRODUCT_NAME"/> îl va utiliza pentru stocarea datelor utilizatorilor. Dacă setaţi această politică, <ph name="PRODUCT_NAME"/> va utiliza directorul furnizat, indiferent dacă utilizatorul a specificat sau nu semnalizatorul „--user-data-dir”. Dacă această politică nu este setată, va fi utilizată calea prestabilită pentru profil, iar utilizatorul va putea să o suprascrie cu semnalizatorul de linie de comandă „--user-data-dir”.</translation>
+<translation id="7690740696284155549">Configurează directorul pe care <ph name="PRODUCT_NAME"/> îl va utiliza pentru descărcarea fişierelor.
+
+      Dacă setaţi această politică, <ph name="PRODUCT_NAME"/> va folosi directorul furnizat, indiferent dacă utilizatorul a specificat unul sau a activat opţiunea de a fi întrebat de fiecare dată în privinţa locaţiei descărcării.
+
+      Pentru o listă a variabilelor care pot fi utilizate, accesaţi http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
+
+      Dacă această politică este lăsată nesetată, va fi utilizat directorul prestabilit pentru descărcare, dar utilizatorul îl va putea schimba.</translation>
 <translation id="7381326101471547614">Dezactivează utilizarea protocolul SPDY în <ph name="PRODUCT_NAME"/>. Dacă această politică este activată, protocolul SPDY nu va fi disponibil în <ph name="PRODUCT_NAME"/>. Dezactivarea acestei politici va permite utilizarea protocolului SPDY. Dacă această politică rămâne nesetată, SPDY va fi disponibil.</translation>
 <translation id="1583248206450240930">Utilizaţi <ph name="PRODUCT_FRAME_NAME"/> în mod prestabilit</translation>
 <translation id="1047128214168693844">Nu permiteţi niciunui site să urmărească locaţia fizică a utilizatorilor</translation>
@@ -611,17 +684,6 @@
 <translation id="6658245400435704251">Specifică numărul de secunde până la care un dispozitiv poate întârzia în mod aleatoriu descărcarea unei actualizări, din momentul în care respectiva actualizare a fost publicată pe server. O parte din perioada în care dispozitivul aşteaptă efectuarea actualizării poate fi exprimată în termeni temporali, iar partea rămasă printr-un număr de verificări ale existenţei unei actualizări. În orice caz, difuzarea are ca limită superioară o valoare constantă de timp, astfel încât un dispozitiv nu poate rămâne niciodată blocat definitiv în aşteptarea descărcării unei actualizări.</translation>
 <translation id="1948757837129151165">Politici pentru autentificarea HTTP</translation>
 <translation id="5946082169633555022">Canalul beta</translation>
-<translation id="145467868108778033">Vă permite să specificaţi o listă de extensii care vor fi instalate în fundal, fără intervenţia utilizatorului.
-
-          Fiecare element din listă este un şir care conţine un cod al extensiei şi o adresă URL pentru actualizare, delimitate prin punct şi virgulă (<ph name="SEMICOLON"/>). Codul extensiei este şirul alcătuit din 32 de litere, disponibil, de exemplu, la <ph name="CHROME_EXTENSIONS_LINK"/> în modul pentru dezvoltatori. Adresa URL trebuie să direcţioneze la un document XML care conţine un manifest de actualizare, conform descrierii de la <ph name="LINK_TO_EXTENSION_DOC1"/>. Reţineţi că adresa de actualizare setată în această politică este utilizată numai pentru instalarea iniţială. Actualizările ulterioare ale extensiei vor utiliza adresa URL de actualizare indicată în manifestul extensiei.
-
-          Pentru fiecare element, <ph name="PRODUCT_NAME"/> va prelua extensia specificată de codul extensiei de la serviciul de actualizare de la adresa URL de actualizare specificată şi o va instala în fundal.
-
-          De exemplu, <ph name="EXTENSION_POLICY_EXAMPLE"/> instalează extensia <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/> de la adresa URL de actualizare standard pentru Magazinul web Chrome. Pentru mai multe informaţii despre găzduirea extensiilor, consultaţi: <ph name="LINK_TO_EXTENSION_DOC2"/>.
-
-          Utilizatorii nu vor putea dezinstala extensiile specificate de această politică. Dacă ştergeţi o extensie din această listă, aceasta va fi dezinstalată în mod automat de <ph name="PRODUCT_NAME"/>.
-
-          Dacă această politică nu este setată, utilizatorul nu poate dezinstala nicio extensie din <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="8303314579975657113">Specifică biblioteca GSSAPI de utilizat pentru autentificarea HTTP. Puteţi seta fie numai un nume de bibliotecă, fie o cale completă. Dacă nu este furnizată nicio setare, <ph name="PRODUCT_NAME"/> va utiliza ca alternativă un nume de bibliotecă prestabilit.</translation>
 <translation id="7749402620209366169">Activează autentificarea cu doi factori pentru gazdele de acces la distanţă, în locul unui PIN specificat de utilizator.
 

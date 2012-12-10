@@ -38,6 +38,7 @@
 <translation id="8398145039500709259">Kas soovite kasutada Chrome'i kraami sünkroonimiseks seda Google'i kontot?</translation>
 <translation id="1779550429052479749">Süsteemist leiti Google Chrome'i või Google Chrome Frame'i konfliktne install. Desinstallige see ja proovige uuesti.</translation>
 <translation id="3555616473548901994">Desinstallimine on lõpetatud.</translation>
+<translation id="4987308747895123092">Sulgege kõik Google Chrome'i aknad (k.a Windows 8 režiimis) ja proovige uuesti.</translation>
 <translation id="568643307450491754">Otsige oma järjehoidjaid Chrome'i menüüst või järjehoidjaribalt.</translation>
 <translation id="8556340503434111824">Saadaval on uus Google Chrome'i versioon ja see on senistest kiireim.</translation>
 <translation id="4728575227883772061">Install ebaõnnestus määramata vea tõttu. Kui Google Chrome parasjagu töötab, siis palun sulgege see ja proovige uuesti.</translation>
@@ -71,6 +72,7 @@
 <translation id="3889417619312448367">Google Chrome'i desinstallimine</translation>
 <translation id="8551886023433311834">Seade on peaaegu ajakohane. Täienduse lõpuleviimiseks taaskäivitage seade.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="7339898014177206373">Uus aken</translation>
 <translation id="3026202950002788510">Minge siia:
           <ph name="BEGIN_BOLD"/>
           Rakendused &gt; Süsteemieelistused &gt; Võrk &gt; Täpsem &gt; Puhverserverid
@@ -154,6 +156,7 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
           on olemas, klõpsake sellel ja veenduge, et konfiguratsioon
           on määratud valikule „Otse”.</translation>
 <translation id="3612333635265770873">Samanimeline moodul on teadaolevalt Google Chrome'iga vastuolus.</translation>
+<translation id="824729746779295798">Autoriõigus © 2012 Google Inc. Kõik õigused kaitstud.</translation>
 <translation id="61852838583753520">Värskenda &amp;Chrome OS-i</translation>
 <translation id="6650142020817594541">Sait soovitab Google Chrome Frame'i (on juba installitud).</translation>
 <translation id="2712549016134575851">Tuvastatud on konflikt teise installitud rakendusega.</translation>
@@ -164,6 +167,7 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="870251953148363156">Värskenda &amp;Google Chrome'i</translation>
 <translation id="130631256467250065">Muudatused jõustuvad järgmine kord, kui seadme taaskäivitate.</translation>
+<translation id="163860049029591106">Alustamine Chrome OS-iga</translation>
 <translation id="1399397803214730675">Selles arvutis on juba Google Chrome'i uuem versioon. Kui tarkvara ei tööta, desinstallige Google Chrome ja proovige uuesti.</translation>
 <translation id="576822117893741893">Chrome'i menüü kuvamine</translation>
 <translation id="3444832043240812445">Lehel näidatakse vaid teavet hiljutiste krahhide kohta, kui olete <ph name="BEGIN_LINK"/>krahhide aruandluse lubanud<ph name="END_LINK"/>.</translation>
@@ -176,8 +180,8 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="2680623880102270805">Google Chrome ei saa luua rakenduse otseteed, kuna praegust töölauakeskkonda ei saa määratleda.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=et<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Interneti-brauser</translation>
+<translation id="5244325494201350962">Olite varem sisse logitud teise kontoga. Sisselogimine ühendab andmed. Kaaluge oma Chrome'i kraami jaoks uue Chrome'i kasutaja loomist <ph name="BEGIN_LINK"/>seadete lehel<ph name="END_LINK"/>.</translation>
 <translation id="2189123953385179981">Google ChromeOS ei toeta väliste rakenduste käivitamist, et hallata rakenduse <ph name="SCHEME"/> linke. Soovitud link on <ph name="PROTOLINK"/>.</translation>
-<translation id="711654979569750606">Autoriõigustega kaitstud © 2006–2012 Google Inc. Kõik õigused kaitstud.</translation>
 <translation id="8205111949707227942">Valikuline: aidake muuta Chrome OS paremaks, saates Google'ile automaatselt kasutusstatistikat ja kokkujooksuaruandeid.</translation>
 <translation id="7253415505590551024">Allalaadimised on pooleli. Kas soovite Google Chrome'ist väljuda ja allalaadimised tühistada?</translation>
 <translation id="7196020411877309443">Miks mulle seda näidatakse?</translation>

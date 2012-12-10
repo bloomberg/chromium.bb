@@ -14,6 +14,7 @@
 <translation id="3660179305079774227">위쪽 화살표</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY"/>MB/초</translation>
 <translation id="3990502903496589789">오른쪽 모서리</translation>
+<translation id="5182671122927417841">확장 프로그램 사용 중지</translation>
 <translation id="932327136139879170">홈</translation>
 <translation id="3909791450649380159">잘라내기(&amp;T)</translation>
 <translation id="688711909580084195">제목 없는 웹페이지</translation>
@@ -53,6 +54,7 @@
 <translation id="8179976553408161302">로그인</translation>
 <translation id="9170848237812810038">실행 취소(&amp;U)</translation>
 <translation id="520299402983819650"><ph name="QUANTITY"/>PB</translation>
+<translation id="2983818520079887040">설정...</translation>
 <translation id="6845383723252244143">폴더 선택</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY"/>GB/s</translation>
@@ -60,10 +62,13 @@
 <translation id="2297836609126180313"><ph name="QUANTITY"/>TB/s</translation>
 <translation id="6040143037577758943">닫기</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY"/>B/s</translation>
+<translation id="477782898153505579">알림이 없습니다.</translation>
+<translation id="7457942297256758195">모두 지우기</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="6907759265145635167"><ph name="QUANTITY"/>PB/s</translation>
 <translation id="6965382102122355670">확인</translation>
 <translation id="5941711191222866238">최소화</translation>
+<translation id="4469842253116033348"><ph name="SITE"/>의 알림을 표시 안함</translation>
 <translation id="3036649622769666520">파일 열기</translation>
 <translation id="8328145009876646418">왼쪽 모서리</translation>
 </translationbundle>

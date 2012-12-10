@@ -17,6 +17,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="7128196614940529818">Chromium Frame ya está instalado y disponible para todos los usuarios de este ordenador. Si quieres instalar Chromium Frame a nivel de usuario, primero debes desinstalar la versión a nivel de sistema instalada por un administrador.</translation>
 <translation id="731644333568559921">Actualizar &amp;Chromium OS</translation>
 <translation id="7421823331379285070">Chromium requiere Windows XP o una versión posterior. Es posible que algunas características no funcionen.</translation>
+<translation id="3549345495227188780">Introducción a Chromium OS</translation>
 <translation id="4330297532943865716">Se ha producido un conflicto al instalar Chromium o Chromium Frame en el sistema. Desinstala el software y vuelve a intentarlo.</translation>
 <translation id="6953661834318318668">Barra de herramientas de Chromium</translation>
 <translation id="7097100943370017396">Chromium ha dejado de actualizarse porque el sistema operativo está obsoleto.</translation>
@@ -58,6 +59,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="3197823471738295152">El dispositivo está actualizado.</translation>
 <translation id="8551886023433311834">El dispositivo está casi actualizado. Reinícialo para completar la actualización.</translation>
 <translation id="8353224596138547809">¿Quieres que Chromium guarde tu contraseña para este sitio?</translation>
+<translation id="7339898014177206373">Nueva ventana</translation>
 <translation id="3026202950002788510">Accede a
           <ph name="BEGIN_BOLD"/>
           Aplicaciones &gt; Preferencias del Sistema &gt; Red &gt; Avanzado &gt; Proxies
@@ -69,7 +71,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="9191268552238695869">Un administrador ha instalado Chromium en este sistema y está disponible para todos los usuarios. La versión de Chromium a nivel de usuario se sustituirá por la versión a nivel de sistema.</translation>
 <translation id="3509308970982693815">Cierra todas las ventanas de Chromium e inténtalo de nuevo.</translation>
 <translation id="4077262827416206768">Cierra todas las ventanas de Chromium y vuelve a iniciarlo para que se aplique el cambio.</translation>
-<translation id="9119843944749246249">Copyright © 2006-2012 Los creadores de Chromium. Todos los derechos reservados.</translation>
 <translation id="6944967875980567883">Módulos cargados en Chromium 
 </translation>
 <translation id="118298050220780080">Has intentado acceder a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, pero el servidor presentó un certificado emitido por una entidad que el sistema operativo del ordenador no tiene registrada como entidad de confianza. Este problema se puede deber a que el servidor haya generado sus propias credenciales de seguridad (en las que Chromium no puede confiar para confirmar la autenticidad del sitio) o a que un hacker esté intentando interceptar tus comunicaciones.</translation>
@@ -92,6 +93,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="2881203820889150661">Chromium no puede crear un acceso directo a la aplicación porque no puede identificar el entorno de escritorio actual.</translation>
 <translation id="4886158514168859177">Este ordenador ya cuenta con una versión más reciente de Chromium Frame. Si el software no funciona, desinstala Chromium Frame y vuelve a intentarlo.</translation>
 <translation id="911206726377975832">¿Quieres borrar también los datos de navegación?</translation>
+<translation id="1699664235656412242">Cierra todas las ventanas de Chromium (incluidas las ventanas en modo Windows 8) y vuelve a intentarlo.</translation>
 <translation id="6734080038664603509">Actualizar &amp;Chromium</translation>
 <translation id="8862326446509486874">No dispones de los derechos necesarios para la instalación en el sistema. Intenta ejecutar de nuevo el programa de instalación como administrador.</translation>
 <translation id="1774152462503052664">Permitir que Chromium se ejecute en segundo plano</translation>
@@ -129,7 +131,9 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="6717134281241384636">No se puede utilizar tu perfil porque procede de una versión de Chromium más actualizada.
 
 Es posible que algunas funciones no estén disponibles. Especifica un directorio de perfil diferente o utiliza una versión más actualizada de Chromium.</translation>
+<translation id="4499972362520386277">Copyright 2012 Los creadores de Chromium. Todos los derechos reservados</translation>
 <translation id="2712549016134575851">Se ha detectado un conflicto con otra aplicación instalada.</translation>
+<translation id="4881709374218686648">Habías iniciado sesión con otra cuenta, por lo que si inicias sesión se fusionarán tus datos. Considera la posibilidad de crear un nuevo usuario de Chromium a través de la <ph name="BEGIN_LINK"/>página de configuración<ph name="END_LINK"/> para tus datos de Chromium.</translation>
 <translation id="9013087743919948559">Añadir a Chromium</translation>
 <translation id="6212496753309875659">Este ordenador ya cuenta con una versión más reciente de Chromium. Si el software no funciona, desinstala Chromium y vuelve a intentarlo.</translation>
 <translation id="3014684866565908571">Chromium Utility</translation>

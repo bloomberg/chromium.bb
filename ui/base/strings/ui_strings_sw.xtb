@@ -14,6 +14,7 @@
 <translation id="3660179305079774227">Mshale Juu</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY"/> MB/s</translation>
 <translation id="3990502903496589789">Ncha ya Kulia</translation>
+<translation id="5182671122927417841">Lemaza kiendelezi</translation>
 <translation id="932327136139879170">Nyumbani</translation>
 <translation id="3909791450649380159">&amp;Kata</translation>
 <translation id="688711909580084195">Ukurasa wa Wavuti usio na Kichwa</translation>
@@ -53,6 +54,7 @@
 <translation id="8179976553408161302">Enter</translation>
 <translation id="9170848237812810038">&amp;Tendua</translation>
 <translation id="520299402983819650">PB <ph name="QUANTITY"/></translation>
+<translation id="2983818520079887040">Mipangilio...</translation>
 <translation id="6845383723252244143">Chagua Folda</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="3740362395218339114">GB/s <ph name="QUANTITY"/></translation>
@@ -60,10 +62,13 @@
 <translation id="2297836609126180313"><ph name="QUANTITY"/> TB/s</translation>
 <translation id="6040143037577758943">Funga</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY"/> B/s</translation>
+<translation id="477782898153505579">Huna arifa zozote. Tulia!</translation>
+<translation id="7457942297256758195">Futa Zote</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="6907759265145635167"><ph name="QUANTITY"/> PB/s</translation>
 <translation id="6965382102122355670">Sawa</translation>
 <translation id="5941711191222866238">Punguza</translation>
+<translation id="4469842253116033348">Lemaza arifa kutoka <ph name="SITE"/></translation>
 <translation id="3036649622769666520">Fungua Mafaili</translation>
 <translation id="8328145009876646418">Ncha ya Kushoto</translation>
 </translationbundle>

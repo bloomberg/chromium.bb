@@ -15,6 +15,7 @@
 <translation id="7128196614940529818">Chromium Frame đã được cài đặt và khả dụng cho tất cả người dùng máy tính này. Nếu bạn muốn cài đặt Chromium Frame ở cấp người dùng, trước hết bạn phải gỡ cài đặt phiên bản cấp hệ thống đã được quản trị viên cài đặt.</translation>
 <translation id="731644333568559921">Cập nhật &amp;Chromium OS</translation>
 <translation id="7421823331379285070">Chromium yêu cầu Windows XP trở lên. Một số tính năng có thể không hoạt động.</translation>
+<translation id="3549345495227188780">Bắt đầu với Chromium OS</translation>
 <translation id="4330297532943865716">Đã phát hiện thấy cài đặt Chromium hoặc Chromium Frame xung đột trên hệ thống. Hãy gỡ cài đặt và thử lại.</translation>
 <translation id="6953661834318318668">Thanh công cụ của Chromium</translation>
 <translation id="7097100943370017396">Chromium hiện không còn cập nhật nhật do hệ điều hành của bạn đã lỗi thời.</translation>
@@ -56,6 +57,7 @@
 <translation id="3197823471738295152">Thiết bị của bạn đã được cập nhật.</translation>
 <translation id="8551886023433311834">Gần như cập nhật! Khởi động lại thiết bị của bạn để hoàn tất cập nhật.</translation>
 <translation id="8353224596138547809">Bạn có muốn Chromium lưu mật khẩu của bạn cho trang web này không?</translation>
+<translation id="7339898014177206373">Cửa sổ mới</translation>
 <translation id="3026202950002788510">Đi tới
           <ph name="BEGIN_BOLD"/>
           Ứng dụng &gt; Tùy chọn hệ thống &gt; Mạng &gt; Nâng cao &gt; Proxy
@@ -67,7 +69,6 @@
 <translation id="9191268552238695869">Một quản trị viên đã cài đặt Chromium trên hệ thống này và Chromium hiện khả dụng cho tất cả người dùng. Chromium cấp hệ thống sẽ thay thế cài đặt cấp người dùng của bạn ngay bây giờ.</translation>
 <translation id="3509308970982693815">Hãy đóng tất cả cửa sổ Chromium và thử lại.</translation>
 <translation id="4077262827416206768">Hãy đóng tất cả cửa sổ Chromium và khởi chạy lại Chromium để thay đổi này có hiệu lực.</translation>
-<translation id="9119843944749246249">Copyright © 2006-2012 Tác giả Chromium. Mọi quyền được bảo lưu.</translation>
 <translation id="6944967875980567883">Mô-đun được tải vào Chromium</translation>
 <translation id="118298050220780080">Bạn đã cố gắng truy cập vào &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; nhưng máy chủ lại đưa ra một chứng chỉ được cấp bởi một tổ chức không được hệ điều hành máy tính của bạn tin cậy. Điều này có thể có nghĩa là máy chủ đã tạo thông tin xác thực bảo mật riêng mà Chromium không thể dựa vào để biết thông tin nhận dạng hoặc một kẻ tấn công có thể đang cố chặn các kết nối của bạn.</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
@@ -89,6 +90,7 @@
 <translation id="2881203820889150661">Chromium không thể tạo lối tắt ứng dụng do Chromium không thể xác định môi trường màn hình hiện tại.</translation>
 <translation id="4886158514168859177">Máy tính này đã có phiên bản Chromium Frame mới hơn. Nếu phần mềm không hoạt động, hãy gỡ cài đặt Chromium Frame và thử lại.</translation>
 <translation id="911206726377975832">Bạn cũng muốn xóa dữ liệu duyệt web của mình?</translation>
+<translation id="1699664235656412242">Hãy đóng tất cả cửa sổ Chromium (bao gồm cả những cửa sổ trong chế độ Windows 8) và thử lại.</translation>
 <translation id="6734080038664603509">Cập nhật &amp;Chromium</translation>
 <translation id="8862326446509486874">Bạn không có quyền thích hợp để cài đặt cấp hệ thống. Thử chạy lại trình cài đặt với vai trò Quản trị viên.</translation>
 <translation id="1774152462503052664">Cho phép Chromium chạy dưới nền</translation>
@@ -125,7 +127,9 @@
 <translation id="6717134281241384636">Không thể sử dụng cấu hình của bạn do cấu hình này đến từ một phiên bản Chromium mới hơn.
 
 Một số tính năng có thể không khả dụng. Hãy chỉ định thư mục cấu hình khác hoặc sử dụng phiên bản Chromium mới hơn.</translation>
+<translation id="4499972362520386277">Bản quyền 2012 Tác giả Chromium. Mọi quyền được bảo lưu.</translation>
 <translation id="2712549016134575851">Đã phát hiện thấy xung đột với một ứng dụng đã cài đặt khác.</translation>
+<translation id="4881709374218686648">Trước đó bạn đã đăng nhập bằng tài khoản khác, việc đăng nhập sẽ kết hợp dữ liệu của bạn. Hãy xem xét tạo người dùng Chromium mới qua <ph name="BEGIN_LINK"/>trang cài đặt<ph name="END_LINK"/> cho nội dung trên Chromium của bạn.</translation>
 <translation id="9013087743919948559">Thêm vào Chromium</translation>
 <translation id="6212496753309875659">Máy tính này đã có phiên bản Chromium mới hơn. Nếu phần mềm không hoạt động, hãy gỡ cài đặt Chromium và thử lại.</translation>
 <translation id="3014684866565908571">Tiện ích Chromium</translation>

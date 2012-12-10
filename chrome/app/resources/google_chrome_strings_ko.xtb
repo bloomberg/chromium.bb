@@ -41,6 +41,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="8398145039500709259">이 Google 계정을 사용하여 Chrome 전체를 동기화하시겠습니까?</translation>
 <translation id="1779550429052479749">Chrome 또는 Chrome 프레임을 시스템에 설치하던 중 이전 설치와 충돌이 발생했습니다. 제거한 다음 다시 시도해 보세요.</translation>
 <translation id="3555616473548901994">제거를 완료했습니다.</translation>
+<translation id="4987308747895123092">Chrome 창(Windows 8 모드의 창 포함)을 모두 닫고 다시 시도해 보세요.</translation>
 <translation id="568643307450491754">Chrome 메뉴 또는 북마크바에서 북마크를 검색합니다.</translation>
 <translation id="8556340503434111824">이전보다 더 빨라진 Chrome 새 버전을 사용할 수 있습니다.</translation>
 <translation id="4728575227883772061">확인되지 않은 오류로 설치에 실패했습니다. Chrome이 실행 중인 경우 종료한 후 다시 실행하세요.</translation>
@@ -73,6 +74,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="3889417619312448367">Chrome 제거</translation>
 <translation id="8551886023433311834">업데이트가 거의 완료되었습니다. 업데이트를 완료하려면 기기를 다시 시작하세요.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Chrome</translation>
+<translation id="7339898014177206373">새 창</translation>
 <translation id="3026202950002788510">
           <ph name="BEGIN_BOLD"/>
           애플리케이션 &gt; 시스템 환경설정 &gt; 네트워크 &gt; 고급 &gt; 프록시
@@ -153,6 +155,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
           <ph name="END_BOLD"/> 버튼이 있다면 클릭하여 '직접 연결'로 설정되어 있는지
           확인합니다.</translation>
 <translation id="3612333635265770873">같은 이름의 모듈이 Chrome과 충돌하는 것으로 알려져 있습니다.</translation>
+<translation id="824729746779295798">Copyright 2012 Google Inc. All rights reserved.</translation>
 <translation id="61852838583753520">Chrome OS 업데이트(&amp;C)</translation>
 <translation id="6650142020817594541">이 사이트는 Chrome 프레임을 권장함(이미 설치됨)</translation>
 <translation id="2712549016134575851">설치된 다른 애플리케이션과의 충돌이 감지되었습니다.</translation>
@@ -163,6 +166,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="8669527147644353129">Chrome 도우미</translation>
 <translation id="870251953148363156">Chrome 업데이트(&amp;G)</translation>
 <translation id="130631256467250065">기기를 다시 시작할 때 변경사항이 적용됩니다.</translation>
+<translation id="163860049029591106">Chrome OS 시작하기</translation>
 <translation id="1399397803214730675">컴퓨터에 Chrome 최신 버전이 설치되어 있습니다. 실행되지 않는 경우 제거한 후 다시 시도하세요.</translation>
 <translation id="576822117893741893">Chrome 메뉴 표시</translation>
 <translation id="3444832043240812445"><ph name="BEGIN_LINK"/>충돌 보고를 사용<ph name="END_LINK"/>하면 최근 충돌에 대한 정보만 이 페이지에 표시됩니다.</translation>
@@ -175,8 +179,8 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="2680623880102270805">Chrome에서 현재 데스크톱 환경을 확인할 수 없으므로 애플리케이션 바로가기를 만들 수 없습니다.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">인터넷 브라우저</translation>
+<translation id="5244325494201350962">이전에 다른 계정으로 로그인했습니다. 로그인하면 데이터가 통합됩니다. <ph name="BEGIN_LINK"/>설정 페이지<ph name="END_LINK"/>에서 새 Chrome 사용자를 생성하시기 바랍니다.</translation>
 <translation id="2189123953385179981">Google Chrome OS는 외부 애플리케이션 실행을 통한<ph name="SCHEME"/>링크 처리를 지원하지 않습니다. 요청된 링크는<ph name="PROTOLINK"/>입니다.</translation>
-<translation id="711654979569750606">Copyright © 2006-2012 Google Inc. All Rights Reserved.</translation>
 <translation id="8205111949707227942"/>
 <translation id="7253415505590551024">현재 여러 개의 다운로드가 진행 중입니다. Chrome을 종료하고 다운로드를 취소하시겠습니까?</translation>
 <translation id="7196020411877309443">이 메시지가 표시되는 이유</translation>

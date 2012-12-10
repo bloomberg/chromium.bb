@@ -17,6 +17,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="7128196614940529818">Chromium Frame är redan installerat och tillgängligt för alla användare på den här datorn. Om du vill installera Chromium Frame på användarnivå måste du först avinstallera versionen på systemnivå som installerats av en administratör.</translation>
 <translation id="731644333568559921">Uppdatera &amp;Chromium OS</translation>
 <translation id="7421823331379285070">För Chromium krävs Windows XP eller senare. En del funktioner fungerar eventuellt inte.</translation>
+<translation id="3549345495227188780">Komma igång med Chromium OS</translation>
 <translation id="4330297532943865716">Det finns en installation av Chromium eller Chromium Frame i datorn och det förhindrar installationen. Avinstallera och försök igen.</translation>
 <translation id="6953661834318318668">Chromiums verktygsfält</translation>
 <translation id="7097100943370017396">Chromium uppdateras inte längre eftersom operativsystemet är inaktuellt.</translation>
@@ -58,6 +59,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="3197823471738295152">Enheten är uppdaterad.</translation>
 <translation id="8551886023433311834">Uppdateringen är nästan klar! Slutför den genom att starta om enheten.</translation>
 <translation id="8353224596138547809">Vill du att Chromium sparar lösenordet för den här webbplatsen?</translation>
+<translation id="7339898014177206373">Nytt fönster</translation>
 <translation id="3026202950002788510">Öppna
           <ph name="BEGIN_BOLD"/>
           Program &gt; Systeminställningar &gt; Nätverk &gt; Avancerat &gt; Proxyservrar
@@ -69,7 +71,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="9191268552238695869">En administratör har installerat Chromium på den här datorn och det är tillgängligt för alla användare. Chromium på systemnivå ersätter din installation på användarnivå nu.</translation>
 <translation id="3509308970982693815">Stäng alla Chromium-fönster och försök igen.</translation>
 <translation id="4077262827416206768">Du måste stänga alla Chromium-fönster och starta om Chromium för att ändringen ska börja gälla.</translation>
-<translation id="9119843944749246249">Copyright © 2006-2012 The Chromium Authors. Med ensamrätt.</translation>
 <translation id="6944967875980567883">Moduler som är inlästa i Chromium</translation>
 <translation id="118298050220780080">Du försökte öppna &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, men servern visade ett certifikat som utfärdats av en enhet som inte är tillförlitlig enligt datorns operativsystem. Det kan betyda att servern har skapat egna säkerhetsuppgifter som Chromium inte kan förlita sig på för identitetsinformation eller att en angripare försöker ta över din kommunikation.</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
@@ -91,6 +92,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="2881203820889150661">Det går inte att skapa en genväg till programmet i Chromium eftersom den aktuella skrivbordsmiljön inte kan fastställas.</translation>
 <translation id="4886158514168859177">Det finns redan en nyare version av Chromium Frame på den här datorn. Avinstallera Chromium Frame och försök igen om programvaran inte fungerar.</translation>
 <translation id="911206726377975832">Vill du även ta bort din webbinformation?</translation>
+<translation id="1699664235656412242">Stäng alla Chromium-fönster (inklusive i Windows 8-läge) och försök igen.</translation>
 <translation id="6734080038664603509">Uppdatera &amp;Chromium</translation>
 <translation id="8862326446509486874">Du har inte behörighet att göra en installation på systemnivå. Försök köra installationsprogrammet igen som administratör.</translation>
 <translation id="1774152462503052664">Låt Chromium köras i bakgrunden</translation>
@@ -126,7 +128,9 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="6717134281241384636">Din profil kan inte användas eftersom den kommer från en nyare version av Chromium.
 
 Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog eller använd en nyare version av Chromium.</translation>
+<translation id="4499972362520386277">Upphovsrätt © 2006–2012 The Chromium Authors. Med ensamrätt.</translation>
 <translation id="2712549016134575851">En konflikt med ett annat installerat program har upptäckts.</translation>
+<translation id="4881709374218686648">Du var tidigare inloggad med ett annat konto. Om du loggar in slås dina data ihop. Du kan välja att skapa en ny Chromium-användare på <ph name="BEGIN_LINK"/>sidan Inställningar<ph name="END_LINK"/> för Chromium.</translation>
 <translation id="9013087743919948559">Lägg till i Chromium</translation>
 <translation id="6212496753309875659">Det finns redan en nyare version av Chromium på den här datorn. Avinstallera Chromium och försök igen om programvaran inte fungerar.</translation>
 <translation id="3014684866565908571">Verktyg för Chromium</translation>

@@ -43,6 +43,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="8398145039500709259">¿Quieres utilizar esta cuenta de Google para sincronizar todos los elementos de Chrome?</translation>
 <translation id="1779550429052479749">Se ha detectado una instalación conflictiva de Google Chrome o de Google Chrome Frame en el sistema. Desinstálala y vuelve a intentarlo.</translation>
 <translation id="3555616473548901994">Desinstalación completada</translation>
+<translation id="4987308747895123092">Cierra todas las ventanas de Google Chrome (incluidas las ventanas en modo Windows 8) y vuelve a intentarlo.</translation>
 <translation id="568643307450491754">Busca tus marcadores en el menú de Chrome o en la barra de marcadores.</translation>
 <translation id="8556340503434111824">Hay una nueva versión de Google Chrome disponible que funciona a una velocidad sin precedentes.</translation>
 <translation id="4728575227883772061">Debido a un error desconocido, la instalación no se ha llevado a cabo. Si Google Chrome se está ejecutando, ciérralo y vuelve a intentarlo.</translation>
@@ -76,6 +77,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="3889417619312448367">Desinstalar Google Chrome</translation>
 <translation id="8551886023433311834">El dispositivo está casi actualizado. Reinícialo para completar la actualización.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="7339898014177206373">Nueva ventana</translation>
 <translation id="3026202950002788510">Accede a
           <ph name="BEGIN_BOLD"/>
           Aplicaciones &gt; Preferencias del Sistema &gt; Red &gt; Avanzado &gt; Proxies
@@ -159,6 +161,7 @@ Puede que algunas funciones no estén disponibles. Especifica otro directorio de
           ), haz clic en él y asegúrate de tener 
           establecida la opción de conexión directa.</translation>
 <translation id="3612333635265770873">Se ha detectado que un módulo con el mismo nombre provoca un conflicto con Google Chrome.</translation>
+<translation id="824729746779295798">Copyright 2012 Google Inc. Todos los derechos reservados</translation>
 <translation id="61852838583753520">Información de &amp;Chrome OS</translation>
 <translation id="6650142020817594541">Este sitio recomienda Google Chrome Frame (ya instalado).</translation>
 <translation id="2712549016134575851">Se ha detectado un conflicto con otra aplicación instalada.</translation>
@@ -169,6 +172,7 @@ Puede que algunas funciones no estén disponibles. Especifica otro directorio de
 <translation id="8669527147644353129">Ayudante de Google Chrome</translation>
 <translation id="870251953148363156">Actualizar &amp;Google Chrome</translation>
 <translation id="130631256467250065">Los cambios se aplicarán la próxima vez que reinicies el dispositivo.</translation>
+<translation id="163860049029591106">Introducción a Chrome OS</translation>
 <translation id="1399397803214730675">Este ordenador tiene instalada una versión más reciente de Google Chrome. Si el software no funciona, desinstala Google Chrome y vuelve a intentarlo.</translation>
 <translation id="576822117893741893">Mostrar el menú de Chrome</translation>
 <translation id="3444832043240812445">Esta página solo muestra información sobre fallos recientes si se <ph name="BEGIN_LINK"/>habilitan los informes sobre fallos<ph name="END_LINK"/>.</translation>
@@ -181,8 +185,8 @@ Puede que algunas funciones no estén disponibles. Especifica otro directorio de
 <translation id="2680623880102270805">Google Chrome no puede crear un acceso directo a la aplicación porque no puede identificar el entorno de escritorio actual.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Navegador de Internet</translation>
+<translation id="5244325494201350962">Habías iniciado sesión con otra cuenta, por lo que si inicias sesión se fusionarán tus datos. Considera la posibilidad de crear un nuevo usuario de Chrome a través de la <ph name="BEGIN_LINK"/>página de configuración<ph name="END_LINK"/> para tus datos de Chrome.</translation>
 <translation id="2189123953385179981">Google Chrome OS no puede iniciar una aplicación externa que administre enlaces <ph name="SCHEME"/>. El enlace solicitado es <ph name="PROTOLINK"/>.</translation>
-<translation id="711654979569750606">Copyright © 2006-2012 Google Inc. Todos los derechos reservados</translation>
 <translation id="8205111949707227942">Opcional: Ayúdanos a mejorar Google Chrome OS enviando estadísticas de uso e informes sobre fallos.</translation>
 <translation id="7253415505590551024">Actualmente hay descargas en curso. ¿Quieres salir de Google Chrome y cancelarlas?</translation>
 <translation id="7196020411877309443">¿Por qué aparece este mensaje?</translation>

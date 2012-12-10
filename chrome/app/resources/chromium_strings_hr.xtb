@@ -15,6 +15,7 @@
 <translation id="7128196614940529818">Chromium Frame već je instaliran i dostupan svim korisnicima ovog računala. Ako želite instalirati Chromium Frame na razini korisnika, prvo morate deinstalirati verziju na razini sustava koju je instalirao administrator.</translation>
 <translation id="731644333568559921">Ažuriranje OS-a &amp;Chromium</translation>
 <translation id="7421823331379285070">Chromium zahtijeva Windows XP ili noviju verziju. Neke značajke možda neće raditi.</translation>
+<translation id="3549345495227188780">Počnite s upotrebom OS-a Chromium</translation>
 <translation id="4330297532943865716">U sustavu je pronađena sukobljena instalacija preglednika Chromium ili aplikacije Chromium Frame. Deinstalirajte je i pokušajte ponovo.</translation>
 <translation id="6953661834318318668">Alatna traka preglednika Chromium</translation>
 <translation id="7097100943370017396">Chromium se više ne ažurira jer je vaš operativni sustav zastario.</translation>
@@ -56,6 +57,7 @@
 <translation id="3197823471738295152">Uređaj je ažuran.</translation>
 <translation id="8551886023433311834">Gotovo ažurno! Ponovo pokrenite uređaj da biste dovršili ažuriranje.</translation>
 <translation id="8353224596138547809">Želite li da Chromium spremi vašu zaporku za ovu web-lokaciju?</translation>
+<translation id="7339898014177206373">Novi prozor</translation>
 <translation id="3026202950002788510">Idite na
           <ph name="BEGIN_BOLD"/>
           Aplikacije &gt; Postavke sustava &gt; Mreža &gt; Napredno &gt; Proxy poslužitelji
@@ -67,7 +69,6 @@
 <translation id="9191268552238695869">Administrator je instalirao Chromium u ovom sustavu i on je dostupan svim korisnicima. Chromium na razini sustava sada će zamijeniti vašu instalaciju na razini korisnika.</translation>
 <translation id="3509308970982693815">Zatvorite sve prozore preglednika Chromium i pokušajte ponovo.</translation>
 <translation id="4077262827416206768">Zatvorite sve prozore preglednika Chromium i ponovo pokrenite Chromium da bi ta promjena postala aktivna.</translation>
-<translation id="9119843944749246249">Autorska prava © 2006. – 2012. Autori Chromiuma. Sva prava pridržana.</translation>
 <translation id="6944967875980567883">Moduli učitani u Chromium</translation>
 <translation id="118298050220780080">Pokušali ste pristupiti web-lokaciji &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ali poslužitelj je ponudio certifikat koji je izdao entitet kojemu operativni sustav vašeg računala ne vjeruje. To može značiti da je poslužitelj generirao vlastite sigurnosne vjerodajnice, na koje se Chromium ne može osloniti za informacije o identitetu, ili da napadač pokušava presresti vaše komunikacije.</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
@@ -89,6 +90,7 @@
 <translation id="2881203820889150661">Chromium ne može stvoriti prečac aplikacije jer ne može odrediti trenutačno računalno okruženje.</translation>
 <translation id="4886158514168859177">Ovo računalo već ima noviju verziju aplikacije Chromium Frame. Ako softver ne funkcionira, deinstalirajte Chromium Frame i pokušajte ponovo.</translation>
 <translation id="911206726377975832">Izbrisati i podatke o pregledavanju?</translation>
+<translation id="1699664235656412242">Zatvorite sve prozore u Chromiumu (uključujući i one u načinu sustava Windows 8) i pokušajte ponovo.</translation>
 <translation id="6734080038664603509">Ažuriranje &amp;Chromiuma</translation>
 <translation id="8862326446509486874">Nemate odgovarajuća prava za instaliranje na razini sustava. Pokušajte ponovno pokrenuti program za instalaciju kao administrator.</translation>
 <translation id="1774152462503052664">Neka Chromium radi u pozadini</translation>
@@ -125,7 +127,9 @@
 <translation id="6717134281241384636">Vaš se profil ne može upotrebljavati jer je iz novije verzije Chromiuma.
 
 Neke su značajke možda nedostupne. Navedite neki drugi direktorij profila ili upotrijebite noviju verziju Chromiuma.</translation>
+<translation id="4499972362520386277">Autorska prava 2012. Autori Chromiuma. Sva prava pridržana.</translation>
 <translation id="2712549016134575851">Otkriven je sukob s drugom instaliranom aplikacijom.</translation>
+<translation id="4881709374218686648">Prethodno ste bili prijavljeni s drugim računom; prijavom će se spojiti vaši podaci. Razmislite o otvaranju novog korisnika sustava Chromium na <ph name="BEGIN_LINK"/>stranici s postavkama<ph name="END_LINK"/> za svoje aktivnosti u sustavu Chromium.</translation>
 <translation id="9013087743919948559">Dodajte u Chromium</translation>
 <translation id="6212496753309875659">Ovo računalo već ima noviju verziju Chromiuma. Ako softver ne funkcionira, deinstalirajte Chromium i pokušajte ponovo.</translation>
 <translation id="3014684866565908571">Chromium Utility</translation>

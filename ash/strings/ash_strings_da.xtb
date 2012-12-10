@@ -18,6 +18,8 @@
 <translation id="6459472438155181876">Udvider skærmen til <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Mobil</translation>
 <translation id="6596816719288285829">IP-adresse</translation>
+<translation id="1812696562331527143">Din inputmetode er ændret til <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>tredjepart<ph name="END_LINK"/>).
+Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="5233638681132016545">Ny fane</translation>
 <translation id="3846575436967432996">Der er ingen tilgængelige netværksoplysninger</translation>
 <translation id="3026237328237090306">Konfigurer mobildata</translation>
@@ -26,19 +28,22 @@
 <translation id="3126069444801937830">Genstart for at opdatere</translation>
 <translation id="3294437725009624529">Gæst</translation>
 <translation id="8190698733819146287">Tilpas sprog og indtastning...</translation>
-<translation id="5182671122927417841">Deaktiver udvidelse</translation>
 <translation id="598295083618286569">Bluetooth tilsluttet</translation>
 <translation id="5222676887888702881">Log ud</translation>
-<translation id="2091132388437059185">Skjul automatisk applikationslisten, når den er maksimeret</translation>
 <translation id="2964193600955408481">Deaktiver Wi-Fi</translation>
 <translation id="811680302244032017">Tilføj enhed...</translation>
 <translation id="2509468283778169019">CAPS LOCK er slået til</translation>
+<translation id="3892641579809465218">Internt display</translation>
 <translation id="7823564328645135659">Sproget er blevet ændret fra &quot;<ph name="FROM_LOCALE"/>&quot; til &quot;<ph name="TO_LOCALE"/>&quot;, efter at du har synkroniseret dine indstillinger.</translation>
+<translation id="5825747213122829519">Din inputmetode er ændret til <ph name="INPUT_METHOD_ID"/>.
+Tryk på Shift+Alt for at ændre den.</translation>
+<translation id="2562916301614567480">Privat netværk</translation>
 <translation id="6426039856985689743">Deaktiver mobildata</translation>
 <translation id="3087734570205094154">Bund</translation>
+<translation id="5271016907025319479">VPN er ikke konfigureret.</translation>
 <translation id="3232695630852378748">Bluetooth-indstillinger...</translation>
 <translation id="1480041086352807611">Demotilstand</translation>
-<translation id="4186384497305035875">Det er meningen, at denne skærm skal være tom.</translation>
+<translation id="3626637461649818317"><ph name="PERCENTAGE"/> % tilbage</translation>
 <translation id="9089416786594320554">Indtastningsmetoder</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/> %</translation>
 <translation id="2570059561924004903">Deaktiver talefeedback</translation>
@@ -52,6 +57,7 @@
 <translation id="1346748346194534595">Højre</translation>
 <translation id="8528322925433439945">Mobil...</translation>
 <translation id="8428213095426709021">Indstillinger</translation>
+<translation id="2472320577759310817">Bluetooth er slået fra.</translation>
 <translation id="2372145515558759244">Synkroniserer apps...</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="1467432559032391204">Venstre</translation>
@@ -65,21 +71,19 @@
 <translation id="1850504506766569011">Wi-Fi er slået fra.</translation>
 <translation id="2872961005593481000">Luk</translation>
 <translation id="7052914147756339792">Angiv baggrundsbillede...</translation>
-<translation id="80942317552162138"><ph name="PERCENTAGE"/> % fuld</translation>
-<translation id="5746825509052394497">Din inputmetode er ændret til <ph name="INPUT_METHOD_ID"/>.
-        Tryk på Skift+Alt for at ændre den.</translation>
+<translation id="2739500853984626550">Ingen Bluetooth-enheder til rådighed</translation>
 <translation id="1602076796624386989">Aktivér mobildata</translation>
 <translation id="3157931365184549694">Gendan</translation>
+<translation id="225680501294068881">Scanner efter enheder...</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/> d. <ph name="DATE"/></translation>
 <translation id="7029814467594812963">Afslut session</translation>
 <translation id="8454013096329229812">Wi-Fi er slået til.</translation>
 <translation id="4872237917498892622">Alt+Søg eller Skift</translation>
 <translation id="2983818520079887040">Indstillinger...</translation>
 <translation id="2712866615167520691">Tilgængelighedsfunktioner er aktiveret. Tryk Ctrl+Alt+Z for at annullere.</translation>
+<translation id="5467313780247887226">Kan ikke kopiere billedet på de tilsluttede skærme. Der blev ikke fundet en matchende opløsning.</translation>
 <translation id="2792498699870441125">Alt+Søg</translation>
 <translation id="8660803626959853127">Synkroniserer <ph name="COUNT"/> fil(er)</translation>
-<translation id="1837166567415282700">Dit inputmetode er ændret til <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>tredjepart<ph name="END_LINK"/>).
-        Tryk på Skift+Alt for at ændre den.</translation>
 <translation id="639644700271529076">CAPS LOCK er deaktiveret</translation>
 <translation id="4101192585425716296">Meddelelsescenter</translation>
 <translation id="4864165860509564259">Applikationslistens placering</translation>
@@ -88,9 +92,6 @@
 <translation id="3050422059534974565">CAPS LOCK er slået til.
 Tryk på Søg eller Skift for at annullere.</translation>
 <translation id="397105322502079400">Beregner...</translation>
-<translation id="6362354186508391853">Ctrl +</translation>
-<translation id="477782898153505579">Du har ingen underretninger. Bare rolig!</translation>
-<translation id="7457942297256758195">Ryd alle</translation>
 <translation id="3573179567135747900">Skift tilbage til &quot;<ph name="FROM_LOCALE"/>&quot; (kræver genstart)</translation>
 <translation id="8103386449138765447">SMS-beskeder: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="5045002648206642691">Google Drev-indstillinger...</translation>
@@ -101,6 +102,5 @@ Tryk på Alt+Søg eller Skift for at annullere.</translation>
 <translation id="6911468394164995108">Find andre... </translation>
 <translation id="6843725295806269523">slå lyden fra</translation>
 <translation id="412065659894267608"><ph name="HOUR"/> t <ph name="MINUTE"/> m, indtil det er fuldt opladet</translation>
-<translation id="4469842253116033348">Deaktiver meddelelser fra <ph name="SITE"/></translation>
 <translation id="6359806961507272919">Sms fra <ph name="PHONE_NUMBER"/></translation>
 </translationbundle>

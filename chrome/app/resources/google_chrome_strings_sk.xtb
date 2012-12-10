@@ -19,7 +19,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="7781002470561365167">K dispozícii je nová verzia prehliadača Google Chrome.</translation>
 <translation id="7101265395643981223">Spustiť prehľadávač Google Chrome</translation>
 <translation id="4891791193823137474">Povoliť prehliadaču Google Chrome spustenie na pozadí</translation>
-<translation id="2879385160622431163">Dynamické vyhľadávanie Google Chrome</translation>
+<translation id="2879385160622431163">Dynamický režim Google Chrome</translation>
 <translation id="2370289711218562573">Prehliadač Google Chrome práve importuje Obľúbené položky/Záložky.</translation>
 <translation id="1761870329818521071">Nie je možné nainštalovať rovnakú verziu doplnku Google Chrome Frame, ako je aktuálne spustená verzia. Zavrite doplnok Google Chrome Frame a skúste to znova.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
@@ -42,6 +42,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="8398145039500709259">Chcete tento účet Google použiť na synchronizáciu všetkých položiek prehliadača Chrome?</translation>
 <translation id="1779550429052479749">V systéme sa našla kolidujúca inštalácia prehliadača Google Chrome alebo doplnku Google Chrome Frame. Odinštalujte ho a skúste to znova.</translation>
 <translation id="3555616473548901994">Odinštalovanie dokončené.</translation>
+<translation id="4987308747895123092">Zatvorte všetky okná prehliadača Google Chrome (vrátane okien v režime systému Windows 8) a skúste to znova.</translation>
 <translation id="568643307450491754">Záložky nájdete v ponuke Chrome alebo na paneli so záložkami.</translation>
 <translation id="8556340503434111824">K dispozícii je nová verzia prehliadača Google Chrome, ktorá je rýchlejšia ako kedykoľvek predtým.</translation>
 <translation id="4728575227883772061">Inštalácia zlyhala kvôli neurčenej chybe. Ak je prehliadač Google Chrome momentálne spustený, zatvorte ho a skúste znova.</translation>
@@ -73,6 +74,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="3889417619312448367">Odinštalovanie prehliadača Google Chrome</translation>
 <translation id="8551886023433311834">Aktualizácia je takmer hotová! Dokončíte ju reštartovaním zariadenia.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="7339898014177206373">Nové okno</translation>
 <translation id="3026202950002788510">Prejdite na možnosť
           <ph name="BEGIN_BOLD"/>
           Aplikácie &gt; Systémové predvoľby &gt; Sieť &gt; Rozšírené nastavenia &gt; Servery proxy
@@ -156,6 +158,7 @@ Niektoré funkcie môžu byť nedostupné. Zadajte iný adresár profilu alebo p
           karte), kliknite naň a uistite sa, že je vaša konfigurácia
           nastavená na hodnotu Priame.</translation>
 <translation id="3612333635265770873">Zistilo sa, že modul s rovnakým názvom spôsobuje konflikt s aplikáciou Google Chrome.</translation>
+<translation id="824729746779295798">Copyright 2012 Google Inc. Všetky práva vyhradené.</translation>
 <translation id="61852838583753520">Aktualizácia systému &amp;Chrome OS</translation>
 <translation id="6650142020817594541">Na týchto stránkach je odporúčaný doplnok Google Chrome Frame (už je nainštalovaný).</translation>
 <translation id="2712549016134575851">Zistil sa konflikt s inou nainštalovanou aplikáciou.</translation>
@@ -166,6 +169,7 @@ Niektoré funkcie môžu byť nedostupné. Zadajte iný adresár profilu alebo p
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="870251953148363156">Aktualizácia prehliadača &amp;Google Chrome</translation>
 <translation id="130631256467250065">Zmeny sa prejavia po ďalšom reštartovaní zariadenia.</translation>
+<translation id="163860049029591106">Začíname so systémom OS Chrome</translation>
 <translation id="1399397803214730675">Tento počítač už obsahuje novšiu verziu prehliadača Google Chrome. Ak softvér nefunguje, odinštalujte prehliadač Google Chrome a skúste to znova.</translation>
 <translation id="576822117893741893">Zobraziť ponuku Chrome</translation>
 <translation id="3444832043240812445">Táto stránka zobrazuje informácie o nedávnych zlyhaniach, len ak ste <ph name="BEGIN_LINK"/>povolili hlásenia zlyhaní<ph name="END_LINK"/>.</translation>
@@ -178,8 +182,8 @@ Niektoré funkcie môžu byť nedostupné. Zadajte iný adresár profilu alebo p
 <translation id="2680623880102270805">Prehliadač Google Chrome nemôže vytvoriť odkaz aplikácie, pretože nemôže určiť aktuálne prostredie pracovnej plochy.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Internetový prehliadač</translation>
+<translation id="5244325494201350962">V minulosti ste sa prihlásili s iným účtom. Prihlásenie spôsobí zlúčenie údajov. Zvážte vytvorenie nového používateľa Chrome pre položky súvisiace so systémom Chrome. Môžete to vykonať prostredníctvom <ph name="BEGIN_LINK"/>stránky nastavení<ph name="END_LINK"/>.</translation>
 <translation id="2189123953385179981">Systém Google ChromeOS nepodporuje spustenie externej aplikácie na spracovanie odkazov typu <ph name="SCHEME"/>. Typ požadovaného odkazu je <ph name="PROTOLINK"/>.</translation>
-<translation id="711654979569750606">Copyright © 2006-2012 Google Inc. Všetky práva vyhradené.</translation>
 <translation id="8205111949707227942">Voliteľné: Chcem pomôcť pri vylepšovaní služieb prehliadača Chrome tým, že bude automaticky odosielať spoločnosti Google štatistické údaje o jeho využívaní a správy o výpadkoch.</translation>
 <translation id="7253415505590551024">Prebieha preberanie. Chcete prehliadač Google Chrome ukončiť a preberanie zrušiť?</translation>
 <translation id="7196020411877309443">Prečo sa zobrazila táto výzva?</translation>

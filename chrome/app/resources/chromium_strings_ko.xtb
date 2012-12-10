@@ -17,6 +17,7 @@
 <translation id="7128196614940529818">Chromium 프레임이 이미 설치되어 컴퓨터의 모든 사용자가 사용할 수 있습니다. 사용자 수준에서 Chromium 프레임을 설치하려면, 먼저 관리자가 설치한 시스템 수준의 버전을 제거합니다.</translation>
 <translation id="731644333568559921">Chrome OS 업데이트</translation>
 <translation id="7421823331379285070">Chromium에는 Windows XP 이상이 필요합니다. 일부 기능이 작동하지 않을 수 있습니다.</translation>
+<translation id="3549345495227188780">Chromium OS 시작하기</translation>
 <translation id="4330297532943865716">Chromium 또는 Chromium 프레임을 시스템에 설치하던 중 이전 설치와 충돌이 발생했습니다. 제거한 다음 다시 시도해 보세요</translation>
 <translation id="6953661834318318668">Chromium 툴바</translation>
 <translation id="7097100943370017396">지원되지 않는 운영체제이므로 Chromium이  더 이상 업데이트되지 않습니다.</translation>
@@ -57,6 +58,7 @@
 <translation id="3197823471738295152">기기가 최신 버전입니다.</translation>
 <translation id="8551886023433311834">업데이트가 거의 완료되었습니다. 업데이트를 완료하려면 기기를 다시 시작하세요.</translation>
 <translation id="8353224596138547809">Chromium이 이 사이트에서 비밀번호를 저장하도록 하시겠습니까?</translation>
+<translation id="7339898014177206373">새 창</translation>
 <translation id="3026202950002788510">
           <ph name="BEGIN_BOLD"/>
           애플리케이션 &gt; 시스템 환경설정 &gt; 네트워크 &gt; 고급 &gt; 프록시
@@ -68,7 +70,6 @@
 <translation id="9191268552238695869">관리자가 Chromium을 시스템에 설치하여 모든 사용자가 사용할 수 있습니다. 시스템 수준의 Chromium은 사용자 수준의 설치를 대체합니다.</translation>
 <translation id="3509308970982693815">Chromium 창을 모두 닫고 다시 시도해 보세요.</translation>
 <translation id="4077262827416206768">모든 Chromium 창을 닫은 뒤 다시 Chromium을 실행하면 변경 사항이 반영됩니다.</translation>
-<translation id="9119843944749246249">Copyright © 2006-2012 The Chromium Authors. All Rights Reserved.</translation>
 <translation id="6944967875980567883">Chromium에 로드된 모듈</translation>
 <translation id="118298050220780080">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;에 접속하려고 했지만 컴퓨터의 운영체제에서 신뢰하지 않는 단체에서 발급한 인증서를 제공했습니다. 다시 말해 서버가 자체 보안 인증 정보를 신뢰하지 않기 때문에 Chromium이 식별 정보를 수락하지 않거나 침입자가 통신을 가로챌 수 있습니다.</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
@@ -90,6 +91,7 @@
 <translation id="2881203820889150661">Chromium에서 현재 데스크톱 환경을 확인할 수 없으므로 애플리케이션 바로가기를 만들 수 없습니다.</translation>
 <translation id="4886158514168859177">컴퓨터에 이미 최신 버전의 Chromium 프레임이 있습니다. 소프트웨어가 작동하지 않으면 Chromium 프레임의 설치를 제거한 뒤 다시 시도하세요.</translation>
 <translation id="911206726377975832">인터넷 사용 기록도 삭제하시겠습니까?</translation>
+<translation id="1699664235656412242">Chromium 창(Windows 8 모드의 창 포함)을 모두 닫고 다시 시도해 보세요.</translation>
 <translation id="6734080038664603509">Chromium 업데이트</translation>
 <translation id="8862326446509486874">시스템 수준의 설치 권한이 없습니다. 관리자 권한으로 설치 프로그램을 다시 실행해 보세요.</translation>
 <translation id="1774152462503052664">백그라운드에서 Chromium을 실행</translation>
@@ -125,7 +127,9 @@
 <translation id="6717134281241384636">Chromium의 최신 버전을 사용하기 때문에 프로필을 사용할 수 없습니다.
 
 일부 기능을 사용할 수 없습니다. 다른 프로필 디렉토리를 지정하거나 Chromium의 새로운 버전을 사용하시기 바랍니다.</translation>
+<translation id="4499972362520386277">Copyright 2012 The Chromium Authors. All rights reserved.</translation>
 <translation id="2712549016134575851">설치된 다른 애플리케이션과의 충돌이 감지되었습니다.</translation>
+<translation id="4881709374218686648">이전에 다른 계정으로 로그인했습니다. 로그인하면 데이터가 통합됩니다. <ph name="BEGIN_LINK"/>설정 페이지<ph name="END_LINK"/>에서 새 Chromium 사용자를 생성하시기 바랍니다.</translation>
 <translation id="9013087743919948559">Chromium에 추가</translation>
 <translation id="6212496753309875659">컴퓨터에 이미 최신 버전의 Chromium이 있습니다. 소프트웨어가 작동하지 않으면 Chromium의 설치를 제거한 뒤 다시 시도하세요.</translation>
 <translation id="3014684866565908571">Chromium 유틸리티</translation>

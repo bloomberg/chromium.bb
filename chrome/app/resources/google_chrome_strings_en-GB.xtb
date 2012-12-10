@@ -42,6 +42,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="8398145039500709259">Use this Google Account to sync all your Chrome stuff?</translation>
 <translation id="1779550429052479749">A conflicting installation of Google Chrome or Google Chrome Frame was found on the system. Please uninstall it and try again.</translation>
 <translation id="3555616473548901994">Uninstallation complete.</translation>
+<translation id="4987308747895123092">Please close all Google Chrome windows (including those in Windows 8 mode) and try again.</translation>
 <translation id="568643307450491754">Find your bookmarks in the Chrome menu or on the bookmarks bar.</translation>
 <translation id="8556340503434111824">There's a new version of Google Chrome available and it's faster than ever.</translation>
 <translation id="4728575227883772061">Installation failed due to unspecified error. If Google Chrome is currently running, please close it and try again.</translation>
@@ -75,6 +76,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="3889417619312448367">Uninstall Google Chrome</translation>
 <translation id="8551886023433311834">Nearly up to date! Restart your device to finish updating.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="7339898014177206373">New window</translation>
 <translation id="3026202950002788510">Go to
           <ph name="BEGIN_BOLD"/>
           Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies
@@ -158,6 +160,7 @@ Some features may be unavailable. Please specify a different profile directory o
           tab) is present, click on that and make sure your configuration
           is set to &quot;Direct&quot;.</translation>
 <translation id="3612333635265770873">A module with the same name has been known to conflict with Google Chrome.</translation>
+<translation id="824729746779295798">Copyright 2012 Google Inc. All rights reserved.</translation>
 <translation id="61852838583753520">Update the &amp;Chrome OS</translation>
 <translation id="6650142020817594541">This site recommends Google Chrome Frame (already installed).</translation>
 <translation id="2712549016134575851">A conflict with another installed application has been detected.</translation>
@@ -168,6 +171,7 @@ Some features may be unavailable. Please specify a different profile directory o
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="870251953148363156">Update &amp;Google Chrome</translation>
 <translation id="130631256467250065">Your changes will take effect the next time that you restart your device.</translation>
+<translation id="163860049029591106">Get Started with Chrome OS</translation>
 <translation id="1399397803214730675">This computer already has a more recent version of Google Chrome. If the software is not working, please uninstall Google Chrome and try again.</translation>
 <translation id="576822117893741893">Show the Chrome menu</translation>
 <translation id="3444832043240812445">This page only shows information on your recent crashes if you <ph name="BEGIN_LINK"/>enable crash reporting<ph name="END_LINK"/>.</translation>
@@ -180,8 +184,8 @@ Some features may be unavailable. Please specify a different profile directory o
 <translation id="2680623880102270805">Google Chrome cannot create an application shortcut because it cannot determine the current desktop environment.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Internet Browser</translation>
+<translation id="5244325494201350962">You were previously signed in with a different account, signing in will merge your data. Consider creating a new Chrome user via the <ph name="BEGIN_LINK"/>settings page<ph name="END_LINK"/> for your Chrome stuff.</translation>
 <translation id="2189123953385179981">Google ChromeOS does not support launching an external application to handle <ph name="SCHEME"/> links. The link requested is <ph name="PROTOLINK"/>.</translation>
-<translation id="711654979569750606">Copyright © 2006-2012 Google Inc. All Rights Reserved.</translation>
 <translation id="8205111949707227942">Optional: Help make Chrome OS better by sending usage statistics and crash reports automatically to Google.</translation>
 <translation id="7253415505590551024">Downloads are currently in progress. Do you want to exit Google Chrome and cancel the downloads?</translation>
 <translation id="7196020411877309443">Why am I seeing this?</translation>

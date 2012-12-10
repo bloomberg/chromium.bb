@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="te">
+<translation id="5843503607508392247">ఇతర...</translation>
 <translation id="248395913932153421">రోజు</translation>
 <translation id="6015796118275082299">సంవత్సరం</translation>
 <translation id="9186171386827445984">పత్రాన్ని లోడ్ చేస్తోంది: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> పేజీలు...</translation>
@@ -10,7 +11,9 @@
 <translation id="5048533449481078685">జాబితా మార్కర్</translation>
 <translation id="4202807286478387388">వెళ్ళు</translation>
 <translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
+<translation id="8199524924445686405">yyyy</translation>
 <translation id="795667975304826397">ఫైల్ ఏదీ ఎంచుకోలేదు</translation>
+<translation id="1758486001363313524">ఇతర...</translation>
 <translation id="8141602879876242471">ఇది ఒక శోధించగల సూచిక. శోధన కీవర్డ్‌లను ఎంటర్ చెయ్యండి:</translation>
 <translation id="370665806235115550">లోడ్ అవుతోంది...</translation>
 <translation id="6845533974506654842">నొక్కండి</translation>
@@ -19,11 +22,13 @@
 <translation id="2548326553472216322">ఇటీవల శోధనలు లేవు</translation>
 <translation id="7263440858009898357">దయచేసి జాబితాలోని ఒక అంశాన్ని ఎంచుకోండి.</translation>
 <translation id="5164977714490026579">విలువ ఖచ్చితంగా <ph name="MINIMUM"/> కంటే ఎక్కువగా లేదా సమానంగా ఉండాలి.</translation>
+<translation id="2247351761944213033"><ph name="WEEKNUMBER"/>వ వారం, <ph name="YEAR"/></translation>
 <translation id="5944544982112848342">2048 (ఉత్తమ గ్రేడ్)</translation>
 <translation id="3040011195152428237">లింక్</translation>
 <translation id="1014825444426747588">ఖాళీ</translation>
 <translation id="4522570452068850558">వివరాలు</translation>
 <translation id="8451268428117625855">దయచేసి ఒక ఫైల్‌ని ఎంచుకోండి.</translation>
+<translation id="8117451130807776954">ఈ వారం</translation>
 <translation id="5966707198760109579">వారం</translation>
 <translation id="2674318244760992338">ఫుటర్</translation>
 <translation id="8987927404178983737">నెల</translation>
@@ -38,10 +43,12 @@
 <translation id="5476505524087279545">ఎంపిక  చెయ్యబడలేదు</translation>
 <translation id="2148716181193084225">ఈ రోజు</translation>
 <translation id="2507943997699731163">దయచేసి ఈ ఫీల్డ్‌ని పూర్తి చెయ్యండి.</translation>
+<translation id="739024184232394898">ఇతర...</translation>
 <translation id="5919473608089529604">ప్లగిన్‌ని లోడ్ చేయడం సాధ్యం కాలేదు.</translation>
 <translation id="6663448176199120256">ఇటీవల శోధనలు</translation>
 <translation id="2597378329261239068">ఈ పత్రం అనుమతి పదంచే రక్షించబడింది. దయచేసి అనుమతి పదాన్ని నమోదు చేయండి.</translation>
 <translation id="5466621249238537318">దయచేసి ఒకటి లేదా మరిన్ని ఫైళ్ళను ఎంచుకోండి.</translation>
+<translation id="9132465097189459683">ఇతర...</translation>
 <translation id="8750798805984357768">దయచేసి ఈ ఎంపికలలో ఒకదాన్ని ఎంచుకోండి.</translation>
 <translation id="7740050170769002709">HTML కంటెంట్</translation>
 <translation id="6692633176391053278">స్టెప్పర్</translation>
@@ -50,11 +57,13 @@
 <translation id="1639239467298939599">లోడ్ అవుతోంది</translation>
 <translation id="2908441821576996758">దయచేసి కామాతో వేరు చేసిన ఇమెయిల్ చిరునామాల జాబితాను ఎంటర్ చెయ్యండి.</translation>
 <translation id="5939518447894949180">తిరిగి అమర్చండి</translation>
+<translation id="1921819250265091946">dd</translation>
 <translation id="835897206747267392">చెల్లని విలువ.</translation>
 <translation id="1842960171412779397">ఎంచుకోండి</translation>
 <translation id="7673697353781729403">గంటలు</translation>
 <translation id="3450233048674729344">విలువ ఖచ్చితంగా <ph name="MAXIMUM"/> కంటే తగ్గువగా లేదా సమానంగా ఉండాలి.</translation>
 <translation id="668171684555832681">ఇతర...</translation>
+<translation id="1591562245178063882">ఈ నెల</translation>
 <translation id="6119846243427417423">ఆక్టివేట్ చెయ్యి</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> ఫైళ్ళు</translation>
 <translation id="6643016212128521049">క్లియర్ చేయి</translation>
@@ -62,4 +71,5 @@
 <translation id="3934680773876859118">PDF పత్రాన్ని లోడ్ చెయ్యడానికి విఫలమైంది</translation>
 <translation id="8597182159515967513">శీర్షిక</translation>
 <translation id="2653659639078652383">సమర్పించు</translation>
+<translation id="3732799496749320381">mm</translation>
 </translationbundle>

@@ -15,6 +15,7 @@
 <translation id="7128196614940529818">Wtyczka Chromium Frame jest już zainstalowana i dostępna dla wszystkich użytkowników tego komputera. Jeśli chcesz zainstalować Chromium Frame na poziomie użytkownika, musisz najpierw odinstalować wersję z poziomu systemu zainstalowaną przez administratora.</translation>
 <translation id="731644333568559921">Aktualizuj system operacyjny &amp;Chromium</translation>
 <translation id="7421823331379285070">Chromium wymaga systemu Windows XP lub nowszego. Niektóre funkcje mogą nie działać.</translation>
+<translation id="3549345495227188780">Pierwsze kroki z systemem operacyjnym Chromium</translation>
 <translation id="4330297532943865716">W systemie znaleziono instalacje Chromium lub Chromium Frame, które powodują konflikt. Odinstaluj je i spróbuj ponownie.</translation>
 <translation id="6953661834318318668">Pasek narzędzi Chromium</translation>
 <translation id="7097100943370017396">Chromium nie jest już aktualizowany, bo Twój system operacyjny jest przestarzały.</translation>
@@ -56,6 +57,7 @@
 <translation id="3197823471738295152">Urządzenie używa aktualnej wersji oprogramowania.</translation>
 <translation id="8551886023433311834">Aktualizacja jest już prawie ukończona. Wystarczy tylko uruchomić ponownie urządzenie.</translation>
 <translation id="8353224596138547809">Czy Chromium ma zapisać hasło do tej strony?</translation>
+<translation id="7339898014177206373">Nowe okno</translation>
 <translation id="3026202950002788510">Przejdź do opcji
           <ph name="BEGIN_BOLD"/>
           Aplikacje &gt; Ustawienia systemowe &gt; Sieć &gt; Zaawansowane &gt; Serwery proxy
@@ -67,7 +69,6 @@
 <translation id="9191268552238695869">Administrator zainstalował Chromium w tym systemie i jest on dostępny dla wszystkich użytkowników. Chromium zainstalowany na poziomie systemu zastąpi Twoją instalację.</translation>
 <translation id="3509308970982693815">Zamknij wszystkie okna Chromium i spróbuj ponownie.</translation>
 <translation id="4077262827416206768">Zamknij wszystkie okna Chromium i uruchom go ponownie, by zmiany zostały wprowadzone.</translation>
-<translation id="9119843944749246249">Copyright 2006-2012 Autorzy Chromium. Wszelkie prawa zastrzeżone.</translation>
 <translation id="6944967875980567883">Moduły załadowane do Chromium</translation>
 <translation id="118298050220780080">Próbujesz wejść na &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ale serwer przedstawił certyfikat wydany przez podmiot, który nie jest zaufany w systemie operacyjnym. To może oznaczać, że serwer wygenerował własne dane uwierzytelniające, którym Chromium nie może ufać w kwestii identyfikacji tożsamości. Możliwe też, że intruz próbuje przechwycić Twoją komunikację.</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
@@ -87,6 +88,7 @@
 <translation id="2881203820889150661">Chromium nie może utworzyć skrótu do aplikacji, bo nie jest w stanie rozpoznać środowiska komputera.</translation>
 <translation id="4886158514168859177">Na tym komputerze jest już zainstalowana nowsza wersja Chromium Frame. Jeśli program nie działa, odinstaluj Chromium Frame i spróbuj ponownie.</translation>
 <translation id="911206726377975832">Czy usunąć także dane przeglądarki?</translation>
+<translation id="1699664235656412242">Zamknij wszystkie okna Chromium (także te działające w trybie Windows 8) i spróbuj ponownie.</translation>
 <translation id="6734080038664603509">Aktualizuj &amp;Chromium</translation>
 <translation id="8862326446509486874">Nie masz odpowiednich uprawnień do przeprowadzenia instalacji na poziomie systemowym. Uruchom ponownie program instalacyjny jako administrator.</translation>
 <translation id="1774152462503052664">Zezwól Chromium na działanie w tle</translation>
@@ -123,7 +125,9 @@
 <translation id="6717134281241384636">Nie można użyć Twojego profilu, ponieważ pochodzi on z nowszej wersji Chromium.
 
 Niektóre funkcje mogą być niedostępne. Podaj inny katalog z profilem lub użyj nowszej wersji Chromium.</translation>
+<translation id="4499972362520386277">Copyright 2012 Autorzy Chromium. Wszelkie prawa zastrzeżone.</translation>
 <translation id="2712549016134575851">Wykryto konflikt z inną zainstalowaną aplikacją.</translation>
+<translation id="4881709374218686648">Wcześniej zalogowałeś się przy użyciu innego konta. Jeśli się zalogujesz, dane zostaną scalone. Na <ph name="BEGIN_LINK"/>stronie ustawień<ph name="END_LINK"/> utwórz nowego użytkownika Chromium na potrzeby swoich rzeczy z Chromium.</translation>
 <translation id="9013087743919948559">Dodaj do Chromium</translation>
 <translation id="6212496753309875659">Na tym komputerze jest już zainstalowana nowsza wersja Chromium. Jeśli program nie działa, odinstaluj go i spróbuj ponownie.</translation>
 <translation id="3014684866565908571">Program Chromium</translation>

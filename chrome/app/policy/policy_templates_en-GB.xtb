@@ -21,6 +21,7 @@
       If this policy is left unset, this will be enabled and the user will be able to use incognito mode.</translation>
 <translation id="7614663184588396421">List of disabled protocol schemes</translation>
 <translation id="2309390639296060546">Default geolocation setting</translation>
+<translation id="7261507082507286116">Disables Google Drive over Cellular connections</translation>
 <translation id="7443616896860707393">Cross-origin HTTP Basic Auth prompts</translation>
 <translation id="2337466621458842053">Allows you to set a list of url patterns that specify sites which are allowed to display images.
 
@@ -150,6 +151,9 @@
 <translation id="4668325077104657568">Default images setting</translation>
 <translation id="7161193985878519056">Incognito mode disabled.</translation>
 <translation id="2524379983318108884">Allow capturing audio</translation>
+<translation id="7978961945071764766">Disables Google Drive syncing when using a cellular connection when set to True. In that case, data is only synced to Google Drive when connected via WiFi or Ethernet.
+
+          If not set or set to False, then users will be able to transfer files to Google Drive via cellular connections.</translation>
 <translation id="4492287494009043413">Disable taking screenshots</translation>
 <translation id="6368403635025849609">Allow JavaScript on these sites</translation>
 <translation id="6074963268421707432">Do not allow any site to show desktop notifications</translation>
@@ -159,11 +163,6 @@
 <translation id="2906874737073861391">List of AppPack extensions</translation>
 <translation id="3758249152301468420">Disable Developer Tools</translation>
 <translation id="8665076741187546529">Configure the list of force-installed extensions</translation>
-<translation id="2505112041294615513">Configures the directory that <ph name="PRODUCT_FRAME_NAME"/> will use for storing user data.
-
-      If you set this policy, <ph name="PRODUCT_FRAME_NAME"/> will use the provided directory.
-
-      If this setting is left not set, the default profile directory will be used.</translation>
 <translation id="8818173863808665831">Report the geographic location of the device.
 
       If the policy is not set or set to false, the location will not be reported.</translation>
@@ -189,6 +188,13 @@
       If this policy is left unset the setting will be what the user chose upon installation / first run.</translation>
 <translation id="9135033364005346124">Enable <ph name="CLOUD_PRINT_NAME"/> proxy</translation>
 <translation id="6943577887654905793">Mac/Linux preference name:</translation>
+<translation id="6925212669267783763">Configures the directory that <ph name="PRODUCT_FRAME_NAME"/> will use for storing user data.
+
+      If you set this policy, <ph name="PRODUCT_FRAME_NAME"/> will use the provided directory.
+
+      See http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for a list of variables that can be used.
+
+      If this setting is left not set the default profile directory will be used.</translation>
 <translation id="8906768759089290519">Enable guest mode</translation>
 <translation id="838870586332499308">Enable data roaming</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME"/> can use a Google web service to help resolve spelling errors. If this setting is enabled, then this service is always used. If this setting is disabled, then this service is never used.
@@ -202,6 +208,9 @@
           If you enable this setting, CNAME lookup will be skipped and the server name will be used as entered.
 
           If you disable this setting or leave it unset, the canonical name of the server will be determined via CNAME lookup.</translation>
+<translation id="5711323964690760562">Specifies the URL for the enterprise web store. When this setting is enabled, an app will appear on the new tab page which, when clicked, will take the user to the specified URL. To actually allow extension installation from the configured website, the ExtensionInstallSources policy must be configured to allow installation from the appropriate extension download URLs. If this policy is set, the EnterpriseWebStoreName setting should also be set.
+
+      If this setting is disabled, no enterprise web store app will appear on the new tab page.</translation>
 <translation id="4377599627073874279">Allow all sites to show all images</translation>
 <translation id="3915395663995367577">URL to a proxy .pac file</translation>
 <translation id="1022361784792428773">Extension IDs the user should be prevented from installing (or * for all)</translation>
@@ -219,6 +228,13 @@
 
           For example patterns see http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8044493735196713914">Report device boot mode</translation>
+<translation id="2746016768603629042">This policy is deprecated, please use DefaultJavaScriptSetting instead.
+
+      Can be used to disable JavaScript in <ph name="PRODUCT_NAME"/>.
+
+      If this setting is disabled, web pages cannot use JavaScript and the user cannot change that setting.
+
+      If this setting is enabled or not set, web pages can use JavaScript but the user can change that setting.</translation>
 <translation id="1942957375738056236">You can specify the URL of the proxy server here.
 
           This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
@@ -262,6 +278,9 @@
 <translation id="4962195944157514011">Specifies the URL of the search engine used when doing a default search. The URL should contain the string '<ph name="SEARCH_TERM_MARKER"/>', which will be replaced at query time by the terms the user is searching for.
 
           This option must be set when the 'DefaultSearchProviderEnabled' policy is enabled and will only be respected if this is the case.</translation>
+<translation id="3343454696188645600">Disables Google Drive syncing when set to True. In that case, no data is uploaded to Google Drive.
+
+          If not set or set to False, then users will be able to transfer files to Google Drive.</translation>
 <translation id="6009903244351574348">Allow <ph name="PRODUCT_FRAME_NAME"/> to handle the listed content types.
 
           If this policy is not set the default renderer will be used for all sites as specified by the 'ChromeFrameRendererSettings' policy.</translation>
@@ -316,6 +335,17 @@
 <translation id="6786747875388722282">Extensions</translation>
 <translation id="8947415621777543415">Report device location</translation>
 <translation id="1655229863189977773">Set disk cache size in bytes</translation>
+<translation id="6376842084200599664">Allows you to specify a list of extensions that will be installed silently, without user interaction.
+
+          Each item of the list is a string that contains an extension ID and an update URL delimited by a semicolon (<ph name="SEMICOLON"/>). The extension ID is the 32-letter string found e.g. on <ph name="CHROME_EXTENSIONS_LINK"/> when in developer mode. The update URL should point to an Update Manifest XML document as described at <ph name="LINK_TO_EXTENSION_DOC1"/>. Note that the update URL set in this policy is only used for the initial installation; subsequent updates of the extension will use the update URL indicated in the extension's manifest.
+
+          For each item, <ph name="PRODUCT_NAME"/> will retrieve the extension specified by the extension ID from the update service at the specified update URL and silently install it.
+
+          For example, <ph name="EXTENSION_POLICY_EXAMPLE"/> installs the <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/> extension from the standard Chrome Web Store update URL. For more information about hosting extensions, see: <ph name="LINK_TO_EXTENSION_DOC2"/>.
+
+          Users will be unable to uninstall extensions that are specified by this policy. If you remove an extension from this list, then it will be automatically uninstalled by <ph name="PRODUCT_NAME"/>. Extensions specified in this list are also automatically whitelisted for installation; the ExtensionsInstallBlacklist does not affect them.
+
+          If this policy is left not set the user can uninstall any extension  in <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="6899705656741990703">Auto detect proxy settings</translation>
 <translation id="7003334574344702284">This policy forces the saved passwords to be imported from the previous default browser, if enabled. If enabled, this policy also affects the import dialogue.
 
@@ -333,12 +363,26 @@
       The format of the value follows the names of timezones in the &quot;IANA Time Zone Database&quot; (see &quot;http://en.wikipedia.org/wiki/List_of_tz_database_time&quot;). In particular, most timezones can be referred to by &quot;continent/large_city&quot; or &quot;ocean/large_city&quot;.</translation>
 <translation id="8992176907758534924">Do not allow any site to show images</translation>
 <translation id="262740370354162807">Enable submission of documents to <ph name="CLOUD_PRINT_NAME"/></translation>
+<translation id="5182055907976889880">Configure Google Drive in <ph name="PRODUCT_OS_NAME"/>.</translation>
 <translation id="8704831857353097849">List of disabled plug-ins</translation>
 <translation id="8391419598427733574">Report OS and firmware version of enrolled devices.
 
       If this setting is set to True, enrolled devices will report the OS and firmware version periodically. If this setting is not set or set to False, version info will not be reported.</translation>
 <translation id="467449052039111439">Open a list of URLs</translation>
 <translation id="5883015257301027298">Default cookies setting</translation>
+<translation id="5017500084427291117">Blocks access to the listed URLs.
+
+      This policy prevents the user from loading web pages from blacklisted URLs.
+
+      A URL has the format 'scheme://host:port/path'.
+      The optional scheme can be http, https or ftp. Only this scheme will be blocked; if none is specified, all schemes are blocked.
+      The host can be a hostname or an IP address. Subdomains of a hostname will also be blocked. To prevent blocking subdomains, include a '.' before the hostname. The special hostname '*' will block all domains.
+      The optional port is a valid port number from 1 to 65535. If none is specified, all ports are blocked.
+      If the optional path is specified, only paths with that prefix will be blocked.
+
+      Exceptions can be defined in the URL whitelist policy. These policies are limited to 1000 entries; subsequent entries will be ignored.
+
+      If this policy is not set no URL will be blacklisted in the browser.</translation>
 <translation id="8955719471735800169">Back to top</translation>
 <translation id="2534584045044686957">Configures the cache size that <ph name="PRODUCT_NAME"/> will use for storing cached media files on the disk.
 
@@ -356,18 +400,6 @@
       This policy is meant to allow for strict plugin blacklisting where the 'DisabledPlugins' list contains wildcarded entries like disable all plugins '*' or disable all Java plugins '*Java*' but the administrator wishes to enable some particular version like 'IcedTea Java 2.3'. This particular versions can be specified in this policy.
 
       If this policy is left not set any plugin that matches the patterns in the 'DisabledPlugins' will be locked disabled and the user won't be able to enable them.</translation>
-<translation id="8170882486743832400">Configure GData options</translation>
-<translation id="2322733497952278056">Allows access to the listed URLs, as exceptions to the URL blacklist.
-
-      See the description of the URL blacklist policy for the format of entries of this list.
-
-      This policy can be used to open exceptions to restrictive blacklists. For example, '*' can be blacklisted to block all requests, and this policy can be used to allow access to a limited list of URLs. It can be used to open exceptions to certain schemes, sub-domains of other domains, ports or specific paths.
-
-      The most specific filter will determine if a URL is blocked or allowed. The whitelist takes precedence over the blacklist.
-
-      This policy is limited to 100 entries; subsequent entries will be ignored.
-
-      If this policy is not set there will be no exceptions to the blacklist from the 'URLBlacklist' policy.</translation>
 <translation id="5316405756476735914">Allows you to set whether websites are allowed to set local data. Setting local data can be either allowed for all websites or denied for all websites.
 
           If this policy is left unset, 'AllowCookies' will be used and the user will be able to change it.</translation>
@@ -411,26 +443,10 @@
       If this policy is left unset, the user may change the list of pinned apps in the launcher.</translation>
 <translation id="7625444193696794922">Specifies the release channel that this device should be locked to.</translation>
 <translation id="2552966063069741410">Timezone</translation>
-<translation id="3088288048720661397">Disables Google Docs syncing when using a cellular connection when set to True. In that case, data is only synced to Google Docs when connected via WiFi or Ethernet.
-
-          If not set or set to False, then users will be able to transfer files to Google Docs via cellular connections.</translation>
 <translation id="2240879329269430151">Allows you to set whether websites are allowed to show pop-ups. Showing pop-ups can be either allowed for all websites or denied for all websites.
 
           If this policy is left unset, 'BlockPop-ups' will be used and the user will be able to change it.</translation>
 <translation id="2529700525201305165">Restrict which users are allowed to sign in to <ph name="PRODUCT_NAME"/></translation>
-<translation id="5289914968905023866">Blocks access to the listed URLs.
-
-      This policy prevents the user from loading web pages from blacklisted URLs.
-
-      A URL has the format 'scheme://host:port/path'.
-      The optional scheme can be http, https or ftp. Only this scheme will be blocked; if none is specified, all schemes are blocked.
-      The host can be a hostname or an IP address. Sub-domains of a hostname will also be blocked. To prevent blocking sub-domains, include a '.' before the hostname. The special hostname '*' will block all domains.
-      The optional port is a valid port number from 1 to 65535. If none is specified, all ports are blocked.
-      If the optional path is specified, only paths with that prefix will be blocked.
-
-      Exceptions can be defined in the URL whitelist policy. These policies are limited to 100 entries; subsequent entries will be ignored.
-
-      If this policy is not set no URL will be blacklisted in the browser.</translation>
 <translation id="3864818549971490907"> setting</translation>
 <translation id="7151201297958662315">Determines whether a <ph name="PRODUCT_NAME"/> process is started on OS login and keeps running when the last browser window is closed, allowing background apps to remain active. The background process displays an icon in the system tray and can always be closed from there.
 
@@ -446,12 +462,24 @@
 <translation id="2646290749315461919">Allows you to set whether websites are allowed to track the users' physical location. Tracking the users' physical location can be allowed by default, denied by default or the user can be asked every time a website requests the physical location.
 
           If this policy is left not set, 'AskGeolocation' will be used and the user will be able to change it.</translation>
+<translation id="3309789488678647282">Disables Drive</translation>
 <translation id="5770738360657678870">Dev channel (may be unstable)</translation>
 <translation id="2959898425599642200">Proxy bypass rules</translation>
 <translation id="1098794473340446990">Report device activity times.
 
       If this setting is set to True, enrolled devices will report time periods when a user is active on the device. If this setting is not set or set to False, device activity times will not be recorded or reported.</translation>
 <translation id="896575211736907134">Incognito mode forced.</translation>
+<translation id="817455428376641507">Allows access to the listed URLs, as exceptions to the URL blacklist.
+
+      See the description of the URL blacklist policy for the format of entries of this list.
+
+      This policy can be used to open exceptions to restrictive blacklists. For example, '*' can be blacklisted to block all requests, and this policy can be used to allow access to a limited list of URLs. It can be used to open exceptions to certain schemes, subdomains of other domains, ports or specific paths.
+
+      The most specific filter will determine if a URL is blocked or allowed. The whitelist takes precedence over the blacklist.
+
+      This policy is limited to 1000 entries; subsequent entries will be ignored.
+
+      If this policy is not set there will be no exceptions to the blacklist from the 'URLBlacklist' policy.</translation>
 <translation id="6177482277304066047">Sets a target version for Auto Updates.
 
       Specifies the prefix of a target version <ph name="PRODUCT_OS_NAME"/> should update to. If the device is running a version that's before the specified prefix, it will update to the latest version with the given prefix. If the device is already on a later version, there is no effect (i.e. no downgrades are performed) and the device will remain on the current version. The prefix format works component-wise as is demonstrated in the following example:
@@ -503,6 +531,13 @@
 
       If this policy is disabled or left unconfigured the policy for storing site data is determined by the DefaultCookiesSetting policy.</translation>
 <translation id="2824715612115726353">Enable Incognito mode</translation>
+<translation id="1057535219415338480">Enables network prediction in <ph name="PRODUCT_NAME"/> and prevents users from changing this setting.
+
+      This controls not only DNS prefetching but also TCP and SSL preconnection and prerendering of web pages. The policy name refers to DNS prefetching for historical reasons.
+
+      If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME"/>.
+
+      If this policy is left not set, this will be enabled but the user will be able to change it.</translation>
 <translation id="1757688868319862958">Allows <ph name="PRODUCT_NAME"/> to run plug-ins that require authorisation. If you enable this setting, plug-ins that are not outdated always run. If this setting is disabled or not set, users will be asked for permission to run plug-ins that require authorisation. These are plug-ins that can compromise security.</translation>
 <translation id="6392973646875039351">Enables <ph name="PRODUCT_NAME"/>'s Auto-fill feature and allows users to auto-complete web forms using previously stored information such as address or credit card information.
 
@@ -520,9 +555,6 @@
           This policy is optional. If not set, no instant search results will be provided.
 
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
-<translation id="4126767310980686012">Disables Google Docs syncing when set to True. In that case, no data is uploaded to Google Docs.
-
-          If not set or set to False, then users will be able to transfer files to Google Docs.</translation>
 <translation id="6693751878507293182">If you set this setting to enabled the automatic search and installation of missing plug-ins will be disabled in <ph name="PRODUCT_NAME"/>.
 
       Setting this option to disabled or leave it unset the plug-in finder will be active.</translation>
@@ -602,19 +634,9 @@
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultJavaScriptSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
 <translation id="538108065117008131">Allow <ph name="PRODUCT_FRAME_NAME"/> to handle the following content types.</translation>
-<translation id="717221064259627503">Configures the directory that <ph name="PRODUCT_NAME"/> will use for storing cached files on the disk.
-
-      If you set this policy, <ph name="PRODUCT_NAME"/> will use the provided directory regardless whether the user has specified the '--disk-cache-dir' flag or not.
-
-      If this policy is left not set the default cache directory will be used and the user will be able to override it with the '--disk-cache-dir' command line flag.</translation>
 <translation id="2312134445771258233">Allows you to configure the pages that are loaded on start-up.
 
 The contents of the list 'URLs to open at start-up' are ignored unless you select 'Open a list of URLs' in 'Action on start-up'.</translation>
-<translation id="2538628396238281971">Configures the directory that <ph name="PRODUCT_NAME"/> will use for downloading files.
-
-      If you set this policy, <ph name="PRODUCT_NAME"/> will use the provided directory regardless whether the user has specified one or enabled the flag to be prompted for download location every time.
-
-      If this policy is left unset, the default download directory will be used and the user will be able to change it.</translation>
 <translation id="7750991880413385988">Open New Tab Page</translation>
 <translation id="741903087521737762">Allows you to specify the behaviour on start-up.
 
@@ -653,17 +675,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="6699880231565102694">Enable two-factor authentication for remote access hosts</translation>
 <translation id="2030905906517501646">Default search provider keyword</translation>
 <translation id="3072045631333522102">Screen saver to be used on the sign-in screen in retail mode</translation>
-<translation id="7393895128271703858">This policy is deprecated, please use DefaultJavaScriptSetting instead.
-
-      Enables JavaScript in <ph name="PRODUCT_NAME"/> and prevents users from changing this setting.
-
-      If this setting is enabled or not configured, web pages can use JavaScript.
-
-      If this setting is disabled, web pages cannot use JavaScript.
-
-      If this policy is left unset, the default value will be used which is enabled and the user will be able to change it.
-
-      If this policy is left unset, this will be enabled but the user will be able to change it.</translation>
 <translation id="8079569179819932120">Specifies which servers should be whitelisted for integrated authentication. Integrated authentication is only enabled when <ph name="PRODUCT_NAME"/> receives an authentication challenge from a proxy or from a server which is in this permitted list.
 
           Separate multiple server names with commas. wild cards (*) are allowed.
@@ -757,11 +768,17 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
       If this setting is enabled, browsing history is not saved.
 
       If this setting is disabled or not set, browsing history is saved.</translation>
+<translation id="3844092002200215574">Configures the directory that <ph name="PRODUCT_NAME"/> will use for storing cached files on the disk.
+
+      If you set this policy, <ph name="PRODUCT_NAME"/> will use the provided directory regardless of whether the user has specified the '--disk-cache-dir' flag or not.
+
+      See http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for a list of variables that can be used.
+
+      If this policy is left not set the default cache directory will be used and the user will be able to override it with the '--disk-cache-dir' command line flag.</translation>
 <translation id="7202926611616207807">Allow all sites to set local data.</translation>
 <translation id="3034580675120919256">Allows you to set whether websites are allowed to run JavaScript. Running JavaScript can be either allowed for all websites or denied for all websites.
 
           If this policy is left unset, 'AllowJavaScript' will be used and the user will be able to change it.</translation>
-<translation id="7459381849362539054">Configure GData in <ph name="PRODUCT_OS_NAME"/>.</translation>
 <translation id="3195451902035818945">Specifies whether SSL record splitting should be disabled. Record splitting is a workaround for a weakness in SSL 3.0 and TLS 1.0 but can cause compatibility issues with some HTTPS servers and proxies.
 
       If the policy is not set, or is set to false, then record splitting will be used on SSL/TLS connections which use CBC cipher suites.</translation>
@@ -770,7 +787,6 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
       Determines the set of URLs to be loaded when the demo session is started. This policy will override any other mechanisms for setting the initial URL and thus can only be applied to a session not associated with a particular user.</translation>
 <translation id="5868414965372171132">User-level network configuration</translation>
 <translation id="1221359380862872747">Load specified URLs on demo login</translation>
-<translation id="6771644447620682565">Disables GData</translation>
 <translation id="5493552890659553833">Enables search suggestions in <ph name="PRODUCT_NAME"/>'s Omnibox and prevents users from changing this setting.
 
       If you enable this setting, search suggestions are used.
@@ -804,6 +820,11 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 
       Leaving this policy unset will allow the user to choose whether to show the home button.</translation>
 <translation id="2518231489509538392">Allow playing audio</translation>
+<translation id="7301543427086558500">Specifies a list of alternative URLs that can be used to extract search terms from the search engine. The URLs should contain the string <ph name="SEARCH_TERM_MARKER"/>, which will be used to extract the search terms.
+
+          This policy is optional. If not set, no alternative urls will be used to extract search terms.
+
+          This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
 <translation id="7547044444554936129">Enables <ph name="PRODUCT_NAME"/>'s Instant feature and prevents users from changing this setting.
 
       If you enable this setting, <ph name="PRODUCT_NAME"/> Instant is enabled.
@@ -820,7 +841,6 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 <translation id="5469484020713359236">Allows you to set a list of url patterns that specify sites which are allowed to set cookies.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultCookiesSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
-<translation id="3664573135939978914">Disables GData over Cellular connections</translation>
 <translation id="930930237275114205">Set <ph name="PRODUCT_FRAME_NAME"/> user data directory</translation>
 <translation id="5208240613060747912">Allows you to set a list of url patterns that specify sites which are not allowed to display notifications.
 
@@ -876,9 +896,6 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 <translation id="8908294717014659003">Allows you to set whether websites are allowed to get access to media capture devices. Access to media capture devices can be allowed by default, or the user can be asked every time a website wants to get access to media capture devices.
 
           If this policy is left not set, 'PromptOnAccess' will be used and the user will be able to change it.</translation>
-<translation id="9191982992032190929">Specifies the URL for the enterprise web store. When this setting is enabled, an app will appear on the new tab page which, when clicked, will take the user to the specified URL. Extensions and apps can be installed from this page without extra warnings being presented to the user. If this policy is set, the EnterpriseWebStoreName setting should also be set.
-
-      If this setting is disabled, no enterprise web store app will appear on the new tab page.</translation>
 <translation id="8889026535261486875">Servers that <ph name="PRODUCT_NAME"/> may delegate to.
 
           Separate multiple server names with commas. wild cards (*) are allowed.
@@ -894,11 +911,6 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 <translation id="922540222991413931">Configure extension, app, and user script install sources</translation>
 <translation id="7323896582714668701">Additional command line parameters for <ph name="PRODUCT_NAME"/></translation>
 <translation id="6931242315485576290">Disable synchronisation of data with Google</translation>
-<translation id="36674322972891584">Enables network prediction in <ph name="PRODUCT_NAME"/> and prevents users from changing this setting.
-
-      If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME"/>.
-
-      If this policy is left unset, this will be enabled but the user will be able to change it.</translation>
 <translation id="7006788746334555276">Content Settings</translation>
 <translation id="5142301680741828703">Always render the following URL patterns in <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="4625915093043961294">Configure extension installation whitelist</translation>
@@ -930,6 +942,13 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
       If disabled, no bookmarks are imported.
 
       If it is not set, the user may be asked whether to import or importing may happen automatically.</translation>
+<translation id="5757829681942414015">Configures the directory that <ph name="PRODUCT_NAME"/> will use for storing user data.
+
+      If you set this policy, <ph name="PRODUCT_NAME"/> will use the provided directory regardless of whether the user has specified the '--user-data-dir' flag or not.
+
+      See http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for a list of variables that can be used.
+
+      If this policy is left not set the default profile path will be used and the user will be able to override it with the '--user-data-dir' command line flag.</translation>
 <translation id="5067143124345820993">Login user white list</translation>
 <translation id="3612784419634427880">Incognito mode available.</translation>
 <translation id="2514328368635166290">Specifies the favourite icon URL of the default search provider.
@@ -994,6 +1013,8 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
       If you enable this setting, <ph name="PRODUCT_NAME"/> uses the specified locale. If the configured locale is not supported, 'en-US' is used instead.
 
       If this setting is disabled or not set, <ph name="PRODUCT_NAME"/> uses either the user-specified preferred locale (if configured), the system locale or the default locale 'en-US'.</translation>
+<translation id="1681852583119028071">List of alternate URLs for the default search provider.</translation>
+<translation id="7842869978353666042">Configure Google Drive options</translation>
 <translation id="718956142899066210">Connection types allowed for updates</translation>
 <translation id="6985168562472482191">The name of the enterprise web store, which will appear underneath the app icon on the new tab page. This setting has no effect if EnterpriseWebStoreURL is not set.
 
@@ -1012,11 +1033,13 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
           For detailed examples, visit:
           <ph name="PROXY_HELP_URL"/></translation>
 <translation id="3406810703404235731">Enterprise web store URL</translation>
-<translation id="7782879802219764346">Configures the directory that <ph name="PRODUCT_NAME"/> will use for storing user data.
+<translation id="7690740696284155549">Configures the directory that <ph name="PRODUCT_NAME"/> will use for downloading files.
 
-      If you set this policy, <ph name="PRODUCT_NAME"/> will use the provided directory regardless of whether the user has specified the '--user-data-dir' flag or not.
+      If you set this policy, <ph name="PRODUCT_NAME"/> will use the provided directory regardless of whether the user has specified one or enabled the flag to be prompted for download location every time.
 
-      If this policy is left not set the default profile path will be used and the user will be able to override it with the '--user-data-dir' command line flag.</translation>
+      See http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for a list of variables that can be used.
+
+      If this policy is left not set the default download directory will be used and the user will be able to change it.</translation>
 <translation id="7381326101471547614">Disables use of the SPDY protocol in <ph name="PRODUCT_NAME"/>.
 
       If this policy is enabled the SPDY protocol will not be available in <ph name="PRODUCT_NAME"/>.
@@ -1075,17 +1098,6 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 <translation id="6658245400435704251">Specifies the number of seconds up to which a device may randomly delay its download of an update from the time the update was first pushed out to the server. The device may wait a portion of this time in terms of wall-clock-time and the remaining portion in terms of the number of update checks. In any case, the scatter is upper bounded to a constant amount of time so that a device does not ever get stuck waiting to download an update forever.</translation>
 <translation id="1948757837129151165">Policies for HTTP Authentication</translation>
 <translation id="5946082169633555022">Beta channel</translation>
-<translation id="145467868108778033">Allows you to specify a list of extensions that will be installed silently, without user interaction.
-
-          Each item of the list is a string that contains an extension ID and an update URL delimited by a semicolon (<ph name="SEMICOLON"/>). The extension ID is the 32-letter string found e.g. on <ph name="CHROME_EXTENSIONS_LINK"/> when in developer mode. The update URL should point to an Update Manifest XML document as described at <ph name="LINK_TO_EXTENSION_DOC1"/>. Note that the update URL set in this policy is only used for the initial installation; subsequent updates of the extension will use the update URL indicated in the extension's manifest.
-
-          For each item, <ph name="PRODUCT_NAME"/> will retrieve the extension specified by the extension ID from the update service at the specified update URL and silently install it.
-
-          For example, <ph name="EXTENSION_POLICY_EXAMPLE"/> installs the <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/> extension from the standard Chrome Web Store update URL. For more information about hosting extensions, see: <ph name="LINK_TO_EXTENSION_DOC2"/>.
-
-          Users will be unable to uninstall extensions that are specified by this policy. If you remove an extension from this list, then it will be automatically uninstalled by <ph name="PRODUCT_NAME"/>.
-
-          If this policy is left not set the user can uninstall any extension  in <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="8303314579975657113">Specifies which GSSAPI library to use for HTTP Authentication. You can set either just a library name or a full path.
 
           If no setting is provided, <ph name="PRODUCT_NAME"/> will fall back to using a default library name.</translation>

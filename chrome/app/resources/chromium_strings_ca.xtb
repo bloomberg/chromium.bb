@@ -15,6 +15,7 @@
 <translation id="7128196614940529818">Chromium Frame ja està instal·lat i disponible per a tots els usuaris d'aquest equip. Si voleu instal·lar Chromium Frame a nivell d'usuari, primer cal desinstal·lar la versió de nivell de sistema que un administrador ha instal·lat.</translation>
 <translation id="731644333568559921">Actualitza &amp;Chromium OS</translation>
 <translation id="7421823331379285070">Chromium necessita Windows XP o una versió posterior. És possible que algunes funcions no estiguin disponibles.</translation>
+<translation id="3549345495227188780">Introducció a Chromium OS</translation>
 <translation id="4330297532943865716">S'ha trobat una instal·lació conflictiva de Chromium al sistema. Desinstal·leu l'aplicació i torneu-ho a provar.</translation>
 <translation id="6953661834318318668">Barra d'eines de Chromium</translation>
 <translation id="7097100943370017396">Chromium ja no s'actualitza perquè el sistema operatiu ha quedat obsolet.</translation>
@@ -56,6 +57,7 @@
 <translation id="3197823471738295152">El dispositiu està actualitzat.</translation>
 <translation id="8551886023433311834">L'actualització està a punt d'acabar. Reinicieu el dispositiu per completar-la.</translation>
 <translation id="8353224596138547809">Voleu que Chromium desi la vostra contrasenya per a aquest lloc?</translation>
+<translation id="7339898014177206373">Finestra nova</translation>
 <translation id="3026202950002788510">Aneu a
           <ph name="BEGIN_BOLD"/>
           Aplicacions &gt; Preferències del sistema &gt; Xarxa &gt; Opcions avançades &gt; Servidors intermediaris
@@ -67,7 +69,6 @@
 <translation id="9191268552238695869">Un administrador ha instal·lat Chromium en aquest sistema i està disponible per a tots els usuaris. El Chromium a nivell de sistema substituirà ara la vostra instal·lació a nivell d'usuari.</translation>
 <translation id="3509308970982693815">Tanqueu totes les finestres de Chromium i torneu-ho a provar.</translation>
 <translation id="4077262827416206768">Tanqueu totes les finestres de Chromium i torneu-lo a iniciar perquè s'apliqui aquest canvi.</translation>
-<translation id="9119843944749246249">Copyright  © 2006-2012 Els autors de Chromium. Tots els drets reservats.</translation>
 <translation id="6944967875980567883">Mòduls carregats a Chromium</translation>
 <translation id="118298050220780080">Heu provat d'accedir a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, però el servidor ha presentat un certificat emès per una entitat en què el sistema operatiu del vostre ordinador no confia. Això pot significar que el servidor ha generat les seves pròpies credencials de seguretat, en què Chromium no es pot fiar per a la vostra informació d'identitat. O bé pot significar que un atacant està provant d'interceptar les vostres comunicacions.</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
@@ -89,6 +90,7 @@
 <translation id="2881203820889150661">Chromium no pot crear una drecera a l'aplicació perquè no pot determinar l'entorn actual de l'escriptori.</translation>
 <translation id="4886158514168859177">Aquest equip ja té una versió més recent de Chromium Frame. Si el programari no funciona, desinstal·leu Chromium Frame i torneu-ho a provar.</translation>
 <translation id="911206726377975832">També voleu suprimir les dades de navegació?</translation>
+<translation id="1699664235656412242">Tanqueu totes les finestres de Chromium (incloses les del mode Windows 8) i torneu-ho a provar.</translation>
 <translation id="6734080038664603509">Actualitza &amp;Chromium</translation>
 <translation id="8862326446509486874">No disposeu dels drets necessaris per instal·lar aplicacions al sistema. Proveu de tornar a executar l'instal·lador com a administrador.</translation>
 <translation id="1774152462503052664">Permet que Chromium s'executi en segon pla</translation>
@@ -125,7 +127,9 @@
 <translation id="6717134281241384636">El vostre perfil no es pot utilitzar perquè es va crear amb una versió més recent de Chromium.
 
 És possible que algunes funcions no estiguin disponibles. Especifiqueu un altre directori de perfil o utilitzeu una versió més nova de Chromium.</translation>
+<translation id="4499972362520386277">Copyright 2012 Els autors de Chromium. Tots els drets reservats.</translation>
 <translation id="2712549016134575851">S'ha detectat un conflicte amb una altra aplicació instal·lada.</translation>
+<translation id="4881709374218686648">Anteriorment heu iniciat la sessió amb un compte diferent; si inicieu la sessió, les dades es barrejaran. Podeu crear un usuari de Chromium nou a la <ph name="BEGIN_LINK"/>pàgina de configuració<ph name="END_LINK"/> de les coses de Chromium.</translation>
 <translation id="9013087743919948559">Addició a Chromium</translation>
 <translation id="6212496753309875659">Aquest equip ja té una versió més recent de Chromium. Si el programari no funciona, desinstal·leu Chromium i torneu-ho a provar.</translation>
 <translation id="3014684866565908571">Utilitat de Chromium</translation>

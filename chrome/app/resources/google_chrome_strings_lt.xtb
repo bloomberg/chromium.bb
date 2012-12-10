@@ -42,6 +42,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="8398145039500709259">Naudoti šią „Google“ paskyrą visiems „Chrome“ duomenims sinchronizuoti?</translation>
 <translation id="1779550429052479749">Sistemoje nustatyta prieštaringa „Google Chrome“ arba „Google Chrome“ rėmelio įdiegtis. Pašalinkite ir bandykite dar kartą.</translation>
 <translation id="3555616473548901994">Pašalinimas baigtas.</translation>
+<translation id="4987308747895123092">Uždarykite visus „Google Chrome“ langus (įskaitant atidarytus veikiant „Windows 8“ režimui) ir bandykite dar kartą.</translation>
 <translation id="568643307450491754">Žymes rasite „Chrome“ meniu arba žymių juostoje.</translation>
 <translation id="8556340503434111824">Galima nauja „Google Chrome“ versija, kuri greitesnė nei bet kada.</translation>
 <translation id="4728575227883772061">Diegimas nepavyko dėl nežinomos klaidos. Jei šiuo metu veikia „Google Chrome“, uždarykite ir pabandykite iš naujo.</translation>
@@ -75,6 +76,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="3889417619312448367">Išdiegti „Google Chrome“</translation>
 <translation id="8551886023433311834">Beveik įdiegta naujausia versija! Paleiskite įrenginį iš naujo, kad būtų užbaigtas naujinimas.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/>– „Google Chrome“</translation>
+<translation id="7339898014177206373">Naujas langas</translation>
 <translation id="3026202950002788510">Eikite į
           <ph name="BEGIN_BOLD"/>
           Programos &gt; Sistemos nuostatos &gt; Tinklas &gt; Išplėstinis &gt; Įgaliotieji serveriai
@@ -158,6 +160,7 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
           lape), spustelėkite jį ir įsitikinkite, kad konfigūracija
           nustatyta į „Tiesioginis“.</translation>
 <translation id="3612333635265770873">Modulis tokiu pačiu pavadinimu žinomas kaip prieštaraujantis „Google Chrome“.</translation>
+<translation id="824729746779295798">Autorių teisės priklauso „Google Inc.“, 2012 m. Visos teisės saugomos.</translation>
 <translation id="61852838583753520">Atnaujinti „&amp;Chrome“ OS</translation>
 <translation id="6650142020817594541">Šioje svetainėje rekomenduojamas „Google Chrome“ rėmelis (jau įdiegtas).</translation>
 <translation id="2712549016134575851">Aptiktas prieštaravimas su kita įdiegta programa.</translation>
@@ -168,6 +171,7 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="8669527147644353129">„Google Chrome“ pagalbos priemonė</translation>
 <translation id="870251953148363156">Atnaujinti „&amp;Google Chrome“</translation>
 <translation id="130631256467250065">Pakeitimai įsigalios kitą kartą iš naujo paleidus įrenginį.</translation>
+<translation id="163860049029591106">Darbo su „Chrome“ OS pradžia</translation>
 <translation id="1399397803214730675">Kompiuteryje jau yra naujausia „Google Chrome“ versija. Jei programinė įranga neveikia, pašalinkite „Google Chrome“ ir bandykite dar kartą.</translation>
 <translation id="576822117893741893">Rodyti „Chrome“ meniu</translation>
 <translation id="3444832043240812445">Šiame puslapyje rodoma informacija apie paskutines strigtis, jei <ph name="BEGIN_LINK"/>įgalinote strigčių ataskaitų teikimą<ph name="END_LINK"/>.</translation>
@@ -180,8 +184,8 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="2680623880102270805">„Google Chrome“ negali sukurti programos šaukinio, nes negali nustatyti dabartinės darbalaukio aplinkos.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Interneto naršyklė</translation>
+<translation id="5244325494201350962">Anksčiau buvote prisijungę per kitą paskyrą. Jei prisijungsite, bus susieti jūsų duomenys. Apsvarstykite galimybę susikurti naujo „Chrome“ naudotojo paskyrą „Chrome“ <ph name="BEGIN_LINK"/>nustatymų puslapyje<ph name="END_LINK"/>.</translation>
 <translation id="2189123953385179981">„Google Chrome“ operacinė sistema nepalaiko išorinės programos, skirtos tvarkyti <ph name="SCHEME"/> nuorodas, paleidimo. Nuoroda, dėl kurios pateikta užklausa, yra <ph name="PROTOLINK"/>.</translation>
-<translation id="711654979569750606">© „Google Inc.“, 2006–2012 m. Visos teisės saugomos.</translation>
 <translation id="8205111949707227942">Pasirenkama: padėkite tobulinti „Chrome“ OS automatiškai siųsdami „Google“ naudojimo statistiką ir strigčių ataskaitas.</translation>
 <translation id="7253415505590551024">Šiuo metu vykdomi atsisiuntimai. Ar norite išeiti iš „Google Chrome“ ir atšaukti atsisiuntimus?</translation>
 <translation id="7196020411877309443">Kodėl tai matau?</translation>

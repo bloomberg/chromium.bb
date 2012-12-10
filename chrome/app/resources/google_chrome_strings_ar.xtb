@@ -28,6 +28,7 @@
 <translation id="8398145039500709259">هل تريد استخدام حساب Google هذا لمزامنة جميع عناصر Chrome؟</translation>
 <translation id="1779550429052479749">تم العثور على تثبيت متضارب لـ Google Chrome أو إطار Google Chrome على النظام. الرجاء إزالته وإعادة المحاولة.</translation>
 <translation id="3555616473548901994">تمت عملية الإزالة.</translation>
+<translation id="4987308747895123092">الرجاء إغلاق جميع نوافذ Google Chrome (بما في ذلك تلك المفتوحة في وضع Windows 8) ثم إعادة المحاولة.</translation>
 <translation id="568643307450491754">ابحث عن الإشارات المرجعية في قائمة Chrome أو على شريط الإشارات المرجعية.</translation>
 <translation id="8556340503434111824">يتوفر إصدار جديد من Google Chrome، وهو أسرع بكثير من ذي قبل.</translation>
 <translation id="4728575227883772061">فشلت عملية التثبيت بسبب خطأ غير محدد. إذا كان Google Chrome في حالة التشغيل حاليًا، يُرجى إغلاقه وإعادة المحاولة.</translation>
@@ -52,6 +53,7 @@
 <translation id="3889417619312448367">إزالة Google Chrome</translation>
 <translation id="8551886023433311834">محدّث تقريبًا! أعد تشغيل الجهاز لإنهاء التحديث.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="7339898014177206373">نافذة جديدة</translation>
 <translation id="3026202950002788510">الانتقال إلى <ph name="BEGIN_BOLD"/>Applications (التطبيقات) &gt; System Preferences (تفضيلات النظام) &gt; Network (الشبكة) &gt; Advanced (متقدم) &gt; Proxies (الخوادم الوكيلة)<ph name="END_BOLD"/> وإلغاء تحديد أي خوادم وكيلة سبق تحديدها.</translation>
 <translation id="3282568296779691940">تسجيل الدخول إلى Chrome</translation>
 <translation id="3089968997497233615">يتوفر إصدار جديد وأكثر أمانًا لمتصفح Google Chrome.</translation>
@@ -103,6 +105,7 @@
 <translation id="4561051373932531560">يتيح لك Google Chrome النقر على رقم هاتف على الويب والاتصال به باستخدام Skype!</translation>
 <translation id="4270804660370715583">انتقل إلى <ph name="BEGIN_BOLD"/> قائمة Chrome &gt; <ph name="SETTINGS_TITLE"/> &gt; <ph name="INTERNET_TITLE"/> &gt; &quot;<ph name="OPTIONS_BUTTON"/>&quot; <ph name="END_BOLD"/> (للشبكة المستخدمة حاليًا). وفي حالة وجود الزر <ph name="BEGIN_BOLD"/> &quot;<ph name="PROXY_BUTTON"/>&quot; <ph name="END_BOLD"/>(في علامة التبويب <ph name="BEGIN_BOLD"/> <ph name="NETWORK_TAB"/> <ph name="END_BOLD"/>)، انقر عليه مع التأكد من تعيين التهيئة على &quot;مباشر&quot;.</translation>
 <translation id="3612333635265770873">هناك وحدة تحمل الاسم نفسه ومعروف أنها تتعارض مع Google Chrome.</translation>
+<translation id="824729746779295798">حقوق الطبع والنشر لعام 2012 لصالح شركة Google Inc. جميع الحقوق محفوظة.</translation>
 <translation id="61852838583753520">تحديث ن&amp;ظام التشغيل Google Chrome</translation>
 <translation id="6650142020817594541">يوصي هذا الموقع باستخدام إطار Google Chrome (المثبت من قبل).</translation>
 <translation id="2712549016134575851">تم اكتشاف تعارض مع تطبيق آخر مثبَّت.</translation>
@@ -113,6 +116,7 @@
 <translation id="8669527147644353129">مساعد Google Chrome</translation>
 <translation id="870251953148363156">&amp;تحديث Google Chrome</translation>
 <translation id="130631256467250065">تسري التغييرات في المرة التالية التي تعيد فيها تشغيل الجهاز.</translation>
+<translation id="163860049029591106">البدء في استخدام نظام التشغيل Chrome</translation>
 <translation id="1399397803214730675">يحتوي جهاز الكمبيوتر هذا على نسخة أحدث من Google Chrome. إذا كان برنامج Google Chrome لا يعمل، فالرجاء إزالة Google Chrome وإعادة المحاولة.</translation>
 <translation id="576822117893741893">إظهار قائمة Chrome</translation>
 <translation id="3444832043240812445">تعرض هذه الصفحة فقط معلومات عن الأعطال الحديثة إذا <ph name="BEGIN_LINK"/>مكّنت الإبلاغ عن الأعطال<ph name="END_LINK"/>.</translation>
@@ -125,8 +129,8 @@
 <translation id="2680623880102270805">يتعذر على Google Chrome إنشاء اختصار للتطبيق بسبب عدم التمكن من تحديد بيئة سطح المكتب الحالية.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">متصفح الإنترنت</translation>
+<translation id="5244325494201350962">لقد سجلت الدخول في السابق باستخدام حساب مختلف، سيؤدي تسجيل الدخول إلى دمج بياناتك. جرِّب إنشاء مستخدم Chrome جديد عبر <ph name="BEGIN_LINK"/>صفحة الإعدادات<ph name="END_LINK"/> من أجل عناصر Chrome.</translation>
 <translation id="2189123953385179981">لا يتيح نظام التشغيل Google ChromeOS إمكانية تشغيل تطبيق خارجي للتعامل مع روابط <ph name="SCHEME"/>. والرابط المطلوب هو <ph name="PROTOLINK"/>.</translation>
-<translation id="711654979569750606">حقوق الطبع والنشر © 2006-2012 لصالح شركة Google Inc.‎ جميع الحقوق محفوظة.</translation>
 <translation id="8205111949707227942">اختياري: ساعد في تحسين Chrome OS عن طريق إرسال إحصاءات الاستخدام وتقارير الأعطال إلى Google تلقائيًا.</translation>
 <translation id="7253415505590551024">هناك تنزيلات قيد التقدم. هل تريد الخروج من Google Chrome وإلغاء التنزيلات؟</translation>
 <translation id="7196020411877309443">لماذا أرى مربع الحوار هذا؟</translation>

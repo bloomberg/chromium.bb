@@ -15,6 +15,7 @@
 <translation id="7128196614940529818">このパソコンには既に Chromium Frame がインストールされており、パソコンのすべてのユーザーが使用できます。ユーザー レベルで Chromium Frame をインストールする場合は、管理者がインストールしたシステム レベルの Chromium Frame を最初にアンインストールする必要があります。</translation>
 <translation id="731644333568559921">Chromium OS を更新(&amp;C)</translation>
 <translation id="7421823331379285070">Chromium は、Windows XP 以降が必要です。一部の機能が動作しない場合があります。</translation>
+<translation id="3549345495227188780">Chromium OS のスタート ガイド</translation>
 <translation id="4330297532943865716">システム上に競合している Chromium または Chromium Frame が見つかりました。こちらをアンインストールしてからもう一度お試しください。</translation>
 <translation id="6953661834318318668">Chromium ツールバー</translation>
 <translation id="7097100943370017396">お使いのオペレーティング システムはサポートが終了しているため、今後 Chromium は更新されません。</translation>
@@ -55,6 +56,7 @@
 <translation id="3197823471738295152">お使いの端末は最新の状態です。</translation>
 <translation id="8551886023433311834">更新を完了するには、端末を再起動してください。</translation>
 <translation id="8353224596138547809">Chromium でこのサイトのパスワードを保存しますか？</translation>
+<translation id="7339898014177206373">新しいウィンドウ</translation>
 <translation id="3026202950002788510">以下の順にアクセスします:
           <ph name="BEGIN_BOLD"/>
           [アプリケーション] &gt; [システム環境設定] &gt; [ネットワーク] &gt; [詳細] &gt; [プロキシ]
@@ -66,11 +68,10 @@
 <translation id="9191268552238695869">このパソコンには管理者権限のあるユーザーがインストールしたシステム レベル（パソコンの全ユーザーが利用可）の Chromium があります。ユーザー レベルの Chromium はシステム レベルの Chromium に置き換えられます。</translation>
 <translation id="3509308970982693815">すべての Chromium ウィンドウを閉じてからもう一度お試しください。</translation>
 <translation id="4077262827416206768">変更内容を反映するには、すべての Chromium ウィンドウを閉じてから Chromium を再起動してください。</translation>
-<translation id="9119843944749246249">Copyright © 2006-2012 The Chromium Authors. All Rights Reserved.</translation>
 <translation id="6944967875980567883">Chromium に読み込まれているモジュール</translation>
 <translation id="118298050220780080">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; にアクセスしようとしましたが、サーバーから提示された証明書の発行元は、お使いのパソコンのオペレーティング システムによって信頼されていない発行元です。サーバーが独自のセキュリティ認証情報を生成し、それが Chromium では認証情報として信頼できないものであるか、悪意のあるユーザーが通信を傍受しようとしている可能性があります。</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
-<translation id="3296368748942286671">Chromium を閉じた際にバックグラウンド アプリケーションの処理を続行する</translation>
+<translation id="3296368748942286671">Chromium を閉じた際にバックグラウンド アプリの処理を続行する</translation>
 <translation id="473775607612524610">アップデート</translation>
 <translation id="6055895534982063517">Chromium がさらに速くなりました！最新バージョンをぜひお試しください。</translation>
 <translation id="2407806170074302369">Chromium Frame について...</translation>
@@ -88,6 +89,7 @@
 <translation id="2881203820889150661">Chromium では、現在のデスクトップ環境を特定できないため、アプリケーション ショートカットを作成できません。</translation>
 <translation id="4886158514168859177">新しいバージョンの Chromium Frame が既にインストールされています。ソフトウェアが動作しない場合は、Chromium Frame をアンインストールしてからもう一度お試しください。</translation>
 <translation id="911206726377975832">閲覧データも削除しますか？</translation>
+<translation id="1699664235656412242">Chromium のウィンドウ（Windows 8 モードのウィンドウを含む）をすべて閉じてからもう一度お試しください。</translation>
 <translation id="6734080038664603509">Chromium を更新(&amp;C)</translation>
 <translation id="8862326446509486874">権限が不十分なためシステムレベルのインストールができません。管理者権限でインストールしてください。</translation>
 <translation id="1774152462503052664">Chromium をバックグラウンドで実行する</translation>
@@ -123,7 +125,9 @@
 <translation id="6717134281241384636">バージョンが新しい Chromium のプロフィールは使用できません。
 
 一部の機能が利用できない可能性があります。別の場所のプロフィールを指定するか、新しいバージョンの Chromium をご使用ください。</translation>
+<translation id="4499972362520386277">Copyright 2012 The Chromium Authors. All rights reserved.</translation>
 <translation id="2712549016134575851">インストールされている別のアプリケーションとの競合が検出されました。</translation>
+<translation id="4881709374218686648">前回、別のアカウントでログインしていたため、今回ログインするとデータが統合されます。Chromium データの<ph name="BEGIN_LINK"/>設定ページ<ph name="END_LINK"/>で新しい Chromium ユーザーを作成することをおすすめします。</translation>
 <translation id="9013087743919948559">Chromium に追加</translation>
 <translation id="6212496753309875659">新しいバージョンの Chromium が既にインストールされています。ソフトウェアが動作しない場合は、Chromium をアンインストールしてからもう一度お試しください。</translation>
 <translation id="3014684866565908571">Chromium Utility</translation>
