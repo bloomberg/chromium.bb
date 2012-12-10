@@ -62,8 +62,7 @@ static const char* kKeyTests[] = {
   "keyrange-required-arguments.html",
   "key-sort-order-across-types.html",
   "key-sort-order-date.html",
-  // Flaky: http://crbug.com/159158
-  // "key-type-array.html",
+  "key-type-array.html",
   "key-type-infinity.html",
   "invalid-keys.html",
   NULL
