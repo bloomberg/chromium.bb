@@ -226,6 +226,8 @@ class ShillServiceClientStubImpl : public ShillServiceClient,
 
   virtual void GetProperties(const dbus::ObjectPath& service_path,
                              const DictionaryValueCallback& callback) OVERRIDE {
+    if (callback.is_null())
+      return;
     MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&ShillServiceClientStubImpl::PassStubDictionaryValue,
@@ -246,11 +248,13 @@ class ShillServiceClientStubImpl : public ShillServiceClient,
       return;
     }
     dict->SetWithoutPathExpansion(name, value.DeepCopy());
-    MessageLoop::current()->PostTask(FROM_HERE, callback);
     MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&ShillServiceClientStubImpl::NotifyObserversPropertyChanged,
                    weak_ptr_factory_.GetWeakPtr(), service_path, name));
+    if (callback.is_null())
+      return;
+    MessageLoop::current()->PostTask(FROM_HERE, callback);
   }
 
   virtual void ClearProperty(const dbus::ObjectPath& service_path,
@@ -264,11 +268,13 @@ class ShillServiceClientStubImpl : public ShillServiceClient,
       return;
     }
     dict->Remove(name, NULL);
-    MessageLoop::current()->PostTask(FROM_HERE, callback);
     MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&ShillServiceClientStubImpl::NotifyObserversPropertyChanged,
                    weak_ptr_factory_.GetWeakPtr(), service_path, name));
+    if (callback.is_null())
+      return;
+    MessageLoop::current()->PostTask(FROM_HERE, callback);
   }
 
   virtual void ClearProperties(const dbus::ObjectPath& service_path,
@@ -287,10 +293,6 @@ class ShillServiceClientStubImpl : public ShillServiceClient,
       dict->Remove(*iter, NULL);
       results->AppendBoolean(true);
     }
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&ShillServiceClientStubImpl::PassStubListValue,
-                   callback, base::Owned(results.release())));
     for (std::vector<std::string>::const_iterator iter = names.begin();
          iter != names.end(); ++iter) {
       MessageLoop::current()->PostTask(
@@ -299,23 +301,58 @@ class ShillServiceClientStubImpl : public ShillServiceClient,
               &ShillServiceClientStubImpl::NotifyObserversPropertyChanged,
               weak_ptr_factory_.GetWeakPtr(), service_path, *iter));
     }
+    if (callback.is_null())
+      return;
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&ShillServiceClientStubImpl::PassStubListValue,
+                   callback, base::Owned(results.release())));
   }
 
   virtual void Connect(const dbus::ObjectPath& service_path,
                        const base::Closure& callback,
                        const ErrorCallback& error_callback) OVERRIDE {
-    MessageLoop::current()->PostTask(FROM_HERE, callback);
+    // Set Associating
+    base::StringValue associating_value(flimflam::kStateAssociation);
+    SetServiceProperty(service_path.value(),
+                       flimflam::kStateProperty,
+                       associating_value);
+    // Set Online after a delay
+    const int kConnectDelaySeconds = 5;
+    base::StringValue online_value(flimflam::kStateOnline);
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&ShillServiceClientStubImpl::SetProperty,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   service_path,
+                   flimflam::kStateProperty,
+                   online_value,
+                   callback, error_callback),
+        base::TimeDelta::FromSeconds(kConnectDelaySeconds));
   }
 
   virtual void Disconnect(const dbus::ObjectPath& service_path,
                           const base::Closure& callback,
                           const ErrorCallback& error_callback) OVERRIDE {
-    MessageLoop::current()->PostTask(FROM_HERE, callback);
+    // Set Idle after a delay
+    const int kConnectDelaySeconds = 2;
+    base::StringValue idle_value(flimflam::kStateIdle);
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&ShillServiceClientStubImpl::SetProperty,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   service_path,
+                   flimflam::kStateProperty,
+                   idle_value,
+                   callback, error_callback),
+        base::TimeDelta::FromSeconds(kConnectDelaySeconds));
   }
 
   virtual void Remove(const dbus::ObjectPath& service_path,
                       const base::Closure& callback,
                       const ErrorCallback& error_callback) OVERRIDE {
+    if (callback.is_null())
+      return;
     MessageLoop::current()->PostTask(FROM_HERE, callback);
   }
 
@@ -324,6 +361,8 @@ class ShillServiceClientStubImpl : public ShillServiceClient,
       const std::string& carrier,
       const base::Closure& callback,
       const ErrorCallback& error_callback) OVERRIDE {
+    if (callback.is_null())
+      return;
     MessageLoop::current()->PostTask(FROM_HERE, callback);
   }
 

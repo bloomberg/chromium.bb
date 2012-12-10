@@ -27,6 +27,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/chromeos/chromeos_version.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/utf_string_conversions.h"
@@ -67,6 +68,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/dbus/root_power_manager_client.h"
@@ -629,8 +631,18 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   virtual void ConnectToNetwork(const std::string& network_id) OVERRIDE {
     NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
     Network* network = crosnet->FindNetworkByPath(network_id);
-    if (network)
-      network_menu_->ConnectToNetwork(network);
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            chromeos::switches::kEnableNewNetworkHandlers)) {
+      // If the new network handlers are enabled, this should always trigger
+      // displaying the network settings UI.
+      if (network)
+        network_menu_->ShowTabbedNetworkSettings(network);
+      else
+        ShowNetworkSettings();
+    } else {
+      if (network)
+        network_menu_->ConnectToNetwork(network);
+    }
   }
 
   virtual void RequestNetworkScan() OVERRIDE {

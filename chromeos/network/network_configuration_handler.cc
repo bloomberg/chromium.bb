@@ -20,6 +20,8 @@
 
 namespace chromeos {
 
+static NetworkConfigurationHandler* g_network_configuration_handler = NULL;
+
 namespace {
 
 const char kLogModule[] = "NetworkConfigurationHandler";
@@ -103,6 +105,26 @@ NetworkConfigurationHandler::NetworkConfigurationHandler() {
 }
 
 NetworkConfigurationHandler::~NetworkConfigurationHandler() {
+}
+
+// static
+void NetworkConfigurationHandler::Initialize() {
+  CHECK(!g_network_configuration_handler);
+  g_network_configuration_handler = new NetworkConfigurationHandler();
+}
+
+// static
+void NetworkConfigurationHandler::Shutdown() {
+  CHECK(g_network_configuration_handler);
+  delete g_network_configuration_handler;
+  g_network_configuration_handler = NULL;
+}
+
+// static
+NetworkConfigurationHandler* NetworkConfigurationHandler::Get() {
+  CHECK(g_network_configuration_handler)
+      << "NetworkConfigurationHandler::Get() called before Initialize()";
+  return g_network_configuration_handler;
 }
 
 void NetworkConfigurationHandler::GetProperties(

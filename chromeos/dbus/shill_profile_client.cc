@@ -140,6 +140,8 @@ class ShillProfileClientStubImpl : public ShillProfileClient {
       const dbus::ObjectPath& profile_path,
       const DictionaryValueCallbackWithoutStatus& callback,
       const ErrorCallback& error_callback) OVERRIDE {
+    if (callback.is_null())
+      return;
     MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&ShillProfileClientStubImpl::PassEmptyDictionaryValue,
@@ -151,6 +153,8 @@ class ShillProfileClientStubImpl : public ShillProfileClient {
                         const std::string& entry_path,
                         const DictionaryValueCallbackWithoutStatus& callback,
                         const ErrorCallback& error_callback) OVERRIDE {
+    if (callback.is_null())
+      return;
     MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&ShillProfileClientStubImpl::PassEmptyDictionaryValue,
@@ -162,6 +166,8 @@ class ShillProfileClientStubImpl : public ShillProfileClient {
                            const std::string& entry_path,
                            const base::Closure& callback,
                            const ErrorCallback& error_callback) OVERRIDE {
+    if (callback.is_null())
+      return;
     MessageLoop::current()->PostTask(FROM_HERE, callback);
   }
 

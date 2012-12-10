@@ -175,8 +175,8 @@ class ShillManagerClientImpl : public ShillManagerClient {
 // Used to compare values for finding entries to erase in a ListValue.
 // (ListValue only implements a const_iterator version of Find).
 struct ValueEquals {
-  ValueEquals(const Value* first) : first_(first) {}
-  bool operator ()(const Value* second) const {
+  explicit ValueEquals(const Value* first) : first_(first) {}
+  bool operator()(const Value* second) const {
     return first_->Equals(second);
   }
   const Value* first_;
@@ -208,6 +208,8 @@ class ShillManagerClientStubImpl : public ShillManagerClient,
   }
 
   virtual void GetProperties(const DictionaryValueCallback& callback) OVERRIDE {
+    if (callback.is_null())
+      return;
     MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(
             &ShillManagerClientStubImpl::PassStubProperties,
@@ -224,16 +226,20 @@ class ShillManagerClientStubImpl : public ShillManagerClient,
                            const base::Closure& callback,
                            const ErrorCallback& error_callback) OVERRIDE {
     stub_properties_.Set(name, value.DeepCopy());
+    if (callback.is_null())
+      return;
     MessageLoop::current()->PostTask(FROM_HERE, callback);
   }
 
   virtual void RequestScan(const std::string& type,
                            const base::Closure& callback,
                            const ErrorCallback& error_callback) OVERRIDE {
-    MessageLoop::current()->PostTask(FROM_HERE, callback);
     const int kScanDelayMilliseconds = 3000;
     CallNotifyObserversPropertyChanged(
         flimflam::kServicesProperty, kScanDelayMilliseconds);
+    if (callback.is_null())
+      return;
+    MessageLoop::current()->PostTask(FROM_HERE, callback);
   }
 
   virtual void EnableTechnology(
@@ -243,15 +249,20 @@ class ShillManagerClientStubImpl : public ShillManagerClient,
     base::ListValue* enabled_list = NULL;
     if (!stub_properties_.GetListWithoutPathExpansion(
             flimflam::kEnabledTechnologiesProperty, &enabled_list)) {
-      MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(error_callback, "StubError", "Property not found"));
+      if (!error_callback.is_null()) {
+        MessageLoop::current()->PostTask(FROM_HERE, callback);
+        MessageLoop::current()->PostTask(
+            FROM_HERE,
+            base::Bind(error_callback, "StubError", "Property not found"));
+      }
       return;
     }
-    MessageLoop::current()->PostTask(FROM_HERE, callback);
     enabled_list->AppendIfNotPresent(new base::StringValue(type));
     CallNotifyObserversPropertyChanged(
         flimflam::kEnabledTechnologiesProperty, 0);
+    if (callback.is_null())
+      return;
+    MessageLoop::current()->PostTask(FROM_HERE, callback);
   }
 
   virtual void DisableTechnology(
@@ -261,22 +272,28 @@ class ShillManagerClientStubImpl : public ShillManagerClient,
     base::ListValue* enabled_list = NULL;
     if (!stub_properties_.GetListWithoutPathExpansion(
             flimflam::kEnabledTechnologiesProperty, &enabled_list)) {
-      MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(error_callback, "StubError", "Property not found"));
+      if (!error_callback.is_null()) {
+        MessageLoop::current()->PostTask(
+            FROM_HERE,
+            base::Bind(error_callback, "StubError", "Property not found"));
+      }
       return;
     }
-    MessageLoop::current()->PostTask(FROM_HERE, callback);
     base::StringValue type_value(type);
     enabled_list->Remove(type_value, NULL);
     CallNotifyObserversPropertyChanged(
         flimflam::kEnabledTechnologiesProperty, 0);
+    if (callback.is_null())
+      return;
+    MessageLoop::current()->PostTask(FROM_HERE, callback);
   }
 
   virtual void ConfigureService(
       const base::DictionaryValue& properties,
       const base::Closure& callback,
       const ErrorCallback& error_callback) OVERRIDE {
+    if (callback.is_null())
+      return;
     MessageLoop::current()->PostTask(FROM_HERE, callback);
   }
 
@@ -284,6 +301,8 @@ class ShillManagerClientStubImpl : public ShillManagerClient,
       const base::DictionaryValue& properties,
       const ObjectPathCallback& callback,
       const ErrorCallback& error_callback) OVERRIDE {
+    if (callback.is_null())
+      return;
     MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(callback, dbus::ObjectPath()));
   }

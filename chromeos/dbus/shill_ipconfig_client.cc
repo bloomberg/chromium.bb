@@ -190,6 +190,8 @@ class ShillIPConfigClientStubImpl : public ShillIPConfigClient {
 
   virtual void GetProperties(const dbus::ObjectPath& ipconfig_path,
                              const DictionaryValueCallback& callback) OVERRIDE {
+    if (callback.is_null())
+      return;
     MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(&ShillIPConfigClientStubImpl::PassProperties,
                               weak_ptr_factory_.GetWeakPtr(),
@@ -205,6 +207,8 @@ class ShillIPConfigClientStubImpl : public ShillIPConfigClient {
                            const std::string& name,
                            const base::Value& value,
                            const VoidDBusMethodCallback& callback) OVERRIDE {
+    if (callback.is_null())
+      return;
     MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS));
   }
@@ -212,12 +216,16 @@ class ShillIPConfigClientStubImpl : public ShillIPConfigClient {
   virtual void ClearProperty(const dbus::ObjectPath& ipconfig_path,
                              const std::string& name,
                              const VoidDBusMethodCallback& callback) OVERRIDE {
+    if (callback.is_null())
+      return;
     MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS));
   }
 
   virtual void Remove(const dbus::ObjectPath& ipconfig_path,
                       const VoidDBusMethodCallback& callback) OVERRIDE {
+    if (callback.is_null())
+      return;
     MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS));
   }

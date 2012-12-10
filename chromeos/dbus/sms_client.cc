@@ -99,6 +99,8 @@ class SMSClientStubImpl : public SMSClient {
     sms->SetString("Timestamp", "Fri Jun  8 13:26:04 EDT 2012");
 
     // Run callback asynchronously.
+    if (callback.is_null())
+      return;
     MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&SMSClientStubImpl::OnGetAll,

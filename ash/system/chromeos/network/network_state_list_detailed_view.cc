@@ -14,6 +14,7 @@
 #include "ash/system/tray/tray_views.h"
 #include "base/utf_string_conversions.h"
 #include "chromeos/network/device_state.h"
+#include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "grit/ash_resources.h"
@@ -234,8 +235,21 @@ void NetworkStateListDetailedView::ClickedOn(views::View* sender) {
     std::map<views::View*, std::string>::iterator found =
         network_map_.find(sender);
     if (found != network_map_.end()) {
-      std::string network_id = found->second;
-      delegate->ConnectToNetwork(network_id);
+      std::string service_path = found->second;
+      const chromeos::NetworkState* network =
+          chromeos::NetworkStateHandler::Get()->GetNetworkState(service_path);
+      if (!network)
+        return;
+      if (!network->IsConnectedState()) {
+        chromeos::NetworkConfigurationHandler::Get()->Connect(
+            service_path,
+            base::Closure(),
+            chromeos::network_handler::ErrorCallback());
+      } else {
+        // This will show the settings UI for a connected network.
+        // TODO(stevenjb): Change the API to explicitly show network settings.
+        delegate->ConnectToNetwork(service_path);
+      }
     }
   }
 }

@@ -237,6 +237,8 @@ class ShillDeviceClientStubImpl : public ShillDeviceClient,
 
   virtual void GetProperties(const dbus::ObjectPath& device_path,
                              const DictionaryValueCallback& callback) OVERRIDE {
+    if (callback.is_null())
+      return;
     MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&ShillDeviceClientStubImpl::PassStubDeviceProperties,
@@ -266,18 +268,22 @@ class ShillDeviceClientStubImpl : public ShillDeviceClient,
     if (!stub_devices_.GetDictionary(device_path.value(), &device_properties)) {
       std::string error_name("org.chromium.flimflam.Error.Failure");
       std::string error_message("Failed");
-      MessageLoop::current()->PostTask(FROM_HERE,
-                                       base::Bind(error_callback,
-                                                  error_name,
-                                                  error_message));
+      if (!error_callback.is_null()) {
+        MessageLoop::current()->PostTask(FROM_HERE,
+                                         base::Bind(error_callback,
+                                                    error_name,
+                                                    error_message));
+      }
       return;
     }
     device_properties->Set(name, value.DeepCopy());
-    MessageLoop::current()->PostTask(FROM_HERE, callback);
     MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&ShillDeviceClientStubImpl::NotifyObserversPropertyChanged,
                    weak_ptr_factory_.GetWeakPtr(), device_path, name));
+    if (callback.is_null())
+      return;
+    MessageLoop::current()->PostTask(FROM_HERE, callback);
   }
 
   virtual void ClearProperty(const dbus::ObjectPath& device_path,
@@ -296,6 +302,8 @@ class ShillDeviceClientStubImpl : public ShillDeviceClient,
       const dbus::ObjectPath& device_path,
       const std::string& method,
       const ObjectPathDBusMethodCallback& callback) OVERRIDE {
+    if (callback.is_null())
+      return;
     MessageLoop::current()->PostTask(FROM_HERE,
                                      base::Bind(callback,
                                                 DBUS_METHOD_CALL_SUCCESS,
@@ -307,6 +315,8 @@ class ShillDeviceClientStubImpl : public ShillDeviceClient,
                           bool require,
                           const base::Closure& callback,
                           const ErrorCallback& error_callback) OVERRIDE {
+    if (callback.is_null())
+      return;
     MessageLoop::current()->PostTask(FROM_HERE, callback);
   }
 
@@ -314,6 +324,8 @@ class ShillDeviceClientStubImpl : public ShillDeviceClient,
                         const std::string& pin,
                         const base::Closure& callback,
                         const ErrorCallback& error_callback) OVERRIDE {
+    if (callback.is_null())
+      return;
     MessageLoop::current()->PostTask(FROM_HERE, callback);
   }
 
@@ -322,6 +334,8 @@ class ShillDeviceClientStubImpl : public ShillDeviceClient,
                           const std::string& pin,
                           const base::Closure& callback,
                           const ErrorCallback& error_callback) OVERRIDE {
+    if (callback.is_null())
+      return;
     MessageLoop::current()->PostTask(FROM_HERE, callback);
   }
 
@@ -330,6 +344,8 @@ class ShillDeviceClientStubImpl : public ShillDeviceClient,
                          const std::string& new_pin,
                          const base::Closure& callback,
                          const ErrorCallback& error_callback) OVERRIDE {
+    if (callback.is_null())
+      return;
     MessageLoop::current()->PostTask(FROM_HERE, callback);
   }
 
@@ -337,6 +353,8 @@ class ShillDeviceClientStubImpl : public ShillDeviceClient,
                         const std::string& network_id,
                         const base::Closure& callback,
                         const ErrorCallback& error_callback) OVERRIDE {
+    if (callback.is_null())
+      return;
     MessageLoop::current()->PostTask(FROM_HERE, callback);
   }
 
@@ -344,6 +362,8 @@ class ShillDeviceClientStubImpl : public ShillDeviceClient,
                           const std::string& carrier,
                           const base::Closure& callback,
                           const ErrorCallback& error_callback) OVERRIDE {
+    if (callback.is_null())
+      return;
     MessageLoop::current()->PostTask(FROM_HERE, callback);
   }
 
@@ -406,6 +426,8 @@ class ShillDeviceClientStubImpl : public ShillDeviceClient,
   // Posts a task to run a void callback with status code |status|.
   void PostVoidCallback(const VoidDBusMethodCallback& callback,
                         DBusMethodCallStatus status) {
+    if (callback.is_null())
+      return;
     MessageLoop::current()->PostTask(FROM_HERE,
                                      base::Bind(callback, status));
   }

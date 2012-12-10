@@ -40,8 +40,16 @@ namespace chromeos {
 
 class CHROMEOS_EXPORT NetworkConfigurationHandler {
  public:
-  NetworkConfigurationHandler();
   ~NetworkConfigurationHandler();
+
+  // Sets the global instance. Must be called before any calls to Get().
+  static void Initialize();
+
+  // Destroys the global instance.
+  static void Shutdown();
+
+  // Gets the global instance. Initialize() must be called first.
+  static NetworkConfigurationHandler* Get();
 
   // Gets the properties of the network with id |service_path|. See note on
   // |callback| and |error_callback|, in class description above.
@@ -103,6 +111,9 @@ class CHROMEOS_EXPORT NetworkConfigurationHandler {
       const network_handler::ErrorCallback& error_callback) const;
 
  private:
+  friend class NetworkConfigurationHandlerTest;
+  NetworkConfigurationHandler();
+
   DISALLOW_COPY_AND_ASSIGN(NetworkConfigurationHandler);
 };
 

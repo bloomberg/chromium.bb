@@ -1181,6 +1181,8 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
 void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
     const std::string& service_path,
     const base::DictionaryValue* shill_properties) {
+  if (!shill_properties)
+    return;
   chromeos::Network* network = cros_->FindNetworkByPath(service_path);
   if (!network)
     return;
@@ -1201,6 +1203,8 @@ void InternetOptionsHandler::PopulateIPConfigsCallback(
     base::DictionaryValue* shill_properties,
     const chromeos::NetworkIPConfigVector& ipconfigs,
     const std::string& hardware_address) {
+  if (!shill_properties)
+    return;
   if (VLOG_IS_ON(2)) {
     std::string properties_json;
     base::JSONWriter::WriteWithOptions(shill_properties,

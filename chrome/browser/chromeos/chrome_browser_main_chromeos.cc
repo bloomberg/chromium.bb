@@ -82,6 +82,7 @@
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/display/output_configurator.h"
+#include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/power/power_state_override.h"
@@ -274,6 +275,7 @@ class DBusServices {
       return;
     chromeos::network_event_log::Initialize();
     chromeos::NetworkStateHandler::Initialize();
+    chromeos::NetworkConfigurationHandler::Initialize();
     network_handlers_initialized_ = true;
   }
 
@@ -288,6 +290,7 @@ class DBusServices {
 
     if (network_handlers_initialized_) {
       chromeos::NetworkStateHandler::Shutdown();
+      chromeos::NetworkConfigurationHandler::Shutdown();
       chromeos::network_event_log::Shutdown();
     }
 
