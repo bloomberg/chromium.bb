@@ -44,7 +44,18 @@ class DeviceLocalAccountPolicyServiceTest
   virtual void SetUp() OVERRIDE {
     DeviceSettingsTestBase::SetUp();
 
-    expected_policy_map_.Set(key::kDisableSpdy, POLICY_LEVEL_MANDATORY,
+    // Values implicitly enforced for public accounts.
+    expected_policy_map_.Set(key::kShelfAutoHideBehavior,
+                             POLICY_LEVEL_MANDATORY,
+                             POLICY_SCOPE_USER,
+                             Value::CreateStringValue("Never"));
+    expected_policy_map_.Set(key::kShowLogoutButtonInTray,
+                             POLICY_LEVEL_MANDATORY,
+                             POLICY_SCOPE_USER,
+                             Value::CreateBooleanValue(true));
+    // Explicitly set value.
+    expected_policy_map_.Set(key::kDisableSpdy,
+                             POLICY_LEVEL_MANDATORY,
                              POLICY_SCOPE_USER,
                              Value::CreateBooleanValue(true));
 
@@ -408,6 +419,21 @@ TEST_F(DeviceLocalAccountPolicyProviderTest, Policy) {
   expected_policy_bundle.Get(POLICY_DOMAIN_CHROME, "").Set(
       key::kDisableSpdy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
       Value::CreateBooleanValue(false));
+  EXPECT_TRUE(expected_policy_bundle.Equals(provider_.policies()));
+
+  // Any values set for the |ShelfAutoHideBehavior| and |ShowLogoutButtonInTray|
+  // policies should be overridden.
+  EXPECT_CALL(provider_observer_, OnUpdatePolicy(&provider_)).Times(AtLeast(1));
+  device_local_account_policy_.payload().mutable_shelfautohidebehavior()->
+      set_value("Always");
+  device_local_account_policy_.payload().mutable_showlogoutbuttonintray()->
+      set_value(false);
+  device_local_account_policy_.Build();
+  device_settings_test_helper_.set_device_local_account_policy_blob(
+      PolicyBuilder::kFakeUsername, device_local_account_policy_.GetBlob());
+  broker->core()->store()->Load();
+  FlushDeviceSettings();
+  Mock::VerifyAndClearExpectations(&provider_observer_);
   EXPECT_TRUE(expected_policy_bundle.Equals(provider_.policies()));
 
   // Account disappears, policy should stay in effect.
