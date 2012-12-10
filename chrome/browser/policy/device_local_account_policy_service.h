@@ -93,6 +93,10 @@ class DeviceLocalAccountPolicyService
   DeviceLocalAccountPolicyBroker* GetBrokerForAccount(
       const std::string& account_id);
 
+  // Indicates whether policy has been successfully fetched for the given
+  // account.
+  bool IsPolicyAvailableForAccount(const std::string& account_id);
+
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 

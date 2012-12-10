@@ -105,6 +105,12 @@ DeviceLocalAccountPolicyBroker*
   return entry->second;
 }
 
+bool DeviceLocalAccountPolicyService::IsPolicyAvailableForAccount(
+    const std::string& account_id) {
+  DeviceLocalAccountPolicyBroker* broker = GetBrokerForAccount(account_id);
+  return broker && broker->core()->store()->is_managed();
+}
+
 void DeviceLocalAccountPolicyService::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }

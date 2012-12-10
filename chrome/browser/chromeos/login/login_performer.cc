@@ -19,6 +19,8 @@
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/policy/device_local_account_policy_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -330,8 +332,17 @@ void LoginPerformer::LoginOffTheRecord() {
 }
 
 void LoginPerformer::LoginAsPublicAccount(const std::string& username) {
-  // TODO(bartfab): Ensure that policy is available for the account. Refuse to
-  // log in otherwise.
+  // Login is not allowed if policy could not be loaded for the account.
+  policy::DeviceLocalAccountPolicyService* policy_service =
+      g_browser_process->browser_policy_connector()->
+          GetDeviceLocalAccountPolicyService();
+  if (!policy_service ||
+      !policy_service->IsPolicyAvailableForAccount(username)) {
+    DCHECK(delegate_);
+    if (delegate_)
+      delegate_->PolicyLoadFailed();
+    return;
+  }
 
   authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
   BrowserThread::PostTask(

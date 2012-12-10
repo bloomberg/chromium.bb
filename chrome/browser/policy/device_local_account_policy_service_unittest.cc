@@ -117,6 +117,8 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, LoadNoPolicy) {
   EXPECT_EQ(CloudPolicyStore::STATUS_LOAD_ERROR,
             broker->core()->store()->status());
   EXPECT_TRUE(broker->core()->store()->policy_map().empty());
+  EXPECT_FALSE(service_.IsPolicyAvailableForAccount(
+      PolicyBuilder::kFakeUsername));
 }
 
 TEST_F(DeviceLocalAccountPolicyServiceTest, LoadValidationFailure) {
@@ -138,6 +140,8 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, LoadValidationFailure) {
   EXPECT_EQ(CloudPolicyStore::STATUS_VALIDATION_ERROR,
             broker->core()->store()->status());
   EXPECT_TRUE(broker->core()->store()->policy_map().empty());
+  EXPECT_FALSE(service_.IsPolicyAvailableForAccount(
+      PolicyBuilder::kFakeUsername));
 }
 
 TEST_F(DeviceLocalAccountPolicyServiceTest, LoadPolicy) {
@@ -160,6 +164,8 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, LoadPolicy) {
             broker->core()->store()->policy()->SerializeAsString());
   EXPECT_TRUE(expected_policy_map_.Equals(
       broker->core()->store()->policy_map()));
+  EXPECT_TRUE(service_.IsPolicyAvailableForAccount(
+      PolicyBuilder::kFakeUsername));
 }
 
 TEST_F(DeviceLocalAccountPolicyServiceTest, StoreValidationFailure) {
@@ -182,6 +188,8 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, StoreValidationFailure) {
             broker->core()->store()->status());
   EXPECT_EQ(CloudPolicyValidatorBase::VALIDATION_WRONG_POLICY_TYPE,
             broker->core()->store()->validation_status());
+  EXPECT_FALSE(service_.IsPolicyAvailableForAccount(
+      PolicyBuilder::kFakeUsername));
 }
 
 TEST_F(DeviceLocalAccountPolicyServiceTest, StorePolicy) {
@@ -199,6 +207,8 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, StorePolicy) {
   EXPECT_EQ(device_local_account_policy_.GetBlob(),
             device_settings_test_helper_.device_local_account_policy_blob(
                 PolicyBuilder::kFakeUsername));
+  EXPECT_TRUE(service_.IsPolicyAvailableForAccount(
+      PolicyBuilder::kFakeUsername));
 }
 
 TEST_F(DeviceLocalAccountPolicyServiceTest, DevicePolicyChange) {
@@ -264,12 +274,16 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, FetchPolicy) {
             broker->core()->store()->policy()->SerializeAsString());
   EXPECT_TRUE(expected_policy_map_.Equals(
       broker->core()->store()->policy_map()));
+  EXPECT_TRUE(service_.IsPolicyAvailableForAccount(
+      PolicyBuilder::kFakeUsername));
 
   EXPECT_CALL(service_observer_,
               OnPolicyUpdated(PolicyBuilder::kFakeUsername)).Times(0);
   service_.Disconnect();
   EXPECT_FALSE(broker->core()->client());
   Mock::VerifyAndClearExpectations(&service_observer_);
+  EXPECT_TRUE(service_.IsPolicyAvailableForAccount(
+      PolicyBuilder::kFakeUsername));
 }
 
 TEST_F(DeviceLocalAccountPolicyServiceTest, RefreshPolicy) {
@@ -305,6 +319,8 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, RefreshPolicy) {
             broker->core()->store()->status());
   EXPECT_TRUE(expected_policy_map_.Equals(
       broker->core()->store()->policy_map()));
+  EXPECT_TRUE(service_.IsPolicyAvailableForAccount(
+      PolicyBuilder::kFakeUsername));
 }
 
 class DeviceLocalAccountPolicyProviderTest
