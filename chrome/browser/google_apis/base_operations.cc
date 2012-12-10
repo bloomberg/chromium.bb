@@ -200,7 +200,10 @@ void UrlFetchOperationBase::OnURLFetchComplete(const URLFetcher* source) {
 
   if (code == HTTP_UNAUTHORIZED) {
     if (++re_authenticate_count_ <= kMaxReAuthenticateAttemptsPerOperation) {
-      re_authenticate_callback_.Run(this);
+      // Reset re_authenticate_callback_ so Start() can be called again.
+      ReAuthenticateCallback callback = re_authenticate_callback_;
+      re_authenticate_callback_.Reset();
+      callback.Run(this);
       return;
     }
 
