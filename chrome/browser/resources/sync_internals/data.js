@@ -93,11 +93,11 @@ function makeDownloadName() {
   // Format is sync-data-dump-$epoch-$year-$month-$day-$OS.csv.
   var now = new Date();
   var friendlyDate = [now.getFullYear(),
-                      now.getMonth(),
+                      now.getMonth() + 1,
                       now.getDate()].join('-');
   var name = ['sync-data-dump',
-              Date.now(),
               friendlyDate,
+              Date.now(),
               navigator.platform].join('-');
   return [name, 'csv'].join('.');
 }
