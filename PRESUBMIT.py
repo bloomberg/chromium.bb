@@ -619,8 +619,13 @@ def _CheckIncludeOrder(input_api, output_api):
 
   results = []
   if warnings:
-    results.append(output_api.PresubmitPromptWarning(_INCLUDE_ORDER_WARNING,
-                                                     warnings))
+    if not input_api.is_committing:
+      results.append(output_api.PresubmitPromptWarning(_INCLUDE_ORDER_WARNING,
+                                                       warnings))
+    else:
+      # We don't warn on commit, to avoid stopping commits going through CQ.
+      results.append(output_api.PresubmitNotifyResult(_INCLUDE_ORDER_WARNING,
+                                                      warnings))
   return results
 
 

@@ -15,6 +15,7 @@ class MockInputApi(object):
     self.re = re
     self.os_path = os.path
     self.files = []
+    self.is_committing = False
 
   def AffectedFiles(self):
     return self.files
@@ -30,14 +31,17 @@ class MockOutputApi(object):
   class PresubmitError(PresubmitResult):
     def __init__(self, message, items, long_text=''):
       MockOutputApi.PresubmitResult.__init__(self, message, items, long_text)
+      self.type = 'error'
 
   class PresubmitPromptWarning(PresubmitResult):
     def __init__(self, message, items, long_text=''):
       MockOutputApi.PresubmitResult.__init__(self, message, items, long_text)
+      self.type = 'warning'
 
   class PresubmitNotifyResult(PresubmitResult):
     def __init__(self, message, items, long_text=''):
       MockOutputApi.PresubmitResult.__init__(self, message, items, long_text)
+      self.type = 'notify'
 
 
 class MockFile(object):
@@ -234,6 +238,19 @@ class IncludeOrderTest(unittest.TestCase):
     warnings = PRESUBMIT._CheckIncludeOrder(mock_input_api, mock_output_api)
     self.assertEqual(1, len(warnings))
     self.assertEqual(2, len(warnings[0].items))
+    self.assertEqual('warning', warnings[0].type)
+
+  def testOnlyNotifyOnCommit(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.is_committing = True
+    mock_output_api = MockOutputApi()
+    contents = ['#include <b.h>',
+                '#include <a.h>']
+    mock_input_api.files = [MockFile('something.cc', contents)]
+    warnings = PRESUBMIT._CheckIncludeOrder(mock_input_api, mock_output_api)
+    self.assertEqual(1, len(warnings))
+    self.assertEqual(1, len(warnings[0].items))
+    self.assertEqual('notify', warnings[0].type)
 
 
 class VersionControlerConflictsTest(unittest.TestCase):
