@@ -105,7 +105,8 @@ class TaskManagerRendererResource : public TaskManager::Resource {
   DISALLOW_COPY_AND_ASSIGN(TaskManagerRendererResource);
 };
 
-// Tracks a single tab contents, prerendered page, or instant page.
+// Tracks a single tab contents, prerendered page, instant page, or background
+// printing page.
 class TaskManagerTabContentsResource : public TaskManagerRendererResource {
  public:
   explicit TaskManagerTabContentsResource(content::WebContents* web_contents);
@@ -135,7 +136,8 @@ class TaskManagerTabContentsResource : public TaskManagerRendererResource {
   DISALLOW_COPY_AND_ASSIGN(TaskManagerTabContentsResource);
 };
 
-// Provides resources for tab contents, prerendered pages, and instant pages.
+// Provides resources for tab contents, prerendered pages, instant pages, and
+// background printing pages.
 class TaskManagerTabContentsResourceProvider
     : public TaskManager::ResourceProvider,
       public content::NotificationObserver {

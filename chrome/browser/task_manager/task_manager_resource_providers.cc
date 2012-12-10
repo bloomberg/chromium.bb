@@ -30,6 +30,7 @@
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
+#include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -168,6 +169,12 @@ bool IsContentsInstant(WebContents* web_contents) {
   }
 
   return false;
+}
+
+bool IsContentsBackgroundPrinted(WebContents* web_contents) {
+  printing::BackgroundPrintingManager* printing_manager =
+      g_browser_process->background_printing_manager();
+  return printing_manager->HasPrintPreviewTab(web_contents);
 }
 
 }  // namespace
@@ -415,7 +422,7 @@ void TaskManagerTabContentsResourceProvider::StartUpdating() {
 
   // The contents that are tracked by this resource provider are those that
   // are tab contents (WebContents serving as a tab in a Browser), instant
-  // pages, and prerender pages.
+  // pages, prerender pages, and background printed pages.
 
   // Add all the existing WebContentses.
   for (TabContentsIterator iterator; !iterator.done(); ++iterator)
@@ -440,6 +447,15 @@ void TaskManagerTabContentsResourceProvider::StartUpdating() {
         prerender_manager->GetAllPrerenderingContents();
     for (size_t j = 0; j < contentses.size(); ++j)
       Add(contentses[j]);
+  }
+
+  // Add all the pages being background printed.
+  printing::BackgroundPrintingManager* printing_manager =
+      g_browser_process->background_printing_manager();
+  for (printing::BackgroundPrintingManager::WebContentsSet::iterator i =
+           printing_manager->begin();
+       i != printing_manager->end(); ++i) {
+    Add(*i);
   }
 
   // Then we register for notifications to get new web contents.
@@ -542,10 +558,11 @@ void TaskManagerTabContentsResourceProvider::Observe(
 
   // The contents that are tracked by this resource provider are those that
   // are tab contents (WebContents serving as a tab in a Browser), instant
-  // pages, and prerender pages.
+  // pages, prerender pages, and background printed pages.
   if (!chrome::FindBrowserWithWebContents(web_contents) &&
       !IsContentsPrerendering(web_contents) &&
-      !IsContentsInstant(web_contents)) {
+      !IsContentsInstant(web_contents) &&
+      !IsContentsBackgroundPrinted(web_contents)) {
     return;
   }
 
