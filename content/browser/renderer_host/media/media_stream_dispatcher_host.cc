@@ -142,15 +142,15 @@ void MediaStreamDispatcherHost::OnGenerateStream(
   std::string label;
   if (components.audio_type == MEDIA_TAB_AUDIO_CAPTURE ||
       components.video_type == MEDIA_TAB_VIDEO_CAPTURE) {
-    DCHECK(!components.video_device_id.empty());
-
-    // Append our tab capture device id scheme.
+    // Append our tab capture device id scheme. It's OK if both device_id's
+    // are empty since we check their validity in GenerateStreamForDevice.
     // TODO(justinlin): This is kind of a hack, but the plumbing for audio
     // streams is too complicated to plumb in by type. Will revisit once it's
     // refactored. http://crbug.com/163100
     const std::string& device_id =
         WebContentsCaptureUtil::AppendWebContentsDeviceScheme(
-            components.video_device_id);
+            components.video_device_id.empty() ?
+            components.video_device_id : components.audio_device_id);
 
     // TODO(justinlin): Cleanup/get rid of GenerateStreamForDevice and merge
     // with the regular GenerateStream.

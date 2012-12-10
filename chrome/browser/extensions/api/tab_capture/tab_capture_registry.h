@@ -6,6 +6,9 @@
 #define CHROME_BROWSER_EXTENSIONS_API_TAB_CAPTURE_TAB_CAPTURE_REGISTRY_H_
 
 #include <map>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "chrome/browser/media/media_internals.h"
 #include "chrome/browser/media/media_internals_observer.h"
@@ -31,7 +34,7 @@ class TabCaptureRegistry : public ProfileKeyedService,
     int tab_id;
     tab_capture::TabCaptureState status;
 
-    TabCaptureRequest() {}
+    TabCaptureRequest() : tab_id(-1) {}
     TabCaptureRequest(std::string extension_id, int tab_id,
                       tab_capture::TabCaptureState status)
         : extension_id(extension_id), tab_id(tab_id), status(status) {}
@@ -41,13 +44,14 @@ class TabCaptureRegistry : public ProfileKeyedService,
   explicit TabCaptureRegistry(Profile* profile);
 
   const CaptureRequestList GetCapturedTabs(const std::string& extension_id);
-  bool AddRequest(const std::string& key, const TabCaptureRequest& request);
-  bool VerifyRequest(const std::string& key);
+  bool AddRequest(const std::pair<int, int>, const TabCaptureRequest& request);
+  bool VerifyRequest(int render_process_id, int render_view_id);
 
  private:
   // Maps device_id to information about the media stream request. This is
   // expected to be small since maintaining a media stream is expensive.
-  typedef std::map<std::string, TabCaptureRequest> DeviceCaptureRequestMap;
+  typedef std::map<const std::pair<int, int>, TabCaptureRequest>
+      DeviceCaptureRequestMap;
 
   class MediaObserverProxy : public MediaInternalsObserver,
                              public base::RefCountedThreadSafe<
@@ -63,11 +67,15 @@ class TabCaptureRegistry : public ProfileKeyedService,
 
     // MediaInternalsObserver.
     virtual void OnRequestUpdate(
+        int render_process_id,
+        int render_view_id,
         const content::MediaStreamDevice& device,
         const content::MediaRequestState state) OVERRIDE;
 
     void RegisterAsMediaObserverOnIOThread(bool unregister);
     void UpdateOnUIThread(
+        int render_process_id,
+        int render_view_id,
         const content::MediaStreamDevice& device,
         const content::MediaRequestState new_state);
 
@@ -77,6 +85,8 @@ class TabCaptureRegistry : public ProfileKeyedService,
   virtual ~TabCaptureRegistry();
 
   void HandleRequestUpdateOnUIThread(
+      int render_process_id,
+      int render_view_id,
       const content::MediaStreamDevice& device,
       const content::MediaRequestState state);
 

@@ -38,7 +38,9 @@ bool WebContentsCaptureUtil::ExtractTabCaptureTarget(
     const std::string& device_id_param,
     int* render_process_id,
     int* render_view_id) {
-  DCHECK(IsWebContentsDeviceId(device_id_param));
+  if (!IsWebContentsDeviceId(device_id_param))
+    return false;
+
   const std::string device_id = device_id_param.substr(
       arraysize(kVirtualDeviceScheme) - 1);
 

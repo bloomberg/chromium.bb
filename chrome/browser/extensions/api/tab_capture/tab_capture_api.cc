@@ -117,9 +117,11 @@ bool TabCaptureCaptureFunction::RunImpl() {
 
   extensions::TabCaptureRegistry* registry =
       extensions::TabCaptureRegistryFactory::GetForProfile(profile());
-  if (!registry->AddRequest(device_id, TabCaptureRegistry::TabCaptureRequest(
-          GetExtension()->id(), tab_id,
-          tab_capture::TAB_CAPTURE_TAB_CAPTURE_STATE_NONE))) {
+  if (!registry->AddRequest(
+          std::make_pair(render_process_id, routing_id),
+          TabCaptureRegistry::TabCaptureRequest(
+              GetExtension()->id(), tab_id,
+              tab_capture::TAB_CAPTURE_TAB_CAPTURE_STATE_NONE))) {
     error_ = kCapturingSameTab;
     SetResult(base::Value::CreateIntegerValue(0));
     return false;

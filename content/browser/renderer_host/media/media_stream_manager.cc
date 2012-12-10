@@ -248,29 +248,39 @@ std::string MediaStreamManager::GenerateStreamForDevice(
     const GURL& security_origin) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
+  int target_render_process_id = -1;
+  int target_render_view_id = -1;
+
+  // We will post the request to the target render view, not the source (i.e.
+  // source is an extension, and target is the tab we want to capture).
+  bool has_valid_device_id = WebContentsCaptureUtil::ExtractTabCaptureTarget(
+      device_id, &target_render_process_id, &target_render_view_id);
+
   // Create a new request based on options.
   DeviceRequest* request = new DeviceRequest(requester, options,
                                              DeviceRequest::GENERATE_STREAM,
-                                             render_process_id,
-                                             render_view_id,
+                                             target_render_process_id,
+                                             target_render_view_id,
                                              security_origin);
   const std::string& label = AddRequest(request);
   request->requested_device_id = device_id;
 
-  // Get user confirmation to use the capture device.
-  PostRequestToUI(label);
-
-  if (!security_origin.SchemeIs(kExtensionScheme) ||
+  if (!has_valid_device_id ||
+      !security_origin.SchemeIs(kExtensionScheme) ||
       (options.audio_type != MEDIA_TAB_AUDIO_CAPTURE &&
        options.audio_type != MEDIA_NO_SERVICE) ||
       (options.video_type != MEDIA_TAB_VIDEO_CAPTURE &&
        options.video_type != MEDIA_NO_SERVICE)) {
     LOG(ERROR) << "Invalid request or used tab capture outside extension API.";
+
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
         base::Bind(&MediaStreamManager::CancelRequest,
                    base::Unretained(this), label));
     return label;
   }
+
+  // Get user confirmation to use the capture device.
+  PostRequestToUI(label);
 
   // TODO(miu): We should ask the device manager whether a device with id
   // |device_id| actually exists.  Note that no such MediaStreamProvider API for
@@ -583,7 +593,6 @@ std::string MediaStreamManager::AddRequest(DeviceRequest* request) {
 
 void MediaStreamManager::PostRequestToUI(const std::string& label) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DeviceRequest* request = requests_[label];
   // Get user confirmation to use capture devices.
   ui_controller_->MakeUIRequest(label,
@@ -859,6 +868,12 @@ void MediaStreamManager::DevicesAccepted(const std::string& label,
        device_it != devices.end(); ++device_it) {
     StreamDeviceInfo device_info = *device_it;  // Make a copy.
 
+    // TODO(justinlin): Nicer way to do this?
+    // Re-append the device_id since we lost it when posting request to UI.
+    if (device_info.stream_type == content::MEDIA_TAB_VIDEO_CAPTURE ||
+        device_info.stream_type == content::MEDIA_TAB_AUDIO_CAPTURE)
+      device_info.device_id = request->requested_device_id;
+
     // Set in_use to false to be able to track if this device has been
     // opened. in_use might be true if the device type can be used in more
     // than one session.
@@ -937,22 +952,8 @@ void MediaStreamManager::NotifyDevicesOpened(const DeviceRequest& request) {
   if (opened_devices.empty())
     return;
 
-  int target_render_process_id = request.render_process_id;
-  int target_render_view_id = request.render_view_id;
-
-  // For tab capture requests, we should notify the UI to update the renderer
-  // that is the target of the capture instead of the requester.
-  if (request.options.audio_type == content::MEDIA_TAB_AUDIO_CAPTURE ||
-      request.options.video_type == content::MEDIA_TAB_VIDEO_CAPTURE) {
-    if (!WebContentsCaptureUtil::ExtractTabCaptureTarget(
-            request.requested_device_id,
-            &target_render_process_id,
-            &target_render_view_id))
-      return;
-  }
-
-  NotifyUIDevicesOpened(target_render_process_id,
-                        target_render_view_id,
+  NotifyUIDevicesOpened(request.render_process_id,
+                        request.render_view_id,
                         opened_devices);
 }
 
@@ -963,22 +964,8 @@ void MediaStreamManager::NotifyDevicesClosed(const DeviceRequest& request) {
   if (closed_devices.empty())
     return;
 
-  int target_render_process_id = request.render_process_id;
-  int target_render_view_id = request.render_view_id;
-
-  // For tab capture requests, we should notify the UI to update the renderer
-  // that is the target of the capture instead of the requester.
-  if (request.options.audio_type == content::MEDIA_TAB_AUDIO_CAPTURE ||
-      request.options.video_type == content::MEDIA_TAB_VIDEO_CAPTURE) {
-    if (!WebContentsCaptureUtil::ExtractTabCaptureTarget(
-            request.requested_device_id,
-            &target_render_process_id,
-            &target_render_view_id))
-      return;
-  }
-
-  NotifyUIDevicesClosed(target_render_process_id,
-                        target_render_view_id,
+  NotifyUIDevicesClosed(request.render_process_id,
+                        request.render_view_id,
                         closed_devices);
 }
 

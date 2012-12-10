@@ -103,9 +103,13 @@ void MediaInternals::OnMediaRequestStateChanged(
     const content::MediaStreamDevice& device,
     content::MediaRequestState state) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
   if (observers_.size()) {
-    FOR_EACH_OBSERVER(MediaInternalsObserver, observers_,
-                      OnRequestUpdate(device, state));
+    FOR_EACH_OBSERVER(
+        MediaInternalsObserver, observers_, OnRequestUpdate(render_process_id,
+                                                            render_view_id,
+                                                            device,
+                                                            state));
   }
 }
 

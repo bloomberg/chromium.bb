@@ -88,22 +88,25 @@ bool MediaStreamDevicesController::DismissInfoBarAndTakeActionOnSettings() {
       request_.devices.find(content::MEDIA_TAB_AUDIO_CAPTURE);
   if (tab_video != request_.devices.end() ||
       tab_audio != request_.devices.end()) {
-    std::string audio_device_id;
-    std::string video_device_id;
-
-    if ((tab_audio != request_.devices.end()) && !tab_audio->second.empty())
-      audio_device_id = tab_audio->second[0].device_id;
-    if ((tab_video != request_.devices.end()) && !tab_video->second.empty())
-      video_device_id = tab_video->second[0].device_id;
-
-    DCHECK(!audio_device_id.empty() || !video_device_id.empty());
     extensions::TabCaptureRegistry* registry =
         extensions::TabCaptureRegistryFactory::GetForProfile(profile_);
-    if (!registry->VerifyRequest(!video_device_id.empty() ?
-                                 video_device_id : audio_device_id)) {
+
+    if (!registry->VerifyRequest(request_.render_process_id,
+                                 request_.render_view_id)) {
       Deny();
     } else {
-      Accept(audio_device_id, video_device_id, false);
+      content::MediaStreamDevices devices;
+
+      if (tab_video != request_.devices.end()) {
+        devices.push_back(content::MediaStreamDevice(
+            content::MEDIA_TAB_VIDEO_CAPTURE, "", ""));
+      }
+      if (tab_audio != request_.devices.end()) {
+        devices.push_back(content::MediaStreamDevice(
+            content::MEDIA_TAB_AUDIO_CAPTURE, "", ""));
+      }
+
+      callback_.Run(devices);
     }
 
     return true;

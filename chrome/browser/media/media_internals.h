@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_MEDIA_MEDIA_INTERNALS_H_
 #define CHROME_BROWSER_MEDIA_MEDIA_INTERNALS_H_
 
+#include <string>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"

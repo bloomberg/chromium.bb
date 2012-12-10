@@ -17,6 +17,8 @@ class MediaInternalsObserver {
 
   // Handle an information update related to a media stream request.
   virtual void OnRequestUpdate(
+      int render_process_id,
+      int render_view_id,
       const content::MediaStreamDevice& device,
       const content::MediaRequestState state) {}
 

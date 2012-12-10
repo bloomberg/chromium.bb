@@ -33,6 +33,8 @@ TabCaptureRegistry::~TabCaptureRegistry() {
 }
 
 void TabCaptureRegistry::HandleRequestUpdateOnUIThread(
+    int render_process_id,
+    int render_view_id,
     const content::MediaStreamDevice& device,
     const content::MediaRequestState new_state) {
   EventRouter* router = profile_ ?
@@ -40,8 +42,12 @@ void TabCaptureRegistry::HandleRequestUpdateOnUIThread(
   if (!router)
     return;
 
-  if (requests_.find(device.device_id) == requests_.end())
+  std::pair<int, int> key = std::make_pair(render_process_id, render_view_id);
+
+  if (requests_.find(key) == requests_.end()) {
+    LOG(ERROR) << "Receiving updates for invalid tab capture request.";
     return;
+  }
 
   tab_capture::TabCaptureState state =
       tab_capture::TAB_CAPTURE_TAB_CAPTURE_STATE_NONE;
@@ -71,8 +77,7 @@ void TabCaptureRegistry::HandleRequestUpdateOnUIThread(
     return;
   }
 
-  TabCaptureRegistry::TabCaptureRequest& request_info =
-      requests_[device.device_id];
+  TabCaptureRegistry::TabCaptureRequest& request_info = requests_[key];
   request_info.status = state;
 
   scoped_ptr<tab_capture::CaptureInfo> info(new tab_capture::CaptureInfo());
@@ -122,10 +127,9 @@ void TabCaptureRegistry::Observe(int type,
   }
 }
 
-bool TabCaptureRegistry::AddRequest(
-    const std::string& key, const TabCaptureRequest& request) {
+bool TabCaptureRegistry::AddRequest(const std::pair<int, int> key,
+                                    const TabCaptureRequest& request) {
   // Currently, we do not allow multiple active captures for same tab.
-  DCHECK(!key.empty());
   if (requests_.find(key) != requests_.end())
     if (requests_[key].status !=
         tab_capture::TAB_CAPTURE_TAB_CAPTURE_STATE_STOPPED &&
@@ -136,8 +140,10 @@ bool TabCaptureRegistry::AddRequest(
   return true;
 }
 
-bool TabCaptureRegistry::VerifyRequest(const std::string& key) {
-  return requests_.find(key) != requests_.end();
+bool TabCaptureRegistry::VerifyRequest(int render_process_id,
+                                       int render_view_id) {
+  return requests_.find(std::make_pair(
+      render_process_id, render_view_id)) != requests_.end();
 }
 
 void TabCaptureRegistry::MediaObserverProxy::Attach(
@@ -167,6 +173,8 @@ void TabCaptureRegistry::MediaObserverProxy::RegisterAsMediaObserverOnIOThread(
 }
 
 void TabCaptureRegistry::MediaObserverProxy::OnRequestUpdate(
+    int render_process_id,
+    int render_view_id,
     const content::MediaStreamDevice& device,
     const content::MediaRequestState new_state) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -180,14 +188,19 @@ void TabCaptureRegistry::MediaObserverProxy::OnRequestUpdate(
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       base::Bind(&TabCaptureRegistry::MediaObserverProxy::UpdateOnUIThread,
-          this, device, new_state));
+          this, render_process_id, render_view_id, device, new_state));
 }
 
 void TabCaptureRegistry::MediaObserverProxy::UpdateOnUIThread(
+    int render_process_id,
+    int render_view_id,
     const content::MediaStreamDevice& device,
     const content::MediaRequestState new_state) {
   if (handler_)
-    handler_->HandleRequestUpdateOnUIThread(device, new_state);
+    handler_->HandleRequestUpdateOnUIThread(render_process_id,
+                                            render_view_id,
+                                            device,
+                                            new_state);
 }
 
 }  // namespace extensions
