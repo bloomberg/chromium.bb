@@ -192,8 +192,7 @@ class ValidatorTests : public ::testing::Test {
   }
 
  protected:
-  ValidatorTests()
-      : _validator(NULL) { }
+  ValidatorTests();
 
   virtual ~ValidatorTests() {
     EXPECT_EQ(_validator, (SfiValidator *) NULL);
@@ -269,7 +268,17 @@ class ValidatorTests : public ::testing::Test {
     return (inst & 0xffefffff) | (static_cast<arm_inst>(s) << 20);
   }
 
+  // Returns true if the given register is not in {Tp, Sp, Pc}. That is,
+  // not one of the registers requiring either: a 2-instruction sequence
+  // to update (Sp and Pc); or should not be updated at all (Tp).
+  bool IsValidSingleInstructionDestinationRegister(Register r) const {
+    return !_is_valid_single_instruction_destination_register.Contains(r);
+  }
+
   SfiValidator *_validator;
+
+ private:
+  RegisterList _is_valid_single_instruction_destination_register;
 };
 
 }  // namespace nacl_val_arm_test

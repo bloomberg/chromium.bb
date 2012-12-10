@@ -203,6 +203,9 @@ static const char* ValidatorProblemFormatDirective[kValidatorProblemSize] = {
   "Call not last instruction in instruction bundle.",
   // kProblemConstructionFailed.
   "Construction of the SfiValidator failed because its arguments were invalid.",
+  // kProblemIllegalUseOfThreadPointer.
+  "Use of thread pointer $r not legal outside of load thread pointer "
+  "instruction(s)",
 };
 
 // Error message to append to ValidatorProblemFormatDirective text (i.e. $R),
@@ -232,7 +235,7 @@ static const char* kValidatorInstructionPairProblem[] = {
 };
 
 // Returns a printable name for the given register.
-static const char* RegisterName(const nacl_arm_dec::Register& r) {
+const char* RegisterName(const nacl_arm_dec::Register& r) {
   static const char* Name[16] = {
     "r0",
     "r1",

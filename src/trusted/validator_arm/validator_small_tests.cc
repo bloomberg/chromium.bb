@@ -33,6 +33,7 @@ using nacl_arm_dec::kLiteralPoolHead;
 using nacl_arm_dec::kFailValidation;
 using nacl_arm_dec::Instruction;
 using nacl_arm_dec::ClassDecoder;
+using nacl_arm_val::RegisterName;
 
 namespace {
 
@@ -219,7 +220,8 @@ TEST_F(ValidatorTests, DirectBranchTargetCalculation) {
 // Here are examples of every form of safe store permitted in a Native Client
 // program.  These stores have common properties:
 //  1. The high nibble is 0, to allow tests to write an arbitrary predicate.
-//  2. They address memory only through r1.
+//  2. They address memory only through r1 (assumed to be the first register
+//     in the about text).
 //  3. They do not do anything dumb, like try to alter SP or PC.
 static const AnnotatedInstruction examples_of_safe_stores[] = {
   // Single-register stores
@@ -261,6 +263,8 @@ static const AnnotatedInstruction examples_of_safe_stores[] = {
   { 0x0CA10B10, "vstmia r1!, { d0-d7 }: writeback" },
 };
 
+// Note: We assume that r3 is used for the operand, if it isn't the same
+// as the destination (i.e. r1).
 static const AnnotatedInstruction examples_of_safe_masks[] = {
   { 0x03C11103, "bic r1, r1, #0xC0000000: simple in-place mask (form 1)" },
   { 0x03C114C0, "bic r1, r1, #0xC0000000: simple in-place mask (form 2)" },
@@ -1402,6 +1406,87 @@ TEST_F(ValidatorTests, Preloads) {
           }
         }
       }
+    }
+  }
+}
+
+TEST_F(ValidatorTests, LoadThreadLocalPtr) {
+  // Verify that we recognize valid load thread local pointer instructions.
+  static const AnnotatedInstruction loadr9_insts[] = {
+    {0xe5990000,  "ldr<c> r0, [r9]"},
+    {0xe5990004,  "ldr<c> r0, [r9, #4]"},
+  };
+
+  // Try each load instruction
+  for (size_t i = 0; i < NACL_ARRAY_SIZE(loadr9_insts); ++i) {
+    Instruction test_base(loadr9_insts[i].inst);
+
+    // Try each possible condition.
+    for (Instruction::Condition cond = Instruction::EQ;
+         cond < Instruction::UNCONDITIONAL;
+         cond = Instruction::Next(cond)) {
+      Instruction test_cond(ChangeInstCond(test_base, cond));
+
+      // Try each register to assign (i.e. replace r0).
+      for (uint32_t r = 0; r < 16; ++r) {
+        Register reg(r);
+        Instruction test(test_cond);
+        test.SetBits(15, 12, r);  // I.e. set Rt(15:12) to r;
+
+        // Generate string describing instruction being tested.
+        ostringstream message;
+        string msg(loadr9_insts[i].about);
+        const char* r0 = "r0";
+        msg.replace(msg.find(r0), strlen(r0), RegisterName(reg));
+        const char* cc = "<c>";
+        msg.replace(msg.find(cc), strlen(cc), Instruction::ToString(cond));
+        message << "Test '" << msg << "'";
+
+        // Test the generated instruction.
+        arm_inst insts[1] = { test.Bits() };
+        if (IsValidSingleInstructionDestinationRegister(reg)) {
+          validation_should_pass(insts, NACL_ARRAY_SIZE(insts),
+                                 kDefaultBaseAddr, message.str());
+        } else {
+          validation_should_fail(insts, NACL_ARRAY_SIZE(insts),
+                                 kDefaultBaseAddr, message.str());
+        }
+      }
+    }
+  }
+}
+
+TEST_F(ValidatorTests, UseR9) {
+  // Verify that we report about illegal uses of thread local pointer.
+  static const AnnotatedInstruction use_r9_insts[] = {
+    {0xe0892009, "add r2, r9, r9"},
+    { 0x03C99103, "bic r9, r9, #0xC0000000: simple in-place mask (form 1)" },
+    { 0x03C91103, "bic r1, r9, #0xC0000000: mask with register move (form 1)" },
+    { 0x03C19103, "bic r9, r1, #0xC0000000: mask with register move (form 1)" },
+    { 0x03C994C0, "bic r9, r9, #0xC0000000: simple in-place mask (form 2)" },
+    { 0x03C914C0, "bic r1, r9, #0xC0000000: mask with register move (form 2)" },
+    { 0x03C394C0, "bic r9, r3, #0xC0000000: mask with register move (form 2)" },
+    { 0x03C994FF, "bic r9, r9, #0xFF000000: overzealous but correct mask" },
+    {0xe7df9f1f, "bfc   r9, #30, #2"},
+    // TODO(karl): Add load/store examples, when implemented, like:
+    //    STR r9, [rt]; MOV rd, r9; MOV sd, r9
+  };
+
+  // Try each test instruction.
+  for (size_t i = 0; i < NACL_ARRAY_SIZE(use_r9_insts); ++i) {
+    Instruction test(use_r9_insts[i].inst);
+
+    // Try each possible condition.
+    for (Instruction::Condition cond = Instruction::EQ;
+         cond < Instruction::UNCONDITIONAL;
+         cond = Instruction::Next(cond)) {
+      Instruction test_cond(ChangeInstCond(test, cond));
+
+      ostringstream message;
+      message << "Test use of r9 with cond=" << Instruction::ToString(cond)
+              << ": " << use_r9_insts[i].about;
+      validation_should_fail(&use_r9_insts[i].inst, 1, kDefaultBaseAddr,
+                             message.str());
     }
   }
 }

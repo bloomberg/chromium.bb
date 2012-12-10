@@ -373,6 +373,11 @@ class DecodedInstruction {
     return defs().ContainsAll(rl);
   }
 
+  // Returns true if the instruction uses the given register.
+  bool uses(nacl_arm_dec::Register r) const {
+     return decoder_->uses(inst_).Contains(r);
+  }
+
   const nacl_arm_dec::Instruction& inst() const {
     return inst_;
   }
@@ -483,6 +488,8 @@ typedef enum {
   kProblemMisalignedCall,
   // Construction of the SfiValidator failed because its arguments were invalid.
   kProblemConstructionFailed,
+  // Code uses thread pointer in non-load TLS pointer situation.
+  kProblemIllegalUseOfThreadPointer,
   // Special constant defining the number of elements in this list.
   kValidatorProblemSize
 } ValidatorProblem;

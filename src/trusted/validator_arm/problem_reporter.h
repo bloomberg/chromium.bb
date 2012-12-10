@@ -119,6 +119,9 @@ class ProblemReporter : public ProblemSink {
               const ValidatorProblemUserData user_data);
 };
 
+// Returns a printable name for the given register.
+const char* RegisterName(const nacl_arm_dec::Register& r);
+
 }  // namespace
 
 #endif  // NATIVE_CLIENT_SOURCE_TRUSTED_VALIDATOR_ARM_PROBLEM_REPORTER_H_

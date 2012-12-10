@@ -74,6 +74,13 @@ void ProblemSpy::ReportProblemInternal(uint32_t vaddr,
   problems_.push_back(prob);
 }
 
+ValidatorTests::ValidatorTests()
+    : _validator(NULL),
+      _is_valid_single_instruction_destination_register() {
+  _is_valid_single_instruction_destination_register.
+      Add(Register::Tp()).Add(Register::Sp()).Add(Register::Pc());
+}
+
 const nacl_arm_dec::ClassDecoder& ValidatorTests::decode(
     nacl_arm_dec::Instruction inst) const {
   return _validator->decode(inst);

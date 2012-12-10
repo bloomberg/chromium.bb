@@ -456,6 +456,20 @@ static PatternMatch check_read_only(const SfiValidator& sfi,
   return NO_MATCH;
 }
 
+// Checks for instructions that may read the thread local pointer.
+static PatternMatch check_dont_read_thread_local_pointer(
+    const SfiValidator& sfi, const DecodedInstruction& inst, ProblemSink* out) {
+  UNREFERENCED_PARAMETER(sfi);
+  if (inst.uses(Register::Tp()) &&
+      !inst.is_load_thread_address_pointer()) {
+    out->ReportProblemRegister(inst.addr(),
+                               kProblemIllegalUseOfThreadPointer,
+                               Register::Tp());
+    return PATTERN_UNSAFE;
+  }
+  return NO_MATCH;
+}
+
 // Checks writes to r15 from instructions that aren't branches.
 static PatternMatch check_pc_writes(const SfiValidator& sfi,
                                     const DecodedInstruction& inst,
@@ -827,6 +841,7 @@ bool SfiValidator::apply_patterns(const DecodedInstruction& inst,
                                          ProblemSink*);
   static const OneInstPattern one_inst_patterns[] = {
     &check_read_only,
+    &check_dont_read_thread_local_pointer,
     &check_pc_writes,
     &check_call_position,
   };
