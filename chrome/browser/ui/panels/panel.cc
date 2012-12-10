@@ -409,7 +409,7 @@ void Panel::Show() {
   if (manager()->display_settings_provider()->is_full_screen() || !collection_)
     return;
 
-    native_panel_->ShowPanel();
+  native_panel_->ShowPanel();
 }
 
 void Panel::ShowInactive() {

@@ -619,13 +619,11 @@ bool DesktopNativeWidgetAura::ShouldActivate() const {
 }
 
 void DesktopNativeWidgetAura::OnActivated() {
-  native_widget_delegate_->OnNativeWidgetActivationChanged(true);
   if (IsVisible() && GetWidget()->non_client_view())
     GetWidget()->non_client_view()->SchedulePaint();
 }
 
 void DesktopNativeWidgetAura::OnLostActive() {
-  native_widget_delegate_->OnNativeWidgetActivationChanged(false);
   if (IsVisible() && GetWidget()->non_client_view())
     GetWidget()->non_client_view()->SchedulePaint();
 }
