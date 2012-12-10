@@ -34,4 +34,6 @@ NativeTheme::NativeTheme()
       track_color_(0xd3d3d3) {
 }
 
+NativeTheme::~NativeTheme() {}
+
 }  // namespace ui

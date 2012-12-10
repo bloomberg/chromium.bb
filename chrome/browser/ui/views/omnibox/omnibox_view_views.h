@@ -222,10 +222,6 @@ class OmniboxViewViews
   // allow the user to select just a portion of the text.
   bool select_all_on_mouse_release_;
 
-  // Used to keep track of the visible caret color so that it can be restored
-  // after the caret has been hidden.
-  SkColor visible_caret_color_;
-
   DISALLOW_COPY_AND_ASSIGN(OmniboxViewViews);
 };
 

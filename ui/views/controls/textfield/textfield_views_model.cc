@@ -18,7 +18,6 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/render_text.h"
 #include "ui/gfx/text_constants.h"
-#include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/textfield/textfield.h"
 
 namespace views {
@@ -284,16 +283,6 @@ TextfieldViewsModel::TextfieldViewsModel(Delegate* delegate)
     : delegate_(delegate),
       render_text_(gfx::RenderText::CreateInstance()),
       current_edit_(edit_history_.end()) {
-  const ui::NativeTheme* theme = ui::NativeTheme::instance();
-  render_text_->set_selection_color(
-      theme->GetSystemColor(
-          ui::NativeTheme::kColorId_TextfieldSelectionColor));
-  render_text_->set_selection_background_focused_color(
-      theme->GetSystemColor(
-          ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused));
-  render_text_->set_selection_background_unfocused_color(
-      theme->GetSystemColor(
-          ui::NativeTheme::kColorId_TextfieldSelectionBackgroundUnfocused));
 }
 
 TextfieldViewsModel::~TextfieldViewsModel() {

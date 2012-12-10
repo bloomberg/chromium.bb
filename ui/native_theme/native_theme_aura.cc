@@ -43,6 +43,8 @@ const SkColor kLabelBackgroundColor = SK_ColorWHITE;
 // Textfield:
 const SkColor kTextfieldDefaultColor = SK_ColorBLACK;
 const SkColor kTextfieldDefaultBackground = SK_ColorWHITE;
+const SkColor kTextfieldReadOnlyColor = SK_ColorDKGRAY;
+const SkColor kTextfieldReadOnlyBackground = SK_ColorWHITE;
 const SkColor kTextfieldSelectionBackgroundFocused =
     SkColorSetARGB(0x54, 0x60, 0xA8, 0xEB);
 const SkColor kTextfieldSelectionBackgroundUnfocused = SK_ColorLTGRAY;
@@ -127,6 +129,10 @@ SkColor NativeThemeAura::GetSystemColor(ColorId color_id) const {
       return kTextfieldDefaultColor;
     case kColorId_TextfieldDefaultBackground:
       return kTextfieldDefaultBackground;
+    case kColorId_TextfieldReadOnlyColor:
+      return kTextfieldReadOnlyColor;
+    case kColorId_TextfieldReadOnlyBackground:
+      return kTextfieldReadOnlyBackground;
     case kColorId_TextfieldSelectionColor:
       return kTextfieldSelectionColor;
     case kColorId_TextfieldSelectionBackgroundFocused:

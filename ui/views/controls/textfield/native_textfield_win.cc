@@ -249,25 +249,13 @@ void NativeTextfieldWin::UpdateBorder() {
 void NativeTextfieldWin::UpdateTextColor() {
   CHARFORMAT cf = {0};
   cf.dwMask = CFM_COLOR;
-  cf.crTextColor = textfield_->use_default_text_color() ?
-      GetSysColor(textfield_->read_only() ? COLOR_GRAYTEXT : COLOR_WINDOWTEXT) :
-      skia::SkColorToCOLORREF(textfield_->text_color());
+  cf.crTextColor = skia::SkColorToCOLORREF(textfield_->GetTextColor());
   CRichEditCtrl::SetDefaultCharFormat(cf);
 }
 
 void NativeTextfieldWin::UpdateBackgroundColor() {
-  if (!textfield_->use_default_background_color()) {
-    bg_color_ = skia::SkColorToCOLORREF(textfield_->background_color());
-  } else {
-    bg_color_ = GetSysColor(textfield_->read_only() ? COLOR_3DFACE
-                                                    : COLOR_WINDOW);
-  }
-  CRichEditCtrl::SetBackgroundColor(bg_color_);
-}
-
-void NativeTextfieldWin::UpdateCursorColor() {
-  if (!textfield_->use_default_cursor_color())
-    NOTIMPLEMENTED();
+  CRichEditCtrl::SetBackgroundColor(
+      skia::SkColorToCOLORREF(textfield_->GetBackgroundColor()));
 }
 
 void NativeTextfieldWin::UpdateReadOnly() {
@@ -385,6 +373,17 @@ size_t NativeTextfieldWin::GetCursorPosition() const {
   // TODO(tommi): Implement.
   NOTIMPLEMENTED();
   return 0U;
+}
+
+bool NativeTextfieldWin::GetCursorEnabled() const {
+  // TODO(msw): Implement.
+  NOTIMPLEMENTED();
+  return true;
+}
+
+void NativeTextfieldWin::SetCursorEnabled(bool enabled) {
+  // TODO(msw): Implement.
+  NOTIMPLEMENTED();
 }
 
 bool NativeTextfieldWin::HandleKeyPressed(const ui::KeyEvent& event) {

@@ -49,26 +49,24 @@ const SkColor kEnabledMenuItemForegroundColor = kTextButtonEnabledColor;
 const SkColor kDisabledMenuItemForegroundColor = kTextButtonDisabledColor;
 const SkColor kFocusedMenuItemBackgroundColor = SkColorSetRGB(246, 249, 253);
 const SkColor kMenuSeparatorColor = SkColorSetARGB(50, 0, 0, 0);
-// Label:
-const SkColor kLabelEnabledColor = color_utils::GetSysSkColor(COLOR_WINDOWTEXT);
-const SkColor kLabelDisabledColor = color_utils::GetSysSkColor(COLOR_GRAYTEXT);
-const SkColor kLabelBackgroundColor = color_utils::GetSysSkColor(COLOR_WINDOW);
 // Textfield:
-const SkColor kTextfieldDefaultColor = SK_ColorBLACK;
-const SkColor kTextfieldDefaultBackground = SK_ColorWHITE;
-const SkColor kTextfieldSelectionColor = SK_ColorWHITE;
-const SkColor kTextfieldSelectionBackgroundFocused =
-    SkColorSetRGB(0x1D, 0x90, 0xFF);
 const SkColor kTextfieldSelectionBackgroundUnfocused = SK_ColorLTGRAY;
 
-SkColor WinColorToSkColor(COLORREF color) {
-  return SkColorSetRGB(GetRValue(color), GetGValue(color), GetBValue(color));
-}
+// Windows system color IDs cached and updated by the native theme.
+const int kSystemColors[] = {
+  COLOR_3DFACE,
+  COLOR_GRAYTEXT,
+  COLOR_HIGHLIGHT,
+  COLOR_HIGHLIGHTTEXT,
+  COLOR_SCROLLBAR,
+  COLOR_WINDOW,
+  COLOR_WINDOWTEXT,
+};
 
 void SetCheckerboardShader(SkPaint* paint, const RECT& align_rect) {
   // Create a 2x2 checkerboard pattern using the 3D face and highlight colors.
-  SkColor face = skia::COLORREFToSkColor(GetSysColor(COLOR_3DFACE));
-  SkColor highlight = skia::COLORREFToSkColor(GetSysColor(COLOR_3DHILIGHT));
+  const SkColor face = color_utils::GetSysSkColor(COLOR_3DFACE);
+  const SkColor highlight = color_utils::GetSysSkColor(COLOR_3DHILIGHT);
   SkColor buffer[] = { face, highlight, highlight, face };
   // Confusing bit: we first create a temporary bitmap with our desired pattern,
   // then copy it to another bitmap.  The temporary bitmap doesn't take
@@ -154,7 +152,7 @@ SkColor NativeThemeWin::GetThemeColorWithDefault(ThemeName theme,
                                                  int default_sys_color) const {
   SkColor color;
   if (GetThemeColor(theme, part_id, state_id, prop_id, &color) != S_OK)
-    color = skia::COLORREFToSkColor(GetSysColor(default_sys_color));
+    color = color_utils::GetSysSkColor(default_sys_color);
   return color;
 }
 
@@ -306,7 +304,8 @@ NativeThemeWin::NativeThemeWin()
       close_theme_(NULL),
       set_theme_properties_(NULL),
       is_theme_active_(NULL),
-      get_theme_int_(NULL) {
+      get_theme_int_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(color_change_listener_(this)) {
   if (theme_dll_) {
     draw_theme_ = reinterpret_cast<DrawThemeBackgroundPtr>(
         GetProcAddress(theme_dll_, "DrawThemeBackground"));
@@ -330,6 +329,9 @@ NativeThemeWin::NativeThemeWin()
         GetProcAddress(theme_dll_, "GetThemeInt"));
   }
   memset(theme_handles_, 0, sizeof(theme_handles_));
+
+  // Initialize the cached system colors.
+  UpdateSystemColors();
 }
 
 NativeThemeWin::~NativeThemeWin() {
@@ -338,6 +340,17 @@ NativeThemeWin::~NativeThemeWin() {
     // certain tests and the reliability bots.
     // CloseHandles();
     FreeLibrary(theme_dll_);
+  }
+}
+
+void NativeThemeWin::OnSysColorChange() {
+  UpdateSystemColors();
+}
+
+void NativeThemeWin::UpdateSystemColors() {
+  for (int i = 0; i < arraysize(kSystemColors); ++i) {
+    system_colors_[kSystemColors[i]] =
+        color_utils::GetSysSkColor(kSystemColors[i]);
   }
 }
 
@@ -441,7 +454,7 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
     case kColorId_DialogBackground:
       // TODO(benrg): Should this use the new Windows theme functions? The old
       // code in DialogClientView::OnPaint used GetSysColor(COLOR_3DFACE).
-      return WinColorToSkColor(GetSysColor(COLOR_3DFACE));
+      return system_colors_[COLOR_3DFACE];
 
     // FocusableBorder
     case kColorId_FocusedBorderColor:
@@ -473,21 +486,25 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
 
     // Label
     case kColorId_LabelEnabledColor:
-      return kLabelEnabledColor;
+      return system_colors_[COLOR_WINDOWTEXT];
     case kColorId_LabelDisabledColor:
-      return kLabelDisabledColor;
+      return system_colors_[COLOR_GRAYTEXT];
     case kColorId_LabelBackgroundColor:
-      return kLabelBackgroundColor;
+      return system_colors_[COLOR_WINDOW];
 
     // Textfield
     case kColorId_TextfieldDefaultColor:
-      return kTextfieldDefaultColor;
+      return system_colors_[COLOR_WINDOWTEXT];
     case kColorId_TextfieldDefaultBackground:
-      return kTextfieldDefaultBackground;
+      return system_colors_[COLOR_WINDOW];
+    case kColorId_TextfieldReadOnlyColor:
+      return system_colors_[COLOR_GRAYTEXT];
+    case kColorId_TextfieldReadOnlyBackground:
+      return system_colors_[COLOR_3DFACE];
     case kColorId_TextfieldSelectionColor:
-      return kTextfieldSelectionColor;
+      return system_colors_[COLOR_HIGHLIGHTTEXT];
     case kColorId_TextfieldSelectionBackgroundFocused:
-      return kTextfieldSelectionBackgroundFocused;
+      return system_colors_[COLOR_HIGHLIGHT];
     case kColorId_TextfieldSelectionBackgroundUnfocused:
       return kTextfieldSelectionBackgroundUnfocused;
 
@@ -1143,10 +1160,8 @@ HRESULT NativeThemeWin::PaintScrollbarTrack(
     return draw_theme_(handle, hdc, part_id, state_id, &rect_win, NULL);
 
   // Draw it manually.
-  const DWORD colorScrollbar = GetSysColor(COLOR_SCROLLBAR);
-  const DWORD color3DFace = GetSysColor(COLOR_3DFACE);
-  if ((colorScrollbar != color3DFace) &&
-      (colorScrollbar != GetSysColor(COLOR_WINDOW))) {
+  if ((system_colors_[COLOR_SCROLLBAR] != system_colors_[COLOR_3DFACE]) &&
+      (system_colors_[COLOR_SCROLLBAR] != system_colors_[COLOR_WINDOW])) {
     FillRect(hdc, &rect_win, reinterpret_cast<HBRUSH>(COLOR_SCROLLBAR + 1));
   } else {
     SkPaint paint;

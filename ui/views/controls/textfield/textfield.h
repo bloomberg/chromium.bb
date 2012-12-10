@@ -108,36 +108,20 @@ class VIEWS_EXPORT Textfield : public View {
   StyleFlags style() const { return style_; }
 
   // Gets/Sets the text color to be used when painting the Textfield.
-  // Call |UseDefaultTextColor| to return to the system default colors.
-  SkColor text_color() const { return text_color_; }
+  // Call |UseDefaultTextColor| to restore the default system color.
+  SkColor GetTextColor() const;
   void SetTextColor(SkColor color);
-
-  // Gets/Sets whether the default text color should be used when painting the
-  // Textfield.
-  bool use_default_text_color() const {
-    return use_default_text_color_;
-  }
   void UseDefaultTextColor();
 
   // Gets/Sets the background color to be used when painting the Textfield.
-  // Call |UseDefaultBackgroundColor| to return to the system default colors.
-  SkColor background_color() const { return background_color_; }
+  // Call |UseDefaultBackgroundColor| to restore the default system color.
+  SkColor GetBackgroundColor() const;
   void SetBackgroundColor(SkColor color);
-
-  // Gets/Sets whether the default background color should be used when painting
-  // the Textfield.
-  bool use_default_background_color() const {
-    return use_default_background_color_;
-  }
   void UseDefaultBackgroundColor();
 
-  // Gets/Sets the color to be used for the cursor.
-  SkColor cursor_color() const { return cursor_color_; }
-  void SetCursorColor(SkColor color);
-
-  // Gets/Sets whether we use the system's default color for the cursor.
-  bool use_default_cursor_color() const { return use_default_cursor_color_; }
-  void UseDefaultCursorColor();
+  // Gets/Sets whether or not the cursor is enabled.
+  bool GetCursorEnabled() const;
+  void SetCursorEnabled(bool enabled);
 
   // Gets/Sets the font used when rendering the text within the Textfield.
   const gfx::Font& font() const { return font_; }
@@ -302,12 +286,6 @@ class VIEWS_EXPORT Textfield : public View {
 
   // Should we use the system background color instead of |background_color_|?
   bool use_default_background_color_;
-
-  // Cursor color.  Only used if |use_default_cursor_color_| is false.
-  SkColor cursor_color_;
-
-  // Should we use the system cursor color instead of |cursor_color_|?
-  bool use_default_cursor_color_;
 
   // TODO(beng): remove this once NativeTextfieldWin subclasses
   //             NativeControlWin.

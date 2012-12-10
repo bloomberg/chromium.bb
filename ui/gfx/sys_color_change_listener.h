@@ -18,7 +18,7 @@ namespace gfx {
 UI_EXPORT bool IsInvertedColorScheme();
 
 // Interface for classes that want to listen to system color changes.
-class SysColorChangeListener {
+class UI_EXPORT SysColorChangeListener {
  public:
   virtual void OnSysColorChange() = 0;
 

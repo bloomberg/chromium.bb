@@ -120,12 +120,6 @@ const int kDesktopScriptBadgeEdgeItemPadding = kDesktopScriptBadgeItemPadding;
 const int kTouchItemPadding = 8;
 const int kTouchEdgeItemPadding = kTouchItemPadding;
 
-#if defined(OS_CHROMEOS)
-const SkColor kOmniboxBackgroundColor = SkColorSetARGB(0, 255, 255, 255);
-#else
-const SkColor kOmniboxBackgroundColor = SkColorSetARGB(255, 255, 255, 255);
-#endif
-
 }  // namespace
 
 // static
@@ -331,26 +325,24 @@ bool LocationBarView::IsInitialized() const {
 
 SkColor LocationBarView::GetColor(ToolbarModel::SecurityLevel security_level,
                                   ColorKind kind) const {
-#if defined(OS_WIN)
-  if (GetNativeTheme() == ui::NativeThemeWin::instance()) {
-    switch (kind) {
-      case BACKGROUND:
-        return color_utils::GetSysSkColor(COLOR_WINDOW);
-      case TEXT:
-        return color_utils::GetSysSkColor(COLOR_WINDOWTEXT);
-      case SELECTED_TEXT:
-        return color_utils::GetSysSkColor(COLOR_HIGHLIGHTTEXT);
-      default:
-        // Other cases are handled below.
-        break;
-    }
-  }
-#endif
+  const ui::NativeTheme* native_theme = GetNativeTheme();
   switch (kind) {
-    // TODO(beng): source from theme provider.
-    case BACKGROUND:    return kOmniboxBackgroundColor;
-    case TEXT:          return SK_ColorBLACK;
-    case SELECTED_TEXT: return SK_ColorWHITE;
+    case BACKGROUND:
+#if defined(OS_CHROMEOS)
+      // Chrome OS requires a transparent omnibox background color.
+      return SkColorSetARGB(0, 255, 255, 255);
+#else
+      return native_theme->GetSystemColor(
+          ui::NativeTheme::kColorId_TextfieldDefaultBackground);
+#endif
+
+    case TEXT:
+      return native_theme->GetSystemColor(
+          ui::NativeTheme::kColorId_TextfieldDefaultColor);
+
+    case SELECTED_TEXT:
+      return native_theme->GetSystemColor(
+          ui::NativeTheme::kColorId_TextfieldSelectionColor);
 
     case DEEMPHASIZED_TEXT:
       return color_utils::AlphaBlend(

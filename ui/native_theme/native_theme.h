@@ -243,6 +243,8 @@ class NATIVE_THEME_EXPORT NativeTheme {
     // Textfield
     kColorId_TextfieldDefaultColor,
     kColorId_TextfieldDefaultBackground,
+    kColorId_TextfieldReadOnlyColor,
+    kColorId_TextfieldReadOnlyBackground,
     kColorId_TextfieldSelectionColor,
     kColorId_TextfieldSelectionBackgroundFocused,
     kColorId_TextfieldSelectionBackgroundUnfocused,
@@ -263,7 +265,7 @@ class NATIVE_THEME_EXPORT NativeTheme {
 
  protected:
   NativeTheme();
-  virtual ~NativeTheme() {}
+  virtual ~NativeTheme();
 
   unsigned int thumb_inactive_color_;
   unsigned int thumb_active_color_;

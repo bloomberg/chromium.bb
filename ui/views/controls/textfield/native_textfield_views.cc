@@ -47,9 +47,6 @@
 
 namespace {
 
-// Text color for read only.
-const SkColor kReadonlyTextColor = SK_ColorDKGRAY;
-
 // Default "system" color for text cursor.
 const SkColor kDefaultCursorColor = SK_ColorBLACK;
 
@@ -82,12 +79,8 @@ NativeTextfieldViews::NativeTextfieldViews(Textfield* parent)
 #else
   GetRenderText()->SetFont(textfield_->font());
 #endif
-  // Set the default text style.
-  gfx::StyleRange default_style;
-  default_style.foreground = textfield_->text_color();
-  GetRenderText()->set_default_style(default_style);
-  GetRenderText()->ApplyDefaultStyle();
 
+  UpdateColorsFromTheme(GetNativeTheme());
   set_context_menu_controller(this);
   set_drag_controller(this);
 }
@@ -292,15 +285,7 @@ void NativeTextfieldViews::OnBlur() {
 }
 
 void NativeTextfieldViews::OnNativeThemeChanged(const ui::NativeTheme* theme) {
-  gfx::RenderText* render_text = GetRenderText();
-  render_text->set_selection_color(
-      theme->GetSystemColor(ui::NativeTheme::kColorId_TextfieldSelectionColor));
-  render_text->set_selection_background_focused_color(
-      theme->GetSystemColor(
-          ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused));
-  render_text->set_selection_background_unfocused_color(
-      theme->GetSystemColor(
-              ui::NativeTheme::kColorId_TextfieldSelectionBackgroundUnfocused));
+  UpdateColorsFromTheme(theme);
 }
 
 void NativeTextfieldViews::SelectRect(const gfx::Point& start,
@@ -442,29 +427,21 @@ void NativeTextfieldViews::UpdateBorder() {
 }
 
 void NativeTextfieldViews::UpdateTextColor() {
+  gfx::StyleRange default_style(GetRenderText()->default_style());
+  default_style.foreground = textfield_->GetTextColor();
+  GetRenderText()->set_default_style(default_style);
+  GetRenderText()->ApplyDefaultStyle();
   SchedulePaint();
 }
 
 void NativeTextfieldViews::UpdateBackgroundColor() {
-  // TODO(oshima): Background has to match the border's shape.
-  set_background(
-      Background::CreateSolidBackground(textfield_->background_color()));
-  SchedulePaint();
-}
-
-void NativeTextfieldViews::UpdateCursorColor() {
+  const SkColor color = textfield_->GetBackgroundColor();
+  set_background(Background::CreateSolidBackground(color));
+  GetRenderText()->set_background_is_transparent(SkColorGetA(color) != 0xFF);
   SchedulePaint();
 }
 
 void NativeTextfieldViews::UpdateReadOnly() {
-  // Update the default text style.
-  gfx::StyleRange default_style(GetRenderText()->default_style());
-  default_style.foreground = textfield_->read_only() ? kReadonlyTextColor :
-                                                       textfield_->text_color();
-  GetRenderText()->set_default_style(default_style);
-  GetRenderText()->ApplyDefaultStyle();
-
-  SchedulePaint();
   OnTextInputTypeChanged();
 }
 
@@ -557,6 +534,14 @@ void NativeTextfieldViews::SelectSelectionModel(
 
 size_t NativeTextfieldViews::GetCursorPosition() const {
   return model_->GetCursorPosition();
+}
+
+bool NativeTextfieldViews::GetCursorEnabled() const {
+  return GetRenderText()->cursor_enabled();
+}
+
+void NativeTextfieldViews::SetCursorEnabled(bool enabled) {
+  GetRenderText()->SetCursorEnabled(enabled);
 }
 
 bool NativeTextfieldViews::HandleKeyPressed(const ui::KeyEvent& e) {
@@ -932,6 +917,19 @@ string16 NativeTextfieldViews::GetTextForDisplay(const string16& text) {
       base::i18n::ToLower(text) : text;
 }
 
+void NativeTextfieldViews::UpdateColorsFromTheme(const ui::NativeTheme* theme) {
+  UpdateTextColor();
+  UpdateBackgroundColor();
+  gfx::RenderText* render_text = GetRenderText();
+  render_text->set_cursor_color(kDefaultCursorColor);
+  render_text->set_selection_color(theme->GetSystemColor(
+      ui::NativeTheme::kColorId_TextfieldSelectionColor));
+  render_text->set_selection_background_focused_color(theme->GetSystemColor(
+      ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused));
+  render_text->set_selection_background_unfocused_color(theme->GetSystemColor(
+      ui::NativeTheme::kColorId_TextfieldSelectionBackgroundUnfocused));
+}
+
 void NativeTextfieldViews::UpdateCursor() {
   is_cursor_visible_ = !is_cursor_visible_;
   RepaintCursor();
@@ -951,15 +949,8 @@ void NativeTextfieldViews::RepaintCursor() {
 void NativeTextfieldViews::PaintTextAndCursor(gfx::Canvas* canvas) {
   TRACE_EVENT0("views", "NativeTextfieldViews::PaintTextAndCursor");
   canvas->Save();
-  GetRenderText()->set_background_is_transparent(
-      !textfield_->use_default_background_color() &&
-      SkColorGetA(textfield_->background_color()) != 0xFF);
   GetRenderText()->set_cursor_visible(is_drop_cursor_visible_ ||
       (is_cursor_visible_ && !model_->HasSelection()));
-  GetRenderText()->set_cursor_color(
-      textfield_->use_default_cursor_color() ?
-          kDefaultCursorColor :
-          textfield_->cursor_color());
   // Draw the text, cursor, and selection.
   GetRenderText()->Draw(canvas);
 

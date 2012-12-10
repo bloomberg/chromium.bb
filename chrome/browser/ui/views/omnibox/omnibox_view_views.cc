@@ -194,12 +194,6 @@ class OmniboxViewViews::AutocompleteTextfield : public views::Textfield {
     omnibox_view_->HandleMouseReleaseEvent(event);
   }
 
- protected:
-  // views::View implementation.
-  virtual void PaintChildren(gfx::Canvas* canvas) {
-    views::Textfield::PaintChildren(canvas);
-  }
-
  private:
   OmniboxViewViews* omnibox_view_;
   LocationBarView* location_bar_view_;
@@ -224,8 +218,7 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
       delete_at_end_pressed_(false),
       location_bar_view_(location_bar),
       ime_candidate_window_open_(false),
-      select_all_on_mouse_release_(false),
-      visible_caret_color_(SK_ColorBLACK) {
+      select_all_on_mouse_release_(false) {
 }
 
 OmniboxViewViews::~OmniboxViewViews() {
@@ -590,12 +583,7 @@ void OmniboxViewViews::SetFocus() {
 }
 
 void OmniboxViewViews::ApplyCaretVisibility() {
-  if (textfield_->cursor_color() != textfield_->background_color())
-    visible_caret_color_ = textfield_->cursor_color();
-  // Setting the color of the text cursor (caret) to the background color
-  // effectively hides it.
-  textfield_->SetCursorColor(model()->is_caret_visible() ?
-      visible_caret_color_ : textfield_->background_color());
+  textfield_->SetCursorEnabled(model()->is_caret_visible());
 }
 
 void OmniboxViewViews::OnTemporaryTextMaybeChanged(

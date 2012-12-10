@@ -106,7 +106,6 @@ class VIEWS_EXPORT NativeTextfieldViews : public TouchSelectionClientView,
   virtual void UpdateBorder() OVERRIDE;
   virtual void UpdateTextColor() OVERRIDE;
   virtual void UpdateBackgroundColor() OVERRIDE;
-  virtual void UpdateCursorColor() OVERRIDE;
   virtual void UpdateReadOnly() OVERRIDE;
   virtual void UpdateFont() OVERRIDE;
   virtual void UpdateIsObscured() OVERRIDE;
@@ -123,6 +122,8 @@ class VIEWS_EXPORT NativeTextfieldViews : public TouchSelectionClientView,
   virtual void GetSelectionModel(gfx::SelectionModel* sel) const OVERRIDE;
   virtual void SelectSelectionModel(const gfx::SelectionModel& sel) OVERRIDE;
   virtual size_t GetCursorPosition() const OVERRIDE;
+  virtual bool GetCursorEnabled() const OVERRIDE;
+  virtual void SetCursorEnabled(bool enabled) OVERRIDE;
   virtual bool HandleKeyPressed(const ui::KeyEvent& e) OVERRIDE;
   virtual bool HandleKeyReleased(const ui::KeyEvent& e) OVERRIDE;
   virtual void HandleFocus() OVERRIDE;
@@ -190,6 +191,9 @@ class VIEWS_EXPORT NativeTextfieldViews : public TouchSelectionClientView,
   // Converts |text| according to textfield style, e.g. lower case if
   // |textfield_| has STYLE_LOWERCASE style.
   string16 GetTextForDisplay(const string16& text);
+
+  // Updates any colors that have not been explicitly set from the theme.
+  void UpdateColorsFromTheme(const ui::NativeTheme* theme);
 
   // A callback function to periodically update the cursor state.
   void UpdateCursor();

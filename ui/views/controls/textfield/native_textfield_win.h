@@ -77,7 +77,6 @@ class NativeTextfieldWin
   virtual void UpdateBorder() OVERRIDE;
   virtual void UpdateTextColor() OVERRIDE;
   virtual void UpdateBackgroundColor() OVERRIDE;
-  virtual void UpdateCursorColor() OVERRIDE;
   virtual void UpdateReadOnly() OVERRIDE;
   virtual void UpdateFont() OVERRIDE;
   virtual void UpdateIsObscured() OVERRIDE;
@@ -94,6 +93,8 @@ class NativeTextfieldWin
   virtual void GetSelectionModel(gfx::SelectionModel* sel) const OVERRIDE;
   virtual void SelectSelectionModel(const gfx::SelectionModel& sel) OVERRIDE;
   virtual size_t GetCursorPosition() const OVERRIDE;
+  virtual bool GetCursorEnabled() const OVERRIDE;
+  virtual void SetCursorEnabled(bool enabled) OVERRIDE;
   virtual bool HandleKeyPressed(const ui::KeyEvent& event) OVERRIDE;
   virtual bool HandleKeyReleased(const ui::KeyEvent& event) OVERRIDE;
   virtual void HandleFocus() OVERRIDE;

@@ -11,6 +11,8 @@
 // For more information on visual style parts and states, see:
 // http://msdn.microsoft.com/library/default.asp?url=/library/en-us/shellcc/platform/commctls/userex/topics/partsandstates.asp
 
+#include <map>
+
 #include <windows.h>
 #include <uxtheme.h>
 
@@ -18,6 +20,7 @@
 #include "base/compiler_specific.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/size.h"
+#include "ui/gfx/sys_color_change_listener.h"
 #include "ui/native_theme/native_theme.h"
 
 class SkCanvas;
@@ -30,7 +33,8 @@ namespace ui {
 // of several PaintXXX methods to an API, inherited from the NativeTheme base
 // class, that consists of a single Paint() method with a argument to indicate
 // what kind of part to paint.
-class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme {
+class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
+                                           public gfx::SysColorChangeListener {
  public:
   enum ThemeName {
     BUTTON,
@@ -96,7 +100,7 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme {
                          bool fill_content_area,
                          bool draw_edges) const;
 
-  // NativeTheme Implementation:
+  // NativeTheme implementation:
   virtual gfx::Size GetPartSize(Part part,
                                 State state,
                                 const ExtraParams& extra) const OVERRIDE;
@@ -110,6 +114,12 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme {
  private:
   NativeThemeWin();
   ~NativeThemeWin();
+
+  // gfx::SysColorChangeListener implementation:
+  virtual void OnSysColorChange() OVERRIDE;
+
+  // Update the locally cached set of system colors.
+  void UpdateSystemColors();
 
   // Paint directly to canvas' HDC.
   void PaintDirect(SkCanvas* canvas,
@@ -331,6 +341,10 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme {
 
   // A cache of open theme handles.
   mutable HANDLE theme_handles_[LAST];
+
+  // The system color change listener and the updated cache of system colors.
+  gfx::ScopedSysColorChangeListener color_change_listener_;
+  mutable std::map<int, SkColor> system_colors_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeThemeWin);
 };

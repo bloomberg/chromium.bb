@@ -414,7 +414,7 @@ class BrowserView : public BrowserWindow,
   // views::SingleSplitViewListener overrides:
   virtual bool SplitHandleMoved(views::SingleSplitView* sender) OVERRIDE;
 
-  // gfx::ScopedSysColorChangeListener overrides:
+  // gfx::SysColorChangeListener overrides:
   virtual void OnSysColorChange() OVERRIDE;
 
   // Returns the resource ID to use for the OTR icon, which depends on
