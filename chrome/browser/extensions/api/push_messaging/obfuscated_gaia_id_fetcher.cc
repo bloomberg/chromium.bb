@@ -20,26 +20,32 @@ namespace {
 
 // URL of the service to get obfuscated Gaia ID (here misnamed channel ID).
 static const char kCWSChannelServiceURL[] =
-    "https://www.googleapis.com/chromewebstore/v1.1/channels/id";
+    "https://www.googleapis.com/gcm_for_chrome/v1/channels/id";
 
-static GoogleServiceAuthError CreateAuthError(URLRequestStatus status) {
-  if (status.status() == URLRequestStatus::CANCELED) {
+GoogleServiceAuthError CreateAuthError(const URLFetcher* source) {
+  if (source->GetStatus().status() == URLRequestStatus::CANCELED) {
     return GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED);
   } else {
     // TODO(munjal): Improve error handling. Currently we return connection
     // error for even application level errors. We need to either expand the
     // GoogleServiceAuthError enum or create a new one to report better
     // errors.
-    DLOG(WARNING) << "Server returned error: errno " << status.error();
-    return GoogleServiceAuthError::FromConnectionError(status.error());
+    if (source->GetStatus().is_success()) {
+      DLOG(WARNING) << "Remote server returned " << source->GetResponseCode();
+      return GoogleServiceAuthError::FromConnectionError(
+          source->GetResponseCode());
+    } else {
+      DLOG(WARNING) << "URLFetcher failed: " << source->GetStatus().error();
+      return GoogleServiceAuthError::FromConnectionError(
+          source->GetStatus().error());
+    }
   }
 }
 
 // Returns a vector of scopes needed to call the API to get obfuscated Gaia ID.
 std::vector<std::string> GetScopes() {
   std::vector<std::string> scopes;
-  scopes.push_back(
-      "https://www.googleapis.com/auth/chromewebstore.notification");
+  scopes.push_back("https://www.googleapis.com/auth/gcm_for_chrome.readonly");
   return scopes;
 }
 
@@ -96,7 +102,7 @@ void ObfuscatedGaiaIdFetcher::ProcessApiCallSuccess(
 
 void ObfuscatedGaiaIdFetcher::ProcessApiCallFailure(
     const net::URLFetcher* source) {
-  ReportFailure(CreateAuthError(source->GetStatus()));
+  ReportFailure(CreateAuthError(source));
 }
 
 void ObfuscatedGaiaIdFetcher::ProcessNewAccessToken(
