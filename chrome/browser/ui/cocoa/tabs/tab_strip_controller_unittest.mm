@@ -214,40 +214,4 @@ TEST_F(TabStripControllerTest, CorrectToolTipText) {
                 userData:nil] cStringUsingEncoding:NSASCIIStringEncoding]);
 }
 
-TEST_F(TabStripControllerTest, ViewAccessibility_Contents) {
-  NSArray* attrs = [tab_strip_ accessibilityAttributeNames];
-  ASSERT_TRUE([attrs containsObject:NSAccessibilityContentsAttribute]);
-
-  // Create two tabs and ensure they exist in the contents array.
-  TabView* tab1 = CreateTab();
-  TabView* tab2 = CreateTab();
-  NSObject* contents =
-      [tab_strip_ accessibilityAttributeValue:NSAccessibilityContentsAttribute];
-  DCHECK([contents isKindOfClass:[NSArray class]]);
-  NSArray* contentsArray = static_cast<NSArray*>(contents);
-  ASSERT_TRUE([contentsArray containsObject:tab1]);
-  ASSERT_TRUE([contentsArray containsObject:tab2]);
-}
-
-TEST_F(TabStripControllerTest, ViewAccessibility_Value) {
-  NSArray* attrs = [tab_strip_ accessibilityAttributeNames];
-  ASSERT_TRUE([attrs containsObject:NSAccessibilityValueAttribute]);
-
-  // Create two tabs and ensure the active one gets returned.
-  TabView* tab1 = CreateTab();
-  TabView* tab2 = CreateTab();
-  EXPECT_FALSE([tab1 controller].selected);
-  EXPECT_TRUE([tab2 controller].selected);
-  NSObject* value =
-      [tab_strip_ accessibilityAttributeValue:NSAccessibilityValueAttribute];
-  EXPECT_EQ(tab2, value);
-
-  model_->ActivateTabAt(0, false);
-  EXPECT_TRUE([tab1 controller].selected);
-  EXPECT_FALSE([tab2 controller].selected);
-  value =
-      [tab_strip_ accessibilityAttributeValue:NSAccessibilityValueAttribute];
-  EXPECT_EQ(tab1, value);
-}
-
 }  // namespace

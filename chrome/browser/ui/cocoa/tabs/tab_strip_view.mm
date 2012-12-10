@@ -215,10 +215,6 @@
     }
     return tabs;
   }
-  if ([attribute isEqual:NSAccessibilityContentsAttribute])
-    return [self accessibilityAttributeValue:NSAccessibilityChildrenAttribute];
-  if ([attribute isEqual:NSAccessibilityValueAttribute])
-    return [controller_ activeTabView];
 
   return [super accessibilityAttributeValue:attribute];
 }
@@ -227,8 +223,6 @@
   NSMutableArray* attributes =
       [[super accessibilityAttributeNames] mutableCopy];
   [attributes addObject:NSAccessibilityTabsAttribute];
-  [attributes addObject:NSAccessibilityContentsAttribute];
-  [attributes addObject:NSAccessibilityValueAttribute];
 
   return [attributes autorelease];
 }
