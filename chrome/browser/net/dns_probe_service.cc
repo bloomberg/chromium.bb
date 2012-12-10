@@ -154,6 +154,28 @@ void DnsProbeService::HistogramProbes() const {
                               result_, MAX_RESULT);
     UMA_HISTOGRAM_MEDIUM_TIMES("DnsProbe.Probe.NcnOnline.Elapsed", elapsed);
   }
+
+  switch (result_) {
+  case PROBE_UNKNOWN:
+    UMA_HISTOGRAM_MEDIUM_TIMES("DnsProbe.Probe.ResultUnknown.Elapsed",
+                               elapsed);
+    break;
+  case PROBE_NO_INTERNET:
+    UMA_HISTOGRAM_MEDIUM_TIMES("DnsProbe.Probe.ResultNoInternet.Elapsed",
+                               elapsed);
+    break;
+  case PROBE_BAD_CONFIG:
+    UMA_HISTOGRAM_MEDIUM_TIMES("DnsProbe.Probe.ResultBadConfig.Elapsed",
+                               elapsed);
+    break;
+  case PROBE_NXDOMAIN:
+    UMA_HISTOGRAM_MEDIUM_TIMES("DnsProbe.Probe.ResultNxdomain.Elapsed",
+                               elapsed);
+    break;
+  case MAX_RESULT:
+    NOTREACHED();
+    break;
+  }
 }
 
 DnsProbeService::Result DnsProbeService::EvaluateResults() const {
