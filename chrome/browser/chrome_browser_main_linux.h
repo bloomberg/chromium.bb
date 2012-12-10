@@ -10,11 +10,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chrome_browser_main_posix.h"
-#include "chrome/common/cancelable_task_tracker.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/version_loader.h"
-#endif
 
 #if !defined(OS_CHROMEOS)
 namespace chrome {
@@ -38,11 +33,7 @@ class ChromeBrowserMainPartsLinux : public ChromeBrowserMainPartsPosix {
   virtual void PostMainMessageLoopRun() OVERRIDE;
 
  private:
-#if defined(OS_CHROMEOS)
-  // TODO(stevenjb): Move these to ChromeBrowserMainChromeos.
-  chromeos::VersionLoader cros_version_loader_;
-  CancelableTaskTracker tracker_;
-#else
+#if !defined(OS_CHROMEOS)
   scoped_refptr<chrome::RemovableDeviceNotificationsLinux>
       removable_device_notifications_linux_;
 #endif

@@ -13,6 +13,7 @@
 #include "base/chromeos/chromeos_version.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "base/linux_util.h"
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
@@ -95,6 +96,13 @@
 namespace chromeos {
 
 namespace {
+
+#if defined(USE_LINUX_BREAKPAD)
+void ChromeOSVersionCallback(const std::string& version) {
+  base::SetLinuxDistro(std::string("CrOS ") + version);
+}
+
+#endif
 
 class MessageLoopObserver : public MessageLoopForUI::Observer {
   virtual base::EventStatus WillProcessEvent(
@@ -480,6 +488,12 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   // Initialize magnification manager before ash tray is created. And this must
   // be placed after UserManager::SessionStarted();
   chromeos::MagnificationManager::Initialize();
+
+#if defined(USE_LINUX_BREAKPAD)
+  cros_version_loader_.GetVersion(VersionLoader::VERSION_FULL,
+                                  base::Bind(&ChromeOSVersionCallback),
+                                  &tracker_);
+#endif
 
   // In Aura builds this will initialize ash::Shell.
   ChromeBrowserMainPartsLinux::PreProfileInit();

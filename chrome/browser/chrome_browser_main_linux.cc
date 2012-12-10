@@ -33,11 +33,7 @@
 namespace {
 
 #if defined(USE_LINUX_BREAKPAD)
-#if defined(OS_CHROMEOS)
-void ChromeOSVersionCallback(const std::string& version) {
-  base::SetLinuxDistro(std::string("CrOS ") + version);
-}
-#else
+#if !defined(OS_CHROMEOS)
 void GetLinuxDistroCallback() {
   base::GetLinuxDistro();  // Initialize base::linux_distro if needed.
 }
@@ -91,11 +87,7 @@ ChromeBrowserMainPartsLinux::~ChromeBrowserMainPartsLinux() {
 
 void ChromeBrowserMainPartsLinux::PreProfileInit() {
 #if defined(USE_LINUX_BREAKPAD)
-#if defined(OS_CHROMEOS)
-  cros_version_loader_.GetVersion(chromeos::VersionLoader::VERSION_FULL,
-                                  base::Bind(&ChromeOSVersionCallback),
-                                  &tracker_);
-#else
+#if !defined(OS_CHROMEOS)
   // Needs to be called after we have chrome::DIR_USER_DATA and
   // g_browser_process.  This happens in PreCreateThreads.
   content::BrowserThread::PostTask(content::BrowserThread::FILE,
