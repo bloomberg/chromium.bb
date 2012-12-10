@@ -15875,7 +15875,7 @@ var keyboardOverlayData = {
     'w<>CTRL': 'keyboardOverlayCloseTab',
     'w<>CTRL<>SHIFT': 'keyboardOverlayCloseWindow',
     'x<>CTRL': 'keyboardOverlayCut',
-    'z<>ALT<>CTRL': 'keyboardOverlayToggleAccessibilityFeatures',
+    'z<>ALT<>CTRL': 'keyboardOverlayToggleSpokenFeedback',
     'z<>CTRL': 'keyboardOverlayUndo'
   }
 };

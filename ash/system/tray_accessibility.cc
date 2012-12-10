@@ -206,7 +206,7 @@ class AccessibilityPopupView : public TrayNotificationView {
   views::Label* GetLabel() {
     views::Label* label = new views::Label(
         l10n_util::GetStringUTF16(
-            IDS_ASH_STATUS_TRAY_ACCESSIBILITY_TURNED_ON_BUBBLE));
+            IDS_ASH_STATUS_TRAY_SPOKEN_FEEDBACK_ENABLED_BUBBLE));
     label->SetMultiLine(true);
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     return label;

@@ -2083,8 +2083,8 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_POINTER_OVERLAY_SECTION_TITLE_MOUSE" desc="The title for 'Mouse' section of the Pointer Settings overlay.">
     Mouse
   </message>
-  <message name="IDS_STATUSBAR_ACCESSIBILITY_ENABLED" desc="The tooltip for the status bar button to indicate that accessibility is enabled.">
-    Accessibility features are enabled.
+  <message name="IDS_STATUSBAR_SPOKEN_FEEDBACK_ENABLED" desc="The tooltip for the status bar button to indicate that spoken feedback has been enabled.">
+    Spoken feedback is enabled.
   </message>
   <message name="IDS_STATUSBAR_DISABLE_SPOKEN_FEEDBACK" desc="The menu option to disable spoken feedback accessibility feature.">
     Disable spoken feedback
@@ -2985,9 +2985,6 @@ Battery full
   <message name="IDS_KEYBOARD_OVERLAY_TASK_MANAGER" desc="The text in the keyboard overlay to explain the shortcut.">
     Task Manager
   </message>
-  <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_ACCESSIBILITY_FEATURES" desc="The text in the keyboard overlay to explain the shortcut (enable or disable accessibility features).">
-    Toggle accessibility features
-  </message>
   <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_BOOKMARK_BAR" desc="The text in the keyboard overlay to explain the shortcut.">
     Toggle bookmark bar
   </message>
@@ -2996,6 +2993,9 @@ Battery full
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_SPEECH_INPUT" desc="The text in the keyboard overlay to explain the shortcut (start or stop speech input).">
     Toggle speech input
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_SPOKEN_FEEDBACK" desc="The text in the keyboard overlay to explain the shortcut (enable or disable spoken feedback).">
+    Toggle spoken feedback
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_UNDO" desc="The text in the keyboard overlay to explain the shortcut.">
     Undo

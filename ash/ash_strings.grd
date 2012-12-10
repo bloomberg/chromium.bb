@@ -208,9 +208,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBLE_NAME" desc="The accessible name of the status tray.">
         Status tray
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_TURNED_ON_BUBBLE" desc="The message shown on a bubble when accessibility is turned on">
-Accessibility features are enabled.
-Press Ctrl+Alt+Z to cancel.
+      <message name="IDS_ASH_STATUS_TRAY_SPOKEN_FEEDBACK_ENABLED_BUBBLE" desc="The message shown on a bubble when spoken feedback is enabled">
+Spoken feedback is enabled.
+Press Ctrl+Alt+Z to disable.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_SETTINGS" desc="The label used for the settings item in the status tray.">
         Settings
