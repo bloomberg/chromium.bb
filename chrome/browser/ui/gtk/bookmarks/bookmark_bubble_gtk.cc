@@ -24,7 +24,7 @@
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
@@ -58,11 +58,6 @@ void BookmarkBubbleGtk::BubbleClosing(BubbleGtk* bubble,
     remove_bookmark_ = newly_bookmarked_;
     apply_edits_ = false;
   }
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_BOOKMARK_BUBBLE_HIDDEN,
-      content::Source<Profile>(profile_->GetOriginalProfile()),
-      content::NotificationService::NoDetails());
 }
 
 void BookmarkBubbleGtk::Observe(int type,
