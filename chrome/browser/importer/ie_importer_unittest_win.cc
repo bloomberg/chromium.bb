@@ -467,6 +467,8 @@ TEST_F(IEImporterTest, IEImporter) {
   ASSERT_TRUE(CreateUrlFile(
       links_path.AppendASCII("SubFolderOfLinks").AppendASCII("SubLink.url"),
       L"http://www.links-sublink.com/"));
+  ASSERT_TRUE(CreateUrlFile(path.AppendASCII("IEDefaultLink.url"),
+                            L"http://go.microsoft.com/fwlink/?linkid=140813"));
   file_util::WriteFile(path.AppendASCII("InvalidUrlFile.url"), "x", 1);
   file_util::WriteFile(path.AppendASCII("PlainTextFile.txt"), "x", 1);
 

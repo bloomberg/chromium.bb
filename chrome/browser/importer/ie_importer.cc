@@ -827,7 +827,13 @@ void IEImporter::ParseFavoritesFolder(
     GURL url = ReadURLFromInternetShortcut(url_locator);
     if (!url.is_valid())
       continue;
-
+    // Skip default bookmarks. go.microsoft.com redirects to
+    // search.microsoft.com, and http://go.microsoft.com/fwlink/?LinkId=XXX,
+    // which URLs IE has as default, to some another sites.
+    // We expect that users will never themselves create bookmarks having this
+    // hostname.
+    if (url.host() == "go.microsoft.com")
+      continue;
     // Read favicon.
     UpdateFaviconMap(*it, url, url_locator, &favicon_map);
 
