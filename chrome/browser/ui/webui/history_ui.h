@@ -10,6 +10,7 @@
 #include "base/string16.h"
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/history/web_history_service.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/cancelable_task_tracker.h"
 #include "content/public/browser/notification_registrar.h"
@@ -53,6 +54,12 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
                      HistoryService::Handle request_handle,
                      history::QueryResults* results);
 
+  // Callback from the WebHistoryService when a query has completed.
+  void WebHistoryQueryComplete(const string16& search_text,
+                               const history::QueryOptions& options,
+                               history::WebHistoryService::Request* request,
+                               const DictionaryValue* results_value);
+
   // Callback from the history system when visits were deleted.
   void RemoveComplete();
 
@@ -67,10 +74,14 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
 
   content::NotificationRegistrar registrar_;
 
-  // Our consumer for search requests to the history service.
-  CancelableRequestConsumerT<int, 0> cancelable_search_consumer_;
+  // Consumer for search requests to the history service.
+  CancelableRequestConsumerT<int, 0> history_request_consumer_;
 
-  // Our tracker for delete requests to the history service.
+  // The currently-executing request for synced history results.
+  // Deleting the request will cancel it.
+  scoped_ptr<history::WebHistoryService::Request> web_history_request_;
+
+  // Tracker for delete requests to the history service.
   CancelableTaskTracker delete_task_tracker_;
 
   // The list of URLs that are in the process of being deleted.

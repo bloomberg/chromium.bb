@@ -1188,6 +1188,13 @@ const Experiment kExperiments[] = {
     kOsWin | kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kEnableRichNotifications)
   },
+  {
+    "full-history-sync",
+    IDS_FLAGS_FULL_HISTORY_SYNC_NAME,
+    IDS_FLAGS_FULL_HISTORY_SYNC_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kHistoryEnableFullHistorySync)
+  },
 };
 
 const Experiment* experiments = kExperiments;

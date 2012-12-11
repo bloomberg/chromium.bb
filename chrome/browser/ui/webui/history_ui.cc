@@ -24,6 +24,8 @@
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_types.h"
+#include "chrome/browser/history/web_history_service.h"
+#include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -154,7 +156,8 @@ std::string HistoryUIHTMLSource::GetMimeType(const std::string& path) const {
 BrowsingHistoryHandler::BrowsingHistoryHandler() {}
 
 BrowsingHistoryHandler::~BrowsingHistoryHandler() {
-  cancelable_search_consumer_.CancelAllRequests();
+  history_request_consumer_.CancelAllRequests();
+  web_history_request_.reset();
 }
 
 void BrowsingHistoryHandler::RegisterMessages() {
@@ -195,16 +198,29 @@ bool BrowsingHistoryHandler::ExtractIntegerValueAtIndex(const ListValue* value,
 
 void BrowsingHistoryHandler::QueryHistory(
     string16 search_text, const history::QueryOptions& options) {
+  Profile* profile = Profile::FromWebUI(web_ui());
+
   // Anything in-flight is invalid.
-  cancelable_search_consumer_.CancelAllRequests();
+  history_request_consumer_.CancelAllRequests();
+  web_history_request_.reset();
 
   HistoryService* hs = HistoryServiceFactory::GetForProfile(
-      Profile::FromWebUI(web_ui()), Profile::EXPLICIT_ACCESS);
+      profile, Profile::EXPLICIT_ACCESS);
   hs->QueryHistory(search_text,
       options,
-      &cancelable_search_consumer_,
+      &history_request_consumer_,
       base::Bind(&BrowsingHistoryHandler::QueryComplete,
                  base::Unretained(this), search_text, options));
+
+  history::WebHistoryService* web_history =
+      WebHistoryServiceFactory::GetForProfile(profile);
+  if (web_history) {
+    web_history_request_ = web_history->QueryHistory(
+        search_text,
+        options,
+        base::Bind(&BrowsingHistoryHandler::WebHistoryQueryComplete,
+                   base::Unretained(this), search_text, options));
+  }
 }
 
 void BrowsingHistoryHandler::HandleQueryHistory(const ListValue* args) {
@@ -365,6 +381,26 @@ void BrowsingHistoryHandler::QueryComplete(
   info_value.Set("cursor", results->cursor().ToValue());
 
   web_ui()->CallJavascriptFunction("historyResult", info_value, results_value);
+}
+
+void BrowsingHistoryHandler::WebHistoryQueryComplete(
+    const string16& search_text,
+    const history::QueryOptions& options,
+    history::WebHistoryService::Request* request,
+    const DictionaryValue* results_value) {
+  DCHECK_EQ(request, web_history_request_.get());
+  DictionaryValue info_value;
+  info_value.SetString("term", search_text);
+  info_value.SetBoolean("finished", false);
+
+  const ListValue* result_list;
+  if (results_value && results_value->GetList("event", &result_list)) {
+    web_ui()->CallJavascriptFunction("syncedHistoryResult",
+                                     info_value,
+                                     *result_list);
+  } else {
+    NOTREACHED() << "Unexpected result from history server.";
+  }
 }
 
 void BrowsingHistoryHandler::RemoveComplete() {
