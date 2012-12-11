@@ -157,14 +157,15 @@ TEST_F(ValidatorTests, GeneratesCorrectMasksFromSizes) {
   EXPECT_EQ(0xE000000F, _validator->code_address_mask());
 
   // Reinitialize the validator to test a different bundle size.
-  SfiValidator *old_validator = _validator;
-  _validator = new SfiValidator(32,
-                                kCodeRegionSize,
-                                kDataRegionSize,
-                                kAbiReadOnlyRegisters,
-                                kAbiDataAddrRegisters,
-                                _validator->CpuFeatures());
-  delete old_validator;
+  SfiValidator *new_validator = new SfiValidator(32,
+                                                 kCodeRegionSize,
+                                                 kDataRegionSize,
+                                                 kAbiReadOnlyRegisters,
+                                                 kAbiDataAddrRegisters,
+                                                 _validator->CpuFeatures());
+  delete _validator;
+  _validator = new_validator;
+
   EXPECT_EQ(0xC0000000, _validator->data_address_mask())
       << "Changes in bundle size should not affect the data mask.";
   EXPECT_EQ(0xE000001F, _validator->code_address_mask())
@@ -1205,13 +1206,13 @@ TEST_F(ValidatorTests, LiteralPoolHeadInstruction) {
         (imm16 & 0xF) |
         ((imm16 & 0xFFF0) << 8);
     if (literal_pool[0] == kLiteralPoolHead) {
-      validation_should_pass(literal_pool.data(),
+      validation_should_pass(&literal_pool.front(),
                              literal_pool.size(),
                              kDefaultBaseAddr,
                              "valid literal pool: "
                              "starts with special BKPT");
     } else {
-      validation_should_fail(literal_pool.data(),
+      validation_should_fail(&literal_pool.front(),
                              literal_pool.size(),
                              kDefaultBaseAddr,
                              "invalid literal pool: "
@@ -1231,13 +1232,13 @@ TEST_F(ValidatorTests, LiteralPoolHeadPosition) {
       literal_pool[pos] = kLiteralPoolHead;
     }
     if (pos == 0) {
-      validation_should_pass(literal_pool.data(),
+      validation_should_pass(&literal_pool.front(),
                              literal_pool.size(),
                              kDefaultBaseAddr,
                              "valid literal pool: "
                              "starts with special head instruction");
     } else {
-      validation_should_fail(literal_pool.data(),
+      validation_should_fail(&literal_pool.front(),
                              literal_pool.size(),
                              kDefaultBaseAddr,
                              "invalid literal pool: "
@@ -1253,7 +1254,7 @@ TEST_F(ValidatorTests, LiteralPoolBig) {
   for (size_t pos = 0; pos <= literal_pools.size(); ++pos) {
     std::fill(literal_pools.begin(), literal_pools.end(), kSvc0);
     literal_pools[pos] = kLiteralPoolHead;
-    validation_should_fail(literal_pools.data(),
+    validation_should_fail(&literal_pools.front(),
                            literal_pools.size(),
                            kDefaultBaseAddr,
                            "invalid literal pool: two pools, one head");
@@ -1288,12 +1289,12 @@ TEST_F(ValidatorTests, LiteralPoolBranch) {
       bool target_in_pool = (bundle_pos < b_target) &&
           (b_target < bundle_pos * 2);  // Excluding head.
       if (target_in_pool) {
-        validation_should_fail(code.data(),
+        validation_should_fail(&code.front(),
                                code.size(),
                                kDefaultBaseAddr,
                                "branch inside a literal pool");
       } else {
-        validation_should_pass(code.data(),
+        validation_should_pass(&code.front(),
                                code.size(),
                                kDefaultBaseAddr,
                                "branch around or at head of a literal pool");
