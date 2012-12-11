@@ -46,6 +46,11 @@ class UI_EXPORT GridSampler : public KMeanImageSampler {
    int calls_;
 };
 
+// Returns the color in an ARGB |image| that is closest in RGB-space to the
+// provided |color|. Exported for testing.
+UI_EXPORT SkColor FindClosestColor(const uint8_t* image, int width, int height,
+                                   SkColor color);
+
 // Returns an SkColor that represents the calculated dominant color in the png.
 // This uses a KMean clustering algorithm to find clusters of pixel colors in
 // RGB space.
@@ -56,8 +61,6 @@ class UI_EXPORT GridSampler : public KMeanImageSampler {
 // acceptable as a color choice. This can be from 0 to 765.
 //
 // RGB KMean Algorithm (N clusters, M iterations):
-// TODO (dtrainor): Try moving most/some of this to HSV space?  Better for
-// color comparisons/averages?
 // 1.Pick N starting colors by randomly sampling the pixels. If you see a
 //   color you already saw keep sampling. After a certain number of tries
 //   just remove the cluster and continue with N = N-1 clusters (for an image
@@ -82,6 +85,9 @@ class UI_EXPORT GridSampler : public KMeanImageSampler {
 //   |darkness_limit| < SUM(R, G, B) < |brightness_limit|. Return that color.
 //   If no color fulfills that requirement return the color with the largest
 //   weight regardless of whether or not it fulfills the equation above.
+//
+// Note: Switching to HSV space did not improve the results of this algorithm
+// for typical favicon images.
 UI_EXPORT SkColor CalculateKMeanColorOfPNG(
     scoped_refptr<base::RefCountedMemory> png,
     uint32_t darkness_limit,

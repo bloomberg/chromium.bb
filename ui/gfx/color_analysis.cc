@@ -175,6 +175,37 @@ int GridSampler::GetSample(int width, int height) {
   return index % (width * height);
 }
 
+SkColor FindClosestColor(const uint8_t* image,
+                         int width,
+                         int height,
+                         SkColor color) {
+  uint8_t in_r = SkColorGetR(color);
+  uint8_t in_g = SkColorGetG(color);
+  uint8_t in_b = SkColorGetB(color);
+  // Search using distance-squared to avoid expensive sqrt() operations.
+  int best_distance_squared = kint32max;
+  SkColor best_color = color;
+  const uint8_t* byte = image;
+  for (int i = 0; i < width * height; ++i) {
+    uint8_t b = *(byte++);
+    uint8_t g = *(byte++);
+    uint8_t r = *(byte++);
+    uint8_t a = *(byte++);
+    // Ignore fully transparent pixels.
+    if (a == 0)
+      continue;
+    int distance_squared =
+        (in_b - b) * (in_b - b) +
+        (in_g - g) * (in_g - g) +
+        (in_r - r) * (in_r - r);
+    if (distance_squared < best_distance_squared) {
+      best_distance_squared = distance_squared;
+      best_color = SkColorSetRGB(r, g, b);
+    }
+  }
+  return best_color;
+}
+
 // For a 16x16 icon on an Intel Core i5 this function takes approximately
 // 0.5 ms to run.
 // TODO(port): This code assumes the CPU architecture is little-endian.
@@ -317,7 +348,9 @@ SkColor CalculateKMeanColorOfBuffer(uint8_t* decoded_data,
     }
   }
 
-  return color;
+  // Find a color that actually appears in the image (the K-mean cluster center
+  // will not usually be a color that appears in the image).
+  return FindClosestColor(decoded_data, img_width, img_height, color);
 }
 
 SkColor CalculateKMeanColorOfPNG(scoped_refptr<base::RefCountedMemory> png,

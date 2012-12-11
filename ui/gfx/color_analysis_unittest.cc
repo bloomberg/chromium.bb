@@ -10,6 +10,8 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 
+using color_utils::FindClosestColor;
+
 namespace {
 
 const unsigned char k1x1White[] = {
@@ -202,6 +204,33 @@ TEST_F(ColorAnalysisTest, GridSampler) {
   EXPECT_EQ(4 + 4 * kWidth, sampler.GetSample(kWidth, kHeight));
   EXPECT_EQ(4 + 7 * kWidth, sampler.GetSample(kWidth, kHeight));
   EXPECT_EQ(4 + 10 * kWidth, sampler.GetSample(kWidth, kHeight));
+}
+
+TEST_F(ColorAnalysisTest, FindClosestColor) {
+  // Empty image returns input color.
+  SkColor color = FindClosestColor(NULL, 0, 0, SK_ColorRED);
+  EXPECT_EQ(SK_ColorRED, color);
+
+  // Single color image returns that color.
+  SkBitmap bitmap;
+  bitmap.setConfig(SkBitmap::kARGB_8888_Config, 16, 16);
+  bitmap.allocPixels();
+  bitmap.eraseColor(SK_ColorWHITE);
+  color = FindClosestColor(static_cast<uint8_t*>(bitmap.getPixels()),
+                           bitmap.width(),
+                           bitmap.height(),
+                           SK_ColorRED);
+  EXPECT_EQ(SK_ColorWHITE, color);
+
+  // Write a black pixel into the image. A dark grey input pixel should match
+  // the black one in the image.
+  uint32_t* pixel = bitmap.getAddr32(0, 0);
+  *pixel = SK_ColorBLACK;
+  color = FindClosestColor(static_cast<uint8_t*>(bitmap.getPixels()),
+                           bitmap.width(),
+                           bitmap.height(),
+                           SK_ColorDKGRAY);
+  EXPECT_EQ(SK_ColorBLACK, color);
 }
 
 TEST_F(ColorAnalysisTest, CalculateKMeanColorOfBitmap) {
