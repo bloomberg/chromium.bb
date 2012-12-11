@@ -14,15 +14,9 @@
 #include "content/public/browser/render_view_host.h"
 #include "webkit/glue/webpreferences.h"
 
-// Tests that GPU-related WebKit preferences are set for extension background
-// pages. See http://crbug.com/64512.
-// Disabled on Windows since it breaks Win7 build bots: http://crbug.com/164835.
-#if defined(OS_WIN)
-#define MAYBE_WebKitPrefsBackgroundPage DISABLED_WebKitPrefsBackgroundPage
-#else
-#define MAYBE_WebKitPrefsBackgroundPage WebKitPrefsBackgroundPage
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_WebKitPrefsBackgroundPage) {
+// Tests that GPU acceleration is disabled for extension background
+// pages. See crbug.com/163698 .
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WebKitPrefsBackgroundPage) {
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("good").AppendASCII("Extensions")
                     .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
@@ -34,7 +28,5 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_WebKitPrefsBackgroundPage) {
       FindHostWithPath(manager, "/backgroundpage.html", 1);
   webkit_glue::WebPreferences prefs =
       host->render_view_host()->GetWebkitPreferences();
-  ASSERT_TRUE(prefs.experimental_webgl_enabled);
-  ASSERT_TRUE(prefs.accelerated_compositing_enabled);
-  ASSERT_TRUE(prefs.accelerated_2d_canvas_enabled);
+  ASSERT_FALSE(prefs.accelerated_compositing_enabled);
 }

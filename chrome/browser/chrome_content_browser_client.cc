@@ -1650,6 +1650,9 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   }
   DCHECK(!web_prefs->default_encoding.empty());
 
+  if (content::IsForceCompositingModeEnabled())
+    web_prefs->force_compositing_mode = true;
+
   WebContents* web_contents = WebContents::FromRenderViewHost(rvh);
   chrome::ViewType view_type = chrome::GetViewType(web_contents);
   ExtensionService* service =
@@ -1666,9 +1669,6 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
           extension, view_type, web_prefs);
     }
   }
-
-  if (content::IsForceCompositingModeEnabled())
-    web_prefs->force_compositing_mode = true;
 
   if (view_type == chrome::VIEW_TYPE_NOTIFICATION) {
     web_prefs->allow_scripts_to_close_windows = true;
