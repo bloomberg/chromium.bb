@@ -4,6 +4,7 @@
 
 #include "content/browser/loader/resource_loader.h"
 
+#include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/time.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -15,6 +16,8 @@
 #include "content/common/ssl_status_serialization.h"
 #include "content/public/browser/cert_store.h"
 #include "content/public/browser/resource_dispatcher_host_login_delegate.h"
+#include "content/public/common/content_client.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/resource_response.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
@@ -302,6 +305,19 @@ void ResourceLoader::OnResponseStarted(net::URLRequest* unused) {
   DCHECK_EQ(request_.get(), unused);
 
   VLOG(1) << "OnResponseStarted: " << request_->url().spec();
+
+  // The CanLoadPage check should take place after any server redirects have
+  // finished, at the point in time that we know a page will commit in the
+  // renderer process.
+  ResourceRequestInfoImpl* info = GetRequestInfo();
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+  if (!policy->CanLoadPage(info->GetChildID(),
+                           request_->url(),
+                           info->GetResourceType())) {
+    Cancel();
+    return;
+  }
 
   if (!request_->status().is_success()) {
     ResponseCompleted();

@@ -73,7 +73,8 @@ IN_PROC_BROWSER_TEST_F(ChromeContentBrowserClientBrowserTest,
                        SitePerProcessNavigation) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kSitePerProcess);
-  const GURL url(std::string("chrome://chrome/"));
+  ASSERT_TRUE(test_server()->Start());
+  const GURL url(test_server()->GetURL("files/title1.html"));
 
   ui_test_utils::NavigateToURL(browser(), url);
   NavigationEntry* entry = GetLastCommittedEntry();

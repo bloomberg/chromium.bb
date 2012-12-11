@@ -167,6 +167,17 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
     return false;
   }
 
+  bool CanLoadPage(const GURL& gurl) {
+    if (origin_lock_.is_empty())
+      return true;
+
+    // TODO(creis): We must pass the valid browser_context to convert hosted
+    // apps URLs.  Currently, hosted apps cannot be loaded in this mode.
+    // See http://crbug.com/160576.
+    GURL site_gurl = SiteInstanceImpl::GetSiteForURL(NULL, gurl);
+    return origin_lock_ == site_gurl;
+  }
+
   bool CanAccessCookiesForOrigin(const GURL& gurl) {
     if (origin_lock_.is_empty())
       return true;
@@ -485,6 +496,27 @@ void ChildProcessSecurityPolicyImpl::RevokeReadRawCookies(int child_id) {
     return;
 
   state->second->RevokeReadRawCookies();
+}
+
+bool ChildProcessSecurityPolicyImpl::CanLoadPage(
+    int child_id,
+    const GURL& url,
+    ResourceType::Type resource_type) {
+  // If --site-per-process flag is passed, we should enforce
+  // stronger security restrictions on page navigation.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess) &&
+      ResourceType::IsFrame(resource_type)) {
+    // TODO(irobert): This currently breaks some WebUI page such as
+    // "chrome://extensions/" (belongs to site chrome://chrome/) which
+    // will load an iframe for the page "chrome://uber-frame/"
+    // (belongs to site chrome://uber-frame/).
+    base::AutoLock lock(lock_);
+    SecurityStateMap::iterator state = security_state_.find(child_id);
+    if (state == security_state_.end())
+      return false;
+    return state->second->CanLoadPage(url);
+  }
+  return true;
 }
 
 bool ChildProcessSecurityPolicyImpl::CanRequestURL(

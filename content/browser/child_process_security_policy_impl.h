@@ -15,6 +15,7 @@
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "webkit/glue/resource_type.h"
 
 class FilePath;
 class GURL;
@@ -109,6 +110,13 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // call this method to determine whether the process has the capability to
   // request the URL.
   bool CanRequestURL(int child_id, const GURL& url);
+
+  // Returns true if the process is permitted to load pages from
+  // the given origin in main frames or subframes.
+  // Only might return false if --site-per-process flag is used.
+  bool CanLoadPage(int child_id,
+                   const GURL& url,
+                   ResourceType::Type resource_type);
 
   // Before servicing a child process's request to enumerate a directory
   // the browser should call this method to check for the capability.
