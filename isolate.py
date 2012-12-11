@@ -321,8 +321,7 @@ def process_input(filepath, prevdict, read_only):
       # Reuse the previous hash if available.
       out['h'] = prevdict.get('h')
     if not out.get('h'):
-      with open(filepath, 'rb') as f:
-        out['h'] = hashlib.sha1(f.read()).hexdigest()
+      out['h'] = isolateserver_archive.sha1_file(filepath)
   else:
     # If the timestamp wasn't updated, carry on the link destination.
     if prevdict.get('t') == out['t']:
