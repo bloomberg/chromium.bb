@@ -2254,13 +2254,7 @@ void Browser::TabDetachedAtImpl(content::WebContents* contents,
 
 bool Browser::SupportsWindowFeatureImpl(WindowFeature feature,
                                         bool check_fullscreen) const {
-  // On Mac, fullscreen mode has most normal things (in a slide-down panel). On
-  // other platforms, we hide some controls when in fullscreen mode.
-  bool hide_ui_for_fullscreen = false;
-#if !defined(OS_MACOSX)
-  hide_ui_for_fullscreen = check_fullscreen && window_ &&
-      window_->IsFullscreen();
-#endif
+  bool hide_ui_for_fullscreen = check_fullscreen && ShouldHideUIForFullscreen();
 
   unsigned int features = FEATURE_INFOBAR | FEATURE_DOWNLOADSHELF;
 
@@ -2288,7 +2282,7 @@ void Browser::UpdateBookmarkBarState(BookmarkBarStateChangeReason reason) {
   // The bookmark bar is hidden in fullscreen mode, unless on the new tab page.
   if (browser_defaults::bookmarks_enabled &&
       profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar) &&
-      (!window_ || !window_->IsFullscreen())) {
+      !ShouldHideUIForFullscreen()) {
     state = BookmarkBar::SHOW;
   } else {
     WebContents* web_contents = tab_strip_model_->GetActiveWebContents();
@@ -2332,6 +2326,15 @@ void Browser::UpdateBookmarkBarState(BookmarkBarStateChangeReason reason) {
       BookmarkBar::ANIMATE_STATE_CHANGE :
       BookmarkBar::DONT_ANIMATE_STATE_CHANGE;
   window_->BookmarkBarStateChanged(animate_type);
+}
+
+bool Browser::ShouldHideUIForFullscreen() const {
+  // On Mac, fullscreen mode has most normal things (in a slide-down panel). On
+  // other platforms, we hide some controls when in fullscreen mode.
+#if defined(OS_MACOSX)
+  return false;
+#endif
+  return window_ && window_->IsFullscreen();
 }
 
 bool Browser::MaybeCreateBackgroundContents(int route_id,

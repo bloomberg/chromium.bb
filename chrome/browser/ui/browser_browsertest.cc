@@ -1552,6 +1552,21 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, WindowOpenClose) {
   EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
 }
 
+// GTK doesn't use the Browser's fullscreen state.
+#if !defined(TOOLKIT_GTK)
+IN_PROC_BROWSER_TEST_F(BrowserTest, FullscreenBookmarkBar) {
+  chrome::ToggleBookmarkBar(browser());
+  EXPECT_EQ(BookmarkBar::SHOW, browser()->bookmark_bar_state());
+  chrome::ToggleFullscreenMode(browser());
+  EXPECT_TRUE(browser()->window()->IsFullscreen());
+#if defined(OS_MACOSX)
+  EXPECT_EQ(BookmarkBar::SHOW, browser()->bookmark_bar_state());
+#else
+  EXPECT_EQ(BookmarkBar::HIDDEN, browser()->bookmark_bar_state());
+#endif
+}
+#endif
+
 class ShowModalDialogTest : public BrowserTest {
  public:
   ShowModalDialogTest() {}

@@ -853,6 +853,8 @@ class Browser : public TabStripModelObserver,
   // BrowserWindow if necessary.
   void UpdateBookmarkBarState(BookmarkBarStateChangeReason reason);
 
+  bool ShouldHideUIForFullscreen() const;
+
   // Creates a BackgroundContents if appropriate; return true if one was
   // created.
   bool MaybeCreateBackgroundContents(int route_id,
