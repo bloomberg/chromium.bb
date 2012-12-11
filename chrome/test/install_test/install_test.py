@@ -28,6 +28,7 @@ sys.path.append(os.path.join(_DIRECTORY, os.path.pardir, os.path.pardir,
                              'pylib'))
 
 # This import should go after sys.path is set appropriately.
+from chrome import Chrome
 from selenium import webdriver
 import selenium.webdriver.chrome.service as service
 from selenium.webdriver.chrome.service import WebDriverException
@@ -134,7 +135,7 @@ class InstallTest(unittest.TestCase):
     Args:
       caps: Capabilities that will be passed to ChromeDriver.
     """
-    self._driver = webdriver.Remote(self._service.service_url, caps)
+    self._driver = Chrome(self._service.service_url, caps)
 
   def Install(self, build, master_pref=None):
     """Helper method that installs the specified Chrome build.

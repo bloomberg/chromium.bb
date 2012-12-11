@@ -36,3 +36,9 @@ class SampleUpdater(InstallTest):
     self.Install(self.GetInstallBuild())
     self.StartChrome()
     self._driver.get('http://www.google.org/')
+
+  def testCanOpenNewTab(self):
+    """Sample of using the extended webdriver interface."""
+    self.Install(self.GetInstallBuild())
+    self.StartChrome()
+    self._driver.create_blank_tab()
