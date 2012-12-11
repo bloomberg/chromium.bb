@@ -123,6 +123,8 @@
           '<(PRODUCT_DIR)/nacl_helper<(EXECUTABLE_SUFFIX)',
           '<(PRODUCT_DIR)/nacl_helper_bootstrap<(EXECUTABLE_SUFFIX)',
           '<(PRODUCT_DIR)/xdisplaycheck<(EXECUTABLE_SUFFIX)',
+          'browser/nacl_host/test/debug_stub_browser_tests.py',
+          'browser/nacl_host/test/gdb_rsp.py',
         ],
       },
     }, {
