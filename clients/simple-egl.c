@@ -68,11 +68,7 @@ struct window {
 	struct display *display;
 	struct geometry geometry, window_size;
 	struct {
-		GLuint fbo;
-		GLuint color_rbo;
-
 		GLuint rotation_uniform;
-
 		GLuint pos;
 		GLuint col;
 	} gl;
