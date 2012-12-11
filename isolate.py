@@ -1781,14 +1781,14 @@ class OptionParserIsolate(trace_inputs.OptionParserWithNiceDescription):
     group.add_option(
         '-o', '--outdir', metavar='DIR',
         help='Directory used to recreate the tree or store the hash table. '
-            'If the environment variable ISOLATE_HASH_TABLE_DIR exists, it '
-            'will be used. Otherwise, for run and remap, uses a /tmp '
-            'subdirectory. For the other modes, defaults to the directory '
-            'containing --isolated')
+             'Defaults: run|remap: a /tmp subdirectory, others: '
+             'defaults to the directory containing --isolated')
     group.add_option(
         '--ignore_broken_items', action='store_true',
-        help='Indicates that invalid entries in the isolated file won\'t '
-            'cause exceptions, but instead will just be logged.')
+        default=bool(os.environ.get('ISOLATE_IGNORE_BROKEN_ITEMS')),
+        help='Indicates that invalid entries in the isolated file to be '
+             'only be logged and not stop processing. Defaults to True if '
+             'env var ISOLATE_IGNORE_BROKEN_ITEMS is set')
     self.add_option_group(group)
     self.require_isolated = require_isolated
 
