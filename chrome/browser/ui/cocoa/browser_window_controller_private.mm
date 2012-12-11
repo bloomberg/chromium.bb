@@ -293,6 +293,25 @@ willPositionSheet:(NSWindow*)sheet
   [tabStripController_ setLeftIndentForControls:(fullscreen ? 0 :
       [[tabStripController_ class] defaultLeftIndentForControls])];
 
+  // Lay out the icognito/avatar badge because calculating the indentation on
+  // the right depends on it.
+  if ([self shouldShowAvatar]) {
+    NSView* avatarButton = [avatarButtonController_ view];
+    CGFloat buttonHeight = std::min(
+        static_cast<CGFloat>(profiles::kAvatarIconHeight), tabStripHeight);
+    [avatarButton setFrameSize:NSMakeSize(profiles::kAvatarIconWidth,
+                                          buttonHeight)];
+
+    // Actually place the badge *above* |maxY|, by +2 to miss the divider.
+    CGFloat badgeXOffset = -kAvatarRightOffset;
+    CGFloat badgeYOffset = 2 * [[avatarButton superview] cr_lineWidth];
+    NSPoint origin =
+        NSMakePoint(width - NSWidth([avatarButton frame]) + badgeXOffset,
+                    maxY + badgeYOffset);
+    [avatarButton setFrameOrigin:origin];
+    [avatarButton setHidden:NO];  // Make sure it's shown.
+  }
+
   // Calculate the right indentation.  The default indentation built into the
   // tabstrip leaves enough room for the fullscreen button or presentation mode
   // toggle button on Lion.  On non-Lion systems, the right indent needs to be
@@ -310,24 +329,6 @@ willPositionSheet:(NSWindow*)sheet
 
   // Go ahead and layout the tabs.
   [tabStripController_ layoutTabsWithoutAnimation];
-
-  // Now lay out incognito badge together with the tab strip.
-  if ([self shouldShowAvatar]) {
-    NSView* avatarButton = [avatarButtonController_ view];
-    CGFloat buttonHeight = std::min(
-        static_cast<CGFloat>(profiles::kAvatarIconHeight), tabStripHeight);
-    [avatarButton setFrameSize:NSMakeSize(profiles::kAvatarIconWidth,
-                                          buttonHeight)];
-
-    // Actually place the badge *above* |maxY|, by +2 to miss the divider.
-    CGFloat badgeXOffset = -kAvatarRightOffset;
-    CGFloat badgeYOffset = 2 * [[avatarButton superview] cr_lineWidth];
-    NSPoint origin =
-        NSMakePoint(width - NSWidth([avatarButton frame]) + badgeXOffset,
-                    maxY + badgeYOffset);
-    [avatarButton setFrameOrigin:origin];
-    [avatarButton setHidden:NO];  // Make sure it's shown.
-  }
 
   return maxY;
 }

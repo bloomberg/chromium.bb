@@ -91,9 +91,6 @@ const CGFloat kMenuYOffsetAdjust = 1.0;
   if ((self = [super init])) {
     browser_ = browser;
 
-    // This view's single child view is a button with the same size and width as
-    // the parent. Set it to automatically resize to the size of this view and
-    // to scale the image.
     scoped_nsobject<NSButton> button(
         [[NSButton alloc] initWithFrame:NSMakeRect(0, 0, 20, 20)]);
     [button setButtonType:NSMomentaryLightButton];
