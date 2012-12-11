@@ -310,7 +310,8 @@ void WebKitTestRunner::CanOpenWindows() {
   Send(new ShellViewHostMsg_CanOpenWindows(routing_id()));
 }
 
-void WebKitTestRunner::NotImplemented(const char* object, const char* method) {
+void WebKitTestRunner::NotImplemented(const std::string& object,
+                                      const std::string& method) {
   Send(new ShellViewHostMsg_NotImplemented(routing_id(), object, method));
 }
 
