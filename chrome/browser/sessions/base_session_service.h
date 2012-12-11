@@ -11,9 +11,11 @@
 #include "base/gtest_prod_util.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/sessions/session_id.h"
+#include "chrome/common/cancelable_task_tracker.h"
 #include "googleurl/src/gurl.h"
 
 class Profile;
@@ -48,28 +50,8 @@ class BaseSessionService : public CancelableRequestProvider {
   // Deletes the last session.
   void DeleteLastSession();
 
-  class InternalGetCommandsRequest;
-
-  typedef base::Callback<void(Handle,
-                              scoped_refptr<InternalGetCommandsRequest>)>
+  typedef base::Callback<void(ScopedVector<SessionCommand>)>
       InternalGetCommandsCallback;
-
-  // Callback used when fetching the last session. The last session consists
-  // of a vector of SessionCommands.
-  class InternalGetCommandsRequest :
-      public CancelableRequest<InternalGetCommandsCallback> {
-   public:
-    explicit InternalGetCommandsRequest(const CallbackType& callback);
-
-    // The commands. The backend fills this in for us.
-    std::vector<SessionCommand*> commands;
-
-   protected:
-    virtual ~InternalGetCommandsRequest();
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(InternalGetCommandsRequest);
-  };
 
  protected:
   virtual ~BaseSessionService();
@@ -160,11 +142,12 @@ class BaseSessionService : public CancelableRequestProvider {
   // Returns true if the entry at specified |url| should be written to disk.
   bool ShouldTrackEntry(const GURL& url);
 
-  // Invokes ReadLastSessionCommands with request on the backend thread.
-  // If testing, ReadLastSessionCommands is invoked directly.
-  Handle ScheduleGetLastSessionCommands(
-      InternalGetCommandsRequest* request,
-      CancelableRequestConsumerBase* consumer);
+  // Invokes SessionBackend::ReadLastSessionCommands with callback on the
+  // backend thread.
+  // If testing, SessionBackend::ReadLastSessionCommands is invoked directly.
+  CancelableTaskTracker::TaskId ScheduleGetLastSessionCommands(
+      const InternalGetCommandsCallback& callback,
+      CancelableTaskTracker* tracker);
 
   // In production, this posts the task to the FILE thread.  For
   // tests, it immediately runs the specified task on the current

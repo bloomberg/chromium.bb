@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/metrics/histogram.h"
 #include "base/platform_file.h"
 #include "base/stl_util.h"
@@ -33,6 +34,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
+#include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/dom_storage_context.h"
@@ -523,8 +525,8 @@ class SessionRestoreImpl : public content::NotificationObserver {
         SessionServiceFactory::GetForProfile(profile_);
     DCHECK(session_service);
     session_service->GetLastSession(
-        &request_consumer_,
-        base::Bind(&SessionRestoreImpl::OnGotSession, base::Unretained(this)));
+        base::Bind(&SessionRestoreImpl::OnGotSession, base::Unretained(this)),
+        &cancelable_task_tracker_);
 
     if (synchronous_) {
       {
@@ -711,8 +713,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
     return browser;
   }
 
-  void OnGotSession(SessionService::Handle handle,
-                    std::vector<SessionWindow*>* windows,
+  void OnGotSession(ScopedVector<SessionWindow> windows,
                     SessionID::id_type active_window_id) {
     base::TimeDelta time_to_got_sessions =
         base::TimeTicks::Now() - restore_started_;
@@ -728,13 +729,13 @@ class SessionRestoreImpl : public content::NotificationObserver {
 #endif
     if (synchronous_) {
       // See comment above windows_ as to why we don't process immediately.
-      windows_.swap(*windows);
+      windows_.swap(windows.get());
       active_window_id_ = active_window_id;
       MessageLoop::current()->QuitNow();
       return;
     }
 
-    ProcessSessionWindows(windows, active_window_id);
+    ProcessSessionWindows(&windows.get(), active_window_id);
   }
 
   Browser* ProcessSessionWindows(std::vector<SessionWindow*>* windows,
@@ -1103,7 +1104,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
   std::vector<GURL> urls_to_open_;
 
   // Used to get the session.
-  CancelableRequestConsumer request_consumer_;
+  CancelableTaskTracker cancelable_task_tracker_;
 
   // Responsible for loading the tabs.
   scoped_refptr<TabLoader> tab_loader_;

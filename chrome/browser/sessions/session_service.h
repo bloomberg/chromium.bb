@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/memory/scoped_vector.h"
 #include "base/time.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
+#include "chrome/common/cancelable_task_tracker.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/base/ui_base_types.h"
@@ -180,25 +182,16 @@ class SessionService : public BaseSessionService,
                                const SessionID& tab_id,
                                const std::string& user_agent_override);
 
-  // Callback from GetSavedSession of GetLastSession.
-  //
-  // The contents of the supplied vector are deleted after the callback is
-  // notified. To take ownership of the vector clear it before returning.
-  //
-  // The session ID is the id of the window that was last active.
-  typedef base::Callback<void(Handle,
-                              std::vector<SessionWindow*>*,
-                              SessionID::id_type)> SessionCallback;
+  // Callback from GetLastSession.
+  // The second parameter is the id of the window that was last active.
+  typedef base::Callback<void(ScopedVector<SessionWindow>, SessionID::id_type)>
+      SessionCallback;
 
   // Fetches the contents of the last session, notifying the callback when
   // done. If the callback is supplied an empty vector of SessionWindows
   // it means the session could not be restored.
-  //
-  // The created request does NOT directly invoke the callback, rather the
-  // callback invokes OnGotSessionCommands from which we map the
-  // SessionCommands to browser state, then notify the callback.
-  Handle GetLastSession(CancelableRequestConsumerBase* consumer,
-                        const SessionCallback& callback);
+  CancelableTaskTracker::TaskId GetLastSession(const SessionCallback& callback,
+                                               CancelableTaskTracker* tracker);
 
   // Overridden from BaseSessionService because we want some UMA reporting on
   // session update activities.
@@ -284,11 +277,9 @@ class SessionService : public BaseSessionService,
 
   SessionCommand* CreateSetActiveWindowCommand(const SessionID& window_id);
 
-  // Callback from the backend for getting the commands from the save file.
-  // Converts the commands in SessionWindows and notifies the real callback.
-  void OnGotSessionCommands(
-      Handle handle,
-      scoped_refptr<InternalGetCommandsRequest> request);
+  // Converts |commands| to SessionWindows and notifies the callback.
+  void OnGotSessionCommands(const SessionCallback& callback,
+                            ScopedVector<SessionCommand> commands);
 
   // Converts the commands into SessionWindows. On return any valid
   // windows are added to valid_windows. It is up to the caller to delete

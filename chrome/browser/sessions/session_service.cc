@@ -13,7 +13,6 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
-#include "base/memory/scoped_vector.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/pickle.h"
@@ -82,29 +81,6 @@ static const SessionCommand::id_type kCommandSetActiveWindow = 20;
 static const int kWritesPerReset = 250;
 
 namespace {
-
-// The callback from GetLastSession is internally routed to SessionService
-// first and then the caller. This is done so that the SessionWindows can be
-// recreated from the SessionCommands and the SessionWindows passed to the
-// caller. The following class is used for this.
-class InternalSessionRequest
-    : public BaseSessionService::InternalGetCommandsRequest {
- public:
-  InternalSessionRequest(
-      const CallbackType& callback,
-      const SessionService::SessionCallback& real_callback)
-      : BaseSessionService::InternalGetCommandsRequest(callback),
-        real_callback(real_callback) {
-  }
-
-  // The callback supplied to GetLastSession.
-  SessionService::SessionCallback real_callback;
-
- private:
-  ~InternalSessionRequest() {}
-
-  DISALLOW_COPY_AND_ASSIGN(InternalSessionRequest);
-};
 
 // Various payload structures.
 struct ClosedPayload {
@@ -500,15 +476,15 @@ void SessionService::SetTabUserAgentOverride(
       kCommandSetTabUserAgentOverride, tab_id.id(), user_agent_override));
 }
 
-SessionService::Handle SessionService::GetLastSession(
-    CancelableRequestConsumerBase* consumer,
-    const SessionCallback& callback) {
+CancelableTaskTracker::TaskId SessionService::GetLastSession(
+    const SessionCallback& callback,
+    CancelableTaskTracker* tracker) {
+  // OnGotSessionCommands maps the SessionCommands to browser state, then run
+  // the callback.
   return ScheduleGetLastSessionCommands(
-      new InternalSessionRequest(
-          base::Bind(&SessionService::OnGotSessionCommands,
-                     base::Unretained(this)),
-          callback),
-      consumer);
+      base::Bind(&SessionService::OnGotSessionCommands,
+                 base::Unretained(this), callback),
+      tracker);
 }
 
 void SessionService::Save() {
@@ -857,17 +833,14 @@ SessionCommand* SessionService::CreateSetActiveWindowCommand(
 }
 
 void SessionService::OnGotSessionCommands(
-    Handle handle,
-    scoped_refptr<InternalGetCommandsRequest> request) {
-  if (request->canceled())
-    return;
-
+    const SessionCallback& callback,
+    ScopedVector<SessionCommand> commands) {
   ScopedVector<SessionWindow> valid_windows;
   SessionID::id_type active_window_id = 0;
+
   RestoreSessionFromCommands(
-      request->commands, &(valid_windows.get()), &active_window_id);
-  static_cast<InternalSessionRequest*>(request.get())->real_callback.Run(
-      request->handle(), &(valid_windows.get()), active_window_id);
+      commands.get(), &valid_windows.get(), &active_window_id);
+  callback.Run(valid_windows.Pass(), active_window_id);
 }
 
 void SessionService::RestoreSessionFromCommands(

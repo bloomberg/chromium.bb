@@ -244,12 +244,16 @@ void SessionBackend::AppendCommands(
 }
 
 void SessionBackend::ReadLastSessionCommands(
-    scoped_refptr<BaseSessionService::InternalGetCommandsRequest> request) {
-  if (request->canceled())
+    const CancelableTaskTracker::IsCanceledCallback& is_canceled,
+    const BaseSessionService::InternalGetCommandsCallback& callback) {
+  if (is_canceled.Run())
     return;
+
   Init();
-  ReadLastSessionCommandsImpl(&(request->commands));
-  request->ForwardResult(request->handle(), request);
+
+  ScopedVector<SessionCommand> commands;
+  ReadLastSessionCommandsImpl(&(commands.get()));
+  callback.Run(commands.Pass());
 }
 
 bool SessionBackend::ReadLastSessionCommandsImpl(
@@ -292,15 +296,6 @@ void SessionBackend::MoveCurrentSessionToLastSession() {
 
   // Create and open the file for the current session.
   ResetFile();
-}
-
-void SessionBackend::ReadCurrentSessionCommands(
-    scoped_refptr<BaseSessionService::InternalGetCommandsRequest> request) {
-  if (request->canceled())
-    return;
-  Init();
-  ReadCurrentSessionCommandsImpl(&(request->commands));
-  request->ForwardResult(request->handle(), request);
 }
 
 bool SessionBackend::ReadCurrentSessionCommandsImpl(
