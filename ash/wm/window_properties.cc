@@ -42,6 +42,7 @@ DEFINE_WINDOW_PROPERTY_KEY(ash::WindowPersistsAcrossAllWorkspacesType,
                            kWindowPersistsAcrossAllWorkspacesKey,
                            WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_DEFAULT);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kWindowPositionManagedKey, false);
+DEFINE_WINDOW_PROPERTY_KEY(bool, kWindowRestoresToRestoreBounds, false);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kWindowTrackedByWorkspaceKey, true);
 
 }  // namespace internal

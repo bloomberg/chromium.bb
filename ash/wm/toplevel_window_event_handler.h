@@ -98,6 +98,12 @@ class ASH_EXPORT ToplevelWindowEventHandler
   // Is a window move/resize in progress because of gesture events?
   bool in_gesture_drag_;
 
+  // The window bounds before it started the drag.
+  // When a window is moved using a touch gesture, and it is swiped up/down
+  // maximize/minimize, the restore bounds should be set to the bounds of the
+  // window when the drag started.
+  gfx::Rect pre_drag_window_bounds_;
+
   scoped_ptr<ScopedWindowResizer> window_resizer_;
 
   base::Closure quit_closure_;

@@ -170,6 +170,7 @@ void ToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
         return;
       }
       in_gesture_drag_ = true;
+      pre_drag_window_bounds_ = target->bounds();
       gfx::Point location_in_parent(
           ConvertPointToParent(target, event->location()));
       CreateScopedWindowResizer(target, location_in_parent, component);
@@ -208,10 +209,14 @@ void ToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
       if (fabs(event->details().velocity_y()) >
           kMinVertVelocityForWindowMinimize) {
         // Minimize/maximize.
-        if (event->details().velocity_y() > 0)
+        if (event->details().velocity_y() > 0) {
           wm::MinimizeWindow(target);
-        else if (wm::CanMaximizeWindow(target))
+          SetWindowAlwaysRestoresToRestoreBounds(target, true);
+          SetRestoreBoundsInParent(target, pre_drag_window_bounds_);
+        } else if (wm::CanMaximizeWindow(target)) {
+          SetRestoreBoundsInParent(target, pre_drag_window_bounds_);
           wm::MaximizeWindow(target);
+        }
       } else if (fabs(event->details().velocity_x()) >
                  kMinHorizVelocityForWindowSwipe) {
         // Snap left/right.

@@ -59,6 +59,14 @@ bool GetIgnoredByShelf(const aura::Window* window) {
   return window->GetProperty(internal::kIgnoredByShelfKey);
 }
 
+void SetWindowAlwaysRestoresToRestoreBounds(aura::Window* window, bool value) {
+  window->SetProperty(internal::kWindowRestoresToRestoreBounds, value);
+}
+
+bool GetWindowAlwaysRestoresToRestoreBounds(const aura::Window* window) {
+  return window->GetProperty(internal::kWindowRestoresToRestoreBounds);
+}
+
 void SetPersistsAcrossAllWorkspaces(
     aura::Window* window,
     WindowPersistsAcrossAllWorkspacesType type) {

@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/property_util.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/snap_sizer.h"
 #include "ash/wm/workspace_controller.h"
@@ -449,6 +450,7 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDrag) {
   bounds_before_maximization.Offset(0, 100);
   target->SetBounds(bounds_before_maximization);
   old_bounds = target->bounds();
+
   // Maximize.
   end = location = target->GetBoundsInRootWindow().CenterPoint();
   end.Offset(0, -100);
@@ -458,6 +460,8 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDrag) {
   RunAllPendingInMessageLoop();
   EXPECT_NE(old_bounds.ToString(), target->bounds().ToString());
   EXPECT_TRUE(wm::IsWindowMaximized(target.get()));
+  EXPECT_EQ(old_bounds.ToString(),
+            GetRestoreBoundsInScreen(target.get())->ToString());
 
   wm::RestoreWindow(target.get());
   target->SetBounds(old_bounds);
@@ -471,6 +475,35 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDrag) {
   RunAllPendingInMessageLoop();
   EXPECT_NE(old_bounds.ToString(), target->bounds().ToString());
   EXPECT_TRUE(wm::IsWindowMinimized(target.get()));
+  EXPECT_TRUE(GetWindowAlwaysRestoresToRestoreBounds(target.get()));
+  EXPECT_EQ(old_bounds.ToString(),
+            GetRestoreBoundsInScreen(target.get())->ToString());
+}
+
+TEST_F(ToplevelWindowEventHandlerTest, GestureDragToRestore) {
+  scoped_ptr<aura::Window> window(
+      CreateTestWindowInShellWithDelegate(
+          new TestWindowDelegate(HTCAPTION),
+          0,
+          gfx::Rect(10, 20, 30, 40)));
+  window->Show();
+  ash::wm::ActivateWindow(window.get());
+
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                       window.get());
+  gfx::Rect old_bounds = window->bounds();
+  gfx::Point location, end;
+  end = location = window->GetBoundsInRootWindow().CenterPoint();
+  end.Offset(0, 100);
+  generator.GestureScrollSequence(location, end,
+      base::TimeDelta::FromMilliseconds(5),
+      10);
+  RunAllPendingInMessageLoop();
+  EXPECT_NE(old_bounds.ToString(), window->bounds().ToString());
+  EXPECT_TRUE(wm::IsWindowMinimized(window.get()));
+  EXPECT_TRUE(GetWindowAlwaysRestoresToRestoreBounds(window.get()));
+  EXPECT_EQ(old_bounds.ToString(),
+            GetRestoreBoundsInScreen(window.get())->ToString());
 }
 
 // Verifies pressing escape resets the bounds to the original bounds.

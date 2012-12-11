@@ -183,7 +183,8 @@ void WorkspaceLayoutManager::OnWindowPropertyChanged(Window* window,
     if (old_state == ui::SHOW_STATE_MINIMIZED &&
         (new_state == ui::SHOW_STATE_NORMAL ||
          new_state == ui::SHOW_STATE_DEFAULT) &&
-        GetRestoreBoundsInScreen(window)) {
+        GetRestoreBoundsInScreen(window) &&
+        !GetWindowAlwaysRestoresToRestoreBounds(window)) {
       restore = *GetRestoreBoundsInScreen(window);
       SetRestoreBoundsInScreen(window, window->bounds());
     }
@@ -266,6 +267,11 @@ void WorkspaceLayoutManager::ShowStateChanged(
       // The layer may be hidden if the window was previously minimized. Make
       // sure it's visible.
       window->Show();
+    }
+    if (last_show_state == ui::SHOW_STATE_MINIMIZED &&
+        !wm::IsWindowMaximized(window) &&
+        !wm::IsWindowFullscreen(window)) {
+      window->ClearProperty(internal::kWindowRestoresToRestoreBounds);
     }
     workspace_manager()->OnWorkspaceWindowShowStateChanged(
         workspace_, window, last_show_state, cloned_layer);

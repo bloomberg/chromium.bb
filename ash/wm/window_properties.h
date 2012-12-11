@@ -82,6 +82,10 @@ extern const aura::WindowProperty<WindowPersistsAcrossAllWorkspacesType>* const
 ASH_EXPORT extern const aura::WindowProperty<bool>* const
     kWindowPositionManagedKey;
 
+// A property key to tell the workspace layout manager to always restore the
+// window to the restore-bounds (false by default).
+extern const aura::WindowProperty<bool>* const kWindowRestoresToRestoreBounds;
+
 // True if the window is controlled by the workspace manager.
 extern const aura::WindowProperty<bool>* const
     kWindowTrackedByWorkspaceKey;
