@@ -667,7 +667,7 @@ def _CheckHardcodedGoogleHostsInLowerLayers(input_api, output_api):
     """
     return input_api.FilterSourceFile(
       affected_file,
-      white_list=('^(android_webview|base|content|net)[\\\/].*'),
+      white_list=(r'^(android_webview|base|content|net)[\\\/].*', ),
       black_list=(_EXCLUDED_PATHS +
                   _TEST_CODE_EXCLUDED_PATHS +
                   input_api.DEFAULT_BLACK_LIST))
