@@ -149,7 +149,7 @@ void CompositorSoftwareOutputDeviceGLAdapter::Resize(
       viewport_size.width(), viewport_size.height(), true));
 
   context3d_->makeContextCurrent();
-  context3d_->ensureFramebufferCHROMIUM();
+  context3d_->ensureBackbufferCHROMIUM();
   framebuffer_texture_id_ = context3d_->createTexture();
   context3d_->bindTexture(GL_TEXTURE_2D, framebuffer_texture_id_);
   context3d_->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -169,7 +169,7 @@ void CompositorSoftwareOutputDeviceGLAdapter::Draw(void* pixels) {
     NOTREACHED();
 
   context3d_->makeContextCurrent();
-  context3d_->ensureFramebufferCHROMIUM();
+  context3d_->ensureBackbufferCHROMIUM();
   context3d_->clear(GL_COLOR_BUFFER_BIT);
 
   context3d_->texImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
