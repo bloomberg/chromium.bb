@@ -121,6 +121,10 @@ gfx::Point RemoteRootWindowHostWin::GetLocationOnNativeScreen() const {
 }
 
 void RemoteRootWindowHostWin::SetCursor(gfx::NativeCursor native_cursor) {
+  if (!host_)
+    return;
+  host_->Send(
+      new MetroViewerHostMsg_SetCursor(uint64(native_cursor.platform())));
 }
 
 void RemoteRootWindowHostWin::SetCapture() {

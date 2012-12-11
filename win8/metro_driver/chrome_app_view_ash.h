@@ -32,6 +32,8 @@ class ChromeAppViewAsh
   IFACEMETHOD(Run)();
   IFACEMETHOD(Uninitialize)();
 
+  void OnSetCursor(HCURSOR cursor);
+
  private:
   HRESULT OnActivate(winapp::Core::ICoreApplicationView* view,
                      winapp::Activation::IActivatedEventArgs* args);

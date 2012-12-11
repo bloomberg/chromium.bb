@@ -66,8 +66,16 @@ void MetroExit() {
 
 class ChromeChannelListener : public IPC::Listener {
  public:
+  ChromeChannelListener(MessageLoop* ui_loop, ChromeAppViewAsh* app_view)
+      : ui_proxy_(ui_loop->message_loop_proxy()),
+        app_view_(app_view) {
+  }
+
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
-    DVLOG(1) << "Received ipc message " << message.type();
+    IPC_BEGIN_MESSAGE_MAP(ChromeChannelListener, message)
+      IPC_MESSAGE_HANDLER(MetroViewerHostMsg_SetCursor, OnSetCursor)
+      IPC_MESSAGE_UNHANDLED(__debugbreak())
+    IPC_END_MESSAGE_MAP()
     return true;
   }
 
@@ -75,6 +83,17 @@ class ChromeChannelListener : public IPC::Listener {
     DVLOG(1) << "Channel error";
     MetroExit();
   }
+
+ private:
+   void OnSetCursor(int64 cursor) {
+     ui_proxy_->PostTask(FROM_HERE,
+                         base::Bind(&ChromeAppViewAsh::OnSetCursor,
+                                    base::Unretained(app_view_),
+                                    reinterpret_cast<HCURSOR>(cursor)));
+   }
+
+   scoped_refptr<base::MessageLoopProxy> ui_proxy_;
+   ChromeAppViewAsh* app_view_;
 };
 
 bool WaitForChromeIPCConnection(const std::string& channel_name) {
@@ -328,7 +347,7 @@ ChromeAppViewAsh::Run() {
 
   // In Aura mode we create an IPC channel to the browser, then ask it to
   // connect to us.
-  ChromeChannelListener ui_channel_listener;
+  ChromeChannelListener ui_channel_listener(&msg_loop, this);
   IPC::ChannelProxy ui_channel(ipc_channel_name,
                                IPC::Channel::MODE_NAMED_CLIENT,
                                &ui_channel_listener,
@@ -353,6 +372,10 @@ ChromeAppViewAsh::Uninitialize() {
   window_ = nullptr;
   view_ = nullptr;
   return S_OK;
+}
+
+void ChromeAppViewAsh::OnSetCursor(HCURSOR cursor) {
+  ::SetCursor(HCURSOR(cursor));
 }
 
 HRESULT ChromeAppViewAsh::OnActivate(
