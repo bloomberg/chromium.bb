@@ -66,6 +66,7 @@ bool GLContextVirtual::IsCurrent(gfx::GLSurface* surface) {
 
   gfx::GLSurface* current_surface = gfx::GLSurface::GetCurrent();
   return surface->GetBackingFrameBufferObject() ||
+      surface->IsOffscreen() ||
       (current_surface &&
        current_surface->GetHandle() == surface->GetHandle());
 }
