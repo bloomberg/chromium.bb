@@ -374,7 +374,6 @@ bool CreateVisualElementsManifest(const FilePath& src_path,
   }
 }
 
-// TODO(tommi): Change this function to use WorkItemList.
 void CreateOrUpdateShortcuts(
     const FilePath& target,
     const Product& product,
@@ -442,9 +441,13 @@ void CreateOrUpdateShortcuts(
 
   if (!do_not_create_quick_launch_shortcut ||
       shortcut_operation == ShellUtil::SHELL_SHORTCUT_REPLACE_EXISTING) {
+    // There is no such thing as an all-users Quick Launch shortcut, always
+    // install the per-user shortcut.
+    ShellUtil::ShortcutProperties quick_launch_properties(base_properties);
+    quick_launch_properties.level = ShellUtil::CURRENT_USER;
     ExecuteAndLogShortcutOperation(
-        ShellUtil::SHORTCUT_LOCATION_QUICK_LAUNCH, dist, base_properties,
-        shortcut_operation);
+        ShellUtil::SHORTCUT_LOCATION_QUICK_LAUNCH, dist,
+        quick_launch_properties, shortcut_operation);
   }
 
   ShellUtil::ShortcutProperties start_menu_properties(base_properties);
@@ -571,6 +574,14 @@ InstallStatus InstallOrUpdateProduct(
           installer_state.target_path().Append(kChromeExe));
       CleanupLegacyShortcuts(installer_state, dist, chrome_exe);
 
+      // Install per-user shortcuts on user-level installs and all-users
+      // shortcuts on system-level installs. Note that Active Setup will take
+      // care of installing missing per-user shortcuts on system-level install
+      // (i.e., quick launch, taskbar pin, and possibly deleted all-users
+      // shortcuts).
+      InstallShortcutLevel install_level = installer_state.system_install() ?
+          ALL_USERS : CURRENT_USER;
+
       InstallShortcutOperation install_operation =
           INSTALL_SHORTCUT_REPLACE_EXISTING;
       if (result == installer::FIRST_INSTALL_SUCCESS ||
@@ -578,14 +589,7 @@ InstallStatus InstallOrUpdateProduct(
         install_operation = INSTALL_SHORTCUT_CREATE_ALL;
       }
 
-      if (installer_state.system_install()) {
-        // Update existing all-users shortcuts for legacy installs.
-        CreateOrUpdateShortcuts(chrome_exe, *chrome_product, prefs, ALL_USERS,
-                                INSTALL_SHORTCUT_REPLACE_EXISTING);
-      }
-      // Always install per-user shortcuts (even on system-level installs where
-      // we do so for the installing user instead of waiting for Active Setup).
-      CreateOrUpdateShortcuts(chrome_exe, *chrome_product, prefs, CURRENT_USER,
+      CreateOrUpdateShortcuts(chrome_exe, *chrome_product, prefs, install_level,
                               install_operation);
     }
 
@@ -652,7 +656,7 @@ void HandleOsUpgradeForBrowser(const InstallerState& installer_state,
 
     // Unfortunately, if this is a system-level install, we can't update the
     // shortcuts of each individual user (this only matters if this is an OS
-    // upgrade for XP/Vista to Win7+ as some properties are only set on
+    // upgrade from XP/Vista to Win7+ as some properties are only set on
     // shortcuts as of Win7).
     // At least attempt to update potentially existing all-users shortcuts.
     InstallShortcutLevel level = installer_state.system_install() ?
@@ -678,6 +682,9 @@ void HandleActiveSetupForBrowser(const FilePath& installation_root,
   FilePath first_run_sentinel;
   InstallUtil::GetSentinelFilePath(
       chrome::kFirstRunSentinel, chrome.distribution(), &first_run_sentinel);
+  // Decide whether to create the shortcuts or simply replace existing
+  // shortcuts; if the decision is to create them, only shortcuts whose matching
+  // all-users shortcut isn't present on the system will be created.
   InstallShortcutOperation install_operation =
       (!force && file_util::PathExists(first_run_sentinel) ?
            INSTALL_SHORTCUT_REPLACE_EXISTING :

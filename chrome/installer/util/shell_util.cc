@@ -1278,6 +1278,7 @@ bool ShellUtil::CreateOrUpdateShortcut(
   system_shortcut_path = system_shortcut_path.Append(shortcut_name);
 
   FilePath *chosen_path;
+  bool should_install_shortcut = true;
   if (properties.level == SYSTEM_LEVEL) {
     // Install the system-level shortcut if requested.
     chosen_path = &system_shortcut_path;
@@ -1288,36 +1289,42 @@ bool ShellUtil::CreateOrUpdateShortcut(
     // not to create a user-level shortcut in that case.
     chosen_path = &user_shortcut_path;
   } else {
-    // Do not install anything if we are told to install a user-level shortcut,
-    // but the system-level variant of that shortcut is present.
-    chosen_path = &FilePath();
+    // Do not install any shortcut if we are told to install a user-level
+    // shortcut, but the system-level variant of that shortcut is present.
+    // Other actions (e.g., pinning) can still happen with respect to the
+    // existing system-level shortcut however.
+    chosen_path = &system_shortcut_path;
+    should_install_shortcut = false;
   }
 
-  // No shortcut needs to be created/updated.
-  if (chosen_path->empty())
-    return true;
-
-  base::win::ShortcutOperation shortcut_operation =
-      TranslateShortcutOperation(operation);
-  // Make sure the parent directories exist when creating the shortcut.
-  if (shortcut_operation == base::win::SHORTCUT_CREATE_ALWAYS &&
-      !file_util::CreateDirectory(chosen_path->DirName())) {
+  if (chosen_path == NULL || chosen_path->empty()) {
     NOTREACHED();
     return false;
   }
 
-  base::win::ShortcutProperties shortcut_properties(
-      TranslateShortcutProperties(properties));
-  bool ret = base::win::CreateOrUpdateShortcutLink(
-      *chosen_path, shortcut_properties, shortcut_operation);
+  base::win::ShortcutOperation shortcut_operation =
+      TranslateShortcutOperation(operation);
+  bool ret = true;
+  if (should_install_shortcut) {
+    // Make sure the parent directories exist when creating the shortcut.
+    if (shortcut_operation == base::win::SHORTCUT_CREATE_ALWAYS &&
+        !file_util::CreateDirectory(chosen_path->DirName())) {
+      NOTREACHED();
+      return false;
+    }
+
+    base::win::ShortcutProperties shortcut_properties(
+        TranslateShortcutProperties(properties));
+    ret = base::win::CreateOrUpdateShortcutLink(
+        *chosen_path, shortcut_properties, shortcut_operation);
+  }
 
   if (ret && shortcut_operation == base::win::SHORTCUT_CREATE_ALWAYS &&
       properties.pin_to_taskbar &&
       base::win::GetVersion() >= base::win::VERSION_WIN7) {
     ret = base::win::TaskbarPinShortcutLink(chosen_path->value().c_str());
     if (!ret) {
-      LOG(ERROR) << "The shorcut at " << chosen_path->value()
-                 << " was created, but the taskbar pin failed.";
+      LOG(ERROR) << "Failed to pin " << chosen_path->value();
     }
   }
 

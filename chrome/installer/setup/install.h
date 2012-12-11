@@ -41,9 +41,9 @@ enum InstallShortcutOperation {
 enum InstallShortcutLevel {
   // Install shortcuts for the current user only.
   CURRENT_USER,
-  // Install global shortcuts visible to all users. This is no longer used on
-  // install and should only be used to update existing shortcuts on legacy
-  // installs.
+  // Install global shortcuts visible to all users. Note: the Quick Launch
+  // and taskbar pin shortcuts are still installed per-user (as they have no
+  // all-users version).
   ALL_USERS,
 };
 
