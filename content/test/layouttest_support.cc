@@ -17,7 +17,7 @@ namespace content {
 namespace {
 
 base::LazyInstance<base::Callback<void(RenderView*, WebTestProxyBase*)> >::Leaky
-    g_callback;
+    g_callback = LAZY_INSTANCE_INITIALIZER;
 
 RenderViewImpl* CreateWebTestProxy(RenderViewImplParams* params) {
   typedef WebTestProxy<RenderViewImpl, RenderViewImplParams*> ProxyType;
