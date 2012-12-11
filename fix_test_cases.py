@@ -18,7 +18,6 @@ import subprocess
 import sys
 import tempfile
 
-import run_isolated
 import run_test_cases
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -225,15 +224,13 @@ def main():
 
   # Retrieve the command from the .isolated file.
   with open(options.isolated) as f:
-    data = run_isolated.load_isolated(f.read())
-  if 'includes' in data:
-    parser.error('includes key is not supported yet')
+    data = json.load(f)
 
   command = data.get('command')
   if not command:
     parser.error('A command must be defined')
   test_cases = parser.process_gtest_options(
-      run_isolated.fix_python_path(command),
+      run_test_cases.fix_python_path(command),
       data.get('relative_cwd', os.getcwd()),
       options)
   if not test_cases:
