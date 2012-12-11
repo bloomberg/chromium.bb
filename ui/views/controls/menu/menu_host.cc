@@ -34,7 +34,7 @@ void MenuHost::InitMenuHost(Widget* parent,
                             bool do_capture) {
   Widget::InitParams params(Widget::InitParams::TYPE_MENU);
   params.has_dropshadow = true;
-  params.parent = parent->GetNativeView();
+  params.parent = parent ? parent->GetNativeView() : NULL;
   params.bounds = bounds;
   Init(params);
 
