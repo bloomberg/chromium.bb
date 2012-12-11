@@ -503,8 +503,8 @@ remoting.connectMe2MeWithPin = function() {
   remoting.hostJid = host.jabberId;
   remoting.hostPublicKey = host.publicKey;
   document.getElementById('connected-to').innerText = host.hostName;
-  document.title = chrome.i18n.getMessage('PRODUCT_NAME') + ': ' +
-      host.hostName;
+  document.title = host.hostName + ' - ' +
+      chrome.i18n.getMessage('PRODUCT_NAME');
 
   remoting.WcsLoader.load(connectMe2MeWithAccessToken_,
                           remoting.showErrorMessage);
