@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/child_thread.h"
+#include "ppapi/proxy/plugin_globals.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 
 #if defined(OS_WIN)
@@ -70,7 +71,9 @@ bool PpapiWebKitPlatformSupportImpl::SandboxSupport::ensureFontLoaded(
   LOGFONT logfont;
   GetObject(font, sizeof(LOGFONT), &logfont);
 
-  return ChildThread::current()->Send(
+  // Use the proxy sender rather than going directly to the ChildThread since
+  // the proxy browser sender will properly unlock during sync messages.
+  return ppapi::proxy::PluginGlobals::Get()->GetBrowserSender()->Send(
       new ChildProcessHostMsg_PreCacheFont(logfont));
 }
 
@@ -82,6 +85,7 @@ bool PpapiWebKitPlatformSupportImpl::SandboxSupport::loadFont(
     uint32_t* font_id) {
   // TODO(brettw) this should do the something similar to what
   // RendererWebKitClientImpl does and request that the browser load the font.
+  // Note: need to unlock the proxy lock like ensureFontLoaded does.
   NOTIMPLEMENTED();
   return false;
 }
