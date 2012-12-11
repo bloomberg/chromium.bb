@@ -10,6 +10,7 @@
 #include "chrome/browser/policy/configuration_policy_handler.h"
 #include "chrome/browser/policy/policy_error_map.h"
 #include "chrome/browser/policy/policy_map.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "policy/policy_constants.h"
@@ -350,6 +351,16 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
 #endif  // !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
 };
 
+// Mapping from extension type names to Extension::Type.
+StringToIntEnumListPolicyHandler::MappingEntry kExtensionAllowedTypesMap[] = {
+  { "extension", extensions::Extension::TYPE_EXTENSION },
+  { "theme", extensions::Extension::TYPE_THEME },
+  { "user_script", extensions::Extension::TYPE_USER_SCRIPT },
+  { "hosted_app", extensions::Extension::TYPE_HOSTED_APP },
+  { "legacy_packaged_app", extensions::Extension::TYPE_LEGACY_PACKAGED_APP },
+  { "platform_app", extensions::Extension::TYPE_PLATFORM_APP },
+};
+
 }  // namespace
 
 ConfigurationPolicyHandlerList::ConfigurationPolicyHandlerList() {
@@ -383,6 +394,11 @@ ConfigurationPolicyHandlerList::ConfigurationPolicyHandlerList() {
       new ExtensionURLPatternListPolicyHandler(
           key::kExtensionInstallSources,
           prefs::kExtensionAllowedInstallSites));
+  handlers_.push_back(
+      new StringToIntEnumListPolicyHandler(
+          key::kExtensionAllowedTypes, prefs::kExtensionAllowedTypes,
+          kExtensionAllowedTypesMap,
+          kExtensionAllowedTypesMap + arraysize(kExtensionAllowedTypesMap)));
 
 #if !defined(OS_CHROMEOS)
   handlers_.push_back(new DownloadDirPolicyHandler());

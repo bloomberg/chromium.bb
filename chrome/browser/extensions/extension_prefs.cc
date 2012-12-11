@@ -2229,6 +2229,8 @@ void ExtensionPrefs::RegisterUserPrefs(PrefService* prefs) {
                           PrefService::UNSYNCABLE_PREF);
   prefs->RegisterListPref(prefs::kExtensionInstallForceList,
                           PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterListPref(prefs::kExtensionAllowedTypes,
+                          PrefService::UNSYNCABLE_PREF);
   prefs->RegisterStringPref(kWebStoreLogin,
                             std::string(),  // default value
                             PrefService::UNSYNCABLE_PREF);

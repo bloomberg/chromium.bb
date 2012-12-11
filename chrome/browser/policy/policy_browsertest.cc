@@ -123,9 +123,12 @@ const char kCookieOptions[] = ";expires=Wed Jan 01 3000 00:00:00 GMT";
 const FilePath::CharType kTestExtensionsDir[] = FILE_PATH_LITERAL("extensions");
 const FilePath::CharType kGoodCrxName[] = FILE_PATH_LITERAL("good.crx");
 const FilePath::CharType kAdBlockCrxName[] = FILE_PATH_LITERAL("adblock.crx");
+const FilePath::CharType kHostedAppCrxName[] =
+    FILE_PATH_LITERAL("hosted_app.crx");
 
 const char kGoodCrxId[] = "ldnnhddmnhbkjipkidpdiheffobcpfmf";
 const char kAdBlockCrxId[] = "dojnnbeimaimaojcialkkgajdnefpgcn";
+const char kHostedAppCrxId[] = "kbmnembihfiondgfjekmnmcbddelicoi";
 
 const FilePath::CharType kGoodCrxManifestName[] =
     FILE_PATH_LITERAL("good_update_manifest.xml");
@@ -1170,6 +1173,34 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
   EXPECT_EQ(details.ptr(), service->GetExtensionById(kGoodCrxId, true));
   // The user is not allowed to uninstall force-installed extensions.
   UninstallExtension(kGoodCrxId, false);
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionAllowedTypes) {
+  // Verifies that extensions are blocked if policy specifies an allowed types
+  // list and the extension's type is not on that list.
+  ExtensionService* service = extension_service();
+  ASSERT_FALSE(service->GetExtensionById(kGoodCrxId, true));
+  ASSERT_FALSE(service->GetExtensionById(kHostedAppCrxId, true));
+
+  base::ListValue allowed_types;
+  allowed_types.AppendString("hosted_app");
+  PolicyMap policies;
+  policies.Set(key::kExtensionAllowedTypes, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, allowed_types.DeepCopy());
+  provider_.UpdateChromePolicy(policies);
+
+  // "good.crx" is blocked.
+  EXPECT_FALSE(InstallExtension(kGoodCrxName));
+  EXPECT_FALSE(service->GetExtensionById(kGoodCrxId, true));
+
+  // "hosted_app.crx" is of a whitelisted type.
+  const extensions::Extension* hosted_app = InstallExtension(kHostedAppCrxName);
+  ASSERT_TRUE(hosted_app);
+  EXPECT_EQ(kHostedAppCrxId, hosted_app->id());
+  EXPECT_EQ(hosted_app, service->GetExtensionById(kHostedAppCrxId, true));
+
+  // The user can remove the extension.
+  UninstallExtension(kHostedAppCrxId, true);
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, HomepageLocation) {

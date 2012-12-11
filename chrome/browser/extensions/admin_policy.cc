@@ -31,6 +31,16 @@ bool ManagementPolicyImpl(const extensions::Extension* extension,
   return !modifiable_value;
 }
 
+bool ReturnLoadError(const extensions::Extension* extension, string16* error) {
+  if (error) {
+    *error = l10n_util::GetStringFUTF16(
+          IDS_EXTENSION_CANT_INSTALL_POLICY_BLOCKED,
+          UTF8ToUTF16(extension->name()),
+          UTF8ToUTF16(extension->id()));
+  }
+  return false;
+}
+
 }  // namespace
 
 namespace extensions {
@@ -44,13 +54,38 @@ bool BlacklistedByDefault(const base::ListValue* blacklist) {
 bool UserMayLoad(const base::ListValue* blacklist,
                  const base::ListValue* whitelist,
                  const base::ListValue* forcelist,
+                 const base::ListValue* allowed_types,
                  const Extension* extension,
                  string16* error) {
   if (IsRequired(extension))
     return true;
 
-  if (!blacklist || blacklist->empty())
+  // Early exit for the common case of no policy restrictions.
+  if ((!blacklist || blacklist->empty()) && (!allowed_types))
     return true;
+
+  // Check whether the extension type is allowed.
+  //
+  // If you get a compile error here saying that the type you added is not
+  // handled by the switch statement below, please consider whether enterprise
+  // policy should be able to disallow extensions of the new type. If so, add a
+  // branch to the second block and add a line to the definition of
+  // kExtensionAllowedTypesMap in configuration_policy_handler_list.cc.
+  switch (extension->GetType()) {
+    case Extension::TYPE_UNKNOWN:
+      break;
+    case Extension::TYPE_EXTENSION:
+    case Extension::TYPE_THEME:
+    case Extension::TYPE_USER_SCRIPT:
+    case Extension::TYPE_HOSTED_APP:
+    case Extension::TYPE_LEGACY_PACKAGED_APP:
+    case Extension::TYPE_PLATFORM_APP:
+      base::FundamentalValue type_value(extension->GetType());
+      if (allowed_types &&
+          allowed_types->Find(type_value) == allowed_types->end())
+        return ReturnLoadError(extension, error);
+      break;
+  }
 
   // Check the whitelist/forcelist first.
   base::StringValue id_value(extension->id());
@@ -59,15 +94,11 @@ bool UserMayLoad(const base::ListValue* blacklist,
     return true;
 
   // Then check the admin blacklist.
-  bool result = (!blacklist || blacklist->Find(id_value) == blacklist->end()) &&
-                !BlacklistedByDefault(blacklist);
-  if (error && !result) {
-    *error = l10n_util::GetStringFUTF16(
-          IDS_EXTENSION_CANT_INSTALL_POLICY_BLACKLIST,
-          UTF8ToUTF16(extension->name()),
-          UTF8ToUTF16(extension->id()));
-  }
-  return result;
+  if ((blacklist && blacklist->Find(id_value) != blacklist->end()) ||
+      BlacklistedByDefault(blacklist))
+    return ReturnLoadError(extension, error);
+
+  return true;
 }
 
 bool UserMayModifySettings(const Extension* extension, string16* error) {

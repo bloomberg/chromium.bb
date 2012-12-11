@@ -622,6 +622,14 @@
     ]
   },
 
+  "ExtensionAllowedTypes": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "ExtensionAllowedTypes": ["hosted_app"] },
+    "pref_mappings": [
+      { "pref": "extensions.allowed_types" }
+    ]
+  },
+
   "ShowHomeButton": {
     "os": ["win", "linux", "mac", "chromeos"],
     "can_be_recommended": true,

@@ -18,12 +18,24 @@ class ExtensionAdminPolicyTest : public testing::Test {
  public:
   void CreateExtension(Extension::Location location, bool required) {
     ASSERT_EQ(required, Extension::IsRequired(location));
+    base::DictionaryValue values;
+    CreateExtensionFromValues(location, &values);
+  }
 
-    DictionaryValue values;
-    values.SetString(extension_manifest_keys::kName, "test");
-    values.SetString(extension_manifest_keys::kVersion, "0.1");
+  void CreateHostedApp(Extension::Location location) {
+    base::DictionaryValue values;
+    values.Set(extension_manifest_keys::kWebURLs, new base::ListValue());
+    values.SetString(extension_manifest_keys::kLaunchWebURL,
+                     "http://www.example.com");
+    CreateExtensionFromValues(location, &values);
+  }
+
+  void CreateExtensionFromValues(Extension::Location location,
+                                 base::DictionaryValue* values) {
+    values->SetString(extension_manifest_keys::kName, "test");
+    values->SetString(extension_manifest_keys::kVersion, "0.1");
     std::string error;
-    extension_ = Extension::Create(FilePath(), location, values,
+    extension_ = Extension::Create(FilePath(), location, *values,
                                    Extension::NO_FLAGS, &error);
     ASSERT_TRUE(extension_.get());
   }
@@ -50,32 +62,32 @@ TEST_F(ExtensionAdminPolicyTest, BlacklistedByDefault) {
 // Tests UserMayLoad for required extensions.
 TEST_F(ExtensionAdminPolicyTest, UserMayLoadRequired) {
   CreateExtension(Extension::EXTERNAL_POLICY_DOWNLOAD, true);
-  EXPECT_TRUE(ap::UserMayLoad(NULL, NULL, NULL, extension_.get(), NULL));
+  EXPECT_TRUE(ap::UserMayLoad(NULL, NULL, NULL, NULL, extension_.get(), NULL));
   string16 error;
-  EXPECT_TRUE(ap::UserMayLoad(NULL, NULL, NULL, extension_.get(),
+  EXPECT_TRUE(ap::UserMayLoad(NULL, NULL, NULL, NULL, extension_.get(),
                               &error));
   EXPECT_TRUE(error.empty());
 
   // Required extensions may load even if they're on the blacklist.
   base::ListValue blacklist;
   blacklist.Append(Value::CreateStringValue(extension_->id()));
-  EXPECT_TRUE(ap::UserMayLoad(&blacklist, NULL, NULL, extension_.get(),
+  EXPECT_TRUE(ap::UserMayLoad(&blacklist, NULL, NULL, NULL, extension_.get(),
                               NULL));
 
   blacklist.Append(Value::CreateStringValue("*"));
-  EXPECT_TRUE(ap::UserMayLoad(&blacklist, NULL, NULL, extension_.get(),
+  EXPECT_TRUE(ap::UserMayLoad(&blacklist, NULL, NULL, NULL, extension_.get(),
                               NULL));
 }
 
 // Tests UserMayLoad when no blacklist exists, or it's empty.
 TEST_F(ExtensionAdminPolicyTest, UserMayLoadNoBlacklist) {
   CreateExtension(Extension::INTERNAL, false);
-  EXPECT_TRUE(ap::UserMayLoad(NULL, NULL, NULL, extension_.get(), NULL));
+  EXPECT_TRUE(ap::UserMayLoad(NULL, NULL, NULL, NULL, extension_.get(), NULL));
   base::ListValue blacklist;
-  EXPECT_TRUE(ap::UserMayLoad(&blacklist, NULL, NULL, extension_.get(),
+  EXPECT_TRUE(ap::UserMayLoad(&blacklist, NULL, NULL, NULL, extension_.get(),
                               NULL));
   string16 error;
-  EXPECT_TRUE(ap::UserMayLoad(&blacklist, NULL, NULL, extension_.get(),
+  EXPECT_TRUE(ap::UserMayLoad(&blacklist, NULL, NULL, NULL, extension_.get(),
                               &error));
   EXPECT_TRUE(error.empty());
 }
@@ -86,15 +98,15 @@ TEST_F(ExtensionAdminPolicyTest, UserMayLoadWhitelisted) {
 
   base::ListValue whitelist;
   whitelist.Append(Value::CreateStringValue(extension_->id()));
-  EXPECT_TRUE(ap::UserMayLoad(NULL, &whitelist, NULL, extension_.get(),
+  EXPECT_TRUE(ap::UserMayLoad(NULL, &whitelist, NULL, NULL, extension_.get(),
                               NULL));
 
   base::ListValue blacklist;
   blacklist.Append(Value::CreateStringValue(extension_->id()));
-  EXPECT_TRUE(ap::UserMayLoad(NULL, &whitelist, NULL, extension_.get(),
+  EXPECT_TRUE(ap::UserMayLoad(NULL, &whitelist, NULL, NULL, extension_.get(),
                               NULL));
   string16 error;
-  EXPECT_TRUE(ap::UserMayLoad(NULL, &whitelist, NULL, extension_.get(),
+  EXPECT_TRUE(ap::UserMayLoad(NULL, &whitelist, NULL, NULL, extension_.get(),
                               &error));
   EXPECT_TRUE(error.empty());
 }
@@ -106,30 +118,47 @@ TEST_F(ExtensionAdminPolicyTest, UserMayLoadBlacklisted) {
   // Blacklisted by default.
   base::ListValue blacklist;
   blacklist.Append(Value::CreateStringValue("*"));
-  EXPECT_FALSE(ap::UserMayLoad(&blacklist, NULL, NULL, extension_.get(),
+  EXPECT_FALSE(ap::UserMayLoad(&blacklist, NULL, NULL, NULL, extension_.get(),
                                NULL));
   string16 error;
-  EXPECT_FALSE(ap::UserMayLoad(&blacklist, NULL, NULL, extension_.get(),
+  EXPECT_FALSE(ap::UserMayLoad(&blacklist, NULL, NULL, NULL, extension_.get(),
                                &error));
   EXPECT_FALSE(error.empty());
 
   // Extension on the blacklist, with and without wildcard.
   blacklist.Append(Value::CreateStringValue(extension_->id()));
-  EXPECT_FALSE(ap::UserMayLoad(&blacklist, NULL, NULL, extension_.get(),
+  EXPECT_FALSE(ap::UserMayLoad(&blacklist, NULL, NULL, NULL, extension_.get(),
                                NULL));
   blacklist.Clear();
   blacklist.Append(Value::CreateStringValue(extension_->id()));
-  EXPECT_FALSE(ap::UserMayLoad(&blacklist, NULL, NULL, extension_.get(),
+  EXPECT_FALSE(ap::UserMayLoad(&blacklist, NULL, NULL, NULL, extension_.get(),
                                NULL));
 
   // With a whitelist. There's no such thing as a whitelist wildcard.
   base::ListValue whitelist;
   whitelist.Append(
       Value::CreateStringValue("behllobkkfkfnphdnhnkndlbkcpglgmj"));
-  EXPECT_FALSE(ap::UserMayLoad(&blacklist, &whitelist, NULL,
+  EXPECT_FALSE(ap::UserMayLoad(&blacklist, &whitelist, NULL, NULL,
                                extension_.get(), NULL));
   whitelist.Append(Value::CreateStringValue("*"));
-  EXPECT_FALSE(ap::UserMayLoad(&blacklist, &whitelist, NULL,
+  EXPECT_FALSE(ap::UserMayLoad(&blacklist, &whitelist, NULL, NULL,
+                               extension_.get(), NULL));
+}
+
+TEST_F(ExtensionAdminPolicyTest, UserMayLoadAllowedTypes) {
+  CreateExtension(Extension::INTERNAL, false);
+  EXPECT_TRUE(ap::UserMayLoad(NULL, NULL, NULL, NULL, extension_.get(), NULL));
+
+  base::ListValue allowed_types;
+  EXPECT_FALSE(ap::UserMayLoad(NULL, NULL, NULL, &allowed_types,
+                               extension_.get(), NULL));
+
+  allowed_types.AppendInteger(Extension::TYPE_EXTENSION);
+  EXPECT_TRUE(ap::UserMayLoad(NULL, NULL, NULL, &allowed_types,
+                              extension_.get(), NULL));
+
+  CreateHostedApp(Extension::INTERNAL);
+  EXPECT_FALSE(ap::UserMayLoad(NULL, NULL, NULL, &allowed_types,
                                extension_.get(), NULL));
 }
 

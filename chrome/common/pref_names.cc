@@ -1500,10 +1500,27 @@ const char kDisablePluginFinder[] = "plugins.disable_plugin_finder";
 const char kBrowserActionContainerWidth[] =
     "extensions.browseractions.container.width";
 
+// Time of the last, and next scheduled, extensions auto-update checks.
+const char kLastExtensionsUpdateCheck[] = "extensions.autoupdate.last_check";
+const char kNextExtensionsUpdateCheck[] = "extensions.autoupdate.next_check";
+
+// Whether we have run the extension-alert system (see ExtensionGlobalError)
+// at least once for this profile.
+const char kExtensionAlertsInitializedPref[] = "extensions.alerts.initialized";
+
 // The sites that are allowed to install extensions. These sites should be
 // allowed to install extensions without the scary dangerous downloads bar.
 // Also, when off-store-extension installs are disabled, these sites are exempt.
 const char kExtensionAllowedInstallSites[] = "extensions.allowed_install_sites";
+
+// A list of allowed extension types. Extensions can only be installed if their
+// type is on this whitelist or alternatively on kExtensionInstallAllowList or
+// kExtensionInstallForceList.
+const char kExtensionAllowedTypes[] = "extensions.allowed_types";
+
+// Version number of last blacklist check.
+const char kExtensionBlacklistUpdateVersion[] =
+    "extensions.blacklistupdate.version";
 
 // A whitelist of extension ids the user can install: exceptions from the
 // following blacklist.
@@ -1514,23 +1531,12 @@ const char kExtensionInstallAllowList[] = "extensions.install.allowlist";
 // extension blacklist, which is Google controlled.
 const char kExtensionInstallDenyList[] = "extensions.install.denylist";
 
-// Whether we have run the extension-alert system (see ExtensionGlobalError)
-// at least once for this profile.
-const char kExtensionAlertsInitializedPref[] = "extensions.alerts.initialized";
-
 // A list containing extensions that Chrome will silently install
 // at startup time. It is a list of strings, each string contains
 // an extension ID and an update URL, delimited by a semicolon.
 // This preference is set by an admin policy, and meant to be only
 // accessed through extensions::ExternalPolicyProvider.
 const char kExtensionInstallForceList[] = "extensions.install.forcelist";
-
-// Time of the last, and next scheduled, extensions auto-update checks.
-const char kLastExtensionsUpdateCheck[] = "extensions.autoupdate.last_check";
-const char kNextExtensionsUpdateCheck[] = "extensions.autoupdate.next_check";
-// Version number of last blacklist check
-const char kExtensionBlacklistUpdateVersion[] =
-    "extensions.blacklistupdate.version";
 
 // Indicates on-disk data might have skeletal data that needs to be cleaned
 // on the next start of the browser.

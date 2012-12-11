@@ -536,12 +536,13 @@ extern const char kBrowserActionContainerWidth[];
 extern const char kLastExtensionsUpdateCheck[];
 extern const char kNextExtensionsUpdateCheck[];
 
+extern const char kExtensionAlertsInitializedPref[];
 extern const char kExtensionAllowedInstallSites[];
+extern const char kExtensionAllowedTypes[];
+extern const char kExtensionBlacklistUpdateVersion[];
 extern const char kExtensionInstallAllowList[];
 extern const char kExtensionInstallDenyList[];
-extern const char kExtensionAlertsInitializedPref[];
 extern const char kExtensionInstallForceList[];
-extern const char kExtensionBlacklistUpdateVersion[];
 extern const char kExtensionStorageGarbageCollect[];
 
 extern const char kNtpTipsResourceServer[];

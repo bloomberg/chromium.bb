@@ -12,6 +12,84 @@
 
 namespace policy {
 
+namespace {
+
+StringToIntEnumListPolicyHandler::MappingEntry kTestTypeMap[] = {
+  { "one", 1 },
+  { "two", 2 },
+};
+
+}  // namespace
+
+TEST(StringToIntEnumListPolicyHandlerTest, CheckPolicySettings) {
+  base::ListValue list;
+  PolicyMap policy_map;
+  PolicyErrorMap errors;
+  StringToIntEnumListPolicyHandler handler(
+      key::kExtensionAllowedTypes, prefs::kExtensionAllowedTypes,
+      kTestTypeMap, kTestTypeMap + arraysize(kTestTypeMap));
+
+  policy_map.Set(key::kExtensionAllowedTypes, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, list.DeepCopy());
+  errors.Clear();
+  EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_TRUE(errors.empty());
+
+  list.AppendString("one");
+  policy_map.Set(key::kExtensionAllowedTypes, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, list.DeepCopy());
+  errors.Clear();
+  EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_TRUE(errors.empty());
+
+  list.AppendString("invalid");
+  policy_map.Set(key::kExtensionAllowedTypes, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, list.DeepCopy());
+  errors.Clear();
+  EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_FALSE(errors.empty());
+  EXPECT_FALSE(errors.GetErrors(key::kExtensionAllowedTypes).empty());
+
+  policy_map.Set(key::kExtensionAllowedTypes, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, base::Value::CreateStringValue("no list"));
+  errors.Clear();
+  EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_FALSE(errors.empty());
+  EXPECT_FALSE(errors.GetErrors(key::kExtensionAllowedTypes).empty());
+}
+
+TEST(StringToIntEnumListPolicyHandlerTest, ApplyPolicySettings) {
+  base::ListValue list;
+  base::ListValue expected;
+  PolicyMap policy_map;
+  PrefValueMap prefs;
+  base::Value* value;
+  StringToIntEnumListPolicyHandler handler(
+      key::kExtensionAllowedTypes, prefs::kExtensionAllowedTypes,
+      kTestTypeMap, kTestTypeMap + arraysize(kTestTypeMap));
+
+  policy_map.Set(key::kExtensionAllowedTypes, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, list.DeepCopy());
+  handler.ApplyPolicySettings(policy_map, &prefs);
+  EXPECT_TRUE(prefs.GetValue(prefs::kExtensionAllowedTypes, &value));
+  EXPECT_TRUE(base::Value::Equals(&expected, value));
+
+  list.AppendString("two");
+  expected.AppendInteger(2);
+  policy_map.Set(key::kExtensionAllowedTypes, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, list.DeepCopy());
+  handler.ApplyPolicySettings(policy_map, &prefs);
+  EXPECT_TRUE(prefs.GetValue(prefs::kExtensionAllowedTypes, &value));
+  EXPECT_TRUE(base::Value::Equals(&expected, value));
+
+  list.AppendString("invalid");
+  policy_map.Set(key::kExtensionAllowedTypes, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, list.DeepCopy());
+  handler.ApplyPolicySettings(policy_map, &prefs);
+  EXPECT_TRUE(prefs.GetValue(prefs::kExtensionAllowedTypes, &value));
+  EXPECT_TRUE(base::Value::Equals(&expected, value));
+}
+
 TEST(ExtensionListPolicyHandlerTest, CheckPolicySettings) {
   base::ListValue list;
   PolicyMap policy_map;

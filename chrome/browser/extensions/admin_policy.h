@@ -26,6 +26,7 @@ bool BlacklistedByDefault(const base::ListValue* blacklist);
 bool UserMayLoad(const base::ListValue* blacklist,
                  const base::ListValue* whitelist,
                  const base::ListValue* forcelist,
+                 const base::ListValue* allowed_types,
                  const Extension* extension,
                  string16* error);
 

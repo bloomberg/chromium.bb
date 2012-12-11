@@ -207,6 +207,81 @@ bool TypeCheckingPolicyHandler::CheckAndGetValue(const PolicyMap& policies,
   return true;
 }
 
+// StringToIntEnumListPolicyHandler implementation -----------------------------
+
+StringToIntEnumListPolicyHandler::StringToIntEnumListPolicyHandler(
+    const char* policy_name,
+    const char* pref_path,
+    const MappingEntry* mapping_begin,
+    const MappingEntry* mapping_end)
+    : TypeCheckingPolicyHandler(policy_name, base::Value::TYPE_LIST),
+      pref_path_(pref_path),
+      mapping_begin_(mapping_begin),
+      mapping_end_(mapping_end) {}
+
+bool StringToIntEnumListPolicyHandler::CheckPolicySettings(
+    const PolicyMap& policies,
+    PolicyErrorMap* errors) {
+  const base::Value* value;
+  return CheckAndGetValue(policies, errors, &value) &&
+      Convert(value, NULL, errors);
+}
+
+void StringToIntEnumListPolicyHandler::ApplyPolicySettings(
+    const PolicyMap& policies,
+    PrefValueMap* prefs) {
+  const base::Value* value = policies.GetValue(policy_name());
+  scoped_ptr<base::ListValue> list(new base::ListValue());
+  if (value && Convert(value, list.get(), NULL))
+    prefs->SetValue(pref_path_, list.release());
+}
+
+bool StringToIntEnumListPolicyHandler::Convert(const base::Value* input,
+                                               base::ListValue* output,
+                                               PolicyErrorMap* errors) {
+  if (!input)
+    return true;
+
+  const base::ListValue* list_value = NULL;
+  if (!input->GetAsList(&list_value)) {
+    NOTREACHED();
+    return false;
+  }
+
+  for (base::ListValue::const_iterator entry(list_value->begin());
+       entry != list_value->end(); ++entry) {
+    std::string entry_value;
+    if (!(*entry)->GetAsString(&entry_value)) {
+      if (errors) {
+        errors->AddError(policy_name(),
+                         entry - list_value->begin(),
+                         IDS_POLICY_TYPE_ERROR,
+                         ValueTypeToString(base::Value::TYPE_STRING));
+      }
+      continue;
+    }
+    bool found = false;
+    for (const MappingEntry* mapping_entry(mapping_begin_);
+         mapping_entry != mapping_end_; ++mapping_entry) {
+      if (mapping_entry->enum_value == entry_value) {
+        found = true;
+        if (output)
+          output->AppendInteger(mapping_entry->int_value);
+        break;
+      }
+    }
+    if (!found) {
+      if (errors) {
+        errors->AddError(policy_name(),
+                         entry - list_value->begin(),
+                         IDS_POLICY_OUT_OF_RANGE_ERROR);
+      }
+    }
+  }
+
+  return true;
+}
+
 // ExtensionListPolicyHandler implementation -----------------------------------
 
 ExtensionListPolicyHandler::ExtensionListPolicyHandler(const char* policy_name,
