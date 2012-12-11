@@ -430,6 +430,16 @@ cr.define('cr.ui', function() {
     DisplayManager.setLabelText(labelId, labelText);
   };
 
+  /**
+   * Sets the text content of the enterprise info message.
+   * If the text is empty, the entire notification will be hidden.
+   * @param {string} messageText The message text.
+   * @param {boolean} showTrackingHint Whether to show the reporting warning.
+   */
+  Oobe.setEnterpriseInfo = function(messageText, showReportingWarning) {
+    DisplayManager.setEnterpriseInfo(messageText, showReportingWarning);
+  };
+
   // Export
   return {
     Oobe: Oobe
