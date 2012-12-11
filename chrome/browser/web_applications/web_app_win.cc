@@ -188,8 +188,9 @@ bool CheckAndSaveIcon(const FilePath& icon_file, const SkBitmap& image) {
 
 FilePath GetShortcutExecutablePath(
     const ShellIntegration::ShortcutInfo& shortcut_info) {
-  if (BrowserDistribution::GetDistribution()->AppHostIsSupported() &&
-      shortcut_info.is_platform_app) {
+  if (shortcut_info.is_platform_app &&
+      BrowserDistribution::GetDistribution()->AppHostIsSupported() &&
+      chrome_launcher_support::IsAppHostPresent()) {
     return chrome_launcher_support::GetAnyAppHostPath();
   }
 

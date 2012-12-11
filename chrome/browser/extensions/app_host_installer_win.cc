@@ -160,6 +160,10 @@ void AppHostInstaller::SetInstallWithLauncher(
   install_with_launcher_ = install_with_launcher;
 }
 
+bool AppHostInstaller::GetInstallWithLauncher() {
+  return install_with_launcher_;
+}
+
 AppHostInstaller::AppHostInstaller(
     const OnAppHostInstallationCompleteCallback& completion_callback,
     BrowserThread::ID caller_thread_id)

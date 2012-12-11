@@ -35,6 +35,8 @@ class AppHostInstaller {
 
   static void SetInstallWithLauncher(bool install_with_launcher);
 
+  static bool GetInstallWithLauncher();
+
  private:
   // Constructs an AppHostInstaller, which will call |completion_callback|
   // on the specified thread upon installation completion.

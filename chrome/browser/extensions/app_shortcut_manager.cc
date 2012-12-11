@@ -91,7 +91,8 @@ void AppShortcutManager::Observe(int type,
       if (extension->is_platform_app() &&
           extension->location() != Extension::COMPONENT) {
 #if defined(OS_WIN)
-        if (BrowserDistribution::GetDistribution()->AppHostIsSupported()) {
+        if (BrowserDistribution::GetDistribution()->AppHostIsSupported() &&
+            extensions::AppHostInstaller::GetInstallWithLauncher()) {
           scoped_refptr<Extension> extension_ref(const_cast<Extension*>(
               extension));
           extensions::AppHostInstaller::EnsureAppHostInstalled(
