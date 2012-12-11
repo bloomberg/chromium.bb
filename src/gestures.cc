@@ -408,6 +408,8 @@ void GestureInterpreter::InitializeTouchpad(void) {
 
 void GestureInterpreter::InitializeMouse(void) {
   Interpreter* temp = new MouseInterpreter(prop_reg_.get(), tracer_.get());
+  // TODO(clchiou;chromium-os:36321): Use mouse acceleration algorithm for mice
+  temp = new AccelFilterInterpreter(prop_reg_.get(), temp, tracer_.get());
   temp = new ScalingFilterInterpreter(prop_reg_.get(), temp, tracer_.get(),
                                       GESTURES_DEVCLASS_MOUSE);
   temp = loggingFilter_ = new LoggingFilterInterpreter(prop_reg_.get(), temp,
