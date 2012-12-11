@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -93,6 +94,18 @@ bool GetNextTest(const CommandLine::StringVector& args,
 
 // Main routine for running as the Browser process.
 int ShellBrowserMain(const content::MainFunctionParams& parameters) {
+  bool layout_test_mode =
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree);
+  base::ScopedTempDir browser_context_path_for_layout_tests;
+
+  if (layout_test_mode) {
+    CHECK(browser_context_path_for_layout_tests.CreateUniqueTempDir());
+    CHECK(!browser_context_path_for_layout_tests.path().MaybeAsASCII().empty());
+    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kContentShellDataPath,
+        browser_context_path_for_layout_tests.path().MaybeAsASCII());
+  }
+
   scoped_ptr<content::BrowserMainRunner> main_runner_(
       content::BrowserMainRunner::Create());
 
@@ -108,9 +121,6 @@ int ShellBrowserMain(const content::MainFunctionParams& parameters) {
     main_runner_->Shutdown();
     return 0;
   }
-
-  bool layout_test_mode =
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree);
 
   if (layout_test_mode) {
     content::WebKitTestController test_controller;

@@ -47,11 +47,6 @@ void ShellBrowserContext::InitWhileIOAllowed() {
       cmd_line->HasSwitch(switches::kDumpRenderTree)) {
     ignore_certificate_errors_ = true;
   }
-  if (cmd_line->HasSwitch(switches::kDumpRenderTree)) {
-    CHECK(testing_path_.CreateUniqueTempDir());
-    path_ = testing_path_.path();
-    return;
-  }
   if (cmd_line->HasSwitch(switches::kContentShellDataPath)) {
     path_ = cmd_line->GetSwitchValuePath(switches::kContentShellDataPath);
     return;

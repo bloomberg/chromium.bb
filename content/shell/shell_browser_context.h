@@ -7,7 +7,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/browser_context.h"
@@ -54,7 +53,6 @@ class ShellBrowserContext : public BrowserContext {
 
   bool off_the_record_;
   bool ignore_certificate_errors_;
-  base::ScopedTempDir testing_path_;
   FilePath path_;
   scoped_ptr<ResourceContext> resource_context_;
   scoped_refptr<ShellDownloadManagerDelegate> download_manager_delegate_;
