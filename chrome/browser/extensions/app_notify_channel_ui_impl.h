@@ -13,7 +13,10 @@
 #include "chrome/browser/extensions/app_notify_channel_ui.h"
 
 class Profile;
-class TabContents;
+
+namespace content {
+class WebContents;
+}
 
 namespace extensions {
 
@@ -21,7 +24,7 @@ class AppNotifyChannelUIImpl : public AppNotifyChannelUI,
                                public ProfileSyncServiceObserver {
  public:
   AppNotifyChannelUIImpl(Profile* profile,
-                         TabContents* tab_contents,
+                         content::WebContents* web_contents,
                          const std::string& app_name,
                          AppNotifyChannelUI::UIType ui_type);
   virtual ~AppNotifyChannelUIImpl();
@@ -31,7 +34,7 @@ class AppNotifyChannelUIImpl : public AppNotifyChannelUI,
 
  protected:
   // A private class we use to put up an infobar - its lifetime is managed by
-  // |tab_contents_|, so we don't have one as an instance variable.
+  // |web_contents_|, so we don't have one as an instance variable.
   class InfoBar;
   friend class AppNotifyChannelUIImpl::InfoBar;
 
@@ -46,7 +49,7 @@ class AppNotifyChannelUIImpl : public AppNotifyChannelUI,
   void StopObservingSync();
 
   Profile* profile_;
-  TabContents* tab_contents_;
+  content::WebContents* web_contents_;
   std::string app_name_;
   AppNotifyChannelUI::UIType ui_type_;
   AppNotifyChannelUI::Delegate* delegate_;

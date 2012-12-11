@@ -37,7 +37,7 @@ class WebNavigationTabObserver
  public:
   virtual ~WebNavigationTabObserver();
 
-  // Returns the object for the given |tab_contents|.
+  // Returns the object for the given |web_contents|.
   static WebNavigationTabObserver* Get(content::WebContents* web_contents);
 
   const FrameNavigationState& frame_navigation_state() const {

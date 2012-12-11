@@ -45,7 +45,6 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/snapshot_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -843,12 +842,12 @@ bool GetSelectedTabFunction::RunImpl() {
     return false;
 
   TabStripModel* tab_strip = browser->tab_strip_model();
-  TabContents* contents = tab_strip->GetActiveTabContents();
+  WebContents* contents = tab_strip->GetActiveWebContents();
   if (!contents) {
     error_ = keys::kNoSelectedTabError;
     return false;
   }
-  SetResult(ExtensionTabUtil::CreateTabValue(contents->web_contents(),
+  SetResult(ExtensionTabUtil::CreateTabValue(contents,
                                              tab_strip,
                                              tab_strip->active_index(),
                                              GetExtension()));
@@ -950,8 +949,7 @@ bool QueryTabsFunction::RunImpl() {
 
     TabStripModel* tab_strip = (*browser)->tab_strip_model();
     for (int i = 0; i < tab_strip->count(); ++i) {
-      const WebContents* web_contents =
-          tab_strip->GetTabContentsAt(i)->web_contents();
+      const WebContents* web_contents = tab_strip->GetWebContentsAt(i);
 
       if (index > -1 && i != index)
         continue;

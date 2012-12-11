@@ -8,7 +8,10 @@
 #include <string>
 
 class Profile;
-class TabContents;
+
+namespace content {
+class WebContents;
+}
 
 namespace extensions {
 
@@ -43,7 +46,7 @@ class AppNotifyChannelUI {
 
   // Builds the platform specific AppNotifyChannelUI.
   static AppNotifyChannelUI* Create(Profile* profile,
-                                    TabContents* tab_contents,
+                                    content::WebContents* web_contents,
                                     const std::string& app_name,
                                     AppNotifyChannelUI::UIType ui_type);
 };

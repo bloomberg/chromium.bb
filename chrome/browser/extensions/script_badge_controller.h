@@ -68,7 +68,7 @@ class ScriptBadgeController
   // Gets the Profile for |web_contents_|.
   Profile* profile() const;
 
-  // Gets the ExtensionService for |tab_contents_|.
+  // Gets the ExtensionService for |web_contents_|.
   ExtensionService* GetExtensionService() const;
 
   // Gets the current page ID, or -1 if no navigation entry has been committed.

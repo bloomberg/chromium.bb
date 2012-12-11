@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/url_constants.h"
@@ -94,11 +93,11 @@ void AppNotifyChannelUIImpl::InfoBar::InfoBarDismissed() {
 
 AppNotifyChannelUIImpl::AppNotifyChannelUIImpl(
     Profile* profile,
-    TabContents* tab_contents,
+    content::WebContents* web_contents,
     const std::string& app_name,
     AppNotifyChannelUI::UIType ui_type)
     : profile_(profile->GetOriginalProfile()),
-      tab_contents_(tab_contents),
+      web_contents_(web_contents),
       app_name_(app_name),
       ui_type_(ui_type),
       delegate_(NULL),
@@ -114,10 +113,10 @@ AppNotifyChannelUIImpl::~AppNotifyChannelUIImpl() {
 
 // static
 AppNotifyChannelUI* AppNotifyChannelUI::Create(Profile* profile,
-    TabContents* tab_contents,
+    content::WebContents* web_contents,
     const std::string& app_name,
     AppNotifyChannelUI::UIType ui_type) {
-  return new AppNotifyChannelUIImpl(profile, tab_contents, app_name, ui_type);
+  return new AppNotifyChannelUIImpl(profile, web_contents, app_name, ui_type);
 }
 
 void AppNotifyChannelUIImpl::PromptSyncSetup(
@@ -137,7 +136,7 @@ void AppNotifyChannelUIImpl::PromptSyncSetup(
   }
 
   InfoBarTabHelper* infobar_tab_helper =
-      InfoBarTabHelper::FromWebContents(tab_contents_->web_contents());
+      InfoBarTabHelper::FromWebContents(web_contents_);
   infobar_tab_helper->AddInfoBar(new AppNotifyChannelUIImpl::InfoBar(
       this, infobar_tab_helper, app_name_));
 }
@@ -169,8 +168,7 @@ void AppNotifyChannelUIImpl::OnInfoBarResult(bool accepted) {
     }
   }
   // Any existing UI is now closed - display new login UI.
-  Browser* browser = chrome::FindBrowserWithWebContents(
-      tab_contents_->web_contents());
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
   chrome::ShowSettingsSubPage(browser, chrome::kSyncSetupForceLoginSubPage);
 }
 

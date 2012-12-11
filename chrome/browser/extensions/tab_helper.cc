@@ -20,7 +20,6 @@
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -339,9 +338,8 @@ void TabHelper::OnGetAppNotifyChannel(const GURL& requestor_url,
     return;
   }
 
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents());
   AppNotifyChannelUI* ui = AppNotifyChannelUI::Create(
-      profile, tab_contents, extension->name(),
+      profile, web_contents(), extension->name(),
       AppNotifyChannelUI::NOTIFICATION_INFOBAR);
 
   scoped_refptr<AppNotifyChannelSetup> channel_setup(

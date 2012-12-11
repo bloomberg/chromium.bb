@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 
 namespace extensions {
 
@@ -17,7 +16,7 @@ AppNotifyChannelUIAndroid::~AppNotifyChannelUIAndroid() {
 
 // static
 AppNotifyChannelUI* AppNotifyChannelUI::Create(Profile* profile,
-    TabContents* tab_contents,
+    content::WebContents* web_contents,
     const std::string& app_name,
     AppNotifyChannelUI::UIType ui_type) {
   return new AppNotifyChannelUIAndroid();

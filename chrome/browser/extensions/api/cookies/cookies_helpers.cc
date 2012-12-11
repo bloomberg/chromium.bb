@@ -18,7 +18,6 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/api/cookies.h"
 #include "chrome/common/extensions/extension.h"
@@ -152,8 +151,7 @@ void AppendToTabIdList(Browser* browser, ListValue* tab_ids) {
   TabStripModel* tab_strip = browser->tab_strip_model();
   for (int i = 0; i < tab_strip->count(); ++i) {
     tab_ids->Append(Value::CreateIntegerValue(
-        ExtensionTabUtil::GetTabId(
-            tab_strip->GetTabContentsAt(i)->web_contents())));
+        ExtensionTabUtil::GetTabId(tab_strip->GetWebContentsAt(i))));
   }
 }
 
