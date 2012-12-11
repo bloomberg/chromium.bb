@@ -319,10 +319,9 @@ class TestCaseFactory {
 // Helper macros for checking values in tests, and returning a location
 // description of the test fails.
 #define ASSERT_TRUE(cmd) \
-  do { \
-    if (!(cmd)) \
-      return MakeFailureMessage(__FILE__, __LINE__, #cmd); \
-  } while (false)
+  if (!(cmd)) { \
+    return MakeFailureMessage(__FILE__, __LINE__, #cmd); \
+  }
 #define ASSERT_FALSE(cmd) ASSERT_TRUE(!(cmd))
 #define ASSERT_EQ(a, b) ASSERT_TRUE((a) == (b))
 #define ASSERT_NE(a, b) ASSERT_TRUE((a) != (b))
