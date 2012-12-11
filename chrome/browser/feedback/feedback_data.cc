@@ -6,10 +6,16 @@
 
 #include "base/json/json_string_value_serializer.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/feedback/feedback_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/about_sync_util.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_set.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -18,6 +24,8 @@ using content::BrowserThread;
 // TODO(rkc): Remove all the code that gather sync data and move it to a
 // log data source once crbug.com/138582 is fixed.
 namespace {
+
+const char kExtensionsListKey[] = "extensions";
 
 void AddSyncLogs(chromeos::system::LogDictionaryType* logs) {
   Profile* profile = ProfileManager::GetDefaultProfile();
@@ -53,6 +61,40 @@ void AddSyncLogs(chromeos::system::LogDictionaryType* logs) {
   JSONStringValueSerializer serializer(&sync_logs_string);
   serializer.Serialize(*sync_logs.get());
   (*logs)[kSyncDataKey] = sync_logs_string;
+}
+
+void AddExtensionInfoLogs(chromeos::system::LogDictionaryType* logs) {
+  bool reporting_enabled = false;
+  chromeos::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref,
+                                            &reporting_enabled);
+  if (!reporting_enabled)
+    return;
+
+  Profile* default_profile =
+      g_browser_process->profile_manager()->GetDefaultProfile();
+  if (!default_profile)
+    return;
+
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(default_profile)->extension_service();
+  if (!service)
+    return;
+
+  std::string extensions_list;
+  const ExtensionSet* extensions = service->extensions();
+  for (ExtensionSet::const_iterator it = extensions->begin();
+       it != extensions->end();
+       ++it) {
+    const extensions::Extension* extension = *it;
+    if (extensions_list.empty()) {
+      extensions_list = extension->name();
+    } else {
+      extensions_list += ", " + extension->name();
+    }
+  }
+
+  if (!extensions_list.empty())
+    (*logs)[kExtensionsListKey] = extensions_list;
 }
 
 }
@@ -158,6 +200,7 @@ void FeedbackData::SyslogsComplete(chromeos::system::LogDictionaryType* logs,
 
     // TODO(rkc): Move to the correct place once crbug.com/138582 is done.
     AddSyncLogs(logs);
+    AddExtensionInfoLogs(logs);
 
     // Will get deleted when SendReport() is called.
     zip_content_ = zip_content;
