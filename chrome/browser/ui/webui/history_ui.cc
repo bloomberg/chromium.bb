@@ -393,7 +393,7 @@ void BrowsingHistoryHandler::WebHistoryQueryComplete(
   info_value.SetString("term", search_text);
   info_value.SetBoolean("finished", false);
 
-  const ListValue* result_list;
+  const ListValue* result_list = NULL;
   if (results_value && results_value->GetList("event", &result_list)) {
     web_ui()->CallJavascriptFunction("syncedHistoryResult",
                                      info_value,
