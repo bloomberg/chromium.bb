@@ -126,6 +126,8 @@
       'page_scale_animation.h',
       'picture.cc',
       'picture.h',
+      'picture_image_layer.cc',
+      'picture_image_layer.h',
       'picture_layer.cc',
       'picture_layer.h',
       'picture_layer_impl.cc',

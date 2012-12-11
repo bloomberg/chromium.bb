@@ -5,6 +5,8 @@
 #ifndef CC_CONTENT_LAYER_CLIENT_H_
 #define CC_CONTENT_LAYER_CLIENT_H_
 
+#include "cc/cc_export.h"
+
 class SkCanvas;
 
 namespace gfx {
@@ -14,7 +16,7 @@ class RectF;
 
 namespace cc {
 
-class ContentLayerClient {
+class CC_EXPORT ContentLayerClient {
 public:
     virtual void paintContents(SkCanvas*, const gfx::Rect& clip, gfx::RectF& opaque) = 0;
 

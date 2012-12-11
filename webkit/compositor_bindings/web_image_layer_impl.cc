@@ -4,10 +4,16 @@
 
 #include "web_image_layer_impl.h"
 
+#include "base/command_line.h"
 #include "cc/image_layer.h"
+#include "cc/picture_image_layer.h"
+#include "cc/switches.h"
 #include "web_layer_impl.h"
 
-using cc::ImageLayer;
+static bool usingPictureLayer()
+{
+    return CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kEnableImplSidePainting);
+}
 
 namespace WebKit {
 
@@ -17,8 +23,11 @@ WebImageLayer* WebImageLayer::create()
 }
 
 WebImageLayerImpl::WebImageLayerImpl()
-    : m_layer(new WebLayerImpl(ImageLayer::create()))
 {
+    if (usingPictureLayer())
+        m_layer.reset(new WebLayerImpl(cc::PictureImageLayer::create()));
+    else
+        m_layer.reset(new WebLayerImpl(cc::ImageLayer::create()));
 }
 
 WebImageLayerImpl::~WebImageLayerImpl()
@@ -32,7 +41,10 @@ WebLayer* WebImageLayerImpl::layer()
 
 void WebImageLayerImpl::setBitmap(SkBitmap bitmap)
 {
-    static_cast<ImageLayer*>(m_layer->layer())->setBitmap(bitmap);
+    if (usingPictureLayer())
+        static_cast<cc::PictureImageLayer*>(m_layer->layer())->setBitmap(bitmap);
+    else
+        static_cast<cc::ImageLayer*>(m_layer->layer())->setBitmap(bitmap);
 }
 
 } // namespace WebKit
