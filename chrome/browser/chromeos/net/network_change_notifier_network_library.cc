@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/net/network_change_notifier_chromeos.h"
+#include "chrome/browser/chromeos/net/network_change_notifier_network_library.h"
 
 #include <vector>
 
@@ -30,7 +30,7 @@ bool IsOnline(chromeos::ConnectionState state) {
 
 namespace chromeos {
 
-class NetworkChangeNotifierChromeos::DnsConfigServiceChromeos
+class NetworkChangeNotifierNetworkLibrary::DnsConfigServiceChromeos
     : public net::internal::DnsConfigServicePosix {
  public:
   DnsConfigServiceChromeos() {}
@@ -40,7 +40,7 @@ class NetworkChangeNotifierChromeos::DnsConfigServiceChromeos
   // net::DnsConfigServicePosix:
   virtual bool StartWatching() OVERRIDE {
     // Notifications from NetworkLibrary are sent to
-    // NetworkChangeNotifierChromeos.
+    // NetworkChangeNotifierNetworkLibrary.
     return true;
   }
 
@@ -51,7 +51,7 @@ class NetworkChangeNotifierChromeos::DnsConfigServiceChromeos
   }
 };
 
-NetworkChangeNotifierChromeos::NetworkChangeNotifierChromeos()
+NetworkChangeNotifierNetworkLibrary::NetworkChangeNotifierNetworkLibrary()
     : NetworkChangeNotifier(NetworkChangeCalculatorParamsChromeos()),
       has_active_network_(false),
       connection_state_(chromeos::STATE_UNKNOWN),
@@ -60,14 +60,14 @@ NetworkChangeNotifierChromeos::NetworkChangeNotifierChromeos()
   BrowserThread::PostDelayedTask(
          BrowserThread::UI, FROM_HERE,
          base::Bind(
-             &NetworkChangeNotifierChromeos::UpdateInitialState, this),
+             &NetworkChangeNotifierNetworkLibrary::UpdateInitialState, this),
          base::TimeDelta::FromMilliseconds(kInitialNotificationCheckDelayMS));
 }
 
-NetworkChangeNotifierChromeos::~NetworkChangeNotifierChromeos() {
+NetworkChangeNotifierNetworkLibrary::~NetworkChangeNotifierNetworkLibrary() {
 }
 
-void NetworkChangeNotifierChromeos::Init() {
+void NetworkChangeNotifierNetworkLibrary::Init() {
   chromeos::NetworkLibrary* network_library =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
   network_library->AddNetworkManagerObserver(this);
@@ -81,7 +81,7 @@ void NetworkChangeNotifierChromeos::Init() {
   UpdateNetworkState(network_library);
 }
 
-void NetworkChangeNotifierChromeos::Shutdown() {
+void NetworkChangeNotifierNetworkLibrary::Shutdown() {
   weak_factory_.InvalidateWeakPtrs();
 
   dns_config_service_.reset();
@@ -97,7 +97,7 @@ void NetworkChangeNotifierChromeos::Shutdown() {
   DBusThreadManager::Get()->GetRootPowerManagerClient()->RemoveObserver(this);
 }
 
-void NetworkChangeNotifierChromeos::OnResume(
+void NetworkChangeNotifierNetworkLibrary::OnResume(
     const base::TimeDelta& sleep_duration) {
   // Force invalidation of various net resources on system resume.
   BrowserThread::PostTask(
@@ -107,17 +107,17 @@ void NetworkChangeNotifierChromeos::OnResume(
 }
 
 
-void NetworkChangeNotifierChromeos::OnNetworkManagerChanged(
+void NetworkChangeNotifierNetworkLibrary::OnNetworkManagerChanged(
     chromeos::NetworkLibrary* cros) {
   UpdateNetworkState(cros);
 }
 
 net::NetworkChangeNotifier::ConnectionType
-NetworkChangeNotifierChromeos::GetCurrentConnectionType() const {
+NetworkChangeNotifierNetworkLibrary::GetCurrentConnectionType() const {
   return connection_type_;
 }
 
-void NetworkChangeNotifierChromeos::OnNetworkChanged(
+void NetworkChangeNotifierNetworkLibrary::OnNetworkChanged(
     chromeos::NetworkLibrary* cros,
     const chromeos::Network* network) {
   CHECK(network);
@@ -129,16 +129,17 @@ void NetworkChangeNotifierChromeos::OnNetworkChanged(
     UpdateConnectivityState(network);
 }
 
-void NetworkChangeNotifierChromeos::UpdateNetworkState(
+void NetworkChangeNotifierNetworkLibrary::UpdateNetworkState(
     chromeos::NetworkLibrary* lib) {
   const chromeos::Network* network = lib->active_network();
   if (network) {
     lib->GetIPConfigs(
         network->device_path(),
         chromeos::NetworkLibrary::FORMAT_COLON_SEPARATED_HEX,
-        base::Bind(&NetworkChangeNotifierChromeos::UpdateNetworkStateCallback,
-                   weak_factory_.GetWeakPtr(),
-                   lib));
+        base::Bind(
+            &NetworkChangeNotifierNetworkLibrary::UpdateNetworkStateCallback,
+            weak_factory_.GetWeakPtr(),
+            lib));
   } else {
     // If we don't have a network, then we can't fetch ipconfigs, but we still
     // need to process state updates when we lose a network (i.e. when
@@ -148,7 +149,7 @@ void NetworkChangeNotifierChromeos::UpdateNetworkState(
   }
 }
 
-void NetworkChangeNotifierChromeos::UpdateNetworkStateCallback(
+void NetworkChangeNotifierNetworkLibrary::UpdateNetworkStateCallback(
     chromeos::NetworkLibrary* lib,
     const NetworkIPConfigVector& ipconfigs,
     const std::string& hardware_address) {
@@ -214,7 +215,7 @@ void NetworkChangeNotifierChromeos::UpdateNetworkStateCallback(
   }
 }
 
-void NetworkChangeNotifierChromeos::UpdateConnectivityState(
+void NetworkChangeNotifierNetworkLibrary::UpdateConnectivityState(
       const chromeos::Network* network) {
   if (network) {
     VLOG(1) << "UpdateConnectivityState: " << network->name()
@@ -258,7 +259,7 @@ void NetworkChangeNotifierChromeos::UpdateConnectivityState(
           << ", new_type_ = " << new_connection_type;
 }
 
-void NetworkChangeNotifierChromeos::ReportConnectionChange() {
+void NetworkChangeNotifierNetworkLibrary::ReportConnectionChange() {
   if (weak_factory_.HasWeakPtrs()) {
     // If we have a pending task, cancel it.
     DVLOG(1) << "ReportConnectionChange: has pending task";
@@ -268,27 +269,28 @@ void NetworkChangeNotifierChromeos::ReportConnectionChange() {
   // Posting task with delay allows us to cancel it when connection type is
   // changed frequently. This should help us avoid transient edge reporting
   // while switching between connection types (e.g. ethernet->wifi).
+  base::Closure task = base::Bind(
+      &NetworkChangeNotifierNetworkLibrary::ReportConnectionChangeOnUIThread,
+      weak_factory_.GetWeakPtr());
+
   BrowserThread::PostDelayedTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(
-          &NetworkChangeNotifierChromeos::ReportConnectionChangeOnUIThread,
-          weak_factory_.GetWeakPtr()),
+      BrowserThread::UI, FROM_HERE, task,
       base::TimeDelta::FromMilliseconds(kOnlineNotificationDelayMS));
 }
 
-void NetworkChangeNotifierChromeos::ReportConnectionChangeOnUIThread() {
+void NetworkChangeNotifierNetworkLibrary::ReportConnectionChangeOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(
-         &NetworkChangeNotifierChromeos::
+         &NetworkChangeNotifierNetworkLibrary::
              NotifyObserversOfConnectionTypeChange));
 }
 
 // static
-void NetworkChangeNotifierChromeos::UpdateInitialState(
-    NetworkChangeNotifierChromeos* self) {
+void NetworkChangeNotifierNetworkLibrary::UpdateInitialState(
+    NetworkChangeNotifierNetworkLibrary* self) {
   chromeos::NetworkLibrary* net =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
   self->UpdateNetworkState(net);
@@ -296,7 +298,7 @@ void NetworkChangeNotifierChromeos::UpdateInitialState(
 
 // static
 net::NetworkChangeNotifier::ConnectionType
-NetworkChangeNotifierChromeos::GetNetworkConnectionType(
+NetworkChangeNotifierNetworkLibrary::GetNetworkConnectionType(
     const chromeos::Network* network) {
   if (!network || !IsOnline(network->connection_state()))
     return net::NetworkChangeNotifier::CONNECTION_NONE;
@@ -336,7 +338,7 @@ NetworkChangeNotifierChromeos::GetNetworkConnectionType(
 
 // static
 net::NetworkChangeNotifier::NetworkChangeCalculatorParams
-NetworkChangeNotifierChromeos::NetworkChangeCalculatorParamsChromeos() {
+NetworkChangeNotifierNetworkLibrary::NetworkChangeCalculatorParamsChromeos() {
   NetworkChangeCalculatorParams params;
   // Delay values arrived at by simple experimentation and adjusted so as to
   // produce a single signal when switching between network connections.

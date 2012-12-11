@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_NET_NETWORK_CHANGE_NOTIFIER_CHROMEOS_H_
-#define CHROME_BROWSER_CHROMEOS_NET_NETWORK_CHANGE_NOTIFIER_CHROMEOS_H_
+#ifndef CHROME_BROWSER_CHROMEOS_NET_NETWORK_CHANGE_NOTIFIER_NETWORK_LIBRARY_H_
+#define CHROME_BROWSER_CHROMEOS_NET_NETWORK_CHANGE_NOTIFIER_NETWORK_LIBRARY_H_
 
 #include <vector>
 
@@ -18,14 +18,14 @@ namespace chromeos {
 
 class OnlineStatusReportThreadTask;
 
-class NetworkChangeNotifierChromeos
+class NetworkChangeNotifierNetworkLibrary
     : public net::NetworkChangeNotifier,
       public chromeos::RootPowerManagerObserver,
       public chromeos::NetworkLibrary::NetworkObserver,
       public chromeos::NetworkLibrary::NetworkManagerObserver {
  public:
-  NetworkChangeNotifierChromeos();
-  virtual ~NetworkChangeNotifierChromeos();
+  NetworkChangeNotifierNetworkLibrary();
+  virtual ~NetworkChangeNotifierNetworkLibrary();
 
   // Initializes the network change notifier. Starts to observe changes
   // from the power manager and the network manager.
@@ -75,7 +75,7 @@ class NetworkChangeNotifierChromeos
   // Updates the initial state. Lets us trigger initial eval of the
   // connectivity status without waiting for an event from the connection
   // manager.
-  static void UpdateInitialState(NetworkChangeNotifierChromeos* self);
+  static void UpdateInitialState(NetworkChangeNotifierNetworkLibrary* self);
 
   // Gets connection type for given |network|.
   static net::NetworkChangeNotifier::ConnectionType GetNetworkConnectionType(
@@ -99,11 +99,11 @@ class NetworkChangeNotifierChromeos
 
   scoped_ptr<DnsConfigServiceChromeos> dns_config_service_;
 
-  base::WeakPtrFactory<NetworkChangeNotifierChromeos> weak_factory_;
+  base::WeakPtrFactory<NetworkChangeNotifierNetworkLibrary> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(NetworkChangeNotifierChromeos);
+  DISALLOW_COPY_AND_ASSIGN(NetworkChangeNotifierNetworkLibrary);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_NET_NETWORK_CHANGE_NOTIFIER_CHROMEOS_H_
+#endif  // CHROME_BROWSER_CHROMEOS_NET_NETWORK_CHANGE_NOTIFIER_NETWORK_LIBRARY_H_

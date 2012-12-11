@@ -3,24 +3,25 @@
 // found in the LICENSE file.
 #include "chrome/browser/chromeos/net/cros_network_change_notifier_factory.h"
 
-#include "chrome/browser/chromeos/net/network_change_notifier_chromeos.h"
+#include "chrome/browser/chromeos/net/network_change_notifier_network_library.h"
 
 namespace chromeos {
 
 namespace {
 
-NetworkChangeNotifierChromeos* g_network_change_notifier = NULL;
+NetworkChangeNotifierNetworkLibrary* g_network_change_notifier = NULL;
 
 }  // namespace
 
 net::NetworkChangeNotifier* CrosNetworkChangeNotifierFactory::CreateInstance() {
   DCHECK(!g_network_change_notifier);
-  g_network_change_notifier = new NetworkChangeNotifierChromeos();
+  g_network_change_notifier = new NetworkChangeNotifierNetworkLibrary();
   return g_network_change_notifier;
 }
 
 // static
-NetworkChangeNotifierChromeos* CrosNetworkChangeNotifierFactory::GetInstance() {
+NetworkChangeNotifierNetworkLibrary*
+CrosNetworkChangeNotifierFactory::GetInstance() {
   return g_network_change_notifier;
 }
 
