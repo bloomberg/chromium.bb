@@ -1603,10 +1603,15 @@ DialogType.isModal = function(type) {
     this.filePopupCloseCallback_ = closeCallback;
     this.dialogDom_.appendChild(this.filePopup_);
     this.filePopup_.focus();
+    this.document_.body.setAttribute('overlay-visible', '');
   };
 
   FileManager.prototype.closeFilePopup_ = function() {
     if (this.filePopup_) {
+      this.document_.body.removeAttribute('overlay-visible');
+      // The window resize would not be processed properly while the relevant
+      // divs had 'display:none', force resize after the layout fired.
+      setTimeout(this.onResize_.bind(this), 0);
       if (this.filePopup_.contentWindow &&
           this.filePopup_.contentWindow.unload) {
         this.filePopup_.contentWindow.unload();

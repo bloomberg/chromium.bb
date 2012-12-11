@@ -1243,6 +1243,12 @@ body[type='folder'] .file,
   z-index: 100;
 }
 
+/* When the overlay pane is visible hide everything else so that the tab order
+  is not confused. */
+body[overlay-visible] > :not(.overlay-pane) {
+  display: none !important;
+}
+
 /* Invisible container for elements representing files while dragging. */
 #drag-image-container {
   -webkit-box-orient: horizontal;
