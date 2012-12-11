@@ -9,6 +9,7 @@
 #include <set>
 
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chromeos/network/onc/onc_constants.h"
 
 namespace chromeos {
 
@@ -43,7 +44,7 @@ class NetworkLibraryImplBase : public NetworkLibrary {
   virtual void CallConfigureService(const std::string& identifier,
                                     const DictionaryValue* info) = 0;
   // Called from NetworkConnectStart.
-  // Calls NetworkConnectCompleted when the connection attept completes.
+  // Calls NetworkConnectCompleted when the connection attempt completes.
   virtual void CallConnectToNetwork(Network* network) = 0;
   // Called from DeleteRememberedNetwork.
   virtual void CallDeleteRememberedNetwork(
@@ -233,9 +234,8 @@ class NetworkLibraryImplBase : public NetworkLibrary {
   virtual void SwitchToPreferredNetwork() OVERRIDE;
   virtual bool LoadOncNetworks(const std::string& onc_blob,
                                const std::string& passphrase,
-                               NetworkUIData::ONCSource source,
-                               bool allow_web_trust_from_policy,
-                               std::string* error) OVERRIDE;
+                               onc::ONCSource source,
+                               bool allow_web_trust_from_policy) OVERRIDE;
   virtual bool SetActiveNetwork(ConnectionType type,
                                 const std::string& service_path) OVERRIDE;
 
@@ -251,7 +251,7 @@ class NetworkLibraryImplBase : public NetworkLibrary {
   typedef std::map<std::string, int> PriorityMap;
   typedef std::map<std::string, NetworkDevice*> NetworkDeviceMap;
   typedef std::map<std::string, const base::DictionaryValue*> NetworkOncMap;
-  typedef std::map<NetworkUIData::ONCSource,
+  typedef std::map<onc::ONCSource,
                    std::set<std::string> > NetworkSourceMap;
 
   struct NetworkProfile {
@@ -317,7 +317,7 @@ class NetworkLibraryImplBase : public NetworkLibrary {
   // When |if_found| is true, then it forgets networks that appear in |ids|.
   // When |if_found| is false, it removes networks that do NOT appear in |ids|.
   // |source| is the import source of the data.
-  void ForgetNetworksById(NetworkUIData::ONCSource source,
+  void ForgetNetworksById(onc::ONCSource source,
                           std::set<std::string> ids,
                           bool if_found);
 

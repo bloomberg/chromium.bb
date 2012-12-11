@@ -43,7 +43,7 @@ LogEntry::LogEntry(const std::string& module,
 std::string LogEntry::ToString() const {
   std::string line;
   line += "[" + UTF16ToUTF8(base::TimeFormatShortDateAndTime(time)) + "]";
-  line += " " + module + "." + event;
+  line += " " + module + ":" + event;
   if (!description.empty())
     line += ": " + description;
   if (count > 1)

@@ -15,11 +15,11 @@ const char NetworkUIData::kKeyCertificatePattern[] = "certificate_pattern";
 const char NetworkUIData::kKeyCertificateType[] = "certificate_type";
 
 // Property names for per-property data stored under |kKeyProperties|.
-const EnumMapper<NetworkUIData::ONCSource>::Pair
+const EnumMapper<onc::ONCSource>::Pair
     NetworkUIData::kONCSourceTable[] =  {
-  { "user_import", NetworkUIData::ONC_SOURCE_USER_IMPORT },
-  { "device_policy", NetworkUIData::ONC_SOURCE_DEVICE_POLICY },
-  { "user_policy", NetworkUIData::ONC_SOURCE_USER_POLICY },
+  { "user_import", onc::ONC_SOURCE_USER_IMPORT },
+  { "device_policy", onc::ONC_SOURCE_DEVICE_POLICY },
+  { "user_policy", onc::ONC_SOURCE_USER_POLICY },
 };
 
 // Property names for per-property data stored under |kKeyProperties|.
@@ -35,7 +35,7 @@ const char NetworkPropertyUIData::kKeyController[] = "controller";
 const char NetworkPropertyUIData::kKeyDefaultValue[] = "default_value";
 
 NetworkUIData::NetworkUIData()
-    : onc_source_(ONC_SOURCE_NONE),
+    : onc_source_(onc::ONC_SOURCE_NONE),
       certificate_type_(CLIENT_CERT_TYPE_NONE) {
 }
 
@@ -44,7 +44,7 @@ NetworkUIData::NetworkUIData(const DictionaryValue& dict) {
   if (dict.GetString(kKeyONCSource, &source)) {
     onc_source_ = GetONCSourceMapper().Get(source);
   } else {
-    onc_source_ = ONC_SOURCE_NONE;
+    onc_source_ = onc::ONC_SOURCE_NONE;
   }
   const DictionaryValue* cert_dict = NULL;
   if (dict.GetDictionary(kKeyCertificatePattern, &cert_dict) && cert_dict)
@@ -87,10 +87,10 @@ void NetworkUIData::FillDictionary(base::DictionaryValue* dict) const {
 }
 
 // static
-EnumMapper<NetworkUIData::ONCSource>& NetworkUIData::GetONCSourceMapper() {
-  CR_DEFINE_STATIC_LOCAL(EnumMapper<ONCSource>, mapper,
+EnumMapper<onc::ONCSource>& NetworkUIData::GetONCSourceMapper() {
+  CR_DEFINE_STATIC_LOCAL(EnumMapper<onc::ONCSource>, mapper,
                          (kONCSourceTable, arraysize(kONCSourceTable),
-                          ONC_SOURCE_NONE));
+                          onc::ONC_SOURCE_NONE));
   return mapper;
 }
 

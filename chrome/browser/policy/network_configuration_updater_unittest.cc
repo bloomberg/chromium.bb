@@ -9,6 +9,7 @@
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/policy_service_impl.h"
+#include "chromeos/network/onc/onc_constants.h"
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -42,13 +43,13 @@ class NetworkConfigurationUpdaterTest
   }
 
   // Maps configuration policy name to corresponding ONC source.
-  static chromeos::NetworkUIData::ONCSource NameToONCSource(
+  static chromeos::onc::ONCSource NameToONCSource(
       const std::string& name) {
     if (name == key::kDeviceOpenNetworkConfiguration)
-      return chromeos::NetworkUIData::ONC_SOURCE_DEVICE_POLICY;
+      return chromeos::onc::ONC_SOURCE_DEVICE_POLICY;
     if (name == key::kOpenNetworkConfiguration)
-      return chromeos::NetworkUIData::ONC_SOURCE_USER_POLICY;
-    return chromeos::NetworkUIData::ONC_SOURCE_NONE;
+      return chromeos::onc::ONC_SOURCE_USER_POLICY;
+    return chromeos::onc::ONC_SOURCE_NONE;
   }
 
   chromeos::MockNetworkLibrary network_library_;
@@ -69,7 +70,7 @@ TEST_P(NetworkConfigurationUpdaterTest, InitialUpdates) {
   const char* device_onc = GetParam() == key::kDeviceOpenNetworkConfiguration ?
       kFakeONC : kEmptyConfiguration;
   EXPECT_CALL(network_library_, LoadOncNetworks(
-      device_onc, "", chromeos::NetworkUIData::ONC_SOURCE_DEVICE_POLICY, _, _));
+      device_onc, "", chromeos::onc::ONC_SOURCE_DEVICE_POLICY, _));
 
   {
     NetworkConfigurationUpdater updater(policy_service_.get(),
@@ -79,9 +80,9 @@ TEST_P(NetworkConfigurationUpdaterTest, InitialUpdates) {
     // After the user policy is initialized, we always push both policies to the
     // NetworkLibrary.
     EXPECT_CALL(network_library_, LoadOncNetworks(
-        kFakeONC, "", NameToONCSource(GetParam()), _, _));
+        kFakeONC, "", NameToONCSource(GetParam()), _));
     EXPECT_CALL(network_library_, LoadOncNetworks(
-        kEmptyConfiguration, "", Ne(NameToONCSource(GetParam())), _, _));
+        kEmptyConfiguration, "", Ne(NameToONCSource(GetParam())), _));
 
     EXPECT_CALL(network_library_, RemoveNetworkProfileObserver(_));
 
@@ -95,7 +96,7 @@ TEST_P(NetworkConfigurationUpdaterTest, AllowWebTrust) {
     EXPECT_CALL(network_library_, AddNetworkProfileObserver(_));
 
     // Initially web trust is disabled.
-    EXPECT_CALL(network_library_, LoadOncNetworks(_, _, _, false, _))
+    EXPECT_CALL(network_library_, LoadOncNetworks(_, _, _, false))
         .Times(AtLeast(0));
     NetworkConfigurationUpdater updater(policy_service_.get(),
                                         &network_library_);
@@ -103,7 +104,7 @@ TEST_P(NetworkConfigurationUpdaterTest, AllowWebTrust) {
     Mock::VerifyAndClearExpectations(&network_library_);
 
     // Web trust should be forwarded to LoadOncNetworks.
-    EXPECT_CALL(network_library_, LoadOncNetworks(_, _, _, true, _))
+    EXPECT_CALL(network_library_, LoadOncNetworks(_, _, _, true))
         .Times(AtLeast(0));
 
     updater.set_allow_web_trust(true);
@@ -124,7 +125,7 @@ TEST_P(NetworkConfigurationUpdaterTest, PolicyChange) {
     EXPECT_CALL(network_library_, AddNetworkProfileObserver(_));
 
     // Ignore the initial updates.
-    EXPECT_CALL(network_library_, LoadOncNetworks(_, _, _, _, _))
+    EXPECT_CALL(network_library_, LoadOncNetworks(_, _, _, _))
         .Times(AtLeast(0));
     NetworkConfigurationUpdater updater(policy_service_.get(),
                                         &network_library_);
@@ -133,11 +134,11 @@ TEST_P(NetworkConfigurationUpdaterTest, PolicyChange) {
 
     // We should update if policy changes.
     EXPECT_CALL(network_library_, LoadOncNetworks(
-        kFakeONC, "", NameToONCSource(GetParam()), _, _));
+        kFakeONC, "", NameToONCSource(GetParam()), _));
 
     // In the current implementation, we always apply both policies.
     EXPECT_CALL(network_library_, LoadOncNetworks(
-        kEmptyConfiguration, "", Ne(NameToONCSource(GetParam())), _, _));
+        kEmptyConfiguration, "", Ne(NameToONCSource(GetParam())), _));
 
     PolicyMap policy;
     policy.Set(GetParam(), POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
@@ -149,11 +150,11 @@ TEST_P(NetworkConfigurationUpdaterTest, PolicyChange) {
     // implementation, we always apply both policies.
     EXPECT_CALL(network_library_, LoadOncNetworks(
         kEmptyConfiguration, "",
-        chromeos::NetworkUIData::ONC_SOURCE_DEVICE_POLICY, _, _));
+        chromeos::onc::ONC_SOURCE_DEVICE_POLICY, _));
 
     EXPECT_CALL(network_library_, LoadOncNetworks(
         kEmptyConfiguration, "",
-        chromeos::NetworkUIData::ONC_SOURCE_USER_POLICY, _, _));
+        chromeos::onc::ONC_SOURCE_USER_POLICY, _));
 
     EXPECT_CALL(network_library_, RemoveNetworkProfileObserver(_));
 

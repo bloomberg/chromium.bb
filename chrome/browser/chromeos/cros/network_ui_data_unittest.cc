@@ -35,21 +35,20 @@ TEST_F(NetworkUIDataTest, ONCSource) {
   ui_data_dict.SetString(NetworkUIData::kKeyONCSource, "user_import");
   {
     NetworkUIData ui_data(ui_data_dict);
-    EXPECT_EQ(NetworkUIData::ONC_SOURCE_USER_IMPORT,
-              ui_data.onc_source());
+    EXPECT_EQ(onc::ONC_SOURCE_USER_IMPORT, ui_data.onc_source());
     EXPECT_FALSE(ui_data.is_managed());
   }
 
   ui_data_dict.SetString(NetworkUIData::kKeyONCSource, "device_policy");
   {
     NetworkUIData ui_data(ui_data_dict);
-    EXPECT_EQ(NetworkUIData::ONC_SOURCE_DEVICE_POLICY, ui_data.onc_source());
+    EXPECT_EQ(onc::ONC_SOURCE_DEVICE_POLICY, ui_data.onc_source());
     EXPECT_TRUE(ui_data.is_managed());
   }
   ui_data_dict.SetString(NetworkUIData::kKeyONCSource, "user_policy");
   {
     NetworkUIData ui_data(ui_data_dict);
-    EXPECT_EQ(NetworkUIData::ONC_SOURCE_USER_POLICY, ui_data.onc_source());
+    EXPECT_EQ(onc::ONC_SOURCE_USER_POLICY, ui_data.onc_source());
     EXPECT_TRUE(ui_data.is_managed());
   }
 }
@@ -135,7 +134,7 @@ TEST_F(NetworkUIDataTest, ParseOncProperty) {
 
   NetworkPropertyUIData prop;
 
-  ui_data.set_onc_source(NetworkUIData::ONC_SOURCE_USER_IMPORT);
+  ui_data.set_onc_source(onc::ONC_SOURCE_USER_IMPORT);
   ui_data.FillDictionary(&ui_data_dict);
 
   NetworkUIData empty_data;
@@ -151,7 +150,7 @@ TEST_F(NetworkUIDataTest, ParseOncProperty) {
   prop.ParseOncProperty(ui_data, &onc, "c");
   CheckProperty(prop, NULL, false, false, true);
 
-  ui_data.set_onc_source(NetworkUIData::ONC_SOURCE_USER_POLICY);
+  ui_data.set_onc_source(onc::ONC_SOURCE_USER_POLICY);
   ui_data.FillDictionary(&ui_data_dict);
 
   prop.ParseOncProperty(ui_data, &onc, "a");

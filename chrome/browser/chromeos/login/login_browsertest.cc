@@ -47,7 +47,7 @@ class LoginTestBase : public CrosInProcessBrowserTest {
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*mock_network_library_, AddUserActionObserver(_))
         .Times(AnyNumber());
-    EXPECT_CALL(*mock_network_library_, LoadOncNetworks(_, _, _, _, _))
+    EXPECT_CALL(*mock_network_library_, LoadOncNetworks(_, _, _, _))
         .WillRepeatedly(Return(true));
   }
 

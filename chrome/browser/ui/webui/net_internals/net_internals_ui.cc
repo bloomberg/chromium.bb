@@ -79,6 +79,7 @@
 #include "chrome/browser/chromeos/system/syslogs_provider.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
+#include "chromeos/network/onc/onc_constants.h"
 #endif
 #if defined(OS_WIN)
 #include "chrome/browser/net/service_providers_win.h"
@@ -1491,10 +1492,12 @@ void NetInternalsMessageHandler::OnImportONCFile(const ListValue* list) {
   std::string error;
   chromeos::NetworkLibrary* cros_network =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-  cros_network->LoadOncNetworks(onc_blob, passcode,
-                                chromeos::NetworkUIData::ONC_SOURCE_USER_IMPORT,
-                                false,  // allow_web_trust_from_policy
-                                &error);
+  if (!cros_network->LoadOncNetworks(onc_blob, passcode,
+                                chromeos::onc::ONC_SOURCE_USER_IMPORT,
+                                false)) {  // allow web trust from policy
+    LOG(ERROR) << "Unable to load ONC.";
+    error = "Unable to load ONC configuration.";
+  }
 
   // Now that we've added the networks, we need to rescan them so they'll be
   // available from the menu more immediately.
@@ -1505,7 +1508,7 @@ void NetInternalsMessageHandler::OnImportONCFile(const ListValue* list) {
 }
 
 void NetInternalsMessageHandler::OnStoreDebugLogs(const ListValue* list) {
-  DCHECK(!list);
+  DCHECK(list);
   StoreDebugLogs(
       base::Bind(&NetInternalsMessageHandler::OnStoreDebugLogsCompleted,
                  AsWeakPtr()));

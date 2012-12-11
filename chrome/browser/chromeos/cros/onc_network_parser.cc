@@ -9,7 +9,6 @@
 
 #include "base/base64.h"
 #include "base/json/json_string_value_serializer.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
 #include "base/json/json_writer.h"  // for debug output only.
 #include "base/stringprintf.h"
 #include "base/values.h"
@@ -18,13 +17,14 @@
 #include "chrome/browser/chromeos/cros/native_network_constants.h"
 #include "chrome/browser/chromeos/cros/native_network_parser.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/browser/chromeos/cros/onc_constants.h"
-#include "chrome/browser/chromeos/network_settings/onc_certificate_importer.h"
-#include "chrome/browser/chromeos/network_settings/onc_signature.h"
-#include "chrome/browser/chromeos/network_settings/onc_validator.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/common/net/x509_certificate_model.h"
+#include "chromeos/network/onc/onc_certificate_importer.h"
+#include "chromeos/network/onc/onc_constants.h"
+#include "chromeos/network/onc/onc_signature.h"
+#include "chromeos/network/onc/onc_validator.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/encryptor.h"
 #include "crypto/hmac.h"
@@ -281,7 +281,7 @@ bool GetAsListOfStrings(const base::Value& value,
 // -------------------- OncNetworkParser --------------------
 
 OncNetworkParser::OncNetworkParser(const base::ListValue& network_configs,
-                                   NetworkUIData::ONCSource onc_source)
+                                   onc::ONCSource onc_source)
     : NetworkParser(get_onc_mapper()),
       onc_source_(onc_source),
       network_configs_(network_configs.DeepCopy()) {
@@ -458,7 +458,7 @@ bool OncNetworkParser::ParseNestedObject(Network* network,
 // static
 std::string OncNetworkParser::GetUserExpandedValue(
     const base::Value& value,
-    NetworkUIData::ONCSource source) {
+    onc::ONCSource source) {
   std::string string_value;
   if (!value.GetAsString(&string_value))
     return string_value;
@@ -467,8 +467,8 @@ std::string OncNetworkParser::GetUserExpandedValue(
   if (!content::BrowserThread::IsMessageLoopValid(content::BrowserThread::UI))
     return string_value;
 
-  if (source != NetworkUIData::ONC_SOURCE_USER_POLICY &&
-      source != NetworkUIData::ONC_SOURCE_USER_IMPORT) {
+  if (source != onc::ONC_SOURCE_USER_POLICY &&
+      source != onc::ONC_SOURCE_USER_IMPORT) {
     return string_value;
   }
 
@@ -857,7 +857,7 @@ bool OncNetworkParser::ParseClientCertPattern(OncNetworkParser* parser,
                                               Network* network) {
   // Ignore certificate patterns for device policy ONC so that an unmanaged user
   // won't have a certificate presented for them involuntarily.
-  if (parser->onc_source() == NetworkUIData::ONC_SOURCE_DEVICE_POLICY)
+  if (parser->onc_source() == onc::ONC_SOURCE_DEVICE_POLICY)
     return false;
 
   // Only WiFi and VPN have this type.

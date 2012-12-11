@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/cros/cros_network_functions.h"
 #include "chrome/browser/chromeos/cros/network_constants.h"
 #include "chrome/browser/chromeos/cros/network_ui_data.h"
+#include "chromeos/network/onc/onc_constants.h"
 #include "googleurl/src/gurl.h"
 
 namespace base {
@@ -1689,9 +1690,8 @@ class NetworkLibrary {
   // the error message.
   virtual bool LoadOncNetworks(const std::string& onc_blob,
                                const std::string& passcode,
-                               NetworkUIData::ONCSource source,
-                               bool allow_web_trust_from_policy,
-                               std::string* error) = 0;
+                               onc::ONCSource source,
+                               bool allow_web_trust_from_policy) = 0;
 
   // This sets the active network for the network type. Note: priority order
   // is unchanged (i.e. if a wifi network is set to active, but an ethernet

@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/policy/policy_map.h"
+#include "chromeos/network/onc/onc_constants.h"
 #include "policy/policy_constants.h"
 
 namespace policy {
@@ -31,12 +32,12 @@ NetworkConfigurationUpdater::NetworkConfigurationUpdater(
       key::kDeviceOpenNetworkConfiguration,
       base::Bind(&NetworkConfigurationUpdater::OnPolicyChanged,
                  base::Unretained(this),
-                 chromeos::NetworkUIData::ONC_SOURCE_DEVICE_POLICY));
+                 chromeos::onc::ONC_SOURCE_DEVICE_POLICY));
   policy_change_registrar_.Observe(
       key::kOpenNetworkConfiguration,
       base::Bind(&NetworkConfigurationUpdater::OnPolicyChanged,
                  base::Unretained(this),
-                 chromeos::NetworkUIData::ONC_SOURCE_USER_POLICY));
+                 chromeos::onc::ONC_SOURCE_USER_POLICY));
 
   network_library_->AddNetworkProfileObserver(this);
 
@@ -60,7 +61,7 @@ void NetworkConfigurationUpdater::OnUserPolicyInitialized() {
 }
 
 void NetworkConfigurationUpdater::OnPolicyChanged(
-    chromeos::NetworkUIData::ONCSource onc_source,
+    chromeos::onc::ONCSource onc_source,
     const base::Value* previous,
     const base::Value* current) {
   VLOG(1) << "Policy for ONC source " << onc_source << " changed.";
@@ -69,16 +70,16 @@ void NetworkConfigurationUpdater::OnPolicyChanged(
 
 void NetworkConfigurationUpdater::ApplyNetworkConfigurations() {
   ApplyNetworkConfiguration(key::kDeviceOpenNetworkConfiguration,
-                            chromeos::NetworkUIData::ONC_SOURCE_DEVICE_POLICY);
+                            chromeos::onc::ONC_SOURCE_DEVICE_POLICY);
   if (user_policy_initialized_) {
     ApplyNetworkConfiguration(key::kOpenNetworkConfiguration,
-                              chromeos::NetworkUIData::ONC_SOURCE_USER_POLICY);
+                              chromeos::onc::ONC_SOURCE_USER_POLICY);
   }
 }
 
 void NetworkConfigurationUpdater::ApplyNetworkConfiguration(
     const std::string& policy_key,
-    chromeos::NetworkUIData::ONCSource onc_source) {
+    chromeos::onc::ONCSource onc_source) {
   VLOG(1) << "Apply policy for ONC source " << onc_source;
   const PolicyMap& policies = policy_service_->GetPolicies(POLICY_DOMAIN_CHROME,
                                                            std::string());
@@ -97,9 +98,8 @@ void NetworkConfigurationUpdater::ApplyNetworkConfiguration(
   if (new_network_config.empty())
     new_network_config = kEmptyConfiguration;
 
-  std::string unused_error;
   network_library_->LoadOncNetworks(new_network_config, "", onc_source,
-                                    allow_web_trust_, &unused_error);
+                                    allow_web_trust_);
 }
 
 }  // namespace policy

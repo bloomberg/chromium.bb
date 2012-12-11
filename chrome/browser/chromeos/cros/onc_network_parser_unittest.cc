@@ -20,15 +20,15 @@
 #include "chrome/browser/chromeos/cros/certificate_pattern.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/browser/chromeos/cros/onc_constants.h"
 #include "chrome/browser/chromeos/login/mock_user_manager.h"
-#include "chrome/browser/chromeos/network_settings/onc_utils.h"
 #include "chrome/browser/net/pref_proxy_config_tracker_impl.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/net/x509_certificate_model.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/network/onc/onc_constants.h"
+#include "chromeos/network/onc/onc_utils.h"
 #include "content/public/test/test_browser_thread.h"
 #include "crypto/nss_util.h"
 #include "net/base/cert_type.h"
@@ -77,7 +77,6 @@ class OncNetworkParserTest : public testing::Test {
   virtual scoped_ptr<base::ListValue> ReadNetworkConfigs(
       const std::string& filename) {
       FilePath path;
-      std::string error;
       PathService::Get(chrome::DIR_TEST_DATA, &path);
       path = path.AppendASCII("chromeos").AppendASCII("cros").Append(filename);
       CHECK(file_util::PathExists(path))
@@ -87,9 +86,8 @@ class OncNetworkParserTest : public testing::Test {
         << "Unable to read test data file " << path.value();
 
       scoped_ptr<base::DictionaryValue> root =
-          onc::ReadDictionaryFromJson(contents, &error);
-      CHECK(root.get() != NULL) << "ONC is not a valid json dictionary: "
-                                << error;
+          onc::ReadDictionaryFromJson(contents);
+      CHECK(root.get() != NULL) << "ONC is not a valid JSON dictionary.";
 
       base::ListValue* network_configs;
       CHECK(root->GetListWithoutPathExpansion(onc::kNetworkConfigurations,
@@ -191,7 +189,7 @@ void OncNetworkParserTest::TestProxySettings(const std::string filename,
   // Parse Network Configuration including ProxySettings dictionary.
   scoped_ptr<base::ListValue> network_configs = ReadNetworkConfigs(filename);
   OncNetworkParser parser(*network_configs,
-                          NetworkUIData::ONC_SOURCE_USER_IMPORT);
+                          onc::ONC_SOURCE_USER_IMPORT);
 
   scoped_ptr<Network> network(parser.ParseNetwork(0, NULL));
   ASSERT_TRUE(network.get());
@@ -213,7 +211,7 @@ TEST_F(OncNetworkParserTest, TestCreateNetworkWifi) {
   scoped_ptr<base::ListValue> network_configs =
       ReadNetworkConfigs("network-wifi.onc");
   OncNetworkParser parser(*network_configs,
-                          NetworkUIData::ONC_SOURCE_USER_IMPORT);
+                          onc::ONC_SOURCE_USER_IMPORT);
 
   EXPECT_EQ(1, parser.GetNetworkConfigsSize());
   scoped_ptr<Network> network(parser.ParseNetwork(0, NULL));
@@ -234,7 +232,7 @@ TEST_F(OncNetworkParserTest, TestCreateNetworkEthernet) {
   scoped_ptr<base::ListValue> network_configs =
       ReadNetworkConfigs("network-ethernet.onc");
   OncNetworkParser parser(*network_configs,
-                          NetworkUIData::ONC_SOURCE_USER_IMPORT);
+                          onc::ONC_SOURCE_USER_IMPORT);
 
   EXPECT_GE(parser.GetNetworkConfigsSize(), 1);
   scoped_ptr<Network> network(parser.ParseNetwork(0, NULL));
@@ -249,7 +247,7 @@ TEST_F(OncNetworkParserTest, TestLoadWifiCertificatePattern) {
   scoped_ptr<base::ListValue> network_configs =
       ReadNetworkConfigs("cert-pattern.onc");
   OncNetworkParser parser(*network_configs,
-                          NetworkUIData::ONC_SOURCE_USER_IMPORT);
+                          onc::ONC_SOURCE_USER_IMPORT);
   ASSERT_TRUE(parser.parse_error().empty());
   EXPECT_EQ(1, parser.GetNetworkConfigsSize());
   scoped_ptr<Network> network(parser.ParseNetwork(0, NULL));
@@ -277,7 +275,7 @@ TEST_F(OncNetworkParserTest, TestLoadVPNCertificatePattern) {
   scoped_ptr<base::ListValue> network_configs =
       ReadNetworkConfigs("cert-pattern-vpn.onc");
   OncNetworkParser parser(*network_configs,
-                          NetworkUIData::ONC_SOURCE_USER_IMPORT);
+                          onc::ONC_SOURCE_USER_IMPORT);
   ASSERT_TRUE(parser.parse_error().empty());
   EXPECT_EQ(1, parser.GetNetworkConfigsSize());
   scoped_ptr<Network> network(parser.ParseNetwork(0, NULL));
@@ -301,7 +299,7 @@ TEST_F(OncNetworkParserTest, TestNoCertificatePatternForDevicePolicy) {
   scoped_ptr<base::ListValue> network_configs =
       ReadNetworkConfigs("cert-pattern.onc");
   OncNetworkParser parser(*network_configs,
-                          NetworkUIData::ONC_SOURCE_DEVICE_POLICY);
+                          onc::ONC_SOURCE_DEVICE_POLICY);
 
   // Make sure we fail when parsing a certificate pattern from a device policy
   // ONC file.
@@ -326,7 +324,7 @@ TEST_F(OncNetworkParserTest, TestCreateNetworkWifiEAP1) {
   scoped_ptr<base::ListValue> network_configs =
       ReadNetworkConfigs("network-wifi-eap1.onc");
   OncNetworkParser parser(*network_configs,
-                          NetworkUIData::ONC_SOURCE_USER_IMPORT);
+                          onc::ONC_SOURCE_USER_IMPORT);
 
   EXPECT_EQ(1, parser.GetNetworkConfigsSize());
   scoped_ptr<Network> network(parser.ParseNetwork(0, NULL));
@@ -349,7 +347,7 @@ TEST_F(OncNetworkParserTest, TestCreateNetworkWifiEAP2) {
   scoped_ptr<base::ListValue> network_configs =
       ReadNetworkConfigs("network-wifi-eap2.onc");
   OncNetworkParser parser(*network_configs,
-                          NetworkUIData::ONC_SOURCE_USER_IMPORT);
+                          onc::ONC_SOURCE_USER_IMPORT);
 
   EXPECT_EQ(1, parser.GetNetworkConfigsSize());
   scoped_ptr<Network> network(parser.ParseNetwork(0, NULL));
@@ -374,7 +372,7 @@ TEST_F(OncNetworkParserTest, TestCreateNetworkUnknownFields) {
   scoped_ptr<base::ListValue> network_configs =
       ReadNetworkConfigs("network-unknown-fields.onc");
   OncNetworkParser parser(*network_configs,
-                          NetworkUIData::ONC_SOURCE_USER_IMPORT);
+                          onc::ONC_SOURCE_USER_IMPORT);
   scoped_ptr<Network> network(parser.ParseNetwork(0, NULL));
   ASSERT_TRUE(network.get());
 
@@ -389,7 +387,7 @@ TEST_F(OncNetworkParserTest, TestCreateNetworkOpenVPN) {
   scoped_ptr<base::ListValue> network_configs =
       ReadNetworkConfigs("network-openvpn.onc");
   OncNetworkParser parser(*network_configs,
-                          NetworkUIData::ONC_SOURCE_USER_IMPORT);
+                          onc::ONC_SOURCE_USER_IMPORT);
 
   EXPECT_EQ(1, parser.GetNetworkConfigsSize());
   scoped_ptr<Network> network(parser.ParseNetwork(0, NULL));
@@ -447,7 +445,7 @@ TEST_F(OncNetworkParserTest, TestCreateNetworkL2TPIPsec) {
   scoped_ptr<base::ListValue> network_configs =
       ReadNetworkConfigs("network-l2tp-ipsec.onc");
   OncNetworkParser parser(*network_configs,
-                          NetworkUIData::ONC_SOURCE_USER_IMPORT);
+                          onc::ONC_SOURCE_USER_IMPORT);
 
   EXPECT_EQ(1, parser.GetNetworkConfigsSize());
   scoped_ptr<Network> network(parser.ParseNetwork(0, NULL));
@@ -548,7 +546,7 @@ TEST(OncNetworkParserUserExpansionTest, GetUserExpandedValue) {
       .Times(2)
       .WillRepeatedly(Return(false));
 
-  NetworkUIData::ONCSource source = NetworkUIData::ONC_SOURCE_USER_IMPORT;
+  onc::ONCSource source = onc::ONC_SOURCE_USER_IMPORT;
 
   // Setup environment needed by UserManager.
   MessageLoop loop;
@@ -585,7 +583,7 @@ TEST_F(OncNetworkParserTest, TestRemoveNetworkWifi) {
   scoped_ptr<base::ListValue> network_configs =
       ReadNetworkConfigs("network-wifi-remove.onc");
   OncNetworkParser parser(*network_configs,
-                          NetworkUIData::ONC_SOURCE_USER_IMPORT);
+                          onc::ONC_SOURCE_USER_IMPORT);
   EXPECT_EQ(1, parser.GetNetworkConfigsSize());
   bool marked_for_removal = false;
   scoped_ptr<Network> network(parser.ParseNetwork(0, &marked_for_removal));

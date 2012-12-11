@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/stringprintf.h"
 #include "base/time.h"
 #include "chromeos/chromeos_export.h"
 
@@ -44,6 +45,19 @@ CHROMEOS_EXPORT void AddEntry(const std::string& module,
 // Outputs the log to a formatted string. |order| determines which order to
 // output the events. If |max_events| > 0, limits how many events are output.
 CHROMEOS_EXPORT std::string GetAsString(StringOrder order, size_t max_events);
+
+// Macros to make logging format more consistent.
+#define NET_LOG(module, message)                                             \
+    ::chromeos::network_event_log::AddEntry(                                 \
+        module,                                                              \
+        std::string(__FILE__) + ":" + ::base::StringPrintf("%d",__LINE__) +  \
+        " (" + std::string(__func__) + ")",                                  \
+        message)
+
+#define NET_LOG_WARNING(module, message)                                     \
+    NET_LOG(module, std::string("WARNING:") + message)
+#define NET_LOG_ERROR(module, message)                                       \
+    NET_LOG(module, std::string("ERROR:") + message)
 
 }  // namespace network_event_log
 

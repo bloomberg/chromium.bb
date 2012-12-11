@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/cros/network_ui_data.h"
 #include "chrome/browser/policy/policy_service.h"
+#include "chromeos/network/onc/onc_constants.h"
 
 namespace base {
 class Value;
@@ -54,7 +55,7 @@ class NetworkConfigurationUpdater
  private:
   // Callback that's called by |policy_service_| if the respective ONC policy
   // changed.
-  void OnPolicyChanged(chromeos::NetworkUIData::ONCSource onc_source,
+  void OnPolicyChanged(chromeos::onc::ONCSource onc_source,
                        const base::Value* previous,
                        const base::Value* current);
 
@@ -66,7 +67,7 @@ class NetworkConfigurationUpdater
   // Push the policy stored at |policy_key| for |onc_source| to
   // |network_library_|.
   void ApplyNetworkConfiguration(const std::string& policy_key,
-                                 chromeos::NetworkUIData::ONCSource onc_source);
+                                 chromeos::onc::ONCSource onc_source);
 
   // Wraps the policy service we read network configuration from.
   PolicyChangeRegistrar policy_change_registrar_;

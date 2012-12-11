@@ -8,6 +8,7 @@
 #include <string>
 
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chromeos/network/onc/onc_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace chromeos {
@@ -187,11 +188,10 @@ class MockNetworkLibrary : public NetworkLibrary {
                                      const std::string&,
                                      int));
   MOCK_METHOD0(SwitchToPreferredNetwork, void(void));
-  MOCK_METHOD5(LoadOncNetworks, bool(const std::string&,
+  MOCK_METHOD4(LoadOncNetworks, bool(const std::string&,
                                      const std::string&,
-                                     NetworkUIData::ONCSource,
-                                     bool,
-                                     std::string*));
+                                     onc::ONCSource,
+                                     bool));
   MOCK_METHOD2(SetActiveNetwork, bool(ConnectionType, const std::string&));
 };
 

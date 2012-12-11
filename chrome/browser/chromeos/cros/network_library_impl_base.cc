@@ -9,13 +9,13 @@
 #include "base/memory/scoped_vector.h"
 #include "base/stl_util.h"
 #include "chrome/browser/chromeos/cros/native_network_parser.h"
-#include "chrome/browser/chromeos/cros/onc_constants.h"
 #include "chrome/browser/chromeos/cros/onc_network_parser.h"
 #include "chrome/browser/chromeos/network_login_observer.h"
-#include "chrome/browser/chromeos/network_settings/onc_certificate_importer.h"
-#include "chrome/browser/chromeos/network_settings/onc_signature.h"
-#include "chrome/browser/chromeos/network_settings/onc_utils.h"
-#include "chrome/browser/chromeos/network_settings/onc_validator.h"
+#include "chromeos/network/onc/onc_certificate_importer.h"
+#include "chromeos/network/onc/onc_constants.h"
+#include "chromeos/network/onc/onc_signature.h"
+#include "chromeos/network/onc/onc_utils.h"
+#include "chromeos/network/onc/onc_validator.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/nss_util.h"  // crypto::GetTPMTokenInfo() for 802.1X and VPN.
 #include "grit/generated_resources.h"
@@ -34,14 +34,14 @@ const int kNetworkNotifyDelayMs = 50;
 // How long we should remember that cellular plan payment was received.
 const int kRecentPlanPaymentHours = 6;
 
-NetworkProfileType GetProfileTypeForSource(NetworkUIData::ONCSource source) {
+NetworkProfileType GetProfileTypeForSource(onc::ONCSource source) {
   switch (source) {
-    case NetworkUIData::ONC_SOURCE_DEVICE_POLICY:
+    case onc::ONC_SOURCE_DEVICE_POLICY:
       return PROFILE_SHARED;
-    case NetworkUIData::ONC_SOURCE_USER_POLICY:
+    case onc::ONC_SOURCE_USER_POLICY:
       return PROFILE_USER;
-    case NetworkUIData::ONC_SOURCE_NONE:
-    case NetworkUIData::ONC_SOURCE_USER_IMPORT:
+    case onc::ONC_SOURCE_NONE:
+    case onc::ONC_SOURCE_USER_IMPORT:
       return PROFILE_NONE;
   }
   NOTREACHED() << "Unknown ONC source " << source;
@@ -364,7 +364,7 @@ const Network* NetworkLibraryImplBase::connected_network() const {
   return result;
 }
 
-// Connecting order in logical prefernce.
+// Connecting order in logical preference.
 const Network* NetworkLibraryImplBase::connecting_network() const {
   if (ethernet_connecting())
     return ethernet_network();
@@ -1023,12 +1023,11 @@ void NetworkLibraryImplBase::SwitchToPreferredNetwork() {
 
 bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
                                              const std::string& passphrase,
-                                             NetworkUIData::ONCSource source,
-                                             bool allow_web_trust_from_policy,
-                                             std::string* error) {
+                                             onc::ONCSource source,
+                                             bool allow_web_trust_from_policy) {
   NetworkProfile* profile = NULL;
-  bool from_policy = (source == NetworkUIData::ONC_SOURCE_USER_POLICY ||
-                      source == NetworkUIData::ONC_SOURCE_DEVICE_POLICY);
+  bool from_policy = (source == onc::ONC_SOURCE_USER_POLICY ||
+                      source == onc::ONC_SOURCE_DEVICE_POLICY);
 
   // Policies are applied to a specific Shill profile. User ONC import however
   // is applied to whatever profile Shill chooses. This should be the profile
@@ -1037,20 +1036,19 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
   if (from_policy) {
     profile = GetProfileForType(GetProfileTypeForSource(source));
     if (profile == NULL) {
-      DLOG(WARNING) << "Profile for ONC source " << source << " doesn't exist.";
+      DLOG(WARNING) << "Profile for ONC source "
+                    << onc::GetSourceAsString(source)
+                    << " doesn't exist.";
       return false;
     }
   }
 
   VLOG(2) << __func__ << ": called on " << onc_blob;
-  std::string json_error;
   scoped_ptr<base::DictionaryValue> root_dict =
-      onc::ReadDictionaryFromJson(onc_blob, &json_error);
+      onc::ReadDictionaryFromJson(onc_blob);
   if (root_dict.get() == NULL) {
-    if (error != NULL)
-      *error = json_error;
-    LOG(WARNING) << "ONC loaded from ONC source " << source
-                 << " is not a valid json dictionary: " << json_error;
+    LOG(WARNING) << "ONC loaded from " << onc::GetSourceAsString(source)
+                 << " is not a valid JSON dictionary.";
     return false;
   }
 
@@ -1058,13 +1056,10 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
   std::string onc_type;
   root_dict->GetStringWithoutPathExpansion(onc::kType, &onc_type);
   if (onc_type == onc::kEncryptedConfiguration) {
-    std::string decrypt_error;
-    root_dict = onc::Decrypt(passphrase, *root_dict, &decrypt_error);
+    root_dict = onc::Decrypt(passphrase, *root_dict);
     if (root_dict.get() == NULL) {
-      if (error != NULL)
-        *error = decrypt_error;
-      LOG(WARNING) << "Couldn't decrypt the ONC from source " << source
-                   << " with error: " << decrypt_error;
+      LOG(WARNING) << "Couldn't decrypt the ONC from "
+                   << onc::GetSourceAsString(source);
       return false;
     }
   }
@@ -1105,12 +1100,10 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
     VLOG(2) << "ONC file has " << certificates->GetSize() << " certificates";
 
     onc::CertificateImporter cert_importer(source, allow_web_trust_from_policy);
-    std::string cert_error;
-    if (!cert_importer.ParseAndStoreCertificates(*certificates, &cert_error)) {
-      if (error != NULL)
-        *error = cert_error;
+    if (cert_importer.ParseAndStoreCertificates(*certificates) !=
+        onc::CertificateImporter::IMPORT_OK) {
       LOG(WARNING) << "Cannot parse some of the certificates in the ONC from "
-                   << "source " << source << " with error: " << cert_error;
+                   << onc::GetSourceAsString(source);
       return false;
     }
   }
@@ -1130,17 +1123,14 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
       bool marked_for_removal = false;
       Network* network = parser.ParseNetwork(i, &marked_for_removal);
       if (!network) {
-        if (error != NULL)
-          *error = parser.parse_error();
         LOG(WARNING) << "Error during parsing network at index " << i
-                     << " from ONC source " << source
-                     << ": " << parser.parse_error();
+                     << " from ONC source " << onc::GetSourceAsString(source);
         return false;
       }
 
       // Disallow anything but WiFi and Ethernet for device-level policy (which
       // corresponds to shared networks). See also http://crosbug.com/28741.
-      if (source == NetworkUIData::ONC_SOURCE_DEVICE_POLICY &&
+      if (source == onc::ONC_SOURCE_DEVICE_POLICY &&
           network->type() != TYPE_WIFI &&
           network->type() != TYPE_ETHERNET) {
         LOG(WARNING) << "Ignoring device-level policy-pushed network of type "
@@ -1150,7 +1140,7 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
       }
 
       networks.push_back(network);
-      if (!(source == NetworkUIData::ONC_SOURCE_USER_IMPORT &&
+      if (!(source == onc::ONC_SOURCE_USER_IMPORT &&
             marked_for_removal)) {
         added_onc_map[network->unique_id()] = parser.GetNetworkConfig(i);
       }
@@ -1178,7 +1168,7 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
 
       // Don't configure a network that is supposed to be removed. For
       // policy-managed networks, the "remove" functionality of ONC is ignored.
-      if (source == NetworkUIData::ONC_SOURCE_USER_IMPORT &&
+      if (source == onc::ONC_SOURCE_USER_IMPORT &&
           removal_ids.find(network->unique_id()) != removal_ids.end()) {
         continue;
       }
@@ -1222,7 +1212,7 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
     // ONC blob. We first collect the networks and do the actual deletion later
     // because ForgetNetwork() changes the remembered network vectors.
     ForgetNetworksById(source, network_ids, false);
-  } else if (source == NetworkUIData::ONC_SOURCE_USER_IMPORT) {
+  } else if (source == onc::ONC_SOURCE_USER_IMPORT) {
     if (removal_ids.empty())
       return true;
 
@@ -1368,7 +1358,7 @@ void NetworkLibraryImplBase::DeleteNetwork(Network* network) {
 }
 
 void NetworkLibraryImplBase::ForgetNetworksById(
-    NetworkUIData::ONCSource source,
+    onc::ONCSource source,
     std::set<std::string> ids,
     bool if_found) {
   std::vector<std::string> to_be_forgotten;
@@ -1405,9 +1395,9 @@ bool NetworkLibraryImplBase::ValidateRememberedNetwork(Network* network) {
   // available to LoadOncNetworks(), which can happen due to the asynchronous
   // communication between shill and NetworkLibrary. Just tell shill to
   // delete the network now.
-  const NetworkUIData::ONCSource source = network->ui_data().onc_source();
-  if (source == NetworkUIData::ONC_SOURCE_USER_POLICY ||
-      source == NetworkUIData::ONC_SOURCE_DEVICE_POLICY) {
+  const onc::ONCSource source = network->ui_data().onc_source();
+  if (source == onc::ONC_SOURCE_USER_POLICY ||
+      source == onc::ONC_SOURCE_DEVICE_POLICY) {
     NetworkSourceMap::const_iterator network_id_set(
         network_source_map_.find(source));
     if (network_id_set != network_source_map_.end() &&

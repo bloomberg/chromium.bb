@@ -179,7 +179,7 @@ void NetworkLibraryImplStub::Init() {
   wifi7->SetEAPIdentity("enterprise@example.com");
   wifi7->SetEAPPassphrase("password");
   NetworkUIData wifi7_ui_data;
-  wifi7_ui_data.set_onc_source(NetworkUIData::ONC_SOURCE_DEVICE_POLICY);
+  wifi7_ui_data.set_onc_source(onc::ONC_SOURCE_DEVICE_POLICY);
   wifi7->set_ui_data(wifi7_ui_data);
   AddStubNetwork(wifi7, PROFILE_USER);
 
@@ -211,7 +211,7 @@ void NetworkLibraryImplStub::Init() {
   cellular3->set_activation_state(ACTIVATION_STATE_ACTIVATED);
   cellular3->set_network_technology(NETWORK_TECHNOLOGY_EVDO);
   NetworkUIData cellular3_ui_data;
-  cellular3_ui_data.set_onc_source(NetworkUIData::ONC_SOURCE_USER_POLICY);
+  cellular3_ui_data.set_onc_source(onc::ONC_SOURCE_USER_POLICY);
   cellular3->set_ui_data(cellular3_ui_data);
   AddStubNetwork(cellular3, PROFILE_NONE);
 
@@ -221,7 +221,7 @@ void NetworkLibraryImplStub::Init() {
   cellular4->set_activation_state(ACTIVATION_STATE_ACTIVATED);
   cellular4->set_network_technology(NETWORK_TECHNOLOGY_GSM);
   NetworkUIData cellular4_ui_data;
-  cellular4_ui_data.set_onc_source(NetworkUIData::ONC_SOURCE_USER_POLICY);
+  cellular4_ui_data.set_onc_source(onc::ONC_SOURCE_USER_POLICY);
   cellular4->set_ui_data(cellular4_ui_data);
   AddStubNetwork(cellular4, PROFILE_NONE);
 
@@ -265,7 +265,7 @@ void NetworkLibraryImplStub::Init() {
   vpn4->set_server_hostname("vpn4server.fake.com");
   vpn4->set_provider_type(PROVIDER_TYPE_OPEN_VPN);
   NetworkUIData vpn4_ui_data;
-  vpn4_ui_data.set_onc_source(NetworkUIData::ONC_SOURCE_DEVICE_POLICY);
+  vpn4_ui_data.set_onc_source(onc::ONC_SOURCE_DEVICE_POLICY);
   vpn4->set_ui_data(vpn4_ui_data);
   AddStubNetwork(vpn4, PROFILE_USER);
 
@@ -301,7 +301,7 @@ void NetworkLibraryImplStub::Init() {
         "  ],"
         "  \"Certificates\": []"
         "}");
-//  LoadOncNetworks(test_blob, "", NetworkUIData::ONC_SOURCE_USER_IMPORT, NULL);
+//  LoadOncNetworks(test_blob, "", onc::ONC_SOURCE_USER_IMPORT, NULL);
 }
 
 bool NetworkLibraryImplStub::IsCros() const {

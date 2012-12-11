@@ -17,11 +17,11 @@
 #include "base/path_service.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/browser/chromeos/cros/onc_constants.h"
 #include "chrome/browser/chromeos/cros/onc_network_parser.h"
-#include "chrome/browser/chromeos/network_settings/onc_certificate_importer.h"
-#include "chrome/browser/chromeos/network_settings/onc_utils.h"
 #include "chrome/common/chrome_paths.h"
+#include "chromeos/network/onc/onc_certificate_importer.h"
+#include "chromeos/network/onc/onc_constants.h"
+#include "chromeos/network/onc/onc_utils.h"
 #include "crypto/nss_util.h"
 #include "net/base/crypto_module.h"
 #include "net/base/nss_cert_database.h"
@@ -156,7 +156,6 @@ class NetworkLibraryStubTest : public testing::Test {
                            scoped_ptr<base::ListValue>* certificates,
                            scoped_ptr<base::ListValue>* network_configs) {
       FilePath path;
-      std::string error;
       PathService::Get(chrome::DIR_TEST_DATA, &path);
       path = path.AppendASCII("chromeos").AppendASCII("cros").Append(filename);
       ASSERT_TRUE(file_util::PathExists(path))
@@ -166,9 +165,8 @@ class NetworkLibraryStubTest : public testing::Test {
         << "Unable to read test data file " << path.value();
 
       scoped_ptr<base::DictionaryValue> root =
-          onc::ReadDictionaryFromJson(contents, &error);
-      CHECK(root.get() != NULL) << "ONC is not a valid json dictionary: "
-                                << error;
+          onc::ReadDictionaryFromJson(contents);
+      CHECK(root.get() != NULL) << "ONC is not a valid JSON dictionary.";
 
       base::ListValue* certificates_ptr;
       CHECK(root->GetListWithoutPathExpansion(onc::kCertificates,
@@ -304,12 +302,13 @@ TEST_F(NetworkLibraryStubTest, NetworkConnectOncWifi) {
   scoped_ptr<base::ListValue> certificates;
   GetTestData("cert-pattern.onc", &certificates, &network_configs);
 
-  onc::CertificateImporter importer(NetworkUIData::ONC_SOURCE_USER_IMPORT,
+  onc::CertificateImporter importer(onc::ONC_SOURCE_USER_IMPORT,
                                     false /* don't allow webtrust */);
-  EXPECT_TRUE(importer.ParseAndStoreCertificates(*certificates, NULL));
+  EXPECT_EQ(onc::CertificateImporter::IMPORT_OK,
+            importer.ParseAndStoreCertificates(*certificates));
 
   OncNetworkParser parser(*network_configs,
-                          NetworkUIData::ONC_SOURCE_USER_IMPORT);
+                          onc::ONC_SOURCE_USER_IMPORT);
   ASSERT_TRUE(parser.parse_error().empty());
   EXPECT_EQ(1, parser.GetNetworkConfigsSize());
   scoped_ptr<Network> network(parser.ParseNetwork(0, NULL));
@@ -340,12 +339,13 @@ TEST_F(NetworkLibraryStubTest, NetworkConnectOncVPN) {
   scoped_ptr<base::ListValue> certificates;
   GetTestData("cert-pattern-vpn.onc", &certificates, &network_configs);
 
-  onc::CertificateImporter importer(NetworkUIData::ONC_SOURCE_USER_IMPORT,
+  onc::CertificateImporter importer(onc::ONC_SOURCE_USER_IMPORT,
                                     false /* don't allow webtrust */);
-  EXPECT_TRUE(importer.ParseAndStoreCertificates(*certificates, NULL));
+  EXPECT_EQ(onc::CertificateImporter::IMPORT_OK,
+            importer.ParseAndStoreCertificates(*certificates));
 
   OncNetworkParser parser(*network_configs,
-                          NetworkUIData::ONC_SOURCE_USER_IMPORT);
+                          onc::ONC_SOURCE_USER_IMPORT);
   ASSERT_TRUE(parser.parse_error().empty());
   EXPECT_EQ(1, parser.GetNetworkConfigsSize());
   scoped_ptr<Network> network(parser.ParseNetwork(0, NULL));

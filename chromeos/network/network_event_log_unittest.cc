@@ -60,34 +60,34 @@ TEST_F(NetworkEventLogTest, TestNetworkEvents) {
   network_event_log::AddEntry("module3", "event3", "description3");
 
   const std::string expected_output_oldest_first(
-      "module1.event1: description1\n"
-      "module2.event2: description2\n"
-      "module3.event3: description3 (2)\n");
+      "module1:event1: description1\n"
+      "module2:event2: description2\n"
+      "module3:event3: description3 (2)\n");
   std::string output_oldest_first = network_event_log::GetAsString(
       network_event_log::OLDEST_FIRST, 0);
   output_oldest_first = SkipTime(output_oldest_first);
   EXPECT_EQ(expected_output_oldest_first, output_oldest_first);
 
   const std::string expected_output_oldest_first_short(
-      "module2.event2: description2\n"
-      "module3.event3: description3 (2)\n");
+      "module2:event2: description2\n"
+      "module3:event3: description3 (2)\n");
   std::string output_oldest_first_short = network_event_log::GetAsString(
       network_event_log::OLDEST_FIRST, 2);
   output_oldest_first_short = SkipTime(output_oldest_first_short);
   EXPECT_EQ(expected_output_oldest_first_short, output_oldest_first_short);
 
   const std::string expected_output_newest_first(
-      "module3.event3: description3 (2)\n"
-      "module2.event2: description2\n"
-      "module1.event1: description1\n");
+      "module3:event3: description3 (2)\n"
+      "module2:event2: description2\n"
+      "module1:event1: description1\n");
   std::string output_newest_first = network_event_log::GetAsString(
       network_event_log::NEWEST_FIRST, 0);
   output_newest_first = SkipTime(output_newest_first);
   EXPECT_EQ(expected_output_newest_first, output_newest_first);
 
   const std::string expected_output_newest_first_short(
-      "module3.event3: description3 (2)\n"
-      "module2.event2: description2\n");
+      "module3:event3: description3 (2)\n"
+      "module2:event2: description2\n");
   std::string output_newest_first_short = network_event_log::GetAsString(
       network_event_log::NEWEST_FIRST, 2);
   output_newest_first_short = SkipTime(output_newest_first_short);

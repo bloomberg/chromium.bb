@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/network_parser.h"
 #include "chrome/browser/chromeos/cros/network_ui_data.h"
+#include "chromeos/network/onc/onc_constants.h"
 
 namespace base {
 class DictionaryValue;
@@ -54,7 +55,7 @@ class OncNetworkParser : public NetworkParser {
                                 Network*);
 
   OncNetworkParser(const base::ListValue& network_configs,
-                   NetworkUIData::ONCSource onc_source);
+                   onc::ONCSource onc_source);
   virtual ~OncNetworkParser();
   static const EnumMapper<PropertyIndex>* property_mapper();
 
@@ -85,11 +86,11 @@ class OncNetworkParser : public NetworkParser {
 
   // Expands |value| with user account specific paramaters.
   static std::string GetUserExpandedValue(const base::Value& value,
-                                          NetworkUIData::ONCSource source);
+                                          onc::ONCSource source);
 
   const std::string& parse_error() const { return parse_error_; }
 
-  NetworkUIData::ONCSource onc_source() const { return onc_source_; }
+  onc::ONCSource onc_source() const { return onc_source_; }
 
  protected:
   OncNetworkParser();
@@ -181,7 +182,7 @@ class OncNetworkParser : public NetworkParser {
   std::string parse_error_;
 
   // Where the ONC blob comes from.
-  NetworkUIData::ONCSource onc_source_;
+  onc::ONCSource onc_source_;
 
   scoped_ptr<base::ListValue> network_configs_;
 

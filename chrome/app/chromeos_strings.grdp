@@ -144,15 +144,6 @@ Press any key to continue exploring.
   <message name="IDS_OFFERS_CONSENT_INFOBAR_DISABLE_BUTTON" desc="Disable button label.">
     Deny
   </message>
-  <message name="IDS_NETWORK_CONFIG_ERROR_NETWORK_NOT_A_JSON_DICTIONARY" desc="Error for network configuration: Configuration is not a valid JSON dictionary.">
-    The configuration is not a valid JSON dictionary.
-  </message>
-  <message name="IDS_NETWORK_CONFIG_LOADING_ERROR" desc="Error message for loading network configuration file.">
-    Error loading network configuration file: <ph name="error">$1<ex>Unknown error</ex></ph>
-  </message>
-  <message name="IDS_NETWORK_CONFIG_ERROR_UNKNOWN" desc="Error for network configuration: Unknown error.">
-    Unknown error
-  </message>
   <message name="IDS_NETWORK_CONFIG_ERROR_INCORRECT_PASSWORD" desc="Error for network configuration: Incorrect password.">
     Incorrect password
   </message>
@@ -161,57 +152,6 @@ Press any key to continue exploring.
   </message>
   <message name="IDS_NETWORK_CONFIG_ERROR_NETWORK_PROP_DICT_MALFORMED" desc="Error for network configuration: Network property dictionary malformed.">
     Network property dictionary malformed
-  </message>
-  <message name="IDS_NETWORK_CONFIG_ERROR_NETWORK_EAP_DICT_MALFORMED" desc="Error for network configuration: Network EAP dictionary malformed.">
-    Network EAP dictionary malformed
-  </message>
-  <message name="IDS_NETWORK_CONFIG_ERROR_NETWORK_DELETE" desc="Error for network configuration: Network delete error.">
-    Network delete error
-  </message>
-  <message name="IDS_NETWORK_CONFIG_ERROR_NETWORK_IMPORT" desc="Error for network configuration: Network import error.">
-    Network import error
-  </message>
-  <message name="IDS_NETWORK_CONFIG_ERROR_CERT_GUID_MISSING" desc="Error for network configuration: Certificateg GUID missing.">
-    Certificate GUID missing
-  </message>
-  <message name="IDS_NETWORK_CONFIG_ERROR_CERT_GUID_COLLISION" desc="Error for network configuration: GUID is taken by a different certificate.">
-    Certificate GUID collision
-  </message>
-  <message name="IDS_NETWORK_CONFIG_ERROR_CERT_TYPE_MISSING" desc="Error for network configuration: Certificate type missing.">
-    Certificate type missing
-  </message>
-  <message name="IDS_NETWORK_CONFIG_ERROR_CERT_TRUST_INVALID" desc="Error for network configuration: Certificate trust invalid.">
-    Certificate trust invalid
-  </message>
-  <message name="IDS_NETWORK_CONFIG_ERROR_CERT_TRUST_UNKNOWN" desc="Error for network configuration: Certificate trust unknown.">
-    Certificate trust unknown
-  </message>
-  <message name="IDS_NETWORK_CONFIG_ERROR_CERT_DATA_MISSING" desc="Error for network configuration: Certificate data missing.">
-    Certificate data missing
-  </message>
-  <message name="IDS_NETWORK_CONFIG_ERROR_CERT_DATA_MALFORMED" desc="Error for network configuration: Certificate data malformed.">
-    Certificate data malformed
-  </message>
-  <message name="IDS_NETWORK_CONFIG_ERROR_CERT_DELETE" desc="Error for network configuration: Certificate delete error.">
-    Certificate delete error
-  </message>
-  <message name="IDS_NETWORK_CONFIG_ERROR_CERT_IMPORT" desc="Error for network configuration: Certificate import error.">
-    Certificate import error
-  </message>
-  <message name="IDS_NETWORK_CONFIG_ERROR_ENCRYPTED_ONC_MALFORMED" desc="Displayed when importing an encrypted ONC file and the ONC file is malformed.">
-    Encrypted ONC file is malformed.
-  </message>
-  <message name="IDS_NETWORK_CONFIG_ERROR_ENCRYPTED_ONC_UNSUPPORTED_ENCRYPTION" desc="Displayed when importing an encrypted ONC file and the ONC file uses an encryption protocol that is not supported.">
-    Encrypted ONC file uses an unsupported encryption scheme.
-  </message>
-  <message name="IDS_NETWORK_CONFIG_ERROR_ENCRYPTED_ONC_UNABLE_TO_DECODE" desc="Displayed when importing an encrypted ONC file and the encryption parameters are not able to be parsed.">
-    Unable to parse some parameters in the encrypted ONC file.
-  </message>
-  <message name="IDS_NETWORK_CONFIG_ERROR_ENCRYPTED_ONC_UNABLE_TO_DECRYPT" desc="Displayed when importing an encrypted ONC file and it is not able to be decrypted.">
-    Unable to decrypt the encrypted ONC file.
-  </message>
-  <message name="IDS_NETWORK_CONFIG_ERROR_ENCRYPTED_ONC_TOO_MANY_ITERATIONS" desc="Displayed when importing an encrypted ONC file and the iteration count is too large.">
-    Passphrase iteration count is too large.
   </message>
   <message name="IDS_NETWORK_ENROLLMENT_HANDLER_TITLE" desc="Title of the window for generating a new network certificate.">
     Obtain network certificate

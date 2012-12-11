@@ -7,6 +7,7 @@
 
 #include "chrome/browser/chromeos/cros/network_ui_data.h"
 #include "chrome/browser/policy/configuration_policy_handler.h"
+#include "chromeos/network/onc/onc_constants.h"
 
 namespace base {
 class DictionaryValue;
@@ -22,7 +23,7 @@ class NetworkConfigurationPolicyHandler : public TypeCheckingPolicyHandler {
  public:
   NetworkConfigurationPolicyHandler(
       const char* policy_name,
-      chromeos::NetworkUIData::ONCSource onc_source);
+      chromeos::onc::ONCSource onc_source);
   virtual ~NetworkConfigurationPolicyHandler();
 
   // ConfigurationPolicyHandler methods:
@@ -43,7 +44,7 @@ class NetworkConfigurationPolicyHandler : public TypeCheckingPolicyHandler {
   // their values with placeholders.
   static void MaskSensitiveValues(base::DictionaryValue* network_dict);
 
-  chromeos::NetworkUIData::ONCSource onc_source_;
+  chromeos::onc::ONCSource onc_source_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkConfigurationPolicyHandler);
 };

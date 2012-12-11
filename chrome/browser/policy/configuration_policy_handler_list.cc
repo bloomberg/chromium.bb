@@ -12,6 +12,7 @@
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/network/onc/onc_constants.h"
 #include "grit/generated_resources.h"
 #include "policy/policy_constants.h"
 
@@ -408,11 +409,11 @@ ConfigurationPolicyHandlerList::ConfigurationPolicyHandlerList() {
   handlers_.push_back(
       new NetworkConfigurationPolicyHandler(
           key::kDeviceOpenNetworkConfiguration,
-          chromeos::NetworkUIData::ONC_SOURCE_DEVICE_POLICY));
+          chromeos::onc::ONC_SOURCE_DEVICE_POLICY));
   handlers_.push_back(
       new NetworkConfigurationPolicyHandler(
           key::kOpenNetworkConfiguration,
-          chromeos::NetworkUIData::ONC_SOURCE_USER_POLICY));
+          chromeos::onc::ONC_SOURCE_USER_POLICY));
   handlers_.push_back(new PinnedLauncherAppsPolicyHandler());
 #endif  // defined(OS_CHROMEOS)
 }

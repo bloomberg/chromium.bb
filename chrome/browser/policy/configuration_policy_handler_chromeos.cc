@@ -12,14 +12,14 @@
 #include "base/prefs/pref_value_map.h"
 #include "base/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/cros/onc_constants.h"
-#include "chrome/browser/chromeos/network_settings/onc_signature.h"
-#include "chrome/browser/chromeos/network_settings/onc_utils.h"
-#include "chrome/browser/chromeos/network_settings/onc_validator.h"
 #include "chrome/browser/policy/policy_error_map.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/network/onc/onc_constants.h"
+#include "chromeos/network/onc/onc_signature.h"
+#include "chromeos/network/onc/onc_utils.h"
+#include "chromeos/network/onc/onc_validator.h"
 #include "grit/generated_resources.h"
 #include "policy/policy_constants.h"
 
@@ -33,7 +33,7 @@ namespace policy {
 
 NetworkConfigurationPolicyHandler::NetworkConfigurationPolicyHandler(
     const char* policy_name,
-    chromeos::NetworkUIData::ONCSource onc_source)
+    chromeos::onc::ONCSource onc_source)
     : TypeCheckingPolicyHandler(policy_name, base::Value::TYPE_STRING),
       onc_source_(onc_source) {}
 
@@ -49,12 +49,10 @@ bool NetworkConfigurationPolicyHandler::CheckPolicySettings(
   if (value) {
     std::string onc_blob;
     value->GetAsString(&onc_blob);
-    std::string json_error;
     scoped_ptr<base::DictionaryValue> root_dict =
-        onc::ReadDictionaryFromJson(onc_blob, &json_error);
+        onc::ReadDictionaryFromJson(onc_blob);
     if (root_dict.get() == NULL) {
-      errors->AddError(policy_name(), IDS_POLICY_NETWORK_CONFIG_PARSE_ERROR,
-                       json_error);
+      errors->AddError(policy_name(), IDS_POLICY_NETWORK_CONFIG_PARSE_ERROR);
       return false;
     }
 

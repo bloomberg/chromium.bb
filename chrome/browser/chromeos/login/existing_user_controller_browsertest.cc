@@ -137,7 +137,7 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
     mock_network_library_ = cros_mock_->mock_network_library();
     EXPECT_CALL(*mock_network_library_, AddUserActionObserver(_))
         .Times(AnyNumber());
-    EXPECT_CALL(*mock_network_library_, LoadOncNetworks(_, _, _, _, _))
+    EXPECT_CALL(*mock_network_library_, LoadOncNetworks(_, _, _, _))
         .WillRepeatedly(Return(true));
 
     MockSessionManagerClient* mock_session_manager_client =

@@ -751,7 +751,7 @@ void VirtualNetwork::MatchCertificatePattern(bool allow_enroll,
   // user can't get to the place where a cert is presented for them
   // involuntarily.
   if (client_cert_pattern().Empty() ||
-      ui_data().onc_source() == NetworkUIData::ONC_SOURCE_DEVICE_POLICY) {
+      ui_data().onc_source() == onc::ONC_SOURCE_DEVICE_POLICY) {
     connect.Run();
     return;
   }
