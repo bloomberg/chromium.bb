@@ -24,6 +24,8 @@ void PictureLayerTilingSet::CloneFrom(const PictureLayerTilingSet& other) {
 }
 
 void PictureLayerTilingSet::SetLayerBounds(gfx::Size layer_bounds) {
+  if (layer_bounds_ == layer_bounds)
+    return;
   layer_bounds_ = layer_bounds;
   for (size_t i = 0; i < tilings_.size(); ++i)
     tilings_[i]->SetLayerBounds(layer_bounds);

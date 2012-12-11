@@ -30,6 +30,7 @@ scoped_ptr<LayerImpl> PictureLayer::createLayerImpl(LayerTreeHostImpl* host) {
 void PictureLayer::pushPropertiesTo(LayerImpl* base_layer) {
   Layer::pushPropertiesTo(base_layer);
   PictureLayerImpl* layer_impl = static_cast<PictureLayerImpl*>(base_layer);
+  layer_impl->didUpdateBounds();
   pile_.PushPropertiesTo(layer_impl->pile_);
 
   // TODO(enne): Once we have two trees on the impl side, we need to

@@ -129,7 +129,6 @@ void PictureLayerImpl::dumpLayerProperties(std::string*, int indent) const {
 
 void PictureLayerImpl::didUpdateTransforms() {
   if (drawsContent()) {
-    tilings_.SetLayerBounds(bounds());
     // TODO(enne): Add more tilings during pinch zoom.
     if (!tilings_.num_tilings()) {
       gfx::Size tile_size = layerTreeHostImpl()->settings().defaultTileSize;
@@ -163,6 +162,10 @@ void PictureLayerImpl::didUpdateTransforms() {
   last_content_bounds_ = contentBounds();
   last_content_scale_x_ = contentsScaleX();
   last_content_scale_y_ = contentsScaleY();
+}
+
+void PictureLayerImpl::didUpdateBounds() {
+  tilings_.SetLayerBounds(bounds());
 }
 
 scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling* tiling,
