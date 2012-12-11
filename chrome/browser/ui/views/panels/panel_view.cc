@@ -738,10 +738,16 @@ void PanelView::OnWidgetClosing(views::Widget* widget) {
 }
 
 void PanelView::OnWidgetActivationChanged(views::Widget* widget, bool active) {
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
   // The panel window is in focus (actually accepting keystrokes) if it is
   // active and belongs to a foreground application.
+#if !defined(USE_AURA)
   bool focused = active && widget->GetNativeWindow() == ::GetForegroundWindow();
+#else  // USE_AURA
+  bool focused = active &&
+      widget->GetNativeView()->GetRootWindow()->GetAcceleratedWidget() ==
+          ::GetForegroundWindow();
+#endif
 #else
   NOTIMPLEMENTED();
   bool focused = active;
