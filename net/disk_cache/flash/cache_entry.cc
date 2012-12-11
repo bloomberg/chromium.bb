@@ -105,8 +105,8 @@ int CacheEntry::WriteData(int index, int offset, net::IOBuffer* buf,
     // TODO(agayev): Currently, only append and overwrite is supported.  Add
     // support for arbitrary writes.
     DCHECK(!offset || offset == stream.size);
-    if (stream.write_buffer.capacity() < new_size)
-      stream.write_buffer.reserve(new_size);
+    if (stream.write_buffer.size() < new_size)
+      stream.write_buffer.resize(new_size);
     memcpy(&streams_[index].write_buffer[offset], buf->data(), buf_len);
   }
   stream.size = new_size;
@@ -144,8 +144,10 @@ bool CacheEntry::Save() {
   if (!store_->WriteData(stream_sizes, kFlashCacheEntryHeaderSize))
     return false;
   for (int i = 0; i < kFlashCacheEntryNumStreams; ++i) {
-    if (!store_->WriteData(&streams_[i].write_buffer[0], streams_[i].size))
+    if (streams_[i].size > 0 &&
+        !store_->WriteData(&streams_[i].write_buffer[0], streams_[i].size)) {
       return false;
+    }
   }
   store_->CloseEntry(id_);
   return true;
