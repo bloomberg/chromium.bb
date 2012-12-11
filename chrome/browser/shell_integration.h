@@ -47,7 +47,7 @@ class ShellIntegration {
   // flow. We will distinguish between two types of permissions here to avoid
   // forcing the user into UI interaction when this should not be done.
   enum DefaultWebClientSetPermission {
-    SET_DEFAULT_NOT_ALLOWED = 0,
+    SET_DEFAULT_NOT_ALLOWED,
     SET_DEFAULT_UNATTENDED,
     SET_DEFAULT_INTERACTIVE,
   };
@@ -61,19 +61,19 @@ class ShellIntegration {
 
   // On Linux, it may not be possible to determine or set the default browser
   // on some desktop environments or configurations. So, we use this enum and
-  // not a plain bool. (Note however that if used like a bool, this enum will
-  // have reasonable behavior.)
+  // not a plain bool.
   enum DefaultWebClientState {
-    NOT_DEFAULT_WEB_CLIENT = 0,
-    IS_DEFAULT_WEB_CLIENT,
-    UNKNOWN_DEFAULT_WEB_CLIENT = -1
+    NOT_DEFAULT,
+    IS_DEFAULT,
+    UNKNOWN_DEFAULT,
+    NUM_DEFAULT_STATES
   };
 
   // Attempt to determine if this instance of Chrome is the default browser and
   // return the appropriate state. (Defined as being the handler for HTTP/HTTPS
   // protocols; we don't want to report "no" here if the user has simply chosen
   // to open HTML files in a text editor and FTP links with an FTP client.)
-  static DefaultWebClientState IsDefaultBrowser();
+  static DefaultWebClientState GetDefaultBrowser();
 
   // Returns true if Firefox is likely to be the default browser for the current
   // user. This method is very fast so it can be invoked in the UI thread.

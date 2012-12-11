@@ -230,7 +230,7 @@ bool ShouldLaunchInWindows8ImmersiveMode(const FilePath& user_data_dir) {
   if (base::win::IsProcessImmersive(base::GetCurrentProcessHandle()))
     return false;
 
-  if (!ShellIntegration::IsDefaultBrowser())
+  if (ShellIntegration::GetDefaultBrowser() != ShellIntegration::IS_DEFAULT)
     return false;
 
   base::IntegrityLevel integrity_level = base::INTEGRITY_UNKNOWN;

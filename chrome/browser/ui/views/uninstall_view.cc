@@ -79,7 +79,7 @@ void UninstallView::SetupControls() {
   // instance because the OS doesn't permit that).
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   if (dist->CanSetAsDefault() &&
-      ShellIntegration::IsDefaultBrowser() &&
+      ShellIntegration::GetDefaultBrowser() == ShellIntegration::IS_DEFAULT &&
       (ShellIntegration::CanSetAsDefaultBrowser() !=
           ShellIntegration::SET_DEFAULT_INTERACTIVE)) {
     browsers_.reset(new BrowsersMap());

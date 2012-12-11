@@ -107,8 +107,7 @@ void WarnAboutMinimumSystemRequirements() {
 void ShowCloseBrowserFirstMessageBox() {
   int message_id = IDS_UNINSTALL_CLOSE_APP;
   if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
-      (ShellIntegration::IsDefaultBrowser() ==
-           ShellIntegration::IS_DEFAULT_WEB_CLIENT)) {
+      (ShellIntegration::GetDefaultBrowser() == ShellIntegration::IS_DEFAULT)) {
     message_id = IDS_UNINSTALL_CLOSE_APP_IMMERSIVE;
   }
   chrome::ShowMessageBox(NULL,

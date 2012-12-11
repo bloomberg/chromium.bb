@@ -100,15 +100,14 @@ bool IsIdentifierDefaultProtocolClient(NSString* identifier,
 // return the appropriate state. (Defined as being the handler for HTTP/HTTPS
 // protocols; we don't want to report "no" here if the user has simply chosen
 // to open HTML files in a text editor and FTP links with an FTP client.)
-ShellIntegration::DefaultWebClientState ShellIntegration::IsDefaultBrowser() {
+ShellIntegration::DefaultWebClientState ShellIntegration::GetDefaultBrowser() {
   // We really do want the outer bundle here, since this we want to know the
   // status of the main Chrome bundle and not a shortcut.
   NSString* my_identifier = [base::mac::OuterBundle() bundleIdentifier];
   if (!my_identifier)
-    return UNKNOWN_DEFAULT_WEB_CLIENT;
+    return UNKNOWN_DEFAULT;
 
-  return IsIdentifierDefaultBrowser(my_identifier) ? IS_DEFAULT_WEB_CLIENT
-                                                   : NOT_DEFAULT_WEB_CLIENT;
+  return IsIdentifierDefaultBrowser(my_identifier) ? IS_DEFAULT : NOT_DEFAULT;
 }
 
 // Returns true if Firefox is the default browser for the current user.
@@ -121,15 +120,15 @@ bool ShellIntegration::IsFirefoxDefaultBrowser() {
 ShellIntegration::DefaultWebClientState
     ShellIntegration::IsDefaultProtocolClient(const std::string& protocol) {
   if (protocol.empty())
-    return UNKNOWN_DEFAULT_WEB_CLIENT;
+    return UNKNOWN_DEFAULT;
 
   // We really do want the main bundle here since it makes sense to set an
   // app shortcut as a default protocol handler.
   NSString* my_identifier = [base::mac::MainBundle() bundleIdentifier];
   if (!my_identifier)
-    return UNKNOWN_DEFAULT_WEB_CLIENT;
+    return UNKNOWN_DEFAULT;
 
   NSString* protocol_ns = [NSString stringWithUTF8String:protocol.c_str()];
   return IsIdentifierDefaultProtocolClient(my_identifier, protocol_ns) ?
-      IS_DEFAULT_WEB_CLIENT : NOT_DEFAULT_WEB_CLIENT;
+      IS_DEFAULT : NOT_DEFAULT;
 }

@@ -1133,7 +1133,7 @@ ShellUtil::DefaultState ProbeOpenCommandHandlers(
 
 // A helper function that probes default protocol handler registration (in a
 // manner appropriate for the current version of Windows) to determine if
-// Chrome is the default handler for |protocols|.  Returns IS_DEFAULT_WEB_CLIENT
+// Chrome is the default handler for |protocols|.  Returns IS_DEFAULT
 // only if Chrome is the default for all specified protocols.
 ShellUtil::DefaultState ProbeProtocolHandlers(
     const wchar_t* const* protocols,

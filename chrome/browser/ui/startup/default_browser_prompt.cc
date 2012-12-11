@@ -38,7 +38,8 @@ void SetChromeAsDefaultBrowser(bool interactive_flow, PrefService* prefs) {
     UMA_HISTOGRAM_COUNTS("DefaultBrowserWarning.SetAsDefaultUI", 1);
     if (!ShellIntegration::SetAsDefaultBrowserInteractive()) {
       UMA_HISTOGRAM_COUNTS("DefaultBrowserWarning.SetAsDefaultUIFailed", 1);
-    } else if (!ShellIntegration::IsDefaultBrowser()) {
+    } else if (ShellIntegration::GetDefaultBrowser() ==
+               ShellIntegration::NOT_DEFAULT) {
       // If the interaction succeeded but we are still not the default browser
       // it likely means the user simply selected another browser from the
       // panel. We will respect this choice and write it down as 'no, thanks'.
@@ -186,7 +187,7 @@ void NotifyNotDefaultBrowserCallback(chrome::HostDesktopType desktop_type) {
 }
 
 void CheckDefaultBrowserCallback(chrome::HostDesktopType desktop_type) {
-  if (!ShellIntegration::IsDefaultBrowser()) {
+  if (ShellIntegration::GetDefaultBrowser() == ShellIntegration::NOT_DEFAULT) {
     ShellIntegration::DefaultWebClientSetPermission default_change_mode =
         ShellIntegration::CanSetAsDefaultBrowser();
 

@@ -168,9 +168,9 @@ class FakeProtocolClientWorker
 
   virtual ShellIntegration::DefaultWebClientState CheckIsDefault() OVERRIDE {
     if (force_failure_) {
-      return ShellIntegration::NOT_DEFAULT_WEB_CLIENT;
+      return ShellIntegration::NOT_DEFAULT;
     } else {
-      return ShellIntegration::IS_DEFAULT_WEB_CLIENT;
+      return ShellIntegration::IS_DEFAULT;
     }
   }
 

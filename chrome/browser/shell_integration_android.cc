@@ -26,16 +26,16 @@ bool ShellIntegration::SetAsDefaultProtocolClient(const std::string& protocol) {
 }
 
 // static
-ShellIntegration::DefaultWebClientState ShellIntegration::IsDefaultBrowser() {
+ShellIntegration::DefaultWebClientState ShellIntegration::GetDefaultBrowser() {
   NOTIMPLEMENTED();
-  return UNKNOWN_DEFAULT_WEB_CLIENT;
+  return UNKNOWN_DEFAULT;
 }
 
 // static
 ShellIntegration::DefaultWebClientState
 ShellIntegration::IsDefaultProtocolClient(const std::string& protocol) {
   NOTIMPLEMENTED();
-  return UNKNOWN_DEFAULT_WEB_CLIENT;
+  return UNKNOWN_DEFAULT;
 }
 
 // static

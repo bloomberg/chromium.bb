@@ -30,6 +30,7 @@
 #include "base/sys_info.h"
 #include "base/sys_string_conversions.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -382,6 +383,14 @@ void AddPreReadHistogramTime(const char* name, base::TimeDelta time) {
       name, kMin, kMax, kBuckets, base::Histogram::kUmaTargetedHistogramFlag);
 
   counter->AddTime(time);
+}
+
+void RecordDefaultBrowserUMAStat() {
+  // Record whether Chrome is the default browser or not.
+  ShellIntegration::DefaultWebClientState default_state =
+      ShellIntegration::GetDefaultBrowser();
+  UMA_HISTOGRAM_ENUMERATION("DefaultBrowser.State", default_state,
+                            ShellIntegration::NUM_DEFAULT_STATES);
 }
 
 bool ProcessSingletonNotificationCallback(const CommandLine& command_line,
@@ -1304,6 +1313,12 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   LanguageUsageMetrics::RecordApplicationLanguage(
       browser_process_->GetApplicationLocale());
 #endif
+
+  // Querying the default browser state can be slow, do it in the background.
+  BrowserThread::GetBlockingPool()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&RecordDefaultBrowserUMAStat),
+        base::TimeDelta::FromSeconds(5));
 
   // The extension service may be available at this point. If the command line
   // specifies --uninstall-extension, attempt the uninstall extension startup

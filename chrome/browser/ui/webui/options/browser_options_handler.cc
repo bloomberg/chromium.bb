@@ -727,11 +727,11 @@ void BrowserOptionsHandler::UpdateDefaultBrowserState() {
 
 #if defined(OS_MACOSX)
   ShellIntegration::DefaultWebClientState state =
-      ShellIntegration::IsDefaultBrowser();
+      ShellIntegration::GetDefaultBrowser();
   int status_string_id;
-  if (state == ShellIntegration::IS_DEFAULT_WEB_CLIENT)
+  if (state == ShellIntegration::IS_DEFAULT)
     status_string_id = IDS_OPTIONS_DEFAULTBROWSER_DEFAULT;
-  else if (state == ShellIntegration::NOT_DEFAULT_WEB_CLIENT)
+  else if (state == ShellIntegration::NOT_DEFAULT)
     status_string_id = IDS_OPTIONS_DEFAULTBROWSER_NOTDEFAULT;
   else
     status_string_id = IDS_OPTIONS_DEFAULTBROWSER_UNKNOWN;
@@ -765,9 +765,9 @@ void BrowserOptionsHandler::BecomeDefaultBrowser(const ListValue* args) {
 
 int BrowserOptionsHandler::StatusStringIdForState(
     ShellIntegration::DefaultWebClientState state) {
-  if (state == ShellIntegration::IS_DEFAULT_WEB_CLIENT)
+  if (state == ShellIntegration::IS_DEFAULT)
     return IDS_OPTIONS_DEFAULTBROWSER_DEFAULT;
-  if (state == ShellIntegration::NOT_DEFAULT_WEB_CLIENT)
+  if (state == ShellIntegration::NOT_DEFAULT)
     return IDS_OPTIONS_DEFAULTBROWSER_NOTDEFAULT;
   return IDS_OPTIONS_DEFAULTBROWSER_UNKNOWN;
 }

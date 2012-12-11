@@ -250,12 +250,12 @@ ShellIntegration::DefaultWebClientState
         ShellUtil::DefaultState default_state) {
   switch (default_state) {
     case ShellUtil::NOT_DEFAULT:
-      return ShellIntegration::NOT_DEFAULT_WEB_CLIENT;
+      return ShellIntegration::NOT_DEFAULT;
     case ShellUtil::IS_DEFAULT:
-      return ShellIntegration::IS_DEFAULT_WEB_CLIENT;
+      return ShellIntegration::IS_DEFAULT;
     default:
       DCHECK_EQ(ShellUtil::UNKNOWN_DEFAULT, default_state);
-      return ShellIntegration::UNKNOWN_DEFAULT_WEB_CLIENT;
+      return ShellIntegration::UNKNOWN_DEFAULT;
   }
 }
 
@@ -351,7 +351,7 @@ bool ShellIntegration::SetAsDefaultProtocolClientInteractive(
   return true;
 }
 
-ShellIntegration::DefaultWebClientState ShellIntegration::IsDefaultBrowser() {
+ShellIntegration::DefaultWebClientState ShellIntegration::GetDefaultBrowser() {
   return GetDefaultWebClientStateFromShellUtilDefaultState(
       ShellUtil::GetChromeDefaultState());
 }
