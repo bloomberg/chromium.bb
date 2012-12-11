@@ -73,7 +73,7 @@ BOT_ASSIGNMENT = {
     'lucid-64-glibc-opt':
         python + ' buildbot/buildbot_standard.py opt 64 glibc',
     'lucid-64-arm-newlib-opt':
-        python + ' buildbot/buildbot_standard.py opt arm newlib',
+        python + ' buildbot/buildbot_standard.py opt arm newlib --no-gyp',
     'lucid-64-validator-opt':
         python + ' buildbot/buildbot_standard.py opt 64 glibc --validator',
     'lucid-32-bare-newlib-opt':
@@ -189,7 +189,7 @@ BOT_ASSIGNMENT = {
     'nacl-lucid64_glibc_opt':
         python + ' buildbot/buildbot_standard.py opt 64 glibc',
     'nacl-lucid64_arm_newlib_opt':
-        python + ' buildbot/buildbot_standard.py opt arm newlib',
+        python + ' buildbot/buildbot_standard.py opt arm newlib --no-gyp',
     'nacl-lucid64_validator_opt':
         python + ' buildbot/buildbot_standard.py opt 64 glibc --validator',
     'nacl-lucid64_newlib_dbg_valgrind':
