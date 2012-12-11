@@ -119,9 +119,16 @@ void RemoveBackgroundPermission(ExtensionService* service,
 }
 }  // namespace
 
+// Crashes on Mac tryslaves.
+// http://crbug.com/165458
+#if defined(OS_MACOSX)
+#define MAYBE_ExplicitTest DISABLED_ExplicitTest
+#else
+#define MAYBE_ExplicitTest ExplicitTest
+#endif
 // With minimal test logic, verifies behavior over an explicit set of
 // extensions, of which some are Background Apps and others are not.
-TEST_F(BackgroundApplicationListModelTest, ExplicitTest) {
+TEST_F(BackgroundApplicationListModelTest, MAYBE_ExplicitTest) {
   InitializeAndLoadEmptyExtensionService();
   ExtensionService* service = extensions::ExtensionSystem::Get(profile_.get())->
       extension_service();
