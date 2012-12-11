@@ -46,6 +46,7 @@ class AudioManager;
 }
 
 namespace content {
+
 class AudioInputDeviceManager;
 class MediaStreamDeviceSettings;
 class MediaStreamRequester;

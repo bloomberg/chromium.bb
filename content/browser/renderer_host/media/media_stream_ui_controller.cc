@@ -133,16 +133,18 @@ MediaStreamUIController::~MediaStreamUIController() {
 }
 
 void MediaStreamUIController::MakeUIRequest(
-    const std::string& label, int render_process_id, int render_view_id,
+    const std::string& label,
+    int render_process_id,
+    int render_view_id,
     const StreamOptions& request_options,
     const GURL& security_origin) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   // Create a new request.
   if (!requests_.insert(
-      std::make_pair(label, new MediaStreamRequestForUI(
-          render_process_id, render_view_id, security_origin,
-          request_options))).second) {
+          std::make_pair(label, new MediaStreamRequestForUI(
+              render_process_id, render_view_id, security_origin,
+              request_options))).second) {
     NOTREACHED();
   }
 }
@@ -309,7 +311,8 @@ bool MediaStreamUIController::IsUIBusy(int render_process_id,
 }
 
 void MediaStreamUIController::ProcessNextRequestForView(
-    int render_process_id, int render_view_id) {
+    int render_process_id,
+    int render_view_id) {
   std::string next_request_label;
   for (UIRequests::iterator it = requests_.begin(); it != requests_.end();
        ++it) {
@@ -326,10 +329,11 @@ void MediaStreamUIController::ProcessNextRequestForView(
   if (next_request_label.empty())
     return;
 
-  if (use_fake_ui_)
+  if (use_fake_ui_) {
     PostRequestToFakeUI(next_request_label);
-  else
+  } else {
     PostRequestToUI(next_request_label);
+  }
 }
 
 void MediaStreamUIController::PostRequestToUI(const std::string& label) {

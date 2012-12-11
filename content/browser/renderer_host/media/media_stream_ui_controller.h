@@ -28,6 +28,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 
 namespace content {
+
 class MediaStreamRequestForUI;
 class SettingsRequester;
 
