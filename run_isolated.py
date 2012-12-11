@@ -683,14 +683,14 @@ class Cache(object):
       self.trim()
 
     logging.info(
-        '%4d (%7dkb) added', len(self._added), sum(self._added) / 1024)
+        '%5d (%8dkb) added', len(self._added), sum(self._added) / 1024)
     logging.info(
-        '%4d (%7dkb) current',
+        '%5d (%8dkb) current',
         len(self.state),
         sum(i[1] for i in self.state) / 1024)
     logging.info(
-        '%4d (%7dkb) removed', len(self._removed), sum(self._removed) / 1024)
-    logging.info('%7dkb free', self._free_disk / 1024)
+        '%5d (%8dkb) removed', len(self._removed), sum(self._removed) / 1024)
+    logging.info('       %8dkb free', self._free_disk / 1024)
 
   def remove_file_at_index(self, index):
     """Removes the file at the given index."""
