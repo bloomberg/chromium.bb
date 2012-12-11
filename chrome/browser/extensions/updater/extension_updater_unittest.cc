@@ -399,9 +399,6 @@ class ServiceForDownloadTests : public MockService {
   const std::string& extension_id() const { return extension_id_; }
   const FilePath& install_path() const { return install_path_; }
   const GURL& download_url() const { return download_url_; }
-  const std::string& last_inquired_extension_id() const {
-    return last_inquired_extension_id_;
-  }
 
  private:
   // Hold the set of ids that UpdateExtension() should fake success on.
@@ -513,6 +510,7 @@ class ExtensionUpdaterTest : public testing::Test {
     ServiceForManifestTests service(prefs_.get());
     std::string update_url("http://foo.com/bar");
     ExtensionList extensions;
+    NotificationsObserver observer;
     PendingExtensionManager* pending_extension_manager =
         service.pending_extension_manager();
     if (pending) {
@@ -537,7 +535,9 @@ class ExtensionUpdaterTest : public testing::Test {
     updater.set_default_check_params(check_params);
 
     // Tell the update that it's time to do update checks.
+    EXPECT_EQ(0u, observer.StartedCount());
     SimulateTimerFired(&updater);
+    EXPECT_EQ(1u, observer.StartedCount());
 
     // Get the url our mock fetcher was asked to fetch.
     net::TestURLFetcher* fetcher =
@@ -573,6 +573,7 @@ class ExtensionUpdaterTest : public testing::Test {
   void TestBlacklistUpdateCheckRequests() {
     // Setup and start the updater.
     ServiceForManifestTests service(prefs_.get());
+    NotificationsObserver observer;
 
     net::TestURLFetcherFactory factory;
     ExtensionUpdater updater(
@@ -581,7 +582,9 @@ class ExtensionUpdaterTest : public testing::Test {
     updater.Start();
 
     // Tell the updater that it's time to do update checks.
+    EXPECT_EQ(0u, observer.StartedCount());
     SimulateTimerFired(&updater);
+    EXPECT_EQ(1u, observer.StartedCount());
 
     // Get the url our mock fetcher was asked to fetch.
     net::TestURLFetcher* fetcher =

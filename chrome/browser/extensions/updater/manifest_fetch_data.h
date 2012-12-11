@@ -59,7 +59,6 @@ class ManifestFetchData {
 
   const GURL& base_url() const { return base_url_; }
   const GURL& full_url() const { return full_url_; }
-  int extension_count() { return extension_ids_.size(); }
   const std::set<std::string>& extension_ids() const { return extension_ids_; }
   const std::set<int>& request_ids() const { return request_ids_; }
 
