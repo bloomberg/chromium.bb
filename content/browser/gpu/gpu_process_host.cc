@@ -409,8 +409,19 @@ GpuProcessHost::~GpuProcessHost() {
                             status,
                             base::TERMINATION_STATUS_MAX_ENUM);
 
-  UMA_HISTOGRAM_COUNTS_100("GPU.SurfaceCountAtExit",
+  UMA_HISTOGRAM_COUNTS_100("GPU.AtExitSurfaceCount",
                            GpuSurfaceTracker::Get()->GetSurfaceCount());
+  UMA_HISTOGRAM_COUNTS_100("GPU.AtExitWindowCount",
+                           uma_memory_stats_.window_count);
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "GPU.AtExitMBytesAllocated",
+      uma_memory_stats_.bytes_allocated_current / 1024 / 1024, 1, 2000, 50);
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "GPU.AtExitMBytesAllocatedMax",
+      uma_memory_stats_.bytes_allocated_max / 1024 / 1024, 1, 2000, 50);
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "GPU.AtExitMBytesLimit",
+      uma_memory_stats_.bytes_limit / 1024 / 1024, 1, 2000, 50);
 
   if (status == base::TERMINATION_STATUS_NORMAL_TERMINATION ||
       status == base::TERMINATION_STATUS_ABNORMAL_TERMINATION) {
@@ -518,6 +529,8 @@ bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(GpuHostMsg_DidLoseContext, OnDidLoseContext)
     IPC_MESSAGE_HANDLER(GpuHostMsg_DidDestroyOffscreenContext,
                         OnDidDestroyOffscreenContext)
+    IPC_MESSAGE_HANDLER(GpuHostMsg_GpuMemoryUmaStats,
+                        OnGpuMemoryUmaStatsReceived)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
                         OnAcceleratedSurfaceBuffersSwapped)
@@ -743,6 +756,12 @@ void GpuProcessHost::OnDidLoseContext(bool offscreen,
 void GpuProcessHost::OnDidDestroyOffscreenContext(
     const GURL& url) {
   urls_with_live_offscreen_contexts_.erase(url);
+}
+
+void GpuProcessHost::OnGpuMemoryUmaStatsReceived(
+    const GPUMemoryUmaStats& stats) {
+  TRACE_EVENT0("gpu", "GpuProcessHost::OnGpuMemoryUmaStatsReceived");
+  uma_memory_stats_ = stats;
 }
 
 #if defined(OS_MACOSX)

@@ -15,8 +15,11 @@
 #include "base/process_util.h"
 #include "base/string_number_conversions.h"
 #include "base/sys_info.h"
+#include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_memory_allocation.h"
 #include "content/common/gpu/gpu_memory_tracking.h"
+#include "content/common/gpu/gpu_memory_uma_stats.h"
+#include "content/common/gpu/gpu_messages.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 
 namespace content {
@@ -32,8 +35,10 @@ void TrackValueChanged(size_t old_size, size_t new_size, size_t* total_size) {
 }
 
 GpuMemoryManager::GpuMemoryManager(
+    GpuChannelManager* channel_manager,
     size_t max_surfaces_with_frontbuffer_soft_limit)
-    : manage_immediate_scheduled_(false),
+    : channel_manager_(channel_manager),
+      manage_immediate_scheduled_(false),
       max_surfaces_with_frontbuffer_soft_limit_(
           max_surfaces_with_frontbuffer_soft_limit),
       bytes_available_gpu_memory_(0),
@@ -42,6 +47,7 @@ GpuMemoryManager::GpuMemoryManager(
       bytes_allocated_current_(0),
       bytes_allocated_managed_visible_(0),
       bytes_allocated_managed_backgrounded_(0),
+      bytes_allocated_historical_max_(0),
       window_count_has_been_received_(false),
       window_count_(0),
       disable_schedule_manage_(false)
@@ -259,6 +265,12 @@ void GpuMemoryManager::TrackMemoryAllocatedChange(size_t old_size,
     TRACE_COUNTER1("gpu",
                    "GpuMemoryUsage",
                    bytes_allocated_current_);
+  }
+  if (bytes_allocated_current_ > bytes_allocated_historical_max_) {
+      bytes_allocated_historical_max_ = bytes_allocated_current_;
+      // If we're blowing into new memory usage territory, spam the browser
+      // process with the most up-to-date information about our memory usage.
+      SendUmaStatsToBrowser();
   }
 }
 
@@ -515,6 +527,8 @@ void GpuMemoryManager::Manage() {
     }
     client_state->client->SetMemoryAllocation(allocation);
   }
+
+  SendUmaStatsToBrowser();
 }
 
 void GpuMemoryManager::SetClientsHibernatedState(
@@ -594,6 +608,17 @@ size_t GpuMemoryManager::GetVisibleClientAllocation(
     clients_allocation_when_visible = GetMaximumTabAllocation();
 
   return clients_allocation_when_visible;
+}
+
+void GpuMemoryManager::SendUmaStatsToBrowser() {
+  if (!channel_manager_)
+    return;
+  GPUMemoryUmaStats params;
+  params.bytes_allocated_current = bytes_allocated_current_;
+  params.bytes_allocated_max = bytes_allocated_historical_max_;
+  params.bytes_limit = bytes_available_gpu_memory_;
+  params.window_count = window_count_;
+  channel_manager_->Send(new GpuHostMsg_GpuMemoryUmaStats(params));
 }
 
 GpuMemoryManager::ClientState::ClientState(

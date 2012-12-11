@@ -22,6 +22,7 @@
 #include "ui/gfx/size.h"
 
 namespace content {
+class GpuChannelManager;
 class GpuMemoryManagerClient;
 }
 
@@ -45,7 +46,8 @@ class CONTENT_EXPORT GpuMemoryManager :
  public:
   enum { kDefaultMaxSurfacesWithFrontbufferSoftLimit = 8 };
 
-  explicit GpuMemoryManager(size_t max_surfaces_with_frontbuffer_soft_limit);
+  GpuMemoryManager(GpuChannelManager* channel_manager,
+                   size_t max_surfaces_with_frontbuffer_soft_limit);
   ~GpuMemoryManager();
 
   // Schedule a Manage() call. If immediate is true, we PostTask without delay.
@@ -170,6 +172,9 @@ class CONTENT_EXPORT GpuMemoryManager :
   static size_t CalcAvailableFromViewportArea(int viewport_area);
   static size_t CalcAvailableFromGpuTotal(size_t total_gpu_memory);
 
+  // Send memory usage stats to the browser process.
+  void SendUmaStatsToBrowser();
+
   // Interfaces for testing
   void TestingSetClientVisible(GpuMemoryManagerClient* client, bool visible);
   void TestingSetClientLastUsedTime(GpuMemoryManagerClient* client,
@@ -187,6 +192,8 @@ class CONTENT_EXPORT GpuMemoryManager :
   void TestingSetBackgroundedAvailableGpuMemory(size_t bytes) {
     bytes_backgrounded_available_gpu_memory_ = bytes;
   }
+
+  GpuChannelManager* channel_manager_;
 
   // All clients of this memory manager which have callbacks we
   // can use to adjust memory usage
@@ -212,6 +219,7 @@ class CONTENT_EXPORT GpuMemoryManager :
   size_t bytes_allocated_current_;
   size_t bytes_allocated_managed_visible_;
   size_t bytes_allocated_managed_backgrounded_;
+  size_t bytes_allocated_historical_max_;
 
   // The number of browser windows that exist. If we ever receive a
   // GpuMsg_SetVideoMemoryWindowCount, then we use this to compute memory

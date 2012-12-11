@@ -15,6 +15,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/time.h"
 #include "content/common/content_export.h"
+#include "content/common/gpu/gpu_memory_uma_stats.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/public/browser/browser_child_process_host_delegate.h"
 #include "content/public/browser/gpu_data_manager.h"
@@ -149,6 +150,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
                         gpu::error::ContextLostReason reason,
                         const GURL& url);
   void OnDidDestroyOffscreenContext(const GURL& url);
+  void OnGpuMemoryUmaStatsReceived(const GPUMemoryUmaStats& stats);
 #if defined(OS_MACOSX)
   void OnAcceleratedSurfaceBuffersSwapped(
       const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params);
@@ -241,6 +243,9 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // received, assume all of these URLs are guilty, and block
   // automatic execution of 3D content from those domains.
   std::multiset<GURL> urls_with_live_offscreen_contexts_;
+
+  // Statics kept around to send to UMA histograms on GPU process lost.
+  GPUMemoryUmaStats uma_memory_stats_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuProcessHost);
 };

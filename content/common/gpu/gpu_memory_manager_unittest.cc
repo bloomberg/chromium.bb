@@ -137,7 +137,7 @@ class GpuMemoryManagerTest : public testing::Test {
   static const size_t kFrontbufferLimitForTest = 3;
 
   GpuMemoryManagerTest()
-      : memmgr_(kFrontbufferLimitForTest) {
+      : memmgr_(0, kFrontbufferLimitForTest) {
     memmgr_.TestingDisableScheduleManage();
   }
 

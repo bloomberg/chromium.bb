@@ -11,6 +11,7 @@
 #include "base/shared_memory.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/gpu_memory_allocation.h"
+#include "content/common/gpu/gpu_memory_uma_stats.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/common/gpu/gpu_rendering_stats.h"
 #include "content/public/common/common_param_traits.h"
@@ -170,6 +171,13 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::GPUVideoMemoryUsageStats)
   IPC_STRUCT_TRAITS_MEMBER(process_map)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(content::GPUMemoryUmaStats)
+  IPC_STRUCT_TRAITS_MEMBER(bytes_allocated_current)
+  IPC_STRUCT_TRAITS_MEMBER(bytes_allocated_max)
+  IPC_STRUCT_TRAITS_MEMBER(bytes_limit)
+  IPC_STRUCT_TRAITS_MEMBER(window_count)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::GpuMemoryAllocationForRenderer)
@@ -399,6 +407,10 @@ IPC_MESSAGE_CONTROL3(GpuHostMsg_DidLoseContext,
 
 IPC_MESSAGE_CONTROL1(GpuHostMsg_DidDestroyOffscreenContext,
                      GURL /* url */)
+
+// Tells the browser about GPU memory usage statistics for UMA logging.
+IPC_MESSAGE_CONTROL1(GpuHostMsg_GpuMemoryUmaStats,
+                     content::GPUMemoryUmaStats /* GPU memory UMA stats */)
 
 //------------------------------------------------------------------------------
 // GPU Channel Messages
