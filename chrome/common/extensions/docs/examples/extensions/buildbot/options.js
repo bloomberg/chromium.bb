@@ -2,16 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+var checkbox;
+
 function save() {
-  var prefs = JSON.parse(localStorage.prefs);
-  prefs.use_notifications = document.getElementById('notifications').checked;
-  localStorage.prefs = JSON.stringify(prefs);
+  chrome.storage.sync.set({prefs: {use_notifications: checkbox.checked}});
 }
 
-// Make sure the checkbox checked state gets properly initialized from the
-// saved preference.
-document.addEventListener('DOMContentLoaded', function () {
-  var prefs = JSON.parse(localStorage.prefs);
-  document.getElementById('notifications').checked = prefs.use_notifications;
-  document.getElementById('notifications').addEventListener('click', save);
-});
+// Initialize the checkbox checked state from the saved preference.
+function main() {
+  checkbox = document.getElementById('notifications');
+  chrome.storage.sync.get(
+      {prefs: {use_notifications: false}},
+      function (storage) {
+        checkbox.checked = storage.prefs.use_notifications;
+        checkbox.addEventListener('click', save);
+      });
+}
+
+main();

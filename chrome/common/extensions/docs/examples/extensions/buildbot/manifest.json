@@ -8,6 +8,7 @@
   },
   "permissions": [
     "notifications",
+    "storage",
     "http://build.chromium.org/",
     "http://chromium-status.appspot.com/"
   ],

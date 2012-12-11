@@ -2,22 +2,11 @@
 <html>
   <head>
     <title>Chromium Buildbot Monitor Popup</title>
-    <script src='popup.js'></script>
     <style>
     body {
       font-family: sans-serif;
       font-size: 0.8em;
       overflow: hidden;
-    }
-
-    #links {
-      background-color: #efefef;
-      border: 1px solid #cccccc;
-      border-radius: 5px;
-      margin-top: 1px;
-      padding: 3px;
-      white-space: nowrap;
-      text-align: center;
     }
 
     a {
@@ -30,71 +19,30 @@
       cursor: pointer;
     }
 
-    body.big .bot {
-      -webkit-transition: all .5s ease-out;
-      margin: 20px;
+    .botlabel {
+      text-align: right;
+      font-size: 12px;
+      font-weight: bold;
+      min-width: 85px;
+      padding: 0px;
     }
 
-    body.small .bot {
-      -webkit-transition: all .5s ease-out;
+    .botstatus {
+      padding: 0px;
     }
 
-    .bot {
-      cursor: pointer;
-      border-radius: 5px;
-      margin-top: 1px;
-      padding: 3px;
-      white-space: nowrap;
+    .statusiframe {
+      height: 10px;
+      border: none;
     }
 
-    .bot:hover {
-      border: 2px solid black;
-      padding: 2px;
-    }
-
-    .open {
-      color: green;
-    }
-
-    .closed {
-      color: red;
-    }
-
-    .running {
-      background-color:  rgb(255, 252, 108);
-      border: 1px solid rgb(197, 197, 109);
-    }
-
-    .notstarted {
-      border: 1px solid rgb(170, 170, 170);
-    }
-
-    .failure {
-      background-color: rgb(233, 128, 128);
-      border: 1px solid rgb(167, 114, 114);
-    }
-
-    .warnings {
-      background-color: rgb(255, 195, 67);
-      border: 1px solid rgb(194, 157, 70);
-    }
-
-    .success {
-      background-color: rgb(143, 223, 95);
-      border: 1px solid rgb(79, 133, 48);
-    }
-
-    .exception {
-      background-color: rgb(224, 176, 255);
-      border: 1px solid rgb(172, 160, 179);
+    .spacer {
     }
   </style>
 </head>
 <body>
-<div id="links">
-<a href="" id='console'>console</a> -
-<a href="" id='try'>try</a> -
-<a href="" id='fyi'>fyi</a>
-</div>
-<div id="bots">Loading....</div>
+  <table id="bot-status-table">
+  </table>
+  <script src='popup.js'></script>
 </body>
+</html>

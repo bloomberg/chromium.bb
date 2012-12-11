@@ -2,79 +2,154 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// TODO(wittman): Convert this extension to event pages once they work with
+// the notifications API.  Currently it's not possible to restore the
+// Notification object when event pages get reloaded.  See
+// http://crbug.com/165276.
+
 var statusURL = "http://chromium-status.appspot.com/current?format=raw";
+var statusHistoryURL = "http://chromium-status.appspot.com/";
+var pollFrequencyInMs = 30000;
 
-if (!localStorage.prefs) {
-  // Default to notifications being on.
-  localStorage.prefs = JSON.stringify({ "use_notifications": true });
+function getUseNotifications(callback) {
+  chrome.storage.sync.get(
+    // Default to notifications being off.
+    {prefs: {use_notifications: false}},
+    function(storage) { callback(storage.prefs.use_notifications); });
 }
 
-var lastOpen = null;
 var lastNotification = null;
-function notifyIfStatusChange(open, status) {
-  var prefs = JSON.parse(localStorage.prefs);
-  if (lastOpen && lastOpen != open && prefs.use_notifications) {
-    if (lastNotification) {
-      lastNotification.cancel();
-    }
-    var notification = webkitNotifications.createNotification(
-        chrome.extension.getURL("icon.png"), "Tree is " + open, status);
-    lastNotification = notification;
-    notification.show();
+function notifyStatusChange(treeState, status) {
+  if (lastNotification) {
+    lastNotification.cancel();
   }
-  lastOpen = open;
+  var notification = webkitNotifications.createNotification(
+    chrome.extension.getURL("icon.png"), "Tree is " + treeState, status);
+  lastNotification = notification;
+  notification.show();
 }
 
-function updateStatus(status) {
-  chrome.browserAction.setTitle({title:status});
-  var open = /open/i;
-  if (open.exec(status)) {
-    notifyIfStatusChange("open", status);
-    //chrome.browserAction.setBadgeText("\u263A");
-    chrome.browserAction.setBadgeText({text:"\u2022"});
-    chrome.browserAction.setBadgeBackgroundColor({color:[0,255,0,255]});
+// The type parameter should be "open", "closed", or "throttled".
+function getLastStatusTime(callback, type) {
+  requestURL(statusHistoryURL, function(doc) {
+    var elements = doc.getElementsByClassName(type);
+    // The status history URL doesn't give the year, so use the current year.
+    // Check if the period spans Jan 1 00:00:00, which would result in a
+    // negative time span.
+    var now = new Date;
+    var time = new Date(elements[0].cells[1].innerText + " " +
+                        now.getFullYear());
+    if (time.getMonth() == 11 && now.getMonth() == 0) {
+      time.setFullYear(time.getFullYear() - 1);
+    }
+
+    // Status times are given to the minute.  Bias by 30 seconds to get the most
+    // accurate time, on average.
+    time.setTime(time.getTime() + 30000);
+    callback(time);
+  });
+}
+
+function updateTimeBadge(timeDeltaInMs) {
+  var secondsSinceChangeEvent = Math.round(timeDeltaInMs / 1000);
+  var minutesSinceChangeEvent = Math.round(secondsSinceChangeEvent / 60);
+  var hoursSinceChangeEvent = Math.round(minutesSinceChangeEvent / 60);
+  var daysSinceChangeEvent = Math.round(hoursSinceChangeEvent / 24);
+
+  var text;
+  if (secondsSinceChangeEvent < 60) {
+    text = "<1m";
+  } else if (minutesSinceChangeEvent < 57.5) {
+    if (minutesSinceChangeEvent < 30) {
+      text = minutesSinceChangeEvent + "m";
+    } else {
+      text = Math.round(minutesSinceChangeEvent / 5) * 5 + "m";
+    }
+  } else if (minutesSinceChangeEvent < 5 * 60) {
+      var halfHours = Math.round(minutesSinceChangeEvent / 30);
+      text = Math.floor(halfHours / 2) + (halfHours % 2 ? ".5" : "") + "h";
+  } else if (hoursSinceChangeEvent < 23.5) {
+    text = hoursSinceChangeEvent + "h";
   } else {
-    notifyIfStatusChange("closed", status);
-    //chrome.browserAction.setBadgeText("\u2639");
-    chrome.browserAction.setBadgeText({text:"\u00D7"});
-    chrome.browserAction.setBadgeBackgroundColor({color:[255,0,0,255]});
+    text = daysSinceChangeEvent + "d";
+  }
+
+  chrome.browserAction.setBadgeText({text: text});
+}
+
+var lastState;
+var lastChangeTime;
+function updateStatus(status) {
+  var badgeState = {
+    open: {color: [0,255,0,255], defaultText: "\u2022"},
+    closed: {color: [255,0,0,255], defaultText: "\u00D7"},
+    throttled: {color: [255,255,0,255], defaultText: "!"}
+  };
+
+  chrome.browserAction.setTitle({title:status});
+  var treeState = (/open/i).exec(status) ? "open" :
+      (/throttled/i).exec(status) ? "throttled" : "closed";
+
+  getUseNotifications(function(useNotifications) {
+    if (useNotifications && lastState && lastState != treeState) {
+      notifyStatusChange(treeState, status);
+    }
+  });
+
+  chrome.browserAction.setBadgeBackgroundColor(
+      {color: badgeState[treeState].color});
+
+  if (lastChangeTime === undefined) {
+    chrome.browserAction.setBadgeText(
+        {text: badgeState[treeState].defaultText});
+    lastState = treeState;
+    getLastStatusTime(function(time) {
+      lastChangeTime = time;
+      updateTimeBadge(Date.now() - lastChangeTime);
+    }, treeState);
+  } else {
+    if (treeState != lastState) {
+      lastState = treeState;
+      // The change event will occur 1/2 the polling frequency before we
+      // are aware of it, on average.
+      lastChangeTime = Date.now() - pollFrequencyInMs / 2;
+    }
+    updateTimeBadge(Date.now() - lastChangeTime);
   }
 }
 
 function requestStatus() {
-  requestURL(statusURL, updateStatus);
-  setTimeout(requestStatus, 30000);
+  requestURL(statusURL, updateStatus, "text");
+  setTimeout(requestStatus, pollFrequencyInMs);
 }
 
-function requestURL(url, callback) {
-  //console.log("requestURL: " + url);
+function requestURL(url, callback, opt_responseType) {
   var xhr = new XMLHttpRequest();
-  try {
-    xhr.onreadystatechange = function(state) {
-      if (xhr.readyState == 4) {
-        if (xhr.status == 200) {
-          var text = xhr.responseText;
-          //console.log(text);
-          callback(text);
-        } else {
-          chrome.browserAction.setBadgeText({text:"?"});
-          chrome.browserAction.setBadgeBackgroundColor({color:[0,0,255,255]});
-        }
+  xhr.responseType = opt_responseType || "document";
+
+  xhr.onreadystatechange = function(state) {
+    if (xhr.readyState == 4) {
+      if (xhr.status == 200) {
+        callback(xhr.responseType == "document" ?
+                 xhr.responseXML : xhr.responseText);
+      } else {
+        chrome.browserAction.setBadgeText({text:"?"});
+        chrome.browserAction.setBadgeBackgroundColor({color:[0,0,255,255]});
       }
     }
+  };
 
-    xhr.onerror = function(error) {
-      console.log("xhr error: " + JSON.stringify(error));
-      console.dir(error);
-    }
+  xhr.onerror = function(error) {
+    console.log("xhr error: " + JSON.stringify(error));
+    console.dir(error);
+  };
 
-    xhr.open("GET", url, true);
-    xhr.send({});
-  } catch(e) {
-    console.log("exception: " + e);
-  }
+  xhr.open("GET", url, true);
+  xhr.send();
 }
 
-window.onload = function() {
-  window.setTimeout(requestStatus, 10);
+function main() {
+  requestStatus();
 }
+
+main();
