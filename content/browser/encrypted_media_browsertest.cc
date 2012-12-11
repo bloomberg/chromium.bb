@@ -168,7 +168,8 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, BasicPlayback_VideoClearAudio) {
                          GetParam(), kExpected));
 }
 
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, FrameChangeVideo) {
+// TODO(acolwell): Reenable when the changes for http://webk.it/104583 land.
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, DISABLED_FrameChangeVideo) {
   const string16 kExpected = ASCIIToUTF16("ENDED");
   ASSERT_NO_FATAL_FAILURE(TestFrameSizeChange(GetParam(), kExpected));
 }
