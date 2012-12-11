@@ -433,7 +433,7 @@ void FileBrowserEventRouter::OnDirectoryChanged(
   HandleFileWatchNotification(directory_path, false);
 }
 
-void FileBrowserEventRouter::OnDocumentFeedFetched(
+void FileBrowserEventRouter::OnResourceListFetched(
     int num_accumulated_entries) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 

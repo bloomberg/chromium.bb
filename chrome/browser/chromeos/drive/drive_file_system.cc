@@ -981,18 +981,18 @@ void DriveFileSystem::OnGetResourceEntry(const GetFileFromCacheParams& params,
     return;
   }
 
-  scoped_ptr<google_apis::ResourceEntry> doc_entry;
+  scoped_ptr<google_apis::ResourceEntry> entry;
   if (!google_apis::util::IsDriveV2ApiEnabled()) {
-    doc_entry = google_apis::ResourceEntry::ExtractAndParse(*data);
+    entry = google_apis::ResourceEntry::ExtractAndParse(*data);
   } else {
     scoped_ptr<google_apis::FileResource> file_resource =
         google_apis::FileResource::CreateFrom(*data);
-    doc_entry = google_apis::ResourceEntry::CreateFromFileResource(
+    entry = google_apis::ResourceEntry::CreateFromFileResource(
         *file_resource);
   }
 
-  GURL content_url = doc_entry->content_url();
-  int64 file_size = doc_entry->file_size();
+  GURL content_url = entry->content_url();
+  int64 file_size = entry->file_size();
 
   // The content URL can be empty for non-downloadable files (such as files
   // shared from others with "prevent downloading by viewers" flag set.)
@@ -1004,9 +1004,9 @@ void DriveFileSystem::OnGetResourceEntry(const GetFileFromCacheParams& params,
     return;
   }
 
-  DCHECK_EQ(params.resource_id, doc_entry->resource_id());
+  DCHECK_EQ(params.resource_id, entry->resource_id());
   resource_metadata_->RefreshFile(
-      doc_entry.Pass(),
+      entry.Pass(),
       base::Bind(&DriveFileSystem::CheckForSpaceBeforeDownload,
                  ui_weak_ptr_,
                  params,
@@ -1241,7 +1241,7 @@ void DriveFileSystem::RequestDirectoryRefreshOnUIThreadAfterGetEntryInfo(
 void DriveFileSystem::OnRequestDirectoryRefresh(
     const std::string& directory_resource_id,
     const FilePath& directory_path,
-    const ScopedVector<google_apis::DocumentFeed>& feed_list,
+    const ScopedVector<google_apis::ResourceList>& feed_list,
     DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -1412,7 +1412,7 @@ void DriveFileSystem::ContinueCreateDirectory(
 
 void DriveFileSystem::OnSearch(
     const SearchCallback& search_callback,
-    const ScopedVector<google_apis::DocumentFeed>& feed_list,
+    const ScopedVector<google_apis::ResourceList>& feed_list,
     DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!search_callback.is_null());
@@ -1431,7 +1431,7 @@ void DriveFileSystem::OnSearch(
   scoped_ptr<std::vector<SearchResultInfo> > result_vec(results);
 
   DCHECK_EQ(1u, feed_list.size());
-  const google_apis::DocumentFeed* feed = feed_list[0];
+  const google_apis::ResourceList* feed = feed_list[0];
 
   // TODO(tbarzic): Limit total number of returned results for the query.
   GURL next_feed;
@@ -1534,11 +1534,11 @@ void DriveFileSystem::OnDirectoryChanged(const FilePath& directory_path) {
                     OnDirectoryChanged(directory_path));
 }
 
-void DriveFileSystem::OnDocumentFeedFetched(int num_accumulated_entries) {
+void DriveFileSystem::OnResourceListFetched(int num_accumulated_entries) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   FOR_EACH_OBSERVER(DriveFileSystemObserver, observers_,
-                    OnDocumentFeedFetched(num_accumulated_entries));
+                    OnResourceListFetched(num_accumulated_entries));
 }
 
 void DriveFileSystem::OnFeedFromServerLoaded() {
@@ -1775,23 +1775,23 @@ void DriveFileSystem::ContinueFindFirstMissingParentDirectory(
 
 void DriveFileSystem::AddUploadedFile(
     const FilePath& directory_path,
-    scoped_ptr<google_apis::ResourceEntry> doc_entry,
+    scoped_ptr<google_apis::ResourceEntry> entry,
     const FilePath& file_content_path,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(doc_entry.get());
-  DCHECK(!doc_entry->resource_id().empty());
-  DCHECK(!doc_entry->file_md5().empty());
+  DCHECK(entry.get());
+  DCHECK(!entry->resource_id().empty());
+  DCHECK(!entry->file_md5().empty());
   DCHECK(!callback.is_null());
 
   AddUploadedFileParams params(file_content_path,
                                callback,
-                               doc_entry->resource_id(),
-                               doc_entry->file_md5());
+                               entry->resource_id(),
+                               entry->file_md5());
 
   resource_metadata_->AddEntryToDirectory(
       directory_path,
-      doc_entry.Pass(),
+      entry.Pass(),
       base::Bind(&DriveFileSystem::AddUploadedFileToCache,
                  ui_weak_ptr_, params));
 }

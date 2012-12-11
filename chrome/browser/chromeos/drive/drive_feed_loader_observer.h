@@ -21,9 +21,9 @@ class DriveFeedLoaderObserver {
   virtual void OnDirectoryChanged(const FilePath& directory_path) {
   }
 
-  // Triggered when a document feed is fetched. |num_accumulated_entries|
+  // Triggered when a resource list is fetched. |num_accumulated_entries|
   // tells the number of entries fetched so far.
-  virtual void OnDocumentFeedFetched(int num_accumulated_entries) {
+  virtual void OnResourceListFetched(int num_accumulated_entries) {
   }
 
   // Triggered when the feed from the server is loaded.
