@@ -11,6 +11,18 @@
 
 using WebKit::WebInputEvent;
 
+namespace {
+
+bool IsImeEvent(const IPC::Message& message) {
+  return (message.type() == ViewMsg_ImeSetComposition::ID ||
+          message.type() == ViewMsg_ImeConfirmComposition::ID ||
+          message.type() == ViewMsg_SetCompositionFromExistingText::ID ||
+          message.type() == ViewMsg_SetEditableSelectionOffsets::ID ||
+          message.type() == ViewMsg_ExtendSelectionAndDelete::ID);
+}
+
+}
+
 namespace content {
 
 InputEventFilter::InputEventFilter(IPC::Listener* main_listener,
@@ -40,6 +52,7 @@ void InputEventFilter::DidHandleInputEvent() {
 
   SendACK(messages_.front(), INPUT_EVENT_ACK_STATE_CONSUMED);
   messages_.pop();
+  ForwardPendingImeEvents();
 }
 
 void InputEventFilter::DidNotHandleInputEvent(bool send_to_widget) {
@@ -58,6 +71,7 @@ void InputEventFilter::DidNotHandleInputEvent(bool send_to_widget) {
     SendACK(messages_.front(), INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
   }
   messages_.pop();
+  ForwardPendingImeEvents();
 }
 
 void InputEventFilter::OnFilterAdded(IPC::Channel* channel) {
@@ -74,6 +88,9 @@ void InputEventFilter::OnChannelClosing() {
 }
 
 bool InputEventFilter::OnMessageReceived(const IPC::Message& message) {
+  if (IsImeEvent(message))
+    return QueueImeEvent(message);
+
   if (message.type() != ViewMsg_HandleInputEvent::ID)
     return false;
 
@@ -150,6 +167,23 @@ void InputEventFilter::SendACKOnIOThread(
 
   sender_->Send(
       new ViewHostMsg_HandleInputEvent_ACK(routing_id, event_type, ack_result));
+}
+
+bool InputEventFilter::QueueImeEvent(const IPC::Message& message) {
+  if (messages_.empty())
+    return false;
+  messages_.push(message);
+  return true;
+}
+
+void InputEventFilter::ForwardPendingImeEvents() {
+  while (!messages_.empty() && IsImeEvent(messages_.front())) {
+    main_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(&InputEventFilter::ForwardToMainListener,
+                   this, messages_.front()));
+    messages_.pop();
+  }
 }
 
 }  // namespace content
