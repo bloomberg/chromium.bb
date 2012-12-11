@@ -128,6 +128,8 @@ def _CheckLicenseHeaders(directory_list, whitelisted_files):
   directory_list.append('remoting/appengine/')
   # Histogram tools, doesn't exist in the snapshot
   directory_list.append('tools/histograms/')
+  # Arm sysroot tools, doesn't exist in the snapshot
+  directory_list.append('arm-sysroot/')
 
   # Exclude files under listed directories and some known offenders.
   offending_files = []
