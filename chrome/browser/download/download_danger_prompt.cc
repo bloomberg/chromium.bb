@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 #include "content/public/browser/browser_thread.h"
@@ -24,7 +23,7 @@ class DownloadDangerPromptImpl
     public TabModalConfirmDialogDelegate {
  public:
   DownloadDangerPromptImpl(content::DownloadItem* item,
-                           TabContents* tab_contents,
+                           content::WebContents* web_contents,
                            const base::Closure& accepted,
                            const base::Closure& canceled);
   virtual ~DownloadDangerPromptImpl();
@@ -63,10 +62,10 @@ class DownloadDangerPromptImpl
 
 DownloadDangerPromptImpl::DownloadDangerPromptImpl(
     content::DownloadItem* download,
-    TabContents* tab_contents,
+    content::WebContents* web_contents,
     const base::Closure& accepted,
     const base::Closure& canceled)
-    : TabModalConfirmDialogDelegate(tab_contents->web_contents()),
+    : TabModalConfirmDialogDelegate(web_contents),
       download_(download),
       accepted_(accepted),
       canceled_(canceled) {
@@ -145,12 +144,12 @@ void DownloadDangerPromptImpl::PrepareToClose() {
 // static
 DownloadDangerPrompt* DownloadDangerPrompt::Create(
     content::DownloadItem* item,
-    TabContents* tab_contents,
+    content::WebContents* web_contents,
     const base::Closure& accepted,
     const base::Closure& canceled) {
   DownloadDangerPromptImpl* prompt =
-      new DownloadDangerPromptImpl(item, tab_contents, accepted, canceled);
+      new DownloadDangerPromptImpl(item, web_contents, accepted, canceled);
   // |prompt| will be deleted when the dialog is done.
-  TabModalConfirmDialog::Create(prompt, tab_contents->web_contents());
+  TabModalConfirmDialog::Create(prompt, web_contents);
   return prompt;
 }

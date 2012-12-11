@@ -388,7 +388,7 @@ void DragDownload(const DownloadItem* download,
       ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
 #else  // We are on WIN without AURA
   // We cannot use Widget::RunShellDrag on WIN since the |view| is backed by a
-  // TabContentsViewWin, not a NativeWidgetWin.
+  // WebContentsViewWin, not a NativeWidgetWin.
   scoped_refptr<ui::DragSource> drag_source(new ui::DragSource);
   // Run the drag and drop loop
   DWORD effects;

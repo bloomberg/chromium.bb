@@ -31,7 +31,6 @@
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/fileicon_source.h"
 #include "chrome/common/time_format.h"
@@ -468,7 +467,7 @@ void DownloadsDOMHandler::ShowDangerPrompt(
     content::DownloadItem* dangerous_item) {
   DownloadDangerPrompt* danger_prompt = DownloadDangerPrompt::Create(
       dangerous_item,
-      TabContents::FromWebContents(GetWebUIWebContents()),
+      GetWebUIWebContents(),
       base::Bind(&DownloadsDOMHandler::DangerPromptAccepted,
                  weak_ptr_factory_.GetWeakPtr(), dangerous_item->GetId()),
       base::Closure());

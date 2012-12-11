@@ -8,10 +8,10 @@
 #include "base/callback_forward.h"
 
 class ConstrainedWindow;
-class TabContents;
 
 namespace content {
 class DownloadItem;
+class WebContents;
 }
 
 // Prompts the user for whether to Keep a dangerous DownloadItem using native
@@ -37,7 +37,7 @@ class DownloadDangerPrompt {
   // caller does not own the object and receive no guarantees about lifetime.
   static DownloadDangerPrompt* Create(
       content::DownloadItem* item,
-      TabContents* tab_contents,
+      content::WebContents* web_contents,
       const base::Closure& accepted,
       const base::Closure& canceled);
 
