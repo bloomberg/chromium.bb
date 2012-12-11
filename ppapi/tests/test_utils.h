@@ -178,14 +178,14 @@ class TestCompletionCallbackWithOutput : public TestCompletionCallback {
   explicit TestCompletionCallbackWithOutput(PP_Instance instance) :
     TestCompletionCallback(instance) {
   }
-
-  TestCompletionCallbackWithOutput(PP_Instance instance, bool force_async) :
-    TestCompletionCallback(instance, force_async) {
-  }
+  // We purposely don't define a force_async constructor, since force_async
+  // is going away. TODO(dmichael): remove this comment with force_async.
 
   TestCompletionCallbackWithOutput(PP_Instance instance,
                                    CallbackType callback_type) :
     TestCompletionCallback(instance, callback_type) {
+    // Callbacks with output don't make sense for blocking calls.
+    PP_DCHECK(callback_type != PP_BLOCKING);
   }
 
   pp::CompletionCallbackWithOutput<OutputT> GetCallbackWithOutput();
@@ -203,14 +203,6 @@ template <typename OutputT>
 pp::CompletionCallbackWithOutput<OutputT>
 TestCompletionCallbackWithOutput<OutputT>::GetCallbackWithOutput() {
   Reset();
-  if (callback_type_ == PP_BLOCKING) {
-    pp::CompletionCallbackWithOutput<OutputT> cc(
-        &TestCompletionCallback::Handler,
-        this,
-        &output_storage_);
-    return cc;
-  }
-
   target_loop_ = pp::MessageLoop::GetCurrent();
   pp::CompletionCallbackWithOutput<OutputT> cc(
         &TestCompletionCallback::Handler,
