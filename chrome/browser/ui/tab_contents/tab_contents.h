@@ -12,7 +12,6 @@
 #include "content/public/browser/web_contents_observer.h"
 
 class Browser;
-class BrowserTabstripTabContentsCreator;
 class Profile;
 class TestTabStripModelDelegate;
 
@@ -44,7 +43,6 @@ class TabContents : public content::WebContentsObserver {
     // do so.
 
     friend class Browser;
-    friend class BrowserTabstripTabContentsCreator;
     friend class prerender::PrerenderContents;
     // See crbug.com/153587
     friend class TabAndroid;

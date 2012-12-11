@@ -53,11 +53,6 @@ void AddWebContents(Browser* browser,
                     bool* was__blocked);
 void CloseWebContents(Browser* browser, content::WebContents* contents);
 
-// Centralized methods for creating a TabContents, configuring and
-// installing all its supporting objects and observers.
-TabContents* TabContentsFactory(
-    const content::WebContents::CreateParams& create_params);
-
 }  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_BROWSER_TABSTRIP_H_

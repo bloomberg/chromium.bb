@@ -17,14 +17,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 
-// TODO(avi): Kill this when TabContents goes away.
-class BrowserTabstripTabContentsCreator {
- public:
-  static TabContents* CreateTabContents(content::WebContents* contents) {
-    return TabContents::Factory::CreateTabContents(contents);
-  }
-};
-
 namespace chrome {
 
 content::WebContents* GetActiveWebContents(const Browser* browser) {
@@ -126,12 +118,6 @@ void CloseWebContents(Browser* browser, content::WebContents* contents) {
   browser->tab_strip_model()->CloseWebContentsAt(
       index,
       TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
-}
-
-TabContents* TabContentsFactory(
-    const content::WebContents::CreateParams& create_params) {
-  return BrowserTabstripTabContentsCreator::CreateTabContents(
-      content::WebContents::Create(create_params));
 }
 
 }  // namespace chrome
