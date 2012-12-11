@@ -20,19 +20,19 @@ namespace policy {
 TEST(PolicyUITest, ListPolicyValues) {
   base::StringValue kHomepage("http://google.com");
   base::FundamentalValue kTrue(true);
-  base::FundamentalValue kMaxConnections(10);
-  base::ListValue kDisabledSchemes;
-  kDisabledSchemes.Append(base::Value::CreateStringValue("aaa"));
-  kDisabledSchemes.Append(base::Value::CreateStringValue("bbb"));
-  kDisabledSchemes.Append(base::Value::CreateStringValue("ccc"));
+  base::FundamentalValue kRestoreOnStartup(4);
+  base::ListValue kRestoreOnStartupURLs;
+  kRestoreOnStartupURLs.Append(base::Value::CreateStringValue("aaa"));
+  kRestoreOnStartupURLs.Append(base::Value::CreateStringValue("bbb"));
+  kRestoreOnStartupURLs.Append(base::Value::CreateStringValue("ccc"));
 
   PolicyMap policies;
-  policies.Set(key::kDisabledSchemes, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, kDisabledSchemes.DeepCopy());
+  policies.Set(key::kRestoreOnStartupURLs, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, kRestoreOnStartupURLs.DeepCopy());
   policies.Set(key::kHomepageLocation, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_MACHINE, kHomepage.DeepCopy());
-  policies.Set(key::kMaxConnectionsPerProxy, POLICY_LEVEL_RECOMMENDED,
-               POLICY_SCOPE_USER, kMaxConnections.DeepCopy());
+  policies.Set(key::kRestoreOnStartup, POLICY_LEVEL_RECOMMENDED,
+               POLICY_SCOPE_USER, kRestoreOnStartup.DeepCopy());
   policies.Set(key::kShowHomeButton, POLICY_LEVEL_RECOMMENDED,
                POLICY_SCOPE_MACHINE, kTrue.DeepCopy());
 
@@ -66,20 +66,6 @@ TEST(PolicyUITest, ListPolicyValues) {
   base::DictionaryValue* dict = NULL;
   ASSERT_TRUE(list->GetDictionary(0, &dict));
   EXPECT_TRUE(dict->GetString(PolicyUIHandler::kName, &string));
-  EXPECT_EQ(ASCIIToUTF16("DisabledSchemes"), string);
-  EXPECT_TRUE(dict->GetBoolean(PolicyUIHandler::kSet, &boolean));
-  EXPECT_TRUE(boolean);
-  EXPECT_TRUE(dict->GetString(PolicyUIHandler::kLevel, &string));
-  EXPECT_EQ(kMandatory, string);
-  EXPECT_TRUE(dict->GetString(PolicyUIHandler::kScope, &string));
-  EXPECT_EQ(kUser, string);
-  EXPECT_TRUE(dict->Get(PolicyUIHandler::kValue, &value));
-  EXPECT_TRUE(base::Value::Equals(&kDisabledSchemes, value));
-  EXPECT_TRUE(dict->GetString(PolicyUIHandler::kStatus, &string));
-  EXPECT_EQ(kOK, string);
-
-  ASSERT_TRUE(list->GetDictionary(1, &dict));
-  EXPECT_TRUE(dict->GetString(PolicyUIHandler::kName, &string));
   EXPECT_EQ(ASCIIToUTF16("HomepageLocation"), string);
   EXPECT_TRUE(dict->GetBoolean(PolicyUIHandler::kSet, &boolean));
   EXPECT_TRUE(boolean);
@@ -92,9 +78,9 @@ TEST(PolicyUITest, ListPolicyValues) {
   EXPECT_TRUE(dict->GetString(PolicyUIHandler::kStatus, &string));
   EXPECT_EQ(kOK, string);
 
-  ASSERT_TRUE(list->GetDictionary(2, &dict));
+  ASSERT_TRUE(list->GetDictionary(1, &dict));
   EXPECT_TRUE(dict->GetString(PolicyUIHandler::kName, &string));
-  EXPECT_EQ(ASCIIToUTF16("MaxConnectionsPerProxy"), string);
+  EXPECT_EQ(ASCIIToUTF16("RestoreOnStartup"), string);
   EXPECT_TRUE(dict->GetBoolean(PolicyUIHandler::kSet, &boolean));
   EXPECT_TRUE(boolean);
   EXPECT_TRUE(dict->GetString(PolicyUIHandler::kLevel, &string));
@@ -102,7 +88,21 @@ TEST(PolicyUITest, ListPolicyValues) {
   EXPECT_TRUE(dict->GetString(PolicyUIHandler::kScope, &string));
   EXPECT_EQ(kUser, string);
   EXPECT_TRUE(dict->Get(PolicyUIHandler::kValue, &value));
-  EXPECT_TRUE(base::Value::Equals(&kMaxConnections, value));
+  EXPECT_TRUE(base::Value::Equals(&kRestoreOnStartup, value));
+  EXPECT_TRUE(dict->GetString(PolicyUIHandler::kStatus, &string));
+  EXPECT_EQ(kOK, string);
+
+  ASSERT_TRUE(list->GetDictionary(2, &dict));
+  EXPECT_TRUE(dict->GetString(PolicyUIHandler::kName, &string));
+  EXPECT_EQ(ASCIIToUTF16("RestoreOnStartupURLs"), string);
+  EXPECT_TRUE(dict->GetBoolean(PolicyUIHandler::kSet, &boolean));
+  EXPECT_TRUE(boolean);
+  EXPECT_TRUE(dict->GetString(PolicyUIHandler::kLevel, &string));
+  EXPECT_EQ(kMandatory, string);
+  EXPECT_TRUE(dict->GetString(PolicyUIHandler::kScope, &string));
+  EXPECT_EQ(kUser, string);
+  EXPECT_TRUE(dict->Get(PolicyUIHandler::kValue, &value));
+  EXPECT_TRUE(base::Value::Equals(&kRestoreOnStartupURLs, value));
   EXPECT_TRUE(dict->GetString(PolicyUIHandler::kStatus, &string));
   EXPECT_EQ(kOK, string);
 
