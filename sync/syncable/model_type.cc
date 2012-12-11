@@ -93,7 +93,6 @@ ModelType GetModelTypeFromSpecificsFieldNumber(int field_number) {
     if (GetSpecificsFieldNumberFromModelType(model_type) == field_number)
       return model_type;
   }
-  NOTREACHED();
   return UNSPECIFIED;
 }
 

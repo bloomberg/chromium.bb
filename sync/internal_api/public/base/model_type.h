@@ -160,7 +160,25 @@ ModelTypeSet ControlTypes();
 bool IsControlType(ModelType model_type);
 
 // Determine a model type from the field number of its associated
-// EntitySpecifics field.
+// EntitySpecifics field.  Returns UNSPECIFIED if the field number is
+// not recognized.
+//
+// If you're putting the result in a ModelTypeSet, you should use the
+// following pattern:
+//
+//   ModelTypeSet model_types;
+//   // Say we're looping through a list of items, each of which has a
+//   // field number.
+//   for (...) {
+//     int field_number = ...;
+//     ModelType model_type =
+//         GetModelTypeFromSpecificsFieldNumber(field_number);
+//     if (!IsRealDataType(model_type)) {
+//       NOTREACHED() << "Unknown field number " << field_number;
+//       continue;
+//     }
+//     model_types.Put(model_type);
+//   }
 ModelType GetModelTypeFromSpecificsFieldNumber(int field_number);
 
 // Return the field number of the EntitySpecifics field associated with

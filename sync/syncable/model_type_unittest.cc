@@ -70,5 +70,20 @@ TEST_F(ModelTypeTest, IsRealDataType) {
   EXPECT_TRUE(IsRealDataType(APPS));
 }
 
+// Make sure we can convert ModelTypes to and from specifics field
+// numbers.
+TEST_F(ModelTypeTest, ModelTypeToFromSpecificsFieldNumber) {
+  for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
+    ModelType model_type = ModelTypeFromInt(i);
+    int field_number = GetSpecificsFieldNumberFromModelType(model_type);
+    EXPECT_EQ(model_type,
+              GetModelTypeFromSpecificsFieldNumber(field_number));
+  }
+}
+
+TEST_F(ModelTypeTest, ModelTypeOfInvalidSpecificsFieldNumber) {
+  EXPECT_EQ(UNSPECIFIED, GetModelTypeFromSpecificsFieldNumber(0));
+}
+
 }  // namespace
 }  // namespace syncer

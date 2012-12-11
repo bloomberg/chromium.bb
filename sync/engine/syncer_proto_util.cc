@@ -117,8 +117,13 @@ void SyncerProtoUtil::HandleMigrationDoneResponse(
       << "MIGRATION_DONE but no types specified.";
   ModelTypeSet to_migrate;
   for (int i = 0; i < response->migrated_data_type_id_size(); i++) {
-    to_migrate.Put(GetModelTypeFromSpecificsFieldNumber(
-        response->migrated_data_type_id(i)));
+    int field_number = response->migrated_data_type_id(i);
+    ModelType model_type = GetModelTypeFromSpecificsFieldNumber(field_number);
+    if (!IsRealDataType(model_type)) {
+      NOTREACHED() << "Unknown field number " << field_number;
+      continue;
+    }
+    to_migrate.Put(model_type);
   }
   // TODO(akalin): This should be a set union.
   session->mutable_status_controller()->
@@ -322,9 +327,14 @@ SyncProtocolError ConvertErrorPBToLocalType(
     // THROTTLED is currently the only error code that uses |error_data_types|.
     DCHECK_EQ(error.error_type(), sync_pb::SyncEnums::THROTTLED);
     for (int i = 0; i < error.error_data_type_ids_size(); ++i) {
-      sync_protocol_error.error_data_types.Put(
-          GetModelTypeFromSpecificsFieldNumber(
-              error.error_data_type_ids(i)));
+      int field_number = error.error_data_type_ids(i);
+      ModelType model_type =
+          GetModelTypeFromSpecificsFieldNumber(field_number);
+      if (!IsRealDataType(model_type)) {
+        NOTREACHED() << "Unknown field number " << field_number;
+        continue;
+      }
+      sync_protocol_error.error_data_types.Put(model_type);
     }
   }
 

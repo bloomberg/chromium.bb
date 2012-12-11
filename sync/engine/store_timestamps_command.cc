@@ -28,15 +28,14 @@ SyncerError StoreTimestampsCommand::ExecuteImpl(
   // state.
   ModelTypeSet forward_progress_types;
   for (int i = 0; i < updates.new_progress_marker_size(); ++i) {
-    ModelType model =
-        GetModelTypeFromSpecificsFieldNumber(
-            updates.new_progress_marker(i).data_type_id());
-    if (model == UNSPECIFIED || model == TOP_LEVEL_FOLDER) {
-      NOTREACHED() << "Unintelligible server response.";
+    int field_number = updates.new_progress_marker(i).data_type_id();
+    ModelType model_type = GetModelTypeFromSpecificsFieldNumber(field_number);
+    if (!IsRealDataType(model_type)) {
+      NOTREACHED() << "Unknown field number " << field_number;
       continue;
     }
-    forward_progress_types.Put(model);
-    dir->SetDownloadProgress(model, updates.new_progress_marker(i));
+    forward_progress_types.Put(model_type);
+    dir->SetDownloadProgress(model_type, updates.new_progress_marker(i));
   }
   DCHECK(!forward_progress_types.Empty() ||
          updates.changes_remaining() == 0);
