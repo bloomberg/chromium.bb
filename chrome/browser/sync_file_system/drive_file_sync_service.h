@@ -188,38 +188,45 @@ class DriveFileSyncService
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::ResourceEntry> entry);
 
+  // Local synchronization related methods.
   LocalSyncOperationType ResolveLocalSyncOperationType(
       const fileapi::FileChange& local_file_change,
       const fileapi::FileSystemURL& url);
-
-  void DidApplyLocalChange(scoped_ptr<TaskToken> token,
-                           const fileapi::FileSystemURL& url,
-                           const google_apis::GDataErrorCode error,
-                           const fileapi::SyncStatusCallback& callback,
-                           fileapi::SyncStatusCode status);
-
-  void FinalizeLocalSync(scoped_ptr<TaskToken> token,
-                         const fileapi::SyncStatusCallback& callback,
-                         fileapi::SyncStatusCode status);
-
-  void DidUploadNewFile(scoped_ptr<TaskToken> token,
-                        const fileapi::FileSystemURL& url,
-                        const fileapi::SyncStatusCallback& callback,
-                        google_apis::GDataErrorCode error,
-                        const std::string& resource_id,
-                        const std::string& file_md5);
-
-  void DidUploadExistingFile(scoped_ptr<TaskToken> token,
-                             const fileapi::FileSystemURL& url,
-                             const fileapi::SyncStatusCallback& callback,
-                             google_apis::GDataErrorCode error,
-                             const std::string& resource_id,
-                             const std::string& file_md5);
-
-  void DidDeleteFile(scoped_ptr<TaskToken> token,
-                     const fileapi::FileSystemURL& url,
-                     const fileapi::SyncStatusCallback& callback,
-                     google_apis::GDataErrorCode error);
+  void DidApplyLocalChange(
+      scoped_ptr<TaskToken> token,
+      const fileapi::FileSystemURL& url,
+      const google_apis::GDataErrorCode error,
+      const fileapi::SyncStatusCallback& callback,
+      fileapi::SyncStatusCode status);
+  void DidResolveConflictToRemoteChange(
+      scoped_ptr<TaskToken> token,
+      const fileapi::FileSystemURL& url,
+      const std::string& resource_id,
+      const fileapi::SyncStatusCallback& callback,
+      fileapi::SyncStatusCode status);
+  void FinalizeLocalSync(
+      scoped_ptr<TaskToken> token,
+      const fileapi::SyncStatusCallback& callback,
+      fileapi::SyncStatusCode status);
+  void DidUploadNewFileForLocalSync(
+      scoped_ptr<TaskToken> token,
+      const fileapi::FileSystemURL& url,
+      const fileapi::SyncStatusCallback& callback,
+      google_apis::GDataErrorCode error,
+      const std::string& resource_id,
+      const std::string& file_md5);
+  void DidUploadExistingFileForLocalSync(
+      scoped_ptr<TaskToken> token,
+      const fileapi::FileSystemURL& url,
+      const fileapi::SyncStatusCallback& callback,
+      google_apis::GDataErrorCode error,
+      const std::string& resource_id,
+      const std::string& file_md5);
+  void DidDeleteFileForLocalSync(
+      scoped_ptr<TaskToken> token,
+      const fileapi::FileSystemURL& url,
+      const fileapi::SyncStatusCallback& callback,
+      google_apis::GDataErrorCode error);
 
   void DidInitializeMetadataStore(scoped_ptr<TaskToken> token,
                                   fileapi::SyncStatusCode status,
@@ -257,6 +264,7 @@ class DriveFileSyncService
       const fileapi::SyncStatusCallback& callback,
       fileapi::SyncStatusCode status);
 
+  // Remote synchronization related methods.
   void DidPrepareForProcessRemoteChange(
       scoped_ptr<ProcessRemoteChangeParam> param,
       fileapi::SyncStatusCode status,
@@ -265,20 +273,15 @@ class DriveFileSyncService
   void DidResolveConflictToLocalChange(
       scoped_ptr<ProcessRemoteChangeParam> param,
       fileapi::SyncStatusCode status);
-  void DidResolveConflictToRemoteChange(
-      scoped_ptr<TaskToken> token,
-      const fileapi::FileSystemURL& url,
-      const std::string& resource_id,
-      const fileapi::SyncStatusCallback& callback,
-      fileapi::SyncStatusCode status);
   void DownloadForRemoteSync(
       scoped_ptr<ProcessRemoteChangeParam> param);
   void DidGetTemporaryFileForDownload(
       scoped_ptr<ProcessRemoteChangeParam> param,
       bool success);
-  void DidDownloadFile(scoped_ptr<ProcessRemoteChangeParam> param,
-                       google_apis::GDataErrorCode error,
-                       const std::string& md5_checksum);
+  void DidDownloadFileForRemoteSync(
+      scoped_ptr<ProcessRemoteChangeParam> param,
+      google_apis::GDataErrorCode error,
+      const std::string& md5_checksum);
   void DidApplyRemoteChange(
       scoped_ptr<ProcessRemoteChangeParam> param,
       fileapi::SyncStatusCode status);
