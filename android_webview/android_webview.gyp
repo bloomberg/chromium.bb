@@ -198,8 +198,6 @@
       'type': 'none',
       'dependencies': [
         '../base/base.gyp:base_java',
-        '../chrome/chrome_resources.gyp:packed_extra_resources',
-        '../chrome/chrome_resources.gyp:packed_resources',
         '../content/content.gyp:content_java',
         '../content/content.gyp:navigation_interception_java',
         '../content/content.gyp:web_contents_delegate_android_java',
@@ -214,24 +212,7 @@
         'manifest_package_name': 'org.chromium.android_webview',
         'java_in_dir': '../android_webview/java',
         'native_libs_paths': ['<(SHARED_LIB_DIR)/libwebviewchromium.so'],
-        'input_pak_files': [
-          '<(SHARED_INTERMEDIATE_DIR)/repack/chrome.pak',
-          '<(SHARED_INTERMEDIATE_DIR)/repack/chrome_100_percent.pak',
-          '<(SHARED_INTERMEDIATE_DIR)/repack/en-US.pak',
-        ],
-        'copied_pak_files': [
-          '<(PRODUCT_DIR)/android_webview/assets/chrome.pak',
-          '<(PRODUCT_DIR)/android_webview/assets/chrome_100_percent.pak',
-          '<(PRODUCT_DIR)/android_webview/assets/en-US.pak',
-        ],
-        'additional_input_paths': [ '<@(copied_pak_files)' ],
       },
-      'copies': [
-        {
-          'destination': '<(PRODUCT_DIR)/android_webview/assets',
-          'files': [ '<@(input_pak_files)' ]
-        },
-      ],
       'includes': [ '../build/java_apk.gypi' ],
     },
   ],

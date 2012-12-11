@@ -59,22 +59,3 @@ LOCAL_MODULE := webviewchromium_strings_pak
 LOCAL_MODULE_STEM := webviewchromium_strings
 LOCAL_BUILT_MODULE_STEM := android_webview/assets/webviewchromium_strings.pak
 include $(LOCAL_PATH)/webview_pak.mk
-
-# TODO(benm): Remove the following pak rules when the above
-# rules have rolled downstream.
-include $(CLEAR_VARS)
-LOCAL_MODULE := webviewchromium_res_chrome
-LOCAL_MODULE_STEM := chrome
-include $(LOCAL_PATH)/webview_pak.mk
-
-include $(CLEAR_VARS)
-LOCAL_MODULE := webviewchromium_res_chrome_100_percent
-LOCAL_MODULE_STEM := chrome_100_percent
-include $(LOCAL_PATH)/webview_pak.mk
-
-# TODO(torne): add other locales (filtered by PRODUCT_LOCALES?)
-include $(CLEAR_VARS)
-LOCAL_MODULE := webviewchromium_res_en-US
-LOCAL_MODULE_STEM := en-US
-LOCAL_BUILT_MODULE_STEM := locales/en-US.pak
-include $(LOCAL_PATH)/webview_pak.mk
