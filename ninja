@@ -7,12 +7,24 @@
 OS="$(uname -s)"
 THIS_DIR="$(dirname "${0}")"
 
+function print_help() {
+cat <<-EOF
+No prebuilt ninja binary was found for this system.
+Try building your own binary by doing:
+  cd ~
+  git clone https://github.com/martine/ninja.git -b v1.0.0
+  ./ninja/bootstrap.py
+Then add ~/ninja/ to your PATH.
+EOF
+}
+
 case "$OS" in
   Linux)
     MACHINE=$(getconf LONG_BIT)
     case "$MACHINE" in
       32|64)  exec "${THIS_DIR}/ninja-linux${MACHINE}" "$@";;
       *)      echo Unknown architecture \($MACHINE\) -- unable to run ninja.
+              print_help
               exit 1;;
     esac
     ;;
@@ -20,5 +32,6 @@ case "$OS" in
   CYGWIN*)   exec cmd.exe /c $(cygpath -t windows $0).exe "$@";;
   MINGW32*)  cmd.exe //c $0.exe "$@";;
   *)         echo "Unsupported OS ${OS}"
+             print_help
              exit 1;;
 esac
