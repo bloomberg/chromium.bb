@@ -122,13 +122,16 @@ cr.define('options', function() {
           Preferences.getInstance().addEventListener(
               this.enableSpellCheckPref,
               this.updateEnableSpellCheck_.bind(this));
-
-          var spellCheckLanguageButton = getRequiredElement(
-              'language-options-spell-check-language-button');
-          spellCheckLanguageButton.addEventListener(
-              'click',
-              this.handleSpellCheckLanguageButtonClick_.bind(this));
         }
+      }
+
+      // Handle clicks on "Use this language for spell checking" button.
+      if (!cr.isMac) {
+        var spellCheckLanguageButton = getRequiredElement(
+            'language-options-spell-check-language-button');
+        spellCheckLanguageButton.addEventListener(
+            'click',
+            this.handleSpellCheckLanguageButtonClick_.bind(this));
       }
 
       if (cr.isChromeOS) {
