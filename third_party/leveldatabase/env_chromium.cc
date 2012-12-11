@@ -31,6 +31,10 @@
 #include "base/win/win_util.h"
 #endif
 
+#if !defined(OS_WIN)
+#include <fcntl.h>
+#endif
+
 namespace {
 
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_ANDROID) || \
@@ -70,6 +74,34 @@ FILE* fopen_internal(const char* fname, const char* mode) {
 #endif
 }
 
+::FilePath CreateFilePath(const std::string& file_path) {
+#if defined(OS_WIN)
+  return FilePath(UTF8ToUTF16(file_path));
+#else
+  return FilePath(file_path);
+#endif
+}
+
+std::string FilePathToString(const ::FilePath& file_path) {
+#if defined(OS_WIN)
+  return UTF16ToUTF8(file_path.value());
+#else
+  return file_path.value();
+#endif
+}
+
+bool sync_parent(const std::string& fname) {
+#if !defined(OS_WIN)
+  FilePath parent_dir = CreateFilePath(fname).DirName();
+  int parent_fd = open(FilePathToString(parent_dir).c_str(), O_RDONLY);
+  if (parent_fd < 0)
+    return false;
+  fsync(parent_fd);
+  close(parent_fd);
+#endif
+  return true;
+}
+
 enum UmaEntry {
   kSequentialFileRead,
   kSequentialFileSkip,
@@ -107,22 +139,6 @@ class Thread;
 
 static const ::FilePath::CharType kLevelDBTestDirectoryPrefix[]
     = FILE_PATH_LITERAL("leveldb-test-");
-
-::FilePath CreateFilePath(const std::string& file_path) {
-#if defined(OS_WIN)
-  return FilePath(UTF8ToUTF16(file_path));
-#else
-  return FilePath(file_path);
-#endif
-}
-
-std::string FilePathToString(const ::FilePath& file_path) {
-#if defined(OS_WIN)
-  return UTF16ToUTF8(file_path.value());
-#else
-  return file_path.value();
-#endif
-}
 
 // TODO(jorlow): This should be moved into Chromium's base.
 const char* PlatformFileErrorString(const ::base::PlatformFileError& error) {
@@ -328,6 +344,10 @@ class ChromiumEnv : public Env {
       LogToUMA(kNewWritableFile);
       return Status::IOError(fname, strerror(errno));
     } else {
+      if (!sync_parent(fname)) {
+        fclose(f); 
+        return Status::IOError(fname, strerror(errno));
+      }
       *result = new ChromiumWritableFile(fname, f);
       return Status::OK();
     }
@@ -400,6 +420,10 @@ class ChromiumEnv : public Env {
     if (!::file_util::ReplaceFile(CreateFilePath(src), CreateFilePath(dst))) {
       result = Status::IOError(src, "Could not rename file.");
       LogToUMA(kRenamefile);
+    } else {
+      sync_parent(dst);
+      if (src != dst)
+        sync_parent(src);
     }
     return result;
   }
@@ -477,6 +501,10 @@ class ChromiumEnv : public Env {
       LogToUMA(kNewLogger);
       return Status::IOError(fname, strerror(errno));
     } else {
+      if (!sync_parent(fname)) {
+        fclose(f); 
+        return Status::IOError(fname, strerror(errno));
+      }
       *result = new ChromiumLogger(f);
       return Status::OK();
     }
