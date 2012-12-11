@@ -111,9 +111,8 @@ static IMP gOriginalInitIMP = NULL;
     } else {
       // Make sure that developers see when their code throws
       // exceptions.
-      DLOG(ERROR) << "Someone is trying to raise an exception!  "
-                  << base::SysNSStringToUTF8(value);
-      DCHECK(allow);
+      DCHECK(allow) << "Someone is trying to raise an exception!  "
+                    << base::SysNSStringToUTF8(value);
     }
   }
 
