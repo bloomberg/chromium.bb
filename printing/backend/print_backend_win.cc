@@ -154,7 +154,7 @@ bool PrintBackendWin::GetPrinterSemanticCapsAndDefaults(
                                               NULL) == 1);
 
   DEVMODE* devmode = NULL;
-  // PRINTER_INFO_9 retrieves current user settings.
+  // Retrieves user defaults.
   PrinterInfo<PRINTER_INFO_9> info_9;
   if (info_9.GetPrinterInfo(printer_handle, 9)) {
     devmode = info_9.get()->pDevMode;
@@ -162,8 +162,7 @@ bool PrintBackendWin::GetPrinterSemanticCapsAndDefaults(
     LOG(WARNING) << "Failed to get PRINTER_INFO_9, error = " << GetLastError();
   }
 
-  // Sometimes user settings are not available (have not been setted up yet).
-  // Use printer default settings (PRINTER_INFO_8) in this case.
+  // Retrieves admin defaults.
   PrinterInfo<PRINTER_INFO_8> info_8;
   if (!devmode) {
     if (info_8.GetPrinterInfo(printer_handle, 8)) {
@@ -173,29 +172,44 @@ bool PrintBackendWin::GetPrinterSemanticCapsAndDefaults(
                       GetLastError();
     }
   }
-  if (!devmode)
-    return false;
+
+  // Retrieves printer defaults.
+  PrinterInfo<PRINTER_INFO_2> info_2;
+  if (!devmode) {
+    if (info_2.GetPrinterInfo(printer_handle, 2)) {
+      devmode = info_2.get()->pDevMode;
+    } else {
+      LOG(WARNING) << "Failed to get PRINTER_INFO_2, error = " <<
+                       GetLastError();
+    }
+  }
 
   PrinterSemanticCapsAndDefaults caps;
   caps.color_capable = color_supported;
-  if ((devmode->dmFields & DM_COLOR) == DM_COLOR)
-    caps.color_default = (devmode->dmColor == DMCOLOR_COLOR);
-
   caps.duplex_capable = duplex_supported;
-  if ((devmode->dmFields & DM_DUPLEX) == DM_DUPLEX) {
-    switch (devmode->dmDuplex) {
-      case DMDUP_SIMPLEX:
-        caps.duplex_default = SIMPLEX;
-        break;
-      case DMDUP_VERTICAL:
-        caps.duplex_default = LONG_EDGE;
-        break;
-      case DMDUP_HORIZONTAL:
-        caps.duplex_default = SHORT_EDGE;
-        break;
-      default:
-        NOTREACHED();
+
+  if (devmode) {
+    if ((devmode->dmFields & DM_COLOR) == DM_COLOR)
+      caps.color_default = (devmode->dmColor == DMCOLOR_COLOR);
+    if ((devmode->dmFields & DM_DUPLEX) == DM_DUPLEX) {
+      switch (devmode->dmDuplex) {
+        case DMDUP_SIMPLEX:
+          caps.duplex_default = SIMPLEX;
+          break;
+        case DMDUP_VERTICAL:
+          caps.duplex_default = LONG_EDGE;
+          break;
+        case DMDUP_HORIZONTAL:
+          caps.duplex_default = SHORT_EDGE;
+          break;
+        default:
+          NOTREACHED();
+      }
     }
+  } else {
+    LOG(WARNING) << "Fallback to color/simplex mode.";
+    caps.color_default = caps.color_capable;
+    caps.duplex_default = SIMPLEX;
   }
 
   *printer_info = caps;
