@@ -4890,25 +4890,6 @@
    fun:_ZN7WebCore25IDBTransactionBackendImpl6commitEv
 }
 {
-   bug_122249e
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN7WebCore11ScriptState10forContextEN2v85LocalINS1_7ContextEEE
-   fun:_ZN7WebCore11ScriptState7currentEv
-   fun:_ZN7WebCore14IDBObjectStore3putENS_30IDBObjectStoreBackendInterface7PutModeEN3WTF10PassRefPtrINS_6IDBAnyEEEPNS_22ScriptExecutionContextERNS_11ScriptValueENS4_INS_6IDBKeyEEERi
-}
-{
-   bug_122249f
-   Memcheck:Leak
-   fun:malloc
-   fun:_ZN3WTF10fastMallocEm
-   fun:_ZN3WTF10RefCountedIN7WebCore20IDBDatabaseCallbacksEEnwEm
-   fun:_ZN7WebCore24IDBDatabaseCallbacksImpl6createEv
-   fun:_ZN7WebCore10IDBFactory4openEPNS_22ScriptExecutionContextERKN3WTF6StringElRi
-   fun:_ZN7WebCore10IDBFactory4openEPNS_22ScriptExecutionContextERKN3WTF6StringERi
-   fun:_ZN7WebCore20IDBFactoryV8InternalL12openCallbackERKN2v89ArgumentsE
-}
-{
    bug_122429
    Memcheck:Leak
    fun:_Znw*
