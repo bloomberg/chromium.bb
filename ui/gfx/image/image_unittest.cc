@@ -278,12 +278,14 @@ TEST_F(ImageTest, PlatformToPNGEncodeAndDecode) {
 // sure these work with the Skia Encode/Decode.
 TEST_F(ImageTest, PNGEncodeFromSkiaDecodeToPlatform) {
   // Force the conversion sequence skia to png to platform_type.
+  ui::ScaleFactor ideal_scale_factor = ui::GetScaleFactorFromScale(1.0f);
+
   gfx::Image from_skia(gt::CreateBitmap(25, 25));
   scoped_refptr<base::RefCountedBytes> png_bytes =
       from_skia.As1xPNGBytes();
 
   std::vector<gfx::ImagePNGRep> image_png_reps;
-  image_png_reps.push_back(gfx::ImagePNGRep(png_bytes, ui::SCALE_FACTOR_100P));
+  image_png_reps.push_back(gfx::ImagePNGRep(png_bytes, ideal_scale_factor));
   gfx::Image from_png(image_png_reps);
 
   gfx::Image from_platform(gt::CopyPlatformType(from_png));
