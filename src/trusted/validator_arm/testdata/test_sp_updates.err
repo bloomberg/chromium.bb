@@ -5,5 +5,4 @@ ncval: 0002003c Updating register without masking in following instruction, beca
 ncval: 00020050 Updating sp without masking in following instruction.
 ncval: 00020060 Updating sp without masking in following instruction.
 ncval: 00020070 Updating sp without masking in following instruction.
-ncval: 00020078 Updating sp without masking in following instruction, because instruction 00020078 can't be used in patterns.
 ncval: 00020080 Updating sp without masking in following instruction.

@@ -159,8 +159,11 @@ class BreakPointAndConstantPoolHead : Immediate16Use
 class Binary2RegisterImmediateOpDynCodeReplace : Binary2RegisterImmediateOp
 class Binary2RegisterImmediateOpAddSub : Binary2RegisterImmediateOp
 class Binary3RegisterImmedShiftedOpRegsNotPc : Binary3RegisterImmedShiftedOp
+class Binary3RegisterOpAltANoCondsUpdate : Binary3RegisterOpAltA
 class Binary4RegisterDualOpLtV6RdNotRn : Binary4RegisterDualOp
+class Binary4RegisterDualOpNoCondsUpdate : Binary4RegisterDualOp
 class Binary4RegisterDualResultLtV6RdHiLoNotRn : Binary4RegisterDualResult
+class Binary4RegisterDualResultNoCondsUpdate : Binary4RegisterDualResult
 class Binary4RegisterDualResultUsesRnRm : Binary4RegisterDualResult
 class Deprecated : UnsafeCondDecoder
 class ForbiddenCondDecoder : UnsafeCondDecoder
@@ -1574,93 +1577,94 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | else:                        = Undefined  # Note on page A5-24
 +--
 
-# TODO(karl): Add uses to corresponding classes.
 +-- signed_multiply_signed_and_unsigned_divide (See Section A5.4.4)
+*RdRnRmRa
+  { cond(31:28), Rd(19:16), Ra(15:12), Rm(11:8), M(5), Rn(3:0) }
+  baseline := Binary4RegisterDualOpNoCondsUpdate;
+  defs := {Rd};
+  uses := {Rn, Rm, Ra};
+  safety := Ra == Pc => DECODER_ERROR &
+            Pc in {Rd, Rn, Rm} => UNPREDICTABLE;
+  arch := v6;
+*RdRnRm
+  { cond(31:28), Rd(19:16), Rm(11:8), M(5), Rn(3:0) }
+  baseline := Binary3RegisterOpAltANoCondsUpdate;
+  defs := {Rd};
+  uses := {Rm, Rn};
+  safety := Pc in {Rd, Rm, Rn} => UNPREDICTABLE;
+  arch := v6;
+*RdLoHiRnRm
+  { cond(31:28), RdHi(19:16), RdLo(15:12), Rm(11:8), M(5), Rn(3:0) }
+  baseline := Binary4RegisterDualResultNoCondsUpdate;
+  defs := {RdHi, RdLo};
+  uses := {RdHi, RdLo, Rm, Rn};
+  safety := Pc in { RdHi, RdLo, Rn, Rm} => UNPREDICTABLE &
+            RdHi == RdLo => UNPREDICTABLE;
+  arch := v6;
++--
 | op1(22:20) op2(7:5) A(15:12)
                                  # Implements Smlad and Smladx, where
                                  # the x form is chosen if bit 5 is 1.
-| 000        00x      ~1111    = Binary4RegisterDualOp
-                                 => Defs16To19CondsDontCareRdRaRmRnNotPc
-                                 Smlad_Rule_167_P332
-                                 cccc01110000ddddaaaammmm00m1nnnn
-                                 RegsNotPc (v6)
+| 000        00x      ~1111    = *RdRnRmRa
+                                 pattern := cccc01110000ddddaaaammmm00m1nnnn;
+                                 rule := SMLAD;
                                  # Implements Smuad and Smuadx, where
                                  # the x form is chosen if bit 5 is 1.
-| "          "        1111     = Binary3RegisterOpAltA
-                                 => Defs16To19CondsDontCareRdRmRnNotPc
-                                 Smuad_Rule_177_P352
-                                 cccc01110000dddd1111mmmm00m1nnnn
-                                 RegsNotPc (v6)
+| "          "        1111     = *RdRnRm
+                                 pattern := cccc01110000dddd1111mmmm00m1nnnn;
+                                 rule := SMUAD;
                                  # Implements Smlsd and Smlsdx, where
                                  # the x form is chosen if bit 5 is 1.
                                  # Note: This rule has the constraint that
                                  # Ra!=1111, but we did not test it since
                                  # its checked by the pattern (column A)
                                  # for this instruction.
-| "          01x      ~1111    = Binary4RegisterDualOp
-                                 => Defs16To19CondsDontCareRdRaRmRnNotPc
-                                 Smlsd_Rule_172_P342
-                                 cccc01110000ddddaaaammmm01m1nnnn
-                                 RegsNotPc (v6)
+| "          01x      ~1111    = *RdRnRmRa
+                                 pattern := cccc01110000ddddaaaammmm01m1nnnn;
+                                 rule := SMLSD;
                                  # Implements Smusd and Smusdx, where
                                  # the x form is chosen if bit 5 is 1.
-| "          "        1111     = Binary3RegisterOpAltA
-                                 => Defs16To19CondsDontCareRdRmRnNotPc
-                                 Smusd_Rule_181_P360
-                                 cccc01110000dddd1111mmmm01m1nnnn
-                                 RegsNotPc (v6)
-| 001        000      -        = Binary3RegisterOpAltA
-                                 => Defs16To19CondsDontCareRdRmRnNotPc
-                                 Sdiv_Rule_A1
-                                 cccc01110001dddd1111mmmm0001nnnn
-                                 # TODO(jfb) In v7VE, optional in v7-A/v7-R.
-                                 (v7VEoptv7A_v7R)
-| 011        "        -        = Binary3RegisterOpAltA
-                                 => Defs16To19CondsDontCareRdRmRnNotPc
-                                 Udiv_Rule_A1
-                                 cccc01110011dddd1111mmmm0001nnnn
-                                 # TODO(jfb) In v7VE, optional in v7-A/v7-R.
-                                 (v7VEoptv7A_v7R)
+| "          "        1111     = *RdRnRm
+                                 pattern := cccc01110000dddd1111mmmm01m1nnnn;
+                                 rule := SMUSD;
+| 001        000      -        = *RdRnRm
+                                 pattern := cccc01110001dddd1111mmmm0001nnnn;
+                                 rule := SDIV;
+                                 arch := v7VEoptv7A_v7R;
+| 011        "        -        = *RdRnRm
+                                 pattern := cccc01110011dddd1111mmmm0001nnnn;
+                                 rule := UDIV;
+                                 arch := v7VEoptv7A_v7R;
                                  # Implements Smalad and Smaladx, where
                                  # the x form is chosen if bit 5 is 1.
-| 100        00x      -        = Binary4RegisterDualResult
-                                 => Defs12To19CondsDontCareRdRmRnNotPc
-                                 Smlald_Rule_170_P336
-                                 cccc01110100hhhhllllmmmm00m1nnnn
-                                 RegsNotPc (v6)
+| 100        00x      -        = *RdLoHiRnRm
+                                 pattern := cccc01110100hhhhllllmmmm00m1nnnn;
+                                 rule := SMLALD;
                                  # Implements Smlsld and Smlsldx, where
                                  # the x form is chosen if bit 5 is 1.
-| "          01x      -        = Binary4RegisterDualResult
-                                 => Defs12To19CondsDontCareRdRmRnNotPc
-                                 Smlsld_Rule_173_P344
-                                 cccc01110100hhhhllllmmmm01m1nnnn
-                                 RegsNotPc (v6)
+| "          01x      -        = *RdLoHiRnRm
+                                 pattern := cccc01110100hhhhllllmmmm01m1nnnn;
+                                 rule := SMLSLD;
                                  # Implements Smmla and Smmlar, where
                                  # the r form is chosen if bit 5 is 1.
                                  # Note: This rule has the constraint that
                                  # Ra!=1111, but we did not test it since
                                  # it's checked by the pattern (column A)
                                  # for this instruction.
-| 101        00x      ~1111    = Binary4RegisterDualOp
-                                 => Defs16To19CondsDontCareRdRaRmRnNotPc
-                                 Smmla_Rule_174_P346
-                                 cccc01110101ddddaaaammmm00r1nnnn
-                                 RegsNotPc (v6)
+| 101        00x      ~1111    = *RdRnRmRa
+                                 pattern := cccc01110101ddddaaaammmm00r1nnnn;
+                                 rule := SMMLA;
                                  # Implements Smmul and Smmulr, where
                                  # the r form is chosen if bit 5 is 1.
-| "          "        1111     = Binary3RegisterOpAltA
-                                 => Defs16To19CondsDontCareRdRmRnNotPc
-                                 Smmul_Rule_176_P350
-                                 cccc01110101dddd1111mmmm00r1nnnn
-                                 RegsNotPc (v6)
+| "          "        1111     = *RdRnRm
+                                 pattern := cccc01110101dddd1111mmmm00r1nnnn;
+                                 rule := SMMUL;
                                  # Implements Smmls and Smmlsr, where
                                  # the r form is chosen if bit 5 is 1.
-| "          11x      -        = Binary4RegisterDualOp
-                                 => Defs16To19CondsDontCareRdRaRmRnNotPc
-                                 Smmls_Rule_175_P348
-                                 cccc01110101ddddaaaammmm11r1nnnn
-                                 RegsNotPc (v6)
-| else:                        = Undefined  # Note on page A5-26
+| "          11x      -        = *RdRnRmRa
+                                 pattern := cccc01110101ddddaaaammmm11r1nnnn;
+                                 rule := SMMLS;
+| else:                        = Undefined  # Note associated with table.
 +--
 
 # TODO(karl): Add uses to corresponding classes.

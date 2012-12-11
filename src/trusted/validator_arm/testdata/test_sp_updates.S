@@ -1,7 +1,6 @@
-@ Copyright 2009 The Native Client Authors.  All rights reserved.
-@ Use of this source code is governed by a BSD-style license that can
-@ be found in the LICENSE file.
-@ Copyright 2009 Google Inc.
+@ Copyright (c) 2012 The Native Client Authors. All rights reserved.
+@ Use of this source code is governed by a BSD-style license that can be
+@ found in the LICENSE file.
 
 @
 @ Tests both legal and illegal variations on SP updates.
@@ -61,7 +60,7 @@ bundle7:
   smlad sp, r0, r1, r2    @ Attempt to write SP using a MAC instruction,
   nop                     @ without a mask: ERROR.
   smlad sp, r0, r1, r2    @ Attempt to write SP using a MAC instruction,
-  bic sp, sp, #0xC0000000 @ with a mask: ERROR - affects flags
+  bic sp, sp, #0xC0000000 @ with a mask, should pass.
 
 bundle8:
   ldrd r0, r1, [sp], r3   @ Post-index SP with a register on LDRD,

@@ -362,6 +362,11 @@ RegisterList Binary3RegisterOpAltA::uses(Instruction i) const {
   return RegisterList(m.reg(i)).Add(n.reg(i));
 }
 
+// Binary3RegisterOpAltANoCondsUpdate
+RegisterList Binary3RegisterOpAltANoCondsUpdate::defs(Instruction i) const {
+  return RegisterList(d.reg(i));
+}
+
 // Binary3RegisterOpAltBNoCondUpdates
 SafetyLevel Binary3RegisterOpAltBNoCondUpdates::safety(Instruction i) const {
   // Unsafe if any register contains PC (ARM restriction).
@@ -404,6 +409,11 @@ RegisterList Binary4RegisterDualOp::uses(Instruction i) const {
   return RegisterList(n.reg(i)).Add(m.reg(i)).Add(a.reg(i));
 }
 
+// Binary4RegisterDualOpNoCondsUpdate
+RegisterList Binary4RegisterDualOpNoCondsUpdate::defs(Instruction i) const {
+  return RegisterList(d.reg(i));
+}
+
 // Binary4RegisterDualOpLtV6RdNotRn
 SafetyLevel Binary4RegisterDualOpLtV6RdNotRn::safety(Instruction i) const {
   SafetyLevel level = Binary4RegisterDualOp::safety(i);
@@ -438,6 +448,11 @@ RegisterList Binary4RegisterDualResult::defs(Instruction i) const {
 
 RegisterList Binary4RegisterDualResult::uses(Instruction i) const {
   return RegisterList(d_lo.reg(i)).Add(d_hi.reg(i)).Add(n.reg(i)).Add(m.reg(i));
+}
+
+// Binary4RegisterDualResultNoCondsUpdate
+RegisterList Binary4RegisterDualResultNoCondsUpdate::defs(Instruction i) const {
+  return RegisterList(d_hi.reg(i)).Add(d_lo.reg(i));
 }
 
 // Binary4RegisterDualResultUsesRnRm
@@ -802,6 +817,11 @@ safety(Instruction i) const {
     return UNPREDICTABLE;
 
   return MAY_BE_SAFE;
+}
+
+RegisterList Store2RegisterImm12OpRnNotRtOnWriteback::uses(
+    Instruction i) const {
+  return RegisterList(Register::Sp()).Add(t.reg(i));
 }
 
 // LoadStoreRegisterList

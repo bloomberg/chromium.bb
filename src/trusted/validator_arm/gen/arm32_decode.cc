@@ -19,13 +19,16 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Binary2RegisterImmediateOpDynCodeReplace_instance_()
   , Binary3RegisterOp_instance_()
   , Binary3RegisterOpAltA_instance_()
+  , Binary3RegisterOpAltANoCondsUpdate_instance_()
   , Binary3RegisterOpAltBNoCondUpdates_instance_()
   , Binary3RegisterShiftedOp_instance_()
   , Binary3RegisterShiftedTest_instance_()
   , Binary4RegisterDualOp_instance_()
   , Binary4RegisterDualOpLtV6RdNotRn_instance_()
+  , Binary4RegisterDualOpNoCondsUpdate_instance_()
   , Binary4RegisterDualResult_instance_()
   , Binary4RegisterDualResultLtV6RdHiLoNotRn_instance_()
+  , Binary4RegisterDualResultNoCondsUpdate_instance_()
   , Binary4RegisterDualResultUsesRnRm_instance_()
   , Binary4RegisterShiftedOp_instance_()
   , BinaryRegisterImmediateTest_instance_()
@@ -37,7 +40,6 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Defs12To15CondsDontCareRdRnNotPc_instance_()
   , Defs12To15CondsDontCareRdRnNotPcBitfieldExtract_instance_()
   , Defs12To15CondsDontCareRnRdRmNotPc_instance_()
-  , Defs12To19CondsDontCareRdRmRnNotPc_instance_()
   , Defs16To19CondsDontCareRdRaRmRnNotPc_instance_()
   , Defs16To19CondsDontCareRdRmRnNotPc_instance_()
   , Deprecated_instance_()
@@ -1719,41 +1721,41 @@ const ClassDecoder& Arm32DecoderState::decode_signed_multiply_signed_and_unsigne
   if ((inst.Bits() & 0x00700000) == 0x00000000 /* op1(22:20)=000 */ &&
       (inst.Bits() & 0x00000080) == 0x00000000 /* op2(7:5)=0xx */ &&
       (inst.Bits() & 0x0000F000) != 0x0000F000 /* A(15:12)=~1111 */) {
-    return Defs16To19CondsDontCareRdRaRmRnNotPc_instance_;
+    return Binary4RegisterDualOpNoCondsUpdate_instance_;
   }
 
   if ((inst.Bits() & 0x00700000) == 0x00000000 /* op1(22:20)=000 */ &&
       (inst.Bits() & 0x00000080) == 0x00000000 /* op2(7:5)=0xx */ &&
       (inst.Bits() & 0x0000F000) == 0x0000F000 /* A(15:12)=1111 */) {
-    return Defs16To19CondsDontCareRdRmRnNotPc_instance_;
+    return Binary3RegisterOpAltANoCondsUpdate_instance_;
   }
 
   if ((inst.Bits() & 0x00700000) == 0x00400000 /* op1(22:20)=100 */ &&
       (inst.Bits() & 0x00000080) == 0x00000000 /* op2(7:5)=0xx */) {
-    return Defs12To19CondsDontCareRdRmRnNotPc_instance_;
+    return Binary4RegisterDualResultNoCondsUpdate_instance_;
   }
 
   if ((inst.Bits() & 0x00700000) == 0x00500000 /* op1(22:20)=101 */ &&
       (inst.Bits() & 0x000000C0) == 0x00000000 /* op2(7:5)=00x */ &&
       (inst.Bits() & 0x0000F000) != 0x0000F000 /* A(15:12)=~1111 */) {
-    return Defs16To19CondsDontCareRdRaRmRnNotPc_instance_;
+    return Binary4RegisterDualOpNoCondsUpdate_instance_;
   }
 
   if ((inst.Bits() & 0x00700000) == 0x00500000 /* op1(22:20)=101 */ &&
       (inst.Bits() & 0x000000C0) == 0x00000000 /* op2(7:5)=00x */ &&
       (inst.Bits() & 0x0000F000) == 0x0000F000 /* A(15:12)=1111 */) {
-    return Defs16To19CondsDontCareRdRmRnNotPc_instance_;
+    return Binary3RegisterOpAltANoCondsUpdate_instance_;
   }
 
   if ((inst.Bits() & 0x00700000) == 0x00500000 /* op1(22:20)=101 */ &&
       (inst.Bits() & 0x000000C0) == 0x000000C0 /* op2(7:5)=11x */) {
-    return Defs16To19CondsDontCareRdRaRmRnNotPc_instance_;
+    return Binary4RegisterDualOpNoCondsUpdate_instance_;
   }
 
   if ((inst.Bits() & 0x00500000) == 0x00100000 /* op1(22:20)=0x1 */ &&
       (inst.Bits() & 0x000000E0) == 0x00000000 /* op2(7:5)=000 */ &&
       (inst.Bits() & 0x0000F000) == 0x0000F000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) {
-    return Defs16To19CondsDontCareRdRmRnNotPc_instance_;
+    return Binary3RegisterOpAltANoCondsUpdate_instance_;
   }
 
   if (true) {

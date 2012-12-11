@@ -1205,6 +1205,7 @@ class Store2RegisterImm12OpRnNotRtOnWriteback : public Store2RegisterImm12Op {
  public:
   Store2RegisterImm12OpRnNotRtOnWriteback() {}
   virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Store2RegisterImm12OpRnNotRtOnWriteback);
@@ -1436,6 +1437,17 @@ class Binary3RegisterOpAltA : public ClassDecoder {
   NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterOpAltA);
 };
 
+// Same as Binary3RegisterOpAltA, but the S flag is ignored. That is,
+// conditions NZCV are not updated.
+class Binary3RegisterOpAltANoCondsUpdate : public Binary3RegisterOpAltA {
+ public:
+  Binary3RegisterOpAltANoCondsUpdate() : Binary3RegisterOpAltA() {}
+  virtual RegisterList defs(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterOpAltANoCondsUpdate);
+};
+
 // Models a 3-register binary operation of the form:
 // Op(S)<c> <Rd>, <Rn>, <Rm>
 // +--------+--------------+--+--------+--------+----------------+--------+
@@ -1504,6 +1516,17 @@ class Binary4RegisterDualOp : public ClassDecoder {
   NACL_DISALLOW_COPY_AND_ASSIGN(Binary4RegisterDualOp);
 };
 
+// A Binary4RegisterDualOp where S is ignored. That is,
+// conditions NZCV are not updated.
+class Binary4RegisterDualOpNoCondsUpdate : public Binary4RegisterDualOp {
+ public:
+  Binary4RegisterDualOpNoCondsUpdate() : Binary4RegisterDualOp() {}
+  virtual RegisterList defs(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary4RegisterDualOpNoCondsUpdate);
+};
+
 // A Binary4RegisterDualOp that adds the restruction that Rd!=Rn if
 // ArchVersion<6.
 class Binary4RegisterDualOpLtV6RdNotRn : public Binary4RegisterDualOp {
@@ -1558,6 +1581,19 @@ class Binary4RegisterDualResult : public ClassDecoder {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Binary4RegisterDualResult);
+};
+
+// A Binary4RegisterDualResult where S is ignored. That is,
+// conditions NZCV are not updated.
+class Binary4RegisterDualResultNoCondsUpdate
+    : public Binary4RegisterDualResult {
+ public:
+  Binary4RegisterDualResultNoCondsUpdate()
+      : Binary4RegisterDualResult() {}
+  virtual RegisterList defs(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary4RegisterDualResultNoCondsUpdate);
 };
 
 // A Binary4RegisterDualResult where its input (i.e. uses) is just
