@@ -35,6 +35,14 @@ enum NotificationType {
   NOTIFICATION_TYPE_MULTIPLE,
 };
 
+enum NotificationPriority {
+  MIN_PRIORITY = -2,
+  LOW_PRIORITY = -1,
+  DEFAULT_PRIORITY = 0,
+  HIGH_PRIORITY = 1,
+  MAX_PRIORITY = 2,
+};
+
 UI_EXPORT NotificationType StringToNotificationType(std::string& string_type);
 
 }  // namespace notifications

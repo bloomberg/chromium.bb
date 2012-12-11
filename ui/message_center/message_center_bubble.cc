@@ -284,8 +284,9 @@ void MessageCenterBubble::OnBubbleViewDestroyed() {
 void MessageCenterBubble::UpdateBubbleView() {
   if (!bubble_view())
     return;  // Could get called after view is closed
-  contents_view_->Update(
-      list_delegate()->GetNotificationList()->notifications());
+  NotificationList::Notifications notifications;
+  list_delegate()->GetNotificationList()->GetNotifications(&notifications);
+  contents_view_->Update(notifications);
   bubble_view()->Show();
   bubble_view()->UpdateBubble();
 }

@@ -6,6 +6,7 @@
 #define UI_MESSAGE_CENTER_NOTIFICATION_LIST_H_
 
 #include <list>
+#include <map>
 #include <string>
 
 #include "base/string16.h"
@@ -146,24 +147,29 @@ class MESSAGE_CENTER_EXPORT NotificationList {
   // specified time-delta from now.
   void EnterQuietModeWithExpire(const base::TimeDelta& expires_in);
 
-  const Notifications& notifications() const { return notifications_; }
+  void GetNotifications(Notifications* notifications) const;
+  size_t NotificationCount() const;
   size_t unread_count() const { return unread_count_; }
 
   static const size_t kMaxVisiblePopupNotifications;
   static const size_t kMaxVisibleMessageCenterNotifications;
 
  private:
-  // Iterates through the list and returns the first notification matching |id|
-  // (should always be unique).
-  Notifications::iterator GetNotification(const std::string& id);
+  typedef std::map<int, Notifications> NotificationMap;
+
+  // Iterates through the list and stores the first notification matching |id|
+  // (should always be unique) to |iter|. Returns true if it's found.
+  bool GetNotification(const std::string& id, Notifications::iterator* iter);
 
   void EraseNotification(Notifications::iterator iter);
 
   void PushNotification(Notification& notification);
 
-  // Returns the |kMaxVisiblePopupNotifications| least recent notifications
-  // that have not been shown as a popup.
-  void GetPopupIterators(Notifications::iterator& first,
+  // Returns the recent notifications of the |priority| that have not been shown
+  // as a popup. kMaxVisiblePopupNotifications are used to limit the number of
+  // notifications for the default priority.
+  void GetPopupIterators(int priority,
+                         Notifications::iterator& first,
                          Notifications::iterator& last);
 
   // Given a dictionary of optional notification fields (or NULL), unpacks all
@@ -177,7 +183,7 @@ class MESSAGE_CENTER_EXPORT NotificationList {
   void SetQuietModeInternal(bool quiet_mode);
 
   Delegate* delegate_;
-  Notifications notifications_;
+  NotificationMap notifications_;
   bool message_center_visible_;
   size_t unread_count_;
   bool quiet_mode_;

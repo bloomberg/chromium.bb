@@ -30,7 +30,7 @@ void MessageCenter::SetMessageCenterVisible(bool visible) {
 }
 
 size_t MessageCenter::NotificationCount() const {
-  return notification_list_->notifications().size();
+  return notification_list_->NotificationCount();
 }
 
 size_t MessageCenter::UnreadNotificationCount() const {
@@ -93,8 +93,8 @@ void MessageCenter::SendRemoveNotification(const std::string& id) {
 
 void MessageCenter::SendRemoveAllNotifications() {
   if (delegate_) {
-    const NotificationList::Notifications& notifications =
-        notification_list_->notifications();
+    NotificationList::Notifications notifications;
+    notification_list_->GetNotifications(&notifications);
     for (NotificationList::Notifications::const_iterator loopiter =
              notifications.begin();
          loopiter != notifications.end(); ) {
