@@ -6,5 +6,9 @@ include_rules = [
   "+sandbox/win/src",
   "+native_client/src",
   "+ppapi/c",  # header files only
-  "+ppapi/proxy/ppapi_messages.h",  # for message id's only
+  # For handle conversion in nacl_ipc_adapter.cc:
+  # TODO(dmichael): We should only need 1 include to ppapi/proxy for a
+  # HandleConverter class.  crbug.com/165201
+  "+ppapi/proxy/ppapi_messages.h",
+  "+ppapi/proxy/resource_message_params.h",
 ]

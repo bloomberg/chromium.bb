@@ -29,6 +29,11 @@ class PPAPI_PROXY_EXPORT ResourceMessageParams {
     return handles_->data();
   }
 
+  // Makes ResourceMessageParams leave its handles open, even if they weren't
+  // taken using a Take.* function. After this call, no Take.* calls are
+  // allowed.
+  void ConsumeHandles() const;
+
   // Returns the handle at the given index if it exists and is of the given
   // type. The corresponding slot in the list is set to an invalid handle.
   // If the index doesn't exist or the handle isn't of the given type, returns
@@ -69,6 +74,14 @@ class PPAPI_PROXY_EXPORT ResourceMessageParams {
 
   virtual void Serialize(IPC::Message* msg) const;
   virtual bool Deserialize(const IPC::Message* msg, PickleIterator* iter);
+
+  // Writes everything except the handles to |msg|.
+  void WriteHeader(IPC::Message* msg) const;
+  // Writes the handles to |msg|.
+  void WriteHandles(IPC::Message* msg) const;
+  // Matching deserialize helpers.
+  bool ReadHeader(const IPC::Message* msg, PickleIterator* iter);
+  bool ReadHandles(const IPC::Message* msg, PickleIterator* iter);
 
  private:
   class SerializedHandles
@@ -153,6 +166,9 @@ class PPAPI_PROXY_EXPORT ResourceMessageReplyParams
   virtual void Serialize(IPC::Message* msg) const OVERRIDE;
   virtual bool Deserialize(const IPC::Message* msg,
                            PickleIterator* iter) OVERRIDE;
+
+  // Writes everything except the handles to |msg|.
+  void WriteReplyHeader(IPC::Message* msg) const;
 
  private:
   // Pepper "result code" for the callback.
