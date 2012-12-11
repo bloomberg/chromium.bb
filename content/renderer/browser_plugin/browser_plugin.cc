@@ -737,6 +737,7 @@ WebKit::WebPluginContainer* BrowserPlugin::container() const {
 
 bool BrowserPlugin::initialize(WebPluginContainer* container) {
   container_ = container;
+  container_->setWantsWheelEvents(true);
   return true;
 }
 
