@@ -1605,10 +1605,14 @@ bool ExtensionService::ProcessExtensionSyncDataHelper(
   }
 
   // Set user settings.
+  // If the extension has been disabled from sync, it may not have
+  // been installed yet, so we don't know if the disable reason was a
+  // permissions increase.  That will be updated once InitializePermissions
+  // is called for it.
   if (extension_sync_data.enabled())
     EnableExtension(id);
   else
-    DisableExtension(id, Extension::DISABLE_USER_ACTION);
+    DisableExtension(id, Extension::DISABLE_UNKNOWN_FROM_SYNC);
 
   // We need to cache some version information here because setting the
   // incognito flag invalidates the |extension| pointer (it reloads the
@@ -2186,7 +2190,9 @@ void ExtensionService::AddExtension(const Extension* extension) {
         content::Source<Profile>(profile_),
         content::Details<const Extension>(extension));
 
-    if (extension_prefs_->GetDisableReasons(extension->id()) &
+    // Show the extension disabled error if a permissions increase was the
+    // only reason it was disabled.
+    if (extension_prefs_->GetDisableReasons(extension->id()) ==
         Extension::DISABLE_PERMISSIONS_INCREASE) {
       extensions::AddExtensionDisabledError(this, extension);
     }
@@ -2333,19 +2339,23 @@ void ExtensionService::InitializePermissions(const Extension* extension) {
     // If the extension was already disabled, suppress any alerts for becoming
     // disabled on permissions increase.
     previously_disabled = extension_prefs_->IsExtensionDisabled(old->id());
-    if (previously_disabled) {
-      int reasons = extension_prefs_->GetDisableReasons(old->id());
-      if (reasons == Extension::DISABLE_NONE) {
-        // Initialize the reason for legacy disabled extensions from whether the
-        // extension already exceeded granted permissions.
-        if (extension_prefs_->DidExtensionEscalatePermissions(old->id()))
-          disable_reasons = Extension::DISABLE_PERMISSIONS_INCREASE;
-        else
-          disable_reasons = Extension::DISABLE_USER_ACTION;
-      }
-    } else {
-      disable_reasons = Extension::DISABLE_PERMISSIONS_INCREASE;
+    // Legacy disabled extensions do not have a disable reason. Infer that if
+    // there was no permission increase, it was likely disabled by the user.
+    if (previously_disabled && disable_reasons == Extension::DISABLE_NONE &&
+        !extension_prefs_->DidExtensionEscalatePermissions(old->id())) {
+      disable_reasons |= Extension::DISABLE_USER_ACTION;
     }
+    // Extensions that came to us disabled from sync need a similar inference,
+    // except based on the new version's permissions.
+    if (previously_disabled &&
+        disable_reasons == Extension::DISABLE_UNKNOWN_FROM_SYNC) {
+      // Remove the DISABLE_UNKNOWN_FROM_SYNC reason.
+      extension_prefs_->ClearDisableReasons(extension->id());
+      if (!is_privilege_increase)
+        disable_reasons |= Extension::DISABLE_USER_ACTION;
+    }
+    if (disable_reasons != Extension::DISABLE_NONE)
+      disable_reasons &= ~Extension::DISABLE_UNKNOWN_FROM_SYNC;
 
     // To upgrade an extension in place, unload the old one and
     // then load the new one.
@@ -2356,6 +2366,7 @@ void ExtensionService::InitializePermissions(const Extension* extension) {
   // Extension has changed permissions significantly. Disable it. A
   // notification should be sent by the caller.
   if (is_privilege_increase) {
+    disable_reasons |= Extension::DISABLE_PERMISSIONS_INCREASE;
     if (!extension_prefs_->DidExtensionEscalatePermissions(extension->id())) {
       RecordPermissionMessagesHistogram(
           extension, "Extensions.Permissions_AutoDisable");
