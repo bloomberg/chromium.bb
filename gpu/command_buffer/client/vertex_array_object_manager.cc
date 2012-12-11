@@ -183,7 +183,7 @@ class GLES2_IMPL_EXPORT VertexArrayObject {
  private:
   const VertexAttrib* GetAttrib(GLuint index) const;
 
-  GLuint num_client_side_pointers_enabled_;
+  int num_client_side_pointers_enabled_;
 
   // The currently bound element array buffer.
   GLuint bound_element_array_buffer_id_;
@@ -200,6 +200,9 @@ VertexArrayObject::VertexArrayObject(GLuint max_vertex_attribs)
 }
 
 void VertexArrayObject::UnbindBuffer(GLuint id) {
+  if (id == 0) {
+    return;
+  }
   for (size_t ii = 0; ii < vertex_attribs_.size(); ++ii) {
     VertexAttrib& attrib = vertex_attribs_[ii];
     if (attrib.buffer_id() == id) {
@@ -231,6 +234,7 @@ void VertexArrayObject::SetAttribEnable(GLuint index, bool enabled) {
     if (attrib.enabled() != enabled) {
       if (attrib.IsClientSide()) {
         num_client_side_pointers_enabled_ += enabled ? 1 : -1;
+        GPU_DCHECK_GE(num_client_side_pointers_enabled_, 0);
       }
       attrib.set_enabled(enabled);
     }
@@ -249,6 +253,7 @@ void VertexArrayObject::SetAttribPointer(
     VertexAttrib& attrib = vertex_attribs_[index];
     if (attrib.IsClientSide() && attrib.enabled()) {
       --num_client_side_pointers_enabled_;
+      GPU_DCHECK_GE(num_client_side_pointers_enabled_, 0);
     }
 
     attrib.SetInfo(buffer_id, size, type, normalized, stride, ptr);

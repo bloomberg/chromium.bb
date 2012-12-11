@@ -120,6 +120,14 @@ TEST_F(VertexArrayObjectManagerTest, UnbindBuffer) {
 
   // The vao that was not bound still has all service side bufferws.
   EXPECT_FALSE(manager_->HaveEnabledClientSideBuffers());
+
+  // Make sure unbinding 0 does not effect count incorrectly.
+  EXPECT_TRUE(manager_->BindVertexArray(0, &changed));
+  EXPECT_FALSE(manager_->HaveEnabledClientSideBuffers());
+  manager_->SetAttribEnable(2, true);
+  manager_->UnbindBuffer(0);
+  manager_->SetAttribEnable(2, false);
+  EXPECT_FALSE(manager_->HaveEnabledClientSideBuffers());
 }
 
 TEST_F(VertexArrayObjectManagerTest, GetSet) {
