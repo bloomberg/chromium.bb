@@ -110,9 +110,8 @@ class ASH_EXPORT Launcher  {
   // TODO(sky): remove this!
   internal::LauncherView* GetLauncherViewForTest();
 
-  LauncherDelegate* delegate() { return delegate_.get(); }
+  LauncherDelegate* delegate() { return delegate_; }
 
-  LauncherModel* model() { return model_.get(); }
   views::Widget* widget() { return widget_.get(); }
 
   views::Widget* GetDimmerWidgetForTest() { return dimmer_.get(); }
@@ -121,8 +120,6 @@ class ASH_EXPORT Launcher  {
 
  private:
   class DelegateView;
-
-  scoped_ptr<LauncherModel> model_;
 
   // Widget hosting the view.
   scoped_ptr<views::Widget> widget_;
@@ -138,7 +135,7 @@ class ASH_EXPORT Launcher  {
 
   ShelfAlignment alignment_;
 
-  scoped_ptr<LauncherDelegate> delegate_;
+  LauncherDelegate* delegate_;
 
   // Size reserved for the status area.
   gfx::Size status_size_;

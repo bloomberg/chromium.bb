@@ -20,6 +20,8 @@
 #include "ash/drag_drop/drag_drop_controller.h"
 #include "ash/focus_cycler.h"
 #include "ash/high_contrast/high_contrast_controller.h"
+#include "ash/launcher/launcher_delegate.h"
+#include "ash/launcher/launcher_model.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/root_window_controller.h"
@@ -267,7 +269,7 @@ Shell::~Shell() {
 
   // These need a valid Shell instance to clean up properly, so explicitly
   // delete them before invalidating the instance.
-  // Alphabetical.
+  // Alphabetical. TODO(oshima): sort.
   drag_drop_controller_.reset();
   magnification_controller_.reset();
   partial_magnification_controller_.reset();
@@ -280,6 +282,8 @@ Shell::~Shell() {
   nested_dispatcher_controller_.reset();
   user_action_client_.reset();
   visibility_controller_.reset();
+  launcher_delegate_.reset();
+  launcher_model_.reset();
 
   power_button_controller_.reset();
   session_state_controller_.reset();
@@ -578,10 +582,13 @@ void Shell::ShowContextMenu(const gfx::Point& location_in_screen) {
   GetRootWindowController(root)->ShowContextMenu(location_in_screen);
 }
 
-void Shell::ToggleAppList() {
+void Shell::ToggleAppList(aura::Window* window) {
+  // If the context window is not given, show it on the active root window.
+  if (!window)
+    window = GetActiveRootWindow();
   if (!app_list_controller_.get())
     app_list_controller_.reset(new internal::AppListController);
-  app_list_controller_->SetVisible(!app_list_controller_->IsVisible());
+  app_list_controller_->SetVisible(!app_list_controller_->IsVisible(), window);
 }
 
 bool Shell::GetAppListTargetVisibility() const {
@@ -765,6 +772,15 @@ bool Shell::HasPrimaryStatusArea() {
 
 SystemTray* Shell::GetPrimarySystemTray() {
   return GetPrimaryRootWindowController()->GetSystemTray();
+}
+
+LauncherDelegate* Shell::GetLauncherDelegate() {
+  if (!launcher_delegate_.get()) {
+    launcher_model_.reset(new LauncherModel);
+    launcher_delegate_.reset(
+        delegate_->CreateLauncherDelegate(launcher_model_.get()));
+  }
+  return launcher_delegate_.get();
 }
 
 void Shell::InitRootWindowForSecondaryDisplay(aura::RootWindow* root) {

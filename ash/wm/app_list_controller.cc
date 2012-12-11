@@ -101,7 +101,7 @@ AppListController::~AppListController() {
   pagination_model_->RemoveObserver(this);
 }
 
-void AppListController::SetVisible(bool visible) {
+void AppListController::SetVisible(bool visible, aura::Window* window) {
   if (visible == is_visible_)
     return;
 
@@ -118,14 +118,12 @@ void AppListController::SetVisible(bool visible) {
     // will be released with AppListView on close.
     app_list::AppListView* view = new app_list::AppListView(
         Shell::GetInstance()->delegate()->CreateAppListViewDelegate());
-    // TODO(oshima): support multiple displays.
-    aura::Window* container = Shell::GetPrimaryRootWindowController()->
+    aura::Window* container = GetRootWindowController(window->GetRootWindow())->
         GetContainer(kShellWindowId_AppListContainer);
     view->InitAsBubble(
-        Shell::GetPrimaryRootWindowController()->GetContainer(
-            kShellWindowId_AppListContainer),
+        container,
         pagination_model_.get(),
-        Launcher::ForWindow(GetWindow())->GetAppListButtonView(),
+        Launcher::ForWindow(container)->GetAppListButtonView(),
         gfx::Point(),
         GetBubbleArrowLocation(container));
     SetView(view);
@@ -151,7 +149,7 @@ void AppListController::SetView(app_list::AppListView* view) {
   views::Widget* widget = view_->GetWidget();
   widget->AddObserver(this);
   Shell::GetInstance()->AddPreTargetHandler(this);
-  Launcher::ForWindow(GetWindow())->AddIconObserver(this);
+  Launcher::ForWindow(widget->GetNativeWindow())->AddIconObserver(this);
   widget->GetNativeView()->GetRootWindow()->AddRootWindowObserver(this);
   aura::client::GetFocusClient(widget->GetNativeView())->AddObserver(this);
 
@@ -166,7 +164,7 @@ void AppListController::ResetView() {
   widget->RemoveObserver(this);
   GetLayer(widget)->GetAnimator()->RemoveObserver(this);
   Shell::GetInstance()->RemovePreTargetHandler(this);
-  Launcher::ForWindow(GetWindow())->RemoveIconObserver(this);
+  Launcher::ForWindow(widget->GetNativeWindow())->RemoveIconObserver(this);
   widget->GetNativeView()->GetRootWindow()->RemoveRootWindowObserver(this);
   aura::client::GetFocusClient(widget->GetNativeView())->RemoveObserver(this);
   view_ = NULL;
@@ -222,7 +220,7 @@ void AppListController::ProcessLocatedEvent(ui::LocatedEvent* event) {
                                        &window_local_point);
     // Use HitTest to respect the hit test mask of the bubble.
     if (!window->HitTest(window_local_point))
-      SetVisible(false);
+      SetVisible(false, window);
   }
 }
 
@@ -251,11 +249,11 @@ void AppListController::OnGestureEvent(ui::GestureEvent* event) {
 void AppListController::OnWindowFocused(aura::Window* gained_focus,
                                         aura::Window* lost_focus) {
   if (gained_focus && view_ && is_visible_) {
-    aura::Window* applist_container = Shell::GetContainer(
-        Shell::GetPrimaryRootWindow(),
-        kShellWindowId_AppListContainer);
+    aura::Window* applist_container =
+        GetRootWindowController(gained_focus->GetRootWindow())->GetContainer(
+            kShellWindowId_AppListContainer);
     if (gained_focus->parent() != applist_container)
-      SetVisible(false);
+      SetVisible(false, gained_focus);
   }
 }
 
@@ -282,7 +280,7 @@ void AppListController::OnImplicitAnimationsCompleted() {
 void AppListController::OnWidgetClosing(views::Widget* widget) {
   DCHECK(view_->GetWidget() == widget);
   if (is_visible_)
-    SetVisible(false);
+    SetVisible(false, widget->GetNativeView());
   ResetView();
 }
 

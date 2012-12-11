@@ -566,7 +566,7 @@ bool AcceleratorController::PerformAction(int action,
       DCHECK_EQ(ui::VKEY_LWIN, accelerator.key_code());
       if (Shell::GetInstance()->delegate()->IsSpokenFeedbackEnabled())
         return false;
-      ash::Shell::GetInstance()->ToggleAppList();
+      ash::Shell::GetInstance()->ToggleAppList(NULL);
       return true;
     case DISABLE_CAPS_LOCK:
       if (previous_event_type == ui::ET_KEY_RELEASED ||
@@ -834,8 +834,9 @@ bool AcceleratorController::AcceleratorPressed(
 
 void AcceleratorController::SwitchToWindow(int window) {
   Launcher* launcher = Launcher::ForPrimaryDisplay();
-  const LauncherItems& items = launcher->model()->items();
-  int item_count = launcher->model()->item_count();
+  LauncherModel* launcher_model = Shell::GetInstance()->launcher_model();
+  const LauncherItems& items = launcher_model->items();
+  int item_count = launcher_model->item_count();
   int indexes_left = window >= 0 ? window : item_count;
   int found_index = -1;
 

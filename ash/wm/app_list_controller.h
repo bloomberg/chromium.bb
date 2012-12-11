@@ -45,8 +45,10 @@ class AppListController : public views::corewm::FocusChangeShim,
   AppListController();
   virtual ~AppListController();
 
-  // Show/hide app list window.
-  void SetVisible(bool visible);
+  // Show/hide app list window. The |window| is used to deterime in
+  // which display (in which the |window| exists) the app list should
+  // be shown.
+  void SetVisible(bool visible, aura::Window* window);
 
   // Whether app list window is visible (shown or being shown).
   bool IsVisible() const;

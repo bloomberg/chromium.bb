@@ -519,12 +519,12 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfVisibleState) {
   EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
 
   // Toggle app list to show, and the shelf stays visible.
-  shell->ToggleAppList();
+  shell->ToggleAppList(NULL);
   EXPECT_TRUE(shell->GetAppListTargetVisibility());
   EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
 
   // Toggle app list to hide, and the shelf stays visible.
-  shell->ToggleAppList();
+  shell->ToggleAppList(NULL);
   EXPECT_FALSE(shell->GetAppListTargetVisibility());
   EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
 }
@@ -551,7 +551,7 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfAutoHideState) {
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
 
   // Toggle app list to show.
-  shell->ToggleAppList();
+  shell->ToggleAppList(NULL);
   // The shelf's auto hide state won't be changed until the timer fires, so
   // calling shell->UpdateShelfVisibility() is kind of manually helping it to
   // update the state.
@@ -561,7 +561,7 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfAutoHideState) {
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->auto_hide_state());
 
   // Toggle app list to hide.
-  shell->ToggleAppList();
+  shell->ToggleAppList(NULL);
   EXPECT_FALSE(shell->GetAppListTargetVisibility());
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
 }
@@ -586,12 +586,12 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfHiddenState) {
   EXPECT_EQ(SHELF_HIDDEN, shelf->visibility_state());
 
   // Toggle app list to show.
-  shell->ToggleAppList();
+  shell->ToggleAppList(NULL);
   EXPECT_TRUE(shell->GetAppListTargetVisibility());
   EXPECT_EQ(SHELF_HIDDEN, shelf->visibility_state());
 
   // Toggle app list to hide.
-  shell->ToggleAppList();
+  shell->ToggleAppList(NULL);
   EXPECT_FALSE(shell->GetAppListTargetVisibility());
   EXPECT_EQ(SHELF_HIDDEN, shelf->visibility_state());
 }

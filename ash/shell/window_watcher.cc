@@ -77,7 +77,7 @@ void WindowWatcher::OnWindowAdded(aura::Window* new_window) {
     return;
 
   static int image_count = 0;
-  ash::LauncherModel* model = Launcher::ForPrimaryDisplay()->model();
+  ash::LauncherModel* model = Shell::GetInstance()->launcher_model();
   ash::LauncherItem item;
   item.type = ash::TYPE_TABBED;
   id_to_window_[model->next_id()] = new_window;
@@ -100,7 +100,7 @@ void WindowWatcher::OnWillRemoveWindow(aura::Window* window) {
   for (IDToWindow::iterator i = id_to_window_.begin();
        i != id_to_window_.end(); ++i) {
     if (i->second == window) {
-      ash::LauncherModel* model = Launcher::ForPrimaryDisplay()->model();
+      ash::LauncherModel* model = Shell::GetInstance()->launcher_model();
       int index = model->ItemIndexByID(i->first);
       DCHECK_NE(-1, index);
       model->RemoveItemAt(index);

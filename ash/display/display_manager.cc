@@ -447,8 +447,14 @@ void DisplayManager::CycleDisplayImpl() {
   std::vector<gfx::Display> new_displays;
   new_displays.push_back(DisplayController::GetPrimaryDisplay());
   // Add if there is only one display.
-  if (displays_.size() == 1)
-    new_displays.push_back(aura::CreateDisplayFromSpec("100+200-500x400"));
+  if (displays_.size() == 1) {
+    // Layout the 2nd display below the primary as with the real device.
+    aura::RootWindow* primary = Shell::GetPrimaryRootWindow();
+    gfx::Rect host_bounds =
+        gfx::Rect(primary->GetHostOrigin(),  primary->GetHostSize());
+    new_displays.push_back(aura::CreateDisplayFromSpec(
+        StringPrintf("%d+%d-500x400", host_bounds.x(), host_bounds.bottom())));
+  }
   OnNativeDisplaysChanged(new_displays);
 }
 

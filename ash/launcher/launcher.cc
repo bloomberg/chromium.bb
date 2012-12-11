@@ -206,11 +206,8 @@ Launcher::Launcher(aura::Window* window_container,
       delegate_view_(new DelegateView(this)),
       launcher_view_(NULL),
       alignment_(SHELF_ALIGNMENT_BOTTOM),
+      delegate_(Shell::GetInstance()->GetLauncherDelegate()),
       background_animator_(delegate_view_, 0, kLauncherBackgroundAlpha) {
-  model_.reset(new LauncherModel);
-  delegate_.reset(
-      Shell::GetInstance()->delegate()->CreateLauncherDelegate(model_.get()));
-
   widget_.reset(new views::Widget);
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
@@ -220,7 +217,7 @@ Launcher::Launcher(aura::Window* window_container,
       window_container_->GetRootWindow(),
       ash::internal::kShellWindowId_LauncherContainer);
   launcher_view_ = new internal::LauncherView(
-      model_.get(), delegate_.get(), shelf_layout_manager);
+      Shell::GetInstance()->launcher_model(), delegate_, shelf_layout_manager);
   launcher_view_->Init();
   delegate_view_->AddChildView(launcher_view_);
   params.delegate = delegate_view_;
@@ -333,13 +330,14 @@ gfx::Rect Launcher::GetScreenBoundsOfItemIconForWindow(aura::Window* window) {
 }
 
 void Launcher::ActivateLauncherItem(int index) {
-  DCHECK(delegate_.get());
-  const ash::LauncherItems& items = model_->items();
+  const ash::LauncherItems& items =
+      Shell::GetInstance()->launcher_model()->items();
   delegate_->ItemClicked(items[index], ui::EF_NONE);
 }
 
 void Launcher::CycleWindowLinear(CycleDirection direction) {
-  int item_index = GetNextActivatedItemIndex(*model(), direction);
+  int item_index = GetNextActivatedItemIndex(
+      *(Shell::GetInstance()->launcher_model()), direction);
   if (item_index >= 0)
     ActivateLauncherItem(item_index);
 }

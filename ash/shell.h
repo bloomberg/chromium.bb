@@ -71,6 +71,8 @@ class DesktopBackgroundController;
 class DisplayController;
 class HighContrastController;
 class Launcher;
+class LauncherDelegate;
+class LauncherModel;
 class MagnificationController;
 class NestedDispatcherController;
 class PartialMagnificationController;
@@ -191,8 +193,10 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate,
   // |location_in_screen| (in screen coordinates).
   void ShowContextMenu(const gfx::Point& location_in_screen);
 
-  // Toggles app list.
-  void ToggleAppList();
+  // Toggles the app list. |window| specifies in which display the app
+  // list should be shown. If this is NULL, the active root window
+  // will be used.
+  void ToggleAppList(aura::Window* anchor);
 
   // Returns app list target visibility.
   bool GetAppListTargetVisibility() const;
@@ -366,6 +370,9 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate,
   // Returns the system tray on primary display.
   SystemTray* GetPrimarySystemTray();
 
+  // Returns the launcher delegate, creating if necesary.
+  LauncherDelegate* GetLauncherDelegate();
+
   // TODO(stevenjb): Rename to system_tray_delegate().
   SystemTrayDelegate* tray_delegate() {
     return system_tray_delegate_.get();
@@ -373,6 +380,10 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate,
 
   SystemTrayNotifier* system_tray_notifier() {
     return system_tray_notifier_.get();
+  }
+
+  LauncherModel* launcher_model() {
+    return launcher_model_.get();
   }
 
   static void set_initially_hide_cursor(bool hide) {
@@ -468,6 +479,9 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate,
   scoped_ptr<SystemTrayNotifier> system_tray_notifier_;
   scoped_ptr<UserWallpaperDelegate> user_wallpaper_delegate_;
   scoped_ptr<CapsLockDelegate> caps_lock_delegate_;
+  scoped_ptr<LauncherDelegate> launcher_delegate_;
+
+  scoped_ptr<LauncherModel> launcher_model_;
 
   scoped_ptr<internal::AppListController> app_list_controller_;
 

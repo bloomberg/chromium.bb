@@ -249,8 +249,7 @@ void ShelfLayoutManager::LayoutShelf() {
           status_area_widget_->GetNativeView()->parent(),
           target_bounds.status_bounds_in_root));
   Shell::GetInstance()->SetDisplayWorkAreaInsets(
-      Shell::GetPrimaryRootWindow(),
-      target_bounds.work_area_insets);
+      root_window_, target_bounds.work_area_insets);
   UpdateHitTestBounds();
 }
 
@@ -578,8 +577,7 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   layer->SetBounds(target_bounds.status_bounds_in_root);
   layer->SetOpacity(target_bounds.opacity);
   Shell::GetInstance()->SetDisplayWorkAreaInsets(
-      Shell::GetPrimaryRootWindow(),
-      target_bounds.work_area_insets);
+      root_window_, target_bounds.work_area_insets);
   UpdateHitTestBounds();
   if (!delay_shelf_update)
     UpdateShelfBackground(change_type);

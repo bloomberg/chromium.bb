@@ -1042,7 +1042,7 @@ void LauncherView::ButtonPressed(views::Button* sender,
     case TYPE_APP_LIST:
       Shell::GetInstance()->delegate()->RecordUserMetricsAction(
           UMA_LAUNCHER_CLICK_ON_APPLIST_BUTTON);
-      Shell::GetInstance()->ToggleAppList();
+      Shell::GetInstance()->ToggleAppList(GetWidget()->GetNativeView());
       break;
 
     case TYPE_BROWSER_SHORTCUT:

@@ -14,7 +14,7 @@ AppListControllerDelegateAsh::~AppListControllerDelegateAsh() {}
 void AppListControllerDelegateAsh::DismissView() {
   DCHECK(ash::Shell::HasInstance());
   if (ash::Shell::GetInstance()->GetAppListTargetVisibility())
-    ash::Shell::GetInstance()->ToggleAppList();
+    ash::Shell::GetInstance()->ToggleAppList(NULL);
 }
 
 bool AppListControllerDelegateAsh::IsAppPinned(
@@ -63,7 +63,7 @@ namespace app_list_controller {
 
 #if defined(OS_CHROMEOS)
 void ShowAppList() {
-  ash::Shell::GetInstance()->ToggleAppList();
+  ash::Shell::GetInstance()->ToggleAppList(NULL);
 }
 #endif
 

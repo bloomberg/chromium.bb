@@ -470,11 +470,11 @@ void DisplayController::OnDisplayAdded(const gfx::Display& display) {
   DCHECK(!root_windows_.empty());
   NotifyDisplayConfigurationChanging();
   aura::RootWindow* root = AddRootWindowForDisplay(display);
-  Shell::GetInstance()->InitRootWindowForSecondaryDisplay(root);
   UpdateDisplayBoundsForLayout();
-
   if (desired_primary_display_id_ == display.id())
     SetPrimaryDisplay(display);
+
+  Shell::GetInstance()->InitRootWindowForSecondaryDisplay(root);
 }
 
 void DisplayController::OnDisplayRemoved(const gfx::Display& display) {
