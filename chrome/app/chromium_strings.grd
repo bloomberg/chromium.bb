@@ -589,10 +589,10 @@ Chromium is unable to recover your settings.
         Chromium lets you click a phone number on the web and call it with Skype!
       </message>
       <message name="IDS_TRY_TOAST_TRY_OPT" desc="First option radio button on the dialog to try chrome">
-        Try it out (already installed)
+        Try it out, it's already installed.
       </message>
       <message name="IDS_TRY_TOAST_CANCEL" desc="Try chrome again dialog Cancel button">
-        Don't bug me
+        Don't bug me.
       </message>
       <message name="IDS_TRY_TOAST_WHY" desc="Text of the url link that explains why this dialog is being shown">
         Why am I seeing this?
