@@ -22,6 +22,7 @@ class LogoutButton;
 class TrayLogoutButton : public SystemTrayItem, public LogoutButtonObserver {
  public:
   explicit TrayLogoutButton(SystemTray* system_tray);
+  virtual ~TrayLogoutButton();
 
   // Overridden from SystemTrayItem.
   virtual views::View* CreateTrayView(user::LoginStatus status) OVERRIDE;

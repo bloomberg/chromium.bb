@@ -10,6 +10,7 @@
 #include "ash/system/chromeos/network/tray_network_state_observer.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_item_more.h"
 #include "ash/system/tray/tray_item_view.h"
@@ -567,9 +568,11 @@ TrayNetwork::TrayNetwork(SystemTray* system_tray)
           chromeos::switches::kEnableNewNetworkHandlers)) {
     network_state_observer_.reset(new TrayNetworkStateObserver(this));
   }
+  Shell::GetInstance()->system_tray_notifier()->AddNetworkObserver(this);
 }
 
 TrayNetwork::~TrayNetwork() {
+  Shell::GetInstance()->system_tray_notifier()->RemoveNetworkObserver(this);
 }
 
 views::View* TrayNetwork::CreateTrayView(user::LoginStatus status) {

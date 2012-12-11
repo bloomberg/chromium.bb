@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "ash/system/brightness/brightness_control_delegate.h"
 #include "ash/system/tray/system_tray_delegate.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_views.h"
 #include "base/bind.h"
@@ -137,9 +138,12 @@ TrayBrightness::TrayBrightness(SystemTray* system_tray)
       FROM_HERE,
       base::Bind(&TrayBrightness::GetInitialBrightness,
                  weak_ptr_factory_.GetWeakPtr()));
+  Shell::GetInstance()->system_tray_notifier()->AddBrightnessObserver(this);
 }
 
-TrayBrightness::~TrayBrightness() {}
+TrayBrightness::~TrayBrightness() {
+  Shell::GetInstance()->system_tray_notifier()->RemoveBrightnessObserver(this);
+}
 
 void TrayBrightness::GetInitialBrightness() {
   BrightnessControlDelegate* delegate =

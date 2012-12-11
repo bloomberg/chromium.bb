@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/system/power/power_status_view.h"
 #include "ash/system/tray/system_tray_delegate.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_views.h"
 #include "base/logging.h"
@@ -123,9 +124,12 @@ class SettingsDefaultView : public ash::internal::ActionableView {
 TraySettings::TraySettings(SystemTray* system_tray)
     : SystemTrayItem(system_tray),
       default_view_(NULL) {
+  Shell::GetInstance()->system_tray_notifier()->AddPowerStatusObserver(this);
 }
 
-TraySettings::~TraySettings() {}
+TraySettings::~TraySettings() {
+  Shell::GetInstance()->system_tray_notifier()->RemovePowerStatusObserver(this);
+}
 
 views::View* TraySettings::CreateTrayView(user::LoginStatus status) {
   return NULL;

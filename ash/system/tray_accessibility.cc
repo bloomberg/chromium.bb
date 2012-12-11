@@ -8,6 +8,7 @@
 #include "ash/shell_delegate.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_details_view.h"
 #include "ash/system/tray/tray_item_more.h"
@@ -227,9 +228,12 @@ TrayAccessibility::TrayAccessibility(SystemTray* system_tray)
       login_(GetCurrentLoginStatus()) {
   DCHECK(Shell::GetInstance()->delegate());
   DCHECK(system_tray);
+  Shell::GetInstance()->system_tray_notifier()->AddAccessibilityObserver(this);
 }
 
 TrayAccessibility::~TrayAccessibility() {
+  Shell::GetInstance()->system_tray_notifier()->
+      RemoveAccessibilityObserver(this);
 }
 
 bool TrayAccessibility::GetInitialVisibility() {

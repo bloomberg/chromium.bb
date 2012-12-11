@@ -258,13 +258,12 @@ Shell::~Shell() {
   // Destroy SystemTrayDelegate before destroying the status area(s).
   system_tray_delegate_.reset();
 
-  // Destroy SystemTrayNotifier immediately after destroying SystemTrayDelegate
-  // so that it is still available when shutting down the UI, but not after
-  // the notifier observers have been destroyed.
-  system_tray_notifier_.reset();
-
   // Destroy all child windows including widgets.
   display_controller_->CloseChildWindows();
+
+  // Destroy SystemTrayNotifier after destroying SystemTray as TrayItems
+  // needs to remove observers from it.
+  system_tray_notifier_.reset();
 
   // These need a valid Shell instance to clean up properly, so explicitly
   // delete them before invalidating the instance.

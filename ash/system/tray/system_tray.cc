@@ -23,7 +23,6 @@
 #include "ash/system/settings/tray_settings.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray_delegate.h"
-#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/system/tray/tray_constants.h"
@@ -129,73 +128,28 @@ void SystemTray::InitializeTrayItems(SystemTrayDelegate* delegate) {
 }
 
 void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
-  internal::TrayVolume* tray_volume = new internal::TrayVolume(this);
-  internal::TrayBluetooth* tray_bluetooth = new internal::TrayBluetooth(this);
-  internal::TrayBrightness* tray_brightness =
-      new internal::TrayBrightness(this);
-  internal::TrayDate* tray_date = new internal::TrayDate(this);
-  internal::TrayPower* tray_power = new internal::TrayPower(this);
-  internal::TrayIME* tray_ime = new internal::TrayIME(this);
-  internal::TrayUser* tray_user = new internal::TrayUser(this);
-  internal::TrayAccessibility* tray_accessibility =
-      new internal::TrayAccessibility(this);
-  internal::TrayCapsLock* tray_caps_lock = new internal::TrayCapsLock(this);
-  internal::TrayDrive* tray_drive = new internal::TrayDrive(this);
-  internal::TrayLocale* tray_locale = new internal::TrayLocale(this);
-  internal::TrayLogoutButton* tray_logout_button =
-      new internal::TrayLogoutButton(this);
-  internal::TrayUpdate* tray_update = new internal::TrayUpdate(this);
-  internal::TraySettings* tray_settings = new internal::TraySettings(this);
+  AddTrayItem(new internal::TrayLogoutButton(this));
+  AddTrayItem(new internal::TrayUser(this));
+  AddTrayItem(new internal::TrayIME(this));
+  AddTrayItem(new internal::TrayAccessibility(this));
+  AddTrayItem(new internal::TrayPower(this));
 #if defined(OS_CHROMEOS)
-  internal::TrayDisplay* tray_display = new internal::TrayDisplay(this);
-  internal::TrayNetwork* tray_network = new internal::TrayNetwork(this);
-  internal::TrayVPN* tray_vpn = new internal::TrayVPN(this);
-  internal::TraySms* tray_sms = new internal::TraySms(this);
+  AddTrayItem(new internal::TrayNetwork(this));
+  AddTrayItem(new internal::TrayVPN(this));
+  AddTrayItem(new internal::TraySms(this));
 #endif
-
-  SystemTrayNotifier* notifier = Shell::GetInstance()->system_tray_notifier();
-  notifier->AddAccessibilityObserver(tray_accessibility);
-  notifier->AddAudioObserver(tray_volume);
-  notifier->AddBluetoothObserver(tray_bluetooth);
-  notifier->AddBrightnessObserver(tray_brightness);
-  notifier->AddCapsLockObserver(tray_caps_lock);
-  notifier->AddClockObserver(tray_date);
-  notifier->AddDriveObserver(tray_drive);
-  notifier->AddIMEObserver(tray_ime);
-  notifier->AddLocaleObserver(tray_locale);
-  notifier->AddLogoutButtonObserver(tray_logout_button);
-  notifier->AddPowerStatusObserver(tray_power);
-  notifier->AddPowerStatusObserver(tray_settings);
-  notifier->AddUpdateObserver(tray_update);
-  notifier->AddUserObserver(tray_user);
+  AddTrayItem(new internal::TrayBluetooth(this));
+  AddTrayItem(new internal::TrayDrive(this));
+  AddTrayItem(new internal::TrayLocale(this));
 #if defined(OS_CHROMEOS)
-  notifier->AddNetworkObserver(tray_network);
-  notifier->AddVpnObserver(tray_vpn);
-  notifier->AddSmsObserver(tray_sms);
+  AddTrayItem(new internal::TrayDisplay(this));
 #endif
-
-  AddTrayItem(tray_logout_button);
-  AddTrayItem(tray_user);
-  AddTrayItem(tray_ime);
-  AddTrayItem(tray_accessibility);
-  AddTrayItem(tray_power);
-#if defined(OS_CHROMEOS)
-  AddTrayItem(tray_network);
-  AddTrayItem(tray_vpn);
-  AddTrayItem(tray_sms);
-#endif
-  AddTrayItem(tray_bluetooth);
-  AddTrayItem(tray_drive);
-  AddTrayItem(tray_locale);
-#if defined(OS_CHROMEOS)
-  AddTrayItem(tray_display);
-#endif
-  AddTrayItem(tray_volume);
-  AddTrayItem(tray_brightness);
-  AddTrayItem(tray_update);
-  AddTrayItem(tray_caps_lock);
-  AddTrayItem(tray_settings);
-  AddTrayItem(tray_date);
+  AddTrayItem(new internal::TrayVolume(this));
+  AddTrayItem(new internal::TrayBrightness(this));
+  AddTrayItem(new internal::TrayUpdate(this));
+  AddTrayItem(new internal::TrayCapsLock(this));
+  AddTrayItem(new internal::TraySettings(this));
+  AddTrayItem(new internal::TrayDate(this));
 
 #if defined(OS_LINUX)
   // Add memory monitor if enabled.

@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_details_view.h"
 #include "ash/system/tray/tray_item_more.h"
@@ -378,9 +379,11 @@ TrayDrive::TrayDrive(SystemTray* system_tray) :
     TrayImageItem(system_tray, IDR_AURA_UBER_TRAY_DRIVE_LIGHT),
     default_(NULL),
     detailed_(NULL) {
+  Shell::GetInstance()->system_tray_notifier()->AddDriveObserver(this);
 }
 
 TrayDrive::~TrayDrive() {
+  Shell::GetInstance()->system_tray_notifier()->RemoveDriveObserver(this);
 }
 
 bool TrayDrive::GetInitialVisibility() {

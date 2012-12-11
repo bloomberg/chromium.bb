@@ -5,8 +5,10 @@
 #include "ash/system/chromeos/network/tray_sms.h"
 
 #include "ash/ash_switches.h"
+#include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_bubble.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_details_view.h"
 #include "ash/system/tray/tray_item_more.h"
@@ -281,9 +283,11 @@ TraySms::TraySms(SystemTray* system_tray)
       default_(NULL),
       detailed_(NULL),
       notification_(NULL) {
+  Shell::GetInstance()->system_tray_notifier()->AddSmsObserver(this);
 }
 
 TraySms::~TraySms() {
+  Shell::GetInstance()->system_tray_notifier()->RemoveSmsObserver(this);
 }
 
 views::View* TraySms::CreateDefaultView(user::LoginStatus status) {

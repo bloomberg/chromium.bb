@@ -39,22 +39,53 @@ public:
   ~SystemTrayNotifier();
 
   void AddAccessibilityObserver(AccessibilityObserver* observer);
+  void RemoveAccessibilityObserver(AccessibilityObserver* observer);
+
   void AddAudioObserver(AudioObserver* observer);
+  void RemoveAudioObserver(AudioObserver* observer);
+
   void AddBluetoothObserver(BluetoothObserver* observer);
+  void RemoveBluetoothObserver(BluetoothObserver* observer);
+
   void AddBrightnessObserver(BrightnessObserver* observer);
+  void RemoveBrightnessObserver(BrightnessObserver* observer);
+
   void AddCapsLockObserver(CapsLockObserver* observer);
+  void RemoveCapsLockObserver(CapsLockObserver* observer);
+
   void AddClockObserver(ClockObserver* observer);
+  void RemoveClockObserver(ClockObserver* observer);
+
   void AddDriveObserver(DriveObserver* observer);
+  void RemoveDriveObserver(DriveObserver* observer);
+
   void AddIMEObserver(IMEObserver* observer);
+  void RemoveIMEObserver(IMEObserver* observer);
+
   void AddLocaleObserver(LocaleObserver* observer);
+  void RemoveLocaleObserver(LocaleObserver* observer);
+
   void AddLogoutButtonObserver(LogoutButtonObserver* observer);
+  void RemoveLogoutButtonObserver(LogoutButtonObserver* observer);
+
   void AddPowerStatusObserver(PowerStatusObserver* observer);
+  void RemovePowerStatusObserver(PowerStatusObserver* observer);
+
   void AddUpdateObserver(UpdateObserver* observer);
+  void RemoveUpdateObserver(UpdateObserver* observer);
+
   void AddUserObserver(UserObserver* observer);
+  void RemoveUserObserver(UserObserver* observer);
+
 #if defined(OS_CHROMEOS)
   void AddNetworkObserver(NetworkObserver* observer);
+  void RemoveNetworkObserver(NetworkObserver* observer);
+
   void AddVpnObserver(NetworkObserver* observer);
+  void RemoveVpnObserver(NetworkObserver* observer);
+
   void AddSmsObserver(SmsObserver* observer);
+  void RemoveSmsObserver(SmsObserver* observer);
 #endif
 
   void NotifyAccessibilityModeChanged();

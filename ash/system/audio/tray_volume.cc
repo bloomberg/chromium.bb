@@ -9,6 +9,7 @@
 #include "ash/ash_constants.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_views.h"
 #include "ash/volume_control_delegate.h"
@@ -217,9 +218,11 @@ TrayVolume::TrayVolume(SystemTray* system_tray)
     : TrayImageItem(system_tray, IDR_AURA_UBER_TRAY_VOLUME_MUTE),
       volume_view_(NULL),
       is_default_view_(false) {
+  Shell::GetInstance()->system_tray_notifier()->AddAudioObserver(this);
 }
 
 TrayVolume::~TrayVolume() {
+  Shell::GetInstance()->system_tray_notifier()->RemoveAudioObserver(this);
 }
 
 bool TrayVolume::GetInitialVisibility() {

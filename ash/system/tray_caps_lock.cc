@@ -6,6 +6,7 @@
 
 #include "ash/caps_lock_delegate.h"
 #include "ash/shell.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_views.h"
 #include "grit/ash_resources.h"
@@ -110,9 +111,12 @@ TrayCapsLock::TrayCapsLock(SystemTray* system_tray)
       caps_lock_enabled_(
           Shell::GetInstance()->caps_lock_delegate()->IsCapsLockEnabled()),
       message_shown_(false) {
+  Shell::GetInstance()->system_tray_notifier()->AddCapsLockObserver(this);
 }
 
-TrayCapsLock::~TrayCapsLock() {}
+TrayCapsLock::~TrayCapsLock() {
+  Shell::GetInstance()->system_tray_notifier()->RemoveCapsLockObserver(this);
+}
 
 bool TrayCapsLock::GetInitialVisibility() {
   return Shell::GetInstance()->caps_lock_delegate()->IsCapsLockEnabled();

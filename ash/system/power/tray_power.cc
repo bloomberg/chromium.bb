@@ -10,6 +10,7 @@
 #include "ash/system/power/power_status_view.h"
 #include "ash/system/power/power_supply_status.h"
 #include "ash/system/tray/system_tray_delegate.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_notification_view.h"
 #include "ash/system/tray/tray_views.h"
@@ -138,9 +139,11 @@ TrayPower::TrayPower(SystemTray* system_tray)
       power_tray_(NULL),
       notification_view_(NULL),
       notification_state_(NOTIFICATION_NONE) {
+  Shell::GetInstance()->system_tray_notifier()->AddPowerStatusObserver(this);
 }
 
 TrayPower::~TrayPower() {
+  Shell::GetInstance()->system_tray_notifier()->RemovePowerStatusObserver(this);
 }
 
 // static

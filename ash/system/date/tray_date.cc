@@ -8,6 +8,7 @@
 #include "ash/system/date/date_view.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_item_view.h"
 #include "ash/system/tray/tray_views.h"
@@ -133,9 +134,11 @@ namespace internal {
 TrayDate::TrayDate(SystemTray* system_tray)
     : SystemTrayItem(system_tray),
       time_tray_(NULL) {
+  Shell::GetInstance()->system_tray_notifier()->AddClockObserver(this);
 }
 
 TrayDate::~TrayDate() {
+  Shell::GetInstance()->system_tray_notifier()->RemoveClockObserver(this);
 }
 
 views::View* TrayDate::CreateTrayView(user::LoginStatus status) {

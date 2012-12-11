@@ -9,6 +9,7 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_views.h"
 #include "ash/wm/shelf_layout_manager.h"
@@ -156,9 +157,12 @@ class UpdateNagger : public ui::LayerAnimationObserver {
 TrayUpdate::TrayUpdate(SystemTray* system_tray)
     : TrayImageItem(system_tray, IDR_AURA_UBER_TRAY_UPDATE),
       severity_(UpdateObserver::UPDATE_NORMAL) {
+  Shell::GetInstance()->system_tray_notifier()->AddUpdateObserver(this);
 }
 
-TrayUpdate::~TrayUpdate() {}
+TrayUpdate::~TrayUpdate() {
+  Shell::GetInstance()->system_tray_notifier()->RemoveUpdateObserver(this);
+}
 
 bool TrayUpdate::GetInitialVisibility() {
   return Shell::GetInstance()->tray_delegate()->SystemShouldUpgrade();

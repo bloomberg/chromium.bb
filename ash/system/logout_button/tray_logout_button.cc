@@ -8,6 +8,7 @@
 
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/user/login_status.h"
 #include "base/logging.h"
@@ -135,6 +136,12 @@ class LogoutButton : public views::View,
 TrayLogoutButton::TrayLogoutButton(SystemTray* system_tray)
     : SystemTrayItem(system_tray),
       logout_button_(NULL) {
+  Shell::GetInstance()->system_tray_notifier()->AddLogoutButtonObserver(this);
+}
+
+TrayLogoutButton::~TrayLogoutButton() {
+  Shell::GetInstance()->system_tray_notifier()->
+      RemoveLogoutButtonObserver(this);
 }
 
 views::View* TrayLogoutButton::CreateTrayView(user::LoginStatus status) {

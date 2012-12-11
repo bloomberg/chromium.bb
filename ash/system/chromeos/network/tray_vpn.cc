@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/system/chromeos/network/network_list_detailed_view_base.h"
 #include "ash/system/tray/system_tray_delegate.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_item_more.h"
 #include "grit/ash_strings.h"
@@ -122,9 +123,11 @@ TrayVPN::TrayVPN(SystemTray* system_tray)
     : SystemTrayItem(system_tray),
       default_(NULL),
       detailed_(NULL) {
+  Shell::GetInstance()->system_tray_notifier()->AddVpnObserver(this);
 }
 
 TrayVPN::~TrayVPN() {
+  Shell::GetInstance()->system_tray_notifier()->RemoveVpnObserver(this);
 }
 
 views::View* TrayVPN::CreateTrayView(user::LoginStatus status) {

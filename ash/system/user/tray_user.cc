@@ -11,6 +11,7 @@
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_item_view.h"
 #include "ash/system/tray/tray_views.h"
@@ -534,9 +535,11 @@ TrayUser::TrayUser(SystemTray* system_tray)
       user_(NULL),
       avatar_(NULL),
       label_(NULL) {
+  Shell::GetInstance()->system_tray_notifier()->AddUserObserver(this);
 }
 
 TrayUser::~TrayUser() {
+  Shell::GetInstance()->system_tray_notifier()->RemoveUserObserver(this);
 }
 
 views::View* TrayUser::CreateTrayView(user::LoginStatus status) {

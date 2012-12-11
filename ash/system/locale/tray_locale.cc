@@ -4,6 +4,8 @@
 
 #include "ash/system/locale/tray_locale.h"
 
+#include "ash/shell.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_notification_view.h"
 #include "ash/system/tray/tray_views.h"
@@ -113,9 +115,11 @@ TrayLocale::TrayLocale(SystemTray* system_tray)
     : SystemTrayItem(system_tray),
       notification_(NULL),
       delegate_(NULL) {
+  Shell::GetInstance()->system_tray_notifier()->AddLocaleObserver(this);
 }
 
 TrayLocale::~TrayLocale() {
+  Shell::GetInstance()->system_tray_notifier()->RemoveLocaleObserver(this);
 }
 
 views::View* TrayLocale::CreateNotificationView(user::LoginStatus status) {

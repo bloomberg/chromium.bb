@@ -17,36 +17,74 @@ void SystemTrayNotifier::AddAccessibilityObserver(
   accessibility_observers_.AddObserver(observer);
 }
 
+void SystemTrayNotifier::RemoveAccessibilityObserver(
+    AccessibilityObserver* observer) {
+  accessibility_observers_.RemoveObserver(observer);
+}
+
 void SystemTrayNotifier::AddAudioObserver(AudioObserver* observer) {
   audio_observers_.AddObserver(observer);
+}
+
+void SystemTrayNotifier::RemoveAudioObserver(AudioObserver* observer) {
+  audio_observers_.RemoveObserver(observer);
 }
 
 void SystemTrayNotifier::AddBluetoothObserver(BluetoothObserver* observer) {
   bluetooth_observers_.AddObserver(observer);
 }
 
+void SystemTrayNotifier::RemoveBluetoothObserver(BluetoothObserver* observer) {
+  bluetooth_observers_.RemoveObserver(observer);
+}
+
 void SystemTrayNotifier::AddBrightnessObserver(BrightnessObserver* observer) {
   brightness_observers_.AddObserver(observer);
+}
+
+void SystemTrayNotifier::RemoveBrightnessObserver(
+    BrightnessObserver* observer) {
+  brightness_observers_.RemoveObserver(observer);
 }
 
 void SystemTrayNotifier::AddCapsLockObserver(CapsLockObserver* observer) {
   caps_lock_observers_.AddObserver(observer);
 }
 
+void SystemTrayNotifier::RemoveCapsLockObserver(CapsLockObserver* observer) {
+  caps_lock_observers_.RemoveObserver(observer);
+}
+
 void SystemTrayNotifier::AddClockObserver(ClockObserver* observer) {
   clock_observers_.AddObserver(observer);
+}
+
+void SystemTrayNotifier::RemoveClockObserver(ClockObserver* observer) {
+  clock_observers_.RemoveObserver(observer);
 }
 
 void SystemTrayNotifier::AddDriveObserver(DriveObserver* observer) {
   drive_observers_.AddObserver(observer);
 }
 
+void SystemTrayNotifier::RemoveDriveObserver(DriveObserver* observer) {
+  drive_observers_.RemoveObserver(observer);
+}
+
 void SystemTrayNotifier::AddIMEObserver(IMEObserver* observer) {
   ime_observers_.AddObserver(observer);
 }
 
+void SystemTrayNotifier::RemoveIMEObserver(IMEObserver* observer) {
+  ime_observers_.RemoveObserver(observer);
+}
+
 void SystemTrayNotifier::AddLocaleObserver(LocaleObserver* observer) {
   locale_observers_.AddObserver(observer);
+}
+
+void SystemTrayNotifier::RemoveLocaleObserver(LocaleObserver* observer) {
+  locale_observers_.RemoveObserver(observer);
 }
 
 void SystemTrayNotifier::AddLogoutButtonObserver(
@@ -54,17 +92,35 @@ void SystemTrayNotifier::AddLogoutButtonObserver(
   logout_button_observers_.AddObserver(observer);
 }
 
+void SystemTrayNotifier::RemoveLogoutButtonObserver(
+    LogoutButtonObserver* observer) {
+  logout_button_observers_.RemoveObserver(observer);
+}
+
 void SystemTrayNotifier::AddPowerStatusObserver(
     PowerStatusObserver* observer) {
   power_status_observers_.AddObserver(observer);
+}
+
+void SystemTrayNotifier::RemovePowerStatusObserver(
+    PowerStatusObserver* observer) {
+  power_status_observers_.RemoveObserver(observer);
 }
 
 void SystemTrayNotifier::AddUpdateObserver(UpdateObserver* observer) {
   update_observers_.AddObserver(observer);
 }
 
+void SystemTrayNotifier::RemoveUpdateObserver(UpdateObserver* observer) {
+  update_observers_.RemoveObserver(observer);
+}
+
 void SystemTrayNotifier::AddUserObserver(UserObserver* observer) {
   user_observers_.AddObserver(observer);
+}
+
+void SystemTrayNotifier::RemoveUserObserver(UserObserver* observer) {
+  user_observers_.RemoveObserver(observer);
 }
 
 #if defined(OS_CHROMEOS)
@@ -72,12 +128,24 @@ void SystemTrayNotifier::AddNetworkObserver(NetworkObserver* observer) {
   network_observers_.AddObserver(observer);
 }
 
+void SystemTrayNotifier::RemoveNetworkObserver(NetworkObserver* observer) {
+  network_observers_.RemoveObserver(observer);
+}
+
 void SystemTrayNotifier::AddVpnObserver(NetworkObserver* observer) {
   vpn_observers_.AddObserver(observer);
 }
 
+void SystemTrayNotifier::RemoveVpnObserver(NetworkObserver* observer) {
+  vpn_observers_.RemoveObserver(observer);
+}
+
 void SystemTrayNotifier::AddSmsObserver(SmsObserver* observer) {
   sms_observers_.AddObserver(observer);
+}
+
+void SystemTrayNotifier::RemoveSmsObserver(SmsObserver* observer) {
+  sms_observers_.RemoveObserver(observer);
 }
 #endif
 

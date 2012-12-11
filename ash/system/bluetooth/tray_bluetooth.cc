@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_details_view.h"
 #include "ash/system/tray/tray_item_more.h"
@@ -262,9 +263,11 @@ TrayBluetooth::TrayBluetooth(SystemTray* system_tray)
     : SystemTrayItem(system_tray),
       default_(NULL),
       detailed_(NULL) {
+  Shell::GetInstance()->system_tray_notifier()->AddBluetoothObserver(this);
 }
 
 TrayBluetooth::~TrayBluetooth() {
+  Shell::GetInstance()->system_tray_notifier()->RemoveBluetoothObserver(this);
 }
 
 views::View* TrayBluetooth::CreateTrayView(user::LoginStatus status) {
