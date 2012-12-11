@@ -71,6 +71,10 @@ net::UploadData* CreateUploadData(
       NOTIMPLEMENTED();
     }
   }
+  upload_data->set_identifier(upload_data_stream->identifier());
+  upload_data->set_is_chunked(upload_data_stream->is_chunked());
+  upload_data->set_last_chunk_appended(
+      upload_data_stream->last_chunk_appended());
   return upload_data;
 }
 
