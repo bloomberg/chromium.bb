@@ -64,8 +64,7 @@ class SyncFileSystemApiTest : public ExtensionApiTest {
 // (http://crbug.com/160693)
 #if !defined(OS_CHROMEOS)
 
-// TODO(benwells): Re-enable this test.
-IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, DISABLED_DeleteFileSystem) {
+IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, DeleteFileSystem) {
   ASSERT_TRUE(RunPlatformAppTest("sync_file_system/delete_file_system"))
       << message_;
 }

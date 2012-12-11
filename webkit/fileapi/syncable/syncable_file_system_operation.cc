@@ -161,10 +161,6 @@ void SyncableFileSystemOperation::DirectoryExists(
     AbortOperation(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND);
     return;
   }
-  if (!is_directory_operation_enabled_) {
-    AbortOperation(callback, base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
-    return;
-  }
   file_system_operation_->DirectoryExists(url, callback);
   delete this;
 }

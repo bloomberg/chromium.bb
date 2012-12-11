@@ -20,11 +20,8 @@ var testStep = [
         errorHandler);
   },
   // Check the directory for contents.
-  function(fileEntry) {
-    fileSystem.root.getDirectory('/', {}, testStep.shift(), errorHandler);
-  },
   function(dirEntry) {
-    var dirReader = dirEntry.createReader();
+    var dirReader = fileSystem.root.createReader();
     dirReader.readEntries(testStep.shift(), errorHandler);
   },
   function(entries) {
@@ -61,8 +58,8 @@ function testFail() {
       "file system should no longer exist.");
 }
 
-function errorHandler() {
-  chrome.test.fail();
+function errorHandler(e) {
+  chrome.test.fail("e=" + e.code);
 }
 
 chrome.test.runTests([
