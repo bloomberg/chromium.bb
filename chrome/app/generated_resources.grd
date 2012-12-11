@@ -15594,6 +15594,15 @@ Some features may be unavailable.  Please check that the profile exists and you 
     <message name="IDS_MANAGED_MODE_GO_BACK_ACTION" desc="Label for the button that goes back to a 'safe' page.">
       Take me back!
     </message>
+
+    <!-- Password generation strings -->
+    <message name="IDS_PASSWORD_GENERATION_BUBBLE_TITLE" desc="The title of the bubble asking users if they would like Chrome to generate a password for them on an account creation page.">
+      Password Suggestion
+    </message>
+    <message name="IDS_PASSWORD_GENERATION_BUTTON_TEXT" desc="The text on the button that users click to accept the generated password">
+      Try it
+    </message>
+
     </messages>
 
     <structures fallback_to_english="true">

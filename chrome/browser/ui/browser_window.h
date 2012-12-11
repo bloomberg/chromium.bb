@@ -359,13 +359,11 @@ class BrowserWindow : public BaseWindow {
   // Show bubble for password generation positioned relative to |rect|. The
   // subclasses implementing this interface do not own the |password_generator|
   // object which is passed to generate the password. |form| is the form that
-  // contains the password field that the bubble will be associated with. A
-  // stub implementation is provided since this feature is currently not
-  // available on mac.
+  // contains the password field that the bubble will be associated with.
   virtual void ShowPasswordGenerationBubble(
       const gfx::Rect& rect,
       const content::PasswordForm& form,
-      autofill::PasswordGenerator* password_generator) {}
+      autofill::PasswordGenerator* password_generator) = 0;
 
  protected:
   friend void browser::CloseAllBrowsers();

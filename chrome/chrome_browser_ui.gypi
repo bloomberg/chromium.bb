@@ -349,6 +349,8 @@
         'browser/ui/cocoa/browser/avatar_menu_bubble_controller.mm',
         'browser/ui/cocoa/browser/edit_search_engine_cocoa_controller.h',
         'browser/ui/cocoa/browser/edit_search_engine_cocoa_controller.mm',
+	'browser/ui/cocoa/browser/password_generation_bubble_controller.h',
+	'browser/ui/cocoa/browser/password_generation_bubble_controller.mm',
         'browser/ui/cocoa/browser_command_executor.h',
         'browser/ui/cocoa/browser_window_cocoa.h',
         'browser/ui/cocoa/browser_window_cocoa.mm',

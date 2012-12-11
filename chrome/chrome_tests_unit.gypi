@@ -1214,6 +1214,7 @@
         'browser/ui/cocoa/browser/avatar_button_controller_unittest.mm',
         'browser/ui/cocoa/browser/avatar_menu_bubble_controller_unittest.mm',
         'browser/ui/cocoa/browser/edit_search_engine_cocoa_controller_unittest.mm',
+	'browser/ui/cocoa/browser/password_generation_bubble_controller_unittest.mm',
         'browser/ui/cocoa/browser_window_cocoa_unittest.mm',
         'browser/ui/cocoa/browser_window_controller_unittest.mm',
         'browser/ui/cocoa/bubble_view_unittest.mm',

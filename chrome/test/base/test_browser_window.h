@@ -139,6 +139,10 @@ class TestBrowserWindow : public BrowserWindow {
   virtual void ShowAvatarBubble(content::WebContents* web_contents,
                                 const gfx::Rect& rect) OVERRIDE {}
   virtual void ShowAvatarBubbleFromAvatarButton() OVERRIDE {}
+  virtual void ShowPasswordGenerationBubble(
+      const gfx::Rect& rect,
+      const content::PasswordForm& form,
+      autofill::PasswordGenerator* generator) OVERRIDE {}
 
  protected:
   virtual void DestroyBrowser() OVERRIDE {}

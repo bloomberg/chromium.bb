@@ -13,6 +13,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
@@ -25,6 +26,7 @@
 #import "chrome/browser/ui/cocoa/browser/avatar_button_controller.h"
 #import "chrome/browser/ui/cocoa/browser/avatar_menu_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/browser/edit_search_engine_cocoa_controller.h"
+#import "chrome/browser/ui/cocoa/browser/password_generation_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
 #import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
@@ -46,6 +48,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/password_form.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -78,6 +81,24 @@ typedef NSInteger NSWindowAnimationBehavior;
 @end
 
 #endif  // MAC_OS_X_VERSION_10_7
+
+namespace {
+
+NSPoint GetPointForBubble(content::WebContents* web_contents,
+                          int x_offset,
+                          int y_offset) {
+  NSView* view = web_contents->GetNativeView();
+  NSRect bounds = [view bounds];
+  NSPoint point;
+  point.x = NSMinX(bounds) + x_offset;
+  // The view's origin is at the bottom but |rect|'s origin is at the top.
+  point.y = NSMaxY(bounds) - y_offset;
+  point = [view convertPoint:point toView:nil];
+  point = [[view window] convertBaseToScreen:point];
+  return point;
+}
+
+}  // namespace
 
 BrowserWindowCocoa::BrowserWindowCocoa(Browser* browser,
                                        BrowserWindowController* controller)
@@ -637,14 +658,7 @@ NSWindow* BrowserWindowCocoa::window() const {
 
 void BrowserWindowCocoa::ShowAvatarBubble(WebContents* web_contents,
                                           const gfx::Rect& rect) {
-  NSView* view = web_contents->GetNativeView();
-  NSRect bounds = [view bounds];
-  NSPoint point;
-  point.x = NSMinX(bounds) + rect.right();
-  // The view's origin is at the bottom but |rect|'s origin is at the top.
-  point.y = NSMaxY(bounds) - rect.bottom();
-  point = [view convertPoint:point toView:nil];
-  point = [[view window] convertBaseToScreen:point];
+  NSPoint point = GetPointForBubble(web_contents, rect.right(), rect.bottom());
 
   // |menu| will automatically release itself on close.
   AvatarMenuBubbleController* menu =
@@ -656,4 +670,25 @@ void BrowserWindowCocoa::ShowAvatarBubble(WebContents* web_contents,
 
 void BrowserWindowCocoa::ShowAvatarBubbleFromAvatarButton() {
   [[controller_ avatarButtonController] showAvatarBubble];
+}
+
+void BrowserWindowCocoa::ShowPasswordGenerationBubble(
+    const gfx::Rect& rect,
+    const content::PasswordForm& form,
+    autofill::PasswordGenerator* password_generator) {
+  WebContents* web_contents = chrome::GetActiveWebContents(browser_);
+  // We want to point to the middle of the rect instead of the right side.
+  NSPoint point = GetPointForBubble(web_contents,
+                                    rect.x() + rect.width()/2,
+                                    rect.bottom());
+
+  PasswordGenerationBubbleController* controller =
+      [[PasswordGenerationBubbleController alloc]
+        initWithWindow:browser_->window()->GetNativeWindow()
+            anchoredAt:point
+        renderViewHost:web_contents->GetRenderViewHost()
+        passwordManager:PasswordManager::FromWebContents(web_contents)
+        usingGenerator:password_generator
+               forForm:form];
+  [controller showWindow:nil];
 }

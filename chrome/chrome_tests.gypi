@@ -1144,6 +1144,7 @@
         'browser/ui/browser_navigator_browsertest_chromeos.cc',
         'browser/ui/cocoa/applescript/browsercrapplication+applescript_test.mm',
         'browser/ui/cocoa/applescript/window_applescript_test.mm',
+        'browser/ui/cocoa/browser_window_cocoa_browsertest.mm',
         'browser/ui/cocoa/browser_window_controller_browsertest.mm',
         'browser/ui/cocoa/bookmarks/bookmark_bar_controller_browsertest.mm',
         'browser/ui/cocoa/constrained_window/constrained_window_mac_browsertest.mm',
