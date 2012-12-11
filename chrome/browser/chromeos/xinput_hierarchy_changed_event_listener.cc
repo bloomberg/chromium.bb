@@ -7,6 +7,7 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/XInput2.h>
 
+#include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "ui/base/x/x11_util.h"
@@ -54,7 +55,7 @@ void HandleHierarchyChangedEvent(
 
   if (update_keyboard_status) {
     chromeos::input_method::InputMethodManager* input_method_manager =
-        chromeos::input_method::InputMethodManager::GetInstance();
+        chromeos::input_method::GetInputMethodManager();
     chromeos::input_method::XKeyboard* xkeyboard =
         input_method_manager->GetXKeyboard();
     xkeyboard->ReapplyCurrentModifierLockStatus();

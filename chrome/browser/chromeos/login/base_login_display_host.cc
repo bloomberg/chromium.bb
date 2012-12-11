@@ -17,6 +17,7 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/customization_document.h"
+#include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/language_preferences.h"
@@ -71,7 +72,7 @@ void DetermineAndSaveHardwareKeyboard(const std::string& locale,
     layout = oem_layout;
   } else {
     chromeos::input_method::InputMethodManager* manager =
-        chromeos::input_method::InputMethodManager::GetInstance();
+        chromeos::input_method::GetInputMethodManager();
     // Otherwise, determine the hardware keyboard from the locale.
     std::vector<std::string> input_method_ids;
     if (manager->GetInputMethodUtil()->GetInputMethodIdsFromLanguageCode(
@@ -376,7 +377,7 @@ void ShowLoginWizard(const std::string& first_screen_name,
   VLOG(1) << "Showing OOBE screen: " << first_screen_name;
 
   chromeos::input_method::InputMethodManager* manager =
-      chromeos::input_method::InputMethodManager::GetInstance();
+      chromeos::input_method::GetInputMethodManager();
 
   // Set up keyboards. For example, when |locale| is "en-US", enable US qwerty
   // and US dvorak keyboard layouts.

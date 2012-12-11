@@ -11,6 +11,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "chrome/browser/chromeos/input_method/ibus_keymap.h"
+#include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -57,8 +58,7 @@ InputMethodEngineIBus::InputMethodEngineIBus()
 
 InputMethodEngineIBus::~InputMethodEngineIBus() {
   GetCurrentService()->UnsetEngine();
-  input_method::InputMethodManager::GetInstance()->
-      RemoveInputMethodExtension(ibus_id_);
+  input_method::GetInputMethodManager()->RemoveInputMethodExtension(ibus_id_);
 }
 
 void InputMethodEngineIBus::Initialize(
@@ -79,13 +79,11 @@ void InputMethodEngineIBus::Initialize(
   ibus_id_ += engine_id;
 
   input_method::InputMethodManager* manager =
-      input_method::InputMethodManager::GetInstance();
+      input_method::GetInputMethodManager();
   std::string layout;
   if (!layouts.empty()) {
     layout = JoinString(layouts, ',');
   } else {
-    input_method::InputMethodManager* manager =
-        input_method::InputMethodManager::GetInstance();
     const std::string fallback_id =
         manager->GetInputMethodUtil()->GetHardwareInputMethodId();
     const input_method::InputMethodDescriptor* fallback_desc =

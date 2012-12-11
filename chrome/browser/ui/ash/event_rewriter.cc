@@ -27,6 +27,7 @@
 
 #include "base/chromeos/chromeos_version.h"
 #include "base/command_line.h"
+#include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
@@ -37,7 +38,7 @@
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
 #include "ui/base/x/x11_util.h"
 
-using chromeos::input_method::InputMethodManager;
+using chromeos::input_method::GetInputMethodManager;
 #endif
 
 namespace {
@@ -126,8 +127,7 @@ bool IsMod3UsedByCurrentInputMethod() {
   // it's not possible to make both features work. For now, we don't remap
   // Mod3Mask when Neo2 is in use.
   // TODO(yusukes): Remove the restriction.
-  return InputMethodManager::GetInstance()->GetCurrentInputMethod().id() ==
-      kNeo2LayoutId;
+  return GetInputMethodManager()->GetCurrentInputMethod().id() == kNeo2LayoutId;
 }
 #endif
 
@@ -524,8 +524,8 @@ bool EventRewriter::RewriteModifiers(ui::KeyEvent* event) {
   if ((event->type() == ui::ET_KEY_PRESSED) &&
       (event->key_code() != ui::VKEY_CAPITAL) &&
       (remapped_keycode == ui::VKEY_CAPITAL)) {
-    chromeos::input_method::XKeyboard* xkeyboard = xkeyboard_ ?
-        xkeyboard_ : InputMethodManager::GetInstance()->GetXKeyboard();
+    chromeos::input_method::XKeyboard* xkeyboard =
+        xkeyboard_ ? xkeyboard_ : GetInputMethodManager()->GetXKeyboard();
     xkeyboard->SetCapsLockEnabled(!xkeyboard->CapsLockIsEnabled());
   }
 

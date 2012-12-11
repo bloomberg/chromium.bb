@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/extensions/input_method_api.h"
 
 #include "base/values.h"
+#include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/extensions/input_method_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -28,7 +29,7 @@ bool GetInputMethodFunction::RunImpl() {
       extensions::ExtensionSystem::Get(profile_)->extension_service()->
           input_method_event_router();
   chromeos::input_method::InputMethodManager* manager =
-      chromeos::input_method::InputMethodManager::GetInstance();
+      chromeos::input_method::GetInputMethodManager();
   const std::string input_method =
       router->GetInputMethodForXkb(manager->GetCurrentInputMethod().id());
   SetResult(Value::CreateStringValue(input_method));

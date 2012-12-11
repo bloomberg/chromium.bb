@@ -16,6 +16,7 @@
 #include "base/threading/thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
+#include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
@@ -183,7 +184,7 @@ class LoginUtilsTest : public testing::Test,
     // which is part of io_thread_state_.
     DBusThreadManager::InitializeForTesting(&mock_dbus_thread_manager_);
 
-    input_method::InputMethodManager::InitializeForTesting(
+    input_method::InitializeForTesting(
         &mock_input_method_manager_);
 
     // Likewise, SessionManagerClient should also be initialized before

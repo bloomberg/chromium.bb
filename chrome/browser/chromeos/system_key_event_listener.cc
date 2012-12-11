@@ -11,6 +11,7 @@
 #undef Status
 
 #include "base/message_loop.h"
+#include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "ui/base/x/x11_util.h"
@@ -46,7 +47,7 @@ SystemKeyEventListener::SystemKeyEventListener()
       num_lock_mask_(0),
       xkb_event_base_(0) {
   input_method::XKeyboard* xkeyboard =
-      input_method::InputMethodManager::GetInstance()->GetXKeyboard();
+      input_method::GetInputMethodManager()->GetXKeyboard();
   num_lock_mask_ = xkeyboard->GetNumLockMask();
   xkeyboard->GetLockedModifiers(&caps_lock_is_on_, NULL);
 
@@ -107,7 +108,7 @@ void SystemKeyEventListener::OnCapsLock(bool enabled) {
 
 bool SystemKeyEventListener::ProcessedXEvent(XEvent* xevent) {
   input_method::InputMethodManager* input_method_manager =
-      input_method::InputMethodManager::GetInstance();
+      input_method::GetInputMethodManager();
 
   if (xevent->type == xkb_event_base_) {
     // TODO(yusukes): Move this part to aura::RootWindowHost.

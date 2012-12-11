@@ -50,6 +50,7 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/background/ash_user_wallpaper_delegate.h"
 #include "chrome/browser/chromeos/extensions/media_player_event_router.h"
+#include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/webui_login_display_host.h"
@@ -421,7 +422,7 @@ ash::UserWallpaperDelegate* ChromeShellDelegate::CreateUserWallpaperDelegate() {
 ash::CapsLockDelegate* ChromeShellDelegate::CreateCapsLockDelegate() {
 #if defined(OS_CHROMEOS)
   chromeos::input_method::XKeyboard* xkeyboard =
-      chromeos::input_method::InputMethodManager::GetInstance()->GetXKeyboard();
+      chromeos::input_method::GetInputMethodManager()->GetXKeyboard();
   return new CapsLockHandler(xkeyboard);
 #else
   return new CapsLockHandler;

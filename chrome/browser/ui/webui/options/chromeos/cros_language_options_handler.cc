@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -75,7 +76,7 @@ void CrosLanguageOptionsHandler::GetLocalizedValues(
           IDS_OPTIONS_SETTINGS_LANGUAGES_INPUT_METHOD_EXTENSION_DESCRIPTION));
 
   input_method::InputMethodManager* manager =
-      input_method::InputMethodManager::GetInstance();
+      input_method::GetInputMethodManager();
   // GetSupportedInputMethods() never return NULL.
   scoped_ptr<input_method::InputMethodDescriptors> descriptors(
       manager->GetSupportedInputMethods());
@@ -104,7 +105,7 @@ void CrosLanguageOptionsHandler::RegisterMessages() {
 ListValue* CrosLanguageOptionsHandler::GetInputMethodList(
     const input_method::InputMethodDescriptors& descriptors) {
   input_method::InputMethodManager* manager =
-      input_method::InputMethodManager::GetInstance();
+      input_method::GetInputMethodManager();
 
   ListValue* input_method_list = new ListValue();
 
@@ -173,7 +174,7 @@ ListValue* CrosLanguageOptionsHandler::GetLanguageList(
   for (std::set<std::string>::const_iterator iter = language_codes.begin();
        iter != language_codes.end(); ++iter) {
     input_method::InputMethodUtil* input_method_util =
-        input_method::InputMethodManager::GetInstance()->GetInputMethodUtil();
+        input_method::GetInputMethodManager()->GetInputMethodUtil();
     const string16 display_name =
         input_method_util->GetLanguageDisplayNameFromCode(*iter);
     const string16 native_display_name =
@@ -214,7 +215,7 @@ ListValue* CrosLanguageOptionsHandler::GetLanguageList(
 
 base::ListValue* CrosLanguageOptionsHandler::GetExtensionImeList() {
   input_method::InputMethodManager* manager =
-      input_method::InputMethodManager::GetInstance();
+      input_method::GetInputMethodManager();
 
   input_method::InputMethodDescriptors descriptors;
   manager->GetInputMethodExtensions(&descriptors);

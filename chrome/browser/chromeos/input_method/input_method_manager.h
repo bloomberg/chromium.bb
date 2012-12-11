@@ -13,7 +13,6 @@
 #include "chrome/browser/chromeos/input_method/input_method_config.h"
 #include "chrome/browser/chromeos/input_method/input_method_descriptor.h"
 #include "chrome/browser/chromeos/input_method/input_method_property.h"
-#include "chrome/browser/chromeos/input_method/input_method_util.h"
 
 namespace ui {
 class Accelerator;
@@ -23,11 +22,12 @@ namespace chromeos {
 class InputMethodEngine;
 namespace input_method {
 
+class InputMethodUtil;
 class XKeyboard;
 
 // This class manages input methodshandles.  Classes can add themselves as
 // observers. Clients can get an instance of this library class by:
-// InputMethodManager::GetInstance().
+// GetInputMethodManager().
 class InputMethodManager {
  public:
   enum State {
@@ -158,24 +158,6 @@ class InputMethodManager {
   // Switches to an input method (or keyboard layout) which is associated with
   // the |accelerator|.
   virtual bool SwitchInputMethod(const ui::Accelerator& accelerator) = 0;
-
-  // Sets the global instance. Must be called before any calls to GetInstance().
-  // We explicitly initialize and shut down the global object, rather than
-  // making it a Singleton, to ensure clean startup and shutdown.
-  static void Initialize();
-
-  // Similar to Initialize(), but can inject an alternative
-  // InputMethodManager such as MockInputMethodManager for testing.
-  // The injected object will be owned by the internal pointer and deleted
-  // by Shutdown().
-  static void InitializeForTesting(InputMethodManager* mock_manager);
-
-  // Destroys the global instance.
-  static void Shutdown();
-
-  // Gets the global instance. Initialize() or InitializeForTesting() must be
-  // called first.
-  static InputMethodManager* GetInstance();
 };
 
 }  // namespace input_method

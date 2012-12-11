@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
+#include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
@@ -137,7 +138,7 @@ void WebUILoginDisplay::ShowError(int error_msg_id,
       error_msg_id != IDS_LOGIN_ERROR_OWNER_REQUIRED) {
     // Display a warning if Caps Lock is on.
     input_method::InputMethodManager* ime_manager =
-        input_method::InputMethodManager::GetInstance();
+        input_method::GetInputMethodManager();
     if (ime_manager->GetXKeyboard()->CapsLockIsEnabled()) {
       // TODO(ivankr): use a format string instead of concatenation.
       error_text += "\n" +

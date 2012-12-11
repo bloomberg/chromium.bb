@@ -8,6 +8,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/web_socket_proxy_controller.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
@@ -25,11 +26,11 @@ const char kXkbPrefix[] = "xkb:";
 namespace chromeos {
 
 ExtensionInputMethodEventRouter::ExtensionInputMethodEventRouter() {
-  input_method::InputMethodManager::GetInstance()->AddObserver(this);
+  input_method::GetInputMethodManager()->AddObserver(this);
 }
 
 ExtensionInputMethodEventRouter::~ExtensionInputMethodEventRouter() {
-  input_method::InputMethodManager::GetInstance()->RemoveObserver(this);
+  input_method::GetInputMethodManager()->RemoveObserver(this);
 }
 
 void ExtensionInputMethodEventRouter::InputMethodChanged(

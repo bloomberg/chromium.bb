@@ -19,6 +19,7 @@
 #include <X11/XF86keysym.h>
 #include <X11/Xlib.h>
 
+#include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/mock_xkeyboard.h"
 #include "chrome/browser/chromeos/login/mock_user_manager.h"
@@ -168,13 +169,13 @@ class EventRewriterTest : public testing::Test {
         .WillRepeatedly(testing::Return(false));
     input_method_manager_mock_ =
         new chromeos::input_method::MockInputMethodManager;
-    chromeos::input_method::InputMethodManager::InitializeForTesting(
+    chromeos::input_method::InitializeForTesting(
         input_method_manager_mock_);  // pass ownership
   }
 
   virtual void TearDown() {
     // Shutdown() deletes the IME mock object.
-    chromeos::input_method::InputMethodManager::Shutdown();
+    chromeos::input_method::Shutdown();
   }
 
  protected:

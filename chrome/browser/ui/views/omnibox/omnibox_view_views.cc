@@ -11,6 +11,7 @@
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
+#include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
@@ -223,7 +224,7 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
 
 OmniboxViewViews::~OmniboxViewViews() {
 #if defined(OS_CHROMEOS)
-  chromeos::input_method::InputMethodManager::GetInstance()->
+  chromeos::input_method::GetInputMethodManager()->
       RemoveCandidateWindowObserver(this);
 #endif
 
@@ -264,7 +265,7 @@ void OmniboxViewViews::Init() {
   set_border(views::Border::CreateEmptyBorder(vertical_margin, 0,
                                               vertical_margin, 0));
 #if defined(OS_CHROMEOS)
-  chromeos::input_method::InputMethodManager::GetInstance()->
+  chromeos::input_method::GetInputMethodManager()->
       AddCandidateWindowObserver(this);
 #endif
 }

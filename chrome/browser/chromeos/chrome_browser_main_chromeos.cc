@@ -30,6 +30,7 @@
 #include "chrome/browser/chromeos/extensions/default_app_order.h"
 #include "chrome/browser/chromeos/external_metrics.h"
 #include "chrome/browser/chromeos/imageburner/burn_manager.h"
+#include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_idle_logout.h"
@@ -245,7 +246,7 @@ class DBusServices {
     CrosDBusService::Initialize();
 
     // This function and SystemKeyEventListener use InputMethodManager.
-    input_method::InputMethodManager::Initialize();
+    chromeos::input_method::Initialize();
     disks::DiskMountManager::Initialize();
     cryptohome::AsyncMethodCaller::Initialize();
 
@@ -260,8 +261,8 @@ class DBusServices {
 
     if (base::chromeos::IsRunningOnChromeOS()) {
       // Disable Num Lock on X start up for http://crosbug.com/29169.
-      input_method::InputMethodManager::GetInstance()->
-          GetXKeyboard()->SetNumLockEnabled(false);
+      input_method::GetInputMethodManager()->GetXKeyboard()->
+          SetNumLockEnabled(false);
     }
 
     // Initialize the device settings service so that we'll take actions per
@@ -304,7 +305,7 @@ class DBusServices {
 
     cryptohome::AsyncMethodCaller::Shutdown();
     disks::DiskMountManager::Shutdown();
-    input_method::InputMethodManager::Shutdown();
+    input_method::Shutdown();
     CrosDBusService::Shutdown();
     // NOTE: This must only be called if Initialize() was called.
     DBusThreadManager::Shutdown();

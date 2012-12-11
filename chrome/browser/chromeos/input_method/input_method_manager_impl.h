@@ -32,6 +32,12 @@ class InputMethodManagerImpl : public InputMethodManager,
   explicit InputMethodManagerImpl(scoped_ptr<InputMethodDelegate> delegate);
   virtual ~InputMethodManagerImpl();
 
+  // Attach IBusController, CandidateWindowController, and XKeyboard objects
+  // to the InputMethodManagerImpl object. You don't have to call this function
+  // if you attach them yourself (e.g. in unit tests) using the protected
+  // setters.
+  void Init();
+
   // InputMethodManager override:
   virtual void AddObserver(InputMethodManager::Observer* observer) OVERRIDE;
   virtual void AddCandidateWindowObserver(
@@ -83,8 +89,6 @@ class InputMethodManagerImpl : public InputMethodManager,
   void SetXKeyboardForTesting(XKeyboard* xkeyboard);
 
  private:
-  friend class InputMethodManager;
-
   // IBusController overrides:
   virtual void PropertyChanged() OVERRIDE;
   virtual void OnConnected() OVERRIDE;
@@ -94,11 +98,6 @@ class InputMethodManagerImpl : public InputMethodManager,
   // CandidateWindowController::Observer overrides:
   virtual void CandidateWindowOpened() OVERRIDE;
   virtual void CandidateWindowClosed() OVERRIDE;
-
-  // Attach IBusController, CandidateWindowController, and XKeyboard objects
-  // to the InputMethodManagerImpl object. You don't have to call this function
-  // if you attach them yourself (e.g. in unit tests) using the setters above.
-  void Init();
 
   // Temporarily deactivates all input methods (e.g. Chinese, Japanese, Arabic)
   // since they are not necessary to input a login password. Users are still

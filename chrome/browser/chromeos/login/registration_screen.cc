@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -131,7 +132,7 @@ void RegistrationScreen::CloseScreen(ScreenObserver::ExitCodes code) {
   if (g_browser_process) {
     const std::string locale = g_browser_process->GetApplicationLocale();
     input_method::InputMethodManager* manager =
-        input_method::InputMethodManager::GetInstance();
+        input_method::GetInputMethodManager();
     manager->EnableLayouts(locale, "");
   }
   delegate()->GetObserver()->OnExit(code);

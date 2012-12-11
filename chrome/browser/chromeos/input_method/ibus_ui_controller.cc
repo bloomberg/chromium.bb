@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
+#include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/input_method_descriptor.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
@@ -51,7 +52,7 @@ class IBusChromeOSClientImpl : public ui::internal::IBusClient {
 
   // ui::IBusClient override.
   virtual InputMethodType GetInputMethodType() OVERRIDE {
-    InputMethodManager* manager = InputMethodManager::GetInstance();
+    InputMethodManager* manager = GetInputMethodManager();
     DCHECK(manager);
     return InputMethodUtil::IsKeyboardLayout(
         manager->GetCurrentInputMethod().id()) ?

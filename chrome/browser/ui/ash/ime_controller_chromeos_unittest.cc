@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/ime_controller_chromeos.h"
 
 #include "base/basictypes.h"
+#include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -19,12 +20,12 @@ class ImeControllerTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     mock_input_method_manager_ =
         new chromeos::input_method::MockInputMethodManager;
-    chromeos::input_method::InputMethodManager::InitializeForTesting(
+    chromeos::input_method::InitializeForTesting(
         mock_input_method_manager_);
   }
 
   virtual void TearDown() OVERRIDE {
-    chromeos::input_method::InputMethodManager::Shutdown();
+    chromeos::input_method::Shutdown();
     mock_input_method_manager_ = NULL;
   }
 

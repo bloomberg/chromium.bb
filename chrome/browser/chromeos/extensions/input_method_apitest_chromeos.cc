@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/chromeos/extensions/input_method_event_router.h"
+#include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/extensions/api/test/test_api.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -32,7 +33,7 @@ class SetInputMethodListener : public content::NotificationObserver {
   explicit SetInputMethodListener(int count) : count_(count) {
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_TEST_MESSAGE,
                    content::NotificationService::AllSources());
-    chromeos::input_method::InputMethodManager::GetInstance()->
+    chromeos::input_method::GetInputMethodManager()->
         EnableLayouts(kLoginScreenUILanguage, kInitialInputMethodOnLoginScreen);
   }
 
@@ -49,7 +50,7 @@ class SetInputMethodListener : public content::NotificationObserver {
                                                       kSetInputMethodMessage,
                                                       kNewInputMethod);
     if (content == expected_message) {
-      chromeos::input_method::InputMethodManager::GetInstance()->
+      chromeos::input_method::GetInputMethodManager()->
           ChangeInputMethod(StringPrintf("xkb:%s", kNewInputMethod));
 
       extensions::TestSendMessageFunction* function =

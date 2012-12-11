@@ -10,13 +10,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/input_method_descriptor.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager.h"
 #include "chrome/browser/ui/webui/options/chromeos/cros_language_options_handler.h"
 
 using chromeos::input_method::InputMethodDescriptor;
 using chromeos::input_method::InputMethodDescriptors;
-using chromeos::input_method::InputMethodManager;
 using chromeos::input_method::MockInputMethodManager;
 
 namespace {
@@ -24,10 +24,10 @@ namespace {
 class LanguageOptionsHandlerTest : public testing::Test {
  public:
   LanguageOptionsHandlerTest() {
-    InputMethodManager::InitializeForTesting(new MockInputMethodManager);
+    chromeos::input_method::InitializeForTesting(new MockInputMethodManager);
   }
   virtual ~LanguageOptionsHandlerTest() {
-    InputMethodManager::Shutdown();
+    chromeos::input_method::Shutdown();
   }
 
  protected:
