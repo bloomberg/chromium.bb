@@ -730,6 +730,7 @@ TEST(PermissionsTest, PermissionMessages) {
   // Platform apps.
   skip.insert(APIPermission::kFileSystem);
   skip.insert(APIPermission::kSocket);
+  skip.insert(APIPermission::kUsbDevice);
 
   PermissionsInfo* info = PermissionsInfo::GetInstance();
   APIPermissionSet permissions = info->GetAll();

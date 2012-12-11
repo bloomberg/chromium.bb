@@ -7,6 +7,7 @@
 #include "chrome/common/extensions/permissions/bluetooth_device_permission.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
 #include "chrome/common/extensions/permissions/socket_permission.h"
+#include "chrome/common/extensions/permissions/usb_device_permission.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -339,6 +340,9 @@ void APIPermissionInfo::RegisterAllPermissions(
     { APIPermission::kUsb, "usb", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_USB,
       PermissionMessage::kUsb },
+    { APIPermission::kUsbDevice, "usbDevice",
+      kFlagMustBeOptional, 0, PermissionMessage::kNone,
+      &::CreateAPIPermission<UsbDevicePermission> },
     { APIPermission::kSystemIndicator, "systemIndicator", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_SYSTEM_INDICATOR,
       PermissionMessage::kSystemIndicator },

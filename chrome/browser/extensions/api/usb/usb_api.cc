@@ -14,6 +14,7 @@
 #include "chrome/browser/usb/usb_service.h"
 #include "chrome/browser/usb/usb_service_factory.h"
 #include "chrome/common/extensions/api/usb.h"
+#include "chrome/common/extensions/permissions/usb_device_permission.h"
 
 namespace BulkTransfer = extensions::api::usb::BulkTransfer;
 namespace ClaimInterface = extensions::api::usb::ClaimInterface;
@@ -68,6 +69,8 @@ static const char* kErrorConvertRecipient = "Invalid transfer recipient.";
 static const char* kErrorConvertRequestType = "Invalid request type.";
 static const char* kErrorMalformedParameters = "Error parsing parameters.";
 static const char* kErrorNoDevice = "No such device.";
+static const char* kErrorPermissionDenied =
+    "Permission to access device was denied";
 
 static UsbDevice* device_for_test_ = NULL;
 
@@ -295,6 +298,15 @@ void UsbFindDevicesFunction::AsyncWorkStart() {
     result->Append(PopulateDevice(manager_->Add(resource), 0, 0));
     SetResult(result.release());
     AsyncWorkCompleted();
+    return;
+  }
+
+  UsbDevicePermission::CheckParam param(
+      parameters_->vendor_id, parameters_->product_id);
+  if (!GetExtension()->CheckAPIPermissionWithParam(
+        APIPermission::kUsbDevice, &param)) {
+    LOG(WARNING) << "Insufficient permissions to access device.";
+    CompleteWithError(kErrorPermissionDenied);
     return;
   }
 

@@ -1490,6 +1490,16 @@ bool Extension::InitFromValue(int flags, string16* error) {
     return false;
   }
 
+  // Check for any permissions that are optional only.
+  for (APIPermissionSet::const_iterator i = api_permissions.begin();
+      i != api_permissions.end(); ++i) {
+    if ((*i)->info()->must_be_optional()) {
+      *error = ErrorUtils::FormatErrorMessageUTF16(
+          errors::kPermissionMustBeOptional, (*i)->info()->name());
+      return false;
+    }
+  }
+
   // TODO(jeremya/kalman) do this via the features system by exposing the
   // app.window API to platform apps, with no dependency on any permissions.
   // See http://crbug.com/120069.

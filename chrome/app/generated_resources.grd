@@ -5088,8 +5088,17 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
       <message name="IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH" desc="Permission string for access to the Bluetooth API.">
         Access Bluetooth on your system
       </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH_DEVICE" desc="Permission string for access to a specific the Bluetooth device.">
+      <message name="IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH_DEVICE" desc="Permission string for access to a specific Bluetooth device.">
         Access the Bluetooth device "<ph name="DEVICE_NAME">$1<ex>Galaxy Nexus</ex></ph>".
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_UNKNOWN_USB_VENDOR" desc="Description used within IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE when a vendor cannot be established for a USB device.">
+        Unknown Company
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_UNKNOWN_USB_PRODUCT" desc="Description used within IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE when a product cannot be established for a USB device.">
+        Unknown Device
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE" desc="Permission string for access to a specific USB device.">
+        Access the USB device "<ph name="PRODUCT_NAME">$1<ex>SoundKnob</ex></ph> (<ph name="VENDOR_NAME">$2<ex>Griffin Technology</ex></ph>)".
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_AUDIO_CAPTURE" desc="Permission string for access to audio capture devices.">
         Use your microphone

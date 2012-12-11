@@ -4,12 +4,10 @@
 
 #include "chrome/common/extensions/permissions/bluetooth_device_permission.h"
 
-#include <algorithm>
 #include <string>
 #include <vector>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -36,16 +34,6 @@ BluetoothDevicePermission::BluetoothDevicePermission(
 }
 
 BluetoothDevicePermission::~BluetoothDevicePermission() {
-}
-
-void BluetoothDevicePermission::AddDevicesFromString(
-    const std::string &devices_string) {
-  std::vector<std::string> devices;
-  Tokenize(devices_string, kSeparator, &devices);
-  for (std::vector<std::string>::const_iterator i = devices.begin();
-      i != devices.end(); ++i) {
-    data_set_.insert(BluetoothDevicePermissionData(*i));
-  }
 }
 
 std::string BluetoothDevicePermission::ToString() const {

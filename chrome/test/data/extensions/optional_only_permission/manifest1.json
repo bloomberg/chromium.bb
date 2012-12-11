@@ -1,0 +1,13 @@
+{
+  "name": "optional only permission test",
+  "version": "1.0",
+  "manifest_version": 2,
+  "app": {
+    "background": {
+      "scripts": ["main.js"]
+    }
+  },
+  "permissions": [
+    {"usbDevice":["0:0"]}
+  ]
+}

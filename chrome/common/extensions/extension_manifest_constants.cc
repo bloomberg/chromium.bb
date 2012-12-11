@@ -522,6 +522,8 @@ const char kNoWildCardsInPaths[] =
   "Wildcards are not allowed in extent URL pattern paths.";
 const char kOneUISurfaceOnly[] =
     "Only one of 'browser_action', 'page_action', and 'app' can be specified.";
+const char kPermissionMustBeOptional[] =
+    "Permission '*' must be specified in the optional section of the manifest.";
 const char kPermissionNotAllowed[] =
     "Access to permission '*' denied.";
 const char kPermissionNotAllowedInManifest[] =

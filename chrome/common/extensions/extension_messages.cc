@@ -19,6 +19,7 @@ using extensions::Extension;
 using extensions::PermissionSet;
 using extensions::SocketPermissionData;
 using extensions::URLPatternSet;
+using extensions::UsbDevicePermissionData;
 
 ExtensionMsg_Loaded_Params::ExtensionMsg_Loaded_Params()
     : location(Extension::INVALID),
@@ -225,6 +226,25 @@ bool ParamTraits<BluetoothDevicePermissionData>::Read(
 void ParamTraits<BluetoothDevicePermissionData>::Log(
     const param_type& p, std::string* l) {
   LogParam(std::string("<BluetoothDevicePermissionData>"), l);
+}
+
+void ParamTraits<UsbDevicePermissionData>::Write(
+    Message* m, const param_type& p) {
+  WriteParam(m, p.GetAsString());
+}
+
+bool ParamTraits<UsbDevicePermissionData>::Read(
+    const Message* m, PickleIterator* iter, param_type* r) {
+  std::string spec;
+  if (!ReadParam(m, iter, &spec))
+    return false;
+
+  return r->Parse(spec);
+}
+
+void ParamTraits<UsbDevicePermissionData>::Log(
+    const param_type& p, std::string* l) {
+  LogParam(std::string("<UsbDevicePermissionData>"), l);
 }
 
 void ParamTraits<ExtensionMsg_Loaded_Params>::Write(Message* m,

@@ -4,12 +4,14 @@
 
 #include "chrome/browser/extensions/api/permissions/permissions_api_helpers.h"
 
+#include "base/json/json_reader.h"
 #include "base/values.h"
 #include "chrome/common/extensions/api/permissions.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/permissions/bluetooth_device_permission.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
+#include "chrome/common/extensions/permissions/usb_device_permission.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/url_pattern_set.h"
 
@@ -25,12 +27,14 @@ namespace permissions_api_helpers {
 
 namespace {
 
+const char kInvalidParameter[] =
+    "Invalid argument for permission '*'.";
 const char kInvalidOrigin[] =
     "Invalid value for origin pattern *: *";
 const char kUnknownPermissionError[] =
     "'*' is not a recognized permission.";
-const char kNonBluetoothPermissionWithArgument[] =
-    "Only the bluetoothDevice permission supports arguments.";
+const char kUnsupportedPermissionId[] =
+    "Only the bluetoothDevice and usbDevice permissions support arguments.";
 
 }  // namespace
 
@@ -68,20 +72,36 @@ scoped_refptr<PermissionSet> UnpackPermissionSet(
         std::string permission_name = it->substr(0, delimiter);
         std::string permission_arg = it->substr(delimiter + 1);
 
-        // Restrict this to the bluetoothDevice permission for now, to
-        // discourage the use of this style of permission spreading until it is
-        // better supported.
-        const APIPermissionInfo* permission_info = info->GetByID(
-            APIPermission::kBluetoothDevice);
-        if (permission_name != permission_info->name()) {
-          *error = kNonBluetoothPermissionWithArgument;
+        scoped_ptr<base::Value> permission_json(
+            base::JSONReader::Read(permission_arg));
+        if (!permission_json.get()) {
+          *error = ErrorUtils::FormatErrorMessage(kInvalidParameter, *it);
           return NULL;
         }
 
-        BluetoothDevicePermission *permission =
-            new BluetoothDevicePermission(permission_info);
-        permission->AddDevicesFromString(permission_arg);
+        APIPermission* permission = NULL;
 
+        // Explicitly check the permissions that accept arguments until the bug
+        // referenced above is fixed.
+        const APIPermissionInfo* bluetooth_device_permission_info =
+            info->GetByID(APIPermission::kBluetoothDevice);
+        const APIPermissionInfo* usb_device_permission_info =
+            info->GetByID(APIPermission::kUsbDevice);
+        if (permission_name == bluetooth_device_permission_info->name()) {
+          permission = new BluetoothDevicePermission(
+              bluetooth_device_permission_info);
+        } else if (permission_name == usb_device_permission_info->name()) {
+          permission = new UsbDevicePermission(usb_device_permission_info);
+        } else {
+          *error = kUnsupportedPermissionId;
+          return NULL;
+        }
+
+        CHECK(permission);
+        if (!permission->FromValue(permission_json.get())) {
+          *error = ErrorUtils::FormatErrorMessage(kInvalidParameter, *it);
+          return NULL;
+        }
         apis.insert(permission);
       } else {
         const APIPermissionInfo* permission_info = info->GetByName(*it);

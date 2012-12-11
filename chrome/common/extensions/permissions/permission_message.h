@@ -55,6 +55,7 @@ class PermissionMessage {
     kUsb,
     kSystemIndicator,
     kBluetoothDevice,
+    kUsbDevice,
     kEnumBoundary
   };
 

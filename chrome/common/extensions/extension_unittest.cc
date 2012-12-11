@@ -21,6 +21,7 @@
 #include "chrome/common/extensions/permissions/api_permission.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/extensions/permissions/socket_permission.h"
+#include "chrome/common/extensions/permissions/usb_device_permission.h"
 #include "chrome/common/url_constants.h"
 #include "extensions/common/error_utils.h"
 #include "googleurl/src/gurl.h"
@@ -40,6 +41,7 @@ using extensions::Feature;
 using extensions::PermissionSet;
 using extensions::SocketPermission;
 using extensions::URLPatternSet;
+using extensions::UsbDevicePermission;
 
 namespace keys = extension_manifest_keys;
 namespace values = extension_manifest_values;
@@ -1244,6 +1246,31 @@ TEST(ExtensionTest, DontSyncDefault) {
                             Extension::INTERNAL, 0, FilePath(),
                             Extension::WAS_INSTALLED_BY_DEFAULT));
   EXPECT_FALSE(extension_default->IsSyncable());
+}
+
+TEST(ExtensionTest, OptionalOnlyPermission) {
+  // Set feature current channel to dev because the only permission that must
+  // be optional (usbDevice) is only available on dev channel.
+  Feature::ScopedCurrentChannel scoped_channel(
+      chrome::VersionInfo::CHANNEL_DEV);
+
+  scoped_refptr<Extension> extension;
+  std::string error;
+  extension = LoadManifestUnchecked("optional_only_permission",
+                                    "manifest1.json",
+                                    Extension::INTERNAL, Extension::NO_FLAGS,
+                                    &error);
+  EXPECT_TRUE(extension == NULL);
+  ASSERT_EQ(ErrorUtils::FormatErrorMessage(
+        errors::kPermissionMustBeOptional, "usbDevice"), error);
+
+  error.clear();
+  extension = LoadManifestUnchecked("optional_only_permission",
+                                    "manifest2.json",
+                                    Extension::INTERNAL, Extension::NO_FLAGS,
+                                    &error);
+  EXPECT_TRUE(extension != NULL);
+  EXPECT_TRUE(error.empty());
 }
 
 // These last 2 tests don't make sense on Chrome OS, where extension plugins

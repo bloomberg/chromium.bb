@@ -344,6 +344,10 @@
     "channel": "dev",
     "extension_types": ["platform_app"]
   },
+  "usbDevice": {
+    "channel": "dev",
+    "extension_types": ["platform_app"]
+  },
   "videoCapture": {
     "channel": "stable",
     "extension_types": ["platform_app"]

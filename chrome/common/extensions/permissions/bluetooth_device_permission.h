@@ -5,7 +5,6 @@
 #ifndef CHROME_COMMON_EXTENSIONS_PERMISSIONS_BLUETOOTH_DEVICE_PERMISSION_H_
 #define CHROME_COMMON_EXTENSIONS_PERMISSIONS_BLUETOOTH_DEVICE_PERMISSION_H_
 
-#include <set>
 #include <string>
 
 #include "chrome/common/extensions/permissions/api_permission.h"
@@ -29,10 +28,6 @@ class BluetoothDevicePermission
 
   explicit BluetoothDevicePermission(const APIPermissionInfo* info);
   virtual ~BluetoothDevicePermission();
-
-  // Adds BluetoothDevices from |devices| to the set of allowed devices.
-  // |devices| should be a string of Bluetooth device addresses separated by |.
-  void AddDevicesFromString(const std::string &devices_string);
 
   // APIPermission overrides
   virtual std::string ToString() const OVERRIDE;

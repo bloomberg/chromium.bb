@@ -12,6 +12,7 @@
 #include "chrome/common/extensions/permissions/bluetooth_device_permission_data.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/extensions/permissions/socket_permission_data.h"
+#include "chrome/common/extensions/permissions/usb_device_permission_data.h"
 #include "chrome/common/view_type.h"
 #include "chrome/common/web_apps.h"
 #include "content/public/common/common_param_traits.h"
@@ -205,6 +206,14 @@ struct ParamTraits<ExtensionMsg_Loaded_Params> {
 template <>
 struct ParamTraits<extensions::BluetoothDevicePermissionData> {
   typedef extensions::BluetoothDevicePermissionData param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct ParamTraits<extensions::UsbDevicePermissionData> {
+  typedef extensions::UsbDevicePermissionData param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);

@@ -27,7 +27,8 @@ chromeHidden.registerCustomHook('permissions', function(api) {
             if (keys.length != 1) {
               throw new Error("Too many keys in object-style permission.");
             }
-            arguments[0].permissions[i] = keys[0] + '|' + a[keys[0]];
+            arguments[0].permissions[i] = keys[0] + '|' +
+                JSON.stringify(a[keys[0]]);
           }
         }
 
