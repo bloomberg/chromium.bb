@@ -285,44 +285,7 @@ void DevToolsHttpHandlerImpl::Observe(int type,
 void DevToolsHttpHandlerImpl::OnHttpRequest(
     int connection_id,
     const net::HttpServerRequestInfo& info) {
-  if (info.path.find("/json/version") == 0) {
-    // New page request.
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&DevToolsHttpHandlerImpl::OnVersionRequestUI,
-                   this,
-                   connection_id,
-                   info));
-    return;
-  }
-
-  if (info.path.find("/json/new") == 0) {
-    // New page request.
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&DevToolsHttpHandlerImpl::OnNewTargetRequestUI,
-                   this,
-                   connection_id,
-                   info));
-    return;
-  }
-
-  if (info.path.find("/json/close/") == 0) {
-    // Close page request.
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&DevToolsHttpHandlerImpl::OnCloseTargetRequestUI,
-                   this,
-                   connection_id,
-                   info));
-    return;
-  }
-
   if (info.path.find("/json") == 0) {
-    // Pages discovery json request.
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
@@ -479,57 +442,122 @@ std::string DevToolsHttpHandlerImpl::GetFrontendURLInternal(
       rvh_id.c_str());
 }
 
-void DevToolsHttpHandlerImpl::OnVersionRequestUI(
-    int connection_id,
-    const net::HttpServerRequestInfo& info) {
-  DictionaryValue version;
-  version.SetString("Protocol-Version",
-                    WebKit::WebDevToolsAgent::inspectorProtocolVersion());
-  version.SetString("WebKit-Version",
-                    webkit_glue::GetWebKitVersion());
-  version.SetString("User-Agent",
-                    webkit_glue::GetUserAgent(GURL(chrome::kAboutBlankURL)));
-  SendJson(connection_id, info, version);
+static bool ParseJsonPath(
+    const std::string& path,
+    std::string* command,
+    std::string* target_id) {
+
+  // Fall back to list in case of empty query.
+  if (path.empty()) {
+    *command = "list";
+    return true;
+  }
+
+  if (path.find("/") != 0) {
+    // Malformed command.
+    return false;
+  }
+  *command = path.substr(1);
+
+  size_t separator_pos = command->find("/");
+  if (separator_pos != std::string::npos) {
+    *target_id = command->substr(separator_pos + 1);
+    *command = command->substr(0, separator_pos);
+  }
+  return true;
 }
 
 void DevToolsHttpHandlerImpl::OnJsonRequestUI(
     int connection_id,
     const net::HttpServerRequestInfo& info) {
-  PageList page_list = GeneratePageList();
-  ListValue json_pages_list;
-  std::string host = info.headers["Host"];
-  for (PageList::iterator i = page_list.begin(); i != page_list.end(); ++i)
-    json_pages_list.Append(SerializePageInfo(*i, host));
-  SendJson(connection_id, info, json_pages_list);
-}
-
-void DevToolsHttpHandlerImpl::OnNewTargetRequestUI(
-    int connection_id,
-    const net::HttpServerRequestInfo& info) {
-  RenderViewHost* rvh = delegate_->CreateNewTarget();
-  if (!rvh) {
-    Send500(connection_id, "Could not create new page");
-    return;
+  // Trim /json and ?jsonp=...
+  std::string path = info.path.substr(5);
+  std::string jsonp;
+  size_t jsonp_pos = path.find("?jsonp=");
+  if (jsonp_pos != std::string::npos) {
+    jsonp = path.substr(jsonp_pos + 7);
+    path = path.substr(0, jsonp_pos);
   }
-  PageInfo page_info = CreatePageInfo(rvh);
-  std::string host = info.headers["Host"];
-  scoped_ptr<DictionaryValue> dictionary(SerializePageInfo(page_info, host));
-  SendJson(connection_id, info, *dictionary);
-}
 
-void DevToolsHttpHandlerImpl::OnCloseTargetRequestUI(
-    int connection_id,
-    const net::HttpServerRequestInfo& info) {
-  std::string prefix = "/json/close/";
-  std::string page_id = info.path.substr(prefix.length());
-  RenderViewHost* rvh = binding_->ForIdentifier(page_id);
-  if (!rvh) {
-    Send500(connection_id, "No such target id: " + page_id);
+  std::string command;
+  std::string target_id;
+  if (!ParseJsonPath(path, &command, &target_id)) {
+    SendJson(connection_id,
+             net::HTTP_NOT_FOUND,
+             NULL,
+             "Malformed query: " + info.path,
+             jsonp);
     return;
   }
 
-  rvh->ClosePage();
-  Send200(connection_id, "Target is closing");
+  if (command == "version") {
+    DictionaryValue version;
+    version.SetString("Protocol-Version",
+                      WebKit::WebDevToolsAgent::inspectorProtocolVersion());
+    version.SetString("WebKit-Version",
+                      webkit_glue::GetWebKitVersion());
+    version.SetString("User-Agent",
+                      webkit_glue::GetUserAgent(GURL(chrome::kAboutBlankURL)));
+    SendJson(connection_id, net::HTTP_OK, &version, "", jsonp);
+    return;
+  }
+
+  if (command == "list") {
+    PageList page_list = GeneratePageList();
+    ListValue json_pages_list;
+    std::string host = info.headers["Host"];
+    for (PageList::iterator i = page_list.begin(); i != page_list.end(); ++i)
+      json_pages_list.Append(SerializePageInfo(*i, host));
+    SendJson(connection_id, net::HTTP_OK, &json_pages_list, "", jsonp);
+    return;
+  }
+
+  if (command == "new") {
+    RenderViewHost* rvh = delegate_->CreateNewTarget();
+    if (!rvh) {
+      SendJson(connection_id,
+               net::HTTP_INTERNAL_SERVER_ERROR,
+               NULL,
+               "Could not create new page",
+               jsonp);
+      return;
+    }
+    PageInfo page_info = CreatePageInfo(rvh);
+    std::string host = info.headers["Host"];
+    scoped_ptr<DictionaryValue> dictionary(SerializePageInfo(page_info, host));
+    SendJson(connection_id, net::HTTP_OK, dictionary.get(), "", jsonp);
+    return;
+  }
+
+  if (command == "activate" || command == "close") {
+    RenderViewHost* rvh = binding_->ForIdentifier(target_id);
+    if (!rvh) {
+      SendJson(connection_id,
+               net::HTTP_NOT_FOUND,
+               NULL,
+               "No such target id: " + target_id,
+               jsonp);
+      return;
+    }
+
+    if (command == "activate") {
+      rvh->GetDelegate()->Activate();
+      SendJson(connection_id, net::HTTP_OK, NULL, "Target activated", jsonp);
+      return;
+    }
+
+    if (command == "close") {
+      rvh->ClosePage();
+      SendJson(connection_id, net::HTTP_OK, NULL, "Target is closing", jsonp);
+      return;
+    }
+  }
+  SendJson(connection_id,
+           net::HTTP_NOT_FOUND,
+           NULL,
+           "Unknown command: " + command,
+           jsonp);
+  return;
 }
 
 void DevToolsHttpHandlerImpl::OnThumbnailRequestUI(
@@ -579,8 +607,8 @@ void DevToolsHttpHandlerImpl::OnWebSocketRequestUI(
   DevToolsAgentHost* agent = DevToolsAgentHostRegistry::GetDevToolsAgentHost(
       rvh);
   if (manager->GetDevToolsClientHostFor(agent)) {
-    Send500(connection_id, "Target with given id is being inspected: " +
-        page_id);
+    Send500(connection_id,
+            "Target with given id is being inspected: " + page_id);
     return;
   }
 
@@ -663,6 +691,53 @@ void DevToolsHttpHandlerImpl::StopHandlerThread() {
   thread_->Stop();
 }
 
+void DevToolsHttpHandlerImpl::SendJson(int connection_id,
+                                       net::HttpStatusCode status_code,
+                                       Value* value,
+                                       const std::string& message,
+                                       const std::string& jsonp) {
+  if (!thread_.get())
+    return;
+
+  // Serialize value and message.
+  std::string json_value;
+  if (value) {
+    base::JSONWriter::WriteWithOptions(value,
+                                       base::JSONWriter::OPTIONS_PRETTY_PRINT,
+                                       &json_value);
+  }
+  std::string json_message;
+  scoped_ptr<Value> message_object(Value::CreateStringValue(message));
+  base::JSONWriter::Write(message_object.get(), &json_message);
+
+  std::string response;
+  std::string mime_type = "application/json; charset=UTF-8";
+
+  // Wrap jsonp if necessary.
+  if (!jsonp.empty()) {
+    mime_type = "text/javascript; charset=UTF-8";
+    response = StringPrintf("%s(%s, %d, %s);",
+                            jsonp.c_str(),
+                            json_value.empty() ? "undefined"
+                                               : json_value.c_str(),
+                            status_code,
+                            json_message.c_str());
+    // JSONP always returns 200.
+    status_code = net::HTTP_OK;
+  } else {
+    response = StringPrintf("%s%s", json_value.c_str(), message.c_str());
+  }
+
+  thread_->message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&net::HttpServer::Send,
+                 server_.get(),
+                 connection_id,
+                 status_code,
+                 response,
+                 mime_type));
+}
+
 void DevToolsHttpHandlerImpl::Send200(int connection_id,
                                       const std::string& data,
                                       const std::string& mime_type) {
@@ -675,25 +750,6 @@ void DevToolsHttpHandlerImpl::Send200(int connection_id,
                  connection_id,
                  data,
                  mime_type));
-}
-
-void DevToolsHttpHandlerImpl::SendJson(int connection_id,
-                                       const net::HttpServerRequestInfo& info,
-                                       const Value& value) {
-  std::string response;
-  base::JSONWriter::WriteWithOptions(&value,
-                                     base::JSONWriter::OPTIONS_PRETTY_PRINT,
-                                     &response);
-
-  size_t jsonp_pos = info.path.find("?jsonp=");
-  if (jsonp_pos == std::string::npos) {
-    Send200(connection_id, response, "application/json; charset=UTF-8");
-    return;
-  }
-
-  std::string jsonp = info.path.substr(jsonp_pos + 7);
-  response = StringPrintf("%s(%s);", jsonp.c_str(), response.c_str());
-  Send200(connection_id, response, "text/javascript; charset=UTF-8");
 }
 
 void DevToolsHttpHandlerImpl::Send404(int connection_id) {
