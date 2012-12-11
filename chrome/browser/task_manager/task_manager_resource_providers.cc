@@ -1565,11 +1565,17 @@ void TaskManagerExtensionProcessResourceProvider::Observe(
 
 bool TaskManagerExtensionProcessResourceProvider::
     IsHandledByThisProvider(content::RenderViewHost* render_view_host) {
+  WebContents* web_contents = WebContents::FromRenderViewHost(render_view_host);
+  // Don't add WebContents that belong to a guest (those are handled by
+  // TaskManagerGuestResourceProvider). Otherwise they will be added twice, and
+  // in this case they will have the app's name as a title (due to the
+  // TaskManagerExtensionProcessResource constructor).
+  if (web_contents->GetRenderProcessHost()->IsGuest())
+    return false;
+  chrome::ViewType view_type = chrome::GetViewType(web_contents);
   // Don't add WebContents (those are handled by
   // TaskManagerTabContentsResourceProvider) or background contents (handled
   // by TaskManagerBackgroundResourceProvider).
-  WebContents* web_contents = WebContents::FromRenderViewHost(render_view_host);
-  chrome::ViewType view_type = chrome::GetViewType(web_contents);
 #if defined(USE_ASH)
   return (view_type != chrome::VIEW_TYPE_TAB_CONTENTS &&
           view_type != chrome::VIEW_TYPE_BACKGROUND_CONTENTS);
