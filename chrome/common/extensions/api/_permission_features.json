@@ -4,7 +4,7 @@
 
 {
   "activeTab": {
-    "channel": "stable",
+    "channel": "dev",
     "extension_types": ["extension", "packaged_app"],
     "min_manifest_version": 2
   },
