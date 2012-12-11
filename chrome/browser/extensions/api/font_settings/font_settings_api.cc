@@ -210,27 +210,11 @@ void FontSettingsEventRouter::OnFontPrefChanged(
       pref_name);
 }
 
-FontSettingsAPI::FontSettingsAPI(Profile* profile) : profile_(profile) {
-  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      this, kOnDefaultFixedFontSizeChanged);
-  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      this, kOnDefaultFontSizeChanged);
-  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      this, kOnFontChanged);
-  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      this, kOnMinimumFontSizeChanged);
+FontSettingsAPI::FontSettingsAPI(Profile* profile)
+    : font_settings_event_router_(new FontSettingsEventRouter(profile)) {
 }
 
 FontSettingsAPI::~FontSettingsAPI() {
-}
-
-void FontSettingsAPI::Shutdown() {
-  ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
-}
-
-void FontSettingsAPI::OnListenerAdded(const EventListenerInfo& details) {
-  font_settings_event_router_.reset(new FontSettingsEventRouter(profile_));
-  ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
 }
 
 bool ClearFontFunction::RunImpl() {
