@@ -14,6 +14,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "content/public/renderer/render_view.h"
+#include "content/public/test/layouttest_support.h"
 #include "content/shell/shell_messages.h"
 #include "content/shell/shell_render_process_observer.h"
 #include "net/base/net_util.h"
@@ -183,8 +184,7 @@ void WebKitTestRunner::fillSpellingSuggestionList(
 }
 
 void WebKitTestRunner::setGamepadData(const WebGamepads& gamepads) {
-  Send(new ShellViewHostMsg_NotImplemented(
-      routing_id(), "WebTestDelegate", "setGamepadData"));
+  SetMockGamepads(gamepads);
 }
 
 void WebKitTestRunner::printMessage(const std::string& message) {

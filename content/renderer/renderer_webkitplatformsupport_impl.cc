@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/lazy_instance.h"
 #include "base/metrics/histogram.h"
 #include "base/platform_file.h"
 #include "base/shared_memory.h"
@@ -96,6 +97,8 @@ using WebKit::WebVector;
 namespace content {
 
 static bool g_sandbox_enabled = true;
+base::LazyInstance<WebGamepads>::Leaky g_test_gamepads =
+    LAZY_INSTANCE_INITIALIZER;
 
 //------------------------------------------------------------------------------
 
@@ -650,9 +653,14 @@ WebBlobRegistry* RendererWebKitPlatformSupportImpl::blobRegistry() {
 //------------------------------------------------------------------------------
 
 void RendererWebKitPlatformSupportImpl::sampleGamepads(WebGamepads& gamepads) {
-  if (!gamepad_shared_memory_reader_.get())
-    gamepad_shared_memory_reader_.reset(new GamepadSharedMemoryReader);
-  gamepad_shared_memory_reader_->SampleGamepads(gamepads);
+  if (g_test_gamepads == 0) {
+    if (!gamepad_shared_memory_reader_.get())
+      gamepad_shared_memory_reader_.reset(new GamepadSharedMemoryReader);
+    gamepad_shared_memory_reader_->SampleGamepads(gamepads);
+  } else {
+    gamepads = g_test_gamepads.Get();
+    return;
+  }
 }
 
 WebKit::WebString RendererWebKitPlatformSupportImpl::userAgent(
@@ -704,6 +712,12 @@ bool RendererWebKitPlatformSupportImpl::SetSandboxEnabledForTesting(
   bool was_enabled = g_sandbox_enabled;
   g_sandbox_enabled = enable;
   return was_enabled;
+}
+
+// static
+void RendererWebKitPlatformSupportImpl::SetMockGamepadsForTesting(
+    const WebGamepads& pads) {
+  g_test_gamepads.Get() = pads;
 }
 
 GpuChannelHostFactory*

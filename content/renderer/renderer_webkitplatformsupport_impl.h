@@ -98,6 +98,9 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   // Returns the previous |enable| value.
   static bool SetSandboxEnabledForTesting(bool enable);
 
+  // Set WebGamepads to return when sampleGamepads() is invoked.
+  static void SetMockGamepadsForTesting(const WebKit::WebGamepads& pads);
+
  protected:
   virtual GpuChannelHostFactory* GetGpuChannelHostFactory() OVERRIDE;
 

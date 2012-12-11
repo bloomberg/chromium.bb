@@ -7,6 +7,10 @@
 
 #include "base/callback_forward.h"
 
+namespace WebKit {
+class WebGamepads;
+}
+
 namespace WebTestRunner {
 class WebTestProxyBase;
 }
@@ -20,6 +24,10 @@ class RenderView;
 // WebTestProxy.
 void EnableWebTestProxyCreation(const base::Callback<
     void(RenderView*, WebTestRunner::WebTestProxyBase*)>& callback);
+
+// Sets the WebGamepads that should be returned by
+// WebKitPlatformSupport::sampleGamepads().
+void SetMockGamepads(const WebKit::WebGamepads& pads);
 
 }  // namespace content
 

@@ -7,8 +7,11 @@
 #include "base/callback.h"
 #include "base/lazy_instance.h"
 #include "content/renderer/render_view_impl.h"
+#include "content/renderer/renderer_webkitplatformsupport_impl.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebGamepads.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestProxy.h"
 
+using WebKit::WebGamepads;
 using WebTestRunner::WebTestProxy;
 using WebTestRunner::WebTestProxyBase;
 
@@ -37,6 +40,10 @@ void EnableWebTestProxyCreation(
     const base::Callback<void(RenderView*, WebTestProxyBase*)>& callback) {
   g_callback.Get() = callback;
   RenderViewImpl::InstallCreateHook(CreateWebTestProxy);
+}
+
+void SetMockGamepads(const WebGamepads& pads) {
+  RendererWebKitPlatformSupportImpl::SetMockGamepadsForTesting(pads);
 }
 
 }  // namespace content
