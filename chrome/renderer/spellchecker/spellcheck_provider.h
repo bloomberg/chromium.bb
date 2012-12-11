@@ -49,6 +49,9 @@ class SpellCheckProvider
   // Replace shared spellcheck data.
   void set_spellcheck(SpellCheck* spellcheck) { spellcheck_ = spellcheck; }
 
+  // Enables document-wide spellchecking.
+  void EnableSpellcheck(bool enabled);
+
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void FocusedNodeChanged(const WebKit::WebNode& node) OVERRIDE;
@@ -103,7 +106,6 @@ class SpellCheckProvider
       const std::vector<SpellCheckResult>& results);
   void OnToggleSpellPanel(bool is_currently_visible);
 #endif
-  void OnToggleSpellCheck();
 
   // Holds ongoing spellchecking operations, assigns IDs for the IPC routing.
   WebTextCheckCompletions text_check_completions_;

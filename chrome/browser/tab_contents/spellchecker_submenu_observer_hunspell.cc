@@ -159,14 +159,11 @@ void SpellCheckerSubMenuObserver::ExecuteCommand(int command_id) {
     return;
   }
 
-  content::RenderViewHost* rvh = proxy_->GetRenderViewHost();
   switch (command_id) {
     case IDC_CHECK_SPELLING_WHILE_TYPING:
       profile->GetPrefs()->SetBoolean(
           prefs::kEnableSpellCheck,
           !profile->GetPrefs()->GetBoolean(prefs::kEnableSpellCheck));
-      if (rvh)
-        rvh->Send(new SpellCheckMsg_ToggleSpellCheck(rvh->GetRoutingID()));
-      break;
+    break;
   }
 }

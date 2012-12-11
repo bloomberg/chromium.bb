@@ -23,7 +23,8 @@ IPC_STRUCT_TRAITS_END()
 
 // Messages sent from the browser to the renderer.
 
-IPC_MESSAGE_ROUTED0(SpellCheckMsg_ToggleSpellCheck)
+IPC_MESSAGE_CONTROL1(SpellCheckMsg_EnableSpellCheck,
+                    bool)
 
 // Passes some initialization params to the renderer's spellchecker. This can
 // be called directly after startup or in (async) response to a
@@ -52,7 +53,7 @@ IPC_MESSAGE_CONTROL1(SpellCheckMsg_EnableAutoSpellCorrect,
 // Sends text-check results from the Spelling service when the service finishes
 // checking text reveived by a SpellCheckHostMsg_CallSpellingService message.
 // If the service is not available, the 4th parameter should be false and
-// the 5th parameter should contain the requested setence.
+// the 5th parameter should contain the requested sentence.
 IPC_MESSAGE_ROUTED5(SpellCheckMsg_RespondSpellingService,
                     int         /* request identifier given by WebKit */,
                     int         /* offset */,

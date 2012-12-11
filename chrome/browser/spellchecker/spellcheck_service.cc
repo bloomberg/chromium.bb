@@ -25,7 +25,7 @@
 using content::BrowserThread;
 using chrome::spellcheck_common::WordList;
 
-// TODO(rlp): I do not like globals, but keeping thsese for now during
+// TODO(rlp): I do not like globals, but keeping these for now during
 // transition.
 // An event used by browser tests to receive status events from this class and
 // its derived classes.
@@ -184,6 +184,8 @@ void SpellcheckService::InitForRenderer(content::RenderProcessHost* process) {
       custom_dictionary_->GetWords(),
       hunspell_dictionary_->GetLanguage(),
       prefs->GetBoolean(prefs::kEnableAutoSpellCorrect)));
+  process->Send(new SpellCheckMsg_EnableSpellCheck(
+      prefs->GetBoolean(prefs::kEnableSpellCheck)));
 }
 
 SpellCheckHostMetrics* SpellcheckService::GetMetrics() const {

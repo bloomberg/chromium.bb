@@ -12,7 +12,10 @@
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/spellcheck_result.h"
 #include "chrome/renderer/spellchecker/hunspell_engine.h"
+#include "chrome/renderer/spellchecker/spellcheck_provider.h"
 #include "chrome/renderer/spellchecker/spelling_engine.h"
+#include "content/public/renderer/render_view.h"
+#include "content/public/renderer/render_view_visitor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingCompletion.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingResult.h"
 
@@ -20,6 +23,27 @@ using base::TimeTicks;
 using WebKit::WebVector;
 using WebKit::WebTextCheckingResult;
 using WebKit::WebTextCheckingType;
+
+namespace {
+
+class UpdateSpellcheckEnabled : public content::RenderViewVisitor {
+ public:
+  explicit UpdateSpellcheckEnabled(bool enabled) : enabled_(enabled) {}
+  virtual bool Visit(content::RenderView* render_view) OVERRIDE;
+
+ private:
+  bool enabled_;  // New spellcheck-enabled state.
+  DISALLOW_COPY_AND_ASSIGN(UpdateSpellcheckEnabled);
+};
+
+bool UpdateSpellcheckEnabled::Visit(content::RenderView* render_view) {
+  SpellCheckProvider* provider = SpellCheckProvider::Get(render_view);
+  DCHECK(provider);
+  provider->EnableSpellcheck(enabled_);
+  return true;
+}
+
+}  // namespace
 
 class SpellCheck::SpellcheckRequest {
  public:
@@ -45,7 +69,24 @@ class SpellCheck::SpellcheckRequest {
   DISALLOW_COPY_AND_ASSIGN(SpellcheckRequest);
 };
 
-SpellCheck::SpellCheck() : auto_spell_correct_turned_on_(false) {
+
+// Initializes SpellCheck object.
+// spellcheck_enabled_ currently MUST be set to true, due to peculiarities of
+// the initialization sequence.
+// Since it defaults to true, newly created SpellCheckProviders will enable
+// spellchecking. After the first word is typed, the provider requests a check,
+// which in turn triggers the delayed initialization sequence in SpellCheck.
+// This does send a message to the browser side, which triggers the creation
+// of the SpellcheckService. That does create the observer for the preference
+// responsible for enabling/disabling checking, which allows subsequent changes
+// to that preference to be sent to all SpellCheckProviders.
+// Setting |spellcheck_enabled_| to false by default prevents that mechanism,
+// and as such the SpellCheckProviders will never be notified of different
+// values.
+// TODO(groby): Simplify this.
+SpellCheck::SpellCheck()
+    : auto_spell_correct_turned_on_(false),
+      spellcheck_enabled_(true) {
   platform_spelling_engine_.reset(CreateNativeSpellingEngine());
 }
 
@@ -60,6 +101,7 @@ bool SpellCheck::OnControlMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(SpellCheckMsg_WordRemoved, OnWordRemoved)
     IPC_MESSAGE_HANDLER(SpellCheckMsg_EnableAutoSpellCorrect,
                         OnEnableAutoSpellCorrect)
+    IPC_MESSAGE_HANDLER(SpellCheckMsg_EnableSpellCheck, OnEnableSpellCheck)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -90,6 +132,12 @@ void SpellCheck::OnWordRemoved(const std::string& word) {
 
 void SpellCheck::OnEnableAutoSpellCorrect(bool enable) {
   auto_spell_correct_turned_on_ = enable;
+}
+
+void SpellCheck::OnEnableSpellCheck(bool enable) {
+  spellcheck_enabled_ = enable;
+  UpdateSpellcheckEnabled updater(enable);
+  content::RenderView::ForEach(&updater);
 }
 
 // TODO(groby): Make sure we always have a spelling engine, even before Init()

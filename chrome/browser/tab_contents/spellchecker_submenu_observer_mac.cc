@@ -113,8 +113,6 @@ void SpellCheckerSubMenuObserver::ExecuteCommand(int command_id) {
       profile->GetPrefs()->SetBoolean(
           prefs::kEnableSpellCheck,
           !profile->GetPrefs()->GetBoolean(prefs::kEnableSpellCheck));
-      if (rvh)
-        rvh->Send(new SpellCheckMsg_ToggleSpellCheck(rvh->GetRoutingID()));
       break;
 
     case IDC_SPELLPANEL_TOGGLE:

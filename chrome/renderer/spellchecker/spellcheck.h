@@ -100,6 +100,8 @@ class SpellCheck : public content::RenderProcessObserver,
       const std::vector<SpellCheckResult>& spellcheck_results,
       WebKit::WebVector<WebKit::WebTextCheckingResult>* textcheck_results);
 
+  bool is_spellcheck_enabled() { return spellcheck_enabled_; }
+
  private:
   friend class SpellCheckTest;
   FRIEND_TEST_ALL_PREFIXES(SpellCheckTest, GetAutoCorrectionWord_EN_US);
@@ -119,6 +121,7 @@ class SpellCheck : public content::RenderProcessObserver,
   void OnWordAdded(const std::string& word);
   void OnWordRemoved(const std::string& word);
   void OnEnableAutoSpellCorrect(bool enable);
+  void OnEnableSpellCheck(bool enable);
 
   // If there is no dictionary file, then this requests one from the browser
   // and does not block. In this case it returns true.
@@ -164,6 +167,9 @@ class SpellCheck : public content::RenderProcessObserver,
 
   // Remember state for auto spell correct.
   bool auto_spell_correct_turned_on_;
+
+  // Remember state for spellchecking.
+  bool spellcheck_enabled_;
 
   // Pointer to a platform-specific spelling engine, if it is in use. This
   // should only be set if hunspell is not used. (I.e. on OSX, for now)

@@ -196,7 +196,7 @@ ProfileDependencyManager::ProfileDependencyManager()
 ProfileDependencyManager::~ProfileDependencyManager() {}
 
 // This method gets the instance of each ServiceFactory. We do this so that
-// each ServiceFactory initializes iteslf and registers its dependencies with
+// each ServiceFactory initializes itself and registers its dependencies with
 // the global PreferenceDependencyManager. We need to have a complete
 // dependency graph when we create a profile so we can dispatch the profile
 // creation message to the services that want to create their services at

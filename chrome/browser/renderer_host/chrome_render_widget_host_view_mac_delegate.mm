@@ -292,6 +292,8 @@ class SpellCheckRenderViewObserver : public content::RenderViewHostObserver {
     return YES;
   }
 
+  // TODO(groby): Clarify who sends this and if toggleContinuousSpellChecking:
+  // is still necessary.
   if (action == @selector(toggleContinuousSpellChecking:)) {
     if ([(id)item respondsToSelector:@selector(setState:)]) {
       content::RenderProcessHost* host = renderWidgetHost_->GetProcess();
@@ -361,8 +363,6 @@ class SpellCheckRenderViewObserver : public content::RenderViewHostObserver {
   PrefService* pref = profile->GetPrefs();
   pref->SetBoolean(prefs::kEnableSpellCheck,
                    !pref->GetBoolean(prefs::kEnableSpellCheck));
-  renderWidgetHost_->Send(
-      new SpellCheckMsg_ToggleSpellCheck(renderWidgetHost_->GetRoutingID()));
 }
 
 - (void)spellCheckEnabled:(BOOL)enabled checked:(BOOL)checked {

@@ -50,8 +50,10 @@ SpellCheckProvider::SpellCheckProvider(
       spelling_panel_visible_(false),
       spellcheck_(spellcheck) {
   DCHECK(spellcheck_);
-  if (render_view)  // NULL in unit tests.
+  if (render_view) { // NULL in unit tests.
     render_view->GetWebView()->setSpellCheckClient(this);
+    EnableSpellcheck(spellcheck_->is_spellcheck_enabled());
+  }
 }
 
 SpellCheckProvider::~SpellCheckProvider() {
@@ -111,7 +113,6 @@ bool SpellCheckProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(SpellCheckMsg_RespondTextCheck, OnRespondTextCheck)
     IPC_MESSAGE_HANDLER(SpellCheckMsg_ToggleSpellPanel, OnToggleSpellPanel)
 #endif
-    IPC_MESSAGE_HANDLER(SpellCheckMsg_ToggleSpellCheck, OnToggleSpellCheck)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -296,13 +297,12 @@ void SpellCheckProvider::OnToggleSpellPanel(bool is_currently_visible) {
 }
 #endif
 
-void SpellCheckProvider::OnToggleSpellCheck() {
+void SpellCheckProvider::EnableSpellcheck(bool enable) {
   if (!render_view()->GetWebView())
     return;
 
   WebFrame* frame = render_view()->GetWebView()->focusedFrame();
-  frame->enableContinuousSpellChecking(
-      !frame->isContinuousSpellCheckingEnabled());
+  frame->enableContinuousSpellChecking(enable);
 }
 
 #if !defined(OS_MACOSX)
