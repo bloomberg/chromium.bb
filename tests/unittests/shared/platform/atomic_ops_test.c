@@ -4,10 +4,16 @@
  */
 
 #include <stdio.h>
+
 #include "native_client/src/include/atomic_ops.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
+
+#if defined(__native_client__)
+# include <sched.h>
+#endif
+
 
 #define THREAD_STACK_SIZE  (128*1024)
 
@@ -66,7 +72,11 @@ static void ExchangeTest(int32_t tid) {
 */
 Atomic32 gSwap = 1;
 static void CompareAndSwapTest(int32_t tid) {
-  while (CompareAndSwap(&gSwap, tid, tid+1) != tid);
+  while (CompareAndSwap(&gSwap, tid, tid + 1) != tid) {
+#if defined(__native_client__)
+    sched_yield();
+#endif
+  }
 }
 
 void WINAPI ThreadMain(void *state) {
