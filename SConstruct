@@ -3264,6 +3264,10 @@ def IrtTestAddNodeToTestSuite(env, node, suite_name, node_name=None,
     if node_name is not None:
       node_name += '_irt'
     suite_name = [name + '_irt' for name in suite_name]
+  # TODO(mcgrathr): IRT image built by arm-nacl-gcc is currently broken.
+  #     http://code.google.com/p/nativeclient/issues/detail?id=3212
+  if env.Bit('target_arm') and not env.Bit('bitcode'):
+    is_broken = True
   # NOTE: This needs to be called directly to as we're overriding the
   #       prior version.
   return AddNodeToTestSuite(env, node, suite_name, node_name,

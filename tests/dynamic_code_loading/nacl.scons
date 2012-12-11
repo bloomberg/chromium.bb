@@ -22,7 +22,10 @@ if env.Bit('bitcode') and not env.Bit('target_arm'):
 # TODO(mseaborn): To fix this, ld.so will need an interface, like
 # mmap() or brk(), for reserving space in the dynamic code area.
 # See http://code.google.com/p/nativeclient/issues/detail?id=1112
-is_broken = not env.Bit('nacl_static_link')
+# TODO(mcgrathr): broken in arm-nacl-gcc for now:
+#     http://code.google.com/p/nativeclient/issues/detail?id=3212
+is_broken = (not env.Bit('nacl_static_link') or
+             env.Bit('target_arm') and not env.Bit('bitcode'))
 
 # there is fair amount of assembly code in these tests
 asm_env = env.Clone()

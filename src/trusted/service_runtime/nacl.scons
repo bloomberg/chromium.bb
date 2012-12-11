@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -22,6 +22,10 @@ if env.Bit('nacl_glibc'):
 # Pexes can't contain native code
 if env.Bit('bitcode') and env.Bit('pnacl_generate_pexe'):
   Return()
+
+# TODO(mcgrathr): halt sled tests are broken in arm-nacl-gcc for now:
+#     http://code.google.com/p/nativeclient/issues/detail?id=3212
+is_broken = env.Bit('target_arm') and not env.Bit('bitcode')
 
 # ----------------------------------------------------------
 # Tests that require a NaCl module
@@ -169,4 +173,5 @@ for text_end, variant in test_specs:
     env.AddNodeToTestSuite(node,
                            ['small_tests', 'sel_ldr_sled_tests',
                             'nonpexe_tests'],
-                           'run_' + base_name)
+                           'run_' + base_name,
+                           is_broken=is_broken)

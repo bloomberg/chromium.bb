@@ -43,7 +43,7 @@ BOT_ASSIGNMENT = {
     'win7-64-bare-glibc-opt':
         python + ' buildbot\\buildbot_standard.py opt 64 glibc',
     'win7-64-arm-newlib-opt':
-        'echo "TODO(mcgrathr): add arm"',
+        python + ' buildbot\\buildbot_standard.py opt arm newlib',
     'mac10.6-newlib-opt':
         python + ' buildbot/buildbot_standard.py opt 32 newlib',
     'mac10.7-newlib-opt':
@@ -53,7 +53,7 @@ BOT_ASSIGNMENT = {
     'mac10.7-glibc-opt':
         python + ' buildbot/buildbot_standard.py opt 32 glibc',
     'mac10.7-arm-newlib-opt':
-        'echo "TODO(mcgrathr): add arm"',
+        python + ' buildbot/buildbot_standard.py opt arm newlib',
     'lucid-32-newlib-dbg':
         python + ' buildbot/buildbot_standard.py dbg 32 newlib',
     'lucid-32-newlib-opt':
@@ -73,7 +73,7 @@ BOT_ASSIGNMENT = {
     'lucid-64-glibc-opt':
         python + ' buildbot/buildbot_standard.py opt 64 glibc',
     'lucid-64-arm-newlib-opt':
-        'echo "TODO(mcgrathr): add arm"',
+        python + ' buildbot/buildbot_standard.py opt arm newlib',
     'lucid-64-validator-opt':
         python + ' buildbot/buildbot_standard.py opt 64 glibc --validator',
     'lucid-32-bare-newlib-opt':
@@ -165,7 +165,7 @@ BOT_ASSIGNMENT = {
     'nacl-win8-64_glibc_opt':
         python + ' buildbot\\buildbot_standard.py opt 64 glibc',
     'nacl-win7_64_arm_newlib_opt':
-        'echo "TODO(mcgrathr): add arm"',
+        python + ' buildbot\\buildbot_standard.py opt arm newlib',
     'nacl-mac10.6_newlib_opt':
         python + ' buildbot/buildbot_standard.py opt 32 newlib',
     'nacl-mac10.6_glibc_opt':
@@ -175,7 +175,7 @@ BOT_ASSIGNMENT = {
     'nacl-mac10.7_glibc_opt':
         python + ' buildbot/buildbot_standard.py opt 32 glibc',
     'nacl-mac10.7_arm_newlib_opt':
-        'echo "TODO(mcgrathr): add arm"',
+        python + ' buildbot/buildbot_standard.py opt arm newlib',
     'nacl-lucid32_newlib_dbg':
         python + ' buildbot/buildbot_standard.py dbg 32 newlib',
     'nacl-lucid32_newlib_opt':
@@ -189,7 +189,7 @@ BOT_ASSIGNMENT = {
     'nacl-lucid64_glibc_opt':
         python + ' buildbot/buildbot_standard.py opt 64 glibc',
     'nacl-lucid64_arm_newlib_opt':
-        'echo "TODO(mcgrathr): add arm"',
+        python + ' buildbot/buildbot_standard.py opt arm newlib',
     'nacl-lucid64_validator_opt':
         python + ' buildbot/buildbot_standard.py opt 64 glibc --validator',
     'nacl-lucid64_newlib_dbg_valgrind':
