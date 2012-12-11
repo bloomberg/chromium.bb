@@ -254,6 +254,7 @@ FileTransferController.prototype = {
   },
 
   onDragEnterList_: function(list, event) {
+    event.preventDefault();  // Required to prevent the cursor flicker.
     this.lastEnteredTarget_ = event.target;
     var item = list.getListItemAncestor(event.target);
     item = item && list.isItem(item) ? item : null;
@@ -270,6 +271,7 @@ FileTransferController.prototype = {
   },
 
   onDragEnterBreadcrumbs_: function(breadcrumbsContainer, event) {
+    event.preventDefault();  // Required to prevent the cursor flicker.
     this.lastEnteredTarget_ = event.target;
     var path = breadcrumbsContainer.getTargetPath(event);
     if (!path)
