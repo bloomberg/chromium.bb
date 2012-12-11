@@ -624,6 +624,9 @@ const char kEnablePasswordGeneration[]      = "enable-password-generation";
 const char kEnableResourceContentSettings[] =
     "enable-resource-content-settings";
 
+// Enables rich templated notifications and NotificationCenter.
+const char kEnableRichNotifications[]       = "enable-rich-notifications";
+
 // Enables the installation and usage of Portable Native Client.
 const char kEnablePnacl[]                   = "enable-pnacl";
 

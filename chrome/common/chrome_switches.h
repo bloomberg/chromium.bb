@@ -176,6 +176,7 @@ extern const char kEnablePasswordGeneration[];
 extern const char kEnablePnacl[];
 extern const char kEnableProfiling[];
 extern const char kEnableResourceContentSettings[];
+extern const char kEnableRichNotifications[];
 extern const char kEnableSdch[];
 extern const char kEnableSpdy3[];
 extern const char kEnableSpdyCredentialFrames[];

@@ -1180,7 +1180,14 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_DESKTOP_CLOUD_POLICY_DESCRIPTION,
     kOsWin | kOsMac | kOsLinux,
     SINGLE_VALUE_TYPE(switches::kLoadCloudPolicyOnSignin)
-  }
+  },
+  {
+    "enable-rich-notifications",
+    IDS_FLAGS_ENABLE_RICH_NOTIFICATIONS_NAME,
+    IDS_FLAGS_ENABLE_RICH_NOTIFICATIONS_DESCRIPTION,
+    kOsWin | kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kEnableRichNotifications)
+  },
 };
 
 const Experiment* experiments = kExperiments;
