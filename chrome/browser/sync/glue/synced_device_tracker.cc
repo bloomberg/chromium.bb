@@ -52,13 +52,13 @@ void SyncedDeviceTracker::CommitChangesFromSyncModel() {
   // TODO(sync): notify our listeners.
 }
 
-scoped_ptr<DeviceInfo> SyncedDeviceTracker::ReadLocalDeviceInfo() {
+scoped_ptr<DeviceInfo> SyncedDeviceTracker::ReadLocalDeviceInfo() const {
   syncer::ReadTransaction trans(FROM_HERE, user_share_);
   return ReadLocalDeviceInfo(trans);
 }
 
 scoped_ptr<DeviceInfo> SyncedDeviceTracker::ReadLocalDeviceInfo(
-    const syncer::BaseTransaction& trans) {
+    const syncer::BaseTransaction& trans) const {
   syncer::ReadNode node(&trans);
   if (node.InitByClientTagLookup(syncer::DEVICE_INFO, local_device_info_tag_) !=
       syncer::BaseNode::INIT_OK) {

@@ -37,8 +37,8 @@ class SyncedDeviceTracker : public ChangeProcessor {
   // Methods for accessing and updating the device_info list.
   // These are virtual for testing.
   virtual scoped_ptr<DeviceInfo> ReadLocalDeviceInfo(
-      const syncer::BaseTransaction &trans);
-  virtual scoped_ptr<DeviceInfo> ReadLocalDeviceInfo();
+      const syncer::BaseTransaction &trans) const;
+  virtual scoped_ptr<DeviceInfo> ReadLocalDeviceInfo() const;
   virtual void InitLocalDeviceInfo(const base::Closure& callback);
 
  private:

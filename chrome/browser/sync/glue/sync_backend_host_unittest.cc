@@ -640,11 +640,11 @@ TEST_F(SyncBackendHostTest, InvalidationsAfterStopSyncingForShutdown) {
 
 // Ensure the device info tracker is initialized properly on startup.
 TEST_F(SyncBackendHostTest, InitializeDeviceInfo) {
-  ASSERT_EQ(NULL, backend_->GetSyncedDeviceTrackerForTest());
+  ASSERT_EQ(NULL, backend_->GetSyncedDeviceTracker());
 
   InitializeBackend();
-  SyncedDeviceTracker* device_tracker =
-      backend_->GetSyncedDeviceTrackerForTest();
+  const SyncedDeviceTracker* device_tracker =
+      backend_->GetSyncedDeviceTracker();
   ASSERT_TRUE(device_tracker->ReadLocalDeviceInfo());
 }
 

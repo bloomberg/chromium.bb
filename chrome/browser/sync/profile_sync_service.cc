@@ -39,8 +39,10 @@
 #include "chrome/browser/sync/glue/chrome_encryptor.h"
 #include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
+#include "chrome/browser/sync/glue/device_info.h"
 #include "chrome/browser/sync/glue/session_data_type_controller.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
+#include "chrome/browser/sync/glue/synced_device_tracker.h"
 #include "chrome/browser/sync/glue/typed_url_data_type_controller.h"
 #include "chrome/browser/sync/profile_sync_components_factory_impl.h"
 #include "chrome/browser/sync/sync_global_error.h"
@@ -320,6 +322,17 @@ browser_sync::SessionModelAssociator*
   return static_cast<browser_sync::SessionDataTypeController*>(
       data_type_controllers_.find(
       syncer::SESSIONS)->second.get())->GetModelAssociator();
+}
+
+scoped_ptr<browser_sync::DeviceInfo>
+ProfileSyncService::GetLocalDeviceInfo() const {
+  DCHECK(sync_initialized());
+  browser_sync::SyncedDeviceTracker* device_tracker =
+      backend_->GetSyncedDeviceTracker();
+  if (device_tracker)
+    return device_tracker->ReadLocalDeviceInfo();
+  else
+    return scoped_ptr<browser_sync::DeviceInfo>();
 }
 
 void ProfileSyncService::GetDataTypeControllerStates(

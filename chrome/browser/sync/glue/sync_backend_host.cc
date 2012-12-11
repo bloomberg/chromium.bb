@@ -785,7 +785,9 @@ void SyncBackendHost::GetModelSafeRoutingInfo(
   }
 }
 
-SyncedDeviceTracker* SyncBackendHost::GetSyncedDeviceTrackerForTest() {
+SyncedDeviceTracker* SyncBackendHost::GetSyncedDeviceTracker() const {
+  if (!initialized())
+    return NULL;
   return core_->synced_device_tracker();
 }
 

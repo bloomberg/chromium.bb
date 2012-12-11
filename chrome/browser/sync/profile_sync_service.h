@@ -50,6 +50,7 @@ class SyncGlobalError;
 namespace browser_sync {
 class BackendMigrator;
 class ChangeProcessor;
+class DeviceInfo;
 class DataTypeManager;
 class JsController;
 class SessionModelAssociator;
@@ -255,7 +256,13 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // Returns the session model associator associated with this type, but only if
   // the associator is running.  If it is doing anything else, it will return
   // null.
+  // TODO(zea): Figure out a better way to expose this to the UI elements that
+  // need it.
   browser_sync::SessionModelAssociator* GetSessionModelAssociator();
+
+  // Returns sync's representation of the local device info.
+  // Return value is an empty scoped_ptr if the device info is unavailable.
+  virtual scoped_ptr<browser_sync::DeviceInfo> GetLocalDeviceInfo() const;
 
   // Fills state_map with a map of current data types that are possible to
   // sync, as well as their states.

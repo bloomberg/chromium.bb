@@ -20,10 +20,12 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
+#include "chrome/browser/sync/glue/device_info.h"
 #include "chrome/browser/sync/glue/session_change_processor.h"
 #include "chrome/browser/sync/glue/session_data_type_controller.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
+#include "chrome/browser/sync/glue/synced_device_tracker.h"
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
@@ -63,6 +65,27 @@ using testing::Return;
 namespace browser_sync {
 
 namespace {
+
+class FakeProfileSyncService : public TestProfileSyncService {
+ public:
+  FakeProfileSyncService(
+      ProfileSyncComponentsFactory* factory,
+      Profile* profile,
+      SigninManager* signin,
+      ProfileSyncService::StartBehavior behavior,
+      bool synchronous_backend_initialization)
+      : TestProfileSyncService(factory,
+                               profile,
+                               signin,
+                               behavior,
+                               synchronous_backend_initialization) {}
+  virtual ~FakeProfileSyncService() {}
+
+  virtual scoped_ptr<DeviceInfo> GetLocalDeviceInfo() const OVERRIDE {
+    return scoped_ptr<DeviceInfo>(
+        new DeviceInfo("client_name", "", "", sync_pb::SyncEnums::TYPE_WIN));
+  }
+};
 
 void BuildSessionSpecifics(const std::string& tag,
                            sync_pb::SessionSpecifics* meta) {
@@ -225,7 +248,7 @@ class ProfileSyncServiceSessionTest
     signin->SetAuthenticatedUsername("test_user");
     ProfileSyncComponentsFactoryMock* factory =
         new ProfileSyncComponentsFactoryMock();
-    sync_service_.reset(new TestProfileSyncService(
+    sync_service_.reset(new FakeProfileSyncService(
         factory,
         profile(),
         signin,
@@ -319,7 +342,7 @@ TEST_F(ProfileSyncServiceSessionTest, WriteSessionToNode) {
   ASSERT_TRUE(specifics.has_header());
   const sync_pb::SessionHeader& header_s = specifics.header();
   ASSERT_TRUE(header_s.has_device_type());
-  ASSERT_EQ("TestSessionName", header_s.client_name());
+  ASSERT_EQ("client_name", header_s.client_name());
   ASSERT_EQ(0, header_s.window_size());
 }
 

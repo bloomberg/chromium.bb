@@ -19,6 +19,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sync/glue/device_info.h"
+#include "chrome/browser/sync/glue/synced_device_tracker.h"
 #include "chrome/browser/sync/glue/synced_session.h"
 #include "chrome/browser/sync/glue/synced_tab_delegate.h"
 #include "chrome/browser/sync/glue/synced_window_delegate.h"
@@ -42,7 +43,6 @@
 #include "sync/syncable/directory.h"
 #include "sync/syncable/read_transaction.h"
 #include "sync/syncable/write_transaction.h"
-#include "sync/util/get_session_name.h"
 #include "ui/gfx/favicon_size.h"
 #if defined(OS_LINUX)
 #include "base/linux_util.h"
@@ -605,6 +605,8 @@ syncer::SyncError SessionModelAssociator::AssociateModels(
 
   local_session_syncid_ = syncer::kInvalidId;
 
+  scoped_ptr<DeviceInfo> local_device_info(sync_service_->GetLocalDeviceInfo());
+
   // Read any available foreign sessions and load any session data we may have.
   // If we don't have any local session data in the db, create a header node.
   {
@@ -620,12 +622,15 @@ syncer::SyncError SessionModelAssociator::AssociateModels(
     }
 
     // Make sure we have a machine tag.
-    if (current_machine_tag_.empty()) {
+    if (current_machine_tag_.empty())
       InitializeCurrentMachineTag(&trans);
-      // The session name is retrieved asynchronously so it might not come back
-      // for the writing of the session. However, we write to the session often
-      // enough (on every navigation) that we'll pick it up quickly.
-      InitializeCurrentSessionName();
+    if (local_device_info.get()) {
+      current_session_name_ = local_device_info->client_name();
+    } else {
+      return error_handler_->CreateAndUploadError(
+          FROM_HERE,
+          "Failed to get device info.",
+          model_type());
     }
     synced_session_tracker_.SetLocalSessionTag(current_machine_tag_);
     if (!UpdateAssociationsFromSyncModel(root, &trans, &error)) {
@@ -721,19 +726,6 @@ void SessionModelAssociator::InitializeCurrentMachineTag(
   tab_pool_.set_machine_tag(current_machine_tag_);
 }
 
-void SessionModelAssociator::OnSessionNameInitialized(
-    const std::string& name) {
-  DCHECK(CalledOnValidThread());
-  // Only use the default machine name if it hasn't already been set.
-  if (current_session_name_.empty()) {
-    current_session_name_ = name;
-    // Force a reassociation so we update our header node with the current name.
-    // TODO(zea): Pull the name from somewhere shared with the sync manager.
-    // crbug.com/124287
-    SessionModelAssociator::AssociateWindows(false, NULL);
-  }
-}
-
 bool SessionModelAssociator::GetSyncedFaviconForPageURL(
     const std::string& url,
     std::string* png_favicon) const {
@@ -747,24 +739,6 @@ bool SessionModelAssociator::GetSyncedFaviconForPageURL(
   png_favicon->assign(favicon);
   DCHECK_GT(favicon.size(), 0U);
   return true;
-}
-
-void SessionModelAssociator::InitializeCurrentSessionName() {
-  DCHECK(CalledOnValidThread());
-  if (setup_for_test_) {
-    // We post this task to break out of any transactional locks a caller may be
-    // holding.
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&SessionModelAssociator::OnSessionNameInitialized,
-                   AsWeakPtr(),
-                   std::string("TestSessionName")));
-  } else {
-    syncer::GetSessionName(
-        BrowserThread::GetBlockingPool(),
-        base::Bind(&SessionModelAssociator::OnSessionNameInitialized,
-                   AsWeakPtr()));
-  }
 }
 
 bool SessionModelAssociator::UpdateAssociationsFromSyncModel(

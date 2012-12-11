@@ -285,9 +285,8 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
 
   void GetModelSafeRoutingInfo(syncer::ModelSafeRoutingInfo* out) const;
 
-  // Fetches the DeviceInfo ChangeProcessor.
-  // We'll keep this test-only until we have non-test clients.
-  virtual SyncedDeviceTracker* GetSyncedDeviceTrackerForTest();
+  // Fetches the DeviceInfo tracker.
+  virtual SyncedDeviceTracker* GetSyncedDeviceTracker() const;
 
  protected:
   // The types and functions below are protected so that test

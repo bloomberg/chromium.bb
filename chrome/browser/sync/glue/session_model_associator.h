@@ -228,9 +228,6 @@ class SessionModelAssociator
   // first.
   void BlockUntilLocalChangeForTest(base::TimeDelta timeout);
 
-  // Callback for when the session name has been computed.
-  void OnSessionNameInitialized(const std::string& name);
-
   // If a valid favicon for the page at |url| is found, fills |png_favicon| with
   // the png-encoded image and returns true. Else, returns false.
   bool GetSyncedFaviconForPageURL(const std::string& url,
@@ -257,8 +254,6 @@ class SessionModelAssociator
   FRIEND_TEST_ALL_PREFIXES(SyncSessionModelAssociatorTest,
                            PopulateSessionWindow);
   FRIEND_TEST_ALL_PREFIXES(SyncSessionModelAssociatorTest, PopulateSessionTab);
-  FRIEND_TEST_ALL_PREFIXES(SyncSessionModelAssociatorTest,
-                           InitializeCurrentSessionName);
   FRIEND_TEST_ALL_PREFIXES(SyncSessionModelAssociatorTest,
                            TabNodePool);
 
@@ -395,9 +390,6 @@ class SessionModelAssociator
 
   // Initializes the tag corresponding to this machine.
   void InitializeCurrentMachineTag(syncer::WriteTransaction* trans);
-
-  // Initializes the user visible name for this session
-  void InitializeCurrentSessionName();
 
   // Updates the server data based upon the current client session.  If no node
   // corresponding to this machine exists in the sync model, one is created.
