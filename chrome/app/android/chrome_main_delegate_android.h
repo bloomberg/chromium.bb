@@ -11,14 +11,16 @@
 // Android override of ChromeMainDelegate
 class ChromeMainDelegateAndroid : public ChromeMainDelegate {
  public:
-  ChromeMainDelegateAndroid();
-  virtual ~ChromeMainDelegateAndroid();
+  static ChromeMainDelegateAndroid* Create();
 
   // Set up the JNI bindings.  Tie the Java methods with their native
   // counterparts.  Override to add more JNI bindings.
   virtual bool RegisterApplicationNativeMethods(JNIEnv* env);
 
  protected:
+  ChromeMainDelegateAndroid();
+  virtual ~ChromeMainDelegateAndroid();
+
   virtual bool BasicStartupComplete(int* exit_code) OVERRIDE;
 
   virtual void SandboxInitialized(const std::string& process_type) OVERRIDE;

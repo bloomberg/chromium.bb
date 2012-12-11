@@ -17,9 +17,12 @@
         'chrome_android_core',
       ],
       'sources': [
+        # This file must always be included in the shared_library step to ensure
+        # JNI_OnLoad is exported.
+        'app/android/chrome_jni_onload.cc',
+
         'android/testshell/chrome_main_delegate_testshell_android.cc',
         'android/testshell/chrome_main_delegate_testshell_android.h',
-        'android/testshell/testshell_entry_point.cc',
         "android/testshell/testshell_google_location_settings_helper.cc",
         "android/testshell/testshell_google_location_settings_helper.h",
         'android/testshell/testshell_stubs.cc',

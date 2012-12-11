@@ -9,6 +9,10 @@
 
 static const char kDefaultCountryCode[] = "US";
 
+ChromeMainDelegateAndroid* ChromeMainDelegateAndroid::Create() {
+  return new ChromeMainDelegateTestShellAndroid();
+}
+
 ChromeMainDelegateTestShellAndroid::ChromeMainDelegateTestShellAndroid() {
 }
 
