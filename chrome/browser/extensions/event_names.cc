@@ -47,6 +47,8 @@ const char kOnInputMethodChanged[] = "inputMethodPrivate.onChanged";
 const char kOnContextMenus[] = "contextMenus";
 const char kOnContextMenuClicked[] = "contextMenus.onClicked";
 
+const char kOnDialDeviceList[] = "dial.onDeviceList";
+
 const char kOnDownloadCreated[] = "downloads.onCreated";
 const char kOnDownloadChanged[] = "downloads.onChanged";
 const char kOnDownloadErased[] = "downloads.onErased";

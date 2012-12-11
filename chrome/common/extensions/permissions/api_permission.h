@@ -57,6 +57,7 @@ class APIPermission {
     kContentSettings,
     kContextMenus,
     kCookie,
+    kDial,
     kDebugger,
     kDeclarative,
     kDeclarativeWebRequest,

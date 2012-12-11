@@ -246,6 +246,7 @@ void APIPermissionInfo::RegisterAllPermissions(
       kFlagCannotBeOptional },
     { APIPermission::kChromeosInfoPrivate, "chromeosInfoPrivate",
       kFlagCannotBeOptional },
+    { APIPermission::kDial, "dial", kFlagCannotBeOptional },
     { APIPermission::kFileBrowserHandlerInternal, "fileBrowserHandlerInternal",
       kFlagCannotBeOptional },
     { APIPermission::kFileBrowserPrivate, "fileBrowserPrivate",

@@ -46,6 +46,7 @@
           'app_runtime.idl',
           'app_window.idl',
           'bluetooth.idl',
+          'dial.idl',
           'downloads.idl',
           'experimental_discovery.idl',
           'experimental_dns.idl',

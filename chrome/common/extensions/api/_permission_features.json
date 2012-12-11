@@ -114,6 +114,14 @@
       "extension", "packaged_app"
     ]
   },
+  "dial": {
+    "channel": "stable",
+    "extension_types": ["extension"],
+    "whitelist": [
+      "onpogbcnheabnhmnkgielnjpanneejmi",
+      "pkedcjkdefgpdelpbcmbmeomcjbeemfm"
+    ]
+  },
   "experimental": {
     "channel": "stable",
     "extension_types": [

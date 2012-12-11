@@ -1,0 +1,71 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// An API for discovery of devices that support DIAL.
+// Protocol specification: http://www.dial-multiscreen.org/
+//
+// The API is backed by a service that multicasts discovery requests on the
+// local network to discover DIAL-capable devices and maintains a list of
+// devices that have responded.  Adding an onDeviceList listener causes the
+// service to periodically issue discovery requests to maintain the device list.
+// (No polling is done when there are no onDeviceList listeners.)
+//
+// The onDeviceList event is fired when discovery respnses are received and in
+// other circumstances (see docs).
+//
+// The client can request that network discovery can be done immediately by
+// invoking discoverNow() which is useful for presenting the user with an
+// updated list of devices.
+//
+// On-demand use (updates when discoverNow() is called):
+// chrome.dial.onDeviceList.addListener(function (list) { updateMenu(list); });
+// chrome.dial.discoverNow();
+// (Remember to remove the listener when the menu closes.)
+//
+// Background use (updates only when periodic polling happens):
+// var myList;
+// chrome.dial.onDeviceList.addListener(function (list) { myList = list; });
+//
+// These can be combined to poll for devices to prime the device menu, then
+// refresh the menu when it is displayed.
+
+namespace dial {
+
+  // Represents a unique device that responded to a DIAL discovery request.
+  dictionary DialDevice {
+    // A label identifying the device within this instance of the browser.
+    // Not guaranteed to persist beyond browser instances.
+    DOMString deviceLabel;
+
+    // A URL pointing to the device description file for the device.
+    DOMString deviceDescriptionUrl;
+
+    // The uPnP configuration ID reported by the device.  Corresponds to the
+    // CONFIGID.UPNP.ORG header in the M-SEARCH response.
+    long? configId;
+  };
+
+  callback BooleanCallback = void (boolean result);
+
+  interface Functions {
+    // Causes DIAL discovery to happen immediately.  An onDeviceList event is
+    // fired with the resulting device list.  The callback is invoked with
+    // |true| if discovery was successful or |false| otherwise (and
+    // chrome.extension.lastError is set).
+    static void discoverNow(BooleanCallback callback);
+  };
+
+  interface Events {
+    // Event fired to inform clients of the current set of responsive devices.
+    // May be fired in response to multiple circumstances:
+    //
+    // (1) The DIAL service refreshed its device list through periodic polling.
+    // (2) A client invoked discoverNow().
+    // (3) An event happened that should invalidate the device list
+    //     (e.g., a network interface went offline), in which case it is fired
+    //     with an empty array.
+    static void onDeviceList(DialDevice[] result);
+  };
+
+};

@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_api_factory.h"
 #include "chrome/browser/extensions/api/commands/command_service_factory.h"
 #include "chrome/browser/extensions/api/cookies/cookies_api_factory.h"
+#include "chrome/browser/extensions/api/dial/dial_api_factory.h"
 #include "chrome/browser/extensions/api/discovery/suggested_links_registry_factory.h"
 #include "chrome/browser/extensions/api/font_settings/font_settings_api_factory.h"
 #include "chrome/browser/extensions/api/idle/idle_manager_factory.h"
@@ -228,6 +229,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   extensions::BluetoothAPIFactory::GetInstance();
   extensions::CommandServiceFactory::GetInstance();
   extensions::CookiesAPIFactory::GetInstance();
+  extensions::DialAPIFactory::GetInstance();
   extensions::ExtensionSystemFactory::GetInstance();
   extensions::FontSettingsAPIFactory::GetInstance();
   extensions::IdleManagerFactory::GetInstance();

@@ -1,0 +1,10 @@
+ {
+  "manifest_version": 2,
+  "name": "Test DIAL Whitelist",
+  "version": "1.0",
+  "description": "Tests DIAL Whitelist",
+  "background": {
+    "scripts": ["runtest.js"]
+  },
+  "permissions": ["dial"]
+}

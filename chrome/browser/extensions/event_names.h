@@ -51,6 +51,9 @@ extern const char kOnInputMethodChanged[];
 extern const char kOnContextMenus[];
 extern const char kOnContextMenuClicked[];
 
+// DIAL.
+extern const char kOnDialDeviceList[];
+
 // Downloads.
 extern const char kOnDownloadCreated[];
 extern const char kOnDownloadChanged[];

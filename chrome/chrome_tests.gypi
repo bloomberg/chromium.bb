@@ -228,7 +228,7 @@
         'test/base/interactive_test_utils_aura.cc',
         'test/base/interactive_test_utils_aura.h',
         'test/base/interactive_test_utils_gtk.cc',
-        'test/base/interactive_test_utils_mac.mm',        
+        'test/base/interactive_test_utils_mac.mm',
         'test/base/interactive_test_utils_views.cc',
         'test/base/interactive_test_utils_win.cc',
         'test/base/view_event_test_base.cc',
@@ -919,6 +919,7 @@
         'browser/extensions/api/cookies/cookies_apitest.cc',
         'browser/extensions/api/debugger/debugger_apitest.cc',
         'browser/extensions/api/declarative/declarative_apitest.cc',
+        'browser/extensions/api/dial/dial_apitest.cc',
         'browser/extensions/api/dns/dns_apitest.cc',
         'browser/extensions/api/dns/mock_host_resolver_creator.cc',
         'browser/extensions/api/dns/mock_host_resolver_creator.h',
@@ -2723,7 +2724,7 @@
                 # Win bot needs to be turned into an interactive bot.
                 'interactive_ui_tests',
                 # Disabled from running in coverage_posix.py.
-                # We need to build this during compile step, so enabling here. 
+                # We need to build this during compile step, so enabling here.
                 'browser_tests',
                 '../courgette/courgette.gyp:courgette_unittests',
                 '../crypto/crypto.gyp:crypto_unittests',
