@@ -38,7 +38,6 @@ class BrowserWebKitPlatformSupportImpl : public WebKitPlatformSupportImpl {
   virtual WebKit::WebSocketStreamHandle* createSocketStreamHandle();
   virtual void getPluginList(bool refresh, WebKit::WebPluginListBuilder*);
   virtual WebKit::WebData loadResource(const char* name);
-  virtual WebKit::WebSharedWorkerRepository* sharedWorkerRepository();
   virtual int databaseDeleteFile(const WebKit::WebString& vfs_file_name,
                                  bool sync_dir);
 

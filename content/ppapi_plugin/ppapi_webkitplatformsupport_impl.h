@@ -45,7 +45,6 @@ class PpapiWebKitPlatformSupportImpl : public WebKitPlatformSupportImpl {
       const WebKit::WebString& oldValue, const WebKit::WebString& newValue,
       const WebKit::WebString& origin, const WebKit::WebURL& url,
       bool isLocalStorage);
-  virtual WebKit::WebSharedWorkerRepository* sharedWorkerRepository();
   virtual int databaseDeleteFile(const WebKit::WebString& vfs_file_name,
                                  bool sync_dir);
 

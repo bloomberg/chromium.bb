@@ -263,11 +263,6 @@ WebKit::WebIDBFactory* TestShellWebKitInit::idbFactory() {
   return WebKit::WebIDBFactory::create();
 }
 
-WebKit::WebSharedWorkerRepository*
-TestShellWebKitInit::sharedWorkerRepository() {
-  return NULL;
-}
-
 WebKit::WebGraphicsContext3D*
 TestShellWebKitInit::createOffscreenGraphicsContext3D(
     const WebKit::WebGraphicsContext3D::Attributes& attributes) {

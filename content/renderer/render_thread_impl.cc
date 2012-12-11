@@ -89,6 +89,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRuntimeFeatures.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptController.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSharedWorkerRepository.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_switches.h"
@@ -557,6 +558,8 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
 
   webkit_platform_support_.reset(new RendererWebKitPlatformSupportImpl);
   WebKit::initialize(webkit_platform_support_.get());
+  WebKit::setSharedWorkerRepository(
+      webkit_platform_support_.get()->sharedWorkerRepository());
 
   WebKit::WebCompositorSupport* compositor_support =
       WebKit::Platform::current()->compositorSupport();

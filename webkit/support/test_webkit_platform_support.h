@@ -81,7 +81,6 @@ class TestWebKitPlatformSupport :
   virtual WebKit::WebThemeEngine *themeEngine() OVERRIDE;
 #endif
 
-  virtual WebKit::WebSharedWorkerRepository* sharedWorkerRepository() OVERRIDE;
   virtual WebKit::WebGraphicsContext3D* createOffscreenGraphicsContext3D(
       const WebKit::WebGraphicsContext3D::Attributes&);
   virtual bool canAccelerate2dCanvas();

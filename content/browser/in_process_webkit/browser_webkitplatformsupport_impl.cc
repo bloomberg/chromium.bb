@@ -114,12 +114,6 @@ WebKit::WebData BrowserWebKitPlatformSupportImpl::loadResource(
   return WebKit::WebData();
 }
 
-WebKit::WebSharedWorkerRepository*
-BrowserWebKitPlatformSupportImpl::sharedWorkerRepository() {
-    NOTREACHED();
-    return NULL;
-}
-
 int BrowserWebKitPlatformSupportImpl::databaseDeleteFile(
     const WebKit::WebString& vfs_file_name, bool sync_dir) {
   const FilePath path = webkit_base::WebStringToFilePath(vfs_file_name);

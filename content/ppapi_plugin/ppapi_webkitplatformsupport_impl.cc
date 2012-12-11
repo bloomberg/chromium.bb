@@ -249,12 +249,6 @@ void PpapiWebKitPlatformSupportImpl::dispatchStorageEvent(
   NOTREACHED();
 }
 
-WebKit::WebSharedWorkerRepository*
-PpapiWebKitPlatformSupportImpl::sharedWorkerRepository() {
-  NOTREACHED();
-  return NULL;
-}
-
 int PpapiWebKitPlatformSupportImpl::databaseDeleteFile(
     const WebKit::WebString& vfs_file_name, bool sync_dir) {
   NOTREACHED();

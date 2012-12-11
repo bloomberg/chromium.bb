@@ -47,7 +47,6 @@ class WorkerWebKitPlatformSupportImpl : public WebKitPlatformSupportImpl,
       const WebKit::WebString& key, const WebKit::WebString& old_value,
       const WebKit::WebString& new_value, const WebKit::WebString& origin,
       const WebKit::WebURL& url, bool is_local_storage);
-  virtual WebKit::WebSharedWorkerRepository* sharedWorkerRepository();
 
   virtual WebKit::WebKitPlatformSupport::FileHandle databaseOpenFile(
       const WebKit::WebString& vfs_file_name, int desired_flags);

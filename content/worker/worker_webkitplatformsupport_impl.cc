@@ -171,11 +171,6 @@ void WorkerWebKitPlatformSupportImpl::dispatchStorageEvent(
   NOTREACHED();
 }
 
-WebSharedWorkerRepository*
-WorkerWebKitPlatformSupportImpl::sharedWorkerRepository() {
-    return 0;
-}
-
 WebKitPlatformSupport::FileHandle
 WorkerWebKitPlatformSupportImpl::databaseOpenFile(
     const WebString& vfs_file_name, int desired_flags) {

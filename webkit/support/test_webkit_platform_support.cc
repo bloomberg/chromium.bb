@@ -421,11 +421,6 @@ WebKit::WebThemeEngine* TestWebKitPlatformSupport::themeEngine() {
 }
 #endif
 
-WebKit::WebSharedWorkerRepository*
-TestWebKitPlatformSupport::sharedWorkerRepository() {
-  return NULL;
-}
-
 WebKit::WebGraphicsContext3D*
 TestWebKitPlatformSupport::createOffscreenGraphicsContext3D(
     const WebKit::WebGraphicsContext3D::Attributes& attributes) {
