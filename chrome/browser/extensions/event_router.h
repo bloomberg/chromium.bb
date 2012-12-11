@@ -12,6 +12,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/hash_tables.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
@@ -222,7 +223,7 @@ class EventRouter : public content::NotificationObserver,
 
   EventListenerMap listeners_;
 
-  typedef std::map<std::string, Observer*> ObserverMap;
+  typedef base::hash_map<std::string, Observer*> ObserverMap;
   ObserverMap observers_;
 
   // True if we should dispatch the event signalling that Chrome was updated
