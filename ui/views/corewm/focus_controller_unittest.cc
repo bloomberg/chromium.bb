@@ -6,13 +6,16 @@
 
 #include <map>
 
+#include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/client/activation_client.h"
+#include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_tracker.h"
 #include "ui/base/events/event_handler.h"
 #include "ui/views/corewm/base_focus_rules.h"
 #include "ui/views/corewm/focus_change_event.h"
@@ -20,55 +23,77 @@
 namespace views {
 namespace corewm {
 
-class FocusEventsTestHandler : public ui::EventHandler,
-                               public aura::WindowObserver {
+class FocusNotificationObserver : public aura::client::ActivationChangeObserver,
+                                  public aura::client::FocusChangeObserver {
  public:
-  explicit FocusEventsTestHandler(aura::Window* window)
-      : window_(window),
-        result_(ui::ER_UNHANDLED) {
-    window_->AddObserver(this);
-    window_->AddPreTargetHandler(this);
-  }
-  virtual ~FocusEventsTestHandler() {
-    RemoveObserver();
+  FocusNotificationObserver()
+      : activation_changed_count_(0),
+        focus_changed_count_(0) {}
+  virtual ~FocusNotificationObserver() {}
+
+  void ExpectCounts(int activation_changed_count, int focus_changed_count) {
+    EXPECT_EQ(activation_changed_count, activation_changed_count_);
+    EXPECT_EQ(focus_changed_count, focus_changed_count_);
   }
 
-  void set_result(ui::EventResult result) { result_ = result; }
 
-  int GetCountForEventType(int event_type) {
-    std::map<int, int>::const_iterator it = event_counts_.find(event_type);
-    return it != event_counts_.end() ? it->second : 0;
+ private:
+  // Overridden from aura::client::ActivationChangeObserver:
+  virtual void OnWindowActivated(aura::Window* gained_active,
+                                 aura::Window* lost_active) OVERRIDE {
+    ++activation_changed_count_;
+  }
+
+  // Overridden from aura::client::FocusChangeObserver:
+  virtual void OnWindowFocused(aura::Window* gained_focus,
+                               aura::Window* lost_focus) OVERRIDE {
+    ++focus_changed_count_;
+  }
+
+  int activation_changed_count_;
+  int focus_changed_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(FocusNotificationObserver);
+};
+
+class ScopedFocusNotificationObserver : public FocusNotificationObserver {
+ public:
+  ScopedFocusNotificationObserver(aura::RootWindow* root_window)
+      : root_window_(root_window) {
+    aura::client::GetActivationClient(root_window_)->AddObserver(this);
+    aura::client::GetFocusClient(root_window_)->AddObserver(this);
+  }
+  virtual ~ScopedFocusNotificationObserver() {
+    aura::client::GetActivationClient(root_window_)->RemoveObserver(this);
+    aura::client::GetFocusClient(root_window_)->RemoveObserver(this);
   }
 
  private:
-  // Overridden from ui::EventHandler:
-  virtual void OnEvent(ui::Event* event) OVERRIDE {
-    event_counts_[event->type()] += 1;
-    if (result_ & ui::ER_CONSUMED)
-      event->StopPropagation();
-    else if (result_ & ui::ER_HANDLED)
-      event->SetHandled();
-  }
+  aura::RootWindow* root_window_;
 
-  // Overridden from aura::WindowObserver:
-  virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE {
-    DCHECK_EQ(window, window_);
-    RemoveObserver();
-  }
+  DISALLOW_COPY_AND_ASSIGN(ScopedFocusNotificationObserver);
+};
 
-  void RemoveObserver() {
-    if (window_) {
-      window_->RemoveObserver(this);
-      window_->RemovePreTargetHandler(this);
-      window_ = NULL;
+class ScopedTargetFocusNotificationObserver : public FocusNotificationObserver {
+ public:
+  ScopedTargetFocusNotificationObserver(aura::RootWindow* root_window, int id)
+      : target_(root_window->GetChildById(id)) {
+    aura::client::SetActivationChangeObserver(target_, this);
+    aura::client::SetFocusChangeObserver(target_, this);
+    tracker_.Add(target_);
+  }
+  virtual ~ScopedTargetFocusNotificationObserver() {
+    if (tracker_.Contains(target_)) {
+      aura::client::SetActivationChangeObserver(target_, NULL);
+      aura::client::SetFocusChangeObserver(target_, NULL);
     }
   }
 
-  aura::Window* window_;
-  std::map<int, int> event_counts_;
-  ui::EventResult result_;
+ private:
+  aura::Window* target_;
+  aura::WindowTracker tracker_;
 
-  DISALLOW_COPY_AND_ASSIGN(FocusEventsTestHandler);
+  DISALLOW_COPY_AND_ASSIGN(ScopedTargetFocusNotificationObserver);
 };
 
 // BaseFocusRules subclass that allows basic overrides of focus/activation to
@@ -213,17 +238,6 @@ class FocusControllerTestBase : public aura::test::AuraTestBase {
     return active_window ? active_window->id() : -1;
   }
 
-  void ExpectActivationEvents(FocusEventsTestHandler* handler,
-                              int expected_changing_event_count,
-                              int expected_changed_event_count) {
-    EXPECT_EQ(expected_changing_event_count,
-              handler->GetCountForEventType(
-                  FocusChangeEvent::activation_changing_event_type()));
-    EXPECT_EQ(expected_changed_event_count,
-              handler->GetCountForEventType(
-                  FocusChangeEvent::activation_changed_event_type()));
-  }
-
   TestFocusRules* test_focus_rules() { return test_focus_rules_; }
 
   // Test functions.
@@ -288,70 +302,77 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
     EXPECT_EQ(1, GetActiveWindowId());
   }
   virtual void FocusEvents() OVERRIDE {
-    FocusEventsTestHandler handler(root_window());
-    EXPECT_EQ(0, handler.GetCountForEventType(
-        FocusChangeEvent::focus_changing_event_type()));
-    EXPECT_EQ(0, handler.GetCountForEventType(
-        FocusChangeEvent::focus_changed_event_type()));
+    ScopedFocusNotificationObserver root_observer(root_window());
+    ScopedTargetFocusNotificationObserver observer1(root_window(), 1);
+    ScopedTargetFocusNotificationObserver observer2(root_window(), 2);
+
+    root_observer.ExpectCounts(0, 0);
+    observer1.ExpectCounts(0, 0);
+    observer2.ExpectCounts(0, 0);
+
     FocusWindowById(1);
-    // Since the focused window is initially NULL, there is no target to
-    // dispatch a changing event to, so none of the pre-target handlers get hit.
-    EXPECT_EQ(0, handler.GetCountForEventType(
-        FocusChangeEvent::focus_changing_event_type()));
-    EXPECT_EQ(1, handler.GetCountForEventType(
-        FocusChangeEvent::focus_changed_event_type()));
+    root_observer.ExpectCounts(1, 1);
+    observer1.ExpectCounts(1, 1);
+    observer2.ExpectCounts(0, 0);
+
     FocusWindowById(2);
-    // Now that w1 is focused, it can receive a changing event, and so can our
-    // pre-target handler.
-    EXPECT_EQ(1, handler.GetCountForEventType(
-        FocusChangeEvent::focus_changing_event_type()));
-    EXPECT_EQ(2, handler.GetCountForEventType(
-        FocusChangeEvent::focus_changed_event_type()));
+    root_observer.ExpectCounts(2, 2);
+    observer1.ExpectCounts(2, 2);
+    observer2.ExpectCounts(1, 1);
   }
   virtual void DuplicateFocusEvents() OVERRIDE {
     // Focusing an existing focused window should not resend focus events.
-    FocusEventsTestHandler handler(root_window());
-    EXPECT_EQ(0, handler.GetCountForEventType(
-        FocusChangeEvent::focus_changing_event_type()));
-    EXPECT_EQ(0, handler.GetCountForEventType(
-        FocusChangeEvent::focus_changed_event_type()));
+    ScopedFocusNotificationObserver root_observer(root_window());
+    ScopedTargetFocusNotificationObserver observer1(root_window(), 1);
+
+    root_observer.ExpectCounts(0, 0);
+    observer1.ExpectCounts(0, 0);
+
     FocusWindowById(1);
-    // See FocusEvents() above for why this is 0.
-    EXPECT_EQ(0, handler.GetCountForEventType(
-        FocusChangeEvent::focus_changing_event_type()));
-    EXPECT_EQ(1, handler.GetCountForEventType(
-        FocusChangeEvent::focus_changed_event_type()));
+    root_observer.ExpectCounts(1, 1);
+    observer1.ExpectCounts(1, 1);
+
     FocusWindowById(1);
-    EXPECT_EQ(0, handler.GetCountForEventType(
-        FocusChangeEvent::focus_changing_event_type()));
-    EXPECT_EQ(1, handler.GetCountForEventType(
-        FocusChangeEvent::focus_changed_event_type()));
+    root_observer.ExpectCounts(1, 1);
+    observer1.ExpectCounts(1, 1);
   }
   virtual void ActivationEvents() OVERRIDE {
     ActivateWindowById(1);
 
-    FocusEventsTestHandler handler_root(root_window());
-    FocusEventsTestHandler handler_1(root_window()->GetChildById(1));
-    FocusEventsTestHandler handler_2(root_window()->GetChildById(2));
+    ScopedFocusNotificationObserver root_observer(root_window());
+    ScopedTargetFocusNotificationObserver observer1(root_window(), 1);
+    ScopedTargetFocusNotificationObserver observer2(root_window(), 2);
 
-    ExpectActivationEvents(&handler_root, 0, 0);
-    ExpectActivationEvents(&handler_1, 0, 0);
-    ExpectActivationEvents(&handler_2, 0, 0);
+    root_observer.ExpectCounts(0, 0);
+    observer1.ExpectCounts(0, 0);
+    observer2.ExpectCounts(0, 0);
+
     ActivateWindowById(2);
-    ExpectActivationEvents(&handler_root, 1, 1);
-    ExpectActivationEvents(&handler_1, 1, 0);
-    ExpectActivationEvents(&handler_2, 0, 1);
+    root_observer.ExpectCounts(1, 1);
+    observer1.ExpectCounts(1, 1);
+    observer2.ExpectCounts(1, 1);
   }
   virtual void DuplicateActivationEvents() OVERRIDE {
     // Activating an existing active window should not resend activation events.
     ActivateWindowById(1);
 
-    FocusEventsTestHandler handler_root(root_window());
-    ExpectActivationEvents(&handler_root, 0, 0);
+    ScopedFocusNotificationObserver root_observer(root_window());
+    ScopedTargetFocusNotificationObserver observer1(root_window(), 1);
+    ScopedTargetFocusNotificationObserver observer2(root_window(), 2);
+
+    root_observer.ExpectCounts(0, 0);
+    observer1.ExpectCounts(0, 0);
+    observer2.ExpectCounts(0, 0);
+
     ActivateWindowById(2);
-    ExpectActivationEvents(&handler_root, 1, 1);
+    root_observer.ExpectCounts(1, 1);
+    observer1.ExpectCounts(1, 1);
+    observer2.ExpectCounts(1, 1);
+
     ActivateWindowById(2);
-    ExpectActivationEvents(&handler_root, 1, 1);
+    root_observer.ExpectCounts(1, 1);
+    observer1.ExpectCounts(1, 1);
+    observer2.ExpectCounts(1, 1);
   }
   virtual void ShiftFocusWithinActiveWindow() OVERRIDE {
     ActivateWindowById(1);
@@ -522,16 +543,14 @@ class FocusControllerImplicitTestBase : public FocusControllerTestBase {
     aura::Window* w211 = root_window()->GetChildById(211);
     FocusWindow(w211);
 
-    FocusEventsTestHandler handler(root_window());
-    EXPECT_EQ(0, handler.GetCountForEventType(
-        FocusChangeEvent::focus_changing_event_type()));
-    EXPECT_EQ(0, handler.GetCountForEventType(
-        FocusChangeEvent::focus_changed_event_type()));
+    ScopedFocusNotificationObserver root_observer(root_window());
+    ScopedTargetFocusNotificationObserver observer211(root_window(), 211);
+    root_observer.ExpectCounts(0, 0);
+    observer211.ExpectCounts(0, 0);
+
     ChangeWindowDisposition(w211);
-    EXPECT_EQ(1, handler.GetCountForEventType(
-        FocusChangeEvent::focus_changing_event_type()));
-    EXPECT_EQ(1, handler.GetCountForEventType(
-        FocusChangeEvent::focus_changed_event_type()));
+    root_observer.ExpectCounts(0, 1);
+    observer211.ExpectCounts(0, 1);
   }
   virtual void ActivationEvents() OVERRIDE {
     DCHECK(!parent_) << "Activation tests don't support parent changes.";
@@ -539,18 +558,17 @@ class FocusControllerImplicitTestBase : public FocusControllerTestBase {
     aura::Window* w2 = root_window()->GetChildById(2);
     ActivateWindow(w2);
 
-    FocusEventsTestHandler handler_root(root_window());
-    FocusEventsTestHandler handler_2(root_window()->GetChildById(2));
-    FocusEventsTestHandler handler_3(root_window()->GetChildById(3));
-
-    ExpectActivationEvents(&handler_root, 0, 0);
-    ExpectActivationEvents(&handler_2, 0, 0);
-    ExpectActivationEvents(&handler_3, 0, 0);
+    ScopedFocusNotificationObserver root_observer(root_window());
+    ScopedTargetFocusNotificationObserver observer2(root_window(), 2);
+    ScopedTargetFocusNotificationObserver observer3(root_window(), 3);
+    root_observer.ExpectCounts(0, 0);
+    observer2.ExpectCounts(0, 0);
+    observer3.ExpectCounts(0, 0);
 
     ChangeWindowDisposition(w2);
-    ExpectActivationEvents(&handler_root, 1, 1);
-    ExpectActivationEvents(&handler_2, 1, 0);
-    ExpectActivationEvents(&handler_3, 0, 1);
+    root_observer.ExpectCounts(1, 1);
+    observer2.ExpectCounts(1, 1);
+    observer3.ExpectCounts(1, 1);
   }
   virtual void FocusRulesOverride() OVERRIDE {
     EXPECT_EQ(NULL, GetFocusedWindow());

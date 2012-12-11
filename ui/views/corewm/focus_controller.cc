@@ -5,9 +5,10 @@
 #include "ui/views/corewm/focus_controller.h"
 
 #include "base/auto_reset.h"
+#include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/env.h"
-#include "ui/views/corewm/focus_change_event.h"
 #include "ui/views/corewm/focus_rules.h"
 
 namespace views {
@@ -36,11 +37,9 @@ void StackTransientParentsBelowModalWindow(aura::Window* window) {
 FocusController::FocusController(FocusRules* rules)
     : active_window_(NULL),
       focused_window_(NULL),
-      event_dispatch_target_(NULL),
       rules_(rules),
       ALLOW_THIS_IN_INITIALIZER_LIST(observer_manager_(this)) {
   DCHECK(rules);
-  FocusChangeEvent::RegisterEventTypes();
   aura::Env::GetInstance()->AddObserver(this);
 }
 
@@ -53,12 +52,12 @@ FocusController::~FocusController() {
 
 void FocusController::AddObserver(
     aura::client::ActivationChangeObserver* observer) {
-  //NOTREACHED();
+  activation_observers_.AddObserver(observer);
 }
 
 void FocusController::RemoveObserver(
     aura::client::ActivationChangeObserver* observer) {
-  //NOTREACHED();
+  activation_observers_.RemoveObserver(observer);
 }
 
 void FocusController::ActivateWindow(aura::Window* window) {
@@ -93,12 +92,12 @@ bool FocusController::CanActivateWindow(aura::Window* window) const {
 
 void FocusController::AddObserver(
     aura::client::FocusChangeObserver* observer) {
-  //NOTREACHED();
+  focus_observers_.AddObserver(observer);
 }
 
 void FocusController::RemoveObserver(
     aura::client::FocusChangeObserver* observer) {
-  //NOTREACHED();
+  focus_observers_.RemoveObserver(observer);
 }
 
 void FocusController::FocusWindow(aura::Window* window,
@@ -188,13 +187,6 @@ void FocusController::OnWindowInitialized(aura::Window* window) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// FocusController, ui::EventDispatcherDelegate implementation:
-
-bool FocusController::CanDispatchToTarget(ui::EventTarget* target) {
-  return target == event_dispatch_target_;
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // FocusController, private:
 
 void FocusController::SetFocusedWindow(aura::Window* window) {
@@ -204,12 +196,19 @@ void FocusController::SetFocusedWindow(aura::Window* window) {
   if (window)
     DCHECK_EQ(window, rules_->GetFocusableWindow(window));
 
-  DispatchEvents(
-      FocusChangeEvent::focus_changing_event_type(),
-      FocusChangeEvent::focus_changed_event_type(),
-      &focused_window_,
-      window,
-      false /* restack */);
+  aura::Window* lost_focus = focused_window_;
+  focused_window_ = window;
+
+  FOR_EACH_OBSERVER(aura::client::FocusChangeObserver,
+                    focus_observers_,
+                    OnWindowFocused(focused_window_, lost_focus));
+  aura::client::FocusChangeObserver* observer =
+      aura::client::GetFocusChangeObserver(lost_focus);
+  if (observer)
+    observer->OnWindowFocused(focused_window_, lost_focus);
+  observer = aura::client::GetFocusChangeObserver(focused_window_);
+  if (observer)
+    observer->OnWindowFocused(focused_window_, lost_focus);
 }
 
 void FocusController::SetActiveWindow(aura::Window* window) {
@@ -218,51 +217,28 @@ void FocusController::SetActiveWindow(aura::Window* window) {
   DCHECK(rules_->CanActivateWindow(window));
   if (window)
     DCHECK_EQ(window, rules_->GetActivatableWindow(window));
-  DispatchEvents(
-      FocusChangeEvent::activation_changing_event_type(),
-      FocusChangeEvent::activation_changed_event_type(),
-      &active_window_,
-      window,
-      true  /* restack */);
-}
 
-
-void FocusController::DispatchEvents(int changing_event_type,
-                                     int changed_event_type,
-                                     aura::Window** state,
-                                     aura::Window* new_state,
-                                     bool restack) {
-  ui::EventTarget* old_target = event_dispatch_target_;
-  event_dispatch_target_ = *state;
-
-  FocusChangeEvent changing_event(changing_event_type);
-  if (!DispatchEvent(*state, &changing_event))
-    return;
-  event_dispatch_target_ = old_target;
-
-  // We ignore attempts to cancel the default action of focus changing events,
-  // this is not supported as it can leave an inconsistent state.
-
-  aura::Window* lost_active = *state;
-  *state = new_state;
-
-  if (restack && new_state) {
-    StackTransientParentsBelowModalWindow(new_state);
-    new_state->parent()->StackChildAtTop(new_state);
+  aura::Window* lost_activation = active_window_;
+  active_window_ = window;
+  if (active_window_) {
+    StackTransientParentsBelowModalWindow(active_window_);
+    active_window_->parent()->StackChildAtTop(active_window_);
   }
 
-  old_target = event_dispatch_target_;
-  event_dispatch_target_ = *state;
-  FocusChangeEvent changed_event(changed_event_type);
-  FocusChangeEvent::DispatcherApi(&changed_event).set_last_focus(lost_active);
-  if (DispatchEvent(*state, &changed_event))
-    event_dispatch_target_ = old_target;
+  FOR_EACH_OBSERVER(aura::client::ActivationChangeObserver,
+                    activation_observers_,
+                    OnWindowActivated(active_window_, lost_activation));
+  aura::client::ActivationChangeObserver* observer =
+      aura::client::GetActivationChangeObserver(lost_activation);
+  if (observer)
+    observer->OnWindowActivated(active_window_, lost_activation);
+  observer = aura::client::GetActivationChangeObserver(active_window_);
+  if (observer)
+    observer->OnWindowActivated(active_window_, lost_activation);
 }
 
 void FocusController::WindowLostFocusFromDispositionChange(
     aura::Window* window) {
-  if (window == event_dispatch_target_)
-    event_dispatch_target_ = NULL;
   // TODO(beng): See if this function can be replaced by a call to
   //             FocusWindow().
   // Activation adjustments are handled first in the event of a disposition
