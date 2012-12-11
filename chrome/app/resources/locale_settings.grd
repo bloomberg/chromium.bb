@@ -386,11 +386,17 @@
         </message>
       </if>
 
-      <!-- The URL for Adobe Flash storage settings. We cannot rely on -->
+      <!-- The URLs for Adobe Flash settings. We cannot rely on -->
       <!-- the automatic expansion of GRITLANGCODE here because Adobe does -->
       <!-- not use the language/locale code. -->
       <message name="IDS_FLASH_STORAGE_URL" use_name_for_id="true">
         http://www.adobe.com/go/settmgr_storage_en
+      </message>
+      <message name="IDS_FLASH_GLOBAL_PRIVACY_URL" use_name_for_id="true">
+        http://www.macromedia.com/support/documentation/en/flashplayer/help/settings_manager02.html
+      </message>
+      <message name="IDS_FLASH_WEBSITE_PRIVACY_URL" use_name_for_id="true">
+        http://www.macromedia.com/support/documentation/en/flashplayer/help/settings_manager06.html
       </message>
 
       <message name="IDS_SYNC_GET_ACCESS_CODE_URL" translateable="false">

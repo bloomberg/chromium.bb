@@ -8197,6 +8197,15 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_MEDIA_SELECTED_CAMERA_LABEL" desc="The label of the 'camera device' select menu">
         Camera:
       </message>
+      <message name="IDS_MEDIA_PEPPER_FLASH_DEFAULT_DIVERGED_LABEL" desc="The label in Content Settings dialog informing that Pepper Flash uses different default permission for camera and microphone than the default media permission.">
+        Adobe Flash Player camera and microphone settings are different.
+      </message>
+      <message name="IDS_MEDIA_PEPPER_FLASH_EXCEPTIONS_DIVERGED_LABEL" desc="The label in the media device exception management page informing that Pepper Flash uses different exceptions than the ones listed on the page.">
+        Adobe Flash Player camera and microphone exceptions are different.
+      </message>
+      <message name="IDS_MEDIA_PEPPER_FLASH_CHANGE_LINK" desc="The link to change Pepper Flash camera and microphone settings.">
+        Change
+      </message>
       <message name="IDS_MEDIA_GALLERY_SECTION_LABEL" desc="The label for the section of content settings that relates to media galleries.">
         Media galleries
       </message>
