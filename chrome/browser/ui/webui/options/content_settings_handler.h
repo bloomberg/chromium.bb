@@ -95,8 +95,8 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
   // Clobbers and rebuilds just the Pepper Flash camera and microphone exception
   // table.
   void UpdateFlashCameraMicExceptionsView();
-  // Clobbers and rebuilds just the Media Stream device exception table.
-  void UpdateMediaStreamExceptionsView();
+  // Clobbers and rebuilds just the Media device exception table.
+  void UpdateMediaExceptionsView();
   // Clobbers and rebuilds an exception table that's managed by the host content
   // settings map.
   void UpdateExceptionsViewFromHostContentSettingsMap(ContentSettingsType type);
@@ -114,6 +114,8 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
   // Removes one Pepper Flash camera and microphone exception.
   void RemoveFlashCameraMicException(const base::ListValue* args,
                                      size_t arg_index);
+  // Removes one media camera and microphone exception.
+  void RemoveMediaException(const base::ListValue* args, size_t arg_index);
   // Removes one exception of |type| from the host content settings map.
   void RemoveExceptionFromHostContentSettingsMap(
       const base::ListValue* args,

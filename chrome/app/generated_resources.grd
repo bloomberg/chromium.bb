@@ -8221,6 +8221,12 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_MEDIA_GALLERY_ADD_NEW_BUTTON" desc="The text for the button that opens a dialog to select a new media gallery.">
         Add...
       </message>
+      <message name="IDS_MEDIA_AUDIO_EXCEPTION_HEADER" desc="A column header for the action column of the media audio exceptions dialog">
+        Audio
+      </message>
+      <message name="IDS_MEDIA_VIDEO_EXCEPTION_HEADER" desc="A column header for the action column of the media video exceptions dialog">
+        Video
+      </message>
 
       <!-- Mac and ChromeOS users do not close their browser. Mac users quit it and ChromeOS users log out. -->
       <if expr="not is_macosx and not pp_ifdef('chromeos')">

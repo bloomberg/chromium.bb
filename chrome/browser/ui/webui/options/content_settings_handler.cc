@@ -78,6 +78,7 @@ const char* kAppId = "appId";
 const char* kEmbeddingOrigin = "embeddingOrigin";
 const char* kDefaultProviderID = "default";
 const char* kPreferencesSource = "preference";
+const char* kVideoSetting = "video";
 
 std::string ContentSettingToString(ContentSetting setting) {
   switch (setting) {
@@ -312,6 +313,8 @@ const ContentSettingsHandler::ExContentSettingsTypeNameEntry
   {CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS, "register-protocol-handler"},
   {EX_CONTENT_SETTINGS_TYPE_PEPPER_FLASH_CAMERAMIC, "pepper-flash-cameramic"},
   {CONTENT_SETTINGS_TYPE_MEDIASTREAM, "media-stream"},
+  {CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, "media-stream-mic"},
+  {CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, "media-stream-camera"},
   {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, "ppapi-broker"},
 };
 
@@ -417,6 +420,9 @@ void ContentSettingsHandler::GetLocalizedValues(
     { "mediaStreamVideoBlock", IDS_MEDIA_STREAM_BLOCK_VIDEO_ONLY_RADIO },
     { "mediaStreamBubbleAudio", IDS_MEDIA_STREAM_AUDIO_MANAGED },
     { "mediaStreamBubbleVideo", IDS_MEDIA_STREAM_VIDEO_MANAGED },
+    { "mediaAudioExceptionHeader", IDS_MEDIA_AUDIO_EXCEPTION_HEADER },
+    { "mediaVideoExceptionHeader", IDS_MEDIA_VIDEO_EXCEPTION_HEADER },
+
     // PPAPI broker filter.
     // TODO(bauerb): Use IDS_PPAPI_BROKER_HEADER.
     { "ppapi-broker_header", IDS_PPAPI_BROKER_TAB_LABEL },
@@ -729,6 +735,13 @@ void ContentSettingsHandler::UpdateExceptionsViewFromModel(
     case EX_CONTENT_SETTINGS_TYPE_PEPPER_FLASH_CAMERAMIC:
       UpdateFlashCameraMicExceptionsView();
       break;
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
+      UpdateMediaSettingsView();
+      break;
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
+      UpdateMediaExceptionsView();
+      break;
     case CONTENT_SETTINGS_TYPE_INTENTS:
       // Don't update intents settings at this point.
       // Turn on when enable_web_intents_tag is enabled.
@@ -743,9 +756,6 @@ void ContentSettingsHandler::UpdateExceptionsViewFromModel(
       break;
     case CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS:
       // The RPH settings are retrieved separately.
-      break;
-    case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
-      UpdateMediaSettingsView();
       break;
 #if defined(OS_WIN)
     case CONTENT_SETTINGS_TYPE_METRO_SWITCH_TO_DESKTOP:
@@ -770,6 +780,9 @@ void ContentSettingsHandler::UpdateOTRExceptionsViewFromModel(
     case CONTENT_SETTINGS_TYPE_METRO_SWITCH_TO_DESKTOP:
 #endif
     case EX_CONTENT_SETTINGS_TYPE_PEPPER_FLASH_CAMERAMIC:
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
       break;
     default:
       UpdateExceptionsViewFromOTRHostContentSettingsMap(
@@ -911,6 +924,74 @@ void ContentSettingsHandler::UpdateFlashCameraMicExceptionsView() {
       ExContentSettingsType(EX_CONTENT_SETTINGS_TYPE_PEPPER_FLASH_CAMERAMIC));
 }
 
+void ContentSettingsHandler::UpdateMediaExceptionsView() {
+  ListValue media_exceptions;
+  GetExceptionsFromHostContentSettingsMap(
+      GetContentSettingsMap(),
+      CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+      &media_exceptions);
+
+  ListValue video_exceptions;
+  GetExceptionsFromHostContentSettingsMap(
+      GetContentSettingsMap(),
+      CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
+      &video_exceptions);
+
+  // Merge the |video_exceptions| list to |media_exceptions| list.
+  std::map<std::string, base::DictionaryValue*> entries_map;
+  for (ListValue::const_iterator media_entry(media_exceptions.begin());
+       media_entry != media_exceptions.end(); ++media_entry) {
+    DictionaryValue* media_dict = NULL;
+    if (!(*media_entry)->GetAsDictionary(&media_dict))
+      NOTREACHED();
+
+    media_dict->SetString(kVideoSetting,
+                          ContentSettingToString(CONTENT_SETTING_ASK));
+
+    std::string media_origin;
+    media_dict->GetString(kOrigin, &media_origin);
+    entries_map[media_origin] = media_dict;
+  }
+
+  for (ListValue::iterator video_entry = video_exceptions.begin();
+       video_entry != video_exceptions.end(); ++video_entry) {
+    DictionaryValue* video_dict = NULL;
+    if (!(*video_entry)->GetAsDictionary(&video_dict))
+      NOTREACHED();
+
+    std::string video_origin;
+    std::string video_setting;
+    video_dict->GetString(kOrigin, &video_origin);
+    video_dict->GetString(kSetting, &video_setting);
+
+    std::map<std::string, base::DictionaryValue*>::iterator iter =
+        entries_map.find(video_origin);
+    if (iter == entries_map.end()) {
+      DictionaryValue* exception = new DictionaryValue();
+      exception->SetString(kOrigin, video_origin);
+      exception->SetString(kSetting,
+                           ContentSettingToString(CONTENT_SETTING_ASK));
+      exception->SetString(kVideoSetting, video_setting);
+      exception->SetString(kSource, kPreferencesSource);
+
+      // Append the new entry to the list and map.
+      media_exceptions.Append(exception);
+      entries_map[video_origin] = exception;
+    } else {
+      // Modify the existing entry.
+      iter->second->SetString(kVideoSetting, video_setting);
+    }
+  }
+
+  StringValue type_string(
+       ContentSettingsTypeToGroupName(CONTENT_SETTINGS_TYPE_MEDIASTREAM));
+   web_ui()->CallJavascriptFunction("ContentSettings.setExceptions",
+                                    type_string, media_exceptions);
+
+  UpdateSettingDefaultFromModel(
+      ExContentSettingsType(CONTENT_SETTINGS_TYPE_MEDIASTREAM));
+}
+
 void ContentSettingsHandler::UpdateExceptionsViewFromHostContentSettingsMap(
     ContentSettingsType type) {
   ListValue exceptions;
@@ -1012,11 +1093,6 @@ void ContentSettingsHandler::GetExceptionsFromHostContentSettingsMap(
         continue;
 
       ContentSetting content_setting = j->second;
-      // Media Stream is using compound values for exceptions, which are
-      // granted as |CONTENT_SETTING_ALLOW|.
-      if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM)
-        content_setting = CONTENT_SETTING_ALLOW;
-
       this_provider_exceptions->push_back(GetExceptionForPage(
           primary_pattern,
           j->first,
@@ -1076,6 +1152,35 @@ void ContentSettingsHandler::RemoveFlashCameraMicException(
   }
 
   UpdateFlashCameraMicExceptionsView();
+}
+
+void ContentSettingsHandler::RemoveMediaException(
+    const ListValue* args, size_t arg_index) {
+  std::string mode;
+  bool rv = args->GetString(arg_index++, &mode);
+  DCHECK(rv);
+
+  std::string pattern;
+  rv = args->GetString(arg_index++, &pattern);
+  DCHECK(rv);
+
+  HostContentSettingsMap* settings_map =
+      mode == "normal" ? GetContentSettingsMap() :
+                         GetOTRContentSettingsMap();
+  if (settings_map) {
+    settings_map->SetWebsiteSetting(
+        ContentSettingsPattern::FromString(pattern),
+        ContentSettingsPattern::Wildcard(),
+        CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+        "",
+        NULL);
+    settings_map->SetWebsiteSetting(
+        ContentSettingsPattern::FromString(pattern),
+        ContentSettingsPattern::Wildcard(),
+        CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
+        "",
+        NULL);
+  }
 }
 
 void ContentSettingsHandler::RemoveExceptionFromHostContentSettingsMap(
@@ -1231,7 +1336,7 @@ void ContentSettingsHandler::SetContentFilter(const ListValue* args) {
       break;
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
       content::RecordAction(
-          UserMetricsAction("Options_DefaultMediaStreamSettingChanged"));
+          UserMetricsAction("Options_DefaultMediaStreamMicSettingChanged"));
       break;
     default:
       break;
@@ -1250,6 +1355,9 @@ void ContentSettingsHandler::RemoveException(const ListValue* args) {
       break;
     case EX_CONTENT_SETTINGS_TYPE_PEPPER_FLASH_CAMERAMIC:
       RemoveFlashCameraMicException(args, arg_i);
+      break;
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
+      RemoveMediaException(args, arg_i);
       break;
     default:
       RemoveExceptionFromHostContentSettingsMap(args, arg_i, type);
@@ -1271,7 +1379,9 @@ void ContentSettingsHandler::SetException(const ListValue* args) {
   ExContentSettingsType type = ExContentSettingsTypeFromGroupName(type_string);
   if (type == CONTENT_SETTINGS_TYPE_GEOLOCATION ||
       type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS ||
-      type == CONTENT_SETTINGS_TYPE_MEDIASTREAM) {
+      type == CONTENT_SETTINGS_TYPE_MEDIASTREAM ||
+      type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
+      type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA) {
     NOTREACHED();
   } else if (type == EX_CONTENT_SETTINGS_TYPE_PEPPER_FLASH_CAMERAMIC) {
     DCHECK(IsValidHost(pattern));

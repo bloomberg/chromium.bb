@@ -73,7 +73,8 @@ class PrefProvider : public ObservableProvider {
       const ResourceIdentifier& resource_identifier,
       const base::Value* value);
 
-  void MigrateObsoleteClearOnExitPref();
+  // Migrate the old media setting into new mic/camera content settings.
+  void MigrateObsoleteMediaContentSetting();
 
   static void CanonicalizeContentSettingsExceptions(
       base::DictionaryValue* all_settings_dictionary);

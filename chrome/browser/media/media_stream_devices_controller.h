@@ -43,6 +43,10 @@ class MediaStreamDevicesController {
   void Deny();
 
  private:
+  // Returns true if the media access for the origin of the request has been
+  // blocked before. Otherwise returns false.
+  bool IsRequestBlockedByDefault() const;
+
   // Used by the various helper methods below to filter an operation on devices
   // of a particular type.
   typedef bool (*FilterByDeviceTypeFunc)(content::MediaStreamDeviceType);
@@ -73,9 +77,9 @@ class MediaStreamDevicesController {
   // chrome://URLs, otherwise returns false.
   bool ShouldAlwaysAllowOrigin();
 
-  // Grants "always allow" exception for the origin to use the selected devices.
-  void AlwaysAllowOriginAndDevices(const std::string& audio_device,
-                                   const std::string& video_device);
+  // Sets the permission of the origin of the request. This is triggered when
+  // the users deny the request or allow the request for https sites.
+  void SetPermission(bool allowed) const;
 
   // Gets the respective "always allowed" devices for the origin in |request_|.
   // |audio_id| and |video_id| will be empty if there is no "always allowed"

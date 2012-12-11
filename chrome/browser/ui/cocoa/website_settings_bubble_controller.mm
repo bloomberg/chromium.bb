@@ -873,15 +873,15 @@ NSColor* IdentityVerifiedTextColor() {
   // TODO(dubroy): Refactor this code to use PermissionMenuModel.
 
   // Media stream permission does not support "Always allow".
+  // TODO(xians): Media supports "allow" for https but not for http.
   if (permissionInfo.type != CONTENT_SETTINGS_TYPE_MEDIASTREAM) {
     [button addItemWithTitle:
         l10n_util::GetNSString(IDS_WEBSITE_SETTINGS_MENU_ITEM_ALLOW)];
     [[button lastItem] setTag:CONTENT_SETTING_ALLOW];
   }
 
-  // Fullscreen and media stream do not support "Always block".
-  if (permissionInfo.type != CONTENT_SETTINGS_TYPE_FULLSCREEN &&
-      permissionInfo.type != CONTENT_SETTINGS_TYPE_MEDIASTREAM) {
+  // Fullscreen does not support "Always block".
+  if (permissionInfo.type != CONTENT_SETTINGS_TYPE_FULLSCREEN) {
     [button addItemWithTitle:
         l10n_util::GetNSString(IDS_WEBSITE_SETTINGS_MENU_ITEM_BLOCK)];
     [[button lastItem] setTag:CONTENT_SETTING_BLOCK];

@@ -36,6 +36,8 @@ const char* kTypeNames[] = {
   "mouselock",
   "mixed-script",
   "media-stream",
+  "media-stream-mic",
+  "media-stream-camera",
   "register-protocol-handler",
   "ppapi-broker",
 #if defined(OS_WIN)

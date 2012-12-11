@@ -38,6 +38,8 @@ const char* kPrefToManageType[] = {
   NULL,  // No policy for default value of mouse lock requests
   NULL,  // No policy for default value of mixed script blocking
   prefs::kManagedDefaultMediaStreamSetting,
+  NULL,  // No policy for default value of media stream mic
+  NULL,  // No policy for default value of media stream camera
   NULL,  // No policy for default value of protocol handlers
   NULL,  // No policy for default value of PPAPI broker
 #if defined(OS_WIN)

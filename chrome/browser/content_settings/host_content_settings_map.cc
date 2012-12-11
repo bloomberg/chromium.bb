@@ -348,6 +348,12 @@ bool HostContentSettingsMap::IsSettingAllowedForType(
     return false;
   }
 
+  // We don't support ALLOW for media default setting.
+  if (content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM &&
+      setting == CONTENT_SETTING_ALLOW) {
+    return false;
+  }
+
   // DEFAULT, ALLOW and BLOCK are always allowed.
   if (setting == CONTENT_SETTING_DEFAULT ||
       setting == CONTENT_SETTING_ALLOW ||
@@ -363,6 +369,8 @@ bool HostContentSettingsMap::IsSettingAllowedForType(
     case CONTENT_SETTINGS_TYPE_INTENTS:
     case CONTENT_SETTINGS_TYPE_MOUSELOCK:
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
     case CONTENT_SETTINGS_TYPE_PPAPI_BROKER:
       return setting == CONTENT_SETTING_ASK;
     default:
@@ -373,9 +381,9 @@ bool HostContentSettingsMap::IsSettingAllowedForType(
 // static
 bool HostContentSettingsMap::ContentTypeHasCompoundValue(
     ContentSettingsType type) {
-  // Values for content type CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE are
-  // of type dictionary/map. Compound types like dictionaries can't be mapped to
-  // the type |ContentSetting|.
+  // Values for content type CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE and
+  // CONTENT_SETTINGS_TYPE_MEDIASTREAM are of type dictionary/map. Compound
+  // types like dictionaries can't be mapped to the type |ContentSetting|.
   return (type == CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE ||
           type == CONTENT_SETTINGS_TYPE_MEDIASTREAM);
 }
@@ -460,7 +468,6 @@ void HostContentSettingsMap::MigrateObsoleteClearOnExitPref() {
 
   prefs_->SetBoolean(prefs::kContentSettingsClearOnExitMigrated, true);
 }
-
 
 void HostContentSettingsMap::AddSettingsForOneType(
     const content_settings::ProviderInterface* provider,

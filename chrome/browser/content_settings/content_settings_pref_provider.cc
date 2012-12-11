@@ -37,6 +37,8 @@ typedef std::pair<std::string, std::string> StringPair;
 typedef std::map<std::string, std::string> StringMap;
 
 const char kPerPluginPrefName[] = "per_plugin";
+const char kAudioKey[] = "audio";
+const char kVideoKey[] = "video";
 
 ContentSetting FixObsoleteCookiePromptMode(ContentSettingsType content_type,
                                            ContentSetting setting) {
@@ -84,7 +86,6 @@ PrefProvider::PrefProvider(PrefService* prefs,
     is_incognito_(incognito),
     updating_preferences_(false) {
   DCHECK(prefs_);
-
   // Verify preferences version.
   if (!prefs_->HasPrefPath(prefs::kContentSettingsVersion)) {
     prefs_->SetInteger(prefs::kContentSettingsVersion,
@@ -102,6 +103,11 @@ PrefProvider::PrefProvider(PrefService* prefs,
     UMA_HISTOGRAM_COUNTS("ContentSettings.NumberOfExceptions",
                          value_map_.size());
   }
+
+  // Migrate the obsolete media content setting exceptions to the new settings.
+  // This needs to be done after ReadContentSettingsFromPref().
+  if (!is_incognito_)
+    MigrateObsoleteMediaContentSetting();
 
   pref_change_registrar_.Init(prefs_);
   pref_change_registrar_.Add(
@@ -293,6 +299,57 @@ void PrefProvider::UpdatePref(
             pattern_str, NULL);
       }
     }
+  }
+}
+
+
+void PrefProvider::MigrateObsoleteMediaContentSetting() {
+  std::vector<Rule> rules_to_delete;
+  {
+    scoped_ptr<RuleIterator> rule_iterator(
+        GetRuleIterator(CONTENT_SETTINGS_TYPE_MEDIASTREAM, "", false));
+    while (rule_iterator->HasNext()) {
+      // Skip default setting and rules without a value.
+      const content_settings::Rule& rule = rule_iterator->Next();
+      DCHECK(rule.primary_pattern != ContentSettingsPattern::Wildcard());
+      if (!rule.value.get())
+        continue;
+      rules_to_delete.push_back(rule);
+    }
+  }
+
+  for (std::vector<Rule>::const_iterator it = rules_to_delete.begin();
+       it != rules_to_delete.end(); ++it) {
+    const DictionaryValue* value_dict = NULL;
+    if (!it->value->GetAsDictionary(&value_dict) || value_dict->empty())
+      return;
+
+    std::string audio_device, video_device;
+    value_dict->GetString(kAudioKey, &audio_device);
+    value_dict->GetString(kVideoKey, &video_device);
+    // Add the exception to the new microphone content setting.
+    if (!audio_device.empty()) {
+      SetWebsiteSetting(it->primary_pattern,
+                        it->secondary_pattern,
+                        CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+                        "",
+                        Value::CreateIntegerValue(CONTENT_SETTING_ALLOW));
+    }
+    // Add the exception to the new camera content setting.
+    if (!video_device.empty()) {
+      SetWebsiteSetting(it->primary_pattern,
+                        it->secondary_pattern,
+                        CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
+                        "",
+                        Value::CreateIntegerValue(CONTENT_SETTING_ALLOW));
+    }
+
+    // Remove the old exception in CONTENT_SETTINGS_TYPE_MEDIASTREAM.
+    SetWebsiteSetting(it->primary_pattern,
+                      it->secondary_pattern,
+                      CONTENT_SETTINGS_TYPE_MEDIASTREAM,
+                      "",
+                      NULL);
   }
 }
 

@@ -101,3 +101,23 @@ div[role='section-header'] > h3 {
   display: table-cell;
   width: 12em;
 }
+
+.exception-setting.media-audio-setting {
+  width: 6em;
+}
+
+.exception-setting.media-video-setting {
+  width: 6.5em;
+}
+
+#media-column-header {
+  display: -webkit-box;
+}
+
+#media-audio-column {
+  width: 6em;
+}
+
+#media-video-column {
+  width: 8.5em;
+}
