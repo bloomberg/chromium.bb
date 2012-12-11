@@ -2,11 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// From private/ppb_flash_device_id.idl modified Mon Dec 10 16:03:11 2012.
+
+#include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_flash_device_id.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
-#include "ppapi/thunk/thunk.h"
 #include "ppapi/thunk/ppb_flash_device_id_api.h"
+#include "ppapi/thunk/ppb_instance_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
+#include "ppapi/thunk/thunk.h"
 
 namespace ppapi {
 namespace thunk {
@@ -20,24 +25,24 @@ PP_Resource Create(PP_Instance instance) {
   return enter.functions()->CreateFlashDeviceID(instance);
 }
 
-int32_t GetDeviceID(PP_Resource resource,
-                    PP_Var* id,
-                    PP_CompletionCallback callback) {
-  EnterResource<PPB_Flash_DeviceID_API> enter(resource, callback, true);
+int32_t GetDeviceID(PP_Resource device_id,
+                    struct PP_Var* id,
+                    struct PP_CompletionCallback callback) {
+  EnterResource<PPB_Flash_DeviceID_API> enter(device_id, callback, true);
   if (enter.failed())
     return enter.retval();
   return enter.SetResult(enter.object()->GetDeviceID(id, enter.callback()));
 }
 
-const PPB_Flash_DeviceID g_ppb_flash_deviceid_thunk = {
+const PPB_Flash_DeviceID_1_0 g_ppb_flash_deviceid_thunk_1_0 = {
   &Create,
-  &GetDeviceID
+  &GetDeviceID,
 };
 
 }  // namespace
 
 const PPB_Flash_DeviceID_1_0* GetPPB_Flash_DeviceID_1_0_Thunk() {
-  return &g_ppb_flash_deviceid_thunk;
+  return &g_ppb_flash_deviceid_thunk_1_0;
 }
 
 }  // namespace thunk
