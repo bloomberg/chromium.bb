@@ -1040,12 +1040,11 @@ void DownloadItemImpl::OnDownloadRenamedToIntermediateName(
     const FilePath& full_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   VLOG(20) << __FUNCTION__ << " download=" << DebugString(true);
-  if (DOWNLOAD_INTERRUPT_REASON_NONE != reason) {
+  if (DOWNLOAD_INTERRUPT_REASON_NONE != reason)
     Interrupt(reason);
-  } else {
+  else
     SetFullPath(full_path);
-    delegate_->ShowDownloadInBrowser(this);
-  }
+  delegate_->ShowDownloadInBrowser(this);
 
   MaybeCompleteDownload();
 }
