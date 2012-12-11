@@ -14,7 +14,6 @@ class AutomationProvider;
 class AutomationResourceMessageFilter;
 class GURL;
 class Profile;
-class TabContents;
 
 namespace content {
 class WebContents;

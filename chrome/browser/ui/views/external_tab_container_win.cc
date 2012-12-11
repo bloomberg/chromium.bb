@@ -33,7 +33,6 @@
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
 #include "chrome/browser/ui/views/tab_contents/render_view_context_menu_win.h"
@@ -220,7 +219,7 @@ bool ExternalTabContainerWin::Init(Profile* profile,
   content::WebContentsObserver::Observe(existing_contents);
 
   Browser::Adoption::AdoptAsTabContents(existing_contents);
-  tab_contents_.reset(TabContents::FromWebContents(existing_contents));
+  web_contents_.reset(existing_contents);
 
   if (!infobars_enabled) {
     InfoBarTabHelper* infobar_tab_helper =
@@ -263,20 +262,18 @@ bool ExternalTabContainerWin::Init(Profile* profile,
 
 void ExternalTabContainerWin::Uninitialize() {
   registrar_.RemoveAll();
-  if (tab_contents_.get()) {
-    UnregisterRenderViewHost(
-        tab_contents_->web_contents()->GetRenderViewHost());
+  if (web_contents_.get()) {
+    UnregisterRenderViewHost(web_contents_->GetRenderViewHost());
 
     if (GetWidget()->GetRootView())
       GetWidget()->GetRootView()->RemoveAllChildViews(true);
 
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTERNAL_TAB_CLOSED,
-        content::Source<NavigationController>(
-            &tab_contents_->web_contents()->GetController()),
+        content::Source<NavigationController>(&web_contents_->GetController()),
         content::Details<ExternalTabContainer>(this));
 
-    tab_contents_.reset(NULL);
+    web_contents_.reset(NULL);
   }
 
   if (focus_manager_) {
@@ -312,7 +309,7 @@ bool ExternalTabContainerWin::Reinitialize(
 }
 
 WebContents* ExternalTabContainerWin::GetWebContents() const {
-  return tab_contents_.get() ? tab_contents_->web_contents() : NULL;
+  return web_contents_.get();
 }
 
 gfx::NativeView ExternalTabContainerWin::GetExternalTabNativeView() const {
@@ -363,8 +360,8 @@ void ExternalTabContainerWin::RunUnloadHandlers(IPC::Message* reply_message) {
 
   unload_reply_message_ = reply_message;
   bool wait_for_unload_handlers =
-      tab_contents_.get() &&
-      Browser::RunUnloadEventsHelper(tab_contents_->web_contents());
+      web_contents_.get() &&
+      Browser::RunUnloadEventsHelper(web_contents_.get());
   if (!wait_for_unload_handlers) {
     AutomationMsg_RunUnloadHandlers::WriteReplyParams(reply_message, true);
     automation_->Send(reply_message);
@@ -381,16 +378,16 @@ void ExternalTabContainerWin::ProcessUnhandledAccelerator(const MSG& msg) {
 void ExternalTabContainerWin::FocusThroughTabTraversal(
     bool reverse,
     bool restore_focus_to_view) {
-  DCHECK(tab_contents_.get());
-  if (tab_contents_.get())
-    tab_contents_->web_contents()->Focus();
+  DCHECK(web_contents_.get());
+  if (web_contents_.get())
+    web_contents_->Focus();
 
-  // The tab_contents_ member can get destroyed in the context of the call to
-  // TabContentsViewViews::Focus() above. This method eventually calls SetFocus
+  // The web_contents_ member can get destroyed in the context of the call to
+  // WebContentsViewViews::Focus() above. This method eventually calls SetFocus
   // on the native window, which could end up dispatching messages like
   // WM_DESTROY for the external tab.
-  if (tab_contents_.get() && restore_focus_to_view)
-    tab_contents_->web_contents()->FocusThroughTabTraversal(reverse);
+  if (web_contents_.get() && restore_focus_to_view)
+    web_contents_->FocusThroughTabTraversal(reverse);
 }
 
 // static
@@ -449,14 +446,14 @@ WebContents* ExternalTabContainerWin::OpenURLFromTab(
         nav_params.transition = content::PAGE_TRANSITION_LINK;
 
         HistoryTabHelper* history_tab_helper =
-            HistoryTabHelper::FromWebContents(tab_contents_->web_contents());
+            HistoryTabHelper::FromWebContents(web_contents_.get());
         const history::HistoryAddPageArgs& add_page_args =
             history_tab_helper->CreateHistoryAddPageArgs(
                 params.url, base::Time::Now(),
                 false /* did_replace_entry */, nav_params);
         history_tab_helper->UpdateHistoryForNavigation(add_page_args);
 
-        return tab_contents_->web_contents();
+        return web_contents_.get();
       }
       break;
     default:
@@ -916,8 +913,7 @@ void ExternalTabContainerWin::Observe(
         // 0th entry will be +1).
         if (InitNavigationInfo(&navigation_info, commit->type,
                 commit->previous_entry_index -
-                tab_contents_->web_contents()->
-                    GetController().GetLastCommittedEntryIndex()))
+                web_contents_->GetController().GetLastCommittedEntryIndex()))
           automation_->Send(new AutomationMsg_DidNavigate(tab_handle_,
                                                           navigation_info));
       }
@@ -1010,19 +1006,18 @@ bool ExternalTabContainerWin::InitNavigationInfo(
     content::NavigationType nav_type,
     int relative_offset) {
   DCHECK(nav_info);
-  NavigationEntry* entry =
-      tab_contents_->web_contents()->GetController().GetActiveEntry();
-  // If this is very early in the game then we may not have an entry.
+  NavigationEntry* entry = web_contents_->GetController().GetActiveEntry();
+  // If this is very early in the game then there may not be an entry.
   if (!entry)
     return false;
 
   nav_info->navigation_type = nav_type;
   nav_info->relative_offset = relative_offset;
   nav_info->navigation_index =
-      tab_contents_->web_contents()->GetController().GetCurrentEntryIndex();
+      web_contents_->GetController().GetCurrentEntryIndex();
   nav_info->url = entry->GetURL();
   nav_info->referrer = entry->GetReferrer().url;
-  nav_info->title =  UTF16ToWideHack(entry->GetTitle());
+  nav_info->title = UTF16ToWideHack(entry->GetTitle());
   if (nav_info->title.empty())
     nav_info->title = UTF8ToWide(nav_info->url.spec());
 
@@ -1054,13 +1049,12 @@ bool ExternalTabContainerWin::AcceleratorPressed(
       accelerator_table_.find(accelerator);
   DCHECK(iter != accelerator_table_.end());
 
-  if (!tab_contents_.get() ||
-      !tab_contents_->web_contents()->GetRenderViewHost()) {
+  if (!web_contents_.get() || !web_contents_->GetRenderViewHost()) {
     NOTREACHED();
     return false;
   }
 
-  RenderViewHost* host = tab_contents_->web_contents()->GetRenderViewHost();
+  RenderViewHost* host = web_contents_->GetRenderViewHost();
   int command_id = iter->second;
   switch (command_id) {
     case IDC_ZOOM_PLUS:
@@ -1073,28 +1067,24 @@ bool ExternalTabContainerWin::AcceleratorPressed(
       host->Zoom(content::PAGE_ZOOM_OUT);
       break;
     case IDC_DEV_TOOLS:
-      DevToolsWindow::ToggleDevToolsWindow(
-          tab_contents_->web_contents()->GetRenderViewHost(),
-          false,
-          DEVTOOLS_TOGGLE_ACTION_SHOW);
+      DevToolsWindow::ToggleDevToolsWindow(web_contents_->GetRenderViewHost(),
+                                           false,
+                                           DEVTOOLS_TOGGLE_ACTION_SHOW);
       break;
     case IDC_DEV_TOOLS_CONSOLE:
-      DevToolsWindow::ToggleDevToolsWindow(
-          tab_contents_->web_contents()->GetRenderViewHost(),
-          false,
-          DEVTOOLS_TOGGLE_ACTION_SHOW_CONSOLE);
+      DevToolsWindow::ToggleDevToolsWindow(web_contents_->GetRenderViewHost(),
+                                           false,
+                                           DEVTOOLS_TOGGLE_ACTION_SHOW_CONSOLE);
       break;
     case IDC_DEV_TOOLS_INSPECT:
-      DevToolsWindow::ToggleDevToolsWindow(
-          tab_contents_->web_contents()->GetRenderViewHost(),
-          false,
-          DEVTOOLS_TOGGLE_ACTION_INSPECT);
+      DevToolsWindow::ToggleDevToolsWindow(web_contents_->GetRenderViewHost(),
+                                           false,
+                                           DEVTOOLS_TOGGLE_ACTION_INSPECT);
       break;
     case IDC_DEV_TOOLS_TOGGLE:
-      DevToolsWindow::ToggleDevToolsWindow(
-          tab_contents_->web_contents()->GetRenderViewHost(),
-          false,
-          DEVTOOLS_TOGGLE_ACTION_TOGGLE);
+      DevToolsWindow::ToggleDevToolsWindow(web_contents_->GetRenderViewHost(),
+                                           false,
+                                           DEVTOOLS_TOGGLE_ACTION_TOGGLE);
       break;
     default:
       NOTREACHED() << "Unsupported accelerator: " << command_id;
@@ -1108,14 +1098,14 @@ bool ExternalTabContainerWin::CanHandleAccelerators() const {
 }
 
 void ExternalTabContainerWin::Navigate(const GURL& url, const GURL& referrer) {
-  if (!tab_contents_.get()) {
+  if (!web_contents_.get()) {
     NOTREACHED();
     return;
   }
 
   TRACE_EVENT_BEGIN_ETW("ExternalTabContainerWin::Navigate", 0, url.spec());
 
-  tab_contents_->web_contents()->GetController().LoadURL(
+  web_contents_->GetController().LoadURL(
       url, content::Referrer(referrer, WebKit::WebReferrerPolicyDefault),
       content::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
 }
@@ -1169,7 +1159,7 @@ void ExternalTabContainerWin::LoadAccelerators() {
 
 void ExternalTabContainerWin::OnReinitialize() {
   if (load_requests_via_automation_) {
-    RenderViewHost* rvh = tab_contents_->web_contents()->GetRenderViewHost();
+    RenderViewHost* rvh = web_contents_->GetRenderViewHost();
     if (rvh) {
       AutomationResourceMessageFilter::ResumePendingRenderView(
           rvh->GetProcess()->GetID(), rvh->GetRoutingID(),
@@ -1197,7 +1187,9 @@ void ExternalTabContainerWin::ServicePendingOpenURLRequests() {
 void ExternalTabContainerWin::SetupExternalTabView() {
   // Create a TabContentsContainer to handle focus cycling using Tab and
   // Shift-Tab.
-  tab_contents_container_ = new views::WebView(tab_contents_->profile());
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
+  tab_contents_container_ = new views::WebView(profile);
 
   // The views created here will be destroyed when the ExternalTabContainer
   // widget is torn down.
@@ -1206,7 +1198,7 @@ void ExternalTabContainerWin::SetupExternalTabView() {
   InfoBarContainerView* info_bar_container =
       new InfoBarContainerView(this, NULL);
   InfoBarTabHelper* infobar_tab_helper =
-      InfoBarTabHelper::FromWebContents(tab_contents_->web_contents());
+      InfoBarTabHelper::FromWebContents(web_contents_.get());
   info_bar_container->ChangeTabContents(infobar_tab_helper);
 
   views::GridLayout* layout = new views::GridLayout(external_tab_view_);
@@ -1226,7 +1218,7 @@ void ExternalTabContainerWin::SetupExternalTabView() {
   layout->StartRow(1, 0);
   layout->AddView(tab_contents_container_);
   GetWidget()->SetContentsView(external_tab_view_);
-  // Note that SetTabContents must be called after AddChildView is called
+  // Note that SetWebContents must be called after AddChildView is called
   tab_contents_container_->SetWebContents(web_contents());
 }
 

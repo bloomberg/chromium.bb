@@ -31,7 +31,6 @@ class AutomationProvider;
 class Browser;
 class Profile;
 class TabContentsContainer;
-class TabContents;
 class RenderViewContextMenuViews;
 struct NavigationInfo;
 
@@ -269,7 +268,7 @@ class ExternalTabContainerWin : public ExternalTabContainer,
   // ExternalTabContainerWin.
   void SetupExternalTabView();
 
-  scoped_ptr<TabContents> tab_contents_;
+  scoped_ptr<content::WebContents> web_contents_;
   scoped_refptr<AutomationProvider> automation_;
 
   content::NotificationRegistrar registrar_;
