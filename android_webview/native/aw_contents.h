@@ -63,6 +63,8 @@ class AwContents : public FindHelper::Listener,
       const string16& message_text,
       const base::android::ScopedJavaLocalRef<jobject>& js_result);
 
+  void PerformLongClick();
+
   // |handler| is an instance of
   // org.chromium.android_webview.AwHttpAuthHandler.
   void onReceivedHttpAuthRequest(const base::android::JavaRef<jobject>& handler,

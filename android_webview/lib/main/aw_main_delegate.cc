@@ -6,6 +6,7 @@
 
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/lib/aw_browser_dependency_factory_impl.h"
+#include "android_webview/native/aw_web_contents_view_delegate.h"
 #include "android_webview/renderer/aw_content_renderer_client.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -14,8 +15,6 @@
 
 namespace android_webview {
 
-base::LazyInstance<AwContentBrowserClient>
-    g_webview_content_browser_client = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<AwContentRendererClient>
     g_webview_content_renderer_client = LAZY_INSTANCE_INITIALIZER;
 
@@ -66,12 +65,16 @@ void AwMainDelegate::ProcessExiting(const std::string& process_type) {
 
 content::ContentBrowserClient*
     AwMainDelegate::CreateContentBrowserClient() {
-  return &g_webview_content_browser_client.Get();
+  content_browser_client_.reset(
+      new AwContentBrowserClient(&AwWebContentsViewDelegate::Create));
+
+  return content_browser_client_.get();
 }
 
 content::ContentRendererClient*
     AwMainDelegate::CreateContentRendererClient() {
-  return &g_webview_content_renderer_client.Get();
+  content_renderer_client_.reset(new AwContentRendererClient());
+  return content_renderer_client_.get();
 }
 
 }  // namespace android_webview

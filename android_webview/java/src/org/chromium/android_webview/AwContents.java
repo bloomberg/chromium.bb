@@ -830,6 +830,11 @@ public class AwContents {
         mContainerView.invalidate();
     }
 
+    @CalledByNative
+    private boolean performLongClick() {
+        return mContainerView.performLongClick();
+    }
+
     // -------------------------------------------------------------------------------------------
     // Helper methods
     // -------------------------------------------------------------------------------------------
@@ -945,5 +950,5 @@ public class AwContents {
     private native boolean nativeRestoreFromOpaqueState(int nativeAwContents, byte[] state);
 
     private native int nativeReleasePopupWebContents(int nativeAwContents);
-    private native void  nativeSetWebContents(int nativeAwContents, int nativeNewWebContents);
+    private native void nativeSetWebContents(int nativeAwContents, int nativeNewWebContents);
 }

@@ -15,6 +15,9 @@ class BrowserMainRunner;
 
 namespace android_webview {
 
+class AwContentBrowserClient;
+class AwContentRendererClient;
+
 // Android WebView implementation of ContentMainDelegate.
 class AwMainDelegate : public content::ContentMainDelegate {
  public:
@@ -35,7 +38,9 @@ class AwMainDelegate : public content::ContentMainDelegate {
       CreateContentRendererClient() OVERRIDE;
 
   scoped_ptr<content::BrowserMainRunner> browser_runner_;
-  android_webview::AwContentClient content_client_;
+  AwContentClient content_client_;
+  scoped_ptr<AwContentBrowserClient> content_browser_client_;
+  scoped_ptr<AwContentRendererClient> content_renderer_client_;
 
   DISALLOW_COPY_AND_ASSIGN(AwMainDelegate);
 };

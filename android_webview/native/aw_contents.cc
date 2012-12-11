@@ -300,6 +300,15 @@ void AwContents::RunBeforeUnloadDialog(
           env, obj.obj(), jurl.obj(), jmessage.obj(), js_result.obj());
 }
 
+void AwContents::PerformLongClick() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+
+  Java_AwContents_performLongClick(env, obj.obj());
+}
+
 void AwContents::onReceivedHttpAuthRequest(
     const JavaRef<jobject>& handler,
     const std::string& host,

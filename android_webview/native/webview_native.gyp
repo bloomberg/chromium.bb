@@ -39,6 +39,8 @@
         'aw_resource.h',
         'aw_web_contents_delegate.cc',
         'aw_web_contents_delegate.h',
+        'aw_web_contents_view_delegate.cc',
+        'aw_web_contents_view_delegate.h',
         'cookie_manager.cc',
         'cookie_manager.h',
         'input_stream_impl.cc',

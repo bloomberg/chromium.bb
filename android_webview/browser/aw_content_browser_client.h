@@ -14,7 +14,10 @@ namespace android_webview {
 
 class AwContentBrowserClient : public content::ContentBrowserClient {
  public:
-  AwContentBrowserClient();
+  typedef content::WebContentsViewDelegate* ViewDelegateFactoryFn(
+      content::WebContents* web_contents);
+
+  AwContentBrowserClient(ViewDelegateFactoryFn* view_delegate_factory);
   virtual ~AwContentBrowserClient();
 
   AwBrowserContext* GetAwBrowserContext();
@@ -22,6 +25,8 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   // Overriden methods from ContentBrowserClient.
   virtual content::BrowserMainParts* CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) OVERRIDE;
+  virtual content::WebContentsViewDelegate* GetWebContentsViewDelegate(
+      content::WebContents* web_contents) OVERRIDE;
   virtual void RenderProcessHostCreated(
       content::RenderProcessHost* host) OVERRIDE;
   virtual std::string GetCanonicalEncodingNameByAliasName(
@@ -119,10 +124,13 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       content::BrowserContext* browser_context,
       const GURL& url,
       const content::SocketPermissionRequest& params) OVERRIDE;
+
  private:
   // Android WebView currently has a single global (non-off-the-record) browser
   // context.
   scoped_ptr<AwBrowserContext> browser_context_;
+
+  ViewDelegateFactoryFn* view_delegate_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AwContentBrowserClient);
 };

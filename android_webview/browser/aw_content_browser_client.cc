@@ -42,7 +42,9 @@ class DummyAccessTokenStore : public content::AccessTokenStore {
 
 namespace android_webview {
 
-AwContentBrowserClient::AwContentBrowserClient() {
+AwContentBrowserClient::AwContentBrowserClient(
+    ViewDelegateFactoryFn* view_delegate_factory)
+    : view_delegate_factory_(view_delegate_factory) {
   FilePath user_data_dir;
   if (!PathService::Get(base::DIR_ANDROID_APP_DATA, &user_data_dir)) {
     NOTREACHED() << "Failed to get app data directory for Android WebView";
@@ -60,6 +62,12 @@ AwBrowserContext* AwContentBrowserClient::GetAwBrowserContext() {
 content::BrowserMainParts* AwContentBrowserClient::CreateBrowserMainParts(
     const content::MainFunctionParams& parameters) {
   return new AwBrowserMainParts(browser_context_.get());
+}
+
+content::WebContentsViewDelegate*
+AwContentBrowserClient::GetWebContentsViewDelegate(
+    content::WebContents* web_contents) {
+  return (*view_delegate_factory_)(web_contents);
 }
 
 void AwContentBrowserClient::RenderProcessHostCreated(
