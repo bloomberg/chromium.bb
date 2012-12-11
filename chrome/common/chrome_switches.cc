@@ -519,9 +519,6 @@ const char kEnableExtensionActivityUI[]     = "enable-extension-activity-ui";
 // Enables or disables showing extensions in the action box.
 const char kExtensionsInActionBox[]         = "extensions-in-action-box";
 
-// Enables experimental timeline API.
-const char kEnableExtensionTimelineApi[]    = "enable-extension-timeline-api";
-
 // Applies the chrome style to any dialog based on ConstrainedWindowViews.
 const char kEnableChromeStyleDialogs[]      = "enable-chrome-style-dialogs";
 

@@ -16,7 +16,6 @@
 #include "chrome/browser/extensions/api/runtime/runtime_api.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/event_names.h"
-#include "chrome/browser/extensions/extension_devtools_manager.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
@@ -189,16 +188,6 @@ void EventRouter::OnListenerAdded(const EventListener* listener) {
   if (observer != observers_.end())
     observer->second->OnListenerAdded(details);
 
-  // TODO(yoz): Migrate these to become EventRouter observers.
-  // EventRouter shouldn't need to know about them.
-  if (listener->process) {
-    ExtensionDevToolsManager* extension_devtools_manager =
-        ExtensionSystem::Get(profile_)->devtools_manager();
-    if (extension_devtools_manager)
-      extension_devtools_manager->AddEventListener(event_name,
-                                                   listener->process->GetID());
-  }
-
   if (SystemInfoEventRouter::IsSystemInfoEvent(event_name))
     SystemInfoEventRouter::GetInstance()->AddEventListener(event_name);
 }
@@ -209,16 +198,6 @@ void EventRouter::OnListenerRemoved(const EventListener* listener) {
   ObserverMap::iterator observer = observers_.find(event_name);
   if (observer != observers_.end())
     observer->second->OnListenerRemoved(details);
-
-  // TODO(yoz): Migrate these to become EventRouter observers.
-  // EventRouter shouldn't need to know about them.
-  if (listener->process) {
-    ExtensionDevToolsManager* extension_devtools_manager =
-        ExtensionSystem::Get(profile_)->devtools_manager();
-    if (extension_devtools_manager)
-      extension_devtools_manager->RemoveEventListener(
-          event_name, listener->process->GetID());
-  }
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,

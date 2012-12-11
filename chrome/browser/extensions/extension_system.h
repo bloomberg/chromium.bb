@@ -16,7 +16,6 @@
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/common/extensions/extension_constants.h"
 
-class ExtensionDevToolsManager;
 class ExtensionInfoMap;
 class ExtensionProcessManager;
 class ExtensionService;
@@ -74,9 +73,6 @@ class ExtensionSystem : public ProfileKeyedService {
   // actions on extensions (install, uninstall, disable, etc.).
   // The ManagementPolicy is created at startup.
   virtual ManagementPolicy* management_policy() = 0;
-
-  //  The ExtensionDevToolsManager is created at startup.
-  virtual ExtensionDevToolsManager* devtools_manager() = 0;
 
   // The UserScriptMaster is created at startup.
   virtual UserScriptMaster* user_script_master() = 0;
@@ -161,7 +157,6 @@ class ExtensionSystemImpl : public ExtensionSystem {
   virtual ExtensionService* extension_service() OVERRIDE;  // shared
   virtual ManagementPolicy* management_policy() OVERRIDE;  // shared
   virtual UserScriptMaster* user_script_master() OVERRIDE;  // shared
-  virtual ExtensionDevToolsManager* devtools_manager() OVERRIDE;
   virtual ExtensionProcessManager* process_manager() OVERRIDE;
   virtual AlarmManager* alarm_manager() OVERRIDE;
   virtual StateStore* state_store() OVERRIDE;  // shared
@@ -253,8 +248,6 @@ class ExtensionSystemImpl : public ExtensionSystem {
 
   Shared* shared_;
 
-  // The services that have their own instances in incognito.
-  scoped_refptr<ExtensionDevToolsManager> extension_devtools_manager_;
   // |extension_process_manager_| must be destroyed before the Profile's
   // |io_data_|. While |extension_process_manager_| still lives, we handle
   // incoming resource requests from extension processes and those require

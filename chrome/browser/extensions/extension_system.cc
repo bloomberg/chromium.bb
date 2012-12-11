@@ -17,7 +17,6 @@
 #include "chrome/browser/extensions/blacklist.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/event_router.h"
-#include "chrome/browser/extensions/extension_devtools_manager.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
@@ -285,8 +284,7 @@ Blacklist* ExtensionSystemImpl::Shared::blacklist() {
 //
 
 ExtensionSystemImpl::ExtensionSystemImpl(Profile* profile)
-    : profile_(profile),
-      extension_devtools_manager_(NULL) {
+    : profile_(profile) {
   shared_ = ExtensionSystemSharedFactory::GetForProfile(profile);
 
   if (profile->IsOffTheRecord()) {
@@ -309,12 +307,6 @@ void ExtensionSystemImpl::InitForRegularProfile(bool extensions_enabled) {
   DCHECK(!profile_->IsOffTheRecord());
   if (user_script_master() || extension_service())
     return;  // Already initialized.
-
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(
-      switches::kEnableExtensionTimelineApi)) {
-    extension_devtools_manager_ = new ExtensionDevToolsManager(profile_);
-  }
 
   // The ExtensionInfoMap needs to be created before the
   // ExtensionProcessManager.
@@ -356,12 +348,6 @@ ManagementPolicy* ExtensionSystemImpl::management_policy() {
 
 UserScriptMaster* ExtensionSystemImpl::user_script_master() {
   return shared_->user_script_master();
-}
-
-ExtensionDevToolsManager* ExtensionSystemImpl::devtools_manager() {
-  // TODO(mpcomplete): in incognito, figure out whether we should
-  // return the original profile's version.
-  return extension_devtools_manager_.get();
 }
 
 ExtensionProcessManager* ExtensionSystemImpl::process_manager() {

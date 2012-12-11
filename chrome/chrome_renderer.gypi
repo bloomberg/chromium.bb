@@ -146,7 +146,6 @@
         'renderer/resources/extensions/browser_action_custom_bindings.js',
         'renderer/resources/extensions/context_menus_custom_bindings.js',
         'renderer/resources/extensions/declarative_webrequest_custom_bindings.js',
-        'renderer/resources/extensions/devtools_custom_bindings.js',
         'renderer/resources/extensions/event.js',
         'renderer/resources/extensions/experimental.offscreenTabs_custom_bindings.js',
         'renderer/resources/extensions/extension_custom_bindings.js',

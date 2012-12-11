@@ -9,7 +9,6 @@
 #include "chrome/browser/extensions/api/messaging/message_service.h"
 #include "chrome/browser/extensions/blacklist.h"
 #include "chrome/browser/extensions/event_router.h"
-#include "chrome/browser/extensions/extension_devtools_manager.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_pref_value_map.h"
 #include "chrome/browser/extensions/extension_pref_value_map_factory.h"
@@ -112,10 +111,6 @@ void TestExtensionSystem::SetExtensionService(ExtensionService* service) {
 }
 
 UserScriptMaster* TestExtensionSystem::user_script_master() {
-  return NULL;
-}
-
-ExtensionDevToolsManager* TestExtensionSystem::devtools_manager() {
   return NULL;
 }
 
