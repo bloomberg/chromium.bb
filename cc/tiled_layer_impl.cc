@@ -23,9 +23,14 @@ using namespace std;
 
 namespace cc {
 
+// Temporary diagnostic.
+static bool safeToDeleteDrawableTile = false;
+
 class DrawableTile : public LayerTilingData::Tile {
 public:
     static scoped_ptr<DrawableTile> create() { return make_scoped_ptr(new DrawableTile()); }
+
+    virtual ~DrawableTile() { CHECK(safeToDeleteDrawableTile); }
 
     ResourceProvider::ResourceId resourceId() const { return m_resourceId; }
     void setResourceId(ResourceProvider::ResourceId resourceId) { m_resourceId = resourceId; }
@@ -51,6 +56,10 @@ TiledLayerImpl::TiledLayerImpl(LayerTreeHostImpl* hostImpl, int id)
 
 TiledLayerImpl::~TiledLayerImpl()
 {
+    safeToDeleteDrawableTile = true;
+    if (m_tiler)
+      m_tiler->reset();
+    safeToDeleteDrawableTile = false;
 }
 
 ResourceProvider::ResourceId TiledLayerImpl::contentsResourceId() const
@@ -92,6 +101,11 @@ DrawableTile* TiledLayerImpl::createTile(int i, int j)
     scoped_ptr<DrawableTile> tile(DrawableTile::create());
     DrawableTile* addedTile = tile.get();
     m_tiler->addTile(tile.PassAs<LayerTilingData::Tile>(), i, j);
+
+    // Temporary diagnostic checks.
+    CHECK(addedTile);
+    CHECK(tileAt(i, j));
+
     return addedTile;
 }
 
@@ -202,11 +216,15 @@ void TiledLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuad
 
 void TiledLayerImpl::setTilingData(const LayerTilingData& tiler)
 {
+    safeToDeleteDrawableTile = true;
+
     if (m_tiler)
         m_tiler->reset();
     else
         m_tiler = LayerTilingData::create(tiler.tileSize(), tiler.hasBorderTexels() ? LayerTilingData::HasBorderTexels : LayerTilingData::NoBorderTexels);
     *m_tiler = tiler;
+
+    safeToDeleteDrawableTile = false;
 }
 
 void TiledLayerImpl::pushTileProperties(int i, int j, ResourceProvider::ResourceId resourceId, const gfx::Rect& opaqueRect, bool contentsSwizzled)
@@ -240,7 +258,11 @@ Region TiledLayerImpl::visibleContentOpaqueRegion() const
 
 void TiledLayerImpl::didLoseOutputSurface()
 {
+    safeToDeleteDrawableTile = true;
+    // Temporary diagnostic check.
+    CHECK(m_tiler);
     m_tiler->reset();
+    safeToDeleteDrawableTile = false;
 }
 
 const char* TiledLayerImpl::layerTypeAsString() const
