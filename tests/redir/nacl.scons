@@ -58,6 +58,8 @@ env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
                        'run_redir_test')
 
+tests_disabled = env.Bit('do_not_run_tests') or env.GetSelLdr() is None
+
 test_node = env.AutoDepsCommand(
     'redir_test_output_compare',
     ['${PYTHON}',
@@ -65,7 +67,7 @@ test_node = env.AutoDepsCommand(
      outfile,
      env.File('redir_test.stdout')],
     [node, env.File(outfile)],
-    disabled=env.Bit('do_not_run_tests'))
+    disabled=tests_disabled)
 
 env.AddNodeToTestSuite(test_node,
                        ['small_tests', 'sel_ldr_tests'],
@@ -78,7 +80,7 @@ test_node = env.AutoDepsCommand(
      errfile,
      env.File('redir_test.stderr')],
     [node, env.File(errfile)],
-    disabled=env.Bit('do_not_run_tests'))
+    disabled=tests_disabled )
 
 env.AddNodeToTestSuite(test_node,
                        ['small_tests', 'sel_ldr_tests'],

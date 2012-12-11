@@ -105,7 +105,11 @@ def ParseStandardCommandLine(context):
   if context['asan']:
     context['gyp_vars'].append('asan=1')
   context['default_scons_platform'] = ARCH_MAP[arch]['scons_platform']
-  context['default_scons_mode'] = [mode + '-host', 'nacl']
+  context['default_scons_mode'] = ['nacl']
+  # Only Linux can build trusted code on ARM.
+  # TODO(mcgrathr): clean this up somehow
+  if arch != 'arm' or platform == 'linux':
+    context['default_scons_mode'] += [mode + '-host']
   context['use_glibc'] = clib == 'glibc'
   context['max_jobs'] = 8
   context['dry_run'] = options.dry_run

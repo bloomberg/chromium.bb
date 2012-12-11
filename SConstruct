@@ -2290,8 +2290,13 @@ def SetupLinuxEnvArm(env):
     elif which('arm-linux-gnueabi-g++-4.5'):
       arm_suffix = '-4.5'
     else:
-      print 'ERROR: arm trusted TC is not installed'
-      sys.exit(-1)
+      # This doesn't bail out completely here because we cannot
+      # tell whether scons was run with just --mode=nacl, where
+      # none of these settings will actually be used.
+      print 'NOTE: arm trusted TC is not installed'
+      bad = 'ERROR-missing-arm-trusted-toolchain'
+      env.Replace(CC=bad, CXX=bad, LD=bad)
+      return
 
     env.Replace(CC='arm-linux-gnueabi-gcc' + arm_suffix,
                 CXX='arm-linux-gnueabi-g++' + arm_suffix,

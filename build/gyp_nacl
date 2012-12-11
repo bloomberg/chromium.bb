@@ -42,5 +42,8 @@ if __name__ == '__main__':
   # Building NaCl as standalone (not as part of Chrome)
   args += ['-D', 'nacl_standalone=1']
 
+  # TODO(mcgrathr): remove this after common.gypi cleanup
+  args += ['-D', 'sysroot=']
+
   # Off we go...
   sys.exit(gyp.main(args))

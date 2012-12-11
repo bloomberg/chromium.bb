@@ -14,7 +14,7 @@ test_prog = env.ComponentProgram(
 
 sel_ldr_command = env.AddBootstrap(env.GetSelLdr(), ['-f', test_prog])
 
-is_broken = not env.Bit('nacl_static_link')
+is_broken = not env.Bit('nacl_static_link') or env.GetSelLdr() is None
 
 if env.Bit('build_arm'):
   # Use the system's 'nm' tool.  The NaCl toolchain will not be
