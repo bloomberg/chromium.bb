@@ -1027,12 +1027,16 @@ Web Store: https://chrome.google.com/remotedesktop"""
         return 0
       elif os.WEXITSTATUS(status) == 103:
         logging.info("Host domain is blocked by policy - exiting.")
-        os.remove(host.config_file)
+        host_config.clear_auth()
+        host_config.clear_host_info()
+        host_config.save()
         return 0
       # Nothing to do for Mac-only status 104 (login screen unsupported)
       elif os.WEXITSTATUS(status) == 105:
         logging.info("Username is blocked by policy - exiting.")
-        os.remove(host.config_file)
+        host_config.clear_auth()
+        host_config.clear_host_info()
+        host_config.save()
         return 0
 
 
