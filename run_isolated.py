@@ -386,7 +386,15 @@ class ThreadPool(object):
 def valid_file(filepath, size):
   """Determines if the given files appears valid (currently it just checks
   the file's size)."""
-  return (size == UNKNOWN_FILE_SIZE or size == os.stat(filepath).st_size)
+  if size == UNKNOWN_FILE_SIZE:
+    return True
+  actual_size = os.stat(filepath).st_size
+  if size != actual_size:
+    logging.warning(
+        'Found invalid item %s; %d != %d',
+        os.path.basename(filepath), actual_size, size)
+    return False
+  return True
 
 
 class Profiler(object):
@@ -611,9 +619,10 @@ class Cache(object):
     # The tuple(file, size) are kept as an array in a LRU style. E.g.
     # self.state[0] is the oldest item.
     self.state = []
+    self._state_need_to_be_saved = False
     # A lookup map to speed up searching.
     self._lookup = {}
-    self._dirty = False
+    self._lookup_is_stale = True
 
     # Items currently being fetched. Keep it local to reduce lock contention.
     self._pending_queue = set()
@@ -623,29 +632,32 @@ class Cache(object):
     self._removed = []
     self._free_disk = 0
 
-    if not os.path.isdir(self.cache_dir):
-      os.makedirs(self.cache_dir)
-    if os.path.isfile(self.state_file):
-      try:
-        self.state = json.load(open(self.state_file, 'r'))
-      except (IOError, ValueError), e:
-        # Too bad. The file will be overwritten and the cache cleared.
-        logging.error(
-            'Broken state file %s, ignoring.\n%s' % (self.STATE_FILE, e))
-      if (not isinstance(self.state, list) or
-          not all(
-            isinstance(i, (list, tuple)) and len(i) == 2 for i in self.state)):
-        # Discard.
-        self.state = []
-        self._dirty = True
+    with Profiler('Setup'):
+      if not os.path.isdir(self.cache_dir):
+        os.makedirs(self.cache_dir)
+      if os.path.isfile(self.state_file):
+        try:
+          self.state = json.load(open(self.state_file, 'r'))
+        except (IOError, ValueError), e:
+          # Too bad. The file will be overwritten and the cache cleared.
+          logging.error(
+              'Broken state file %s, ignoring.\n%s' % (self.STATE_FILE, e))
+          self._state_need_to_be_saved = True
+        if (not isinstance(self.state, list) or
+            not all(
+              isinstance(i, (list, tuple)) and len(i) == 2
+              for i in self.state)):
+          # Discard.
+          self._state_need_to_be_saved = True
+          self.state = []
 
-    # Ensure that all files listed in the state still exist and add new ones.
-    previous = set(filename for filename, _ in self.state)
-    if len(previous) != len(self.state):
-      logging.warn('Cache state is corrupted')
-      self._dirty = True
-      self.state = []
-    else:
+      # Ensure that all files listed in the state still exist and add new ones.
+      previous = set(filename for filename, _ in self.state)
+      if len(previous) != len(self.state):
+        logging.warn('Cache state is corrupted, found duplicate files')
+        self._state_need_to_be_saved = True
+        self.state = []
+
       added = 0
       for filename in os.listdir(self.cache_dir):
         if filename == self.STATE_FILE:
@@ -654,25 +666,28 @@ class Cache(object):
           previous.remove(filename)
           continue
         # An untracked file.
-        self._dirty = True
         if not RE_IS_SHA1.match(filename):
           logging.warn('Removing unknown file %s from cache', filename)
           os.remove(self.path(filename))
-        else:
-          # Insert as the oldest file. It will be deleted eventually if not
-          # accessed.
-          self._add(filename, False)
-          logging.warn('Add unknown file %s to cache', filename)
-          added += 1
+          continue
+        # Insert as the oldest file. It will be deleted eventually if not
+        # accessed.
+        self._add(filename, False)
+        logging.warn('Add unknown file %s to cache', filename)
+        added += 1
+
       if added:
         logging.warn('Added back %d unknown files', added)
-      self.state = [
-        (filename, size) for filename, size in self.state
-        if filename not in previous
-      ]
-      self._update_lookup()
-
-    with Profiler('SetupTrimming'):
+      if previous:
+        logging.warn('Removed %d lost files', len(previous))
+        # Set explicitly in case self._add() wasn't called.
+        self._state_need_to_be_saved = True
+        # Filter out entries that were not found while keeping the previous
+        # order.
+        self.state = [
+          (filename, size) for filename, size in self.state
+          if filename not in previous
+        ]
       self.trim()
 
   def __enter__(self):
@@ -695,12 +710,14 @@ class Cache(object):
   def remove_file_at_index(self, index):
     """Removes the file at the given index."""
     try:
+      self._state_need_to_be_saved = True
       filename, size = self.state.pop(index)
-      # TODO(csharp): _lookup should self-update.
-      del self._lookup[filename]
+      # If the lookup was already stale, its possible the filename was not
+      # present yet.
+      self._lookup_is_stale = True
+      self._lookup.pop(filename, None)
       self._removed.append(size)
       os.remove(self.path(filename))
-      self._dirty = True
     except OSError as e:
       logging.error('Error attempting to delete a file\n%s' % e)
 
@@ -740,19 +757,19 @@ class Cache(object):
     """
     assert not '/' in item
     path = self.path(item)
+    self._update_lookup()
     index = self._lookup.get(item)
 
     if index is not None:
       if not valid_file(self.path(item), size):
         self.remove_file_at_index(index)
-        self._update_lookup()
         index = None
       else:
         assert index < len(self.state)
         # Was already in cache. Update it's LRU value by putting it at the end.
+        self._state_need_to_be_saved = True
+        self._lookup_is_stale = True
         self.state.append(self.state.pop(index))
-        self._dirty = True
-        self._update_lookup()
 
     if index is None:
       if item in self._pending_queue:
@@ -763,6 +780,7 @@ class Cache(object):
 
   def add(self, filepath, obj):
     """Forcibly adds a file to the cache."""
+    self._update_lookup()
     if not obj in self._lookup:
       link_file(self.path(obj), filepath, HARDLINK)
       self._add(obj, True)
@@ -773,7 +791,9 @@ class Cache(object):
 
   def save(self):
     """Saves the LRU ordering."""
-    json.dump(self.state, open(self.state_file, 'wb'), separators=(',',':'))
+    if self._state_need_to_be_saved:
+      json.dump(self.state, open(self.state_file, 'wb'), separators=(',',':'))
+      self._state_need_to_be_saved = False
 
   def wait_for(self, items):
     """Starts a loop that waits for at least one of |items| to be retrieved.
@@ -781,6 +801,7 @@ class Cache(object):
     Returns the first item retrieved.
     """
     # Flush items already present.
+    self._update_lookup()
     for item in items:
       if item in self._lookup:
         return item
@@ -807,17 +828,19 @@ class Cache(object):
     """
     size = os.stat(self.path(item)).st_size
     self._added.append(size)
+    self._state_need_to_be_saved = True
     if at_end:
       self.state.append((item, size))
       self._lookup[item] = len(self.state) - 1
     else:
+      self._lookup_is_stale = True
       self.state.insert(0, (item, size))
-    self._dirty = True
 
   def _update_lookup(self):
-    self._lookup = dict(
-        (filename, index) for index, (filename, _) in enumerate(self.state))
-
+    if self._lookup_is_stale:
+      self._lookup = dict(
+          (filename, index) for index, (filename, _) in enumerate(self.state))
+      self._lookup_is_stale = False
 
 
 class IsolatedFile(object):
@@ -885,7 +908,6 @@ class Settings(object):
     self.relative_cwd = None
     # The main .isolated file, a IsolatedFile instance.
     self.root = None
-    logging.debug('Settings')
 
   def load(self, cache, root_isolated_hash):
     """Loads the .isolated and all the included .isolated asynchronously.

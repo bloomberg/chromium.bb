@@ -229,7 +229,7 @@ class RunSwarmStep(unittest.TestCase):
     actual = list_files_tree(self.cache)
     self.assertEquals(sorted(expected), actual)
 
-  def test_delete_invald_cache_entry(self):
+  def test_delete_invalid_cache_entry(self):
     isolated_file = os.path.join(self.data_dir, 'file_with_size.isolated')
     file1_sha1 = self._store('file1.txt')
 
@@ -245,7 +245,7 @@ class RunSwarmStep(unittest.TestCase):
     cached_file_path = os.path.join(self.cache, file1_sha1)
     with open(cached_file_path, 'w') as f:
       f.write('invalid size')
-
+    logging.info('Modified %s', cached_file_path)
     # Ensure that the cache has an invalid file.
     self.assertNotEqual(
         os.stat(os.path.join(self.data_dir, 'file1.txt')).st_size,
