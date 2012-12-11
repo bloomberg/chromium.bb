@@ -40,10 +40,10 @@ enum AlertState {
 
 @interface TabView : BackgroundGradientView {
  @private
-  IBOutlet TabController* controller_;
+  TabController* controller_;
   // TODO(rohitrao): Add this button to a CoreAnimation layer so we can fade it
   // in and out on mouseovers.
-  IBOutlet HoverCloseButton* closeButton_;
+  HoverCloseButton* closeButton_;  // Weak.
 
   BOOL closing_;
 
@@ -79,6 +79,10 @@ enum AlertState {
 // clicks inside it from sending messages.
 @property(assign, nonatomic, getter=isClosing) BOOL closing;
 
+// Designated initializer.
+- (id)initWithFrame:(NSRect)frame
+         controller:(TabController*)controller
+        closeButton:(HoverCloseButton*)closeButton;
 
 // Returns the inset multiplier used to compute the inset of the top of the tab.
 + (CGFloat)insetMultiplier;

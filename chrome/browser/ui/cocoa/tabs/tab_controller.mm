@@ -27,9 +27,6 @@
 @synthesize pinned = pinned_;
 @synthesize target = target_;
 @synthesize url = url_;
-@synthesize iconView = iconView_;
-@synthesize titleView = titleView_;
-@synthesize closeButton = closeButton_;
 
 namespace TabControllerInternal {
 
@@ -80,8 +77,50 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 }
 
 - (id)init {
-  self = [super initWithNibName:@"TabView" bundle:base::mac::FrameworkBundle()];
-  if (self != nil) {
+  if ((self = [super init])) {
+    // Icon.
+    // Remember the icon's frame, so that if the icon is ever removed, a new
+    // one can later replace it in the proper location.
+    originalIconFrame_ = NSMakeRect(18, 5, 16, 16);
+    iconView_.reset([[NSImageView alloc] initWithFrame:originalIconFrame_]);
+    [iconView_ setAutoresizingMask:NSViewMaxXMargin];
+
+    // When the icon is removed, the title expands to the left to fill the
+    // space left by the icon.  When the close button is removed, the title
+    // expands to the right to fill its space.  These are the amounts to expand
+    // and contract titleView_ under those conditions. We don't have to
+    // explicilty save the offset between the title and the close button since
+    // we can just get that value for the close button's frame.
+    NSRect titleFrame = NSMakeRect(34, 6, 98, 14);
+    iconTitleXOffset_ = NSMinX(titleFrame) - NSMinX(originalIconFrame_);
+
+    // Label.
+    titleView_.reset([[NSTextField alloc] initWithFrame:titleFrame]);
+    [titleView_ setAutoresizingMask:NSViewWidthSizable];
+    scoped_nsobject<GTMFadeTruncatingTextFieldCell> labelCell(
+        [[GTMFadeTruncatingTextFieldCell alloc] initTextCell:@"Label"]);
+    [labelCell setControlSize:NSSmallControlSize];
+    CGFloat fontSize = [NSFont systemFontSizeForControlSize:NSSmallControlSize];
+    NSFont* font = [NSFont fontWithName:
+        [[labelCell font] fontName] size:fontSize];
+    [labelCell setFont:font];
+    [titleView_ setCell:labelCell];
+
+    // Close button.
+    closeButton_.reset([[HoverCloseButton alloc] initWithFrame:
+        NSMakeRect(130, 4, 18, 18)]);
+    [closeButton_ setAutoresizingMask:NSViewMinXMargin];
+    [closeButton_ setTarget:self];
+    [closeButton_ setAction:@selector(closeTab:)];
+
+    scoped_nsobject<TabView> view([[TabView alloc] initWithFrame:
+        NSMakeRect(0, 0, 160, 25) controller:self closeButton:closeButton_]);
+    [view setAutoresizingMask:NSViewMaxXMargin | NSViewMinYMargin];
+    [view addSubview:iconView_];
+    [view addSubview:titleView_];
+    [view addSubview:closeButton_];
+    [super setView:view];
+
     isIconShowing_ = YES;
     NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
     [defaultCenter addObserver:self
@@ -92,6 +131,8 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
                       selector:@selector(themeChangedNotification:)
                           name:kBrowserThemeDidChangeNotification
                         object:nil];
+
+    [self internalSetSelected:selected_];
   }
   return self;
 }
@@ -106,31 +147,13 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 // backing variables. This updates the drawing state and marks self as needing
 // a re-draw.
 - (void)internalSetSelected:(BOOL)selected {
-  TabView* tabView = static_cast<TabView*>([self view]);
+  TabView* tabView = [self tabView];
   DCHECK([tabView isKindOfClass:[TabView class]]);
   [tabView setState:selected];
   if ([self active])
     [tabView cancelAlert];
   [self updateVisibility];
   [self updateTitleColor];
-}
-
-// Called when the tab's nib is done loading and all outlets are hooked up.
-- (void)awakeFromNib {
-  // Remember the icon's frame, so that if the icon is ever removed, a new
-  // one can later replace it in the proper location.
-  originalIconFrame_ = [iconView_ frame];
-
-  // When the icon is removed, the title expands to the left to fill the space
-  // left by the icon.  When the close button is removed, the title expands to
-  // the right to fill its space.  These are the amounts to expand and contract
-  // titleView_ under those conditions. We don't have to explicilty save the
-  // offset between the title and the close button since we can just get that
-  // value for the close button's frame.
-  NSRect titleFrame = [titleView_ frame];
-  iconTitleXOffset_ = NSMinX(titleFrame) - NSMinX(originalIconFrame_);
-
-  [self internalSetSelected:selected_];
 }
 
 // Called when Cocoa wants to display the context menu. Lazily instantiate
@@ -148,7 +171,7 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
   return [contextMenuController_ menu];
 }
 
-- (IBAction)closeTab:(id)sender {
+- (void)closeTab:(id)sender {
   if ([[self target] respondsToSelector:@selector(closeTab:)]) {
     [[self target] performSelector:@selector(closeTab:)
                         withObject:[self view]];
@@ -163,6 +186,7 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 }
 
 - (void)setTitle:(NSString*)title {
+  [titleView_ setStringValue:title];
   [[self view] setToolTip:title];
   if ([self mini] && ![self selected]) {
     TabView* tabView = static_cast<TabView*>([self view]);
@@ -194,9 +218,13 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
   return selected_ || active_;
 }
 
+- (NSView*)iconView {
+  return iconView_;
+}
+
 - (void)setIconView:(NSView*)iconView {
   [iconView_ removeFromSuperview];
-  iconView_ = iconView;
+  iconView_.reset([iconView retain]);
   if ([self app] || [self mini]) {
     NSRect appIconFrame = [iconView frame];
     appIconFrame.origin = originalIconFrame_.origin;
@@ -217,6 +245,14 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 
   if (iconView_)
     [[self view] addSubview:iconView_];
+}
+
+- (NSTextField*)titleView {
+  return titleView_;
+}
+
+- (HoverCloseButton*)closeButton {
+  return closeButton_;
 }
 
 - (NSString*)toolTip {

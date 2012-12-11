@@ -63,16 +63,16 @@ const CGFloat kRapidCloseDist = 2.5;
   return kInsetMultiplier;
 }
 
-- (id)initWithFrame:(NSRect)frame {
+- (id)initWithFrame:(NSRect)frame
+         controller:(TabController*)controller
+        closeButton:(HoverCloseButton*)closeButton {
   self = [super initWithFrame:frame];
   if (self) {
     [self setShowsDivider:NO];
+    controller_ = controller;
+    closeButton_ = closeButton;
   }
   return self;
-}
-
-- (void)awakeFromNib {
-  [self setShowsDivider:NO];
 }
 
 - (void)dealloc {

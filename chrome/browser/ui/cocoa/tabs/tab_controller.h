@@ -40,9 +40,9 @@ class MenuDelegate;
 
 @interface TabController : NSViewController<TabDraggingEventTarget> {
  @private
-  IBOutlet NSView* iconView_;
-  IBOutlet NSTextField* titleView_;
-  IBOutlet HoverCloseButton* closeButton_;
+  scoped_nsobject<NSView> iconView_;
+  scoped_nsobject<NSTextField> titleView_;
+  scoped_nsobject<HoverCloseButton> closeButton_;
 
   NSRect originalIconFrame_;  // frame of iconView_ as loaded from nib
   BOOL isIconShowing_;  // last state of iconView_ in updateVisibility
@@ -76,8 +76,8 @@ class MenuDelegate;
 @property(assign, nonatomic) id target;
 @property(assign, nonatomic) GURL url;
 @property(assign, nonatomic) NSView* iconView;
-@property(assign, nonatomic) NSTextField* titleView;
-@property(assign, nonatomic) HoverCloseButton* closeButton;
+@property(readonly, nonatomic) NSTextField* titleView;
+@property(readonly, nonatomic) HoverCloseButton* closeButton;
 
 // Minimum and maximum allowable tab width. The minimum width does not show
 // the icon or the close button. The selected tab always has at least a close
@@ -93,15 +93,10 @@ class MenuDelegate;
 
 // Closes the associated TabView by relaying the message to |target_| to
 // perform the close.
-- (IBAction)closeTab:(id)sender;
+- (void)closeTab:(id)sender;
 
 // Selects the associated TabView by sending |action_| to |target_|.
 - (void)selectTab:(id)sender;
-
-// Replace the current icon view with the given view. |iconView| will be
-// resized to the size of the current icon view.
-- (void)setIconView:(NSView*)iconView;
-- (NSView*)iconView;
 
 // Called by the tabs to determine whether we are in rapid (tab) closure mode.
 // In this mode, we handle clicks slightly differently due to animation.
