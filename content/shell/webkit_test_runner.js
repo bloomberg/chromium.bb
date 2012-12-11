@@ -5,7 +5,9 @@
 var testRunner = testRunner || {};
 
 (function() {
+  native function CloseWebInspector();
   native function Display();
+  native function EvaluateInWebInspector();
   native function GetWorkerThreadCount();
   native function NotifyDone();
   native function SetCanOpenWindows();
@@ -15,6 +17,7 @@ var testRunner = testRunner || {};
   native function SetShouldStayOnPageAfterHandlingBeforeUnload();
   native function SetWaitUntilDone();
   native function SetXSSAuditorEnabled();
+  native function ShowWebInspector();
 
   native function NotImplemented();
 
@@ -54,6 +57,13 @@ var testRunner = testRunner || {};
                           "setXSSAuditorEnabled",
                           {value: SetXSSAuditorEnabled});
     Object.defineProperty(this, "waitUntilDone", {value: SetWaitUntilDone});
+    Object.defineProperty(this, "showWebInspector", {value: ShowWebInspector});
+    Object.defineProperty(this,
+                          "closeWebInspector",
+                          {value: CloseWebInspector});
+    Object.defineProperty(this,
+                          "evaluateInWebInspector",
+                          {value: EvaluateInWebInspector});
 
     var stubs = [
         "overridePreference",  // not really a stub, but required to pass

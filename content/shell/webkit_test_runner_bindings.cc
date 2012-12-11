@@ -126,6 +126,40 @@ v8::Handle<v8::Value> GetWorkerThreadCount(const v8::Arguments& args) {
   return v8::Integer::NewFromUnsigned(WebWorkerInfo::dedicatedWorkerCount());
 }
 
+v8::Handle<v8::Value> ShowWebInspector(const v8::Arguments& args) {
+  WebKitTestRunner* runner =
+      ShellRenderProcessObserver::GetInstance()->main_test_runner();
+  if (!runner)
+    return v8::Undefined();
+
+  runner->ShowWebInspector();
+  return v8::Undefined();
+}
+
+v8::Handle<v8::Value> CloseWebInspector(const v8::Arguments& args) {
+  WebKitTestRunner* runner =
+      ShellRenderProcessObserver::GetInstance()->main_test_runner();
+  if (!runner)
+    return v8::Undefined();
+
+  runner->CloseWebInspector();
+  return v8::Undefined();
+}
+
+v8::Handle<v8::Value> EvaluateInWebInspector(const v8::Arguments& args) {
+  if (args.Length() != 2 || !args[0]->IsNumber() || !args[1]->IsString())
+    return v8::Undefined();
+
+  WebKitTestRunner* runner =
+      ShellRenderProcessObserver::GetInstance()->main_test_runner();
+  if (!runner)
+    return v8::Undefined();
+
+  runner->EvaluateInWebInspector(args[0]->Int32Value(),
+                                 *v8::String::AsciiValue(args[1]));
+  return v8::Undefined();
+}
+
 v8::Handle<v8::Value> NotImplemented(const v8::Arguments& args) {
   if (args.Length() != 2 || !args[0]->IsString() || !args[1]->IsString())
     return v8::Undefined();
@@ -180,6 +214,12 @@ WebKitTestRunnerBindings::GetNativeFunction(v8::Handle<v8::String> name) {
     return v8::FunctionTemplate::New(SetXSSAuditorEnabled);
   if (name->Equals(v8::String::New("GetWorkerThreadCount")))
     return v8::FunctionTemplate::New(GetWorkerThreadCount);
+  if (name->Equals(v8::String::New("ShowWebInspector")))
+    return v8::FunctionTemplate::New(ShowWebInspector);
+  if (name->Equals(v8::String::New("CloseWebInspector")))
+    return v8::FunctionTemplate::New(CloseWebInspector);
+  if (name->Equals(v8::String::New("EvaluateInWebInspector")))
+    return v8::FunctionTemplate::New(EvaluateInWebInspector);
   if (name->Equals(v8::String::New("NotImplemented")))
     return v8::FunctionTemplate::New(NotImplemented);
 

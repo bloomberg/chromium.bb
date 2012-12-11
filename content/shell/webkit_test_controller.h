@@ -120,6 +120,8 @@ class WebKitTestController : public base::NonThreadSafe,
   void OnSetShouldStayOnPageAfterHandlingBeforeUnload(bool should_stay_on_page);
   void OnWaitUntilDone();
   void OnCanOpenWindows();
+  void OnShowWebInspector();
+  void OnCloseWebInspector();
 
   void OnNotImplemented(const std::string& object_name,
                         const std::string& method_name);

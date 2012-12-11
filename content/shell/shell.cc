@@ -41,7 +41,8 @@ base::Callback<void(Shell*)> Shell::shell_created_callback_;
 bool Shell::quit_message_loop_ = true;
 
 Shell::Shell(WebContents* web_contents)
-    : is_fullscreen_(false),
+    : dev_tools_(NULL),
+      is_fullscreen_(false),
       window_(NULL),
       url_edit_view_(NULL)
 #if defined(OS_WIN) && !defined(USE_AURA)
@@ -159,6 +160,10 @@ void Shell::UpdateNavigationControls() {
 }
 
 void Shell::ShowDevTools() {
+  if (dev_tools_) {
+    dev_tools_->web_contents()->Focus();
+    return;
+  }
   ShellContentBrowserClient* browser_client =
       static_cast<ShellContentBrowserClient*>(
           GetContentClient()->browser());
@@ -166,9 +171,16 @@ void Shell::ShowDevTools() {
       browser_client->shell_browser_main_parts()->devtools_delegate();
   GURL url = delegate->devtools_http_handler()->GetFrontendURL(
       web_contents()->GetRenderViewHost());
-  CreateNewWindow(
+  dev_tools_ = CreateNewWindow(
       web_contents()->GetBrowserContext(),
       url, NULL, MSG_ROUTING_NONE, NULL);
+}
+
+void Shell::CloseDevTools() {
+  if (!dev_tools_)
+    return;
+  dev_tools_->Close();
+  dev_tools_ = NULL;
 }
 
 gfx::NativeView Shell::GetContentView() {

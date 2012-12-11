@@ -24,6 +24,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -35,6 +36,7 @@
 #include "webkit/glue/webpreferences.h"
 
 using WebKit::WebContextMenuData;
+using WebKit::WebDevToolsAgent;
 using WebKit::WebElement;
 using WebKit::WebFrame;
 using WebKit::WebGamepads;
@@ -308,6 +310,21 @@ void WebKitTestRunner::WaitUntilDone() {
 
 void WebKitTestRunner::CanOpenWindows() {
   Send(new ShellViewHostMsg_CanOpenWindows(routing_id()));
+}
+
+void WebKitTestRunner::ShowWebInspector() {
+  Send(new ShellViewHostMsg_ShowWebInspector(routing_id()));
+}
+
+void WebKitTestRunner::CloseWebInspector() {
+  Send(new ShellViewHostMsg_CloseWebInspector(routing_id()));
+}
+
+void WebKitTestRunner::EvaluateInWebInspector(int32_t call_id,
+                                              const std::string& script) {
+  WebDevToolsAgent* agent = render_view()->GetWebView()->devToolsAgent();
+  if (agent)
+    agent->evaluateInWebInspector(call_id, WebString::fromUTF8(script));
 }
 
 void WebKitTestRunner::NotImplemented(const std::string& object,

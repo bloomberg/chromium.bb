@@ -68,6 +68,10 @@ class WebKitTestRunner : public RenderViewObserver,
   void SetShouldStayOnPageAfterHandlingBeforeUnload(bool should_stay_on_page);
   void WaitUntilDone();
   void CanOpenWindows();
+  void ShowWebInspector();
+  void CloseWebInspector();
+  void EvaluateInWebInspector(int32_t call_id, const std::string& script);
+
   void NotImplemented(const std::string& object, const std::string& method);
 
   void set_proxy(WebTestRunner::WebTestProxyBase* proxy) { proxy_ = proxy; }

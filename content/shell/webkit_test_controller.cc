@@ -148,11 +148,6 @@ bool WebKitTestController::PrepareForLayoutTest(
   current_working_directory_ = current_working_directory;
   enable_pixel_dumping_ = enable_pixel_dumping;
   expected_pixel_hash_ = expected_pixel_hash;
-  if (test_url.spec().find("/dumpAsText/") != std::string::npos ||
-      test_url.spec().find("\\dumpAsText\\") != std::string::npos) {
-    dump_as_text_ = true;
-    enable_pixel_dumping_ = false;
-  }
   printer_->reset();
   printer_->PrintTextHeader();
   content::ShellBrowserContext* browser_context =
@@ -165,6 +160,15 @@ bool WebKitTestController::PrepareForLayoutTest(
       MSG_ROUTING_NONE,
       NULL);
   Observe(main_window_->web_contents());
+  if (test_url.spec().find("/dumpAsText/") != std::string::npos ||
+      test_url.spec().find("\\dumpAsText\\") != std::string::npos) {
+    dump_as_text_ = true;
+    enable_pixel_dumping_ = false;
+  }
+  if (test_url.spec().find("/inspector/") != std::string::npos ||
+      test_url.spec().find("\\inspector\\") != std::string::npos) {
+    main_window_->ShowDevTools();
+  }
   return true;
 }
 
@@ -226,6 +230,8 @@ bool WebKitTestController::OnMessageReceived(const IPC::Message& message) {
         OnSetShouldStayOnPageAfterHandlingBeforeUnload)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_WaitUntilDone, OnWaitUntilDone)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_CanOpenWindows, OnCanOpenWindows)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_ShowWebInspector, OnShowWebInspector)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_CloseWebInspector, OnCloseWebInspector)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_NotImplemented, OnNotImplemented)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -395,6 +401,14 @@ void WebKitTestController::OnWaitUntilDone() {
 void WebKitTestController::OnCanOpenWindows() {
   base::AutoLock lock(lock_);
   can_open_windows_ = true;
+}
+
+void WebKitTestController::OnShowWebInspector() {
+  main_window_->ShowDevTools();
+}
+
+void WebKitTestController::OnCloseWebInspector() {
+  main_window_->CloseDevTools();
 }
 
 void WebKitTestController::OnNotImplemented(

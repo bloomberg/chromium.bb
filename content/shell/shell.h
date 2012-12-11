@@ -59,6 +59,7 @@ class Shell : public WebContentsDelegate,
   void UpdateNavigationControls();
   void Close();
   void ShowDevTools();
+  void CloseDevTools();
 
   // Do one time initialization at application startup.
   static void PlatformInitialize();
@@ -205,6 +206,8 @@ class Shell : public WebContentsDelegate,
   scoped_ptr<ShellJavaScriptDialogCreator> dialog_creator_;
 
   scoped_ptr<WebContents> web_contents_;
+
+  Shell* dev_tools_;
 
   bool is_fullscreen_;
 

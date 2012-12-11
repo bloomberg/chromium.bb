@@ -70,6 +70,8 @@ IPC_MESSAGE_ROUTED0(ShellViewHostMsg_WaitUntilDone)
 IPC_MESSAGE_ROUTED1(ShellViewHostMsg_OverridePreferences,
                     content::ShellWebPreferences /* preferences */)
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_CanOpenWindows)
+IPC_MESSAGE_ROUTED0(ShellViewHostMsg_ShowWebInspector)
+IPC_MESSAGE_ROUTED0(ShellViewHostMsg_CloseWebInspector)
 
 IPC_MESSAGE_ROUTED2(ShellViewHostMsg_NotImplemented,
                     std::string /* object_name */,
