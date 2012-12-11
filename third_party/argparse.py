@@ -82,7 +82,66 @@ __all__ = [
 ]
 
 
-import collections as _collections
+# -- Modification by ChromeOS build, adding a simple OrderedDict implementation.
+try:
+    from collections import OrderedDict as _OrderedDict
+except ImportError:
+    # TODO(build): fallback to snakeoil.mappings.OrderedDict
+    # Note that this implementation is *just* enough to make this code work while
+    # also covering any derivative usage of the SubParser class.
+    _SENTINEL = object()
+    class _OrderedDict(dict):
+
+        def __init__(self):
+            self._sequence = []
+            dict.__init__(self)
+
+        def __setitem__(self, key, value):
+            if key not in self._sequence:
+                self._sequence.append(key)
+            return dict.__setitem__(self, key, value)
+
+        def __delitem__(self, key):
+            dict.__delitem__(self, key)
+            self._sequence.remove(key)
+
+        def pop(self, key, default=_SENTINEL):
+            try:
+                default = dict.pop(self, key)
+                self._sequence.remove(key)
+            except KeyError:
+                if default is _SENTINEL:
+                    raise
+            return default
+
+        def __iter__(self):
+            return self.iterkeys()
+
+        def iterkeys(self):
+            return iter(self._sequence)
+
+        def keys(self):
+            return list(self.iterkeys())
+
+        def iteritems(self):
+            return ((k, self[k]) for k in self)
+
+        def items(self):
+            return list(self.iteritems())
+
+        def itervalues(self):
+            return (self[k] for k in self)
+
+        def values(self):
+            return list(self.itervalues())
+
+        def update(self, iterable):
+            if isinstance(iterable, dict):
+                iterable = iterable.iteritems()
+            for key, value in iterable:
+                self[key] = value
+
+
 import copy as _copy
 import os as _os
 import re as _re
@@ -1038,7 +1097,7 @@ class _SubParsersAction(Action):
 
         self._prog_prefix = prog
         self._parser_class = parser_class
-        self._name_parser_map = _collections.OrderedDict()
+        self._name_parser_map = _OrderedDict()
         self._choices_actions = []
 
         super(_SubParsersAction, self).__init__(
