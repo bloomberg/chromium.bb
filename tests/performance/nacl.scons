@@ -20,6 +20,7 @@ nexe = env.ComponentProgram(
     'performance_test',
     ['perf_test_runner.cc',
      'perf_test_basics.cc',
+     'perf_test_exceptions.cc',
      'perf_test_threads.cc'],
     EXTRA_LIBS=['${NONIRT_LIBS}', '${PTHREAD_LIBS}'] + libs)
 
@@ -41,6 +42,11 @@ description_string = '_'.join(description_list)
 
 node = env.CommandSelLdrTestNacl(
     'performance_test.out', nexe, [description_string],
+    # Pass '-e' to enable untrusted fault handling.  This should not
+    # affect performance until the exception_handler() syscall is
+    # called -- the Windows debug exception handler process is
+    # launched and attached on demand.
+    sel_ldr_flags=['-e'],
     # Don't hide output: We want the timings to be reported in the
     # Buildbot logs so that Buildbot records the "RESULT" lines.
     capture_output=False)

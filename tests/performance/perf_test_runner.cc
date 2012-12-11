@@ -117,6 +117,20 @@ int main(int argc, char **argv) {
   RUN_TEST(TestThreadCreateAndJoin);
   RUN_TEST(TestThreadWakeup);
 
+#if defined(__native_client__)
+  // Test untrusted fault handling.  This should come last because, on
+  // Windows, registering a fault handler has a performance impact on
+  // thread creation and exit.  This is because when the Windows debug
+  // exception handler is attached to sel_ldr as a debugger, Windows
+  // suspends the whole sel_ldr process every time a thread is created
+  // or exits.
+  RUN_TEST(TestCatchingFault);
+  // Measure that overhead by running MakeTestThreadCreateAndJoin again.
+  RunPerfTest(description_string,
+              "TestThreadCreateAndJoinAfterSettingFaultHandler",
+              MakeTestThreadCreateAndJoin());
+#endif
+
 #undef RUN_TEST
 
   return 0;
