@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/loader/x509_user_cert_resource_handler.h"
+#include "content/browser/loader/certificate_resource_handler.h"
 
 #include "base/string_util.h"
 #include "content/browser/loader/resource_request_info_impl.h"
@@ -11,14 +11,13 @@
 #include "net/base/io_buffer.h"
 #include "net/base/mime_sniffer.h"
 #include "net/base/mime_util.h"
-#include "net/base/x509_certificate.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_status.h"
 
 namespace content {
 
-X509UserCertResourceHandler::X509UserCertResourceHandler(
+CertificateResourceHandler::CertificateResourceHandler(
     net::URLRequest* request,
     int render_process_host_id,
     int render_view_id)
@@ -27,42 +26,44 @@ X509UserCertResourceHandler::X509UserCertResourceHandler(
       read_buffer_(NULL),
       resource_buffer_(NULL),
       render_process_host_id_(render_process_host_id),
-      render_view_id_(render_view_id) {
+      render_view_id_(render_view_id),
+      cert_type_(net::CERTIFICATE_MIME_TYPE_UNKNOWN) {
 }
 
-X509UserCertResourceHandler::~X509UserCertResourceHandler() {
+CertificateResourceHandler::~CertificateResourceHandler() {
 }
 
-bool X509UserCertResourceHandler::OnUploadProgress(int request_id,
-                                                   uint64 position,
-                                                   uint64 size) {
+bool CertificateResourceHandler::OnUploadProgress(int request_id,
+                                                 uint64 position,
+                                                 uint64 size) {
   return true;
 }
 
-bool X509UserCertResourceHandler::OnRequestRedirected(int request_id,
-                                                      const GURL& url,
-                                                      ResourceResponse* resp,
-                                                      bool* defer) {
+bool CertificateResourceHandler::OnRequestRedirected(int request_id,
+                                                    const GURL& url,
+                                                    ResourceResponse* resp,
+                                                    bool* defer) {
   url_ = url;
   return true;
 }
 
-bool X509UserCertResourceHandler::OnResponseStarted(int request_id,
-                                                    ResourceResponse* resp,
-                                                    bool* defer) {
-  return (resp->head.mime_type == "application/x-x509-user-cert");
+bool CertificateResourceHandler::OnResponseStarted(int request_id,
+                                                  ResourceResponse* resp,
+                                                  bool* defer) {
+  cert_type_ = net::GetCertificateMimeTypeForMimeType(resp->head.mime_type);
+  return cert_type_ != net::CERTIFICATE_MIME_TYPE_UNKNOWN;
 }
 
-bool X509UserCertResourceHandler::OnWillStart(int request_id,
-                                              const GURL& url,
-                                              bool* defer) {
+bool CertificateResourceHandler::OnWillStart(int request_id,
+                                            const GURL& url,
+                                            bool* defer) {
   return true;
 }
 
-bool X509UserCertResourceHandler::OnWillRead(int request_id,
-                                             net::IOBuffer** buf,
-                                             int* buf_size,
-                                             int min_size) {
+bool CertificateResourceHandler::OnWillRead(int request_id,
+                                           net::IOBuffer** buf,
+                                           int* buf_size,
+                                           int min_size) {
   static const int kReadBufSize = 32768;
 
   // TODO(gauravsh): Should we use 'min_size' here?
@@ -76,9 +77,9 @@ bool X509UserCertResourceHandler::OnWillRead(int request_id,
   return true;
 }
 
-bool X509UserCertResourceHandler::OnReadCompleted(int request_id,
-                                                  int bytes_read,
-                                                  bool* defer) {
+bool CertificateResourceHandler::OnReadCompleted(int request_id,
+                                                int bytes_read,
+                                                bool* defer) {
   if (!bytes_read)
     return true;
 
@@ -96,7 +97,7 @@ bool X509UserCertResourceHandler::OnReadCompleted(int request_id,
   return true;
 }
 
-bool X509UserCertResourceHandler::OnResponseCompleted(
+bool CertificateResourceHandler::OnResponseCompleted(
     int request_id,
     const net::URLRequestStatus& urs,
     const std::string& sec_info) {
@@ -104,17 +105,21 @@ bool X509UserCertResourceHandler::OnResponseCompleted(
     return false;
 
   AssembleResource();
-  scoped_refptr<net::X509Certificate> cert;
-  if (resource_buffer_) {
-      cert = net::X509Certificate::CreateFromBytes(resource_buffer_->data(),
-                                                   content_length_);
-  }
-  GetContentClient()->browser()->AddNewCertificate(
-      request_, cert, render_process_host_id_, render_view_id_);
+
+  const void* content_bytes = NULL;
+  if (resource_buffer_)
+    content_bytes = resource_buffer_->data();
+
+  // Note that it's up to the browser to verify that the certificate
+  // data is well-formed.
+  GetContentClient()->browser()->AddCertificate(
+      request_, cert_type_, content_bytes, content_length_,
+      render_process_host_id_, render_view_id_);
+
   return true;
 }
 
-void X509UserCertResourceHandler::AssembleResource() {
+void CertificateResourceHandler::AssembleResource() {
   // 0-length IOBuffers are not allowed.
   if (content_length_ == 0) {
     resource_buffer_ = NULL;

@@ -1873,6 +1873,8 @@
         'browser/spellchecker/spellcheck_service.h',
         'browser/spellchecker/spelling_service_client.cc',
         'browser/spellchecker/spelling_service_client.h',
+        'browser/ssl/ssl_add_certificate.cc',
+        'browser/ssl/ssl_add_certificate.h',
         'browser/ssl/ssl_add_cert_handler.cc',
         'browser/ssl/ssl_add_cert_handler.h',
         'browser/ssl/ssl_add_cert_handler_mac.mm',
@@ -2757,6 +2759,7 @@
           'sources': [
             'browser/sessions/in_memory_tab_restore_service.cc',
             'browser/sessions/in_memory_tab_restore_service.h',
+            'browser/ssl/ssl_add_certificate_android.cc',
             'browser/web_resource/notification_promo_mobile_ntp.cc',
             'browser/web_resource/notification_promo_mobile_ntp.h',
           ],
@@ -2764,6 +2767,7 @@
             # Bookmark export/import are handled via the BookmarkColumns
             # ContentProvider.
             'browser/bookmarks/bookmark_html_writer.cc',
+            'browser/ssl/ssl_add_certificate.cc',
 
             # about:flags is unsupported.
             'browser/about_flags.cc',

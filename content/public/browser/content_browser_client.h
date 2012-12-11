@@ -14,6 +14,7 @@
 #include "content/public/common/socket_permission_request.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/window_container_type.h"
+#include "net/base/mime_util.h"
 #include "net/cookies/canonical_cookie.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPresenter.h"
 
@@ -332,13 +333,15 @@ class CONTENT_EXPORT ContentBrowserClient {
       net::SSLCertRequestInfo* cert_request_info,
       const base::Callback<void(net::X509Certificate*)>& callback) {}
 
-  // Adds a downloaded client cert. The embedder should ensure that there's
-  // a private key for the cert, displays the cert to the user, and adds it upon
-  // user approval. If the downloaded data could not be interpreted as a valid
-  // certificate, |cert| will be NULL.
-  virtual void AddNewCertificate(
+  // Adds a new installable certificate or private key.
+  // Typically used to install an X.509 user certificate.
+  // Note that it's up to the embedder to verify that the data is
+  // well-formed. |cert_data| will be NULL if file_size is 0.
+  virtual void AddCertificate(
       net::URLRequest* request,
-      net::X509Certificate* cert,
+      net::CertificateMimeType cert_type,
+      const void* cert_data,
+      size_t cert_size,
       int render_process_id,
       int render_view_id) {}
 

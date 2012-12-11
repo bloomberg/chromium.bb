@@ -63,7 +63,7 @@
 #include "chrome/browser/search_engines/search_provider_install_state_message_filter.h"
 #include "chrome/browser/speech/chrome_speech_recognition_manager_delegate.h"
 #include "chrome/browser/spellchecker/spellcheck_message_filter.h"
-#include "chrome/browser/ssl/ssl_add_cert_handler.h"
+#include "chrome/browser/ssl/ssl_add_certificate.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/ssl/ssl_tab_helper.h"
 #include "chrome/browser/tab_contents/tab_util.h"
@@ -105,6 +105,7 @@
 #include "grit/generated_resources.h"
 #include "grit/ui_resources.h"
 #include "net/base/escape.h"
+#include "net/base/mime_util.h"
 #include "net/base/ssl_cert_request_info.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_options.h"
@@ -1327,13 +1328,15 @@ void ChromeContentBrowserClient::SelectClientCertificate(
       network_session, cert_request_info, callback);
 }
 
-void ChromeContentBrowserClient::AddNewCertificate(
+void ChromeContentBrowserClient::AddCertificate(
     net::URLRequest* request,
-    net::X509Certificate* cert,
+    net::CertificateMimeType cert_type,
+    const void* cert_data,
+    size_t cert_size,
     int render_process_id,
     int render_view_id) {
-  // The handler will run the UI and delete itself when it's finished.
-  new SSLAddCertHandler(request, cert, render_process_id, render_view_id);
+  chrome::SSLAddCertificate(request, cert_type, cert_data, cert_size,
+      render_process_id, render_view_id);
 }
 
 content::MediaObserver* ChromeContentBrowserClient::GetMediaObserver() {

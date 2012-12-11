@@ -12,9 +12,9 @@
 #include "base/string_util.h"
 #include "content/browser/download/download_resource_handler.h"
 #include "content/browser/download/download_stats.h"
+#include "content/browser/loader/certificate_resource_handler.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
-#include "content/browser/loader/x509_user_cert_resource_handler.h"
 #include "content/browser/plugin_service_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -303,12 +303,12 @@ bool BufferedResourceHandler::SelectNextHandler(bool* defer) {
   ResourceRequestInfoImpl* info = ResourceRequestInfoImpl::ForRequest(request_);
   const std::string& mime_type = response_->head.mime_type;
 
-  if (mime_type == "application/x-x509-user-cert") {
-    // Install X509 handler.
+  if (net::IsSupportedCertificateMimeType(mime_type)) {
+    // Install certificate file.
     scoped_ptr<ResourceHandler> handler(
-        new X509UserCertResourceHandler(request_,
-                                        info->GetChildID(),
-                                        info->GetRouteID()));
+        new CertificateResourceHandler(request_,
+                                       info->GetChildID(),
+                                       info->GetRouteID()));
     return UseAlternateNextHandler(handler.Pass());
   }
 
