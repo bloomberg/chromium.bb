@@ -2270,8 +2270,6 @@
         'test/gpu/gpu_feature_browsertest.cc',
         'test/gpu/gpu_mapsgl_endurance_browsertest.cc',
         'test/gpu/gpu_pixel_browsertest.cc',
-        'test/gpu/webgl_conformance_tests.cc',
-        'test/gpu/webgl_conformance_test_list_autogen.h',
       ],
     },
     {
