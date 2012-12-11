@@ -1,0 +1,13 @@
+Name: eyesfree
+Short Name: eyesfree
+URL: https://code.google.com/p/eyes-free/
+Version: r798
+License: Apache 2.0
+Security Critical: yes
+
+Description:
+Speech Enabled Eyes-Free Android Applications.  Used for Braille Keyboard
+integration.
+
+Local Modifications:
+None.
