@@ -134,16 +134,6 @@ bool TextureImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
   if (!backbuffer_.service_id && !is_swap_buffers_pending_ &&
       backbuffer_suggested_allocation_) {
     CreateBackTexture();
-
-#ifndef NDEBUG
-    GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER);
-    if (status != GL_FRAMEBUFFER_COMPLETE) {
-      DLOG(ERROR) << "Framebuffer incomplete.";
-      glDeleteFramebuffersEXT(1, &fbo_id_);
-      fbo_id_ = 0;
-      return false;
-    }
-#endif
   }
   return true;
 }
