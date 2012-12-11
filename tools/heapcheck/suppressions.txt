@@ -1436,14 +1436,6 @@
    fun:ManagedModeTest::ManagedModeTest
 }
 {
-   bug_143563
-   Heapcheck:Leak
-   ...
-   fun:TaskManagerModel::RefreshVideoMemoryUsageStats
-   fun:TaskManagerModel::Refresh
-   fun:TaskManagerTest_RefreshCalled_Test::TestBody
-}
-{
    bug_143565
    Heapcheck:Leak
    ...

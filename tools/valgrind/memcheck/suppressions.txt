@@ -5478,15 +5478,6 @@
    fun:_ZN3ash4test11AshTestBase5SetUpEv
 }
 {
-   bug_143563
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN16TaskManagerModel28RefreshVideoMemoryUsageStatsEv
-   fun:_ZN16TaskManagerModel7RefreshEv
-   fun:_ZN34TaskManagerTest_RefreshCalled_Test8TestBodyEv
-}
-{
    bug_144913
    Memcheck:Leak
    fun:_Znw*
