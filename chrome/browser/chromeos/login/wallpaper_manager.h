@@ -192,6 +192,10 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   // Deletes all |email| related custom or converted wallpapers.
   void DeleteUserWallpapers(const std::string& email);
 
+  // Initialize wallpaper of registered device after device policy is trusted.
+  // Note that before device is enrolled, it proceeds with untrusted setting.
+  void InitializeRegisteredDeviceWallpaper();
+
   // Loads |email|'s wallpaper. When |update_wallpaper| is true, sets wallpaper
   // to the loaded wallpaper.
   void LoadWallpaper(const std::string& email,

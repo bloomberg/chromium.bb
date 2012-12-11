@@ -216,32 +216,13 @@ void WallpaperManager::InitializeWallpaper() {
 
   bool disable_new_oobe = CommandLine::ForCurrentProcess()->
       HasSwitch(switches::kDisableNewOobe);
-  bool disable_boot_animation = CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kDisableBootAnimation);
 
   if (!user_manager->IsUserLoggedIn()) {
     if (!disable_new_oobe) {
       if (!WizardController::IsDeviceRegistered()) {
         SetDefaultWallpaper();
       } else {
-        bool show_users = true;
-        bool result = CrosSettings::Get()->GetBoolean(
-            kAccountsPrefShowUserNamesOnSignIn, &show_users);
-        DCHECK(result) << "Unable to fetch setting "
-                       << kAccountsPrefShowUserNamesOnSignIn;
-        const chromeos::UserList& users = user_manager->GetUsers();
-        if (!show_users || users.empty()) {
-          // Boot into sign in form, preload default wallpaper.
-          SetDefaultWallpaper();
-          return;
-        }
-
-        if (!disable_boot_animation) {
-          // Normal boot, load user wallpaper.
-          // If normal boot animation is disabled wallpaper would be set
-          // asynchronously once user pods are loaded.
-          SetUserWallpaper(users[0]->email());
-        }
+        InitializeRegisteredDeviceWallpaper();
       }
     }
     return;
@@ -659,6 +640,35 @@ void WallpaperManager::DeleteUserWallpapers(const std::string& email) {
                  base::Unretained(this),
                  file_to_remove),
       false);
+}
+
+void WallpaperManager::InitializeRegisteredDeviceWallpaper() {
+  if (CrosSettingsProvider::TEMPORARILY_UNTRUSTED ==
+      CrosSettings::Get()->PrepareTrustedValues(
+          base::Bind(&WallpaperManager::InitializeRegisteredDeviceWallpaper,
+                     base::Unretained(this)))) {
+    return;
+  }
+  bool disable_boot_animation = CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kDisableBootAnimation);
+  bool show_users = true;
+  bool result = CrosSettings::Get()->GetBoolean(
+      kAccountsPrefShowUserNamesOnSignIn, &show_users);
+  DCHECK(result) << "Unable to fetch setting "
+                 << kAccountsPrefShowUserNamesOnSignIn;
+  const chromeos::UserList& users = UserManager::Get()->GetUsers();
+  if (!show_users || users.empty()) {
+    // Boot into sign in form, preload default wallpaper.
+    SetDefaultWallpaper();
+    return;
+  }
+
+  if (!disable_boot_animation) {
+    // Normal boot, load user wallpaper.
+    // If normal boot animation is disabled wallpaper would be set
+    // asynchronously once user pods are loaded.
+    SetUserWallpaper(users[0]->email());
+  }
 }
 
 void WallpaperManager::LoadWallpaper(const std::string& email,
