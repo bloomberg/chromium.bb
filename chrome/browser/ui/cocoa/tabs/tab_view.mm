@@ -96,6 +96,14 @@ const CGFloat kRapidCloseDist = 2.5;
   return [controller_ menu];
 }
 
+- (void)resizeSubviewsWithOldSize:(NSSize)oldBoundsSize {
+  [super resizeSubviewsWithOldSize:oldBoundsSize];
+  // Called when our view is resized. If it gets too small, start by hiding
+  // the close button and only show it if tab is selected. Eventually, hide the
+  // icon as well.
+  [controller_ updateVisibility];
+}
+
 // Overridden so that mouse clicks come to this view (the parent of the
 // hierarchy) first. We want to handle clicks and drags in this class and
 // leave the background button for display purposes only.

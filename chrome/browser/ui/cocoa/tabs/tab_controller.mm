@@ -124,10 +124,6 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
     isIconShowing_ = YES;
     NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
     [defaultCenter addObserver:self
-                      selector:@selector(viewResized:)
-                          name:NSViewFrameDidChangeNotification
-                        object:[self view]];
-    [defaultCenter addObserver:self
                       selector:@selector(themeChangedNotification:)
                           name:kBrowserThemeDidChangeNotification
                         object:nil];
@@ -348,14 +344,6 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
                                    true);
   }
   [titleView_ setTextColor:titleColor ? titleColor : [NSColor textColor]];
-}
-
-// Called when our view is resized. If it gets too small, start by hiding
-// the close button and only show it if tab is selected. Eventually, hide the
-// icon as well. We know that this is for our view because we only registered
-// for notifications from our specific view.
-- (void)viewResized:(NSNotification*)info {
-  [self updateVisibility];
 }
 
 - (void)themeChangedNotification:(NSNotification*)notification {
