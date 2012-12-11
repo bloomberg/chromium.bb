@@ -108,6 +108,18 @@ bool GetDesktopShortcutsDirectory(FilePath* directory) {
   return result;
 }
 
+// Returns the long form of |path|, which will expand any shortened components
+// like "foo~2" to their full names.
+FilePath ConvertToLongPath(const FilePath& path) {
+  const size_t length = GetLongPathName(path.value().c_str(), NULL, 0);
+  if (length != 0 && length != path.value().length()) {
+    std::vector<wchar_t> long_path(length);
+    if (GetLongPathName(path.value().c_str(), &long_path[0], length) != 0)
+      return FilePath(&long_path[0]);
+  }
+  return path;
+}
+
 // Returns true if the file at |path| is a Chrome shortcut and returns its
 // command line in output parameter |command_line|.
 bool IsChromeShortcut(const FilePath& path,
@@ -121,7 +133,9 @@ bool IsChromeShortcut(const FilePath& path,
   FilePath target_path;
   if (!base::win::ResolveShortcut(path, &target_path, command_line))
     return false;
-  return target_path == chrome_exe;
+  // One of the paths may be in short (elided) form. Compare long paths to
+  // ensure these are still properly matched.
+  return ConvertToLongPath(target_path) == ConvertToLongPath(chrome_exe);
 }
 
 // Populates |paths| with the file paths of Chrome desktop shortcuts that have
