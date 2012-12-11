@@ -14,20 +14,32 @@ from future import Future
 from zipfile import ZipFile, BadZipfile
 
 ZIP_KEY = 'zipball'
+USERNAME = None
+PASSWORD = None
 
 def _MakeKey(version):
   return ZIP_KEY + '.' + str(version)
 
 class _AsyncFetchFutureZip(object):
   def __init__(self, fetcher, blobstore, key_to_set, key_to_delete=None):
-    self._fetch = fetcher.FetchAsync(ZIP_KEY)
+    self._fetcher = fetcher
+    self._fetch = fetcher.FetchAsync(ZIP_KEY,
+                                     username=USERNAME,
+                                     password=PASSWORD)
     self._blobstore = blobstore
     self._key_to_set = key_to_set
     self._key_to_delete = key_to_delete
 
   def Get(self):
     try:
-      blob = self._fetch.Get().content
+      result = self._fetch.Get()
+      # Check if Github authentication failed.
+      if result.status_code == 401:
+        logging.error('Github authentication failed for %s, falling back to '
+                      'unauthenticated.' % USERNAME)
+        blob = self._fetcher.Fetch(ZIP_KEY).content
+      else:
+        blob = result.content
     except FileNotFoundError as e:
       logging.error('Bad github zip file: %s' % e)
       return None
@@ -118,10 +130,17 @@ class GithubFileSystem(FileSystem):
     version = self._object_store.Get(path, object_store.GITHUB_STAT).Get()
     if version is not None:
       return StatInfo(version)
-    version = (json.loads(
-        self._fetcher.Fetch('commits/HEAD').content).get('commit', {})
-                                                    .get('tree', {})
-                                                    .get('sha', None))
+    result =  self._fetcher.Fetch('commits/HEAD',
+                                  username=USERNAME,
+                                  password=PASSWORD)
+    # Check if Github authentication failed.
+    if result.status_code == 401:
+      logging.error('Github authentication failed for %s, falling back to '
+                    'unauthenticated.' % USERNAME)
+      result =  self._fetcher.Fetch('commits/HEAD')
+    version = (json.loads(result.content).get('commit', {})
+                                         .get('tree', {})
+                                         .get('sha', None))
     # Check if the JSON was valid, and set to 0 if not.
     if version is not None:
       self._object_store.Set(path, version, object_store.GITHUB_STAT)
