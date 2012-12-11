@@ -223,7 +223,7 @@ TEST_F(GLES2DecoderTest2, LineWidthValidArgs) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_F(GLES2DecoderTest2, LineWidthInValue0_0) {
+TEST_F(GLES2DecoderTest2, LineWidthInvalidValue0_0) {
   SpecializedSetup<LineWidth, 0>(false);
   LineWidth cmd;
   cmd.Init(0.0f);

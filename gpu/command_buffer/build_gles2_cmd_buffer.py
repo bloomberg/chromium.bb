@@ -2892,6 +2892,10 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
     for arg in func.GetOriginalArgs():
       arg.WriteDestinationInitalizationValidation(file, func)
 
+  def WriteTraceEvent(self, func, file):
+    file.Write('  TRACE_EVENT0("gpu", "GLES2Implementation::%s");\n' %
+               func.original_name)
+
   def WriteImmediateCmdComputeSize(self, func, file):
     """Writes the size computation code for the immediate version of a cmd."""
     file.Write("  static uint32 ComputeSize(uint32 size_in_bytes) {\n")
@@ -4282,6 +4286,7 @@ class GETnHandler(TypeHandler):
           ", ".join(["%s" % arg.name for arg in all_but_last_args]))
       all_arg_string = (
           ", ".join(["%s" % arg.name for arg in func.GetOriginalArgs()]))
+      self.WriteTraceEvent(func, file)
       code = """  if (%(func_name)sHelper(%(all_arg_string)s)) {
     return;
   }
@@ -5231,6 +5236,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgsBadSharedMemoryId) {
                  (func.return_type, func.original_name,
                   func.MakeTypedOriginalArgString("")))
       file.Write("  GPU_CLIENT_SINGLE_THREAD_CHECK();\n")
+      self.WriteTraceEvent(func, file)
       func.WriteDestinationInitalizationValidation(file)
       self.WriteClientGLCallLog(func, file)
       file.Write("  typedef %s::Result Result;\n" % func.name)
