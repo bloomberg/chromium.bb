@@ -864,6 +864,7 @@ GDataContactsService::GDataContactsService(
   std::vector<std::string> scopes;
   scopes.push_back(kContactsScope);
   runner_.reset(new google_apis::OperationRunner(profile,
+                                                 url_request_context_getter_,
                                                  scopes,
                                                  "" /* custom_user_agent */));
 }

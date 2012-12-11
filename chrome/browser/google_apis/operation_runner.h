@@ -17,6 +17,10 @@
 
 class Profile;
 
+namespace net {
+class URLRequestContextGetter;
+}
+
 namespace google_apis {
 
 class AuthenticatedOperationInterface;
@@ -27,11 +31,15 @@ class OperationRegistry;
 // retries and authentication.
 class OperationRunner {
  public:
+  // |url_request_context_getter| is used to perform authentication with
+  // AuthService.
+  //
   // |scopes| specifies OAuth2 scopes.
   //
   // |custom_user_agent| will be used for the User-Agent header in HTTP
   // requests issued through the operation runner if the value is not empty.
   OperationRunner(Profile* profile,
+                  net::URLRequestContextGetter* url_request_context_getter,
                   const std::vector<std::string>& scopes,
                   const std::string& custom_user_agent);
   virtual ~OperationRunner();
@@ -63,7 +71,7 @@ class OperationRunner {
   // an authentication token refresh.
   void RetryOperation(AuthenticatedOperationInterface* operation);
 
-  Profile* profile_;  // not owned
+  Profile* profile_;  // Not owned.
 
   scoped_ptr<AuthService> auth_service_;
   scoped_ptr<OperationRegistry> operation_registry_;

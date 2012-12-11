@@ -98,7 +98,10 @@ void GDataWapiService::Initialize(Profile* profile) {
   scopes.push_back(kUserContentScope);
   // Drive App scope is required for even WAPI v3 apps access.
   scopes.push_back(kDriveAppsScope);
-  runner_.reset(new OperationRunner(profile, scopes, custom_user_agent_));
+  runner_.reset(new OperationRunner(profile,
+                                    url_request_context_getter_,
+                                    scopes,
+                                    custom_user_agent_));
   runner_->Initialize();
 
   runner_->auth_service()->AddObserver(this);

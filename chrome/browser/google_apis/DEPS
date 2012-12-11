@@ -4,7 +4,6 @@ include_rules = [
   "+chrome/browser/google_apis",
 
   # Temporarily needed, see http://crbug.com/146989
-  "!chrome/browser/browser_process.h",
   "!chrome/browser/chromeos/login/user_manager.h",
   "!chrome/browser/prefs/pref_service.h",
   "!chrome/browser/profiles/profile.h",

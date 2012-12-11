@@ -17,6 +17,10 @@
 
 class Profile;
 
+namespace net {
+class URLRequestContextGetter;
+}
+
 namespace google_apis {
 
 class OperationRegistry;
@@ -33,7 +37,12 @@ typedef base::Callback<void(GDataErrorCode error,
 // All public functions must be called on UI thread.
 class AuthService : public content::NotificationObserver {
  public:
-  explicit AuthService(const std::vector<std::string>& scopes);
+  // |url_request_context_getter| is used to perform authentication with
+  // URLFetcher.
+  //
+  // |scopes| specifies OAuth2 scopes.
+  AuthService(net::URLRequestContextGetter* url_request_context_getter,
+              const std::vector<std::string>& scopes);
   virtual ~AuthService();
 
   // Adds and removes the observer. AddObserver() should be called before
@@ -87,6 +96,7 @@ class AuthService : public content::NotificationObserver {
                        const std::string& access_token);
 
   Profile* profile_;
+  net::URLRequestContextGetter* url_request_context_getter_;  // Not owned.
   std::string refresh_token_;
   std::string access_token_;
   std::vector<std::string> scopes_;

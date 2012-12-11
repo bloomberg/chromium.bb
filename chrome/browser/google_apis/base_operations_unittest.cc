@@ -57,6 +57,7 @@ class BaseOperationsTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     profile_.reset(new TestingProfile);
     runner_.reset(new OperationRunner(profile_.get(),
+                                      NULL  /* url_request_context_getter */,
                                       std::vector<std::string>() /* scopes */,
                                       "" /* custom_user_agent*/));
     runner_->Initialize();

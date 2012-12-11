@@ -55,7 +55,10 @@ void DriveAPIService::Initialize(Profile* profile) {
   scopes.push_back(kDriveScope);
   scopes.push_back(kDriveAppsReadonlyScope);
   runner_.reset(
-      new google_apis::OperationRunner(profile, scopes, custom_user_agent_));
+      new google_apis::OperationRunner(profile,
+                                       url_request_context_getter_,
+                                       scopes,
+                                       custom_user_agent_));
   runner_->Initialize();
 
   runner_->auth_service()->AddObserver(this);

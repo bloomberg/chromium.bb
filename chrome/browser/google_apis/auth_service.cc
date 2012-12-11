@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/google_apis/auth_service_observer.h"
 #include "chrome/browser/google_apis/base_operations.h"
 #include "chrome/browser/profiles/profile.h"
@@ -50,6 +49,7 @@ class AuthOperation : public OperationRegistry::Operation,
                       public OAuth2AccessTokenConsumer {
  public:
   AuthOperation(OperationRegistry* registry,
+                net::URLRequestContextGetter* url_request_context_getter,
                 const AuthStatusCallback& callback,
                 const std::vector<std::string>& scopes,
                 const std::string& refresh_token);
@@ -65,6 +65,7 @@ class AuthOperation : public OperationRegistry::Operation,
   virtual void DoCancel() OVERRIDE;
 
  private:
+  net::URLRequestContextGetter* url_request_context_getter_;
   std::string refresh_token_;
   AuthStatusCallback callback_;
   std::vector<std::string> scopes_;
@@ -73,11 +74,14 @@ class AuthOperation : public OperationRegistry::Operation,
   DISALLOW_COPY_AND_ASSIGN(AuthOperation);
 };
 
-AuthOperation::AuthOperation(OperationRegistry* registry,
-                             const AuthStatusCallback& callback,
-                             const std::vector<std::string>& scopes,
-                             const std::string& refresh_token)
+AuthOperation::AuthOperation(
+    OperationRegistry* registry,
+    net::URLRequestContextGetter* url_request_context_getter,
+    const AuthStatusCallback& callback,
+    const std::vector<std::string>& scopes,
+    const std::string& refresh_token)
     : OperationRegistry::Operation(registry),
+      url_request_context_getter_(url_request_context_getter),
       refresh_token_(refresh_token),
       callback_(callback),
       scopes_(scopes) {
@@ -89,7 +93,7 @@ AuthOperation::~AuthOperation() {}
 void AuthOperation::Start() {
   DCHECK(!refresh_token_.empty());
   oauth2_access_token_fetcher_.reset(new OAuth2AccessTokenFetcher(
-      this, g_browser_process->system_request_context()));
+      this, url_request_context_getter_));
   NotifyStart();
   oauth2_access_token_fetcher_->Start(
       GaiaUrls::GetInstance()->oauth2_chrome_client_id(),
@@ -159,8 +163,11 @@ void AuthService::Initialize(Profile* profile) {
                       OnOAuth2RefreshTokenChanged());
 }
 
-AuthService::AuthService(const std::vector<std::string>& scopes)
+AuthService::AuthService(
+    net::URLRequestContextGetter* url_request_context_getter,
+    const std::vector<std::string>& scopes)
     : profile_(NULL),
+      url_request_context_getter_(url_request_context_getter),
       scopes_(scopes),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -182,6 +189,7 @@ void AuthService::StartAuthentication(OperationRegistry* registry,
   } else if (HasRefreshToken()) {
     // We have refresh token, let's get an access token.
     (new AuthOperation(registry,
+                       url_request_context_getter_,
                        base::Bind(&AuthService::OnAuthCompleted,
                                   weak_ptr_factory_.GetWeakPtr(),
                                   callback),

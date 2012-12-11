@@ -14,11 +14,13 @@ using content::BrowserThread;
 
 namespace google_apis {
 
-OperationRunner::OperationRunner(Profile* profile,
-                                 const std::vector<std::string>& scopes,
-                                 const std::string& custom_user_agent)
+OperationRunner::OperationRunner(
+    Profile* profile,
+    net::URLRequestContextGetter* url_request_context_getter,
+    const std::vector<std::string>& scopes,
+    const std::string& custom_user_agent)
     : profile_(profile),
-      auth_service_(new AuthService(scopes)),
+      auth_service_(new AuthService(url_request_context_getter, scopes)),
       operation_registry_(new OperationRegistry()),
       custom_user_agent_(custom_user_agent),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {

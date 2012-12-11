@@ -126,7 +126,7 @@ class GDataWapiService : public DriveServiceInterface,
   virtual void OnAuthenticationFailed(
       GDataErrorCode error) OVERRIDE;
 
-  net::URLRequestContextGetter* url_request_context_getter_;
+  net::URLRequestContextGetter* url_request_context_getter_;  // Not owned.
   scoped_ptr<OperationRunner> runner_;
   ObserverList<DriveServiceObserver> observers_;
   // Operation objects should hold a copy of this, rather than a const
