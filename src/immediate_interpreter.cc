@@ -1268,8 +1268,6 @@ void ImmediateInterpreter::UpdateTapState(
             !tap_record_.FingersBelowMaxAge()) {
           SetTapToClickState(kTtcIdle, now);
         } else if (tap_record_.TapType() == GESTURES_BUTTON_LEFT) {
-          *buttons_down = *buttons_up = GESTURES_BUTTON_LEFT;
-          tap_record_.Clear();
           SetTapToClickState(kTtcTapComplete, now);
         } else {
           *buttons_down = *buttons_up = tap_record_.TapType();
@@ -1290,6 +1288,7 @@ void ImmediateInterpreter::UpdateTapState(
         // If more than one finger is touching: Send click
         // and return to FirstTapBegan state.
         if (tap_record_.TapType() != GESTURES_BUTTON_LEFT) {
+          *buttons_down = *buttons_up = GESTURES_BUTTON_LEFT;
           SetTapToClickState(kTtcFirstTapBegan, now);
         } else {
           tap_drag_last_motion_time_ = now;
@@ -1333,21 +1332,26 @@ void ImmediateInterpreter::UpdateTapState(
               *buttons_down = GESTURES_BUTTON_LEFT;
               SetTapToClickState(kTtcDrag, now);
             } else {
+              *buttons_down = GESTURES_BUTTON_LEFT;
+              *buttons_up = GESTURES_BUTTON_LEFT;
               SetTapToClickState(kTtcIdle, now);
             }
           }
         } else if (!tap_record_.TapComplete()) {
-          // not just one finger. Go to idle.
+          // not just one finger. Send button click and go to idle.
+          *buttons_down = *buttons_up = GESTURES_BUTTON_LEFT;
           SetTapToClickState(kTtcIdle, now);
         }
         break;
       }
       if (tap_record_.TapType() != GESTURES_BUTTON_LEFT) {
+        // We aren't going to drag, so send left click now and handle current
+        // tap afterwards.
+        *buttons_down = *buttons_up = GESTURES_BUTTON_LEFT;
         SetTapToClickState(kTtcFirstTapBegan, now);
       }
       if (tap_record_.TapComplete()) {
         *buttons_down = *buttons_up = GESTURES_BUTTON_LEFT;
-        tap_record_.Clear();
         SetTapToClickState(kTtcTapComplete, now);
         Log("Subsequent left tap complete");
       }
