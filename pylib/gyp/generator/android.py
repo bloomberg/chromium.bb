@@ -19,6 +19,7 @@ import gyp.common
 import gyp.generator.make as make  # Reuse global functions from make backend.
 import os
 import re
+import subprocess
 
 generator_default_variables = {
   'OS': 'android',
@@ -38,7 +39,7 @@ generator_default_variables = {
   'RULE_INPUT_PATH': '$(RULE_SOURCES)',
   'RULE_INPUT_EXT': '$(suffix $<)',
   'RULE_INPUT_NAME': '$(notdir $<)',
-  'CONFIGURATION_NAME': 'NOT_USED_ON_ANDROID',
+  'CONFIGURATION_NAME': '$(GYP_DEFAULT_CONFIGURATION)',
 }
 
 # Make supports multiple toolsets
@@ -940,6 +941,18 @@ class AndroidMkWriter(object):
     return path
 
 
+def PerformBuild(data, configurations, params):
+  # The android backend only supports the default configuration.
+  options = params['options']
+  makefile = os.path.abspath(os.path.join(options.toplevel_dir,
+                                          'GypAndroid.mk'))
+  env = dict(os.environ)
+  env['ONE_SHOT_MAKEFILE'] = makefile
+  arguments = ['make', '-C', os.environ['ANDROID_BUILD_TOP'], 'gyp_all_modules']
+  print 'Building: %s' % arguments
+  subprocess.check_call(arguments, env=env)
+
+
 def GenerateOutput(target_list, target_dicts, data, params):
   options = params['options']
   generator_flags = params.get('generator_flags', {})
@@ -1051,6 +1064,8 @@ def GenerateOutput(target_list, target_dicts, data, params):
 
   # Some tools need to know the absolute path of the top directory.
   root_makefile.write('GYP_ABS_ANDROID_TOP_DIR := $(shell pwd)\n')
+  root_makefile.write('GYP_DEFAULT_CONFIGURATION := %s\n' %
+                      default_configuration)
 
   # Write out the sorted list of includes.
   root_makefile.write('\n')

@@ -383,7 +383,7 @@ class TestGypAndroid(TestGypBase):
   ALL = 'gyp_all_modules'
 
   def __init__(self, gyp=None, *args, **kw):
-    # Android requires build and test output to be outside its source tree.
+    # Android requires build and test output to be inside its source tree.
     # We use the following working directory for the test's source, but the
     # test's build output still goes to $ANDROID_PRODUCT_OUT.
     # Note that some tests explicitly set format='gypd' to invoke the gypd
