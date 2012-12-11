@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+set -eu
+
+if [[ "$#" -ne 3 ]]; then
+  echo "$0 <dump_syms_tool> <mac_bundle> <breakpad_symbols>" >&2
+  exit 1
+fi
+
+DUMP_SYMS_TOOL="$1"
+SOURCE_BUNDLE="$2"
+BREAKPAD_SYMBOLS="$3"
+
+ARCH="i386"
+
+# Filename of bundle, minus the file extension.
+STEM="$(basename "${SOURCE_BUNDLE%.*}")"
+DWARF_PATH="${SOURCE_BUNDLE}.dSYM/Contents/Resources/DWARF/${STEM}"
+
+# Use -c to avoid dumping CFI, because the Breakpad stackwalk is incompatible
+# with CFI produced by clang.
+# http://code.google.com/p/google-breakpad/issues/detail?id=443
+"${DUMP_SYMS_TOOL}" -a "${ARCH}" -c "${DWARF_PATH}" > "${BREAKPAD_SYMBOLS}"

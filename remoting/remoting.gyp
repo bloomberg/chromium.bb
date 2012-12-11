@@ -1086,10 +1086,42 @@
                 # A real .dSYM is needed for dump_syms to operate on.
                 'mac_real_dsym': 1,
               },
-            }],
+            }],  # 'mac_breakpad==1'
           ],  # conditions
         },  # end of target 'remoting_host_prefpane'
       ],  # end of 'targets'
+      'conditions': [
+        ['mac_breakpad==1', {
+          'targets': [
+            {
+              'target_name': 'remoting_mac_symbols',
+              'type': 'none',
+              'dependencies': [
+                '../breakpad/breakpad.gyp:dump_syms',
+		'remoting_me2me_host',
+              ],
+              'actions': [
+                {
+                  'action_name': 'dump_symbols',
+                  'inputs': [
+                    '<(DEPTH)/remoting/scripts/mac/dump_product_syms',
+                    '<(PRODUCT_DIR)/dump_syms',
+                    '<(PRODUCT_DIR)/remoting_me2me_host.app',
+                  ],
+                  'outputs': [
+                    '<(PRODUCT_DIR)/remoting_me2me_host.app-<(version_full)-<(target_arch).breakpad',
+                  ],
+                  'action': [
+                    '<@(_inputs)',
+                    '<@(_outputs)',
+                  ],
+                  'message': 'Dumping breakpad symbols to <(_outputs)',
+                },  # end of action 'dump_symbols'
+              ],  # end of 'actions'
+            },  # end of target 'remoting_mac_symbols'
+          ],  # end of 'targets'
+        }],  # 'mac_breakpad==1'
+      ],  # end of 'conditions'
     }],  # 'OS=="mac"'
 
     ['OS=="win"', {
