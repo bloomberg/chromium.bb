@@ -363,23 +363,35 @@ std::string AboutDiscards(const std::string& path) {
   base::GetSystemMemoryInfo(&meminfo);
   output.append("<h3>System memory information in MB</h3>");
   output.append("<table>");
+  // Start with summary statistics.
   output.append(AddStringRow(
-    "Total", base::IntToString(meminfo.total / 1024)));
+      "Total", base::IntToString(meminfo.total / 1024)));
   output.append(AddStringRow(
-    "Free", base::IntToString(meminfo.free / 1024)));
+      "Free", base::IntToString(meminfo.free / 1024)));
+  int mem_allocated_kb = meminfo.active_anon + meminfo.inactive_anon;
+#if defined(ARCH_CPU_ARM_FAMILY)
+  // ARM counts allocated graphics memory separately from anonymous.
+  if (meminfo.gem_size != -1)
+    mem_allocated_kb += meminfo.gem_size / 1024;
+#endif
   output.append(AddStringRow(
-    "Buffered", base::IntToString(meminfo.buffers / 1024)));
+      "Allocated", base::IntToString(mem_allocated_kb / 1024)));
+  // Add some space, then detailed numbers.
+  output.append(AddStringRow("&nbsp;", "&nbsp;"));
   output.append(AddStringRow(
-    "Cached", base::IntToString(meminfo.cached / 1024)));
+      "Buffered", base::IntToString(meminfo.buffers / 1024)));
   output.append(AddStringRow(
-    "Committed", base::IntToString(
-    (meminfo.total - meminfo.free - meminfo.buffers - meminfo.cached) / 1024)));
+      "Cached", base::IntToString(meminfo.cached / 1024)));
   output.append(AddStringRow(
-    "Active Anon", base::IntToString(meminfo.active_anon / 1024)));
+      "Active Anon", base::IntToString(meminfo.active_anon / 1024)));
   output.append(AddStringRow(
-    "Inactive Anon", base::IntToString(meminfo.inactive_anon / 1024)));
+      "Inactive Anon", base::IntToString(meminfo.inactive_anon / 1024)));
   output.append(AddStringRow(
-    "Shared", base::IntToString(meminfo.shmem / 1024)));
+      "Shared", base::IntToString(meminfo.shmem / 1024)));
+  if (meminfo.gem_size != -1) {
+    output.append(AddStringRow(
+        "Graphics", base::IntToString(meminfo.gem_size / 1024 / 1024)));
+  }
   output.append("</table>");
 
   AppendFooter(&output);

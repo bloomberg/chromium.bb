@@ -17,6 +17,7 @@
 #include "base/process_util.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
+#include "base/string_util.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "base/time.h"
@@ -37,6 +38,7 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/zygote_host_linux.h"
+#include "ui/base/text/bytes_formatting.h"
 
 using base::TimeDelta;
 using base::TimeTicks;
@@ -109,8 +111,14 @@ void OomMemoryDetails::OnDetailsAvailable() {
   TimeDelta delta = TimeTicks::Now() - start_time_;
   // These logs are collected by user feedback reports.  We want them to help
   // diagnose user-reported problems with frequently discarded tabs.
+  std::string log_string = ToLogString();
+  base::SystemMemoryInfoKB memory;
+  if (base::GetSystemMemoryInfo(&memory) && memory.gem_size != -1) {
+    log_string += "Graphics ";
+    log_string += UTF16ToASCII(ui::FormatBytes(memory.gem_size));
+  }
   LOG(WARNING) << "OOM details (" << delta.InMilliseconds() << " ms):\n"
-      << ToLogString();
+      << log_string;
   if (g_browser_process && g_browser_process->oom_priority_manager())
     g_browser_process->oom_priority_manager()->DiscardTab();
   // Delete ourselves so we don't have to worry about OomPriorityManager
@@ -279,9 +287,22 @@ void OomPriorityManager::RecordDiscardStatistics() {
   // Record Chrome's concept of system memory usage at the time of the discard.
   base::SystemMemoryInfoKB memory;
   if (base::GetSystemMemoryInfo(&memory)) {
+    // TODO(jamescook): Remove this after R25 is deployed to stable. It does
+    // not have sufficient resolution in the 2-4 GB range and does not properly
+    // account for graphics memory on ARM. Replace with MemAllocatedMB below.
     int mem_anonymous_mb = (memory.active_anon + memory.inactive_anon) / 1024;
     EXPERIMENT_HISTOGRAM_MEGABYTES("Tabs.Discard.MemAnonymousMB",
                                    mem_anonymous_mb);
+
+    // On Intel, graphics objects are in anonymous pages, but on ARM they are
+    // not. For a total "allocated count" add in graphics pages on ARM.
+    int mem_allocated_mb = mem_anonymous_mb;
+#if defined(ARCH_CPU_ARM_FAMILY)
+    if (memory.gem_size != -1)
+      mem_allocated_mb += memory.gem_size / 1024 / 1024;
+#endif
+    EXPERIMENT_CUSTOM_COUNTS("Tabs.Discard.MemAllocatedMB", mem_allocated_mb,
+                             256, 32768, 50)
 
     int mem_available_mb =
         (memory.active_file + memory.inactive_file + memory.free) / 1024;
