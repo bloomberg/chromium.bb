@@ -53,10 +53,6 @@ class CONTENT_EXPORT SiteInstanceImpl : public SiteInstance,
     render_process_host_factory_ = rph_factory;
   }
 
-  // Returns the site for the given URL, which includes only the scheme and
-  // registered domain.  Returns an empty GURL if the URL has no host.
-  static GURL GetSiteForURL(BrowserContext* context, const GURL& url);
-
  protected:
   friend class BrowsingInstance;
   friend class SiteInstance;

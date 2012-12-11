@@ -1532,6 +1532,11 @@ const char kNextExtensionsUpdateCheck[] = "extensions.autoupdate.next_check";
 const char kExtensionBlacklistUpdateVersion[] =
     "extensions.blacklistupdate.version";
 
+// Indicates on-disk data might have skeletal data that needs to be cleaned
+// on the next start of the browser.
+const char kExtensionStorageGarbageCollect[] =
+    "extensions.storage.garbagecollect";
+
 // Keeps track of which sessions are collapsed in the Other Devices menu.
 const char kNtpCollapsedForeignSessions[] = "ntp.collapsed_foreign_sessions";
 

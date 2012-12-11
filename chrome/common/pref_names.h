@@ -542,6 +542,7 @@ extern const char kExtensionInstallDenyList[];
 extern const char kExtensionAlertsInitializedPref[];
 extern const char kExtensionInstallForceList[];
 extern const char kExtensionBlacklistUpdateVersion[];
+extern const char kExtensionStorageGarbageCollect[];
 
 extern const char kNtpTipsResourceServer[];
 

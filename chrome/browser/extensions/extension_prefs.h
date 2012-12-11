@@ -384,25 +384,25 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
 
   // We've downloaded an updated .crx file for the extension, but are waiting
   // for idle time to install it.
-  void SetIdleInstallInfo(const Extension* extension,
-                          Extension::State initial_state,
-                          const syncer::StringOrdinal& page_ordinal);
+  void SetDelayedInstallInfo(const Extension* extension,
+                             Extension::State initial_state,
+                             const syncer::StringOrdinal& page_ordinal);
 
-  // Removes any idle install information we have for the given |extension_id|.
-  // Returns true if there was info to remove; false otherwise.
-  bool RemoveIdleInstallInfo(const std::string& extension_id);
+  // Removes any delayed install information we have for the given
+  // |extension_id|. Returns true if there was info to remove; false otherwise.
+  bool RemoveDelayedInstallInfo(const std::string& extension_id);
 
   // Update the prefs to finish the update for an extension.
-  bool FinishIdleInstallInfo(const std::string& extension_id);
+  bool FinishDelayedInstallInfo(const std::string& extension_id);
 
-  // Returns the ExtensionInfo from the prefs for idle install information for
-  // |extension_id|, if we have any. Otherwise returns NULL.
-  scoped_ptr<ExtensionInfo> GetIdleInstallInfo(
+  // Returns the ExtensionInfo from the prefs for delayed install information
+  // for |extension_id|, if we have any. Otherwise returns NULL.
+  scoped_ptr<ExtensionInfo> GetDelayedInstallInfo(
       const std::string& extension_id) const;
 
-  // Returns information about all the extensions that have pending idle
-  // install information.
-  scoped_ptr<ExtensionsInfo> GetAllIdleInstallInfo() const;
+  // Returns information about all the extensions that have delayed install
+  // information.
+  scoped_ptr<ExtensionsInfo> GetAllDelayedInstallInfo() const;
 
   // We allow the web store to set a string containing login information when a
   // purchase is made, so that when a user logs into sync with a different
@@ -502,6 +502,12 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   // Describes the URLs that are able to install extensions. See
   // prefs::kExtensionAllowedInstallSites for more information.
   URLPatternSet GetAllowedInstallSites();
+
+  // Schedules garbage collection of an extension's on-disk data on the next
+  // start of this ExtensionService. Applies only to extensions with isolated
+  // storage.
+  void SetNeedsStorageGarbageCollection(bool value);
+  bool NeedsStorageGarbageCollection();
 
  private:
   friend class ExtensionPrefsBlacklistedExtensions;  // Unit test.

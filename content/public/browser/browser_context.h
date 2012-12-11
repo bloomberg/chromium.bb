@@ -7,6 +7,7 @@
 
 #include "base/callback_forward.h"
 #include "base/hash_tables.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
 
@@ -52,7 +53,15 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
       const StoragePartitionCallback& callback);
   static void AsyncObliterateStoragePartition(
       BrowserContext* browser_context,
-      const GURL& site);
+      const GURL& site,
+      const base::Closure& on_gc_required);
+
+  // This function clears the contents of |active_paths| but does not take
+  // ownership of the pointer.
+  static void GarbageCollectStoragePartitions(
+      BrowserContext* browser_context,
+      scoped_ptr<base::hash_set<FilePath> > active_paths,
+      const base::Closure& done);
 
   // DON'T USE THIS. GetDefaultStoragePartition() is going away.
   // Use GetStoragePartition() instead. Ask ajwong@ if you have problems.

@@ -105,6 +105,8 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/site_instance.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/pepper_plugin_info.h"
 #include "extensions/common/error_utils.h"
 #include "googleurl/src/gurl.h"
@@ -374,6 +376,7 @@ ExtensionService::ExtensionService(Profile* profile,
       event_routers_initialized_(false),
       update_once_all_providers_are_ready_(false),
       browser_terminating_(false),
+      installs_delayed_(false),
       wipeout_is_active_(false),
       app_sync_bundle_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       extension_sync_bundle_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
@@ -589,6 +592,12 @@ const Extension* ExtensionService::GetExtensionById(
   return GetExtensionById(id, include_mask);
 }
 
+GURL ExtensionService::GetSiteForExtensionId(const std::string& extension_id) {
+  return content::SiteInstance::GetSiteForURL(
+      profile_,
+      Extension::GetBaseURLFromExtensionId(extension_id));
+}
+
 const Extension* ExtensionService::GetExtensionById(
     const std::string& id, int include_mask) const {
   std::string lowercase_id = StringToLowerASCII(id);
@@ -621,8 +630,8 @@ void ExtensionService::Init() {
   DCHECK(!ready_);  // Can't redo init.
   DCHECK_EQ(extensions_.size(), 0u);
 
-  // TODO(mek): It might be cleaner to do the FinishIdleInstallInfo stuff here
-  // instead of in installedloader
+  // TODO(mek): It might be cleaner to do the FinishDelayedInstallInfo stuff
+  // here instead of in installedloader.
   component_loader_->LoadAll();
   extensions::InstalledLoader(this).LoadAllExtensions();
 
@@ -651,6 +660,11 @@ void ExtensionService::Init() {
       // TODO(erikkay) this should probably be deferred as well.
       GarbageCollectExtensions();
     }
+  }
+
+  if (extension_prefs_->NeedsStorageGarbageCollection()) {
+    GarbageCollectIsolatedStorage();
+    extension_prefs_->SetNeedsStorageGarbageCollection(false);
   }
 }
 
@@ -783,7 +797,7 @@ void ExtensionService::ReloadExtensionWithEvents(
     path = unloaded_extension_paths_[extension_id];
   }
 
-  if (pending_extension_updates_.Contains(extension_id)) {
+  if (delayed_updates_for_idle_.Contains(extension_id)) {
     FinishDelayedInstallation(extension_id);
     return;
   }
@@ -881,14 +895,22 @@ bool ExtensionService::UninstallExtension(
   launch_web_url_origin = launch_web_url_origin.GetOrigin();
   bool is_storage_isolated = extension->is_storage_isolated();
 
-  if (extension->is_hosted_app() &&
-      !profile_->GetExtensionSpecialStoragePolicy()->
-          IsStorageProtected(launch_web_url_origin)) {
-    extensions::DataDeleter::StartDeleting(
-        profile_, extension_id, launch_web_url_origin, is_storage_isolated);
+  if (is_storage_isolated) {
+    BrowserContext::AsyncObliterateStoragePartition(
+        profile_,
+        GetSiteForExtensionId(extension_id),
+        base::Bind(&ExtensionService::OnNeedsToGarbageCollectIsolatedStorage,
+                   AsWeakPtr()));
+  } else {
+    if (extension->is_hosted_app() &&
+        !profile_->GetExtensionSpecialStoragePolicy()->
+            IsStorageProtected(launch_web_url_origin)) {
+      extensions::DataDeleter::StartDeleting(
+          profile_, extension_id, launch_web_url_origin);
+    }
+    extensions::DataDeleter::StartDeleting(profile_, extension_id,
+                                           extension->url());
   }
-  extensions::DataDeleter::StartDeleting(
-      profile_, extension_id, extension->url(), is_storage_isolated);
 
   UntrackTerminatedExtension(extension_id);
 
@@ -906,7 +928,8 @@ bool ExtensionService::UninstallExtension(
     extension_sync_bundle_.ProcessDeletion(extension_id, sync_change);
   }
 
-  pending_extension_updates_.Remove(extension_id);
+  delayed_updates_for_idle_.Remove(extension_id);
+  delayed_installs_.Remove(extension_id);
 
   // Track the uninstallation.
   UMA_HISTOGRAM_ENUMERATION("Extensions.ExtensionUninstalled", 1, 2);
@@ -2071,7 +2094,7 @@ void ExtensionService::GarbageCollectExtensions() {
     extension_paths.insert(std::make_pair(info->at(i)->extension_id,
                                           info->at(i)->extension_path));
 
-  info = extension_prefs_->GetAllIdleInstallInfo();
+  info = extension_prefs_->GetAllDelayedInstallInfo();
   for (size_t i = 0; i < info->size(); ++i)
     extension_paths.insert(std::make_pair(info->at(i)->extension_id,
                                           info->at(i)->extension_path));
@@ -2203,8 +2226,8 @@ void ExtensionService::AddComponentExtension(const Extension* extension) {
         << old_version_string << "' to " << extension->version()->GetString();
 
     AddNewOrUpdatedExtension(extension,
-                             syncer::StringOrdinal(),
-                             Extension::ENABLED_COMPONENT);
+                             Extension::ENABLED_COMPONENT,
+                             syncer::StringOrdinal());
     return;
   }
 
@@ -2463,15 +2486,14 @@ void ExtensionService::OnExtensionInstalled(
   // auto-acknowledge any extension that came from one of them.
   if (extension->location() == Extension::EXTERNAL_POLICY_DOWNLOAD)
     AcknowledgeExternalExtension(extension->id());
-
+  const Extension::State initial_state =
+      initial_enable ? Extension::ENABLED : Extension::DISABLED;
   if (ShouldDelayExtensionUpdate(id, wait_for_idle)) {
-    extension_prefs_->SetIdleInstallInfo(
-        extension,
-        initial_enable ? Extension::ENABLED : Extension::DISABLED,
-        page_ordinal);
+    extension_prefs_->SetDelayedInstallInfo(extension, initial_state,
+                                            page_ordinal);
 
     // Transfer ownership of |extension|.
-    pending_extension_updates_.Insert(extension);
+    delayed_updates_for_idle_.Insert(extension);
 
     // Notify extension of available update.
     extensions::RuntimeEventRouter::DispatchOnUpdateAvailableEvent(
@@ -2479,17 +2501,19 @@ void ExtensionService::OnExtensionInstalled(
     return;
   }
 
-  // Transfer ownership of |extension|.
-  AddNewOrUpdatedExtension(
-      extension,
-      page_ordinal,
-      initial_enable ? Extension::ENABLED : Extension::DISABLED);
+  if (installs_delayed()) {
+    extension_prefs_->SetDelayedInstallInfo(extension, initial_state,
+                                            page_ordinal);
+    delayed_installs_.Insert(extension);
+  } else {
+    AddNewOrUpdatedExtension(extension, initial_state, page_ordinal);
+  }
 }
 
 void ExtensionService::AddNewOrUpdatedExtension(
     const Extension* extension,
-    const syncer::StringOrdinal& page_ordinal,
-    Extension::State initial_state) {
+    Extension::State initial_state,
+    const syncer::StringOrdinal& page_ordinal) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   extension_prefs_->OnExtensionInstalled(
@@ -2497,20 +2521,13 @@ void ExtensionService::AddNewOrUpdatedExtension(
       initial_state,
       page_ordinal);
 
-  // Unpacked extensions default to allowing file access, but if that has been
-  // overridden, don't reset the value.
-  if (Extension::ShouldAlwaysAllowFileAccess(extension->location()) &&
-      !extension_prefs_->HasAllowFileAccessSetting(extension->id())) {
-    extension_prefs_->SetAllowFileAccess(extension->id(), true);
-  }
-
   FinishInstallation(extension);
 }
 
 void ExtensionService::MaybeFinishDelayedInstallation(
     const std::string& extension_id) {
   // Check if the extension already got updated.
-  if (!pending_extension_updates_.Contains(extension_id))
+  if (!delayed_updates_for_idle_.Contains(extension_id))
     return;
   // Check if the extension is idle.
   if (!IsExtensionIdle(extension_id))
@@ -2524,9 +2541,9 @@ void ExtensionService::FinishDelayedInstallation(
   scoped_refptr<const Extension> extension(
       GetPendingExtensionUpdate(extension_id));
   CHECK(extension);
-  pending_extension_updates_.Remove(extension_id);
+  delayed_updates_for_idle_.Remove(extension_id);
 
-  if (!extension_prefs_->FinishIdleInstallInfo(extension_id))
+  if (!extension_prefs_->FinishDelayedInstallInfo(extension_id))
     NOTREACHED();
 
   FinishInstallation(extension);
@@ -2539,6 +2556,13 @@ void ExtensionService::FinishInstallation(const Extension* extension) {
       content::Details<const Extension>(extension));
 
   bool unacknowledged_external = IsUnacknowledgedExternalExtension(extension);
+
+  // Unpacked extensions default to allowing file access, but if that has been
+  // overridden, don't reset the value.
+  if (Extension::ShouldAlwaysAllowFileAccess(extension->location()) &&
+      !extension_prefs_->HasAllowFileAccessSetting(extension->id())) {
+    extension_prefs_->SetAllowFileAccess(extension->id(), true);
+  }
 
   AddExtension(extension);
 
@@ -2569,7 +2593,7 @@ void ExtensionService::FinishInstallation(const Extension* extension) {
 
 const Extension* ExtensionService::GetPendingExtensionUpdate(
     const std::string& id) const {
-  return pending_extension_updates_.GetByID(id);
+  return delayed_updates_for_idle_.GetByID(id);
 }
 
 void ExtensionService::TrackTerminatedExtension(const Extension* extension) {
@@ -2815,7 +2839,7 @@ void ExtensionService::Observe(int type,
       extensions::ExtensionHost* host =
           content::Details<extensions::ExtensionHost>(details).ptr();
       std::string extension_id = host->extension_id();
-      if (pending_extension_updates_.Contains(extension_id)) {
+      if (delayed_updates_for_idle_.Contains(extension_id)) {
         // We were waiting for this extension to become idle, it now might have,
         // so maybe finish installation.
         MessageLoop::current()->PostDelayedTask(
@@ -3101,6 +3125,46 @@ bool ExtensionService::ShouldDelayExtensionUpdate(
     // Delay installation if the extension is not idle.
     return !IsExtensionIdle(extension_id);
   }
+}
+
+void ExtensionService::GarbageCollectIsolatedStorage() {
+  scoped_ptr<base::hash_set<FilePath> > active_paths(
+      new base::hash_set<FilePath>());
+  for (ExtensionSet::const_iterator it = extensions_.begin();
+       it != extensions_.end(); ++it) {
+    if ((*it)->is_storage_isolated()) {
+      active_paths->insert(
+          BrowserContext::GetStoragePartitionForSite(
+              profile_,
+              GetSiteForExtensionId((*it)->id()))->GetPath());
+    }
+  }
+
+  DCHECK(!installs_delayed());
+  set_installs_delayed(true);
+  BrowserContext::GarbageCollectStoragePartitions(
+      profile_, active_paths.Pass(),
+      base::Bind(&ExtensionService::OnGarbageCollectIsolatedStorageFinished,
+                 AsWeakPtr()));
+}
+
+void ExtensionService::OnGarbageCollectIsolatedStorageFinished() {
+  set_installs_delayed(false);
+  for (ExtensionSet::const_iterator it = delayed_installs_.begin();
+       it != delayed_installs_.end();
+       ++it) {
+    FinishDelayedInstallation((*it)->id());
+  }
+  for (ExtensionSet::const_iterator it = delayed_updates_for_idle_.begin();
+       it != delayed_updates_for_idle_.end();
+       ++it) {
+    MaybeFinishDelayedInstallation((*it)->id());
+  }
+  delayed_installs_.Clear();
+}
+
+void ExtensionService::OnNeedsToGarbageCollectIsolatedStorage() {
+  extension_prefs_->SetNeedsStorageGarbageCollection(true);
 }
 
 void ExtensionService::OnBlacklistUpdated() {

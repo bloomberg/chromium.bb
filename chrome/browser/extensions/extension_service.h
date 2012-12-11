@@ -325,6 +325,10 @@ class ExtensionService
   const extensions::Extension* GetExtensionById(const std::string& id,
                                                 int include_mask) const;
 
+  // Returns the site of the given |extension_id|. Suitable for use with
+  // BrowserContext::GetStoragePartitionForSite().
+  GURL GetSiteForExtensionId(const std::string& extension_id);
+
   // Looks up a terminated (crashed) extension by ID.
   const extensions::Extension*
       GetTerminatedExtension(const std::string& id) const;
@@ -780,10 +784,9 @@ class ExtensionService
   // the extension is installed, e.g., to update event handlers on background
   // pages; and perform other extension install tasks before calling
   // AddExtension.
-  void AddNewOrUpdatedExtension(
-      const extensions::Extension* extension,
-      const syncer::StringOrdinal& page_ordinal,
-      extensions::Extension::State initial_state);
+  void AddNewOrUpdatedExtension(const extensions::Extension* extension,
+                                extensions::Extension::State initial_state,
+                                const syncer::StringOrdinal& page_ordinal);
 
   // Handles sending notification that |extension| was loaded.
   void NotifyExtensionLoaded(const extensions::Extension* extension);
@@ -847,6 +850,12 @@ class ExtensionService
   bool ShouldDelayExtensionUpdate(const std::string& extension_id,
                                   bool wait_for_idle) const;
 
+  // Helper to search storage directories for extensions with isolated storage
+  // that have been orphaned by an uninstall.
+  void GarbageCollectIsolatedStorage();
+  void OnGarbageCollectIsolatedStorageFinished();
+  void OnNeedsToGarbageCollectIsolatedStorage();
+
   // extensions::Blacklist::Observer implementation.
   virtual void OnBlacklistUpdated() OVERRIDE;
 
@@ -854,6 +863,10 @@ class ExtensionService
   // Blacklist::GetBlacklistedIDs.
   void ManageBlacklist(const std::set<std::string>& old_blacklisted_ids,
                        const std::set<std::string>& new_blacklisted_ids);
+
+  // Controls if installs are delayed. See comment for |installs_delayed_|.
+  void set_installs_delayed(bool value) { installs_delayed_ = value; }
+  bool installs_delayed() const { return installs_delayed_; }
 
   // The normal profile associated with this ExtensionService.
   Profile* profile_;
@@ -885,8 +898,14 @@ class ExtensionService
   // they can easily be un-blacklisted.
   ExtensionSet blacklisted_extensions_;
 
-  // The list of extension updates that are waiting to be installed.
-  ExtensionSet pending_extension_updates_;
+  // The list of extension updates that have had their installs delayed because
+  // they are waiting for idle.
+  ExtensionSet delayed_updates_for_idle_;
+
+  // The list of extension installs delayed by |installs_delayed_|.
+  // This is a disjoint set from |delayed_updates_for_idle_|. Extensions in
+  // the |delayed_installs_| do not need to wait for idle.
+  ExtensionSet delayed_installs_;
 
   // Hold the set of pending extensions.
   extensions::PendingExtensionManager pending_extension_manager_;
@@ -999,6 +1018,12 @@ class ExtensionService
   // updating additional extensions and allows in-progress installations to
   // decide to abort.
   bool browser_terminating_;
+
+  // Set to true to delay all new extension installations. Acts as a lock
+  // to allow background processing of tasks such as garbage collection of
+  // on-disk state without needing to worry about race conditions caused
+  // by extension installation and reinstallation.
+  bool installs_delayed_;
 
   // Whether any extension should be considered for wipeout.
   bool wipeout_is_active_;

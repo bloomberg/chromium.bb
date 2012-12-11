@@ -134,6 +134,10 @@ class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance> {
   static bool IsSameWebSite(content::BrowserContext* browser_context,
                             const GURL& url1, const GURL& url2);
 
+  // Returns the site for the given URL, which includes only the scheme and
+  // registered domain.  Returns an empty GURL if the URL has no host.
+  static GURL GetSiteForURL(BrowserContext* context, const GURL& url);
+
  protected:
   friend class base::RefCounted<SiteInstance>;
 

@@ -1401,7 +1401,7 @@ RenderProcessHost* RenderProcessHostImpl::GetProcessHostForSite(
 
   // See if we have an existing process for this site.  If not, the caller
   // should create a new process and register it.
-  std::string site = SiteInstanceImpl::GetSiteForURL(browser_context, url)
+  std::string site = SiteInstance::GetSiteForURL(browser_context, url)
       .possibly_invalid_spec();
   return map->FindProcess(site);
 }
@@ -1417,7 +1417,7 @@ void RenderProcessHostImpl::RegisterProcessHostForSite(
   // TODO(creis): Determine if it's better to allow registration of
   // empty sites or not.  For now, group anything from which we can't parse
   // a site into the same process, when using --process-per-site.
-  std::string site = SiteInstanceImpl::GetSiteForURL(browser_context, url)
+  std::string site = SiteInstance::GetSiteForURL(browser_context, url)
       .possibly_invalid_spec();
   map->RegisterProcess(site, process);
 }

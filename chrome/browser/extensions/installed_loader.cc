@@ -152,9 +152,9 @@ void InstalledLoader::LoadAllExtensions() {
     ExtensionInfo* info = extensions_info->at(i).get();
 
     scoped_ptr<ExtensionInfo> pending_update(
-        extension_prefs_->GetIdleInstallInfo(info->extension_id));
+        extension_prefs_->GetDelayedInstallInfo(info->extension_id));
     if (pending_update) {
-      if (!extension_prefs_->FinishIdleInstallInfo(info->extension_id))
+      if (!extension_prefs_->FinishDelayedInstallInfo(info->extension_id))
         NOTREACHED();
 
       Version old_version;

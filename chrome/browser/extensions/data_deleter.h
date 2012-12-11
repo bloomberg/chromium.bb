@@ -20,8 +20,7 @@ class DataDeleter {
   static void StartDeleting(
       Profile* profile,
       const std::string& extension_id,
-      const GURL& storage_origin,
-      bool is_storage_isolated);
+      const GURL& storage_origin);
 
   DISALLOW_COPY_AND_ASSIGN(DataDeleter);
 };

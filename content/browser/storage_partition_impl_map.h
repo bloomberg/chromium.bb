@@ -10,11 +10,16 @@
 
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
+#include "base/hash_tables.h"
 #include "base/supports_user_data.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
 
 class FilePath;
+
+namespace base {
+class SequencedTaskRunner;
+}  // namespace base
 
 namespace content {
 
@@ -34,7 +39,20 @@ class StoragePartitionImplMap : public base::SupportsUserData::Data {
 
   // Starts an asynchronous best-effort attempt to delete all on-disk storage
   // related to |site|, avoiding any directories that are known to be in use.
-  void AsyncObliterate(const GURL& site);
+  //
+  // |on_gc_required| is called if the AsyncObliterate() call was unable to
+  // fully clean the on-disk storage requiring a call to GarbageCollect() on
+  // the next browser start.
+  void AsyncObliterate(const GURL& site, const base::Closure& on_gc_required);
+
+  // Examines the on-disk storage and removes any entires that are not listed
+  // in the |active_paths|, or in use by current entries in the storage
+  // partition.
+  //
+  // The |done| closure is executed on the calling thread when garbage
+  // collection is complete.
+  void GarbageCollect(scoped_ptr<base::hash_set<FilePath> > active_paths,
+                      const base::Closure& done);
 
   void ForEach(const BrowserContext::StoragePartitionCallback& callback);
 
@@ -101,6 +119,7 @@ class StoragePartitionImplMap : public base::SupportsUserData::Data {
                                 bool in_memory);
 
   BrowserContext* browser_context_;  // Not Owned.
+  scoped_refptr<base::SequencedTaskRunner> file_access_runner_;
   PartitionMap partitions_;
 
   // Set to true when the ResourceContext for the associated |browser_context_|

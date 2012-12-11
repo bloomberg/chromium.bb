@@ -94,8 +94,19 @@ void PurgeMemoryOnIOThread(appcache::AppCacheService* appcache_service) {
 // static
 void BrowserContext::AsyncObliterateStoragePartition(
     BrowserContext* browser_context,
-    const GURL& site) {
-  GetStoragePartitionMap(browser_context)->AsyncObliterate(site);
+    const GURL& site,
+    const base::Closure& on_gc_required) {
+  GetStoragePartitionMap(browser_context)->AsyncObliterate(site,
+                                                           on_gc_required);
+}
+
+// static
+void BrowserContext::GarbageCollectStoragePartitions(
+      BrowserContext* browser_context,
+      scoped_ptr<base::hash_set<FilePath> > active_paths,
+      const base::Closure& done) {
+  GetStoragePartitionMap(browser_context)->GarbageCollect(
+      active_paths.Pass(), done);
 }
 
 DownloadManager* BrowserContext::GetDownloadManager(

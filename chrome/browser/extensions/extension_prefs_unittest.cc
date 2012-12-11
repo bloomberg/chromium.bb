@@ -594,7 +594,7 @@ class ExtensionPrefsHidingBrowserActions : public ExtensionPrefsTest {
 TEST_F(ExtensionPrefsHidingBrowserActions, ForceHide) {}
 
 // Tests the idle install information functions.
-class ExtensionPrefsIdleInstallInfo : public ExtensionPrefsTest {
+class ExtensionPrefsDelayedInstallInfo : public ExtensionPrefsTest {
  public:
   // Sets idle install information for one test extension.
   void SetIdleInfo(std::string id, int num) {
@@ -608,14 +608,14 @@ class ExtensionPrefsIdleInstallInfo : public ExtensionPrefsTest {
         path, Extension::INTERNAL, manifest, Extension::NO_FLAGS, id, &errors);
     ASSERT_TRUE(extension) << errors;
     ASSERT_EQ(id, extension->id());
-    prefs()->SetIdleInstallInfo(extension.get(), Extension::ENABLED,
-                                syncer::StringOrdinal());
+    prefs()->SetDelayedInstallInfo(extension.get(), Extension::ENABLED,
+                                   syncer::StringOrdinal());
   }
 
   // Verifies that we get back expected idle install information previously
   // set by SetIdleInfo.
   void VerifyIdleInfo(std::string id, int num) {
-    scoped_ptr<ExtensionInfo> info(prefs()->GetIdleInstallInfo(id));
+    scoped_ptr<ExtensionInfo> info(prefs()->GetDelayedInstallInfo(id));
     ASSERT_TRUE(info);
     std::string version;
     ASSERT_TRUE(info->extension_manifest->GetString("version", &version));
@@ -647,22 +647,22 @@ class ExtensionPrefsIdleInstallInfo : public ExtensionPrefsTest {
     VerifyIdleInfo(id1_, 1);
     VerifyIdleInfo(id2_, 2);
     scoped_ptr<extensions::ExtensionPrefs::ExtensionsInfo> info(
-        prefs()->GetAllIdleInstallInfo());
+        prefs()->GetAllDelayedInstallInfo());
     EXPECT_EQ(2u, info->size());
     EXPECT_TRUE(HasInfoForId(info.get(), id1_));
     EXPECT_TRUE(HasInfoForId(info.get(), id2_));
-    prefs()->RemoveIdleInstallInfo(id1_);
-    prefs()->RemoveIdleInstallInfo(id2_);
-    info = prefs()->GetAllIdleInstallInfo();
+    prefs()->RemoveDelayedInstallInfo(id1_);
+    prefs()->RemoveDelayedInstallInfo(id2_);
+    info = prefs()->GetAllDelayedInstallInfo();
     EXPECT_TRUE(info->empty());
 
     // Try getting/removing info for an id that used to have info set.
-    EXPECT_FALSE(prefs()->GetIdleInstallInfo(id1_));
-    EXPECT_FALSE(prefs()->RemoveIdleInstallInfo(id1_));
+    EXPECT_FALSE(prefs()->GetDelayedInstallInfo(id1_));
+    EXPECT_FALSE(prefs()->RemoveDelayedInstallInfo(id1_));
 
     // Try getting/removing info for an id that has not yet had any info set.
-    EXPECT_FALSE(prefs()->GetIdleInstallInfo(id3_));
-    EXPECT_FALSE(prefs()->RemoveIdleInstallInfo(id3_));
+    EXPECT_FALSE(prefs()->GetDelayedInstallInfo(id3_));
+    EXPECT_FALSE(prefs()->RemoveDelayedInstallInfo(id3_));
 
     // Set info for 4 extensions, then remove for one of them.
     SetIdleInfo(id1_, 1);
@@ -673,13 +673,13 @@ class ExtensionPrefsIdleInstallInfo : public ExtensionPrefsTest {
     VerifyIdleInfo(id2_, 2);
     VerifyIdleInfo(id3_, 3);
     VerifyIdleInfo(id4_, 4);
-    prefs()->RemoveIdleInstallInfo(id3_);
+    prefs()->RemoveDelayedInstallInfo(id3_);
   }
 
   virtual void Verify() {
     // Make sure the info for the 3 extensions we expect is present.
     scoped_ptr<extensions::ExtensionPrefs::ExtensionsInfo> info(
-        prefs()->GetAllIdleInstallInfo());
+        prefs()->GetAllDelayedInstallInfo());
     EXPECT_EQ(3u, info->size());
     EXPECT_TRUE(HasInfoForId(info.get(), id1_));
     EXPECT_TRUE(HasInfoForId(info.get(), id2_));
@@ -689,7 +689,7 @@ class ExtensionPrefsIdleInstallInfo : public ExtensionPrefsTest {
     VerifyIdleInfo(id4_, 4);
 
     // Make sure there isn't info the for the one extension id we removed.
-    EXPECT_FALSE(prefs()->GetIdleInstallInfo(id3_));
+    EXPECT_FALSE(prefs()->GetDelayedInstallInfo(id3_));
   }
 
  protected:
@@ -700,7 +700,7 @@ class ExtensionPrefsIdleInstallInfo : public ExtensionPrefsTest {
   std::string id3_;
   std::string id4_;
 };
-TEST_F(ExtensionPrefsIdleInstallInfo, IdleInstallInfo) {}
+TEST_F(ExtensionPrefsDelayedInstallInfo, DelayedInstallInfo) {}
 
 class ExtensionPrefsOnExtensionInstalled : public ExtensionPrefsTest {
  public:

@@ -22,17 +22,11 @@ namespace extensions {
 // static
 void DataDeleter::StartDeleting(Profile* profile,
                                 const std::string& extension_id,
-                                const GURL& storage_origin,
-                                bool is_storage_isolated) {
+                                const GURL& storage_origin) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile);
 
   const GURL& site = Extension::GetBaseURLFromExtensionId(extension_id);
-
-  if (is_storage_isolated) {
-    BrowserContext::AsyncObliterateStoragePartition(profile, site);
-    return;
-  }
 
   content::StoragePartition* partition =
       BrowserContext::GetStoragePartitionForSite(profile, site);

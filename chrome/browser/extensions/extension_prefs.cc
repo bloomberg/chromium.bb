@@ -116,8 +116,10 @@ const char kActiveBit[] = "active_bit";
 // Path for settings specific to blacklist update.
 const char kExtensionsBlacklistUpdate[] = "extensions.blacklistupdate";
 
-// Path for the idle install info dictionary preference.
-const char kIdleInstallInfo[] = "idle_install_info";
+// Path for the delayed install info dictionary preference. The actual string
+// value is a legacy artifact for when delayed installs only pertained to
+// updates that were waiting for idle.
+const char kDelayedInstallInfo[] = "idle_install_info";
 
 // Path for the suggested page ordinal of a delayed extension install.
 const char kPrefSuggestedPageOrdinal[] = "suggested_page_ordinal";
@@ -1675,7 +1677,7 @@ scoped_ptr<ExtensionPrefs::ExtensionsInfo>
   return extensions_info.Pass();
 }
 
-void ExtensionPrefs::SetIdleInstallInfo(
+void ExtensionPrefs::SetDelayedInstallInfo(
     const Extension* extension,
     Extension::State initial_state,
     const syncer::StringOrdinal& page_ordinal) {
@@ -1683,35 +1685,39 @@ void ExtensionPrefs::SetIdleInstallInfo(
   PopulateExtensionInfoPrefs(extension, time_provider_->GetCurrentTime(),
                              initial_state, extension_dict);
 
-  // Add transient data that is needed by FinishIdleInstallInfo(), but
+  // Add transient data that is needed by FinishDelayedInstallInfo(), but
   // should not be in the final extension prefs. All entries here should have
-  // a corresponding Remove() call in FinishIdleInstallInfo().
+  // a corresponding Remove() call in FinishDelayedInstallInfo().
   if (extension->RequiresSortOrdinal()) {
     extension_dict->SetString(kPrefSuggestedPageOrdinal,
                               page_ordinal.ToInternalValue());
   }
 
-  UpdateExtensionPref(extension->id(), kIdleInstallInfo, extension_dict);
+  UpdateExtensionPref(extension->id(), kDelayedInstallInfo, extension_dict);
 }
 
-bool ExtensionPrefs::RemoveIdleInstallInfo(const std::string& extension_id) {
+bool ExtensionPrefs::RemoveDelayedInstallInfo(
+    const std::string& extension_id) {
   if (!GetExtensionPref(extension_id))
     return false;
   ScopedExtensionPrefUpdate update(prefs_, extension_id);
-  bool result = update->Remove(kIdleInstallInfo, NULL);
+  bool result = update->Remove(kDelayedInstallInfo, NULL);
   return result;
 }
 
-bool ExtensionPrefs::FinishIdleInstallInfo(const std::string& extension_id) {
+bool ExtensionPrefs::FinishDelayedInstallInfo(
+    const std::string& extension_id) {
   CHECK(Extension::IdIsValid(extension_id));
   ScopedExtensionPrefUpdate update(prefs_, extension_id);
   DictionaryValue* extension_dict = update.Get();
   DictionaryValue* pending_install_dict = NULL;
-  if (!extension_dict->GetDictionary(kIdleInstallInfo, &pending_install_dict))
+  if (!extension_dict->GetDictionary(kDelayedInstallInfo,
+                                     &pending_install_dict)) {
     return false;
+  }
 
-  // Retrieve and clear transient values populated by SetIdleInstallInfo(). Also
-  // do any other data cleanup that makes sense.
+  // Retrieve and clear transient values populated by SetDelayedInstallInfo().
+  // Also do any other data cleanup that makes sense.
   std::string serialized_ordinal;
   syncer::StringOrdinal suggested_page_ordinal;
   bool needs_sort_ordinal = false;
@@ -1735,14 +1741,14 @@ bool ExtensionPrefs::FinishIdleInstallInfo(const std::string& extension_id) {
   return true;
 }
 
-scoped_ptr<ExtensionInfo> ExtensionPrefs::GetIdleInstallInfo(
+scoped_ptr<ExtensionInfo> ExtensionPrefs::GetDelayedInstallInfo(
     const std::string& extension_id) const {
   const DictionaryValue* extension_prefs = GetExtensionPref(extension_id);
   if (!extension_prefs)
     return scoped_ptr<ExtensionInfo>();
 
   const DictionaryValue* ext = NULL;
-  if (!extension_prefs->GetDictionary(kIdleInstallInfo, &ext))
+  if (!extension_prefs->GetDictionary(kDelayedInstallInfo, &ext))
     return scoped_ptr<ExtensionInfo>();
 
   // TODO(mek): share code with GetInstalledExtensionInfo
@@ -1785,7 +1791,7 @@ scoped_ptr<ExtensionInfo> ExtensionPrefs::GetIdleInstallInfo(
 }
 
 scoped_ptr<ExtensionPrefs::ExtensionsInfo> ExtensionPrefs::
-    GetAllIdleInstallInfo() const {
+    GetAllDelayedInstallInfo() const {
   scoped_ptr<ExtensionsInfo> extensions_info(new ExtensionsInfo);
 
   const DictionaryValue* extensions = prefs_->GetDictionary(kExtensionsPref);
@@ -1794,7 +1800,7 @@ scoped_ptr<ExtensionPrefs::ExtensionsInfo> ExtensionPrefs::
     if (!Extension::IdIsValid(*extension_id))
       continue;
 
-    scoped_ptr<ExtensionInfo> info = GetIdleInstallInfo(*extension_id);
+    scoped_ptr<ExtensionInfo> info = GetDelayedInstallInfo(*extension_id);
     if (info)
       extensions_info->push_back(linked_ptr<ExtensionInfo>(info.release()));
   }
@@ -1819,7 +1825,7 @@ bool ExtensionPrefs::GetSideloadWipeoutDone() const {
 }
 
 void ExtensionPrefs::SetSideloadWipeoutDone() {
-  return prefs_->SetBoolean(kSideloadWipeoutDone, true);
+  prefs_->SetBoolean(kSideloadWipeoutDone, true);
 }
 
 bool ExtensionPrefs::WasAppDraggedByUser(const std::string& extension_id) {
@@ -2198,6 +2204,14 @@ void ExtensionPrefs::Init(bool extensions_disabled) {
   content_settings_store_->AddObserver(this);
 }
 
+void ExtensionPrefs::SetNeedsStorageGarbageCollection(bool value) {
+  prefs_->SetBoolean(prefs::kExtensionStorageGarbageCollect, value);
+}
+
+bool ExtensionPrefs::NeedsStorageGarbageCollection() {
+  return prefs_->GetBoolean(prefs::kExtensionStorageGarbageCollect);
+}
+
 // static
 void ExtensionPrefs::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterDictionaryPref(kExtensionsPref, PrefService::UNSYNCABLE_PREF);
@@ -2221,6 +2235,9 @@ void ExtensionPrefs::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterStringPref(prefs::kExtensionBlacklistUpdateVersion,
                             "0",  // default value
                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kExtensionStorageGarbageCollect,
+                             false,  // default value
+                             PrefService::UNSYNCABLE_PREF);
   prefs->RegisterInt64Pref(prefs::kLastExtensionsUpdateCheck,
                            0,  // default value
                            PrefService::UNSYNCABLE_PREF);
@@ -2314,7 +2331,7 @@ void ExtensionPrefs::FinishExtensionInfoPrefs(
 
   // If this point has been reached, any pending installs should be considered
   // out of date.
-  extension_dict->Remove(kIdleInstallInfo, NULL);
+  extension_dict->Remove(kDelayedInstallInfo, NULL);
 
   // Clear state that may be registered from a previous install.
   extension_dict->Remove(kRegisteredEvents, NULL);

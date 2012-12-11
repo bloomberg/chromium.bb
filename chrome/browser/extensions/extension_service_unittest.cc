@@ -1323,7 +1323,8 @@ TEST_F(ExtensionServiceTest, UpdateOnStartup) {
 
   // Make sure update information got deleted.
   ExtensionPrefs* prefs = service_->extension_prefs();
-  EXPECT_FALSE(prefs->GetIdleInstallInfo("bjafgdebaacbbbecmhlhpofkepfkgcpa"));
+  EXPECT_FALSE(
+      prefs->GetDelayedInstallInfo("bjafgdebaacbbbecmhlhpofkepfkgcpa"));
 }
 
 // Test installing extensions. This test tries to install few extensions using
