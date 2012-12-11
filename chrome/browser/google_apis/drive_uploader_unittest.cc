@@ -309,11 +309,6 @@ class DriveUploaderTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
 };
 
-// Records whether UploaderReadyCallback is called or not.
-void OnUploaderReady(bool* called, int32 /* upload_id */) {
-  *called = true;
-}
-
 // Struct for holding the results copied from UploadCompletionCallback.
 struct UploadCompletionCallbackResult {
   UploadCompletionCallbackResult() : error(DRIVE_UPLOAD_ERROR_ABORT) {}
@@ -432,7 +427,6 @@ TEST_F(DriveUploaderTest, UploadNew1234KB) {
                                         &local_path, &data));
 
   UploadCompletionCallbackResult out;
-  bool uploader_ready_called = false;
 
   MockDriveServiceWithUploadExpectation mock_service(data);
   DriveUploader uploader(&mock_service);
@@ -444,12 +438,10 @@ TEST_F(DriveUploaderTest, UploadNew1234KB) {
       kTestMimeType,
       1234 * 1024,  // content length
       1234 * 1024,  // current file size
-      base::Bind(&CopyResultsFromUploadCompletionCallbackAndQuit, &out),
-      base::Bind(&OnUploaderReady, &uploader_ready_called)
+      base::Bind(&CopyResultsFromUploadCompletionCallbackAndQuit, &out)
   );
   message_loop_.Run();
 
-  EXPECT_TRUE(uploader_ready_called);
   // The file should be split into 3 chunks (1234 = 512 + 512 + 210).
   EXPECT_EQ(3, mock_service.resume_upload_call_count());
   EXPECT_EQ(1234 * 1024, mock_service.received_bytes());

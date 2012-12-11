@@ -8,12 +8,10 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/download_item.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_errors.h"
 
@@ -58,24 +56,21 @@ DriveUploader::~DriveUploader() {
   }
 }
 
-int DriveUploader::UploadNewFile(
-    const GURL& upload_location,
-    const FilePath& drive_file_path,
-    const FilePath& local_file_path,
-    const std::string& title,
-    const std::string& content_type,
-    int64 content_length,
-    int64 file_size,
-    const UploadCompletionCallback& completion_callback,
-    const UploaderReadyCallback& ready_callback) {
+int DriveUploader::UploadNewFile(const GURL& upload_location,
+                                 const FilePath& drive_file_path,
+                                 const FilePath& local_file_path,
+                                 const std::string& title,
+                                 const std::string& content_type,
+                                 int64 content_length,
+                                 int64 file_size,
+                                 const UploadCompletionCallback& callback) {
    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
    DCHECK(!upload_location.is_empty());
    DCHECK(!drive_file_path.empty());
    DCHECK(!local_file_path.empty());
    DCHECK(!title.empty());
    DCHECK(!content_type.empty());
-   DCHECK(!completion_callback.is_null());
-   // ready_callback may be null.
+   DCHECK(!callback.is_null());
 
   scoped_ptr<UploadFileInfo> upload_file_info(new UploadFileInfo);
   upload_file_info->upload_mode = UPLOAD_NEW_FILE;
@@ -87,8 +82,7 @@ int DriveUploader::UploadNewFile(
   upload_file_info->content_length = content_length;
   upload_file_info->file_size = file_size;
   upload_file_info->all_bytes_present = content_length == file_size;
-  upload_file_info->completion_callback = completion_callback;
-  upload_file_info->ready_callback = ready_callback;
+  upload_file_info->completion_callback = callback;
 
   // When uploading a new file, we should retry file open as the file may
   // not yet be ready. See comments in OpenCompletionCallback.
@@ -131,13 +125,13 @@ int DriveUploader::UploadExistingFile(
     const FilePath& local_file_path,
     const std::string& content_type,
     int64 file_size,
-    const UploadCompletionCallback& completion_callback) {
+    const UploadCompletionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!upload_location.is_empty());
   DCHECK(!drive_file_path.empty());
   DCHECK(!local_file_path.empty());
   DCHECK(!content_type.empty());
-  DCHECK(!completion_callback.is_null());
+  DCHECK(!callback.is_null());
 
   scoped_ptr<UploadFileInfo> upload_file_info(new UploadFileInfo);
   upload_file_info->upload_mode = UPLOAD_EXISTING_FILE;
@@ -148,72 +142,12 @@ int DriveUploader::UploadExistingFile(
   upload_file_info->content_length = file_size;
   upload_file_info->file_size = file_size;
   upload_file_info->all_bytes_present = true;
-  upload_file_info->completion_callback = completion_callback;
+  upload_file_info->completion_callback = callback;
 
   // When uploading an updated file, we should not retry file open as the
   // file should already be present by definition.
   upload_file_info->should_retry_file_open = false;
   return StartUploadFile(upload_file_info.Pass());
-}
-
-void DriveUploader::UpdateUpload(int upload_id,
-                                 content::DownloadItem* download) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  UploadFileInfo* upload_file_info = GetUploadFileInfo(upload_id);
-  if (!upload_file_info)
-    return;
-
-  const int64 file_size = download->GetReceivedBytes();
-
-  // Update file_size and all_bytes_present.
-  DVLOG(1) << "Updating file size from " << upload_file_info->file_size
-           << " to " << file_size
-           << (download->AllDataSaved() ? " (AllDataSaved)" : " (In-progress)");
-  upload_file_info->file_size = file_size;
-  upload_file_info->all_bytes_present = download->AllDataSaved();
-  if (upload_file_info->file_path != download->GetFullPath()) {
-    // We shouldn't see a rename if should_retry_file_open is true. The only
-    // rename we expect (for now) is the final rename that happens after the
-    // download transition from IN_PROGRESS -> COMPLETE. This, in turn, only
-    // happens after the upload completes. However, since this isn't enforced by
-    // the API contract, we reset the retry count so we can retry all over again
-    // with the new path.
-    // TODO(asanka): Introduce a synchronization point after the initial rename
-    //               of the download and get rid of the retry logic.
-    upload_file_info->num_file_open_tries = 0;
-    upload_file_info->file_path = download->GetFullPath();
-  }
-
-  // Resume upload if necessary and possible.
-  if (upload_file_info->upload_paused &&
-      (upload_file_info->all_bytes_present ||
-       upload_file_info->SizeRemaining() > kUploadChunkSize)) {
-    DVLOG(1) << "Resuming upload " << upload_file_info->title;
-    upload_file_info->upload_paused = false;
-    UploadNextChunk(upload_file_info);
-  }
-
-  // Retry opening this file if we failed before.  File open can fail because
-  // the downloads system sets the full path on the UI thread and schedules a
-  // rename on the FILE thread. Thus the new path is visible on the UI thread
-  // before the renamed file is available on the file system.
-  if (upload_file_info->should_retry_file_open) {
-    DCHECK(!download->IsComplete());
-    // Disallow further retries.
-    upload_file_info->should_retry_file_open = false;
-    OpenFile(upload_file_info, FILE_OPEN_UPDATE_UPLOAD);
-  }
-}
-
-int64 DriveUploader::GetUploadedBytes(int upload_id) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  UploadFileInfo* upload_info = GetUploadFileInfo(upload_id);
-  // We return the start_range as the count of uploaded bytes since that is the
-  // start of the next or currently uploading chunk.
-  // TODO(asanka): Use a finer grained progress value than this. We end up
-  //               reporting progress in kUploadChunkSize increments.
-  return upload_info ? upload_info->start_range : 0;
 }
 
 DriveUploader::UploadFileInfo* DriveUploader::GetUploadFileInfo(
@@ -296,22 +230,6 @@ void DriveUploader::OpenCompletionCallback(FileOpenType open_type,
         base::Bind(&DriveUploader::OnUploadLocationReceived,
                    weak_ptr_factory_.GetWeakPtr(),
                    upload_file_info->upload_id));
-  }
-  // The uploader gets ready after we complete opening the file, called
-  // from the StartUploadFile method. We use PostTask on purpose, because
-  // this callback is called by FileStream, and we may access FileStream
-  // again from the |ready_callback| implementation. FileStream is not
-  // reentrant.
-  //
-  // Note, that we call this callback if we opened the file, or if we
-  // failed, but further retries are scheduled. The callback will not be
-  // called if the upload has been aborted.
-  if (open_type == FILE_OPEN_START_UPLOAD &&
-      !upload_file_info->ready_callback.is_null()) {
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(upload_file_info->ready_callback, upload_id));
   }
 }
 

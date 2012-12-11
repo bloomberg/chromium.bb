@@ -546,9 +546,7 @@ void DriveFileSyncClient::UploadNewFileInternal(
       mime_type,
       file_size,  // content_length.
       file_size,
-      base::Bind(&DriveFileSyncClient::DidUploadFile,
-                 AsWeakPtr(), callback),
-      google_apis::UploaderReadyCallback());
+      base::Bind(&DriveFileSyncClient::DidUploadFile, AsWeakPtr(), callback));
 }
 
 void DriveFileSyncClient::UploadExistingFileInternal(

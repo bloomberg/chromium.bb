@@ -21,24 +21,16 @@
 
 class GURL;
 
-namespace content {
-class DownloadItem;
-}
-
 namespace google_apis {
 class DriveServiceInterface;
 struct ResumeUploadResponse;
 
 // Callback to be invoked once the upload has completed.
-typedef base::Callback<void(
-    DriveUploadError error,
-    const FilePath& drive_path,
-    const FilePath& file_path,
-    scoped_ptr<ResourceEntry> resource_entry)>
+typedef base::Callback<void(DriveUploadError error,
+                            const FilePath& drive_path,
+                            const FilePath& file_path,
+                            scoped_ptr<ResourceEntry> resource_entry)>
     UploadCompletionCallback;
-
-// Callback to be invoked once the uploader is ready to upload.
-typedef base::Callback<void(int32 upload_id)> UploaderReadyCallback;
 
 class DriveUploaderInterface {
  public:
@@ -69,45 +61,30 @@ class DriveUploaderInterface {
   // file_size:
   //  The current size of the file to be uploaded. This can be smaller than
   //  |content_length|, if the source file is still being written (i.e. being
-  //  downdloaded from some web site). The client should keep providing the
+  //  downloaded from some web site). The client should keep providing the
   //  current status with the  UpdateUpload() function.
   //
-  // completion_callback
+  // callback:
   //   Called when an upload is done regardless of it was successful or not.
   //   Must not be null.
-  //
-  // |ready_callback| is called when the uploader is ready to upload data
-  // (i.e. when the file is opened). May be null.
-  virtual int UploadNewFile(
-      const GURL& upload_location,
-      const FilePath& drive_file_path,
-      const FilePath& local_file_path,
-      const std::string& title,
-      const std::string& content_type,
-      int64 content_length,
-      int64 file_size,
-      const UploadCompletionCallback& completion_callback,
-      const UploaderReadyCallback& ready_callback) = 0;
+  virtual int UploadNewFile(const GURL& upload_location,
+                            const FilePath& drive_file_path,
+                            const FilePath& local_file_path,
+                            const std::string& title,
+                            const std::string& content_type,
+                            int64 content_length,
+                            int64 file_size,
+                            const UploadCompletionCallback& callback) = 0;
 
   // Uploads an existing file (a file that already exists on Drive).
   //
   // See comments at UploadNewFile() about common parameters.
-  virtual int UploadExistingFile(
-      const GURL& upload_location,
-      const FilePath& drive_file_path,
-      const FilePath& local_file_path,
-      const std::string& content_type,
-      int64 file_size,
-      const UploadCompletionCallback& completion_callback) = 0;
-
-  // Updates attributes of streaming upload from |download|. This function
-  // should be used when downloading from some web site and uploading to
-  // Drive are done in parallel.
-  virtual void UpdateUpload(int upload_id,
-                            content::DownloadItem* download) = 0;
-
-  // Returns the count of bytes confirmed as uploaded so far.
-  virtual int64 GetUploadedBytes(int upload_id) const = 0;
+  virtual int UploadExistingFile(const GURL& upload_location,
+                                 const FilePath& drive_file_path,
+                                 const FilePath& local_file_path,
+                                 const std::string& content_type,
+                                 int64 file_size,
+                                 const UploadCompletionCallback& callback) = 0;
 };
 
 class DriveUploader : public DriveUploaderInterface {
@@ -116,26 +93,21 @@ class DriveUploader : public DriveUploaderInterface {
   virtual ~DriveUploader();
 
   // DriveUploaderInterface overrides.
-  virtual int UploadNewFile(
-      const GURL& upload_location,
-      const FilePath& drive_file_path,
-      const FilePath& local_file_path,
-      const std::string& title,
-      const std::string& content_type,
-      int64 content_length,
-      int64 file_size,
-      const UploadCompletionCallback& completion_callback,
-      const UploaderReadyCallback& ready_callback) OVERRIDE;
+  virtual int UploadNewFile(const GURL& upload_location,
+                            const FilePath& drive_file_path,
+                            const FilePath& local_file_path,
+                            const std::string& title,
+                            const std::string& content_type,
+                            int64 content_length,
+                            int64 file_size,
+                            const UploadCompletionCallback& callback) OVERRIDE;
   virtual int UploadExistingFile(
       const GURL& upload_location,
       const FilePath& drive_file_path,
       const FilePath& local_file_path,
       const std::string& content_type,
       int64 file_size,
-      const UploadCompletionCallback& completion_callback) OVERRIDE;
-  virtual void UpdateUpload(
-      int upload_id, content::DownloadItem* download) OVERRIDE;
-  virtual int64 GetUploadedBytes(int upload_id) const OVERRIDE;
+      const UploadCompletionCallback& callback) OVERRIDE;
 
  private:
   // Structure containing current upload information of file, passed between
@@ -205,9 +177,6 @@ class DriveUploader : public DriveUploaderInterface {
 
     // Will be set once the upload is complete.
     scoped_ptr<ResourceEntry> entry;
-
-    // Callback to be invoked once the uploader is ready to upload.
-    UploaderReadyCallback ready_callback;
 
     // Callback to be invoked once the upload has finished.
     UploadCompletionCallback completion_callback;

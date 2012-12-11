@@ -133,10 +133,8 @@ class FakeDriveUploader : public google_apis::DriveUploaderInterface {
       const std::string& content_type,
       int64 content_length,
       int64 file_size,
-      const google_apis::UploadCompletionCallback& completion_callback,
-      const google_apis::UploaderReadyCallback& ready_callback) OVERRIDE {
-    DCHECK(!completion_callback.is_null());
-    // ready_callback may be null.
+      const google_apis::UploadCompletionCallback& callback) OVERRIDE {
+    DCHECK(!callback.is_null());
 
     scoped_ptr<base::Value> value =
         google_apis::test_util::LoadJSONFile("gdata/uploaded_file.json");
@@ -145,7 +143,7 @@ class FakeDriveUploader : public google_apis::DriveUploaderInterface {
 
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
-        base::Bind(completion_callback,
+        base::Bind(callback,
                    google_apis::DRIVE_UPLOAD_OK,
                    drive_file_path,
                    local_file_path,
@@ -164,8 +162,8 @@ class FakeDriveUploader : public google_apis::DriveUploaderInterface {
       const FilePath& local_file_path,
       const std::string& content_type,
       int64 file_size,
-      const google_apis::UploadCompletionCallback& completion_callback) {
-    DCHECK(!completion_callback.is_null());
+      const google_apis::UploadCompletionCallback& callback) OVERRIDE {
+    DCHECK(!callback.is_null());
 
     // This function can only handle "drive/File 1.txt" whose resource ID is
     // "file:2_file_resource_id".
@@ -200,7 +198,7 @@ class FakeDriveUploader : public google_apis::DriveUploaderInterface {
 
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
-        base::Bind(completion_callback,
+        base::Bind(callback,
                    google_apis::DRIVE_UPLOAD_OK,
                    drive_file_path,
                    local_file_path,
@@ -208,16 +206,6 @@ class FakeDriveUploader : public google_apis::DriveUploaderInterface {
 
     const int kUploadId = 123;
     return kUploadId;
-  }
-
-  virtual void UpdateUpload(int upload_id,
-                            content::DownloadItem* download) OVERRIDE {
-    NOTREACHED();
-  }
-
-  virtual int64 GetUploadedBytes(int upload_id) const OVERRIDE {
-    NOTREACHED();
-    return 0;
   }
 };
 

@@ -475,8 +475,7 @@ void CopyOperation::StartFileUploadAfterGetEntryInfo(
                            file_size,
                            base::Bind(&CopyOperation::OnTransferCompleted,
                                       weak_ptr_factory_.GetWeakPtr(),
-                                      params.callback),
-                           google_apis::UploaderReadyCallback());
+                                      params.callback));
 }
 
 void CopyOperation::OnTransferCompleted(
