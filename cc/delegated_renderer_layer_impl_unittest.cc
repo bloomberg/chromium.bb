@@ -100,10 +100,10 @@ public:
     DelegatedRendererLayerImplTestSimple()
         : DelegatedRendererLayerImplTest()
     {
-        scoped_ptr<LayerImpl> rootLayer = SolidColorLayerImpl::create(m_hostImpl.get(), 1).PassAs<LayerImpl>();
-        scoped_ptr<LayerImpl> layerBefore = SolidColorLayerImpl::create(m_hostImpl.get(), 2).PassAs<LayerImpl>();
-        scoped_ptr<LayerImpl> layerAfter = SolidColorLayerImpl::create(m_hostImpl.get(), 3).PassAs<LayerImpl>();
-        scoped_ptr<DelegatedRendererLayerImpl> delegatedRendererLayer = DelegatedRendererLayerImpl::create(m_hostImpl.get(), 4);
+        scoped_ptr<LayerImpl> rootLayer = SolidColorLayerImpl::create(m_hostImpl->activeTree(), 1).PassAs<LayerImpl>();
+        scoped_ptr<LayerImpl> layerBefore = SolidColorLayerImpl::create(m_hostImpl->activeTree(), 2).PassAs<LayerImpl>();
+        scoped_ptr<LayerImpl> layerAfter = SolidColorLayerImpl::create(m_hostImpl->activeTree(), 3).PassAs<LayerImpl>();
+        scoped_ptr<DelegatedRendererLayerImpl> delegatedRendererLayer = DelegatedRendererLayerImpl::create(m_hostImpl->activeTree(), 4);
 
         m_hostImpl->setViewportSize(gfx::Size(100, 100), gfx::Size(100, 100));
         rootLayer->setBounds(gfx::Size(100, 100));
@@ -420,8 +420,8 @@ public:
     DelegatedRendererLayerImplTestSharedData()
         : DelegatedRendererLayerImplTest()
     {
-        scoped_ptr<LayerImpl> rootLayer = LayerImpl::create(m_hostImpl.get(), 1);
-        scoped_ptr<DelegatedRendererLayerImpl> delegatedRendererLayer = DelegatedRendererLayerImpl::create(m_hostImpl.get(), 2);
+        scoped_ptr<LayerImpl> rootLayer = LayerImpl::create(m_hostImpl->activeTree(), 1);
+        scoped_ptr<DelegatedRendererLayerImpl> delegatedRendererLayer = DelegatedRendererLayerImpl::create(m_hostImpl->activeTree(), 2);
 
         m_hostImpl->setViewportSize(gfx::Size(100, 100), gfx::Size(100, 100));
         rootLayer->setBounds(gfx::Size(100, 100));

@@ -74,8 +74,8 @@ public:
 
     scoped_ptr<LayerImpl> createTestTreeWithOneSurface()
     {
-        scoped_ptr<LayerImpl> root = LayerImpl::create(&m_hostImpl, 1);
-        scoped_ptr<LayerImpl> child = LayerImpl::create(&m_hostImpl, 2);
+        scoped_ptr<LayerImpl> root = LayerImpl::create(m_hostImpl.activeTree(), 1);
+        scoped_ptr<LayerImpl> child = LayerImpl::create(m_hostImpl.activeTree(), 2);
 
         root->setPosition(gfx::PointF());
         root->setAnchorPoint(gfx::PointF());
@@ -101,11 +101,11 @@ public:
         // child1. Additionally, the root has a second child layer, and child1 has two
         // children of its own.
 
-        scoped_ptr<LayerImpl> root = LayerImpl::create(&m_hostImpl, 1);
-        scoped_ptr<LayerImpl> child1 = LayerImpl::create(&m_hostImpl, 2);
-        scoped_ptr<LayerImpl> child2 = LayerImpl::create(&m_hostImpl, 3);
-        scoped_ptr<LayerImpl> grandChild1 = LayerImpl::create(&m_hostImpl, 4);
-        scoped_ptr<LayerImpl> grandChild2 = LayerImpl::create(&m_hostImpl, 5);
+        scoped_ptr<LayerImpl> root = LayerImpl::create(m_hostImpl.activeTree(), 1);
+        scoped_ptr<LayerImpl> child1 = LayerImpl::create(m_hostImpl.activeTree(), 2);
+        scoped_ptr<LayerImpl> child2 = LayerImpl::create(m_hostImpl.activeTree(), 3);
+        scoped_ptr<LayerImpl> grandChild1 = LayerImpl::create(m_hostImpl.activeTree(), 4);
+        scoped_ptr<LayerImpl> grandChild2 = LayerImpl::create(m_hostImpl.activeTree(), 5);
 
         root->setPosition(gfx::PointF());
         root->setAnchorPoint(gfx::PointF());
@@ -536,7 +536,7 @@ TEST_F(DamageTrackerTest, verifyDamageForAddingAndRemovingLayer)
     //
     clearDamageForAllSurfaces(root.get());
     {
-        scoped_ptr<LayerImpl> child2 = LayerImpl::create(&m_hostImpl, 3);
+        scoped_ptr<LayerImpl> child2 = LayerImpl::create(m_hostImpl.activeTree(), 3);
         child2->setPosition(gfx::PointF(400, 380));
         child2->setAnchorPoint(gfx::PointF());
         child2->setBounds(gfx::Size(6, 8));
@@ -577,7 +577,7 @@ TEST_F(DamageTrackerTest, verifyDamageForNewUnchangedLayer)
 
     clearDamageForAllSurfaces(root.get());
     {
-        scoped_ptr<LayerImpl> child2 = LayerImpl::create(&m_hostImpl, 3);
+        scoped_ptr<LayerImpl> child2 = LayerImpl::create(m_hostImpl.activeTree(), 3);
         child2->setPosition(gfx::PointF(400, 380));
         child2->setAnchorPoint(gfx::PointF());
         child2->setBounds(gfx::Size(6, 8));
@@ -607,7 +607,7 @@ TEST_F(DamageTrackerTest, verifyDamageForMultipleLayers)
     // In this test we don't want the above tree manipulation to be considered part of the same frame.
     clearDamageForAllSurfaces(root.get());
     {
-        scoped_ptr<LayerImpl> child2 = LayerImpl::create(&m_hostImpl, 3);
+        scoped_ptr<LayerImpl> child2 = LayerImpl::create(m_hostImpl.activeTree(), 3);
         child2->setPosition(gfx::PointF(400, 380));
         child2->setAnchorPoint(gfx::PointF());
         child2->setBounds(gfx::Size(6, 8));
@@ -828,7 +828,7 @@ TEST_F(DamageTrackerTest, verifyDamageForReplica)
     // contentBounds of the surface.
     grandChild2->setPosition(gfx::PointF(180, 180));
     {
-        scoped_ptr<LayerImpl> grandChild3 = LayerImpl::create(&m_hostImpl, 6);
+        scoped_ptr<LayerImpl> grandChild3 = LayerImpl::create(m_hostImpl.activeTree(), 6);
         grandChild3->setPosition(gfx::PointF(240, 240));
         grandChild3->setAnchorPoint(gfx::PointF());
         grandChild3->setBounds(gfx::Size(10, 10));
@@ -843,7 +843,7 @@ TEST_F(DamageTrackerTest, verifyDamageForReplica)
     //
     clearDamageForAllSurfaces(root.get());
     {
-        scoped_ptr<LayerImpl> grandChild1Replica = LayerImpl::create(&m_hostImpl, 7);
+        scoped_ptr<LayerImpl> grandChild1Replica = LayerImpl::create(m_hostImpl.activeTree(), 7);
         grandChild1Replica->setPosition(gfx::PointF());
         grandChild1Replica->setAnchorPoint(gfx::PointF());
         gfx::Transform reflection;
@@ -911,7 +911,7 @@ TEST_F(DamageTrackerTest, verifyDamageForMask)
 
     // Set up the mask layer.
     {
-        scoped_ptr<LayerImpl> maskLayer = LayerImpl::create(&m_hostImpl, 3);
+        scoped_ptr<LayerImpl> maskLayer = LayerImpl::create(m_hostImpl.activeTree(), 3);
         maskLayer->setPosition(child->position());
         maskLayer->setAnchorPoint(gfx::PointF());
         maskLayer->setBounds(child->bounds());
@@ -923,7 +923,7 @@ TEST_F(DamageTrackerTest, verifyDamageForMask)
     // Add opacity and a grandChild so that the render surface persists even after we remove the mask.
     child->setOpacity(0.5);
     {
-        scoped_ptr<LayerImpl> grandChild = LayerImpl::create(&m_hostImpl, 4);
+        scoped_ptr<LayerImpl> grandChild = LayerImpl::create(m_hostImpl.activeTree(), 4);
         grandChild->setPosition(gfx::PointF(2, 2));
         grandChild->setAnchorPoint(gfx::PointF());
         grandChild->setBounds(gfx::Size(2, 2));
@@ -996,7 +996,7 @@ TEST_F(DamageTrackerTest, verifyDamageForReplicaMask)
 
     // Create a reflection about the left edge of grandChild1.
     {
-        scoped_ptr<LayerImpl> grandChild1Replica = LayerImpl::create(&m_hostImpl, 6);
+        scoped_ptr<LayerImpl> grandChild1Replica = LayerImpl::create(m_hostImpl.activeTree(), 6);
         grandChild1Replica->setPosition(gfx::PointF());
         grandChild1Replica->setAnchorPoint(gfx::PointF());
         gfx::Transform reflection;
@@ -1008,7 +1008,7 @@ TEST_F(DamageTrackerTest, verifyDamageForReplicaMask)
 
     // Set up the mask layer on the replica layer
     {
-        scoped_ptr<LayerImpl> replicaMaskLayer = LayerImpl::create(&m_hostImpl, 7);
+        scoped_ptr<LayerImpl> replicaMaskLayer = LayerImpl::create(m_hostImpl.activeTree(), 7);
         replicaMaskLayer->setPosition(gfx::PointF());
         replicaMaskLayer->setAnchorPoint(gfx::PointF());
         replicaMaskLayer->setBounds(grandChild1->bounds());
@@ -1058,7 +1058,7 @@ TEST_F(DamageTrackerTest, verifyDamageForReplicaMaskWithAnchor)
     grandChild1->setAnchorPoint(gfx::PointF(1, 0)); // This is not exactly the anchor being tested, but by convention its expected to be the same as the replica's anchor point.
 
     {
-        scoped_ptr<LayerImpl> grandChild1Replica = LayerImpl::create(&m_hostImpl, 6);
+        scoped_ptr<LayerImpl> grandChild1Replica = LayerImpl::create(m_hostImpl.activeTree(), 6);
         grandChild1Replica->setPosition(gfx::PointF());
         grandChild1Replica->setAnchorPoint(gfx::PointF(1, 0)); // This is the anchor being tested.
         gfx::Transform reflection;
@@ -1070,7 +1070,7 @@ TEST_F(DamageTrackerTest, verifyDamageForReplicaMaskWithAnchor)
 
     // Set up the mask layer on the replica layer
     {
-        scoped_ptr<LayerImpl> replicaMaskLayer = LayerImpl::create(&m_hostImpl, 7);
+        scoped_ptr<LayerImpl> replicaMaskLayer = LayerImpl::create(m_hostImpl.activeTree(), 7);
         replicaMaskLayer->setPosition(gfx::PointF());
         replicaMaskLayer->setAnchorPoint(gfx::PointF()); // note, this is not the anchor being tested.
         replicaMaskLayer->setBounds(grandChild1->bounds());
@@ -1124,7 +1124,7 @@ TEST_F(DamageTrackerTest, verifyDamageForEmptyLayerList)
     // Though it should never happen, its a good idea to verify that the damage tracker
     // does not crash when it receives an empty layerList.
 
-    scoped_ptr<LayerImpl> root = LayerImpl::create(&m_hostImpl, 1);
+    scoped_ptr<LayerImpl> root = LayerImpl::create(m_hostImpl.activeTree(), 1);
     root->createRenderSurface();
 
     ASSERT_TRUE(root == root->renderTarget());

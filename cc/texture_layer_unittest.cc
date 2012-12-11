@@ -100,7 +100,7 @@ TEST_F(TextureLayerTest, syncImplWhenDrawing)
     scoped_refptr<TextureLayer> testLayer = TextureLayer::create(0);
     ASSERT_TRUE(testLayer);
     scoped_ptr<TextureLayerImpl> implLayer;
-    implLayer = TextureLayerImpl::create(&m_hostImpl, 1);
+    implLayer = TextureLayerImpl::create(m_hostImpl.activeTree(), 1);
     ASSERT_TRUE(implLayer);
 
     EXPECT_CALL(*m_layerTreeHost, acquireLayerTextures()).Times(AnyNumber());

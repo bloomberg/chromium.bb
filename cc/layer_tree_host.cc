@@ -17,6 +17,7 @@
 #include "cc/layer_tree_host_client.h"
 #include "cc/layer_tree_host_common.h"
 #include "cc/layer_tree_host_impl.h"
+#include "cc/layer_tree_impl.h"
 #include "cc/math_util.h"
 #include "cc/occlusion_tracker.h"
 #include "cc/overdraw_metrics.h"
@@ -375,7 +376,7 @@ void LayerTreeHost::finishCommitOnImplThread(LayerTreeHostImpl* hostImpl)
     m_contentsTextureManager->reduceMemory(hostImpl->resourceProvider());
 
     if (m_needsFullTreeSync) {
-        hostImpl->setRootLayer(TreeSynchronizer::synchronizeTrees(rootLayer(), hostImpl->detachLayerTree(), hostImpl));
+        hostImpl->setRootLayer(TreeSynchronizer::synchronizeTrees(rootLayer(), hostImpl->detachLayerTree(), hostImpl->activeTree()));
     } else {
         TRACE_EVENT0("cc", "LayerTreeHost::pushPropertiesRecursive");
         pushPropertiesRecursive(rootLayer(), hostImpl->rootLayer());

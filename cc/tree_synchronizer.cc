@@ -13,7 +13,7 @@
 
 namespace cc {
 
-scoped_ptr<LayerImpl> TreeSynchronizer::synchronizeTrees(Layer* layerRoot, scoped_ptr<LayerImpl> oldLayerImplRoot, LayerTreeHostImpl* hostImpl)
+scoped_ptr<LayerImpl> TreeSynchronizer::synchronizeTrees(Layer* layerRoot, scoped_ptr<LayerImpl> oldLayerImplRoot, LayerTreeImpl* treeImpl)
 {
     TRACE_EVENT0("cc", "TreeSynchronizer::synchronizeTrees");
     ScopedPtrLayerImplMap oldLayers;
@@ -21,7 +21,7 @@ scoped_ptr<LayerImpl> TreeSynchronizer::synchronizeTrees(Layer* layerRoot, scope
 
     collectExistingLayerImplRecursive(oldLayers, oldLayerImplRoot.Pass());
 
-    scoped_ptr<LayerImpl> newTree = synchronizeTreeRecursive(newLayers, oldLayers, layerRoot, hostImpl);
+    scoped_ptr<LayerImpl> newTree = synchronizeTreeRecursive(newLayers, oldLayers, layerRoot, treeImpl);
 
     updateScrollbarLayerPointersRecursive(newLayers, layerRoot);
 
@@ -44,31 +44,31 @@ void TreeSynchronizer::collectExistingLayerImplRecursive(ScopedPtrLayerImplMap& 
     oldLayers.set(id, layerImpl.Pass());
 }
 
-scoped_ptr<LayerImpl> TreeSynchronizer::reuseOrCreateLayerImpl(RawPtrLayerImplMap& newLayers, ScopedPtrLayerImplMap& oldLayers, Layer* layer, LayerTreeHostImpl* hostImpl)
+scoped_ptr<LayerImpl> TreeSynchronizer::reuseOrCreateLayerImpl(RawPtrLayerImplMap& newLayers, ScopedPtrLayerImplMap& oldLayers, Layer* layer, LayerTreeImpl* treeImpl)
 {
     scoped_ptr<LayerImpl> layerImpl = oldLayers.take(layer->id());
 
     if (!layerImpl)
-        layerImpl = layer->createLayerImpl(hostImpl);
+        layerImpl = layer->createLayerImpl(treeImpl);
 
     newLayers[layer->id()] = layerImpl.get();
     return layerImpl.Pass();
 }
 
-scoped_ptr<LayerImpl> TreeSynchronizer::synchronizeTreeRecursive(RawPtrLayerImplMap& newLayers, ScopedPtrLayerImplMap& oldLayers, Layer* layer, LayerTreeHostImpl* hostImpl)
+scoped_ptr<LayerImpl> TreeSynchronizer::synchronizeTreeRecursive(RawPtrLayerImplMap& newLayers, ScopedPtrLayerImplMap& oldLayers, Layer* layer, LayerTreeImpl* treeImpl)
 {
     if (!layer)
         return scoped_ptr<LayerImpl>();
 
-    scoped_ptr<LayerImpl> layerImpl = reuseOrCreateLayerImpl(newLayers, oldLayers, layer, hostImpl);
+    scoped_ptr<LayerImpl> layerImpl = reuseOrCreateLayerImpl(newLayers, oldLayers, layer, treeImpl);
 
     layerImpl->clearChildList();
     const std::vector<scoped_refptr<Layer> >& children = layer->children();
     for (size_t i = 0; i < children.size(); ++i)
-        layerImpl->addChild(synchronizeTreeRecursive(newLayers, oldLayers, children[i].get(), hostImpl));
+        layerImpl->addChild(synchronizeTreeRecursive(newLayers, oldLayers, children[i].get(), treeImpl));
 
-    layerImpl->setMaskLayer(synchronizeTreeRecursive(newLayers, oldLayers, layer->maskLayer(), hostImpl));
-    layerImpl->setReplicaLayer(synchronizeTreeRecursive(newLayers, oldLayers, layer->replicaLayer(), hostImpl));
+    layerImpl->setMaskLayer(synchronizeTreeRecursive(newLayers, oldLayers, layer->maskLayer(), treeImpl));
+    layerImpl->setReplicaLayer(synchronizeTreeRecursive(newLayers, oldLayers, layer->replicaLayer(), treeImpl));
 
     layer->pushPropertiesTo(layerImpl.get());
 

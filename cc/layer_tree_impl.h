@@ -13,22 +13,21 @@ class LayerTreeHostImpl;
 class LayerTreeImpl;
 class HeadsUpDisplayLayerImpl;
 
-class CC_EXPORT LayerTreeImplClient {
- public:
-  virtual void OnCanDrawStateChangedForTree(LayerTreeImpl*)  = 0;
-
- protected:
-  virtual ~LayerTreeImplClient() {}
-};
-
 class CC_EXPORT LayerTreeImpl {
  public:
-  static scoped_ptr<LayerTreeImpl> create(LayerTreeImplClient* client)
+  static scoped_ptr<LayerTreeImpl> create(LayerTreeHostImpl* layer_tree_host_impl)
   {
-    return make_scoped_ptr(new LayerTreeImpl(client));
+    return make_scoped_ptr(new LayerTreeImpl(layer_tree_host_impl));
   }
   virtual ~LayerTreeImpl();
 
+  // Methods called by the layer tree.
+  // ---------------------------------------------------------------------------
+  // TODO(nduca): Remove this and have layers call through this class.
+  LayerTreeHostImpl* layer_tree_host_impl() const { return layer_tree_host_impl_; }
+
+  // Other public methods
+  // ---------------------------------------------------------------------------
   LayerImpl* RootLayer() const { return root_layer_.get(); }
   void SetRootLayer(scoped_ptr<LayerImpl>);
   scoped_ptr<LayerImpl> DetachLayerTree();
@@ -48,9 +47,9 @@ class CC_EXPORT LayerTreeImpl {
   void ClearCurrentlyScrollingLayer();
 
 protected:
-  LayerTreeImpl(LayerTreeImplClient* client);
+  LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl);
 
-  LayerTreeImplClient* client_;
+  LayerTreeHostImpl* layer_tree_host_impl_;
   int source_frame_number_;
   scoped_ptr<LayerImpl> root_layer_;
   HeadsUpDisplayLayerImpl* hud_layer_;

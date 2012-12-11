@@ -18,8 +18,8 @@
 
 namespace cc {
 
-PictureLayerImpl::PictureLayerImpl(LayerTreeHostImpl* host, int id)
-    : LayerImpl(host, id),
+PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* treeImpl, int id)
+    : LayerImpl(treeImpl, id),
       tilings_(this),
       pile_(PicturePileImpl::Create()),
       last_update_time_(0) {

@@ -24,9 +24,9 @@ class FrameRateCounter;
 
 class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
 public:
-    static scoped_ptr<HeadsUpDisplayLayerImpl> create(LayerTreeHostImpl* hostImpl, int id)
+    static scoped_ptr<HeadsUpDisplayLayerImpl> create(LayerTreeImpl* treeImpl, int id)
     {
-        return make_scoped_ptr(new HeadsUpDisplayLayerImpl(hostImpl, id));
+        return make_scoped_ptr(new HeadsUpDisplayLayerImpl(treeImpl, id));
     }
     virtual ~HeadsUpDisplayLayerImpl();
 
@@ -42,7 +42,7 @@ public:
     virtual bool layerIsAlwaysDamaged() const OVERRIDE;
 
 private:
-    HeadsUpDisplayLayerImpl(LayerTreeHostImpl* hostImpl, int id);
+    HeadsUpDisplayLayerImpl(LayerTreeImpl* treeImpl, int id);
 
     virtual const char* layerTypeAsString() const OVERRIDE;
 

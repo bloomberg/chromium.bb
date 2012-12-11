@@ -10,6 +10,7 @@
 #include "cc/debug_border_draw_quad.h"
 #include "cc/debug_colors.h"
 #include "cc/layer_tree_host_impl.h"
+#include "cc/layer_tree_impl.h"
 #include "cc/math_util.h"
 #include "cc/proxy.h"
 #include "cc/quad_sink.h"
@@ -19,12 +20,12 @@
 
 namespace cc {
 
-LayerImpl::LayerImpl(LayerTreeHostImpl* hostImpl, int id)
+LayerImpl::LayerImpl(LayerTreeImpl* treeImpl, int id)
     : m_parent(0)
     , m_maskLayerId(-1)
     , m_replicaLayerId(-1)
     , m_layerId(id)
-    , m_layerTreeHostImpl(hostImpl)
+    , m_layerTreeImpl(treeImpl)
     , m_anchorPoint(0.5, 0.5)
     , m_anchorPointZ(0)
     , m_contentsScaleX(1.0)
@@ -54,7 +55,7 @@ LayerImpl::LayerImpl(LayerTreeHostImpl* hostImpl, int id)
     , m_layerAnimationController(LayerAnimationController::create(this))
 {
     DCHECK(m_layerId > 0);
-    DCHECK(m_layerTreeHostImpl);
+    DCHECK(m_layerTreeImpl);
 }
 
 LayerImpl::~LayerImpl()
@@ -69,7 +70,7 @@ void LayerImpl::addChild(scoped_ptr<LayerImpl> child)
     child->setParent(this);
     DCHECK_EQ(layerTreeHostImpl(), child->layerTreeHostImpl());
     m_children.append(child.Pass());
-    m_layerTreeHostImpl->setNeedsUpdateDrawProperties();
+    layerTreeHostImpl()->setNeedsUpdateDrawProperties();
 }
 
 scoped_ptr<LayerImpl> LayerImpl::removeChild(LayerImpl* child)
@@ -78,7 +79,7 @@ scoped_ptr<LayerImpl> LayerImpl::removeChild(LayerImpl* child)
         if (m_children[i] == child) {
             scoped_ptr<LayerImpl> ret = m_children.take(i);
             m_children.remove(i);
-            m_layerTreeHostImpl->setNeedsUpdateDrawProperties();
+            layerTreeHostImpl()->setNeedsUpdateDrawProperties();
             return ret.Pass();
         }
     }
@@ -88,7 +89,7 @@ scoped_ptr<LayerImpl> LayerImpl::removeChild(LayerImpl* child)
 void LayerImpl::removeAllChildren()
 {
     m_children.clear();
-    m_layerTreeHostImpl->setNeedsUpdateDrawProperties();
+    layerTreeHostImpl()->setNeedsUpdateDrawProperties();
 }
 
 void LayerImpl::clearChildList()
@@ -97,7 +98,7 @@ void LayerImpl::clearChildList()
         return;
 
     m_children.clear();
-    m_layerTreeHostImpl->setNeedsUpdateDrawProperties();
+    layerTreeHostImpl()->setNeedsUpdateDrawProperties();
 }
 
 void LayerImpl::createRenderSurface()
@@ -118,6 +119,10 @@ int LayerImpl::descendantsDrawContent()
             return result;
     }
     return result;
+}
+
+LayerTreeHostImpl* LayerImpl::layerTreeHostImpl() const {
+    return m_layerTreeImpl->layer_tree_host_impl();
 }
 
 scoped_ptr<SharedQuadState> LayerImpl::createSharedQuadState() const
@@ -151,25 +156,25 @@ void LayerImpl::didDraw(ResourceProvider*)
 
 bool LayerImpl::showDebugBorders() const
 {
-    return m_layerTreeHostImpl->debugState().showDebugBorders;
+    return layerTreeHostImpl()->debugState().showDebugBorders;
 }
 
 void LayerImpl::getDebugBorderProperties(SkColor* color, float* width) const
 {
     if (m_drawsContent) {
         *color = DebugColors::ContentLayerBorderColor();
-        *width = DebugColors::ContentLayerBorderWidth(m_layerTreeHostImpl);
+        *width = DebugColors::ContentLayerBorderWidth(layerTreeHostImpl());
         return;
     }
 
     if (m_masksToBounds) {
         *color = DebugColors::MaskingLayerBorderColor();
-        *width = DebugColors::MaskingLayerBorderWidth(m_layerTreeHostImpl);
+        *width = DebugColors::MaskingLayerBorderWidth(layerTreeHostImpl());
         return;
     }
 
     *color = DebugColors::ContainerLayerBorderColor();
-    *width = DebugColors::ContainerLayerBorderWidth(m_layerTreeHostImpl);
+    *width = DebugColors::ContainerLayerBorderWidth(layerTreeHostImpl());
 }
 
 void LayerImpl::appendDebugBorderQuad(QuadSink& quadList, const SharedQuadState* sharedQuadState, AppendQuadsData& appendQuadsData) const
@@ -266,7 +271,7 @@ InputHandlerClient::ScrollStatus LayerImpl::tryScroll(const gfx::PointF& screenS
 
 bool LayerImpl::drawCheckerboardForMissingTiles() const
 {
-    return m_drawCheckerboardForMissingTiles && !m_layerTreeHostImpl->settings().backgroundColorInsteadOfCheckerboard;
+    return m_drawCheckerboardForMissingTiles && !layerTreeHostImpl()->settings().backgroundColorInsteadOfCheckerboard;
 }
 
 gfx::Rect LayerImpl::layerRectToContentRect(const gfx::RectF& layerRect) const
@@ -409,13 +414,13 @@ bool LayerImpl::layerSurfacePropertyChanged() const
 void LayerImpl::noteLayerSurfacePropertyChanged()
 {
     m_layerSurfacePropertyChanged = true;
-    m_layerTreeHostImpl->setNeedsUpdateDrawProperties();
+    layerTreeHostImpl()->setNeedsUpdateDrawProperties();
 }
 
 void LayerImpl::noteLayerPropertyChanged()
 {
     m_layerPropertyChanged = true;
-    m_layerTreeHostImpl->setNeedsUpdateDrawProperties();
+    layerTreeHostImpl()->setNeedsUpdateDrawProperties();
 }
 
 void LayerImpl::noteLayerPropertyChangedForSubtree()
@@ -426,7 +431,7 @@ void LayerImpl::noteLayerPropertyChangedForSubtree()
 
 void LayerImpl::noteLayerPropertyChangedForDescendants()
 {
-    m_layerTreeHostImpl->setNeedsUpdateDrawProperties();
+    layerTreeHostImpl()->setNeedsUpdateDrawProperties();
     for (size_t i = 0; i < m_children.size(); ++i)
         m_children[i]->noteLayerPropertyChangedForSubtree();
 }
@@ -738,7 +743,7 @@ void LayerImpl::setMaxScrollOffset(gfx::Vector2d maxScrollOffset)
         return;
     m_maxScrollOffset = maxScrollOffset;
 
-    m_layerTreeHostImpl->setNeedsUpdateDrawProperties();
+    layerTreeHostImpl()->setNeedsUpdateDrawProperties();
 
     if (!m_scrollbarAnimationController)
         return;

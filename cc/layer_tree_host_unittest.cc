@@ -9,6 +9,7 @@
 #include "cc/content_layer_client.h"
 #include "cc/layer_impl.h"
 #include "cc/layer_tree_host_impl.h"
+#include "cc/layer_tree_impl.h"
 #include "cc/output_surface.h"
 #include "cc/single_thread_proxy.h"
 #include "cc/test/fake_content_layer_client.h"
@@ -2618,7 +2619,7 @@ public:
     virtual void update(ResourceUpdateQueue&, const OcclusionTracker*, RenderingStats&) OVERRIDE;
     virtual bool drawsContent() const OVERRIDE { return true; }
 
-    virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeHostImpl* hostImpl) OVERRIDE;
+    virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* treeImpl) OVERRIDE;
     virtual void pushPropertiesTo(LayerImpl*) OVERRIDE;
     virtual void setTexturePriorities(const PriorityCalculator&) OVERRIDE;
 
@@ -2643,9 +2644,9 @@ private:
 
 class EvictionTestLayerImpl : public LayerImpl {
 public:
-    static scoped_ptr<EvictionTestLayerImpl> create(LayerTreeHostImpl* hostImpl, int id)
+    static scoped_ptr<EvictionTestLayerImpl> create(LayerTreeImpl* treeImpl, int id)
     {
-        return make_scoped_ptr(new EvictionTestLayerImpl(hostImpl, id));
+        return make_scoped_ptr(new EvictionTestLayerImpl(treeImpl, id));
     }
     virtual ~EvictionTestLayerImpl() { }
 
@@ -2658,8 +2659,8 @@ public:
     void setHasTexture(bool hasTexture) { m_hasTexture = hasTexture; }
 
 private:
-    EvictionTestLayerImpl(LayerTreeHostImpl* hostImpl, int id)
-        : LayerImpl(hostImpl, id)
+    EvictionTestLayerImpl(LayerTreeImpl* treeImpl, int id)
+        : LayerImpl(treeImpl, id)
         , m_hasTexture(false) { }
 
     bool m_hasTexture;
@@ -2685,9 +2686,9 @@ void EvictionTestLayer::update(ResourceUpdateQueue& queue, const OcclusionTracke
     queue.appendFullUpload(upload);
 }
 
-scoped_ptr<LayerImpl> EvictionTestLayer::createLayerImpl(LayerTreeHostImpl* hostImpl)
+scoped_ptr<LayerImpl> EvictionTestLayer::createLayerImpl(LayerTreeImpl* treeImpl)
 {
-    return EvictionTestLayerImpl::create(hostImpl, m_layerId).PassAs<LayerImpl>();
+    return EvictionTestLayerImpl::create(treeImpl, m_layerId).PassAs<LayerImpl>();
 }
 
 void EvictionTestLayer::pushPropertiesTo(LayerImpl* layerImpl)

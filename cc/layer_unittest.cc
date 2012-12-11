@@ -559,7 +559,7 @@ TEST_F(LayerTest, checkPropertyChangeCausesCorrectBehavior)
 TEST_F(LayerTest, verifyPushPropertiesAccumulatesUpdateRect)
 {
     scoped_refptr<Layer> testLayer = Layer::create();
-    scoped_ptr<LayerImpl> implLayer = LayerImpl::create(&m_hostImpl, 1);
+    scoped_ptr<LayerImpl> implLayer = LayerImpl::create(m_hostImpl.activeTree(), 1);
 
     testLayer->setNeedsDisplayRect(gfx::RectF(gfx::PointF(), gfx::SizeF(5, 5)));
     testLayer->pushPropertiesTo(implLayer.get());

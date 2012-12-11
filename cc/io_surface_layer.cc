@@ -30,9 +30,9 @@ void IOSurfaceLayer::setIOSurfaceProperties(uint32_t ioSurfaceId, const gfx::Siz
     setNeedsCommit();
 }
 
-scoped_ptr<LayerImpl> IOSurfaceLayer::createLayerImpl(LayerTreeHostImpl* hostImpl)
+scoped_ptr<LayerImpl> IOSurfaceLayer::createLayerImpl(LayerTreeImpl* treeImpl)
 {
-    return IOSurfaceLayerImpl::create(hostImpl, m_layerId).PassAs<LayerImpl>();
+    return IOSurfaceLayerImpl::create(treeImpl, m_layerId).PassAs<LayerImpl>();
 }
 
 bool IOSurfaceLayer::drawsContent() const

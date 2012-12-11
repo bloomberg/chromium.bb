@@ -23,10 +23,10 @@ public:
 protected:
     virtual void SetUp()
     {
-        m_scrollLayer = LayerImpl::create(&m_hostImpl, 1);
-        m_scrollLayer->addChild(LayerImpl::create(&m_hostImpl, 2));
+        m_scrollLayer = LayerImpl::create(m_hostImpl.activeTree(), 1);
+        m_scrollLayer->addChild(LayerImpl::create(m_hostImpl.activeTree(), 2));
         m_contentLayer = m_scrollLayer->children()[0];
-        m_scrollbarLayer = ScrollbarLayerImpl::create(&m_hostImpl, 3);
+        m_scrollbarLayer = ScrollbarLayerImpl::create(m_hostImpl.activeTree(), 3);
 
         m_scrollLayer->setMaxScrollOffset(gfx::Vector2d(50, 50));
         m_contentLayer->setBounds(gfx::Size(50, 50));

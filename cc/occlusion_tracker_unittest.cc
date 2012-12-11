@@ -61,8 +61,8 @@ private:
 
 class TestContentLayerImpl : public LayerImpl {
 public:
-    TestContentLayerImpl(LayerTreeHostImpl* hostImpl, int id)
-        : LayerImpl(hostImpl, id)
+    TestContentLayerImpl(LayerTreeImpl* treeImpl, int id)
+        : LayerImpl(treeImpl, id)
         , m_overrideOpaqueContentsRect(false)
     {
         setDrawsContent(true);
@@ -157,7 +157,7 @@ struct OcclusionTrackerTestMainThreadTypes {
 
 struct OcclusionTrackerTestImplThreadTypes {
     typedef LayerImpl LayerType;
-    typedef LayerTreeHostImpl HostType;
+    typedef LayerTreeImpl HostType;
     typedef RenderSurfaceImpl RenderSurfaceType;
     typedef TestContentLayerImpl ContentLayerType;
     typedef scoped_ptr<LayerImpl> LayerPtrType;
@@ -428,9 +428,9 @@ LayerTreeHost* OcclusionTrackerTest<OcclusionTrackerTestMainThreadTypes>::getHos
 }
 
 template<>
-LayerTreeHostImpl* OcclusionTrackerTest<OcclusionTrackerTestImplThreadTypes>::getHost()
+LayerTreeImpl* OcclusionTrackerTest<OcclusionTrackerTestImplThreadTypes>::getHost()
 {
-    return &m_hostImpl;
+  return m_hostImpl.activeTree();
 }
 
 #define RUN_TEST_MAIN_THREAD_OPAQUE_LAYERS(ClassName) \

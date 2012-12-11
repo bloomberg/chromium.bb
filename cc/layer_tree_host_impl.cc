@@ -20,6 +20,7 @@
 #include "cc/layer_iterator.h"
 #include "cc/layer_tree_host.h"
 #include "cc/layer_tree_host_common.h"
+#include "cc/layer_tree_impl.h"
 #include "cc/math_util.h"
 #include "cc/overdraw_metrics.h"
 #include "cc/page_scale_animation.h"
@@ -953,6 +954,21 @@ void LayerTreeHostImpl::readback(void* pixels, const gfx::Rect& rect)
 {
     DCHECK(m_renderer);
     m_renderer->getFramebufferPixels(pixels, rect);
+}
+
+LayerImpl* LayerTreeHostImpl::rootLayer() const
+{
+  return m_activeTree->RootLayer();
+}
+
+LayerImpl* LayerTreeHostImpl::rootScrollLayer() const
+{
+  return m_activeTree->root_scroll_layer();
+}
+
+LayerImpl* LayerTreeHostImpl::currentlyScrollingLayer() const
+{
+  return m_activeTree->currently_scrolling_layer();
 }
 
 // Content layers can be either directly scrollable or contained in an outer

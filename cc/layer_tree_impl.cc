@@ -9,8 +9,8 @@
 
 namespace cc {
 
-LayerTreeImpl::LayerTreeImpl(LayerTreeImplClient* client)
-    : client_(client)
+LayerTreeImpl::LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl)
+    : layer_tree_host_impl_(layer_tree_host_impl)
     , source_frame_number_(-1)
     , hud_layer_(0)
     , root_scroll_layer_(0)
@@ -51,7 +51,7 @@ void LayerTreeImpl::SetRootLayer(scoped_ptr<LayerImpl> layer) {
 
   scrolling_layer_id_from_previous_tree_ = 0;
 
-  client_->OnCanDrawStateChangedForTree(this);
+  layer_tree_host_impl_->OnCanDrawStateChangedForTree(this);
 }
 
 scoped_ptr<LayerImpl> LayerTreeImpl::DetachLayerTree() {

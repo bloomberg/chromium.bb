@@ -17,9 +17,9 @@ using WebKit::WebRect;
 
 namespace cc {
 
-scoped_ptr<LayerImpl> ScrollbarLayer::createLayerImpl(LayerTreeHostImpl* hostImpl)
+scoped_ptr<LayerImpl> ScrollbarLayer::createLayerImpl(LayerTreeImpl* treeImpl)
 {
-    return ScrollbarLayerImpl::create(hostImpl, id()).PassAs<LayerImpl>();
+    return ScrollbarLayerImpl::create(treeImpl, id()).PassAs<LayerImpl>();
 }
 
 scoped_refptr<ScrollbarLayer> ScrollbarLayer::create(scoped_ptr<WebKit::WebScrollbar> scrollbar, WebKit::WebScrollbarThemePainter painter, scoped_ptr<WebKit::WebScrollbarThemeGeometry> geometry, int scrollLayerId)

@@ -36,7 +36,7 @@ public:
 private:
     NinePatchLayer();
     virtual ~NinePatchLayer();
-    virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeHostImpl* hostImpl) OVERRIDE;
+    virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* treeImpl) OVERRIDE;
 
     void createUpdaterIfNeeded();
     void createResource();

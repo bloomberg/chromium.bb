@@ -34,10 +34,10 @@ class CC_EXPORT VideoLayerImpl : public LayerImpl
 public:
     typedef base::Callback<media::VideoFrame* (WebKit::WebVideoFrame*)> FrameUnwrapper;
 
-    static scoped_ptr<VideoLayerImpl> create(LayerTreeHostImpl* hostImpl, int id, WebKit::WebVideoFrameProvider* provider,
+    static scoped_ptr<VideoLayerImpl> create(LayerTreeImpl* treeImpl, int id, WebKit::WebVideoFrameProvider* provider,
                                              const FrameUnwrapper& unwrapper)
     {
-        return make_scoped_ptr(new VideoLayerImpl(hostImpl, id, provider, unwrapper));
+        return make_scoped_ptr(new VideoLayerImpl(treeImpl, id, provider, unwrapper));
     }
     virtual ~VideoLayerImpl();
 
@@ -66,7 +66,7 @@ public:
     };
 
 private:
-    VideoLayerImpl(LayerTreeHostImpl*, int, WebKit::WebVideoFrameProvider*, const FrameUnwrapper&);
+    VideoLayerImpl(LayerTreeImpl*, int, WebKit::WebVideoFrameProvider*, const FrameUnwrapper&);
 
     virtual const char* layerTypeAsString() const OVERRIDE;
 

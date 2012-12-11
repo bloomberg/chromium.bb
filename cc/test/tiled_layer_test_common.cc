@@ -73,8 +73,8 @@ scoped_ptr<LayerUpdater::Resource> FakeLayerUpdater::createResource(PrioritizedR
     return scoped_ptr<LayerUpdater::Resource>(new Resource(this, PrioritizedResource::create(manager)));
 }
 
-FakeTiledLayerImpl::FakeTiledLayerImpl(LayerTreeHostImpl* hostImpl, int id)
-    : TiledLayerImpl(hostImpl, id)
+FakeTiledLayerImpl::FakeTiledLayerImpl(LayerTreeImpl* treeImpl, int id)
+    : TiledLayerImpl(treeImpl, id)
 {
 }
 

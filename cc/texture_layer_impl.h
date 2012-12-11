@@ -12,9 +12,9 @@ namespace cc {
 
 class CC_EXPORT TextureLayerImpl : public LayerImpl {
 public:
-    static scoped_ptr<TextureLayerImpl> create(LayerTreeHostImpl* hostImpl, int id)
+    static scoped_ptr<TextureLayerImpl> create(LayerTreeImpl* treeImpl, int id)
     {
-        return make_scoped_ptr(new TextureLayerImpl(hostImpl, id));
+        return make_scoped_ptr(new TextureLayerImpl(treeImpl, id));
     }
     virtual ~TextureLayerImpl();
 
@@ -33,7 +33,7 @@ public:
     void setUVRect(const gfx::RectF& rect) { m_uvRect = rect; }
 
 private:
-    TextureLayerImpl(LayerTreeHostImpl* hostImpl, int id);
+    TextureLayerImpl(LayerTreeImpl* treeImpl, int id);
 
     virtual const char* layerTypeAsString() const OVERRIDE;
 

@@ -59,9 +59,9 @@ void HeadsUpDisplayLayer::setFontAtlas(scoped_ptr<FontAtlas> fontAtlas)
     m_hasFontAtlas = true;
 }
 
-scoped_ptr<LayerImpl> HeadsUpDisplayLayer::createLayerImpl(LayerTreeHostImpl* hostImpl)
+scoped_ptr<LayerImpl> HeadsUpDisplayLayer::createLayerImpl(LayerTreeImpl* treeImpl)
 {
-    return HeadsUpDisplayLayerImpl::create(hostImpl, m_layerId).PassAs<LayerImpl>();
+    return HeadsUpDisplayLayerImpl::create(treeImpl, m_layerId).PassAs<LayerImpl>();
 }
 
 void HeadsUpDisplayLayer::pushPropertiesTo(LayerImpl* layerImpl)

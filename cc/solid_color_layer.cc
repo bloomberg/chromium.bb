@@ -8,9 +8,9 @@
 
 namespace cc {
 
-scoped_ptr<LayerImpl> SolidColorLayer::createLayerImpl(LayerTreeHostImpl* hostImpl)
+scoped_ptr<LayerImpl> SolidColorLayer::createLayerImpl(LayerTreeImpl* treeImpl)
 {
-    return SolidColorLayerImpl::create(hostImpl, id()).PassAs<LayerImpl>();
+    return SolidColorLayerImpl::create(treeImpl, id()).PassAs<LayerImpl>();
 }
 
 scoped_refptr<SolidColorLayer> SolidColorLayer::create()

@@ -30,7 +30,7 @@ public:
     static scoped_refptr<VideoLayer> create(WebKit::WebVideoFrameProvider*,
                                             const FrameUnwrapper&);
 
-    virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeHostImpl* hostImpl) OVERRIDE;
+    virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* treeImpl) OVERRIDE;
 
 private:
     VideoLayer(WebKit::WebVideoFrameProvider*, const FrameUnwrapper&);

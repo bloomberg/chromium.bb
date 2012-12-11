@@ -35,7 +35,7 @@ struct AnimationEvent;
 class LayerAnimationDelegate;
 class LayerImpl;
 class LayerTreeHost;
-class LayerTreeHostImpl;
+class LayerTreeImpl;
 class PriorityCalculator;
 class ResourceUpdateQueue;
 class ScrollbarLayer;
@@ -313,7 +313,7 @@ protected:
     scoped_refptr<Layer> m_maskLayer;
 
     // Constructs a LayerImpl of the correct runtime type for this Layer type.
-    virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeHostImpl* hostImpl);
+    virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* treeImpl);
     int m_layerId;
 
 private:

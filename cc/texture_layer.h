@@ -26,7 +26,7 @@ public:
 
     void clearClient() { m_client = 0; }
 
-    virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeHostImpl* hostImpl) OVERRIDE;
+    virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* treeImpl) OVERRIDE;
 
     // Sets whether this texture should be Y-flipped at draw time. Defaults to true.
     void setFlipped(bool);

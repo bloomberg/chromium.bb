@@ -202,11 +202,11 @@ TEST(LayerSorterTest, verifyExistingOrderingPreservedWhenNoZDiff)
     FakeImplProxy proxy;
     FakeLayerTreeHostImpl hostImpl(&proxy);
 
-    scoped_ptr<LayerImpl> layer1 = LayerImpl::create(&hostImpl, 1);
-    scoped_ptr<LayerImpl> layer2 = LayerImpl::create(&hostImpl, 2);
-    scoped_ptr<LayerImpl> layer3 = LayerImpl::create(&hostImpl, 3);
-    scoped_ptr<LayerImpl> layer4 = LayerImpl::create(&hostImpl, 4);
-    scoped_ptr<LayerImpl> layer5 = LayerImpl::create(&hostImpl, 5);
+    scoped_ptr<LayerImpl> layer1 = LayerImpl::create(hostImpl.activeTree(), 1);
+    scoped_ptr<LayerImpl> layer2 = LayerImpl::create(hostImpl.activeTree(), 2);
+    scoped_ptr<LayerImpl> layer3 = LayerImpl::create(hostImpl.activeTree(), 3);
+    scoped_ptr<LayerImpl> layer4 = LayerImpl::create(hostImpl.activeTree(), 4);
+    scoped_ptr<LayerImpl> layer5 = LayerImpl::create(hostImpl.activeTree(), 5);
 
     gfx::Transform BehindMatrix;
     BehindMatrix.Translate3d(0, 0, 2);

@@ -18,7 +18,7 @@ class ScrollView;
 
 class CC_EXPORT ScrollbarLayerImpl : public LayerImpl {
 public:
-    static scoped_ptr<ScrollbarLayerImpl> create(LayerTreeHostImpl* hostImpl, int id);
+    static scoped_ptr<ScrollbarLayerImpl> create(LayerTreeImpl* treeImpl, int id);
     virtual ~ScrollbarLayerImpl();
 
     ScrollbarGeometryFixedThumb* scrollbarGeometry() const { return m_geometry.get(); }
@@ -45,7 +45,7 @@ public:
     virtual void didLoseOutputSurface() OVERRIDE;
 
 protected:
-    ScrollbarLayerImpl(LayerTreeHostImpl* hostImpl, int id);
+    ScrollbarLayerImpl(LayerTreeImpl* treeImpl, int id);
 
 private:
     // nested class only to avoid namespace problem

@@ -16,8 +16,8 @@
 
 namespace cc {
 
-IOSurfaceLayerImpl::IOSurfaceLayerImpl(LayerTreeHostImpl* hostImpl, int id)
-    : LayerImpl(hostImpl, id)
+IOSurfaceLayerImpl::IOSurfaceLayerImpl(LayerTreeImpl* treeImpl, int id)
+    : LayerImpl(treeImpl, id)
     , m_ioSurfaceId(0)
     , m_ioSurfaceChanged(false)
     , m_ioSurfaceTextureId(0)

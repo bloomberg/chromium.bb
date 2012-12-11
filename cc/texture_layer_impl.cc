@@ -11,8 +11,8 @@
 
 namespace cc {
 
-TextureLayerImpl::TextureLayerImpl(LayerTreeHostImpl* hostImpl, int id)
-    : LayerImpl(hostImpl, id)
+TextureLayerImpl::TextureLayerImpl(LayerTreeImpl* treeImpl, int id)
+    : LayerImpl(treeImpl, id)
     , m_textureId(0)
     , m_externalTextureResource(0)
     , m_premultipliedAlpha(true)

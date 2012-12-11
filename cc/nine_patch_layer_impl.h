@@ -19,9 +19,9 @@ namespace cc {
 
 class CC_EXPORT NinePatchLayerImpl : public LayerImpl {
 public:
-    static scoped_ptr<NinePatchLayerImpl> create(LayerTreeHostImpl* hostImpl, int id)
+    static scoped_ptr<NinePatchLayerImpl> create(LayerTreeImpl* treeImpl, int id)
     {
-        return make_scoped_ptr(new NinePatchLayerImpl(hostImpl, id));
+        return make_scoped_ptr(new NinePatchLayerImpl(treeImpl, id));
     }
     virtual ~NinePatchLayerImpl();
 
@@ -38,7 +38,7 @@ public:
     virtual base::DictionaryValue* layerTreeAsJson() const OVERRIDE;
 
 protected:
-    NinePatchLayerImpl(LayerTreeHostImpl* hostImpl, int id);
+    NinePatchLayerImpl(LayerTreeImpl* treeImpl, int id);
 
 private:
     virtual const char* layerTypeAsString() const OVERRIDE;

@@ -33,7 +33,7 @@ public:
     // visibility of the entire layer size.
     scoped_ptr<TiledLayerImpl> createLayer(const gfx::Size& tileSize, const gfx::Size& layerSize, LayerTilingData::BorderTexelOption borderTexels)
     {
-        scoped_ptr<TiledLayerImpl> layer = TiledLayerImpl::create(&m_hostImpl, 1);
+        scoped_ptr<TiledLayerImpl> layer = TiledLayerImpl::create(m_hostImpl.activeTree(), 1);
         scoped_ptr<LayerTilingData> tiler = LayerTilingData::create(tileSize, borderTexels);
         tiler->setBounds(layerSize);
         layer->setTilingData(*tiler);

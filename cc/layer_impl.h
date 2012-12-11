@@ -34,6 +34,7 @@ class DictionaryValue;
 namespace cc {
 
 class LayerTreeHostImpl;
+class LayerTreeImpl;
 class QuadSink;
 class Renderer;
 class ScrollbarAnimationController;
@@ -46,9 +47,9 @@ class CC_EXPORT LayerImpl : public LayerAnimationControllerClient {
 public:
     typedef ScopedPtrVector<LayerImpl> LayerList;
 
-    static scoped_ptr<LayerImpl> create(LayerTreeHostImpl* hostImpl, int id)
+    static scoped_ptr<LayerImpl> create(LayerTreeImpl* treeImpl, int id)
     {
-        return make_scoped_ptr(new LayerImpl(hostImpl, id));
+        return make_scoped_ptr(new LayerImpl(treeImpl, id));
     }
 
     virtual ~LayerImpl();
@@ -80,7 +81,8 @@ public:
     bool hasReplica() const { return m_replicaLayer; }
     bool replicaHasMask() const { return m_replicaLayer && (m_maskLayer || m_replicaLayer->m_maskLayer); }
 
-    LayerTreeHostImpl* layerTreeHostImpl() const { return m_layerTreeHostImpl; }
+    LayerTreeImpl* layerTreeImpl() const { return m_layerTreeImpl; }
+    LayerTreeHostImpl* layerTreeHostImpl() const;
 
     scoped_ptr<SharedQuadState> createSharedQuadState() const;
     // willDraw must be called before appendQuads. If willDraw is called,
@@ -286,7 +288,7 @@ public:
     gfx::Rect layerRectToContentRect(const gfx::RectF& layerRect) const;
 
 protected:
-    LayerImpl(LayerTreeHostImpl* hostImpl, int);
+    LayerImpl(LayerTreeImpl* layerImpl, int);
 
     // Get the color and size of the layer's debug border.
     virtual void getDebugBorderProperties(SkColor*, float* width) const;
@@ -321,7 +323,7 @@ private:
     int m_replicaLayerId; // ditto
     scoped_ptr<LayerImpl> m_replicaLayer;
     int m_layerId;
-    LayerTreeHostImpl* m_layerTreeHostImpl;
+    LayerTreeImpl* m_layerTreeImpl;
 
     // Properties synchronized from the associated Layer.
     gfx::PointF m_anchorPoint;

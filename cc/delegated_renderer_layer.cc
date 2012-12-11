@@ -24,9 +24,9 @@ DelegatedRendererLayer::~DelegatedRendererLayer()
 {
 }
 
-scoped_ptr<LayerImpl> DelegatedRendererLayer::createLayerImpl(LayerTreeHostImpl* hostImpl)
+scoped_ptr<LayerImpl> DelegatedRendererLayer::createLayerImpl(LayerTreeImpl* treeImpl)
 {
-    return DelegatedRendererLayerImpl::create(hostImpl, m_layerId).PassAs<LayerImpl>();
+    return DelegatedRendererLayerImpl::create(treeImpl, m_layerId).PassAs<LayerImpl>();
 }
 
 }  // namespace cc

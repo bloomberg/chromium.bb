@@ -57,7 +57,7 @@ TEST(ScrollbarLayerTest, resolveScrollLayerPointer)
         layerTreeRoot->addChild(child1);
         layerTreeRoot->addChild(child2);
 
-        scoped_ptr<LayerImpl> layerImplTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), scoped_ptr<LayerImpl>(), &hostImpl);
+        scoped_ptr<LayerImpl> layerImplTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), scoped_ptr<LayerImpl>(), hostImpl.activeTree());
 
         LayerImpl* ccChild1 = layerImplTreeRoot->children()[0];
         ScrollbarLayerImpl* ccChild2 = static_cast<ScrollbarLayerImpl*>(layerImplTreeRoot->children()[1]);
@@ -74,7 +74,7 @@ TEST(ScrollbarLayerTest, resolveScrollLayerPointer)
         layerTreeRoot->addChild(child1);
         layerTreeRoot->addChild(child2);
 
-        scoped_ptr<LayerImpl> layerImplTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), scoped_ptr<LayerImpl>(), &hostImpl);
+        scoped_ptr<LayerImpl> layerImplTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), scoped_ptr<LayerImpl>(), hostImpl.activeTree());
 
         ScrollbarLayerImpl* ccChild1 = static_cast<ScrollbarLayerImpl*>(layerImplTreeRoot->children()[0]);
         LayerImpl* ccChild2 = layerImplTreeRoot->children()[1];
@@ -101,7 +101,7 @@ TEST(ScrollbarLayerTest, scrollOffsetSynchronization)
     layerTreeRoot->setMaxScrollOffset(gfx::Vector2d(30, 50));
     contentLayer->setBounds(gfx::Size(100, 200));
 
-    scoped_ptr<LayerImpl> layerImplTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), scoped_ptr<LayerImpl>(), &hostImpl);
+    scoped_ptr<LayerImpl> layerImplTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), scoped_ptr<LayerImpl>(), hostImpl.activeTree());
 
     ScrollbarLayerImpl* ccScrollbarLayer = static_cast<ScrollbarLayerImpl*>(layerImplTreeRoot->children()[1]);
 
@@ -114,7 +114,7 @@ TEST(ScrollbarLayerTest, scrollOffsetSynchronization)
     contentLayer->setBounds(gfx::Size(1000, 2000));
 
     ScrollbarAnimationController* scrollbarController = layerImplTreeRoot->scrollbarAnimationController();
-    layerImplTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), layerImplTreeRoot.Pass(), &hostImpl);
+    layerImplTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), layerImplTreeRoot.Pass(), hostImpl.activeTree());
     EXPECT_EQ(scrollbarController, layerImplTreeRoot->scrollbarAnimationController());
 
     EXPECT_EQ(100, ccScrollbarLayer->currentPos());

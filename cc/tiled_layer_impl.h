@@ -15,9 +15,9 @@ class DrawableTile;
 
 class CC_EXPORT TiledLayerImpl : public LayerImpl {
 public:
-    static scoped_ptr<TiledLayerImpl> create(LayerTreeHostImpl* hostImpl, int id)
+    static scoped_ptr<TiledLayerImpl> create(LayerTreeImpl* treeImpl, int id)
     {
-        return make_scoped_ptr(new TiledLayerImpl(hostImpl, id));
+        return make_scoped_ptr(new TiledLayerImpl(treeImpl, id));
     }
     virtual ~TiledLayerImpl();
 
@@ -36,7 +36,7 @@ public:
     virtual void didLoseOutputSurface() OVERRIDE;
 
 protected:
-    TiledLayerImpl(LayerTreeHostImpl* hostImpl, int id);
+    TiledLayerImpl(LayerTreeImpl* treeImpl, int id);
     // Exposed for testing.
     bool hasTileAt(int, int) const;
     bool hasResourceIdForTileAt(int, int) const;

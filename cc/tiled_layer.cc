@@ -95,9 +95,9 @@ TiledLayer::~TiledLayer()
 {
 }
 
-scoped_ptr<LayerImpl> TiledLayer::createLayerImpl(LayerTreeHostImpl* hostImpl)
+scoped_ptr<LayerImpl> TiledLayer::createLayerImpl(LayerTreeImpl* treeImpl)
 {
-    return TiledLayerImpl::create(hostImpl, id()).PassAs<LayerImpl>();
+    return TiledLayerImpl::create(treeImpl, id()).PassAs<LayerImpl>();
 }
 
 void TiledLayer::updateTileSizeAndTilingOption()

@@ -619,9 +619,9 @@ void Layer::pushPropertiesTo(LayerImpl* layer)
     m_updateRect = gfx::RectF();
 }
 
-scoped_ptr<LayerImpl> Layer::createLayerImpl(LayerTreeHostImpl* hostImpl)
+scoped_ptr<LayerImpl> Layer::createLayerImpl(LayerTreeImpl* treeImpl)
 {
-    return LayerImpl::create(hostImpl, m_layerId);
+    return LayerImpl::create(treeImpl, m_layerId);
 }
 
 bool Layer::drawsContent() const

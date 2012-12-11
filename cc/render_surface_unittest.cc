@@ -39,7 +39,7 @@ TEST(RenderSurfaceTest, verifySurfaceChangesAreTrackedProperly)
 
     FakeImplProxy proxy;
     FakeLayerTreeHostImpl hostImpl(&proxy);
-    scoped_ptr<LayerImpl> owningLayer = LayerImpl::create(&hostImpl, 1);
+    scoped_ptr<LayerImpl> owningLayer = LayerImpl::create(hostImpl.activeTree(), 1);
     owningLayer->createRenderSurface();
     ASSERT_TRUE(owningLayer->renderSurface());
     RenderSurfaceImpl* renderSurface = owningLayer->renderSurface();
@@ -59,7 +59,7 @@ TEST(RenderSurfaceTest, verifySurfaceChangesAreTrackedProperly)
     EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(renderSurface->setClipRect(testRect));
     EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(renderSurface->setContentRect(testRect));
 
-    scoped_ptr<LayerImpl> dummyMask = LayerImpl::create(&hostImpl, 1);
+    scoped_ptr<LayerImpl> dummyMask = LayerImpl::create(hostImpl.activeTree(), 1);
     gfx::Transform dummyMatrix;
     dummyMatrix.Translate(1.0, 2.0);
 
@@ -75,9 +75,9 @@ TEST(RenderSurfaceTest, sanityCheckSurfaceCreatesCorrectSharedQuadState)
 {
     FakeImplProxy proxy;
     FakeLayerTreeHostImpl hostImpl(&proxy);
-    scoped_ptr<LayerImpl> rootLayer = LayerImpl::create(&hostImpl, 1);
+    scoped_ptr<LayerImpl> rootLayer = LayerImpl::create(hostImpl.activeTree(), 1);
 
-    scoped_ptr<LayerImpl> owningLayer = LayerImpl::create(&hostImpl, 2);
+    scoped_ptr<LayerImpl> owningLayer = LayerImpl::create(hostImpl.activeTree(), 2);
     owningLayer->createRenderSurface();
     ASSERT_TRUE(owningLayer->renderSurface());
     owningLayer->drawProperties().render_target = owningLayer.get();
@@ -127,9 +127,9 @@ TEST(RenderSurfaceTest, sanityCheckSurfaceCreatesCorrectRenderPass)
 {
     FakeImplProxy proxy;
     FakeLayerTreeHostImpl hostImpl(&proxy);
-    scoped_ptr<LayerImpl> rootLayer = LayerImpl::create(&hostImpl, 1);
+    scoped_ptr<LayerImpl> rootLayer = LayerImpl::create(hostImpl.activeTree(), 1);
 
-    scoped_ptr<LayerImpl> owningLayer = LayerImpl::create(&hostImpl, 2);
+    scoped_ptr<LayerImpl> owningLayer = LayerImpl::create(hostImpl.activeTree(), 2);
     owningLayer->createRenderSurface();
     ASSERT_TRUE(owningLayer->renderSurface());
     owningLayer->drawProperties().render_target = owningLayer.get();

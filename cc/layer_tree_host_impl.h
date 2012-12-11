@@ -11,7 +11,6 @@
 #include "cc/animation_events.h"
 #include "cc/cc_export.h"
 #include "cc/input_handler.h"
-#include "cc/layer_tree_impl.h"
 #include "cc/output_surface_client.h"
 #include "cc/render_pass.h"
 #include "cc/render_pass_sink.h"
@@ -27,6 +26,7 @@ class DebugRectHistory;
 class FrameRateCounter;
 class LayerImpl;
 class LayerTreeHostImplTimeSourceAdapter;
+class LayerTreeImpl;
 class PageScaleAnimation;
 class RenderPassDrawQuad;
 class ResourceProvider;
@@ -112,7 +112,6 @@ private:
 class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
                                     public RendererClient,
                                     public TileManagerClient,
-                                    public LayerTreeImplClient,
                                     public OutputSurfaceClient {
     typedef std::vector<LayerImpl*> LayerList;
 
@@ -180,8 +179,8 @@ public:
     virtual void OnVSyncParametersChanged(base::TimeTicks timebase, base::TimeDelta interval) OVERRIDE;
     virtual void OnSendFrameToParentCompositorAck(const CompositorFrameAck&) OVERRIDE;
 
-    // LayerTreeImplClient implementation.
-    virtual void OnCanDrawStateChangedForTree(LayerTreeImpl*) OVERRIDE;
+    // Called from LayerTreeImpl.
+    void OnCanDrawStateChangedForTree(LayerTreeImpl*);
 
     // Implementation
     bool canDraw();
@@ -207,16 +206,16 @@ public:
 
     // TODO(nduca): Remove these in favor of LayerTreeImpl.
     void setRootLayer(scoped_ptr<LayerImpl>);
-    LayerImpl* rootLayer() const { return m_activeTree->RootLayer(); }
+    LayerImpl* rootLayer() const;
 
     // Release ownership of the current layer tree and replace it with an empty
     // tree. Returns the root layer of the detached tree.
     scoped_ptr<LayerImpl> detachLayerTree();
 
-    LayerImpl* rootScrollLayer() const { return m_activeTree->root_scroll_layer(); }
+    LayerImpl* rootScrollLayer() const;
 
     // TOOD(nduca): This goes away when scrolling moves to LayerTreeImpl.
-    LayerImpl* currentlyScrollingLayer() const { return m_activeTree->currently_scrolling_layer(); }
+    LayerImpl* currentlyScrollingLayer() const;
 
     bool visible() const { return m_visible; }
     void setVisible(bool);

@@ -40,9 +40,9 @@ TextureLayer::~TextureLayer()
     }
 }
 
-scoped_ptr<LayerImpl> TextureLayer::createLayerImpl(LayerTreeHostImpl* hostImpl)
+scoped_ptr<LayerImpl> TextureLayer::createLayerImpl(LayerTreeImpl* treeImpl)
 {
-    return TextureLayerImpl::create(hostImpl, m_layerId).PassAs<LayerImpl>();
+    return TextureLayerImpl::create(treeImpl, m_layerId).PassAs<LayerImpl>();
 }
 
 void TextureLayer::setFlipped(bool flipped)

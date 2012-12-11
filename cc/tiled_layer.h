@@ -67,7 +67,7 @@ protected:
     virtual PrioritizedResourceManager* resourceManager() const;
 
 private:
-    virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeHostImpl* hostImpl) OVERRIDE;
+    virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* treeImpl) OVERRIDE;
 
     void createTilerIfNeeded();
     void setTilingOption(TilingOption);

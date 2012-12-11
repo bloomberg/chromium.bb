@@ -77,10 +77,10 @@ void executeCalculateDrawProperties(LayerImpl* rootLayer, float deviceScaleFacto
 
 scoped_ptr<LayerImpl> createTreeForFixedPositionTests(LayerTreeHostImpl* hostImpl)
 {
-    scoped_ptr<LayerImpl> root = LayerImpl::create(hostImpl, 1);
-    scoped_ptr<LayerImpl> child = LayerImpl::create(hostImpl, 2);
-    scoped_ptr<LayerImpl> grandChild = LayerImpl::create(hostImpl, 3);
-    scoped_ptr<LayerImpl> greatGrandChild = LayerImpl::create(hostImpl, 4);
+    scoped_ptr<LayerImpl> root = LayerImpl::create(hostImpl->activeTree(), 1);
+    scoped_ptr<LayerImpl> child = LayerImpl::create(hostImpl->activeTree(), 2);
+    scoped_ptr<LayerImpl> grandChild = LayerImpl::create(hostImpl->activeTree(), 3);
+    scoped_ptr<LayerImpl> greatGrandChild = LayerImpl::create(hostImpl->activeTree(), 4);
 
     gfx::Transform IdentityMatrix;
     gfx::PointF anchor(0, 0);
@@ -1112,7 +1112,7 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithM
     // Add one more layer to the test tree for this scenario.
     {
         gfx::Transform identity;
-        scoped_ptr<LayerImpl> fixedPositionChild = LayerImpl::create(&hostImpl, 5);
+        scoped_ptr<LayerImpl> fixedPositionChild = LayerImpl::create(hostImpl.activeTree(), 5);
         setLayerPropertiesForTesting(fixedPositionChild.get(), identity, identity, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(100, 100), false);
         greatGrandChild->addChild(fixedPositionChild.Pass());
     }
@@ -2793,7 +2793,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSingleLayer)
 {
     FakeImplProxy proxy;
     FakeLayerTreeHostImpl hostImpl(&proxy);
-    scoped_ptr<LayerImpl> root = LayerImpl::create(&hostImpl, 12345);
+    scoped_ptr<LayerImpl> root = LayerImpl::create(hostImpl.activeTree(), 12345);
 
     gfx::Transform identityMatrix;
     gfx::PointF anchor(0, 0);
@@ -2835,7 +2835,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForUninvertibleTransform)
 {
     FakeImplProxy proxy;
     FakeLayerTreeHostImpl hostImpl(&proxy);
-    scoped_ptr<LayerImpl> root = LayerImpl::create(&hostImpl, 12345);
+    scoped_ptr<LayerImpl> root = LayerImpl::create(hostImpl.activeTree(), 12345);
 
     gfx::Transform uninvertibleTransform;
     uninvertibleTransform.matrix().setDouble(0, 0, 0);
@@ -2896,7 +2896,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSinglePositionedLayer)
 {
     FakeImplProxy proxy;
     FakeLayerTreeHostImpl hostImpl(&proxy);
-    scoped_ptr<LayerImpl> root = LayerImpl::create(&hostImpl, 12345);
+    scoped_ptr<LayerImpl> root = LayerImpl::create(hostImpl.activeTree(), 12345);
 
     gfx::Transform identityMatrix;
     gfx::PointF anchor(0, 0);
@@ -2939,7 +2939,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSingleRotatedLayer)
 {
     FakeImplProxy proxy;
     FakeLayerTreeHostImpl hostImpl(&proxy);
-    scoped_ptr<LayerImpl> root = LayerImpl::create(&hostImpl, 12345);
+    scoped_ptr<LayerImpl> root = LayerImpl::create(hostImpl.activeTree(), 12345);
 
     gfx::Transform identityMatrix;
     gfx::Transform rotation45DegreesAboutCenter;
@@ -2990,7 +2990,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSinglePerspectiveLayer)
 {
     FakeImplProxy proxy;
     FakeLayerTreeHostImpl hostImpl(&proxy);
-    scoped_ptr<LayerImpl> root = LayerImpl::create(&hostImpl, 12345);
+    scoped_ptr<LayerImpl> root = LayerImpl::create(hostImpl.activeTree(), 12345);
 
     gfx::Transform identityMatrix;
 
@@ -3052,7 +3052,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSingleLayerWithScaledContents)
     //
     FakeImplProxy proxy;
     FakeLayerTreeHostImpl hostImpl(&proxy);
-    scoped_ptr<LayerImpl> root = LayerImpl::create(&hostImpl, 1);
+    scoped_ptr<LayerImpl> root = LayerImpl::create(hostImpl.activeTree(), 1);
 
     gfx::Transform identityMatrix;
     gfx::PointF anchor(0, 0);
@@ -3062,7 +3062,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSingleLayerWithScaledContents)
     {
         gfx::PointF position(25, 25);
         gfx::Size bounds(50, 50);
-        scoped_ptr<LayerImpl> testLayer = LayerImpl::create(&hostImpl, 12345);
+        scoped_ptr<LayerImpl> testLayer = LayerImpl::create(hostImpl.activeTree(), 12345);
         setLayerPropertiesForTesting(testLayer.get(), identityMatrix, identityMatrix, anchor, position, bounds, false);
 
         // override contentBounds and contentsScale
@@ -3118,17 +3118,17 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSimpleClippedLayer)
 
     FakeImplProxy proxy;
     FakeLayerTreeHostImpl hostImpl(&proxy);
-    scoped_ptr<LayerImpl> root = LayerImpl::create(&hostImpl, 1);
+    scoped_ptr<LayerImpl> root = LayerImpl::create(hostImpl.activeTree(), 1);
     setLayerPropertiesForTesting(root.get(), identityMatrix, identityMatrix, anchor, gfx::PointF(0, 0), gfx::Size(100, 100), false);
 
     {
-        scoped_ptr<LayerImpl> clippingLayer = LayerImpl::create(&hostImpl, 123);
+        scoped_ptr<LayerImpl> clippingLayer = LayerImpl::create(hostImpl.activeTree(), 123);
         gfx::PointF position(25, 25); // this layer is positioned, and hit testing should correctly know where the layer is located.
         gfx::Size bounds(50, 50);
         setLayerPropertiesForTesting(clippingLayer.get(), identityMatrix, identityMatrix, anchor, position, bounds, false);
         clippingLayer->setMasksToBounds(true);
 
-        scoped_ptr<LayerImpl> child = LayerImpl::create(&hostImpl, 456);
+        scoped_ptr<LayerImpl> child = LayerImpl::create(hostImpl.activeTree(), 456);
         position = gfx::PointF(-50, -50);
         bounds = gfx::Size(300, 300);
         setLayerPropertiesForTesting(child.get(), identityMatrix, identityMatrix, anchor, position, bounds, false);
@@ -3183,7 +3183,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForMultiClippedRotatedLayer)
     //
     FakeImplProxy proxy;
     FakeLayerTreeHostImpl hostImpl(&proxy);
-    scoped_ptr<LayerImpl> root = LayerImpl::create(&hostImpl, 123);
+    scoped_ptr<LayerImpl> root = LayerImpl::create(hostImpl.activeTree(), 123);
 
     gfx::Transform identityMatrix;
     gfx::PointF anchor(0, 0);
@@ -3193,9 +3193,9 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForMultiClippedRotatedLayer)
     root->setMasksToBounds(true);
 
     {
-        scoped_ptr<LayerImpl> child = LayerImpl::create(&hostImpl, 456);
-        scoped_ptr<LayerImpl> grandChild = LayerImpl::create(&hostImpl, 789);
-        scoped_ptr<LayerImpl> rotatedLeaf = LayerImpl::create(&hostImpl, 2468);
+        scoped_ptr<LayerImpl> child = LayerImpl::create(hostImpl.activeTree(), 456);
+        scoped_ptr<LayerImpl> grandChild = LayerImpl::create(hostImpl.activeTree(), 789);
+        scoped_ptr<LayerImpl> rotatedLeaf = LayerImpl::create(hostImpl.activeTree(), 2468);
 
         position = gfx::PointF(10, 10);
         bounds = gfx::Size(80, 80);
@@ -3286,11 +3286,11 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForNonClippingIntermediateLayer)
 
     FakeImplProxy proxy;
     FakeLayerTreeHostImpl hostImpl(&proxy);
-    scoped_ptr<LayerImpl> root = LayerImpl::create(&hostImpl, 1);
+    scoped_ptr<LayerImpl> root = LayerImpl::create(hostImpl.activeTree(), 1);
     setLayerPropertiesForTesting(root.get(), identityMatrix, identityMatrix, anchor, gfx::PointF(0, 0), gfx::Size(100, 100), false);
 
     {
-        scoped_ptr<LayerImpl> intermediateLayer = LayerImpl::create(&hostImpl, 123);
+        scoped_ptr<LayerImpl> intermediateLayer = LayerImpl::create(hostImpl.activeTree(), 123);
         gfx::PointF position(10, 10); // this layer is positioned, and hit testing should correctly know where the layer is located.
         gfx::Size bounds(50, 50);
         setLayerPropertiesForTesting(intermediateLayer.get(), identityMatrix, identityMatrix, anchor, position, bounds, false);
@@ -3300,7 +3300,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForNonClippingIntermediateLayer)
 
         // The child of the intermediateLayer is translated so that it does not overlap intermediateLayer at all.
         // If child is incorrectly clipped, we would not be able to hit it successfully.
-        scoped_ptr<LayerImpl> child = LayerImpl::create(&hostImpl, 456);
+        scoped_ptr<LayerImpl> child = LayerImpl::create(hostImpl.activeTree(), 456);
         position = gfx::PointF(60, 60); // 70, 70 in screen space
         bounds = gfx::Size(20, 20);
         setLayerPropertiesForTesting(child.get(), identityMatrix, identityMatrix, anchor, position, bounds, false);
@@ -3344,7 +3344,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForMultipleLayers)
 {
     FakeImplProxy proxy;
     FakeLayerTreeHostImpl hostImpl(&proxy);
-    scoped_ptr<LayerImpl> root = LayerImpl::create(&hostImpl, 1);
+    scoped_ptr<LayerImpl> root = LayerImpl::create(hostImpl.activeTree(), 1);
 
     gfx::Transform identityMatrix;
     gfx::PointF anchor(0, 0);
@@ -3359,9 +3359,9 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForMultipleLayers)
         // The expected stacking order is:
         //   (front) child2, (second) grandChild, (third) child1, and (back) the root layer behind all other layers.
 
-        scoped_ptr<LayerImpl> child1 = LayerImpl::create(&hostImpl, 2);
-        scoped_ptr<LayerImpl> child2 = LayerImpl::create(&hostImpl, 3);
-        scoped_ptr<LayerImpl> grandChild1 = LayerImpl::create(&hostImpl, 4);
+        scoped_ptr<LayerImpl> child1 = LayerImpl::create(hostImpl.activeTree(), 2);
+        scoped_ptr<LayerImpl> child2 = LayerImpl::create(hostImpl.activeTree(), 3);
+        scoped_ptr<LayerImpl> grandChild1 = LayerImpl::create(hostImpl.activeTree(), 4);
 
         position = gfx::PointF(10, 10);
         bounds = gfx::Size(50, 50);
@@ -3449,7 +3449,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForMultipleLayerLists)
     //
     FakeImplProxy proxy;
     FakeLayerTreeHostImpl hostImpl(&proxy);
-    scoped_ptr<LayerImpl> root = LayerImpl::create(&hostImpl, 1);
+    scoped_ptr<LayerImpl> root = LayerImpl::create(hostImpl.activeTree(), 1);
 
     gfx::Transform identityMatrix;
     gfx::PointF anchor(0, 0);
@@ -3464,9 +3464,9 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForMultipleLayerLists)
         // The expected stacking order is:
         //   (front) child2, (second) grandChild, (third) child1, and (back) the root layer behind all other layers.
 
-        scoped_ptr<LayerImpl> child1 = LayerImpl::create(&hostImpl, 2);
-        scoped_ptr<LayerImpl> child2 = LayerImpl::create(&hostImpl, 3);
-        scoped_ptr<LayerImpl> grandChild1 = LayerImpl::create(&hostImpl, 4);
+        scoped_ptr<LayerImpl> child1 = LayerImpl::create(hostImpl.activeTree(), 2);
+        scoped_ptr<LayerImpl> child2 = LayerImpl::create(hostImpl.activeTree(), 3);
+        scoped_ptr<LayerImpl> grandChild1 = LayerImpl::create(hostImpl.activeTree(), 4);
 
         position = gfx::PointF(10, 10);
         bounds = gfx::Size(50, 50);
@@ -3573,7 +3573,7 @@ TEST(LayerTreeHostCommonTest, verifyHitCheckingTouchHandlerRegionsForSingleLayer
 {
     FakeImplProxy proxy;
     FakeLayerTreeHostImpl hostImpl(&proxy);
-    scoped_ptr<LayerImpl> root = LayerImpl::create(&hostImpl, 12345);
+    scoped_ptr<LayerImpl> root = LayerImpl::create(hostImpl.activeTree(), 12345);
 
     gfx::Transform identityMatrix;
     Region touchHandlerRegion(gfx::Rect(10, 10, 50, 50));
@@ -3631,7 +3631,7 @@ TEST(LayerTreeHostCommonTest, verifyHitCheckingTouchHandlerRegionsForUninvertibl
 {
     FakeImplProxy proxy;
     FakeLayerTreeHostImpl hostImpl(&proxy);
-    scoped_ptr<LayerImpl> root = LayerImpl::create(&hostImpl, 12345);
+    scoped_ptr<LayerImpl> root = LayerImpl::create(hostImpl.activeTree(), 12345);
 
     gfx::Transform uninvertibleTransform;
     uninvertibleTransform.matrix().setDouble(0, 0, 0);
@@ -3694,7 +3694,7 @@ TEST(LayerTreeHostCommonTest, verifyHitCheckingTouchHandlerRegionsForSinglePosit
 {
     FakeImplProxy proxy;
     FakeLayerTreeHostImpl hostImpl(&proxy);
-    scoped_ptr<LayerImpl> root = LayerImpl::create(&hostImpl, 12345);
+    scoped_ptr<LayerImpl> root = LayerImpl::create(hostImpl.activeTree(), 12345);
 
     gfx::Transform identityMatrix;
     Region touchHandlerRegion(gfx::Rect(10, 10, 50, 50));
@@ -3754,7 +3754,7 @@ TEST(LayerTreeHostCommonTest, verifyHitCheckingTouchHandlerRegionsForSingleLayer
     //
     FakeImplProxy proxy;
     FakeLayerTreeHostImpl hostImpl(&proxy);
-    scoped_ptr<LayerImpl> root = LayerImpl::create(&hostImpl, 1);
+    scoped_ptr<LayerImpl> root = LayerImpl::create(hostImpl.activeTree(), 1);
 
     gfx::Transform identityMatrix;
     gfx::PointF anchor(0, 0);
@@ -3765,7 +3765,7 @@ TEST(LayerTreeHostCommonTest, verifyHitCheckingTouchHandlerRegionsForSingleLayer
         Region touchHandlerRegion(gfx::Rect(10, 10, 30, 30));
         gfx::PointF position(25, 25);
         gfx::Size bounds(50, 50);
-        scoped_ptr<LayerImpl> testLayer = LayerImpl::create(&hostImpl, 12345);
+        scoped_ptr<LayerImpl> testLayer = LayerImpl::create(hostImpl.activeTree(), 12345);
         setLayerPropertiesForTesting(testLayer.get(), identityMatrix, identityMatrix, anchor, position, bounds, false);
 
         // override contentBounds and contentsScale
@@ -3828,7 +3828,7 @@ TEST(LayerTreeHostCommonTest, verifyHitCheckingTouchHandlerRegionsForSingleLayer
     // be able to hit the touch handler region by scaling the points accordingly.
     FakeImplProxy proxy;
     FakeLayerTreeHostImpl hostImpl(&proxy);
-    scoped_ptr<LayerImpl> root = LayerImpl::create(&hostImpl, 1);
+    scoped_ptr<LayerImpl> root = LayerImpl::create(hostImpl.activeTree(), 1);
 
     gfx::Transform identityMatrix;
     gfx::PointF anchor(0, 0);
@@ -3839,7 +3839,7 @@ TEST(LayerTreeHostCommonTest, verifyHitCheckingTouchHandlerRegionsForSingleLayer
         Region touchHandlerRegion(gfx::Rect(10, 10, 30, 30));
         gfx::PointF position(25, 25);
         gfx::Size bounds(50, 50);
-        scoped_ptr<LayerImpl> testLayer = LayerImpl::create(&hostImpl, 12345);
+        scoped_ptr<LayerImpl> testLayer = LayerImpl::create(hostImpl.activeTree(), 12345);
         setLayerPropertiesForTesting(testLayer.get(), identityMatrix, identityMatrix, anchor, position, bounds, false);
 
         testLayer->setDrawsContent(true);
@@ -3916,17 +3916,17 @@ TEST(LayerTreeHostCommonTest, verifyHitCheckingTouchHandlerRegionsForSimpleClipp
 
     FakeImplProxy proxy;
     FakeLayerTreeHostImpl hostImpl(&proxy);
-    scoped_ptr<LayerImpl> root = LayerImpl::create(&hostImpl, 1);
+    scoped_ptr<LayerImpl> root = LayerImpl::create(hostImpl.activeTree(), 1);
     setLayerPropertiesForTesting(root.get(), identityMatrix, identityMatrix, anchor, gfx::PointF(0, 0), gfx::Size(100, 100), false);
 
     {
-        scoped_ptr<LayerImpl> clippingLayer = LayerImpl::create(&hostImpl, 123);
+        scoped_ptr<LayerImpl> clippingLayer = LayerImpl::create(hostImpl.activeTree(), 123);
         gfx::PointF position(25, 25); // this layer is positioned, and hit testing should correctly know where the layer is located.
         gfx::Size bounds(50, 50);
         setLayerPropertiesForTesting(clippingLayer.get(), identityMatrix, identityMatrix, anchor, position, bounds, false);
         clippingLayer->setMasksToBounds(true);
 
-        scoped_ptr<LayerImpl> child = LayerImpl::create(&hostImpl, 456);
+        scoped_ptr<LayerImpl> child = LayerImpl::create(hostImpl.activeTree(), 456);
         Region touchHandlerRegion(gfx::Rect(10, 10, 50, 50));
         position = gfx::PointF(-50, -50);
         bounds = gfx::Size(300, 300);

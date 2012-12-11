@@ -12,16 +12,16 @@ namespace cc {
 
 class CC_EXPORT SolidColorLayerImpl : public LayerImpl {
 public:
-    static scoped_ptr<SolidColorLayerImpl> create(LayerTreeHostImpl* hostImpl, int id)
+    static scoped_ptr<SolidColorLayerImpl> create(LayerTreeImpl* treeImpl, int id)
     {
-        return make_scoped_ptr(new SolidColorLayerImpl(hostImpl, id));
+        return make_scoped_ptr(new SolidColorLayerImpl(treeImpl, id));
     }
     virtual ~SolidColorLayerImpl();
 
     virtual void appendQuads(QuadSink&, AppendQuadsData&) OVERRIDE;
 
 protected:
-    SolidColorLayerImpl(LayerTreeHostImpl* hostImpl, int id);
+    SolidColorLayerImpl(LayerTreeImpl* treeImpl, int id);
 
 private:
     virtual const char* layerTypeAsString() const OVERRIDE;

@@ -62,7 +62,7 @@ public:
         : m_hostImpl(&m_proxy)
         , m_setFullRootLayerDamageCount(0)
         , m_lastCallWasSetVisibility(0)
-        , m_rootLayer(LayerImpl::create(&m_hostImpl, 1))
+        , m_rootLayer(LayerImpl::create(m_hostImpl.activeTree(), 1))
         , m_memoryAllocationLimitBytes(PrioritizedResourceManager::defaultMemoryAllocationLimit())
     {
         m_rootLayer->createRenderSurface();

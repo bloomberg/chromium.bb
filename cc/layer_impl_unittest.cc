@@ -73,10 +73,10 @@ TEST(LayerImplTest, verifyLayerChangesAreTrackedProperly)
     // Create a simple LayerImpl tree:
     FakeImplProxy proxy;
     FakeLayerTreeHostImpl hostImpl(&proxy);
-    scoped_ptr<LayerImpl> root = LayerImpl::create(&hostImpl, 1);
-    root->addChild(LayerImpl::create(&hostImpl, 2));
+    scoped_ptr<LayerImpl> root = LayerImpl::create(hostImpl.activeTree(), 1);
+    root->addChild(LayerImpl::create(hostImpl.activeTree(), 2));
     LayerImpl* child = root->children()[0];
-    child->addChild(LayerImpl::create(&hostImpl, 3));
+    child->addChild(LayerImpl::create(hostImpl.activeTree(), 3));
     LayerImpl* grandChild = child->children()[0];
 
     // Adding children is an internal operation and should not mark layers as changed.
@@ -109,10 +109,10 @@ TEST(LayerImplTest, verifyLayerChangesAreTrackedProperly)
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setFilters(arbitraryFilters));
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setFilters(WebFilterOperations()));
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setFilter(arbitraryFilter));
-    EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setMaskLayer(LayerImpl::create(&hostImpl, 4)));
+    EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setMaskLayer(LayerImpl::create(hostImpl.activeTree(), 4)));
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setMasksToBounds(true));
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setContentsOpaque(true));
-    EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setReplicaLayer(LayerImpl::create(&hostImpl, 5)));
+    EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setReplicaLayer(LayerImpl::create(hostImpl.activeTree(), 5)));
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setPosition(arbitraryPointF));
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setPreserves3D(true));
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setDoubleSided(false)); // constructor initializes it to "true".
@@ -170,7 +170,7 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties)
 {
     FakeImplProxy proxy;
     FakeLayerTreeHostImpl hostImpl(&proxy);
-    scoped_ptr<LayerImpl> root = LayerImpl::create(&hostImpl, 1);
+    scoped_ptr<LayerImpl> root = LayerImpl::create(hostImpl.activeTree(), 1);
 
     gfx::PointF arbitraryPointF = gfx::PointF(0.125f, 0.25f);
     float arbitraryNumber = 0.352f;
@@ -208,10 +208,10 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties)
 
     // Unrelated functions, always set to new values, always set needs update.
     VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->setAnchorPointZ(arbitraryNumber));
-    VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->setMaskLayer(LayerImpl::create(&hostImpl, 4)));
+    VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->setMaskLayer(LayerImpl::create(hostImpl.activeTree(), 4)));
     VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->setMasksToBounds(true));
     VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->setContentsOpaque(true));
-    VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->setReplicaLayer(LayerImpl::create(&hostImpl, 5)));
+    VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->setReplicaLayer(LayerImpl::create(hostImpl.activeTree(), 5)));
     VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->setPosition(arbitraryPointF));
     VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->setPreserves3D(true));
     VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->setDoubleSided(false)); // constructor initializes it to "true".
@@ -229,10 +229,10 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties)
     // Unrelated functions, set to the same values, no needs update.
     VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->setAnchorPointZ(arbitraryNumber));
     VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->setFilter(arbitraryFilter));
-    VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->setMaskLayer(LayerImpl::create(&hostImpl, 4)));
+    VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->setMaskLayer(LayerImpl::create(hostImpl.activeTree(), 4)));
     VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->setMasksToBounds(true));
     VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->setContentsOpaque(true));
-    VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->setReplicaLayer(LayerImpl::create(&hostImpl, 5)));
+    VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->setReplicaLayer(LayerImpl::create(hostImpl.activeTree(), 5)));
     VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->setPosition(arbitraryPointF));
     VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->setPreserves3D(true));
     VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->setDoubleSided(false)); // constructor initializes it to "true".
