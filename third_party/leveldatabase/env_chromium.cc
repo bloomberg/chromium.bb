@@ -286,9 +286,17 @@ class ChromiumWritableFile : public WritableFile {
 
   virtual Status Sync() {
     Status result;
-    if ((fflush_unlocked(file_) != 0) ||
-        (fdatasync(fileno(file_)) != 0)) {
-      result = Status::IOError(filename_, strerror(errno));
+    int error = 0;
+    
+    if (fflush_unlocked(file_))
+      error = errno;
+    // Sync even if fflush gave an error; perhaps the data actually got out,
+    // even though something went wrong.
+    if (fdatasync(fileno(file_)) && !error)
+      error = errno;
+    // Report the first error we found.
+    if (error) {
+      result = Status::IOError(filename_, strerror(error));
       LogToUMA(kWritableFileSync);
     }
     return result;
