@@ -44,6 +44,10 @@
 
   <div id="sync-buttons" class="settings-row">
     <button id="start-stop-sync" hidden></button>
+    <span id="start-stop-sync-indicator"
+        class="controlled-setting-indicator"
+        pref="sync.managed" hidden>
+    </span>
     <button id="customize-sync" i18n-content="customizeSync" hidden>
     </button>
 <if expr="pp_ifdef('chromeos')">

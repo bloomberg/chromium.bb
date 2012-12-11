@@ -673,7 +673,7 @@ cr.define('options', function() {
           syncData.setupInProgress ?
               loadTimeData.getString('syncButtonTextInProgress') :
               loadTimeData.getString('syncButtonTextStart');
-
+      $('start-stop-sync-indicator').hidden = startStopButton.hidden;
 
       // TODO(estade): can this just be textContent?
       $('sync-status-text').innerHTML = syncData.statusText;
