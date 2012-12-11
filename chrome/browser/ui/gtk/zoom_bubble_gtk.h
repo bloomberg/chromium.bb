@@ -28,7 +28,7 @@ class ZoomBubbleGtk {
 
  private:
   ZoomBubbleGtk(GtkWidget* anchor,
-                content::WebContents* tab_contents,
+                content::WebContents* web_contents,
                 bool auto_close);
 
   virtual ~ZoomBubbleGtk();

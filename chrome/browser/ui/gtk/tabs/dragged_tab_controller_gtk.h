@@ -25,7 +25,6 @@ class DraggedViewGtk;
 class TabGtk;
 class TabStripGtk;
 class TabStripModel;
-class TabContents;
 
 class DraggedTabControllerGtk : public content::NotificationObserver,
                                 public content::WebContentsDelegate {
@@ -62,8 +61,8 @@ class DraggedTabControllerGtk : public content::NotificationObserver,
   // Returns true if |tab| matches any tab being dragged.
   bool IsDraggingTab(const TabGtk* tab);
 
-  // Returns true if |tab_contents| matches any tab contents being dragged.
-  bool IsDraggingTabContents(const TabContents* tab_contents);
+  // Returns true if |web_contents| matches any tab contents being dragged.
+  bool IsDraggingWebContents(const content::WebContents* web_contents);
 
   // Returns true if the specified tab is detached.
   bool IsTabDetached(const TabGtk* tab);
@@ -154,12 +153,12 @@ class DraggedTabControllerGtk : public content::NotificationObserver,
   gfx::Point GetDraggedViewPoint(const gfx::Point& screen_point);
 
   // Finds the Tab within the specified TabStrip that corresponds to the
-  // dragged TabContents.
+  // dragged WebContents.
   TabGtk* GetTabMatchingDraggedContents(TabStripGtk* tabstrip,
-                                        TabContents* contents);
+                                        content::WebContents* contents);
 
   // Finds all the tabs within the specified TabStrip that correspond to the
-  // dragged TabContents.
+  // dragged WebContents.
   std::vector<TabGtk*> GetTabsMatchingDraggedContents(TabStripGtk* tabstrip);
 
   // Sets the visible and draggging property of all dragged tabs. If |repaint|
@@ -177,7 +176,7 @@ class DraggedTabControllerGtk : public content::NotificationObserver,
   // be destroyed immediately, false otherwise.
   bool CompleteDrag();
 
-  // Resets the delegates of the TabContents.
+  // Resets the delegates of the WebContents.
   void ResetDelegates();
 
   // Create the DraggedViewGtk if it does not yet exist.

@@ -29,7 +29,6 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/tabs/dragged_tab_controller_gtk.h"
 #include "chrome/browser/ui/gtk/tabs/tab_strip_menu_controller.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -2079,7 +2078,7 @@ gboolean TabStripGtk::OnExpose(GtkWidget* widget, GdkEventExpose* event) {
     TabGtk* tab = GetTabAt(i);
     // We must ask the _Tab's_ model, not ourselves, because in some situations
     // the model will be different to this object, e.g. when a Tab is being
-    // removed after its TabContents has been destroyed.
+    // removed after its WebContents has been destroyed.
     if (!tab->IsActive()) {
       gtk_container_propagate_expose(GTK_CONTAINER(tabstrip_.get()),
                                      tab->widget(), event);

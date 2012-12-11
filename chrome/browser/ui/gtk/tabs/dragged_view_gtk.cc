@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/tabs/drag_data.h"
 #include "chrome/browser/ui/gtk/tabs/tab_renderer_gtk.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -71,7 +70,7 @@ DraggedViewGtk::DraggedViewGtk(DragData* drag_data,
   }
 
   for (size_t i = 0; i < drag_data_->size(); i++) {
-    WebContents* web_contents = drag_data_->get(i)->contents_->web_contents();
+    WebContents* web_contents = drag_data_->get(i)->contents_;
     renderers_[i]->UpdateData(
         web_contents,
         extensions::TabHelper::FromWebContents(web_contents)->is_app(),

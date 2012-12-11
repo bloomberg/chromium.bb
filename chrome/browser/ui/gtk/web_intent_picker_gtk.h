@@ -37,7 +37,7 @@ class WebIntentPickerGtk : public WebIntentPicker,
                            public ConstrainedWindowGtkDelegate,
                            public content::NotificationObserver {
  public:
-  WebIntentPickerGtk(content::WebContents* tab_contents,
+  WebIntentPickerGtk(content::WebContents* web_contents,
                      WebIntentPickerDelegate* delegate,
                      WebIntentPickerModel* model);
   virtual ~WebIntentPickerGtk();
