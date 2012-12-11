@@ -206,6 +206,9 @@ cr.define('cr.ui.login', function() {
 
       this.disableButtons_(newStep, false);
 
+      // Default control to be focused (if specified).
+      var defaultControl = newStep.defaultControl;
+
       if (this.isOobeUI()) {
         // Start gliding animation for OOBE steps.
         if (nextStepIndex > this.currentStep_) {
@@ -239,9 +242,13 @@ cr.define('cr.ui.login', function() {
               innerContainer.classList.remove('animation');
               oldStep.classList.add('hidden');
             }
+            if (defaultControl)
+              defaultControl.focus();
           });
         } else {
           oldStep.classList.add('hidden');
+          if (defaultControl)
+            defaultControl.focus();
         }
       } else {
         // First screen on OOBE launch.
@@ -252,17 +259,17 @@ cr.define('cr.ui.login', function() {
                 innerContainer.removeEventListener('webkitTransitionEnd', f);
                 $('progress-dots').classList.remove('down');
                 chrome.send('loginVisible', ['oobe']);
+                if (defaultControl)
+                  defaultControl.focus();
               });
+        } else {
+          if (defaultControl)
+            defaultControl.focus();
         }
         newHeader.classList.remove('right');  // Old OOBE.
       }
       this.currentStep_ = nextStepIndex;
       $('oobe').className = nextStepId;
-
-      // Focus the default control (if specified).
-      var defaultControl = newStep.defaultControl;
-      if (defaultControl)
-        defaultControl.focus();
 
       $('step-logo').hidden = newStep.classList.contains('no-logo');
 
