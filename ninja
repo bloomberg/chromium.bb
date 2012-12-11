@@ -7,24 +7,18 @@
 OS="$(uname -s)"
 THIS_DIR="$(dirname "${0}")"
 
-if [ "${OS}" = "Linux" ]; then
-  machine=$(getconf LONG_BIT)
-  if [[ "$machine" = "64" ]]; then
-    exec "${THIS_DIR}/ninja-linux64" "$@"
-  elif [[ "$machine" = "32" ]]; then
-    exec "${THIS_DIR}/ninja-linux32" "$@"
-  else
-    echo Unknown architecture \($machine\) -- unable to run ninja.
-    exit 1
-  fi
-elif [ "${OS}" = "Darwin" ]; then
-  exec "${THIS_DIR}/ninja-mac" "$@"
-elif [[ ${OS} == CYGWIN* ]]; then
-  exec cmd.exe /c `cygpath -t windows $0`.exe "$@"
-elif [[ ${OS} == MINGW32* ]]; then
-  cmd.exe //c $0.exe "$@"
-else
-  echo "Unsupported OS ${OS}"
-  exit 1
-fi
-
+case "$OS" in
+  Linux)
+    MACHINE=$(getconf LONG_BIT)
+    case "$MACHINE" in
+      32|64)  exec "${THIS_DIR}/ninja-linux${MACHINE}" "$@";;
+      *)      echo Unknown architecture \($MACHINE\) -- unable to run ninja.
+              exit 1;;
+    esac
+    ;;
+  Darwin)    exec "${THIS_DIR}/ninja-mac" "$@";;
+  CYGWIN*)   exec cmd.exe /c $(cygpath -t windows $0).exe "$@";;
+  MINGW32*)  cmd.exe //c $0.exe "$@";;
+  *)         echo "Unsupported OS ${OS}"
+             exit 1;;
+esac
