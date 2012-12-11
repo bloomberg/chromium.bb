@@ -715,7 +715,7 @@ void PlatformAppDevToolsBrowserTest::RunTestWithDevTools(
   content::WindowedNotificationObserver loaded_observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<content::NavigationController>(
-          &devtools_window->tab_contents()->web_contents()->GetController()));
+          &devtools_window->web_contents()->GetController()));
   loaded_observer.Wait();
   ASSERT_TRUE(DevToolsAgentHostRegistry::HasDevToolsAgentHost(rvh));
 

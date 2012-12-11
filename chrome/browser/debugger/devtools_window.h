@@ -19,15 +19,10 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_delegate.h"
 
-namespace IPC {
-class Message;
-}
-
 class Browser;
 class BrowserWindow;
 class PrefService;
 class Profile;
-class TabContents;
 
 namespace base {
 class Value;
@@ -39,6 +34,10 @@ class DevToolsClientHost;
 struct FileChooserParams;
 class RenderViewHost;
 class WebContents;
+}
+
+namespace IPC {
+class Message;
 }
 
 enum DevToolsDockSide {
@@ -85,8 +84,7 @@ class DevToolsWindow : private content::NotificationObserver,
 
   void Show(DevToolsToggleAction action);
 
-  content::WebContents* web_contents() { return tab_contents_->web_contents(); }
-  TabContents* tab_contents() { return tab_contents_; }
+  content::WebContents* web_contents() { return web_contents_; }
   Browser* browser() { return browser_; }  // For tests.
   DevToolsDockSide dock_side() { return dock_side_; }
   content::DevToolsClientHost* devtools_client_host() { return frontend_host_; }
@@ -114,7 +112,7 @@ class DevToolsWindow : private content::NotificationObserver,
                                 content::RenderViewHost* inspected_rvh,
                                 DevToolsDockSide dock_side,
                                 bool shared_worker_frontend);
-  DevToolsWindow(TabContents* tab_contents,
+  DevToolsWindow(content::WebContents* web_contents,
                  Profile* profile,
                  content::RenderViewHost* inspected_rvh,
                  DevToolsDockSide dock_side);
@@ -193,7 +191,7 @@ class DevToolsWindow : private content::NotificationObserver,
 
   Profile* profile_;
   content::WebContents* inspected_web_contents_;
-  TabContents* tab_contents_;
+  content::WebContents* web_contents_;
   Browser* browser_;
   DevToolsDockSide dock_side_;
   bool is_loaded_;

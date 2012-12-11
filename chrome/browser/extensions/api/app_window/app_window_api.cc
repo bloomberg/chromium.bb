@@ -58,7 +58,7 @@ class DevToolsRestorer : public content::NotificationObserver {
         this,
         content::NOTIFICATION_LOAD_STOP,
         content::Source<content::NavigationController>(
-            &devtools_window->tab_contents()->web_contents()->GetController()));
+            &devtools_window->web_contents()->GetController()));
   }
 
  protected:

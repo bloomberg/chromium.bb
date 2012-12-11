@@ -245,8 +245,8 @@ void ThumbnailLoader::LoadThumbnail() {
   int bottomOffset = 0;
   DevToolsWindow* devToolsWindow =
       DevToolsWindow::GetDockedInstanceForInspectedTab(contents_);
-  content::WebContents* devToolsContents = devToolsWindow ?
-      devToolsWindow->tab_contents()->web_contents() : NULL;
+  content::WebContents* devToolsContents =
+      devToolsWindow ? devToolsWindow->web_contents() : NULL;
   if (devToolsContents && devToolsContents->GetRenderViewHost() &&
       devToolsContents->GetRenderViewHost()->GetView()) {
     // The devtool's size might not be up-to-date, but since its height doesn't

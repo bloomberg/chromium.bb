@@ -2312,8 +2312,8 @@ void BrowserView::UpdateDevToolsForContents(WebContents* web_contents) {
 
   // Replace tab contents.
   if (devtools_window_ != new_devtools_window) {
-    devtools_container_->SetWebContents(new_devtools_window ?
-        new_devtools_window->tab_contents()->web_contents() : NULL);
+    devtools_container_->SetWebContents(
+        new_devtools_window ? new_devtools_window->web_contents() : NULL);
   }
 
   // Store last used position.

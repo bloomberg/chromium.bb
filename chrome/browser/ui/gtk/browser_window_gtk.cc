@@ -2302,18 +2302,16 @@ void BrowserWindowGtk::UpdateDevToolsForContents(WebContents* contents) {
 
   // Replace tab contents.
   if (devtools_window_ != new_devtools_window) {
-    if (devtools_window_) {
-      devtools_container_->DetachTab(
-          devtools_window_->tab_contents()->web_contents());
-    }
-    devtools_container_->SetTab(new_devtools_window ?
-        new_devtools_window->tab_contents()->web_contents() : NULL);
+    if (devtools_window_)
+      devtools_container_->DetachTab(devtools_window_->web_contents());
+    devtools_container_->SetTab(
+        new_devtools_window ? new_devtools_window->web_contents() : NULL);
     if (new_devtools_window) {
-      // WebContentsViewGtk::WasShown is not called when tab contents is shown
+      // WebContentsViewGtk::WasShown is not called when a web contents is shown
       // by anything other than user selecting a Tab.
       // See TabContentsViewViews::OnWindowPosChanged for reference on how it
       // should be implemented.
-      new_devtools_window->tab_contents()->web_contents()->WasShown();
+      new_devtools_window->web_contents()->WasShown();
     }
   }
 
