@@ -45,6 +45,7 @@
           'app_current_window_internal.idl',
           'app_runtime.idl',
           'app_window.idl',
+          'autotest_private.idl',
           'bluetooth.idl',
           'dial.idl',
           'downloads.idl',

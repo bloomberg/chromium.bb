@@ -44,6 +44,7 @@ class APIPermission {
     kAppRuntime,
     kAppWindow,
     kAudioCapture,
+    kAutoTestPrivate,
     kBackground,
     kBluetooth,
     kBluetoothDevice,

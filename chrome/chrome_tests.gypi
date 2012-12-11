@@ -911,6 +911,7 @@
         'browser/extensions/all_urls_apitest.cc',
         'browser/extensions/api/app/app_apitest.cc',
         'browser/extensions/api/app_window/app_window_apitest.cc',
+        'browser/extensions/api/autotest_private/autotest_private_apitest.cc',
         'browser/extensions/api/bluetooth/bluetooth_apitest.cc',
         'browser/extensions/api/browsing_data/browsing_data_test.cc',
         'browser/extensions/api/cloud_print_private/cloud_print_private_apitest.cc',

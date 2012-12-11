@@ -25,6 +25,11 @@
     "channel": "stable",
     "extension_types": ["packaged_app", "hosted_app"]
   },
+    "autotestPrivate": {
+    "channel": "stable",
+    "extension_types": ["extension", "packaged_app"],
+    "location": "component"
+  },
   "audioCapture": {
     "channel": "stable",
     "extension_types": ["platform_app"]

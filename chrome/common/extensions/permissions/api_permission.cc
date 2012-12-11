@@ -243,6 +243,8 @@ void APIPermissionInfo::RegisterAllPermissions(
     { APIPermission::kWebView, "webview", kFlagCannotBeOptional },
 
     // Register private permissions.
+    { APIPermission::kAutoTestPrivate, "autotestPrivate",
+      kFlagCannotBeOptional },
     { APIPermission::kBookmarkManagerPrivate, "bookmarkManagerPrivate",
       kFlagCannotBeOptional },
     { APIPermission::kChromeosInfoPrivate, "chromeosInfoPrivate",

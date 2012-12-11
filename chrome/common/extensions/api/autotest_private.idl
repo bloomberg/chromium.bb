@@ -1,0 +1,25 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// API for integration testing. To be used on test images with a test component
+// extension.
+[nodoc] namespace autotestPrivate {
+
+  callback LoginStatusCallback = void (DOMString status);
+
+  interface Functions {
+    // Logout of a user session.
+    static void logout();
+
+    // Restart the browser.
+    static void restart();
+
+    // Shutdown the browser.
+    // |force|: if set, ignore ongoing downloads and onunbeforeunload handlers.
+    static void shutdown(boolean force);
+
+    // Get login status.
+    static void loginStatus(LoginStatusCallback callback);
+  };
+};
