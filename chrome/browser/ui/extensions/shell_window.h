@@ -83,9 +83,6 @@ class ShellWindow : public content::NotificationObserver,
                              const GURL& url,
                              const CreateParams& params);
 
-  // Specifies a url for the launcher icon.
-  void SetAppIconUrl(const GURL& icon_url);
-
   // Convert draggable regions in raw format to SkRegion format. Caller is
   // responsible for deleting the returned SkRegion instance.
   static SkRegion* RawDraggableRegionsToSkRegion(
@@ -114,6 +111,9 @@ class ShellWindow : public content::NotificationObserver,
   // Should be called by native implementations when the window size, position,
   // or minimized/maximized state has changed.
   void OnNativeWindowChanged();
+
+  // Specifies a url for the launcher icon.
+  void SetAppIconUrl(const GURL& icon_url);
 
  protected:
   ShellWindow(Profile* profile,
@@ -205,6 +205,16 @@ class ShellWindow : public content::NotificationObserver,
   virtual extensions::ActiveTabPermissionGranter*
       GetActiveTabPermissionGranter() OVERRIDE;
 
+  // Callback from web_contents()->DownloadFavicon.
+  void DidDownloadFavicon(int id,
+                          const GURL& image_url,
+                          bool errored,
+                          int requested_size,
+                          const std::vector<SkBitmap>& bitmaps);
+
+  // Updates the app image to |image|, called from image loader callback.
+  void UpdateAppIcon(const gfx::Image& image);
+
   Profile* profile_;  // weak pointer - owned by ProfileManager.
   // weak pointer - owned by ExtensionService.
   const extensions::Extension* extension_;
@@ -219,10 +229,10 @@ class ShellWindow : public content::NotificationObserver,
   content::NotificationRegistrar registrar_;
   ExtensionFunctionDispatcher extension_function_dispatcher_;
 
-  // Icon showed in the task bar.
+  // Icon shown in the task bar.
   gfx::Image app_icon_;
 
-  // Used for loading app_icon_.
+  // Used for loading app_icon_ from the extension.
   scoped_ptr<ImageLoadingTracker> app_icon_loader_;
 
   // Icon URL to be used for setting the app icon. If not empty, app_icon_ will
@@ -230,6 +240,8 @@ class ShellWindow : public content::NotificationObserver,
   GURL app_icon_url_;
 
   scoped_ptr<NativeAppWindow> native_app_window_;
+
+  base::WeakPtrFactory<ShellWindow> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellWindow);
 };

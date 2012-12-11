@@ -175,6 +175,10 @@ class ChromeLauncherController
   virtual void SetAppImage(const std::string& app_id,
                            const gfx::ImageSkia& image) = 0;
 
+  // Set the image for a specific launcher item (e.g. when set by the app).
+  virtual void SetLauncherItemImage(ash::LauncherID launcher_id,
+                                    const gfx::ImageSkia& image) = 0;
+
   // Returns true if a pinned launcher item with given |app_id| could be found.
   virtual bool IsAppPinned(const std::string& app_id) = 0;
 

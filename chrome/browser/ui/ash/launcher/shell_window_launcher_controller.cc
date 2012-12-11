@@ -255,8 +255,13 @@ void ShellWindowLauncherController::OnShellWindowAdded(
 
 void ShellWindowLauncherController::OnShellWindowIconChanged(
     ShellWindow* shell_window) {
-  // TODO(stevenjb): Fetch and set the launcher icon using
-  // shell_window->app_icon_url().
+  const std::string app_launcher_id = GetAppLauncherId(shell_window);
+  AppControllerMap::iterator iter = app_controller_map_.find(app_launcher_id);
+  if (iter == app_controller_map_.end())
+    return;
+  AppLauncherItemController* controller = iter->second;
+  owner_->SetLauncherItemImage(controller->launcher_id(),
+                               shell_window->app_icon().AsImageSkia());
 }
 
 void ShellWindowLauncherController::OnShellWindowRemoved(

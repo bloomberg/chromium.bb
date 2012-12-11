@@ -29,6 +29,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/api/app_window.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/request_media_access_permission_helper.h"
 #include "content/public/browser/browser_thread.h"
@@ -48,6 +49,10 @@
 #include "content/public/common/renderer_preferences.h"
 #include "third_party/skia/include/core/SkRegion.h"
 
+#if defined(USE_ASH)
+#include "ash/launcher/launcher_types.h"
+#endif
+
 namespace app_window = extensions::api::app_window;
 
 using content::BrowserThread;
@@ -62,6 +67,13 @@ using extensions::RequestMediaAccessPermissionHelper;
 namespace {
 const int kDefaultWidth = 512;
 const int kDefaultHeight = 384;
+
+// The preferred icon size for displaying the app icon.
+#if defined(USE_ASH)
+const int kPreferredIconSize = ash::kLauncherPreferredSize;
+#else
+const int kPreferredIconSize = extension_misc::EXTENSION_ICON_SMALL;
+#endif
 
 void SuspendRenderViewHost(RenderViewHost* rvh) {
   DCHECK(rvh);
@@ -94,11 +106,6 @@ ShellWindow* ShellWindow::Create(Profile* profile,
   return window;
 }
 
-void ShellWindow::SetAppIconUrl(const GURL& url) {
-  app_icon_url_ = url;
-  extensions::ShellWindowRegistry::Get(profile_)->ShellWindowIconChanged(this);
-}
-
 ShellWindow::ShellWindow(Profile* profile,
                          const extensions::Extension* extension)
     : profile_(profile),
@@ -106,7 +113,8 @@ ShellWindow::ShellWindow(Profile* profile,
       web_contents_(NULL),
       window_type_(WINDOW_TYPE_DEFAULT),
       ALLOW_THIS_IN_INITIALIZER_LIST(
-          extension_function_dispatcher_(profile, this)) {
+          extension_function_dispatcher_(profile, this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
 void ShellWindow::Init(const GURL& url,
@@ -379,6 +387,16 @@ string16 ShellWindow::GetTitle() const {
   return title;
 }
 
+void ShellWindow::SetAppIconUrl(const GURL& url) {
+  app_icon_url_ = url;
+  web_contents()->DownloadFavicon(url, kPreferredIconSize,
+                                  base::Bind(&ShellWindow::DidDownloadFavicon,
+                                             weak_ptr_factory_.GetWeakPtr()));
+}
+
+//------------------------------------------------------------------------------
+// Private methods
+
 bool ShellWindow::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ShellWindow, message)
@@ -398,21 +416,45 @@ void ShellWindow::UpdateDraggableRegions(
 void ShellWindow::OnImageLoaded(const gfx::Image& image,
                                 const std::string& extension_id,
                                 int index) {
-  if (!image.IsEmpty()) {
-    app_icon_ = image;
-    native_app_window_->UpdateWindowIcon();
-  }
+  UpdateAppIcon(image);
   app_icon_loader_.reset();
+}
+
+void ShellWindow::DidDownloadFavicon(int id,
+                                     const GURL& image_url,
+                                     bool errored,
+                                     int requested_size,
+                                     const std::vector<SkBitmap>& bitmaps) {
+  if (image_url != app_icon_url_ || bitmaps.empty())
+    return;
+
+  // Bitmaps are ordered largest to smallest. Choose the smallest bitmap
+  // whose height >= the preferred size.
+  int largest_index = 0;
+  for (size_t i = 1; i < bitmaps.size(); ++i) {
+    if (bitmaps[i].height() < kPreferredIconSize)
+      break;
+    largest_index = i;
+  }
+  const SkBitmap& largest = bitmaps[largest_index];
+  UpdateAppIcon(gfx::Image(largest));
+}
+
+void ShellWindow::UpdateAppIcon(const gfx::Image& image) {
+  if (image.IsEmpty())
+    return;
+  app_icon_ = image;
+  native_app_window_->UpdateWindowIcon();
+  extensions::ShellWindowRegistry::Get(profile_)->ShellWindowIconChanged(this);
 }
 
 void ShellWindow::UpdateExtensionAppIcon() {
   app_icon_loader_.reset(new ImageLoadingTracker(this));
   app_icon_loader_->LoadImage(
       extension(),
-      extension()->GetIconResource(extension_misc::EXTENSION_ICON_SMALL,
+      extension()->GetIconResource(kPreferredIconSize,
                                    ExtensionIconSet::MATCH_BIGGER),
-      gfx::Size(extension_misc::EXTENSION_ICON_SMALL,
-                extension_misc::EXTENSION_ICON_SMALL),
+      gfx::Size(kPreferredIconSize, kPreferredIconSize),
       ImageLoadingTracker::CACHE);
 }
 
@@ -535,7 +577,6 @@ void ShellWindow::AddMessageToDevToolsConsole(ConsoleMessageLevel level,
   rvh->Send(new ExtensionMsg_AddMessageToConsole(
       rvh->GetRoutingID(), level, message));
 }
-
 
 void ShellWindow::SaveWindowPosition() {
   if (window_key_.empty())

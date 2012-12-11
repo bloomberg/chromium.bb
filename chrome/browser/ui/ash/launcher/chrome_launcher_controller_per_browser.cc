@@ -474,8 +474,9 @@ std::string ChromeLauncherControllerPerBrowser::GetAppIDForLauncherID(
   return id_to_item_controller_map_[id]->app_id();
 }
 
-void ChromeLauncherControllerPerBrowser::SetAppImage(const std::string& id,
-                                           const gfx::ImageSkia& image) {
+void ChromeLauncherControllerPerBrowser::SetAppImage(
+    const std::string& id,
+    const gfx::ImageSkia& image) {
   // TODO: need to get this working for shortcuts.
 
   for (IDToItemControllerMap::const_iterator i =
@@ -497,6 +498,17 @@ void ChromeLauncherControllerPerBrowser::SetAppImage(const std::string& id,
     model_->Set(index, item);
     // It's possible we're waiting on more than one item, so don't break.
   }
+}
+
+void ChromeLauncherControllerPerBrowser::SetLauncherItemImage(
+    ash::LauncherID launcher_id,
+    const gfx::ImageSkia& image) {
+  int index = model_->ItemIndexByID(launcher_id);
+  if (index == -1)
+    return;
+  ash::LauncherItem item = model_->items()[index];
+  item.image = image;
+  model_->Set(index, item);
 }
 
 bool ChromeLauncherControllerPerBrowser::IsAppPinned(
@@ -1109,4 +1121,3 @@ ChromeLauncherControllerPerBrowser::GetAppIdFromLauncherIdForTest(
     ash::LauncherID id) {
   return id_to_item_controller_map_[id]->app_id();
 }
-

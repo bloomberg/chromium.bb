@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/run_loop.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/platform_app_browsertest_util.h"
@@ -81,9 +82,15 @@ IN_PROC_BROWSER_TEST_F(ExperimentalPlatformAppBrowserTest, WindowsApiSetIcon) {
   ExtensionTestMessageListener listener("IconSet", false);
   LoadAndLaunchPlatformApp("windows_api_set_icon");
   EXPECT_EQ(0, test_observer->icon_updates());
-
+  // Wait until the icon load has been requested.
   ASSERT_TRUE(listener.WaitUntilSatisfied());
-
+  // Now wait until the WebContent has decoded the icon and chrome has
+  // processed it. This needs to be in a loop since the renderer runs in a
+  // different process.
+  while (test_observer->icon_updates() < 1) {
+    base::RunLoop run_loop;
+    run_loop.RunUntilIdle();
+  }
   ShellWindow* shell_window = GetFirstShellWindow();
   ASSERT_TRUE(shell_window);
   EXPECT_NE(std::string::npos,

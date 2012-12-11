@@ -495,6 +495,17 @@ void ChromeLauncherControllerPerApp::SetAppImage(
   }
 }
 
+void ChromeLauncherControllerPerApp::SetLauncherItemImage(
+    ash::LauncherID launcher_id,
+    const gfx::ImageSkia& image) {
+  int index = model_->ItemIndexByID(launcher_id);
+  if (index == -1)
+    return;
+  ash::LauncherItem item = model_->items()[index];
+  item.image = image;
+  model_->Set(index, item);
+}
+
 bool ChromeLauncherControllerPerApp::IsAppPinned(const std::string& app_id) {
   for (IDToItemControllerMap::const_iterator i =
            id_to_item_controller_map_.begin();
