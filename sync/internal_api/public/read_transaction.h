@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define SYNC_INTERNAL_API_PUBLIC_READ_TRANSACTION_H_
 
 #include "base/compiler_specific.h"
+#include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base_transaction.h"
 
 namespace tracked_objects {
@@ -18,7 +19,7 @@ struct UserShare;
 
 // Sync API's ReadTransaction is a read-only BaseTransaction.  It wraps
 // a syncable::ReadTransaction.
-class ReadTransaction : public BaseTransaction {
+class SYNC_EXPORT ReadTransaction : public BaseTransaction {
  public:
   // Start a new read-only transaction on the specified repository.
   ReadTransaction(const tracked_objects::Location& from_here,

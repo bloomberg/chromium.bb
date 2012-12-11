@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 
 #include "base/file_util.h"
 #include "base/gtest_prod_util.h"
+#include "sync/base/sync_export.h"
 #include "sync/internal_api/public/util/report_unrecoverable_error_function.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/syncable/dir_open_result.h"
@@ -128,7 +129,7 @@ enum InvariantCheckLevel {
   FULL_DB_VERIFICATION = 2 // Check every entry.  This can be expensive.
 };
 
-class Directory {
+class SYNC_EXPORT Directory {
   friend class BaseTransaction;
   friend class Entry;
   friend class MutableEntry;

@@ -1,6 +1,7 @@
 include_rules = [
   "+googleurl",
   "+net",
+  "+sync/base",
   "+sync/engine",
   "+sync/js",
   "+sync/notifier",

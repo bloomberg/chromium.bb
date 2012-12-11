@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "sync/api/sync_data.h"
 #include "sync/api/sync_error.h"
 #include "sync/api/sync_merge_result.h"
+#include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 
 namespace syncer {
@@ -25,8 +26,9 @@ typedef std::vector<SyncData> SyncDataList;
 // TODO(zea): remove SupportsWeakPtr in favor of having all SyncableService
 // implementers provide a way of getting a weak pointer to themselves.
 // See crbug.com/100114.
-class SyncableService : public SyncChangeProcessor,
-                        public base::SupportsWeakPtr<SyncableService> {
+class SYNC_EXPORT SyncableService
+    : public SyncChangeProcessor,
+      public base::SupportsWeakPtr<SyncableService> {
  public:
   // Informs the service to begin syncing the specified synced datatype |type|.
   // The service should then merge |initial_sync_data| into it's local data,

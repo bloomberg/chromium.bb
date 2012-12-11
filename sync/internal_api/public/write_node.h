@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/base_node.h"
 
@@ -39,7 +40,7 @@ class MutableEntry;
 
 // WriteNode extends BaseNode to add mutation, and wraps
 // syncable::MutableEntry. A WriteTransaction is needed to create a WriteNode.
-class WriteNode : public BaseNode {
+class SYNC_EXPORT WriteNode : public BaseNode {
  public:
   enum InitUniqueByCreationResult {
     INIT_SUCCESS,

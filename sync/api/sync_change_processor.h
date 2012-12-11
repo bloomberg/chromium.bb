@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "sync/api/sync_error.h"
+#include "sync/base/sync_export.h"
 
 namespace tracked_objects {
 class Location;
@@ -20,7 +21,7 @@ class SyncChange;
 typedef std::vector<SyncChange> SyncChangeList;
 
 // An interface for services that handle receiving SyncChanges.
-class SyncChangeProcessor {
+class SYNC_EXPORT SyncChangeProcessor {
  public:
   SyncChangeProcessor();
   virtual ~SyncChangeProcessor();

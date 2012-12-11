@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,8 @@
 // See README.js for design comments.
 
 #include <string>
+
+#include "sync/base/sync_export.h"
 
 namespace syncer {
 
@@ -19,7 +21,7 @@ template <typename T> class WeakHandle;
 // An interface for objects that JsEventHandlers directly interact
 // with.  JsEventHandlers can add themselves to receive events and
 // also send messages which will eventually reach the backend.
-class JsController {
+class SYNC_EXPORT JsController {
  public:
   // Adds an event handler which will start receiving JS events (not
   // immediately, so this can be called in the handler's constructor).

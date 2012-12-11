@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,10 +9,11 @@
 
 #include "base/location.h"
 #include "sync/api/sync_error.h"
+#include "sync/base/sync_export.h"
 
 namespace syncer {
 
-class SyncErrorFactory {
+class SYNC_EXPORT SyncErrorFactory {
  public:
   SyncErrorFactory();
   virtual ~SyncErrorFactory();

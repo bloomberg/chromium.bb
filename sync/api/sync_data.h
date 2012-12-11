@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/util/immutable.h"
 
@@ -22,7 +23,7 @@ namespace syncer {
 
 // A light-weight container for immutable sync data. Pass-by-value and storage
 // in STL containers are supported and encouraged if helpful.
-class SyncData {
+class SYNC_EXPORT SyncData {
  public:
   // Creates an empty and invalid SyncData.
   SyncData();

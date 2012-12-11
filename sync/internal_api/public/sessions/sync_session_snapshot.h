@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/time.h"
+#include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/base/progress_marker_map.h"
 #include "sync/internal_api/public/sessions/model_neutral_state.h"
@@ -26,7 +27,7 @@ namespace sessions {
 // TODO(zea): if copying this all over the place starts getting expensive,
 // consider passing around immutable references instead of values.
 // Default copy and assign welcome.
-class SyncSessionSnapshot {
+class SYNC_EXPORT SyncSessionSnapshot {
  public:
   SyncSessionSnapshot();
   SyncSessionSnapshot(

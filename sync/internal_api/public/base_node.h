@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
+#include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/protocol/sync.pb.h"
 
@@ -54,7 +55,7 @@ static const int64 kInvalidId = 0;
 // transaction is necessary to create a BaseNode or any of its children.
 // Unlike syncable::Entry, a sync API BaseNode is identified primarily by its
 // int64 metahandle, which we call an ID here.
-class BaseNode {
+class SYNC_EXPORT BaseNode {
  public:
   // Enumerates the possible outcomes of trying to initialize a sync node.
   enum InitByLookupResult {

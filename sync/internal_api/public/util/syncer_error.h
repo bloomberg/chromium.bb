@@ -1,9 +1,11 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef SYNC_INTERNAL_API_PUBLIC_UTIL_SYNCER_ERROR_H_
 #define SYNC_INTERNAL_API_PUBLIC_UTIL_SYNCER_ERROR_H_
+
+#include "sync/base/sync_export.h"
 
 namespace syncer {
 
@@ -41,7 +43,7 @@ enum SyncerError {
   SYNCER_OK
 };
 
-const char * GetSyncerErrorString(SyncerError);
+SYNC_EXPORT const char* GetSyncerErrorString(SyncerError);
 
 // Helper to check that |error| is set to something (not UNSET) and is not
 // SYNCER_OK.

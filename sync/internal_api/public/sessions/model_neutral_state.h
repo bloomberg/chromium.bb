@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define SYNC_SESSIONS_MODEL_NEUTRAL_STATE_H
 
 #include "base/basictypes.h"
+#include "sync/base/sync_export.h"
 #include "sync/internal_api/public/util/syncer_error.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/protocol/sync_protocol_error.h"
@@ -17,7 +18,7 @@ namespace sessions {
 // components of the global grouping can internally implement finer grained
 // scope control, but the top level entity is still a singleton with respect to
 // model types.
-struct ModelNeutralState {
+struct SYNC_EXPORT ModelNeutralState {
   ModelNeutralState();
   ~ModelNeutralState();
 

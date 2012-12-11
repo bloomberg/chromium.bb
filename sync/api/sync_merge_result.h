@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define SYNC_API_SYNC_MERGE_RESULT_H_
 
 #include "sync/api/sync_error.h"
+#include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 
 namespace syncer {
@@ -17,7 +18,7 @@ namespace syncer {
 // by the local SyncableService, all values correspond to the local state before
 // and after merging, and the delta's applied to that state. Sync's change
 // processor will create a separate merge result.
-class SyncMergeResult {
+class SYNC_EXPORT SyncMergeResult {
  public:
   // Initialize an empty merge result for model type |type|.
   explicit SyncMergeResult(ModelType type);

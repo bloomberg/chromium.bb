@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 
 namespace tracked_objects {
@@ -22,7 +23,7 @@ namespace syncer {
 // unrecoverable for the datatype creating them, and should only be used as
 // such.
 // This class is copy-friendly and thread-safe.
-class SyncError {
+class SYNC_EXPORT SyncError {
  public:
   // Default constructor refers to "no error", and IsSet() will return false.
   SyncError();

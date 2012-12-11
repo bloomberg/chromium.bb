@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,8 @@
 
 #ifndef SYNC_PROTOCOL_PROTO_VALUE_CONVERSIONS_H_
 #define SYNC_PROTOCOL_PROTO_VALUE_CONVERSIONS_H_
+
+#include "sync/base/sync_export.h"
 
 namespace base {
 class DictionaryValue;
@@ -144,7 +146,7 @@ base::DictionaryValue* ExtensionSettingSpecificsToValue(
 base::DictionaryValue* ExtensionSpecificsToValue(
     const sync_pb::ExtensionSpecifics& extension_specifics);
 
-base::DictionaryValue* HistoryDeleteDirectiveSpecificsToValue(
+SYNC_EXPORT base::DictionaryValue* HistoryDeleteDirectiveSpecificsToValue(
     const sync_pb::HistoryDeleteDirectiveSpecifics&
         history_delete_directive_specifics);
 

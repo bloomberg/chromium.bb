@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -137,7 +137,7 @@ bool ShouldMaintainPosition(ModelType model_type);
 
 // These are the user-selectable data types.  Note that some of these share a
 // preference flag, so not all of them are individually user-selectable.
-ModelTypeSet UserTypes();
+SYNC_EXPORT ModelTypeSet UserTypes();
 
 // This is the subset of UserTypes() that can be encrypted.
 ModelTypeSet EncryptableUserTypes();
@@ -152,12 +152,12 @@ ModelTypeSet EncryptableUserTypes();
 // - Their contents are not encrypted automatically.
 // - They support custom update application and conflict resolution logic.
 // - All change processing occurs on the sync thread (GROUP_PASSIVE).
-ModelTypeSet ControlTypes();
+SYNC_EXPORT ModelTypeSet ControlTypes();
 
 // Returns true if this is a control type.
 //
 // See comment above for more information on what makes these types special.
-bool IsControlType(ModelType model_type);
+SYNC_EXPORT bool IsControlType(ModelType model_type);
 
 // Determine a model type from the field number of its associated
 // EntitySpecifics field.  Returns UNSPECIFIED if the field number is

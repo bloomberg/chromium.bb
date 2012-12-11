@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
+#include "sync/base/sync_export.h"
 
 namespace base {
 class DictionaryValue;
@@ -19,7 +20,7 @@ namespace syncer {
 
 // Opaque class that represents a local ack handle. We don't reuse the
 // invalidation ack handles to avoid unnecessary dependencies.
-class AckHandle {
+class SYNC_EXPORT AckHandle {
  public:
   static AckHandle CreateUnique();
   static AckHandle InvalidAckHandle();

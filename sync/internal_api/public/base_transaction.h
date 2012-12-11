@@ -1,13 +1,13 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef SYNC_INTERNAL_API_PUBLIC_BASE_TRANSACTION_H_
 #define SYNC_INTERNAL_API_PUBLIC_BASE_TRANSACTION_H_
 
-#include "sync/internal_api/public/user_share.h"
-
+#include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
+#include "sync/internal_api/public/user_share.h"
 #include "sync/util/cryptographer.h"
 
 namespace syncer {
@@ -24,7 +24,7 @@ class Directory;
 // syncable, and are used in a similar way. Unlike syncable::BaseTransaction,
 // whose construction requires an explicit syncable::Directory, a sync
 // API BaseTransaction is created from a UserShare object.
-class BaseTransaction {
+class SYNC_EXPORT BaseTransaction {
  public:
   // Provide access to the underlying syncable objects from BaseNode.
   virtual syncable::BaseTransaction* GetWrappedTrans() const = 0;

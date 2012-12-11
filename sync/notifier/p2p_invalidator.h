@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -17,6 +17,7 @@
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "jingle/notifier/listener/push_client_observer.h"
+#include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/notifier/invalidator.h"
 #include "sync/notifier/invalidator_registrar.h"
@@ -29,7 +30,7 @@ class PushClient;
 namespace syncer {
 
 // The channel to use for sync notifications.
-extern const char kSyncP2PNotificationChannel[];
+SYNC_EXPORT_PRIVATE extern const char kSyncP2PNotificationChannel[];
 
 // The intended recipient(s) of a P2P notification.
 enum P2PNotificationTarget {
@@ -49,7 +50,7 @@ P2PNotificationTarget P2PNotificationTargetFromString(
 
 // Helper notification data class that can be serialized to and
 // deserialized from a string.
-class P2PNotificationData {
+class SYNC_EXPORT_PRIVATE P2PNotificationData {
  public:
   // Initializes with an empty sender ID, target set to NOTIFY_SELF,
   // and empty changed types.

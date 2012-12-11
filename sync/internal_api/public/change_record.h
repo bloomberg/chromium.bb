@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/linked_ptr.h"
+#include "sync/base/sync_export.h"
 #include "sync/internal_api/public/util/immutable.h"
 #include "sync/protocol/password_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
@@ -21,7 +22,7 @@ namespace syncer {
 
 // TODO(zea): One day get passwords playing nicely with the rest of encryption
 // and get rid of this.
-class ExtraPasswordChangeRecordData {
+class SYNC_EXPORT ExtraPasswordChangeRecordData {
  public:
   ExtraPasswordChangeRecordData();
   explicit ExtraPasswordChangeRecordData(

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
+#include "sync/base/sync_export.h"
 #include "sync/notifier/invalidation_handler.h"
 #include "sync/notifier/invalidation_util.h"
 #include "sync/notifier/object_id_invalidation_map.h"
@@ -24,7 +25,7 @@ namespace syncer {
 // keep track of registered handlers and which object ID registrations are
 // associated with which handlers, so implementors can just reuse the logic
 // here to dispatch invalidations and other interesting notifications.
-class InvalidatorRegistrar {
+class SYNC_EXPORT InvalidatorRegistrar {
  public:
   InvalidatorRegistrar();
 

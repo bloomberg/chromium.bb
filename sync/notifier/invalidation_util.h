@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -12,6 +12,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 
 namespace base {
@@ -30,15 +31,15 @@ void PrintTo(const invalidation::ObjectId& id, std::ostream* os);
 
 namespace syncer {
 
-struct ObjectIdLessThan {
+struct SYNC_EXPORT ObjectIdLessThan {
   bool operator()(const invalidation::ObjectId& lhs,
                   const invalidation::ObjectId& rhs) const;
 };
 
 typedef std::set<invalidation::ObjectId, ObjectIdLessThan> ObjectIdSet;
 
-bool RealModelTypeToObjectId(ModelType model_type,
-                             invalidation::ObjectId* object_id);
+SYNC_EXPORT bool RealModelTypeToObjectId(ModelType model_type,
+                                         invalidation::ObjectId* object_id);
 
 bool ObjectIdToRealModelType(const invalidation::ObjectId& object_id,
                              ModelType* model_type);
@@ -52,7 +53,7 @@ bool ObjectIdFromValue(const base::DictionaryValue& value,
 
 std::string ObjectIdToString(const invalidation::ObjectId& object_id);
 
-ObjectIdSet ModelTypeSetToObjectIdSet(ModelTypeSet models);
+SYNC_EXPORT_PRIVATE ObjectIdSet ModelTypeSetToObjectIdSet(ModelTypeSet models);
 ModelTypeSet ObjectIdSetToModelTypeSet(const ObjectIdSet& ids);
 
 std::string InvalidationToString(

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "sync/base/sync_export.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/js/js_arg_list.h"
 #include "sync/js/js_controller.h"
@@ -23,7 +24,7 @@ class JsBackend;
 
 // A class that mediates between the sync JsEventHandlers and the sync
 // JsBackend.
-class SyncJsController
+class SYNC_EXPORT SyncJsController
     : public JsController, public JsEventHandler,
       public base::SupportsWeakPtr<SyncJsController> {
  public:

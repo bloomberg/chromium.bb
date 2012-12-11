@@ -1,3 +1,4 @@
 include_rules = [
+  "+sync/base",
   "+sync/internal_api/public/base",
 ]

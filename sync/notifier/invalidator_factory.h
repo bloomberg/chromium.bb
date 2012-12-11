@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "jingle/notifier/base/notifier_options.h"
+#include "sync/base/sync_export.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/notifier/invalidation_state_tracker.h"
 
@@ -18,7 +19,7 @@ class Invalidator;
 
 // Class to instantiate various implementations of the Invalidator
 // interface.
-class InvalidatorFactory {
+class SYNC_EXPORT InvalidatorFactory {
  public:
   // |client_info| is a string identifying the client, e.g. a user
   // agent string.  |invalidation_state_tracker| may be NULL (for

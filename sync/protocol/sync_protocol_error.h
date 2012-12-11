@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #ifndef SYNC_PROTOCOL_SYNC_PROTOCOL_ERROR_H_
@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/values.h"
+#include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 
 namespace syncer{
@@ -62,7 +63,7 @@ enum ClientAction {
   UNKNOWN_ACTION
 };
 
-struct SyncProtocolError {
+struct SYNC_EXPORT SyncProtocolError {
   SyncProtocolErrorType error_type;
   std::string error_description;
   std::string url;
@@ -73,8 +74,8 @@ struct SyncProtocolError {
   DictionaryValue* ToValue() const;
 };
 
-const char* GetSyncErrorTypeString(SyncProtocolErrorType type);
-const char* GetClientActionString(ClientAction action);
+SYNC_EXPORT const char* GetSyncErrorTypeString(SyncProtocolErrorType type);
+SYNC_EXPORT const char* GetClientActionString(ClientAction action);
 }  // namespace syncer
 #endif  // SYNC_PROTOCOL_SYNC_PROTOCOL_ERROR_H_
 

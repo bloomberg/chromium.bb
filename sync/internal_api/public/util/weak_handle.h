@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -125,7 +125,7 @@ class WeakHandleCoreBase {
 // WeakHandleCore<T> contains all the logic for WeakHandle<T>.
 template <typename T>
 class WeakHandleCore
-    : public WeakHandleCoreBase,
+    : public NON_EXPORTED_BASE(WeakHandleCoreBase),
       public base::RefCountedThreadSafe<WeakHandleCore<T> > {
  public:
   // Must be called on |ptr|'s owner thread, which is assumed to be

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "sync/base/sync_export.h"
 
 namespace syncer {
 
@@ -17,10 +18,10 @@ namespace syncer {
 // acknowledged it (successful commit response).
 //
 // All abstract methods are called from the sync thread.
-class ExtensionsActivityMonitor {
+class SYNC_EXPORT ExtensionsActivityMonitor {
  public:
   // A data record of activity performed by extension |extension_id|.
-  struct Record {
+  struct SYNC_EXPORT Record {
     Record();
     ~Record();
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
+#include "sync/base/sync_export.h"
 
 namespace base {
 class TaskRunner;
@@ -16,7 +17,7 @@ class TaskRunner;
 
 namespace syncer {
 
-void GetSessionName(
+SYNC_EXPORT void GetSessionName(
     const scoped_refptr<base::TaskRunner>& task_runner,
     const base::Callback<void(const std::string&)>& done_callback);
 

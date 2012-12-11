@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 
 #include "base/location.h"
 #include "sync/api/sync_data.h"
+#include "sync/base/sync_export.h"
 
 namespace syncer {
 
@@ -19,7 +20,7 @@ namespace syncer {
 // is encapsulated within the SyncChange, which, once created, is immutable.
 // Note: it is safe and cheap to pass these by value or make copies, as they do
 // not create deep copies of their internal data.
-class SyncChange {
+class SYNC_EXPORT SyncChange {
  public:
   enum SyncChangeType {
     ACTION_INVALID,

@@ -1,16 +1,17 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef SYNC_INTERNAL_API_PUBLIC_DATA_TYPE_ASSOCIATION_STATS_H_
 #define SYNC_INTERNAL_API_PUBLIC_DATA_TYPE_ASSOCIATION_STATS_H_
 
+#include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 
 namespace syncer {
 
 // Container for datatype association results.
-struct DataTypeAssociationStats {
+struct SYNC_EXPORT DataTypeAssociationStats {
   DataTypeAssociationStats();
   ~DataTypeAssociationStats();
 

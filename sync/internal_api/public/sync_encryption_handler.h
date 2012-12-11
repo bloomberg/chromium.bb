@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/time.h"
+#include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 
 namespace sync_pb {
@@ -50,11 +51,11 @@ enum BootstrapTokenType {
 // and keeps the nigori node up to date.
 // Implementations of this class must be assumed to be non-thread-safe. All
 // methods must be invoked on the sync thread.
-class SyncEncryptionHandler {
+class SYNC_EXPORT SyncEncryptionHandler {
  public:
   // All Observer methods are done synchronously from within a transaction and
   // on the sync thread.
-  class Observer {
+  class SYNC_EXPORT Observer {
    public:
     Observer();
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define SYNC_NOTIFIER_INVALIDATOR_STATE_H_
 
 #include "jingle/notifier/listener/push_client_observer.h"
+#include "sync/base/sync_export.h"
 
 namespace syncer {
 
@@ -23,7 +24,7 @@ enum InvalidatorState {
   INVALIDATIONS_ENABLED
 };
 
-const char* InvalidatorStateToString(InvalidatorState state);
+SYNC_EXPORT const char* InvalidatorStateToString(InvalidatorState state);
 
 InvalidatorState FromNotifierReason(
     notifier::NotificationsDisabledReason reason);
