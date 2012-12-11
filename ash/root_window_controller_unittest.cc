@@ -12,6 +12,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/system_modal_container_layout_manager.h"
 #include "ash/wm/window_util.h"
+#include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
@@ -47,30 +48,28 @@ class TestDelegate : public views::WidgetDelegateView {
   DISALLOW_COPY_AND_ASSIGN(TestDelegate);
 };
 
-class DeleteOnBlurDelegate : public aura::test::TestWindowDelegate {
+class DeleteOnBlurDelegate : public aura::test::TestWindowDelegate,
+                             public aura::client::FocusChangeObserver {
  public:
   DeleteOnBlurDelegate() : window_(NULL) {}
   virtual ~DeleteOnBlurDelegate() {}
 
-  void set_window(aura::Window* window) { window_ = window; }
+  void SetWindow(aura::Window* window) {
+    window_ = window;
+    aura::client::SetFocusChangeObserver(window_, this);
+  }
 
  private:
   // aura::test::TestWindowDelegate overrides:
   virtual bool CanFocus() OVERRIDE {
     return true;
   }
-  virtual void OnBlur() OVERRIDE {
-    delete window_;
-  }
 
-  // ui::EventHandler overrides:
-  virtual void OnEvent(ui::Event* event) OVERRIDE {
-    if (event->type() ==
-        views::corewm::FocusChangeEvent::focus_changing_event_type()) {
-      if (event->target() == window_) {
-        OnBlur();
-      }
-    }
+  // aura::client::FocusChangeObserver implementation:
+  virtual void OnWindowFocused(aura::Window* gained_focus,
+                               aura::Window* lost_focus) OVERRIDE {
+    if (window_ == lost_focus)
+      delete window_;
   }
 
   aura::Window* window_;
@@ -156,7 +155,7 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
   DeleteOnBlurDelegate delete_on_blur_delegate;
   aura::Window* d2 = CreateTestWindowInShellWithDelegate(
       &delete_on_blur_delegate, 0, gfx::Rect(50, 50, 100, 100));
-  delete_on_blur_delegate.set_window(d2);
+  delete_on_blur_delegate.SetWindow(d2);
   aura::client::GetFocusClient(root_windows[0])->FocusWindow(d2, NULL);
   tracker.Add(d2);
 

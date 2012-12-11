@@ -69,7 +69,8 @@ class ASH_EXPORT ActivationController
   virtual void OnWindowInitialized(aura::Window* window) OVERRIDE;
 
   // Overridden from aura::client::FocusChangeObserver:
-  virtual void OnWindowFocused(aura::Window* window) OVERRIDE;
+  virtual void OnWindowFocused(aura::Window* gained_focus,
+                               aura::Window* lost_focus) OVERRIDE;
 
  private:
   // Overridden from ui::EventHandler:

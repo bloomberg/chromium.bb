@@ -37,7 +37,7 @@ TestActivationDelegate::TestActivationDelegate(bool activate)
 void TestActivationDelegate::SetWindow(aura::Window* window) {
   window_ = window;
   aura::client::SetActivationDelegate(window, this);
-  window_->AddPreTargetHandler(this);
+  aura::client::SetActivationChangeObserver(window, this);
 }
 
 bool TestActivationDelegate::ShouldActivate() const {
@@ -45,26 +45,15 @@ bool TestActivationDelegate::ShouldActivate() const {
   return activate_;
 }
 
-void TestActivationDelegate::OnActivated() {
-  activated_count_++;
-}
-
-void TestActivationDelegate::OnLostActive() {
-  if (lost_active_count_++ == 0)
-    window_was_active_ = wm::IsActiveWindow(window_);
-}
-
-void TestActivationDelegate::OnEvent(ui::Event* event) {
-  if (event->target() == window_) {
-    if (event->type() ==
-        views::corewm::FocusChangeEvent::activation_changed_event_type()) {
-      OnActivated();
-    } else if (event->type() ==
-        views::corewm::FocusChangeEvent::activation_changing_event_type()) {
-      OnLostActive();
-    }
+void TestActivationDelegate::OnWindowActivated(aura::Window* gained_active,
+                                               aura::Window* lost_active) {
+  DCHECK(window_ == gained_active || window_ == lost_active);
+  if (window_ == gained_active) {
+    activated_count_++;
+  } else if (window_ == lost_active) {
+    if (lost_active_count_++ == 0)
+      window_was_active_ = wm::IsActiveWindow(window_);
   }
-  EventHandler::OnEvent(event);
 }
 
 }  // namespace test

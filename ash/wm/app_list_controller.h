@@ -78,7 +78,8 @@ class AppListController : public views::corewm::FocusChangeShim,
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   // aura::client::FocusChangeObserver overrides:
-  virtual void OnWindowFocused(aura::Window* window) OVERRIDE;
+  virtual void OnWindowFocused(aura::Window* gained_focus,
+                               aura::Window* lost_focus) OVERRIDE;
 
   // aura::RootWindowObserver overrides:
   virtual void OnRootWindowResized(const aura::RootWindow* root,

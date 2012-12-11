@@ -19,6 +19,7 @@
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/client/activation_delegate.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
@@ -131,7 +132,8 @@ class BrowserLauncherItemControllerTest
 
  protected:
   // Contains all the objects needed to create a BrowserLauncherItemController.
-  struct State : public aura::client::ActivationDelegate {
+  struct State : public aura::client::ActivationDelegate,
+                 public aura::client::ActivationChangeObserver {
    public:
     State(BrowserLauncherItemControllerTest* test,
           const std::string& app_id,
@@ -148,6 +150,7 @@ class BrowserLauncherItemControllerTest
       launcher_test->root_window()->AddChild(&window);
       launcher_test->activation_client_->ActivateWindow(&window);
       aura::client::SetActivationDelegate(&window, this);
+      aura::client::SetActivationChangeObserver(&window, this);
       updater.Init();
     }
 
@@ -162,10 +165,11 @@ class BrowserLauncherItemControllerTest
     virtual bool ShouldActivate() const OVERRIDE {
       return true;
     }
-    virtual void OnActivated() OVERRIDE {
-      updater.BrowserActivationStateChanged();
-    }
-    virtual void OnLostActive() OVERRIDE {
+
+    // aura::client::ActivationChangeObserver overrides:
+    virtual void OnWindowActivated(aura::Window* gained_active,
+                                   aura::Window* lost_active) OVERRIDE {
+      DCHECK(&window == gained_active || &window == lost_active);
       updater.BrowserActivationStateChanged();
     }
 

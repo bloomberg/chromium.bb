@@ -23,13 +23,14 @@ FocusChangeShim::~FocusChangeShim() {
     target_->RemovePreTargetHandler(this);
 }
 
-void FocusChangeShim::OnWindowFocused(aura::Window* window) {
+void FocusChangeShim::OnWindowFocused(aura::Window* gained_focus,
+                                      aura::Window* lost_focus) {
 }
 
 void FocusChangeShim::OnEvent(ui::Event* event) {
   if (event->type() == FocusChangeEvent::focus_changed_event_type()) {
     DCHECK(views::corewm::UseFocusController());
-    OnWindowFocused(static_cast<aura::Window*>(event->target()));
+    OnWindowFocused(static_cast<aura::Window*>(event->target()), NULL);
   }
   EventHandler::OnEvent(event);
 }

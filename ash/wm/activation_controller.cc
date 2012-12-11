@@ -259,8 +259,10 @@ void ActivationController::OnWindowInitialized(aura::Window* window) {
 ////////////////////////////////////////////////////////////////////////////////
 // ActivationController, aura::RootWindowObserver implementation:
 
-void ActivationController::OnWindowFocused(aura::Window* window) {
-  ActivateWindow(GetActivatableWindow(window, NULL));
+void ActivationController::OnWindowFocused(aura::Window* gained_focus,
+                                           aura::Window* lost_focus) {
+  if (gained_focus)
+    ActivateWindow(GetActivatableWindow(gained_focus, NULL));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -330,21 +332,21 @@ void ActivationController::ActivateWindowWithEvent(aura::Window* window,
     aura::client::GetFocusClient(window)->FocusWindow(window, event);
   }
 
-  FOR_EACH_OBSERVER(aura::client::ActivationChangeObserver,
-                    observers_,
-                    OnWindowActivated(window, old_active));
-
-  // Invoke OnLostActive after we've changed the active window. That way if
-  // the delegate queries for active state it doesn't think the window is
-  // still active.
-  if (old_active && aura::client::GetActivationDelegate(old_active))
-    aura::client::GetActivationDelegate(old_active)->OnLostActive();
-
   if (window) {
     StackTransientParentsBelowModalWindow(window);
     window->parent()->StackChildAtTop(window);
-    if (aura::client::GetActivationDelegate(window))
-      aura::client::GetActivationDelegate(window)->OnActivated();
+  }
+
+  FOR_EACH_OBSERVER(aura::client::ActivationChangeObserver,
+                    observers_,
+                    OnWindowActivated(window, old_active));
+  if (aura::client::GetActivationChangeObserver(old_active)) {
+    aura::client::GetActivationChangeObserver(old_active)->OnWindowActivated(
+        window, old_active);
+  }
+  if (aura::client::GetActivationChangeObserver(window)) {
+    aura::client::GetActivationChangeObserver(window)->OnWindowActivated(
+        window, old_active);
   }
 }
 

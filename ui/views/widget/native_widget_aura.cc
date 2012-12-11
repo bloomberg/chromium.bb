@@ -73,6 +73,8 @@ NativeWidgetAura::NativeWidgetAura(internal::NativeWidgetDelegate* delegate)
       destroying_(false),
       cursor_(gfx::kNullCursor),
       saved_window_state_(ui::SHOW_STATE_DEFAULT) {
+  aura::client::SetFocusChangeObserver(window_, this);
+  aura::client::SetActivationChangeObserver(window_, this);
 }
 
 // static
@@ -669,33 +671,6 @@ void NativeWidgetAura::OnBoundsChanged(const gfx::Rect& old_bounds,
     delegate_->OnNativeWidgetSizeChanged(new_bounds.size());
 }
 
-void NativeWidgetAura::OnFocus(aura::Window* old_focused_window) {
-  // In aura, it is possible for child native widgets to take input and focus,
-  // this differs from the behavior on windows.
-  if (GetWidget()->GetInputMethod())  // Null in tests.
-    GetWidget()->GetInputMethod()->OnFocus();
-  delegate_->OnNativeFocus(old_focused_window);
-}
-
-void NativeWidgetAura::OnBlur() {
-  // GetInputMethod() recreates the input method if it's previously been
-  // destroyed.  If we get called during destruction, the input method will be
-  // gone, and creating a new one and telling it that we lost the focus will
-  // trigger a DCHECK (the new input method doesn't think that we have the focus
-  // and doesn't expect a blur).  OnBlur() shouldn't be called during
-  // destruction unless WIDGET_OWNS_NATIVE_WIDGET is set (which is just the case
-  // in tests).
-  if (!destroying_) {
-    if (GetWidget()->GetInputMethod())
-      GetWidget()->GetInputMethod()->OnBlur();
-  } else {
-    DCHECK_EQ(ownership_, Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET);
-  }
-
-  delegate_->OnNativeBlur(
-      aura::client::GetFocusClient(window_)->GetFocusedWindow());
-}
-
 gfx::NativeCursor NativeWidgetAura::GetCursor(const gfx::Point& point) {
   return cursor_;
 }
@@ -843,26 +818,58 @@ void NativeWidgetAura::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NativeWidgetAura, aura::ActivationDelegate implementation:
+// NativeWidgetAura, aura::client::ActivationDelegate implementation:
 
 bool NativeWidgetAura::ShouldActivate() const {
   return can_activate_ && delegate_->CanActivate();
 }
 
-void NativeWidgetAura::OnActivated() {
-  if (GetWidget()->HasFocusManager())
-    GetWidget()->GetFocusManager()->RestoreFocusedView();
-  delegate_->OnNativeWidgetActivationChanged(true);
+////////////////////////////////////////////////////////////////////////////////
+// NativeWidgetAura, aura::client::ActivationChangeObserver implementation:
+
+void NativeWidgetAura::OnWindowActivated(aura::Window* gained_active,
+                                         aura::Window* lost_active) {
+  DCHECK(window_ == gained_active || window_ == lost_active);
+  if (GetWidget()->GetFocusManager()) {
+    if (window_ == gained_active)
+      GetWidget()->GetFocusManager()->RestoreFocusedView();
+    else if (window_ == lost_active)
+      GetWidget()->GetFocusManager()->StoreFocusedView();
+  }
+  delegate_->OnNativeWidgetActivationChanged(window_ == gained_active);
   if (IsVisible() && GetWidget()->non_client_view())
     GetWidget()->non_client_view()->SchedulePaint();
 }
 
-void NativeWidgetAura::OnLostActive() {
-  if (GetWidget()->HasFocusManager())
-    GetWidget()->GetFocusManager()->StoreFocusedView();
-  delegate_->OnNativeWidgetActivationChanged(false);
-  if (IsVisible() && GetWidget()->non_client_view())
-    GetWidget()->non_client_view()->SchedulePaint();
+////////////////////////////////////////////////////////////////////////////////
+// NativeWidgetAura, aura::client::FocusChangeObserver:
+
+void NativeWidgetAura::OnWindowFocused(aura::Window* gained_focus,
+                                       aura::Window* lost_focus) {
+  if (window_ == gained_focus) {
+    // In aura, it is possible for child native widgets to take input and focus,
+    // this differs from the behavior on windows.
+    if (GetWidget()->GetInputMethod())  // Null in tests.
+      GetWidget()->GetInputMethod()->OnFocus();
+    delegate_->OnNativeFocus(lost_focus);
+  } else if (window_ == lost_focus) {
+    // GetInputMethod() recreates the input method if it's previously been
+    // destroyed.  If we get called during destruction, the input method will be
+    // gone, and creating a new one and telling it that we lost the focus will
+    // trigger a DCHECK (the new input method doesn't think that we have the
+    // focus and doesn't expect a blur).  OnBlur() shouldn't be called during
+    // destruction unless WIDGET_OWNS_NATIVE_WIDGET is set (which is just the
+    // case in tests).
+    if (!destroying_) {
+      if (GetWidget()->GetInputMethod())
+        GetWidget()->GetInputMethod()->OnBlur();
+    } else {
+      DCHECK_EQ(ownership_, Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET);
+    }
+
+    delegate_->OnNativeBlur(
+        aura::client::GetFocusClient(window_)->GetFocusedWindow());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -55,7 +55,8 @@ class VIEWS_EXPORT DesktopActivationClient
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
 
   // Overridden from aura::client::FocusChangeObserver:
-  virtual void OnWindowFocused(aura::Window* window) OVERRIDE;
+  virtual void OnWindowFocused(aura::Window* gained_focus,
+                               aura::Window* lost_focus) OVERRIDE;
 
   // Overridden from ui::EventHandler:
   virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;

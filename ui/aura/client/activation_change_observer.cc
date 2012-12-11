@@ -4,13 +4,26 @@
 
 #include "ui/aura/client/activation_change_observer.h"
 
+#include "ui/aura/window.h"
+#include "ui/aura/window_property.h"
+
+DECLARE_WINDOW_PROPERTY_TYPE(aura::client::ActivationChangeObserver*)
+
 namespace aura {
 namespace client {
 
-// TODO(beng): For some reason, we need these in a separate .cc file for
-//             dependent targets to link on windows!
-ActivationChangeObserver::ActivationChangeObserver() {}
-ActivationChangeObserver::~ActivationChangeObserver() {}
+DEFINE_LOCAL_WINDOW_PROPERTY_KEY(
+    ActivationChangeObserver*, kActivationChangeObserverKey, NULL);
+
+void SetActivationChangeObserver(
+    Window* window,
+    ActivationChangeObserver* observer) {
+  window->SetProperty(kActivationChangeObserverKey, observer);
+}
+
+ActivationChangeObserver* GetActivationChangeObserver(Window* window) {
+  return window ? window->GetProperty(kActivationChangeObserverKey) : NULL;
+}
 
 }  // namespace client
 }  // namespace aura

@@ -12,6 +12,7 @@
 #include "base/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/capture_client.h"
+#include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/client/stacking_client.h"
 #include "ui/aura/client/visibility_client.h"
 #include "ui/aura/layout_manager.h"
@@ -199,7 +200,8 @@ class CaptureWindowDelegateImpl : public TestWindowDelegate {
 
 // aura::WindowDelegate that tracks the window that was reported as having the
 // focus before us.
-class FocusDelegate : public TestWindowDelegate {
+class FocusDelegate : public TestWindowDelegate,
+  public aura::client::FocusChangeObserver {
  public:
   FocusDelegate() : previous_focused_window_(NULL) {
   }
@@ -208,12 +210,16 @@ class FocusDelegate : public TestWindowDelegate {
     return previous_focused_window_;
   }
 
-  virtual void OnFocus(aura::Window* old_focused_window) {
-    previous_focused_window_ = old_focused_window;
+  // Overridden from client::FocusChangeObserver:
+  virtual void OnWindowFocused(Window* gained_focus,
+                               Window* lost_focus) OVERRIDE {
+    previous_focused_window_ = lost_focus;
   }
 
  private:
   aura::Window* previous_focused_window_;
+
+  DISALLOW_COPY_AND_ASSIGN(FocusDelegate);
 };
 
 // Keeps track of the location of the gesture.
@@ -1458,14 +1464,15 @@ TEST_F(WindowTest, FocusedWindowTest) {
   EXPECT_TRUE(parent->HasFocus());
 }
 
-// Tests that the previously-focused window is passed to
-// WindowDelegate::OnFocus().
+// Tests that the previously-focused window is passed to OnWindowFocused.
+// TODO(beng): Remove once the FocusController lands.
 TEST_F(WindowTest, OldFocusedWindowTest) {
   const gfx::Rect kBounds(0, 0, 100, 100);
 
   FocusDelegate delegate1;
   scoped_ptr<Window> window1(
       CreateTestWindowWithDelegate(&delegate1, 0, kBounds, root_window()));
+  client::SetFocusChangeObserver(window1.get(), &delegate1);
   window1->Focus();
   ASSERT_TRUE(window1->HasFocus());
   EXPECT_TRUE(delegate1.previous_focused_window() == NULL);
@@ -1473,6 +1480,7 @@ TEST_F(WindowTest, OldFocusedWindowTest) {
   FocusDelegate delegate2;
   scoped_ptr<Window> window2(
       CreateTestWindowWithDelegate(&delegate2, 1, kBounds, root_window()));
+  client::SetFocusChangeObserver(window2.get(), &delegate2);
   window2->Focus();
   ASSERT_TRUE(window2->HasFocus());
   EXPECT_FALSE(window1->HasFocus());

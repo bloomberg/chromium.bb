@@ -842,12 +842,6 @@ void WebContentsViewAura::OnBoundsChanged(const gfx::Rect& old_bounds,
   }
 }
 
-void WebContentsViewAura::OnFocus(aura::Window* old_focused_window) {
-}
-
-void WebContentsViewAura::OnBlur() {
-}
-
 gfx::NativeCursor WebContentsViewAura::GetCursor(const gfx::Point& point) {
   return gfx::kNullCursor;
 }

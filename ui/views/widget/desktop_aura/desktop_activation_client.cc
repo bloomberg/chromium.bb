@@ -79,16 +79,13 @@ void DesktopActivationClient::ActivateWindow(aura::Window* window) {
   FOR_EACH_OBSERVER(aura::client::ActivationChangeObserver,
                     observers_,
                     OnWindowActivated(window, old_active));
-
-  // Invoke OnLostActive after we've changed the active window. That way if the
-  // delegate queries for active state it doesn't think the window is still
-  // active.
-  if (old_active && aura::client::GetActivationDelegate(old_active))
-    aura::client::GetActivationDelegate(old_active)->OnLostActive();
-
-  // Send an activation event to the new window
-  if (window && aura::client::GetActivationDelegate(window))
-    aura::client::GetActivationDelegate(window)->OnActivated();
+  aura::client::ActivationChangeObserver* observer =
+      aura::client::GetActivationChangeObserver(old_active);
+  if (observer)
+    observer->OnWindowActivated(window, old_active);
+  observer = aura::client::GetActivationChangeObserver(window);
+  if (observer)
+    observer->OnWindowActivated(window, old_active);
 }
 
 void DesktopActivationClient::DeactivateWindow(aura::Window* window) {
@@ -135,8 +132,10 @@ void DesktopActivationClient::OnWindowDestroying(aura::Window* window) {
   observer_manager_.Remove(window);
 }
 
-void DesktopActivationClient::OnWindowFocused(aura::Window* window) {
-  ActivateWindow(GetActivatableWindow(window));
+void DesktopActivationClient::OnWindowFocused(aura::Window* gained_focus,
+                                              aura::Window* lost_focus) {
+  if (gained_focus)
+    ActivateWindow(GetActivatableWindow(gained_focus));
 }
 
 bool DesktopActivationClient::CanActivateWindow(aura::Window* window) const {

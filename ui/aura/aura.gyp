@@ -48,6 +48,7 @@
         'client/drag_drop_delegate.h',
         'client/event_client.cc',
         'client/event_client.h',
+        'client/focus_change_observer.cc',
         'client/focus_change_observer.h',
         'client/focus_client.cc',
         'client/focus_client.h',

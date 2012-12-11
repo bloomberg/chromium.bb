@@ -52,16 +52,20 @@ void TestActivationClient::ActivateWindow(Window* window) {
                     observers_,
                     OnWindowActivated(window, last_active));
 
-  if (aura::client::GetActivationDelegate(window))
-    aura::client::GetActivationDelegate(window)->OnActivated();
-
-  if (last_active && aura::client::GetActivationDelegate(last_active))
-    aura::client::GetActivationDelegate(last_active)->OnLostActive();
+  aura::client::ActivationChangeObserver* observer =
+      aura::client::GetActivationChangeObserver(last_active);
+  if (observer)
+    observer->OnWindowActivated(window, last_active);
+  observer = aura::client::GetActivationChangeObserver(window);
+  if (observer)
+    observer->OnWindowActivated(window, last_active);
 }
 
 void TestActivationClient::DeactivateWindow(Window* window) {
-  if (aura::client::GetActivationDelegate(window))
-    aura::client::GetActivationDelegate(window)->OnLostActive();
+  aura::client::ActivationChangeObserver* observer =
+      aura::client::GetActivationChangeObserver(window);
+  if (observer)
+    observer->OnWindowActivated(NULL, window);
 }
 
 Window* TestActivationClient::GetActiveWindow() {
@@ -91,8 +95,10 @@ void TestActivationClient::OnWindowDestroyed(Window* window) {
     window->RemoveObserver(this);
     active_windows_.pop_back();
     Window* next_active = GetActiveWindow();
-    if (next_active && aura::client::GetActivationDelegate(next_active))
-      aura::client::GetActivationDelegate(next_active)->OnActivated();
+    if (next_active && aura::client::GetActivationChangeObserver(next_active)) {
+      aura::client::GetActivationChangeObserver(next_active)->OnWindowActivated(
+          next_active, NULL);
+    }
     return;
   }
 

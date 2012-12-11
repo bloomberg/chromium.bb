@@ -75,6 +75,8 @@ DesktopNativeWidgetAura::DesktopNativeWidgetAura(
       ALLOW_THIS_IN_INITIALIZER_LIST(window_(new aura::Window(this))),
       native_widget_delegate_(delegate) {
   window_->SetProperty(kDesktopNativeWidgetAuraKey, this);
+  aura::client::SetFocusChangeObserver(window_, this);
+  aura::client::SetActivationChangeObserver(window_, this);
 }
 
 DesktopNativeWidgetAura::~DesktopNativeWidgetAura() {
@@ -473,24 +475,6 @@ void DesktopNativeWidgetAura::OnBoundsChanged(const gfx::Rect& old_bounds,
     native_widget_delegate_->OnNativeWidgetSizeChanged(new_bounds.size());
 }
 
-void DesktopNativeWidgetAura::OnFocus(aura::Window* old_focused_window) {
-  desktop_root_window_host_->OnNativeWidgetFocus();
-  native_widget_delegate_->OnNativeFocus(old_focused_window);
-
-  // If focus is moving from a descendant Window to |window_| then native
-  // activation hasn't changed. We still need to inform the InputMethod we've
-  // been focused though.
-  InputMethod* input_method = GetWidget()->GetInputMethod();
-  if (input_method)
-    input_method->OnFocus();
-}
-
-void DesktopNativeWidgetAura::OnBlur() {
-  desktop_root_window_host_->OnNativeWidgetBlur();
-  native_widget_delegate_->OnNativeBlur(
-      aura::client::GetFocusClient(window_)->GetFocusedWindow());
-}
-
 gfx::NativeCursor DesktopNativeWidgetAura::GetCursor(const gfx::Point& point) {
   return gfx::kNullCursor;
 }
@@ -612,20 +596,45 @@ void DesktopNativeWidgetAura::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopNativeWidgetAura, aura::ActivationDelegate implementation:
+// DesktopNativeWidgetAura, aura::client::ActivationDelegate implementation:
 
 bool DesktopNativeWidgetAura::ShouldActivate() const {
   return can_activate_ && native_widget_delegate_->CanActivate();
 }
 
-void DesktopNativeWidgetAura::OnActivated() {
-  if (IsVisible() && GetWidget()->non_client_view())
+////////////////////////////////////////////////////////////////////////////////
+// DesktopNativeWidgetAura, aura::client::ActivationChangeObserver
+//    implementation:
+
+void DesktopNativeWidgetAura::OnWindowActivated(aura::Window* gained_active,
+                                                aura::Window* lost_active) {
+  DCHECK(window_ == gained_active || window_ == lost_active);
+  if ((window_ == gained_active || window_ == lost_active) &&
+      IsVisible() && GetWidget()->non_client_view()) {
     GetWidget()->non_client_view()->SchedulePaint();
+  }
 }
 
-void DesktopNativeWidgetAura::OnLostActive() {
-  if (IsVisible() && GetWidget()->non_client_view())
-    GetWidget()->non_client_view()->SchedulePaint();
+////////////////////////////////////////////////////////////////////////////////
+// DesktopNativeWidgetAura, aura::client::FocusChangeObserver implementation:
+
+void DesktopNativeWidgetAura::OnWindowFocused(aura::Window* gained_focus,
+                                              aura::Window* lost_focus) {
+  if (window_ == gained_focus) {
+    desktop_root_window_host_->OnNativeWidgetFocus();
+    native_widget_delegate_->OnNativeFocus(lost_focus);
+
+    // If focus is moving from a descendant Window to |window_| then native
+    // activation hasn't changed. We still need to inform the InputMethod we've
+    // been focused though.
+    InputMethod* input_method = GetWidget()->GetInputMethod();
+    if (input_method)
+      input_method->OnFocus();
+  } else if (window_ == lost_focus) {
+    desktop_root_window_host_->OnNativeWidgetBlur();
+    native_widget_delegate_->OnNativeBlur(
+        aura::client::GetFocusClient(window_)->GetFocusedWindow());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

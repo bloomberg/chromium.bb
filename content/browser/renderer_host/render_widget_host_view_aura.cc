@@ -314,6 +314,8 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
   window_->AddObserver(window_observer_.get());
   aura::client::SetTooltipText(window_, &tooltip_);
   aura::client::SetActivationDelegate(window_, this);
+  aura::client::SetActivationChangeObserver(window_, this);
+  aura::client::SetFocusChangeObserver(window_, this);
   gfx::Screen::GetScreenFor(window_)->AddObserver(this);
 }
 
@@ -1348,42 +1350,6 @@ void RenderWidgetHostViewAura::OnBoundsChanged(const gfx::Rect& old_bounds,
     SetSize(new_bounds.size());
 }
 
-void RenderWidgetHostViewAura::OnFocus(aura::Window* old_focused_window) {
-  // We need to honor input bypass if the associated tab is does not want input.
-  // This gives the current focused window a chance to be the text input
-  // client and handle events.
-  if (host_->ignore_input_events())
-    return;
-
-  host_->GotFocus();
-  host_->SetActive(true);
-
-  ui::InputMethod* input_method = GetInputMethod();
-  if (input_method) {
-    // Ask the system-wide IME to send all TextInputClient messages to |this|
-    // object.
-    input_method->SetFocusedTextInputClient(this);
-    host_->SetInputMethodActive(input_method->IsActive());
-  } else {
-    host_->SetInputMethodActive(false);
-  }
-}
-
-void RenderWidgetHostViewAura::OnBlur() {
-  host_->SetActive(false);
-  host_->Blur();
-
-  DetachFromInputMethod();
-  host_->SetInputMethodActive(false);
-
-  // If we lose the focus while fullscreen, close the window; Pepper Flash won't
-  // do it for us (unlike NPAPI Flash).
-  if (is_fullscreen_ && !in_shutdown_) {
-    in_shutdown_ = true;
-    host_->Shutdown();
-  }
-}
-
 gfx::NativeCursor RenderWidgetHostViewAura::GetCursor(const gfx::Point& point) {
   if (mouse_locked_)
     return ui::kCursorNone;
@@ -1726,13 +1692,59 @@ bool RenderWidgetHostViewAura::ShouldActivate() const {
   return is_fullscreen_;
 }
 
-void RenderWidgetHostViewAura::OnActivated() {
-  const ui::Event* event = window_->GetRootWindow()->current_event();
-  if (event && PointerEventActivates(*event))
-    host_->OnPointerEventActivate();
+////////////////////////////////////////////////////////////////////////////////
+// RenderWidgetHostViewAura,
+//     aura::client::ActivationChangeObserver implementation:
+
+void RenderWidgetHostViewAura::OnWindowActivated(aura::Window* gained_active,
+                                                 aura::Window* lost_active) {
+  DCHECK(window_ == gained_active || window_ == lost_active);
+  if (window_ == gained_active) {
+    const ui::Event* event = window_->GetRootWindow()->current_event();
+    if (event && PointerEventActivates(*event))
+      host_->OnPointerEventActivate();
+  }
 }
 
-void RenderWidgetHostViewAura::OnLostActive() {
+////////////////////////////////////////////////////////////////////////////////
+// RenderWidgetHostViewAura, aura::client::FocusChangeObserver implementation:
+
+void RenderWidgetHostViewAura::OnWindowFocused(aura::Window* gained_focus,
+                                               aura::Window* lost_focus) {
+  DCHECK(window_ == gained_focus || window_ == lost_focus);
+  if (window_ == gained_focus) {
+    // We need to honor input bypass if the associated tab is does not want
+    // input. This gives the current focused window a chance to be the text
+    // input client and handle events.
+    if (host_->ignore_input_events())
+      return;
+
+    host_->GotFocus();
+    host_->SetActive(true);
+
+    ui::InputMethod* input_method = GetInputMethod();
+    if (input_method) {
+      // Ask the system-wide IME to send all TextInputClient messages to |this|
+      // object.
+      input_method->SetFocusedTextInputClient(this);
+      host_->SetInputMethodActive(input_method->IsActive());
+    } else {
+      host_->SetInputMethodActive(false);
+    }
+  } else if (window_ == lost_focus) {
+    host_->SetActive(false);
+    host_->Blur();
+
+    DetachFromInputMethod();
+    host_->SetInputMethodActive(false);
+
+    // If we lose the focus while fullscreen, close the window; Pepper Flash
+    // won't do it for us (unlike NPAPI Flash).
+    if (is_fullscreen_ && !in_shutdown_) {
+      in_shutdown_ = true;
+      host_->Shutdown();
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

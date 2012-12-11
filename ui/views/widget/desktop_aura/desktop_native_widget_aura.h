@@ -6,8 +6,10 @@
 #define UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_NATIVE_WIDGET_AURA_H_
 
 #include "base/memory/weak_ptr.h"
+#include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/client/activation_delegate.h"
 #include "ui/aura/client/drag_drop_delegate.h"
+#include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/views/ime/input_method_delegate.h"
 #include "ui/views/widget/native_widget_private.h"
@@ -35,6 +37,8 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
     : public internal::NativeWidgetPrivate,
       public aura::WindowDelegate,
       public aura::client::ActivationDelegate,
+      public aura::client::ActivationChangeObserver,
+      public aura::client::FocusChangeObserver,
       public views::internal::InputMethodDelegate,
       public aura::client::DragDropDelegate {
  public:
@@ -150,8 +154,6 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   virtual gfx::Size GetMaximumSize() const OVERRIDE;
   virtual void OnBoundsChanged(const gfx::Rect& old_bounds,
                                const gfx::Rect& new_bounds) OVERRIDE;
-  virtual void OnFocus(aura::Window* old_focused_window) OVERRIDE;
-  virtual void OnBlur() OVERRIDE;
   virtual gfx::NativeCursor GetCursor(const gfx::Point& point) OVERRIDE;
   virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE;
   virtual bool ShouldDescendIntoChildForEventHandling(
@@ -177,8 +179,14 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
 
   // Overridden from aura::client::ActivationDelegate:
   virtual bool ShouldActivate() const OVERRIDE;
-  virtual void OnActivated() OVERRIDE;
-  virtual void OnLostActive() OVERRIDE;
+
+  // Overridden from aura::client::ActivationChangeObserver:
+  virtual void OnWindowActivated(aura::Window* gained_active,
+                                 aura::Window* lost_active) OVERRIDE;
+
+  // Overridden from aura::client::FocusChangeObserver:
+  virtual void OnWindowFocused(aura::Window* gained_focus,
+                               aura::Window* lost_focus) OVERRIDE;
 
   // Overridden from views::internal::InputMethodDelegate:
   virtual void DispatchKeyEventPostIME(const ui::KeyEvent& key) OVERRIDE;

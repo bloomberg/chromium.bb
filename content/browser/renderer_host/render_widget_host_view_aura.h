@@ -18,7 +18,9 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/content_export.h"
 #include "third_party/skia/include/core/SkRegion.h"
+#include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/client/activation_delegate.h"
+#include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/compositor/compositor.h"
@@ -54,6 +56,8 @@ class RenderWidgetHostViewAura
       public gfx::DisplayObserver,
       public aura::WindowDelegate,
       public aura::client::ActivationDelegate,
+      public aura::client::ActivationChangeObserver,
+      public aura::client::FocusChangeObserver,
       public ImageTransportFactoryObserver,
       public base::SupportsWeakPtr<RenderWidgetHostViewAura> {
  public:
@@ -177,8 +181,6 @@ class RenderWidgetHostViewAura
   virtual gfx::Size GetMaximumSize() const OVERRIDE;
   virtual void OnBoundsChanged(const gfx::Rect& old_bounds,
                                const gfx::Rect& new_bounds) OVERRIDE;
-  virtual void OnFocus(aura::Window* old_focused_window) OVERRIDE;
-  virtual void OnBlur() OVERRIDE;
   virtual gfx::NativeCursor GetCursor(const gfx::Point& point) OVERRIDE;
   virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE;
   virtual bool ShouldDescendIntoChildForEventHandling(
@@ -204,8 +206,14 @@ class RenderWidgetHostViewAura
 
   // Overridden from aura::client::ActivationDelegate:
   virtual bool ShouldActivate() const OVERRIDE;
-  virtual void OnActivated() OVERRIDE;
-  virtual void OnLostActive() OVERRIDE;
+
+  // Overridden from aura::client::ActivationChangeObserver:
+  virtual void OnWindowActivated(aura::Window* gained_activation,
+                                 aura::Window* lost_activation) OVERRIDE;
+
+  // Overridden from aura::client::FocusChangeObserver:
+  virtual void OnWindowFocused(aura::Window* gained_focus,
+                               aura::Window* lost_focus) OVERRIDE;
 
  protected:
   friend class RenderWidgetHostView;

@@ -30,7 +30,8 @@ class VIEWS_EXPORT FocusChangeShim
   virtual ~FocusChangeShim();
 
   // Overridden from aura::client::FocusChangeObserver:
-  virtual void OnWindowFocused(aura::Window* window) OVERRIDE;
+  virtual void OnWindowFocused(aura::Window* gained_focus,
+                               aura::Window* lost_focus) OVERRIDE;
 
   // Overridden from ui::EventHandler:
   virtual void OnEvent(ui::Event* event) OVERRIDE;

@@ -18,12 +18,20 @@ class AURA_EXPORT ActivationChangeObserver {
   // (|active| is NULL in this case.) |old_active| refers to the
   // previous active window or NULL if there was no previously active
   // window.
-  virtual void OnWindowActivated(Window* active, Window* old_active) = 0;
+  virtual void OnWindowActivated(Window* gained_active,
+                                 Window* lost_active) = 0;
 
  protected:
-  ActivationChangeObserver();
-  virtual ~ActivationChangeObserver();
+  virtual ~ActivationChangeObserver() {}
 };
+
+// Gets/Sets the ActivationChangeObserver for a specific window. This observer
+// is notified after the ActivationClient notifies all registered observers.
+AURA_EXPORT void SetActivationChangeObserver(
+    Window* window,
+    ActivationChangeObserver* observer);
+AURA_EXPORT ActivationChangeObserver* GetActivationChangeObserver(
+    Window* window);
 
 }  // namespace client
 }  // namespace aura

@@ -52,14 +52,16 @@ void FocusManager::FocusWindow(Window* focused_window, const ui::Event* event) {
 
   Window* old_focused_window = focused_window_;
   focused_window_ = focused_window;
-  if (old_focused_window && old_focused_window->delegate())
-    old_focused_window->delegate()->OnBlur();
-  if (focused_window_ && focused_window_->delegate())
-    focused_window_->delegate()->OnFocus(old_focused_window);
-  if (focused_window_) {
-    FOR_EACH_OBSERVER(client::FocusChangeObserver, observers_,
-                      OnWindowFocused(focused_window));
-  }
+
+  FOR_EACH_OBSERVER(client::FocusChangeObserver, observers_,
+                    OnWindowFocused(focused_window, old_focused_window));
+  client::FocusChangeObserver* observer =
+      client::GetFocusChangeObserver(old_focused_window);
+  if (observer)
+    observer->OnWindowFocused(focused_window_, old_focused_window);
+  observer = client::GetFocusChangeObserver(focused_window_);
+  if (observer)
+    observer->OnWindowFocused(focused_window_, old_focused_window);
 }
 
 Window* FocusManager::GetFocusedWindow() {

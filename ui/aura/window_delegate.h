@@ -43,10 +43,6 @@ class AURA_EXPORT WindowDelegate : public ui::EventHandler {
   virtual void OnBoundsChanged(const gfx::Rect& old_bounds,
                                const gfx::Rect& new_bounds) = 0;
 
-  // Sent to the Window's delegate when the Window gains or loses focus.
-  virtual void OnFocus(aura::Window* old_focused_window) = 0;
-  virtual void OnBlur() = 0;
-
   // Returns the native cursor for the specified point, in window coordinates,
   // or NULL for the default cursor.
   virtual gfx::NativeCursor GetCursor(const gfx::Point& point) = 0;

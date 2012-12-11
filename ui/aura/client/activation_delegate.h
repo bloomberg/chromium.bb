@@ -22,12 +22,6 @@ class AURA_EXPORT ActivationDelegate {
   // Returns true if the window should be activated.
   virtual bool ShouldActivate() const = 0;
 
-  // Sent when the window is activated.
-  virtual void OnActivated() = 0;
-
-  // Sent when the window loses active status.
-  virtual void OnLostActive() = 0;
-
  protected:
   virtual ~ActivationDelegate() {}
 };

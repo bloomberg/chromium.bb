@@ -45,12 +45,6 @@ void TestWindowDelegate::OnBoundsChanged(const gfx::Rect& old_bounds,
                                          const gfx::Rect& new_bounds) {
 }
 
-void TestWindowDelegate::OnFocus(Window* old_focused_window) {
-}
-
-void TestWindowDelegate::OnBlur() {
-}
-
 gfx::NativeCursor TestWindowDelegate::GetCursor(const gfx::Point& point) {
   return gfx::kNullCursor;
 }

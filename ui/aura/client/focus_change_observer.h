@@ -14,12 +14,18 @@ namespace client {
 // TODO(beng): this interface will be OBSOLETE by FocusChangeEvent.
 class AURA_EXPORT FocusChangeObserver {
  public:
-  // Called when |window| gains focus.
-  virtual void OnWindowFocused(Window* window) = 0;
+  // Called when focus moves from |lost_focus| to |gained_focus|.
+  virtual void OnWindowFocused(Window* gained_focus, Window* lost_focus) = 0;
 
  protected:
   virtual ~FocusChangeObserver() {}
 };
+
+AURA_EXPORT FocusChangeObserver* GetFocusChangeObserver(Window* window);
+AURA_EXPORT void SetFocusChangeObserver(
+    Window* window,
+    FocusChangeObserver* focus_change_observer);
+
 
 }  // namespace client
 }  // namespace aura
