@@ -17,8 +17,9 @@ race:third_party/libvpx/source/libvpx/vp8/decoder/threading.c
 race:third_party/ffmpeg/libavcodec/pthread.c
 race:third_party/ffmpeg/libavcodec/vp8.c
 race:third_party/ffmpeg/libavutil/mem.c
-race:media::VideoFrame::HashFrameForTesting
+race:*HashFrameForTesting
 race:third_party/ffmpeg/libavcodec/h264pred.c
+race:media::ReleaseData
 
 # http://crbug.com/158922
 race:third_party/libvpx/source/libvpx/vp8/encoder/*
