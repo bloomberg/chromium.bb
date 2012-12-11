@@ -82,11 +82,13 @@ class ValueStoreFrontend::Backend : public base::RefCountedThreadSafe<Backend> {
   DISALLOW_COPY_AND_ASSIGN(Backend);
 };
 
+ValueStoreFrontend::ValueStoreFrontend()
+    : backend_(new Backend()) {
+}
+
 ValueStoreFrontend::ValueStoreFrontend(const FilePath& db_path)
     : backend_(new Backend()) {
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      base::Bind(&ValueStoreFrontend::Backend::Init,
-                 backend_, db_path));
+  Init(db_path);
 }
 
 ValueStoreFrontend::ValueStoreFrontend(ValueStore* value_store)
@@ -98,6 +100,12 @@ ValueStoreFrontend::ValueStoreFrontend(ValueStore* value_store)
 
 ValueStoreFrontend::~ValueStoreFrontend() {
   DCHECK(CalledOnValidThread());
+}
+
+void ValueStoreFrontend::Init(const FilePath& db_path) {
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+      base::Bind(&ValueStoreFrontend::Backend::Init,
+                 backend_, db_path));
 }
 
 void ValueStoreFrontend::Get(const std::string& key,

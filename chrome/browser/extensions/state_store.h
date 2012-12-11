@@ -45,10 +45,14 @@ class StateStore
                          scoped_ptr<base::Value> value);
 
  private:
+  class DelayedTaskQueue;
+
   // content::NotificationObserver
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  void Init(const FilePath& db_path);
 
   // The store that holds our key/values.
   ValueStoreFrontend store_;
@@ -56,6 +60,9 @@ class StateStore
   // List of all known keys. They will be cleared for each extension when it is
   // (un)installed.
   std::set<std::string> registered_keys_;
+
+  // Keeps track of tasks we have delayed while starting up.
+  scoped_ptr<DelayedTaskQueue> task_queue_;
 
   content::NotificationRegistrar registrar_;
 };
