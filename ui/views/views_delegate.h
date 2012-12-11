@@ -111,7 +111,8 @@ class VIEWS_EXPORT ViewsDelegate {
   virtual NativeWidget* CreateNativeWidget(
       Widget::InitParams::Type type,
       internal::NativeWidgetDelegate* delegate,
-      gfx::NativeView parent) = 0;
+      gfx::NativeView parent,
+      gfx::NativeView context) = 0;
 };
 
 }  // namespace views

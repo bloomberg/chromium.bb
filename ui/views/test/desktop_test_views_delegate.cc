@@ -16,12 +16,13 @@ DesktopTestViewsDelegate::~DesktopTestViewsDelegate() {}
 NativeWidget* DesktopTestViewsDelegate::CreateNativeWidget(
     Widget::InitParams::Type type,
     internal::NativeWidgetDelegate* delegate,
-    gfx::NativeView parent) {
+    gfx::NativeView parent,
+    gfx::NativeView context) {
 #if defined(USE_AURA) && !defined(OS_CHROMEOS)
   if (parent && type != views::Widget::InitParams::TYPE_MENU)
     return new views::NativeWidgetAura(delegate);
 
-  if (!parent)
+  if (!parent && !context)
     return new views::DesktopNativeWidgetAura(delegate);
 #endif
 

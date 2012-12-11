@@ -21,7 +21,8 @@ class DesktopTestViewsDelegate : public TestViewsDelegate {
   virtual NativeWidget* CreateNativeWidget(
       Widget::InitParams::Type type,
       internal::NativeWidgetDelegate* delegate,
-      gfx::NativeView parent) OVERRIDE;
+      gfx::NativeView parent,
+      gfx::NativeView context) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DesktopTestViewsDelegate);

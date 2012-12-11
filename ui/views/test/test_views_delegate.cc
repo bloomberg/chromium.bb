@@ -64,7 +64,8 @@ content::WebContents* TestViewsDelegate::CreateWebContents(
 NativeWidget* TestViewsDelegate::CreateNativeWidget(
     Widget::InitParams::Type type,
     internal::NativeWidgetDelegate* delegate,
-    gfx::NativeView parent) {
+    gfx::NativeView parent,
+    gfx::NativeView context) {
   return NULL;
 }
 

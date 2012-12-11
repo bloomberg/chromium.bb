@@ -83,12 +83,8 @@ views::Widget* CreateTooltip(const gfx::Point location) {
   // For aura, since we set the type to TOOLTIP_TYPE, the widget will get
   // auto-parented to the MenuAndTooltipsContainer.
   params.type = views::Widget::InitParams::TYPE_TOOLTIP;
-#if !defined(OS_CHROMEOS)
-  // We need to pass the right root window so that the views delegate
-  // can create the right type of widget.
-  params.parent = ash::wm::GetRootWindowAt(location);
-  DCHECK(params.parent);
-#endif
+  params.context = ash::wm::GetRootWindowAt(location);
+  DCHECK(params.context);
   params.keep_on_top = true;
   params.accept_events = false;
   widget->Init(params);

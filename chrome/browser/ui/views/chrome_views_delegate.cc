@@ -176,11 +176,15 @@ content::WebContents* ChromeViewsDelegate::CreateWebContents(
 views::NativeWidget* ChromeViewsDelegate::CreateNativeWidget(
     views::Widget::InitParams::Type type,
     views::internal::NativeWidgetDelegate* delegate,
-    gfx::NativeView parent) {
+    gfx::NativeView parent,
+    gfx::NativeView context) {
 #if defined(USE_AURA) && !defined(OS_CHROMEOS)
   if (parent && type != views::Widget::InitParams::TYPE_MENU)
     return new views::NativeWidgetAura(delegate);
-  if (chrome::GetHostDesktopTypeForNativeView(parent) ==
+  // TODO(erg): Once we've threaded context to everywhere that needs it, we
+  // should remove this check here.
+  gfx::NativeView to_check = context ? context : parent;
+  if (chrome::GetHostDesktopTypeForNativeView(to_check) ==
       chrome::HOST_DESKTOP_TYPE_NATIVE)
     return new views::DesktopNativeWidgetAura(delegate);
 #endif
