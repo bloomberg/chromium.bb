@@ -222,7 +222,7 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
 #if defined(OS_CHROMEOS)
       IDS_OPTIONS_SETTINGS_LANGUAGES_CUSTOMIZE },
 #else
-      IDS_OPTIONS_LANGUAGE_AND_SPELLCHECK_BUTTON },
+      IDS_OPTIONS_SETTINGS_LANGUAGE_AND_INPUT_SETTINGS },
 #endif
     { "linkDoctorPref", IDS_OPTIONS_LINKDOCTOR_PREF },
     { "manageAutofillSettings", IDS_OPTIONS_MANAGE_AUTOFILL_SETTINGS_LINK },
