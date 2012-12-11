@@ -29,9 +29,11 @@ class MockMediaStreamTrackList
   virtual size_t count() const OVERRIDE {
     return tracks_.size();
   }
+
   virtual TrackType* at(size_t index) OVERRIDE {
     return tracks_[index];
   }
+
   void AddTrack(TrackType* track) {
     tracks_.push_back(track);
   }

@@ -8,18 +8,32 @@
 #include "base/utf_string_conversions.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/media_stream_extra_data.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamComponent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamDescriptor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 
 namespace content {
 
+// TODO(hta): Unify implementations of these functions from MediaStreamCenter
 static webrtc::LocalMediaStreamInterface* GetLocalNativeMediaStream(
     const WebKit::WebMediaStreamDescriptor& stream) {
   MediaStreamExtraData* extra_data =
       static_cast<MediaStreamExtraData*>(stream.extraData());
   if (extra_data)
     return extra_data->local_stream();
+  return NULL;
+}
+
+template <class TrackList>
+static webrtc::MediaStreamTrackInterface* GetLocalTrack(
+    const std::string& source_id,
+    TrackList* tracks) {
+  // TODO(hta): Look at MediaStreamTrackInterface - lookup by ID belongs below.
+  for (size_t i = 0; i < tracks->count(); ++i) {
+    if (tracks->at(i)->label() == source_id)
+      return tracks->at(i);
+  }
   return NULL;
 }
 
@@ -86,6 +100,28 @@ PeerConnectionHandlerBase::CreateWebKitStreamDescriptor(
                         audio_source_vector, video_source_vector);
   descriptor.setExtraData(new MediaStreamExtraData(stream));
   return descriptor;
+}
+
+webrtc::MediaStreamTrackInterface*
+PeerConnectionHandlerBase::GetLocalNativeMediaStreamTrack(
+      const WebKit::WebMediaStreamDescriptor& stream,
+      const WebKit::WebMediaStreamComponent& component) {
+  std::string source_id = UTF16ToUTF8(component.source().id());
+  webrtc::MediaStreamInterface* native_stream
+      = GetLocalNativeMediaStream(stream);
+  if (!native_stream) {
+    return NULL;
+  }
+  if (component.source().type() == WebKit::WebMediaStreamSource::TypeAudio) {
+    return GetLocalTrack<webrtc::AudioTracks>(
+        source_id, native_stream->audio_tracks());
+  }
+  if (component.source().type() == WebKit::WebMediaStreamSource::TypeVideo) {
+    return GetLocalTrack<webrtc::VideoTracks>(
+        source_id, native_stream->video_tracks());
+  }
+  NOTIMPLEMENTED();  // We have an unknown type of media stream track.
+  return NULL;
 }
 
 }  // namespace content

@@ -13,11 +13,14 @@
 #include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/rtc_media_constraints.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaConstraints.h"
+// TODO(hta): Move the following include to WebRTCStatsRequest.h file.
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamComponent.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRTCConfiguration.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRTCICECandidate.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRTCPeerConnectionHandlerClient.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRTCSessionDescription.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRTCSessionDescriptionRequest.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebRTCStatsRequest.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRTCVoidRequest.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -151,6 +154,111 @@ class SetSessionDescriptionRequest
  private:
   WebKit::WebRTCVoidRequest webkit_request_;
 };
+
+// Class mapping responses from calls to libjingle
+// GetStats into a WebKit::WebRTCStatsCallback.
+class StatsResponse : public webrtc::StatsObserver {
+ public:
+  explicit StatsResponse(const scoped_refptr<LocalRTCStatsRequest>& request)
+      : request_(request),
+        response_(request_->createResponse()) {}
+
+  virtual void OnComplete(const std::vector<webrtc::StatsReport>& reports) {
+    for (std::vector<webrtc::StatsReport>::const_iterator it = reports.begin();
+         it != reports.end(); ++it) {
+      int idx = response_->addReport();
+      if (it->local.values.size() > 0) {
+        AddElement(idx, true, it->id, it->type, it->local);
+      }
+      if (it->remote.values.size() > 0) {
+        AddElement(idx, false, it->id, it->type, it->remote);
+      }
+    }
+    request_->requestSucceeded(response_);
+  }
+
+ private:
+  void AddElement(int idx,
+                  bool is_local,
+                  const std::string& id,
+                  const std::string& type,
+                  const webrtc::StatsElement& element) {
+    response_->addElement(idx, is_local, element.timestamp);
+    // TODO(hta): Make a better disposition of id and type.
+    AddStatistic(idx, is_local, "id", id);
+    AddStatistic(idx, is_local, "type", type);
+    for (webrtc::StatsElement::Values::const_iterator value_it =
+             element.values.begin();
+         value_it != element.values.end(); ++value_it) {
+      AddStatistic(idx, is_local, value_it->name, value_it->value);
+    }
+  }
+
+  void AddStatistic(int idx, bool is_local, const std::string& name,
+                    const std::string& value) {
+    response_->addStatistic(idx, is_local,
+                            WebKit::WebString::fromUTF8(name),
+                            WebKit::WebString::fromUTF8(value));
+  }
+
+  talk_base::scoped_refptr<LocalRTCStatsRequest> request_;
+  talk_base::scoped_refptr<LocalRTCStatsResponse> response_;
+};
+
+// Implementation of LocalRTCStatsRequest
+LocalRTCStatsRequest::LocalRTCStatsRequest(WebKit::WebRTCStatsRequest impl)
+    : impl_(impl),
+      response_(NULL) {
+}
+
+LocalRTCStatsRequest::LocalRTCStatsRequest() {}
+LocalRTCStatsRequest::~LocalRTCStatsRequest() {}
+
+bool LocalRTCStatsRequest::hasSelector() const {
+  return impl_.hasSelector();
+}
+
+WebKit::WebMediaStreamDescriptor LocalRTCStatsRequest::stream() const {
+  return impl_.stream();
+}
+
+WebKit::WebMediaStreamComponent LocalRTCStatsRequest::component() const {
+  return impl_.component();
+}
+
+scoped_refptr<LocalRTCStatsResponse> LocalRTCStatsRequest::createResponse() {
+  DCHECK(!response_);
+  response_ = new talk_base::RefCountedObject<LocalRTCStatsResponse>(
+      impl_.createResponse());
+  return response_.get();
+}
+
+void LocalRTCStatsRequest::requestSucceeded(
+    const LocalRTCStatsResponse* response) {
+  impl_.requestSucceeded(response->webKitStatsResponse());
+}
+
+// Implementation of LocalRTCStatsResponse
+WebKit::WebRTCStatsResponse LocalRTCStatsResponse::webKitStatsResponse() const {
+  return impl_;
+}
+
+size_t LocalRTCStatsResponse::addReport() {
+  return impl_.addReport();
+}
+
+void LocalRTCStatsResponse::addElement(size_t report,
+                                       bool is_local,
+                                       double timestamp) {
+  impl_.addElement(report, is_local, timestamp);
+}
+
+void LocalRTCStatsResponse::addStatistic(size_t report,
+                                         bool is_local,
+                                         WebKit::WebString name,
+                                         WebKit::WebString value) {
+  impl_.addStatistic(report, is_local, name, value);
+}
 
 RTCPeerConnectionHandler::RTCPeerConnectionHandler(
     WebKit::WebRTCPeerConnectionHandlerClient* client,
@@ -313,6 +421,46 @@ bool RTCPeerConnectionHandler::addStream(
 void RTCPeerConnectionHandler::removeStream(
     const WebKit::WebMediaStreamDescriptor& stream) {
   RemoveStream(stream);
+}
+
+void RTCPeerConnectionHandler::getStats(
+    const WebKit::WebRTCStatsRequest& request) {
+  scoped_refptr<LocalRTCStatsRequest> inner_request(
+      new talk_base::RefCountedObject<LocalRTCStatsRequest>(request));
+  getStats(inner_request);
+}
+
+void RTCPeerConnectionHandler::getStats(LocalRTCStatsRequest* request) {
+  talk_base::scoped_refptr<webrtc::StatsObserver> observer(
+      new talk_base::RefCountedObject<StatsResponse>(request));
+  webrtc::MediaStreamTrackInterface* track = NULL;
+  if (!native_peer_connection_) {
+    DVLOG(1) << "GetStats cannot verify selector on closed connection";
+    // TODO(hta): Consider how to get an error back.
+    std::vector<webrtc::StatsReport> no_reports;
+    observer->OnComplete(no_reports);
+    return;
+  }
+
+  if (request->hasSelector()) {
+    // Verify that stream is a member of local_streams
+    if (native_peer_connection_->local_streams()
+            ->find(UTF16ToUTF8(request->stream().label()))) {
+      track = GetLocalNativeMediaStreamTrack(request->stream(),
+                                             request->component());
+    } else {
+      DVLOG(1) << "GetStats: Stream label not present in PC";
+    }
+
+    if (!track) {
+      DVLOG(1) << "GetStats: Track not found.";
+      // TODO(hta): Consider how to get an error back.
+      std::vector<webrtc::StatsReport> no_reports;
+      observer->OnComplete(no_reports);
+      return;
+    }
+  }
+  native_peer_connection_->GetStats(observer, track);
 }
 
 void RTCPeerConnectionHandler::stop() {

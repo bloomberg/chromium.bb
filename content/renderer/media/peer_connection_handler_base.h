@@ -36,6 +36,9 @@ class CONTENT_EXPORT PeerConnectionHandlerBase
   void RemoveStream(const WebKit::WebMediaStreamDescriptor& stream);
   WebKit::WebMediaStreamDescriptor CreateWebKitStreamDescriptor(
       webrtc::MediaStreamInterface* stream);
+  webrtc::MediaStreamTrackInterface* GetLocalNativeMediaStreamTrack(
+      const WebKit::WebMediaStreamDescriptor& stream,
+      const WebKit::WebMediaStreamComponent& component);
 
   // dependency_factory_ is a raw pointer, and is valid for the lifetime of
   // MediaStreamImpl.

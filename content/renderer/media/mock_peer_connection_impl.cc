@@ -109,18 +109,41 @@ bool MockPeerConnectionImpl::SendDtmf(
   return false;
 }
 
-bool MockPeerConnectionImpl::GetStats(
-    webrtc::StatsObserver* observer,
-    webrtc::MediaStreamTrackInterface* track) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 void MockPeerConnectionImpl::RemoveStream(
     MediaStreamInterface* local_stream) {
   DCHECK_EQ(stream_label_, local_stream->label());
   stream_label_.clear();
   local_streams_->RemoveStream(local_stream);
+}
+
+bool MockPeerConnectionImpl::GetStats(
+    webrtc::StatsObserver* observer,
+    webrtc::MediaStreamTrackInterface* track) {
+  std::vector<webrtc::StatsReport> reports;
+  webrtc::StatsReport report;
+  report.id = "1234";
+  report.type = "ssrc";
+  report.local.timestamp = 42;
+  webrtc::StatsElement::Value value;
+  value.name = "trackname";
+  value.value = "trackvalue";
+  report.local.values.push_back(value);
+  reports.push_back(report);
+  // If selector is given, we pass back one report.
+  // If selector is not given, we pass back two.
+  if (!track) {
+    report.id = "nontrack";
+    report.type = "generic";
+    report.local.timestamp = 44;
+    value.name = "somename";
+    value.value = "somevalue";
+    report.local.values.push_back(value);
+    reports.push_back(report);
+  }
+  // Note that the callback is synchronous, not asynchronous; it will
+  // happen before the request call completes.
+  observer->OnComplete(reports);
+  return true;
 }
 
 MockPeerConnectionImpl::ReadyState MockPeerConnectionImpl::ready_state() {

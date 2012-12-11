@@ -14,6 +14,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle/source/talk/app/webrtc/peerconnectioninterface.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaConstraints.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamComponent.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamDescriptor.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamSource.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRTCConfiguration.h"
@@ -21,6 +22,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRTCPeerConnectionHandlerClient.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRTCSessionDescription.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRTCSessionDescriptionRequest.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebRTCStatsRequest.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRTCVoidRequest.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURL.h"
 
@@ -28,6 +30,90 @@ static const char kDummySdp[] = "dummy sdp";
 static const char kDummySdpType[] = "dummy type";
 
 namespace content {
+
+class MockRTCStatsResponse : public LocalRTCStatsResponse {
+ public:
+  MockRTCStatsResponse()
+      : report_count_(0),
+        element_count_(0),
+        statistic_count_(0) {
+  }
+
+  virtual size_t addReport() OVERRIDE {
+    ++report_count_;
+    return report_count_;
+  }
+
+  virtual void addElement(size_t report, bool isLocal, double timestamp)
+      OVERRIDE {
+    ++element_count_;
+  }
+
+  virtual void addStatistic(size_t report, bool isLocal,
+                            WebKit::WebString name, WebKit::WebString value)
+      OVERRIDE {
+    ++statistic_count_;
+  }
+  int report_count() const { return report_count_; }
+
+ private:
+  int report_count_;
+  int element_count_;
+  int statistic_count_;
+};
+
+// Mocked wrapper for WebKit::WebRTCStatsRequest
+class MockRTCStatsRequest : public LocalRTCStatsRequest {
+ public:
+  MockRTCStatsRequest()
+      : has_selector_(false),
+        stream_(),
+        request_succeeded_called_(false) {}
+
+  virtual bool hasSelector() const OVERRIDE {
+    return has_selector_;
+  }
+  virtual WebKit::WebMediaStreamDescriptor stream() const OVERRIDE {
+    return stream_;
+  }
+  virtual WebKit::WebMediaStreamComponent component() const OVERRIDE {
+    return component_;
+  }
+  virtual scoped_refptr<LocalRTCStatsResponse> createResponse() OVERRIDE {
+    DCHECK(!response_);
+    response_ = new talk_base::RefCountedObject<MockRTCStatsResponse>();
+    return response_;
+  }
+
+  virtual void requestSucceeded(const LocalRTCStatsResponse* response)
+      OVERRIDE {
+    EXPECT_EQ(response, response_.get());
+    request_succeeded_called_ = true;
+  }
+
+  // Function for setting whether or not a selector is available.
+  void setSelector(const WebKit::WebMediaStreamDescriptor& stream,
+                   const WebKit::WebMediaStreamComponent& component) {
+    has_selector_ = true;
+    stream_ = stream;
+    component_ = component;
+  }
+
+  // Function for inspecting the result of a stats request.
+  MockRTCStatsResponse* result() {
+    if (request_succeeded_called_) {
+      return response_.get();
+    } else {
+      return NULL;
+    }
+  }
+ private:
+  bool has_selector_;
+  WebKit::WebMediaStreamDescriptor stream_;
+  WebKit::WebMediaStreamComponent component_;
+  scoped_refptr<MockRTCStatsResponse> response_;
+  bool request_succeeded_called_;
+};
 
 class RTCPeerConnectionHandlerUnderTest : public RTCPeerConnectionHandler {
  public:
@@ -82,7 +168,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
 
     WebKit::WebVector<WebKit::WebMediaStreamSource> audio_sources(
         static_cast<size_t>(1));
-    audio_sources[0].initialize(WebKit::WebString::fromUTF8(video_track_label),
+    audio_sources[0].initialize(WebKit::WebString::fromUTF8(audio_track_label),
                                 WebKit::WebMediaStreamSource::TypeAudio,
                                 WebKit::WebString::fromUTF8("audio_track"));
     WebKit::WebVector<WebKit::WebMediaStreamSource> video_sources(
@@ -142,7 +228,7 @@ TEST_F(RTCPeerConnectionHandlerTest, CreateOffer) {
   EXPECT_TRUE(mock_peer_connection_->created_session_description() != NULL);
 }
 
-TEST_F(RTCPeerConnectionHandlerTest, CreateAnser) {
+TEST_F(RTCPeerConnectionHandlerTest, CreateAnswer) {
   WebKit::WebRTCSessionDescriptionRequest request;
   WebKit::WebMediaConstraints options;
   // TODO(perkj): Can WebKit::WebRTCSessionDescriptionRequest be changed so
@@ -217,6 +303,62 @@ TEST_F(RTCPeerConnectionHandlerTest, addAndRemoveStream) {
 
   pc_handler_->removeStream(local_stream);
   EXPECT_EQ(0u, mock_peer_connection_->local_streams()->count());
+}
+
+TEST_F(RTCPeerConnectionHandlerTest, GetStatsNoSelector) {
+  scoped_refptr<MockRTCStatsRequest> request(
+      new talk_base::RefCountedObject<MockRTCStatsRequest>());
+  pc_handler_->getStats(request.get());
+  // Note that callback gets executed synchronously by mock.
+  ASSERT_TRUE(request->result());
+  EXPECT_LT(1, request->result()->report_count());
+}
+
+TEST_F(RTCPeerConnectionHandlerTest, GetStatsWithSelector) {
+  std::string stream_label = "local_stream";
+  WebKit::WebMediaStreamDescriptor local_stream(
+      CreateLocalMediaStream(stream_label));
+  WebKit::WebMediaConstraints constraints;
+  pc_handler_->addStream(local_stream, constraints);
+  WebKit::WebVector<WebKit::WebMediaStreamComponent> components;
+  local_stream.audioSources(components);
+  ASSERT_LE(1ul, components.size());
+
+  scoped_refptr<MockRTCStatsRequest> request(
+      new talk_base::RefCountedObject<MockRTCStatsRequest>());
+  request->setSelector(local_stream, components[0]);
+  pc_handler_->getStats(request.get());
+  EXPECT_EQ(1, request->result()->report_count());
+}
+
+TEST_F(RTCPeerConnectionHandlerTest, GetStatsAfterStop) {
+  scoped_refptr<MockRTCStatsRequest> request(
+      new talk_base::RefCountedObject<MockRTCStatsRequest>());
+  pc_handler_->stop();
+  pc_handler_->getStats(request.get());
+  // Note that callback gets executed synchronously by mock.
+  ASSERT_TRUE(request->result());
+  // Note - returning no stats is a temporary workaround.
+  EXPECT_EQ(0, request->result()->report_count());
+}
+
+TEST_F(RTCPeerConnectionHandlerTest, GetStatsWithBadSelector) {
+  // The setup is the same as above, but the stream is not added to the
+  // PeerConnection.
+  std::string stream_label = "local_stream_2";
+  WebKit::WebMediaStreamDescriptor local_stream(
+      CreateLocalMediaStream(stream_label));
+  WebKit::WebMediaConstraints constraints;
+  WebKit::WebVector<WebKit::WebMediaStreamComponent> components;
+  local_stream.audioSources(components);
+  WebKit::WebMediaStreamComponent component = components[0];
+  EXPECT_EQ(0u, mock_peer_connection_->local_streams()->count());
+
+  scoped_refptr<MockRTCStatsRequest> request(
+      new talk_base::RefCountedObject<MockRTCStatsRequest>());
+  request->setSelector(local_stream, component);
+  pc_handler_->getStats(request.get());
+  EXPECT_EQ(0, request->result()->report_count());
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, OnStateChange) {

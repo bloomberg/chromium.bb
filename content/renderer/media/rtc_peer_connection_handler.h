@@ -10,6 +10,8 @@
 #include "content/common/content_export.h"
 #include "content/renderer/media/peer_connection_handler_base.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRTCPeerConnectionHandler.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebRTCStatsRequest.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebRTCStatsResponse.h"
 
 namespace WebKit {
 class WebFrame;
@@ -17,10 +19,55 @@ class WebFrame;
 
 namespace content {
 
+// Mockable wrapper for WebKit::WebRTCStatsResponse
+class CONTENT_EXPORT LocalRTCStatsResponse
+    : public talk_base::RefCountInterface {
+ public:
+  explicit LocalRTCStatsResponse(const WebKit::WebRTCStatsResponse& impl)
+      : impl_(impl) {
+  }
+  // Constructor for testing.
+  LocalRTCStatsResponse() {}
+
+  virtual WebKit::WebRTCStatsResponse webKitStatsResponse() const;
+  virtual size_t addReport();
+  virtual void addElement(size_t report, bool is_local, double timestamp);
+  virtual void addStatistic(size_t report, bool is_local,
+                            WebKit::WebString name, WebKit::WebString value);
+
+ protected:
+  virtual ~LocalRTCStatsResponse() {}
+
+ private:
+  WebKit::WebRTCStatsResponse impl_;
+};
+
+// Mockable wrapper for WebKit::WebRTCStatsRequest
+class CONTENT_EXPORT LocalRTCStatsRequest
+    : public talk_base::RefCountInterface {
+ public:
+  explicit LocalRTCStatsRequest(WebKit::WebRTCStatsRequest impl);
+  // Constructor for testing.
+  LocalRTCStatsRequest();
+
+  virtual bool hasSelector() const;
+  virtual WebKit::WebMediaStreamDescriptor stream() const;
+  virtual WebKit::WebMediaStreamComponent component() const;
+  virtual void requestSucceeded(const LocalRTCStatsResponse* response);
+  virtual scoped_refptr<LocalRTCStatsResponse> createResponse();
+
+ protected:
+  virtual ~LocalRTCStatsRequest();
+
+ private:
+  WebKit::WebRTCStatsRequest impl_;
+  talk_base::scoped_refptr<LocalRTCStatsResponse> response_;
+};
+
 // RTCPeerConnectionHandler is a delegate for the RTC PeerConnection API
 // messages going between WebKit and native PeerConnection in libjingle. It's
 // owned by WebKit.
-// WebKit call all of these methods on the main render thread.
+// WebKit calls all of these methods on the main render thread.
 // Callbacks to the webrtc::PeerConnectionObserver implementation also occur on
 // the main render thread.
 class CONTENT_EXPORT RTCPeerConnectionHandler
@@ -73,6 +120,8 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
       const WebKit::WebMediaConstraints& options) OVERRIDE;
   virtual void removeStream(
       const WebKit::WebMediaStreamDescriptor& stream) OVERRIDE;
+  virtual void getStats(
+      const WebKit::WebRTCStatsRequest& request) OVERRIDE;
   // We will be deleted by WebKit after stop has been returned.
   virtual void stop() OVERRIDE;
 
@@ -85,6 +134,10 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
       const webrtc::IceCandidateInterface* candidate) OVERRIDE;
   virtual void OnIceComplete() OVERRIDE;
   virtual void OnRenegotiationNeeded() OVERRIDE;
+
+  // Delegate functions to allow for mocking of WebKit interfaces.
+  // getStats takes ownership of request parameter.
+  virtual void getStats(LocalRTCStatsRequest* request);
 
  private:
   webrtc::SessionDescriptionInterface* CreateNativeSessionDescription(
