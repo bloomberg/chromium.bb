@@ -8,6 +8,11 @@
 #include <fcntl.h>
 #include <pthread.h>
 
+#ifndef WIN32
+// Needed for SEEK_SET/SEEK_CUR/SEEK_END.
+#include <unistd.h>
+#endif
+
 #include "nacl_mounts/mount.h"
 #include "nacl_mounts/mount_node.h"
 

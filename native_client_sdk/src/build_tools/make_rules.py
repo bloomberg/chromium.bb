@@ -20,6 +20,13 @@ NEWLIB_CCFLAGS?=-MMD -pthread $(NACL_WARNINGS) -idirafter $(NACL_SDK_ROOT)/inclu
 NEWLIB_LDFLAGS?=-pthread
 """
 
+ARM_DEFAULTS = """
+ARM_CC?=$(TC_PATH)/$(OSNAME)_arm_newlib/bin/arm-nacl-gcc -c
+ARM_CXX?=$(TC_PATH)/$(OSNAME)_arm_newlib/bin/arm-nacl-g++ -c
+ARM_LINK?=$(TC_PATH)/$(OSNAME)_arm_newlib/bin/arm-nacl-g++ -Wl,-as-needed
+ARM_LIB?=$(TC_PATH)/$(OSNAME)_arm_newlib/bin/arm-nacl-ar r
+"""
+
 GLIBC_DEFAULTS = """
 GLIBC_CC?=$(TC_PATH)/$(OSNAME)_x86_glibc/bin/i686-nacl-gcc -c
 GLIBC_CXX?=$(TC_PATH)/$(OSNAME)_x86_glibc/bin/i686-nacl-g++ -c
@@ -205,23 +212,30 @@ PNACL_TOOL = {
 # Various Architectures
 #
 LINUX = {
-  '<arch>': '',
+  '<arch>': 'linux',
   '<ARCH>': '',
   '<MACH>': '',
 }
 NACL_X86_32 = {
-  '<arch>': '32',
+  '<arch>': 'x86',
   '<ARCH>': 'x86_32',
   '<MACH>': '-m32',
 }
 NACL_X86_64 = {
-  '<arch>': '64',
+  '<arch>': 'x64',
   '<ARCH>': 'x86_64',
   '<MACH>': '-m64',
 }
 NACL_PNACL = {
   '<arch>': 'pnacl',
   '<MACH>': '',
+}
+NACL_ARM = {
+  '<arch>': 'arm',
+  '<ARCH>': 'arm',
+  '<MACH>': '',
+  # override the default NACL toolchain
+  '<TOOLSET>': 'ARM',
 }
 WIN_32 = {
   '<arch>': '',
@@ -232,8 +246,8 @@ WIN_32 = {
 
 BUILD_RULES = {
   'newlib' : {
-    'ARCHES': [NACL_X86_32, NACL_X86_64],
-    'DEFS': NEWLIB_DEFAULTS,
+    'ARCHES': [NACL_X86_32, NACL_X86_64, NACL_ARM],
+    'DEFS': NEWLIB_DEFAULTS + ARM_DEFAULTS,
     'CC' : NACL_CC_RULES,
     'CXX' : NACL_CC_RULES,
     'NMF' : NMF_RULE,
@@ -297,11 +311,10 @@ class MakeRules(object):
   to the appropriate format whenever the toolchain changes.
   """
 
-  def __init__(self, tc, cfg=None, arch=None):
+  def __init__(self, tc):
     self.tc = tc
     self.project = ''
     self.cfg = ''
-    self.arch = ''
     self.ptype = ''
     self.arch_ext = ''
     self.defines = []
@@ -311,10 +324,6 @@ class MakeRules(object):
       '<TAB>': '\t',
     }
     self.SetToolchain(tc)
-    if cfg:
-      self.SetConfig(cfg)
-    if arch:
-      self.SetArch(arch)
 
   def _BuildList(self, key, items):
     pattern = BUILD_RULES[self.tc]['TOOL'][key]
@@ -371,23 +380,23 @@ class MakeRules(object):
   def GetObjectList(self):
     return '%s_%s_%s%s_O' % (self.project.upper(), self.tc.upper(),
                               self.cfg.upper(), self.arch_ext)
-
   def GetPepperPlugin(self):
     plugin = self.Replace(BUILD_RULES[self.tc]['TOOL']['MAIN'])
     text = 'PPAPI_<CONFIG>:=$(abspath %s)' % plugin
     text += ';application/x-ppapi-%s\n' % self.vars['<config>'].lower()
     return self.Replace(text)
 
-
   def SetArch(self, arch):
-    self.arch = arch
     for key in arch:
       self.vars[key] = arch[key]
     if '<ARCH>' in self.vars:
-      self.arch_ext = "_" + self.arch['<ARCH>']
+      self.arch_ext = "_" + arch['<ARCH>']
       self.vars['<libdir>'] = "%s_%s" % (self.tc, self.vars['<ARCH>'])
     else:
       self.vars['<libdir>'] = self.tc
+
+    toolset = arch.get('<TOOLSET>', self.tc.upper())
+    self.SetTools(toolset)
 
   def SetConfig(self, config):
     self.cfg = config
@@ -424,16 +433,18 @@ class MakeRules(object):
       tcname = 'host'
     else:
       tcname = tc
-    self.vars['<CC>'] = '%s_CC' % TC
-    self.vars['<CXX>'] = '%s_CXX' % TC
-    self.vars['<LIB>'] = '%s_LIB' % TC
-    self.vars['<LINK>'] = '%s_LINK' % TC
     self.vars['<tc>'] = tc
     self.vars['<tcname>'] = tcname
     self.vars['<TC>'] = TC
     self.SetDefines(self.defines)
     self.SetIncludes(self.includes)
     self.SetLibraries(self.libraries)
+
+  def SetTools(self, toolname):
+    self.vars['<CC>'] = '%s_CC' % toolname
+    self.vars['<CXX>'] = '%s_CXX' % toolname
+    self.vars['<LIB>'] = '%s_LIB' % toolname
+    self.vars['<LINK>'] = '%s_LINK' % toolname
 
   def SetVars(self, **kwargs):
     # Add other passed in replacements

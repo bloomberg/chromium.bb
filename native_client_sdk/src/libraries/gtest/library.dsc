@@ -7,7 +7,7 @@
   # We can fix this by passing -Wno-unused-private-field to clang, but gcc
   # doesn't support this flag so we'll have to support splitting CXXFLAGS based
   # on TOOL first.
-  'TOOLS': ['newlib', 'glibc', 'win', 'linux'],
+  'TOOLS': ['newlib:x86', 'newlib:x64', 'glibc', 'win', 'linux'],
   'SEARCH': [
     '.',
     '../../../../testing/gtest/include/gtest',

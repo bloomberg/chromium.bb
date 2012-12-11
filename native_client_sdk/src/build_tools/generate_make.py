@@ -93,7 +93,7 @@ def GenerateToolDefaults(tools):
 
 def GenerateSettings(desc, tools):
   settings = SetVar('VALID_TOOLCHAINS', tools)
-  settings += 'TOOLCHAIN?=%s\n\n' % tools[0]
+  settings += 'TOOLCHAIN?=%s\n\n' % desc['TOOLS'][0]
   for target in desc['TARGETS']:
     project = target['NAME']
     macro = project.upper()
@@ -138,10 +138,17 @@ def GenerateRules(desc, tools):
       rules += SetVar('GLIBC_REMAP', glibc_rename)
 
   configs = desc.get('CONFIGS', ['Debug', 'Release'])
-  for tc in tools:
+  for tc, enabled_arches in tools.iteritems():
+    print tc
     makeobj = MakeRules(tc)
     arches = makeobj.GetArches()
     rules += makeobj.BuildDirectoryRules(configs)
+
+    if enabled_arches:
+      # filter out all arches that don't match the list
+      # of enabled arches
+      arches = [a for a in arches if a.get('<arch>') in enabled_arches]
+
     for cfg in configs:
       makeobj.SetConfig(cfg)
       for target in desc['TARGETS']:
@@ -172,7 +179,6 @@ def GenerateRules(desc, tools):
   return '', rules
 
 
-
 def GenerateReplacements(desc, tools):
   # Generate target settings
   settings = GenerateSettings(desc, tools)
@@ -198,7 +204,8 @@ def GenerateReplacements(desc, tools):
 
 # 'KEY' : ( <TYPE>, [Accepted Values], <Required?>)
 DSC_FORMAT = {
-    'TOOLS' : (list, ['newlib', 'glibc', 'pnacl', 'win', 'linux'], True),
+    'TOOLS' : (list, ['newlib:arm', 'newlib:x64', 'newlib:x86', 'newlib',
+                      'glibc', 'pnacl', 'win', 'linux'], True),
     'CONFIGS' : (list, ['Debug', 'Release'], False),
     'PREREQ' : (list, '', False),
     'TARGETS' : (list, {
@@ -276,7 +283,7 @@ def ValidateFormat(src, dsc_format, ErrorMsg=ErrorMsgFunc):
     if exp_type is str:
       if type(exp_value) is list and exp_value:
         if value not in exp_value:
-          ErrorMsg('Value %s not expected for %s.' % (value, key))
+          ErrorMsg("Value '%s' not expected for %s." % (value, key))
           failed = True
       continue
 
@@ -394,7 +401,7 @@ def LoadProject(filename, toolchains):
   if it matches the set of requested toolchains.  Return None if the
   project is filtered out."""
 
-  print '\n\nProcessing %s...' % filename
+  print 'Processing %s...' % filename
   # Default src directory is the directory the description was found in
   desc = open(filename, 'r').read()
   desc = eval(desc, {}, {})
@@ -473,11 +480,23 @@ def ProcessProject(srcroot, dstroot, desc, toolchains):
     else:
       template = os.path.join(SCRIPT_DIR, 'library.mk')
 
-    tools = []
+    tools = {}
+    tool_list = []
     for tool in desc['TOOLS']:
-      if tool in toolchains:
-        tools.append(tool)
+      if ':' in tool:
+        tool, arch = tool.split(':')
+      else:
+        arch = None
+      # Ignore tools that are not enabled in this SDK build
+      if tool not in toolchains:
+        continue
+      tools.setdefault(tool, [])
+      if tool not in tool_list:
+        tool_list.append(tool)
+      if arch:
+        tools[tool].append(arch)
 
+    desc['TOOLS'] = tool_list
 
     # Add Makefile and make.bat
     repdict = GenerateReplacements(desc, tools)
@@ -527,21 +546,22 @@ def GenerateMasterMakefile(in_path, out_path, projects):
 
 
 def main(argv):
-  parser = optparse.OptionParser()
+  usage = "usage: generate_make [options] <dsc_file ..>"
+  parser = optparse.OptionParser(usage=usage)
   parser.add_option('--dstroot', help='Set root for destination.',
-      dest='dstroot', default=os.path.join(OUT_DIR, 'pepper_canary'))
+      default=os.path.join(OUT_DIR, 'pepper_canary'))
   parser.add_option('--master', help='Create master Makefile.',
-      action='store_true', dest='master', default=False)
+      action='store_true', default=False)
   parser.add_option('--newlib', help='Create newlib examples.',
-      action='store_true', dest='newlib', default=False)
+      action='store_true', default=False)
   parser.add_option('--glibc', help='Create glibc examples.',
-      action='store_true', dest='glibc', default=False)
+      action='store_true', default=False)
   parser.add_option('--pnacl', help='Create pnacl examples.',
-      action='store_true', dest='pnacl', default=False)
+      action='store_true', default=False)
   parser.add_option('--host', help='Create host examples.',
-      action='store_true', dest='host', default=False)
+      action='store_true', default=False)
   parser.add_option('--experimental', help='Create experimental examples.',
-      action='store_true', dest='experimental', default=False)
+      action='store_true', default=False)
 
   toolchains = []
   platform = getos.GetPlatform()
@@ -561,13 +581,15 @@ def main(argv):
 
   # By default support newlib and glibc
   if not toolchains:
-    toolchains = ['newlib', 'glibc']
-    print 'Using default toolchains: ' + ' '.join(toolchains)
+    toolchains = ['newlib', 'glibc', 'pnacl']
 
   master_projects = {}
 
   landing_page = LandingPage()
-  for filename in args:
+  for i, filename in enumerate(args):
+    if i:
+      # Print two newlines between each dsc file we process
+      print '\n'
     desc = LoadProject(filename, toolchains)
     if not desc:
       print 'Skipping %s, not in [%s].' % (filename, ', '.join(toolchains))
