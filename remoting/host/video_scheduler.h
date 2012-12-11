@@ -155,6 +155,10 @@ class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
 
   void EncodedDataAvailableCallback(scoped_ptr<VideoPacket> packet);
 
+  // Used to synchronize capture and encode thread teardown, notifying the
+  // network thread when done.
+  void StopOnEncodeThread(const base::Closure& done_task);
+
   // Task runners used by this class.
   scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner_;

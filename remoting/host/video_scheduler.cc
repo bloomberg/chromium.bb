@@ -176,9 +176,12 @@ void VideoScheduler::StopOnCaptureThread(const base::Closure& done_task) {
   // |capture_timer_| must be destroyed on the thread on which it is used.
   capture_timer_.reset();
 
-  // Activity on the encode thread will stop implicitly as a result of
-  // captures having stopped.
-  network_task_runner_->PostTask(FROM_HERE, done_task);
+  // Ensure that the encode thread is no longer processing capture data,
+  // otherwise tearing down |capturer_| will crash it.  See crbug.com/163641.
+  // TODO(wez): Make it safe to tear down capturer while buffers remain, and
+  // remove this work-around.
+  capture_task_runner_->PostTask(FROM_HERE,
+      base::Bind(&VideoScheduler::StopOnEncodeThread, this, done_task));
 }
 
 void VideoScheduler::ScheduleNextCapture() {
@@ -300,6 +303,14 @@ void VideoScheduler::EncodedDataAvailableCallback(
   network_task_runner_->PostTask(
       FROM_HERE, base::Bind(&VideoScheduler::SendVideoPacket, this,
                             base::Passed(&packet)));
+}
+
+void VideoScheduler::StopOnEncodeThread(const base::Closure& done_task) {
+  DCHECK(encode_task_runner_->BelongsToCurrentThread());
+
+  // This is posted by StopOnCaptureThread, so we know that by the time we
+  // process it there are no more encode tasks queued.
+  network_task_runner_->PostTask(FROM_HERE, done_task);
 }
 
 }  // namespace remoting
