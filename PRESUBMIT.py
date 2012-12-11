@@ -28,6 +28,26 @@ _EXCLUDED_PATHS = (
     r".+[\\\/]pnacl_shim\.c$",
 )
 
+# Fragment of a regular expression that matches file name suffixes
+# used to indicate different platforms.
+_PLATFORM_SPECIFIERS = r'(_(android|chromeos|gtk|mac|posix|win))?'
+
+# Fragment of a regular expression that matches C++ and Objective-C++
+# implementation files.
+_IMPLEMENTATION_EXTENSIONS = r'\.(cc|cpp|cxx|mm)$'
+
+# Regular expression that matches code only used for test binaries
+# (best effort).
+_TEST_CODE_EXCLUDED_PATHS = (
+    r'.*[/\\](fake_|test_|mock_).+%s' % _IMPLEMENTATION_EXTENSIONS,
+    r'.+_test_(base|support|util)%s' % _IMPLEMENTATION_EXTENSIONS,
+    r'.+_(api|browser|perf|unit|ui)?test%s%s' % (_PLATFORM_SPECIFIERS,
+                                                 _IMPLEMENTATION_EXTENSIONS),
+    r'.+profile_sync_service_harness%s' % _IMPLEMENTATION_EXTENSIONS,
+    r'.*[/\\](test|tool(s)?)[/\\].*',
+    # At request of folks maintaining this folder.
+    r'chrome[/\\]browser[/\\]automation[/\\].*',
+)
 
 _TEST_ONLY_WARNING = (
     'You might be calling functions intended only for testing from\n'
@@ -183,21 +203,7 @@ def _CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api):
   # We only scan .cc files and the like, as the declaration of
   # for-testing functions in header files are hard to distinguish from
   # calls to such functions without a proper C++ parser.
-  platform_specifiers = r'(_(android|chromeos|gtk|mac|posix|win))?'
-  source_extensions = r'\.(cc|cpp|cxx|mm)$'
-  file_inclusion_pattern = r'.+%s' % source_extensions
-  file_exclusion_patterns = (
-      r'.*[/\\](fake_|test_|mock_).+%s' % source_extensions,
-      r'.+_test_(base|support|util)%s' % source_extensions,
-      r'.+_(api|browser|perf|unit|ui)?test%s%s' % (platform_specifiers,
-                                                   source_extensions),
-      r'.+profile_sync_service_harness%s' % source_extensions,
-      )
-  path_exclusion_patterns = (
-      r'.*[/\\](test|tool(s)?)[/\\].*',
-      # At request of folks maintaining this folder.
-      r'chrome[/\\]browser[/\\]automation[/\\].*',
-      )
+  file_inclusion_pattern = r'.+%s' % _IMPLEMENTATION_EXTENSIONS
 
   base_function_pattern = r'ForTest(ing)?|for_test(ing)?'
   inclusion_pattern = input_api.re.compile(r'(%s)\s*\(' % base_function_pattern)
@@ -206,8 +212,9 @@ def _CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api):
       base_function_pattern, base_function_pattern))
 
   def FilterFile(affected_file):
-    black_list = (file_exclusion_patterns + path_exclusion_patterns +
-                  _EXCLUDED_PATHS + input_api.DEFAULT_BLACK_LIST)
+    black_list = (_EXCLUDED_PATHS +
+                  _TEST_CODE_EXCLUDED_PATHS +
+                  input_api.DEFAULT_BLACK_LIST)
     return input_api.FilterSourceFile(
       affected_file,
       white_list=(file_inclusion_pattern, ),
@@ -651,6 +658,43 @@ def _CheckForVersionControlConflicts(input_api, output_api):
   return results
 
 
+def _CheckHardcodedGoogleHostsInLowerLayers(input_api, output_api):
+  def FilterFile(affected_file):
+    """Filter function for use with input_api.AffectedSourceFiles,
+    below.  This filters out everything except non-test files from
+    top-level directories that generally speaking should not hard-code
+    service URLs (e.g. src/android_webview/, src/content/ and others).
+    """
+    return input_api.FilterSourceFile(
+      affected_file,
+      white_list=('^(android_webview|base|content|net)[\\\/].*'),
+      black_list=(_EXCLUDED_PATHS +
+                  _TEST_CODE_EXCLUDED_PATHS +
+                  input_api.DEFAULT_BLACK_LIST))
+
+  pattern = input_api.re.compile('"[^"]*google\.com[^"]*"')
+  problems = []  # items are (filename, line_number, line)
+  for f in input_api.AffectedSourceFiles(FilterFile):
+    for line_num, line in f.ChangedContents():
+      if pattern.search(line):
+        problems.append((f.LocalPath(), line_num, line))
+
+  if problems:
+    if not input_api.is_committing:
+      warning_factory = output_api.PresubmitPromptWarning
+    else:
+      # We don't want to block use of the CQ when there is a warning
+      # of this kind, so we only show a message when committing.
+      warning_factory = output_api.PresubmitNotifyResult
+    return [warning_factory(
+        'Most layers below src/chrome/ should not hardcode service URLs.\n'
+        'Are you sure this is correct? (Contact: joi@chromium.org)',
+        ['  %s:%d:  %s' % (
+            problem[0], problem[1], problem[2]) for problem in problems])]
+  else:
+    return []
+
+
 def _CommonChecks(input_api, output_api):
   """Checks common to both upload and commit."""
   results = []
@@ -672,6 +716,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckIncludeOrder(input_api, output_api))
   results.extend(_CheckForVersionControlConflicts(input_api, output_api))
   results.extend(_CheckPatchFiles(input_api, output_api))
+  results.extend(_CheckHardcodedGoogleHostsInLowerLayers(input_api, output_api))
 
   if any('PRESUBMIT.py' == f.LocalPath() for f in input_api.AffectedFiles()):
     results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
