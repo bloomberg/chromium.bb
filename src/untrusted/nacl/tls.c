@@ -32,6 +32,11 @@
 extern char __tls_template_start __attribute__((weak));
 extern char __tls_template_tdata_end __attribute__((weak));
 extern char __tls_template_end __attribute__((weak));
+/*
+ * __tls_template_alignment is defined by PNaCl's ExpandTls LLVM pass
+ * but not by linker scripts.
+ */
+extern uint32_t __tls_template_alignment __attribute__((weak));
 
 /*
  * In a proper implementation, there is no single fixed alignment for the
@@ -103,9 +108,12 @@ static const struct tls_info *get_tls_info(void) {
       /*
        * We didn't find anything that way, so we have to assume that
        * we were built with the hacked-up linker that provides symbols
-       * and forces the alignment.
+       * and forces the alignment, or with PNaCl's ExpandTls LLVM
+       * pass, which defines the alignment properly.
        */
-      cached_tls_info.tls_alignment = TLS_PRESUMED_ALIGNMENT;
+      cached_tls_info.tls_alignment =
+          &__tls_template_alignment
+          ? __tls_template_alignment : TLS_PRESUMED_ALIGNMENT;
       cached_tls_info.tdata_start = &__tls_template_start;
       cached_tls_info.tdata_size = (&__tls_template_tdata_end -
                                     &__tls_template_start);
