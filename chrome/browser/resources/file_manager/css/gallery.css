@@ -361,8 +361,8 @@ body {
 }
 
 .gallery[editing] .filename-spacer .saved {
-  color: gray;
-  opacity: 1;
+  color: white;
+  opacity: 0.5;
 }
 
 .gallery[editing] .filename-spacer .overwrite-original,
@@ -370,6 +370,10 @@ body {
   cursor: pointer;
   opacity: 1;
   pointer-events: auto;
+}
+
+.gallery[editing] .options[saved] .overwrite-original {
+  opacity: 0.5;
 }
 
 .gallery[editing] .options[saved] .overwrite-original,
@@ -385,7 +389,7 @@ body {
 
 .gallery .filename-spacer .saved[highlighted] {
   -webkit-transform: scaleX(1.1) scaleY(1.1) rotate(0);
-  color: white;
+  opacity: 1;
 }
 
 /* Bubble */
