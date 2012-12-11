@@ -175,3 +175,7 @@ fun_r:pcache1Fetch
 # fun:MessageLoop::RunTask at the top of the "current" stack which we don't want
 # to suppress. See http://crbug.com/98926
 fun:*base*debug*TraceLog*GetCategoryInternal*
+
+# libc threading on GCC 4.6 
+fun:arena_thread_freeres
+
