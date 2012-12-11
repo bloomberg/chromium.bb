@@ -25,6 +25,7 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_impl.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -403,8 +404,33 @@ bool DevToolsWindow::FindInspectedBrowserAndTabIndex(Browser** browser,
   if (!inspected_web_contents_)
     return false;
 
-  for (BrowserList::const_iterator it = BrowserList::begin();
-       it != BrowserList::end(); ++it) {
+  bool found = FindInspectedBrowserAndTabIndexFromBrowserList(
+      chrome::BrowserListImpl::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE),
+      browser,
+      tab);
+  // On Windows 8 we can have the desktop environment and the ASH environment
+  // active concurrently. If we fail to find the inspected web contents in the
+  // native browser list, then we should look in the ASH browser list.
+#if defined(OS_WIN) && defined(USE_AURA)
+  if (!found) {
+    found = FindInspectedBrowserAndTabIndexFromBrowserList(
+        chrome::BrowserListImpl::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH),
+        browser,
+        tab);
+  }
+#endif
+  return found;
+}
+
+bool DevToolsWindow::FindInspectedBrowserAndTabIndexFromBrowserList(
+    chrome::BrowserListImpl* browser_list,
+    Browser** browser,
+    int* tab) {
+  if (!inspected_web_contents_)
+    return false;
+
+  for (chrome::BrowserListImpl::const_iterator it = browser_list->begin();
+       it != browser_list->end(); ++it) {
     int tab_index = (*it)->tab_strip_model()->GetIndexOfWebContents(
         inspected_web_contents_);
     if (tab_index != TabStripModel::kNoTab) {
