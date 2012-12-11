@@ -133,6 +133,10 @@ interface PPB_ContentDecryptor_Private {
    * <code>PPP_ContentDecryptor_Private</code> interface completes to
    * deliver decrypted_block to the browser for decoding and rendering.
    *
+   * The plugin must not hold a reference to the encrypted buffer resource
+   * provided to <code>Decrypt()</code> when it calls this method. The browser
+   * will reuse the buffer in a subsequent <code>Decrypt()</code> call.
+   *
    * @param[in] decrypted_block A <code>PP_Resource</code> corresponding to a
    * <code>PPB_Buffer_Dev</code> resource that contains a decrypted data
    * block.
@@ -207,6 +211,11 @@ interface PPB_ContentDecryptor_Private {
    * <code>PPP_ContentDecryptor_Private</code> interface completes to deliver
    * a decrypted and decoded video frame to the browser for rendering.
    *
+   * The plugin must not hold a reference to the encrypted buffer resource
+   * provided to <code>DecryptAndDecode()</code> when it calls this method. The
+   * browser will reuse the buffer in a subsequent
+   * <code>DecryptAndDecode()</code> call.
+   *
    * @param[in] decrypted_frame A <code>PP_Resource</code> corresponding to a
    * <code>PPB_Buffer_Dev</code> resource that contains a video frame.
    *
@@ -221,9 +230,14 @@ interface PPB_ContentDecryptor_Private {
 
   /**
    * Called after the <code>DecryptAndDecode()</code> method on the
-   * <code>PPP_ContentDecryptor_Private</code> interface completes to
-   * deliver a buffer of decrypted and decoded audio samples to the browser for
+   * <code>PPP_ContentDecryptor_Private</code> interface completes to deliver
+   * a buffer of decrypted and decoded audio samples to the browser for
    * rendering.
+   *
+   * The plugin must not hold a reference to the encrypted buffer resource
+   * provided to <code>DecryptAndDecode()</code> when it calls this method. The
+   * browser will reuse the buffer in a subsequent
+   * <code>DecryptAndDecode()</code> call.
    *
    * <code>audio_frames</code> can contain multiple audio output buffers. Each
    * buffer is serialized in this format:

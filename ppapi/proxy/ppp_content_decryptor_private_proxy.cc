@@ -75,22 +75,6 @@ PP_Var ExtractReceivedVarAndAddRef(Dispatcher* dispatcher,
   return var;
 }
 
-// Increments the reference count on |resource| to ensure that it remains valid
-// until the plugin receives the resource within the asynchronous message sent
-// from the proxy.  The plugin side takes ownership of that reference. Returns
-// PP_TRUE when the reference is successfully added, PP_FALSE otherwise.
-PP_Bool AddRefResourceForPlugin(HostDispatcher* dispatcher,
-                                PP_Resource resource) {
-  const PPB_Core* core = static_cast<const PPB_Core*>(
-      dispatcher->local_get_interface()(PPB_CORE_INTERFACE));
-  if (!core) {
-    NOTREACHED();
-    return PP_FALSE;
-  }
-  core->AddRefResource(resource);
-  return PP_TRUE;
-}
-
 bool InitializePppDecryptorBuffer(PP_Instance instance,
                                   HostDispatcher* dispatcher,
                                   PP_Resource resource,
@@ -106,9 +90,6 @@ bool InitializePppDecryptorBuffer(PP_Instance instance,
     buffer->size = 0;
     return true;
   }
-
-  if (!AddRefResourceForPlugin(dispatcher, resource))
-    return false;
 
   HostResource host_resource;
   host_resource.SetHostResource(instance, resource);
