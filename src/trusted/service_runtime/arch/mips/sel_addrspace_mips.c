@@ -1,7 +1,7 @@
 /*
- * Copyright 2012 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include "native_client/src/include/nacl_platform.h"
@@ -15,10 +15,12 @@
 
 /* NOTE: This routine is almost identical to the x86_32 version.
  */
-NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) {
+NaClErrorCode NaClAllocateSpaceAslr(void **mem, size_t addrsp_size,
+                                    enum NaClAslrMode aslr_mode) {
   int result;
   void *tmp_mem = (void *) NACL_TRAMPOLINE_START;
 
+  UNREFERENCED_PARAMETER(aslr_mode);
   CHECK(NULL != mem);
 
   /*
