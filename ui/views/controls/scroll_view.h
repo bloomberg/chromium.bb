@@ -43,51 +43,47 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   // Set the contents. Any previous contents will be deleted. The contents
   // is the view that needs to scroll.
   void SetContents(View* a_view);
-  View* GetContents() const;
-
-  // Overridden to layout the viewport and scrollbars.
-  virtual void Layout() OVERRIDE;
+  const View* contents() const { return contents_; }
+  View* contents() { return contents_; }
 
   // Returns the visible region of the content View.
   gfx::Rect GetVisibleRect() const;
+
+  // Retrieves the width/height of scrollbars. These return 0 if the scrollbar
+  // has not yet been created.
+  int GetScrollBarWidth() const;
+  int GetScrollBarHeight() const;
+
+  // Returns the horizontal/vertical scrollbar. This may return NULL.
+  const ScrollBar* horizontal_scroll_bar() const { return horiz_sb_; }
+  const ScrollBar* vertical_scroll_bar() const { return vert_sb_; }
+
+  // View overrides:
+  virtual void Layout() OVERRIDE;
+  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
+  virtual bool OnMouseWheel(const ui::MouseWheelEvent& e) OVERRIDE;
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual std::string GetClassName() const OVERRIDE;
+
+  // ScrollBarController overrides:
+  virtual void ScrollToPosition(ScrollBar* source, int position) OVERRIDE;
+  virtual int GetScrollIncrement(ScrollBar* source,
+                                 bool is_page,
+                                 bool is_positive) OVERRIDE;
+
+ private:
+  class Viewport;
+
+  // Initialize the ScrollView. resize_corner is optional.
+  void Init(ScrollBar* horizontal_scrollbar,
+            ScrollBar* vertical_scrollbar,
+            View* resize_corner);
 
   // Scrolls the minimum amount necessary to make the specified rectangle
   // visible, in the coordinates of the contents view. The specified rectangle
   // is constrained by the bounds of the contents view. This has no effect if
   // the contents have not been set.
-  //
-  // Client code should use ScrollRectToVisible, which invokes this
-  // appropriately.
   void ScrollContentsRegionToBeVisible(const gfx::Rect& rect);
-
-  // ScrollBarController.
-  // NOTE: this is intended to be invoked by the ScrollBar, and NOT general
-  // client code.
-  // See also ScrollRectToVisible.
-  virtual void ScrollToPosition(ScrollBar* source, int position) OVERRIDE;
-
-  // Returns the amount to scroll relative to the visible bounds. This invokes
-  // either GetPageScrollIncrement or GetLineScrollIncrement to determine the
-  // amount to scroll. If the view returns 0 (or a negative value) a default
-  // value is used.
-  virtual int GetScrollIncrement(ScrollBar* source,
-                                 bool is_page,
-                                 bool is_positive) OVERRIDE;
-
-  // Keyboard events
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
-  virtual bool OnMouseWheel(const ui::MouseWheelEvent& e) OVERRIDE;
-
-  // Overridden from ui::EventHandler:
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
-
-  virtual std::string GetClassName() const OVERRIDE;
-
-  // Retrieves the vertical scrollbar width.
-  int GetScrollBarWidth() const;
-
-  // Retrieves the horizontal scrollbar height.
-  int GetScrollBarHeight() const;
 
   // Computes the visibility of both scrollbars, taking in account the view port
   // and content sizes.
@@ -95,16 +91,6 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
                                    const gfx::Size& content_size,
                                    bool* horiz_is_shown,
                                    bool* vert_is_shown) const;
-
-  ScrollBar* horizontal_scroll_bar() const { return horiz_sb_; }
-
-  ScrollBar* vertical_scroll_bar() const { return vert_sb_; }
-
- private:
-  // Initialize the ScrollView. resize_corner is optional.
-  void Init(ScrollBar* horizontal_scrollbar,
-            ScrollBar* vertical_scrollbar,
-            View* resize_corner);
 
   // Shows or hides the scrollbar/resize_corner based on the value of
   // |should_show|.

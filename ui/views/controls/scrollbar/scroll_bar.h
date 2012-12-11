@@ -24,7 +24,6 @@ class ScrollBar;
 /////////////////////////////////////////////////////////////////////////////
 class VIEWS_EXPORT ScrollBarController {
  public:
-
   // Invoked by the scrollbar when the scrolling position changes
   // This method typically implements the actual scrolling.
   //

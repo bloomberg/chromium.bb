@@ -666,6 +666,7 @@
         'controls/native/native_view_host_unittest.cc',
         'controls/progress_bar_unittest.cc',
         'controls/scrollbar/scrollbar_unittest.cc',
+        'controls/scroll_view_unittest.cc',
         'controls/single_split_view_unittest.cc',
         'controls/slider_unittest.cc',
         'controls/tabbed_pane/tabbed_pane_unittest.cc',

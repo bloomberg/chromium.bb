@@ -651,6 +651,7 @@
         '../ui/ui.gyp:ui',
         '../ui/ui.gyp:ui_resources',
         '../ui/views/views.gyp:views',
+        '../ui/views/views.gyp:views_examples_lib',
         '../ui/views/views.gyp:views_examples_with_content_lib',
         '../ui/views/views.gyp:views_test_support',
         'ash',

@@ -103,7 +103,7 @@ void ScrollViewExample::ButtonPressed(Button* sender, const ui::Event& event) {
     scrollable_->SetBounds(0, 0, 100, 100);
     scrollable_->SetColor(SK_ColorYELLOW, SK_ColorGREEN);
   } else if (sender == scroll_to_) {
-    scroll_view_->ScrollContentsRegionToBeVisible(
+    scroll_view_->contents()->ScrollRectToVisible(
         gfx::Rect(20, 500, 1000, 500));
   }
   scroll_view_->Layout();

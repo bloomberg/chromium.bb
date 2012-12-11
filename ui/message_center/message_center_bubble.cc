@@ -103,31 +103,29 @@ class FixedSizedScrollView : public views::ScrollView {
   // views::View overrides.
   virtual gfx::Size GetPreferredSize() OVERRIDE {
     gfx::Size size = fixed_size_.IsEmpty() ?
-        GetContents()->GetPreferredSize() : fixed_size_;
+        contents()->GetPreferredSize() : fixed_size_;
     gfx::Insets insets = GetInsets();
     size.Enlarge(insets.width(), insets.height());
     return size;
   }
 
   virtual void Layout() OVERRIDE {
-    views::View* contents = GetContents();
-    gfx::Rect bounds = gfx::Rect(contents->GetPreferredSize());
+    gfx::Rect bounds = gfx::Rect(contents()->GetPreferredSize());
     bounds.set_width(std::max(0, width() - GetScrollBarWidth()));
-    contents->SetBoundsRect(bounds);
+    contents()->SetBoundsRect(bounds);
 
     views::ScrollView::Layout();
     if (!vertical_scroll_bar()->visible()) {
-      gfx::Rect bounds = contents->bounds();
+      gfx::Rect bounds = contents()->bounds();
       bounds.set_width(bounds.width() + GetScrollBarWidth());
-      contents->SetBoundsRect(bounds);
+      contents()->SetBoundsRect(bounds);
     }
   }
 
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE {
-    views::View* contents = GetContents();
-    gfx::Rect bounds = gfx::Rect(contents->GetPreferredSize());
+    gfx::Rect bounds = gfx::Rect(contents()->GetPreferredSize());
     bounds.set_width(std::max(0, width() - GetScrollBarWidth()));
-    contents->SetBoundsRect(bounds);
+    contents()->SetBoundsRect(bounds);
   }
 
  private:
