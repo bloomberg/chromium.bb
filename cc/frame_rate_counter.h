@@ -52,7 +52,7 @@ private:
     // FIXME: Determine this threshold based on monitor refresh rate, crbug.com/138642.
     static const double kDroppedFrameTime;
 
-    static const int kTimeStampHistorySize = 170;
+    static const int kTimeStampHistorySize = 130;
 
     bool m_hasImplThread;
 

@@ -175,7 +175,7 @@ int HeadsUpDisplayLayerImpl::drawFPSCounter(SkCanvas* canvas, FrameRateCounter* 
 
     const int fontHeight = m_fontAtlas.get() ? m_fontAtlas->fontHeight() : 0;
 
-    const int graphWidth = 120;
+    const int graphWidth = fpsCounter->timeStampHistorySize() - 3;
     const int graphHeight = 40;
 
     const int histogramWidth = 37;
@@ -240,8 +240,7 @@ void HeadsUpDisplayLayerImpl::drawFPSCounterGraphAndHistogram(SkCanvas* canvas, 
     canvas->drawLine(graphBounds.left(), top60, graphBounds.right(), top60, paint);
 
     // Collect graph and histogram data.
-    double x = 0;
-    const double timeScale = 60; // in pixels/second
+    int x = 0;
     SkPath path;
 
     m_minFPS = std::numeric_limits<double>::max();
@@ -251,7 +250,7 @@ void HeadsUpDisplayLayerImpl::drawFPSCounterGraphAndHistogram(SkCanvas* canvas, 
     double histogram[histogramSize] = {0};
     double maxBucketValue = 0;
 
-    for (int i = fpsCounter->timeStampHistorySize() - 2; i > 0 && x <= graphBounds.width(); --i) {
+    for (int i = 1; i < fpsCounter->timeStampHistorySize() - 1; ++i) {
         base::TimeDelta delta = fpsCounter->timeStampOfRecentFrame(i + 1) - fpsCounter->timeStampOfRecentFrame(i);
 
         // Skip this particular instantaneous frame rate if it is not likely to have been valid.
@@ -270,7 +269,7 @@ void HeadsUpDisplayLayerImpl::drawFPSCounterGraphAndHistogram(SkCanvas* canvas, 
                 p = 1;
 
             // Plot this data point.
-            SkPoint cur = SkPoint::Make(graphBounds.right() - x, graphBounds.bottom() - p * graphBounds.height());
+            SkPoint cur = SkPoint::Make(graphBounds.left() + x, graphBounds.bottom() - p * graphBounds.height());
             if (path.isEmpty())
                 path.moveTo(cur);
             else
@@ -284,7 +283,7 @@ void HeadsUpDisplayLayerImpl::drawFPSCounterGraphAndHistogram(SkCanvas* canvas, 
             maxBucketValue = std::max(histogram[bucketIndex], maxBucketValue);
         }
 
-        x += delta.InSecondsF() * timeScale;
+        x++;
     }
 
     // Draw FPS histogram.
