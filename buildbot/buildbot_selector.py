@@ -43,7 +43,8 @@ BOT_ASSIGNMENT = {
     'win7-64-bare-glibc-opt':
         python + ' buildbot\\buildbot_standard.py opt 64 glibc',
     'win7-64-arm-newlib-opt':
-        python + ' buildbot\\buildbot_standard.py opt arm newlib --no-gyp',
+        'echo "TODO(mcgrathr): enable windows arm-nacl-gcc bots"'
+        #python + ' buildbot\\buildbot_standard.py opt arm newlib --no-gyp',
     'mac10.6-newlib-opt':
         python + ' buildbot/buildbot_standard.py opt 32 newlib',
     'mac10.7-newlib-opt':
@@ -165,7 +166,8 @@ BOT_ASSIGNMENT = {
     'nacl-win8-64_glibc_opt':
         python + ' buildbot\\buildbot_standard.py opt 64 glibc',
     'nacl-win7_64_arm_newlib_opt':
-        python + ' buildbot\\buildbot_standard.py opt arm newlib --no-gyp',
+        'echo "TODO(mcgrathr): enable windows arm-nacl-gcc bots"'
+        #python + ' buildbot\\buildbot_standard.py opt arm newlib --no-gyp',
     'nacl-mac10.6_newlib_opt':
         python + ' buildbot/buildbot_standard.py opt 32 newlib',
     'nacl-mac10.6_glibc_opt':
