@@ -60,7 +60,6 @@ const wchar_t kToastExpCancelGroup[] =         L"02";
 const wchar_t kToastExpUninstallGroup[] =      L"04";
 const wchar_t kToastExpTriesOkGroup[] =        L"18";
 const wchar_t kToastExpTriesErrorGroup[] =     L"28";
-const wchar_t kToastExpTriesOkDefaultGroup[] = L"48";
 const wchar_t kToastActiveGroup[] =            L"40";
 const wchar_t kToastUDDirFailure[] =           L"40";
 const wchar_t kToastExpBaseGroup[] =           L"80";
@@ -616,12 +615,17 @@ bool GoogleChromeDistribution::GetExperimentDetails(
   // This struct determines which experiment flavors we show for each locale and
   // brand.
   //
-  // The big experiment in Dec 2009 used TGxx and THxx.
-  // The big experiment in Feb 2010 used TKxx and TLxx.
-  // The big experiment in Apr 2010 used TMxx and TNxx.
-  // The big experiment in Oct 2010 used TVxx TWxx TXxx TYxx.
-  // The big experiment in Feb 2011 used SJxx SKxx SLxx SMxx.
-  // Note: the plugin infobar experiment uses PIxx codes.
+  // Plugin infobar experiment:
+  // The experiment in 2011 used PIxx codes.
+  //
+  // Inactive user toast experiment:
+  // The experiment in Dec 2009 used TGxx and THxx.
+  // The experiment in Feb 2010 used TKxx and TLxx.
+  // The experiment in Apr 2010 used TMxx and TNxx.
+  // The experiment in Oct 2010 used TVxx TWxx TXxx TYxx.
+  // The experiment in Feb 2011 used SJxx SKxx SLxx SMxx.
+  // The experiment in Mar 2012 used ZAxx ZBxx ZCxx.
+  // The experiment in Jan 2013 uses DAxx.
   using namespace attrition_experiments;
 
   static const struct UserExperimentDetails {
@@ -634,21 +638,21 @@ bool GoogleChromeDistribution::GetExperimentDetails(
   } kExperiments[] = {
     // The first match from top to bottom is used so this list should be ordered
     // most-specific rule first.
-    { L"*", L"CHMA",  // All locales, CHMA brand.
-      25,             // 25 percent control group.
-      L"ZA",          // Experiment is ZAxx, ZBxx, ZCxx, ZDxx etc.
-      // Three flavors.
-      { { IDS_TRY_TOAST_HEADING3, kDontBugMeAsButton | kUninstall | kWhyLink },
-        { IDS_TRY_TOAST_HEADING3, 0 },
-        { IDS_TRY_TOAST_HEADING3, kMakeDefault },
-        { 0, 0 },
-      }
-    },
     { L"*", L"GGRV",  // All locales, GGRV is enterprise.
       0,              // 0 percent control group.
       L"EA",          // Experiment is EAxx, EBxx, etc.
       // No flavors means no experiment.
       { { 0, 0 },
+        { 0, 0 },
+        { 0, 0 },
+        { 0, 0 }
+      }
+    },
+    { L"*", L"*",     // All locales, all brands.
+      5,              // 5 percent control group.
+      L"DA",          // Experiment is DAxx.
+      // One single flavor.
+      { { IDS_TRY_TOAST_HEADING3, kMakeDefault },
         { 0, 0 },
         { 0, 0 },
         { 0, 0 }
@@ -849,23 +853,11 @@ void GoogleChromeDistribution::InactiveUserToastExperiment(int flavor,
     default:
       outcome = kToastExpTriesErrorGroup;
   };
-
-  if (outcome == kToastExpTriesOkGroup) {
-    // User tried chrome, but if it had the default group button it belongs
-    // to a different outcome group.
-    UserExperiment experiment;
-    if (GetExperimentDetails(&experiment, flavor)) {
-      outcome = experiment.flags & kMakeDefault ? kToastExpTriesOkDefaultGroup :
-                                                  kToastExpTriesOkGroup;
-    }
-  }
-
   // Write to the |client| key for the last time.
   SetClient(experiment_group + outcome, true);
 
   if (outcome != kToastExpUninstallGroup)
     return;
-
   // The user wants to uninstall. This is a best effort operation. Note that
   // we waited for chrome to exit so the uninstall would not detect chrome
   // running.
