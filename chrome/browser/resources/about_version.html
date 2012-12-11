@@ -74,28 +74,33 @@ about:version template page
         </tr>
 <if expr="not pp_ifdef('android')">
         <tr><td class="label" i18n-content="flash_plugin"></td>
-            <td class="version" id="flash_version" i18n-content="flash_version"></td>
+          <td class="version" id="flash_version" i18n-content="flash_version"></td>
         </tr>
 </if>
         <tr><td class="label" i18n-content="user_agent_name"></td>
-            <td class="version" id="useragent" i18n-content="useragent"></td>
+          <td class="version" id="useragent" i18n-content="useragent"></td>
         </tr>
         <tr><td class="label" i18n-content="command_line_name"></td>
-            <td class="version" id="command_line" i18n-content="command_line"></td>
+          <td class="version" id="command_line" i18n-content="command_line"></td>
         </tr>
         <tr><td class="label" i18n-content="executable_path_name"></td>
-            <td class="version" id="executable_path" i18n-content="executable_path"></td>
+          <td class="version" id="executable_path" i18n-content="executable_path"></td>
         </tr>
         <tr><td class="label" i18n-content="profile_path_name"></td>
-            <td class="version" id="profile_path" i18n-content="profile_path"></td>
+          <td class="version" id="profile_path" i18n-content="profile_path"></td>
         </tr>
         <tr id="variations-section">
-            <td class="label" i18n-content="variations_name"></td>
-            <td class="version" id="variations-list"></td>
+          <td class="label" i18n-content="variations_name"></td>
+          <td class="version" id="variations-list"></td>
         </tr>
+<if expr="pp_ifdef('android')">
+        <tr id="build-id-section">
+          <td class="label" i18n-content="build_id_name"></td>
+          <td class="version" i18n-content="build_id"></td>
+        </tr>
+</if>
       </table>
     </div>
     <script src="chrome://resources/js/i18n_template2.js"></script>
   </body>
-
 </html>

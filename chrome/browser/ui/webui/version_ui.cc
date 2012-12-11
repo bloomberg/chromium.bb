@@ -65,6 +65,9 @@ ChromeWebUIDataSource* CreateVersionUIDataSource(Profile* profile) {
                          android_build_info->package_label());
   html_source->AddString("application_version",
                          android_build_info->package_version_name());
+  html_source->AddLocalizedString("build_id_name",
+                                  IDS_ABOUT_VERSION_BUILD_ID);
+  html_source->AddString("build_id", CHROME_BUILD_ID);
 #else
   html_source->AddLocalizedString("application_label", IDS_PRODUCT_NAME);
   html_source->AddString("os_version", std::string());

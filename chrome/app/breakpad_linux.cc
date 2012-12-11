@@ -432,7 +432,7 @@ bool FinalizeCrashDoneAndroid() {
   __android_log_write(ANDROID_LOG_WARN, kGoogleBreakpad,
                       android_build_info->package_version_code());
   __android_log_write(ANDROID_LOG_WARN, kGoogleBreakpad,
-                      CHROME_SYMBOLS_ID);
+                      CHROME_BUILD_ID);
   __android_log_write(ANDROID_LOG_WARN, kGoogleBreakpad,
                       "### ### ### ### ### ### ### ### ### ### ### ### ###");
   return false;
