@@ -17,6 +17,7 @@
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/history/history_tab_helper.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
+#include "chrome/browser/managed_mode/managed_mode_navigation_observer.h"
 #include "chrome/browser/net/load_time_stats.h"
 #include "chrome/browser/net/net_error_tab_helper.h"
 #include "chrome/browser/omnibox_search_hint.h"
@@ -172,6 +173,7 @@ TabContents::TabContents(WebContents* contents)
 #if !defined(OS_ANDROID)
   if (OmniboxSearchHint::IsEnabled(profile()))
     OmniboxSearchHint::CreateForWebContents(contents);
+  ManagedModeNavigationObserver::CreateForWebContents(contents);
   PDFTabHelper::CreateForWebContents(contents);
   SadTabHelper::CreateForWebContents(contents);
   WebIntentPickerController::CreateForWebContents(contents);
