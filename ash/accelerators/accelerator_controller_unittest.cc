@@ -881,10 +881,6 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   EXPECT_TRUE(ProcessWithContext(
       ui::Accelerator(ui::VKEY_O, ui::EF_CONTROL_DOWN)));
 
-  // Open file manager tab
-  EXPECT_TRUE(ProcessWithContext(
-      ui::Accelerator(ui::VKEY_M, ui::EF_CONTROL_DOWN)));
-
   // Lock screen
   // NOTE: Accelerators that do not work on the lock screen need to be
   // tested before the sequence below is invoked because it causes a side

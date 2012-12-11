@@ -84,7 +84,6 @@ enum AcceleratorAction {
   LOCK_SCREEN,
   OPEN_CROSH,
   OPEN_FILE_MANAGER_DIALOG,
-  OPEN_FILE_MANAGER_TAB,
   DISABLE_GPU_WATCHDOG,
 #endif
 #if !defined(NDEBUG)

@@ -49,7 +49,6 @@
 #include "base/chromeos/chromeos_version.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/background/ash_user_wallpaper_delegate.h"
-#include "chrome/browser/chromeos/extensions/file_manager_util.h"
 #include "chrome/browser/chromeos/extensions/media_player_event_router.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -207,19 +206,14 @@ void ChromeShellDelegate::ToggleMaximized() {
   ash::wm::ToggleMaximizedWindow(window);
 }
 
-void ChromeShellDelegate::OpenFileManager(bool as_dialog) {
+void ChromeShellDelegate::OpenFileManager() {
 #if defined(OS_CHROMEOS)
-  if (as_dialog) {
-    Browser* browser =
-        chrome::FindBrowserWithWindow(ash::wm::GetActiveWindow());
-    // Open the select file dialog only if there is an active browser where the
-    // selected file is displayed.
-    if (browser) {
-      browser->OpenFile();
-      return;
-    }
-  } else {
-    file_manager_util::OpenApplication();
+  Browser* browser =
+      chrome::FindBrowserWithWindow(ash::wm::GetActiveWindow());
+  // Open the select file dialog only if there is an active browser where the
+  // selected file is displayed.
+  if (browser) {
+    browser->OpenFile();
   }
 #endif
 }

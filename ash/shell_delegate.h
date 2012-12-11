@@ -105,8 +105,8 @@ class ASH_EXPORT ShellDelegate {
   // Invoked when the user uses F4 to toggle window maximized state.
   virtual void ToggleMaximized() = 0;
 
-  // Invoked when the user uses Ctrl-M or Ctrl-O to open file manager.
-  virtual void OpenFileManager(bool as_dialog) = 0;
+  // Invoked when the user uses Ctrl-O to open file manager.
+  virtual void OpenFileManager() = 0;
 
   // Invoked when the user opens Crosh.
   virtual void OpenCrosh() = 0;

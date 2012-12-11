@@ -78,9 +78,6 @@ void ViewFile(const FilePath& path);
 // Opens file browser on the folder containing the file, with the file selected.
 void ShowFileInFolder(const FilePath& path);
 
-// Opens file browser application.
-void OpenApplication();
-
 // Executes the built-in File Manager handler or tries to open |file| directly
 // in the browser. Returns false if neither is possible.
 bool ExecuteBuiltinHandler(

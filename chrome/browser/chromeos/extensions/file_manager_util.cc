@@ -597,10 +597,6 @@ void ViewFolder(const FilePath& path) {
   OpenFileBrowser(path, REUSE_SAME_PATH, "open");
 }
 
-void OpenApplication() {
-  OpenFileBrowser(FilePath(), REUSE_NEVER, "");
-}
-
 bool ExecuteDefaultHandler(Profile* profile, const FilePath& path) {
   GURL url;
   if (!ConvertFileToFileSystemUrl(profile, path,
