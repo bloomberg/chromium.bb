@@ -471,6 +471,7 @@
           'supported_on': ['chrome.*:14-'],
           'features': {
             'dynamic_refresh': True,
+            'per_profile': False,
           },
           'example_value': False,
           'id': 95,
@@ -2775,6 +2776,7 @@
       'supported_on': ['chrome.*:14-'],
       'features': {
         'dynamic_refresh': False,
+        'per_profile': False,
       },
       'example_value': 32,
       'id': 92,

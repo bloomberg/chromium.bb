@@ -256,6 +256,19 @@ class PolicyTemplateChecker(object):
                         'documentation string in the messages dictionary.' %
                         feature, 'policy', policy.get('name', policy))
 
+      # All user policies must have a per_profile feature flag.
+      if (not policy.get('device_only', False) and
+          not policy.get('deprecated', False) and
+          not filter(re.compile('^chrome_frame:.*').match, supported_on)):
+        self._CheckContains(features, 'per_profile', bool,
+                            container_name='features',
+                            identifier=policy.get('name'))
+
+      # All policies must declare whether they allow changes at runtime.
+      self._CheckContains(features, 'dynamic_refresh', bool,
+                          container_name='features',
+                          identifier=policy.get('name'))
+
       # Each policy must have an 'example_value' of appropriate type.
       if policy_type == 'main':
         value_type = bool
