@@ -1135,11 +1135,12 @@ class Flattenable(object):
     return out
 
 
-class IsolatedFile(Flattenable):
-  """Describes the content of a .isolated file.
+class SavedState(Flattenable):
+  """Describes the content of a .state file.
 
-  This file is used by run_isolated.py so its content is strictly only
-  what is necessary to run the test outside of a checkout.
+  This file caches the items calculated by this script and is used to increase
+  the performance of the script. This file is not loaded by run_isolated.py.
+  This file can always be safely removed.
 
   It is important to note that the 'files' dict keys are using native OS path
   separator instead of '/' used in .isolate file.
@@ -1147,22 +1148,34 @@ class IsolatedFile(Flattenable):
   MEMBERS = (
     'command',
     'files',
+    'isolate_file',
     'os',
     'read_only',
     'relative_cwd',
+    'variables',
   )
 
   os = get_flavor()
 
   def __init__(self):
-    super(IsolatedFile, self).__init__()
+    super(SavedState, self).__init__()
     self.command = []
     self.files = {}
+    self.isolate_file = None
     self.read_only = None
     self.relative_cwd = None
+    self.variables = {}
 
-  def update(self, command, infiles, touched, read_only, relative_cwd):
-    """Updates the result state with new information."""
+  def update(self, isolate_file, variables):
+    """Updates the saved state with new data to keep GYP variables and internal
+    reference to the original .isolate file.
+    """
+    self.isolate_file = isolate_file
+    self.variables.update(variables)
+
+  def update_isolated(self, command, infiles, touched, read_only, relative_cwd):
+    """Updates the saved state with data necessary to generate a .isolated file.
+    """
     self.command = command
     # Add new files.
     for f in infiles:
@@ -1176,46 +1189,27 @@ class IsolatedFile(Flattenable):
       self.read_only = read_only
     self.relative_cwd = relative_cwd
 
-  def _load_member(self, member, value):
-    if member == 'os':
-      if value != self.os:
-        raise run_isolated.ConfigError(
-            'The .isolated file was created on another platform')
-    else:
-      super(IsolatedFile, self)._load_member(member, value)
+  def to_isolated(self):
+    """Creates a .isolated dictionary out of the saved state.
 
-  def __str__(self):
-    out = '%s(\n' % self.__class__.__name__
-    out += '  command: %s\n' % self.command
-    out += '  files: %d\n' % len(self.files)
-    out += '  read_only: %s\n' % self.read_only
-    out += '  relative_cwd: %s)' % self.relative_cwd
+    http://chromium.org/developers/testing/isolated-testing/design
+    """
+    def strip(data):
+      """Returns a 'files' entry with only the whitelisted keys."""
+      return dict((k, data[k]) for k in ('h', 'l', 'm', 's') if k in data)
+
+    out = {
+      'files': dict(
+          (filepath, strip(data)) for filepath, data in self.files.iteritems()),
+      'os': self.os,
+    }
+    if self.command:
+      out['command'] = self.command
+    if self.read_only is not None:
+      out['read_only'] = self.read_only
+    if self.relative_cwd:
+      out['relative_cwd'] = self.relative_cwd
     return out
-
-
-class SavedState(Flattenable):
-  """Describes the content of a .state file.
-
-  The items in this file are simply to improve the developer's life and aren't
-  used by run_isolated.py. This file can always be safely removed.
-
-  isolate_file permits to find back root_dir, variables are used for stateful
-  rerun.
-  """
-  MEMBERS = (
-    'isolate_file',
-    'variables',
-  )
-
-  def __init__(self):
-    super(SavedState, self).__init__()
-    self.isolate_file = None
-    self.variables = {}
-
-  def update(self, isolate_file, variables):
-    """Updates the saved state with new information."""
-    self.isolate_file = isolate_file
-    self.variables.update(variables)
 
   @classmethod
   def load(cls, data):
@@ -1225,9 +1219,21 @@ class SavedState(Flattenable):
           unicode(out.isolate_file))
     return out
 
+  def _load_member(self, member, value):
+    if member == 'os':
+      if value != self.os:
+        raise run_isolated.ConfigError(
+            'The .isolated file was created on another platform')
+    else:
+      super(SavedState, self)._load_member(member, value)
+
   def __str__(self):
     out = '%s(\n' % self.__class__.__name__
+    out += '  command: %s\n' % self.command
+    out += '  files: %d\n' % len(self.files)
     out += '  isolate_file: %s\n' % self.isolate_file
+    out += '  read_only: %s\n' % self.read_only
+    out += '  relative_cwd: %s' % self.relative_cwd
     out += '  variables: %s' % ''.join(
         '\n    %s=%s' % (k, self.variables[k]) for k in sorted(self.variables))
     out += ')'
@@ -1236,11 +1242,9 @@ class SavedState(Flattenable):
 
 class CompleteState(object):
   """Contains all the state to run the task at hand."""
-  def __init__(self, isolated_filepath, isolated, saved_state):
+  def __init__(self, isolated_filepath, saved_state):
     super(CompleteState, self).__init__()
     self.isolated_filepath = isolated_filepath
-    # Contains the data that will be used by run_isolated.py
-    self.isolated = isolated
     # Contains the data to ease developer's use-case but that is not strictly
     # necessary.
     self.saved_state = saved_state
@@ -1251,7 +1255,6 @@ class CompleteState(object):
     assert os.path.isabs(isolated_filepath), isolated_filepath
     return cls(
         isolated_filepath,
-        IsolatedFile.load_file(isolated_filepath),
         SavedState.load_file(isolatedfile_to_state(isolated_filepath)))
 
   def load_isolate(self, isolate_file, variables, ignore_broken_items):
@@ -1303,33 +1306,37 @@ class CompleteState(object):
         lambda x: re.match(r'.*\.(git|svn|pyc)$', x),
         ignore_broken_items)
 
-    # Finally, update the new stuff in the foo.isolated file, the file that is
-    # used by run_isolated.py.
-    self.isolated.update(command, infiles, touched, read_only, relative_cwd)
+    # Finally, update the new data to be able to generate the foo.isolated file,
+    # the file that is used by run_isolated.py.
+    self.saved_state.update_isolated(
+        command, infiles, touched, read_only, relative_cwd)
     logging.debug(self)
 
   def process_inputs(self, subdir):
-    """Updates self.isolated.files with the files' mode and hash.
+    """Updates self.saved_state.files with the files' mode and hash.
 
     If |subdir| is specified, filters to a subdirectory. The resulting .isolated
     file is tainted.
 
     See process_input() for more information.
     """
-    for infile in sorted(self.isolated.files):
+    for infile in sorted(self.saved_state.files):
       if subdir and not infile.startswith(subdir):
-        self.isolated.files.pop(infile)
+        self.saved_state.files.pop(infile)
       else:
         filepath = os.path.join(self.root_dir, infile)
-        self.isolated.files[infile] = process_input(
-            filepath, self.isolated.files[infile], self.isolated.read_only)
+        self.saved_state.files[infile] = process_input(
+            filepath,
+            self.saved_state.files[infile],
+            self.saved_state.read_only)
 
   def save_files(self):
-    """Saves both self.isolated and self.saved_state."""
+    """Saves self.saved_state and creates a .isolated file."""
     logging.debug('Dumping to %s' % self.isolated_filepath)
     trace_inputs.write_json(
-        self.isolated_filepath, self.isolated.flatten(), True)
-    total_bytes = sum(i.get('s', 0) for i in self.isolated.files.itervalues())
+        self.isolated_filepath, self.saved_state.to_isolated(), True)
+    total_bytes = sum(
+        i.get('s', 0) for i in self.saved_state.files.itervalues())
     if total_bytes:
       logging.debug('Total size: %d bytes' % total_bytes)
     saved_state_file = isolatedfile_to_state(self.isolated_filepath)
@@ -1343,11 +1350,11 @@ class CompleteState(object):
       raise ExecutionError('Please specify --isolate')
     isolate_dir = os.path.dirname(self.saved_state.isolate_file)
     # Special case '.'.
-    if self.isolated.relative_cwd == '.':
+    if self.saved_state.relative_cwd == '.':
       return isolate_dir
-    assert isolate_dir.endswith(self.isolated.relative_cwd), (
-        isolate_dir, self.isolated.relative_cwd)
-    return isolate_dir[:-(len(self.isolated.relative_cwd) + 1)]
+    assert isolate_dir.endswith(self.saved_state.relative_cwd), (
+        isolate_dir, self.saved_state.relative_cwd)
+    return isolate_dir[:-(len(self.saved_state.relative_cwd) + 1)]
 
   @property
   def resultdir(self):
@@ -1364,7 +1371,6 @@ class CompleteState(object):
 
     out = '%s(\n' % self.__class__.__name__
     out += '  root_dir: %s\n' % self.root_dir
-    out += '  result: %s\n' % indent(self.isolated, 2)
     out += '  saved_state: %s)' % indent(self.saved_state, 2)
     return out
 
@@ -1372,19 +1378,19 @@ class CompleteState(object):
 def load_complete_state(options, subdir):
   """Loads a CompleteState.
 
-  This includes data from .isolate, .isolated and .state files.
+  This includes data from .isolate and .isolated.state files. Never reads the
+  .isolated file.
 
   Arguments:
     options: Options instance generated with OptionParserIsolate.
   """
   if options.isolated:
-    # Load the previous state if it was present. Namely, "foo.isolated" and
-    # "foo.state".
+    # Load the previous state if it was present. Namely, "foo.isolated.state".
     complete_state = CompleteState.load_files(options.isolated)
   else:
     # Constructs a dummy object that cannot be saved. Useful for temporary
     # commands like 'run'.
-    complete_state = CompleteState(None, IsolatedFile(), SavedState())
+    complete_state = CompleteState(None, SavedState())
   options.isolate = options.isolate or complete_state.saved_state.isolate_file
   if not options.isolate:
     raise ExecutionError('A .isolate file is required.')
@@ -1398,7 +1404,7 @@ def load_complete_state(options, subdir):
   complete_state.load_isolate(options.isolate, options.variables,
                               options.ignore_broken_items)
 
-  # Regenerate complete_state.isolated.files.
+  # Regenerate complete_state.saved_state.files.
   if subdir:
     subdir = unicode(subdir)
     subdir = eval_variables(subdir, complete_state.saved_state.variables)
@@ -1430,12 +1436,12 @@ def read_trace_as_isolate_dict(complete_state):
         touched,
         complete_state.root_dir,
         complete_state.saved_state.variables,
-        complete_state.isolated.relative_cwd)
+        complete_state.saved_state.relative_cwd)
     return value, exceptions
   except trace_inputs.TracingFailure, e:
     raise ExecutionError(
         'Reading traces failed for: %s\n%s' %
-          (' '.join(complete_state.isolated.command), str(e)))
+          (' '.join(complete_state.saved_state.command), str(e)))
 
 
 def print_all(comment, data, stream):
@@ -1475,7 +1481,7 @@ def merge(complete_state):
 
 
 def CMDcheck(args):
-  """Checks that all the inputs are present and update .isolated."""
+  """Checks that all the inputs are present and generates .isolated."""
   parser = OptionParserIsolate(command='check')
   parser.add_option('--subdir', help='Filters to a subdirectory')
   options, args = parser.parse_args(args)
@@ -1512,7 +1518,7 @@ def CMDhashtable(args):
       complete_state.save_files()
 
       logging.info('Creating content addressed object store with %d item',
-                   len(complete_state.isolated.files))
+                   len(complete_state.saved_state.files))
 
       with open(complete_state.isolated_filepath, 'rb') as f:
         content = f.read()
@@ -1522,7 +1528,7 @@ def CMDhashtable(args):
         'priority': '0'
       }
 
-      infiles = complete_state.isolated.files
+      infiles = complete_state.saved_state.files
       infiles[complete_state.isolated_filepath] = isolated_metadata
 
       if re.match(r'^https?://.+$', options.outdir):
@@ -1605,10 +1611,10 @@ def CMDremap(args):
   recreate_tree(
       outdir=options.outdir,
       indir=complete_state.root_dir,
-      infiles=complete_state.isolated.files,
+      infiles=complete_state.saved_state.files,
       action=run_isolated.HARDLINK,
       as_sha1=False)
-  if complete_state.isolated.read_only:
+  if complete_state.saved_state.read_only:
     run_isolated.make_writable(options.outdir, True)
 
   if complete_state.isolated_filepath:
@@ -1631,7 +1637,7 @@ def CMDrun(args):
   parser.enable_interspersed_args()
   options, args = parser.parse_args(args)
   complete_state = load_complete_state(options, None)
-  cmd = complete_state.isolated.command + args
+  cmd = complete_state.saved_state.command + args
   if not cmd:
     raise ExecutionError('No command to run')
   cmd = trace_inputs.fix_python_path(cmd)
@@ -1645,17 +1651,17 @@ def CMDrun(args):
     recreate_tree(
         outdir=options.outdir,
         indir=complete_state.root_dir,
-        infiles=complete_state.isolated.files,
+        infiles=complete_state.saved_state.files,
         action=run_isolated.HARDLINK,
         as_sha1=False)
     cwd = os.path.normpath(
-        os.path.join(options.outdir, complete_state.isolated.relative_cwd))
+        os.path.join(options.outdir, complete_state.saved_state.relative_cwd))
     if not os.path.isdir(cwd):
       # It can happen when no files are mapped from the directory containing the
       # .isolate file. But the directory must exist to be the current working
       # directory.
       os.makedirs(cwd)
-    if complete_state.isolated.read_only:
+    if complete_state.saved_state.read_only:
       run_isolated.make_writable(options.outdir, True)
     logging.info('Running %s, cwd=%s' % (cmd, cwd))
     result = subprocess.call(cmd, cwd=cwd)
@@ -1686,12 +1692,13 @@ def CMDtrace(args):
       help='After tracing, merge the results back in the .isolate file')
   options, args = parser.parse_args(args)
   complete_state = load_complete_state(options, None)
-  cmd = complete_state.isolated.command + args
+  cmd = complete_state.saved_state.command + args
   if not cmd:
     raise ExecutionError('No command to run')
   cmd = trace_inputs.fix_python_path(cmd)
   cwd = os.path.normpath(os.path.join(
-      unicode(complete_state.root_dir), complete_state.isolated.relative_cwd))
+      unicode(complete_state.root_dir),
+      complete_state.saved_state.relative_cwd))
   cmd[0] = os.path.normpath(os.path.join(cwd, cmd[0]))
   if not os.path.isfile(cmd[0]):
     raise ExecutionError(

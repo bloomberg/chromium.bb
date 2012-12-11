@@ -127,8 +127,6 @@ class FixTestCases(unittest.TestCase):
       u'os': unicode(run_isolated.get_flavor()),
       u'relative_cwd': u'.',
     }
-    for value in actual_isolated['files'].itervalues():
-      self.assertTrue(value.pop('t'))
     if sys.platform == 'win32':
       for value in expected_isolated['files'].itervalues():
         self.assertTrue(value.pop('m'))

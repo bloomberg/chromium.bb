@@ -43,49 +43,13 @@ class IsolateTest(unittest.TestCase):
     self.assertEqual([], touched)
     self.assertEqual(None, read_only)
 
-  def test_isolated_load_empty(self):
+  def test_savedstate_load_empty(self):
     values = {
     }
     expected = {
       'command': [],
       'files': {},
       'os': isolate.get_flavor(),
-    }
-    self.assertEqual(expected, isolate.IsolatedFile.load(values).flatten())
-
-  def test_isolated_load(self):
-    values = {
-      'command': 'maybe',
-      'files': {'foo': 42},
-      'read_only': 2,
-    }
-    expected = {
-      'command': 'maybe',
-      'files': {'foo': 42},
-      'os': isolate.get_flavor(),
-      'read_only': 2,
-    }
-    self.assertEqual(expected, isolate.IsolatedFile.load(values).flatten())
-
-  def test_isolated_load_unexpected(self):
-    values = {
-      'foo': 'bar',
-    }
-    expected = (
-      ("Found unexpected entry {'foo': 'bar'} while constructing an "
-          "object IsolatedFile"),
-      {'foo': 'bar'},
-      'IsolatedFile')
-    try:
-      isolate.IsolatedFile.load(values)
-      self.fail()
-    except ValueError, e:
-      self.assertEqual(expected, e.args)
-
-  def test_savedstate_load_empty(self):
-    values = {
-    }
-    expected = {
       'variables': {},
     }
     self.assertEqual(expected, isolate.SavedState.load(values).flatten())
@@ -96,7 +60,10 @@ class IsolateTest(unittest.TestCase):
       'variables': {'foo': 42},
     }
     expected = {
-      'isolate_file': os.path.join(ROOT_DIR, 'maybe'),
+      'command': [],
+      'files': {},
+      'isolate_file': unicode(os.path.join(ROOT_DIR, 'maybe')),
+      'os': isolate.get_flavor(),
       'variables': {'foo': 42},
     }
     self.assertEqual(expected, isolate.SavedState.load(values).flatten())
@@ -820,16 +787,16 @@ class IsolateLoad(unittest.TestCase):
       ignore_broken_items = False
     return Options()
 
-  def _cleanup_isolated(self, expected_isolated, actual_isolated):
+  def _cleanup_isolated(self, expected_isolated):
     """Modifies isolated to remove the non-deterministic parts."""
     if sys.platform == 'win32':
       # 'm' are not saved in windows.
       for values in expected_isolated['files'].itervalues():
-        del values['m']
+        self.assertTrue(values.pop('m'))
 
-    for item in actual_isolated['files'].itervalues():
-      if 't' in item:
-        self.assertTrue(item.pop('t'))
+  def _cleanup_saved_state(self, actual_saved_state):
+    for item in actual_saved_state['files'].itervalues():
+      self.assertTrue(item.pop('t'))
 
   def test_load_stale_isolated(self):
     isolate_file = os.path.join(
@@ -864,7 +831,7 @@ class IsolateLoad(unittest.TestCase):
     #   when re-running the same command multiple times and contain
     #   discardable information.
     complete_state = isolate.load_complete_state(options, None)
-    actual_isolated = complete_state.isolated.flatten()
+    actual_isolated = complete_state.saved_state.to_isolated()
     actual_saved_state = complete_state.saved_state.flatten()
 
     expected_isolated = {
@@ -884,13 +851,29 @@ class IsolateLoad(unittest.TestCase):
       'os': isolate.get_flavor(),
       'relative_cwd': os.path.join('tests', 'isolate'),
     }
-    self._cleanup_isolated(expected_isolated, actual_isolated)
+    self._cleanup_isolated(expected_isolated)
     self.assertEqual(expected_isolated, actual_isolated)
 
     expected_saved_state = {
+      'command': ['python', 'touch_root.py'],
+      'files': {
+        os.path.join(u'tests', 'isolate', 'touch_root.py'): {
+          'm': 488,
+          'h': _sha1('tests', 'isolate', 'touch_root.py'),
+          's': _size('tests', 'isolate', 'touch_root.py'),
+        },
+        'isolate.py': {
+          'm': 488,
+          'h': _sha1('isolate.py'),
+          's': _size('isolate.py'),
+        },
+      },
       'isolate_file': isolate_file,
+      'os': isolate.get_flavor(),
+      'relative_cwd': os.path.join('tests', 'isolate'),
       'variables': {'foo': 'bar'},
     }
+    self._cleanup_saved_state(actual_saved_state)
     self.assertEqual(expected_saved_state, actual_saved_state)
 
   def test_subdir(self):
@@ -901,7 +884,7 @@ class IsolateLoad(unittest.TestCase):
     options = self._get_option(isolate_file)
     complete_state = isolate.load_complete_state(
         options, os.path.join('tests', 'isolate'))
-    actual_isolated = complete_state.isolated.flatten()
+    actual_isolated = complete_state.saved_state.to_isolated()
     actual_saved_state = complete_state.saved_state.flatten()
 
     expected_isolated =  {
@@ -916,13 +899,24 @@ class IsolateLoad(unittest.TestCase):
       'os': isolate.get_flavor(),
       'relative_cwd': os.path.join('tests', 'isolate'),
     }
-    self._cleanup_isolated(expected_isolated, actual_isolated)
+    self._cleanup_isolated(expected_isolated)
     self.assertEqual(expected_isolated, actual_isolated)
 
     expected_saved_state = {
+      'command': ['python', 'touch_root.py'],
+      'files': {
+        os.path.join('tests', 'isolate', 'touch_root.py'): {
+          'm': 488,
+          'h': _sha1('tests', 'isolate', 'touch_root.py'),
+          's': _size('tests', 'isolate', 'touch_root.py'),
+        },
+      },
       'isolate_file': isolate_file,
+      'os': isolate.get_flavor(),
+      'relative_cwd': os.path.join('tests', 'isolate'),
       'variables': {'foo': 'bar'},
     }
+    self._cleanup_saved_state(actual_saved_state)
     self.assertEqual(expected_saved_state, actual_saved_state)
 
   def test_subdir_variable(self):
@@ -933,7 +927,7 @@ class IsolateLoad(unittest.TestCase):
     options = self._get_option(isolate_file)
     options.variables['BAZ'] = os.path.join('tests', 'isolate')
     complete_state = isolate.load_complete_state(options, '<(BAZ)')
-    actual_isolated = complete_state.isolated.flatten()
+    actual_isolated = complete_state.saved_state.to_isolated()
     actual_saved_state = complete_state.saved_state.flatten()
 
     expected_isolated =  {
@@ -948,16 +942,27 @@ class IsolateLoad(unittest.TestCase):
       'os': isolate.get_flavor(),
       'relative_cwd': os.path.join('tests', 'isolate'),
     }
-    self._cleanup_isolated(expected_isolated, actual_isolated)
+    self._cleanup_isolated(expected_isolated)
     self.assertEqual(expected_isolated, actual_isolated)
 
     expected_saved_state = {
+      'command': ['python', 'touch_root.py'],
+      'files': {
+        os.path.join('tests', 'isolate', 'touch_root.py'): {
+          'm': 488,
+          'h': _sha1('tests', 'isolate', 'touch_root.py'),
+          's': _size('tests', 'isolate', 'touch_root.py'),
+        },
+      },
       'isolate_file': isolate_file,
+      'os': isolate.get_flavor(),
+      'relative_cwd': os.path.join('tests', 'isolate'),
       'variables': {
         'foo': 'bar',
         'BAZ': os.path.join('tests', 'isolate'),
       },
     }
+    self._cleanup_saved_state(actual_saved_state)
     self.assertEqual(expected_saved_state, actual_saved_state)
 
 
@@ -965,4 +970,6 @@ if __name__ == '__main__':
   logging.basicConfig(
       level=logging.DEBUG if '-v' in sys.argv else logging.ERROR,
       format='%(levelname)5s %(filename)15s(%(lineno)3d): %(message)s')
+  if '-v' in sys.argv:
+    unittest.TestCase.maxDiff = None
   unittest.main()

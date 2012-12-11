@@ -117,8 +117,6 @@ class IsolateTestCases(unittest.TestCase):
       u'os': unicode(isolate.get_flavor()),
       u'relative_cwd': u'isolate_test_cases',
     }
-    self.assertTrue(
-        actual_isolated['files'][rel_gtest_fake_pass_py].pop('t'))
     if sys.platform == 'win32':
       expected_isolated['files'][rel_gtest_fake_pass_py].pop('m')
     self.assertEquals(expected_isolated, actual_isolated)

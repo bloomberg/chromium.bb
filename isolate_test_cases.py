@@ -122,8 +122,8 @@ def main():
 
   try:
     config = isolate.CompleteState.load_files(options.isolated)
-    reldir = os.path.join(config.root_dir, config.isolated.relative_cwd)
-    command = run_test_cases.fix_python_path(config.isolated.command)
+    reldir = os.path.join(config.root_dir, config.saved_state.relative_cwd)
+    command = run_test_cases.fix_python_path(config.saved_state.command)
     test_xvfb(command, reldir)
     test_cases = parser.process_gtest_options(command, reldir, options)
     if not test_cases:
@@ -138,7 +138,7 @@ def main():
         config.isolated_filepath,
         config.saved_state.isolate_file,
         config.root_dir,
-        config.isolated.relative_cwd,
+        config.saved_state.relative_cwd,
         config.saved_state.variables)
   except isolate.ExecutionError, e:
     print >> sys.stderr, str(e)

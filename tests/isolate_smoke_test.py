@@ -183,7 +183,7 @@ class IsolateModeBase(IsolateBase):
       min_mode |= 0200
     return (min_mode | 0110) if filename.endswith('.py') else min_mode
 
-  def _gen_files(self, read_only, empty_file):
+  def _gen_files(self, read_only, empty_file, with_time):
     """Returns a dict of files like calling isolate.process_input() on each
     file.
     """
@@ -203,9 +203,10 @@ class IsolateModeBase(IsolateBase):
           v[u'm'] = self._fix_file_mode(relfile, read_only)
       else:
         v[u'm'] = 488
-      # Used the skip recalculating the hash. Use the most recent update
-      # time.
-      v[u't'] = int(round(filestats.st_mtime))
+      if with_time:
+        # Used to skip recalculating the hash. Use the most recent update
+        # time.
+        v[u't'] = int(round(filestats.st_mtime))
       if is_link:
         v['l'] = os.readlink(filepath)  # pylint: disable=E1101
       else:
@@ -220,40 +221,45 @@ class IsolateModeBase(IsolateBase):
       if sys.platform != 'win32':
         item['m'] = 288
       item['s'] = 0
-      item['T'] = True
-      item.pop('t', None)
+      if with_time:
+        item['T'] = True
+        item.pop('t', None)
     return files
 
   def _expected_result(self, args, read_only, empty_file):
     """Verifies self.isolated contains the expected data."""
     expected = {
-      u'files': self._gen_files(read_only, empty_file),
-      u'os': isolate.get_flavor(),
+      u'files': self._gen_files(read_only, empty_file, False),
+      u'os': unicode(isolate.get_flavor()),
       u'relative_cwd': unicode(RELATIVE_CWD[self.case()]),
     }
     if read_only is not None:
       expected[u'read_only'] = read_only
     if args:
       expected[u'command'] = [u'python'] + [unicode(x) for x in args]
-    else:
-      expected[u'command'] = []
     self.assertEquals(expected, json.load(open(self.isolated, 'r')))
 
-  def _expected_saved_state(self, extra_vars):
+  def _expected_saved_state(self, args, read_only, empty_file, extra_vars):
     flavor = isolate.get_flavor()
     expected = {
+      u'command': [],
+      u'files': self._gen_files(read_only, empty_file, True),
       u'isolate_file': unicode(self.filename()),
+      u'os': unicode(isolate.get_flavor()),
+      u'relative_cwd': unicode(RELATIVE_CWD[self.case()]),
       u'variables': {
-        u'EXECUTABLE_SUFFIX': '.exe' if flavor == 'win' else '',
+        u'EXECUTABLE_SUFFIX': u'.exe' if flavor == 'win' else u'',
         u'OS': unicode(flavor),
       },
     }
+    if args:
+      expected[u'command'] = [u'python'] + [unicode(x) for x in args]
     expected['variables'].update(extra_vars or {})
     self.assertEquals(expected, json.load(open(self.saved_state(), 'r')))
 
   def _expect_results(self, args, read_only, extra_vars, empty_file):
     self._expected_result(args, read_only, empty_file)
-    self._expected_saved_state(extra_vars)
+    self._expected_saved_state(args, read_only, empty_file, extra_vars)
     # Also verifies run_isolated.py will be able to read it.
     isolate.run_isolated.load_isolated(open(self.isolated, 'r').read())
 
@@ -465,7 +471,7 @@ class Isolate_check(IsolateModeBase):
 class Isolate_hashtable(IsolateModeBase):
   def _gen_expected_tree(self, empty_file):
     expected = [
-      v['h'] for v in self._gen_files(False, empty_file).itervalues()
+      v['h'] for v in self._gen_files(False, empty_file, False).itervalues()
     ]
     expected.append(calc_sha1(self.isolated))
     return expected
@@ -522,7 +528,7 @@ class Isolate_hashtable(IsolateModeBase):
       # Construct our own tree.
       expected = [
         str(v['h'])
-        for v in self._gen_files(False, None).itervalues() if 'h' in v
+        for v in self._gen_files(False, None, False).itervalues() if 'h' in v
       ]
       expected.append(calc_sha1(self.isolated))
       self.assertEquals(sorted(expected), self._result_tree())
@@ -533,7 +539,7 @@ class Isolate_hashtable(IsolateModeBase):
       # Construct our own tree.
       expected = [
         str(v['h'])
-        for v in self._gen_files(False, None).itervalues() if 'h' in v
+        for v in self._gen_files(False, None, False).itervalues() if 'h' in v
       ]
       expected.append(calc_sha1(self.isolated))
       self.assertEquals(sorted(expected), self._result_tree())
@@ -970,4 +976,6 @@ class IsolateNoOutdir(IsolateBase):
 if __name__ == '__main__':
   VERBOSE = '-v' in sys.argv
   logging.basicConfig(level=logging.DEBUG if VERBOSE else logging.ERROR)
+  if VERBOSE:
+    unittest.TestCase.maxDiff = None
   unittest.main()
