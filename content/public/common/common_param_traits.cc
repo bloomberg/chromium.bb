@@ -130,6 +130,27 @@ void ParamTraits<gfx::Point>::Log(const gfx::Point& p, std::string* l) {
   l->append(base::StringPrintf("(%d, %d)", p.x(), p.y()));
 }
 
+void ParamTraits<gfx::PointF>::Write(Message* m, const gfx::PointF& v) {
+  ParamTraits<float>::Write(m, v.x());
+  ParamTraits<float>::Write(m, v.y());
+}
+
+bool ParamTraits<gfx::PointF>::Read(const Message* m,
+                                      PickleIterator* iter,
+                                      gfx::PointF* r) {
+  float x, y;
+  if (!ParamTraits<float>::Read(m, iter, &x) ||
+      !ParamTraits<float>::Read(m, iter, &y))
+    return false;
+  r->set_x(x);
+  r->set_y(y);
+  return true;
+}
+
+void ParamTraits<gfx::PointF>::Log(const gfx::PointF& v, std::string* l) {
+  l->append(base::StringPrintf("(%f, %f)", v.x(), v.y()));
+}
+
 void ParamTraits<gfx::Size>::Write(Message* m, const gfx::Size& p) {
   m->WriteInt(p.width());
   m->WriteInt(p.height());
@@ -191,6 +212,27 @@ bool ParamTraits<gfx::Vector2d>::Read(const Message* m,
 
 void ParamTraits<gfx::Vector2d>::Log(const gfx::Vector2d& v, std::string* l) {
   l->append(base::StringPrintf("(%d, %d)", v.x(), v.y()));
+}
+
+void ParamTraits<gfx::Vector2dF>::Write(Message* m, const gfx::Vector2dF& v) {
+  ParamTraits<float>::Write(m, v.x());
+  ParamTraits<float>::Write(m, v.y());
+}
+
+bool ParamTraits<gfx::Vector2dF>::Read(const Message* m,
+                                      PickleIterator* iter,
+                                      gfx::Vector2dF* r) {
+  float x, y;
+  if (!ParamTraits<float>::Read(m, iter, &x) ||
+      !ParamTraits<float>::Read(m, iter, &y))
+    return false;
+  r->set_x(x);
+  r->set_y(y);
+  return true;
+}
+
+void ParamTraits<gfx::Vector2dF>::Log(const gfx::Vector2dF& v, std::string* l) {
+  l->append(base::StringPrintf("(%f, %f)", v.x(), v.y()));
 }
 
 void ParamTraits<gfx::Rect>::Write(Message* m, const gfx::Rect& p) {

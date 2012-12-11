@@ -75,6 +75,14 @@ struct CONTENT_EXPORT ParamTraits<gfx::Point> {
 };
 
 template <>
+struct CONTENT_EXPORT ParamTraits<gfx::PointF> {
+  typedef gfx::PointF param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
 struct CONTENT_EXPORT ParamTraits<gfx::Size> {
   typedef gfx::Size param_type;
   static void Write(Message* m, const param_type& p);
@@ -93,6 +101,14 @@ struct CONTENT_EXPORT ParamTraits<gfx::SizeF> {
 template <>
 struct CONTENT_EXPORT ParamTraits<gfx::Vector2d> {
   typedef gfx::Vector2d param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct CONTENT_EXPORT ParamTraits<gfx::Vector2dF> {
+  typedef gfx::Vector2dF param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
