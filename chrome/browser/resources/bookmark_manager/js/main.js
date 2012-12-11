@@ -901,7 +901,7 @@ function updateOpenCommands(e, command) {
     selectionCount = selectedItem ? 1 : 0;
     selectedItem = selectedItem.bookmarkNode;
   } else {
-    selectionCount = e.target.selectedItems.length;
+    selectionCount = list.selectedItems.length;
   }
 
   var isFolder = selectionCount == 1 &&
@@ -979,18 +979,12 @@ document.addEventListener('canExecute', function(e) {
       // We can always execute the export-menu command.
       e.canExecute = true;
       break;
-
-    case 'undo-command':
-      // The global undo command has no visible UI, so always enable it, and
-      // just make it a no-op if undo is not possible.
-      e.canExecute = true;
+    case 'sort-command':
+      e.canExecute = !list.isRecent() && !list.isSearch() &&
+          list.dataModel.length > 1;
       break;
-
-    case 'add-new-bookmark-command':
-    case 'new-folder-command':
-      // When active element is other than list/tree view, add-new-bookmark and
-      // new-folder commands are avaiable as if list view is active.
-      canExecuteShared(e, list.isRecent() || list.isSearch());
+    default:
+      canExecuteForList(e);
       break;
   }
 });
@@ -1007,23 +1001,6 @@ function canExecuteShared(e, isRecentOrSearch) {
   switch (commandId) {
     case 'paste-command':
       updatePasteCommand();
-      break;
-
-    case 'sort-command':
-      if (isRecentOrSearch) {
-        e.canExecute = false;
-      } else {
-        e.canExecute = list.dataModel.length > 0 && canEdit;
-
-        // The list might be loading so listen to the load event.
-        if (canEdit) {
-          var f = function() {
-            list.removeEventListener('load', f);
-            command.disabled = list.dataModel.length == 0 || !canEdit;
-          };
-          list.addEventListener('load', f);
-        }
-      }
       break;
 
     case 'add-new-bookmark-command':
@@ -1044,19 +1021,20 @@ function canExecuteShared(e, isRecentOrSearch) {
   }
 }
 
-// Update canExecute for the commands when the list is the active element.
-list.addEventListener('canExecute', function(e) {
-  if (e.target != list) return;
-
+/**
+ * Helper function for handling canExecute for the list and document.
+ * @param {!Event} e Can execute event object.
+ */
+function canExecuteForList(e) {
   var command = e.command;
   var commandId = command.id;
 
   function hasSelected() {
-    return !!e.target.selectedItem;
+    return !!list.selectedItem;
   }
 
   function hasSingleSelected() {
-    return e.target.selectedItems.length == 1;
+    return list.selectedItems.length == 1;
   }
 
   function isRecentOrSearch() {
@@ -1066,7 +1044,7 @@ list.addEventListener('canExecute', function(e) {
   switch (commandId) {
     case 'rename-folder-command':
       // Show rename if a single folder is selected.
-      var items = e.target.selectedItems;
+      var items = list.selectedItems;
       if (items.length != 1) {
         e.canExecute = false;
         command.hidden = true;
@@ -1079,7 +1057,7 @@ list.addEventListener('canExecute', function(e) {
 
     case 'edit-command':
       // Show the edit command if not a folder.
-      var items = e.target.selectedItems;
+      var items = list.selectedItems;
       if (items.length != 1) {
         e.canExecute = false;
         command.hidden = false;
@@ -1110,6 +1088,12 @@ list.addEventListener('canExecute', function(e) {
     default:
       canExecuteShared(e, isRecentOrSearch());
   }
+}
+
+// Update canExecute for the commands when the list is the active element.
+list.addEventListener('canExecute', function(e) {
+  if (e.target != list) return;
+  canExecuteForList(e);
 });
 
 // Update canExecute for the commands when the tree is the active element.
@@ -1201,31 +1185,10 @@ organizeButton.addEventListener('click', function(e) {
   updateEditingCommands();
   $('add-new-bookmark-command').canExecuteChange();
   $('new-folder-command').canExecuteChange();
+  $('sort-command').canExecuteChange();
 });
 list.addEventListener('contextmenu', updateEditingCommands);
 tree.addEventListener('contextmenu', updateEditingCommands);
-
-// Handle global commands.
-document.addEventListener('command', function(e) {
-  var command = e.command;
-  switch (command.id) {
-    case 'import-menu-command':
-      chrome.bookmarks.import();
-      break;
-    case 'export-menu-command':
-      chrome.bookmarks.export();
-      break;
-    case 'undo-command':
-      if (performGlobalUndo)
-        performGlobalUndo();
-      break;
-    case 'add-new-bookmark-command':
-    case 'new-folder-command':
-      if (e.target != list && e.target != tree)
-        handleCommand(e);
-      break;
-  }
-});
 
 function handleRename(e) {
   var item = e.target;
@@ -1326,13 +1289,8 @@ function getLinkController() {
  * @return {!Array} Array of bookmark nodes.
  */
 function getSelectedBookmarkNodes() {
-  if (document.activeElement == list) {
-    return list.selectedItems;
-  } else if (document.activeElement == tree) {
-    return [tree.selectedItem.bookmarkNode];
-  } else {
-    throw Error('getSelectedBookmarkNodes called when wrong element focused.');
-  }
+  return document.activeElement == tree ? [tree.selectedItem.bookmarkNode] :
+                                          list.selectedItems;
 }
 
 /**
@@ -1617,13 +1575,24 @@ function selectItemsAfterUserAction(target, opt_selectedTreeId) {
 }
 
 /**
- * Handler for the command event. This is used both for the tree and the list.
+ * Handler for the command event. This is used for context menu of list/tree
+ * and organized menu.
  * @param {!Event} e The event object.
  */
 function handleCommand(e) {
   var command = e.command;
   var commandId = command.id;
   switch (commandId) {
+    case 'import-menu-command':
+      chrome.bookmarks.import();
+      break;
+    case 'export-menu-command':
+      chrome.bookmarks.export();
+      break;
+    case 'undo-command':
+      if (performGlobalUndo)
+        performGlobalUndo();
+      break;
     case 'show-in-folder-command':
       showInFolder();
       break;
@@ -1658,12 +1627,12 @@ function handleCommand(e) {
       break;
     case 'rename-folder-command':
     case 'edit-command':
-      if (document.activeElement == list) {
+      if (document.activeElement == tree)
+        tree.selectedItem.editing = true;
+      else {
         var li = list.getListItem(list.selectedItem);
         if (li)
           li.editing = true;
-      } else {
-        document.activeElement.selectedItem.editing = true;
       }
       break;
     case 'new-folder-command':
@@ -1700,8 +1669,7 @@ $('open-in-new-tab-command').shortcut = cr.isMac ? 'Shift-Meta-Enter' :
 $('rename-folder-command').shortcut = $('edit-command').shortcut =
     cr.isMac ? 'Enter' : 'F2';
 
-list.addEventListener('command', handleCommand);
-tree.addEventListener('command', handleCommand);
+document.addEventListener('command', handleCommand);
 
 // Execute the copy, cut and paste commands when those events are dispatched by
 // the browser. This allows us to rely on the browser to handle the keyboard
