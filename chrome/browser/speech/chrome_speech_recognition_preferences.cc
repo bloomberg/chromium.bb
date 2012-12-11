@@ -36,8 +36,16 @@ ChromeSpeechRecognitionPreferences::Factory::GetForProfile(Profile* profile) {
   DCHECK(profile);
   // GetServiceForProfile will let us instantiate a new (if not already cached
   // for the profile) Service through BuildServiceInstanceFor method.
-  return static_cast<ChromeSpeechRecognitionPreferences::Service*>(
-        GetServiceForProfile(profile, true))->GetPreferences();
+  ChromeSpeechRecognitionPreferences::Service* service =
+      static_cast<ChromeSpeechRecognitionPreferences::Service*>(
+          GetServiceForProfile(profile, true));
+
+  if (!service) {
+    // Incognito won't have this service.
+    return NULL;
+  }
+
+  return service->GetPreferences();
 }
 
 ChromeSpeechRecognitionPreferences::Factory::Factory()
@@ -103,12 +111,19 @@ ChromeSpeechRecognitionPreferences::Service::GetPreferences() const {
 
 scoped_refptr<ChromeSpeechRecognitionPreferences>
 ChromeSpeechRecognitionPreferences::GetForProfile(Profile* profile) {
+  scoped_refptr<ChromeSpeechRecognitionPreferences> ret;
   if (profile) {
-    return Factory::GetInstance()->GetForProfile(profile);
-  } else {
-    // Create a detached preferences object if no profile is provided.
-    return new ChromeSpeechRecognitionPreferences(NULL);
+    // Note that when in incognito, GetForProfile will return NULL.
+    // We catch that case below and return the default preferences.
+    ret = Factory::GetInstance()->GetForProfile(profile);
   }
+
+  if (!ret) {
+    // Create a detached preferences object if no profile is provided.
+    ret = new ChromeSpeechRecognitionPreferences(NULL);
+  }
+
+  return ret;
 }
 
 ChromeSpeechRecognitionPreferences::ChromeSpeechRecognitionPreferences(
