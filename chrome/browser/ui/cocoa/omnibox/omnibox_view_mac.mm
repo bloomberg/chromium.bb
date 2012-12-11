@@ -361,8 +361,8 @@ void OmniboxViewMac::CloseOmniboxPopup() {
 }
 
 void OmniboxViewMac::SetFocus() {
-  model()->SetCaretVisibility(true);
   FocusLocation(false);
+  model()->SetCaretVisibility(true);
 }
 
 void OmniboxViewMac::ApplyCaretVisibility() {
