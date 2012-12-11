@@ -13,7 +13,9 @@
       'type': 'none',
       'dependencies': [
         'android_webview.gyp:libwebviewchromium',
+
         # Needed by android_webview_java
+        '../net/net.gyp:certificate_mime_types_java',
         '../net/net.gyp:net_errors_java',
       ],
     }, # target_name: All
