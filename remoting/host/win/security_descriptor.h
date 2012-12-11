@@ -1,0 +1,31 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef REMOTING_HOST_WIN_SECURITY_DESCRIPTOR_H_
+#define REMOTING_HOST_WIN_SECURITY_DESCRIPTOR_H_
+
+#include <windows.h>
+
+#include <string>
+
+#include "remoting/base/typed_buffer.h"
+
+namespace remoting {
+
+typedef TypedBuffer<SECURITY_DESCRIPTOR> ScopedSd;
+typedef TypedBuffer<SID> ScopedSid;
+
+// Converts an SDDL string into a binary self-relative security descriptor.
+ScopedSd ConvertSddlToSd(const std::string& sddl);
+
+// Converts a SID into a text string.
+std::string ConvertSidToString(SID* sid);
+
+// Returns the logon SID of a token. Returns NULL if the token does not specify
+// a logon SID or in case of an error.
+ScopedSid GetLogonSid(HANDLE token);
+
+}  // namespace remoting
+
+#endif  // REMOTING_HOST_WIN_SECURITY_DESCRIPTOR_H_

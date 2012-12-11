@@ -442,10 +442,14 @@
             'host/win/omaha.h',
             'host/win/scoped_thread_desktop.cc',
             'host/win/scoped_thread_desktop.h',
+            'host/win/security_descriptor.cc',
+            'host/win/security_descriptor.h',
             'host/win/session_desktop_environment_factory.cc',
             'host/win/session_desktop_environment_factory.h',
             'host/win/session_event_executor.cc',
             'host/win/session_event_executor.h',
+            'host/win/window_station_and_desktop.cc',
+            'host/win/window_station_and_desktop.h',
           ],
           'conditions': [
             ['OS=="linux"', {
@@ -491,6 +495,11 @@
                   'libpam.a',
                 ],
               },
+            }],
+            ['OS=="win"', {
+              'dependencies': [
+                '../sandbox/sandbox.gyp:sandbox',
+              ],
             }],
           ],
         },  # end of target 'remoting_host'
@@ -1881,6 +1890,7 @@
         'base/socket_reader.h',
         'base/stoppable.cc',
         'base/stoppable.h',
+        'base/typed_buffer.h',
         'base/util.cc',
         'base/util.h',
         'codec/audio_decoder.cc',
@@ -2155,6 +2165,7 @@
         'base/compound_buffer_unittest.cc',
         'base/resources_unittest.cc',
         'base/shared_buffer_unittest.cc',
+        'base/typed_buffer_unittest.cc',
         'base/util_unittest.cc',
         'client/audio_player_unittest.cc',
         'client/key_event_mapper_unittest.cc',
@@ -2212,8 +2223,6 @@
         'host/video_frame_capturer_mac_unittest.cc',
         'host/video_frame_capturer_unittest.cc',
         'host/video_scheduler_unittest.cc',
-        'host/win/launch_process_with_token.cc',
-        'host/win/launch_process_with_token.h',
         'host/win/worker_process_launcher.cc',
         'host/win/worker_process_launcher.h',
         'host/win/worker_process_launcher_unittest.cc',

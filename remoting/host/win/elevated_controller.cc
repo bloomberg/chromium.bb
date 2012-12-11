@@ -4,8 +4,6 @@
 
 #include "remoting/host/win/elevated_controller.h"
 
-#include <sddl.h>
-
 #include "base/file_util.h"
 #include "base/file_version_info.h"
 #include "base/logging.h"
@@ -21,6 +19,9 @@
 #include "remoting/host/usage_stats_consent.h"
 #include "remoting/host/verify_config_window_win.h"
 #include "remoting/host/win/elevated_controller_resource.h"
+#include "remoting/host/win/security_descriptor.h"
+
+namespace remoting {
 
 namespace {
 
@@ -42,11 +43,11 @@ const FilePath::CharType kTempFileExtension[] = FILE_PATH_LITERAL("json~");
 
 // The host configuration file security descriptor that enables full access to
 // Local System and built-in administrators only.
-const wchar_t kConfigFileSecurityDescriptor[] =
-    L"O:BAG:BAD:(A;;GA;;;SY)(A;;GA;;;BA)";
+const char kConfigFileSecurityDescriptor[] =
+    "O:BAG:BAD:(A;;GA;;;SY)(A;;GA;;;BA)";
 
-const wchar_t kUnprivilegedConfigFileSecurityDescriptor[] =
-    L"O:BAG:BAD:(A;;GA;;;SY)(A;;GA;;;BA)(A;;GR;;;AU)";
+const char kUnprivilegedConfigFileSecurityDescriptor[] =
+    "O:BAG:BAD:(A;;GA;;;SY)(A;;GA;;;BA)(A;;GR;;;AU)";
 
 // Configuration keys.
 const char kHostId[] = "host_id";
@@ -142,26 +143,22 @@ FilePath GetTempLocationFor(const FilePath& filename) {
 
 // Writes a config file to a temporary location.
 HRESULT WriteConfigFileToTemp(const FilePath& filename,
-                              const wchar_t* security_descriptor,
+                              const char* security_descriptor,
                               const char* content,
                               size_t length) {
-  // Create a security descriptor for the configuration file.
-  SECURITY_ATTRIBUTES security_attributes;
-  security_attributes.nLength = sizeof(security_attributes);
-  security_attributes.bInheritHandle = FALSE;
-
-  ULONG security_descriptor_length = 0;
-  if (!ConvertStringSecurityDescriptorToSecurityDescriptorW(
-           security_descriptor,
-           SDDL_REVISION_1,
-           reinterpret_cast<PSECURITY_DESCRIPTOR*>(
-               &security_attributes.lpSecurityDescriptor),
-           &security_descriptor_length)) {
+  // Create the security descriptor for the configuration file.
+  ScopedSd sd = ConvertSddlToSd(security_descriptor);
+  if (!sd) {
     DWORD error = GetLastError();
     LOG_GETLASTERROR(ERROR) <<
         "Failed to create a security descriptor for the configuration file";
     return HRESULT_FROM_WIN32(error);
   }
+
+  SECURITY_ATTRIBUTES security_attributes = {0};
+  security_attributes.nLength = sizeof(security_attributes);
+  security_attributes.lpSecurityDescriptor = sd.get();
+  security_attributes.bInheritHandle = FALSE;
 
   // Create a temporary file and write configuration to it.
   FilePath tempname = GetTempLocationFor(filename);
@@ -293,8 +290,6 @@ HRESULT WriteConfig(const char* content, size_t length, HWND owner_window) {
 }
 
 } // namespace
-
-namespace remoting {
 
 ElevatedController::ElevatedController() : owner_window_(NULL) {
 }

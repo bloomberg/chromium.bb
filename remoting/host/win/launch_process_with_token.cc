@@ -5,7 +5,6 @@
 #include "remoting/host/win/launch_process_with_token.h"
 
 #include <windows.h>
-#include <sddl.h>
 #include <winternl.h>
 
 #include <limits>
@@ -16,6 +15,7 @@
 #include "base/rand_util.h"
 #include "base/scoped_native_library.h"
 #include "base/single_thread_task_runner.h"
+#include "base/string16.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_handle.h"
@@ -24,6 +24,7 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_channel.h"
+#include "remoting/host/win/security_descriptor.h"
 
 using base::win::ScopedHandle;
 
@@ -40,9 +41,6 @@ const WINSTATIONINFOCLASS kCreateProcessPipeNameClass =
 
 const int kPipeBusyWaitTimeoutMs = 2000;
 const int kPipeConnectMaxAttempts = 3;
-
-// Name of the default session desktop.
-const char kDefaultDesktopName[] = "winsta0\\default";
 
 // Terminates the process and closes process and thread handles in
 // |process_information| structure.
@@ -297,9 +295,8 @@ bool SendCreateProcessRequest(
     HANDLE pipe,
     const FilePath::StringType& application_name,
     const CommandLine::StringType& command_line,
-    DWORD creation_flags) {
-  string16 desktop_name(UTF8ToUTF16(kDefaultDesktopName));
-
+    DWORD creation_flags,
+    const char16* desktop_name) {
   // |CreateProcessRequest| structure passes the same parameters to
   // the execution server as CreateProcessAsUser() function does. Strings are
   // stored as wide strings immediately after the structure. String pointers are
@@ -322,10 +319,14 @@ bool SendCreateProcessRequest(
     PROCESS_INFORMATION process_information;
   };
 
+  string16 desktop;
+  if (desktop_name)
+    desktop = desktop_name;
+
   // Allocate a large enough buffer to hold the CreateProcessRequest structure
   // and three NULL-terminated string parameters.
   size_t size = sizeof(CreateProcessRequest) + sizeof(wchar_t) *
-      (application_name.size() + command_line.size() + desktop_name.size() + 3);
+      (application_name.size() + command_line.size() + desktop.size() + 3);
   scoped_array<char> buffer(new char[size]);
   memset(buffer.get(), 0, size);
 
@@ -356,8 +357,8 @@ bool SendCreateProcessRequest(
 
   request->startup_info.lpDesktop =
       reinterpret_cast<LPWSTR>(buffer_offset);
-  std::copy(desktop_name.begin(),
-            desktop_name.end(),
+  std::copy(desktop.begin(),
+            desktop.end(),
             reinterpret_cast<wchar_t*>(buffer.get() + buffer_offset));
 
   // Pass the request to create a process in the target session.
@@ -378,6 +379,7 @@ bool CreateRemoteSessionProcess(
     const FilePath::StringType& application_name,
     const CommandLine::StringType& command_line,
     DWORD creation_flags,
+    const char16* desktop_name,
     PROCESS_INFORMATION* process_information_out)
 {
   DCHECK_LT(base::win::GetVersion(), base::win::VERSION_VISTA);
@@ -387,7 +389,7 @@ bool CreateRemoteSessionProcess(
     return false;
 
   if (!SendCreateProcessRequest(pipe, application_name, command_line,
-                                creation_flags)) {
+                                creation_flags, desktop_name)) {
     return false;
   }
 
@@ -411,6 +413,9 @@ namespace remoting {
 // Pipe name prefix used by Chrome IPC channels to convert a channel name into
 // a pipe name.
 const char kChromePipeNamePrefix[] = "\\\\.\\pipe\\chrome.";
+
+base::LazyInstance<base::Lock>::Leaky g_inherit_handles_lock =
+    LAZY_INSTANCE_INITIALIZER;
 
 bool CreateConnectedIpcChannel(
     const std::string& channel_name,
@@ -436,7 +441,7 @@ bool CreateConnectedIpcChannel(
   std::string pipe_name(remoting::kChromePipeNamePrefix);
   pipe_name.append(channel_name);
 
-  SECURITY_ATTRIBUTES security_attributes;
+  SECURITY_ATTRIBUTES security_attributes = {0};
   security_attributes.nLength = sizeof(security_attributes);
   security_attributes.lpSecurityDescriptor = NULL;
   security_attributes.bInheritHandle = TRUE;
@@ -467,21 +472,17 @@ bool CreateIpcChannel(
     const std::string& pipe_security_descriptor,
     base::win::ScopedHandle* pipe_out) {
   // Create security descriptor for the channel.
-  SECURITY_ATTRIBUTES security_attributes;
-  security_attributes.nLength = sizeof(security_attributes);
-  security_attributes.bInheritHandle = FALSE;
-
-  ULONG security_descriptor_length = 0;
-  if (!ConvertStringSecurityDescriptorToSecurityDescriptor(
-          UTF8ToUTF16(pipe_security_descriptor).c_str(),
-          SDDL_REVISION_1,
-          reinterpret_cast<PSECURITY_DESCRIPTOR*>(
-              &security_attributes.lpSecurityDescriptor),
-          &security_descriptor_length)) {
+  ScopedSd sd = ConvertSddlToSd(pipe_security_descriptor);
+  if (!sd) {
     LOG_GETLASTERROR(ERROR) <<
         "Failed to create a security descriptor for the Chromoting IPC channel";
     return false;
   }
+
+  SECURITY_ATTRIBUTES security_attributes = {0};
+  security_attributes.nLength = sizeof(security_attributes);
+  security_attributes.lpSecurityDescriptor = sd.get();
+  security_attributes.bInheritHandle = FALSE;
 
   // Convert the channel name to the pipe name.
   std::string pipe_name(kChromePipeNamePrefix);
@@ -502,11 +503,8 @@ bool CreateIpcChannel(
   if (!pipe.IsValid()) {
     LOG_GETLASTERROR(ERROR) <<
         "Failed to create the server end of the Chromoting IPC channel";
-    LocalFree(security_attributes.lpSecurityDescriptor);
     return false;
   }
-
-  LocalFree(security_attributes.lpSecurityDescriptor);
 
   *pipe_out = pipe.Pass();
   return true;
@@ -557,26 +555,27 @@ bool CreateSessionToken(uint32 session_id, ScopedHandle* token_out) {
 bool LaunchProcessWithToken(const FilePath& binary,
                             const CommandLine::StringType& command_line,
                             HANDLE user_token,
+                            SECURITY_ATTRIBUTES* process_attributes,
+                            SECURITY_ATTRIBUTES* thread_attributes,
                             bool inherit_handles,
                             DWORD creation_flags,
+                            const char16* desktop_name,
                             ScopedHandle* process_out,
                             ScopedHandle* thread_out) {
   FilePath::StringType application_name = binary.value();
 
-  base::win::ScopedProcessInformation process_info;
   STARTUPINFOW startup_info;
-
-  string16 desktop_name(UTF8ToUTF16(kDefaultDesktopName));
-
   memset(&startup_info, 0, sizeof(startup_info));
   startup_info.cb = sizeof(startup_info);
-  startup_info.lpDesktop = const_cast<char16*>(desktop_name.c_str());
+  if (desktop_name)
+    startup_info.lpDesktop = const_cast<char16*>(desktop_name);
 
+  base::win::ScopedProcessInformation process_info;
   BOOL result = CreateProcessAsUser(user_token,
                                     application_name.c_str(),
                                     const_cast<LPWSTR>(command_line.c_str()),
-                                    NULL,
-                                    NULL,
+                                    process_attributes,
+                                    thread_attributes,
                                     inherit_handles,
                                     creation_flags,
                                     NULL,
@@ -605,6 +604,7 @@ bool LaunchProcessWithToken(const FilePath& binary,
                                           application_name,
                                           command_line,
                                           creation_flags,
+                                          desktop_name,
                                           process_info.Receive());
     } else {
       // Restore the error status returned by CreateProcessAsUser().

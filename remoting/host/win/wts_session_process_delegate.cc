@@ -32,6 +32,9 @@
 
 using base::win::ScopedHandle;
 
+// Name of the default session desktop.
+const char kDefaultDesktopName[] = "winsta0\\default";
+
 const char kElevateSwitchName[] = "elevate";
 
 // The command line parameters that should be copied from the service's command
@@ -287,8 +290,11 @@ bool WtsSessionProcessDelegate::Core::LaunchProcess(
   if (!LaunchProcessWithToken(command_line.GetProgram(),
                               command_line.GetCommandLineString(),
                               session_token_,
+                              NULL,
+                              NULL,
                               false,
                               CREATE_SUSPENDED | CREATE_BREAKAWAY_FROM_JOB,
+                              UTF8ToUTF16(kDefaultDesktopName).c_str(),
                               &worker_process,
                               &worker_thread)) {
     return false;
