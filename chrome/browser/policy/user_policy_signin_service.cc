@@ -67,6 +67,13 @@ UserPolicySigninService::UserPolicySigninService(
   registrar_.Add(this,
                  chrome::NOTIFICATION_PROFILE_ADDED,
                  content::Source<Profile>(profile));
+
+  // Make sure we've initialized the DeviceManagementService. It's OK to
+  // call this multiple times so we do it every time we create an instance of
+  // this class (every time a new profile is loaded).
+  g_browser_process->browser_policy_connector()->
+      ScheduleServiceInitialization(
+          kPolicyServiceInitializationDelayMilliseconds);
 }
 
 UserPolicySigninService::~UserPolicySigninService() {}
@@ -74,10 +81,14 @@ UserPolicySigninService::~UserPolicySigninService() {}
 void UserPolicySigninService::FetchPolicyForSignedInUser(
     const std::string& oauth2_access_token,
     const PolicyFetchCallback& callback) {
-  if (!profile_->GetPrefs()->GetBoolean(prefs::kLoadCloudPolicyOnSignin)) {
+  if (!ShouldLoadPolicyForSignedInUser()) {
     callback.Run(false);
     return;
   }
+
+  // If the DeviceManagementService is not yet initialized, start it up now.
+  g_browser_process->browser_policy_connector()->
+      ScheduleServiceInitialization(0);
 
   // The user has just signed in, so the UserCloudPolicyManager should not yet
   // be initialized, and the client should not be registered because there
@@ -156,17 +167,31 @@ void UserPolicySigninService::Observe(
   }
 }
 
+bool UserPolicySigninService::ShouldLoadPolicyForSignedInUser() {
+  if (!profile_->GetPrefs()->GetBoolean(prefs::kLoadCloudPolicyOnSignin))
+    return false; // Cloud policy is disabled.
+
+  const std::string& username = SigninManagerFactory::GetForProfile(profile_)->
+      GetAuthenticatedUsername();
+
+  if (username.empty())
+    return false; // Not signed in.
+
+  return !BrowserPolicyConnector::IsNonEnterpriseUser(username);
+}
+
 void UserPolicySigninService::InitializeUserCloudPolicyManager() {
+  if (!ShouldLoadPolicyForSignedInUser()) {
+    VLOG(1) << "Policy load not enabled for user: " <<
+        SigninManagerFactory::GetForProfile(profile_)->
+            GetAuthenticatedUsername();
+    return;
+  }
+
   UserCloudPolicyManager* manager = GetManager();
   DCHECK(!SigninManagerFactory::GetForProfile(profile_)->
          GetAuthenticatedUsername().empty());
   if (!manager->core()->service()) {
-    // Make sure we've initialized the DeviceManagementService. It's OK to
-    // call this multiple times so we do it every time we initialize the
-    // UserCloudPolicyManager.
-    g_browser_process->browser_policy_connector()->
-        ScheduleServiceInitialization(
-            kPolicyServiceInitializationDelayMilliseconds);
     // If there is no cached DMToken then we can detect this below (or when
     // the OnInitializationCompleted() callback is invoked).
     BrowserPolicyConnector* connector =

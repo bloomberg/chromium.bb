@@ -82,6 +82,11 @@ class UserPolicySigninService
   virtual void Shutdown() OVERRIDE;
 
  private:
+  // Returns false if cloud policy is disabled or if the currently signed-in
+  // user is definitely not from a hosted domain (according to the blacklist in
+  // BrowserPolicyConnector::IsNonEnterpriseUser()).
+  bool ShouldLoadPolicyForSignedInUser();
+
   // Initializes the UserCloudPolicyManager to reflect the currently-signed-in
   // user.
   void InitializeUserCloudPolicyManager();

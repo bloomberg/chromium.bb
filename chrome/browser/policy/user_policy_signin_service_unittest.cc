@@ -203,6 +203,35 @@ TEST_F(UserPolicySigninServiceTest, SignInAfterInit) {
   ASSERT_TRUE(IsRequestActive());
 }
 
+TEST_F(UserPolicySigninServiceTest, SignInWithNonEnterpriseUser) {
+  EXPECT_CALL(*mock_store_, Clear());
+  // Let the SigninService know that the profile has been created.
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_PROFILE_ADDED,
+      content::Source<Profile>(profile_.get()),
+      content::NotificationService::NoDetails());
+
+  // UserCloudPolicyManager should not be initialized since there is no
+  // signed-in user.
+  ASSERT_FALSE(manager_->core()->service());
+
+  // Now sign in a non-enterprise user (gmail.com domain).
+  SigninManagerFactory::GetForProfile(profile_.get())->SetAuthenticatedUsername(
+      "non_enterprise_user@gmail.com");
+
+  // Complete initialization of the store.
+  mock_store_->NotifyStoreLoaded();
+
+  // Make oauth token available.
+  TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
+      GaiaConstants::kGaiaOAuth2LoginRefreshToken, "oauth_login_refresh_token");
+
+  // UserCloudPolicyManager should not be initialized and there should be no
+  // DMToken request active.
+  ASSERT_TRUE(!manager_->core()->service());
+  ASSERT_FALSE(IsRequestActive());
+}
+
 TEST_F(UserPolicySigninServiceTest, UnregisteredClient) {
   EXPECT_CALL(*mock_store_, Clear());
   // Let the SigninService know that the profile has been created.

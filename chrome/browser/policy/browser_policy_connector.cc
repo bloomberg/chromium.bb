@@ -11,6 +11,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/async_policy_provider.h"
 #include "chrome/browser/policy/cloud_policy_client.h"
@@ -36,6 +37,7 @@
 #include "google_apis/gaia/gaia_constants.h"
 #include "grit/generated_resources.h"
 #include "policy/policy_constants.h"
+#include "unicode/regex.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/policy/policy_loader_win.h"
@@ -540,6 +542,24 @@ std::string BrowserPolicyConnector::GetDeviceManagementUrl() {
     return kDefaultDeviceManagementServerUrl;
 }
 
+namespace {
+
+// Returns true if |domain| matches the regex |pattern|.
+bool MatchDomain(const string16& domain, const string16& pattern) {
+  UErrorCode status = U_ZERO_ERROR;
+  const icu::UnicodeString icu_pattern(pattern.data(), pattern.length());
+  icu::RegexMatcher matcher(icu_pattern, UREGEX_CASE_INSENSITIVE, status);
+  DCHECK(U_SUCCESS(status)) << "Invalid domain pattern: " << pattern;
+  icu::UnicodeString icu_input(domain.data(), domain.length());
+  matcher.reset(icu_input);
+  status = U_ZERO_ERROR;
+  UBool match = matcher.matches(status);
+  DCHECK(U_SUCCESS(status));
+  return !!match;  // !! == convert from UBool to bool
+}
+
+}  // namespace
+
 // static
 bool BrowserPolicyConnector::IsNonEnterpriseUser(const std::string& username) {
   if (username.empty()) {
@@ -548,14 +568,25 @@ bool BrowserPolicyConnector::IsNonEnterpriseUser(const std::string& username) {
     return true;
   }
 
-  static const char* kNonManagedDomains[] = {
-    "googlemail.com",
-    "gmail.com"
+  // Exclude many of the larger public email providers as we know these users
+  // are not from hosted enterprise domains.
+  static const wchar_t* kNonManagedDomainPatterns[] = {
+    L"aol\\.com",
+    L"googlemail\\.com",
+    L"gmail\\.com",
+    L"hotmail(\\.co|\\.com|)\\.[^.]+", // hotmail.com, hotmail.it, hotmail.co.uk
+    L"live\\.com",
+    L"mail\\.ru",
+    L"msn\\.com",
+    L"qq\\.com",
+    L"yahoo(\\.co|\\.com|)\\.[^.]+", // yahoo.com, yahoo.co.uk, yahoo.com.tw
+    L"yandex\\.ru",
   };
-  const std::string domain =
-      gaia::ExtractDomainName(gaia::CanonicalizeEmail(username));
-  for (size_t i = 0; i < arraysize(kNonManagedDomains); i++) {
-    if (domain == kNonManagedDomains[i])
+  const string16 domain =
+      UTF8ToUTF16(gaia::ExtractDomainName(gaia::CanonicalizeEmail(username)));
+  for (size_t i = 0; i < arraysize(kNonManagedDomainPatterns); i++) {
+    string16 pattern = WideToUTF16(kNonManagedDomainPatterns[i]);
+    if (MatchDomain(domain, pattern))
       return true;
   }
   return false;
