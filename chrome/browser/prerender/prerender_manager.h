@@ -353,7 +353,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   friend class PrerenderHandle;
   friend class UnitTestPrerenderManager;
 
-  class OnCloseTabContentsDeleter;
+  class OnCloseWebContentsDeleter;
   struct NavigationRecord;
 
   // For each WebContents that is swapped in, we store a
@@ -462,15 +462,15 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // Deletes old WebContents that have been replaced by prerendered ones.  This
   // is needed because they're replaced in a callback from the old WebContents,
   // so cannot immediately be deleted.
-  void DeleteOldTabContents();
+  void DeleteOldWebContents();
 
   // Cleans up old NavigationRecord's.
   void CleanUpOldNavigations();
 
-  // Arrange for the given tab contents to be deleted asap. If deleter is not
+  // Arrange for the given WebContents to be deleted asap. If deleter is not
   // NULL, deletes that as well.
-  void ScheduleDeleteOldTabContents(TabContents* tab,
-                                    OnCloseTabContentsDeleter* deleter);
+  void ScheduleDeleteOldWebContents(content::WebContents* tab,
+                                    OnCloseWebContentsDeleter* deleter);
 
   // Adds to the history list.
   void AddToHistory(PrerenderContents* contents);
@@ -563,12 +563,12 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // Track time of last prerender to limit prerender spam.
   base::TimeTicks last_prerender_start_time_;
 
-  std::list<TabContents*> old_tab_contents_list_;
+  std::list<content::WebContents*> old_web_contents_list_;
 
   // Cancels pending tasks on deletion.
   base::WeakPtrFactory<PrerenderManager> weak_factory_;
 
-  ScopedVector<OnCloseTabContentsDeleter> on_close_tab_contents_deleters_;
+  ScopedVector<OnCloseWebContentsDeleter> on_close_web_contents_deleters_;
 
   scoped_ptr<PrerenderHistory> prerender_history_;
 

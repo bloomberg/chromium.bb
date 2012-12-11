@@ -15,10 +15,6 @@ class Browser;
 class Profile;
 class TestTabStripModelDelegate;
 
-namespace prerender {
-class PrerenderContents;
-}
-
 // Wraps WebContents and all of its supporting objects in order to control
 // their ownership and lifetime.
 //
@@ -43,7 +39,6 @@ class TabContents : public content::WebContentsObserver {
     // do so.
 
     friend class Browser;
-    friend class prerender::PrerenderContents;
     // See crbug.com/153587
     friend class TabAndroid;
     friend class TestTabStripModelDelegate;

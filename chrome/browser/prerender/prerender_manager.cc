@@ -37,7 +37,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -112,30 +111,30 @@ bool NeedMatchCompleteDummyForFinalStatus(FinalStatus final_status) {
 
 }  // namespace
 
-class PrerenderManager::OnCloseTabContentsDeleter
+class PrerenderManager::OnCloseWebContentsDeleter
     : public content::WebContentsDelegate,
       public base::SupportsWeakPtr<
-          PrerenderManager::OnCloseTabContentsDeleter> {
+          PrerenderManager::OnCloseWebContentsDeleter> {
  public:
-  OnCloseTabContentsDeleter(PrerenderManager* manager,
-                            TabContents* tab)
+  OnCloseWebContentsDeleter(PrerenderManager* manager,
+                            WebContents* tab)
       : manager_(manager),
         tab_(tab) {
-    tab_->web_contents()->SetDelegate(this);
+    tab_->SetDelegate(this);
     MessageLoop::current()->PostDelayedTask(FROM_HERE,
-        base::Bind(&OnCloseTabContentsDeleter::ScheduleTabContentsForDeletion,
+        base::Bind(&OnCloseWebContentsDeleter::ScheduleWebContentsForDeletion,
                    this->AsWeakPtr(), true),
         base::TimeDelta::FromSeconds(kDeleteWithExtremePrejudiceSeconds));
   }
 
   virtual void CloseContents(WebContents* source) OVERRIDE {
-    DCHECK_EQ(tab_->web_contents(), source);
-    ScheduleTabContentsForDeletion(false);
+    DCHECK_EQ(tab_, source);
+    ScheduleWebContentsForDeletion(false);
   }
 
   virtual void SwappedOut(WebContents* source) OVERRIDE {
-    DCHECK_EQ(tab_->web_contents(), source);
-    ScheduleTabContentsForDeletion(false);
+    DCHECK_EQ(tab_, source);
+    ScheduleWebContentsForDeletion(false);
   }
 
   virtual bool ShouldSuppressDialogs() OVERRIDE {
@@ -145,16 +144,16 @@ class PrerenderManager::OnCloseTabContentsDeleter
  private:
   static const int kDeleteWithExtremePrejudiceSeconds = 3;
 
-  void ScheduleTabContentsForDeletion(bool timeout) {
-    tab_->web_contents()->SetDelegate(NULL);
-    manager_->ScheduleDeleteOldTabContents(tab_.release(), this);
+  void ScheduleWebContentsForDeletion(bool timeout) {
+    tab_->SetDelegate(NULL);
+    manager_->ScheduleDeleteOldWebContents(tab_.release(), this);
     UMA_HISTOGRAM_BOOLEAN("Prerender.TabContentsDeleterTimeout", timeout);
   }
 
   PrerenderManager* manager_;
-  scoped_ptr<TabContents> tab_;
+  scoped_ptr<WebContents> tab_;
 
-  DISALLOW_COPY_AND_ASSIGN(OnCloseTabContentsDeleter);
+  DISALLOW_COPY_AND_ASSIGN(OnCloseWebContentsDeleter);
 };
 
 // static
@@ -231,7 +230,7 @@ PrerenderManager::~PrerenderManager() {
 void PrerenderManager::Shutdown() {
   DestroyAllContents(FINAL_STATUS_MANAGER_SHUTDOWN);
   STLDeleteElements(&prerender_conditions_);
-  on_close_tab_contents_deleters_.clear();
+  on_close_web_contents_deleters_.clear();
   // Must happen before |profile_| is set to NULL as
   // |local_predictor_| accesses it.
   if (local_predictor_)
@@ -344,9 +343,9 @@ bool PrerenderManager::MaybeUsePrerenderedPage(WebContents* web_contents,
   if (IsNoSwapInExperiment(prerender_data->contents()->experiment_id()))
     return false;
 
-  if (TabContents* new_tab_contents =
+  if (WebContents* new_web_contents =
       prerender_data->contents()->prerender_contents()) {
-    if (web_contents == new_tab_contents->web_contents())
+    if (web_contents == new_web_contents)
       return false;  // Do not swap in to ourself.
   }
 
@@ -423,8 +422,7 @@ bool PrerenderManager::MaybeUsePrerenderedPage(WebContents* web_contents,
   prerender_contents->SetFinalStatus(FINAL_STATUS_USED);
 
   RenderViewHost* new_render_view_host =
-      prerender_contents->prerender_contents()->web_contents()->
-          GetRenderViewHost();
+      prerender_contents->prerender_contents()->GetRenderViewHost();
   new_render_view_host->Send(
       new PrerenderMsg_SetIsPrerendering(new_render_view_host->GetRoutingID(),
                                          false));
@@ -433,28 +431,26 @@ bool PrerenderManager::MaybeUsePrerenderedPage(WebContents* web_contents,
   // any.
   prerender_contents->StartPendingPrerenders();
 
-  TabContents* new_tab_contents =
+  WebContents* new_web_contents =
       prerender_contents->ReleasePrerenderContents();
-  TabContents* old_tab_contents = TabContents::FromWebContents(web_contents);
-  DCHECK(new_tab_contents);
-  DCHECK(old_tab_contents);
+  WebContents* old_web_contents = web_contents;
+  DCHECK(new_web_contents);
+  DCHECK(old_web_contents);
 
-  MarkWebContentsAsPrerendered(new_tab_contents->web_contents(),
-                               prerender_contents->origin());
+  MarkWebContentsAsPrerendered(new_web_contents, prerender_contents->origin());
 
   // Merge the browsing history.
-  new_tab_contents->web_contents()->GetController().CopyStateFromAndPrune(
-      &old_tab_contents->web_contents()->GetController());
-  CoreTabHelper::FromWebContents(old_tab_contents->web_contents())->delegate()->
-      SwapTabContents(old_tab_contents->web_contents(),
-                      new_tab_contents->web_contents());
-  prerender_contents->CommitHistory(new_tab_contents);
+  new_web_contents->GetController().CopyStateFromAndPrune(
+      &old_web_contents->GetController());
+  CoreTabHelper::FromWebContents(old_web_contents)->delegate()->
+      SwapTabContents(old_web_contents, new_web_contents);
+  prerender_contents->CommitHistory(new_web_contents);
 
   GURL icon_url = prerender_contents->icon_url();
   if (!icon_url.is_empty()) {
     std::vector<content::FaviconURL> urls;
     urls.push_back(content::FaviconURL(icon_url, content::FaviconURL::FAVICON));
-    FaviconTabHelper::FromWebContents(new_tab_contents->web_contents())->
+    FaviconTabHelper::FromWebContents(new_web_contents)->
         DidUpdateFaviconURL(prerender_contents->page_id(), urls);
   }
 
@@ -462,19 +458,19 @@ bool PrerenderManager::MaybeUsePrerenderedPage(WebContents* web_contents,
   // If the tab has finished loading, record a PPLT of 0.
   // If the tab is still loading, reset its start time to the current time.
   PrerenderTabHelper* prerender_tab_helper =
-      PrerenderTabHelper::FromWebContents(new_tab_contents->web_contents());
+      PrerenderTabHelper::FromWebContents(new_web_contents);
   DCHECK(prerender_tab_helper != NULL);
   prerender_tab_helper->PrerenderSwappedIn();
 
-  if (old_tab_contents->web_contents()->NeedToFireBeforeUnload()) {
+  if (old_web_contents->NeedToFireBeforeUnload()) {
     // Schedule the delete to occur after the tab has run its unload handlers.
-    on_close_tab_contents_deleters_.push_back(
-        new OnCloseTabContentsDeleter(this, old_tab_contents));
-    old_tab_contents->web_contents()->GetRenderViewHost()->
+    on_close_web_contents_deleters_.push_back(
+        new OnCloseWebContentsDeleter(this, old_web_contents));
+    old_web_contents->GetRenderViewHost()->
         FirePageBeforeUnload(false);
   } else {
     // No unload handler to run, so delete asap.
-    ScheduleDeleteOldTabContents(old_tab_contents, NULL);
+    ScheduleDeleteOldWebContents(old_web_contents, NULL);
   }
 
   // TODO(cbentzel): Should prerender_contents move to the pending delete
@@ -657,10 +653,9 @@ bool PrerenderManager::IsWebContentsPrerendering(
        it != to_delete_prerenders_.end();
        ++it) {
     if (PrerenderContents* prerender_contents = (*it)->contents()) {
-      TabContents* prerender_tab_contents =
+      WebContents* prerender_web_contents =
           prerender_contents->prerender_contents();
-      if (prerender_tab_contents &&
-          prerender_tab_contents->web_contents() == web_contents) {
+      if (prerender_web_contents == web_contents) {
         if (origin)
           *origin = prerender_contents->origin();
         return true;
@@ -677,10 +672,9 @@ PrerenderContents* PrerenderManager::GetPrerenderContents(
   for (ScopedVector<PrerenderData>::const_iterator it =
            active_prerenders_.begin();
        it != active_prerenders_.end(); ++it) {
-    TabContents* prerender_tab_contents =
+    WebContents* prerender_web_contents =
         (*it)->contents()->prerender_contents();
-    if (prerender_tab_contents &&
-        prerender_tab_contents->web_contents() == web_contents) {
+    if (prerender_web_contents == web_contents) {
       return (*it)->contents();
     }
   }
@@ -695,8 +689,8 @@ PrerenderManager::GetAllPrerenderingContents() const {
   for (ScopedVector<PrerenderData>::const_iterator it =
            active_prerenders_.begin();
        it != active_prerenders_.end(); ++it) {
-    if (TabContents* contents = (*it)->contents()->prerender_contents())
-      result.push_back(contents->web_contents());
+    if (WebContents* contents = (*it)->contents()->prerender_contents())
+      result.push_back(contents);
   }
 
   return result;
@@ -1117,7 +1111,7 @@ void PrerenderManager::StopSchedulingPeriodicCleanups() {
 
 void PrerenderManager::PeriodicCleanup() {
   DCHECK(CalledOnValidThread());
-  DeleteOldTabContents();
+  DeleteOldWebContents();
   DeleteOldEntries();
   if (active_prerenders_.empty())
     StopSchedulingPeriodicCleanups();
@@ -1244,12 +1238,12 @@ bool PrerenderManager::DoesRateLimitAllowPrerender(Origin origin) const {
       base::TimeDelta::FromMilliseconds(kMinTimeBetweenPrerendersMs);
 }
 
-void PrerenderManager::DeleteOldTabContents() {
-  while (!old_tab_contents_list_.empty()) {
-    TabContents* tab_contents = old_tab_contents_list_.front();
-    old_tab_contents_list_.pop_front();
+void PrerenderManager::DeleteOldWebContents() {
+  while (!old_web_contents_list_.empty()) {
+    WebContents* web_contents = old_web_contents_list_.front();
+    old_web_contents_list_.pop_front();
     // TODO(dominich): should we use Instant Unload Handler here?
-    delete tab_contents;
+    delete web_contents;
   }
 }
 
@@ -1266,19 +1260,19 @@ void PrerenderManager::CleanUpOldNavigations() {
   }
 }
 
-void PrerenderManager::ScheduleDeleteOldTabContents(
-    TabContents* tab,
-    OnCloseTabContentsDeleter* deleter) {
-  old_tab_contents_list_.push_back(tab);
+void PrerenderManager::ScheduleDeleteOldWebContents(
+    WebContents* tab,
+    OnCloseWebContentsDeleter* deleter) {
+  old_web_contents_list_.push_back(tab);
   PostCleanupTask();
 
   if (deleter) {
-    ScopedVector<OnCloseTabContentsDeleter>::iterator i = std::find(
-        on_close_tab_contents_deleters_.begin(),
-        on_close_tab_contents_deleters_.end(),
+    ScopedVector<OnCloseWebContentsDeleter>::iterator i = std::find(
+        on_close_web_contents_deleters_.begin(),
+        on_close_web_contents_deleters_.end(),
         deleter);
-    DCHECK(i != on_close_tab_contents_deleters_.end());
-    on_close_tab_contents_deleters_.erase(i);
+    DCHECK(i != on_close_web_contents_deleters_.end());
+    on_close_web_contents_deleters_.erase(i);
   }
 }
 
@@ -1302,7 +1296,7 @@ Value* PrerenderManager::GetActivePrerendersAsValue() const {
 }
 
 void PrerenderManager::DestroyAllContents(FinalStatus final_status) {
-  DeleteOldTabContents();
+  DeleteOldWebContents();
   while (!active_prerenders_.empty()) {
     PrerenderContents* contents = active_prerenders_.front()->contents();
     contents->Destroy(final_status);

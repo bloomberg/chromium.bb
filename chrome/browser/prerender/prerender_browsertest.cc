@@ -35,7 +35,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
@@ -598,12 +597,11 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
   virtual ~PrerenderBrowserTest() {}
 
   content::SessionStorageNamespace* GetSessionStorageNamespace() const {
-    TabContents* tab_contents =
-        current_browser()->tab_strip_model()->GetActiveTabContents();
-    if (!tab_contents)
+    WebContents* web_contents =
+        current_browser()->tab_strip_model()->GetActiveWebContents();
+    if (!web_contents)
       return NULL;
-    return tab_contents->web_contents()->GetController()
-        .GetDefaultSessionStorageNamespace();
+    return web_contents->GetController().GetDefaultSessionStorageNamespace();
   }
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
@@ -771,7 +769,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
   void NavigateToDestUrlAndWaitForPassTitle() {
     string16 expected_title = ASCIIToUTF16(kPassTitle);
     content::TitleWatcher title_watcher(
-        GetPrerenderContents()->prerender_contents()->web_contents(),
+        GetPrerenderContents()->prerender_contents(),
         expected_title);
     NavigateToDestURL();
     EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
@@ -1039,8 +1037,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     if (GetPrerenderContents()->prerender_contents()) {
       // In the case of zero loads, need to wait for the page load to complete
       // before running any Javascript.
-      web_contents =
-          GetPrerenderContents()->prerender_contents()->web_contents();
+      web_contents = GetPrerenderContents()->prerender_contents();
       if (GetPrerenderContents()->number_of_loads() == 0) {
         page_load_observer.reset(
             new content::WindowedNotificationObserver(
@@ -1799,7 +1796,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderRendererCrash) {
   // Navigate to about:crash and then wait for the renderer to crash.
   ASSERT_TRUE(GetPrerenderContents());
   ASSERT_TRUE(GetPrerenderContents()->prerender_contents());
-  GetPrerenderContents()->prerender_contents()->web_contents()->GetController().
+  GetPrerenderContents()->prerender_contents()->GetController().
       LoadURL(
           GURL(chrome::kChromeUICrashURL),
           content::Referrer(),
@@ -2213,8 +2210,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderFavicon) {
   ASSERT_TRUE(prerender_contents != NULL);
   content::WindowedNotificationObserver favicon_update_watcher(
       chrome::NOTIFICATION_FAVICON_UPDATED,
-      content::Source<WebContents>(prerender_contents->prerender_contents()->
-                          web_contents()));
+      content::Source<WebContents>(prerender_contents->prerender_contents()));
   NavigateToDestURL();
   favicon_update_watcher.Wait();
 }

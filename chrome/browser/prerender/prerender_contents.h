@@ -24,7 +24,6 @@
 #include "ui/gfx/size.h"
 
 class Profile;
-class TabContents;
 
 namespace base {
 class ProcessMetrics;
@@ -235,12 +234,12 @@ class PrerenderContents : public content::NotificationObserver,
   // remembered.
   virtual bool AddAliasURL(const GURL& url);
 
-  // The preview TabContents (may be null).
-  TabContents* prerender_contents() const {
+  // The prerender WebContents (may be NULL).
+  content::WebContents* prerender_contents() const {
     return prerender_contents_.get();
   }
 
-  TabContents* ReleasePrerenderContents();
+  content::WebContents* ReleasePrerenderContents();
 
   // Sets the final status, calls OnDestroy and adds |this| to the
   // PrerenderManager's pending deletes list.
@@ -253,7 +252,7 @@ class PrerenderContents : public content::NotificationObserver,
 
   // Applies all the URL history encountered during prerendering to the
   // new tab.
-  void CommitHistory(TabContents* tab);
+  void CommitHistory(content::WebContents* tab);
 
   base::Value* GetAsValue() const;
 
@@ -310,15 +309,12 @@ class PrerenderContents : public content::NotificationObserver,
   base::TimeTicks load_start_time_;
 
  private:
-  class TabContentsDelegateImpl;
+  class WebContentsDelegateImpl;
 
   // Needs to be able to call the constructor.
   friend class PrerenderContentsFactoryImpl;
 
   friend class PrerenderRenderViewHostObserver;
-
-  // Returns the RenderViewHost Delegate for this prerender.
-  content::WebContents* GetWebContents();
 
   // Returns the ProcessMetrics for the render process, if it exists.
   base::ProcessMetrics* MaybeGetProcessMetrics();
@@ -380,12 +376,12 @@ class PrerenderContents : public content::NotificationObserver,
   // RenderViewHost for this object.
   scoped_ptr<base::ProcessMetrics> process_metrics_;
 
-  // The prerendered TabContents; may be null.
-  scoped_ptr<TabContents> prerender_contents_;
+  // The prerendered WebContents; may be null.
+  scoped_ptr<content::WebContents> prerender_contents_;
 
   scoped_ptr<PrerenderRenderViewHostObserver> render_view_host_observer_;
 
-  scoped_ptr<TabContentsDelegateImpl> tab_contents_delegate_;
+  scoped_ptr<WebContentsDelegateImpl> web_contents_delegate_;
 
   // These are -1 before a RenderView is created.
   int child_id_;
