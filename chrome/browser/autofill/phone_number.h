@@ -87,7 +87,7 @@ class PhoneNumber : public FormGroup {
   // The phone number.
   string16 number_;
   // Profile which stores the region used as hint when normalizing the number.
-  AutofillProfile* profile_;  // WEAK
+  const AutofillProfile* profile_;  // WEAK
 
   // Cached number.
   mutable autofill_i18n::PhoneObject cached_parsed_phone_;

@@ -29,13 +29,10 @@ namespace autofill_i18n {
 string16 NormalizePhoneNumber(const string16& value,
                               const std::string& region);
 
-// Parses |value| to extract the components of a phone number.  |number|
-// returns the local number, |city_code| returns the city code, and
-// |country_code| returns country code. For some regions the |city_code| is
-// empty.
-// The parsing is based on current region - |region|.
-// Separator characters are stripped before parsing the digits.
-// Returns true if parsing was successful, false otherwise.
+// Parses the number stored in |value| as a phone number interpreted in the
+// given |region|, and stores the results into the remaining arguments.  The
+// |region| should be a 2-letter country code.  This is an internal function,
+// exposed in the header file so that it can be tested.
 bool ParsePhoneNumber(const string16& value,
                       const std::string& region,
                       string16* country_code,
@@ -51,7 +48,7 @@ enum FullPhoneFormat {
 
 // Constructs whole phone number from parts.
 // |city_code| - area code, could be empty.
-// |country_code| - country code, could be empty
+// |country_code| - country code, could be empty.
 // |number| - local number, should not be empty.
 // |region| - current region, the parsing is based on.
 // |phone_format| - whole number constructed in that format,
@@ -65,6 +62,8 @@ bool ConstructPhoneNumber(const string16& country_code,
                           FullPhoneFormat phone_format,
                           string16* whole_number) WARN_UNUSED_RESULT;
 
+// Returns true if |number_a| and |number_b| parse to the same phone number in
+// the given |region|.
 bool PhoneNumbersMatch(const string16& number_a,
                        const string16& number_b,
                        const std::string& region);
