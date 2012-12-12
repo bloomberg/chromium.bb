@@ -136,6 +136,7 @@
     },
     # These come from the above variable scope.
     'target_arch%': '<(target_arch)',
+    'sysroot%': '<(sysroot)',
     'nacl_standalone%': '<(nacl_standalone)',
     'nacl_strict_warnings%': 1,
     'branding%': '<(branding)',
