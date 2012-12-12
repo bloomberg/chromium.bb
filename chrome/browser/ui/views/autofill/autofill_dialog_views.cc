@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/autofill/autofill_dialog_views.h"
 
+#include <utility>
+
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
@@ -237,12 +239,16 @@ views::View* AutofillDialogViews::CreateIntroContainer() {
   view->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
 
-  views::Label* intro = new views::Label(controller_->IntroText());
-  view->AddChildView(intro);
+  std::pair<string16, string16> intro_text_parts =
+      controller_->GetIntroTextParts();
 
-  views::Label* site = new views::Label(controller_->SiteLabel());
-  site->SetFont(site->font().DeriveFont(0, gfx::Font::BOLD));
-  view->AddChildView(site);
+  view->AddChildView(new views::Label(intro_text_parts.first));
+
+  views::Label* site_label = new views::Label(controller_->SiteLabel());
+  site_label->SetFont(site_label->font().DeriveFont(0, gfx::Font::BOLD));
+  view->AddChildView(site_label);
+
+  view->AddChildView(new views::Label(intro_text_parts.second));
 
   return view;
 }

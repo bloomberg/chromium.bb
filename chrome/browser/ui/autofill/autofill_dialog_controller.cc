@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
 
+#include "base/logging.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_country.h"
@@ -250,9 +252,20 @@ string16 AutofillDialogController::SiteLabel() const {
 }
 
 string16 AutofillDialogController::IntroText() const {
-  // TODO(estade): Use the real site name and bold it.
   return l10n_util::GetStringFUTF16(IDS_AUTOFILL_DIALOG_SITE_WARNING,
-                                    ASCIIToUTF16("www.randomsite.com"));
+                                    SiteLabel());
+}
+
+std::pair<string16, string16>
+    AutofillDialogController::GetIntroTextParts() const {
+  const char16 kFakeSite = '$';
+  std::vector<string16> pieces;
+  base::SplitStringDontTrim(
+      l10n_util::GetStringFUTF16(IDS_AUTOFILL_DIALOG_SITE_WARNING,
+                                 string16(1, kFakeSite)),
+      kFakeSite,
+      &pieces);
+  return std::make_pair(pieces[0], pieces[1]);
 }
 
 string16 AutofillDialogController::LabelForSection(DialogSection section)

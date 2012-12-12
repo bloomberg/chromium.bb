@@ -7,6 +7,7 @@
 
 #include <map>
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
@@ -87,6 +88,9 @@ class AutofillDialogController {
   string16 SecurityWarning() const;
   string16 SiteLabel() const;
   string16 IntroText() const;
+  // Returns the text before and after |SiteLabel()| in |IntroText()|. This is
+  // needed because views need to bold just part of a translation.
+  std::pair<string16, string16> GetIntroTextParts() const;
   string16 LabelForSection(DialogSection section) const;
   string16 UseBillingForShippingText() const;
   string16 WalletOptionText() const;
