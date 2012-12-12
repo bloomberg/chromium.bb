@@ -112,6 +112,11 @@ class VIEWS_EXPORT MenuDelegate {
   // other than a mouse event.
   virtual void ExecuteCommand(int id, int mouse_event_flags);
 
+  // Returns true if ExecuteCommand() should be invoked while leaving the
+  // menu open. Default implementation returns true.
+  virtual bool ShouldExecuteCommandWithoutClosingMenu(int id,
+                                                      const ui::Event& e);
+
   // Returns true if the specified event is one the user can use to trigger, or
   // accept, the item. Defaults to left or right mouse buttons or tap.
   virtual bool IsTriggerableEvent(MenuItemView* view, const ui::Event& e);

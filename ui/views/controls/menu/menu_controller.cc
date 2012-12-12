@@ -474,6 +474,12 @@ void MenuController::OnMouseReleased(SubmenuView* source,
       SendMouseReleaseToActiveView(source, event);
       return;
     }
+    if (part.menu->GetDelegate()->ShouldExecuteCommandWithoutClosingMenu(
+            part.menu->GetCommand(), event)) {
+      part.menu->GetDelegate()->ExecuteCommand(part.menu->GetCommand(),
+                                               event.flags());
+      return;
+    }
     if (!part.menu->NonIconChildViewsCount() &&
         part.menu->GetDelegate()->IsTriggerableEvent(part.menu, event)) {
       Accept(part.menu, event.flags());

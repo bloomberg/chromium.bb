@@ -101,6 +101,11 @@ void BookmarkMenuController::ExecuteCommand(int id, int mouse_event_flags) {
   menu_delegate_->ExecuteCommand(id, mouse_event_flags);
 }
 
+bool BookmarkMenuController::ShouldExecuteCommandWithoutClosingMenu(
+      int id, const ui::Event& e) {
+  return menu_delegate_->ShouldExecuteCommandWithoutClosingMenu(id, e);
+}
+
 bool BookmarkMenuController::GetDropFormats(
       MenuItemView* menu,
       int* formats,

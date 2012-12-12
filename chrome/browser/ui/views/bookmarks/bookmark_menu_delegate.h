@@ -97,6 +97,7 @@ class BookmarkMenuDelegate : public BaseBookmarkModelObserver,
   bool IsTriggerableEvent(views::MenuItemView* menu,
                           const ui::Event& e);
   void ExecuteCommand(int id, int mouse_event_flags);
+  bool ShouldExecuteCommandWithoutClosingMenu(int id, const ui::Event& e);
   bool GetDropFormats(
       views::MenuItemView* menu,
       int* formats,

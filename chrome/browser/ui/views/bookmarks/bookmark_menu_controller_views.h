@@ -80,6 +80,9 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
   virtual bool IsTriggerableEvent(views::MenuItemView* view,
                                   const ui::Event& e) OVERRIDE;
   virtual void ExecuteCommand(int id, int mouse_event_flags) OVERRIDE;
+  virtual bool ShouldExecuteCommandWithoutClosingMenu(
+      int id,
+      const ui::Event& e) OVERRIDE;
   virtual bool GetDropFormats(
       views::MenuItemView* menu,
       int* formats,

@@ -135,6 +135,12 @@ void BookmarkMenuDelegate::ExecuteCommand(int id, int mouse_event_flags) {
   bookmark_utils::RecordBookmarkLaunch(location_);
 }
 
+bool BookmarkMenuDelegate::ShouldExecuteCommandWithoutClosingMenu(
+    int id, const ui::Event& event) {
+  return (event.flags() & ui::EF_LEFT_MOUSE_BUTTON) &&
+         chrome::DispositionFromEventFlags(event.flags()) == NEW_BACKGROUND_TAB;
+}
+
 bool BookmarkMenuDelegate::GetDropFormats(
     MenuItemView* menu,
     int* formats,

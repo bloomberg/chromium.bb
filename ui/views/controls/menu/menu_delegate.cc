@@ -57,6 +57,11 @@ void MenuDelegate::ExecuteCommand(int id, int mouse_event_flags) {
   ExecuteCommand(id);
 }
 
+bool MenuDelegate::ShouldExecuteCommandWithoutClosingMenu(int id,
+                                                          const ui::Event& e) {
+  return false;
+}
+
 bool MenuDelegate::IsTriggerableEvent(MenuItemView* source,
                                       const ui::Event& e) {
   return e.type() == ui::ET_GESTURE_TAP ||
