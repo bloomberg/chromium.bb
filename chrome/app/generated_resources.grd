@@ -6853,12 +6853,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_DEVTOOLS_EXPERIMENTS_DESCRIPTION" desc="Description for the flag to enable experiments in Developer Tools.">
         Enable Developer Tools experiments. Use Settings panel in Developer Tools to toggle individual experiments.
       </message>
-      <message name="IDS_FLAGS_FORCE_SYNC_SPELLCHECK" desc="Title for the flag to force synchronous spellchecking.">
-        Force Synchronous Spellchecking
-      </message>
-      <message name="IDS_FLAGS_FORCE_SYNC_SPELLCHECK_DESCRIPTION" desc="Description for the flag to force synchronous spellchecking.">
-        Force use of synchronous spellchecking. Enabling this flag will prevent Chrome from using a web service to get spellchecking results.
-      </message>
       <message name="IDS_FLAGS_SPELLCHECK_AUTOCORRECT" desc="Title for the flag to turn on text autocorrection.">
         Enable Automatic Spelling Correction
       </message>

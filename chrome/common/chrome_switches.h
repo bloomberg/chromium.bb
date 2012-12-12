@@ -197,7 +197,6 @@ extern const char kFlagSwitchesEnd[];
 extern const char kFeedbackServer[];
 extern const char kFileDescriptorLimit[];
 extern const char kFirstRun[];
-extern const char kForceSyncSpellCheck[];
 extern const char kGaiaProfileInfo[];
 extern const char kGoogleSearchDomainCheckURL[];
 extern const char kGSSAPILibraryName[];

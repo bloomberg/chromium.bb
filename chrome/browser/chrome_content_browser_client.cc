@@ -1627,8 +1627,7 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
       // Mac so it uses NSSpellChecker in the background.
       false;
 #else
-      !CommandLine::ForCurrentProcess()->
-          HasSwitch(switches::kForceSyncSpellCheck);
+      true;
 #endif
   web_prefs->unified_textchecker_enabled =
       web_prefs->asynchronous_spell_checking_enabled;

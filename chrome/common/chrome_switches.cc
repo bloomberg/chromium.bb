@@ -713,10 +713,6 @@ const char kFileDescriptorLimit[]           = "file-descriptor-limit";
 // whether or not it's actually the first run.
 const char kFirstRun[]                      = "first-run";
 
-// Force use of synchronous spell checking. If this is enabled, unified spell
-// checking will be disabled since it relies on asynchronous spellchecking.
-const char kForceSyncSpellCheck[]           = "force-sync-spellcheck";
-
 // Enables using GAIA information to populate profile name and icon.
 const char kGaiaProfileInfo[]               = "gaia-profile-info";
 

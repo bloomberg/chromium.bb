@@ -753,13 +753,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableSuggestionsTabPage)
   },
   {
-    "force-sync-spellcheck",
-    IDS_FLAGS_FORCE_SYNC_SPELLCHECK,
-    IDS_FLAGS_FORCE_SYNC_SPELLCHECK_DESCRIPTION,
-    kOsWin | kOsLinux | kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kForceSyncSpellCheck)
-  },
-  {
     "spellcheck-autocorrect",
     IDS_FLAGS_SPELLCHECK_AUTOCORRECT,
     IDS_FLAGS_SPELLCHECK_AUTOCORRECT_DESCRIPTION,

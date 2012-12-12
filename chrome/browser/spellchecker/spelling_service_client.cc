@@ -115,14 +115,10 @@ bool SpellingServiceClient::IsAvailable(Profile* profile, ServiceType type) {
   if (locale.empty())
     return false;
 
-  // If we do not have grammar check enabled, then we are only available for
-  // SUGGEST.
-  // If we do not have asynchronous spelling turned on, then we are only
-  // available for SUGGEST. The SPELLCHECK option depends on asynchronous
-  // spelling.
+  // If we do not have the spelling service enabled, then we are only available
+  // for SUGGEST.
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kUseSpellingService) ||
-      command_line->HasSwitch(switches::kForceSyncSpellCheck))
+  if (!command_line->HasSwitch(switches::kUseSpellingService))
     return type == SUGGEST;
 
   // Finally, if all options are available, we only enable only SUGGEST
