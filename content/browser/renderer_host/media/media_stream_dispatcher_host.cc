@@ -192,6 +192,9 @@ void MediaStreamDispatcherHost::OnStopGeneratedStream(
            << ", {label = " << label <<  "})";
 
   StreamMap::iterator it = streams_.find(label);
+  if (it == streams_.end())
+    return;
+
   GetManager()->StopGeneratedStream(label);
   streams_.erase(it);
 }
