@@ -44,24 +44,22 @@ TEST(simple_keyboard_test)
 			expect_state = WL_KEYBOARD_KEY_STATE_RELEASED;
 			wl_test_send_key(client->test->wl_test, expect_key,
 				expect_state);
-			yield(client);
 		} else if (keyboard->focus) {
 			expect_focus = NULL;
 			wl_test_activate_surface(client->test->wl_test,
 						 NULL);
-			yield(client);
 		} else if (expect_key < 10) {
 			expect_key++;
 			expect_focus = client->surface;
 			expect_state = WL_KEYBOARD_KEY_STATE_PRESSED;
 			wl_test_activate_surface(client->test->wl_test,
 						 expect_focus->wl_surface);
-			yield(client);
 			wl_test_send_key(client->test->wl_test, expect_key,
 					 expect_state);
-			yield(client);
 		} else {
 			break;
 		}
+
+		wl_display_roundtrip(client->wl_display);
 	}
 }
