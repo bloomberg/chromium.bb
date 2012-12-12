@@ -442,9 +442,9 @@ TEST_F(TemplateURLTest, Suggestions) {
     const std::string expected_result;
   } test_data[] = {
     { TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16(),
-      "http://bar/foo?q=foobar" },
+      "http://bar/foo?aq=f&q=foobar" },
     { TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, ASCIIToUTF16("foo"),
-      "http://bar/foo?q=foobar" },
+      "http://bar/foo?aq=f&q=foobar" },
     { TemplateURLRef::NO_SUGGESTION_CHOSEN, string16(),
       "http://bar/foo?aq=f&q=foobar" },
     { TemplateURLRef::NO_SUGGESTION_CHOSEN, ASCIIToUTF16("foo"),

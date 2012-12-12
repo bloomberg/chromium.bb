@@ -280,16 +280,13 @@ std::string TemplateURLRef::ReplaceSearchTermsUsingTermsData(
         }
         break;
 
-      case GOOGLE_ACCEPTED_SUGGESTION:
-        if (search_terms_args.accepted_suggestion == NO_SUGGESTION_CHOSEN) {
-          url.insert(i->index, "aq=f&");
-        } else if (search_terms_args.accepted_suggestion !=
-                   NO_SUGGESTIONS_AVAILABLE) {
-          url.insert(i->index,
-                     base::StringPrintf("aq=%d&",
-                                        search_terms_args.accepted_suggestion));
-        }
+      case GOOGLE_ACCEPTED_SUGGESTION: {
+        std::string value("f");
+        if (search_terms_args.accepted_suggestion >= 0)
+          value = base::IntToString(search_terms_args.accepted_suggestion);
+        url.insert(i->index, "aq=" + value + "&");
         break;
+      }
 
       case GOOGLE_BASE_URL:
         url.insert(i->index, search_terms_data.GoogleBaseURLValue());
