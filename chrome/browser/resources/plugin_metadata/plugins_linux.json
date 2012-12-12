@@ -50,7 +50,7 @@
     ],
     "versions": [
       {
-        "version": "1.6.0.33",
+        "version": "1.6.0.37",
         "status": "requires_authorization"
       },
       {
@@ -58,7 +58,7 @@
         "status": "out_of_date"
       },
       {
-        "version": "1.7.0.5",
+        "version": "1.7.0.9",
         "status": "requires_authorization"
       }
     ],
