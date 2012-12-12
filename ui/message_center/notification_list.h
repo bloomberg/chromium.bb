@@ -134,8 +134,8 @@ class MESSAGE_CENTER_EXPORT NotificationList {
   // least recent notifications that have not been shown as a popup.
   void GetPopupNotifications(Notifications* notifications);
 
-  // Marks the popups returned by GetPopupNotifications() as shown.
-  void MarkPopupsAsShown();
+  // Marks the popups for the |priority| as shown.
+  void MarkPopupsAsShown(int priority);
 
   bool quiet_mode() const { return quiet_mode_; }
 

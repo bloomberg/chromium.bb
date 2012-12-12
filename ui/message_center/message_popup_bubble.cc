@@ -4,16 +4,39 @@
 
 #include "ui/message_center/message_popup_bubble.h"
 
+#include "base/bind.h"
 #include "ui/message_center/message_view.h"
 #include "ui/message_center/message_view_factory.h"
+#include "ui/notifications/notification_types.h"
 #include "ui/views/bubble/tray_bubble_view.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
 namespace message_center {
+namespace {
 
-const int kAutocloseDelaySeconds = 5;
+const int kAutocloseHighPriorityDelaySeconds = 25;
+const int kAutocloseDefaultDelaySeconds = 8;
+
+std::vector<const NotificationList::Notification*> GetNewNotifications(
+    const NotificationList::Notifications& old_list,
+    const NotificationList::Notifications& new_list) {
+  std::set<std::string> existing_ids;
+  std::vector<const NotificationList::Notification*> result;
+  for (NotificationList::Notifications::const_iterator iter = old_list.begin();
+       iter != old_list.end(); ++iter) {
+    existing_ids.insert(iter->id);
+  }
+  for (NotificationList::Notifications::const_iterator iter = new_list.begin();
+       iter != new_list.end(); ++iter) {
+    if (existing_ids.find(iter->id) == existing_ids.end())
+      result.push_back(&(*iter));
+  }
+  return result;
+}
+
+}  // namespace
 
 // Popup notifications contents.
 class PopupBubbleContentsView : public views::View {
@@ -65,7 +88,8 @@ class PopupBubbleContentsView : public views::View {
 MessagePopupBubble::MessagePopupBubble(NotificationList::Delegate* delegate)
     : MessageBubbleBase(delegate),
       contents_view_(NULL),
-      num_popups_(0) {
+      should_run_default_timer_(false),
+      should_run_high_timer_(false) {
 }
 
 MessagePopupBubble::~MessagePopupBubble() {
@@ -93,20 +117,35 @@ void MessagePopupBubble::OnBubbleViewDestroyed() {
 }
 
 void MessagePopupBubble::UpdateBubbleView() {
-  NotificationList::Notifications popup_notifications;
+  NotificationList::Notifications new_notifications;
   list_delegate()->GetNotificationList()->GetPopupNotifications(
-      &popup_notifications);
-  if (popup_notifications.size() == 0) {
+      &new_notifications);
+  if (new_notifications.size() == 0) {
     if (bubble_view())
       bubble_view()->delegate()->HideBubble(bubble_view());  // deletes |this|
     return;
   }
   // Only reset the timer when the number of visible notifications changes.
-  if (num_popups_ != popup_notifications.size()) {
-    num_popups_ = popup_notifications.size();
-    StartAutoCloseTimer();
+  std::vector<const NotificationList::Notification*> added =
+      GetNewNotifications(popup_notifications_, new_notifications);
+  bool run_default = false;
+  bool run_high = false;
+  for (std::vector<const NotificationList::Notification*>::const_iterator iter =
+           added.begin(); iter != added.end(); ++iter) {
+    if ((*iter)->priority == ui::notifications::DEFAULT_PRIORITY)
+      run_default = true;
+    else if ((*iter)->priority >= ui::notifications::HIGH_PRIORITY)
+      run_high = true;
   }
-  contents_view_->Update(popup_notifications);
+  // Currently MAX priority is same as HIGH priority.
+  if (run_high)
+    StartAutoCloseTimer(ui::notifications::MAX_PRIORITY);
+  if (run_default)
+    StartAutoCloseTimer(ui::notifications::DEFAULT_PRIORITY);
+  should_run_high_timer_ = run_high;
+  should_run_default_timer_ = run_default;
+  contents_view_->Update(new_notifications);
+  popup_notifications_.swap(new_notifications);
   bubble_view()->Show();
   bubble_view()->UpdateBubble();
 }
@@ -116,23 +155,44 @@ void MessagePopupBubble::OnMouseEnteredView() {
 }
 
 void MessagePopupBubble::OnMouseExitedView() {
-  StartAutoCloseTimer();
+  if (should_run_high_timer_)
+    StartAutoCloseTimer(ui::notifications::HIGH_PRIORITY);
+  if (should_run_default_timer_)
+    StartAutoCloseTimer(ui::notifications::DEFAULT_PRIORITY);
 }
 
-void MessagePopupBubble::StartAutoCloseTimer() {
-  autoclose_.Start(FROM_HERE,
-                   base::TimeDelta::FromSeconds(
-                       kAutocloseDelaySeconds),
-                   this, &MessagePopupBubble::OnAutoClose);
+void MessagePopupBubble::StartAutoCloseTimer(int priority) {
+  base::TimeDelta seconds;
+  base::OneShotTimer<MessagePopupBubble>* timer = NULL;
+  if (priority == ui::notifications::MAX_PRIORITY) {
+    seconds = base::TimeDelta::FromSeconds(kAutocloseHighPriorityDelaySeconds);
+    timer = &autoclose_high_;
+  } else {
+    seconds = base::TimeDelta::FromSeconds(kAutocloseDefaultDelaySeconds);
+    timer = &autoclose_default_;
+  }
+
+  timer->Start(FROM_HERE,
+               seconds,
+               base::Bind(&MessagePopupBubble::OnAutoClose,
+                          base::Unretained(this), priority));
 }
 
 void MessagePopupBubble::StopAutoCloseTimer() {
-  autoclose_.Stop();
+  autoclose_high_.Stop();
+  autoclose_default_.Stop();
 }
 
-void MessagePopupBubble::OnAutoClose() {
-  list_delegate()->GetNotificationList()->MarkPopupsAsShown();
-  num_popups_ = 0;
+void MessagePopupBubble::OnAutoClose(int priority) {
+  list_delegate()->GetNotificationList()->MarkPopupsAsShown(priority);
+  if (priority == ui::notifications::MAX_PRIORITY)
+    list_delegate()->GetNotificationList()->MarkPopupsAsShown(
+        ui::notifications::HIGH_PRIORITY);
+
+  if (priority >= ui::notifications::MAX_PRIORITY)
+    should_run_high_timer_ = false;
+  else
+    should_run_default_timer_ = false;
   UpdateBubbleView();
 }
 

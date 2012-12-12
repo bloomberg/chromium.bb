@@ -247,14 +247,11 @@ void NotificationList::GetPopupNotifications(
   }
 }
 
-void NotificationList::MarkPopupsAsShown() {
-  for (int i = ui::notifications::DEFAULT_PRIORITY;
-       i <= ui::notifications::MAX_PRIORITY; ++i) {
-    Notifications::iterator first, last;
-    GetPopupIterators(i, first, last);
-    for (Notifications::iterator iter = first; iter != last; ++iter)
-      iter->shown_as_popup = true;
-  }
+void NotificationList::MarkPopupsAsShown(int priority) {
+  Notifications::iterator first, last;
+  GetPopupIterators(priority, first, last);
+  for (Notifications::iterator iter = first; iter != last; ++iter)
+    iter->shown_as_popup = true;
 }
 
 void NotificationList::SetQuietMode(bool quiet_mode) {

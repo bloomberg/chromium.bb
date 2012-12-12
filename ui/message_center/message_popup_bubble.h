@@ -21,9 +21,6 @@ class MESSAGE_CENTER_EXPORT MessagePopupBubble : public MessageBubbleBase {
 
   virtual ~MessagePopupBubble();
 
-  void StartAutoCloseTimer();
-  void StopAutoCloseTimer();
-
   // Overridden from MessageBubbleBase.
   virtual views::TrayBubbleView::InitParams GetInitParams(
       views::TrayBubbleView::AnchorAlignment anchor_alignment) OVERRIDE;
@@ -36,11 +33,17 @@ class MESSAGE_CENTER_EXPORT MessagePopupBubble : public MessageBubbleBase {
    size_t NumMessageViewsForTest() const;
 
  private:
-  void OnAutoClose();
+  void StartAutoCloseTimer(int priority);
+  void StopAutoCloseTimer();
 
-  base::OneShotTimer<MessagePopupBubble> autoclose_;
+  void OnAutoClose(int priority);
+
+  base::OneShotTimer<MessagePopupBubble> autoclose_default_;
+  base::OneShotTimer<MessagePopupBubble> autoclose_high_;
   PopupBubbleContentsView* contents_view_;
-  size_t num_popups_;
+  NotificationList::Notifications popup_notifications_;
+  bool should_run_default_timer_;
+  bool should_run_high_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(MessagePopupBubble);
 };
