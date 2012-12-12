@@ -426,7 +426,7 @@ struct PossibleTestSingletonTraits : public DefaultSingletonTraits<Type> {
 };
 
 void RunFaviconCallbackAsync(
-    const FaviconService::FaviconResultsCallback2& callback,
+    const FaviconService::FaviconResultsCallback& callback,
     const std::vector<history::FaviconBitmapResult>* results,
     const history::IconURLSizesMap* size_map) {
   base::MessageLoopProxy::current()->PostTask(
@@ -453,8 +453,8 @@ bool ChromeWebUIControllerFactory::UseWebUIBindingsForURL(
     content::BrowserContext* browser_context, const GURL& url) const {
   // Extensions are rendered via WebUI in tabs, but don't actually need WebUI
   // bindings (see the ExtensionWebUI constructor).
-  return !NeedsExtensionWebUI(Profile::FromBrowserContext(browser_context),
-                              url) &&
+  return
+      !NeedsExtensionWebUI(Profile::FromBrowserContext(browser_context), url) &&
       UseWebUIForURL(browser_context, url);
 }
 
@@ -497,7 +497,7 @@ void ChromeWebUIControllerFactory::GetFaviconForURL(
     Profile* profile,
     const GURL& page_url,
     const std::vector<ui::ScaleFactor>& scale_factors,
-    const FaviconService::FaviconResultsCallback2& callback) const {
+    const FaviconService::FaviconResultsCallback& callback) const {
   // Before determining whether page_url is an extension url, we must handle
   // overrides. This changes urls in |kChromeUIScheme| to extension urls, and
   // allows to use ExtensionWebUI::GetFaviconForURL.

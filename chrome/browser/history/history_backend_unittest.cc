@@ -133,19 +133,6 @@ class HistoryBackendTest : public testing::Test {
     filtered_list_ = data;
   }
 
-  // Callback for UpdateFaviconMappingsAndFetch.
-  void OnFaviconResults(
-      FaviconService::Handle handle,
-      std::vector<history::FaviconBitmapResult> favicon_bitmap_results,
-      history::IconURLSizesMap icon_url_sizes) {
-    favicon_bitmap_results_ = favicon_bitmap_results;
-  }
-
-  const std::vector<history::FaviconBitmapResult>&
-      get_favicon_bitmap_results() const {
-    return favicon_bitmap_results_;
-  }
-
   const history::MostVisitedURLList& get_most_visited_list() const {
     return most_visited_list_;
   }
@@ -414,9 +401,6 @@ class HistoryBackendTest : public testing::Test {
 
   // The number of notifications which were broadcasted.
   int num_broadcasted_notifications_;
-
-  // The favicon bitmap data returned from OnFaviconResults().
-  std::vector<history::FaviconBitmapResult> favicon_bitmap_results_;
 
   MessageLoop message_loop_;
   FilePath test_dir_;
@@ -1630,13 +1614,10 @@ TEST_F(HistoryBackendTest, SetFaviconsSameFaviconURLForTwoPages) {
   std::vector<GURL> icon_urls;
   icon_urls.push_back(icon_url);
 
-  scoped_refptr<GetFaviconRequest> request(new GetFaviconRequest(
-      base::Bind(&HistoryBackendTest::OnFaviconResults,
-                 base::Unretained(this))));
-  HistoryBackendCancelableRequest cancellable_request;
-  cancellable_request.MockScheduleOfRequest<GetFaviconRequest>(request);
-  backend_->UpdateFaviconMappingsAndFetch(request, page_url2, icon_urls,
-      FAVICON, kSmallSize.width(), GetScaleFactors1x2x());
+  HistoryBackend::FaviconResults results;
+  backend_->UpdateFaviconMappingsAndFetch(
+      page_url2, icon_urls, FAVICON, kSmallSize.width(),
+      GetScaleFactors1x2x(), &results);
 
   // Check that the same FaviconID is mapped to both page URLs.
   std::vector<IconMapping> icon_mappings;
@@ -1711,13 +1692,11 @@ TEST_F(HistoryBackendTest, UpdateFaviconMappingsAndFetchNoChange) {
 
   std::vector<GURL> icon_urls;
   icon_urls.push_back(icon_url);
-  scoped_refptr<GetFaviconRequest> request(new GetFaviconRequest(
-      base::Bind(&HistoryBackendTest::OnFaviconResults,
-                 base::Unretained(this))));
-  HistoryBackendCancelableRequest cancellable_request;
-  cancellable_request.MockScheduleOfRequest<GetFaviconRequest>(request);
-  backend_->UpdateFaviconMappingsAndFetch(request, page_url, icon_urls,
-      FAVICON, kSmallSize.width(), GetScaleFactors1x2x());
+
+  HistoryBackend::FaviconResults results;
+  backend_->UpdateFaviconMappingsAndFetch(
+      page_url, icon_urls, FAVICON, kSmallSize.width(),
+      GetScaleFactors1x2x(), &results);
 
   EXPECT_EQ(icon_id, backend_->thumbnail_db_->GetFaviconIDForFaviconURL(
       icon_url, FAVICON, NULL));
@@ -2023,24 +2002,17 @@ TEST_F(HistoryBackendTest, MergeFaviconShowsUpInGetFaviconsForURLResult) {
   backend_->MergeFavicon(page_url, merged_icon_url, FAVICON, bitmap_data,
                          kSmallSize);
 
-  HistoryBackendCancelableRequest cancellable_request;
-  scoped_refptr<GetFaviconRequest> request(new GetFaviconRequest(
-      base::Bind(&HistoryBackendTest::OnFaviconResults,
-                 base::Unretained(this))));
-  cancellable_request.MockScheduleOfRequest<GetFaviconRequest>(request);
-
   // Request favicon bitmaps for both 1x and 2x to simulate request done by
   // BookmarkModel::GetFavicon().
-  std::vector<history::FaviconBitmapResult> favicon_bitmap_results;
-  IconURLSizesMap size_map;
+  HistoryBackend::FaviconResults results;
   backend_->GetFaviconsForURL(page_url, FAVICON, kSmallSize.width(),
-                              GetScaleFactors1x2x(),
-                              &favicon_bitmap_results, &size_map);
+                              GetScaleFactors1x2x(), &results);
 
-  EXPECT_EQ(2u, favicon_bitmap_results.size());
-  const FaviconBitmapResult& first_result = favicon_bitmap_results[0];
-  const FaviconBitmapResult& result = first_result.pixel_size == kSmallSize ?
-      first_result : favicon_bitmap_results[1];
+  EXPECT_EQ(2u, results.bitmap_results.size());
+  const FaviconBitmapResult& first_result = results.bitmap_results[0];
+  const FaviconBitmapResult& result =
+      (first_result.pixel_size == kSmallSize) ? first_result
+                                              : results.bitmap_results[1];
   EXPECT_TRUE(BitmapDataEqual('c', result.bitmap_data));
 }
 
@@ -2076,14 +2048,11 @@ TEST_F(HistoryBackendTest, UpdateFaviconMappingsAndFetchMultipleIconTypes) {
   icon_urls.push_back(icon_urla);
   icon_urls.push_back(icon_urlb);
   icon_urls.push_back(icon_urlc);
-  scoped_refptr<GetFaviconRequest> request(new GetFaviconRequest(
-      base::Bind(&HistoryBackendTest::OnFaviconResults,
-                 base::Unretained(this))));
-  HistoryBackendCancelableRequest cancellable_request;
-  cancellable_request.MockScheduleOfRequest<GetFaviconRequest>(request);
-  backend_->UpdateFaviconMappingsAndFetch(request, page_url3, icon_urls,
-      TOUCH_ICON | TOUCH_PRECOMPOSED_ICON, kSmallSize.width(),
-      GetScaleFactors1x2x());
+
+  HistoryBackend::FaviconResults results;
+  backend_->UpdateFaviconMappingsAndFetch(
+      page_url3, icon_urls, (TOUCH_ICON | TOUCH_PRECOMPOSED_ICON),
+      kSmallSize.width(), GetScaleFactors1x2x(), &results);
 
   // |page_url1| and |page_url2| should still be mapped to the same icon URLs.
   std::vector<IconMapping> icon_mappings;
@@ -2302,16 +2271,16 @@ TEST_F(HistoryBackendTest, UpdateFaviconMappingsAndFetchNoDB) {
   // Make the thumbnail database invalid.
   backend_->thumbnail_db_.reset();
 
-  HistoryBackendCancelableRequest cancellable_request;
+  HistoryBackend::FaviconResults results;
+  results.bitmap_results.push_back(FaviconBitmapResult());
+  results.size_map[GURL()] = FaviconSizes();
 
-  scoped_refptr<GetFaviconRequest> request1(new GetFaviconRequest(
-      base::Bind(&HistoryBackendTest::OnFaviconResults,
-                 base::Unretained(this))));
-  cancellable_request.MockScheduleOfRequest<GetFaviconRequest>(request1);
-  EXPECT_TRUE(cancellable_request.HasPendingRequests());
-  backend_->UpdateFaviconMappingsAndFetch(request1, GURL(), std::vector<GURL>(),
-      FAVICON, kSmallSize.width(), GetScaleFactors1x2x());
-  EXPECT_FALSE(cancellable_request.HasPendingRequests());
+  backend_->UpdateFaviconMappingsAndFetch(
+      GURL(), std::vector<GURL>(), FAVICON, kSmallSize.width(),
+      GetScaleFactors1x2x(), &results);
+
+  EXPECT_TRUE(results.bitmap_results.empty());
+  EXPECT_TRUE(results.size_map.empty());
 }
 
 TEST_F(HistoryBackendTest, CloneFaviconIsRestrictedToSameDomain) {

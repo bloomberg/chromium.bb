@@ -127,32 +127,20 @@ class HistoryRequestHandler {
                         const GURL& icon_url,
                         int icon_type,
                         const FaviconService::FaviconResultsCallback& callback)
-    : page_url_(page_url),
-      icon_url_(icon_url),
-      icon_type_(icon_type),
-      callback_(callback) {
+      : page_url_(page_url),
+        icon_url_(icon_url),
+        icon_type_(icon_type),
+        callback_(callback) {
   }
 
   HistoryRequestHandler(const GURL& page_url,
                         const GURL& icon_url,
                         int icon_type,
-                        const FaviconService::FaviconResultsCallback2& callback)
-    : page_url_(page_url),
-      icon_url_(icon_url),
-      icon_type_(icon_type),
-      callback2_(callback) {
-  }
-
-  HistoryRequestHandler(const GURL& page_url,
-                        const GURL& icon_url,
-                        int icon_type,
-                        const std::vector<unsigned char>& bitmap_data,
-                        const FaviconService::FaviconResultsCallback& callback)
-    : page_url_(page_url),
-      icon_url_(icon_url),
-      icon_type_(icon_type),
-      bitmap_data_(bitmap_data),
-      callback_(callback) {
+                        const std::vector<unsigned char>& bitmap_data)
+      : page_url_(page_url),
+        icon_url_(icon_url),
+        icon_type_(icon_type),
+        bitmap_data_(bitmap_data) {
   }
 
   virtual ~HistoryRequestHandler() {}
@@ -164,7 +152,6 @@ class HistoryRequestHandler {
   const std::vector<unsigned char> bitmap_data_;
   std::vector<history::FaviconBitmapResult> history_results_;
   FaviconService::FaviconResultsCallback callback_;
-  FaviconService::FaviconResultsCallback2 callback2_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HistoryRequestHandler);
@@ -258,8 +245,8 @@ class TestFaviconHandler : public FaviconHandler {
       const GURL& page_url,
       const GURL& icon_url,
       history::IconType icon_type,
-      CancelableRequestConsumerBase* consumer,
-      const FaviconService::FaviconResultsCallback& callback) OVERRIDE {
+      const FaviconService::FaviconResultsCallback& callback,
+      CancelableTaskTracker* tracker) OVERRIDE {
     history_handler_.reset(new HistoryRequestHandler(page_url, icon_url,
                                                      icon_type, callback));
   }
@@ -267,8 +254,8 @@ class TestFaviconHandler : public FaviconHandler {
   virtual void GetFavicon(
       const GURL& icon_url,
       history::IconType icon_type,
-      CancelableRequestConsumerBase* consumer,
-      const FaviconService::FaviconResultsCallback& callback) OVERRIDE {
+      const FaviconService::FaviconResultsCallback& callback,
+      CancelableTaskTracker* tracker) OVERRIDE {
     history_handler_.reset(new HistoryRequestHandler(GURL(), icon_url,
                                                      icon_type, callback));
   }
@@ -276,7 +263,7 @@ class TestFaviconHandler : public FaviconHandler {
   virtual void GetFaviconForURL(
       const GURL& page_url,
       int icon_types,
-      const FaviconService::FaviconResultsCallback2& callback,
+      const FaviconService::FaviconResultsCallback& callback,
       CancelableTaskTracker* tracker) OVERRIDE {
     history_handler_.reset(new HistoryRequestHandler(page_url, GURL(),
                                                      icon_types, callback));
@@ -293,9 +280,8 @@ class TestFaviconHandler : public FaviconHandler {
                                   history::IconType icon_type,
                                   const gfx::Image& image) OVERRIDE {
     std::vector<unsigned char> bitmap_data = image.As1xPNGBytes()->data();
-    history_handler_.reset(new HistoryRequestHandler(
-        page_url, icon_url, icon_type, bitmap_data,
-        FaviconService::FaviconResultsCallback()));
+    history_handler_.reset(
+        new HistoryRequestHandler(page_url, icon_url, icon_type, bitmap_data));
   }
 
   virtual FaviconService* GetFaviconService() OVERRIDE {
@@ -325,7 +311,7 @@ class TestFaviconHandler : public FaviconHandler {
 namespace {
 
 void HistoryRequestHandler::InvokeCallback() {
-  if (!callback_.is_null() || !callback2_.is_null()) {
+  if (!callback_.is_null()) {
     history::IconURLSizesMap icon_url_sizes;
     // Build IconURLSizesMap such that the requirement that all the icon URLs
     // in |history_results_| be present in |icon_url_sizes| holds.
@@ -337,10 +323,7 @@ void HistoryRequestHandler::InvokeCallback() {
       icon_url_sizes[icon_url].push_back(bitmap_result.pixel_size);
     }
 
-    if (!callback_.is_null())
-      callback_.Run(0, history_results_, icon_url_sizes);
-    if (!callback2_.is_null())
-      callback2_.Run(history_results_, icon_url_sizes);
+    callback_.Run(history_results_, icon_url_sizes);
   }
 }
 

@@ -257,33 +257,41 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // Favicon -------------------------------------------------------------------
 
-  void GetFavicons(scoped_refptr<GetFaviconRequest> request,
-                   const std::vector<GURL>& icon_urls,
-                   int icon_types,
-                   int desired_size_in_dip,
-                   const std::vector<ui::ScaleFactor>& desired_scale_factors);
+  struct FaviconResults {
+    FaviconResults();
+    ~FaviconResults();
+    void Clear();
+
+    std::vector<history::FaviconBitmapResult> bitmap_results;
+    IconURLSizesMap size_map;
+  };
+
+  void GetFavicons(const std::vector<GURL>& icon_urls,
+                    int icon_types,
+                    int desired_size_in_dip,
+                    const std::vector<ui::ScaleFactor>& desired_scale_factors,
+                    FaviconResults* results);
 
   void GetFaviconsForURL(
       const GURL& page_url,
       int icon_types,
       int desired_size_in_dip,
       const std::vector<ui::ScaleFactor>& desired_scale_factors,
-      std::vector<history::FaviconBitmapResult>* bitmap_results,
-      IconURLSizesMap* size_map);
+      FaviconResults* results);
 
   void GetFaviconForID(
-      scoped_refptr<GetFaviconRequest> request,
       FaviconID favicon_id,
       int desired_size_in_dip,
-      ui::ScaleFactor desired_scale_factor);
+      ui::ScaleFactor desired_scale_factor,
+      FaviconResults* results);
 
   void UpdateFaviconMappingsAndFetch(
-      scoped_refptr<GetFaviconRequest> request,
       const GURL& page_url,
       const std::vector<GURL>& icon_urls,
       int icon_types,
       int desired_size_in_dip,
-      const std::vector<ui::ScaleFactor>& desired_scale_factors);
+      const std::vector<ui::ScaleFactor>& desired_scale_factors,
+      FaviconResults* results);
 
   void MergeFavicon(const GURL& page_url,
                     const GURL& icon_url,
@@ -657,12 +665,12 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // If multiple icon types are specified, |page_url| will be mapped to the
   // icon URLs of the largest type available in the database.
   void UpdateFaviconMappingsAndFetchImpl(
-      scoped_refptr<GetFaviconRequest> request,
       const GURL* page_url,
       const std::vector<GURL>& icon_urls,
       int icon_types,
       int desired_size_in_dip,
-      const std::vector<ui::ScaleFactor>& desired_scale_factors);
+      const std::vector<ui::ScaleFactor>& desired_scale_factors,
+      FaviconResults* results);
 
   // Set the favicon bitmaps for |icon_id|.
   // For each entry in |favicon_bitmap_data|, if a favicon bitmap already

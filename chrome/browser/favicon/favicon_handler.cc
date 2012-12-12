@@ -223,7 +223,6 @@ FaviconHandler::~FaviconHandler() {
 }
 
 void FaviconHandler::FetchFavicon(const GURL& url) {
-  cancelable_consumer_.CancelAllRequests();
   cancelable_task_tracker_.TryCancelAll();
 
   url_ = url;
@@ -437,29 +436,29 @@ void FaviconHandler::UpdateFaviconMappingAndFetch(
     const GURL& page_url,
     const GURL& icon_url,
     history::IconType icon_type,
-    CancelableRequestConsumerBase* consumer,
-    const FaviconService::FaviconResultsCallback& callback) {
+    const FaviconService::FaviconResultsCallback& callback,
+    CancelableTaskTracker* tracker) {
   // TODO(pkotwicz): pass in all of |image_urls_| to
   // UpdateFaviconMappingsAndFetch().
   std::vector<GURL> icon_urls;
   icon_urls.push_back(icon_url);
-  GetFaviconService()->UpdateFaviconMappingsAndFetch(page_url, icon_urls,
-      icon_type, preferred_icon_size(), consumer, callback);
+  GetFaviconService()->UpdateFaviconMappingsAndFetch(
+      page_url, icon_urls, icon_type, preferred_icon_size(), callback, tracker);
 }
 
 void FaviconHandler::GetFavicon(
     const GURL& icon_url,
     history::IconType icon_type,
-    CancelableRequestConsumerBase* consumer,
-    const FaviconService::FaviconResultsCallback& callback) {
-  GetFaviconService()->GetFavicon(icon_url, icon_type, preferred_icon_size(),
-      consumer, callback);
+    const FaviconService::FaviconResultsCallback& callback,
+    CancelableTaskTracker* tracker) {
+  GetFaviconService()->GetFavicon(
+      icon_url, icon_type, preferred_icon_size(), callback, tracker);
 }
 
 void FaviconHandler::GetFaviconForURL(
     const GURL& page_url,
     int icon_types,
-    const FaviconService::FaviconResultsCallback2& callback,
+    const FaviconService::FaviconResultsCallback& callback,
     CancelableTaskTracker* tracker) {
   GetFaviconService()->GetFaviconForURL(
       FaviconService::FaviconForURLParams(
@@ -549,8 +548,10 @@ void FaviconHandler::DownloadFaviconOrAskHistory(
     // favicon for another page that shares the same favicon. Ask for the
     // favicon given the favicon URL.
     if (profile_->IsOffTheRecord()) {
-      GetFavicon(icon_url, icon_type, &cancelable_consumer_,
-          base::Bind(&FaviconHandler::OnFaviconData, base::Unretained(this)));
+      GetFavicon(
+          icon_url, icon_type,
+          base::Bind(&FaviconHandler::OnFaviconData, base::Unretained(this)),
+          &cancelable_task_tracker_);
     } else {
       // Ask the history service for the icon. This does two things:
       // 1. Attempts to fetch the favicon data from the database.
@@ -558,17 +559,17 @@ void FaviconHandler::DownloadFaviconOrAskHistory(
       //    include the mapping between the page url and the favicon url.
       // This is asynchronous. The history service will call back when done.
       // Issue the request and associate the current page ID with it.
-      UpdateFaviconMappingAndFetch(page_url, icon_url, icon_type,
-          &cancelable_consumer_,
-          base::Bind(&FaviconHandler::OnFaviconData, base::Unretained(this)));
+      UpdateFaviconMappingAndFetch(
+          page_url, icon_url, icon_type,
+          base::Bind(&FaviconHandler::OnFaviconData, base::Unretained(this)),
+          &cancelable_task_tracker_);
     }
   }
 }
 
 void FaviconHandler::OnFaviconData(
-    FaviconService::Handle handle,
-    std::vector<history::FaviconBitmapResult> favicon_bitmap_results,
-    history::IconURLSizesMap icon_url_sizes) {
+    const std::vector<history::FaviconBitmapResult>& favicon_bitmap_results,
+    const history::IconURLSizesMap& icon_url_sizes) {
   NavigationEntry* entry = GetEntry();
   if (!entry)
     return;

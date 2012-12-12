@@ -1850,14 +1850,23 @@ bool HistoryBackend::GetThumbnailFromOlderRedirect(
   return success;
 }
 
+HistoryBackend::FaviconResults::FaviconResults() {}
+HistoryBackend::FaviconResults::~FaviconResults() {}
+
+void HistoryBackend::FaviconResults::Clear() {
+  bitmap_results.clear();
+  size_map.clear();
+}
+
 void HistoryBackend::GetFavicons(
-    scoped_refptr<GetFaviconRequest> request,
     const std::vector<GURL>& icon_urls,
     int icon_types,
     int desired_size_in_dip,
-    const std::vector<ui::ScaleFactor>& desired_scale_factors) {
-  UpdateFaviconMappingsAndFetchImpl(request, NULL, icon_urls, icon_types,
-      desired_size_in_dip, desired_scale_factors);
+    const std::vector<ui::ScaleFactor>& desired_scale_factors,
+    FaviconResults* results) {
+  UpdateFaviconMappingsAndFetchImpl(NULL, icon_urls, icon_types,
+                                     desired_size_in_dip, desired_scale_factors,
+                                     results);
 }
 
 void HistoryBackend::GetFaviconsForURL(
@@ -1865,48 +1874,41 @@ void HistoryBackend::GetFaviconsForURL(
     int icon_types,
     int desired_size_in_dip,
     const std::vector<ui::ScaleFactor>& desired_scale_factors,
-    std::vector<history::FaviconBitmapResult>* bitmap_results,
-    IconURLSizesMap* size_map) {
-  DCHECK(bitmap_results);
-  DCHECK(size_map);
-
+    FaviconResults* results) {
+  DCHECK(results);
   GetFaviconsFromDB(page_url, icon_types, desired_size_in_dip,
-      desired_scale_factors, bitmap_results, size_map);
+                    desired_scale_factors, &results->bitmap_results,
+                    &results->size_map);
 }
 
-void HistoryBackend::GetFaviconForID(scoped_refptr<GetFaviconRequest> request,
-                                     FaviconID favicon_id,
-                                     int desired_size_in_dip,
-                                     ui::ScaleFactor desired_scale_factor) {
-  if (request->canceled())
-    return;
-
+void HistoryBackend::GetFaviconForID(
+    FaviconID favicon_id,
+    int desired_size_in_dip,
+    ui::ScaleFactor desired_scale_factor,
+    FaviconResults* results) {
   std::vector<FaviconID> favicon_ids;
   favicon_ids.push_back(favicon_id);
   std::vector<ui::ScaleFactor> desired_scale_factors;
   desired_scale_factors.push_back(desired_scale_factor);
 
   // Get results from DB.
-  std::vector<FaviconBitmapResult> favicon_bitmap_results;
-  GetFaviconBitmapResultsForBestMatch(favicon_ids, desired_size_in_dip,
-      desired_scale_factors, &favicon_bitmap_results);
-
-  IconURLSizesMap icon_url_sizes;
-  BuildIconURLSizesMap(favicon_ids, &icon_url_sizes);
-
-  request->ForwardResult(request->handle(), favicon_bitmap_results,
-                         icon_url_sizes);
+  GetFaviconBitmapResultsForBestMatch(favicon_ids,
+                                      desired_size_in_dip,
+                                      desired_scale_factors,
+                                      &results->bitmap_results);
+  BuildIconURLSizesMap(favicon_ids, &results->size_map);
 }
 
 void HistoryBackend::UpdateFaviconMappingsAndFetch(
-    scoped_refptr<GetFaviconRequest> request,
     const GURL& page_url,
     const std::vector<GURL>& icon_urls,
     int icon_types,
     int desired_size_in_dip,
-    const std::vector<ui::ScaleFactor>& desired_scale_factors) {
-  UpdateFaviconMappingsAndFetchImpl(request, &page_url, icon_urls, icon_types,
-      desired_size_in_dip, desired_scale_factors);
+    const std::vector<ui::ScaleFactor>& desired_scale_factors,
+    FaviconResults* results) {
+  UpdateFaviconMappingsAndFetchImpl(&page_url, icon_urls, icon_types,
+                                     desired_size_in_dip, desired_scale_factors,
+                                     results);
 }
 
 void HistoryBackend::MergeFavicon(
@@ -2187,12 +2189,12 @@ void HistoryBackend::SetImportedFavicons(
 }
 
 void HistoryBackend::UpdateFaviconMappingsAndFetchImpl(
-    scoped_refptr<GetFaviconRequest> request,
     const GURL* page_url,
     const std::vector<GURL>& icon_urls,
     int icon_types,
     int desired_size_in_dip,
-    const std::vector<ui::ScaleFactor>& desired_scale_factors) {
+    const std::vector<ui::ScaleFactor>& desired_scale_factors,
+    FaviconResults* results) {
   // If |page_url| is specified, |icon_types| must be either a single icon
   // type or icon types which are equivalent.
   DCHECK(!page_url ||
@@ -2200,16 +2202,9 @@ void HistoryBackend::UpdateFaviconMappingsAndFetchImpl(
          icon_types == TOUCH_ICON ||
          icon_types == TOUCH_PRECOMPOSED_ICON ||
          icon_types == (TOUCH_ICON | TOUCH_PRECOMPOSED_ICON));
-
-  if (request->canceled())
-    return;
+  results->Clear();
 
   if (!thumbnail_db_.get()) {
-    // The thumbnail database is not valid. Send response to the UI as it still
-    // expects one.
-    request->ForwardResult(request->handle(),
-                           std::vector<history::FaviconBitmapResult>(),
-                           history::IconURLSizesMap());
     return;
   }
 
@@ -2248,14 +2243,9 @@ void HistoryBackend::UpdateFaviconMappingsAndFetchImpl(
     }
   }
 
-  std::vector<FaviconBitmapResult> favicon_bitmap_results;
   GetFaviconBitmapResultsForBestMatch(favicon_ids, desired_size_in_dip,
-      desired_scale_factors, &favicon_bitmap_results);
-  IconURLSizesMap icon_url_sizes;
-  BuildIconURLSizesMap(favicon_ids, &icon_url_sizes);
-
-  request->ForwardResult(request->handle(), favicon_bitmap_results,
-                         icon_url_sizes);
+      desired_scale_factors, &results->bitmap_results);
+  BuildIconURLSizesMap(favicon_ids, &results->size_map);
 }
 
 void HistoryBackend::SetFaviconBitmaps(
@@ -2341,6 +2331,8 @@ bool HistoryBackend::GetFaviconsFromDB(
     IconURLSizesMap* icon_url_sizes) {
   DCHECK(favicon_bitmap_results);
   DCHECK(icon_url_sizes);
+  favicon_bitmap_results->clear();
+  icon_url_sizes->clear();
 
   if (!db_.get() || !thumbnail_db_.get())
     return false;

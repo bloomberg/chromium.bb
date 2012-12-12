@@ -81,7 +81,7 @@ void UnregisterAndReplaceOverrideForWebContents(
 // Run favicon callbck with image result. If no favicon was available then
 // |image| will be empty.
 void RunFaviconCallbackAsync(
-    const FaviconService::FaviconResultsCallback2& callback,
+    const FaviconService::FaviconResultsCallback& callback,
     const gfx::Image& image) {
   std::vector<history::FaviconBitmapResult>* favicon_bitmap_results =
       new std::vector<history::FaviconBitmapResult>();
@@ -407,7 +407,7 @@ void ExtensionWebUI::UnregisterChromeURLOverrides(
 void ExtensionWebUI::GetFaviconForURL(
     Profile* profile,
     const GURL& page_url,
-    const FaviconService::FaviconResultsCallback2& callback) {
+    const FaviconService::FaviconResultsCallback& callback) {
   // Even when the extensions service is enabled by default, it's still
   // disabled in incognito mode.
   ExtensionService* service = profile->GetExtensionService();

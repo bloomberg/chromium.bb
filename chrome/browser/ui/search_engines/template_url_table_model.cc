@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/common/cancelable_task_tracker.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -92,14 +93,14 @@ class ModelEntry {
         return;
     }
     load_state_ = LOADING;
-    favicon_service->GetFaviconImage(favicon_url, history::FAVICON,
-        gfx::kFaviconSize, &request_consumer_,
+    favicon_service->GetFaviconImage(
+        favicon_url, history::FAVICON, gfx::kFaviconSize,
         base::Bind(&ModelEntry::OnFaviconDataAvailable,
-                   base::Unretained(this)));
+                   base::Unretained(this)),
+        &tracker_);
   }
 
   void OnFaviconDataAvailable(
-      FaviconService::Handle handle,
       const history::FaviconImageResult& image_result) {
     load_state_ = LOADED;
     if (!image_result.image.IsEmpty()) {
@@ -112,7 +113,7 @@ class ModelEntry {
   gfx::ImageSkia favicon_;
   LoadState load_state_;
   TemplateURLTableModel* model_;
-  CancelableRequestConsumer request_consumer_;
+  CancelableTaskTracker tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(ModelEntry);
 };

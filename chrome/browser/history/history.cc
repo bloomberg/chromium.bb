@@ -101,6 +101,12 @@ void DerefDownloadId(
   callback.Run(*id);
 }
 
+void RunWithFaviconResults(
+    const FaviconService::FaviconResultsCallback& callback,
+    const HistoryBackend::FaviconResults* results) {
+  callback.Run(results->bitmap_results, results->size_map);
+}
+
 }  // namespace
 
 // Sends messages from the backend to us on the main thread. This must be a
@@ -579,15 +585,25 @@ HistoryService::Handle HistoryService::GetPageThumbnail(
                   new history::GetPageThumbnailRequest(callback), page_url);
 }
 
-void HistoryService::GetFavicons(
-    FaviconService::GetFaviconRequest* request,
+CancelableTaskTracker::TaskId HistoryService::GetFavicons(
     const std::vector<GURL>& icon_urls,
     int icon_types,
     int desired_size_in_dip,
-    const std::vector<ui::ScaleFactor>& desired_scale_factors) {
+    const std::vector<ui::ScaleFactor>& desired_scale_factors,
+    const FaviconService::FaviconResultsCallback& callback,
+    CancelableTaskTracker* tracker) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  Schedule(PRIORITY_NORMAL, &HistoryBackend::GetFavicons, NULL, request,
-           icon_urls, icon_types, desired_size_in_dip, desired_scale_factors);
+  LoadBackendIfNecessary();
+
+  HistoryBackend::FaviconResults* results =
+      new HistoryBackend::FaviconResults();
+  return tracker->PostTaskAndReply(
+      thread_->message_loop_proxy(),
+      FROM_HERE,
+      base::Bind(&HistoryBackend::GetFavicons,
+                 history_backend_.get(), icon_urls, icon_types,
+                 desired_size_in_dip, desired_scale_factors, results),
+      base::Bind(&RunWithFaviconResults, callback, base::Owned(results)));
 }
 
 CancelableTaskTracker::TaskId HistoryService::GetFaviconsForURL(
@@ -595,46 +611,62 @@ CancelableTaskTracker::TaskId HistoryService::GetFaviconsForURL(
     int icon_types,
     int desired_size_in_dip,
     const std::vector<ui::ScaleFactor>& desired_scale_factors,
-    const FaviconService::FaviconResultsCallback2& callback,
+    const FaviconService::FaviconResultsCallback& callback,
     CancelableTaskTracker* tracker) {
   DCHECK(thread_checker_.CalledOnValidThread());
   LoadBackendIfNecessary();
 
-  std::vector<history::FaviconBitmapResult>* bitmap_results =
-      new std::vector<history::FaviconBitmapResult>();
-  history::IconURLSizesMap* size_map = new history::IconURLSizesMap();
-
+  HistoryBackend::FaviconResults* results =
+      new HistoryBackend::FaviconResults();
   return tracker->PostTaskAndReply(
       thread_->message_loop_proxy(),
       FROM_HERE,
       base::Bind(&HistoryBackend::GetFaviconsForURL,
                  history_backend_.get(), page_url, icon_types,
-                 desired_size_in_dip, desired_scale_factors,
-                 bitmap_results, size_map),
-      base::Bind(&FaviconService::FaviconResultsCallbackRunner,
-                 callback, base::Owned(bitmap_results), base::Owned(size_map)));
+                 desired_size_in_dip, desired_scale_factors, results),
+      base::Bind(&RunWithFaviconResults, callback, base::Owned(results)));
 }
 
-void HistoryService::GetFaviconForID(FaviconService::GetFaviconRequest* request,
-                                     history::FaviconID favicon_id,
-                                     int desired_size_in_dip,
-                                     ui::ScaleFactor desired_scale_factor) {
+CancelableTaskTracker::TaskId HistoryService::GetFaviconForID(
+    history::FaviconID favicon_id,
+    int desired_size_in_dip,
+    ui::ScaleFactor desired_scale_factor,
+    const FaviconService::FaviconResultsCallback& callback,
+    CancelableTaskTracker* tracker) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  Schedule(PRIORITY_NORMAL, &HistoryBackend::GetFaviconForID, NULL, request,
-           favicon_id, desired_size_in_dip, desired_scale_factor);
+  LoadBackendIfNecessary();
+
+  HistoryBackend::FaviconResults* results =
+      new HistoryBackend::FaviconResults();
+  return tracker->PostTaskAndReply(
+      thread_->message_loop_proxy(),
+      FROM_HERE,
+      base::Bind(&HistoryBackend::GetFaviconForID,
+                 history_backend_.get(), favicon_id,
+                 desired_size_in_dip, desired_scale_factor, results),
+      base::Bind(&RunWithFaviconResults, callback, base::Owned(results)));
 }
 
-void HistoryService::UpdateFaviconMappingsAndFetch(
-    FaviconService::GetFaviconRequest* request,
+CancelableTaskTracker::TaskId HistoryService::UpdateFaviconMappingsAndFetch(
     const GURL& page_url,
     const std::vector<GURL>& icon_urls,
     int icon_types,
     int desired_size_in_dip,
-    const std::vector<ui::ScaleFactor>& desired_scale_factors) {
+    const std::vector<ui::ScaleFactor>& desired_scale_factors,
+    const FaviconService::FaviconResultsCallback& callback,
+    CancelableTaskTracker* tracker) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  Schedule(PRIORITY_NORMAL, &HistoryBackend::UpdateFaviconMappingsAndFetch,
-           NULL, request, page_url, icon_urls, icon_types, desired_size_in_dip,
-           desired_scale_factors);
+  LoadBackendIfNecessary();
+
+  HistoryBackend::FaviconResults* results =
+      new HistoryBackend::FaviconResults();
+  return tracker->PostTaskAndReply(
+      thread_->message_loop_proxy(),
+      FROM_HERE,
+      base::Bind(&HistoryBackend::UpdateFaviconMappingsAndFetch,
+                 history_backend_.get(), page_url, icon_urls, icon_types,
+                 desired_size_in_dip, desired_scale_factors, results),
+      base::Bind(&RunWithFaviconResults, callback, base::Owned(results)));
 }
 
 void HistoryService::MergeFavicon(

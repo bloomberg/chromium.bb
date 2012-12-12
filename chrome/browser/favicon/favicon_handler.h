@@ -10,7 +10,6 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/common/cancelable_task_tracker.h"
@@ -131,19 +130,19 @@ class FaviconHandler {
       const GURL& page_url,
       const GURL& icon_url,
       history::IconType icon_type,
-      CancelableRequestConsumerBase* consumer,
-      const FaviconService::FaviconResultsCallback& callback);
+      const FaviconService::FaviconResultsCallback& callback,
+      CancelableTaskTracker* tracker);
 
   virtual void GetFavicon(
       const GURL& icon_url,
       history::IconType icon_type,
-      CancelableRequestConsumerBase* consumer,
-      const FaviconService::FaviconResultsCallback& callback);
+      const FaviconService::FaviconResultsCallback& callback,
+      CancelableTaskTracker* tracker);
 
   virtual void GetFaviconForURL(
       const GURL& page_url,
       int icon_types,
-      const FaviconService::FaviconResultsCallback2& callback,
+      const FaviconService::FaviconResultsCallback& callback,
       CancelableTaskTracker* tracker);
 
   virtual void SetHistoryFavicons(
@@ -204,9 +203,8 @@ class FaviconHandler {
 
   // See description above class for details.
   void OnFaviconData(
-      FaviconService::Handle handle,
-      std::vector<history::FaviconBitmapResult> favicon_bitmap_results,
-      history::IconURLSizesMap icon_url_sizes);
+      const std::vector<history::FaviconBitmapResult>& favicon_bitmap_results,
+      const history::IconURLSizesMap& icon_url_sizes);
 
   // Schedules a download for the specified entry. This adds the request to
   // download_requests_.
@@ -250,7 +248,6 @@ class FaviconHandler {
   }
 
   // Used for FaviconService requests.
-  CancelableRequestConsumer cancelable_consumer_;
   CancelableTaskTracker cancelable_task_tracker_;
 
   // URL of the page we're requesting the favicon for.

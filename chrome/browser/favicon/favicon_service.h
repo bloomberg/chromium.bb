@@ -58,58 +58,46 @@ class FaviconService : public CancelableRequestProvider,
   // |image| originate from.
   // TODO(pkotwicz): Enable constructing |image| from bitmaps from several
   // icon URLs.
-  typedef base::Callback<void(Handle, const history::FaviconImageResult&)>
-      FaviconImageCallback;
   typedef base::Callback<void(const history::FaviconImageResult&)>
-      FaviconImageCallback2;
+      FaviconImageCallback;
 
   // Callback for GetRawFavicon() and GetRawFaviconForURL().
   // FaviconBitmapResult::bitmap_data is the bitmap in the thumbnail database
   // for the passed in URL and icon types whose pixel size best matches the
   // passed in |desired_size_in_dip| and |desired_scale_factor|. Returns an
   // invalid history::FaviconBitmapResult if there are no matches.
-  typedef base::Callback<void(Handle, const history::FaviconBitmapResult&)>
-      FaviconRawCallback;
   typedef base::Callback<void(const history::FaviconBitmapResult&)>
-      FaviconRawCallback2;
+      FaviconRawCallback;
 
   // Callback for GetFavicon() and GetFaviconForURL().
   //
-  // The second argument is the set of bitmaps for the passed in URL and
+  // The first argument is the set of bitmaps for the passed in URL and
   // icon types whose pixel sizes best match the passed in
   // |desired_size_in_dip| at the scale factors supported by the current
   // platform (eg MacOS) in addition to 1x. The vector has at most one result
   // for each of the scale factors. There are less entries if a single result
   // is the best bitmap to use for several scale factors.
   //
-  // Third argument:
+  // Second argument:
   // a) If the callback is called as a result of GetFaviconForURL():
-  //    The third argument is a map of the icon URLs mapped to |page_url| to
+  //    The second argument is a map of the icon URLs mapped to |page_url| to
   //    the sizes at which the favicon is available from the web.
   // b) If the callback is called as a result of GetFavicon() or
   //    UpdateFaviconMappingsAndFetch():
-  //    The third argument is a map of the subset of |icon_urls| known to the
+  //    The second argument is a map of the subset of |icon_urls| known to the
   //    history backend to a vector of sizes of the favicon bitmaps at each
   //    URL. If none of |icon_urls| are known to the history backend, an empty
   //    map is returned.
   // See history_types.h for more information about IconURLSizesMap.
   typedef base::Callback<
-      void(Handle,  // handle
-           std::vector<history::FaviconBitmapResult>,
-           history::IconURLSizesMap)>
-      FaviconResultsCallback;
-
-  typedef CancelableRequest<FaviconResultsCallback> GetFaviconRequest;
-
-  typedef base::Callback<
       void(const std::vector<history::FaviconBitmapResult>&,
            const history::IconURLSizesMap&)>
-      FaviconResultsCallback2;
+      FaviconResultsCallback;
 
   // We usually pass parameters with pointer to avoid copy. This function is a
-  // helper to run FaviconResultsCallback2 with pointer parameters.
+  // helper to run FaviconResultsCallback with pointer parameters.
   static void FaviconResultsCallbackRunner(
-      const FaviconResultsCallback2& callback,
+      const FaviconResultsCallback& callback,
       const std::vector<history::FaviconBitmapResult>* results,
       const history::IconURLSizesMap* size_map);
 
@@ -121,24 +109,27 @@ class FaviconService : public CancelableRequestProvider,
   // Each of the three methods below differs in the format of the callback and
   // the requested scale factors. All of the scale factors supported by the
   // current platform (eg MacOS) are requested for GetFaviconImage().
-  Handle GetFaviconImage(const GURL& icon_url,
-                         history::IconType icon_type,
-                         int desired_size_in_dip,
-                         CancelableRequestConsumerBase* consumer,
-                         const FaviconImageCallback& callback);
+  CancelableTaskTracker::TaskId GetFaviconImage(
+      const GURL& icon_url,
+      history::IconType icon_type,
+      int desired_size_in_dip,
+      const FaviconImageCallback& callback,
+      CancelableTaskTracker* tracker);
 
-  Handle GetRawFavicon(const GURL& icon_url,
-                       history::IconType icon_type,
-                       int desired_size_in_dip,
-                       ui::ScaleFactor desired_scale_factor,
-                       CancelableRequestConsumerBase* consumer,
-                       const FaviconRawCallback& callback);
+  CancelableTaskTracker::TaskId GetRawFavicon(
+      const GURL& icon_url,
+      history::IconType icon_type,
+      int desired_size_in_dip,
+      ui::ScaleFactor desired_scale_factor,
+      const FaviconRawCallback& callback,
+      CancelableTaskTracker* tracker);
 
-  Handle GetFavicon(const GURL& icon_url,
-                    history::IconType icon_type,
-                    int desired_size_in_dip,
-                    CancelableRequestConsumerBase* consumer,
-                    const FaviconResultsCallback& callback);
+  CancelableTaskTracker::TaskId GetFavicon(
+      const GURL& icon_url,
+      history::IconType icon_type,
+      int desired_size_in_dip,
+      const FaviconResultsCallback& callback,
+      CancelableTaskTracker* tracker);
 
   // Set the favicon mappings to |page_url| for |icon_types| in the history
   // database.
@@ -160,13 +151,13 @@ class FaviconService : public CancelableRequestProvider,
   // addition to 1x from the favicons which were just mapped to |page_url| are
   // returned. If |desired_size_in_dip| is 0, the largest favicon bitmap is
   // returned.
-  Handle UpdateFaviconMappingsAndFetch(
+  CancelableTaskTracker::TaskId UpdateFaviconMappingsAndFetch(
       const GURL& page_url,
       const std::vector<GURL>& icon_urls,
       int icon_types,
       int desired_size_in_dip,
-      CancelableRequestConsumerBase* consumer,
-      const FaviconResultsCallback& callback);
+      const FaviconResultsCallback& callback,
+      CancelableTaskTracker* tracker);
 
   // Requests the favicons of any of |icon_types| whose pixel sizes most
   // closely match |desired_size_in_dip| and desired scale factors for a web
@@ -181,27 +172,28 @@ class FaviconService : public CancelableRequestProvider,
   // Note. |callback| is always run asynchronously.
   CancelableTaskTracker::TaskId GetFaviconImageForURL(
       const FaviconForURLParams& params,
-      const FaviconImageCallback2& callback,
+      const FaviconImageCallback& callback,
       CancelableTaskTracker* tracker);
 
   CancelableTaskTracker::TaskId GetRawFaviconForURL(
       const FaviconForURLParams& params,
       ui::ScaleFactor desired_scale_factor,
-      const FaviconRawCallback2& callback,
+      const FaviconRawCallback& callback,
       CancelableTaskTracker* tracker);
 
   CancelableTaskTracker::TaskId GetFaviconForURL(
       const FaviconForURLParams& params,
-      const FaviconResultsCallback2& callback,
+      const FaviconResultsCallback& callback,
       CancelableTaskTracker* tracker);
 
   // Used to request a bitmap for the favicon with |favicon_id| which is not
   // resized from the size it is stored at in the database. If there are
   // multiple favicon bitmaps for |favicon_id|, the largest favicon bitmap is
   // returned.
-  Handle GetLargestRawFaviconForID(history::FaviconID favicon_id,
-                                   CancelableRequestConsumerBase* consumer,
-                                   const FaviconRawCallback& callback);
+  CancelableTaskTracker::TaskId GetLargestRawFaviconForID(
+      history::FaviconID favicon_id,
+      const FaviconRawCallback& callback,
+      CancelableTaskTracker* tracker);
 
   // Marks all types of favicon for the page as being out of date.
   void SetFaviconOutOfDateForPage(const GURL& page_url);
@@ -254,7 +246,7 @@ class FaviconService : public CancelableRequestProvider,
   CancelableTaskTracker::TaskId GetFaviconForURLImpl(
       const FaviconForURLParams& params,
       const std::vector<ui::ScaleFactor>& desired_scale_factors,
-      const FaviconResultsCallback2& callback,
+      const FaviconResultsCallback& callback,
       CancelableTaskTracker* tracker);
 
   // Intermediate callback for GetFaviconImage() and GetFaviconImageForURL()
@@ -262,13 +254,7 @@ class FaviconService : public CancelableRequestProvider,
   // Builds history::FaviconImageResult from |favicon_bitmap_results| and runs
   // |callback|.
   void RunFaviconImageCallbackWithBitmapResults(
-      FaviconImageCallback callback,
-      int desired_size_in_dip,
-      Handle handle,
-      std::vector<history::FaviconBitmapResult> favicon_bitmap_results,
-      history::IconURLSizesMap icon_url_sizes_map);
-  void RunFaviconImageCallbackWithBitmapResults2(
-      const FaviconImageCallback2& callback,
+      const FaviconImageCallback& callback,
       int desired_size_in_dip,
       const std::vector<history::FaviconBitmapResult>& favicon_bitmap_results,
       const history::IconURLSizesMap& icon_url_sizes_map);
@@ -277,27 +263,11 @@ class FaviconService : public CancelableRequestProvider,
   // so that history service can deal solely with FaviconResultsCallback.
   // Resizes history::FaviconBitmapResult if necessary and runs |callback|.
   void RunFaviconRawCallbackWithBitmapResults(
-      FaviconRawCallback callback,
-      int desired_size_in_dip,
-      ui::ScaleFactor desired_scale_factor,
-      Handle handle,
-      std::vector<history::FaviconBitmapResult> favicon_bitmap_results,
-      history::IconURLSizesMap icon_url_sizes_map);
-  void RunFaviconRawCallbackWithBitmapResults2(
-      const FaviconRawCallback2& callback,
+      const FaviconRawCallback& callback,
       int desired_size_in_dip,
       ui::ScaleFactor desired_scale_factor,
       const std::vector<history::FaviconBitmapResult>& favicon_bitmap_results,
       const history::IconURLSizesMap& icon_url_sizes_map);
-
-  // Helper to forward an empty result if we cannot get the history service.
-  void ForwardEmptyResultAsync(GetFaviconRequest* request);
-
-  // Helper to run callback with empty results if we cannot get the history
-  // service.
-  CancelableTaskTracker::TaskId RunWithEmptyResultAsync(
-      const FaviconResultsCallback2& callback,
-      CancelableTaskTracker* tracker);
 
   DISALLOW_COPY_AND_ASSIGN(FaviconService);
 };

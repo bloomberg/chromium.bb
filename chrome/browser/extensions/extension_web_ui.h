@@ -60,7 +60,7 @@ class ExtensionWebUI : public content::WebUIController {
   static void GetFaviconForURL(
       Profile* profile,
       const GURL& page_url,
-      const FaviconService::FaviconResultsCallback2& callback);
+      const FaviconService::FaviconResultsCallback& callback);
 
  private:
   // Unregister the specified override, and if it's the currently active one,

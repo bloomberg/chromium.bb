@@ -55,11 +55,6 @@ typedef CancelableRequest1<HistoryService::QueryFilteredURLsCallback,
 typedef CancelableRequest<HistoryService::ThumbnailDataCallback>
     GetPageThumbnailRequest;
 
-// Favicons -------------------------------------------------------------------
-
-typedef CancelableRequest<FaviconService::FaviconResultsCallback>
-    GetFaviconRequest;
-
 // Segment usage --------------------------------------------------------------
 
 typedef CancelableRequest1<HistoryService::SegmentQueryCallback,

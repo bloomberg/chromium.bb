@@ -18,6 +18,7 @@
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/history/android/android_history_provider_service.h"
 #include "chrome/browser/history/history_types.h"
+#include "chrome/common/cancelable_task_tracker.h"
 
 // This class is JNI implementation of
 // org.chromium.chrome.database.SqliteCursor, it uses the AndroidStatement to
@@ -146,12 +147,11 @@ class SQLiteCursor {
 
   void GetFaviconForIDInUIThread(
       history::FaviconID id,
-      CancelableRequestConsumerBase* consumer,
-      const FaviconService::FaviconRawCallback& callback);
+      const FaviconService::FaviconRawCallback& callback,
+      CancelableTaskTracker* tracker);
 
-  // The Callback function of GetFavicon().
-  void OnFaviconData(FaviconService::Handle handle,
-                     const history::FaviconBitmapResult& bitmap_result);
+  // The callback function of FaviconService::GetLargestRawFaviconForID().
+  void OnFaviconData(const history::FaviconBitmapResult& bitmap_result);
 
   // The callback function of MoveTo().
   void OnMoved(AndroidHistoryProviderService::Handle handle,
@@ -181,6 +181,7 @@ class SQLiteCursor {
   FaviconService* favicon_service_;
 
   CancelableRequestConsumer consumer_;
+  CancelableTaskTracker tracker_;
 
   // The count of result rows.
   int count_;

@@ -721,11 +721,13 @@ class HistoryService : public CancelableRequestProvider,
   // If |icon_types| has several types, results for only a single type will be
   // returned in the priority of TOUCH_PRECOMPOSED_ICON, TOUCH_ICON, and
   // FAVICON.
-  void GetFavicons(FaviconService::GetFaviconRequest* request,
-                   const std::vector<GURL>& icon_urls,
-                   int icon_types,
-                   int desired_size_in_dip,
-                   const std::vector<ui::ScaleFactor>& desired_scale_factors);
+  CancelableTaskTracker::TaskId GetFavicons(
+      const std::vector<GURL>& icon_urls,
+      int icon_types,
+      int desired_size_in_dip,
+      const std::vector<ui::ScaleFactor>& desired_scale_factors,
+      const FaviconService::FaviconResultsCallback& callback,
+      CancelableTaskTracker* tracker);
 
   // Used by the FaviconService to get favicons mapped to |page_url| for
   // |icon_types| which most closely match |desired_size_in_dip| and
@@ -741,17 +743,19 @@ class HistoryService : public CancelableRequestProvider,
       int icon_types,
       int desired_size_in_dip,
       const std::vector<ui::ScaleFactor>& desired_scale_factors,
-      const FaviconService::FaviconResultsCallback2& callback,
+      const FaviconService::FaviconResultsCallback& callback,
       CancelableTaskTracker* tracker);
 
   // Used by the FaviconService to get the favicon bitmap which most closely
   // matches |desired_size_in_dip| and |desired_scale_factor| from the favicon
   // with |favicon_id| from the history backend. If |desired_size_in_dip| is 0,
   // the largest favicon bitmap for |favicon_id| is returned.
-  void GetFaviconForID(FaviconService::GetFaviconRequest* request,
-                       history::FaviconID favicon_id,
-                       int desired_size_in_dip,
-                       ui::ScaleFactor desired_scale_factor);
+  CancelableTaskTracker::TaskId GetFaviconForID(
+      history::FaviconID favicon_id,
+      int desired_size_in_dip,
+      ui::ScaleFactor desired_scale_factor,
+      const FaviconService::FaviconResultsCallback& callback,
+      CancelableTaskTracker* tracker);
 
   // Used by the FaviconService to replace the favicon mappings to |page_url|
   // for |icon_types| on the history backend.
@@ -772,13 +776,14 @@ class HistoryService : public CancelableRequestProvider,
   // and |desired_scale_factors| from the favicons which were just mapped
   // to |page_url| are returned. If |desired_size_in_dip| is 0, the
   // largest favicon bitmap is returned.
-  void UpdateFaviconMappingsAndFetch(
-      FaviconService::GetFaviconRequest* request,
+  CancelableTaskTracker::TaskId UpdateFaviconMappingsAndFetch(
       const GURL& page_url,
       const std::vector<GURL>& icon_urls,
       int icon_types,
       int desired_size_in_dip,
-      const std::vector<ui::ScaleFactor>& desired_scale_factors);
+      const std::vector<ui::ScaleFactor>& desired_scale_factors,
+      const FaviconService::FaviconResultsCallback& callback,
+      CancelableTaskTracker* tracker);
 
   // Used by FaviconService to set a favicon for |page_url| and |icon_url| with
   // |pixel_size|.
@@ -969,34 +974,6 @@ class HistoryService : public CancelableRequestProvider,
     ScheduleTask(priority,
                  base::Bind(func, history_backend_.get(),
                             scoped_refptr<RequestType>(request), a, b, c, d));
-    return request->handle();
-  }
-
-  template<typename BackendFunc,
-           class RequestType,  // Descendant of CancelableRequestBase.
-           typename ArgA,
-           typename ArgB,
-           typename ArgC,
-           typename ArgD,
-           typename ArgE>
-  Handle Schedule(SchedulePriority priority,
-                  BackendFunc func,  // Function to call on the HistoryBackend.
-                  CancelableRequestConsumerBase* consumer,
-                  RequestType* request,
-                  const ArgA& a,
-                  const ArgB& b,
-                  const ArgC& c,
-                  const ArgD& d,
-                  const ArgE& e) {
-    DCHECK(thread_) << "History service being called after cleanup";
-    DCHECK(thread_checker_.CalledOnValidThread());
-    LoadBackendIfNecessary();
-    if (consumer)
-      AddRequest(request, consumer);
-    ScheduleTask(priority,
-                 base::Bind(func, history_backend_.get(),
-                            scoped_refptr<RequestType>(request),
-                            a, b, c, d, e));
     return request->handle();
   }
 
