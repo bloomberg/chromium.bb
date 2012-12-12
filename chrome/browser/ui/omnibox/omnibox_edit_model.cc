@@ -378,7 +378,10 @@ void OmniboxEditModel::AdjustTextForCopy(int sel_min,
                                          bool* write_url) {
   *write_url = false;
 
-  if (sel_min != 0)
+  // Do not adjust if selection did not start at the beginning of the field, or
+  // if the URL was replaced by search terms.
+  if (sel_min != 0 ||
+      view_->toolbar_model()->WouldReplaceSearchURLWithSearchTerms())
     return;
 
   if (!user_input_in_progress_ && is_all_selected) {
