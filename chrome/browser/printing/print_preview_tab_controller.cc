@@ -425,6 +425,7 @@ WebContents* PrintPreviewTabController::CreatePrintPreviewTab(
                                  initiator_tab);
   WebContents* preview_tab = constrained_delegate->GetWebContents();
   EnableInternalPDFPluginForTab(preview_tab);
+  printing::PrintViewManager::CreateForWebContents(preview_tab);
 
   // Add an entry to the map.
   preview_tab_map_[preview_tab] = initiator_tab;
