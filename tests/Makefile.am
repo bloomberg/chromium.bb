@@ -31,10 +31,8 @@ AM_CFLAGS = $(GCC_CFLAGS)
 AM_CPPFLAGS = -I$(top_srcdir)/src -DUNIT_TEST $(COMPOSITOR_CFLAGS)
 AM_LDFLAGS = -module -avoid-version -rpath $(libdir)
 
-test_runner_src = test-runner.c test-runner.h
-
-surface_global_test_la_SOURCES = surface-global-test.c $(test_runner_src)
-surface_test_la_SOURCES = surface-test.c $(test_runner_src)
+surface_global_test_la_SOURCES = surface-global-test.c
+surface_test_la_SOURCES = surface-test.c
 
 weston_test = weston-test.la
 weston_test_la_LIBADD = $(COMPOSITOR_LIBS)	\

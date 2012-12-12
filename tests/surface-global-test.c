@@ -22,10 +22,12 @@
 
 #include <assert.h>
 
-#include "test-runner.h"
+#include "../src/compositor.h"
 
-TEST(surface_to_from_global)
+static void
+surface_to_from_global(void *data)
 {
+	struct weston_compositor *compositor = data;
 	struct weston_surface *surface;
 	float x, y;
 	wl_fixed_t fx, fy;
@@ -62,4 +64,16 @@ TEST(surface_to_from_global)
 	assert(ix == 0 && iy == 0);
 
 	wl_display_terminate(compositor->wl_display);
+}
+
+WL_EXPORT int
+module_init(struct weston_compositor *compositor)
+{
+	struct wl_event_loop *loop;
+
+	loop = wl_display_get_event_loop(compositor->wl_display);
+
+	wl_event_loop_add_idle(loop, surface_to_from_global, compositor);
+
+	return 0;
 }
