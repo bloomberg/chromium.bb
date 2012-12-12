@@ -44,9 +44,9 @@ const DriveUserData* GetDriveUserData(const DownloadItem* download) {
 }
 
 DriveSystemService* GetSystemService(Profile* profile) {
+  DCHECK(profile);
   DriveSystemService* system_service =
-      DriveSystemServiceFactory::GetForProfile(
-        profile ? profile : ProfileManager::GetDefaultProfile());
+      DriveSystemServiceFactory::GetForProfile(profile);
   DCHECK(system_service);
   return system_service;
 }
@@ -70,6 +70,7 @@ void SubstituteDriveDownloadPathInternal(
     Profile* profile,
     const DriveDownloadObserver::SubstituteDriveDownloadPathCallback&
         callback) {
+  DCHECK(profile);
   DVLOG(1) << "SubstituteDriveDownloadPathInternal";
 
   const FilePath drive_tmp_download_dir = GetSystemService(profile)->cache()->
@@ -89,6 +90,7 @@ void OnCreateDirectory(
     Profile* profile,
     const DriveDownloadObserver::SubstituteDriveDownloadPathCallback& callback,
     DriveFileError error) {
+  DCHECK(profile);
   DVLOG(1) << "OnCreateDirectory " << error;
   if (error == DRIVE_FILE_OK) {
     SubstituteDriveDownloadPathInternal(profile, callback);
@@ -105,6 +107,7 @@ void OnEntryFound(
     const DriveDownloadObserver::SubstituteDriveDownloadPathCallback& callback,
     DriveFileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
+  DCHECK(profile);
   if (error == DRIVE_FILE_ERROR_NOT_FOUND) {
     // Destination Drive directory doesn't exist, so create it.
     const bool is_exclusive = false, is_recursive = true;
@@ -154,6 +157,7 @@ void DriveDownloadObserver::Initialize(
 void DriveDownloadObserver::SubstituteDriveDownloadPath(Profile* profile,
     const FilePath& drive_path, content::DownloadItem* download,
     const SubstituteDriveDownloadPathCallback& callback) {
+  DCHECK(profile);
   DVLOG(1) << "SubstituteDriveDownloadPath " << drive_path.value();
 
   SetDownloadParams(drive_path, download);

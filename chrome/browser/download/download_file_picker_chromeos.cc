@@ -8,6 +8,7 @@
 #include "base/i18n/file_util_icu.h"
 #include "chrome/browser/chromeos/drive/drive_download_observer.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "ui/base/dialogs/selected_file_info.h"
@@ -54,9 +55,11 @@ void DownloadFilePickerChromeOS::FileSelectedWithExtraInfo(
   RecordFileSelected(path);
 
   if (download_manager_) {
+    Profile* profile =
+        Profile::FromBrowserContext(download_manager_->GetBrowserContext());
     DownloadItem* download = download_manager_->GetDownload(download_id_);
     drive::DriveDownloadObserver::SubstituteDriveDownloadPath(
-        NULL, path, download,
+        profile, path, download,
         base::Bind(&DownloadFilePickerChromeOS::OnFileSelected,
                    base::Unretained(this)));
   } else {
