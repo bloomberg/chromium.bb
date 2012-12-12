@@ -1039,6 +1039,9 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     // to read the profile.
     notify_result_ = process_singleton_->NotifyOtherProcessOrCreate(
         base::Bind(&ProcessSingletonNotificationCallback));
+    UMA_HISTOGRAM_ENUMERATION("NotifyOtherProcessOrCreate.Result",
+                               notify_result_,
+                               ProcessSingleton::NUM_NOTIFY_RESULTS);
     switch (notify_result_) {
       case ProcessSingleton::PROCESS_NONE:
         // No process already running, fall through to starting a new one.
