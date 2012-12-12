@@ -79,6 +79,12 @@ class CONTENT_EXPORT GpuDataManagerImpl
   virtual void UnblockDomainFrom3DAPIs(const GURL& url) OVERRIDE;
   virtual void DisableDomainBlockingFor3DAPIsForTesting() OVERRIDE;
   virtual void DisableGpuWatchdog() OVERRIDE;
+  virtual void SetGLStrings(const std::string& gl_vendor,
+                            const std::string& gl_renderer,
+                            const std::string& gl_version) OVERRIDE;
+  virtual void GetGLStrings(std::string* gl_vendor,
+                            std::string* gl_renderer,
+                            std::string* gl_version) OVERRIDE;
 
   // This collects preliminary GPU info, load GpuBlacklist, and compute the
   // preliminary blacklisted features; it should only be called at browser

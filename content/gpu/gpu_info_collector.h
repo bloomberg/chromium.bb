@@ -53,7 +53,7 @@ bool CollectGLVersionInfo(content::GPUInfo* gpu_info);
 bool CollectVideoCardInfo(content::GPUInfo* gpu_info);
 
 // Each platform stores the driver version on the GL_VERSION string differently
-bool CollectDriverInfoGL(content::GPUInfo* gpu_info);
+CONTENT_EXPORT bool CollectDriverInfoGL(content::GPUInfo* gpu_info);
 
 // Advanced Micro Devices has interesting configurations on laptops were
 // there are two videocards that can alternatively a given process output.

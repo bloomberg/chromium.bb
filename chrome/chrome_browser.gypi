@@ -703,6 +703,8 @@
         'browser/google_apis/time_util.h',
         'browser/gpu/chrome_gpu_util.cc',
         'browser/gpu/chrome_gpu_util.h',
+        'browser/gpu/gl_string_manager.cc',
+        'browser/gpu/gl_string_manager.h',
         'browser/gpu/gpu_feature_checker.cc',
         'browser/gpu/gpu_feature_checker.h',
         'browser/hang_monitor/hang_crash_dump_win.cc',
