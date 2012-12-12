@@ -27,6 +27,10 @@ var BrowserBridge = (function() {
     this.crosONCFileParseObservers_ = [];
     this.storeDebugLogsObservers_ = [];
     this.setNetworkDebugModeObservers_ = [];
+    // Unprocessed data received before the constants.  This serves to protect
+    // against passing along data before having information on how to interpret
+    // it.
+    this.earlyReceivedData_ = [];
 
     this.pollableDataHelpers_ = {};
     this.pollableDataHelpers_.proxySettings =
@@ -268,7 +272,25 @@ var BrowserBridge = (function() {
       // Does nothing if disabled.
       if (this.disabled_)
         return;
+
+      // If no constants have been received, and params does not contain the
+      // constants, delay handling the data.
+      if (Constants == null && command != 'receivedConstants') {
+        this.earlyReceivedData_.push({ command: command, params: params });
+        return;
+      }
+
       this[command](params);
+
+      // Handle any data that was received early in the order it was received,
+      // once the constants have been processed.
+      if (this.earlyReceivedData_ != null) {
+        for (var i = 0; i < this.earlyReceivedData_.length; i++) {
+          var command = this.earlyReceivedData_[i];
+          this[command.command](command.params);
+        }
+        this.earlyReceivedData_ = null;
+      }
     },
 
     receivedConstants: function(constants) {
