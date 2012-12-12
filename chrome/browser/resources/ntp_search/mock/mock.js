@@ -243,17 +243,17 @@ var recordMockData = false;
     },
 
     uninstallApp: function(id) {
-      var appData;
+      var removedData;
       var data = dataMap['getApps'][0].apps;
       for (var i = 0, length = data.length; i < length; i++) {
         if (data[i].id == id) {
-          appData = data[i];
+          removedData = data[i];
           data.splice(i, 1);
           break;
         }
       }
-      assert(appData);
-      dataMap['appRemoved'] = [appData, true, true];
+      assert(removedData);
+      dataMap['appRemoved'] = [removedData, true, true];
       dispatchCallbackForMessage('appRemoved');
     },
   };

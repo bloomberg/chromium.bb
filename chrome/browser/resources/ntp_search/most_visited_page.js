@@ -13,12 +13,11 @@ cr.define('ntp', function() {
    * @constructor
    * @extends {Thumbnail}
    * @extends {HTMLAnchorElement}
-   * @param {Object} config Tile page configuration object.
    */
-  function MostVisited(config) {
+  function MostVisited() {
     var el = cr.doc.createElement('a');
     el.__proto__ = MostVisited.prototype;
-    el.initialize(config);
+    el.initialize();
 
     return el;
   }
@@ -28,9 +27,8 @@ cr.define('ntp', function() {
 
     /**
      * Initializes a MostVisited Thumbnail.
-     * @param {Object} config TilePage configuration object.
      */
-    initialize: function(config) {
+    initialize: function() {
       Thumbnail.prototype.initialize.apply(this, arguments);
 
       this.addEventListener('click', this.handleClick_);
@@ -56,14 +54,18 @@ cr.define('ntp', function() {
      * Update the appearance of this tile according to |data|.
      * @param {Object} data A dictionary of relevant data for the page.
      */
-    setData: function(data) {
+    set data(data) {
+      Object.getOwnPropertyDescriptor(Thumbnail.prototype, 'data').set.apply(
+          this, arguments);
+
       if (this.classList.contains('blacklisted') && data) {
         // Animate appearance of new tile.
         this.classList.add('new-tile-contents');
       }
       this.classList.remove('blacklisted');
-
-      Thumbnail.prototype.setData.apply(this, arguments);
+    },
+    get data() {
+      return this.data_;
     },
 
     /**

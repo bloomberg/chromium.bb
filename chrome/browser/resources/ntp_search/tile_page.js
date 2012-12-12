@@ -29,9 +29,8 @@ cr.define('ntp', function() {
    * subclass implemented too (e.g. MostVisitedPage contains MostVisited
    * tiles, and MostVisited is a Tile subclass).
    * @constructor
-   * @param {Object} config TilePage configuration object.
    */
-  function Tile(config) {
+  function Tile() {
     console.error('Tile is a virtual class and is not supposed to be ' +
         'instantiated');
   }
@@ -63,9 +62,8 @@ cr.define('ntp', function() {
 
     /**
      * Initializes a Tile.
-     * @param {Object} config TilePage configuration object.
      */
-    initialize: function(config) {
+    initialize: function() {
       this.classList.add('tile');
       this.reset();
     },
@@ -77,10 +75,10 @@ cr.define('ntp', function() {
     },
 
     /**
-     * Update the appearance of this tile according to |data|.
+     * The data for this Tile.
      * @param {Object} data A dictionary of relevant data for the page.
      */
-    setData: function(data) {
+    set data(data) {
       // TODO(pedrosimonetti): Remove data.filler usage everywhere.
       if (!data || data.filler) {
         if (this.data_)
@@ -89,7 +87,7 @@ cr.define('ntp', function() {
       }
 
       this.data_ = data;
-    }
+    },
   };
 
   var TileGetters = {
@@ -109,14 +107,6 @@ cr.define('ntp', function() {
       assert(this.tileCell);
       return this.tileCell.index;
     },
-
-    /**
-     * Tile data object.
-     * @type {Object}
-     */
-    'data': function() {
-      return this.data_;
-    }
   };
 
   //----------------------------------------------------------------------------
@@ -165,7 +155,15 @@ cr.define('ntp', function() {
      */
     get index() {
       return Array.prototype.indexOf.call(this.tilePage.tiles_,
-          this.firstChild);
+          this.tile);
+    },
+
+    /**
+     * The Tile associated to this TileCell.
+     * @type {Tile}
+     */
+    get tile() {
+      return this.firstElementChild;
     },
 
     /**
@@ -181,8 +179,8 @@ cr.define('ntp', function() {
      * @type {TilePage}
      */
     assign: function(tile) {
-      if (this.firstChild)
-        this.replaceChild(tile, this.firstChild);
+      if (this.tile)
+        this.replaceChild(tile, this.tile);
       else
         this.appendChild(tile);
     },
@@ -192,10 +190,7 @@ cr.define('ntp', function() {
      * @param {boolean=} opt_animate Whether the animation should be animated.
      */
     doRemove: function(opt_animate) {
-      if (opt_animate)
-        this.firstChild.classList.add('removing-tile-contents');
-      else
-        this.tilePage.removeTile(this, false);
+      this.tilePage.removeTile(this.tile, false);
     },
   };
 
@@ -451,16 +446,24 @@ cr.define('ntp', function() {
     },
 
     /**
+     * Create a blank tile.
+     * @protected
+     */
+    createTile_: function() {
+      return new this.TileClass(this.config);
+    },
+
+    /**
      * Create blank tiles.
-     * @private
-     * @param {number} count The number of Tiles to be created.
+     * @param {number} count The desired number of Tiles to be created. If this
+     *   value the maximum value defined in |config.maxTileCount|, the maximum
+     *   value will be used instead.
+     * @protected
      */
     createTiles_: function(count) {
-      var Class = this.TileClass;
-      var config = this.config;
-      count = Math.min(count, config.maxTileCount);
+      count = Math.min(count, this.config.maxTileCount);
       for (var i = 0; i < count; i++) {
-        this.appendTile(new Class(config));
+        this.appendTile(this.createTile_());
       }
     },
 
@@ -482,7 +485,7 @@ cr.define('ntp', function() {
         if (i >= dataList.length)
           tile.reset();
         else
-          tile.setData(data);
+          tile.data = data;
       }
     },
 
@@ -599,11 +602,8 @@ cr.define('ntp', function() {
       var tiles = this.tiles_;
       var tileCount = tiles.length;
 
-      var numOfVisibleRows = this.numOfVisibleRows_;
       var rowCount = Math.ceil(tileCount / colCount);
       var tileRows = tileGridContent.getElementsByClassName('tile-row');
-
-      var pageOffset = this.pageOffset_;
 
       for (var tile = 0, row = 0; row < rowCount; row++) {
         var tileRow = tileRows[row];
@@ -640,16 +640,16 @@ cr.define('ntp', function() {
           if (tile < tileCount) {
             tileCell.classList.remove('filler');
             tileElement = tiles[tile];
-            if (!tileCell.firstChild)
+            if (!tileCell.tile)
               tileCell.appendChild(tileElement);
-            else if (tileElement != tileCell.firstChild)
-              tileCell.replaceChild(tileElement, tileCell.firstChild);
+            else if (tileElement != tileCell.tile)
+              tileCell.replaceChild(tileElement, tileCell.tile);
           } else if (!tileCell.classList.contains('filler')) {
             tileCell.classList.add('filler');
             tileElement = cr.doc.createElement('span');
             tileElement.className = 'tile';
-            if (tileCell.firstChild)
-              tileCell.replaceChild(tileElement, tileCell.firstChild);
+            if (tileCell.tile)
+              tileCell.replaceChild(tileElement, tileCell.tile);
             else
               tileCell.appendChild(tileElement);
           }
@@ -858,7 +858,7 @@ cr.define('ntp', function() {
       var tileBeingRestored = createTile(this, restoredData);
       tileCells[index].appendChild(tileBeingRestored);
 
-      var extraTile = extraCell.firstChild;
+      var extraTile = extraCell.tile;
 
       this.executeRepositioningAnimation_(tileBeingRestored, extraTile,
           repositioningStartIndex, repositioningEndIndex, false);
@@ -1076,7 +1076,7 @@ cr.define('ntp', function() {
     if (opt_data) {
       // If there's data, the new tile will be a real one (not a filler).
       tile = new tilePage.TileClass(tilePage.config);
-      tile.setData(opt_data);
+      tile.data = opt_data;
     } else {
       // Otherwise, it will be a fake filler tile.
       tile = cr.doc.createElement('span');

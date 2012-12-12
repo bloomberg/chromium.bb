@@ -13,12 +13,11 @@ cr.define('ntp', function() {
    * @constructor
    * @extends {Tile}
    * @extends {HTMLAnchorElement}
-   * @param {Object} config Tile page configuration object.
    */
-  function Thumbnail(config) {
+  function Thumbnail() {
     var el = cr.doc.createElement('a');
     el.__proto__ = Thumbnail.prototype;
-    el.initialize(config);
+    el.initialize();
 
     return el;
   }
@@ -28,9 +27,8 @@ cr.define('ntp', function() {
 
     /**
      * Initializes a Thumbnail.
-     * @param {Object} config TilePage configuration object.
      */
-    initialize: function(config) {
+    initialize: function() {
       Tile.prototype.initialize.apply(this, arguments);
       this.classList.add('thumbnail');
       this.addEventListener('mouseover', this.handleMouseOver_);
@@ -56,8 +54,9 @@ cr.define('ntp', function() {
      * Update the appearance of this tile according to |data|.
      * @param {Object} data A dictionary of relevant data for the page.
      */
-    setData: function(data) {
-      Tile.prototype.setData.apply(this, arguments);
+    set data(data) {
+      Object.getOwnPropertyDescriptor(Tile.prototype, 'data').set.apply(this,
+          arguments);
 
       this.formatThumbnail_(data);
     },

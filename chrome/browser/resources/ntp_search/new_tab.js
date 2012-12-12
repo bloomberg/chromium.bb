@@ -368,36 +368,36 @@ cr.define('ntp', function() {
 
     /**
      * Called by chrome when an app has changed positions.
-     * @param {Object} appData The data for the app. This contains page and
+     * @param {Object} data The data for the app. This contains page and
      *     position indices.
      */
-    appMoved: function(appData) {
+    appMoved: function(data) {
       assert(loadTimeData.getBoolean('showApps'));
 
-      var app = $(appData.id);
+      var app = $(data.id);
       assert(app, 'trying to move an app that doesn\'t exist');
       app.remove(false);
 
-      this.appsPage.insertApp(appData, false);
+      this.appsPage.insertApp(data, false);
     },
 
     /**
      * Called by chrome when an existing app has been disabled or
      * removed/uninstalled from chrome.
-     * @param {Object} appData A data structure full of relevant information for
+     * @param {Object} data A data structure full of relevant information for
      *     the app.
      * @param {boolean} isUninstall True if the app is being uninstalled;
      *     false if the app is being disabled.
      * @param {boolean} fromPage True if the removal was from the current page.
      */
-    appRemoved: function(appData, isUninstall, fromPage) {
+    appRemoved: function(data, isUninstall, fromPage) {
       assert(loadTimeData.getBoolean('showApps'));
 
-      var app = $(appData.id);
+      var app = $(data.id);
       assert(app, 'trying to remove an app that doesn\'t exist');
 
       if (!isUninstall)
-        app.replaceAppData(appData);
+        app.replaceAppData(data);
       else
         app.remove(!!fromPage);
     },
@@ -488,30 +488,30 @@ cr.define('ntp', function() {
     /**
      * Called by chrome when a new app has been added to chrome or has been
      * enabled if previously disabled.
-     * @param {Object} appData A data structure full of relevant information for
+     * @param {Object} data A data structure full of relevant information for
      *     the app.
      * @param {boolean=} opt_highlight Whether the app about to be added should
      *     be highlighted.
      */
-    appAdded: function(appData, opt_highlight) {
+    appAdded: function(data, opt_highlight) {
       assert(loadTimeData.getBoolean('showApps'));
 
-      if (appData.id == this.highlightAppId) {
+      if (data.id == this.highlightAppId) {
         opt_highlight = true;
         this.highlightAppId = null;
       }
 
-      var pageIndex = appData.page_index || 0;
+      var pageIndex = data.page_index || 0;
 
-      var app = $(appData.id);
+      var app = $(data.id);
       if (app) {
-        app.replaceAppData(appData);
+        app.replaceAppData(data);
       } else if (opt_highlight) {
-        this.appsPage.insertAndHighlightApp(appData);
+        this.appsPage.insertAndHighlightApp(data);
         this.setShownPage_(loadTimeData.getInteger('apps_page_id'),
-                           appData.page_index);
+                           data.page_index);
       } else {
-        this.appsPage.insertApp(appData, false);
+        this.appsPage.insertApp(data, false);
       }
     },
 
@@ -524,7 +524,7 @@ cr.define('ntp', function() {
       assert(loadTimeData.getBoolean('showApps'));
 
       for (var i = 0; i < data.apps.length; ++i) {
-        $(data.apps[i].id).appData = data.apps[i];
+        $(data.apps[i].id).data = data.apps[i];
       }
     },
 
@@ -672,7 +672,7 @@ cr.define('ntp', function() {
     updateOfflineEnabledApps_: function() {
       var apps = document.querySelectorAll('.app');
       for (var i = 0; i < apps.length; ++i) {
-        if (apps[i].appData.enabled && !apps[i].appData.offline_enabled) {
+        if (apps[i].data.enabled && !apps[i].data.offline_enabled) {
           apps[i].setIcon();
           apps[i].loadIcon();
         }

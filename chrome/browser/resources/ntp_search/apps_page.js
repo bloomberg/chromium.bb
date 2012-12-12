@@ -120,19 +120,19 @@ cr.define('ntp', function() {
     setupForApp: function(app) {
       this.app_ = app;
 
-      this.launch_.textContent = app.appData.title;
+      this.launch_.textContent = app.data.title;
 
       this.forAllLaunchTypes_(function(launchTypeButton, id) {
         launchTypeButton.disabled = false;
-        launchTypeButton.checked = app.appData.launch_type == id;
+        launchTypeButton.checked = app.data.launch_type == id;
       });
 
-      this.options_.disabled = !app.appData.optionsUrl || !app.appData.enabled;
-      this.details_.disabled = !app.appData.detailsUrl;
-      this.uninstall_.disabled = !app.appData.mayDisable;
+      this.options_.disabled = !app.data.optionsUrl || !app.data.enabled;
+      this.details_.disabled = !app.data.detailsUrl;
+      this.uninstall_.disabled = !app.data.mayDisable;
 
       this.disableNotifications_.hidden = true;
-      var notificationsDisabled = app.appData.notifications_disabled;
+      var notificationsDisabled = app.data.notifications_disabled;
       if (typeof notificationsDisabled != 'undefined') {
         this.disableNotifications_.hidden = false;
         this.disableNotifications_.checked = notificationsDisabled;
@@ -155,15 +155,15 @@ cr.define('ntp', function() {
           chrome.send('setLaunchType', [app.appId, id]);
           // Manually update the launch type. We will only get
           // appsPrefChangeCallback calls after changes to other NTP instances.
-          app.appData.launch_type = id;
+          app.data.launch_type = id;
         }
       });
     },
     onShowOptions_: function(e) {
-      window.location = this.app_.appData.optionsUrl;
+      window.location = this.app_.data.optionsUrl;
     },
     onShowDetails_: function(e) {
-      var url = this.app_.appData.detailsUrl;
+      var url = this.app_.data.detailsUrl;
       url = appendParam(url, 'utm_source', 'chrome-ntp-launcher');
       window.location = url;
     },
@@ -172,29 +172,27 @@ cr.define('ntp', function() {
       app.removeBubble();
       // Toggle the current disable setting.
       var newSetting = !this.disableNotifications_.checked;
-      app.appData.notifications_disabled = newSetting;
-      chrome.send('setNotificationsDisabled', [app.appData.id, newSetting]);
+      app.data.notifications_disabled = newSetting;
+      chrome.send('setNotificationsDisabled', [app.data.id, newSetting]);
     },
     onUninstall_: function(e) {
-      var tileCell = this.app_.tileCell;
-      tileCell.tilePage.setTileRepositioningState(tileCell.index, true);
-      chrome.send('uninstallApp', [this.app_.appData.id]);
+      chrome.send('uninstallApp', [this.app_.data.id]);
     },
     onCreateShortcut_: function(e) {
-      chrome.send('createAppShortcut', [this.app_.appData.id]);
+      chrome.send('createAppShortcut', [this.app_.data.id]);
     },
   };
 
   /**
    * Creates a new App object.
-   * @param {Object} appData The data object that describes the app.
    * @constructor
    * @extends {HTMLDivElement}
    */
-  function App(appData) {
+  function App(data) {
     var el = cr.doc.createElement('div');
     el.__proto__ = App.prototype;
-    el.initialize(appData);
+    el.initialize_();
+    el.data = data;
 
     return el;
   }
@@ -204,26 +202,36 @@ cr.define('ntp', function() {
 
     /**
      * Initialize the app object.
-     * @param {Object} appData The data object that describes the app.
+     * @private
      */
-    initialize: function(appData) {
-      this.className = 'app focusable';
-
+    initialize_: function() {
       Tile.prototype.initialize.apply(this, arguments);
 
-      this.appData = appData;
-      assert(this.appData_.id, 'Got an app without an ID');
-      this.id = this.appData_.id;
+      this.classList.add('app');
+      this.classList.add('focusable');
+    },
+
+    /**
+     * Formats this app according to |data|.
+     * @param {Object} data The data object that describes the app.
+     * @private
+     */
+    formatApp_: function(data) {
+      assert(this.data_.id, 'Got an app without an ID');
+      this.id = this.data_.id;
       this.setAttribute('role', 'menuitem');
 
-      if (!this.appData_.icon_big_exists && this.appData_.icon_small_exists)
+      if (!this.data_.icon_big_exists && this.data_.icon_small_exists)
         this.useSmallIcon_ = true;
 
-      this.appContents_ = this.useSmallIcon_ ?
-          $('app-small-icon-template').cloneNode(true) :
-          $('app-large-icon-template').cloneNode(true);
-      this.appContents_.id = '';
-      this.appendChild(this.appContents_);
+      // TODO(pedrosimonetti): Fix crbug.com/165612
+      if (!this.appContents_) {
+        this.appContents_ = this.useSmallIcon_ ?
+            $('app-small-icon-template').cloneNode(true) :
+            $('app-large-icon-template').cloneNode(true);
+        this.appContents_.id = '';
+        this.appendChild(this.appContents_);
+      }
 
       this.appImgContainer_ = this.querySelector('.app-img-container');
       this.appImg_ = this.appImgContainer_.querySelector('img');
@@ -232,22 +240,22 @@ cr.define('ntp', function() {
       if (this.useSmallIcon_) {
         this.imgDiv_ = this.querySelector('.app-icon-div');
         this.addLaunchClickTarget_(this.imgDiv_);
-        this.imgDiv_.title = this.appData_.title;
+        this.imgDiv_.title = this.data_.title;
         chrome.send('getAppIconDominantColor', [this.id]);
       } else {
         this.addLaunchClickTarget_(this.appImgContainer_);
-        this.appImgContainer_.title = this.appData_.title;
+        this.appImgContainer_.title = this.data_.title;
       }
 
       var appSpan = this.appContents_.querySelector('.title');
-      appSpan.textContent = appSpan.title = this.appData_.title;
+      appSpan.textContent = appSpan.title = this.data_.title;
       this.addLaunchClickTarget_(appSpan);
 
-      var notification = this.appData_.notification;
+      var notification = this.data_.notification;
       var hasNotification = typeof notification != 'undefined' &&
                             typeof notification['title'] != 'undefined' &&
                             typeof notification['body'] != 'undefined' &&
-                            !this.appData_.notifications_disabled;
+                            !this.data_.notifications_disabled;
       if (hasNotification)
         this.setupNotification_(notification);
 
@@ -288,15 +296,15 @@ cr.define('ntp', function() {
     },
 
     /**
-     * Set the URL of the icon from |appData_|. This won't actually show the
+     * Set the URL of the icon from |this.data_|. This won't actually show the
      * icon until loadIcon() is called (for performance reasons; we don't want
      * to load icons until we have to).
      */
     setIcon: function() {
-      var src = this.useSmallIcon_ ? this.appData_.icon_small :
-                                     this.appData_.icon_big;
-      if (!this.appData_.enabled ||
-          (!this.appData_.offlineEnabled && !navigator.onLine)) {
+      var src = this.useSmallIcon_ ? this.data_.icon_small :
+                                     this.data_.icon_big;
+      if (!this.data_.enabled ||
+          (!this.data_.offlineEnabled && !navigator.onLine)) {
         src += '?grayscale=true';
       }
 
@@ -359,7 +367,7 @@ cr.define('ntp', function() {
           // Create a new bubble.
           infoBubble = new cr.ui.ExpandableBubble;
           infoBubble.anchorNode = this;
-          infoBubble.appId = this.appData_.id;
+          infoBubble.appId = this.data_.id;
           infoBubble.handleCloseEvent = function() {
             chrome.send('closeNotification', [this.appId]);
             infoBubble.hide();
@@ -395,8 +403,8 @@ cr.define('ntp', function() {
      * @private
      */
     onClick_: function(e) {
-      var url = !this.appData_.is_webstore ? '' :
-          appendParam(this.appData_.url,
+      var url = !this.data_.is_webstore ? '' :
+          appendParam(this.data_.url,
                       'utm_source',
                       'chrome-ntp-icon');
 
@@ -484,11 +492,12 @@ cr.define('ntp', function() {
     },
 
     /**
-     * Change the appData and update the appearance of the app.
-     * @param {Object} appData The new data object that describes the app.
+     * Change the data and update the appearance of the app.
+     * @param {Object} data The new data object that describes the app.
      */
-    replaceAppData: function(appData) {
-      this.appData_ = appData;
+    replaceAppData: function(data) {
+      assert(data);
+      this.data = data;
       this.setIcon();
       this.loadIcon();
     },
@@ -497,15 +506,18 @@ cr.define('ntp', function() {
      * The data and preferences for this app.
      * @type {Object}
      */
-    set appData(data) {
-      this.appData_ = data;
+    set data(data) {
+      Object.getOwnPropertyDescriptor(Tile.prototype, 'data').set.apply(this,
+          arguments);
+
+      this.formatApp_(data);
     },
-    get appData() {
-      return this.appData_;
+    get data() {
+      return this.data_;
     },
 
     get appId() {
-      return this.appData_.id;
+      return this.data_.id;
     },
 
     /**
@@ -526,26 +538,17 @@ cr.define('ntp', function() {
      * @return {boolean} True if the app can be uninstalled.
      */
     canBeRemoved: function() {
-      return this.appData_.mayDisable;
+      return this.data_.mayDisable;
     },
 
     /**
      * Uninstalls the app after it's been dropped on the trash.
      */
     removeFromChrome: function() {
-      chrome.send('uninstallApp', [this.appData_.id, true]);
+      chrome.send('uninstallApp', [this.data_.id, true]);
       this.tile.tilePage.removeTile(this.tile, true);
       if (this.currentBubbleShowing_)
         this.currentBubbleShowing_.hide();
-    },
-
-    /**
-     * Called when a drag is starting on the tile. Updates dataTransfer with
-     * data for this tile.
-     */
-    setDragData: function(dataTransfer) {
-      dataTransfer.setData('Text', this.appData_.title);
-      dataTransfer.setData('URL', this.appData_.url);
     },
   });
 
@@ -603,29 +606,29 @@ cr.define('ntp', function() {
 
     /**
      * Highlight a newly installed app as it's added to the NTP.
-     * @param {Object} appData The data object that describes the app.
+     * @param {Object} data The data object that describes the app.
      */
-    insertAndHighlightApp: function(appData) {
+    insertAndHighlightApp: function(data) {
       ntp.getCardSlider().selectCardByValue(this);
-      this.insertApp(appData, true);
+      this.insertApp(data, true);
     },
 
     /**
      * Inserts an App into the TilePage, preserving the alphabetical order.
-     * @param {Object} appData The data that describes the app.
+     * @param {Object} data The data that describes the app.
      * @param {boolean} animate Whether to animate the insertion.
      */
-    insertApp: function(appData, animate) {
+    insertApp: function(data, animate) {
       var index = this.tiles_.length;
       for (var i = 0; i < this.tiles_.length; i++) {
-        if (appData.title.toLocaleLowerCase() <
-            this.tiles_[i].appData.title.toLocaleLowerCase()) {
+        if (data.title.toLocaleLowerCase() <
+            this.tiles_[i].data.title.toLocaleLowerCase()) {
           index = i;
           break;
         }
       }
 
-      var app = new App(appData);
+      var app = new App(data);
       this.addTileAt(app, index);
       this.renderGrid_();
     },
@@ -697,93 +700,6 @@ cr.define('ntp', function() {
         }
     },
 
-    /** @override */
-    doDragOver: function(e) {
-      // Only animatedly re-arrange if the user is currently dragging an app.
-      var tile = ntp.getCurrentlyDraggingTile();
-      if (tile && tile.querySelector('.app')) {
-        TilePage.prototype.doDragOver.call(this, e);
-      } else {
-        e.preventDefault();
-        this.setDropEffect(e.dataTransfer);
-      }
-    },
-
-    /** @override */
-    shouldAcceptDrag: function(e) {
-      if (ntp.getCurrentlyDraggingTile())
-        return true;
-      if (!e.dataTransfer || !e.dataTransfer.types)
-        return false;
-      return Array.prototype.indexOf.call(e.dataTransfer.types,
-                                          'text/uri-list') != -1;
-    },
-
-    /** @override */
-    addDragData: function(dataTransfer, index) {
-      var sourceId = -1;
-      var currentlyDraggingTile = ntp.getCurrentlyDraggingTile();
-      if (currentlyDraggingTile) {
-        var tileContents = currentlyDraggingTile.firstChild;
-        if (tileContents.classList.contains('app')) {
-          var originalPage = currentlyDraggingTile.tilePage;
-          var samePageDrag = originalPage == this;
-          sourceId = samePageDrag ? DRAG_SOURCE.SAME_APPS_PANE :
-                                    DRAG_SOURCE.OTHER_APPS_PANE;
-          this.tileGrid_.insertBefore(currentlyDraggingTile,
-                                      this.tileElements_[index]);
-          this.tileMoved(currentlyDraggingTile);
-          if (!samePageDrag) {
-            originalPage.fireRemovedEvent(currentlyDraggingTile, index, true);
-            this.fireAddedEvent(currentlyDraggingTile, index, true);
-          }
-        } else if (currentlyDraggingTile.querySelector('.most-visited')) {
-          this.generateAppForLink(tileContents.data);
-          sourceId = DRAG_SOURCE.MOST_VISITED_PANE;
-        }
-      } else {
-        this.addOutsideData_(dataTransfer);
-        sourceId = DRAG_SOURCE.OUTSIDE_NTP;
-      }
-
-      assert(sourceId != -1);
-      chrome.send('metricsHandler:recordInHistogram',
-          ['NewTabPage.AppsPageDragSource', sourceId, DRAG_SOURCE_LIMIT]);
-    },
-
-    /**
-     * Adds drag data that has been dropped from a source that is not a tile.
-     * @param {Object} dataTransfer The data transfer object that holds drop
-     *     data.
-     * @private
-     */
-    addOutsideData_: function(dataTransfer) {
-      var url = dataTransfer.getData('url');
-      assert(url);
-
-      // If the dataTransfer has html data, use that html's text contents as the
-      // title of the new link.
-      var html = dataTransfer.getData('text/html');
-      var title;
-      if (html) {
-        // It's important that we don't attach this node to the document
-        // because it might contain scripts.
-        var node = this.ownerDocument.createElement('div');
-        node.innerHTML = html;
-        title = node.textContent;
-      }
-
-      // Make sure title is >=1 and <=45 characters for Chrome app limits.
-      if (!title)
-        title = url;
-      if (title.length > 45)
-        title = title.substring(0, 45);
-      var data = {url: url, title: title};
-
-      // Synthesize an app.
-      this.generateAppForLink(data);
-    },
-
     /**
      * Creates a new crx-less app manifest and installs it.
      * @param {Object} data The data object describing the link. Must have |url|
@@ -793,32 +709,6 @@ cr.define('ntp', function() {
       assert(data.url != undefined);
       assert(data.title != undefined);
       chrome.send('generateAppForLink', [data.url, data.title, 0]);
-    },
-
-    /** @override */
-    tileMoved: function(draggedTile) {
-      if (!(draggedTile.firstChild instanceof App))
-        return;
-
-      chrome.send('setPageIndex', [draggedTile.firstChild.appId, 0]);
-
-      var appIds = [];
-      for (var i = 0; i < this.tiles_.length; i++) {
-        var tileContents = this.tiles_[i];
-        if (tileContents instanceof App)
-          appIds.push(tileContents.appId);
-      }
-
-      chrome.send('reorderApps', [draggedTile.firstChild.appId, appIds]);
-    },
-
-    /** @override */
-    setDropEffect: function(dataTransfer) {
-      var tile = ntp.getCurrentlyDraggingTile();
-      if (tile && tile.querySelector('.app'))
-        ntp.setCurrentDropEffect(dataTransfer, 'move');
-      else
-        ntp.setCurrentDropEffect(dataTransfer, 'copy');
     },
   };
 
@@ -834,7 +724,7 @@ cr.define('ntp', function() {
   function appNotificationChanged(id, notification) {
     var app = $(id);
     // The app might have been uninstalled, or notifications might be disabled.
-    if (app && !app.appData.notifications_disabled)
+    if (app && !app.data.notifications_disabled)
       app.setupNotification_(notification);
   }
 
