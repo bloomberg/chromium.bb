@@ -442,11 +442,20 @@ static const struct wl_registry_listener registry_listener = {
 	handle_global
 };
 
+static void
+log_handler(const char *fmt, va_list args)
+{
+	fprintf(stderr, "libwayland: ");
+	vfprintf(stderr, fmt, args);
+}
+
 struct client *
 client_create(int x, int y, int width, int height)
 {
 	struct client *client;
 	struct surface *surface;
+
+	wl_log_set_handler_client(log_handler);
 
 	/* connect to display */
 	client = calloc(1, sizeof *client);
