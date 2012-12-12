@@ -9,13 +9,14 @@ class Experiment(db.Model):
     name = db.StringProperty()
     owner = db.UserProperty()
     created = db.DateTimeProperty(auto_now_add=True)
+    participants = db.ListProperty(str)
 
 class Treatment(db.Model):
     """ Models a single treament for experimentation """
     name = db.StringProperty()
+    scores = db.ListProperty(int)
 
 class Property(db.Model):
     """ Models a single parameter property change in a treatment """
     name = db.StringProperty()
     value = db.StringProperty()
-

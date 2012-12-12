@@ -196,3 +196,27 @@ h2 {
 .end {
     min-height: 30px;
 }
+
+.score {
+    text-align: right;
+}
+
+.odd_row {
+    background: #eee;
+}
+
+.error {
+    background: #fee;
+    border: solid;
+    border-width: 1px;
+    border-color: #fcc;
+    padding: 20px;
+}
+
+.success {
+    background: #efe;
+    border: solid;
+    border-width: 1px;
+    border-color: #cfc;
+    padding: 20px;
+}

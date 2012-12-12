@@ -129,6 +129,14 @@
 {% block first_column %}
   <h1> {{ experiment.name }}: Participate </h1>
 
+  {% if user|string in experiment.participants %}
+    <div class="error">
+      Warning! Our records indicate that you have already completed this
+      experiment.  A submission has already been saved for your username
+      and subsequent attempts will not be tallied.
+    </div>
+  {% endif %}
+
   <p>
     Below is a list of treatments for this experiment.  Each treatment
     represents a variation on the touchpad processing algorithm.  To participate

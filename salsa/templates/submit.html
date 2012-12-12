@@ -4,21 +4,7 @@
 
 {% block first_column %}
   <h1> {{ experiment.name }}: Ranking submission </h1>
-  <ul>
-    <li> User: {{ user }}
-    <li> Rankings:
-      <ol>
-        {% for same_rank in ranking %}
-          <li>
-          {% for key in same_rank %}
-            {% for treatment in treatments %}
-              {% if key == treatment.key()|string %}
-                <p> {{ treatment.name }} </p>
-              {% endif %}
-            {% endfor %}
-          {% endfor %}
-          </li>
-        {% endfor %}
-      </ol>
-  </ul>
+  <div class="success">
+    Thank you for your participation, your ranking has been recorded!
+  </div>
 {% endblock %}

@@ -25,6 +25,48 @@
           </div>
         {% endfor %}
     </ul>
+
+    <h1> Results </h1>
+    {% if experiment.participants %}
+      <table>
+        <tr class="even_row"><th>Participant</th>
+          {% for treatment in treatments %}
+            <th> {{ treatment.name }} </th>
+          {% endfor %}
+        </tr>
+
+        {% for participant in experiment.participants %}
+          <tr class="{{ loop.index|row_class }}">
+            <td> <a href="mailto:{{ participant }}">{{ participant }}</a> </td>
+            {% set participant_number = loop.index0 %}
+            {% for treatment in treatments %}
+              <td class="score">
+                {{ treatment.scores[participant_number] }}
+              </td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+
+        <tr>
+          <th> Average: </th>
+          {% for treatment in treatments %}
+            <th> {{ treatment.scores|average}} </th>
+          {% endfor %}
+        </tr>
+
+        <tr>
+          <th> Variance: </th>
+          {% for treatment in treatments %}
+            <th> {{ treatment.scores|variance}} </th>
+          {% endfor %}
+        </tr>
+      </table>
+    {% else %}
+      <p>
+        No one has completed this experiment yet, there are no results to
+        display.
+      </p>
+    {% endif %}
   {% else %}
     <h1> Permission Denied </h1>
     <p>
