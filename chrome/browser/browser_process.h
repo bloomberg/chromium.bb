@@ -23,7 +23,6 @@ class CRLSetFetcher;
 class ComponentUpdateService;
 class DownloadRequestLimiter;
 class DownloadStatusUpdater;
-class GLStringManager;
 class IconManager;
 class IntranetRedirectDetector;
 class IOThread;
@@ -133,8 +132,6 @@ class BrowserProcess {
   virtual policy::PolicyService* policy_service() = 0;
 
   virtual IconManager* icon_manager() = 0;
-
-  virtual GLStringManager* gl_string_manager() = 0;
 
   virtual RenderWidgetSnapshotTaker* GetRenderWidgetSnapshotTaker() = 0;
 

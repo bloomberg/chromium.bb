@@ -132,6 +132,36 @@ bool CollectPreliminaryGraphicsInfo(content::GPUInfo* gpu_info) {
 
   bool rt = CollectVideoCardInfo(gpu_info);
 
+  std::string driver_version;
+  switch (gpu_info->gpu.vendor_id) {
+    case kVendorIDAMD:
+      driver_version = CollectDriverVersionATI();
+      if (!driver_version.empty()) {
+        gpu_info->driver_vendor = "ATI / AMD";
+        gpu_info->driver_version = driver_version;
+      }
+      break;
+    case kVendorIDNVidia:
+      driver_version = CollectDriverVersionNVidia();
+      if (!driver_version.empty()) {
+        gpu_info->driver_vendor = "NVIDIA";
+        gpu_info->driver_version = driver_version;
+      }
+      break;
+    case kVendorIDIntel:
+      // In dual-GPU cases, sometimes PCI scan only gives us the
+      // integrated GPU (i.e., the Intel one).
+      driver_version = CollectDriverVersionNVidia();
+      if (!driver_version.empty()) {
+        gpu_info->driver_vendor = "NVIDIA";
+        gpu_info->driver_version = driver_version;
+        // Machines with more than two GPUs are not handled.
+        if (gpu_info->secondary_gpus.size() <= 1)
+          gpu_info->optimus = true;
+      }
+      break;
+  }
+
   return rt;
 }
 
@@ -223,7 +253,6 @@ bool CollectVideoCardInfo(content::GPUInfo* gpu_info) {
   }
 
   (libpci_loader.pci_cleanup)(access);
-
   return (primary_gpu_identified);
 }
 

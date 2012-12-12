@@ -119,10 +119,6 @@ IconManager* TestingBrowserProcess::icon_manager() {
   return NULL;
 }
 
-GLStringManager* TestingBrowserProcess::gl_string_manager() {
-  return NULL;
-}
-
 RenderWidgetSnapshotTaker*
 TestingBrowserProcess::GetRenderWidgetSnapshotTaker() {
 #if defined(OS_IOS)

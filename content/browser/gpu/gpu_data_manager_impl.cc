@@ -318,14 +318,8 @@ bool GpuDataManagerImpl::GpuAccessAllowed() const {
     return false;
 
   if (blacklisted_features_ == GPU_FEATURE_TYPE_ALL) {
-    // On Linux, we use cached GL strings to make blacklist decsions at browser
-    // startup time. We need to launch the GPU process to validate these
-    // strings even if all features are blacklisted. If all GPU features are
-    // disabled, the GPU process will only initialize GL bindings, create a GL
-    // context, and collect full GPU info.
-#if !defined(OS_LINUX)
-    return false;
-#endif
+    if (gpu_blacklist_.get() && !gpu_blacklist_->needs_more_info())
+      return false;
   }
 
   return true;
@@ -471,9 +465,8 @@ void GpuDataManagerImpl::AppendGpuCommandLine(
     command_line->AppendSwitchASCII(switches::kSupportsDualGpus, "false");
   }
 
-#if defined(OS_LINUX)
-  command_line->AppendSwitch(switches::kSkipGpuFullInfoCollection);
-#endif
+  if (!gpu_blacklist_.get() || !gpu_blacklist_->needs_more_info())
+    command_line->AppendSwitch(switches::kSkipGpuFullInfoCollection);
 
   if (!swiftshader_path.empty())
     command_line->AppendSwitchPath(switches::kSwiftShaderPath,
@@ -715,46 +708,6 @@ GpuDataManagerImpl::Are3DAPIsBlockedAtTime(
 
 int64 GpuDataManagerImpl::GetBlockAllDomainsDurationInMs() const {
   return kBlockAllDomainsMs;
-}
-
-void GpuDataManagerImpl::GetGLStrings(std::string* gl_vendor,
-                                      std::string* gl_renderer,
-                                      std::string* gl_version) {
-  DCHECK(gl_vendor && gl_renderer && gl_version);
-
-  base::AutoLock auto_lock(gpu_info_lock_);
-  *gl_vendor = gpu_info_.gl_vendor;
-  *gl_renderer = gpu_info_.gl_renderer;
-  *gl_version = gpu_info_.gl_version_string;
-}
-
-void GpuDataManagerImpl::SetGLStrings(const std::string& gl_vendor,
-                                      const std::string& gl_renderer,
-                                      const std::string& gl_version) {
-  if (gl_vendor.empty() && gl_renderer.empty() && gl_version.empty())
-    return;
-
-  GPUInfo gpu_info;
-  {
-    base::AutoLock auto_lock(gpu_info_lock_);
-    // If GPUInfo already got GL strings, do nothing.  This is for the rare
-    // situation where GPU process collected GL strings before this call.
-    if (!gpu_info_.gl_vendor.empty() ||
-        !gpu_info_.gl_renderer.empty() ||
-        !gpu_info_.gl_version_string.empty())
-      return;
-    gpu_info = gpu_info_;
-  }
-
-  gpu_info.gl_vendor = gl_vendor;
-  gpu_info.gl_renderer = gl_renderer;
-  gpu_info.gl_version_string = gl_version;
-
-  gpu_info_collector::CollectDriverInfoGL(&gpu_info);
-
-  UpdateGpuInfo(gpu_info);
-  UpdateGpuSwitchingManager(gpu_info);
-  UpdatePreliminaryBlacklistedFeatures();
 }
 
 }  // namespace content

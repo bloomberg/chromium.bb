@@ -33,7 +33,6 @@
 #include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/browser/extensions/extension_tab_id_map.h"
 #include "chrome/browser/first_run/upgrade_util.h"
-#include "chrome/browser/gpu/gl_string_manager.h"
 #include "chrome/browser/icon_manager.h"
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/io_thread.h"
@@ -472,13 +471,6 @@ IconManager* BrowserProcessImpl::icon_manager() {
   if (!created_icon_manager_)
     CreateIconManager();
   return icon_manager_.get();
-}
-
-GLStringManager* BrowserProcessImpl::gl_string_manager() {
-  DCHECK(CalledOnValidThread());
-  if (!gl_string_manager_.get())
-    gl_string_manager_.reset(new GLStringManager());
-  return gl_string_manager_.get();
 }
 
 RenderWidgetSnapshotTaker* BrowserProcessImpl::GetRenderWidgetSnapshotTaker() {
