@@ -15597,8 +15597,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
     </if>
 
     <!-- Pepper 3D and WebGL (client 3D APIs) infobar strings -->
+    <!-- NOTE that "rats" here is being used like "darn". -->
     <message name="IDS_3D_APIS_BLOCKED_TEXT" desc="Infobar message when 3D graphics APIs are blocked because the graphics processor was reset recently.">
-      <ph name="API_NAME">$1<ex>WebGL</ex></ph> was stopped by an error on one of your tabs.
+      Rats! <ph name="API_NAME">$1<ex>WebGL</ex></ph> hit a snag.
     </message>
     <message name="IDS_3D_APIS_WEBGL_NAME" desc="Name of the WebGL API.">
       WebGL
@@ -15607,10 +15608,10 @@ Some features may be unavailable.  Please check that the profile exists and you 
       Pepper 3D
     </message>
     <message name="IDS_3D_APIS_BLOCKED_OK_BUTTON_LABEL" desc="Label for the 'ok' button on the infobar indicating that 3D APIs were blocked. Clicking this button dismisses the infobar with no other action.">
-      OK
+      Ignore
     </message>
     <message name="IDS_3D_APIS_BLOCKED_TRY_AGAIN_BUTTON_LABEL" desc="Label for the 'cancel' button on the infobar indicating that 3D APIs were blocked. Clicking this button unblocks the APIs and reloads the page.">
-      Try again
+      Reload
     </message>
 
     <!-- Managed Mode -->
