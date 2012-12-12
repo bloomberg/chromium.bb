@@ -84,7 +84,7 @@ class UpdateView : public ash::internal::ActionableView {
  private:
   // Overridden from ActionableView.
   virtual bool PerformAction(const ui::Event& event) OVERRIDE {
-    ash::Shell::GetInstance()->tray_delegate()->RequestRestart();
+    ash::Shell::GetInstance()->system_tray_delegate()->RequestRestart();
     return true;
   }
 
@@ -165,11 +165,11 @@ TrayUpdate::~TrayUpdate() {
 }
 
 bool TrayUpdate::GetInitialVisibility() {
-  return Shell::GetInstance()->tray_delegate()->SystemShouldUpgrade();
+  return Shell::GetInstance()->system_tray_delegate()->SystemShouldUpgrade();
 }
 
 views::View* TrayUpdate::CreateDefaultView(user::LoginStatus status) {
-  if (!Shell::GetInstance()->tray_delegate()->SystemShouldUpgrade())
+  if (!Shell::GetInstance()->system_tray_delegate()->SystemShouldUpgrade())
     return NULL;
   return new UpdateView(severity_);
 }

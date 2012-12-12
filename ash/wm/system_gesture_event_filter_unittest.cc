@@ -285,7 +285,7 @@ TEST_F(SystemGestureEventFilterTest, DeviceControl) {
 
   DummyVolumeControlDelegate* delegateVolume =
       new DummyVolumeControlDelegate();
-  ash::Shell::GetInstance()->tray_delegate()->SetVolumeControlDelegate(
+  ash::Shell::GetInstance()->system_tray_delegate()->SetVolumeControlDelegate(
       scoped_ptr<VolumeControlDelegate>(delegateVolume).Pass());
 
   const int kTouchId = 5;

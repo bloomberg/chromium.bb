@@ -39,7 +39,7 @@ bool IsAnyAccessibilityFeatureEnabled() {
 }
 
 user::LoginStatus GetCurrentLoginStatus() {
-  return Shell::GetInstance()->tray_delegate()->GetUserLoginStatus();
+  return Shell::GetInstance()->system_tray_delegate()->GetUserLoginStatus();
 }
 
 }  // namespace
@@ -182,7 +182,8 @@ class AccessibilityDetailedView : public TrayDetailsView,
   // Overridden from ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE {
-    SystemTrayDelegate* tray_delegate = Shell::GetInstance()->tray_delegate();
+    SystemTrayDelegate* tray_delegate =
+        Shell::GetInstance()->system_tray_delegate();
     if (sender == help_view_)
       tray_delegate->ShowAccessibilityHelp();
   }

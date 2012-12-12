@@ -225,7 +225,7 @@ PublicAccountUserDetails::PublicAccountUserDetails(SystemTrayItem* owner,
       kUserDetailsVerticalPadding, rtl ? inner_padding : 0));
 
   ash::SystemTrayDelegate* delegate =
-      ash::Shell::GetInstance()->tray_delegate();
+      ash::Shell::GetInstance()->system_tray_delegate();
   // Retrieve the user's display name and wrap it with markers.
   string16 display_name = delegate->GetUserDisplayName();
   RemoveChars(display_name, kDisplayNameMark, &display_name);
@@ -334,7 +334,7 @@ void PublicAccountUserDetails::OnPaint(gfx::Canvas* canvas) {
 void PublicAccountUserDetails::LinkClicked(views::Link* source,
                                            int event_flags) {
   DCHECK_EQ(source, learn_more_);
-  ash::Shell::GetInstance()->tray_delegate()->ShowPublicAccountInfo();
+  ash::Shell::GetInstance()->system_tray_delegate()->ShowPublicAccountInfo();
 }
 
 void PublicAccountUserDetails::CalculatePreferredSize(SystemTrayItem* owner,
@@ -444,7 +444,7 @@ void UserView::Layout() {
 
 void UserView::ButtonPressed(views::Button* sender, const ui::Event& event) {
   DCHECK_EQ(logout_button_, sender);
-  ash::Shell::GetInstance()->tray_delegate()->SignOut();
+  ash::Shell::GetInstance()->system_tray_delegate()->SignOut();
 }
 
 void UserView::AddLogoutButton(ash::user::LoginStatus login) {
@@ -501,8 +501,9 @@ void UserView::AddUserCard(SystemTrayItem* owner,
   }
 
   RoundedImageView* avatar = new RoundedImageView(kProfileRoundedCornerRadius);
-  avatar->SetImage(ash::Shell::GetInstance()->tray_delegate()->GetUserImage(),
-                   gfx::Size(kUserIconSize, kUserIconSize));
+  avatar->SetImage(
+      ash::Shell::GetInstance()->system_tray_delegate()->GetUserImage(),
+      gfx::Size(kUserIconSize, kUserIconSize));
   user_card_->AddChildView(avatar);
 
   if (login == ash::user::LOGGED_IN_PUBLIC) {
@@ -512,7 +513,7 @@ void UserView::AddUserCard(SystemTrayItem* owner,
   }
 
   ash::SystemTrayDelegate* delegate =
-      ash::Shell::GetInstance()->tray_delegate();
+      ash::Shell::GetInstance()->system_tray_delegate();
   views::View* details = new views::View;
   details->SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kVertical, 0, kUserDetailsVerticalPadding, 0));
@@ -590,7 +591,7 @@ void TrayUser::UpdateAfterLoginStatusChange(user::LoginStatus status) {
     case user::LOGGED_IN_OWNER:
     case user::LOGGED_IN_PUBLIC:
       avatar_->SetImage(
-          ash::Shell::GetInstance()->tray_delegate()->GetUserImage(),
+          ash::Shell::GetInstance()->system_tray_delegate()->GetUserImage(),
           gfx::Size(kUserIconSize, kUserIconSize));
       avatar_->SetVisible(true);
       break;
@@ -634,7 +635,7 @@ void TrayUser::OnUserUpdate() {
   // Check for null to avoid crbug.com/150944.
   if (avatar_) {
     avatar_->SetImage(
-        ash::Shell::GetInstance()->tray_delegate()->GetUserImage(),
+        ash::Shell::GetInstance()->system_tray_delegate()->GetUserImage(),
         gfx::Size(kUserIconSize, kUserIconSize));
   }
 }

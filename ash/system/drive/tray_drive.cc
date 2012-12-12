@@ -53,7 +53,7 @@ string16 GetTrayLabel(const ash::DriveOperationStatusList& list) {
 
 ash::DriveOperationStatusList* GetCurrentOperationList() {
   ash::SystemTrayDelegate* delegate =
-      ash::Shell::GetInstance()->tray_delegate();
+      ash::Shell::GetInstance()->system_tray_delegate();
   ash::DriveOperationStatusList* list = new ash::DriveOperationStatusList();
   delegate->GetDriveOperationStatusList(list);
   return list;
@@ -286,7 +286,7 @@ class DriveDetailedView : public TrayDetailsView,
   }
 
   virtual void OnCancelOperation(const FilePath& file_path) {
-    SystemTrayDelegate* delegate = Shell::GetInstance()->tray_delegate();
+    SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
     delegate->CancelDriveOperation(file_path);
   }
 
@@ -355,7 +355,7 @@ class DriveDetailedView : public TrayDetailsView,
 
   // Overridden from ViewClickListener.
   virtual void ClickedOn(views::View* sender) OVERRIDE {
-    SystemTrayDelegate* delegate = Shell::GetInstance()->tray_delegate();
+    SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
     if (sender == footer()->content()) {
       owner()->system_tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
     } else if (sender == settings_) {

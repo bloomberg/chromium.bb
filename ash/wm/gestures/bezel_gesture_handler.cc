@@ -117,7 +117,7 @@ bool BezelGestureHandler::HandleDeviceControl(
       delegate->SetBrightnessPercent(
           LimitBezelBrightnessFromSlider(percent), true);
   } else if (start_location_ == BEZEL_START_RIGHT) {
-    Shell::GetInstance()->tray_delegate()->GetVolumeControlDelegate()->
+    Shell::GetInstance()->system_tray_delegate()->GetVolumeControlDelegate()->
         SetVolumePercent(percent);
   } else {
     // No further events are necessary.

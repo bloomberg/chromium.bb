@@ -46,7 +46,7 @@ class IMEDefaultView : public TrayItemMore {
         IDR_AURA_UBER_TRAY_IME).ToImageSkia());
 
     IMEInfo info;
-    Shell::GetInstance()->tray_delegate()->GetCurrentIME(&info);
+    Shell::GetInstance()->system_tray_delegate()->GetCurrentIME(&info);
     UpdateLabel(info);
   }
 
@@ -67,7 +67,7 @@ class IMEDetailedView : public TrayDetailsView,
   IMEDetailedView(SystemTrayItem* owner, user::LoginStatus login)
       : TrayDetailsView(owner),
         login_(login) {
-    SystemTrayDelegate* delegate = Shell::GetInstance()->tray_delegate();
+    SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
     IMEInfoList list;
     delegate->GetAvailableIMEList(&list);
     IMEPropertyInfoList property_list;
@@ -138,7 +138,7 @@ class IMEDetailedView : public TrayDetailsView,
 
   // Overridden from ViewClickListener.
   virtual void ClickedOn(views::View* sender) OVERRIDE {
-    SystemTrayDelegate* delegate = Shell::GetInstance()->tray_delegate();
+    SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
     if (sender == footer()->content()) {
       owner()->system_tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
     } else if (sender == settings_) {
@@ -213,7 +213,7 @@ class IMENotificationView : public TrayNotificationView {
   }
 
   views::Label* GetLabel() {
-    SystemTrayDelegate* delegate = Shell::GetInstance()->tray_delegate();
+    SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
     IMEInfo current;
     delegate->GetCurrentIME(&current);
 
@@ -274,7 +274,7 @@ views::View* TrayIME::CreateTrayView(user::LoginStatus status) {
 }
 
 views::View* TrayIME::CreateDefaultView(user::LoginStatus status) {
-  SystemTrayDelegate* delegate = Shell::GetInstance()->tray_delegate();
+  SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
   IMEInfoList list;
   IMEPropertyInfoList property_list;
   delegate->GetAvailableIMEList(&list);
@@ -323,7 +323,7 @@ void TrayIME::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
 }
 
 void TrayIME::OnIMERefresh(bool show_message) {
-  SystemTrayDelegate* delegate = Shell::GetInstance()->tray_delegate();
+  SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
   IMEInfoList list;
   IMEInfo current;
   IMEPropertyInfoList property_list;

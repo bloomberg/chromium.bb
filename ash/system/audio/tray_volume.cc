@@ -44,12 +44,12 @@ const int kVolumeImageHeight = 25;
 const int kVolumeLevels = 4;
 
 bool IsAudioMuted() {
-  return Shell::GetInstance()->tray_delegate()->
+  return Shell::GetInstance()->system_tray_delegate()->
       GetVolumeControlDelegate()->IsAudioMuted();
 }
 
 float GetVolumeLevel() {
-  return Shell::GetInstance()->tray_delegate()->
+  return Shell::GetInstance()->system_tray_delegate()->
       GetVolumeControlDelegate()->GetVolumeLevel();
 }
 
@@ -189,7 +189,7 @@ class VolumeView : public views::View,
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE {
     CHECK(sender == icon_ || sender == mute_);
-    ash::Shell::GetInstance()->tray_delegate()->
+    ash::Shell::GetInstance()->system_tray_delegate()->
         GetVolumeControlDelegate()->SetAudioMuted(!IsAudioMuted());
   }
 
@@ -199,7 +199,7 @@ class VolumeView : public views::View,
                                   float old_value,
                                   views::SliderChangeReason reason) OVERRIDE {
     if (reason == views::VALUE_CHANGED_BY_USER) {
-      ash::Shell::GetInstance()->tray_delegate()->
+      ash::Shell::GetInstance()->system_tray_delegate()->
           GetVolumeControlDelegate()->SetVolumeLevel(value);
     }
     icon_->Update();

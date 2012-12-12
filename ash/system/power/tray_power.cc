@@ -181,7 +181,7 @@ views::View* TrayPower::CreateTrayView(user::LoginStatus status) {
   // there is a battery or not. So always create this, and adjust visibility as
   // necessary.
   PowerSupplyStatus power_status =
-      ash::Shell::GetInstance()->tray_delegate()->GetPowerSupplyStatus();
+      ash::Shell::GetInstance()->system_tray_delegate()->GetPowerSupplyStatus();
   CHECK(power_tray_ == NULL);
   power_tray_ = new tray::PowerTrayView();
   power_tray_->UpdatePowerStatus(power_status);
@@ -190,14 +190,14 @@ views::View* TrayPower::CreateTrayView(user::LoginStatus status) {
 
 views::View* TrayPower::CreateDefaultView(user::LoginStatus status) {
   // Make sure icon status is up-to-date. (Also triggers stub activation).
-  ash::Shell::GetInstance()->tray_delegate()->RequestStatusUpdate();
+  ash::Shell::GetInstance()->system_tray_delegate()->RequestStatusUpdate();
   return NULL;
 }
 
 views::View* TrayPower::CreateNotificationView(user::LoginStatus status) {
   CHECK(notification_view_ == NULL);
   PowerSupplyStatus power_status =
-      ash::Shell::GetInstance()->tray_delegate()->GetPowerSupplyStatus();
+      ash::Shell::GetInstance()->system_tray_delegate()->GetPowerSupplyStatus();
   if (!power_status.battery_is_present)
     return NULL;
 

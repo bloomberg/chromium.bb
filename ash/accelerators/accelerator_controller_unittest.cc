@@ -723,7 +723,7 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   {
     DummyVolumeControlDelegate* delegate =
         new DummyVolumeControlDelegate(false);
-    ash::Shell::GetInstance()->tray_delegate()->SetVolumeControlDelegate(
+    ash::Shell::GetInstance()->system_tray_delegate()->SetVolumeControlDelegate(
         scoped_ptr<VolumeControlDelegate>(delegate).Pass());
     EXPECT_EQ(0, delegate->handle_volume_mute_count());
     EXPECT_FALSE(ProcessWithContext(volume_mute));
@@ -740,7 +740,7 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   }
   {
     DummyVolumeControlDelegate* delegate = new DummyVolumeControlDelegate(true);
-    ash::Shell::GetInstance()->tray_delegate()->SetVolumeControlDelegate(
+    ash::Shell::GetInstance()->system_tray_delegate()->SetVolumeControlDelegate(
         scoped_ptr<VolumeControlDelegate>(delegate).Pass());
     EXPECT_EQ(0, delegate->handle_volume_mute_count());
     EXPECT_TRUE(ProcessWithContext(volume_mute));
@@ -1247,7 +1247,7 @@ TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
     EXPECT_TRUE(ProcessWithContext(volume_up));
     DummyVolumeControlDelegate* delegate =
         new DummyVolumeControlDelegate(false);
-    ash::Shell::GetInstance()->tray_delegate()->SetVolumeControlDelegate(
+    ash::Shell::GetInstance()->system_tray_delegate()->SetVolumeControlDelegate(
         scoped_ptr<VolumeControlDelegate>(delegate).Pass());
     EXPECT_EQ(0, delegate->handle_volume_mute_count());
     EXPECT_FALSE(ProcessWithContext(volume_mute));
@@ -1264,7 +1264,7 @@ TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
   }
   {
     DummyVolumeControlDelegate* delegate = new DummyVolumeControlDelegate(true);
-    ash::Shell::GetInstance()->tray_delegate()->SetVolumeControlDelegate(
+    ash::Shell::GetInstance()->system_tray_delegate()->SetVolumeControlDelegate(
         scoped_ptr<VolumeControlDelegate>(delegate).Pass());
     EXPECT_EQ(0, delegate->handle_volume_mute_count());
     EXPECT_TRUE(ProcessWithContext(volume_mute));

@@ -102,7 +102,7 @@ class DisplayView : public ash::internal::ActionableView {
     if (login_status_ == ash::user::LOGGED_IN_USER ||
         login_status_ == ash::user::LOGGED_IN_OWNER ||
         login_status_ == ash::user::LOGGED_IN_GUEST) {
-      ash::Shell::GetInstance()->tray_delegate()->ShowDisplaySettings();
+      ash::Shell::GetInstance()->system_tray_delegate()->ShowDisplaySettings();
     }
 
     return true;

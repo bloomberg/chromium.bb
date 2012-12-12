@@ -114,7 +114,7 @@ class LogoutButton : public views::View,
   // Overridden from views::ButtonListener.
   void ButtonPressed(views::Button* sender, const ui::Event& event) OVERRIDE {
     DCHECK_EQ(sender, button_);
-    Shell::GetInstance()->tray_delegate()->SignOut();
+    Shell::GetInstance()->system_tray_delegate()->SignOut();
   }
 
  private:

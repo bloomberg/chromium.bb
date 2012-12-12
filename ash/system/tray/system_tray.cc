@@ -77,7 +77,7 @@ class SystemBubbleWrapper {
                 views::View* anchor,
                 TrayBubbleView::InitParams* init_params) {
     user::LoginStatus login_status =
-        Shell::GetInstance()->tray_delegate()->GetUserLoginStatus();
+        Shell::GetInstance()->system_tray_delegate()->GetUserLoginStatus();
     bubble_->InitView(anchor, login_status, init_params);
     bubble_wrapper_.reset(
         new internal::TrayBubbleWrapper(tray, bubble_->bubble_view()));
@@ -158,14 +158,14 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
     AddTrayItem(new internal::TrayMonitor(this));
 #endif
 
-  SetVisible(ash::Shell::GetInstance()->tray_delegate()->
+  SetVisible(ash::Shell::GetInstance()->system_tray_delegate()->
       GetTrayVisibilityOnStartup());
 }
 
 void SystemTray::AddTrayItem(SystemTrayItem* item) {
   items_.push_back(item);
 
-  SystemTrayDelegate* delegate = Shell::GetInstance()->tray_delegate();
+  SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
   views::View* tray_item = item->CreateTrayView(delegate->GetUserLoginStatus());
   item->UpdateAfterShelfAlignmentChange(shelf_alignment());
 

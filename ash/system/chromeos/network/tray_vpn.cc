@@ -29,7 +29,7 @@ class VpnDefaultView : public TrayItemMore {
 
   void Update() {
     NetworkIconInfo info;
-    Shell::GetInstance()->tray_delegate()->GetVirtualNetworkIcon(&info);
+    Shell::GetInstance()->system_tray_delegate()->GetVirtualNetworkIcon(&info);
     SetImage(&info.image);
     SetLabel(info.description);
     SetAccessibleName(info.description);
@@ -66,7 +66,7 @@ class VpnListDetailedView : public NetworkListDetailedViewBase {
 
   virtual void GetAvailableNetworkList(
       std::vector<NetworkIconInfo>* list) OVERRIDE{
-    Shell::GetInstance()->tray_delegate()->GetVirtualNetworks(list);
+    Shell::GetInstance()->system_tray_delegate()->GetVirtualNetworks(list);
   }
 
   virtual void RefreshNetworkScrollWithEmptyNetworkList() OVERRIDE {
@@ -102,7 +102,7 @@ class VpnListDetailedView : public NetworkListDetailedViewBase {
   virtual void CustomButtonPressed(views::Button* sender,
       const ui::Event& event) OVERRIDE {
     if (sender == other_vpn_)
-      ash::Shell::GetInstance()->tray_delegate()->ShowOtherVPN();
+      ash::Shell::GetInstance()->system_tray_delegate()->ShowOtherVPN();
     else
       NOTREACHED();
   }
@@ -141,7 +141,7 @@ views::View* TrayVPN::CreateDefaultView(user::LoginStatus status) {
 
   // Do not show VPN line in uber tray bubble if VPN is not configured.
   std::vector<NetworkIconInfo> list;
-  Shell::GetInstance()->tray_delegate()->GetVirtualNetworks(&list);
+  Shell::GetInstance()->system_tray_delegate()->GetVirtualNetworks(&list);
   if (list.size() == 0)
     return NULL;
 

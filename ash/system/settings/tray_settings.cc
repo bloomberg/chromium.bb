@@ -57,8 +57,8 @@ class SettingsDefaultView : public ash::internal::ActionableView {
       power_view_right_align = true;
     }
 
-    PowerSupplyStatus power_status =
-        ash::Shell::GetInstance()->tray_delegate()->GetPowerSupplyStatus();
+    PowerSupplyStatus power_status = ash::Shell::GetInstance()->
+        system_tray_delegate()->GetPowerSupplyStatus();
     if (power_status.battery_is_present) {
       power_status_view_ = new ash::internal::PowerStatusView(
           ash::internal::PowerStatusView::VIEW_DEFAULT, power_view_right_align);
@@ -86,7 +86,7 @@ class SettingsDefaultView : public ash::internal::ActionableView {
         login_status_ == user::LOGGED_IN_LOCKED)
       return false;
 
-    ash::Shell::GetInstance()->tray_delegate()->ShowSettings();
+    ash::Shell::GetInstance()->system_tray_delegate()->ShowSettings();
     return true;
   }
 
@@ -137,7 +137,7 @@ views::View* TraySettings::CreateTrayView(user::LoginStatus status) {
 
 views::View* TraySettings::CreateDefaultView(user::LoginStatus status) {
   if ((status == user::LOGGED_IN_NONE || status == user::LOGGED_IN_LOCKED) &&
-      (!ash::Shell::GetInstance()->tray_delegate()->
+      (!ash::Shell::GetInstance()->system_tray_delegate()->
           GetPowerSupplyStatus().battery_is_present))
     return NULL;
 

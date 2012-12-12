@@ -186,7 +186,7 @@ void NetworkStateListDetailedView::ButtonPressed(views::Button* sender,
 
   chromeos::NetworkStateHandler* handler = chromeos::NetworkStateHandler::Get();
   ash::SystemTrayDelegate* delegate =
-      ash::Shell::GetInstance()->tray_delegate();
+      ash::Shell::GetInstance()->system_tray_delegate();
   if (sender == button_wifi_) {
     bool enabled = handler->TechnologyEnabled(flimflam::kTypeWifi);
     handler->SetTechnologyEnabled(
@@ -228,7 +228,7 @@ void NetworkStateListDetailedView::ClickedOn(views::View* sender) {
     return;
 
   ash::SystemTrayDelegate* delegate =
-      ash::Shell::GetInstance()->tray_delegate();
+      ash::Shell::GetInstance()->system_tray_delegate();
   if (sender == view_mobile_account_) {
     delegate->ShowCellularURL(topup_url_);
   } else if (sender == setup_mobile_account_) {
@@ -475,7 +475,7 @@ void NetworkStateListDetailedView::UpdateNetworkEntries() {
 
   // TODO(stevenjb): Migrate this code to src/chromeos.
   std::string carrier_id, topup_url, setup_url;
-  if (Shell::GetInstance()->tray_delegate()->
+  if (Shell::GetInstance()->system_tray_delegate()->
       GetCellularCarrierInfo(&carrier_id, &topup_url, &setup_url)) {
     if (carrier_id != carrier_id_) {
       carrier_id_ = carrier_id;

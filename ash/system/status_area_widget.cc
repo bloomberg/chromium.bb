@@ -46,7 +46,8 @@ StatusAreaWidget::~StatusAreaWidget() {
 void StatusAreaWidget::CreateTrayViews() {
   AddSystemTray();
   AddWebNotificationTray();
-  SystemTrayDelegate* delegate = ash::Shell::GetInstance()->tray_delegate();
+  SystemTrayDelegate* delegate =
+      ash::Shell::GetInstance()->system_tray_delegate();
   DCHECK(delegate);
   // Initialize after all trays have been created.
   if (system_tray_)

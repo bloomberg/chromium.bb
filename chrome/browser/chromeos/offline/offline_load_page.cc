@@ -189,7 +189,7 @@ void OfflineLoadPage::CommandReceived(const std::string& cmd) {
   } else if (command == "dontproceed") {
     interstitial_page_->DontProceed();
   } else if (command == "open_network_settings") {
-    ash::Shell::GetInstance()->tray_delegate()->ShowNetworkSettings();
+    ash::Shell::GetInstance()->system_tray_delegate()->ShowNetworkSettings();
   } else {
     LOG(WARNING) << "Unknown command:" << cmd;
   }

@@ -236,7 +236,7 @@ TEST_F(RootWindowControllerTest, ModalContainer) {
   internal::RootWindowController* controller =
       shell->GetPrimaryRootWindowController();
   EXPECT_EQ(user::LOGGED_IN_USER,
-            shell->tray_delegate()->GetUserLoginStatus());
+            shell->system_tray_delegate()->GetUserLoginStatus());
   EXPECT_EQ(Shell::GetContainer(controller->root_window(),
       internal::kShellWindowId_SystemModalContainer)->layout_manager(),
           controller->GetSystemModalLayoutManager(NULL));
@@ -250,7 +250,7 @@ TEST_F(RootWindowControllerTest, ModalContainer) {
 
   shell->delegate()->LockScreen();
   EXPECT_EQ(user::LOGGED_IN_LOCKED,
-            shell->tray_delegate()->GetUserLoginStatus());
+            shell->system_tray_delegate()->GetUserLoginStatus());
   EXPECT_EQ(Shell::GetContainer(controller->root_window(),
       internal::kShellWindowId_LockSystemModalContainer)->layout_manager(),
           controller->GetSystemModalLayoutManager(NULL));
@@ -279,7 +279,7 @@ TEST_F(RootWindowControllerTest, ModalContainerNotLoggedInLoggedIn) {
   // Configure login screen environment.
   SetUserLoggedIn(false);
   EXPECT_EQ(user::LOGGED_IN_NONE,
-            shell->tray_delegate()->GetUserLoginStatus());
+            shell->system_tray_delegate()->GetUserLoginStatus());
   EXPECT_FALSE(shell->delegate()->IsUserLoggedIn());
   EXPECT_FALSE(shell->delegate()->IsSessionStarted());
 
@@ -304,7 +304,7 @@ TEST_F(RootWindowControllerTest, ModalContainerNotLoggedInLoggedIn) {
   SetUserLoggedIn(true);
   SetSessionStarted(true);
   EXPECT_EQ(user::LOGGED_IN_USER,
-            shell->tray_delegate()->GetUserLoginStatus());
+            shell->system_tray_delegate()->GetUserLoginStatus());
   EXPECT_TRUE(shell->delegate()->IsUserLoggedIn());
   EXPECT_TRUE(shell->delegate()->IsSessionStarted());
   EXPECT_EQ(Shell::GetContainer(controller->root_window(),

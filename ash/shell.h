@@ -373,8 +373,7 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate,
   // Returns the launcher delegate, creating if necesary.
   LauncherDelegate* GetLauncherDelegate();
 
-  // TODO(stevenjb): Rename to system_tray_delegate().
-  SystemTrayDelegate* tray_delegate() {
+  SystemTrayDelegate* system_tray_delegate() {
     return system_tray_delegate_.get();
   }
 

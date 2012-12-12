@@ -102,7 +102,7 @@ NetworkListDetailedViewBase::~NetworkListDetailedViewBase() {
 void NetworkListDetailedViewBase::Init() {
   CreateItems();
   Update();
-  Shell::GetInstance()->tray_delegate()->RequestNetworkScan();
+  Shell::GetInstance()->system_tray_delegate()->RequestNetworkScan();
 }
 
 NetworkDetailedView::DetailedViewType
@@ -187,7 +187,7 @@ void NetworkListDetailedViewBase::AppendInfoButtonToHeader() {
 void NetworkListDetailedViewBase::UpdateSettingButton() {
   if (proxy_settings_) {
     proxy_settings_->SetEnabled(
-        Shell::GetInstance()->tray_delegate()->IsNetworkConnected());
+        Shell::GetInstance()->system_tray_delegate()->IsNetworkConnected());
   }
 }
 
@@ -301,7 +301,7 @@ void NetworkListDetailedViewBase::ButtonPressed(views::Button* sender,
   // on.
   ResetInfoBubble();
   ash::SystemTrayDelegate* delegate =
-      ash::Shell::GetInstance()->tray_delegate();
+      ash::Shell::GetInstance()->system_tray_delegate();
   if (sender == settings_)
     delegate->ShowNetworkSettings();
   else if (sender == proxy_settings_)
@@ -312,7 +312,7 @@ void NetworkListDetailedViewBase::ButtonPressed(views::Button* sender,
 
 void NetworkListDetailedViewBase::ClickedOn(views::View* sender) {
   ash::SystemTrayDelegate* delegate =
-      ash::Shell::GetInstance()->tray_delegate();
+      ash::Shell::GetInstance()->system_tray_delegate();
   // If the info bubble was visible, close it when some other item is clicked
   // on.
   ResetInfoBubble();
@@ -352,7 +352,7 @@ void NetworkListDetailedViewBase::CreateSettingsEntry() {
 views::View* NetworkListDetailedViewBase::CreateNetworkInfoView() {
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   std::string ip_address, ethernet_address, wifi_address;
-  Shell::GetInstance()->tray_delegate()->GetNetworkAddresses(
+  Shell::GetInstance()->system_tray_delegate()->GetNetworkAddresses(
       &ip_address, &ethernet_address, &wifi_address);
 
   views::View* container = new views::View;

@@ -408,7 +408,7 @@ void TestingAutomationProvider::AddLoginEventObserver(
 
 void TestingAutomationProvider::SignOut(DictionaryValue* args,
                                         IPC::Message* reply_message) {
-  ash::Shell::GetInstance()->tray_delegate()->SignOut();
+  ash::Shell::GetInstance()->system_tray_delegate()->SignOut();
   // Sign out has the side effect of restarting the session_manager
   // and chrome, thereby severing the automation channel, so it's
   // not really necessary to send a reply back. The next line is

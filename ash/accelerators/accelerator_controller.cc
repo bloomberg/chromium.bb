@@ -493,7 +493,7 @@ bool AcceleratorController::PerformAction(int action,
     case TOGGLE_SPOKEN_FEEDBACK:
       return HandleToggleSpokenFeedback();
     case TOGGLE_WIFI:
-      Shell::GetInstance()->tray_delegate()->ToggleWifi();
+      Shell::GetInstance()->system_tray_delegate()->ToggleWifi();
       return true;
     case DISABLE_GPU_WATCHDOG:
       content::GpuDataManager::GetInstance()->DisableGpuWatchdog();
@@ -602,15 +602,15 @@ bool AcceleratorController::PerformAction(int action,
             HandleKeyboardBrightnessUp(accelerator);
       break;
     case VOLUME_MUTE:
-      return shell->tray_delegate()->GetVolumeControlDelegate()->
+      return shell->system_tray_delegate()->GetVolumeControlDelegate()->
           HandleVolumeMute(accelerator);
       break;
     case VOLUME_DOWN:
-      return shell->tray_delegate()->GetVolumeControlDelegate()->
+      return shell->system_tray_delegate()->GetVolumeControlDelegate()->
           HandleVolumeDown(accelerator);
       break;
     case VOLUME_UP:
-      return shell->tray_delegate()->GetVolumeControlDelegate()->
+      return shell->system_tray_delegate()->GetVolumeControlDelegate()->
           HandleVolumeUp(accelerator);
       break;
     case FOCUS_LAUNCHER:

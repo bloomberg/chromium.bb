@@ -33,8 +33,8 @@ std::string GetUserLoginStatus() {
       { ash::user::LOGGED_IN_NONE, "none" },
   };
   const ash::user::LoginStatus status =
-      ash::Shell::GetInstance()->tray_delegate() ?
-      ash::Shell::GetInstance()->tray_delegate()->GetUserLoginStatus() :
+      ash::Shell::GetInstance()->system_tray_delegate() ?
+      ash::Shell::GetInstance()->system_tray_delegate()->GetUserLoginStatus() :
       ash::user::LOGGED_IN_NONE;
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kStatusStrings); ++i) {

@@ -103,7 +103,7 @@ class NetworkTrayView : public TrayItemView {
     AddChildView(image_view_);
 
     NetworkIconInfo info;
-    Shell::GetInstance()->tray_delegate()->
+    Shell::GetInstance()->system_tray_delegate()->
         GetMostRelevantNetworkIcon(&info, false);
     Update(info);
   }
@@ -158,7 +158,7 @@ class NetworkDefaultView : public TrayItemMore {
 
   void Update() {
     NetworkIconInfo info;
-    Shell::GetInstance()->tray_delegate()->
+    Shell::GetInstance()->system_tray_delegate()->
         GetMostRelevantNetworkIcon(&info, true);
     SetImage(&info.image);
     SetLabel(info.description);
@@ -219,7 +219,7 @@ class NetworkListDetailedView : public NetworkListDetailedViewBase {
   }
 
   virtual void UpdateHeaderButtons() OVERRIDE {
-    SystemTrayDelegate* delegate = Shell::GetInstance()->tray_delegate();
+    SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
     button_wifi_->SetToggled(!delegate->GetWifiEnabled());
     button_mobile_->SetToggled(!delegate->GetMobileEnabled());
     button_mobile_->SetVisible(delegate->GetMobileAvailable());
@@ -248,7 +248,7 @@ class NetworkListDetailedView : public NetworkListDetailedViewBase {
 
   virtual void GetAvailableNetworkList(
       std::vector<NetworkIconInfo>* list) OVERRIDE {
-    Shell::GetInstance()->tray_delegate()->GetAvailableNetworks(list);
+    Shell::GetInstance()->system_tray_delegate()->GetAvailableNetworks(list);
   }
 
   virtual void RefreshNetworkScrollWithEmptyNetworkList() OVERRIDE {
@@ -256,9 +256,9 @@ class NetworkListDetailedView : public NetworkListDetailedViewBase {
     HoverHighlightView* container = new HoverHighlightView(this);
     container->set_fixed_height(kTrayPopupItemHeight);
 
-    if (Shell::GetInstance()->tray_delegate()->GetWifiEnabled()) {
+    if (Shell::GetInstance()->system_tray_delegate()->GetWifiEnabled()) {
       NetworkIconInfo info;
-      Shell::GetInstance()->tray_delegate()->
+      Shell::GetInstance()->system_tray_delegate()->
           GetMostRelevantNetworkIcon(&info, true);
       container->AddIconAndLabel(info.image,
           info.description,
@@ -287,7 +287,7 @@ class NetworkListDetailedView : public NetworkListDetailedViewBase {
       return;
 
     std::string carrier_id, topup_url, setup_url;
-    if (Shell::GetInstance()->tray_delegate()->
+    if (Shell::GetInstance()->system_tray_delegate()->
             GetCellularCarrierInfo(&carrier_id,
                                    &topup_url,
                                    &setup_url)) {
@@ -327,7 +327,7 @@ class NetworkListDetailedView : public NetworkListDetailedViewBase {
     if (login() == user::LOGGED_IN_LOCKED)
       return;
 
-    SystemTrayDelegate* delegate = Shell::GetInstance()->tray_delegate();
+    SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
     if (IsNetworkListEmpty() && !delegate->GetWifiEnabled()) {
       turn_on_wifi_->SetVisible(true);
       other_wifi_->SetVisible(false);
@@ -347,7 +347,7 @@ class NetworkListDetailedView : public NetworkListDetailedViewBase {
   virtual void CustomButtonPressed(views::Button* sender,
       const ui::Event& event) OVERRIDE {
     ash::SystemTrayDelegate* delegate =
-        ash::Shell::GetInstance()->tray_delegate();
+        ash::Shell::GetInstance()->system_tray_delegate();
     if (sender == button_wifi_)
       delegate->ToggleWifi();
     else if (sender == button_mobile_)
@@ -364,7 +364,7 @@ class NetworkListDetailedView : public NetworkListDetailedViewBase {
 
   virtual bool CustomLinkClickedOn(views::View* sender) OVERRIDE {
     ash::SystemTrayDelegate* delegate =
-        ash::Shell::GetInstance()->tray_delegate();
+        ash::Shell::GetInstance()->system_tray_delegate();
     if (sender == view_mobile_account_) {
       delegate->ShowCellularURL(topup_url_);
       return true;
@@ -594,7 +594,7 @@ views::View* TrayNetwork::CreateDetailedView(user::LoginStatus status) {
   messages_->messages().clear();
   HideNotificationView();
   if (request_wifi_view_) {
-    SystemTrayDelegate* delegate = Shell::GetInstance()->tray_delegate();
+    SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
     // The Wi-Fi state is not toggled yet at this point.
     detailed_ = new tray::NetworkWifiDetailedView(this,
                                                   !delegate->GetWifiEnabled());
