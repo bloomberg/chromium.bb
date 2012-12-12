@@ -82,6 +82,7 @@ WebPreferences::WebPreferences()
       show_composited_layer_tree(false),
       show_fps_counter(false),
       accelerated_compositing_for_overflow_scroll_enabled(false),
+      accelerated_compositing_for_scrollable_frames_enabled(false),
       show_paint_rects(false),
       render_vsync_enabled(true),
       asynchronous_spell_checking_enabled(true),
@@ -343,6 +344,11 @@ void WebPreferences::Apply(WebView* web_view) const {
   // Enables accelerated compositing for overflow scroll.
   settings->setAcceleratedCompositingForOverflowScrollEnabled(
       accelerated_compositing_for_overflow_scroll_enabled);
+
+  // Enables accelerated compositing for scrollable frames if requested on
+  // command line.
+  settings->setAcceleratedCompositingForScrollableFramesEnabled(
+      accelerated_compositing_for_scrollable_frames_enabled);
 
   // Display the current compositor tree as overlay if requested on
   // the command line

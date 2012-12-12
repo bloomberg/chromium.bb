@@ -100,6 +100,7 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   bool show_composited_layer_tree;
   bool show_fps_counter;
   bool accelerated_compositing_for_overflow_scroll_enabled;
+  bool accelerated_compositing_for_scrollable_frames_enabled;
   bool show_paint_rects;
   bool render_vsync_enabled;
   bool asynchronous_spell_checking_enabled;
