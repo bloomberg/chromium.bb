@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_INTENTS_CWS_INTENTS_REGISTRY_H_
 #define CHROME_BROWSER_INTENTS_CWS_INTENTS_REGISTRY_H_
 
+#include <vector>
+
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/hash_tables.h"
