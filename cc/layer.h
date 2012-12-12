@@ -216,7 +216,6 @@ public:
     virtual void update(ResourceUpdateQueue&, const OcclusionTracker*, RenderingStats&) { }
     virtual bool needMoreUpdates();
     virtual void setIsMask(bool) { }
-    virtual void bindContentsTexture() { }
 
     void setDebugName(const std::string&);
 
