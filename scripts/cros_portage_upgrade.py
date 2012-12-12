@@ -417,6 +417,10 @@ class Upgrader(object):
 
     if portdir is not None:
       envvars['PORTDIR'] = portdir
+      # Since we are clearing PORTDIR, we also have to clear PORTDIR_OVERLAY
+      # as most of those repos refer to the "normal" PORTDIR and will dump a
+      # lot of warnings if it can't be found.
+      envvars['PORTDIR_OVERLAY'] = portdir
     if portage_configroot is not None:
       envvars['PORTAGE_CONFIGROOT'] = portage_configroot
 

@@ -446,6 +446,8 @@ class CpuTestBase(cros_test_lib.MoxOutputTestCase):
     envvars = {'PORTAGE_CONFIGROOT': eroot,
                'ROOT': eroot,
                'PORTDIR': portdir,
+               # See _GenPortageEnvvars for more info on this setting.
+               'PORTDIR_OVERLAY': portdir,
                }
 
     if active:
