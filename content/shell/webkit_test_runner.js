@@ -77,8 +77,6 @@ var testRunner = testRunner || {};
                           {value: EvaluateInWebInspector});
 
     var stubs = [
-        "overridePreference",  // not really a stub, but required to pass
-                               // content_browsertests for now.
         "dumpDatabaseCallbacks",
         "denyWebNotificationPermission",
         "removeAllWebNotificationPermissions",
@@ -101,10 +99,12 @@ var testRunner = testRunner || {};
         "observeStorageTrackerNotifications",
         "syncLocalStorage",
         "addDisallowedURL",
-        "applicationCacheDiskUsageForOrigin"
+        "applicationCacheDiskUsageForOrigin",
+        "abortModal"
     ];
-    for (var stub in stubs) {
-      Object.defineProperty(this, stub, {value: function() { return null; }});
+    for (var idx in stubs) {
+      Object.defineProperty(
+          this, stubs[idx], {value: function() { return null; }});
     }
   }
   TestRunner.prototype = DefaultHandler("testRunner");
