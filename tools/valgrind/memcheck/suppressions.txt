@@ -1556,10 +1556,12 @@
    fun:_Znw*
    fun:_ZN27ChromeBrowserMainPartsPosix24PostMainMessageLoopStartEv
    fun:_ZN7content15BrowserMainLoop20MainMessageLoopStartEv
-   fun:_ZN12_GLOBAL__N_121BrowserMainRunnerImpl10InitializeERKN7content18MainFunctionParamsE
-   fun:_Z11BrowserMainRKN7content18MainFunctionParamsE
-   fun:_ZN7content15BrowserTestBase5SetUpEv
-   fun:_ZN20InProcessBrowserTest5SetUpEv
+   fun:_ZN7content21BrowserMainRunnerImpl10InitializeERKNS_18MainFunctionParamsE
+   fun:_ZN7content11BrowserMainERKNS_18MainFunctionParamsE
+   fun:_ZN7content23RunNamedProcessTypeMainERKSsRKNS_18MainFunctionParamsEPNS_19ContentMainDelegateE
+   fun:_ZN7content21ContentMainRunnerImpl3RunEv
+   fun:_ZN7content11ContentMainEiPPKcPNS_19ContentMainDelegateE
+   fun:ChromeMain
 }
 {
    bug_30346
