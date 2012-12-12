@@ -120,7 +120,13 @@ IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, DISABLED_IndexTests) {
   RunLayoutTests(kIndexTests);
 }
 
-IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, KeyTests) {
+#if defined(OS_LINUX)
+#define MAYBE_KeyTests DISABLED_KeyTests
+#else
+#define MAYBE_KeyTests KeyTests
+#endif
+
+IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, MAYBE_KeyTests) {
   RunLayoutTests(kKeyTests);
 }
 
