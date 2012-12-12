@@ -28,12 +28,21 @@ def _sha1(*args):
     return hashlib.sha1(f.read()).hexdigest()
 
 
-class IsolateTest(unittest.TestCase):
+class IsolateBase(unittest.TestCase):
   def setUp(self):
-    super(IsolateTest, self).setUp()
+    super(IsolateBase, self).setUp()
+    self.old_cwd = os.getcwd()
+    self.random_directory = tempfile.mkdtemp(prefix='isolate_')
     # Everything should work even from another directory.
-    os.chdir(os.path.dirname(ROOT_DIR))
+    os.chdir(self.random_directory)
 
+  def tearDown(self):
+    os.chdir(self.old_cwd)
+    isolate.run_isolated.rmtree(self.random_directory)
+    super(IsolateBase, self).tearDown()
+
+
+class IsolateTest(IsolateBase):
   def test_load_isolate_for_flavor_empty(self):
     content = "{}"
     command, infiles, touched, read_only = isolate.load_isolate_for_flavor(
@@ -769,10 +778,11 @@ class IsolateTest(unittest.TestCase):
     self._test_pretty_print_impl(value, expected)
 
 
-class IsolateLoad(unittest.TestCase):
+class IsolateLoad(IsolateBase):
   def setUp(self):
     super(IsolateLoad, self).setUp()
     self.directory = tempfile.mkdtemp(prefix='isolate_')
+    self.cwd = self.random_directory
 
   def tearDown(self):
     isolate.run_isolated.rmtree(self.directory)
@@ -960,6 +970,75 @@ class IsolateLoad(unittest.TestCase):
       'variables': {
         'foo': 'bar',
         'BAZ': os.path.join('tests', 'isolate'),
+      },
+    }
+    self._cleanup_saved_state(actual_saved_state)
+    self.assertEqual(expected_saved_state, actual_saved_state)
+
+  def test_variable_not_exist(self):
+    isolate_file = os.path.join(
+        ROOT_DIR, 'tests', 'isolate', 'touch_root.isolate')
+    options = self._get_option(isolate_file)
+    options.variables['PRODUCT_DIR'] = os.path.join('tests', 'isolate')
+    try:
+      isolate.load_complete_state(options, None)
+      self.fail()
+    except isolate.ExecutionError, e:
+      self.assertEquals(
+          'PRODUCT_DIR=%s is not a directory' %
+            os.path.join('tests', 'isolate'),
+          e.args[0])
+
+  def test_variable(self):
+    isolate_file = os.path.join(
+        ROOT_DIR, 'tests', 'isolate', 'touch_root.isolate')
+    options = self._get_option(isolate_file)
+    options.variables['PRODUCT_DIR'] = os.path.join('tests', 'isolate')
+    os.chdir(ROOT_DIR)
+    complete_state = isolate.load_complete_state(options, None)
+    actual_isolated = complete_state.saved_state.to_isolated()
+    actual_saved_state = complete_state.saved_state.flatten()
+
+    expected_isolated =  {
+      'command': ['python', 'touch_root.py'],
+      'files': {
+        'isolate.py': {
+          'm': 488,
+          'h': _sha1('isolate.py'),
+          's': _size('isolate.py'),
+        },
+        os.path.join('tests', 'isolate', 'touch_root.py'): {
+          'm': 488,
+          'h': _sha1('tests', 'isolate', 'touch_root.py'),
+          's': _size('tests', 'isolate', 'touch_root.py'),
+        },
+      },
+      'os': isolate.get_flavor(),
+      'relative_cwd': os.path.join('tests', 'isolate'),
+    }
+    self._cleanup_isolated(expected_isolated)
+    self.assertEqual(expected_isolated, actual_isolated)
+
+    expected_saved_state = {
+      'command': ['python', 'touch_root.py'],
+      'files': {
+        'isolate.py': {
+          'm': 488,
+          'h': _sha1('isolate.py'),
+          's': _size('isolate.py'),
+        },
+        os.path.join('tests', 'isolate', 'touch_root.py'): {
+          'm': 488,
+          'h': _sha1('tests', 'isolate', 'touch_root.py'),
+          's': _size('tests', 'isolate', 'touch_root.py'),
+        },
+      },
+      'isolate_file': isolate_file,
+      'os': isolate.get_flavor(),
+      'relative_cwd': os.path.join('tests', 'isolate'),
+      'variables': {
+        'foo': 'bar',
+        'PRODUCT_DIR': '.', #os.path.join('tests', 'isolate'),
       },
     }
     self._cleanup_saved_state(actual_saved_state)
