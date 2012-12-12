@@ -689,9 +689,22 @@ TEST(MinidumpWriterTest, MinidumpSizeLimit) {
 
   // Third, write a minidump with a size limit small enough to be triggered.
   {
-    // Set size limit to the normal file size minus some arbitrary amount --
-    // enough to make the limiting code kick in.
-    const off_t minidump_size_limit = normal_file_size - 64*1024;
+    // Set size limit to some arbitrary amount, such that the limiting code
+    // will kick in.  The equation used to set this value was determined by
+    // simply reversing the size-limit logic a little bit in order to pick a
+    // size we know will trigger it.  The definition of
+    // kLimitAverageThreadStackLength here was copied from class
+    // MinidumpWriter in minidump_writer.cc.
+    static const unsigned kLimitAverageThreadStackLength = 8 * 1024;
+    off_t minidump_size_limit = kNumberOfThreadsInHelperProgram *
+        kLimitAverageThreadStackLength;
+    // If, in reality, each of the threads' stack is *smaller* than
+    // kLimitAverageThreadStackLength, the normal file size could very well be
+    // smaller than the arbitrary limit that was just set.  In that case,
+    // either of these numbers should trigger the size-limiting code, but we
+    // might as well pick the smallest.
+    if (normal_file_size < minidump_size_limit)
+      minidump_size_limit = normal_file_size;
 
     string limit_dump = temp_dir.path() +
         "/minidump-writer-unittest-limit.dmp";
@@ -701,7 +714,9 @@ TEST(MinidumpWriterTest, MinidumpSizeLimit) {
     struct stat st;
     ASSERT_EQ(0, stat(limit_dump.c_str(), &st));
     ASSERT_GT(st.st_size, 0);
-    // Make sure the file size is at least smaller than the original.
+    // Make sure the file size is at least smaller than the original.  If this
+    // fails because it's the same size, then the size-limit logic didn't kick
+    // in like it was supposed to.
     EXPECT_LT(st.st_size, normal_file_size);
 
     Minidump minidump(limit_dump.c_str());
@@ -721,6 +736,12 @@ TEST(MinidumpWriterTest, MinidumpSizeLimit) {
     // Make sure stack size shrunk by at least 1KB per extra thread.  The
     // definition of kLimitBaseThreadCount here was copied from class
     // MinidumpWriter in minidump_writer.cc.
+    // Note: The 1KB is arbitrary, and assumes that the thread stacks are big
+    // enough to shrink by that much.  For example, if each thread stack was
+    // originally only 2KB, the current size-limit logic wouldn't actually
+    // shrink them because that's the size to which it tries to shrink.  If
+    // you fail this part of the test due to something like that, the test
+    // logic should probably be improved to account for your situation.
     const unsigned kLimitBaseThreadCount = 20;
     const unsigned kMinPerExtraThreadStackReduction = 1024;
     const int min_expected_reduction = (kNumberOfThreadsInHelperProgram -
