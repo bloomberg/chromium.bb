@@ -42,13 +42,13 @@ TEST(simple_button_test)
 
 	wl_test_send_button(client->test->wl_test, BTN_LEFT,
 			    WL_POINTER_BUTTON_STATE_PRESSED);
-	yield(client);
+	wl_display_roundtrip(client->wl_display);
 	assert(pointer->button == BTN_LEFT);
 	assert(pointer->state == WL_POINTER_BUTTON_STATE_PRESSED);
 
 	wl_test_send_button(client->test->wl_test, BTN_LEFT,
 			    WL_POINTER_BUTTON_STATE_RELEASED);
-	yield(client);
+	wl_display_roundtrip(client->wl_display);
 	assert(pointer->button == BTN_LEFT);
 	assert(pointer->state == WL_POINTER_BUTTON_STATE_RELEASED);
 }
