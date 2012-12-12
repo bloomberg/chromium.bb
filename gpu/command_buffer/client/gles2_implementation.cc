@@ -2214,7 +2214,9 @@ bool GLES2Implementation::BindBufferHelper(
 bool GLES2Implementation::BindFramebufferHelper(
     GLenum target, GLuint framebuffer) {
   // TODO(gman): See note #1 above.
-  bool changed = false;
+  // TODO(gman): Change this to false once we figure out why it's failing
+  //      on lumpy.
+  bool changed = true;
   switch (target) {
     case GL_FRAMEBUFFER:
       if (bound_framebuffer_ != framebuffer) {
