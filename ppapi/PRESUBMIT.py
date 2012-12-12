@@ -66,7 +66,7 @@ def CheckTODO(input_api, output_api):
     name_parts = name.split(os.sep)
 
     # Only check normal build sources.
-    if ext not in ['.h', '.cc', '.idl']:
+    if ext not in ['.h', '.idl']:
       continue
 
     # Only examine the ppapi directory.
