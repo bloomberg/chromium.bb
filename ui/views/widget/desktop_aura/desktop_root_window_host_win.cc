@@ -99,7 +99,7 @@ aura::RootWindow* DesktopRootWindowHostWin::Init(
 
   message_handler_->Init(parent_hwnd, params.bounds);
 
-  message_handler_->set_remove_standard_frame(!ShouldUseNativeFrame());
+  message_handler_->set_remove_standard_frame(params.remove_standard_frame);
 
   aura::RootWindow::CreateParams rw_params(params.bounds);
   rw_params.host = this;
