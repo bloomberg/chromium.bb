@@ -52,6 +52,9 @@ except ImportError:
     """A fake urlfetch module that uses the current
     |FAKE_URL_FETCHER_CONFIGURATION| to map urls to fake fetchers.
     """
+    class DownloadError(Exception):
+      pass
+
     class _Response(object):
       def __init__(self, content):
         self.content = content

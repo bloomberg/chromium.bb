@@ -7,8 +7,9 @@ import logging
 import os
 
 import appengine_blobstore as blobstore
+from appengine_wrappers import urlfetch
 import object_store
-from file_system import FileSystem, StatInfo, FileNotFoundError
+from file_system import FileSystem, StatInfo
 from StringIO import StringIO
 from future import Future
 from zipfile import ZipFile, BadZipfile
@@ -40,7 +41,7 @@ class _AsyncFetchFutureZip(object):
         blob = self._fetcher.Fetch(ZIP_KEY).content
       else:
         blob = result.content
-    except FileNotFoundError as e:
+    except urlfetch.DownloadError as e:
       logging.error('Bad github zip file: %s' % e)
       return None
     if self._key_to_delete is not None:
@@ -126,18 +127,32 @@ class GithubFileSystem(FileSystem):
         result[path] = self._ReadFile(path)
     return Future(value=result)
 
+  def _DefaultStat(self, path):
+    version = 0
+    # Cache for a minute so we don't try to keep fetching bad data.
+    self._object_store.Set(path, version, object_store.GITHUB_STAT, time=60)
+    return StatInfo(version)
+
   def Stat(self, path):
     version = self._object_store.Get(path, object_store.GITHUB_STAT).Get()
     if version is not None:
       return StatInfo(version)
-    result =  self._fetcher.Fetch('commits/HEAD',
-                                  username=USERNAME,
-                                  password=PASSWORD)
+    try:
+      result = self._fetcher.Fetch('commits/HEAD',
+                                   username=USERNAME,
+                                   password=PASSWORD)
+    except urlfetch.DownloadError as e:
+      logging.error('GithubFileSystem Stat: %s' % e)
+      return self._DefaultStat(path)
     # Check if Github authentication failed.
     if result.status_code == 401:
       logging.error('Github authentication failed for %s, falling back to '
                     'unauthenticated.' % USERNAME)
-      result =  self._fetcher.Fetch('commits/HEAD')
+      try:
+        result = self._fetcher.Fetch('commits/HEAD')
+      except urlfetch.DownloadError as e:
+        logging.error('GithubFileSystem Stat: %s' % e)
+        return self._DefaultStat(path)
     version = (json.loads(result.content).get('commit', {})
                                          .get('tree', {})
                                          .get('sha', None))
@@ -146,7 +161,5 @@ class GithubFileSystem(FileSystem):
       self._object_store.Set(path, version, object_store.GITHUB_STAT)
     else:
       logging.warning('Problem fetching commit hash from github.')
-      version = 0
-      # Cache for a minute so we don't try to keep fetching bad data.
-      self._object_store.Set(path, version, object_store.GITHUB_STAT, time=60)
+      return self._DefaultStat(path)
     return StatInfo(version)
