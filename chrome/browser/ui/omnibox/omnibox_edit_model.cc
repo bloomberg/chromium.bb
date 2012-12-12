@@ -71,12 +71,12 @@ OmniboxEditModel::State::State(bool user_input_in_progress,
                                const string16& user_text,
                                const string16& keyword,
                                bool is_keyword_hint,
-                               bool is_caret_visible)
+                               OmniboxFocusState focus_state)
     : user_input_in_progress(user_input_in_progress),
       user_text(user_text),
       keyword(keyword),
       is_keyword_hint(is_keyword_hint),
-      is_caret_visible(is_caret_visible) {
+      focus_state(focus_state) {
 }
 
 OmniboxEditModel::State::~State() {
@@ -91,8 +91,7 @@ OmniboxEditModel::OmniboxEditModel(OmniboxView* view,
     : view_(view),
       popup_(NULL),
       controller_(controller),
-      has_focus_(false),
-      is_caret_visible_(true),
+      focus_state_(OMNIBOX_FOCUS_NONE),
       user_input_in_progress_(false),
       just_deleted_text_(false),
       has_temporary_text_(false),
@@ -132,11 +131,11 @@ const OmniboxEditModel::State OmniboxEditModel::GetStateForTabSwitch() {
   }
 
   return State(user_input_in_progress_, user_text_, keyword_, is_keyword_hint_,
-               is_caret_visible_);
+               focus_state_);
 }
 
 void OmniboxEditModel::RestoreState(const State& state) {
-  SetCaretVisibility(state.is_caret_visible);
+  SetFocusState(state.focus_state, OMNIBOX_FOCUS_CHANGE_TAB_SWITCH);
   // Restore any user editing.
   if (state.user_input_in_progress) {
     // NOTE: Be sure and set keyword-related state BEFORE invoking
@@ -161,7 +160,7 @@ bool OmniboxEditModel::UpdatePermanentText(const string16& new_permanent_text) {
   // an edit and then abandoned it and clicked a link on the page.)
   const bool visibly_changed_permanent_text =
       (permanent_text_ != new_permanent_text) &&
-      (!user_input_in_progress_ || !has_focus_);
+      (!user_input_in_progress_ || !has_focus());
 
   permanent_text_ = new_permanent_text;
   return visibly_changed_permanent_text;
@@ -440,7 +439,7 @@ void OmniboxEditModel::Revert() {
   has_temporary_text_ = false;
   is_temporary_text_set_by_instant_ = false;
   view_->SetWindowTextAndCaretPos(permanent_text_,
-                                  has_focus_ ? permanent_text_.length() : 0,
+                                  has_focus() ? permanent_text_.length() : 0,
                                   false, true);
   AutocompleteActionPredictor* action_predictor =
       AutocompleteActionPredictorFactory::GetForProfile(profile_);
@@ -716,13 +715,12 @@ const AutocompleteResult& OmniboxEditModel::result() const {
 }
 
 void OmniboxEditModel::OnSetFocus(bool control_down) {
-  has_focus_ = true;
+  // If the omnibox lost focus while the caret was hidden and then regained
+  // focus, OnSetFocus() is called and should restore visibility. Note that
+  // focus can be regained without an accompanying call to
+  // OmniboxView::SetFocus(), e.g. by tabbing in.
+  SetFocusState(OMNIBOX_FOCUS_VISIBLE, OMNIBOX_FOCUS_CHANGE_EXPLICIT);
   control_key_state_ = control_down ? DOWN_WITHOUT_CHANGE : UP;
-  // Restore caret visibility whenever the user focuses back into the omnibox.
-  SetCaretVisibility(true);
-
-  if (InstantController* instant = controller_->GetInstant())
-    instant->OmniboxGotFocus();
 
   content::WebContents* web_contents = controller_->GetWebContents();
   if (web_contents) {
@@ -739,17 +737,22 @@ void OmniboxEditModel::OnSetFocus(bool control_down) {
 }
 
 void OmniboxEditModel::SetCaretVisibility(bool visible) {
-  if (has_focus_ && visible != is_caret_visible_) {
-    is_caret_visible_ = visible;
-    view_->ApplyCaretVisibility();
+  // Caret visibility only matters if the omnibox has focus.
+  if (focus_state_ != OMNIBOX_FOCUS_NONE) {
+    SetFocusState(visible ? OMNIBOX_FOCUS_VISIBLE : OMNIBOX_FOCUS_INVISIBLE,
+                  OMNIBOX_FOCUS_CHANGE_EXPLICIT);
   }
 }
 
 void OmniboxEditModel::OnWillKillFocus(gfx::NativeView view_gaining_focus) {
   SetInstantSuggestion(InstantSuggestion());
 
-  if (InstantController* instant = controller_->GetInstant())
-    instant->OmniboxLostFocus(view_gaining_focus);
+  InstantController* instant = controller_->GetInstant();
+  if (instant) {
+    instant->OmniboxFocusChanged(OMNIBOX_FOCUS_NONE,
+                                 OMNIBOX_FOCUS_CHANGE_EXPLICIT,
+                                 view_gaining_focus);
+  }
 
   // TODO(jered): Rip this out along with StartZeroSuggest.
   autocomplete_controller_->StopZeroSuggest();
@@ -757,7 +760,10 @@ void OmniboxEditModel::OnWillKillFocus(gfx::NativeView view_gaining_focus) {
 }
 
 void OmniboxEditModel::OnKillFocus() {
-  has_focus_ = false;
+  // TODO(samarth): determine if it is safe to move the call to
+  // OmniboxFocusChanged() from OnWillKillFocus() to here, which would let us
+  // just call SetFocusState() to handle the state change.
+  focus_state_ = OMNIBOX_FOCUS_NONE;
   control_key_state_ = UP;
   paste_state_ = NONE;
 }
@@ -955,7 +961,7 @@ bool OmniboxEditModel::OnAfterPossibleChange(const string16& old_text,
   // Restore caret visibility whenever the user changes text or selection in the
   // omnibox.
   if (text_differs || selection_differs)
-    SetCaretVisibility(true);
+    SetFocusState(OMNIBOX_FOCUS_VISIBLE, OMNIBOX_FOCUS_CHANGE_TYPING);
 
   // Modifying the selection counts as accepting the autocompleted text.
   const bool user_text_changed =
@@ -1017,7 +1023,8 @@ bool OmniboxEditModel::OnAfterPossibleChange(const string16& old_text,
 }
 
 void OmniboxEditModel::PopupBoundsChangedTo(const gfx::Rect& bounds) {
-  if (InstantController* instant = controller_->GetInstant())
+  InstantController* instant = controller_->GetInstant();
+  if (instant)
     instant->SetOmniboxBounds(bounds);
 }
 
@@ -1066,7 +1073,8 @@ void OmniboxEditModel::OnResultChanged(bool default_match_changed) {
     NotifySearchTabHelper();
   }
 
-  if (InstantController* instant = controller_->GetInstant())
+  InstantController* instant = controller_->GetInstant();
+  if (instant)
     instant->HandleAutocompleteResults(*autocomplete_controller_->providers());
 }
 
@@ -1290,4 +1298,22 @@ void OmniboxEditModel::ClassifyStringForPasteAndGo(
   DCHECK(match);
   AutocompleteClassifierFactory::GetForProfile(profile_)->Classify(text,
       string16(), false, false, match, alternate_nav_url);
+}
+
+void OmniboxEditModel::SetFocusState(OmniboxFocusState state,
+                                     OmniboxFocusChangeReason reason) {
+  if (state == focus_state_)
+    return;
+
+  InstantController* instant = controller_->GetInstant();
+  if (instant)
+    instant->OmniboxFocusChanged(state, reason, NULL);
+
+  // Update state and notify view if the omnibox has focus and the caret
+  // visibility changed.
+  const bool was_caret_visible = is_caret_visible();
+  focus_state_ = state;
+  if (focus_state_ != OMNIBOX_FOCUS_NONE &&
+      is_caret_visible() != was_caret_visible)
+    view_->ApplyCaretVisibility();
 }

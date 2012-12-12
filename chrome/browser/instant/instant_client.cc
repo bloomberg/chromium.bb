@@ -71,6 +71,11 @@ void InstantClient::SetDisplayInstantResults(bool display_instant_results) {
                display_instant_results));
 }
 
+void InstantClient::KeyCaptureChanged(bool is_key_capture_enabled) {
+  Send(new ChromeViewMsg_SearchBoxKeyCaptureChanged(routing_id(),
+               is_key_capture_enabled));
+}
+
 void InstantClient::DidFinishLoad(
     int64 /* frame_id */,
     const GURL& /* validated_url */,

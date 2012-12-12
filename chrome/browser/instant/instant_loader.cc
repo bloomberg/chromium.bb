@@ -274,6 +274,10 @@ void InstantLoader::SetDisplayInstantResults(bool display_instant_results) {
   client_.SetDisplayInstantResults(display_instant_results);
 }
 
+void InstantLoader::KeyCaptureChanged(bool is_key_capture_enabled) {
+  client_.KeyCaptureChanged(is_key_capture_enabled);
+}
+
 void InstantLoader::SetSuggestions(
     const std::vector<InstantSuggestion>& suggestions) {
   InstantSupportDetermined(true);

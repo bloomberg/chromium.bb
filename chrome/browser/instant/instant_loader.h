@@ -101,6 +101,7 @@ class InstantLoader : public InstantClient::Delegate,
   void SendThemeBackgroundInfo(const ThemeBackgroundInfo& theme_info);
   void SendThemeAreaHeight(int height);
   void SetDisplayInstantResults(bool display_instant_results);
+  void KeyCaptureChanged(bool is_key_capture_enabled);
 
  private:
   class WebContentsDelegateImpl;

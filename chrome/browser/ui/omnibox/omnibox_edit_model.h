@@ -31,6 +31,33 @@ class Image;
 class Rect;
 }
 
+// Omnibox focus state.
+enum OmniboxFocusState {
+  // Not focused.
+  OMNIBOX_FOCUS_NONE,
+
+  // Visibly focused.
+  OMNIBOX_FOCUS_VISIBLE,
+
+  // Invisibly focused, i.e. focused with a hidden caret.
+  OMNIBOX_FOCUS_INVISIBLE,
+};
+
+// Reasons why the Omnibox focus state could change.
+enum OmniboxFocusChangeReason {
+  // Includes any explicit changes to focus. (e.g. user clicking to change
+  // focus, user tabbing to change focus, any explicit calls to SetFocus,
+  // etc.)
+  OMNIBOX_FOCUS_CHANGE_EXPLICIT,
+
+  // Focus changed to restore state from a tab the user switched to.
+  OMNIBOX_FOCUS_CHANGE_TAB_SWITCH,
+
+  // Focus changed because user started typing. This only happens when focus
+  // state is INVISIBLE (and this results in a change to VISIBLE).
+  OMNIBOX_FOCUS_CHANGE_TYPING,
+};
+
 class OmniboxEditModel : public AutocompleteControllerDelegate {
  public:
   struct State {
@@ -38,14 +65,14 @@ class OmniboxEditModel : public AutocompleteControllerDelegate {
           const string16& user_text,
           const string16& keyword,
           bool is_keyword_hint,
-          bool is_caret_visible);
+          OmniboxFocusState focus_state);
     ~State();
 
     bool user_input_in_progress;
     const string16 user_text;
     const string16 keyword;
     const bool is_keyword_hint;
-    const bool is_caret_visible;
+    OmniboxFocusState focus_state;
   };
 
   OmniboxEditModel(OmniboxView* view,
@@ -191,8 +218,11 @@ class OmniboxEditModel : public AutocompleteControllerDelegate {
                  const GURL& alternate_nav_url,
                  size_t index);
 
-  bool has_focus() const { return has_focus_; }
-  bool is_caret_visible() const { return is_caret_visible_; }
+  OmniboxFocusState focus_state() const { return focus_state_; }
+  bool has_focus() const { return focus_state_ != OMNIBOX_FOCUS_NONE; }
+  bool is_caret_visible() const {
+    return focus_state_ == OMNIBOX_FOCUS_VISIBLE;
+  }
 
   // Accessors for keyword-related state (see comments on keyword_ and
   // is_keyword_hint_).
@@ -217,12 +247,13 @@ class OmniboxEditModel : public AutocompleteControllerDelegate {
   void OnSetFocus(bool control_down);
 
   // Sets the visibility of the caret in the omnibox, if it has focus. The
-  // visibility of the caret is reset to visible if any of the following
-  // happens:
-  // - User starts typing in the omnibox
-  // - User clicks in the omnibox
-  // - Omnibox loses and then regains focus
-  // - SetFocus() is explicitly called again
+  // visibility of the caret is reset to visible if either
+  //   - The user starts typing, or
+  //   - We explicitly focus the omnibox again.
+  // The latter case must be handled in three separate places--OnSetFocus(),
+  // OmniboxView::SetFocus(), and the mouse handlers in OmniboxView. See
+  // accompanying comments for why each of these is necessary.
+  //
   // Caret visibility is tracked per-tab and updates automatically upon
   // switching tabs.
   void SetCaretVisibility(bool visible);
@@ -407,6 +438,12 @@ class OmniboxEditModel : public AutocompleteControllerDelegate {
                                    AutocompleteMatch* match,
                                    GURL* alternate_nav_url) const;
 
+  // If focus_state_ does not match |state|, we update it and notify the
+  // InstantController about the change (passing along the |reason| for the
+  // change). If the caret visibility changes, we call ApplyCaretVisibility() on
+  // the view.
+  void SetFocusState(OmniboxFocusState state, OmniboxFocusChangeReason reason);
+
   scoped_ptr<AutocompleteController> autocomplete_controller_;
 
   OmniboxView* view_;
@@ -415,11 +452,7 @@ class OmniboxEditModel : public AutocompleteControllerDelegate {
 
   OmniboxEditController* controller_;
 
-  // Whether the edit has focus.
-  bool has_focus_;
-
-  // Is the caret visible? Only meaningful if has_focus_ is true.
-  bool is_caret_visible_;
+  OmniboxFocusState focus_state_;
 
   // The URL of the currently displayed page.
   string16 permanent_text_;

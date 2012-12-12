@@ -121,6 +121,9 @@ class InstantClient : public content::WebContentsObserver {
   // Tells the page whether it is allowed to display Instant results.
   void SetDisplayInstantResults(bool display_instant_results);
 
+  // Tells the page whether the browser is capturing user key strokes.
+  void KeyCaptureChanged(bool is_key_capture_enabled);
+
  private:
   // Overridden from content::WebContentsObserver:
   virtual void DidFinishLoad(

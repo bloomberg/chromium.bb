@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
+#include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -361,11 +362,14 @@ bool OmniboxViewViews::HandleKeyReleaseEvent(const ui::KeyEvent& event) {
 void OmniboxViewViews::HandleMousePressEvent(const ui::MouseEvent& event) {
   select_all_on_mouse_release_ =
       (event.IsOnlyLeftMouseButton() || event.IsOnlyRightMouseButton()) &&
-      !textfield_->HasFocus();
-  // Restore caret visibility whenever the user clicks in the the omnibox. This
-  // is not always covered by OnSetFocus() because when clicking while the
-  // omnibox has invisible focus does not trigger a new OnSetFocus() call.
-  model()->SetCaretVisibility(true);
+      (!textfield_->HasFocus() ||
+       (model()->focus_state() == OMNIBOX_FOCUS_INVISIBLE));
+  // Restore caret visibility whenever the user clicks in the omnibox in a way
+  // that would give it focus.  We must handle this case separately here because
+  // if the omnibox currently has invisible focus, the mouse event won't trigger
+  // either SetFocus() or OmniboxEditModel::OnSetFocus().
+  if (select_all_on_mouse_release_)
+    model()->SetCaretVisibility(true);
 }
 
 void OmniboxViewViews::HandleMouseDragEvent(const ui::MouseEvent& event) {
@@ -572,14 +576,14 @@ void OmniboxViewViews::UpdatePopup() {
 }
 
 void OmniboxViewViews::SetFocus() {
-  // Restore caret visibility if focused explicitly. We need to do this here
-  // because if we already have invisible focus, the RequestFocus() call below
-  // will short-circuit, preventing us from reaching
-  // OmniboxEditModel::OnSetFocus(), which handles restoring visibility when we
-  // didn't previously have focus.
-  model()->SetCaretVisibility(true);
   // In views-implementation, the focus is on textfield rather than OmniboxView.
   textfield_->RequestFocus();
+  // Restore caret visibility if focus is explicitly requested. This is
+  // necessary because if we already have invisible focus, the RequestFocus()
+  // call above will short-circuit, preventing us from reaching
+  // OmniboxEditModel::OnSetFocus(), which handles restoring visibility when the
+  // omnibox regains focus after losing focus.
+  model()->SetCaretVisibility(true);
 }
 
 void OmniboxViewViews::ApplyCaretVisibility() {

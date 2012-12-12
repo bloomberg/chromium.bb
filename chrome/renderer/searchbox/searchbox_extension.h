@@ -36,6 +36,7 @@ class SearchBoxExtension {
   static void DispatchOnWindowReady(WebKit::WebFrame* frame);
   static void DispatchAutocompleteResults(WebKit::WebFrame* frame);
   static void DispatchUpOrDownKeyPress(WebKit::WebFrame* frame, int count);
+  static void DispatchKeyCaptureChange(WebKit::WebFrame* frame);
   static void DispatchFocus(WebKit::WebFrame* frame);
   static void DispatchBlur(WebKit::WebFrame* frame);
   static void DispatchContextChange(WebKit::WebFrame* frame);

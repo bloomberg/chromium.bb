@@ -42,6 +42,7 @@ if (!chrome.searchBox) {
     native function GetDisplayInstantResults();
     native function GetThemeBackgroundInfo();
     native function GetThemeAreaHeight();
+    native function IsKeyCaptureEnabled();
     native function NavigateContentWindow();
     native function SetSuggestions();
     native function SetQuerySuggestion();
@@ -197,6 +198,7 @@ if (!chrome.searchBox) {
     this.__defineGetter__('width', GetWidth);
     this.__defineGetter__('height', GetHeight);
     this.__defineGetter__('nativeSuggestions', GetAutocompleteResultsWrapper);
+    this.__defineGetter__('isKeyCaptureEnabled', IsKeyCaptureEnabled);
     this.__defineGetter__('context', GetContext);
     this.__defineGetter__('displayInstantResults', GetDisplayInstantResults);
     this.__defineGetter__('themeBackgroundInfo', GetThemeBackgroundInfo);
@@ -237,6 +239,7 @@ if (!chrome.searchBox) {
     this.onresize = null;
     this.onautocompleteresults = null;
     this.onkeypress = null;
+    this.onkeycapturechange = null;
     this.oncontextchange = null;
   };
 }

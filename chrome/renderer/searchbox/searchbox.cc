@@ -17,6 +17,7 @@ SearchBox::SearchBox(content::RenderView* render_view)
       selection_end_(0),
       results_base_(0),
       last_results_base_(0),
+      is_key_capture_enabled_(false),
       theme_area_height_(0),
       display_instant_results_(false) {
 }
@@ -114,6 +115,8 @@ bool SearchBox::OnMessageReceived(const IPC::Message& message) {
                         OnModeChanged)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxSetDisplayInstantResults,
                         OnSetDisplayInstantResults)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxKeyCaptureChanged,
+                        OnKeyCaptureChange)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxThemeChanged,
                         OnThemeChanged)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxThemeAreaHeightChanged,
@@ -204,6 +207,16 @@ void SearchBox::OnUpOrDownKeyPressed(int count) {
   }
 }
 
+void SearchBox::OnKeyCaptureChange(bool is_key_capture_enabled) {
+  if (is_key_capture_enabled != is_key_capture_enabled_ &&
+      render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
+    is_key_capture_enabled_ = is_key_capture_enabled;
+    DVLOG(1) << render_view() << " OnKeyCaptureChange";
+    extensions_v8::SearchBoxExtension::DispatchKeyCaptureChange(
+        render_view()->GetWebView()->mainFrame());
+  }
+}
+
 void SearchBox::OnModeChanged(const chrome::search::Mode& mode) {
   mode_ = mode;
   if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
@@ -241,6 +254,7 @@ void SearchBox::Reset() {
   results_base_ = 0;
   rect_ = gfx::Rect();
   autocomplete_results_.clear();
+  is_key_capture_enabled_ = false;
   mode_ = chrome::search::Mode();
   theme_info_ = ThemeBackgroundInfo();
   theme_area_height_ = 0;

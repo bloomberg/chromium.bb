@@ -141,6 +141,15 @@ static const char kDispatchUpOrDownKeyPressEventScript[] =
     "  true;"
     "}";
 
+static const char kDispatchKeyCaptureChangeScript[] =
+    "if (window.chrome &&"
+    "    window.chrome.searchBox &&"
+    "    window.chrome.searchBox.onkeycapturechange &&"
+    "    typeof window.chrome.searchBox.onkeycapturechange == 'function') {"
+    "  window.chrome.searchBox.onkeycapturechange();"
+    "  true;"
+    "}";
+
 static const char kDispatchContextChangeEventScript[] =
     "if (window.chrome &&"
     "    window.chrome.searchBox &&"
@@ -234,6 +243,9 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   // "top".
   static v8::Handle<v8::Value> GetThemeAreaHeight(const v8::Arguments& args);
 
+  // Gets whether the browser is capturing key strokes.
+  static v8::Handle<v8::Value> IsKeyCaptureEnabled(const v8::Arguments& args);
+
   // Navigates the window to a URL represented by either a URL string or a
   // restricted ID.
   static v8::Handle<v8::Value> NavigateContentWindow(const v8::Arguments& args);
@@ -303,6 +315,8 @@ v8::Handle<v8::FunctionTemplate> SearchBoxExtensionWrapper::GetNativeFunction(
     return v8::FunctionTemplate::New(GetThemeBackgroundInfo);
   if (name->Equals(v8::String::New("GetThemeAreaHeight")))
     return v8::FunctionTemplate::New(GetThemeAreaHeight);
+  if (name->Equals(v8::String::New("IsKeyCaptureEnabled")))
+    return v8::FunctionTemplate::New(IsKeyCaptureEnabled);
   if (name->Equals(v8::String::New("NavigateContentWindow")))
     return v8::FunctionTemplate::New(NavigateContentWindow);
   if (name->Equals(v8::String::New("SetSuggestions")))
@@ -442,6 +456,16 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetAutocompleteResults(
     results_array->Set(i, result);
   }
   return results_array;
+}
+
+// static
+v8::Handle<v8::Value> SearchBoxExtensionWrapper::IsKeyCaptureEnabled(
+    const v8::Arguments& args) {
+  content::RenderView* render_view = GetRenderView();
+  if (!render_view) return v8::Undefined();
+
+  return v8::Boolean::New(SearchBox::Get(render_view)->
+                          is_key_capture_enabled());
 }
 
 // static
@@ -827,6 +851,11 @@ void SearchBoxExtension::DispatchUpOrDownKeyPress(WebKit::WebFrame* frame,
   Dispatch(frame, WebKit::WebString::fromUTF8(
       base::StringPrintf(kDispatchUpOrDownKeyPressEventScript, abs(count),
                          count < 0 ? ui::VKEY_UP : ui::VKEY_DOWN)));
+}
+
+// static
+void SearchBoxExtension::DispatchKeyCaptureChange(WebKit::WebFrame* frame) {
+  Dispatch(frame, kDispatchKeyCaptureChangeScript);
 }
 
 // static

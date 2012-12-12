@@ -102,10 +102,13 @@ class InstantTest : public InProcessBrowserTest {
 
   void FocusOmnibox() {
     // If the omnibox already has focus, just notify Instant.
-    if (omnibox()->model()->has_focus())
-      instant()->OmniboxGotFocus();
-    else
+    if (omnibox()->model()->has_focus()) {
+      instant()->OmniboxFocusChanged(OMNIBOX_FOCUS_VISIBLE,
+                                     OMNIBOX_FOCUS_CHANGE_EXPLICIT, NULL);
+    }
+    else {
       browser()->window()->GetLocationBar()->FocusLocation(false);
+    }
   }
 
   void FocusOmniboxAndWaitForInstantSupport() {
@@ -678,7 +681,8 @@ IN_PROC_BROWSER_TEST_F(InstantTest, DoesNotCommitURLsTwo) {
 
   // Pretend the omnibox got focus. It already had focus, so we are just trying
   // to tickle a different code path.
-  instant()->OmniboxGotFocus();
+  instant()->OmniboxFocusChanged(OMNIBOX_FOCUS_VISIBLE,
+                                 OMNIBOX_FOCUS_CHANGE_EXPLICIT, NULL);
 
   // Commit the URL. As before, check that Instant wasn't committed.
   browser()->window()->GetLocationBar()->AcceptInput();
@@ -897,7 +901,8 @@ IN_PROC_BROWSER_TEST_F(InstantTest, InstantLoaderRefresh) {
   EXPECT_TRUE(instant()->loader_->supports_instant());
   instant()->HideLoader();
   EXPECT_TRUE(instant()->loader_->supports_instant());
-  instant()->OmniboxLostFocus(NULL);
+  instant()->OmniboxFocusChanged(OMNIBOX_FOCUS_NONE,
+                                 OMNIBOX_FOCUS_CHANGE_EXPLICIT, NULL);
   EXPECT_FALSE(instant()->loader_->supports_instant());
 
   // Try with a different ordering.
@@ -905,7 +910,8 @@ IN_PROC_BROWSER_TEST_F(InstantTest, InstantLoaderRefresh) {
   instant()->stale_loader_timer_.Stop();
   instant()->OnStaleLoader();
   EXPECT_TRUE(instant()->loader_->supports_instant());
-  instant()->OmniboxLostFocus(NULL);
+  instant()->OmniboxFocusChanged(OMNIBOX_FOCUS_NONE,
+                                 OMNIBOX_FOCUS_CHANGE_EXPLICIT, NULL);
   // TODO(sreeram): Currently, OmniboxLostFocus() calls HideLoader(). When it
   // stops hiding the preview eventually, uncomment these two lines:
   //     EXPECT_TRUE(instant()->loader_->supports_instant());

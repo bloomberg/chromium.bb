@@ -33,6 +33,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
+#include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
@@ -761,10 +762,11 @@ void OmniboxViewWin::UpdatePopup() {
 
 void OmniboxViewWin::SetFocus() {
   ::SetFocus(m_hWnd);
-  // Restore caret visibility if focused explicitly. We need to do this here
-  // because if we already have invisible focus, the ::SetFocus call above will
-  // short-circuit, preventing us from reaching OmniboxEditModel::OnSetFocus(),
-  // which handles restoring visibility when we didn't previously have focus.
+  // Restore caret visibility if focus is explicitly requested. This is
+  // necessary because if we already have invisible focus, the ::SetFocus()
+  // call above will short-circuit, preventing us from reaching
+  // OmniboxEditModel::OnSetFocus(), which handles restoring visibility when the
+  // omnibox regains focus after losing focus.
   model()->SetCaretVisibility(true);
 }
 
@@ -1772,7 +1774,8 @@ LRESULT OmniboxViewWin::OnMouseActivate(HWND window,
   // reached before OnXButtonDown(), preventing us from detecting this properly
   // there.  Also in those cases, we need to already know in OnSetFocus() that
   // we should not restore the saved selection.
-  if ((!model()->has_focus() || !model()->is_caret_visible()) &&
+  if ((!model()->has_focus() ||
+       (model()->focus_state() == OMNIBOX_FOCUS_INVISIBLE)) &&
       ((mouse_message == WM_LBUTTONDOWN || mouse_message == WM_RBUTTONDOWN)) &&
       (result == MA_ACTIVATE)) {
     if (gaining_focus_) {
@@ -1783,8 +1786,10 @@ LRESULT OmniboxViewWin::OnMouseActivate(HWND window,
     }
     gaining_focus_.reset(new ScopedFreeze(this, GetTextObjectModel()));
 
-    // Explicitely set focus visibility in the case of clicking on the omnibox,
-    // which will remove invisible focus if present.
+    // Restore caret visibility whenever the user clicks in the omnibox in a
+    // way that would give it focus.  We must handle this case separately here
+    // because if the omnibox currently has invisible focus, the mouse event
+    // won't trigger either SetFocus() or OmniboxEditModel::OnSetFocus().
     model()->SetCaretVisibility(true);
 
     // NOTE: Despite |mouse_message| being WM_XBUTTONDOWN here, we're not

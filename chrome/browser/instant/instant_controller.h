@@ -17,6 +17,7 @@
 #include "base/timer.h"
 #include "chrome/browser/instant/instant_commit_type.h"
 #include "chrome/browser/instant/instant_model.h"
+#include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 #include "chrome/common/instant_types.h"
 #include "chrome/common/search_types.h"
 #include "content/public/common/page_transition_types.h"
@@ -84,12 +85,12 @@ class InstantController {
   // CommitInstant() on the browser, and returns true. Else, returns false.
   bool CommitIfPossible(InstantCommitType type);
 
-  // The omnibox has lost focus. Commit or discard the preview accordingly.
-  void OmniboxLostFocus(gfx::NativeView view_gaining_focus);
-
-  // The omnibox has gained focus. Preload the default search engine, in
-  // anticipation of the user typing a query.
-  void OmniboxGotFocus();
+  // Called to indicate that the omnibox focus state changed with the given
+  // |reason|. If |focus_state| is FOCUS_NONE, |view_gaining_focus| is set to
+  // the view gaining focus.
+  void OmniboxFocusChanged(OmniboxFocusState focus_state,
+                           OmniboxFocusChangeReason reason,
+                           gfx::NativeView view_gaining_focus);
 
   // The search mode in the active tab has changed. Pass the message down to
   // the loader which will notify the renderer. Create |instant_tab_| if the
@@ -152,6 +153,9 @@ class InstantController {
   FRIEND_TEST_ALL_PREFIXES(InstantTest, OmniboxFocusLoadsInstant);
   FRIEND_TEST_ALL_PREFIXES(InstantTest, NonInstantSearchProvider);
   FRIEND_TEST_ALL_PREFIXES(InstantTest, InstantLoaderRefresh);
+
+  // Helper for OmniboxFocusChanged. Commit or discard the preview.
+  void OmniboxLostFocus(gfx::NativeView view_gaining_focus);
 
   // Creates a new loader if necessary, using the instant_url property of the
   // |template_url| (for example, if the Instant URL has changed since the last
@@ -243,8 +247,8 @@ class InstantController {
   // Used to ensure that the preview page is committable.
   bool last_match_was_search_;
 
-  // True if the omnibox is focused, false otherwise.
-  bool is_omnibox_focused_;
+  // Omnibox focus state.
+  OmniboxFocusState omnibox_focus_state_;
 
   // The search model mode for the active tab.
   chrome::search::Mode search_mode_;

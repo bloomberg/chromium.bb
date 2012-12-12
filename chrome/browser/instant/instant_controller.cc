@@ -156,7 +156,7 @@ InstantController::InstantController(chrome::BrowserInstantController* browser,
       last_verbatim_(false),
       last_transition_type_(content::PAGE_TRANSITION_LINK),
       last_match_was_search_(false),
-      is_omnibox_focused_(false),
+      omnibox_focus_state_(OMNIBOX_FOCUS_NONE),
       allow_preview_to_show_search_suggestions_(false) {
 }
 
@@ -547,50 +547,37 @@ bool InstantController::CommitIfPossible(InstantCommitType type) {
   return true;
 }
 
-void InstantController::OmniboxLostFocus(gfx::NativeView view_gaining_focus) {
-  DVLOG(1) << "OmniboxLostFocus";
-  is_omnibox_focused_ = false;
+void InstantController::OmniboxFocusChanged(
+    OmniboxFocusState state,
+    OmniboxFocusChangeReason reason,
+    gfx::NativeView view_gaining_focus) {
+  DVLOG(1) << "OmniboxFocusChanged: " << omnibox_focus_state_ << " to "
+           << state << " for reason " << reason;
 
+  OmniboxFocusState old_focus_state = omnibox_focus_state_;
+  omnibox_focus_state_ = state;
   if (!extended_enabled_ && !instant_enabled_)
     return;
 
-  // If the preview is showing custom NTP content, don't hide it, commit it
-  // (no matter where the user clicked) or try to recreate it.
-  if (model_.mode().is_ntp())
-    return;
+  // Tell the page if the key capture mode changed unless the focus state
+  // changed because of TYPING. This is because in that case, the browser hasn't
+  // really stopped capturing key strokes.
+  //
+  // (More practically, if we don't do this check, the page would receive
+  // onkeycapturechange before the corresponding onchange, and the page would
+  // have no way of telling whether the keycapturechange happened because of
+  // some actual user action or just because they started typing.)
+  if (extended_enabled_ && GetPreviewContents() &&
+      reason != OMNIBOX_FOCUS_CHANGE_TYPING)
+    loader_->KeyCaptureChanged(omnibox_focus_state_ == OMNIBOX_FOCUS_INVISIBLE);
 
-  // If the preview is not showing at all, recreate it if it's stale.
-  if (model_.mode().is_default()) {
-    OnStaleLoader();
-    return;
-  }
-
-  // The preview is showing search suggestions. If GetPreviewContents() is NULL,
-  // we are in the commit path. Don't do anything.
-  if (!GetPreviewContents())
-    return;
-
-#if defined(OS_MACOSX)
-  // TODO(sreeram): See if Mac really needs this special treatment.
-  if (!loader_->is_pointer_down_from_activate())
-    HideLoader();
-#else
-  if (IsViewInContents(GetViewGainingFocus(view_gaining_focus),
-                       loader_->contents()))
-    CommitIfPossible(INSTANT_COMMIT_FOCUS_LOST);
-  else
-    HideLoader();
-#endif
-}
-
-void InstantController::OmniboxGotFocus() {
-  DVLOG(1) << "OmniboxGotFocus";
-  is_omnibox_focused_ = true;
-
-  if (!extended_enabled_ && !instant_enabled_)
-    return;
-
-  CreateDefaultLoader();
+  // If focus went from outside the omnibox to the omnibox, preload the default
+  // search engine, in anticipation of the user typing a query. If the reverse
+  // happened, commit or discard the preview.
+  if (state != OMNIBOX_FOCUS_NONE && old_focus_state == OMNIBOX_FOCUS_NONE)
+    CreateDefaultLoader();
+  else if (state == OMNIBOX_FOCUS_NONE && old_focus_state != OMNIBOX_FOCUS_NONE)
+    OmniboxLostFocus(view_gaining_focus);
 }
 
 void InstantController::SearchModeChanged(
@@ -810,6 +797,36 @@ void InstantController::InstantLoaderAboutToNavigateMainFrame(const GURL& url) {
     CommitIfPossible(INSTANT_COMMIT_NAVIGATED);
 }
 
+void InstantController::OmniboxLostFocus(gfx::NativeView view_gaining_focus) {
+  // If the preview is showing custom NTP content, don't hide it, commit it
+  // (no matter where the user clicked) or try to recreate it.
+  if (model_.mode().is_ntp())
+    return;
+
+  // If the preview is not showing at all, recreate it if it's stale.
+  if (model_.mode().is_default()) {
+    OnStaleLoader();
+    return;
+  }
+
+  // The preview is showing search suggestions. If GetPreviewContents() is NULL,
+  // we are in the commit path. Don't do anything.
+  if (!GetPreviewContents())
+    return;
+
+#if defined(OS_MACOSX)
+  // TODO(sreeram): See if Mac really needs this special treatment.
+  if (!loader_->is_pointer_down_from_activate())
+    HideLoader();
+#else
+  if (IsViewInContents(GetViewGainingFocus(view_gaining_focus),
+                       loader_->contents()))
+    CommitIfPossible(INSTANT_COMMIT_FOCUS_LOST);
+  else
+    HideLoader();
+#endif
+}
+
 bool InstantController::ResetLoader(const TemplateURL* template_url,
                                     const content::WebContents* active_tab) {
   std::string instant_url;
@@ -828,6 +845,7 @@ bool InstantController::ResetLoader(const TemplateURL* template_url,
     browser_->UpdateThemeInfoForPreview();
     loader_->SetDisplayInstantResults(instant_enabled_);
     loader_->SearchModeChanged(search_mode_);
+    loader_->KeyCaptureChanged(omnibox_focus_state_ == OMNIBOX_FOCUS_INVISIBLE);
   }
 
   // Restart the stale loader timer.
@@ -855,7 +873,8 @@ void InstantController::OnStaleLoader() {
   // If the preview is showing or the omnibox has focus, don't delete the
   // loader. It will get refreshed the next time the preview is hidden or the
   // omnibox loses focus.
-  if (!stale_loader_timer_.IsRunning() && !is_omnibox_focused_ &&
+  if (!stale_loader_timer_.IsRunning() &&
+      omnibox_focus_state_ == OMNIBOX_FOCUS_NONE &&
       model_.mode().is_default()) {
     loader_.reset();
     CreateDefaultLoader();

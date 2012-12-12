@@ -329,6 +329,9 @@ IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxThemeChanged,
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxThemeAreaHeightChanged,
                     int /* height */)
 
+IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxKeyCaptureChanged,
+                    bool /* is_key_capture_enabled */)
+
 // Toggles visual muting of the render view area. This is on when a constrained
 // window is showing.
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetVisuallyDeemphasized,
