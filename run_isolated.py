@@ -50,6 +50,11 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # The name of the log to use for the run_test_cases.py command
 RUN_TEST_CASES_LOG = os.path.join(BASE_DIR, 'run_test_cases.log')
 
+# The delay (in seconds) to wait between logging statements when retrieving
+# the required files. This is intended to let the user (or buildbot) know that
+# the program is still running.
+DELAY_BETWEEN_UPDATES_IN_SECS = 30
+
 
 class ConfigError(ValueError):
   """Generic failure to load a .isolated file."""
@@ -1048,6 +1053,8 @@ def run_tha_test(isolated_hash, cache_dir, remote, policies):
         cmd = fix_python_path(cmd)
 
         # Now block on the remaining files to be downloaded and mapped.
+        logging.info('Retrieving remaining files')
+        last_update = time.time()
         while remaining:
           obj = cache.wait_for(remaining)
           for filepath, properties in remaining.pop(obj):
@@ -1056,6 +1063,10 @@ def run_tha_test(isolated_hash, cache_dir, remote, policies):
             if 'm' in properties:
               # It's not set on Windows.
               os.chmod(outfile, properties['m'])
+
+          if time.time() - last_update > DELAY_BETWEEN_UPDATES_IN_SECS:
+            logging.info('%d files remaining...' % len(remaining))
+            last_update = time.time()
 
       if settings.read_only:
         make_writable(outdir, True)
