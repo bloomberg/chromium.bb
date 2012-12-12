@@ -165,6 +165,13 @@ ImageEditor.prototype.executeWhenReady = function(callback) {
 };
 
 /**
+ * @return {boolean} True if undo queue is not empty.
+ */
+ImageEditor.prototype.canUndo = function() {
+  return this.commandQueue_ && this.commandQueue_.canUndo();
+};
+
+  /**
  * Undo the recently executed command.
  */
 ImageEditor.prototype.undo = function() {

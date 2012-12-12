@@ -856,9 +856,13 @@ SlideMode.prototype.saveCurrentImage_ = function(callback) {
         e.metadata = this.selectedImageMetadata_;
         this.dataModel_.dispatchEvent(e);
 
+        // Allow changing the 'Overwrite original' setting only if the user
+        // used Undo to restore the original image AND it is not a copy.
+        // Otherwise lock the setting in its current state.
+        var mayChangeOverwrite = !this.editor_.canUndo() && item.isOriginal();
+        ImageUtil.setAttribute(this.options_, 'saved', !mayChangeOverwrite);
+
         if (this.imageView_.getContentRevision() == 1) {  // First edit.
-          // Lock the 'Overwrite original' checkbox for this item.
-          ImageUtil.setAttribute(this.options_, 'saved', true);
           ImageUtil.metrics.recordUserAction(ImageUtil.getMetricName('Edit'));
         }
 
