@@ -514,7 +514,7 @@ void FullscreenController::ToggleFullscreenModeInternal(bool for_tab) {
     window_->EnterFullscreen(url, GetFullscreenExitBubbleType());
   } else {
 #if defined(OS_MACOSX)
-    if (window_->InPresentationMode())
+    if (window_->InPresentationMode() && !for_tab)
       window_->ExitPresentationMode();
     else
 #endif
@@ -561,7 +561,7 @@ void FullscreenController::SetMouseLockTab(WebContents* tab) {
 
 void FullscreenController::ExitTabFullscreenOrMouseLockIfNecessary() {
   if (tab_caused_fullscreen_)
-    ToggleFullscreenMode();
+    ToggleFullscreenModeInternal(true);
   else
     NotifyTabOfExitIfNecessary();
 }
