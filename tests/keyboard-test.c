@@ -60,6 +60,6 @@ TEST(simple_keyboard_test)
 			break;
 		}
 
-		wl_display_roundtrip(client->wl_display);
+		client_roundtrip(client);
 	}
 }

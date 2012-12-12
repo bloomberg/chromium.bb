@@ -161,28 +161,28 @@ TEST(text_test)
 	/* Make sure our test surface has keyboard focus. */
 	wl_test_activate_surface(client->test->wl_test,
 				 client->surface->wl_surface);
-	wl_display_roundtrip(client->wl_display);
+	client_roundtrip(client);
 	assert(client->input->keyboard->focus == client->surface);
 
 	/* Activate test model and make sure we get enter event. */
 	text_model_activate(text_model, client->input->wl_seat,
 			    client->surface->wl_surface);
-	wl_display_roundtrip(client->wl_display);
+	client_roundtrip(client);
 	assert(state.activated == 1 && state.deactivated == 0);
 
 	/* Deactivate test model and make sure we get leave event. */
 	text_model_deactivate(text_model, client->input->wl_seat);
-	wl_display_roundtrip(client->wl_display);
+	client_roundtrip(client);
 	assert(state.activated == 1 && state.deactivated == 1);
 
 	/* Activate test model again. */
 	text_model_activate(text_model, client->input->wl_seat,
 			    client->surface->wl_surface);
-	wl_display_roundtrip(client->wl_display);
+	client_roundtrip(client);
 	assert(state.activated == 2 && state.deactivated == 1);
 
 	/* Take keyboard focus away and verify we get leave event. */
 	wl_test_activate_surface(client->test->wl_test, NULL);
-	wl_display_roundtrip(client->wl_display);
+	client_roundtrip(client);
 	assert(state.activated == 2 && state.deactivated == 2);
 }

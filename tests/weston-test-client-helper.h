@@ -107,5 +107,8 @@ surface_contains(struct surface *surface, int x, int y);
 void
 move_client(struct client *client, int x, int y);
 
+#define client_roundtrip(c) do { \
+	assert(wl_display_roundtrip((c)->wl_display) >= 0); \
+} while (0)
 
 #endif
