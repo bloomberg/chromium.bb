@@ -5,43 +5,43 @@
 #include "base/logging.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "net/disk_cache/flash/cache_entry.h"
 #include "net/disk_cache/flash/format.h"
-#include "net/disk_cache/flash/log_structured_store.h"
+#include "net/disk_cache/flash/log_store.h"
+#include "net/disk_cache/flash/log_store_entry.h"
 
 namespace disk_cache {
 
-CacheEntry::CacheEntry(LogStructuredStore* store)
+LogStoreEntry::LogStoreEntry(LogStore* store)
     : store_(store), id_(-1), init_(false), closed_(false) {
   DCHECK(store);
 }
 
-CacheEntry::CacheEntry(LogStructuredStore* store, int32 id)
+LogStoreEntry::LogStoreEntry(LogStore* store, int32 id)
     : store_(store), id_(id), init_(false), closed_(false) {
   DCHECK(store);
 }
 
-CacheEntry::~CacheEntry() {
+LogStoreEntry::~LogStoreEntry() {
   DCHECK(!init_ || closed_);
 }
 
-bool CacheEntry::Init() {
+bool LogStoreEntry::Init() {
   DCHECK(!init_);
   if (!OnDisk()) {
     init_ = true;
     return true;
   }
 
-  int32 stream_sizes[kFlashCacheEntryNumStreams];
-  COMPILE_ASSERT(sizeof(stream_sizes) == kFlashCacheEntryHeaderSize,
-                 invalid_cache_entry_header_size);
+  int32 stream_sizes[kFlashLogStoreEntryNumStreams];
+  COMPILE_ASSERT(sizeof(stream_sizes) == kFlashLogStoreEntryHeaderSize,
+                 invalid_log_store_entry_header_size);
 
   if (!store_->OpenEntry(id_) ||
-      !store_->ReadData(id_, stream_sizes, kFlashCacheEntryHeaderSize, 0)) {
+      !store_->ReadData(id_, stream_sizes, kFlashLogStoreEntryHeaderSize, 0)) {
     return false;
   }
-  for (int i = 0, offset = kFlashCacheEntryHeaderSize;
-       i < kFlashCacheEntryNumStreams; ++i) {
+  for (int i = 0, offset = kFlashLogStoreEntryHeaderSize;
+       i < kFlashLogStoreEntryNumStreams; ++i) {
     streams_[i].offset = offset;
     streams_[i].size = stream_sizes[i];
     offset += stream_sizes[i];
@@ -50,7 +50,7 @@ bool CacheEntry::Init() {
   return true;
 }
 
-bool CacheEntry::Close() {
+bool LogStoreEntry::Close() {
   DCHECK(init_ && !closed_);
   if (OnDisk())
     store_->CloseEntry(id_);
@@ -60,18 +60,18 @@ bool CacheEntry::Close() {
   return true;
 }
 
-int32 CacheEntry::id() const {
+int32 LogStoreEntry::id() const {
   DCHECK(init_);
   return id_;
 }
 
-int32 CacheEntry::GetDataSize(int index) const {
+int32 LogStoreEntry::GetDataSize(int index) const {
   DCHECK(init_);
   return InvalidStream(index) ? 0 : streams_[index].size;
 }
 
-int CacheEntry::ReadData(int index, int offset, net::IOBuffer* buf,
-                         int buf_len) {
+int LogStoreEntry::ReadData(int index, int offset, net::IOBuffer* buf,
+                            int buf_len) {
   DCHECK(init_);
   if (InvalidStream(index))
     return net::ERR_INVALID_ARGUMENT;
@@ -92,8 +92,8 @@ int CacheEntry::ReadData(int index, int offset, net::IOBuffer* buf,
   return buf_len;
 }
 
-int CacheEntry::WriteData(int index, int offset, net::IOBuffer* buf,
-                          int buf_len) {
+int LogStoreEntry::WriteData(int index, int offset, net::IOBuffer* buf,
+                             int buf_len) {
   DCHECK(init_ && !closed_);
   if (InvalidStream(index))
     return net::ERR_INVALID_ARGUMENT;
@@ -113,37 +113,37 @@ int CacheEntry::WriteData(int index, int offset, net::IOBuffer* buf,
   return buf_len;
 }
 
-bool CacheEntry::OnDisk() const {
+bool LogStoreEntry::OnDisk() const {
   return id_ != -1;
 }
 
-bool CacheEntry::InvalidStream(int stream_index) const {
-  return stream_index < 0 || stream_index >= kFlashCacheEntryNumStreams;
+bool LogStoreEntry::InvalidStream(int stream_index) const {
+  return stream_index < 0 || stream_index >= kFlashLogStoreEntryNumStreams;
 }
 
-int32 CacheEntry::Size() const {
+int32 LogStoreEntry::Size() const {
   DCHECK(init_);
-  int32 size = kFlashCacheEntryHeaderSize;
-  for (int i = 0; i < kFlashCacheEntryNumStreams; ++i)
+  int32 size = kFlashLogStoreEntryHeaderSize;
+  for (int i = 0; i < kFlashLogStoreEntryNumStreams; ++i)
     size += streams_[i].size;
   DCHECK(size > 0 && size <= kFlashSegmentFreeSpace);
   return size;
 }
 
-bool CacheEntry::Save() {
+bool LogStoreEntry::Save() {
   DCHECK(init_ && !closed_ && !OnDisk());
-  int32 stream_sizes[kFlashCacheEntryNumStreams];
-  COMPILE_ASSERT(sizeof(stream_sizes) == kFlashCacheEntryHeaderSize,
-                 invalid_cache_entry_header_size);
+  int32 stream_sizes[kFlashLogStoreEntryNumStreams];
+  COMPILE_ASSERT(sizeof(stream_sizes) == kFlashLogStoreEntryHeaderSize,
+                 invalid_log_store_entry_header_size);
 
-  for (int i = 0; i < kFlashCacheEntryNumStreams; ++i)
+  for (int i = 0; i < kFlashLogStoreEntryNumStreams; ++i)
     stream_sizes[i] = streams_[i].size;
 
   if (!store_->CreateEntry(Size(), &id_))
     return false;
-  if (!store_->WriteData(stream_sizes, kFlashCacheEntryHeaderSize))
+  if (!store_->WriteData(stream_sizes, kFlashLogStoreEntryHeaderSize))
     return false;
-  for (int i = 0; i < kFlashCacheEntryNumStreams; ++i) {
+  for (int i = 0; i < kFlashLogStoreEntryNumStreams; ++i) {
     if (streams_[i].size > 0 &&
         !store_->WriteData(&streams_[i].write_buffer[0], streams_[i].size)) {
       return false;
@@ -153,10 +153,10 @@ bool CacheEntry::Save() {
   return true;
 }
 
-CacheEntry::Stream::Stream() : offset(0), size(0) {
+LogStoreEntry::Stream::Stream() : offset(0), size(0) {
 }
 
-CacheEntry::Stream::~Stream() {
+LogStoreEntry::Stream::~Stream() {
 }
 
 }  // namespace disk_cache

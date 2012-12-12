@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_DISK_CACHE_FLASH_LOG_ENTRY_H_
-#define NET_DISK_CACHE_FLASH_LOG_ENTRY_H_
+#ifndef NET_DISK_CACHE_FLASH_LOG_STORE_ENTRY_H_
+#define NET_DISK_CACHE_FLASH_LOG_STORE_ENTRY_H_
 
 #include <vector>
 
@@ -18,13 +18,13 @@ class IOBuffer;
 
 namespace disk_cache {
 
-class LogStructuredStore;
+class LogStore;
 
-class NET_EXPORT_PRIVATE CacheEntry {
+class NET_EXPORT_PRIVATE LogStoreEntry {
  public:
-  explicit CacheEntry(LogStructuredStore* store);
-  CacheEntry(LogStructuredStore* store, int32 id);
-  ~CacheEntry();
+  explicit LogStoreEntry(LogStore* store);
+  LogStoreEntry(LogStore* store, int32 id);
+  ~LogStoreEntry();
 
   bool Init();
   bool Close();
@@ -49,15 +49,15 @@ class NET_EXPORT_PRIVATE CacheEntry {
   int32 Size() const;
   bool Save();
 
-  LogStructuredStore* store_;
+  LogStore* store_;
   int32 id_;
-  Stream streams_[kFlashCacheEntryNumStreams];
+  Stream streams_[kFlashLogStoreEntryNumStreams];
   bool init_;
   bool closed_;
 
-  DISALLOW_COPY_AND_ASSIGN(CacheEntry);
+  DISALLOW_COPY_AND_ASSIGN(LogStoreEntry);
 };
 
 }  // namespace disk_cache
 
-#endif  // NET_DISK_CACHE_FLASH_LOG_ENTRY_H_
+#endif  // NET_DISK_CACHE_FLASH_LOG_STORE_ENTRY_H_

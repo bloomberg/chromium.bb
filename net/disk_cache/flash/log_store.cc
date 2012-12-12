@@ -6,13 +6,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "net/disk_cache/flash/format.h"
-#include "net/disk_cache/flash/log_structured_store.h"
+#include "net/disk_cache/flash/log_store.h"
 #include "net/disk_cache/flash/segment.h"
 #include "net/disk_cache/flash/storage.h"
 
 namespace disk_cache {
 
-LogStructuredStore::LogStructuredStore(Storage* storage)
+LogStore::LogStore(Storage* storage)
     : storage_(storage),
       num_segments_(storage->size() / kFlashSegmentSize),
       open_segments_(num_segments_),
@@ -24,12 +24,12 @@ LogStructuredStore::LogStructuredStore(Storage* storage)
   DCHECK(storage->size() % kFlashSegmentSize == 0);
 }
 
-LogStructuredStore::~LogStructuredStore() {
+LogStore::~LogStore() {
   DCHECK(!init_ || closed_);
   STLDeleteElements(&open_segments_);
 }
 
-bool LogStructuredStore::Init() {
+bool LogStore::Init() {
   DCHECK(!init_);
   // TODO(agayev): Once we start persisting segment metadata to disk, we will
   // start from where we left off during the last shutdown.
@@ -43,7 +43,7 @@ bool LogStructuredStore::Init() {
   return true;
 }
 
-bool LogStructuredStore::Close() {
+bool LogStore::Close() {
   DCHECK(init_ && !closed_);
   open_segments_[write_index_]->ReleaseUser();
   if (!open_segments_[write_index_]->Close())
@@ -53,7 +53,7 @@ bool LogStructuredStore::Close() {
   // TODO(agayev): persist metadata to disk.
 }
 
-bool LogStructuredStore::CreateEntry(int32 size, int32* id) {
+bool LogStore::CreateEntry(int32 size, int32* id) {
   DCHECK(init_ && !closed_);
   DCHECK(current_entry_id_ == -1 && size <= disk_cache::kFlashSegmentFreeSpace);
 
@@ -85,7 +85,7 @@ bool LogStructuredStore::CreateEntry(int32 size, int32* id) {
   return true;
 }
 
-bool LogStructuredStore::WriteData(const void* buffer, int32 size) {
+bool LogStore::WriteData(const void* buffer, int32 size) {
   DCHECK(init_ && !closed_);
   DCHECK(current_entry_id_ != -1 &&
          size <= current_entry_num_bytes_left_to_write_);
@@ -96,7 +96,7 @@ bool LogStructuredStore::WriteData(const void* buffer, int32 size) {
   return false;
 }
 
-bool LogStructuredStore::OpenEntry(int32 id) {
+bool LogStore::OpenEntry(int32 id) {
   DCHECK(init_ && !closed_);
   if (open_entries_.find(id) != open_entries_.end())
     return false;
@@ -122,7 +122,7 @@ bool LogStructuredStore::OpenEntry(int32 id) {
   return true;
 }
 
-bool LogStructuredStore::ReadData(int32 id, void* buffer, int32 size,
+bool LogStore::ReadData(int32 id, void* buffer, int32 size,
                                   int32 offset) const {
   DCHECK(init_ && !closed_);
   DCHECK(open_entries_.find(id) != open_entries_.end());
@@ -132,7 +132,7 @@ bool LogStructuredStore::ReadData(int32 id, void* buffer, int32 size,
   return open_segments_[index]->ReadData(buffer, size, id + offset);
 }
 
-void LogStructuredStore::CloseEntry(int32 id) {
+void LogStore::CloseEntry(int32 id) {
   DCHECK(init_ && !closed_);
   std::set<int32>::iterator entry_iter = open_entries_.find(id);
   DCHECK(entry_iter != open_entries_.end());
@@ -155,7 +155,7 @@ void LogStructuredStore::CloseEntry(int32 id) {
   }
 }
 
-int32 LogStructuredStore::GetNextSegmentIndex() {
+int32 LogStore::GetNextSegmentIndex() {
   DCHECK(init_ && !closed_);
   int32 next_index = (write_index_ + 1) % num_segments_;
 
@@ -166,7 +166,7 @@ int32 LogStructuredStore::GetNextSegmentIndex() {
   return next_index;
 }
 
-bool LogStructuredStore::InUse(int32 index) const {
+bool LogStore::InUse(int32 index) const {
   DCHECK(init_ && !closed_);
   DCHECK(index >= 0 && index < num_segments_);
   return open_segments_[index] != NULL;

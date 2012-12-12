@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_DISK_CACHE_FLASH_LOG_STRUCTURED_STORE_H_
-#define NET_DISK_CACHE_FLASH_LOG_STRUCTURED_STORE_H_
+#ifndef NET_DISK_CACHE_FLASH_LOG_STORE_H_
+#define NET_DISK_CACHE_FLASH_LOG_STORE_H_
 
 #include <set>
 #include <vector>
@@ -22,10 +22,10 @@ class Storage;
 // i.e. it's not possible to overwrite data in place.  In order to update an
 // entry, a new version must be written.  Only one entry can be written to at
 // any given time, while concurrent reading of multiple entries is supported.
-class NET_EXPORT_PRIVATE LogStructuredStore {
+class NET_EXPORT_PRIVATE LogStore {
  public:
-  explicit LogStructuredStore(Storage* storage);
-  ~LogStructuredStore();
+  explicit LogStore(Storage* storage);
+  ~LogStore();
 
   // Performs initialization.  Must be the first function called and further
   // calls should be made only if it is successful.
@@ -56,13 +56,13 @@ class NET_EXPORT_PRIVATE LogStructuredStore {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(FlashCacheTest,
-                           LogStructuredStoreReadFromClosedSegment);
+                           LogStoreReadFromClosedSegment);
   FRIEND_TEST_ALL_PREFIXES(FlashCacheTest,
-                           LogStructuredStoreSegmentSelectionIsFifo);
+                           LogStoreSegmentSelectionIsFifo);
   FRIEND_TEST_ALL_PREFIXES(FlashCacheTest,
-                           LogStructuredStoreInUseSegmentIsSkipped);
+                           LogStoreInUseSegmentIsSkipped);
   FRIEND_TEST_ALL_PREFIXES(FlashCacheTest,
-                           LogStructuredStoreReadFromCurrentAfterClose);
+                           LogStoreReadFromCurrentAfterClose);
 
   int32 GetNextSegmentIndex();
   bool InUse(int32 segment_index) const;
@@ -94,9 +94,9 @@ class NET_EXPORT_PRIVATE LogStructuredStore {
   bool init_;  // Init was called.
   bool closed_;  // Close was called.
 
-  DISALLOW_COPY_AND_ASSIGN(LogStructuredStore);
+  DISALLOW_COPY_AND_ASSIGN(LogStore);
 };
 
 }  // namespace disk_cache
 
-#endif  // NET_DISK_CACHE_FLASH_LOG_STRUCTURED_STORE_H_
+#endif  // NET_DISK_CACHE_FLASH_LOG_STORE_H_
