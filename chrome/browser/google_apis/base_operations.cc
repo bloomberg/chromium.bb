@@ -285,6 +285,19 @@ GetDataOperation::GetDataOperation(
 
 GetDataOperation::~GetDataOperation() {}
 
+void GetDataOperation::ParseResponse(GDataErrorCode fetch_error_code,
+                                     const std::string& data) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  base::PostTaskAndReplyWithResult(
+      BrowserThread::GetBlockingPool(),
+      FROM_HERE,
+      base::Bind(&ParseJsonOnBlockingPool, data),
+      base::Bind(&GetDataOperation::OnDataParsed,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 fetch_error_code));
+}
+
 void GetDataOperation::ProcessURLFetchResults(const URLFetcher* source) {
   std::string data;
   source->GetResponseAsString(&data);
@@ -307,19 +320,6 @@ void GetDataOperation::ProcessURLFetchResults(const URLFetcher* source) {
 void GetDataOperation::RunCallbackOnPrematureFailure(
     GDataErrorCode fetch_error_code) {
   callback_.Run(fetch_error_code, scoped_ptr<base::Value>());
-}
-
-void GetDataOperation::ParseResponse(GDataErrorCode fetch_error_code,
-                                     const std::string& data) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  base::PostTaskAndReplyWithResult(
-      BrowserThread::GetBlockingPool(),
-      FROM_HERE,
-      base::Bind(&ParseJsonOnBlockingPool, data),
-      base::Bind(&GetDataOperation::OnDataParsed,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 fetch_error_code));
 }
 
 void GetDataOperation::OnDataParsed(

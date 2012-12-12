@@ -445,12 +445,6 @@ AuthorizeAppOperation::GetExtraRequestHeaders() const {
   return headers;
 }
 
-void AuthorizeAppOperation::ProcessURLFetchResults(const URLFetcher* source) {
-  std::string data;
-  source->GetResponseAsString(&data);
-  GetDataOperation::ProcessURLFetchResults(source);
-}
-
 bool AuthorizeAppOperation::GetContentData(std::string* upload_content_type,
                                             std::string* upload_content) {
   upload_content_type->assign("application/atom+xml");
@@ -469,53 +463,8 @@ bool AuthorizeAppOperation::GetContentData(std::string* upload_content_type,
   return true;
 }
 
-void AuthorizeAppOperation::ParseResponse(
-    GDataErrorCode fetch_error_code,
-    const std::string& data) {
-  // Parse entry XML.
-  XmlReader xml_reader;
-  scoped_ptr<ResourceEntry> entry;
-  if (xml_reader.Load(data)) {
-    while (xml_reader.Read()) {
-      if (xml_reader.NodeName() == ResourceEntry::GetEntryNodeName()) {
-        entry = ResourceEntry::CreateFromXml(&xml_reader);
-        break;
-      }
-    }
-  }
-
-  // |entry| is NULL if parsing of XML failed.
-  if (!entry) {
-    LOG(WARNING) << "Failed to parse the XML data: " << data;
-    RunCallbackOnPrematureFailure(GDATA_PARSE_ERROR);
-    const bool success = false;
-    OnProcessURLFetchResultsComplete(success);
-    return;
-  }
-
-  // From the response, we create a list of the links returned, since those
-  // are the only things we are interested in.
-  scoped_ptr<base::ListValue> link_list(new ListValue);
-  const ScopedVector<Link>& feed_links = entry->links();
-  for (ScopedVector<Link>::const_iterator iter = feed_links.begin();
-       iter != feed_links.end(); ++iter) {
-    if ((*iter)->type() == Link::LINK_OPEN_WITH) {
-      base::DictionaryValue* link = new DictionaryValue;
-      link->SetString(std::string("href"), (*iter)->href().spec());
-      link->SetString(std::string("mime_type"), (*iter)->mime_type());
-      link->SetString(std::string("title"), (*iter)->title());
-      link->SetString(std::string("app_id"), (*iter)->app_id());
-      link_list->Append(link);
-    }
-  }
-
-  RunCallbackOnSuccess(fetch_error_code, link_list.PassAs<base::Value>());
-  const bool success = true;
-  OnProcessURLFetchResultsComplete(success);
-}
-
 GURL AuthorizeAppOperation::GetURL() const {
-  return edit_url_;
+  return GDataWapiUrlGenerator::AddStandardUrlParams(edit_url_);
 }
 
 //======================= AddResourceToDirectoryOperation ======================

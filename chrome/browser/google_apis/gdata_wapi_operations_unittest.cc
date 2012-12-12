@@ -270,7 +270,7 @@ class GDataWapiOperationsTest : public testing::Test {
         if (request.method == test_server::METHOD_PUT &&
             request.content.find("<docs:authorizedApp>") != std::string::npos) {
           return CreateHttpResponseFromFile(
-              test_util::GetTestFilePath("gdata/entry.xml"));
+              test_util::GetTestFilePath("gdata/basic_feed.json"));
         }
 
         return CreateHttpResponseFromFile(
@@ -774,7 +774,7 @@ TEST_F(GDataWapiOperationsTest, AuthorizeAppOperation_ValidFeed) {
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(test_server::METHOD_PUT, http_request_.method);
-  EXPECT_EQ("/feeds/default/private/full/file:2_file_resource_id",
+  EXPECT_EQ("/feeds/default/private/full/file:2_file_resource_id?v=3&alt=json",
             http_request_.relative_url);
   EXPECT_EQ("application/atom+xml", http_request_.headers["Content-Type"]);
   EXPECT_EQ("*", http_request_.headers["If-Match"]);
@@ -808,7 +808,8 @@ TEST_F(GDataWapiOperationsTest, AuthorizeAppOperation_InvalidFeed) {
 
   EXPECT_EQ(GDATA_PARSE_ERROR, result_code);
   EXPECT_EQ(test_server::METHOD_PUT, http_request_.method);
-  EXPECT_EQ("/files/gdata/testfile.txt", http_request_.relative_url);
+  EXPECT_EQ("/files/gdata/testfile.txt?v=3&alt=json",
+            http_request_.relative_url);
   EXPECT_EQ("application/atom+xml", http_request_.headers["Content-Type"]);
   EXPECT_EQ("*", http_request_.headers["If-Match"]);
 

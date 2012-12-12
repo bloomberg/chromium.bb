@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
 #include "chrome/browser/chromeos/extensions/file_browser_private_api.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
+#include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -130,20 +131,18 @@ void DriveTaskExecutor::OnAppAuthorized(
     return;
   }
 
-  // Yay!  We've got the feed data finally, and we can get the open-with URL.
+  // TODO(mtomasz): Pass an object containing required links instead of
+  // base::Value in |feed_data| argument to this method. crbug.com/165393.
+  scoped_ptr<google_apis::ResourceEntry> entry =
+      google_apis::ResourceEntry::ExtractAndParse(*feed_data.get());
+
   GURL open_with_url;
-  base::ListValue* link_list = NULL;
-  feed_data->GetAsList(&link_list);
-  for (size_t i = 0; i < link_list->GetSize(); ++i) {
-    DictionaryValue* entry = NULL;
-    link_list->GetDictionary(i, &entry);
-    std::string app_id;
-    entry->GetString("app_id", &app_id);
-    if (app_id == extension_id()) {
-      std::string href;
-      entry->GetString("href", &href);
-      open_with_url = GURL(href);
-      break;
+  const ScopedVector<google_apis::Link>& feed_links = entry->links();
+  for (size_t i = 0; i < feed_links.size(); ++i) {
+    if (feed_links[i]->type() == google_apis::Link::LINK_OPEN_WITH &&
+        feed_links[i]->app_id() == extension_id()) {
+        open_with_url = feed_links[i]->href();
+        break;
     }
   }
 

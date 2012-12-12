@@ -329,12 +329,6 @@ class AuthorizeAppOperation : public GetDataOperation {
                               std::string* upload_content) OVERRIDE;
   virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
   virtual GURL GetURL() const OVERRIDE;
-  virtual void ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
-
-  // Must override GetDataOperation's ParseResponse because the response is XML
-  // not JSON.
-  virtual void ParseResponse(GDataErrorCode fetch_error_code,
-                             const std::string& data) OVERRIDE;
 
  private:
   const std::string app_id_;

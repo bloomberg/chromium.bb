@@ -210,25 +210,21 @@ class GetDataOperation : public UrlFetchOperationBase {
                    const GetDataCallback& callback);
   virtual ~GetDataOperation();
 
-  // Parses JSON response. A derived class should override this function if
-  // the input data is not JSON (ex. XML).
-  virtual void ParseResponse(GDataErrorCode fetch_error_code,
-                             const std::string& data);
+  // Parses JSON response.
+  void ParseResponse(GDataErrorCode fetch_error_code, const std::string& data);
 
  protected:
   // UrlFetchOperationBase overrides.
   virtual void ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
-
-  // Runs |callback_| with the given parameters. A derived class should
-  // call this from ParseResponse() if ParseResponse() is overridden.
-  void RunCallbackOnSuccess(GDataErrorCode fetch_error_code,
-                            scoped_ptr<base::Value> value);
-
-  // UrlFetchOperationBase overrides.
   virtual void RunCallbackOnPrematureFailure(
       GDataErrorCode fetch_error_code) OVERRIDE;
 
  private:
+  // Runs |callback_| with the given parameters.
+  void RunCallbackOnSuccess(GDataErrorCode fetch_error_code,
+                            scoped_ptr<base::Value> value);
+
+
   // Called when ParseJsonOnBlockingPool() is completed.
   void OnDataParsed(GDataErrorCode fetch_error_code,
                     scoped_ptr<base::Value> value);
