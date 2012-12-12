@@ -497,8 +497,10 @@ AppPackUpdater* BrowserPolicyConnector::GetAppPackUpdater() {
     // system_request_context() is NULL in unit tests.
     net::URLRequestContextGetter* request_context =
         g_browser_process->system_request_context();
-    if (request_context)
-      app_pack_updater_.reset(new AppPackUpdater(request_context, this));
+    if (request_context) {
+      app_pack_updater_.reset(
+          new AppPackUpdater(request_context, install_attributes_.get()));
+    }
   }
   return app_pack_updater_.get();
 #else
