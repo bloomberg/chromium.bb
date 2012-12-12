@@ -10,7 +10,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/timer.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/dock_info.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_selection_model.h"
@@ -189,8 +188,8 @@ class TabDragController : public content::WebContentsDelegate,
     TabDragData();
     ~TabDragData();
 
-    // The TabContents being dragged.
-    TabContents* contents;
+    // The WebContents being dragged.
+    content::WebContents* contents;
 
     // The original content::WebContentsDelegate of |contents|, before it was
     // detached from the browser window. We store this so that we can forward
@@ -212,7 +211,7 @@ class TabDragController : public content::WebContentsDelegate,
   typedef std::vector<TabDragData> DragData;
 
   // Sets |drag_data| from |tab|. This also registers for necessary
-  // notifications and resets the delegate of the TabContents.
+  // notifications and resets the delegate of the WebContents.
   void InitTabDragData(Tab* tab, TabDragData* drag_data);
 
   // Overridden from content::WebContentsDelegate:
@@ -429,7 +428,7 @@ class TabDragController : public content::WebContentsDelegate,
   }
 
   // Convenience for |source_tab_drag_data()->contents|.
-  TabContents* source_dragged_contents() {
+  content::WebContents* source_dragged_contents() {
     return source_tab_drag_data()->contents;
   }
 

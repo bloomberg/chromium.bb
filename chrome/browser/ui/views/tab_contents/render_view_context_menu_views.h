@@ -28,7 +28,7 @@ class RenderViewContextMenuViews : public RenderViewContextMenu {
 
   // Factory function to create an instance.
   static RenderViewContextMenuViews* Create(
-      content::WebContents* tab_contents,
+      content::WebContents* web_contents,
       const content::ContextMenuParams& params);
 
   void RunMenuAt(views::Widget* parent,
@@ -44,7 +44,7 @@ class RenderViewContextMenuViews : public RenderViewContextMenu {
                               const string16& title) OVERRIDE;
 
  protected:
-  RenderViewContextMenuViews(content::WebContents* tab_contents,
+  RenderViewContextMenuViews(content::WebContents* web_contents,
                              const content::ContextMenuParams& params);
   // RenderViewContextMenu implementation.
   virtual void PlatformInit() OVERRIDE;

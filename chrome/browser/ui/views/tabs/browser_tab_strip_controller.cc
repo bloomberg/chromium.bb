@@ -13,7 +13,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
@@ -251,7 +250,7 @@ bool BrowserTabStripController::IsTabPinned(int model_index) const {
 
 bool BrowserTabStripController::IsNewTabPage(int model_index) const {
   return model_->ContainsIndex(model_index) &&
-      model_->GetTabContentsAt(model_index)->web_contents()->GetURL() ==
+      model_->GetWebContentsAt(model_index)->GetURL() ==
       GURL(chrome::kChromeUINewTabURL);
 }
 
@@ -295,9 +294,8 @@ void BrowserTabStripController::UpdateLoadingAnimations() {
   for (int i = 0, tab_count = tabstrip_->tab_count(); i < tab_count; ++i) {
     if (model_->ContainsIndex(i)) {
       Tab* tab = tabstrip_->tab_at(i);
-      TabContents* contents = model_->GetTabContentsAt(i);
-      tab->UpdateLoadingAnimation(
-          TabContentsNetworkState(contents->web_contents()));
+      WebContents* contents = model_->GetWebContentsAt(i);
+      tab->UpdateLoadingAnimation(TabContentsNetworkState(contents));
     }
   }
 }

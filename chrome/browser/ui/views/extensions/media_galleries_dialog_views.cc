@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/extensions/media_galleries_dialog_views.h"
 
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/common/chrome_switches.h"
 #include "grit/generated_resources.h"

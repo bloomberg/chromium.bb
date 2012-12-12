@@ -406,7 +406,7 @@ void FindBarView::ContentsChanged(views::Textfield* sender,
   FindBarController* controller = find_bar_host()->GetFindBarController();
   DCHECK(controller);
   content::WebContents* web_contents = controller->web_contents();
-  // We must guard against a NULL tab_contents, which can happen if the text
+  // We must guard against a NULL web_contents, which can happen if the text
   // in the Find box is changed right after the tab is destroyed. Otherwise, it
   // can lead to crashes, as exposed by automation testing in issue 8048.
   if (!web_contents)

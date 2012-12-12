@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_VIEWS_HUNG_RENDERER_VIEW_WIN_H_
 
 #include "base/basictypes.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/web_contents.h"
 
 // This class provides functionality to display a Windows 8 metro style hung

@@ -21,7 +21,6 @@
 #endif
 
 class SSLClientAuthHandler;
-class TabContents;
 
 namespace content {
 class WebContents;

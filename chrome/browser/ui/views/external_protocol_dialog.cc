@@ -157,7 +157,7 @@ ExternalProtocolDialog::ExternalProtocolDialog(WebContents* web_contents,
   if (web_contents_) {
     root_hwnd = GetAncestor(web_contents_->GetContentNativeView(), GA_ROOT);
   } else {
-    // Dialog is top level if we don't have a tab_contents associated with us.
+    // Dialog is top level if we don't have a web_contents associated with us.
     root_hwnd = NULL;
   }
 

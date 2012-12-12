@@ -20,7 +20,6 @@ class EditSearchEngineControllerDelegate;
 class FindBar;
 class GURL;
 class Profile;
-class TabContents;
 class TemplateURL;
 
 namespace content {

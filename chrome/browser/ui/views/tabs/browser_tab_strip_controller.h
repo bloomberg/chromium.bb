@@ -14,7 +14,6 @@
 
 class Browser;
 class Tab;
-class TabContents;
 class TabStrip;
 class TabStripSelectionModel;
 struct TabRendererData;
@@ -24,7 +23,7 @@ class WebContents;
 }
 
 // An implementation of TabStripController that sources data from the
-// TabContentses in a TabStripModel.
+// WebContentses in a TabStripModel.
 class BrowserTabStripController : public TabStripController,
                                   public TabStripModelObserver {
  public:

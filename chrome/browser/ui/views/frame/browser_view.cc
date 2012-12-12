@@ -52,7 +52,6 @@
 #include "chrome/browser/ui/search/search_delegate.h"
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/search/search_ui.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -716,10 +715,6 @@ bool BrowserView::GetAccelerator(int cmd_id, ui::Accelerator* accelerator) {
 
 WebContents* BrowserView::GetActiveWebContents() const {
   return browser_->tab_strip_model()->GetActiveWebContents();
-}
-
-TabContents* BrowserView::GetActiveTabContents() const {
-  return browser_->tab_strip_model()->GetActiveTabContents();
 }
 
 gfx::ImageSkia BrowserView::GetOTRAvatarIcon() const {

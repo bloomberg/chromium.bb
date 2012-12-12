@@ -36,9 +36,9 @@ RenderViewContextMenuViews::~RenderViewContextMenuViews() {
 #if !defined(OS_WIN)
 // static
 RenderViewContextMenuViews* RenderViewContextMenuViews::Create(
-    content::WebContents* tab_contents,
+    content::WebContents* web_contents,
     const content::ContextMenuParams& params) {
-  return new RenderViewContextMenuViews(tab_contents, params);
+  return new RenderViewContextMenuViews(web_contents, params);
 }
 #endif  // OS_WIN
 

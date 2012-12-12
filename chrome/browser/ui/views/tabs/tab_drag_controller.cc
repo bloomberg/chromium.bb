@@ -514,18 +514,17 @@ void TabDragController::InitTabDragData(Tab* tab,
                                         TabDragData* drag_data) {
   drag_data->source_model_index =
       source_tabstrip_->GetModelIndexOfTab(tab);
-  drag_data->contents = GetModel(source_tabstrip_)->GetTabContentsAt(
+  drag_data->contents = GetModel(source_tabstrip_)->GetWebContentsAt(
       drag_data->source_model_index);
   drag_data->pinned = source_tabstrip_->IsTabPinned(tab);
   registrar_.Add(
       this,
       content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-      content::Source<WebContents>(drag_data->contents->web_contents()));
+      content::Source<WebContents>(drag_data->contents));
 
   if (!detach_into_browser_) {
-    drag_data->original_delegate =
-        drag_data->contents->web_contents()->GetDelegate();
-    drag_data->contents->web_contents()->SetDelegate(this);
+    drag_data->original_delegate = drag_data->contents->GetDelegate();
+    drag_data->contents->SetDelegate(this);
   }
 }
 
@@ -553,7 +552,7 @@ void TabDragController::NavigationStateChanged(const WebContents* source,
                                                unsigned changed_flags) {
   if (attached_tabstrip_) {
     for (size_t i = 0; i < drag_data_.size(); ++i) {
-      if (drag_data_[i].contents->web_contents() == source) {
+      if (drag_data_[i].contents == source) {
         // Pass the NavigationStateChanged call to the original delegate so
         // that the title is updated. Do this only when we are attached as
         // otherwise the Tab isn't in the TabStrip.
@@ -614,7 +613,7 @@ void TabDragController::Observe(
   WebContents* destroyed_web_contents =
       content::Source<WebContents>(source).ptr();
   for (size_t i = 0; i < drag_data_.size(); ++i) {
-    if (drag_data_[i].contents->web_contents() == destroyed_web_contents) {
+    if (drag_data_[i].contents == destroyed_web_contents) {
       // One of the tabs we're dragging has been destroyed. Cancel the drag.
       if (destroyed_web_contents->GetDelegate() == this)
         destroyed_web_contents->SetDelegate(NULL);
@@ -938,9 +937,9 @@ void TabDragController::MoveAttached(const gfx::Point& point_in_screen) {
     TabStripModel* attached_model = GetModel(attached_tabstrip_);
     gfx::Rect bounds = GetDraggedViewTabStripBounds(dragged_view_point);
     int to_index = GetInsertionIndexForDraggedBounds(bounds);
-    TabContents* last_contents = drag_data_[drag_data_.size() - 1].contents;
+    WebContents* last_contents = drag_data_[drag_data_.size() - 1].contents;
     int index_of_last_item =
-          attached_model->GetIndexOfTabContents(last_contents);
+          attached_model->GetIndexOfWebContents(last_contents);
     if (initial_move_) {
       // TabStrip determines if the tabs needs to be animated based on model
       // position. This means we need to invoke LayoutDraggedTabsAt before
@@ -956,7 +955,7 @@ void TabDragController::MoveAttached(const gfx::Point& point_in_screen) {
     // tabs). Make sure the tabstrip actually changed before updating
     // last_move_screen_loc_.
     if (index_of_last_item !=
-        attached_model->GetIndexOfTabContents(last_contents)) {
+        attached_model->GetIndexOfWebContents(last_contents)) {
       last_move_screen_loc_ = point_in_screen.x();
     }
   }
@@ -1133,12 +1132,12 @@ void TabDragController::Attach(TabStrip* attached_tabstrip,
       // Remove ourselves as the delegate now that the dragged WebContents is
       // being inserted back into a Browser.
       for (size_t i = 0; i < drag_data_.size(); ++i) {
-        drag_data_[i].contents->web_contents()->SetDelegate(NULL);
+        drag_data_[i].contents->SetDelegate(NULL);
         drag_data_[i].original_delegate = NULL;
       }
 
       // Return the WebContents to normalcy.
-      source_dragged_contents()->web_contents()->SetCapturingContents(false);
+      source_dragged_contents()->SetCapturingContents(false);
     }
 
     // Inserting counts as a move. We don't want the tabs to jitter when the
@@ -1169,7 +1168,7 @@ void TabDragController::Attach(TabStrip* attached_tabstrip,
       if (drag_data_[i].pinned)
         add_types |= TabStripModel::ADD_PINNED;
       GetModel(attached_tabstrip_)->InsertWebContentsAt(
-          index + i, drag_data_[i].contents->web_contents(), add_types);
+          index + i, drag_data_[i].contents, add_types);
     }
 
     tabs = GetTabsMatchingDraggedContents(attached_tabstrip_);
@@ -1227,14 +1226,14 @@ void TabDragController::Detach(ReleaseCapture release_capture) {
   // Prevent the WebContents HWND from being hidden by any of the model
   // operations performed during the drag.
   if (!detach_into_browser_)
-    source_dragged_contents()->web_contents()->SetCapturingContents(true);
+    source_dragged_contents()->SetCapturingContents(true);
 
   std::vector<gfx::Rect> drag_bounds = CalculateBoundsForDraggedTabs(0);
   TabStripModel* attached_model = GetModel(attached_tabstrip_);
   std::vector<TabRendererData> tab_data;
   for (size_t i = 0; i < drag_data_.size(); ++i) {
     tab_data.push_back(drag_data_[i].attached_tab->data());
-    int index = attached_model->GetIndexOfTabContents(drag_data_[i].contents);
+    int index = attached_model->GetIndexOfWebContents(drag_data_[i].contents);
     DCHECK_NE(-1, index);
 
     // Hide the tab so that the user doesn't see it animate closed.
@@ -1244,7 +1243,7 @@ void TabDragController::Detach(ReleaseCapture release_capture) {
 
     // Detaching resets the delegate, but we still want to be the delegate.
     if (!detach_into_browser_)
-      drag_data_[i].contents->web_contents()->SetDelegate(this);
+      drag_data_[i].contents->SetDelegate(this);
 
     // Detaching may end up deleting the tab, drop references to it.
     drag_data_[i].attached_tab = NULL;
@@ -1544,7 +1543,7 @@ std::vector<Tab*> TabDragController::GetTabsMatchingDraggedContents(
   TabStripModel* model = GetModel(attached_tabstrip_);
   std::vector<Tab*> tabs;
   for (size_t i = 0; i < drag_data_.size(); ++i) {
-    int model_index = model->GetIndexOfTabContents(drag_data_[i].contents);
+    int model_index = model->GetIndexOfWebContents(drag_data_[i].contents);
     if (model_index == TabStripModel::kNoTab)
       return std::vector<Tab*>();
     tabs.push_back(tabstrip->tab_at(model_index));
@@ -1670,7 +1669,7 @@ void TabDragController::ResetSelection(TabStripModel* model) {
   for (size_t i = 0; i < drag_data_.size(); ++i) {
     // |contents| is NULL if a tab was deleted out from under us.
     if (drag_data_[i].contents) {
-      int index = model->GetIndexOfTabContents(drag_data_[i].contents);
+      int index = model->GetIndexOfWebContents(drag_data_[i].contents);
       DCHECK_NE(-1, index);
       selection_model.AddIndexToSelection(index);
       if (!has_one_valid_tab || i == source_tab_index_) {
@@ -1696,7 +1695,7 @@ void TabDragController::RevertDragAt(size_t drag_index) {
   TabDragData* data = &(drag_data_[drag_index]);
   if (attached_tabstrip_) {
     int index =
-        GetModel(attached_tabstrip_)->GetIndexOfTabContents(data->contents);
+        GetModel(attached_tabstrip_)->GetIndexOfWebContents(data->contents);
     if (attached_tabstrip_ != source_tabstrip_) {
       // The Tab was inserted into another TabStrip. We need to put it back
       // into the original one.
@@ -1704,7 +1703,7 @@ void TabDragController::RevertDragAt(size_t drag_index) {
       // TODO(beng): (Cleanup) seems like we should use Attach() for this
       //             somehow.
       GetModel(source_tabstrip_)->InsertWebContentsAt(
-          data->source_model_index, data->contents->web_contents(),
+          data->source_model_index, data->contents,
           (data->pinned ? TabStripModel::ADD_PINNED : 0));
     } else {
       // The Tab was moved within the TabStrip where the drag was initiated.
@@ -1717,7 +1716,7 @@ void TabDragController::RevertDragAt(size_t drag_index) {
     // been attached to any other TabStrip. We need to put it back into the
     // source TabStrip.
     GetModel(source_tabstrip_)->InsertWebContentsAt(
-        data->source_model_index, data->contents->web_contents(),
+        data->source_model_index, data->contents,
         (data->pinned ? TabStripModel::ADD_PINNED : 0));
   }
 }
@@ -1795,7 +1794,7 @@ void TabDragController::CompleteDrag() {
     std::vector<TabStripModelDelegate::NewStripContents> contentses;
     for (size_t i = 0; i < drag_data_.size(); ++i) {
       TabStripModelDelegate::NewStripContents item;
-      item.web_contents = drag_data_[i].contents->web_contents();
+      item.web_contents = drag_data_[i].contents;
       item.add_types = drag_data_[i].pinned ? TabStripModel::ADD_PINNED
                                             : TabStripModel::ADD_NONE;
       contentses.push_back(item);
@@ -1815,8 +1814,8 @@ void TabDragController::ResetDelegates() {
   DCHECK(!detach_into_browser_);
   for (size_t i = 0; i < drag_data_.size(); ++i) {
     if (drag_data_[i].contents &&
-        drag_data_[i].contents->web_contents()->GetDelegate() == this) {
-      drag_data_[i].contents->web_contents()->SetDelegate(
+        drag_data_[i].contents->GetDelegate() == this) {
+      drag_data_[i].contents->SetDelegate(
           drag_data_[i].original_delegate);
     }
   }
@@ -1832,12 +1831,10 @@ void TabDragController::CreateDraggedView(
   // Set up the photo booth to start capturing the contents of the dragged
   // WebContents.
   NativeViewPhotobooth* photobooth =
-      NativeViewPhotobooth::Create(
-          source_dragged_contents()->web_contents()->GetNativeView());
+      NativeViewPhotobooth::Create(source_dragged_contents()->GetNativeView());
 
   gfx::Rect content_bounds;
-  source_dragged_contents()->web_contents()->GetContainerBounds(
-      &content_bounds);
+  source_dragged_contents()->GetContainerBounds(&content_bounds);
 
   std::vector<views::View*> renderers;
   for (size_t i = 0; i < drag_data_.size(); ++i) {
@@ -2006,10 +2003,11 @@ Browser* TabDragController::CreateBrowserForDrag(
 
   *drag_offset = point_in_screen - new_bounds.origin();
 
-  Browser::CreateParams create_params(
-      Browser::TYPE_TABBED,
-      drag_data_[0].contents->profile(),
-      host_desktop_type_);
+  Profile* profile =
+      Profile::FromBrowserContext(drag_data_[0].contents->GetBrowserContext());
+  Browser::CreateParams create_params(Browser::TYPE_TABBED,
+                                      profile,
+                                      host_desktop_type_);
   create_params.initial_bounds = new_bounds;
   Browser* browser = new Browser(create_params);
   SetTrackedByWorkspace(browser->window()->GetNativeWindow(), false);

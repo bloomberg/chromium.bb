@@ -12,7 +12,6 @@
 #include "base/string_number_conversions.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
@@ -43,6 +42,8 @@
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/root_window.h"
 #endif
+
+using content::WebContents;
 
 namespace test {
 
@@ -93,14 +94,14 @@ gfx::Point GetCenterInScreenCoordinates(const views::View* view) {
   return center;
 }
 
-void SetID(content::WebContents* tab_contents, int id) {
-  tab_contents->SetUserData(&kTabDragControllerInteractiveUITestUserDataKey,
+void SetID(WebContents* web_contents, int id) {
+  web_contents->SetUserData(&kTabDragControllerInteractiveUITestUserDataKey,
                             new TabDragControllerInteractiveUITestUserData(id));
 }
 
 void ResetIDs(TabStripModel* model, int start) {
   for (int i = 0; i < model->count(); ++i)
-    SetID(model->GetTabContentsAt(i)->web_contents(), start + i);
+    SetID(model->GetWebContentsAt(i), start + i);
 }
 
 std::string IDString(TabStripModel* model) {
@@ -108,7 +109,7 @@ std::string IDString(TabStripModel* model) {
   for (int i = 0; i < model->count(); ++i) {
     if (i != 0)
       result += " ";
-    content::WebContents* contents = model->GetTabContentsAt(i)->web_contents();
+    WebContents* contents = model->GetWebContentsAt(i);
     TabDragControllerInteractiveUITestUserData* user_data =
         static_cast<TabDragControllerInteractiveUITestUserData*>(
             contents->GetUserData(
@@ -481,7 +482,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   ASSERT_TRUE(TabDragController::IsActive());
 
   // Delete the tab being dragged.
-  delete browser()->tab_strip_model()->GetTabContentsAt(0);
+  delete browser()->tab_strip_model()->GetWebContentsAt(0);
 
   // Should have canceled dragging.
   ASSERT_FALSE(tab_strip->IsDragSessionActive());
@@ -510,7 +511,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   ASSERT_TRUE(TabDragController::IsActive());
 
   // Delete the tab being dragged.
-  delete browser()->tab_strip_model()->GetTabContentsAt(0);
+  delete browser()->tab_strip_model()->GetWebContentsAt(0);
 
   // Should have canceled dragging.
   ASSERT_FALSE(tab_strip->IsDragSessionActive());
@@ -523,7 +524,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
 
 namespace {
 
-void DeleteWhileDetachedStep2(TabContents* tab) {
+void DeleteWhileDetachedStep2(WebContents* tab) {
   delete tab;
 }
 
@@ -539,8 +540,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
 
   // Move to the first tab and drag it enough so that it detaches.
   gfx::Point tab_0_center(GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
-  TabContents* to_delete =
-      browser()->tab_strip_model()->GetTabContentsAt(0);
+  WebContents* to_delete =
+      browser()->tab_strip_model()->GetWebContentsAt(0);
   ASSERT_TRUE(PressInput(tab_0_center));
   ASSERT_TRUE(DragInputToNotifyWhenDone(
       tab_0_center.x(), tab_0_center.y() + GetDetachY(tab_strip),
@@ -558,7 +559,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
 
 namespace {
 
-void DeleteSourceDetachedStep2(TabContents* tab) {
+void DeleteSourceDetachedStep2(WebContents* tab) {
   // This ends up closing the source window.
   delete tab;
   // Cancel the drag.
@@ -577,7 +578,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
 
   // Move to the first tab and drag it enough so that it detaches.
   gfx::Point tab_0_center(GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
-  TabContents* to_delete = browser()->tab_strip_model()->GetTabContentsAt(1);
+  WebContents* to_delete = browser()->tab_strip_model()->GetWebContentsAt(1);
   ASSERT_TRUE(PressInput(tab_0_center));
   ASSERT_TRUE(DragInputToNotifyWhenDone(
       tab_0_center.x(), tab_0_center.y() + GetDetachY(tab_strip),
@@ -844,28 +845,6 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   EXPECT_TRUE(GetTrackedByWorkspace(browser()));
   EXPECT_TRUE(GetTrackedByWorkspace(browser2));
 }
-
-namespace {
-
-// Invoked from the nested message loop.
-void DragSingleTabToSeparateWindowStep2(
-    DetachToBrowserTabDragControllerTest* test,
-    TabStrip* attached_tab_strip,
-    TabStrip* target_tab_strip) {
-  ASSERT_TRUE(attached_tab_strip->IsDragSessionActive());
-  ASSERT_FALSE(target_tab_strip->IsDragSessionActive());
-  ASSERT_TRUE(TabDragController::IsActive());
-  ASSERT_EQ(2u, BrowserList::size());
-
-  // Drag to target_tab_strip. This should stop the nested loop from dragging
-  // the window.
-  gfx::Point target_point(target_tab_strip->width() - 1,
-                          target_tab_strip->height() / 2);
-  views::View::ConvertPointToScreen(target_tab_strip, &target_point);
-  ASSERT_TRUE(test->DragInputTo(target_point));
-}
-
-}  // namespace
 
 // Creates two browsers, the first browser has a single tab and drags into the
 // second browser.

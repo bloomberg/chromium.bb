@@ -186,14 +186,13 @@ class BrowserView : public BrowserWindow,
   // otherwise.
   bool GetAccelerator(int cmd_id, ui::Accelerator* accelerator);
 
-  // Returns the selected WebContents/TabContents. Used by our
-  // NonClientView's TabIconView::TabContentsProvider implementations.
+  // Returns the selected WebContents. Used by our NonClientView's
+  // TabIconView::TabContentsProvider implementations.
   // TODO(beng): exposing this here is a bit bogus, since it's only used to
   // determine loading state. It'd be nicer if we could change this to be
   // bool IsSelectedTabLoading() const; or something like that. We could even
   // move it to a WindowDelegate subclass.
   content::WebContents* GetActiveWebContents() const;
-  TabContents* GetActiveTabContents() const;
 
   // Retrieves the icon to use in the frame to indicate an OTR window.
   gfx::ImageSkia GetOTRAvatarIcon() const;

@@ -26,9 +26,9 @@ RenderViewContextMenuWin::~RenderViewContextMenuWin() {
 
 // static
 RenderViewContextMenuViews* RenderViewContextMenuViews::Create(
-    content::WebContents* tab_contents,
+    content::WebContents* web_contents,
     const content::ContextMenuParams& params) {
-  return new RenderViewContextMenuWin(tab_contents, params);
+  return new RenderViewContextMenuWin(web_contents, params);
 }
 
 bool RenderViewContextMenuWin::IsCommandIdVisible(int command_id) const {

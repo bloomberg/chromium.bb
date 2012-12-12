@@ -39,7 +39,7 @@ void DragBookmarks(Profile* profile,
         ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
   } else {
     // We hit this case when we're using WebContentsViewWin or
-    // WebContentsViewAura, instead of TabContentsViewViews.
+    // WebContentsViewAura, instead of WebContentsViewViews.
     views::RunShellDrag(view, data, gfx::Point(), operation,
         ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
   }

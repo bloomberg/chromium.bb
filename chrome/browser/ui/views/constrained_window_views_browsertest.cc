@@ -122,7 +122,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, FocusTest) {
       ConstrainedWindowTabHelper::FromWebContents(web_contents);
   ASSERT_TRUE(constrained_window_helper != NULL);
 
-  // Create a constrained dialog.  It will attach itself to tab_contents.
+  // Create a constrained dialog.  It will attach itself to web_contents.
   scoped_ptr<TestConstrainedDialog> test_dialog1(new TestConstrainedDialog);
   ConstrainedWindowViews* window1 = new ConstrainedWindowViews(
       web_contents, test_dialog1.get(), false,
@@ -136,7 +136,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, FocusTest) {
             focus_manager->GetFocusedView());
 
   // Now create a second constrained dialog.  This will also be attached to
-  // tab_contents, but will remain hidden since the test_dialog1 is still
+  // web_contents, but will remain hidden since the test_dialog1 is still
   // showing.
   scoped_ptr<TestConstrainedDialog> test_dialog2(new TestConstrainedDialog);
   ConstrainedWindowViews* window2 = new ConstrainedWindowViews(
@@ -198,7 +198,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, TabCloseTest) {
       ConstrainedWindowTabHelper::FromWebContents(web_contents);
   ASSERT_TRUE(constrained_window_helper != NULL);
 
-  // Create a constrained dialog.  It will attach itself to tab_contents.
+  // Create a constrained dialog.  It will attach itself to web_contents.
   scoped_ptr<TestConstrainedDialog> test_dialog(new TestConstrainedDialog);
   new ConstrainedWindowViews(
       web_contents, test_dialog.get(), true,
@@ -220,7 +220,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, TabSwitchTest) {
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents != NULL);
 
-  // Create a constrained dialog.  It will attach itself to tab_contents.
+  // Create a constrained dialog.  It will attach itself to web_contents.
   scoped_ptr<TestConstrainedDialog> test_dialog(new TestConstrainedDialog);
   ConstrainedWindowViews* window = new ConstrainedWindowViews(
       web_contents, test_dialog.get(), true,

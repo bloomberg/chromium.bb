@@ -55,8 +55,8 @@ TabStrip* GetTabStripForBrowser(Browser* browser);
 // Returns the center of |view| in screen coordinates.
 gfx::Point GetCenterInScreenCoordinates(const views::View* view);
 
-// Sets the id of |tab_contents| to |id|.
-void SetID(content::WebContents* tab_contents, int id);
+// Sets the id of |web_contents| to |id|.
+void SetID(content::WebContents* web_contents, int id);
 
 // Resets the ids of all the tabs in |model| starting at |start|. That is, the
 // id of the first tab is set to |start|, the second tab |start + 1| ...

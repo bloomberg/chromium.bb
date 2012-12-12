@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
@@ -32,6 +31,7 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
+using content::WebContents;
 using test::GetCenterInScreenCoordinates;
 using test::SetID;
 using test::ResetIDs;
@@ -155,7 +155,7 @@ IN_PROC_BROWSER_TEST_F(TabDragControllerTest, DeleteBeforeStartedDragging) {
   ASSERT_TRUE(TabDragController::IsActive());
 
   // Delete the tab being dragged.
-  delete browser()->tab_strip_model()->GetTabContentsAt(0);
+  delete browser()->tab_strip_model()->GetWebContentsAt(0);
 
   // Should have canceled dragging.
   ASSERT_FALSE(tab_strip->IsDragSessionActive());
@@ -184,7 +184,7 @@ IN_PROC_BROWSER_TEST_F(TabDragControllerTest, DeleteTabWhileAttached) {
   ASSERT_TRUE(TabDragController::IsActive());
 
   // Delete the tab being dragged.
-  delete browser()->tab_strip_model()->GetTabContentsAt(0);
+  delete browser()->tab_strip_model()->GetWebContentsAt(0);
 
   // Should have canceled dragging.
   ASSERT_FALSE(tab_strip->IsDragSessionActive());
@@ -202,7 +202,7 @@ IN_PROC_BROWSER_TEST_F(TabDragControllerTest, DeleteTabWhileDetached) {
 
   // Move to the first tab and drag it enough so that it detaches.
   gfx::Point tab_0_center(GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
-  TabContents* to_delete = browser()->tab_strip_model()->GetTabContentsAt(0);
+  WebContents* to_delete = browser()->tab_strip_model()->GetWebContentsAt(0);
   ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(tab_0_center));
   ASSERT_TRUE(ui_test_utils::SendMouseEventsSync(
                   ui_controls::LEFT, ui_controls::DOWN));
@@ -220,7 +220,7 @@ IN_PROC_BROWSER_TEST_F(TabDragControllerTest, DeleteTabWhileDetached) {
 
 namespace {
 
-void DeleteSourceDetachedStep2(TabContents* tab) {
+void DeleteSourceDetachedStep2(WebContents* tab) {
   // This ends up closing the source window.
   delete tab;
   // Cancel the drag.
@@ -238,7 +238,7 @@ IN_PROC_BROWSER_TEST_F(TabDragControllerTest, DeleteSourceDetached) {
 
   // Move to the first tab and drag it enough so that it detaches.
   gfx::Point tab_0_center(GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
-  TabContents* to_delete = browser()->tab_strip_model()->GetTabContentsAt(1);
+  WebContents* to_delete = browser()->tab_strip_model()->GetWebContentsAt(1);
   ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(tab_0_center));
   ASSERT_TRUE(ui_test_utils::SendMouseEventsSync(
                   ui_controls::LEFT, ui_controls::DOWN));
