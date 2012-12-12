@@ -135,9 +135,6 @@ void wl_proxy_set_queue(struct wl_proxy *proxy, struct wl_event_queue *queue);
 
 #include "wayland-client-protocol.h"
 
-typedef int (*wl_display_update_func_t)(uint32_t mask, void *data);
-typedef void (*wl_callback_func_t)(void *data, uint32_t time);
-
 struct wl_display *wl_display_connect(const char *name);
 struct wl_display *wl_display_connect_to_fd(int fd);
 void wl_display_disconnect(struct wl_display *display);
