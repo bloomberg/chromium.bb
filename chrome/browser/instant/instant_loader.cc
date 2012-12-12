@@ -307,8 +307,7 @@ void InstantLoader::StartCapturingKeyStrokes() {
 
 void InstantLoader::StopCapturingKeyStrokes() {
   InstantSupportDetermined(true);
-  // NOTE(samarth): the current implementation of the key capturing (invisible
-  // focus) doesn't require doing anything explicitly here.
+  controller_->StopCapturingKeyStrokes();
 }
 
 void InstantLoader::RenderViewGone() {

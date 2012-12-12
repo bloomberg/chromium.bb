@@ -135,6 +135,10 @@ class InstantController {
   // strokes.
   void StartCapturingKeyStrokes();
 
+  // Invoked by InstantLoader to request the browser to stop capturing user key
+  // strokes.
+  void StopCapturingKeyStrokes();
+
   // Invoked by InstantLoader when it has swapped a different WebContents into
   // the preview, usually because a prerendered page was navigated to.
   void SwappedWebContents();

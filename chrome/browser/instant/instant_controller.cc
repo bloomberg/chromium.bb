@@ -765,6 +765,14 @@ void InstantController::StartCapturingKeyStrokes() {
     browser_->FocusOmniboxInvisibly();
 }
 
+void InstantController::StopCapturingKeyStrokes() {
+  // Ignore unless the loader is active and on the NTP, and the omnibox has
+  // invisible focus.
+  if (extended_enabled_ && !instant_tab_ && model_.mode().is_ntp() &&
+      omnibox_focus_state_ == OMNIBOX_FOCUS_INVISIBLE)
+    loader_->contents()->Focus();
+}
+
 void InstantController::SwappedWebContents() {
   model_.SetPreviewContents(GetPreviewContents());
 }
