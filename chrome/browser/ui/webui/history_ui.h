@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/string16.h"
+#include "base/timer.h"
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/web_history_service.h"
@@ -46,7 +47,20 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
+  // Core implementation of history querying.
   void QueryHistory(string16 search_text, const history::QueryOptions& options);
+
+  // Creates a history query result value.
+  DictionaryValue* CreateQueryResultValue(
+      const GURL& url, const string16 title, base::Time visit_time,
+      bool is_search_result, const string16& snippet);
+
+  // Helper to send the accumulated results of the query to the front end.
+  void ReturnResultsToFrontEnd();
+
+  // Callback from |web_history_timer_| when a response from web history has
+  // not been received in time.
+  void WebHistoryTimeout();
 
   // Callback from the history system when a history query has completed.
   void QueryComplete(const string16& search_text,
@@ -86,6 +100,15 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
 
   // The list of URLs that are in the process of being deleted.
   std::set<GURL> urls_to_be_deleted_;
+
+  // The info value that is returned to the front end with the query results.
+  DictionaryValue results_info_value_;
+
+  // The list of query results that is returned to the front end.
+  ListValue results_value_;
+
+  // Timer used to implement a timeout on a Web History response.
+  base::OneShotTimer<BrowsingHistoryHandler> web_history_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingHistoryHandler);
 };

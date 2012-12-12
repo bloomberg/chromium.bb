@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/i18n/rtl.h"
 #include "base/i18n/time_formatting.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
@@ -62,6 +63,9 @@ using content::WebContents;
 static const char kStringsJsFile[] = "strings.js";
 static const char kHistoryJsFile[] = "history.js";
 
+// The amount of time to wait for a response from the WebHistoryService.
+static const int kWebHistoryTimeoutSeconds = 3;
+
 namespace {
 
 #if defined(OS_MACOSX)
@@ -74,6 +78,32 @@ const char kIncognitoModeShortcut[] = "(Ctrl+Shift+N)";
 #else
 const char kIncognitoModeShortcut[] = "(Shift+Ctrl+N)";
 #endif
+
+// Format the URL and title for the given history query result.
+void SetURLAndTitle(DictionaryValue* result,
+                    const string16& title,
+                    const GURL& gurl) {
+  result->SetString("url", gurl.spec());
+
+  bool using_url_as_the_title = false;
+  string16 title_to_set(title);
+  if (title.empty()) {
+    using_url_as_the_title = true;
+    title_to_set = UTF8ToUTF16(gurl.spec());
+  }
+
+  // Since the title can contain BiDi text, we need to mark the text as either
+  // RTL or LTR, depending on the characters in the string. If we use the URL
+  // as the title, we mark the title as LTR since URLs are always treated as
+  // left to right strings.
+  if (base::i18n::IsRTL()) {
+    if (using_url_as_the_title)
+      base::i18n::WrapStringWithLTRFormatting(&title_to_set);
+    else
+      base::i18n::AdjustStringForLocaleDirection(&title_to_set);
+  }
+  result->SetString("title", title_to_set);
+}
 
 };  // namespace
 
@@ -196,6 +226,12 @@ bool BrowsingHistoryHandler::ExtractIntegerValueAtIndex(const ListValue* value,
   return false;
 }
 
+void BrowsingHistoryHandler::WebHistoryTimeout() {
+  // TODO(dubroy): Communicate the failure to the front end.
+  if (!results_info_value_.empty())
+    ReturnResultsToFrontEnd();
+}
+
 void BrowsingHistoryHandler::QueryHistory(
     string16 search_text, const history::QueryOptions& options) {
   Profile* profile = Profile::FromWebUI(web_ui());
@@ -203,6 +239,9 @@ void BrowsingHistoryHandler::QueryHistory(
   // Anything in-flight is invalid.
   history_request_consumer_.CancelAllRequests();
   web_history_request_.reset();
+
+  results_value_.Clear();
+  results_info_value_.Clear();
 
   HistoryService* hs = HistoryServiceFactory::GetForProfile(
       profile, Profile::EXPLICIT_ACCESS);
@@ -220,6 +259,10 @@ void BrowsingHistoryHandler::QueryHistory(
         options,
         base::Bind(&BrowsingHistoryHandler::WebHistoryQueryComplete,
                    base::Unretained(this), search_text, options));
+    // Start a timer so we know when to give up.
+    web_history_timer_.Start(
+        FROM_HERE, base::TimeDelta::FromSeconds(kWebHistoryTimeoutSeconds),
+        this, &BrowsingHistoryHandler::WebHistoryTimeout);
   }
 }
 
@@ -326,81 +369,131 @@ void BrowsingHistoryHandler::HandleRemoveBookmark(const ListValue* args) {
   bookmark_utils::RemoveAllBookmarks(model, GURL(url));
 }
 
+DictionaryValue* BrowsingHistoryHandler::CreateQueryResultValue(
+    const GURL& url, const string16 title, base::Time visit_time,
+    bool is_search_result, const string16& snippet) {
+  DictionaryValue* result = new DictionaryValue();
+  SetURLAndTitle(result, title, url);
+  result->SetDouble("time", visit_time.ToJsTime());
+
+  // Until we get some JS i18n infrastructure, we also need to
+  // pass the dates in as strings. This could use some
+  // optimization.
+
+  // Only pass in the strings we need (search results need a shortdate
+  // and snippet, browse results need day and time information).
+  if (is_search_result) {
+    result->SetString("dateShort", base::TimeFormatShortDate(visit_time));
+    result->SetString("snippet", snippet);
+  } else {
+    base::Time midnight_today = base::Time::Now().LocalMidnight();
+    string16 date_str = TimeFormat::RelativeDate(visit_time, &midnight_today);
+    if (date_str.empty()) {
+      date_str = base::TimeFormatFriendlyDate(visit_time);
+    } else {
+      date_str = l10n_util::GetStringFUTF16(
+          IDS_HISTORY_DATE_WITH_RELATIVE_TIME,
+          date_str,
+          base::TimeFormatFriendlyDate(visit_time));
+    }
+    result->SetString("dateRelativeDay", date_str);
+    result->SetString("dateTimeOfDay", base::TimeFormatTimeOfDay(visit_time));
+  }
+  Profile* profile = Profile::FromWebUI(web_ui());
+  result->SetBoolean("starred",
+      BookmarkModelFactory::GetForProfile(profile)->IsBookmarked(url));
+
+  return result;
+}
+
+void BrowsingHistoryHandler::ReturnResultsToFrontEnd() {
+  web_ui()->CallJavascriptFunction(
+      "historyResult", results_info_value_, results_value_);
+  results_info_value_.Clear();
+  results_value_.Clear();
+}
+
 void BrowsingHistoryHandler::QueryComplete(
     const string16& search_text,
     const history::QueryOptions& options,
     HistoryService::Handle request_handle,
     history::QueryResults* results) {
-  ListValue results_value;
-  base::Time midnight_today = base::Time::Now().LocalMidnight();
+  unsigned int old_results_count = results_value_.GetSize();
 
   for (size_t i = 0; i < results->size(); ++i) {
     history::URLResult const &page = (*results)[i];
-    DictionaryValue* page_value = new DictionaryValue();
-    SetURLAndTitle(page_value, page.title(), page.url());
-
-    // Need to pass the time in epoch time (fastest JS conversion).
-    page_value->SetDouble("time", page.visit_time().ToJsTime());
-
-    // Until we get some JS i18n infrastructure, we also need to
-    // pass the dates in as strings. This could use some
-    // optimization.
-
-    // Only pass in the strings we need (search results need a shortdate
-    // and snippet, browse results need day and time information).
-    if (search_text.empty()) {
-      // Figure out the relative date string.
-      string16 date_str = TimeFormat::RelativeDate(page.visit_time(),
-                                                   &midnight_today);
-      if (date_str.empty()) {
-        date_str = base::TimeFormatFriendlyDate(page.visit_time());
-      } else {
-        date_str = l10n_util::GetStringFUTF16(
-            IDS_HISTORY_DATE_WITH_RELATIVE_TIME,
-            date_str,
-            base::TimeFormatFriendlyDate(page.visit_time()));
-      }
-      page_value->SetString("dateRelativeDay", date_str);
-      page_value->SetString("dateTimeOfDay",
-          base::TimeFormatTimeOfDay(page.visit_time()));
-    } else {
-      page_value->SetString("dateShort",
-          base::TimeFormatShortDate(page.visit_time()));
-      page_value->SetString("snippet", page.snippet().text());
-    }
-    Profile* profile = Profile::FromWebUI(web_ui());
-    page_value->SetBoolean("starred",
-        BookmarkModelFactory::GetForProfile(profile)->IsBookmarked(
-            page.url()));
-    results_value.Append(page_value);
+    results_value_.Append(
+        CreateQueryResultValue(
+            page.url(), page.title(), page.visit_time(), !search_text.empty(),
+            page.snippet().text()));
   }
 
-  DictionaryValue info_value;
-  info_value.SetString("term", search_text);
-  info_value.SetBoolean("finished", results->reached_beginning());
-  info_value.Set("cursor", results->cursor().ToValue());
+  results_info_value_.SetString("term", search_text);
+  results_info_value_.SetBoolean("finished", results->reached_beginning());
+  results_info_value_.Set("cursor", results->cursor().ToValue());
 
-  web_ui()->CallJavascriptFunction("historyResult", info_value, results_value);
+  // The results are sorted if and only if they were empty before.
+  results_info_value_.SetBoolean("sorted", old_results_count == 0);
+
+  if (!web_history_timer_.IsRunning())
+    ReturnResultsToFrontEnd();
 }
 
-void BrowsingHistoryHandler::WebHistoryQueryComplete(
-    const string16& search_text,
-    const history::QueryOptions& options,
-    history::WebHistoryService::Request* request,
-    const DictionaryValue* results_value) {
-  DCHECK_EQ(request, web_history_request_.get());
-  DictionaryValue info_value;
-  info_value.SetString("term", search_text);
-  info_value.SetBoolean("finished", false);
+  void BrowsingHistoryHandler::WebHistoryQueryComplete(
+      const string16& search_text,
+      const history::QueryOptions& options,
+      history::WebHistoryService::Request* request,
+      const DictionaryValue* results_value) {
+  web_history_timer_.Stop();
 
-  const ListValue* result_list = NULL;
-  if (results_value && results_value->GetList("event", &result_list)) {
-    web_ui()->CallJavascriptFunction("syncedHistoryResult",
-                                     info_value,
-                                     *result_list);
-  } else {
-    NOTREACHED() << "Unexpected result from history server.";
+  // Check if the results have already been received from the history DB.
+  // It is unlikely, but possible, that server results will arrive first.
+  bool has_local_results = !results_info_value_.empty();
+  unsigned int old_results_count = results_value_.GetSize();
+
+  const ListValue* events;
+  if (results_value && results_value->GetList("event", &events)) {
+    for (unsigned int i = 0; i < events->GetSize(); ++i) {
+      const DictionaryValue* event;
+      const DictionaryValue* result;
+      const DictionaryValue* id;
+      const ListValue* results;
+      const ListValue* ids;
+      string16 timestamp_string;
+      string16 url;
+      int64 timestamp_usec;
+
+      if (!events->GetDictionary(i, &event) ||
+          !event->GetList("result", &results)) {
+        LOG(WARNING) << "Improperly formed JSON response.";
+        continue;  // Skip this result.
+      }
+
+      DCHECK_GT(results->GetSize(), 0U);
+
+      if (results->GetDictionary(0, &result) &&
+          result->GetList("id", &ids) &&
+          result->GetStringWithoutPathExpansion("url", &url) &&
+          ids->GetDictionary(0, &id) &&
+          id->GetString("timestamp_usec", &timestamp_string) &&
+          base::StringToInt64(timestamp_string, &timestamp_usec)) {
+        results_value_.Append(
+            CreateQueryResultValue(
+                GURL(url),
+                string16(),
+                base::Time::FromJsTime(timestamp_usec / 1000),
+                !search_text.empty(),
+                string16()));
+      }
+    }
+    // The results are sorted if and only if they were empty before.
+    results_info_value_.SetBoolean("sorted", old_results_count == 0);
+  } else if (results_value) {
+    NOTREACHED() << "Failed to parse JSON response.";
   }
+
+  if (has_local_results)
+    ReturnResultsToFrontEnd();
 }
 
 void BrowsingHistoryHandler::RemoveComplete() {
@@ -408,53 +501,6 @@ void BrowsingHistoryHandler::RemoveComplete() {
 
   // Notify the page that the deletion request succeeded.
   web_ui()->CallJavascriptFunction("deleteComplete");
-}
-
-void BrowsingHistoryHandler::SetQueryDepthInDays(
-      history::QueryOptions& options, int depth) {
-  options.end_time =
-      base::Time::Now().LocalMidnight() - base::TimeDelta::FromDays(depth - 1);
-  options.begin_time =
-      base::Time::Now().LocalMidnight() - base::TimeDelta::FromDays(depth);
-}
-
-void BrowsingHistoryHandler::SetQueryDepthInMonths(
-      history::QueryOptions& options, int depth) {
-  // Configure the begin point of the search to the start of the
-  // current month.
-  base::Time::Exploded exploded;
-  base::Time::Now().LocalMidnight().LocalExplode(&exploded);
-  exploded.day_of_month = 1;
-
-  if (depth == 0) {
-    options.begin_time = base::Time::FromLocalExploded(exploded);
-
-    // Set the end time of this first search to null (which will
-    // show results from the future, should the user's clock have
-    // been set incorrectly).
-    options.end_time = base::Time();
-  } else {
-    // Set the end-time of this search to the end of the month that is
-    // |depth| months before the search end point. The end time is not
-    // inclusive, so we should feel free to set it to midnight on the
-    // first day of the following month.
-    exploded.month -= depth - 1;
-    while (exploded.month < 1) {
-      exploded.month += 12;
-      exploded.year--;
-    }
-    options.end_time = base::Time::FromLocalExploded(exploded);
-
-    // Set the begin-time of the search to the start of the month
-    // that is |depth| months prior to search_start_.
-    if (exploded.month > 1) {
-      exploded.month--;
-    } else {
-      exploded.month = 12;
-      exploded.year--;
-    }
-    options.begin_time = base::Time::FromLocalExploded(exploded);
-  }
 }
 
 // Helper function for Observe that determines if there are any differences

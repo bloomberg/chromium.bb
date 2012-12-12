@@ -60,7 +60,7 @@ function Visit(result, continued, model, id) {
   // All the date information is public so that owners can compare properties of
   // two items easily.
 
-  this.time = new Date(result.time);
+  this.date = new Date(result.time);
 
   // See comment in BrowsingHistoryHandler::QueryComplete - we won't always
   // get all of these.
@@ -96,7 +96,7 @@ Visit.prototype.getResultDOM = function(searchResultFlag) {
   var checkbox = document.createElement('input');
   checkbox.type = 'checkbox';
   checkbox.id = 'checkbox-' + this.id_;
-  checkbox.time = this.time.getTime();
+  checkbox.time = this.date.getTime();
   checkbox.addEventListener('click', checkboxClicked);
   time.appendChild(checkbox);
 
@@ -243,7 +243,7 @@ Visit.prototype.removeFromHistory_ = function() {
   var onSuccessCallback = function() {
     removeEntryFromView(self.domNode_);
   };
-  queueURLsForDeletion(this.time, [this.url_], onSuccessCallback);
+  queueURLsForDeletion(this.date, [this.url_], onSuccessCallback);
   deleteNextInQueue();
 };
 
@@ -354,32 +354,33 @@ HistoryModel.prototype.addResults = function(info, results) {
   this.isQueryFinished_ = info.finished;
   this.queryCursor_ = info.cursor;
 
-  // If our results aren't for our current search term, they're rubbish.
-  if (info.term != this.searchText_)
+  // If there are no results, or they're not for the current search term,
+  // there's nothing more to do.
+  if (!results || !results.length || info.term != this.searchText_)
     return;
 
-  // Currently we assume we're getting things in date order. This needs to
-  // be updated if that ever changes.
-  if (results && results.length) {
-    var lastURL, lastDay;
-    var lastVisit = this.visits_.slice(-1)[0];
-    if (lastVisit) {
-      lastURL = lastVisit.url;
-      lastDay = lastVisit.dateRelativeDay;
-    }
+  // If necessary, sort the results from newest to oldest.
+  if (!results.sorted)
+    results.sort(function(a, b) { return b.time - a.time; });
 
-    for (var i = 0, thisResult; thisResult = results[i]; i++) {
-      var thisURL = thisResult.url;
-      var thisDay = thisResult.dateRelativeDay;
+  var lastVisit = this.visits_.slice(-1)[0];
+  var lastDay = lastVisit ? lastVisit.dateRelativeDay : null;
 
-      // Figure out if this visit is in the same day as the previous visit.
-      // This is used to determine how day headers should be drawn.
-      this.visits_.push(
-          new Visit(thisResult, thisDay == lastDay, this, this.last_id_++));
-      this.changed = true;
-      lastDay = thisDay;
-      lastURL = thisURL;
-    }
+  for (var i = 0, thisResult; thisResult = results[i]; i++) {
+    var thisDay = thisResult.dateRelativeDay;
+    var isSameDay = lastDay == thisDay;
+
+    // Keep track of all URLs seen on a particular day, and only use the
+    // latest visit from that day.
+    if (!isSameDay)
+      this.urlsFromLastSeenDay_ = {};
+    else if (thisResult.url in this.urlsFromLastSeenDay_)
+      continue;
+    this.urlsFromLastSeenDay_[thisResult.url] = thisResult.time;
+
+    this.visits_.push(new Visit(thisResult, isSameDay, this, this.last_id_++));
+    this.changed = true;
+    lastDay = thisDay;
   }
 
   this.updateSearch_();
@@ -438,6 +439,11 @@ HistoryModel.prototype.clearModel_ = function() {
   // fetch the next page of results for a query.
   this.queryCursor_ = null;
 
+  // A map of URLs of visits on the same day as the last known visit.
+  // This is used for de-duping URLs, so that we only show the most recent
+  // visit to a URL on any day.
+  this.urlsFromLastSeenDay_ = {};
+
   if (this.view_)
     this.view_.clear_();
 };
@@ -474,7 +480,8 @@ HistoryModel.prototype.queryHistory_ = function() {
   // left off.
   if (this.visits_.length > 0) {
     var lastVisit = this.visits_.slice(-1)[0];
-    endTime = lastVisit.time;
+    endTime = lastVisit.date.getTime();
+    cursor = this.queryCursor_;
   }
 
   $('loading-spinner').hidden = false;
@@ -669,7 +676,7 @@ HistoryView.prototype.displayResults_ = function() {
       if (visit.isRendered)
         continue;
 
-      var thisTime = visit.time.getTime();
+      var thisTime = visit.date.getTime();
 
       // Break across day boundaries and insert gaps for browsing pauses.
       // Create a dayResults element to contain results for each day.
@@ -1071,7 +1078,6 @@ function deleteFailed() {
  * Called when the history is deleted by someone else.
  */
 function historyDeleted() {
-  window.console.log('History deleted');
   var anyChecked = document.querySelector('.entry input:checked') != null;
   // Reload the page, unless the user has any items checked.
   // TODO(dubroy): We should just reload the page & restore the checked items.
