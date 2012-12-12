@@ -68,4 +68,57 @@ void LayerTreeImpl::ClearCurrentlyScrollingLayer() {
   scrolling_layer_id_from_previous_tree_ = 0;
 }
 
+const LayerTreeSettings& LayerTreeImpl::settings() const {
+  return layer_tree_host_impl_->settings();
+}
+
+OutputSurface* LayerTreeImpl::output_surface() const {
+  return layer_tree_host_impl_->outputSurface();
+}
+
+ResourceProvider* LayerTreeImpl::resource_provider() const {
+  return layer_tree_host_impl_->resourceProvider();
+}
+
+TileManager* LayerTreeImpl::tile_manager() const {
+  return layer_tree_host_impl_->tileManager();
+}
+
+FrameRateCounter* LayerTreeImpl::frame_rate_counter() const {
+  return layer_tree_host_impl_->fpsCounter();
+}
+
+void LayerTreeImpl::SetNeedsRedraw() {
+  layer_tree_host_impl_->setNeedsRedraw();
+}
+
+void LayerTreeImpl::SetNeedsUpdateDrawProperties() {
+  layer_tree_host_impl_->setNeedsUpdateDrawProperties();
+}
+
+const LayerTreeDebugState& LayerTreeImpl::debug_state() const {
+  return layer_tree_host_impl_->debugState();
+}
+
+float LayerTreeImpl::device_scale_factor() const {
+  return layer_tree_host_impl_->deviceScaleFactor();
+}
+
+const gfx::Size& LayerTreeImpl::device_viewport_size() const {
+  return layer_tree_host_impl_->deviceViewportSize();
+}
+
+const gfx::Size& LayerTreeImpl::layout_viewport_size() const {
+  return layer_tree_host_impl_->layoutViewportSize();
+}
+
+std::string LayerTreeImpl::layer_tree_as_text() const {
+  return layer_tree_host_impl_->layerTreeAsText();
+}
+
+DebugRectHistory* LayerTreeImpl::debug_rect_history() const {
+  return layer_tree_host_impl_->debugRectHistory();
+}
+
+
 } // namespace cc

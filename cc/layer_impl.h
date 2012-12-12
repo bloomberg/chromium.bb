@@ -82,7 +82,6 @@ public:
     bool replicaHasMask() const { return m_replicaLayer && (m_maskLayer || m_replicaLayer->m_maskLayer); }
 
     LayerTreeImpl* layerTreeImpl() const { return m_layerTreeImpl; }
-    LayerTreeHostImpl* layerTreeHostImpl() const;
 
     scoped_ptr<SharedQuadState> createSharedQuadState() const;
     // willDraw must be called before appendQuads. If willDraw is called,

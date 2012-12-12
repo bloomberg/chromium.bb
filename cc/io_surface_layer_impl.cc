@@ -7,7 +7,7 @@
 #include "base/stringprintf.h"
 #include "cc/gl_renderer.h" // For the GLC() macro.
 #include "cc/io_surface_draw_quad.h"
-#include "cc/layer_tree_host_impl.h"
+#include "cc/layer_tree_impl.h"
 #include "cc/output_surface.h"
 #include "cc/quad_sink.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
@@ -29,7 +29,7 @@ IOSurfaceLayerImpl::~IOSurfaceLayerImpl()
     if (!m_ioSurfaceTextureId)
         return;
 
-    OutputSurface* outputSurface = layerTreeHostImpl()->outputSurface();
+    OutputSurface* outputSurface = layerTreeImpl()->output_surface();
     // FIXME: Implement this path for software compositing.
     WebKit::WebGraphicsContext3D* context3d = outputSurface->Context3D();
     if (context3d)

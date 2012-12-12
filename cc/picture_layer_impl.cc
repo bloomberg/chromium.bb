@@ -9,7 +9,7 @@
 #include "cc/checkerboard_draw_quad.h"
 #include "cc/debug_border_draw_quad.h"
 #include "cc/debug_colors.h"
-#include "cc/layer_tree_host_impl.h"
+#include "cc/layer_tree_impl.h"
 #include "cc/math_util.h"
 #include "cc/quad_sink.h"
 #include "cc/solid_color_draw_quad.h"
@@ -58,10 +58,10 @@ void PictureLayerImpl::appendQuads(QuadSink& quadSink,
       float width;
       if (*iter && iter->GetResourceId()) {
         color = DebugColors::TileBorderColor();
-        width = DebugColors::TileBorderWidth(layerTreeHostImpl());
+        width = DebugColors::TileBorderWidth(layerTreeImpl());
       } else {
         color = DebugColors::MissingTileBorderColor();
-        width = DebugColors::MissingTileBorderWidth(layerTreeHostImpl());
+        width = DebugColors::MissingTileBorderWidth(layerTreeImpl());
       }
 
       scoped_ptr<DebugBorderDrawQuad> debugBorderQuad =
@@ -131,7 +131,7 @@ void PictureLayerImpl::didUpdateTransforms() {
   if (drawsContent()) {
     // TODO(enne): Add more tilings during pinch zoom.
     if (!tilings_.num_tilings()) {
-      gfx::Size tile_size = layerTreeHostImpl()->settings().defaultTileSize;
+      gfx::Size tile_size = layerTreeImpl()->settings().defaultTileSize;
       tilings_.AddTiling(contentsScaleX(), tile_size);
       // TODO(enne): handle invalidations, create new tiles
     }
@@ -149,7 +149,7 @@ void PictureLayerImpl::didUpdateTransforms() {
       last_content_scale_y_ == contentsScaleY()) {
     time_delta = current_time - last_update_time_;
   }
-  tilings_.UpdateTilePriorities(layerTreeHostImpl()->deviceViewportSize(),
+  tilings_.UpdateTilePriorities(layerTreeImpl()->device_viewport_size(),
                                 contentsScaleX(),
                                 contentsScaleY(),
                                 last_screen_space_transform_,
@@ -170,7 +170,7 @@ void PictureLayerImpl::didUpdateBounds() {
 
 scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling* tiling,
                                                  gfx::Rect rect) {
-  TileManager* tile_manager = layerTreeHostImpl()->tileManager();
+  TileManager* tile_manager = layerTreeImpl()->tile_manager();
 
   return make_scoped_refptr(new Tile(
       tile_manager,

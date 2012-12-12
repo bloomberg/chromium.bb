@@ -50,7 +50,7 @@ static inline bool appendQuadInternal(scoped_ptr<DrawQuad> drawQuad, const gfx::
     if (keepQuad) {
         if (createDebugBorderQuads && !drawQuad->IsDebugQuad() && drawQuad->visible_rect != drawQuad->rect) {
             SkColor color = DebugColors::CulledTileBorderColor();
-            float width = DebugColors::CulledTileBorderWidth(layer ? layer->layerTreeHostImpl() : NULL);
+            float width = DebugColors::CulledTileBorderWidth(layer ? layer->layerTreeImpl() : NULL);
             scoped_ptr<DebugBorderDrawQuad> debugBorderQuad = DebugBorderDrawQuad::Create();
             debugBorderQuad->SetNew(drawQuad->shared_quad_state, drawQuad->visible_rect, color, width);
             quadList.append(debugBorderQuad.PassAs<DrawQuad>());

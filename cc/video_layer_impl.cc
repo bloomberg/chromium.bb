@@ -6,9 +6,10 @@
 
 #include "base/logging.h"
 #include "cc/io_surface_draw_quad.h"
-#include "cc/layer_tree_host_impl.h"
+#include "cc/layer_tree_impl.h"
 #include "cc/math_util.h"
 #include "cc/quad_sink.h"
+#include "cc/renderer.h"
 #include "cc/resource_provider.h"
 #include "cc/stream_video_draw_quad.h"
 #include "cc/texture_draw_quad.h"
@@ -51,7 +52,7 @@ VideoLayerImpl::~VideoLayerImpl()
         m_provider->setVideoFrameProviderClient(0);
         m_provider = 0;
     }
-    freePlaneData(layerTreeHostImpl()->resourceProvider());
+    freePlaneData(layerTreeImpl()->resource_provider());
 
 #ifndef NDEBUG
     for (size_t i = 0; i < media::VideoFrame::kMaxPlanes; ++i)
@@ -412,12 +413,12 @@ void VideoLayerImpl::didUpdateMatrix(const float matrix[16])
 
 void VideoLayerImpl::didLoseOutputSurface()
 {
-    freePlaneData(layerTreeHostImpl()->resourceProvider());
+    freePlaneData(layerTreeImpl()->resource_provider());
 }
 
 void VideoLayerImpl::setNeedsRedraw()
 {
-    layerTreeHostImpl()->setNeedsRedraw();
+    layerTreeImpl()->SetNeedsRedraw();
 }
 
 const char* VideoLayerImpl::layerTypeAsString() const

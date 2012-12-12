@@ -265,6 +265,7 @@ public:
     FrameRateCounter* fpsCounter() const { return m_fpsCounter.get(); }
     DebugRectHistory* debugRectHistory() const { return m_debugRectHistory.get(); }
     ResourceProvider* resourceProvider() const { return m_resourceProvider.get(); }
+
     Proxy* proxy() const { return m_proxy; }
 
     void setDebugState(const LayerTreeDebugState& debugState) { m_debugState = debugState; }

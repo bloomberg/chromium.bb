@@ -14,7 +14,7 @@
 namespace cc {
 
 class LayerImpl;
-struct LayerTreeDebugState;
+class LayerTreeDebugState;
 
 // There are currently six types of debug rects:
 //

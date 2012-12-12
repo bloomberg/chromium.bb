@@ -203,7 +203,7 @@ void RenderSurfaceImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQ
 
     if (m_owningLayer->showDebugBorders()) {
         SkColor color = forReplica ? DebugColors::SurfaceReplicaBorderColor() : DebugColors::SurfaceBorderColor();
-        float width = forReplica ? DebugColors::SurfaceReplicaBorderWidth(m_owningLayer->layerTreeHostImpl()) : DebugColors::SurfaceBorderWidth(m_owningLayer->layerTreeHostImpl());
+        float width = forReplica ? DebugColors::SurfaceReplicaBorderWidth(m_owningLayer->layerTreeImpl()) : DebugColors::SurfaceBorderWidth(m_owningLayer->layerTreeImpl());
         scoped_ptr<DebugBorderDrawQuad> debugBorderQuad = DebugBorderDrawQuad::Create();
         debugBorderQuad->SetNew(sharedQuadState, contentRect(), color, width);
         quadSink.append(debugBorderQuad.PassAs<DrawQuad>(), appendQuadsData);

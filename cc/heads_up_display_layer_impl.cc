@@ -11,8 +11,9 @@
 #include "cc/debug_rect_history.h"
 #include "cc/font_atlas.h"
 #include "cc/frame_rate_counter.h"
-#include "cc/layer_tree_host_impl.h"
+#include "cc/layer_tree_impl.h"
 #include "cc/quad_sink.h"
+#include "cc/renderer.h"
 #include "cc/texture_draw_quad.h"
 #include "skia/ext/platform_canvas.h"
 #include "skia/ext/platform_canvas.h"
@@ -146,7 +147,7 @@ bool HeadsUpDisplayLayerImpl::layerIsAlwaysDamaged() const
 
 void HeadsUpDisplayLayerImpl::drawHudContents(SkCanvas* canvas)
 {
-    const LayerTreeDebugState& debugState = layerTreeHostImpl()->debugState();
+    const LayerTreeDebugState& debugState = layerTreeImpl()->debug_state();
 
     if (debugState.showPlatformLayerTree) {
         SkPaint paint = createPaint();
@@ -157,15 +158,15 @@ void HeadsUpDisplayLayerImpl::drawHudContents(SkCanvas* canvas)
     int platformLayerTreeTop = 0;
 
     if (debugState.showFPSCounter)
-        platformLayerTreeTop = drawFPSCounter(canvas, layerTreeHostImpl()->fpsCounter());
+        platformLayerTreeTop = drawFPSCounter(canvas, layerTreeImpl()->frame_rate_counter());
 
     if (debugState.showPlatformLayerTree && m_fontAtlas) {
-        std::string layerTree = layerTreeHostImpl()->layerTreeAsText();
+        std::string layerTree = layerTreeImpl()->layer_tree_as_text();
         m_fontAtlas->drawText(canvas, createPaint(), layerTree, gfx::Point(2, platformLayerTreeTop), bounds());
     }
 
     if (debugState.showHudRects())
-        drawDebugRects(canvas, layerTreeHostImpl()->debugRectHistory());
+        drawDebugRects(canvas, layerTreeImpl()->debug_rect_history());
 }
 
 int HeadsUpDisplayLayerImpl::drawFPSCounter(SkCanvas* canvas, FrameRateCounter* fpsCounter)
@@ -312,7 +313,7 @@ void HeadsUpDisplayLayerImpl::drawFPSCounterGraphAndHistogram(SkCanvas* canvas, 
 void HeadsUpDisplayLayerImpl::drawDebugRects(SkCanvas* canvas, DebugRectHistory* debugRectHistory)
 {
     const std::vector<DebugRect>& debugRects = debugRectHistory->debugRects();
-    float rectScale = 1 / layerTreeHostImpl()->deviceScaleFactor();
+    float rectScale = 1 / layerTreeImpl()->device_scale_factor();
 
     canvas->save();
     canvas->scale(rectScale, rectScale);
@@ -326,37 +327,37 @@ void HeadsUpDisplayLayerImpl::drawDebugRects(SkCanvas* canvas, DebugRectHistory*
         case PaintRectType:
             strokeColor = DebugColors::PaintRectBorderColor();
             fillColor = DebugColors::PaintRectFillColor();
-            strokeWidth = DebugColors::PaintRectBorderWidth(layerTreeHostImpl());
+            strokeWidth = DebugColors::PaintRectBorderWidth(layerTreeImpl());
             break;
         case PropertyChangedRectType:
             strokeColor = DebugColors::PropertyChangedRectBorderColor();
             fillColor = DebugColors::PropertyChangedRectFillColor();
-            strokeWidth = DebugColors::PropertyChangedRectBorderWidth(layerTreeHostImpl());
+            strokeWidth = DebugColors::PropertyChangedRectBorderWidth(layerTreeImpl());
             break;
         case SurfaceDamageRectType:
             strokeColor = DebugColors::SurfaceDamageRectBorderColor();
             fillColor = DebugColors::SurfaceDamageRectFillColor();
-            strokeWidth = DebugColors::SurfaceDamageRectBorderWidth(layerTreeHostImpl());
+            strokeWidth = DebugColors::SurfaceDamageRectBorderWidth(layerTreeImpl());
             break;
         case ReplicaScreenSpaceRectType:
             strokeColor = DebugColors::ScreenSpaceSurfaceReplicaRectBorderColor();
             fillColor = DebugColors::ScreenSpaceSurfaceReplicaRectFillColor();
-            strokeWidth = DebugColors::ScreenSpaceSurfaceReplicaRectBorderWidth(layerTreeHostImpl());
+            strokeWidth = DebugColors::ScreenSpaceSurfaceReplicaRectBorderWidth(layerTreeImpl());
             break;
         case ScreenSpaceRectType:
             strokeColor = DebugColors::ScreenSpaceLayerRectBorderColor();
             fillColor = DebugColors::ScreenSpaceLayerRectFillColor();
-            strokeWidth = DebugColors::ScreenSpaceLayerRectBorderWidth(layerTreeHostImpl());
+            strokeWidth = DebugColors::ScreenSpaceLayerRectBorderWidth(layerTreeImpl());
             break;
         case OccludingRectType:
             strokeColor = DebugColors::OccludingRectBorderColor();
             fillColor = DebugColors::OccludingRectFillColor();
-            strokeWidth = DebugColors::OccludingRectBorderWidth(layerTreeHostImpl());
+            strokeWidth = DebugColors::OccludingRectBorderWidth(layerTreeImpl());
             break;
         case NonOccludingRectType:
             strokeColor = DebugColors::NonOccludingRectBorderColor();
             fillColor = DebugColors::NonOccludingRectFillColor();
-            strokeWidth = DebugColors::NonOccludingRectBorderWidth(layerTreeHostImpl());
+            strokeWidth = DebugColors::NonOccludingRectBorderWidth(layerTreeImpl());
             break;
         }
 

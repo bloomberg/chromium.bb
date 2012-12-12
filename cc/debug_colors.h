@@ -10,67 +10,67 @@
 
 namespace cc {
 
-class LayerTreeHostImpl;
+class LayerTreeImpl;
 
 class DebugColors {
  public:
   static SkColor TiledContentLayerBorderColor();
-  static int TiledContentLayerBorderWidth(const LayerTreeHostImpl* host_impl);
+  static int TiledContentLayerBorderWidth(const LayerTreeImpl* tree_impl);
 
   static SkColor ContentLayerBorderColor();
-  static int ContentLayerBorderWidth(const LayerTreeHostImpl* host_impl);
+  static int ContentLayerBorderWidth(const LayerTreeImpl* tree_impl);
 
   static SkColor MaskingLayerBorderColor();
-  static int MaskingLayerBorderWidth(const LayerTreeHostImpl* host_impl);
+  static int MaskingLayerBorderWidth(const LayerTreeImpl* tree_impl);
 
   static SkColor ContainerLayerBorderColor();
-  static int ContainerLayerBorderWidth(const LayerTreeHostImpl* host_impl);
+  static int ContainerLayerBorderWidth(const LayerTreeImpl* tree_impl);
 
   static SkColor SurfaceBorderColor();
-  static int SurfaceBorderWidth(const LayerTreeHostImpl* host_impl);
+  static int SurfaceBorderWidth(const LayerTreeImpl* tree_impl);
 
   static SkColor SurfaceReplicaBorderColor();
-  static int SurfaceReplicaBorderWidth(const LayerTreeHostImpl* host_impl);
+  static int SurfaceReplicaBorderWidth(const LayerTreeImpl* tree_impl);
 
   static SkColor TileBorderColor();
-  static int TileBorderWidth(const LayerTreeHostImpl* host_impl);
+  static int TileBorderWidth(const LayerTreeImpl* tree_impl);
 
   static SkColor MissingTileBorderColor();
-  static int MissingTileBorderWidth(const LayerTreeHostImpl* host_impl);
+  static int MissingTileBorderWidth(const LayerTreeImpl* tree_impl);
 
   static SkColor CulledTileBorderColor();
-  static int CulledTileBorderWidth(const LayerTreeHostImpl* host_impl);
+  static int CulledTileBorderWidth(const LayerTreeImpl* tree_impl);
 
   static SkColor DefaultCheckerboardColor();
   static SkColor EvictedTileCheckerboardColor();
   static SkColor InvalidatedTileCheckerboardColor();
 
   static SkColor PaintRectBorderColor();
-  static int PaintRectBorderWidth(const LayerTreeHostImpl* host_impl);
+  static int PaintRectBorderWidth(const LayerTreeImpl* tree_impl);
   static SkColor PaintRectFillColor();
 
   static SkColor PropertyChangedRectBorderColor();
-  static int PropertyChangedRectBorderWidth(const LayerTreeHostImpl* host_impl);
+  static int PropertyChangedRectBorderWidth(const LayerTreeImpl* tree_impl);
   static SkColor PropertyChangedRectFillColor();
 
   static SkColor SurfaceDamageRectBorderColor();
-  static int SurfaceDamageRectBorderWidth(const LayerTreeHostImpl* host_impl);
+  static int SurfaceDamageRectBorderWidth(const LayerTreeImpl* tree_impl);
   static SkColor SurfaceDamageRectFillColor();
 
   static SkColor ScreenSpaceLayerRectBorderColor();
-  static int ScreenSpaceLayerRectBorderWidth(const LayerTreeHostImpl* host_impl);
+  static int ScreenSpaceLayerRectBorderWidth(const LayerTreeImpl* tree_impl);
   static SkColor ScreenSpaceLayerRectFillColor();
 
   static SkColor ScreenSpaceSurfaceReplicaRectBorderColor();
-  static int ScreenSpaceSurfaceReplicaRectBorderWidth(const LayerTreeHostImpl* host_impl);
+  static int ScreenSpaceSurfaceReplicaRectBorderWidth(const LayerTreeImpl* tree_impl);
   static SkColor ScreenSpaceSurfaceReplicaRectFillColor();
 
   static SkColor OccludingRectBorderColor();
-  static int OccludingRectBorderWidth(const LayerTreeHostImpl* host_impl);
+  static int OccludingRectBorderWidth(const LayerTreeImpl* tree_impl);
   static SkColor OccludingRectFillColor();
 
   static SkColor NonOccludingRectBorderColor();
-  static int NonOccludingRectBorderWidth(const LayerTreeHostImpl* host_impl);
+  static int NonOccludingRectBorderWidth(const LayerTreeImpl* tree_impl);
   static SkColor NonOccludingRectFillColor();
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(DebugColors);

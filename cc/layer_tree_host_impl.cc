@@ -558,7 +558,7 @@ bool LayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
             if (occlusionTracker.occluded(it->renderTarget(), it->visibleContentRect(), it->drawTransform(), implDrawTransformIsUnknown, it->drawableContentRect(), &hasOcclusionFromOutsideTargetSurface))
                 appendQuadsData.hadOcclusionFromOutsideTargetSurface |= hasOcclusionFromOutsideTargetSurface;
             else {
-                DCHECK_EQ(this, it->layerTreeHostImpl());
+                DCHECK_EQ(this->activeTree(), it->layerTreeImpl());
                 it->willDraw(m_resourceProvider.get());
                 frame.willDrawLayers.push_back(*it);
 

@@ -17,6 +17,7 @@
 #include "cc/cc_export.h"
 #include "cc/layer_tree_host_client.h"
 #include "cc/layer_tree_host_common.h"
+#include "cc/layer_tree_settings.h"
 #include "cc/occlusion_tracker.h"
 #include "cc/output_surface.h"
 #include "cc/prioritized_resource_manager.h"
@@ -49,52 +50,6 @@ class HeadsUpDisplayLayer;
 class Region;
 struct ScrollAndScaleSet;
 
-struct CC_EXPORT LayerTreeDebugState {
-    LayerTreeDebugState();
-    ~LayerTreeDebugState();
-
-    bool showFPSCounter;
-    bool showPlatformLayerTree;
-    bool showDebugBorders;
-
-    bool showPaintRects;
-    bool showPropertyChangedRects;
-    bool showSurfaceDamageRects;
-    bool showScreenSpaceRects;
-    bool showReplicaScreenSpaceRects;
-    bool showOccludingRects;
-    bool showNonOccludingRects;
-
-    bool showHudInfo() const;
-    bool showHudRects() const;
-    bool hudNeedsFont() const;
-
-    static bool equal(const LayerTreeDebugState& a, const LayerTreeDebugState& b);
-    static LayerTreeDebugState unite(const LayerTreeDebugState& a, const LayerTreeDebugState& b);
-};
-
-struct CC_EXPORT LayerTreeSettings {
-    LayerTreeSettings();
-    ~LayerTreeSettings();
-
-    bool acceleratePainting;
-    bool implSidePainting;
-    bool renderVSyncEnabled;
-    bool perTilePaintingEnabled;
-    bool partialSwapEnabled;
-    bool acceleratedAnimationEnabled;
-    bool pageScalePinchZoomEnabled;
-    bool backgroundColorInsteadOfCheckerboard;
-    bool showOverdrawInTracing;
-    double refreshRate;
-    size_t maxPartialTextureUpdates;
-    size_t numRasterThreads;
-    gfx::Size defaultTileSize;
-    gfx::Size maxUntiledLayerSize;
-    gfx::Size minimumOcclusionTrackingSize;
-
-    LayerTreeDebugState initialDebugState;
-};
 
 // Provides information on an Impl's rendering capabilities back to the LayerTreeHost
 struct CC_EXPORT RendererCapabilities {

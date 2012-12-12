@@ -9,9 +9,16 @@
 
 namespace cc {
 
+class DebugRectHistory;
+class FrameRateCounter;
+class HeadsUpDisplayLayerImpl;
+class LayerTreeDebugState;
 class LayerTreeHostImpl;
 class LayerTreeImpl;
-class HeadsUpDisplayLayerImpl;
+class LayerTreeSettings;
+class OutputSurface;
+class ResourceProvider;
+class TileManager;
 
 class CC_EXPORT LayerTreeImpl {
  public:
@@ -21,10 +28,27 @@ class CC_EXPORT LayerTreeImpl {
   }
   virtual ~LayerTreeImpl();
 
-  // Methods called by the layer tree.
+  // Methods called by the layer tree that pass-through to LHTI.
   // ---------------------------------------------------------------------------
-  // TODO(nduca): Remove this and have layers call through this class.
-  LayerTreeHostImpl* layer_tree_host_impl() const { return layer_tree_host_impl_; }
+  const LayerTreeSettings& settings() const;
+  OutputSurface* output_surface() const;
+  ResourceProvider* resource_provider() const;
+  TileManager* tile_manager() const;
+  FrameRateCounter* frame_rate_counter() const;
+
+  // Tree specific methods exposed to layer-impl tree.
+  // ---------------------------------------------------------------------------
+  void SetNeedsRedraw();
+  void SetNeedsUpdateDrawProperties();
+
+  // TODO(nduca): These are implemented in cc files temporarily, but will become
+  // trivial accessors in a followup patch.
+  const LayerTreeDebugState& debug_state() const;
+  float device_scale_factor() const;
+  const gfx::Size& device_viewport_size() const;
+  const gfx::Size& layout_viewport_size() const;
+  std::string layer_tree_as_text() const;
+  DebugRectHistory* debug_rect_history() const;
 
   // Other public methods
   // ---------------------------------------------------------------------------

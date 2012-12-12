@@ -112,7 +112,7 @@ DrawableTile* TiledLayerImpl::createTile(int i, int j)
 void TiledLayerImpl::getDebugBorderProperties(SkColor* color, float* width) const
 {
     *color = DebugColors::TiledContentLayerBorderColor();
-    *width = DebugColors::TiledContentLayerBorderWidth(layerTreeHostImpl());
+    *width = DebugColors::TiledContentLayerBorderWidth(layerTreeImpl());
 }
 
 void TiledLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuadsData)
@@ -138,10 +138,10 @@ void TiledLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuad
 
                 if (m_skipsDraw || !tile || !tile->resourceId()) {
                     borderColor = DebugColors::MissingTileBorderColor();
-                    borderWidth = DebugColors::MissingTileBorderWidth(layerTreeHostImpl());
+                    borderWidth = DebugColors::MissingTileBorderWidth(layerTreeImpl());
                 } else {
                     borderColor = DebugColors::TileBorderColor();
-                    borderWidth = DebugColors::TileBorderWidth(layerTreeHostImpl());
+                    borderWidth = DebugColors::TileBorderWidth(layerTreeImpl());
                 }
                 scoped_ptr<DebugBorderDrawQuad> debugBorderQuad = DebugBorderDrawQuad::Create();
                 debugBorderQuad->SetNew(sharedQuadState, tileRect, borderColor, borderWidth);
