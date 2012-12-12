@@ -19,12 +19,6 @@ node = env.CommandSelLdrTestNacl(
     'simple_srpc_test_nexe.out', simple_srpc_test_nexe)
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_simple_srpc_test_nexe')
 
-# Increase verbosity to get more information in the event of a test
-# failure.  See http://code.google.com/p/nativeclient/issues/detail?id=3054
-osenv = []
-if env.Bit('host_windows'):
-  osenv.append('NACLVERBOSITY=4')
-
 types_srpc_test_nexe = env.ComponentProgram(
     'types_srpc_test',
     ['types_srpc_test.c'],
@@ -36,5 +30,5 @@ types_srpc_test_nexe = env.ComponentProgram(
                 '${PTHREAD_LIBS}',
                 '${NONIRT_LIBS}'])
 node = env.CommandSelLdrTestNacl(
-    'types_srpc_test_nexe.out', types_srpc_test_nexe, osenv=osenv)
+    'types_srpc_test_nexe.out', types_srpc_test_nexe)
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_types_srpc_test_nexe')
