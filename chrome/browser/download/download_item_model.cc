@@ -251,9 +251,8 @@ string16 DownloadItemModel::GetStatusText() const {
       content::DownloadInterruptReason reason = download_->GetLastReason();
       if (reason != content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED) {
         string16 interrupt_reason = InterruptReasonStatusMessage(reason);
-        string16 size_ratio = GetProgressSizesString();
         status_text = l10n_util::GetStringFUTF16(
-            IDS_DOWNLOAD_STATUS_INTERRUPTED, size_ratio, interrupt_reason);
+            IDS_DOWNLOAD_STATUS_INTERRUPTED, interrupt_reason);
       } else {
         // Same as DownloadItem::CANCELLED.
         status_text = l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_CANCELLED);

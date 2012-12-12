@@ -2726,11 +2726,11 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       <!-- *_DESCRIPTION_*: Corresponding more descriptive message on the download page.-->
       <message name="IDS_DOWNLOAD_INTERRUPTED_STATUS"
                desc="The download experienced an error and was interrupted, size downloaded/total.">
-        Download Error
+        Download error
       </message>
       <message name="IDS_DOWNLOAD_INTERRUPTED_STATUS_ACCESS_DENIED"
                desc="Cannot write to the directory/file due to insufficient permissions. Please select another directory.">
-        Insufficient Permissions
+        Insufficient permissions
       </message>
       <message name="IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_ACCESS_DENIED"
                desc="Download page message: Access Denied.">
@@ -2738,7 +2738,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       </message>
       <message name="IDS_DOWNLOAD_INTERRUPTED_STATUS_PATH_TOO_LONG"
                desc="The file path name is too long.  Please select another location or name.">
-        Path Too Long
+        Path too long
       </message>
       <message name="IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_PATH_TOO_LONG"
                desc="Download page message: Path Too Long.">
@@ -2746,7 +2746,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       </message>
       <message name="IDS_DOWNLOAD_INTERRUPTED_STATUS_DISK_FULL"
                desc="There is not enough room on the disk to download this file.  Please choose another disk or delete files to make more room.">
-        Disk Full
+        Disk full
       </message>
       <message name="IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_DISK_FULL"
                desc="Download page message: Disk Full.">
@@ -2754,7 +2754,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       </message>
       <message name="IDS_DOWNLOAD_INTERRUPTED_STATUS_FILE_TOO_LARGE"
                desc="The file is too large for the file system.">
-        File Too Large
+        File too large
       </message>
       <message name="IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_FILE_TOO_LARGE"
                desc="Download page message: File too large.">
@@ -2762,7 +2762,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       </message>
       <message name="IDS_DOWNLOAD_INTERRUPTED_STATUS_TEMPORARY_PROBLEM"
                desc="There was a problem saving the file.  Please try again later.">
-        System Busy
+        System busy
       </message>
       <message name="IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_TEMPORARY_PROBLEM"
                desc="Download page message: Temporary problem.">
@@ -2770,7 +2770,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       </message>
       <message name="IDS_DOWNLOAD_INTERRUPTED_STATUS_VIRUS"
                desc="This file contains a virus.  We recommend not downloading it.">
-        Virus Detected
+        Virus detected
       </message>
       <message name="IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_VIRUS"
                desc="Download page message: Virus.">
@@ -2786,7 +2786,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       </message>
       <message name="IDS_DOWNLOAD_INTERRUPTED_STATUS_SECURITY_CHECK_FAILED"
                desc="The security check performed on this download failed unexpectedly">
-        Virus Scan Failed
+        Virus scan failed
       </message>
       <message name="IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_SECURITY_CHECK_FAILED"
                desc="Download page message: The security check performed on this download failed unexpectedly">
@@ -2794,7 +2794,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       </message>
       <message name="IDS_DOWNLOAD_INTERRUPTED_STATUS_NETWORK_TIMEOUT"
                desc="Network Timeout.">
-        Network Timeout
+        Network timeout
       </message>
       <message name="IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_NETWORK_TIMEOUT"
                desc="Download page message: Network Timeout.">
@@ -2802,7 +2802,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       </message>
       <message name="IDS_DOWNLOAD_INTERRUPTED_STATUS_NETWORK_DISCONNECTED"
                desc="Network Disconnected.">
-        Network Disconnected
+        Network disconnected
       </message>
       <message name="IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_NETWORK_DISCONNECTED"
                desc="Download page message: Network Disconnected.">
@@ -2810,7 +2810,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       </message>
       <message name="IDS_DOWNLOAD_INTERRUPTED_STATUS_SERVER_DOWN"
                desc="The server is down.">
-        Server Unavailable
+        Server unavailable
       </message>
       <message name="IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_SERVER_DOWN"
                desc="Download page message: The server is down.">
@@ -2818,7 +2818,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       </message>
       <message name="IDS_DOWNLOAD_INTERRUPTED_STATUS_NETWORK_ERROR"
                desc="Network error.">
-        Network Error
+        Network error
       </message>
       <message name="IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_NETWORK_ERROR"
                desc="Download page message: Network error.">
@@ -2826,7 +2826,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       </message>
       <message name="IDS_DOWNLOAD_INTERRUPTED_STATUS_NO_FILE"
                desc="File not found on server.">
-        No File
+        No file
       </message>
       <message name="IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_NO_FILE"
                desc="Download page message: File not found on server.">
@@ -2834,7 +2834,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       </message>
       <message name="IDS_DOWNLOAD_INTERRUPTED_STATUS_SERVER_PROBLEM"
                desc="Server problem.">
-        Server Problem
+        Server problem
       </message>
       <message name="IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_SERVER_PROBLEM"
                desc="Download page message: Server problem.">
@@ -2880,8 +2880,8 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       <message name="IDS_DOWNLOAD_STATUS_REMOVED" desc="Text that appears under the downloaded files that have been removed.">
         Removed
       </message>
-      <message name="IDS_DOWNLOAD_STATUS_INTERRUPTED" desc="">
-        <ph name="PROGRESS">$1<ex>100/125 MB</ex></ph> <ph name="INTERRUPT_REASON">$2<ex>Disk full</ex></ph>
+      <message name="IDS_DOWNLOAD_STATUS_INTERRUPTED" desc="Status text for a download item that was interrupted.">
+        Failed - <ph name="INTERRUPT_REASON">$1<ex>Disk full</ex></ph>
       </message>
       <message name="IDS_DOWNLOAD_UNCONFIRMED_PREFIX" desc="The prefix used in the unconfirmed download file.">
         Unconfirmed
