@@ -40,27 +40,6 @@ using gdb_rsp::Target;
 #pragma warning(disable:4530)
 #endif
 
-/*
- * These macro wraps all debugging stub calls to prevent C++ code called
- * by the debugging stub to throw and exception past the C API.  We use
- * this technique to allow the use of STL templates.   We catch bad_alloc
- * separately purely to provide information for debugging purposes.
- */
-#define DBG_CATCH_ALL                                                       \
-  catch(std::bad_alloc) {                                                  \
-    NaClLog(LOG_FATAL, "nacl_debug(%d) : Failed to allocate.\n", __LINE__); \
-    NaClExit(-1);                                                          \
-  }                                                                         \
-  catch(std::exception e) {                                                \
-    NaClLog(LOG_FATAL, "nacl_debug(%d) : Caught exception: %s.\n",          \
-            __LINE__ , e.what());                                           \
-    NaClExit(-1);                                                          \
-  }                                                                         \
-  catch(...) {                                                             \
-    NaClLog(LOG_FATAL, "nacl_debug(%d) : Unexpected exception.\n", __LINE__);\
-    NaClExit(-1);                                                           \
-  }
-
 
 static Target *g_target = NULL;
 static SocketBinding *g_socket_binding = NULL;
