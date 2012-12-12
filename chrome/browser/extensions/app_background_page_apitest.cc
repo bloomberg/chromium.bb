@@ -277,7 +277,7 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, NoJsManifestBackgroundPage) {
       message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, OpenTwoBackgroundPages) {
+IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, FLAKY_OpenTwoBackgroundPages) {
   host_resolver()->AddRule("a.com", "127.0.0.1");
   ASSERT_TRUE(StartTestServer());
 
