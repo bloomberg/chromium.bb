@@ -112,6 +112,11 @@ int ImportBookmarkFromFileIfNeeded(Profile* profile,
 bool ImportBookmarks(const FilePath& import_bookmarks_path);
 #endif
 
+// Shows the EULA dialog if required. Returns true if the EULA is accepted,
+// returns false if the EULA has not been accepted, in which case the browser
+// should exit.
+bool ShowPostInstallEULAIfNeeded(installer::MasterPreferences* install_prefs);
+
 }  // namespace internal
 }  // namespace first_run
 

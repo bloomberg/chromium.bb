@@ -116,6 +116,11 @@ void SetImportPreferencesAndLaunchImport(
   }
 }
 
+bool ShowPostInstallEULAIfNeeded(installer::MasterPreferences* install_prefs) {
+  // The EULA is only handled on Windows.
+  return true;
+}
+
 }  // namespace internal
 }  // namespace first_run
 
@@ -126,58 +131,6 @@ namespace first_run {
 // (as this function will not be called on Mac).
 int ImportNow(Profile* profile, const CommandLine& cmdline) {
   return internal::ImportBookmarkFromFileIfNeeded(profile, cmdline);
-}
-
-ProcessMasterPreferencesResult ProcessMasterPreferences(
-    const FilePath& user_data_dir,
-    MasterPrefs* out_prefs) {
-  DCHECK(!user_data_dir.empty());
-
-#if defined(OS_CHROMEOS)
-  // Chrome OS has its own out-of-box-experience code.  Create the sentinel to
-  // mark the fact that we've run once but skip the full first-run flow.
-  CreateSentinel();
-  return SKIP_FIRST_RUN;
-#endif
-
-  FilePath master_prefs_path;
-  scoped_ptr<installer::MasterPreferences>
-      install_prefs(internal::LoadMasterPrefs(&master_prefs_path));
-  if (!install_prefs.get())
-    return SHOW_FIRST_RUN;
-
-  out_prefs->new_tabs = install_prefs->GetFirstRunTabs();
-
-  internal::SetRLZPref(out_prefs, install_prefs.get());
-
-  if (!internal::CopyPrefFile(user_data_dir, master_prefs_path))
-    return SHOW_FIRST_RUN;
-
-  internal::SetupMasterPrefsFromInstallPrefs(out_prefs,
-      install_prefs.get());
-
-  // TODO(mirandac): Refactor skip-first-run-ui process into regular first run
-  // import process.  http://crbug.com/49647
-  // Note we are skipping all other master preferences if skip-first-run-ui
-  // is *not* specified. (That is, we continue only if skipping first run ui.)
-  if (!internal::SkipFirstRunUI(install_prefs.get()))
-    return SHOW_FIRST_RUN;
-
-  // From here on we won't show first run so we need to do the work to show the
-  // bubble anyway, unless it's already been explicitly suppressed.
-  SetShowFirstRunBubblePref(true);
-
-  // We need to be able to create the first run sentinel or else we cannot
-  // proceed because ImportSettings will launch the importer process which
-  // would end up here if the sentinel is not present.
-  if (!CreateSentinel())
-    return SKIP_FIRST_RUN;
-
-  internal::SetShowWelcomePagePrefIfNeeded(install_prefs.get());
-  internal::SetImportPreferencesAndLaunchImport(out_prefs, install_prefs.get());
-  internal::SetDefaultBrowser(install_prefs.get());
-
-  return SKIP_FIRST_RUN;
 }
 
 }  // namespace first_run

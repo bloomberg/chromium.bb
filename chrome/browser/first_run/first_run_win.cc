@@ -21,8 +21,6 @@
 #include "base/win/object_watcher.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/first_run/first_run_import_observer.h"
 #include "chrome/browser/first_run/first_run_internal.h"
 #include "chrome/browser/importer/importer_host.h"
@@ -33,7 +31,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
@@ -59,50 +56,6 @@
 #include "ui/base/win/shell.h"
 
 namespace {
-
-// Helper class that performs delayed first-run tasks that need more of the
-// chrome infrastructure to be up and running before they can be attempted.
-class FirstRunDelayedTasks : public content::NotificationObserver {
- public:
-  enum Tasks {
-    NO_TASK,
-    INSTALL_EXTENSIONS
-  };
-
-  explicit FirstRunDelayedTasks(Tasks task) {
-    if (task == INSTALL_EXTENSIONS) {
-      registrar_.Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
-                     content::NotificationService::AllSources());
-    }
-    registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSED,
-                   content::NotificationService::AllSources());
-  }
-
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
-    // After processing the notification we always delete ourselves.
-    if (type == chrome::NOTIFICATION_EXTENSIONS_READY) {
-      DoExtensionWork(
-          content::Source<Profile>(source).ptr()->GetExtensionService());
-    }
-    delete this;
-  }
-
- private:
-  // Private ctor forces it to be created only in the heap.
-  ~FirstRunDelayedTasks() {}
-
-  // The extension work is to basically trigger an extension update check.
-  // If the extension specified in the master pref is older than the live
-  // extension it will get updated which is the same as get it installed.
-  void DoExtensionWork(ExtensionService* service) {
-    if (service)
-      service->updater()->CheckNow(extensions::ExtensionUpdater::CheckParams());
-  }
-
-  content::NotificationRegistrar registrar_;
-};
 
 // Launches the setup exe with the given parameter/value on the command-line.
 // For non-metro Windows, it waits for its termination, returns its exit code
@@ -214,55 +167,6 @@ bool CreateEULASentinel() {
 
   return (file_util::CreateDirectory(eula_sentinel.DirName()) &&
           file_util::WriteFile(eula_sentinel, "", 0) != -1);
-}
-
-// Shows the EULA dialog if required. Returns true if the EULA is accepted,
-// returns false if the EULA has not been accepted, in which case the browser
-// should exit.
-bool ShowPostInstallEULAIfNeeded(installer::MasterPreferences* install_prefs) {
-  if (IsEULANotAccepted(install_prefs)) {
-    // Show the post-installation EULA. This is done by setup.exe and the
-    // result determines if we continue or not. We wait here until the user
-    // dismisses the dialog.
-
-    // The actual eula text is in a resource in chrome. We extract it to
-    // a text file so setup.exe can use it as an inner frame.
-    FilePath inner_html;
-    if (WriteEULAtoTempFile(&inner_html)) {
-      int retcode = 0;
-      if (!LaunchSetupForEula(inner_html.value(), &retcode) ||
-          (retcode != installer::EULA_ACCEPTED &&
-           retcode != installer::EULA_ACCEPTED_OPT_IN)) {
-        LOG(WARNING) << "EULA flow requires fast exit.";
-        return false;
-      }
-      CreateEULASentinel();
-
-      if (retcode == installer::EULA_ACCEPTED) {
-        VLOG(1) << "EULA : no collection";
-        GoogleUpdateSettings::SetCollectStatsConsent(false);
-      } else if (retcode == installer::EULA_ACCEPTED_OPT_IN) {
-        VLOG(1) << "EULA : collection consent";
-        GoogleUpdateSettings::SetCollectStatsConsent(true);
-      }
-    }
-  }
-  return true;
-}
-
-// Installs a task to do an extensions update check once the extensions system
-// is running.
-void DoDelayedInstallExtensions() {
-  new FirstRunDelayedTasks(FirstRunDelayedTasks::INSTALL_EXTENSIONS);
-}
-
-void DoDelayedInstallExtensionsIfNeeded(
-    installer::MasterPreferences* install_prefs) {
-  DictionaryValue* extensions = 0;
-  if (install_prefs->GetExtensionsBlock(&extensions)) {
-    VLOG(1) << "Extensions block found in master preferences";
-    DoDelayedInstallExtensions();
-  }
 }
 
 // This class is used by first_run::ImportSettings to determine when the import
@@ -524,6 +428,37 @@ void SetImportPreferencesAndLaunchImport(
   }
 }
 
+bool ShowPostInstallEULAIfNeeded(installer::MasterPreferences* install_prefs) {
+  if (IsEULANotAccepted(install_prefs)) {
+    // Show the post-installation EULA. This is done by setup.exe and the
+    // result determines if we continue or not. We wait here until the user
+    // dismisses the dialog.
+
+    // The actual eula text is in a resource in chrome. We extract it to
+    // a text file so setup.exe can use it as an inner frame.
+    FilePath inner_html;
+    if (WriteEULAtoTempFile(&inner_html)) {
+      int retcode = 0;
+      if (!LaunchSetupForEula(inner_html.value(), &retcode) ||
+          (retcode != installer::EULA_ACCEPTED &&
+           retcode != installer::EULA_ACCEPTED_OPT_IN)) {
+        LOG(WARNING) << "EULA flow requires fast exit.";
+        return false;
+      }
+      CreateEULASentinel();
+
+      if (retcode == installer::EULA_ACCEPTED) {
+        VLOG(1) << "EULA : no collection";
+        GoogleUpdateSettings::SetCollectStatsConsent(false);
+      } else if (retcode == installer::EULA_ACCEPTED_OPT_IN) {
+        VLOG(1) << "EULA : collection consent";
+        GoogleUpdateSettings::SetCollectStatsConsent(true);
+      }
+    }
+  }
+  return true;
+}
+
 }  // namespace internal
 }  // namespace first_run
 
@@ -572,52 +507,6 @@ FilePath MasterPrefsPath() {
   if (!PathService::Get(base::DIR_EXE, &master_prefs))
     return FilePath();
   return master_prefs.AppendASCII(installer::kDefaultMasterPrefs);
-}
-
-ProcessMasterPreferencesResult ProcessMasterPreferences(
-    const FilePath& user_data_dir,
-    MasterPrefs* out_prefs) {
-  DCHECK(!user_data_dir.empty());
-
-  FilePath master_prefs_path;
-  scoped_ptr<installer::MasterPreferences>
-      install_prefs(internal::LoadMasterPrefs(&master_prefs_path));
-  if (!install_prefs.get())
-    return SHOW_FIRST_RUN;
-
-  out_prefs->new_tabs = install_prefs->GetFirstRunTabs();
-
-  internal::SetRLZPref(out_prefs, install_prefs.get());
-
-  if (!ShowPostInstallEULAIfNeeded(install_prefs.get()))
-    return EULA_EXIT_NOW;
-
-  if (!internal::CopyPrefFile(user_data_dir, master_prefs_path))
-    return SHOW_FIRST_RUN;
-
-  DoDelayedInstallExtensionsIfNeeded(install_prefs.get());
-
-  internal::SetupMasterPrefsFromInstallPrefs(out_prefs,
-      install_prefs.get());
-
-  // TODO(mirandac): Refactor skip-first-run-ui process into regular first run
-  // import process.  http://crbug.com/49647
-  // Note we are skipping all other master preferences if skip-first-run-ui
-  // is *not* specified. (That is, we continue only if skipping first run ui.)
-  if (!internal::SkipFirstRunUI(install_prefs.get()))
-    return SHOW_FIRST_RUN;
-
-  // We need to be able to create the first run sentinel or else we cannot
-  // proceed because ImportSettings will launch the importer process which
-  // would end up here if the sentinel is not present.
-  if (!CreateSentinel())
-    return SKIP_FIRST_RUN;
-
-  internal::SetShowWelcomePagePrefIfNeeded(install_prefs.get());
-  internal::SetImportPreferencesAndLaunchImport(out_prefs, install_prefs.get());
-  internal::SetDefaultBrowser(install_prefs.get());
-
-  return SKIP_FIRST_RUN;
 }
 
 }  // namespace first_run
