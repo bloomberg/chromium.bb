@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_thread.h"
+#include "content/public/test/layouttest_support.h"
 #include "content/shell/shell_messages.h"
 #include "content/shell/shell_switches.h"
 #include "content/shell/webkit_test_runner.h"
@@ -49,6 +50,7 @@ ShellRenderProcessObserver::ShellRenderProcessObserver()
   WebRuntimeFeatures::enableInputTypeMonth(true);
   WebRuntimeFeatures::enableInputTypeTime(true);
   WebRuntimeFeatures::enableInputTypeWeek(true);
+  DisableAppCacheLogging();
 }
 
 ShellRenderProcessObserver::~ShellRenderProcessObserver() {

@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "base/lazy_instance.h"
 #include "content/renderer/render_view_impl.h"
+#include "content/renderer/renderer_webapplicationcachehost_impl.h"
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGamepads.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestProxy.h"
@@ -44,6 +45,10 @@ void EnableWebTestProxyCreation(
 
 void SetMockGamepads(const WebGamepads& pads) {
   RendererWebKitPlatformSupportImpl::SetMockGamepadsForTesting(pads);
+}
+
+void DisableAppCacheLogging() {
+  RendererWebApplicationCacheHostImpl::DisableLoggingForTesting();
 }
 
 }  // namespace content

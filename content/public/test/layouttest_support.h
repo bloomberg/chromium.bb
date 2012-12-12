@@ -29,6 +29,9 @@ void EnableWebTestProxyCreation(const base::Callback<
 // WebKitPlatformSupport::sampleGamepads().
 void SetMockGamepads(const WebKit::WebGamepads& pads);
 
+// Disable logging to the console from the appcache system.
+void DisableAppCacheLogging();
+
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_TEST_LAYOUTTEST_SUPPORT_H_
