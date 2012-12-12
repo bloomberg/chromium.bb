@@ -16,7 +16,7 @@ import third_party.json_schema_compiler.idl_parser as idl_parser
 # Increment this version when there are changes to the data stored in any of
 # the caches used by APIDataSource. This allows the cache to be invalidated
 # without having to flush memcache on the production server.
-_VERSION = 6
+_VERSION = 7
 
 def _RemoveNoDocs(item):
   if json_parse.IsDict(item):
@@ -117,8 +117,6 @@ class _JSCModel(object):
       function_dict['returns'] = self._GenerateProperty(function.returns)
     for param in function.params:
       function_dict['parameters'].append(self._GenerateProperty(param))
-    if function_dict['callback']:
-      function_dict['parameters'].append(function_dict['callback'])
     if len(function_dict['parameters']) > 0:
       function_dict['parameters'][-1]['last'] = True
     return function_dict
@@ -144,8 +142,6 @@ class _JSCModel(object):
       event_dict['parent_name'] = event.parent.simple_name
     else:
       event_dict['parent_name'] = None
-    if event_dict['callback']:
-      event_dict['parameters'].append(event_dict['callback'])
     if len(event_dict['parameters']) > 0:
       event_dict['parameters'][-1]['last'] = True
     return event_dict

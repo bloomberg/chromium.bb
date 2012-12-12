@@ -7,7 +7,6 @@
         "simple_type": {
           "simple_type": "function"
         },
-        "last": true,
         "name": "callback",
         "parameters": [
           {
@@ -48,6 +47,7 @@
           "functions": [],
           "parameters": [],
           "returns": null,
+          "last": true,
           "name": "a",
           "parent_name": "get",
           "id": "property-get-a",
@@ -92,45 +92,6 @@
           "optional": false,
           "properties": [],
           "description": "a param"
-        },
-        {
-          "simple_type": {
-            "simple_type": "function"
-          },
-          "last": true,
-          "name": "callback",
-          "parameters": [
-            {
-              "functions": [],
-              "parameters": [],
-              "returns": null,
-              "last": true,
-              "name": "results",
-              "parent_name": "callback",
-              "id": "property-callback-results",
-              "array": {
-                "functions": [],
-                "parameters": [],
-                "returns": null,
-                "name": "resultsElement",
-                "parent_name": "results",
-                "id": "property-results-resultsElement",
-                "link": {
-                  "text": "TypeA",
-                  "href": "tester.html#type-TypeA",
-                  "name": "TypeA"
-                },
-                "optional": false,
-                "properties": [],
-                "description": null
-              },
-              "optional": false,
-              "properties": [],
-              "description": null
-            }
-          ],
-          "optional": false,
-          "description": null
         }
       ],
       "id": "method-get",
