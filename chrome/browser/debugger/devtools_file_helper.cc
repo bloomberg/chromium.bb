@@ -146,8 +146,8 @@ void DevToolsFileHelper::Save(const std::string& url,
     std::string suggested_file_name = gurl.is_valid() ?
         gurl.ExtractFileName() : url;
 
-    if (suggested_file_name.length() > 20)
-      suggested_file_name = suggested_file_name.substr(0, 20);
+    if (suggested_file_name.length() > 64)
+      suggested_file_name = suggested_file_name.substr(0, 64);
 
     if (!g_last_save_path.Pointer()->empty()) {
       initial_path = g_last_save_path.Pointer()->DirName().AppendASCII(
