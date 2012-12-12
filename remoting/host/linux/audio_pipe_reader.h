@@ -67,8 +67,10 @@ class AudioPipeReader
   // Time when capturing was started.
   base::TimeTicks started_time_;
 
-  // Stream position of the last capture.
-  int64 last_capture_samples_;
+  // Stream position of the last capture in bytes with zero position
+  // corresponding to |started_time_|. Must always be a multiple of the sample
+  // size.
+  int64 last_capture_position_;
 
   // Bytes left from the previous read.
   std::string left_over_bytes_;
