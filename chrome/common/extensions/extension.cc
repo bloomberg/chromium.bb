@@ -34,6 +34,7 @@
 #include "chrome/common/extensions/features/simple_feature_provider.h"
 #include "chrome/common/extensions/file_browser_handler.h"
 #include "chrome/common/extensions/manifest.h"
+#include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
 #include "chrome/common/extensions/user_script.h"
@@ -1272,6 +1273,21 @@ void Extension::ClearTabSpecificPermissions(int tab_id) const {
   runtime_data_.ClearTabSpecificPermissions(tab_id);
 }
 
+Extension::ManifestData* Extension::GetManifestData(const std::string& key)
+    const {
+  DCHECK(finished_parsing_manifest_);
+  ManifestDataMap::const_iterator iter = manifest_data_.find(key);
+  if (iter != manifest_data_.end())
+    return iter->second.get();
+  return NULL;
+}
+
+void Extension::SetManifestData(const std::string& key,
+                                Extension::ManifestData* data) {
+  DCHECK(!finished_parsing_manifest_);
+  manifest_data_[key] = linked_ptr<ManifestData>(data);
+}
+
 Extension::Location Extension::location() const {
   return manifest_->location();
 }
@@ -1430,6 +1446,7 @@ Extension::Extension(const FilePath& path,
       background_page_is_persistent_(true),
       allow_background_js_access_(true),
       manifest_(manifest.release()),
+      finished_parsing_manifest_(false),
       is_storage_isolated_(false),
       launch_container_(extension_misc::LAUNCH_TAB),
       launch_width_(0),
@@ -1546,6 +1563,8 @@ bool Extension::InitFromValue(int flags, string16* error) {
       this, api_permissions, host_permissions);
   optional_permission_set_ = new PermissionSet(
       optional_api_permissions, optional_host_permissions, URLPatternSet());
+
+  finished_parsing_manifest_ = true;
 
   return true;
 }
@@ -2741,7 +2760,8 @@ bool Extension::LoadExtensionFeatures(APIPermissionSet* api_permissions,
     manifest_->GetBoolean(keys::kConvertedFromUserScript,
                           &converted_from_user_script_);
 
-  if (!LoadDevToolsPage(error) ||
+  if (!LoadManifestHandlerFeatures(error) ||
+      !LoadDevToolsPage(error) ||
       !LoadInputComponents(*api_permissions, error) ||
       !LoadContentScripts(error) ||
       !LoadPageAction(error) ||
@@ -2750,13 +2770,24 @@ bool Extension::LoadExtensionFeatures(APIPermissionSet* api_permissions,
       !LoadScriptBadge(error) ||
       !LoadFileBrowserHandlers(error) ||
       !LoadChromeURLOverrides(error) ||
-      !LoadOmnibox(error) ||
       !LoadTextToSpeechVoices(error) ||
       !LoadIncognitoMode(error) ||
       !LoadFileHandlers(error) ||
       !LoadContentSecurityPolicy(error))
     return false;
 
+  return true;
+}
+
+bool Extension::LoadManifestHandlerFeatures(string16* error) {
+  std::vector<std::string> keys = ManifestHandler::GetKeys();
+  for (size_t i = 0; i < keys.size(); ++i) {
+    Value* value = NULL;
+    if (!manifest_->Get(keys[i], &value))
+      continue;
+    if (!ManifestHandler::Get(keys[i])->Parse(value, this, error))
+      return false;
+  }
   return true;
 }
 
@@ -3309,17 +3340,6 @@ bool Extension::LoadChromeURLOverrides(string16* error) {
     return false;
   }
 
-  return true;
-}
-
-bool Extension::LoadOmnibox(string16* error) {
-  if (!manifest_->HasKey(keys::kOmnibox))
-    return true;
-  if (!manifest_->GetString(keys::kOmniboxKeyword, &omnibox_keyword_) ||
-      omnibox_keyword_.empty()) {
-    *error = ASCIIToUTF16(errors::kInvalidOmniboxKeyword);
-    return false;
-  }
   return true;
 }
 

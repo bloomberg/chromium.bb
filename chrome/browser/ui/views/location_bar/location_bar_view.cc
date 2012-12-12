@@ -14,8 +14,7 @@
 #include "chrome/browser/alternate_nav_url_fetcher.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/extensions/script_bubble_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -755,8 +754,8 @@ void LocationBarView::Layout() {
           TemplateURLServiceFactory::GetForProfile(profile_)->
           GetTemplateURLForKeyword(keyword);
       if (template_url && template_url->IsExtensionKeyword()) {
-        gfx::Image image = extensions::ExtensionSystem::Get(profile_)->
-            extension_service()->GetOmniboxIcon(template_url->GetExtensionId());
+        gfx::Image image = extensions::OmniboxAPI::Get(profile_)->
+            GetOmniboxIcon(template_url->GetExtensionId());
         selected_keyword_view_->SetImage(image.AsImageSkia());
         selected_keyword_view_->set_is_extension_icon(true);
       } else {

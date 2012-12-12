@@ -65,11 +65,14 @@ typedef std::set<std::string> OAuth2Scopes;
 class Extension : public base::RefCountedThreadSafe<Extension> {
  public:
   struct InstallWarning;
+  struct ManifestData;
 
   typedef std::map<const std::string, GURL> URLOverrideMap;
   typedef std::vector<std::string> ScriptingWhitelist;
   typedef std::vector<linked_ptr<FileBrowserHandler> > FileBrowserHandlerList;
   typedef std::vector<InstallWarning> InstallWarningVector;
+  typedef std::map<const std::string, linked_ptr<ManifestData> >
+      ManifestDataMap;
 
   // What an extension was loaded from.
   // NOTE: These values are stored as integers in the preferences and used
@@ -265,6 +268,13 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     bool operator==(const InstallWarning& other) const;
     Format format;
     std::string message;
+  };
+
+  // A base class for parsed manifest data that APIs want to store on
+  // the extension. Related to base::SupportsUserData, but with an immutable
+  // thread-safe interface to match Extension.
+  struct ManifestData {
+    virtual ~ManifestData() {}
   };
 
   enum InitFromValueFlags {
@@ -659,6 +669,15 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Clears the tab-specific permissions of |tab_id|.
   void ClearTabSpecificPermissions(int tab_id) const;
 
+  // Get the manifest data associated with the key, or NULL if there is none.
+  // Can only be called after InitValue is finished.
+  ManifestData* GetManifestData(const std::string& key) const;
+
+  // Sets |data| to be associated with the key. Takes ownership of |data|.
+  // Can only be called before InitValue is finished. Not thread-safe;
+  // all SetManifestData calls should be on only one thread.
+  void SetManifestData(const std::string& key, ManifestData* data);
+
   // Accessors:
 
   const Requirements& requirements() const { return requirements_; }
@@ -689,13 +708,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   }
   const ActionInfo* system_indicator_info() const {
     return system_indicator_info_.get();
-  }
-  bool is_verbose_install_message() const {
-    return !omnibox_keyword().empty() ||
-           browser_action_info() ||
-           (page_action_info() &&
-            (page_action_command() ||
-             !page_action_info()->default_icon.empty()));
   }
   const FileBrowserHandlerList* file_browser_handlers() const {
     return file_browser_handlers_.get();
@@ -769,7 +781,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   const URLOverrideMap& GetChromeURLOverrides() const {
     return chrome_url_overrides_;
   }
-  const std::string omnibox_keyword() const { return omnibox_keyword_; }
   bool incognito_split_mode() const { return incognito_split_mode_; }
   bool offline_enabled() const { return offline_enabled_; }
   const std::vector<TtsVoice>& tts_voices() const { return tts_voices_; }
@@ -876,7 +887,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   static bool IsTrustedId(const std::string& id);
 
   Extension(const FilePath& path, scoped_ptr<extensions::Manifest> manifest);
-  ~Extension();
+  virtual ~Extension();
 
   // Initialize the extension from a parsed manifest.
   // TODO(aa): Rename to just Init()? There's no Value here anymore.
@@ -946,6 +957,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool LoadFileHandlers(string16* error);
   bool LoadExtensionFeatures(APIPermissionSet* api_permissions,
                              string16* error);
+  bool LoadManifestHandlerFeatures(string16* error);
   bool LoadDevToolsPage(string16* error);
   bool LoadInputComponents(const APIPermissionSet& api_permissions,
                            string16* error);
@@ -962,7 +974,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   FileBrowserHandler* LoadFileBrowserHandler(
       const base::DictionaryValue* file_browser_handlers, string16* error);
   bool LoadChromeURLOverrides(string16* error);
-  bool LoadOmnibox(string16* error);
   bool LoadTextToSpeechVoices(string16* error);
   bool LoadIncognitoMode(string16* error);
   bool LoadContentSecurityPolicy(string16* error);
@@ -1201,6 +1212,12 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // The manifest from which this extension was created.
   scoped_ptr<Manifest> manifest_;
 
+  // Stored parsed manifest data.
+  ManifestDataMap manifest_data_;
+
+  // Set to true at the end of InitValue when initialization is finished.
+  bool finished_parsing_manifest_;
+
   // A map of chrome:// hostnames (newtab, downloads, etc.) to Extension URLs
   // which override the handling of those URLs. (see ExtensionOverrideUI).
   URLOverrideMap chrome_url_overrides_;
@@ -1232,9 +1249,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Should this app be shown in the browser New Tab Page.
   bool display_in_new_tab_page_;
-
-  // The Omnibox keyword for this extension, or empty if there is none.
-  std::string omnibox_keyword_;
 
   // List of text-to-speech voices that this extension provides, if any.
   std::vector<TtsVoice> tts_voices_;

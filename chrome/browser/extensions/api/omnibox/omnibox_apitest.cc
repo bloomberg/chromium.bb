@@ -67,7 +67,7 @@ class OmniboxApiTest : public ExtensionApiTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(OmniboxApiTest, DISABLED_Basic) {
+IN_PROC_BROWSER_TEST_F(OmniboxApiTest, Basic) {
   ASSERT_TRUE(RunExtensionTest("omnibox")) << message_;
 
   // The results depend on the TemplateURLService being loaded. Make sure it is
@@ -182,7 +182,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, DISABLED_Basic) {
 // Tests that the autocomplete popup doesn't reopen after accepting input for
 // a given query.
 // http://crbug.com/88552
-IN_PROC_BROWSER_TEST_F(OmniboxApiTest, DISABLED_PopupStaysClosed) {
+IN_PROC_BROWSER_TEST_F(OmniboxApiTest, PopupStaysClosed) {
   ASSERT_TRUE(RunExtensionTest("omnibox")) << message_;
 
   // The results depend on the TemplateURLService being loaded. Make sure it is

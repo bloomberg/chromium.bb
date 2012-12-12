@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/api/omnibox/omnibox_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_details.h"
@@ -116,12 +117,12 @@ class ExtensionLoadedNotificationObserver
 
     if (bundle_) {
       type_ = extension_installed_bubble::kBundle;
-    } else if (!extension->omnibox_keyword().empty()) {
+    } else if (!extensions::OmniboxInfo::GetKeyword(extension).empty()) {
       type_ = extension_installed_bubble::kOmniboxKeyword;
     } else if (extension_action_manager->GetBrowserAction(*extension)) {
       type_ = extension_installed_bubble::kBrowserAction;
     } else if (extension_action_manager->GetPageAction(*extension) &&
-             extension->is_verbose_install_message()) {
+               extensions::OmniboxInfo::IsVerboseInstallMessage(extension)) {
       type_ = extension_installed_bubble::kPageAction;
     } else {
       type_ = extension_installed_bubble::kGeneric;
@@ -390,7 +391,7 @@ class ExtensionLoadedNotificationObserver
   if (type_ == extension_installed_bubble::kOmniboxKeyword) {
     [extraInfoMsg_ setStringValue:l10n_util::GetNSStringF(
         IDS_EXTENSION_INSTALLED_OMNIBOX_KEYWORD_INFO,
-        UTF8ToUTF16(extension_->omnibox_keyword()))];
+        UTF8ToUTF16(extensions::OmniboxInfo::GetKeyword(extension_)))];
     [extraInfoMsg_ setHidden:NO];
     [[extraInfoMsg_ cell]
         setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
@@ -513,7 +514,7 @@ class ExtensionLoadedNotificationObserver
       extensionMessageFrame1.size.height +
       extension_installed_bubble::kOuterVerticalMargin);
   [extensionInstalledMsg_ setFrame:extensionMessageFrame1];
-  if (extension_->is_verbose_install_message()) {
+  if (extensions::OmniboxInfo::IsVerboseInstallMessage(extension_)) {
     // The extra message is only shown when appropriate.
     NSRect extraMessageFrame = [extraInfoMsg_ frame];
     extraMessageFrame.origin.y = extensionMessageFrame1.origin.y - (

@@ -15,6 +15,7 @@
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/event_disposition.h"
+#include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/extensions/extension_icon_image.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -171,7 +172,7 @@ class ExtensionAppResult : public SearchBuilderResult,
 
  private:
   void LoadExtensionIcon(const extensions::Extension* extension) {
-    const gfx::ImageSkia default_icon = profile()->GetExtensionService()->
+    const gfx::ImageSkia default_icon = extensions::OmniboxAPI::Get(profile())->
         GetOmniboxPopupIcon(extension->id()).AsImageSkia();
     icon_.reset(new extensions::IconImage(
         extension,

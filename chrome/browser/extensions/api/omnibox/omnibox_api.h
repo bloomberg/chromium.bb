@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_OMNIBOX_OMNIBOX_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_OMNIBOX_OMNIBOX_API_H_
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -12,8 +13,14 @@
 #include "base/string16.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/extension_icon_manager.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
+class Profile;
 class TemplateURL;
+class TemplateURLService;
 
 namespace base {
 class ListValue;
@@ -21,6 +28,10 @@ class ListValue;
 
 namespace content {
 class WebContents;
+}
+
+namespace gfx {
+class Image;
 }
 
 namespace extensions {
@@ -65,6 +76,46 @@ class OmniboxSendSuggestionsFunction : public SyncExtensionFunction {
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
+};
+
+class OmniboxAPI : public ProfileKeyedService,
+                   public content::NotificationObserver {
+ public:
+  explicit OmniboxAPI(Profile* profile);
+  virtual ~OmniboxAPI();
+
+  // ProfileKeyedService implementation.
+  virtual void Shutdown() OVERRIDE;
+
+  // Convenience method to get the OmniboxAPI for a profile.
+  static OmniboxAPI* Get(Profile* profile);
+
+  // content::NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
+  // Returns the icon to display in the omnibox for the given extension.
+  gfx::Image GetOmniboxIcon(const std::string& extension_id);
+
+  // Returns the icon to display in the omnibox popup window for the given
+  // extension.
+  gfx::Image GetOmniboxPopupIcon(const std::string& extension_id);
+
+ private:
+  typedef std::set<const Extension*> PendingExtensions;
+
+  TemplateURLService* url_service_;
+
+  // List of extensions waiting for the TemplateURLService to Load to
+  // have keywords registered.
+  PendingExtensions pending_extensions_;
+
+  content::NotificationRegistrar registrar_;
+
+  // Keeps track of favicon-sized omnibox icons for extensions.
+  ExtensionIconManager omnibox_icon_manager_;
+  ExtensionIconManager omnibox_popup_icon_manager_;
 };
 
 class OmniboxSetDefaultSuggestionFunction : public SyncExtensionFunction {

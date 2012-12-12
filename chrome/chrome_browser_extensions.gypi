@@ -250,6 +250,8 @@
         'browser/extensions/api/offscreen_tabs/offscreen_tabs_constants.h',
         'browser/extensions/api/omnibox/omnibox_api.cc',
         'browser/extensions/api/omnibox/omnibox_api.h',
+        'browser/extensions/api/omnibox/omnibox_api_factory.cc',
+        'browser/extensions/api/omnibox/omnibox_api_factory.h',
         'browser/extensions/api/page_capture/page_capture_api.cc',
         'browser/extensions/api/page_capture/page_capture_api.h',
         'browser/extensions/api/permissions/permissions_api.cc',

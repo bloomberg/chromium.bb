@@ -74,8 +74,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/search_engines/template_url_service.h"
-#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
@@ -156,17 +154,6 @@ enum ExternalExtensionEvent {
   EXTERNAL_EXTENSION_UNINSTALLED,
   EXTERNAL_EXTENSION_BUCKET_BOUNDARY,
 };
-
-#if defined(OS_LINUX)
-static const int kOmniboxIconPaddingLeft = 2;
-static const int kOmniboxIconPaddingRight = 2;
-#elif defined(OS_MACOSX)
-static const int kOmniboxIconPaddingLeft = 0;
-static const int kOmniboxIconPaddingRight = 2;
-#else
-static const int kOmniboxIconPaddingLeft = 0;
-static const int kOmniboxIconPaddingRight = 0;
-#endif
 
 // Prompt the user this many times before considering an extension acknowledged.
 static const int kMaxExtensionAcknowledgePromptCount = 3;
@@ -435,12 +422,6 @@ ExtensionService::ExtensionService(Profile* profile,
           this, profile_, &external_extension_providers_);
     }
   }
-
-  // Use monochrome icons for Omnibox icons.
-  omnibox_popup_icon_manager_.set_monochrome(true);
-  omnibox_icon_manager_.set_monochrome(true);
-  omnibox_icon_manager_.set_padding(gfx::Insets(0, kOmniboxIconPaddingLeft,
-                                                0, kOmniboxIconPaddingRight));
 
   // Set this as the ExtensionService for extension sorting to ensure it
   // cause syncs if required.
@@ -866,11 +847,6 @@ bool ExtensionService::UninstallExtension(
   RecordPermissionMessagesHistogram(
       extension, "Extensions.Permissions_Uninstall");
 
-  TemplateURLService* url_service =
-      TemplateURLServiceFactory::GetForProfile(profile_);
-  if (url_service)
-    url_service->UnregisterExtensionKeyword(extension);
-
   // Unload before doing more cleanup to ensure that nothing is hanging on to
   // any of these resources.
   UnloadExtension(extension_id, extension_misc::UNLOAD_REASON_UNINSTALL);
@@ -1125,18 +1101,6 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
 
   ExtensionWebUI::RegisterChromeURLOverrides(
       profile_, extension->GetChromeURLOverrides());
-
-  TemplateURLService* url_service =
-      TemplateURLServiceFactory::GetForProfile(profile_);
-  if (url_service)
-    url_service->RegisterExtensionKeyword(extension);
-
-  // Load the icon for omnibox-enabled extensions so it will be ready to display
-  // in the URL bar.
-  if (!extension->omnibox_keyword().empty()) {
-    omnibox_popup_icon_manager_.LoadIcon(extension);
-    omnibox_icon_manager_.LoadIcon(extension);
-  }
 
   // If the extension has permission to load chrome://favicon/ resources we need
   // to make sure that the FaviconSource is registered with the
@@ -2637,16 +2601,6 @@ bool ExtensionService::ShouldBlockUrlInBrowserTab(GURL* url) {
   }
 
   return false;
-}
-
-gfx::Image ExtensionService::GetOmniboxIcon(
-    const std::string& extension_id) {
-  return gfx::Image(omnibox_icon_manager_.GetIcon(extension_id));
-}
-
-gfx::Image ExtensionService::GetOmniboxPopupIcon(
-    const std::string& extension_id) {
-  return gfx::Image(omnibox_popup_icon_manager_.GetIcon(extension_id));
 }
 
 bool ExtensionService::OnExternalExtensionFileFound(

@@ -26,6 +26,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/api/commands/command_service_factory.h"
+#include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -1367,7 +1368,7 @@ void LocationBarViewGtk::SetKeywordLabel(const string16& keyword) {
     if (is_extension_keyword) {
       const TemplateURL* template_url =
           template_url_service->GetTemplateURLForKeyword(keyword);
-      gfx::Image image = profile->GetExtensionService()->
+      gfx::Image image = extensions::OmniboxAPI::Get(profile)->
           GetOmniboxIcon(template_url->GetExtensionId());
       gtk_image_set_from_pixbuf(GTK_IMAGE(tab_to_search_magnifier_),
                                 image.ToGdkPixbuf());

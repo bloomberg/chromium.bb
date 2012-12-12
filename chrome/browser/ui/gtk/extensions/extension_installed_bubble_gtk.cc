@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/api/omnibox/omnibox_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_details.h"
@@ -83,12 +84,12 @@ ExtensionInstalledBubbleGtk::ExtensionInstalledBubbleGtk(
   extensions::ExtensionActionManager* extension_action_manager =
       ExtensionActionManager::Get(browser_->profile());
 
-  if (!extension_->omnibox_keyword().empty())
+  if (!extensions::OmniboxInfo::GetKeyword(extension_).empty())
     type_ = OMNIBOX_KEYWORD;
   else if (extension_action_manager->GetBrowserAction(*extension_))
     type_ = BROWSER_ACTION;
   else if (extension_action_manager->GetPageAction(*extension) &&
-           extension->is_verbose_install_message())
+           extensions::OmniboxInfo::IsVerboseInstallMessage(extension))
     type_ = PAGE_ACTION;
   else
     type_ = GENERIC;
@@ -295,7 +296,7 @@ void ExtensionInstalledBubbleGtk::ShowInternal() {
   if (type_ == OMNIBOX_KEYWORD) {
     GtkWidget* info_label = gtk_label_new(l10n_util::GetStringFUTF8(
         IDS_EXTENSION_INSTALLED_OMNIBOX_KEYWORD_INFO,
-        UTF8ToUTF16(extension_->omnibox_keyword())).c_str());
+        UTF8ToUTF16(extensions::OmniboxInfo::GetKeyword(extension_))).c_str());
     gtk_util::SetLabelWidth(info_label, kTextColumnWidth);
     gtk_box_pack_start(GTK_BOX(text_column), info_label, FALSE, FALSE, 0);
   }

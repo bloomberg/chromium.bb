@@ -14,6 +14,7 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/ui/search_engines/template_url_table_model.h"
+#include "chrome/common/extensions/api/omnibox/omnibox_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
@@ -144,7 +145,7 @@ void SearchEngineManagerHandler::OnModelChanged() {
     const ExtensionSet* extensions = extension_service->extensions();
     for (ExtensionSet::const_iterator it = extensions->begin();
          it != extensions->end(); ++it) {
-      if ((*it)->omnibox_keyword().size() > 0)
+      if (extensions::OmniboxInfo::GetKeyword(*it).size() > 0)
         keyword_list.Append(CreateDictionaryForExtension(*(*it)));
     }
   }
@@ -170,7 +171,8 @@ base::DictionaryValue* SearchEngineManagerHandler::CreateDictionaryForExtension(
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("name",  extension.name());
   dict->SetString("displayName", extension.name());
-  dict->SetString("keyword", extension.omnibox_keyword());
+  dict->SetString("keyword",
+                  extensions::OmniboxInfo::GetKeyword(&extension));
   GURL icon = extension.GetIconURL(16, ExtensionIconSet::MATCH_BIGGER);
   dict->SetString("iconURL", icon.spec());
   dict->SetString("url", string16());

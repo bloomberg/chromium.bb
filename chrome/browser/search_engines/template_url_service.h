@@ -35,10 +35,6 @@ class SyncData;
 class SyncErrorFactory;
 }
 
-namespace extensions {
-class Extension;
-}
-
 namespace history {
 struct URLVisitedDetails;
 }
@@ -176,20 +172,20 @@ class TemplateURLService : public WebDataServiceConsumer,
                                            base::Time created_after,
                                            base::Time created_before);
 
-  // If the given extension has an omnibox keyword, adds a TemplateURL for that
-  // keyword. Only 1 keyword is allowed for a given extension. If the keyword
+  // Adds a TemplateURL for an extension with an omnibox keyword.
+  // Only 1 keyword is allowed for a given extension. If a keyword
   // already exists for this extension, does nothing.
-  void RegisterExtensionKeyword(const extensions::Extension* extension);
+  void RegisterExtensionKeyword(const std::string& extension_id,
+                                const std::string& extension_name,
+                                const std::string& keyword);
 
-  // Removes the TemplateURL containing the keyword for the given extension,
-  // if any.
-  void UnregisterExtensionKeyword(const extensions::Extension* extension);
+  // Removes the TemplateURL containing the keyword for the extension with the
+  // given ID, if any.
+  void UnregisterExtensionKeyword(const std::string& extension_id);
 
   // Returns the TemplateURL associated with the keyword for this extension.
-  // This works by checking the extension ID, not the keyword, so it will work
-  // even if the user changed the keyword.
-  TemplateURL* GetTemplateURLForExtension(
-      const extensions::Extension* extension);
+  // This will work even if the user changed the keyword.
+  TemplateURL* GetTemplateURLForExtension(const std::string& extension_id);
 
   // Returns the set of URLs describing the keywords. The elements are owned
   // by TemplateURLService and should not be deleted.
@@ -363,7 +359,6 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   typedef std::map<string16, TemplateURL*> KeywordToTemplateMap;
   typedef std::map<std::string, TemplateURL*> GUIDToTemplateMap;
-  typedef std::list<std::string> PendingExtensionIDs;
 
   // Declaration of values to be used in an enumerated histogram to tally
   // changes to the default search provider from various entry points. In
@@ -639,9 +634,6 @@ class TemplateURLService : public WebDataServiceConsumer,
   // ID assigned to next TemplateURL added to this model. This is an ever
   // increasing integer that is initialized from the database.
   TemplateURLID next_id_;
-
-  // List of extension IDs waiting for Load to have keywords registered.
-  PendingExtensionIDs pending_extension_ids_;
 
   // Function returning current time in base::Time units.
   TimeProvider* time_provider_;

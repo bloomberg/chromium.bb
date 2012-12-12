@@ -23,6 +23,7 @@
 #include "chrome/browser/extensions/api/idle/idle_manager_factory.h"
 #include "chrome/browser/extensions/api/managed_mode/managed_mode_api_factory.h"
 #include "chrome/browser/extensions/api/management/management_api_factory.h"
+#include "chrome/browser/extensions/api/omnibox/omnibox_api_factory.h"
 #include "chrome/browser/extensions/api/processes/processes_api_factory.h"
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry_factory.h"
 #include "chrome/browser/extensions/api/tabs/tabs_windows_api_factory.h"
@@ -235,6 +236,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   extensions::FontSettingsAPIFactory::GetInstance();
   extensions::IdleManagerFactory::GetInstance();
   extensions::ManagedModeAPIFactory::GetInstance();
+  extensions::OmniboxAPIFactory::GetInstance();
   extensions::ProcessesAPIFactory::GetInstance();
   extensions::SuggestedLinksRegistryFactory::GetInstance();
   extensions::TabCaptureRegistryFactory::GetInstance();

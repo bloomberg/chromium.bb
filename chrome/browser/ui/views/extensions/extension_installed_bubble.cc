@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/api/omnibox/omnibox_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_details.h"
@@ -208,7 +209,7 @@ class InstalledBubbleContent : public views::View,
       case ExtensionInstalledBubble::OMNIBOX_KEYWORD: {
         info_ = new views::Label(l10n_util::GetStringFUTF16(
             IDS_EXTENSION_INSTALLED_OMNIBOX_KEYWORD_INFO,
-            UTF8ToUTF16(extension->omnibox_keyword())));
+            UTF8ToUTF16(extensions::OmniboxInfo::GetKeyword(extension))));
         info_->SetFont(font);
         info_->SetMultiLine(true);
         info_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -392,12 +393,12 @@ ExtensionInstalledBubble::ExtensionInstalledBubble(const Extension* extension,
       extensions::ExtensionActionManager::Get(browser_->profile());
   if (extension->is_app())
     type_ = APP;
-  else if (!extension_->omnibox_keyword().empty())
+  else if (!extensions::OmniboxInfo::GetKeyword(extension).empty())
     type_ = OMNIBOX_KEYWORD;
   else if (extension_action_manager->GetBrowserAction(*extension_))
     type_ = BROWSER_ACTION;
   else if (extension_action_manager->GetPageAction(*extension) &&
-           extension->is_verbose_install_message())
+           extensions::OmniboxInfo::IsVerboseInstallMessage(extension))
     type_ = PAGE_ACTION;
   else
     type_ = GENERIC;

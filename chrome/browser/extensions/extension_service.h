@@ -427,13 +427,6 @@ class ExtensionService
   // tab. In this case, |url| is also rewritten to an error URL.
   bool ShouldBlockUrlInBrowserTab(GURL* url);
 
-  // Returns the icon to display in the omnibox for the given extension.
-  gfx::Image GetOmniboxIcon(const std::string& extension_id);
-
-  // Returns the icon to display in the omnibox popup window for the given
-  // extension.
-  gfx::Image GetOmniboxPopupIcon(const std::string& extension_id);
-
   // Called when the initial extensions load has completed.
   virtual void OnLoadedInstalledExtensions();
 
@@ -966,10 +959,6 @@ class ExtensionService
 
   // Keeps track of app notifications.
   scoped_refptr<extensions::AppNotificationManager> app_notification_manager_;
-
-  // Keeps track of favicon-sized omnibox icons for extensions.
-  ExtensionIconManager omnibox_icon_manager_;
-  ExtensionIconManager omnibox_popup_icon_manager_;
 
   // Flag to make sure event routers are only initialized once.
   bool event_routers_initialized_;
