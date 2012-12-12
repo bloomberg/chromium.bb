@@ -327,8 +327,8 @@ cr.define('ntp', function() {
 
     /**
      * Notify interested subscribers that a tile has been removed from this
-     * page. TODO(pedrosimonetti): Do we really need to fire this event?
-     * @param {TileCell} tile The newly added tile.
+     * page.
+     * @param {Tile} tile The newly added tile.
      * @param {number} index The index of the tile that was added.
      * @param {boolean} wasAnimated Whether the removal was animated.
      */
@@ -352,7 +352,7 @@ cr.define('ntp', function() {
       var index = tiles.indexOf(tile);
       tile.parentNode.removeChild(tile);
       tiles.splice(index, 1);
-      this.renderGrid_();
+      this.renderGrid();
 
       if (!opt_dontNotify)
         this.fireRemovedEvent(tile, index, !!opt_animate);
@@ -442,7 +442,8 @@ cr.define('ntp', function() {
      */
     addTileAt: function(tile, index) {
       this.tiles_.splice(index, 0, tile);
-      this.fireAddedEvent(tile, index);
+      this.fireAddedEvent(tile, index, false);
+      this.renderGrid();
     },
 
     /**
@@ -468,6 +469,33 @@ cr.define('ntp', function() {
     },
 
     /**
+     * This method will create/remove necessary/unnecessary tiles, render the
+     * grid when the number of tiles has changed, and finally will call
+     * |updateTiles_| which will in turn render the individual tiles.
+     * @protected
+     */
+    updateGrid: function() {
+      var dataListLength = this.dataList_.length;
+      var tileCount = this.tileCount;
+      // Create or remove tiles if necessary.
+      if (tileCount < dataListLength) {
+        this.createTiles_(dataListLength - tileCount);
+      } else if (tileCount > dataListLength) {
+        var tiles = this.tiles_;
+        while (tiles.length > dataListLength) {
+          var previousLength = tiles.length;
+          // It doesn't matter which tiles are being removed here because
+          // they're going to be reconstructed below when calling updateTiles_
+          // method, so the first tiles are being removed here.
+          this.removeTile(tiles[0]);
+          assert(tiles.length < previousLength);
+        }
+      }
+
+      this.updateTiles_();
+    },
+
+    /**
      * Update the tiles after a change to |dataList_|.
      */
     updateTiles_: function() {
@@ -490,36 +518,11 @@ cr.define('ntp', function() {
     },
 
     /**
-     * Sets the dataList that will be used to create Tiles. This method will
-     * create/remove necessary/unnecessary tiles, render the grid when the
-     * number of tiles has changed, and finally will call |updateTiles_| which
-     * will in turn render the individual tiles.
-     * @param {Array} dataList The array of data.
+     * Sets the dataList that will be used to create Tiles.
+     * TODO(pedrosimonetti): Use setters and getters instead.
      */
     setDataList: function(dataList) {
       this.dataList_ = dataList.slice(0, this.config.maxTileCount);
-
-      var dataListLength = this.dataList_.length;
-      var tileCount = this.tileCount;
-      // Create or remove tiles if necessary.
-      if (tileCount < dataListLength) {
-        this.createTiles_(dataListLength - tileCount);
-      } else if (tileCount > dataListLength) {
-        var tiles = this.tiles_;
-        while (tiles.length > dataListLength) {
-          var previousLength = tiles.length;
-          // It doesn't matter which tiles are being removed here because
-          // they're going to be reconstructed below when calling updateTiles_
-          // method, so the first tiles are being removed here.
-          this.removeTile(tiles[0]);
-          assert(tiles.length < previousLength);
-        }
-      }
-
-      if (dataListLength != tileCount)
-        this.renderGrid_();
-
-      this.updateTiles_();
     },
 
     // internal helpers
@@ -593,9 +596,9 @@ cr.define('ntp', function() {
      * This method should be called every time the contents of the grid changes,
      * that is, when the number, contents or order of the tiles has changed.
      * @param {number=} opt_colCount The number of columns.
-     * @private
+     * @protected
      */
-    renderGrid_: function(opt_colCount) {
+    renderGrid: function(opt_colCount) {
       var colCount = opt_colCount || this.colCount_;
 
       var tileGridContent = this.tileGridContent_;
@@ -700,7 +703,7 @@ cr.define('ntp', function() {
           // If the grid is expanding, it needs to be rendered first so the
           // revealing tiles are visible as soon as the animation starts.
           if (colCount != lastColCount)
-            this.renderGrid_(colCount);
+            this.renderGrid(colCount);
 
           // Hides affected columns and forces the reflow.
           this.showTileCols_(animatingColCount, false);
@@ -720,7 +723,7 @@ cr.define('ntp', function() {
         var self = this;
         this.onTileGridTransitionEndHandler_ = function() {
           if (colCount < lastColCount)
-            self.renderGrid_(colCount);
+            self.renderGrid(colCount);
           else
             self.showTileCols_(0, true);
         };
@@ -826,7 +829,6 @@ cr.define('ntp', function() {
         if (extraTileData)
           this.appendTile(extraTile);
 
-        this.renderGrid_();
       }.bind(this);
 
       // Listens to the animation end.
@@ -858,7 +860,12 @@ cr.define('ntp', function() {
       var tileBeingRestored = createTile(this, restoredData);
       tileCells[index].appendChild(tileBeingRestored);
 
-      var extraTile = extraCell.tile;
+      if (this.config.scrollable)
+        this.content_.scrollTop = tileCells[index].offsetTop;
+
+      var extraTile;
+      if (extraCell)
+        extraTile = extraCell.tile;
 
       this.executeRepositioningAnimation_(tileBeingRestored, extraTile,
           repositioningStartIndex, repositioningEndIndex, false);
@@ -884,7 +891,6 @@ cr.define('ntp', function() {
 
         this.addTileAt(tileBeingRestored, index);
 
-        this.renderGrid_();
       }.bind(this);
 
       // Listens to the animation end.
@@ -959,7 +965,8 @@ cr.define('ntp', function() {
 
       // Alternate the visualization of the target and extra tiles.
       fadeTile(targetTile, !isRemoving);
-      fadeTile(extraTile, isRemoving);
+      if (extraTile)
+        fadeTile(extraTile, isRemoving);
 
       // Move tiles to the new position.
       var tiles = this.tiles_;
@@ -994,7 +1001,9 @@ cr.define('ntp', function() {
         var tile = tiles[i];
         this.resetTilePosition_(tile);
         tile.style.zIndex = '';
-        tileCells[i + positionDiff].assign(tile);
+        var tileCell = tileCells[i + positionDiff];
+        if (tileCell)
+          tileCell.assign(tile);
       }
     },
 

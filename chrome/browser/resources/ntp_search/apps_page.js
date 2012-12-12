@@ -292,7 +292,15 @@ cr.define('ntp', function() {
       // Unset the ID immediately, because the app is already gone. But leave
       // the tile on the page as it animates out.
       this.id = '';
-      this.tileCell.doRemove(opt_animate);
+
+      if (opt_animate) {
+        var cell = this.tileCell;
+        var tilePage = cell.tilePage;
+        tilePage.dataList_.splice(cell.index, 1);
+        tilePage.animateTileRemoval(cell.index, tilePage.dataList_);
+      } else {
+        this.tileCell.doRemove(opt_animate);
+      }
     },
 
     /**
@@ -581,7 +589,7 @@ cr.define('ntp', function() {
       // The width of a cell.
       cellWidth: 70,
       // The start margin of a cell (left or right according to text direction).
-      cellMarginStart: 22,
+      cellMarginStart: 20,
       // The maximum number of Tiles to be displayed.
       maxTileCount: 20,
       // Whether the TilePage content will be scrollable.
@@ -628,9 +636,13 @@ cr.define('ntp', function() {
         }
       }
 
-      var app = new App(data);
-      this.addTileAt(app, index);
-      this.renderGrid_();
+      if (animate) {
+        this.dataList_.splice(index, 0, data);
+        this.animateTileRestoration(index, this.dataList_);
+      } else {
+        var app = new App(data);
+        this.addTileAt(app, index);
+      }
     },
 
     /**

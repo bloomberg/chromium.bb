@@ -3,8 +3,10 @@
  * found in the LICENSE file. */
 
 .apps-page .tile-cell {
-  -webkit-margin-start: 22px;
+  -webkit-margin-start: 20px;
+  height: 70px;
   margin-bottom: 12px;
+  width: 70px;
 }
 
 .apps-page .tile-cell:first-child {
@@ -14,6 +16,7 @@
 .apps-page .app {
   display: block;
   height: 70px;
+  margin-top: 8px;
   outline: none;
   text-align: center;
   width: 70px;

@@ -211,6 +211,7 @@ cr.define('ntp', function() {
     setDataList: function(dataList) {
       var startTime = Date.now();
       ThumbnailPage.prototype.setDataList.apply(this, arguments);
+      this.updateGrid();
       logEvent('mostVisited.layout: ' + (Date.now() - startTime));
     },
   };

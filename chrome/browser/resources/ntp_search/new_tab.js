@@ -429,20 +429,7 @@ cr.define('ntp', function() {
     getAppsCallback: function(data) {
       assert(loadTimeData.getBoolean('showApps'));
 
-      var page = this.appsPage;
-      var state = page && page.getTileRepositioningState();
-      if (state) {
-        if (state.isRemoving)
-          page.animateTileRemoval(state.index, data);
-        else
-          page.animateTileRestoration(state.index, data);
-
-        page.resetTileRepositioningState();
-        return;
-      }
-
       var startTime = Date.now();
-
 
       // Get the array of apps and add any special synthesized entries.
       var apps = data.apps;
@@ -459,8 +446,9 @@ cr.define('ntp', function() {
       if (this.appsPage) {
         this.appsPage.removeAllTiles();
       } else {
-        this.appendTilePage(new ntp.AppsPage(),
-            loadTimeData.getString('appDefaultPageName'));
+        var page = new ntp.AppsPage();
+        page.setDataList(apps);
+        this.appendTilePage(page, loadTimeData.getString('appDefaultPageName'));
       }
 
       for (var i = 0; i < apps.length; i++) {
