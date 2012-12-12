@@ -405,6 +405,30 @@ void LogDefaultTask(const std::set<std::string>& mime_types,
 void DoNothingWithBool(bool /* success */) {
 }
 
+void FillDriveFilePropertiesValue(
+    const drive::DriveEntryProto& entry_proto,
+    DictionaryValue* property_dict) {
+  const drive::DriveFileSpecificInfo& file_specific_info =
+      entry_proto.file_specific_info();
+
+  property_dict->SetString("thumbnailUrl", file_specific_info.thumbnail_url());
+
+  if (!file_specific_info.alternate_url().empty())
+    property_dict->SetString("editUrl", file_specific_info.alternate_url());
+
+  if (!file_specific_info.share_url().empty())
+    property_dict->SetString("shareUrl", file_specific_info.share_url());
+
+  if (!entry_proto.content_url().empty())
+    property_dict->SetString("contentUrl", entry_proto.content_url());
+
+  property_dict->SetBoolean("isHosted",
+                            file_specific_info.is_hosted_document());
+
+  property_dict->SetString("contentMimeType",
+                           file_specific_info.content_mime_type());
+}
+
 }  // namespace
 
 class RequestLocalFileSystemFunction::LocalFileSystemCallbackDispatcher {
@@ -2244,22 +2268,8 @@ void GetDriveFilePropertiesFunction::OnOperationComplete(
 
   const drive::DriveFileSpecificInfo& file_specific_info =
       entry_proto->file_specific_info();
-  property_dict->SetString("thumbnailUrl", file_specific_info.thumbnail_url());
-  if (!file_specific_info.alternate_url().empty())
-    property_dict->SetString("editUrl", file_specific_info.alternate_url());
 
-  if (!file_specific_info.share_url().empty())
-    property_dict->SetString("shareUrl", file_specific_info.share_url());
-
-  if (!entry_proto->content_url().empty()) {
-    property_dict->SetString("contentUrl", entry_proto->content_url());
-  }
-
-  property_dict->SetBoolean("isHosted",
-                            file_specific_info.is_hosted_document());
-
-  property_dict->SetString("contentMimeType",
-                           file_specific_info.content_mime_type());
+  FillDriveFilePropertiesValue(*entry_proto.get(), property_dict);
 
   drive::DriveSystemService* system_service =
       drive::DriveSystemServiceFactory::GetForProfile(profile_);
@@ -2716,10 +2726,17 @@ SearchDriveFunction::SearchDriveFunction() {}
 SearchDriveFunction::~SearchDriveFunction() {}
 
 bool SearchDriveFunction::RunImpl() {
-  if (!args_->GetString(0, &query_))
+  DictionaryValue* search_params;
+  if (!args_->GetDictionary(0, &search_params))
     return false;
 
-  if (!args_->GetString(1, &next_feed_))
+  if (!search_params->GetString("query", &query_))
+    return false;
+
+  if (!search_params->GetBoolean("sharedWithMe", &shared_with_me_))
+    return false;
+
+  if (!search_params->GetString("nextFeed", &next_feed_))
     return false;
 
   BrowserContext::GetDefaultStoragePartition(profile())->
@@ -2750,7 +2767,7 @@ void SearchDriveFunction::OnFileSystemOpened(
   }
 
   system_service->file_system()->Search(
-      query_, false /* shared_with_me */, GURL(next_feed_),
+      query_, shared_with_me_, GURL(next_feed_),
       base::Bind(&SearchDriveFunction::OnSearch, this));
 }
 
@@ -2765,20 +2782,30 @@ void SearchDriveFunction::OnSearch(
 
   DCHECK(results.get());
 
-  base::ListValue* entries = new ListValue();
+  base::ListValue* results_list = new ListValue();
+
   // Convert Drive files to something File API stack can understand.
   for (size_t i = 0; i < results->size(); ++i) {
+    DictionaryValue* result_dict = new DictionaryValue();
+
+    // FileEntry fields.
     DictionaryValue* entry = new DictionaryValue();
     entry->SetString("fileSystemName", file_system_name_);
     entry->SetString("fileSystemRoot", file_system_url_.spec());
     entry->SetString("fileFullPath", "/" + results->at(i).path.value());
-    entry->SetBoolean("fileIsDirectory", results->at(i).is_directory);
+    entry->SetBoolean("fileIsDirectory",
+                      results->at(i).entry_proto.file_info().is_directory());
+    result_dict->Set("entry", entry);
 
-    entries->Append(entry);
+    // Drive files properties.
+    DictionaryValue* property_dict = new DictionaryValue();
+    FillDriveFilePropertiesValue(results->at(i).entry_proto, property_dict);
+    result_dict->Set("properties", property_dict);
+    results_list->Append(result_dict);
   }
 
   base::DictionaryValue* result = new DictionaryValue();
-  result->Set("entries", entries);
+  result->Set("results", results_list);
   result->SetString("nextFeed", next_feed.spec());
 
   SetResult(result);

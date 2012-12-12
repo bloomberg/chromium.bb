@@ -72,8 +72,8 @@ function verifySearchResult(entries, nextFeed, expectedNextFeed) {
   chrome.test.assertEq(2, entries.length);
   chrome.test.assertEq(expectedNextFeed, nextFeed);
 
-  chrome.test.assertEq('/drive/Folder', entries[0].fullPath);
-  chrome.test.assertEq('/drive/Folder/File.aBc', entries[1].fullPath);
+  chrome.test.assertEq('/drive/Folder', entries[0].entry.fullPath);
+  chrome.test.assertEq('/drive/Folder/File.aBc', entries[1].entry.fullPath);
 }
 
 chrome.test.runTests([
@@ -86,17 +86,30 @@ chrome.test.runTests([
       });
   },
   function driveSearch() {
-    chrome.fileBrowserPrivate.searchDrive('foo', '',
+    var params = {
+        'query': 'foo',
+        'sharedWithMe': false,
+        'nextFeed': ''
+    };
+
+    chrome.fileBrowserPrivate.searchDrive(
+        params,
         function(entries, nextFeed) {
           verifySearchResult(entries, nextFeed, 'https://next_feed/');
-          chrome.fileBrowserPrivate.searchDrive('foo', nextFeed,
+          var nextParams = {
+              'query': 'foo',
+              'sharedWithMe': false,
+              'nextFeed': nextFeed
+          };
+          chrome.fileBrowserPrivate.searchDrive(
+              nextParams,
               function(entries, nextFeed) {
                 verifySearchResult(entries, nextFeed, '');
 
                 var directoryVerifier = verifyDirectoryAccessible.bind(null,
-                    entries[0], 1, chrome.test.succeed, errorCallback);
+                    entries[0].entry, 1, chrome.test.succeed, errorCallback);
 
-                verifyFileAccessible(entries[1], directoryVerifier,
+                verifyFileAccessible(entries[1].entry, directoryVerifier,
                                      errorCallback);
               });
         });

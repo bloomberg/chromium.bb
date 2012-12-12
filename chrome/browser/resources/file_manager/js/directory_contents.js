@@ -497,25 +497,32 @@ DirectoryContentsGDataSearch.prototype.readNextChunk = function() {
     return;
   }
 
-  var searchCallback = (function(entries, nextFeed) {
+  var searchCallback = (function(results, nextFeed) {
     // TODO(tbarzic): Improve error handling.
-    if (!entries) {
+    if (!results) {
       console.log('Drive search encountered an error');
       this.lastChunkReceived();
       return;
     }
     this.nextFeed_ = nextFeed;
-    this.fetchedResultsNum_ += entries.length;
+    this.fetchedResultsNum_ += results.length;
     if (this.fetchedResultsNum_ >= DirectoryContentsGDataSearch.MAX_RESULTS)
       this.nextFeed_ = '';
 
     this.done_ = (this.nextFeed_ == '');
+
+    // TODO(haruki): Use the file properties as well when we implement the UI
+    // side.
+    var entries = results.map(function(r) { return r.entry; });
     this.onNewEntries(entries);
   }).bind(this);
 
-  chrome.fileBrowserPrivate.searchDrive(this.query_,
-                                        this.nextFeed_,
-                                        searchCallback);
+  var searchParams = {
+    'query': this.query_,
+    'sharedWithMe': false,  // (leave out for false)
+    'nextFeed': this.nextFeed_
+  };
+  chrome.fileBrowserPrivate.searchDrive(searchParams, searchCallback);
 };
 
 

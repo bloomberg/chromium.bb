@@ -239,7 +239,8 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // |callback| is that should be run with data received. It must not be null.
   // |feed_list| is the document feed for content search.
   // |error| is the error code returned by DriveFeedLoader.
-  void OnSearch(const SearchCallback& callback,
+  void OnSearch(bool shared_with_me,
+                const SearchCallback& callback,
                 const ScopedVector<google_apis::ResourceList>& feed_list,
                 DriveFileError error);
 

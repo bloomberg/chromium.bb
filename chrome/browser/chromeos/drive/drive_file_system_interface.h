@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_metadata.h"
 #include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
 #include "chrome/browser/google_apis/gdata_wapi_operations.h"
@@ -19,7 +20,6 @@ class ResourceEntry;
 
 namespace drive {
 
-class DriveEntryProto;
 class DriveFileSystemObserver;
 class DriveResourceMetadata;
 
@@ -29,13 +29,14 @@ typedef std::vector<DriveEntryProto> DriveEntryProtoVector;
 // This is data needed to create a file system entry that will be used by file
 // browser.
 struct SearchResultInfo {
-  SearchResultInfo(const FilePath& in_path, bool in_is_directory)
-      : path(in_path),
-        is_directory(in_is_directory) {
+  SearchResultInfo(const FilePath& path,
+                   const DriveEntryProto& entry_proto)
+      : path(path),
+        entry_proto(entry_proto) {
   }
 
   FilePath path;
-  bool is_directory;
+  DriveEntryProto entry_proto;
 };
 
 // Used to get files from the file system.

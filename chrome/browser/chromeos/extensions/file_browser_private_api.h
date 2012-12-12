@@ -703,6 +703,7 @@ class SearchDriveFunction : public AsyncExtensionFunction {
   // Query for which the search is being performed.
   std::string query_;
   std::string next_feed_;
+  bool shared_with_me_;
   // Information about remote file system we will need to create file entries
   // to represent search results.
   std::string file_system_name_;

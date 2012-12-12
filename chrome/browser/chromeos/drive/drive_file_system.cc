@@ -1402,6 +1402,7 @@ void DriveFileSystem::ContinueCreateDirectory(
 }
 
 void DriveFileSystem::OnSearch(
+    bool shared_with_me,
     const SearchCallback& search_callback,
     const ScopedVector<google_apis::ResourceList>& feed_list,
     DriveFileError error) {
@@ -1443,13 +1444,27 @@ void DriveFileSystem::OnSearch(
   for (size_t i = 0; i < entries.size(); ++i) {
     // Run the callback if this is the last iteration of the loop.
     const bool should_run_callback = (i + 1 == entries.size());
-    resource_metadata_->RefreshEntryProto(
-        ConvertResourceEntryToDriveEntryProto(*entries[i]),
+    DriveEntryProto entry_proto =
+        ConvertResourceEntryToDriveEntryProto(*entries[i]);
+
+    const GetEntryInfoWithFilePathCallback entry_info_callback =
         base::Bind(&DriveFileSystem::AddToSearchResults,
                    ui_weak_ptr_,
                    results,
                    should_run_callback,
-                   callback));
+                   callback);
+
+    // Some entries (e.g. shared_with_me files) are not tracked in
+    // DriveResourceMetadata, so that we skip RefreshEntryProto() and call the
+    // callback directly.
+    if (!shared_with_me) {
+      resource_metadata_->RefreshEntryProto(entry_proto, entry_info_callback);
+    } else {
+      entry_info_callback.Run(
+          DRIVE_FILE_OK,
+          FilePath::FromUTF8Unsafe(entry_proto.base_name()),
+          scoped_ptr<DriveEntryProto>(new DriveEntryProto(entry_proto)));
+    }
   }
 }
 
@@ -1461,6 +1476,7 @@ void DriveFileSystem::AddToSearchResults(
     const FilePath& drive_file_path,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(entry_proto.get());
 
   // If a result is not present in our local file system snapshot, call
   // CheckForUpdates to refresh the snapshot with a delta feed. This may happen
@@ -1468,8 +1484,7 @@ void DriveFileSystem::AddToSearchResults(
   // received its delta feed).
   if (error == DRIVE_FILE_OK) {
     DCHECK(entry_proto.get());
-    const bool is_directory = entry_proto->file_info().is_directory();
-    results->push_back(SearchResultInfo(drive_file_path, is_directory));
+    results->push_back(SearchResultInfo(drive_file_path, *entry_proto.get()));
     DVLOG(1) << "AddToSearchResults " << drive_file_path.value();
   } else if (error == DRIVE_FILE_ERROR_NOT_FOUND) {
     CheckForUpdates();
@@ -1510,7 +1525,10 @@ void DriveFileSystem::SearchAsyncOnUIThread(
       search_query,
       shared_with_me,
       next_feed,
-      base::Bind(&DriveFileSystem::OnSearch, ui_weak_ptr_, callback));
+      base::Bind(&DriveFileSystem::OnSearch,
+                 ui_weak_ptr_,
+                 shared_with_me,
+                 callback));
 }
 
 void DriveFileSystem::OnDirectoryChangedByOperation(

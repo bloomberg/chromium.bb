@@ -530,10 +530,17 @@ void DriveResourceMetadata::RefreshEntryProto(
   DriveEntry* old_entry = GetEntryByResourceId(drive_entry->resource_id());
   DriveDirectory* old_parent = old_entry ? old_entry->parent() : NULL;
   DriveDirectory* new_parent = GetParent(entry_proto.parent_resource_id());
+
+  scoped_ptr<DriveEntryProto> result_entry_proto(new DriveEntryProto);
   // We special case root here because old_parent of root is null.
   if ((!old_parent || !new_parent) && old_entry != root_.get()) {
-    PostGetEntryInfoWithFilePathCallbackError(callback,
-                                              DRIVE_FILE_ERROR_NOT_FOUND);
+    drive_entry->ToProtoFull(result_entry_proto.get());
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback,
+                   DRIVE_FILE_ERROR_NOT_FOUND,
+                   FilePath(),
+                   base::Passed(&result_entry_proto)));
     return;
   }
 
@@ -556,14 +563,13 @@ void DriveResourceMetadata::RefreshEntryProto(
 
   DVLOG(1) << "RefreshEntryProto " << new_entry->GetFilePath().value();
   // Note that base_name is not the same for new_entry and entry_proto.
-  scoped_ptr<DriveEntryProto> new_entry_proto(new DriveEntryProto);
-  new_entry->ToProtoFull(new_entry_proto.get());
+  new_entry->ToProtoFull(result_entry_proto.get());
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(callback,
                  DRIVE_FILE_OK,
                  new_entry->GetFilePath(),
-                 base::Passed(&new_entry_proto)));
+                 base::Passed(&result_entry_proto)));
 }
 
 void DriveResourceMetadata::RefreshDirectory(

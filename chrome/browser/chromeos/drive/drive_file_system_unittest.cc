@@ -74,7 +74,7 @@ void DriveSearchCallback(
     EXPECT_EQ(FilePath(expected_results[i].path),
               results->at(i).path);
     EXPECT_EQ(expected_results[i].is_directory,
-              results->at(i).is_directory);
+              results->at(i).entry_proto.file_info().is_directory());
   }
 
   EXPECT_EQ(expected_next_feed, next_feed);
