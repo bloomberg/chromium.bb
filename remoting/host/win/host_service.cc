@@ -18,6 +18,8 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/message_loop.h"
+#include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stringprintf.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
@@ -116,8 +118,9 @@ void HostService::RemoveWtsConsoleObserver(WtsConsoleObserver* observer) {
 }
 
 void HostService::OnChildStopped() {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+
   child_.reset(NULL);
-  main_task_runner_ = NULL;
 }
 
 void HostService::OnSessionChange() {
@@ -196,12 +199,20 @@ int HostService::Run() {
 }
 
 void HostService::CreateLauncher(
-    scoped_refptr<AutoThreadTaskRunner> io_task_runner) {
+    scoped_refptr<AutoThreadTaskRunner> task_runner) {
+  // Launch the I/O thread.
+  scoped_refptr<AutoThreadTaskRunner> io_task_runner =
+      AutoThread::CreateWithType(kIoThreadName, task_runner,
+                                 MessageLoop::TYPE_IO);
+  if (!io_task_runner) {
+    LOG(FATAL) << "Failed to start the I/O thread";
+    return;
+  }
 
 #if defined(REMOTING_MULTI_PROCESS)
 
   child_ = DaemonProcess::Create(
-      main_task_runner_,
+      task_runner,
       io_task_runner,
       base::Bind(&HostService::OnChildStopped,
                  base::Unretained(this))).PassAs<Stoppable>();
@@ -212,26 +223,10 @@ void HostService::CreateLauncher(
   child_.reset(new WtsConsoleSessionProcessDriver(
       base::Bind(&HostService::OnChildStopped, base::Unretained(this)),
       this,
-      main_task_runner_,
+      task_runner,
       io_task_runner));
 
 #endif  // !defined(REMOTING_MULTI_PROCESS)
-}
-
-void HostService::RunMessageLoop(MessageLoop* message_loop) {
-  // Launch the I/O thread.
-  scoped_refptr<AutoThreadTaskRunner> io_thread =
-      AutoThread::CreateWithType(kIoThreadName, main_task_runner_,
-                                 MessageLoop::TYPE_IO);
-  if (!io_thread) {
-    LOG(FATAL) << "Failed to start the I/O thread";
-    return;
-  }
-
-  CreateLauncher(io_thread);
-
-  // Run the service.
-  message_loop->Run();
 }
 
 int HostService::Elevate() {
@@ -285,12 +280,8 @@ int HostService::RunAsService() {
 
 void HostService::RunAsServiceImpl() {
   MessageLoop message_loop(MessageLoop::TYPE_DEFAULT);
-
-  // Keep a reference to the main message loop while it is used. Once the last
-  // reference is dropped QuitClosure() will be posted to the loop.
-  main_task_runner_ =
-      new AutoThreadTaskRunner(message_loop.message_loop_proxy(),
-                               MessageLoop::QuitClosure());
+  base::RunLoop run_loop;
+  main_task_runner_ = message_loop.message_loop_proxy();
 
   // Register the service control handler.
   service_status_handle_ = RegisterServiceCtrlHandlerExW(
@@ -310,25 +301,25 @@ void HostService::RunAsServiceImpl() {
                                       SERVICE_ACCEPT_STOP |
                                       SERVICE_ACCEPT_SESSIONCHANGE;
   service_status.dwWin32ExitCode = kSuccessExitCode;
-
   if (!SetServiceStatus(service_status_handle_, &service_status)) {
     LOG_GETLASTERROR(ERROR)
         << "Failed to report service status to the service control manager";
     return;
   }
 
-  // Post a dummy session change notification to peek up the current console
-  // session.
-  main_task_runner_->PostTask(FROM_HERE, base::Bind(
-      &HostService::OnSessionChange, base::Unretained(this)));
+  // Peek up the current console session.
+  console_session_id_ = WTSGetActiveConsoleSessionId();
+
+  CreateLauncher(scoped_refptr<AutoThreadTaskRunner>(
+      new AutoThreadTaskRunner(main_task_runner_,
+                               run_loop.QuitClosure())));
 
   // Run the service.
-  RunMessageLoop(&message_loop);
+  run_loop.Run();
 
   // Tell SCM that the service is stopped.
   service_status.dwCurrentState = SERVICE_STOPPED;
   service_status.dwControlsAccepted = 0;
-
   if (!SetServiceStatus(service_status_handle_, &service_status)) {
     LOG_GETLASTERROR(ERROR)
         << "Failed to report service status to the service control manager";
@@ -338,12 +329,8 @@ void HostService::RunAsServiceImpl() {
 
 int HostService::RunInConsole() {
   MessageLoop message_loop(MessageLoop::TYPE_UI);
-
-  // Keep a reference to the main message loop while it is used. Once the last
-  // reference is dropped, QuitClosure() will be posted to the loop.
-  main_task_runner_ =
-      new AutoThreadTaskRunner(message_loop.message_loop_proxy(),
-                               MessageLoop::QuitClosure());
+  base::RunLoop run_loop;
+  main_task_runner_ = message_loop.message_loop_proxy();
 
   int result = kInitializationFailed;
 
@@ -379,16 +366,18 @@ int HostService::RunInConsole() {
     goto cleanup;
   }
 
-  // Post a dummy session change notification to peek up the current console
-  // session.
-  main_task_runner_->PostTask(FROM_HERE, base::Bind(
-      &HostService::OnSessionChange, base::Unretained(this)));
-
   // Subscribe to session change notifications.
   if (WTSRegisterSessionNotification(window,
                                      NOTIFY_FOR_ALL_SESSIONS) != FALSE) {
+    // Peek up the current console session.
+    console_session_id_ = WTSGetActiveConsoleSessionId();
+
+    CreateLauncher(scoped_refptr<AutoThreadTaskRunner>(
+        new AutoThreadTaskRunner(main_task_runner_,
+                                 run_loop.QuitClosure())));
+
     // Run the service.
-    RunMessageLoop(&message_loop);
+    run_loop.Run();
 
     // Release the control handler.
     stopped_event_.Signal();

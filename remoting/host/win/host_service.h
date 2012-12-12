@@ -14,7 +14,10 @@
 #include "remoting/host/win/wts_console_monitor.h"
 
 class CommandLine;
-class MessageLoop;
+
+namespace base {
+class SingleThreadTaskRunner;
+}  // namespace base
 
 namespace remoting {
 
@@ -47,11 +50,7 @@ class HostService : public WtsConsoleMonitor {
   void OnSessionChange();
 
   // Creates the process launcher.
-  void CreateLauncher(scoped_refptr<AutoThreadTaskRunner> io_task_runner);
-
-  // This is a common entry point to the main service loop called by both
-  // RunAsService() and RunInConsole().
-  void RunMessageLoop(MessageLoop* message_loop);
+  void CreateLauncher(scoped_refptr<AutoThreadTaskRunner> task_runner);
 
   // Runs the binary specified by the command line, elevated.
   int Elevate();
@@ -95,7 +94,7 @@ class HostService : public WtsConsoleMonitor {
   scoped_ptr<Stoppable> child_;
 
   // Service message loop.
-  scoped_refptr<AutoThreadTaskRunner> main_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
   // The action routine to be executed.
   int (HostService::*run_routine_)();
