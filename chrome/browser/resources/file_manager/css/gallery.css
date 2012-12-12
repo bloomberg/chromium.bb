@@ -310,6 +310,10 @@ body {
 }
 
 .gallery .filename-spacer .options {
+  -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: start;
+  display: -webkit-box;
   top: 50px;
 }
 
@@ -364,7 +368,6 @@ body {
 .gallery .filename-spacer .overwrite-original {
   -webkit-transition: all linear 120ms;
   cursor: inherit;
-  display: inline-block;
   font-size: 90%;
   margin-left: 3px;
   margin-right: 18px;
