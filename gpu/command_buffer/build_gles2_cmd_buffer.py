@@ -730,6 +730,14 @@ _ENUM_LISTS = {
       'GL_STENCIL_ATTACHMENT',
     ],
   },
+  'BackbufferAttachment': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_COLOR_EXT',
+      'GL_DEPTH_EXT',
+      'GL_STENCIL_EXT',
+    ],
+  },
   'BufferParameter': {
     'type': 'GLenum',
     'valid': [
@@ -2268,6 +2276,17 @@ _FUNCTION_INFO = {
     'client_test': False,
     'extension': True,
     'chromium': True,
+  },
+  'DiscardFramebufferEXT': {
+    'type': 'PUTn',
+    'count': 1,
+    'data_type': 'GLenum',
+    'cmd_args': 'GLenum target, GLsizei count, '
+        'const GLenum* attachments',
+    'decoder_func': 'DoDiscardFramebufferEXT',
+    'unit_test': False,
+    'client_test': False,
+    'extension': True,
   },
 }
 

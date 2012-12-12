@@ -1958,5 +1958,27 @@
     }
   }
 
+  void DiscardFramebufferEXT(
+      GLenum target, GLsizei count, uint32 attachments_shm_id,
+      uint32 attachments_shm_offset) {
+    gles2::DiscardFramebufferEXT* c =
+        GetCmdSpace<gles2::DiscardFramebufferEXT>();
+    if (c) {
+      c->Init(target, count, attachments_shm_id, attachments_shm_offset);
+    }
+  }
+
+  void DiscardFramebufferEXTImmediate(
+      GLenum target, GLsizei count, const GLenum* attachments) {
+    const uint32 size =
+        gles2::DiscardFramebufferEXTImmediate::ComputeSize(count);
+    gles2::DiscardFramebufferEXTImmediate* c =
+        GetImmediateCmdSpaceTotalSize<gles2::DiscardFramebufferEXTImmediate>(
+            size);
+    if (c) {
+      c->Init(target, count, attachments);
+    }
+  }
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_AUTOGEN_H_
 

@@ -283,7 +283,7 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   ASSERT_TRUE(rb_info3 != NULL);
   renderbuffer_manager_.SetInfo(
       rb_info3, kSamples3, kFormat3, kWidth3, kHeight3);
-  renderbuffer_manager_.SetCleared(rb_info3);
+  renderbuffer_manager_.SetCleared(rb_info3, true);
 
   info_->AttachRenderbuffer(GL_STENCIL_ATTACHMENT, rb_info3);
   EXPECT_FALSE(info_->HasUnclearedAttachment(GL_STENCIL_ATTACHMENT));

@@ -115,3 +115,5 @@ Later modifications (see chromium.patch):
 - Fix the compile errors on Android
 
 - Added constants for GL_NVX_gpu_memory_info to glext.h
+
+- Added constants for GL_EXT_discard_framebuffer to glext.h

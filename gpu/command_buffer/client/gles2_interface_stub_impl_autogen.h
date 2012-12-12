@@ -623,5 +623,9 @@ void GLES2InterfaceStub::AsyncTexImage2DCHROMIUM(
     GLsizei /* width */, GLsizei /* height */, GLint /* border */,
     GLenum /* format */, GLenum /* type */, const void* /* pixels */) {
 }
+void GLES2InterfaceStub::DiscardFramebufferEXT(
+    GLenum /* target */, GLsizei /* count */,
+    const GLenum* /* attachments */) {
+}
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_STUB_IMPL_AUTOGEN_H_
 

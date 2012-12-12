@@ -680,6 +680,16 @@ std::string GLES2Util::GetStringAttachment(uint32 value) {
       string_table, arraysize(string_table), value);
 }
 
+std::string GLES2Util::GetStringBackbufferAttachment(uint32 value) {
+  static EnumToString string_table[] = {
+    { GL_COLOR_EXT, "GL_COLOR_EXT" },
+    { GL_DEPTH_EXT, "GL_DEPTH_EXT" },
+    { GL_STENCIL_EXT, "GL_STENCIL_EXT" },
+  };
+  return GLES2Util::GetQualifiedEnumString(
+      string_table, arraysize(string_table), value);
+}
+
 std::string GLES2Util::GetStringBlitFilter(uint32 value) {
   static EnumToString string_table[] = {
     { GL_NEAREST, "GL_NEAREST" },

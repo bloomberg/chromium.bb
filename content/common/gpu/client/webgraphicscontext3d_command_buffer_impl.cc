@@ -682,8 +682,7 @@ void WebGraphicsContext3DCommandBufferImpl::setVisibilityCHROMIUM(
 
 void WebGraphicsContext3DCommandBufferImpl::discardFramebufferEXT(
     WGC3Denum target, WGC3Dsizei numAttachments, const WGC3Denum* attachments) {
-  // TODO(jamesr): Call the real function when it exists on GLES2Implementation.
-  // gl_->DiscardFramebufferEXT(target, numAttachments, attachments);
+  gl_->DiscardFramebufferEXT(target, numAttachments, attachments);
 }
 
 void WebGraphicsContext3DCommandBufferImpl::discardBackbufferCHROMIUM() {

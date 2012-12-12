@@ -711,6 +711,10 @@ void GLES2AsyncTexImage2DCHROMIUM(
       target, level, internalformat, width, height, border, format, type,
       pixels);
 }
+void GLES2DiscardFramebufferEXT(
+    GLenum target, GLsizei count, const GLenum* attachments) {
+  gles2::GetGLContext()->DiscardFramebufferEXT(target, count, attachments);
+}
 
 namespace gles2 {
 
@@ -1042,6 +1046,8 @@ NameToFunc g_gles2_function_table[] = {
       glAsyncTexSubImage2DCHROMIUM), },
   { "glAsyncTexImage2DCHROMIUM", reinterpret_cast<GLES2FunctionPointer>(
       glAsyncTexImage2DCHROMIUM), },
+  { "glDiscardFramebufferEXT", reinterpret_cast<GLES2FunctionPointer>(
+      glDiscardFramebufferEXT), },
   { NULL, NULL, },
 };
 

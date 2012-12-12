@@ -3118,6 +3118,52 @@ error::Error GLES2DecoderImpl::HandleTraceEndCHROMIUM(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleDiscardFramebufferEXT(
+    uint32 immediate_data_size, const gles2::DiscardFramebufferEXT& c) {
+  GLenum target = static_cast<GLenum>(c.target);
+  GLsizei count = static_cast<GLsizei>(c.count);
+  uint32 data_size;
+  if (!ComputeDataSize(count, sizeof(GLenum), 1, &data_size)) {
+    return error::kOutOfBounds;
+  }
+  const GLenum* attachments = GetSharedMemoryAs<const GLenum*>(
+      c.attachments_shm_id, c.attachments_shm_offset, data_size);
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE, "glDiscardFramebufferEXT", "count < 0");
+    return error::kNoError;
+  }
+  if (attachments == NULL) {
+    return error::kOutOfBounds;
+  }
+  DoDiscardFramebufferEXT(target, count, attachments);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleDiscardFramebufferEXTImmediate(
+    uint32 immediate_data_size,
+    const gles2::DiscardFramebufferEXTImmediate& c) {
+  GLenum target = static_cast<GLenum>(c.target);
+  GLsizei count = static_cast<GLsizei>(c.count);
+  uint32 data_size;
+  if (!ComputeDataSize(count, sizeof(GLenum), 1, &data_size)) {
+    return error::kOutOfBounds;
+  }
+  if (data_size > immediate_data_size) {
+    return error::kOutOfBounds;
+  }
+  const GLenum* attachments = GetImmediateDataAs<const GLenum*>(
+      c, data_size, immediate_data_size);
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE, "glDiscardFramebufferEXT", "count < 0");
+    return error::kNoError;
+  }
+  if (attachments == NULL) {
+    return error::kOutOfBounds;
+  }
+  DoDiscardFramebufferEXT(target, count, attachments);
+  return error::kNoError;
+}
+
 
 bool GLES2DecoderImpl::SetCapabilityState(GLenum cap, bool enabled) {
   switch (cap) {

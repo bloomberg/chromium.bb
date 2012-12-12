@@ -381,6 +381,12 @@ void VirtualGLApi::glDisableVertexAttribArrayFn(GLuint index) {
   driver_->fn.glDisableVertexAttribArrayFn(index);
 }
 
+void VirtualGLApi::glDiscardFramebufferEXTFn(GLenum target,
+                                           GLsizei numAttachments,
+                                           const GLenum* attachments) {
+  driver_->fn.glDiscardFramebufferEXTFn(target, numAttachments, attachments);
+}
+
 void VirtualGLApi::glDrawArraysFn(GLenum mode, GLint first, GLsizei count) {
   driver_->fn.glDrawArraysFn(mode, first, count);
 }

@@ -125,7 +125,7 @@ TEST_F(RenderbufferManagerTest, RenderbufferInfo) {
   EXPECT_TRUE(manager_.HaveUnclearedRenderbuffers());
   EXPECT_EQ(kWidth * kHeight * 4u * 2u, info1->EstimatedSize());
 
-  manager_.SetCleared(info1);
+  manager_.SetCleared(info1, true);
   EXPECT_TRUE(info1->cleared());
   EXPECT_FALSE(manager_.HaveUnclearedRenderbuffers());
 
@@ -157,7 +157,7 @@ TEST_F(RenderbufferManagerTest, UseDeletedRenderbufferInfo) {
   manager_.SetInfo(info1, kSamples, kFormat, kWidth, kHeight);
   // See that it still affects manager.
   EXPECT_TRUE(manager_.HaveUnclearedRenderbuffers());
-  manager_.SetCleared(info1);
+  manager_.SetCleared(info1, true);
   EXPECT_FALSE(manager_.HaveUnclearedRenderbuffers());
   // Check that the renderbuffer is deleted when the last ref is released.
   EXPECT_CALL(*gl_, DeleteRenderbuffersEXT(1, ::testing::Pointee(kService1Id)))

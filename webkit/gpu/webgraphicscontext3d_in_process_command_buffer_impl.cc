@@ -846,10 +846,15 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::
 
 void WebGraphicsContext3DInProcessCommandBufferImpl::discardFramebufferEXT(
     WGC3Denum target, WGC3Dsizei numAttachments, const WGC3Denum* attachments) {
+  gl_->DiscardFramebufferEXT(target, numAttachments, attachments);
 }
 
 void WebGraphicsContext3DInProcessCommandBufferImpl::
-    ensureFramebufferCHROMIUM() {
+    discardBackbufferCHROMIUM() {
+}
+
+void WebGraphicsContext3DInProcessCommandBufferImpl::
+    ensureBackbufferCHROMIUM() {
 }
 
 void WebGraphicsContext3DInProcessCommandBufferImpl::

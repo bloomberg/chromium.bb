@@ -10730,6 +10730,106 @@ COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, pixels_shm_id) == 36,
 COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, pixels_shm_offset) == 40,
                OffsetOf_AsyncTexImage2DCHROMIUM_pixels_shm_offset_not_40);
 
+struct DiscardFramebufferEXT {
+  typedef DiscardFramebufferEXT ValueType;
+  static const CommandId kCmdId = kDiscardFramebufferEXT;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(
+      GLenum _target, GLsizei _count, uint32 _attachments_shm_id,
+      uint32 _attachments_shm_offset) {
+    SetHeader();
+    target = _target;
+    count = _count;
+    attachments_shm_id = _attachments_shm_id;
+    attachments_shm_offset = _attachments_shm_offset;
+  }
+
+  void* Set(
+      void* cmd, GLenum _target, GLsizei _count, uint32 _attachments_shm_id,
+      uint32 _attachments_shm_offset) {
+    static_cast<ValueType*>(
+        cmd)->Init(
+            _target, _count, _attachments_shm_id, _attachments_shm_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32 target;
+  int32 count;
+  uint32 attachments_shm_id;
+  uint32 attachments_shm_offset;
+};
+
+COMPILE_ASSERT(sizeof(DiscardFramebufferEXT) == 20,
+               Sizeof_DiscardFramebufferEXT_is_not_20);
+COMPILE_ASSERT(offsetof(DiscardFramebufferEXT, header) == 0,
+               OffsetOf_DiscardFramebufferEXT_header_not_0);
+COMPILE_ASSERT(offsetof(DiscardFramebufferEXT, target) == 4,
+               OffsetOf_DiscardFramebufferEXT_target_not_4);
+COMPILE_ASSERT(offsetof(DiscardFramebufferEXT, count) == 8,
+               OffsetOf_DiscardFramebufferEXT_count_not_8);
+COMPILE_ASSERT(offsetof(DiscardFramebufferEXT, attachments_shm_id) == 12,
+               OffsetOf_DiscardFramebufferEXT_attachments_shm_id_not_12);
+COMPILE_ASSERT(offsetof(DiscardFramebufferEXT, attachments_shm_offset) == 16,
+               OffsetOf_DiscardFramebufferEXT_attachments_shm_offset_not_16);
+
+struct DiscardFramebufferEXTImmediate {
+  typedef DiscardFramebufferEXTImmediate ValueType;
+  static const CommandId kCmdId = kDiscardFramebufferEXTImmediate;
+  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
+
+  static uint32 ComputeDataSize(GLsizei count) {
+    return static_cast<uint32>(
+        sizeof(GLenum) * 1 * count);  // NOLINT
+  }
+
+  static uint32 ComputeSize(GLsizei count) {
+    return static_cast<uint32>(
+        sizeof(ValueType) + ComputeDataSize(count));  // NOLINT
+  }
+
+  void SetHeader(GLsizei count) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
+  }
+
+  void Init(GLenum _target, GLsizei _count, const GLenum* _attachments) {
+    SetHeader(_count);
+    target = _target;
+    count = _count;
+    memcpy(ImmediateDataAddress(this),
+           _attachments, ComputeDataSize(_count));
+  }
+
+  void* Set(
+      void* cmd, GLenum _target, GLsizei _count, const GLenum* _attachments) {
+    static_cast<ValueType*>(cmd)->Init(_target, _count, _attachments);
+    const uint32 size = ComputeSize(_count);
+    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
+  }
+
+  gpu::CommandHeader header;
+  uint32 target;
+  int32 count;
+};
+
+COMPILE_ASSERT(sizeof(DiscardFramebufferEXTImmediate) == 12,
+               Sizeof_DiscardFramebufferEXTImmediate_is_not_12);
+COMPILE_ASSERT(offsetof(DiscardFramebufferEXTImmediate, header) == 0,
+               OffsetOf_DiscardFramebufferEXTImmediate_header_not_0);
+COMPILE_ASSERT(offsetof(DiscardFramebufferEXTImmediate, target) == 4,
+               OffsetOf_DiscardFramebufferEXTImmediate_target_not_4);
+COMPILE_ASSERT(offsetof(DiscardFramebufferEXTImmediate, count) == 8,
+               OffsetOf_DiscardFramebufferEXTImmediate_count_not_8);
+
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_
 

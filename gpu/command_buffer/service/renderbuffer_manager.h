@@ -88,8 +88,8 @@ class GPU_EXPORT RenderbufferManager {
 
     ~RenderbufferInfo();
 
-    void set_cleared() {
-      cleared_ = true;
+    void set_cleared(bool cleared) {
+      cleared_ = cleared;
     }
 
     void SetInfo(
@@ -151,7 +151,7 @@ class GPU_EXPORT RenderbufferManager {
       RenderbufferInfo* renderbuffer,
       GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height);
 
-  void SetCleared(RenderbufferInfo* renderbuffer);
+  void SetCleared(RenderbufferInfo* renderbuffer, bool cleared);
 
   // Must call before destruction.
   void Destroy(bool have_context);

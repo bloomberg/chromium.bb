@@ -226,7 +226,7 @@ class GPU_EXPORT TextureManager {
         bool cleared);
 
     // Marks a particular level as cleared or uncleared.
-    void SetLevelCleared(GLenum target, GLint level);
+    void SetLevelCleared(GLenum target, GLint level, bool cleared);
 
     // Updates the cleared flag for this texture by inspecting all the mips.
     void UpdateCleared();
@@ -432,7 +432,8 @@ class GPU_EXPORT TextureManager {
                TextureDefinition* definition);
 
   // Sets a mip as cleared.
-  void SetLevelCleared(TextureInfo* info, GLenum target, GLint level);
+  void SetLevelCleared(TextureInfo* info, GLenum target,
+                       GLint level, bool cleared);
 
   // Sets a texture parameter of a TextureInfo
   // Returns GL_NO_ERROR on success. Otherwise the error to generate.

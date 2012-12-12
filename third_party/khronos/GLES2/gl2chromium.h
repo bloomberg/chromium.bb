@@ -226,6 +226,7 @@
 #define glTraceEndCHROMIUM GLES2_GET_FUN(TraceEndCHROMIUM)
 #define glAsyncTexSubImage2DCHROMIUM GLES2_GET_FUN(AsyncTexSubImage2DCHROMIUM)
 #define glAsyncTexImage2DCHROMIUM GLES2_GET_FUN(AsyncTexImage2DCHROMIUM)
+#define glDiscardFramebufferEXT GLES2_GET_FUN(DiscardFramebufferEXT)
 
 #endif  // THIRD_PARTY_KHRONOS_GLES2_GL2CHROMIUM_H_
 

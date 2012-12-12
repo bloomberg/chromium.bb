@@ -37,7 +37,8 @@ class GPU_EXPORT FramebufferManager {
       virtual bool cleared() const = 0;
       virtual void SetCleared(
           RenderbufferManager* renderbuffer_manager,
-          TextureManager* texture_manager) = 0;
+          TextureManager* texture_manager,
+          bool cleared) = 0;
       virtual bool IsTexture(TextureManager::TextureInfo* texture) const = 0;
       virtual bool IsRenderbuffer(
           RenderbufferManager::RenderbufferInfo* renderbuffer) const = 0;
@@ -59,6 +60,12 @@ class GPU_EXPORT FramebufferManager {
     }
 
     bool HasUnclearedAttachment(GLenum attachment) const;
+
+    void MarkAttachmentAsCleared(
+      RenderbufferManager* renderbuffer_manager,
+      TextureManager* texture_manager,
+      GLenum attachment,
+      bool cleared);
 
     // Attaches a renderbuffer to a particlar attachment.
     // Pass null to detach.
@@ -123,7 +130,8 @@ class GPU_EXPORT FramebufferManager {
 
     void MarkAttachmentsAsCleared(
       RenderbufferManager* renderbuffer_manager,
-      TextureManager* texture_manager);
+      TextureManager* texture_manager,
+      bool cleared);
 
     void MarkAsComplete(unsigned state_id) {
       framebuffer_complete_state_count_id_ = state_id;

@@ -834,7 +834,7 @@ TEST_F(TextureInfoTest, SafeUnsafe) {
   EXPECT_TRUE(manager_.HaveUnsafeTextures());
   EXPECT_TRUE(manager_.HaveUnclearedMips());
   EXPECT_EQ(1, info_->num_uncleared_mips());
-  manager_.SetLevelCleared(info_, GL_TEXTURE_2D, 0);
+  manager_.SetLevelCleared(info_, GL_TEXTURE_2D, 0, true);
   EXPECT_TRUE(info_->SafeToRenderFrom());
   EXPECT_FALSE(manager_.HaveUnsafeTextures());
   EXPECT_FALSE(manager_.HaveUnclearedMips());
@@ -845,7 +845,7 @@ TEST_F(TextureInfoTest, SafeUnsafe) {
   EXPECT_TRUE(manager_.HaveUnsafeTextures());
   EXPECT_TRUE(manager_.HaveUnclearedMips());
   EXPECT_EQ(1, info_->num_uncleared_mips());
-  manager_.SetLevelCleared(info_, GL_TEXTURE_2D, 1);
+  manager_.SetLevelCleared(info_, GL_TEXTURE_2D, 1, true);
   EXPECT_TRUE(info_->SafeToRenderFrom());
   EXPECT_FALSE(manager_.HaveUnsafeTextures());
   EXPECT_FALSE(manager_.HaveUnclearedMips());
@@ -858,12 +858,12 @@ TEST_F(TextureInfoTest, SafeUnsafe) {
   EXPECT_TRUE(manager_.HaveUnsafeTextures());
   EXPECT_TRUE(manager_.HaveUnclearedMips());
   EXPECT_EQ(2, info_->num_uncleared_mips());
-  manager_.SetLevelCleared(info_, GL_TEXTURE_2D, 0);
+  manager_.SetLevelCleared(info_, GL_TEXTURE_2D, 0, true);
   EXPECT_FALSE(info_->SafeToRenderFrom());
   EXPECT_TRUE(manager_.HaveUnsafeTextures());
   EXPECT_TRUE(manager_.HaveUnclearedMips());
   EXPECT_EQ(1, info_->num_uncleared_mips());
-  manager_.SetLevelCleared(info_, GL_TEXTURE_2D, 1);
+  manager_.SetLevelCleared(info_, GL_TEXTURE_2D, 1, true);
   EXPECT_TRUE(info_->SafeToRenderFrom());
   EXPECT_FALSE(manager_.HaveUnsafeTextures());
   EXPECT_FALSE(manager_.HaveUnclearedMips());
@@ -907,11 +907,11 @@ TEST_F(TextureInfoTest, SafeUnsafe) {
   EXPECT_TRUE(manager_.HaveUnsafeTextures());
   EXPECT_TRUE(manager_.HaveUnclearedMips());
   EXPECT_EQ(1, info3->num_uncleared_mips());
-  manager_.SetLevelCleared(info2, GL_TEXTURE_2D, 0);
+  manager_.SetLevelCleared(info2, GL_TEXTURE_2D, 0, true);
   EXPECT_TRUE(manager_.HaveUnsafeTextures());
   EXPECT_TRUE(manager_.HaveUnclearedMips());
   EXPECT_EQ(0, info2->num_uncleared_mips());
-  manager_.SetLevelCleared(info3, GL_TEXTURE_2D, 0);
+  manager_.SetLevelCleared(info3, GL_TEXTURE_2D, 0, true);
   EXPECT_FALSE(manager_.HaveUnsafeTextures());
   EXPECT_FALSE(manager_.HaveUnclearedMips());
   EXPECT_EQ(0, info3->num_uncleared_mips());

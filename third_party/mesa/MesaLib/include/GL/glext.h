@@ -5027,6 +5027,12 @@ extern "C" {
 #define GL_GPU_MEMORY_INFO_EVICTED_MEMORY_NVX 0x904B
 #endif
 
+#ifndef GL_EXT_discard_framebuffer
+#define GL_COLOR_EXT                      0x1800
+#define GL_DEPTH_EXT                      0x1801
+#define GL_STENCIL_EXT                    0x1802
+#endif
+
 /*************************************************************/
 
 #include <stddef.h>

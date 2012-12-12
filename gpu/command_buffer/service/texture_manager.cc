@@ -293,7 +293,9 @@ bool TextureManager::TextureInfo::CanGenerateMipmaps(
   return true;
 }
 
-void TextureManager::TextureInfo::SetLevelCleared(GLenum target, GLint level) {
+void TextureManager::TextureInfo::SetLevelCleared(GLenum target,
+                                                  GLint level,
+                                                  bool cleared) {
   DCHECK_GE(level, 0);
   DCHECK_LT(static_cast<size_t>(GLTargetToFaceIndex(target)),
             level_infos_.size());
@@ -304,8 +306,10 @@ void TextureManager::TextureInfo::SetLevelCleared(GLenum target, GLint level) {
   if (!info.cleared) {
     DCHECK_NE(0, num_uncleared_mips_);
     --num_uncleared_mips_;
+  } else {
+    ++num_uncleared_mips_;
   }
-  info.cleared = true;
+  info.cleared = cleared;
   UpdateCleared();
 }
 
@@ -827,8 +831,10 @@ void TextureManager::SetInfoTarget(
   }
 }
 
-void TextureManager::SetLevelCleared(
-    TextureManager::TextureInfo* info, GLenum target, GLint level) {
+void TextureManager::SetLevelCleared(TextureManager::TextureInfo* info,
+                                     GLenum target,
+                                     GLint level,
+                                     bool cleared) {
   DCHECK(info);
   if (!info->SafeToRenderFrom()) {
     DCHECK_NE(0, num_unsafe_textures_);
@@ -836,7 +842,7 @@ void TextureManager::SetLevelCleared(
   }
   num_uncleared_mips_ -= info->num_uncleared_mips();
   DCHECK_GE(num_uncleared_mips_, 0);
-  info->SetLevelCleared(target, level);
+  info->SetLevelCleared(target, level, cleared);
   num_uncleared_mips_ += info->num_uncleared_mips();
   if (!info->SafeToRenderFrom()) {
     ++num_unsafe_textures_;

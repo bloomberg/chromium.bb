@@ -4318,5 +4318,51 @@ TEST_F(GLES2FormatTest, AsyncTexImage2DCHROMIUM) {
       next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, DiscardFramebufferEXT) {
+  DiscardFramebufferEXT& cmd = *GetBufferAs<DiscardFramebufferEXT>();
+  void* next_cmd = cmd.Set(
+      &cmd,
+      static_cast<GLenum>(11),
+      static_cast<GLsizei>(12),
+      static_cast<uint32>(13),
+      static_cast<uint32>(14));
+  EXPECT_EQ(static_cast<uint32>(DiscardFramebufferEXT::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLenum>(11), cmd.target);
+  EXPECT_EQ(static_cast<GLsizei>(12), cmd.count);
+  EXPECT_EQ(static_cast<uint32>(13), cmd.attachments_shm_id);
+  EXPECT_EQ(static_cast<uint32>(14), cmd.attachments_shm_offset);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, DiscardFramebufferEXTImmediate) {
+  const int kSomeBaseValueToTestWith = 51;
+  static GLenum data[] = {
+    static_cast<GLenum>(kSomeBaseValueToTestWith + 0),
+    static_cast<GLenum>(kSomeBaseValueToTestWith + 1),
+  };
+  DiscardFramebufferEXTImmediate& cmd =
+      *GetBufferAs<DiscardFramebufferEXTImmediate>();
+  const GLsizei kNumElements = 2;
+  const size_t kExpectedCmdSize =
+      sizeof(cmd) + kNumElements * sizeof(GLenum) * 1;
+  void* next_cmd = cmd.Set(
+      &cmd,
+      static_cast<GLenum>(1),
+      static_cast<GLsizei>(2),
+      data);
+  EXPECT_EQ(static_cast<uint32>(DiscardFramebufferEXTImmediate::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(kExpectedCmdSize, cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLenum>(1), cmd.target);
+  EXPECT_EQ(static_cast<GLsizei>(2), cmd.count);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd, sizeof(cmd) +
+      RoundSizeToMultipleOfEntries(sizeof(data)));
+  // TODO(gman): Check that data was inserted;
+}
+
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_TEST_AUTOGEN_H_
 

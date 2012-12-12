@@ -15,6 +15,12 @@ static GLenum valid_attachment_table[] = {
   GL_STENCIL_ATTACHMENT,
 };
 
+static GLenum valid_backbuffer_attachment_table[] = {
+  GL_COLOR_EXT,
+  GL_DEPTH_EXT,
+  GL_STENCIL_EXT,
+};
+
 static GLenum valid_blit_filter_table[] = {
   GL_NEAREST,
   GL_LINEAR,
@@ -504,6 +510,9 @@ static GLint valid_zero_only_table[] = {
 Validators::Validators()
     : attachment(
           valid_attachment_table, arraysize(valid_attachment_table)),
+      backbuffer_attachment(
+          valid_backbuffer_attachment_table, arraysize(
+              valid_backbuffer_attachment_table)),
       blit_filter(
           valid_blit_filter_table, arraysize(valid_blit_filter_table)),
       buffer_parameter(

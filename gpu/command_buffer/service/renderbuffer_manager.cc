@@ -100,12 +100,13 @@ void RenderbufferManager::SetInfo(
   }
 }
 
-void RenderbufferManager::SetCleared(RenderbufferInfo* renderbuffer) {
+void RenderbufferManager::SetCleared(RenderbufferInfo* renderbuffer,
+                                     bool cleared) {
   DCHECK(renderbuffer);
   if (!renderbuffer->cleared()) {
     --num_uncleared_renderbuffers_;
   }
-  renderbuffer->set_cleared();
+  renderbuffer->set_cleared(cleared);
   if (!renderbuffer->cleared()) {
     ++num_uncleared_renderbuffers_;
   }

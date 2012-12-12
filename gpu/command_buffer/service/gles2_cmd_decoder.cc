@@ -1119,6 +1119,12 @@ class GLES2DecoderImpl : public GLES2Decoder {
   // Wrapper for glDisableVertexAttribArray.
   void DoDisableVertexAttribArray(GLuint index);
 
+  // Wrapper for glDiscardFramebufferEXT, since we need to track undefined
+  // attachments.
+  void DoDiscardFramebufferEXT(GLenum target,
+                               GLsizei numAttachments,
+                               const GLenum* attachments);
+
   // Wrapper for glEnable
   void DoEnable(GLenum cap);
 
@@ -1596,6 +1602,9 @@ class GLES2DecoderImpl : public GLES2Decoder {
   bool back_buffer_has_depth_;
   bool back_buffer_has_stencil_;
 
+  // Backbuffer attachments that are currently undefined.
+  uint32 backbuffer_needs_clear_bits_;
+
   bool teximage2d_faster_than_texsubimage2d_;
 
   // The last error message set.
@@ -2030,6 +2039,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       back_buffer_color_format_(0),
       back_buffer_has_depth_(false),
       back_buffer_has_stencil_(false),
+      backbuffer_needs_clear_bits_(0),
       teximage2d_faster_than_texsubimage2d_(true),
       log_message_count_(0),
       current_decoder_error_(error::kNoError),
@@ -2698,6 +2708,19 @@ bool GLES2DecoderImpl::CheckFramebufferValid(
     FramebufferManager::FramebufferInfo* framebuffer,
     GLenum target, const char* func_name) {
   if (!framebuffer) {
+    if (backbuffer_needs_clear_bits_) {
+      glClearColor(0, 0, 0, (GLES2Util::GetChannelsForFormat(
+          offscreen_target_color_format_) & 0x0008) != 0 ? 0 : 1);
+      glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+      glClearStencil(0);
+      glStencilMask(-1);
+      glClearDepth(1.0f);
+      glDepthMask(true);
+      glDisable(GL_SCISSOR_TEST);
+      glClear(backbuffer_needs_clear_bits_);
+      backbuffer_needs_clear_bits_ = 0;
+      RestoreClearState();
+    }
     return true;
   }
 
@@ -3630,6 +3653,53 @@ void GLES2DecoderImpl::DoDisableVertexAttribArray(GLuint index) {
     SetGLError(GL_INVALID_VALUE,
                "glDisableVertexAttribArray", "index out of range");
   }
+}
+
+void GLES2DecoderImpl::DoDiscardFramebufferEXT(GLenum target,
+                                               GLsizei numAttachments,
+                                               const GLenum* attachments) {
+  FramebufferManager::FramebufferInfo* framebuffer =
+      GetFramebufferInfoForTarget(GL_FRAMEBUFFER);
+
+  // Validates the attachments. If one of them fails
+  // the whole command fails.
+  for (GLsizei i = 0; i < numAttachments; ++i) {
+    if ((framebuffer &&
+        !validators_->attachment.IsValid(attachments[i])) ||
+       (!framebuffer &&
+        !validators_->backbuffer_attachment.IsValid(attachments[i]))) {
+      SetGLErrorInvalidEnum("glDiscardFramebufferEXT",
+                           attachments[i],
+                           "attachments");
+      return;
+    }
+  }
+
+  // Marks each one of them as not cleared
+  for (GLsizei i = 0; i < numAttachments; ++i) {
+    if (framebuffer) {
+      framebuffer->MarkAttachmentAsCleared(renderbuffer_manager(),
+                                           texture_manager(),
+                                           attachments[i],
+                                           false);
+    } else {
+      switch (attachments[i]) {
+        case GL_COLOR_EXT:
+          backbuffer_needs_clear_bits_ |= GL_COLOR_BUFFER_BIT;
+          break;
+        case GL_DEPTH_EXT:
+          backbuffer_needs_clear_bits_ |= GL_DEPTH_BUFFER_BIT;
+        case GL_STENCIL_EXT:
+          backbuffer_needs_clear_bits_ |= GL_STENCIL_BUFFER_BIT;
+          break;
+        default:
+          NOTREACHED();
+          break;
+      }
+    }
+  }
+
+  glDiscardFramebufferEXT(target, numAttachments, attachments);
 }
 
 void GLES2DecoderImpl::DoEnableVertexAttribArray(GLuint index) {
@@ -7536,7 +7606,7 @@ void GLES2DecoderImpl::DoTexImage2D(
 
   if (!teximage2d_faster_than_texsubimage2d_ && level_is_same && pixels) {
     glTexSubImage2D(target, level, 0, 0, width, height, format, type, pixels);
-    texture_manager()->SetLevelCleared(info, target, level);
+    texture_manager()->SetLevelCleared(info, target, level, true);
     tex_image_2d_failed_ = false;
     return;
   }
@@ -8004,7 +8074,7 @@ error::Error GLES2DecoderImpl::DoTexSubImage2D(
     glTexSubImage2D(
         target, level, xoffset, yoffset, width, height, format, type, data);
   }
-  texture_manager()->SetLevelCleared(info, target, level);
+  texture_manager()->SetLevelCleared(info, target, level, true);
   return error::kNoError;
 }
 
@@ -9253,7 +9323,7 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
         dest_info, GL_TEXTURE_2D, level, internal_format, source_width,
         source_height, 1, 0, internal_format, dest_type, true);
   } else {
-    texture_manager()->SetLevelCleared(dest_info, GL_TEXTURE_2D, level);
+    texture_manager()->SetLevelCleared(dest_info, GL_TEXTURE_2D, level, true);
   }
 
   clear_state_dirty_ = true;

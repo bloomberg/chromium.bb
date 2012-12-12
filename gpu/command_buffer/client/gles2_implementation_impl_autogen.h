@@ -1679,5 +1679,21 @@ void GLES2Implementation::TraceEndCHROMIUM() {
   CheckGLError();
 }
 
+void GLES2Implementation::DiscardFramebufferEXT(
+    GLenum target, GLsizei count, const GLenum* attachments) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glDiscardFramebufferEXT(" << GLES2Util::GetStringEnum(target) << ", " << count << ", " << static_cast<const void*>(attachments) << ")");  // NOLINT
+  GPU_CLIENT_LOG_CODE_BLOCK({
+    for (GLsizei i = 0; i < count; ++i) {
+       GPU_CLIENT_LOG("  " << i << ": " << attachments[0 + i * 1]);
+    }
+  });
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE, "glDiscardFramebufferEXT", "count < 0");
+    return;
+  }
+  helper_->DiscardFramebufferEXTImmediate(target, count, attachments);
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_IMPL_AUTOGEN_H_
 

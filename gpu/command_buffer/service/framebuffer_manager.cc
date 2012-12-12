@@ -50,8 +50,9 @@ class RenderbufferAttachment
 
   virtual void SetCleared(
       RenderbufferManager* renderbuffer_manager,
-      TextureManager* /* texture_manager */) OVERRIDE {
-    renderbuffer_manager->SetCleared(renderbuffer_);
+      TextureManager* /* texture_manager */,
+      bool cleared) OVERRIDE {
+    renderbuffer_manager->SetCleared(renderbuffer_, cleared);
   }
 
   virtual bool IsTexture(
@@ -139,8 +140,9 @@ class TextureAttachment
 
   virtual void SetCleared(
       RenderbufferManager* /* renderbuffer_manager */,
-      TextureManager* texture_manager) OVERRIDE {
-    texture_manager->SetLevelCleared(texture_, target_, level_);
+      TextureManager* texture_manager,
+      bool cleared) OVERRIDE {
+    texture_manager->SetLevelCleared(texture_, target_, level_, cleared);
   }
 
   virtual bool IsTexture(TextureManager::TextureInfo* texture) const OVERRIDE {
@@ -273,14 +275,31 @@ bool FramebufferManager::FramebufferInfo::HasUnclearedAttachment(
   return false;
 }
 
+void FramebufferManager::FramebufferInfo::MarkAttachmentAsCleared(
+      RenderbufferManager* renderbuffer_manager,
+      TextureManager* texture_manager,
+      GLenum attachment,
+      bool cleared) {
+  AttachmentMap::iterator it = attachments_.find(attachment);
+  if (it != attachments_.end()) {
+    Attachment* a = it->second;
+    if (a->cleared() != cleared) {
+      a->SetCleared(renderbuffer_manager,
+                    texture_manager,
+                    cleared);
+    }
+  }
+}
+
 void FramebufferManager::FramebufferInfo::MarkAttachmentsAsCleared(
       RenderbufferManager* renderbuffer_manager,
-      TextureManager* texture_manager) {
+      TextureManager* texture_manager,
+      bool cleared) {
   for (AttachmentMap::iterator it = attachments_.begin();
        it != attachments_.end(); ++it) {
     Attachment* attachment = it->second;
-    if (!attachment->cleared()) {
-      attachment->SetCleared(renderbuffer_manager, texture_manager);
+    if (attachment->cleared() != cleared) {
+      attachment->SetCleared(renderbuffer_manager, texture_manager, cleared);
     }
   }
 }
@@ -496,7 +515,9 @@ void FramebufferManager::MarkAttachmentsAsCleared(
     RenderbufferManager* renderbuffer_manager,
     TextureManager* texture_manager) {
   DCHECK(framebuffer);
-  framebuffer->MarkAttachmentsAsCleared(renderbuffer_manager, texture_manager);
+  framebuffer->MarkAttachmentsAsCleared(renderbuffer_manager,
+                                        texture_manager,
+                                        true);
   MarkAsComplete(framebuffer);
 }
 

@@ -299,5 +299,7 @@ virtual void AsyncTexImage2DCHROMIUM(
     GLenum target, GLint level, GLint internalformat, GLsizei width,
     GLsizei height, GLint border, GLenum format, GLenum type,
     const void* pixels) = 0;
+virtual void DiscardFramebufferEXT(
+    GLenum target, GLsizei count, const GLenum* attachments) = 0;
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_AUTOGEN_H_
 

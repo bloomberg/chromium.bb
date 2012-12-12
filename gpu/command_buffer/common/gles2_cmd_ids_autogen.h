@@ -245,6 +245,8 @@
   OP(TraceEndCHROMIUM)                                         /* 488 */ \
   OP(AsyncTexSubImage2DCHROMIUM)                               /* 489 */ \
   OP(AsyncTexImage2DCHROMIUM)                                  /* 490 */ \
+  OP(DiscardFramebufferEXT)                                    /* 491 */ \
+  OP(DiscardFramebufferEXTImmediate)                           /* 492 */ \
 
 enum CommandId {
   kStartPoint = cmd::kLastCommonId,  // All GLES2 commands start after this.

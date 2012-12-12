@@ -720,6 +720,10 @@ GL_FUNCTIONS = [
   'other_extensions': ['OES_vertex_array_object',
                        'APPLE_vertex_array_object',
                        'ARB_vertex_array_object'] },
+{ 'return_type': 'void',
+  'names': ['glDiscardFramebufferEXT'],
+  'arguments': 'GLenum target, GLsizei numAttachments, '
+      'const GLenum* attachments' },
 ]
 
 OSMESA_FUNCTIONS = [

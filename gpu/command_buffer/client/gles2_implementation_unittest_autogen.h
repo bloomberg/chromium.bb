@@ -1769,5 +1769,22 @@ TEST_F(GLES2ImplementationTest, TraceEndCHROMIUM) {
   gl_->TraceEndCHROMIUM();
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
+
+TEST_F(GLES2ImplementationTest, DiscardFramebufferEXT) {
+  struct Cmds {
+    DiscardFramebufferEXTImmediate cmd;
+    GLenum data[2][1];
+  };
+
+  Cmds expected;
+  for (int ii = 0; ii < 2; ++ii) {
+    for (int jj = 0; jj < 1; ++jj) {
+      expected.data[ii][jj] = static_cast<GLenum>(ii * 1 + jj);
+    }
+  }
+  expected.cmd.Init(1, 2, &expected.data[0][0]);
+  gl_->DiscardFramebufferEXT(1, 2, &expected.data[0][0]);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_UNITTEST_AUTOGEN_H_
 
