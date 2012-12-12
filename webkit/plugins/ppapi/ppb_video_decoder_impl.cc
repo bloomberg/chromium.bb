@@ -142,7 +142,7 @@ int32_t PPB_VideoDecoder_Impl::Decode(
   media::BitstreamBuffer decode_buffer(
       bitstream_buffer->id,
       buffer->shared_memory()->handle(),
-      static_cast<size_t>(bitstream_buffer->size));
+      bitstream_buffer->size);
   if (!SetBitstreamBufferCallback(bitstream_buffer->id, callback))
     return PP_ERROR_BADARGUMENT;
 

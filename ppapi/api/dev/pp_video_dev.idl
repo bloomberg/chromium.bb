@@ -53,7 +53,7 @@ struct PP_VideoBitstreamBuffer_Dev {
   /**
    * Size of the bitstream contained in buffer (in bytes).
    */
-  int32_t size;
+  uint32_t size;
 };
 
 /**

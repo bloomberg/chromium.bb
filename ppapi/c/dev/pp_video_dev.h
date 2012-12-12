@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/pp_video_dev.idl modified Fri Jul 20 12:22:28 2012. */
+/* From dev/pp_video_dev.idl modified Fri Dec  7 15:33:11 2012. */
 
 #ifndef PPAPI_C_DEV_PP_VIDEO_DEV_H_
 #define PPAPI_C_DEV_PP_VIDEO_DEV_H_
@@ -72,7 +72,7 @@ struct PP_VideoBitstreamBuffer_Dev {
   /**
    * Size of the bitstream contained in buffer (in bytes).
    */
-  int32_t size;
+  uint32_t size;
 };
 PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_VideoBitstreamBuffer_Dev, 12);
 

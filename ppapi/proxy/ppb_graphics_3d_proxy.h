@@ -96,7 +96,7 @@ class PPB_Graphics3D_Proxy : public InterfaceProxy {
   void OnMsgAsyncFlush(const HostResource& context,
                        int32 put_offset);
   void OnMsgCreateTransferBuffer(const HostResource& context,
-                                 int32 size,
+                                 uint32 size,
                                  int32* id);
   void OnMsgDestroyTransferBuffer(const HostResource& context,
                                   int32 id);

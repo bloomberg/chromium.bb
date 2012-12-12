@@ -226,7 +226,7 @@ void PPB_VideoDecoder_Proxy::OnMsgCreate(
 
 void PPB_VideoDecoder_Proxy::OnMsgDecode(
     const HostResource& decoder,
-    const HostResource& buffer, int32 id, int32 size) {
+    const HostResource& buffer, int32 id, uint32 size) {
   EnterHostFromHostResourceForceCallback<PPB_VideoDecoder_API> enter(
       decoder, callback_factory_,
       &PPB_VideoDecoder_Proxy::SendMsgEndOfBitstreamACKToPlugin, decoder, id);

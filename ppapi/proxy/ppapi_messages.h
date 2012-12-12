@@ -913,7 +913,7 @@ IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBGraphics3D_AsyncFlush,
                     int32 /* put_offset */)
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBGraphics3D_CreateTransferBuffer,
                            ppapi::HostResource /* context */,
-                           int32 /* size */,
+                           uint32 /* size */,
                            int32 /* id */)
 IPC_SYNC_MESSAGE_ROUTED2_0(PpapiHostMsg_PPBGraphics3D_DestroyTransferBuffer,
                            ppapi::HostResource /* context */,
@@ -1242,7 +1242,7 @@ IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBVideoDecoder_Decode,
                     ppapi::HostResource /* video_decoder */,
                     ppapi::HostResource /* bitstream buffer */,
                     int32 /* bitstream buffer id */,
-                    int32 /* size of buffer */)
+                    uint32 /* size of buffer */)
 IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBVideoDecoder_AssignPictureBuffers,
                     ppapi::HostResource /* video_decoder */,
                     std::vector<PP_PictureBuffer_Dev> /* picture buffers */)

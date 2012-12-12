@@ -449,7 +449,7 @@ void PPB_Graphics3D_Proxy::OnMsgAsyncFlush(const HostResource& context,
 
 void PPB_Graphics3D_Proxy::OnMsgCreateTransferBuffer(
     const HostResource& context,
-    int32 size,
+    uint32 size,
     int32* id) {
   EnterHostFromHostResource<PPB_Graphics3D_API> enter(context);
   if (enter.succeeded())

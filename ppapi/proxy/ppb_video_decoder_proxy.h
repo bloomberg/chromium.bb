@@ -40,7 +40,7 @@ class PPB_VideoDecoder_Proxy : public InterfaceProxy {
                    ppapi::HostResource* result);
   void OnMsgDecode(
       const ppapi::HostResource& decoder,
-      const ppapi::HostResource& buffer, int32 id, int32 size);
+      const ppapi::HostResource& buffer, int32 id, uint32 size);
   void OnMsgAssignPictureBuffers(
       const ppapi::HostResource& decoder,
       const std::vector<PP_PictureBuffer_Dev>& buffers);
