@@ -35,6 +35,10 @@ const NSInteger kFramedWindowButtonsWithoutTabStripOffsetFromLeft = 8;
   CGFloat windowButtonsInterButtonSpacing_;
 }
 
+// Designated initializer.
+- (id)initWithContentRect:(NSRect)contentRect
+              hasTabStrip:(BOOL)hasTabStrip;
+
 // Tells the window to suppress title drawing.
 - (void)setShouldHideTitle:(BOOL)flag;
 
