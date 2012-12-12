@@ -9,6 +9,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/env.h"
+#include "ui/base/events/event.h"
 #include "ui/views/corewm/focus_rules.h"
 
 namespace views {

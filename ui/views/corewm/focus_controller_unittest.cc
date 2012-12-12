@@ -18,7 +18,6 @@
 #include "ui/aura/window_tracker.h"
 #include "ui/base/events/event_handler.h"
 #include "ui/views/corewm/base_focus_rules.h"
-#include "ui/views/corewm/focus_change_event.h"
 
 namespace views {
 namespace corewm {

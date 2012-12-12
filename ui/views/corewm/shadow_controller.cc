@@ -67,8 +67,7 @@ Shadow::Style GetShadowStyleForWindowLosingActive(
 }  // namespace
 
 ShadowController::ShadowController(aura::RootWindow* root_window)
-    : ActivationChangeShim(root_window),
-      ALLOW_THIS_IN_INITIALIZER_LIST(observer_manager_(this)),
+    : ALLOW_THIS_IN_INITIALIZER_LIST(observer_manager_(this)),
       root_window_(root_window) {
   aura::Env::GetInstance()->AddObserver(this);
   // Watch for window activation changes.
@@ -108,18 +107,18 @@ void ShadowController::OnWindowDestroyed(aura::Window* window) {
   observer_manager_.Remove(window);
 }
 
-void ShadowController::OnWindowActivated(aura::Window* gaining_active,
-                                         aura::Window* losing_active) {
-  if (gaining_active) {
-    Shadow* shadow = GetShadowForWindow(gaining_active);
-    if (shadow && !ShouldUseSmallShadowForWindow(gaining_active))
+void ShadowController::OnWindowActivated(aura::Window* gained_active,
+                                         aura::Window* lost_active) {
+  if (gained_active) {
+    Shadow* shadow = GetShadowForWindow(gained_active);
+    if (shadow && !ShouldUseSmallShadowForWindow(gained_active))
       shadow->SetStyle(Shadow::STYLE_ACTIVE);
   }
-  if (losing_active) {
-    Shadow* shadow = GetShadowForWindow(losing_active);
-    if (shadow && !ShouldUseSmallShadowForWindow(losing_active)) {
-      shadow->SetStyle(GetShadowStyleForWindowLosingActive(losing_active,
-                                                           gaining_active));
+  if (lost_active) {
+    Shadow* shadow = GetShadowForWindow(lost_active);
+    if (shadow && !ShouldUseSmallShadowForWindow(lost_active)) {
+      shadow->SetStyle(GetShadowStyleForWindowLosingActive(lost_active,
+                                                           gained_active));
     }
   }
 }

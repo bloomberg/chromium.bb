@@ -14,10 +14,10 @@
 #include "base/logging.h"
 #include "base/observer_list.h"
 #include "base/timer.h"
+#include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/rect.h"
-#include "ui/views/corewm/activation_change_shim.h"
 
 namespace aura {
 class RootWindow;
@@ -44,7 +44,7 @@ class WorkspaceController;
 class ASH_EXPORT ShelfLayoutManager :
     public aura::LayoutManager,
     public ash::ShellObserver,
-    public views::corewm::ActivationChangeShim {
+    public aura::client::ActivationChangeObserver {
  public:
   class ASH_EXPORT Observer {
    public:
@@ -154,8 +154,8 @@ class ASH_EXPORT ShelfLayoutManager :
   virtual void OnLockStateChanged(bool locked) OVERRIDE;
 
   // Overriden from aura::client::ActivationChangeObserver:
-  virtual void OnWindowActivated(aura::Window* active,
-                                 aura::Window* old_active) OVERRIDE;
+  virtual void OnWindowActivated(aura::Window* gained_active,
+                                 aura::Window* lost_active) OVERRIDE;
 
   // TODO(harrym|oshima): These templates will be moved to
   // new Shelf class.

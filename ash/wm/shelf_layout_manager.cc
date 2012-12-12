@@ -144,9 +144,7 @@ class ShelfLayoutManager::UpdateShelfObserver
 // ShelfLayoutManager ----------------------------------------------------------
 
 ShelfLayoutManager::ShelfLayoutManager(StatusAreaWidget* status_area_widget)
-    : ActivationChangeShim(
-          status_area_widget->GetNativeView()->GetRootWindow()),
-      root_window_(status_area_widget->GetNativeView()->GetRootWindow()),
+    : root_window_(status_area_widget->GetNativeView()->GetRootWindow()),
       in_layout_(false),
       auto_hide_behavior_(SHELF_AUTO_HIDE_BEHAVIOR_NEVER),
       alignment_(SHELF_ALIGNMENT_BOTTOM),
@@ -470,8 +468,8 @@ void ShelfLayoutManager::OnLockStateChanged(bool locked) {
   UpdateVisibilityState();
 }
 
-void ShelfLayoutManager::OnWindowActivated(aura::Window* active,
-                                           aura::Window* old_active) {
+void ShelfLayoutManager::OnWindowActivated(aura::Window* gained_active,
+                                           aura::Window* lost_active) {
   UpdateAutoHideStateNow();
 }
 

@@ -13,8 +13,7 @@ namespace views {
 NativeWidgetAuraWindowObserver::NativeWidgetAuraWindowObserver(
     gfx::NativeView native_view,
     internal::NativeWidgetDelegate* delegate)
-    : ActivationChangeShim(native_view->GetRootWindow()),
-      native_view_(native_view),
+    : native_view_(native_view),
       delegate_(delegate) {
   native_view_->GetRootWindow()->AddObserver(this);
   native_view_->AddObserver(this);
@@ -27,11 +26,10 @@ NativeWidgetAuraWindowObserver::~NativeWidgetAuraWindowObserver() {
 }
 
 void NativeWidgetAuraWindowObserver::OnWindowActivated(
-    aura::Window* active,
-    aura::Window* old_active) {
-  if (!active || active->transient_parent() != native_view_) {
+    aura::Window* gained_active,
+    aura::Window* lost_active) {
+  if (!gained_active || gained_active->transient_parent() != native_view_)
     delegate_->EnableInactiveRendering();
-  }
 }
 
 void NativeWidgetAuraWindowObserver::OnWindowRemovingFromRootWindow(

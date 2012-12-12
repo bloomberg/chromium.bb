@@ -18,8 +18,7 @@ namespace ash {
 namespace internal {
 
 WorkspaceController::WorkspaceController(aura::Window* viewport)
-    : ActivationChangeShim(viewport->GetRootWindow()),
-      viewport_(viewport),
+    : viewport_(viewport),
       workspace_cycler_(NULL) {
   aura::RootWindow* root_window = viewport->GetRootWindow();
   workspace_manager_.reset(new WorkspaceManager(viewport));
@@ -56,10 +55,12 @@ void WorkspaceController::DoInitialAnimation() {
   workspace_manager_->DoInitialAnimation();
 }
 
-void WorkspaceController::OnWindowActivated(aura::Window* window,
-                                            aura::Window* old_active) {
-  if (!window || window->GetRootWindow() == viewport_->GetRootWindow())
-    workspace_manager_->SetActiveWorkspaceByWindow(window);
+void WorkspaceController::OnWindowActivated(aura::Window* gained_active,
+                                            aura::Window* lost_active) {
+  if (!gained_active ||
+      gained_active->GetRootWindow() == viewport_->GetRootWindow()) {
+    workspace_manager_->SetActiveWorkspaceByWindow(gained_active);
+  }
 }
 
 }  // namespace internal
