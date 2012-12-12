@@ -6,6 +6,7 @@
 """Runs all ChromeDriver end to end tests."""
 
 import os
+import shutil
 import sys
 
 _THIS_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -14,6 +15,7 @@ sys.path.insert(0, os.path.join(_THIS_DIR, os.pardir, 'pylib'))
 from common import chrome_paths
 from common import util
 
+
 def _AppendEnvironmentPath(env_name, path):
   if env_name in os.environ:
     lib_path = os.environ[env_name]
@@ -21,6 +23,7 @@ def _AppendEnvironmentPath(env_name, path):
       os.environ[env_name] += os.pathsep + path
   else:
     os.environ[env_name] = path
+
 
 def _FindChromeBinary(path):
   if util.IsLinux():
@@ -40,8 +43,8 @@ def _FindChromeBinary(path):
       return binary
   return None
 
+
 def Main():
-  print '@@@BUILD_STEP chromedriver2_tests@@@'
   chromedriver_map = {
     'win': 'chromedriver2.dll',
     'mac': 'chromedriver2.so',
@@ -49,26 +52,47 @@ def Main():
   }
   chromedriver = chromedriver_map[util.GetPlatformName()]
   build_dir = chrome_paths.GetBuildDir([chromedriver])
+  chrome_binary = _FindChromeBinary(build_dir)
+  if util.IsLinux():
+    # Set LD_LIBRARY_PATH to enable successful loading of shared object files,
+    # when chromedriver2.so is not a static build.
+    _AppendEnvironmentPath('LD_LIBRARY_PATH', os.path.join(build_dir, 'lib'))
+
+  # Run python test for chromedriver.
+  print '@@@BUILD_STEP chromedriver2_python_tests@@@'
   cmd = [
     sys.executable,
     os.path.join(_THIS_DIR, 'test.py'),
     os.path.join(build_dir, chromedriver),
   ]
   # Set the built chrome binary.
-  chrome_binary = _FindChromeBinary(build_dir)
   if chrome_binary is not None:
     cmd.append(chrome_binary)
-  if util.IsLinux():
-    # Set LD_LIBRARY_PATH to enable successful loading of shared object files,
-    # when chromedriver2.so is not a static build.
-    _AppendEnvironmentPath('LD_LIBRARY_PATH', os.path.join(build_dir, 'lib'))
-  elif util.IsMac():
+  if util.IsMac():
     # In Mac, chromedriver2.so is a 32-bit build, so run with the 32-bit python.
     os.environ['VERSIONER_PYTHON_PREFER_32_BIT'] = 'yes'
-  code = util.RunCommand(cmd)
-  if code != 0:
+  code1 = util.RunCommand(cmd)
+  if code1 != 0:
     print '@@@STEP_FAILURE@@@'
-  return code
+
+  # Run java tests for chromedriver.
+  print '@@@BUILD_STEP chromedriver2_java_tests@@@'
+  # Running all tests will leave lots of chrome windows opened. So just run one.
+  test_filter = 'ElementFindingTest#testShouldReturnTitleOfPageIfSet'
+  cmd = [
+    sys.executable,
+    os.path.join(_THIS_DIR, 'run_java_tests.py'),
+    '--chromedriver_path=' + os.path.join(build_dir, chromedriver),
+    '--filter=' + test_filter
+  ]
+  # Set the built chrome binary.
+  if chrome_binary is not None:
+    cmd.append('--chrome_path=' + chrome_binary)
+  code2 = util.RunCommand(cmd)
+  if code2 != 0:
+    print '@@@STEP_FAILURE@@@'
+
+  return code1 or code2
 
 
 if __name__ == '__main__':
