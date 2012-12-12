@@ -6,6 +6,7 @@
 
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
+#include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/history/history_tab_helper.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/safe_browsing/safe_browsing_tab_observer.h"
@@ -359,6 +360,9 @@ void InstantLoader::SetupPreviewContents() {
 
   // Observers.
   extensions::WebNavigationTabObserver::CreateForWebContents(contents());
+
+  // Favicons, required by the Task Manager.
+  FaviconTabHelper::CreateForWebContents(contents());
 
   // And some flat-out paranoia.
   safe_browsing::SafeBrowsingTabObserver::CreateForWebContents(contents());
