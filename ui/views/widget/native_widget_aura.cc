@@ -834,7 +834,7 @@ void NativeWidgetAura::OnWindowActivated(aura::Window* gained_active,
     if (window_ == gained_active)
       GetWidget()->GetFocusManager()->RestoreFocusedView();
     else if (window_ == lost_active)
-      GetWidget()->GetFocusManager()->StoreFocusedView();
+      GetWidget()->GetFocusManager()->StoreFocusedView(true);
   }
   delegate_->OnNativeWidgetActivationChanged(window_ == gained_active);
   if (IsVisible() && GetWidget()->non_client_view())

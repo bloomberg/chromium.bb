@@ -65,7 +65,7 @@ bool AccessiblePaneView::SetPaneFocus(views::View* initial_focus) {
   if (!focus_manager_)
     focus_manager_ = GetFocusManager();
 
-  focus_manager_->StoreFocusedView();
+  focus_manager_->StoreFocusedView(true);
 
   // Use the provided initial focus if it's visible and enabled, otherwise
   // use the first focusable child.

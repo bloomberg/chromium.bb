@@ -19,6 +19,9 @@
 #if defined(USE_AURA)
 #include "ui/aura/window.h"
 #include "ui/views/widget/native_widget_aura.h"
+#if !defined(OS_CHROMEOS)
+#include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
+#endif
 #elif defined(OS_WIN)
 #include "ui/views/widget/native_widget_win.h"
 #endif
@@ -724,8 +727,7 @@ TEST_F(WidgetOwnershipTest,
 // Widget observer tests.
 //
 
-class WidgetObserverTest : public WidgetTest,
-                           public WidgetObserver {
+class WidgetObserverTest : public WidgetTest, public WidgetObserver {
  public:
   WidgetObserverTest()
       : active_(NULL),
@@ -1033,6 +1035,46 @@ TEST_F(WidgetTest, KeyboardInputEvent) {
 
   toplevel->Close();
 }
+
+// Verifies bubbles result in a focus lost when shown.
+TEST_F(WidgetTest, FocusChangesOnBubble) {
+  // Create a widget, show and activate it and focus the contents view.
+  View* contents_view = new View;
+  contents_view->set_focusable(true);
+  Widget widget;
+  Widget::InitParams init_params =
+      CreateParams(Widget::InitParams::TYPE_WINDOW);
+  init_params.bounds = gfx::Rect(0, 0, 200, 200);
+  init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+#if !defined(OS_CHROMEOS)
+  init_params.native_widget = new DesktopNativeWidgetAura(&widget);
+#endif
+  widget.Init(init_params);
+  widget.SetContentsView(contents_view);
+  widget.Show();
+  widget.Activate();
+  contents_view->RequestFocus();
+  EXPECT_TRUE(contents_view->HasFocus());
+
+  // Show a buble.
+  BubbleDelegateView* bubble_delegate_view =
+      new BubbleDelegateView(contents_view, BubbleBorder::TOP_LEFT);
+  bubble_delegate_view->set_focusable(true);
+  Widget* bubble_widget =
+      BubbleDelegateView::CreateBubble(bubble_delegate_view);
+  bubble_delegate_view->Show();
+  bubble_delegate_view->RequestFocus();
+
+  // |contents_view_| should no longer have focus.
+  EXPECT_FALSE(contents_view->HasFocus());
+  EXPECT_TRUE(bubble_delegate_view->HasFocus());
+
+  bubble_widget->CloseNow();
+
+  // Closing the bubble should result in focus going back to the contents view.
+  EXPECT_TRUE(contents_view->HasFocus());
+}
+
 #endif  // defined(USE_AURA)
 
 }  // namespace

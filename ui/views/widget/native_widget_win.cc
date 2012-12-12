@@ -561,7 +561,7 @@ bool NativeWidgetWin::CanSaveFocus() const {
 }
 
 void NativeWidgetWin::SaveFocusOnDeactivate() {
-  GetWidget()->GetFocusManager()->StoreFocusedView();
+  GetWidget()->GetFocusManager()->StoreFocusedView(true);
 }
 
 void NativeWidgetWin::RestoreFocusOnActivate() {

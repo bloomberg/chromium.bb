@@ -229,6 +229,9 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   scoped_ptr<DropHelper> drop_helper_;
   int last_drop_operation_;
 
+  // See comments in OnLostActive().
+  bool restore_focus_on_activate_;
+
   DISALLOW_COPY_AND_ASSIGN(DesktopNativeWidgetAura);
 };
 

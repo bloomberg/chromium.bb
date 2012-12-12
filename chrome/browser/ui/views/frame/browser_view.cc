@@ -1153,7 +1153,7 @@ void BrowserView::RotatePaneFocus(bool forwards) {
   // If the focus isn't currently in a pane, save the focus so we
   // can restore it if the user presses Escape.
   if (focused_view && index >= pane_count)
-    GetFocusManager()->StoreFocusedView();
+    GetFocusManager()->StoreFocusedView(true);
 
 #if defined(OS_CHROMEOS) && defined(USE_AURA)
   // Add the special panes to the rotation.

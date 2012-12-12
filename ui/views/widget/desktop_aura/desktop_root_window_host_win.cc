@@ -492,7 +492,7 @@ bool DesktopRootWindowHostWin::CanSaveFocus() const {
 }
 
 void DesktopRootWindowHostWin::SaveFocusOnDeactivate() {
-  GetWidget()->GetFocusManager()->StoreFocusedView();
+  GetWidget()->GetFocusManager()->StoreFocusedView(true);
 }
 
 void DesktopRootWindowHostWin::RestoreFocusOnActivate() {

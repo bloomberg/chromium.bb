@@ -121,10 +121,8 @@ bool FocusManager::OnKeyEvent(const ui::KeyEvent& event) {
 }
 
 void FocusManager::ValidateFocusedView() {
-  if (focused_view_) {
-    if (!ContainsView(focused_view_))
-      ClearFocus();
-  }
+  if (focused_view_ && !ContainsView(focused_view_))
+    ClearFocus();
 }
 
 // Tests whether a view is valid, whether it still belongs to the window
@@ -277,7 +275,7 @@ void FocusManager::ClearFocus() {
   ClearNativeFocus();
 }
 
-void FocusManager::StoreFocusedView() {
+void FocusManager::StoreFocusedView(bool clear_native_focus) {
   ViewStorage* view_storage = ViewStorage::GetInstance();
   if (!view_storage) {
     // This should never happen but bug 981648 seems to indicate it could.
@@ -297,13 +295,15 @@ void FocusManager::StoreFocusedView() {
 
   View* v = focused_view_;
 
-  {
+  if (clear_native_focus) {
     // Temporarily disable notification.  ClearFocus() will set the focus to the
     // main browser window.  This extra focus bounce which happens during
     // deactivation can confuse registered WidgetFocusListeners, as the focus
     // is not changing due to a user-initiated event.
     AutoNativeNotificationDisabler local_notification_disabler;
     ClearFocus();
+  } else {
+    SetFocusedView(NULL);
   }
 
   if (v)

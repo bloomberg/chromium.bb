@@ -176,9 +176,13 @@ class VIEWS_EXPORT FocusManager {
   // attached to the window hierarchy anymore.
   void ValidateFocusedView();
 
-  // Stores and restores the focused view. Used when the window becomes
-  // active/inactive.
-  void StoreFocusedView();
+  // Stores the focused view. Used when the widget loses activation.
+  // |clear_native_focus| indicates whether this should invoke ClearFocus().
+  // Typically |true| should be passed in.
+  void StoreFocusedView(bool clear_native_focus);
+
+  // Restore the view saved with a previous call to StoreFocusedView(). Used
+  // when the widget becomes active.
   void RestoreFocusedView();
 
   // Clears the stored focused view.
