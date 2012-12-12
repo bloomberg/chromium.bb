@@ -420,6 +420,9 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   DoubleProperty tap_drag_delay_;
   // Time [s] it takes to stop dragging when you let go of the touchpad
   DoubleProperty tap_drag_timeout_;
+  // True if tap dragging is enabled. With it disbled we can respond quickly
+  // to tap clicks.
+  BoolProperty tap_drag_enable_;
   // True if drag lock is enabled
   BoolProperty drag_lock_enable_;
   // Time [s] the finger has to be stationary to be considered dragging

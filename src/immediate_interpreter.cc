@@ -320,6 +320,7 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg,
       inter_tap_timeout_(prop_reg, "Inter-Tap Timeout", 0.15),
       tap_drag_delay_(prop_reg, "Tap Drag Delay", 0.1),
       tap_drag_timeout_(prop_reg, "Tap Drag Timeout", 0.3),
+      tap_drag_enable_(prop_reg, "Tap Drag Enable", 0),
       drag_lock_enable_(prop_reg, "Tap Drag Lock Enable", 0),
       tap_drag_stationary_time_(prop_reg, "Tap Drag Stationary Time", 0.05),
       tap_move_dist_(prop_reg, "Tap Move Distance", 2.0),
@@ -1267,7 +1268,8 @@ void ImmediateInterpreter::UpdateTapState(
         if (!tap_record_.MinTapPressureMet() ||
             !tap_record_.FingersBelowMaxAge()) {
           SetTapToClickState(kTtcIdle, now);
-        } else if (tap_record_.TapType() == GESTURES_BUTTON_LEFT) {
+        } else if (tap_record_.TapType() == GESTURES_BUTTON_LEFT &&
+                   tap_drag_enable_.val_) {
           SetTapToClickState(kTtcTapComplete, now);
         } else {
           *buttons_down = *buttons_up = tap_record_.TapType();

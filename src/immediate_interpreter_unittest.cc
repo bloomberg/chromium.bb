@@ -1585,12 +1585,15 @@ const long HWStateFlagContinue       = 0x02000000;  // Continue
 const long HWStateFlagStartDoubleTap = 0x04000000;
 // Start; also start of T5R2 tests:
 const long HWStateFlagStartT5R2      = 0x08000000;
+// Start; also tap dragging is disabled this time
+const long HWStateFlagStartNoDrag    = 0x10000000;
 const long HWStateFlagMask           = 0xff000000;
 
 #define S (__LINE__ + HWStateFlagStart)
 #define C (__LINE__ + HWStateFlagContinue)
 #define D (__LINE__ + HWStateFlagStartDoubleTap)
 #define T (__LINE__ + HWStateFlagStartT5R2)
+#define N (__LINE__ + HWStateFlagStartNoDrag)
 
 struct HWStateGs {
   long line_number_and_flags;
@@ -1605,7 +1608,8 @@ struct HWStateGs {
   bool IsStart() {
     return line_number_and_flags & (HWStateFlagStart |
                                     HWStateFlagStartDoubleTap |
-                                    HWStateFlagStartT5R2);
+                                    HWStateFlagStartT5R2 |
+                                    HWStateFlagStartNoDrag);
   }
   long LineNumber() {
     return line_number_and_flags & ~HWStateFlagMask;
@@ -1707,6 +1711,9 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
     {S,{0.00,0,1,1,&fs[0],0,0,0,0},-1,MkSet(91),0,0,kFTB,false},
     {C,{0.01,0,0,0,NULL,0,0,0,0},-1,MkSet(),0,0,kTpC,true},
     {C,{0.07,0,0,0,NULL,0,0,0,0},.07,MkSet(),kBL,kBL,kIdl,false},
+    // Simple 1-finger tap w/o dragging enabled
+    {N,{0.00,0,1,1,&fs[0],0,0,0,0},-1,MkSet(91),0,0,kFTB,false},
+    {C,{0.01,0,0,0,NULL,0,0,0,0},-1,MkSet(),kBL,kBL,kIdl,false},
     // 1-finger tap with click
     {S,{0.00,kBL,1,1,&fs[0],0,0,0,0},-1,MkSet(91),0,0,kIdl,false},
     {C,{0.01,0,0,0,NULL,0,0,0,0},-1,MkSet(),0,0,kIdl,false},
@@ -2032,6 +2039,8 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
       ii->tapping_finger_min_separation_.val_ = 1.0;
       ii->tap_drag_timeout_.val_ = 0.05;
       ii->tap_enable_.val_ = 1;
+      ii->tap_drag_enable_.val_ =
+        !(hwsgs_full[i].line_number_and_flags & HWStateFlagStartNoDrag);
       ii->tap_move_dist_.val_ = 1.0;
       ii->tap_timeout_.val_ = ii->inter_tap_timeout_.val_ = 0.05;
       ii->three_finger_click_enable_.val_ = 1;
@@ -2203,6 +2212,7 @@ TEST(ImmediateInterpreterTest, TapToClickKeyboardTest) {
     ii->SetHardwareProperties(hwprops);
     ii->motion_tap_prevent_timeout_.val_ = 0;
     ii->tap_enable_.val_ = 1;
+    ii->tap_drag_enable_.val_ = 1;
 
     if (test == kWithKeyboard)
       ii->keyboard_touched_ = 0.001;
@@ -2330,6 +2340,7 @@ TEST(ImmediateInterpreterTest, TapToClickEnableTest) {
         ii->motion_tap_prevent_timeout_.val_ = 0;
         ii->tap_drag_timeout_.val_ = 0.05;
         ii->tap_enable_.val_ = 1;
+        ii->tap_drag_enable_.val_ = 1;
         ii->tap_paused_.val_ = 0;
         ii->tap_move_dist_.val_ = 1.0;
         ii->tap_timeout_.val_ = 0.05;
