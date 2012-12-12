@@ -38,11 +38,9 @@ class CommonSwitches {
 #endif
         sideload_wipeout(
             switches::kSideloadWipeout,
-#if defined(OS_WIN)
-            FeatureSwitch::DEFAULT_ENABLED),
-#else
-            FeatureSwitch::DEFAULT_DISABLED),
-#endif
+            base::FieldTrialList::FindFullName("SideloadWipeout") == "Enabled" ?
+                FeatureSwitch::DEFAULT_ENABLED :
+                FeatureSwitch::DEFAULT_DISABLED),
         prompt_for_external_extensions(
             switches::kPromptForExternalExtensions,
 #if defined(OS_WIN)
