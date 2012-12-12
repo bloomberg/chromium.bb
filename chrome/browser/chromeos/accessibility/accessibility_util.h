@@ -30,9 +30,6 @@ void EnableSpokenFeedback(bool enabled, content::WebUI* login_web_ui);
 // Enables or disables the high contrast mode for Chrome.
 void EnableHighContrast(bool enabled);
 
-// Sets the type of screen magnifier, or disable it.
-void SetMagnifier(ash::MagnifierType type);
-
 // Enables or disable the virtual keyboard.
 void EnableVirtualKeyboard(bool enabled);
 
@@ -51,9 +48,6 @@ bool IsHighContrastEnabled();
 
 // Returns true if the Virtual Keyboard is enabled, or false if not.
 bool IsVirtualKeyboardEnabled();
-
-// Returns the current state of the screen magnifier.
-ash::MagnifierType GetMagnifierType();
 
 // Translates from a string to MagnifierType.
 ash::MagnifierType MagnifierTypeFromName(const char type_name[]);

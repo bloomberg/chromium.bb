@@ -122,9 +122,10 @@ void UpdateChromeOSAccessibilityHistograms() {
                         IsHighContrastEnabled());
   UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosVirtualKeyboard",
                         IsVirtualKeyboardEnabled());
-  UMA_HISTOGRAM_ENUMERATION("Accessibility.CrosScreenMagnifier",
-                            GetMagnifierType(),
-                            3);
+  if (MagnificationManager::Get())
+    UMA_HISTOGRAM_ENUMERATION("Accessibility.CrosScreenMagnifier",
+                              MagnificationManager::Get()->GetMagnifierType(),
+                              3);
 }
 
 void Initialize() {
@@ -222,16 +223,6 @@ void EnableHighContrast(bool enabled) {
 #endif
 }
 
-void SetMagnifier(ash::MagnifierType type) {
-  if (MagnificationManager::Get())
-    MagnificationManager::Get()->SetMagnifier(type);
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER,
-      content::NotificationService::AllSources(),
-      content::NotificationService::NoDetails());
-}
-
 void EnableVirtualKeyboard(bool enabled) {
   PrefService* pref_service = g_browser_process->local_state();
   pref_service->SetBoolean(prefs::kVirtualKeyboardEnabled, enabled);
@@ -289,12 +280,6 @@ bool IsVirtualKeyboardEnabled() {
   bool virtual_keyboard_enabled = prefs &&
       prefs->GetBoolean(prefs::kVirtualKeyboardEnabled);
   return virtual_keyboard_enabled;
-}
-
-ash::MagnifierType GetMagnifierType() {
-  if (!MagnificationManager::Get())
-    return ash::MAGNIFIER_OFF;
-  return MagnificationManager::Get()->GetMagnifierType();
 }
 
 ash::MagnifierType MagnifierTypeFromName(const char type_name[]) {

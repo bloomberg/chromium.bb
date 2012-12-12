@@ -73,6 +73,11 @@ class MagnificationManagerImpl : public MagnificationManager,
       }
     }
 
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER,
+        content::NotificationService::AllSources(),
+        content::NotificationService::NoDetails());
+
     ash::Shell::GetInstance()->magnification_controller()->SetEnabled(
         type == ash::MAGNIFIER_FULL);
     ash::Shell::GetInstance()->partial_magnification_controller()->SetEnabled(

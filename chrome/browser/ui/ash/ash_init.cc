@@ -14,6 +14,7 @@
 #include "ash/wm/property_util.h"
 #include "base/command_line.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
+#include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 #include "chrome/browser/ui/ash/event_rewriter.h"
@@ -94,8 +95,9 @@ void OpenAsh() {
   ash::Shell::GetInstance()->high_contrast_controller()->SetEnabled(
       chromeos::accessibility::IsHighContrastEnabled());
 
+  DCHECK(chromeos::MagnificationManager::Get());
   ash::MagnifierType magnifier_type =
-      chromeos::accessibility::GetMagnifierType();
+      chromeos::MagnificationManager::Get()->GetMagnifierType();
   ash::Shell::GetInstance()->magnification_controller()->SetEnabled(
       magnifier_type == ash::MAGNIFIER_FULL);
   ash::Shell::GetInstance()->partial_magnification_controller()->SetEnabled(

@@ -10,6 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
+#include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -153,7 +154,8 @@ void CoreOobeHandler::HandleEnableScreenMagnifier(const base::ListValue* args) {
   // TODO(nkostylev): Add support for partial screen magnifier.
   ash::MagnifierType type = enabled ? ash::MAGNIFIER_FULL :
                                       ash::MAGNIFIER_OFF;
-  accessibility::SetMagnifier(type);
+  DCHECK(MagnificationManager::Get());
+  MagnificationManager::Get()->SetMagnifier(type);
 }
 
 void CoreOobeHandler::HandleEnableSpokenFeedback(const base::ListValue* args) {
@@ -173,13 +175,16 @@ void CoreOobeHandler::ShowOobeUI(bool show) {
 }
 
 void CoreOobeHandler::UpdateA11yState() {
+  DCHECK(MagnificationManager::Get());
+  ash::MagnifierType type = MagnificationManager::Get()->GetMagnifierType();
+
   base::DictionaryValue a11y_info;
   a11y_info.SetBoolean("highContrastEnabled",
                        accessibility::IsHighContrastEnabled());
   a11y_info.SetBoolean("spokenFeedbackEnabled",
                        accessibility::IsSpokenFeedbackEnabled());
   a11y_info.SetBoolean("screenMagnifierEnabled",
-                       accessibility::GetMagnifierType() != ash::MAGNIFIER_OFF);
+                       type != ash::MAGNIFIER_OFF);
   web_ui()->CallJavascriptFunction("cr.ui.Oobe.refreshA11yInfo", a11y_info);
 }
 
