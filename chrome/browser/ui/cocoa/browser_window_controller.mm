@@ -1677,8 +1677,7 @@ enum {
   [[[[self window] contentView] superview] addSubview:view];
 }
 
-// Documented in 10.6+, but present starting in 10.5. Called when we get a
-// three-finger swipe.
+// Called when we get a three-finger swipe.
 - (void)swipeWithEvent:(NSEvent*)event {
   CGFloat deltaX = [event deltaX];
   CGFloat deltaY = [event deltaY];
@@ -1706,12 +1705,11 @@ enum {
   }
 }
 
-// Documented in 10.6+, but present starting in 10.5. Called repeatedly during
-// a pinch gesture, with incremental change values.
+// Called repeatedly during a pinch gesture, with incremental change values.
 - (void)magnifyWithEvent:(NSEvent*)event {
   // The deltaZ difference necessary to trigger a zoom action. Derived from
   // experimentation to find a value that feels reasonable.
-  const float kZoomStepValue = 300;
+  const float kZoomStepValue = 0.6;
 
   // Find the (absolute) thresholds on either side of the current zoom factor,
   // then convert those to actual numbers to trigger a zoom in or out.
@@ -1726,7 +1724,7 @@ enum {
   float zoomOutThreshold = (currentZoomStepDelta_ <= 0) ? -nextStep : backStep;
 
   unsigned int command = 0;
-  totalMagnifyGestureAmount_ += [event deltaZ];
+  totalMagnifyGestureAmount_ += [event magnification];
   if (totalMagnifyGestureAmount_ > zoomInThreshold) {
     command = IDC_ZOOM_PLUS;
   } else if (totalMagnifyGestureAmount_ < zoomOutThreshold) {
