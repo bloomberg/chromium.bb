@@ -10,6 +10,7 @@ namespace chromeos {
 // This enumerates the various property indices that can be found in a
 // dictionary being parsed.
 enum PropertyIndex {
+  PROPERTY_INDEX_ACTIVATE_OVER_NON_CELLULAR_NETWORK,
   PROPERTY_INDEX_ACTIVATION_STATE,
   PROPERTY_INDEX_ACTIVE_PROFILE,
   PROPERTY_INDEX_ARP_GATEWAY,

@@ -354,10 +354,19 @@ void MobileActivator::StartActivation() {
   lib->AddNetworkManagerObserver(this);
   lib->RemoveObserverForAllNetworks(this);
   lib->AddNetworkObserver(network->service_path(), this);
-  // Try to start with OTASP immediately if we have received payment recently.
-  state_ = lib->HasRecentCellularPlanPayment() ?
-               PLAN_ACTIVATION_START_OTASP :
-               PLAN_ACTIVATION_START;
+
+  if (network->activate_over_non_cellular_network()) {
+    // Fast forward to payment portal loading if the activation is performed
+    // over a non-cellular network.
+    state_ = (network->activation_state() == ACTIVATION_STATE_ACTIVATED) ?
+            PLAN_ACTIVATION_DONE :
+            PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING;
+  } else {
+    // Try to start with OTASP immediately if we have received payment recently.
+    state_ = lib->HasRecentCellularPlanPayment() ?
+                 PLAN_ACTIVATION_START_OTASP :
+                 PLAN_ACTIVATION_START;
+  }
   EvaluateCellularNetwork(network);
 }
 
@@ -385,7 +394,14 @@ void MobileActivator::SetTransactionStatus(bool success) {
     NetworkLibrary* lib = CrosLibrary::Get()->GetNetworkLibrary();
     lib->SignalCellularPlanPayment();
     UMA_HISTOGRAM_COUNTS("Cellular.PaymentReceived", 1);
-    StartOTASP();
+
+    CellularNetwork* network = FindMatchingCellularNetwork(true);
+    if (network && network->activate_over_non_cellular_network()) {
+      state_ = PLAN_ACTIVATION_DONE;
+      EvaluateCellularNetwork(network);
+    } else {
+      StartOTASP();
+    }
   } else {
     UMA_HISTOGRAM_COUNTS("Cellular.PaymentFailed", 1);
   }
@@ -738,8 +754,12 @@ void MobileActivator::EvaluateCellularNetwork(CellularNetwork* network) {
     // Just ignore all signals until the site confirms payment.
     case PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING:
     case PLAN_ACTIVATION_SHOWING_PAYMENT: {
-      if (network->disconnected())
+      // If the activation is performed over a cellular network that is
+      // currently disconnected, try reconnecting to that network.
+      if (!network->activate_over_non_cellular_network() &&
+          network->disconnected()) {
         new_state = PLAN_ACTIVATION_RECONNECTING_PAYMENT;
+      }
       break;
     }
       // Activation completed/failed, ignore network changes.
@@ -980,7 +1000,7 @@ void MobileActivator::ReEnableCertRevocationChecking() {
 }
 
 void MobileActivator::DisableCertRevocationChecking() {
-  // Disable SSL cert checks since we might be performin activation in the
+  // Disable SSL cert checks since we might be performing activation in the
   // restricted pool.
   // TODO(rkc): We want to do this only if on Cellular.
   PrefService* prefs = g_browser_process->local_state();

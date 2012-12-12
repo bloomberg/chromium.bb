@@ -854,6 +854,9 @@ class CellularNetwork : public WirelessNetwork {
   // not permit activation.
   bool StartActivation();
 
+  bool activate_over_non_cellular_network() const {
+    return activate_over_non_cellular_network_;
+  }
   const ActivationState activation_state() const { return activation_state_; }
   bool activated() const {
     return activation_state() == ACTIVATION_STATE_ACTIVATED;
@@ -911,6 +914,9 @@ class CellularNetwork : public WirelessNetwork {
   // parsers to set state, and really shouldn't be used by anything else
   // because they don't do the error checking and sending to the
   // network layer that the other setters do.
+  void set_activate_over_non_cellular_network(bool value) {
+    activate_over_non_cellular_network_ = value;
+  }
   void set_activation_state(ActivationState activation_state) {
     activation_state_ = activation_state;
   }
@@ -944,6 +950,7 @@ class CellularNetwork : public WirelessNetwork {
     last_good_apn_.Set(last_good_apn);
   }
 
+  bool activate_over_non_cellular_network_;
   ActivationState activation_state_;
   NetworkTechnology network_technology_;
   NetworkRoamingState roaming_state_;

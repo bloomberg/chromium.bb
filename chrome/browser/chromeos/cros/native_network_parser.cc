@@ -22,6 +22,8 @@ namespace {
 const char kPostMethod[] = "post";
 
 EnumMapper<PropertyIndex>::Pair property_index_table[] = {
+  { shill::kActivateOverNonCellularNetworkProperty,
+    PROPERTY_INDEX_ACTIVATE_OVER_NON_CELLULAR_NETWORK },
   { flimflam::kActivationStateProperty, PROPERTY_INDEX_ACTIVATION_STATE },
   { flimflam::kActiveProfileProperty, PROPERTY_INDEX_ACTIVE_PROFILE },
   { flimflam::kArpGatewayProperty, PROPERTY_INDEX_ARP_GATEWAY },
@@ -886,6 +888,15 @@ bool NativeCellularNetworkParser::ParseValue(PropertyIndex index,
   CHECK_EQ(TYPE_CELLULAR, network->type());
   CellularNetwork* cellular_network = static_cast<CellularNetwork*>(network);
   switch (index) {
+    case PROPERTY_INDEX_ACTIVATE_OVER_NON_CELLULAR_NETWORK: {
+      bool activate_over_non_cellular_network;
+      if (value.GetAsBoolean(&activate_over_non_cellular_network)) {
+        cellular_network->set_activate_over_non_cellular_network(
+            activate_over_non_cellular_network);
+        return true;
+      }
+      break;
+    }
     case PROPERTY_INDEX_ACTIVATION_STATE: {
       std::string activation_state_string;
       if (value.GetAsString(&activation_state_string)) {
