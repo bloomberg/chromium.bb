@@ -6,6 +6,7 @@ test-text-client
 wayland-test-client-protocol.h
 wayland-test-protocol.c
 wayland-test-server-protocol.h
+text-test
 keyboard-test
 event-test
 button-test

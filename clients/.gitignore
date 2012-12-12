@@ -1,3 +1,4 @@
+calibrator
 clickdot
 cliptest
 desktop-shell-client-protocol.h
@@ -25,6 +26,7 @@ text-client-protocol.h
 text-cursor-position-client-protocol.h
 text-cursor-position-protocol.c
 text-protocol.c
+transformed
 view
 weston-desktop-shell
 weston-info
