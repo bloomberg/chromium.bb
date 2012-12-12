@@ -10,7 +10,7 @@
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
-#include "chrome/browser/api/prefs/pref_member.h"
+#include "base/prefs/public/pref_member.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"

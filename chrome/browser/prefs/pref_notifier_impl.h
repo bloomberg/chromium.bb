@@ -12,7 +12,7 @@
 #include "base/hash_tables.h"
 #include "base/observer_list.h"
 #include "base/prefs/pref_notifier.h"
-#include "base/prefs/public/pref_observer.h"
+#include "base/prefs/pref_observer.h"
 #include "base/threading/non_thread_safe.h"
 
 class PrefService;

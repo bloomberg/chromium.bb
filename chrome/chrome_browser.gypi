@@ -117,8 +117,6 @@
         'browser/api/infobars/one_click_signin_infobar_delegate.h',
         'browser/api/infobars/simple_alert_infobar_delegate.cc',
         'browser/api/infobars/simple_alert_infobar_delegate.h',
-        'browser/api/prefs/pref_member.cc',
-        'browser/api/prefs/pref_member.h',
         'browser/api/sync/profile_sync_service_base.h',
         'browser/api/sync/profile_sync_service_observer.h',
         'browser/api/webdata/autofill_web_data.h',

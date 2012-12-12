@@ -7,10 +7,10 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/prefs/public/pref_member.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time.h"
 #include "base/timer.h"
-#include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/captive_portal/captive_portal_detector.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "googleurl/src/gurl.h"

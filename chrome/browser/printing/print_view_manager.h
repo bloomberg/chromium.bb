@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_PRINTING_PRINT_VIEW_MANAGER_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/prefs/public/pref_member.h"
 #include "base/string16.h"
-#include "chrome/browser/api/prefs/pref_member.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"

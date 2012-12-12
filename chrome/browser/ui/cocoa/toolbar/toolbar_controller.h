@@ -9,7 +9,7 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/api/prefs/pref_member.h"
+#include "base/prefs/public/pref_member.h"
 #import "chrome/browser/ui/cocoa/command_observer_bridge.h"
 #import "chrome/browser/ui/cocoa/tracking_area.h"
 #import "chrome/browser/ui/cocoa/url_drop_target.h"

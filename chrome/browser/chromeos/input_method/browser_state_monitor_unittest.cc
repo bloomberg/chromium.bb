@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/prefs/public/pref_member.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_delegate.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager.h"
 #include "chrome/common/chrome_notification_types.h"

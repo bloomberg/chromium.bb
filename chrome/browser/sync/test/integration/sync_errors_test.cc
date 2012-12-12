@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/api/prefs/pref_member.h"
+#include "base/prefs/public/pref_member.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"

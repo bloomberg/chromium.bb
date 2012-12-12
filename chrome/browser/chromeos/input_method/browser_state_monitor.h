@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/prefs/public/pref_member.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_PREFS_PUBLIC_PREF_OBSERVER_H_
-#define BASE_PREFS_PUBLIC_PREF_OBSERVER_H_
+#ifndef BASE_PREFS_PREF_OBSERVER_H_
+#define BASE_PREFS_PREF_OBSERVER_H_
 
 #include <string>
 
@@ -16,4 +16,4 @@ class PrefObserver {
                                    const std::string& pref_name) = 0;
 };
 
-#endif  // BASE_PREFS_PUBLIC_PREF_OBSERVER_H_
+#endif  // BASE_PREFS_PREF_OBSERVER_H_

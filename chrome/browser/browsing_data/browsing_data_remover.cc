@@ -13,7 +13,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/platform_file.h"
-#include "chrome/browser/api/prefs/pref_member.h"
+#include "base/prefs/public/pref_member.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browser_process.h"

@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/api/prefs/pref_member.h"
+#include "base/prefs/public/pref_member.h"
 
 class PrefService;
 

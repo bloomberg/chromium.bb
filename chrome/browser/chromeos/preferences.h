@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/api/prefs/pref_member.h"
+#include "base/prefs/public/pref_member.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 
 class PrefService;

@@ -9,9 +9,9 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/prefs/public/pref_member.h"
 #include "base/string16.h"
 #include "base/timer.h"
-#include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/tab_contents/render_view_context_menu_observer.h"
 
 class RenderViewContextMenuProxy;

@@ -6,10 +6,10 @@
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/prefs/public/pref_member.h"
 #include "base/stringprintf.h"
-#include "chrome/browser/api/prefs/pref_member.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/events/event.h"

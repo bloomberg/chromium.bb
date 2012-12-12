@@ -5,8 +5,8 @@
 #include "chrome/browser/tab_contents/spellchecker_submenu_observer.h"
 
 #include "base/logging.h"
+#include "base/prefs/public/pref_member.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"

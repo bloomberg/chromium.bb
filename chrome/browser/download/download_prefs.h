@@ -8,7 +8,7 @@
 #include <set>
 
 #include "base/file_path.h"
-#include "chrome/browser/api/prefs/pref_member.h"
+#include "base/prefs/public/pref_member.h"
 
 class Profile;
 

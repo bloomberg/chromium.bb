@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/prefs/public/pref_member.h"
 #include "chrome/browser/policy/cloud_policy_core.h"
 #include "chrome/browser/policy/cloud_policy_store.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"

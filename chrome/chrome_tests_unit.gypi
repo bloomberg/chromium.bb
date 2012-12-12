@@ -431,7 +431,6 @@
         '<(SHARED_INTERMEDIATE_DIR)/chrome/chrome_unscaled_resources.rc',
         # All unittests in browser, common, renderer and service.
         'browser/about_flags_unittest.cc',
-        'browser/api/prefs/pref_member_unittest.cc',
         'browser/app_controller_mac_unittest.mm',
         'browser/autocomplete/autocomplete_input_unittest.cc',
         'browser/autocomplete/autocomplete_match_unittest.cc',
@@ -1588,6 +1587,7 @@
         # TODO(joi): Move to 'base_prefs' target in base/base.gyp once
         # Prefs move is complete and dependencies have been broken.
         '../base/prefs/public/pref_change_registrar_unittest.cc',
+        '../base/prefs/public/pref_member_unittest.cc',
         '../base/prefs/overlay_user_pref_store_unittest.cc',
         '../base/prefs/pref_value_map_unittest.cc',
         '../base/prefs/json_pref_store_unittest.cc',

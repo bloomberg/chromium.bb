@@ -8,7 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/api/prefs/pref_member.h"
+#include "base/prefs/public/pref_member.h"
 #include "chrome/browser/api/sync/profile_sync_service_observer.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_handler.h"
 #include "chrome/browser/profiles/profile.h"

@@ -1,6 +1,0 @@
-# TODO(joi): Bring back to zero.
-specific_include_rules = {
-  ".*[a-z]+test\.cc": [
-    "!chrome/browser/prefs",
-  ],
-}

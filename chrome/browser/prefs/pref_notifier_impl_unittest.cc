@@ -4,7 +4,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/prefs/public/pref_observer.h"
+#include "base/prefs/pref_observer.h"
 #include "chrome/browser/prefs/mock_pref_change_callback.h"
 #include "chrome/browser/prefs/pref_notifier_impl.h"
 #include "chrome/browser/prefs/pref_service.h"

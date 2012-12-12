@@ -21,8 +21,8 @@
 // notify MyClass of changes. Note that if you use SetValue(), the observer
 // will not be notified.
 
-#ifndef CHROME_BROWSER_API_PREFS_PREF_MEMBER_H_
-#define CHROME_BROWSER_API_PREFS_PREF_MEMBER_H_
+#ifndef BASE_PREFS_PUBLIC_PREF_MEMBER_H_
+#define BASE_PREFS_PUBLIC_PREF_MEMBER_H_
 
 #include <string>
 #include <vector>
@@ -34,14 +34,15 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop_proxy.h"
-#include "base/prefs/public/pref_observer.h"
+#include "base/prefs/base_prefs_export.h"
+#include "base/prefs/pref_observer.h"
 #include "base/values.h"
 
 class PrefServiceBase;
 
 namespace subtle {
 
-class PrefMemberBase : public PrefObserver {
+class BASE_PREFS_EXPORT PrefMemberBase : public PrefObserver {
  public:
   // Type of callback you can register if you need to know the name of
   // the pref that is changing.
@@ -51,7 +52,8 @@ class PrefMemberBase : public PrefObserver {
   const PrefServiceBase* prefs() const { return prefs_; }
 
  protected:
-  class Internal : public base::RefCountedThreadSafe<Internal> {
+  class BASE_PREFS_EXPORT Internal
+      : public base::RefCountedThreadSafe<Internal> {
    public:
     Internal();
 
@@ -149,8 +151,9 @@ class PrefMemberBase : public PrefObserver {
 
 // This function implements StringListPrefMember::UpdateValue().
 // It is exposed here for testing purposes.
-bool PrefMemberVectorStringUpdate(const Value& value,
-                                  std::vector<std::string>* string_vector);
+bool BASE_PREFS_EXPORT PrefMemberVectorStringUpdate(
+    const Value& value,
+    std::vector<std::string>* string_vector);
 
 }  // namespace subtle
 
@@ -258,7 +261,8 @@ class PrefMember : public subtle::PrefMemberBase {
    protected:
     virtual ~Internal() {}
 
-    virtual bool UpdateValueInternal(const base::Value& value) const OVERRIDE;
+    virtual BASE_PREFS_EXPORT bool UpdateValueInternal(
+        const base::Value& value) const OVERRIDE;
 
     // We cache the value of the pref so we don't have to keep walking the pref
     // tree.
@@ -273,7 +277,7 @@ class PrefMember : public subtle::PrefMemberBase {
   }
 
   // This method is used to do the actual sync with pref of the specified type.
-  void UpdatePref(const ValueType& value);
+  void BASE_PREFS_EXPORT UpdatePref(const ValueType& value);
 
   mutable scoped_refptr<Internal> internal_;
 
@@ -288,4 +292,4 @@ typedef PrefMember<FilePath> FilePathPrefMember;
 // This preference member is expensive for large string arrays.
 typedef PrefMember<std::vector<std::string> > StringListPrefMember;
 
-#endif  // CHROME_BROWSER_API_PREFS_PREF_MEMBER_H_
+#endif  // BASE_PREFS_PUBLIC_PREF_MEMBER_H_
