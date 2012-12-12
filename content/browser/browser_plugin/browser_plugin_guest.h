@@ -46,6 +46,9 @@
 struct BrowserPluginHostMsg_AutoSize_Params;
 struct BrowserPluginHostMsg_CreateGuest_Params;
 struct BrowserPluginHostMsg_ResizeGuest_Params;
+#if defined(OS_MACOSX)
+struct ViewHostMsg_ShowPopup_Params;
+#endif
 struct ViewHostMsg_UpdateRect_Params;
 class WebCursor;
 struct WebDropData;
@@ -151,6 +154,12 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   void ShowWidget(RenderViewHost* render_view_host,
                   int route_id,
                   const gfx::Rect& initial_pos);
+  // On MacOSX popups are painted by the browser process. We handle them here
+  // so that they are positioned correctly.
+#if defined(OS_MACOSX)
+  void ShowPopup(RenderViewHost* render_view_host,
+                 const ViewHostMsg_ShowPopup_Params& params);
+#endif
   void SetCursor(const WebCursor& cursor);
   // Handles input event acks so they are sent to browser plugin host (via
   // embedder) instead of default view/widget host.

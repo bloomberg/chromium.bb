@@ -34,6 +34,12 @@ bool BrowserPluginGuestHelper::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ViewHostMsg_HasTouchEventHandlers,
                         OnMsgHasTouchEventHandlers)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetCursor, OnSetCursor)
+ #if defined(OS_MACOSX)
+    // MacOSX creates and populates platform-specific select drop-down menus
+    // whereas other platforms merely create a popup window that the guest
+    // renderer process paints inside.
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ShowPopup, OnShowPopup)
+ #endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -72,5 +78,12 @@ void BrowserPluginGuestHelper::OnMsgHasTouchEventHandlers(bool has_handlers) {
 void BrowserPluginGuestHelper::OnSetCursor(const WebCursor& cursor) {
   guest_->SetCursor(cursor);
 }
+
+#if defined(OS_MACOSX)
+void BrowserPluginGuestHelper::OnShowPopup(
+    const ViewHostMsg_ShowPopup_Params& params) {
+  guest_->ShowPopup(render_view_host(), params);
+}
+#endif
 
 }  // namespace content

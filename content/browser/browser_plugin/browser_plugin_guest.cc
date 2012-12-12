@@ -32,6 +32,10 @@
 #include "webkit/glue/webdropdata.h"
 #include "webkit/glue/resource_type.h"
 
+#if defined(OS_MACOSX)
+#include "content/browser/browser_plugin/browser_plugin_popup_menu_helper_mac.h"
+#endif
+
 namespace content {
 
 // static
@@ -512,6 +516,23 @@ void BrowserPluginGuest::ShowWidget(RenderViewHost* render_view_host,
   static_cast<WebContentsImpl*>(web_contents())->ShowCreatedWidget(route_id,
                                                                    screen_pos);
 }
+
+#if defined(OS_MACOSX)
+void BrowserPluginGuest::ShowPopup(RenderViewHost* render_view_host,
+                                   const ViewHostMsg_ShowPopup_Params& params) {
+  gfx::Rect translated_bounds(params.bounds);
+  translated_bounds.Offset(guest_window_rect_.OffsetFromOrigin());
+  BrowserPluginPopupMenuHelper popup_menu_helper(
+      embedder_web_contents_->GetRenderViewHost(), render_view_host);
+  popup_menu_helper.ShowPopupMenu(translated_bounds,
+                                  params.item_height,
+                                  params.item_font_size,
+                                  params.selected_item,
+                                  params.popup_items,
+                                  params.right_aligned,
+                                  params.allow_multiple_selection);
+}
+#endif
 
 void BrowserPluginGuest::SetCursor(const WebCursor& cursor) {
   SendMessageToEmbedder(new BrowserPluginMsg_SetCursor(embedder_routing_id(),

@@ -12,6 +12,9 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
 class WebCursor;
+#if defined(OS_MACOSX)
+struct ViewHostMsg_ShowPopup_Params;
+#endif
 struct ViewHostMsg_UpdateRect_Params;
 
 namespace gfx {
@@ -52,6 +55,9 @@ class BrowserPluginGuestHelper : public RenderViewHostObserver {
   void OnShowWidget(int route_id, const gfx::Rect& initial_pos);
   void OnMsgHasTouchEventHandlers(bool has_handlers);
   void OnSetCursor(const WebCursor& cursor);
+#if defined(OS_MACOSX)
+  void OnShowPopup(const ViewHostMsg_ShowPopup_Params& params);
+#endif
 
   BrowserPluginGuest* guest_;
   // A scoped container for notification registries.

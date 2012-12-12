@@ -40,8 +40,8 @@ void PopupMenuHelper::ShowPopupMenu(
   // dealloced if my Destroy() method is called while the pop-up's up (which
   // would in turn delete me, causing a crash once the -runMenuInView
   // call returns. That's what was happening in <http://crbug.com/33250>).
-  RenderWidgetHostViewMac* rwhvm =
-      static_cast<RenderWidgetHostViewMac*>(render_view_host_->GetView());
+ RenderWidgetHostViewMac* rwhvm =
+     static_cast<RenderWidgetHostViewMac*>(GetRenderWidgetHostView());
   scoped_nsobject<RenderWidgetHostViewCocoa> cocoa_view
       ([rwhvm->cocoa_view() retain]);
 
@@ -80,6 +80,10 @@ void PopupMenuHelper::ShowPopupMenu(
   } else {
     render_view_host_->DidCancelPopupMenu();
   }
+}
+
+RenderWidgetHostViewMac* PopupMenuHelper::GetRenderWidgetHostView() const {
+  return static_cast<RenderWidgetHostViewMac*>(render_view_host_->GetView());
 }
 
 void PopupMenuHelper::Observe(int type,

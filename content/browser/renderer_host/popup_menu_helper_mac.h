@@ -17,6 +17,7 @@ struct WebMenuItem;
 namespace content {
 class RenderViewHost;
 class RenderViewHostImpl;
+class RenderWidgetHostViewMac;
 
 class PopupMenuHelper : public NotificationObserver {
  public:
@@ -35,7 +36,9 @@ class PopupMenuHelper : public NotificationObserver {
                      bool right_aligned,
                      bool allow_multiple_selection);
 
- private:
+ protected:
+  virtual RenderWidgetHostViewMac* GetRenderWidgetHostView() const;
+
   // NotificationObserver implementation:
   virtual void Observe(int type,
                        const NotificationSource& source,
