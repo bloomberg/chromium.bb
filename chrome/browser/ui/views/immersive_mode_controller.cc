@@ -250,6 +250,10 @@ void ImmersiveModeController::SetEnabled(bool enabled) {
 #endif  // defined(USE_AURA)
 }
 
+views::View* ImmersiveModeController::reveal_view() {
+  return reveal_view_.get();
+}
+
 void ImmersiveModeController::MaybeStackViewAtTop() {
 #if defined(USE_AURA)
   if (enabled_ && revealed_ && reveal_view_.get()) {

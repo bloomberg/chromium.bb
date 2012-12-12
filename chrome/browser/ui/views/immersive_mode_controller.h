@@ -16,6 +16,7 @@ class RevealView;
 
 namespace views {
 class MouseWatcher;
+class View;
 }
 
 // Controller for an "immersive mode" similar to MacOS presentation mode where
@@ -36,6 +37,11 @@ class ImmersiveModeController : public ui::EventHandler,
 
   // True when the controller is temporarily showing the top views.
   bool IsRevealed() const { return enabled_ && revealed_; }
+
+  // Returns the view that contains the top UI components (tabstrip, toolbar
+  // etc.) during an immersive mode reveal. Can return NULL when not in a
+  // revealing state.
+  views::View* reveal_view();
 
   // If the controller is temporarily revealing the top views ensures that
   // the reveal view's layer is on top and hence visible over web contents.

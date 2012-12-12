@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/browser_root_view.h"
 
+#include "base/auto_reset.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
@@ -12,6 +13,7 @@
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "grit/chromium_strings.h"
@@ -28,6 +30,7 @@ BrowserRootView::BrowserRootView(BrowserView* browser_view,
                                  views::Widget* widget)
     : views::internal::RootView(widget),
       browser_view_(browser_view),
+      scheduling_immersive_reveal_painting_(false),
       forwarding_to_tab_strip_(false) { }
 
 bool BrowserRootView::GetDropFormats(
@@ -121,6 +124,25 @@ void BrowserRootView::GetAccessibleState(ui::AccessibleViewState* state) {
 
 std::string BrowserRootView::GetClassName() const {
   return kViewClassName;
+}
+
+void BrowserRootView::SchedulePaintInRect(const gfx::Rect& rect) {
+  views::internal::RootView::SchedulePaintInRect(rect);
+
+  // This function becomes reentrant when redirecting a paint-request to the
+  // reveal-view in immersive mode (because paint-requests all bubble up to the
+  // root-view). So return early in such cases.
+  if (scheduling_immersive_reveal_painting_)
+    return;
+
+  if (browser_view_ && browser_view_->immersive_mode_controller()) {
+    views::View* reveal =
+        browser_view_->immersive_mode_controller()->reveal_view();
+    if (reveal) {
+      base::AutoReset<bool> reset(&scheduling_immersive_reveal_painting_, true);
+      reveal->SchedulePaintInRect(rect);
+    }
+  }
 }
 
 bool BrowserRootView::ShouldForwardToTabStrip(
