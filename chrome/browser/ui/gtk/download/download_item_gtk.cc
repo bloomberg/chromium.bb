@@ -276,6 +276,9 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
 
   complete_animation_.SetTweenType(ui::Tween::LINEAR);
   complete_animation_.SetSlideDuration(kCompleteAnimationDurationMs);
+
+  // Update the status text and animation state.
+  OnDownloadUpdated(get_download());
 }
 
 DownloadItemGtk::~DownloadItemGtk() {
