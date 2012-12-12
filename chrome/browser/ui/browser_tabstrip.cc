@@ -73,7 +73,7 @@ void AddWebContents(Browser* browser,
         BlockedContentTabHelper::FromWebContents(source_contents);
   }
 
-  if (source_contents) {
+  if (source_blocked_content) {
     // Handle blocking of tabs.
     if (source_blocked_content->all_contents_blocked()) {
       source_blocked_content->AddWebContents(
