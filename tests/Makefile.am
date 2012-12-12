@@ -3,13 +3,13 @@ TESTS = $(module_tests) $(weston_tests)
 module_tests =				\
 	surface-test.la			\
 	client-test.la			\
-	text-test.la			\
 	surface-global-test.la
 
 weston_tests =				\
 	keyboard-test			\
 	event-test			\
-	button-test
+	button-test			\
+	text-test
 
 TESTS_ENVIRONMENT = $(SHELL) $(top_srcdir)/tests/weston-tests-env
 
@@ -27,7 +27,6 @@ check_LTLIBRARIES =			\
 
 check_PROGRAMS =			\
 	test-client			\
-	test-text-client		\
 	$(weston_tests)
 
 AM_CFLAGS = $(GCC_CFLAGS)
@@ -39,13 +38,9 @@ test_runner_src = test-runner.c test-runner.h
 surface_global_test_la_SOURCES = surface-global-test.c $(test_runner_src)
 surface_test_la_SOURCES = surface-test.c $(test_runner_src)
 client_test_la_SOURCES = client-test.c $(test_runner_src)
-text_test_la_SOURCES = text-test.c $(test_runner_src)
 
 test_client_SOURCES = test-client.c
 test_client_LDADD = $(SIMPLE_CLIENT_LIBS)
-
-test_text_client_SOURCES = test-text-client.c  ../clients/text-protocol.c
-test_text_client_LDADD = $(SIMPLE_CLIENT_LIBS)
 
 weston_test = weston-test.la
 weston_test_la_LIBADD = $(COMPOSITOR_LIBS)	\
@@ -77,6 +72,12 @@ event_test_LDADD = $(weston_test_client_libs)
 
 button_test_SOURCES = button-test.c $(weston_test_client_src)
 button_test_LDADD = $(weston_test_client_libs)
+
+text_test_SOURCES =				\
+	text-test.c				\
+	../clients/text-protocol.c		\
+	$(weston_test_client_src)
+text_test_LDADD = $(weston_test_client_libs)
 
 matrix_test_SOURCES =				\
 	matrix-test.c				\

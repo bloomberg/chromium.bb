@@ -394,6 +394,15 @@ handle_global(void *data, struct wl_registry *registry,
 	struct input *input;
 	struct output *output;
 	struct test *test;
+	struct global *global;
+
+	global = malloc(sizeof *global);
+	assert(global);
+	global->name = id;
+	global->interface = strdup(interface);
+	assert(interface);
+	global->version = version;
+	wl_list_insert(client->global_list.prev, &global->link);
 
 	if (strcmp(interface, "wl_compositor") == 0) {
 		client->wl_compositor =
@@ -443,6 +452,7 @@ client_create(int x, int y, int width, int height)
 	client = calloc(1, sizeof *client);
 	client->wl_display = wl_display_connect(NULL);
 	assert(client->wl_display);
+	wl_list_init(&client->global_list);
 
 	/* setup registry so we can bind to interfaces */
 	client->wl_registry = wl_display_get_registry(client->wl_display);

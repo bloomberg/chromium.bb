@@ -37,6 +37,14 @@ struct client {
 	struct output *output;
 	struct surface *surface;
 	int has_argb;
+	struct wl_list global_list;
+};
+
+struct global {
+	uint32_t name;
+	char *interface;
+	uint32_t version;
+	struct wl_list link;
 };
 
 struct test {

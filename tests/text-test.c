@@ -20,194 +20,169 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <sys/socket.h>
-#include <assert.h>
-#include <unistd.h>
-
 #include <string.h>
+#include <stdio.h>
+#include <linux/input.h>
+#include "weston-test-client-helper.h"
+#include "../clients/text-client-protocol.h"
 
-#include "test-runner.h"
-
-struct text_test_data {
-	struct weston_layer *layer;
-
-	unsigned int expected_activated_count;
-	unsigned int expected_deactivated_count;
-
-	const char *next_command;
-	void (*next_handle)(struct test_client *client);
+struct text_model_state {
+	int activated;
+	int deactivated;
 };
 
 static void
-pre_assert_state(struct test_client *client,
-		 unsigned int expected_activated_count,
-		 unsigned int expected_deactivated_count)
+text_model_commit_string(void *data,
+			 struct text_model *text_model,
+			 const char *text,
+			 uint32_t index)
 {
-	unsigned int activated_count, deactivated_count;
-
-	assert(sscanf(client->buf, "activated %u deactivated %u", &activated_count, &deactivated_count) == 2);
-	fprintf(stderr, "Text model activations: %u deactivations: %u\n", activated_count, deactivated_count);
-	assert(activated_count == expected_activated_count);
-	assert(deactivated_count == expected_deactivated_count);
 }
 
 static void
-handle_assert_state(struct test_client *client)
+text_model_preedit_string(void *data,
+			  struct text_model *text_model,
+			  const char *text,
+			  uint32_t index)
 {
-	struct text_test_data *data = client->data;
-
-	pre_assert_state(client, data->expected_activated_count, data->expected_deactivated_count);
-
-	test_client_send(client, data->next_command);
-	client->handle = data->next_handle;
 }
 
 static void
-post_assert_state(struct test_client *client,
-		  unsigned int expected_activated_count,
-		  unsigned int expected_deactivated_count,
-		  const char *next_command,
-		  void (*next_handle)(struct test_client *client))
+text_model_delete_surrounding_text(void *data,
+				   struct text_model *text_model,
+				   int32_t index,
+				   uint32_t length)
 {
-	struct text_test_data *data = client->data;
-
-	data->expected_activated_count = expected_activated_count;
-	data->expected_deactivated_count = expected_deactivated_count;
-
-	data->next_command = next_command;
-	data->next_handle = next_handle;
-
-	test_client_send(client, "assert-state\n");
-	client->handle = handle_assert_state;
-}
-
-static struct weston_seat*
-get_seat(struct test_client *client)
-{
-	struct wl_list *seat_list;
-	struct weston_seat *seat;
-
-	seat_list = &client->compositor->seat_list;
-	assert(wl_list_length(seat_list) == 1);
-	seat = container_of(seat_list->next, struct weston_seat, link);
-
-	return seat;
 }
 
 static void
-handle_surface_unfocus(struct test_client *client)
+text_model_preedit_styling(void *data,
+			   struct text_model *text_model)
 {
-	struct weston_seat *seat;
-
-	seat = get_seat(client);
-
-	pre_assert_state(client, 2, 1);
-
-	/* Unfocus the surface */
-	wl_keyboard_set_focus(&seat->keyboard, NULL);
-
-	post_assert_state(client, 2, 2, "bye\n", NULL);
 }
 
 static void
-handle_reactivate_text_model(struct test_client *client)
+text_model_modifiers_map(void *data,
+			 struct text_model *text_model,
+			 struct wl_array *map)
 {
-	pre_assert_state(client, 1, 1);
-
-	/* text_model is activated */
-
-	post_assert_state(client, 2, 1,
-			  "assert-state\n", handle_surface_unfocus);
 }
 
 static void
-handle_deactivate_text_model(struct test_client *client)
+text_model_keysym(void *data,
+		  struct text_model *text_model,
+		  uint32_t serial,
+		  uint32_t time,
+		  uint32_t sym,
+		  uint32_t state,
+		  uint32_t modifiers)
 {
-	pre_assert_state(client, 1, 0);
-
-	/* text_model is deactivated */
-
-	post_assert_state(client, 1, 1,
-			  "activate-text-model\n", handle_reactivate_text_model);
 }
 
 static void
-handle_activate_text_model(struct test_client *client)
+text_model_selection_replacement(void *data,
+				 struct text_model *text_model)
 {
-	pre_assert_state(client, 0, 0);
-
-	/* text_model is activated */
-
-	post_assert_state(client, 1, 0,
-			  "deactivate-text-model\n", handle_deactivate_text_model);
 }
 
 static void
-handle_text_model(struct test_client *client)
+text_model_direction(void *data,
+		     struct text_model *text_model)
 {
-	uint32_t id;
-	struct wl_resource *resource;
-
-	assert(sscanf(client->buf, "text_model %u", &id) == 1);
-	fprintf(stderr, "got text_model id %u\n", id);
-	resource = wl_client_get_object(client->client, id);
-	assert(resource);
-	assert(strcmp(resource->object.interface->name, "text_model") == 0);
-
-	test_client_send(client, "activate-text-model\n");
-	client->handle = handle_activate_text_model;
 }
 
 static void
-handle_surface(struct test_client *client)
+text_model_locale(void *data,
+		  struct text_model *text_model)
 {
-	uint32_t id;
-	struct wl_resource *resource;
-	struct weston_surface *surface;
-	struct text_test_data *data = client->data;
-	struct weston_seat *seat;
-
-	assert(sscanf(client->buf, "surface %u", &id) == 1);
-	fprintf(stderr, "got surface id %u\n", id);
-	resource = wl_client_get_object(client->client, id);
-	assert(resource);
-	assert(strcmp(resource->object.interface->name, "wl_surface") == 0);
-
-	surface = (struct weston_surface *) resource;
-
-	weston_surface_configure(surface, 100, 100, 200, 200);
-	weston_surface_update_transform(surface);
-	weston_surface_set_color(surface, 0.0, 0.0, 0.0, 1.0);
-
-	data->layer = malloc(sizeof *data->layer);
-	weston_layer_init(data->layer, &client->compositor->cursor_layer.link);
-	wl_list_insert(&data->layer->surface_list, &surface->layer_link);
-	weston_surface_damage(surface);
-
-	seat = get_seat(client);
-	client->compositor->focus = 1; /* Make it work even if pointer is
-					* outside X window. */
-	wl_keyboard_set_focus(&seat->keyboard, &surface->surface);
-
-	test_client_send(client, "create-text-model\n");
-	client->handle = handle_text_model;
 }
+
+static void
+text_model_enter(void *data,
+		 struct text_model *text_model,
+		 struct wl_surface *surface)
+
+{
+	struct text_model_state *state = data;
+
+	fprintf(stderr, "%s\n", __FUNCTION__);
+
+	state->activated += 1;
+}
+
+static void
+text_model_leave(void *data,
+		 struct text_model *text_model)
+{
+	struct text_model_state *state = data;
+
+	state->deactivated += 1;
+}
+
+static const struct text_model_listener text_model_listener = {
+	text_model_commit_string,
+	text_model_preedit_string,
+	text_model_delete_surrounding_text,
+	text_model_preedit_styling,
+	text_model_modifiers_map,
+	text_model_keysym,
+	text_model_selection_replacement,
+	text_model_direction,
+	text_model_locale,
+	text_model_enter,
+	text_model_leave
+};
 
 TEST(text_test)
 {
-	struct test_client *client;
-	struct text_test_data *data;
+	struct client *client;
+	struct global *global;
+	struct text_model_factory *factory;
+	struct text_model *text_model;
+	struct text_model_state state;
 
-	client = test_client_launch(compositor, "test-text-client");
-	client->terminate = 1;
+	client = client_create(100, 100, 100, 100);
+	assert(client);
 
-	test_client_send(client, "create-surface\n");
-	client->handle = handle_surface;
+	factory = NULL;
+	wl_list_for_each(global, &client->global_list, link) {
+		if (strcmp(global->interface, "text_model_factory") == 0)
+			factory = wl_registry_bind(client->wl_registry,
+						   global->name,
+						   &text_model_factory_interface, 1);
+	}
 
-	data = malloc(sizeof *data);
-	assert(data);
-	client->data = data;
+	assert(factory);
 
+	memset(&state, 0, sizeof state);
+	text_model = text_model_factory_create_text_model(factory);
+	text_model_add_listener(text_model, &text_model_listener, &state);
+
+	/* Make sure our test surface has keyboard focus. */
+	wl_test_activate_surface(client->test->wl_test,
+				 client->surface->wl_surface);
+	wl_display_roundtrip(client->wl_display);
+	assert(client->input->keyboard->focus == client->surface);
+
+	/* Activate test model and make sure we get enter event. */
+	text_model_activate(text_model, client->input->wl_seat,
+			    client->surface->wl_surface);
+	wl_display_roundtrip(client->wl_display);
+	assert(state.activated == 1 && state.deactivated == 0);
+
+	/* Deactivate test model and make sure we get leave event. */
+	text_model_deactivate(text_model, client->input->wl_seat);
+	wl_display_roundtrip(client->wl_display);
+	assert(state.activated == 1 && state.deactivated == 1);
+
+	/* Activate test model again. */
+	text_model_activate(text_model, client->input->wl_seat,
+			    client->surface->wl_surface);
+	wl_display_roundtrip(client->wl_display);
+	assert(state.activated == 2 && state.deactivated == 1);
+
+	/* Take keyboard focus away and verify we get leave event. */
+	wl_test_activate_surface(client->test->wl_test, NULL);
+	wl_display_roundtrip(client->wl_display);
+	assert(state.activated == 2 && state.deactivated == 2);
 }
