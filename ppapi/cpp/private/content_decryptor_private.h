@@ -18,6 +18,9 @@ namespace pp {
 
 class Instance;
 
+// TODO(tomfinegan): Remove redundant pp:: usage, and pass VarArrayBuffers as
+// const references.
+
 class ContentDecryptor_Private {
  public:
   explicit ContentDecryptor_Private(Instance* instance);
@@ -62,7 +65,7 @@ class ContentDecryptor_Private {
                 const std::string& session_id);
   void KeyMessage(const std::string& key_system,
                   const std::string& session_id,
-                  pp::Buffer_Dev message,
+                  pp::VarArrayBuffer message,
                   const std::string& default_url);
   void KeyError(const std::string& key_system,
                 const std::string& session_id,

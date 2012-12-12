@@ -160,7 +160,7 @@ class PPB_Instance_API {
   virtual void KeyMessage(PP_Instance instance,
                           PP_Var key_system,
                           PP_Var session_id,
-                          PP_Resource message,
+                          PP_Var message,
                           PP_Var default_url) = 0;
   virtual void KeyError(PP_Instance instance,
                         PP_Var key_system,

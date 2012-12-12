@@ -23,6 +23,7 @@
 #include "ui/gfx/rect.h"
 #include "webkit/plugins/ppapi/ppb_buffer_impl.h"
 
+using ppapi::ArrayBufferVar;
 using ppapi::PpapiGlobals;
 using ppapi::ScopedPPResource;
 using ppapi::StringVar;
@@ -641,43 +642,28 @@ void ContentDecryptorDelegate::KeyAdded(PP_Var key_system_var,
 
 void ContentDecryptorDelegate::KeyMessage(PP_Var key_system_var,
                                           PP_Var session_id_var,
-                                          PP_Resource message_resource,
+                                          PP_Var message_var,
                                           PP_Var default_url_var) {
   if (!decryptor_client_)
     return;
 
   StringVar* key_system_string = StringVar::FromPPVar(key_system_var);
   StringVar* session_id_string = StringVar::FromPPVar(session_id_var);
+
+  ArrayBufferVar* message_array_buffer =
+      ArrayBufferVar::FromPPVar(message_var);
+
+  std::string message;
+  if (message_array_buffer) {
+    const char* data = static_cast<const char*>(message_array_buffer->Map());
+    message.assign(data, message_array_buffer->ByteLength());
+  }
+
   StringVar* default_url_string = StringVar::FromPPVar(default_url_var);
 
   if (!key_system_string || !session_id_string || !default_url_string) {
     decryptor_client_->KeyError("", "", media::Decryptor::kUnknownError, 0);
     return;
-  }
-
-  std::string message;
-
-  if (message_resource) {
-    EnterResourceNoLock<PPB_Buffer_API> enter(message_resource, true);
-    if (!enter.succeeded()) {
-      decryptor_client_->KeyError(key_system_string->value(),
-                                  session_id_string->value(),
-                                  media::Decryptor::kUnknownError,
-                                  0);
-      return;
-    }
-
-    BufferAutoMapper mapper(enter.object());
-    if (!mapper.data() || !mapper.size()) {
-      decryptor_client_->KeyError(key_system_string->value(),
-                                  session_id_string->value(),
-                                  media::Decryptor::kUnknownError,
-                                  0);
-      return;
-    }
-
-    message = std::string(reinterpret_cast<const char*>(mapper.data()),
-                          mapper.size());
   }
 
   decryptor_client_->KeyMessage(key_system_string->value(),

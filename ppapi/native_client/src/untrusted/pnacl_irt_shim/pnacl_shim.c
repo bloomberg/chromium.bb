@@ -2243,7 +2243,7 @@ void Pnacl_M24_PPB_ContentDecryptor_Private_KeyAdded(PP_Instance instance, struc
 }
 
 static __attribute__((pnaclcall))
-void Pnacl_M24_PPB_ContentDecryptor_Private_KeyMessage(PP_Instance instance, struct PP_Var key_system, struct PP_Var session_id, PP_Resource message, struct PP_Var default_url) {
+void Pnacl_M24_PPB_ContentDecryptor_Private_KeyMessage(PP_Instance instance, struct PP_Var key_system, struct PP_Var session_id, struct PP_Var message, struct PP_Var default_url) {
   const struct PPB_ContentDecryptor_Private_0_6 *iface = Pnacl_WrapperInfo_PPB_ContentDecryptor_Private_0_6.real_iface;
   iface->KeyMessage(instance, key_system, session_id, message, default_url);
 }
@@ -4027,7 +4027,7 @@ struct PPP_Selection_Dev_0_3 Pnacl_Wrappers_PPP_Selection_Dev_0_3 = {
 struct PPB_ContentDecryptor_Private_0_6 Pnacl_Wrappers_PPB_ContentDecryptor_Private_0_6 = {
     .NeedKey = (void (*)(PP_Instance instance, struct PP_Var key_system, struct PP_Var session_id, struct PP_Var init_data))&Pnacl_M24_PPB_ContentDecryptor_Private_NeedKey,
     .KeyAdded = (void (*)(PP_Instance instance, struct PP_Var key_system, struct PP_Var session_id))&Pnacl_M24_PPB_ContentDecryptor_Private_KeyAdded,
-    .KeyMessage = (void (*)(PP_Instance instance, struct PP_Var key_system, struct PP_Var session_id, PP_Resource message, struct PP_Var default_url))&Pnacl_M24_PPB_ContentDecryptor_Private_KeyMessage,
+    .KeyMessage = (void (*)(PP_Instance instance, struct PP_Var key_system, struct PP_Var session_id, struct PP_Var message, struct PP_Var default_url))&Pnacl_M24_PPB_ContentDecryptor_Private_KeyMessage,
     .KeyError = (void (*)(PP_Instance instance, struct PP_Var key_system, struct PP_Var session_id, int32_t media_error, int32_t system_code))&Pnacl_M24_PPB_ContentDecryptor_Private_KeyError,
     .DeliverBlock = (void (*)(PP_Instance instance, PP_Resource decrypted_block, const struct PP_DecryptedBlockInfo* decrypted_block_info))&Pnacl_M24_PPB_ContentDecryptor_Private_DeliverBlock,
     .DecoderInitializeDone = (void (*)(PP_Instance instance, PP_DecryptorStreamType decoder_type, uint32_t request_id, PP_Bool success))&Pnacl_M24_PPB_ContentDecryptor_Private_DecoderInitializeDone,

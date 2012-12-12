@@ -2053,10 +2053,10 @@ void PluginInstance::KeyAdded(PP_Instance instance,
 void PluginInstance::KeyMessage(PP_Instance instance,
                                 PP_Var key_system_var,
                                 PP_Var session_id_var,
-                                PP_Resource message_resource,
+                                PP_Var message_var,
                                 PP_Var default_url_var) {
   content_decryptor_delegate_->KeyMessage(
-      key_system_var, session_id_var, message_resource, default_url_var);
+      key_system_var, session_id_var, message_var, default_url_var);
 }
 
 void PluginInstance::KeyError(PP_Instance instance,

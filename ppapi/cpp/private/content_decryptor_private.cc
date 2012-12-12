@@ -244,7 +244,7 @@ void ContentDecryptor_Private::KeyAdded(const std::string& key_system,
 
 void ContentDecryptor_Private::KeyMessage(const std::string& key_system,
                                           const std::string& session_id,
-                                          pp::Buffer_Dev message,
+                                          pp::VarArrayBuffer message,
                                           const std::string& default_url) {
   if (has_interface<PPB_ContentDecryptor_Private>()) {
     pp::Var key_system_var(key_system);
@@ -254,7 +254,7 @@ void ContentDecryptor_Private::KeyMessage(const std::string& key_system,
         associated_instance_.pp_instance(),
         key_system_var.pp_var(),
         session_id_var.pp_var(),
-        message.pp_resource(),
+        message.pp_var(),
         default_url_var.pp_var());
   }
 }

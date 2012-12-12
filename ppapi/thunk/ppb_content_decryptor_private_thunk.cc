@@ -32,7 +32,7 @@ void KeyAdded(PP_Instance instance,
 void KeyMessage(PP_Instance instance,
                 PP_Var key_system,
                 PP_Var session_id,
-                PP_Resource message,
+                PP_Var message,
                 PP_Var default_url) {
   EnterInstance enter(instance);
   if (enter.succeeded()) {

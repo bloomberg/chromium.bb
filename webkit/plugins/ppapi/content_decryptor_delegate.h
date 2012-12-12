@@ -77,7 +77,7 @@ class WEBKIT_PLUGINS_EXPORT ContentDecryptorDelegate {
   void KeyAdded(PP_Var key_system, PP_Var session_id);
   void KeyMessage(PP_Var key_system,
                   PP_Var session_id,
-                  PP_Resource message,
+                  PP_Var message,
                   PP_Var default_url);
   void KeyError(PP_Var key_system,
                 PP_Var session_id,

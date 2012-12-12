@@ -40,7 +40,7 @@ interface PPB_ContentDecryptor_Private {
    * <code>PP_VARTYPE_STRING</code> containing the session ID.
    *
    * @param[in] init_data A <code>PP_Var</code> of type
-   * <code>PP_VARTYPE_ARRAYBUFFER</code> containing container-specific
+   * <code>PP_VARTYPE_ARRAY_BUFFER</code> containing container-specific
    * initialization data.
    */
   void NeedKey(
@@ -93,9 +93,8 @@ interface PPB_ContentDecryptor_Private {
    * @param[in] session_id A <code>PP_Var</code> of type
    * <code>PP_VARTYPE_STRING</code> containing the session ID.
    *
-   * @param[in] resource A <code>PP_Resource</code> corresponding to a
-   * <code>PPB_Buffer_Dev</code> resource that contains the message. A 0
-   * resource is allowed which indicates an empty message.
+   * @param[in] message A <code>PP_Var</code> of type
+   * <code>PP_VARTYPE_ARRAY_BUFFER</code> that contains the message.
    *
    * @param[in] default_url A <code>PP_Var</code> of type
    * <code>PP_VARTYPE_STRING</code> containing the default URL for the message.
@@ -104,7 +103,7 @@ interface PPB_ContentDecryptor_Private {
       [in] PP_Instance instance,
       [in] PP_Var key_system,
       [in] PP_Var session_id,
-      [in] PP_Resource message,
+      [in] PP_Var message,
       [in] PP_Var default_url);
 
   /**

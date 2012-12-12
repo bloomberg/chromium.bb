@@ -4,7 +4,7 @@
  */
 
 /* From private/ppb_content_decryptor_private.idl,
- *   modified Mon Dec 10 13:46:33 2012.
+ *   modified Mon Dec 10 21:43:51 2012.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPB_CONTENT_DECRYPTOR_PRIVATE_H_
@@ -63,7 +63,7 @@ struct PPB_ContentDecryptor_Private_0_6 {
    * <code>PP_VARTYPE_STRING</code> containing the session ID.
    *
    * @param[in] init_data A <code>PP_Var</code> of type
-   * <code>PP_VARTYPE_ARRAYBUFFER</code> containing container-specific
+   * <code>PP_VARTYPE_ARRAY_BUFFER</code> containing container-specific
    * initialization data.
    */
   void (*NeedKey)(PP_Instance instance,
@@ -112,9 +112,8 @@ struct PPB_ContentDecryptor_Private_0_6 {
    * @param[in] session_id A <code>PP_Var</code> of type
    * <code>PP_VARTYPE_STRING</code> containing the session ID.
    *
-   * @param[in] resource A <code>PP_Resource</code> corresponding to a
-   * <code>PPB_Buffer_Dev</code> resource that contains the message. A 0
-   * resource is allowed which indicates an empty message.
+   * @param[in] message A <code>PP_Var</code> of type
+   * <code>PP_VARTYPE_ARRAY_BUFFER</code> that contains the message.
    *
    * @param[in] default_url A <code>PP_Var</code> of type
    * <code>PP_VARTYPE_STRING</code> containing the default URL for the message.
@@ -122,7 +121,7 @@ struct PPB_ContentDecryptor_Private_0_6 {
   void (*KeyMessage)(PP_Instance instance,
                      struct PP_Var key_system,
                      struct PP_Var session_id,
-                     PP_Resource message,
+                     struct PP_Var message,
                      struct PP_Var default_url);
   /**
    * An error occurred in a <code>PPP_ContentDecryptor_Private</code> method,

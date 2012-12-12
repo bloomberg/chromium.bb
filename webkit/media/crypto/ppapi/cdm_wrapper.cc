@@ -877,16 +877,13 @@ void CdmWrapper::KeyMessage(int32_t result,
                             const std::string& default_url) {
   PP_DCHECK(result == PP_OK);
 
-  pp::Buffer_Dev message_buffer;
-
-  if (!message.empty()) {
-    message_buffer = pp::Buffer_Dev(this, message.size());
-    PP_DCHECK(message_buffer.size() == message.size());
-    memcpy(message_buffer.data(), message.data(), message.size());
+  pp::VarArrayBuffer message_array_buffer(message.size());
+  if (message.size() > 0) {
+    memcpy(message_array_buffer.Map(), message.data(), message.size());
   }
 
   pp::ContentDecryptor_Private::KeyMessage(
-      key_system_, session_id, message_buffer, default_url);
+      key_system_, session_id, message_array_buffer, default_url);
 }
 
 // TODO(xhwang): Support MediaKeyError (see spec: http://goo.gl/rbdnR) in CDM

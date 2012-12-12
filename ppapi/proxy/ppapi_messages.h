@@ -1152,7 +1152,7 @@ IPC_MESSAGE_ROUTED5(PpapiHostMsg_PPBInstance_KeyMessage,
                     PP_Instance /* instance */,
                     ppapi::proxy::SerializedVar /* key_system, String */,
                     ppapi::proxy::SerializedVar /* session_id, String */,
-                    PP_Resource /* message, PPB_Buffer_Dev */,
+                    ppapi::proxy::SerializedVar /* message, ArrayBuffer */,
                     ppapi::proxy::SerializedVar /* default_url, String */)
 IPC_MESSAGE_ROUTED5(PpapiHostMsg_PPBInstance_KeyError,
                     PP_Instance /* instance */,

@@ -543,24 +543,15 @@ void PPB_Instance_Proxy::KeyAdded(PP_Instance instance,
 void PPB_Instance_Proxy::KeyMessage(PP_Instance instance,
                                     PP_Var key_system,
                                     PP_Var session_id,
-                                    PP_Resource message,
+                                    PP_Var message,
                                     PP_Var default_url) {
-  PP_Resource host_resource = 0;
-  if (message) {
-    Resource* object =
-        PpapiGlobals::Get()->GetResourceTracker()->GetResource(message);
-    if (!object || object->pp_instance() != instance)
-      return;
-    host_resource = object->host_resource().host_resource();
-  }
-
   dispatcher()->Send(
       new PpapiHostMsg_PPBInstance_KeyMessage(
           API_ID_PPB_INSTANCE,
           instance,
           SerializedVarSendInput(dispatcher(), key_system),
           SerializedVarSendInput(dispatcher(), session_id),
-          host_resource,
+          SerializedVarSendInput(dispatcher(), message),
           SerializedVarSendInput(dispatcher(), default_url)));
 }
 
@@ -1062,7 +1053,7 @@ void PPB_Instance_Proxy::OnHostMsgKeyMessage(
     PP_Instance instance,
     SerializedVarReceiveInput key_system,
     SerializedVarReceiveInput session_id,
-    PP_Resource message,
+    SerializedVarReceiveInput message,
     SerializedVarReceiveInput default_url) {
   if (!dispatcher()->permissions().HasPermission(PERMISSION_PRIVATE))
     return;
@@ -1071,7 +1062,7 @@ void PPB_Instance_Proxy::OnHostMsgKeyMessage(
     enter.functions()->KeyMessage(instance,
                                   key_system.Get(dispatcher()),
                                   session_id.Get(dispatcher()),
-                                  message,
+                                  message.Get(dispatcher()),
                                   default_url.Get(dispatcher()));
   }
 }
