@@ -257,6 +257,16 @@ std::string MediaStreamManager::GenerateStreamForDevice(
   bool has_valid_device_id = WebContentsCaptureUtil::ExtractTabCaptureTarget(
       device_id, &target_render_process_id, &target_render_view_id);
 
+  if (!has_valid_device_id ||
+      !security_origin.SchemeIs(kExtensionScheme) ||
+      (options.audio_type != MEDIA_TAB_AUDIO_CAPTURE &&
+       options.audio_type != MEDIA_NO_SERVICE) ||
+      (options.video_type != MEDIA_TAB_VIDEO_CAPTURE &&
+       options.video_type != MEDIA_NO_SERVICE)) {
+    LOG(ERROR) << "Invalid request or used tab capture outside extension API.";
+    return std::string();
+  }
+
   // Create a new request based on options.
   DeviceRequest* request = new DeviceRequest(requester, options,
                                              DeviceRequest::GENERATE_STREAM,
@@ -265,20 +275,6 @@ std::string MediaStreamManager::GenerateStreamForDevice(
                                              security_origin);
   const std::string& label = AddRequest(request);
   request->requested_device_id = device_id;
-
-  if (!has_valid_device_id ||
-      !security_origin.SchemeIs(kExtensionScheme) ||
-      (options.audio_type != MEDIA_TAB_AUDIO_CAPTURE &&
-       options.audio_type != MEDIA_NO_SERVICE) ||
-      (options.video_type != MEDIA_TAB_VIDEO_CAPTURE &&
-       options.video_type != MEDIA_NO_SERVICE)) {
-    LOG(ERROR) << "Invalid request or used tab capture outside extension API.";
-
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::Bind(&MediaStreamManager::CancelRequest,
-                                       base::Unretained(this), label));
-    return label;
-  }
 
   // Get user confirmation to use the capture device.
   PostRequestToUI(label);

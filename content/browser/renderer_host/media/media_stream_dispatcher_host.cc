@@ -161,9 +161,15 @@ void MediaStreamDispatcherHost::OnGenerateStream(
     label = GetManager()->GenerateStream(this, render_process_id_,
                                          render_view_id,
                                          components, security_origin);
+    DCHECK(!label.empty());
   }
-  DCHECK(!label.empty());
-  streams_[label] = StreamRequest(render_view_id, page_request_id);
+
+  if (label.empty()) {
+    Send(new MediaStreamMsg_StreamGenerationFailed(render_view_id,
+                                                   page_request_id));
+  } else {
+    streams_[label] = StreamRequest(render_view_id, page_request_id);
+  }
 }
 
 void MediaStreamDispatcherHost::OnCancelGenerateStream(int render_view_id,
