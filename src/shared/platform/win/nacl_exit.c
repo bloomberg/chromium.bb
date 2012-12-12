@@ -36,14 +36,35 @@ void NaClExit(int err_code) {
   /* Give coverage runs a chance to flush coverage data */
   exit(err_code);
 #else
-  /* If the process is scheduled for termination, wait for it.*/
-  if (TerminateProcess(GetCurrentProcess(), err_code)) {
-    while (1) {
-      (void) SwitchToThread();
-    }
-  }
-
-  /* Otherwise use the standard C process exit to bybass destructors. */
+  /*
+   * We want to exit without running any finalization code, because
+   * that could cause currently-running threads to crash.
+   *
+   * We avoid using exit() because it calls atexit() handlers.  We
+   * avoid using _exit() because it is documented as doing some
+   * internal C library shutdown.
+   *
+   * We avoid using TerminateProcess() because it terminates threads
+   * in a non-deterministic order.  On Windows, the exit status of a
+   * process is taken to be the exit status of the last thread that
+   * exited.  Using TerminateProcess() makes the exit status of the
+   * process unreliable; this used to cause many tests to be flaky.
+   * See https://code.google.com/p/nativeclient/issues/detail?id=2870
+   *
+   * ExitProcess() has the following properties:
+   *
+   *  - It first terminates all threads except the calling thread.
+   *    This prevents these threads from messing up the process exit
+   *    status.
+   *
+   *  - It calls loaded DLLs' finalization routines.  This is not
+   *    ideal, but it is OK because NaClExit() should only be used for
+   *    graceful exits (when no internal errors have been detected),
+   *    and because there will be no other threads at this point.
+   */
   ExitProcess(err_code);
+
+  /* Just in case. */
+  NaClAbort();
 #endif
 }
