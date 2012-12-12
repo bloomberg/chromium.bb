@@ -26,8 +26,9 @@ int NaClThreadCtor(struct NaClThread  *ntp,
 
   if (stack_size > MAXDWORD) {
     NaClLog(LOG_ERROR,
-      "nacl_thread: _beginthreadex failed, stack request out of range",
-      errno);
+            ("NaClThreadCtor: "
+             "_beginthreadex failed, stack request out of range\n"),
+            errno);
     return 0;
   } else {
     actual_stack_size = (DWORD)stack_size;
@@ -42,7 +43,7 @@ int NaClThreadCtor(struct NaClThread  *ntp,
                                    NULL);
   if (0 == handle){  /* we don't need the thread id */
     NaClLog(LOG_ERROR,
-            "nacl_thread: _beginthreadex failed, errno %d",
+            "NaClThreadCtor: _beginthreadex failed, errno %d\n",
             errno);
     return 0;
   }
