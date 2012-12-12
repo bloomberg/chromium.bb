@@ -10,12 +10,13 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
+#include "chrome/browser/extensions/api/tabs/tabs_windows_api.h"
+#include "chrome/browser/extensions/api/tabs/windows_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/extensions/window_controller_list.h"
-#include "chrome/browser/extensions/window_event_router.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -681,10 +682,10 @@ void Panel::OnActiveStateChanged(bool active) {
     collection_->OnPanelActiveStateChanged(this);
 
   // Send extension event about window changing active state.
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile())->extension_service();
-  if (service) {
-    service->window_event_router()->OnActiveWindowChanged(
+  extensions::TabsWindowsAPI* tabs_windows_api =
+      extensions::TabsWindowsAPI::Get(profile());
+  if (tabs_windows_api) {
+    tabs_windows_api->windows_event_router()->OnActiveWindowChanged(
         active ? extension_window_controller_.get() : NULL);
   }
 

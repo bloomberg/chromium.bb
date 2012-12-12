@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/window_event_router.h"
+#include "chrome/browser/extensions/api/tabs/windows_event_router.h"
 
 #include "base/values.h"
 #include "chrome/browser/extensions/event_names.h"
@@ -24,7 +24,7 @@ namespace event_names = extensions::event_names;
 
 namespace extensions {
 
-WindowEventRouter::WindowEventRouter(Profile* profile)
+WindowsEventRouter::WindowsEventRouter(Profile* profile)
     : profile_(profile),
       focused_profile_(NULL),
       focused_window_id_(extension_misc::kUnknownWindowId) {
@@ -43,7 +43,7 @@ WindowEventRouter::WindowEventRouter(Profile* profile)
 #endif
 }
 
-WindowEventRouter::~WindowEventRouter() {
+WindowsEventRouter::~WindowsEventRouter() {
   WindowControllerList::GetInstance()->RemoveObserver(this);
 #if defined(TOOLKIT_VIEWS)
   views::WidgetFocusManager::GetInstance()->RemoveFocusChangeListener(this);
@@ -52,7 +52,7 @@ WindowEventRouter::~WindowEventRouter() {
 #endif
 }
 
-void WindowEventRouter::OnWindowControllerAdded(
+void WindowsEventRouter::OnWindowControllerAdded(
     WindowController* window_controller) {
   if (!profile_->IsSameProfile(window_controller->profile()))
     return;
@@ -64,7 +64,7 @@ void WindowEventRouter::OnWindowControllerAdded(
                 args.Pass());
 }
 
-void WindowEventRouter::OnWindowControllerRemoved(
+void WindowsEventRouter::OnWindowControllerRemoved(
     WindowController* window_controller) {
   if (!profile_->IsSameProfile(window_controller->profile()))
     return;
@@ -77,21 +77,21 @@ void WindowEventRouter::OnWindowControllerRemoved(
 }
 
 #if defined(TOOLKIT_VIEWS)
-void WindowEventRouter::OnNativeFocusChange(
+void WindowsEventRouter::OnNativeFocusChange(
     gfx::NativeView focused_before,
     gfx::NativeView focused_now) {
   if (!focused_now)
     OnActiveWindowChanged(NULL);
 }
 #elif defined(TOOLKIT_GTK)
-void WindowEventRouter::ActiveWindowChanged(
+void WindowsEventRouter::ActiveWindowChanged(
     GdkWindow* active_window) {
   if (!active_window)
     OnActiveWindowChanged(NULL);
 }
 #endif
 
-void WindowEventRouter::Observe(
+void WindowsEventRouter::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
@@ -124,7 +124,7 @@ static void WillDispatchWindowFocusedEvent(Profile* new_active_profile,
   }
 }
 
-void WindowEventRouter::OnActiveWindowChanged(
+void WindowsEventRouter::OnActiveWindowChanged(
     WindowController* window_controller) {
   Profile* window_profile = NULL;
   int window_id = extension_misc::kUnknownWindowId;
@@ -149,7 +149,7 @@ void WindowEventRouter::OnActiveWindowChanged(
   ExtensionSystem::Get(profile_)->event_router()->BroadcastEvent(event.Pass());
 }
 
-void WindowEventRouter::DispatchEvent(const char* event_name,
+void WindowsEventRouter::DispatchEvent(const char* event_name,
                                       Profile* profile,
                                       scoped_ptr<base::ListValue> args) {
   scoped_ptr<Event> event(new Event(event_name, args.Pass()));

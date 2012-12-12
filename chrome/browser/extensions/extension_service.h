@@ -75,7 +75,6 @@ class PendingExtensionManager;
 class PreferenceEventRouter;
 class PushMessagingEventRouter;
 class SettingsFrontend;
-class WindowEventRouter;
 }
 
 namespace syncer {
@@ -572,10 +571,6 @@ class ExtensionService
     return browser_event_router_.get();
   }
 
-  extensions::WindowEventRouter* window_event_router() {
-    return window_event_router_.get();
-  }
-
 #if defined(OS_CHROMEOS)
   chromeos::ExtensionInputMethodEventRouter* input_method_event_router() {
     return input_method_event_router_.get();
@@ -984,8 +979,6 @@ class ExtensionService
   scoped_ptr<HistoryExtensionEventRouter> history_event_router_;
 
   scoped_ptr<extensions::BrowserEventRouter> browser_event_router_;
-
-  scoped_ptr<extensions::WindowEventRouter> window_event_router_;
 
   scoped_ptr<extensions::PreferenceEventRouter> preference_event_router_;
 

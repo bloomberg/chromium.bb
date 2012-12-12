@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_WINDOW_EVENT_ROUTER_H_
-#define CHROME_BROWSER_EXTENSIONS_WINDOW_EVENT_ROUTER_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_TABS_WINDOWS_EVENT_ROUTER_H_
+#define CHROME_BROWSER_EXTENSIONS_API_TABS_WINDOWS_EVENT_ROUTER_H_
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -24,11 +24,11 @@ class ListValue;
 
 namespace extensions {
 
-// The WindowEventRouter sends chrome.windows.* events to listeners
+// The WindowsEventRouter sends chrome.windows.* events to listeners
 // inside extension process renderers. The router listens to *all* events,
 // but will only route eventes within a profile to extension processes in the
 // same profile.
-class WindowEventRouter : public WindowControllerListObserver,
+class WindowsEventRouter : public WindowControllerListObserver,
 #if defined(TOOLKIT_VIEWS)
                           public views::WidgetFocusChangeListener,
 #elif defined(TOOLKIT_GTK)
@@ -36,8 +36,8 @@ class WindowEventRouter : public WindowControllerListObserver,
 #endif
                           public content::NotificationObserver {
  public:
-  explicit WindowEventRouter(Profile* profile);
-  virtual ~WindowEventRouter();
+  explicit WindowsEventRouter(Profile* profile);
+  virtual ~WindowsEventRouter();
 
   // WindowControllerListObserver methods:
   virtual void OnWindowControllerAdded(
@@ -79,9 +79,9 @@ class WindowEventRouter : public WindowControllerListObserver,
   // windows.onFocusChanged events with the same windowId.
   int focused_window_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(WindowEventRouter);
+  DISALLOW_COPY_AND_ASSIGN(WindowsEventRouter);
 };
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_WINDOW_EVENT_ROUTER_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_API_TABS_WINDOWS_EVENT_ROUTER_H_

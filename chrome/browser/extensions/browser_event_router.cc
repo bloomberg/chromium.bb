@@ -8,13 +8,14 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/api/extension_action/extension_page_actions_api_constants.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
+#include "chrome/browser/extensions/api/tabs/tabs_windows_api.h"
+#include "chrome/browser/extensions/api/tabs/windows_event_router.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/window_controller.h"
-#include "chrome/browser/extensions/window_event_router.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -145,10 +146,9 @@ void BrowserEventRouter::OnBrowserRemoved(Browser* browser) {
 }
 
 void BrowserEventRouter::OnBrowserSetLastActive(Browser* browser) {
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  if (service) {
-    service->window_event_router()->OnActiveWindowChanged(
+  TabsWindowsAPI* tabs_window_api = TabsWindowsAPI::Get(profile_);
+  if (tabs_window_api) {
+    tabs_window_api->windows_event_router()->OnActiveWindowChanged(
         browser ? browser->extension_window_controller() : NULL);
   }
 }

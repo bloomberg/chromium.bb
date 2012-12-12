@@ -349,8 +349,14 @@
         'browser/extensions/api/tabs/execute_code_in_tab_function.h',
         'browser/extensions/api/tabs/tabs.cc',
         'browser/extensions/api/tabs/tabs.h',
+        'browser/extensions/api/tabs/tabs_windows_api.cc',
+        'browser/extensions/api/tabs/tabs_windows_api.h',
+        'browser/extensions/api/tabs/tabs_windows_api_factory.cc',
+        'browser/extensions/api/tabs/tabs_windows_api_factory.h',
         'browser/extensions/api/tabs/tabs_constants.cc',
         'browser/extensions/api/tabs/tabs_constants.h',
+        'browser/extensions/api/tabs/windows_event_router.cc',
+        'browser/extensions/api/tabs/windows_event_router.h',
         'browser/extensions/api/terminal/terminal_extension_helper.cc',
         'browser/extensions/api/terminal/terminal_extension_helper.h',
         'browser/extensions/api/terminal/terminal_private_api.cc',
@@ -692,8 +698,6 @@
         'browser/extensions/window_controller_list.cc',
         'browser/extensions/window_controller_list.h',
         'browser/extensions/window_controller_list_observer.h',
-        'browser/extensions/window_event_router.cc',
-        'browser/extensions/window_event_router.h',
       ],
       'conditions': [
         ['chromeos==0', {
