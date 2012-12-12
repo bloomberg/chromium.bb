@@ -698,6 +698,9 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   WebRuntimeFeatures::enableCSSRegions(
       command_line.HasSwitch(switches::kEnableExperimentalWebKitFeatures));
 
+  WebRuntimeFeatures::enableDialogElement(
+      command_line.HasSwitch(switches::kEnableExperimentalWebKitFeatures));
+
   FOR_EACH_OBSERVER(RenderProcessObserver, observers_, WebKitInitialized());
 
   devtools_agent_message_filter_ = new DevToolsAgentFilter();
