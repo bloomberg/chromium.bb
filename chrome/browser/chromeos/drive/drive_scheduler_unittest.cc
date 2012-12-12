@@ -94,7 +94,7 @@ class FakeDriveService : public DriveServiceInterface {
   }
 
   virtual void GetResourceEntry(const std::string& resource_id,
-                                const GetDataCallback& callback) {
+                                const GetResourceEntryCallback& callback) {
   }
 
   virtual void GetAccountMetadata(const GetDataCallback& callback) {

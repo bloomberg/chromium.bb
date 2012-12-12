@@ -205,7 +205,7 @@ class DriveFileSyncClient
       const FilePath::StringType& directory_name,
       const ResourceIdCallback& callback,
       google_apis::GDataErrorCode error,
-      scoped_ptr<base::Value> data);
+      scoped_ptr<google_apis::ResourceEntry> entry);
 
   void DidCreateDirectory(const ResourceIdCallback& callback,
                           google_apis::GDataErrorCode error,
@@ -224,9 +224,9 @@ class DriveFileSyncClient
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::ResourceList> resource_list);
 
-  void DidGetResourceEntryData(const ResourceEntryCallback& callback,
-                               google_apis::GDataErrorCode error,
-                               scoped_ptr<base::Value> data);
+  void DidGetResourceEntry(const ResourceEntryCallback& callback,
+                           google_apis::GDataErrorCode error,
+                           scoped_ptr<google_apis::ResourceEntry> entry);
 
   void DownloadFileInternal(const std::string& local_file_md5,
                             const FilePath& local_file_path,

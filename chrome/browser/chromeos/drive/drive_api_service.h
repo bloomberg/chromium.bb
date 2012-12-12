@@ -67,7 +67,7 @@ class DriveAPIService : public google_apis::DriveServiceInterface,
       const google_apis::GetResourceListCallback& callback) OVERRIDE;
   virtual void GetResourceEntry(
       const std::string& resource_id,
-      const google_apis::GetDataCallback& callback) OVERRIDE;
+      const google_apis::GetResourceEntryCallback& callback) OVERRIDE;
 
   virtual void GetAccountMetadata(
       const google_apis::GetDataCallback& callback) OVERRIDE;

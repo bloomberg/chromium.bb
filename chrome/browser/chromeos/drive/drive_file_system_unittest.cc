@@ -84,9 +84,9 @@ void DriveSearchCallback(
 
 // Action used to set mock expectations for
 // DriveServiceInterface::GetResourceEntry().
-ACTION_P2(MockGetResourceEntry, status, value) {
+ACTION_P2(MockGetResourceEntry, status, entry) {
   base::MessageLoopProxy::current()->PostTask(FROM_HERE,
-      base::Bind(arg1, status, base::Passed(value)));
+      base::Bind(arg1, status, entry));
 }
 
 // Action used to set mock expectations for
@@ -619,10 +619,13 @@ class DriveFileSystemTest : public testing::Test {
     }
   }
 
-  void SetExpectationsForGetResourceEntry(scoped_ptr<base::Value>* document,
+  void SetExpectationsForGetResourceEntry(const base::Value& value,
                                           const std::string& resource_id) {
+    scoped_ptr<google_apis::ResourceEntry> entry =
+        google_apis::ResourceEntry::ExtractAndParse(value);
     EXPECT_CALL(*mock_drive_service_, GetResourceEntry(resource_id, _))
-        .WillOnce(MockGetResourceEntry(google_apis::HTTP_SUCCESS, document));
+        .WillOnce(MockGetResourceEntry(google_apis::HTTP_SUCCESS,
+                                       base::Passed(&entry)));
   }
 
   // Loads serialized proto file from GCache, and makes sure the root
@@ -1402,7 +1405,7 @@ TEST_F(DriveFileSystemTest, TransferFileFromRemoteToLocal_RegularFile) {
   // We will read content url from the result.
   scoped_ptr<base::Value> document =
       google_apis::test_util::LoadJSONFile("gdata/document_to_download.json");
-  SetExpectationsForGetResourceEntry(&document, "file:2_file_resource_id");
+  SetExpectationsForGetResourceEntry(*document, "file:2_file_resource_id");
 
   // The file is obtained with the mock DriveService.
   EXPECT_CALL(*mock_drive_service_,
@@ -2018,7 +2021,7 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_EnoughSpace) {
   // We will read content url from the result.
   scoped_ptr<base::Value> document =
       google_apis::test_util::LoadJSONFile("gdata/document_to_download.json");
-  SetExpectationsForGetResourceEntry(&document, "file:2_file_resource_id");
+  SetExpectationsForGetResourceEntry(*document, "file:2_file_resource_id");
 
   // The file is obtained with the mock DriveService.
   EXPECT_CALL(*mock_drive_service_,
@@ -2059,7 +2062,7 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_NoSpaceAtAll) {
   // We will read content url from the result.
   scoped_ptr<base::Value> document =
       google_apis::test_util::LoadJSONFile("gdata/document_to_download.json");
-  SetExpectationsForGetResourceEntry(&document, "file:2_file_resource_id");
+  SetExpectationsForGetResourceEntry(*document, "file:2_file_resource_id");
 
   // The file is not obtained with the mock DriveService, because of no space.
   EXPECT_CALL(*mock_drive_service_,
@@ -2115,7 +2118,7 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_NoEnoughSpaceButCanFreeUp) {
   // We will read content url from the result.
   scoped_ptr<base::Value> document =
       google_apis::test_util::LoadJSONFile("gdata/document_to_download.json");
-  SetExpectationsForGetResourceEntry(&document, "file:2_file_resource_id");
+  SetExpectationsForGetResourceEntry(*document, "file:2_file_resource_id");
 
   // The file is obtained with the mock DriveService, because of we freed up the
   // space.
@@ -2168,7 +2171,7 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_EnoughSpaceButBecomeFull) {
   // We will read content url from the result.
   scoped_ptr<base::Value> document =
       google_apis::test_util::LoadJSONFile("gdata/document_to_download.json");
-  SetExpectationsForGetResourceEntry(&document, "file:2_file_resource_id");
+  SetExpectationsForGetResourceEntry(*document, "file:2_file_resource_id");
 
   // The file is obtained with the mock DriveService.
   EXPECT_CALL(*mock_drive_service_,
@@ -2275,7 +2278,7 @@ TEST_F(DriveFileSystemTest, GetFileByResourceId) {
   // We will read content url from the result.
   scoped_ptr<base::Value> document =
       google_apis::test_util::LoadJSONFile("gdata/document_to_download.json");
-  SetExpectationsForGetResourceEntry(&document, "file:2_file_resource_id");
+  SetExpectationsForGetResourceEntry(*document, "file:2_file_resource_id");
 
   // The file is obtained with the mock DriveService, because it's not stored in
   // the cache.
@@ -2622,7 +2625,7 @@ TEST_F(DriveFileSystemTest, OpenAndCloseFile) {
   // We will read content url from the result.
   scoped_ptr<base::Value> document =
       google_apis::test_util::LoadJSONFile("gdata/document_to_download.json");
-  SetExpectationsForGetResourceEntry(&document, "file:2_file_resource_id");
+  SetExpectationsForGetResourceEntry(*document, "file:2_file_resource_id");
 
   // The file is obtained with the mock DriveService.
   EXPECT_CALL(*mock_drive_service_,

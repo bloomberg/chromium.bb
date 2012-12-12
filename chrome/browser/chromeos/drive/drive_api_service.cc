@@ -61,6 +61,39 @@ void ParseResourceListAndRun(
   callback.Run(error, resource_list.Pass());
 }
 
+// Parses the JSON value to ResourceEntry runs |callback|.
+void ParseResourceEntryAndRun(
+    const google_apis::GetResourceEntryCallback& callback,
+    google_apis::GDataErrorCode error,
+    scoped_ptr<base::Value> value) {
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (!value) {
+    callback.Run(error, scoped_ptr<google_apis::ResourceEntry>());
+    return;
+  }
+
+  // Parsing FileResource is cheap enough to do on UI thread.
+  scoped_ptr<google_apis::FileResource> file_resource =
+      google_apis::FileResource::CreateFrom(*value);
+  if (!file_resource) {
+    callback.Run(google_apis::GDATA_PARSE_ERROR,
+                 scoped_ptr<google_apis::ResourceEntry>());
+    return;
+  }
+
+  // Converting to ResourceEntry is cheap enough to do on UI thread.
+  scoped_ptr<google_apis::ResourceEntry> entry =
+      google_apis::ResourceEntry::CreateFromFileResource(*file_resource);
+  if (!entry) {
+    callback.Run(google_apis::GDATA_PARSE_ERROR,
+                 scoped_ptr<google_apis::ResourceEntry>());
+    return;
+  }
+
+  callback.Run(error, entry.Pass());
+}
+
 }  // namespace
 
 DriveAPIService::DriveAPIService(
@@ -184,7 +217,7 @@ void DriveAPIService::GetChangelist(
 
 void DriveAPIService::GetResourceEntry(
     const std::string& resource_id,
-    const google_apis::GetDataCallback& callback) {
+    const google_apis::GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -192,7 +225,7 @@ void DriveAPIService::GetResourceEntry(
       operation_registry(),
       url_request_context_getter_,
       resource_id,
-      callback));
+      base::Bind(&ParseResourceEntryAndRun, callback)));
 }
 
 void DriveAPIService::GetAccountMetadata(

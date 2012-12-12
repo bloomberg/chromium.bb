@@ -107,6 +107,28 @@ void ParseResourceListAndRun(const GetResourceListCallback& callback,
       base::Bind(&DidParseResourceListOnBlockingPool, callback, error));
 }
 
+// Parses the JSON value to ResourceEntry runs |callback|.
+void ParseResourceEntryAndRun(const GetResourceEntryCallback& callback,
+                              GDataErrorCode error,
+                              scoped_ptr<base::Value> value) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (!value) {
+    callback.Run(error, scoped_ptr<ResourceEntry>());
+    return;
+  }
+
+  // Parsing ResourceEntry is cheap enough to do on UI thread.
+  scoped_ptr<ResourceEntry> entry =
+      google_apis::ResourceEntry::ExtractAndParse(*value);
+  if (!entry) {
+    callback.Run(GDATA_PARSE_ERROR, scoped_ptr<ResourceEntry>());
+    return;
+  }
+
+  callback.Run(error, entry.Pass());
+}
+
 // OAuth2 scopes for the documents API.
 const char kDocsListScope[] = "https://docs.google.com/feeds/";
 const char kSpreadsheetsScope[] = "https://spreadsheets.google.com/feeds/";
@@ -213,16 +235,17 @@ void GDataWapiService::GetResourceList(
 
 void GDataWapiService::GetResourceEntry(
     const std::string& resource_id,
-    const GetDataCallback& callback) {
+    const GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   runner_->StartOperationWithRetry(
-      new GetResourceEntryOperation(operation_registry(),
-                                    url_request_context_getter_,
-                                    url_generator_,
-                                    resource_id,
-                                    callback));
+      new GetResourceEntryOperation(
+          operation_registry(),
+          url_request_context_getter_,
+          url_generator_,
+          resource_id,
+          base::Bind(&ParseResourceEntryAndRun, callback)));
 }
 
 void GDataWapiService::GetAccountMetadata(const GetDataCallback& callback) {

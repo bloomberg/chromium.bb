@@ -194,21 +194,14 @@ void DriveFileSyncClient::DidGetParentDirectoryForCreateDirectory(
     const FilePath::StringType& directory_name,
     const ResourceIdCallback& callback,
     google_apis::GDataErrorCode error,
-    scoped_ptr<base::Value> data) {
+    scoped_ptr<google_apis::ResourceEntry> entry) {
   DCHECK(CalledOnValidThread());
 
   if (error != google_apis::HTTP_SUCCESS) {
     callback.Run(error, std::string());
     return;
   }
-  DCHECK(data);
-
-  scoped_ptr<google_apis::ResourceEntry> entry(
-      google_apis::ResourceEntry::ExtractAndParse(*data));
-  if (!entry) {
-    callback.Run(google_apis::GDATA_PARSE_ERROR, std::string());
-    return;
-  }
+  DCHECK(entry);
 
   drive_service_->AddNewDirectory(
       entry->content_url(),
@@ -253,7 +246,7 @@ void DriveFileSyncClient::GetResourceEntry(
   DCHECK(CalledOnValidThread());
   drive_service_->GetResourceEntry(
       resource_id,
-      base::Bind(&DriveFileSyncClient::DidGetResourceEntryData,
+      base::Bind(&DriveFileSyncClient::DidGetResourceEntry,
                  AsWeakPtr(), callback));
 }
 
@@ -331,7 +324,7 @@ void DriveFileSyncClient::DownloadFile(
   DCHECK(CalledOnValidThread());
   drive_service_->GetResourceEntry(
       resource_id,
-      base::Bind(&DriveFileSyncClient::DidGetResourceEntryData,
+      base::Bind(&DriveFileSyncClient::DidGetResourceEntry,
                  AsWeakPtr(),
                  base::Bind(&DriveFileSyncClient::DownloadFileInternal,
                             AsWeakPtr(), local_file_md5, local_file_path,
@@ -347,7 +340,7 @@ void DriveFileSyncClient::UploadNewFile(
   DCHECK(CalledOnValidThread());
   drive_service_->GetResourceEntry(
       directory_resource_id,
-      base::Bind(&DriveFileSyncClient::DidGetResourceEntryData,
+      base::Bind(&DriveFileSyncClient::DidGetResourceEntry,
                  AsWeakPtr(),
                  base::Bind(&DriveFileSyncClient::UploadNewFileInternal,
                             AsWeakPtr(), local_file_path, title, file_size,
@@ -363,7 +356,7 @@ void DriveFileSyncClient::UploadExistingFile(
   DCHECK(CalledOnValidThread());
   drive_service_->GetResourceEntry(
       resource_id,
-      base::Bind(&DriveFileSyncClient::DidGetResourceEntryData,
+      base::Bind(&DriveFileSyncClient::DidGetResourceEntry,
                  AsWeakPtr(),
                  base::Bind(&DriveFileSyncClient::UploadExistingFileInternal,
                             AsWeakPtr(), remote_file_md5, local_file_path,
@@ -377,7 +370,7 @@ void DriveFileSyncClient::DeleteFile(
   DCHECK(CalledOnValidThread());
   drive_service_->GetResourceEntry(
       resource_id,
-      base::Bind(&DriveFileSyncClient::DidGetResourceEntryData,
+      base::Bind(&DriveFileSyncClient::DidGetResourceEntry,
                  AsWeakPtr(),
                  base::Bind(&DriveFileSyncClient::DeleteFileInternal,
                             AsWeakPtr(), remote_file_md5, callback)));
@@ -427,10 +420,10 @@ void DriveFileSyncClient::DidGetResourceList(
   callback.Run(error, resource_list.Pass());
 }
 
-void DriveFileSyncClient::DidGetResourceEntryData(
+void DriveFileSyncClient::DidGetResourceEntry(
     const ResourceEntryCallback& callback,
     google_apis::GDataErrorCode error,
-    scoped_ptr<base::Value> data) {
+    scoped_ptr<google_apis::ResourceEntry> entry) {
   DCHECK(CalledOnValidThread());
 
   if (error != google_apis::HTTP_SUCCESS) {
@@ -438,11 +431,7 @@ void DriveFileSyncClient::DidGetResourceEntryData(
     return;
   }
 
-  DCHECK(data);
-  scoped_ptr<google_apis::ResourceEntry> entry(
-      google_apis::ResourceEntry::ExtractAndParse(*data));
-  if (!entry)
-    error = google_apis::GDATA_PARSE_ERROR;
+  DCHECK(entry);
   callback.Run(error, entry.Pass());
 }
 

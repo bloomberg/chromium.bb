@@ -306,12 +306,12 @@ ACTION_P2(InvokeGetDataCallback0, error, result) {
       base::Bind(arg0, error, base::Passed(&value)));
 }
 
-// Invokes |arg0| as a GetDataCallback.
-ACTION_P2(InvokeGetDataCallback1, error, result) {
-  scoped_ptr<base::Value> value(result.Pass());
+// Invokes |arg1| as a GetResourceEntryCallback.
+ACTION_P2(InvokeGetResourceEntryCallback1, error, result) {
+  scoped_ptr<google_apis::ResourceEntry> entry(result.Pass());
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(arg1, error, base::Passed(&value)));
+      base::Bind(arg1, error, base::Passed(&entry)));
 }
 
 // Invokes |arg2| as a GetDataCallback.
@@ -493,11 +493,13 @@ TEST_F(DriveFileSyncServiceTest, RegisterNewOrigin) {
   //
   // |sync_root_entry| contains kSyncRootContentURL which is to be added as
   // a new origin directory under the root directory.
-  scoped_ptr<Value> sync_root_entry(LoadJSONFile(
+  scoped_ptr<Value> sync_root_entry_value(LoadJSONFile(
       "sync_file_system/sync_root_entry.json"));
+  scoped_ptr<google_apis::ResourceEntry> sync_root_entry
+      = google_apis::ResourceEntry::ExtractAndParse(*sync_root_entry_value);
   EXPECT_CALL(*mock_drive_service(),
               GetResourceEntry(kSyncRootResourceId, _))
-      .WillOnce(InvokeGetDataCallback1(
+      .WillOnce(InvokeGetResourceEntryCallback1(
           google_apis::HTTP_SUCCESS,
           base::Passed(&sync_root_entry)));
 
@@ -842,11 +844,15 @@ TEST_F(DriveFileSyncServiceTest, RemoteChange_NewFile) {
               ClearLocalChanges(CreateURL(kOrigin, kFileName), _))
       .WillOnce(InvokeCompletionCallback());
 
-  scoped_ptr<Value> file_entry(LoadJSONFile("gdata/file_entry.json").Pass());
+  scoped_ptr<Value> file_entry_value(
+      LoadJSONFile("gdata/file_entry.json").Pass());
+  scoped_ptr<google_apis::ResourceEntry> file_entry
+      = google_apis::ResourceEntry::ExtractAndParse(*file_entry_value);
   EXPECT_CALL(*mock_drive_service(),
               GetResourceEntry(kFileResourceId, _))
-      .WillOnce(InvokeGetDataCallback1(google_apis::HTTP_SUCCESS,
-                                       base::Passed(&file_entry)));
+      .WillOnce(InvokeGetResourceEntryCallback1(
+          google_apis::HTTP_SUCCESS,
+          base::Passed(&file_entry)));
 
   EXPECT_CALL(*mock_drive_service(),
               DownloadFile(_, _, GURL("https://file_content_url"), _, _))
@@ -891,11 +897,15 @@ TEST_F(DriveFileSyncServiceTest, RemoteChange_UpdateFile) {
               ClearLocalChanges(CreateURL(kOrigin, kFileName), _))
       .WillOnce(InvokeCompletionCallback());
 
-  scoped_ptr<Value> file_entry(LoadJSONFile("gdata/file_entry.json").Pass());
+  scoped_ptr<Value> file_entry_value(
+      LoadJSONFile("gdata/file_entry.json").Pass());
+  scoped_ptr<google_apis::ResourceEntry> file_entry
+      = google_apis::ResourceEntry::ExtractAndParse(*file_entry_value);
   EXPECT_CALL(*mock_drive_service(),
               GetResourceEntry(kFileResourceId, _))
-      .WillOnce(InvokeGetDataCallback1(google_apis::HTTP_SUCCESS,
-                                       base::Passed(&file_entry)));
+      .WillOnce(InvokeGetResourceEntryCallback1(
+          google_apis::HTTP_SUCCESS,
+          base::Passed(&file_entry)));
 
   EXPECT_CALL(*mock_drive_service(),
               DownloadFile(_, _, GURL("https://file_content_url"), _, _))

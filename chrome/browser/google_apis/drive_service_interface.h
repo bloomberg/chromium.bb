@@ -63,6 +63,11 @@ typedef base::Callback<void(GDataErrorCode error,
                             scoped_ptr<ResourceList> resource_list)>
     GetResourceListCallback;
 
+// Callback used for GetResourceEntry().
+typedef base::Callback<void(GDataErrorCode error,
+                            scoped_ptr<ResourceEntry> entry)>
+    GetResourceEntryCallback;
+
 // This defines an interface for sharing by DriveService and MockDriveService
 // so that we can do testing of clients of DriveService.
 //
@@ -135,7 +140,7 @@ class DriveServiceInterface {
   // Upon completion, invokes |callback| with results on the calling thread.
   // |callback| must not be null.
   virtual void GetResourceEntry(const std::string& resource_id,
-                                const GetDataCallback& callback) = 0;
+                                const GetResourceEntryCallback& callback) = 0;
 
   // Gets the account metadata from the server using the default account
   // metadata URL. Upon completion, invokes |callback| with results on the

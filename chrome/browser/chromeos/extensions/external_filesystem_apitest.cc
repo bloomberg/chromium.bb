@@ -403,12 +403,14 @@ IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest,
   // Later in the test, file handler will try to open the same file on gdata
   // mount point. This time, DownloadFile should not be called because local
   // copy is already present in the cache.
-  scoped_ptr<base::Value> document_to_download_value(
+  scoped_ptr<base::Value> file_to_download_value(
       LoadJSONFile(kTestDocumentToDownloadEntry));
+  scoped_ptr<google_apis::ResourceEntry> file_to_download(
+      google_apis::ResourceEntry::ExtractAndParse(*file_to_download_value));
   EXPECT_CALL(*mock_drive_service_,
               GetResourceEntry("file:1_file_resource_id", _))
       .WillOnce(MockGetResourceEntryCallback(google_apis::HTTP_SUCCESS,
-                                             &document_to_download_value));
+                                             &file_to_download));
 
   // We expect to download url defined in document entry returned by
   // GetResourceEntry mock implementation.
@@ -467,12 +469,14 @@ IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest, ContentSearch) {
                                             &second_search_list));
 
   // Test will try to create a snapshot of the returned file.
-  scoped_ptr<base::Value> document_to_download_value(
+  scoped_ptr<base::Value> file_to_download_value(
       LoadJSONFile(kTestDocumentToDownloadEntry));
+  scoped_ptr<google_apis::ResourceEntry> file_to_download(
+      google_apis::ResourceEntry::ExtractAndParse(*file_to_download_value));
   EXPECT_CALL(*mock_drive_service_,
               GetResourceEntry("file:1_file_resource_id", _))
       .WillOnce(MockGetResourceEntryCallback(google_apis::HTTP_SUCCESS,
-                                             &document_to_download_value));
+                                             &file_to_download));
 
   // We expect to download url defined in document entry returned by
   // GetResourceEntry mock implementation.

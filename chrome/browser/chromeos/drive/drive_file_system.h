@@ -27,6 +27,7 @@ class SequencedTaskRunner;
 }
 
 namespace google_apis {
+class ResourceEntry;
 class ResourceList;
 class DriveServiceInterface;
 class DriveUploaderInterface;
@@ -432,7 +433,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // from the content url extracted from the fetched metadata.
   void OnGetResourceEntry(const GetFileFromCacheParams& params,
                           google_apis::GDataErrorCode status,
-                          scoped_ptr<base::Value> data);
+                          scoped_ptr<google_apis::ResourceEntry> entry);
 
   // Check available space using file size from the fetched metadata. Called
   // from OnGetResourceEntry after RefreshFile is complete.

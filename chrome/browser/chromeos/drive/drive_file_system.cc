@@ -966,9 +966,10 @@ void DriveFileSystem::OnGetFileFromCache(
                  params));
 }
 
-void DriveFileSystem::OnGetResourceEntry(const GetFileFromCacheParams& params,
-                                         google_apis::GDataErrorCode status,
-                                         scoped_ptr<base::Value> data) {
+void DriveFileSystem::OnGetResourceEntry(
+    const GetFileFromCacheParams& params,
+    google_apis::GDataErrorCode status,
+    scoped_ptr<google_apis::ResourceEntry> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!params.get_file_callback.is_null());
 
@@ -979,16 +980,6 @@ void DriveFileSystem::OnGetResourceEntry(const GetFileFromCacheParams& params,
                                  params.mime_type,
                                  REGULAR_FILE);
     return;
-  }
-
-  scoped_ptr<google_apis::ResourceEntry> entry;
-  if (!google_apis::util::IsDriveV2ApiEnabled()) {
-    entry = google_apis::ResourceEntry::ExtractAndParse(*data);
-  } else {
-    scoped_ptr<google_apis::FileResource> file_resource =
-        google_apis::FileResource::CreateFrom(*data);
-    entry = google_apis::ResourceEntry::CreateFromFileResource(
-        *file_resource);
   }
 
   GURL content_url = entry->content_url();
