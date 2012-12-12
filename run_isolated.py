@@ -234,6 +234,8 @@ def load_isolated(content):
     if key == 'command':
       if not isinstance(value, list):
         raise ConfigError('Expected list, got %r' % value)
+      if not value:
+        raise ConfigError('Expected non-empty command')
       for subvalue in value:
         if not isinstance(subvalue, basestring):
           raise ConfigError('Expected string, got %r' % subvalue)
@@ -259,12 +261,6 @@ def load_isolated(content):
           elif subsubkey == 's':
             if not isinstance(subsubvalue, int):
               raise ConfigError('Expected int, got %r' % subsubvalue)
-          elif subsubkey == 't':
-            if not isinstance(subsubvalue, int):
-              raise ConfigError('Expected int, got %r' % subsubvalue)
-          elif subsubkey == 'T':
-            if not isinstance(subsubvalue, bool):
-              raise ConfigError('Expected bool, got %r' % subsubvalue)
           else:
             raise ConfigError('Unknown subsubkey %s' % subsubkey)
         if bool('h' in subvalue) and bool('l' in subvalue):
@@ -275,6 +271,8 @@ def load_isolated(content):
     elif key == 'includes':
       if not isinstance(value, list):
         raise ConfigError('Expected list, got %r' % value)
+      if not value:
+        raise ConfigError('Expected non-empty includes list')
       for subvalue in value:
         if not RE_IS_SHA1.match(subvalue):
           raise ConfigError('Expected sha-1, got %r' % subvalue)

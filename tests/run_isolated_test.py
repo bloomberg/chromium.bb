@@ -51,7 +51,6 @@ class RunIsolatedTest(unittest.TestCase):
         u'a': {
           u'l': u'somewhere',
           u'm': 123,
-          u't': 456,
         },
         u'b': {
           u'm': 123,
