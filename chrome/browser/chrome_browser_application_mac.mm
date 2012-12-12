@@ -470,26 +470,42 @@ void SwizzleInit() {
     // go off the rails.  The last exception thrown is tracked because
     // it may be the one most directly associated with the crash.
     static NSString* const kFirstExceptionKey = @"firstexception";
+    static NSString* const kFirstExceptionBtKey = @"firstexception_bt";
     static BOOL trackedFirstException = NO;
     static NSString* const kLastExceptionKey = @"lastexception";
+    static NSString* const kLastExceptionBtKey = @"lastexception_bt";
 
-    // TODO(shess): It would be useful to post some stacktrace info
-    // from the exception.
-    // 10.6 has -[NSException callStackSymbols]
-    // 10.5 has -[NSException callStackReturnAddresses]
-    // 10.5 has backtrace_symbols().
-    // I've tried to combine the latter two, but got nothing useful.
-    // The addresses are right, though, maybe we could train the crash
-    // server to decode them for us.
-
+    NSString* const kExceptionKey =
+        trackedFirstException ? kLastExceptionKey : kFirstExceptionKey;
     NSString* value = [NSString stringWithFormat:@"%@ reason %@",
                                 [anException name], [anException reason]];
-    if (!trackedFirstException) {
-      base::mac::SetCrashKeyValue(kFirstExceptionKey, value);
-      trackedFirstException = YES;
+    base::mac::SetCrashKeyValue(kExceptionKey, value);
+
+    // Encode the callstack from point of throw.
+    // TODO(shess): Our swizzle plus the 23-frame limit plus Cocoa
+    // overhead may make this less than useful.  If so, perhaps skip
+    // some items and/or use two keys.
+    NSString* const kExceptionBtKey =
+        trackedFirstException ? kLastExceptionBtKey : kFirstExceptionBtKey;
+    NSArray* addressArray = [anException callStackReturnAddresses];
+    NSUInteger addressCount = [addressArray count];
+    if (addressCount) {
+      // SetCrashKeyFromAddresses() only encodes 23, so that's a natural limit.
+      const NSUInteger kAddressCountMax = 23;
+      void* addresses[kAddressCountMax];
+      if (addressCount > kAddressCountMax)
+        addressCount = kAddressCountMax;
+
+      for (NSUInteger i = 0; i < addressCount; ++i) {
+        addresses[i] = reinterpret_cast<void*>(
+            [[addressArray objectAtIndex:i] unsignedIntegerValue]);
+      }
+      base::mac::SetCrashKeyFromAddresses(
+          kExceptionBtKey, addresses, static_cast<size_t>(addressCount));
     } else {
-      base::mac::SetCrashKeyValue(kLastExceptionKey, value);
+      base::mac::ClearCrashKey(kExceptionBtKey);
     }
+    trackedFirstException = YES;
 
     reportingException = NO;
   }
