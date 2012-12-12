@@ -99,6 +99,10 @@ struct CONTENT_EXPORT PasswordForm {
   // When parsing an HTML form, this is typically empty.
   string16 password_value;
 
+  // False if autocomplete is set to "off" for the password input element;
+  // True otherwise.
+  bool password_autocomplete_set;
+
   // If the form was a change password form, the name of the
   // 'old password' input element. Optional.
   string16 old_password_element;

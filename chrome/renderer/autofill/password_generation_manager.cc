@@ -103,10 +103,7 @@ void PasswordGenerationManager::DidFinishLoad(WebKit::WebFrame* frame) {
   WebKit::WebVector<WebKit::WebFormElement> forms;
   frame->document().forms(forms);
   for (size_t i = 0; i < forms.size(); ++i) {
-    // Ignore forms with autocomplete turned off for now. We may remove this in
-    // the future, as we only want to avoid creating passwords if the signin
-    // form has autocomplete turned off.
-    if (forms[i].isNull() || !forms[i].autoComplete())
+    if (forms[i].isNull())
       continue;
 
     // If we can't get a valid PasswordForm, we skip this form because the

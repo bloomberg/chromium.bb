@@ -348,10 +348,6 @@ void PasswordAutofillManager::SendPasswordForms(WebKit::WebFrame* frame,
   for (size_t i = 0; i < forms.size(); ++i) {
     const WebKit::WebFormElement& form = forms[i];
 
-    // Respect autocomplete=off.
-    if (!form.autoComplete())
-      continue;
-
     // If requested, ignore non-rendered forms, e.g. those styled with
     // display:none.
     if (only_visible && !form.hasNonEmptyBoundingBox())

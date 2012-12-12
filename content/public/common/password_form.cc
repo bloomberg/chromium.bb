@@ -8,6 +8,7 @@ namespace content {
 
 PasswordForm::PasswordForm()
     : scheme(SCHEME_HTML),
+      password_autocomplete_set(true),
       ssl_valid(false),
       preferred(false),
       blacklisted_by_user(false),

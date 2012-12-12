@@ -104,8 +104,9 @@ const char kSigninFormHTML[] =
 const char kAccountCreationFormHTML[] =
     "<FORM name = 'blah' action = 'http://www.random.com/'> "
     "  <INPUT type = 'text' id = 'username'/> "
-    "  <INPUT type = 'password' id = 'first_password' size=5/> "
-    "  <INPUT type = 'password' id = 'second_password' size=5/> "
+    "  <INPUT type = 'password' id = 'first_password' "
+    "         autocomplete = 'off' size = 5/>"
+    "  <INPUT type = 'password' id = 'second_password' size = 5/> "
     "  <INPUT type = 'text' id = 'address'/> "
     "  <INPUT type = 'submit' value = 'LOGIN' />"
     "</FORM>";

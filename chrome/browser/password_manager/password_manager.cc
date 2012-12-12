@@ -181,6 +181,12 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
   if (!manager->HasValidPasswordForm())
     return;
 
+  // Always save generated passwords, as the user expresses explicit intent for
+  // Chrome to manage such passwords. For other passwords, respect the
+  // autocomplete attribute.
+  if (!manager->HasGeneratedPassword() && !form.password_autocomplete_set)
+    return;
+
   PasswordForm provisionally_saved_form(form);
   provisionally_saved_form.ssl_valid = form.origin.SchemeIsSecure() &&
       !delegate_->DidLastPageLoadEncounterSSLErrors();
