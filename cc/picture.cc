@@ -46,10 +46,11 @@ void Picture::Record(ContentLayerClient* painter,
   DCHECK(!picture_);
   picture_ = skia::AdoptRef(new SkPicture);
 
+  // TODO(enne): Use SkPicture::kOptimizeForClippedPlayback_RecordingFlag
+  // once http://code.google.com/p/skia/issues/detail?id=1014 is fixed.
   SkCanvas* canvas = picture_->beginRecording(
       layer_rect_.width(),
-      layer_rect_.height(),
-      SkPicture::kOptimizeForClippedPlayback_RecordingFlag);
+      layer_rect_.height());
 
   canvas->save();
   canvas->translate(SkFloatToScalar(-layer_rect_.x()),
