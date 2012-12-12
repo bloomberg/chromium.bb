@@ -53,10 +53,6 @@ class PRINTING_EXPORT PrintingContextWin : public PrintingContext {
                               const DEVMODE* dev_mode,
                               gfx::NativeDrawingContext* context);
 
-  // Retrieves the content of a GetPrinter call.
-  static void GetPrinterHelper(HANDLE printer, int level,
-                               scoped_array<uint8>* buffer);
-
  private:
   // Class that manages the PrintDlgEx() callbacks. This is meant to be a
   // temporary object used during the Print... dialog display.

@@ -14,34 +14,11 @@
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_hglobal.h"
 #include "printing/backend/print_backend_consts.h"
+#include "printing/backend/printing_info_win.h"
 #include "printing/backend/win_helper.h"
 
+
 namespace {
-
-// This class is designed to work with PRINTER_INFO_X structures
-// and calls GetPrinter internally with correctly allocated buffer.
-template <typename T>
-class PrinterInfo {
- public:
-  bool GetPrinterInfo(HANDLE printer, int level) {
-    DWORD buf_size = 0;
-    GetPrinter(printer, level, NULL, 0, &buf_size);
-    if (buf_size == 0) {
-      LOG(WARNING) << "Failed to GetPrinter, error = " << GetLastError();
-      return false;
-    }
-    buffer_.reset(new uint8[buf_size]);
-    memset(buffer_.get(), 0, buf_size);
-    return !!GetPrinter(printer, level, buffer_.get(), buf_size, &buf_size);
-  }
-
-  const T* get() const {
-    return reinterpret_cast<T*>(buffer_.get());
-  }
-
- private:
-  scoped_array<uint8> buffer_;
-};
 
 HRESULT StreamOnHGlobalToString(IStream* stream, std::string* out) {
   DCHECK(stream);
@@ -133,77 +110,47 @@ bool PrintBackendWin::GetPrinterSemanticCapsAndDefaults(
     return false;
   }
 
-  PrinterInfo<PRINTER_INFO_5> info_5;
-  if (!info_5.GetPrinterInfo(printer_handle, 5)) {
-    LOG(WARNING) << "Failed to get PRINTER_INFO_5, error = " << GetLastError();
+  PrinterInfo5 info_5;
+  if (!info_5.Init(printer_handle)) {
     return false;
   }
+  DCHECK_EQ(info_5.get()->pPrinterName, UTF8ToUTF16(printer_name));
+
+  PrinterSemanticCapsAndDefaults caps;
 
   // Get printer capabilities. For more info see here:
   // http://msdn.microsoft.com/en-us/library/windows/desktop/dd183552(v=vs.85).aspx
-  bool color_supported = (DeviceCapabilities(info_5.get()->pPrinterName,
+  caps.color_capable = (::DeviceCapabilities(info_5.get()->pPrinterName,
                                              info_5.get()->pPortName,
                                              DC_COLORDEVICE,
                                              NULL,
                                              NULL) == 1);
 
-  bool duplex_supported = (DeviceCapabilities(info_5.get()->pPrinterName,
+  caps.duplex_capable = (::DeviceCapabilities(info_5.get()->pPrinterName,
                                               info_5.get()->pPortName,
                                               DC_DUPLEX,
                                               NULL,
                                               NULL) == 1);
 
-  DEVMODE* devmode = NULL;
-  // Retrieves user defaults.
-  PrinterInfo<PRINTER_INFO_9> info_9;
-  if (info_9.GetPrinterInfo(printer_handle, 9)) {
-    devmode = info_9.get()->pDevMode;
-  } else {
-    LOG(WARNING) << "Failed to get PRINTER_INFO_9, error = " << GetLastError();
-  }
+  UserDefaultDevMode user_settings;
 
-  // Retrieves admin defaults.
-  PrinterInfo<PRINTER_INFO_8> info_8;
-  if (!devmode) {
-    if (info_8.GetPrinterInfo(printer_handle, 8)) {
-      devmode = info_8.get()->pDevMode;
-    } else {
-      LOG(WARNING) << "Failed to get PRINTER_INFO_8, error = " <<
-                      GetLastError();
-    }
-  }
+  if (user_settings.Init(printer_handle)) {
+    if ((user_settings.get()->dmFields & DM_COLOR) == DM_COLOR)
+      caps.color_default = (user_settings.get()->dmColor == DMCOLOR_COLOR);
 
-  // Retrieves printer defaults.
-  PrinterInfo<PRINTER_INFO_2> info_2;
-  if (!devmode) {
-    if (info_2.GetPrinterInfo(printer_handle, 2)) {
-      devmode = info_2.get()->pDevMode;
-    } else {
-      LOG(WARNING) << "Failed to get PRINTER_INFO_2, error = " <<
-                       GetLastError();
-    }
-  }
-
-  PrinterSemanticCapsAndDefaults caps;
-  caps.color_capable = color_supported;
-  caps.duplex_capable = duplex_supported;
-
-  if (devmode) {
-    if ((devmode->dmFields & DM_COLOR) == DM_COLOR)
-      caps.color_default = (devmode->dmColor == DMCOLOR_COLOR);
-    if ((devmode->dmFields & DM_DUPLEX) == DM_DUPLEX) {
-      switch (devmode->dmDuplex) {
-        case DMDUP_SIMPLEX:
-          caps.duplex_default = SIMPLEX;
-          break;
-        case DMDUP_VERTICAL:
-          caps.duplex_default = LONG_EDGE;
-          break;
-        case DMDUP_HORIZONTAL:
-          caps.duplex_default = SHORT_EDGE;
-          break;
-        default:
-          NOTREACHED();
+    if ((user_settings.get()->dmFields & DM_DUPLEX) == DM_DUPLEX) {
+      switch (user_settings.get()->dmDuplex) {
+      case DMDUP_SIMPLEX:
+        caps.duplex_default = SIMPLEX;
+        break;
+      case DMDUP_VERTICAL:
+        caps.duplex_default = LONG_EDGE;
+        break;
+      case DMDUP_HORIZONTAL:
+        caps.duplex_default = SHORT_EDGE;
+        break;
+      default:
+        NOTREACHED();
       }
     }
   } else {
