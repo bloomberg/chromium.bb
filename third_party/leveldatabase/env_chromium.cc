@@ -13,7 +13,6 @@
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/platform_file.h"
-#include "base/process_util.h"
 #include "base/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/sys_info.h"
@@ -551,10 +550,6 @@ ChromiumEnv::ChromiumEnv()
     : page_size_(::base::SysInfo::VMAllocationGranularity()),
       bgsignal_(&mu_),
       started_bgthread_(false) {
-#if defined(OS_MACOSX)
-  ::base::EnableTerminationOnHeapCorruption();
-  ::base::EnableTerminationOnOutOfMemory();
-#endif  // OS_MACOSX
 }
 
 class Thread : public ::base::PlatformThread::Delegate {
