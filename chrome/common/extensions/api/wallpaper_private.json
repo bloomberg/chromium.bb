@@ -138,6 +138,26 @@
             "optional": true
           }
         ]
+      },
+      {
+        "name": "getOfflineWallpaperList",
+        "type": "function",
+        "description": "Get the list of file names of downloaded wallpapers.",
+        "nodoc": "true",
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "description": "Function called upon completion.",
+            "parameters": [
+              {
+                "type": "array",
+                "name": "results",
+                "items": {"type": "string"}
+              }
+            ]
+          }
+        ]
       }
     ]
   }

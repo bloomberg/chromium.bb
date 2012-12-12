@@ -567,3 +567,55 @@ void WallpaperSaveThumbnailFunction::Save(const std::string& data,
                      this, file_name));
   }
 }
+
+WallpaperGetOfflineWallpaperListFunction::
+    WallpaperGetOfflineWallpaperListFunction() {
+}
+
+WallpaperGetOfflineWallpaperListFunction::
+    ~WallpaperGetOfflineWallpaperListFunction() {
+}
+
+bool WallpaperGetOfflineWallpaperListFunction::RunImpl() {
+  sequence_token_ = BrowserThread::GetBlockingPool()->
+      GetNamedSequenceToken(chromeos::kWallpaperSequenceTokenName);
+  scoped_refptr<base::SequencedTaskRunner> task_runner =
+      BrowserThread::GetBlockingPool()->
+          GetSequencedTaskRunnerWithShutdownBehavior(sequence_token_,
+              base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
+
+  task_runner->PostTask(FROM_HERE,
+      base::Bind(&WallpaperGetOfflineWallpaperListFunction::GetList, this));
+  return true;
+}
+
+void WallpaperGetOfflineWallpaperListFunction::GetList() {
+  DCHECK(BrowserThread::GetBlockingPool()->IsRunningSequenceOnCurrentThread(
+      sequence_token_));
+  FilePath wallpaper_dir;
+  std::vector<std::string> file_list;
+  CHECK(PathService::Get(chrome::DIR_CHROMEOS_WALLPAPERS, &wallpaper_dir));
+  if (file_util::DirectoryExists(wallpaper_dir)) {
+    file_util::FileEnumerator files(wallpaper_dir, false,
+                                    file_util::FileEnumerator::FILES);
+    for (FilePath current = files.Next(); !current.empty();
+         current = files.Next()) {
+      std::string file_name = current.BaseName().RemoveExtension().value();
+      // Do not add file name of small resolution wallpaper to the list.
+      if (!EndsWith(file_name, chromeos::kSmallWallpaperSuffix, true))
+        file_list.push_back(current.BaseName().value());
+    }
+  }
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&WallpaperGetOfflineWallpaperListFunction::OnComplete,
+                 this, file_list));
+}
+
+void WallpaperGetOfflineWallpaperListFunction::OnComplete(
+    const std::vector<std::string>& file_list) {
+  ListValue* results = new ListValue();
+  results->AppendStrings(file_list);
+  SetResult(results);
+  SendResponse(true);
+}

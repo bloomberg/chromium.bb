@@ -72,15 +72,33 @@ chrome.test.getConfig(function(config) {
       url = url.replace(/PORT/, config.testServer.port);
       chrome.wallpaperPrivate.getThumbnail(url, pass(function(data) {
         chrome.test.assertNoLastError();
-        if (data)
+        if (data) {
           chrome.test.fail('Thumbnail is not found. getThumbnail should not ' +
                            'return any data.');
+        }
         chrome.wallpaperPrivate.saveThumbnail(url, wallpaper, pass(function() {
           chrome.test.assertNoLastError();
           chrome.wallpaperPrivate.getThumbnail(url, pass(function(data) {
             chrome.test.assertNoLastError();
             // Thumbnail should already be saved to thumbnail directory.
             chrome.test.assertEq(wallpaper, data);
+          }));
+        }));
+      }));
+    },
+    function getOfflineWallpaperList() {
+      chrome.wallpaperPrivate.getOfflineWallpaperList(pass(function(list) {
+        // We have previously saved test.jpg in wallpaper directory.
+        chrome.test.assertEq('test.jpg', list[0]);
+        // Saves the same wallpaper to wallpaper directory but name it as
+        // test1.jpg.
+        chrome.wallpaperPrivate.setWallpaper(wallpaper,
+                                             'CENTER_CROPPED',
+                                             'http://dummyurl/test1.jpg',
+                                             pass(function() {
+          chrome.wallpaperPrivate.getOfflineWallpaperList(pass(function(list) {
+            chrome.test.assertEq('test.jpg', list[0]);
+            chrome.test.assertEq('test1.jpg', list[1]);
           }));
         }));
       }));

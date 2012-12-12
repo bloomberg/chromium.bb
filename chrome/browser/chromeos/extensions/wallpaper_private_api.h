@@ -199,4 +199,28 @@ class WallpaperSaveThumbnailFunction : public AsyncExtensionFunction {
   base::SequencedWorkerPool::SequenceToken sequence_token_;
 };
 
+class WallpaperGetOfflineWallpaperListFunction : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("wallpaperPrivate.getOfflineWallpaperList");
+  WallpaperGetOfflineWallpaperListFunction();
+
+ protected:
+  virtual ~WallpaperGetOfflineWallpaperListFunction();
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  // Enumerates the list of files in wallpaper directory.
+  void GetList();
+
+  // Sends the list of files to extension api caller. If no files or no
+  // directory, sends empty list.
+  void OnComplete(const std::vector<std::string>& file_list);
+
+  // Sequence token associated with wallpaper operations. Shared with
+  // WallpaperManager.
+  base::SequencedWorkerPool::SequenceToken sequence_token_;
+};
+
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_WALLPAPER_PRIVATE_API_H_
