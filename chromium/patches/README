@@ -1,4 +1,4 @@
-Current Status as of Dec 3, 2012
+Current Status as of Dec 11, 2012
 
 
 Upstream cherry-picks:
@@ -7,6 +7,12 @@ Upstream cherry-picks:
 
 
 Current patches:
+
+to_upstream/
+10_realloc_mismatch.patch
+  phajdan.jr: Fixes a mismatch between posix_memalign and realloc
+  detected by debugallocation (http://crbug.com/30715). Pointer passed
+  to realloc must come from malloc, calloc or realloc, which was not the case.
 
 ugly/
 01_enable_checked_bitstream.patch
