@@ -71,7 +71,6 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, MAYBE_DrawAttentionOnActive) {
   EXPECT_FALSE(panel->IsDrawingAttention());
   panel->FlashFrame(true);
   EXPECT_FALSE(panel->IsDrawingAttention());
-  MessageLoop::current()->RunUntilIdle();
   EXPECT_FALSE(native_panel_testing->VerifyDrawingAttention());
 
   panel->Close();
@@ -98,20 +97,18 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest,
   EXPECT_FALSE(panel->IsDrawingAttention());
   panel->FlashFrame(true);
   EXPECT_TRUE(panel->IsDrawingAttention());
-  MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(native_panel_testing->VerifyDrawingAttention());
 
   // Stop drawing attention.
   panel->FlashFrame(false);
   EXPECT_FALSE(panel->IsDrawingAttention());
-  MessageLoop::current()->RunUntilIdle();
   EXPECT_FALSE(native_panel_testing->VerifyDrawingAttention());
 
   PanelManager::GetInstance()->CloseAll();
 }
 
-// http://crbug.com/143247 and http://crbug.com/164976 for USE_AURA.
-#if !defined(OS_WIN) || defined(USE_AURA)
+// http://crbug.com/143247
+#if !defined(OS_WIN)
 #define MAYBE_DrawAttentionResetOnActivate DISABLED_DrawAttentionResetOnActivate
 #else
 #define MAYBE_DrawAttentionResetOnActivate DrawAttentionResetOnActivate
@@ -132,7 +129,6 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest,
   // Test that the attention is drawn when the detached panel is not in focus.
   panel1->FlashFrame(true);
   EXPECT_TRUE(panel1->IsDrawingAttention());
-  MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(native_panel_testing->VerifyDrawingAttention());
 
   // Test that the attention is cleared when panel gets focus.

@@ -6,6 +6,7 @@
 
 #include <map>
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
@@ -133,6 +134,7 @@ void NativePanelTestingWin::FinishDragTitlebar() {
 }
 
 bool NativePanelTestingWin::VerifyDrawingAttention() const {
+  MessageLoop::current()->RunUntilIdle();
   return panel_view_->GetFrameView()->paint_state() ==
          PanelFrameView::PAINT_FOR_ATTENTION;
 }
