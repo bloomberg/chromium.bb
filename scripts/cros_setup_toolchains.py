@@ -46,7 +46,6 @@ DEFAULT_TARGET_VERSION_MAP = {
 }
 TARGET_VERSION_MAP = {
   'host' : {
-    'binutils' : '2.21.1',
     'gdb' : PACKAGE_NONE,
   },
 }
