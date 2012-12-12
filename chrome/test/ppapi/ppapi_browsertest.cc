@@ -225,6 +225,14 @@ TEST_PPAPI_NACL_VIA_HTTP(Core)
 #define MAYBE_ImeInputEvent ImeInputEvent
 #endif
 
+#if defined(OS_WIN) && defined(USE_AURA)
+#define MAYBE_WebSocket_AbortReceiveMessageCall \
+        DISABLED_WebSocket_AbortReceiveMessageCall
+#else
+#define MAYBE_WebSocket_AbortReceiveMessageCall \
+        WebSocket_AbortReceiveMessageCall
+#endif
+
 TEST_PPAPI_IN_PROCESS(MAYBE_InputEvent)
 TEST_PPAPI_OUT_OF_PROCESS(MAYBE_InputEvent)
 // TODO(bbudge) Enable when input events are proxied correctly for NaCl.
@@ -687,7 +695,7 @@ TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_BufferedAmount)
 TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_AbortCallsWithCallback)
 TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_AbortSendMessageCall)
 TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_AbortCloseCall)
-TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_AbortReceiveMessageCall)
+TEST_PPAPI_IN_PROCESS_WITH_WS(MAYBE_WebSocket_AbortReceiveMessageCall)
 TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_CcInterfaces)
 TEST_PPAPI_IN_PROCESS(WebSocket_UtilityInvalidConnect)
 TEST_PPAPI_IN_PROCESS(WebSocket_UtilityProtocols)
@@ -715,7 +723,7 @@ TEST_PPAPI_OUT_OF_PROCESS_WITH_WS(WebSocket_BufferedAmount)
 TEST_PPAPI_OUT_OF_PROCESS_WITH_WS(WebSocket_AbortCallsWithCallback)
 TEST_PPAPI_OUT_OF_PROCESS_WITH_WS(WebSocket_AbortSendMessageCall)
 TEST_PPAPI_OUT_OF_PROCESS_WITH_WS(WebSocket_AbortCloseCall)
-TEST_PPAPI_OUT_OF_PROCESS_WITH_WS(WebSocket_AbortReceiveMessageCall)
+TEST_PPAPI_OUT_OF_PROCESS_WITH_WS(MAYBE_WebSocket_AbortReceiveMessageCall)
 TEST_PPAPI_OUT_OF_PROCESS_WITH_WS(WebSocket_CcInterfaces)
 TEST_PPAPI_OUT_OF_PROCESS(WebSocket_UtilityInvalidConnect)
 TEST_PPAPI_OUT_OF_PROCESS(WebSocket_UtilityProtocols)
@@ -743,7 +751,7 @@ TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_BufferedAmount)
 TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_AbortCallsWithCallback)
 TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_AbortSendMessageCall)
 TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_AbortCloseCall)
-TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_AbortReceiveMessageCall)
+TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(MAYBE_WebSocket_AbortReceiveMessageCall)
 TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_CcInterfaces)
 TEST_PPAPI_NACL_VIA_HTTP(WebSocket_UtilityInvalidConnect)
 TEST_PPAPI_NACL_VIA_HTTP(WebSocket_UtilityProtocols)
