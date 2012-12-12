@@ -24,8 +24,19 @@ var testRunner = testRunner || {};
   var DefaultHandler = function(name) {
     var handler = {
       get: function(receiver, property) {
+        if (property === "splice")
+          return undefined;
+        if (property === "__proto__")
+          return {}
+        if (property === "toString")
+          return function() { return "[object Object]"; };
+        if (property === "constructor" || property === "valueOf")
+          return function() { return {}; };
         NotImplemented(name, property);
         return function() {}
+      },
+      getOwnPropertyNames: function() {
+        return [];
       },
       getPropertyDescriptor: function(property) {
         NotImplemented(name, property);
