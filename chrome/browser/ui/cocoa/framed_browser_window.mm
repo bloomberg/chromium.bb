@@ -75,29 +75,34 @@ const CGFloat kWindowGradientHeight = 24.0;
 @implementation FramedBrowserWindow
 
 - (id)initWithContentRect:(NSRect)contentRect
-                styleMask:(NSUInteger)aStyle
-                  backing:(NSBackingStoreType)bufferingType
-                    defer:(BOOL)flag {
+              hasTabStrip:(BOOL)hasTabStrip{
+  NSUInteger styleMask = NSTitledWindowMask |
+                         NSClosableWindowMask |
+                         NSMiniaturizableWindowMask |
+                         NSResizableWindowMask |
+                         NSTexturedBackgroundWindowMask;
   if ((self = [super initWithContentRect:contentRect
-                               styleMask:aStyle
-                                 backing:bufferingType
-                                   defer:flag])) {
-    if (aStyle & NSTexturedBackgroundWindowMask) {
-      // The following two calls fix http://crbug.com/25684 by preventing the
-      // window from recalculating the border thickness as the window is
-      // resized.
-      // This was causing the window tint to change for the default system theme
-      // when the window was being resized.
-      [self setAutorecalculatesContentBorderThickness:NO forEdge:NSMaxYEdge];
-      [self setContentBorderThickness:kWindowGradientHeight forEdge:NSMaxYEdge];
-    }
+                               styleMask:styleMask
+                                 backing:NSBackingStoreBuffered
+                                   defer:YES])) {
+    // The following two calls fix http://crbug.com/25684 by preventing the
+    // window from recalculating the border thickness as the window is
+    // resized.
+    // This was causing the window tint to change for the default system theme
+    // when the window was being resized.
+    [self setAutorecalculatesContentBorderThickness:NO forEdge:NSMaxYEdge];
+    [self setContentBorderThickness:kWindowGradientHeight forEdge:NSMaxYEdge];
 
+    hasTabStrip_ = hasTabStrip;
     closeButton_ = [self standardWindowButton:NSWindowCloseButton];
     [closeButton_ setPostsFrameChangedNotifications:YES];
+    [self adjustButton:closeButton_ ofKind:NSWindowCloseButton];
     miniaturizeButton_ = [self standardWindowButton:NSWindowMiniaturizeButton];
     [miniaturizeButton_ setPostsFrameChangedNotifications:YES];
+    [self adjustButton:miniaturizeButton_ ofKind:NSWindowMiniaturizeButton];
     zoomButton_ = [self standardWindowButton:NSWindowZoomButton];
     [zoomButton_ setPostsFrameChangedNotifications:YES];
+    [self adjustButton:zoomButton_ ofKind:NSWindowZoomButton];
 
     windowButtonsInterButtonSpacing_ =
         NSMinX([miniaturizeButton_ frame]) - NSMaxX([closeButton_ frame]);
@@ -127,32 +132,6 @@ const CGFloat kWindowGradientHeight = 24.0;
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [super dealloc];
-}
-
-- (void)setWindowController:(NSWindowController*)controller {
-  if (controller == [self windowController]) {
-    return;
-  }
-
-  [super setWindowController:controller];
-
-  BrowserWindowController* browserController
-      = static_cast<BrowserWindowController*>(controller);
-  if ([browserController isKindOfClass:[BrowserWindowController class]]) {
-    hasTabStrip_ = [browserController hasTabStrip];
-  } else {
-    hasTabStrip_ = NO;
-  }
-
-  // Force re-layout of the window buttons by wiggling the size of the frame
-  // view.
-  NSView* frameView = [[self contentView] superview];
-  BOOL frameViewDidAutoresizeSubviews = [frameView autoresizesSubviews];
-  [frameView setAutoresizesSubviews:NO];
-  NSRect oldFrame = [frameView frame];
-  [frameView setFrame:NSZeroRect];
-  [frameView setFrame:oldFrame];
-  [frameView setAutoresizesSubviews:frameViewDidAutoresizeSubviews];
 }
 
 - (void)adjustCloseButton:(NSNotification*)notification {

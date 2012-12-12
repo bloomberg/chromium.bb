@@ -224,18 +224,20 @@ enum {
 
 // Private(TestingAPI) init routine with testing options.
 - (id)initWithBrowser:(Browser*)browser takeOwnership:(BOOL)ownIt {
-  // Use initWithWindowNibPath:: instead of initWithWindowNibName: so we
-  // can override it in a unit test.
-  NSString* nibpath = [base::mac::FrameworkBundle()
-                        pathForResource:@"BrowserWindow"
-                                 ofType:@"nib"];
-  if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
+  bool hasTabStrip = browser->SupportsWindowFeature(Browser::FEATURE_TABSTRIP);
+  if ((self = [super initTabWindowControllerWithTabStrip:hasTabStrip])) {
     DCHECK(browser);
     initializing_ = YES;
     browser_.reset(browser);
     ownsBrowser_ = ownIt;
     NSWindow* window = [self window];
     windowShim_.reset(new BrowserWindowCocoa(browser, self));
+
+    // Set different minimum sizes on tabbed windows vs non-tabbed, e.g. popups.
+    // This has to happen before -enforceMinWindowSize: is called further down.
+    NSSize minSize = [self isTabbedWindow] ?
+      NSMakeSize(400, 272) : NSMakeSize(100, 122);
+    [[self window] setMinSize:minSize];
 
     // Create the bar visibility lock set; 10 is arbitrary, but should hopefully
     // be big enough to hold all locks that'll ever be needed.
@@ -319,11 +321,11 @@ enum {
     // registering for the appropriate command state changes from the back-end.
     // Adds the toolbar to the content area.
     toolbarController_.reset([[ToolbarController alloc]
-                               initWithModel:browser->toolbar_model()
-                                    commands:browser->command_controller()->command_updater()
-                                     profile:browser->profile()
-                                     browser:browser
-                              resizeDelegate:self]);
+              initWithModel:browser->toolbar_model()
+                   commands:browser->command_controller()->command_updater()
+                    profile:browser->profile()
+                    browser:browser
+             resizeDelegate:self]);
     [toolbarController_ setHasToolbar:[self hasToolbar]
                        hasLocationBar:[self hasLocationBar]];
     [[[self window] contentView] addSubview:[toolbarController_ view]];
@@ -427,13 +429,6 @@ enum {
     initializing_ = NO;
   }
   return self;
-}
-
-- (void)awakeFromNib {
-  // Set different minimum sizes on tabbed windows vs non-tabbed, e.g. popups.
-  NSSize minSize = [self isTabbedWindow] ?
-      NSMakeSize(400, 272) : NSMakeSize(100, 122);
-  [[self window] setMinSize:minSize];
 }
 
 - (void)dealloc {
