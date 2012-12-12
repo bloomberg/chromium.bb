@@ -40,18 +40,17 @@ static void sortLayers(std::vector<LayerImpl*>::iterator first, std::vector<Laye
     layerSorter->sort(first, end);
 }
 
-gfx::Rect LayerTreeHostCommon::calculateVisibleRect(const gfx::Rect& targetSurfaceRect, const gfx::Rect& layerBoundRect, const gfx::Transform& transform)
+inline gfx::Rect calculateVisibleRectWithCachedLayerRect(const gfx::Rect& targetSurfaceRect, const gfx::Rect& layerBoundRect, const gfx::Rect& layerRectInTargetSpace, const gfx::Transform& transform)
 {
     // Is this layer fully contained within the target surface?
-    gfx::Rect layerInSurfaceSpace = MathUtil::mapClippedRect(transform, layerBoundRect);
-    if (targetSurfaceRect.Contains(layerInSurfaceSpace))
+    if (targetSurfaceRect.Contains(layerRectInTargetSpace))
         return layerBoundRect;
 
     // If the layer doesn't fill up the entire surface, then find the part of
     // the surface rect where the layer could be visible. This avoids trying to
     // project surface rect points that are behind the projection point.
     gfx::Rect minimalSurfaceRect = targetSurfaceRect;
-    minimalSurfaceRect.Intersect(layerInSurfaceSpace);
+    minimalSurfaceRect.Intersect(layerRectInTargetSpace);
 
     // Project the corners of the target surface rect into the layer space.
     // This bounding rectangle may be larger than it needs to be (being
@@ -61,6 +60,12 @@ gfx::Rect LayerTreeHostCommon::calculateVisibleRect(const gfx::Rect& targetSurfa
     gfx::Rect layerRect = gfx::ToEnclosingRect(MathUtil::projectClippedRect(surfaceToLayer, gfx::RectF(minimalSurfaceRect)));
     layerRect.Intersect(layerBoundRect);
     return layerRect;
+}
+
+gfx::Rect LayerTreeHostCommon::calculateVisibleRect(const gfx::Rect& targetSurfaceRect, const gfx::Rect& layerBoundRect, const gfx::Transform& transform)
+{
+    gfx::Rect layerInSurfaceSpace = MathUtil::mapClippedRect(transform, layerBoundRect);
+    return calculateVisibleRectWithCachedLayerRect(targetSurfaceRect, layerBoundRect, layerInSurfaceSpace, transform);
 }
 
 template <typename LayerType>
@@ -126,7 +131,7 @@ static inline bool layerClipsSubtree(LayerType* layer)
 }
 
 template<typename LayerType>
-static gfx::Rect calculateVisibleContentRect(LayerType* layer)
+static gfx::Rect calculateVisibleContentRect(LayerType* layer, const gfx::Rect& ancestorClipRectInDescendantSurfaceSpace, const gfx::Rect& layerRectInTargetSpace)
 {
     DCHECK(layer->renderTarget());
 
@@ -134,23 +139,22 @@ static gfx::Rect calculateVisibleContentRect(LayerType* layer)
     if (!layer->drawsContent() || layer->contentBounds().IsEmpty() || layer->drawableContentRect().IsEmpty())
         return gfx::Rect();
 
-    gfx::Rect targetSurfaceClipRect;
+    // Compute visible bounds in target surface space.
+    gfx::Rect visibleRectInTargetSurfaceSpace = layer->drawableContentRect();
 
-    // First, compute visible bounds in target surface space.
-    if (layer->renderTarget()->renderSurface()->clipRect().IsEmpty())
-        targetSurfaceClipRect = layer->drawableContentRect();
-    else {
-        // In this case the target surface does clip layers that contribute to it. So, we
-        // have convert the current surface's clipRect from its ancestor surface space to
-        // the current surface space.
-        targetSurfaceClipRect = gfx::ToEnclosingRect(MathUtil::projectClippedRect(MathUtil::inverse(layer->renderTarget()->renderSurface()->drawTransform()), layer->renderTarget()->renderSurface()->clipRect()));
-        targetSurfaceClipRect.Intersect(layer->drawableContentRect());
+    if (!layer->renderTarget()->renderSurface()->clipRect().IsEmpty()) {
+        // In this case the target surface does clip layers that contribute to
+        // it. So, we have to convert the current surface's clipRect from its
+        // ancestor surface space to the current (descendant) surface
+        // space. This conversion is done outside this function so that it can
+        // be cached instead of computing it redundantly for every layer.
+        visibleRectInTargetSurfaceSpace.Intersect(ancestorClipRectInDescendantSurfaceSpace);
     }
 
-    if (targetSurfaceClipRect.IsEmpty())
+    if (visibleRectInTargetSurfaceSpace.IsEmpty())
         return gfx::Rect();
 
-    return LayerTreeHostCommon::calculateVisibleRect(targetSurfaceClipRect, gfx::Rect(gfx::Point(), layer->contentBounds()), layer->drawTransform());
+    return calculateVisibleRectWithCachedLayerRect(visibleRectInTargetSurfaceSpace, gfx::Rect(gfx::Point(), layer->contentBounds()), layerRectInTargetSpace, layer->drawTransform());
 }
 
 static inline bool transformToParentIsKnown(LayerImpl*)
@@ -401,12 +405,31 @@ static inline void updateLayerContentsScale(Layer* layer, const gfx::Transform& 
         replicaMaskLayer->setContentsScale(contentsScale);
 }
 
+template<typename LayerType, typename LayerList>
+static inline void removeSurfaceForEarlyExit(LayerType* layerToRemove, LayerList& renderSurfaceLayerList)
+{
+    DCHECK(layerToRemove->renderSurface());
+    // Technically, we know that the layer we want to remove should be
+    // at the back of the renderSurfaceLayerList. However, we have had
+    // bugs before that added unnecessary layers here
+    // (https://bugs.webkit.org/show_bug.cgi?id=74147), but that causes
+    // things to crash. So here we proactively remove any additional
+    // layers from the end of the list.
+    while (renderSurfaceLayerList.back() != layerToRemove) {
+        renderSurfaceLayerList.back()->clearRenderSurface();
+        renderSurfaceLayerList.pop_back();
+    }
+    DCHECK(renderSurfaceLayerList.back() == layerToRemove);
+    renderSurfaceLayerList.pop_back();
+    layerToRemove->clearRenderSurface();
+}
+
 // Recursively walks the layer tree starting at the given node and computes all the
 // necessary transformations, clipRects, render surfaces, etc.
 template<typename LayerType, typename LayerList, typename RenderSurfaceType>
 static void calculateDrawPropertiesInternal(LayerType* layer, const gfx::Transform& parentMatrix,
     const gfx::Transform& fullHierarchyMatrix, const gfx::Transform& currentScrollCompensationMatrix,
-    const gfx::Rect& clipRectFromAncestor, bool ancestorClipsSubtree,
+    const gfx::Rect& clipRectFromAncestor, const gfx::Rect& clipRectFromAncestorInDescendantSpace, bool ancestorClipsSubtree,
     RenderSurfaceType* nearestAncestorThatMovesPixels, LayerList& renderSurfaceLayerList, LayerList& layerList,
     LayerSorter* layerSorter, int maxTextureSize, float deviceScaleFactor, float pageScaleFactor, gfx::Rect& drawableContentRectOfSubtree)
 {
@@ -508,6 +531,13 @@ static void calculateDrawPropertiesInternal(LayerType* layer, const gfx::Transfo
     gfx::Rect clipRectForSubtree;
     bool subtreeShouldBeClipped = false;
 
+    // This value is cached on the stack so that we don't have to inverse-project
+    // the surface's clipRect redundantly for every layer. This value is the
+    // same as the surface's clipRect, except that instead of being described
+    // in the target surface space (i.e. the ancestor surface space), it is
+    // described in the current surface space.
+    gfx::Rect clipRectForSubtreeInDescendantSpace;
+
     float accumulatedDrawOpacity = layer->opacity();
     bool drawOpacityIsAnimating = layer->opacityIsAnimating();
     if (layer->parent()) {
@@ -527,12 +557,16 @@ static void calculateDrawPropertiesInternal(LayerType* layer, const gfx::Transfo
     gfx::PointF position = layer->position() - layer->scrollDelta();
 
     gfx::Transform combinedTransform = parentMatrix;
-    // LT = Tr[origin] * Tr[origin2anchor]
-    combinedTransform.Translate3d(position.x() + anchorPoint.x() * bounds.width(), position.y() + anchorPoint.y() * bounds.height(), layer->anchorPointZ());
-    // LT = Tr[origin] * Tr[origin2anchor] * M[layer]
-    combinedTransform.PreconcatTransform(layer->transform());
-    // LT = Tr[origin] * Tr[origin2anchor] * M[layer] * Tr[anchor2origin]
-    combinedTransform.Translate3d(-anchorPoint.x() * bounds.width(), -anchorPoint.y() * bounds.height(), -layer->anchorPointZ());
+    if (!layer->transform().IsIdentity()) {
+        // LT = Tr[origin] * Tr[origin2anchor]
+        combinedTransform.Translate3d(position.x() + anchorPoint.x() * bounds.width(), position.y() + anchorPoint.y() * bounds.height(), layer->anchorPointZ());
+        // LT = Tr[origin] * Tr[origin2anchor] * M[layer]
+        combinedTransform.PreconcatTransform(layer->transform());
+        // LT = Tr[origin] * Tr[origin2anchor] * M[layer] * Tr[anchor2origin]
+        combinedTransform.Translate3d(-anchorPoint.x() * bounds.width(), -anchorPoint.y() * bounds.height(), -layer->anchorPointZ());
+    } else {
+        combinedTransform.Translate(position.x(), position.y());
+    }
 
     // The layer's contentsSize is determined from the combinedTransform, which then informs the
     // layer's drawTransform.
@@ -643,10 +677,13 @@ static void calculateDrawPropertiesInternal(LayerType* layer, const gfx::Transfo
 
         // The render surface clipRect is expressed in the space where this surface draws, i.e. the same space as clipRectFromAncestor.
         renderSurface->setIsClipped(ancestorClipsSubtree);
-        if (ancestorClipsSubtree)
+        if (ancestorClipsSubtree) {
             renderSurface->setClipRect(clipRectFromAncestor);
-        else
+            clipRectForSubtreeInDescendantSpace = gfx::ToEnclosingRect(MathUtil::projectClippedRect(MathUtil::inverse(renderSurface->drawTransform()), renderSurface->clipRect()));
+        } else {
             renderSurface->setClipRect(gfx::Rect());
+            clipRectForSubtreeInDescendantSpace = clipRectFromAncestorInDescendantSpace;
+        }
 
         renderSurface->setNearestAncestorThatMovesPixels(nearestAncestorThatMovesPixels);
 
@@ -668,6 +705,9 @@ static void calculateDrawPropertiesInternal(LayerType* layer, const gfx::Transfo
         subtreeShouldBeClipped = ancestorClipsSubtree;
         if (ancestorClipsSubtree)
             clipRectForSubtree = clipRectFromAncestor;
+
+        // The surface's cached clipRect value propagates regardless of what clipping goes on between layers here.
+        clipRectForSubtreeInDescendantSpace = clipRectFromAncestorInDescendantSpace;
 
         // Layers that are not their own renderTarget will render into the target of their nearest ancestor.
         layerDrawProperties.render_target = layer->parent()->renderTarget();
@@ -710,7 +750,7 @@ static void calculateDrawPropertiesInternal(LayerType* layer, const gfx::Transfo
         LayerType* child = LayerTreeHostCommon::getChildAsRawPtr(layer->children(), i);
         gfx::Rect drawableContentRectOfChildSubtree;
         calculateDrawPropertiesInternal<LayerType, LayerList, RenderSurfaceType>(child, sublayerMatrix, nextHierarchyMatrix, nextScrollCompensationMatrix,
-                                                                                 clipRectForSubtree, subtreeShouldBeClipped, nearestAncestorThatMovesPixels,
+                                                                                 clipRectForSubtree, clipRectForSubtreeInDescendantSpace, subtreeShouldBeClipped, nearestAncestorThatMovesPixels,
                                                                                  renderSurfaceLayerList, descendants, layerSorter, maxTextureSize, deviceScaleFactor, pageScaleFactor, drawableContentRectOfChildSubtree);
         if (!drawableContentRectOfChildSubtree.IsEmpty()) {
             accumulatedDrawableContentRectOfChildren.Union(drawableContentRectOfChildSubtree);
@@ -719,6 +759,11 @@ static void calculateDrawPropertiesInternal(LayerType* layer, const gfx::Transfo
         }
     }
 
+    if (layer->renderSurface() && !isRootLayer(layer) && !layer->renderSurface()->layerList().size()) {
+        removeSurfaceForEarlyExit(layer, renderSurfaceLayerList);
+        return;
+    }
+    
     // Compute the total drawableContentRect for this subtree (the rect is in targetSurface space)
     gfx::Rect localDrawableContentRectOfSubtree = accumulatedDrawableContentRectOfChildren;
     if (layer->drawsContent())
@@ -745,7 +790,7 @@ static void calculateDrawPropertiesInternal(LayerType* layer, const gfx::Transfo
     }
 
     // Compute the layer's visible content rect (the rect is in content space)
-    layerDrawProperties.visible_content_rect = calculateVisibleContentRect(layer);
+    layerDrawProperties.visible_content_rect = calculateVisibleContentRect(layer, clipRectForSubtreeInDescendantSpace, rectInTargetSpace);
 
     // Compute the remaining properties for the render surface, if the layer has one.
     if (isRootLayer(layer)) {
@@ -773,9 +818,12 @@ static void calculateDrawPropertiesInternal(LayerType* layer, const gfx::Transfo
         clippedContentRect.set_width(std::min(clippedContentRect.width(), maxTextureSize));
         clippedContentRect.set_height(std::min(clippedContentRect.height(), maxTextureSize));
 
-        if (clippedContentRect.IsEmpty())
+        if (clippedContentRect.IsEmpty()) {
             renderSurface->clearLayerLists();
-
+            removeSurfaceForEarlyExit(layer, renderSurfaceLayerList);
+            return;
+        }
+        
         renderSurface->setContentRect(clippedContentRect);
 
         // The owning layer's screenSpaceTransform has a scale from content to layer space which we need to undo and
@@ -800,23 +848,6 @@ static void calculateDrawPropertiesInternal(LayerType* layer, const gfx::Transfo
             // Compute the replica's "screenSpaceTransform" that maps from the replica's origin space to the screen's origin space.
             gfx::Transform replicaScreenSpaceTransform = layer->renderSurface()->screenSpaceTransform() * surfaceOriginToReplicaOriginTransform;
             renderSurface->setReplicaScreenSpaceTransform(replicaScreenSpaceTransform);
-        }
-
-        // If a render surface has no layer list, then it and none of its children needed to get drawn.
-        if (!layer->renderSurface()->layerList().size()) {
-            // FIXME: Originally we asserted that this layer was already at the end of the
-            //        list, and only needed to remove that layer. For now, we remove the
-            //        entire subtree of surfaces to fix a crash bug. The root cause is
-            //        https://bugs.webkit.org/show_bug.cgi?id=74147 and we should be able
-            //        to put the original assert after fixing that.
-            while (renderSurfaceLayerList.back() != layer) {
-                renderSurfaceLayerList.back()->clearRenderSurface();
-                renderSurfaceLayerList.pop_back();
-            }
-            DCHECK(renderSurfaceLayerList.back() == layer);
-            renderSurfaceLayerList.pop_back();
-            layer->clearRenderSurface();
-            return;
         }
     }
 
@@ -858,7 +889,7 @@ void LayerTreeHostCommon::calculateDrawProperties(Layer* rootLayer, const gfx::S
 
     cc::calculateDrawPropertiesInternal<Layer, std::vector<scoped_refptr<Layer> >, RenderSurface>(
         rootLayer, deviceScaleTransform, identityMatrix, identityMatrix,
-        deviceViewportRect, subtreeShouldBeClipped, 0, renderSurfaceLayerList,
+        deviceViewportRect, deviceViewportRect, subtreeShouldBeClipped, 0, renderSurfaceLayerList,
         dummyLayerList, 0, maxTextureSize,
         deviceScaleFactor, pageScaleFactor, totalDrawableContentRect);
 
@@ -886,7 +917,7 @@ void LayerTreeHostCommon::calculateDrawProperties(LayerImpl* rootLayer, const gf
 
     cc::calculateDrawPropertiesInternal<LayerImpl, std::vector<LayerImpl*>, RenderSurfaceImpl>(
         rootLayer, deviceScaleTransform, identityMatrix, identityMatrix,
-        deviceViewportRect, subtreeShouldBeClipped, 0, renderSurfaceLayerList,
+        deviceViewportRect, deviceViewportRect, subtreeShouldBeClipped, 0, renderSurfaceLayerList,
         dummyLayerList, &layerSorter, maxTextureSize,
         deviceScaleFactor, pageScaleFactor, totalDrawableContentRect);
 
