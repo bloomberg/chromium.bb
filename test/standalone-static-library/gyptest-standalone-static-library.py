@@ -13,7 +13,11 @@ import subprocess
 import sys
 import TestGyp
 
-test = TestGyp.TestGyp()
+# standalone_static_library currently means two things: a specific output
+# location for the built target and non-thin archive files. The Android gyp
+# generator leaves both decisions to the Android build system, so this test
+# doesn't work for that format.
+test = TestGyp.TestGyp(formats=['!android'])
 
 # Verify that types other than static_library cause a failure.
 test.run_gyp('invalid.gyp', status=1, stderr=None)

@@ -14,7 +14,7 @@ import sys
 import TestGyp
 
 # TODO: Make colons in filenames work with make, if required.
-test = TestGyp.TestGyp(formats=['!make'])
+test = TestGyp.TestGyp(formats=['!make', '!android'])
 CHDIR = 'colon'
 
 source_name = 'colon/a:b.c'
