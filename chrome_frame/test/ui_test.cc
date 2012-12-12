@@ -903,7 +903,8 @@ TEST_F(ContextMenuTest, FLAKY_CFTxtFieldDelete) {
 }
 
 // Test CF text field context menu - select all.
-TEST_F(ContextMenuTest, CFTxtFieldSelectAll) {
+// Flaky: http://crbug.com/144664
+TEST_F(ContextMenuTest, DISABLED_CFTxtFieldSelectAll) {
   server_mock_.ExpectAndServeAnyRequests(CFInvocation::MetaTag());
 
   // Invoke 'Select all' context menu item of text field.
