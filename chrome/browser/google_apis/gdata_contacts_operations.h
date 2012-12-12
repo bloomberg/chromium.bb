@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_GOOGLE_APIS_GDATA_CONTACTS_OPERATIONS_H_
 
 #include <string>
-#include <vector>
 
 #include "chrome/browser/google_apis/base_operations.h"
 

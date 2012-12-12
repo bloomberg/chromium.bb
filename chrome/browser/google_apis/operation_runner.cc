@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/google_apis/base_operations.h"
-#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;

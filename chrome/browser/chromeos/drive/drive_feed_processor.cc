@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/drive/drive_feed_processor.h"
+
 #include <utility>
 
 #include "base/metrics/histogram.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/drive_feed_processor.h"
 #include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
+#include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;

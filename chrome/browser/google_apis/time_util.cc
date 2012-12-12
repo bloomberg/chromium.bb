@@ -4,14 +4,9 @@
 
 #include "chrome/browser/google_apis/time_util.h"
 
-#include <map>
 #include <string>
-#include <utility>
 #include <vector>
 
-#include "base/basictypes.h"
-#include "base/logging.h"
-#include "base/platform_file.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"

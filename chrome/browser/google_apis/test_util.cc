@@ -4,7 +4,6 @@
 
 #include "chrome/browser/google_apis/test_util.h"
 
-#include "base/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
@@ -57,7 +56,6 @@ void RunBlockingPoolTask() {
       break;
   }
 }
-
 
 scoped_ptr<base::Value> LoadJSONFile(const std::string& relative_path) {
   FilePath path = GetTestFilePath(relative_path);

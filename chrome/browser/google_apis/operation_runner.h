@@ -11,8 +11,6 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/google_apis/auth_service.h"
-#include "chrome/browser/google_apis/base_operations.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
 class Profile;

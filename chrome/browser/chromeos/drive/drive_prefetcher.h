@@ -16,13 +16,11 @@
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_observer.h"
 #include "chrome/browser/chromeos/drive/drive_sync_client_observer.h"
-#include "chrome/browser/google_apis/gdata_errorcode.h"
 
 class FilePath;
 
 namespace drive {
 
-class DriveFileSystemInterface;
 class EventLogger;
 
 // The parameters for DrivePrefetcher construction.

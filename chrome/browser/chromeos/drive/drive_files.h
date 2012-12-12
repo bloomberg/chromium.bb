@@ -12,7 +12,6 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
@@ -20,11 +19,8 @@
 namespace drive {
 
 class DriveDirectory;
-class DriveDirectoryProto;
-class DriveEntryProto;
 class DriveFile;
 class DriveResourceMetadata;
-class PlatformFileInfoProto;
 
 // Used to read a directory from the file system.
 // If |error| is not DRIVE_FILE_OK, |entries| is set to NULL.

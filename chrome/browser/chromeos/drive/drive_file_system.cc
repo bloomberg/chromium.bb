@@ -21,9 +21,6 @@
 #include "chrome/browser/chromeos/drive/drive_file_system_observer.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/drive_scheduler.h"
-#include "chrome/browser/chromeos/drive/file_system/copy_operation.h"
-#include "chrome/browser/chromeos/drive/file_system/move_operation.h"
-#include "chrome/browser/chromeos/drive/file_system/remove_operation.h"
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/drive_api_util.h"
@@ -36,7 +33,6 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
-#include "net/base/mime_util.h"
 
 using content::BrowserThread;
 
@@ -1182,7 +1178,7 @@ void DriveFileSystem::ReadDirectoryByPathOnUIThreadAfterRead(
                  scoped_ptr<DriveEntryProtoVector>());
     return;
   }
-  DCHECK(entries.get());  // This is valid for emptry directories too.
+  DCHECK(entries.get());  // This is valid for empty directories too.
 
   callback.Run(DRIVE_FILE_OK, hide_hosted_docs_, entries.Pass());
 }

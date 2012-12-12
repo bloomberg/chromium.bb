@@ -6,16 +6,13 @@
 #define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FEED_LOADER_H_
 
 #include <string>
-#include <vector>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "googleurl/src/gurl.h"
-
-class FilePath;
 
 namespace base {
 class Value;

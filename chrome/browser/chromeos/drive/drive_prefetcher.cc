@@ -6,8 +6,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/location.h"
-#include "base/message_loop_proxy.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"

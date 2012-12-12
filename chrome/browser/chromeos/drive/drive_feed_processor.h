@@ -8,19 +8,22 @@
 #include <map>
 #include <set>
 #include <string>
-#include <vector>
 
 #include "base/callback.h"
 #include "base/file_path.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/drive/drive_file_error.h"
-#include "chrome/browser/google_apis/gdata_errorcode.h"
-#include "chrome/browser/google_apis/gdata_wapi_parser.h"
+#include "googleurl/src/gurl.h"
+
+namespace google_apis {
+class ResourceList;
+}  // google_apis
 
 namespace drive {
 
-class DriveDirectory;
-class DriveEntry;
+class DriveEntryProto;
 class DriveResourceMetadata;
 
 // DriveFeedProcessor is used to process feeds from WAPI (codename for
@@ -58,9 +61,9 @@ class DriveFeedProcessor {
   // DriveEntryProtoMap. |feed_changestamp| and/or |uma_stats| may be NULL.
   // entry_proto_map_ and root_upload_url_ are updated as side effects.
   void FeedToEntryProtoMap(
-    const ScopedVector<google_apis::ResourceList>& feed_list,
-    int64* feed_changestamp,
-    FeedToEntryProtoMapUMAStats* uma_stats);
+      const ScopedVector<google_apis::ResourceList>& feed_list,
+      int64* feed_changestamp,
+      FeedToEntryProtoMapUMAStats* uma_stats);
 
   // A map of DriveEntryProto's representing a feed.
   const DriveEntryProtoMap& entry_proto_map() const { return entry_proto_map_; }
