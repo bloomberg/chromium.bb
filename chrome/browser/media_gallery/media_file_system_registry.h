@@ -14,11 +14,11 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/lazy_instance.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/prefs/public/pref_change_registrar.h"
 #include "base/system_monitor/system_monitor.h"
+#include "chrome/browser/media_gallery/transient_device_ids.h"
 #include "webkit/fileapi/media/mtp_device_file_system_config.h"
 
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
@@ -42,7 +42,9 @@ class IsolatedContext;
 namespace chrome {
 
 class ExtensionGalleriesHost;
+class MediaFileSystemContext;
 class MediaGalleriesPreferences;
+class ScopedMTPDeviceMapEntry;
 
 struct MediaFileSystemInfo {
   MediaFileSystemInfo(const std::string& fs_name,
@@ -55,69 +57,14 @@ struct MediaFileSystemInfo {
   std::string fsid;
 };
 
-#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-// Class to manage the lifetime of MTPDeviceDelegateImpl object for the
-// attached media transfer protocol (MTP) device. This object is constructed
-// for each MTP device. Refcounted to reuse the same MTP device delegate entry
-// across extensions.
-class ScopedMTPDeviceMapEntry
-    : public base::RefCounted<ScopedMTPDeviceMapEntry> {
- public:
-  // |no_references_callback| is called when the last ScopedMTPDeviceMapEntry
-  // reference goes away.
-  ScopedMTPDeviceMapEntry(const FilePath::StringType& device_location,
-                          const base::Closure& no_references_callback);
-
- private:
-  // Friend declaration for ref counted implementation.
-  friend class base::RefCounted<ScopedMTPDeviceMapEntry>;
-
-  // Private because this class is ref-counted. Destructed when the last user of
-  // this MTP device is destroyed or when the MTP device is detached from the
-  // system or when the browser is in shutdown mode or when the last extension
-  // revokes the MTP device gallery permissions.
-  ~ScopedMTPDeviceMapEntry();
-
-  // The MTP or PTP device location.
-  const FilePath::StringType device_location_;
-
-  // A callback to call when the last reference of this object goes away.
-  base::Closure no_references_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedMTPDeviceMapEntry);
-};
-#endif
-
-class MediaFileSystemContext {
- public:
-  virtual ~MediaFileSystemContext() {}
-
-  // Register a media file system (filtered to media files) for |path| and
-  // return the new file system id.
-  virtual std::string RegisterFileSystemForMassStorage(
-      const std::string& device_id, const FilePath& path) = 0;
-
-#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-  // Registers and returns the file system id for the MTP or PTP device
-  // specified by |device_id| and |path|. Updates |entry| with the corresponding
-  // ScopedMTPDeviceMapEntry object.
-  virtual std::string RegisterFileSystemForMTPDevice(
-      const std::string& device_id, const FilePath& path,
-      scoped_refptr<ScopedMTPDeviceMapEntry>* entry) = 0;
-#endif
-
-  // Revoke the passed |fsid|.
-  virtual void RevokeFileSystem(const std::string& fsid) = 0;
-};
-
 typedef base::Callback<void(const std::vector<MediaFileSystemInfo>&)>
     MediaFileSystemsCallback;
 
 class MediaFileSystemRegistry
     : public base::SystemMonitor::DevicesChangedObserver {
  public:
-  // The instance is lazily created per browser process.
-  static MediaFileSystemRegistry* GetInstance();
+  MediaFileSystemRegistry();
+  virtual ~MediaFileSystemRegistry();
 
   // Passes to |callback| the list of media filesystem IDs and paths for a
   // given RVH. Called on the UI thread.
@@ -142,9 +89,10 @@ class MediaFileSystemRegistry
 
   size_t GetExtensionHostCountForTests() const;
 
+  std::string GetTransientIdForDeviceId(const std::string& device_id) const;
+
  private:
   friend class TestMediaFileSystemContext;
-  friend struct base::DefaultLazyInstanceTraits<MediaFileSystemRegistry>;
   class MediaFileSystemContextImpl;
 
   // Map an extension to the ExtensionGalleriesHost.
@@ -162,10 +110,6 @@ class MediaFileSystemRegistry
   typedef std::map<const FilePath::StringType, ScopedMTPDeviceMapEntry*>
       MTPDeviceDelegateMap;
 #endif
-
-  // Obtain an instance of this class via GetInstance().
-  MediaFileSystemRegistry();
-  virtual ~MediaFileSystemRegistry();
 
   void OnMediaGalleriesRememberedGalleriesChanged(PrefServiceBase* service);
 
@@ -195,6 +139,8 @@ class MediaFileSystemRegistry
 #endif
 
   scoped_ptr<MediaFileSystemContext> file_system_context_;
+
+  TransientDeviceIds transient_device_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaFileSystemRegistry);
 };

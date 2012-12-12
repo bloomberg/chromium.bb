@@ -121,6 +121,8 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual ComponentUpdateService* component_updater() OVERRIDE;
   virtual CRLSetFetcher* crl_set_fetcher() OVERRIDE;
   virtual BookmarkPromptController* bookmark_prompt_controller() OVERRIDE;
+  virtual chrome::MediaFileSystemRegistry*
+      media_file_system_registry() OVERRIDE;
   virtual void PlatformSpecificCommandLineProcessing(
       const CommandLine& command_line) OVERRIDE;
 
@@ -185,6 +187,8 @@ class BrowserProcessImpl : public BrowserProcess,
   // Bookmark prompt controller displays the prompt for frequently visited URL.
   scoped_ptr<BookmarkPromptController> bookmark_prompt_controller_;
 #endif
+
+  scoped_ptr<chrome::MediaFileSystemRegistry> media_file_system_registry_;
 
   scoped_refptr<printing::PrintPreviewTabController>
       print_preview_tab_controller_;

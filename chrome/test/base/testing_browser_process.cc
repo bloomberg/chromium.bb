@@ -14,13 +14,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if !defined(OS_IOS)
+#include "chrome/browser/media_gallery/media_file_system_registry.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/thumbnails/render_widget_snapshot_taker.h"
-#include "content/public/browser/notification_service.h"
 #endif
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
@@ -282,6 +282,18 @@ BookmarkPromptController* TestingBrowserProcess::bookmark_prompt_controller() {
   return NULL;
 #else
   return bookmark_prompt_controller_.get();
+#endif
+}
+
+chrome::MediaFileSystemRegistry*
+TestingBrowserProcess::media_file_system_registry() {
+#if defined(OS_IOS)
+  NOTIMPLEMENTED();
+  return NULL;
+#else
+  if (!media_file_system_registry_)
+    media_file_system_registry_.reset(new chrome::MediaFileSystemRegistry());
+  return media_file_system_registry_.get();
 #endif
 }
 

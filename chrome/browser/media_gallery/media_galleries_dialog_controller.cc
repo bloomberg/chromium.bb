@@ -6,6 +6,7 @@
 
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/media_gallery/media_file_system_registry.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/system_monitor/media_storage_util.h"
@@ -45,9 +46,11 @@ MediaGalleriesDialogController::MediaGalleriesDialogController(
     const base::Closure& on_finish)
       : web_contents_(web_contents),
         extension_(&extension),
-        on_finish_(on_finish),
-        preferences_(MediaFileSystemRegistry::GetInstance()->GetPreferences(
-            Profile::FromBrowserContext(web_contents->GetBrowserContext()))) {
+        on_finish_(on_finish) {
+  MediaFileSystemRegistry* registry =
+      g_browser_process->media_file_system_registry();
+  preferences_ = registry->GetPreferences(
+      Profile::FromBrowserContext(web_contents->GetBrowserContext()));
   InitializePermissions();
 
   dialog_.reset(MediaGalleriesDialog::Create(this));

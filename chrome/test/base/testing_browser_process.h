@@ -98,6 +98,8 @@ class TestingBrowserProcess : public BrowserProcess {
   virtual ComponentUpdateService* component_updater() OVERRIDE;
   virtual CRLSetFetcher* crl_set_fetcher() OVERRIDE;
   virtual BookmarkPromptController* bookmark_prompt_controller() OVERRIDE;
+  virtual chrome::MediaFileSystemRegistry*
+      media_file_system_registry() OVERRIDE;
   virtual void PlatformSpecificCommandLineProcessing(
       const CommandLine& command_line) OVERRIDE;
 
@@ -132,6 +134,7 @@ class TestingBrowserProcess : public BrowserProcess {
   scoped_ptr<RenderWidgetSnapshotTaker> render_widget_snapshot_taker_;
   scoped_refptr<SafeBrowsingService> sb_service_;
   scoped_ptr<BookmarkPromptController> bookmark_prompt_controller_;
+  scoped_ptr<chrome::MediaFileSystemRegistry> media_file_system_registry_;
 #endif  // !defined(OS_IOS)
 
   // The following objects are not owned by TestingBrowserProcess:

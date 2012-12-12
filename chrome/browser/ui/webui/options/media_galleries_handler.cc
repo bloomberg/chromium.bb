@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/string_number_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/media_gallery/media_file_system_registry.h"
 #include "chrome/browser/media_gallery/media_galleries_preferences.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -75,7 +76,7 @@ void MediaGalleriesHandler::RegisterMessages() {
 void MediaGalleriesHandler::OnGalleriesChanged() {
   Profile* profile = Profile::FromWebUI(web_ui());
   chrome::MediaGalleriesPreferences* preferences =
-      chrome::MediaFileSystemRegistry::GetInstance()->GetPreferences(profile);
+      g_browser_process->media_file_system_registry()->GetPreferences(profile);
 
   ListValue list;
   const MediaGalleriesPrefInfoMap& galleries = preferences->known_galleries();
@@ -120,7 +121,7 @@ void MediaGalleriesHandler::HandleForgetGallery(const base::ListValue* args) {
   }
 
   chrome::MediaGalleriesPreferences* prefs =
-      chrome::MediaFileSystemRegistry::GetInstance()->GetPreferences(
+      g_browser_process->media_file_system_registry()->GetPreferences(
           Profile::FromWebUI(web_ui()));
   prefs->ForgetGalleryById(id);
 }
@@ -129,7 +130,7 @@ void MediaGalleriesHandler::FileSelected(const FilePath& path,
                                          int index,
                                          void* params) {
   chrome::MediaGalleriesPreferences* prefs =
-      chrome::MediaFileSystemRegistry::GetInstance()->GetPreferences(
+      g_browser_process->media_file_system_registry()->GetPreferences(
           Profile::FromWebUI(web_ui()));
   prefs->AddGalleryByPath(path);
 }

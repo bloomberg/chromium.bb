@@ -36,6 +36,10 @@ class SafeBrowsingService;
 class StatusTray;
 class WatchDogThread;
 
+namespace chrome {
+class MediaFileSystemRegistry;
+}
+
 #if defined(OS_CHROMEOS)
 namespace chromeos {
 class OomPriorityManager;
@@ -195,6 +199,8 @@ class BrowserProcess {
   virtual CRLSetFetcher* crl_set_fetcher() = 0;
 
   virtual BookmarkPromptController* bookmark_prompt_controller() = 0;
+
+  virtual chrome::MediaFileSystemRegistry* media_file_system_registry() = 0;
 
   virtual void PlatformSpecificCommandLineProcessing(
       const CommandLine& command_line) = 0;

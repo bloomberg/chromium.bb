@@ -19,11 +19,12 @@
 #include "base/system_monitor/system_monitor.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/api/media_galleries_private/media_galleries_private_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/media_gallery/media_file_system_context.h"
 #include "chrome/browser/media_gallery/media_galleries_preferences.h"
 #include "chrome/browser/media_gallery/media_galleries_preferences_factory.h"
+#include "chrome/browser/media_gallery/scoped_mtp_device_map_entry.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/system_monitor/media_storage_util.h"
@@ -45,12 +46,6 @@
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/isolated_context.h"
 
-#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-#include "chrome/browser/media_gallery/mtp_device_delegate_impl.h"
-#include "webkit/fileapi/media/mtp_device_map_service.h"
-#endif
-
-using base::Bind;
 using base::SystemMonitor;
 using content::BrowserThread;
 using content::NavigationController;
@@ -58,14 +53,7 @@ using content::RenderProcessHost;
 using content::WebContents;
 using fileapi::IsolatedContext;
 
-#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-using fileapi::MTPDeviceMapService;
-#endif
-
 namespace chrome {
-
-static base::LazyInstance<MediaFileSystemRegistry>::Leaky
-    g_media_file_system_registry = LAZY_INSTANCE_INITIALIZER;
 
 namespace {
 
@@ -73,49 +61,6 @@ struct InvalidatedGalleriesInfo {
   std::set<ExtensionGalleriesHost*> extension_hosts;
   std::set<MediaGalleryPrefId> pref_ids;
 };
-
-// Make a JSON string out of |name|, |pref_id| and |device_id|. The IDs makes
-// the combined name unique. The JSON string should not contain any slashes.
-std::string MakeJSONFileSystemName(const string16& name,
-                                   const MediaGalleryPrefId& pref_id,
-                                   const std::string& device_id) {
-  string16 sanitized_name;
-  string16 separators =
-#if defined(FILE_PATH_USES_WIN_SEPARATORS)
-      FilePath::kSeparators
-#else
-      ASCIIToUTF16(FilePath::kSeparators)
-#endif
-      ;  // NOLINT
-  ReplaceChars(name, separators.c_str(), ASCIIToUTF16("_"), &sanitized_name);
-
-  base::DictionaryValue dict_value;
-  dict_value.SetWithoutPathExpansion(
-      "name", Value::CreateStringValue(sanitized_name));
-  dict_value.SetWithoutPathExpansion("galleryId",
-                                     Value::CreateIntegerValue(pref_id));
-  // |device_id| can be empty, in which case, just omit it.
-  if (!device_id.empty()) {
-    dict_value.SetWithoutPathExpansion("deviceId",
-                                       Value::CreateStringValue(device_id));
-  }
-
-  std::string json_string;
-  base::JSONWriter::Write(&dict_value, &json_string);
-  return json_string;
-}
-
-std::string GetTransientIdForRemovableDeviceId(const std::string& device_id) {
-#if defined(OS_ANDROID)
-  return std::string();
-#else
-  using extensions::MediaGalleriesPrivateEventRouter;
-
-  if (!MediaStorageUtil::IsRemovableDevice(device_id))
-    return std::string();
-  return MediaGalleriesPrivateEventRouter::GetTransientIdForDeviceId(device_id);
-#endif  // OS_ANDROID
-}
 
 }  // namespace
 
@@ -128,30 +73,6 @@ MediaFileSystemInfo::MediaFileSystemInfo(const std::string& fs_name,
 }
 
 MediaFileSystemInfo::MediaFileSystemInfo() {}
-
-#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-ScopedMTPDeviceMapEntry::ScopedMTPDeviceMapEntry(
-    const FilePath::StringType& device_location,
-    const base::Closure& no_references_callback)
-    : device_location_(device_location),
-      no_references_callback_(no_references_callback) {
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      Bind(&MTPDeviceMapService::AddDelegate,
-           base::Unretained(MTPDeviceMapService::GetInstance()),
-           device_location_,
-           CreateMTPDeviceDelegate(device_location_)));
-}
-
-ScopedMTPDeviceMapEntry::~ScopedMTPDeviceMapEntry() {
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      Bind(&MTPDeviceMapService::RemoveDelegate,
-           base::Unretained(MTPDeviceMapService::GetInstance()),
-           device_location_));
-  no_references_callback_.Run();
-}
-#endif  // defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
 
 // The main owner of this class is
 // |MediaFileSystemRegistry::extension_hosts_map_|, but a callback may
@@ -359,7 +280,7 @@ class ExtensionGalleriesHost
       MediaFileSystemInfo new_entry(
           MakeJSONFileSystemName(gallery_info.display_name,
                                  pref_id,
-                                 GetTransientIdForRemovableDeviceId(device_id)),
+                                 device_id),
           path,
           fsid);
       result.push_back(new_entry);
@@ -375,6 +296,46 @@ class ExtensionGalleriesHost
     }
 
     callback.Run(result);
+  }
+
+  std::string GetTransientIdForRemovableDeviceId(const std::string& device_id) {
+    if (!MediaStorageUtil::IsRemovableDevice(device_id))
+      return std::string();
+    MediaFileSystemRegistry* registry =
+        file_system_context_->GetMediaFileSystemRegistry();
+    return registry->GetTransientIdForDeviceId(device_id);
+  }
+
+  // Make a JSON string out of |name|, |pref_id| and |device_id|. The IDs makes
+  // the combined name unique. The JSON string should not contain any slashes.
+  std::string MakeJSONFileSystemName(const string16& name,
+                                     const MediaGalleryPrefId& pref_id,
+                                     const std::string& device_id) {
+    string16 sanitized_name;
+    string16 separators =
+#if defined(FILE_PATH_USES_WIN_SEPARATORS)
+        FilePath::kSeparators
+#else
+        ASCIIToUTF16(FilePath::kSeparators)
+#endif
+        ;  // NOLINT
+    ReplaceChars(name, separators.c_str(), ASCIIToUTF16("_"), &sanitized_name);
+
+    base::DictionaryValue dict_value;
+    dict_value.SetStringWithoutPathExpansion("name", sanitized_name);
+
+    // This should have been a StringValue, but it's a bit late to change it.
+    dict_value.SetIntegerWithoutPathExpansion("galleryId", pref_id);
+
+    // |device_id| can be empty, in which case, just omit it.
+    std::string transient_device_id =
+        GetTransientIdForRemovableDeviceId(device_id);
+    if (!transient_device_id.empty())
+      dict_value.SetStringWithoutPathExpansion("deviceId", transient_device_id);
+
+    std::string json_string;
+    base::JSONWriter::Write(&dict_value, &json_string);
+    return json_string;
   }
 
   void OnRendererProcessTerminated(const RenderProcessHost* rph) {
@@ -462,11 +423,6 @@ class ExtensionGalleriesHost
  * Public methods
  ******************/
 
-// static
-MediaFileSystemRegistry* MediaFileSystemRegistry::GetInstance() {
-  return g_media_file_system_registry.Pointer();
-}
-
 void MediaFileSystemRegistry::GetMediaFileSystemsForExtension(
     const content::RenderViewHost* rvh,
     const extensions::Extension* extension,
@@ -538,6 +494,7 @@ void MediaFileSystemRegistry::OnRemovableStorageAttached(
     const std::string& id, const string16& name,
     const FilePath::StringType& location) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  transient_device_ids_.DeviceAttached(id);
 
   if (!MediaStorageUtil::IsMediaDevice(id))
     return;
@@ -549,10 +506,6 @@ void MediaFileSystemRegistry::OnRemovableStorageAttached(
     MediaGalleriesPreferences* preferences = GetPreferences(profile_it->first);
     preferences->AddGallery(id, name, FilePath(), false /*not user added*/);
   }
-}
-
-size_t MediaFileSystemRegistry::GetExtensionHostCountForTests() const {
-  return extension_hosts_map_.size();
 }
 
 void MediaFileSystemRegistry::OnRemovableStorageDetached(
@@ -601,6 +554,15 @@ void MediaFileSystemRegistry::OnRemovableStorageDetached(
   }
 }
 
+size_t MediaFileSystemRegistry::GetExtensionHostCountForTests() const {
+  return extension_hosts_map_.size();
+}
+
+std::string MediaFileSystemRegistry::GetTransientIdForDeviceId(
+    const std::string& device_id) const {
+  return transient_device_ids_.GetTransientIdForDeviceId(device_id);
+}
+
 /******************
  * Private methods
  ******************/
@@ -617,7 +579,7 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
   // Registers and returns the file system id for the mass storage device
   // specified by |device_id| and |path|.
   virtual std::string RegisterFileSystemForMassStorage(
-      const std::string& device_id, const FilePath& path) {
+      const std::string& device_id, const FilePath& path) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(MediaStorageUtil::IsMassStorageDevice(device_id));
 
@@ -635,7 +597,7 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
   virtual std::string RegisterFileSystemForMTPDevice(
       const std::string& device_id, const FilePath& path,
-      scoped_refptr<ScopedMTPDeviceMapEntry>* entry) {
+      scoped_refptr<ScopedMTPDeviceMapEntry>* entry) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(!MediaStorageUtil::IsMassStorageDevice(device_id));
 
@@ -653,8 +615,12 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
   }
 #endif
 
-  virtual void RevokeFileSystem(const std::string& fsid) {
+  virtual void RevokeFileSystem(const std::string& fsid) OVERRIDE {
     IsolatedContext::GetInstance()->RevokeFileSystem(fsid);
+  }
+
+  virtual MediaFileSystemRegistry* GetMediaFileSystemRegistry() OVERRIDE {
+    return registry_;
   }
 
  private:
@@ -667,8 +633,16 @@ MediaFileSystemRegistry::MediaFileSystemRegistry()
     : file_system_context_(new MediaFileSystemContextImpl(this)) {
   // SystemMonitor may be NULL in unit tests.
   SystemMonitor* system_monitor = SystemMonitor::Get();
-  if (system_monitor)
+  if (system_monitor) {
     system_monitor->AddDevicesChangedObserver(this);
+
+    // Add the devices that were already present before MediaFileSystemRegistry
+    // creation.
+    std::vector<base::SystemMonitor::RemovableStorageInfo> storage_info =
+        system_monitor->GetAttachedRemovableStorage();
+    for (size_t i = 0; i < storage_info.size(); ++i)
+      transient_device_ids_.DeviceAttached(storage_info[i].device_id);
+  }
 }
 
 MediaFileSystemRegistry::~MediaFileSystemRegistry() {

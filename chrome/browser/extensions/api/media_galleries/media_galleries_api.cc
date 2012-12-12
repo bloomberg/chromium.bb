@@ -14,6 +14,7 @@
 #include "base/platform_file.h"
 #include "base/stl_util.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/media_gallery/media_file_system_registry.h"
 #include "chrome/browser/media_gallery/media_galleries_dialog_controller.h"
@@ -87,13 +88,16 @@ bool MediaGalleriesGetMediaFileSystemsFunction::RunImpl() {
       ShowDialog();
       return true;
     case MediaGalleries::
-        MEDIA_GALLERIES_GET_MEDIA_FILE_SYSTEMS_INTERACTIVITY_IF_NEEDED:
-      MediaFileSystemRegistry::GetInstance()->GetMediaFileSystemsForExtension(
+        MEDIA_GALLERIES_GET_MEDIA_FILE_SYSTEMS_INTERACTIVITY_IF_NEEDED: {
+      MediaFileSystemRegistry* registry =
+          g_browser_process->media_file_system_registry();
+      registry->GetMediaFileSystemsForExtension(
           render_view_host(), GetExtension(), base::Bind(
               &MediaGalleriesGetMediaFileSystemsFunction::
                   ShowDialogIfNoGalleries,
               this));
       return true;
+    }
     case MediaGalleries::
         MEDIA_GALLERIES_GET_MEDIA_FILE_SYSTEMS_INTERACTIVITY_NO:
       GetAndReturnGalleries();
@@ -115,7 +119,9 @@ void MediaGalleriesGetMediaFileSystemsFunction::ShowDialogIfNoGalleries(
 }
 
 void MediaGalleriesGetMediaFileSystemsFunction::GetAndReturnGalleries() {
-  MediaFileSystemRegistry::GetInstance()->GetMediaFileSystemsForExtension(
+  MediaFileSystemRegistry* registry =
+      g_browser_process->media_file_system_registry();
+  registry->GetMediaFileSystemsForExtension(
       render_view_host(), GetExtension(), base::Bind(
           &MediaGalleriesGetMediaFileSystemsFunction::ReturnGalleries, this));
 }

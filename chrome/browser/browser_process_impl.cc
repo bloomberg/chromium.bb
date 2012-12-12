@@ -37,6 +37,7 @@
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/media_gallery/media_file_system_registry.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/metrics/thread_watcher.h"
 #include "chrome/browser/metrics/variations/variations_service.h"
@@ -572,6 +573,13 @@ BookmarkPromptController* BrowserProcessImpl::bookmark_prompt_controller() {
 #else
   return bookmark_prompt_controller_.get();
 #endif
+}
+
+chrome::MediaFileSystemRegistry*
+BrowserProcessImpl::media_file_system_registry() {
+  if (!media_file_system_registry_)
+    media_file_system_registry_.reset(new chrome::MediaFileSystemRegistry());
+  return media_file_system_registry_.get();
 }
 
 #if !defined(OS_WIN)
