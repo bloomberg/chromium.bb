@@ -10,9 +10,9 @@
 #include <string>
 #include <vector>
 
-#include "base/string16.h"
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/string16.h"
 #include "chrome/browser/chromeos/input_method/input_method_descriptor.h"
 
 namespace chromeos {

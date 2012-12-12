@@ -5,7 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_INPUT_METHOD_EVENT_ROUTER_H_
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_INPUT_METHOD_EVENT_ROUTER_H_
 
+#include <string>
+
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 
 namespace chromeos {
