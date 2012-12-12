@@ -194,10 +194,6 @@ ProfileKeyedService* ShellWindowRegistry::Factory::BuildServiceInstanceFor(
   return new ShellWindowRegistry(profile);
 }
 
-bool ShellWindowRegistry::Factory::ServiceHasOwnInstanceInIncognito() const {
-  return true;
-}
-
 bool ShellWindowRegistry::Factory::ServiceIsCreatedWithProfile() const {
   return true;
 }

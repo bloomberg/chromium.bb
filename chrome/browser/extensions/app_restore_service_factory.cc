@@ -36,9 +36,7 @@ AppRestoreServiceFactory::~AppRestoreServiceFactory() {
 
 ProfileKeyedService* AppRestoreServiceFactory::BuildServiceInstanceFor(
     Profile* profile) const {
-  AppRestoreService* service = NULL;
-  service = new AppRestoreService(profile);
-  return service;
+  return new AppRestoreService(profile);
 }
 
 bool AppRestoreServiceFactory::ServiceIsCreatedWithProfile() const {
