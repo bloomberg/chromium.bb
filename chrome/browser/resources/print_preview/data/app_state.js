@@ -176,6 +176,8 @@ cr.define('print_preview', function() {
      */
     init: function(serializedAppStateStr) {
       if (!serializedAppStateStr) {
+        // Set some state defaults.
+        this.isGcpPromoDismissed_ = false;
         return;
       }
 
