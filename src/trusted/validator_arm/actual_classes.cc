@@ -411,13 +411,8 @@ SafetyLevel StoreBasedMemoryWithWriteBack::safety(const Instruction i) const {
   }
 
   if (HasWriteBack(i) &&
-      (n.reg(i).Equals(Register::Pc()))) {
-    // NOTE: The manual states that that it is also unpredictable
-    // when HasWriteBack(i) and Rn=Rt. However, the compilers
-    // may not check for this. For the moment, we are changing
-    // the code to ignore this case for stores.
-    // TODO(karl): Should we not allow this?
-    // TODO(jfb) Fix this.
+      (n.reg(i).Equals(Register::Pc()) ||
+       n.reg(i).Equals(t.reg(i)))) {
     return UNPREDICTABLE;
   }
 
@@ -446,13 +441,8 @@ SafetyLevel StoreBasedOffsetMemory::safety(const Instruction i) const {
   }
 
   if (HasWriteBack(i) &&
-      (n.reg(i).Equals(Register::Pc()))) {
-    // NOTE: The manual states that that it is also unpredictable
-    // when HasWriteBack(i) and Rn=Rt. However, the compilers
-    // may not check for this. For the moment, we are changing
-    // the code to ignore this case for stores.
-    // TODO(karl): Should we not allow this?
-    // TODO(jfb) Fix this.
+      (n.reg(i).Equals(Register::Pc()) ||
+       n.reg(i).Equals(t.reg(i)))) {
     return UNPREDICTABLE;
   }
 
@@ -461,56 +451,9 @@ SafetyLevel StoreBasedOffsetMemory::safety(const Instruction i) const {
   return StoreBasedMemoryWithWriteBack::safety(i);
 }
 
-SafetyLevel StoreBasedOffsetMemoryDouble::safety(const Instruction i) const {
-  // Arm double width restrictions for this instruction.
-  if (!t.IsEven(i)) {
-    return UNDEFINED;
-  }
-
-  if (RegisterList(t2.reg(i)).Add(m.reg(i)).Contains(Register::Pc())) {
-    return UNPREDICTABLE;
-  }
-
-  // NOTE: The manual states that that it is also unpredictable
-  // when HasWriteBack(i) and Rn=Rt or Rn=Rt2. However, the compilers
-  // may not check for this. For the moment, we are changing
-  // the code to ignore this case for stores.
-  // TODO(karl): Should we not allow this?
-  // if (HasWriteBack(i) &&
-  //     (n.reg(i).Equals(Register::Pc()))) {
-  //   return UNPREDICTABLE;
-  // }
-
-  // Now apply non-double width restrictions for this instruction.
-  return StoreBasedOffsetMemory::safety(i);
-}
-
 bool StoreBasedImmedMemory::base_address_register_writeback_small_immediate(
     Instruction i) const {
   return HasWriteBack(i);
-}
-
-SafetyLevel StoreBasedImmedMemoryDouble::safety(const Instruction i) const {
-  // Arm double width restrictions for this instruction.
-  if (!t.IsEven(i)) {
-    return UNDEFINED;
-  }
-
-  if (t2.reg(i).Equals(Register::Pc())) {
-    return UNPREDICTABLE;
-  }
-
-  // NOTE: The manual states that that it is also unpredictable
-  // when HasWriteBack(i) and Rn=Rt or Rn=Rt2. However, the compilers
-  // may not check for this. For the moment, we are changing
-  // the code to ignore this case for stores.
-  // TODO(karl): Should we not allow this?
-  // if (HasWriteBack(i) && n.reg(i).Equals(t2.reg(i))) {
-  //   return UNPREDICTABLE;
-  // }
-
-  // Now apply non-double width restrictions for this instruction.
-  return StoreBasedImmedMemory::safety(i);
 }
 
 // **************************************************************

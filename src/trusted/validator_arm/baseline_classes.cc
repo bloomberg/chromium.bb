@@ -594,13 +594,7 @@ SafetyLevel LoadStore2RegisterImm8Op::safety(Instruction i) const {
 
   if (HasWriteBack(i) &&
       (n.reg(i).Equals(Register::Pc()) ||
-       // NOTE: The manual states that that it is also unpredictable
-       // when HasWriteBack(i) and Rn=Rt. However, the compilers
-       // may not check for this. For the moment, we are changing
-       // the code to ignore this case for stores.
-       // TODO(karl): Should we not allow this?
-       // TODO(jfb) Fix this.
-       (is_load_ && n.reg(i).Equals(t.reg(i))))) {
+       n.reg(i).Equals(t.reg(i)))) {
     return UNPREDICTABLE;
   }
 
@@ -665,12 +659,7 @@ SafetyLevel LoadStore2RegisterImm8DoubleOp::safety(Instruction i) const {
     return UNPREDICTABLE;
   }
 
-  // NOTE: The manual states that that it is also unpredictable
-  // when HasWriteBack(i) and Rn=Rt2. However, the compilers
-  // may not check for this. For the moment, we are changing
-  // the code to ignore this case for stores.
-  // TODO(karl): Should we not allow this?
-  if (is_load_ && HasWriteBack(i) && n.reg(i).Equals(t2.reg(i))) {
+  if (HasWriteBack(i) && n.reg(i).Equals(t2.reg(i))) {
     return UNPREDICTABLE;
   }
 
@@ -740,15 +729,7 @@ SafetyLevel LoadStore2RegisterImm12Op::safety(Instruction i) const {
   // Arm restrictions for this instruction.
   if (HasWriteBack(i) &&
       (n.reg(i).Equals(Register::Pc()) ||
-       // NOTE: The manual states that that it is also unpredictable
-       // when HasWriteBack(i) and Rn=Rt. However, the compilers
-       // may not check for this. For the moment, we are changing
-       // the code to ignore this case for stores.
-       // TODO(karl): Should we not allow this?
-       // TODO(jfb) Fix this. Once this is fixed,
-       //           Store2RegisterImm12OpRnNotRtOnWriteback becomes redundant
-       //           with this class and can be removed.
-       (is_load_ && n.reg(i).Equals(t.reg(i))))) {
+       n.reg(i).Equals(t.reg(i)))) {
     return UNPREDICTABLE;
   }
 
@@ -1006,13 +987,7 @@ SafetyLevel LoadStore3RegisterOp::safety(Instruction i) const {
 
   if (HasWriteBack(i) &&
       (n.reg(i).Equals(Register::Pc()) ||
-       // NOTE: The manual states that that it is also unpredictable
-       // when HasWriteBack(i) and Rn=Rt. However, the compilers
-       // may not check for this. For the moment, we are changing
-       // the code to ignore this case for stores.
-       // TODO(karl): Should we not allow this?
-       // TODO(jfb) Fix this.
-       (is_load_ && n.reg(i).Equals(t.reg(i))))) {
+       n.reg(i).Equals(t.reg(i)))) {
     return UNPREDICTABLE;
   }
 
@@ -1063,13 +1038,7 @@ SafetyLevel LoadStore3RegisterDoubleOp::safety(Instruction i) const {
 
   if (HasWriteBack(i) &&
       (n.reg(i).Equals(Register::Pc()) ||
-       // NOTE: The manual states that that it is also unpredictable
-       // when HasWriteBack(i) and Rn=Rt2. However, the compilers
-       // may not check for this. For the moment, we are changing
-       // the code to ignore this case for stores.
-       // TODO(karl): Should we not allow this?
-       // TODO(jfb) Fix this.
-       (is_load_ && n.reg(i).Equals(t2.reg(i))))) {
+       n.reg(i).Equals(t2.reg(i)))) {
     return UNPREDICTABLE;
   }
 
@@ -1171,13 +1140,7 @@ SafetyLevel LoadStore3RegisterImm5Op::safety(Instruction i) const {
 
   if (HasWriteBack(i) &&
       (n.reg(i).Equals(Register::Pc()) ||
-       // NOTE: The manual states that that it is also unpredictable
-       // when HasWriteBack(i) and Rn=Rt2. However, the compilers
-       // may not check for this. For the moment, we are changing
-       // the code to ignore this case for stores.
-       // TODO(karl): Should we not allow this?
-       // TODO(jfb) Fix this.
-       (is_load_ && n.reg(i).Equals(t.reg(i))))) {
+       n.reg(i).Equals(t.reg(i)))) {
     return UNPREDICTABLE;
   }
 

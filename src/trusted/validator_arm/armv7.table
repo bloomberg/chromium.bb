@@ -832,26 +832,14 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
   uses := {Rt, Rn};
   safety := P=0 & W=1 => DECODER_ERROR &
             Rt == Pc => UNPREDICTABLE &
-            # wback & (Rn == Pc | Rn == Rt) => UNPREDICTABLE &
-            # NOTE: The manual states the above. However, the
-            # compilers may not check for this when "wback & Rn==Rt".
-            # For the moment, we are changing the test to ignore this
-            # case (for stores).
-            # TODO(karl) Fix this. See issue 2816.
-            wback & (Rn == Pc) => UNPREDICTABLE;
+            wback & (Rn == Pc | Rn == Rt) => UNPREDICTABLE;
 *StrRtRt2RnImm *StrRtRnImm
   baseline := Store2RegisterImm8DoubleOp;
   Rt2 := Rt + 1;
   uses := {Rt, Rt2, Rn};
   safety := Rt(0)=1 => UNPREDICTABLE &
             P=0 & W=1 => UNPREDICTABLE &
-            # wback & (Rn == Pc | Rn == Rt) => UNPREDICTABLE &
-            # NOTE: The manual states the above. However, the
-            # compilers may not check for this when "wback & Rn==Rt".
-            # For the moment, we are changing the test to ignore this
-            # case (for stores).
-            # TODO(karl) Fix this. See issue 2816.
-            wback & (Rn == Pc) => UNPREDICTABLE &
+            wback & (Rn == Pc | Rn == Rt) => UNPREDICTABLE &
             Rt2 == Pc => UNPREDICTABLE;
 
 *RtRnRm
@@ -866,13 +854,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
   safety := Rt(0)=1 => UNPREDICTABLE &
             P=0 & W=1 => UNPREDICTABLE &
             Rt2 == Pc | Rm == Pc | Rm == Rt | Rm == Rt2 => UNPREDICTABLE &
-            # wback & (Rn == Pc | Rn == Rt | Rn == Rt2) => UNPREDICTABLE &
-            # NOTE: The manual states the above. However, the
-            # compilers may not check for this when "wback & Rn==Rt".
-            # For the moment, we are changing the test to ignore this
-            # case (for stores).
-            # TODO(karl) Fix this. See issue 2816.
-            wback & (Rn == Pc) => UNPREDICTABLE &
+            wback & (Rn == Pc | Rn == Rt | Rn == Rt2) => UNPREDICTABLE &
             ArchVersion() < 6 & wback & Rm == Rn => UNPREDICTABLE &
             # If indexing, load is computed as the sum of two registers,
             # which NaCl doesn't allow.
@@ -886,13 +868,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
   safety := Rt(0)=1 => UNPREDICTABLE &
             P=0 & W=1 => UNPREDICTABLE &
             Rt2 == Pc | Rm == Pc => UNPREDICTABLE &
-            # wback & (Rn == Pc | Rn == Rt | Rn == Rt2) => UNPREDICTABLE &
-            # NOTE: The manual states the above. However, the
-            # compilers may not check for this when "wback & Rn==Rt".
-            # For the moment, we are changing the test to ignore this
-            # case (for stores).
-            # TODO(karl) Fix this. See issue 2816.
-            wback & (Rn == Pc) => UNPREDICTABLE &
+            wback & (Rn == Pc | Rn == Rt | Rn == Rt2) => UNPREDICTABLE &
             ArchVersion() < 6 & wback & Rm == Rn => UNPREDICTABLE &
             # If indexing, load is computed as the sum of two registers,
             # which NaCl doesn't allow.
@@ -917,13 +893,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
   uses := {Rt, Rn, Rm};
   safety := P=0 & W=1 => DECODER_ERROR &
             Pc in {Rt, Rm} => UNPREDICTABLE &
-            # wback & (Rn == Pc | Rn == Rt) => UNPREDICTABLE &
-            # NOTE: The manual states the above. However, the
-            # compilers may not check for this when "wback & Rn==Rt".
-            # For the moment, we are changing the test to ignore this
-            # case (for stores).
-            # TODO(karl) Fix this. See issue 2816.
-            wback & (Rn == Pc) => UNPREDICTABLE &
+            wback & (Rn == Pc | Rn == Rt) => UNPREDICTABLE &
             ArchVersion() < 6 & wback & Rm == Rn => UNPREDICTABLE &
             # If indexing, load is computed as the sum of two registers,
             # which NaCl doesn't allow.

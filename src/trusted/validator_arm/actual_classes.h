@@ -608,18 +608,6 @@ class StoreBasedOffsetMemory : public StoreBasedMemoryWithWriteBack {
   NACL_DISALLOW_COPY_AND_ASSIGN(StoreBasedOffsetMemory);
 };
 
-// Defines a StoreBasedOffsetMemory, which also uses Rt2.
-class StoreBasedOffsetMemoryDouble : public StoreBasedOffsetMemory {
- public:
-  static const RegBits12To15Plus1Interface t2;
-
-  StoreBasedOffsetMemoryDouble() {}
-  virtual SafetyLevel safety(Instruction i) const;
-
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(StoreBasedOffsetMemoryDouble);
-};
-
 // Defines a based memory load on register Rn, assuming it can be
 // modified by an immediate offset.
 class StoreBasedImmedMemory : public StoreBasedMemoryWithWriteBack {
@@ -630,18 +618,6 @@ class StoreBasedImmedMemory : public StoreBasedMemoryWithWriteBack {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(StoreBasedImmedMemory);
-};
-
-// Defines a StoreBasedImmedMemory, which also uses Rt2
-class StoreBasedImmedMemoryDouble : public StoreBasedImmedMemory {
- public:
-  static const RegBits12To15Plus1Interface t2;
-
-  StoreBasedImmedMemoryDouble() {}
-  virtual SafetyLevel safety(Instruction i) const;
-
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(StoreBasedImmedMemoryDouble);
 };
 
 // **************************************************************

@@ -1145,6 +1145,47 @@ TEST_F(ValidatorTests, ConditionalBreakpoints) {
   }
 }
 
+TEST_F(ValidatorTests, CheckLoadStoreWritebackUnpredictable) {
+  // See issue #2816: compilers used to emit some unpredictable load/store
+  // instructions with writeback, and the validator accepted them for a while.
+  //
+  // Theses unpredictables have writeback and either Rn=Rt or Rn=Rt2.
+  //
+  // The instructions are all from A5.2.8 Extra Load/Store Instructions:
+  //   cccc 000P UaWa nnnn tttt xxxx 1bb1 xxxx
+  // With an exclusion for data-processing and miscellaneous as noted below.
+  //
+  // Nibbles 0 and 2 are either zeroes/Rm (register variants) or
+  // imm4H/imm4L (integer variant). Only test when they're all zero.
+  arm_inst templ = 0x00000090;
+  for (uint32_t op2 = 0; op2 <= 0x3; ++op2) {  // op2 is in inst(6:5).
+    for (uint32_t op1 = 0; op1 <= 0x1F; ++op1) {  // op1 is in inst(24:20).
+      if (!(op1 & 0x2))
+        continue;  // Only undefined with writeback.
+      if ((op2 == 0x0) ||
+          ((op1 & 0x13) == 0x03) ||
+          (((op1 & 0x13) == 0x02) && ((op2 & 0x2) == 0x0)))
+        continue;  // Not in A5.2.8: actually Data-processing and miscellaneous.
+      // Dual load/store encode Rt2 as Rt+1.
+      bool is_dual = ((op1 & 0x01) == 0x00) && ((op2 == 0x2) || (op2 == 0x3));
+      for (uint32_t n = 0; n < 15; ++n) {  // Ignore Rn=PC, it can't writeback.
+        uint32_t t = n;
+        arm_inst base = (templ | (op1 << 20) | (t << 12) | (op2 << 5));
+        arm_inst inst = base | (n << 16);  // Rn=Rt.
+        arm_inst inst_dual = base | ((n + 1) << 16);  // Rn=Rt2.
+        all_cond_values_fail(inst, kDefaultBaseAddr, "extra load/store "
+                             "with writeback and Rn==Rt should be "
+                             "unpredictable");
+        if (is_dual) {
+          all_cond_values_fail(inst_dual, kDefaultBaseAddr, "extra load/store "
+                               "with writeback and Rn==Rt2 should be "
+                               "unpredictable");
+        }
+      }
+    }
+  }
+}
+
 TEST_F(ValidatorTests, LiteralPoolHeadIsBreakpoint) {
   EXPECT_EQ(kLiteralPoolHead & 0xFFF000F0, 0xE1200070)  // BKPT #0
       << ("the literal pool head should be a breakpoint: "
