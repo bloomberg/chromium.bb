@@ -118,6 +118,8 @@ class WEBKIT_PLUGINS_EXPORT PluginModule :
   // must be called before calling InitAsProxiedNaCl. Returns true on success.
   bool InitAsProxiedNaCl(PluginInstance* instance);
 
+  bool IsProxied() const;
+
   static const PPB_Core* GetCore();
 
   // Returns a pointer to the local GetInterface function for retrieving

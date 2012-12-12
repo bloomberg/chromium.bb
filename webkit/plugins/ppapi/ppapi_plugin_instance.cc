@@ -580,10 +580,13 @@ bool PluginInstance::Initialize(const std::vector<std::string>& arg_names,
   argv_ = arg_values;
   scoped_array<const char*> argn_array(StringVectorToArgArray(argn_));
   scoped_array<const char*> argv_array(StringVectorToArgArray(argv_));
-  return PP_ToBool(instance_interface_->DidCreate(pp_instance(),
-                                                  argn_.size(),
-                                                  argn_array.get(),
-                                                  argv_array.get()));
+  bool success =  PP_ToBool(instance_interface_->DidCreate(pp_instance(),
+                                                           argn_.size(),
+                                                           argn_array.get(),
+                                                           argv_array.get()));
+  if (success)
+    message_channel_->StopQueueingJavaScriptMessages();
+  return success;
 }
 
 bool PluginInstance::HandleDocumentLoad(PPB_URLLoader_Impl* loader) {
@@ -2386,6 +2389,9 @@ bool PluginInstance::ResetAsProxied(scoped_refptr<PluginModule> module) {
   original_module_ = module_;
   module_ = module;
 
+  // Don't send any messages to the plugin until DidCreate() has finished.
+  message_channel_->QueueJavaScriptMessages();
+
   // For NaCl instances, remember the NaCl plugin instance interface, so we
   // can shut it down by calling its DidDestroy in our Delete() method.
   original_instance_interface_.reset(instance_interface_.release());
@@ -2420,6 +2426,7 @@ bool PluginInstance::ResetAsProxied(scoped_refptr<PluginModule> module) {
   if (!instance_interface_->DidCreate(pp_instance(), argn_.size(),
                                       argn_array.get(), argv_array.get()))
     return false;
+  message_channel_->StopQueueingJavaScriptMessages();
 
   // Clear sent_initial_did_change_view_ and cancel any pending DidChangeView
   // event. This way, SendDidChangeView will send the "current" view

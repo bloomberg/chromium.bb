@@ -5,14 +5,14 @@
 #ifndef WEBKIT_PLUGINS_PPAPI_MESSAGE_CHANNEL_H_
 #define WEBKIT_PLUGINS_PPAPI_MESSAGE_CHANNEL_H_
 
+#include <deque>
+
 #include "base/memory/weak_ptr.h"
 #include "ppapi/shared_impl/resource.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSerializedScriptValue.h"
 #include "third_party/npapi/bindings/npruntime.h"
 
 struct PP_Var;
-namespace WebKit {
-class WebSerializedScriptValue;
-}
 
 namespace webkit {
 namespace ppapi {
@@ -70,6 +70,12 @@ class MessageChannel {
     return instance_;
   }
 
+  // Messages sent to JavaScript are queued by default. After the DOM is
+  // set up for the plugin, users of MessageChannel should call
+  // StopQueueingJavaScriptMessages to start dispatching messages to JavaScript.
+  void QueueJavaScriptMessages();
+  void StopQueueingJavaScriptMessages();
+
  private:
   PluginInstance* instance_;
 
@@ -91,9 +97,22 @@ class MessageChannel {
   // channel's instance.  This is used by PostMessageToNative.
   void PostMessageToNativeImpl(PP_Var message_data);
 
+  void DrainEarlyMessageQueue();
+
   // This is used to ensure pending tasks will not fire after this object is
   // destroyed.
   base::WeakPtrFactory<MessageChannel> weak_ptr_factory_;
+
+  // TODO(teravest): Remove all the tricky DRAIN_CANCELLED logic once
+  // webkit::ppapi::PluginInstance::ResetAsProxied() is gone.
+  std::deque<WebKit::WebSerializedScriptValue> early_message_queue_;
+  enum EarlyMessageQueueState {
+    QUEUE_MESSAGES,       // Queue JS messages.
+    SEND_DIRECTLY,        // Post JS messages directly.
+    DRAIN_PENDING,        // Drain queue, then transition to DIRECT.
+    DRAIN_CANCELLED       // Preempt drain, go back to QUEUE.
+  };
+  EarlyMessageQueueState early_message_queue_state_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageChannel);
 };

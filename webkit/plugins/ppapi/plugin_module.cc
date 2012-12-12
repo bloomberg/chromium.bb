@@ -518,6 +518,10 @@ bool PluginModule::InitAsProxiedNaCl(PluginInstance* plugin_instance) {
   return plugin_instance->ResetAsProxied(this);
 }
 
+bool PluginModule::IsProxied() const {
+  return !!out_of_process_proxy_;
+}
+
 // static
 const PPB_Core* PluginModule::GetCore() {
   return &core_interface;
