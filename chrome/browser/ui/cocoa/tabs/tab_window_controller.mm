@@ -5,8 +5,6 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_window_controller.h"
 
 #include "base/logging.h"
-#import "chrome/browser/ui/cocoa/fast_resize_view.h"
-#import "chrome/browser/ui/cocoa/framed_browser_window.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "ui/base/cocoa/focus_tracker.h"
@@ -42,49 +40,42 @@
 @end
 
 @implementation TabWindowController
-
-- (id)initTabWindowControllerWithTabStrip:(BOOL)hasTabStrip {
-  NSRect contentRect = NSMakeRect(60, 229, 750, 600);
-  scoped_nsobject<FramedBrowserWindow> window(
-      [[FramedBrowserWindow alloc] initWithContentRect:contentRect
-                                           hasTabStrip:hasTabStrip]);
-  [window setReleasedWhenClosed:YES];
-
-  if ((self = [super initWithWindow:window])) {
-    [[self window] setDelegate:self];
-
-    tabContentArea_.reset([[FastResizeView alloc] initWithFrame:
-        NSMakeRect(0, 0, 750, 600)]);
-    [tabContentArea_ setAutoresizingMask:NSViewWidthSizable |
-                                         NSViewHeightSizable];
-    [[[self window] contentView] addSubview:tabContentArea_];
-
-    tabStripView_.reset([[TabStripView alloc] initWithFrame:
-        NSMakeRect(0, 0, 750, 37)]);
-    [tabStripView_ setAutoresizingMask:NSViewWidthSizable |
-                                       NSViewMinYMargin];
-    if (hasTabStrip)
-      [self addTabStripToWindow];
-  }
-  return self;
-}
-
-- (TabStripView*)tabStripView {
-  return tabStripView_;
-}
-
-- (FastResizeView*)tabContentArea {
-  return tabContentArea_;
-}
+@synthesize tabContentArea = tabContentArea_;
 
 // Add the top tab strop to the window, above the content box and add it to the
 // view hierarchy as a sibling of the content view so it can overlap with the
 // window frame.
 - (void)addTabStripToWindow {
-  // The frame doesn't matter. This class relies on subclasses to do tab strip
-  // layout.
+  NSRect contentFrame = [tabContentArea_ frame];
+  NSRect tabFrame =
+      NSMakeRect(0, NSMaxY(contentFrame),
+                 NSWidth(contentFrame),
+                 NSHeight([tabStripView_ frame]));
+  [tabStripView_ setFrame:tabFrame];
   NSView* contentParent = [[[self window] contentView] superview];
   [contentParent addSubview:tabStripView_];
+}
+
+- (void)windowDidLoad {
+  // Cache the difference in height between the window content area and the
+  // tab content area.
+  NSRect tabFrame = [tabContentArea_ frame];
+  NSRect contentFrame = [[[self window] contentView] frame];
+  contentAreaHeightDelta_ = NSHeight(contentFrame) - NSHeight(tabFrame);
+
+  if ([self hasTabStrip]) {
+    [self addTabStripToWindow];
+  } else {
+    // No top tabstrip so remove the tabContentArea offset.
+    tabFrame.size.height = contentFrame.size.height;
+    [tabContentArea_ setFrame:tabFrame];
+  }
+}
+
+// Return the appropriate tab strip based on whether or not side tabs are
+// enabled.
+- (TabStripView*)tabStripView {
+  return tabStripView_;
 }
 
 - (void)removeOverlay {
