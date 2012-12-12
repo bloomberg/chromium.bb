@@ -214,6 +214,15 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
                                                  gfx::NativeWindow parent,
                                                  const gfx::Rect& bounds);
 
+  // Creates a decorated window Widget in the same desktop context as
+  // |context|.
+  static Widget* CreateWindowWithContext(WidgetDelegate* delegate,
+                                         gfx::NativeView context);
+  static Widget* CreateWindowWithContextAndBounds(WidgetDelegate* delegate,
+                                                  gfx::NativeView context,
+                                                  const gfx::Rect& bounds);
+
+
   // Enumerates all windows pertaining to us and notifies their
   // view hierarchies that the locale has changed.
   // TODO(beng): remove post-Aurafication of ChromeOS.

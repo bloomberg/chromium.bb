@@ -49,7 +49,7 @@ ColorChooserAura::ColorChooserAura(int identifier,
       tab_(tab) {
   DCHECK(tab_);
   view_ = new views::ColorChooserView(this, initial_color);
-  widget_ = views::Widget::CreateWindow(view_);
+  widget_ = views::Widget::CreateWindowWithContext(view_, tab->GetNativeView());
   widget_->SetAlwaysOnTop(true);
   widget_->Show();
 }

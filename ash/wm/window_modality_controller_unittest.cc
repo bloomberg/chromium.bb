@@ -8,6 +8,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
@@ -240,7 +241,8 @@ TEST_F(WindowModalityControllerTest, GetModalTransient) {
 
 // Verifies we generate a capture lost when showing a modal window.
 TEST_F(WindowModalityControllerTest, ChangeCapture) {
-  views::Widget* widget = views::Widget::CreateWindow(NULL);
+  views::Widget* widget = views::Widget::CreateWindowWithContext(
+      NULL, Shell::GetPrimaryRootWindow());
   scoped_ptr<aura::Window> widget_window(widget->GetNativeView());
   views::test::CaptureTrackingView* view = new views::test::CaptureTrackingView;
   widget->client_view()->AddChildView(view);

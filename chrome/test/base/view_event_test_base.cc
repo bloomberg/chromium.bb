@@ -26,7 +26,7 @@
 #include "ui/aura/client/event_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/test/test_stacking_client.h"
+#include "ui/aura/test/aura_test_helper.h"
 #endif
 
 namespace {
@@ -89,6 +89,7 @@ void ViewEventTestBase::Done() {
 void ViewEventTestBase::SetUp() {
   ui::TextInputTestSupport::Initialize();
   ui::CompositorTestSupport::Initialize();
+  gfx::NativeView context = NULL;
 #if defined(USE_ASH)
 #if defined(OS_WIN)
   // http://crbug.com/154081 use ash::Shell code path below on win_ash bots when
@@ -97,13 +98,17 @@ void ViewEventTestBase::SetUp() {
       gfx::SCREEN_TYPE_NATIVE, views::CreateDesktopScreen());
 #else
   ash::Shell::CreateInstance(new ash::test::TestShellDelegate());
+  context = ash::Shell::GetPrimaryRootWindow();
 #endif
+#elif defined(USE_AURA)
+  // Instead of using the ash shell, use an AuraTestHelper to create and manage
+  // the test screen.
+  aura_test_helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
+  aura_test_helper_->SetUp();
+  context = aura_test_helper_->root_window();
 #endif
-  window_ = views::Widget::CreateWindow(this);
-#if defined(USE_AURA)
-  stacking_client_.reset(new aura::test::TestStackingClient(
-      window_->GetNativeWindow()->GetRootWindow()));
-#endif
+
+  window_ = views::Widget::CreateWindowWithContext(this, context);
 }
 
 void ViewEventTestBase::TearDown() {
@@ -120,11 +125,10 @@ void ViewEventTestBase::TearDown() {
 #if defined(OS_WIN)
 #else
   ash::Shell::DeleteInstance();
-#endif
-#endif
-#if defined(USE_AURA)
-  stacking_client_.reset();
   aura::Env::DeleteInstance();
+#endif
+#elif defined(USE_AURA)
+  aura_test_helper_->TearDown();
 #endif
   ui::CompositorTestSupport::Terminate();
   ui::TextInputTestSupport::Shutdown();

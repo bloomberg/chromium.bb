@@ -25,7 +25,7 @@
 
 namespace aura {
 namespace test {
-class TestStackingClient;
+class AuraTestHelper;
 }
 }
 
@@ -150,7 +150,7 @@ class ViewEventTestBase : public views::WidgetDelegate,
 #endif
 
 #if defined(USE_AURA)
-  scoped_ptr<aura::test::TestStackingClient> stacking_client_;
+  scoped_ptr<aura::test::AuraTestHelper> aura_test_helper_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ViewEventTestBase);

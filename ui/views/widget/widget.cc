@@ -253,9 +253,26 @@ Widget* Widget::CreateWindowWithParentAndBounds(WidgetDelegate* delegate,
   Widget* widget = new Widget;
   Widget::InitParams params;
   params.delegate = delegate;
-#if defined(OS_WIN) || defined(USE_AURA)
   params.parent = parent;
-#endif
+  params.bounds = bounds;
+  widget->Init(params);
+  return widget;
+}
+
+// static
+Widget* Widget::CreateWindowWithContext(WidgetDelegate* delegate,
+                                        gfx::NativeView context) {
+  return CreateWindowWithContextAndBounds(delegate, context, gfx::Rect());
+}
+
+// static
+Widget* Widget::CreateWindowWithContextAndBounds(WidgetDelegate* delegate,
+                                                 gfx::NativeView context,
+                                                 const gfx::Rect& bounds) {
+  Widget* widget = new Widget;
+  Widget::InitParams params;
+  params.delegate = delegate;
+  params.context = context;
   params.bounds = bounds;
   widget->Init(params);
   return widget;
