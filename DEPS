@@ -318,6 +318,9 @@ deps = {
 
   "src/third_party/opus/src":
     "/trunk/deps/third_party/opus@165487",
+
+  "src/third_party/accessibility-developer-tools":
+    Var("chromium_git") + "/external/accessibility-developer-tools.git@c77344d0d39b2365775b8e1d86bafcd5ac407444",
 }
 
 
