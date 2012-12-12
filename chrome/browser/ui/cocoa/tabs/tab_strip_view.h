@@ -25,7 +25,8 @@
   // Handles being a drag-and-drop target.
   scoped_nsobject<URLDropTargetHandler> dropHandler_;
 
-  scoped_nsobject<NewTabButton> newTabButton_;
+  // Weak; the following come from the nib.
+  NewTabButton* newTabButton_;
 
   // Whether the drop-indicator arrow is shown, and if it is, the coordinate of
   // its tip.

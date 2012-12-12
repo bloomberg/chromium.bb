@@ -9,13 +9,10 @@
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "chrome/browser/themes/theme_service.h"
-#import "chrome/browser/ui/cocoa/browser_window_controller.h"
-#import "chrome/browser/ui/cocoa/new_tab_button.h"
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
+#import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
-#include "grit/generated_resources.h"
-#include "ui/base/l10n/l10n_util_mac.h"
 
 @implementation TabStripView
 
@@ -25,10 +22,6 @@
 - (id)initWithFrame:(NSRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
-    newTabButton_.reset([[NewTabButton alloc] initWithFrame:
-        NSMakeRect(295, 0, 40, 27)]);
-    [newTabButton_ setToolTip:l10n_util::GetNSString(IDS_TOOLTIP_NEW_TAB)];
-
     // Set lastMouseUp_ = -1000.0 so that timestamp-lastMouseUp_ is big unless
     // lastMouseUp_ has been reset.
     lastMouseUp_ = -1000.0;
@@ -249,7 +242,7 @@
 }
 
 - (void)setNewTabButton:(NewTabButton*)button {
-  newTabButton_.reset([button retain]);
+  newTabButton_ = button;
 }
 
 - (void)setController:(TabStripController*)controller {
