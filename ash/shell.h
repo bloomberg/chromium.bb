@@ -18,7 +18,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "ui/aura/client/activation_change_observer.h"
 #include "ui/base/events/event_target.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/screen.h"
@@ -127,10 +126,8 @@ class ShellTestApi;
 //
 // Upon creation, the Shell sets itself as the RootWindow's delegate, which
 // takes ownership of the Shell.
-class ASH_EXPORT Shell
-    : public internal::SystemModalContainerEventFilterDelegate,
-      public ui::EventTarget,
-      public aura::client::ActivationChangeObserver {
+class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate,
+                         public ui::EventTarget {
  public:
   typedef std::vector<aura::RootWindow*> RootWindowList;
   typedef std::vector<internal::RootWindowController*> RootWindowControllerList;
@@ -453,10 +450,6 @@ class ASH_EXPORT Shell
   virtual bool CanAcceptEvent(const ui::Event& event) OVERRIDE;
   virtual EventTarget* GetParentTarget() OVERRIDE;
   virtual void OnEvent(ui::Event* event) OVERRIDE;
-
-  // Overridden from aura::client::ActivationChangeObserver:
-  virtual void OnWindowActivated(aura::Window* gained_active,
-                                 aura::Window* lost_active) OVERRIDE;
 
   static Shell* instance_;
 

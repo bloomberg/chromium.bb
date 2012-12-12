@@ -122,7 +122,8 @@ void FanOutPanels(std::vector<VisiblePanelPositionInfo>::iterator first,
 ////////////////////////////////////////////////////////////////////////////////
 // PanelLayoutManager public implementation:
 PanelLayoutManager::PanelLayoutManager(aura::Window* panel_container)
-    : panel_container_(panel_container),
+    : ActivationChangeShim(Shell::GetInstance()),
+      panel_container_(panel_container),
       in_layout_(false),
       dragged_panel_(NULL),
       launcher_(NULL),
@@ -283,13 +284,11 @@ void PanelLayoutManager::OnWindowPropertyChanged(aura::Window* window,
 
 ////////////////////////////////////////////////////////////////////////////////
 // PanelLayoutManager, aura::client::ActivationChangeObserver implementation:
-
-void PanelLayoutManager::OnWindowActivated(aura::Window* gained_active,
-                                           aura::Window* lost_active) {
-  if (gained_active &&
-      gained_active->type() == aura::client::WINDOW_TYPE_PANEL) {
-    UpdateStacking(gained_active);
-    UpdateCallout(gained_active);
+void PanelLayoutManager::OnWindowActivated(aura::Window* active,
+                                           aura::Window* old_active) {
+  if (active && active->type() == aura::client::WINDOW_TYPE_PANEL) {
+    UpdateStacking(active);
+    UpdateCallout(active);
   } else {
     UpdateCallout(NULL);
   }

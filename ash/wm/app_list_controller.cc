@@ -82,7 +82,8 @@ gfx::Rect OffsetTowardsShelf(const gfx::Rect& rect, views::Widget* widget) {
 // AppListController, public:
 
 AppListController::AppListController()
-    : pagination_model_(new app_list::PaginationModel),
+    : FocusChangeShim(Shell::GetInstance()),
+      pagination_model_(new app_list::PaginationModel),
       is_visible_(false),
       view_(NULL),
       should_snap_back_(false) {

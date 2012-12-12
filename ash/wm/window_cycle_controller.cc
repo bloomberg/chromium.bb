@@ -89,7 +89,8 @@ void AddCycleWindows(aura::RootWindow* root,
 
 WindowCycleController::WindowCycleController(
     aura::client::ActivationClient* activation_client)
-    : activation_client_(activation_client) {
+    : ActivationChangeShim(Shell::GetInstance()),
+      activation_client_(activation_client) {
   activation_client_->AddObserver(this);
 }
 
@@ -266,12 +267,11 @@ void WindowCycleController::InstallEventFilter() {
   Shell::GetInstance()->AddPreTargetHandler(event_handler_.get());
 }
 
-void WindowCycleController::OnWindowActivated(aura::Window* gained_active,
-                                              aura::Window* lost_active) {
-  if (gained_active && !IsCycling() &&
-      IsTrackedContainer(gained_active->parent())) {
-    mru_windows_.remove(gained_active);
-    mru_windows_.push_front(gained_active);
+void WindowCycleController::OnWindowActivated(aura::Window* active,
+                                              aura::Window* old_active) {
+  if (active && !IsCycling() && IsTrackedContainer(active->parent())) {
+    mru_windows_.remove(active);
+    mru_windows_.push_front(active);
   }
 }
 

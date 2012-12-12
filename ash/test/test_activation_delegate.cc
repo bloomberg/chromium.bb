@@ -8,6 +8,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/events/event.h"
+#include "ui/views/corewm/focus_change_event.h"
 
 namespace ash {
 namespace test {

@@ -22,6 +22,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/views/controls/menu/menu_controller.h"
+#include "ui/views/corewm/focus_change_event.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 

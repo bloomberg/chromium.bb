@@ -5,13 +5,13 @@
 #include "ui/views/controls/menu/menu_controller.h"
 
 #include "base/run_loop.h"
-#include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/dispatcher_client.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/corewm/activation_change_shim.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -22,12 +22,13 @@ namespace {
 // the menu. Additionally it listens for the root window to be destroyed and
 // cancel the menu as well.
 class ActivationChangeObserverImpl
-    : public aura::client::ActivationChangeObserver,
+    : public corewm::ActivationChangeShim,
       public aura::WindowObserver {
  public:
   ActivationChangeObserverImpl(MenuController* controller,
                                aura::RootWindow* root)
-      : controller_(controller),
+      : ActivationChangeShim(root),
+        controller_(controller),
         root_(root) {
     aura::client::GetActivationClient(root_)->AddObserver(this);
     root_->AddObserver(this);
@@ -38,8 +39,8 @@ class ActivationChangeObserverImpl
   }
 
   // aura::client::ActivationChangeObserver overrides:
-  virtual void OnWindowActivated(aura::Window* gained_active,
-                                 aura::Window* lost_active) OVERRIDE {
+  virtual void OnWindowActivated(aura::Window* active,
+                                 aura::Window* old_active) OVERRIDE {
     if (!controller_->drag_in_progress())
       controller_->CancelAll();
   }

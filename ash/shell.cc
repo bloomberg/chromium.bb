@@ -87,6 +87,7 @@
 #include "ui/ui_controls/ui_controls.h"
 #include "ui/views/corewm/compound_event_filter.h"
 #include "ui/views/corewm/corewm_switches.h"
+#include "ui/views/corewm/focus_change_event.h"
 #include "ui/views/corewm/focus_controller.h"
 #include "ui/views/corewm/input_method_event_filter.h"
 #include "ui/views/corewm/shadow_controller.h"
@@ -413,7 +414,6 @@ void Shell::Init() {
         new views::corewm::FocusController(new wm::AshFocusRules);
     focus_client_.reset(focus_controller);
     activation_client_ = focus_controller;
-    activation_client_->AddObserver(this);
   } else {
     focus_client_.reset(new aura::FocusManager);
     activation_controller_.reset(
@@ -891,14 +891,11 @@ ui::EventTarget* Shell::GetParentTarget() {
 }
 
 void Shell::OnEvent(ui::Event* event) {
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Shell, aura::client::ActivationChangeObserver implementation:
-
-void Shell::OnWindowActivated(aura::Window* gained_active,
-                              aura::Window* lost_active) {
-  active_root_window_ = gained_active->GetRootWindow();
+  if (event->type() ==
+      views::corewm::FocusChangeEvent::activation_changed_event_type()) {
+    active_root_window_ =
+        static_cast<aura::Window*>(event->target())->GetRootWindow();
+  }
 }
 
 }  // namespace ash
