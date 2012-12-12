@@ -39,6 +39,29 @@ class ScrollViewWithBorder : public views::ScrollView {
   DISALLOW_COPY_AND_ASSIGN(ScrollViewWithBorder);
 };
 
+// Returns the position for the view so that it isn't scrolled off the visible
+// region.
+int CheckScrollBounds(int viewport_size, int content_size, int current_pos) {
+  int max = std::max(content_size - viewport_size, 0);
+  if (current_pos < 0)
+    return 0;
+  if (current_pos > max)
+    return max;
+  return current_pos;
+}
+
+// Make sure the content is not scrolled out of bounds
+void CheckScrollBounds(View* viewport, View* view) {
+  if (!view)
+    return;
+
+  int x = CheckScrollBounds(viewport->width(), view->width(), -view->x());
+  int y = CheckScrollBounds(viewport->height(), view->height(), -view->y());
+
+  // This is no op if bounds are the same
+  view->SetBounds(-x, -y, view->width(), view->height());
+}
+
 }  // namespace
 
 // Viewport contains the contents View of the ScrollView.
@@ -71,23 +94,32 @@ class ScrollView::Viewport : public View {
   DISALLOW_COPY_AND_ASSIGN(Viewport);
 };
 
-ScrollView::ScrollView() {
-  Init(new NativeScrollBar(true), new NativeScrollBar(false), NULL);
-}
+ScrollView::ScrollView()
+    : contents_(NULL),
+      contents_viewport_(new Viewport()),
+      header_(NULL),
+      header_viewport_(new Viewport()),
+      horiz_sb_(new NativeScrollBar(true)),
+      vert_sb_(new NativeScrollBar(false)),
+      resize_corner_(NULL) {
+  AddChildView(contents_viewport_);
+  AddChildView(header_viewport_);
 
-ScrollView::ScrollView(ScrollBar* horizontal_scrollbar,
-                       ScrollBar* vertical_scrollbar,
-                       View* resize_corner) {
-  Init(horizontal_scrollbar, vertical_scrollbar, resize_corner);
+  // Don't add the scrollbars as children until we discover we need them
+  // (ShowOrHideScrollBar).
+  horiz_sb_->SetVisible(false);
+  horiz_sb_->set_controller(this);
+  vert_sb_->SetVisible(false);
+  vert_sb_->set_controller(this);
+  if (resize_corner_)
+    resize_corner_->SetVisible(false);
 }
 
 ScrollView::~ScrollView() {
-  // If scrollbars are currently not used, delete them
-  if (!horiz_sb_->parent())
-    delete horiz_sb_;
-
-  if (!vert_sb_->parent())
-    delete vert_sb_;
+  // The scrollbars may not have been added, delete them to ensure they get
+  // deleted.
+  delete horiz_sb_;
+  delete vert_sb_;
 
   if (resize_corner_ && !resize_corner_->parent())
     delete resize_corner_;
@@ -99,18 +131,11 @@ ScrollView* ScrollView::CreateScrollViewWithBorder() {
 }
 
 void ScrollView::SetContents(View* a_view) {
-  if (contents_ && contents_ != a_view) {
-    viewport_->RemoveChildView(contents_);
-    delete contents_;
-    contents_ = NULL;
-  }
+  SetHeaderOrContents(contents_viewport_, a_view, &contents_);
+}
 
-  if (a_view) {
-    contents_ = a_view;
-    viewport_->AddChildView(contents_);
-  }
-
-  Layout();
+void ScrollView::SetHeader(View* header) {
+  SetHeaderOrContents(header_viewport_, header, &header_);
 }
 
 gfx::Rect ScrollView::GetVisibleRect() const {
@@ -119,7 +144,8 @@ gfx::Rect ScrollView::GetVisibleRect() const {
 
   const int x = horiz_sb_->visible() ? horiz_sb_->GetPosition() : 0;
   const int y = vert_sb_->visible() ? vert_sb_->GetPosition() : 0;
-  return gfx::Rect(x, y, viewport_->width(), viewport_->height());
+  return gfx::Rect(x, y, contents_viewport_->width(),
+                   contents_viewport_->height());
 }
 
 int ScrollView::GetScrollBarWidth() const {
@@ -140,22 +166,30 @@ void ScrollView::Layout() {
   // used ComputeScrollBarsVisibility() to use the same calculation that is done
   // here and sets its bound to fit within.
   gfx::Rect viewport_bounds = GetContentsBounds();
-  // viewport_size is the total client space available.
-  gfx::Size viewport_size = viewport_bounds.size();
+  const int contents_x = viewport_bounds.x();
+  const int contents_y = viewport_bounds.y();
   if (viewport_bounds.IsEmpty()) {
     // There's nothing to layout.
     return;
   }
 
+  const int header_height =
+      std::min(viewport_bounds.height(),
+               header_ ? header_->GetPreferredSize().height() : 0);
+  viewport_bounds.set_height(
+      std::max(0, viewport_bounds.height() - header_height));
+  viewport_bounds.set_y(viewport_bounds.y() + header_height);
+  // viewport_size is the total client space available.
+  gfx::Size viewport_size = viewport_bounds.size();
   // Assumes a vertical scrollbar since most of the current views are designed
   // for this.
   int horiz_sb_height = GetScrollBarHeight();
   int vert_sb_width = GetScrollBarWidth();
   viewport_bounds.set_width(viewport_bounds.width() - vert_sb_width);
   // Update the bounds right now so the inner views can fit in it.
-  viewport_->SetBoundsRect(viewport_bounds);
+  contents_viewport_->SetBoundsRect(viewport_bounds);
 
-  // Give contents_ a chance to update its bounds if it depends on the
+  // Give |contents_| a chance to update its bounds if it depends on the
   // viewport.
   if (contents_)
     contents_->Layout();
@@ -210,11 +244,17 @@ void ScrollView::Layout() {
   }
 
   // Update to the real client size with the visible scrollbars.
-  viewport_->SetBoundsRect(viewport_bounds);
+  contents_viewport_->SetBoundsRect(viewport_bounds);
   if (should_layout_contents && contents_)
     contents_->Layout();
 
-  CheckScrollBounds();
+  header_viewport_->SetBounds(contents_x, contents_y,
+                              viewport_bounds.width(), header_height);
+  if (header_)
+    header_->Layout();
+
+  CheckScrollBounds(header_viewport_, header_);
+  CheckScrollBounds(contents_viewport_, contents_);
   SchedulePaint();
   UpdateScrollBarPositions();
 }
@@ -273,7 +313,7 @@ void ScrollView::ScrollToPosition(ScrollBar* source, int position) {
     return;
 
   if (source == horiz_sb_ && horiz_sb_->visible()) {
-    int vw = viewport_->width();
+    int vw = contents_viewport_->width();
     int cw = contents_->width();
     int origin = contents_->x();
     if (-origin != position) {
@@ -286,7 +326,7 @@ void ScrollView::ScrollToPosition(ScrollBar* source, int position) {
       contents_->SchedulePaintInRect(contents_->GetVisibleBounds());
     }
   } else if (source == vert_sb_ && vert_sb_->visible()) {
-    int vh = viewport_->height();
+    int vh = contents_viewport_->height();
     int ch = contents_->height();
     int origin = contents_->y();
     if (-origin != position) {
@@ -317,32 +357,25 @@ int ScrollView::GetScrollIncrement(ScrollBar* source, bool is_page,
       return amount;
   }
   // No view, or the view didn't return a valid amount.
-  if (is_page)
-    return is_horizontal ? viewport_->width() : viewport_->height();
-  return is_horizontal ? viewport_->width() / 5 : viewport_->height() / 5;
+  if (is_page) {
+    return is_horizontal ? contents_viewport_->width() :
+                           contents_viewport_->height();
+  }
+  return is_horizontal ? contents_viewport_->width() / 5 :
+                         contents_viewport_->height() / 5;
 }
 
-void ScrollView::Init(ScrollBar* horizontal_scrollbar,
-                      ScrollBar* vertical_scrollbar,
-                      View* resize_corner) {
-  DCHECK(horizontal_scrollbar && vertical_scrollbar);
+void ScrollView::SetHeaderOrContents(View* parent,
+                                     View* new_view,
+                                     View** member) {
+  if (*member == new_view)
+    return;
 
-  contents_ = NULL;
-  horiz_sb_ = horizontal_scrollbar;
-  vert_sb_ = vertical_scrollbar;
-  resize_corner_ = resize_corner;
-
-  viewport_ = new Viewport();
-  AddChildView(viewport_);
-
-  // Don't add the scrollbars as children until we discover we need them
-  // (ShowOrHideScrollBar).
-  horiz_sb_->SetVisible(false);
-  horiz_sb_->set_controller(this);
-  vert_sb_->SetVisible(false);
-  vert_sb_->set_controller(this);
-  if (resize_corner_)
-    resize_corner_->SetVisible(false);
+  delete *member;
+  *member = new_view;
+  if (*member)
+    parent->AddChildView(*member);
+  Layout();
 }
 
 void ScrollView::ScrollContentsRegionToBeVisible(const gfx::Rect& rect) {
@@ -351,9 +384,9 @@ void ScrollView::ScrollContentsRegionToBeVisible(const gfx::Rect& rect) {
 
   // Figure out the maximums for this scroll view.
   const int contents_max_x =
-      std::max(viewport_->width(), contents_->width());
+      std::max(contents_viewport_->width(), contents_->width());
   const int contents_max_y =
-      std::max(viewport_->height(), contents_->height());
+      std::max(contents_viewport_->height(), contents_->height());
 
   // Make sure x and y are within the bounds of [0,contents_max_*].
   int x = std::max(0, std::min(contents_max_x, rect.x()));
@@ -362,9 +395,9 @@ void ScrollView::ScrollContentsRegionToBeVisible(const gfx::Rect& rect) {
   // Figure out how far and down the rectangle will go taking width
   // and height into account.  This will be "clipped" by the viewport.
   const int max_x = std::min(contents_max_x,
-                             x + std::min(rect.width(), viewport_->width()));
+      x + std::min(rect.width(), contents_viewport_->width()));
   const int max_y = std::min(contents_max_y,
-                             y + std::min(rect.height(), viewport_->height()));
+      y + std::min(rect.height(), contents_viewport_->height()));
 
   // See if the rect is already visible. Note the width is (max_x - x)
   // and the height is (max_y - y) to take into account the clipping of
@@ -381,9 +414,10 @@ void ScrollView::ScrollContentsRegionToBeVisible(const gfx::Rect& rect) {
   // lower/right corner. This is calculated by taking max_x or max_y
   // and scaling it back by the size of the viewport.
   const int new_x =
-      (vis_rect.x() > x) ? x : std::max(0, max_x - viewport_->width());
+      (vis_rect.x() > x) ? x : std::max(0, max_x - contents_viewport_->width());
   const int new_y =
-      (vis_rect.y() > y) ? y : std::max(0, max_y - viewport_->height());
+      (vis_rect.y() > y) ? y : std::max(0, max_y -
+                                        contents_viewport_->height());
 
   contents_->SetX(-new_x);
   contents_->SetY(-new_y);
@@ -432,43 +466,16 @@ void ScrollView::UpdateScrollBarPositions() {
     return;
 
   if (horiz_sb_->visible()) {
-    int vw = viewport_->width();
+    int vw = contents_viewport_->width();
     int cw = contents_->width();
     int origin = contents_->x();
     horiz_sb_->Update(vw, cw, -origin);
   }
   if (vert_sb_->visible()) {
-    int vh = viewport_->height();
+    int vh = contents_viewport_->height();
     int ch = contents_->height();
     int origin = contents_->y();
     vert_sb_->Update(vh, ch, -origin);
-  }
-}
-
-int ScrollView::CheckScrollBounds(int viewport_size,
-                                  int content_size,
-                                  int current_pos) {
-  int max = std::max(content_size - viewport_size, 0);
-  if (current_pos < 0)
-    current_pos = 0;
-  else if (current_pos > max)
-    current_pos = max;
-  return current_pos;
-}
-
-void ScrollView::CheckScrollBounds() {
-  if (contents_) {
-    int x, y;
-
-    x = CheckScrollBounds(viewport_->width(),
-                          contents_->width(),
-                          -contents_->x());
-    y = CheckScrollBounds(viewport_->height(),
-                          contents_->height(),
-                          -contents_->y());
-
-    // This is no op if bounds are the same
-    contents_->SetBounds(-x, -y, contents_->width(), contents_->height());
   }
 }
 

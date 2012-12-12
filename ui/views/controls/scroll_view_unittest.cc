@@ -10,6 +10,7 @@ namespace views {
 
 namespace {
 
+// View implementation that allows setting the preferred size.
 class CustomView : public View {
  public:
   CustomView() {}
@@ -44,7 +45,7 @@ TEST(ScrollViewTest, ViewportSizedToFit) {
 // Verifies the scrollbars are added as necessary.
 TEST(ScrollViewTest, ScrollBars) {
   ScrollView scroll_view;
-  CustomView* contents = new CustomView;
+  View* contents = new View;
   scroll_view.SetContents(contents);
   scroll_view.SetBoundsRect(gfx::Rect(0, 0, 100, 100));
 
@@ -75,6 +76,97 @@ TEST(ScrollViewTest, ScrollBars) {
   EXPECT_EQ(100 - scroll_view.GetScrollBarWidth(), contents->parent()->width());
   EXPECT_EQ(100 - scroll_view.GetScrollBarHeight(),
             contents->parent()->height());
+  ASSERT_TRUE(scroll_view.horizontal_scroll_bar() != NULL);
+  EXPECT_TRUE(scroll_view.horizontal_scroll_bar()->visible());
+  ASSERT_TRUE(scroll_view.vertical_scroll_bar() != NULL);
+  EXPECT_TRUE(scroll_view.vertical_scroll_bar()->visible());
+}
+
+// Assertions around adding a header.
+TEST(ScrollViewTest, Header) {
+  ScrollView scroll_view;
+  View* contents = new View;
+  CustomView* header = new CustomView;
+  scroll_view.SetHeader(header);
+  View* header_parent = header->parent();
+  scroll_view.SetContents(contents);
+  scroll_view.SetBoundsRect(gfx::Rect(0, 0, 100, 100));
+  scroll_view.Layout();
+  // |header|s preferred size is empty, which should result in all space going
+  // to contents.
+  EXPECT_EQ("0,0 100x0", header->parent()->bounds().ToString());
+  EXPECT_EQ("0,0 100x100", contents->parent()->bounds().ToString());
+
+  // Get the header a height of 20.
+  header->SetPreferredSize(gfx::Size(10, 20));
+  EXPECT_EQ("0,0 100x20", header->parent()->bounds().ToString());
+  EXPECT_EQ("0,20 100x80", contents->parent()->bounds().ToString());
+
+  // Remove the header.
+  scroll_view.SetHeader(NULL);
+  // SetHeader(NULL) deletes header.
+  header = NULL;
+  EXPECT_EQ("0,0 100x0", header_parent->bounds().ToString());
+  EXPECT_EQ("0,0 100x100", contents->parent()->bounds().ToString());
+}
+
+// Verifies the scrollbars are added as necessary when a header is present.
+TEST(ScrollViewTest, ScrollBarsWithHeader) {
+  ScrollView scroll_view;
+  View* contents = new View;
+  scroll_view.SetContents(contents);
+  CustomView* header = new CustomView;
+  scroll_view.SetHeader(header);
+  scroll_view.SetBoundsRect(gfx::Rect(0, 0, 100, 100));
+
+  header->SetPreferredSize(gfx::Size(10, 20));
+
+  // Size the contents such that vertical scrollbar is needed.
+  contents->SetBounds(0, 0, 50, 400);
+  scroll_view.Layout();
+  EXPECT_EQ(0, contents->parent()->x());
+  EXPECT_EQ(20, contents->parent()->y());
+  EXPECT_EQ(100 - scroll_view.GetScrollBarWidth(), contents->parent()->width());
+  EXPECT_EQ(80, contents->parent()->height());
+  EXPECT_EQ(0, header->parent()->x());
+  EXPECT_EQ(0, header->parent()->y());
+  EXPECT_EQ(100 - scroll_view.GetScrollBarWidth(), header->parent()->width());
+  EXPECT_EQ(20, header->parent()->height());
+  EXPECT_TRUE(!scroll_view.horizontal_scroll_bar() ||
+              !scroll_view.horizontal_scroll_bar()->visible());
+  ASSERT_TRUE(scroll_view.vertical_scroll_bar() != NULL);
+  EXPECT_TRUE(scroll_view.vertical_scroll_bar()->visible());
+
+
+  // Size the contents such that horizontal scrollbar is needed.
+  contents->SetBounds(0, 0, 400, 50);
+  scroll_view.Layout();
+  EXPECT_EQ(0, contents->parent()->x());
+  EXPECT_EQ(20, contents->parent()->y());
+  EXPECT_EQ(100, contents->parent()->width());
+  EXPECT_EQ(100 - scroll_view.GetScrollBarHeight() - 20,
+            contents->parent()->height());
+  EXPECT_EQ(0, header->parent()->x());
+  EXPECT_EQ(0, header->parent()->y());
+  EXPECT_EQ(100, header->parent()->width());
+  EXPECT_EQ(20, header->parent()->height());
+  ASSERT_TRUE(scroll_view.horizontal_scroll_bar() != NULL);
+  EXPECT_TRUE(scroll_view.horizontal_scroll_bar()->visible());
+  EXPECT_TRUE(!scroll_view.vertical_scroll_bar() ||
+              !scroll_view.vertical_scroll_bar()->visible());
+
+  // Both horizontal and vertical.
+  contents->SetBounds(0, 0, 300, 400);
+  scroll_view.Layout();
+  EXPECT_EQ(0, contents->parent()->x());
+  EXPECT_EQ(20, contents->parent()->y());
+  EXPECT_EQ(100 - scroll_view.GetScrollBarWidth(), contents->parent()->width());
+  EXPECT_EQ(100 - scroll_view.GetScrollBarHeight() - 20,
+            contents->parent()->height());
+  EXPECT_EQ(0, header->parent()->x());
+  EXPECT_EQ(0, header->parent()->y());
+  EXPECT_EQ(100 - scroll_view.GetScrollBarWidth(), header->parent()->width());
+  EXPECT_EQ(20, header->parent()->height());
   ASSERT_TRUE(scroll_view.horizontal_scroll_bar() != NULL);
   EXPECT_TRUE(scroll_view.horizontal_scroll_bar()->visible());
   ASSERT_TRUE(scroll_view.vertical_scroll_bar() != NULL);

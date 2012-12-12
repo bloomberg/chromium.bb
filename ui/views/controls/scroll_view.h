@@ -31,10 +31,6 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   static const char* const kViewClassName;
 
   ScrollView();
-  // Initialize with specific views. resize_corner is optional.
-  ScrollView(ScrollBar* horizontal_scrollbar,
-             ScrollBar* vertical_scrollbar,
-             View* resize_corner);
   virtual ~ScrollView();
 
   // Creates a ScrollView with a theme specific border.
@@ -45,6 +41,9 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   void SetContents(View* a_view);
   const View* contents() const { return contents_; }
   View* contents() { return contents_; }
+
+  // Sets the header, deleting the previous header.
+  void SetHeader(View* header);
 
   // Returns the visible region of the content View.
   gfx::Rect GetVisibleRect() const;
@@ -74,10 +73,9 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
  private:
   class Viewport;
 
-  // Initialize the ScrollView. resize_corner is optional.
-  void Init(ScrollBar* horizontal_scrollbar,
-            ScrollBar* vertical_scrollbar,
-            View* resize_corner);
+  // Used internally by SetHeader() and SetContents() to reset the view.  Sets
+  // |member| to |new_view|. If |new_view| is non-null it is added to |parent|.
+  void SetHeaderOrContents(View* parent, View* new_view, View** member);
 
   // Scrolls the minimum amount necessary to make the specified rectangle
   // visible, in the coordinates of the contents view. The specified rectangle
@@ -99,17 +97,15 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   // Update the scrollbars positions given viewport and content sizes.
   void UpdateScrollBarPositions();
 
-  // Make sure the content is not scrolled out of bounds
-  void CheckScrollBounds();
-
-  // Make sure the content is not scrolled out of bounds in one dimension
-  int CheckScrollBounds(int viewport_size, int content_size, int current_pos);
-
-  // The clipping viewport. Content is added to that view.
-  View* viewport_;
-
-  // The current contents
+  // The current contents and its viewport. |contents_| is contained in
+  // |contents_viewport_|.
   View* contents_;
+  View* contents_viewport_;
+
+  // The current header and its viewport. |header_| is contained in
+  // |header_viewport_|.
+  View* header_;
+  View* header_viewport_;
 
   // Horizontal scrollbar.
   ScrollBar* horiz_sb_;
