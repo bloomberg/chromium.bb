@@ -224,14 +224,7 @@ class RunTestCases(unittest.TestCase):
 
     self.assertEqual(1, return_code)
 
-    expected_out_re = [
-      r'\[1/\d\]   \d\.\d\ds .+',
-      r'\[2/\d\]   \d\.\d\ds .+',
-      r'\[3/\d\]   \d\.\d\ds .+',
-      r'\[4/\d\]   \d\.\d\ds .+',
-      # Retries
-      r'\[5/\d\]   \d\.\d\ds .+ retry \#1',
-      r'\[6/\d\]   \d\.\d\ds .+ retry \#2',
+    test_failure_output = [
       re.escape('Note: Google Test filter = Baz.Fail'),
       r'',
     ] + [
@@ -244,6 +237,19 @@ class RunTestCases(unittest.TestCase):
     ] + [
       '',
       '',
+    ]
+
+    expected_out_re = [
+      r'\[1/\d\]   \d\.\d\ds .+',
+      r'\[2/\d\]   \d\.\d\ds .+',
+      r'\[3/\d\]   \d\.\d\ds .+',
+      r'\[4/\d\]   \d\.\d\ds .+',
+    ] + test_failure_output + [
+      # Retries
+      r'\[5/\d\]   \d\.\d\ds .+ retry \#1',
+    ] + test_failure_output + [
+      r'\[6/\d\]   \d\.\d\ds .+ retry \#2',
+    ] + test_failure_output + [
       re.escape('Failed tests:'),
       re.escape('  Baz.Fail'),
       re.escape('Summary:'),
