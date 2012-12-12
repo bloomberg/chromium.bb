@@ -293,6 +293,10 @@ html[dir='rtl'] #extension-settings .trash {
   display: none;
 }
 
+.managed-mode-banner .page-banner-text {
+  background-image: url('chrome://theme/IDR_WARNING');
+}
+
 .managed-mode .more-extensions-link {
   display: none;
 }
