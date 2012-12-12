@@ -209,12 +209,10 @@ def recreate_tree(outdir, indir, infiles, action, as_sha1):
       run_isolated.HARDLINK,
       run_isolated.SYMLINK,
       run_isolated.COPY)
-  outdir = os.path.normpath(outdir)
+  assert os.path.isabs(outdir) and outdir == os.path.normpath(outdir), outdir
   if not os.path.isdir(outdir):
-    logging.info ('Creating %s' % outdir)
+    logging.info('Creating %s' % outdir)
     os.makedirs(outdir)
-  # Do not call abspath until the directory exists.
-  outdir = os.path.abspath(outdir)
 
   for relfile, metadata in infiles.iteritems():
     infile = os.path.join(indir, relfile)
@@ -374,24 +372,33 @@ def replace_variable(part, variables):
   return part
 
 
-def process_variables(variables, relative_base_dir):
+def process_variables(cwd, variables, relative_base_dir):
   """Processes path variables as a special case and returns a copy of the dict.
 
-  For each 'path' variable: first normalizes it, verifies it exists, converts it
-  to an absolute path, then sets it as relative to relative_base_dir.
+  For each 'path' variable: first normalizes it based on |cwd|, verifies it
+  exists then sets it as relative to relative_base_dir.
   """
   variables = variables.copy()
   for i in PATH_VARIABLES:
     if i not in variables:
       continue
-    variable = os.path.normpath(variables[i])
-    if not os.path.isdir(variable):
-      raise ExecutionError('%s=%s is not a directory' % (i, variable))
     # Variables could contain / or \ on windows. Always normalize to
     # os.path.sep.
-    variable = os.path.abspath(variable.replace('/', os.path.sep))
+    variable = variables[i].replace('/', os.path.sep)
+    if os.path.isabs(variable):
+      raise ExecutionError(
+          'Variable can\'t absolute: %s: %s' % (i, variables[i]))
+
+    variable = os.path.join(cwd, variable)
+    variable = os.path.normpath(variable)
+    if not os.path.isdir(variable):
+      raise ExecutionError('%s=%s is not a directory' % (i, variable))
+
     # All variables are relative to the .isolate file.
-    variables[i] = os.path.relpath(variable, relative_base_dir)
+    variable = os.path.relpath(variable, relative_base_dir)
+    logging.debug(
+        'Translated variable %s from %s to %s', i, variables[i], variable)
+    variables[i] = variable
   return variables
 
 
@@ -1257,7 +1264,7 @@ class CompleteState(object):
         isolated_filepath,
         SavedState.load_file(isolatedfile_to_state(isolated_filepath)))
 
-  def load_isolate(self, isolate_file, variables, ignore_broken_items):
+  def load_isolate(self, cwd, isolate_file, variables, ignore_broken_items):
     """Updates self.isolated and self.saved_state with information loaded from a
     .isolate file.
 
@@ -1266,11 +1273,12 @@ class CompleteState(object):
     # Make sure to not depend on os.getcwd().
     assert os.path.isabs(isolate_file), isolate_file
     logging.info(
-        'CompleteState.load_isolate(%s, %s)' % (isolate_file, variables))
+        'CompleteState.load_isolate(%s, %s, %s, %s)',
+        cwd, isolate_file, variables, ignore_broken_items)
     relative_base_dir = os.path.dirname(isolate_file)
 
     # Processes the variables and update the saved state.
-    variables = process_variables(variables, relative_base_dir)
+    variables = process_variables(cwd, variables, relative_base_dir)
     self.saved_state.update(isolate_file, variables)
 
     with open(isolate_file, 'r') as f:
@@ -1375,7 +1383,7 @@ class CompleteState(object):
     return out
 
 
-def load_complete_state(options, subdir):
+def load_complete_state(options, cwd, subdir):
   """Loads a CompleteState.
 
   This includes data from .isolate and .isolated.state files. Never reads the
@@ -1401,8 +1409,8 @@ def load_complete_state(options, subdir):
           options.isolate, complete_state.saved_state.isolate_file))
 
   # Then load the .isolate and expands directories.
-  complete_state.load_isolate(options.isolate, options.variables,
-                              options.ignore_broken_items)
+  complete_state.load_isolate(
+      cwd, options.isolate, options.variables, options.ignore_broken_items)
 
   # Regenerate complete_state.saved_state.files.
   if subdir:
@@ -1487,7 +1495,7 @@ def CMDcheck(args):
   options, args = parser.parse_args(args)
   if args:
     parser.error('Unsupported argument: %s' % args)
-  complete_state = load_complete_state(options, options.subdir)
+  complete_state = load_complete_state(options, os.getcwd(), options.subdir)
 
   # Nothing is done specifically. Just store the result and state.
   complete_state.save_files()
@@ -1509,7 +1517,7 @@ def CMDhashtable(args):
   with run_isolated.Profiler('GenerateHashtable'):
     success = False
     try:
-      complete_state = load_complete_state(options, options.subdir)
+      complete_state = load_complete_state(options, os.getcwd(), options.subdir)
       options.outdir = (
           options.outdir or os.path.join(complete_state.resultdir, 'hashtable'))
       # Make sure that complete_state isn't modified until save_files() is
@@ -1561,7 +1569,7 @@ def CMDmerge(args):
   options, args = parser.parse_args(args)
   if args:
     parser.error('Unsupported argument: %s' % args)
-  complete_state = load_complete_state(options, None)
+  complete_state = load_complete_state(options, os.getcwd(), None)
   merge(complete_state)
   return 0
 
@@ -1575,7 +1583,7 @@ def CMDread(args):
   options, args = parser.parse_args(args)
   if args:
     parser.error('Unsupported argument: %s' % args)
-  complete_state = load_complete_state(options, None)
+  complete_state = load_complete_state(options, os.getcwd(), None)
   value, exceptions = read_trace_as_isolate_dict(complete_state)
   pretty_print(value, sys.stdout)
   if exceptions:
@@ -1597,7 +1605,7 @@ def CMDremap(args):
   options, args = parser.parse_args(args)
   if args:
     parser.error('Unsupported argument: %s' % args)
-  complete_state = load_complete_state(options, None)
+  complete_state = load_complete_state(options, os.getcwd(), None)
 
   if not options.outdir:
     options.outdir = run_isolated.make_temp_dir(
@@ -1636,7 +1644,7 @@ def CMDrun(args):
   parser = OptionParserIsolate(command='run', require_isolated=False)
   parser.enable_interspersed_args()
   options, args = parser.parse_args(args)
-  complete_state = load_complete_state(options, None)
+  complete_state = load_complete_state(options, os.getcwd(), None)
   cmd = complete_state.saved_state.command + args
   if not cmd:
     raise ExecutionError('No command to run')
@@ -1691,7 +1699,7 @@ def CMDtrace(args):
       '-m', '--merge', action='store_true',
       help='After tracing, merge the results back in the .isolate file')
   options, args = parser.parse_args(args)
-  complete_state = load_complete_state(options, None)
+  complete_state = load_complete_state(options, os.getcwd(), None)
   cmd = complete_state.saved_state.command + args
   if not cmd:
     raise ExecutionError('No command to run')
@@ -1757,11 +1765,11 @@ def add_variable_option(parser):
             '<.isolated>.state')
 
 
-def parse_variable_option(parser, options, require_isolated):
+def parse_variable_option(parser, options, cwd, require_isolated):
   """Processes --isolated and --variable."""
   if options.isolated:
-    options.isolated = os.path.abspath(
-        options.isolated.replace('/', os.path.sep))
+    options.isolated = os.path.normpath(
+        os.path.join(cwd, options.isolated.replace('/', os.path.sep)))
   if require_isolated and not options.isolated:
     parser.error('--isolated is required. Visit http://chromium.org/developers/'
                  'testing/isolated-testing#TOC-Where-can-I-find-the-.isolated-'
@@ -1808,16 +1816,21 @@ class OptionParserIsolate(trace_inputs.OptionParserWithNiceDescription):
     if not self.allow_interspersed_args and args:
       self.error('Unsupported argument: %s' % args)
 
-    parse_variable_option(self, options, self.require_isolated)
+    cwd = os.getcwd()
+    parse_variable_option(self, options, cwd, self.require_isolated)
 
     if options.isolate:
-      options.isolate = trace_inputs.get_native_path_case(
-          os.path.abspath(
-              unicode(options.isolate.replace('/', os.path.sep))))
+      # TODO(maruel): Work with non-ASCII.
+      # The path must be in native path case for tracing purposes.
+      options.isolate = unicode(options.isolate).replace('/', os.path.sep)
+      options.isolate = os.path.normpath(os.path.join(cwd, options.isolate))
+      options.isolate = trace_inputs.get_native_path_case(options.isolate)
 
     if options.outdir and not re.match(r'^https?://.+$', options.outdir):
-      options.outdir = os.path.abspath(
-          unicode(options.outdir.replace('/', os.path.sep)))
+      options.outdir = unicode(options.outdir).replace('/', os.path.sep)
+      # outdir doesn't need native path case since tracing is never done from
+      # there.
+      options.outdir = os.path.normpath(os.path.join(cwd, options.outdir))
 
     return options, args
 

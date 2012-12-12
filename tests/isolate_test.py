@@ -840,7 +840,7 @@ class IsolateLoad(IsolateBase):
     #   corresponding to the .state file, which is simply to aid the developer
     #   when re-running the same command multiple times and contain
     #   discardable information.
-    complete_state = isolate.load_complete_state(options, None)
+    complete_state = isolate.load_complete_state(options, self.cwd, None)
     actual_isolated = complete_state.saved_state.to_isolated()
     actual_saved_state = complete_state.saved_state.flatten()
 
@@ -893,7 +893,7 @@ class IsolateLoad(IsolateBase):
         ROOT_DIR, 'tests', 'isolate', 'touch_root.isolate')
     options = self._get_option(isolate_file)
     complete_state = isolate.load_complete_state(
-        options, os.path.join('tests', 'isolate'))
+        options, self.cwd, os.path.join('tests', 'isolate'))
     actual_isolated = complete_state.saved_state.to_isolated()
     actual_saved_state = complete_state.saved_state.flatten()
 
@@ -936,7 +936,7 @@ class IsolateLoad(IsolateBase):
         ROOT_DIR, 'tests', 'isolate', 'touch_root.isolate')
     options = self._get_option(isolate_file)
     options.variables['BAZ'] = os.path.join('tests', 'isolate')
-    complete_state = isolate.load_complete_state(options, '<(BAZ)')
+    complete_state = isolate.load_complete_state(options, self.cwd, '<(BAZ)')
     actual_isolated = complete_state.saved_state.to_isolated()
     actual_saved_state = complete_state.saved_state.flatten()
 
@@ -981,12 +981,12 @@ class IsolateLoad(IsolateBase):
     options = self._get_option(isolate_file)
     options.variables['PRODUCT_DIR'] = os.path.join('tests', 'isolate')
     try:
-      isolate.load_complete_state(options, None)
+      isolate.load_complete_state(options, self.cwd, None)
       self.fail()
     except isolate.ExecutionError, e:
       self.assertEquals(
           'PRODUCT_DIR=%s is not a directory' %
-            os.path.join('tests', 'isolate'),
+            os.path.join(self.cwd, 'tests', 'isolate'),
           e.args[0])
 
   def test_variable(self):
@@ -994,8 +994,7 @@ class IsolateLoad(IsolateBase):
         ROOT_DIR, 'tests', 'isolate', 'touch_root.isolate')
     options = self._get_option(isolate_file)
     options.variables['PRODUCT_DIR'] = os.path.join('tests', 'isolate')
-    os.chdir(ROOT_DIR)
-    complete_state = isolate.load_complete_state(options, None)
+    complete_state = isolate.load_complete_state(options, ROOT_DIR, None)
     actual_isolated = complete_state.saved_state.to_isolated()
     actual_saved_state = complete_state.saved_state.flatten()
 

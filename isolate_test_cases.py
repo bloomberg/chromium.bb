@@ -118,7 +118,7 @@ def main():
   options, args = parser.parse_args()
   if args:
     parser.error('Unsupported arg: %s' % args)
-  isolate.parse_variable_option(parser, options, True)
+  isolate.parse_variable_option(parser, options, os.getcwd(), True)
 
   try:
     config = isolate.CompleteState.load_files(options.isolated)
