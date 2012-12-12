@@ -45,6 +45,16 @@ class Widget;
 //   |                  [ OK ]                       |
 //   +-----------------------------------------------+
 //
+// And the 2013 version looks like:
+//   +-----------------------------------------------+
+//   | |icon| There is a new version of          [x] |
+//   | |icon| Google Chrome available                |
+//   |        [o] Try it out (already installed)     |
+//   |        [ ] Don't bug me                       |
+//   | --------------------------------------------- |
+//   | [x] Make it the default browser       [ OK ]  |
+//   +-----------------------------------------------+
+
 class TryChromeDialogView : public views::ButtonListener,
                             public views::LinkListener {
  public:
