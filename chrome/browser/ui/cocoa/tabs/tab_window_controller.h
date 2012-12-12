@@ -11,12 +11,6 @@
 // know anything about the actual tab implementation or model, as that is fairly
 // application-specific. It only provides an API to be overridden by subclasses
 // to fill in the details.
-//
-// This assumes that there will be a view in the nib, connected to
-// |tabContentArea_|, that indicates the content that it switched when switching
-// between tabs. It needs to be a regular NSView, not something like an NSBox
-// because the TabStripController makes certain assumptions about how it can
-// swap out subviews.
 
 #import <Cocoa/Cocoa.h>
 
@@ -29,21 +23,20 @@
 
 @interface TabWindowController : NSWindowController<NSWindowDelegate> {
  @private
-  IBOutlet FastResizeView* tabContentArea_;
-  IBOutlet TabStripView* tabStripView_;
+  scoped_nsobject<FastResizeView> tabContentArea_;
+  scoped_nsobject<TabStripView> tabStripView_;
   NSWindow* overlayWindow_;  // Used during dragging for window opacity tricks
   NSView* cachedContentView_;  // Used during dragging for identifying which
                                // view is the proper content area in the overlay
                                // (weak)
   scoped_nsobject<FocusTracker> focusBeforeOverlay_;
   BOOL closeDeferred_;  // If YES, call performClose: in removeOverlay:.
-  // Difference between height of window content area and height of the
-  // |tabContentArea_|. Calculated when the window is loaded from the nib and
-  // cached in order to restore the delta when switching tab modes.
-  CGFloat contentAreaHeightDelta_;
 }
 @property(readonly, nonatomic) TabStripView* tabStripView;
 @property(readonly, nonatomic) FastResizeView* tabContentArea;
+
+// This is the designated initializer for this class.
+- (id)initTabWindowControllerWithTabStrip:(BOOL)hasTabStrip;
 
 // Used during tab dragging to turn on/off the overlay window when a tab
 // is torn off. If -deferPerformClose (below) is used, -removeOverlay will

@@ -64,14 +64,11 @@ const CGFloat kLocBarBottomInset = 1;
 
 @implementation BrowserWindowController(Private)
 
-// Create the appropriate tab strip controller based on whether or not side
-// tabs are enabled.
+// Create the tab strip controller.
 - (void)createTabStripController {
-  Class factory = [TabStripController class];
-
   DCHECK([previewableContentsController_ activeContainer]);
   DCHECK([[previewableContentsController_ activeContainer] window]);
-  tabStripController_.reset([[factory alloc]
+  tabStripController_.reset([[TabStripController alloc]
       initWithView:[self tabStripView]
         switchView:[previewableContentsController_ activeContainer]
            browser:browser_.get()
