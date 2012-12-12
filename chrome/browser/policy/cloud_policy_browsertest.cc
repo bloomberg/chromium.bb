@@ -210,6 +210,20 @@ class CloudPolicyTest : public InProcessBrowserTest,
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
+    // Checks that no policies have been loaded by the other providers before
+    // setting up the cloud connection. Other policies configured in the test
+    // machine will interfere with these tests.
+    const PolicyMap& map = g_browser_process->policy_service()->GetPolicies(
+        POLICY_DOMAIN_CHROME, "");
+    if (!map.empty()) {
+      base::DictionaryValue dict;
+      for (PolicyMap::const_iterator it = map.begin(); it != map.end(); ++it)
+        dict.SetWithoutPathExpansion(it->first, it->second.value->DeepCopy());
+      ADD_FAILURE()
+          << "There are pre-existing policies in this machine that will "
+          << "interfere with these tests. Policies found: " << dict;
+    }
+
     GetParam().SetUpAfterCreatingBrowser(browser());
   }
 
