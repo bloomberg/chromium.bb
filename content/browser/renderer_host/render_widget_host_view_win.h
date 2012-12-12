@@ -141,6 +141,8 @@ class RenderWidgetHostViewWin
     MESSAGE_HANDLER(WM_GETOBJECT, OnGetObject)
     MESSAGE_HANDLER(WM_PARENTNOTIFY, OnParentNotify)
     MESSAGE_HANDLER(WM_GESTURE, OnGestureEvent)
+    MESSAGE_HANDLER(WM_MOVE, OnMoveOrSize)
+    MESSAGE_HANDLER(WM_SIZE, OnMoveOrSize)
   END_MSG_MAP()
 
   // RenderWidgetHostView implementation.
@@ -330,6 +332,8 @@ class RenderWidgetHostViewWin
   // Handle high-level touch events.
   LRESULT OnGestureEvent(UINT message, WPARAM wparam, LPARAM lparam,
                          BOOL& handled);
+  LRESULT OnMoveOrSize(UINT message, WPARAM wparam, LPARAM lparam,
+                       BOOL& handled);
 
   void OnFinalMessage(HWND window);
 

@@ -2224,6 +2224,17 @@ LRESULT RenderWidgetHostViewWin::OnGestureEvent(
   return 0;
 }
 
+LRESULT RenderWidgetHostViewWin::OnMoveOrSize(
+    UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled) {
+  // Reset the cliping rectangle if the mouse is locked.
+  if (mouse_locked_) {
+    CRect rect;
+    GetWindowRect(&rect);
+    ::ClipCursor(&rect);
+  }
+  return 0;
+}
+
 void RenderWidgetHostViewWin::OnAccessibilityNotifications(
     const std::vector<AccessibilityHostMsg_NotificationParams>& params) {
   if (!GetBrowserAccessibilityManager()) {
@@ -2798,7 +2809,7 @@ void RenderWidgetHostViewWin::MoveCursorToCenterIfNecessary() {
   DCHECK(mouse_locked_);
 
   CRect rect;
-  GetWindowRect(&rect);
+  GetClipCursor(&rect);
   int border_x = rect.Width() * kMouseLockBorderPercentage / 100;
   int border_y = rect.Height() * kMouseLockBorderPercentage / 100;
 
