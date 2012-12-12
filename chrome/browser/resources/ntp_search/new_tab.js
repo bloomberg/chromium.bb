@@ -443,8 +443,6 @@ cr.define('ntp', function() {
 
       var startTime = Date.now();
 
-      if (page)
-        page.removeAllTiles();
 
       // Get the array of apps and add any special synthesized entries.
       var apps = data.apps;
@@ -458,9 +456,13 @@ cr.define('ntp', function() {
       // An app to animate (in case it was just installed).
       var highlightApp;
 
-      // Add the apps, creating pages as necessary.
-      this.appendTilePage(new ntp.AppsPage(),
-          loadTimeData.getString('appDefaultPageName'));
+      if (this.appsPage) {
+        this.appsPage.removeAllTiles();
+      } else {
+        this.appendTilePage(new ntp.AppsPage(),
+            loadTimeData.getString('appDefaultPageName'));
+      }
+
       for (var i = 0; i < apps.length; i++) {
         var app = apps[i];
         if (app.id == this.highlightAppId)
@@ -1041,10 +1043,6 @@ cr.define('ntp', function() {
       notificationContainer.hidden = true;
   }
 
-  function setRecentlyClosedTabs(dataList) {
-    newTabView.recentlyClosedPage.setDataList(dataList);
-  }
-
   function setMostVisitedPages(dataList, hasBlacklistedUrls) {
     var page = newTabView.mostVisitedPage;
     var state = page.getTileRepositioningState();
@@ -1059,10 +1057,6 @@ cr.define('ntp', function() {
       page.setDataList(dataList);
       cr.dispatchSimpleEvent(document, 'sectionready', true, true);
     }
-  }
-
-  function setForeignSessions(dataList, isTabSyncEnabled) {
-    newTabView.otherDevicesPage.setDataList(dataList);
   }
 
   function getThumbnailUrl(url) {
@@ -1134,6 +1128,10 @@ cr.define('ntp', function() {
     return newTabView.contentWidth;
   }
 
+  function noop() {
+    // Ignore some NTP4 callbacks for backwards compatibility purposes.
+  }
+
   // Return an object with all the exports
   return {
     APP_LAUNCH: APP_LAUNCH,
@@ -1154,11 +1152,12 @@ cr.define('ntp', function() {
     onLoad: onLoad,
     setAppToBeHighlighted: setAppToBeHighlighted,
     setBookmarkBarAttached: setBookmarkBarAttached,
-    setForeignSessions: setForeignSessions,
+    setForeignSessions: noop,
     setMostVisitedPages: setMostVisitedPages,
-    setRecentlyClosedTabs: setRecentlyClosedTabs,
+    setRecentlyClosedTabs: noop,
     showNotification: showNotification,
     themeChanged: themeChanged,
+    updateLogin: noop,
   };
 });
 
