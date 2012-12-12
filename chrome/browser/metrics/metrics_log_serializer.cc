@@ -38,15 +38,6 @@ const size_t kStorageByteLimitPerLogType = 300000;
 // checksum of the elements.
 const size_t kChecksumEntryCount = 2;
 
-// TODO(isherman): Remove this histogram once it's confirmed that there are no
-// encoding failures for protobuf logs.
-enum LogStoreStatus {
-  STORE_SUCCESS,    // Successfully presisted log.
-  ENCODE_FAIL,      // Failed to encode log.
-  COMPRESS_FAIL,    // Failed to compress log.
-  END_STORE_STATUS  // Number of bins to use to create the histogram.
-};
-
 MetricsLogSerializer::LogReadStatus MakeRecallStatusHistogram(
     MetricsLogSerializer::LogReadStatus status,
     bool is_xml) {
@@ -58,11 +49,6 @@ MetricsLogSerializer::LogReadStatus MakeRecallStatusHistogram(
                               status, MetricsLogSerializer::END_RECALL_STATUS);
   }
   return status;
-}
-
-void MakeStoreStatusHistogram(LogStoreStatus status) {
-  UMA_HISTOGRAM_ENUMERATION("PrefService.PersistentLogStore2", status,
-                            END_STORE_STATUS);
 }
 
 }  // namespace
@@ -180,7 +166,6 @@ void MetricsLogSerializer::WriteLogsToPrefList(
     // We encode the compressed log as Value::CreateStringValue() expects to
     // take a valid UTF8 string.
     if (!base::Base64Encode(value, &encoded_log)) {
-      MakeStoreStatusHistogram(ENCODE_FAIL);
       list->Clear();
       return;
     }
@@ -193,7 +178,6 @@ void MetricsLogSerializer::WriteLogsToPrefList(
   base::MD5Final(&digest, &ctx);
   list->Append(Value::CreateStringValue(base::MD5DigestToBase16(digest)));
   DCHECK(list->GetSize() >= 3);  // Minimum of 3 elements (size, data, hash).
-  MakeStoreStatusHistogram(STORE_SUCCESS);
 }
 
 // static
