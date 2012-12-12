@@ -95,6 +95,14 @@ bool MockPeerConnectionImpl::AddStream(
   return true;
 }
 
+void MockPeerConnectionImpl::RemoveStream(
+    MediaStreamInterface* local_stream) {
+  DCHECK_EQ(stream_label_, local_stream->label());
+  stream_label_.clear();
+  local_streams_->RemoveStream(local_stream);
+}
+
+
 bool MockPeerConnectionImpl::CanSendDtmf(
     const webrtc::AudioTrackInterface* track) {
   NOTIMPLEMENTED();
@@ -109,11 +117,12 @@ bool MockPeerConnectionImpl::SendDtmf(
   return false;
 }
 
-void MockPeerConnectionImpl::RemoveStream(
-    MediaStreamInterface* local_stream) {
-  DCHECK_EQ(stream_label_, local_stream->label());
-  stream_label_.clear();
-  local_streams_->RemoveStream(local_stream);
+talk_base::scoped_refptr<webrtc::DataChannelInterface>
+MockPeerConnectionImpl::CreateDataChannel(
+    const std::string& label,
+    const webrtc::DataChannelInit* config) {
+  NOTIMPLEMENTED();
+  return NULL;
 }
 
 bool MockPeerConnectionImpl::GetStats(

@@ -557,6 +557,8 @@
       'sources': [
         '<@(libjingle_source)/talk/app/webrtc/audiotrack.cc',
         '<@(libjingle_source)/talk/app/webrtc/audiotrack.h',
+        '<@(libjingle_source)/talk/app/webrtc/datachannel.cc',
+        '<@(libjingle_source)/talk/app/webrtc/datachannel.h',
         '<@(libjingle_source)/talk/app/webrtc/jsep.h',
         '<@(libjingle_source)/talk/app/webrtc/jsepicecandidate.cc',
         '<@(libjingle_source)/talk/app/webrtc/jsepicecandidate.h',
@@ -716,6 +718,7 @@
                 '<@(libjingle_source)/talk/base/linuxwindowpicker.h',
                 '<@(libjingle_source)/talk/media/devices/libudevsymboltable.cc',
                 '<@(libjingle_source)/talk/media/devices/libudevsymboltable.h',
+                '<@(libjingle_source)/talk/media/devices/linuxdeviceinfo.cc',
                 '<@(libjingle_source)/talk/media/devices/linuxdevicemanager.cc',
                 '<@(libjingle_source)/talk/media/devices/linuxdevicemanager.h',
                 '<@(libjingle_source)/talk/media/devices/v4llookup.cc',

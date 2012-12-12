@@ -29,14 +29,17 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
   virtual bool AddStream(
       webrtc::MediaStreamInterface* local_stream,
       const webrtc::MediaConstraintsInterface* constraints) OVERRIDE;
+  virtual void RemoveStream(
+      webrtc::MediaStreamInterface* local_stream) OVERRIDE;
   virtual bool CanSendDtmf(const webrtc::AudioTrackInterface* track) OVERRIDE;
   virtual bool SendDtmf(const webrtc::AudioTrackInterface* send_track,
                         const std::string& tones, int duration,
                         const webrtc::AudioTrackInterface* play_track) OVERRIDE;
+  virtual talk_base::scoped_refptr<webrtc::DataChannelInterface>
+  CreateDataChannel(const std::string& label,
+                    const webrtc::DataChannelInit* config) OVERRIDE;
   virtual bool GetStats(webrtc::StatsObserver* observer,
                         webrtc::MediaStreamTrackInterface* track) OVERRIDE;
-  virtual void RemoveStream(
-      webrtc::MediaStreamInterface* local_stream) OVERRIDE;
   virtual ReadyState ready_state() OVERRIDE;
   virtual bool StartIce(IceOptions options) OVERRIDE;
 
