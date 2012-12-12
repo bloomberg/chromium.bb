@@ -63,10 +63,27 @@ move_pointer(struct client *client, int x, int y)
 	yield(client);
 }
 
+static void
+move_client_frame_handler(void *data, 
+			  struct wl_callback *callback, uint32_t time)
+{
+	int *done = data;
+
+	*done = 1;
+
+	wl_callback_destroy(callback);
+}
+
+static const struct wl_callback_listener frame_listener = {
+	move_client_frame_handler
+};
+
 void
 move_client(struct client *client, int x, int y)
 {
 	struct surface *surface = client->surface;
+	struct wl_callback *callback;
+	int done;
 
 	client->surface->x = x;
 	client->surface->y = y;
@@ -74,10 +91,15 @@ move_client(struct client *client, int x, int y)
 			     surface->x, surface->y);
 	wl_surface_damage(surface->wl_surface, 0, 0, surface->width,
 			  surface->height);
+
+	callback = wl_surface_frame(surface->wl_surface);
+	done = 0;
+	wl_callback_add_listener(callback, &frame_listener, &done);
+
 	wl_surface_commit(surface->wl_surface);
 
-	yield(client);
-	yield(client);
+	while (!done)
+		wl_display_dispatch(client->wl_display);
 }
 
 static void
