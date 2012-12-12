@@ -246,6 +246,12 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   // Gets whether the browser is capturing key strokes.
   static v8::Handle<v8::Value> IsKeyCaptureEnabled(const v8::Arguments& args);
 
+  // Gets the font family of the text in the omnibox.
+  static v8::Handle<v8::Value> GetFont(const v8::Arguments& args);
+
+  // Gets the font size of the text in the omnibox.
+  static v8::Handle<v8::Value> GetFontSize(const v8::Arguments& args);
+
   // Navigates the window to a URL represented by either a URL string or a
   // restricted ID.
   static v8::Handle<v8::Value> NavigateContentWindow(const v8::Arguments& args);
@@ -317,6 +323,10 @@ v8::Handle<v8::FunctionTemplate> SearchBoxExtensionWrapper::GetNativeFunction(
     return v8::FunctionTemplate::New(GetThemeAreaHeight);
   if (name->Equals(v8::String::New("IsKeyCaptureEnabled")))
     return v8::FunctionTemplate::New(IsKeyCaptureEnabled);
+  if (name->Equals(v8::String::New("GetFont")))
+    return v8::FunctionTemplate::New(GetFont);
+  if (name->Equals(v8::String::New("GetFontSize")))
+    return v8::FunctionTemplate::New(GetFontSize);
   if (name->Equals(v8::String::New("NavigateContentWindow")))
     return v8::FunctionTemplate::New(NavigateContentWindow);
   if (name->Equals(v8::String::New("SetSuggestions")))
@@ -599,6 +609,21 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetThemeAreaHeight(
   DVLOG(1) << render_view << " GetThemeAreaHeight: "
            << SearchBox::Get(render_view)->GetThemeAreaHeight();
   return v8::Int32::New(SearchBox::Get(render_view)->GetThemeAreaHeight());
+}
+
+// static
+v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetFont(
+    const v8::Arguments& args) {
+  return UTF8ToV8String(ui::ResourceBundle::GetSharedInstance().GetFont(
+      ui::ResourceBundle::MediumFont).GetFontName());
+}
+
+// static
+v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetFontSize(
+    const v8::Arguments& args) {
+  return v8::Uint32::New(
+      ui::ResourceBundle::GetSharedInstance().GetFont(
+          ui::ResourceBundle::MediumFont).GetFontSize());
 }
 
 // static

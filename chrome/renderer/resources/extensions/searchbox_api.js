@@ -40,6 +40,8 @@ if (!chrome.searchBox) {
     native function GetAutocompleteResults();
     native function GetContext();
     native function GetDisplayInstantResults();
+    native function GetFont();
+    native function GetFontSize();
     native function GetThemeBackgroundInfo();
     native function GetThemeAreaHeight();
     native function IsKeyCaptureEnabled();
@@ -58,18 +60,10 @@ if (!chrome.searchBox) {
       var node = document.createElement('div');
       var nodeShadow = new safeObjects.ShadowRoot(node);
       nodeShadow.applyAuthorStyles = true;
-      // The fonts specified here are as follows:
-      //  Segoe UI - WIndows 7
-      //  Chrome Droid Sans - ChromeOS
-      //  Arial - fallback for other platforms.
-      // This doesn't look right on WInXP, MacOS, and Linux, but rather than
-      // try to include all the logic here, the correct value should be passed
-      // in from the C++. crbug.com/164496 tracks this task.
       nodeShadow.innerHTML =
           '<div style="width:700px!important;' +
           '            height:22px!important;' +
-          '            font-family:\'Segoe UI\',\'Chrome Droid Sans\',' +
-          '                        \'Arial\'!important;' +
+          '            font-family:\'' + GetFont() + '\',\'Arial\'!important;' +
           '            overflow:hidden!important;' +
           '            text-overflow:ellipsis!important">' +
           '  <nobr>' + restrictedText + '</nobr>' +
@@ -203,6 +197,8 @@ if (!chrome.searchBox) {
     this.__defineGetter__('displayInstantResults', GetDisplayInstantResults);
     this.__defineGetter__('themeBackgroundInfo', GetThemeBackgroundInfo);
     this.__defineGetter__('themeAreaHeight', GetThemeAreaHeight);
+    this.__defineGetter__('font', GetFont);
+    this.__defineGetter__('fontSize', GetFontSize);
     this.setSuggestions = function(text) {
       SetSuggestions(text);
     };
