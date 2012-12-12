@@ -505,6 +505,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
                         APIPermissionSet* api_permissions,
                         URLPatternSet* host_permissions);
 
+  // Returns true if this extension has the given permission. Prefer
+  // IsExtensionWithPermissionOrSuggestInConsole when developers may be using an
+  // api that requires a permission they didn't know about, e.g. open web apis.
   bool HasAPIPermission(APIPermission::ID permission) const;
   bool HasAPIPermission(const std::string& function_name) const;
   bool HasAPIPermissionForTab(int tab_id, APIPermission::ID permission) const;
