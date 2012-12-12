@@ -19,6 +19,8 @@ function ActionChoice(dom, filesystem, params) {
   this.document_ = this.dom_.ownerDocument;
   this.metadataCache_ = params.metadataCache;
   this.volumeManager_ = new VolumeManager();
+  this.volumeManager_.addEventListener('externally-unmounted',
+     this.onDeviceUnmounted_.bind(this));
   this.closeBound_ = this.close_.bind(this);
 
   this.initDom_();
@@ -258,4 +260,15 @@ ActionChoice.prototype.onOk_ = function(event) {
         function(success) {});
   }
   this.close_();
+};
+
+/**
+ * Called when some device is unmounted.
+ * @param {Event} event Event object.
+ * @private
+ */
+ActionChoice.prototype.onDeviceUnmounted_ = function(event) {
+  if (this.sourceEntry_ && event.mountPath == this.sourceEntry_.fullPath) {
+    util.platform.closeWindow();
+  }
 };
