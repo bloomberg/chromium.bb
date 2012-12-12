@@ -700,19 +700,6 @@ void Layer::createRenderSurface()
     m_drawProperties.render_target = this;
 }
 
-int Layer::descendantsDrawContent()
-{
-    int result = 0;
-    for (size_t i = 0; i < m_children.size(); ++i) {
-        if (m_children[i]->drawsContent())
-            ++result;
-        result += m_children[i]->descendantsDrawContent();
-        if (result > 1)
-            return result;
-    }
-    return result;
-}
-
 int Layer::id() const
 {
     return m_layerId;

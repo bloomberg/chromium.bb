@@ -109,19 +109,6 @@ void LayerImpl::createRenderSurface()
     m_drawProperties.render_target = this;
 }
 
-int LayerImpl::descendantsDrawContent()
-{
-    int result = 0;
-    for (size_t i = 0; i < m_children.size(); ++i) {
-        if (m_children[i]->drawsContent())
-            ++result;
-        result += m_children[i]->descendantsDrawContent();
-        if (result > 1)
-            return result;
-    }
-    return result;
-}
-
 scoped_ptr<SharedQuadState> LayerImpl::createSharedQuadState() const
 {
   scoped_ptr<SharedQuadState> state = SharedQuadState::Create();
@@ -187,6 +174,11 @@ void LayerImpl::appendDebugBorderQuad(QuadSink& quadList, const SharedQuadState*
     scoped_ptr<DebugBorderDrawQuad> debugBorderQuad = DebugBorderDrawQuad::Create();
     debugBorderQuad->SetNew(sharedQuadState, contentRect, color, width);
     quadList.append(debugBorderQuad.PassAs<DrawQuad>(), appendQuadsData);
+}
+
+bool LayerImpl::hasDelegatedContent() const
+{
+    return false;
 }
 
 bool LayerImpl::hasContributingDelegatedRenderPasses() const

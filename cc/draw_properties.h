@@ -22,6 +22,7 @@ struct CC_EXPORT DrawProperties {
         , screen_space_transform_is_animating(false)
         , is_clipped(false)
         , render_target(0)
+        , num_descendants_that_draw_content(0)
     {
     }
 
@@ -67,6 +68,9 @@ struct CC_EXPORT DrawProperties {
     // layer. This value is used to avoid unnecessarily changing GL scissor
     // state.
     gfx::Rect clip_rect;
+
+    // Does not include this layer itself, only its children and descendants.
+    int num_descendants_that_draw_content;
 };
 
 }  // namespace cc

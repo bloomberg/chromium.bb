@@ -266,21 +266,26 @@ static bool subtreeShouldRenderToSeparateSurface(LayerType* layer, bool axisAlig
     if (!layer->filters().isEmpty() || !layer->backgroundFilters().isEmpty() || layer->filter())
         return true;
 
-    // Cache this value, because otherwise it walks the entire subtree several times.
-    int descendantsDrawContent = layer->descendantsDrawContent();
+    int numDescendantsThatDrawContent = layer->drawProperties().num_descendants_that_draw_content;
 
     // If the layer flattens its subtree (i.e. the layer doesn't preserve-3d), but it is
     // treated as a 3D object by its parent (i.e. parent does preserve-3d).
-    if (layerIsInExisting3DRenderingContext(layer) && !layer->preserves3D() && descendantsDrawContent > 0)
+    if (layerIsInExisting3DRenderingContext(layer) && !layer->preserves3D() && numDescendantsThatDrawContent > 0)
         return true;
 
     // If the layer clips its descendants but it is not axis-aligned with respect to its parent.
-    if (layerClipsSubtree(layer) && !axisAlignedWithRespectToParent && descendantsDrawContent > 0)
+    if (layerClipsSubtree(layer) && !axisAlignedWithRespectToParent && numDescendantsThatDrawContent > 0)
         return true;
 
-    // If the layer has opacity != 1 and does not have a preserves-3d transform style.
-    if (layer->opacity() != 1 && !layer->preserves3D() && descendantsDrawContent > 0
-        && (layer->drawsContent() || descendantsDrawContent > 1))
+    // If the layer has some translucency and does not have a preserves-3d transform style.
+    // This condition only needs a render surface if two or more layers in the
+    // subtree overlap. But checking layer overlaps is unnecessarily costly so
+    // instead we conservatively create a surface whenever at least two layers
+    // draw content for this subtree.
+    bool atLeastTwoLayersInSubtreeDrawContent = layer->hasDelegatedContent() ||
+        (numDescendantsThatDrawContent > 0 && (layer->drawsContent() || numDescendantsThatDrawContent > 1));
+
+    if (layer->opacity() != 1 && !layer->preserves3D() && atLeastTwoLayersInSubtreeDrawContent)
         return true;
 
     return false;
@@ -422,6 +427,23 @@ static inline void removeSurfaceForEarlyExit(LayerType* layerToRemove, LayerList
     DCHECK(renderSurfaceLayerList.back() == layerToRemove);
     renderSurfaceLayerList.pop_back();
     layerToRemove->clearRenderSurface();
+}
+
+// Recursively walks the layer tree to compute any information that is needed
+// before doing the main recursion.
+template<typename LayerType>
+static void preCalculateMetaInformation(LayerType* layer)
+{
+    int numDescendantsThatDrawContent = 0;
+
+    for (size_t i = 0; i < layer->children().size(); ++i) {
+        LayerType* childLayer = layer->children()[i];
+        preCalculateMetaInformation<LayerType>(childLayer);
+        numDescendantsThatDrawContent += childLayer->drawsContent() ? 1 : 0;
+        numDescendantsThatDrawContent += childLayer->drawProperties().num_descendants_that_draw_content;
+    }
+
+    layer->drawProperties().num_descendants_that_draw_content = numDescendantsThatDrawContent;
 }
 
 // Recursively walks the layer tree starting at the given node and computes all the
@@ -887,7 +909,8 @@ void LayerTreeHostCommon::calculateDrawProperties(Layer* rootLayer, const gfx::S
     // This function should have received a root layer.
     DCHECK(isRootLayer(rootLayer));
 
-    cc::calculateDrawPropertiesInternal<Layer, std::vector<scoped_refptr<Layer> >, RenderSurface>(
+    preCalculateMetaInformation<Layer>(rootLayer);
+    calculateDrawPropertiesInternal<Layer, std::vector<scoped_refptr<Layer> >, RenderSurface>(
         rootLayer, deviceScaleTransform, identityMatrix, identityMatrix,
         deviceViewportRect, deviceViewportRect, subtreeShouldBeClipped, 0, renderSurfaceLayerList,
         dummyLayerList, 0, maxTextureSize,
@@ -915,7 +938,8 @@ void LayerTreeHostCommon::calculateDrawProperties(LayerImpl* rootLayer, const gf
     // This function should have received a root layer.
     DCHECK(isRootLayer(rootLayer));
 
-    cc::calculateDrawPropertiesInternal<LayerImpl, std::vector<LayerImpl*>, RenderSurfaceImpl>(
+    preCalculateMetaInformation<LayerImpl>(rootLayer);
+    calculateDrawPropertiesInternal<LayerImpl, std::vector<LayerImpl*>, RenderSurfaceImpl>(
         rootLayer, deviceScaleTransform, identityMatrix, identityMatrix,
         deviceViewportRect, deviceViewportRect, subtreeShouldBeClipped, 0, renderSurfaceLayerList,
         dummyLayerList, &layerSorter, maxTextureSize,

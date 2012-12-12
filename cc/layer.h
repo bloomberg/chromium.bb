@@ -198,6 +198,7 @@ public:
 
     virtual void setLayerTreeHost(LayerTreeHost*);
 
+    bool hasDelegatedContent() const { return false; }
     bool hasContributingDelegatedRenderPasses() const { return false; }
 
     void setIsDrawable(bool);
@@ -248,11 +249,6 @@ public:
     // setBoundsContainPageScale recursively sets the value on all child layers.
     void setBoundsContainPageScale(bool);
     bool boundsContainPageScale() const { return m_boundsContainPageScale; }
-
-    // Returns 0 if none of the layer's descendants has content to draw,
-    // 1 if exactly one descendant has content to draw, or a number >1
-    // (but necessary the exact number of descendants) otherwise.
-    int descendantsDrawContent();
 
     LayerTreeHost* layerTreeHost() const { return m_layerTreeHost; }
 

@@ -94,6 +94,7 @@ public:
 
     virtual ResourceProvider::ResourceId contentsResourceId() const;
 
+    virtual bool hasDelegatedContent() const;
     virtual bool hasContributingDelegatedRenderPasses() const;
     virtual RenderPass::Id firstContributingRenderPassId() const;
     virtual RenderPass::Id nextContributingRenderPassId(RenderPass::Id) const;
@@ -104,11 +105,6 @@ public:
 
     bool forceRenderSurface() const { return m_forceRenderSurface; }
     void setForceRenderSurface(bool force) { m_forceRenderSurface = force; }
-
-    // Returns 0 if none of the layer's descendants has content to draw,
-    // 1 if exactly one descendant has content to draw, or a number >1
-    // (but necessary the exact number of descendants) otherwise.
-    virtual int descendantsDrawContent();
 
     void setAnchorPoint(const gfx::PointF&);
     const gfx::PointF& anchorPoint() const { return m_anchorPoint; }

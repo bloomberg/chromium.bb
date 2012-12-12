@@ -16,7 +16,7 @@ public:
     static scoped_ptr<DelegatedRendererLayerImpl> create(LayerTreeImpl* treeImpl, int id) { return make_scoped_ptr(new DelegatedRendererLayerImpl(treeImpl, id)); }
     virtual ~DelegatedRendererLayerImpl();
 
-    virtual int descendantsDrawContent() OVERRIDE;
+    virtual bool hasDelegatedContent() const OVERRIDE;
     virtual bool hasContributingDelegatedRenderPasses() const OVERRIDE;
 
     // This gives ownership of the RenderPasses to the layer.
