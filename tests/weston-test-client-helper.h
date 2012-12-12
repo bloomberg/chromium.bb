@@ -97,12 +97,6 @@ int
 surface_contains(struct surface *surface, int x, int y);
 
 void
-yield(struct client *client);
-
-void
-move_pointer(struct client *client, int x, int y);
-
-void
 move_client(struct client *client, int x, int y);
 
 

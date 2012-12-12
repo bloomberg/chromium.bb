@@ -40,29 +40,6 @@ surface_contains(struct surface *surface, int x, int y)
 	return x >= sx && y >= sy && x < sx + sw && y < sy + sh;
 }
 
-void
-yield(struct client *client)
-{
-	/*
-	 * FIXME: ugh! how do we ensure all events have finished
-	 * propagating to the client.  The calls to usleep seem to do a
-	 * pretty reasonable job... and without them, tests can fail
-	 * intermittently.
-	 */
-	usleep(0.02 * 1e6);
-	wl_display_flush(client->wl_display);
-	wl_display_roundtrip(client->wl_display);
-	usleep(0.02 * 1e6);
-}
-
-void
-move_pointer(struct client *client, int x, int y)
-{
-	wl_test_move_pointer(client->test->wl_test, x, y);
-
-	yield(client);
-}
-
 static void
 move_client_frame_handler(void *data, 
 			  struct wl_callback *callback, uint32_t time)

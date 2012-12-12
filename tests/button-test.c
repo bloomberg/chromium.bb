@@ -36,7 +36,8 @@ TEST(simple_button_test)
 	assert(pointer->button == 0);
 	assert(pointer->state == 0);
 
-	move_pointer(client, 150, 150);
+	wl_test_move_pointer(client->test->wl_test, 150, 150);
+	wl_display_roundtrip(client->wl_display);
 	assert(pointer->x == 50);
 	assert(pointer->y == 50);
 

@@ -56,7 +56,8 @@ check_pointer(struct client *client, int x, int y)
 static void
 check_pointer_move(struct client *client, int x, int y)
 {
-	move_pointer(client, x, y);
+	wl_test_move_pointer(client->test->wl_test, x, y);
+	wl_display_roundtrip(client->wl_display);
 	check_pointer(client, x, y);
 }
 
