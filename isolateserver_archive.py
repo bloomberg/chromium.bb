@@ -23,7 +23,7 @@ import run_isolated
 MAX_UPLOAD_ATTEMPTS = 5
 
 # The minimum size of files to upload directly to the blobstore.
-MIN_SIZE_FOR_DIRECT_BLOBSTORE = 20 * 8
+MIN_SIZE_FOR_DIRECT_BLOBSTORE = 20 * 1024
 
 # A list of already compressed extension types that should not receive any
 # compression before being uploaded.
