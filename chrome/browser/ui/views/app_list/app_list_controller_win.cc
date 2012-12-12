@@ -306,12 +306,14 @@ void AppListController::AppListClosing() {
 }
 
 void AppListController::AppListActivationChanged(bool active) {
+  const int kFocusCheckIntervalMS = 250;
   if (active) {
     timer_.Stop();
     return;
   }
 
-  timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(1), this,
+  timer_.Start(FROM_HERE,
+               base::TimeDelta::FromMilliseconds(kFocusCheckIntervalMS), this,
                &AppListController::CheckTaskbarOrViewHasFocus);
 }
 
