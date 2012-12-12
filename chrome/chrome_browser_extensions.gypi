@@ -262,6 +262,8 @@
         'browser/extensions/api/preference/preference_api.h',
         'browser/extensions/api/preference/preference_api_constants.cc',
         'browser/extensions/api/preference/preference_api_constants.h',
+        'browser/extensions/api/preference/preference_api_factory.cc',
+        'browser/extensions/api/preference/preference_api_factory.h',
         'browser/extensions/api/preference/preference_helpers.cc',
         'browser/extensions/api/preference/preference_helpers.h',
         'browser/extensions/api/processes/processes_api.cc',

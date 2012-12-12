@@ -8,7 +8,9 @@
 #include <string>
 
 #include "base/prefs/public/pref_change_registrar.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 
 class PrefService;
@@ -35,6 +37,25 @@ class PreferenceEventRouter {
   Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(PreferenceEventRouter);
+};
+
+class PreferenceAPI : public ProfileKeyedService,
+                      public EventRouter::Observer {
+ public:
+  explicit PreferenceAPI(Profile* profile);
+  virtual ~PreferenceAPI();
+
+  // ProfileKeyedService implementation.
+  virtual void Shutdown() OVERRIDE;
+
+  // EventRouter::Observer implementation.
+  virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;
+
+ private:
+  Profile* profile_;
+
+  // Created lazily upon OnListenerAdded.
+  scoped_ptr<PreferenceEventRouter> preference_event_router_;
 };
 
 class PrefTransformerInterface {

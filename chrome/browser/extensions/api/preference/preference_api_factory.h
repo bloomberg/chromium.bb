@@ -2,35 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_PROCESSES_PROCESSES_API_FACTORY_H_
-#define CHROME_BROWSER_EXTENSIONS_API_PROCESSES_PROCESSES_API_FACTORY_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_PREFERENCE_PREFERENCE_API_FACTORY_H_
+#define CHROME_BROWSER_EXTENSIONS_API_PREFERENCE_PREFERENCE_API_FACTORY_H_
 
 #include "base/memory/singleton.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 
 namespace extensions {
-class ProcessesAPI;
+class PreferenceAPI;
 
-class ProcessesAPIFactory : public ProfileKeyedServiceFactory {
+class PreferenceAPIFactory : public ProfileKeyedServiceFactory {
  public:
-  static ProcessesAPI* GetForProfile(Profile* profile);
+  static PreferenceAPI* GetForProfile(Profile* profile);
 
-  static ProcessesAPIFactory* GetInstance();
+  static PreferenceAPIFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<ProcessesAPIFactory>;
+  friend struct DefaultSingletonTraits<PreferenceAPIFactory>;
 
-  ProcessesAPIFactory();
-  virtual ~ProcessesAPIFactory();
+  PreferenceAPIFactory();
+  virtual ~PreferenceAPIFactory();
 
   // ProfileKeyedBaseFactory implementation.
   virtual ProfileKeyedService* BuildServiceInstanceFor(
       Profile* profile) const OVERRIDE;
-  virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
   virtual bool ServiceIsCreatedWithProfile() const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
 };
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_PROCESSES_PROCESSES_API_FACTORY_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_API_PREFERENCE_PREFERENCE_API_FACTORY_H_
