@@ -183,7 +183,7 @@ remoting.HostSetupDialog.prototype.showForStartWithToken_ = function(token) {
     that.usageStatsCheckbox_.disabled = set_by_policy;
   };
   this.usageStats_.hidden = false;
-  this.usageStatsCheckbox_.checked = true;
+  this.usageStatsCheckbox_.checked = false;
   this.hostController_.getConsent(onGetConsent);
 
   var flow = [

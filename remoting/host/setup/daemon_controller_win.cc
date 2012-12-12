@@ -636,11 +636,9 @@ void DaemonControllerWin::DoGetUsageStatsConsent(
   // Activate the Daemon Controller and see if it supports |IDaemonControl2|.
   HRESULT hr = ActivateController();
   if (FAILED(hr)) {
-    // The host is not installed yet. Assume that the user's consent is not
-    // recorded yet and set the default value to true. This value will not come
-    // into effect until the user installs the host and agrees to crash
-    // dump reporting.
-    done.Run(true, true, false);
+    // The host is not installed yet. Assume that the user didn't consent to
+    // collecting crash dumps.
+    done.Run(true, false, false);
     return;
   }
 
@@ -655,10 +653,9 @@ void DaemonControllerWin::DoGetUsageStatsConsent(
   BOOL set_by_policy;
   hr = control2_->GetUsageStatsConsent(&allowed, &set_by_policy);
   if (FAILED(hr)) {
-    // If the user's consent is not recorded yet, set the default value to true.
-    // This value will not come into effect until the user agrees to crash
-    // dump reporting.
-    done.Run(true, true, false);
+    // If the user's consent is not recorded yet, assume that the user didn't
+    // consent to collecting crash dumps.
+    done.Run(true, false, false);
     return;
   }
 
