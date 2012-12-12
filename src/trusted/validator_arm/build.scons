@@ -171,6 +171,13 @@ env.SDKInstallBin('ncval', ncval, target='arm')
 gtest_env = env.MakeGTestEnv()
 gtest_env.Append(CCFLAGS=['-DNACL_TRUSTED_BUT_NOT_TCB'])
 
+arm_ins_tester = gtest_env.ComponentProgram(
+    'arm_ins_tester',
+    ['arm_ins_tester.cc'],
+    EXTRA_LIBS=['arm_validator_reporters',
+                'arm_validator_core',
+                'platform'])
+
 gtest_env.ComponentProgram('address_set_test_binary',
                            ['address_set_test.cc'],
                            EXTRA_LIBS=['arm_validator_core',
