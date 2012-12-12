@@ -11,8 +11,6 @@ var watchForTag = require("tagWatcher").watchForTag;
 
 var WEB_VIEW_ATTRIBUTES = ['src', 'partition'];
 
-var WEB_VIEW_READONLY_ATTRIBUTES = ['contentWindow'];
-
 // All exposed api methods for <webview>, these are forwarded to the browser
 // plugin.
 var WEB_VIEW_API_METHODS = [
@@ -100,16 +98,15 @@ function WebView(node) {
 
   // We cannot use {writable: true} property descriptor because we want dynamic
   // getter value.
-  WEB_VIEW_READONLY_ATTRIBUTES.forEach(function(attributeName) {
-    Object.defineProperty(this.node_, attributeName, {
-      get: function() {
-        // Read these attributes from the plugin <object>.
-        return objectNode[attributeName];
-      },
-      // No setter.
-      enumerable: true
-    })
-  }, this);
+  Object.defineProperty(this.node_, 'contentWindow', {
+    get: function() {
+      // TODO(fsamuel): This is a workaround to enable
+      // contentWindow.postMessage until http://crbug.com/152006 is fixed.
+      return objectNode.contentWindow.self;
+    },
+    // No setter.
+    enumerable: true
+  });
 
   for (var eventName in WEB_VIEW_EVENTS) {
     this.setupEvent_(eventName, WEB_VIEW_EVENTS[eventName]);
