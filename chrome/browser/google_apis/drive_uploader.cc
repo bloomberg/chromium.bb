@@ -22,9 +22,6 @@ namespace {
 // Google Documents List API requires uploading in chunks of 512kB.
 const int64 kUploadChunkSize = 512 * 1024;
 
-// Maximum number of times we try to open a file before giving up.
-const int kMaxFileOpenTries = 5;
-
 // Reads |bytes_to_read| bytes from |file_stream| to |buf|.
 int ReadFileStreamOnBlockingPool(net::FileStream* file_stream,
                                  scoped_refptr<net::IOBuffer> buf,
@@ -83,12 +80,6 @@ int DriveUploader::UploadNewFile(const GURL& upload_location,
   upload_file_info->file_size = file_size;
   upload_file_info->all_bytes_present = content_length == file_size;
   upload_file_info->completion_callback = callback;
-
-  // When uploading a new file, we should retry file open as the file may
-  // not yet be ready. See comments in OpenCompletionCallback.
-  // TODO(satorux): The retry should be done only when we are uploading
-  // while downloading files from web sites (i.e. saving files to Drive).
-  upload_file_info->should_retry_file_open = true;
   return StartUploadFile(upload_file_info.Pass());
 }
 
@@ -143,10 +134,6 @@ int DriveUploader::UploadExistingFile(
   upload_file_info->file_size = file_size;
   upload_file_info->all_bytes_present = true;
   upload_file_info->completion_callback = callback;
-
-  // When uploading an updated file, we should not retry file open as the
-  // file should already be present by definition.
-  upload_file_info->should_retry_file_open = false;
   return StartUploadFile(upload_file_info.Pass());
 }
 
@@ -190,47 +177,28 @@ void DriveUploader::OpenCompletionCallback(FileOpenType open_type,
   if (!upload_file_info)
     return;
 
-  // The file may actually not exist yet, as the downloads system downloads
-  // to a temp location and then renames the file. If this is the case, we
-  // just retry opening the file later.
   if (result != net::OK) {
     DCHECK_EQ(result, net::ERR_FILE_NOT_FOUND);
-
-    if (upload_file_info->should_retry_file_open) {
-      // File open failed. Try again later.
-      upload_file_info->num_file_open_tries++;
-
-      DVLOG(1) << "Error opening \"" << upload_file_info->file_path.value()
-               << "\" for reading: " << net::ErrorToString(result)
-               << ", tries=" << upload_file_info->num_file_open_tries;
-
-      // Stop trying to open this file if we exceed kMaxFileOpenTries.
-      const bool exceeded_max_attempts =
-          upload_file_info->num_file_open_tries >= kMaxFileOpenTries;
-      upload_file_info->should_retry_file_open = !exceeded_max_attempts;
-    }
-    if (!upload_file_info->should_retry_file_open) {
-      UploadFailed(upload_file_info, DRIVE_UPLOAD_ERROR_NOT_FOUND);
-      return;
-    }
-  } else {
-    // Open succeeded, initiate the upload.
-    upload_file_info->should_retry_file_open = false;
-    if (upload_file_info->initial_upload_location.is_empty()) {
-      UploadFailed(upload_file_info, DRIVE_UPLOAD_ERROR_ABORT);
-      return;
-    }
-    drive_service_->InitiateUpload(
-        InitiateUploadParams(upload_file_info->upload_mode,
-                             upload_file_info->title,
-                             upload_file_info->content_type,
-                             upload_file_info->content_length,
-                             upload_file_info->initial_upload_location,
-                             upload_file_info->drive_path),
-        base::Bind(&DriveUploader::OnUploadLocationReceived,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   upload_file_info->upload_id));
+    UploadFailed(upload_file_info, DRIVE_UPLOAD_ERROR_NOT_FOUND);
+    return;
   }
+
+  if (upload_file_info->initial_upload_location.is_empty()) {
+    UploadFailed(upload_file_info, DRIVE_UPLOAD_ERROR_ABORT);
+    return;
+  }
+
+  // Open succeeded, initiate the upload.
+  drive_service_->InitiateUpload(
+      InitiateUploadParams(upload_file_info->upload_mode,
+                           upload_file_info->title,
+                           upload_file_info->content_type,
+                           upload_file_info->content_length,
+                           upload_file_info->initial_upload_location,
+                           upload_file_info->drive_path),
+      base::Bind(&DriveUploader::OnUploadLocationReceived,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 upload_file_info->upload_id));
 }
 
 void DriveUploader::OnUploadLocationReceived(int upload_id,
@@ -458,9 +426,7 @@ DriveUploader::UploadFileInfo::UploadFileInfo()
       start_position(0),
       end_position(0),
       all_bytes_present(false),
-      upload_paused(false),
-      should_retry_file_open(false),
-      num_file_open_tries(0) {
+      upload_paused(false) {
 }
 
 DriveUploader::UploadFileInfo::~UploadFileInfo() { }

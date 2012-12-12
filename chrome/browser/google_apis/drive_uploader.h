@@ -170,9 +170,6 @@ class DriveUploader : public DriveUploaderInterface {
     bool all_bytes_present;  // Whether all bytes of this file are present.
     bool upload_paused;  // Whether this file's upload has been paused.
 
-    bool should_retry_file_open;  // Whether we should retry opening this file.
-    int num_file_open_tries;  // Number of times we've tried to open this file.
-
     // Will be set once the upload is complete.
     scoped_ptr<ResourceEntry> entry;
 
