@@ -200,15 +200,14 @@ class MockDriveServiceWithUploadExpectation : public MockDriveServiceBase {
     const int64 expected_size = expected_upload_content_.size();
 
     // The upload range should start from the current first unreceived byte.
-    EXPECT_EQ(received_bytes_, params.start_range);
+    EXPECT_EQ(received_bytes_, params.start_position);
 
     // The upload data must be split into 512KB chunks.
     const int64 expected_chunk_end =
         std::min(received_bytes_ + kUploadChunkSize, expected_size);
-    EXPECT_EQ(expected_chunk_end - 1, params.end_range);
+    EXPECT_EQ(expected_chunk_end, params.end_position);
 
-    const int64 expected_chunk_size =
-        expected_chunk_end - received_bytes_;
+    const int64 expected_chunk_size = expected_chunk_end - received_bytes_;
     const std::string expected_chunk_data(
         expected_upload_content_.substr(received_bytes_,
                                         expected_chunk_size));
@@ -225,7 +224,7 @@ class MockDriveServiceWithUploadExpectation : public MockDriveServiceBase {
 
     // Update the internal status of the current upload session.
     resume_upload_call_count_ ++;
-    received_bytes_ = params.end_range + 1;
+    received_bytes_ = params.end_position;
 
     // Callback with response.
     ResumeUploadResponse response;
@@ -240,7 +239,7 @@ class MockDriveServiceWithUploadExpectation : public MockDriveServiceBase {
       entry = ResourceEntry::CreateFrom(dict);
     } else {
       response = ResumeUploadResponse(HTTP_RESUME_INCOMPLETE, 0,
-                                      params.end_range);
+                                      params.end_position);
     }
     // ResumeUpload is an asynchronous function, so don't callback directly.
     MessageLoop::current()->PostTask(FROM_HERE,

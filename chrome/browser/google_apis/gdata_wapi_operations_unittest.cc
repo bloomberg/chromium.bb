@@ -933,8 +933,8 @@ TEST_F(GDataWapiOperationsTest, UploadNewFile) {
   scoped_refptr<net::IOBuffer> buffer = new net::StringIOBuffer(kUploadContent);
   ResumeUploadParams resume_params(
       UPLOAD_NEW_FILE,
-      0,  // start_range
-      static_cast<int64>(kUploadContent.size()) - 1, // end_range (inclusive)
+      0,  // start_position
+      kUploadContent.size(), // end_position (exclusive)
       kUploadContent.size(),  // content_length,
       "text/plain",  // content_type
       buffer,
@@ -972,17 +972,17 @@ TEST_F(GDataWapiOperationsTest, UploadNewFile) {
   // Check the response.
   EXPECT_EQ(HTTP_CREATED, response.code);  // Because it's a new file
   // The start and end positions should be set to -1, if an upload is complete.
-  EXPECT_EQ(-1, response.start_range_received);
-  EXPECT_EQ(-1, response.end_range_received);
+  EXPECT_EQ(-1, response.start_position_received);
+  EXPECT_EQ(-1, response.end_position_received);
 }
 
 // This test exercises InitiateUploadOperation and ResumeUploadOperation for
-// a scenario of uploading a new *large* file, which requires mutiple requests
+// a scenario of uploading a new *large* file, which requires multiple requests
 // of ResumeUploadOperation.
 TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
   const size_t kMaxNumBytes = 10;
   // This is big enough to cause multiple requests of ResumeUploadOperation
-  // as we are gonig to send at most kMaxNumBytes at a time.
+  // as we are going to send at most kMaxNumBytes at a time.
   const std::string kUploadContent(kMaxNumBytes + 1, 'a');
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
   GURL upload_url;
@@ -1038,14 +1038,14 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
     const std::string payload = kUploadContent.substr(
         start_position, std::min(kMaxNumBytes, remaining_size));
     num_bytes_consumed += payload.size();
-    // The end position is inclusive, hence -1.
-    const size_t end_position = start_position + payload.size() - 1;
+    // The end position is exclusive.
+    const size_t end_position = start_position + payload.size();
 
     scoped_refptr<net::IOBuffer> buffer = new net::StringIOBuffer(payload);
     ResumeUploadParams resume_params(
         UPLOAD_NEW_FILE,
-        start_position,  // start_range
-        end_position,  // end_range
+        start_position,
+        end_position,
         kUploadContent.size(),  // content_length,
         "text/plain",  // content_type
         buffer,
@@ -1074,7 +1074,7 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
     // Content-Range header should be added.
     EXPECT_EQ("bytes " +
               base::Int64ToString(start_position) + "-" +
-              base::Int64ToString(end_position) + "/" +
+              base::Int64ToString(end_position - 1) + "/" +
               base::Int64ToString(kUploadContent.size()),
               http_request_.headers["Content-Range"]);
     // The upload content should be set in the HTTP request.
@@ -1086,14 +1086,14 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
       EXPECT_EQ(HTTP_CREATED, response.code);  // Because it's a new file.
       // The start and end positions should be set to -1, if an upload is
       // complete.
-      EXPECT_EQ(-1, response.start_range_received);
-      EXPECT_EQ(-1, response.end_range_received);
+      EXPECT_EQ(-1, response.start_position_received);
+      EXPECT_EQ(-1, response.end_position_received);
     } else {
       EXPECT_EQ(HTTP_RESUME_INCOMPLETE, response.code);
       EXPECT_EQ(static_cast<int64>(start_position),
-                response.start_range_received);
+                response.start_position_received);
       EXPECT_EQ(static_cast<int64>(end_position),
-                response.end_range_received);
+                response.end_position_received);
     }
   }
 
@@ -1154,8 +1154,8 @@ TEST_F(GDataWapiOperationsTest, UploadNewEmptyFile) {
   scoped_refptr<net::IOBuffer> buffer = new net::StringIOBuffer(kUploadContent);
   ResumeUploadParams resume_params(
       UPLOAD_NEW_FILE,
-      0,  // start_range
-      static_cast<int64>(kUploadContent.size()) - 1, // end_range (inclusive)
+      0,  // start_position
+      kUploadContent.size(), // end_position (exclusive)
       kUploadContent.size(),  // content_length,
       "text/plain",  // content_type
       buffer,
@@ -1191,8 +1191,8 @@ TEST_F(GDataWapiOperationsTest, UploadNewEmptyFile) {
   // Check the response.
   EXPECT_EQ(HTTP_CREATED, response.code);  // Because it's a new file.
   // The start and end positions should be set to -1, if an upload is complete.
-  EXPECT_EQ(-1, response.start_range_received);
-  EXPECT_EQ(-1, response.end_range_received);
+  EXPECT_EQ(-1, response.start_position_received);
+  EXPECT_EQ(-1, response.end_position_received);
 }
 
 // This test exercises InitiateUploadOperation and ResumeUploadOperation for
@@ -1247,8 +1247,8 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFile) {
   scoped_refptr<net::IOBuffer> buffer = new net::StringIOBuffer(kUploadContent);
   ResumeUploadParams resume_params(
       UPLOAD_EXISTING_FILE,
-      0,  // start_range
-      static_cast<int64>(kUploadContent.size()) - 1, // end_range (inclusive)
+      0,  // start_position
+      kUploadContent.size(), // end_position (exclusive)
       kUploadContent.size(),  // content_length,
       "text/plain",  // content_type
       buffer,
@@ -1286,8 +1286,8 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFile) {
   // Check the response.
   EXPECT_EQ(HTTP_SUCCESS, response.code);  // Because it's an existing file.
   // The start and end positions should be set to -1, if an upload is complete.
-  EXPECT_EQ(-1, response.start_range_received);
-  EXPECT_EQ(-1, response.end_range_received);
+  EXPECT_EQ(-1, response.start_position_received);
+  EXPECT_EQ(-1, response.end_position_received);
 }
 
 }  // namespace google_apis

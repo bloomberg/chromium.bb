@@ -288,8 +288,8 @@ void DriveUploader::UploadNextChunk(UploadFileInfo* upload_file_info) {
     DCHECK(upload_file_info->all_bytes_present &&
            upload_file_info->content_length == 0);
 
-    upload_file_info->start_range = 0;
-    upload_file_info->end_range = -1;
+    upload_file_info->start_position = 0;
+    upload_file_info->end_position = 0;
     // Skips file_stream->Read and error checks for 0-byte case. Immediately
     // proceeds to ResumeUpload.
     // TODO(kinaba): http://crbug.com/134814
@@ -341,9 +341,9 @@ void DriveUploader::ReadCompletionCallback(int upload_id,
     return;
   }
 
-  upload_file_info->start_range = upload_file_info->end_range + 1;
-  upload_file_info->end_range = upload_file_info->start_range +
-                                bytes_read - 1;
+  upload_file_info->start_position = upload_file_info->end_position;
+  upload_file_info->end_position =
+      upload_file_info->start_position + bytes_read;
 
   ResumeUpload(upload_id);
 }
@@ -355,8 +355,8 @@ void DriveUploader::ResumeUpload(int upload_id) {
 
   drive_service_->ResumeUpload(
       ResumeUploadParams(upload_file_info->upload_mode,
-                         upload_file_info->start_range,
-                         upload_file_info->end_range,
+                         upload_file_info->start_position,
+                         upload_file_info->end_position,
                          upload_file_info->content_length,
                          upload_file_info->content_type,
                          upload_file_info->buf,
@@ -397,18 +397,18 @@ void DriveUploader::OnResumeUploadResponseReceived(
   }
 
   // If code is 308 (RESUME_INCOMPLETE) and range_received is what has been
-  // previously uploaded (i.e. = upload_file_info->end_range), proceed to
+  // previously uploaded (i.e. = upload_file_info->end_position), proceed to
   // upload the next chunk.
   if (response.code != HTTP_RESUME_INCOMPLETE ||
-      response.start_range_received != 0 ||
-      response.end_range_received != upload_file_info->end_range) {
+      response.start_position_received != 0 ||
+      response.end_position_received != upload_file_info->end_position) {
     // TODO(achuith): Handle error cases, e.g.
     // - when previously uploaded data wasn't received by Google Docs server,
-    //   i.e. when end_range_received < upload_file_info->end_range
+    //   i.e. when end_position_received < upload_file_info->end_position
     LOG(ERROR) << "UploadNextChunk http code=" << response.code
-               << ", start_range_received=" << response.start_range_received
-               << ", end_range_received=" << response.end_range_received
-               << ", expected end range=" << upload_file_info->end_range;
+        << ", start_position_received=" << response.start_position_received
+        << ", end_position_received=" << response.end_position_received
+        << ", expected end range=" << upload_file_info->end_position;
     UploadFailed(
         upload_file_info,
         response.code == HTTP_FORBIDDEN ?
@@ -416,8 +416,8 @@ void DriveUploader::OnResumeUploadResponseReceived(
     return;
   }
 
-  DVLOG(1) << "Received range " << response.start_range_received
-           << "-" << response.end_range_received
+  DVLOG(1) << "Received range " << response.start_position_received
+           << "-" << response.end_position_received
            << " for [" << upload_file_info->title << "]";
 
   // Continue uploading.
@@ -455,8 +455,8 @@ DriveUploader::UploadFileInfo::UploadFileInfo()
       upload_mode(UPLOAD_INVALID),
       file_stream(NULL),
       buf_len(0),
-      start_range(0),
-      end_range(-1),
+      start_position(0),
+      end_position(0),
       all_bytes_present(false),
       upload_paused(false),
       should_retry_file_open(false),
@@ -466,9 +466,8 @@ DriveUploader::UploadFileInfo::UploadFileInfo()
 DriveUploader::UploadFileInfo::~UploadFileInfo() { }
 
 int64 DriveUploader::UploadFileInfo::SizeRemaining() const {
-  DCHECK(file_size > end_range);
-  // Note that uploaded_bytes = end_range + 1;
-  return file_size - end_range - 1;
+  DCHECK(file_size >= end_position);
+  return file_size - end_position;
 }
 
 std::string DriveUploader::UploadFileInfo::DebugString() const {

@@ -485,24 +485,24 @@ class InitiateUploadOperation : public UrlFetchOperationBase {
 struct ResumeUploadResponse {
   ResumeUploadResponse();
   ResumeUploadResponse(GDataErrorCode code,
-                       int64 start_range_received,
-                       int64 end_range_received);
+                       int64 start_position_received,
+                       int64 end_position_received);
   ~ResumeUploadResponse();
 
   GDataErrorCode code;
   // The values of "Range" header returned from the server. The values are
   // used to continue uploading more data. These are set to -1 if an upload
   // is complete.
-  int64 start_range_received;
-  int64 end_range_received;  // inclusive. See below.
+  int64 start_position_received;
+  int64 end_position_received;  // Exclusive. See below.
 };
 
 // Struct for passing params needed for DriveServiceInterface::ResumeUpload()
 // calls.
 struct ResumeUploadParams {
   ResumeUploadParams(UploadMode upload_mode,
-                     int64 start_range,
-                     int64 end_range,
+                     int64 start_position,
+                     int64 end_position,
                      int64 content_length,
                      const std::string& content_type,
                      scoped_refptr<net::IOBuffer> buf,
@@ -512,11 +512,11 @@ struct ResumeUploadParams {
 
   const UploadMode upload_mode;  // Mode of the upload.
   // Start of range of contents currently stored in |buf|.
-  const int64 start_range;
-  // End of range of contents currently stored in |buf|. This is inclusive.
-  // For instance, if you are to upload the first 500 bytes of date,
-  // |start_range| is 0 and |end_range| is 499.
-  const int64 end_range;
+  const int64 start_position;
+  // End of range of contents currently stored in |buf|. This is exclusive.
+  // For instance, if you are to upload the first 500 bytes of data,
+  // |start_position| is 0 and |end_position| is 500.
+  const int64 end_position;
   const int64 content_length;  // File content-Length.
   const std::string content_type;   // Content-Type of file.
   // Holds current content to be uploaded.

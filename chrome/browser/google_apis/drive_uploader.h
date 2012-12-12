@@ -161,13 +161,11 @@ class DriveUploader : public DriveUploaderInterface {
     // chunk to be a multiple of 512KB.
     int64 buf_len;
 
-    // Data to be updated by caller before sending each ResumeUpload request.
-    // Note that end_range is inclusive, so start_range=0, end_range=8 is 9
-    // bytes.
-    //
-    // Start of range of contents currently stored in |buf|.
-    int64 start_range;
-    int64 end_range;  // End of range of contents currently stored in |buf|.
+    // The start and the end position of the range of contents currently stored
+    // in |buf|. Note that end_position is exclusive, so start_position = 0 and
+    // end_position = 9 means 9 bytes.
+    int64 start_position;
+    int64 end_position;
 
     bool all_bytes_present;  // Whether all bytes of this file are present.
     bool upload_paused;  // Whether this file's upload has been paused.

@@ -45,16 +45,16 @@ namespace google_apis {
 
 ResumeUploadResponse::ResumeUploadResponse()
     : code(HTTP_SUCCESS),
-      start_range_received(0),
-      end_range_received(0) {
+      start_position_received(0),
+      end_position_received(0) {
 }
 
 ResumeUploadResponse::ResumeUploadResponse(GDataErrorCode code,
-                                           int64 start_range_received,
-                                           int64 end_range_received)
+                                           int64 start_position_received,
+                                           int64 end_position_received)
     : code(code),
-      start_range_received(start_range_received),
-      end_range_received(end_range_received) {
+      start_position_received(start_position_received),
+      end_position_received(end_position_received) {
 }
 
 ResumeUploadResponse::~ResumeUploadResponse() {
@@ -80,15 +80,15 @@ InitiateUploadParams::~InitiateUploadParams() {
 
 ResumeUploadParams::ResumeUploadParams(
     UploadMode upload_mode,
-    int64 start_range,
-    int64 end_range,
+    int64 start_position,
+    int64 end_position,
     int64 content_length,
     const std::string& content_type,
     scoped_refptr<net::IOBuffer> buf,
     const GURL& upload_location,
     const FilePath& drive_file_path) : upload_mode(upload_mode),
-                                    start_range(start_range),
-                                    end_range(end_range),
+                                    start_position(start_position),
+                                    end_position(end_position),
                                     content_length(content_length),
                                     content_type(content_type),
                                     buf(buf),
@@ -735,8 +735,8 @@ GURL ResumeUploadOperation::GetURL() const {
 void ResumeUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
   GDataErrorCode code = GetErrorCode(source);
   net::HttpResponseHeaders* hdrs = source->GetResponseHeaders();
-  int64 start_range_received = -1;
-  int64 end_range_received = -1;
+  int64 start_position_received = -1;
+  int64 end_position_received = -1;
   scoped_ptr<ResourceEntry> entry;
 
   if (code == HTTP_RESUME_INCOMPLETE) {
@@ -748,15 +748,19 @@ void ResumeUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
       if (net::HttpUtil::ParseRangeHeader(range_received, &ranges) &&
           !ranges.empty() ) {
         // We only care about the first start-end pair in the range.
-        start_range_received = ranges[0].first_byte_position();
-        end_range_received = ranges[0].last_byte_position();
+        //
+        // Range header represents the range inclusively, while we are treating
+        // ranges exclusively (i.e., end_position_received should be one passed
+        // the last valid index). So "+ 1" is added.
+        start_position_received = ranges[0].first_byte_position();
+        end_position_received = ranges[0].last_byte_position() + 1;
       }
     }
     DVLOG(1) << "Got response for [" << params_.drive_file_path.value()
              << "]: code=" << code
              << ", range_hdr=[" << range_received
-             << "], range_parsed=" << start_range_received
-             << "," << end_range_received;
+             << "], range_parsed=" << start_position_received
+             << "," << end_position_received;
   } else {
     // There might be explanation of unexpected error code in response.
     std::string response_content;
@@ -780,8 +784,8 @@ void ResumeUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
   }
 
   callback_.Run(ResumeUploadResponse(code,
-                                     start_range_received,
-                                     end_range_received),
+                                     start_position_received,
+                                     end_position_received),
                 entry.Pass());
 
   // For a new file, HTTP_CREATED is returned.
@@ -818,25 +822,26 @@ URLFetcher::RequestType ResumeUploadOperation::GetRequestType() const {
 std::vector<std::string> ResumeUploadOperation::GetExtraRequestHeaders() const {
   if (params_.content_length == 0) {
     // For uploading an empty document, just PUT an empty content.
-    DCHECK_EQ(params_.start_range, 0);
-    DCHECK_EQ(params_.end_range, -1);
+    DCHECK_EQ(params_.start_position, 0);
+    DCHECK_EQ(params_.end_position, 0);
     return std::vector<std::string>();
   }
 
   // The header looks like
-  // Content-Range: bytes <start_range>-<end_range>/<content_length>
+  // Content-Range: bytes <start_position>-<end_position>/<content_length>
   // for example:
   // Content-Range: bytes 7864320-8388607/13851821
   // Use * for unknown/streaming content length.
-  DCHECK_GE(params_.start_range, 0);
-  DCHECK_GE(params_.end_range, 0);
+  // The header takes inclusive range, so we adjust by "end_position - 1".
+  DCHECK_GE(params_.start_position, 0);
+  DCHECK_GT(params_.end_position, 0);
   DCHECK_GE(params_.content_length, -1);
 
   std::vector<std::string> headers;
   headers.push_back(
       std::string(kUploadContentRange) +
-      base::Int64ToString(params_.start_range) + "-" +
-      base::Int64ToString(params_.end_range) + "/" +
+      base::Int64ToString(params_.start_position) + "-" +
+      base::Int64ToString(params_.end_position - 1) + "/" +
       (params_.content_length == -1 ? "*" :
           base::Int64ToString(params_.content_length)));
   return headers;
@@ -846,14 +851,14 @@ bool ResumeUploadOperation::GetContentData(std::string* upload_content_type,
                                            std::string* upload_content) {
   *upload_content_type = params_.content_type;
   *upload_content = std::string(params_.buf->data(),
-                                params_.end_range - params_.start_range + 1);
+                                params_.end_position - params_.start_position);
   return true;
 }
 
 void ResumeUploadOperation::OnURLFetchUploadProgress(
     const URLFetcher* source, int64 current, int64 total) {
   // Adjust the progress values according to the range currently uploaded.
-  NotifyProgress(params_.start_range + current, params_.content_length);
+  NotifyProgress(params_.start_position + current, params_.content_length);
 }
 
 }  // namespace google_apis
