@@ -12,6 +12,7 @@
 #include "base/message_loop_proxy.h"
 #include "base/path_service.h"
 #include "base/platform_file.h"
+#include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -69,17 +70,21 @@ void MockDriveService::GetResourceListStub(
     const std::string& search_string,
     bool shared_with_me,
     const std::string& directory_resource_id,
-    const GetDataCallback& callback) {
+    const GetResourceListCallback& callback) {
   if (search_string.empty()) {
+    scoped_ptr<ResourceList> resource_list =
+        google_apis::ResourceList::ExtractAndParse(*feed_data_);
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
         base::Bind(callback, HTTP_SUCCESS,
-                   base::Passed(&feed_data_)));
+                   base::Passed(&resource_list)));
   } else {
+    scoped_ptr<ResourceList> resource_list =
+        google_apis::ResourceList::ExtractAndParse(*search_result_);
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
         base::Bind(callback, HTTP_SUCCESS,
-                   base::Passed(&search_result_)));
+                   base::Passed(&resource_list)));
   }
 }
 

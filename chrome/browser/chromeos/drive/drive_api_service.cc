@@ -9,7 +9,10 @@
 
 #include "base/bind.h"
 #include "base/message_loop_proxy.h"
+#include "base/values.h"
 #include "chrome/browser/google_apis/drive_api_operations.h"
+#include "chrome/browser/google_apis/drive_api_parser.h"
+#include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/operation_runner.h"
 #include "chrome/browser/google_apis/time_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -26,6 +29,37 @@ namespace {
 const char kDriveScope[] = "https://www.googleapis.com/auth/drive";
 const char kDriveAppsReadonlyScope[] =
     "https://www.googleapis.com/auth/drive.apps.readonly";
+
+// Parses the JSON value into ResourceList and runs |callback|.
+void ParseResourceListAndRun(
+    const google_apis::GetResourceListCallback& callback,
+    google_apis::GDataErrorCode error,
+    scoped_ptr<base::Value> value) {
+  if (!value) {
+    callback.Run(error, scoped_ptr<google_apis::ResourceList>());
+    return;
+  }
+
+  // TODO(satorux): Parse the JSON value on a blocking pool. crbug.com/165088
+  scoped_ptr<google_apis::ChangeList> change_list(
+      google_apis::ChangeList::CreateFrom(*value));
+  if (!change_list) {
+    callback.Run(google_apis::GDATA_PARSE_ERROR,
+                 scoped_ptr<google_apis::ResourceList>());
+    return;
+  }
+
+  // TODO(satorux): Do the conversion on a blocking pool too. crbug.com/165088
+  scoped_ptr<google_apis::ResourceList> resource_list =
+      google_apis::ResourceList::CreateFromChangeList(*change_list);
+  if (!resource_list) {
+    callback.Run(google_apis::GDATA_PARSE_ERROR,
+                 scoped_ptr<google_apis::ResourceList>());
+    return;
+  }
+
+  callback.Run(error, resource_list.Pass());
+}
 
 }  // namespace
 
@@ -102,7 +136,7 @@ void DriveAPIService::GetResourceList(
     const std::string& search_query,
     bool shared_with_me,
     const std::string& directory_resource_id,
-    const google_apis::GetDataCallback& callback) {
+    const google_apis::GetResourceListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -119,31 +153,33 @@ void DriveAPIService::GetResourceList(
 void DriveAPIService::GetFilelist(
     const GURL& url,
     const std::string& search_query,
-    const google_apis::GetDataCallback& callback) {
+    const google_apis::GetResourceListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   runner_->StartOperationWithRetry(
-      new google_apis::GetFilelistOperation(operation_registry(),
-                                            url_request_context_getter_,
-                                            url,
-                                            search_query,
-                                            callback));
+      new google_apis::GetFilelistOperation(
+          operation_registry(),
+          url_request_context_getter_,
+          url,
+          search_query,
+          base::Bind(&ParseResourceListAndRun, callback)));
 }
 
 void DriveAPIService::GetChangelist(
     const GURL& url,
     int64 start_changestamp,
-    const google_apis::GetDataCallback& callback) {
+    const google_apis::GetResourceListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   runner_->StartOperationWithRetry(
-      new google_apis::GetChangelistOperation(operation_registry(),
-                                              url_request_context_getter_,
-                                              url,
-                                              start_changestamp,
-                                              callback));
+      new google_apis::GetChangelistOperation(
+          operation_registry(),
+          url_request_context_getter_,
+          url,
+          start_changestamp,
+          base::Bind(&ParseResourceListAndRun, callback)));
 }
 
 void DriveAPIService::GetResourceEntry(

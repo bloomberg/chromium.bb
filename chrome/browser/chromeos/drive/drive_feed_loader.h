@@ -144,20 +144,7 @@ class DriveFeedLoader {
   void OnGetResourceList(scoped_ptr<LoadFeedParams> params,
                          base::TimeTicks start_time,
                          google_apis::GDataErrorCode status,
-                         scoped_ptr<base::Value> data);
-
-  // Callback for handling results of feed parse.
-  void OnParseFeed(scoped_ptr<LoadFeedParams> params,
-                   base::TimeTicks start_time,
-                   scoped_ptr<google_apis::ResourceList> current_feed);
-
-  // Callback for handling response from |DriveAPIService::GetResourceList|.
-  // Invokes |callback| when done.
-  // |callback| must not be null.
-  void OnGetChangelist(scoped_ptr<LoadFeedParams> params,
-                       base::TimeTicks start_time,
-                       google_apis::GDataErrorCode status,
-                       scoped_ptr<base::Value> data);
+                         scoped_ptr<google_apis::ResourceList> data);
 
   // Save filesystem to disk.
   void SaveFileSystem();

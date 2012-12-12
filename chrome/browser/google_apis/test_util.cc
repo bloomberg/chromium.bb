@@ -9,6 +9,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -74,6 +75,15 @@ void CopyResultsFromGetDataCallback(GDataErrorCode* error_out,
                                     GDataErrorCode error_in,
                                     scoped_ptr<base::Value> value_in) {
   value_out->swap(value_in);
+  *error_out = error_in;
+}
+
+void CopyResultsFromGetResourceListCallback(
+    GDataErrorCode* error_out,
+    scoped_ptr<ResourceList>* resource_list_out,
+    GDataErrorCode error_in,
+    scoped_ptr<ResourceList> resource_list_in) {
+  resource_list_out->swap(resource_list_in);
   *error_out = error_in;
 }
 

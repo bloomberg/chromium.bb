@@ -101,7 +101,7 @@ ACTION(MockFailingGetResourceList) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(arg5, google_apis::GDATA_NO_CONNECTION,
-                 base::Passed(scoped_ptr<base::Value>())));
+                 base::Passed(scoped_ptr<google_apis::ResourceList>())));
 }
 
 // Counts the number of files (not directories) in |entries|.

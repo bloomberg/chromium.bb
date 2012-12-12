@@ -404,29 +404,16 @@ void DriveFeedLoader::LoadFromServer(scoped_ptr<LoadFeedParams> params) {
 
   // base::Passed() may get evaluated first, so get a pointer to params.
   LoadFeedParams* params_ptr = params.get();
-  if (google_apis::util::IsDriveV2ApiEnabled()) {
-    scheduler_->GetResourceList(
-        params_ptr->feed_to_load,
-        params_ptr->start_changestamp,
-        std::string(),  // No search query.
-        params_ptr->shared_with_me,
-        std::string(),  // No directory resource ID.
-        base::Bind(&DriveFeedLoader::OnGetChangelist,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   base::Passed(&params),
-                   start_time));
-  } else {
-    scheduler_->GetResourceList(
-        params_ptr->feed_to_load,
-        params_ptr->start_changestamp,
-        params_ptr->search_query,
-        params_ptr->shared_with_me,
-        params_ptr->directory_resource_id,
-        base::Bind(&DriveFeedLoader::OnGetResourceList,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   base::Passed(&params),
-                   start_time));
-  }
+  scheduler_->GetResourceList(
+      params_ptr->feed_to_load,
+      params_ptr->start_changestamp,
+      params_ptr->search_query,
+      params_ptr->shared_with_me,
+      params_ptr->directory_resource_id,
+      base::Bind(&DriveFeedLoader::OnGetResourceList,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(&params),
+                 start_time));
 }
 
 void DriveFeedLoader::LoadDirectoryFromServer(
@@ -477,10 +464,11 @@ void DriveFeedLoader::UpdateMetadataFromFeedAfterLoadFromServer(
                             params.callback));
 }
 
-void DriveFeedLoader::OnGetResourceList(scoped_ptr<LoadFeedParams> params,
-                                        base::TimeTicks start_time,
-                                        google_apis::GDataErrorCode status,
-                                        scoped_ptr<base::Value> data) {
+void DriveFeedLoader::OnGetResourceList(
+    scoped_ptr<LoadFeedParams> params,
+    base::TimeTicks start_time,
+    google_apis::GDataErrorCode status,
+    scoped_ptr<google_apis::ResourceList> resource_list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (params->feed_list.empty()) {
@@ -489,44 +477,19 @@ void DriveFeedLoader::OnGetResourceList(scoped_ptr<LoadFeedParams> params,
   }
 
   DriveFileError error = util::GDataToDriveFileError(status);
-  if (error == DRIVE_FILE_OK &&
-      (!data.get() || data->GetType() != Value::TYPE_DICTIONARY)) {
-    error = DRIVE_FILE_ERROR_FAILED;
-  }
-
   if (error != DRIVE_FILE_OK) {
     params->RunFeedLoadCallback(error);
     return;
   }
-
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
-      FROM_HERE,
-      base::Bind(&ParseFeedOnBlockingPool, base::Passed(&data)),
-      base::Bind(&DriveFeedLoader::OnParseFeed,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(&params),
-                 start_time));
-}
-
-void DriveFeedLoader::OnParseFeed(
-    scoped_ptr<LoadFeedParams> params,
-    base::TimeTicks start_time,
-    scoped_ptr<google_apis::ResourceList> current_feed) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (!current_feed) {
-    params->RunFeedLoadCallback(DRIVE_FILE_ERROR_FAILED);
-    return;
-  }
+  DCHECK(resource_list);
 
   GURL next_feed_url;
   const bool has_next_feed_url =
       params->load_subsequent_feeds &&
-      current_feed->GetNextFeedURL(&next_feed_url);
+      resource_list->GetNextFeedURL(&next_feed_url);
 
   // Add the current feed to the list of collected feeds for this directory.
-  params->feed_list.push_back(current_feed.release());
+  params->feed_list.push_back(resource_list.release());
 
   // Compute and notify the number of entries fetched so far.
   int num_accumulated_entries = 0;
@@ -581,109 +544,6 @@ void DriveFeedLoader::OnParseFeed(
 
   // Run the callback so the client can process the retrieved feeds.
   params->RunFeedLoadCallback(DRIVE_FILE_OK);
-}
-
-void DriveFeedLoader::OnGetChangelist(scoped_ptr<LoadFeedParams> params,
-                                      base::TimeTicks start_time,
-                                      google_apis::GDataErrorCode status,
-                                      scoped_ptr<base::Value> data) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (params->feed_list.empty()) {
-    UMA_HISTOGRAM_TIMES("Drive.InitialFeedLoadTime",
-                        base::TimeTicks::Now() - start_time);
-  }
-
-  DriveFileError error = util::GDataToDriveFileError(status);
-  if (error == DRIVE_FILE_OK &&
-      (!data.get() || data->GetType() != Value::TYPE_DICTIONARY)) {
-    error = DRIVE_FILE_ERROR_FAILED;
-  }
-
-  if (error != DRIVE_FILE_OK) {
-    params->RunFeedLoadCallback(error);
-    return;
-  }
-
-  GURL next_feed_url;
-  scoped_ptr<google_apis::ChangeList> current_feed(
-      google_apis::ChangeList::CreateFrom(*data));
-  if (!current_feed.get()) {
-    params->RunFeedLoadCallback(DRIVE_FILE_ERROR_FAILED);
-    return;
-  }
-  const bool has_next_feed = !current_feed->next_page_token().empty();
-
-#ifndef NDEBUG
-  // Save initial root feed for analysis.
-  std::string file_name =
-      base::StringPrintf("DEBUG_changelist_%" PRId64 ".json",
-                         params->start_changestamp);
-  blocking_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&SaveFeedOnBlockingPoolForDebugging,
-                 cache_->GetCacheDirectoryPath(
-                     DriveCache::CACHE_TYPE_META).Append(file_name),
-                 base::Passed(&data)));
-#endif
-
-  // Add the current feed to the list of collected feeds for this directory.
-  scoped_ptr<google_apis::ResourceList> feed =
-      google_apis::ResourceList::CreateFromChangeList(*current_feed);
-  params->feed_list.push_back(feed.release());
-
-  // Compute and notify the number of entries fetched so far.
-  int num_accumulated_entries = 0;
-  for (size_t i = 0; i < params->feed_list.size(); ++i)
-    num_accumulated_entries += params->feed_list[i]->entries().size();
-
-  // Check if we need to collect more data to complete the directory list.
-  if (has_next_feed) {
-    // Post an UI update event to make the UI smoother.
-    GetResourceListUiState* ui_state = params->ui_state.get();
-    if (ui_state == NULL) {
-      ui_state = new GetResourceListUiState(base::TimeTicks::Now());
-      params->ui_state.reset(ui_state);
-    }
-    DCHECK(ui_state);
-
-    if ((ui_state->num_fetched_documents - ui_state->num_showing_documents)
-        < kFetchUiUpdateStep) {
-      // Currently the UI update is stopped. Start UI periodic callback.
-      base::MessageLoopProxy::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&DriveFeedLoader::OnNotifyResourceListFetched,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     ui_state->weak_ptr_factory.GetWeakPtr()));
-    }
-    ui_state->num_fetched_documents = num_accumulated_entries;
-    ui_state->feed_fetching_elapsed_time = base::TimeTicks::Now() - start_time;
-
-    // Kick off the remaining part of the feeds.
-    // Extract the pointer so we can use it bellow.
-    LoadFeedParams* params_ptr = params.get();
-    scheduler_->GetResourceList(
-        current_feed->next_link(),
-        params_ptr->start_changestamp,
-        std::string(),  // No search query.
-        false,  // Not shared with me.
-        std::string(),  // No directory resource ID.
-        base::Bind(&DriveFeedLoader::OnGetChangelist,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   base::Passed(&params),
-                   start_time));
-    return;
-  }
-
-  // Notify the observers that all document feeds are fetched.
-  FOR_EACH_OBSERVER(DriveFeedLoaderObserver, observers_,
-                    OnResourceListFetched(num_accumulated_entries));
-
-  UMA_HISTOGRAM_TIMES("Drive.EntireFeedLoadTime",
-                      base::TimeTicks::Now() - start_time);
-
-  // Run the callback so the client can process the retrieved feeds.
-  params->RunFeedLoadCallback(error);
 }
 
 void DriveFeedLoader::OnNotifyResourceListFetched(

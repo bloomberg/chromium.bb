@@ -219,9 +219,10 @@ class DriveFileSyncClient
                              google_apis::GDataErrorCode error,
                              scoped_ptr<base::Value> data);
 
-  void DidGetResourceListData(const ResourceListCallback& callback,
-                              google_apis::GDataErrorCode error,
-                              scoped_ptr<base::Value> data);
+  void DidGetResourceList(
+      const ResourceListCallback& callback,
+      google_apis::GDataErrorCode error,
+      scoped_ptr<google_apis::ResourceList> resource_list);
 
   void DidGetResourceEntryData(const ResourceEntryCallback& callback,
                                google_apis::GDataErrorCode error,

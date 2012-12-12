@@ -64,7 +64,7 @@ class DriveAPIService : public google_apis::DriveServiceInterface,
       const std::string& search_query,
       bool shared_with_me,
       const std::string& directory_resource_id,
-      const google_apis::GetDataCallback& callback) OVERRIDE;
+      const google_apis::GetResourceListCallback& callback) OVERRIDE;
   virtual void GetResourceEntry(
       const std::string& resource_id,
       const google_apis::GetDataCallback& callback) OVERRIDE;
@@ -130,7 +130,7 @@ class DriveAPIService : public google_apis::DriveServiceInterface,
   // Upon completion, invokes |callback| with results on calling thread.
   void GetChangelist(const GURL& url,
                      int64 start_changestamp,
-                     const google_apis::GetDataCallback& callback);
+                     const google_apis::GetResourceListCallback& callback);
 
   // Fetches a filelist from |url| with |search_query|, using Drive V2 API. If
   // this URL is empty the call will use the default URL. Specify |url| when
@@ -139,7 +139,7 @@ class DriveAPIService : public google_apis::DriveServiceInterface,
   // https://developers.google.com/drive/search-parameters
   void GetFilelist(const GURL& url,
                    const std::string& search_query,
-                   const google_apis::GetDataCallback& callback);
+                   const google_apis::GetResourceListCallback& callback);
 
   // AuthService::Observer override.
   virtual void OnOAuth2RefreshTokenChanged() OVERRIDE;

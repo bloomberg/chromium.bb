@@ -39,7 +39,7 @@ class MockDriveService : public DriveServiceInterface {
           const std::string& search_string,
           bool shared_with_me,
           const std::string& directory_resource_id,
-          const GetDataCallback& callback));
+          const GetResourceListCallback& callback));
   MOCK_METHOD2(GetResourceEntry,
       void(const std::string& resource_id,
           const GetDataCallback& callback));
@@ -126,7 +126,7 @@ class MockDriveService : public DriveServiceInterface {
       const std::string& search_string,
       bool shared_with_me,
       const std::string& directory_resource_id,
-      const GetDataCallback& callback);
+      const GetResourceListCallback& callback);
 
   // Will call |callback| with HTTP_SUCCESS and a StringValue with the current
   // value of |account_metadata_|.

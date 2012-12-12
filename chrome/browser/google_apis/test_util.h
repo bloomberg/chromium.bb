@@ -17,6 +17,9 @@ class Value;
 }
 
 namespace google_apis {
+
+class ResourceList;
+
 namespace test_util {
 
 // Runs a task posted to the blocking pool, including subsequent tasks posted
@@ -41,6 +44,13 @@ void CopyResultsFromGetDataCallback(GDataErrorCode* error_out,
                                     scoped_ptr<base::Value>* value_out,
                                     GDataErrorCode error_in,
                                     scoped_ptr<base::Value> value_in);
+
+// Copies the results from GetResourceListCallback.
+void CopyResultsFromGetResourceListCallback(
+    GDataErrorCode* error_out,
+    scoped_ptr<ResourceList>* resource_list_out,
+    GDataErrorCode error_in,
+    scoped_ptr<ResourceList> resource_list_in);
 
 }  // namespace test_util
 }  // namespace google_apis

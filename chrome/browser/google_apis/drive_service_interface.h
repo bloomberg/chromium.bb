@@ -17,6 +17,7 @@ class Profile;
 
 namespace google_apis {
 
+class ResourceList;
 class OperationRegistry;
 
 // Document export format.
@@ -56,6 +57,11 @@ class DriveServiceObserver {
  protected:
   virtual ~DriveServiceObserver() {}
 };
+
+// Callback used for GetResourceList().
+typedef base::Callback<void(GDataErrorCode error,
+                            scoped_ptr<ResourceList> resource_list)>
+    GetResourceListCallback;
 
 // This defines an interface for sharing by DriveService and MockDriveService
 // so that we can do testing of clients of DriveService.
@@ -122,7 +128,7 @@ class DriveServiceInterface {
                                const std::string& search_query,
                                bool shared_with_me,
                                const std::string& directory_resource_id,
-                               const GetDataCallback& callback) = 0;
+                               const GetResourceListCallback& callback) = 0;
 
   // Fetches single entry metadata from server. The entry's resource id equals
   // |resource_id|.

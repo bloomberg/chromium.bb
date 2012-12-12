@@ -284,7 +284,7 @@ void DriveFileSyncClient::SearchFilesInDirectory(
       search_query,
       false,  // shared_with_me
       directory_resource_id,
-      base::Bind(&DriveFileSyncClient::DidGetResourceListData,
+      base::Bind(&DriveFileSyncClient::DidGetResourceList,
                  AsWeakPtr(), callback));
 }
 
@@ -305,7 +305,7 @@ void DriveFileSyncClient::ListChanges(int64 start_changestamp,
       std::string(),  // search_query
       false,  // shared_with_me
       std::string(),  // directory_resource_id
-      base::Bind(&DriveFileSyncClient::DidGetResourceListData,
+      base::Bind(&DriveFileSyncClient::DidGetResourceList,
                  AsWeakPtr(), callback));
 }
 
@@ -319,7 +319,7 @@ void DriveFileSyncClient::ContinueListing(
       std::string(),  // search_query
       false,  // shared_with_me
       std::string(),  // directory_resource_id
-      base::Bind(&DriveFileSyncClient::DidGetResourceListData,
+      base::Bind(&DriveFileSyncClient::DidGetResourceList,
                  AsWeakPtr(), callback));
 }
 
@@ -412,10 +412,10 @@ void DriveFileSyncClient::OnConnectionTypeChanged(
                       observers_, OnNetworkConnected());
 }
 
-void DriveFileSyncClient::DidGetResourceListData(
+void DriveFileSyncClient::DidGetResourceList(
     const ResourceListCallback& callback,
     google_apis::GDataErrorCode error,
-    scoped_ptr<base::Value> data) {
+    scoped_ptr<google_apis::ResourceList> resource_list) {
   DCHECK(CalledOnValidThread());
 
   if (error != google_apis::HTTP_SUCCESS) {
@@ -423,12 +423,8 @@ void DriveFileSyncClient::DidGetResourceListData(
     return;
   }
 
-  DCHECK(data);
-  scoped_ptr<google_apis::ResourceList> feed(
-      google_apis::ResourceList::ExtractAndParse(*data));
-  if (!feed)
-    error = google_apis::GDATA_PARSE_ERROR;
-  callback.Run(error, feed.Pass());
+  DCHECK(resource_list);
+  callback.Run(error, resource_list.Pass());
 }
 
 void DriveFileSyncClient::DidGetResourceEntryData(

@@ -388,11 +388,13 @@ IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest,
 
   // Then the test will try to read an existing file file.
   // Remote filesystem should first request root feed from gdata server.
-  scoped_ptr<base::Value> documents_value(LoadJSONFile(kTestRootFeed));
+  scoped_ptr<base::Value> value(LoadJSONFile(kTestRootFeed));
+  scoped_ptr<google_apis::ResourceList> resource_list =
+      google_apis::ResourceList::ExtractAndParse(*value);
   EXPECT_CALL(*mock_drive_service_,
               GetResourceList(_, _, _, _, _, _))
       .WillOnce(MockGetResourceListCallback(google_apis::HTTP_SUCCESS,
-                                            &documents_value));
+                                            &resource_list));
 
   // When file browser tries to read the file, remote filesystem should detect
   // that the cached file is not present on the disk and download it. Mocked
@@ -428,11 +430,13 @@ IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest, ContentSearch) {
   EXPECT_CALL(*mock_drive_service_, GetAccountMetadata(_)).Times(1);
 
   // First, test will get drive root directory, to init file system.
-  scoped_ptr<base::Value> documents_value(LoadJSONFile(kTestRootFeed));
+  scoped_ptr<base::Value> value(LoadJSONFile(kTestRootFeed));
+  scoped_ptr<google_apis::ResourceList> resource_list =
+      google_apis::ResourceList::ExtractAndParse(*value);
   EXPECT_CALL(*mock_drive_service_,
               GetResourceList(_, _, "", _, _, _))
       .WillOnce(MockGetResourceListCallback(google_apis::HTTP_SUCCESS,
-                                            &documents_value));
+                                            &resource_list));
 
   // Search results will be returned in two parts:
   // 1. Search will be given empty initial feed url. The returned feed will
@@ -443,20 +447,24 @@ IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest, ContentSearch) {
   // In both cases search will return all files and directories in test root
   // feed.
   scoped_ptr<base::Value> first_search_value(LoadJSONFile(kTestRootFeed));
-
   ASSERT_TRUE(
       AddNextFeedURLToFeedValue("https://next_feed", first_search_value.get()));
+  scoped_ptr<google_apis::ResourceList> first_search_list =
+      google_apis::ResourceList::ExtractAndParse(*first_search_value);
 
   EXPECT_CALL(*mock_drive_service_,
               GetResourceList(GURL(), _, "foo", _, _, _))
       .WillOnce(MockGetResourceListCallback(google_apis::HTTP_SUCCESS,
-                                            &first_search_value));
+                                            &first_search_list));
 
   scoped_ptr<base::Value> second_search_value(LoadJSONFile(kTestRootFeed));
+  scoped_ptr<google_apis::ResourceList> second_search_list =
+      google_apis::ResourceList::ExtractAndParse(*second_search_value);
+
   EXPECT_CALL(*mock_drive_service_,
               GetResourceList(GURL("https://next_feed"), _, "foo", _, _, _))
       .WillOnce(MockGetResourceListCallback(google_apis::HTTP_SUCCESS,
-                                            &second_search_value));
+                                            &second_search_list));
 
   // Test will try to create a snapshot of the returned file.
   scoped_ptr<base::Value> document_to_download_value(

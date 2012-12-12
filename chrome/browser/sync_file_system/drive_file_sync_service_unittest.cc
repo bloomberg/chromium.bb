@@ -10,6 +10,7 @@
 #include "base/message_loop_proxy.h"
 #include "chrome/browser/google_apis/drive_uploader.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
+#include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/mock_drive_service.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_client.h"
@@ -321,12 +322,12 @@ ACTION_P2(InvokeGetDataCallback2, error, result) {
       base::Bind(arg2, error, base::Passed(&value)));
 }
 
-// Invokes |arg5| as a GetDataCallback.
-ACTION_P2(InvokeGetDataCallback5, error, result) {
-  scoped_ptr<base::Value> value(result.Pass());
+// Invokes |arg5| as a GetResourceListCallback.
+ACTION_P2(InvokeGetResourceListCallback5, error, result) {
+  scoped_ptr<google_apis::ResourceList> resource_list(result.Pass());
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(arg5, error, base::Passed(&value)));
+      base::Bind(arg5, error, base::Passed(&resource_list)));
 }
 
 ACTION(PrepareForRemoteChange_Busy) {
@@ -371,12 +372,14 @@ ACTION(InvokeDidApplyRemoteChange) {
 #if !defined(OS_ANDROID)
 
 TEST_F(DriveFileSyncServiceTest, GetSyncRoot) {
-  scoped_ptr<Value> sync_root_found(LoadJSONFile(
+  scoped_ptr<Value> sync_root_found_value(LoadJSONFile(
       "sync_file_system/sync_root_found.json"));
+  scoped_ptr<google_apis::ResourceList> sync_root_found(
+      google_apis::ResourceList::ExtractAndParse(*sync_root_found_value));
   std::string query = FormatTitleQuery(kSyncRootDirectoryName);
   EXPECT_CALL(*mock_drive_service(),
               GetResourceList(GURL(), 0, query, false, std::string(), _))
-      .WillOnce(InvokeGetDataCallback5(
+      .WillOnce(InvokeGetResourceListCallback5(
           google_apis::HTTP_SUCCESS,
           base::Passed(&sync_root_found)));
 
@@ -424,12 +427,15 @@ TEST_F(DriveFileSyncServiceTest, BatchSyncOnInitialization) {
           google_apis::HTTP_SUCCESS,
           base::Passed(&account_metadata)));
 
-  scoped_ptr<Value> listing_files_in_directory(LoadJSONFile(
+  scoped_ptr<Value> listing_files_in_directory_value(LoadJSONFile(
       "sync_file_system/listing_files_in_directory.json"));
+  scoped_ptr<google_apis::ResourceList> listing_files_in_directory(
+      google_apis::ResourceList::ExtractAndParse(
+          *listing_files_in_directory_value));
   EXPECT_CALL(*mock_drive_service(),
               GetResourceList(GURL(), 0, std::string(), false,
                               kDirectoryResourceId1, _))
-      .WillOnce(InvokeGetDataCallback5(
+      .WillOnce(InvokeGetResourceListCallback5(
           google_apis::HTTP_SUCCESS,
           base::Passed(&listing_files_in_directory)));
 
@@ -465,14 +471,18 @@ TEST_F(DriveFileSyncServiceTest, RegisterNewOrigin) {
 
   InSequence sequence;
 
-  scoped_ptr<Value> origin_directory_not_found(LoadJSONFile(
+  scoped_ptr<Value> origin_directory_not_found_value(LoadJSONFile(
       "sync_file_system/origin_directory_not_found.json"));
+  scoped_ptr<google_apis::ResourceList> origin_directory_not_found(
+      google_apis::ResourceList::ExtractAndParse(
+          *origin_directory_not_found_value));
+
   std::string query = FormatTitleQuery(
       DriveFileSyncClient::OriginToDirectoryTitle(kOrigin));
 
   EXPECT_CALL(*mock_drive_service(),
               GetResourceList(GURL(), 0, query, false, kSyncRootResourceId, _))
-      .WillOnce(InvokeGetDataCallback5(
+      .WillOnce(InvokeGetResourceListCallback5(
           google_apis::HTTP_SUCCESS,
           base::Passed(&origin_directory_not_found)))
       .RetiresOnSaturation();
@@ -510,12 +520,16 @@ TEST_F(DriveFileSyncServiceTest, RegisterNewOrigin) {
           google_apis::HTTP_SUCCESS,
           base::Passed(&account_metadata)));
 
-  scoped_ptr<Value> listing_files_in_empty_directory(LoadJSONFile(
+  scoped_ptr<Value> listing_files_in_empty_directory_value(LoadJSONFile(
       "sync_file_system/listing_files_in_empty_directory.json"));
+  scoped_ptr<google_apis::ResourceList> listing_files_in_empty_directory(
+      google_apis::ResourceList::ExtractAndParse(
+          *listing_files_in_empty_directory_value));
+
   EXPECT_CALL(*mock_drive_service(),
               GetResourceList(GURL(), 0, std::string(), false,
                               kDirectoryResourceId, _))
-      .WillOnce(InvokeGetDataCallback5(
+      .WillOnce(InvokeGetResourceListCallback5(
           google_apis::HTTP_SUCCESS,
           base::Passed(&listing_files_in_empty_directory)));
 
@@ -546,13 +560,17 @@ TEST_F(DriveFileSyncServiceTest, RegisterExistingOrigin) {
 
   InSequence sequence;
 
-  scoped_ptr<Value> origin_directory_found(LoadJSONFile(
+  scoped_ptr<Value> origin_directory_found_value(LoadJSONFile(
       "sync_file_system/origin_directory_found.json"));
+  scoped_ptr<google_apis::ResourceList> origin_directory_found(
+      google_apis::ResourceList::ExtractAndParse(
+          *origin_directory_found_value));
+
   std::string query = FormatTitleQuery(
       DriveFileSyncClient::OriginToDirectoryTitle(kOrigin));
   EXPECT_CALL(*mock_drive_service(),
               GetResourceList(GURL(), 0, query, false, kSyncRootResourceId, _))
-      .WillOnce(InvokeGetDataCallback5(
+      .WillOnce(InvokeGetResourceListCallback5(
           google_apis::HTTP_SUCCESS,
           base::Passed(&origin_directory_found)))
       .RetiresOnSaturation();
@@ -566,12 +584,15 @@ TEST_F(DriveFileSyncServiceTest, RegisterExistingOrigin) {
 
   // DriveFileSyncService should fetch the list of the directory content
   // to start the batch sync.
-  scoped_ptr<Value> listing_files_in_directory(LoadJSONFile(
+  scoped_ptr<Value> listing_files_in_directory_value(LoadJSONFile(
       "sync_file_system/listing_files_in_directory.json"));
+  scoped_ptr<google_apis::ResourceList> listing_files_in_directory(
+      google_apis::ResourceList::ExtractAndParse(
+          *listing_files_in_directory_value));
   EXPECT_CALL(*mock_drive_service(),
               GetResourceList(GURL(), 0, std::string(),
                               false, kDirectoryResourceId, _))
-      .WillOnce(InvokeGetDataCallback5(
+      .WillOnce(InvokeGetResourceListCallback5(
           google_apis::HTTP_SUCCESS,
           base::Passed(&listing_files_in_directory)));
 
@@ -620,12 +641,15 @@ TEST_F(DriveFileSyncServiceTest, UnregisterOrigin) {
           google_apis::HTTP_SUCCESS,
           base::Passed(&account_metadata)));
 
-  scoped_ptr<Value> listing_files_in_directory(LoadJSONFile(
+  scoped_ptr<Value> value(LoadJSONFile(
       "sync_file_system/listing_files_in_directory.json"));
+  scoped_ptr<google_apis::ResourceList> listing_files_in_directory(
+      google_apis::ResourceList::ExtractAndParse(*value));
+
   EXPECT_CALL(*mock_drive_service(),
               GetResourceList(GURL(), 0, std::string(), false,
                               kDirectoryResourceId1, _))
-      .WillOnce(InvokeGetDataCallback5(
+      .WillOnce(InvokeGetResourceListCallback5(
           google_apis::HTTP_SUCCESS,
           base::Passed(&listing_files_in_directory)));
 
@@ -655,12 +679,15 @@ TEST_F(DriveFileSyncServiceTest, ResolveLocalSyncOperationType) {
   const std::string kResourceId("123456");
   const int64 kChangestamp = 654321;
 
-  scoped_ptr<Value> sync_root_found(LoadJSONFile(
+  scoped_ptr<Value> value(LoadJSONFile(
       "sync_file_system/sync_root_found.json"));
+  scoped_ptr<google_apis::ResourceList> sync_root_found(
+      google_apis::ResourceList::ExtractAndParse(*value));
+
   std::string query = FormatTitleQuery(kSyncRootDirectoryName);
   EXPECT_CALL(*mock_drive_service(),
               GetResourceList(GURL(), 0, query, false, std::string(), _))
-      .WillOnce(InvokeGetDataCallback5(
+      .WillOnce(InvokeGetResourceListCallback5(
           google_apis::HTTP_SUCCESS,
           base::Passed(&sync_root_found)));
 

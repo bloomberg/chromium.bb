@@ -9,8 +9,12 @@
 
 #include "base/bind.h"
 #include "base/message_loop_proxy.h"
+#include "base/task_runner_util.h"
+#include "base/threading/sequenced_worker_pool.h"
+#include "base/values.h"
 #include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/google_apis/gdata_wapi_operations.h"
+#include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
 #include "chrome/browser/google_apis/operation_runner.h"
 #include "chrome/browser/google_apis/time_util.h"
@@ -56,6 +60,51 @@ const char* GetExportFormatParam(DocumentExportFormat format) {
     default:
       return "pdf";
   }
+}
+
+// Parses the JSON value to ResourceList.
+scoped_ptr<ResourceList> ParseResourceListOnBlockingPool(
+    scoped_ptr<base::Value> value) {
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(value);
+
+  return ResourceList::ExtractAndParse(*value);
+}
+
+// Runs |callback| with |error| and |value|, but replace the error code with
+// GDATA_PARSE_ERROR, if there was a parsing error.
+void DidParseResourceListOnBlockingPool(
+    const GetResourceListCallback& callback,
+    GDataErrorCode error,
+    scoped_ptr<ResourceList> resource_list) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  // resource_list being NULL indicates there was a parsing error.
+  if (!resource_list)
+    error = GDATA_PARSE_ERROR;
+
+  callback.Run(error, resource_list.Pass());
+}
+
+// Parses the JSON value to ResourceList on the blocking pool and runs
+// |callback| on the UI thread once parsing is done.
+void ParseResourceListAndRun(const GetResourceListCallback& callback,
+                             GDataErrorCode error,
+                             scoped_ptr<base::Value> value) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  if (!value) {
+    callback.Run(error, scoped_ptr<ResourceList>());
+    return;
+  }
+
+  base::PostTaskAndReplyWithResult(
+      BrowserThread::GetBlockingPool(),
+      FROM_HERE,
+      base::Bind(&ParseResourceListOnBlockingPool, base::Passed(&value)),
+      base::Bind(&DidParseResourceListOnBlockingPool, callback, error));
 }
 
 // OAuth2 scopes for the documents API.
@@ -143,22 +192,23 @@ void GDataWapiService::GetResourceList(
     const std::string& search_query,
     bool shared_with_me,
     const std::string& directory_resource_id,
-    const GetDataCallback& callback) {
+    const GetResourceListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   // Drive V2 API defines changestamp in int64, while DocumentsList API uses
   // int32. This narrowing should not cause any trouble.
   runner_->StartOperationWithRetry(
-      new GetResourceListOperation(operation_registry(),
-                                   url_request_context_getter_,
-                                   url_generator_,
-                                   url,
-                                   static_cast<int>(start_changestamp),
-                                   search_query,
-                                   shared_with_me,
-                                   directory_resource_id,
-                                   callback));
+      new GetResourceListOperation(
+          operation_registry(),
+          url_request_context_getter_,
+          url_generator_,
+          url,
+          static_cast<int>(start_changestamp),
+          search_query,
+          shared_with_me,
+          directory_resource_id,
+          base::Bind(&ParseResourceListAndRun, callback)));
 }
 
 void GDataWapiService::GetResourceEntry(

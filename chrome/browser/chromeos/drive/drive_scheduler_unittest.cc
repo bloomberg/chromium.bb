@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/drive/file_system/copy_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/move_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/remove_operation.h"
+#include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
@@ -67,7 +68,7 @@ class FakeDriveService : public DriveServiceInterface {
                                const std::string& search_query,
                                bool shared_with_me,
                                const std::string& directory_resource_id,
-                               const GetDataCallback& callback) {
+                               const GetResourceListCallback& callback) {
     // TODO: Make this more flexible.
     if (feed_url == GURL("http://example.com/gdata/root_feed.json")) {
       // Make some sample data.
@@ -77,17 +78,18 @@ class FakeDriveService : public DriveServiceInterface {
       file_util::ReadFileToString(feed_path, &feed_contents);
       scoped_ptr<base::Value> feed_data(
           base::JSONReader::Read(feed_contents));
-
+      scoped_ptr<google_apis::ResourceList> resource_list =
+          google_apis::ResourceList::ExtractAndParse(*feed_data);
       base::MessageLoopProxy::current()->PostTask(FROM_HERE,
           base::Bind(callback,
                      HTTP_SUCCESS,
-                     base::Passed(&feed_data)));
+                     base::Passed(&resource_list)));
     } else {
-      scoped_ptr<base::Value> feed_data;
+      scoped_ptr<google_apis::ResourceList> resource_list;
       base::MessageLoopProxy::current()->PostTask(FROM_HERE,
           base::Bind(callback,
                      GDATA_PARSE_ERROR,
-                     base::Passed(&feed_data)));
+                     base::Passed(&resource_list)));
     }
   }
 
@@ -429,7 +431,7 @@ TEST_F(DriveSchedulerTest, GetResourceList) {
   ConnectToWifi();
 
   google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
-  scoped_ptr<base::Value> value;
+  scoped_ptr<google_apis::ResourceList> resource_list;
 
   scheduler_->GetResourceList(
       GURL("http://example.com/gdata/root_feed.json"),
@@ -437,13 +439,14 @@ TEST_F(DriveSchedulerTest, GetResourceList) {
       std::string(),
       true,
       std::string(),
-      base::Bind(&google_apis::test_util::CopyResultsFromGetDataCallback,
-                 &error,
-                 &value));
+      base::Bind(
+          &google_apis::test_util::CopyResultsFromGetResourceListCallback,
+          &error,
+          &resource_list));
   google_apis::test_util::RunBlockingPoolTask();
 
   ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
-  ASSERT_TRUE(value);
+  ASSERT_TRUE(resource_list);
 }
 
 TEST_F(DriveSchedulerTest, MoveFile) {

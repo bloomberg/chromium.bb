@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/file_system/drive_operations.h"
 #include "chrome/browser/chromeos/drive/file_system/remove_operation.h"
+#include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -128,7 +129,7 @@ void DriveScheduler::GetResourceList(
     const std::string& search_query,
     bool shared_with_me,
     const std::string& directory_resource_id,
-    const google_apis::GetDataCallback& callback) {
+    const google_apis::GetResourceListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -139,7 +140,7 @@ void DriveScheduler::GetResourceList(
   new_job->search_query = search_query;
   new_job->shared_with_me = shared_with_me;
   new_job->directory_resource_id = directory_resource_id;
-  new_job->get_data_callback = callback;
+  new_job->get_resource_list_callback = callback;
 
   QueueJob(new_job.Pass());
 
@@ -304,7 +305,7 @@ void DriveScheduler::DoJobLoop() {
           queue_entry->search_query,
           queue_entry->shared_with_me,
           queue_entry->directory_resource_id,
-          base::Bind(&DriveScheduler::OnGetDataJobDone,
+          base::Bind(&DriveScheduler::OnGetResourceListJobDone,
                      weak_ptr_factory_.GetWeakPtr(),
                      job_id));
     }
@@ -462,6 +463,27 @@ void DriveScheduler::OnFileOperationJobDone(int job_id, DriveFileError error) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(job_info->file_operation_callback, error));
+}
+
+void DriveScheduler::OnGetResourceListJobDone(
+    int job_id,
+    google_apis::GDataErrorCode error,
+    scoped_ptr<google_apis::ResourceList> resource_list) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  DriveFileError drive_error(util::GDataToDriveFileError(error));
+
+  scoped_ptr<QueueEntry> job_info = OnJobDone(job_id, drive_error);
+
+  if (!job_info)
+    return;
+
+  // Handle the callback.
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(job_info->get_resource_list_callback,
+                 error,
+                 base::Passed(&resource_list)));
 }
 
 void DriveScheduler::OnGetDataJobDone(int job_id,
