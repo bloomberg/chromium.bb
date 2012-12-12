@@ -39,6 +39,8 @@ deps = {
         Var('git_url') + '/external/googletest.git@a6772271f71672e889776bfe49ec4efd9da036df',
     'src/third_party/WebKit':
         Var('webkit_url') + Var('webkit_rev'),
+    'src/third_party/accessibility-developer-tools':
+        Var('git_url') + '/external/accessibility-developer-tools.git@c77344d0d39b2365775b8e1d86bafcd5ac407444',
     'src/third_party/angle':
         Var('git_url') + '/external/angleproject.git@48a8499c165c6527396d0059e82a716b194fa010',
     'src/third_party/bidichecker':
