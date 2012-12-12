@@ -40,7 +40,7 @@ static const string::size_type kUpdateStatementBufferSize = 2048;
 
 // Increment this version whenever updating DB tables.
 extern const int32 kCurrentDBVersion;  // Global visibility for our unittest.
-const int32 kCurrentDBVersion = 84;
+const int32 kCurrentDBVersion = 85;
 
 // Iterate over the fields of |entry| and bind each to |statement| for
 // updating.  Returns the number of args bound.
@@ -197,8 +197,11 @@ bool DirectoryBackingStore::SaveChanges(
   // Back out early if there is nothing to write.
   bool save_info =
     (Directory::KERNEL_SHARE_INFO_DIRTY == snapshot.kernel_info_status);
-  if (snapshot.dirty_metas.size() < 1 && !save_info)
+  if (snapshot.dirty_metas.empty()
+      && snapshot.metahandles_to_purge.empty()
+      && !save_info) {
     return true;
+  }
 
   sql::Transaction transaction(db_.get());
   if (!transaction.Begin())
@@ -236,9 +239,8 @@ bool DirectoryBackingStore::SaveChanges(
     sql::Statement s2(db_->GetCachedStatement(
             SQL_FROM_HERE,
             "INSERT OR REPLACE "
-            "INTO models (model_id, progress_marker, initial_sync_ended, "
-            "             transaction_version) "
-            "VALUES (?, ?, ?, ?)"));
+            "INTO models (model_id, progress_marker, transaction_version) "
+            "VALUES (?, ?, ?)"));
 
     for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
       // We persist not ModelType but rather a protobuf-derived ID.
@@ -247,8 +249,7 @@ bool DirectoryBackingStore::SaveChanges(
       info.download_progress[i].SerializeToString(&progress_marker);
       s2.BindBlob(0, model_id.data(), model_id.length());
       s2.BindBlob(1, progress_marker.data(), progress_marker.length());
-      s2.BindBool(2, info.initial_sync_ended.Has(ModelTypeFromInt(i)));
-      s2.BindInt64(3, info.transaction_version[i]);
+      s2.BindInt64(2, info.transaction_version[i]);
       if (!s2.Run())
         return false;
       DCHECK_EQ(db_->GetLastChangeCount(), 1);
@@ -370,6 +371,12 @@ bool DirectoryBackingStore::InitializeTables() {
       version_on_disk = 84;
   }
 
+  // Version 85 migration removes the initial_sync_ended bits.
+  if (version_on_disk == 84) {
+    if (MigrateVersion84To85())
+      version_on_disk = 85;
+  }
+
   // If one of the migrations requested it, drop columns that aren't current.
   // It's only safe to do this after migrating all the way to the current
   // version.
@@ -379,13 +386,6 @@ bool DirectoryBackingStore::InitializeTables() {
   }
 
   // A final, alternative catch-all migration to simply re-sync everything.
-  //
-  // TODO(rlarocque): It's wrong to recreate the database here unless the higher
-  // layers were expecting us to do so.  See crbug.com/103824.  We must leave
-  // this code as is for now because this is the code that ends up creating the
-  // database in the first time sync case, where the higher layers are expecting
-  // us to create a fresh database.  The solution to this should be to implement
-  // crbug.com/105018.
   if (version_on_disk != kCurrentDBVersion) {
     if (version_on_disk > kCurrentDBVersion)
       return false;
@@ -508,7 +508,7 @@ bool DirectoryBackingStore::LoadInfo(Directory::KernelLoadInfo* info) {
   {
     sql::Statement s(
         db_->GetUniqueStatement(
-            "SELECT model_id, progress_marker, initial_sync_ended, "
+            "SELECT model_id, progress_marker, "
             "transaction_version FROM models"));
 
     while (s.Step()) {
@@ -517,9 +517,7 @@ bool DirectoryBackingStore::LoadInfo(Directory::KernelLoadInfo* info) {
       if (type != UNSPECIFIED && type != TOP_LEVEL_FOLDER) {
         info->kernel_info.download_progress[type].ParseFromArray(
             s.ColumnBlob(1), s.ColumnByteLength(1));
-        if (s.ColumnBool(2))
-          info->kernel_info.initial_sync_ended.Put(type);
-        info->kernel_info.transaction_version[type] = s.ColumnInt64(3);
+        info->kernel_info.transaction_version[type] = s.ColumnInt64(2);
       }
     }
     if (!s.Succeeded())
@@ -914,7 +912,7 @@ bool DirectoryBackingStore::MigrateVersion74To75() {
   // Move aside the old table and create a new empty one at the current schema.
   if (!db_->Execute("ALTER TABLE models RENAME TO temp_models"))
     return false;
-  if (!CreateModelsTable())
+  if (!CreateV75ModelsTable())
     return false;
 
   sql::Statement query(db_->GetUniqueStatement(
@@ -1065,14 +1063,6 @@ bool DirectoryBackingStore::MigrateVersion80To81() {
 }
 
 bool DirectoryBackingStore::MigrateVersion81To82() {
-  // Version 82 added transaction_version to kernel info. But if user is
-  // migrating from 74 or before, 74->75 migration would recreate models table
-  // that already has transaction_version column.
-  if (db_->DoesColumnExist("models", "transaction_version")) {
-    SetVersion(82);
-    return true;
-  }
-
   if (!db_->Execute(
       "ALTER TABLE models ADD COLUMN transaction_version BIGINT default 0"))
     return false;
@@ -1104,7 +1094,25 @@ bool DirectoryBackingStore::MigrateVersion83To84() {
   query.append(ComposeCreateTableColumnSpecs());
   if (!db_->Execute(query.c_str()))
     return false;
+
   SetVersion(84);
+  return true;
+}
+
+bool DirectoryBackingStore::MigrateVersion84To85() {
+  // Version 84 removes the initial_sync_ended flag.
+  if (!db_->Execute("ALTER TABLE models RENAME TO temp_models"))
+    return false;
+  if (!CreateModelsTable())
+    return false;
+  if (!db_->Execute("INSERT INTO models SELECT "
+                    "model_id, progress_marker, transaction_version "
+                    "FROM temp_models")) {
+    return false;
+  }
+  SafeDropTable("temp_models");
+
+  SetVersion(85);
   return true;
 }
 
@@ -1213,10 +1221,8 @@ bool DirectoryBackingStore::CreateV71ModelsTable() {
       "initial_sync_ended BOOLEAN default 0)");
 }
 
-bool DirectoryBackingStore::CreateModelsTable() {
-  // This is the current schema for the Models table, from version 81
-  // onward.  If you change the schema, you'll probably want to double-check
-  // the use of this function in the v74-v75 migration.
+bool DirectoryBackingStore::CreateV75ModelsTable() {
+  // This is an old schema for the Models table, used from versions 75 to 80.
   return db_->Execute(
       "CREATE TABLE models ("
       "model_id BLOB primary key, "
@@ -1224,7 +1230,20 @@ bool DirectoryBackingStore::CreateModelsTable() {
       // Gets set if the syncer ever gets updates from the
       // server and the server returns 0.  Lets us detect the
       // end of the initial sync.
-      "initial_sync_ended BOOLEAN default 0, "
+      "initial_sync_ended BOOLEAN default 0)");
+}
+
+bool DirectoryBackingStore::CreateModelsTable() {
+  // This is the current schema for the Models table, from version 81
+  // onward.  If you change the schema, you'll probably want to double-check
+  // the use of this function in the v84-v85 migration.
+  return db_->Execute(
+      "CREATE TABLE models ("
+      "model_id BLOB primary key, "
+      "progress_marker BLOB, "
+      // Gets set if the syncer ever gets updates from the
+      // server and the server returns 0.  Lets us detect the
+      // end of the initial sync.
       "transaction_version BIGINT default 0)");
 }
 

@@ -77,8 +77,6 @@ TEST_F(JsSyncManagerObserverTest, OnInitializationComplete) {
 TEST_F(JsSyncManagerObserverTest, OnSyncCycleCompleted) {
   sessions::SyncSessionSnapshot snapshot(
       sessions::ModelNeutralState(),
-      false,
-      ModelTypeSet(),
       ProgressMarkerMap(),
       false,
       5,

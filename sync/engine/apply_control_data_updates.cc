@@ -79,17 +79,6 @@ void ApplyControlDataUpdates(sessions::SyncSession* session) {
                        &entry,
                        dir->GetCryptographer(&trans));
   }
-
-  // Set initial sync ended bits for all control types requested.
-  for (ModelTypeSet::Iterator it =
-           session->status_controller().updates_request_types().First();
-       it.Good(); it.Inc()) {
-    if (!IsControlType(it.Get()))
-        continue;
-
-    // This gets persisted to the directory's backing store.
-    dir->set_initial_sync_ended_for_type(it.Get(), true);
-  }
 }
 
 // Update the nigori handler with the server's nigori node.

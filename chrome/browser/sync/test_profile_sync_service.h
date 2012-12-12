@@ -67,8 +67,6 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHost {
 
   static void SetHistoryServiceExpectations(ProfileMock* profile);
 
-  void SetInitialSyncEndedForAllTypes();
-
   void EmitOnInvalidatorStateChange(syncer::InvalidatorState state);
   void EmitOnIncomingInvalidation(
       const syncer::ObjectIdInvalidationMap& invalidation_map,

@@ -460,9 +460,9 @@ class SyncableDirectoryTest : public testing::Test {
       ReadTransaction trans(FROM_HERE, dir_.get());
       MetahandleSet all_set;
       dir_->GetAllMetaHandles(&trans, &all_set);
-      EXPECT_EQ(3U, all_set.size());
+      EXPECT_EQ(4U, all_set.size());
       if (before_reload)
-        EXPECT_EQ(4U, dir_->kernel_->metahandles_to_purge->size());
+        EXPECT_EQ(6U, dir_->kernel_->metahandles_to_purge->size());
       for (MetahandleSet::iterator iter = all_set.begin();
            iter != all_set.end(); ++iter) {
         Entry e(&trans, GET_BY_HANDLE, *iter);
@@ -481,10 +481,10 @@ class SyncableDirectoryTest : public testing::Test {
 
     for (ModelTypeSet::Iterator it = types_to_purge.First();
          it.Good(); it.Inc()) {
-      EXPECT_FALSE(dir_->initial_sync_ended_for_type(it.Get()));
+      EXPECT_FALSE(dir_->InitialSyncEndedForType(it.Get()));
     }
     EXPECT_FALSE(types_to_purge.Has(BOOKMARKS));
-    EXPECT_TRUE(dir_->initial_sync_ended_for_type(BOOKMARKS));
+    EXPECT_TRUE(dir_->InitialSyncEndedForType(BOOKMARKS));
   }
 
   FakeEncryptor encryptor_;
@@ -1550,9 +1550,6 @@ TEST_F(OnDiskSyncableDirectoryTest, TestPurgeEntriesWithTypeIn) {
   AddDefaultFieldValue(BOOKMARKS, &bookmark_specs);
   AddDefaultFieldValue(PREFERENCES, &preference_specs);
   AddDefaultFieldValue(AUTOFILL, &autofill_specs);
-  dir_->set_initial_sync_ended_for_type(BOOKMARKS, true);
-  dir_->set_initial_sync_ended_for_type(PREFERENCES, true);
-  dir_->set_initial_sync_ended_for_type(AUTOFILL, true);
 
   ModelTypeSet types_to_purge(PREFERENCES, AUTOFILL);
 
@@ -1560,6 +1557,15 @@ TEST_F(OnDiskSyncableDirectoryTest, TestPurgeEntriesWithTypeIn) {
   // Create some items for each type.
   {
     WriteTransaction trans(FROM_HERE, UNITTEST, dir_.get());
+
+    // Make it look like these types have completed initial sync.
+    CreateTypeRoot(&trans, dir_.get(), BOOKMARKS);
+    CreateTypeRoot(&trans, dir_.get(), PREFERENCES);
+    CreateTypeRoot(&trans, dir_.get(), AUTOFILL);
+
+    // Add more nodes for this type.  Technically, they should be placed under
+    // the proper type root nodes but the assertions in this test won't notice
+    // if their parent isn't quite right.
     MutableEntry item1(&trans, CREATE, trans.root_id(), "Item");
     ASSERT_TRUE(item1.good());
     item1.Put(SPECIFICS, bookmark_specs);
@@ -1602,7 +1608,7 @@ TEST_F(OnDiskSyncableDirectoryTest, TestPurgeEntriesWithTypeIn) {
     ReadTransaction trans(FROM_HERE, dir_.get());
     MetahandleSet all_set;
     GetAllMetaHandles(&trans, &all_set);
-    ASSERT_EQ(7U, all_set.size());
+    ASSERT_EQ(10U, all_set.size());
   }
 
   dir_->PurgeEntriesWithTypeIn(types_to_purge);
@@ -1615,7 +1621,6 @@ TEST_F(OnDiskSyncableDirectoryTest, TestPurgeEntriesWithTypeIn) {
 }
 
 TEST_F(OnDiskSyncableDirectoryTest, TestShareInfo) {
-  dir_->set_initial_sync_ended_for_type(AUTOFILL, true);
   dir_->set_store_birthday("Jan 31st");
   dir_->SetNotificationState("notification_state");
   const char* const bag_of_chips_array = "\0bag of chips";
@@ -1624,8 +1629,6 @@ TEST_F(OnDiskSyncableDirectoryTest, TestShareInfo) {
   dir_->set_bag_of_chips(bag_of_chips_string);
   {
     ReadTransaction trans(FROM_HERE, dir_.get());
-    EXPECT_TRUE(dir_->initial_sync_ended_for_type(AUTOFILL));
-    EXPECT_FALSE(dir_->initial_sync_ended_for_type(BOOKMARKS));
     EXPECT_EQ("Jan 31st", dir_->store_birthday());
     EXPECT_EQ("notification_state", dir_->GetNotificationState());
     EXPECT_EQ(bag_of_chips_string, dir_->bag_of_chips());
@@ -1639,8 +1642,6 @@ TEST_F(OnDiskSyncableDirectoryTest, TestShareInfo) {
   dir_->SaveChanges();
   {
     ReadTransaction trans(FROM_HERE, dir_.get());
-    EXPECT_TRUE(dir_->initial_sync_ended_for_type(AUTOFILL));
-    EXPECT_FALSE(dir_->initial_sync_ended_for_type(BOOKMARKS));
     EXPECT_EQ("April 10th", dir_->store_birthday());
     EXPECT_EQ("notification_state2", dir_->GetNotificationState());
     EXPECT_EQ(bag_of_chips2_string, dir_->bag_of_chips());
@@ -1650,8 +1651,6 @@ TEST_F(OnDiskSyncableDirectoryTest, TestShareInfo) {
   SaveAndReloadDir();
   {
     ReadTransaction trans(FROM_HERE, dir_.get());
-    EXPECT_TRUE(dir_->initial_sync_ended_for_type(AUTOFILL));
-    EXPECT_FALSE(dir_->initial_sync_ended_for_type(BOOKMARKS));
     EXPECT_EQ("April 10th", dir_->store_birthday());
     EXPECT_EQ("notification_state2", dir_->GetNotificationState());
     EXPECT_EQ(bag_of_chips2_string, dir_->bag_of_chips());

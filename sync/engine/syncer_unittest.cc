@@ -297,10 +297,6 @@ class SyncerTest : public testing::Test,
     EXPECT_FALSE(client_status.has_hierarchy_conflict_detected());
   }
 
-  bool initial_sync_ended_for_type(ModelType type) {
-    return directory()->initial_sync_ended_for_type(type);
-  }
-
   void SyncRepeatedlyToTriggerConflictResolution(SyncSession* session) {
     // We should trigger after less than 6 syncs, but extra does no harm.
     for (int i = 0 ; i < 6 ; ++i)
@@ -3952,8 +3948,6 @@ TEST_F(SyncerTest, UpdateFailsThenDontCommit) {
 // Downloads two updates and applies them successfully.
 // This is the "happy path" alternative to ConfigureFailsDontApplyUpdates.
 TEST_F(SyncerTest, ConfigureDownloadsTwoBatchesSuccess) {
-  EXPECT_FALSE(initial_sync_ended_for_type(BOOKMARKS));
-
   syncable::Id node1 = ids_.NewServerId();
   syncable::Id node2 = ids_.NewServerId();
 
@@ -3977,14 +3971,10 @@ TEST_F(SyncerTest, ConfigureDownloadsTwoBatchesSuccess) {
   Entry n2(&trans, GET_BY_ID, node2);
   ASSERT_TRUE(n2.good());
   EXPECT_FALSE(n2.Get(IS_UNAPPLIED_UPDATE));
-
-  EXPECT_TRUE(initial_sync_ended_for_type(BOOKMARKS));
 }
 
 // Same as the above case, but this time the second batch fails to download.
 TEST_F(SyncerTest, ConfigureFailsDontApplyUpdates) {
-  EXPECT_FALSE(initial_sync_ended_for_type(BOOKMARKS));
-
   syncable::Id node1 = ids_.NewServerId();
   syncable::Id node2 = ids_.NewServerId();
 
@@ -4017,8 +4007,6 @@ TEST_F(SyncerTest, ConfigureFailsDontApplyUpdates) {
 
   // One update remains undownloaded.
   mock_server_->ClearUpdatesQueue();
-
-  EXPECT_FALSE(initial_sync_ended_for_type(BOOKMARKS));
 }
 
 TEST_F(SyncerTest, GetKeySuccess) {

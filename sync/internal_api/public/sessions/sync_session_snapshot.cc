@@ -12,8 +12,7 @@ namespace syncer {
 namespace sessions {
 
 SyncSessionSnapshot::SyncSessionSnapshot()
-    : is_share_usable_(false),
-      is_silenced_(false),
+    : is_silenced_(false),
       num_encryption_conflicts_(0),
       num_hierarchy_conflicts_(0),
       num_server_conflicts_(0),
@@ -26,8 +25,6 @@ SyncSessionSnapshot::SyncSessionSnapshot()
 
 SyncSessionSnapshot::SyncSessionSnapshot(
     const ModelNeutralState& model_neutral_state,
-    bool is_share_usable,
-    ModelTypeSet initial_sync_ended,
     const ProgressMarkerMap& download_progress_markers,
     bool is_silenced,
     int num_encryption_conflicts,
@@ -41,8 +38,6 @@ SyncSessionSnapshot::SyncSessionSnapshot(
     const std::vector<int>& num_entries_by_type,
     const std::vector<int>& num_to_delete_entries_by_type)
     : model_neutral_state_(model_neutral_state),
-      is_share_usable_(is_share_usable),
-      initial_sync_ended_(initial_sync_ended),
       download_progress_markers_(download_progress_markers),
       is_silenced_(is_silenced),
       num_encryption_conflicts_(num_encryption_conflicts),
@@ -79,9 +74,6 @@ DictionaryValue* SyncSessionSnapshot::ToValue() const {
   value->SetInteger(
       "numServerChangesRemaining",
       static_cast<int>(model_neutral_state_.num_server_changes_remaining));
-  value->SetBoolean("isShareUsable", is_share_usable_);
-  value->Set("initialSyncEnded",
-             ModelTypeSetToValue(initial_sync_ended_));
   value->Set("downloadProgressMarkers",
              ProgressMarkerMapToValue(download_progress_markers_).release());
   value->SetBoolean("isSilenced", is_silenced_);
@@ -128,14 +120,6 @@ std::string SyncSessionSnapshot::ToString() const {
 
 int64 SyncSessionSnapshot::num_server_changes_remaining() const {
   return model_neutral_state().num_server_changes_remaining;
-}
-
-bool SyncSessionSnapshot::is_share_usable() const {
-  return is_share_usable_;
-}
-
-ModelTypeSet SyncSessionSnapshot::initial_sync_ended() const {
-  return initial_sync_ended_;
 }
 
 const ProgressMarkerMap&

@@ -277,7 +277,7 @@ void SyncManagerImpl::ThrowUnrecoverableError() {
 }
 
 ModelTypeSet SyncManagerImpl::InitialSyncEndedTypes() {
-  return directory()->initial_sync_ended_types();
+  return directory()->InitialSyncEndedTypes();
 }
 
 ModelTypeSet SyncManagerImpl::GetTypesWithEmptyProgressMarkerToken(
@@ -572,6 +572,8 @@ bool SyncManagerImpl::PurgePartiallySyncedTypes() {
   partially_synced_types.RemoveAll(GetTypesWithEmptyProgressMarkerToken(
       ModelTypeSet::All()));
 
+  DVLOG(1) << "Purging partially synced types "
+           << ModelTypeSetToString(partially_synced_types);
   UMA_HISTOGRAM_COUNTS("Sync.PartiallySyncedTypes",
                        partially_synced_types.Size());
   if (partially_synced_types.Empty())

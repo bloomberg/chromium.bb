@@ -596,7 +596,6 @@ bool Directory::PurgeEntriesWithTypeIn(ModelTypeSet types) {
       // Ensure meta tracking for these data types reflects the deleted state.
       for (ModelTypeSet::Iterator it = types.First();
            it.Good(); it.Inc()) {
-        set_initial_sync_ended_for_type_unsafe(it.Get(), false);
         kernel_->persisted_info.reset_download_progress(it.Get());
         kernel_->persisted_info.transaction_version[it.Get()] = 0;
       }
@@ -667,14 +666,30 @@ void Directory::IncrementTransactionVersion(ModelType type) {
   kernel_->persisted_info.transaction_version[type]++;
 }
 
-ModelTypeSet Directory::initial_sync_ended_types() const {
-  ScopedKernelLock lock(this);
-  return kernel_->persisted_info.initial_sync_ended;
+ModelTypeSet Directory::InitialSyncEndedTypes() {
+  syncable::ReadTransaction trans(FROM_HERE, this);
+  const ModelTypeSet all_types = ModelTypeSet::All();
+  ModelTypeSet initial_sync_ended_types;
+  for (ModelTypeSet::Iterator i = all_types.First(); i.Good(); i.Inc()) {
+    if (InitialSyncEndedForType(&trans, i.Get())) {
+      initial_sync_ended_types.Put(i.Get());
+    }
+  }
+  return initial_sync_ended_types;
 }
 
-bool Directory::initial_sync_ended_for_type(ModelType type) const {
-  ScopedKernelLock lock(this);
-  return kernel_->persisted_info.initial_sync_ended.Has(type);
+bool Directory::InitialSyncEndedForType(ModelType type) {
+  syncable::ReadTransaction trans(FROM_HERE, this);
+  return InitialSyncEndedForType(&trans, type);
+}
+
+bool Directory::InitialSyncEndedForType(
+    BaseTransaction* trans, ModelType type) {
+  // True iff the type's root node has been received and applied.
+  syncable::Entry entry(trans,
+                        syncable::GET_BY_SERVER_TAG,
+                        ModelTypeToRootTag(type));
+  return entry.good() && entry.Get(syncable::BASE_VERSION) != CHANGES_VERSION;
 }
 
 template <class T> void Directory::TestAndSet(
@@ -683,23 +698,6 @@ template <class T> void Directory::TestAndSet(
     *kernel_data = *data_to_set;
     kernel_->info_status = KERNEL_SHARE_INFO_DIRTY;
   }
-}
-
-void Directory::set_initial_sync_ended_for_type(ModelType type, bool x) {
-  ScopedKernelLock lock(this);
-  set_initial_sync_ended_for_type_unsafe(type, x);
-}
-
-void Directory::set_initial_sync_ended_for_type_unsafe(ModelType type,
-                                                       bool x) {
-  if (kernel_->persisted_info.initial_sync_ended.Has(type) == x)
-    return;
-  if (x) {
-    kernel_->persisted_info.initial_sync_ended.Put(type);
-  } else {
-    kernel_->persisted_info.initial_sync_ended.Remove(type);
-  }
-  kernel_->info_status = KERNEL_SHARE_INFO_DIRTY;
 }
 
 void Directory::SetNotificationStateUnsafe(

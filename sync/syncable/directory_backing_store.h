@@ -84,6 +84,7 @@ class DirectoryBackingStore : public base::NonThreadSafe {
   bool CreateMetasTable(bool is_temporary);
   bool CreateModelsTable();
   bool CreateV71ModelsTable();
+  bool CreateV75ModelsTable();
 
   // We don't need to load any synced and applied deleted entries, we can
   // in fact just purge them forever on startup.
@@ -160,6 +161,7 @@ class DirectoryBackingStore : public base::NonThreadSafe {
   bool MigrateVersion81To82();
   bool MigrateVersion82To83();
   bool MigrateVersion83To84();
+  bool MigrateVersion84To85();
 
   scoped_ptr<sql::Connection> db_;
   sql::Statement save_entry_statement_;

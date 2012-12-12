@@ -9,6 +9,9 @@
 #include "sync/syncable/base_transaction.h"
 #include "sync/syncable/directory.h"
 #include "sync/syncable/entry.h"
+#include "sync/syncable/mutable_entry.h"
+#include "sync/syncable/write_transaction.h"
+#include "sync/test/engine/test_id_factory.h"
 
 using std::string;
 
@@ -60,6 +63,30 @@ Id GetOnlyEntryWithName(BaseTransaction* rtrans,
                         const string& name) {
   CHECK(1 == CountEntriesWithName(rtrans, parent_id, name));
   return GetFirstEntryWithName(rtrans, parent_id, name);
+}
+
+void CreateTypeRoot(WriteTransaction* trans,
+                    syncable::Directory *dir,
+                    ModelType type) {
+  std::string tag_name = syncer::ModelTypeToRootTag(type);
+  syncable::MutableEntry node(trans,
+                              syncable::CREATE,
+                              TestIdFactory::root(),
+                              tag_name);
+  DCHECK(node.good());
+  node.Put(syncable::UNIQUE_SERVER_TAG, tag_name);
+  node.Put(syncable::IS_DIR, true);
+  node.Put(syncable::SERVER_IS_DIR, false);
+  node.Put(syncable::IS_UNSYNCED, false);
+  node.Put(syncable::IS_UNAPPLIED_UPDATE, false);
+  node.Put(syncable::SERVER_VERSION, 20);
+  node.Put(syncable::BASE_VERSION, 20);
+  node.Put(syncable::IS_DEL, false);
+  node.Put(syncable::ID, syncer::TestIdFactory::MakeServer(tag_name));
+  sync_pb::EntitySpecifics specifics;
+  syncer::AddDefaultFieldValue(type, &specifics);
+  node.Put(syncable::SERVER_SPECIFICS, specifics);
+  node.Put(syncable::SPECIFICS, specifics);
 }
 
 }  // namespace syncable

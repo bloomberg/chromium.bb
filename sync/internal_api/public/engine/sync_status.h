@@ -48,8 +48,6 @@ struct SYNC_EXPORT SyncStatus {
   int committed_count;
 
   bool syncing;
-  // True after a client has done a first sync.
-  bool initial_sync_ended;
 
   // Total updates available.  If zero, nothing left to download.
   int64 updates_available;

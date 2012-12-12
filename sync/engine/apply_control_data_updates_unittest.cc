@@ -67,11 +67,6 @@ TEST_F(ApplyControlDataUpdatesTest, NigoriUpdate) {
   ModelTypeSet encrypted_types;
   encrypted_types.PutAll(SyncEncryptionHandler::SensitiveTypes());
 
-  // We start with initial_sync_ended == false.  This is wrong, since we would
-  // have no nigori node if that were the case.  However, it makes it easier to
-  // verify that ApplyControlDataUpdates sets initial_sync_ended correctly.
-  EXPECT_FALSE(directory()->initial_sync_ended_types().Has(NIGORI));
-
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     cryptographer = directory()->GetCryptographer(&trans);
@@ -100,7 +95,6 @@ TEST_F(ApplyControlDataUpdatesTest, NigoriUpdate) {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     EXPECT_TRUE(directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)
         .Equals(ModelTypeSet::All()));
-    EXPECT_TRUE(directory()->initial_sync_ended_types().Has(NIGORI));
   }
 }
 
@@ -383,7 +377,6 @@ TEST_F(ApplyControlDataUpdatesTest,
     syncable::ReadTransaction trans(FROM_HERE, directory());
     EXPECT_TRUE(directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)
         .Equals(ModelTypeSet::All()));
-    EXPECT_TRUE(directory()->initial_sync_ended_types().Has(NIGORI));
   }
 }
 
@@ -462,7 +455,6 @@ TEST_F(ApplyControlDataUpdatesTest,
     syncable::ReadTransaction trans(FROM_HERE, directory());
     EXPECT_TRUE(directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)
         .Equals(ModelTypeSet::All()));
-    EXPECT_TRUE(directory()->initial_sync_ended_types().Has(NIGORI));
   }
 }
 
@@ -534,7 +526,6 @@ TEST_F(ApplyControlDataUpdatesTest,
     syncable::ReadTransaction trans(FROM_HERE, directory());
     EXPECT_TRUE(directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)
         .Equals(ModelTypeSet::All()));
-    EXPECT_TRUE(directory()->initial_sync_ended_types().Has(NIGORI));
   }
 }
 
@@ -617,7 +608,6 @@ TEST_F(ApplyControlDataUpdatesTest,
     syncable::ReadTransaction trans(FROM_HERE, directory());
     EXPECT_TRUE(directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)
         .Equals(ModelTypeSet::All()));
-    EXPECT_TRUE(directory()->initial_sync_ended_types().Has(NIGORI));
   }
 }
 
@@ -701,7 +691,6 @@ TEST_F(ApplyControlDataUpdatesTest,
     syncable::ReadTransaction trans(FROM_HERE, directory());
     EXPECT_TRUE(directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)
         .Equals(ModelTypeSet::All()));
-    EXPECT_TRUE(directory()->initial_sync_ended_types().Has(NIGORI));
   }
 }
 
@@ -781,7 +770,6 @@ TEST_F(ApplyControlDataUpdatesTest,
     syncable::ReadTransaction trans(FROM_HERE, directory());
     EXPECT_TRUE(directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)
         .Equals(ModelTypeSet::All()));
-    EXPECT_TRUE(directory()->initial_sync_ended_types().Has(NIGORI));
   }
 }
 
@@ -866,14 +854,11 @@ TEST_F(ApplyControlDataUpdatesTest,
                 nigori().passphrase_type());
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
-    EXPECT_TRUE(directory()->initial_sync_ended_types().Has(NIGORI));
   }
 }
 
 // Check that we can apply a simple control datatype node successfully.
 TEST_F(ApplyControlDataUpdatesTest, ControlApply) {
-  EXPECT_FALSE(directory()->initial_sync_ended_types().Has(EXPERIMENTS));
-
   std::string experiment_id = "experiment";
   sync_pb::EntitySpecifics specifics;
   specifics.mutable_experiments()->mutable_keystore_encryption()->
@@ -882,7 +867,6 @@ TEST_F(ApplyControlDataUpdatesTest, ControlApply) {
       experiment_id, specifics, false);
   ApplyControlDataUpdates(session());
 
-  EXPECT_TRUE(directory()->initial_sync_ended_types().Has(EXPERIMENTS));
   EXPECT_FALSE(entry_factory_->GetIsUnappliedForItem(experiment_handle));
   EXPECT_TRUE(
       entry_factory_->GetLocalSpecificsForItem(experiment_handle).
@@ -891,8 +875,6 @@ TEST_F(ApplyControlDataUpdatesTest, ControlApply) {
 
 // Verify that we apply top level folders before their children.
 TEST_F(ApplyControlDataUpdatesTest, ControlApplyParentBeforeChild) {
-  EXPECT_FALSE(directory()->initial_sync_ended_types().Has(EXPERIMENTS));
-
   std::string parent_id = "parent";
   std::string experiment_id = "experiment";
   sync_pb::EntitySpecifics specifics;
@@ -904,7 +886,6 @@ TEST_F(ApplyControlDataUpdatesTest, ControlApplyParentBeforeChild) {
       parent_id, specifics, true);
   ApplyControlDataUpdates(session());
 
-  EXPECT_TRUE(directory()->initial_sync_ended_types().Has(EXPERIMENTS));
   EXPECT_FALSE(entry_factory_->GetIsUnappliedForItem(parent_handle));
   EXPECT_FALSE(entry_factory_->GetIsUnappliedForItem(experiment_handle));
   EXPECT_TRUE(
@@ -915,8 +896,6 @@ TEST_F(ApplyControlDataUpdatesTest, ControlApplyParentBeforeChild) {
 // Verify that we handle control datatype conflicts by preserving the server
 // data.
 TEST_F(ApplyControlDataUpdatesTest, ControlConflict) {
-  EXPECT_FALSE(directory()->initial_sync_ended_types().Has(EXPERIMENTS));
-
   std::string experiment_id = "experiment";
   sync_pb::EntitySpecifics local_specifics, server_specifics;
   server_specifics.mutable_experiments()->mutable_keystore_encryption()->
@@ -931,7 +910,6 @@ TEST_F(ApplyControlDataUpdatesTest, ControlConflict) {
                                            local_specifics);
   ApplyControlDataUpdates(session());
 
-  EXPECT_TRUE(directory()->initial_sync_ended_types().Has(EXPERIMENTS));
   EXPECT_FALSE(entry_factory_->GetIsUnappliedForItem(experiment_handle));
   EXPECT_TRUE(
       entry_factory_->GetLocalSpecificsForItem(experiment_handle).

@@ -14,7 +14,6 @@
 namespace syncer {
 
 AllStatus::AllStatus() {
-  status_.initial_sync_ended = true;
   status_.notifications_enabled = false;
   status_.cryptographer_ready = false;
   status_.crypto_has_pending_keys = false;
@@ -32,7 +31,6 @@ SyncStatus AllStatus::CreateBlankStatus() const {
   status.hierarchy_conflicts = 0;
   status.server_conflicts = 0;
   status.committed_count = 0;
-  status.initial_sync_ended = false;
   status.updates_available = 0;
   return status;
 }
@@ -51,8 +49,6 @@ SyncStatus AllStatus::CalcSyncing(const SyncEngineEvent &event) const {
   } else if (event.what_happened == SyncEngineEvent::SYNC_CYCLE_ENDED) {
     status.syncing = false;
   }
-
-  status.initial_sync_ended |= snapshot.is_share_usable();
 
   status.updates_available += snapshot.num_server_changes_remaining();
   status.sync_protocol_error =

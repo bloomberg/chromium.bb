@@ -189,7 +189,6 @@ scoped_ptr<DictionaryValue> ConstructAboutInformation(
                                  "Sync First-Time Setup Complete");
   BoolSyncStat is_backend_initialized(section_local,
                                       "Sync Backend Initialized");
-  BoolSyncStat is_download_complete(section_local, "Initial Download Complete");
   BoolSyncStat is_syncing(section_local, "Syncing");
 
   ListValue* section_network = AddSection(stats_list, "Network");
@@ -299,7 +298,6 @@ scoped_ptr<DictionaryValue> ConstructAboutInformation(
   is_setup_complete.SetValue(service->HasSyncSetupCompleted());
   is_backend_initialized.SetValue(sync_initialized);
   if (is_status_valid) {
-    is_download_complete.SetValue(full_status.initial_sync_ended);
     is_syncing.SetValue(full_status.syncing);
   }
 

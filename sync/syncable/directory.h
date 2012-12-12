@@ -169,8 +169,6 @@ class SYNC_EXPORT Directory {
     // TODO(hatiaol): implement detection and fixing of out-of-sync models.
     //                Bug 154858.
     int64 transaction_version[MODEL_TYPE_COUNT];
-    // true iff we ever reached the end of the changelog.
-    ModelTypeSet initial_sync_ended;
     // The store birthday we were given by the server. Contents are opaque to
     // the client.
     std::string store_birthday;
@@ -265,9 +263,9 @@ class SYNC_EXPORT Directory {
   int64 GetTransactionVersion(ModelType type) const;
   void IncrementTransactionVersion(ModelType type);
 
-  ModelTypeSet initial_sync_ended_types() const;
-  bool initial_sync_ended_for_type(ModelType type) const;
-  void set_initial_sync_ended_for_type(ModelType type, bool value);
+  ModelTypeSet InitialSyncEndedTypes();
+  bool InitialSyncEndedForType(ModelType type);
+  bool InitialSyncEndedForType(BaseTransaction* trans, ModelType type);
 
   const std::string& name() const { return kernel_->name; }
 
@@ -491,7 +489,6 @@ class SYNC_EXPORT Directory {
   // Internal setters that do not acquire a lock internally.  These are unsafe
   // on their own; caller must guarantee exclusive access manually by holding
   // a ScopedKernelLock.
-  void set_initial_sync_ended_for_type_unsafe(ModelType type, bool x);
   void SetNotificationStateUnsafe(const std::string& notification_state);
 
   Directory& operator = (const Directory&);

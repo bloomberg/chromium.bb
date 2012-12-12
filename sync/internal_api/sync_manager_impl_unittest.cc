@@ -32,6 +32,7 @@
 #include "sync/internal_api/public/http_post_provider_interface.h"
 #include "sync/internal_api/public/read_node.h"
 #include "sync/internal_api/public/read_transaction.h"
+#include "sync/internal_api/public/test/test_entry_factory.h"
 #include "sync/internal_api/public/test/test_internal_components_factory.h"
 #include "sync/internal_api/public/test/test_user_share.h"
 #include "sync/internal_api/public/write_node.h"
@@ -60,6 +61,7 @@
 #include "sync/syncable/entry.h"
 #include "sync/syncable/mutable_entry.h"
 #include "sync/syncable/nigori_util.h"
+#include "sync/syncable/read_transaction.h"
 #include "sync/syncable/syncable_id.h"
 #include "sync/syncable/write_transaction.h"
 #include "sync/test/callback_counter.h"
@@ -84,11 +86,12 @@ using testing::StrictMock;
 namespace syncer {
 
 using sessions::SyncSessionSnapshot;
+using syncable::GET_BY_HANDLE;
 using syncable::IS_DEL;
 using syncable::IS_UNSYNCED;
-using syncable::kEncryptedString;
 using syncable::NON_UNIQUE_NAME;
 using syncable::SPECIFICS;
+using syncable::kEncryptedString;
 
 namespace {
 
@@ -888,7 +891,6 @@ class SyncManagerTest : public testing::Test,
   bool SetUpEncryption(NigoriStatus nigori_status,
                        EncryptionStatus encryption_status) {
     UserShare* share = sync_manager_.GetUserShare();
-    share->directory->set_initial_sync_ended_for_type(NIGORI, true);
 
     // We need to create the nigori node as if it were an applied server update.
     int64 nigori_id = GetIdForDataType(NIGORI);
@@ -1010,10 +1012,6 @@ class SyncManagerTest : public testing::Test,
       sync_pb::DataTypeProgressMarker marker;
       sync_manager_.directory()->SetDownloadProgress(type, marker);
     }
-  }
-
-  void SetInitialSyncEndedForType(ModelType type, bool value) {
-    sync_manager_.directory()->set_initial_sync_ended_for_type(type, value);
   }
 
   InternalComponentsFactory::Switches GetSwitches() const {
@@ -2855,7 +2853,6 @@ TEST_F(SyncManagerTestWithMockScheduler, MAYBE_BasicConfiguration) {
   for (ModelTypeSet::Iterator iter = ModelTypeSet::All().First(); iter.Good();
        iter.Inc()) {
     SetProgressMarkerForType(iter.Get(), true);
-    SetInitialSyncEndedForType(iter.Get(), true);
   }
 
   CallbackCounter ready_task_counter, retry_task_counter;
@@ -2906,10 +2903,8 @@ TEST_F(SyncManagerTestWithMockScheduler, ReConfiguration) {
        iter.Inc()) {
     if (!disabled_types.Has(iter.Get())) {
       SetProgressMarkerForType(iter.Get(), true);
-      SetInitialSyncEndedForType(iter.Get(), true);
     } else {
       SetProgressMarkerForType(iter.Get(), false);
-      SetInitialSyncEndedForType(iter.Get(), false);
     }
   }
 
@@ -2933,8 +2928,6 @@ TEST_F(SyncManagerTestWithMockScheduler, ReConfiguration) {
   EXPECT_EQ(new_routing_info, params.routing_info);
 
   // Verify only the recently disabled types were purged.
-  EXPECT_TRUE(sync_manager_.InitialSyncEndedTypes().Equals(
-      Difference(ModelTypeSet::All(), disabled_types)));
   EXPECT_TRUE(sync_manager_.GetTypesWithEmptyProgressMarkerToken(
       ModelTypeSet::All()).Equals(disabled_types));
 }
@@ -2968,51 +2961,81 @@ TEST_F(SyncManagerTestWithMockScheduler, ConfigurationRetry) {
   EXPECT_EQ(new_routing_info, params.routing_info);
 }
 
-// Test that PurgePartiallySyncedTypes purges only those types that don't
-// have empty progress marker and don't have initial sync ended set.
+// Test that PurgePartiallySyncedTypes purges only those types that have not
+// fully completed their initial download and apply.
 TEST_F(SyncManagerTest, PurgePartiallySyncedTypes) {
+  ModelSafeRoutingInfo routing_info;
+  GetModelSafeRoutingInfo(&routing_info);
+  ModelTypeSet enabled_types = GetRoutingInfoTypes(routing_info);
+
   UserShare* share = sync_manager_.GetUserShare();
 
-  // Set Nigori and Bookmarks to be partial types.
-  sync_pb::DataTypeProgressMarker nigori_marker;
-  nigori_marker.set_data_type_id(
-      GetSpecificsFieldNumberFromModelType(NIGORI));
-  nigori_marker.set_token("token");
-  sync_pb::DataTypeProgressMarker bookmark_marker;
-  bookmark_marker.set_data_type_id(
-      GetSpecificsFieldNumberFromModelType(BOOKMARKS));
-  bookmark_marker.set_token("token");
-  share->directory->SetDownloadProgress(NIGORI, nigori_marker);
-  share->directory->SetDownloadProgress(BOOKMARKS, bookmark_marker);
+  // The test harness automatically initializes all types in the routing info.
+  // Check that autofill is not among them.
+  ASSERT_FALSE(enabled_types.Has(AUTOFILL));
 
-  // Set Preferences to be a full type.
-  sync_pb::DataTypeProgressMarker pref_marker;
-  pref_marker.set_data_type_id(
+  // Further ensure that the test harness did not create its root node.
+  {
+    syncable::ReadTransaction trans(FROM_HERE, share->directory.get());
+    syncable::Entry autofill_root_node(&trans, syncable::GET_BY_SERVER_TAG,
+                                       ModelTypeToRootTag(AUTOFILL));
+    ASSERT_FALSE(autofill_root_node.good());
+  }
+
+  // One more redundant check.
+  ASSERT_FALSE(sync_manager_.InitialSyncEndedTypes().Has(AUTOFILL));
+
+  // Give autofill a progress marker.
+  sync_pb::DataTypeProgressMarker autofill_marker;
+  autofill_marker.set_data_type_id(
+      GetSpecificsFieldNumberFromModelType(AUTOFILL));
+  autofill_marker.set_token("token");
+  share->directory->SetDownloadProgress(AUTOFILL, autofill_marker);
+
+  // Also add a pending autofill root node update from the server.
+  TestEntryFactory factory_(share->directory.get());
+  int autofill_meta = factory_.CreateUnappliedRootNode(AUTOFILL);
+
+  // Preferences is an enabled type.  Check that the harness initialized it.
+  ASSERT_TRUE(enabled_types.Has(PREFERENCES));
+  ASSERT_TRUE(sync_manager_.InitialSyncEndedTypes().Has(PREFERENCES));
+
+  // Give preferencse a progress marker.
+  sync_pb::DataTypeProgressMarker prefs_marker;
+  prefs_marker.set_data_type_id(
       GetSpecificsFieldNumberFromModelType(PREFERENCES));
-  pref_marker.set_token("token");
-  share->directory->SetDownloadProgress(PREFERENCES, pref_marker);
-  share->directory->set_initial_sync_ended_for_type(PREFERENCES, true);
+  prefs_marker.set_token("token");
+  share->directory->SetDownloadProgress(PREFERENCES, prefs_marker);
 
-  ModelTypeSet partial_types =
-      sync_manager_.GetTypesWithEmptyProgressMarkerToken(ModelTypeSet::All());
-  EXPECT_FALSE(partial_types.Has(NIGORI));
-  EXPECT_FALSE(partial_types.Has(BOOKMARKS));
-  EXPECT_FALSE(partial_types.Has(PREFERENCES));
+  // Add a fully synced preferences node under the root.
+  std::string pref_client_tag = "prefABC";
+  std::string pref_hashed_tag = "hashXYZ";
+  sync_pb::EntitySpecifics pref_specifics;
+  AddDefaultFieldValue(PREFERENCES, &pref_specifics);
+  int pref_meta = MakeServerNode(
+      share, PREFERENCES, pref_client_tag, pref_hashed_tag, pref_specifics);
 
+  // And now, the purge.
   EXPECT_TRUE(sync_manager_.PurgePartiallySyncedTypes());
 
-  // Ensure only bookmarks and nigori lost their progress marker. Preferences
-  // should still have it.
-  partial_types =
+  // Ensure that autofill lost its progress marker, but preferences did not.
+  ModelTypeSet empty_tokens =
       sync_manager_.GetTypesWithEmptyProgressMarkerToken(ModelTypeSet::All());
-  EXPECT_TRUE(partial_types.Has(NIGORI));
-  EXPECT_TRUE(partial_types.Has(BOOKMARKS));
-  EXPECT_FALSE(partial_types.Has(PREFERENCES));
+  EXPECT_TRUE(empty_tokens.Has(AUTOFILL));
+  EXPECT_FALSE(empty_tokens.Has(PREFERENCES));
+
+  // Ensure that autofill lots its node, but preferences did not.
+  {
+    syncable::ReadTransaction trans(FROM_HERE, share->directory.get());
+    syncable::Entry autofill_node(&trans, GET_BY_HANDLE, autofill_meta);
+    syncable::Entry pref_node(&trans, GET_BY_HANDLE, pref_meta);
+    EXPECT_FALSE(autofill_node.good());
+    EXPECT_TRUE(pref_node.good());
+  }
 }
 
 // Test CleanupDisabledTypes properly purges all disabled types as specified
-// by the previous and current enabled params. Enabled partial types should not
-// be purged.
+// by the previous and current enabled params.
 // Fails on Windows: crbug.com/139726
 #if defined(OS_WIN)
 #define MAYBE_PurgeDisabledTypes DISABLED_PurgeDisabledTypes
@@ -3024,21 +3047,20 @@ TEST_F(SyncManagerTest, MAYBE_PurgeDisabledTypes) {
   GetModelSafeRoutingInfo(&routing_info);
   ModelTypeSet enabled_types = GetRoutingInfoTypes(routing_info);
   ModelTypeSet disabled_types = Difference(ModelTypeSet::All(), enabled_types);
-  ModelTypeSet partial_enabled_types(PASSWORDS);
 
-  // Set data for all non-partial types.
+  // The harness should have initialized the enabled_types for us.
+  EXPECT_TRUE(enabled_types.Equals(sync_manager_.InitialSyncEndedTypes()));
+
+  // Set progress markers for all types.
   for (ModelTypeSet::Iterator iter = ModelTypeSet::All().First(); iter.Good();
        iter.Inc()) {
     SetProgressMarkerForType(iter.Get(), true);
-    if (!partial_enabled_types.Has(iter.Get()))
-      SetInitialSyncEndedForType(iter.Get(), true);
   }
 
   // Verify all the enabled types remain after cleanup, and all the disabled
   // types were purged.
   sync_manager_.PurgeDisabledTypes(ModelTypeSet::All(), enabled_types);
-  EXPECT_TRUE(enabled_types.Equals(
-      Union(sync_manager_.InitialSyncEndedTypes(), partial_enabled_types)));
+  EXPECT_TRUE(enabled_types.Equals(sync_manager_.InitialSyncEndedTypes()));
   EXPECT_TRUE(disabled_types.Equals(
       sync_manager_.GetTypesWithEmptyProgressMarkerToken(ModelTypeSet::All())));
 
@@ -3050,8 +3072,7 @@ TEST_F(SyncManagerTest, MAYBE_PurgeDisabledTypes) {
 
   // Verify only the non-disabled types remain after cleanup.
   sync_manager_.PurgeDisabledTypes(enabled_types, new_enabled_types);
-  EXPECT_TRUE(new_enabled_types.Equals(
-      Union(sync_manager_.InitialSyncEndedTypes(), partial_enabled_types)));
+  EXPECT_TRUE(new_enabled_types.Equals(sync_manager_.InitialSyncEndedTypes()));
   EXPECT_TRUE(disabled_types.Equals(
       sync_manager_.GetTypesWithEmptyProgressMarkerToken(ModelTypeSet::All())));
 }

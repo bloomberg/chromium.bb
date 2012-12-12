@@ -676,10 +676,10 @@ void SyncBackendHost::ConfigureDataTypes(
   // downloaded if they are enabled.
   //
   // The SyncBackendRegistrar's state was initially derived from the types
-  // marked initial_sync_ended when the sync database was loaded.  Afterwards it
-  // is modified only by this function.  We expect it to remain in sync with the
+  // detected to have been downloaded in the database.  Afterwards it is
+  // modified only by this function.  We expect it to remain in sync with the
   // backend because configuration requests are never aborted; they are retried
-  // until they succeed or the browser is closed.
+  // until they succeed or the backend is shut down.
 
   syncer::ModelTypeSet types_to_download = registrar_->ConfigureDataTypes(
       types_to_add, types_to_remove);
@@ -692,10 +692,10 @@ void SyncBackendHost::ConfigureDataTypes(
   // prepared to handle a migration during a configure, so we must ensure that
   // all our types_to_download actually contain no data before we sync them.
   //
-  // The most common way to end up in this situation used to be types which had
-  // !initial_sync_ended, but did have some progress markers.  We avoid problems
-  // with those types by purging the data of any such partially synced types
-  // soon after we load the directory.
+  // One common way to end up in this situation used to be types which
+  // downloaded some or all of their data but have not applied it yet.  We avoid
+  // problems with those types by purging the data of any such partially synced
+  // types soon after we load the directory.
   //
   // Another possible scenario is that we have newly supported or newly enabled
   // data types being downloaded here but the nigori type, which is always
@@ -1238,6 +1238,15 @@ void SyncBackendHost::Core::DoInitialProcessControlTypes() {
         FROM_HERE,
         &SyncBackendHost::HandleInitializationCompletedOnFrontendLoop,
         true);
+    return;
+  }
+
+  if (!sync_manager_->InitialSyncEndedTypes().HasAll(syncer::ControlTypes())) {
+    LOG(ERROR) << "Failed to download control types";
+    host_.Call(
+        FROM_HERE,
+        &SyncBackendHost::HandleInitializationCompletedOnFrontendLoop,
+        false);
     return;
   }
 

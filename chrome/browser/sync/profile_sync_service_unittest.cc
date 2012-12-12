@@ -421,6 +421,18 @@ TEST_F(ProfileSyncServiceTest, FailToOpenDatabase) {
   EXPECT_FALSE(harness_.service->sync_initialized());
 }
 
+// This setup will allow the database to exist, but leave it empty.  The attempt
+// to download control types will silently fail (no downloads have any effect in
+// these tests).  The sync_backend_host will notice this and inform the profile
+// sync service of the failure to initialize the backed.
+TEST_F(ProfileSyncServiceTest, FailToDownloadControlTypes) {
+  harness_.StartSyncServiceAndSetInitialSyncEnded(false, true, true, true,
+                                                  syncer::STORAGE_IN_MEMORY);
+
+  // The backend is not ready.  Ensure the PSS knows this.
+  EXPECT_FALSE(harness_.service->sync_initialized());
+}
+
 // Register a handler with the ProfileSyncService, and disable and
 // reenable sync.  The handler should get notified of the state
 // changes.

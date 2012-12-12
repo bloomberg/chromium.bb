@@ -128,20 +128,6 @@ SyncerError ApplyUpdatesAndResolveConflictsCommand::ModelChangingExecuteImpl(
     DCHECK(conflict_applicator.simple_conflict_ids().empty());
   }
 
-  // This might be the first time we've fully completed a sync cycle, for
-  // some subset of the currently synced datatypes.
-  if (status->ServerSaysNothingMoreToDownload()) {
-    for (ModelTypeSet::Iterator it =
-             status->updates_request_types().First(); it.Good(); it.Inc()) {
-      // Don't set the flag for control types.  We didn't process them here.
-      if (IsControlType(it.Get()))
-        continue;
-
-      // This gets persisted to the directory's backing store.
-      dir->set_initial_sync_ended_for_type(it.Get(), true);
-    }
-  }
-
   return SYNCER_OK;
 }
 

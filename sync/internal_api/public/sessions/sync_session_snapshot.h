@@ -32,8 +32,6 @@ class SYNC_EXPORT SyncSessionSnapshot {
   SyncSessionSnapshot();
   SyncSessionSnapshot(
       const ModelNeutralState& model_neutral_state,
-      bool is_share_usable,
-      ModelTypeSet initial_sync_ended,
       const ProgressMarkerMap& download_progress_markers,
       bool is_silenced,
       int num_encryption_conflicts,
@@ -57,8 +55,6 @@ class SYNC_EXPORT SyncSessionSnapshot {
     return model_neutral_state_;
   }
   int64 num_server_changes_remaining() const;
-  bool is_share_usable() const;
-  ModelTypeSet initial_sync_ended() const;
   const ProgressMarkerMap& download_progress_markers() const;
   bool is_silenced() const;
   int num_encryption_conflicts() const;
@@ -77,8 +73,6 @@ class SYNC_EXPORT SyncSessionSnapshot {
 
  private:
   ModelNeutralState model_neutral_state_;
-  bool is_share_usable_;
-  ModelTypeSet initial_sync_ended_;
   ProgressMarkerMap download_progress_markers_;
   bool is_silenced_;
   int num_encryption_conflicts_;

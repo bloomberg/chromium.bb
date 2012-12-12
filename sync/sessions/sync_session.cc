@@ -150,17 +150,9 @@ void SyncSession::RebaseRoutingInfoWithLatest(
 SyncSessionSnapshot SyncSession::TakeSnapshot() const {
   syncable::Directory* dir = context_->directory();
 
-  bool is_share_useable = true;
-  ModelTypeSet initial_sync_ended;
   ProgressMarkerMap download_progress_markers;
   for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
     ModelType type(ModelTypeFromInt(i));
-    if (routing_info_.count(type) != 0) {
-      if (dir->initial_sync_ended_for_type(type))
-        initial_sync_ended.Put(type);
-      else
-        is_share_useable = false;
-    }
     dir->GetDownloadProgressAsString(type, &download_progress_markers[type]);
   }
 
@@ -171,8 +163,6 @@ SyncSessionSnapshot SyncSession::TakeSnapshot() const {
 
   SyncSessionSnapshot snapshot(
       status_controller_->model_neutral_state(),
-      is_share_useable,
-      initial_sync_ended,
       download_progress_markers,
       delegate_->IsSyncingCurrentlySilenced(),
       status_controller_->num_encryption_conflicts(),

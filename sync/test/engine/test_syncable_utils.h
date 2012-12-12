@@ -10,11 +10,15 @@
 
 #include <string>
 
+#include "sync/internal_api/public/base/model_type.h"
+
 namespace syncer {
 namespace syncable {
 
 class BaseTransaction;
+class Directory;
 class Id;
+class WriteTransaction;
 
 // Count the number of entries with a given name inside of a parent.
 // Useful to check folder structure and for porting older tests that
@@ -33,6 +37,10 @@ Id GetFirstEntryWithName(BaseTransaction* rtrans,
 Id GetOnlyEntryWithName(BaseTransaction* rtrans,
                         const syncable::Id& parent_id,
                         const std::string& name);
+
+void CreateTypeRoot(WriteTransaction* trans,
+                    syncable::Directory *dir,
+                    ModelType type);
 
 }  // namespace syncable
 }  // namespace syncer

@@ -133,22 +133,21 @@ void SyncBackendHostForProfileSyncTest
     UserShare* user_share = GetUserShare();
     Directory* directory = user_share->directory.get();
 
-    if (!directory->initial_sync_ended_for_type(NIGORI)) {
+    if (!directory->InitialSyncEndedForType(NIGORI)) {
       syncer::TestUserShare::CreateRoot(NIGORI, user_share);
 
       // A side effect of adding the NIGORI mode (normally done by the
       // syncer) is a decryption attempt, which will fail the first time.
     }
 
-    if (!directory->initial_sync_ended_for_type(DEVICE_INFO)) {
+    if (!directory->InitialSyncEndedForType(DEVICE_INFO)) {
       syncer::TestUserShare::CreateRoot(DEVICE_INFO, user_share);
     }
 
-    if (!directory->initial_sync_ended_for_type(EXPERIMENTS)) {
+    if (!directory->InitialSyncEndedForType(EXPERIMENTS)) {
       syncer::TestUserShare::CreateRoot(EXPERIMENTS, user_share);
     }
 
-    SetInitialSyncEndedForAllTypes();
     restored_types = syncer::ModelTypeSet::All();
   }
 
@@ -165,17 +164,6 @@ void SyncBackendHostForProfileSyncTest
   } else {
     initial_download_closure_.Run();
     initial_download_closure_.Reset();
-  }
-}
-
-void SyncBackendHostForProfileSyncTest::SetInitialSyncEndedForAllTypes() {
-  UserShare* user_share = GetUserShare();
-  Directory* directory = user_share->directory.get();
-
-  for (int i = syncer::FIRST_REAL_MODEL_TYPE;
-       i < syncer::MODEL_TYPE_COUNT; ++i) {
-    directory->set_initial_sync_ended_for_type(
-        syncer::ModelTypeFromInt(i), true);
   }
 }
 
