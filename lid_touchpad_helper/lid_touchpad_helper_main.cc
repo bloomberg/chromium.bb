@@ -34,7 +34,7 @@
 
 const char kDevInputEvent[] = "/dev/input";
 const char kEventDevName[] = "event";
-const char kTapEnableName[] = "Tap Enable";
+const char kTapPausedName[] = "Tap Paused";
 
 using std::string;
 
@@ -58,7 +58,7 @@ class XNotifier {
       exit(1);
     }
     dev_ = XOpenDevice(display_, tp_id);
-    prop_tap_enable_ = XInternAtom(display_, kTapEnableName, True);
+    prop_tap_paused_ = XInternAtom(display_, kTapPausedName, True);
   }
   ~XNotifier() {
     if (dev_) {
@@ -70,9 +70,9 @@ class XNotifier {
   bool NotifyLidEvent(int lid_close) {
     if (!dev_)
       return false;
-    unsigned char enable_tap = lid_close ? 0 : 1;
-    XChangeDeviceProperty(display_, dev_, prop_tap_enable_, XA_INTEGER, 8,
-                          PropModeReplace, &enable_tap, 1);
+    unsigned char pause_tap = lid_close ? 1 : 0;
+    XChangeDeviceProperty(display_, dev_, prop_tap_paused_, XA_INTEGER, 8,
+                          PropModeReplace, &pause_tap, 1);
     XSync(display_, False);
     return true;
   }
@@ -80,7 +80,7 @@ class XNotifier {
  private:
   Display *display_;
   XDevice* dev_;
-  Atom prop_tap_enable_;
+  Atom prop_tap_paused_;
 };
 
 bool SupportLidEvent(int fd) {
@@ -138,7 +138,7 @@ int GetLidFd() {
 }
 
 bool IsCmtTouchpad(Display* display, int device_id) {
-  Atom prop = XInternAtom(display, kTapEnableName, True);
+  Atom prop = XInternAtom(display, kTapPausedName, True);
   // Fail quick if server does not have Atom
   if (prop == None)
     return false;
