@@ -112,7 +112,7 @@ PictureLayerTilingSet::Iterator& PictureLayerTilingSet::Iterator::operator++() {
 
   // Loop until we find a valid place to stop.
   while (true) {
-    while (tiling_iter_ && !tiling_iter_->GetResourceId()) {
+    while (tiling_iter_ && (!*tiling_iter_ || !tiling_iter_->GetResourceId())) {
       missing_region_.Union(tiling_iter_.geometry_rect());
       ++tiling_iter_;
     }

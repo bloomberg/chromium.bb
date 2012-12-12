@@ -63,7 +63,7 @@ class CC_EXPORT PictureLayerTiling {
     Tile* operator*() const { return current_tile_; }
 
     Iterator& operator++();
-    operator bool() const { return current_tile_; }
+    operator bool() const { return tile_j_ <= bottom_; }
 
    private:
     PictureLayerTiling* tiling_;
