@@ -28,6 +28,10 @@ VIEWS_EXPORT bool CanActivateWindow(aura::Window* window);
 // this determination.
 VIEWS_EXPORT aura::Window* GetActivatableWindow(aura::Window* window);
 
+// Retrieves the toplevel window for |window|. The ActivationClient makes this
+// determination.
+VIEWS_EXPORT aura::Window* GetToplevelWindow(aura::Window* window);
+
 // Deletes |layer| and all its child layers.
 VIEWS_EXPORT void DeepDeleteLayers(ui::Layer* layer);
 

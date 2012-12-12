@@ -39,14 +39,24 @@ bool BaseFocusRules::IsWindowConsideredVisibleForActivation(
 ////////////////////////////////////////////////////////////////////////////////
 // BaseFocusRules, FocusRules implementation:
 
+bool BaseFocusRules::IsToplevelWindow(aura::Window* window) const {
+  // The window must in a valid hierarchy.
+  if (!window->GetRootWindow())
+    return false;
+
+  // The window must exist within a container that supports activation.
+  // The window cannot be blocked by a modal transient.
+  return SupportsChildActivation(window->parent());
+}
+
 bool BaseFocusRules::CanActivateWindow(aura::Window* window) const {
   // It is possible to activate a NULL window, it is equivalent to clearing
   // activation.
   if (!window)
     return true;
 
-  // The window must in a valid hierarchy.
-  if (!window->GetRootWindow())
+  // Only toplevel windows can be activated.
+  if (!IsToplevelWindow(window))
     return false;
 
   // The window must be visible.
@@ -59,10 +69,8 @@ bool BaseFocusRules::CanActivateWindow(aura::Window* window) const {
     return false;
   }
 
-  // The window must exist within a container that supports activation.
   // The window cannot be blocked by a modal transient.
-  return SupportsChildActivation(window->parent()) &&
-      !GetModalTransientForActivatableWindow(window);
+  return !GetModalTransient(window);
 }
 
 bool BaseFocusRules::CanFocusWindow(aura::Window* window) const {
@@ -76,6 +84,19 @@ bool BaseFocusRules::CanFocusWindow(aura::Window* window) const {
   if (!activatable->Contains(window))
     return false;
   return window->CanFocus();
+}
+
+aura::Window* BaseFocusRules::GetToplevelWindow(aura::Window* window) const {
+  aura::Window* parent = window->parent();
+  aura::Window* child = window;
+  while (parent) {
+    if (IsToplevelWindow(child))
+      return child;
+
+    parent = parent->parent();
+    child = child->parent();
+  }
+  return NULL;
 }
 
 aura::Window* BaseFocusRules::GetActivatableWindow(aura::Window* window) const {
@@ -152,7 +173,6 @@ aura::Window* BaseFocusRules::GetNextFocusableWindow(
   // focus_controller_unittest.cc.
   return GetFocusableWindow(ignore->parent());
 }
-
 
 }  // namespace corewm
 }  // namespace views

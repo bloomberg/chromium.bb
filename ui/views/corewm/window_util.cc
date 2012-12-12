@@ -50,6 +50,12 @@ aura::Window* GetActivatableWindow(aura::Window* window) {
   return client ? client->GetActivatableWindow(window) : NULL;
 }
 
+aura::Window* GetToplevelWindow(aura::Window* window) {
+  aura::client::ActivationClient* client =
+      aura::client::GetActivationClient(window->GetRootWindow());
+  return client ? client->GetToplevelWindow(window) : NULL;
+}
+
 void DeepDeleteLayers(ui::Layer* layer) {
   std::vector<ui::Layer*> children = layer->children();
   for (std::vector<ui::Layer*>::const_iterator it = children.begin();

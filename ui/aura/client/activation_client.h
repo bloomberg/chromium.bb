@@ -36,7 +36,14 @@ class AURA_EXPORT ActivationClient {
   virtual Window* GetActiveWindow() = 0;
 
   // Retrieves the activatable window for |window|, or NULL if there is none.
+  // Note that this is often but not always the toplevel window (see
+  // GetToplevelWindow() below), as the toplevel window may not be activatable
+  // (for example it may be blocked by a modal transient, or some other
+  // condition).
   virtual Window* GetActivatableWindow(Window* window) = 0;
+
+  // Retrieves the toplevel window for |window|, or NULL if there is none.
+  virtual Window* GetToplevelWindow(Window* window) = 0;
 
   // Invoked prior to |window| getting focus as a result of the |event|. |event|
   // may be NULL. Returning false blocks |window| from getting focus.

@@ -78,6 +78,10 @@ Window* TestActivationClient::GetActivatableWindow(Window* window) {
   return NULL;
 }
 
+Window* TestActivationClient::GetToplevelWindow(Window* window) {
+  return NULL;
+}
+
 bool TestActivationClient::OnWillFocusWindow(Window* window,
                                              const ui::Event* event) {
   return true;

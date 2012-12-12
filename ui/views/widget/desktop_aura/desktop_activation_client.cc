@@ -114,6 +114,19 @@ aura::Window* DesktopActivationClient::GetActivatableWindow(
   return NULL;
 }
 
+aura::Window* DesktopActivationClient::GetToplevelWindow(aura::Window* window) {
+  aura::Window* parent = window->parent();
+  aura::Window* child = window;
+  aura::Window* root = child->GetRootWindow();
+  while (parent) {
+    if (parent == root)
+      return child;
+    parent = parent->parent();
+    child = child->parent();
+  }
+  return NULL;
+}
+
 bool DesktopActivationClient::OnWillFocusWindow(aura::Window* window,
                                                 const ui::Event* event) {
   return CanActivateWindow(GetActivatableWindow(window));

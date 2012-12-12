@@ -214,6 +214,10 @@ aura::Window* ActivationController::GetActivatableWindow(aura::Window* window) {
   return GetActivatableWindow(window, NULL);
 }
 
+aura::Window* ActivationController::GetToplevelWindow(aura::Window* window) {
+  return GetActivatableWindow(window, NULL);
+}
+
 bool ActivationController::OnWillFocusWindow(aura::Window* window,
                                              const ui::Event* event) {
   return CanActivateWindowWithEvent(

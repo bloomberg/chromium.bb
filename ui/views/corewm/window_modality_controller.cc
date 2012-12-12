@@ -75,22 +75,16 @@ void SetModalParent(aura::Window* child, aura::Window* parent) {
   child->SetProperty(kModalParentKey, parent);
 }
 
-aura::Window* GetModalTransientForActivatableWindow(
-    aura::Window* activatable) {
-  return GetModalTransientChild(activatable, activatable);
-}
-
 aura::Window* GetModalTransient(aura::Window* window) {
   if (!window)
     return NULL;
 
-  // We always want to check the for the transient child of the activatable
-  // window.
-  aura::Window* activatable = GetActivatableWindow(window);
-  if (!activatable)
+  // We always want to check the for the transient child of the toplevel window.
+  aura::Window* toplevel = GetToplevelWindow(window);
+  if (!toplevel)
     return NULL;
 
-  return GetModalTransientChild(activatable, window);
+  return GetModalTransientChild(toplevel, window);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

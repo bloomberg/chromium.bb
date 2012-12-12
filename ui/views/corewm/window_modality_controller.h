@@ -26,8 +26,6 @@ VIEWS_EXPORT void SetModalParent(aura::Window* child, aura::Window* parent);
 // Returns the modal transient child of |window|, or NULL if |window| does not
 // have any modal transient children.
 VIEWS_EXPORT aura::Window* GetModalTransient(aura::Window* window);
-// |activatable| must be activatable.
-aura::Window* GetModalTransientForActivatableWindow(aura::Window* activatable);
 
 // WindowModalityController is an event filter that consumes events sent to
 // windows that are the transient parents of window-modal windows. This filter

@@ -27,8 +27,10 @@ class VIEWS_EXPORT BaseFocusRules : public FocusRules {
       aura::Window* window) const;
 
   // Overridden from FocusRules:
+  virtual bool IsToplevelWindow(aura::Window* window) const OVERRIDE;
   virtual bool CanActivateWindow(aura::Window* window) const OVERRIDE;
   virtual bool CanFocusWindow(aura::Window* window) const OVERRIDE;
+  virtual aura::Window* GetToplevelWindow(aura::Window* window) const OVERRIDE;
   virtual aura::Window* GetActivatableWindow(
       aura::Window* window) const OVERRIDE;
   virtual aura::Window* GetFocusableWindow(aura::Window* window) const OVERRIDE;
