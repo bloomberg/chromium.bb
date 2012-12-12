@@ -552,21 +552,32 @@ public class ContentViewCore implements MotionEventDelegate {
         mPopupZoomer = new PopupZoomer(context);
         mPopupZoomer.setOnVisibilityChangedListener(new PopupZoomer.OnVisibilityChangedListener() {
             @Override
-            public void onPopupZoomerShown(PopupZoomer zoomer) {
-                if (mContainerView.indexOfChild(zoomer) == -1) {
-                    mContainerView.addView(zoomer);
-                } else {
-                    assert false : "PopupZoomer should never be shown without being hidden";
-                }
+            public void onPopupZoomerShown(final PopupZoomer zoomer) {
+                mContainerView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mContainerView.indexOfChild(zoomer) == -1) {
+                            mContainerView.addView(zoomer);
+                        } else {
+                            assert false : "PopupZoomer should never be shown without being hidden";
+                        }
+                    }
+                });
             }
 
             @Override
-            public void onPopupZoomerHidden(PopupZoomer zoomer) {
-                if (mContainerView.indexOfChild(zoomer) != -1) {
-                    mContainerView.removeView(zoomer);
-                } else {
-                    assert false : "PopupZoomer should never be hidden without being shown";
-                }
+            public void onPopupZoomerHidden(final PopupZoomer zoomer) {
+                mContainerView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mContainerView.indexOfChild(zoomer) != -1) {
+                            mContainerView.removeView(zoomer);
+                            mContainerView.invalidate();
+                        } else {
+                            assert false : "PopupZoomer should never be hidden without being shown";
+                        }
+                    }
+                });
             }
         });
         PopupZoomer.OnTapListener listener = new PopupZoomer.OnTapListener() {
