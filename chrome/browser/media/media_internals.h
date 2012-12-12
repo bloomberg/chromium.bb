@@ -17,9 +17,20 @@
 class MediaCaptureDevicesDispatcher;
 class MediaInternalsObserver;
 class MediaStreamCaptureIndicator;
+class Profile;
 
 namespace media {
+
 struct MediaLogEvent;
+
+// Helper to get the default devices which can be used by the media request,
+// if the return list is empty, it means there is no available device on the OS.
+// Called on the UI thread.
+void GetDefaultDevicesForProfile(Profile* profile,
+                                 bool audio,
+                                 bool video,
+                                 content::MediaStreamDevices* devices);
+
 }
 
 // This class stores information about currently active media.

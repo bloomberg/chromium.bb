@@ -10,11 +10,9 @@
 // Expected call flow:
 // 1. MakeUIRequest() is called to create a new request to the UI for capture
 //    device access.
-// 2. AddAvailableDevicesToRequest() is called with a list of currently
-//    available devices.
-// 3. Pick device and get user confirmation.
-// 4. Confirm by calling SettingsRequester::DevicesAccepted().
-// Repeat step 1 - 4 for new device requests.
+// 2. Pick device and get user confirmation.
+// 3. Confirm by calling SettingsRequester::DevicesAccepted().
+// Repeat step 1 - 3 for new device requests.
 
 #ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_MEDIA_STREAM_UI_CONTROLLER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_MEDIA_STREAM_UI_CONTROLLER_H_
@@ -51,15 +49,6 @@ class CONTENT_EXPORT MediaStreamUIController {
   // Called to cancel a pending UI request of capture device access when the
   // user has no action for the media stream InfoBar.
   void CancelUIRequest(const std::string& label);
-
-  // Called to pass in an array of available devices for a request represented
-  // by |label|. There could be multiple calls for a request.
-  // TODO(xians): use the monitor to get a up-to-date device list and remove
-  // this API.
-  void AddAvailableDevicesToRequest(
-      const std::string& label,
-      MediaStreamDeviceType stream_type,
-      const StreamDeviceInfoArray& devices);
 
   // Called by the InfoBar when the user grants/denies access to some devices
   // to the webpage. This is placed here, so the request can be cleared from the

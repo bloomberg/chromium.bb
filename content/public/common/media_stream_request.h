@@ -65,7 +65,9 @@ struct CONTENT_EXPORT MediaStreamRequest {
   MediaStreamRequest(
       int render_process_id,
       int render_view_id,
-      const GURL& security_origin);
+      const GURL& security_origin,
+      MediaStreamDeviceType audio_type,
+      MediaStreamDeviceType video_type);
 
   ~MediaStreamRequest();
 
@@ -78,10 +80,11 @@ struct CONTENT_EXPORT MediaStreamRequest {
   // The WebKit security origin for the current request (e.g. "html5rocks.com").
   GURL security_origin;
 
-  // A list of devices present on the user's computer, for each device type
-  // requested.
-  // All the elements in this map will be deleted in ~MediaStreamRequest().
-  MediaStreamDeviceMap devices;
+  // Flag to indicate if the request contains audio.
+  MediaStreamDeviceType audio_type;
+
+  // Flag to indicate if the request contains video.
+  MediaStreamDeviceType video_type;
 };
 
 }  // namespace content

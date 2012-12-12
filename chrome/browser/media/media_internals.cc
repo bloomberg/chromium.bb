@@ -10,12 +10,73 @@
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/media_internals_observer.h"
 #include "chrome/browser/media/media_stream_capture_indicator.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
 #include "media/base/media_log.h"
 #include "media/base/media_log_event.h"
 
 using content::BrowserThread;
+
+namespace media {
+
+namespace {
+
+const content::MediaStreamDevice* FindDefaultDeviceWithId(
+    const content::MediaStreamDevices& devices,
+    const std::string& device_id) {
+  if (devices.empty())
+    return NULL;
+
+  content::MediaStreamDevices::const_iterator iter = devices.begin();
+  for (; iter != devices.end(); ++iter) {
+    if (iter->device_id == device_id) {
+      return &(*iter);
+    }
+  }
+
+  return &(*devices.begin());
+};
+
+}  // namespace
+
+void GetDefaultDevicesForProfile(Profile* profile,
+                                 bool audio,
+                                 bool video,
+                                 content::MediaStreamDevices* devices) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(profile);
+  DCHECK(audio || video);
+
+  MediaCaptureDevicesDispatcher* dispatcher =
+      MediaInternals::GetInstance()->GetMediaCaptureDevicesDispatcher();
+  PrefService* prefs = profile->GetPrefs();
+  if (audio) {
+    std::string default_device;
+    default_device = prefs->GetString(prefs::kDefaultAudioCaptureDevice);
+    const content::MediaStreamDevices& audio_devices =
+        dispatcher->GetAudioCaptureDevices();
+    const content::MediaStreamDevice* const device =
+        FindDefaultDeviceWithId(audio_devices, default_device);
+    if (device)
+      devices->push_back(*device);
+  }
+
+  if (video) {
+    std::string default_device;
+    default_device = prefs->GetString(prefs::kDefaultVideoCaptureDevice);
+    const content::MediaStreamDevices& video_devices =
+           dispatcher->GetVideoCaptureDevices();
+    const content::MediaStreamDevice* const device =
+        FindDefaultDeviceWithId(video_devices, default_device);
+    if (device)
+      devices->push_back(*device);
+  }
+}
+
+} // namespace media
 
 MediaInternals* MediaInternals::GetInstance() {
   return Singleton<MediaInternals>::get();

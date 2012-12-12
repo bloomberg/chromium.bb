@@ -2247,38 +2247,7 @@ void TestingAutomationProvider::PerformActionOnInfobar(
     reply.SendSuccess(NULL);
     return;
   }
-  if ("allow" == action || "deny" == action) {
-    MediaStreamInfoBarDelegate* media_stream_infobar;
-    if (!(media_stream_infobar = infobar->AsMediaStreamInfoBarDelegate())) {
-      reply.SendError("Not a media stream infobar.");
-      return;
-    }
-    if ("allow" == action) {
-      content::MediaStreamDevices video_devices =
-          media_stream_infobar->GetVideoDevices();
-      content::MediaStreamDevices audio_devices =
-          media_stream_infobar->GetAudioDevices();
 
-      if (media_stream_infobar->HasVideo() && video_devices.empty()) {
-        reply.SendError("Requested video, but there are no video "
-                        "devices on the system.");
-        return;
-      }
-      if (media_stream_infobar->HasAudio() && audio_devices.empty()) {
-        reply.SendError("Requested audio, but there are no audio "
-            "devices on the system.");
-        return;
-      }
-
-      media_stream_infobar->Accept();
-      infobar_helper->RemoveInfoBar(infobar);
-    } else if ("deny" == action) {
-      media_stream_infobar->Deny();
-      infobar_helper->RemoveInfoBar(infobar);
-    }
-    reply.SendSuccess(NULL);
-    return;
-  }
   reply.SendError("Invalid action");
 }
 

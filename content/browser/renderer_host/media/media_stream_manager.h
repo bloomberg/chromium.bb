@@ -159,6 +159,7 @@ class CONTENT_EXPORT MediaStreamManager
   virtual void DevicesAccepted(const std::string& label,
                                const StreamDeviceInfoArray& devices) OVERRIDE;
   virtual void SettingsError(const std::string& label) OVERRIDE;
+  virtual void GetAvailableDevices(MediaStreamDevices* devices) OVERRIDE;
 
   // Implements base::SystemMonitor::DevicesChangedObserver.
   virtual void OnDevicesChanged(
@@ -209,6 +210,7 @@ class CONTENT_EXPORT MediaStreamManager
   std::string AddRequest(DeviceRequest* request);
   void ClearEnumerationCache(EnumerationCache* cache);
   void PostRequestToUI(const std::string& label);
+  void HandleRequest(const std::string& label);
 
   // Sends cached device list to a client corresponding to the request
   // identified by |label|.
@@ -249,9 +251,6 @@ class CONTENT_EXPORT MediaStreamManager
   // Hold a pointer to the IO loop to check we delete the device thread and
   // managers on the right thread.
   MessageLoop* io_loop_;
-
-  // Static members.
-  static bool always_use_fake_devices_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamManager);
 };

@@ -72,27 +72,14 @@ class MediaStreamRequestForUI : public MediaStreamRequest {
                           int render_vid,
                           const GURL& origin,
                           const StreamOptions& options)
-      : MediaStreamRequest(render_pid, render_vid, origin),
-        wait_for_audio(IsAudioMediaType(options.audio_type)),
-        wait_for_video(IsVideoMediaType(options.video_type)),
+      : MediaStreamRequest(render_pid, render_vid, origin, options.audio_type,
+                           options.video_type),
         posted_task(false) {
-    DCHECK(wait_for_audio || wait_for_video);
+    DCHECK(IsAudioMediaType(options.audio_type) ||
+           IsVideoMediaType(options.video_type));
   }
 
   ~MediaStreamRequestForUI() {}
-
-  bool IsRequestReadyForView() const {
-    if (wait_for_audio || wait_for_video)
-      return false;
-
-    // We have got all the requested devices, it is ready if it has not
-    // been posted for UI yet.
-    return !posted_task;
-  }
-
-  // Flags to indicate if we should wait for enumerated device lists.
-  bool wait_for_audio;
-  bool wait_for_video;
 
   // Whether or not a task was posted to make the call to
   // RequestMediaAccessPermission, to make sure that we never post twice to it.
@@ -147,6 +134,18 @@ void MediaStreamUIController::MakeUIRequest(
               request_options))).second) {
     NOTREACHED();
   }
+
+  if (use_fake_ui_) {
+    PostRequestToFakeUI(label);
+    return;
+  }
+
+  // The UI can handle only one request at the time, do not post the
+  // request to the view if the UI is handling any other request.
+  if (IsUIBusy(render_process_id, render_view_id))
+    return;
+
+  PostRequestToUI(label);
 }
 
 void MediaStreamUIController::CancelUIRequest(const std::string& label) {
@@ -171,57 +170,6 @@ void MediaStreamUIController::CancelUIRequest(const std::string& label) {
     // Process the next pending request to replace the old infobar on the same
     // page.
     ProcessNextRequestForView(render_process_id, render_view_id);
-  }
-}
-
-void MediaStreamUIController::AddAvailableDevicesToRequest(
-    const std::string& label,
-    MediaStreamDeviceType stream_type,
-    const StreamDeviceInfoArray& devices) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  UIRequests::const_iterator request_iter = requests_.find(label);
-  if (request_iter == requests_.end()) {
-    NOTREACHED();
-    return;
-  }
-
-  // Add the available devices to the request.
-  MediaStreamRequestForUI* request = request_iter->second;
-
-  // Create the simplified list of devices.
-  MediaStreamDevices& requested_devices = request->devices[stream_type];
-  DCHECK(requested_devices.empty());
-  for (StreamDeviceInfoArray::const_iterator it = devices.begin();
-       it != devices.end();
-       ++it) {
-    requested_devices.push_back(MediaStreamDevice(stream_type,
-                                                  it->device_id,
-                                                  it->name));
-  }
-
-  if (IsAudioMediaType(stream_type)) {
-    DCHECK(request->wait_for_audio);
-    request->wait_for_audio = false;
-  } else if (IsVideoMediaType(stream_type)) {
-    DCHECK(request->wait_for_video);
-    request->wait_for_video = false;
-  } else {
-    NOTREACHED();
-  }
-
-  if (request->IsRequestReadyForView()) {
-    if (use_fake_ui_) {
-      PostRequestToFakeUI(label);
-      return;
-    }
-
-    // The UI can handle only one request at the time, do not post the
-    // request to the view if the UI is handling any other request.
-    if (IsUIBusy(request->render_process_id, request->render_view_id))
-      return;
-
-    PostRequestToUI(label);
   }
 }
 
@@ -319,7 +267,7 @@ void MediaStreamUIController::ProcessNextRequestForView(
     if (it->second->render_process_id == render_process_id &&
         it->second->render_view_id == render_view_id) {
       // This request belongs to the given render view.
-      if (it->second->IsRequestReadyForView()) {
+      if (!it->second->posted_task) {
         next_request_label = it->first;
         break;
       }
@@ -361,17 +309,30 @@ void MediaStreamUIController::PostRequestToUI(const std::string& label) {
 
 void MediaStreamUIController::PostRequestToFakeUI(const std::string& label) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(requester_);
   UIRequests::iterator request_iter = requests_.find(label);
   DCHECK(request_iter != requests_.end());
   MediaStreamRequestForUI* request = request_iter->second;
-  // Used to fake UI, which is needed for server based testing.
-  // Use first device for each media type.
+
+  MediaStreamDevices devices;
+  requester_->GetAvailableDevices(&devices);
   MediaStreamDevices devices_to_use;
-  for (MediaStreamDeviceMap::const_iterator it = request->devices.begin();
-       it != request->devices.end(); ++it) {
-    // Use the first capture device in the list for the fake UI.
-    if (!it->second.empty()) {
-      devices_to_use.push_back(it->second.front());
+  bool accepted_audio = false;
+  bool accepted_video = false;
+  // Use the first capture device of the same media type in the list for the
+  // fake UI.
+  for (MediaStreamDevices::const_iterator it = devices.begin();
+       it != devices.end(); ++it) {
+    if (!accepted_audio &&
+        IsAudioMediaType(request->audio_type) &&
+        IsAudioMediaType(it->type)) {
+      devices_to_use.push_back(*it);
+      accepted_audio = true;
+    } else if (!accepted_video &&
+               IsVideoMediaType(request->video_type) &&
+               IsVideoMediaType(it->type)) {
+      devices_to_use.push_back(*it);
+      accepted_video = true;
     }
   }
 

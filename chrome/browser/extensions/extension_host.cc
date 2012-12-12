@@ -22,6 +22,7 @@
 #include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/intents/web_intents_util.h"
+#include "chrome/browser/media/media_internals.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_creator.h"
 #include "chrome/browser/ui/browser.h"
@@ -649,9 +650,17 @@ void ExtensionHost::RequestMediaAccessPermission(
     content::WebContents* web_contents,
     const content::MediaStreamRequest* request,
     const content::MediaResponseCallback& callback) {
+  // Get the preferred default devices for the request.
+  content::MediaStreamDevices devices;
+  media::GetDefaultDevicesForProfile(
+      profile_,
+      content::IsAudioMediaType(request->audio_type),
+      content::IsVideoMediaType(request->video_type),
+      &devices);
+
   // For tab capture device, we require the tabCapture permission.
   RequestMediaAccessPermissionHelper::AuthorizeRequest(
-      request, callback, extension(), false);
+      devices, request, callback, extension(), false);
 }
 
 }  // namespace extensions

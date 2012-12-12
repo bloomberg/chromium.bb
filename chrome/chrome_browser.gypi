@@ -1012,8 +1012,6 @@
         'browser/media/media_stream_capture_indicator.h',
         'browser/media/media_stream_devices_controller.cc',
         'browser/media/media_stream_devices_controller.h',
-        'browser/media/media_stream_devices_menu_model.cc',
-        'browser/media/media_stream_devices_menu_model.h',
         'browser/media_gallery/linux/mtp_device_delegate_impl_linux.cc',
         'browser/media_gallery/linux/mtp_device_delegate_impl_linux.h',
         'browser/media_gallery/linux/mtp_device_object_enumerator.cc',

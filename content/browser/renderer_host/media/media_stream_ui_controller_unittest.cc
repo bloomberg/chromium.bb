@@ -28,6 +28,14 @@ class MediaStreamDeviceUIControllerTest
   MOCK_METHOD2(DevicesAccepted, void(
       const std::string&, const StreamDeviceInfoArray&));
   MOCK_METHOD1(SettingsError, void(const std::string&));
+  void GetAvailableDevices(MediaStreamDevices* devices) OVERRIDE {
+    devices->push_back(MediaStreamDevice(MEDIA_DEVICE_AUDIO_CAPTURE,
+                                         "mic",
+                                         "mic_id"));
+    devices->push_back(MediaStreamDevice(MEDIA_DEVICE_VIDEO_CAPTURE,
+                                         "camera",
+                                         "camera_id"));
+  }
 
  protected:
   virtual void SetUp() {
@@ -55,39 +63,6 @@ class MediaStreamDeviceUIControllerTest
                                   dummy_render_view_id,
                                   components,
                                   security_origin);
-    if (audio)
-      CreateAudioDeviceForRequset(label);
-
-    if (video)
-      CreateVideoDeviceForRequset(label);
-  }
-
-  void CreateAudioDeviceForRequset(const std::string& label) {
-    // Setup the dummy available device for the request.
-    StreamDeviceInfoArray audio_device_array(1);
-    StreamDeviceInfo dummy_audio_device;
-    dummy_audio_device.name = "Microphone";
-    dummy_audio_device.stream_type = MEDIA_DEVICE_AUDIO_CAPTURE;
-    dummy_audio_device.session_id = 1;
-    audio_device_array[0] = dummy_audio_device;
-    ui_controller_->AddAvailableDevicesToRequest(
-        label,
-        dummy_audio_device.stream_type,
-        audio_device_array);
-  }
-
-  void CreateVideoDeviceForRequset(const std::string& label) {
-    // Setup the dummy available device for the request.
-    StreamDeviceInfoArray video_device_array(1);
-    StreamDeviceInfo dummy_video_device;
-    dummy_video_device.name = "camera";
-    dummy_video_device.stream_type = MEDIA_DEVICE_VIDEO_CAPTURE;
-    dummy_video_device.session_id = 1;
-    video_device_array[0] = dummy_video_device;
-    ui_controller_->AddAvailableDevicesToRequest(
-        label,
-        dummy_video_device.stream_type,
-        video_device_array);
   }
 
   scoped_ptr<MessageLoop> message_loop_;

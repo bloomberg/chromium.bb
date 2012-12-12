@@ -9,6 +9,8 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry.h"
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry_factory.h"
+#include "chrome/browser/media/media_capture_devices_dispatcher.h"
+#include "chrome/browser/media/media_internals.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -21,20 +23,15 @@ using content::BrowserThread;
 
 namespace {
 
-// A predicate that checks if a StreamDeviceInfo object has the same device
-// name as the device name specified at construction.
-class DeviceNameEquals {
- public:
-  explicit DeviceNameEquals(const std::string& device_name)
-      : device_name_(device_name) {
-  }
+bool HasAnyAvailableDevice() {
+  MediaCaptureDevicesDispatcher* dispatcher =
+      MediaInternals::GetInstance()->GetMediaCaptureDevicesDispatcher();
+  const content::MediaStreamDevices& audio_devices =
+      dispatcher->GetAudioCaptureDevices();
+  const content::MediaStreamDevices& video_devices =
+      dispatcher->GetVideoCaptureDevices();
 
-  bool operator() (const content::MediaStreamDevice& device) {
-    return device.name == device_name_;
-  }
-
- private:
-  std::string device_name_;
+  return !audio_devices.empty() || !video_devices.empty();
 };
 
 const char kAudioKey[] = "audio";
@@ -46,24 +43,14 @@ MediaStreamDevicesController::MediaStreamDevicesController(
     Profile* profile,
     const content::MediaStreamRequest* request,
     const content::MediaResponseCallback& callback)
-    : has_audio_(false),
-      has_video_(false),
-      profile_(profile),
+    : profile_(profile),
       request_(*request),
-      callback_(callback) {
-  for (content::MediaStreamDeviceMap::const_iterator it =
-           request_.devices.begin();
-       it != request_.devices.end(); ++it) {
-    if (content::IsAudioMediaType(it->first)) {
-      has_audio_ |= !it->second.empty();
-    } else if (content::IsVideoMediaType(it->first)) {
-      has_video_ |= !it->second.empty();
-    }
-    if (IsAudioDeviceBlockedByPolicy())
-      has_audio_ = false;
-    if (IsVideoDeviceBlockedByPolicy())
-      has_video_ = false;
-  }
+      callback_(callback),
+      has_audio_(content::IsAudioMediaType(request->audio_type) &&
+                 !IsAudioDeviceBlockedByPolicy()),
+      has_video_(content::IsVideoMediaType(request->video_type) &&
+                 !IsVideoDeviceBlockedByPolicy()) {
+  DCHECK(request);
 }
 
 MediaStreamDevicesController::~MediaStreamDevicesController() {}
@@ -80,177 +67,70 @@ void MediaStreamDevicesController::RegisterUserPrefs(PrefService* prefs) {
 
 
 bool MediaStreamDevicesController::DismissInfoBarAndTakeActionOnSettings() {
-  // For tab media requests, we need to make sure the request came from the
-  // extension API, so we check the registry here.
-  content::MediaStreamDeviceMap::const_iterator tab_video =
-      request_.devices.find(content::MEDIA_TAB_VIDEO_CAPTURE);
-  content::MediaStreamDeviceMap::const_iterator tab_audio =
-      request_.devices.find(content::MEDIA_TAB_AUDIO_CAPTURE);
-  if (tab_video != request_.devices.end() ||
-      tab_audio != request_.devices.end()) {
-    extensions::TabCaptureRegistry* registry =
-        extensions::TabCaptureRegistryFactory::GetForProfile(profile_);
-
-    if (!registry->VerifyRequest(request_.render_process_id,
-                                 request_.render_view_id)) {
-      Deny();
-    } else {
-      content::MediaStreamDevices devices;
-
-      if (tab_video != request_.devices.end()) {
-        devices.push_back(content::MediaStreamDevice(
-            content::MEDIA_TAB_VIDEO_CAPTURE, "", ""));
-      }
-      if (tab_audio != request_.devices.end()) {
-        devices.push_back(content::MediaStreamDevice(
-            content::MEDIA_TAB_AUDIO_CAPTURE, "", ""));
-      }
-
-      callback_.Run(devices);
-    }
-
+  if (request_.audio_type == content::MEDIA_TAB_AUDIO_CAPTURE ||
+      request_.video_type == content::MEDIA_TAB_VIDEO_CAPTURE) {
+    HandleTapMediaRequest();
     return true;
   }
 
   // Deny the request if the security origin is empty, this happens with
   // file access without |--allow-file-access-from-files| flag.
   if (request_.security_origin.is_empty()) {
-    Deny();
+    Deny(false);
     return true;
   }
 
-  // Deny the request and don't show the infobar if there is no devices.
-  if (!has_audio_ && !has_video_) {
-    // TODO(xians): We should detect this in a early state, and post a callback
-    // to tell the users that no device is available. Remove the code and add
-    // a DCHECK when this is done.
-    Deny();
+  // Deny the request if there is no device attached to the OS.
+  if (!HasAnyAvailableDevice()) {
+    Deny(false);
     return true;
   }
 
-  // Checks if any exception has been made for this request, get the "always
-  // allowed" devices if they are available.
-  std::string audio, video;
-  GetAlwaysAllowedDevices(&audio, &video);
-  if ((has_audio_ && audio.empty()) || (has_video_ && video.empty())) {
-    // If there is no "always allowed" device for the origin, or the device is
-    // not available in the device lists, Check the default setting to see if
-    // the user has blocked the access to the media device.
-    if (IsMediaDeviceBlocked() || IsRequestBlockedByDefault()) {
-      Deny();
-      return true;
-    }
-
-    // Show the infobar.
-    return false;
+  // Check if any allow exception has been made for this request.
+  if (IsRequestAllowedByDefault()) {
+    Accept(false);
+    return true;
   }
 
-  // Dismiss the infobar by selecting the "always allowed" devices.
-  Accept(audio, video, false);
-  return true;
-}
+  // Check if any block exception has been made for this request.
+  if (IsRequestBlockedByDefault()) {
+    Deny(false);
+    return true;
+  }
 
-content::MediaStreamDevices
-MediaStreamDevicesController::GetAudioDevices() const {
-  content::MediaStreamDevices all_audio_devices;
-  if (has_audio_)
-    FindSubsetOfDevices(&content::IsAudioMediaType, &all_audio_devices);
-  return all_audio_devices;
-}
+  // Check if the media default setting is set to block.
+  if (IsDefaultMediaAccessBlocked()) {
+    Deny(false);
+    return true;
+  }
 
-content::MediaStreamDevices
-MediaStreamDevicesController::GetVideoDevices() const {
-  content::MediaStreamDevices all_video_devices;
-  if (has_video_)
-    FindSubsetOfDevices(&content::IsVideoMediaType, &all_video_devices);
-  return all_video_devices;
+  // Show the infobar.
+  return false;
 }
 
 const std::string& MediaStreamDevicesController::GetSecurityOriginSpec() const {
   return request_.security_origin.spec();
 }
 
-bool MediaStreamDevicesController::IsSafeToAlwaysAllowAudio() const {
-  return IsSafeToAlwaysAllow(
-      &content::IsAudioMediaType, content::MEDIA_DEVICE_AUDIO_CAPTURE);
-}
-
-bool MediaStreamDevicesController::IsSafeToAlwaysAllowVideo() const {
-  return IsSafeToAlwaysAllow(
-      &content::IsVideoMediaType, content::MEDIA_DEVICE_VIDEO_CAPTURE);
-}
-
-void MediaStreamDevicesController::Accept(const std::string& audio_id,
-                                          const std::string& video_id,
-                                          bool always_allow) {
+void MediaStreamDevicesController::Accept(bool update_content_setting) {
+  // Get the default devices for the request.
   content::MediaStreamDevices devices;
-  std::string audio_device_name, video_device_name;
+  media::GetDefaultDevicesForProfile(profile_,
+                                     has_audio_,
+                                     has_video_,
+                                     &devices);
 
-  const content::MediaStreamDevice* const audio_device =
-      FindFirstDeviceWithIdInSubset(&content::IsAudioMediaType, audio_id);
-  if (audio_device) {
-    if (audio_device->type != content::MEDIA_DEVICE_AUDIO_CAPTURE)
-      always_allow = false;  // Override for virtual audio device type.
-    devices.push_back(*audio_device);
-    audio_device_name = audio_device->name;
-  }
-
-  const content::MediaStreamDevice* const video_device =
-      FindFirstDeviceWithIdInSubset(&content::IsVideoMediaType, video_id);
-  if (video_device) {
-    if (video_device->type != content::MEDIA_DEVICE_VIDEO_CAPTURE)
-      always_allow = false;  // Override for virtual video device type.
-    devices.push_back(*video_device);
-    video_device_name = video_device->name;
-  }
-
-  DCHECK(!devices.empty());
-
-  if (always_allow)
+  if (update_content_setting && IsSchemeSecure() && !devices.empty())
     SetPermission(true);
 
   callback_.Run(devices);
 }
 
-void MediaStreamDevicesController::Deny() {
-  SetPermission(false);
+void MediaStreamDevicesController::Deny(bool update_content_setting) {
+  if (update_content_setting)
+    SetPermission(false);
+
   callback_.Run(content::MediaStreamDevices());
-}
-
-bool MediaStreamDevicesController::IsSafeToAlwaysAllow(
-    FilterByDeviceTypeFunc is_included,
-    content::MediaStreamDeviceType device_type) const {
-  DCHECK(device_type == content::MEDIA_DEVICE_AUDIO_CAPTURE ||
-         device_type == content::MEDIA_DEVICE_VIDEO_CAPTURE);
-
-  if (!request_.security_origin.SchemeIsSecure())
-    return false;
-
-  // If non-physical devices are available for the choosing, then it's not safe.
-  bool safe_devices_found = false;
-  for (content::MediaStreamDeviceMap::const_iterator it =
-           request_.devices.begin();
-       it != request_.devices.end(); ++it) {
-    if (it->first != device_type && is_included(it->first))
-      return false;
-    safe_devices_found = true;
-  }
-
-  return safe_devices_found;
-}
-
-bool MediaStreamDevicesController::ShouldAlwaysAllowOrigin() {
-  return profile_->GetHostContentSettingsMap()->ShouldAllowAllContent(
-      request_.security_origin, request_.security_origin,
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM);
-}
-
-bool MediaStreamDevicesController::IsMediaDeviceBlocked() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  ContentSetting current_setting =
-      profile_->GetHostContentSettingsMap()->GetDefaultContentSetting(
-          CONTENT_SETTINGS_TYPE_MEDIASTREAM, NULL);
-  return (current_setting == CONTENT_SETTING_BLOCK);
 }
 
 bool MediaStreamDevicesController::IsAudioDeviceBlockedByPolicy() const {
@@ -267,26 +147,95 @@ bool MediaStreamDevicesController::IsVideoDeviceBlockedByPolicy() const {
               prefs::kVideoCaptureAllowed));
 }
 
-bool MediaStreamDevicesController::IsRequestBlockedByDefault() const {
-  if (has_audio_) {
-    if (profile_->GetHostContentSettingsMap()->GetContentSetting(
-            request_.security_origin,
-            request_.security_origin,
-            CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
-            NO_RESOURCE_IDENTIFIER) != CONTENT_SETTING_BLOCK)
-      return false;
+bool MediaStreamDevicesController::IsRequestAllowedByDefault() const {
+  // The request from internal objects like chrome://URLs is always allowed.
+  if (ShouldAlwaysAllowOrigin())
+    return true;
+
+  if (has_audio_ &&
+      profile_->GetHostContentSettingsMap()->GetContentSetting(
+          request_.security_origin,
+          request_.security_origin,
+          CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+          NO_RESOURCE_IDENTIFIER) != CONTENT_SETTING_ALLOW) {
+    return false;
   }
 
-  if (has_video_) {
-    if (profile_->GetHostContentSettingsMap()->GetContentSetting(
-            request_.security_origin,
-            request_.security_origin,
-            CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
-            NO_RESOURCE_IDENTIFIER) != CONTENT_SETTING_BLOCK)
-      return false;
+  if (has_video_ &&
+      profile_->GetHostContentSettingsMap()->GetContentSetting(
+          request_.security_origin,
+          request_.security_origin,
+          CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
+          NO_RESOURCE_IDENTIFIER) != CONTENT_SETTING_ALLOW) {
+    return false;
   }
 
   return true;
+}
+
+bool MediaStreamDevicesController::IsRequestBlockedByDefault() const {
+  if (has_audio_ &&
+      profile_->GetHostContentSettingsMap()->GetContentSetting(
+          request_.security_origin,
+          request_.security_origin,
+          CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+          NO_RESOURCE_IDENTIFIER) != CONTENT_SETTING_BLOCK) {
+    return false;
+  }
+
+  if (has_video_ &&
+      profile_->GetHostContentSettingsMap()->GetContentSetting(
+          request_.security_origin,
+          request_.security_origin,
+          CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
+          NO_RESOURCE_IDENTIFIER) != CONTENT_SETTING_BLOCK) {
+    return false;
+  }
+
+  return true;
+}
+
+bool MediaStreamDevicesController::IsDefaultMediaAccessBlocked() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  ContentSetting current_setting =
+      profile_->GetHostContentSettingsMap()->GetDefaultContentSetting(
+          CONTENT_SETTINGS_TYPE_MEDIASTREAM, NULL);
+  return (current_setting == CONTENT_SETTING_BLOCK);
+}
+
+void MediaStreamDevicesController::HandleTapMediaRequest() {
+  // For tab media requests, we need to make sure the request came from the
+  // extension API, so we check the registry here.
+  extensions::TabCaptureRegistry* registry =
+      extensions::TabCaptureRegistryFactory::GetForProfile(profile_);
+
+  if (!registry->VerifyRequest(request_.render_process_id,
+                               request_.render_view_id)) {
+    Deny(false);
+  } else {
+    content::MediaStreamDevices devices;
+
+    if (request_.audio_type == content::MEDIA_TAB_AUDIO_CAPTURE) {
+      devices.push_back(content::MediaStreamDevice(
+          content::MEDIA_TAB_VIDEO_CAPTURE, "", ""));
+    }
+    if (request_.video_type == content::MEDIA_TAB_VIDEO_CAPTURE) {
+      devices.push_back(content::MediaStreamDevice(
+          content::MEDIA_TAB_AUDIO_CAPTURE, "", ""));
+    }
+
+    callback_.Run(devices);
+  }
+}
+
+bool MediaStreamDevicesController::IsSchemeSecure() const {
+  return (request_.security_origin.SchemeIsSecure());
+}
+
+bool MediaStreamDevicesController::ShouldAlwaysAllowOrigin() const {
+  return profile_->GetHostContentSettingsMap()->ShouldAllowAllContent(
+      request_.security_origin, request_.security_origin,
+      CONTENT_SETTINGS_TYPE_MEDIASTREAM);
 }
 
 void MediaStreamDevicesController::SetPermission(bool allowed) const {
@@ -316,131 +265,4 @@ void MediaStreamDevicesController::SetPermission(bool allowed) const {
         std::string(),
         content_setting);
   }
-}
-
-void MediaStreamDevicesController::GetAlwaysAllowedDevices(
-    std::string* audio_id, std::string* video_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(audio_id->empty());
-  DCHECK(video_id->empty());
-  // If the request is from internal objects like chrome://URLs, use the first
-  // devices on the lists.
-  if (ShouldAlwaysAllowOrigin()) {
-    if (has_audio_)
-      *audio_id = GetFirstDeviceId(content::MEDIA_DEVICE_AUDIO_CAPTURE);
-    if (has_video_)
-      *video_id = GetFirstDeviceId(content::MEDIA_DEVICE_VIDEO_CAPTURE);
-    return;
-  }
-
-  // "Always allowed" option is only available for secure connection.
-  if (!request_.security_origin.SchemeIsSecure())
-    return;
-
-  // Checks the media exceptions to get the "always allowed" devices.
-  scoped_ptr<Value> value(
-      profile_->GetHostContentSettingsMap()->GetWebsiteSetting(
-          request_.security_origin,
-          request_.security_origin,
-          CONTENT_SETTINGS_TYPE_MEDIASTREAM,
-          NO_RESOURCE_IDENTIFIER,
-          NULL));
-  if (!value.get()) {
-    NOTREACHED();
-    return;
-  }
-
-  const DictionaryValue* value_dict = NULL;
-  std::string audio_name, video_name;
-  if (value->GetAsDictionary(&value_dict) && !value_dict->empty()) {
-    value_dict->GetString(kAudioKey, &audio_name);
-    value_dict->GetString(kVideoKey, &video_name);
-  }
-
-  if (has_audio_) {
-    if (!audio_name.empty()) {
-      *audio_id = GetDeviceIdByName(content::MEDIA_DEVICE_AUDIO_CAPTURE,
-                                    audio_name);
-    } else if (profile_->GetHostContentSettingsMap()->GetContentSetting(
-                   request_.security_origin,
-                   request_.security_origin,
-                   CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
-                   NO_RESOURCE_IDENTIFIER) == CONTENT_SETTING_ALLOW) {
-      PrefService* prefs = profile_->GetPrefs();
-      *audio_id = prefs->GetString(prefs::kDefaultAudioCaptureDevice);
-    }
-  }
-
-  if (has_video_) {
-    if (!video_name.empty()) {
-      *video_id = GetDeviceIdByName(content::MEDIA_DEVICE_VIDEO_CAPTURE,
-                                    video_name);
-    } else if (profile_->GetHostContentSettingsMap()->GetContentSetting(
-                   request_.security_origin,
-                   request_.security_origin,
-                   CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
-                   NO_RESOURCE_IDENTIFIER) == CONTENT_SETTING_ALLOW) {
-      PrefService* prefs = profile_->GetPrefs();
-      *video_id = prefs->GetString(prefs::kDefaultVideoCaptureDevice);
-    }
-  }
-}
-
-std::string MediaStreamDevicesController::GetDeviceIdByName(
-    content::MediaStreamDeviceType type,
-    const std::string& name) {
-  content::MediaStreamDeviceMap::const_iterator device_it =
-      request_.devices.find(type);
-  if (device_it != request_.devices.end()) {
-    content::MediaStreamDevices::const_iterator it = std::find_if(
-        device_it->second.begin(), device_it->second.end(),
-        DeviceNameEquals(name));
-    if (it != device_it->second.end())
-      return it->device_id;
-  }
-
-  // Device is not available, return an empty string.
-  return std::string();
-}
-
-std::string MediaStreamDevicesController::GetFirstDeviceId(
-    content::MediaStreamDeviceType type) {
-  content::MediaStreamDeviceMap::const_iterator device_it =
-      request_.devices.find(type);
-  if (device_it != request_.devices.end())
-    return device_it->second.begin()->device_id;
-
-  return std::string();
-}
-
-void MediaStreamDevicesController::FindSubsetOfDevices(
-    FilterByDeviceTypeFunc is_included,
-    content::MediaStreamDevices* out) const {
-  for (content::MediaStreamDeviceMap::const_iterator it =
-           request_.devices.begin();
-       it != request_.devices.end(); ++it) {
-    if (is_included(it->first))
-      out->insert(out->end(), it->second.begin(), it->second.end());
-  }
-}
-
-const content::MediaStreamDevice*
-MediaStreamDevicesController::FindFirstDeviceWithIdInSubset(
-    FilterByDeviceTypeFunc is_included,
-    const std::string& device_id) const {
-  for (content::MediaStreamDeviceMap::const_iterator it =
-           request_.devices.begin();
-       it != request_.devices.end(); ++it) {
-    if (!is_included(it->first)) continue;
-    content::MediaStreamDevices::const_iterator device_it = it->second.begin();
-    for (; device_it != it->second.end(); ++device_it) {
-      const content::MediaStreamDevice& candidate = *device_it;
-      if (candidate.device_id == device_id)
-        return &candidate;
-    }
-    // Return the first device if the preferred device is not available.
-    if (device_it == it->second.end())
-      return &(*it->second.begin());
-  }
-  return NULL;
 }

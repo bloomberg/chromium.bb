@@ -10,48 +10,45 @@ namespace extensions {
 
 // static
 void RequestMediaAccessPermissionHelper::AuthorizeRequest(
+    const content::MediaStreamDevices& devices,
     const content::MediaStreamRequest* request,
     const content::MediaResponseCallback& callback,
     const extensions::Extension* extension,
     bool is_packaged_app) {
-  content::MediaStreamDevices devices;
-
+  content::MediaStreamDevices accepted_devices;
   bool accepted_an_audio_device = false;
   bool accepted_a_video_device = false;
-  for (content::MediaStreamDeviceMap::const_iterator it =
-       request->devices.begin(); it != request->devices.end(); ++it) {
-    if (!accepted_an_audio_device &&
-        content::IsAudioMediaType(it->first) &&
-        !it->second.empty()) {
+  for (content::MediaStreamDevices::const_iterator it =
+       devices.begin(); it != devices.end(); ++it) {
+    if (!accepted_an_audio_device && content::IsAudioMediaType(it->type)) {
       // Require flag and tab capture permission for tab media.
       // Require audio capture permission for packaged apps.
-      if ((it->first == content::MEDIA_TAB_AUDIO_CAPTURE &&
+      if ((request->audio_type == content::MEDIA_TAB_AUDIO_CAPTURE &&
            extensions::FeatureSwitch::tab_capture()->IsEnabled() &&
            extension->HasAPIPermission(APIPermission::kTabCapture)) ||
-          (it->first == content::MEDIA_DEVICE_AUDIO_CAPTURE &&
+          (request->audio_type == content::MEDIA_DEVICE_AUDIO_CAPTURE &&
            is_packaged_app &&
            extension->HasAPIPermission(APIPermission::kAudioCapture))) {
-        devices.push_back(it->second.front());
+        accepted_devices.push_back(*it);
         accepted_an_audio_device = true;
       }
     } else if (!accepted_a_video_device &&
-               content::IsVideoMediaType(it->first) &&
-               !it->second.empty()) {
+               content::IsVideoMediaType(it->type)) {
       // Require flag and tab capture permission for tab media.
       // Require video capture permission for packaged apps.
-      if ((it->first == content::MEDIA_TAB_VIDEO_CAPTURE &&
+      if ((request->video_type == content::MEDIA_TAB_VIDEO_CAPTURE &&
            extensions::FeatureSwitch::tab_capture()->IsEnabled() &&
            extension->HasAPIPermission(APIPermission::kTabCapture)) ||
-          (it->first == content::MEDIA_DEVICE_VIDEO_CAPTURE &&
+          (request->video_type == content::MEDIA_DEVICE_VIDEO_CAPTURE &&
            is_packaged_app &&
            extension->HasAPIPermission(APIPermission::kVideoCapture))) {
-        devices.push_back(it->second.front());
+        accepted_devices.push_back(*it);
         accepted_a_video_device = true;
       }
     }
   }
 
-  callback.Run(devices);
+  callback.Run(accepted_devices);
 }
 
 }  // namespace extensions

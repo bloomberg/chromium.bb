@@ -23,6 +23,9 @@ class CONTENT_EXPORT SettingsRequester {
   // An error for specified |request_id| has occurred.
   virtual void SettingsError(const std::string& label) = 0;
 
+  // Gets a list of available devices stored in the requester.
+  virtual void GetAvailableDevices(MediaStreamDevices* devices) = 0;
+
  protected:
   virtual ~SettingsRequester() {}
 };

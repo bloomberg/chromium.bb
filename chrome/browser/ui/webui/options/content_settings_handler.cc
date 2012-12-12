@@ -625,9 +625,6 @@ void ContentSettingsHandler::UpdateMediaSettingsView() {
   bool video_disabled = !prefs->GetBoolean(prefs::kVideoCaptureAllowed) &&
       prefs->IsManagedPreference(prefs::kVideoCaptureAllowed);
 
-  UpdateExceptionsViewFromHostContentSettingsMap(
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM);
-
   DictionaryValue media_ui_settings;
   media_ui_settings.SetBoolean("cameraDisabled", video_disabled);
   media_ui_settings.SetBoolean("micDisabled", audio_disabled);

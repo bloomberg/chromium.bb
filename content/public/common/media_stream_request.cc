@@ -30,19 +30,16 @@ MediaStreamDevice::~MediaStreamDevice() {}
 MediaStreamRequest::MediaStreamRequest(
     int render_process_id,
     int render_view_id,
-    const GURL& security_origin)
+    const GURL& security_origin,
+    MediaStreamDeviceType audio_type,
+    MediaStreamDeviceType video_type)
     : render_process_id(render_process_id),
       render_view_id(render_view_id),
-      security_origin(security_origin) {
+      security_origin(security_origin),
+      audio_type(audio_type),
+      video_type(video_type) {
 }
 
-MediaStreamRequest::~MediaStreamRequest() {
-  for (MediaStreamDeviceMap::iterator iter = devices.begin();
-       iter != devices.end();
-       ++iter) {
-    iter->second.clear();
-  }
-  devices.clear();
-}
+MediaStreamRequest::~MediaStreamRequest() {}
 
 }  // namespace content

@@ -5,83 +5,37 @@
 #include "chrome/browser/ui/media_stream_infobar_delegate.h"
 
 #include "base/logging.h"
+#include "base/utf_string_conversions.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
+#include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
+#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
-// TODO(xians): Register to the system monitor to get a device changed
-// notification, update the selected devices based on the new device lists.
 MediaStreamInfoBarDelegate::MediaStreamInfoBarDelegate(
     InfoBarTabHelper* tab_helper,
     MediaStreamDevicesController* controller)
-    : InfoBarDelegate(tab_helper),
-      controller_(controller),
-      always_allow_(false) {
-  if (HasAudio())
-    selected_audio_device_ = GetAudioDevices().begin()->device_id;
-  if (HasVideo())
-    selected_video_device_ = GetVideoDevices().begin()->device_id;
-
+    : ConfirmInfoBarDelegate(tab_helper),
+      controller_(controller) {
   DCHECK(controller_.get());
+  DCHECK(controller_->has_audio() || controller_->has_video());
 }
 
 MediaStreamInfoBarDelegate::~MediaStreamInfoBarDelegate() {}
 
-bool MediaStreamInfoBarDelegate::HasAudio() const {
-  return controller_->has_audio();
-}
-
-bool MediaStreamInfoBarDelegate::HasVideo() const {
-  return controller_->has_video();
-}
-
-content::MediaStreamDevices
-    MediaStreamInfoBarDelegate::GetAudioDevices() const {
-  return controller_->GetAudioDevices();
-}
-
-content::MediaStreamDevices
-    MediaStreamInfoBarDelegate::GetVideoDevices() const {
-  return controller_->GetVideoDevices();
-}
-
-const std::string& MediaStreamInfoBarDelegate::GetSecurityOriginSpec() const {
-  return controller_->GetSecurityOriginSpec();
-}
-
-bool MediaStreamInfoBarDelegate::IsSafeToAlwaysAllowAudio() const {
-  return controller_->IsSafeToAlwaysAllowAudio();
-}
-
-bool MediaStreamInfoBarDelegate::IsSafeToAlwaysAllowVideo() const {
-  return controller_->IsSafeToAlwaysAllowVideo();
-}
-
-void MediaStreamInfoBarDelegate::Accept() {
-  DCHECK_NE(HasAudio(), selected_audio_device_.empty());
-  DCHECK_NE(HasVideo(), selected_video_device_.empty());
-
-  controller_->Accept(selected_audio_device_, selected_video_device_,
-                      always_allow_);
-}
-
-void MediaStreamInfoBarDelegate::Deny() {
-  controller_->Deny();
-}
-
-// MediaStreamInfoBarDelegate::CreateInfoBar is implemented in platform-specific
-// files.
-
 void MediaStreamInfoBarDelegate::InfoBarDismissed() {
   // Deny the request if the infobar was closed with the 'x' button, since
   // we don't want WebRTC to be waiting for an answer that will never come.
-  Deny();
+  controller_->Deny(false);
 }
 
 gfx::Image* MediaStreamInfoBarDelegate::GetIcon() const {
-  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(HasVideo() ?
-      IDR_INFOBAR_MEDIA_STREAM_CAMERA : IDR_INFOBAR_MEDIA_STREAM_MIC);
+  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+      controller_->has_video() ?
+          IDR_INFOBAR_MEDIA_STREAM_CAMERA : IDR_INFOBAR_MEDIA_STREAM_MIC);
 }
 
 InfoBarDelegate::Type MediaStreamInfoBarDelegate::GetInfoBarType() const {
@@ -91,4 +45,48 @@ InfoBarDelegate::Type MediaStreamInfoBarDelegate::GetInfoBarType() const {
 MediaStreamInfoBarDelegate*
     MediaStreamInfoBarDelegate::AsMediaStreamInfoBarDelegate() {
   return this;
+}
+
+string16 MediaStreamInfoBarDelegate::GetMessageText() const {
+  int message_id = IDS_MEDIA_CAPTURE_AUDIO_AND_VIDEO;
+  if (!controller_->has_audio())
+    message_id = IDS_MEDIA_CAPTURE_VIDEO_ONLY;
+  else if (!controller_->has_video())
+    message_id = IDS_MEDIA_CAPTURE_AUDIO_ONLY;
+  return l10n_util::GetStringFUTF16(
+      message_id, UTF8ToUTF16(controller_->GetSecurityOriginSpec()));
+}
+
+string16 MediaStreamInfoBarDelegate::GetButtonLabel(
+    InfoBarButton button) const {
+  return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
+      IDS_MEDIA_CAPTURE_ALLOW : IDS_MEDIA_CAPTURE_DENY);
+}
+
+bool MediaStreamInfoBarDelegate::Accept() {
+  controller_->Accept(true);
+  return true;
+}
+
+bool MediaStreamInfoBarDelegate::Cancel() {
+  controller_->Deny(true);
+  return true;
+}
+
+string16 MediaStreamInfoBarDelegate::GetLinkText() const {
+  return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
+}
+
+bool MediaStreamInfoBarDelegate::LinkClicked(
+    WindowOpenDisposition disposition) {
+  content::OpenURLParams params(
+      google_util::AppendGoogleLocaleParam(
+          GURL(chrome::kMediaAccessLearnMoreUrl)),
+      content::Referrer(),
+      (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
+      content::PAGE_TRANSITION_LINK,
+      false);
+  owner()->GetWebContents()->OpenURL(params);
+
+  return false;  // Do not dismiss the info bar.
 }

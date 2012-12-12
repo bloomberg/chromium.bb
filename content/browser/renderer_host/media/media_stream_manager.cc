@@ -207,11 +207,10 @@ std::string MediaStreamManager::MakeMediaAccessRequest(
                                              render_view_id,
                                              security_origin);
   const std::string& label = AddRequest(request);
-  StartEnumeration(request);
 
   request->callback = callback;
 
-  PostRequestToUI(label);
+  HandleRequest(label);
 
   return label;
 }
@@ -235,10 +234,8 @@ std::string MediaStreamManager::GenerateStream(
                                              render_view_id,
                                              security_origin);
   const std::string& label = AddRequest(request);
-  StartEnumeration(request);
 
-  // Get user confirmation to use capture devices.
-  PostRequestToUI(label);
+  HandleRequest(label);
 
   return label;
 }
@@ -276,7 +273,8 @@ std::string MediaStreamManager::GenerateStreamForDevice(
   const std::string& label = AddRequest(request);
   request->requested_device_id = device_id;
 
-  // Get user confirmation to use the capture device.
+  // Pass the request to UI to get user confirmation to use the capture device.
+  // Note, GenerateStreamForDevice does not need device enumeration.
   PostRequestToUI(label);
 
   // TODO(miu): We should ask the device manager whether a device with id
@@ -289,18 +287,10 @@ std::string MediaStreamManager::GenerateStreamForDevice(
     // support in terms of extensions (which is registered as an observer).
     request->SetState(options.audio_type, MEDIA_REQUEST_STATE_REQUESTED);
     request->SetState(options.audio_type, MEDIA_REQUEST_STATE_PENDING_APPROVAL);
-    ui_controller_->AddAvailableDevicesToRequest(
-        label, options.audio_type, StreamDeviceInfoArray(
-            1, StreamDeviceInfo(options.audio_type, device_id, device_id,
-                                false)));
   }
   if (IsVideoMediaType(options.video_type)) {
     request->SetState(options.video_type, MEDIA_REQUEST_STATE_REQUESTED);
     request->SetState(options.video_type, MEDIA_REQUEST_STATE_PENDING_APPROVAL);
-    ui_controller_->AddAvailableDevicesToRequest(
-        label, options.video_type, StreamDeviceInfoArray(
-            1, StreamDeviceInfo(options.video_type, device_id, device_id,
-                                false)));
   }
 
   return label;
@@ -600,6 +590,33 @@ void MediaStreamManager::PostRequestToUI(const std::string& label) {
                                 request->security_origin);
 }
 
+void MediaStreamManager::HandleRequest(const std::string& label) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DeviceRequest* request = requests_[label];
+  if ((IsAudioMediaType(request->options.audio_type) &&
+       !audio_enumeration_cache_.valid) ||
+      (IsVideoMediaType(request->options.video_type) &&
+       !video_enumeration_cache_.valid)) {
+    // Enumerate the devices if there is no valid device lists to be used.
+    StartEnumeration(request);
+    return;
+  }
+
+  // No need to do new device enumerations, post the request to UI
+  // immediately.
+  if (IsAudioMediaType(request->options.audio_type)) {
+    request->SetState(request->options.audio_type,
+                      MEDIA_REQUEST_STATE_PENDING_APPROVAL);
+  }
+
+  if (IsVideoMediaType(request->options.video_type)) {
+    request->SetState(request->options.video_type,
+                      MEDIA_REQUEST_STATE_PENDING_APPROVAL);
+  }
+
+  PostRequestToUI(label);
+}
+
 void MediaStreamManager::InitializeDeviceManagersOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (device_thread_.get())
@@ -768,8 +785,18 @@ void MediaStreamManager::DevicesEnumerated(
         }
         break;
       default:
-        ui_controller_->AddAvailableDevicesToRequest(*it, stream_type,
-                                                     devices);
+        if (request->state(request->options.audio_type) ==
+                MEDIA_REQUEST_STATE_REQUESTED ||
+            request->state(request->options.video_type) ==
+                MEDIA_REQUEST_STATE_REQUESTED) {
+          // We are doing enumeration for other type of media, wait until it is
+          // all done before posting the request to UI because UI needs
+          // the device lists to handle the request.
+          break;
+        }
+
+        // Post the request to UI for permission approval.
+        PostRequestToUI(*it);
         break;
     }
   }
@@ -918,6 +945,33 @@ void MediaStreamManager::SettingsError(const std::string& label) {
   }
 
   requests_.erase(it);
+}
+
+void MediaStreamManager::GetAvailableDevices(MediaStreamDevices* devices) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(audio_enumeration_cache_.valid || video_enumeration_cache_.valid);
+  DCHECK(devices->empty());
+  if (audio_enumeration_cache_.valid) {
+    for (StreamDeviceInfoArray::const_iterator it =
+             audio_enumeration_cache_.devices.begin();
+         it != audio_enumeration_cache_.devices.end();
+         ++it) {
+      devices->push_back(MediaStreamDevice(it->stream_type,
+                                           it->device_id,
+                                           it->name));
+    }
+  }
+
+  if (video_enumeration_cache_.valid) {
+    for (StreamDeviceInfoArray::const_iterator it =
+             video_enumeration_cache_.devices.begin();
+         it != video_enumeration_cache_.devices.end();
+         ++it) {
+      devices->push_back(MediaStreamDevice(it->stream_type,
+                                           it->device_id,
+                                           it->name));
+    }
+  }
 }
 
 void MediaStreamManager::UseFakeDevice() {

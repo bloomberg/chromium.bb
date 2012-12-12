@@ -33,79 +33,41 @@ class MediaStreamDevicesController {
   bool has_audio() const { return has_audio_; }
   bool has_video() const { return has_video_; }
   const std::string& GetSecurityOriginSpec() const;
-  content::MediaStreamDevices GetAudioDevices() const;
-  content::MediaStreamDevices GetVideoDevices() const;
-  bool IsSafeToAlwaysAllowAudio() const;
-  bool IsSafeToAlwaysAllowVideo() const;
-  void Accept(const std::string& audio_id,
-              const std::string& video_id,
-              bool always_allow);
-  void Deny();
+  void Accept(bool update_content_setting);
+  void Deny(bool update_content_setting);
 
  private:
-  // Returns true if the media access for the origin of the request has been
-  // blocked before. Otherwise returns false.
-  bool IsRequestBlockedByDefault() const;
-
-  // Used by the various helper methods below to filter an operation on devices
-  // of a particular type.
-  typedef bool (*FilterByDeviceTypeFunc)(content::MediaStreamDeviceType);
-
-  // Returns true if a secure scheme is being used by the origin AND only
-  // devices of the given physical |device_type| are present in the subset of
-  // devices selected by the |is_included| function.
-  bool IsSafeToAlwaysAllow(FilterByDeviceTypeFunc is_included,
-                           content::MediaStreamDeviceType device_type) const;
-
-  // Returns true if the media section in content settings is set to
-  // |CONTENT_SETTING_BLOCK|, otherwise returns false.
-  bool IsMediaDeviceBlocked() const;
-
   // Returns true if audio capture is disabled by policy.
   bool IsAudioDeviceBlockedByPolicy() const;
 
   // Returns true if video capture is disabled by policy.
   bool IsVideoDeviceBlockedByPolicy() const;
 
-  // NOTE on AlwaysAllowOrigin functionality: The rules only apply to physical
-  // capture devices, and not tab mirroring (or other "virtual device" types).
-  // Virtual devices are always denied an AlwaysAllowOrigin status because they
-  // refer to internal objects whose "IDs" might be re-used for different
-  // objects across browser sessions.
+  // Returns true if the origin of the request has been granted the media
+  // access before, otherwise returns false.
+  bool IsRequestAllowedByDefault() const;
+
+  // Returns true if the media access for the origin of the request has been
+  // blocked before. Otherwise returns false.
+  bool IsRequestBlockedByDefault() const;
+
+  // Returns true if the media section in content settings is set to
+  // |CONTENT_SETTING_BLOCK|, otherwise returns false.
+  bool IsDefaultMediaAccessBlocked() const;
+
+  // Handles Tab Capture media request.
+  void HandleTapMediaRequest();
+
+  // Returns true if the origin is a secure scheme, otherwise returns false.
+  bool IsSchemeSecure() const;
 
   // Returns true if request's origin is from internal objects like
   // chrome://URLs, otherwise returns false.
-  bool ShouldAlwaysAllowOrigin();
+  bool ShouldAlwaysAllowOrigin() const;
 
   // Sets the permission of the origin of the request. This is triggered when
   // the users deny the request or allow the request for https sites.
   void SetPermission(bool allowed) const;
-
-  // Gets the respective "always allowed" devices for the origin in |request_|.
-  // |audio_id| and |video_id| will be empty if there is no "always allowed"
-  // device for the origin, or any of the devices is not listed on the devices
-  // list in |request_|.
-  void GetAlwaysAllowedDevices(std::string* audio_id,
-                               std::string* video_id);
-
-  std::string GetDeviceIdByName(content::MediaStreamDeviceType type,
-                                const std::string& name);
-
-  std::string GetFirstDeviceId(content::MediaStreamDeviceType type);
-
-  // Copies all devices passing the |is_included| predicate to the given output
-  // container.
-  void FindSubsetOfDevices(FilterByDeviceTypeFunc is_included,
-                           content::MediaStreamDevices* out) const;
-
-  // Finds the first device with the given |device_id| within the subset of
-  // devices passing the |is_included| predicate, or return NULL.
-  const content::MediaStreamDevice* FindFirstDeviceWithIdInSubset(
-      FilterByDeviceTypeFunc is_included,
-      const std::string& device_id) const;
-
-  bool has_audio_;
-  bool has_video_;
 
   // The owner of this class needs to make sure it does not outlive the profile.
   Profile* profile_;
@@ -116,6 +78,9 @@ class MediaStreamDevicesController {
   // The callback that needs to be Run to notify WebRTC of whether access to
   // audio/video devices was granted or not.
   content::MediaResponseCallback callback_;
+
+  bool has_audio_;
+  bool has_video_;
   DISALLOW_COPY_AND_ASSIGN(MediaStreamDevicesController);
 };
 

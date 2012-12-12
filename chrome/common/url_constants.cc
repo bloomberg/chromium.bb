@@ -510,4 +510,7 @@ const char kExtensionResourceScheme[] = "chrome-extension-resource";
 const char kSafeSearchSafeParameter[] = "safe=active";
 const char kSafeSearchSsuiParameter[] = "ssui=on";
 
+const char kMediaAccessLearnMoreUrl[] =
+    "https://support.google.com/chrome/?p=ib_access_cam_mic";
+
 }  // namespace chrome
