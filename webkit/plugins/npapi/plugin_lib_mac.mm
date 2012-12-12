@@ -84,8 +84,13 @@ bool ReadPlistPluginInfo(const FilePath& filename, CFBundleRef bundle,
 
   for (NSString* mime_type in [mime_types allKeys]) {
     NSDictionary* mime_dict = [mime_types objectForKey:mime_type];
+    NSNumber* type_enabled = [mime_dict objectForKey:@"WebPluginTypeEnabled"];
     NSString* mime_desc = [mime_dict objectForKey:@"WebPluginTypeDescription"];
     NSArray* mime_exts = [mime_dict objectForKey:@"WebPluginExtensions"];
+
+    // Skip any disabled types.
+    if (type_enabled && ![type_enabled boolValue])
+      continue;
 
     WebPluginMimeType mime;
     mime.mime_type = base::SysNSStringToUTF8([mime_type lowercaseString]);
