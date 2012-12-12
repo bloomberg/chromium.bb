@@ -68,9 +68,13 @@ void SpellingMenuObserver::InitMenu(const content::ContextMenuParams& params) {
 
   // Append a placeholder item for the suggestion from the Spelling serivce and
   // send a request to the service if we can retrieve suggestions from it.
+  // Also, see if we can use the spelling service to get an ideal suggestion.
+  // Otherwise, we'll fall back to the set of suggestions.
+  bool useSpellingService = SpellingServiceClient::IsAvailable(
+      profile, SpellingServiceClient::SPELLCHECK);
   bool useSuggestions = SpellingServiceClient::IsAvailable(
-      profile,SpellingServiceClient::SUGGEST);
-  if (useSuggestions) {
+      profile, SpellingServiceClient::SUGGEST);
+  if (useSuggestions || useSpellingService) {
     // Initialize variables used in OnTextCheckComplete(). We copy the input
     // text to the result text so we can replace its misspelled regions with
     // suggestions.
@@ -89,9 +93,12 @@ void SpellingMenuObserver::InitMenu(const content::ContextMenuParams& params) {
     // can update the placeholder item when we receive its response. It also
     // starts the animation timer so we can show animation until we receive
     // it.
+    SpellingServiceClient::ServiceType type = SpellingServiceClient::SUGGEST;
+    if (useSpellingService)
+      type = SpellingServiceClient::SPELLCHECK;
     client_.reset(new SpellingServiceClient);
     bool result = client_->RequestTextCheck(
-        profile, 0, SpellingServiceClient::SUGGEST, params.misspelled_word,
+        profile, 0, type, params.misspelled_word,
         base::Bind(&SpellingMenuObserver::OnTextCheckComplete,
                    base::Unretained(this)));
     if (result) {
@@ -118,7 +125,7 @@ void SpellingMenuObserver::InitMenu(const content::ContextMenuParams& params) {
     proxy_->AddMenuItem(IDC_CONTENT_CONTEXT_NO_SPELLING_SUGGESTIONS,
         l10n_util::GetStringUTF16(
             IDS_CONTENT_CONTEXT_NO_SPELLING_SUGGESTIONS));
-    if (useSuggestions)
+    if (useSuggestions || useSpellingService)
       proxy_->AddSeparator();
   }
   misspelled_word_ = params.misspelled_word;
