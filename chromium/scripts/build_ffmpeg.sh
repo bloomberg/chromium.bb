@@ -247,6 +247,7 @@ add_flag_common --disable-avdevice
 add_flag_common --disable-avfilter
 add_flag_common --disable-bzlib
 add_flag_common --disable-doc
+add_flag_common --disable-ffprobe
 add_flag_common --disable-lzo
 add_flag_common --disable-network
 add_flag_common --disable-postproc
