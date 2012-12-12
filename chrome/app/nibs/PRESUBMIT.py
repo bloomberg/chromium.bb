@@ -35,7 +35,13 @@ def _CheckXIBSystemAndXcodeVersions(input_api, output_api, error_type):
   for xib in affected_xibs:
     system_version = None
     ib_version = None
-    for line in xib.NewContents():
+
+    new_contents = xib.NewContents()
+    if not new_contents:
+      # Deleting files is always fine.
+      continue
+
+    for line in new_contents:
       m = re.search(SYSTEM_VERSION_RE, line)
       if m:
         system_version = (m.group(1), m.group(2), m.group(3))
