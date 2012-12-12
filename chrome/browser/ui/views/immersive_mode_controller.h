@@ -10,6 +10,7 @@
 #include "base/timer.h"
 #include "ui/base/events/event_handler.h"
 #include "ui/compositor/layer_animation_observer.h"
+#include "ui/gfx/native_widget_types.h"
 
 class BrowserView;
 class RevealView;
@@ -64,6 +65,9 @@ class ImmersiveModeController : public ui::EventHandler,
     LAYOUT_YES,
   };
 
+  // Enables or disables observers for mouse move and window restore.
+  void EnableWindowObservers(bool enable);
+
   // Temporarily reveals the top-of-window views while in immersive mode,
   // hiding them when the cursor exits the area of the top views.
   void StartReveal();
@@ -98,6 +102,15 @@ class ImmersiveModeController : public ui::EventHandler,
 
   // Timer to track cursor being held at the top.
   base::OneShotTimer<ImmersiveModeController> top_timer_;
+
+  // Native window for the browser, needed to clean up observers.
+  gfx::NativeWindow native_window_;
+
+#if defined(USE_AURA)
+  // Observer to disable immersive mode when window leaves the maximized state.
+  class WindowObserver;
+  scoped_ptr<WindowObserver> window_observer_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ImmersiveModeController);
 };
