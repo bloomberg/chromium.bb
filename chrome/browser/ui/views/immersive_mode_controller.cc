@@ -16,7 +16,9 @@
 #include "ui/views/window/non_client_view.h"
 
 #if defined(USE_AURA)
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_observer.h"
 #endif
 
 using views::View;
@@ -213,15 +215,55 @@ bool ImmersiveModeController::RevealView::ContainsCursor() const {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#if defined(USE_AURA)
+// Observer to watch for window restore. views::Widget does not provide a hook
+// to observe for window restore, so do this at the Aura level.
+class ImmersiveModeController::WindowObserver : public aura::WindowObserver {
+ public:
+  explicit WindowObserver(ImmersiveModeController* controller)
+      : controller_(controller) {
+    controller_->native_window_->AddObserver(this);
+  }
+
+  virtual ~WindowObserver() {
+    controller_->native_window_->RemoveObserver(this);
+  }
+
+  // aura::WindowObserver overrides:
+  virtual void OnWindowPropertyChanged(aura::Window* window,
+                                       const void* key,
+                                       intptr_t old) OVERRIDE {
+    using aura::client::kShowStateKey;
+    if (key != kShowStateKey)
+        return;
+    // Disable immersive mode when leaving the maximized state.
+    if (window->GetProperty(kShowStateKey) != ui::SHOW_STATE_MAXIMIZED)
+      controller_->SetEnabled(false);
+  }
+
+ private:
+  ImmersiveModeController* controller_;  // Not owned.
+
+  DISALLOW_COPY_AND_ASSIGN(WindowObserver);
+};
+#endif  // defined(USE_AURA)
+
+////////////////////////////////////////////////////////////////////////////////
+
 ImmersiveModeController::ImmersiveModeController(BrowserView* browser_view)
     : browser_view_(browser_view),
       enabled_(false),
       revealed_(false) {
+  // Browser view is detached from its widget during destruction. Cache the
+  // window pointer so |this| can stop observing during destruction.
+  native_window_ = browser_view_->GetNativeWindow();
 }
 
 ImmersiveModeController::~ImmersiveModeController() {
   // Ensure views are reparented if we are deleted while revealing.
   EndReveal(ANIMATE_NO, LAYOUT_NO);
+  // Clean up our window observers.
+  EnableWindowObservers(false);
 }
 
 void ImmersiveModeController::SetEnabled(bool enabled) {
@@ -237,17 +279,7 @@ void ImmersiveModeController::SetEnabled(bool enabled) {
     top_timer_.Stop();
   }
 
-#if defined(USE_AURA)
-  // TODO(jamescook): If we want to port this feature to non-Aura views we'll
-  // need a method to monitor incoming mouse move events without handling them.
-  // Currently views uses GetEventHandlerForPoint() to route events directly
-  // to either a tab or the caption area, bypassing pre-target handlers and
-  // intermediate views.
-  if (enabled_)
-    browser_view_->GetNativeWindow()->AddPreTargetHandler(this);
-  else
-    browser_view_->GetNativeWindow()->RemovePreTargetHandler(this);
-#endif  // defined(USE_AURA)
+  EnableWindowObservers(enabled_);
 }
 
 views::View* ImmersiveModeController::reveal_view() {
@@ -303,6 +335,25 @@ void ImmersiveModeController::EndRevealForTest() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // private:
+
+void ImmersiveModeController::EnableWindowObservers(bool enable) {
+#if defined(USE_AURA)
+  // TODO(jamescook): Porting immersive mode to non-Aura views will require
+  // a method to monitor incoming mouse move events without handling them.
+  // Currently views uses GetEventHandlerForPoint() to route events directly
+  // to either a tab or the caption area, bypassing pre-target handlers and
+  // intermediate views.
+  if (enable)
+    native_window_->AddPreTargetHandler(this);
+  else
+    native_window_->RemovePreTargetHandler(this);
+
+  // The window observer adds and removes itself from the native window.
+  // TODO(jamescook): Porting to non-Aura will also require a method to monitor
+  // for window restore, which is not provided by views Widget.
+  window_observer_.reset(enable ? new WindowObserver(this) : NULL);
+#endif  // defined(USE_AURA)
+}
 
 void ImmersiveModeController::StartReveal() {
   if (revealed_)
