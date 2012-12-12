@@ -403,8 +403,10 @@ void GpuCommandBufferStub::OnInitialize(
   }
 
   scoped_refptr<gfx::GLContext> context;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableVirtualGLContexts) && channel_->share_group()) {
+  if ((context_group_->feature_info()->feature_flags().enable_virtual_context ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableVirtualGLContexts)) &&
+      channel_->share_group()) {
     context = channel_->share_group()->GetSharedContext();
     if (!context) {
       context = gfx::GLContext::CreateGLContext(
