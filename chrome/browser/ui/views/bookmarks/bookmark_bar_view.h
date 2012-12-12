@@ -16,10 +16,9 @@
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar_instructions_delegate.h"
+#include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view_observer.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_menu_controller_views.h"
 #include "chrome/browser/ui/views/detachable_toolbar_view.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
@@ -63,12 +62,12 @@ class BookmarkBarView : public DetachableToolbarView,
                         public BookmarkModelObserver,
                         public views::MenuButtonListener,
                         public views::ButtonListener,
-                        public content::NotificationObserver,
                         public views::ContextMenuController,
                         public views::DragController,
                         public ui::AnimationDelegate,
                         public BookmarkMenuController::Observer,
-                        public chrome::BookmarkBarInstructionsDelegate {
+                        public chrome::BookmarkBarInstructionsDelegate,
+                        public BookmarkBubbleViewObserver {
  public:
   // The internal view class name.
   static const char kViewClassName[];
@@ -210,6 +209,10 @@ class BookmarkBarView : public DetachableToolbarView,
   // chrome::BookmarkBarInstructionsDelegate:
   virtual void ShowImportDialog() OVERRIDE;
 
+  // BookmarkBubbleViewObserver:
+  virtual void OnBookmarkBubbleShown(const GURL& url) OVERRIDE;
+  virtual void OnBookmarkBubbleHidden() OVERRIDE;
+
   // BookmarkModelObserver:
   virtual void Loaded(BookmarkModel* model, bool ids_reassigned) OVERRIDE;
   virtual void BookmarkModelBeingDeleted(BookmarkModel* model) OVERRIDE;
@@ -253,11 +256,6 @@ class BookmarkBarView : public DetachableToolbarView,
   // views::ContextMenuController:
   virtual void ShowContextMenuForView(views::View* source,
                                       const gfx::Point& point) OVERRIDE;
-
-  // content::NotificationObserver::
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   class ButtonSeparatorView;
@@ -367,8 +365,6 @@ class BookmarkBarView : public DetachableToolbarView,
   // but are not set. This mode is used by GetPreferredSize() to obtain the
   // desired bounds. If |compute_bounds_only| = FALSE, the bounds are set.
   gfx::Size LayoutItems(bool compute_bounds_only);
-
-  content::NotificationRegistrar registrar_;
 
   // Used for opening urls.
   content::PageNavigator* page_navigator_;

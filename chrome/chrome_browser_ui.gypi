@@ -1365,6 +1365,7 @@
         'browser/ui/views/bookmarks/bookmark_bar_view.h',
         'browser/ui/views/bookmarks/bookmark_bubble_view.cc',
         'browser/ui/views/bookmarks/bookmark_bubble_view.h',
+        'browser/ui/views/bookmarks/bookmark_bubble_view_observer.h',
         'browser/ui/views/bookmarks/bookmark_context_menu.cc',
         'browser/ui/views/bookmarks/bookmark_context_menu.h',
         'browser/ui/views/bookmarks/bookmark_context_menu_controller_views.cc',

@@ -950,6 +950,18 @@ void BookmarkBarView::ShowImportDialog() {
   chrome::ShowImportDialog(browser_);
 }
 
+void BookmarkBarView::OnBookmarkBubbleShown(const GURL& url) {
+  StopThrobbing(true);
+  const BookmarkNode* node = model_->GetMostRecentlyAddedNodeForURL(url);
+  if (!node)
+    return;  // Generally shouldn't happen.
+  StartThrobbing(node, false);
+}
+
+void BookmarkBarView::OnBookmarkBubbleHidden() {
+  StopThrobbing(false);
+}
+
 void BookmarkBarView::Loaded(BookmarkModel* model, bool ids_reassigned) {
   // There should be no buttons. If non-zero it means Load was invoked more than
   // once, or we didn't properly clear things. Either of which shouldn't happen.
@@ -1200,30 +1212,6 @@ void BookmarkBarView::ShowContextMenuForView(views::View* source,
   context_menu_->RunMenuAt(point);
 }
 
-void BookmarkBarView::Observe(int type,
-                              const content::NotificationSource& source,
-                              const content::NotificationDetails& details) {
-  DCHECK(browser_->profile());
-  switch (type) {
-    case chrome::NOTIFICATION_BOOKMARK_BUBBLE_SHOWN: {
-      StopThrobbing(true);
-      GURL url = *(content::Details<GURL>(details).ptr());
-      const BookmarkNode* node = model_->GetMostRecentlyAddedNodeForURL(url);
-      if (!node)
-        return;  // Generally shouldn't happen.
-      StartThrobbing(node, false);
-      break;
-    }
-    case chrome::NOTIFICATION_BOOKMARK_BUBBLE_HIDDEN:
-      StopThrobbing(false);
-      break;
-
-    default:
-      NOTREACHED();
-      break;
-  }
-}
-
 void BookmarkBarView::Init() {
   // Note that at this point we're not in a hierarchy so GetThemeProvider() will
   // return NULL.  When we're inserted into a hierarchy, we'll call
@@ -1260,12 +1248,7 @@ void BookmarkBarView::Init() {
 
   size_animation_.reset(new ui::SlideAnimation(this));
 
-  Profile* profile = browser_->profile();
-  content::Source<Profile> ns_source(profile->GetOriginalProfile());
-  registrar_.Add(this, chrome::NOTIFICATION_BOOKMARK_BUBBLE_SHOWN, ns_source);
-  registrar_.Add(this, chrome::NOTIFICATION_BOOKMARK_BUBBLE_HIDDEN, ns_source);
-
-  model_ = BookmarkModelFactory::GetForProfile(profile);
+  model_ = BookmarkModelFactory::GetForProfile(browser_->profile());
   if (model_) {
     model_->AddObserver(this);
     if (model_->IsLoaded())

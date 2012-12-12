@@ -15,8 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/common/chrome_notification_types.h"
-#include "content/public/browser/notification_service.h"
+#include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view_observer.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -54,10 +53,12 @@ const int kMinimumFieldSize = 180;
 namespace chrome {
 
 void ShowBookmarkBubbleView(views::View* anchor_view,
+                            BookmarkBubbleViewObserver* observer,
                             Profile* profile,
                             const GURL& url,
                             bool newly_bookmarked) {
-  BookmarkBubbleView::ShowBubble(anchor_view, profile, url, newly_bookmarked);
+  BookmarkBubbleView::ShowBubble(anchor_view, observer, profile, url,
+                                 newly_bookmarked);
 }
 
 void HideBookmarkBubbleView() {
@@ -76,24 +77,22 @@ BookmarkBubbleView* BookmarkBubbleView::bookmark_bubble_ = NULL;
 
 // static
 void BookmarkBubbleView::ShowBubble(views::View* anchor_view,
+                                    BookmarkBubbleViewObserver* observer,
                                     Profile* profile,
                                     const GURL& url,
                                     bool newly_bookmarked) {
   if (IsShowing())
     return;
 
-  bookmark_bubble_ =
-      new BookmarkBubbleView(anchor_view, profile, url, newly_bookmarked);
+  bookmark_bubble_ = new BookmarkBubbleView(anchor_view, observer, profile, url,
+                                            newly_bookmarked);
   views::BubbleDelegateView::CreateBubble(bookmark_bubble_);
   bookmark_bubble_->Show();
   // Select the entire title textfield contents when the bubble is first shown.
   bookmark_bubble_->title_tf_->SelectAll(true);
 
-  GURL url_ptr(url);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_BOOKMARK_BUBBLE_SHOWN,
-      content::Source<Profile>(profile->GetOriginalProfile()),
-      content::Details<GURL>(&url_ptr));
+  if (bookmark_bubble_->observer_)
+    bookmark_bubble_->observer_->OnBookmarkBubbleShown(url);
 }
 
 // static
@@ -127,10 +126,8 @@ void BookmarkBubbleView::WindowClosing() {
   DCHECK_EQ(bookmark_bubble_, this);
   bookmark_bubble_ = NULL;
 
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_BOOKMARK_BUBBLE_HIDDEN,
-      content::Source<Profile>(profile_->GetOriginalProfile()),
-      content::NotificationService::NoDetails());
+  if (observer_)
+    observer_->OnBookmarkBubbleHidden();
  }
 
 bool BookmarkBubbleView::AcceleratorPressed(
@@ -237,10 +234,12 @@ void BookmarkBubbleView::Init() {
 }
 
 BookmarkBubbleView::BookmarkBubbleView(views::View* anchor_view,
+                                       BookmarkBubbleViewObserver* observer,
                                        Profile* profile,
                                        const GURL& url,
                                        bool newly_bookmarked)
     : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
+      observer_(observer),
       profile_(profile),
       url_(url),
       newly_bookmarked_(newly_bookmarked),
@@ -271,8 +270,8 @@ string16 BookmarkBubbleView::GetTitle() {
   return string16();
 }
 
-void BookmarkBubbleView::ButtonPressed(
-    views::Button* sender, const ui::Event& event) {
+void BookmarkBubbleView::ButtonPressed(views::Button* sender,
+                                       const ui::Event& event) {
   HandleButtonPressed(sender);
 }
 

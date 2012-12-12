@@ -15,6 +15,7 @@
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/controls/link_listener.h"
 
+class BookmarkBubbleViewObserver;
 class Profile;
 
 namespace views {
@@ -32,6 +33,7 @@ class BookmarkBubbleView : public views::BubbleDelegateView,
                            public views::ComboboxListener {
  public:
   static void ShowBubble(views::View* anchor_view,
+                         BookmarkBubbleViewObserver* observer,
                          Profile* profile,
                          const GURL& url,
                          bool newly_bookmarked);
@@ -58,6 +60,7 @@ class BookmarkBubbleView : public views::BubbleDelegateView,
  private:
   // Creates a BookmarkBubbleView.
   BookmarkBubbleView(views::View* anchor_view,
+                     BookmarkBubbleViewObserver* observer,
                      Profile* profile,
                      const GURL& url,
                      bool newly_bookmarked);
@@ -89,6 +92,9 @@ class BookmarkBubbleView : public views::BubbleDelegateView,
 
   // The bookmark bubble, if we're showing one.
   static BookmarkBubbleView* bookmark_bubble_;
+
+  // Our observer, to notify when the bubble shows or hides.
+  BookmarkBubbleViewObserver* observer_;
 
   // The profile.
   Profile* profile_;

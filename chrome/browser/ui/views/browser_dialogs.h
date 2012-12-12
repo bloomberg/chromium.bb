@@ -14,6 +14,7 @@
 // TODO: Make as many of these methods as possible cross platform, and move them
 // into chrome/browser/ui/browser_dialogs.h.
 
+class BookmarkBubbleViewObserver;
 class Browser;
 class BrowserView;
 class EditSearchEngineControllerDelegate;
@@ -40,6 +41,7 @@ namespace chrome {
 
 // Shows or hides the bookmark bubble anchored to the supplied view.
 void ShowBookmarkBubbleView(views::View* anchor_view,
+                            BookmarkBubbleViewObserver* observer,
                             Profile* profile,
                             const GURL& url,
                             bool newly_bookmarked);

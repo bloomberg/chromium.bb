@@ -199,10 +199,6 @@ enum NotificationType {
 
   // Stuff inside the tabs ---------------------------------------------------
 
-  // Sent when the bookmark bubble hides. The source is the profile, the
-  // details unused.
-  NOTIFICATION_BOOKMARK_BUBBLE_HIDDEN,
-
   // This notification is sent when the result of a find-in-page search is
   // available with the browser process. The source is a Source<WebContents>.
   // Details encompass a FindNotificationDetail object that tells whether the
@@ -359,10 +355,6 @@ enum NotificationType {
   // Sent when the bookmark bar model finishes loading. This source is the
   // Profile, and the details aren't used.
   NOTIFICATION_BOOKMARK_MODEL_LOADED,
-
-  // Sent when the bookmark bubble is shown for a particular URL. The source
-  // is the profile, the details the URL.
-  NOTIFICATION_BOOKMARK_BUBBLE_SHOWN,
 
   // Task Manager ------------------------------------------------------------
 
