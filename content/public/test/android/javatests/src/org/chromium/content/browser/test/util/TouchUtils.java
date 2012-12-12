@@ -83,6 +83,15 @@ public class TouchUtils extends android.test.TouchUtils {
     }
 
     /**
+     * Sleeps for at least the length of the double tap timeout.
+     *
+     * @param instrumentation Instrumentation object used by the test.
+     */
+    public static void sleepForDoubleTapTimeout(Instrumentation instrumentation) {
+        SystemClock.sleep((long)(ViewConfiguration.getDoubleTapTimeout() * 1.5));
+    }
+
+    /**
      * Sends (synchronously) a long click to the View at the specified coordinates.
      *
      * @param instrumentation Instrumentation object used by the test.

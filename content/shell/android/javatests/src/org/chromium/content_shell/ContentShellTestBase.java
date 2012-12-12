@@ -13,6 +13,9 @@ import android.text.TextUtils;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.chromium.base.test.util.UrlUtils;
+import org.chromium.content.browser.ContentView;
+import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
@@ -56,6 +59,49 @@ public class ContentShellTestBase extends ActivityInstrumentationTestCase2<Conte
         return getActivity();
     }
 
+    // TODO(cjhopman): These functions are inconsistent with launchContentShell***. Should be
+    // startContentShell*** and should use the url exactly without the getTestFileUrl call. Possibly
+    // these two ways of starting the activity (launch* and start*) should be merged into one.
+    /**
+     * Starts the content shell activity with the provided test url.
+     * The url is synchronously loaded.
+     * @param url Test url to load.
+     */
+    protected void startActivityWithTestUrl(String url) throws Throwable {
+        launchContentShellWithUrl(UrlUtils.getTestFileUrl(url));
+        assertNotNull(getActivity());
+        assertTrue(waitForActiveShellToBeDoneLoading());
+        assertEquals(UrlUtils.getTestFileUrl(url), getContentView().getUrl());
+    }
+
+    /**
+     * Starts the content shell activity with the provided test url and optional command line
+     * arguments to append.
+     * The url is synchronously loaded.
+     * @param url Test url to load.
+     * @param commandLineArgs Optional command line args to append when launching the activity.
+     */
+    protected void startActivityWithTestUrlAndCommandLineArgs(
+            String url, String[] commandLineArgs) throws Throwable {
+        launchContentShellWithUrlAndCommandLineArgs(
+                UrlUtils.getTestFileUrl(url), commandLineArgs);
+        assertNotNull(getActivity());
+        assertTrue(waitForActiveShellToBeDoneLoading());
+    }
+
+    /**
+     * Returns the current ContentView.
+     */
+    protected ContentView getContentView() {
+        return getActivity().getActiveShell().getContentView();
+    }
+
+    /**
+     * Returns the current ContentViewCore or null if there is no ContentView.
+     */
+    protected ContentViewCore getContentViewCore() {
+        return getContentView() == null ? null : getContentView().getContentViewCore();
+    }
 
     /**
      * Waits for the Active shell to finish loading.  This times out after

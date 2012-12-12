@@ -20,6 +20,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
 import android.os.SystemClock;
+import android.text.Editable;
 import android.util.Log;
 import android.util.Pair;
 import android.view.ActionMode;
@@ -333,6 +334,10 @@ public class ContentViewCore implements MotionEventDelegate {
                 mContainerView.removeView(view);
             }
         };
+    }
+
+    public ImeAdapter getImeAdapterForTest() {
+        return mImeAdapter;
     }
 
     private ImeAdapter createImeAdapter(Context context) {
@@ -1175,6 +1180,10 @@ public class ContentViewCore implements MotionEventDelegate {
         return mInputConnection;
     }
 
+    public Editable getEditableForTest() {
+        return mInputConnection.getEditable();
+    }
+
     /**
      * @see View#onCheckIsTextEditor()
      */
@@ -1678,6 +1687,10 @@ public class ContentViewCore implements MotionEventDelegate {
             mInsertionHandleController.hideAndDisallowAutomaticShowing();
         }
 
+        return mInsertionHandleController;
+    }
+
+    public InsertionHandleController getInsertionHandleControllerForTest() {
         return mInsertionHandleController;
     }
 

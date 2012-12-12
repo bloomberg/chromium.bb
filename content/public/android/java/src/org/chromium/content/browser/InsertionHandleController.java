@@ -89,6 +89,10 @@ abstract class InsertionHandleController implements CursorController {
         mHandle.positionAt(x, y);
     }
 
+    public HandleView getHandleViewForTest() {
+        return mHandle;
+    }
+
     @Override
     public void onTouchModeChanged(boolean isInTouchMode) {
         if (!isInTouchMode) {

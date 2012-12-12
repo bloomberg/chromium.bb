@@ -12,7 +12,6 @@ import java.util.concurrent.TimeUnit;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
-import org.chromium.content.browser.test.util.TestContentViewClient;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnStartContentIntentHelper;
@@ -26,44 +25,7 @@ public class ContentDetectionTestBase extends ContentShellTestBase {
 
     private static final int WAIT_TIMEOUT_SECONDS = 10;
 
-    private ContentView mContentView;
     private TestCallbackHelperContainer mCallbackHelper;
-
-    /**
-     * Starts the content shell activity with the provided test url.
-     * The url is synchronously loaded.
-     * @param testUrl Test url to load.
-     */
-    protected void startActivityWithTestUrl(String testUrl) throws Throwable {
-        ContentShellActivity activity = launchContentShellWithUrl(UrlUtils.getTestFileUrl(testUrl));
-        assertNotNull(activity);
-        assertTrue(waitForActiveShellToBeDoneLoading());
-        mContentView = activity.getActiveShell().getContentView();
-        assertEquals(UrlUtils.getTestFileUrl(testUrl), mContentView.getUrl());
-    }
-
-    /**
-     * Starts the content shell activity with the provided etst url and optional command line
-     * arguments to append.
-     * The url is synchronously loaded.
-     * @param testUrl Test url to load.
-     * @param commandLineArgs Optional command line args to append when launching the activity.
-     */
-    protected void startActivityWithTestUrlAndCommandLineArgs(
-            String testUrl, String[] commandLineArgs) throws Throwable {
-        ContentShellActivity activity = launchContentShellWithUrlAndCommandLineArgs(
-                UrlUtils.getTestFileUrl(testUrl), commandLineArgs);
-        assertNotNull(activity);
-        assertTrue(waitForActiveShellToBeDoneLoading());
-        mContentView = activity.getActiveShell().getContentView();
-    }
-
-    /**
-     * Returns the current ContentView.
-     */
-    protected ContentView getContentView() {
-        return mContentView;
-    }
 
     /**
      * Returns the TestCallbackHelperContainer associated with this ContentView,
