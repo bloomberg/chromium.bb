@@ -1138,6 +1138,9 @@ bool PluginInstance::LoadPrintInterface() {
 }
 
 bool PluginInstance::LoadPrivateInterface() {
+  // Only check for the interface if the plugin has private permission.
+  if (!module_->permissions().HasPermission(::ppapi::PERMISSION_PRIVATE))
+    return false;
   if (!plugin_private_interface_) {
     plugin_private_interface_ = static_cast<const PPP_Instance_Private*>(
         module_->GetPluginInterface(PPP_INSTANCE_PRIVATE_INTERFACE));

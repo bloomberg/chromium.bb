@@ -36,11 +36,19 @@ struct ObjectProxy {
 };
 
 ObjectProxy* ToObjectProxy(void* data) {
-  return reinterpret_cast<ObjectProxy*>(data);
+  ObjectProxy* obj = reinterpret_cast<ObjectProxy*>(data);
+  if (!obj || !obj->dispatcher)
+    return NULL;
+  if (!obj->dispatcher->permissions().HasPermission(PERMISSION_DEV))
+    return NULL;
+  return obj;
 }
 
 bool HasProperty(void* object, PP_Var name, PP_Var* exception) {
   ObjectProxy* obj = ToObjectProxy(object);
+  if (!obj)
+    return false;
+
   bool result = false;
   ReceiveSerializedException se(obj->dispatcher, exception);
   obj->dispatcher->Send(new PpapiMsg_PPPClass_HasProperty(
@@ -51,6 +59,9 @@ bool HasProperty(void* object, PP_Var name, PP_Var* exception) {
 
 bool HasMethod(void* object, PP_Var name, PP_Var* exception) {
   ObjectProxy* obj = ToObjectProxy(object);
+  if (!obj)
+    return false;
+
   bool result = false;
   ReceiveSerializedException se(obj->dispatcher, exception);
   obj->dispatcher->Send(new PpapiMsg_PPPClass_HasMethod(
@@ -63,6 +74,9 @@ PP_Var GetProperty(void* object,
                    PP_Var name,
                    PP_Var* exception) {
   ObjectProxy* obj = ToObjectProxy(object);
+  if (!obj)
+    return PP_MakeUndefined();
+
   ReceiveSerializedException se(obj->dispatcher, exception);
   ReceiveSerializedVarReturnValue result;
   obj->dispatcher->Send(new PpapiMsg_PPPClass_GetProperty(
@@ -84,6 +98,9 @@ void SetProperty(void* object,
                  PP_Var value,
                  PP_Var* exception) {
   ObjectProxy* obj = ToObjectProxy(object);
+  if (!obj)
+    return;
+
   ReceiveSerializedException se(obj->dispatcher, exception);
   obj->dispatcher->Send(new PpapiMsg_PPPClass_SetProperty(
       API_ID_PPP_CLASS, obj->ppp_class, obj->user_data,
@@ -95,6 +112,9 @@ void RemoveProperty(void* object,
                     PP_Var name,
                     PP_Var* exception) {
   ObjectProxy* obj = ToObjectProxy(object);
+  if (!obj)
+    return;
+
   ReceiveSerializedException se(obj->dispatcher, exception);
   obj->dispatcher->Send(new PpapiMsg_PPPClass_RemoveProperty(
       API_ID_PPP_CLASS, obj->ppp_class, obj->user_data,
@@ -107,6 +127,8 @@ PP_Var Call(void* object,
             PP_Var* argv,
             PP_Var* exception) {
   ObjectProxy* obj = ToObjectProxy(object);
+  if (!obj)
+    return PP_MakeUndefined();
 
   ReceiveSerializedVarReturnValue result;
   ReceiveSerializedException se(obj->dispatcher, exception);
@@ -126,6 +148,8 @@ PP_Var Construct(void* object,
                  PP_Var* argv,
                  PP_Var* exception) {
   ObjectProxy* obj = ToObjectProxy(object);
+  if (!obj)
+    return PP_MakeUndefined();
 
   ReceiveSerializedVarReturnValue result;
   ReceiveSerializedException se(obj->dispatcher, exception);
@@ -141,6 +165,9 @@ PP_Var Construct(void* object,
 
 void Deallocate(void* object) {
   ObjectProxy* obj = ToObjectProxy(object);
+  if (!obj)
+    return;
+
   obj->dispatcher->Send(new PpapiMsg_PPPClass_Deallocate(
       API_ID_PPP_CLASS, obj->ppp_class, obj->user_data));
   delete obj;

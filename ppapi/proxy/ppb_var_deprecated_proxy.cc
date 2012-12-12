@@ -326,6 +326,9 @@ const InterfaceProxy::Info* PPB_Var_Deprecated_Proxy::GetInfo() {
 }
 
 bool PPB_Var_Deprecated_Proxy::OnMessageReceived(const IPC::Message& msg) {
+  if (!dispatcher()->permissions().HasPermission(PERMISSION_DEV))
+    return false;
+
   // Prevent the dispatcher from going away during a call to Call or other
   // function that could mutate the DOM. This must happen OUTSIDE of
   // the message handlers since the SerializedVars use the dispatcher upon

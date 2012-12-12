@@ -316,7 +316,7 @@ void HostProxyTestHarness::SetUpHarness() {
       pp_module(),
       &MockGetInterface,
       status_receiver_.release(),
-      PpapiPermissions()));
+      PpapiPermissions::AllPermissions()));
   host_dispatcher_->InitWithTestSink(&sink());
   HostDispatcher::SetForInstance(pp_instance(), host_dispatcher_.get());
 }
@@ -336,7 +336,7 @@ void HostProxyTestHarness::SetUpHarnessWithChannel(
       pp_module(),
       &MockGetInterface,
       status_receiver_.release(),
-      PpapiPermissions()));
+      PpapiPermissions::AllPermissions()));
   ppapi::Preferences preferences;
   host_dispatcher_->InitHostWithChannel(&delegate_mock_, channel_handle,
                                         is_client, preferences);

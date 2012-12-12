@@ -21,6 +21,9 @@ namespace {
 
 PP_Var GetInstanceObject(PP_Instance instance) {
   Dispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
+  if (!dispatcher->permissions().HasPermission(PERMISSION_PRIVATE))
+    return PP_MakeUndefined();
+
   ReceiveSerializedVarReturnValue result;
   dispatcher->Send(new PpapiMsg_PPPInstancePrivate_GetInstanceObject(
       API_ID_PPP_INSTANCE_PRIVATE, instance, &result));
