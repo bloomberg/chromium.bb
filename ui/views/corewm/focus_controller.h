@@ -11,7 +11,6 @@
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/window_observer.h"
-#include "ui/base/events/event_dispatcher.h"
 #include "ui/views/views_export.h"
 
 namespace views {
@@ -22,7 +21,8 @@ class FocusRules;
 // FocusController handles focus and activation changes for an environment
 // encompassing one or more RootWindows. Within an environment there can be
 // only one focused and one active window at a time. When focus or activation
-// changes a FocusChangeEvent is dispatched.
+// changes notifications are sent using the
+// aura::client::Focus/ActivationChangeObserver interfaces.
 // Changes to focus and activation can be from three sources:
 // . the Aura Client API (implemented here in aura::client::ActivationClient).
 //   (The FocusController must be set as the ActivationClient implementation

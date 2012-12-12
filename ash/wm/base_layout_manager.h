@@ -11,11 +11,12 @@
 #include "ash/shell_observer.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/root_window_observer.h"
+#include "ui/aura/window_observer.h"
 #include "ui/base/events/event_handler.h"
 #include "ui/base/ui_base_types.h"
-#include "ui/aura/window_observer.h"
 
 namespace aura {
 class RootWindow;
@@ -30,11 +31,12 @@ namespace internal {
 // window appropriately.  Subclasses should be sure to invoke the base class
 // for adding and removing windows, otherwise show state will not be tracked
 // properly.
-class ASH_EXPORT BaseLayoutManager : public aura::LayoutManager,
-                                     public aura::RootWindowObserver,
-                                     public ash::ShellObserver,
-                                     public aura::WindowObserver,
-                                     public ui::EventHandler {
+class ASH_EXPORT BaseLayoutManager
+    : public aura::LayoutManager,
+      public aura::RootWindowObserver,
+      public ash::ShellObserver,
+      public aura::WindowObserver,
+      public aura::client::ActivationChangeObserver {
  public:
   typedef std::set<aura::Window*> WindowSet;
 
@@ -72,8 +74,9 @@ class ASH_EXPORT BaseLayoutManager : public aura::LayoutManager,
                                        intptr_t old) OVERRIDE;
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
 
-  // ui::EventHandler overrides:
-  virtual void OnEvent(ui::Event* event) OVERRIDE;
+  // aura::client::ActivationChangeObserver overrides:
+  virtual void OnWindowActivated(aura::Window* gained_active,
+                                 aura::Window* lost_active) OVERRIDE;
 
  protected:
   // Invoked from OnWindowPropertyChanged() if |kShowStateKey| changes.
@@ -92,6 +95,8 @@ class ASH_EXPORT BaseLayoutManager : public aura::LayoutManager,
   WindowSet windows_;
 
   aura::RootWindow* root_window_;
+
+  bool added_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseLayoutManager);
 };

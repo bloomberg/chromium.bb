@@ -11,11 +11,11 @@
 #include "base/compiler_specific.h"
 #include "base/timer.h"
 #include "ui/app_list/pagination_model_observer.h"
+#include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/root_window_observer.h"
 #include "ui/base/events/event_handler.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/rect.h"
-#include "ui/views/corewm/focus_change_shim.h"
 #include "ui/views/widget/widget_observer.h"
 
 namespace app_list {
@@ -34,7 +34,8 @@ namespace internal {
 // It creates AppListView and schedules showing/hiding animation.
 // While the UI is visible, it monitors things such as app list widget's
 // activation state and desktop mouse click to auto dismiss the UI.
-class AppListController : public views::corewm::FocusChangeShim,
+class AppListController : public ui::EventHandler,
+                          public aura::client::FocusChangeObserver,
                           public aura::RootWindowObserver,
                           public ui::ImplicitAnimationObserver,
                           public views::WidgetObserver,

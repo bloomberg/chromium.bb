@@ -6,9 +6,9 @@
 #define UI_VIEWS_WIDGET_NATIVE_WIDGET_AURA_WINDOW_OBSERVER_H_
 
 #include "base/compiler_specific.h"
+#include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/views/corewm/activation_change_shim.h"
 #include "ui/views/widget/native_widget_private.h"
 
 namespace views {
@@ -18,7 +18,7 @@ namespace views {
 // changes in such a way that we should enable inactive rendering.
 class NativeWidgetAuraWindowObserver
     : public aura::WindowObserver,
-      public corewm::ActivationChangeShim {
+      public aura::client::ActivationChangeObserver {
  public:
   explicit NativeWidgetAuraWindowObserver(
       gfx::NativeView native_view,
@@ -26,8 +26,8 @@ class NativeWidgetAuraWindowObserver
   virtual ~NativeWidgetAuraWindowObserver();
 
   // Overridden from aura::client::ActivationChangeObserver:
-  virtual void OnWindowActivated(aura::Window* active,
-                                 aura::Window* old_active) OVERRIDE;
+  virtual void OnWindowActivated(aura::Window* gained_active,
+                                 aura::Window* lost_active) OVERRIDE;
 
   // Overridden from aura::WindowObserver:
   virtual void OnWindowRemovingFromRootWindow(aura::Window* window) OVERRIDE;

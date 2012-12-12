@@ -10,8 +10,8 @@
 #include <string>
 
 #include "chrome/browser/extensions/shell_window_registry.h"
+#include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/window_observer.h"
-#include "ui/views/corewm/activation_change_shim.h"
 
 namespace aura {
 
@@ -33,7 +33,7 @@ class ShellWindow;
 class ShellWindowLauncherController
     : public extensions::ShellWindowRegistry::Observer,
       public aura::WindowObserver,
-      public views::corewm::ActivationChangeShim {
+      public aura::client::ActivationChangeObserver {
  public:
   explicit ShellWindowLauncherController(ChromeLauncherController* owner);
   virtual ~ShellWindowLauncherController();
@@ -47,8 +47,8 @@ class ShellWindowLauncherController
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
 
   // Overriden from client::ActivationChangeObserver:
-  virtual void OnWindowActivated(aura::Window* active,
-                                 aura::Window* old_active) OVERRIDE;
+  virtual void OnWindowActivated(aura::Window* gained_active,
+                                 aura::Window* lost_active) OVERRIDE;
 
  private:
   class AppLauncherItemController;
