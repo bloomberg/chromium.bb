@@ -170,8 +170,8 @@ EXTRA_ENV = {
   'LLC_FLAGS': '${LLC_FLAGS_TARGET} ' +
                '${LLC_FLAGS_COMMON} ' +
                '${LLC_FLAGS_%ARCH%} ' +
-               '${LLC_FLAGS_EXTRA} ' +
-               '${FAST_TRANSLATION ? ${LLC_FLAGS_FAST} : ${LLC_FLAGS_SLOW}}',
+               '${FAST_TRANSLATION ? ${LLC_FLAGS_FAST} : ${LLC_FLAGS_SLOW}} ' +
+               '${LLC_FLAGS_EXTRA} ',
 
   # CPU that is representative of baseline feature requirements for NaCl
   # and/or chrome.  We may want to make this more like "-mtune"
@@ -211,6 +211,8 @@ TranslatorPatterns = [
   ( '(--gc-sections)',       "env.append('LD_FLAGS', $0)"),
   ( '(-mattr=.*)', "env.append('LLC_FLAGS_EXTRA', $0)"),
   ( '-mcpu=(.*)', "env.set('LLC_MCPU', $0)"),
+  # Allow overriding the -O level.
+  ( '(-O[0-3])', "env.append('LLC_FLAGS_EXTRA', $0)"),
 
   # This adds arch specific flags to the llc invocation aimed at
   # improving translation speed at the expense of code quality.
@@ -610,4 +612,5 @@ ADVANCED OPTIONS:
   -S                      Generate native assembly only.
   -c                      Generate native object file only.
   --pnacl-sb              Use the translator which runs inside the NaCl sandbox.
+  -O[0-3]                 Change translation-time optimization level.
 """

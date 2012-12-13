@@ -144,8 +144,8 @@ EXTRA_ENV = {
     '-l:crt1.bc ' +
     '-l:crti.bc -l:crtbegin.bc ${ld_inputs} ${STDLIBS}',
 
-  'TRANSLATE_FLAGS' : '',
-
+  # Flags for translating to native .o files.
+  'TRANSLATE_FLAGS' : '-O${OPT_LEVEL}',
 
   'STDLIBS'   : '${DEFAULTLIBS ? '
                 '${LIBSTDCPP} ${LIBPTHREAD} ${LIBNACL} ${LIBC} ${PNACL_ABI}}',

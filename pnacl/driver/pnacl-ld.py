@@ -40,6 +40,7 @@ EXTRA_ENV = {
                      '${STATIC ? -static} ' +
                      '${SHARED ? -shared} ' +
                      '${#SONAME ? -Wl,--soname=${SONAME}} ' +
+                     '-O${OPT_LEVEL} ' +
                      '${TRANSLATE_FLAGS_USER}',
 
   # Extra pnacl-translate flags specified by the user using -Wt
