@@ -27,7 +27,6 @@
 #include "chrome/browser/extensions/api/management/management_api.h"
 #include "chrome/browser/extensions/api/metrics/metrics.h"
 #include "chrome/browser/extensions/api/module/module.h"
-#include "chrome/browser/extensions/api/offscreen_tabs/offscreen_tabs_api.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/extensions/api/page_capture/page_capture_api.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api.h"
@@ -499,16 +498,6 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<extensions::AddRulesFunction>();
   RegisterFunction<extensions::RemoveRulesFunction>();
   RegisterFunction<extensions::GetRulesFunction>();
-
-  // Experimental Offscreen Tabs
-  RegisterFunction<CreateOffscreenTabFunction>();
-  RegisterFunction<GetOffscreenTabFunction>();
-  RegisterFunction<GetAllOffscreenTabFunction>();
-  RegisterFunction<RemoveOffscreenTabFunction>();
-  RegisterFunction<SendKeyboardEventOffscreenTabFunction>();
-  RegisterFunction<SendMouseEventOffscreenTabFunction>();
-  RegisterFunction<ToDataUrlOffscreenTabFunction>();
-  RegisterFunction<UpdateOffscreenTabFunction>();
 
   // Runtime
   RegisterFunction<extensions::RuntimeGetBackgroundPageFunction>();

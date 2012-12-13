@@ -1,7 +1,0 @@
-{
-  "name": "chrome.experimental.offscreenTabs API test",
-  "description": "tests offscrene tabs API",
-  "version": "1",
-  "manifest_version": 2,
-  "permissions": [ "experimental", "*://*/*" ]
-}
