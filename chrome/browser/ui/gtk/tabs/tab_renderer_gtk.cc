@@ -94,7 +94,7 @@ const int kRecordingDurationMs = 1000;
 const int kCloseButtonHorzFuzz = 4;
 
 // Scale to resize the current favicon by when projecting.
-const double kProjectingFaviconResizeScale = 0.8;
+const double kProjectingFaviconResizeScale = 0.75;
 
 // Scale to translate the current favicon by to center after scaling.
 const double kProjectingFaviconXShiftScale = 0.15;
