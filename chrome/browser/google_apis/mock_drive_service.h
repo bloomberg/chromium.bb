@@ -59,7 +59,7 @@ class MockDriveService : public DriveServiceInterface {
   MOCK_METHOD3(CopyHostedDocument,
       void(const std::string& resource_id,
            const FilePath::StringType& new_name,
-           const GetDataCallback& callback));
+           const GetResourceEntryCallback& callback));
   MOCK_METHOD3(RenameResource,
       void(const GURL& edit_url,
           const FilePath::StringType& new_name,
@@ -149,7 +149,7 @@ class MockDriveService : public DriveServiceInterface {
   // |document_data_|.
   void CopyHostedDocumentStub(const std::string& resource_id,
       const FilePath::StringType& new_name,
-      const GetDataCallback& callback);
+      const GetResourceEntryCallback& callback);
 
   // Will call |callback| with HTTP_SUCCESS.
   void RenameResourceStub(const GURL& edit_url,

@@ -1349,13 +1349,16 @@ TEST_F(DriveFileSystemTest, TransferFileFromLocalToRemote_HostedDocument) {
 
   // We'll copy a hosted document using CopyHostedDocument.
   // ".gdoc" suffix should be stripped when copying.
-  scoped_ptr<base::Value> document =
+  scoped_ptr<base::Value> value =
       google_apis::test_util::LoadJSONFile("gdata/uploaded_document.json");
+  scoped_ptr<google_apis::ResourceEntry> resource_entry =
+      google_apis::ResourceEntry::ExtractAndParse(*value);
   EXPECT_CALL(*mock_drive_service_,
               CopyHostedDocument(kResourceId,
                                  FILE_PATH_LITERAL("Document 1"),
                                  _))
-      .WillOnce(MockCopyHostedDocument(google_apis::HTTP_SUCCESS, &document));
+      .WillOnce(MockCopyHostedDocument(google_apis::HTTP_SUCCESS,
+                                       &resource_entry));
   // We'll then add the hosted document to the destination directory.
   EXPECT_CALL(*mock_drive_service_,
               AddResourceToDirectory(_, _, _)).Times(1);

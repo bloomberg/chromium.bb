@@ -233,7 +233,7 @@ void CopyOperation::OnCopyHostedDocumentCompleted(
     const FilePath& dir_path,
     const FileOperationCallback& callback,
     GDataErrorCode status,
-    scoped_ptr<base::Value> data) {
+    scoped_ptr<google_apis::ResourceEntry> resource_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -242,13 +242,14 @@ void CopyOperation::OnCopyHostedDocumentCompleted(
     callback.Run(error);
     return;
   }
+  DCHECK(resource_entry);
 
   // |entry| was added in the root directory on the server, so we should
   // first add it to |root_| to mirror the state and then move it to the
   // destination directory by MoveEntryFromRootDirectory().
   metadata_->AddEntryToDirectory(
       FilePath(kDriveRootDirectory),
-      scoped_ptr<ResourceEntry>(ResourceEntry::ExtractAndParse(*data)),
+      resource_entry.Pass(),
       base::Bind(&CopyOperation::MoveEntryFromRootDirectory,
                  weak_ptr_factory_.GetWeakPtr(),
                  dir_path,

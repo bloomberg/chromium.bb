@@ -326,7 +326,7 @@ void DriveAPIService::AddNewDirectory(
 void DriveAPIService::CopyHostedDocument(
     const std::string& resource_id,
     const FilePath::StringType& new_name,
-    const google_apis::GetDataCallback& callback) {
+    const google_apis::GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 

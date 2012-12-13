@@ -116,9 +116,10 @@ class MockDriveServiceBase : public DriveServiceInterface {
       const DownloadActionCallback& callback) OVERRIDE {
     NOTREACHED();
   }
-  virtual void CopyHostedDocument(const std::string& resource_id,
-                                  const FilePath::StringType& new_name,
-                                  const GetDataCallback& callback) OVERRIDE {
+  virtual void CopyHostedDocument(
+      const std::string& resource_id,
+      const FilePath::StringType& new_name,
+      const GetResourceEntryCallback& callback) OVERRIDE {
     NOTREACHED();
   }
   virtual void RenameResource(const GURL& edit_url,

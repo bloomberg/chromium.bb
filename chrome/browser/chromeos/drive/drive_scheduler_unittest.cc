@@ -129,7 +129,7 @@ class FakeDriveService : public DriveServiceInterface {
 
   virtual void CopyHostedDocument(const std::string& resource_id,
                                   const FilePath::StringType& new_name,
-                                  const GetDataCallback& callback) {
+                                  const GetResourceEntryCallback& callback) {
   }
 
   virtual void RenameResource(const GURL& edit_url,

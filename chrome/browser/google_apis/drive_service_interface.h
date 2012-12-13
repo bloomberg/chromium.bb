@@ -182,9 +182,10 @@ class DriveServiceInterface {
   // when needed. Upon completion, invokes |callback| with results on the
   // calling thread.
   // |callback| must not be null.
-  virtual void CopyHostedDocument(const std::string& resource_id,
-                                  const FilePath::StringType& new_name,
-                                  const GetDataCallback& callback) = 0;
+  virtual void CopyHostedDocument(
+      const std::string& resource_id,
+      const FilePath::StringType& new_name,
+      const GetResourceEntryCallback& callback) = 0;
 
   // Renames a document or collection identified by its |edit_url|
   // to the UTF-8 encoded |new_name|. Upon completion,

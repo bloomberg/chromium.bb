@@ -116,10 +116,11 @@ class CopyOperation {
 
   // Callback for handling document copy attempt.
   // |callback| must not be null.
-  void OnCopyHostedDocumentCompleted(const FilePath& dir_path,
-                                     const FileOperationCallback& callback,
-                                     google_apis::GDataErrorCode status,
-                                     scoped_ptr<base::Value> data);
+  void OnCopyHostedDocumentCompleted(
+      const FilePath& dir_path,
+      const FileOperationCallback& callback,
+      google_apis::GDataErrorCode status,
+      scoped_ptr<google_apis::ResourceEntry> resource_entry);
 
   // Moves a file or directory at |file_path| in the root directory to
   // another directory at |dir_path|. This function does nothing if

@@ -73,14 +73,14 @@ void MockDriveService::GetResourceListStub(
     const GetResourceListCallback& callback) {
   if (search_string.empty()) {
     scoped_ptr<ResourceList> resource_list =
-        google_apis::ResourceList::ExtractAndParse(*feed_data_);
+        ResourceList::ExtractAndParse(*feed_data_);
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
         base::Bind(callback, HTTP_SUCCESS,
                    base::Passed(&resource_list)));
   } else {
     scoped_ptr<ResourceList> resource_list =
-        google_apis::ResourceList::ExtractAndParse(*search_result_);
+        ResourceList::ExtractAndParse(*search_result_);
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
         base::Bind(callback, HTTP_SUCCESS,
@@ -120,11 +120,13 @@ void MockDriveService::DownloadHostedDocumentStub(
 void MockDriveService::CopyHostedDocumentStub(
     const std::string& resource_id,
     const FilePath::StringType& new_name,
-    const GetDataCallback& callback) {
+    const GetResourceEntryCallback& callback) {
+  scoped_ptr<ResourceEntry> resource_entry =
+      ResourceEntry::ExtractAndParse(*document_data_);
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(callback, HTTP_SUCCESS,
-                 base::Passed(&document_data_)));
+                 base::Passed(&resource_entry)));
 }
 
 void MockDriveService::RenameResourceStub(

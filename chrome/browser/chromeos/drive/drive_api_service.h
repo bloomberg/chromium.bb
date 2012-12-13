@@ -91,7 +91,7 @@ class DriveAPIService : public google_apis::DriveServiceInterface,
   virtual void CopyHostedDocument(
       const std::string& resource_id,
       const FilePath::StringType& new_name,
-      const google_apis::GetDataCallback& callback) OVERRIDE;
+      const google_apis::GetResourceEntryCallback& callback) OVERRIDE;
   virtual void RenameResource(
       const GURL& edit_url,
       const FilePath::StringType& new_name,

@@ -363,17 +363,18 @@ void GDataWapiService::AddNewDirectory(
 void GDataWapiService::CopyHostedDocument(
     const std::string& resource_id,
     const FilePath::StringType& new_name,
-    const GetDataCallback& callback) {
+    const GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   runner_->StartOperationWithRetry(
-      new CopyHostedDocumentOperation(operation_registry(),
-                                      url_request_context_getter_,
-                                      url_generator_,
-                                      callback,
-                                      resource_id,
-                                      new_name));
+      new CopyHostedDocumentOperation(
+          operation_registry(),
+          url_request_context_getter_,
+          url_generator_,
+          base::Bind(&ParseResourceEntryAndRun, callback),
+          resource_id,
+          new_name));
 }
 
 void GDataWapiService::RenameResource(
