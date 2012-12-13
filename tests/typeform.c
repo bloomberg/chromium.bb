@@ -7,7 +7,7 @@
 int
 main (int argc, char **argv)
 {
-    const char strings[][629] = {
+    const char* strings[] = {
 
 		"I",
 		"Alice's Adventures In Wonderland",
@@ -641,10 +641,10 @@ main (int argc, char **argv)
     };
 
     char* table = "unicode.dis,en-us-g2.ctb";
-    int i;
+    unsigned int i;
     int j;
-    for (i=0; i<629; i++) {
-        //printf("%s\n", strings[i]);
+    for (i=0; i < sizeof(strings)/sizeof(strings[0]); i++) {
+        /* printf("%s\n", strings[i]); */
         int inlen = strlen(strings[i]);
         int outlen = inlen * 3;
         widechar* inbuf = malloc(inlen * sizeof(widechar));

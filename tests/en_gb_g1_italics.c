@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include "brl_checks.h"
 
+#undef TRANSLATION_TABLE
 #define TRANSLATION_TABLE "en-gb-g1.utb"
 
 int
