@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_MEDIA_CRYPTO_PPAPI_CONTENT_DECRYPTION_MODULE_H_
-#define WEBKIT_MEDIA_CRYPTO_PPAPI_CONTENT_DECRYPTION_MODULE_H_
+#ifndef CDM_CONTENT_DECRYPTION_MODULE_H_
+#define CDM_CONTENT_DECRYPTION_MODULE_H_
 
 #if defined(_MSC_VER)
 typedef unsigned char uint8_t;
@@ -14,12 +14,32 @@ typedef __int64 int64_t;
 #include <stdint.h>
 #endif
 
-#include "webkit/media/crypto/ppapi/cdm_export.h"
-
 // The version number must be rolled when this file is updated!
 // If the CDM and the plugin use different versions of this file, the plugin
 // will fail to load or crash!
 #define INITIALIZE_CDM_MODULE InitializeCdmModule_3
+
+
+// Define CDM_EXPORT so that functionality implemented by the CDM module
+// can be exported to consumers.
+#if defined(WIN32)
+
+#if defined(CDM_IMPLEMENTATION)
+#define CDM_EXPORT __declspec(dllexport)
+#else
+#define CDM_EXPORT __declspec(dllimport)
+#endif  // defined(CDM_IMPLEMENTATION)
+
+#else  // defined(WIN32)
+
+#if defined(CDM_IMPLEMENTATION)
+#define CDM_EXPORT __attribute__((visibility("default")))
+#else
+#define CDM_EXPORT
+#endif
+
+#endif  // defined(WIN32)
+
 
 namespace cdm {
 class Allocator;
@@ -472,4 +492,4 @@ class AudioFrames {
 
 }  // namespace cdm
 
-#endif  // WEBKIT_MEDIA_CRYPTO_PPAPI_CONTENT_DECRYPTION_MODULE_H_
+#endif  // CDM_CONTENT_DECRYPTION_MODULE_H_
