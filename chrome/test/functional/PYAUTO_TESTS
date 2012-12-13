@@ -84,9 +84,6 @@
       '-fullscreen_mouselock.FullscreenMouselockTest.testNoTabFSExitWhenJSExitMouseLock',
       # crosbug.com/136875
       '-fullscreen_mouselock.FullscreenMouselockTest.testTabFSDoesNotExitForAnchorLinks',
-      # crbug.com/158794
-      '-gtalk.test_basic.BasicTest.testCurrentVersion',
-      '-gtalk.test_basic.BasicTest.testRCVersion',
       # crbug.com/131874
       '-infobars.OneClickInfobarTest.testNoOneClickInfobarAfterCancel',
       # crbug.com/133315
