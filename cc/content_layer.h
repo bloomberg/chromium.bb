@@ -37,6 +37,7 @@ public:
     static scoped_refptr<ContentLayer> create(ContentLayerClient*);
 
     void clearClient() { m_client = 0; }
+    bool useLCDText() const { return m_useLCDText; }
 
     virtual bool drawsContent() const OVERRIDE;
     virtual void setTexturePriorities(const PriorityCalculator&) OVERRIDE;
@@ -53,8 +54,19 @@ private:
     virtual LayerUpdater* updater() const OVERRIDE;
     virtual void createUpdaterIfNeeded() OVERRIDE;
 
+    void updateUseLCDText();
+    // Called when LCD text setting is about to potentially change.
+    // If this function returns true, the setting is allowed to change.
+    // If it returns false, the setting is not changed.
+    bool useLCDTextWillChange() const;
+    void useLCDTextDidChange();
+
     ContentLayerClient* m_client;
     scoped_refptr<LayerUpdater> m_updater;
+
+    bool m_useLCDText;
+    int m_lcdTextChangeCount;
+    static const int kLCDTextMaxChangeCount;
 };
 
 }

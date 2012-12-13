@@ -23,6 +23,7 @@ LayerTreeSettings::LayerTreeSettings()
     , pageScalePinchZoomEnabled(false)
     , backgroundColorInsteadOfCheckerboard(false)
     , showOverdrawInTracing(false)
+    , canUseLCDText(true)
     , refreshRate(0)
     , maxPartialTextureUpdates(std::numeric_limits<size_t>::max())
     , numRasterThreads(1)
@@ -35,6 +36,12 @@ LayerTreeSettings::LayerTreeSettings()
     partialSwapEnabled = CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePartialSwap);
     backgroundColorInsteadOfCheckerboard = CommandLine::ForCurrentProcess()->HasSwitch(switches::kBackgroundColorInsteadOfCheckerboard);
     showOverdrawInTracing = CommandLine::ForCurrentProcess()->HasSwitch(switches::kTraceOverdraw);
+
+// TODO(alokp): Remove this hard-coded setting.
+// Platforms that need to disable LCD text must explicitly set this value.
+#if defined(OS_ANDROID)
+    canUseLCDText = false;
+#endif
 
     initialDebugState.showPropertyChangedRects = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kShowPropertyChangedRects);
     initialDebugState.showSurfaceDamageRects = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kShowSurfaceDamageRects);

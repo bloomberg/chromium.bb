@@ -414,7 +414,7 @@ void LayerTreeHostImpl::calculateRenderSurfaceLayerList(LayerList& renderSurface
 
         TRACE_EVENT0("cc", "LayerTreeHostImpl::calcDrawEtc");
         float pageScaleFactor = m_pinchZoomViewport.pageScaleFactor();
-        LayerTreeHostCommon::calculateDrawProperties(rootLayer(), deviceViewportSize(), m_deviceScaleFactor, pageScaleFactor, rendererCapabilities().maxTextureSize, renderSurfaceLayerList);
+        LayerTreeHostCommon::calculateDrawProperties(rootLayer(), deviceViewportSize(), m_deviceScaleFactor, pageScaleFactor, rendererCapabilities().maxTextureSize, m_settings.canUseLCDText, renderSurfaceLayerList);
     }
 }
 

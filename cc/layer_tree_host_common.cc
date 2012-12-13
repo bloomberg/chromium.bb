@@ -453,7 +453,8 @@ static void calculateDrawPropertiesInternal(LayerType* layer, const gfx::Transfo
     const gfx::Transform& fullHierarchyMatrix, const gfx::Transform& currentScrollCompensationMatrix,
     const gfx::Rect& clipRectFromAncestor, const gfx::Rect& clipRectFromAncestorInDescendantSpace, bool ancestorClipsSubtree,
     RenderSurfaceType* nearestAncestorThatMovesPixels, LayerList& renderSurfaceLayerList, LayerList& layerList,
-    LayerSorter* layerSorter, int maxTextureSize, float deviceScaleFactor, float pageScaleFactor, gfx::Rect& drawableContentRectOfSubtree)
+    LayerSorter* layerSorter, int maxTextureSize, float deviceScaleFactor, float pageScaleFactor, bool subtreeCanUseLCDText,
+    gfx::Rect& drawableContentRectOfSubtree)
 {
     // This function computes the new matrix transformations recursively for this
     // layer and all its descendants. It also computes the appropriate render surfaces.
@@ -561,10 +562,12 @@ static void calculateDrawPropertiesInternal(LayerType* layer, const gfx::Transfo
     gfx::Rect clipRectForSubtreeInDescendantSpace;
 
     float accumulatedDrawOpacity = layer->opacity();
-    bool drawOpacityIsAnimating = layer->opacityIsAnimating();
+    bool animatingOpacityToTarget = layer->opacityIsAnimating();
+    bool animatingOpacityToScreen = animatingOpacityToTarget;
     if (layer->parent()) {
         accumulatedDrawOpacity *= layer->parent()->drawOpacity();
-        drawOpacityIsAnimating |= layer->parent()->drawOpacityIsAnimating();
+        animatingOpacityToTarget |= layer->parent()->drawOpacityIsAnimating();
+        animatingOpacityToScreen |= layer->parent()->screenSpaceOpacityIsAnimating();
     }
 
     bool animatingTransformToTarget = layer->transformIsAnimating();
@@ -620,6 +623,13 @@ static void calculateDrawPropertiesInternal(LayerType* layer, const gfx::Transfo
         MathUtil::flattenTransformTo2d(layerDrawProperties.screen_space_transform);
     layerDrawProperties.screen_space_transform.PreconcatTransform(layerDrawProperties.target_space_transform);
 
+    // Adjusting text AA method during animation may cause repaints, which in-turn causes jank.
+    bool adjustTextAA = !animatingOpacityToScreen && !animatingTransformToScreen;
+    // To avoid color fringing, LCD text should only be used on opaque layers with just integral translation.
+    bool layerCanUseLCDText = subtreeCanUseLCDText &&
+                              (accumulatedDrawOpacity == 1.0) &&
+                              layerDrawProperties.target_space_transform.IsIdentityOrIntegerTranslation();
+
     gfx::RectF contentRect(gfx::PointF(), layer->contentBounds());
 
     // fullHierarchyMatrix is the matrix that transforms objects between screen space (except projection matrix) and the most recent RenderSurfaceImpl's space.
@@ -660,9 +670,11 @@ static void calculateDrawPropertiesInternal(LayerType* layer, const gfx::Transfo
 
         // The opacity value is moved from the layer to its surface, so that the entire subtree properly inherits opacity.
         renderSurface->setDrawOpacity(accumulatedDrawOpacity);
-        renderSurface->setDrawOpacityIsAnimating(drawOpacityIsAnimating);
+        renderSurface->setDrawOpacityIsAnimating(animatingOpacityToTarget);
+        animatingOpacityToTarget = false;
         layerDrawProperties.opacity = 1;
-        layerDrawProperties.opacity_is_animating = false;
+        layerDrawProperties.opacity_is_animating = animatingOpacityToTarget;
+        layerDrawProperties.screen_space_opacity_is_animating = animatingOpacityToScreen;
 
         renderSurface->setTargetSurfaceTransformsAreAnimating(animatingTransformToTarget);
         renderSurface->setScreenSpaceTransformsAreAnimating(animatingTransformToScreen);
@@ -709,6 +721,10 @@ static void calculateDrawPropertiesInternal(LayerType* layer, const gfx::Transfo
 
         renderSurface->setNearestAncestorThatMovesPixels(nearestAncestorThatMovesPixels);
 
+        // If the new render surface is drawn translucent or with a non-integral translation
+        // then the subtree that gets drawn on this render surface cannot use LCD text.
+        subtreeCanUseLCDText = layerCanUseLCDText;
+
         renderSurfaceLayerList.push_back(layer);
     } else {
         DCHECK(layer->parent());
@@ -718,7 +734,8 @@ static void calculateDrawPropertiesInternal(LayerType* layer, const gfx::Transfo
         layerDrawProperties.target_space_transform_is_animating = animatingTransformToTarget;
         layerDrawProperties.screen_space_transform_is_animating = animatingTransformToScreen;
         layerDrawProperties.opacity = accumulatedDrawOpacity;
-        layerDrawProperties.opacity_is_animating = drawOpacityIsAnimating;
+        layerDrawProperties.opacity_is_animating = animatingOpacityToTarget;
+        layerDrawProperties.screen_space_opacity_is_animating = animatingOpacityToScreen;
         sublayerMatrix = combinedTransform;
 
         layer->clearRenderSurface();
@@ -734,6 +751,9 @@ static void calculateDrawPropertiesInternal(LayerType* layer, const gfx::Transfo
         // Layers that are not their own renderTarget will render into the target of their nearest ancestor.
         layerDrawProperties.render_target = layer->parent()->renderTarget();
     }
+
+    if (adjustTextAA)
+        layerDrawProperties.can_use_lcd_text = layerCanUseLCDText;
 
     gfx::Rect rectInTargetSpace = ToEnclosingRect(MathUtil::mapClippedRect(layer->drawTransform(), contentRect));
 
@@ -773,7 +793,8 @@ static void calculateDrawPropertiesInternal(LayerType* layer, const gfx::Transfo
         gfx::Rect drawableContentRectOfChildSubtree;
         calculateDrawPropertiesInternal<LayerType, LayerList, RenderSurfaceType>(child, sublayerMatrix, nextHierarchyMatrix, nextScrollCompensationMatrix,
                                                                                  clipRectForSubtree, clipRectForSubtreeInDescendantSpace, subtreeShouldBeClipped, nearestAncestorThatMovesPixels,
-                                                                                 renderSurfaceLayerList, descendants, layerSorter, maxTextureSize, deviceScaleFactor, pageScaleFactor, drawableContentRectOfChildSubtree);
+                                                                                 renderSurfaceLayerList, descendants, layerSorter, maxTextureSize, deviceScaleFactor, pageScaleFactor,
+                                                                                 subtreeCanUseLCDText, drawableContentRectOfChildSubtree);
         if (!drawableContentRectOfChildSubtree.IsEmpty()) {
             accumulatedDrawableContentRectOfChildren.Union(drawableContentRectOfChildSubtree);
             if (child->renderSurface())
@@ -894,7 +915,7 @@ static void calculateDrawPropertiesInternal(LayerType* layer, const gfx::Transfo
         layer->renderTarget()->renderSurface()->addContributingDelegatedRenderPassLayer(layer);
 }
 
-void LayerTreeHostCommon::calculateDrawProperties(Layer* rootLayer, const gfx::Size& deviceViewportSize, float deviceScaleFactor, float pageScaleFactor, int maxTextureSize, std::vector<scoped_refptr<Layer> >& renderSurfaceLayerList)
+void LayerTreeHostCommon::calculateDrawProperties(Layer* rootLayer, const gfx::Size& deviceViewportSize, float deviceScaleFactor, float pageScaleFactor, int maxTextureSize, bool canUseLCDText, std::vector<scoped_refptr<Layer> >& renderSurfaceLayerList)
 {
     gfx::Rect totalDrawableContentRect;
     gfx::Transform identityMatrix;
@@ -914,7 +935,7 @@ void LayerTreeHostCommon::calculateDrawProperties(Layer* rootLayer, const gfx::S
         rootLayer, deviceScaleTransform, identityMatrix, identityMatrix,
         deviceViewportRect, deviceViewportRect, subtreeShouldBeClipped, 0, renderSurfaceLayerList,
         dummyLayerList, 0, maxTextureSize,
-        deviceScaleFactor, pageScaleFactor, totalDrawableContentRect);
+        deviceScaleFactor, pageScaleFactor, canUseLCDText, totalDrawableContentRect);
 
     // The dummy layer list should not have been used.
     DCHECK(dummyLayerList.size() == 0);
@@ -922,7 +943,7 @@ void LayerTreeHostCommon::calculateDrawProperties(Layer* rootLayer, const gfx::S
     DCHECK(rootLayer->renderSurface());
 }
 
-void LayerTreeHostCommon::calculateDrawProperties(LayerImpl* rootLayer, const gfx::Size& deviceViewportSize, float deviceScaleFactor, float pageScaleFactor, int maxTextureSize, std::vector<LayerImpl*>& renderSurfaceLayerList)
+void LayerTreeHostCommon::calculateDrawProperties(LayerImpl* rootLayer, const gfx::Size& deviceViewportSize, float deviceScaleFactor, float pageScaleFactor, int maxTextureSize, bool canUseLCDText, std::vector<LayerImpl*>& renderSurfaceLayerList)
 {
     gfx::Rect totalDrawableContentRect;
     gfx::Transform identityMatrix;
@@ -943,7 +964,7 @@ void LayerTreeHostCommon::calculateDrawProperties(LayerImpl* rootLayer, const gf
         rootLayer, deviceScaleTransform, identityMatrix, identityMatrix,
         deviceViewportRect, deviceViewportRect, subtreeShouldBeClipped, 0, renderSurfaceLayerList,
         dummyLayerList, &layerSorter, maxTextureSize,
-        deviceScaleFactor, pageScaleFactor, totalDrawableContentRect);
+        deviceScaleFactor, pageScaleFactor, canUseLCDText, totalDrawableContentRect);
 
     // The dummy layer list should not have been used.
     DCHECK(dummyLayerList.size() == 0);

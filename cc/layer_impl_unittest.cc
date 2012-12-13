@@ -99,7 +99,6 @@ TEST(LayerImplTest, verifyLayerChangesAreTrackedProperly)
     skia::RefPtr<SkImageFilter> arbitraryFilter = skia::AdoptRef(new SkBlurImageFilter(SK_Scalar1, SK_Scalar1));
 
     // These properties are internal, and should not be considered "change" when they are used.
-    EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setUseLCDText(true));
     EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setUpdateRect(arbitraryRectF));
     EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setMaxScrollOffset(arbitraryVector2d));
 

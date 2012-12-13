@@ -148,9 +148,6 @@ public:
     void setUseParentBackfaceVisibility(bool useParentBackfaceVisibility) { m_useParentBackfaceVisibility = useParentBackfaceVisibility; }
     bool useParentBackfaceVisibility() const { return m_useParentBackfaceVisibility; }
 
-    void setUseLCDText(bool useLCDText) { m_useLCDText = useLCDText; }
-    bool useLCDText() const { return m_useLCDText; }
-
     void setSublayerTransform(const gfx::Transform&);
     const gfx::Transform& sublayerTransform() const { return m_sublayerTransform; }
 
@@ -176,6 +173,8 @@ public:
     bool drawOpacityIsAnimating() const { return m_drawProperties.opacity_is_animating; }
     bool drawTransformIsAnimating() const { return m_drawProperties.target_space_transform_is_animating; }
     bool screenSpaceTransformIsAnimating() const { return m_drawProperties.screen_space_transform_is_animating; }
+    bool screenSpaceOpacityIsAnimating() const { return m_drawProperties.screen_space_opacity_is_animating; }
+    bool canUseLCDText() const { return m_drawProperties.can_use_lcd_text; }
     bool isClipped() const { return m_drawProperties.is_clipped; }
     const gfx::Rect& clipRect() const { return m_drawProperties.clip_rect; }
     const gfx::Rect& drawableContentRect() const { return m_drawProperties.drawable_content_rect; }
@@ -356,7 +355,6 @@ private:
     bool m_drawCheckerboardForMissingTiles;
     gfx::Transform m_sublayerTransform;
     gfx::Transform m_transform;
-    bool m_useLCDText;
 
     bool m_drawsContent;
     bool m_forceRenderSurface;

@@ -4,6 +4,7 @@
 
 #include "cc/content_layer.h"
 
+#include "base/debug/trace_event.h"
 #include "base/metrics/histogram.h"
 #include "base/time.h"
 #include "cc/bitmap_content_layer_updater.h"
@@ -34,6 +35,8 @@ void ContentLayerPainter::paint(SkCanvas* canvas, const gfx::Rect& contentRect, 
     HISTOGRAM_CUSTOM_COUNTS("Renderer4.AccelContentPaintMegapixPerSecond", pixelsPerSec / 1000000, 10, 210, 30);
 }
 
+const int ContentLayer::kLCDTextMaxChangeCount = 1;
+
 scoped_refptr<ContentLayer> ContentLayer::create(ContentLayerClient* client)
 {
     return make_scoped_refptr(new ContentLayer(client));
@@ -42,6 +45,8 @@ scoped_refptr<ContentLayer> ContentLayer::create(ContentLayerClient* client)
 ContentLayer::ContentLayer(ContentLayerClient* client)
     : TiledLayer()
     , m_client(client)
+    , m_useLCDText(false)
+    , m_lcdTextChangeCount(0)
 {
 }
 
@@ -65,6 +70,8 @@ void ContentLayer::setTexturePriorities(const PriorityCalculator& priorityCalc)
 void ContentLayer::update(ResourceUpdateQueue& queue, const OcclusionTracker* occlusion, RenderingStats& stats)
 {
     createUpdaterIfNeeded();
+    updateUseLCDText();
+
     TiledLayer::update(queue, occlusion, stats);
     m_needsDisplay = false;
 }
@@ -101,6 +108,40 @@ void ContentLayer::setContentsOpaque(bool opaque)
     Layer::setContentsOpaque(opaque);
     if (m_updater)
         m_updater->setOpaque(opaque);
+}
+
+void ContentLayer::updateUseLCDText()
+{
+    if (m_useLCDText == drawProperties().can_use_lcd_text)
+        return;
+
+    if (!useLCDTextWillChange())
+        return;
+
+    m_useLCDText = drawProperties().can_use_lcd_text;
+    useLCDTextDidChange();
+}
+
+bool ContentLayer::useLCDTextWillChange() const
+{
+    // Always allow disabling LCD text.
+    if (m_useLCDText)
+        return true;
+ 
+    return m_lcdTextChangeCount < kLCDTextMaxChangeCount;
+}
+
+void ContentLayer::useLCDTextDidChange()
+{
+    if (m_lcdTextChangeCount > 0) {
+        // Do not record the first time LCD text is enabled because
+        // it does not really cause any invalidation.
+        TRACE_EVENT_INSTANT0("cc", "ContentLayer::canUseLCDTextDidChange");
+    }
+    ++m_lcdTextChangeCount;
+ 
+    // Need to repaint the layer with different text AA setting.
+    setNeedsDisplay();
 }
 
 }  // namespace cc

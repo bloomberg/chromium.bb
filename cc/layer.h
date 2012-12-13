@@ -140,6 +140,8 @@ public:
     bool drawOpacityIsAnimating() const { return m_drawProperties.opacity_is_animating; }
     bool drawTransformIsAnimating() const { return m_drawProperties.target_space_transform_is_animating; }
     bool screenSpaceTransformIsAnimating() const { return m_drawProperties.screen_space_transform_is_animating; }
+    bool screenSpaceOpacityIsAnimating() const { return m_drawProperties.screen_space_opacity_is_animating; }
+    bool canUseLCDText() const { return m_drawProperties.can_use_lcd_text; }
     bool isClipped() const { return m_drawProperties.is_clipped; }
     const gfx::Rect& clipRect() const { return m_drawProperties.clip_rect; }
     const gfx::Rect& drawableContentRect() const { return m_drawProperties.drawable_content_rect; }
@@ -192,9 +194,6 @@ public:
 
     void setUseParentBackfaceVisibility(bool useParentBackfaceVisibility) { m_useParentBackfaceVisibility = useParentBackfaceVisibility; }
     bool useParentBackfaceVisibility() const { return m_useParentBackfaceVisibility; }
-
-    void setUseLCDText(bool);
-    bool useLCDText() const { return m_useLCDText; }
 
     virtual void setLayerTreeHost(LayerTreeHost*);
 
@@ -363,7 +362,6 @@ private:
     bool m_masksToBounds;
     bool m_contentsOpaque;
     bool m_doubleSided;
-    bool m_useLCDText;
     bool m_preserves3D;
     bool m_useParentBackfaceVisibility;
     bool m_drawCheckerboardForMissingTiles;

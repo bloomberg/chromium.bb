@@ -48,7 +48,6 @@ Layer::Layer()
     , m_masksToBounds(false)
     , m_contentsOpaque(false)
     , m_doubleSided(true)
-    , m_useLCDText(false)
     , m_preserves3D(false)
     , m_useParentBackfaceVisibility(false)
     , m_drawCheckerboardForMissingTiles(false)
@@ -74,11 +73,6 @@ Layer::~Layer()
 
     // Remove the parent reference from all children.
     removeAllChildren();
-}
-
-void Layer::setUseLCDText(bool useLCDText)
-{
-    m_useLCDText = useLCDText;
 }
 
 void Layer::setLayerTreeHost(LayerTreeHost* host)
@@ -567,7 +561,6 @@ void Layer::pushPropertiesTo(LayerImpl* layer)
     layer->setFilters(filters());
     layer->setFilter(filter());
     layer->setBackgroundFilters(backgroundFilters());
-    layer->setUseLCDText(m_useLCDText);
     layer->setMasksToBounds(m_masksToBounds);
     layer->setScrollable(m_scrollable);
     layer->setShouldScrollOnMainThread(m_shouldScrollOnMainThread);

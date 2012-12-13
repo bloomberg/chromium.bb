@@ -1120,7 +1120,6 @@ TEST_P(LayerTreeHostImplTest, scrollNonCompositedRoot)
     gfx::Size surfaceSize(10, 10);
 
     scoped_ptr<LayerImpl> contentLayer = LayerImpl::create(m_hostImpl->activeTree(), 1);
-    contentLayer->setUseLCDText(true);
     contentLayer->setDrawsContent(true);
     contentLayer->setPosition(gfx::PointF(0, 0));
     contentLayer->setAnchorPoint(gfx::PointF(0, 0));

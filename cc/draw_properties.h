@@ -18,8 +18,10 @@ struct CC_EXPORT DrawProperties {
     DrawProperties()
         : opacity(0)
         , opacity_is_animating(false)
+        , screen_space_opacity_is_animating(false)
         , target_space_transform_is_animating(false)
         , screen_space_transform_is_animating(false)
+        , can_use_lcd_text(false)
         , is_clipped(false)
         , render_target(0)
         , num_descendants_that_draw_content(0)
@@ -43,8 +45,12 @@ struct CC_EXPORT DrawProperties {
     // animating, the main thread may not have the same values that are used
     // to draw.
     bool opacity_is_animating;
+    bool screen_space_opacity_is_animating;
     bool target_space_transform_is_animating;
     bool screen_space_transform_is_animating;
+
+    // True if the layer can use LCD text.
+    bool can_use_lcd_text;
 
     // True if the layer needs to be clipped by clipRect.
     bool is_clipped;

@@ -72,9 +72,9 @@ void WebContentLayerImpl::setAutomaticallyComputeRasterScale(bool automatic)
   m_layer->layer()->setAutomaticallyComputeRasterScale(automatic);
 }
 
+// TODO(alokp): Remove this function from WebContentLayer API.
 void WebContentLayerImpl::setUseLCDText(bool enable)
 {
-    m_layer->layer()->setUseLCDText(enable);
 }
 
 void WebContentLayerImpl::setDrawCheckerboardForMissingTiles(bool enable)
@@ -87,11 +87,15 @@ void WebContentLayerImpl::paintContents(SkCanvas* canvas, const gfx::Rect& clip,
 {
     if (!m_client)
         return;
+
+    bool useLCDText = usingPictureLayer() ?
+            false :
+            static_cast<ContentLayer*>(m_layer->layer())->useLCDText();
     WebFloatRect webOpaque;
     m_client->paintContents(canvas,
                             clip,
 #if WEBCONTENTLAYERCLIENT_HAS_CANPAINTLCDTEXT
-                            m_layer->layer()->useLCDText(),
+                            useLCDText,
 #endif  // WEBCONTENTLAYERCLIENT_HAS_CANPAINTLCDTEXT
                             webOpaque);
     opaque = webOpaque;

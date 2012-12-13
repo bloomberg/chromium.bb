@@ -51,7 +51,7 @@ void setLayerPropertiesForTesting(LayerImpl* layer, const gfx::Transform& transf
     layer->setContentBounds(bounds);
 }
 
-void executeCalculateDrawProperties(Layer* rootLayer, float deviceScaleFactor = 1, float pageScaleFactor = 1)
+void executeCalculateDrawProperties(Layer* rootLayer, float deviceScaleFactor = 1, float pageScaleFactor = 1, bool canUseLCDText = false)
 {
     gfx::Transform identityMatrix;
     std::vector<scoped_refptr<Layer> > dummyRenderSurfaceLayerList;
@@ -60,10 +60,10 @@ void executeCalculateDrawProperties(Layer* rootLayer, float deviceScaleFactor = 
 
     // We are probably not testing what is intended if the rootLayer bounds are empty.
     DCHECK(!rootLayer->bounds().IsEmpty());
-    LayerTreeHostCommon::calculateDrawProperties(rootLayer, deviceViewportSize, deviceScaleFactor, pageScaleFactor, dummyMaxTextureSize, dummyRenderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(rootLayer, deviceViewportSize, deviceScaleFactor, pageScaleFactor, dummyMaxTextureSize, canUseLCDText, dummyRenderSurfaceLayerList);
 }
 
-void executeCalculateDrawProperties(LayerImpl* rootLayer, float deviceScaleFactor = 1, float pageScaleFactor = 1)
+void executeCalculateDrawProperties(LayerImpl* rootLayer, float deviceScaleFactor = 1, float pageScaleFactor = 1, bool canUseLCDText = false)
 {
     gfx::Transform identityMatrix;
     std::vector<LayerImpl*> dummyRenderSurfaceLayerList;
@@ -72,7 +72,7 @@ void executeCalculateDrawProperties(LayerImpl* rootLayer, float deviceScaleFacto
 
     // We are probably not testing what is intended if the rootLayer bounds are empty.
     DCHECK(!rootLayer->bounds().IsEmpty());
-    LayerTreeHostCommon::calculateDrawProperties(rootLayer, deviceViewportSize, deviceScaleFactor, pageScaleFactor, dummyMaxTextureSize, dummyRenderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(rootLayer, deviceViewportSize, deviceScaleFactor, pageScaleFactor, dummyMaxTextureSize, canUseLCDText, dummyRenderSurfaceLayerList);
 }
 
 scoped_ptr<LayerImpl> createTreeForFixedPositionTests(LayerTreeHostImpl* hostImpl)
@@ -699,7 +699,7 @@ TEST(LayerTreeHostCommonTest, verifyRenderSurfaceListForRenderSurfaceWithClipped
 
     std::vector<scoped_refptr<Layer> > renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), 1, 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
 
     // The child layer's content is entirely outside the parent's clip rect, so the intermediate
     // render surface should not be listed here, even if it was forced to be created. Render surfaces without children or visible
@@ -726,7 +726,7 @@ TEST(LayerTreeHostCommonTest, verifyRenderSurfaceListForTransparentChild)
 
     std::vector<scoped_refptr<Layer> > renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), 1, 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
 
     // Since the layer is transparent, renderSurface1->renderSurface() should not have gotten added anywhere.
     // Also, the drawable content rect should not have been extended by the children.
@@ -758,7 +758,7 @@ TEST(LayerTreeHostCommonTest, verifyForceRenderSurface)
 
     std::vector<scoped_refptr<Layer> > renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), 1, 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
 
     // The root layer always creates a renderSurface
     EXPECT_TRUE(parent->renderSurface());
@@ -767,7 +767,7 @@ TEST(LayerTreeHostCommonTest, verifyForceRenderSurface)
 
     renderSurfaceLayerList.clear();
     renderSurface1->setForceRenderSurface(false);
-    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), 1, 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
     EXPECT_TRUE(parent->renderSurface());
     EXPECT_FALSE(renderSurface1->renderSurface());
     EXPECT_EQ(1U, renderSurfaceLayerList.size());
@@ -1382,7 +1382,7 @@ TEST(LayerTreeHostCommonTest, verifyClipRectCullsRenderSurfaces)
 
     std::vector<scoped_refptr<Layer> > renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), 1, 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
 
     ASSERT_EQ(2U, renderSurfaceLayerList.size());
     EXPECT_EQ(parent->id(), renderSurfaceLayerList[0]->id());
@@ -1429,7 +1429,7 @@ TEST(LayerTreeHostCommonTest, verifyClipRectCullsSurfaceWithoutVisibleContent)
 
     std::vector<scoped_refptr<Layer> > renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), 1, 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
 
     // Without an animation, we should cull child and grandChild from the renderSurfaceLayerList.
     ASSERT_EQ(1U, renderSurfaceLayerList.size());
@@ -1443,7 +1443,7 @@ TEST(LayerTreeHostCommonTest, verifyClipRectCullsSurfaceWithoutVisibleContent)
     grandChild->clearRenderSurface();
     renderSurfaceLayerList.clear();
 
-    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), 1, 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
 
     // With an animating transform, we should keep child and grandChild in the renderSurfaceLayerList.
     ASSERT_EQ(3U, renderSurfaceLayerList.size());
@@ -1495,7 +1495,7 @@ TEST(LayerTreeHostCommonTest, verifyIsClippedIsSetCorrectly)
     // Case 1: nothing is clipped except the root renderSurface.
     std::vector<scoped_refptr<Layer> > renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawProperties(root.get(), parent->bounds(), 1, 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(root.get(), parent->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
 
     ASSERT_TRUE(root->renderSurface());
     ASSERT_TRUE(child2->renderSurface());
@@ -1516,7 +1516,7 @@ TEST(LayerTreeHostCommonTest, verifyIsClippedIsSetCorrectly)
     // that clip.
     renderSurfaceLayerList.clear();
     parent->setMasksToBounds(true);
-    LayerTreeHostCommon::calculateDrawProperties(root.get(), parent->bounds(), 1, 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(root.get(), parent->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
 
     ASSERT_TRUE(root->renderSurface());
     ASSERT_TRUE(child2->renderSurface());
@@ -1536,7 +1536,7 @@ TEST(LayerTreeHostCommonTest, verifyIsClippedIsSetCorrectly)
     renderSurfaceLayerList.clear();
     parent->setMasksToBounds(false);
     child2->setMasksToBounds(true);
-    LayerTreeHostCommon::calculateDrawProperties(root.get(), parent->bounds(), 1, 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(root.get(), parent->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
 
     ASSERT_TRUE(root->renderSurface());
     ASSERT_TRUE(child2->renderSurface());
@@ -1595,7 +1595,7 @@ TEST(LayerTreeHostCommonTest, verifyDrawableContentRectForLayers)
 
     std::vector<scoped_refptr<Layer> > renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), 1, 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
 
     EXPECT_RECT_EQ(gfx::Rect(gfx::Point(5, 5), gfx::Size(10, 10)), grandChild1->drawableContentRect());
     EXPECT_RECT_EQ(gfx::Rect(gfx::Point(15, 15), gfx::Size(5, 5)), grandChild3->drawableContentRect());
@@ -1665,7 +1665,7 @@ TEST(LayerTreeHostCommonTest, verifyClipRectIsPropagatedCorrectlyToSurfaces)
 
     std::vector<scoped_refptr<Layer> > renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), 1, 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
 
     ASSERT_TRUE(grandChild1->renderSurface());
     ASSERT_TRUE(grandChild2->renderSurface());
@@ -2507,7 +2507,7 @@ TEST(LayerTreeHostCommonTest, verifyBackFaceCullingWithoutPreserves3d)
 
     std::vector<scoped_refptr<Layer> > renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), 1, 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
 
     // Verify which renderSurfaces were created.
     EXPECT_FALSE(frontFacingChild->renderSurface());
@@ -2606,7 +2606,7 @@ TEST(LayerTreeHostCommonTest, verifyBackFaceCullingWithPreserves3d)
 
     std::vector<scoped_refptr<Layer> > renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), 1, 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
 
     // Verify which renderSurfaces were created.
     EXPECT_FALSE(frontFacingChild->renderSurface());
@@ -2686,7 +2686,7 @@ TEST(LayerTreeHostCommonTest, verifyBackFaceCullingWithAnimatingTransforms)
 
     std::vector<scoped_refptr<Layer> > renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), 1, 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
 
     EXPECT_FALSE(child->renderSurface());
     EXPECT_TRUE(animatingSurface->renderSurface());
@@ -2752,7 +2752,7 @@ TEST(LayerTreeHostCommonTest, verifyBackFaceCullingWithPreserves3dForFlatteningS
 
     std::vector<scoped_refptr<Layer> > renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), 1, 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
 
     // Verify which renderSurfaces were created.
     EXPECT_TRUE(frontFacingSurface->renderSurface());
@@ -2804,7 +2804,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSingleLayer)
 
     std::vector<LayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
 
     // Sanity check the scenario we just created.
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
@@ -2853,7 +2853,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForUninvertibleTransform)
 
     std::vector<LayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
 
     // Sanity check the scenario we just created.
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
@@ -2907,7 +2907,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSinglePositionedLayer)
 
     std::vector<LayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
 
     // Sanity check the scenario we just created.
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
@@ -2954,7 +2954,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSingleRotatedLayer)
 
     std::vector<LayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
 
     // Sanity check the scenario we just created.
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
@@ -3010,7 +3010,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSinglePerspectiveLayer)
 
     std::vector<LayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
 
     // Sanity check the scenario we just created.
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
@@ -3075,7 +3075,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSingleLayerWithScaledContents)
 
     std::vector<LayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
 
     // Sanity check the scenario we just created.
     // The visibleContentRect for testLayer is actually 100x100, even though its layout size is 50x50, positioned at 25x25.
@@ -3139,7 +3139,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSimpleClippedLayer)
 
     std::vector<LayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
 
     // Sanity check the scenario we just created.
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
@@ -3229,7 +3229,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForMultiClippedRotatedLayer)
 
     std::vector<LayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
 
     // Sanity check the scenario we just created.
     // The grandChild is expected to create a renderSurface because it masksToBounds and is not axis aligned.
@@ -3311,7 +3311,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForNonClippingIntermediateLayer)
 
     std::vector<LayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
 
     // Sanity check the scenario we just created.
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
@@ -3391,7 +3391,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForMultipleLayers)
 
     std::vector<LayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
 
     // Sanity check the scenario we just created.
     ASSERT_TRUE(child1);
@@ -3499,7 +3499,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForMultipleLayerLists)
 
     std::vector<LayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
 
     // Sanity check the scenario we just created.
     ASSERT_TRUE(child1);
@@ -3585,7 +3585,7 @@ TEST(LayerTreeHostCommonTest, verifyHitCheckingTouchHandlerRegionsForSingleLayer
 
     std::vector<LayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
 
     // Sanity check the scenario we just created.
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
@@ -3651,7 +3651,7 @@ TEST(LayerTreeHostCommonTest, verifyHitCheckingTouchHandlerRegionsForUninvertibl
 
     std::vector<LayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
 
     // Sanity check the scenario we just created.
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
@@ -3707,7 +3707,7 @@ TEST(LayerTreeHostCommonTest, verifyHitCheckingTouchHandlerRegionsForSinglePosit
 
     std::vector<LayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
 
     // Sanity check the scenario we just created.
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
@@ -3779,7 +3779,7 @@ TEST(LayerTreeHostCommonTest, verifyHitCheckingTouchHandlerRegionsForSingleLayer
 
     std::vector<LayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
 
     // Sanity check the scenario we just created.
     // The visibleContentRect for testLayer is actually 100x100, even though its layout size is 50x50, positioned at 25x25.
@@ -3855,7 +3855,7 @@ TEST(LayerTreeHostCommonTest, verifyHitCheckingTouchHandlerRegionsForSingleLayer
     pageScaleTransform.Scale(pageScaleFactor, pageScaleFactor);
     root->setImplTransform(pageScaleTransform); // Applying the pageScaleFactor through implTransform.
     gfx::Size scaledBoundsForRoot = gfx::ToCeiledSize(gfx::ScaleSize(root->bounds(), deviceScaleFactor * pageScaleFactor));
-    LayerTreeHostCommon::calculateDrawProperties(root.get(), scaledBoundsForRoot, deviceScaleFactor, 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(root.get(), scaledBoundsForRoot, deviceScaleFactor, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
 
     // Sanity check the scenario we just created.
     // The visibleContentRect for testLayer is actually 100x100, even though its layout size is 50x50, positioned at 25x25.
@@ -3939,7 +3939,7 @@ TEST(LayerTreeHostCommonTest, verifyHitCheckingTouchHandlerRegionsForSimpleClipp
 
     std::vector<LayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(root.get(), root->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
 
     // Sanity check the scenario we just created.
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
@@ -4022,7 +4022,7 @@ TEST(LayerTreeHostCommonTest, verifyLayerTransformsInHighDPI)
     const double deviceScaleFactor = 2.5;
     const double pageScaleFactor = 1;
 
-    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), deviceScaleFactor, pageScaleFactor, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), deviceScaleFactor, pageScaleFactor, dummyMaxTextureSize, false, renderSurfaceLayerList);
 
     EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * pageScaleFactor, parent);
     EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * pageScaleFactor, child);
@@ -4104,7 +4104,7 @@ TEST(LayerTreeHostCommonTest, verifyLayerTransformsInHighDPIAccurateScaleZeroChi
     const float deviceScaleFactor = 1.7f;
     const float pageScaleFactor = 1;
 
-    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), deviceScaleFactor, pageScaleFactor, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), deviceScaleFactor, pageScaleFactor, dummyMaxTextureSize, false, renderSurfaceLayerList);
 
     EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * pageScaleFactor, parent);
     EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * pageScaleFactor, child);
@@ -4209,7 +4209,7 @@ TEST(LayerTreeHostCommonTest, verifyContentsScale)
     pageScaleMatrix.Scale(pageScaleFactor, pageScaleFactor);
     parent->setSublayerTransform(pageScaleMatrix);
 
-    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), deviceScaleFactor, pageScaleFactor, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), deviceScaleFactor, pageScaleFactor, dummyMaxTextureSize, false, renderSurfaceLayerList);
 
     EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * initialParentScale, parent);
     EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * initialChildScale, childScale);
@@ -4235,7 +4235,7 @@ TEST(LayerTreeHostCommonTest, verifyContentsScale)
     childEmpty->setTransform(identityMatrix);
 
     renderSurfaceLayerList.clear();
-    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), deviceScaleFactor, pageScaleFactor, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), deviceScaleFactor, pageScaleFactor, dummyMaxTextureSize, false, renderSurfaceLayerList);
 
     EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * initialParentScale, parent);
     EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * initialChildScale, childScale);
@@ -4252,7 +4252,7 @@ TEST(LayerTreeHostCommonTest, verifyContentsScale)
     parent->setSublayerTransform(pageScaleMatrix);
 
     renderSurfaceLayerList.clear();
-    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), deviceScaleFactor, pageScaleFactor, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), deviceScaleFactor, pageScaleFactor, dummyMaxTextureSize, false, renderSurfaceLayerList);
 
     EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * initialParentScale, parent);
     EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * initialChildScale, childScale);
@@ -4297,7 +4297,7 @@ TEST(LayerTreeHostCommonTest, verifySmallContentsScale)
     pageScaleMatrix.Scale(pageScaleFactor, pageScaleFactor);
     parent->setSublayerTransform(pageScaleMatrix);
 
-    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), deviceScaleFactor, pageScaleFactor, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), deviceScaleFactor, pageScaleFactor, dummyMaxTextureSize, false, renderSurfaceLayerList);
 
     EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * initialParentScale, parent);
     // The child's scale is < 1, so we should not save and use that scale factor.
@@ -4310,7 +4310,7 @@ TEST(LayerTreeHostCommonTest, verifySmallContentsScale)
     childScale->setTransform(childScaleMatrix);
 
     renderSurfaceLayerList.clear();
-    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), deviceScaleFactor, pageScaleFactor, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), deviceScaleFactor, pageScaleFactor, dummyMaxTextureSize, false, renderSurfaceLayerList);
 
     EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * initialParentScale, parent);
     EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * finalChildScale, childScale);
@@ -4394,7 +4394,7 @@ TEST(LayerTreeHostCommonTest, verifyContentsScaleForSurfaces)
     pageScaleMatrix.Scale(pageScaleFactor, pageScaleFactor);
     parent->setSublayerTransform(pageScaleMatrix);
 
-    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), deviceScaleFactor, pageScaleFactor, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), deviceScaleFactor, pageScaleFactor, dummyMaxTextureSize, false, renderSurfaceLayerList);
 
     EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * initialParentScale, parent);
     EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * initialChildScale, surfaceScale);
@@ -4488,7 +4488,7 @@ TEST(LayerTreeHostCommonTest, verifyContentsScaleForAnimatingLayer)
     std::vector<scoped_refptr<Layer> > renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
 
-    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), 1, 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
 
     EXPECT_CONTENTS_SCALE_EQ(initialParentScale, parent);
     // The layers with animating transforms should not compute a contentsScale other than 1 until they finish animating.
@@ -4497,7 +4497,7 @@ TEST(LayerTreeHostCommonTest, verifyContentsScaleForAnimatingLayer)
     // Remove the animation, now it can save a raster scale.
     childScale->layerAnimationController()->removeAnimation(animationId);
 
-    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), 1, 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
 
     EXPECT_CONTENTS_SCALE_EQ(initialParentScale, parent);
     // The layers with animating transforms should not compute a contentsScale other than 1 until they finish animating.
@@ -4539,7 +4539,7 @@ TEST(LayerTreeHostCommonTest, verifyRenderSurfaceTransformsInHighDPI)
     duplicateChildNonOwner->setContentsScale(deviceScaleFactor);
     replica->setContentsScale(deviceScaleFactor);
 
-    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), deviceScaleFactor, 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), deviceScaleFactor, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
 
     // We should have two render surfaces. The root's render surface and child's
     // render surface (it needs one because it has a replica layer).
@@ -4622,7 +4622,7 @@ TEST(LayerTreeHostCommonTest, verifyRenderSurfaceTransformsInHighDPIAccurateScal
     duplicateChildNonOwner->setContentsScale(deviceScaleFactor);
     replica->setContentsScale(deviceScaleFactor);
 
-    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), deviceScaleFactor, 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), deviceScaleFactor, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
 
     // We should have two render surfaces. The root's render surface and child's
     // render surface (it needs one because it has a replica layer).
@@ -4693,6 +4693,129 @@ TEST(LayerTreeHostCommonTest, verifyTransparentChildRenderSurfaceCreation)
 
     EXPECT_FALSE(child->renderSurface());
 }
+
+typedef std::tr1::tuple<bool, bool> LCDTextTestParam;
+class LCDTextTest : public testing::TestWithParam<LCDTextTestParam> {
+protected:
+    virtual void SetUp()
+    {
+        m_canUseLCDText = std::tr1::get<0>(GetParam());
+
+        m_root = Layer::create();
+        m_child = Layer::create();
+        m_grandChild = Layer::create();
+        m_child->addChild(m_grandChild.get());
+        m_root->addChild(m_child.get());
+
+        gfx::Transform identityMatrix;
+        setLayerPropertiesForTesting(m_root, identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(1, 1), false);
+        setLayerPropertiesForTesting(m_child, identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(1, 1), false);
+        setLayerPropertiesForTesting(m_grandChild, identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(1, 1), false);
+
+        m_child->setForceRenderSurface(std::tr1::get<1>(GetParam()));
+    }
+
+    bool m_canUseLCDText;
+    scoped_refptr<Layer> m_root;
+    scoped_refptr<Layer> m_child;
+    scoped_refptr<Layer> m_grandChild;
+};
+
+TEST_P(LCDTextTest, verifyCanUseLCDText)
+{
+    // Case 1: Identity transform.
+    gfx::Transform identityMatrix;
+    executeCalculateDrawProperties(m_root, 1, 1, m_canUseLCDText);
+    EXPECT_EQ(m_canUseLCDText, m_root->canUseLCDText());
+    EXPECT_EQ(m_canUseLCDText, m_child->canUseLCDText());
+    EXPECT_EQ(m_canUseLCDText, m_grandChild->canUseLCDText());
+
+    // Case 2: Integral translation.
+    gfx::Transform integralTranslation;
+    integralTranslation.Translate(1, 2);
+    m_child->setTransform(integralTranslation);
+    executeCalculateDrawProperties(m_root, 1, 1, m_canUseLCDText);
+    EXPECT_EQ(m_canUseLCDText, m_root->canUseLCDText());
+    EXPECT_EQ(m_canUseLCDText, m_child->canUseLCDText());
+    EXPECT_EQ(m_canUseLCDText, m_grandChild->canUseLCDText());
+
+    // Case 3: Non-integral translation.
+    gfx::Transform nonIntegralTranslation;
+    nonIntegralTranslation.Translate(1.5, 2.5);
+    m_child->setTransform(nonIntegralTranslation);
+    executeCalculateDrawProperties(m_root, 1, 1, m_canUseLCDText);
+    EXPECT_EQ(m_canUseLCDText, m_root->canUseLCDText());
+    EXPECT_FALSE(m_child->canUseLCDText());
+    EXPECT_FALSE(m_grandChild->canUseLCDText());
+
+    // Case 4: Rotation.
+    gfx::Transform rotation;
+    rotation.Rotate(10);
+    m_child->setTransform(rotation);
+    executeCalculateDrawProperties(m_root, 1, 1, m_canUseLCDText);
+    EXPECT_EQ(m_canUseLCDText, m_root->canUseLCDText());
+    EXPECT_FALSE(m_child->canUseLCDText());
+    EXPECT_FALSE(m_grandChild->canUseLCDText());
+
+    // Case 5: Scale.
+    gfx::Transform scale;
+    scale.Scale(2, 2);
+    m_child->setTransform(scale);
+    executeCalculateDrawProperties(m_root, 1, 1, m_canUseLCDText);
+    EXPECT_EQ(m_canUseLCDText, m_root->canUseLCDText());
+    EXPECT_FALSE(m_child->canUseLCDText());
+    EXPECT_FALSE(m_grandChild->canUseLCDText());
+
+    // Case 6: Skew.
+    gfx::Transform skew;
+    skew.SkewX(10);
+    m_child->setTransform(skew);
+    executeCalculateDrawProperties(m_root, 1, 1, m_canUseLCDText);
+    EXPECT_EQ(m_canUseLCDText, m_root->canUseLCDText());
+    EXPECT_FALSE(m_child->canUseLCDText());
+    EXPECT_FALSE(m_grandChild->canUseLCDText());
+
+    // Case 7: Translucent.
+    m_child->setTransform(identityMatrix);
+    m_child->setOpacity(0.5);
+    executeCalculateDrawProperties(m_root, 1, 1, m_canUseLCDText);
+    EXPECT_EQ(m_canUseLCDText, m_root->canUseLCDText());
+    EXPECT_FALSE(m_child->canUseLCDText());
+    EXPECT_FALSE(m_grandChild->canUseLCDText());
+
+    // Case 8: Sanity check: restore transform and opacity.
+    m_child->setTransform(identityMatrix);
+    m_child->setOpacity(1);
+    executeCalculateDrawProperties(m_root, 1, 1, m_canUseLCDText);
+    EXPECT_EQ(m_canUseLCDText, m_root->canUseLCDText());
+    EXPECT_EQ(m_canUseLCDText, m_child->canUseLCDText());
+    EXPECT_EQ(m_canUseLCDText, m_grandChild->canUseLCDText());
+}
+
+TEST_P(LCDTextTest, verifyCanUseLCDTextWithAnimation)
+{
+    // Sanity check: Make sure m_canUseLCDText is set on each node.
+    executeCalculateDrawProperties(m_root, 1, 1, m_canUseLCDText);
+    EXPECT_EQ(m_canUseLCDText, m_root->canUseLCDText());
+    EXPECT_EQ(m_canUseLCDText, m_child->canUseLCDText());
+    EXPECT_EQ(m_canUseLCDText, m_grandChild->canUseLCDText());
+
+    // Add opacity animation.
+    m_child->setOpacity(0.9f);
+    addOpacityTransitionToController(*(m_child->layerAnimationController()), 10, 0.9f, 0.1f, false);
+
+    executeCalculateDrawProperties(m_root, 1, 1, m_canUseLCDText);
+    // Text AA should not be adjusted while animation is active.
+    // Make sure LCD text AA setting remains unchanged.
+    EXPECT_EQ(m_canUseLCDText, m_root->canUseLCDText());
+    EXPECT_EQ(m_canUseLCDText, m_child->canUseLCDText());
+    EXPECT_EQ(m_canUseLCDText, m_grandChild->canUseLCDText());
+}
+
+INSTANTIATE_TEST_CASE_P(LayerTreeHostCommonTest,
+                        LCDTextTest,
+                        testing::Combine(testing::Bool(),
+                                         testing::Bool()));
 
 }  // namespace
 }  // namespace cc

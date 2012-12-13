@@ -26,6 +26,7 @@ class CC_EXPORT LayerTreeSettings {
   bool pageScalePinchZoomEnabled;
   bool backgroundColorInsteadOfCheckerboard;
   bool showOverdrawInTracing;
+  bool canUseLCDText;
   double refreshRate;
   size_t maxPartialTextureUpdates;
   size_t numRasterThreads;
