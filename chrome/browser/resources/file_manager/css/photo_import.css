@@ -171,13 +171,18 @@ button.import {
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
   display: -webkit-box;
+  padding: 10px 10px;
 }
 
 .importing-dialog .cr-dialog-frame .progress-container {
   -webkit-box-flex: 1;
   -webkit-box-orient: vertical;
   display: -webkit-box;
-  padding: 0 0 40px 10px;
+  padding: 0 0 32px 10px;
+}
+
+.importing-dialog .cr-dialog-text {
+  margin: 15px 0;
 }
 
 .importing-dialog .img-container {
@@ -186,38 +191,57 @@ button.import {
   width: 120px;
 }
 
+.importing-dialog .img-container[state=success]::after {
+  background: -webkit-image-set(
+    url('../images/common/check_circled.png') 1x,
+    url('../images/common/2x/check_circled.png') 2x)
+    no-repeat center rgba(20, 20, 22, 0.5);
+  content: '';
+  height: 120px;
+  left: 0;
+  opacity: 0.9;
+  position: absolute;
+  top: 0;
+  width: 120px;
+}
+
+.importing-dialog .img-container[state=error]::after {
+  background: rgba(20, 20, 22, 0.5);
+  content: '';
+  height: 120px;
+  left: 0;
+  opacity: 0.9;
+  position: absolute;
+  top: 0;
+  width: 120px;
+}
+
 .importing-dialog button {
-  bottom: 14px;
+  bottom: 10px;
   font-size: 90%;
   min-height: 26px;
   min-width: 87px;
   position: absolute;
-  right: 14px;
+  right: 10px;
 }
 
 .progress-bar {
   -webkit-box-flex: 1;
-  border: 1px solid #999;
-  height: 8px;
-  padding: 1px;
+  background-color: #e6e6e6;
+  border: 1px solid #ddd;
+  border-radius: 2px;
+  box-sizing: border-box;
+  height: 11px;
 }
 
 .progress-track {
-  -webkit-animation-duration: 800ms;
-  -webkit-animation-iteration-count: infinite;
-  -webkit-animation-name: bg;
-  -webkit-animation-timing-function: linear;
-  background-color: #ccc;
-  background-image: -webkit-linear-gradient(315deg, transparent,
-      transparent 33%, rgba(0, 0, 0, 0.12) 33%, rgba(0, 0, 0, 0.12) 66%,
-      transparent 66%, transparent);
+  background-image: -webkit-linear-gradient(
+    rgb(110, 188, 249) 1px, rgb(86, 167, 247) 2px,
+    rgb(76, 148, 245) 11px, rgb(41, 112, 211) 12px);
   background-position: 0 0;
   background-repeat: repeat-x;
-  background-size: 16px 8px;
-  height: 8px;
-}
-
-@-webkit-keyframes bg {
-  0% { background-position: 0 0; }
-  100% { background-position: -16px 0; }
+  border: 1px solid rgb(65, 137, 237);
+  border-radius: 2px;
+  height: 9px;
+  margin: -1px 0 0 -1px;
 }
