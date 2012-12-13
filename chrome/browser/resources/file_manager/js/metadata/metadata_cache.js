@@ -533,7 +533,7 @@ MetadataCache.prototype.refreshFileMetadata = function(fileURL) {
   if (!FileType.isOnGDrive(fileURL))
     return;
   // TODO(kaznacheev) This does not really work with GData search.
-  var url = imageURL.substr(0, fileURL.lastIndexOf('/'));
+  var url = fileURL.substr(0, fileURL.lastIndexOf('/'));
   metadataCache.refreshDirectory(url);
 };
 
