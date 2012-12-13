@@ -79,7 +79,8 @@ class CGen(object):
       'inout': '%s',
       'out': '%s*',
       'store': '%s',
-      'return': '%s'
+      'return': '%s',
+      'ref': '%s*'
     },
     'Callspec': {
       'in': '%s',
@@ -107,7 +108,8 @@ class CGen(object):
       'inout': '%s*',
       'out': '%s*',
       'return': ' %s*',
-      'store': '%s'
+      'store': '%s',
+      'ref': '%s*'
     },
     'blob_t': {
       'in': 'const %s',
@@ -396,9 +398,15 @@ class CGen(object):
 
 
   def Compose(self, rtype, name, arrayspec, callspec, prefix, func_as_ptr,
-              ptr_prefix, include_name):
+              ptr_prefix, include_name, unsized_as_ptr):
     self.LogEnter('Compose: %s %s' % (rtype, name))
     arrayspec = ''.join(arrayspec)
+
+    # Switch unsized array to a ptr. NOTE: Only last element can be unsized.
+    if unsized_as_ptr and arrayspec[-2:] == '[]':
+      prefix +=  '*'
+      arrayspec=arrayspec[:-2]
+
     if not include_name:
       name = prefix + arrayspec
     else:
@@ -409,7 +417,8 @@ class CGen(object):
       params = []
       for ptype, pname, parray, pspec in callspec:
         params.append(self.Compose(ptype, pname, parray, pspec, '', True,
-                                   ptr_prefix='', include_name=True))
+                                   ptr_prefix='', include_name=True,
+                                   unsized_as_ptr=unsized_as_ptr))
       if func_as_ptr:
         name = '(%s*%s)' % (ptr_prefix, name)
       if not params:
@@ -437,8 +446,13 @@ class CGen(object):
     rtype, name, arrayspec, callspec = self.GetComponents(node, release, mode)
     if include_version:
       name = self.GetStructName(node, release, True)
+
+    # If not a callspec (such as a struct) use a ptr instead of []
+    unsized_as_ptr = not callspec
+
     out = self.Compose(rtype, name, arrayspec, callspec, prefix,
-                       func_as_ptr, ptr_prefix, include_name)
+                       func_as_ptr, ptr_prefix, include_name, unsized_as_ptr)
+
     self.LogExit('Exit GetSignature: %s' % out)
     return out
 
@@ -492,7 +506,10 @@ class CGen(object):
     __pychecker__ = 'unusednames=prefix,comment'
     release = releases[0]
     self.LogEnter('DefineMember %s' % node)
-    out = '%s;' % self.GetSignature(node, release, 'store', '', True)
+    if node.GetProperty('ref'):
+      out = '%s;' % self.GetSignature(node, release, 'ref', '', True)
+    else:
+      out = '%s;' % self.GetSignature(node, release, 'store', '', True)
     self.LogExit('Exit DefineMember')
     return out
 

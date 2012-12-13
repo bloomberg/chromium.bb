@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From private/ppb_flash_device_id.idl modified Mon Dec 10 16:03:11 2012.
+// From private/ppb_flash_device_id.idl modified Tue Dec 11 13:47:18 2012.
 
+#include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_flash_device_id.h"
 #include "ppapi/shared_impl/tracked_callback.h"

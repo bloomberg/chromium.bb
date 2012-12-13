@@ -3,18 +3,24 @@
  * found in the LICENSE file.
  */
 
-/* PPB_Flash */
+/**
+ * This file defines the <code>PPB_Flash_Menu</code> interface.
+ */
+label Chrome {
+  M14 = 0.2
+};
 
 /* Menu item type.
  *
  * TODO(viettrungluu): Radio items not supported yet. Will also probably want
  * special menu items tied to clipboard access.
  */
+[assert_size(4)]
 enum PP_Flash_MenuItem_Type {
-  PP_FLASH_MENUITEM_TYPE_NORMAL    = 0,
-  PP_FLASH_MENUITEM_TYPE_CHECKBOX  = 1,
+  PP_FLASH_MENUITEM_TYPE_NORMAL = 0,
+  PP_FLASH_MENUITEM_TYPE_CHECKBOX = 1,
   PP_FLASH_MENUITEM_TYPE_SEPARATOR = 2,
-  PP_FLASH_MENUITEM_TYPE_SUBMENU   = 3
+  PP_FLASH_MENUITEM_TYPE_SUBMENU = 3
 };
 
 struct PP_Flash_MenuItem {
@@ -23,7 +29,7 @@ struct PP_Flash_MenuItem {
   int32_t id;
   PP_Bool enabled;
   PP_Bool checked;
-  PP_Flash_Menu submenu;
+  [ref] PP_Flash_Menu submenu;
 };
 
 struct PP_Flash_Menu {
@@ -31,22 +37,18 @@ struct PP_Flash_Menu {
   [size_is(count)] PP_Flash_MenuItem[] items;
 };
 
-interface PPB_Flash_Menu_0_1 {
-  PP_Resource Create(
-      [in] PP_Instance instance_id,
-      [in] PP_Flash_Menu menu_data);
-
-  PP_Bool IsFlashMenu(
-      [in] PP_Resource resource_id);
-
+interface PPB_Flash_Menu {
+  PP_Resource Create([in] PP_Instance instance_id,
+                     [in] PP_Flash_Menu menu_data);
+  PP_Bool IsFlashMenu(PP_Resource resource_id);
   /* Display a context menu at the given location. If the user selects an item,
    * |selected_id| will be set to its |id| and the callback called with |PP_OK|.
    * If the user dismisses the menu without selecting an item,
    * |PP_ERROR_USERCANCEL| will be indicated.
    */
-  int32_t Show(
-      [in] PP_Resource menu_id,
-      [in] PP_Point location,
-      [out] int32_t selected_id,
-      [in] PP_CompletionCallback callback);
+  int32_t Show([in] PP_Resource menu_id,
+               [in] PP_Point location,
+               [out] int32_t selected_id,
+               [in] PP_CompletionCallback callback);
 };
+

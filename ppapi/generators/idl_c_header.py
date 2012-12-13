@@ -18,9 +18,41 @@ from idl_outfile import IDLOutFile
 from idl_parser import ParseFiles
 from idl_c_proto import CGen, GetNodeComments, CommentLines, Comment
 from idl_generator import Generator, GeneratorByFile
+from idl_visitor import IDLVisitor
 
 Option('dstroot', 'Base directory of output', default=os.path.join('..', 'c'))
 Option('guard', 'Include guard prefix', default=os.path.join('ppapi', 'c'))
+
+
+#
+# PrototypeResolver
+#
+# A specialized visitor which traverses the AST, building a mapping of
+# Release names to Versions numbers and calculating a min version.
+# The mapping is applied to the File nodes within the AST.
+#
+class ProtoResolver(IDLVisitor):
+  def __init__(self):
+    IDLVisitor.__init__(self)
+    self.struct_map = {}
+    self.interface_map = {}
+
+  def Arrive(self, node, ignore):
+    if node.IsA('Member') and node.GetProperty('ref'):
+      typeref = node.typelist.GetReleases()[0]
+      if typeref.IsA('Struct'):
+        nodelist = self.struct_map.get(typeref.GetName(), [])
+        nodelist.append(node)
+        self.struct_map[typeref.GetName()] = nodelist
+
+    if node.IsA('Param'):
+      typeref = node.typelist.GetReleases()[0]
+      if typeref.IsA('Interface'):
+        nodelist = self.struct_map.get(typeref.GetName(), [])
+        nodelist.append(node)
+        self.interface_map[typeref.GetName()] = nodelist
+
+    return None
 
 
 def GetPathFromNode(filenode, relpath=None, ext=None):
@@ -128,6 +160,10 @@ class HGen(GeneratorByFile):
 
   def GenerateHead(self, out, filenode, releases, options):
     __pychecker__ = 'unusednames=options'
+
+    proto = ProtoResolver()
+    proto.Visit(filenode, None)
+
     cgen = CGen()
     gpath = GetOption('guard')
     def_guard = GetHeaderFromNode(filenode, relpath=gpath)
@@ -175,6 +211,12 @@ class HGen(GeneratorByFile):
     for include in includes:
       if include == cur_include: continue
       out.Write('#include "%s"\n' % include)
+
+    # Generate Prototypes
+    if proto.struct_map:
+      out.Write('\n/* Struct prototypes */\n')
+      for struct in proto.struct_map:
+        out.Write('struct %s;\n' % struct)
 
     # If we are generating a single release, then create a macro for the highest
     # available release number.
