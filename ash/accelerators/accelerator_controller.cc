@@ -673,31 +673,31 @@ bool AcceleratorController::PerformAction(int action,
         return ime_control_delegate_->HandleSwitchIme(accelerator);
       break;
     case SELECT_WIN_0:
-      SwitchToWindow(0);
+      Launcher::ForPrimaryDisplay()->SwitchToWindow(0);
       return true;
     case SELECT_WIN_1:
-      SwitchToWindow(1);
+      Launcher::ForPrimaryDisplay()->SwitchToWindow(1);
       return true;
     case SELECT_WIN_2:
-      SwitchToWindow(2);
+      Launcher::ForPrimaryDisplay()->SwitchToWindow(2);
       return true;
     case SELECT_WIN_3:
-      SwitchToWindow(3);
+      Launcher::ForPrimaryDisplay()->SwitchToWindow(3);
       return true;
     case SELECT_WIN_4:
-      SwitchToWindow(4);
+      Launcher::ForPrimaryDisplay()->SwitchToWindow(4);
       return true;
     case SELECT_WIN_5:
-      SwitchToWindow(5);
+      Launcher::ForPrimaryDisplay()->SwitchToWindow(5);
       return true;
     case SELECT_WIN_6:
-      SwitchToWindow(6);
+      Launcher::ForPrimaryDisplay()->SwitchToWindow(6);
       return true;
     case SELECT_WIN_7:
-      SwitchToWindow(7);
+      Launcher::ForPrimaryDisplay()->SwitchToWindow(7);
       return true;
     case SELECT_LAST_WIN:
-      SwitchToWindow(-1);
+      Launcher::ForPrimaryDisplay()->SwitchToWindow(-1);
       return true;
     case WINDOW_SNAP_LEFT:
     case WINDOW_SNAP_RIGHT: {
@@ -828,35 +828,6 @@ bool AcceleratorController::AcceleratorPressed(
       accelerators_.find(accelerator);
   DCHECK(it != accelerators_.end());
   return PerformAction(static_cast<AcceleratorAction>(it->second), accelerator);
-}
-
-void AcceleratorController::SwitchToWindow(int window) {
-  Launcher* launcher = Launcher::ForPrimaryDisplay();
-  LauncherModel* launcher_model = Shell::GetInstance()->launcher_model();
-  const LauncherItems& items = launcher_model->items();
-  int item_count = launcher_model->item_count();
-  int indexes_left = window >= 0 ? window : item_count;
-  int found_index = -1;
-
-  // Iterating until we have hit the index we are interested in which
-  // is true once indexes_left becomes negative.
-  for (int i = 0; i < item_count && indexes_left >= 0; i++) {
-    if (items[i].type != TYPE_APP_LIST &&
-        items[i].type != TYPE_BROWSER_SHORTCUT) {
-      found_index = i;
-      indexes_left--;
-    }
-  }
-
-  // There are two ways how found_index can be valid: a.) the nth item was
-  // found (which is true when indexes_left is -1) or b.) the last item was
-  // requested (which is true when index was passed in as a negative number).
-  if (found_index >= 0 && (indexes_left == -1 || window < 0) &&
-      (items[found_index].status == ash::STATUS_RUNNING ||
-       items[found_index].status == ash::STATUS_CLOSED)) {
-    // Then set this one as active.
-    launcher->ActivateLauncherItem(found_index);
-  }
 }
 
 void AcceleratorController::RegisterAccelerators(

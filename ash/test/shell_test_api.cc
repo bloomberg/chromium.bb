@@ -35,5 +35,9 @@ ShellTestApi::screen_position_controller() {
   return shell_->screen_position_controller_.get();
 }
 
+LauncherModel* ShellTestApi::launcher_model() {
+  return shell_->launcher_model_.get();
+}
+
 }  // namespace test
 }  // namespace ash

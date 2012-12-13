@@ -15,6 +15,7 @@ class InputMethodEventFilter;
 
 namespace ash {
 class Shell;
+class LauncherModel;
 
 namespace internal {
 class RootWindowLayoutManager;
@@ -35,6 +36,7 @@ public:
   internal::SystemGestureEventFilter* system_gesture_event_filter();
   internal::WorkspaceController* workspace_controller();
   internal::ScreenPositionController* screen_position_controller();
+  LauncherModel* launcher_model();
 
  private:
   Shell* shell_;  // not owned

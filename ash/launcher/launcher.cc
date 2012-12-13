@@ -199,14 +199,16 @@ void Launcher::DelegateView::UpdateBackground(int alpha) {
 
 // Launcher --------------------------------------------------------------------
 
-Launcher::Launcher(aura::Window* window_container,
+Launcher::Launcher(LauncherModel* launcher_model,
+                   LauncherDelegate* launcher_delegate,
+                   aura::Window* window_container,
                    internal::ShelfLayoutManager* shelf_layout_manager)
     : widget_(NULL),
       window_container_(window_container),
       delegate_view_(new DelegateView(this)),
       launcher_view_(NULL),
       alignment_(SHELF_ALIGNMENT_BOTTOM),
-      delegate_(Shell::GetInstance()->GetLauncherDelegate()),
+      delegate_(launcher_delegate),
       background_animator_(delegate_view_, 0, kLauncherBackgroundAlpha) {
   widget_.reset(new views::Widget);
   views::Widget::InitParams params(
@@ -217,7 +219,7 @@ Launcher::Launcher(aura::Window* window_container,
       window_container_->GetRootWindow(),
       ash::internal::kShellWindowId_LauncherContainer);
   launcher_view_ = new internal::LauncherView(
-      Shell::GetInstance()->launcher_model(), delegate_, shelf_layout_manager);
+      launcher_model, delegate_, shelf_layout_manager);
   launcher_view_->Init();
   delegate_view_->AddChildView(launcher_view_);
   params.delegate = delegate_view_;
@@ -331,13 +333,13 @@ gfx::Rect Launcher::GetScreenBoundsOfItemIconForWindow(aura::Window* window) {
 
 void Launcher::ActivateLauncherItem(int index) {
   const ash::LauncherItems& items =
-      Shell::GetInstance()->launcher_model()->items();
+      launcher_view_->model()->items();
   delegate_->ItemClicked(items[index], ui::EF_NONE);
 }
 
 void Launcher::CycleWindowLinear(CycleDirection direction) {
   int item_index = GetNextActivatedItemIndex(
-      *(Shell::GetInstance()->launcher_model()), direction);
+      *(launcher_view_->model()), direction);
   if (item_index >= 0)
     ActivateLauncherItem(item_index);
 }
@@ -374,6 +376,34 @@ void Launcher::SetWidgetBounds(const gfx::Rect bounds) {
   widget_->SetBounds(bounds);
   if (dimmer_.get())
     dimmer_->SetBounds(bounds);
+}
+
+void Launcher::SwitchToWindow(int window_index) {
+  LauncherModel* launcher_model = launcher_view_->model();
+  const LauncherItems& items = launcher_model->items();
+  int item_count = launcher_model->item_count();
+  int indexes_left = window_index >= 0 ? window_index : item_count;
+  int found_index = -1;
+
+  // Iterating until we have hit the index we are interested in which
+  // is true once indexes_left becomes negative.
+  for (int i = 0; i < item_count && indexes_left >= 0; i++) {
+    if (items[i].type != TYPE_APP_LIST &&
+        items[i].type != TYPE_BROWSER_SHORTCUT) {
+      found_index = i;
+      indexes_left--;
+    }
+  }
+
+  // There are two ways how found_index can be valid: a.) the nth item was
+  // found (which is true when indexes_left is -1) or b.) the last item was
+  // requested (which is true when index was passed in as a negative number).
+  if (found_index >= 0 && (indexes_left == -1 || window_index < 0) &&
+      (items[found_index].status == ash::STATUS_RUNNING ||
+       items[found_index].status == ash::STATUS_CLOSED)) {
+    // Then set this one as active.
+    ActivateLauncherItem(found_index);
+  }
 }
 
 internal::LauncherView* Launcher::GetLauncherViewForTest() {

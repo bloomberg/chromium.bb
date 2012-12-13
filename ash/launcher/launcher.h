@@ -40,7 +40,9 @@ class LauncherModel;
 
 class ASH_EXPORT Launcher  {
  public:
-  Launcher(aura::Window* window_container,
+  Launcher(LauncherModel* launcher_model,
+           LauncherDelegate* launcher_delegate,
+           aura::Window* window_container,
            internal::ShelfLayoutManager* shelf_layout_manager);
   virtual ~Launcher();
 
@@ -105,6 +107,10 @@ class ASH_EXPORT Launcher  {
 
   // Sets the bounds of the launcher widget, and the dimmer if visible.
   void SetWidgetBounds(const gfx::Rect bounds);
+
+  // Switches to a 0-indexed (in order of creation) window.
+  // A negative index switches to the last window in the list.
+  void SwitchToWindow(int window_index);
 
   // Only to be called for testing. Retrieves the LauncherView.
   // TODO(sky): remove this!

@@ -341,7 +341,13 @@ void RootWindowController::CreateLauncher() {
 
   aura::Window* default_container =
       GetContainer(internal::kShellWindowId_DefaultContainer);
-  launcher_.reset(new Launcher(default_container, shelf_));
+  // Get the delegate first to make sure the launcher model is created.
+  LauncherDelegate* launcher_delegate =
+      Shell::GetInstance()->GetLauncherDelegate();
+  launcher_.reset(new Launcher(Shell::GetInstance()->launcher_model(),
+                               launcher_delegate,
+                               default_container,
+                               shelf_));
 
   launcher_->SetFocusCycler(Shell::GetInstance()->focus_cycler());
   shelf_->SetLauncher(launcher_.get());

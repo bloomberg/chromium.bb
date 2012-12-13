@@ -118,6 +118,10 @@ class TouchObserverHUD;
 class WorkspaceController;
 }
 
+namespace shell {
+class WindowWatcher;
+}
+
 namespace test {
 class ShellTestApi;
 }
@@ -373,19 +377,12 @@ class ASH_EXPORT Shell
   // Returns the system tray on primary display.
   SystemTray* GetPrimarySystemTray();
 
-  // Returns the launcher delegate, creating if necesary.
-  LauncherDelegate* GetLauncherDelegate();
-
   SystemTrayDelegate* system_tray_delegate() {
     return system_tray_delegate_.get();
   }
 
   SystemTrayNotifier* system_tray_notifier() {
     return system_tray_notifier_.get();
-  }
-
-  LauncherModel* launcher_model() {
-    return launcher_model_.get();
   }
 
   static void set_initially_hide_cursor(bool hide) {
@@ -433,6 +430,7 @@ class ASH_EXPORT Shell
   FRIEND_TEST_ALL_PREFIXES(WindowManagerTest, TransformActivate);
   friend class internal::RootWindowController;
   friend class test::ShellTestApi;
+  friend class shell::WindowWatcher;
 
   typedef std::pair<aura::Window*, gfx::Rect> WindowAndBoundsPair;
 
@@ -440,6 +438,13 @@ class ASH_EXPORT Shell
   virtual ~Shell();
 
   void Init();
+
+  LauncherModel* launcher_model() {
+    return launcher_model_.get();
+  }
+
+  // Returns the launcher delegate, creating if necesary.
+  LauncherDelegate* GetLauncherDelegate();
 
   // Initializes the root window and root window controller so that it
   // can host browser windows.

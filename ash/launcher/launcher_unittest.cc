@@ -58,7 +58,7 @@ TEST_F(LauncherTest, OpenBrowser) {
   ASSERT_TRUE(launcher);
   LauncherView* launcher_view = launcher->GetLauncherViewForTest();
   test::LauncherViewTestAPI test(launcher_view);
-  LauncherModel* model = Shell::GetInstance()->launcher_model();
+  LauncherModel* model = launcher_view->model();
 
   // Initially we have the app list and chrome icon.
   int button_count = test.GetButtonCount();

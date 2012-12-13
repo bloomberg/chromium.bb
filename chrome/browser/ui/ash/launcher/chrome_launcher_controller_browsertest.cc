@@ -7,6 +7,7 @@
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/shell.h"
+#include "ash/test/shell_test_api.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
@@ -50,7 +51,7 @@ class LauncherPlatformAppBrowserTest
   virtual ~LauncherPlatformAppBrowserTest() {}
 
   ash::LauncherModel* launcher_model() {
-    return ash::Shell::GetInstance()->launcher_model();
+    return ash::test::ShellTestApi(ash::Shell::GetInstance()).launcher_model();
   }
 
   virtual void RunTestOnMainThreadLoop() {
@@ -79,7 +80,8 @@ class LauncherAppBrowserTest : public ExtensionBrowserTest {
 
   virtual void RunTestOnMainThreadLoop() {
     launcher_ = ash::Launcher::ForPrimaryDisplay();
-    model_ = ash::Shell::GetInstance()->launcher_model();
+    model_ =
+        ash::test::ShellTestApi(ash::Shell::GetInstance()).launcher_model();
     return ExtensionBrowserTest::RunTestOnMainThreadLoop();
   }
 

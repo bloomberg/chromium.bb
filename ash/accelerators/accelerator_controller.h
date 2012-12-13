@@ -121,10 +121,6 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   // Initializes the accelerators this class handles as a target.
   void Init();
 
-  // Switches to a 0-indexed (in order of creation) window.
-  // A negative index switches to the last window in the list.
-  void SwitchToWindow(int window);
-
   // Registers the specified accelerators.
   void RegisterAccelerators(const AcceleratorData accelerators[],
                             size_t accelerators_length);

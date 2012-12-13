@@ -59,6 +59,8 @@ class ASH_EXPORT LauncherView : public views::View,
 
   LauncherTooltipManager* tooltip_manager() { return tooltip_.get(); }
 
+  LauncherModel* model() { return model_; }
+
   void Init();
 
   void OnShelfAlignmentChanged();
