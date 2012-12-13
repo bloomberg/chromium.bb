@@ -19,6 +19,8 @@ namespace content {
 
 namespace {
 
+bool g_global_flag = false;
+
 base::StringPiece GetStringResource(int resource_id) {
   return ResourceBundle::GetSharedInstance().GetRawDataResource(
       resource_id);
@@ -122,10 +124,6 @@ v8::Handle<v8::Value> SetXSSAuditorEnabled(
   return v8::Undefined();
 }
 
-v8::Handle<v8::Value> GetWorkerThreadCount(const v8::Arguments& args) {
-  return v8::Integer::NewFromUnsigned(WebWorkerInfo::dedicatedWorkerCount());
-}
-
 v8::Handle<v8::Value> ShowWebInspector(const v8::Arguments& args) {
   WebKitTestRunner* runner =
       ShellRenderProcessObserver::GetInstance()->main_test_runner();
@@ -160,6 +158,20 @@ v8::Handle<v8::Value> EvaluateInWebInspector(const v8::Arguments& args) {
   return v8::Undefined();
 }
 
+v8::Handle<v8::Value> GetGlobalFlag(const v8::Arguments& args) {
+  return v8::Boolean::New(g_global_flag);
+}
+
+v8::Handle<v8::Value> SetGlobalFlag(const v8::Arguments& args) {
+  if (args.Length() == 1 && args[0]->IsBoolean())
+    g_global_flag = args[0]->BooleanValue();
+  return v8::Undefined();
+}
+
+v8::Handle<v8::Value> GetWorkerThreadCount(const v8::Arguments& args) {
+  return v8::Integer::NewFromUnsigned(WebWorkerInfo::dedicatedWorkerCount());
+}
+
 v8::Handle<v8::Value> NotImplemented(const v8::Arguments& args) {
   if (args.Length() != 2 || !args[0]->IsString() || !args[1]->IsString())
     return v8::Undefined();
@@ -187,6 +199,11 @@ WebKitTestRunnerBindings::WebKitTestRunnerBindings()
 }
 
 WebKitTestRunnerBindings::~WebKitTestRunnerBindings() {
+}
+
+// static
+void WebKitTestRunnerBindings::Reset() {
+  g_global_flag = false;
 }
 
 v8::Handle<v8::FunctionTemplate>
@@ -220,6 +237,10 @@ WebKitTestRunnerBindings::GetNativeFunction(v8::Handle<v8::String> name) {
     return v8::FunctionTemplate::New(CloseWebInspector);
   if (name->Equals(v8::String::New("EvaluateInWebInspector")))
     return v8::FunctionTemplate::New(EvaluateInWebInspector);
+  if (name->Equals(v8::String::New("GetGlobalFlag")))
+    return v8::FunctionTemplate::New(GetGlobalFlag);
+  if (name->Equals(v8::String::New("SetGlobalFlag")))
+    return v8::FunctionTemplate::New(SetGlobalFlag);
   if (name->Equals(v8::String::New("NotImplemented")))
     return v8::FunctionTemplate::New(NotImplemented);
 

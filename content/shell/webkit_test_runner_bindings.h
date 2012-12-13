@@ -13,6 +13,8 @@ namespace content {
 
 class WebKitTestRunnerBindings : public v8::Extension {
  public:
+  static void Reset();
+
   WebKitTestRunnerBindings();
   virtual ~WebKitTestRunnerBindings();
 

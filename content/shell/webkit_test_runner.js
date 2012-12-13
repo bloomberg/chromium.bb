@@ -19,6 +19,9 @@ var testRunner = testRunner || {};
   native function SetXSSAuditorEnabled();
   native function ShowWebInspector();
 
+  native function GetGlobalFlag();
+  native function SetGlobalFlag();
+
   native function NotImplemented();
 
   var DefaultHandler = function(name) {
@@ -48,9 +51,6 @@ var testRunner = testRunner || {};
 
   var TestRunner = function() {
     Object.defineProperty(this, "display", {value: Display});
-    Object.defineProperty(this,
-                          "workerThreadCount",
-                          {value: GetWorkerThreadCount});
     Object.defineProperty(this, "notifyDone", {value: NotifyDone});
     Object.defineProperty(this, "dumpAsText", {value: SetDumpAsText});
     Object.defineProperty(this,
@@ -75,6 +75,28 @@ var testRunner = testRunner || {};
     Object.defineProperty(this,
                           "evaluateInWebInspector",
                           {value: EvaluateInWebInspector});
+
+
+    Object.defineProperty(this,
+                          "globalFlag",
+                          {
+                            get: GetGlobalFlag,
+                            set: SetGlobalFlag,
+                            writeable: true,
+                            configurable: true,
+                            enumerable: true
+                          });
+    Object.defineProperty(this,
+                          "platformName",
+                          {
+                            value: "chromium",
+                            writeable: true,
+                            configurable: true,
+                            enumerable: true
+                          });
+    Object.defineProperty(this,
+                          "workerThreadCount",
+                          {get: GetWorkerThreadCount});
 
     var stubs = [
         "dumpDatabaseCallbacks",
