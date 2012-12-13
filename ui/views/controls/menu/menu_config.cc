@@ -13,7 +13,8 @@ namespace views {
 MenuConfig::MenuConfig(const ui::NativeTheme* theme)
     : text_color(SK_ColorBLACK),
       arrow_color(SK_ColorBLACK),
-      menu_border_size(3),
+      menu_vertical_border_size(3),
+      menu_horizontal_border_size(3),
       submenu_horizontal_inset(3),
       item_top_margin(3),
       item_bottom_margin(4),
@@ -61,7 +62,8 @@ void MenuConfig::AdjustForCommonTheme() {
   item_top_margin = 6;
   item_bottom_margin = 6;
   separator_height = 15;
-  menu_border_size = 2;
+  menu_horizontal_border_size = 2;
+  menu_vertical_border_size = 8;
 }
 
 }  // namespace views

@@ -1713,7 +1713,7 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
         x = item_loc.x() + item->width() - submenu_horizontal_inset;
       }
     }
-    y = item_loc.y() - menu_config.menu_border_size;
+    y = item_loc.y() - menu_config.menu_vertical_border_size;
     if (state_.monitor_bounds.width() != 0) {
       pref.set_height(std::min(pref.height(), state_.monitor_bounds.height()));
       if (y + pref.height() > state_.monitor_bounds.bottom())

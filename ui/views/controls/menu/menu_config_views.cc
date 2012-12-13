@@ -23,7 +23,8 @@ void MenuConfig::InitAura() {
   ui::NativeTheme* theme = ui::NativeThemeAura::instance();
   text_color = theme->GetSystemColor(
       ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor);
-  menu_border_size = 0;
+  menu_horizontal_border_size = 0;
+  menu_vertical_border_size = 0;
   submenu_horizontal_inset = 1;
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   arrow_to_edge_padding = 20;

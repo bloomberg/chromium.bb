@@ -32,8 +32,9 @@ struct VIEWS_EXPORT MenuConfig {
   // Color for the arrow to scroll bookmarks.
   SkColor arrow_color;
 
-  // Menu border size.
-  int menu_border_size;
+  // Menu border sizes.
+  int menu_vertical_border_size;
+  int menu_horizontal_border_size;
 
   // Submenu horizontal inset with parent menu. This is the horizontal overlap
   // between the submenu and its parent menu, not including the borders of

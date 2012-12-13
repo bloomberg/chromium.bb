@@ -180,13 +180,16 @@ MenuScrollViewContainer::MenuScrollViewContainer(SubmenuView* content_view)
         new views::RoundRectPainter(
             ui::NativeTheme::instance()->GetSystemColor(
                 ui::NativeTheme::kColorId_MenuBorderColor)),
-        gfx::Insets(menu_config.menu_border_size, menu_config.menu_border_size,
-            menu_config.menu_border_size, menu_config.menu_border_size)));
+        gfx::Insets(menu_config.menu_vertical_border_size,
+                    menu_config.menu_horizontal_border_size,
+                    menu_config.menu_vertical_border_size,
+                    menu_config.menu_horizontal_border_size)));
   } else {
-    set_border(Border::CreateEmptyBorder(menu_config.menu_border_size,
-                                         menu_config.menu_border_size,
-                                         menu_config.menu_border_size,
-                                         menu_config.menu_border_size));
+    set_border(
+        Border::CreateEmptyBorder(menu_config.menu_vertical_border_size,
+                                  menu_config.menu_horizontal_border_size,
+                                  menu_config.menu_vertical_border_size,
+                                  menu_config.menu_horizontal_border_size));
   }
 }
 
