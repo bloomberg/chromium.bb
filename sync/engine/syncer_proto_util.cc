@@ -13,7 +13,6 @@
 #include "sync/engine/throttled_data_type_tracker.h"
 #include "sync/engine/traffic_logger.h"
 #include "sync/internal_api/public/base/model_type.h"
-#include "sync/protocol/sync.pb.h"
 #include "sync/protocol/sync_enums.pb.h"
 #include "sync/protocol/sync_protocol_error.h"
 #include "sync/sessions/sync_session.h"
@@ -107,53 +106,122 @@ SyncerError ServerConnectionErrorAsSyncerError(
   }
 }
 
+SyncProtocolErrorType ConvertSyncProtocolErrorTypePBToLocalType(
+    const sync_pb::SyncEnums::ErrorType& error_type) {
+  switch (error_type) {
+    case sync_pb::SyncEnums::SUCCESS:
+      return SYNC_SUCCESS;
+    case sync_pb::SyncEnums::NOT_MY_BIRTHDAY:
+      return NOT_MY_BIRTHDAY;
+    case sync_pb::SyncEnums::THROTTLED:
+      return THROTTLED;
+    case sync_pb::SyncEnums::CLEAR_PENDING:
+      return CLEAR_PENDING;
+    case sync_pb::SyncEnums::TRANSIENT_ERROR:
+      return TRANSIENT_ERROR;
+    case sync_pb::SyncEnums::MIGRATION_DONE:
+      return MIGRATION_DONE;
+    case sync_pb::SyncEnums::UNKNOWN:
+      return UNKNOWN_ERROR;
+    case sync_pb::SyncEnums::USER_NOT_ACTIVATED:
+    case sync_pb::SyncEnums::AUTH_INVALID:
+    case sync_pb::SyncEnums::ACCESS_DENIED:
+      return INVALID_CREDENTIAL;
+    default:
+      NOTREACHED();
+      return UNKNOWN_ERROR;
+  }
+}
+
+ClientAction ConvertClientActionPBToLocalClientAction(
+    const sync_pb::SyncEnums::Action& action) {
+  switch (action) {
+    case sync_pb::SyncEnums::UPGRADE_CLIENT:
+      return UPGRADE_CLIENT;
+    case sync_pb::SyncEnums::CLEAR_USER_DATA_AND_RESYNC:
+      return CLEAR_USER_DATA_AND_RESYNC;
+    case sync_pb::SyncEnums::ENABLE_SYNC_ON_ACCOUNT:
+      return ENABLE_SYNC_ON_ACCOUNT;
+    case sync_pb::SyncEnums::STOP_AND_RESTART_SYNC:
+      return STOP_AND_RESTART_SYNC;
+    case sync_pb::SyncEnums::DISABLE_SYNC_ON_CLIENT:
+      return DISABLE_SYNC_ON_CLIENT;
+    case sync_pb::SyncEnums::UNKNOWN_ACTION:
+      return UNKNOWN_ACTION;
+    default:
+      NOTREACHED();
+      return UNKNOWN_ACTION;
+  }
+}
+
 }  // namespace
 
-// static
-void SyncerProtoUtil::HandleMigrationDoneResponse(
-  const ClientToServerResponse* response,
-  sessions::SyncSession* session) {
-  LOG_IF(ERROR, 0 >= response->migrated_data_type_id_size())
-      << "MIGRATION_DONE but no types specified.";
+ModelTypeSet GetTypesToMigrate(const ClientToServerResponse& response) {
   ModelTypeSet to_migrate;
-  for (int i = 0; i < response->migrated_data_type_id_size(); i++) {
-    int field_number = response->migrated_data_type_id(i);
+  for (int i = 0; i < response.migrated_data_type_id_size(); i++) {
+    int field_number = response.migrated_data_type_id(i);
     ModelType model_type = GetModelTypeFromSpecificsFieldNumber(field_number);
     if (!IsRealDataType(model_type)) {
-      NOTREACHED() << "Unknown field number " << field_number;
+      DLOG(WARNING) << "Unknown field number " << field_number;
       continue;
     }
     to_migrate.Put(model_type);
   }
-  // TODO(akalin): This should be a set union.
-  session->mutable_status_controller()->
-      set_types_needing_local_migration(to_migrate);
+  return to_migrate;
 }
 
-// static
-bool SyncerProtoUtil::VerifyResponseBirthday(syncable::Directory* dir,
-    const ClientToServerResponse* response) {
+SyncProtocolError ConvertErrorPBToLocalType(
+    const sync_pb::ClientToServerResponse_Error& error) {
+  SyncProtocolError sync_protocol_error;
+  sync_protocol_error.error_type = ConvertSyncProtocolErrorTypePBToLocalType(
+      error.error_type());
+  sync_protocol_error.error_description = error.error_description();
+  sync_protocol_error.url = error.url();
+  sync_protocol_error.action = ConvertClientActionPBToLocalClientAction(
+      error.action());
+
+  if (error.error_data_type_ids_size() > 0) {
+    // THROTTLED is currently the only error code that uses |error_data_types|.
+    DCHECK_EQ(error.error_type(), sync_pb::SyncEnums::THROTTLED);
+    for (int i = 0; i < error.error_data_type_ids_size(); ++i) {
+      int field_number = error.error_data_type_ids(i);
+      ModelType model_type =
+          GetModelTypeFromSpecificsFieldNumber(field_number);
+      if (!IsRealDataType(model_type)) {
+        DLOG(WARNING) << "Unknown field number " << field_number;
+        continue;
+      }
+      sync_protocol_error.error_data_types.Put(model_type);
+    }
+  }
+
+  return sync_protocol_error;
+}
+
+bool SyncerProtoUtil::VerifyResponseBirthday(
+    const ClientToServerResponse& response,
+    syncable::Directory* dir) {
 
   std::string local_birthday = dir->store_birthday();
 
   if (local_birthday.empty()) {
-    if (!response->has_store_birthday()) {
+    if (!response.has_store_birthday()) {
       LOG(WARNING) << "Expected a birthday on first sync.";
       return false;
     }
 
-    DVLOG(1) << "New store birthday: " << response->store_birthday();
-    dir->set_store_birthday(response->store_birthday());
+    DVLOG(1) << "New store birthday: " << response.store_birthday();
+    dir->set_store_birthday(response.store_birthday());
     return true;
   }
 
   // Error situation, but we're not stuck.
-  if (!response->has_store_birthday()) {
+  if (!response.has_store_birthday()) {
     LOG(WARNING) << "No birthday in server response?";
     return true;
   }
 
-  if (response->store_birthday() != local_birthday) {
+  if (response.store_birthday() != local_birthday) {
     LOG(WARNING) << "Birthday changed, showing syncer stuck";
     return false;
   }
@@ -265,82 +333,6 @@ bool IsVeryFirstGetUpdates(const ClientToServerMessage& message) {
   return true;
 }
 
-SyncProtocolErrorType ConvertSyncProtocolErrorTypePBToLocalType(
-    const sync_pb::SyncEnums::ErrorType& error_type) {
-  switch (error_type) {
-    case sync_pb::SyncEnums::SUCCESS:
-      return SYNC_SUCCESS;
-    case sync_pb::SyncEnums::NOT_MY_BIRTHDAY:
-      return NOT_MY_BIRTHDAY;
-    case sync_pb::SyncEnums::THROTTLED:
-      return THROTTLED;
-    case sync_pb::SyncEnums::CLEAR_PENDING:
-      return CLEAR_PENDING;
-    case sync_pb::SyncEnums::TRANSIENT_ERROR:
-      return TRANSIENT_ERROR;
-    case sync_pb::SyncEnums::MIGRATION_DONE:
-      return MIGRATION_DONE;
-    case sync_pb::SyncEnums::UNKNOWN:
-      return UNKNOWN_ERROR;
-    case sync_pb::SyncEnums::USER_NOT_ACTIVATED:
-    case sync_pb::SyncEnums::AUTH_INVALID:
-    case sync_pb::SyncEnums::ACCESS_DENIED:
-      return INVALID_CREDENTIAL;
-    default:
-      NOTREACHED();
-      return UNKNOWN_ERROR;
-  }
-}
-
-ClientAction ConvertClientActionPBToLocalClientAction(
-    const sync_pb::SyncEnums::Action& action) {
-  switch (action) {
-    case sync_pb::SyncEnums::UPGRADE_CLIENT:
-      return UPGRADE_CLIENT;
-    case sync_pb::SyncEnums::CLEAR_USER_DATA_AND_RESYNC:
-      return CLEAR_USER_DATA_AND_RESYNC;
-    case sync_pb::SyncEnums::ENABLE_SYNC_ON_ACCOUNT:
-      return ENABLE_SYNC_ON_ACCOUNT;
-    case sync_pb::SyncEnums::STOP_AND_RESTART_SYNC:
-      return STOP_AND_RESTART_SYNC;
-    case sync_pb::SyncEnums::DISABLE_SYNC_ON_CLIENT:
-      return DISABLE_SYNC_ON_CLIENT;
-    case sync_pb::SyncEnums::UNKNOWN_ACTION:
-      return UNKNOWN_ACTION;
-    default:
-      NOTREACHED();
-      return UNKNOWN_ACTION;
-  }
-}
-
-SyncProtocolError ConvertErrorPBToLocalType(
-    const ClientToServerResponse::Error& error) {
-  SyncProtocolError sync_protocol_error;
-  sync_protocol_error.error_type = ConvertSyncProtocolErrorTypePBToLocalType(
-      error.error_type());
-  sync_protocol_error.error_description = error.error_description();
-  sync_protocol_error.url = error.url();
-  sync_protocol_error.action = ConvertClientActionPBToLocalClientAction(
-      error.action());
-
-  if (error.error_data_type_ids_size() > 0) {
-    // THROTTLED is currently the only error code that uses |error_data_types|.
-    DCHECK_EQ(error.error_type(), sync_pb::SyncEnums::THROTTLED);
-    for (int i = 0; i < error.error_data_type_ids_size(); ++i) {
-      int field_number = error.error_data_type_ids(i);
-      ModelType model_type =
-          GetModelTypeFromSpecificsFieldNumber(field_number);
-      if (!IsRealDataType(model_type)) {
-        NOTREACHED() << "Unknown field number " << field_number;
-        continue;
-      }
-      sync_protocol_error.error_data_types.Put(model_type);
-    }
-  }
-
-  return sync_protocol_error;
-}
-
 // TODO(lipalani) : Rename these function names as per the CR for issue 7740067.
 SyncProtocolError ConvertLegacyErrorCodeToNewError(
     const sync_pb::SyncEnums::ErrorType& error_type) {
@@ -360,7 +352,6 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
     ClientToServerMessage* msg,
     ClientToServerResponse* response,
     SyncSession* session) {
-
   CHECK(response);
   DCHECK(!msg->get_updates().has_from_timestamp());  // Deprecated.
   DCHECK(!msg->get_updates().has_requested_types());  // Deprecated.
@@ -400,7 +391,7 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
   SyncProtocolError sync_protocol_error;
 
   // Birthday mismatch overrides any error that is sent by the server.
-  if (!VerifyResponseBirthday(dir, response)) {
+  if (!VerifyResponseBirthday(*response, dir)) {
     sync_protocol_error.error_type = NOT_MY_BIRTHDAY;
      sync_protocol_error.action =
          DISABLE_SYNC_ON_CLIENT;
@@ -465,7 +456,11 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
     case TRANSIENT_ERROR:
       return SERVER_RETURN_TRANSIENT_ERROR;
     case MIGRATION_DONE:
-      HandleMigrationDoneResponse(response, session);
+      LOG_IF(ERROR, 0 >= response->migrated_data_type_id_size())
+          << "MIGRATION_DONE but no types specified.";
+      // TODO(akalin): This should be a set union.
+      session->mutable_status_controller()->
+          set_types_needing_local_migration(GetTypesToMigrate(*response));
       return SERVER_RETURN_MIGRATION_DONE;
     case CLEAR_PENDING:
       return SERVER_RETURN_CLEAR_PENDING;

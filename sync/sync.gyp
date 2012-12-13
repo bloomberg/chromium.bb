@@ -665,6 +665,7 @@
           'engine/model_changing_syncer_command_unittest.cc',
           'engine/process_commit_response_command_unittest.cc',
           'engine/process_updates_command_unittest.cc',
+          'engine/store_timestamps_command_unittest.cc',
           'engine/sync_session_job_unittest.cc',
           'engine/sync_scheduler_unittest.cc',
           'engine/sync_scheduler_whitebox_unittest.cc',

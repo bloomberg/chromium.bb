@@ -6,10 +6,26 @@
 #define SYNC_ENGINE_STORE_TIMESTAMPS_COMMAND_H_
 
 #include "base/compiler_specific.h"
+#include "sync/base/sync_export.h"
 #include "sync/engine/syncer_command.h"
 #include "sync/engine/syncer_types.h"
+#include "sync/internal_api/public/base/model_type.h"
+
+namespace sync_pb {
+class GetUpdatesResponse;
+}  // namespace sync_pb
 
 namespace syncer {
+
+namespace syncable {
+class Directory;
+}  // namespace syncable
+
+// Sets |dir|'s progress markers from the data in |response|.  Returns
+// the set of model types with new progress markers.
+SYNC_EXPORT_PRIVATE ModelTypeSet ProcessNewProgressMarkers(
+    const sync_pb::GetUpdatesResponse& response,
+    syncable::Directory* dir);
 
 // A syncer command that extracts the changelog timestamp information from
 // a GetUpdatesResponse (fetched in DownloadUpdatesCommand) and stores

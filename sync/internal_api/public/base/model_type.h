@@ -174,7 +174,7 @@ SYNC_EXPORT bool IsControlType(ModelType model_type);
 //     ModelType model_type =
 //         GetModelTypeFromSpecificsFieldNumber(field_number);
 //     if (!IsRealDataType(model_type)) {
-//       NOTREACHED() << "Unknown field number " << field_number;
+//       DLOG(WARNING) << "Unknown field number " << field_number;
 //       continue;
 //     }
 //     model_types.Put(model_type);

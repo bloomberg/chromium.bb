@@ -48,6 +48,38 @@ class MockDelegate : public sessions::SyncSession::Delegate {
   MOCK_METHOD1(OnSilencedUntil, void(const base::TimeTicks&));
 };
 
+// Builds a ClientToServerResponse with some data type ids, including
+// invalid ones.  GetTypesToMigrate() should return only the valid
+// model types.
+TEST(SyncerProtoUtil, GetTypesToMigrate) {
+  sync_pb::ClientToServerResponse response;
+  response.add_migrated_data_type_id(
+      GetSpecificsFieldNumberFromModelType(BOOKMARKS));
+  response.add_migrated_data_type_id(
+      GetSpecificsFieldNumberFromModelType(HISTORY_DELETE_DIRECTIVES));
+  response.add_migrated_data_type_id(-1);
+  EXPECT_TRUE(
+      GetTypesToMigrate(response).Equals(
+          ModelTypeSet(BOOKMARKS, HISTORY_DELETE_DIRECTIVES)));
+}
+
+// Builds a ClientToServerResponse_Error with some error data type
+// ids, including invalid ones.  ConvertErrorPBToLocalType() should
+// return a SyncProtocolError with only the valid model types.
+TEST(SyncerProtoUtil, ConvertErrorPBToLocalType) {
+  sync_pb::ClientToServerResponse_Error error_pb;
+  error_pb.set_error_type(sync_pb::SyncEnums::THROTTLED);
+  error_pb.add_error_data_type_ids(
+      GetSpecificsFieldNumberFromModelType(BOOKMARKS));
+  error_pb.add_error_data_type_ids(
+      GetSpecificsFieldNumberFromModelType(HISTORY_DELETE_DIRECTIVES));
+  error_pb.add_error_data_type_ids(-1);
+  SyncProtocolError error = ConvertErrorPBToLocalType(error_pb);
+  EXPECT_TRUE(
+      error.error_data_types.Equals(
+          ModelTypeSet(BOOKMARKS, HISTORY_DELETE_DIRECTIVES)));
+}
+
 TEST(SyncerProtoUtil, TestBlobToProtocolBufferBytesUtilityFunctions) {
   unsigned char test_data1[] = {1, 2, 3, 4, 5, 6, 7, 8, 0, 1, 4, 2, 9};
   unsigned char test_data2[] = {1, 99, 3, 4, 5, 6, 7, 8, 0, 1, 4, 2, 9};
@@ -175,24 +207,24 @@ TEST_F(SyncerProtoUtilTest, VerifyResponseBirthday) {
   // Both sides empty
   EXPECT_TRUE(directory()->store_birthday().empty());
   sync_pb::ClientToServerResponse response;
-  EXPECT_FALSE(SyncerProtoUtil::VerifyResponseBirthday(directory(), &response));
+  EXPECT_FALSE(SyncerProtoUtil::VerifyResponseBirthday(response, directory()));
 
   // Remote set, local empty
   response.set_store_birthday("flan");
-  EXPECT_TRUE(SyncerProtoUtil::VerifyResponseBirthday(directory(), &response));
+  EXPECT_TRUE(SyncerProtoUtil::VerifyResponseBirthday(response, directory()));
   EXPECT_EQ(directory()->store_birthday(), "flan");
 
   // Remote empty, local set.
   response.clear_store_birthday();
-  EXPECT_TRUE(SyncerProtoUtil::VerifyResponseBirthday(directory(), &response));
+  EXPECT_TRUE(SyncerProtoUtil::VerifyResponseBirthday(response, directory()));
   EXPECT_EQ(directory()->store_birthday(), "flan");
 
   // Doesn't match
   response.set_store_birthday("meat");
-  EXPECT_FALSE(SyncerProtoUtil::VerifyResponseBirthday(directory(), &response));
+  EXPECT_FALSE(SyncerProtoUtil::VerifyResponseBirthday(response, directory()));
 
   response.set_error_code(sync_pb::SyncEnums::CLEAR_PENDING);
-  EXPECT_FALSE(SyncerProtoUtil::VerifyResponseBirthday(directory(), &response));
+  EXPECT_FALSE(SyncerProtoUtil::VerifyResponseBirthday(response, directory()));
 }
 
 TEST_F(SyncerProtoUtilTest, AddRequestBirthday) {
@@ -291,4 +323,5 @@ TEST_F(SyncerProtoUtilTest, HandleThrottlingNoDatatypes) {
   SyncerProtoUtil::HandleThrottleError(error, ticks, &tracker, &delegate);
   EXPECT_TRUE(tracker.GetThrottledTypes().Empty());
 }
+
 }  // namespace syncer
