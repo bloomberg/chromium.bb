@@ -168,9 +168,9 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   // at 0am if chromeos device is on.
   void BatchUpdateWallpaper();
 
-  // Cache all logged in users' wallpapers to memory at login screen. It should
-  // not compete with first wallpaper loading when boot up/initialize login
-  // WebUI page.
+  // Cache some (or all) logged in users' wallpapers to memory at login
+  // screen. It should not compete with first wallpaper loading when boot
+  // up/initialize login WebUI page.
   // There are two ways the first wallpaper might be loaded:
   // 1. Loaded on boot. Login WebUI waits for it.
   // 2. When flag --disable-boot-animation is passed. Login WebUI is loaded
@@ -178,7 +178,7 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   // For case 2, should_cache_wallpaper_ is used to indicate if we need to
   // cache wallpapers on wallpaper animation finished. The cache operation
   // should be only executed once.
-  void CacheAllUsersWallpapers();
+  void CacheUsersWallpapers();
 
   // Caches |email|'s wallpaper to memory.
   void CacheUserWallpaper(const std::string& email);

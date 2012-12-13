@@ -70,6 +70,9 @@ const char kNewWallpaperTypeNodeName[] = "type";
 // File path suffix of the original custom wallpaper.
 const char kOriginalCustomWallpaperSuffix[] = "_wallpaper";
 
+// Maximum number of wallpapers cached by CacheUsersWallpapers().
+const int kMaxWallpapersToCache = 3;
+
 // For our scaling ratios we need to round positive numbers.
 int RoundPositive(double x) {
   return static_cast<int>(floor(x + 0.5));
@@ -244,7 +247,7 @@ void WallpaperManager::Observe(int type,
           HasSwitch(switches::kDisableBootAnimation)) {
         BrowserThread::PostDelayedTask(
             BrowserThread::UI, FROM_HERE,
-            base::Bind(&WallpaperManager::CacheAllUsersWallpapers,
+            base::Bind(&WallpaperManager::CacheUsersWallpapers,
                        weak_factory_.GetWeakPtr()),
             base::TimeDelta::FromMilliseconds(kCacheWallpaperDelayMs));
       } else {
@@ -256,7 +259,7 @@ void WallpaperManager::Observe(int type,
       if (should_cache_wallpaper_) {
         BrowserThread::PostDelayedTask(
             BrowserThread::UI, FROM_HERE,
-            base::Bind(&WallpaperManager::CacheAllUsersWallpapers,
+            base::Bind(&WallpaperManager::CacheUsersWallpapers,
                        weak_factory_.GetWeakPtr()),
             base::TimeDelta::FromMilliseconds(kCacheWallpaperDelayMs));
         should_cache_wallpaper_ = false;
@@ -559,7 +562,7 @@ void WallpaperManager::BatchUpdateWallpaper() {
   NOTIMPLEMENTED();
 }
 
-void WallpaperManager::CacheAllUsersWallpapers() {
+void WallpaperManager::CacheUsersWallpapers() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   UserList users = UserManager::Get()->GetUsers();
 
@@ -567,7 +570,9 @@ void WallpaperManager::CacheAllUsersWallpapers() {
     UserList::const_iterator it = users.begin();
     // Skip the wallpaper of first user in the list. It should have been cached.
     it++;
-    for (; it != users.end(); ++it) {
+    for (int cached = 0;
+         it != users.end() && cached < kMaxWallpapersToCache;
+         ++it, ++cached) {
       std::string user_email = (*it)->email();
       CacheUserWallpaper(user_email);
     }
