@@ -1224,6 +1224,25 @@ void RenderViewHostImpl::OnMsgNavigate(const IPC::Message& msg) {
     return;
 
   RenderProcessHost* process = GetProcess();
+
+  // If the --site-per-process flag is passed, then the renderer process is
+  // not allowed to request web pages from other sites than the one it is
+  // dedicated to.
+  // Kill the renderer process if it violates this policy.
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kSitePerProcess) &&
+      static_cast<SiteInstanceImpl*>(GetSiteInstance())->HasSite() &&
+      validated_params.url != GURL(chrome::kAboutBlankURL)) {
+    if (!SiteInstance::IsSameWebSite(GetSiteInstance()->GetBrowserContext(),
+                                     GetSiteInstance()->GetSiteURL(),
+                                     validated_params.url) ||
+        static_cast<SiteInstanceImpl*>(GetSiteInstance())->
+            HasWrongProcessForURL(validated_params.url)) {
+      base::KillProcess(process->GetHandle(), RESULT_CODE_KILLED, true);
+      UMA_HISTOGRAM_COUNTS("ChildProcess.ViolatedSitePerProcess", 1);
+    }
+  }
+
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
   // Without this check, an evil renderer can trick the browser into creating
