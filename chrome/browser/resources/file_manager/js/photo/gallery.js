@@ -126,7 +126,7 @@ Gallery.openStandalone = function(path, pageState) {
       var context = {
         readonlyDirName: null,
         curDirEntry: currentDir,
-        saveDirEntry: currentDir,
+        saveDirEntry: null,
         metadataCache: MetadataCache.createFull(),
         pageState: pageState,
         onClose: onClose,
@@ -170,11 +170,15 @@ Gallery.prototype.initListeners_ = function() {
   this.inactivityWatcher_ = new MouseInactivityWatcher(
       this.container_, Gallery.FADE_TIMEOUT, this.hasActiveTool.bind(this));
 
-  this.thumbnailObserverId_ = this.metadataCache_.addObserver(
-      this.context_.curDirEntry,
-      MetadataCache.CHILDREN,
-      'thumbnail',
-      this.updateThumbnails_.bind(this));
+  // Search results may contain files from different subdirectories so
+  // the observer is not going to work.
+  if (!this.context_.searchResults) {
+    this.thumbnailObserverId_ = this.metadataCache_.addObserver(
+        this.context_.curDirEntry,
+        MetadataCache.CHILDREN,
+        'thumbnail',
+        this.updateThumbnails_.bind(this));
+  }
 };
 
 /**
@@ -190,7 +194,9 @@ Gallery.prototype.onBeforeUnload = function() {
  * @param {boolean} exiting True if the app is exiting.
  */
 Gallery.prototype.onUnload = function(exiting) {
-  this.metadataCache_.removeObserver(this.thumbnailObserverId_);
+  if (!this.context_.searchResults) {
+    this.metadataCache_.removeObserver(this.thumbnailObserverId_);
+  }
   this.slideMode_.onUnload(exiting);
 };
 
@@ -623,22 +629,27 @@ Gallery.prototype.onKeyDown_ = function(event) {
  * @private
  */
 Gallery.prototype.updateSelectionAndState_ = function() {
+  var path;
   var displayName = '';
-  var fullName = '';
 
   var selectedItems = this.getSelectedItems();
   if (selectedItems.length == 1) {
-    fullName = selectedItems[0].getFileName();
+    var item = selectedItems[0];
+    path = util.extractFilePath(item.getUrl());
+    var fullName = item.getFileName();
+    window.top.document.title = fullName;
     displayName = ImageUtil.getFileNameFromFullName(fullName);
   } else if (selectedItems.length > 1) {
+    // If the Gallery was opened on search results the search query will not be
+    // recorded in the app state and the relaunch will just open the gallery
+    // in the curDirEntry directory.
+    path = this.context_.curDirEntry.fullPath;
+    window.top.document.title = this.context_.curDirEntry.name;
     displayName =
         this.displayStringFunction_('ITEMS_SELECTED', selectedItems.length);
   }
 
-  window.top.document.title = fullName || this.context_.curDirEntry.name;
-
-  window.top.util.updateAppState(true /*replace*/,
-      this.context_.curDirEntry.fullPath + '/' + fullName,
+  window.top.util.updateAppState(true /*replace*/, path,
       {gallery: (this.currentMode_ == this.mosaicMode_ ? 'mosaic' : 'slide')});
 
   this.filenameEdit_.value = displayName;
@@ -693,7 +704,7 @@ Gallery.prototype.onFilenameEditBlur_ = function() {
   }.bind(this);
 
   if (this.filenameEdit_.value) {
-    this.getSingleSelectedItem().rename(this.context_.saveDirEntry,
+    this.getSingleSelectedItem().rename(
         this.filenameEdit_.value, onSuccess, onFileExists);
   }
 

@@ -116,14 +116,15 @@ Gallery.Item.prototype.createCopyName_ = function(dirEntry, callback) {
 /**
  * Write the new item content to the file.
  *
- * @param {Entry} dirEntry Directory entry.
+ * @param {Entry} overrideDir Directory to save to. If null, save to the same
+ *   directory as the original.
  * @param {boolean} overwrite True if overwrite, false if copy.
  * @param {HTMLCanvasElement} canvas Source canvas.
  * @param {ImageEncoder.MetadataEncoder} metadataEncoder MetadataEncoder.
  * @param {function(boolean)} opt_callback Callback accepting true for success.
  */
 Gallery.Item.prototype.saveToFile = function(
-    dirEntry, overwrite, canvas, metadataEncoder, opt_callback) {
+    overrideDir, overwrite, canvas, metadataEncoder, opt_callback) {
   ImageUtil.metrics.startInterval(ImageUtil.getMetricName('SaveTime'));
 
   var name = this.getFileName();
@@ -163,37 +164,46 @@ Gallery.Item.prototype.saveToFile = function(
     }, onError);
   }
 
-  function getFile(newFile) {
-    dirEntry.getFile(name, {create: newFile, exclusive: newFile},
+  function getFile(dir, newFile) {
+    dir.getFile(name, {create: newFile, exclusive: newFile},
         doSave.bind(null, newFile), onError);
   }
 
-  function checkExistence() {
-    dirEntry.getFile(name, {create: false, exclusive: false},
-        getFile.bind(null, false /* existing file */),
-        getFile.bind(null, true /* create new file */));
+  function checkExistence(dir) {
+    dir.getFile(name, {create: false, exclusive: false},
+        getFile.bind(null, dir, false /* existing file */),
+        getFile.bind(null, dir, true /* create new file */));
   }
 
-  if (overwrite) {
-    checkExistence();
+  function saveToDir(dir) {
+    if (overwrite) {
+      checkExistence(dir);
+    } else {
+      this.createCopyName_(dir, function(copyName) {
+        this.original_ = false;
+        name = copyName;
+        checkExistence(dir);
+      }.bind(this));
+    }
+  }
+
+  if (overrideDir) {
+    saveToDir(overrideDir);
   } else {
-    this.createCopyName_(dirEntry, function(copyName) {
-      this.original_ = false;
-      name = copyName;
-      checkExistence();
-    }.bind(this));
+    webkitResolveLocalFileSystemURL(this.getUrl(),
+        function(entry) { entry.getParent(saveToDir, onError)},
+        onError);
   }
 };
 
 /**
  * Rename the file.
  *
- * @param {Entry} dir Directory entry.
  * @param {string} name New file name.
  * @param {function} onSuccess Success callback.
  * @param {function} onExists Called if the file with the new name exists.
  */
-Gallery.Item.prototype.rename = function(dir, name, onSuccess, onExists) {
+Gallery.Item.prototype.rename = function(name, onSuccess, onExists) {
   var oldName = this.getFileName();
   if (ImageUtil.getExtensionFromFullName(name) ==
       ImageUtil.getExtensionFromFullName(oldName)) {
@@ -211,13 +221,14 @@ Gallery.Item.prototype.rename = function(dir, name, onSuccess, onExists) {
     onSuccess();
   }.bind(this);
 
-  var doRename = function() {
-    dir.getFile(
-        this.getFileName(),
-        {create: false},
-        function(entry) { entry.moveTo(dir, newName, onRenamed, onError); },
-        onError);
-  }.bind(this);
+  function moveIfDoesNotExist(entry, parentDir) {
+    parentDir.getFile(newName, {create: false, exclusive: false}, onExists,
+        function() { entry.moveTo(parentDir, newName, onRenamed, onError) });
+  }
 
-  dir.getFile(newName, {create: false, exclusive: false}, onExists, doRename);
+  webkitResolveLocalFileSystemURL(this.getUrl(),
+      function(entry) {
+        entry.getParent(moveIfDoesNotExist.bind(null, entry), onError);
+      },
+      onError);
 };

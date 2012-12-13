@@ -429,7 +429,8 @@ FileTasks.prototype.openGallery = function(urls) {
       // We show the root label in readonly warning (e.g. archive name).
       readonlyDirName: readonlyDirName,
       curDirEntry: currentDir,
-      saveDirEntry: readonly ? downloadsDir : currentDir,
+      saveDirEntry: readonly ? downloadsDir : null,
+      searchResults: fm.directoryModel_.isSearching(),
       metadataCache: fm.metadataCache_,
       pageState: this.params_,
       onClose: onClose,
