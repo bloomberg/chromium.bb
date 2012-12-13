@@ -152,7 +152,8 @@ def _SetupWorkDirectoryForPatch(work_dir, patch, branch, manifest, email):
 
   mbranch = git.MatchSingleBranchName(
       work_dir, branch, namespace='refs/remotes/origin/')
-  logging.info('Auto resolved branch name "%s" to "%s"', branch, mbranch)
+  if branch != mbranch:
+    logging.info('Auto resolved branch name "%s" to "%s"', branch, mbranch)
   branch = mbranch
 
   # Finally, create a local branch for uploading changes to the given remote
