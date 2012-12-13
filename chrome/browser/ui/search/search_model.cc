@@ -37,9 +37,6 @@ void SearchModel::SetMode(const Mode& new_mode) {
 
   FOR_EACH_OBSERVER(SearchModelObserver, observers_,
                     ModeChanged(old_mode, mode_));
-
-  // Animation is transient, it is cleared after observers are notified.
-  mode_.animate = false;
 }
 
 void SearchModel::AddObserver(SearchModelObserver* observer) {

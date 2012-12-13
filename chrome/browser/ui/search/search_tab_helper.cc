@@ -38,7 +38,6 @@ namespace search {
 SearchTabHelper::SearchTabHelper(content::WebContents* web_contents)
     : WebContentsObserver(web_contents),
       is_search_enabled_(IsSearchEnabled(web_contents)),
-      is_initial_navigation_commit_(true),
       user_input_in_progress_(false),
       model_(web_contents) {
   if (!is_search_enabled_)
@@ -63,13 +62,13 @@ void SearchTabHelper::OmniboxEditModelChanged(bool user_input_in_progress,
   if (!user_input_in_progress && !cancelling)
     return;
 
-  UpdateModelBasedOnURL(web_contents()->GetURL(), true);
+  UpdateModelBasedOnURL(web_contents()->GetURL());
 }
 
 void SearchTabHelper::NavigationEntryUpdated() {
   if (!is_search_enabled_)
     return;
-  UpdateModelBasedOnURL(web_contents()->GetURL(), true);
+  UpdateModelBasedOnURL(web_contents()->GetURL());
 }
 
 void SearchTabHelper::NavigateToPendingEntry(
@@ -78,12 +77,11 @@ void SearchTabHelper::NavigateToPendingEntry(
   if (!is_search_enabled_)
     return;
 
-  // Do not animate if this url is the very first navigation for the tab.
   // NTP mode changes are initiated at "pending", all others are initiated
   // when "committed".  This is because NTP is rendered natively so is faster
   // to render than the web contents and we need to coordinate the animations.
   if (IsNTP(url))
-    UpdateModelBasedOnURL(url, !is_initial_navigation_commit_);
+    UpdateModelBasedOnURL(url);
 }
 
 void SearchTabHelper::Observe(
@@ -95,13 +93,11 @@ void SearchTabHelper::Observe(
       content::Details<content::LoadCommittedDetails>(details).ptr();
   // See comment in |NavigateToPendingEntry()| about why |!IsNTP()| is used.
   if (!IsNTP(committed_details->entry->GetURL())) {
-    UpdateModelBasedOnURL(committed_details->entry->GetURL(),
-                          !is_initial_navigation_commit_);
+    UpdateModelBasedOnURL(committed_details->entry->GetURL());
   }
-  is_initial_navigation_commit_ = false;
 }
 
-void SearchTabHelper::UpdateModelBasedOnURL(const GURL& url, bool animate) {
+void SearchTabHelper::UpdateModelBasedOnURL(const GURL& url) {
   Mode::Type type = Mode::MODE_DEFAULT;
   Mode::Origin origin = Mode::ORIGIN_DEFAULT;
   if (IsNTP(url)) {
@@ -113,7 +109,7 @@ void SearchTabHelper::UpdateModelBasedOnURL(const GURL& url, bool animate) {
   }
   if (user_input_in_progress_)
     type = Mode::MODE_SEARCH_SUGGESTIONS;
-  model_.SetMode(Mode(type, origin, animate));
+  model_.SetMode(Mode(type, origin));
 }
 
 const content::WebContents* SearchTabHelper::web_contents() const {

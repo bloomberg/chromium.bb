@@ -57,16 +57,13 @@ class SearchTabHelper : public content::WebContentsObserver,
   explicit SearchTabHelper(content::WebContents* web_contents);
   friend class content::WebContentsUserData<SearchTabHelper>;
 
-  // Sets the mode of the model based on |url|. |animate| is based on initial
-  // navigation and used for the mode change on the |model_|.
-  void UpdateModelBasedOnURL(const GURL& url, bool animate);
+  // Sets the mode of the model based on |url|.
+  void UpdateModelBasedOnURL(const GURL& url);
 
   // Returns the web contents associated with the tab that owns this helper.
   const content::WebContents* web_contents() const;
 
   const bool is_search_enabled_;
-
-  bool is_initial_navigation_commit_;
 
   // Tracks the last value passed to OmniboxEditModelChanged().
   bool user_input_in_progress_;

@@ -9,39 +9,9 @@ namespace chrome {
 namespace search {
 
 // The Mode structure encodes the visual states encountered when interacting
-// with the NTP and the Omnibox.  State changes can be animated depending on the
-// context.
-//
-// *** Legend ***
-// |--------------+------------------------------------------------|
-// | Abbreviation | User Action                                    |
-// |--------------+------------------------------------------------|
-// | S            | Start.  First navigation to NTP                |
-// | N            | Navigation: Back/Forward/Direct                |
-// | T            | Tab switch                                     |
-// | I            | User input in Omnibox                          |
-// | D            | Defocus the Omnibox                            |
-// | E            | Escape out of Omnibox with suggestions showing |
-// | C            | Choose a suggestion from suggestion list       |
-//
-//
-// *** Transitions ***
-// |----------+---------+-----+---------+-----+----------+-----+---------+-----|
-// |          | To      |     |         |     |          |     |         |     |
-// |----------+---------+-----+---------+-----+----------+-----+---------+-----|
-// |          | NTP     |     | Search* |     | Search** |     | Default |     |
-// |----------+---------+-----+---------+-----+----------+-----+---------+-----|
-// | From     | Animate | Pop | Animate | Pop | Animate  | Pop | Animate | Pop |
-// |----------+---------+-----+---------+-----+----------+-----+---------+-----|
-// | Start    |         | S   | -       | -   | -        | -   | -       | -   |
-// | NTP      | -       | -   | I       |     | N        | T   | N       | T   |
-// | Search*  | N D E   | T   | -       | -   | D E C    | T   | N D E C | T   |
-// | Search** | N       | T   | I       |     | -        | -   | N D E C | T   |
-// | Default  | N       | T   | I       |     | N        | T   | -       | -   |
-//
-// * Search with suggestions showing.
-// ** Search without suggestions showing.
+// with the NTP and the Omnibox.
 struct Mode {
+  // The visual state that applies to the current interaction.
   enum Type {
     // The default state means anything but the following states.
     MODE_DEFAULT,
@@ -56,6 +26,7 @@ struct Mode {
     MODE_SEARCH_RESULTS,
   };
 
+  // The kind of page from which the user initiated the current search.
   enum Origin {
     // The user is searching from some random page.
     ORIGIN_DEFAULT = 0,
@@ -67,18 +38,16 @@ struct Mode {
     ORIGIN_SEARCH,
   };
 
-  Mode() : mode(MODE_DEFAULT), origin(ORIGIN_DEFAULT), animate(false) {
+  Mode() : mode(MODE_DEFAULT), origin(ORIGIN_DEFAULT) {
   }
 
-  Mode(Type in_mode, Origin in_origin, bool in_animate)
+  Mode(Type in_mode, Origin in_origin)
       : mode(in_mode),
-        origin(in_origin),
-        animate(in_animate) {
+        origin(in_origin) {
   }
 
   bool operator==(const Mode& rhs) const {
     return mode == rhs.mode && origin == rhs.origin;
-    // |animate| is transient.  It doesn't count.
   }
 
   bool is_default() const {
@@ -114,14 +83,7 @@ struct Mode {
   }
 
   Type mode;
-
-  // The kind of page from which the user initiated the current search.
   Origin origin;
-
-  // Mode changes can be animated.  This is transient state, once a call to
-  // |SearchModel::SetMode| has completed and its observers notified |animate|
-  // is set to |false|.
-  bool animate;
 };
 
 }  // namespace search
