@@ -33,13 +33,14 @@
 
 using content::WebContents;
 using test::GetCenterInScreenCoordinates;
-using test::SetID;
-using test::ResetIDs;
-using test::IDString;
 using test::GetTabStripForBrowser;
+using test::IDString;
+using test::ResetIDs;
+using test::SetID;
 
 // The tests in this file exercise detaching the dragged tab into a standalone
-// window (not a Browser).
+// window (not a Browser). They are not applicable to aura as aura forces real
+// window dragging.
 
 // Creates a browser with two tabs, drags the second to the first.
 IN_PROC_BROWSER_TEST_F(TabDragControllerTest, DragInSameWindow) {

@@ -362,6 +362,8 @@ TabDragController::TabDragController()
     : detach_into_browser_(ShouldDetachIntoNewBrowser()),
       source_tabstrip_(NULL),
       attached_tabstrip_(NULL),
+      screen_(NULL),
+      host_desktop_type_(chrome::HOST_DESKTOP_TYPE_NATIVE),
       source_tab_offset_(0),
       offset_to_width_ratio_(0),
       old_focused_view_(NULL),
@@ -818,13 +820,13 @@ TabDragController::DragBrowserToNewTabStrip(
     return DRAG_BROWSER_RESULT_STOP;
   }
   if (is_dragging_window_) {
-#if defined(USE_ASH)
     // ReleaseCapture() is going to result in calling back to us (because it
     // results in a move). That'll cause all sorts of problems.  Reset the
     // observer so we don't get notified and process the event.
-    move_loop_widget_->RemoveObserver(this);
-    move_loop_widget_ = NULL;
-#endif
+    if (host_desktop_type_ == chrome::HOST_DESKTOP_TYPE_ASH) {
+      move_loop_widget_->RemoveObserver(this);
+      move_loop_widget_ = NULL;
+    }
     views::Widget* browser_widget = GetAttachedBrowserWidget();
     // Need to release the drag controller before starting the move loop as it's
     // going to trigger capture lost, which cancels drag.
@@ -834,11 +836,10 @@ TabDragController::DragBrowserToNewTabStrip(
     browser_widget->SetVisibilityChangedAnimationsEnabled(false);
     // For aura we can't release capture, otherwise it'll cancel a gesture.
     // Instead we have to directly change capture.
-#if !defined(USE_ASH)
-    browser_widget->ReleaseCapture();
-#else
-    target_tabstrip->GetWidget()->SetCapture(attached_tabstrip_);
-#endif
+    if (host_desktop_type_ == chrome::HOST_DESKTOP_TYPE_ASH)
+      target_tabstrip->GetWidget()->SetCapture(attached_tabstrip_);
+    else
+      browser_widget->ReleaseCapture();
     // The window is going away. Since the drag is still on going we don't want
     // that to effect the position of any windows.
     SetWindowPositionManaged(browser_widget->GetNativeView(), false);
@@ -848,21 +849,21 @@ TabDragController::DragBrowserToNewTabStrip(
     browser_widget->Hide();
     browser_widget->EndMoveLoop();
 
-    // Ideally we would always swap the tabs now, but on windows it seems that
+    // Ideally we would always swap the tabs now, but on non-ash it seems that
     // running the move loop implicitly activates the window when done, leading
-    // to all sorts of flicker. So, on windows, instead we process the move
+    // to all sorts of flicker. So, on non-ash, instead we process the move
     // after the loop completes. But on chromeos, we can do tab swapping now to
     // avoid the tab flashing issue(crbug.com/116329).
-#if defined(USE_ASH)
-    is_dragging_window_ = false;
-    Detach(DONT_RELEASE_CAPTURE);
-    Attach(target_tabstrip, point_in_screen);
-    // Move the tabs into position.
-    MoveAttached(point_in_screen);
-    attached_tabstrip_->GetWidget()->Activate();
-#else
-    tab_strip_to_attach_to_after_exit_ = target_tabstrip;
-#endif
+    if (host_desktop_type_ == chrome::HOST_DESKTOP_TYPE_ASH) {
+      is_dragging_window_ = false;
+      Detach(DONT_RELEASE_CAPTURE);
+      Attach(target_tabstrip, point_in_screen);
+      // Move the tabs into position.
+      MoveAttached(point_in_screen);
+      attached_tabstrip_->GetWidget()->Activate();
+    } else {
+      tab_strip_to_attach_to_after_exit_ = target_tabstrip;
+    }
 
     waiting_for_run_loop_to_exit_ = true;
     end_run_loop_behavior_ = END_RUN_LOOP_CONTINUE_DRAGGING;
@@ -1340,14 +1341,14 @@ void TabDragController::RunMoveLoop(const gfx::Vector2d& drag_offset) {
   is_dragging_window_ = true;
   bool destroyed = false;
   destroyed_ = &destroyed;
-#if !defined(USE_ASH)
-  // Running the move loop releases mouse capture on Windows, which triggers
+  // Running the move loop releases mouse capture on non-ash, which triggers
   // destroying the drag loop. Release mouse capture ourself before this while
   // the DragController isn't owned by the TabStrip.
-  attached_tabstrip_->ReleaseDragController();
-  attached_tabstrip_->GetWidget()->ReleaseCapture();
-  attached_tabstrip_->OwnDragController(this);
-#endif
+  if (host_desktop_type_ != chrome::HOST_DESKTOP_TYPE_ASH) {
+    attached_tabstrip_->ReleaseDragController();
+    attached_tabstrip_->GetWidget()->ReleaseCapture();
+    attached_tabstrip_->OwnDragController(this);
+  }
   views::Widget::MoveLoopResult result =
       move_loop_widget_->RunMoveLoop(drag_offset);
   content::NotificationService::current()->Notify(
@@ -2020,17 +2021,19 @@ Browser* TabDragController::CreateBrowserForDrag(
 
 gfx::Point TabDragController::GetCursorScreenPoint() {
 #if defined(USE_ASH)
-  views::Widget* widget = GetAttachedBrowserWidget();
-  DCHECK(widget);
-  if (aura::Env::GetInstance()->is_touch_down()) {
-    aura::Window* widget_window = widget->GetNativeWindow();
-    DCHECK(widget_window->GetRootWindow());
-    gfx::Point touch_point;
-    bool got_touch_point = widget_window->GetRootWindow()->
-        gesture_recognizer()->GetLastTouchPointForTarget(widget_window,
-                                                         &touch_point);
-    DCHECK(got_touch_point);
-    return touch_point;
+  if (host_desktop_type_ == chrome::HOST_DESKTOP_TYPE_ASH) {
+    views::Widget* widget = GetAttachedBrowserWidget();
+    DCHECK(widget);
+    if (aura::Env::GetInstance()->is_touch_down()) {
+      aura::Window* widget_window = widget->GetNativeWindow();
+      DCHECK(widget_window->GetRootWindow());
+      gfx::Point touch_point;
+      bool got_touch_point = widget_window->GetRootWindow()->
+          gesture_recognizer()->GetLastTouchPointForTarget(widget_window,
+                                                           &touch_point);
+      DCHECK(got_touch_point);
+      return touch_point;
+    }
   }
 #endif
   return screen_->GetCursorScreenPoint();

@@ -560,10 +560,13 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
 namespace {
 
 void DeleteSourceDetachedStep2(WebContents* tab) {
+  ASSERT_EQ(2u, BrowserList::size());
+  Browser* new_browser = *(++BrowserList::begin());
   // This ends up closing the source window.
   delete tab;
   // Cancel the drag.
-  ui_controls::SendKeyPress(NULL, ui::VKEY_ESCAPE, false, false, false, false);
+  ui_controls::SendKeyPress(new_browser->window()->GetNativeWindow(),
+                            ui::VKEY_ESCAPE, false, false, false, false);
 }
 
 }  // namespace
@@ -599,8 +602,11 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
 namespace {
 
 void PressEscapeWhileDetachedStep2() {
-  // Cancel the drag.
-  ui_controls::SendKeyPress(NULL, ui::VKEY_ESCAPE, false, false, false, false);
+  ASSERT_EQ(2u, BrowserList::size());
+  Browser* new_browser = *(++BrowserList::begin());
+  ui_controls::SendKeyPress(
+      new_browser->window()->GetNativeWindow(), ui::VKEY_ESCAPE, false, false,
+      false, false);
 }
 
 }  // namespace
@@ -608,7 +614,7 @@ void PressEscapeWhileDetachedStep2() {
 // This is disabled until NativeViewHost::Detach really detaches.
 // Detaches a tab and while detached presses escape to revert the drag.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
-                       DISABLED_PressEscapeWhileDetached) {
+                       PressEscapeWhileDetached) {
   // Add another tab.
   AddTabAndResetBrowser(browser());
   TabStrip* tab_strip = GetTabStripForBrowser(browser());

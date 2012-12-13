@@ -312,6 +312,11 @@
             '../ash/ash.gyp:ash_test_support',
           ],
         }],
+        ['use_aura==1', {
+          'sources!': [
+            'browser/ui/views/tabs/tab_drag_controller_interactive_uitest_win.cc',
+          ],
+        }],
         ['chromeos==1', {
           'sources': [
             'browser/chromeos/cros/cros_in_process_browser_test.cc',
