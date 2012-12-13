@@ -250,9 +250,20 @@ SocketBinding *SocketBinding::Bind(const char *addr) {
   // only be released after a timeout, and later processes can fail
   // to bind it.
   int reuse_address = 1;
-  setsockopt(socket_handle, SOL_SOCKET, SO_REUSEADDR,
-             reinterpret_cast<char *>(&reuse_address),
-             sizeof(reuse_address));
+  if (setsockopt(socket_handle, SOL_SOCKET, SO_REUSEADDR,
+                 reinterpret_cast<char *>(&reuse_address),
+                 sizeof(reuse_address))) {
+    NaClLog(LOG_WARNING, "Failed to set SO_REUSEADDR option.\n");
+  }
+  // Do not delay sending small packets.  This significantly speeds up
+  // remote debugging.  Debug stub uses buffering to send outgoing packets so
+  // they are not splitted to more TCP packets than necessary.
+  int nodelay = 1;
+  if (setsockopt(socket_handle, IPPROTO_TCP, TCP_NODELAY,
+                 reinterpret_cast<char *>(&nodelay),
+                 sizeof(nodelay))) {
+    NaClLog(LOG_WARNING, "Failed to set TCP_NODELAY option.\n");
+  }
 
   struct sockaddr *psaddr = reinterpret_cast<struct sockaddr *>(&saddr);
   if (bind(socket_handle, psaddr, addrlen)) {

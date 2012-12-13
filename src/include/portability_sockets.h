@@ -30,6 +30,7 @@ typedef SOCKET NaClSocketHandle;
 
 # include <arpa/inet.h>
 # include <netdb.h>
+# include <netinet/tcp.h>
 # include <sys/select.h>
 # include <sys/socket.h>
 
