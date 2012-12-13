@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
+#include "content/renderer/media/rtc_data_channel_handler.h"
 #include "content/renderer/media/rtc_media_constraints.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaConstraints.h"
 // TODO(hta): Move the following include to WebRTCStatsRequest.h file.
@@ -463,6 +464,22 @@ void RTCPeerConnectionHandler::getStats(LocalRTCStatsRequest* request) {
   native_peer_connection_->GetStats(observer, track);
 }
 
+WebKit::WebRTCDataChannelHandler* RTCPeerConnectionHandler::createDataChannel(
+    const WebKit::WebString& label, bool reliable) {
+  DVLOG(1) << "createDataChannel label " << UTF16ToUTF8(label);
+
+  webrtc::DataChannelInit config;
+  config.reliable = reliable;
+
+  talk_base::scoped_refptr<webrtc::DataChannelInterface> webrtc_channel(
+      native_peer_connection_->CreateDataChannel(UTF16ToUTF8(label), &config));
+  if (!webrtc_channel) {
+    DLOG(ERROR) << "Could not create native data channel.";
+    return NULL;
+  }
+  return new RtcDataChannelHandler(webrtc_channel);
+}
+
 void RTCPeerConnectionHandler::stop() {
   DVLOG(1) << "RTCPeerConnectionHandler::stop";
   native_peer_connection_ = NULL;
@@ -538,6 +555,13 @@ void RTCPeerConnectionHandler::OnIceComplete() {
   // Generates a NULL ice candidate object.
   WebKit::WebRTCICECandidate web_candidate;
   client_->didGenerateICECandidate(web_candidate);
+}
+
+void RTCPeerConnectionHandler::OnDataChannel(
+    webrtc::DataChannelInterface* data_channel) {
+  DVLOG(1) << "RTCPeerConnectionHandler::OnDataChannel "
+           << data_channel->label();
+  client_->didAddRemoteDataChannel(new RtcDataChannelHandler(data_channel));
 }
 
 void RTCPeerConnectionHandler::OnRenegotiationNeeded() {

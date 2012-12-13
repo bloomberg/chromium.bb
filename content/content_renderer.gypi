@@ -348,6 +348,8 @@
         'renderer/media/media_stream_impl.cc',
         'renderer/media/peer_connection_handler_base.cc',
         'renderer/media/peer_connection_handler_base.h',
+        'renderer/media/rtc_data_channel_handler.cc',
+        'renderer/media/rtc_data_channel_handler.h',
         'renderer/media/rtc_peer_connection_handler.cc',
         'renderer/media/rtc_peer_connection_handler.h',
         'renderer/media/rtc_video_capture_delegate.cc',

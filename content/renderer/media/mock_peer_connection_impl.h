@@ -36,8 +36,9 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
                         const std::string& tones, int duration,
                         const webrtc::AudioTrackInterface* play_track) OVERRIDE;
   virtual talk_base::scoped_refptr<webrtc::DataChannelInterface>
-  CreateDataChannel(const std::string& label,
-                    const webrtc::DataChannelInit* config) OVERRIDE;
+      CreateDataChannel(const std::string& label,
+                        const webrtc::DataChannelInit* config) OVERRIDE;
+
   virtual bool GetStats(webrtc::StatsObserver* observer,
                         webrtc::MediaStreamTrackInterface* track) OVERRIDE;
   virtual ReadyState ready_state() OVERRIDE;

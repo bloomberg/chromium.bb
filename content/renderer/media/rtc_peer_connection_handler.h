@@ -125,6 +125,10 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   // We will be deleted by WebKit after stop has been returned.
   virtual void stop() OVERRIDE;
 
+  virtual WebKit::WebRTCDataChannelHandler* createDataChannel(
+      const WebKit::WebString& label,
+      bool reliable) OVERRIDE;
+
   // webrtc::PeerConnectionObserver implementation
   virtual void OnError() OVERRIDE;
   virtual void OnStateChange(StateType state_changed) OVERRIDE;
@@ -133,6 +137,8 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   virtual void OnIceCandidate(
       const webrtc::IceCandidateInterface* candidate) OVERRIDE;
   virtual void OnIceComplete() OVERRIDE;
+  virtual void OnDataChannel(
+      webrtc::DataChannelInterface* data_channel) OVERRIDE;
   virtual void OnRenegotiationNeeded() OVERRIDE;
 
   // Delegate functions to allow for mocking of WebKit interfaces.

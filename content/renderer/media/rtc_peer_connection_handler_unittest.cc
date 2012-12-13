@@ -18,6 +18,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamDescriptor.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamSource.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRTCConfiguration.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebRTCDataChannelHandler.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRTCICECandidate.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRTCPeerConnectionHandlerClient.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRTCSessionDescription.h"
@@ -454,6 +455,14 @@ TEST_F(RTCPeerConnectionHandlerTest, OnRenegotiationNeeded) {
   EXPECT_FALSE(mock_client_->renegotiate());
   pc_handler_->OnRenegotiationNeeded();
   EXPECT_TRUE(mock_client_->renegotiate());
+}
+
+TEST_F(RTCPeerConnectionHandlerTest, CreateDataChannel) {
+  WebKit::WebString label = "d1";
+  scoped_ptr<WebKit::WebRTCDataChannelHandler> channel(
+      pc_handler_->createDataChannel("d1", true));
+  EXPECT_TRUE(channel.get() != NULL);
+  EXPECT_EQ(label, channel->label());
 }
 
 }  // namespace content

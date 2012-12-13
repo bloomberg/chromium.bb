@@ -57,6 +57,56 @@ class MockStreamCollection : public webrtc::StreamCollectionInterface {
   StreamVector streams_;
 };
 
+class MockDataChannel : public webrtc::DataChannelInterface {
+ public:
+  MockDataChannel(const std::string& label,
+                  const webrtc::DataChannelInit* config)
+      : label_(label),
+        reliable_(config->reliable),
+        state_(webrtc::DataChannelInterface::kConnecting) {
+  }
+
+  virtual void RegisterObserver(
+      webrtc::DataChannelObserver* observer) OVERRIDE {
+  }
+
+  virtual void UnregisterObserver() OVERRIDE {
+  }
+
+  virtual const std::string& label() const OVERRIDE {
+    return label_;
+  }
+
+  virtual bool reliable() const OVERRIDE {
+    return reliable_;
+  }
+
+  virtual DataState state() const OVERRIDE {
+    return state_;
+  }
+
+  virtual uint64 buffered_amount() const OVERRIDE {
+    NOTIMPLEMENTED();
+    return 0;
+  }
+
+  virtual void Close() OVERRIDE {
+    state_ = webrtc::DataChannelInterface::kClosing;
+  }
+
+  virtual bool Send(const webrtc::DataBuffer& buffer) OVERRIDE {
+    return state_ == webrtc::DataChannelInterface::kOpen;
+  }
+
+ protected:
+  ~MockDataChannel() {}
+
+ private:
+  std::string label_;
+  bool reliable_;
+  webrtc::DataChannelInterface::DataState state_;
+};
+
 const char MockPeerConnectionImpl::kDummyOffer[] = "dummy offer";
 const char MockPeerConnectionImpl::kDummyAnswer[] = "dummy answer";
 
@@ -118,11 +168,9 @@ bool MockPeerConnectionImpl::SendDtmf(
 }
 
 talk_base::scoped_refptr<webrtc::DataChannelInterface>
-MockPeerConnectionImpl::CreateDataChannel(
-    const std::string& label,
-    const webrtc::DataChannelInit* config) {
-  NOTIMPLEMENTED();
-  return NULL;
+MockPeerConnectionImpl::CreateDataChannel(const std::string& label,
+                      const webrtc::DataChannelInit* config) {
+  return new talk_base::RefCountedObject<MockDataChannel>(label, config);
 }
 
 bool MockPeerConnectionImpl::GetStats(
