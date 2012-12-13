@@ -561,9 +561,12 @@ TEST_F(MenuManagerTest, ExecuteCommand) {
   params.is_editable = false;
 
   Extension* extension = AddExtension("test");
+  MenuItem* parent = CreateTestItem(extension);
   MenuItem* item = CreateTestItem(extension);
+  MenuItem::Id parent_id = parent->id();
   MenuItem::Id id = item->id();
-  ASSERT_TRUE(manager_.AddContextItem(extension, item));
+  ASSERT_TRUE(manager_.AddContextItem(extension, parent));
+  ASSERT_TRUE(manager_.AddChildItem(parent->id(), item));
 
   // Use the magic of googlemock to save a parameter to our mock's
   // DispatchEventToExtension method into event_args.
@@ -601,6 +604,8 @@ TEST_F(MenuManagerTest, ExecuteCommand) {
   int tmp_id = 0;
   ASSERT_TRUE(info->GetInteger("menuItemId", &tmp_id));
   ASSERT_EQ(id.uid, tmp_id);
+  ASSERT_TRUE(info->GetInteger("parentMenuItemId", &tmp_id));
+  ASSERT_EQ(parent_id.uid, tmp_id);
 
   std::string tmp;
   ASSERT_TRUE(info->GetString("mediaType", &tmp));

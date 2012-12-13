@@ -612,7 +612,7 @@ void MenuManager::ExecuteCommand(Profile* profile,
   DictionaryValue* properties = new DictionaryValue();
   SetIdKeyValue(properties, "menuItemId", item->id());
   if (item->parent_id())
-    SetIdKeyValue(properties, "parentMenuItemId", item->id());
+    SetIdKeyValue(properties, "parentMenuItemId", *item->parent_id());
 
   switch (params.media_type) {
     case WebKit::WebContextMenuData::MediaTypeImage:
