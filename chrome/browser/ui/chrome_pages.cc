@@ -12,6 +12,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/singleton_tabs.h"
@@ -187,6 +188,15 @@ void ShowSyncSetup(Browser* browser, SyncPromoUI::Source source) {
   if (service->HasSyncSetupCompleted()) {
     ShowSettings(browser);
   } else {
+    // If the browser's profile is an incognito profile, make sure to use
+    // a browser window from the original profile.  The user cannot sign in
+    // from an incognito window.
+    if (browser->profile()->IsOffTheRecord()) {
+      browser =
+          browser::FindOrCreateTabbedBrowser(original_profile,
+                                             chrome::HOST_DESKTOP_TYPE_NATIVE);
+    }
+
     const bool use_web_flow = SyncPromoUI::UseWebBasedSigninFlow();
     const bool show_promo =
         SyncPromoUI::ShouldShowSyncPromo(browser->profile());
@@ -194,12 +204,15 @@ void ShowSyncSetup(Browser* browser, SyncPromoUI::Source source) {
     LoginUIService* login = LoginUIServiceFactory::GetForProfile(
         original_profile);
     if (use_web_flow || (show_promo && login->current_login_ui() == NULL)) {
-      NavigateToSingletonTab(browser, GURL(SyncPromoUI::GetSyncPromoURL(GURL(),
-                                                            source,
-                                                            false)));
+      NavigateToSingletonTab(browser,
+                             GURL(SyncPromoUI::GetSyncPromoURL(GURL(),
+                                                               source,
+                                                               false)));
     } else {
       login->ShowLoginUI(browser);
     }
+
+    DCHECK_GT(browser->tab_count(), 0);
   }
 }
 
