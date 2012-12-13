@@ -69,7 +69,7 @@ class RenderbufferAttachment
     return true;
   }
 
-  virtual void DetachFromFramebuffer() OVERRIDE {
+  virtual void DetachFromFramebuffer() const OVERRIDE {
     // Nothing to do for renderbuffers.
   }
 
@@ -163,7 +163,7 @@ class TextureAttachment
     return texture_->CanRenderTo();
   }
 
-  virtual void DetachFromFramebuffer() OVERRIDE {
+  virtual void DetachFromFramebuffer() const OVERRIDE {
     texture_->DetachFromFramebuffer();
   }
 
@@ -457,6 +457,9 @@ void FramebufferManager::FramebufferInfo::AttachRenderbuffer(
          attachment == GL_DEPTH_ATTACHMENT ||
          attachment == GL_STENCIL_ATTACHMENT ||
          attachment == GL_DEPTH_STENCIL_ATTACHMENT);
+  const Attachment* a = GetAttachment(attachment);
+  if (a)
+    a->DetachFromFramebuffer();
   if (renderbuffer) {
     attachments_[attachment] = Attachment::Ref(
         new RenderbufferAttachment(renderbuffer));
@@ -474,9 +477,8 @@ void FramebufferManager::FramebufferInfo::AttachTexture(
          attachment == GL_STENCIL_ATTACHMENT ||
          attachment == GL_DEPTH_STENCIL_ATTACHMENT);
   const Attachment* a = GetAttachment(attachment);
-  if (a && a->IsTexture(texture)) {
-    texture->DetachFromFramebuffer();
-  }
+  if (a)
+    a->DetachFromFramebuffer();
   if (texture) {
     attachments_[attachment] = Attachment::Ref(
         new TextureAttachment(texture, target, level));

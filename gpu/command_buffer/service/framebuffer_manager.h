@@ -43,7 +43,7 @@ class GPU_EXPORT FramebufferManager {
       virtual bool IsRenderbuffer(
           RenderbufferManager::RenderbufferInfo* renderbuffer) const = 0;
       virtual bool CanRenderTo() const = 0;
-      virtual void DetachFromFramebuffer() = 0;
+      virtual void DetachFromFramebuffer() const = 0;
       virtual bool ValidForAttachmentType(GLenum attachment_type) = 0;
       virtual void AddToSignature(
           TextureManager* texture_manager, std::string* signature) const = 0;
