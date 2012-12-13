@@ -1131,6 +1131,7 @@ DirectoryModel.prototype.onGDataStatusChanged_ = function() {
     if (mounted) {
       // Change fake entry to real one and rescan.
       function onGotDirectory(entry) {
+        this.updateRootEntry_(entry);
         if (this.getCurrentDirEntry() == DirectoryModel.fakeGDataEntry_) {
           this.changeDirectoryEntrySilent_(entry);
         }
@@ -1140,6 +1141,7 @@ DirectoryModel.prototype.onGDataStatusChanged_ = function() {
     }
   } else if (!mounted) {
     // Current entry unmounted. Replace with fake one.
+    this.updateRootEntry_(DirectoryModel.fakeGDataEntry_);
     if (this.getCurrentDirPath() == DirectoryModel.fakeGDataEntry_.fullPath) {
       // Replace silently and rescan.
       this.changeDirectoryEntrySilent_(DirectoryModel.fakeGDataEntry_);
@@ -1147,6 +1149,22 @@ DirectoryModel.prototype.onGDataStatusChanged_ = function() {
       this.changeDirectoryEntry_(false, DirectoryModel.fakeGDataEntry_);
     }
   }
+};
+
+/**
+ * Update the entry in the roots list model.
+ *
+ * @param {DirectoryEntry} entry New entry.
+ * @private
+ */
+DirectoryModel.prototype.updateRootEntry_ = function(entry) {
+  for (var i = 0; i != this.rootsList_.length; i++) {
+    if (this.rootsList_.item(i).fullPath == entry.fullPath) {
+      this.rootsList_.splice(i, 1, entry);
+      return;
+    }
+  }
+  console.error('Cannot find root: ' + entry.fullPath);
 };
 
 /**
