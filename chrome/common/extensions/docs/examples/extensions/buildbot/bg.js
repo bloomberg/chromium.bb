@@ -90,11 +90,13 @@ function updateStatus(status) {
   var treeState = (/open/i).exec(status) ? "open" :
       (/throttled/i).exec(status) ? "throttled" : "closed";
 
-  getUseNotifications(function(useNotifications) {
-    if (useNotifications && lastState && lastState != treeState) {
-      notifyStatusChange(treeState, status);
-    }
-  });
+  if (lastState && lastState != treeState) {
+    getUseNotifications(function(useNotifications) {
+      if (useNotifications) {
+        notifyStatusChange(treeState, status);
+      }
+    });
+  }
 
   chrome.browserAction.setBadgeBackgroundColor(
       {color: badgeState[treeState].color});
