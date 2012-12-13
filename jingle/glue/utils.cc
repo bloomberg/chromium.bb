@@ -19,7 +19,7 @@ namespace jingle_glue {
 
 bool IPEndPointToSocketAddress(const net::IPEndPoint& address_chrome,
                                talk_base::SocketAddress* address_lj) {
-  if (address_chrome.GetFamily() != AF_INET) {
+  if (address_chrome.GetFamily() != net::ADDRESS_FAMILY_IPV4) {
     LOG(ERROR) << "Only IPv4 addresses are supported.";
     return false;
   }
