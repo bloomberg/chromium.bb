@@ -307,8 +307,12 @@ SearchBuilder::SearchBuilder(
       GetImageSkiaNamed(IDR_OMNIBOX_SEARCH));
 
   int providers = AutocompleteProvider::TYPE_EXTENSION_APP;
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      app_list::switches::kAppListShowAppsOnly)) {
+  bool apps_only = true;
+#if defined(OS_CHROMEOS)
+  apps_only = CommandLine::ForCurrentProcess()->HasSwitch(
+      app_list::switches::kAppListShowAppsOnly);
+#endif
+  if (!apps_only) {
     // TODO(xiyuan): Consider requesting fewer providers in the non-apps-only
     // case.
     providers |= AutocompleteClassifier::kDefaultOmniboxProviders;
