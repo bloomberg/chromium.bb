@@ -79,27 +79,6 @@ DriveFileError LoadProtoOnBlockingPool(const FilePath& path,
   return DRIVE_FILE_OK;
 }
 
-// Saves json file content content in |feed| to |file_pathname| on blocking
-// pool. Used for debugging.
-void SaveFeedOnBlockingPoolForDebugging(const FilePath& file_path,
-                                        scoped_ptr<base::Value> feed) {
-  std::string json;
-  base::JSONWriter::WriteWithOptions(feed.get(),
-                                     base::JSONWriter::OPTIONS_PRETTY_PRINT,
-                                     &json);
-
-  int file_size = static_cast<int>(json.length());
-  if (file_util::WriteFile(file_path, json.data(), file_size) != file_size) {
-    LOG(WARNING) << "Drive metadata file can't be stored at "
-                 << file_path.value();
-    if (!file_util::Delete(file_path, true)) {
-      LOG(WARNING) << "Drive metadata file can't be deleted at "
-                   << file_path.value();
-      return;
-    }
-  }
-}
-
 // Returns true if file system is due to be serialized on disk based on it
 // |serialized_size| and |last_serialized| timestamp.
 bool ShouldSerializeFileSystemNow(size_t serialized_size,
@@ -314,7 +293,7 @@ void DriveFeedLoader::ReloadFromServerIfNeeded(
 void DriveFeedLoader::OnGetAccountMetadata(
     const FileOperationCallback& callback,
     google_apis::GDataErrorCode status,
-    scoped_ptr<base::Value> feed_data) {
+    scoped_ptr<google_apis::AccountMetadataFeed> account_metadata) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
   DCHECK(refreshing_);
@@ -324,35 +303,10 @@ void DriveFeedLoader::OnGetAccountMetadata(
   std::string root_id;
 
   // When account metadata successfully fetched, parse the latest changestamp.
-  if (util::GDataToDriveFileError(status) == DRIVE_FILE_OK && feed_data) {
-    if (google_apis::util::IsDriveV2ApiEnabled()) {
-      scoped_ptr<google_apis::AboutResource> about_resource =
-          google_apis::AboutResource::CreateFrom(*feed_data);
-      if (about_resource) {
-        // In DriveV2 API, root ID is not fixed and must be get from the feed.
-        root_id = about_resource->root_folder_id();
-        remote_changestamp = about_resource->largest_change_id();
-      }
-    } else {
-      scoped_ptr<google_apis::AccountMetadataFeed> account_metadata =
-          google_apis::AccountMetadataFeed::CreateFrom(*feed_data);
-      if (account_metadata) {
-        // In WAPI, application list is packed in this account feed.
-        webapps_registry_->UpdateFromFeed(*account_metadata);
-        remote_changestamp = account_metadata->largest_changestamp();
-      }
-    }
-
-#ifndef NDEBUG
-    // Save account metadata feed for analysis.
-    const FilePath path =
-        cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_META).Append(
-            kAccountMetadataFile);
-    blocking_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&SaveFeedOnBlockingPoolForDebugging,
-                   path, base::Passed(&feed_data)));
-#endif
+  if (util::GDataToDriveFileError(status) == DRIVE_FILE_OK) {
+    DCHECK(account_metadata);
+    webapps_registry_->UpdateFromFeed(*account_metadata);
+    remote_changestamp = account_metadata->largest_changestamp();
   }
 
   if (remote_changestamp > 0 && local_changestamp >= remote_changestamp) {

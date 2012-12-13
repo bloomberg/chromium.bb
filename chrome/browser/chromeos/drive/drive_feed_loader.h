@@ -19,6 +19,7 @@ class Value;
 }
 
 namespace google_apis {
+class AccountMetadataFeed;
 class ResourceList;
 }
 
@@ -115,9 +116,10 @@ class DriveFeedLoader {
   // Helper callback for handling results of metadata retrieval initiated from
   // ReloadFromServerIfNeeded(). This method makes a decision about fetching
   // the content of the root feed during the root directory refresh process.
-  void OnGetAccountMetadata(const FileOperationCallback& callback,
-                            google_apis::GDataErrorCode status,
-                            scoped_ptr<base::Value> feed_data);
+  void OnGetAccountMetadata(
+      const FileOperationCallback& callback,
+      google_apis::GDataErrorCode status,
+      scoped_ptr<google_apis::AccountMetadataFeed> account_metadata);
 
   // Callback for handling response from |DriveAPIService::GetApplicationInfo|.
   // If the application list is successfully parsed, passes the list to

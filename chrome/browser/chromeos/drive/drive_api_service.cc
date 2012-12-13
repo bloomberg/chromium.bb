@@ -94,6 +94,30 @@ void ParseResourceEntryAndRun(
   callback.Run(error, entry.Pass());
 }
 
+// Parses the JSON value to AccountMetadataFeed on the blocking pool and runs
+// |callback| on the UI thread once parsing is done.
+void ParseAccounetMetadataAndRun(
+    const google_apis::GetAccountMetadataCallback& callback,
+    google_apis::GDataErrorCode error,
+    scoped_ptr<base::Value> value) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  if (!value) {
+    callback.Run(error, scoped_ptr<google_apis::AccountMetadataFeed>());
+    return;
+  }
+
+  // Parsing AboutResource is cheap enough to do on UI thread.
+  scoped_ptr<google_apis::AboutResource> about_resource =
+      google_apis::AboutResource::CreateFrom(*value);
+
+  // TODO(satorux): Convert AboutResource to AccountMetadataFeed.
+  // For now just returning an error. crbug.com/165621
+  callback.Run(google_apis::GDATA_PARSE_ERROR,
+               scoped_ptr<google_apis::AccountMetadataFeed>());
+}
+
 }  // namespace
 
 DriveAPIService::DriveAPIService(
@@ -229,14 +253,15 @@ void DriveAPIService::GetResourceEntry(
 }
 
 void DriveAPIService::GetAccountMetadata(
-    const google_apis::GetDataCallback& callback) {
+    const google_apis::GetAccountMetadataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   runner_->StartOperationWithRetry(
-      new google_apis::GetAboutOperation(operation_registry(),
-                                         url_request_context_getter_,
-                                         callback));
+      new google_apis::GetAboutOperation(
+          operation_registry(),
+          url_request_context_getter_,
+          base::Bind(&ParseAccounetMetadataAndRun, callback)));
 }
 
 void DriveAPIService::GetApplicationInfo(

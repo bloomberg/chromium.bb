@@ -97,7 +97,8 @@ class MockDriveServiceBase : public DriveServiceInterface {
       const GetResourceEntryCallback& callback) OVERRIDE {
     NOTREACHED();
   }
-  virtual void GetAccountMetadata(const GetDataCallback& callback) OVERRIDE {
+  virtual void GetAccountMetadata(
+      const GetAccountMetadataCallback& callback) OVERRIDE {
     NOTREACHED();
   }
   virtual void GetApplicationInfo(const GetDataCallback& callback) OVERRIDE {

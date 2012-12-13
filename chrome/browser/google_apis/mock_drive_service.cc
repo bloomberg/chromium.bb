@@ -50,7 +50,7 @@ MockDriveService::MockDriveService() {
       .WillByDefault(Invoke(this, &MockDriveService::DownloadFileStub));
 
   // Fill in the default values for mock feeds.
-  account_metadata_ =
+  account_metadata_data_ =
       test_util::LoadJSONFile("gdata/account_metadata.json");
   feed_data_ = test_util::LoadJSONFile("gdata/basic_feed.json");
   directory_data_ =
@@ -89,11 +89,13 @@ void MockDriveService::GetResourceListStub(
 }
 
 void MockDriveService::GetAccountMetadataStub(
-    const GetDataCallback& callback) {
+    const GetAccountMetadataCallback& callback) {
+  scoped_ptr<AccountMetadataFeed> account_metadata =
+      AccountMetadataFeed::CreateFrom(*account_metadata_data_);
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(callback, HTTP_SUCCESS,
-                 base::Passed(&account_metadata_)));
+                 base::Passed(&account_metadata)));
 }
 
 void MockDriveService::DeleteResourceStub(

@@ -168,7 +168,7 @@ TEST_F(StaleCacheFilesRemoverTest, RemoveStaleCacheFiles) {
   EXPECT_CALL(*mock_drive_service_, GetAccountMetadata(_)).Times(2);
   EXPECT_CALL(*mock_drive_service_, GetResourceList(Eq(GURL()), _, "", _, _, _))
       .Times(2);
-  EXPECT_CALL(*mock_webapps_registry_, UpdateFromFeed(_)).Times(1);
+  EXPECT_CALL(*mock_webapps_registry_, UpdateFromFeed(_)).Times(2);
 
   FilePath unused;
   scoped_ptr<DriveEntryProto> entry_proto;

@@ -17,6 +17,7 @@ class Profile;
 
 namespace google_apis {
 
+class AccountMetadataFeed;
 class ResourceList;
 class OperationRegistry;
 
@@ -67,6 +68,11 @@ typedef base::Callback<void(GDataErrorCode error,
 typedef base::Callback<void(GDataErrorCode error,
                             scoped_ptr<ResourceEntry> entry)>
     GetResourceEntryCallback;
+
+// Callback used for GetAccountMetadata().
+typedef base::Callback<void(GDataErrorCode error,
+                            scoped_ptr<AccountMetadataFeed> account_metadata)>
+    GetAccountMetadataCallback;
 
 // This defines an interface for sharing by DriveService and MockDriveService
 // so that we can do testing of clients of DriveService.
@@ -146,7 +152,8 @@ class DriveServiceInterface {
   // metadata URL. Upon completion, invokes |callback| with results on the
   // calling thread.
   // |callback| must not be null.
-  virtual void GetAccountMetadata(const GetDataCallback& callback) = 0;
+  virtual void GetAccountMetadata(
+      const GetAccountMetadataCallback& callback) = 0;
 
   // Gets the application information from the server.
   // Upon completion, invokes |callback| with results on the calling thread.

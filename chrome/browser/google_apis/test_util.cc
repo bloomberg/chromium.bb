@@ -85,5 +85,14 @@ void CopyResultsFromGetResourceListCallback(
   *error_out = error_in;
 }
 
+void CopyResultsFromGetAccountMetadataCallback(
+    GDataErrorCode* error_out,
+    scoped_ptr<AccountMetadataFeed>* account_metadata_out,
+    GDataErrorCode error_in,
+    scoped_ptr<AccountMetadataFeed> account_metadata_in) {
+  account_metadata_out->swap(account_metadata_in);
+  *error_out = error_in;
+}
+
 }  // namespace test_util
 }  // namespace google_apis

@@ -81,13 +81,13 @@ void DriveScheduler::Initialize() {
 }
 
 void DriveScheduler::GetAccountMetadata(
-    const google_apis::GetDataCallback& callback) {
+    const google_apis::GetAccountMetadataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   scoped_ptr<QueueEntry> new_job(
       new QueueEntry(TYPE_GET_ACCOUNT_METADATA, FilePath()));
-  new_job->get_data_callback = callback;
+  new_job->get_account_metadata_callback = callback;
 
   QueueJob(new_job.Pass());
 
@@ -274,7 +274,7 @@ void DriveScheduler::DoJobLoop() {
   switch (job_info.job_type) {
     case TYPE_GET_ACCOUNT_METADATA: {
       drive_service_->GetAccountMetadata(
-          base::Bind(&DriveScheduler::OnGetDataJobDone,
+          base::Bind(&DriveScheduler::OnGetAccountMetadataJobDone,
                      weak_ptr_factory_.GetWeakPtr(),
                      job_id));
     }
@@ -484,6 +484,27 @@ void DriveScheduler::OnGetResourceListJobDone(
       base::Bind(job_info->get_resource_list_callback,
                  error,
                  base::Passed(&resource_list)));
+}
+
+void DriveScheduler::OnGetAccountMetadataJobDone(
+    int job_id,
+    google_apis::GDataErrorCode error,
+    scoped_ptr<google_apis::AccountMetadataFeed> account_metadata) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  DriveFileError drive_error(util::GDataToDriveFileError(error));
+
+  scoped_ptr<QueueEntry> job_info = OnJobDone(job_id, drive_error);
+
+  if (!job_info)
+    return;
+
+  // Handle the callback.
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(job_info->get_account_metadata_callback,
+                 error,
+                 base::Passed(&account_metadata)));
 }
 
 void DriveScheduler::OnGetDataJobDone(int job_id,

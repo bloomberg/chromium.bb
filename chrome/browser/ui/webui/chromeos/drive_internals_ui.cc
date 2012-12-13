@@ -231,8 +231,9 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   void OnGetFreeDiskSpace(base::DictionaryValue* local_storage_summary);
 
   // Called when GetAccountMetadata() call to DriveService is complete.
-  void OnGetAccountMetadata(google_apis::GDataErrorCode status,
-                            scoped_ptr<base::Value> data);
+  void OnGetAccountMetadata(
+      google_apis::GDataErrorCode status,
+      scoped_ptr<google_apis::AccountMetadataFeed> account_metadata);
 
   // Called when the page requests periodic update.
   void OnPeriodicUpdate(const base::ListValue* args);
@@ -247,52 +248,34 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
 };
 
 void DriveInternalsWebUIHandler::OnGetAccountMetadata(
-    google_apis::GDataErrorCode status, scoped_ptr<base::Value> data) {
+    google_apis::GDataErrorCode status,
+    scoped_ptr<google_apis::AccountMetadataFeed> parsed_metadata) {
   if (status != google_apis::HTTP_SUCCESS) {
     LOG(ERROR) << "Failed to get account metadata";
     return;
   }
-  DCHECK(data.get());
+  DCHECK(parsed_metadata);
 
   base::DictionaryValue account_metadata;
+  account_metadata.SetDouble("account-quota-total",
+                             parsed_metadata->quota_bytes_total());
+  account_metadata.SetDouble("account-quota-used",
+                             parsed_metadata->quota_bytes_used());
+  account_metadata.SetDouble("account-largest-changestamp-remote",
+                             parsed_metadata->largest_changestamp());
 
-  if (google_apis::util::IsDriveV2ApiEnabled()) {
-    scoped_ptr<google_apis::AboutResource> about_resource;
-    about_resource = google_apis::AboutResource::CreateFrom(*data);
+  base::ListValue* installed_apps = new base::ListValue();
+  for (size_t i = 0; i < parsed_metadata->installed_apps().size(); ++i) {
+    const google_apis::InstalledApp* app = parsed_metadata->installed_apps()[i];
+    base::DictionaryValue* app_data = new base::DictionaryValue();
+    app_data->SetString("app_name", app->app_name());
+    app_data->SetString("app_id", app->app_id());
+    app_data->SetString("object_type", app->object_type());
+    app_data->SetBoolean("supports_create", app->supports_create());
 
-    account_metadata.SetDouble("account-quota-total",
-                               about_resource->quota_bytes_total());
-    account_metadata.SetDouble("account-quota-used",
-                               about_resource->quota_bytes_used());
-    account_metadata.SetDouble("account-largest-changestamp-remote",
-                               about_resource->largest_change_id());
-
-    // TODO(haruki): Fill installed Drive apps for Drive API.
-    // http://crbug.com/154241
-    return;
-  } else {
-    scoped_ptr<google_apis::AccountMetadataFeed> feed;
-    feed = google_apis::AccountMetadataFeed::CreateFrom(*data);
-
-    account_metadata.SetDouble("account-quota-total",
-                               feed->quota_bytes_total());
-    account_metadata.SetDouble("account-quota-used", feed->quota_bytes_used());
-    account_metadata.SetDouble("account-largest-changestamp-remote",
-                               feed->largest_changestamp());
-
-    base::ListValue* installed_apps = new base::ListValue();
-    for (size_t i = 0; i < feed->installed_apps().size(); ++i) {
-      const google_apis::InstalledApp* app = feed->installed_apps()[i];
-      base::DictionaryValue* app_data = new base::DictionaryValue();
-      app_data->SetString("app_name", app->app_name());
-      app_data->SetString("app_id", app->app_id());
-      app_data->SetString("object_type", app->object_type());
-      app_data->SetBoolean("supports_create", app->supports_create());
-
-      installed_apps->Append(app_data);
-    }
-    account_metadata.Set("installed-apps", installed_apps);
+    installed_apps->Append(app_data);
   }
+  account_metadata.Set("installed-apps", installed_apps);
 
   web_ui()->CallJavascriptFunction("updateAccountMetadata", account_metadata);
 }

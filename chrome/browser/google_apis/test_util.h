@@ -18,6 +18,7 @@ class Value;
 
 namespace google_apis {
 
+class AccountMetadataFeed;
 class ResourceList;
 
 namespace test_util {
@@ -51,6 +52,13 @@ void CopyResultsFromGetResourceListCallback(
     scoped_ptr<ResourceList>* resource_list_out,
     GDataErrorCode error_in,
     scoped_ptr<ResourceList> resource_list_in);
+
+// Copies the results from GetAccountMetadataCallback.
+void CopyResultsFromGetAccountMetadataCallback(
+    GDataErrorCode* error_out,
+    scoped_ptr<AccountMetadataFeed>* account_metadata_out,
+    GDataErrorCode error_in,
+    scoped_ptr<AccountMetadataFeed> account_metadata_in);
 
 }  // namespace test_util
 }  // namespace google_apis

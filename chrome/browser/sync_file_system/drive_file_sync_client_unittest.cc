@@ -159,12 +159,12 @@ class DriveFileSyncClientTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(DriveFileSyncClientTest);
 };
 
-// Invokes |arg0| as a GetDataCallback.
-ACTION_P2(InvokeGetDataCallback0, error, result) {
-  scoped_ptr<base::Value> value(result.Pass());
+// Invokes |arg0| as a GetAccountMetadataCallback.
+ACTION_P2(InvokeGetAccountMetadataCallback0, error, result) {
+  scoped_ptr<google_apis::AccountMetadataFeed> account_metadata(result.Pass());
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(arg0, error, base::Passed(&value)));
+      base::Bind(arg0, error, base::Passed(&account_metadata)));
 }
 
 // Invokes |arg1| as a GetResourceEntryCallback.
@@ -445,11 +445,14 @@ TEST_F(DriveFileSyncClientTest, CreateOriginDirectory) {
 TEST_F(DriveFileSyncClientTest, GetLargestChangeStamp) {
   scoped_ptr<base::Value> result(google_apis::test_util::LoadJSONFile(
       "sync_file_system/account_metadata.json").Pass());
+  scoped_ptr<google_apis::AccountMetadataFeed> account_metadata(
+      google_apis::AccountMetadataFeed::CreateFrom(*result));
 
   // Expected to call GetAccountMetadata from GetLargestChangeStamp.
   EXPECT_CALL(*mock_drive_service(), GetAccountMetadata(_))
-      .WillOnce(InvokeGetDataCallback0(google_apis::HTTP_SUCCESS,
-                                       base::Passed(&result)))
+      .WillOnce(InvokeGetAccountMetadataCallback0(
+          google_apis::HTTP_SUCCESS,
+          base::Passed(&account_metadata)))
       .RetiresOnSaturation();
 
   bool done = false;

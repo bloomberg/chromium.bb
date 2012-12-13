@@ -129,6 +129,30 @@ void ParseResourceEntryAndRun(const GetResourceEntryCallback& callback,
   callback.Run(error, entry.Pass());
 }
 
+// Parses the JSON value to AccountMetadataFeed on the blocking pool and runs
+// |callback| on the UI thread once parsing is done.
+void ParseAccounetMetadataAndRun(const GetAccountMetadataCallback& callback,
+                                 GDataErrorCode error,
+                                 scoped_ptr<base::Value> value) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  if (!value) {
+    callback.Run(error, scoped_ptr<AccountMetadataFeed>());
+    return;
+  }
+
+  // Parsing AccountMetadataFeed is cheap enough to do on UI thread.
+  scoped_ptr<AccountMetadataFeed> entry =
+      google_apis::AccountMetadataFeed::CreateFrom(*value);
+  if (!entry) {
+    callback.Run(GDATA_PARSE_ERROR, scoped_ptr<AccountMetadataFeed>());
+    return;
+  }
+
+  callback.Run(error, entry.Pass());
+}
+
 // OAuth2 scopes for the documents API.
 const char kDocsListScope[] = "https://docs.google.com/feeds/";
 const char kSpreadsheetsScope[] = "https://spreadsheets.google.com/feeds/";
@@ -248,21 +272,24 @@ void GDataWapiService::GetResourceEntry(
           base::Bind(&ParseResourceEntryAndRun, callback)));
 }
 
-void GDataWapiService::GetAccountMetadata(const GetDataCallback& callback) {
+void GDataWapiService::GetAccountMetadata(
+    const GetAccountMetadataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   runner_->StartOperationWithRetry(
-      new GetAccountMetadataOperation(operation_registry(),
-                                      url_request_context_getter_,
-                                      url_generator_,
-                                      callback));
+      new GetAccountMetadataOperation(
+          operation_registry(),
+          url_request_context_getter_,
+          url_generator_,
+          base::Bind(&ParseAccounetMetadataAndRun, callback)));
 }
 
 void GDataWapiService::GetApplicationInfo(
     const GetDataCallback& callback) {
-  // For WAPI, AccountMetadata includes Drive application information.
-  GetAccountMetadata(callback);
+  // For WAPI, AccountMetadata includes Drive application information, and
+  // this function is not used.
+  NOTREACHED();
 }
 
 void GDataWapiService::DownloadHostedDocument(

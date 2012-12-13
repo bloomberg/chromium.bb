@@ -90,7 +90,8 @@ class DriveScheduler
 
   // Adds a GetAccountMetadata operation to the queue.
   // |callback| must not be null.
-  void GetAccountMetadata(const google_apis::GetDataCallback& callback);
+  void GetAccountMetadata(
+      const google_apis::GetAccountMetadataCallback& callback);
 
   // Adds a GetApplicationInfo operation to the queue.
   // |callback| must not be null.
@@ -187,7 +188,6 @@ class DriveScheduler
 
     // Callback for operations that take a GetDataCallback.
     // Used by:
-    //   TYPE_GET_ACCOUNT_METADATA,
     //   TYPE_GET_APPLICATION_INFO,
     google_apis::GetDataCallback get_data_callback;
 
@@ -195,6 +195,11 @@ class DriveScheduler
     // Used by:
     //   TYPE_GET_RESOURCE_LIST
     google_apis::GetResourceListCallback get_resource_list_callback;
+
+    // Callback for operations that take a GetAccountMetadataCallback.
+    // Used by:
+    //   TYPE_GET_ACCOUNT_METADATA,
+    google_apis::GetAccountMetadataCallback get_account_metadata_callback;
   };
 
   // Adds the specified job to the queue.  Takes ownership of |job|
@@ -231,6 +236,12 @@ class DriveScheduler
       int job_id,
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::ResourceList> resource_list);
+
+  // Callback for job finishing with a GetAccountMetadataCallback.
+  void OnGetAccountMetadataJobDone(
+      int job_id,
+      google_apis::GDataErrorCode error,
+      scoped_ptr<google_apis::AccountMetadataFeed> account_metadata);
 
   // Callback for job finishing with a GetDataCallback.
   void OnGetDataJobDone(int job_id,

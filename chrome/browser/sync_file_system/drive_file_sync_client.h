@@ -215,9 +215,10 @@ class DriveFileSyncClient
                               const std::string& search_query,
                               const ResourceListCallback& callback);
 
-  void DidGetAccountMetadata(const ChangeStampCallback& callback,
-                             google_apis::GDataErrorCode error,
-                             scoped_ptr<base::Value> data);
+  void DidGetAccountMetadata(
+      const ChangeStampCallback& callback,
+      google_apis::GDataErrorCode error,
+      scoped_ptr<google_apis::AccountMetadataFeed> metadata);
 
   void DidGetResourceList(
       const ResourceListCallback& callback,

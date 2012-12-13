@@ -28,6 +28,7 @@ class SequencedTaskRunner;
 
 namespace google_apis {
 class ResourceEntry;
+class AccountMetadataFeed;
 class ResourceList;
 class DriveServiceInterface;
 class DriveUploaderInterface;
@@ -336,14 +337,10 @@ class DriveFileSystem : public DriveFileSystemInterface,
       DriveFileError error);
 
   // Callback for handling account metadata fetch.
-  void OnGetAvailableSpace(const GetAvailableSpaceCallback& callback,
-                           google_apis::GDataErrorCode status,
-                           scoped_ptr<base::Value> data);
-
-  // Callback for handling Drive V2 about resource fetch.
-  void OnGetAboutResource(const GetAvailableSpaceCallback& callback,
-                          google_apis::GDataErrorCode status,
-                          scoped_ptr<base::Value> data);
+  void OnGetAccountMetadata(
+      const GetAvailableSpaceCallback& callback,
+      google_apis::GDataErrorCode status,
+      scoped_ptr<google_apis::AccountMetadataFeed> account_metadata);
 
   // Callback for handling directory create requests. Adds the directory
   // represented by |created_entry| to the local filesystem.

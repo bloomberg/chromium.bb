@@ -72,12 +72,8 @@ class FakeDriveService : public DriveServiceInterface {
     // TODO: Make this more flexible.
     if (feed_url == GURL("http://example.com/gdata/root_feed.json")) {
       // Make some sample data.
-      const FilePath feed_path =
-          test_util::GetTestFilePath("gdata/root_feed.json");
-      std::string feed_contents;
-      file_util::ReadFileToString(feed_path, &feed_contents);
-      scoped_ptr<base::Value> feed_data(
-          base::JSONReader::Read(feed_contents));
+      scoped_ptr<base::Value> feed_data = google_apis::test_util::LoadJSONFile(
+          "gdata/root_feed.json");
       scoped_ptr<google_apis::ResourceList> resource_list =
           google_apis::ResourceList::ExtractAndParse(*feed_data);
       base::MessageLoopProxy::current()->PostTask(FROM_HERE,
@@ -97,22 +93,27 @@ class FakeDriveService : public DriveServiceInterface {
                                 const GetResourceEntryCallback& callback) {
   }
 
-  virtual void GetAccountMetadata(const GetDataCallback& callback) {
+  virtual void GetAccountMetadata(const GetAccountMetadataCallback& callback) {
     // Make some sample data.
-    const FilePath account_metadata =
-        test_util::GetTestFilePath("gdata/account_metadata.json");
-    std::string contents;
-    file_util::ReadFileToString(account_metadata, &contents);
-    scoped_ptr<base::Value> data(base::JSONReader::Read(contents));
+    scoped_ptr<Value> data = google_apis::test_util::LoadJSONFile(
+        "gdata/account_metadata.json");
+    scoped_ptr<google_apis::AccountMetadataFeed> account_metadata
+        = google_apis::AccountMetadataFeed::CreateFrom(*data);
+
+    base::MessageLoopProxy::current()->PostTask(FROM_HERE,
+        base::Bind(callback,
+                   HTTP_SUCCESS,
+                   base::Passed(&account_metadata)));
+  }
+
+  virtual void GetApplicationInfo(const GetDataCallback& callback) {
+    scoped_ptr<Value> data = google_apis::test_util::LoadJSONFile(
+        "gdata/account_metadata.json");
 
     base::MessageLoopProxy::current()->PostTask(FROM_HERE,
         base::Bind(callback,
                    HTTP_SUCCESS,
                    base::Passed(&data)));
-  }
-
-  virtual void GetApplicationInfo(const GetDataCallback& callback) {
-    GetAccountMetadata(callback);
   }
 
   virtual void DeleteResource(const GURL& edit_url,
@@ -414,16 +415,17 @@ TEST_F(DriveSchedulerTest, GetAccountMetadata) {
   ConnectToWifi();
 
   google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
-  scoped_ptr<base::Value> value;
+  scoped_ptr<google_apis::AccountMetadataFeed> account_metadata;
 
   scheduler_->GetAccountMetadata(
-      base::Bind(&google_apis::test_util::CopyResultsFromGetDataCallback,
-                 &error,
-                 &value));
+      base::Bind(
+          &google_apis::test_util::CopyResultsFromGetAccountMetadataCallback,
+          &error,
+          &account_metadata));
   google_apis::test_util::RunBlockingPoolTask();
 
   ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
-  ASSERT_TRUE(value);
+  ASSERT_TRUE(account_metadata);
 }
 
 

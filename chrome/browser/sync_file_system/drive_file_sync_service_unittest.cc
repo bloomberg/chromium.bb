@@ -299,11 +299,11 @@ ACTION(InvokeCompletionCallback) {
 }
 
 // Invokes |arg0| as a GetDataCallback.
-ACTION_P2(InvokeGetDataCallback0, error, result) {
-  scoped_ptr<base::Value> value(result.Pass());
+ACTION_P2(InvokeGetAccountMetadataCallback0, error, result) {
+  scoped_ptr<google_apis::AccountMetadataFeed> account_metadata(result.Pass());
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(arg0, error, base::Passed(&value)));
+      base::Bind(arg0, error, base::Passed(&account_metadata)));
 }
 
 // Invokes |arg1| as a GetResourceEntryCallback.
@@ -419,11 +419,13 @@ TEST_F(DriveFileSyncServiceTest, BatchSyncOnInitialization) {
 
   InSequence sequence;
 
-  scoped_ptr<Value> account_metadata(LoadJSONFile(
+  scoped_ptr<Value> account_metadata_value(LoadJSONFile(
       "gdata/account_metadata.json"));
+  scoped_ptr<google_apis::AccountMetadataFeed> account_metadata(
+      google_apis::AccountMetadataFeed::CreateFrom(*account_metadata_value));
   EXPECT_CALL(*mock_drive_service(),
               GetAccountMetadata(_))
-      .WillOnce(InvokeGetDataCallback0(
+      .WillOnce(InvokeGetAccountMetadataCallback0(
           google_apis::HTTP_SUCCESS,
           base::Passed(&account_metadata)));
 
@@ -515,10 +517,12 @@ TEST_F(DriveFileSyncServiceTest, RegisterNewOrigin) {
 
   // Once the directory is created GetAccountMetadata should be called to get
   // the largest changestamp for the origin as a prepariation of the batch sync.
-  scoped_ptr<Value> account_metadata(LoadJSONFile(
+  scoped_ptr<Value> account_metadata_value(LoadJSONFile(
       "gdata/account_metadata.json"));
+  scoped_ptr<google_apis::AccountMetadataFeed> account_metadata(
+      google_apis::AccountMetadataFeed::CreateFrom(*account_metadata_value));
   EXPECT_CALL(*mock_drive_service(), GetAccountMetadata(_))
-      .WillOnce(InvokeGetDataCallback0(
+      .WillOnce(InvokeGetAccountMetadataCallback0(
           google_apis::HTTP_SUCCESS,
           base::Passed(&account_metadata)));
 
@@ -577,10 +581,12 @@ TEST_F(DriveFileSyncServiceTest, RegisterExistingOrigin) {
           base::Passed(&origin_directory_found)))
       .RetiresOnSaturation();
 
-  scoped_ptr<Value> account_metadata(LoadJSONFile(
+  scoped_ptr<Value> account_metadata_value(LoadJSONFile(
       "gdata/account_metadata.json"));
+  scoped_ptr<google_apis::AccountMetadataFeed> account_metadata(
+      google_apis::AccountMetadataFeed::CreateFrom(*account_metadata_value));
   EXPECT_CALL(*mock_drive_service(), GetAccountMetadata(_))
-      .WillOnce(InvokeGetDataCallback0(
+      .WillOnce(InvokeGetAccountMetadataCallback0(
           google_apis::HTTP_SUCCESS,
           base::Passed(&account_metadata)));
 
@@ -635,11 +641,14 @@ TEST_F(DriveFileSyncServiceTest, UnregisterOrigin) {
 
   InSequence sequence;
 
-  scoped_ptr<Value> account_metadata(LoadJSONFile(
+  scoped_ptr<Value> account_metadata_value(LoadJSONFile(
       "gdata/account_metadata.json"));
+  scoped_ptr<google_apis::AccountMetadataFeed> account_metadata(
+      google_apis::AccountMetadataFeed::CreateFrom(*account_metadata_value));
+
   EXPECT_CALL(*mock_drive_service(),
               GetAccountMetadata(_))
-      .WillOnce(InvokeGetDataCallback0(
+      .WillOnce(InvokeGetAccountMetadataCallback0(
           google_apis::HTTP_SUCCESS,
           base::Passed(&account_metadata)));
 

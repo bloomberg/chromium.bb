@@ -1286,19 +1286,15 @@ void DriveFileSystem::GetAvailableSpaceOnUIThread(
   DCHECK(!callback.is_null());
 
   scheduler_->GetAccountMetadata(
-      google_apis::util::IsDriveV2ApiEnabled() ?
-      base::Bind(&DriveFileSystem::OnGetAboutResource,
-                 ui_weak_ptr_,
-                 callback) :
-      base::Bind(&DriveFileSystem::OnGetAvailableSpace,
+      base::Bind(&DriveFileSystem::OnGetAccountMetadata,
                  ui_weak_ptr_,
                  callback));
 }
 
-void DriveFileSystem::OnGetAvailableSpace(
+void DriveFileSystem::OnGetAccountMetadata(
     const GetAvailableSpaceCallback& callback,
     google_apis::GDataErrorCode status,
-    scoped_ptr<base::Value> data) {
+    scoped_ptr<google_apis::AccountMetadataFeed> account_metadata) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -1307,45 +1303,11 @@ void DriveFileSystem::OnGetAvailableSpace(
     callback.Run(error, -1, -1);
     return;
   }
-
-  scoped_ptr<google_apis::AccountMetadataFeed> feed;
-  if (data.get())
-    feed = google_apis::AccountMetadataFeed::CreateFrom(*data);
-  if (!feed.get()) {
-    callback.Run(DRIVE_FILE_ERROR_FAILED, -1, -1);
-    return;
-  }
+  DCHECK(account_metadata);
 
   callback.Run(DRIVE_FILE_OK,
-               feed->quota_bytes_total(),
-               feed->quota_bytes_used());
-}
-
-void DriveFileSystem::OnGetAboutResource(
-    const GetAvailableSpaceCallback& callback,
-    google_apis::GDataErrorCode status,
-    scoped_ptr<base::Value> resource_json) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  DriveFileError error = util::GDataToDriveFileError(status);
-  if (error != DRIVE_FILE_OK) {
-    callback.Run(error, -1, -1);
-    return;
-  }
-
-  scoped_ptr<google_apis::AboutResource> about;
-  if (resource_json.get())
-    about = google_apis::AboutResource::CreateFrom(*resource_json);
-
-  if (!about.get()) {
-    callback.Run(DRIVE_FILE_ERROR_FAILED, -1, -1);
-    return;
-  }
-
-  callback.Run(DRIVE_FILE_OK,
-               about->quota_bytes_total(),
-               about->quota_bytes_used());
+               account_metadata->quota_bytes_total(),
+               account_metadata->quota_bytes_used());
 }
 
 void DriveFileSystem::AddNewDirectory(

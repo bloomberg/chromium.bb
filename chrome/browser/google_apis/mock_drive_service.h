@@ -44,7 +44,7 @@ class MockDriveService : public DriveServiceInterface {
       void(const std::string& resource_id,
           const GetResourceEntryCallback& callback));
   MOCK_METHOD1(GetAccountMetadata,
-      void(const GetDataCallback& callback));
+      void(const GetAccountMetadataCallback& callback));
   MOCK_METHOD1(GetApplicationInfo,
       void(const GetDataCallback& callback));
   MOCK_METHOD2(DeleteResource,
@@ -97,8 +97,8 @@ class MockDriveService : public DriveServiceInterface {
   MOCK_CONST_METHOD0(HasAccessToken, bool());
   MOCK_CONST_METHOD0(HasRefreshToken, bool());
 
-  void set_account_metadata(base::Value* account_metadata) {
-    account_metadata_.reset(account_metadata);
+  void set_account_metadata(base::Value* account_metadata_data) {
+    account_metadata_data_.reset(account_metadata_data);
   }
 
   void set_feed_data(base::Value* feed_data) {
@@ -130,7 +130,7 @@ class MockDriveService : public DriveServiceInterface {
 
   // Will call |callback| with HTTP_SUCCESS and a StringValue with the current
   // value of |account_metadata_|.
-  void GetAccountMetadataStub(const GetDataCallback& callback);
+  void GetAccountMetadataStub(const GetAccountMetadataCallback& callback);
 
   // Will call |callback| with HTTP_SUCCESS.
   void DeleteResourceStub(const GURL& edit_url,
@@ -185,7 +185,7 @@ class MockDriveService : public DriveServiceInterface {
       const GetContentCallback& get_content_callback);
 
   // Account meta data to be returned from GetAccountMetadata.
-  scoped_ptr<base::Value> account_metadata_;
+  scoped_ptr<base::Value> account_metadata_data_;
 
   // Feed data to be returned from GetResourceList.
   scoped_ptr<base::Value> feed_data_;
