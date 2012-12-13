@@ -86,6 +86,10 @@ DesktopNativeWidgetAura::~DesktopNativeWidgetAura() {
     delete native_widget_delegate_;
   else
     CloseNow();
+
+  stacking_client_.reset();  // Uses root_window_ at destruction.
+  root_window_.reset();  // Uses input_method_event_filter_ at destruction.
+  input_method_event_filter_.reset();
 }
 
 // static
@@ -516,7 +520,7 @@ void DesktopNativeWidgetAura::OnWindowDestroyed() {
   window_ = NULL;
   native_widget_delegate_->OnNativeWidgetDestroyed();
   if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
-  delete this;
+    delete this;
 }
 
 void DesktopNativeWidgetAura::OnWindowTargetVisibilityChanged(bool visible) {
