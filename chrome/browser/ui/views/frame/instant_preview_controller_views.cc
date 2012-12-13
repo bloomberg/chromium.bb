@@ -30,19 +30,14 @@ void InstantPreviewControllerViews::PreviewStateChanged(
       preview_.reset(new views::WebView(browser_->profile()));
       preview_->set_id(VIEW_ID_TAB_CONTAINER);
     }
-    // Drop shadow is only needed if search mode is not |NTP| and preview does
-    // not fill up the entire contents page.
-    bool draw_drop_shadow = !model.mode().is_ntp() &&
-        !(contents_->IsPreviewFullHeight(model.height(), model.height_units()));
     content::WebContents* web_contents = model.GetPreviewContents();
     contents_->SetPreview(preview_.get(), web_contents,
-                          model.height(), model.height_units(),
-                          draw_drop_shadow);
+                          model.height(), model.height_units());
     preview_->SetWebContents(web_contents);
   } else if (preview_) {
     // Hide the preview. SetWebContents() must happen before SetPreview().
     preview_->SetWebContents(NULL);
-    contents_->SetPreview(NULL, NULL, 100, INSTANT_SIZE_PERCENT, false);
+    contents_->SetPreview(NULL, NULL, 100, INSTANT_SIZE_PERCENT);
     preview_.reset();
   }
 
