@@ -29,6 +29,8 @@ public:
 
     static LayerImpl* findLayerThatIsHitByPointInTouchHandlerRegion(const gfx::PointF& screenSpacePoint, std::vector<LayerImpl*>& renderSurfaceLayerList);
 
+    static bool layerHasTouchEventHandlersAt(const gfx::PointF& screenSpacePoint, LayerImpl* layerImpl);
+
     template<typename LayerType> static bool renderSurfaceContributesToTarget(LayerType*, int targetSurfaceLayerID);
 
     // Returns a layer with the given id if one exists in the subtree starting

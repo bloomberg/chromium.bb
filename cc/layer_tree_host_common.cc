@@ -1054,16 +1054,7 @@ LayerImpl* LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(co
 
         LayerImpl* currentLayer = (*it);
 
-        if (currentLayer->touchEventHandlerRegion().IsEmpty())
-            continue;
-
-        if (!pointHitsRegion(screenSpacePoint, currentLayer->screenSpaceTransform(), currentLayer->touchEventHandlerRegion(), currentLayer->contentsScaleX(), currentLayer->contentsScaleY()))
-            continue;
-
-        // At this point, we think the point does hit the touch event handler region on the layer, but we need to walk up
-        // the parents to ensure that the layer was not clipped in such a way that the
-        // hit point actually should not hit the layer.
-        if (pointIsClippedBySurfaceOrClipRect(screenSpacePoint, currentLayer))
+        if (!layerHasTouchEventHandlersAt(screenSpacePoint, currentLayer))
             continue;
 
         foundLayer = currentLayer;
@@ -1074,4 +1065,19 @@ LayerImpl* LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(co
     return foundLayer;
 }
 
+bool LayerTreeHostCommon::layerHasTouchEventHandlersAt(const gfx::PointF& screenSpacePoint, LayerImpl* layerImpl) {
+  if (layerImpl->touchEventHandlerRegion().IsEmpty())
+      return false;
+
+  if (!pointHitsRegion(screenSpacePoint, layerImpl->screenSpaceTransform(), layerImpl->touchEventHandlerRegion(), layerImpl->contentsScaleX(), layerImpl->contentsScaleY()))
+     return false;;
+
+  // At this point, we think the point does hit the touch event handler region on the layer, but we need to walk up
+  // the parents to ensure that the layer was not clipped in such a way that the
+  // hit point actually should not hit the layer.
+  if (pointIsClippedBySurfaceOrClipRect(screenSpacePoint, layerImpl))
+     return false;
+
+  return true;
+}
 }  // namespace cc

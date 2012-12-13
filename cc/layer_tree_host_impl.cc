@@ -358,10 +358,13 @@ bool LayerTreeHostImpl::haveTouchEventHandlersAt(const gfx::Point& viewportPoint
 
     // First find out which layer was hit from the saved list of visible layers
     // in the most recent frame.
-    LayerImpl* layerImplHitByPointInTouchHandlerRegion = LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(deviceViewportPoint, m_renderSurfaceLayerList);
+    LayerImpl* layerImpl = LayerTreeHostCommon::findLayerThatIsHitByPoint(deviceViewportPoint, m_renderSurfaceLayerList);
 
-    if (layerImplHitByPointInTouchHandlerRegion)
-      return true;
+    // Walk up the hierarchy and look for a layer with a touch event handler region that the given point hits.
+    for (; layerImpl; layerImpl = layerImpl->parent()) {
+      if (LayerTreeHostCommon::layerHasTouchEventHandlersAt(deviceViewportPoint,layerImpl))
+          return true;
+    }
 
     return false;
 }
