@@ -1052,6 +1052,11 @@ void BrowserView::ToolbarSizeChanged(bool is_animating) {
   }
 }
 
+void BrowserView::MaybeStackImmersiveRevealAtTop() {
+  if (immersive_mode_controller_)
+    immersive_mode_controller_->MaybeStackViewAtTop();
+}
+
 LocationBar* BrowserView::GetLocationBar() const {
   return GetLocationBarView();
 }
@@ -1677,7 +1682,7 @@ void BrowserView::ActiveTabChanged(content::WebContents* old_contents,
 
   // Like the preview layer and the bookmark bar layer, the immersive mode
   // reveal view's layer may need to live above the web contents.
-  immersive_mode_controller_->MaybeStackViewAtTop();
+  MaybeStackImmersiveRevealAtTop();
 
   // No need to update Toolbar because it's already updated in
   // browser.cc.

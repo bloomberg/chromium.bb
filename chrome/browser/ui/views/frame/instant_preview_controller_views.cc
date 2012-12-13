@@ -8,6 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/view_ids.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/contents_container.h"
 #include "ui/views/controls/webview/webview.h"
 
@@ -46,4 +47,12 @@ void InstantPreviewControllerViews::PreviewStateChanged(
   }
 
   browser_->MaybeUpdateBookmarkBarStateForInstantPreview(model.mode());
+
+  // If an instant preview is added during an immersive mode reveal, the reveal
+  // view needs to stay on top.
+  if (preview_) {
+    BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser_);
+    if (browser_view)
+      browser_view->MaybeStackImmersiveRevealAtTop();
+  }
 }

@@ -160,9 +160,6 @@ class BrowserView : public BrowserWindow,
   // Accessor for the Toolbar.
   ToolbarView* toolbar() { return toolbar_; }
 
-  // Returns the page contents container, see diagram below.
-  ContentsContainer* contents() { return contents_; }
-
   // Returns true if various window components are visible.
   virtual bool IsTabStripVisible() const;
 
@@ -232,6 +229,10 @@ class BrowserView : public BrowserWindow,
   // Called from BookmarkBarView/DownloadShelfView during their show/hide
   // animations.
   void ToolbarSizeChanged(bool is_animating);
+
+  // If immersive mode is enabled and we're revealing the tab strip and toolbar
+  // then stack it at the top.
+  void MaybeStackImmersiveRevealAtTop();
 
 #if defined(USE_ASH)
   // Test support.

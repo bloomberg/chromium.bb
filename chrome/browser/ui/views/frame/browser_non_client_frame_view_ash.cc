@@ -286,7 +286,7 @@ gfx::Size BrowserNonClientFrameViewAsh::GetMinimumSize() {
 // views::ButtonListener overrides:
 
 void BrowserNonClientFrameViewAsh::ButtonPressed(views::Button* sender,
-                                                  const ui::Event& event) {
+                                                 const ui::Event& event) {
   // When shift-clicking slow down animations for visual debugging.
   // We used to do this via an event filter that looked for the shift key being
   // pressed but this interfered with several normal keyboard shortcuts.
