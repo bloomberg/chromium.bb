@@ -23,50 +23,14 @@ TableColumn::TableColumn()
       sortable(false) {
 }
 
-TableColumn::TableColumn(int id, const string16& title,
-                         Alignment alignment,
-                         int width)
-    : id(id),
-      title(title),
-      alignment(alignment),
-      width(width),
-      percent(0),
-      min_visible_width(0),
-      sortable(false) {
-}
-
-TableColumn::TableColumn(int id, const string16& title,
-                         Alignment alignment, int width, float percent)
-    : id(id),
-      title(title),
-      alignment(alignment),
-      width(width),
-      percent(percent),
-      min_visible_width(0),
-      sortable(false) {
-}
-
-// It's common (but not required) to use the title's IDS_* tag as the column
-// id. In this case, the provided conveniences look up the title string on
-// bahalf of the caller.
-TableColumn::TableColumn(int id, Alignment alignment, int width)
-    : id(id),
-      alignment(alignment),
-      width(width),
-      percent(0),
-      min_visible_width(0),
-      sortable(false) {
-  title = l10n_util::GetStringUTF16(id);
-}
-
 TableColumn::TableColumn(int id, Alignment alignment, int width, float percent)
     : id(id),
+      title(l10n_util::GetStringUTF16(id)),
       alignment(alignment),
       width(width),
       percent(percent),
       min_visible_width(0),
       sortable(false) {
-  title = l10n_util::GetStringUTF16(id);
 }
 
 // TableModel -----------------------------------------------------------------

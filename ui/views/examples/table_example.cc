@@ -17,6 +17,18 @@
 namespace views {
 namespace examples {
 
+namespace {
+
+ui::TableColumn TestTableColumn(int id, const std::string& title) {
+  ui::TableColumn column;
+  column.id = id;
+  column.title = ASCIIToUTF16(title.c_str());
+  column.width = 100;
+  return column;
+}
+
+}  // namespace
+
 TableExample::TableExample() : ExampleBase("Table") , table_(NULL) {
 }
 
@@ -50,15 +62,11 @@ void TableExample::CreateExampleView(View* container) {
   container->SetLayoutManager(layout);
 
   std::vector<ui::TableColumn> columns;
-  columns.push_back(ui::TableColumn(0, ASCIIToUTF16("Fruit"),
-                                    ui::TableColumn::LEFT, 100));
+  columns.push_back(TestTableColumn(0, "Fruit"));
 #if defined(OS_WIN) && !defined(USE_AURA)
-  columns.push_back(ui::TableColumn(1, ASCIIToUTF16("Color"),
-                                    ui::TableColumn::LEFT, 100));
-  columns.push_back(ui::TableColumn(2, ASCIIToUTF16("Origin"),
-                                    ui::TableColumn::LEFT, 100));
-  columns.push_back(ui::TableColumn(3, ASCIIToUTF16("Price"),
-                                    ui::TableColumn::LEFT, 100));
+  columns.push_back(TestTableColumn(1, "Color"));
+  columns.push_back(TestTableColumn(2, "Origin"));
+  columns.push_back(TestTableColumn(3, "Price"));
 #endif
   table_ = new TableView(this, columns, ICON_AND_TEXT, true, true, true);
   table_->SetObserver(this);

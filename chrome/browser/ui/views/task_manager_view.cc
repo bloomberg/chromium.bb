@@ -494,10 +494,13 @@ void TaskManagerView::UpdateStatsCounters() {
         // TODO(erikkay): Use l10n to get display names for stats.  Right
         // now we're just displaying the internal counter name.  Perhaps
         // stat names not in the string table would be filtered out.
+        ui::TableColumn col;
+        col.id = i;
+        col.title = ASCIIToUTF16(row);
+        col.alignment = ui::TableColumn::RIGHT;
         // TODO(erikkay): Width is hard-coded right now, so many column
         // names are clipped.
-        ui::TableColumn col(i, ASCIIToUTF16(row), ui::TableColumn::RIGHT, 90,
-                            0);
+        col.width = 90;
         col.sortable = true;
         columns_.push_back(col);
         tab_table_->AddColumn(col);

@@ -97,15 +97,6 @@ struct UI_EXPORT TableColumn {
   };
 
   TableColumn();
-  TableColumn(int id, const string16& title,
-              Alignment alignment, int width);
-  TableColumn(int id, const string16& title,
-              Alignment alignment, int width, float percent);
-
-  // It's common (but not required) to use the title's IDS_* tag as the column
-  // id. In this case, the provided conveniences look up the title string on
-  // bahalf of the caller.
-  TableColumn(int id, Alignment alignment, int width);
   TableColumn(int id, Alignment alignment, int width, float percent);
 
   // A unique identifier for the column.
