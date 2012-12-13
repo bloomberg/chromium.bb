@@ -137,10 +137,19 @@ class UrlFetchOperationBase : public AuthenticatedOperationInterface,
   // the status of the URLFetcher.
   static GDataErrorCode GetErrorCode(const net::URLFetcher* source);
 
-  // The following members are used by DownloadFileOperation.
-  // TODO(satorux): Make them private.
-  bool save_temp_file_;
-  FilePath output_file_path_;
+  // By default, no temporary file will be saved. Derived classes can set
+  // this to true in their constructors, if they want to save the downloaded
+  // content to a temporary file.
+  void set_save_temp_file(bool save_temp_file) {
+    save_temp_file_ = save_temp_file;
+  }
+
+  // By default, no file will be saved. Derived classes can set an output
+  // file path in their constructors, if they want to save the donwloaded
+  // content to a file at a specific path.
+  void set_output_file_path(const FilePath& output_file_path) {
+    output_file_path_ = output_file_path;
+  }
 
  private:
   // OperationRegistry::Operation overrides.
@@ -157,6 +166,9 @@ class UrlFetchOperationBase : public AuthenticatedOperationInterface,
   int re_authenticate_count_;
   scoped_ptr<net::URLFetcher> url_fetcher_;
   bool started_;
+
+  bool save_temp_file_;
+  FilePath output_file_path_;
 
   // WeakPtrFactory bound to the UI thread.
   // Note: This should remain the last member so it'll be destroyed and

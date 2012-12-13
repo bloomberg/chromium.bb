@@ -191,9 +191,9 @@ DownloadFileOperation::DownloadFileOperation(
 
   // Make sure we download the content into a temp file.
   if (output_file_path.empty())
-    save_temp_file_ = true;
+    set_save_temp_file(true);
   else
-    output_file_path_ = output_file_path;
+    set_output_file_path(output_file_path);
 }
 
 DownloadFileOperation::~DownloadFileOperation() {}

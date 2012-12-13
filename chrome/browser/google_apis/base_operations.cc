@@ -75,10 +75,10 @@ UrlFetchOperationBase::UrlFetchOperationBase(
     OperationRegistry* registry,
     net::URLRequestContextGetter* url_request_context_getter)
     : OperationRegistry::Operation(registry),
-      save_temp_file_(false),
       url_request_context_getter_(url_request_context_getter),
       re_authenticate_count_(0),
       started_(false),
+      save_temp_file_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -89,10 +89,10 @@ UrlFetchOperationBase::UrlFetchOperationBase(
     OperationType type,
     const FilePath& path)
     : OperationRegistry::Operation(registry, type, path),
-      save_temp_file_(false),
       url_request_context_getter_(url_request_context_getter),
       re_authenticate_count_(0),
       started_(false),
+      save_temp_file_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
