@@ -1,9 +1,14 @@
 liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
-* Noteworthy changes in release 2.6.0 (????-??-??)
+* Noteworthy changes in release 2.5.2 (2012-12-10)
+
+This is mainly a bug fix release. However it also contains some new
+tables for Inuktitut, Korean and UEB.
 
 ** Bug Fixes
-- Update gnulib
+   - Update gnulib
+   - Fix a bug in the correct opcode which causes sometimes random
+     results when translating. Thanks to Bert Frees.
 
 ** New features
 *** New Braille tables
