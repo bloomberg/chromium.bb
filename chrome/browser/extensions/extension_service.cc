@@ -66,7 +66,6 @@
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
-#include "chrome/browser/history/history_extension_api.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -520,7 +519,6 @@ void ExtensionService::InitEventRouters() {
     return;
 
 #if defined(ENABLE_EXTENSIONS)
-  history_event_router_.reset(new HistoryExtensionEventRouter(profile_));
   browser_event_router_.reset(new extensions::BrowserEventRouter(profile_));
   bookmark_event_router_.reset(new BookmarkExtensionEventRouter(
       BookmarkModelFactory::GetForProfile(profile_)));

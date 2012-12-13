@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/api/dial/dial_api_factory.h"
 #include "chrome/browser/extensions/api/discovery/suggested_links_registry_factory.h"
 #include "chrome/browser/extensions/api/font_settings/font_settings_api_factory.h"
+#include "chrome/browser/extensions/api/history/history_api_factory.h"
 #include "chrome/browser/extensions/api/idle/idle_manager_factory.h"
 #include "chrome/browser/extensions/api/managed_mode/managed_mode_api_factory.h"
 #include "chrome/browser/extensions/api/management/management_api_factory.h"
@@ -237,6 +238,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   extensions::DialAPIFactory::GetInstance();
   extensions::ExtensionSystemFactory::GetInstance();
   extensions::FontSettingsAPIFactory::GetInstance();
+  extensions::HistoryAPIFactory::GetInstance();
   extensions::IdleManagerFactory::GetInstance();
   extensions::ManagedModeAPIFactory::GetInstance();
   extensions::MediaGalleriesPrivateAPIFactory::GetInstance();

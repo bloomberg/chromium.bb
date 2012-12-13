@@ -45,7 +45,6 @@ class CommandLine;
 class ExtensionErrorUI;
 class ExtensionSyncData;
 class ExtensionToolbarModel;
-class HistoryExtensionEventRouter;
 class GURL;
 class Profile;
 class Version;
@@ -951,8 +950,6 @@ class ExtensionService
 
   // TODO(yoz): None of these should be owned by ExtensionService.
   // crbug.com/159265
-  scoped_ptr<HistoryExtensionEventRouter> history_event_router_;
-
   scoped_ptr<extensions::BrowserEventRouter> browser_event_router_;
 
   scoped_ptr<BookmarkExtensionEventRouter> bookmark_event_router_;

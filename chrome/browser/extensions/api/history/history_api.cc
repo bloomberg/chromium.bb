@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/history/history_extension_api.h"
+#include "chrome/browser/extensions/api/history/history_api.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -27,24 +27,25 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 
-using extensions::api::experimental_history::MostVisitedItem;
-using extensions::api::history::HistoryItem;
-using extensions::api::history::VisitItem;
+namespace extensions {
 
-typedef std::vector<linked_ptr<extensions::api::history::HistoryItem> >
+using api::experimental_history::MostVisitedItem;
+using api::history::HistoryItem;
+using api::history::VisitItem;
+
+typedef std::vector<linked_ptr<api::history::HistoryItem> >
     HistoryItemList;
-typedef std::vector<linked_ptr<extensions::api::history::VisitItem> >
+typedef std::vector<linked_ptr<api::history::VisitItem> >
     VisitItemList;
 
-namespace AddUrl = extensions::api::history::AddUrl;
-namespace DeleteUrl = extensions::api::history::DeleteUrl;
-namespace DeleteRange = extensions::api::history::DeleteRange;
-namespace GetMostVisited =
-    extensions::api::experimental_history::GetMostVisited;
-namespace GetVisits = extensions::api::history::GetVisits;
-namespace OnVisited = extensions::api::history::OnVisited;
-namespace OnVisitRemoved = extensions::api::history::OnVisitRemoved;
-namespace Search = extensions::api::history::Search;
+namespace AddUrl = api::history::AddUrl;
+namespace DeleteUrl = api::history::DeleteUrl;
+namespace DeleteRange = api::history::DeleteRange;
+namespace GetMostVisited = api::experimental_history::GetMostVisited;
+namespace GetVisits = api::history::GetVisits;
+namespace OnVisited = api::history::OnVisited;
+namespace OnVisitRemoved = api::history::OnVisitRemoved;
+namespace Search = api::history::Search;
 
 namespace {
 
@@ -127,7 +128,7 @@ scoped_ptr<VisitItem> GetVisitItem(const history::VisitRow& row) {
 
 }  // namespace
 
-HistoryExtensionEventRouter::HistoryExtensionEventRouter(Profile* profile) {
+HistoryEventRouter::HistoryEventRouter(Profile* profile) {
   const content::Source<Profile> source = content::Source<Profile>(profile);
   registrar_.Add(this,
                  chrome::NOTIFICATION_HISTORY_URL_VISITED,
@@ -137,12 +138,11 @@ HistoryExtensionEventRouter::HistoryExtensionEventRouter(Profile* profile) {
                  source);
 }
 
-HistoryExtensionEventRouter::~HistoryExtensionEventRouter() {}
+HistoryEventRouter::~HistoryEventRouter() {}
 
-void HistoryExtensionEventRouter::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
+void HistoryEventRouter::Observe(int type,
+                                 const content::NotificationSource& source,
+                                 const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_HISTORY_URL_VISITED:
       HistoryUrlVisited(
@@ -159,7 +159,7 @@ void HistoryExtensionEventRouter::Observe(
   }
 }
 
-void HistoryExtensionEventRouter::HistoryUrlVisited(
+void HistoryEventRouter::HistoryUrlVisited(
     Profile* profile,
     const history::URLVisitedDetails* details) {
   scoped_ptr<HistoryItem> history_item = GetHistoryItem(details->row);
@@ -168,7 +168,7 @@ void HistoryExtensionEventRouter::HistoryUrlVisited(
   DispatchEvent(profile, kOnVisited, args.Pass());
 }
 
-void HistoryExtensionEventRouter::HistoryUrlsRemoved(
+void HistoryEventRouter::HistoryUrlsRemoved(
     Profile* profile,
     const history::URLsDeletedDetails* details) {
   OnVisitRemoved::Removed removed;
@@ -185,7 +185,7 @@ void HistoryExtensionEventRouter::HistoryUrlsRemoved(
   DispatchEvent(profile, kOnVisitRemoved, args.Pass());
 }
 
-void HistoryExtensionEventRouter::DispatchEvent(
+void HistoryEventRouter::DispatchEvent(
     Profile* profile,
     const char* event_name,
     scoped_ptr<ListValue> event_args) {
@@ -196,6 +196,25 @@ void HistoryExtensionEventRouter::DispatchEvent(
     extensions::ExtensionSystem::Get(profile)->event_router()->
         BroadcastEvent(event.Pass());
   }
+}
+
+HistoryAPI::HistoryAPI(Profile* profile) : profile_(profile) {
+  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+      this, kOnVisited);
+  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+      this, kOnVisitRemoved);
+}
+
+HistoryAPI::~HistoryAPI() {
+}
+
+void HistoryAPI::Shutdown() {
+  ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
+}
+
+void HistoryAPI::OnListenerAdded(const EventListenerInfo& details) {
+  history_event_router_.reset(new HistoryEventRouter(profile_));
+  ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
 }
 
 void HistoryFunction::Run() {
@@ -451,3 +470,5 @@ bool DeleteAllHistoryFunction::RunAsyncImpl() {
 void DeleteAllHistoryFunction::DeleteComplete() {
   SendAsyncResponse();
 }
+
+}  // namespace extensions

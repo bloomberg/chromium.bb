@@ -2312,8 +2312,6 @@
             'browser/accessibility/accessibility_extension_api.h',
             'browser/bookmarks/bookmark_extension_api.cc',
             'browser/bookmarks/bookmark_extension_api.h',
-            'browser/history/history_extension_api.cc',
-            'browser/history/history_extension_api.h',
             'browser/history/top_sites_extension_api.cc',
             'browser/history/top_sites_extension_api.h',
             'browser/infobars/infobar_extension_api.cc',

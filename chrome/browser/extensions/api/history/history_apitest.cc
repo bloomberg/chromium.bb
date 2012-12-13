@@ -6,16 +6,18 @@
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_types.h"
-#include "chrome/browser/history/history.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/mock_host_resolver.h"
 
-class HistoryExtensionApiTest : public ExtensionApiTest {
+namespace extensions {
+
+class HistoryApiTest : public ExtensionApiTest {
  public:
   virtual void SetUpInProcessBrowserTestFixture() {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
@@ -33,12 +35,12 @@ class HistoryExtensionApiTest : public ExtensionApiTest {
 };
 
 // Full text search indexing sometimes exceeds a timeout. (http://crbug/119505)
-IN_PROC_BROWSER_TEST_F(HistoryExtensionApiTest, DISABLED_MiscSearch) {
+IN_PROC_BROWSER_TEST_F(HistoryApiTest, DISABLED_MiscSearch) {
   ASSERT_TRUE(RunExtensionSubtest("history", "misc_search.html")) << message_;
 }
 
 // Same could happen here without the FTS (http://crbug/119505)
-IN_PROC_BROWSER_TEST_F(HistoryExtensionApiTest, DISABLED_TimedSearch) {
+IN_PROC_BROWSER_TEST_F(HistoryApiTest, DISABLED_TimedSearch) {
   ASSERT_TRUE(RunExtensionSubtest("history", "timed_search.html")) << message_;
 }
 
@@ -48,12 +50,12 @@ IN_PROC_BROWSER_TEST_F(HistoryExtensionApiTest, DISABLED_TimedSearch) {
 #else
 #define MAYBE_Delete Delete
 #endif
-IN_PROC_BROWSER_TEST_F(HistoryExtensionApiTest, MAYBE_Delete) {
+IN_PROC_BROWSER_TEST_F(HistoryApiTest, MAYBE_Delete) {
   ASSERT_TRUE(RunExtensionSubtest("history", "delete.html")) << message_;
 }
 
 // See crbug.com/79074
-IN_PROC_BROWSER_TEST_F(HistoryExtensionApiTest, DISABLED_GetVisits) {
+IN_PROC_BROWSER_TEST_F(HistoryApiTest, DISABLED_GetVisits) {
   ASSERT_TRUE(RunExtensionSubtest("history", "get_visits.html")) << message_;
 }
 
@@ -65,12 +67,12 @@ IN_PROC_BROWSER_TEST_F(HistoryExtensionApiTest, DISABLED_GetVisits) {
 #define MAYBE_SearchAfterAdd SearchAfterAdd
 #endif
 
-IN_PROC_BROWSER_TEST_F(HistoryExtensionApiTest, MAYBE_SearchAfterAdd) {
+IN_PROC_BROWSER_TEST_F(HistoryApiTest, MAYBE_SearchAfterAdd) {
   ASSERT_TRUE(RunExtensionSubtest("history", "search_after_add.html"))
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(HistoryExtensionApiTest, MostVisited) {
+IN_PROC_BROWSER_TEST_F(HistoryApiTest, MostVisited) {
   // Add entries to the history database that we can query for (using the
   // extension history API for this doesn't work as it only adds URLs with
   // LINK transition type).
@@ -98,3 +100,5 @@ IN_PROC_BROWSER_TEST_F(HistoryExtensionApiTest, MostVisited) {
   ASSERT_TRUE(RunExtensionSubtest("history", "most_visited.html"))
     << message_;
 }
+
+}  // namespace extensions

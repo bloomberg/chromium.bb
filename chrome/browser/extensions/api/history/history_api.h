@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_HISTORY_HISTORY_EXTENSION_API_H_
-#define CHROME_BROWSER_HISTORY_HISTORY_EXTENSION_API_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_HISTORY_HISTORY_API_H_
+#define CHROME_BROWSER_EXTENSIONS_API_HISTORY_HISTORY_API_H_
 
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_notifications.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/extensions/api/history.h"
 #include "content/public/browser/notification_registrar.h"
@@ -21,12 +23,14 @@ namespace base {
 class ListValue;
 }
 
+namespace extensions {
+
 // Observes History service and routes the notifications as events to the
 // extension system.
-class HistoryExtensionEventRouter : public content::NotificationObserver {
+class HistoryEventRouter : public content::NotificationObserver {
  public:
-  explicit HistoryExtensionEventRouter(Profile* profile);
-  virtual ~HistoryExtensionEventRouter();
+  explicit HistoryEventRouter(Profile* profile);
+  virtual ~HistoryEventRouter();
 
  private:
   // content::NotificationObserver::Observe.
@@ -47,9 +51,27 @@ class HistoryExtensionEventRouter : public content::NotificationObserver {
   // Used for tracking registrations to history service notifications.
   content::NotificationRegistrar registrar_;
 
-  DISALLOW_COPY_AND_ASSIGN(HistoryExtensionEventRouter);
+  DISALLOW_COPY_AND_ASSIGN(HistoryEventRouter);
 };
 
+class HistoryAPI : public ProfileKeyedService,
+                   public EventRouter::Observer {
+ public:
+  explicit HistoryAPI(Profile* profile);
+  virtual ~HistoryAPI();
+
+  // ProfileKeyedService implementation.
+  virtual void Shutdown() OVERRIDE;
+
+  // EventRouter::Observer implementation.
+  virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;
+
+ private:
+  Profile* profile_;
+
+  // Created lazily upon OnListenerAdded.
+  scoped_ptr<HistoryEventRouter> history_event_router_;
+};
 
 // Base class for history function APIs.
 class HistoryFunction : public AsyncExtensionFunction {
@@ -188,4 +210,6 @@ class DeleteRangeHistoryFunction : public HistoryFunctionWithCallback {
   void DeleteComplete();
 };
 
-#endif  // CHROME_BROWSER_HISTORY_HISTORY_EXTENSION_API_H_
+}  // namespace extensions
+
+#endif  // CHROME_BROWSER_EXTENSIONS_API_HISTORY_HISTORY_API_H_

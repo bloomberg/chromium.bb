@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/api/extension_action/extension_page_actions_api.h"
 #include "chrome/browser/extensions/api/extension_action/extension_script_badge_api.h"
 #include "chrome/browser/extensions/api/font_settings/font_settings_api.h"
+#include "chrome/browser/extensions/api/history/history_api.h"
 #include "chrome/browser/extensions/api/identity/identity_api.h"
 #include "chrome/browser/extensions/api/i18n/i18n_api.h"
 #include "chrome/browser/extensions/api/idle/idle_api.h"
@@ -44,7 +45,6 @@
 #include "chrome/browser/extensions/api/webstore_private/webstore_private_api.h"
 #include "chrome/browser/extensions/settings/settings_api.h"
 #include "chrome/browser/extensions/system/system_api.h"
-#include "chrome/browser/history/history_extension_api.h"
 #include "chrome/browser/history/top_sites_extension_api.h"
 #include "chrome/browser/infobars/infobar_extension_api.h"
 #include "chrome/browser/rlz/rlz_extension_api.h"
@@ -190,13 +190,13 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<CanOpenNewWindowsBookmarkFunction>();
 
   // History
-  RegisterFunction<AddUrlHistoryFunction>();
-  RegisterFunction<DeleteAllHistoryFunction>();
-  RegisterFunction<DeleteRangeHistoryFunction>();
-  RegisterFunction<DeleteUrlHistoryFunction>();
-  RegisterFunction<GetMostVisitedHistoryFunction>();
-  RegisterFunction<GetVisitsHistoryFunction>();
-  RegisterFunction<SearchHistoryFunction>();
+  RegisterFunction<extensions::AddUrlHistoryFunction>();
+  RegisterFunction<extensions::DeleteAllHistoryFunction>();
+  RegisterFunction<extensions::DeleteRangeHistoryFunction>();
+  RegisterFunction<extensions::DeleteUrlHistoryFunction>();
+  RegisterFunction<extensions::GetMostVisitedHistoryFunction>();
+  RegisterFunction<extensions::GetVisitsHistoryFunction>();
+  RegisterFunction<extensions::SearchHistoryFunction>();
 
   // Idle
   RegisterFunction<extensions::IdleQueryStateFunction>();
