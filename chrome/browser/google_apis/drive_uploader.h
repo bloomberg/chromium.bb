@@ -54,16 +54,6 @@ class DriveUploaderInterface {
   // content_type:
   //   The content type of the file to be uploaded.
   //
-  // content_length:
-  //   The content length of the file to be uploaded.
-  //   If the length is unknown beforehand, -1 should be passed.
-  //
-  // file_size:
-  //  The current size of the file to be uploaded. This can be smaller than
-  //  |content_length|, if the source file is still being written (i.e. being
-  //  downloaded from some web site). The client should keep providing the
-  //  current status with the  UpdateUpload() function.
-  //
   // callback:
   //   Called when an upload is done regardless of it was successful or not.
   //   Must not be null.
@@ -72,8 +62,6 @@ class DriveUploaderInterface {
                             const FilePath& local_file_path,
                             const std::string& title,
                             const std::string& content_type,
-                            int64 content_length,
-                            int64 file_size,
                             const UploadCompletionCallback& callback) = 0;
 
   // Uploads an existing file (a file that already exists on Drive).
@@ -83,7 +71,6 @@ class DriveUploaderInterface {
                                  const FilePath& drive_file_path,
                                  const FilePath& local_file_path,
                                  const std::string& content_type,
-                                 int64 file_size,
                                  const UploadCompletionCallback& callback) = 0;
 };
 
@@ -98,15 +85,12 @@ class DriveUploader : public DriveUploaderInterface {
                             const FilePath& local_file_path,
                             const std::string& title,
                             const std::string& content_type,
-                            int64 content_length,
-                            int64 file_size,
                             const UploadCompletionCallback& callback) OVERRIDE;
   virtual int UploadExistingFile(
       const GURL& upload_location,
       const FilePath& drive_file_path,
       const FilePath& local_file_path,
       const std::string& content_type,
-      int64 file_size,
       const UploadCompletionCallback& callback) OVERRIDE;
 
  private:
@@ -125,7 +109,6 @@ class DriveUploader : public DriveUploaderInterface {
 
     int upload_id;  // id of this upload.
     FilePath file_path;  // The path of the file to be uploaded.
-    int64 file_size;  // Last known size of the file.
 
     // TODO(zelirag, achuith): Make this string16.
     std::string title;  // Title to be used for file to be uploaded.
@@ -167,9 +150,6 @@ class DriveUploader : public DriveUploaderInterface {
     int64 start_position;
     int64 end_position;
 
-    bool all_bytes_present;  // Whether all bytes of this file are present.
-    bool upload_paused;  // Whether this file's upload has been paused.
-
     // Will be set once the upload is complete.
     scoped_ptr<ResourceEntry> entry;
 
@@ -190,11 +170,11 @@ class DriveUploader : public DriveUploaderInterface {
   // Open the file.
   void OpenFile(UploadFileInfo* upload_file_info, FileOpenType open_type);
 
-  // net::FileStream::Open completion callback. The result of the file
-  // open operation is passed as |result|.
+  // net::FileStream::Open completion callback. The result of the file open
+  // operation is passed as |result|, and the size is stored in |file_size|.
   void OpenCompletionCallback(FileOpenType open_type,
                               int upload_id,
-                              int result);
+                              int64 file_size);
 
   // DriveService callback for InitiateUpload.
   void OnUploadLocationReceived(int upload_id,

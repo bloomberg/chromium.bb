@@ -292,12 +292,10 @@ class MockDriveServiceNoConnectionAtResume : public MockDriveServiceBase {
 class DriveUploaderTest : public testing::Test {
  public:
   DriveUploaderTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_),
-        io_thread_(content::BrowserThread::IO) {
+      : ui_thread_(content::BrowserThread::UI, &message_loop_) {
   }
 
   virtual void SetUp() OVERRIDE {
-    io_thread_.StartIOThread();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   }
 
@@ -308,7 +306,6 @@ class DriveUploaderTest : public testing::Test {
  protected:
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread io_thread_;
   base::ScopedTempDir temp_dir_;
 };
 
@@ -352,7 +349,6 @@ TEST_F(DriveUploaderTest, UploadExisting0KB) {
       FilePath::FromUTF8Unsafe(kTestDrivePath),
       local_path,
       kTestMimeType,
-      0,  // content length
       base::Bind(&CopyResultsFromUploadCompletionCallbackAndQuit, &out));
   message_loop_.Run();
 
@@ -380,7 +376,6 @@ TEST_F(DriveUploaderTest, UploadExisting512KB) {
       FilePath::FromUTF8Unsafe(kTestDrivePath),
       local_path,
       kTestMimeType,
-      512 * 1024,  // content length
       base::Bind(&CopyResultsFromUploadCompletionCallbackAndQuit, &out));
   message_loop_.Run();
 
@@ -409,7 +404,6 @@ TEST_F(DriveUploaderTest, UploadExisting1234KB) {
       FilePath::FromUTF8Unsafe(kTestDrivePath),
       local_path,
       kTestMimeType,
-      1234 * 1024,  // content length
       base::Bind(&CopyResultsFromUploadCompletionCallbackAndQuit, &out));
   message_loop_.Run();
 
@@ -439,8 +433,6 @@ TEST_F(DriveUploaderTest, UploadNew1234KB) {
       local_path,
       kTestDocumentTitle,
       kTestMimeType,
-      1234 * 1024,  // content length
-      1234 * 1024,  // current file size
       base::Bind(&CopyResultsFromUploadCompletionCallbackAndQuit, &out)
   );
   message_loop_.Run();
@@ -470,7 +462,6 @@ TEST_F(DriveUploaderTest, InitiateUploadFail) {
       FilePath::FromUTF8Unsafe(kTestDrivePath),
       local_path,
       kTestMimeType,
-      512 * 1024,  // content length
       base::Bind(&CopyResultsFromUploadCompletionCallbackAndQuit, &out));
   message_loop_.Run();
 
@@ -492,7 +483,6 @@ TEST_F(DriveUploaderTest, ResumeUploadFail) {
       FilePath::FromUTF8Unsafe(kTestDrivePath),
       local_path,
       kTestMimeType,
-      512 * 1024,  // content length
       base::Bind(&CopyResultsFromUploadCompletionCallbackAndQuit, &out));
   message_loop_.Run();
 
@@ -508,7 +498,6 @@ TEST_F(DriveUploaderTest, NonExistingSourceFile) {
       FilePath::FromUTF8Unsafe(kTestDrivePath),
       temp_dir_.path().AppendASCII("_this_path_should_not_exist_"),
       kTestMimeType,
-      0,  // content length
       base::Bind(&CopyResultsFromUploadCompletionCallbackAndQuit, &out));
   message_loop_.Run();
 

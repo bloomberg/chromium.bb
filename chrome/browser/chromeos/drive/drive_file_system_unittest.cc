@@ -131,8 +131,6 @@ class FakeDriveUploader : public google_apis::DriveUploaderInterface {
       const FilePath& local_file_path,
       const std::string& title,
       const std::string& content_type,
-      int64 content_length,
-      int64 file_size,
       const google_apis::UploadCompletionCallback& callback) OVERRIDE {
     DCHECK(!callback.is_null());
 
@@ -161,7 +159,6 @@ class FakeDriveUploader : public google_apis::DriveUploaderInterface {
       const FilePath& drive_file_path,
       const FilePath& local_file_path,
       const std::string& content_type,
-      int64 file_size,
       const google_apis::UploadCompletionCallback& callback) OVERRIDE {
     DCHECK(!callback.is_null());
 

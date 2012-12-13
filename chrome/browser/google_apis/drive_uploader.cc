@@ -29,6 +29,17 @@ int ReadFileStreamOnBlockingPool(net::FileStream* file_stream,
   return file_stream->ReadSync(buf->data(), bytes_to_read);
 }
 
+// Opens |path| with |file_stream| and returns the file size.
+// If failed, returns an error code in a negative value.
+int64 OpenFileStreamAndGetSizeOnBlockingPool(net::FileStream* file_stream,
+                                             const FilePath& path) {
+  int result = file_stream->OpenSync(
+      path, base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ);
+  if (result != net::OK)
+    return result;
+  return file_stream->Available();
+}
+
 }  // namespace
 
 namespace google_apis {
@@ -58,8 +69,6 @@ int DriveUploader::UploadNewFile(const GURL& upload_location,
                                  const FilePath& local_file_path,
                                  const std::string& title,
                                  const std::string& content_type,
-                                 int64 content_length,
-                                 int64 file_size,
                                  const UploadCompletionCallback& callback) {
    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
    DCHECK(!upload_location.is_empty());
@@ -76,9 +85,6 @@ int DriveUploader::UploadNewFile(const GURL& upload_location,
   upload_file_info->file_path = local_file_path;
   upload_file_info->title = title;
   upload_file_info->content_type = content_type;
-  upload_file_info->content_length = content_length;
-  upload_file_info->file_size = file_size;
-  upload_file_info->all_bytes_present = content_length == file_size;
   upload_file_info->completion_callback = callback;
   return StartUploadFile(upload_file_info.Pass());
 }
@@ -115,7 +121,6 @@ int DriveUploader::UploadExistingFile(
     const FilePath& drive_file_path,
     const FilePath& local_file_path,
     const std::string& content_type,
-    int64 file_size,
     const UploadCompletionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!upload_location.is_empty());
@@ -130,9 +135,6 @@ int DriveUploader::UploadExistingFile(
   upload_file_info->drive_path = drive_file_path;
   upload_file_info->file_path = local_file_path;
   upload_file_info->content_type = content_type;
-  upload_file_info->content_length = file_size;
-  upload_file_info->file_size = file_size;
-  upload_file_info->all_bytes_present = true;
   upload_file_info->completion_callback = callback;
   return StartUploadFile(upload_file_info.Pass());
 }
@@ -158,10 +160,9 @@ void DriveUploader::OpenFile(UploadFileInfo* upload_file_info,
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
-      base::Bind(&net::FileStream::OpenSync,
+      base::Bind(&OpenFileStreamAndGetSizeOnBlockingPool,
                  base::Unretained(upload_file_info->file_stream.get()),
-                 upload_file_info->file_path,
-                 base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ),
+                 upload_file_info->file_path),
       base::Bind(&DriveUploader::OpenCompletionCallback,
                  weak_ptr_factory_.GetWeakPtr(),
                  open_type,
@@ -170,15 +171,14 @@ void DriveUploader::OpenFile(UploadFileInfo* upload_file_info,
 
 void DriveUploader::OpenCompletionCallback(FileOpenType open_type,
                                            int upload_id,
-                                           int result) {
+                                           int64 file_size) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   UploadFileInfo* upload_file_info = GetUploadFileInfo(upload_id);
   if (!upload_file_info)
     return;
 
-  if (result != net::OK) {
-    DCHECK_EQ(result, net::ERR_FILE_NOT_FOUND);
+  if (file_size < 0) {
     UploadFailed(upload_file_info, DRIVE_UPLOAD_ERROR_NOT_FOUND);
     return;
   }
@@ -189,6 +189,7 @@ void DriveUploader::OpenCompletionCallback(FileOpenType open_type,
   }
 
   // Open succeeded, initiate the upload.
+  upload_file_info->content_length = file_size;
   drive_service_->InitiateUpload(
       InitiateUploadParams(upload_file_info->upload_mode,
                            upload_file_info->title,
@@ -233,28 +234,12 @@ void DriveUploader::UploadNextChunk(UploadFileInfo* upload_file_info) {
 
   // Determine number of bytes to read for this upload iteration, which cannot
   // exceed size of buf i.e. buf_len.
-  const int64 bytes_remaining = upload_file_info->SizeRemaining();
   const int bytes_to_read = std::min(upload_file_info->SizeRemaining(),
                                      upload_file_info->buf_len);
 
-  // Update the content length if the file_size is known.
-  if (upload_file_info->all_bytes_present)
-    upload_file_info->content_length = upload_file_info->file_size;
-  else if (bytes_remaining == bytes_to_read) {
-    // Wait for more data if this is the last chunk we have and we don't know
-    // whether we've reached the end of the file. We won't know how much data to
-    // expect until the transfer is complete (the Content-Length might be
-    // incorrect or absent). If we've sent the last chunk out already when we
-    // find out there's no more data, we won't be able to complete the upload.
-    DVLOG(1) << "Paused upload " << upload_file_info->title;
-    upload_file_info->upload_paused = true;
-    return;
-  }
-
   if (bytes_to_read == 0) {
     // This should only happen when the actual file size is 0.
-    DCHECK(upload_file_info->all_bytes_present &&
-           upload_file_info->content_length == 0);
+    DCHECK(upload_file_info->content_length == 0);
 
     upload_file_info->start_position = 0;
     upload_file_info->end_position = 0;
@@ -418,22 +403,19 @@ void DriveUploader::RemoveUpload(scoped_ptr<UploadFileInfo> upload_file_info) {
 
 DriveUploader::UploadFileInfo::UploadFileInfo()
     : upload_id(-1),
-      file_size(0),
       content_length(0),
       upload_mode(UPLOAD_INVALID),
       file_stream(NULL),
       buf_len(0),
       start_position(0),
-      end_position(0),
-      all_bytes_present(false),
-      upload_paused(false) {
+      end_position(0) {
 }
 
 DriveUploader::UploadFileInfo::~UploadFileInfo() { }
 
 int64 DriveUploader::UploadFileInfo::SizeRemaining() const {
-  DCHECK(file_size >= end_position);
-  return file_size - end_position;
+  DCHECK(content_length >= end_position);
+  return content_length - end_position;
 }
 
 std::string DriveUploader::UploadFileInfo::DebugString() const {
@@ -441,7 +423,6 @@ std::string DriveUploader::UploadFileInfo::DebugString() const {
          "], file_path=[" + file_path.AsUTF8Unsafe() +
          "], content_type=[" + content_type +
          "], content_length=[" + base::UintToString(content_length) +
-         "], file_size=[" + base::UintToString(file_size) +
          "], drive_path=[" + drive_path.AsUTF8Unsafe() +
          "]";
 }

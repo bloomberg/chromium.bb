@@ -51,8 +51,6 @@ class FakeDriveUploader : public google_apis::DriveUploaderInterface {
       const FilePath& local_file_path,
       const std::string& title,
       const std::string& content_type,
-      int64 content_length,
-      int64 file_size,
       const google_apis::UploadCompletionCallback& callback) OVERRIDE {
     DCHECK(!callback.is_null());
 
@@ -80,7 +78,6 @@ class FakeDriveUploader : public google_apis::DriveUploaderInterface {
       const FilePath& drive_file_path,
       const FilePath& local_file_path,
       const std::string& content_type,
-      int64 file_size,
       const google_apis::UploadCompletionCallback& callback) OVERRIDE {
     DCHECK(!callback.is_null());
 
@@ -704,7 +701,6 @@ TEST_F(DriveFileSyncClientTest, UploadNewFile) {
   const std::string kDirectoryResourceId = "folder:directory_resource_id";
   const FilePath kLocalFilePath(FPL("/tmp/dir/file"));
   const std::string kTitle("testfile");
-  int64 kFileSize = 1024;
 
   scoped_ptr<base::Value> dir_entry_data(google_apis::test_util::LoadJSONFile(
       "gdata/directory_entry.json").Pass());
@@ -729,7 +725,6 @@ TEST_F(DriveFileSyncClientTest, UploadNewFile) {
   sync_client()->UploadNewFile(kDirectoryResourceId,
                                kLocalFilePath,
                                kTitle,
-                               kFileSize,
                                base::Bind(&DidUploadFile,
                                           &done, &error, &resource_id));
   message_loop()->RunUntilIdle();
@@ -741,7 +736,6 @@ TEST_F(DriveFileSyncClientTest, UploadNewFile) {
 TEST_F(DriveFileSyncClientTest, UploadExistingFile) {
   const std::string kResourceId = "file:resource_id";
   const FilePath kLocalFilePath(FPL("/tmp/dir/file"));
-  int64 kFileSize = 1024;
 
   scoped_ptr<base::Value> file_entry_data(
       google_apis::test_util::LoadJSONFile("gdata/file_entry.json").Pass());
@@ -768,7 +762,6 @@ TEST_F(DriveFileSyncClientTest, UploadExistingFile) {
   sync_client()->UploadExistingFile(kResourceId,
                                     expected_remote_file_md5,
                                     kLocalFilePath,
-                                    kFileSize,
                                     base::Bind(&DidUploadFile,
                                                &done, &error, &resource_id));
   message_loop()->RunUntilIdle();
@@ -780,7 +773,6 @@ TEST_F(DriveFileSyncClientTest, UploadExistingFile) {
 TEST_F(DriveFileSyncClientTest, UploadExistingFileInConflict) {
   const std::string kResourceId = "file:resource_id";
   const FilePath kLocalFilePath(FPL("/tmp/dir/file"));
-  int64 kFileSize = 1024;
 
   // Since remote file's hash value is different from the expected one, it is
   // expected to cancel upload the file and to return CONFLICT status code.
@@ -808,7 +800,6 @@ TEST_F(DriveFileSyncClientTest, UploadExistingFileInConflict) {
   sync_client()->UploadExistingFile(kResourceId,
                                     kExpectedRemoteFileMD5,
                                     kLocalFilePath,
-                                    kFileSize,
                                     base::Bind(&DidUploadFile,
                                                &done, &error, &resource_id));
   message_loop()->RunUntilIdle();

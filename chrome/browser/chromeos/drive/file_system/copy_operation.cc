@@ -39,25 +39,6 @@ DriveFileError CopyLocalFileOnBlockingPool(const FilePath& src_file_path,
       DRIVE_FILE_OK : DRIVE_FILE_ERROR_FAILED;
 }
 
-// Gets the file size of |local_file|, and the content type for |extension|.
-// Since |local_file| can be "/dev/null" for a new file upload case, we pass
-// the (destination) extension separately from the source file name.
-DriveFileError GetLocalFileInfoOnBlockingPool(
-    const FilePath& local_file,
-    const FilePath::StringType& extension,
-    int64* file_size,
-    std::string* content_type) {
-  DCHECK(file_size);
-  DCHECK(content_type);
-
-  if (!net::GetMimeTypeFromExtension(extension, content_type))
-    *content_type = kMimeTypeOctetStream;
-
-  *file_size = 0;
-  return file_util::GetFileSize(local_file, file_size) ?
-      DRIVE_FILE_OK : DRIVE_FILE_ERROR_NOT_FOUND;
-}
-
 // Checks if a local file at |local_file_path| is a JSON file referencing a
 // hosted document on blocking pool, and if so, gets the resource ID of the
 // document.
@@ -193,22 +174,18 @@ void CopyOperation::TransferRegularFile(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  int64* file_size = new int64;
   std::string* content_type = new std::string;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_,
       FROM_HERE,
-      base::Bind(&GetLocalFileInfoOnBlockingPool,
-                 local_file_path,
+      base::Bind(&net::GetMimeTypeFromExtension,
                  remote_dest_file_path.Extension(),
-                 file_size,
-                 content_type),
+                 base::Unretained(content_type)),
       base::Bind(&CopyOperation::StartFileUpload,
                  weak_ptr_factory_.GetWeakPtr(),
                  StartFileUploadParams(local_file_path,
                                        remote_dest_file_path,
                                        callback),
-                 base::Owned(file_size),
                  base::Owned(content_type)));
 }
 
@@ -421,37 +398,23 @@ void CopyOperation::OnGetFileCompleteForCopy(
   TransferRegularFile(local_file_path, remote_dest_file_path, callback);
 }
 
-void CopyOperation::StartFileUpload(
-    const StartFileUploadParams& params,
-    int64* file_size,
-    std::string* content_type,
-    DriveFileError error) {
-  // This method needs to run on the UI thread as required by
-  // DriveUploader::UploadNewFile().
+void CopyOperation::StartFileUpload(const StartFileUploadParams& params,
+                                    const std::string* content_type,
+                                    bool got_content_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(file_size);
-  DCHECK(content_type);
   DCHECK(!params.callback.is_null());
-
-  if (error != DRIVE_FILE_OK) {
-    params.callback.Run(error);
-    return;
-  }
 
   // Make sure the destination directory exists.
   metadata_->GetEntryInfoByPath(
       params.remote_file_path.DirName(),
-      base::Bind(
-          &CopyOperation::StartFileUploadAfterGetEntryInfo,
-          weak_ptr_factory_.GetWeakPtr(),
-          params,
-          *file_size,
-          *content_type));
+      base::Bind(&CopyOperation::StartFileUploadAfterGetEntryInfo,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 params,
+                 got_content_type ? *content_type : kMimeTypeOctetStream));
 }
 
 void CopyOperation::StartFileUploadAfterGetEntryInfo(
     const StartFileUploadParams& params,
-    int64 file_size,
     const std::string& content_type,
     DriveFileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
@@ -472,8 +435,6 @@ void CopyOperation::StartFileUploadAfterGetEntryInfo(
                            params.local_file_path,
                            params.remote_file_path.BaseName().value(),
                            content_type,
-                           file_size,
-                           file_size,
                            base::Bind(&CopyOperation::OnTransferCompleted,
                                       weak_ptr_factory_.GetWeakPtr(),
                                       params.callback));

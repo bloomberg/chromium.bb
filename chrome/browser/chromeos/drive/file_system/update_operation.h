@@ -72,17 +72,6 @@ class UpdateOperation {
                                       const FilePath& cache_file_path);
 
   // Part of UpdateFileByResourceId().
-  // Callback for getting the size of the cache file in the blocking pool.
-  // |callback| must not be null.
-  void OnGetFileSizeCompleteForUpdateFile(
-      const FileOperationCallback& callback,
-      const FilePath& drive_file_path,
-      scoped_ptr<DriveEntryProto> entry_proto,
-      const FilePath& cache_file_path,
-      int64* file_size,
-      bool get_file_size_result);
-
-  // Part of UpdateFileByResourceId().
   // Called when DriveUploader::UploadUpdatedFile() is completed for
   // UpdateFileByResourceId().
   // |callback| must not be null.

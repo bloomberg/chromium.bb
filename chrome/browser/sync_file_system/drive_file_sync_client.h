@@ -143,7 +143,6 @@ class DriveFileSyncClient
   void UploadNewFile(const std::string& directory_resource_id,
                      const FilePath& local_file_path,
                      const std::string& title,
-                     int64 file_size,
                      const UploadFileCallback& callback);
 
   // Uploads the existing file identified by |local_file_path|.
@@ -154,7 +153,6 @@ class DriveFileSyncClient
   void UploadExistingFile(const std::string& resource_id,
                           const std::string& remote_file_md5,
                           const FilePath& local_file_path,
-                          int64 file_size,
                           const UploadFileCallback& callback);
 
   // Returns true if the user is authenticated.
@@ -243,7 +241,6 @@ class DriveFileSyncClient
   void UploadNewFileInternal(
       const FilePath& local_file_path,
       const std::string& title,
-      int64 file_size,
       const UploadFileCallback& callback,
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::ResourceEntry> parent_directory_entry);
@@ -251,7 +248,6 @@ class DriveFileSyncClient
   void UploadExistingFileInternal(
       const std::string& remote_file_md5,
       const FilePath& local_file_path,
-      int64 file_size,
       const UploadFileCallback& callback,
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::ResourceEntry> entry);

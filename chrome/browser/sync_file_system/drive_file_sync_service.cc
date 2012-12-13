@@ -470,7 +470,6 @@ void DriveFileSyncService::ApplyLocalChange(
           metadata_store_->GetResourceIdForOrigin(url.origin()),
           local_file_path,
           url.path().AsUTF8Unsafe(),
-          local_file_metadata.size,
           base::Bind(&DriveFileSyncService::DidUploadNewFileForLocalSync,
                      AsWeakPtr(), base::Passed(&token), url, callback));
       return;
@@ -484,7 +483,6 @@ void DriveFileSyncService::ApplyLocalChange(
           metadata.resource_id(),
           metadata.md5_checksum(),
           local_file_path,
-          local_file_metadata.size,
           base::Bind(&DriveFileSyncService::DidUploadExistingFileForLocalSync,
                      AsWeakPtr(), base::Passed(&token), url, callback));
       return;

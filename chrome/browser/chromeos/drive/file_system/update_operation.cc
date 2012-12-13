@@ -93,48 +93,11 @@ void UpdateOperation::OnGetFileCompleteForUpdateFile(
     return;
   }
 
-  // Gets the size of the cache file. Since the file is locally modified, the
-  // file size information stored in DriveEntry is not correct.
-  int64* file_size = new int64(0);
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
-      FROM_HERE,
-      base::Bind(&file_util::GetFileSize,
-                 cache_file_path,
-                 file_size),
-      base::Bind(&UpdateOperation::OnGetFileSizeCompleteForUpdateFile,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback,
-                 drive_file_path,
-                 base::Passed(&entry_proto),
-                 cache_file_path,
-                 base::Owned(file_size)));
-}
-
-void UpdateOperation::OnGetFileSizeCompleteForUpdateFile(
-    const FileOperationCallback& callback,
-    const FilePath& drive_file_path,
-    scoped_ptr<DriveEntryProto> entry_proto,
-    const FilePath& cache_file_path,
-    int64* file_size,
-    bool get_file_size_result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-  // |entry_proto| has been checked in UpdateFileByEntryInfo().
-  DCHECK(entry_proto.get());
-  DCHECK(!entry_proto->file_info().is_directory());
-
-  if (!get_file_size_result) {
-    callback.Run(DRIVE_FILE_ERROR_NOT_FOUND);
-    return;
-  }
-
   uploader_->UploadExistingFile(
       GURL(entry_proto->upload_url()),
       drive_file_path,
       cache_file_path,
       entry_proto->file_specific_info().content_mime_type(),
-      *file_size,
       base::Bind(&UpdateOperation::OnUpdatedFileUploaded,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback));

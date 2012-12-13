@@ -334,7 +334,6 @@ void DriveFileSyncClient::UploadNewFile(
     const std::string& directory_resource_id,
     const FilePath& local_file_path,
     const std::string& title,
-    int64 file_size,
     const UploadFileCallback& callback) {
   DCHECK(CalledOnValidThread());
   drive_service_->GetResourceEntry(
@@ -342,15 +341,13 @@ void DriveFileSyncClient::UploadNewFile(
       base::Bind(&DriveFileSyncClient::DidGetResourceEntry,
                  AsWeakPtr(),
                  base::Bind(&DriveFileSyncClient::UploadNewFileInternal,
-                            AsWeakPtr(), local_file_path, title, file_size,
-                            callback)));
+                            AsWeakPtr(), local_file_path, title, callback)));
 }
 
 void DriveFileSyncClient::UploadExistingFile(
     const std::string& resource_id,
     const std::string& remote_file_md5,
     const FilePath& local_file_path,
-    int64 file_size,
     const UploadFileCallback& callback) {
   DCHECK(CalledOnValidThread());
   drive_service_->GetResourceEntry(
@@ -359,7 +356,7 @@ void DriveFileSyncClient::UploadExistingFile(
                  AsWeakPtr(),
                  base::Bind(&DriveFileSyncClient::UploadExistingFileInternal,
                             AsWeakPtr(), remote_file_md5, local_file_path,
-                            file_size, callback)));
+                            callback)));
 }
 
 void DriveFileSyncClient::DeleteFile(
@@ -504,7 +501,6 @@ void DriveFileSyncClient::DidDownloadFile(
 void DriveFileSyncClient::UploadNewFileInternal(
     const FilePath& local_file_path,
     const std::string& title,
-    int64 file_size,
     const UploadFileCallback& callback,
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::ResourceEntry> parent_directory_entry) {
@@ -528,15 +524,12 @@ void DriveFileSyncClient::UploadNewFileInternal(
       local_file_path,
       title,
       mime_type,
-      file_size,  // content_length.
-      file_size,
       base::Bind(&DriveFileSyncClient::DidUploadFile, AsWeakPtr(), callback));
 }
 
 void DriveFileSyncClient::UploadExistingFileInternal(
     const std::string& remote_file_md5,
     const FilePath& local_file_path,
-    int64 file_size,
     const UploadFileCallback& callback,
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::ResourceEntry> entry) {
@@ -568,7 +561,6 @@ void DriveFileSyncClient::UploadExistingFileInternal(
       FilePath(kDummyDrivePath),
       local_file_path,
       mime_type,
-      file_size,
       base::Bind(&DriveFileSyncClient::DidUploadFile,
                  AsWeakPtr(), callback));
 }
