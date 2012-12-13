@@ -8,7 +8,6 @@ int
 main (int argc, char **argv)
 {
     const char* strings[] = {
-
 		"I",
 		"Alice's Adventures In Wonderland",
 		"II",
@@ -640,11 +639,11 @@ main (int argc, char **argv)
 		"\"I wish I hadn't mentioned Dinah!\" she said to herself in a\n                    melancholy tone. \"Nobody seems to like her, down here, and I'm sure she's the\n                    best cat in the world! Oh, my dear Dinah! I wonder if I shall ever\n                    see you any more!\" And here poor Alice began to cry again, for she\n                    felt very lonely and low-spirited. In a little while, however, she again heard a\n                    little pattering of footsteps in the distance, and she looked up eagerly, half\n                    hoping that the Mousehad changed his mind, and was coming back to\n                    finish his story."
     };
 
-    char* table = "unicode.dis,en-us-g2.ctb";
+    const char* table = "unicode.dis,en-us-g2.ctb";
+
     unsigned int i;
     int j;
     for (i=0; i < sizeof(strings)/sizeof(strings[0]); i++) {
-        /* printf("%s\n", strings[i]); */
         int inlen = strlen(strings[i]);
         int outlen = inlen * 3;
         widechar* inbuf = malloc(inlen * sizeof(widechar));
@@ -652,8 +651,7 @@ main (int argc, char **argv)
         char* typeform = malloc(outlen * sizeof(char));
         for (j=0; j<=inlen; j++)
             typeform[j] = 0;
-        if (!extParseChars(strings[i], inbuf))
-            return 1;
+        extParseChars(strings[i], inbuf);
         if (!lou_translate(table, inbuf, &inlen, outbuf, &outlen, typeform, NULL, NULL, NULL, NULL, 0))
             return 1;
         free(inbuf);

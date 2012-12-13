@@ -68,7 +68,7 @@ trace_translate (const char *tableList, const widechar * inbufx,
 		 int *inlen, widechar * outbuf, int *outlen,
 		 char *typeform, char *spacing, int *outputPos,
 		 int *inputPos, int *cursorPos,
-		 TranslationTableRule ** rules, int *rulesLen, int modex)
+		 const TranslationTableRule ** rules, int *rulesLen, int modex)
 {
   int k;
   int goodTrans = 1;

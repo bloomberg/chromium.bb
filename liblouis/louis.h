@@ -553,7 +553,7 @@ extern "C"
                        int* inlen, widechar* outbuf, int* outlen,
                        char* typeform, char* spacing, int* outputPos,
                        int* inputPos, int* cursorPos,
-                       TranslationTableRule** rules, int* rulesLen,
+                       const TranslationTableRule** rules, int* rulesLen,
                        int mode);
 
   char * getLastTableList();
