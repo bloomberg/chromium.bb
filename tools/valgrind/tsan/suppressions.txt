@@ -1011,22 +1011,3 @@
    fun:safe_browsing::ClientSideDetectionHost::ShouldClassifyUrlRequest::CheckCsdWhitelist
    fun:base::internal::RunnableAdapter::Run
 }
-{
-   bug_164349_a
-   ThreadSanitizer:Race
-   fun:base::FieldTrial::group
-   fun:base::FieldTrial::group_name
-   fun:base::FieldTrialList::FindFullName
-   fun:base::FieldTrial::MakeName
-   fun:net::URLRequestHttpJob::RecordPerfHistograms
-}
-{
-   bug_164349_b
-   ThreadSanitizer:Race
-   fun:base::FieldTrial::GetActiveGroup
-   fun:base::FieldTrialList::GetActiveFieldTrialGroups
-   fun:chrome_variations::GetFieldTrialActiveGroupIds
-   fun:chrome_variations::GetFieldTrialActiveGroupIdsAsStrings
-   fun:chrome_variations::SetChildProcessLoggingVariationList
-   fun:FieldTrialSynchronizer::OnFieldTrialGroupFinalized
-}
