@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
+#include "base/sequenced_task_runner_helpers.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/media_gallery/mtp_device_delegate_impl.h"
 #include "webkit/fileapi/file_system_file_util.h"
@@ -24,13 +25,31 @@ namespace chrome {
 
 // This class communicates with the MTP storage to complete the isolated file
 // system operations. This class contains platform specific code to communicate
-// with the attached MTP storage. Instantiate this class per MTP storage. This
-// object is constructed on the UI thread. This object is operated and
-// destructed on the sequenced task runner thread. ScopedMTPDeviceMapEntry class
-// manages the lifetime of this object via MTPDeviceMapService class. This class
-// supports weak pointers because the base class supports weak pointers.
+// with the attached MTP storage.
+// Instantiate this class per MTP storage using CreateMTPDeviceDelegate().
+// This object lives on a sequenced task runner thread, except for
+// CancelPendingTasksAndDeleteDelegate() which happens on the UI thread.
 class MTPDeviceDelegateImplLinux : public fileapi::MTPDeviceDelegate {
- public:
+ private:
+  friend void CreateMTPDeviceDelegate(const std::string&,
+                                      base::SequencedTaskRunner*,
+                                      const CreateMTPDeviceDelegateCallback&);
+  friend class base::DeleteHelper<MTPDeviceDelegateImplLinux>;
+
+  // Should only be called by CreateMTPDeviceDelegate() factory call.
+  // Defer the device initializations until the first file operation request.
+  // Do all the initializations in LazyInit() function.
+  MTPDeviceDelegateImplLinux(const std::string& device_location,
+                             base::SequencedTaskRunner* media_task_runner);
+
+  // Destructed via CancelPendingTasksAndDeleteDelegate().
+  virtual ~MTPDeviceDelegateImplLinux();
+
+  // Opens the device for communication. This function is called on
+  // |media_task_runner_|. Returns true if the device is ready for
+  // communication, else false.
+  bool LazyInit();
+
   // MTPDeviceDelegate:
   virtual base::PlatformFileError GetFileInfo(
       const FilePath& file_path,
@@ -44,31 +63,6 @@ class MTPDeviceDelegateImplLinux : public fileapi::MTPDeviceDelegate {
       base::PlatformFileInfo* file_info) OVERRIDE;
   virtual base::SequencedTaskRunner* GetMediaTaskRunner() OVERRIDE;
   virtual void CancelPendingTasksAndDeleteDelegate() OVERRIDE;
-  virtual base::WeakPtr<fileapi::MTPDeviceDelegate> GetAsWeakPtrOnIOThread()
-      OVERRIDE;
-
- private:
-  friend MTPDeviceDelegate* CreateMTPDeviceDelegate(const std::string&);
-
-  // Should only be called by CreateMTPDeviceDelegate factory. Use
-  // GetAsWeakPtrOnIOThread() to get a weak pointer instance of this class.
-  // Defer the device initializations until the first file operation request.
-  // Do all the initializations in LazyInit() function.
-  explicit MTPDeviceDelegateImplLinux(const std::string& device_location);
-
-  // Destructed via DeleteDelegateOnTaskRunner(). Do all the clean up in
-  // DeleteDelegateOnTaskRunner().
-  virtual ~MTPDeviceDelegateImplLinux();
-
-  // Opens the device for communication. This function is called on
-  // |media_task_runner_|. Returns true if the device is ready for
-  // communication, else false.
-  bool LazyInit();
-
-  // Deletes the delegate on the task runner thread. Called by
-  // CancelPendingTasksAndDeleteDelegate(). Performs clean up that needs to
-  // happen on |media_task_runner_|.
-  void DeleteDelegateOnTaskRunner();
 
   // Stores the registered file system device path value. This path does not
   // correspond to a real device path (E.g.: "/usb:2,2:81282").
@@ -87,7 +81,7 @@ class MTPDeviceDelegateImplLinux : public fileapi::MTPDeviceDelegate {
   base::WaitableEvent on_task_completed_event_;
 
   // Used to notify |media_task_runner_| pending tasks about the shutdown
-  // sequence. Signaled on the IO thread.
+  // sequence. Signaled on the UI thread.
   base::WaitableEvent on_shutdown_event_;
 
   DISALLOW_COPY_AND_ASSIGN(MTPDeviceDelegateImplLinux);

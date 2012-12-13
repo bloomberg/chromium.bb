@@ -39,16 +39,14 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemOperationContext {
   int64 allowed_bytes_growth() const { return allowed_bytes_growth_; }
 
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-  // Called on IO thread.
-  void set_mtp_device_delegate(
-      const base::WeakPtr<MTPDeviceDelegate>& delegate) {
-    mtp_device_delegate_ = delegate;
+  // Initializes |mtp_device_delegate_url_| on the IO thread.
+  void set_mtp_device_delegate_url(const std::string& delegate_url) {
+    mtp_device_delegate_url_ = delegate_url;
   }
 
-  // Caller of this function should dereference the delegate only on media
-  // sequenced task runner thread.
-  base::WeakPtr<MTPDeviceDelegate> mtp_device_delegate() const {
-    return mtp_device_delegate_;
+  // Reads |mtp_device_delegate_url_| on |task_runner_|.
+  const std::string& mtp_device_delegate_url() const {
+    return mtp_device_delegate_url_;
   }
 #endif
 
@@ -96,9 +94,9 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemOperationContext {
   UpdateObserverList update_observers_;
 
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-  // The media transfer protocol (MTP) device delegate.
-  // Set on IO thread and dereferenced on media sequenced task runner thread.
-  base::WeakPtr<MTPDeviceDelegate> mtp_device_delegate_;
+  // URL for the media transfer protocol (MTP) device delegate.
+  // Initialized on IO thread and used on |task_runner_|.
+  std::string mtp_device_delegate_url_;
 #endif
 };
 

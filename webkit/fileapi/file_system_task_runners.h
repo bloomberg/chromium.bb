@@ -16,6 +16,8 @@ class SingleThreadTaskRunner;
 
 namespace fileapi {
 
+WEBKIT_STORAGE_EXPORT extern const char kMediaTaskRunnerName[];
+
 // This class holds task runners used for filesystem related stuff.
 class WEBKIT_STORAGE_EXPORT FileSystemTaskRunners {
  public:

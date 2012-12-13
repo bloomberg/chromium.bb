@@ -23,6 +23,12 @@ namespace {
 const FilePath::CharType kDeviceMediaFileUtilTempDir[] =
     FILE_PATH_LITERAL("DeviceMediaFileSystem");
 
+MTPDeviceDelegate* GetMTPDeviceDelegate(FileSystemOperationContext* context) {
+  DCHECK(context->task_runner()->RunsTasksOnCurrentThread());
+  return MTPDeviceMapService::GetInstance()->GetMTPDeviceDelegate(
+      context->mtp_device_delegate_url());
+}
+
 }  // namespace
 
 DeviceMediaFileUtil::DeviceMediaFileUtil(const FilePath& profile_path)
@@ -63,11 +69,11 @@ PlatformFileError DeviceMediaFileUtil::GetFileInfo(
     const FileSystemURL& url,
     PlatformFileInfo* file_info,
     FilePath* platform_path) {
-  if (!context->mtp_device_delegate().get())
+  MTPDeviceDelegate* delegate = GetMTPDeviceDelegate(context);
+  if (!delegate)
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 
-  PlatformFileError error =
-      context->mtp_device_delegate()->GetFileInfo(url.path(), file_info);
+  PlatformFileError error = delegate->GetFileInfo(url.path(), file_info);
   if (error != base::PLATFORM_FILE_OK)
     return error;
 
@@ -78,19 +84,19 @@ PlatformFileError DeviceMediaFileUtil::GetFileInfo(
 }
 
 scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator>
-    DeviceMediaFileUtil::CreateFileEnumerator(
-        FileSystemOperationContext* context,
-        const FileSystemURL& url,
-        bool recursive) {
-  if (!context->mtp_device_delegate().get()) {
+DeviceMediaFileUtil::CreateFileEnumerator(
+    FileSystemOperationContext* context,
+    const FileSystemURL& url,
+    bool recursive) {
+  MTPDeviceDelegate* delegate = GetMTPDeviceDelegate(context);
+  if (!delegate) {
     return scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator>(
         new FileSystemFileUtil::EmptyFileEnumerator());
   }
-  return make_scoped_ptr(new FilteringFileEnumerator(
-      context->mtp_device_delegate()->CreateFileEnumerator(url.path(),
-                                                           recursive),
-      context->media_path_filter()))
-      .PassAs<FileSystemFileUtil::AbstractFileEnumerator>();
+  return scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator>(
+      new FilteringFileEnumerator(
+          delegate->CreateFileEnumerator(url.path(), recursive),
+          context->media_path_filter()));
 }
 
 PlatformFileError DeviceMediaFileUtil::GetLocalFilePath(
@@ -118,7 +124,8 @@ PlatformFileError DeviceMediaFileUtil::Truncate(
 bool DeviceMediaFileUtil::IsDirectoryEmpty(
     FileSystemOperationContext* context,
     const FileSystemURL& url) {
-  if (!context->mtp_device_delegate().get())
+  MTPDeviceDelegate* delegate = GetMTPDeviceDelegate(context);
+  if (!delegate)
     return false;
 
   scoped_ptr<AbstractFileEnumerator> enumerator(
@@ -168,7 +175,8 @@ base::PlatformFileError DeviceMediaFileUtil::CreateSnapshotFile(
   DCHECK(file_info);
   DCHECK(local_path);
   DCHECK(snapshot_policy);
-  if (!context->mtp_device_delegate().get())
+  MTPDeviceDelegate* delegate = GetMTPDeviceDelegate(context);
+  if (!delegate)
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 
   // We return a temporary file as a snapshot.
@@ -193,8 +201,7 @@ base::PlatformFileError DeviceMediaFileUtil::CreateSnapshotFile(
                  << isolated_media_file_system_dir_path.value();
     return base::PLATFORM_FILE_ERROR_FAILED;
   }
-  return context->mtp_device_delegate()->CreateSnapshotFile(
-      url.path(), *local_path, file_info);
+  return delegate->CreateSnapshotFile(url.path(), *local_path, file_info);
 }
 
 }  // namespace fileapi

@@ -9,7 +9,6 @@
 #include "base/file_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/string_util.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/media_gallery/linux/mtp_device_object_enumerator.h"
 #include "chrome/browser/media_gallery/linux/mtp_device_operations_utils.h"
 #include "chrome/browser/media_gallery/linux/mtp_get_file_info_worker.h"
@@ -72,16 +71,13 @@ std::string GetDeviceRelativePath(const std::string& registered_dev_path,
 }  // namespace
 
 MTPDeviceDelegateImplLinux::MTPDeviceDelegateImplLinux(
-    const std::string& device_location)
+    const std::string& device_location,
+    base::SequencedTaskRunner* media_task_runner)
     : device_path_(device_location),
+      media_task_runner_(media_task_runner),
       on_task_completed_event_(false, false),
       on_shutdown_event_(true, false) {
   CHECK(!device_path_.empty());
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
-  base::SequencedWorkerPool::SequenceToken media_sequence_token =
-      pool->GetNamedSequenceToken("media-task-runner");
-  media_task_runner_ = pool->GetSequencedTaskRunner(media_sequence_token);
 }
 
 PlatformFileError MTPDeviceDelegateImplLinux::GetFileInfo(
@@ -161,31 +157,21 @@ SequencedTaskRunner* MTPDeviceDelegateImplLinux::GetMediaTaskRunner() {
 }
 
 void MTPDeviceDelegateImplLinux::CancelPendingTasksAndDeleteDelegate() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  // Caution: This function is called on the IO thread. Access only the thread
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // Caution: This function is called on the UI thread. Access only the thread
   // safe member variables in this function. Do all the clean up operations in
   // DeleteDelegateOnTaskRunner().
   on_shutdown_event_.Signal();
   on_task_completed_event_.Signal();
-  media_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&MTPDeviceDelegateImplLinux::DeleteDelegateOnTaskRunner,
-                 base::Unretained(this)));
-}
-
-base::WeakPtr<fileapi::MTPDeviceDelegate> MTPDeviceDelegateImplLinux::
-    GetAsWeakPtrOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  base::WeakPtr<fileapi::MTPDeviceDelegate> delegate = AsWeakPtr();
-  // The weak pointer is instantiated on the IO thread, but only accessed on
-  // |media_task_runner_|. Therefore, detach from the current thread.
-  DetachFromThread();
-  return delegate;
+  media_task_runner_->DeleteSoon(FROM_HERE, this);
 }
 
 MTPDeviceDelegateImplLinux::~MTPDeviceDelegateImplLinux() {
   DCHECK(media_task_runner_->RunsTasksOnCurrentThread());
-  // Do all the clean up operations on DeleteDelegateOnTaskRunner().
+  if (!device_handle_.empty()) {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            Bind(&CloseStorageOnUIThread, device_handle_));
+  }
 }
 
 bool MTPDeviceDelegateImplLinux::LazyInit() {
@@ -206,16 +192,10 @@ bool MTPDeviceDelegateImplLinux::LazyInit() {
   return !device_handle_.empty();
 }
 
-void MTPDeviceDelegateImplLinux::DeleteDelegateOnTaskRunner() {
-  DCHECK(media_task_runner_->RunsTasksOnCurrentThread());
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          Bind(&CloseStorageOnUIThread, device_handle_));
-  delete this;
-}
-
-fileapi::MTPDeviceDelegate* CreateMTPDeviceDelegate(
-    const std::string& device_location) {
-  return new MTPDeviceDelegateImplLinux(device_location);
+void CreateMTPDeviceDelegate(const std::string& device_location,
+                             base::SequencedTaskRunner* media_task_runner,
+                             const CreateMTPDeviceDelegateCallback& cb) {
+  cb.Run(new MTPDeviceDelegateImplLinux(device_location, media_task_runner));
 }
 
 }  // namespace chrome

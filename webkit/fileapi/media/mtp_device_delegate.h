@@ -5,15 +5,13 @@
 #ifndef WEBKIT_FILEAPI_MEDIA_MTP_DEVICE_DELEGATE_H_
 #define WEBKIT_FILEAPI_MEDIA_MTP_DEVICE_DELEGATE_H_
 
-#include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
-#include "base/sequenced_task_runner_helpers.h"
 #include "webkit/fileapi/file_system_file_util.h"
 
+class FilePath;
+
 namespace base {
-struct PlatformFileInfo;
 class SequencedTaskRunner;
 class Time;
 }
@@ -24,7 +22,7 @@ namespace fileapi {
 // isolated file system operations. Class that implements this delegate does
 // the actual communication with the MTP device. ScopedMTPDeviceMapEntry class
 // manages the lifetime of the delegate via MTPDeviceMapService class.
-class MTPDeviceDelegate : public base::SupportsWeakPtr<MTPDeviceDelegate> {
+class MTPDeviceDelegate {
  public:
   // Returns information about the given file path.
   virtual base::PlatformFileError GetFileInfo(
@@ -59,11 +57,8 @@ class MTPDeviceDelegate : public base::SupportsWeakPtr<MTPDeviceDelegate> {
   // implementation class by this call. This function should take care of
   // deleting itself on the right thread. This function should cancel all the
   // pending requests before posting any message to delete itself.
-  // Called on the IO thread.
+  // Called on the UI thread.
   virtual void CancelPendingTasksAndDeleteDelegate() = 0;
-
-  // Called on the IO thread.
-  virtual base::WeakPtr<MTPDeviceDelegate> GetAsWeakPtrOnIOThread() = 0;
 
  protected:
   // Always destruct this object via CancelPendingTasksAndDeleteDelegate().

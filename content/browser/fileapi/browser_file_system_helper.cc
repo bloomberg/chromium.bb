@@ -46,7 +46,7 @@ scoped_refptr<fileapi::FileSystemContext> CreateFileSystemContext(
         quota::QuotaManagerProxy* quota_manager_proxy) {
   base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
   base::SequencedWorkerPool::SequenceToken media_sequence_token =
-      pool->GetSequenceToken();
+      pool->GetNamedSequenceToken(fileapi::kMediaTaskRunnerName);
 
   scoped_ptr<fileapi::FileSystemTaskRunners> task_runners(
       new fileapi::FileSystemTaskRunners(

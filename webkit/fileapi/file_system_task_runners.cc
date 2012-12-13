@@ -10,6 +10,8 @@
 
 namespace fileapi {
 
+const char kMediaTaskRunnerName[] = "media-task-runner";
+
 FileSystemTaskRunners::FileSystemTaskRunners(
     base::SingleThreadTaskRunner* io_task_runner,
     base::SingleThreadTaskRunner* file_task_runner,

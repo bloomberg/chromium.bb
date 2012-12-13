@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_MEDIA_GALLERY_MTP_DEVICE_DELEGATE_IMPL_H_
 #define CHROME_BROWSER_MEDIA_GALLERY_MTP_DEVICE_DELEGATE_IMPL_H_
 
-#include "build/build_config.h"
 #include "webkit/fileapi/media/mtp_device_file_system_config.h"
 
 #if !defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
@@ -16,8 +15,12 @@
 
 namespace chrome {
 
-fileapi::MTPDeviceDelegate* CreateMTPDeviceDelegate(
-    const std::string& device_location);
+typedef base::Callback<void(fileapi::MTPDeviceDelegate*)>
+    CreateMTPDeviceDelegateCallback;
+
+void CreateMTPDeviceDelegate(const std::string& device_location,
+                             base::SequencedTaskRunner* media_task_runner,
+                             const CreateMTPDeviceDelegateCallback& cb);
 
 }  // namespace chrome
 

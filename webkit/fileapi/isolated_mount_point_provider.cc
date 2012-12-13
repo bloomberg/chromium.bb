@@ -29,7 +29,6 @@
 
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
 #include "webkit/fileapi/media/device_media_file_util.h"
-#include "webkit/fileapi/media/mtp_device_map_service.h"
 #endif
 
 namespace fileapi {
@@ -115,27 +114,16 @@ FileSystemOperation* IsolatedMountPointProvider::CreateFileSystemOperation(
     base::PlatformFileError* error_code) const {
   scoped_ptr<FileSystemOperationContext> operation_context(
       new FileSystemOperationContext(context));
-  if (url.type() == kFileSystemTypeNativeMedia) {
+  if (url.type() == kFileSystemTypeNativeMedia ||
+      url.type() == kFileSystemTypeDeviceMedia) {
     operation_context->set_media_path_filter(media_path_filter_.get());
     operation_context->set_task_runner(
         context->task_runners()->media_task_runner());
   }
 
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-  if (url.type() == kFileSystemTypeDeviceMedia) {
-    MTPDeviceMapService* map_service = MTPDeviceMapService::GetInstance();
-    MTPDeviceDelegate* device_delegate =
-        map_service->GetMTPDeviceDelegate(url.filesystem_id());
-    if (!device_delegate) {
-      if (error_code)
-        *error_code = base::PLATFORM_FILE_ERROR_NOT_FOUND;
-      return NULL;
-    }
-    operation_context->set_mtp_device_delegate(
-        device_delegate->GetAsWeakPtrOnIOThread());
-    operation_context->set_task_runner(device_delegate->GetMediaTaskRunner());
-    operation_context->set_media_path_filter(media_path_filter_.get());
-  }
+  if (url.type() == kFileSystemTypeDeviceMedia)
+    operation_context->set_mtp_device_delegate_url(url.filesystem_id());
 #endif
 
   return new LocalFileSystemOperation(context, operation_context.Pass());

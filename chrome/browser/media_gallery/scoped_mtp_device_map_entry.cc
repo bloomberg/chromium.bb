@@ -7,12 +7,26 @@
 #include "webkit/fileapi/media/mtp_device_file_system_config.h"
 
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
+#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/media_gallery/mtp_device_delegate_impl.h"
 #include "content/public/browser/browser_thread.h"
+#include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/fileapi/media/mtp_device_map_service.h"
 #endif
 
 namespace chrome {
+
+namespace {
+
+#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
+void AddDelegateToMTPDeviceMapService(const std::string& device_location,
+                                      fileapi::MTPDeviceDelegate* delegate) {
+  fileapi::MTPDeviceMapService::GetInstance()->AddDelegate(device_location,
+                                                           delegate);
+}
+#endif
+
+}  // namespace
 
 ScopedMTPDeviceMapEntry::ScopedMTPDeviceMapEntry(
     const FilePath::StringType& device_location,
@@ -20,22 +34,24 @@ ScopedMTPDeviceMapEntry::ScopedMTPDeviceMapEntry(
     : device_location_(device_location),
       no_references_callback_(no_references_callback) {
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&fileapi::MTPDeviceMapService::AddDelegate,
-           base::Unretained(fileapi::MTPDeviceMapService::GetInstance()),
-           device_location_,
-           CreateMTPDeviceDelegate(device_location_)));
+  base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
+  base::SequencedWorkerPool::SequenceToken media_sequence_token =
+      pool->GetNamedSequenceToken(fileapi::kMediaTaskRunnerName);
+  scoped_refptr<base::SequencedTaskRunner> media_task_runner =
+      pool->GetSequencedTaskRunner(media_sequence_token);
+  CreateMTPDeviceDelegateCallback cb =
+      base::Bind(&AddDelegateToMTPDeviceMapService, device_location_);
+  media_task_runner->PostTask(FROM_HERE,
+                              base::Bind(&CreateMTPDeviceDelegate,
+                                         device_location_,
+                                         media_task_runner,
+                                         cb));
 #endif
 }
 
 ScopedMTPDeviceMapEntry::~ScopedMTPDeviceMapEntry() {
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&fileapi::MTPDeviceMapService::RemoveDelegate,
-           base::Unretained(fileapi::MTPDeviceMapService::GetInstance()),
-           device_location_));
+  fileapi::MTPDeviceMapService::GetInstance()->RemoveDelegate(device_location_);
   no_references_callback_.Run();
 #endif
 }
