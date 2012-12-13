@@ -378,9 +378,7 @@ void DesktopRootWindowHostWin::SetBounds(const gfx::Rect& bounds) {
 }
 
 gfx::Point DesktopRootWindowHostWin::GetLocationOnNativeScreen() const {
-  RECT r;
-  GetWindowRect(GetHWND(), &r);
-  return gfx::Point(r.left, r.top);
+  return GetBounds().origin();
 }
 
 void DesktopRootWindowHostWin::SetCapture() {
