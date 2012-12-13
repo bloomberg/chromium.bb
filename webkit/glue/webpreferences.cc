@@ -4,6 +4,7 @@
 
 #include "webkit/glue/webpreferences.h"
 
+#include "base/basictypes.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNetworkStateNotifier.h"
@@ -123,6 +124,15 @@ WebPreferences::WebPreferences()
       sync_xhr_in_documents_enabled(true),
       deferred_image_decoding_enabled(false),
       number_of_cpu_cores(1),
+#if defined(OS_MACOSX)
+      editing_behavior(EDITING_BEHAVIOR_MAC),
+#elif defined(OS_WIN)
+      editing_behavior(EDITING_BEHAVIOR_WIN),
+#elif defined(OS_POSIX)
+      editing_behavior(EDITING_BEHAVIOR_UNIX),
+#else
+      editing_behavior(EDITING_BEHAVIOR_MAC),
+#endif
       cookie_enabled(true)
 #if defined(OS_ANDROID)
       ,
@@ -447,6 +457,9 @@ void WebPreferences::Apply(WebView* web_view) const {
 
   settings->setDeferredImageDecodingEnabled(deferred_image_decoding_enabled);
 
+  settings->setEditingBehavior(
+      static_cast<WebSettings::EditingBehavior>(editing_behavior));
+
 #if defined(OS_ANDROID)
   settings->setAllowCustomScrollbarInMainFrame(false);
   settings->setTextAutosizingEnabled(text_autosizing_enabled);
@@ -461,5 +474,17 @@ void WebPreferences::Apply(WebView* web_view) const {
 
   WebNetworkStateNotifier::setOnLine(is_online);
 }
+
+#define COMPILE_ASSERT_MATCHING_ENUMS(webkit_glue_name, webkit_name)         \
+    COMPILE_ASSERT(                                                          \
+        static_cast<int>(webkit_glue_name) == static_cast<int>(webkit_name), \
+        mismatching_enums)
+
+COMPILE_ASSERT_MATCHING_ENUMS(
+    WebPreferences::EDITING_BEHAVIOR_MAC, WebSettings::EditingBehaviorMac);
+COMPILE_ASSERT_MATCHING_ENUMS(
+    WebPreferences::EDITING_BEHAVIOR_WIN, WebSettings::EditingBehaviorWin);
+COMPILE_ASSERT_MATCHING_ENUMS(
+    WebPreferences::EDITING_BEHAVIOR_UNIX, WebSettings::EditingBehaviorUnix);
 
 }  // namespace webkit_glue

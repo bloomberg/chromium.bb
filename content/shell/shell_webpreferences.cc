@@ -23,6 +23,9 @@ void ShellWebPreferences::Apply(webkit_glue::WebPreferences* prefs) const {
   prefs->dom_paste_enabled = dom_paste_enabled;
   prefs->javascript_can_access_clipboard = javascript_can_access_clipboard;
   prefs->xss_auditor_enabled = xss_auditor_enabled;
+#if !defined(OS_MACOSX)
+  prefs->editing_behavior = webkit_glue::WebPreferences::EDITING_BEHAVIOR_WIN;
+#endif
 }
 
 }  // namespace content

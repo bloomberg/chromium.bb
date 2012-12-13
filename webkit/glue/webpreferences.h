@@ -30,6 +30,12 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   // "Arab" to "My Arabic Font".
   typedef std::map<std::string, string16> ScriptFontFamilyMap;
 
+  enum EditingBehavior {
+    EDITING_BEHAVIOR_MAC,
+    EDITING_BEHAVIOR_WIN,
+    EDITING_BEHAVIOR_UNIX
+  };
+
   // The ISO 15924 script code for undetermined script aka Common. It's the
   // default used on WebKit's side to get/set a font setting when no script is
   // specified.
@@ -141,6 +147,7 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   bool sync_xhr_in_documents_enabled;
   bool deferred_image_decoding_enabled;
   int number_of_cpu_cores;
+  EditingBehavior editing_behavior;
 
   // This flags corresponds to a Page's Settings' setCookieEnabled state. It
   // only controls whether or not the "document.cookie" field is properly
