@@ -2921,6 +2921,13 @@ cleanup:
   return retval;
 }
 
+int32_t NaClSysSched_Yield(struct NaClAppThread *natp) {
+  UNREFERENCED_PARAMETER(natp);
+
+  NaClThreadYield();
+  return 0;
+}
+
 int32_t NaClCommonSysException_Handler(struct NaClAppThread *natp,
                                        uint32_t             handler_addr,
                                        uint32_t             old_handler) {

@@ -95,3 +95,7 @@ void NaClThreadExit(void) {
 uint32_t NaClThreadId(void) {
   return GetCurrentThreadId();
 }
+
+void NaClThreadYield(void) {
+  SwitchToThread();
+}

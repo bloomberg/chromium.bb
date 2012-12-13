@@ -123,11 +123,6 @@ int32_t NaClSysClock(struct NaClAppThread *natp) {
   return retval;
 }
 
-int32_t NaClSysSched_Yield(struct NaClAppThread *natp) {
-  SwitchToThread();
-  return 0;
-}
-
 int32_t NaClSysSysconf(struct NaClAppThread *natp,
                        int32_t              name,
                        int32_t              *result) {

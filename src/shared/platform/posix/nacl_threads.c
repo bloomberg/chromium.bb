@@ -136,3 +136,7 @@ void NaClThreadJoin(struct NaClThread *ntp) {
 void NaClThreadExit(void) {
   pthread_exit(NULL);
 }
+
+void NaClThreadYield(void) {
+  sched_yield();
+}

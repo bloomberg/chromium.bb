@@ -10,10 +10,6 @@
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
 
-#if defined(__native_client__)
-# include <sched.h>
-#endif
-
 
 #define THREAD_STACK_SIZE  (128*1024)
 
@@ -66,16 +62,20 @@ static void ExchangeTest(int32_t tid) {
   AtomicIncrement(&gExchangeSum, i);
 }
 
-/* Atomic compare and swap test
-   Each thread spins until gSwap == tid, and
-   then exchanges it for tid + 1
-*/
+/*
+ * Atomic compare and swap test.
+ *
+ * Each thread spins until gSwap == tid, and then exchanges it for tid + 1.
+ *
+ * If the threads are scheduled in the order they are launched, the
+ * CompareAndSwap() loops will complete quickly.  However, if they are
+ * scheduled out-of-order, these loops could take a long time to
+ * complete.  Yielding the CPU here improves that significantly.
+ */
 Atomic32 gSwap = 1;
 static void CompareAndSwapTest(int32_t tid) {
   while (CompareAndSwap(&gSwap, tid, tid + 1) != tid) {
-#if defined(__native_client__)
-    sched_yield();
-#endif
+    NaClThreadYield();
   }
 }
 

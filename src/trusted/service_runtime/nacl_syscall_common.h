@@ -259,6 +259,8 @@ int32_t NaClSysNanosleep(struct NaClAppThread     *natp,
                          struct nacl_abi_timespec *req,
                          struct nacl_abi_timespec *rem);
 
+int32_t NaClSysSched_Yield(struct NaClAppThread *natp);
+
 int32_t NaClCommonSysException_Handler(struct NaClAppThread *natp,
                                        uint32_t             handler_addr,
                                        uint32_t             old_handler);
