@@ -268,7 +268,8 @@ class RequestHandler(object):
     """
     for request in msg.request:
       if (request.policy_type in
-             ('google/chromeos/user',
+             ('google/chrome/user',
+              'google/chromeos/user',
               'google/chromeos/device',
               'google/chromeos/publicaccount')):
         if request_type != 'policy':
@@ -445,15 +446,14 @@ class RequestHandler(object):
     if msg.settings_entity_id:
       policy_key += '/' + msg.settings_entity_id
     if msg.policy_type in token_info['allowed_policy_types']:
-      if msg.policy_type == 'google/chromeos/user':
+      if (msg.policy_type == 'google/chromeos/user' or
+          msg.policy_type == 'google/chrome/user' or
+          msg.policy_type == 'google/chromeos/publicaccount'):
         settings = cp.CloudPolicySettings()
         self.GatherUserPolicySettings(settings, policy.get(policy_key, {}))
       elif msg.policy_type == 'google/chromeos/device':
         settings = dp.ChromeDeviceSettingsProto()
         self.GatherDevicePolicySettings(settings, policy.get(policy_key, {}))
-      elif msg.policy_type == 'google/chromeos/publicaccount':
-        settings = cp.CloudPolicySettings()
-        self.GatherUserPolicySettings(settings, policy.get(policy_key, {}))
 
     # Figure out the key we want to use. If multiple keys are configured, the
     # server will rotate through them in a round-robin fashion.
@@ -629,12 +629,14 @@ class TestServer(object):
       dmtoken_chars.append(random.choice('0123456789abcdef'))
     dmtoken = ''.join(dmtoken_chars)
     allowed_policy_types = {
-      dm.DeviceRegisterRequest.USER: ['google/chromeos/user'],
+      dm.DeviceRegisterRequest.USER: ['google/chromeos/user',
+                                      'google/chrome/user'],
       dm.DeviceRegisterRequest.DEVICE: [
           'google/chromeos/device',
           'google/chromeos/publicaccount'
       ],
-      dm.DeviceRegisterRequest.TT: ['google/chromeos/user'],
+      dm.DeviceRegisterRequest.TT: ['google/chromeos/user',
+                                    'google/chrome/user'],
     }
     if machine_id in KIOSK_MACHINE_IDS:
       enrollment_mode = dm.DeviceRegisterResponse.RETAIL

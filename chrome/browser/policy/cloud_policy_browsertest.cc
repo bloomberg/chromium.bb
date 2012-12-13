@@ -13,6 +13,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/cloud_policy_client.h"
+#include "chrome/browser/policy/cloud_policy_constants.h"
 #include "chrome/browser/policy/cloud_policy_data_store.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/policy_service.h"
@@ -74,7 +75,7 @@ const char* GetTestUser() {
 std::string GetEmptyPolicy() {
   const char kEmptyPolicy[] =
       "{"
-      "  \"google/chromeos/user\": {"
+      "  \"%s\": {"
       "    \"mandatory\": {},"
       "    \"recommended\": {}"
       "  },"
@@ -82,13 +83,14 @@ std::string GetEmptyPolicy() {
       "  \"policy_user\": \"%s\""
       "}";
 
-  return base::StringPrintf(kEmptyPolicy, GetTestUser());
+  return base::StringPrintf(kEmptyPolicy, dm_protocol::kChromeUserPolicyType,
+                            GetTestUser());
 }
 
 std::string GetTestPolicy() {
   const char kTestPolicy[] =
       "{"
-      "  \"google/chromeos/user\": {"
+      "  \"%s\": {"
       "    \"mandatory\": {"
       "      \"ShowHomeButton\": true,"
       "      \"MaxConnectionsPerProxy\": 42,"
@@ -102,7 +104,8 @@ std::string GetTestPolicy() {
       "  \"policy_user\": \"%s\""
       "}";
 
-  return base::StringPrintf(kTestPolicy, GetTestUser());
+  return base::StringPrintf(kTestPolicy, dm_protocol::kChromeUserPolicyType,
+                            GetTestUser());
 }
 
 #if defined(OS_CHROMEOS)
