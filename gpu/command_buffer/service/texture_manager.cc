@@ -82,8 +82,10 @@ void TextureManager::Destroy(bool have_context) {
     glDeleteTextures(arraysize(black_texture_ids_), black_texture_ids_);
   }
 
-  DCHECK_EQ(0u, mem_represented_);
-  UpdateMemRepresented();
+  DCHECK_EQ(0u, memory_tracker_managed_->GetMemRepresented());
+  DCHECK_EQ(0u, memory_tracker_unmanaged_->GetMemRepresented());
+  memory_tracker_managed_->UpdateMemRepresented();
+  memory_tracker_unmanaged_->UpdateMemRepresented();
 }
 
 TextureManager::TextureInfo::TextureInfo(TextureManager* manager,
@@ -99,6 +101,7 @@ TextureManager::TextureInfo::TextureInfo(TextureManager* manager,
       wrap_s_(GL_REPEAT),
       wrap_t_(GL_REPEAT),
       usage_(GL_NONE),
+      tracking_pool_(MemoryTracker::kUnmanaged),
       max_level_set_(-1),
       texture_complete_(false),
       cube_complete_(false),
@@ -692,7 +695,10 @@ TextureManager::TextureManager(
     FeatureInfo* feature_info,
     GLint max_texture_size,
     GLint max_cube_map_texture_size)
-    : texture_memory_tracker_(new MemoryTypeTracker(memory_tracker)),
+    : memory_tracker_managed_(
+          new MemoryTypeTracker(memory_tracker, MemoryTracker::kManaged)),
+      memory_tracker_unmanaged_(
+          new MemoryTypeTracker(memory_tracker, MemoryTracker::kUnmanaged)),
       feature_info_(feature_info),
       max_texture_size_(max_texture_size),
       max_cube_map_texture_size_(max_cube_map_texture_size),
@@ -706,19 +712,15 @@ TextureManager::TextureManager(
       num_unsafe_textures_(0),
       num_uncleared_mips_(0),
       texture_info_count_(0),
-      mem_represented_(0),
       have_context_(true) {
   for (int ii = 0; ii < kNumDefaultTextures; ++ii) {
     black_texture_ids_[ii] = 0;
   }
 }
 
-void TextureManager::UpdateMemRepresented() {
-  texture_memory_tracker_->UpdateMemRepresented(mem_represented_);
-}
-
 bool TextureManager::Initialize() {
-  UpdateMemRepresented();
+  memory_tracker_managed_->UpdateMemRepresented();
+  memory_tracker_unmanaged_->UpdateMemRepresented();
 
   // TODO(gman): The default textures have to be real textures, not the 0
   // texture because we simulate non shared resources on top of shared
@@ -912,12 +914,13 @@ void TextureManager::SetLevelInfo(
   }
   num_uncleared_mips_ -= info->num_uncleared_mips();
   DCHECK_GE(num_uncleared_mips_, 0);
-  mem_represented_ -= info->estimated_size();
+
+  GetMemTracker(info->tracking_pool_)->TrackMemFree(info->estimated_size());
   info->SetLevelInfo(
       feature_info_, target, level, internal_format, width, height, depth,
       border, format, type, cleared);
-  mem_represented_ += info->estimated_size();
-  UpdateMemRepresented();
+  GetMemTracker(info->tracking_pool_)->TrackMemAlloc(info->estimated_size());
+  GetMemTracker(info->tracking_pool_)->UpdateMemRepresented();
 
   num_uncleared_mips_ += info->num_uncleared_mips();
   if (!info->CanRender(feature_info_)) {
@@ -1069,10 +1072,10 @@ bool TextureManager::MarkMipmapsGenerated(TextureManager::TextureInfo* info) {
   }
   num_uncleared_mips_ -= info->num_uncleared_mips();
   DCHECK_GE(num_uncleared_mips_, 0);
-  mem_represented_ -= info->estimated_size();
+  GetMemTracker(info->tracking_pool_)->TrackMemFree(info->estimated_size());
   bool result = info->MarkMipmapsGenerated(feature_info_);
-  mem_represented_ += info->estimated_size();
-  UpdateMemRepresented();
+  GetMemTracker(info->tracking_pool_)->TrackMemAlloc(info->estimated_size());
+  GetMemTracker(info->tracking_pool_)->UpdateMemRepresented();
 
   num_uncleared_mips_ += info->num_uncleared_mips();
   if (!info->CanRender(feature_info_)) {
@@ -1132,8 +1135,25 @@ void TextureManager::StopTracking(TextureManager::TextureInfo* texture) {
   }
   num_uncleared_mips_ -= texture->num_uncleared_mips();
   DCHECK_GE(num_uncleared_mips_, 0);
-  mem_represented_ -= texture->estimated_size();
-  UpdateMemRepresented();
+  GetMemTracker(texture->tracking_pool_)->TrackMemFree(
+      texture->estimated_size());
+  GetMemTracker(texture->tracking_pool_)->UpdateMemRepresented();
+}
+
+MemoryTypeTracker* TextureManager::GetMemTracker(
+    MemoryTracker::Pool tracking_pool) {
+  switch(tracking_pool) {
+    case MemoryTracker::kManaged:
+      return memory_tracker_managed_.get();
+      break;
+    case MemoryTracker::kUnmanaged:
+      return memory_tracker_unmanaged_.get();
+      break;
+    default:
+      break;
+  }
+  NOTREACHED();
+  return NULL;
 }
 
 bool TextureManager::GetClientId(GLuint service_id, GLuint* client_id) const {

@@ -44,9 +44,10 @@ GpuMemoryManager::GpuMemoryManager(
       bytes_available_gpu_memory_(0),
       bytes_available_gpu_memory_overridden_(false),
       bytes_backgrounded_available_gpu_memory_(0),
-      bytes_allocated_current_(0),
+      bytes_allocated_managed_current_(0),
       bytes_allocated_managed_visible_(0),
       bytes_allocated_managed_backgrounded_(0),
+      bytes_allocated_unmanaged_current_(0),
       bytes_allocated_historical_max_(0),
       window_count_has_been_received_(false),
       window_count_(0),
@@ -67,7 +68,8 @@ GpuMemoryManager::GpuMemoryManager(
 GpuMemoryManager::~GpuMemoryManager() {
   DCHECK(tracking_groups_.empty());
   DCHECK(clients_.empty());
-  DCHECK(!bytes_allocated_current_);
+  DCHECK(!bytes_allocated_managed_current_);
+  DCHECK(!bytes_allocated_unmanaged_current_);
   DCHECK(!bytes_allocated_managed_visible_);
   DCHECK(!bytes_allocated_managed_backgrounded_);
 }
@@ -258,16 +260,30 @@ void GpuMemoryManager::ScheduleManage(bool immediate) {
   }
 }
 
-void GpuMemoryManager::TrackMemoryAllocatedChange(size_t old_size,
-                                                  size_t new_size) {
-  TrackValueChanged(old_size, new_size, &bytes_allocated_current_);
+void GpuMemoryManager::TrackMemoryAllocatedChange(
+    size_t old_size,
+    size_t new_size,
+    gpu::gles2::MemoryTracker::Pool tracking_pool) {
+  switch (tracking_pool) {
+    case gpu::gles2::MemoryTracker::kManaged:
+      TrackValueChanged(old_size, new_size, &bytes_allocated_managed_current_);
+      break;
+    case gpu::gles2::MemoryTracker::kUnmanaged:
+      TrackValueChanged(old_size,
+                        new_size,
+                        &bytes_allocated_unmanaged_current_);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
   if (new_size != old_size) {
     TRACE_COUNTER1("gpu",
                    "GpuMemoryUsage",
-                   bytes_allocated_current_);
+                   GetCurrentUsage());
   }
-  if (bytes_allocated_current_ > bytes_allocated_historical_max_) {
-      bytes_allocated_historical_max_ = bytes_allocated_current_;
+  if (GetCurrentUsage() > bytes_allocated_historical_max_) {
+      bytes_allocated_historical_max_ = GetCurrentUsage();
       // If we're blowing into new memory usage territory, spam the browser
       // process with the most up-to-date information about our memory usage.
       SendUmaStatsToBrowser();
@@ -399,7 +415,7 @@ void GpuMemoryManager::GetVideoMemoryUsageStats(
 
   // Assign the total across all processes in the GPU process
   video_memory_usage_stats.process_map[
-      base::GetCurrentProcId()].video_memory = bytes_allocated_current_;
+      base::GetCurrentProcId()].video_memory = GetCurrentUsage();
   video_memory_usage_stats.process_map[
       base::GetCurrentProcId()].has_duplicates = true;
 }
@@ -614,7 +630,7 @@ void GpuMemoryManager::SendUmaStatsToBrowser() {
   if (!channel_manager_)
     return;
   GPUMemoryUmaStats params;
-  params.bytes_allocated_current = bytes_allocated_current_;
+  params.bytes_allocated_current = GetCurrentUsage();
   params.bytes_allocated_max = bytes_allocated_historical_max_;
   params.bytes_limit = bytes_available_gpu_memory_;
   params.window_count = window_count_;

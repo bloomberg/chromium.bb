@@ -11,13 +11,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/service/gl_utils.h"
+#include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/gpu_export.h"
 
 namespace gpu {
 namespace gles2 {
-
-class MemoryTracker;
-class MemoryTypeTracker;
 
 // This class keeps track of the renderbuffers and whether or not they have
 // been cleared.
@@ -169,23 +167,19 @@ class GPU_EXPORT RenderbufferManager {
   bool GetClientId(GLuint service_id, GLuint* client_id) const;
 
   size_t mem_represented() const {
-    return mem_represented_;
+    return memory_tracker_->GetMemRepresented();
   }
 
  private:
-  void UpdateMemRepresented();
-
   void StartTracking(RenderbufferInfo* renderbuffer);
   void StopTracking(RenderbufferInfo* renderbuffer);
 
-  scoped_ptr<MemoryTypeTracker> renderbuffer_memory_tracker_;
+  scoped_ptr<MemoryTypeTracker> memory_tracker_;
 
   GLint max_renderbuffer_size_;
   GLint max_samples_;
 
   int num_uncleared_renderbuffers_;
-
-  size_t mem_represented_;
 
   // Counts the number of RenderbufferInfo allocated with 'this' as its manager.
   // Allows to check no RenderbufferInfo will outlive this.

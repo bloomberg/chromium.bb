@@ -16,7 +16,14 @@ namespace gles2 {
 // statistics to the global GpuMemoryManager.
 class MemoryTracker : public base::RefCounted<MemoryTracker> {
  public:
-  virtual void TrackMemoryAllocatedChange(size_t old_size, size_t new_size) = 0;
+   enum Pool {
+     kUnmanaged,
+     kManaged
+   };
+
+   virtual void TrackMemoryAllocatedChange(size_t old_size,
+                                           size_t new_size,
+                                           Pool pool) = 0;
 
  protected:
   friend class base::RefCounted<MemoryTracker>;
@@ -32,34 +39,49 @@ class MemoryTracker : public base::RefCounted<MemoryTracker> {
 // MemoryTracker.
 class MemoryTypeTracker {
  public:
-  MemoryTypeTracker(MemoryTracker* memory_tracker)
+  MemoryTypeTracker(MemoryTracker* memory_tracker, MemoryTracker::Pool pool)
     : memory_tracker_(memory_tracker),
-      has_updated_mem_represented_(false),
-      last_updated_mem_represented_(0) {
+      pool_(pool),
+      has_done_update_(false),
+      mem_represented_(0),
+      mem_represented_at_last_update_(0) {
   }
 
-  void UpdateMemRepresented(size_t mem_represented) {
-    if (!has_updated_mem_represented_ &&
-        mem_represented == last_updated_mem_represented_) {
+  void TrackMemAlloc(size_t bytes) {
+    mem_represented_ += bytes;
+  }
+
+  void TrackMemFree(size_t bytes) {
+    DCHECK(bytes <= mem_represented_);
+    mem_represented_ -= bytes;
+  }
+
+  void UpdateMemRepresented() {
+    // Skip redundant updates only if we have already done an update.
+    if (!has_done_update_ &&
+        mem_represented_ == mem_represented_at_last_update_) {
       return;
     }
     if (memory_tracker_) {
       memory_tracker_->TrackMemoryAllocatedChange(
-        last_updated_mem_represented_,
-        mem_represented);
+        mem_represented_at_last_update_,
+        mem_represented_,
+        pool_);
     }
-    has_updated_mem_represented_ = true;
-    last_updated_mem_represented_ = mem_represented;
+    has_done_update_ = true;
+    mem_represented_at_last_update_ = mem_represented_;
   }
 
   size_t GetMemRepresented() const {
-    return last_updated_mem_represented_;
+    return mem_represented_at_last_update_;
   }
 
  private:
   MemoryTracker* memory_tracker_;
-  bool has_updated_mem_represented_;
-  size_t last_updated_mem_represented_;
+  MemoryTracker::Pool pool_;
+  bool has_done_update_;
+  size_t mem_represented_;
+  size_t mem_represented_at_last_update_;
 
   DISALLOW_COPY_AND_ASSIGN(MemoryTypeTracker);
 };

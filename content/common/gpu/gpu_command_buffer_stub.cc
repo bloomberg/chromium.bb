@@ -53,9 +53,11 @@ class GpuCommandBufferMemoryTracker : public gpu::gles2::MemoryTracker {
         channel->gpu_channel_manager()->gpu_memory_manager());
   }
 
-  void TrackMemoryAllocatedChange(size_t old_size, size_t new_size) {
+  void TrackMemoryAllocatedChange(size_t old_size,
+                                  size_t new_size,
+                                  gpu::gles2::MemoryTracker::Pool pool) {
     gpu_memory_manager_tracking_group_->TrackMemoryAllocatedChange(
-        old_size, new_size);
+        old_size, new_size, pool);
   }
 
  private:

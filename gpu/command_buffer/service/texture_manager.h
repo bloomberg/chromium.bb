@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gl_utils.h"
+#include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/gpu_export.h"
 #include "ui/gl/gl_image.h"
 
@@ -22,8 +23,6 @@ namespace gles2 {
 class GLES2Decoder;
 class Display;
 class TextureDefinition;
-class MemoryTracker;
-class MemoryTypeTracker;
 
 // This class keeps track of the textures and their sizes so we can do NPOT and
 // texture complete checking.
@@ -312,6 +311,11 @@ class GPU_EXPORT TextureManager {
     GLenum wrap_t_;
     GLenum usage_;
 
+    // The accounting pool towards which the memory for this allocation should
+    // be charged. This will be rolled into a new GLenum texture parameter in
+    // a separate change.
+    MemoryTracker::Pool tracking_pool_;
+
     // The maximum level that has been set.
     GLint max_level_set_;
 
@@ -508,8 +512,10 @@ class GPU_EXPORT TextureManager {
     }
   }
 
-  uint32 mem_represented() const {
-    return mem_represented_;
+  size_t mem_represented() const {
+    return
+        memory_tracker_managed_->GetMemRepresented() +
+        memory_tracker_unmanaged_->GetMemRepresented();
   }
 
   void SetLevelImage(
@@ -530,12 +536,12 @@ class GPU_EXPORT TextureManager {
       GLenum target,
       GLuint* black_texture);
 
-  void UpdateMemRepresented();
-
   void StartTracking(TextureInfo* info);
   void StopTracking(TextureInfo* info);
 
-  scoped_ptr<MemoryTypeTracker> texture_memory_tracker_;
+  MemoryTypeTracker* GetMemTracker(MemoryTracker::Pool tracking_pool);
+  scoped_ptr<MemoryTypeTracker> memory_tracker_managed_;
+  scoped_ptr<MemoryTypeTracker> memory_tracker_unmanaged_;
 
   FeatureInfo::Ref feature_info_;
 
@@ -555,8 +561,6 @@ class GPU_EXPORT TextureManager {
   // Counts the number of TextureInfo allocated with 'this' as its manager.
   // Allows to check no TextureInfo will outlive this.
   unsigned int texture_info_count_;
-
-  uint32 mem_represented_;
 
   bool have_context_;
 

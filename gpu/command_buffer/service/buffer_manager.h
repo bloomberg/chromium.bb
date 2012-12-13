@@ -12,13 +12,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/service/gl_utils.h"
+#include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/gpu_export.h"
 
 namespace gpu {
 namespace gles2 {
-
-class MemoryTracker;
-class MemoryTypeTracker;
 
 // This class keeps track of the buffers and their sizes so we can do
 // bounds checking.
@@ -190,16 +188,14 @@ class GPU_EXPORT BufferManager {
   }
 
   size_t mem_represented() const {
-    return mem_represented_;
+    return memory_tracker_->GetMemRepresented();
   }
 
  private:
-  void UpdateMemRepresented();
-
   void StartTracking(BufferInfo* info);
   void StopTracking(BufferInfo* info);
 
-  scoped_ptr<MemoryTypeTracker> buffer_memory_tracker_;
+  scoped_ptr<MemoryTypeTracker> memory_tracker_;
 
   // Info for each buffer in the system.
   typedef base::hash_map<GLuint, BufferInfo::Ref> BufferInfoMap;
@@ -207,8 +203,6 @@ class GPU_EXPORT BufferManager {
 
   // Whether or not buffers can be bound to multiple targets.
   bool allow_buffers_on_multiple_targets_;
-
-  size_t mem_represented_;
 
   // Counts the number of BufferInfo allocated with 'this' as its manager.
   // Allows to check no BufferInfo will outlive this.

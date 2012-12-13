@@ -14,12 +14,12 @@ namespace gpu {
 namespace gles2 {
 
 BufferManager::BufferManager(MemoryTracker* memory_tracker)
-    : buffer_memory_tracker_(new MemoryTypeTracker(memory_tracker)),
+    : memory_tracker_(
+          new MemoryTypeTracker(memory_tracker, MemoryTracker::kManaged)),
       allow_buffers_on_multiple_targets_(false),
-      mem_represented_(0),
       buffer_info_count_(0),
       have_context_(true) {
-  UpdateMemRepresented();
+  memory_tracker_->UpdateMemRepresented();
 }
 
 BufferManager::~BufferManager() {
@@ -30,12 +30,8 @@ BufferManager::~BufferManager() {
 void BufferManager::Destroy(bool have_context) {
   have_context_ = have_context;
   buffer_infos_.clear();
-  DCHECK_EQ(0u, mem_represented_);
-  UpdateMemRepresented();
-}
-
-void BufferManager::UpdateMemRepresented() {
-  buffer_memory_tracker_->UpdateMemRepresented(mem_represented_);
+  DCHECK_EQ(0u, memory_tracker_->GetMemRepresented());
+  memory_tracker_->UpdateMemRepresented();
 }
 
 void BufferManager::CreateBufferInfo(GLuint client_id, GLuint service_id) {
@@ -65,9 +61,9 @@ void BufferManager::StartTracking(BufferManager::BufferInfo* /* buffer */) {
 }
 
 void BufferManager::StopTracking(BufferManager::BufferInfo* buffer) {
-  mem_represented_ -= buffer->size();
+  memory_tracker_->TrackMemFree(buffer->size());
   --buffer_info_count_;
-  UpdateMemRepresented();
+  memory_tracker_->UpdateMemRepresented();
 }
 
 BufferManager::BufferInfo::BufferInfo(BufferManager* manager, GLuint service_id)
@@ -227,12 +223,13 @@ bool BufferManager::GetClientId(GLuint service_id, GLuint* client_id) const {
 void BufferManager::SetInfo(
     BufferManager::BufferInfo* info, GLsizeiptr size, GLenum usage) {
   DCHECK(info);
-  mem_represented_ -= info->size();
+  memory_tracker_->TrackMemFree(info->size());
   info->SetInfo(size,
                 usage,
                 info->target() == GL_ELEMENT_ARRAY_BUFFER ||
                 allow_buffers_on_multiple_targets_);
-  mem_represented_ += info->size();
+  memory_tracker_->TrackMemAlloc(info->size());
+  memory_tracker_->UpdateMemRepresented();
 }
 
 bool BufferManager::SetTarget(BufferManager::BufferInfo* info, GLenum target) {

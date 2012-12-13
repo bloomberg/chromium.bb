@@ -29,7 +29,10 @@ class GpuMemoryTrackingGroup {
   ~GpuMemoryTrackingGroup() {
     memory_manager_->RemoveTrackingGroup(this);
   }
-  void TrackMemoryAllocatedChange(size_t old_size, size_t new_size) {
+  void TrackMemoryAllocatedChange(
+      size_t old_size,
+      size_t new_size,
+      gpu::gles2::MemoryTracker::Pool tracking_pool) {
     if (old_size < new_size) {
       size_t delta = new_size - old_size;
       size_ += delta;
@@ -39,7 +42,8 @@ class GpuMemoryTrackingGroup {
       DCHECK(size_ >= delta);
       size_ -= delta;
     }
-    memory_manager_->TrackMemoryAllocatedChange(old_size, new_size);
+    memory_manager_->TrackMemoryAllocatedChange(
+        old_size, new_size, tracking_pool);
   }
   base::ProcessId GetPid() const {
     return pid_;

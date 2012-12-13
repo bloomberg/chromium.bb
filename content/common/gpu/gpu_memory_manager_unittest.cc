@@ -11,7 +11,10 @@
 
 class FakeMemoryTracker : public gpu::gles2::MemoryTracker {
  public:
-  void TrackMemoryAllocatedChange(size_t old_size, size_t new_size) {
+  void TrackMemoryAllocatedChange(
+      size_t old_size,
+      size_t new_size,
+      gpu::gles2::MemoryTracker::Pool pool) {
   }
  private:
   ~FakeMemoryTracker() {

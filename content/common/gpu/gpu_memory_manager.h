@@ -77,7 +77,10 @@ class CONTENT_EXPORT GpuMemoryManager :
   void RemoveTrackingGroup(GpuMemoryTrackingGroup* tracking_group);
 
   // Track a change in memory allocated by any context
-  void TrackMemoryAllocatedChange(size_t old_size, size_t new_size);
+  void TrackMemoryAllocatedChange(
+      size_t old_size,
+      size_t new_size,
+      gpu::gles2::MemoryTracker::Pool tracking_pool);
 
  private:
   friend class GpuMemoryManagerTest;
@@ -175,6 +178,12 @@ class CONTENT_EXPORT GpuMemoryManager :
   // Send memory usage stats to the browser process.
   void SendUmaStatsToBrowser();
 
+  // Get the current number of bytes allocated.
+  size_t GetCurrentUsage() const {
+    return bytes_allocated_managed_current_ +
+        bytes_allocated_unmanaged_current_;
+  }
+
   // Interfaces for testing
   void TestingSetClientVisible(GpuMemoryManagerClient* client, bool visible);
   void TestingSetClientLastUsedTime(GpuMemoryManagerClient* client,
@@ -216,9 +225,10 @@ class CONTENT_EXPORT GpuMemoryManager :
   size_t bytes_backgrounded_available_gpu_memory_;
 
   // The current total memory usage, and historical maximum memory usage
-  size_t bytes_allocated_current_;
+  size_t bytes_allocated_managed_current_;
   size_t bytes_allocated_managed_visible_;
   size_t bytes_allocated_managed_backgrounded_;
+  size_t bytes_allocated_unmanaged_current_;
   size_t bytes_allocated_historical_max_;
 
   // The number of browser windows that exist. If we ever receive a
