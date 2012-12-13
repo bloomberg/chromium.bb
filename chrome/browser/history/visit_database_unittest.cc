@@ -163,8 +163,12 @@ TEST_F(VisitDatabaseTest, Update) {
 namespace {
 
 std::vector<VisitRow> GetTestVisitRows() {
+  // Tests can be sensitive to the local timezone, so use a local time as the
+  // basis for all visit times.
+  base::Time base_time = Time::UnixEpoch().LocalMidnight();
+
   // Add one visit.
-  VisitRow visit_info1(1, Time::UnixEpoch(), 0,
+  VisitRow visit_info1(1, base_time + TimeDelta::FromMinutes(1), 0,
       static_cast<content::PageTransition>(
           content::PAGE_TRANSITION_LINK |
           content::PAGE_TRANSITION_CHAIN_START |
@@ -210,12 +214,24 @@ std::vector<VisitRow> GetTestVisitRows() {
       0);
   visit_info5.visit_id = 5;
 
+  // Add third visit for the same URL as visit 1 and 2, but exactly a day
+  // later than visit 2.
+  VisitRow visit_info6(visit_info1.url_id,
+      visit_info2.visit_time + TimeDelta::FromDays(1), 1,
+      static_cast<content::PageTransition>(
+          content::PAGE_TRANSITION_TYPED |
+          content::PAGE_TRANSITION_CHAIN_START |
+          content::PAGE_TRANSITION_CHAIN_END),
+      0);
+  visit_info6.visit_id = 6;
+
   std::vector<VisitRow> test_visit_rows;
   test_visit_rows.push_back(visit_info1);
   test_visit_rows.push_back(visit_info2);
   test_visit_rows.push_back(visit_info3);
   test_visit_rows.push_back(visit_info4);
   test_visit_rows.push_back(visit_info5);
+  test_visit_rows.push_back(visit_info6);
   return test_visit_rows;
 }
 
@@ -236,7 +252,7 @@ TEST_F(VisitDatabaseTest, GetVisitsForTimes) {
     }
     VisitVector results;
     GetVisitsForTimes(times, &results);
-    EXPECT_EQ(static_cast<size_t>(5), results.size());
+    EXPECT_EQ(test_visit_rows.size(), results.size());
   }
 
   // Query the visits for a single time.
@@ -260,7 +276,7 @@ TEST_F(VisitDatabaseTest, GetAllVisitsInRange) {
   // Query the visits for all time.  We should get all visits.
   VisitVector results;
   GetAllVisitsInRange(Time(), Time(), 0, &results);
-  ASSERT_EQ(static_cast<size_t>(5), results.size());
+  ASSERT_EQ(test_visit_rows.size(), results.size());
   for (size_t i = 0; i < test_visit_rows.size(); ++i) {
     EXPECT_TRUE(IsVisitInfoEqual(results[i], test_visit_rows[i]));
   }
@@ -287,20 +303,39 @@ TEST_F(VisitDatabaseTest, GetVisibleVisitsInRange) {
     EXPECT_TRUE(AddVisit(&test_visit_rows[i], SOURCE_BROWSED));
   }
 
-  // Query the visits for all time.  We should not get the first
-  // (duplicate of the second) or the redirect or subframe visits.
+  // Query the visits for all time.  We should not get the first or the second
+  // visit (duplicates of the sixth) or the redirect or subframe visits.
   VisitVector results;
   QueryOptions options;
   GetVisibleVisitsInRange(options, &results);
   ASSERT_EQ(static_cast<size_t>(2), results.size());
-  EXPECT_TRUE(IsVisitInfoEqual(results[0], test_visit_rows[3]) &&
-              IsVisitInfoEqual(results[1], test_visit_rows[1]));
+  EXPECT_TRUE(IsVisitInfoEqual(results[0], test_visit_rows[5]));
+  EXPECT_TRUE(IsVisitInfoEqual(results[1], test_visit_rows[3]));
+
+  // Now try with only per-day de-duping -- the second visit should appear,
+  // since it's a duplicate of visit6 but on a different day.
+  options.duplicate_policy = QueryOptions::REMOVE_DUPLICATES_PER_DAY;
+  GetVisibleVisitsInRange(options, &results);
+  ASSERT_EQ(static_cast<size_t>(3), results.size());
+  EXPECT_TRUE(IsVisitInfoEqual(results[0], test_visit_rows[5]));
+  EXPECT_TRUE(IsVisitInfoEqual(results[1], test_visit_rows[3]));
+  EXPECT_TRUE(IsVisitInfoEqual(results[2], test_visit_rows[1]));
+
+  // Set the end time to exclude the second visit. The first visit should be
+  // returned. Even though the second is a more recent visit, it's not in the
+  // query range.
+  options.end_time = test_visit_rows[1].visit_time;
+  GetVisibleVisitsInRange(options, &results);
+  ASSERT_EQ(static_cast<size_t>(1), results.size());
+  EXPECT_TRUE(IsVisitInfoEqual(results[0], test_visit_rows[0]));
+
+  options = QueryOptions();  // Reset to options to default.
 
   // Query for a max count and make sure we get only that number.
   options.max_count = 1;
   GetVisibleVisitsInRange(options, &results);
   ASSERT_EQ(static_cast<size_t>(1), results.size());
-  EXPECT_TRUE(IsVisitInfoEqual(results[0], test_visit_rows[3]));
+  EXPECT_TRUE(IsVisitInfoEqual(results[0], test_visit_rows[5]));
 
   // Query a time range and make sure beginning is inclusive and ending is
   // exclusive.

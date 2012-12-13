@@ -516,6 +516,21 @@ struct QueryOptions {
   // duplicate timestamps, |end_time| is not sufficient for that purpose.
   QueryCursor cursor;
 
+  enum DuplicateHandling {
+    // Omit visits for which there is a more recent visit to the same URL.
+    // Each URL in the results will appear only once.
+    REMOVE_ALL_DUPLICATES,
+
+    // Omit visits for which there is a more recent visit to the same URL on
+    // the same day. Each URL will appear no more than once per day, where the
+    // day is defined by the local timezone.
+    REMOVE_DUPLICATES_PER_DAY
+  };
+
+  // Allows the caller to specify how duplicate URLs in the result set should
+  // be handled. The default is REMOVE_DUPLICATES.
+  DuplicateHandling duplicate_policy;
+
   // Helpers to get the effective parameters values, since a value of 0 means
   // "unspecified".
   int EffectiveMaxCount() const;

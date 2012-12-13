@@ -286,7 +286,6 @@ void BrowsingHistoryHandler::HandleQueryHistory(const ListValue* args) {
     options.end_time = base::Time::FromJsTime(end_time);
 
   const Value* cursor_value;
-  base::FundamentalValue cursor_not_specified(0.0);
 
   // Get the cursor. It must be either null, or a list.
   if (!args->Get(2, &cursor_value) ||
@@ -301,6 +300,7 @@ void BrowsingHistoryHandler::HandleQueryHistory(const ListValue* args) {
     return;
   }
 
+  options.duplicate_policy = history::QueryOptions::REMOVE_DUPLICATES_PER_DAY;
   QueryHistory(search_text, options);
 }
 

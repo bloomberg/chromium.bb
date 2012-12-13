@@ -355,9 +355,21 @@ void VisitDatabase::GetVisibleVisitsInRange(const QueryOptions& options,
   statement.BindInt(i++, content::PAGE_TRANSITION_KEYWORD_GENERATED);
 
   std::set<URLID> found_urls;
+
+  // Keeps track of the day that |found_urls| is holding the URLs for, in order
+  // to handle removing per-day duplicates.
+  base::Time found_urls_midnight;
+
   while (statement.Step()) {
     VisitRow visit;
     FillVisitRow(statement, &visit);
+
+    if (options.duplicate_policy == QueryOptions::REMOVE_DUPLICATES_PER_DAY &&
+        found_urls_midnight != visit.visit_time.LocalMidnight()) {
+      found_urls.clear();
+      found_urls_midnight = visit.visit_time.LocalMidnight();
+    }
+
     // Make sure the URL this visit corresponds to is unique.
     if (found_urls.find(visit.url_id) != found_urls.end())
       continue;
