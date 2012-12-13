@@ -317,7 +317,6 @@ int main(int argc, const char** argv) {
   }
   if (error_correction) {
     codec_context->error_concealment = FF_EC_GUESS_MVS | FF_EC_DEBLOCK;
-    codec_context->err_recognition = AV_EF_CAREFUL;
   }
 
   // Initialize threaded decode.
