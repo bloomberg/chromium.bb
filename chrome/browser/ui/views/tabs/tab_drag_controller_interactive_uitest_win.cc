@@ -219,17 +219,6 @@ IN_PROC_BROWSER_TEST_F(TabDragControllerTest, DeleteTabWhileDetached) {
   EXPECT_EQ("1", IDString(browser()->tab_strip_model()));
 }
 
-namespace {
-
-void DeleteSourceDetachedStep2(WebContents* tab) {
-  // This ends up closing the source window.
-  delete tab;
-  // Cancel the drag.
-  ui_controls::SendKeyPress(NULL, ui::VKEY_ESCAPE, false, false, false, false);
-}
-
-}  // namespace
-
 // Detaches a tab and while detached deletes a tab from the source and releases
 // the mouse.
 IN_PROC_BROWSER_TEST_F(TabDragControllerTest, DeleteSourceDetached) {

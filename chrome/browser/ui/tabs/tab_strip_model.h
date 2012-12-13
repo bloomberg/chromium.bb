@@ -16,7 +16,6 @@
 #include "content/public/common/page_transition_types.h"
 
 class Profile;
-class TabContents;
 class TabStripModelDelegate;
 class TabStripModelOrderController;
 
@@ -246,17 +245,14 @@ class TabStripModel : public content::NotificationObserver {
   void MoveSelectedTabsTo(int index);
 
   // Returns the currently active WebContents, or NULL if there is none.
-  TabContents* GetActiveTabContents() const;
   content::WebContents* GetActiveWebContents() const;
 
   // Returns the WebContents at the specified index, or NULL if there is
   // none.
-  TabContents* GetTabContentsAt(int index) const;
   content::WebContents* GetWebContentsAt(int index) const;
 
   // Returns the index of the specified WebContents, or TabStripModel::kNoTab
   // if the WebContents is not in this TabStripModel.
-  int GetIndexOfTabContents(const TabContents* contents) const;
   int GetIndexOfWebContents(const content::WebContents* contents) const;
 
   // Notify any observers that the WebContents at the specified index has
@@ -506,7 +502,6 @@ class TabStripModel : public content::NotificationObserver {
                         bool create_historical_tabs);
 
   // Gets the WebContents at an index. Does no bounds checking.
-  TabContents* GetTabContentsAtImpl(int index) const;
   content::WebContents* GetWebContentsAtImpl(int index) const;
 
   // Notifies the observers if the active tab is being deactivated.

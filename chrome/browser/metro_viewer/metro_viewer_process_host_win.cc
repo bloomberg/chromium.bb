@@ -11,9 +11,9 @@
 #include "chrome/browser/ui/browser_list_impl.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ui/aura/remote_root_window_host_win.h"
 #include "ui/metro_viewer/metro_viewer_messages.h"
@@ -32,7 +32,7 @@ void CloseOpenAshBrowsers() {
       // If the attempt to Close the browser fails due to unload handlers on
       // the page or in progress downloads, etc, destroy all tabs on the page.
       while (browser->tab_count())
-        delete browser->tab_strip_model()->GetTabContentsAt(0);
+        delete browser->tab_strip_model()->GetWebContentsAt(0);
     }
   }
 }
@@ -65,7 +65,7 @@ bool MetroViewerProcessHost::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_SetTargetSurface, OnSetTargetSurface)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
-  return handled ? true : 
+  return handled ? true :
       aura::RemoteRootWindowHostWin::Instance()->OnMessageReceived(message);
 }
 
@@ -89,4 +89,3 @@ void MetroViewerProcessHost::OnSetTargetSurface(
   any_window->SetNewTargetWindow(hwnd);
   aura::RemoteRootWindowHostWin::Instance()->Connected(this);
 }
-

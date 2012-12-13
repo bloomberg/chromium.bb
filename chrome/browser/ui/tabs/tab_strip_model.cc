@@ -16,7 +16,6 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_order_controller.h"
 #include "chrome/common/url_constants.h"
@@ -310,28 +309,14 @@ void TabStripModel::MoveSelectedTabsTo(int index) {
                          selected_count - selected_mini_count);
 }
 
-TabContents* TabStripModel::GetActiveTabContents() const {
-  return GetTabContentsAt(active_index());
-}
-
 WebContents* TabStripModel::GetActiveWebContents() const {
   return GetWebContentsAt(active_index());
-}
-
-TabContents* TabStripModel::GetTabContentsAt(int index) const {
-  if (ContainsIndex(index))
-    return GetTabContentsAtImpl(index);
-  return NULL;
 }
 
 WebContents* TabStripModel::GetWebContentsAt(int index) const {
   if (ContainsIndex(index))
     return GetWebContentsAtImpl(index);
   return NULL;
-}
-
-int TabStripModel::GetIndexOfTabContents(const TabContents* contents) const {
-  return GetIndexOfWebContents(contents->web_contents());
 }
 
 int TabStripModel::GetIndexOfWebContents(const WebContents* contents) const {
@@ -1097,12 +1082,6 @@ void TabStripModel::InternalCloseTab(WebContents* contents,
   // Deleting the WebContents will call back to us via
   // NotificationObserver and detach it.
   delete contents;
-}
-
-TabContents* TabStripModel::GetTabContentsAtImpl(int index) const {
-  CHECK(ContainsIndex(index)) <<
-      "Failed to find: " << index << " in: " << count() << " entries.";
-  return TabContents::FromWebContents(contents_data_[index]->contents);
 }
 
 WebContents* TabStripModel::GetWebContentsAtImpl(int index) const {

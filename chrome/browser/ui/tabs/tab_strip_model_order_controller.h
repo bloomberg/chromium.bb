@@ -8,8 +8,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/common/page_transition_types.h"
 
-class TabContents;
-
 ///////////////////////////////////////////////////////////////////////////////
 // TabStripModelOrderController
 //

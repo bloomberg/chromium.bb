@@ -114,7 +114,6 @@
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/ui/startup/startup_types.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome/common/automation_events.h"
@@ -3547,8 +3546,8 @@ void TestingAutomationProvider::GetSavedPasswords(
 
 namespace {
 
-// Get the TabContents from a dictionary of arguments.
-TabContents* GetTabContentsFromDict(const Browser* browser,
+// Get the WebContents from a dictionary of arguments.
+WebContents* GetWebContentsFromDict(const Browser* browser,
                                     const DictionaryValue* args,
                                     std::string* error_message) {
   int tab_index;
@@ -3557,13 +3556,13 @@ TabContents* GetTabContentsFromDict(const Browser* browser,
     return NULL;
   }
 
-  TabContents* tab_contents =
-      browser->tab_strip_model()->GetTabContentsAt(tab_index);
-  if (!tab_contents) {
+  WebContents* web_contents =
+      browser->tab_strip_model()->GetWebContentsAt(tab_index);
+  if (!web_contents) {
     *error_message = StringPrintf("No tab at index %d.", tab_index);
     return NULL;
   }
-  return tab_contents;
+  return web_contents;
 }
 
 }  // namespace
@@ -3573,9 +3572,9 @@ void TestingAutomationProvider::FindInPage(
     DictionaryValue* args,
     IPC::Message* reply_message) {
   std::string error_message;
-  TabContents* tab_contents =
-      GetTabContentsFromDict(browser, args, &error_message);
-  if (!tab_contents) {
+  WebContents* web_contents =
+      GetWebContentsFromDict(browser, args, &error_message);
+  if (!web_contents) {
     AutomationJSONReply(this, reply_message).SendError(error_message);
     return;
   }
@@ -3603,7 +3602,7 @@ void TestingAutomationProvider::FindInPage(
         SendError("Must include find_next boolean.");
     return;
   }
-  SendFindRequest(tab_contents->web_contents(),
+  SendFindRequest(web_contents,
                   true,
                   search_string,
                   forward,

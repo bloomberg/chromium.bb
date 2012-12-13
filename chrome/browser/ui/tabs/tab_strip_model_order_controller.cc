@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/tabs/tab_strip_model_order_controller.h"
 
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/web_contents.h"
 
 ///////////////////////////////////////////////////////////////////////////////

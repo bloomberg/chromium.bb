@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -193,7 +192,7 @@ void CloseAllBrowsers() {
       // DestroyBrowser to make sure the browser is deleted and cleanup can
       // happen.
       while (browser->tab_count())
-        delete browser->tab_strip_model()->GetTabContentsAt(0);
+        delete browser->tab_strip_model()->GetWebContentsAt(0);
       browser->window()->DestroyBrowser();
       i = BrowserList::begin();
       if (i != BrowserList::end() && browser == *i) {

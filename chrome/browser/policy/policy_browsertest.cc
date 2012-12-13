@@ -50,7 +50,6 @@
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/search/search.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -1628,8 +1627,7 @@ IN_PROC_BROWSER_TEST_P(RestoreOnStartupPolicyTest, RunTest) {
   int size = static_cast<int>(expected_urls_.size());
   EXPECT_EQ(size, model->count());
   for (int i = 0; i < size && i < model->count(); ++i) {
-    EXPECT_EQ(expected_urls_[i],
-              model->GetTabContentsAt(i)->web_contents()->GetURL());
+    EXPECT_EQ(expected_urls_[i], model->GetWebContentsAt(i)->GetURL());
   }
 }
 

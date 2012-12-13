@@ -36,7 +36,6 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/simple_message_box.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -431,8 +430,7 @@ bool FileManageTabExists(const FilePath& path, TAB_REUSE_MODE mode) {
     Browser* browser = *browser_iterator;
     TabStripModel* tab_strip = browser->tab_strip_model();
     for (int idx = 0; idx < tab_strip->count(); idx++) {
-      content::WebContents* web_contents =
-          tab_strip->GetTabContentsAt(idx)->web_contents();
+      content::WebContents* web_contents = tab_strip->GetWebContentsAt(idx);
       const GURL& url = web_contents->GetURL();
       if (origin == url.GetOrigin()) {
         if (mode == REUSE_ANY_FILE_MANAGER || ref == url.ref()) {
@@ -538,8 +536,7 @@ Browser* GetBrowserForUrl(GURL target_url) {
     Browser* browser = *browser_iterator;
     TabStripModel* tab_strip = browser->tab_strip_model();
     for (int idx = 0; idx < tab_strip->count(); idx++) {
-      content::WebContents* web_contents =
-          tab_strip->GetTabContentsAt(idx)->web_contents();
+      content::WebContents* web_contents = tab_strip->GetWebContentsAt(idx);
       const GURL& url = web_contents->GetURL();
       if (url == target_url)
         return browser;

@@ -1950,7 +1950,7 @@ private:
       content::RecordAction(UserMetricsAction("Tab_DropURLOnTab"));
       OpenURLParams params(
           *url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false);
-      tabStripModel_->GetTabContentsAt(index)->web_contents()->OpenURL(params);
+      tabStripModel_->GetWebContentsAt(index)->OpenURL(params);
       tabStripModel_->ActivateTabAt(index, true);
       break;
     }

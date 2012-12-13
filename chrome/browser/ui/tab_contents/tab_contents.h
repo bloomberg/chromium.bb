@@ -13,7 +13,6 @@
 
 class Browser;
 class Profile;
-class TestTabStripModelDelegate;
 
 // Wraps WebContents and all of its supporting objects in order to control
 // their ownership and lifetime.
@@ -41,7 +40,6 @@ class TabContents : public content::WebContentsObserver {
     friend class Browser;
     // See crbug.com/153587
     friend class TabAndroid;
-    friend class TestTabStripModelDelegate;
 
     static TabContents* CreateTabContents(content::WebContents* contents);
   };

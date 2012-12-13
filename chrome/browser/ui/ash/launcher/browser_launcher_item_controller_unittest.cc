@@ -9,6 +9,7 @@
 
 #include "ash/launcher/launcher_model.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -33,7 +34,7 @@ namespace {
 
 const int kExpectedAppIndex = 1;
 
-// Test implementation of AppTabHelper
+// Test implementation of AppTabHelper.
 class AppTabHelperImpl : public ChromeLauncherController::AppTabHelper {
  public:
   AppTabHelperImpl() {}
@@ -98,6 +99,24 @@ class AppIconLoaderImpl : public ChromeLauncherController::AppIconLoader {
   int fetch_count_;
 
   DISALLOW_COPY_AND_ASSIGN(AppIconLoaderImpl);
+};
+
+// Test implementation of TabStripModelDelegate.
+class TabHelperTabStripModelDelegate : public TestTabStripModelDelegate {
+ public:
+  TabHelperTabStripModelDelegate() {}
+  virtual ~TabHelperTabStripModelDelegate() {}
+
+  virtual void WillAddWebContents(content::WebContents* contents) OVERRIDE {
+    // BrowserLauncherItemController assumes that all WebContents passed to it
+    // have attached an extensions::TabHelper and a FaviconTabHelper. The
+    // TestTabStripModelDelegate adds an extensions::TabHelper.
+    TestTabStripModelDelegate::WillAddWebContents(contents);
+    FaviconTabHelper::CreateForWebContents(contents);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TabHelperTabStripModelDelegate);
 };
 
 }  // namespace
@@ -175,7 +194,7 @@ class BrowserLauncherItemControllerTest
 
     BrowserLauncherItemControllerTest* launcher_test;
     aura::Window window;
-    TestTabStripModelDelegate tab_strip_delegate;
+    TabHelperTabStripModelDelegate tab_strip_delegate;
     TabStripModel tab_strip;
     BrowserLauncherItemController updater;
 
@@ -241,7 +260,7 @@ TEST_F(BrowserLauncherItemControllerTest, TabbedSetup) {
   {
     scoped_ptr<content::WebContents> web_contents(CreateTestWebContents());
 
-    TestTabStripModelDelegate tab_strip_delegate;
+    TabHelperTabStripModelDelegate tab_strip_delegate;
     TabStripModel tab_strip(&tab_strip_delegate, profile());
     tab_strip.InsertWebContentsAt(0,
                                   web_contents.get(),
@@ -269,7 +288,7 @@ TEST_F(BrowserLauncherItemControllerTest, PanelItem) {
   // Add an App panel.
   {
     aura::Window window(NULL);
-    TestTabStripModelDelegate tab_strip_delegate;
+    TabHelperTabStripModelDelegate tab_strip_delegate;
     TabStripModel tab_strip(&tab_strip_delegate, profile());
     scoped_ptr<content::WebContents> panel_tab(CreateTestWebContents());
     app_tab_helper_->SetAppID(panel_tab.get(), "1");  // Panels are apps.
@@ -289,7 +308,7 @@ TEST_F(BrowserLauncherItemControllerTest, PanelItem) {
   // Add an Extension panel.
   {
     aura::Window window(NULL);
-    TestTabStripModelDelegate tab_strip_delegate;
+    TabHelperTabStripModelDelegate tab_strip_delegate;
     TabStripModel tab_strip(&tab_strip_delegate, profile());
     scoped_ptr<content::WebContents> panel_tab(CreateTestWebContents());
     app_tab_helper_->SetAppID(panel_tab.get(), "1");  // Panels are apps.

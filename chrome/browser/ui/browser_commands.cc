@@ -50,7 +50,6 @@
 #include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/status_bubble.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -331,13 +330,12 @@ bool CanGoBack(const Browser* browser) {
 void GoBack(Browser* browser, WindowOpenDisposition disposition) {
   content::RecordAction(UserMetricsAction("Back"));
 
-  TabContents* current_tab = browser->tab_strip_model()->GetActiveTabContents();
+  WebContents* current_tab = browser->tab_strip_model()->GetActiveWebContents();
   if (CanGoBack(browser)) {
     WebContents* new_tab = GetOrCloneTabForDisposition(browser, disposition);
     // If we are on an interstitial page and clone the tab, it won't be copied
     // to the new tab, so we don't need to go back.
-    if (current_tab->web_contents()->ShowingInterstitialPage() &&
-        (new_tab != current_tab->web_contents()))
+    if (current_tab->ShowingInterstitialPage() && new_tab != current_tab)
       return;
     new_tab->GetController().GoBack();
   }

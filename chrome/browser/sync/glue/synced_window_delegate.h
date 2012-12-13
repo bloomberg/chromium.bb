@@ -56,7 +56,7 @@ class SyncedWindowDelegate {
   // Returns true iff the provided tab is currently "pinned" in the tab strip.
   virtual bool IsTabPinned(const SyncedTabDelegate* tab) const = 0;
 
-  // see Browser::GetTabContentsAt
+  // see TabStripModel::GetWebContentsAt
   virtual SyncedTabDelegate* GetTabAt(int index) const = 0;
 
   // Return the tab id for the tab at |index|.

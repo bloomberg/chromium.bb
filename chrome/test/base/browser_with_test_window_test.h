@@ -41,7 +41,7 @@ class WebContents;
 //   // Add a new tab and navigate it. This will be at index 0.
 //   AddTab(browser(), GURL("http://foo/1"));
 //   NavigationController* controller =
-//       &browser()->tab_strip_model()->GetTabContentsAt(0)->GetController();
+//       &browser()->tab_strip_model()->GetWebContentsAt(0)->GetController();
 //
 //   // Navigate somewhere else.
 //   GURL url2("http://foo/2");

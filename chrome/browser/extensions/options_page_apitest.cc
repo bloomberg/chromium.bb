@@ -41,7 +41,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_OptionsPage) {
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIExtensionsURL));
   TabStripModel* tab_strip = browser()->tab_strip_model();
   ASSERT_TRUE(content::ExecuteJavaScript(
-      chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
+      tab_strip->GetActiveWebContents()->GetRenderViewHost(), L"",
       jscript_click_option_button));
 
   // If the options page hasn't already come up, wait for it.
