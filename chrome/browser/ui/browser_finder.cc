@@ -193,6 +193,12 @@ Browser* FindBrowserWithWebContents(const WebContents* web_contents) {
   return NULL;
 }
 
+chrome::HostDesktopType FindHostDesktopTypeForWebContents(
+    const WebContents* web_contents) {
+  Browser* browser = FindBrowserWithWebContents(web_contents);
+  return browser ? browser->host_desktop_type() : HOST_DESKTOP_TYPE_NATIVE;
+}
+
 Browser* FindLastActiveWithProfile(Profile* profile, HostDesktopType type) {
   BrowserListImpl* list = BrowserListImpl::GetInstance(type);
   // We are only interested in last active browsers, so we don't fall back to

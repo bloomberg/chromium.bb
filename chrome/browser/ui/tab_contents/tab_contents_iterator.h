@@ -8,7 +8,8 @@
 #include <set>
 
 #include "base/basictypes.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_impl.h"
+#include "chrome/browser/ui/host_desktop.h"
 
 namespace content {
 class WebContents;
@@ -35,11 +36,7 @@ class TabContentsIterator {
 
   // Returns the Browser instance associated with the current
   // WebContents. Valid as long as !done()
-  Browser* browser() const {
-    if (browser_iterator_ != BrowserList::end())
-      return *browser_iterator_;
-    return NULL;
-  }
+  Browser* browser() const;
 
   // Returns the current WebContents, valid as long as !Done()
   content::WebContents* operator->() const {
@@ -66,8 +63,11 @@ class TabContentsIterator {
   // web_view_index_ is -1, it will fill the first host.
   void Advance();
 
-  // Iterator over all the Browser objects.
-  BrowserList::const_iterator browser_iterator_;
+  // Helper function to iterate the BrowserList passed in.
+  // Returns true if the iterator was successfully advanced.
+  bool AdvanceBrowserIterator(
+      chrome::BrowserListImpl::const_iterator* list_iterator,
+      chrome::BrowserListImpl* browser_list);
 
   // Tab index into the current Browser of the current web view.
   int web_view_index_;
@@ -76,6 +76,18 @@ class TabContentsIterator {
   // can be extracted given the browser iterator and index, but it's nice to
   // cache this since the caller may access the current host many times.
   content::WebContents* cur_;
+
+  // The Desktop Browser list.
+  chrome::BrowserListImpl* desktop_browser_list_;
+
+  // The Ash Browser list.
+  chrome::BrowserListImpl* ash_browser_list_;
+
+  // Iterator over all the Browser objects in desktop mode.
+  chrome::BrowserListImpl::const_iterator desktop_browser_iterator_;
+
+  // Iterator over all the Browser objects in Ash mode.
+  chrome::BrowserListImpl::const_iterator ash_browser_iterator_;
 
   DISALLOW_COPY_AND_ASSIGN(TabContentsIterator);
 };

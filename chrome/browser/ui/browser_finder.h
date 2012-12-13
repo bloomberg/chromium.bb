@@ -67,6 +67,10 @@ Browser* FindBrowserWithWindow(gfx::NativeWindow window);
 // |web_contents| must not be NULL.
 Browser* FindBrowserWithWebContents(const content::WebContents* web_contents);
 
+// Finds the host desktop type for the web_contents passed in.
+HostDesktopType FindHostDesktopTypeForWebContents(
+    const content::WebContents* web_contents);
+
 // Returns the Browser object owned by |profile| on the given desktop type
 // whose window was most recently active. If no such Browsers exist, returns
 // NULL.
