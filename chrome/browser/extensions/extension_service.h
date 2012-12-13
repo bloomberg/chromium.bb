@@ -71,7 +71,6 @@ class ExtensionSyncData;
 class ExtensionSystem;
 class ExtensionUpdater;
 class PendingExtensionManager;
-class PushMessagingEventRouter;
 class SettingsFrontend;
 }
 
@@ -289,13 +288,6 @@ class ExtensionService
 
   // Start up the extension event routers.
   void InitEventRouters();
-
-  // Called when the ProfileSyncService for the associated Profile is
-  // going to be destroyed.  This is guaranteed to be called exactly
-  // once before Shutdown() is called.
-  //
-  // TODO(akalin): Remove this once http://crbug.com/153827 is fixed.
-  void OnProfileSyncServiceShutdown();
 
   // Called when the associated Profile is going to be destroyed.
   void Shutdown();
@@ -567,10 +559,6 @@ class ExtensionService
     return input_method_event_router_.get();
   }
 #endif
-
-  extensions::PushMessagingEventRouter* push_messaging_event_router() {
-    return push_messaging_event_router_.get();
-  }
 
   // Notify the frontend that there was an error loading an extension.
   // This method is public because UnpackedInstaller and InstalledLoader
@@ -968,9 +956,6 @@ class ExtensionService
   scoped_ptr<extensions::BrowserEventRouter> browser_event_router_;
 
   scoped_ptr<BookmarkExtensionEventRouter> bookmark_event_router_;
-
-  scoped_ptr<extensions::PushMessagingEventRouter>
-      push_messaging_event_router_;
 
 #if defined(OS_CHROMEOS)
   scoped_ptr<chromeos::ExtensionInputMethodEventRouter>

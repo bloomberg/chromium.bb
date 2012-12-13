@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/api/push_messaging/push_messaging_api_factory.h"
 #include "chrome/browser/extensions/api/push_messaging/push_messaging_invalidation_handler.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
@@ -74,15 +75,6 @@ PushMessagingEventRouter::PushMessagingEventRouter(Profile* profile)
 }
 
 PushMessagingEventRouter::~PushMessagingEventRouter() {}
-
-void PushMessagingEventRouter::Shutdown() {
-  // We need an explicit Shutdown() due to the dependencies among the various
-  // ProfileKeyedServices. ProfileSyncService depends on ExtensionSystem, so
-  // it is destroyed before us in the destruction phase of Profile shutdown.
-  // As a result, we need to drop any references to it in the Shutdown() phase
-  // instead.
-  handler_.reset();
-}
 
 void PushMessagingEventRouter::SetMapperForTest(
     scoped_ptr<PushMessagingInvalidationMapper> mapper) {
@@ -287,6 +279,46 @@ void PushMessagingGetChannelIdFunction::OnObfuscatedGaiaIdFetchFailure(
   }
 
   ReportResult(std::string(), error_text);
+}
+
+PushMessagingAPI::PushMessagingAPI(Profile* profile)
+    : profile_(profile) {
+  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+      this, event_names::kOnPushMessage);
+}
+
+PushMessagingAPI::~PushMessagingAPI() {
+}
+
+// static
+PushMessagingAPI* PushMessagingAPI::Get(Profile* profile) {
+  return PushMessagingAPIFactory::GetForProfile(profile);
+}
+
+void PushMessagingAPI::Shutdown() {
+  // UnregisterObserver() may have already been called in
+  // InitializeEventRouter(), but it is safe to call it more than once.
+  ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
+  push_messaging_event_router_.reset();
+}
+
+void PushMessagingAPI::OnListenerAdded(
+    const extensions::EventListenerInfo& details) {
+  InitializeEventRouter();
+}
+
+void PushMessagingAPI::InitializeEventRouterForTest() {
+  InitializeEventRouter();
+}
+
+PushMessagingEventRouter* PushMessagingAPI::GetEventRouterForTest() {
+  return push_messaging_event_router_.get();
+}
+
+void PushMessagingAPI::InitializeEventRouter() {
+  DCHECK(!push_messaging_event_router_.get());
+  push_messaging_event_router_.reset(new PushMessagingEventRouter(profile_));
+  ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
 }
 
 }  // namespace extensions

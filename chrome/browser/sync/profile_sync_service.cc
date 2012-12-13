@@ -25,8 +25,6 @@
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -530,14 +528,6 @@ void ProfileSyncService::EmitInvalidationForTest(
 
 void ProfileSyncService::Shutdown() {
   DCHECK(invalidator_registrar_.get());
-  // TODO(akalin): Remove this once http://crbug.com/153827 is fixed.
-  ExtensionService* const extension_service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  // |extension_service| may be NULL if it was never initialized
-  // (e.g., extension sync wasn't enabled in tests).
-  if (extension_service)
-    extension_service->OnProfileSyncServiceShutdown();
-
   // Reset |invalidator_registrar_| first so that ShutdownImpl cannot
   // use it.
   invalidator_registrar_.reset();

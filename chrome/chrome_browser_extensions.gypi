@@ -282,6 +282,8 @@
         'browser/extensions/api/push_messaging/obfuscated_gaia_id_fetcher.h',
         'browser/extensions/api/push_messaging/push_messaging_api.cc',
         'browser/extensions/api/push_messaging/push_messaging_api.h',
+        'browser/extensions/api/push_messaging/push_messaging_api_factory.cc',
+        'browser/extensions/api/push_messaging/push_messaging_api_factory.h',
         'browser/extensions/api/push_messaging/push_messaging_invalidation_handler.cc',
         'browser/extensions/api/push_messaging/push_messaging_invalidation_handler.h',
         'browser/extensions/api/push_messaging/push_messaging_invalidation_handler_delegate.h',

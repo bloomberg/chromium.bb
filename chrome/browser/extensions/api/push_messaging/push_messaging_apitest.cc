@@ -6,8 +6,6 @@
 #include "chrome/browser/extensions/api/push_messaging/push_messaging_invalidation_handler.h"
 #include "chrome/browser/extensions/api/push_messaging/push_messaging_invalidation_mapper.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/platform_app_launcher.h"
 #include "chrome/browser/profiles/profile.h"
@@ -44,8 +42,8 @@ class PushMessagingApiTest : public ExtensionApiTest {
   }
 
   PushMessagingEventRouter* GetEventRouter() {
-    return ExtensionSystem::Get(browser()->profile())->extension_service()->
-        push_messaging_event_router();
+    return PushMessagingAPI::Get(browser()->profile())->
+        GetEventRouterForTest();
   }
 };
 
@@ -102,6 +100,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingApiTest, AutoRegistration) {
   scoped_ptr<StrictMock<MockInvalidationMapper> > mapper(
       new StrictMock<MockInvalidationMapper>);
   StrictMock<MockInvalidationMapper>* unsafe_mapper = mapper.get();
+  PushMessagingAPI::Get(browser()->profile())->InitializeEventRouterForTest();
   // PushMessagingEventRouter owns the mapper now.
   GetEventRouter()->SetMapperForTest(
       mapper.PassAs<PushMessagingInvalidationMapper>());
@@ -120,6 +119,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingApiTest, AutoRegistration) {
 // Tests that we re-register for invalidations on restart for extensions that
 // are already installed.
 IN_PROC_BROWSER_TEST_F(PushMessagingApiTest, PRE_Restart) {
+  PushMessagingAPI::Get(browser()->profile())->InitializeEventRouterForTest();
   PushMessagingInvalidationHandler* handler =
       static_cast<PushMessagingInvalidationHandler*>(
           GetEventRouter()->GetMapperForTest());
@@ -129,6 +129,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingApiTest, PRE_Restart) {
 }
 
 IN_PROC_BROWSER_TEST_F(PushMessagingApiTest, Restart) {
+  PushMessagingAPI::Get(browser()->profile())->InitializeEventRouterForTest();
   PushMessagingInvalidationHandler* handler =
       static_cast<PushMessagingInvalidationHandler*>(
           GetEventRouter()->GetMapperForTest());

@@ -35,7 +35,6 @@
 #include "chrome/browser/extensions/api/app_runtime/app_runtime_api.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
 #include "chrome/browser/extensions/api/extension_action/extension_actions_api.h"
-#include "chrome/browser/extensions/api/push_messaging/push_messaging_api.h"
 #include "chrome/browser/extensions/api/runtime/runtime_api.h"
 #include "chrome/browser/extensions/app_notification_manager.h"
 #include "chrome/browser/extensions/app_sync_data.h"
@@ -525,8 +524,6 @@ void ExtensionService::InitEventRouters() {
   browser_event_router_.reset(new extensions::BrowserEventRouter(profile_));
   bookmark_event_router_.reset(new BookmarkExtensionEventRouter(
       BookmarkModelFactory::GetForProfile(profile_)));
-  push_messaging_event_router_.reset(
-      new extensions::PushMessagingEventRouter(profile_));
 
 #if defined(OS_CHROMEOS)
   FileBrowserEventRouterFactory::GetForProfile(
@@ -540,13 +537,6 @@ void ExtensionService::InitEventRouters() {
 #endif  // defined(OS_CHROMEOS)
 #endif  // defined(ENABLE_EXTENSIONS)
   event_routers_initialized_ = true;
-}
-
-void ExtensionService::OnProfileSyncServiceShutdown() {
-  // TODO(akalin): Move this block to Shutdown() once
-  // http://crbug.com/153827 is fixed.
-  if (push_messaging_event_router_.get())
-    push_messaging_event_router_->Shutdown();
 }
 
 void ExtensionService::Shutdown() {

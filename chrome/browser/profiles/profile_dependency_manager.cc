@@ -27,6 +27,7 @@
 #include "chrome/browser/extensions/api/omnibox/omnibox_api_factory.h"
 #include "chrome/browser/extensions/api/preference/preference_api_factory.h"
 #include "chrome/browser/extensions/api/processes/processes_api_factory.h"
+#include "chrome/browser/extensions/api/push_messaging/push_messaging_api_factory.h"
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry_factory.h"
 #include "chrome/browser/extensions/api/tabs/tabs_windows_api_factory.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api_factory.h"
@@ -242,6 +243,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   extensions::OmniboxAPIFactory::GetInstance();
   extensions::PreferenceAPIFactory::GetInstance();
   extensions::ProcessesAPIFactory::GetInstance();
+  extensions::PushMessagingAPIFactory::GetInstance();
   extensions::SuggestedLinksRegistryFactory::GetInstance();
   extensions::TabCaptureRegistryFactory::GetInstance();
   extensions::TabsWindowsAPIFactory::GetInstance();
