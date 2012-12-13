@@ -30,12 +30,23 @@ namespace internal {
 namespace {
 const int kPaddingAroundBottomRow = 5;
 
-bool IsAnyAccessibilityFeatureEnabled() {
+enum AccessibilityState {
+  A11Y_NONE             = 0,
+  A11Y_SPOKEN_FEEDBACK  = 1 << 0,
+  A11Y_HIGH_CONTRAST    = 1 << 1,
+  A11Y_SCREEN_MAGNIFIER = 1 << 2,
+};
+
+uint32 GetAccessibilityState() {
   ShellDelegate* shell_delegate = Shell::GetInstance()->delegate();
-  return shell_delegate &&
-      (shell_delegate->IsSpokenFeedbackEnabled() ||
-       shell_delegate->IsHighContrastEnabled() ||
-       shell_delegate->GetMagnifierType() != ash::MAGNIFIER_OFF);
+  uint32 state = A11Y_NONE;
+  if (shell_delegate->IsSpokenFeedbackEnabled())
+    state |= A11Y_SPOKEN_FEEDBACK;
+  if (shell_delegate->IsHighContrastEnabled())
+    state |= A11Y_HIGH_CONTRAST;
+  if (shell_delegate->GetMagnifierType() != ash::MAGNIFIER_OFF)
+    state |= A11Y_SCREEN_MAGNIFIER;
+  return state;
 }
 
 user::LoginStatus GetCurrentLoginStatus() {
@@ -168,7 +179,7 @@ class AccessibilityDetailedView : public TrayDetailsView,
     if (sender == footer()->content()) {
       owner()->system_tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
     } else if (sender == spoken_feedback_view_) {
-      shell_delegate->ToggleSpokenFeedback();
+      shell_delegate->ToggleSpokenFeedback(A11Y_NOTIFICATION_NONE);
     } else if (sender == high_contrast_view_) {
       shell_delegate->ToggleHighContrast();
     } else if (sender == screen_magnifier_view_) {
@@ -225,8 +236,8 @@ TrayAccessibility::TrayAccessibility(SystemTray* system_tray)
       default_(NULL),
       detailed_(NULL),
       request_popup_view_(false),
-      accessibility_previously_enabled_(IsAnyAccessibilityFeatureEnabled()),
-      login_(GetCurrentLoginStatus()) {
+      login_(GetCurrentLoginStatus()),
+      previous_accessibility_state_(GetAccessibilityState()) {
   DCHECK(Shell::GetInstance()->delegate());
   DCHECK(system_tray);
   Shell::GetInstance()->system_tray_notifier()->AddAccessibilityObserver(this);
@@ -240,7 +251,7 @@ TrayAccessibility::~TrayAccessibility() {
 bool TrayAccessibility::GetInitialVisibility() {
   // Shows accessibility icon if any accessibility feature is enabled.
   // Otherwise, doen't show it.
-  return IsAnyAccessibilityFeatureEnabled();
+  return GetAccessibilityState() != A11Y_NONE;
 }
 
 views::View* TrayAccessibility::CreateDefaultView(user::LoginStatus status) {
@@ -256,7 +267,7 @@ views::View* TrayAccessibility::CreateDefaultView(user::LoginStatus status) {
   ShellDelegate* delegate = Shell::GetInstance()->delegate();
   if (login_ != user::LOGGED_IN_NONE &&
       !delegate->ShouldAlwaysShowAccessibilityMenu() &&
-      !IsAnyAccessibilityFeatureEnabled())
+      GetAccessibilityState() == A11Y_NONE)
     return NULL;
 
   CHECK(default_ == NULL);
@@ -295,21 +306,23 @@ void TrayAccessibility::UpdateAfterLoginStatusChange(user::LoginStatus status) {
     tray_view()->SetVisible(GetInitialVisibility());
 }
 
-void TrayAccessibility::OnAccessibilityModeChanged() {
+void TrayAccessibility::OnAccessibilityModeChanged(
+    AccessibilityNotificationVisibility notify) {
   if (tray_view())
     tray_view()->SetVisible(GetInitialVisibility());
 
-  bool accessibility_enabled = IsAnyAccessibilityFeatureEnabled();
-  if (!accessibility_previously_enabled_ && accessibility_enabled) {
-    // Shows popup if the accessibilty status is being changed to true from
-    // false.
+  uint32 accessibility_state = GetAccessibilityState();
+  if ((notify == ash::A11Y_NOTIFICATION_SHOW)&&
+      !(previous_accessibility_state_ & A11Y_SPOKEN_FEEDBACK) &&
+      (accessibility_state & A11Y_SPOKEN_FEEDBACK)) {
+    // Shows popup if |notify| is true and the spoken feedback is being enabled.
     request_popup_view_ = true;
     PopupDetailedView(kTrayPopupAutoCloseDelayForTextInSeconds, false);
   } else if (detailed_) {
     detailed_->GetWidget()->Close();
   }
 
-  accessibility_previously_enabled_ = accessibility_enabled;
+  previous_accessibility_state_ = accessibility_state;
 }
 
 }  // namespace internal

@@ -8,6 +8,8 @@
 #include <string>
 
 #include "ash/magnifier/magnifier_constants.h"
+#include "ash/shell_delegate.h"
+#include "base/basictypes.h"
 
 class Browser;
 
@@ -18,6 +20,16 @@ class WebUI;
 namespace chromeos {
 namespace accessibility {
 
+struct AccessibilityStatusEventDetails {
+  AccessibilityStatusEventDetails(
+      bool enabled, ash::AccessibilityNotificationVisibility notify)
+    : enabled(enabled),
+      notify(notify) {}
+
+  bool enabled;
+  ash::AccessibilityNotificationVisibility notify;
+};
+
 // Do any accessibility initialization that should happen once on startup.
 void Initialize();
 
@@ -25,7 +37,9 @@ void Initialize();
 // ChromeVox component extension.  If this is being called in a login/oobe
 // login screen, pass the WebUI object in login_web_ui so that ChromeVox
 // can be injected directly into that screen, otherwise it should be NULL.
-void EnableSpokenFeedback(bool enabled, content::WebUI* login_web_ui);
+void EnableSpokenFeedback(bool enabled,
+                          content::WebUI* login_web_ui,
+                          ash::AccessibilityNotificationVisibility notify);
 
 // Enables or disables the high contrast mode for Chrome.
 void EnableHighContrast(bool enabled);
@@ -35,7 +49,8 @@ void EnableVirtualKeyboard(bool enabled);
 
 // Toggles whether Chrome OS spoken feedback is on or off. See docs for
 // EnableSpokenFeedback, above.
-void ToggleSpokenFeedback(content::WebUI* login_web_ui);
+void ToggleSpokenFeedback(content::WebUI* login_web_ui,
+                          ash::AccessibilityNotificationVisibility notify);
 
 // Speaks the specified string.
 void Speak(const std::string& utterance);

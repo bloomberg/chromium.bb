@@ -1264,7 +1264,8 @@ void BrowserOptionsHandler::SpokenFeedbackChangeCallback(
   bool enabled = false;
   args->GetBoolean(0, &enabled);
 
-  chromeos::accessibility::EnableSpokenFeedback(enabled, NULL);
+  chromeos::accessibility::EnableSpokenFeedback(
+      enabled, NULL, ash::A11Y_NOTIFICATION_NONE);
 }
 
 void BrowserOptionsHandler::HighContrastChangeCallback(const ListValue* args) {

@@ -113,9 +113,11 @@ bool HandleCrosh() {
 }
 
 bool HandleToggleSpokenFeedback() {
-  Shell::GetInstance()->delegate()->ToggleSpokenFeedback();
+  Shell::GetInstance()->delegate()->
+      ToggleSpokenFeedback(A11Y_NOTIFICATION_SHOW);
   return true;
 }
+
 void HandleCycleDisplayMode() {
   Shell* shell = Shell::GetInstance();
   if (!base::chromeos::IsRunningOnChromeOS()) {

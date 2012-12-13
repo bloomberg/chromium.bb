@@ -116,7 +116,8 @@ content::BrowserContext* ShellDelegateImpl::GetCurrentBrowserContext() {
   return Shell::GetInstance()->browser_context();
 }
 
-void ShellDelegateImpl::ToggleSpokenFeedback() {
+void ShellDelegateImpl::ToggleSpokenFeedback(
+    AccessibilityNotificationVisibility notify) {
   spoken_feedback_enabled_ = !spoken_feedback_enabled_;
 }
 

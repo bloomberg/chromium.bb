@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/system/ash_system_tray_delegate.h"
 
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/audio/audio_observer.h"
 #include "ash/system/bluetooth/bluetooth_observer.h"
@@ -203,6 +204,14 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     registrar_.Add(this,
                    chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
                    content::NotificationService::AllSources());
+    registrar_.Add(
+        this,
+        chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK,
+        content::NotificationService::AllSources());
+    registrar_.Add(
+        this,
+        chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE,
+        content::NotificationService::AllSources());
   }
 
   virtual void Initialize() OVERRIDE {
@@ -226,18 +235,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
     if (chromeos::MagnificationManager::Get())
       chromeos::MagnificationManager::Get()->AddObserver(this);
-
-    spoken_feedback_enabled_.Init(
-        prefs::kSpokenFeedbackEnabled,
-        g_browser_process->local_state(),
-        base::Bind(&SystemTrayDelegate::OnAccessibilityModeChanged,
-                   base::Unretained(this)));
-
-    high_contrast_enabled_.Init(
-        prefs::kHighContrastEnabled,
-        g_browser_process->local_state(),
-        base::Bind(&SystemTrayDelegate::OnAccessibilityModeChanged,
-                   base::Unretained(this)));
 
     network_icon_->SetResourceColorTheme(NetworkMenuIcon::COLOR_LIGHT);
     network_icon_dark_->SetResourceColorTheme(NetworkMenuIcon::COLOR_DARK);
@@ -811,7 +808,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     pref_registrar_->Add(
         prefs::kShouldAlwaysShowAccessibilityMenu,
         base::Bind(&SystemTrayDelegate::OnAccessibilityModeChanged,
-                   base::Unretained(this)));
+                   base::Unretained(this),
+                   ash::A11Y_NOTIFICATION_NONE));
 
     UpdateClockType();
     UpdateShowLogoutButtonInTray();
@@ -1073,6 +1071,14 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         SetProfile(ProfileManager::GetDefaultProfile());
         break;
       }
+      case chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK:
+      case chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE: {
+        accessibility::AccessibilityStatusEventDetails* accessibility_status =
+            content::Details<accessibility::AccessibilityStatusEventDetails>(
+                details).ptr();
+        OnAccessibilityModeChanged(accessibility_status->notify);
+        break;
+      }
       default:
         NOTREACHED();
     }
@@ -1083,8 +1089,9 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         prefs::kLanguageRemapSearchKeyTo);
   }
 
-  void OnAccessibilityModeChanged() {
-    GetSystemTrayNotifier()->NotifyAccessibilityModeChanged();
+  void OnAccessibilityModeChanged(
+      ash::AccessibilityNotificationVisibility notify) {
+    GetSystemTrayNotifier()->NotifyAccessibilityModeChanged(notify);
   }
 
   // Overridden from InputMethodManager::Observer.
@@ -1232,7 +1239,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   // Overridden from MagnificationObserver
   void OnMagnifierTypeChanged(ash::MagnifierType new_type) {
-    OnAccessibilityModeChanged();
+    OnAccessibilityModeChanged(ash::A11Y_NOTIFICATION_NONE);
   }
 
   scoped_ptr<base::WeakPtrFactory<SystemTrayDelegate> > ui_weak_ptr_factory_;
@@ -1249,9 +1256,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   bool screen_locked_;
 
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
-
-  BooleanPrefMember spoken_feedback_enabled_;
-  BooleanPrefMember high_contrast_enabled_;
 
   scoped_ptr<DataPromoNotification> data_promo_notification_;
 

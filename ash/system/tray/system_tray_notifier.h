@@ -88,7 +88,8 @@ public:
   void RemoveSmsObserver(SmsObserver* observer);
 #endif
 
-  void NotifyAccessibilityModeChanged();
+  void NotifyAccessibilityModeChanged(
+      AccessibilityNotificationVisibility notify);
   void NotifyVolumeChanged(float level);
   void NotifyMuteToggled();
   void NotifyRefreshBluetooth();

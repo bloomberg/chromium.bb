@@ -60,6 +60,11 @@ enum UserMetricsAction {
   UMA_TOUCHSCREEN_TAP_DOWN,
 };
 
+enum AccessibilityNotificationVisibility {
+  A11Y_NOTIFICATION_NONE,
+  A11Y_NOTIFICATION_SHOW,
+};
+
 // Delegate of the Shell.
 class ASH_EXPORT ShellDelegate {
  public:
@@ -131,7 +136,8 @@ class ASH_EXPORT ShellDelegate {
   virtual content::BrowserContext* GetCurrentBrowserContext() = 0;
 
   // Invoked to toggle spoken feedback for accessibility
-  virtual void ToggleSpokenFeedback() = 0;
+  virtual void ToggleSpokenFeedback(
+      AccessibilityNotificationVisibility notify) = 0;
 
   // Returns true if spoken feedback is enabled.
   virtual bool IsSpokenFeedbackEnabled() const = 0;

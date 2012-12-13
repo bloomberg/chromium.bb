@@ -107,7 +107,8 @@ content::BrowserContext* TestShellDelegate::GetCurrentBrowserContext() {
   return current_browser_context_.get();
 }
 
-void TestShellDelegate::ToggleSpokenFeedback() {
+void TestShellDelegate::ToggleSpokenFeedback(
+    AccessibilityNotificationVisibility notify) {
   spoken_feedback_enabled_ = !spoken_feedback_enabled_;
 }
 

@@ -161,7 +161,7 @@ void CoreOobeHandler::HandleEnableScreenMagnifier(const base::ListValue* args) {
 void CoreOobeHandler::HandleEnableSpokenFeedback(const base::ListValue* args) {
   // Checkbox is initialized on page init and updates when spoken feedback
   // setting is changed so just toggle spoken feedback here.
-  accessibility::ToggleSpokenFeedback(web_ui());
+  accessibility::ToggleSpokenFeedback(web_ui(), ash::A11Y_NOTIFICATION_NONE);
 }
 
 void CoreOobeHandler::ShowOobeUI(bool show) {

@@ -10,6 +10,7 @@
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
@@ -133,7 +134,9 @@ void Initialize() {
       base::Bind(&UpdateChromeOSAccessibilityHistograms));
 }
 
-void EnableSpokenFeedback(bool enabled, content::WebUI* login_web_ui) {
+void EnableSpokenFeedback(bool enabled,
+                          content::WebUI* login_web_ui,
+                          ash::AccessibilityNotificationVisibility notify) {
   bool spoken_feedback_enabled = g_browser_process &&
       g_browser_process->local_state()->GetBoolean(
           prefs::kSpokenFeedbackEnabled);
@@ -148,10 +151,12 @@ void EnableSpokenFeedback(bool enabled, content::WebUI* login_web_ui) {
   g_browser_process->local_state()->CommitPendingWrite();
   ExtensionAccessibilityEventRouter::GetInstance()->
       SetAccessibilityEnabled(enabled);
+
+  AccessibilityStatusEventDetails details(enabled, notify);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK,
       content::NotificationService::AllSources(),
-      content::Details<bool>(&enabled));
+      content::Details<AccessibilityStatusEventDetails>(&details));
 
   Speak(l10n_util::GetStringUTF8(
       enabled ? IDS_CHROMEOS_ACC_SPOKEN_FEEDBACK_ENABLED :
@@ -213,10 +218,12 @@ void EnableHighContrast(bool enabled) {
   PrefService* pref_service = g_browser_process->local_state();
   pref_service->SetBoolean(prefs::kHighContrastEnabled, enabled);
   pref_service->CommitPendingWrite();
+
+  AccessibilityStatusEventDetails detail(enabled, ash::A11Y_NOTIFICATION_NONE);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE,
       content::NotificationService::AllSources(),
-      content::Details<bool>(&enabled));
+      content::Details<AccessibilityStatusEventDetails>(&detail));
 
 #if defined(USE_ASH)
   ash::Shell::GetInstance()->high_contrast_controller()->SetEnabled(enabled);
@@ -229,12 +236,13 @@ void EnableVirtualKeyboard(bool enabled) {
   pref_service->CommitPendingWrite();
 }
 
-void ToggleSpokenFeedback(content::WebUI* login_web_ui) {
+void ToggleSpokenFeedback(content::WebUI* login_web_ui,
+    ash::AccessibilityNotificationVisibility notify) {
   bool spoken_feedback_enabled = g_browser_process &&
       g_browser_process->local_state()->GetBoolean(
           prefs::kSpokenFeedbackEnabled);
   spoken_feedback_enabled = !spoken_feedback_enabled;
-  EnableSpokenFeedback(spoken_feedback_enabled, login_web_ui);
+  EnableSpokenFeedback(spoken_feedback_enabled, login_web_ui, notify);
 };
 
 void Speak(const std::string& text) {

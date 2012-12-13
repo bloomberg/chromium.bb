@@ -149,11 +149,12 @@ void SystemTrayNotifier::RemoveSmsObserver(SmsObserver* observer) {
 }
 #endif
 
-void SystemTrayNotifier::NotifyAccessibilityModeChanged() {
+void SystemTrayNotifier::NotifyAccessibilityModeChanged(
+    AccessibilityNotificationVisibility notify) {
   FOR_EACH_OBSERVER(
       AccessibilityObserver,
       accessibility_observers_,
-      OnAccessibilityModeChanged());
+      OnAccessibilityModeChanged(notify));
 }
 
 void SystemTrayNotifier::NotifyVolumeChanged(float level) {

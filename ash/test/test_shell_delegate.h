@@ -40,7 +40,8 @@ class TestShellDelegate : public ShellDelegate {
   virtual void ShowKeyboardOverlay() OVERRIDE;
   virtual void ShowTaskManager() OVERRIDE;
   virtual content::BrowserContext* GetCurrentBrowserContext() OVERRIDE;
-  virtual void ToggleSpokenFeedback() OVERRIDE;
+  virtual void ToggleSpokenFeedback(
+      AccessibilityNotificationVisibility notify) OVERRIDE;
   virtual bool IsSpokenFeedbackEnabled() const OVERRIDE;
   virtual void ToggleHighContrast() OVERRIDE;
   virtual bool IsHighContrastEnabled() const OVERRIDE;

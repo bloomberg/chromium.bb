@@ -58,7 +58,8 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   virtual content::BrowserContext* GetCurrentBrowserContext() OVERRIDE;
   virtual void ToggleHighContrast() OVERRIDE;
   virtual bool IsSpokenFeedbackEnabled() const OVERRIDE;
-  virtual void ToggleSpokenFeedback() OVERRIDE;
+  virtual void ToggleSpokenFeedback(
+      ash::AccessibilityNotificationVisibility notify) OVERRIDE;
   virtual bool IsHighContrastEnabled() const OVERRIDE;
   virtual void SetMagnifier(ash::MagnifierType type) OVERRIDE;
   virtual ash::MagnifierType GetMagnifierType() const OVERRIDE;

@@ -309,7 +309,8 @@ content::BrowserContext* ChromeShellDelegate::GetCurrentBrowserContext() {
   return ProfileManager::GetDefaultProfile();
 }
 
-void ChromeShellDelegate::ToggleSpokenFeedback() {
+void ChromeShellDelegate::ToggleSpokenFeedback(
+    ash::AccessibilityNotificationVisibility notify) {
 #if defined(OS_CHROMEOS)
   content::WebUI* web_ui = NULL;
 
@@ -325,7 +326,7 @@ void ChromeShellDelegate::ToggleSpokenFeedback() {
     web_ui = chromeos::ScreenLocker::default_screen_locker()->
         GetAssociatedWebUI();
   }
-  chromeos::accessibility::ToggleSpokenFeedback(web_ui);
+  chromeos::accessibility::ToggleSpokenFeedback(web_ui, notify);
 #endif
 }
 

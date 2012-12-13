@@ -1344,7 +1344,8 @@ void TestingAutomationProvider::EnableSpokenFeedback(
   }
 
   if (user_manager->IsUserLoggedIn()) {
-    chromeos::accessibility::EnableSpokenFeedback(enabled, NULL);
+    chromeos::accessibility::EnableSpokenFeedback(
+        enabled, NULL, ash::A11Y_NOTIFICATION_NONE);
   } else {
     ExistingUserController* controller =
         ExistingUserController::current_controller();
@@ -1352,7 +1353,9 @@ void TestingAutomationProvider::EnableSpokenFeedback(
         static_cast<chromeos::WebUILoginDisplayHost*>(
             controller->login_display_host());
     chromeos::accessibility::EnableSpokenFeedback(
-        enabled, webui_login_display_host->GetOobeUI()->web_ui());
+        enabled,
+        webui_login_display_host->GetOobeUI()->web_ui(),
+        ash::A11Y_NOTIFICATION_NONE);
   }
 
   reply.SendSuccess(return_value.get());
