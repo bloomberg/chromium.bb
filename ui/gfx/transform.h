@@ -20,17 +20,18 @@ class Vector3dF;
 // copy/assign.
 class UI_EXPORT Transform {
  public:
-  Transform();
-  Transform(const Transform& rhs);
+  Transform() : matrix_(SkMatrix44::kIdentity_Constructor) {}
+  Transform(const Transform& rhs) : matrix_(rhs.matrix_) {}
   // Initialize with the concatenation of lhs * rhs.
-  Transform(const Transform& lhs, const Transform& rhs);
-  ~Transform();
+  Transform(const Transform& lhs, const Transform& rhs)
+      : matrix_(lhs.matrix_, rhs.matrix_) {}
+  ~Transform() {}
 
-  bool operator==(const Transform& rhs) const;
-  bool operator!=(const Transform& rhs) const;
+  bool operator==(const Transform& rhs) const { return matrix_ == rhs.matrix_; }
+  bool operator!=(const Transform& rhs) const { return matrix_ != rhs.matrix_; }
 
   // Resets this transform to the identity transform.
-  void MakeIdentity();
+  void MakeIdentity() { matrix_.setIdentity(); }
 
   // Applies the current transformation on a 2d rotation and assigns the result
   // to |this|.
@@ -83,14 +84,19 @@ class UI_EXPORT Transform {
   bool IsIdentityOrIntegerTranslation() const;
 
   // Returns true if the matrix is has only scaling and translation components.
-  bool IsScaleOrTranslation() const;
+  bool IsScaleOrTranslation() const {
+    int mask = SkMatrix44::kScale_Mask | SkMatrix44::kTranslate_Mask;
+    return (matrix_.getType() & ~mask) == 0;
+  }
 
   // Returns true if the matrix has any perspective component that would
   // change the w-component of a homogeneous point.
-  bool HasPerspective() const;
+  bool HasPerspective() const {
+    return (matrix_.getType() & SkMatrix44::kPerspective_Mask) != 0;
+  }
 
   // Returns true if this transform is non-singular.
-  bool IsInvertible() const;
+  bool IsInvertible() const { return matrix_.invert(NULL); }
 
   // Returns true if a layer with a forward-facing normal of (0, 0, 1) would
   // have its back side facing frontwards after applying the transform.
@@ -146,7 +152,10 @@ class UI_EXPORT Transform {
   }
 
   // Sets |this| = |this| * |other|
-  Transform& operator*=(const Transform& other);
+  Transform& operator*=(const Transform& other) {
+    PreconcatTransform(other);
+    return *this;
+  }
 
   // Returns the underlying matrix.
   const SkMatrix44& matrix() const { return matrix_; }

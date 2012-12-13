@@ -31,30 +31,6 @@ double TanDegrees(double degrees) {
 
 }  // namespace
 
-Transform::Transform() {
-}
-
-Transform::Transform(const Transform& rhs) : matrix_(rhs.matrix_) {
-}
-
-Transform::Transform(const Transform& lhs, const Transform& rhs)
-    : matrix_(lhs.matrix_, rhs.matrix_) {
-}
-
-Transform::~Transform() {}
-
-bool Transform::operator==(const Transform& rhs) const {
-  return matrix_ == rhs.matrix_;
-}
-
-bool Transform::operator!=(const Transform& rhs) const {
-  return matrix_ != rhs.matrix_;
-}
-
-void Transform::MakeIdentity() {
-  matrix_.setIdentity();
-}
-
 void Transform::RotateAboutXAxis(double degrees) {
   double radians = degrees * M_PI / 180;
   double cosTheta = std::cos(radians);
@@ -194,19 +170,6 @@ bool Transform::IsIdentityOrIntegerTranslation() const {
       static_cast<int>(matrix_.getDouble(2, 3)) == matrix_.getDouble(2, 3);
 
   return no_fractional_translation;
-}
-
-bool Transform::IsScaleOrTranslation() const {
-  int mask = SkMatrix44::kScale_Mask | SkMatrix44::kTranslate_Mask;
-  return (matrix_.getType() & ~mask) == 0;
-}
-
-bool Transform::HasPerspective() const {
-  return (matrix_.getType() & SkMatrix44::kPerspective_Mask) != 0;
-}
-
-bool Transform::IsInvertible() const {
-  return matrix_.invert(NULL);
 }
 
 bool Transform::IsBackFaceVisible() const {
@@ -361,11 +324,6 @@ bool Transform::Blend(const Transform& from, double progress) {
 
   matrix_ = ComposeTransform(to_decomp).matrix();
   return true;
-}
-
-Transform& Transform::operator*=(const Transform& other) {
-  PreconcatTransform(other);
-  return *this;
 }
 
 void Transform::TransformPointInternal(const SkMatrix44& xform,
