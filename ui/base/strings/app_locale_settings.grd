@@ -197,7 +197,7 @@
       <if expr="pp_ifdef('chromeos')">
         <!-- The font name like: 'Font Name, 10' -->
         <message name="IDS_UI_FONT_FAMILY_CROS" use_name_for_id="true">
-          Noto Sans UI,Droid Sans Fallback,sans-serif, 12px
+          Noto Sans UI,ui-sans, 12px
         </message>
       </if>
     </messages>

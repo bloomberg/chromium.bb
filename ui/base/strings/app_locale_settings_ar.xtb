@@ -2,5 +2,5 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ar">
 <translation id="IDS_MINIMUM_UI_FONT_SIZE">10</translation>
-<translation id="IDS_UI_FONT_FAMILY_CROS">Noto Sans UI,Droid Arabic Kufi,Droid Sans Fallback,sans-serif, 13px</translation>
+<translation id="IDS_UI_FONT_FAMILY_CROS">Noto Sans UI,Droid Arabic Kufi,ui-sans, 13px</translation>
 </translationbundle>
