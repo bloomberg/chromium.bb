@@ -183,9 +183,8 @@ cr.define('login', function() {
     /**
      * Shows/hides offline message.
      * @param {boolean} visible True to show offline message.
-     * @private
      */
-    showOfflineMessage_: function(visible) {
+    showOfflineMessage: function(visible) {
       var offlineMessage = this;
       var currentScreen = Oobe.getInstance().currentScreen;
 
@@ -251,7 +250,7 @@ cr.define('login', function() {
    * @param {boolean} visible True to show offline message.
    */
   ErrorMessageScreen.showOfflineMessage = function(visible) {
-    $('error-message').showOfflineMessage_(visible);
+    $('error-message').showOfflineMessage(visible);
   };
 
   ErrorMessageScreen.onBeforeShow = function(lastNetworkType) {
