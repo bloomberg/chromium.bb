@@ -119,6 +119,15 @@ void AwWebContentsDelegate::CloseContents(content::WebContents* source) {
   }
 }
 
+void AwWebContentsDelegate::ActivateContents(content::WebContents* contents) {
+  JNIEnv* env = AttachCurrentThread();
+
+  ScopedJavaLocalRef<jobject> java_delegate = GetJavaDelegate(env);
+  if (java_delegate.obj()) {
+    Java_AwWebContentsDelegate_activateContents(env, java_delegate.obj());
+  }
+}
+
 bool RegisterAwWebContentsDelegate(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }

@@ -107,4 +107,8 @@ class NullContentsClient extends AwContentsClient {
     @Override
     public void onCloseWindow() {
     }
+
+    @Override
+    public void onRequestFocus() {
+    }
 }

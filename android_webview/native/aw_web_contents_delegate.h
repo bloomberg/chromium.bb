@@ -39,6 +39,7 @@ class AwWebContentsDelegate
                               bool user_gesture,
                               bool* was_blocked) OVERRIDE;
   virtual void CloseContents(content::WebContents* source) OVERRIDE;
+  virtual void ActivateContents(content::WebContents* contents) OVERRIDE;
 };
 
 bool RegisterAwWebContentsDelegate(JNIEnv* env);

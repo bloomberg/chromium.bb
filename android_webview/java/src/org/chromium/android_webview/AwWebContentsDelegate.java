@@ -11,16 +11,17 @@ import org.chromium.content.components.web_contents_delegate_android.WebContents
 /**
  * WebView-specific WebContentsDelegate.
  * This file is the Java version of the native class of the same name.
- * It should contain empty WebContentsDelegate methods to be implemented by the embedder.
+ * It should contain abstract WebContentsDelegate methods to be implemented by the embedder.
  * These methods belong to WebView but are not shared with the Chromium Android port.
  */
 @JNINamespace("android_webview")
-public class AwWebContentsDelegate extends WebContentsDelegateAndroid {
+public abstract class AwWebContentsDelegate extends WebContentsDelegateAndroid {
     @CalledByNative
-    public boolean addNewContents(boolean isDialog, boolean isUserGesture) {
-        return false;
-    }
+    public abstract boolean addNewContents(boolean isDialog, boolean isUserGesture);
 
     @CalledByNative
-    public void closeContents() { }
+    public abstract void closeContents();
+
+    @CalledByNative
+    public abstract void activateContents();
 }
