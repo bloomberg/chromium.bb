@@ -374,11 +374,16 @@
             4996, 4018, 4090, 4305, 4133, 4146, 4554, 4028, 4334, 4101, 4102,
             4116, 4307, 4273
           ],
-          # This magical incantation is necessary because VC++ will compile all
-          # object files to same directory... even if they have the same name!
           'msvs_settings': {
+            # This magical incantation is necessary because VC++ will compile
+            # object files to same directory... even if they have the same name!
             'VCCLCompilerTool': {
               'ObjectFile': '$(IntDir)/%(RelativeDir)/',
+            },
+            # Ignore warnings about a local symbol being inefficiently imported,
+            # upstream is working on a fix.
+            'VCLinkerTool': {
+              'AdditionalOptions': ['/ignore:4049', '/ignore:4217'],
             }
           },
           'actions': [
