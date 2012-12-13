@@ -26,8 +26,11 @@ class UsbDevicePermissionData {
   bool operator<(const UsbDevicePermissionData& rhs) const;
   bool operator==(const UsbDevicePermissionData& rhs) const;
 
-  uint16 vendor_id() const { return vendor_id_; }
-  uint16 product_id() const { return product_id_; }
+  const uint16& vendor_id() const { return vendor_id_; }
+  uint16& vendor_id() { return vendor_id_; }
+
+  const uint16& product_id() const { return product_id_; }
+  uint16& product_id() { return product_id_; }
 
  private:
   uint16 vendor_id_;

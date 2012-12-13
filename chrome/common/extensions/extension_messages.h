@@ -105,6 +105,15 @@ IPC_STRUCT_TRAITS_BEGIN(extensions::DraggableRegion)
   IPC_STRUCT_TRAITS_MEMBER(bounds)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(extensions::BluetoothDevicePermissionData)
+  IPC_STRUCT_TRAITS_MEMBER(device_address())
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(extensions::UsbDevicePermissionData)
+  IPC_STRUCT_TRAITS_MEMBER(vendor_id())
+  IPC_STRUCT_TRAITS_MEMBER(product_id())
+IPC_STRUCT_TRAITS_END()
+
 // Singly-included section for custom IPC traits.
 #ifndef CHROME_COMMON_EXTENSIONS_EXTENSION_MESSAGES_H_
 #define CHROME_COMMON_EXTENSIONS_EXTENSION_MESSAGES_H_
@@ -200,22 +209,6 @@ struct ParamTraits<ExtensionMsg_Loaded_Params> {
   typedef ExtensionMsg_Loaded_Params param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<extensions::BluetoothDevicePermissionData> {
-  typedef extensions::BluetoothDevicePermissionData param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<extensions::UsbDevicePermissionData> {
-  typedef extensions::UsbDevicePermissionData param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 

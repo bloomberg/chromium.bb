@@ -14,12 +14,10 @@ using extensions::APIPermission;
 using extensions::APIPermissionInfo;
 using extensions::APIPermissionMap;
 using extensions::APIPermissionSet;
-using extensions::BluetoothDevicePermissionData;
 using extensions::Extension;
 using extensions::PermissionSet;
 using extensions::SocketPermissionData;
 using extensions::URLPatternSet;
-using extensions::UsbDevicePermissionData;
 
 ExtensionMsg_Loaded_Params::ExtensionMsg_Loaded_Params()
     : location(Extension::INVALID),
@@ -207,44 +205,6 @@ bool ParamTraits<SocketPermissionData>::Read(
 void ParamTraits<SocketPermissionData>::Log(
     const param_type& p, std::string* l) {
   LogParam(std::string("<SocketPermissionData>"), l);
-}
-
-void ParamTraits<BluetoothDevicePermissionData>::Write(
-    Message* m, const param_type& p) {
-  WriteParam(m, p.GetAsString());
-}
-
-bool ParamTraits<BluetoothDevicePermissionData>::Read(
-    const Message* m, PickleIterator* iter, param_type* r) {
-  std::string spec;
-  if (!ReadParam(m, iter, &spec))
-    return false;
-
-  return r->Parse(spec);
-}
-
-void ParamTraits<BluetoothDevicePermissionData>::Log(
-    const param_type& p, std::string* l) {
-  LogParam(std::string("<BluetoothDevicePermissionData>"), l);
-}
-
-void ParamTraits<UsbDevicePermissionData>::Write(
-    Message* m, const param_type& p) {
-  WriteParam(m, p.GetAsString());
-}
-
-bool ParamTraits<UsbDevicePermissionData>::Read(
-    const Message* m, PickleIterator* iter, param_type* r) {
-  std::string spec;
-  if (!ReadParam(m, iter, &spec))
-    return false;
-
-  return r->Parse(spec);
-}
-
-void ParamTraits<UsbDevicePermissionData>::Log(
-    const param_type& p, std::string* l) {
-  LogParam(std::string("<UsbDevicePermissionData>"), l);
 }
 
 void ParamTraits<ExtensionMsg_Loaded_Params>::Write(Message* m,
