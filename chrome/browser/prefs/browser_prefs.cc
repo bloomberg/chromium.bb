@@ -151,7 +151,6 @@ void RegisterLocalState(PrefService* local_state) {
   // Please keep this list alphabetized.
   browser_shutdown::RegisterPrefs(local_state);
   chrome::RegisterScreenshotPrefs(local_state);
-  chrome_variations::VariationsService::RegisterPrefs(local_state);
   ExternalProtocolHandler::RegisterPrefs(local_state);
   geolocation::RegisterPrefs(local_state);
   IntranetRedirectDetector::RegisterPrefs(local_state);
@@ -191,6 +190,7 @@ void RegisterLocalState(PrefService* local_state) {
 
 #if !defined(OS_ANDROID)
   BackgroundModeManager::RegisterPrefs(local_state);
+  chrome_variations::VariationsService::RegisterPrefs(local_state);
   RegisterBrowserPrefs(local_state);
   FlagsUI::RegisterPrefs(local_state);
   ManagedMode::RegisterPrefs(local_state);
