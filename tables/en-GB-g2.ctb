@@ -145,11 +145,11 @@ midword cch 14-16
 always chloro 16-123-135-1235-135
 begword cofac = cofactor
 always cofound 14-135-124-46-145
-# begword com 36
-begword com 23478
+begword com 36
+# begword com 23478
 
-# sufword common 36-134-135-1345 commonest
-sufword common 23478-134-135-1345 commonest
+sufword common 36-134-135-1345 commonest
+# sufword common 23478-134-135-1345 commonest
 begword con 25
 sufword conceive 25-14-1236
 word concv =
