@@ -1179,7 +1179,7 @@ JsArgList SyncManagerImpl::GetAllNodes(const JsArgList& args) {
 
   for (std::vector<const syncable::EntryKernel*>::const_iterator it =
            entry_kernels.begin(); it != entry_kernels.end(); ++it) {
-    result->Append((*it)->ToValue());
+    result->Append((*it)->ToValue(trans.GetCryptographer()));
   }
 
   return JsArgList(&return_args);

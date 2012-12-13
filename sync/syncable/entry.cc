@@ -45,11 +45,11 @@ Id Entry::ComputePrevIdFromServerPosition(const Id& parent_id) const {
   return dir()->ComputePrevIdFromServerPosition(kernel_, parent_id);
 }
 
-DictionaryValue* Entry::ToValue() const {
+DictionaryValue* Entry::ToValue(Cryptographer* cryptographer) const {
   DictionaryValue* entry_info = new DictionaryValue();
   entry_info->SetBoolean("good", good());
   if (good()) {
-    entry_info->Set("kernel", kernel_->ToValue());
+    entry_info->Set("kernel", kernel_->ToValue(cryptographer));
     entry_info->Set("modelType",
                     ModelTypeToValue(GetModelType()));
     entry_info->SetBoolean("existsOnClientBecauseNameIsNonEmpty",

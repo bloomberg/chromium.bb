@@ -8,6 +8,7 @@
 #include "sync/syncable/entry_kernel.h"
 
 namespace syncer {
+class Cryptographer;
 class ReadNode;
 
 namespace syncable {
@@ -127,7 +128,7 @@ class Entry {
 
   // Dumps all entry info into a DictionaryValue and returns it.
   // Transfers ownership of the DictionaryValue to the caller.
-  base::DictionaryValue* ToValue() const;
+  base::DictionaryValue* ToValue(Cryptographer* cryptographer) const;
 
  protected:  // Don't allow creation on heap, except by sync API wrappers.
   void* operator new(size_t size) { return (::operator new)(size); }

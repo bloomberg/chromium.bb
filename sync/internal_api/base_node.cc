@@ -291,7 +291,8 @@ DictionaryValue* BaseNode::GetDetailsAsValue() const {
                        base::Int64ToString(GetSuccessorId()));
   node_info->SetString("firstChildId",
                        base::Int64ToString(GetFirstChildId()));
-  node_info->Set("entry", GetEntry()->ToValue());
+  node_info->Set("entry",
+                 GetEntry()->ToValue(GetTransaction()->GetCryptographer()));
   return node_info;
 }
 

@@ -50,7 +50,7 @@ class SyncableKernelTest : public testing::Test {};
 
 TEST_F(SyncableKernelTest, ToValue) {
   EntryKernel kernel;
-  scoped_ptr<DictionaryValue> value(kernel.ToValue());
+  scoped_ptr<DictionaryValue> value(kernel.ToValue(NULL));
   if (value.get()) {
     // Not much to check without repeating the ToValue() code.
     EXPECT_TRUE(value->HasKey("isDirty"));
@@ -392,7 +392,7 @@ TEST_F(SyncableGeneralTest, ToValue) {
     Entry e(&rtrans, GET_BY_ID, id);
     EXPECT_FALSE(e.good());  // Hasn't been written yet.
 
-    scoped_ptr<DictionaryValue> value(e.ToValue());
+    scoped_ptr<DictionaryValue> value(e.ToValue(NULL));
     ExpectDictBooleanValue(false, *value, "good");
     EXPECT_EQ(1u, value->size());
   }
@@ -405,7 +405,7 @@ TEST_F(SyncableGeneralTest, ToValue) {
     me.Put(ID, id);
     me.Put(BASE_VERSION, 1);
 
-    scoped_ptr<DictionaryValue> value(me.ToValue());
+    scoped_ptr<DictionaryValue> value(me.ToValue(NULL));
     ExpectDictBooleanValue(true, *value, "good");
     EXPECT_TRUE(value->HasKey("kernel"));
     ExpectDictStringValue("Unspecified", *value, "modelType");

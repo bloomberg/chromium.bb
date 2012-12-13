@@ -7,6 +7,7 @@
 #include "base/string_number_conversions.h"
 #include "sync/protocol/proto_value_conversions.h"
 #include "sync/syncable/syncable_enum_conversions.h"
+#include "sync/util/cryptographer.h"
 
 namespace syncer {
 namespace syncable {
@@ -55,6 +56,32 @@ void SetFieldValues(const EntryKernel& kernel,
   }
 }
 
+void SetEncryptableProtoValues(
+    const EntryKernel& kernel,
+    Cryptographer* cryptographer,
+    DictionaryValue* dictionary_value,
+    int field_key_min, int field_key_max) {
+  DCHECK_LE(field_key_min, field_key_max);
+  for (int i = field_key_min; i <= field_key_max; ++i) {
+    ProtoField field = static_cast<ProtoField>(i);
+    const std::string& key = GetProtoFieldString(field);
+
+    base::DictionaryValue* value = NULL;
+    sync_pb::EntitySpecifics decrypted;
+    const sync_pb::EncryptedData& encrypted = kernel.ref(field).encrypted();
+    if (cryptographer &&
+        kernel.ref(field).has_encrypted() &&
+        cryptographer->CanDecrypt(encrypted) &&
+        cryptographer->Decrypt(encrypted, &decrypted)) {
+      value = EntitySpecificsToValue(decrypted);
+      value->SetBoolean("encrypted", "true");
+    } else {
+      value = EntitySpecificsToValue(kernel.ref(field));
+    }
+    dictionary_value->Set(key, value);
+  }
+}
+
 // Helper functions for SetFieldValues().
 
 StringValue* Int64ToValue(int64 i) {
@@ -75,7 +102,7 @@ StringValue* OrdinalToValue(const NodeOrdinal& ord) {
 
 }  // namespace
 
-DictionaryValue* EntryKernel::ToValue() const {
+DictionaryValue* EntryKernel::ToValue(Cryptographer* cryptographer) const {
   DictionaryValue* kernel_info = new DictionaryValue();
   kernel_info->SetBoolean("isDirty", is_dirty());
   kernel_info->Set("serverModelType", ModelTypeToValue(GetServerModelType()));
@@ -123,9 +150,8 @@ DictionaryValue* EntryKernel::ToValue() const {
   }
 
   // Proto fields.
-  SetFieldValues(*this, kernel_info,
-                 &GetProtoFieldString, &EntitySpecificsToValue,
-                 PROTO_FIELDS_BEGIN, PROTO_FIELDS_END - 1);
+  SetEncryptableProtoValues(*this, cryptographer, kernel_info,
+                            PROTO_FIELDS_BEGIN, PROTO_FIELDS_END - 1);
 
   // Ordinal fields
   SetFieldValues(*this, kernel_info,
@@ -153,8 +179,8 @@ ListValue* EntryKernelMutationMapToValue(
 DictionaryValue* EntryKernelMutationToValue(
     const EntryKernelMutation& mutation) {
   DictionaryValue* dict = new DictionaryValue();
-  dict->Set("original", mutation.original.ToValue());
-  dict->Set("mutated", mutation.mutated.ToValue());
+  dict->Set("original", mutation.original.ToValue(NULL));
+  dict->Set("mutated", mutation.mutated.ToValue(NULL));
   return dict;
 }
 

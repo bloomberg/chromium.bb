@@ -182,7 +182,7 @@ bool UpdateEntryWithEncryption(
   } else {
     // Encrypt new_specifics into generated_specifics.
     if (VLOG_IS_ON(2)) {
-      scoped_ptr<DictionaryValue> value(entry->ToValue());
+      scoped_ptr<DictionaryValue> value(entry->ToValue(NULL));
       std::string info;
       base::JSONWriter::WriteWithOptions(value.get(),
                                          base::JSONWriter::OPTIONS_PRETTY_PRINT,
