@@ -42,6 +42,10 @@ namespace {
 // Google search for 'gnutls thread safety' provided a solution that
 // initialized gcrypt and gnutls.
 
+// TODO(phajdan.jr): Remove this after https://bugs.g10code.com/gnupg/issue1197
+// gets fixed on all Linux distros we support (i.e. when they ship libgcrypt
+// with the fix).
+
 // Initially, we linked with -lgnutls and simply called gnutls_global_init(),
 // but this did not work well since we build one binary on Ubuntu Hardy and
 // expect it to run on many Linux distros. (See http://crbug.com/46954)
