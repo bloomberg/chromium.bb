@@ -59,7 +59,7 @@ class MockRenderThread : public RenderThread {
   virtual void WidgetRestored() OVERRIDE;
   virtual void EnsureWebKitInitialized() OVERRIDE;
   virtual void RecordUserMetrics(const std::string& action) OVERRIDE;
-  virtual base::SharedMemoryHandle HostAllocateSharedMemoryBuffer(
+  virtual scoped_ptr<base::SharedMemory> HostAllocateSharedMemoryBuffer(
       uint32 buffer_size) OVERRIDE;
   virtual void RegisterExtension(v8::Extension* extension) OVERRIDE;
   virtual void ScheduleIdleHandler(int64 initial_delay_ms) OVERRIDE;

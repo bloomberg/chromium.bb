@@ -82,8 +82,8 @@ class CONTENT_EXPORT RenderThread : public IPC::Sender {
   virtual void RecordUserMetrics(const std::string& action) = 0;
 
   // Asks the host to create a block of shared memory for the renderer.
-  // The shared memory handle allocated by the host is returned back.
-  virtual base::SharedMemoryHandle HostAllocateSharedMemoryBuffer(
+  // The shared memory allocated by the host is returned back.
+  virtual scoped_ptr<base::SharedMemory> HostAllocateSharedMemoryBuffer(
       uint32 buffer_size) = 0;
 
   // Registers the given V8 extension with WebKit.

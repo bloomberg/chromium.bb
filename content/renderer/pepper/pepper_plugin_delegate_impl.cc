@@ -1383,19 +1383,7 @@ PP_FlashLSORestrictions PepperPluginDelegateImpl::GetLocalDataRestrictions(
 
 base::SharedMemory* PepperPluginDelegateImpl::CreateAnonymousSharedMemory(
     uint32_t size) {
-  if (size == 0)
-    return NULL;
-  base::SharedMemoryHandle handle;
-  if (!render_view_->Send(
-          new ChildProcessHostMsg_SyncAllocateSharedMemory(size, &handle))) {
-    DLOG(WARNING) << "Browser allocation request message failed";
-    return NULL;
-  }
-  if (!base::SharedMemory::IsHandleValid(handle)) {
-    DLOG(WARNING) << "Browser failed to allocate shared memory";
-    return NULL;
-  }
-  return new base::SharedMemory(handle, false);
+  return RenderThread::Get()->HostAllocateSharedMemoryBuffer(size).release();
 }
 
 ppapi::Preferences PepperPluginDelegateImpl::GetPreferences() {

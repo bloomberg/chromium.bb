@@ -722,12 +722,37 @@ void RenderThreadImpl::RecordUserMetrics(const std::string& action) {
   Send(new ViewHostMsg_UserMetricsRecordAction(action));
 }
 
-base::SharedMemoryHandle RenderThreadImpl::HostAllocateSharedMemoryBuffer(
-    uint32 buffer_size) {
-  base::SharedMemoryHandle mem_handle = base::SharedMemoryHandle();
-  Send(new ChildProcessHostMsg_SyncAllocateSharedMemory(
-                buffer_size, &mem_handle));
-  return mem_handle;
+scoped_ptr<base::SharedMemory>
+    RenderThreadImpl::HostAllocateSharedMemoryBuffer(uint32 size) {
+  //if (!size)
+  //  return scoped_ptr<base::SharedMemory>();
+
+//#if defined(OS_WIN)
+//  scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory);
+//  if (!shared_memory->CreateAnonymous(size))
+//    return scoped_ptr<base::SharedMemory>();
+//
+//  return scoped_ptr<base::SharedMemory>(shared_memory.release());
+//#else
+  base::SharedMemoryHandle handle;
+  bool success;
+  IPC::Message* message =
+      new ChildProcessHostMsg_SyncAllocateSharedMemory(size, &handle);
+
+  // Allow calling this from the compositor thread.
+  if (MessageLoop::current() == message_loop())
+    success = ChildThread::Send(message);
+  else
+    success = sync_message_filter()->Send(message);
+
+  if (!success)
+    return scoped_ptr<base::SharedMemory>();
+
+  if (!base::SharedMemory::IsHandleValid(handle))
+    return scoped_ptr<base::SharedMemory>();
+
+  return scoped_ptr<base::SharedMemory>(new base::SharedMemory(handle, false));
+//#endif  // defined(OS_WIN)
 }
 
 void RenderThreadImpl::RegisterExtension(v8::Extension* extension) {
@@ -913,23 +938,8 @@ base::WaitableEvent* RenderThreadImpl::GetShutDownEvent() {
 
 scoped_ptr<base::SharedMemory> RenderThreadImpl::AllocateSharedMemory(
     uint32 size) {
-  base::SharedMemoryHandle handle;
-  bool success;
-  IPC::Message* message =
-      new ChildProcessHostMsg_SyncAllocateSharedMemory(size, &handle);
-
-  // Allow calling this from the compositor thread.
-  if (MessageLoop::current() == message_loop())
-    success = ChildThread::Send(message);
-  else
-    success = sync_message_filter()->Send(message);
-
-  if (!success)
-    return scoped_ptr<base::SharedMemory>();
-
-  if (!base::SharedMemory::IsHandleValid(handle))
-    return scoped_ptr<base::SharedMemory>();
-  return scoped_ptr<base::SharedMemory>(new base::SharedMemory(handle, false));
+  return scoped_ptr<base::SharedMemory>(
+      HostAllocateSharedMemoryBuffer(size));
 }
 
 int32 RenderThreadImpl::CreateViewCommandBuffer(

@@ -141,16 +141,16 @@ void MockRenderThread::EnsureWebKitInitialized() {
 void MockRenderThread::RecordUserMetrics(const std::string& action) {
 }
 
-base::SharedMemoryHandle MockRenderThread::HostAllocateSharedMemoryBuffer(
-    uint32 buffer_size) {
-  base::SharedMemory shared_buf;
-  if (!shared_buf.CreateAndMapAnonymous(buffer_size)) {
+scoped_ptr<base::SharedMemory>
+    MockRenderThread::HostAllocateSharedMemoryBuffer(
+        uint32 buffer_size) {
+  scoped_ptr<base::SharedMemory> shared_buf(new base::SharedMemory);
+  if (!shared_buf->CreateAndMapAnonymous(buffer_size)) {
     NOTREACHED() << "Cannot map shared memory buffer";
-    return base::SharedMemory::NULLHandle();
+    return scoped_ptr<base::SharedMemory>();
   }
-  base::SharedMemoryHandle handle;
-  shared_buf.GiveToProcess(base::GetCurrentProcessHandle(), &handle);
-  return handle;
+
+  return scoped_ptr<base::SharedMemory>(shared_buf.release());
 }
 
 void MockRenderThread::RegisterExtension(v8::Extension* extension) {

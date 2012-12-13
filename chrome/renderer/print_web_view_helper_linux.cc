@@ -91,23 +91,23 @@ bool PrintWebViewHelper::PrintPages(WebFrame* frame, const WebNode& node) {
   printed_page_params.data_size = 0;
   printed_page_params.document_cookie = params.params.document_cookie;
 
-  base::SharedMemoryHandle shared_mem_handle =
-      content::RenderThread::Get()->HostAllocateSharedMemoryBuffer(buf_size);
-  if (!base::SharedMemory::IsHandleValid(shared_mem_handle)) {
-    NOTREACHED() << "AllocateSharedMemoryBuffer returned bad handle";
-    return false;
-  }
-
   {
-    base::SharedMemory shared_buf(shared_mem_handle, false);
-    if (!shared_buf.Map(buf_size)) {
+    scoped_ptr<base::SharedMemory> shared_mem(
+        content::RenderThread::Get()->HostAllocateSharedMemoryBuffer(
+            buf_size).release());
+    if (!shared_mem.get()) {
+      NOTREACHED() << "AllocateSharedMemoryBuffer failed";
+      return false;
+    }
+
+    if (!shared_mem->Map(buf_size)) {
       NOTREACHED() << "Map failed";
       return false;
     }
-    metafile.GetData(shared_buf.memory(), buf_size);
+    metafile.GetData(shared_mem->memory(), buf_size);
     printed_page_params.data_size = buf_size;
-    shared_buf.GiveToProcess(base::GetCurrentProcessHandle(),
-                             &(printed_page_params.metafile_data_handle));
+    shared_mem->GiveToProcess(base::GetCurrentProcessHandle(),
+                              &(printed_page_params.metafile_data_handle));
   }
 
   for (size_t i = 0; i < printed_pages.size(); ++i) {
