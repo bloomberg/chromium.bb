@@ -723,8 +723,13 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
 // chrome://settings-frame/fonts
 //========================================
 
+#if defined(OS_MACOSX)
+#define MAYBE_TestSettingsFrameFonts DISABLED_TestSettingsFrameFonts
+#else
+#define MAYBE_TestSettingsFrameFonts TestSettingsFrameFonts
+#endif
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
-                       TestSettingsFrameFonts) {
+                       MAYBE_TestSettingsFrameFonts) {
   std::string url(chrome::kChromeUISettingsFrameURL);
   url += "fonts";
   RunBidiCheckerOnPage(url);
