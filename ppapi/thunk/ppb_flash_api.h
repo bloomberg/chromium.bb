@@ -6,13 +6,9 @@
 #define PPAPI_THUNK_PPB_FLASH_API_H_
 
 #include "ppapi/c/private/ppb_flash.h"
-#include "ppapi/c/private/ppb_flash_file.h"
 #include "ppapi/thunk/ppapi_thunk_export.h"
 
 namespace ppapi {
-
-struct URLRequestInfoData;
-
 namespace thunk {
 
 /////////////////////////// WARNING:DEPRECTATED ////////////////////////////////
@@ -28,34 +24,7 @@ class PPAPI_THUNK_EXPORT PPB_Flash_API {
   virtual ~PPB_Flash_API() {}
 
   // Flash.
-  virtual void SetInstanceAlwaysOnTop(PP_Instance instance, PP_Bool on_top) = 0;
-  virtual PP_Bool DrawGlyphs(
-      PP_Instance instance,
-      PP_Resource pp_image_data,
-      const PP_BrowserFont_Trusted_Description* font_desc,
-      uint32_t color,
-      const PP_Point* position,
-      const PP_Rect* clip,
-      const float transformation[3][3],
-      PP_Bool allow_subpixel_aa,
-      uint32_t glyph_count,
-      const uint16_t glyph_indices[],
-      const PP_Point glyph_advances[]) = 0;
-
-  // External function that takes a PPB_URLRequestInfo resource.
-  virtual int32_t Navigate(PP_Instance instance,
-                           PP_Resource request_info,
-                           const char* target,
-                           PP_Bool from_user_action) = 0;
-
-  // Internal navigate function that takes a URLRequestInfoData.
-  virtual int32_t Navigate(PP_Instance instance,
-                           const URLRequestInfoData& data,
-                           const char* target,
-                           PP_Bool from_user_action) = 0;
-
   virtual double GetLocalTimeZoneOffset(PP_Instance instance, PP_Time t) = 0;
-  virtual PP_Bool IsRectTopmost(PP_Instance instance, const PP_Rect* rect) = 0;
   virtual PP_Var GetSetting(PP_Instance instance, PP_FlashSetting setting) = 0;
 };
 

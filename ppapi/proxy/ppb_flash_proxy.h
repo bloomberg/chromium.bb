@@ -49,32 +49,8 @@ class PPB_Flash_Proxy : public InterfaceProxy, public thunk::PPB_Flash_API {
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
   // PPB_Flash_API implementation.
-  virtual void SetInstanceAlwaysOnTop(PP_Instance instance,
-                                      PP_Bool on_top) OVERRIDE;
-  virtual PP_Bool DrawGlyphs(
-      PP_Instance instance,
-      PP_Resource pp_image_data,
-      const PP_BrowserFont_Trusted_Description* font_desc,
-      uint32_t color,
-      const PP_Point* position,
-      const PP_Rect* clip,
-      const float transformation[3][3],
-      PP_Bool allow_subpixel_aa,
-      uint32_t glyph_count,
-      const uint16_t glyph_indices[],
-      const PP_Point glyph_advances[]) OVERRIDE;
-  virtual int32_t Navigate(PP_Instance instance,
-                           PP_Resource request_info,
-                           const char* target,
-                           PP_Bool from_user_action) OVERRIDE;
-  virtual int32_t Navigate(PP_Instance instance,
-                           const URLRequestInfoData& data,
-                           const char* target,
-                           PP_Bool from_user_action) OVERRIDE;
   virtual double GetLocalTimeZoneOffset(PP_Instance instance,
                                         PP_Time t) OVERRIDE;
-  virtual PP_Bool IsRectTopmost(PP_Instance instance,
-                                const PP_Rect* rect) OVERRIDE;
   virtual PP_Var GetSetting(PP_Instance instance,
                             PP_FlashSetting setting) OVERRIDE;
 
@@ -82,21 +58,9 @@ class PPB_Flash_Proxy : public InterfaceProxy, public thunk::PPB_Flash_API {
 
  private:
   // Message handlers.
-  void OnHostMsgSetInstanceAlwaysOnTop(PP_Instance instance,
-                                       PP_Bool on_top);
-  void OnHostMsgDrawGlyphs(PP_Instance instance,
-                           const PPBFlash_DrawGlyphs_Params& params,
-                           PP_Bool* result);
-  void OnHostMsgNavigate(PP_Instance instance,
-                         const URLRequestInfoData& data,
-                         const std::string& target,
-                         PP_Bool from_user_action,
-                         int32_t* result);
-  void OnHostMsgGetLocalTimeZoneOffset(PP_Instance instance, PP_Time t,
+  void OnHostMsgGetLocalTimeZoneOffset(PP_Instance instance,
+                                       PP_Time t,
                                        double* result);
-  void OnHostMsgIsRectTopmost(PP_Instance instance,
-                              PP_Rect rect,
-                              PP_Bool* result);
   void OnHostMsgGetSetting(PP_Instance instance,
                            PP_FlashSetting setting,
                            SerializedVarReturnValue result);
