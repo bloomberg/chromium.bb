@@ -522,6 +522,10 @@ RegisterList LoadExclusive2RegisterOp::defs(Instruction i) const {
   return RegisterList(t.reg(i));
 }
 
+RegisterList LoadExclusive2RegisterOp::uses(Instruction i) const {
+  return RegisterList(n.reg(i));
+}
+
 Register LoadExclusive2RegisterOp::base_address_register(Instruction i) const {
   return n.reg(i);
 }
@@ -1070,6 +1074,10 @@ RegisterList StoreExclusive3RegisterOp::defs(Instruction i) const {
   return RegisterList(d.reg(i));
 }
 
+RegisterList StoreExclusive3RegisterOp::uses(Instruction i) const {
+  return RegisterList(n.reg(i)).Add(t.reg(i));
+}
+
 Register StoreExclusive3RegisterOp::base_address_register(Instruction i) const {
   return n.reg(i);
 }
@@ -1093,6 +1101,10 @@ SafetyLevel StoreExclusive3RegisterDoubleOp::safety(Instruction i) const {
   }
 
   return MAY_BE_SAFE;
+}
+
+RegisterList StoreExclusive3RegisterDoubleOp::uses(Instruction i) const {
+  return RegisterList(n.reg(i)).Add(t.reg(i)).Add(t2.reg(i));
 }
 
 // Load3RegisterDoubleOp

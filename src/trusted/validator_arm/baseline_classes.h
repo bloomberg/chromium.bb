@@ -814,6 +814,7 @@ class LoadExclusive2RegisterOp : public ClassDecoder {
   LoadExclusive2RegisterOp() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
   virtual Register base_address_register(Instruction i) const;
 
  private:
@@ -1767,6 +1768,7 @@ class StoreExclusive3RegisterOp : public ClassDecoder {
   StoreExclusive3RegisterOp() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
   virtual Register base_address_register(Instruction i) const;
 
  private:
@@ -1786,6 +1788,7 @@ class StoreExclusive3RegisterDoubleOp : public StoreExclusive3RegisterOp {
 
   StoreExclusive3RegisterDoubleOp() {}
   virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(StoreExclusive3RegisterDoubleOp);

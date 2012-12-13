@@ -55,9 +55,9 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Load3RegisterDoubleOp_instance_()
   , Load3RegisterOp_instance_()
   , LoadBasedImmedMemory_instance_()
-  , LoadBasedMemory_instance_()
-  , LoadBasedMemoryDouble_instance_()
   , LoadBasedOffsetMemory_instance_()
+  , LoadExclusive2RegisterDoubleOp_instance_()
+  , LoadExclusive2RegisterOp_instance_()
   , LoadMultiple_instance_()
   , LoadRegisterImm8DoubleOp_instance_()
   , LoadRegisterImm8Op_instance_()
@@ -77,9 +77,9 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Store3RegisterDoubleOp_instance_()
   , Store3RegisterOp_instance_()
   , StoreBasedImmedMemory_instance_()
-  , StoreBasedMemoryDoubleRtBits0To3_instance_()
-  , StoreBasedMemoryRtBits0To3_instance_()
   , StoreBasedOffsetMemory_instance_()
+  , StoreExclusive3RegisterDoubleOp_instance_()
+  , StoreExclusive3RegisterOp_instance_()
   , StoreRegisterList_instance_()
   , StoreVectorRegister_instance_()
   , StoreVectorRegisterList_instance_()
@@ -2258,22 +2258,22 @@ const ClassDecoder& Arm32DecoderState::decode_synchronization_primitives(
   UNREFERENCED_PARAMETER(inst);
   if ((inst.Bits() & 0x00F00000) == 0x00A00000 /* op(23:20)=1010 */ &&
       (inst.Bits() & 0x00000F00) == 0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return StoreBasedMemoryDoubleRtBits0To3_instance_;
+    return StoreExclusive3RegisterDoubleOp_instance_;
   }
 
   if ((inst.Bits() & 0x00F00000) == 0x00B00000 /* op(23:20)=1011 */ &&
       (inst.Bits() & 0x00000F0F) == 0x00000F0F /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxx1111 */) {
-    return LoadBasedMemoryDouble_instance_;
+    return LoadExclusive2RegisterDoubleOp_instance_;
   }
 
   if ((inst.Bits() & 0x00F00000) == 0x00E00000 /* op(23:20)=1110 */ &&
       (inst.Bits() & 0x00000F00) == 0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return StoreBasedMemoryRtBits0To3_instance_;
+    return StoreExclusive3RegisterOp_instance_;
   }
 
   if ((inst.Bits() & 0x00F00000) == 0x00F00000 /* op(23:20)=1111 */ &&
       (inst.Bits() & 0x00000F0F) == 0x00000F0F /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxx1111 */) {
-    return LoadBasedMemory_instance_;
+    return LoadExclusive2RegisterOp_instance_;
   }
 
   if ((inst.Bits() & 0x00B00000) == 0x00000000 /* op(23:20)=0x00 */ &&
@@ -2283,12 +2283,12 @@ const ClassDecoder& Arm32DecoderState::decode_synchronization_primitives(
 
   if ((inst.Bits() & 0x00B00000) == 0x00800000 /* op(23:20)=1x00 */ &&
       (inst.Bits() & 0x00000F00) == 0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return StoreBasedMemoryRtBits0To3_instance_;
+    return StoreExclusive3RegisterOp_instance_;
   }
 
   if ((inst.Bits() & 0x00B00000) == 0x00900000 /* op(23:20)=1x01 */ &&
       (inst.Bits() & 0x00000F0F) == 0x00000F0F /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxx1111 */) {
-    return LoadBasedMemory_instance_;
+    return LoadExclusive2RegisterOp_instance_;
   }
 
   if (true) {

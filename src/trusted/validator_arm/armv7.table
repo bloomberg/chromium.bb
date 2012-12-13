@@ -957,43 +957,69 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
                                    rule := LDRSB_literal;
 +--
 
-# TODO(karl): Add uses to corresponding classes.
-# extra_load_store_instructions_unpriviledged (See section A5.2.9)
-# Table omitted: modeled as Forbidden.
-# They are not expected in user code.
+# Table omitted: extra_load_store_instructions_unpriviledged (See section A5.2.9)
+
 +-- synchronization_primitives (See Section A5.2.10)
+*LdRtRn
+  { cond(31:28), Rn(19:16), Rt(15:12) }
+  baseline := LoadExclusive2RegisterOp;
+  imm32 := Zeros((32));
+  base := Rn;
+  defs := {Rt};
+  uses := {Rn};
+  safety := Pc in {Rt, Rn} => UNPREDICTABLE;
+*LdRtRt2Rn *LdRtRn
+  baseline := LoadExclusive2RegisterDoubleOp;
+  Rt2 := Rt + 1;
+  defs := {Rt, Rt2};
+  safety := Rt(0)=1 | Rt == Lr | Rn == Pc => UNPREDICTABLE;
+*StRdRtRn
+  { cond(31:28), Rn(19:16), Rd(15:12), Rt(3:0) }
+  baseline := StoreExclusive3RegisterOp;
+  imm32 := Zeros((32));
+  base := Rn;
+  defs := {Rd};
+  uses := {Rn, Rt};
+  safety := Pc in {Rd, Rt, Rn} => UNPREDICTABLE &
+            Rd in {Rn, Rt} => UNPREDICTABLE;
+*StRdRtRt2Rn *StRdRtRn
+  baseline := StoreExclusive3RegisterDoubleOp;
+  Rt2 := Rt + 1;
+  uses := {Rn, Rt, Rt2};
+  safety := Pc in {Rd, Rn} | Rt(0)=1 | Rt == Lr  => UNPREDICTABLE &
+            Rd in {Rn, Rt, Rt2} => UNPREDICTABLE;
++--
 | op(23:20)
             # SWP/SWPB are OPTIONAL+deprecated in v7 with the Virtualization
             # Extension, and OBSOLETE+UNDEFINED in v8 aarch32.
-| 0x00      = Deprecated
-              Swp_Swpb_Rule_A1
-              cccc00010b00nnnntttt00001001tttt
-| 1000      = StoreExclusive3RegisterOp => StoreBasedMemoryRtBits0To3
-              Strex_Rule_202_A1_P400
-              cccc00011000nnnndddd11111001tttt (v6)
-| 1001      = LoadExclusive2RegisterOp => LoadBasedMemory
-              Ldrex_Rule_69_A1_P142
-              cccc00011001nnnntttt111110011111 (v6)
-| 1010      = StoreExclusive3RegisterDoubleOp
-              => StoreBasedMemoryDoubleRtBits0To3
-              Strexd_Rule_204_A1_P404
-              cccc00011010nnnndddd11111001tttt (v6K)
-| 1011      = LoadExclusive2RegisterDoubleOp => LoadBasedMemoryDouble
-              Ldrexd_Rule_71_A1_P146
-              cccc00011011nnnntttt111110011111 (v6K)
-| 1100      = StoreExclusive3RegisterOp => StoreBasedMemoryRtBits0To3
-              Strexb_Rule_203_A1_P402
-              cccc00011100nnnndddd11111001tttt (v6K)
-| 1101      = LoadExclusive2RegisterOp => LoadBasedMemory
-              Ldrexb_Rule_70_A1_P144
-              cccc00011101nnnntttt111110011111 (v6K)
-| 1110      = StoreExclusive3RegisterOp  => StoreBasedMemoryRtBits0To3
-              Strexh_Rule_205_A1_P406
-              cccc00011110nnnndddd11111001tttt (v6K)
-| 1111      = LoadExclusive2RegisterOp => LoadBasedMemory
-              Ldrexh_Rule_72_A1_P148
-              cccc00011111nnnntttt111110011111 (v6K)
-| else:     = Undefined # Note on page A5-16
+| 0x00      = baseline := Deprecated;
+              pattern := cccc00010b00nnnntttt00001001tttt;
+              rule := SWP_SWPB;
+| 1000      = *StRdRtRn
+              pattern := cccc00011000nnnndddd11111001tttt;
+              rule := STREX;  arch := v6;
+| 1001      = *LdRtRn
+              pattern := cccc00011001nnnntttt111110011111;
+              rule := LDREX;  arch := v6;
+| 1010      = *StRdRtRt2Rn
+              pattern := cccc00011010nnnndddd11111001tttt;
+              rule := STREXD;  arch := v6K;
+| 1011      = *LdRtRt2Rn
+              pattern := cccc00011011nnnntttt111110011111;
+              rule := LDREXD;  arch := v6K;
+| 1100      = *StRdRtRn
+              pattern := cccc00011100nnnndddd11111001tttt;
+              rule := STREXB;  arch := v6K;
+| 1101      = *LdRtRn
+              pattern := cccc00011101nnnntttt111110011111;
+              rule := LDREXB;  arch := v6K;
+| 1110      = *StRdRtRn
+              pattern := cccc00011110nnnndddd11111001tttt;
+              rule := STREXH;  arch := v6K;
+| 1111      = *LdRtRn
+              pattern := cccc00011111nnnntttt111110011111;
+              rule := STREXH;  arch := v6K;
+| else:     = Undefined  # Note on table description.
 +--
 
 # TODO(karl): Add uses to corresponding classes.

@@ -190,9 +190,9 @@ class Arm32DecoderState : DecoderState {
   const Load3RegisterDoubleOp Load3RegisterDoubleOp_instance_;
   const Load3RegisterOp Load3RegisterOp_instance_;
   const LoadBasedImmedMemory LoadBasedImmedMemory_instance_;
-  const LoadBasedMemory LoadBasedMemory_instance_;
-  const LoadBasedMemoryDouble LoadBasedMemoryDouble_instance_;
   const LoadBasedOffsetMemory LoadBasedOffsetMemory_instance_;
+  const LoadExclusive2RegisterDoubleOp LoadExclusive2RegisterDoubleOp_instance_;
+  const LoadExclusive2RegisterOp LoadExclusive2RegisterOp_instance_;
   const LoadMultiple LoadMultiple_instance_;
   const LoadRegisterImm8DoubleOp LoadRegisterImm8DoubleOp_instance_;
   const LoadRegisterImm8Op LoadRegisterImm8Op_instance_;
@@ -212,9 +212,9 @@ class Arm32DecoderState : DecoderState {
   const Store3RegisterDoubleOp Store3RegisterDoubleOp_instance_;
   const Store3RegisterOp Store3RegisterOp_instance_;
   const StoreBasedImmedMemory StoreBasedImmedMemory_instance_;
-  const StoreBasedMemoryDoubleRtBits0To3 StoreBasedMemoryDoubleRtBits0To3_instance_;
-  const StoreBasedMemoryRtBits0To3 StoreBasedMemoryRtBits0To3_instance_;
   const StoreBasedOffsetMemory StoreBasedOffsetMemory_instance_;
+  const StoreExclusive3RegisterDoubleOp StoreExclusive3RegisterDoubleOp_instance_;
+  const StoreExclusive3RegisterOp StoreExclusive3RegisterOp_instance_;
   const StoreRegisterList StoreRegisterList_instance_;
   const StoreVectorRegister StoreVectorRegister_instance_;
   const StoreVectorRegisterList StoreVectorRegisterList_instance_;
