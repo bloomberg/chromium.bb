@@ -369,7 +369,7 @@ bool CreateWindowFunction::ShouldOpenIncognitoWindow(
 
   // Remove all URLs that are not allowed in an incognito session. Note that a
   // ChromeOS guest session is not considered incognito in this case.
-  if (incognito && !Profile::IsGuestSession()) {
+  if (incognito && !profile_->IsGuestSession()) {
     std::string first_url_erased;
     for (size_t i = 0; i < urls->size();) {
       if (chrome::IsURLAllowedInIncognito((*urls)[i], profile())) {

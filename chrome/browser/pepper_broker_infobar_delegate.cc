@@ -37,14 +37,14 @@ void PepperBrokerInfoBarDelegate::Show(
     const GURL& url,
     const FilePath& plugin_path,
     const base::Callback<void(bool)>& callback) {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
   // TODO(wad): Add ephemeral device ID support for broker in guest mode.
-  if (Profile::IsGuestSession()) {
+  if (profile->IsGuestSession()) {
     callback.Run(false);
     return;
   }
 
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
   HostContentSettingsMap* content_settings =
       profile->GetHostContentSettingsMap();
   ContentSetting setting =

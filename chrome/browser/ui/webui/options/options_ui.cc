@@ -358,7 +358,7 @@ base::RefCountedMemory* OptionsUI::GetFaviconResourceBytes(
 
 void OptionsUI::InitializeHandlers() {
   Profile* profile = Profile::FromWebUI(web_ui());
-  DCHECK(!profile->IsOffTheRecord() || Profile::IsGuestSession());
+  DCHECK(!profile->IsOffTheRecord() || profile->IsGuestSession());
 
   // A new web page DOM has been brought up in an existing renderer, causing
   // this method to be called twice. If that happens, ignore the second call.

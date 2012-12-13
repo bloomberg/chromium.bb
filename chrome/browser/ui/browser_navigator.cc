@@ -81,7 +81,7 @@ bool AdjustNavigateParamsForURL(chrome::NavigateParams* params) {
   if (params->target_contents != NULL ||
       chrome::IsURLAllowedInIncognito(params->url,
                                       params->initiating_profile) ||
-      Profile::IsGuestSession()) {
+      params->initiating_profile->IsGuestSession()) {
     return true;
   }
 

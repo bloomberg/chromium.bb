@@ -119,7 +119,6 @@ std::string Profile::GetDebugName() {
   return name;
 }
 
-// static
 bool Profile::IsGuestSession() {
 #if defined(OS_CHROMEOS)
   static bool is_guest_session =

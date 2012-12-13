@@ -36,7 +36,8 @@ BrowserLauncherItemController::BrowserLauncherItemController(
       window_(window),
       tab_model_(tab_model),
       is_incognito_(tab_model->profile()->GetOriginalProfile() !=
-                    tab_model->profile() && !Profile::IsGuestSession()) {
+                    tab_model->profile() &&
+                    !tab_model->profile()->IsGuestSession()) {
   DCHECK(window_);
   window_->AddObserver(this);
 }

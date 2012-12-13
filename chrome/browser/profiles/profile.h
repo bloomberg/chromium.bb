@@ -316,7 +316,7 @@ class Profile : public content::BrowserContext {
   std::string GetDebugName();
 
   // Returns whether it is a guest session.
-  static bool IsGuestSession();
+  bool IsGuestSession();
 
   // Did the user restore the last session? This is set by SessionRestore.
   void set_restored_last_session(bool restored_last_session) {
