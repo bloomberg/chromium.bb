@@ -115,7 +115,7 @@ class GDataWapiService : public DriveServiceInterface,
   virtual void AuthorizeApp(
       const GURL& edit_url,
       const std::string& app_id,
-      const GetDataCallback& callback) OVERRIDE;
+      const AuthorizeAppCallback& callback) OVERRIDE;
 
  private:
   OperationRegistry* operation_registry() const;

@@ -93,7 +93,7 @@ class MockDriveService : public DriveServiceInterface {
   MOCK_METHOD3(AuthorizeApp,
       void(const GURL& edit_url,
           const std::string& app_id,
-          const GetDataCallback& callback));
+          const AuthorizeAppCallback& callback));
   MOCK_CONST_METHOD0(HasAccessToken, bool());
   MOCK_CONST_METHOD0(HasRefreshToken, bool());
 

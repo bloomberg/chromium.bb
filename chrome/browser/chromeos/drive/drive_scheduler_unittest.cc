@@ -171,7 +171,7 @@ class FakeDriveService : public DriveServiceInterface {
 
   virtual void AuthorizeApp(const GURL& edit_url,
                             const std::string& app_id,
-                            const GetDataCallback& callback) {
+                            const AuthorizeAppCallback& callback) {
   }
 
 };

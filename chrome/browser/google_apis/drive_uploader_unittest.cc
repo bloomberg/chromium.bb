@@ -154,7 +154,7 @@ class MockDriveServiceBase : public DriveServiceInterface {
   }
   virtual void AuthorizeApp(const GURL& edit_url,
                             const std::string& app_id,
-                            const GetDataCallback& callback) OVERRIDE {
+                            const AuthorizeAppCallback& callback) OVERRIDE {
     NOTREACHED();
   }
 };

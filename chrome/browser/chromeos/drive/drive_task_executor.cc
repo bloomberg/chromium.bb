@@ -116,7 +116,7 @@ void DriveTaskExecutor::OnFileEntryFetched(
 void DriveTaskExecutor::OnAppAuthorized(
     const std::string& resource_id,
     google_apis::GDataErrorCode error,
-    scoped_ptr<base::Value> feed_data) {
+    const GURL& open_link) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   // If we aborted, then this will be zero.
@@ -131,28 +131,13 @@ void DriveTaskExecutor::OnAppAuthorized(
     return;
   }
 
-  // TODO(mtomasz): Pass an object containing required links instead of
-  // base::Value in |feed_data| argument to this method. crbug.com/165393.
-  scoped_ptr<google_apis::ResourceEntry> entry =
-      google_apis::ResourceEntry::ExtractAndParse(*feed_data.get());
-
-  GURL open_with_url;
-  const ScopedVector<google_apis::Link>& feed_links = entry->links();
-  for (size_t i = 0; i < feed_links.size(); ++i) {
-    if (feed_links[i]->type() == google_apis::Link::LINK_OPEN_WITH &&
-        feed_links[i]->app_id() == extension_id()) {
-        open_with_url = feed_links[i]->href();
-        break;
-    }
-  }
-
-  if (open_with_url.is_empty()) {
+  if (open_link.is_empty()) {
     Done(false);
     return;
   }
 
   Browser* browser = GetBrowser();
-  chrome::AddSelectedTabWithURL(browser, open_with_url,
+  chrome::AddSelectedTabWithURL(browser, open_link,
                                 content::PAGE_TRANSITION_LINK);
   // If the current browser is not tabbed then the new tab will be created
   // in a different browser. Make sure it is visible.

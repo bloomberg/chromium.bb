@@ -74,6 +74,12 @@ typedef base::Callback<void(GDataErrorCode error,
                             scoped_ptr<AccountMetadataFeed> account_metadata)>
     GetAccountMetadataCallback;
 
+// Callback used for AuthorizeApp(). |open_url| is used to open the target
+// file with the authorized app.
+typedef base::Callback<void(GDataErrorCode error,
+                            const GURL& open_url)>
+    AuthorizeAppCallback;
+
 // This defines an interface for sharing by DriveService and MockDriveService
 // so that we can do testing of clients of DriveService.
 //
@@ -250,12 +256,12 @@ class DriveServiceInterface {
   virtual void ResumeUpload(const ResumeUploadParams& params,
                             const ResumeUploadCallback& callback) = 0;
 
-  // Authorizes a Drive app with the id |app_id| to open the given document.
-  // Upon completion, invokes |callback| with results on the calling thread.
-  // |callback| must not be null.
+  // Authorizes a Drive app with the id |app_id| to open the given file.
+  // Upon completion, invokes |callback| with the link to open the file with
+  // the provided app. |callback| must not be null.
   virtual void AuthorizeApp(const GURL& edit_url,
                             const std::string& app_id,
-                            const GetDataCallback& callback) = 0;
+                            const AuthorizeAppCallback& callback) = 0;
 };
 
 }  // namespace google_apis

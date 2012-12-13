@@ -117,7 +117,7 @@ class DriveAPIService : public google_apis::DriveServiceInterface,
   virtual void AuthorizeApp(
       const GURL& edit_url,
       const std::string& app_id,
-      const google_apis::GetDataCallback& callback) OVERRIDE;
+      const google_apis::AuthorizeAppCallback& callback) OVERRIDE;
 
  private:
   google_apis::OperationRegistry* operation_registry() const;

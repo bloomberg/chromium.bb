@@ -390,7 +390,7 @@ void DriveAPIService::ResumeUpload(
 void DriveAPIService::AuthorizeApp(
     const GURL& edit_url,
     const std::string& app_ids,
-    const google_apis::GetDataCallback& callback) {
+    const google_apis::AuthorizeAppCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 

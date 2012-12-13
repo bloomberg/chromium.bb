@@ -41,7 +41,7 @@ class DriveTaskExecutor : public file_handler_util::FileTaskExecutor {
                           scoped_ptr<DriveEntryProto> entry_proto);
   void OnAppAuthorized(const std::string& resource_id,
                        google_apis::GDataErrorCode error,
-                       scoped_ptr<base::Value> feed_data);
+                       const GURL& open_link);
 
   // Calls |done_| with |success| status.
   void Done(bool success);

@@ -153,6 +153,32 @@ void ParseAccounetMetadataAndRun(const GetAccountMetadataCallback& callback,
   callback.Run(error, entry.Pass());
 }
 
+// Extracts the open link url from the JSON Feed. Used by AuthorizeApp().
+void ExtractOpenLinkAndRun(const std::string app_id,
+                           const AuthorizeAppCallback& callback,
+                           GDataErrorCode error,
+                           scoped_ptr<ResourceEntry> entry) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Entry not found in the feed.
+  if (!entry) {
+    callback.Run(error, GURL());
+    return;
+  }
+
+  const ScopedVector<google_apis::Link>& feed_links = entry->links();
+  GURL open_link;
+  for (size_t i = 0; i < feed_links.size(); ++i) {
+    if (feed_links[i]->type() == google_apis::Link::LINK_OPEN_WITH &&
+        feed_links[i]->app_id() == app_id) {
+        open_link = feed_links[i]->href();
+        break;
+    }
+  }
+
+  callback.Run(error, open_link);
+}
+
 // OAuth2 scopes for the documents API.
 const char kDocsListScope[] = "https://docs.google.com/feeds/";
 const char kSpreadsheetsScope[] = "https://spreadsheets.google.com/feeds/";
@@ -455,16 +481,18 @@ void GDataWapiService::ResumeUpload(const ResumeUploadParams& params,
 
 void GDataWapiService::AuthorizeApp(const GURL& edit_url,
                                     const std::string& app_id,
-                                    const GetDataCallback& callback) {
+                                    const AuthorizeAppCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   runner_->StartOperationWithRetry(
-      new AuthorizeAppOperation(operation_registry(),
-                                url_request_context_getter_,
-                                callback,
-                                edit_url,
-                                app_id));
+      new AuthorizeAppOperation(
+          operation_registry(),
+          url_request_context_getter_,
+          base::Bind(&ParseResourceEntryAndRun,
+                     base::Bind(&ExtractOpenLinkAndRun, app_id, callback)),
+                     edit_url,
+                     app_id));
 }
 
 bool GDataWapiService::HasAccessToken() const {
