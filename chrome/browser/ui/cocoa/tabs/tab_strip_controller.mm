@@ -95,7 +95,7 @@ const CGFloat kLastMiniTabSpacing = 3.0;
 const CGFloat kIconWidthAndHeight = 16.0;
 
 // The amount by which the new tab button is offset (from the tabs).
-const CGFloat kNewTabButtonOffset = 9.0;
+const CGFloat kNewTabButtonOffset = 7.0;
 
 // Time (in seconds) in which tabs animate to their final position.
 const NSTimeInterval kAnimationDuration = 0.125;
