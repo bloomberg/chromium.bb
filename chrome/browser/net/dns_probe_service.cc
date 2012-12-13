@@ -252,6 +252,8 @@ void DnsProbeService::OnProbeJobComplete(DnsProbeJob* job,
 
 void DnsProbeService::GetSystemDnsConfig(DnsConfig* config) {
   NetworkChangeNotifier::GetDnsConfig(config);
+  // DNS probes don't need or want the suffix search list populated
+  config->search.clear();
 }
 
 void DnsProbeService::GetPublicDnsConfig(DnsConfig* config) {
