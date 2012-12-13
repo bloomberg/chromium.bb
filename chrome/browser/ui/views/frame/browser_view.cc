@@ -1356,7 +1356,7 @@ int BrowserView::GetExtraRenderViewHeight() const {
 void BrowserView::WebContentsFocused(WebContents* contents) {
   if (contents_container_->GetWebContents() == contents)
     contents_container_->OnWebContentsFocused(contents);
-  else if (contents_->preview_web_contents() == contents)
+  else if (contents_->HasSamePreviewContents(contents))
     preview_controller_->preview()->OnWebContentsFocused(contents);
   else
     devtools_container_->OnWebContentsFocused(contents);
@@ -1620,7 +1620,7 @@ void BrowserView::ActiveTabChanged(content::WebContents* old_contents,
   DCHECK(new_contents);
 
   // See if the Instant preview is being activated (committed).
-  if (contents_->preview_web_contents() == new_contents) {
+  if (contents_->HasSamePreviewContents(new_contents)) {
     contents_->MakePreviewContentsActiveContents();
     views::WebView* old_container = contents_container_;
     contents_container_ = preview_controller_->release_preview();

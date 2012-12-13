@@ -20,6 +20,10 @@ namespace gfx {
 class Rect;
 }
 
+namespace internal {
+class ShadowContainer;
+}
+
 namespace views {
 class WebView;
 }
@@ -43,15 +47,12 @@ class ContentsContainer : public views::View {
   void SetPreview(views::WebView* preview,
                   content::WebContents* preview_web_contents,
                   int height,
-                  InstantSizeUnits units);
+                  InstantSizeUnits units,
+                  bool draw_drop_shadow);
 
   // When the active content is reset and we have a visible preview,
   // the preview must be stacked back at top.
   void MaybeStackPreviewAtTop();
-
-  content::WebContents* preview_web_contents() const {
-    return preview_web_contents_;
-  }
 
   // Sets the active top margin.
   void SetActiveTopMargin(int margin);
@@ -67,25 +68,27 @@ class ContentsContainer : public views::View {
   int extra_content_height() const { return extra_content_height_; }
   void SetExtraContentHeight(int height);
 
+  // Returns true if |this| has the same preview contents as |contents|.
+  bool HasSamePreviewContents(content::WebContents* contents) const;
+
+  // Returns true if preview occupies full height of content page.
+  bool IsPreviewFullHeight(int preview_height,
+                           InstantSizeUnits preview_height_units) const;
+
  private:
   // Overridden from views::View:
   virtual void Layout() OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
 
-  // Returns |preview_height_| in pixels.
-  int PreviewHeightInPixels() const;
-
   views::WebView* active_;
-  views::WebView* preview_;
-  content::WebContents* preview_web_contents_;
+
+  // Contains the child preview, and is responsible for drawing the bottom
+  // edge and drop shadow below the preview when necessary.
+  internal::ShadowContainer* shadow_container_;
 
   // The margin between the top and the active view. This is used to make the
   // preview overlap the bookmark bar on the new tab page.
   int active_top_margin_;
-
-  // The desired height of the preview and units.
-  int preview_height_;
-  InstantSizeUnits preview_height_units_;
 
   // Used to extend the child WebView beyond the contents view bottom bound.
   int extra_content_height_;
