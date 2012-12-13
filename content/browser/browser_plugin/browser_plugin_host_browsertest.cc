@@ -926,7 +926,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, AcceptDragEvents) {
 // 5. The guest acks the 'stop' message with a 'stop_ack' message.
 // 6. The embedder changes its title to 'main guest' when it sees the 'stop_ack'
 // message.
-IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, DISABLED_PostMessage) {
+IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, PostMessage) {
   const char* kTesting = "testing123";
   const char* kEmbedderURL = "files/browser_plugin_embedder.html";
   const char* kGuestURL = "files/browser_plugin_post_message_guest.html";
@@ -939,11 +939,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, DISABLED_PostMessage) {
                                         expected_title);
 
     // By the time we get here 'contentWindow' should be ready because the
-    // guest has begun sending pixels to the embedder. This happens after
-    // the browser process sends the guest_routing_id to the embedder via
-    // BrowserPluginMsg_GuestContentWindowReady and after the browser process
-    // issues a ViewMsg_New to create the swapped out guest in the embedder's
-    // render process.
+    // guest has completed loading.
     ExecuteSyncJSFunction(rvh,
         ASCIIToUTF16(StringPrintf("PostMessage('%s, false');", kTesting)));
 
