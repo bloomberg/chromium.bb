@@ -66,6 +66,8 @@ void EulaScreenHandler::GetLocalizedStrings(
       l10n_util::GetStringUTF16(IDS_EULA_TPM_DESCRIPTION));
   localized_strings->SetString("eulaTpmKeyDesc",
       l10n_util::GetStringUTF16(IDS_EULA_TPM_KEY_DESCRIPTION));
+  localized_strings->SetString("eulaTpmDescPowerwash",
+      l10n_util::GetStringUTF16(IDS_EULA_TPM_KEY_DESCRIPTION_POWERWASH));
   localized_strings->SetString("eulaTpmBusy",
       l10n_util::GetStringUTF16(IDS_EULA_TPM_BUSY));
 #if defined(ENABLE_RLZ)

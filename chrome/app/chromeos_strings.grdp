@@ -1335,6 +1335,9 @@ Press any key to continue exploring.
   <message name="IDS_EULA_TPM_KEY_DESCRIPTION" desc="Dialog box text">
     Below is the randomly generated TPM password that has been assigned to your computer:
   </message>
+  <message name="IDS_EULA_TPM_KEY_DESCRIPTION_POWERWASH" desc="Dialog box text in case TPM is already in owned state">
+    The randomly generated TPM password is not available. This is normal after a Powerwash.
+  </message>  
   <message name="IDS_EULA_TPM_WAIT" desc="Dialog box text">
     The TPM is being set up. Please be patient; this may take a few minutes.
   </message>

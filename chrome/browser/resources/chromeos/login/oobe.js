@@ -280,9 +280,15 @@ cr.define('cr.ui', function() {
    */
   Oobe.setTpmPassword = function(password) {
     $('tpm-busy').hidden = true;
-    $('tpm-password').textContent = password;
-    $('tpm-password').hidden = false;
-  };
+
+    if (password.length) {
+      $('tpm-password').textContent = password;
+      $('tpm-password').hidden = false;
+    } else {
+      $('tpm-desc').hidden = true;
+      $('tpm-desc-powerwash').hidden = false;
+    }
+  }
 
   /**
    * Refreshes a11y menu state.
