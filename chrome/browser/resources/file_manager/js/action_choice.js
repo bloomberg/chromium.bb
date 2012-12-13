@@ -137,6 +137,11 @@ ActionChoice.prototype.loadSource_ = function(source) {
     if (mediaFiles.length == 0) {
       this.dom_.querySelector('#import-photos-to-drive').parentNode.
           style.display = 'none';
+
+      // If we have no media files, the only choice is view files. So, don't
+      // confuse user with a single choice, and just open file manager.
+      this.viewFiles_();
+      this.close_();
     }
 
     if (mediaFiles.length < ActionChoice.PREVIEW_COUNT) {
@@ -147,7 +152,8 @@ ActionChoice.prototype.loadSource_ = function(source) {
           'ACTION_CHOICE_COUNTER', mediaFiles.length);
     }
     var previews = mediaFiles.length ? mediaFiles : results;
-    this.renderPreview_(previews, ActionChoice.PREVIEW_COUNT);
+    var previewsCount = Math.min(ActionChoice.PREVIEW_COUNT, previews.length);
+    this.renderPreview_(previews, previewsCount);
   }.bind(this);
 
   var onEntry = function(entry) {
@@ -252,9 +258,7 @@ ActionChoice.prototype.onOk_ = function(event) {
         '#' + this.sourceEntry_.fullPath;
     util.platform.createWindow(url, {height: 656, width: 728});
   } else if (this.document_.querySelector('#view-files').checked) {
-    var url = util.platform.getURL('main.html') +
-        '#' + this.sourceEntry_.fullPath;
-    util.platform.createWindow(url);
+    this.viewFiles_();
   } else if (this.document_.querySelector('#watch-single-video').checked) {
     chrome.fileBrowserPrivate.viewFiles([this.singleVideo_.toURL()], 'watch',
         function(success) {});
@@ -270,5 +274,21 @@ ActionChoice.prototype.onOk_ = function(event) {
 ActionChoice.prototype.onDeviceUnmounted_ = function(event) {
   if (this.sourceEntry_ && event.mountPath == this.sourceEntry_.fullPath) {
     util.platform.closeWindow();
+  }
+};
+
+/**
+ * Perform the 'view files' action.
+ * @private
+ */
+ActionChoice.prototype.viewFiles_ = function() {
+  var path = this.sourceEntry_.fullPath;
+  if (util.platform.v2()) {
+    chrome.runtime.getBackgroundPage(function(bg) {
+      bg.launchFileManager({defaultPath: path});
+    });
+  } else {
+    var url = util.platform.getURL('main.html') + '#' + path;
+    util.platform.createWindow(url);
   }
 };
