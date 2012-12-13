@@ -106,9 +106,12 @@ TEST_F(DnsProbeJobTest, Test) {
     //                (Need to add another mock behavior to MockDnsClient.)
     { MockDnsClientRule::FAIL_ASYNC,
       MockDnsClientRule::FAIL_ASYNC,
-      DnsProbeJob::SERVERS_UNREACHABLE },
+      DnsProbeJob::SERVERS_FAILING },
     { MockDnsClientRule::FAIL_SYNC,
       MockDnsClientRule::FAIL_SYNC,
+      DnsProbeJob::SERVERS_FAILING },
+    { MockDnsClientRule::TIMEOUT,
+      MockDnsClientRule::TIMEOUT,
       DnsProbeJob::SERVERS_UNREACHABLE },
   };
   for (size_t i = 0; i < arraysize(kTestCases); i++) {

@@ -29,6 +29,22 @@ namespace chrome_browser_net {
 
 namespace {
 
+// Returns true if the given net_error indicates that we received a response
+// from the DNS server containing an error, or false if the given net_error
+// indicates that we never received a response.
+bool DidReceiveDnsResponse(int net_error) {
+  switch (net_error) {
+  case net::ERR_NAME_NOT_RESOLVED:  // NXDOMAIN maps to this.
+  case net::ERR_DNS_MALFORMED_RESPONSE:
+  case net::ERR_DNS_SERVER_REQUIRES_TCP:
+  case net::ERR_DNS_SERVER_FAILED:
+  case net::ERR_DNS_SORT_ERROR:  // Can only happen if the server responds.
+    return true;
+  default:
+    return false;
+  }
+}
+
 class DnsProbeJobImpl : public DnsProbeJob {
  public:
   DnsProbeJobImpl(scoped_ptr<DnsClient> dns_client,
@@ -139,7 +155,7 @@ DnsProbeJobImpl::QueryResult DnsProbeJobImpl::EvaluateGoodResponse(
     int net_error,
     const DnsResponse* response) {
   if (net_error != net::OK)
-    return QUERY_NET_ERROR;
+    return DidReceiveDnsResponse(net_error) ? QUERY_DNS_ERROR : QUERY_NET_ERROR;
 
   AddressList addr_list;
   TimeDelta ttl;
@@ -160,10 +176,8 @@ DnsProbeJobImpl::QueryResult DnsProbeJobImpl::EvaluateBadResponse(
   if (net_error == net::ERR_NAME_NOT_RESOLVED)  // NXDOMAIN maps to this
     return QUERY_CORRECT;
 
-  // TODO(ttuttle): Examine net_error a little more closely to see whether
-  // it's a DNS error or a network error.
   if (net_error != net::OK)
-    return QUERY_NET_ERROR;
+    return DidReceiveDnsResponse(net_error) ? QUERY_DNS_ERROR : QUERY_NET_ERROR;
 
   return QUERY_INCORRECT;
 }
