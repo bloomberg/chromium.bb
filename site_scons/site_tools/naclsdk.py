@@ -13,6 +13,7 @@ import sys
 import SCons.Scanner
 import SCons.Script
 import subprocess
+import tempfile
 
 
 # Mapping from env['PLATFORM'] (scons) to a single host platform from the point
@@ -544,6 +545,128 @@ or:
   found = [SCons.Node.FS.find_file(lib, libpath) for lib in libs]
   return [lib for lib in found if lib is not None]
 
+# This is a modified copy of the class TempFileMunge in
+# third_party/scons-2.0.1/engine/SCons/Platform/__init__.py.
+# It differs in using quote_for_at_file (below) in place of
+# SCons.Subst.quote_spaces.
+class NaClTempFileMunge(object):
+  """A callable class.  You can set an Environment variable to this,
+  then call it with a string argument, then it will perform temporary
+  file substitution on it.  This is used to circumvent the long command
+  line limitation.
+
+  Example usage:
+  env["TEMPFILE"] = TempFileMunge
+  env["LINKCOM"] = "${TEMPFILE('$LINK $TARGET $SOURCES')}"
+
+  By default, the name of the temporary file used begins with a
+  prefix of '@'.  This may be configred for other tool chains by
+  setting '$TEMPFILEPREFIX'.
+
+  env["TEMPFILEPREFIX"] = '-@'        # diab compiler
+  env["TEMPFILEPREFIX"] = '-via'      # arm tool chain
+  """
+  def __init__(self, cmd):
+    self.cmd = cmd
+
+  def __call__(self, target, source, env, for_signature):
+    if for_signature:
+      # If we're being called for signature calculation, it's
+      # because we're being called by the string expansion in
+      # Subst.py, which has the logic to strip any $( $) that
+      # may be in the command line we squirreled away.  So we
+      # just return the raw command line and let the upper
+      # string substitution layers do their thing.
+      return self.cmd
+
+    # Now we're actually being called because someone is actually
+    # going to try to execute the command, so we have to do our
+    # own expansion.
+    cmd = env.subst_list(self.cmd, SCons.Subst.SUBST_CMD, target, source)[0]
+    try:
+      maxline = int(env.subst('$MAXLINELENGTH'))
+    except ValueError:
+      maxline = 2048
+
+    length = 0
+    for c in cmd:
+      length += len(c)
+    if length <= maxline:
+      return self.cmd
+
+    # We do a normpath because mktemp() has what appears to be
+    # a bug in Windows that will use a forward slash as a path
+    # delimiter.  Windows's link mistakes that for a command line
+    # switch and barfs.
+    #
+    # We use the .lnk suffix for the benefit of the Phar Lap
+    # linkloc linker, which likes to append an .lnk suffix if
+    # none is given.
+    (fd, tmp) = tempfile.mkstemp('.lnk', text=True)
+    native_tmp = SCons.Util.get_native_path(os.path.normpath(tmp))
+
+    if env['SHELL'] and env['SHELL'] == 'sh':
+      # The sh shell will try to escape the backslashes in the
+      # path, so unescape them.
+      native_tmp = native_tmp.replace('\\', r'\\\\')
+      # In Cygwin, we want to use rm to delete the temporary
+      # file, because del does not exist in the sh shell.
+      rm = env.Detect('rm') or 'del'
+    else:
+      # Don't use 'rm' if the shell is not sh, because rm won't
+      # work with the Windows shells (cmd.exe or command.com) or
+      # Windows path names.
+      rm = 'del'
+
+    prefix = env.subst('$TEMPFILEPREFIX')
+    if not prefix:
+      prefix = '@'
+
+    # The @file is sometimes handled by a GNU tool itself, using
+    # the libiberty/argv.c code, and sometimes handled implicitly
+    # by Cygwin before the tool's own main even sees it.  These
+    # two treat the contents differently, so there is no single
+    # perfect way to quote.  The libiberty @file code uses a very
+    # regular scheme: a \ in any context is always swallowed and
+    # quotes the next character, whatever it is; '...' or "..."
+    # quote whitespace in ... and the outer quotes are swallowed.
+    # The Cygwin @file code uses a vaguely similar scheme, but its
+    # treatment of \ is much less consistent: a \ outside a quoted
+    # string is never stripped, and a \ inside a quoted string is
+    # only stripped when it quoted something (Cygwin's definition
+    # of "something" here is nontrivial).  In our uses the only
+    # appearances of \ we expect are in Windows-style file names.
+    # Fortunately, an extra doubling of \\ that doesn't get
+    # stripped is harmless in the middle of a file name.
+    def quote_for_at_file(s):
+      s = str(s)
+      if ' ' in s or '\t' in s:
+        return '"' + re.sub('([ \t"])', r'\\\1', s) + '"'
+      return s.replace('\\', '\\\\')
+
+    args = list(map(quote_for_at_file, cmd[1:]))
+    os.write(fd, " ".join(args) + "\n")
+    os.close(fd)
+    # XXX Using the SCons.Action.print_actions value directly
+    # like this is bogus, but expedient.  This class should
+    # really be rewritten as an Action that defines the
+    # __call__() and strfunction() methods and lets the
+    # normal action-execution logic handle whether or not to
+    # print/execute the action.  The problem, though, is all
+    # of that is decided before we execute this method as
+    # part of expanding the $TEMPFILE construction variable.
+    # Consequently, refactoring this will have to wait until
+    # we get more flexible with allowing Actions to exist
+    # independently and get strung together arbitrarily like
+    # Ant tasks.  In the meantime, it's going to be more
+    # user-friendly to not let obsession with architectural
+    # purity get in the way of just being helpful, so we'll
+    # reach into SCons.Action directly.
+    if SCons.Action.print_actions:
+      print("Using tempfile "+native_tmp+" for command line:\n"+
+            str(cmd[0]) + " " + " ".join(args))
+    return [ cmd[0], prefix + native_tmp + '\n' + rm, native_tmp ]
+
 def generate(env):
   """SCons entry point for this tool.
 
@@ -631,6 +754,7 @@ def generate(env):
   # most of a command line into a temporary file and pass it with
   # @filename, which works with gcc.
   if env['PLATFORM'] in ['win32', 'cygwin']:
+    env['TEMPFILE'] = NaClTempFileMunge
     for com in ['LINKCOM', 'SHLINKCOM', 'ARCOM']:
       env[com] = "${TEMPFILE('%s')}" % env[com]
 
