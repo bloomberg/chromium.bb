@@ -42,6 +42,7 @@ const char kHTMLForGuest[] =
 const char kHTMLForGuestBusyLoop[] =
     "data:text/html,<html><head><script type=\"text/javascript\">"
     "function PauseMs(timems) {"
+    "  document.title = \"start\";"
     "  var date = new Date();"
     "  var currDate = null;"
     "  do {"
@@ -342,29 +343,30 @@ class BrowserPluginHostTest : public ContentBrowserTest {
 
 // This test loads a guest that has a busy loop, and therefore it hangs the
 // guest.
-// Disabled on Windows and Linux since it is flaky http://crbug.com/164812.
-#if defined(OS_WIN) || defined(OS_LINUX)
-#define MAYBE_GuestUnresponsive DISABLED_GuestUnresponsive
-#else
-#define MAYBE_GuestUnresponsive GuestUnresponsive
-#endif
-IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, MAYBE_GuestUnresponsive) {
+IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, GuestUnresponsive) {
   // Override the hang timeout for guest to be very small.
   content::BrowserPluginGuest::set_factory_for_testing(
       TestShortHangTimeoutGuestFactory::GetInstance());
   const char kEmbedderURL[] =
       "files/browser_plugin_embedder_guest_unresponsive.html";
   StartBrowserPluginTest(kEmbedderURL, kHTMLForGuestBusyLoop, true, "");
-
-  // Hang the guest for a period of time.
+  // Wait until the busy loop starts.
   {
-    const string16 expected_title = ASCIIToUTF16("done");
-    content::TitleWatcher title_watcher(test_embedder()->web_contents(),
+    const string16 expected_title = ASCIIToUTF16("start");
+    content::TitleWatcher title_watcher(test_guest()->web_contents(),
                                         expected_title);
     // Hang the guest for a length of time.
     int spin_time = 10 * TestTimeouts::tiny_timeout().InMilliseconds();
     ExecuteSyncJSFunction(test_guest()->web_contents()->GetRenderViewHost(),
         ASCIIToUTF16(StringPrintf("StartPauseMs(%d);", spin_time).c_str()));
+
+    string16 actual_title = title_watcher.WaitAndGetTitle();
+    EXPECT_EQ(expected_title, actual_title);
+  }
+  {
+    const string16 expected_title = ASCIIToUTF16("done");
+    content::TitleWatcher title_watcher(test_embedder()->web_contents(),
+                                        expected_title);
 
     // Send a mouse event to the guest.
     SimulateMouseClick(test_embedder()->web_contents(), 0,
