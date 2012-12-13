@@ -242,7 +242,13 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcessInstances) {
 // Test that hosted apps with the background permission but that set
 // allow_js_access to false also use a process per app instance model.
 // Separate instances should be in separate processes.
-IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcessBackgroundInstances) {
+#if defined(OS_WIN)
+#define MAYBE_AppProcessBackgroundInstances \
+    DISABLED_AppProcessBackgroundInstances
+#else
+#define MAYBE_AppProcessBackgroundInstances AppProcessBackgroundInstances
+#endif
+IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_AppProcessBackgroundInstances) {
   TestAppInstancesHelper("app_process_background_instances");
 }
 
