@@ -756,35 +756,6 @@ const char kGeoAgeProperty[] = "age";
 const char kGeoSignalStrengthProperty[] = "signalStrength";
 }  // namespace shill
 
-namespace cashew {
-// Cashew D-Bus service identifiers.
-const char kCashewServiceName[] = "org.chromium.Cashew";
-const char kCashewServicePath[] = "/org/chromium/Cashew";
-const char kCashewServiceInterface[] = "org.chromium.Cashew";
-
-// Cashew function names.
-const char kRequestDataPlanFunction[] = "RequestDataPlansUpdate";
-const char kRetrieveDataPlanFunction[] = "GetDataPlans";
-const char kRequestCellularUsageFunction[] = "RequestCellularUsageInfo";
-
-// Cashew signals.
-const char kMonitorDataPlanUpdate[] = "DataPlansUpdate";
-
-// Cashew data plan properties
-const char kCellularPlanNameProperty[] = "CellularPlanName";
-const char kCellularPlanTypeProperty[] = "CellularPlanType";
-const char kCellularPlanUpdateTimeProperty[] = "CellularPlanUpdateTime";
-const char kCellularPlanStartProperty[] = "CellularPlanStart";
-const char kCellularPlanEndProperty[] = "CellularPlanEnd";
-const char kCellularPlanDataBytesProperty[] = "CellularPlanDataBytes";
-const char kCellularDataBytesUsedProperty[] = "CellularDataBytesUsed";
-
-// Cashew Data Plan types
-const char kCellularDataPlanUnlimited[] = "UNLIMITED";
-const char kCellularDataPlanMeteredPaid[] = "METERED_PAID";
-const char kCellularDataPlanMeteredBase[] = "METERED_BASE";
-}  // namespace cashew
-
 namespace modemmanager {
 // ModemManager D-Bus service identifiers
 const char kModemManagerSMSInterface[] =
