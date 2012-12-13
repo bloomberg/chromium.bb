@@ -47,5 +47,16 @@ void EnableInstantExtendedAPIForTesting() {
       switches::kEnableInstantExtendedAPI);
 }
 
+bool IsQueryExtractionEnabled(const Profile* profile) {
+  return IsInstantExtendedAPIEnabled(profile) ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableInstantExtendedAPI);
+}
+
+void EnableQueryExtractionForTesting() {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableInstantExtendedAPI);
+}
+
 }  // namespace search
 }  // namespace chrome

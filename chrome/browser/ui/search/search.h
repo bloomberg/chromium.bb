@@ -24,6 +24,12 @@ uint64 EmbeddedSearchPageVersion(const Profile* profile);
 // Force the instant extended API to be enabled for tests.
 void EnableInstantExtendedAPIForTesting();
 
+// Returns whether query extraction is enabled.
+bool IsQueryExtractionEnabled(const Profile* profile);
+
+// Force query extraction to be enabled for tests.
+void EnableQueryExtractionForTesting();
+
 }  // namespace search
 }  // namespace chrome
 

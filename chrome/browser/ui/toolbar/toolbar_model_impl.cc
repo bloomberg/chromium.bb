@@ -215,8 +215,8 @@ string16 ToolbarModelImpl::TryToExtractSearchTermsFromURL() const {
   const GURL& url = GetURL();
   Profile* profile = GetProfile();
 
-  // Ensure instant extended API is enabled and query URL is HTTPS.
-  if (!profile || !chrome::search::IsInstantExtendedAPIEnabled(profile) ||
+  // Ensure query extraction is enabled and query URL is HTTPS.
+  if (!profile || !chrome::search::IsQueryExtractionEnabled(profile) ||
       !url.SchemeIs(chrome::kHttpsScheme) ||
       !google_util::IsInstantExtendedAPIGoogleSearchUrl(url.spec()))
     return string16();
