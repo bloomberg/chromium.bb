@@ -114,15 +114,6 @@ int main(int argc, char** argv) {
 #if defined(OS_LINUX) && defined(USE_AURA) && !defined(OS_CHROMEOS)
   return 0;
 #endif
-#if defined(OS_WIN) && defined(USE_AURA)
-  wchar_t filename[MAX_PATH];
-  GetModuleFileName(NULL, filename, MAX_PATH);
-  // http://crbug.com/154081: early exit until interactive_ui_tests are green.
-  if (EndsWith(filename, L"interactive_ui_tests.exe", false)) {
-    LOG(INFO) << "interactive_ui_tests on win aura are not ready yet.";
-    return 0;
-  }
-#endif
 
 #if defined(OS_MACOSX)
   chrome_browser_application_mac::RegisterBrowserCrApp();
