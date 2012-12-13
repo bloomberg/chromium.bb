@@ -439,11 +439,11 @@ void BrowsingHistoryHandler::QueryComplete(
     ReturnResultsToFrontEnd();
 }
 
-  void BrowsingHistoryHandler::WebHistoryQueryComplete(
-      const string16& search_text,
-      const history::QueryOptions& options,
-      history::WebHistoryService::Request* request,
-      const DictionaryValue* results_value) {
+void BrowsingHistoryHandler::WebHistoryQueryComplete(
+    const string16& search_text,
+    const history::QueryOptions& options,
+    history::WebHistoryService::Request* request,
+    const DictionaryValue* results_value) {
   web_history_timer_.Stop();
 
   // Check if the results have already been received from the history DB.
@@ -454,11 +454,11 @@ void BrowsingHistoryHandler::QueryComplete(
   const ListValue* events = NULL;
   if (results_value && results_value->GetList("event", &events)) {
     for (unsigned int i = 0; i < events->GetSize(); ++i) {
-      const DictionaryValue* event;
-      const DictionaryValue* result;
-      const DictionaryValue* id;
+      const DictionaryValue* event = NULL;
+      const DictionaryValue* result = NULL;
+      const DictionaryValue* id = NULL;
       const ListValue* results = NULL;
-      const ListValue* ids;
+      const ListValue* ids = NULL;
       string16 timestamp_string;
       string16 url;
       int64 timestamp_usec;
