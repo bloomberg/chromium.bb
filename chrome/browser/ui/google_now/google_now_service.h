@@ -7,6 +7,7 @@
 
 #include "base/timer.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
+#include "net/url_request/url_fetcher_delegate.h"
 
 class Profile;
 
@@ -18,10 +19,6 @@ namespace content {
 struct Geoposition;
 }
 
-namespace net {
-class URLRequest;
-}
-
 // The Google Now service gets Google Now cards from the server and shows them
 // as Chrome notifications.
 // The service performs periodic updating of Google Now cards.
@@ -29,7 +26,8 @@ class URLRequest;
 // 1. Obtaining the location of the machine (asynchronous);
 // 2. Making a server request (asynchronous);
 // 3. Showing the cards as notifications.
-class GoogleNowService : public ProfileKeyedService {
+class GoogleNowService : public ProfileKeyedService,
+                         public net::URLFetcherDelegate {
  public:
   // Must call Init after construction.
   explicit GoogleNowService(Profile* profile);
@@ -54,17 +52,21 @@ class GoogleNowService : public ProfileKeyedService {
   void OnLocationObtained(const content::Geoposition& position);
   void OnLocationRequestTimeout();
 
+  // Builds a URL for a server request.
+  static std::string BuildRequestURL(const content::Geoposition& position);
+
   // Starts downloading cards from the server.
   void StartServerRequest(const content::Geoposition& position);
-  void OnServerRequestCompleted(net::URLRequest* request, int num_bytes);
 
   // Parses server response. Returns true if the parsing was successful.
-  static bool ParseServerResponse(const net::URLRequest* request,
-                                  int num_bytes,
+  static bool ParseServerResponse(const std::string& response_string,
                                   ServerResponse* server_response);
 
   // Shows Google Now cards as notifications.
   void ShowNotifications(const ServerResponse& server_response);
+
+  // URLFetcherDelegate
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   // The profile.
   Profile* const profile_;
@@ -75,6 +77,8 @@ class GoogleNowService : public ProfileKeyedService {
   // Weak factory for the geolocation request callback. Used to ensure
   // geolocation request callback is not run after this object is destroyed.
   base::WeakPtrFactory<GoogleNowService> geolocation_request_weak_factory_;
+  // Fetcher for Google Now cards.
+  scoped_ptr<net::URLFetcher> fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(GoogleNowService);
 };

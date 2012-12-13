@@ -4,13 +4,21 @@
 
 #include "chrome/browser/ui/google_now/google_now_service.h"
 
+#include "base/command_line.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/geolocation.h"
 #include "content/public/common/geoposition.h"
+#include "net/http/http_status_code.h"
+#include "net/url_request/url_fetcher.h"
+#include "net/url_request/url_request_context.h"
 
 using base::Bind;
 using base::TimeDelta;
 using content::Geoposition;
-using net::URLRequest;
+using net::HTTP_OK;
+using net::URLFetcher;
+using net::URLRequestStatus;
 
 namespace {
 // TODO(vadimt): Figure out the values of the constants.
@@ -71,6 +79,7 @@ void GoogleNowService::OnWaitingForNextUpdateEnds() {
   DCHECK(!next_update_timer_.IsRunning());
   DCHECK(!geolocation_request_timer_.IsRunning());
   DCHECK(!geolocation_request_weak_factory_.HasWeakPtrs());
+  DCHECK(fetcher_.get() == NULL);
 
   UpdateCards();
 }
@@ -92,6 +101,7 @@ void GoogleNowService::OnLocationObtained(const Geoposition& position) {
   DCHECK(!next_update_timer_.IsRunning());
   DCHECK(geolocation_request_timer_.IsRunning());
   DCHECK(geolocation_request_weak_factory_.HasWeakPtrs());
+  DCHECK(fetcher_.get() == NULL);
 
   geolocation_request_weak_factory_.InvalidateWeakPtrs();
   geolocation_request_timer_.Stop();
@@ -103,44 +113,50 @@ void GoogleNowService::OnLocationRequestTimeout() {
   DCHECK(!next_update_timer_.IsRunning());
   DCHECK(!geolocation_request_timer_.IsRunning());
   DCHECK(geolocation_request_weak_factory_.HasWeakPtrs());
+  DCHECK(fetcher_.get() == NULL);
 
   geolocation_request_weak_factory_.InvalidateWeakPtrs();
   StartServerRequest(Geoposition());
 }
 
+std::string GoogleNowService::BuildRequestURL(
+    const content::Geoposition& position) {
+  std::string server_path =
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kEnableGoogleNowIntegration);
+  DCHECK(!server_path.empty());
+
+  if (position.Validate()) {
+    // If position is available, append it to the URL.
+    std::stringstream parameters;
+    parameters << "?q="
+               << position.latitude << ','
+               << position.longitude << ','
+               << position.accuracy;
+    server_path += parameters.str();
+  }
+
+  return server_path;
+}
+
 void GoogleNowService::StartServerRequest(
     const content::Geoposition& position) {
-  // TODO(vadimt): Implement via making URLRequest to the server.
-  OnServerRequestCompleted(NULL, 0);
+  DCHECK(fetcher_.get() == NULL);
+  fetcher_.reset(URLFetcher::Create(GURL(BuildRequestURL(position)),
+                                    URLFetcher::GET,
+                                    this));
+
+  // TODO(vadimt): Figure out how to send user's identity to the server. Make
+  // sure we never get responses like 'Select an account' page.
+  fetcher_->SetRequestContext(profile_->GetRequestContext());
+  fetcher_->SetLoadFlags(
+      net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE |
+      net::LOAD_DO_NOT_SAVE_COOKIES);
+
+  fetcher_->Start();
 }
 
-void GoogleNowService::OnServerRequestCompleted(URLRequest* request,
-                                                int num_bytes) {
-  DCHECK(IsGoogleNowEnabled());
-  DCHECK(!next_update_timer_.IsRunning());
-  DCHECK(!geolocation_request_timer_.IsRunning());
-  // TODO(vadimt): Uncomment the check below once OnServerRequestCompleted is
-  // called asynchronously.
-  // DCHECK(!geolocation_request_weak_factory_.HasWeakPtrs());
-
-  ServerResponse server_response;
-  // TODO(vadimt): Check request's status.
-  if (ParseServerResponse(request, num_bytes, &server_response)) {
-    ShowNotifications(server_response);
-    // Once the cards are shown, schedule next cards update after the delay
-    // suggested by the server.
-    StartWaitingForNextUpdate(server_response.next_request_delay);
-  } else {
-    // If the server response is bad, schedule next cards update after the
-    // default delay.
-    // TODO(vadimt): Consider exponential backoff with randomized jitter.
-    StartWaitingForNextUpdate(
-        TimeDelta::FromMilliseconds(kDefaultPollingPeriodMs));
-  }
-}
-
-bool GoogleNowService::ParseServerResponse(const URLRequest* request,
-                                           int num_bytes,
+bool GoogleNowService::ParseServerResponse(const std::string& response_string,
                                            ServerResponse* server_response) {
   // TODO(vadimt): Do real parsing.
   server_response->next_request_delay =
@@ -151,4 +167,34 @@ bool GoogleNowService::ParseServerResponse(const URLRequest* request,
 void GoogleNowService::ShowNotifications(
     const ServerResponse& server_response) {
   // TODO(vadimt): Implement using Chrome Notifications.
+}
+
+void GoogleNowService::OnURLFetchComplete(const net::URLFetcher* source) {
+  DCHECK(source != NULL);
+  DCHECK(IsGoogleNowEnabled());
+  DCHECK(!next_update_timer_.IsRunning());
+  DCHECK(!geolocation_request_timer_.IsRunning());
+  DCHECK(!geolocation_request_weak_factory_.HasWeakPtrs());
+  DCHECK(fetcher_.get() == source);
+
+  // TODO(vadimt): Implement exponential backoff with randomized jitter.
+  TimeDelta next_request_delay =
+      TimeDelta::FromMilliseconds(kDefaultPollingPeriodMs);
+
+  if (source->GetStatus().status() == URLRequestStatus::SUCCESS &&
+      source->GetResponseCode() == HTTP_OK) {
+    std::string response_string;
+
+    if (source->GetResponseAsString(&response_string)) {
+      ServerResponse server_response;
+
+      if (ParseServerResponse(response_string, &server_response)) {
+        ShowNotifications(server_response);
+        next_request_delay = server_response.next_request_delay;
+      }
+    }
+  }
+
+  fetcher_.reset(NULL);
+  StartWaitingForNextUpdate(next_request_delay);
 }
