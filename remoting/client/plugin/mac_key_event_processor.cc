@@ -12,6 +12,7 @@ namespace remoting {
 
 namespace {
 
+const unsigned int kUsbCapsLock     = 0x070039;
 const unsigned int kUsbLeftControl  = 0x0700e0;
 const unsigned int kUsbLeftShift    = 0x0700e1;
 const unsigned int kUsbLeftOption   = 0x0700e2;
@@ -45,7 +46,21 @@ void MacKeyEventProcessor::InjectKeyEvent(const protocol::KeyEvent& event) {
   bool is_cmd_key = event.usb_keycode() == kUsbLeftCmd ||
       event.usb_keycode() == kUsbRightCmd;
 
-  if (!is_cmd_key && !is_special_key) {
+  if (event.usb_keycode() == kUsbCapsLock) {
+    // Mac OS X generates keydown/keyup on lock-state transitions, rather than
+    // when the key is pressed & released, so fake keydown/keyup on each event.
+    protocol::KeyEvent event;
+    event.set_usb_keycode(kUsbCapsLock);
+
+    event.set_pressed(true);
+    InputFilter::InjectKeyEvent(event);
+    event.set_pressed(false);
+    InputFilter::InjectKeyEvent(event);
+
+    return;
+  } else if (!is_cmd_key && !is_special_key) {
+    // Track keydown/keyup events for non-modifiers, so we can release them if
+    // necessary (see below).
     if (event.pressed()) {
       key_pressed_map_[event.usb_keycode()] = event;
     } else {
@@ -54,6 +69,8 @@ void MacKeyEventProcessor::InjectKeyEvent(const protocol::KeyEvent& event) {
   }
 
   if (is_cmd_key && !event.pressed()) {
+    // Mac OS X will not generate release events for keys pressed while Cmd is
+    // pressed, so release all pressed keys when Cmd is released.
     GenerateKeyupEvents();
   }
 
