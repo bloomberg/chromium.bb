@@ -985,6 +985,9 @@ void GLRenderer::flushTextureQuadCache()
     // Bind the program to the GL state.
     setUseProgram(m_drawCache.program_id);
 
+    // Bind the correct texture sampler location.
+    GLC(context(), context()->uniform1i(m_drawCache.sampler_location, 0));
+
     // Assume the current active textures is 0.
     ResourceProvider::ScopedReadLockGL lockedQuad(m_resourceProvider, m_drawCache.resource_id);
     GLC(context(), context()->bindTexture(GL_TEXTURE_2D, lockedQuad.textureId()));
@@ -1052,6 +1055,7 @@ void GLRenderer::enqueueTextureQuad(const DrawingFrame& frame, const TextureDraw
         m_drawCache.alpha_location = binding.alphaLocation;
         m_drawCache.uv_xform_location = binding.texTransformLocation;
         m_drawCache.matrix_location = binding.matrixLocation;
+        m_drawCache.sampler_location = binding.samplerLocation;
     }
 
     // Generate the uv-transform
@@ -1646,7 +1650,6 @@ const GLRenderer::TextureProgram* GLRenderer::textureProgram()
     if (!m_textureProgram->initialized()) {
         TRACE_EVENT0("cc", "GLRenderer::textureProgram::initialize");
         m_textureProgram->initialize(m_context, m_isUsingBindUniform);
-        GLC(context(), context()->uniform1i(m_textureProgram.get()->fragmentShader().samplerLocation(), 0));
     }
     return m_textureProgram.get();
 }
@@ -1658,7 +1661,6 @@ const GLRenderer::TextureProgramFlip* GLRenderer::textureProgramFlip()
     if (!m_textureProgramFlip->initialized()) {
         TRACE_EVENT0("cc", "GLRenderer::textureProgramFlip::initialize");
         m_textureProgramFlip->initialize(m_context, m_isUsingBindUniform);
-        GLC(context(), context()->uniform1i(m_textureProgramFlip.get()->fragmentShader().samplerLocation(), 0));
     }
     return m_textureProgramFlip.get();
 }

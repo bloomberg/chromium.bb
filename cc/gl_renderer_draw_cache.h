@@ -32,6 +32,7 @@ struct TexturedQuadDrawCache {
   int alpha_location;
   int uv_xform_location;
   int matrix_location;
+  int sampler_location;
 
   // A cache for the coalesced quad data.
   std::vector<Float4> uv_xform_data;
