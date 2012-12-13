@@ -1,7 +1,7 @@
 Name: Google Cache Invalidation API
 Short Name: google-cache-invalidation-api
 URL: http://code.google.com/p/google-cache-invalidation-api/
-Version: r245
+Version: r247
 License: Apache 2.0
 License File: src/google/cacheinvalidation/COPYING
 Security Critical: no
@@ -11,3 +11,14 @@ This is the API to talk to the Google Cache Invalidation service.
 
 Local Modifications:
 None.
+
+Note: If you are rolling forward the Cache Invalidation API version, and want to
+check if any changes need to be made to cacheinvalidation.gyp, do the following:
+
+  cd src/third_party/cacheinvalidation/src
+  git remote update
+  git diff --diff-filter=ACDR --name-only origin/master | grep -v ^java/
+
+This should give you a list of relevant files that were added, copied, renamed
+or deleted upstream. You will likely need to make appropriate changes to
+cacheinvalidation.gyp to keep the build green.
