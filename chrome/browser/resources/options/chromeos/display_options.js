@@ -851,7 +851,10 @@ cr.define('options', function() {
         resolutionElement.removeChild(resolutionElement.firstChild);
       resolutionElement.appendChild(document.createTextNode(resolutionData));
 
-      if (this.overscanCalibrator_) {
+      if (display.isInternal) {
+        $('start-calibrating-overscan-control').hidden = true;
+        $('end-calibrating-overscan-control').hidden = true;
+      } else if (this.overscanCalibrator_) {
         $('start-calibrating-overscan-control').hidden = true;
         $('end-calibrating-overscan-control').hidden = false;
       } else {

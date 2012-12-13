@@ -153,6 +153,8 @@ void DisplayOptionsHandler::SendDisplayInfo() {
     js_display->SetString("name",
                           display_manager->GetDisplayNameFor(*display));
     js_display->SetBoolean("isPrimary", display->id() == primary_id);
+    js_display->SetBoolean("isInternal",
+                           display_manager->IsInternalDisplayId(display->id()));
     base::DictionaryValue* js_insets = new base::DictionaryValue();
     const gfx::Insets& insets =
         display_controller->GetOverscanInsets(display->id());
