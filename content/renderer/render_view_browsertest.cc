@@ -501,6 +501,81 @@ TEST_F(RenderViewImplTest, SendSwapOutACK) {
   EXPECT_FALSE(msg3);
 }
 
+// Ensure the RenderViewImpl reloads the previous page if a reload request
+// arrives while it is showing swappedout://.  http://crbug.com/143155.
+TEST_F(RenderViewImplTest, ReloadWhileSwappedOut) {
+  // Load page A.
+  LoadHTML("<div>Page A</div>");
+
+  // Load page B, which will trigger an UpdateState message for page A.
+  LoadHTML("<div>Page B</div>");
+
+  // Check for a valid UpdateState message for page A.
+  ProcessPendingMessages();
+  const IPC::Message* msg_A = render_thread_->sink().GetUniqueMessageMatching(
+      ViewHostMsg_UpdateState::ID);
+  ASSERT_TRUE(msg_A);
+  int page_id_A;
+  std::string state_A;
+  ViewHostMsg_UpdateState::Read(msg_A, &page_id_A, &state_A);
+  EXPECT_EQ(1, page_id_A);
+  render_thread_->sink().ClearMessages();
+
+  // Back to page A (page_id 1) and commit.
+  ViewMsg_Navigate_Params params_A;
+  params_A.navigation_type = ViewMsg_Navigate_Type::NORMAL;
+  params_A.transition = PAGE_TRANSITION_FORWARD_BACK;
+  params_A.current_history_list_length = 2;
+  params_A.current_history_list_offset = 1;
+  params_A.pending_history_list_offset = 0;
+  params_A.page_id = 1;
+  params_A.state = state_A;
+  view()->OnNavigate(params_A);
+  ProcessPendingMessages();
+
+  // Respond to a swap out request.
+  ViewMsg_SwapOut_Params params;
+  params.closing_process_id = 10;
+  params.closing_route_id = 11;
+  params.new_render_process_host_id = 12;
+  params.new_request_id = 13;
+  view()->OnSwapOut(params);
+
+  // Check for a OnSwapOutACK.
+  const IPC::Message* msg = render_thread_->sink().GetUniqueMessageMatching(
+      ViewHostMsg_SwapOut_ACK::ID);
+  ASSERT_TRUE(msg);
+  render_thread_->sink().ClearMessages();
+
+  // It is possible to get a reload request at this point, containing the
+  // params.state of the initial page (e.g., if the new page fails the
+  // provisional load in the renderer process, after we unload the old page).
+  // Ensure the old page gets reloaded, not swappedout://.
+  ViewMsg_Navigate_Params nav_params;
+  nav_params.url = GURL("data:text/html,<div>Page A</div>");
+  nav_params.navigation_type = ViewMsg_Navigate_Type::RELOAD;
+  nav_params.transition = PAGE_TRANSITION_RELOAD;
+  nav_params.current_history_list_length = 2;
+  nav_params.current_history_list_offset = 0;
+  nav_params.pending_history_list_offset = 0;
+  nav_params.page_id = 1;
+  nav_params.state = state_A;
+  view()->OnNavigate(nav_params);
+  ProcessPendingMessages();
+
+  // Verify page A committed, not swappedout://.
+  const IPC::Message* frame_navigate_msg =
+      render_thread_->sink().GetUniqueMessageMatching(
+          ViewHostMsg_FrameNavigate::ID);
+  EXPECT_TRUE(frame_navigate_msg);
+
+  // Read URL out of the parent trait of the params object.
+  ViewHostMsg_FrameNavigate::Param commit_params;
+  ViewHostMsg_FrameNavigate::Read(frame_navigate_msg, &commit_params);
+  EXPECT_NE(GURL("swappedout://"), commit_params.a.url);
+}
+
+
 // Test that we get the correct UpdateState message when we go back twice
 // quickly without committing.  Regression test for http://crbug.com/58082.
 // Disabled: http://crbug.com/157357 .
