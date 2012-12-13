@@ -318,6 +318,12 @@ void InstantLoader::AboutToNavigateMainFrame(const GURL& url) {
   controller_->InstantLoaderAboutToNavigateMainFrame(url);
 }
 
+void InstantLoader::NavigateToURL(const GURL& url,
+                                  content::PageTransition transition) {
+  InstantSupportDetermined(true);
+  controller_->NavigateToURL(url, transition);
+}
+
 void InstantLoader::Observe(int type,
                             const content::NotificationSource& source,
                             const content::NotificationDetails& details) {

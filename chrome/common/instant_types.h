@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/string16.h"
+#include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
 
 // Ways that the Instant suggested text is autocompleted into the omnibox.
@@ -62,6 +63,10 @@ struct InstantAutocompleteResult {
 
   // The URL of the match, same as AutocompleteMatch::destination_url.
   string16 destination_url;
+
+  // The transition type to use when the user opens this match. Same as
+  // AutocompleteMatch::transition.
+  content::PageTransition transition;
 
   // The relevance score of this match, same as AutocompleteMatch::relevance.
   int relevance;

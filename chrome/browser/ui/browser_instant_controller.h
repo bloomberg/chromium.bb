@@ -84,6 +84,9 @@ class BrowserInstantController : public content::NotificationObserver,
   // Invoked by |instant_| to update theme information for preview.
   void UpdateThemeInfoForPreview();
 
+  // Invoked by the InstantController when it wants to open a URL.
+  void OpenURLInCurrentTab(const GURL& url, content::PageTransition transition);
+
  private:
   // Sets the value of |instant_| based on value from profile. Invoked
   // on pref change.

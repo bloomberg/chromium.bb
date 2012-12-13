@@ -56,6 +56,13 @@ void SearchBox::StopCapturingKeyStrokes() {
       render_view()->GetRoutingID(), render_view()->GetPageId()));
 }
 
+void SearchBox::NavigateToURL(const GURL& url,
+                              content::PageTransition transition) {
+  render_view()->Send(new ChromeViewHostMsg_SearchBoxNavigate(
+      render_view()->GetRoutingID(), render_view()->GetPageId(),
+      url, transition));
+}
+
 gfx::Rect SearchBox::GetRect() {
   // Need to adjust for scale.
   if (rect_.IsEmpty())

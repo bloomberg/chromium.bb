@@ -11,6 +11,7 @@
 #include "base/string16.h"
 #include "chrome/common/instant_types.h"
 #include "chrome/common/search_types.h"
+#include "content/public/common/page_transition_types.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_observer_tracker.h"
 #include "ui/gfx/rect.h"
@@ -25,19 +26,22 @@ class SearchBox : public content::RenderViewObserver,
   explicit SearchBox(content::RenderView* render_view);
   virtual ~SearchBox();
 
-  // Sends ViewHostMsg_SetSuggestions to the browser.
+  // Sends ChromeViewHostMsg_SetSuggestions to the browser.
   void SetSuggestions(const std::vector<InstantSuggestion>& suggestions);
 
-  // Sends ViewHostMsg_ShowInstantPreview to the browser.
+  // Sends ChromeViewHostMsg_ShowInstantPreview to the browser.
   void ShowInstantPreview(InstantShownReason reason,
                           int height,
                           InstantSizeUnits units);
 
-  // Sends ViewHostMsg_StartCapturingKeyStrokes to the browser.
+  // Sends ChromeViewHostMsg_StartCapturingKeyStrokes to the browser.
   void StartCapturingKeyStrokes();
 
-  // Sends ViewHostMsg_StopCapturingKeyStrokes to the browser.
+  // Sends ChromeViewHostMsg_StopCapturingKeyStrokes to the browser.
   void StopCapturingKeyStrokes();
+
+  // Send ChromeViewHostMsg_SearchBoxNavigate to the browser.
+  void NavigateToURL(const GURL& url, content::PageTransition transition);
 
   const string16& query() const { return query_; }
   bool verbatim() const { return verbatim_; }

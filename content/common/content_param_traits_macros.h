@@ -9,7 +9,6 @@
 #define CONTENT_COMMON_CONTENT_PARAM_TRAITS_MACROS_H_
 
 #include "content/common/content_export.h"
-#include "content/public/common/page_transition_types.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "webkit/glue/resource_type.h"
@@ -17,7 +16,6 @@
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 
-IPC_ENUM_TRAITS(content::PageTransition)
 IPC_ENUM_TRAITS(ResourceType::Type)
 IPC_ENUM_TRAITS(WebKit::WebInputEvent::Type)
 

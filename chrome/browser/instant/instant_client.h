@@ -64,6 +64,10 @@ class InstantClient : public content::WebContentsObserver {
     // Called when the page is about to navigate.
     virtual void AboutToNavigateMainFrame(const GURL& url) = 0;
 
+    // Called when the SearchBox wants to navigate to the specified URL.
+    virtual void NavigateToURL(const GURL& url,
+                               content::PageTransition transition) = 0;
+
    protected:
     virtual ~Delegate();
   };
@@ -149,6 +153,8 @@ class InstantClient : public content::WebContentsObserver {
                           InstantSizeUnits units);
   void StartCapturingKeyStrokes(int page_id);
   void StopCapturingKeyStrokes(int page_id);
+  void SearchBoxNavigate(int page_id, const GURL& url,
+                         content::PageTransition transition);
 
   Delegate* const delegate_;
 

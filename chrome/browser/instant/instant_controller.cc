@@ -391,6 +391,7 @@ void InstantController::HandleAutocompleteResults(
       result.type = UTF8ToUTF16(AutocompleteMatch::TypeToString(match->type));
       result.description = match->description;
       result.destination_url = UTF8ToUTF16(match->destination_url.spec());
+      result.transition = match->transition;
       result.relevance = match->relevance;
       DVLOG(1) << "    " << result.relevance << " " << result.type << " "
                << result.provider << " " << result.destination_url << " '"
@@ -838,6 +839,15 @@ void InstantController::OmniboxLostFocus(gfx::NativeView view_gaining_focus) {
   else
     HideLoader();
 #endif
+}
+
+void InstantController::NavigateToURL(const GURL& url,
+                                      content::PageTransition transition) {
+  if (!extended_enabled_)
+    return;
+  if (loader_)
+    HideLoader();
+  browser_->OpenURLInCurrentTab(url, transition);
 }
 
 bool InstantController::ResetLoader(const TemplateURL* template_url,

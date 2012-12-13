@@ -87,3 +87,8 @@ void InstantTab::RenderViewGone() {
 void InstantTab::AboutToNavigateMainFrame(const GURL& url) {
   // The client is a committed tab, navigations will happen as expected.
 }
+
+void InstantTab::NavigateToURL(const GURL& url,
+                               content::PageTransition transition) {
+  controller_->NavigateToURL(url, transition);
+}

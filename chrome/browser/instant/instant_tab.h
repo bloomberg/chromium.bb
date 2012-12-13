@@ -57,6 +57,8 @@ class InstantTab : public InstantClient::Delegate {
   virtual void StopCapturingKeyStrokes() OVERRIDE;
   virtual void RenderViewGone() OVERRIDE;
   virtual void AboutToNavigateMainFrame(const GURL& url) OVERRIDE;
+  virtual void NavigateToURL(const GURL& url,
+                             content::PageTransition transition) OVERRIDE;
 
   InstantClient client_;
   InstantController* const controller_;

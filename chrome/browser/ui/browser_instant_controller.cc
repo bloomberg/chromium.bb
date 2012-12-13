@@ -161,6 +161,16 @@ void BrowserInstantController::UpdateThemeInfoForPreview() {
     OnThemeChanged(NULL);
 }
 
+void BrowserInstantController::OpenURLInCurrentTab(
+    const GURL& url,
+    content::PageTransition transition) {
+  browser_->OpenURL(content::OpenURLParams(url,
+                                           content::Referrer(),
+                                           CURRENT_TAB,
+                                           transition,
+                                           false));
+}
+
 void BrowserInstantController::ResetInstant() {
   instant_.SetInstantEnabled(IsInstantEnabled(browser_->profile()));
 }

@@ -97,6 +97,8 @@ bool InstantClient::OnMessageReceived(const IPC::Message& message) {
                         StartCapturingKeyStrokes);
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_StopCapturingKeyStrokes,
                         StopCapturingKeyStrokes);
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SearchBoxNavigate,
+                        SearchBoxNavigate);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -145,4 +147,11 @@ void InstantClient::StartCapturingKeyStrokes(int page_id) {
 void InstantClient::StopCapturingKeyStrokes(int page_id) {
   if (web_contents()->IsActiveEntry(page_id))
     delegate_->StopCapturingKeyStrokes();
+}
+
+void InstantClient::SearchBoxNavigate(int page_id,
+                                      const GURL& url,
+                                      content::PageTransition transition) {
+  if (web_contents()->IsActiveEntry(page_id))
+    delegate_->NavigateToURL(url, transition);
 }

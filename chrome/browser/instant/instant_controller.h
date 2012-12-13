@@ -154,6 +154,10 @@ class InstantController {
   // Invoked by InstantLoader when the instant page is about to navigate.
   void InstantLoaderAboutToNavigateMainFrame(const GURL& url);
 
+  // Invoked by the InstantLoader when the instant page wants to navigate to
+  // the speicfied URL.
+  void NavigateToURL(const GURL& url, content::PageTransition transition);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(InstantTest, OmniboxFocusLoadsInstant);
   FRIEND_TEST_ALL_PREFIXES(InstantTest, NonInstantSearchProvider);

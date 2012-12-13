@@ -633,20 +633,21 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::NavigateContentWindow(
   if (!render_view || !args.Length()) return v8::Undefined();
 
   GURL destination_url;
+  content::PageTransition transition = content::PAGE_TRANSITION_TYPED;
   if (args[0]->IsNumber()) {
     const InstantAutocompleteResult* result = SearchBox::Get(render_view)->
         GetAutocompleteResultWithId(args[0]->Uint32Value());
-    if (result)
+    if (result) {
       destination_url = GURL(result->destination_url);
+      transition = result->transition;
+    }
   } else {
     destination_url = GURL(V8ValueToUTF16(args[0]));
   }
 
   // Navigate the main frame.
-  if (destination_url.is_valid()) {
-    WebKit::WebURLRequest request(destination_url);
-    render_view->GetWebView()->mainFrame()->loadRequest(request);
-  }
+  if (destination_url.is_valid())
+    SearchBox::Get(render_view)->NavigateToURL(destination_url, transition);
 
   return v8::Undefined();
 }

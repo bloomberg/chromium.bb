@@ -655,6 +655,11 @@ IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_InstantSupportDetermined,
                     int /* page_id */,
                     bool /* result */)
 
+IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_SearchBoxNavigate,
+                    int /* page_id */,
+                    GURL /* destination */,
+                    content::PageTransition /* transition */)
+
 // Sent by the Instant preview asking to show itself with the given height.
 IPC_MESSAGE_ROUTED4(ChromeViewHostMsg_ShowInstantPreview,
                     int /* page_id */,

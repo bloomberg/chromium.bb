@@ -9,6 +9,7 @@
 #define CONTENT_PUBLIC_COMMON_COMMON_PARAM_TRAITS_MACROS_H_
 
 #include "content/public/common/console_message_level.h"
+#include "content/public/common/page_transition_types.h"
 #include "content/public/common/password_form.h"
 #include "content/public/common/security_style.h"
 #include "content/public/common/ssl_status.h"
@@ -23,6 +24,7 @@
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 
 IPC_ENUM_TRAITS(content::ConsoleMessageLevel)
+IPC_ENUM_TRAITS(content::PageTransition)
 IPC_ENUM_TRAITS(content::SecurityStyle)
 IPC_ENUM_TRAITS(WebKit::WebReferrerPolicy)
 IPC_ENUM_TRAITS(WindowOpenDisposition)
