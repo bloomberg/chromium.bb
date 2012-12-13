@@ -32,6 +32,7 @@ cr.define('cr.ui', function() {
    * be invoked to do final setup.
    */
   Oobe.initialize = function() {
+    DisplayManager.initialize();
     login.AccountPickerScreen.register();
     login.GaiaSigninScreen.register();
     oobe.OAuthEnrollmentScreen.register();

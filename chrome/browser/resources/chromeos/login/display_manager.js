@@ -470,6 +470,15 @@ cr.define('cr.ui.login', function() {
   };
 
   /**
+   * Initializes display manager.
+   */
+  DisplayManager.initialize = function() {
+    var link = $('enterprise-reporting-hint-link');
+    link.addEventListener(
+        'click', DisplayManager.handleEnterpriseHintLinkClick);
+  },
+
+  /**
    * Returns offset (top, left) of the element.
    * @param {!Element} element HTML element.
    * @return {!Object} The offset (top, left).
@@ -586,6 +595,15 @@ cr.define('cr.ui.login', function() {
   };
 
   /**
+   * Shows help topic about enrolled devices.
+   * @param {MouseEvent} Event object.
+   */
+  DisplayManager.handleEnterpriseHintLinkClick = function(e) {
+    chrome.send('launchHelpApp', [HELP_TOPIC_ENTERPRISE_REPORTING]);
+    e.preventDefault();
+  }
+
+  /**
    * Sets the text content of the enterprise info message.
    * @param {string} messageText The message text.
    * @param {boolean} showReportingHint Whether to show the reporting warning.
@@ -596,11 +614,6 @@ cr.define('cr.ui.login', function() {
       $('enterprise-info-container').hidden = false;
       if (showReportingHint) {
         $('enterprise-reporting-hint-container').hidden = false;
-        var link = $('enterprise-reporting-hint-link');
-        link.addEventListener('click', function(e) {
-          chrome.send('launchHelpApp', [HELP_TOPIC_ENTERPRISE_REPORTING]);
-          e.preventDefault();
-        });
       }
     }
   };
