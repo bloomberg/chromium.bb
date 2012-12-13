@@ -9,7 +9,7 @@
   document.documentElement.classList.add('settings-app');
 
   // Override the offset in the options page.
-  OptionsPage.setHorizontalOffset(30);
+  OptionsPage.setHorizontalOffset(38);
 
   loadTimeData.overrideValues(loadTimeData.getValue('settingsApp'));
 }());

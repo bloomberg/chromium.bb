@@ -2,13 +2,30 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+/*
+ * Don't use the large margin used for the navigation bar. Settings App uses a
+ * 20px margin for headings + 18px for sections.
+ */
 html.settings-app body.uber-frame {
-   /* Don't use the large margin used for navigating settings. */
-  -webkit-margin-start: 30px;
+  -webkit-margin-start: 38px;
+}
+
+/*
+ * There is a tweak in uber_shared.css to improve touch events around the
+ * navigation bar (which is not used for the settings app) in reaction to a
+ * webkit bug (wk95204). We need to reset back to the original style.
+ */
+@media(pointer:coarse) {
+  html.settings-app body.uber-frame section {
+    -webkit-padding-start: 18px;
+  }
+  body.uber-frame section > h3 {
+    -webkit-margin-start: -18px;
+  }
 }
 
 html.settings-app body.uber-frame header {
-  left: 12px;
+  left: 20px;
   min-width: 400px;
 }
 
@@ -53,5 +70,10 @@ html.settings-app #sync-users-section {
 /* Hide irrelevant parts of privacy section. */
 html.settings-app #privacy-section > div > .checkbox,
 html.settings-app #privacy-section > div > #privacy-explanation {
+  display: none;
+}
+
+/* Hide Import bookmarks and settings button. */
+html.settings-app #import-data {
   display: none;
 }
