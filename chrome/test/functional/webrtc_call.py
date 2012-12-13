@@ -161,7 +161,7 @@ class WebrtcCallTest(webrtc_test_base.WebrtcTestBase):
     self.EstablishCall(from_tab_with_index=0, to_tab_with_index=1)
 
     self.assertEquals('failed-with-error-1',
-                      self.GetUserMedia(tab_index=0, action='deny'))
+                      self.GetUserMedia(tab_index=0, action='cancel'))
     self.assertEquals('failed-with-error-1',
                       self.GetUserMedia(tab_index=0, action='dismiss'))
 

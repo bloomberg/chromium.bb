@@ -25,7 +25,7 @@ class WebrtcBrutalityTest(webrtc_test_base.WebrtcTestBase):
 
     for i in range(1, 100):
       if i % 10 == 0:
-        self.GetUserMedia(tab_index=0, action='allow')
+        self.GetUserMedia(tab_index=0, action='accept')
       else:
         self._GetUserMediaWithoutTakingAction(tab_index=0)
       self.ReloadTab(tab_index=0)
@@ -40,7 +40,7 @@ class WebrtcBrutalityTest(webrtc_test_base.WebrtcTestBase):
 
     for i in range(1, 100):
       if i % 10 == 0:
-        self.GetUserMedia(tab_index=0, action='allow')
+        self.GetUserMedia(tab_index=0, action='accept')
       else:
         self._GetUserMediaWithoutTakingAction(tab_index=0)
 
@@ -49,7 +49,7 @@ class WebrtcBrutalityTest(webrtc_test_base.WebrtcTestBase):
     url = self.GetFileURLForDataPath('webrtc', 'webrtc_jsep01_test.html')
     self.NavigateToURL(url)
 
-    self.GetUserMedia(tab_index=0, action='allow')
+    self.GetUserMedia(tab_index=0, action='accept')
     self.ReloadTab(tab_index=0)
 
   def testClosingTabAfterGetUserMedia(self):
@@ -65,7 +65,7 @@ class WebrtcBrutalityTest(webrtc_test_base.WebrtcTestBase):
     url = self.GetFileURLForDataPath('webrtc', 'webrtc_jsep01_test.html')
     self.NavigateToURL(url)
 
-    self.GetUserMedia(tab_index=0, action='allow')
+    self.GetUserMedia(tab_index=0, action='accept')
     self.CloseTab(tab_index=0)
 
   def _GetUserMediaWithoutTakingAction(self, tab_index):

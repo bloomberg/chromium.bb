@@ -23,16 +23,16 @@ class MediaStreamInfobarTest(webrtc_test_base.WebrtcTestBase):
     return pyauto.PyUITest.ExtraChromeFlags(self) + extra_flags
 
   def testAllowingUserMedia(self):
-    """Test that selecting 'allow' gives us a media stream.
+    """Test that selecting 'accept' gives us a media stream.
 
     When the user clicks allow, the javascript should have the success callback
     called with a media stream.
     """
     self.assertEquals('ok-got-stream',
-                      self._TestGetUserMedia(with_action='allow'))
+                      self._TestGetUserMedia(with_action='accept'))
 
   def testDenyingUserMedia(self):
-    """Tests that selecting 'deny' actually denies access to user media.
+    """Tests that selecting 'cancel' actually denies access to user media.
 
     When the user clicks deny in the user media bar, the javascript should have
     the error callback called with an error specification instead of the success
@@ -41,7 +41,7 @@ class MediaStreamInfobarTest(webrtc_test_base.WebrtcTestBase):
     """
     # Error 1 = Permission denied
     self.assertEquals('failed-with-error-1',
-                      self._TestGetUserMedia(with_action='deny'))
+                      self._TestGetUserMedia(with_action='cancel'))
 
   def testDismissingUserMedia(self):
     """Dismiss should be treated just like deny, which is described above."""
@@ -54,13 +54,13 @@ class MediaStreamInfobarTest(webrtc_test_base.WebrtcTestBase):
     self.assertEquals('failed-with-error-1',
                       self._TestGetUserMedia(with_action='dismiss'))
     self.assertEquals('failed-with-error-1',
-                      self._TestGetUserMedia(with_action='deny'))
+                      self._TestGetUserMedia(with_action='cancel'))
     self.assertEquals('ok-got-stream',
-                      self._TestGetUserMedia(with_action='allow'))
+                      self._TestGetUserMedia(with_action='accept'))
     self.assertEquals('failed-with-error-1',
-                      self._TestGetUserMedia(with_action='deny'))
+                      self._TestGetUserMedia(with_action='cancel'))
     self.assertEquals('ok-got-stream',
-                      self._TestGetUserMedia(with_action='allow'))
+                      self._TestGetUserMedia(with_action='accept'))
     self.assertEquals('failed-with-error-1',
                       self._TestGetUserMedia(with_action='dismiss'))
 
