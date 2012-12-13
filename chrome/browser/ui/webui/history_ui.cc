@@ -451,13 +451,13 @@ void BrowsingHistoryHandler::QueryComplete(
   bool has_local_results = !results_info_value_.empty();
   unsigned int old_results_count = results_value_.GetSize();
 
-  const ListValue* events;
+  const ListValue* events = NULL;
   if (results_value && results_value->GetList("event", &events)) {
     for (unsigned int i = 0; i < events->GetSize(); ++i) {
       const DictionaryValue* event;
       const DictionaryValue* result;
       const DictionaryValue* id;
-      const ListValue* results;
+      const ListValue* results = NULL;
       const ListValue* ids;
       string16 timestamp_string;
       string16 url;
