@@ -72,7 +72,7 @@ MediaGalleriesDialogCocoa::MediaGalleriesDialogCocoa(
                       action:@selector(onCancelButton:)];
   [alert_ addButtonWithTitle:
       l10n_util::GetNSString(IDS_MEDIA_GALLERIES_DIALOG_ADD_GALLERY)
-               keyEquivalent:kKeyEquivalentReturn
+               keyEquivalent:kKeyEquivalentNone
                       target:cocoa_controller_
                       action:@selector(onAddFolderClicked:)];
   [[alert_ closeButton] setTarget:cocoa_controller_];
