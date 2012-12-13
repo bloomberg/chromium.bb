@@ -160,7 +160,6 @@ PpapiPluginProcessHost::PpapiPluginProcessHost(
     net::HostResolver* host_resolver)
     : permissions_(
           ppapi::PpapiPermissions::GetForCommandLine(info.permissions)),
-      network_observer_(new PluginNetworkObserver(this)),
       profile_data_directory_(profile_data_directory),
       is_broker_(false) {
   process_.reset(new BrowserChildProcessHostImpl(
@@ -177,6 +176,10 @@ PpapiPluginProcessHost::PpapiPluginProcessHost(
   process_->GetHost()->AddFilter(host_impl_->message_filter());
 
   GetContentClient()->browser()->DidCreatePpapiPlugin(host_impl_.get());
+
+  // Only request network status updates if the plugin has dev permissions.
+  if (permissions_.HasPermission(ppapi::PERMISSION_DEV))
+    network_observer_.reset(new PluginNetworkObserver(this));
 }
 
 PpapiPluginProcessHost::PpapiPluginProcessHost()

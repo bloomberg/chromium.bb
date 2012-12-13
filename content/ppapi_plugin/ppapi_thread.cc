@@ -124,8 +124,6 @@ bool PpapiThread::OnMessageReceived(const IPC::Message& msg) {
                                 OnPluginDispatcherMessageReceived(msg))
     IPC_MESSAGE_HANDLER_GENERIC(PpapiMsg_PPBNetworkMonitor_NetworkList,
                                 OnPluginDispatcherMessageReceived(msg))
-    IPC_MESSAGE_HANDLER_GENERIC(PpapiMsg_PPBFlashDeviceID_GetReply,
-                                OnPluginDispatcherMessageReceived(msg))
     IPC_MESSAGE_HANDLER(PpapiMsg_SetNetworkState, OnMsgSetNetworkState)
   IPC_END_MESSAGE_MAP()
   return true;
@@ -346,6 +344,9 @@ void PpapiThread::OnMsgResourceReply(
 }
 
 void PpapiThread::OnMsgSetNetworkState(bool online) {
+  // Note the browser-process side shouldn't send us these messages in the
+  // first unless the plugin has dev permissions, so we don't need to check
+  // again here. We don't want random plugins depending on this dev interface.
   if (!plugin_entry_points_.get_interface)
     return;
   const PPP_NetworkState_Dev* ns = static_cast<const PPP_NetworkState_Dev*>(
