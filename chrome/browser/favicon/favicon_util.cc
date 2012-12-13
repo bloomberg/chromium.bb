@@ -9,7 +9,60 @@
 #include "content/public/browser/render_view_host.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/image/image_png_rep.h"
 #include "ui/gfx/image/image_skia.h"
+
+namespace {
+
+// Attempts to create a resulting image of DIP size |favicon_size| with
+// image reps of |scale_factors| without resizing or decoding the bitmap
+// data.
+// Returns an empty gfx::Image if the bitmap data must be resized.
+gfx::Image SelectFaviconFramesFromPNGsWithoutResizing(
+    const std::vector<history::FaviconBitmapResult>& png_data,
+    const std::vector<ui::ScaleFactor> scale_factors,
+    int favicon_size) {
+  if (png_data.size() != scale_factors.size())
+    return gfx::Image();
+
+  // A |favicon_size| of 0 indicates that the largest frame is desired.
+  if (favicon_size == 0 && png_data.size() == 1) {
+    scoped_refptr<base::RefCountedMemory> bitmap_data = png_data[0].bitmap_data;
+    return gfx::Image::CreateFrom1xPNGBytes(bitmap_data->front(),
+                                            bitmap_data->size());
+  }
+
+  // Cache the scale factor for each pixel size as |scale_factors| may contain
+  // any of GetFaviconScaleFactors() which may include scale factors not
+  // supported by the platform. (ui::GetScaleFactorFromScale() cannot be used.)
+  std::map<int, ui::ScaleFactor> desired_pixel_sizes;
+  for (size_t i = 0; i < scale_factors.size(); ++i) {
+    int pixel_size = floor(favicon_size *
+        ui::GetScaleFactorScale(scale_factors[i]));
+    desired_pixel_sizes[pixel_size] = scale_factors[i];
+  }
+
+  std::vector<gfx::ImagePNGRep> png_reps;
+  for (size_t i = 0; i < png_data.size(); ++i) {
+    if (!png_data[i].is_valid())
+      return gfx::Image();
+
+    const gfx::Size& pixel_size = png_data[i].pixel_size;
+    if (pixel_size.width() != pixel_size.height())
+      return gfx::Image();
+
+    std::map<int, ui::ScaleFactor>::iterator it = desired_pixel_sizes.find(
+        pixel_size.width());
+    if (it == desired_pixel_sizes.end())
+      return gfx::Image();
+
+    png_reps.push_back(gfx::ImagePNGRep(png_data[i].bitmap_data, it->second));
+  }
+
+  return gfx::Image(png_reps);
+}
+
+}  // namespace
 
 // static
 std::vector<ui::ScaleFactor> FaviconUtil::GetFaviconScaleFactors() {
@@ -40,6 +93,18 @@ gfx::Image FaviconUtil::SelectFaviconFramesFromPNGs(
       const std::vector<history::FaviconBitmapResult>& png_data,
       const std::vector<ui::ScaleFactor> scale_factors,
       int favicon_size) {
+  // Attempt to create a result image without resizing the bitmap data or
+  // decoding it. FaviconHandler stores already resized favicons into history
+  // so no additional resizing should be needed in the common case. Skipping
+  // decoding to ImageSkia is useful because the ImageSkia representation may
+  // not be needed and because the decoding is done on the UI thread and the
+  // decoding can be a significant performance hit if a user has many bookmarks.
+  // TODO(pkotwicz): Move the decoding off the UI thread.
+  gfx::Image without_resizing = SelectFaviconFramesFromPNGsWithoutResizing(
+      png_data, scale_factors, favicon_size);
+  if (!without_resizing.IsEmpty())
+    return without_resizing;
+
   std::vector<SkBitmap> bitmaps;
   for (size_t i = 0; i < png_data.size(); ++i) {
     if (!png_data[i].is_valid())
