@@ -3431,21 +3431,6 @@ Battery full
   <message name="IDS_LOGIN_VERSION_LABEL_FORMAT" desc="Login screen version text format.">
     <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> <ph name="PRODUCT_VERSION">$2<ex>15.0.0.0</ex></ph> (Platform <ph name="PLATFORM_VERSION">$3<ex>900.0-11.09.01</ex></ph>)
   </message>
-  <message name="IDS_LOGIN_MANAGED_BY_LABEL_FORMAT" desc="Text format for a 'Managed by DOMAIN' label on login screen.">
-    Managed by <ph name="DOMAIN">$1<ex>yourdomain.com</ex></ph>
-  </message>
-  <message name="IDS_LOGIN_MANAGED_BY_WITH_STATUS_LABEL_FORMAT" desc="Text format for a 'Managed by DOMAIN' label on login screen, with additional status message.">
-    Managed by <ph name="DOMAIN">$1<ex>yourdomain.com</ex></ph> (<ph name="STATUS">$2<ex>network error</ex></ph>)
-  </message>
-  <message name="IDS_LOGIN_MANAGED_BY_STATUS_PENDING" desc="Text for the pending status in 'Managed by DOMAIN' label on login screen.">
-    Handshake with device management service pending...
-  </message>
-  <message name="IDS_LOGIN_MANAGED_BY_STATUS_LOST_CONNECTION" desc="Text for the lost connection status in 'Managed by DOMAIN' label on login screen.">
-    Lost connection with the policy service. Please reset the device or contact your support representative.
-  </message>
-  <message name="IDS_LOGIN_MANAGED_BY_STATUS_NETWORK_ERROR" desc="Text for the network error status in 'Managed by DOMAIN' label on login screen.">
-    Network error while communicating with the device management service.
-  </message>
   <message name="IDS_LOGIN_MANAGED_BY_NOTICE" desc="Text for the notification bar on the login screen showing that this is a managed device.">
     This device is managed by <ph name="DOMAIN">$1<ex>yourdomain.com</ex></ph>.
   </message>

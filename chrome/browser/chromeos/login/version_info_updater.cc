@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_version_info.h"
 #include "grit/chromium_strings.h"
@@ -47,6 +48,12 @@ VersionInfoUpdater::VersionInfoUpdater(Delegate* delegate)
 }
 
 VersionInfoUpdater::~VersionInfoUpdater() {
+  policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
+      g_browser_process->browser_policy_connector()->
+          GetDeviceCloudPolicyManager();
+  if (policy_manager)
+    policy_manager->core()->store()->RemoveObserver(this);
+
   for (unsigned int i = 0; i < arraysize(kReportingFlags); ++i)
     cros_settings_->RemoveSettingsObserver(kReportingFlags[i], this);
 }
@@ -84,6 +91,17 @@ void VersionInfoUpdater::StartUpdate(bool is_official_build) {
     UpdateEnterpriseInfo();
   }
 
+  policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
+      g_browser_process->browser_policy_connector()->
+          GetDeviceCloudPolicyManager();
+  if (policy_manager) {
+    policy_manager->core()->store()->AddObserver(this);
+
+    // Ensure that we have up-to-date enterprise info in case enterprise policy
+    // is already fetched and has finished initialization.
+    UpdateEnterpriseInfo();
+  }
+
   // Watch for changes to the reporting flags.
   for (unsigned int i = 0; i < arraysize(kReportingFlags); ++i)
     cros_settings_->AddSettingsObserver(kReportingFlags[i], this);
@@ -100,20 +118,6 @@ void VersionInfoUpdater::UpdateVersionLabel() {
       UTF8ToUTF16(version_info.Version()),
       UTF8ToUTF16(version_text_));
 
-  if (!enterprise_domain_text_.empty()) {
-    label_text += ' ';
-    if (enterprise_status_text_.empty()) {
-      label_text += l10n_util::GetStringFUTF8(
-          IDS_LOGIN_MANAGED_BY_LABEL_FORMAT,
-          UTF8ToUTF16(enterprise_domain_text_));
-    } else {
-      label_text += l10n_util::GetStringFUTF8(
-          IDS_LOGIN_MANAGED_BY_WITH_STATUS_LABEL_FORMAT,
-          UTF8ToUTF16(enterprise_domain_text_),
-          UTF8ToUTF16(enterprise_status_text_));
-    }
-  }
-
   // Workaround over incorrect width calculation in old fonts.
   // TODO(glotov): remove the following line when new fonts are used.
   label_text += ' ';
@@ -123,34 +127,6 @@ void VersionInfoUpdater::UpdateVersionLabel() {
 }
 
 void VersionInfoUpdater::UpdateEnterpriseInfo() {
-  policy::BrowserPolicyConnector* policy_connector =
-      g_browser_process->browser_policy_connector();
-
-  std::string status_text;
-  policy::CloudPolicySubsystem* cloud_policy_subsystem =
-      policy_connector->device_cloud_policy_subsystem();
-  if (cloud_policy_subsystem) {
-    switch (cloud_policy_subsystem->state()) {
-      case policy::CloudPolicySubsystem::UNENROLLED:
-        status_text = l10n_util::GetStringUTF8(
-            IDS_LOGIN_MANAGED_BY_STATUS_PENDING);
-        break;
-      case policy::CloudPolicySubsystem::UNMANAGED:
-      case policy::CloudPolicySubsystem::BAD_GAIA_TOKEN:
-      case policy::CloudPolicySubsystem::LOCAL_ERROR:
-        status_text = l10n_util::GetStringUTF8(
-            IDS_LOGIN_MANAGED_BY_STATUS_LOST_CONNECTION);
-        break;
-      case policy::CloudPolicySubsystem::NETWORK_ERROR:
-        status_text = l10n_util::GetStringUTF8(
-            IDS_LOGIN_MANAGED_BY_STATUS_NETWORK_ERROR);
-        break;
-      case policy::CloudPolicySubsystem::TOKEN_FETCHED:
-      case policy::CloudPolicySubsystem::SUCCESS:
-        break;
-    }
-  }
-
   bool reporting_hint = false;
   for (unsigned int i = 0; i < arraysize(kReportingFlags); ++i) {
     bool enabled = false;
@@ -160,19 +136,16 @@ void VersionInfoUpdater::UpdateEnterpriseInfo() {
     }
   }
 
-  SetEnterpriseInfo(policy_connector->GetEnterpriseDomain(),
-                    status_text,
-                    reporting_hint);
+  SetEnterpriseInfo(
+      g_browser_process->browser_policy_connector()->GetEnterpriseDomain(),
+      reporting_hint);
 }
 
 void VersionInfoUpdater::SetEnterpriseInfo(const std::string& domain_name,
-                                           const std::string& status_text,
                                            bool reporting_hint) {
   if (domain_name != enterprise_domain_text_ ||
-      status_text != enterprise_status_text_ ||
       reporting_hint != enterprise_reporting_hint_) {
     enterprise_domain_text_ = domain_name;
-    enterprise_status_text_ = status_text;
     enterprise_reporting_hint_ = reporting_hint;
     UpdateVersionLabel();
 
@@ -230,6 +203,14 @@ void VersionInfoUpdater::OnBootTimes(
 void VersionInfoUpdater::OnPolicyStateChanged(
     policy::CloudPolicySubsystem::PolicySubsystemState state,
     policy::CloudPolicySubsystem::ErrorDetails error_details) {
+  UpdateEnterpriseInfo();
+}
+
+void VersionInfoUpdater::OnStoreLoaded(policy::CloudPolicyStore* store) {
+  UpdateEnterpriseInfo();
+}
+
+void VersionInfoUpdater::OnStoreError(policy::CloudPolicyStore* store) {
   UpdateEnterpriseInfo();
 }
 

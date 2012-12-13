@@ -9,6 +9,7 @@
 
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/version_loader.h"
+#include "chrome/browser/policy/cloud_policy_store.h"
 #include "chrome/browser/policy/cloud_policy_subsystem.h"
 #include "content/public/browser/notification_observer.h"
 
@@ -19,6 +20,7 @@ class CrosSettings;
 // Fetches all info we want to show on OOBE/Login screens about system
 // version, boot times and cloud policy.
 class VersionInfoUpdater : public policy::CloudPolicySubsystem::Observer,
+                           public policy::CloudPolicyStore::Observer,
                            public content::NotificationObserver {
  public:
   class Delegate {
@@ -55,6 +57,10 @@ class VersionInfoUpdater : public policy::CloudPolicySubsystem::Observer,
       policy::CloudPolicySubsystem::PolicySubsystemState state,
       policy::CloudPolicySubsystem::ErrorDetails error_details) OVERRIDE;
 
+  // policy::CloudPolicyStore::Observer interface:
+  virtual void OnStoreLoaded(policy::CloudPolicyStore* store) OVERRIDE;
+  virtual void OnStoreError(policy::CloudPolicyStore* store) OVERRIDE;
+
   // content::NotificationObserver interface.
   virtual void Observe(
       int type,
@@ -68,9 +74,7 @@ class VersionInfoUpdater : public policy::CloudPolicySubsystem::Observer,
   void UpdateEnterpriseInfo();
 
   // Set enterprise domain name.
-  void SetEnterpriseInfo(const std::string& domain_name,
-                         const std::string& status_text,
-                         bool reporting_hint);
+  void SetEnterpriseInfo(const std::string& domain_name, bool reporting_hint);
 
   // Callback from chromeos::VersionLoader giving the version.
   void OnVersion(const std::string& version);
@@ -89,7 +93,6 @@ class VersionInfoUpdater : public policy::CloudPolicySubsystem::Observer,
   // Information pieces for version label.
   std::string version_text_;
   std::string enterprise_domain_text_;
-  std::string enterprise_status_text_;
   bool enterprise_reporting_hint_;
 
   // Full text for the OS version label.
