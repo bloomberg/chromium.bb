@@ -36,7 +36,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_storage.h"
 
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
 #include "chrome/browser/importer/firefox_proxy_settings.h"
 #endif
 
@@ -107,8 +107,10 @@ class ExperimentURLRequestContext : public net::URLRequestContext {
     // The rest of the dependencies are standard, and don't depend on the
     // experiment being run.
     storage_.set_cert_verifier(net::CertVerifier::CreateDefault());
+#if !defined(DISABLE_FTP_SUPPORT)
     storage_.set_ftp_transaction_factory(
         new net::FtpNetworkLayer(host_resolver()));
+#endif
     storage_.set_ssl_config_service(new net::SSLConfigServiceDefaults);
     storage_.set_http_auth_handler_factory(
         net::HttpAuthHandlerFactory::CreateDefault(host_resolver()));
@@ -194,6 +196,11 @@ class ExperimentURLRequestContext : public net::URLRequestContext {
       dhcp_factory.set_enabled(false);
     }
 
+#if defined(OS_IOS)
+    experiment_proxy_service->reset(
+        net::ProxyService::CreateUsingSystemProxyResolver(
+            proxy_config_service->release(), 0u, NULL));
+#else
     experiment_proxy_service->reset(
         net::CreateProxyServiceUsingV8ProxyResolver(
             proxy_config_service->release(),
@@ -203,6 +210,7 @@ class ExperimentURLRequestContext : public net::URLRequestContext {
             host_resolver(),
             NULL,
             NULL));
+#endif
 
     return net::OK;
   }
@@ -224,7 +232,7 @@ class ExperimentURLRequestContext : public net::URLRequestContext {
 #endif
   }
 
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
   static int FirefoxProxySettingsTask(
       FirefoxProxySettings* firefox_settings) {
     if (!FirefoxProxySettings::GetSettings(firefox_settings))
@@ -259,8 +267,8 @@ class ExperimentURLRequestContext : public net::URLRequestContext {
   int CreateFirefoxProxyConfigService(
       scoped_ptr<net::ProxyConfigService>* config_service,
       base::Callback<void(int)> callback) {
-#if defined(OS_ANDROID)
-    // Chrome on Android does not support Firefox settings.
+#if defined(OS_ANDROID) || defined(OS_IOS)
+    // Chrome on Android and iOS do not support Firefox settings.
     return net::ERR_NOT_IMPLEMENTED;
 #else
     // Fetch Firefox's proxy settings (can fail if Firefox is not installed).

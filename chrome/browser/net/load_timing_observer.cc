@@ -117,7 +117,9 @@ void LoadTimingObserver::PopulateTimingInfo(
   if (record) {
     response->head.connection_id = record->socket_log_id;
     response->head.connection_reused = record->socket_reused;
+#if !defined(OS_IOS)
     response->head.load_timing = record->timing;
+#endif
   }
 }
 
@@ -152,9 +154,11 @@ void LoadTimingObserver::OnAddURLRequestEntry(const net::NetLog::Entry& entry) {
       URLRequestRecord& record = url_request_to_record_[entry.source().id];
       base::TimeTicks now = GetCurrentTime();
       record.base_ticks = now;
+#if !defined(OS_IOS)
       record.timing = ResourceLoadTimingInfo();
       record.timing.base_ticks = now;
       record.timing.base_time = TimeTicksToTime(now);
+#endif
     }
     return;
   } else if (entry.type() == net::NetLog::TYPE_REQUEST_ALIVE) {
@@ -168,6 +172,7 @@ void LoadTimingObserver::OnAddURLRequestEntry(const net::NetLog::Entry& entry) {
   if (!record)
     return;
 
+#if !defined(OS_IOS)
   ResourceLoadTimingInfo& timing = record->timing;
 
   switch (entry.type()) {
@@ -229,6 +234,7 @@ void LoadTimingObserver::OnAddURLRequestEntry(const net::NetLog::Entry& entry) {
     default:
       break;
   }
+#endif  // !defined(OS_IOS)
 }
 
 void LoadTimingObserver::OnAddHTTPStreamJobEntry(

@@ -29,7 +29,9 @@ class LoadTimingObserver : public net::NetLog::ThreadSafeObserver {
   struct URLRequestRecord {
     URLRequestRecord();
 
+#if !defined(OS_IOS)
     webkit_glue::ResourceLoadTimingInfo timing;
+#endif
     uint32 connect_job_id;
     uint32 socket_log_id;
     bool socket_reused;
