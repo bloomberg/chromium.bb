@@ -763,7 +763,7 @@ jboolean ContentViewCoreImpl::SendTouchEvent(JNIEnv* env,
     using WebKit::WebTouchEvent;
     WebKit::WebTouchEvent event;
     TouchPoint::BuildWebTouchEvent(env, type, time_ms, pts, event);
-    UpdateVSyncFlagOnInputEvent(event);
+    UpdateVSyncFlagOnInputEvent(&event);
     rwhv->SendTouchEvent(event);
     return true;
   }
@@ -831,18 +831,18 @@ WebGestureEvent ContentViewCoreImpl::MakeGestureEvent(WebInputEvent::Type type,
   event.x = x / DpiScale();
   event.y = y / DpiScale();
   event.timeStampSeconds = time_ms / 1000.0;
-  UpdateVSyncFlagOnInputEvent(event);
+  UpdateVSyncFlagOnInputEvent(&event);
   return event;
 }
 
 void ContentViewCoreImpl::UpdateVSyncFlagOnInputEvent(
-    WebKit::WebInputEvent& event) const {
+    WebKit::WebInputEvent* event) const {
   if (!input_events_delivered_at_vsync_)
     return;
-  if (event.type == WebInputEvent::GestureScrollUpdate ||
-      event.type == WebInputEvent::GesturePinchUpdate ||
-      event.type == WebInputEvent::TouchMove)
-    event.modifiers |= WebInputEvent::IsLastInputEventForCurrentVSync;
+  if (event->type == WebInputEvent::GestureScrollUpdate ||
+      event->type == WebInputEvent::GesturePinchUpdate ||
+      event->type == WebInputEvent::TouchMove)
+    event->modifiers |= WebInputEvent::IsLastInputEventForCurrentVSync;
 }
 
 void ContentViewCoreImpl::ScrollBegin(JNIEnv* env, jobject obj, jlong time_ms,

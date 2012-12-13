@@ -266,7 +266,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   float DpiScale() const;
   WebKit::WebGestureEvent MakeGestureEvent(WebKit::WebInputEvent::Type type,
                                            long time_ms, int x, int y) const;
-  void UpdateVSyncFlagOnInputEvent(WebKit::WebInputEvent& event) const;
+  void UpdateVSyncFlagOnInputEvent(WebKit::WebInputEvent* event) const;
 
   void DeleteScaledSnapshotTexture();
 
