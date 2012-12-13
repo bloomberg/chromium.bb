@@ -103,10 +103,10 @@ class MockTransferBuffer : public TransferBufferInterface {
     // we need to know their address before GLES2Implementation::Initialize
     // is called.
     for (int ii = 0; ii < kNumBuffers; ++ii) {
-      buffer_ids_[ii] = command_buffer_->CreateTransferBuffer(
-          size_ + ii * alignment_, -1);
+      buffers_[ii] = command_buffer_->CreateTransferBuffer(
+          size_ + ii * alignment_,
+          &buffer_ids_[ii]);
       EXPECT_NE(-1, buffer_ids_[ii]);
-      buffers_[ii] = command_buffer_->GetTransferBuffer(buffer_ids_[ii]);
     }
   }
 

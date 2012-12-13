@@ -492,8 +492,8 @@ IPC_SYNC_MESSAGE_ROUTED1_0(GpuCommandBufferMsg_SetSharedStateBuffer,
                            int32 /* shm_id */)
 
 // Sets the shared memory buffer used for commands.
-IPC_SYNC_MESSAGE_ROUTED1_0(GpuCommandBufferMsg_SetGetBuffer,
-                           int32 /* shm_id */)
+IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_SetGetBuffer,
+                    int32 /* shm_id */)
 
 // Sets the parent command buffer. This allows the parent and child to share
 // textures.
@@ -527,24 +527,16 @@ IPC_MESSAGE_ROUTED0(GpuCommandBufferMsg_Rescheduled)
 IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_ConsoleMsg,
                     GPUCommandBufferConsoleMessage /* msg */)
 
-// Create a shared memory transfer buffer. Returns an id that can be used to
-// identify the transfer buffer from a comment.
-IPC_SYNC_MESSAGE_ROUTED2_1(GpuCommandBufferMsg_CreateTransferBuffer,
-                           uint32 /* size */,
-                           int32 /* id_request (-1 means any) */,
-                           int32 /* id */)
-
 // Register an existing shared memory transfer buffer. Returns an id that can be
 // used to identify the transfer buffer from a command buffer.
-IPC_SYNC_MESSAGE_ROUTED3_1(GpuCommandBufferMsg_RegisterTransferBuffer,
-                           base::SharedMemoryHandle /* transfer_buffer */,
-                           uint32 /* size */,
-                           int32 /* id_request (-1 means any) */,
-                           int32 /* id */)
+IPC_MESSAGE_ROUTED3(GpuCommandBufferMsg_RegisterTransferBuffer,
+                    int32 /* id */,
+                    base::SharedMemoryHandle /* transfer_buffer */,
+                    uint32 /* size */)
 
 // Destroy a previously created transfer buffer.
-IPC_SYNC_MESSAGE_ROUTED1_0(GpuCommandBufferMsg_DestroyTransferBuffer,
-                           int32 /* id */)
+IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_DestroyTransferBuffer,
+                    int32 /* id */)
 
 // Get the shared memory handle for a transfer buffer mapped to the callers
 // process.
@@ -561,10 +553,6 @@ IPC_SYNC_MESSAGE_ROUTED1_1(GpuCommandBufferMsg_CreateVideoDecoder,
 // Release all resources held by the named hardware video decoder.
 IPC_SYNC_MESSAGE_ROUTED1_0(GpuCommandBufferMsg_DestroyVideoDecoder,
                            int /* route_id */)
-
-// Send from command buffer stub to proxy when window is invalid and must be
-// repainted.
-IPC_MESSAGE_ROUTED0(GpuCommandBufferMsg_NotifyRepaint)
 
 // Tells the GPU process to resize an offscreen frame buffer.
 IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_ResizeOffscreenFrameBuffer,

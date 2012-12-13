@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/atomic_sequence_num.h"
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -159,6 +160,9 @@ class GpuChannelHost : public IPC::Sender,
   // a finish.
   bool GenerateMailboxNames(unsigned num, std::vector<std::string>* names);
 
+  // Reserve one unused transfer buffer ID.
+  int32 ReserveTransferBufferId();
+
  private:
   friend class base::RefCountedThreadSafe<GpuChannelHost>;
   virtual ~GpuChannelHost();
@@ -214,6 +218,9 @@ class GpuChannelHost : public IPC::Sender,
 
   // A pool of valid mailbox names.
   std::vector<std::string> mailbox_name_pool_;
+
+  // Transfer buffer IDs are allocated in sequence.
+  base::AtomicSequenceNumber next_transfer_buffer_id_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuChannelHost);
 };

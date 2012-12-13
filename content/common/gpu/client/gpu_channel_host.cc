@@ -29,6 +29,7 @@ GpuChannelHost::GpuChannelHost(
       client_id_(client_id),
       gpu_host_id_(gpu_host_id),
       state_(kUnconnected) {
+  next_transfer_buffer_id_.GetNext();
 }
 
 void GpuChannelHost::Connect(
@@ -287,6 +288,10 @@ void GpuChannelHost::OnGenerateMailboxNamesReply(
   mailbox_name_pool_.insert(mailbox_name_pool_.end(),
                             names.begin(),
                             names.end());
+}
+
+int32 GpuChannelHost::ReserveTransferBufferId() {
+  return next_transfer_buffer_id_.GetNext();
 }
 
 GpuChannelHost::~GpuChannelHost() {}

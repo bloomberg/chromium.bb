@@ -50,7 +50,8 @@ class CommandBufferServiceTest : public testing::Test {
   }
 
   bool Initialize(size_t size) {
-    int32 id = command_buffer_->CreateTransferBuffer(size, -1);
+    int32 id;
+    command_buffer_->CreateTransferBuffer(size, &id);
     EXPECT_GT(id, 0);
     command_buffer_->SetGetBuffer(id);
     return true;
@@ -117,7 +118,8 @@ TEST_F(CommandBufferServiceTest, CanSyncGetAndPutOffset) {
 }
 
 TEST_F(CommandBufferServiceTest, SetGetBuffer) {
-  int32 ring_buffer_id = command_buffer_->CreateTransferBuffer(1024, -1);
+  int32 ring_buffer_id;
+  command_buffer_->CreateTransferBuffer(1024, &ring_buffer_id);
   EXPECT_GT(ring_buffer_id, 0);
 
   scoped_ptr<StrictMock<MockCallbackTest> > change_callback(

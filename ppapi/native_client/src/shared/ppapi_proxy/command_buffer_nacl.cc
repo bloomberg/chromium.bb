@@ -104,18 +104,20 @@ void CommandBufferNacl::SetGetOffset(int32 get_offset) {
   GPU_NOTREACHED();
 }
 
-int32 CommandBufferNacl::CreateTransferBuffer(size_t size, int32 id_request) {
+gpu::Buffer CommandBufferNacl::CreateTransferBuffer(size_t size, int32* id) {
   DebugPrintf("CommandBufferNacl::CreateTransferBuffer\n");
-  int32_t id;
+  *id = -1;
 
   NaClSrpcChannel* channel = ppapi_proxy::GetMainSrpcChannel();
   NaClSrpcError retval =
       PpbGraphics3DRpcClient::PPB_Graphics3DTrusted_CreateTransferBuffer(
-          channel, graphics_3d_, size, id_request, &id);
+          channel, graphics_3d_, size, -1, id);
   if (NACL_SRPC_RESULT_OK != retval)
-    return 0;
+    return BufferFromShm(-1, 0);
+  if ((*id) <= 0)
+    return BufferFromShm(-1, 0);
 
-  return id;
+  return GetTransferBuffer(*id);
 }
 
 void CommandBufferNacl::DestroyTransferBuffer(int32 id) {

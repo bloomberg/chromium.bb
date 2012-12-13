@@ -52,7 +52,7 @@ class BaseFencedAllocatorTest : public testing::Test {
     }
     command_buffer_.reset(
         new CommandBufferService(transfer_buffer_manager_.get()));
-    command_buffer_->Initialize();
+    EXPECT_TRUE(command_buffer_->Initialize());
 
     gpu_scheduler_.reset(new GpuScheduler(
         command_buffer_.get(), api_mock_.get(), NULL));

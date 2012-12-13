@@ -12,14 +12,22 @@ using base::SharedMemory;
 
 namespace gpu {
 
+const static size_t kBufferSize = 1024;
+
 class TransferBufferManagerTest : public testing::Test {
  protected:
   virtual void SetUp() {
+    for (size_t i = 0; i < arraysize(buffers_); ++i) {
+      buffers_[i].CreateAnonymous(kBufferSize);
+      buffers_[i].Map(kBufferSize);
+    }
+
     TransferBufferManager* manager = new TransferBufferManager();
     transfer_buffer_manager_.reset(manager);
-    manager->Initialize();
+    ASSERT_TRUE(manager->Initialize());
   }
 
+  base::SharedMemory buffers_[3];
   scoped_ptr<TransferBufferManagerInterface> transfer_buffer_manager_;
 };
 
@@ -35,59 +43,73 @@ TEST_F(TransferBufferManagerTest, OutOfRangeHandleMapsToNull) {
   EXPECT_TRUE(NULL == transfer_buffer_manager_->GetTransferBuffer(1).ptr);
 }
 
-TEST_F(TransferBufferManagerTest, CanCreateTransferBuffers) {
-  int32 handle = transfer_buffer_manager_->CreateTransferBuffer(1024, -1);
-  EXPECT_EQ(1, handle);
-  Buffer buffer = transfer_buffer_manager_->GetTransferBuffer(handle);
-  ASSERT_TRUE(NULL != buffer.ptr);
-  EXPECT_EQ(1024u, buffer.size);
+TEST_F(TransferBufferManagerTest, CanRegisterTransferBuffer) {
+  EXPECT_TRUE(transfer_buffer_manager_->RegisterTransferBuffer(1,
+                                                               &buffers_[0],
+                                                               kBufferSize));
+  Buffer registered = transfer_buffer_manager_->GetTransferBuffer(1);
+
+  // Distinct memory range and shared memory handle from that originally
+  // registered.
+  EXPECT_NE(static_cast<void*>(NULL), registered.ptr);
+  EXPECT_NE(buffers_[0].memory(), registered.ptr);
+  EXPECT_EQ(kBufferSize, registered.size);
+  EXPECT_NE(&buffers_[0], registered.shared_memory);
+
+  // But maps to the same physical memory.
+  *static_cast<int*>(registered.ptr) = 7;
+  *static_cast<int*>(buffers_[0].memory()) = 8;
+  EXPECT_EQ(8, *static_cast<int*>(registered.ptr));
 }
 
-TEST_F(TransferBufferManagerTest, CreateTransferBufferReturnsDistinctHandles) {
-  EXPECT_EQ(1, transfer_buffer_manager_->CreateTransferBuffer(1024, -1));
-}
-
-TEST_F(TransferBufferManagerTest,
-    CreateTransferBufferReusesUnregisteredHandles) {
-  EXPECT_EQ(1, transfer_buffer_manager_->CreateTransferBuffer(1024, -1));
-  EXPECT_EQ(2, transfer_buffer_manager_->CreateTransferBuffer(1024, -1));
+TEST_F(TransferBufferManagerTest, CanDestroyTransferBuffer) {
+  EXPECT_TRUE(transfer_buffer_manager_->RegisterTransferBuffer(1,
+                                                               &buffers_[0],
+                                                               kBufferSize));
   transfer_buffer_manager_->DestroyTransferBuffer(1);
-  EXPECT_EQ(1, transfer_buffer_manager_->CreateTransferBuffer(1024, -1));
-  EXPECT_EQ(3, transfer_buffer_manager_->CreateTransferBuffer(1024, -1));
+  Buffer registered = transfer_buffer_manager_->GetTransferBuffer(1);
+
+  EXPECT_EQ(static_cast<void*>(NULL), registered.ptr);
+  EXPECT_EQ(0U, registered.size);
+  EXPECT_EQ(static_cast<base::SharedMemory*>(NULL), registered.shared_memory);
 }
 
-TEST_F(TransferBufferManagerTest, CannotUnregisterHandleZero) {
-  transfer_buffer_manager_->DestroyTransferBuffer(0);
-  EXPECT_TRUE(NULL == transfer_buffer_manager_->GetTransferBuffer(0).ptr);
-  EXPECT_EQ(1, transfer_buffer_manager_->CreateTransferBuffer(1024, -1));
+TEST_F(TransferBufferManagerTest, CannotRegregisterTransferBufferId) {
+  EXPECT_TRUE(transfer_buffer_manager_->RegisterTransferBuffer(1,
+                                                               &buffers_[0],
+                                                               kBufferSize));
+  EXPECT_FALSE(transfer_buffer_manager_->RegisterTransferBuffer(1,
+                                                                &buffers_[0],
+                                                                kBufferSize));
+  EXPECT_FALSE(transfer_buffer_manager_->RegisterTransferBuffer(1,
+                                                                &buffers_[1],
+                                                                kBufferSize));
 }
 
-TEST_F(TransferBufferManagerTest, CannotUnregisterNegativeHandles) {
-  transfer_buffer_manager_->DestroyTransferBuffer(-1);
-  EXPECT_EQ(1, transfer_buffer_manager_->CreateTransferBuffer(1024, -1));
-}
-
-TEST_F(TransferBufferManagerTest, CannotUnregisterUnregisteredHandles) {
+TEST_F(TransferBufferManagerTest, CanReuseTransferBufferIdAfterDestroying) {
+  EXPECT_TRUE(transfer_buffer_manager_->RegisterTransferBuffer(1,
+                                                               &buffers_[0],
+                                                               kBufferSize));
   transfer_buffer_manager_->DestroyTransferBuffer(1);
-  EXPECT_EQ(1, transfer_buffer_manager_->CreateTransferBuffer(1024, -1));
+  EXPECT_TRUE(transfer_buffer_manager_->RegisterTransferBuffer(1,
+                                                               &buffers_[1],
+                                                               kBufferSize));
 }
 
-// Testing this case specifically because there is an optimization that takes
-// a different code path in this case.
-TEST_F(TransferBufferManagerTest, UnregistersLastRegisteredHandle) {
-  EXPECT_EQ(1, transfer_buffer_manager_->CreateTransferBuffer(1024, -1));
+TEST_F(TransferBufferManagerTest, DestroyUnusedTransferBufferIdDoesNotCrash) {
   transfer_buffer_manager_->DestroyTransferBuffer(1);
-  EXPECT_EQ(1, transfer_buffer_manager_->CreateTransferBuffer(1024, -1));
 }
 
-// Testing this case specifically because there is an optimization that takes
-// a different code path in this case.
-TEST_F(TransferBufferManagerTest, UnregistersTwoLastRegisteredHandles) {
-  EXPECT_EQ(1, transfer_buffer_manager_->CreateTransferBuffer(1024, -1));
-  EXPECT_EQ(2, transfer_buffer_manager_->CreateTransferBuffer(1024, -1));
-  transfer_buffer_manager_->DestroyTransferBuffer(2);
-  transfer_buffer_manager_->DestroyTransferBuffer(1);
-  EXPECT_EQ(1, transfer_buffer_manager_->CreateTransferBuffer(1024, -1));
+TEST_F(TransferBufferManagerTest, CannotRegisterNullTransferBuffer) {
+  EXPECT_FALSE(transfer_buffer_manager_->RegisterTransferBuffer(0,
+                                                                &buffers_[0],
+                                                                kBufferSize));
+}
+
+TEST_F(TransferBufferManagerTest, CannotRegisterNegativeTransferBufferId) {
+  EXPECT_FALSE(transfer_buffer_manager_->RegisterTransferBuffer(-1,
+                                                                &buffers_[0],
+                                                                kBufferSize));
 }
 
 }  // namespace gpu
