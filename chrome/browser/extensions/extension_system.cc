@@ -101,7 +101,7 @@ void ExtensionSystemImpl::Shared::InitPrefs() {
       profile_->GetPath().AppendASCII(ExtensionService::kStateStoreName)));
 
   shell_window_geometry_cache_.reset(new ShellWindowGeometryCache(
-    profile_, state_store_.get()));
+      profile_, extension_prefs_.get()));
 
   blacklist_.reset(new Blacklist(extension_prefs_.get()));
 

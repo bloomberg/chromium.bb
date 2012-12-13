@@ -509,6 +509,13 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   void SetNeedsStorageGarbageCollection(bool value);
   bool NeedsStorageGarbageCollection();
 
+  // Used by ShellWindowGeometryCache to persist its cache. These methods
+  // should not be called directly.
+  const base::DictionaryValue* GetGeometryCache(
+        const std::string& extension_id) const;
+  void SetGeometryCache(const std::string& extension_id,
+                        scoped_ptr<base::DictionaryValue> cache);
+
  private:
   friend class ExtensionPrefsBlacklistedExtensions;  // Unit test.
   friend class ExtensionPrefsUninstallExtension;     // Unit test.

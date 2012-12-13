@@ -224,6 +224,9 @@ const char kMediaGalleryIdKey[] = "id";
 // Key for Media Gallery Permission Value.
 const char kMediaGalleryHasPermissionKey[] = "has_permission";
 
+// Key for Geometry Cache preference.
+const char kPrefGeometryCache[] = "geometry_cache";
+
 // Key for what version chrome was last time the extension prefs were loaded.
 const char kExtensionsLastChromeVersion[] = "extensions.last_chrome_version";
 
@@ -2180,6 +2183,25 @@ URLPatternSet ExtensionPrefs::GetAllowedInstallSites() {
   }
 
   return result;
+}
+
+const base::DictionaryValue* ExtensionPrefs::GetGeometryCache(
+    const std::string& extension_id) const {
+  const DictionaryValue* extension_prefs = GetExtensionPref(extension_id);
+  if (!extension_prefs)
+    return NULL;
+
+  const DictionaryValue* ext = NULL;
+  if (!extension_prefs->GetDictionary(kPrefGeometryCache, &ext))
+    return NULL;
+
+  return ext;
+}
+
+void ExtensionPrefs::SetGeometryCache(
+    const std::string& extension_id,
+    scoped_ptr<base::DictionaryValue> cache) {
+  UpdateExtensionPref(extension_id, kPrefGeometryCache, cache.release());
 }
 
 ExtensionPrefs::ExtensionPrefs(

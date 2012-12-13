@@ -80,7 +80,7 @@ ExtensionService* TestExtensionSystem::CreateExtensionService(
       extensions_disabled);
   state_store_.reset(new StateStore(profile_, new TestingValueStore()));
   shell_window_geometry_cache_.reset(
-      new ShellWindowGeometryCache(profile_, state_store_.get()));
+      new ShellWindowGeometryCache(profile_, extension_prefs_.get()));
   blacklist_.reset(new Blacklist(extension_prefs_.get()));
   standard_management_policy_provider_.reset(
       new StandardManagementPolicyProvider(extension_prefs_.get()));

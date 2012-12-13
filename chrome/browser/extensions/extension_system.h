@@ -221,8 +221,9 @@ class ExtensionSystemImpl : public ExtensionSystem {
     // The services that are shared between normal and incognito profiles.
 
     scoped_ptr<StateStore> state_store_;
-    scoped_ptr<ShellWindowGeometryCache> shell_window_geometry_cache_;
     scoped_ptr<ExtensionPrefs> extension_prefs_;
+    // ShellWindowGeometryCache depends on ExtensionPrefs.
+    scoped_ptr<ShellWindowGeometryCache> shell_window_geometry_cache_;
     // LazyBackgroundTaskQueue is a dependency of
     // MessageService and EventRouter.
     scoped_ptr<LazyBackgroundTaskQueue> lazy_background_task_queue_;
