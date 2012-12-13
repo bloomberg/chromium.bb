@@ -142,13 +142,14 @@ void NaClThreadInterfaceLaunchCallback(struct NaClThreadInterface *self) {
 
 void NaClThreadInterfaceExit(struct NaClThreadInterface *self,
                              void                       *exit_code) {
+  UNREFERENCED_PARAMETER(exit_code);
+
   NaClLog(3,
           "NaClThreadInterfaceExit: thread 0x%"NACL_PRIxPTR"\n",
           (uintptr_t) self);
   self->thread_started = 0;  /* on way out */
   NaClRefCountUnref((struct NaClRefCount *) self);
-  /* only keep low order bits of the traditional void* return */
-  NaClThreadExit((int) (uintptr_t) exit_code);
+  NaClThreadExit();
 }
 
 struct NaClThreadInterfaceVtbl const kNaClThreadInterfaceVtbl = {

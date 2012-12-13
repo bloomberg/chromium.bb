@@ -305,7 +305,7 @@ void WINAPI SecondaryHandlerThread(void* desc_void) {
   NaClLog(1, "secondary service thread started %p\n", desc_void);
   NaClSrpcServerLoop(desc->desc(), SecondaryHandlers, NULL);
   NaClLog(1, "secondary service thread stopped\n");
-  NaClThreadExit(0);
+  NaClThreadExit();
 }
 
 bool NaClCommandLoop::HandleInstallUpcalls(NaClCommandLoop* ncl,

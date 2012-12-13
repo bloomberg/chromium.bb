@@ -133,6 +133,6 @@ void NaClThreadJoin(struct NaClThread *ntp) {
   pthread_join(ntp->tid, NULL);
 }
 
-void NaClThreadExit(int exit_code) {
-  pthread_exit((void *) (uintptr_t) exit_code);
+void NaClThreadExit(void) {
+  pthread_exit(NULL);
 }

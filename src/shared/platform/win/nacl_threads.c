@@ -79,8 +79,17 @@ void NaClThreadJoin(struct NaClThread *ntp) {
   CloseHandle(ntp->tid);
 }
 
-void NaClThreadExit(int exit_code) {
-  _endthreadex((unsigned int) exit_code);
+void NaClThreadExit(void) {
+  /*
+   * On Windows, the exit status of a process is taken to be the exit
+   * status of the last thread that exited.  If a process is killed
+   * with TerminateProcess(), the threads exit in a non-deterministic
+   * order.  In that case, the thread exit status we return here could
+   * become the process's exit status.  We return a magic number so
+   * that we can identify when that happens.
+   * See https://code.google.com/p/nativeclient/issues/detail?id=2870
+   */
+  _endthreadex(0xdecea5ed);
 }
 
 uint32_t NaClThreadId(void) {

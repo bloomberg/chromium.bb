@@ -78,7 +78,7 @@ void WINAPI serviceThread(void* arg) {
 #else
   NaClDescUnref(desc);
 #endif
-  NaClThreadExit(0);
+  NaClThreadExit();
 }
 
 int main(int argc, char* argv[]) {

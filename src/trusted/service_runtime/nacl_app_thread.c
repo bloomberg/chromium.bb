@@ -81,7 +81,6 @@ void WINAPI NaClThreadLauncher(void *state) {
 void NaClAppThreadTeardown(struct NaClAppThread *natp) {
   struct NaClApp  *nap;
   size_t          thread_idx;
-  int             process_exit_status;
 
   /*
    * mark this thread as dead; doesn't matter if some other thread is
@@ -129,20 +128,7 @@ void NaClAppThreadTeardown(struct NaClAppThread *natp) {
   NaClLog(3, " freeing thread object\n");
   NaClAppThreadDelete(natp);
   NaClLog(3, " NaClThreadExit\n");
-
-  NaClXMutexLock(&nap->mu);
-  process_exit_status = NACL_ABI_WEXITSTATUS(nap->exit_status);
-  NaClXMutexUnlock(&nap->mu);
-  /*
-   * There appears to be a race on Windows where the process can sometimes
-   * return a thread exit status instead of the process exit status when
-   * they occur near simultaneously on two separate threads.  Since this is
-   * non-deterministic, we always exit a thread with the current value of the
-   * process exit status to mitigate the possibility of exiting with an
-   * incorrect value.
-   * See http://code.google.com/p/nativeclient/issues/detail?id=1715
-   */
-  NaClThreadExit(process_exit_status);
+  NaClThreadExit();
   NaClLog(LOG_FATAL,
           "NaClAppThreadTeardown: NaClThreadExit() should not return\n");
   /* NOTREACHED */

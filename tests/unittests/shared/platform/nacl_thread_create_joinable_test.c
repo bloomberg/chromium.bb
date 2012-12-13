@@ -29,7 +29,7 @@ void WINAPI myThread(void* arg) {
     fprintf(stderr, "myThread: %d expected, but %d received\n", TEST_NUM, num);
     exit(EXIT_FAILURE);
   }
-  NaClThreadExit(0);
+  NaClThreadExit();
 }
 
 int main(int argc, char* argv[]) {

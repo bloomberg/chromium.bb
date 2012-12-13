@@ -64,10 +64,9 @@ int NaClThreadCreateJoinable(struct NaClThread  *ntp,
 void NaClThreadJoin(struct NaClThread *ntp);
 
 /*
- * NaClThreadExit is invoked by the thread itself, and exit_code is the
- * value returned by the thread.
+ * NaClThreadExit() terminates the current thread.
  */
-void NaClThreadExit(int exit_code);
+void NaClThreadExit(void);
 
 uint32_t NaClThreadId(void);
 

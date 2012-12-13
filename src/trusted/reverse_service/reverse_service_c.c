@@ -485,6 +485,7 @@ void NaClReverseThreadIfExit(struct NaClThreadInterface   *vself,
                              void                         *exit_code) {
   struct NaClReverseCountingThreadInterface *self =
       (struct NaClReverseCountingThreadInterface *) vself;
+  UNREFERENCED_PARAMETER(exit_code);
   NaClLog(4,
           ("NaClReverseThreadIfExit: thread 0x%"NACL_PRIxPTR
            " is exiting\n"),
@@ -494,7 +495,7 @@ void NaClReverseThreadIfExit(struct NaClThreadInterface   *vself,
       self->reverse_service);
 
   NaClRefCountUnref((struct NaClRefCount *) self);
-  NaClThreadExit((int)(uintptr_t) exit_code);
+  NaClThreadExit();
 }
 
 struct NaClSrpcHandlerDesc const kNaClReverseServiceHandlers[] = {
