@@ -4,6 +4,8 @@
 
 // MediaFileSystemRegistry unit tests.
 
+#include <algorithm>
+
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -254,12 +256,15 @@ class MediaFileSystemRegistryTest : public ChromeRenderViewHostTestHarness {
 
   void DetachDevice(const std::string& device_id);
 
-  void SetGalleryPermission(size_t profile, extensions::Extension* extension,
-                            const std::string& device_id, bool has_access);
+  void SetGalleryPermission(ProfileState* profile_state,
+                            extensions::Extension* extension,
+                            const std::string& device_id,
+                            bool has_access);
 
   void AssertAllAutoAddedGalleries();
 
-  std::vector<MediaFileSystemInfo> GetAutoAddedGalleries(size_t profile);
+  std::vector<MediaFileSystemInfo> GetAutoAddedGalleries(
+      ProfileState* profile_state);
 
  protected:
   void SetUp();
@@ -536,10 +541,10 @@ void MediaFileSystemRegistryTest::DetachDevice(const std::string& device_id) {
 }
 
 void MediaFileSystemRegistryTest::SetGalleryPermission(
-    size_t profile, extensions::Extension* extension,
+    ProfileState* profile_state, extensions::Extension* extension,
     const std::string& device_id, bool has_access) {
   MediaGalleriesPreferences* preferences =
-      GetProfileState(profile)->GetMediaGalleriesPrefs();
+      profile_state->GetMediaGalleriesPrefs();
   MediaGalleryPrefIdSet pref_id =
       preferences->LookUpGalleriesByDeviceId(device_id);
   DCHECK_EQ(1U, pref_id.size());
@@ -567,10 +572,10 @@ void MediaFileSystemRegistryTest::AssertAllAutoAddedGalleries() {
 }
 
 std::vector<MediaFileSystemInfo>
-MediaFileSystemRegistryTest::GetAutoAddedGalleries(size_t profile) {
-  DCHECK_LT(profile, profile_states_.size());
+MediaFileSystemRegistryTest::GetAutoAddedGalleries(
+    ProfileState* profile_state) {
   const MediaGalleriesPrefInfoMap& galleries =
-      GetProfileState(profile)->GetMediaGalleriesPrefs()->known_galleries();
+      profile_state->GetMediaGalleriesPrefs()->known_galleries();
   std::vector<MediaFileSystemInfo> result;
   for (MediaGalleriesPrefInfoMap::const_iterator it = galleries.begin();
        it != galleries.end();
@@ -624,21 +629,20 @@ TEST_F(MediaFileSystemRegistryTest, Basic) {
   CreateProfileState(1);
   AssertAllAutoAddedGalleries();
 
+  ProfileState* profile_state = GetProfileState(0);
+  std::vector<MediaFileSystemInfo> auto_galleries =
+      GetAutoAddedGalleries(profile_state);
   std::vector<MediaFileSystemInfo> empty_expectation;
-  std::vector<MediaFileSystemInfo> auto_galleries = GetAutoAddedGalleries(0);
-  GetProfileState(0)->CheckGalleries("basic", empty_expectation,
-                                     auto_galleries);
+  profile_state->CheckGalleries("basic", empty_expectation, auto_galleries);
 }
 
 TEST_F(MediaFileSystemRegistryTest, UserAddedGallery) {
   CreateProfileState(1);
   AssertAllAutoAddedGalleries();
-  const size_t kProfileId = 0U;
-
-  std::vector<MediaFileSystemInfo> added_galleries;
+  ProfileState* profile_state = GetProfileState(0);
   std::vector<MediaFileSystemInfo> auto_galleries =
-      GetAutoAddedGalleries(kProfileId);
-  ProfileState* profile_state = GetProfileState(kProfileId);
+      GetAutoAddedGalleries(profile_state);
+  std::vector<MediaFileSystemInfo> added_galleries;
   profile_state->CheckGalleries("user added init", added_galleries,
                                 auto_galleries);
 
@@ -646,7 +650,7 @@ TEST_F(MediaFileSystemRegistryTest, UserAddedGallery) {
   std::string device_id = AddUserGallery(MediaStorageUtil::FIXED_MASS_STORAGE,
                                          empty_dir().AsUTF8Unsafe(),
                                          empty_dir());
-  SetGalleryPermission(kProfileId,
+  SetGalleryPermission(profile_state,
                        profile_state->regular_permission_extension(),
                        device_id,
                        true /*has access*/);
@@ -657,7 +661,7 @@ TEST_F(MediaFileSystemRegistryTest, UserAddedGallery) {
                                 auto_galleries);
 
   // Add it to the all galleries extension.
-  SetGalleryPermission(kProfileId,
+  SetGalleryPermission(profile_state,
                        profile_state->all_permission_extension(),
                        device_id,
                        true /*has access*/);
