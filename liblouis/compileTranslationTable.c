@@ -1613,7 +1613,6 @@ extParseChars (const char *inString, widechar * outString)
     }
   for (k = 0; k < result.length; k++)
     outString[k] = result.chars[k];
-  outString[k] = 0;
   return result.length;
 }
 
