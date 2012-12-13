@@ -613,6 +613,9 @@ TEST_F(ClientSideDetectionHostTest,
 #if defined(OS_WIN)
 // Flaky on Windows: crbug.com/134918
 #define MAYBE_NavigationCancelsShouldClassifyUrl DISABLED_NavigationCancelsShouldClassifyUrl
+#elif defined(ADDRESS_SANITIZER)
+// Use after free in ASAN: http://crbug.com/165887
+#define MAYBE_NavigationCancelsShouldClassifyUrl DISABLED_NavigationCancelsShouldClassifyUrl
 #else
 #define MAYBE_NavigationCancelsShouldClassifyUrl NavigationCancelsShouldClassifyUrl
 #endif
