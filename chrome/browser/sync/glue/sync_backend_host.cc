@@ -1190,7 +1190,13 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
 void SyncBackendHost::Core::DoUpdateCredentials(
     const SyncCredentials& credentials) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  sync_manager_->UpdateCredentials(credentials);
+  // UpdateCredentials can be called during backend initialization, possibly
+  // when backend initialization has failed but hasn't notified the UI thread
+  // yet. In that case, the sync manager may have been destroyed on the sync
+  // thread before this task was executed, so we do nothing.
+  if (!sync_manager_.get()) {
+    sync_manager_->UpdateCredentials(credentials);
+  }
 }
 
 void SyncBackendHost::Core::DoUpdateRegisteredInvalidationIds(
