@@ -50,7 +50,7 @@ float VelocityCalculator::VelocitySquared() {
 
 void VelocityCalculator::UpdateVelocity() {
   // We don't have enough data to make a good estimate of the velocity.
-  if (num_valid_entries_ < buffer_size_)
+  if (num_valid_entries_ < 2)
     return;
 
   // Where A_i = A[i] - mean(A)
@@ -61,23 +61,23 @@ void VelocityCalculator::UpdateVelocity() {
   float mean_y = 0;
   int64 mean_time = 0;
 
-  for (size_t i = 0; i < buffer_size_; ++i) {
+  for (size_t i = 0; i < num_valid_entries_; ++i) {
     mean_x += buffer_[i].x;
     mean_y += buffer_[i].y;
     mean_time += buffer_[i].time;
   }
 
   // Minimize number of divides.
-  const float buffer_size_i = 1.0f / buffer_size_;
+  const float num_valid_entries_i = 1.0f / num_valid_entries_;
 
-  mean_x *= buffer_size_i;
-  mean_y *= buffer_size_i;
+  mean_x *= num_valid_entries_i;
+  mean_y *= num_valid_entries_i;
 
   // The loss in accuracy due to rounding is insignificant compared to
   // the error due to the resolution of the timer.
   // Use integer division to avoid the cast to double, which would cause
   // VelocityCalculatorTest.IsAccurateWithLargeTimes to fail.
-  mean_time /= buffer_size_;
+  mean_time /= num_valid_entries_;
 
   float xt = 0;  // sum_i(x_i * t_i)
   float yt = 0;  // sum_i(y_i * t_i)
@@ -85,16 +85,21 @@ void VelocityCalculator::UpdateVelocity() {
 
   int64 t_i;
 
-  for (size_t i = 0; i < buffer_size_; ++i) {
+  for (size_t i = 0; i < num_valid_entries_; ++i) {
     t_i = (buffer_[i].time - mean_time);
     xt += (buffer_[i].x - mean_x) * t_i;
     yt += (buffer_[i].y - mean_y) * t_i;
     tt += t_i * t_i;
   }
 
-  // Convert time from microseconds to seconds.
-  x_velocity_ = xt / (tt / 1000000.0f);
-  y_velocity_ = yt / (tt / 1000000.0f);
+  if (tt > 0) {
+    // Convert time from microseconds to seconds.
+    x_velocity_ = xt / (tt / 1000000.0f);
+    y_velocity_ = yt / (tt / 1000000.0f);
+  } else {
+    x_velocity_ = 0.0f;
+    y_velocity_ = 0.0f;
+  }
   velocities_stale_ = false;
 }
 
