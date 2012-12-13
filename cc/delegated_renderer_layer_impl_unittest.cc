@@ -13,6 +13,7 @@
 #include "cc/solid_color_draw_quad.h"
 #include "cc/solid_color_layer_impl.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
+#include "cc/test/fake_layer_tree_host_impl_client.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_proxy.h"
 #include "cc/test/fake_web_graphics_context_3d.h"
@@ -29,7 +30,7 @@ using namespace WebKitTests;
 namespace cc {
 namespace {
 
-class DelegatedRendererLayerImplTest : public testing::Test, public LayerTreeHostImplClient {
+class DelegatedRendererLayerImplTest : public testing::Test {
 public:
     DelegatedRendererLayerImplTest()
         : m_proxy(scoped_ptr<Thread>(NULL))
@@ -38,25 +39,14 @@ public:
         LayerTreeSettings settings;
         settings.minimumOcclusionTrackingSize = gfx::Size();
 
-        m_hostImpl = LayerTreeHostImpl::create(settings, this, &m_proxy);
+        m_hostImpl = LayerTreeHostImpl::create(settings, &m_client, &m_proxy);
         m_hostImpl->initializeRenderer(createFakeOutputSurface());
         m_hostImpl->setViewportSize(gfx::Size(10, 10), gfx::Size(10, 10));
     }
 
-    // LayerTreeHostImplClient implementation.
-    virtual void didLoseOutputSurfaceOnImplThread() OVERRIDE { }
-    virtual void onSwapBuffersCompleteOnImplThread() OVERRIDE { }
-    virtual void onVSyncParametersChanged(base::TimeTicks, base::TimeDelta) OVERRIDE { }
-    virtual void onCanDrawStateChanged(bool) OVERRIDE { }
-    virtual void setNeedsRedrawOnImplThread() OVERRIDE { }
-    virtual void setNeedsCommitOnImplThread() OVERRIDE { }
-    virtual void setNeedsManageTilesOnImplThread() OVERRIDE { }
-    virtual void postAnimationEventsToMainThreadOnImplThread(scoped_ptr<AnimationEventsVector>, base::Time wallClockTime) OVERRIDE { }
-    virtual bool reduceContentsTextureMemoryOnImplThread(size_t limitBytes, int priorityCutoff) OVERRIDE { return true; }
-    virtual void sendManagedMemoryStats() OVERRIDE { }
-
 protected:
     FakeProxy m_proxy;
+    FakeLayerTreeHostImplClient m_client;
     DebugScopedSetImplThreadAndMainThreadBlocked m_alwaysImplThreadAndMainThreadBlocked;
     scoped_ptr<LayerTreeHostImpl> m_hostImpl;
 };
