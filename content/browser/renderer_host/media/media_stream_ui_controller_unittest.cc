@@ -62,7 +62,8 @@ class MediaStreamDeviceUIControllerTest
                                   dummy_render_process_id,
                                   dummy_render_view_id,
                                   components,
-                                  security_origin);
+                                  security_origin,
+                                  MEDIA_GENERATE_STREAM);
   }
 
   scoped_ptr<MessageLoop> message_loop_;

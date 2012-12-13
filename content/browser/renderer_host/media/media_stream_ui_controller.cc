@@ -71,9 +71,10 @@ class MediaStreamRequestForUI : public MediaStreamRequest {
   MediaStreamRequestForUI(int render_pid,
                           int render_vid,
                           const GURL& origin,
-                          const StreamOptions& options)
-      : MediaStreamRequest(render_pid, render_vid, origin, options.audio_type,
-                           options.video_type),
+                          const StreamOptions& options,
+                          MediaStreamRequestType request_type)
+      : MediaStreamRequest(render_pid, render_vid, origin, request_type,
+                           options.audio_type, options.video_type),
         posted_task(false) {
     DCHECK(IsAudioMediaType(options.audio_type) ||
            IsVideoMediaType(options.video_type));
@@ -124,14 +125,14 @@ void MediaStreamUIController::MakeUIRequest(
     int render_process_id,
     int render_view_id,
     const StreamOptions& request_options,
-    const GURL& security_origin) {
+    const GURL& security_origin, MediaStreamRequestType request_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   // Create a new request.
   if (!requests_.insert(
           std::make_pair(label, new MediaStreamRequestForUI(
               render_process_id, render_view_id, security_origin,
-              request_options))).second) {
+              request_options, request_type))).second) {
     NOTREACHED();
   }
 

@@ -30,6 +30,14 @@ enum MediaStreamDeviceType {
   NUM_MEDIA_TYPES
 };
 
+// Types of media stream requests that can be made to the media controller.
+enum MediaStreamRequestType {
+  MEDIA_DEVICE_ACCESS = 0,
+  MEDIA_GENERATE_STREAM,
+  MEDIA_ENUMERATE_DEVICES,
+  MEDIA_OPEN_DEVICE
+};
+
 // Convenience predicates to determine whether the given type represents some
 // audio or some video device.
 CONTENT_EXPORT bool IsAudioMediaType(MediaStreamDeviceType type);
@@ -66,6 +74,7 @@ struct CONTENT_EXPORT MediaStreamRequest {
       int render_process_id,
       int render_view_id,
       const GURL& security_origin,
+      MediaStreamRequestType request_type,
       MediaStreamDeviceType audio_type,
       MediaStreamDeviceType video_type);
 
@@ -79,6 +88,12 @@ struct CONTENT_EXPORT MediaStreamRequest {
 
   // The WebKit security origin for the current request (e.g. "html5rocks.com").
   GURL security_origin;
+
+  // Stores the type of request that was made to the media controller. Right now
+  // this is only used to destinguish between WebRTC and Pepper requests, as the
+  // latter should not be subject to user approval but only to policy check.
+  // Pepper requests are signified by the |MEDIA_OPEN_DEVICE| value.
+  MediaStreamRequestType request_type;
 
   // Flag to indicate if the request contains audio.
   MediaStreamDeviceType audio_type;

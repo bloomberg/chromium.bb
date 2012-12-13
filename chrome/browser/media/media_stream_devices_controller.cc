@@ -67,6 +67,13 @@ void MediaStreamDevicesController::RegisterUserPrefs(PrefService* prefs) {
 
 
 bool MediaStreamDevicesController::DismissInfoBarAndTakeActionOnSettings() {
+  // If this is a no UI check for policies only go straight to accept - policy
+  // check will be done automatically on the way.
+  if (request_.request_type == content::MEDIA_OPEN_DEVICE) {
+    Accept(false);
+    return true;
+  }
+
   if (request_.audio_type == content::MEDIA_TAB_AUDIO_CAPTURE ||
       request_.video_type == content::MEDIA_TAB_VIDEO_CAPTURE) {
     HandleTapMediaRequest();

@@ -64,16 +64,9 @@ static bool Requested(const StreamOptions& options,
 // TODO(xians): Merge DeviceRequest with MediaStreamRequest.
 class MediaStreamManager::DeviceRequest {
  public:
-  enum RequestType {
-    DEVICE_ACCESS = 0,
-    GENERATE_STREAM,
-    ENUMERATE_DEVICES,
-    OPEN_DEVICE
-  };
-
   DeviceRequest()
       : requester(NULL),
-        type(GENERATE_STREAM),
+        type(MEDIA_GENERATE_STREAM),
         render_process_id(-1),
         render_view_id(-1),
         state_(NUM_MEDIA_TYPES, MEDIA_REQUEST_STATE_NOT_REQUESTED) {
@@ -81,7 +74,7 @@ class MediaStreamManager::DeviceRequest {
 
   DeviceRequest(MediaStreamRequester* requester,
                 const StreamOptions& request_options,
-                RequestType request_type,
+                MediaStreamRequestType request_type,
                 int render_process_id,
                 int render_view_id,
                 const GURL& request_security_origin)
@@ -129,7 +122,7 @@ class MediaStreamManager::DeviceRequest {
 
   MediaStreamRequester* requester;  // Can be NULL.
   StreamOptions options;
-  RequestType type;
+  MediaStreamRequestType type;
   int render_process_id;
   int render_view_id;
   GURL security_origin;
@@ -202,7 +195,7 @@ std::string MediaStreamManager::MakeMediaAccessRequest(
   // Create a new request based on options.
   DeviceRequest* request = new DeviceRequest(NULL,
                                              options,
-                                             DeviceRequest::DEVICE_ACCESS,
+                                             MEDIA_DEVICE_ACCESS,
                                              render_process_id,
                                              render_view_id,
                                              security_origin);
@@ -229,7 +222,7 @@ std::string MediaStreamManager::GenerateStream(
 
   // Create a new request based on options.
   DeviceRequest* request = new DeviceRequest(requester, options,
-                                             DeviceRequest::GENERATE_STREAM,
+                                             MEDIA_GENERATE_STREAM,
                                              render_process_id,
                                              render_view_id,
                                              security_origin);
@@ -266,7 +259,7 @@ std::string MediaStreamManager::GenerateStreamForDevice(
 
   // Create a new request based on options.
   DeviceRequest* request = new DeviceRequest(requester, options,
-                                             DeviceRequest::GENERATE_STREAM,
+                                             MEDIA_GENERATE_STREAM,
                                              target_render_process_id,
                                              target_render_view_id,
                                              security_origin);
@@ -334,7 +327,7 @@ void MediaStreamManager::StopGeneratedStream(const std::string& label) {
   // Find the request and close all open devices for the request.
   DeviceRequests::iterator it = requests_.find(label);
   if (it != requests_.end()) {
-    if (it->second->type == DeviceRequest::ENUMERATE_DEVICES) {
+    if (it->second->type == MEDIA_ENUMERATE_DEVICES) {
       StopEnumerateDevices(label);
       return;
     }
@@ -346,7 +339,7 @@ void MediaStreamManager::StopGeneratedStream(const std::string& label) {
          device_it != request->devices.end(); ++device_it) {
       GetDeviceManager(device_it->stream_type)->Close(device_it->session_id);
     }
-    if (request->type == DeviceRequest::GENERATE_STREAM &&
+    if (request->type == MEDIA_GENERATE_STREAM &&
         RequestDone(*request)) {
       // Notify observers that this device is being closed.
       for (int i = MEDIA_NO_SERVICE + 1; i != NUM_MEDIA_TYPES; ++i) {
@@ -400,7 +393,7 @@ std::string MediaStreamManager::EnumerateDevices(
 
   DeviceRequest* request = new DeviceRequest(requester,
                                              options,
-                                             DeviceRequest::ENUMERATE_DEVICES,
+                                             MEDIA_ENUMERATE_DEVICES,
                                              render_process_id,
                                              render_view_id,
                                              security_origin);
@@ -428,7 +421,7 @@ void MediaStreamManager::StopEnumerateDevices(const std::string& label) {
 
   DeviceRequests::iterator it = requests_.find(label);
   if (it != requests_.end()) {
-    DCHECK_EQ(it->second->type, DeviceRequest::ENUMERATE_DEVICES);
+    DCHECK_EQ(it->second->type, MEDIA_ENUMERATE_DEVICES);
     // Delete the DeviceRequest.
     scoped_ptr<DeviceRequest> request(it->second);
     requests_.erase(it);
@@ -459,13 +452,15 @@ std::string MediaStreamManager::OpenDevice(
 
   DeviceRequest* request = new DeviceRequest(requester,
                                              options,
-                                             DeviceRequest::OPEN_DEVICE,
+                                             MEDIA_OPEN_DEVICE,
                                              render_process_id,
                                              render_view_id,
                                              security_origin);
   request->requested_device_id = device_id;
   const std::string& label = AddRequest(request);
   StartEnumeration(request);
+
+  PostRequestToUI(label);
 
   return label;
 }
@@ -587,7 +582,8 @@ void MediaStreamManager::PostRequestToUI(const std::string& label) {
                                 request->render_process_id,
                                 request->render_view_id,
                                 request->options,
-                                request->security_origin);
+                                request->security_origin,
+                                request->type);
 }
 
 void MediaStreamManager::HandleRequest(const std::string& label) {
@@ -692,10 +688,10 @@ void MediaStreamManager::Opened(MediaStreamType stream_type,
   }
 
   switch (request->type) {
-    case DeviceRequest::OPEN_DEVICE:
+    case MEDIA_OPEN_DEVICE:
       request->requester->DeviceOpened(label, devices->front());
       break;
-    case DeviceRequest::GENERATE_STREAM: {
+    case MEDIA_GENERATE_STREAM: {
       // Partition the array of devices into audio vs video.
       StreamDeviceInfoArray audio_devices, video_devices;
       for (StreamDeviceInfoArray::const_iterator device_it = devices->begin();
@@ -755,7 +751,7 @@ void MediaStreamManager::DevicesEnumerated(
     if (it->second->state(stream_type) ==
         MEDIA_REQUEST_STATE_REQUESTED &&
         Requested(it->second->options, stream_type)) {
-      if (it->second->type != DeviceRequest::ENUMERATE_DEVICES)
+      if (it->second->type != MEDIA_ENUMERATE_DEVICES)
         it->second->SetState(stream_type, MEDIA_REQUEST_STATE_PENDING_APPROVAL);
       label_list.push_back(it->first);
     }
@@ -764,25 +760,9 @@ void MediaStreamManager::DevicesEnumerated(
        it != label_list.end(); ++it) {
     DeviceRequest* request = requests_[*it];
     switch (request->type) {
-      case DeviceRequest::ENUMERATE_DEVICES:
+      case MEDIA_ENUMERATE_DEVICES:
         if (need_update_clients && request->requester)
           request->requester->DevicesEnumerated(*it, devices);
-        break;
-      case DeviceRequest::OPEN_DEVICE:
-        DCHECK(!request->requested_device_id.empty());
-        for (StreamDeviceInfoArray::const_iterator device_it = devices.begin();
-             device_it != devices.end(); ++device_it) {
-          if (request->requested_device_id == device_it->device_id) {
-            StreamDeviceInfo device = *device_it;
-            device.in_use = false;
-            device.session_id =
-                GetDeviceManager(device_it->stream_type)->Open(device);
-            request->SetState(device_it->stream_type,
-                              MEDIA_REQUEST_STATE_OPENING);
-            request->devices.push_back(device);
-            break;
-          }
-        }
         break;
       default:
         if (request->state(request->options.audio_type) ==
@@ -868,7 +848,7 @@ void MediaStreamManager::DevicesAccepted(const std::string& label,
     return;
   }
 
-  if (request_it->second->type == DeviceRequest::DEVICE_ACCESS) {
+  if (request_it->second->type == MEDIA_DEVICE_ACCESS) {
     scoped_ptr<DeviceRequest> request(request_it->second);
     if (!request->callback.is_null()) {
       // Map the devices to MediaStreamDevices.
@@ -939,7 +919,7 @@ void MediaStreamManager::SettingsError(const std::string& label) {
   if (request->requester)
     request->requester->StreamGenerationFailed(label);
 
-  if (request->type == DeviceRequest::DEVICE_ACCESS &&
+  if (request->type == MEDIA_DEVICE_ACCESS &&
       !request->callback.is_null()) {
     request->callback.Run(label, MediaStreamDevices());
   }
