@@ -169,6 +169,8 @@
         'system/chromeos/network/network_icon.cc',
         'system/chromeos/network/network_icon.h',
         'system/chromeos/network/network_icon_animation_observer.h',
+        'system/chromeos/network/network_list_detailed_view.cc',
+        'system/chromeos/network/network_list_detailed_view.h',
         'system/chromeos/network/network_list_detailed_view_base.cc',
         'system/chromeos/network/network_list_detailed_view_base.h',
         'system/chromeos/network/network_observer.h',
