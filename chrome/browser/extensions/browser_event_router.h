@@ -85,11 +85,6 @@ class BrowserEventRouter : public TabStripModelObserver,
   void BrowserActionExecuted(const ExtensionAction& browser_action,
                              Browser* browser);
 
-  // A keyboard shortcut resulted in an extension command.
-  void CommandExecuted(Profile* profile,
-                       const std::string& extension_id,
-                       const std::string& command);
-
   // content::NotificationObserver.
   virtual void Observe(int type,
                        const content::NotificationSource& source,

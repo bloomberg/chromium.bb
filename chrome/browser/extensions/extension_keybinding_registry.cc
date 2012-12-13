@@ -4,8 +4,9 @@
 
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
 
+#include "base/values.h"
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
-#include "chrome/browser/extensions/browser_event_router.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
@@ -69,9 +70,14 @@ void ExtensionKeybindingRegistry::CommandExecuted(
   if (granter)
     granter->GrantIfRequested(extension);
 
-  service->browser_event_router()->CommandExecuted(profile_,
-                                                   extension_id,
-                                                   command);
+  scoped_ptr<ListValue> args(new ListValue());
+  args->Append(Value::CreateStringValue(command));
+
+  scoped_ptr<Event> event(new Event("commands.onCommand", args.Pass()));
+  event->restrict_to_profile = profile_;
+  event->user_gesture = EventRouter::USER_GESTURE_ENABLED;
+  ExtensionSystem::Get(profile_)->event_router()->
+      DispatchEventToExtension(extension_id, event.Pass());
 }
 
 void ExtensionKeybindingRegistry::Observe(
