@@ -80,6 +80,9 @@ class UI_EXPORT SimpleMenuModel : public MenuModel {
   void AddRadioItem(int command_id, const string16& label, int group_id);
   void AddRadioItemWithStringId(int command_id, int string_id, int group_id);
 
+  // Adds a separator if the menu is empty, or the last item is not a separator.
+  void AddSeparatorIfNecessary(MenuSeparatorType separator_type);
+
   // These three methods take pointers to various sub-models. These models
   // should be owned by the same owner of this SimpleMenuModel.
   void AddButtonItem(int command_id, ButtonMenuItemModel* model);

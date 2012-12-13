@@ -87,6 +87,7 @@ void SimpleMenuModel::AddSeparator(MenuSeparatorType separator_type) {
     NOTIMPLEMENTED();
   }
 #endif
+  DCHECK(items_.empty() || items_.back().type != TYPE_SEPARATOR);
   Item item = { kSeparatorId, string16(), gfx::Image(), TYPE_SEPARATOR,
                 -1, NULL, NULL , separator_type };
   AppendItem(item);
@@ -112,6 +113,12 @@ void SimpleMenuModel::AddRadioItem(int command_id, const string16& label,
 void SimpleMenuModel::AddRadioItemWithStringId(int command_id, int string_id,
                                                int group_id) {
   AddRadioItem(command_id, l10n_util::GetStringUTF16(string_id), group_id);
+}
+
+void SimpleMenuModel::AddSeparatorIfNecessary(MenuSeparatorType separator_type)
+{
+  if (!items_.empty() && items_.back().type != TYPE_SEPARATOR)
+    AddSeparator(separator_type);
 }
 
 void SimpleMenuModel::AddButtonItem(int command_id,

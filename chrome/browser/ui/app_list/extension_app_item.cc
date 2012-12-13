@@ -413,7 +413,7 @@ ui::MenuModel* ExtensionAppItem::GetContextMenuModel() {
                                                 &index);
 
     if (controller_->CanPin()) {
-      context_menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
+      context_menu_model_->AddSeparatorIfNecessary(ui::NORMAL_SEPARATOR);
       context_menu_model_->AddItemWithStringId(
           TOGGLE_PIN,
           controller_->IsAppPinned(extension_id_) ?
@@ -429,7 +429,7 @@ ui::MenuModel* ExtensionAppItem::GetContextMenuModel() {
     }
 
     if (!extension->is_platform_app()) {
-      context_menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
+      context_menu_model_->AddSeparatorIfNecessary(ui::NORMAL_SEPARATOR);
       context_menu_model_->AddCheckItemWithStringId(
           LAUNCH_TYPE_REGULAR_TAB,
           IDS_APP_CONTEXT_MENU_OPEN_REGULAR);
@@ -447,7 +447,7 @@ ui::MenuModel* ExtensionAppItem::GetContextMenuModel() {
     }
 
     if (!extension->is_platform_app()) {
-      context_menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
+      context_menu_model_->AddSeparatorIfNecessary(ui::NORMAL_SEPARATOR);
       context_menu_model_->AddItemWithStringId(OPTIONS,
                                                IDS_NEW_TAB_APP_OPTIONS);
       context_menu_model_->AddItemWithStringId(DETAILS,
