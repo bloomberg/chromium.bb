@@ -6,6 +6,19 @@
 Import('env')
 
 
+# TLS variable alignments larger than 16 do not work with NaCl's
+# original linker scripts for static linking, for which nacl/tls.c
+# uses TLS_PRESUMED_ALIGNMENT == 16.
+# See https://code.google.com/p/nativeclient/issues/detail?id=1240
+large_alignments_work = (
+    # With dynamic linking, the runtime reads the TLS alignment from
+    # the PT_TLS segment header.
+    env.Bit('nacl_glibc') or
+    # With PNaCl pexes, the TLS alignment is stored in
+    # __tls_template_alignment by the ExpandTls LLVM pass.
+    env.Bit('bitcode'))
+
+
 defines_map = {
     'tdata1' : ['WITH_PTHREAD'],
     'tdata2' : ['MORE_TDATA', 'WITH_PTHREAD'],
@@ -15,8 +28,7 @@ defines_map = {
     'largealign' : ['TDATA_LARGE_ALIGN', 'TBSS_LARGE_ALIGN', 'WITH_PTHREAD'],
     'nopthread' : ['WITH_TBSS', 'TDATA_LARGE_ALIGN', 'TBSS_LARGE_ALIGN']}
 for case_name, defines in sorted(defines_map.iteritems()):
-  # Large TLS aligns don't work for newlib.
-  if not env.Bit('nacl_glibc') and case_name in ['largealign', 'nopthread']:
+  if case_name in ['largealign', 'nopthread'] and not large_alignments_work:
     continue
   full_name = 'tls_test_' + case_name
   if 'WITH_PTHREAD' in defines:
