@@ -111,7 +111,13 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, Basic) {
   ASSERT_TRUE(result);
 }
 
-IN_PROC_BROWSER_TEST_F(CommandsApiTest, PageAction) {
+// Flaky on linux and chromeos, http://crbug.com/165825
+#if defined(OS_MACOSX) || defined(OS_WIN)
+#define MAYBE_PageAction PageAction
+#else
+#define MAYBE_PageAction DISABLED_PageAction
+#endif
+IN_PROC_BROWSER_TEST_F(CommandsApiTest, MAYBE_PageAction) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(RunExtensionTest("keybinding/page_action")) << message_;
   const Extension* extension = GetSingleLoadedExtension();
