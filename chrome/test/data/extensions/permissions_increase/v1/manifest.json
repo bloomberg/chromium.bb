@@ -1,5 +1,6 @@
 {
   "version": "1",
   "name": "Permission Test",
-  "background_page": "background.html"
+  "background_page": "background.html",
+  "update_url": "http://localhost/autoupdate/updates.xml"
 }
