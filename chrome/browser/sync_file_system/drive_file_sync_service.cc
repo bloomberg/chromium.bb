@@ -36,9 +36,12 @@ namespace {
 const FilePath::CharType kTempDirName[] = FILE_PATH_LITERAL("tmp");
 const FilePath::CharType kSyncFileSystemDir[] =
     FILE_PATH_LITERAL("Sync FileSystem");
-const int64 kMinimumPollingDelaySeconds = 10;
-const int64 kMaximumPollingDelaySeconds = 60 * 60;  // 1 hour
-const double kDelayMultiplier = 2;
+
+// Incremental sync polling interval.
+// TODO(tzik,nhiroki): Support push notifications. (http://crbug.com/165592)
+const int64 kMinimumPollingDelaySeconds = 5;
+const int64 kMaximumPollingDelaySeconds = 10 * 60;  // 10 min
+const double kDelayMultiplier = 1.6;
 
 bool CreateTemporaryFile(const FilePath& dir_path, FilePath* temp_file) {
   return file_util::CreateDirectory(dir_path) &&
@@ -551,23 +554,25 @@ void DriveFileSyncService::ApplyLocalChange(
 
 void DriveFileSyncService::OnAuthenticated() {
   DVLOG(1) << "OnAuthenticated";
-  if (state_ == REMOTE_SERVICE_AUTHENTICATION_REQUIRED ||
-      state_ == REMOTE_SERVICE_TEMPORARY_UNAVAILABLE) {
+  if (state_ != REMOTE_SERVICE_OK) {
     state_ = REMOTE_SERVICE_OK;
     FOR_EACH_OBSERVER(
         Observer, observers_,
         OnRemoteServiceStateUpdated(state_, "Authenticated"));
+    polling_delay_seconds_ = kMinimumPollingDelaySeconds;
+    SchedulePolling();
   }
 }
 
 void DriveFileSyncService::OnNetworkConnected() {
   DVLOG(1) << "OnNetworkConnected";
-  if (state_ == REMOTE_SERVICE_AUTHENTICATION_REQUIRED ||
-      state_ == REMOTE_SERVICE_TEMPORARY_UNAVAILABLE) {
+  if (state_ != REMOTE_SERVICE_OK) {
     state_ = REMOTE_SERVICE_OK;
     FOR_EACH_OBSERVER(
         Observer, observers_,
         OnRemoteServiceStateUpdated(state_, "Network connected"));
+    polling_delay_seconds_ = kMinimumPollingDelaySeconds;
+    SchedulePolling();
   }
 }
 
