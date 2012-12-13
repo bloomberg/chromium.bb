@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 
+#include "base/basictypes.h"
+
 // Include once to get the type definitions
 #include "chrome/common/all_messages.h"
 #include "content/common/all_messages.h"
@@ -33,6 +35,7 @@ static msginfo msgtable[] = {
 #include "content/common/all_messages.h"
 };
 #define MSGTABLE_SIZE (sizeof(msgtable)/sizeof(msgtable[0]))
+COMPILE_ASSERT(MSGTABLE_SIZE, CHECK_YOUR_HEADERS_FOR_AN_EXTRA_SEMICOLON);
 
 static bool check_msgtable() {
   bool result = true;
