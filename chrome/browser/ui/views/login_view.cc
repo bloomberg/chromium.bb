@@ -27,8 +27,7 @@ using views::GridLayout;
 // LoginView, public:
 
 LoginView::LoginView(const string16& explanation,
-                     LoginModel* model,
-                     bool enable_chrome_style)
+                     LoginModel* model)
     : username_field_(new views::Textfield),
       password_field_(new views::Textfield(views::Textfield::STYLE_OBSCURED)),
       username_label_(new views::Label(
@@ -45,9 +44,6 @@ LoginView::LoginView(const string16& explanation,
   GridLayout* layout = GridLayout::CreatePanel(this);
   SetLayoutManager(layout);
 
-  if (enable_chrome_style)
-    layout->SetInsets(0, 0, ConstrainedWindowConstants::kRowPadding, 0);
-
   // Add the column set for the information message at the top of the dialog
   // box.
   const int single_column_view_set_id = 0;
@@ -59,24 +55,18 @@ LoginView::LoginView(const string16& explanation,
   // Add the column set for the user name and password fields and labels.
   const int labels_column_set_id = 1;
   column_set = layout->AddColumnSet(labels_column_set_id);
-  if (!enable_chrome_style)
-    column_set->AddPaddingColumn(0, kTextfieldStackHorizontalSpacing);
+  column_set->AddPaddingColumn(0, kTextfieldStackHorizontalSpacing);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
                         GridLayout::USE_PREF, 0, 0);
-  if (!enable_chrome_style)
-    column_set->AddPaddingColumn(0, kTextfieldStackHorizontalSpacing);
+  column_set->AddPaddingColumn(0, kTextfieldStackHorizontalSpacing);
 
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(message_label_);
 
-  if (enable_chrome_style) {
-    layout->AddPaddingRow(0, ConstrainedWindowConstants::kRowPadding);
-  } else {
-    layout->AddPaddingRow(0, views::kUnrelatedControlLargeVerticalSpacing);
-  }
+  layout->AddPaddingRow(0, views::kUnrelatedControlLargeVerticalSpacing);
 
   layout->StartRow(0, labels_column_set_id);
   layout->AddView(username_label_);
@@ -88,8 +78,7 @@ LoginView::LoginView(const string16& explanation,
   layout->AddView(password_label_);
   layout->AddView(password_field_);
 
-  if (!enable_chrome_style)
-    layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
 
   if (login_model_)
     login_model_->SetObserver(this);

@@ -1400,8 +1400,6 @@
         'browser/ui/views/confirm_bubble_views.cc',
         'browser/ui/views/confirm_bubble_views.h',
         'browser/ui/views/constrained_web_dialog_delegate_views.cc',
-        'browser/ui/views/constrained_window_frame_simple.cc',
-        'browser/ui/views/constrained_window_frame_simple.h',
         'browser/ui/views/constrained_window_views.cc',
         'browser/ui/views/constrained_window_views.h',
         'browser/ui/views/content_setting_bubble_contents.cc',

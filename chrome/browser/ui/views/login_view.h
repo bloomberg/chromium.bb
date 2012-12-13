@@ -22,8 +22,7 @@ class LoginView : public views::View, public LoginModelObserver {
   // Therefore |model| should not be destroyed before the LoginView
   // object.
   LoginView(const string16& explanation,
-            LoginModel* model,
-            bool enable_chrome_style);
+            LoginModel* model);
   virtual ~LoginView();
 
   // Access the data in the username/password text fields.

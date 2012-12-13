@@ -92,9 +92,7 @@ void AutofillDialogViews::Show() {
 
   // Ownership of |contents_| is handed off by this call. The ConstrainedWindow
   // will take care of deleting itself after calling DeleteDelegate().
-  window_ = new ConstrainedWindowViews(
-      controller_->web_contents(), this,
-      true, ConstrainedWindowViews::DEFAULT_INSETS);
+  window_ = new ConstrainedWindowViews(controller_->web_contents(), this);
 }
 
 int AutofillDialogViews::GetSuggestionSelection(DialogSection section) {
@@ -152,10 +150,6 @@ string16 AutofillDialogViews::GetDialogButtonLabel(ui::DialogButton button)
 bool AutofillDialogViews::IsDialogButtonEnabled(ui::DialogButton button) const {
   return button == ui::DIALOG_BUTTON_OK ?
       controller_->ConfirmButtonEnabled() : true;
-}
-
-bool AutofillDialogViews::UseChromeStyle() const {
-  return true;
 }
 
 bool AutofillDialogViews::Cancel() {

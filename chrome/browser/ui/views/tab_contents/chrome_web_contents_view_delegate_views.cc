@@ -68,26 +68,21 @@ bool ChromeWebContentsViewDelegateViews::Focus() {
     }
   }
 
-#if defined(USE_ASH)
-  if (!chrome::UseChromeStyleDialogs()) {
-#endif
-    ConstrainedWindowTabHelper* constrained_window_tab_helper =
-        ConstrainedWindowTabHelper::FromWebContents(web_contents_);
-    if (constrained_window_tab_helper) {
-      // TODO(erg): WebContents used to own constrained windows, which is why
-      // this is here. Eventually this should be ported to a containing view
-      // specializing in constrained window management.
-      if (constrained_window_tab_helper->constrained_window_count() > 0) {
-        ConstrainedWindow* window =
-            *constrained_window_tab_helper->constrained_window_begin();
-        DCHECK(window);
-        window->FocusConstrainedWindow();
-        return true;
-      }
+  ConstrainedWindowTabHelper* constrained_window_tab_helper =
+      ConstrainedWindowTabHelper::FromWebContents(web_contents_);
+  if (constrained_window_tab_helper) {
+    // TODO(erg): WebContents used to own constrained windows, which is why
+    // this is here. Eventually this should be ported to a containing view
+    // specializing in constrained window management.
+    if (constrained_window_tab_helper->constrained_window_count() > 0) {
+      ConstrainedWindow* window =
+          *constrained_window_tab_helper->constrained_window_begin();
+      DCHECK(window);
+      window->FocusConstrainedWindow();
+      return true;
     }
-#if defined(USE_ASH)
   }
-#endif
+
   return false;
 }
 

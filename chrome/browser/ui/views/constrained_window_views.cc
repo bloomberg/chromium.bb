@@ -14,15 +14,9 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
-#include "chrome/browser/ui/views/constrained_window_frame_simple.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "grit/chromium_strings.h"
@@ -566,13 +560,8 @@ class ConstrainedWindowFrameViewAsh : public ash::CustomFrameViewAsh {
 
 ConstrainedWindowViews::ConstrainedWindowViews(
     content::WebContents* web_contents,
-    views::WidgetDelegate* widget_delegate,
-    bool enable_chrome_style,
-    ChromeStyleClientInsets chrome_style_client_insets)
-    : WebContentsObserver(web_contents),
-      web_contents_(web_contents),
-      enable_chrome_style_(enable_chrome_style),
-      chrome_style_client_insets_(chrome_style_client_insets),
+    views::WidgetDelegate* widget_delegate)
+    : web_contents_(web_contents),
       ALLOW_THIS_IN_INITIALIZER_LIST(native_constrained_window_(
           NativeConstrainedWindow::CreateNativeConstrainedWindow(this))) {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
@@ -580,18 +569,9 @@ ConstrainedWindowViews::ConstrainedWindowViews(
   params.native_widget = native_constrained_window_->AsNativeWidget();
   params.child = true;
 
-  if (enable_chrome_style_) {
-    params.parent = Widget::GetTopLevelWidgetForNativeView(
-        web_contents_->GetView()->GetNativeView())->GetNativeView();
-  } else {
-    params.parent = web_contents_->GetNativeView();
-  }
+  params.parent = web_contents_->GetNativeView();
 
 #if defined(USE_ASH)
-  if (enable_chrome_style_) {
-    params.child = false;
-    DCHECK_EQ(widget_delegate->GetModalType(), ui::MODAL_TYPE_CHILD);
-  }
   // Ash window headers can be transparent.
   params.transparent = true;
   views::corewm::SetChildWindowVisibilityChangesAnimated(params.parent);
@@ -603,29 +583,6 @@ ConstrainedWindowViews::ConstrainedWindowViews(
   }
 #endif
   Init(params);
-
-  if (enable_chrome_style_) {
-    // Set dialog-specific state.
-    if (widget_delegate && widget_delegate->AsDialogDelegate()) {
-      views::DialogClientView* dialog_client_view =
-          widget_delegate->AsDialogDelegate()->GetDialogClientView();
-      if (dialog_client_view) {
-        views::Background* background =
-            views::Background::CreateSolidBackground(
-                ConstrainedWindow::GetBackgroundColor());
-        dialog_client_view->set_background(background);
-
-        ConstrainedWindowFrameSimple *frame =
-            static_cast<ConstrainedWindowFrameSimple*>(
-                non_client_view()->frame_view());
-        frame->set_bottom_margin(dialog_client_view->GetBottomMargin());
-      }
-    }
-    PositionChromeStyleWindow(GetRootView()->bounds().size());
-    registrar_.Add(this,
-                   content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
-                   content::Source<content::WebContents>(web_contents));
-  }
 
   ConstrainedWindowTabHelper* constrained_window_tab_helper =
       ConstrainedWindowTabHelper::FromWebContents(web_contents_);
@@ -641,13 +598,6 @@ ConstrainedWindowViews::~ConstrainedWindowViews() {
 }
 
 void ConstrainedWindowViews::ShowConstrainedWindow() {
-#if defined(USE_AURA)
-  if (enable_chrome_style_) {
-    views::corewm::SetWindowVisibilityAnimationType(
-        GetNativeWindow(),
-        views::corewm::WINDOW_VISIBILITY_ANIMATION_TYPE_ROTATE);
-  }
-#endif
   Show();
   FocusConstrainedWindow();
 }
@@ -692,16 +642,7 @@ void ConstrainedWindowViews::NotifyTabHelperWillClose() {
   constrained_window_tab_helper->WillClose(this);
 }
 
-void ConstrainedWindowViews::CenterWindow(const gfx::Size& size) {
-  if (enable_chrome_style_)
-    PositionChromeStyleWindow(size);
-  else
-    Widget::CenterWindow(size);
-}
-
 views::NonClientFrameView* ConstrainedWindowViews::CreateNonClientFrameView() {
-  if (enable_chrome_style_)
-    return new ConstrainedWindowFrameSimple(this, chrome_style_client_insets_);
 #if defined(USE_ASH)
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(ash::switches::kAuraGoogleDialogFrames))
@@ -729,45 +670,4 @@ views::internal::NativeWidgetDelegate*
 int ConstrainedWindowViews::GetNonClientComponent(const gfx::Point& point) {
   // Prevent a constrained window to be moved by the user.
   return HTNOWHERE;
-}
-
-void ConstrainedWindowViews::WebContentsDestroyed(
-    content::WebContents* web_contents) {
-  web_contents_ = NULL;
-}
-
-void ConstrainedWindowViews::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK(enable_chrome_style_);
-  DCHECK_EQ(type, content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED);
-#if defined(USE_ASH)
-  views::corewm::SuspendChildWindowVisibilityAnimations
-      suspend(GetNativeWindow()->parent());
-#endif
-  if (*content::Details<bool>(details).ptr()) {
-    Show();
-  } else {
-    Hide();
-  }
-}
-
-void ConstrainedWindowViews::PositionChromeStyleWindow(const gfx::Size& size) {
-  DCHECK(enable_chrome_style_);
-  ConstrainedWindowTabHelperDelegate* tab_helper_delegate =
-      ConstrainedWindowTabHelper::FromWebContents(web_contents_)->delegate();
-  gfx::Point point;
-  if (!tab_helper_delegate ||
-      !tab_helper_delegate->GetConstrainedWindowTopCenter(&point)) {
-    Widget::CenterWindow(size);
-    return;
-  }
-#if defined(USE_ASH)
-  if (is_top_level()) {
-    point += web_contents_->GetNativeView()->parent()->bounds().origin().
-        OffsetFromOrigin();
-  }
-#endif
-  SetBounds(gfx::Rect(point - gfx::Vector2d(size.width() / 2, 0), size));
 }

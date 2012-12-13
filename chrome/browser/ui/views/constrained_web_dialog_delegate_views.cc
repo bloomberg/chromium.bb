@@ -199,10 +199,7 @@ ConstrainedWebDialogDelegate* CreateConstrainedWebDialog(
       new ConstrainedWebDialogDelegateViewViews(
           browser_context, delegate, tab_delegate);
   ConstrainedWindow* constrained_window =
-      new ConstrainedWindowViews(web_contents,
-                                 constrained_delegate,
-                                 false,
-                                 ConstrainedWindowViews::DEFAULT_INSETS);
+      new ConstrainedWindowViews(web_contents, constrained_delegate);
   constrained_delegate->set_window(constrained_window);
   return constrained_delegate;
 }

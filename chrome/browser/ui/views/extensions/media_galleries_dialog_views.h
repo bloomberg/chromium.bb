@@ -43,7 +43,6 @@ class MediaGalleriesDialogViews : public MediaGalleriesDialog,
   virtual views::View* GetContentsView() OVERRIDE;
   virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
   virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
-  virtual bool UseChromeStyle() const OVERRIDE;
   virtual ui::ModalType GetModalType() const OVERRIDE;
   virtual views::View* GetExtraView() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
@@ -83,9 +82,6 @@ class MediaGalleriesDialogViews : public MediaGalleriesDialog,
 
   // True if the user has pressed accept.
   bool accepted_;
-
-  // True if using the new "chrome style" constrained dialogs.
-  bool enable_chrome_style_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaGalleriesDialogViews);
 };

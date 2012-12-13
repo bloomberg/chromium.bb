@@ -21,47 +21,19 @@ TabModalConfirmDialog* TabModalConfirmDialog::Create(
     TabModalConfirmDialogDelegate* delegate,
     content::WebContents* web_contents) {
   return new TabModalConfirmDialogViews(
-      delegate, web_contents, chrome::UseChromeStyleDialogs());
+      delegate, web_contents);
 }
-
-namespace {
-
-const int kChromeStyleInterRowVerticalSpacing = 17;
-
-views::MessageBoxView::InitParams CreateMessageBoxViewInitParams(
-    const string16& message,
-    bool enable_chrome_style) {
-  views::MessageBoxView::InitParams params(message);
-
-  if (enable_chrome_style) {
-    params.top_inset = 0;
-    params.bottom_inset = 0;
-    params.left_inset = 0;
-    params.right_inset = 0;
-
-    params.inter_row_vertical_spacing = kChromeStyleInterRowVerticalSpacing;
-  }
-
-  return params;
-}
-
-}  // namespace
 
 //////////////////////////////////////////////////////////////////////////////
 // TabModalConfirmDialogViews, constructor & destructor:
 
 TabModalConfirmDialogViews::TabModalConfirmDialogViews(
     TabModalConfirmDialogDelegate* delegate,
-    content::WebContents* web_contents,
-    bool enable_chrome_style)
+    content::WebContents* web_contents)
     : delegate_(delegate),
       message_box_view_(new views::MessageBoxView(
-          CreateMessageBoxViewInitParams(delegate->GetMessage(),
-                                         enable_chrome_style))),
-      enable_chrome_style_(enable_chrome_style) {
-  delegate_->set_window(new ConstrainedWindowViews(
-      web_contents, this, enable_chrome_style,
-      ConstrainedWindowViews::DEFAULT_INSETS));
+          views::MessageBoxView::InitParams(delegate->GetMessage()))) {
+  delegate_->set_window(new ConstrainedWindowViews(web_contents, this));
 }
 
 TabModalConfirmDialogViews::~TabModalConfirmDialogViews() {
@@ -89,10 +61,6 @@ string16 TabModalConfirmDialogViews::GetDialogButtonLabel(
   if (button == ui::DIALOG_BUTTON_CANCEL)
     return delegate_->GetCancelButtonTitle();
   return string16();
-}
-
-bool TabModalConfirmDialogViews::UseChromeStyle() const {
-  return enable_chrome_style_;
 }
 
 bool TabModalConfirmDialogViews::Cancel() {

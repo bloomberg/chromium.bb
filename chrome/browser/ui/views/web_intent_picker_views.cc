@@ -1082,8 +1082,7 @@ WebIntentPickerViews::WebIntentPickerViews(WebContents* web_contents,
       choose_another_service_link_(NULL),
       waiting_view_(NULL),
       can_close_(true) {
-  bool enable_chrome_style = true;
-  use_close_button_ = enable_chrome_style;
+  use_close_button_ = false;
 
   model_->set_observer(this);
   contents_ = new views::View();
@@ -1091,9 +1090,7 @@ WebIntentPickerViews::WebIntentPickerViews(WebContents* web_contents,
       ConstrainedWindow::GetBackgroundColor()));
 
   // Show the dialog.
-  window_ = new ConstrainedWindowViews(web_contents, this,
-                                       enable_chrome_style,
-                                       ConstrainedWindowViews::NO_INSETS);
+  window_ = new ConstrainedWindowViews(web_contents, this);
   if (model_->IsInlineDisposition())
     OnInlineDisposition(string16(), model_->inline_disposition_url());
   else

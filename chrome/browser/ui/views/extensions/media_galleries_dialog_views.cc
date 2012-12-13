@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/extensions/media_galleries_dialog_views.h"
 
 #include "chrome/browser/ui/views/constrained_window_views.h"
-#include "chrome/common/chrome_switches.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -39,18 +38,12 @@ MediaGalleriesDialogViews::MediaGalleriesDialogViews(
       checkbox_container_(NULL),
       add_gallery_container_(NULL),
       confirm_available_(false),
-      accepted_(false),
-      // Enable this once chrome style constrained windows work on shell
-      // windows. http://crbug.com/156694
-      enable_chrome_style_(UseChromeStyleDialogs()) {
+      accepted_(false) {
   InitChildViews();
 
   // Ownership of |contents_| is handed off by this call. |window_| will take
   // care of deleting itself after calling DeleteDelegate().
-  window_ = new ConstrainedWindowViews(
-      controller->web_contents(), this,
-      enable_chrome_style_,
-      ConstrainedWindowViews::DEFAULT_INSETS);
+  window_ = new ConstrainedWindowViews(controller->web_contents(), this);
 }
 
 MediaGalleriesDialogViews::~MediaGalleriesDialogViews() {}
@@ -58,10 +51,9 @@ MediaGalleriesDialogViews::~MediaGalleriesDialogViews() {}
 void MediaGalleriesDialogViews::InitChildViews() {
   // Layout.
   views::GridLayout* layout = new views::GridLayout(contents_);
-  if (!enable_chrome_style_) {
-    layout->SetInsets(views::kPanelVertMargin, views::kPanelHorizMargin,
-                      0, views::kPanelHorizMargin);
-  }
+  layout->SetInsets(views::kPanelVertMargin, views::kPanelHorizMargin,
+                    0, views::kPanelHorizMargin);
+
   int column_set_id = 0;
   views::ColumnSet* columns = layout->AddColumnSet(column_set_id);
   columns->AddColumn(views::GridLayout::LEADING,
@@ -74,14 +66,12 @@ void MediaGalleriesDialogViews::InitChildViews() {
   contents_->SetLayoutManager(layout);
 
   // Header text.
-  if (!enable_chrome_style_) {
-    views::Label* header = new views::Label(controller_->GetHeader());
-    header->SetFont(header->font().DeriveFont(kHeadingFontSizeDelta,
-                                              gfx::Font::BOLD));
-    header->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    layout->StartRow(0, column_set_id);
-    layout->AddView(header);
-  }
+  views::Label* header = new views::Label(controller_->GetHeader());
+  header->SetFont(header->font().DeriveFont(kHeadingFontSizeDelta,
+                                            gfx::Font::BOLD));
+  header->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  layout->StartRow(0, column_set_id);
+  layout->AddView(header);
 
   // Message text.
   views::Label* subtext = new views::Label(controller_->GetSubtext());
@@ -148,7 +138,7 @@ string16 MediaGalleriesDialogViews::GetWindowTitle() const {
 }
 
 bool MediaGalleriesDialogViews::ShouldShowWindowTitle() const {
-  return enable_chrome_style_;
+  return false;
 }
 
 void MediaGalleriesDialogViews::DeleteDelegate() {
@@ -177,10 +167,6 @@ string16 MediaGalleriesDialogViews::GetDialogButtonLabel(
 bool MediaGalleriesDialogViews::IsDialogButtonEnabled(
     ui::DialogButton button) const {
   return button != ui::DIALOG_BUTTON_OK || confirm_available_;
-}
-
-bool MediaGalleriesDialogViews::UseChromeStyle() const {
-  return enable_chrome_style_;
 }
 
 ui::ModalType MediaGalleriesDialogViews::GetModalType() const {

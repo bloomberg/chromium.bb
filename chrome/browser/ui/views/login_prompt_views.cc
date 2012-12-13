@@ -35,7 +35,6 @@ class LoginHandlerViews : public LoginHandler,
  public:
   LoginHandlerViews(net::AuthChallengeInfo* auth_info, net::URLRequest* request)
       : LoginHandler(auth_info, request),
-        enable_chrome_style_(chrome::UseChromeStyleDialogs()),
         login_view_(NULL) {
   }
 
@@ -78,10 +77,6 @@ class LoginHandlerViews : public LoginHandler,
     SetModel(NULL);
 
     ReleaseSoon();
-  }
-
-  virtual bool UseChromeStyle() const OVERRIDE {
-    return enable_chrome_style_;
   }
 
   virtual ui::ModalType GetModalType() const OVERRIDE {
@@ -132,7 +127,7 @@ class LoginHandlerViews : public LoginHandler,
     // so natural destruction order means we don't have to worry about
     // disassociating the model from the view, because the view will
     // be deleted before the password manager.
-    login_view_ = new LoginView(explanation, manager, enable_chrome_style_);
+    login_view_ = new LoginView(explanation, manager);
 
     // Scary thread safety note: This can potentially be called *after* SetAuth
     // or CancelAuth (say, if the request was cancelled before the UI thread got
@@ -140,11 +135,7 @@ class LoginHandlerViews : public LoginHandler,
     // will occur via an InvokeLater on the UI thread, which is guaranteed
     // to happen after this is called (since this was InvokeLater'd first).
     WebContents* requesting_contents = GetWebContentsForLogin();
-    SetDialog(new ConstrainedWindowViews(
-        requesting_contents,
-        this,
-        enable_chrome_style_,
-        ConstrainedWindowViews::DEFAULT_INSETS));
+    SetDialog(new ConstrainedWindowViews(requesting_contents, this));
     NotifyAuthNeeded();
   }
 
@@ -153,8 +144,6 @@ class LoginHandlerViews : public LoginHandler,
   friend class LoginPrompt;
 
   ~LoginHandlerViews() {}
-
-  bool enable_chrome_style_;
 
   // The LoginView that contains the user's login information
   LoginView* login_view_;
