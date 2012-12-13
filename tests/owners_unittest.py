@@ -234,34 +234,39 @@ class OwnersDatabaseTest(unittest.TestCase):
 
   def test_reviewers_for__one_owner(self):
     self.assert_reviewers_for([
-        '/chrome/gpu/gpu_channel.h',
-        '/content/baz/froboz.h',
-        '/chrome/renderer/gpu/gpu_channel_host.h'], [brett])
+        'chrome/gpu/gpu_channel.h',
+        'content/baz/froboz.h',
+        'chrome/renderer/gpu/gpu_channel_host.h'], [brett])
 
   def test_reviewers_for__two_owners(self):
     self.assert_reviewers_for([
-        '/chrome/gpu/gpu_channel.h',
-        '/content/content.gyp',
-        '/content/baz/froboz.h',
-        '/content/views/pie.h'
+        'chrome/gpu/gpu_channel.h',
+        'content/content.gyp',
+        'content/baz/froboz.h',
+        'content/views/pie.h'
         ], [john, brett])
 
   def test_reviewers_for__all_files(self):
     self.assert_reviewers_for([
-        '/chrome/gpu/gpu_channel.h',
-        '/chrome/renderer/gpu/gpu_channel_host.h',
-        '/chrome/renderer/safe_browsing/scorer.h',
-        '/content/content.gyp',
-        '/content/bar/foo.cc',
-        '/content/baz/froboz.h',
-        '/content/views/pie.h'], [john, brett])
+        'chrome/gpu/gpu_channel.h',
+        'chrome/renderer/gpu/gpu_channel_host.h',
+        'chrome/renderer/safe_browsing/scorer.h',
+        'content/content.gyp',
+        'content/bar/foo.cc',
+        'content/baz/froboz.h',
+        'content/views/pie.h'], [john, brett])
+
+  def test_reviewers_for__per_file_owners_file(self):
+    self.files['/content/baz/OWNERS'] = owners_file(lines=[
+        'per-file ugly.*=tom@example.com'])
+    self.assert_reviewers_for(['content/baz/OWNERS'], [darin])
 
   def assert_syntax_error(self, owners_file_contents):
     db = self.db()
     self.files['/foo/OWNERS'] = owners_file_contents
     self.files['/foo/DEPS'] = ''
     try:
-      db.reviewers_for(['/foo/DEPS'])
+      db.reviewers_for(['foo/DEPS'])
       self.fail()  # pragma: no cover
     except owners.SyntaxErrorInOwnersFile, e:
       self.assertTrue(str(e).startswith('/foo/OWNERS:1'))

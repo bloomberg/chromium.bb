@@ -157,7 +157,8 @@ class Database(object):
     def _is_under(f, pfx):
       return self.os_path.abspath(self.os_path.join(pfx, f)).startswith(pfx)
     _assert_is_collection(files)
-    assert all(_is_under(f, self.os_path.abspath(self.root)) for f in files)
+    assert all(not self.os_path.isabs(f) and
+                _is_under(f, self.os_path.abspath(self.root)) for f in files)
 
   def _check_reviewers(self, reviewers):
     _assert_is_collection(reviewers)
@@ -256,7 +257,8 @@ class Database(object):
     # Get the set of directories from the files.
     dirs = set()
     for f in files:
-      dirs.add(self.os_path.dirname(f))
+      dirs.add(self._enclosing_dir_with_owners(f))
+
 
     owned_dirs = {}
     dir_owners = {}

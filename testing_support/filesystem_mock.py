@@ -46,6 +46,9 @@ class MockFileSystem(object):
   def exists(self, path):
     return self.isfile(path) or self.isdir(path)
 
+  def isabs(self, path):
+    return path.startswith(self.sep)
+
   def isfile(self, path):
     return path in self.files and self.files[path] is not None
 
