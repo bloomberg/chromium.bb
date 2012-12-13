@@ -4,11 +4,14 @@
 
 #include "chrome/browser/google_apis/test_util.h"
 
+#include "base/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/string_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
+#include "chrome/browser/google_apis/test_server/http_server.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -92,6 +95,28 @@ void CopyResultsFromGetAccountMetadataCallback(
     scoped_ptr<AccountMetadataFeed> account_metadata_in) {
   account_metadata_out->swap(account_metadata_in);
   *error_out = error_in;
+}
+
+// Returns a HttpResponse created from the given file path.
+scoped_ptr<test_server::HttpResponse> CreateHttpResponseFromFile(
+    const FilePath& file_path) {
+  std::string content;
+  if (!file_util::ReadFileToString(file_path, &content))
+    return scoped_ptr<test_server::HttpResponse>();
+
+  std::string content_type = "text/plain";
+  if (EndsWith(file_path.AsUTF8Unsafe(), ".json", true /* case sensitive */)) {
+    content_type = "application/json";
+  } else if (EndsWith(file_path.AsUTF8Unsafe(), ".xml", true)) {
+    content_type = "application/atom+xml";
+  }
+
+  scoped_ptr<test_server::HttpResponse> http_response(
+      new test_server::HttpResponse);
+  http_response->set_code(test_server::SUCCESS);
+  http_response->set_content(content);
+  http_response->set_content_type(content_type);
+  return http_response.Pass();
 }
 
 }  // namespace test_util

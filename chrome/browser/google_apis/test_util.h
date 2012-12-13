@@ -21,6 +21,10 @@ namespace google_apis {
 class AccountMetadataFeed;
 class ResourceList;
 
+namespace test_server {
+class HttpResponse;
+}
+
 namespace test_util {
 
 // Runs a task posted to the blocking pool, including subsequent tasks posted
@@ -59,6 +63,10 @@ void CopyResultsFromGetAccountMetadataCallback(
     scoped_ptr<AccountMetadataFeed>* account_metadata_out,
     GDataErrorCode error_in,
     scoped_ptr<AccountMetadataFeed> account_metadata_in);
+
+// Returns a HttpResponse created from the given file path.
+scoped_ptr<test_server::HttpResponse> CreateHttpResponseFromFile(
+    const FilePath& file_path);
 
 }  // namespace test_util
 }  // namespace google_apis

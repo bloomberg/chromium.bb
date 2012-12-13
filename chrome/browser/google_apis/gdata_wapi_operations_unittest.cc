@@ -97,28 +97,6 @@ bool VerifyJsonData(const FilePath& expected_json_file_path,
   return base::Value::Equals(expected_data.get(), json_data);
 }
 
-// Returns a HttpResponse created from the given file path.
-scoped_ptr<test_server::HttpResponse> CreateHttpResponseFromFile(
-    const FilePath& file_path) {
-  std::string content;
-  if (!file_util::ReadFileToString(file_path, &content))
-    return scoped_ptr<test_server::HttpResponse>();
-
-  std::string content_type = "text/plain";
-  if (EndsWith(file_path.AsUTF8Unsafe(), ".json", true /* case sensitive */)) {
-    content_type = "application/json";
-  } else if (EndsWith(file_path.AsUTF8Unsafe(), ".xml", true)) {
-    content_type = "application/atom+xml";
-  }
-
-  scoped_ptr<test_server::HttpResponse> http_response(
-      new test_server::HttpResponse);
-  http_response->set_code(test_server::SUCCESS);
-  http_response->set_content(content);
-  http_response->set_content_type(content_type);
-  return http_response.Pass();
-}
-
 // Removes |prefix| from |input| and stores the result in |output|. Returns
 // true if the prefix is removed.
 bool RemovePrefix(const std::string& input,
@@ -231,7 +209,7 @@ class GDataWapiOperationsTest : public testing::Test {
     if (!RemovePrefix(absolute_url.path(), "/files/", &remaining_path))
       return scoped_ptr<test_server::HttpResponse>();
 
-    return CreateHttpResponseFromFile(
+    return test_util::CreateHttpResponseFromFile(
         test_util::GetTestFilePath(remaining_path));
   }
 
@@ -247,7 +225,7 @@ class GDataWapiOperationsTest : public testing::Test {
       // This is a request for copying a document.
       // TODO(satorux): we should generate valid JSON data for the newly
       // copied document but for now, just return "file_entry.json"
-      return CreateHttpResponseFromFile(
+      return test_util::CreateHttpResponseFromFile(
           test_util::GetTestFilePath("gdata/file_entry.json"));
     }
 
@@ -259,7 +237,7 @@ class GDataWapiOperationsTest : public testing::Test {
 
     if (remaining_path == "-/mine") {
       // Process the default feed.
-      return CreateHttpResponseFromFile(
+      return test_util::CreateHttpResponseFromFile(
           test_util::GetTestFilePath("gdata/root_feed.json"));
     } else {
       // Process a feed for a single resource ID.
@@ -269,18 +247,18 @@ class GDataWapiOperationsTest : public testing::Test {
         // Check if this is an authorization request for an app.
         if (request.method == test_server::METHOD_PUT &&
             request.content.find("<docs:authorizedApp>") != std::string::npos) {
-          return CreateHttpResponseFromFile(
+          return test_util::CreateHttpResponseFromFile(
               test_util::GetTestFilePath("gdata/basic_feed.json"));
         }
 
-        return CreateHttpResponseFromFile(
+        return test_util::CreateHttpResponseFromFile(
             test_util::GetTestFilePath("gdata/file_entry.json"));
       } else if (resource_id == "folder:root" &&
                  request.method == test_server::METHOD_POST) {
         // This is a request for creating a directory in the root directory.
         // TODO(satorux): we should generate valid JSON data for the newly
         // created directory but for now, just return "directory_entry.json"
-        return CreateHttpResponseFromFile(
+        return test_util::CreateHttpResponseFromFile(
             test_util::GetTestFilePath("gdata/directory_entry.json"));
       } else if (resource_id == "folder:root/file:2_file_resource_id" &&
                  request.method == test_server::METHOD_DELETE) {
@@ -288,7 +266,7 @@ class GDataWapiOperationsTest : public testing::Test {
         // TODO(satorux): Investigate what's returned from the server, and
         // copy it. For now, just return a random file, as the contents don't
         // matter.
-        return CreateHttpResponseFromFile(
+        return test_util::CreateHttpResponseFromFile(
             test_util::GetTestFilePath("gdata/testfile.txt"));
       }
     }
@@ -305,7 +283,7 @@ class GDataWapiOperationsTest : public testing::Test {
     if (absolute_url.path() != "/feeds/metadata/default")
       return scoped_ptr<test_server::HttpResponse>();
 
-    return CreateHttpResponseFromFile(
+    return test_util::CreateHttpResponseFromFile(
         test_util::GetTestFilePath("gdata/account_metadata.json"));
   }
 
@@ -354,7 +332,7 @@ class GDataWapiOperationsTest : public testing::Test {
     // TODO(satorux): We should create a correct entry for the uploaded file,
     // but for now, just return entry.xml.
     scoped_ptr<test_server::HttpResponse> response =
-        CreateHttpResponseFromFile(
+        test_util::CreateHttpResponseFromFile(
             test_util::GetTestFilePath("gdata/entry.xml"));
     // response.code() is set to SUCCESS. Change it to CREATED if it's a new
     // file.
