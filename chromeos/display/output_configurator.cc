@@ -39,6 +39,13 @@ struct OutputSnapshot {
   bool is_internal;
 };
 
+enum MirrorModeType {
+  MIRROR_MODE_NONE,
+  MIRROR_MODE_ASPECT_PRESERVING,
+  MIRROR_MODE_FALLBACK,
+  MIRROR_MODE_TYPE_COUNT
+};
+
 namespace {
 // DPI measurements.
 const float kMmInInch = 25.4;
@@ -275,137 +282,6 @@ static RRCrtc GetNextCrtcAfter(Display* display,
   return crtc;
 }
 
-static bool EnterState(Display* display,
-                       XRRScreenResources* screen,
-                       Window window,
-                       OutputState new_state,
-                       const OutputSnapshot* outputs,
-                       int output_count) {
-  switch (output_count) {
-    case 0:
-      // Do nothing as no 0-display states are supported.
-      break;
-    case 1: {
-      // Re-allocate the framebuffer to fit.
-      XRRModeInfo* mode_info = ModeInfoForID(screen, outputs[0].native_mode);
-      if (mode_info == NULL) {
-        UMA_HISTOGRAM_COUNTS("Display.EnterState.single_failures", 1);
-        return false;
-      }
-
-      int width = mode_info->width;
-      int height = mode_info->height;
-      CreateFrameBuffer(display, screen, window, width, height);
-
-      // Re-attach native mode for the CRTC.
-      const int x = 0;
-      const int y = 0;
-      RRCrtc crtc = GetNextCrtcAfter(display, screen, outputs[0].output, None);
-      ConfigureCrtc(display,
-                    screen,
-                    crtc,
-                    x,
-                    y,
-                    outputs[0].native_mode,
-                    outputs[0].output);
-      break;
-    }
-    case 2: {
-      RRCrtc primary_crtc =
-          GetNextCrtcAfter(display, screen, outputs[0].output, None);
-      RRCrtc secondary_crtc =
-          GetNextCrtcAfter(display, screen, outputs[1].output, primary_crtc);
-
-      if (STATE_DUAL_MIRROR == new_state) {
-        XRRModeInfo* mode_info = ModeInfoForID(screen, outputs[0].mirror_mode);
-        if (mode_info == NULL) {
-          UMA_HISTOGRAM_COUNTS("Display.EnterState.mirror_failures", 1);
-          return false;
-        }
-
-        int width = mode_info->width;
-        int height = mode_info->height;
-        CreateFrameBuffer(display, screen, window, width, height);
-
-        const int x = 0;
-        const int y = 0;
-        ConfigureCrtc(display,
-                      screen,
-                      primary_crtc,
-                      x,
-                      y,
-                      outputs[0].mirror_mode,
-                      outputs[0].output);
-        ConfigureCrtc(display,
-                      screen,
-                      secondary_crtc,
-                      x,
-                      y,
-                      outputs[1].mirror_mode,
-                      outputs[1].output);
-      } else {
-        XRRModeInfo* primary_mode_info =
-            ModeInfoForID(screen, outputs[0].native_mode);
-        XRRModeInfo* secondary_mode_info =
-            ModeInfoForID(screen, outputs[1].native_mode);
-        if (primary_mode_info == NULL || secondary_mode_info == NULL) {
-          UMA_HISTOGRAM_COUNTS("Display.EnterState.dual_failures", 1);
-          return false;
-        }
-
-        int width =
-            std::max<int>(primary_mode_info->width, secondary_mode_info->width);
-        int primary_height = primary_mode_info->height;
-        int secondary_height = secondary_mode_info->height;
-        int height = primary_height + secondary_height + kVerticalGap;
-        CreateFrameBuffer(display, screen, window, width, height);
-
-        const int x = 0;
-        if (STATE_DUAL_PRIMARY_ONLY == new_state) {
-          int primary_y = 0;
-          ConfigureCrtc(display,
-                        screen,
-                        primary_crtc,
-                        x,
-                        primary_y,
-                        outputs[0].native_mode,
-                        outputs[0].output);
-          int secondary_y = primary_height + kVerticalGap;
-          ConfigureCrtc(display,
-                        screen,
-                        secondary_crtc,
-                        x,
-                        secondary_y,
-                        outputs[1].native_mode,
-                        outputs[1].output);
-        } else {
-          int primary_y = secondary_height + kVerticalGap;
-          ConfigureCrtc(display,
-                        screen,
-                        primary_crtc,
-                        x,
-                        primary_y,
-                        outputs[0].native_mode,
-                        outputs[0].output);
-          int secondary_y = 0;
-          ConfigureCrtc(display,
-                        screen,
-                        secondary_crtc,
-                        x,
-                        secondary_y,
-                        outputs[1].native_mode,
-                        outputs[1].output);
-        }
-      }
-      break;
-    }
-    default:
-      CHECK(false);
-  }
-
-  return true;
-}
-
 static XRRScreenResources* GetScreenResourcesAndRecordUMA(Display* display,
                                                           Window window) {
   // This call to XRRGetScreenResources is implicated in a hang bug so
@@ -440,7 +316,10 @@ OutputConfigurator::OutputConfigurator()
       is_panel_fitting_enabled_(false),
       connected_output_count_(0),
       xrandr_event_base_(0),
-      output_state_(STATE_INVALID) {
+      output_state_(STATE_INVALID),
+      mirror_mode_will_preserve_aspect_(false),
+      mirror_mode_preserved_aspect_(false),
+      last_enter_state_time_() {
 }
 
 void OutputConfigurator::Init(bool is_panel_fitting_enabled) {
@@ -499,6 +378,7 @@ void OutputConfigurator::Init(bool is_panel_fitting_enabled) {
 }
 
 OutputConfigurator::~OutputConfigurator() {
+  RecordPreviousStateUMA();
 }
 
 bool OutputConfigurator::CycleDisplayMode() {
@@ -871,12 +751,33 @@ int OutputConfigurator::GetDualOutputs(Display* display,
                                               &one->mirror_mode);
         }
       }
+
+      if (can_mirror) {
+        if (preserve_aspect) {
+          UMA_HISTOGRAM_ENUMERATION(
+              "Display.GetDualOutputs.detected_mirror_mode",
+              MIRROR_MODE_ASPECT_PRESERVING,
+              MIRROR_MODE_TYPE_COUNT);
+        } else {
+          UMA_HISTOGRAM_ENUMERATION(
+              "Display.GetDualOutputs.detected_mirror_mode",
+              MIRROR_MODE_FALLBACK,
+              MIRROR_MODE_TYPE_COUNT);
+        }
+        mirror_mode_will_preserve_aspect_ = preserve_aspect;
+      }
     }
 
     if (!can_mirror) {
       // We can't mirror so set mirror_mode to None.
       one->mirror_mode = None;
       two->mirror_mode = None;
+
+      UMA_HISTOGRAM_ENUMERATION(
+          "Display.GetDualOutputs.detected_mirror_mode",
+          MIRROR_MODE_NONE,
+          MIRROR_MODE_TYPE_COUNT);
+      mirror_mode_will_preserve_aspect_ = false;
     }
   }
 
@@ -946,6 +847,173 @@ bool OutputConfigurator::FindOrCreateMirrorMode(
   }
 
   return false;
+}
+
+bool OutputConfigurator::EnterState(Display* display,
+                                    XRRScreenResources* screen,
+                                    Window window,
+                                    OutputState new_state,
+                                    const OutputSnapshot* outputs,
+                                    int output_count) {
+  switch (output_count) {
+    case 0:
+      // Do nothing as no 0-display states are supported.
+      break;
+    case 1: {
+      // Re-allocate the framebuffer to fit.
+      XRRModeInfo* mode_info = ModeInfoForID(screen, outputs[0].native_mode);
+      if (mode_info == NULL) {
+        UMA_HISTOGRAM_COUNTS("Display.EnterState.single_failures", 1);
+        return false;
+      }
+
+      int width = mode_info->width;
+      int height = mode_info->height;
+      CreateFrameBuffer(display, screen, window, width, height);
+
+      // Re-attach native mode for the CRTC.
+      const int x = 0;
+      const int y = 0;
+      RRCrtc crtc = GetNextCrtcAfter(display, screen, outputs[0].output, None);
+      ConfigureCrtc(display,
+                    screen,
+                    crtc,
+                    x,
+                    y,
+                    outputs[0].native_mode,
+                    outputs[0].output);
+      break;
+    }
+    case 2: {
+      RRCrtc primary_crtc =
+          GetNextCrtcAfter(display, screen, outputs[0].output, None);
+      RRCrtc secondary_crtc =
+          GetNextCrtcAfter(display, screen, outputs[1].output, primary_crtc);
+
+      if (STATE_DUAL_MIRROR == new_state) {
+        XRRModeInfo* mode_info = ModeInfoForID(screen, outputs[0].mirror_mode);
+        if (mode_info == NULL) {
+          UMA_HISTOGRAM_COUNTS("Display.EnterState.mirror_failures", 1);
+          return false;
+        }
+
+        int width = mode_info->width;
+        int height = mode_info->height;
+        CreateFrameBuffer(display, screen, window, width, height);
+
+        const int x = 0;
+        const int y = 0;
+        ConfigureCrtc(display,
+                      screen,
+                      primary_crtc,
+                      x,
+                      y,
+                      outputs[0].mirror_mode,
+                      outputs[0].output);
+        ConfigureCrtc(display,
+                      screen,
+                      secondary_crtc,
+                      x,
+                      y,
+                      outputs[1].mirror_mode,
+                      outputs[1].output);
+      } else {
+        XRRModeInfo* primary_mode_info =
+            ModeInfoForID(screen, outputs[0].native_mode);
+        XRRModeInfo* secondary_mode_info =
+            ModeInfoForID(screen, outputs[1].native_mode);
+        if (primary_mode_info == NULL || secondary_mode_info == NULL) {
+          UMA_HISTOGRAM_COUNTS("Display.EnterState.dual_failures", 1);
+          return false;
+        }
+
+        int width =
+            std::max<int>(primary_mode_info->width, secondary_mode_info->width);
+        int primary_height = primary_mode_info->height;
+        int secondary_height = secondary_mode_info->height;
+        int height = primary_height + secondary_height + kVerticalGap;
+        CreateFrameBuffer(display, screen, window, width, height);
+
+        const int x = 0;
+        if (STATE_DUAL_PRIMARY_ONLY == new_state) {
+          int primary_y = 0;
+          ConfigureCrtc(display,
+                        screen,
+                        primary_crtc,
+                        x,
+                        primary_y,
+                        outputs[0].native_mode,
+                        outputs[0].output);
+          int secondary_y = primary_height + kVerticalGap;
+          ConfigureCrtc(display,
+                        screen,
+                        secondary_crtc,
+                        x,
+                        secondary_y,
+                        outputs[1].native_mode,
+                        outputs[1].output);
+        } else {
+          int primary_y = secondary_height + kVerticalGap;
+          ConfigureCrtc(display,
+                        screen,
+                        primary_crtc,
+                        x,
+                        primary_y,
+                        outputs[0].native_mode,
+                        outputs[0].output);
+          int secondary_y = 0;
+          ConfigureCrtc(display,
+                        screen,
+                        secondary_crtc,
+                        x,
+                        secondary_y,
+                        outputs[1].native_mode,
+                        outputs[1].output);
+        }
+      }
+      break;
+    }
+    default:
+      CHECK(false);
+  }
+
+  RecordPreviousStateUMA();
+
+  return true;
+}
+
+void OutputConfigurator::RecordPreviousStateUMA() {
+  base::TimeDelta duration = base::TimeTicks::Now() -
+      last_enter_state_time_;
+
+  // |output_state_| can be used for the state being left,
+  // since RecordPreviousStateUMA is called from EnterState,
+  // and |output_state_| is always updated after EnterState is called.
+  switch (output_state_) {
+    case STATE_SINGLE:
+      UMA_HISTOGRAM_LONG_TIMES("Display.EnterState.single_duration", duration);
+      break;
+    case STATE_DUAL_MIRROR:
+      if (mirror_mode_preserved_aspect_)
+        UMA_HISTOGRAM_LONG_TIMES("Display.EnterState.mirror_aspect_duration",
+                                 duration);
+      else
+        UMA_HISTOGRAM_LONG_TIMES("Display.EnterState.mirror_fallback_duration",
+                                 duration);
+      break;
+    case STATE_DUAL_PRIMARY_ONLY:
+      UMA_HISTOGRAM_LONG_TIMES("Display.EnterState.dual_primary_duration",
+                               duration);
+      break;
+    case STATE_DUAL_SECONDARY_ONLY:
+      UMA_HISTOGRAM_LONG_TIMES("Display.EnterState.dual_secondary_duration",
+                               duration);
+    default:
+      break;
+  }
+
+  mirror_mode_preserved_aspect_ = mirror_mode_will_preserve_aspect_;
+  last_enter_state_time_ = base::TimeTicks::Now();
 }
 
 // static

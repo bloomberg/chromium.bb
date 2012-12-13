@@ -133,6 +133,22 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
                               RRMode* internal_mirror_mode,
                               RRMode* external_mirror_mode);
 
+  // Configures X to the state specified in |new_state|.
+  // |display|, |screen| and |window| are used to change X configuration.
+  // |new_state| is the state to enter.
+  // |outputs| and |output_count| contain information
+  // on the currently configured state, as well as how to apply the new state.
+  bool EnterState(Display* display,
+                  XRRScreenResources* screen,
+                  Window window,
+                  OutputState new_state,
+                  const OutputSnapshot* outputs,
+                  int output_count);
+
+  // Outputs UMA metrics of previous state (the state that is being left).
+  // Updates |mirror_mode_preserved_aspect_| and |last_enter_state_time_|.
+  void RecordPreviousStateUMA();
+
   // Tells if the output specified by |output_info| is for internal display.
   static bool IsInternalOutput(const XRROutputInfo* output_info);
 
@@ -166,6 +182,16 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   // The timer to delay sending the notification of OnDisplayChanged(). See also
   // the comments in Dispatch().
   scoped_ptr<base::OneShotTimer<OutputConfigurator> > notification_timer_;
+
+  // Next 3 members are used for UMA of time spent in various states.
+  // Indicates that current OutputSnapshot has aspect preserving mirror mode.
+  bool mirror_mode_will_preserve_aspect_;
+
+  // Indicates that last entered mirror mode preserved aspect.
+  bool mirror_mode_preserved_aspect_;
+
+  // Indicates the time at which |output_state_| was entered.
+  base::TimeTicks last_enter_state_time_;
 
   DISALLOW_COPY_AND_ASSIGN(OutputConfigurator);
 };
