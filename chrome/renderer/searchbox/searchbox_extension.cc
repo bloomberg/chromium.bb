@@ -795,6 +795,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::Show(
     case 1: reason = INSTANT_SHOWN_CUSTOM_NTP_CONTENT; break;
     case 2: reason = INSTANT_SHOWN_QUERY_SUGGESTIONS; break;
     case 3: reason = INSTANT_SHOWN_ZERO_SUGGESTIONS; break;
+    case 4: reason = INSTANT_SHOWN_CLICKED_QUERY_SUGGESTION; break;
   }
 
   int height = 100;

@@ -93,6 +93,9 @@ enum InstantShownReason {
   // ZeroSuggest suggestions relevant when the user has focused in the omnibox,
   // but not yet typed anything.
   INSTANT_SHOWN_ZERO_SUGGESTIONS,
+
+  // Search results in response to the user clicking a query suggestion.
+  INSTANT_SHOWN_CLICKED_QUERY_SUGGESTION,
 };
 
 // The alignment of the theme background image.

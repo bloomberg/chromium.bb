@@ -453,7 +453,8 @@ bool InstantController::CommitIfPossible(InstantCommitType type) {
 
   if (type == INSTANT_COMMIT_FOCUS_LOST)
     loader_->Cancel(last_omnibox_text_);
-  else if (type != INSTANT_COMMIT_NAVIGATED)
+  else if (type != INSTANT_COMMIT_NAVIGATED &&
+           type != INSTANT_COMMIT_CLICKED_QUERY_SUGGESTION)
     loader_->Submit(last_omnibox_text_);
 
   content::WebContents* preview = loader_->ReleaseContents();
@@ -978,7 +979,8 @@ void InstantController::ShowLoader(InstantShownReason reason,
     return;
 
   // Must have updated omnibox after the last HideLoader() to show suggestions.
-  if (reason == INSTANT_SHOWN_QUERY_SUGGESTIONS &&
+  if ((reason == INSTANT_SHOWN_QUERY_SUGGESTIONS ||
+       reason == INSTANT_SHOWN_CLICKED_QUERY_SUGGESTION) &&
       !allow_preview_to_show_search_suggestions_)
     return;
 
@@ -1006,6 +1008,13 @@ void InstantController::ShowLoader(InstantShownReason reason,
     model_.SetPreviewState(search_mode_, height, units);
   else
     model_.SetPreviewState(search_mode_, 100, INSTANT_SIZE_PERCENT);
+
+  // If the user clicked on a query suggestion, also go ahead and commit the
+  // overlay. This is necessary because if the overlay was partially visible
+  // when the suggestion was clicked, the click itself would not commit the
+  // overlay (because we're not full height).
+  if (reason == INSTANT_SHOWN_CLICKED_QUERY_SUGGESTION)
+    CommitIfPossible(INSTANT_COMMIT_CLICKED_QUERY_SUGGESTION);
 }
 
 void InstantController::SendBoundsToPage() {
