@@ -24,6 +24,20 @@ print_widechars(widechar * buf, int len)
     printf("%c", buf[i]);
 }
 
+/* Helper function to convert a typeform string of '0's, '1's, '2's etc.
+   to the required format, which is an array of 0s, 1s, 2s, etc.
+   For example, "0000011111000" is converted to {0,0,0,0,0,1,1,1,1,1,0,0,0}
+   The caller is responsible for freeing the returned array. */
+char *
+convert_typeform(char* typeform_string)
+{
+  int len = strlen(typeform_string);
+  char *typeform = malloc(len * sizeof(char));
+  for (int i=0; i<len; i++)
+    typeform[i] = typeform_string[i] - '0';
+  return typeform;
+}
+
 /* Check if a string is translated as expected. Return 0 if the
    translation is as expected and 1 otherwise. */
 int

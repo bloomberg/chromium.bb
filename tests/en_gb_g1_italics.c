@@ -16,19 +16,19 @@ main(int argc, char **argv)
   const char *typeform = "00000000000000";
   const char *expected = ",this is a ,test";
 
-  result |= check_translation(TRANSLATION_TABLE, str, typeform, expected);
+  result |= check_translation(TRANSLATION_TABLE, str, convert_typeform(typeform), expected);
 
   str      = "This is a Test in Italic.";
   typeform = "1111111111111111111111111";
   expected = "..,this is a ,test in ,italic4.'";
 
-  result |= check_translation(TRANSLATION_TABLE, str, typeform, expected);
+  result |= check_translation(TRANSLATION_TABLE, str, convert_typeform(typeform), expected);
 
   str      = "This is a Test";
   typeform = "00000111100000";
   expected = ",this .is .a ,test";
 
-  result |= check_translation(TRANSLATION_TABLE, str, typeform, expected);
+  result |= check_translation(TRANSLATION_TABLE, str, convert_typeform(typeform), expected);
 
   return result;
 }
