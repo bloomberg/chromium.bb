@@ -4319,7 +4319,7 @@ static void configureRenderPassTestData(const char* testScript, RenderPassRemova
                 gfx::Rect quadRect = gfx::Rect(0, 0, 1, 1);
                 gfx::Rect contentsChangedRect = contentsChanged ? quadRect : gfx::Rect();
                 scoped_ptr<RenderPassDrawQuad> quad = RenderPassDrawQuad::Create();
-                quad->SetNew(testData.sharedQuadState.get(), quadRect, newRenderPassId, isReplica, 1, contentsChangedRect, 1, 1, 0, 0);
+                quad->SetNew(testData.sharedQuadState.get(), quadRect, newRenderPassId, isReplica, 1, contentsChangedRect, gfx::RectF(0, 0, 1, 1));
                 renderPass->AppendQuad(quad.PassAs<DrawQuad>());
             }
         }

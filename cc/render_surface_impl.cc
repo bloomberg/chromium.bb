@@ -225,23 +225,22 @@ void RenderSurfaceImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQ
             maskLayer = 0;
     }
 
-    float maskTexCoordScaleX = 1;
-    float maskTexCoordScaleY = 1;
-    float maskTexCoordOffsetX = 0;
-    float maskTexCoordOffsetY = 0;
+    gfx::RectF maskUVRect(0.0f, 0.0f, 1.0f, 1.0f);
     if (maskLayer) {
-        maskTexCoordScaleX = contentRect().width() / maskLayer->contentsScaleX() / maskLayer->bounds().width();
-        maskTexCoordScaleY = contentRect().height() / maskLayer->contentsScaleY() / maskLayer->bounds().height();
-        maskTexCoordOffsetX = static_cast<float>(contentRect().x()) / contentRect().width() * maskTexCoordScaleX;
-        maskTexCoordOffsetY = static_cast<float>(contentRect().y()) / contentRect().height() * maskTexCoordScaleY;
+        float scaleX = contentRect().width() / maskLayer->contentsScaleX() / maskLayer->bounds().width();
+        float scaleY = contentRect().height() / maskLayer->contentsScaleY() / maskLayer->bounds().height();
+
+        maskUVRect = gfx::RectF(static_cast<float>(contentRect().x()) / contentRect().width() * scaleX,
+                                static_cast<float>(contentRect().y()) / contentRect().height() * scaleY,
+                                scaleX,
+                                scaleY);
     }
 
     ResourceProvider::ResourceId maskResourceId = maskLayer ? maskLayer->contentsResourceId() : 0;
     gfx::Rect contentsChangedSinceLastFrame = contentsChanged() ? m_contentRect : gfx::Rect();
 
     scoped_ptr<RenderPassDrawQuad> quad = RenderPassDrawQuad::Create();
-    quad->SetNew(sharedQuadState, contentRect(), renderPassId, forReplica, maskResourceId, contentsChangedSinceLastFrame,
-                 maskTexCoordScaleX, maskTexCoordScaleY, maskTexCoordOffsetX, maskTexCoordOffsetY);
+    quad->SetNew(sharedQuadState, contentRect(), renderPassId, forReplica, maskResourceId, contentsChangedSinceLastFrame, maskUVRect);
     quadSink.append(quad.PassAs<DrawQuad>(), appendQuadsData);
 }
 

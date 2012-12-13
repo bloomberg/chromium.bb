@@ -9,11 +9,7 @@ namespace cc {
 RenderPassDrawQuad::RenderPassDrawQuad()
     : render_pass_id(RenderPass::Id(-1, -1)),
       is_replica(false),
-      mask_resource_id(-1),
-      mask_tex_coord_scale_x(0),
-      mask_tex_coord_scale_y(0),
-      mask_tex_coord_offset_x(0),
-      mask_tex_coord_offset_y(0) {
+      mask_resource_id(-1) {
 }
 
 scoped_ptr<RenderPassDrawQuad> RenderPassDrawQuad::Create() {
@@ -35,10 +31,7 @@ void RenderPassDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                                 bool is_replica,
                                 ResourceProvider::ResourceId mask_resource_id,
                                 gfx::Rect contents_changed_since_last_frame,
-                                float mask_tex_coord_scale_x,
-                                float mask_tex_coord_scale_y,
-                                float mask_tex_coord_offset_x,
-                                float mask_tex_coord_offset_y) {
+                                gfx::RectF mask_uv_rect) {
   DCHECK(render_pass_id.layer_id > 0);
   DCHECK(render_pass_id.index >= 0);
 
@@ -51,10 +44,7 @@ void RenderPassDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
   this->is_replica = is_replica;
   this->mask_resource_id = mask_resource_id;
   this->contents_changed_since_last_frame = contents_changed_since_last_frame;
-  this->mask_tex_coord_scale_x = mask_tex_coord_scale_x;
-  this->mask_tex_coord_scale_y = mask_tex_coord_scale_y;
-  this->mask_tex_coord_offset_x = mask_tex_coord_offset_x;
-  this->mask_tex_coord_offset_y = mask_tex_coord_offset_y;
+  this->mask_uv_rect = mask_uv_rect;
 }
 
 void RenderPassDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
@@ -66,10 +56,7 @@ void RenderPassDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                                 bool is_replica,
                                 ResourceProvider::ResourceId mask_resource_id,
                                 gfx::Rect contents_changed_since_last_frame,
-                                float mask_tex_coord_scale_x,
-                                float mask_tex_coord_scale_y,
-                                float mask_tex_coord_offset_x,
-                                float mask_tex_coord_offset_y) {
+                                gfx::RectF mask_uv_rect) {
   DCHECK(render_pass_id.layer_id > 0);
   DCHECK(render_pass_id.index >= 0);
 
@@ -79,10 +66,7 @@ void RenderPassDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
   this->is_replica = is_replica;
   this->mask_resource_id = mask_resource_id;
   this->contents_changed_since_last_frame = contents_changed_since_last_frame;
-  this->mask_tex_coord_scale_x = mask_tex_coord_scale_x;
-  this->mask_tex_coord_scale_y = mask_tex_coord_scale_y;
-  this->mask_tex_coord_offset_x = mask_tex_coord_offset_x;
-  this->mask_tex_coord_offset_y = mask_tex_coord_offset_y;
+  this->mask_uv_rect = mask_uv_rect;
 }
 
 const RenderPassDrawQuad* RenderPassDrawQuad::MaterialCast(

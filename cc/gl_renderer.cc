@@ -628,8 +628,8 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
         DCHECK(shaderMaskTexCoordOffsetLocation != 1);
         GLC(context(), context()->activeTexture(GL_TEXTURE1));
         GLC(context(), context()->uniform1i(shaderMaskSamplerLocation, 1));
-        GLC(context(), context()->uniform2f(shaderMaskTexCoordScaleLocation, quad->mask_tex_coord_scale_x, quad->mask_tex_coord_scale_y));
-        GLC(context(), context()->uniform2f(shaderMaskTexCoordOffsetLocation, quad->mask_tex_coord_offset_x, quad->mask_tex_coord_offset_y));
+        GLC(context(), context()->uniform2f(shaderMaskTexCoordOffsetLocation, quad->mask_uv_rect.x(), quad->mask_uv_rect.y()));
+        GLC(context(), context()->uniform2f(shaderMaskTexCoordScaleLocation, quad->mask_uv_rect.width(), quad->mask_uv_rect.height()));
         m_resourceProvider->bindForSampling(quad->mask_resource_id, GL_TEXTURE_2D, GL_LINEAR);
         GLC(context(), context()->activeTexture(GL_TEXTURE0));
     }

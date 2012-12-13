@@ -321,10 +321,10 @@ void SoftwareRenderer::drawRenderPassQuad(const DrawingFrame& frame, const Rende
         const SkBitmap* mask = maskLock.skBitmap();
 
         SkRect maskRect = SkRect::MakeXYWH(
-            quad->mask_tex_coord_offset_x * mask->width(),
-            quad->mask_tex_coord_offset_y * mask->height(),
-            quad->mask_tex_coord_scale_x * mask->width(),
-            quad->mask_tex_coord_scale_y * mask->height());
+            quad->mask_uv_rect.x() * mask->width(),
+            quad->mask_uv_rect.y() * mask->height(),
+            quad->mask_uv_rect.width() * mask->width(),
+            quad->mask_uv_rect.height() * mask->height());
 
         SkMatrix maskMat;
         maskMat.setRectToRect(maskRect, destRect, SkMatrix::kFill_ScaleToFit);

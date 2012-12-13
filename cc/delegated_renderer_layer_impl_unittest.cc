@@ -81,7 +81,7 @@ static void addRenderPassQuad(TestRenderPass* toPass, TestRenderPass* contributi
     SharedQuadState* sharedState = quadSink.useSharedQuadState(SharedQuadState::Create());
     sharedState->SetAll(gfx::Transform(), outputRect, outputRect, outputRect, false, 1);
     scoped_ptr<RenderPassDrawQuad> quad = RenderPassDrawQuad::Create();
-    quad->SetNew(sharedState, outputRect, contributingPass->id, false, 0, outputRect, 0, 0, 0, 0);
+    quad->SetNew(sharedState, outputRect, contributingPass->id, false, 0, outputRect, gfx::RectF());
     quadSink.append(quad.PassAs<DrawQuad>(), data);
 }
 

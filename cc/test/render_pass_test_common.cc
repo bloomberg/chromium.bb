@@ -67,10 +67,7 @@ void TestRenderPass::AppendOneOfEveryQuadType(cc::ResourceProvider* resourceProv
                            false,
                            0,
                            rect,
-                           0,
-                           0,
-                           0,
-                           0);
+                           gfx::RectF());
   AppendQuad(render_pass_quad.PassAs<DrawQuad>());
 
   scoped_ptr<cc::SolidColorDrawQuad> solid_color_quad =

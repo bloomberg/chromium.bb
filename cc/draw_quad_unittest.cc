@@ -156,6 +156,18 @@ void compareDrawQuad(DrawQuad* quad, DrawQuad* copy, SharedQuadState* copyShared
       quadAll->SetAll(sharedState.get(), quadRect, quadOpaqueRect, quadVisibleRect, needsBlending, a, b, c, d, e); } \
     SETUP_AND_COPY_QUAD_ALL(Type, quadAll);
 
+#define CREATE_QUAD_5_NEW_1(Type, a, b, c, d, e, copyA) \
+    scoped_ptr<Type> quadNew(Type::Create()); \
+    { QUAD_DATA \
+      quadNew->SetNew(sharedState.get(), quadRect, a, b, c, d, e); } \
+    SETUP_AND_COPY_QUAD_NEW_1(Type, quadNew, copyA);
+
+#define CREATE_QUAD_5_ALL_1(Type, a, b, c, d, e, copyA) \
+    scoped_ptr<Type> quadAll(Type::Create()); \
+    { QUAD_DATA \
+      quadAll->SetAll(sharedState.get(), quadRect, quadOpaqueRect, quadVisibleRect, needsBlending, a, b, c, d, e); } \
+    SETUP_AND_COPY_QUAD_ALL_1(Type, quadAll, copyA);
+
 #define CREATE_QUAD_6_NEW(Type, a, b, c, d, e, f) \
     scoped_ptr<Type> quadNew(Type::Create()); \
     { QUAD_DATA \
@@ -191,18 +203,6 @@ void compareDrawQuad(DrawQuad* quad, DrawQuad* copy, SharedQuadState* copyShared
     { QUAD_DATA \
       quadAll->SetAll(sharedState.get(), quadRect, quadOpaqueRect, quadVisibleRect, needsBlending, a, b, c, d, e, f, g, h); } \
     SETUP_AND_COPY_QUAD_ALL(Type, quadAll);
-
-#define CREATE_QUAD_8_NEW_1(Type, a, b, c, d, e, f, g, h, copyA) \
-    scoped_ptr<Type> quadNew(Type::Create()); \
-    { QUAD_DATA \
-      quadNew->SetNew(sharedState.get(), quadRect, a, b, c, d, e, f, g, h); } \
-    SETUP_AND_COPY_QUAD_NEW_1(Type, quadNew, copyA);
-
-#define CREATE_QUAD_8_ALL_1(Type, a, b, c, d, e, f, g, h, copyA) \
-    scoped_ptr<Type> quadAll(Type::Create()); \
-    { QUAD_DATA \
-      quadAll->SetAll(sharedState.get(), quadRect, quadOpaqueRect, quadVisibleRect, needsBlending, a, b, c, d, e, f, g, h); } \
-    SETUP_AND_COPY_QUAD_ALL_1(Type, quadAll, copyA);
 
 #define CREATE_QUAD_9_NEW(Type, a, b, c, d, e, f, g, h, i) \
     scoped_ptr<Type> quadNew(Type::Create()); \
@@ -275,35 +275,26 @@ TEST(DrawQuadTest, copyRenderPassDrawQuad)
     bool isReplica = true;
     ResourceProvider::ResourceId maskResourceId = 78;
     gfx::Rect contentsChangedSinceLastFrame(42, 11, 74, 24);
-    float maskTexCoordScaleX = 33;
-    float maskTexCoordScaleY = 19;
-    float maskTexCoordOffsetX = -45;
-    float maskTexCoordOffsetY = -21;
+    gfx::RectF maskUVRect(-45, -21, 33, 19);
 
     RenderPass::Id copiedRenderPassId(235, 11);
     CREATE_SHARED_STATE();
 
-    CREATE_QUAD_8_NEW_1(RenderPassDrawQuad, renderPassId, isReplica, maskResourceId, contentsChangedSinceLastFrame, maskTexCoordScaleX, maskTexCoordScaleY, maskTexCoordOffsetX, maskTexCoordOffsetY, copiedRenderPassId);
+    CREATE_QUAD_5_NEW_1(RenderPassDrawQuad, renderPassId, isReplica, maskResourceId, contentsChangedSinceLastFrame, maskUVRect, copiedRenderPassId);
     EXPECT_EQ(DrawQuad::RENDER_PASS, copyQuad->material);
     EXPECT_EQ(copiedRenderPassId, copyQuad->render_pass_id);
     EXPECT_EQ(isReplica, copyQuad->is_replica);
     EXPECT_EQ(maskResourceId, copyQuad->mask_resource_id);
     EXPECT_RECT_EQ(contentsChangedSinceLastFrame, copyQuad->contents_changed_since_last_frame);
-    EXPECT_EQ(maskTexCoordScaleX, copyQuad->mask_tex_coord_scale_x);
-    EXPECT_EQ(maskTexCoordScaleY, copyQuad->mask_tex_coord_scale_y);
-    EXPECT_EQ(maskTexCoordOffsetX, copyQuad->mask_tex_coord_offset_x);
-    EXPECT_EQ(maskTexCoordOffsetY, copyQuad->mask_tex_coord_offset_y);
+    EXPECT_EQ(maskUVRect.ToString(), copyQuad->mask_uv_rect.ToString());
 
-    CREATE_QUAD_8_ALL_1(RenderPassDrawQuad, renderPassId, isReplica, maskResourceId, contentsChangedSinceLastFrame, maskTexCoordScaleX, maskTexCoordScaleY, maskTexCoordOffsetX, maskTexCoordOffsetY, copiedRenderPassId);
+    CREATE_QUAD_5_ALL_1(RenderPassDrawQuad, renderPassId, isReplica, maskResourceId, contentsChangedSinceLastFrame, maskUVRect, copiedRenderPassId);
     EXPECT_EQ(DrawQuad::RENDER_PASS, copyQuad->material);
     EXPECT_EQ(copiedRenderPassId, copyQuad->render_pass_id);
     EXPECT_EQ(isReplica, copyQuad->is_replica);
     EXPECT_EQ(maskResourceId, copyQuad->mask_resource_id);
     EXPECT_RECT_EQ(contentsChangedSinceLastFrame, copyQuad->contents_changed_since_last_frame);
-    EXPECT_EQ(maskTexCoordScaleX, copyQuad->mask_tex_coord_scale_x);
-    EXPECT_EQ(maskTexCoordScaleY, copyQuad->mask_tex_coord_scale_y);
-    EXPECT_EQ(maskTexCoordOffsetX, copyQuad->mask_tex_coord_offset_x);
-    EXPECT_EQ(maskTexCoordOffsetY, copyQuad->mask_tex_coord_offset_y);
+    EXPECT_EQ(maskUVRect.ToString(), copyQuad->mask_uv_rect.ToString());
 }
 
 TEST(DrawQuadTest, copySolidColorDrawQuad)

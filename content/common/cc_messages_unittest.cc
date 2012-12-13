@@ -129,10 +129,7 @@ class CCMessagesTest : public testing::Test {
     EXPECT_EQ(a->mask_resource_id, b->mask_resource_id);
     EXPECT_EQ(a->contents_changed_since_last_frame,
               b->contents_changed_since_last_frame);
-    EXPECT_EQ(a->mask_tex_coord_scale_x, b->mask_tex_coord_scale_x);
-    EXPECT_EQ(a->mask_tex_coord_scale_y, b->mask_tex_coord_scale_y);
-    EXPECT_EQ(a->mask_tex_coord_offset_x, b->mask_tex_coord_offset_x);
-    EXPECT_EQ(a->mask_tex_coord_offset_y, b->mask_tex_coord_offset_y);
+    EXPECT_EQ(a->mask_uv_rect.ToString(), b->mask_uv_rect.ToString());
   }
 
   void Compare(const SolidColorDrawQuad* a, const SolidColorDrawQuad* b) {
@@ -202,7 +199,6 @@ TEST_F(CCMessagesTest, AllQuads) {
   float arbitrary_float1 = 0.7f;
   float arbitrary_float2 = 0.3f;
   float arbitrary_float3 = 0.9f;
-  float arbitrary_float4 = 0.1f;
   bool arbitrary_bool1 = true;
   bool arbitrary_bool2 = false;
   int arbitrary_int = 5;
@@ -294,10 +290,7 @@ TEST_F(CCMessagesTest, AllQuads) {
                         arbitrary_bool2,
                         arbitrary_resourceid,
                         arbitrary_rect1,
-                        arbitrary_float1,
-                        arbitrary_float2,
-                        arbitrary_float3,
-                        arbitrary_float4);
+                        arbitrary_rectf1);
   scoped_ptr<RenderPassDrawQuad> renderpass_cmp = renderpass_in->Copy(
       renderpass_in->shared_quad_state, renderpass_in->render_pass_id);
 
