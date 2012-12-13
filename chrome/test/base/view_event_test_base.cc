@@ -109,6 +109,11 @@ void ViewEventTestBase::SetUp() {
 #endif
 
   window_ = views::Widget::CreateWindowWithContext(this, context);
+
+#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+  stacking_client_.reset(new aura::test::TestStackingClient(
+      window_->GetNativeWindow()->GetRootWindow()));
+#endif
 }
 
 void ViewEventTestBase::TearDown() {
