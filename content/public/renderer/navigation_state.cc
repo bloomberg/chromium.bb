@@ -18,8 +18,7 @@ NavigationState::NavigationState(content::PageTransition transition_type,
       was_within_same_page_(false),
       transferred_request_child_id_(-1),
       transferred_request_request_id_(-1),
-      allow_download_(true),
-      is_redirect_in_progress_(false) {
+      allow_download_(true) {
 }
 
 NavigationState::~NavigationState() {}

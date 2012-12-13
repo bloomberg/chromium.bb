@@ -78,12 +78,6 @@ class NavigationState {
   bool allow_download() const {
     return allow_download_;
   }
-  void set_is_redirect_in_progress(bool value) {
-    is_redirect_in_progress_ = value;
-  }
-  bool is_redirect_in_progress() const {
-    return is_redirect_in_progress_;
-  }
 
  private:
   NavigationState(content::PageTransition transition_type,
@@ -101,13 +95,6 @@ class NavigationState {
   int transferred_request_child_id_;
   int transferred_request_request_id_;
   bool allow_download_;
-
-  // If we are handling a top-level client-side redirect, we need to set this
-  // to true when calling willPerformClientRedirect.
-  // If DecidePolicyForNavigation decides this redirect is a cross-process
-  // navigation, it will pass this flag to the browser process through OpenURL,
-  // which will eventually replace the current navigation entry.
-  bool is_redirect_in_progress_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationState);
 };

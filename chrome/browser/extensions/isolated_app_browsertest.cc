@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/automation/automation_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -90,7 +91,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, CrossProcessClientRedirect) {
       browser(), base_url.Resolve("app1/main.html"),
       CURRENT_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
-  // redirect to app2.
+  // Redirect to app2.
   GURL redirect_url(test_server()->GetURL(
       "client-redirect?files/extensions/isolated_apps/app2/main.html"));
   ui_test_utils::NavigateToURLWithDisposition(
@@ -100,7 +101,37 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, CrossProcessClientRedirect) {
   // Go back twice.
   // If bug fixed, we cannot go back anymore.
   // If not fixed, we will redirect back to app2 and can go back again.
+  EXPECT_TRUE(chrome::CanGoBack(browser()));
   chrome::GoBack(browser(), CURRENT_TAB);
+  EXPECT_TRUE(chrome::CanGoBack(browser()));
+  chrome::GoBack(browser(), CURRENT_TAB);
+  EXPECT_FALSE(chrome::CanGoBack(browser()));
+
+  // We also need to test script-initialized navigation (document.location.href)
+  // happened after page finishes loading. This one will also triggered the
+  // willPerformClientRedirect hook in RenderViewImpl but should not replace
+  // the previous history entry.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), base_url.Resolve("non_app/main.html"),
+      NEW_FOREGROUND_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  WebContents* tab0 = chrome::GetWebContentsAt(browser(), 1);
+  RenderViewHost* rvh = tab0->GetRenderViewHost();
+
+  // Using JavaScript to navigate to app2 page,
+  // after the non_app page has finished loading.
+  content::WindowedNotificationObserver observer1(
+      content::NOTIFICATION_LOAD_STOP,
+      content::Source<NavigationController>(
+          &chrome::GetActiveWebContents(browser())->GetController()));
+  std::string script = base::StringPrintf(
+        "document.location.href=\"%s\";",
+        base_url.Resolve("app2/main.html").spec().c_str());
+  EXPECT_TRUE(ExecuteJavaScript(rvh, L"", ASCIIToWide(script)));
+  observer1.Wait();
+
+  // This kind of navigation should not replace previous navigation entry.
+  EXPECT_TRUE(chrome::CanGoBack(browser()));
   chrome::GoBack(browser(), CURRENT_TAB);
   EXPECT_FALSE(chrome::CanGoBack(browser()));
 }
