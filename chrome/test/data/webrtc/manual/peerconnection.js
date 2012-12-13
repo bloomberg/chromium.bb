@@ -80,6 +80,21 @@ function stopLocalFromHere() {
   stopLocalStream();
 }
 
+function createDataChannelFromHere() {
+  ensureHasPeerConnection_();
+  createDataChannelOnPeerConnection();
+}
+
+function closeDataChannelFromHere() {
+  ensureHasPeerConnection_();
+  closeDataChannelOnPeerConnection();
+}
+
+function sendDataFromHere() {
+  var data = $('data-channel-send').value;
+  sendDataOnChannel(data);
+}
+
 function forceOpusChanged() {
   var forceOpus = $('force-opus').checked;
   if (forceOpus) {
@@ -137,6 +152,7 @@ window.onload = function() {
   replaceDebugCallback(debug_);
   updateGetUserMediaConstraints();
   doNotAutoAddLocalStreamWhenCalled();
+  hookupDataChannelCallbacks_();
 };
 
 /**
@@ -247,6 +263,18 @@ function forceOpus_() {
 /** @private */
 function dontTouchSdp_() {
   setOutgoingSdpTransform(function(sdp) { return sdp; });
+}
+
+/** @private */
+function hookupDataChannelCallbacks_() {
+  setDataCallbacks(function(status) {
+    $('data-channel-status').value = status;
+  },
+  function(data_message) {
+    debug('Received ' + data_message.data);
+    $('data-channel-receive').value =
+      data_message.data + '\n' + $('data-channel-receive').value;
+  });
 }
 
 $ = function(id) {

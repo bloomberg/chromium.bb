@@ -33,7 +33,11 @@
       <h2>Local Preview</h2>
       <video width="320" height="240" id="local-view" autoplay="autoplay">
           </video><br/>
+      <h2>Send on data channel</h2>
+      <input type="text" id="data-channel-send" size="10" />
+      <button onclick="sendDataFromHere();">Send data</button><br>
 
+      <h2>Settings</h2>
       Server [<a href="" onclick="showServerHelp()">?</a>]:
       <input type="text" id="server" size="30"
           value="http://localhost:8888" />
@@ -41,11 +45,11 @@
       <button id="connect" onclick="connectFromHere();">Connect</button><br/>
       PeerConnection <a href="http://goo.gl/xVi12">createOffer MediaConstraints:
           </a><br/>
-      <textarea id="pc-createoffer-constraints" rows="7" cols="40"></textarea>
+      <input type="text" id="pc-createoffer-constraints" rows="7" cols="40"/>
       <br/>
       PeerConnection <a href="http://goo.gl/0TjfX">createAnswer
           MediaConstraints:</a><br/>
-      <textarea id="pc-createanswer-constraints" rows="7" cols="40"></textarea>
+      <input type="text" id="pc-createanswer-constraints" rows="7" cols="40"/>
       <br/>
       Call:
       <button onclick="negotiateCallFromHere();">Negotiate</button>
@@ -59,6 +63,12 @@
       Remote Stream:
       <button onclick="toggleRemoteVideoFromHere();">Toggle Video</button>
       <button onclick="toggleRemoteAudioFromHere();">Toggle Audio</button><br/>
+      Data Channel:
+      <button onclick="createDataChannelFromHere();">Create</button>
+      <button onclick="closeDataChannelFromHere();">Close</button>            
+      status:
+      <input type="text" id="data-channel-status" size="10" value="not created" 
+          disabled="true" /><br/>
       Options:
       <input type="checkbox" id="force-opus" onclick="forceOpusChanged();"/>
           Force Opus in Outgoing SDP<br/>
@@ -70,6 +80,9 @@
       <h2>Remote Video</h2>
       <video width="320" height="240" id="remote-view" autoplay="autoplay">
           </video><br/>
+      <h2>Received on data channel</h2>      
+      <textarea id="data-channel-receive" rows="7" cols="40" disabled="true">
+          </textarea>
 
       <h2>Debug</h2>
       <pre id="debug"></pre>

@@ -56,6 +56,12 @@ var gRemotePeerId = null;
 var gAutoAddLocalToPeerConnectionStreamWhenCalled = true;
 
 /**
+ * The one and only data channel.
+ * @private
+ */
+var gDataChannel = null;
+
+/**
  * We need a STUN server for some API calls.
  * @private
  */
@@ -196,8 +202,8 @@ function toggleRemoteStream(selectAudioOrVideoTrack, typeToToggle) {
  */
 function toggleLocalStream(selectAudioOrVideoTrack, typeToToggle) {
   if (gPeerConnection == null)
-    throw failTest(
-        'Tried to toggle local stream, but have no peer connection.');
+    throw failTest('Tried to toggle local stream, ' +
+                   'but have no peer connection.');
   if (gPeerConnection.localStreams.length == 0)
     throw failTest('Tried to toggle local stream, but there is no local ' +
                    'stream in the call.');
@@ -248,6 +254,33 @@ function disconnect() {
   request.send();
   gOurPeerId = null;
   returnToTest('ok-disconnected');
+}
+
+/**
+ * Creates a DataChannel on the current PeerConnection. Only one DataChannel can
+ * be created on each PeerConnection.
+ * Returns ok-datachannel-created on success.
+ */
+function createDataChannelOnPeerConnection() {
+  if (gPeerConnection == null)
+    throw failTest('Tried to create data channel, ' +
+        'but have no peer connection.');
+
+  createDataChannel(gPeerConnection, gOurClientName);
+  returnToTest('ok-datachannel-created');
+}
+
+/**
+ * Close the DataChannel on the current PeerConnection.
+ * Returns ok-datachannel-close on success.
+ */
+function closeDataChannelOnPeerConnection() {
+  if (gPeerConnection == null)
+    throw failTest('Tried to close data channel, ' +
+        'but have no peer connection.');
+
+  closeDataChannel(gPeerConnection);
+  returnToTest('ok-datachannel-close');
 }
 
 // Public interface to signaling implementations, such as JSEP.

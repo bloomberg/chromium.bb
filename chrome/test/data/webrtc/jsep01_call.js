@@ -13,6 +13,15 @@ var gCreateAnswerConstraints = {};
 /** @private */
 var gCreateOfferConstraints = {};
 
+/** @private */
+var gDataChannel = null;
+
+/** @private */
+var gDataStatusCallback = function(status) {};
+
+/** @private */
+var gDataCallback = function(data) {};
+
 /**
  * Sets the transform to apply just before setting the local description and
  * sending to the peer.
@@ -41,6 +50,28 @@ function setCreateOfferConstraints(mediaConstraints) {
   gCreateOfferConstraints = mediaConstraints;
 }
 
+/**
+ * Sets the callback functions that will receive DataChannel readyState updates
+ * and received data.
+ * @param{function} status_callback The function that will receive a string with
+ *     the current DataChannel readyState.
+ * @param{function} data_callback The function that will a string with data
+ *     received from the remote peer.
+ */
+function setDataCallbacks(status_callback, data_callback) {
+  gDataStatusCallback = status_callback;
+  gDataCallback = data_callback;
+}
+
+/**
+ * Sends data on an active DataChannel.
+ * @param{string} data The string that will be sent to the remote peer.
+ */
+function sendDataOnChannel(data) {
+  if (gDataChannel == null)
+    throw failTest('Trying to send data, but there is no DataChannel.');
+  gDataChannel.send(data);
+}
 
 // Public interface towards the other javascript files, such as
 // message_handling.js. The contract for these functions is described in
@@ -75,13 +106,15 @@ function handleMessage(peerConnection, message) {
 function createPeerConnection(stun_server) {
   servers = {iceServers:[{url:"stun:" + stun_server}]};
   try {
-    peerConnection = new webkitRTCPeerConnection(servers, null);
+    peerConnection = new webkitRTCPeerConnection(
+        servers, { optional:[ { RtpDataChannels: true } ]});
   } catch (exception) {
     throw failTest('Failed to create peer connection: ' + exception);
   }
   peerConnection.onaddstream = addStreamCallback_;
   peerConnection.onremovestream = removeStreamCallback_;
   peerConnection.onicecandidate = iceCallback_;
+  peerConnection.ondatachannel = onCreateDataChannelCallback_;
   return peerConnection;
 }
 
@@ -96,6 +129,23 @@ function setupCall(peerConnection) {
 
 function answerCall(peerConnection, message) {
   handleMessage(peerConnection, message);
+}
+
+function createDataChannel(peerConnection, label) {
+  if (gDataChannel != null && gDataChannel.readyState != 'closed') {
+    throw failTest('Creating DataChannel, but we already have one.');
+  }
+
+  gDataChannel = peerConnection.createDataChannel(label, { reliable : false });
+  debug('DataChannel with label ' + gDataChannel.label + ' initiated locally.');
+  hookupDataChannelEvents();
+}
+
+function closeDataChannel(peerConnection) {
+  if (gDataChannel == null)
+    throw failTest('Closing DataChannel, but none exists.');
+  debug('DataChannel with label ' + gDataChannel.label + ' is beeing closed.');
+  gDataChannel.close();
 }
 
 // Internals.
@@ -142,4 +192,33 @@ function addStreamCallback_(event) {
 function removeStreamCallback_(event) {
   debug('Call ended.');
   document.getElementById("remote-view").src = '';
+}
+
+/** @private */
+function onCreateDataChannelCallback_(event) {
+  if (gDataChannel != null && gDataChannel.readyState != 'closed') {
+    throw failTest('Received DataChannel, but we already have one.');
+  }
+
+  gDataChannel = event.channel;
+  debug('DataChannel with label ' + gDataChannel.label +
+      ' initiated by remote peer.');
+  hookupDataChannelEvents();
+}
+
+/** @private */
+function hookupDataChannelEvents() {
+  gDataChannel.onmessage = gDataCallback;
+  gDataChannel.onopen = onDataChannelReadyStateChange_;
+  gDataChannel.onclose = onDataChannelReadyStateChange_;
+  // Trigger gDataStatusCallback so an application is notified
+  // about the created data channel.
+  onDataChannelReadyStateChange_();
+}
+
+/** @private */
+function onDataChannelReadyStateChange_() {
+  var readyState = gDataChannel.readyState;
+  debug('DataChannel state:' + readyState);
+  gDataStatusCallback(readyState);
 }
