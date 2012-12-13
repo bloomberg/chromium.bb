@@ -19,7 +19,7 @@ class DisconnectWindowMac : public remoting::DisconnectWindow {
   DisconnectWindowMac();
   virtual ~DisconnectWindowMac();
 
-  virtual void Show(const UiStrings& ui_strings,
+  virtual bool Show(const UiStrings& ui_strings,
                     const base::Closure& disconnect_callback,
                     const std::string& username) OVERRIDE;
   virtual void Hide() OVERRIDE;
@@ -38,15 +38,18 @@ DisconnectWindowMac::~DisconnectWindowMac() {
   [window_controller_ close];
 }
 
-void DisconnectWindowMac::Show(const UiStrings& ui_strings,
+bool DisconnectWindowMac::Show(const UiStrings& ui_strings,
                                const base::Closure& disconnect_callback,
                                const std::string& username) {
-  CHECK(window_controller_ == nil);
+  DCHECK(!disconnect_callback.is_null());
+  DCHECK(window_controller_ == nil);
+
   window_controller_ =
       [[DisconnectWindowController alloc] initWithUiStrings:ui_strings
                                                    callback:disconnect_callback
                                                    username:username];
   [window_controller_ showWindow:nil];
+  return true;
 }
 
 void DisconnectWindowMac::Hide() {

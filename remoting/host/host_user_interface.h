@@ -36,9 +36,9 @@ class HostUserInterface : public HostStatusObserver {
   // Init must be called from |ui_task_runner_|.
   virtual void Init();
 
-  // Start the HostUserInterface for |host|.  |disconnect_callback| will be
-  // called on |ui_task_runner| when |host| is shut down.  |host| must remain
-  // valid at least until ChromotingHost::Shutdown() completes.
+  // Start the HostUserInterface for |host|. |disconnect_callback| will be
+  // called on |ui_task_runner| to notify the caller that the connection should
+  // be disconnected. |host| must remain valid until OnShutdown() is called.
   // Start must be called from |network_task_runner_|.
   virtual void Start(ChromotingHost* host,
                      const base::Closure& disconnect_callback);
@@ -83,10 +83,6 @@ class HostUserInterface : public HostStatusObserver {
   void OnDisconnectCallback();
 
   void MonitorLocalInputs(bool enable);
-
-  // Show or hide the Disconnect window on the UI thread.  If |show| is false,
-  // hide the window, ignoring the |username| parameter.
-  void ShowDisconnectWindow(bool show, const std::string& username);
 
   // The JID of the currently-authenticated user (or an empty string if no user
   // is connected).

@@ -27,12 +27,13 @@ class DisconnectWindow {
 
   virtual ~DisconnectWindow() {}
 
-  // Show the disconnect window allowing the user to shut down the host.
-  virtual void Show(const UiStrings& ui_strings,
+  // Shows the disconnect window allowing the user to disconnect the session.
+  // Returns false if the window could not be shown for any reason.
+  virtual bool Show(const UiStrings& ui_strings,
                     const DisconnectCallback& disconnect_callback,
                     const std::string& username) = 0;
 
-  // Hide the disconnect window.
+  // Hides the disconnect window.
   virtual void Hide() = 0;
 
   static scoped_ptr<DisconnectWindow> Create();

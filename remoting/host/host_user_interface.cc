@@ -27,7 +27,7 @@ HostUserInterface::~HostUserInterface() {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
   MonitorLocalInputs(false);
-  ShowDisconnectWindow(false, std::string());
+  disconnect_window_->Hide();
 }
 
 void HostUserInterface::Init() {
@@ -84,7 +84,7 @@ void HostUserInterface::OnDisconnectCallback() {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
   MonitorLocalInputs(false);
-  ShowDisconnectWindow(false, std::string());
+  disconnect_window_->Hide();
   DisconnectSession();
 }
 
@@ -106,15 +106,23 @@ void HostUserInterface::ProcessOnClientAuthenticated(
     const std::string& username) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
+  if (!disconnect_window_->Show(
+          host_->ui_strings(),
+          base::Bind(&HostUserInterface::OnDisconnectCallback, weak_ptr_),
+          username)) {
+    LOG(ERROR) << "Failed to show the disconnect window.";
+    DisconnectSession();
+    return;
+  }
+
   MonitorLocalInputs(true);
-  ShowDisconnectWindow(true, username);
 }
 
 void HostUserInterface::ProcessOnClientDisconnected() {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
   MonitorLocalInputs(false);
-  ShowDisconnectWindow(false, std::string());
+  disconnect_window_->Hide();
 }
 
 void HostUserInterface::MonitorLocalInputs(bool enable) {
@@ -127,20 +135,6 @@ void HostUserInterface::MonitorLocalInputs(bool enable) {
       local_input_monitor_->Stop();
     }
     is_monitoring_local_inputs_ = enable;
-  }
-}
-
-void HostUserInterface::ShowDisconnectWindow(bool show,
-                                             const std::string& username) {
-  DCHECK(ui_task_runner_->BelongsToCurrentThread());
-
-  if (show) {
-    disconnect_window_->Show(
-        host_->ui_strings(),
-        base::Bind(&HostUserInterface::OnDisconnectCallback, weak_ptr_),
-        username);
-  } else {
-    disconnect_window_->Hide();
   }
 }
 

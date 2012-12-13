@@ -59,7 +59,7 @@ class MockDisconnectWindow : public DisconnectWindow {
   MockDisconnectWindow();
   virtual ~MockDisconnectWindow();
 
-  MOCK_METHOD3(Show, void(const UiStrings& ui_strings,
+  MOCK_METHOD3(Show, bool(const UiStrings& ui_strings,
                           const DisconnectCallback& disconnect_callback,
                           const std::string& username));
   MOCK_METHOD0(Hide, void());

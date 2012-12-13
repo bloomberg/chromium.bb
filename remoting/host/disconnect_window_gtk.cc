@@ -21,7 +21,7 @@ class DisconnectWindowGtk : public DisconnectWindow {
   DisconnectWindowGtk();
   virtual ~DisconnectWindowGtk();
 
-  virtual void Show(const UiStrings& ui_strings,
+  virtual bool Show(const UiStrings& ui_strings,
                     const DisconnectCallback& disconnect_callback,
                     const std::string& username) OVERRIDE;
   virtual void Hide() OVERRIDE;
@@ -128,9 +128,13 @@ void DisconnectWindowGtk::CreateWindow(const UiStrings& ui_strings) {
   gtk_widget_show_all(disconnect_window_);
 }
 
-void DisconnectWindowGtk::Show(const UiStrings& ui_strings,
+bool DisconnectWindowGtk::Show(const UiStrings& ui_strings,
                                const DisconnectCallback& disconnect_callback,
                                const std::string& username) {
+  DCHECK(disconnect_callback_.is_null());
+  DCHECK(!disconnect_callback.is_null());
+  DCHECK(!disconnect_window_);
+
   disconnect_callback_ = disconnect_callback;
   CreateWindow(ui_strings);
 
@@ -138,6 +142,7 @@ void DisconnectWindowGtk::Show(const UiStrings& ui_strings,
       ui_strings.disconnect_message, UTF8ToUTF16(username), NULL);
   gtk_label_set_text(GTK_LABEL(message_), UTF16ToUTF8(text).c_str());
   gtk_window_present(GTK_WINDOW(disconnect_window_));
+  return true;
 }
 
 void DisconnectWindowGtk::Hide() {
@@ -145,18 +150,16 @@ void DisconnectWindowGtk::Hide() {
     gtk_widget_destroy(disconnect_window_);
     disconnect_window_ = NULL;
   }
+
+  disconnect_callback_.Reset();
 }
 
 void DisconnectWindowGtk::OnClicked(GtkWidget* button) {
-  CHECK(!disconnect_callback_.is_null());
-
   disconnect_callback_.Run();
   Hide();
 }
 
 gboolean DisconnectWindowGtk::OnDelete(GtkWidget* window, GdkEvent* event) {
-  CHECK(!disconnect_callback_.is_null());
-
   disconnect_callback_.Run();
   Hide();
 
