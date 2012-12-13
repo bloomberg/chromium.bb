@@ -159,6 +159,7 @@ function WallpaperManager(dialogDom) {
       self.butterBar_.showError_(str('connectionFailed'),
                                  {help_url: LEARN_MORE_URL});
       self.initDom_();
+      $('wallpaper-grid').classList.add('image-picker-offline');
     });
   };
 
@@ -169,36 +170,82 @@ function WallpaperManager(dialogDom) {
     i18nTemplate.process(this.document_, loadTimeData);
     this.initCategoriesList_();
     this.initThumbnailsGrid_();
-
-    this.currentWallpaper_ = str('currentWallpaper');
-    if (this.currentWallpaper_ == 'CUSTOM') {
-      // Custom is the last one in the categories list.
-      this.categoriesList_.selectionModel.selectedIndex =
-          this.categoriesList_.dataModel.length - 1;
-    } else {
-      // Selects the first category in the categories list of current wallpaper
-      // as the default selected category when showing wallpaper picker UI.
-      var firstCategory = 0;
-      for (var key in this.manifest_.wallpaper_list) {
-        var url = this.manifest_.wallpaper_list[key].base_url +
-            HighResolutionSuffix;
-        if (url.indexOf(this.currentWallpaper_) != -1) {
-          firstCategory = this.manifest_.wallpaper_list[key].categories[0];
-        }
-      }
-      this.categoriesList_.selectionModel.selectedIndex = firstCategory;
-    }
+    this.presetCategory_();
 
     $('file-selector').addEventListener(
         'change', this.onFileSelectorChanged_.bind(this));
-
     $('set-wallpaper-layout').addEventListener(
         'change', this.onWallpaperLayoutChanged_.bind(this));
-
-    this.dialogDom_.ownerDocument.defaultView.addEventListener(
+    var self = this;
+    window.addEventListener('offline', function() {
+      chrome.wallpaperPrivate.getOfflineWallpaperList(function(lists) {
+        if (!self.downloadedListMap_)
+          self.downloadedListMap_ = {};
+        for (var i = 0; i < lists.length; i++)
+          self.downloadedListMap_[lists[i]] = true;
+        var thumbnails = self.document_.querySelectorAll('.thumbnail');
+        for (var i = 0; i < thumbnails.length; i++) {
+          var thumbnail = thumbnails[i];
+          var url = self.wallpaperGrid_.dataModel.item(i).baseURL;
+          var fileName = url.substring(url.lastIndexOf('/') + 1) +
+              HighResolutionSuffix;
+          if (self.downloadedListMap_ &&
+              self.downloadedListMap_.hasOwnProperty(encodeURI(fileName))) {
+            thumbnail.offline = true;
+          }
+        }
+      });
+      $('wallpaper-grid').classList.add('image-picker-offline');
+    });
+    window.addEventListener('online', function() {
+      self.downloadedListMap_ = null;
+      $('wallpaper-grid').classList.remove('image-picker-offline');
+    });
+    this.document_.defaultView.addEventListener(
         'resize', this.onResize_.bind(this));
 
     this.onResize_();
+  };
+
+  /**
+   * Preset to the category which contains current wallpaper.
+   */
+  WallpaperManager.prototype.presetCategory_ = function() {
+    this.currentWallpaper_ = str('currentWallpaper');
+    if (this.currentWallpaper_ && this.currentWallpaper_ == 'CUSTOM') {
+      // Custom is the last one in the categories list.
+      this.categoriesList_.selectionModel.selectedIndex =
+          this.categoriesList_.dataModel.length - 1;
+      return;
+    }
+    var self = this;
+    var presetCategoryInner_ = function() {
+      // Selects the first category in the categories list of current
+      // wallpaper as the default selected category when showing wallpaper
+      // picker UI.
+      var firstCategory = 0;
+      for (var key in self.manifest_.wallpaper_list) {
+        var url = self.manifest_.wallpaper_list[key].base_url +
+            HighResolutionSuffix;
+        if (url.indexOf(self.currentWallpaper_) != -1)
+          firstCategory = self.manifest_.wallpaper_list[key].categories[0];
+      }
+      self.categoriesList_.selectionModel.selectedIndex = firstCategory;
+    };
+    if (navigator.onLine) {
+      presetCategoryInner_();
+    } else {
+      // If device is offline, gets the available offline wallpaper list first.
+      // Wallpapers which are not in the list will display a grayscaled
+      // thumbnail.
+      chrome.wallpaperPrivate.getOfflineWallpaperList(function(lists) {
+        if (!self.downloadedListMap_)
+          self.downloadedListMap_ = {};
+        for (var i = 0; i < lists.length; i++)
+          self.downloadedListMap_[lists[i]] = true;
+        presetCategoryInner_();
+      });
+    }
   };
 
   /**
@@ -267,7 +314,7 @@ function WallpaperManager(dialogDom) {
    * Set attributions of wallpaper with given URL. If URL is not valid, clear
    * the attributions.
    * @param {{baseURL: string, dynamicURL: string, layout: string,
-   *          author: string, authorWebsite: string}}
+   *          author: string, authorWebsite: string, availableOffline: boolean}}
    *     selectedItem selected wallpaper item in grid.
    * @private
    */
@@ -449,8 +496,16 @@ function WallpaperManager(dialogDom) {
             dynamicURL: this.manifest_.wallpaper_list[key].dynamic_url,
             layout: this.manifest_.wallpaper_list[key].default_layout,
             author: this.manifest_.wallpaper_list[key].author,
-            authorWebsite: this.manifest_.wallpaper_list[key].author_website
+            authorWebsite: this.manifest_.wallpaper_list[key].author_website,
+            availableOffline: false
           };
+          var startIndex = wallpaperInfo.baseURL.lastIndexOf('/') + 1;
+          var fileName = wallpaperInfo.baseURL.substring(startIndex) +
+              HighResolutionSuffix;
+          if (this.downloadedListMap_ &&
+              this.downloadedListMap_.hasOwnProperty(encodeURI(fileName))) {
+            wallpaperInfo.availableOffline = true;
+          }
           wallpapersDataModel.push(wallpaperInfo);
           var url = this.manifest_.wallpaper_list[key].base_url +
               HighResolutionSuffix;

@@ -123,6 +123,10 @@ body {
   width: 104px;
 }
 
+.image-picker-offline img:not([offline]) {
+  -webkit-filter: grayscale(1);
+}
+
 #wallpaper-attribute {
   -webkit-box-orient: vertical;
   display: -webkit-box;

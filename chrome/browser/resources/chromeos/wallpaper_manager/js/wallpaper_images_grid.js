@@ -13,7 +13,7 @@ cr.define('wallpapers', function() {
   /**
    * Creates a new wallpaper thumbnails grid item.
    * @param {{baseURL: string, dynamicURL: string, layout: string,
-   *          author: string, authorWebsite: string}}
+   *          author: string, authorWebsite: string, availableOffline: boolean}}
    *     wallpaperInfo Wallpaper baseURL, dynamicURL, layout, author and
    *     author website.
    * @constructor
@@ -31,17 +31,22 @@ cr.define('wallpapers', function() {
     /** @override */
     decorate: function() {
       GridItem.prototype.decorate.call(this);
+      // Removes garbage created by GridItem.
+      this.innerText = '';
       var imageEl = cr.doc.createElement('img');
+      imageEl.classList.add('thumbnail');
+      cr.defineProperty(imageEl, 'offline', cr.PropertyKind.BOOL_ATTR);
+      imageEl.offline = this.dataItem.availableOffline;
+      this.appendChild(imageEl);
       var self = this;
       chrome.wallpaperPrivate.getThumbnail(this.dataItem.baseURL,
                                            function(data) {
         if (data) {
-          var blob = new Blob([new Int8Array(data)]);
+          var blob = new Blob([new Int8Array(data)], {'type' : 'image\/png'});
           imageEl.src = window.URL.createObjectURL(blob);
           imageEl.addEventListener('load', function(e) {
             window.URL.revokeObjectURL(this.src);
           });
-          self.appendChild(imageEl);
         } else {
           var xhr = new XMLHttpRequest();
           xhr.open('GET', self.dataItem.baseURL + ThumbnailSuffix, true);
@@ -52,14 +57,14 @@ cr.define('wallpapers', function() {
               self.textContent = '';
               chrome.wallpaperPrivate.saveThumbnail(self.dataItem.baseURL,
                                                     xhr.response);
-              var blob = new Blob([new Int8Array(xhr.response)]);
+              var blob = new Blob([new Int8Array(xhr.response)],
+                                  {'type' : 'image\/png'});
               imageEl.src = window.URL.createObjectURL(blob);
               // TODO(bshe): We currently use empty div to reserve space for
               // thumbnail. Use a placeholder like "loading" image may better.
               imageEl.addEventListener('load', function(e) {
                 window.URL.revokeObjectURL(this.src);
               });
-              self.appendChild(imageEl);
             }
           });
         }
