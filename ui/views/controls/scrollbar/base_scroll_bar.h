@@ -55,7 +55,7 @@ class VIEWS_EXPORT BaseScrollBar : public ScrollBar,
   void ScrollToThumbPosition(int thumb_position, bool scroll_to_middle);
 
   // Scroll the contents by the specified offset (contents coordinates).
-  void ScrollByContentsOffset(int contents_offset);
+  bool ScrollByContentsOffset(int contents_offset);
 
   // View overrides:
   virtual gfx::Size GetPreferredSize() OVERRIDE = 0;
@@ -77,7 +77,7 @@ class VIEWS_EXPORT BaseScrollBar : public ScrollBar,
   virtual int GetPosition() const OVERRIDE;
 
   // ScrollDelegate overrides:
-  virtual void OnScroll(float dx, float dy) OVERRIDE;
+  virtual bool OnScroll(float dx, float dy) OVERRIDE;
 
   // ContextMenuController overrides:
   virtual void ShowContextMenuForView(View* source,

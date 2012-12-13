@@ -99,14 +99,19 @@ void BaseScrollBar::ScrollToThumbPosition(int thumb_position,
   SchedulePaint();
 }
 
-void BaseScrollBar::ScrollByContentsOffset(int contents_offset) {
+bool BaseScrollBar::ScrollByContentsOffset(int contents_offset) {
+  int old_offset = contents_scroll_offset_;
   contents_scroll_offset_ -= contents_offset;
   if (contents_scroll_offset_ < GetMinPosition()) {
     contents_scroll_offset_ = GetMinPosition();
   } else if (contents_scroll_offset_ > GetMaxPosition()) {
     contents_scroll_offset_ = GetMaxPosition();
   }
+  if (old_offset == contents_scroll_offset_)
+    return false;
+
   ScrollContentsToOffset();
+  return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -210,9 +215,10 @@ void BaseScrollBar::OnGestureEvent(ui::GestureEvent* event) {
   }
 
   if (event->type() == ui::ET_GESTURE_SCROLL_UPDATE) {
-    ScrollByContentsOffset(IsHorizontal() ? event->details().scroll_x() :
-                                            event->details().scroll_y());
-    event->SetHandled();
+    if (ScrollByContentsOffset(IsHorizontal() ? event->details().scroll_x() :
+                                                event->details().scroll_y())) {
+      event->SetHandled();
+    }
     return;
   }
 
@@ -229,11 +235,9 @@ void BaseScrollBar::OnGestureEvent(ui::GestureEvent* event) {
 ///////////////////////////////////////////////////////////////////////////////
 // BaseScrollBar, ScrollDelegate implementation:
 
-void BaseScrollBar::OnScroll(float dx, float dy) {
-  if (IsHorizontal())
-    ScrollByContentsOffset(dx);
-  else
-    ScrollByContentsOffset(dy);
+bool BaseScrollBar::OnScroll(float dx, float dy) {
+  return IsHorizontal() ? ScrollByContentsOffset(dx) :
+                          ScrollByContentsOffset(dy);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

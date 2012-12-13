@@ -173,7 +173,7 @@ class VIEWS_EXPORT SubmenuView : public View,
                                          MenuDelegate::DropPosition position);
 
   // Implementation of ScrollDelegate
-  virtual void OnScroll(float dx, float dy) OVERRIDE;
+  virtual bool OnScroll(float dx, float dy) OVERRIDE;
 
   // Parent menu item.
   MenuItemView* parent_menu_item_;

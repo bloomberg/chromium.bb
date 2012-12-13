@@ -18,7 +18,8 @@ namespace views {
 
 class VIEWS_EXPORT ScrollDelegate {
  public:
-  virtual void OnScroll(float dx, float dy) = 0;
+  // Returns true if the content was actually scrolled, false otherwise.
+  virtual bool OnScroll(float dx, float dy) = 0;
 
  protected:
   ~ScrollDelegate() {}

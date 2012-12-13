@@ -267,7 +267,7 @@ void SubmenuView::OnGestureEvent(ui::GestureEvent* event) {
       scroll_animator_->Stop();
       break;
     case ui::ET_GESTURE_SCROLL_UPDATE:
-      OnScroll(0, event->details().scroll_y());
+      handled = OnScroll(0, event->details().scroll_y());
       break;
     case ui::ET_GESTURE_SCROLL_END:
       break;
@@ -442,17 +442,20 @@ gfx::Rect SubmenuView::CalculateDropIndicatorBounds(
   }
 }
 
-void SubmenuView::OnScroll(float dx, float dy) {
+bool SubmenuView::OnScroll(float dx, float dy) {
   const gfx::Rect& vis_bounds = GetVisibleBounds();
   const gfx::Rect& full_bounds = bounds();
   int x = vis_bounds.x();
   int y = vis_bounds.y() - static_cast<int>(dy);
   // clamp y to [0, full_height - vis_height)
-  y = std::max(y, 0);
   y = std::min(y, full_bounds.height() - vis_bounds.height() - 1);
+  y = std::max(y, 0);
   gfx::Rect new_vis_bounds(x, y, vis_bounds.width(), vis_bounds.height());
-  if (new_vis_bounds != vis_bounds)
+  if (new_vis_bounds != vis_bounds) {
     ScrollRectToVisible(new_vis_bounds);
+    return true;
+  }
+  return false;
 }
 
 }  // namespace views
