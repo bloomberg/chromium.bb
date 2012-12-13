@@ -106,7 +106,7 @@ class DriveSyncClientTest : public testing::Test {
     // Initialize the cache.
     scoped_refptr<base::SequencedWorkerPool> pool =
         content::BrowserThread::GetBlockingPool();
-    cache_ = DriveCache::CreateDriveCache(
+    cache_ = new DriveCache(
         temp_dir_.path(),
         pool->GetSequencedTaskRunner(pool->GetSequenceToken()));
     bool cache_initialization_success = false;

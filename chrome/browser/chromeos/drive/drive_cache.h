@@ -85,6 +85,14 @@ class DriveCache {
     FILE_OPERATION_COPY,
   };
 
+  // |cache_root_path| specifies the root directory for the cache. Sub
+  // directories will be created under the root directory.
+  //
+  // |blocking_task_runner| is used to post a task to the blocking worker
+  // pool for file operations. Must not be null.
+  DriveCache(const FilePath& cache_root_path,
+             base::SequencedTaskRunner* blocking_task_runner);
+
   // Returns the sub-directory under drive cache directory for the given sub
   // directory type. Example:  <user_profile_dir>/GCache/v1/tmp
   //
@@ -230,17 +238,8 @@ class DriveCache {
   // Utility method to call InitializeForTesting on UI thread.
   void RequestInitializeForTesting();
 
-  // Factory methods for DriveCache.
-  // |pool| and |sequence_token| are used to assert that the functions are
-  // called on the right sequenced worker pool with the right sequence token.
-  //
-  // For testing, the thread assertion can be disabled by passing NULL and
-  // the default value of SequenceToken.
-  static DriveCache* CreateDriveCache(
-      const FilePath& cache_root_path,
-      base::SequencedTaskRunner* blocking_task_runner);
-
-  // Deletes the cache.
+  // Destroys this cache. This function posts a task to the blocking task
+  // runner to safely delete the object.
   void Destroy();
 
   // Gets the cache root path (i.e. <user_profile_dir>/GCache/v1) from the
@@ -266,8 +265,6 @@ class DriveCache {
  private:
   typedef std::pair<DriveFileError, FilePath> GetFileResult;
 
-  DriveCache(const FilePath& cache_root_path,
-             base::SequencedTaskRunner* blocking_task_runner);
   virtual ~DriveCache();
 
   // Checks whether the current thread is on the right sequenced worker pool
@@ -281,7 +278,7 @@ class DriveCache {
   // The in-memory cache is used since it's faster than the db.
   void InitializeOnBlockingPoolForTesting();
 
-  // Deletes the cache.
+  // Destroys the cache on the blocking pool.
   void DestroyOnBlockingPool();
 
   // Gets the cache entry by the given resource ID and MD5.

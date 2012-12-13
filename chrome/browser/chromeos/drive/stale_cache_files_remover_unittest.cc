@@ -77,7 +77,7 @@ class StaleCacheFilesRemoverTest : public testing::Test {
     blocking_task_runner_ =
         pool->GetSequencedTaskRunner(pool->GetSequenceToken());
 
-    cache_ = DriveCache::CreateDriveCache(
+    cache_ = new DriveCache(
         DriveCache::GetCacheRootPath(profile_.get()), blocking_task_runner_);
 
     mock_webapps_registry_.reset(new StrictMock<MockDriveWebAppsRegistry>);

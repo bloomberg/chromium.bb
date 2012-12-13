@@ -202,10 +202,13 @@ DriveCache::DriveCache(const FilePath& cache_root_path,
       cache_paths_(GetCachePaths(cache_root_path_)),
       blocking_task_runner_(blocking_task_runner),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+  DCHECK(blocking_task_runner_);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 DriveCache::~DriveCache() {
+  // Must be on the sequenced worker pool, as |metadata_| must be deleted on
+  // the sequenced worker pool.
   AssertOnSequencedWorkerPool();
 }
 
@@ -482,14 +485,6 @@ void DriveCache::RequestInitializeForTesting() {
                  base::Unretained(this)));
 }
 
-// static
-DriveCache* DriveCache::CreateDriveCache(
-    const FilePath& cache_root_path,
-    base::SequencedTaskRunner* blocking_task_runner) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return new DriveCache(cache_root_path, blocking_task_runner);
-}
-
 void DriveCache::Destroy() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -497,6 +492,8 @@ void DriveCache::Destroy() {
   weak_ptr_factory_.InvalidateWeakPtrs();
 
   // Destroy myself on the blocking pool.
+  // Note that base::DeletePointer<> cannot be used as the destructor of this
+  // class is private.
   blocking_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&DriveCache::DestroyOnBlockingPool, base::Unretained(this)));
