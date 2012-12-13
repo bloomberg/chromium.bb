@@ -22,8 +22,46 @@ cr.define('media', function() {
     decorate: function() {
       this.properties = {};
 
-      this.details_ = document.createElement('details');
+      this.url_ = document.createElement('span');
+      this.url_.textContent = 'URL Unknown';
+
       this.summary_ = document.createElement('summary');
+      this.summary_.appendChild(this.url_);
+
+      var bufferedDiv = document.createElement('div');
+      bufferedDiv.className = 'buffered';
+      this.summary_.appendChild(bufferedDiv);
+
+      // Create our canvii.
+      function createCanvas(label) {
+        var canvas = document.createElement('canvas');
+        canvas.width = media.BAR_WIDTH;
+        canvas.height = media.BAR_HEIGHT;
+        return canvas;
+      }
+      this.bufferedCanvas_ = createCanvas();
+      this.cacheReadsCanvas_ = createCanvas();
+      this.cacheWritesCanvas_ = createCanvas();
+
+      // Create our per-canvas entry divs that are initially hidden.
+      function addEntry(label, canvas) {
+        var labelDiv = document.createElement('div');
+        labelDiv.textContent = label;
+        var canvasDiv = document.createElement('div');
+        canvasDiv.appendChild(canvas);
+        var entryDiv = document.createElement('div');
+        entryDiv.appendChild(labelDiv);
+        entryDiv.appendChild(canvasDiv);
+        entryDiv.hidden = true;
+        bufferedDiv.appendChild(entryDiv);
+        return entryDiv;
+      }
+      this.bufferedEntry_ = addEntry('Buffered', this.bufferedCanvas_);
+      this.cacheReadsEntry_ = addEntry('Cache Reads', this.cacheReadsCanvas_);
+      this.cacheWritesEntry_ = addEntry(
+          'Cache Writes', this.cacheWritesCanvas_);
+
+      this.details_ = document.createElement('details');
       this.details_.appendChild(this.summary_);
 
       this.propertyTable_ = document.createElement('table');
@@ -41,7 +79,7 @@ cr.define('media', function() {
       this.details_.appendChild(ul);
 
       this.appendChild(this.details_);
-      document.getElementById('media-players').appendChild(this);
+      $('media-players').appendChild(this);
     },
 
     /**
@@ -53,8 +91,13 @@ cr.define('media', function() {
         this.properties[key] = event.params[key];
       }
 
-      if (event.type == 'BUFFERED_EXTENTS_CHANGED')
+      if (event.type == 'LOAD' && event.params['url']) {
+        this.url_.textContent = event.params['url'];
+      }
+
+      if (event.type == 'BUFFERED_EXTENTS_CHANGED') {
         return;
+      }
       this.events_.addEvent(event);
       this.metrics_.addEvent(event);
     },
@@ -67,10 +110,6 @@ cr.define('media', function() {
       media.appendDictionaryToTable(this.properties, this.propertyTable_);
 
       this.setAttribute('status', this.properties.state);
-      this.summary_.textContent = '';
-      this.summary_.appendChild(document.createTextNode(
-            this.id + ' (' + this.properties.url + '):'));
-      this.summary_.appendChild(document.createElement('br'));
 
       // Don't bother drawing anything if we don't know the total size.
       var size = this.properties.total_bytes;
@@ -78,26 +117,9 @@ cr.define('media', function() {
         return;
       }
 
-      var bufferedDiv = document.createElement('div');
-      bufferedDiv.className = 'buffered';
-      this.summary_.appendChild(bufferedDiv);
-
-      function addEntry(label, canvas) {
-        var labelDiv = document.createElement('div');
-        labelDiv.textContent = label;
-        var canvasDiv = document.createElement('div');
-        canvasDiv.appendChild(canvas);
-        var entryDiv = document.createElement('div');
-        entryDiv.appendChild(labelDiv);
-        entryDiv.appendChild(canvasDiv);
-        bufferedDiv.appendChild(entryDiv);
-      }
-
       // Draw the state of BufferedResourceLoader.
-      var canvas = document.createElement('canvas');
-      canvas.width = media.BAR_WIDTH;
-      canvas.height = media.BAR_HEIGHT;
-
+      this.bufferedEntry_.hidden = false;
+      var canvas = this.bufferedCanvas_;
       var context = canvas.getContext('2d');
       context.fillStyle = '#aaa';
       context.fillRect(0, 0, canvas.width, canvas.height);
@@ -109,7 +131,6 @@ cr.define('media', function() {
       context.fillRect(left, 0, middle - left, canvas.height);
       context.fillStyle = '#aa0';
       context.fillRect(middle, 0, right - middle, canvas.height);
-      addEntry('Buffered', canvas);
 
       // Only show cached file information if we have something.
       var cacheEntry = media.cacheEntriesByKey[this.properties.url];
@@ -118,18 +139,12 @@ cr.define('media', function() {
       }
 
       // Draw cache reads.
-      canvas = document.createElement('canvas');
-      canvas.width = media.BAR_WIDTH;
-      canvas.height = media.BAR_HEIGHT;
-      cacheEntry.drawCacheReadsToCanvas(canvas);
-      addEntry('Cache Reads', canvas);
+      this.cacheReadsEntry_.hidden = false;
+      cacheEntry.drawCacheReadsToCanvas(this.cacheReadsCanvas_);
 
       // Draw cache writes.
-      canvas = document.createElement('canvas');
-      canvas.width = media.BAR_WIDTH;
-      canvas.height = media.BAR_HEIGHT;
-      cacheEntry.drawCacheWritesToCanvas(canvas);
-      addEntry('Cache Writes', canvas);
+      this.cacheWritesEntry_.hidden = false;
+      cacheEntry.drawCacheWritesToCanvas(this.cacheWritesCanvas_);
     },
   };
 

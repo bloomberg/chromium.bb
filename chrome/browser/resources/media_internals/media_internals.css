@@ -16,6 +16,10 @@ canvas {
   margin: 0;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 #media-players td,
 #media-players th {
   padding: 0 10px;
@@ -34,7 +38,8 @@ canvas {
 }
 
 #cache-entries ul,
-#media-players ul {
+#media-players ul,
+#media-players {
   list-style-type: none;
 }
 
