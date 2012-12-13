@@ -15603,8 +15603,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
     </if>
 
     <!-- Pepper 3D and WebGL (client 3D APIs) infobar strings -->
-    <!-- NOTE that "rats" here is being used like "darn". -->
-    <message name="IDS_3D_APIS_BLOCKED_TEXT" desc="Infobar message when 3D graphics APIs are blocked because the graphics processor was reset recently.">
+    <message name="IDS_3D_APIS_BLOCKED_TEXT" desc="Infobar message when 3D graphics APIs are blocked because the graphics processor was reset recently. NOTE that 'rats' here is being used like 'darn'.">
       Rats! <ph name="API_NAME">$1<ex>WebGL</ex></ph> hit a snag.
     </message>
     <message name="IDS_3D_APIS_WEBGL_NAME" desc="Name of the WebGL API.">
