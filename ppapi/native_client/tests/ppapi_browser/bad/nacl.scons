@@ -30,6 +30,7 @@ ppapi_bad_files = [
   'ppapi_bad_magic.nmf',
   'ppapi_bad_manifest_uses_nexes.nmf',
   'ppapi_bad_manifest_bad_files.nmf',
+  'ppapi_bad_manifest_nexe_arch.nmf',
   env.File('${SCONSTRUCT_DIR}/tools/browser_tester/browserdata/nacltest.js')
   ]
 ppapi_bad = env.Replicate('${STAGING_DIR}', ppapi_bad_files)

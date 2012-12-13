@@ -63,6 +63,7 @@ enum PluginErrorCode {
   ERROR_SEL_LDR_COMMUNICATION_WRAPPER = 35,
   ERROR_SEL_LDR_COMMUNICATION_REV_SERVICE = 36,
   ERROR_START_PROXY_CRASH = 37,
+  ERROR_MANIFEST_PROGRAM_MISSING_ARCH = 38,
   // If you add a code, read the enum comment above on how to update histograms.
   ERROR_MAX
 };

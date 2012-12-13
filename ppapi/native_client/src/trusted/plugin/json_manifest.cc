@@ -201,18 +201,19 @@ bool IsValidPnaclTranslateSpec(const Json::Value& pnacl_spec,
 // ISAs are allowed, but ignored and warnings are produced. It is also validated
 // that it must have an entry to match the ISA specified in |sandbox_isa| or
 // have a fallback 'portable' entry if there is no match. Returns true if
-// |dictionary| is an ISA to URL map.  Sets |error_string| to something
+// |dictionary| is an ISA to URL map.  Sets |error_info| to something
 // descriptive if it fails.
 bool IsValidISADictionary(const Json::Value& dictionary,
                           const nacl::string& parent_key,
                           const nacl::string& sandbox_isa,
-                          nacl::string* error_string) {
-  if (error_string == NULL)
-    return false;
+                          ErrorInfo* error_info) {
+  if (error_info == NULL) return false;
 
   // An ISA to URL dictionary has to be an object.
   if (!dictionary.isObject()) {
-    *error_string = parent_key + " property is not an ISA to URL dictionary";
+    error_info->SetReport(ERROR_MANIFEST_SCHEMA_VALIDATE,
+                          nacl::string("manifest: ") + parent_key +
+                          " property is not an ISA to URL dictionary");
     return false;
   }
   // The keys to the dictionary have to be valid ISA names.
@@ -236,10 +237,13 @@ bool IsValidISADictionary(const Json::Value& dictionary,
     // it could be "arch/portable" : { "pnacl-translate": URLSpec }
     // for executables that need to be translated.
     Json::Value property_value = dictionary[property_name];
+    nacl::string error_string;
     if (!IsValidUrlSpec(property_value, property_name, parent_key,
-                        error_string) &&
+                        &error_string) &&
         !IsValidPnaclTranslateSpec(property_value, property_name,
-                                   parent_key, error_string)) {
+                                   parent_key, &error_string)) {
+      error_info->SetReport(ERROR_MANIFEST_SCHEMA_VALIDATE,
+                            nacl::string("manifiest: ") + error_string);
       return false;
     }
   }
@@ -250,8 +254,9 @@ bool IsValidISADictionary(const Json::Value& dictionary,
   bool has_portable = dictionary.isMember(kPortableKey);
 
   if (!has_isa && !has_portable) {
-    *error_string = parent_key +
-        " no version given for current arch and no portable version found.";
+    error_info->SetReport(ERROR_MANIFEST_PROGRAM_MISSING_ARCH,
+                          nacl::string("manifest: no version of ") + parent_key+
+        " given for current arch and no portable version found.");
     return false;
   }
 
@@ -273,13 +278,13 @@ bool GetURLFromISADictionary(const Json::Value& dictionary,
                              bool prefer_portable,
                              nacl::string* url,
                              nacl::string* cache_identity,
-                             nacl::string* error_string,
+                             ErrorInfo* error_info,
                              bool* pnacl_translate) {
   if (url == NULL || cache_identity == NULL ||
-      error_string == NULL || pnacl_translate == NULL)
+      error_info == NULL || pnacl_translate == NULL)
     return false;
 
-  if (!IsValidISADictionary(dictionary, parent_key, sandbox_isa, error_string))
+  if (!IsValidISADictionary(dictionary, parent_key, sandbox_isa, error_info))
     return false;
 
   *url = "";
@@ -326,14 +331,10 @@ bool GetKeyUrl(const Json::Value& dictionary,
     return false;
   }
   const Json::Value& isa_dict = dictionary[key];
-  nacl::string error_string;
   nacl::string relative_url;
   if (!GetURLFromISADictionary(isa_dict, key, sandbox_isa, prefer_portable,
                                &relative_url, cache_identity,
-                               &error_string, pnacl_translate)) {
-    error_info->SetReport(ERROR_MANIFEST_RESOLVE_URL,
-                          key + nacl::string(" manifest resolution error: ") +
-                          error_string);
+                               error_info, pnacl_translate)) {
     return false;
   }
   return manifest->ResolveURL(relative_url, full_url, error_info);
@@ -384,8 +385,6 @@ bool JsonManifest::MatchesSchema(ErrorInfo* error_info) {
     }
   }
 
-  nacl::string error_string;
-
   // A manifest file must have a program section.
   if (!dictionary_.isMember(kProgramKey)) {
     error_info->SetReport(
@@ -398,10 +397,7 @@ bool JsonManifest::MatchesSchema(ErrorInfo* error_info) {
   if (!IsValidISADictionary(dictionary_[kProgramKey],
                             kProgramKey,
                             sandbox_isa_,
-                            &error_string)) {
-    error_info->SetReport(
-        ERROR_MANIFEST_SCHEMA_VALIDATE,
-        nacl::string("manifest: ") + error_string);
+                            error_info)) {
     return false;
   }
 
@@ -410,10 +406,7 @@ bool JsonManifest::MatchesSchema(ErrorInfo* error_info) {
     if (!IsValidISADictionary(dictionary_[kInterpreterKey],
                               kInterpreterKey,
                               sandbox_isa_,
-                              &error_string)) {
-      error_info->SetReport(
-          ERROR_MANIFEST_SCHEMA_VALIDATE,
-          nacl::string("manifest: ") + error_string);
+                              error_info)) {
       return false;
     }
   }
@@ -432,10 +425,7 @@ bool JsonManifest::MatchesSchema(ErrorInfo* error_info) {
       if (!IsValidISADictionary(files[file_name],
                                 file_name,
                                 sandbox_isa_,
-                                &error_string)) {
-        error_info->SetReport(
-            ERROR_MANIFEST_SCHEMA_VALIDATE,
-            nacl::string("manifest: file ") + error_string);
+                                error_info)) {
         return false;
       }
     }
@@ -483,11 +473,8 @@ bool JsonManifest::GetProgramURL(nacl::string* full_url,
                                prefer_portable_,
                                &nexe_url,
                                cache_identity,
-                               &error_string,
+                               error_info,
                                pnacl_translate)) {
-    error_info->SetReport(ERROR_MANIFEST_GET_NEXE_URL,
-                          nacl::string("program:") + sandbox_isa_ +
-                          error_string);
     return false;
   }
 
