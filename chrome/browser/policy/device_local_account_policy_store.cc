@@ -86,6 +86,15 @@ void DeviceLocalAccountPolicyStore::UpdatePolicy(
                   POLICY_LEVEL_MANDATORY,
                   POLICY_SCOPE_USER,
                   Value::CreateBooleanValue(true));
+  // Restrict device-local accounts to hosted apps for now (i.e. no extensions,
+  // packaged apps etc.) for security/privacy reasons (i.e. we'd like to
+  // prevent the admin from stealing private information from random people).
+  scoped_ptr<base::ListValue> allowed_extension_types(new base::ListValue());
+  allowed_extension_types->AppendString("hosted_app");
+  policy_map_.Set(key::kExtensionAllowedTypes,
+                  POLICY_LEVEL_MANDATORY,
+                  POLICY_SCOPE_USER,
+                  allowed_extension_types.release());
 
   status_ = STATUS_OK;
   NotifyStoreLoaded();

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
 #include "chrome/browser/policy/cloud_policy_client.h"
 #include "chrome/browser/policy/cloud_policy_constants.h"
@@ -53,6 +54,13 @@ class DeviceLocalAccountPolicyServiceTest
                              POLICY_LEVEL_MANDATORY,
                              POLICY_SCOPE_USER,
                              Value::CreateBooleanValue(true));
+    scoped_ptr<base::ListValue> allowed_extension_types(new base::ListValue());
+    allowed_extension_types->AppendString("hosted_app");
+    expected_policy_map_.Set(key::kExtensionAllowedTypes,
+                             POLICY_LEVEL_MANDATORY,
+                             POLICY_SCOPE_USER,
+                             allowed_extension_types.release());
+
     // Explicitly set value.
     expected_policy_map_.Set(key::kDisableSpdy,
                              POLICY_LEVEL_MANDATORY,
@@ -421,13 +429,15 @@ TEST_F(DeviceLocalAccountPolicyProviderTest, Policy) {
       Value::CreateBooleanValue(false));
   EXPECT_TRUE(expected_policy_bundle.Equals(provider_.policies()));
 
-  // Any values set for the |ShelfAutoHideBehavior| and |ShowLogoutButtonInTray|
-  // policies should be overridden.
+  // Any values set for the |ShelfAutoHideBehavior|, |ShowLogoutButtonInTray|
+  // and |ExtensionAllowedTypes| policies should be overridden.
   EXPECT_CALL(provider_observer_, OnUpdatePolicy(&provider_)).Times(AtLeast(1));
   device_local_account_policy_.payload().mutable_shelfautohidebehavior()->
       set_value("Always");
   device_local_account_policy_.payload().mutable_showlogoutbuttonintray()->
       set_value(false);
+  device_local_account_policy_.payload().mutable_extensionallowedtypes()->
+      mutable_value()->mutable_entries()->Clear();
   device_local_account_policy_.Build();
   device_settings_test_helper_.set_device_local_account_policy_blob(
       PolicyBuilder::kFakeUsername, device_local_account_policy_.GetBlob());
@@ -477,6 +487,7 @@ TEST_F(DeviceLocalAccountPolicyProviderTest, RefreshPolicies) {
   EXPECT_CALL(mock_device_management_service_, CreateJob(_))
       .WillRepeatedly(
           mock_device_management_service_.FailJob(DM_STATUS_REQUEST_FAILED));
+  EXPECT_CALL(mock_device_management_service_, StartJob(_, _, _, _, _, _, _));
   service_.Connect(&mock_device_management_service_);
   FlushDeviceSettings();
   Mock::VerifyAndClearExpectations(&mock_device_management_service_);
