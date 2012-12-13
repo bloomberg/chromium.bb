@@ -146,11 +146,6 @@ cr.define('options', function() {
       this.infoChild.className = 'cookie-details';
       this.infoChild.hidden = true;
 
-      if (this.origin.data.appId) {
-        this.siteChild.classList.add('app-cookie-site');
-        this.itemsChild.classList.add('app-cookie-items');
-      }
-
       var remove = this.ownerDocument.createElement('button');
       remove.textContent = loadTimeData.getString('remove_cookie');
       remove.onclick = this.removeCookie_.bind(this);

@@ -34,7 +34,6 @@ class CanonicalCookie;
 // Friendly typedefs for the multiple types of lists used in the model.
 namespace {
 
-typedef std::map<std::string, LocalDataContainer*> ContainerMap;
 typedef std::list<net::CanonicalCookie> CookieList;
 typedef std::list<BrowsingDataDatabaseHelper::DatabaseInfo> DatabaseInfoList;
 typedef std::list<BrowsingDataLocalStorageHelper::LocalStorageInfo>
@@ -61,8 +60,6 @@ typedef std::vector<std::string> FlashLSODomainList;
 class LocalDataContainer {
  public:
   LocalDataContainer(
-      const std::string& app_name,
-      const std::string& app_id,
       BrowsingDataCookieHelper* cookie_helper,
       BrowsingDataDatabaseHelper* database_helper,
       BrowsingDataLocalStorageHelper* local_storage_helper,
@@ -78,9 +75,6 @@ class LocalDataContainer {
   // This method must be called to start the process of fetching the resources.
   // The delegate passed in is called back to deliver the updates.
   void Init(CookiesTreeModel* delegate);
-
-  const std::string& app_name() { return app_name_; }
-  const std::string& app_id() { return app_id_; }
 
  private:
   friend class CookiesTreeModel;
@@ -110,10 +104,6 @@ class LocalDataContainer {
   void OnQuotaModelInfoLoaded(const QuotaInfoList& quota_info);
   void OnServerBoundCertModelInfoLoaded(const ServerBoundCertList& cert_list);
   void OnFlashLSOInfoLoaded(const FlashLSODomainList& domains);
-
-  // The app name and id, to which this container object is for.
-  std::string app_name_;
-  std::string app_id_;
 
   // Pointers to the helper objects, needed to retreive all the types of locally
   // stored data.

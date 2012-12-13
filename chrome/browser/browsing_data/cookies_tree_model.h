@@ -97,8 +97,7 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
     ~DetailedInfo();
 
     DetailedInfo& Init(NodeType type);
-    DetailedInfo& InitHost(const std::string& app_id,
-                           const std::string& app_name);
+    DetailedInfo& InitHost();
     DetailedInfo& InitCookie(const net::CanonicalCookie* cookie);
     DetailedInfo& InitDatabase(
         const BrowsingDataDatabaseHelper::DatabaseInfo* database_info);
@@ -120,8 +119,6 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
         const net::ServerBoundCertStore::ServerBoundCert* server_bound_cert);
     DetailedInfo& InitFlashLSO(const std::string& flash_lso_domain);
 
-    std::string app_name;
-    std::string app_id;
     NodeType node_type;
     GURL origin;
     const net::CanonicalCookie* cookie;
@@ -167,9 +164,7 @@ class CookieTreeRootNode : public CookieTreeNode {
   explicit CookieTreeRootNode(CookiesTreeModel* model);
   virtual ~CookieTreeRootNode();
 
-  CookieTreeHostNode* GetOrCreateHostNode(const GURL& url,
-                                          const std::string& app_id,
-                                          const std::string& app_name);
+  CookieTreeHostNode* GetOrCreateHostNode(const GURL& url);
 
   // CookieTreeNode methods:
   virtual CookiesTreeModel* GetModel() const OVERRIDE;
@@ -185,13 +180,9 @@ class CookieTreeRootNode : public CookieTreeNode {
 class CookieTreeHostNode : public CookieTreeNode {
  public:
   // Returns the host node's title to use for a given URL.
-  static string16 TitleForUrl(const GURL& url,
-                              const std::string& app_id,
-                              const std::string& app_name);
+  static string16 TitleForUrl(const GURL& url);
 
-  explicit CookieTreeHostNode(const GURL& url,
-                              const std::string& app_id,
-                              const std::string& app_name);
+  explicit CookieTreeHostNode(const GURL& url);
   virtual ~CookieTreeHostNode();
 
   // CookieTreeNode methods:
@@ -220,8 +211,6 @@ class CookieTreeHostNode : public CookieTreeNode {
   // True if a content exception can be created for this origin.
   bool CanCreateContentException() const;
 
-  const std::string& app_id() const { return app_id_; }
-  const std::string& app_name() const { return app_name_; }
   const std::string GetHost() const;
 
  private:
@@ -240,9 +229,6 @@ class CookieTreeHostNode : public CookieTreeNode {
   CookieTreeQuotaNode* quota_child_;
   CookieTreeServerBoundCertsNode* server_bound_certs_child_;
   CookieTreeFlashLSONode* flash_lso_child_;
-
-  std::string app_id_;
-  std::string app_name_;
 
   // The URL for which this node was initially created.
   GURL url_;
@@ -598,7 +584,7 @@ class CookieTreeFlashLSONode : public CookieTreeNode {
 // CookiesTreeModel -----------------------------------------------------------
 class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
  public:
-  CookiesTreeModel(const ContainerMap& apps_map,
+  CookiesTreeModel(LocalDataContainer* data_container,
                    ExtensionSpecialStoragePolicy* special_storage_policy,
                    bool group_by_cookie_source);
   virtual ~CookiesTreeModel();
@@ -679,7 +665,9 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
   void PopulateFlashLSOInfo(LocalDataContainer* container);
 
   BrowsingDataCookieHelper* GetCookieHelper(const std::string& app_id);
-  LocalDataContainer* GetLocalDataContainer(const std::string& app_id);
+  LocalDataContainer* data_container() {
+    return data_container_.get();
+  }
 
  private:
   enum CookieIconIndex {
@@ -725,7 +713,7 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
 
   // Map of app ids to LocalDataContainer objects to use when retrieving
   // locally stored data.
-  ContainerMap app_data_map_;
+  scoped_ptr<LocalDataContainer> data_container_;
 
   // The extension special storage policy; see ExtensionsProtectingNode() above.
   scoped_refptr<ExtensionSpecialStoragePolicy> special_storage_policy_;

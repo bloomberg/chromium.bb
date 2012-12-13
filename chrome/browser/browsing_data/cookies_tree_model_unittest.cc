@@ -74,12 +74,6 @@ class CookiesTreeModelTest : public testing::Test {
     mock_browsing_data_flash_lso_helper_ =
         new MockBrowsingDataFlashLSOHelper(profile_.get());
 
-    // It is fine to reuse the profile request context for the app, since
-    // the mock cookie helper maintains its own list internally and doesn't
-    // really use the request context. Same is true for the rest.
-    mock_browsing_data_cookie_helper_app_ =
-        new MockBrowsingDataCookieHelper(profile_->GetRequestContext());
-
     scoped_refptr<CookieSettings> cookie_settings =
         new CookieSettings(profile_->GetHostContentSettingsMap(),
                            profile_->GetPrefs());
@@ -100,12 +94,8 @@ class CookiesTreeModelTest : public testing::Test {
     message_loop_.RunUntilIdle();
   }
 
-  scoped_ptr<CookiesTreeModel> CreateCookiesTreeModelWithInitialSample(
-      bool add_app) {
-    ContainerMap containers_map;
-
-    containers_map[std::string()] = new LocalDataContainer(
-        "Drive-By-Web", std::string(),
+  scoped_ptr<CookiesTreeModel> CreateCookiesTreeModelWithInitialSample() {
+    LocalDataContainer* container = new LocalDataContainer(
         mock_browsing_data_cookie_helper_,
         mock_browsing_data_database_helper_,
         mock_browsing_data_local_storage_helper_,
@@ -117,17 +107,8 @@ class CookiesTreeModelTest : public testing::Test {
         mock_browsing_data_server_bound_cert_helper_,
         mock_browsing_data_flash_lso_helper_);
 
-    if (add_app) {
-      std::string app_id = "some-random-id";
-      // The cookie helper is mandatory, the rest can be NULL.
-      containers_map[app_id] = new LocalDataContainer(
-          "Isolated App", app_id,
-          mock_browsing_data_cookie_helper_app_,
-          NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-    }
-
     CookiesTreeModel* cookies_model =
-        new CookiesTreeModel(containers_map,
+        new CookiesTreeModel(container,
                              special_storage_policy_,
                              false);
     mock_browsing_data_cookie_helper_->
@@ -157,16 +138,6 @@ class CookiesTreeModelTest : public testing::Test {
     mock_browsing_data_flash_lso_helper_->AddFlashLSODomain("xyz.com");
     mock_browsing_data_flash_lso_helper_->Notify();
 
-    if (add_app) {
-      mock_browsing_data_cookie_helper_app_->
-          AddCookieSamples(GURL("http://app-origin1"), "Z=1");
-      mock_browsing_data_cookie_helper_app_->
-          AddCookieSamples(GURL("http://app-origin2"), "Y=1");
-      mock_browsing_data_cookie_helper_app_->
-          AddCookieSamples(GURL("http://app-origin3"), "X=1");
-      mock_browsing_data_cookie_helper_app_->Notify();
-    }
-
     {
       SCOPED_TRACE("Initial State 3 cookies, 2 databases, 2 local storages, "
                    "2 session storages, 2 indexed DBs, 3 filesystems, "
@@ -191,17 +162,8 @@ class CookiesTreeModelTest : public testing::Test {
       // sbc1 -> sbcerts -> sbc1,
       // sbc2 -> sbcerts -> sbc2.
       // xyz.com -> flash_lsos
-      if (!add_app) {
-        EXPECT_EQ(53, cookies_model->GetRoot()->GetTotalNodeCount());
-        EXPECT_EQ("A,B,C", GetDisplayedCookies(cookies_model));
-      } else {
-        // Once we add the app, we have 9 more nodes:
-        // app-origin1 -> cookies -> z,
-        // app-origin2 -> cookies -> y,
-        // app-origin3 -> cookies -> x,
-        EXPECT_EQ(62, cookies_model->GetRoot()->GetTotalNodeCount());
-        EXPECT_EQ("A,B,C,Z,Y,X", GetDisplayedCookies(cookies_model));
-      }
+      EXPECT_EQ(53, cookies_model->GetRoot()->GetTotalNodeCount());
+      EXPECT_EQ("A,B,C", GetDisplayedCookies(cookies_model));
       EXPECT_EQ("db1,db2", GetDisplayedDatabases(cookies_model));
       EXPECT_EQ("http://host1:1/,http://host2:2/",
                 GetDisplayedLocalStorages(cookies_model));
@@ -405,16 +367,12 @@ class CookiesTreeModelTest : public testing::Test {
   scoped_refptr<MockBrowsingDataFlashLSOHelper>
       mock_browsing_data_flash_lso_helper_;
 
-  // App helpers.
-  scoped_refptr<MockBrowsingDataCookieHelper>
-      mock_browsing_data_cookie_helper_app_;
-
   scoped_refptr<ExtensionSpecialStoragePolicy> special_storage_policy_;
 };
 
 TEST_F(CookiesTreeModelTest, RemoveAll) {
   scoped_ptr<CookiesTreeModel> cookies_model(
-      CreateCookiesTreeModelWithInitialSample(false));
+      CreateCookiesTreeModelWithInitialSample());
 
   // Reset the selection of the first row.
   {
@@ -471,7 +429,7 @@ TEST_F(CookiesTreeModelTest, RemoveAll) {
 
 TEST_F(CookiesTreeModelTest, Remove) {
   scoped_ptr<CookiesTreeModel> cookies_model(
-      CreateCookiesTreeModelWithInitialSample(false));
+      CreateCookiesTreeModelWithInitialSample());
 
   // Children start out arranged as follows:
   //
@@ -734,7 +692,7 @@ TEST_F(CookiesTreeModelTest, Remove) {
 
 TEST_F(CookiesTreeModelTest, RemoveCookiesNode) {
   scoped_ptr<CookiesTreeModel> cookies_model(
-      CreateCookiesTreeModelWithInitialSample(false));
+      CreateCookiesTreeModelWithInitialSample());
 
   DeleteStoredObjects(
       cookies_model->GetRoot()->GetChild(0)->GetChild(0));
@@ -798,7 +756,7 @@ TEST_F(CookiesTreeModelTest, RemoveCookiesNode) {
 
 TEST_F(CookiesTreeModelTest, RemoveCookieNode) {
   scoped_ptr<CookiesTreeModel> cookies_model(
-      CreateCookiesTreeModelWithInitialSample(false));
+      CreateCookiesTreeModelWithInitialSample());
 
   DeleteStoredObjects(
       cookies_model->GetRoot()->GetChild(1)->GetChild(0));
@@ -861,10 +819,7 @@ TEST_F(CookiesTreeModelTest, RemoveCookieNode) {
 }
 
 TEST_F(CookiesTreeModelTest, RemoveSingleCookieNode) {
-  ContainerMap container_map;
-
-  container_map[std::string()] = new LocalDataContainer(
-      "Drive-By-Web", std::string(),
+  LocalDataContainer* container = new LocalDataContainer(
       mock_browsing_data_cookie_helper_,
       mock_browsing_data_database_helper_,
       mock_browsing_data_local_storage_helper_,
@@ -875,7 +830,7 @@ TEST_F(CookiesTreeModelTest, RemoveSingleCookieNode) {
       mock_browsing_data_quota_helper_,
       mock_browsing_data_server_bound_cert_helper_,
       mock_browsing_data_flash_lso_helper_);
-  CookiesTreeModel cookies_model(container_map, special_storage_policy_, false);
+  CookiesTreeModel cookies_model(container, special_storage_policy_, false);
 
   mock_browsing_data_cookie_helper_->
       AddCookieSamples(GURL("http://foo1"), "A=1");
@@ -952,10 +907,7 @@ TEST_F(CookiesTreeModelTest, RemoveSingleCookieNode) {
 }
 
 TEST_F(CookiesTreeModelTest, RemoveSingleCookieNodeOf3) {
-  ContainerMap container_map;
-
-  container_map[std::string()] = new LocalDataContainer(
-      "Drive-By-Web", std::string(),
+  LocalDataContainer* container = new LocalDataContainer(
       mock_browsing_data_cookie_helper_,
       mock_browsing_data_database_helper_,
       mock_browsing_data_local_storage_helper_,
@@ -966,7 +918,7 @@ TEST_F(CookiesTreeModelTest, RemoveSingleCookieNodeOf3) {
       mock_browsing_data_quota_helper_,
       mock_browsing_data_server_bound_cert_helper_,
       mock_browsing_data_flash_lso_helper_);
-  CookiesTreeModel cookies_model(container_map, special_storage_policy_,false);
+  CookiesTreeModel cookies_model(container, special_storage_policy_,false);
 
   mock_browsing_data_cookie_helper_->
       AddCookieSamples(GURL("http://foo1"), "A=1");
@@ -1046,10 +998,7 @@ TEST_F(CookiesTreeModelTest, RemoveSingleCookieNodeOf3) {
 }
 
 TEST_F(CookiesTreeModelTest, RemoveSecondOrigin) {
-  ContainerMap container_map;
-
-  container_map[std::string()] = new LocalDataContainer(
-      "Drive-By-Web", std::string(),
+  LocalDataContainer* container = new LocalDataContainer(
       mock_browsing_data_cookie_helper_,
       mock_browsing_data_database_helper_,
       mock_browsing_data_local_storage_helper_,
@@ -1060,7 +1009,7 @@ TEST_F(CookiesTreeModelTest, RemoveSecondOrigin) {
       mock_browsing_data_quota_helper_,
       mock_browsing_data_server_bound_cert_helper_,
       mock_browsing_data_flash_lso_helper_);
-  CookiesTreeModel cookies_model(container_map, special_storage_policy_,false);
+  CookiesTreeModel cookies_model(container, special_storage_policy_,false);
 
   mock_browsing_data_cookie_helper_->
       AddCookieSamples(GURL("http://foo1"), "A=1");
@@ -1091,10 +1040,7 @@ TEST_F(CookiesTreeModelTest, RemoveSecondOrigin) {
 }
 
 TEST_F(CookiesTreeModelTest, OriginOrdering) {
-  ContainerMap container_map;
-
-  container_map[std::string()] = new LocalDataContainer(
-      "Drive-By-Web", std::string(),
+  LocalDataContainer* container = new LocalDataContainer(
       mock_browsing_data_cookie_helper_,
       mock_browsing_data_database_helper_,
       mock_browsing_data_local_storage_helper_,
@@ -1105,7 +1051,7 @@ TEST_F(CookiesTreeModelTest, OriginOrdering) {
       mock_browsing_data_quota_helper_,
       mock_browsing_data_server_bound_cert_helper_,
       mock_browsing_data_flash_lso_helper_);
-  CookiesTreeModel cookies_model(container_map, special_storage_policy_, false);
+  CookiesTreeModel cookies_model(container, special_storage_policy_, false);
 
   mock_browsing_data_cookie_helper_->
       AddCookieSamples(GURL("http://a.foo2.com"), "A=1");
@@ -1141,12 +1087,7 @@ TEST_F(CookiesTreeModelTest, OriginOrdering) {
 
 TEST_F(CookiesTreeModelTest, ContentSettings) {
   GURL host("http://xyz.com/");
-  std::string name = "Drive-By-Web";
-  std::string browser_id;
-  ContainerMap container_map;
-
-  container_map[browser_id] = new LocalDataContainer(
-      name, browser_id,
+  LocalDataContainer* container = new LocalDataContainer(
       mock_browsing_data_cookie_helper_,
       mock_browsing_data_database_helper_,
       mock_browsing_data_local_storage_helper_,
@@ -1157,7 +1098,7 @@ TEST_F(CookiesTreeModelTest, ContentSettings) {
       mock_browsing_data_quota_helper_,
       mock_browsing_data_server_bound_cert_helper_,
       mock_browsing_data_flash_lso_helper_);
-  CookiesTreeModel cookies_model(container_map, special_storage_policy_, false);
+  CookiesTreeModel cookies_model(container, special_storage_policy_, false);
 
   mock_browsing_data_cookie_helper_->AddCookieSamples(host, "A=1");
   mock_browsing_data_cookie_helper_->Notify();
@@ -1172,7 +1113,7 @@ TEST_F(CookiesTreeModelTest, ContentSettings) {
   CookieTreeRootNode* root =
       static_cast<CookieTreeRootNode*>(cookies_model.GetRoot());
   CookieTreeHostNode* origin =
-      root->GetOrCreateHostNode(host, browser_id, name);
+      root->GetOrCreateHostNode(host);
 
   EXPECT_EQ(1, origin->child_count());
   EXPECT_TRUE(origin->CanCreateContentException());
@@ -1197,19 +1138,9 @@ TEST_F(CookiesTreeModelTest, ContentSettings) {
   EXPECT_TRUE(cookie_settings->IsCookieSessionOnly(host));
 }
 
-TEST_F(CookiesTreeModelTest, AppOriginTitle) {
-  scoped_ptr<CookiesTreeModel> cookies_model(
-      CreateCookiesTreeModelWithInitialSample(true));
-
-  EXPECT_EQ(ASCIIToUTF16("Isolated App, app-origin1"),
-      cookies_model->GetRoot()->GetChild(17)->GetTitle());
-  EXPECT_EQ(ASCIIToUTF16("Isolated App, app-origin2"),
-      cookies_model->GetRoot()->GetChild(18)->GetTitle());
-}
-
 TEST_F(CookiesTreeModelTest, FileSystemFilter) {
   scoped_ptr<CookiesTreeModel> cookies_model(
-      CreateCookiesTreeModelWithInitialSample(false));
+      CreateCookiesTreeModelWithInitialSample());
 
   cookies_model->UpdateSearchResults(ASCIIToUTF16("fshost1"));
   EXPECT_EQ("http://fshost1:1/",
@@ -1229,10 +1160,7 @@ TEST_F(CookiesTreeModelTest, FileSystemFilter) {
 }
 
 TEST_F(CookiesTreeModelTest, CookiesFilter) {
-  ContainerMap container_map;
-
-  container_map[std::string()] = new LocalDataContainer(
-      "Drive-By-Web", std::string(),
+  LocalDataContainer* container = new LocalDataContainer(
       mock_browsing_data_cookie_helper_,
       mock_browsing_data_database_helper_,
       mock_browsing_data_local_storage_helper_,
@@ -1243,7 +1171,7 @@ TEST_F(CookiesTreeModelTest, CookiesFilter) {
       mock_browsing_data_quota_helper_,
       mock_browsing_data_server_bound_cert_helper_,
       mock_browsing_data_flash_lso_helper_);
-  CookiesTreeModel cookies_model(container_map, special_storage_policy_, false);
+  CookiesTreeModel cookies_model(container, special_storage_policy_, false);
 
   mock_browsing_data_cookie_helper_->
       AddCookieSamples(GURL("http://123.com"), "A=1");

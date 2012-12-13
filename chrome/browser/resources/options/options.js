@@ -13,7 +13,6 @@ var ConfirmDialog = options.ConfirmDialog;
 var ContentSettingsExceptionsArea =
     options.contentSettings.ContentSettingsExceptionsArea;
 var ContentSettings = options.ContentSettings;
-var CookiesViewApp = options.CookiesViewApp;
 var CookiesView = options.CookiesView;
 var EditDictionaryOverlay = cr.IsMac ? null : options.EditDictionaryOverlay;
 var FactoryResetOverlay = options.FactoryResetOverlay;
@@ -118,9 +117,6 @@ function load() {
                               ContentSettings.getInstance(),
                               [$('privacyContentSettingsButton'),
                                $('show-cookies-button')]);
-  OptionsPage.registerOverlay(CookiesViewApp.getInstance(),
-                              ContentSettings.getInstance(),
-                              [$('privacyContentSettingsButton')]);
   if (!cr.isMac) {
     OptionsPage.registerOverlay(EditDictionaryOverlay.getInstance(),
                                 LanguageOptions.getInstance(),

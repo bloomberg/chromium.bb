@@ -8507,9 +8507,6 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_COOKIES_SHOW_COOKIES_BUTTON" desc="A button in the Content Settings dialog for showing cookies and other stored site data.">
         All cookies and site data...
       </message>
-      <message name="IDS_COOKIES_SHOW_APP_COOKIES_BUTTON" desc="A button in the Content Settings dialog for showing apps cookies and other stored data.">
-        Application data...
-      </message>
       <message name="IDS_HANDLERS_MANAGE" desc="The label on the button that launches the exceptions management page for a given content type">
         Manage handlers...
       </message>
@@ -11140,9 +11137,6 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       <!-- Cookies Window -->
       <message name="IDS_COOKIES_WEBSITE_PERMISSIONS_WINDOW_TITLE" desc="The title of the redesigned Cookies Window that lets you manage cookies, storage quota for websites and other permissions per-website">
         Cookies and site data
-      </message>
-      <message name="IDS_APP_COOKIES_WEBSITE_PERMISSIONS_WINDOW_TITLE" desc="The title of the redesigned Cookies Window that lets you manage cookies, storage quota for websites and other permissions per-website, for each isolated app">
-        App cookies and data
       </message>
       <message name="IDS_COOKIES_SEARCH_COOKIES" desc="Placeholder text shown in the search box in the Cookies Window">
         Search cookies

@@ -196,17 +196,3 @@ list.cookie-list > .deletable-item[selected] .cookie-details {
 .cookie-details-value {
   word-wrap: break-word;
 }
-
-
-/* Styles specific to the app cookies window */
-#app-cookies-site-column {
-  width: 20em;
-}
-
-.app-cookie-site {
-  width: 20em;
-}
-
-.app-cookie-items {
-  -webkit-margin-start: 20em;
-}

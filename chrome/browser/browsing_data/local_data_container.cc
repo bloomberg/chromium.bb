@@ -16,8 +16,6 @@
 // LocalDataContainer, public:
 
 LocalDataContainer::LocalDataContainer(
-    const std::string& app_name,
-    const std::string& app_id,
     BrowsingDataCookieHelper* cookie_helper,
     BrowsingDataDatabaseHelper* database_helper,
     BrowsingDataLocalStorageHelper* local_storage_helper,
@@ -28,9 +26,7 @@ LocalDataContainer::LocalDataContainer(
     BrowsingDataQuotaHelper* quota_helper,
     BrowsingDataServerBoundCertHelper* server_bound_cert_helper,
     BrowsingDataFlashLSOHelper* flash_lso_helper)
-    : app_name_(app_name),
-      app_id_(app_id),
-      appcache_helper_(appcache_helper),
+    : appcache_helper_(appcache_helper),
       cookie_helper_(cookie_helper),
       database_helper_(database_helper),
       local_storage_helper_(local_storage_helper),

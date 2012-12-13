@@ -71,7 +71,6 @@
 <include src="content_settings_ui.js"></include>
 <include src="cookies_list.js"></include>
 <include src="cookies_view.js"></include>
-<include src="cookies_view_app.js"></include>
 <include src="factory_reset_overlay.js"></include>
 <include src="managed_user_settings.js"></include>
 <include src="font_settings.js"></include>

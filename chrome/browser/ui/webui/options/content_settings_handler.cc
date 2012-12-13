@@ -350,7 +350,6 @@ void ContentSettingsHandler::GetLocalizedValues(
     { "cookies_clear_when_close", IDS_COOKIES_CLEAR_WHEN_CLOSE_CHKBOX },
     { "cookies_lso_clear_when_close", IDS_COOKIES_LSO_CLEAR_WHEN_CLOSE_CHKBOX },
     { "cookies_show_cookies", IDS_COOKIES_SHOW_COOKIES_BUTTON },
-    { "cookies_show_app_cookies", IDS_COOKIES_SHOW_APP_COOKIES_BUTTON },
     { "flash_storage_settings", IDS_FLASH_STORAGE_SETTINGS },
     { "flash_storage_url", IDS_FLASH_STORAGE_URL },
     // Image filter.

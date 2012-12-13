@@ -60,32 +60,15 @@ class CookiesViewHandler : public OptionsPageUIHandler,
   // update the WebUI.
   void SendChildren(const CookieTreeNode* parent);
 
-  // Set the context in which this view is used - regular cookies window or
-  // the apps cookies window.
-  void SetViewContext(const base::ListValue* args);
-
   // Reloads the CookiesTreeModel and passes the nodes to
   // 'CookiesView.loadChildren' to update the WebUI.
   void ReloadCookies(const base::ListValue* args);
 
-  // Return the proper callback string, depending on whether the model is
-  // in regular cookies mode or apps cookies mode.
-  std::string GetCallback(std::string method, CookiesTreeModel* model);
-
-  // Return the proper tree model, depending on the context in which the
-  // view operates.
-  CookiesTreeModel* GetTreeModel();
-
   // The Cookies Tree model
   scoped_ptr<CookiesTreeModel> cookies_tree_model_;
-  scoped_ptr<CookiesTreeModel> app_cookies_tree_model_;
 
   // Flag to indicate whether there is a batch update in progress.
   bool batch_update_;
-
-  // A flag to indicate which view is active - the apps dialog or the regular
-  // cookies one. This will cause different JavaScript functions to be called.
-  bool app_context_;
 
   scoped_ptr<CookiesTreeModelUtil> model_util_;
 

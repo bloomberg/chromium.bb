@@ -183,9 +183,7 @@ size_t LocalSharedObjectsContainer::GetObjectCountForDomain(
 
 scoped_ptr<CookiesTreeModel>
 LocalSharedObjectsContainer::CreateCookiesTreeModel() const {
-  ContainerMap apps_map;
-  apps_map[std::string()] = new LocalDataContainer(
-      std::string(), std::string(),
+  LocalDataContainer* container = new LocalDataContainer(
       cookies()->Clone(),
       databases()->Clone(),
       local_storages()->Clone(),
@@ -197,5 +195,5 @@ LocalSharedObjectsContainer::CreateCookiesTreeModel() const {
       server_bound_certs()->Clone(),
       NULL);
 
-  return make_scoped_ptr(new CookiesTreeModel(apps_map, NULL, true));
+  return make_scoped_ptr(new CookiesTreeModel(container, NULL, true));
 }
