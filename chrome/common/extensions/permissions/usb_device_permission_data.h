@@ -27,9 +27,11 @@ class UsbDevicePermissionData {
   bool operator==(const UsbDevicePermissionData& rhs) const;
 
   const uint16& vendor_id() const { return vendor_id_; }
-  uint16& vendor_id() { return vendor_id_; }
-
   const uint16& product_id() const { return product_id_; }
+
+  // These accessors are provided for IPC_STRUCT_TRAITS_MEMBER.  Please
+  // think twice before using them for anything else.
+  uint16& vendor_id() { return vendor_id_; }
   uint16& product_id() { return product_id_; }
 
  private:

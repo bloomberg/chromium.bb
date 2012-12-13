@@ -241,6 +241,18 @@ const std::string& SocketPermissionData::GetAsString() const {
   return spec_;
 }
 
+content::SocketPermissionRequest& SocketPermissionData::pattern() {
+  // Clear the spec because the caller could mutate |this|.
+  spec_.clear();
+  return pattern_;
+}
+
+bool& SocketPermissionData::match_subdomains() {
+  // Clear the spec because the caller could mutate |this|.
+  spec_.clear();
+  return match_subdomains_;
+}
+
 void SocketPermissionData::Reset() {
   pattern_.type = SocketPermissionRequest::NONE;
   pattern_.host.clear();

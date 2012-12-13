@@ -51,6 +51,14 @@ class SocketPermissionData {
 
   const std::string& GetAsString() const;
 
+  const content::SocketPermissionRequest& pattern() const { return pattern_; }
+  const bool& match_subdomains() const { return match_subdomains_; }
+
+  // These accessors are provided for IPC_STRUCT_TRAITS_MEMBER.  Please
+  // think twice before using them for anything else.
+  content::SocketPermissionRequest& pattern();
+  bool& match_subdomains();
+
  private:
   void Reset();
 

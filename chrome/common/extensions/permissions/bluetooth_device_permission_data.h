@@ -31,8 +31,11 @@ class BluetoothDevicePermissionData {
   bool operator<(const BluetoothDevicePermissionData& rhs) const;
   bool operator==(const BluetoothDevicePermissionData& rhs) const;
 
-  std::string& device_address() { return device_address_; }
   const std::string& device_address() const { return device_address_; }
+
+  // This accessor is provided for IPC_STRUCT_TRAITS_MEMBER.  Please
+  // think twice before using it for anything else.
+  std::string& device_address() { return device_address_; }
 
  private:
   std::string device_address_;

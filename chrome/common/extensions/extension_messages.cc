@@ -16,7 +16,6 @@ using extensions::APIPermissionMap;
 using extensions::APIPermissionSet;
 using extensions::Extension;
 using extensions::PermissionSet;
-using extensions::SocketPermissionData;
 using extensions::URLPatternSet;
 
 ExtensionMsg_Loaded_Params::ExtensionMsg_Loaded_Params()
@@ -186,25 +185,6 @@ bool ParamTraits<APIPermissionSet>::Read(
 void ParamTraits<APIPermissionSet>::Log(
     const param_type& p, std::string* l) {
   LogParam(p.map(), l);
-}
-
-void ParamTraits<SocketPermissionData>::Write(
-    Message* m, const param_type& p) {
-  WriteParam(m, p.GetAsString());
-}
-
-bool ParamTraits<SocketPermissionData>::Read(
-    const Message* m, PickleIterator* iter, param_type* r) {
-  std::string spec;
-  if (!ReadParam(m, iter, &spec))
-    return false;
-
-  return r->Parse(spec);
-}
-
-void ParamTraits<SocketPermissionData>::Log(
-    const param_type& p, std::string* l) {
-  LogParam(std::string("<SocketPermissionData>"), l);
 }
 
 void ParamTraits<ExtensionMsg_Loaded_Params>::Write(Message* m,

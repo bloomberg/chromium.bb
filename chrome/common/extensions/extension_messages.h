@@ -16,6 +16,7 @@
 #include "chrome/common/view_type.h"
 #include "chrome/common/web_apps.h"
 #include "content/public/common/common_param_traits.h"
+#include "content/public/common/socket_permission_request.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
 #include "googleurl/src/gurl.h"
@@ -105,6 +106,19 @@ IPC_STRUCT_TRAITS_BEGIN(extensions::DraggableRegion)
   IPC_STRUCT_TRAITS_MEMBER(bounds)
 IPC_STRUCT_TRAITS_END()
 
+IPC_ENUM_TRAITS(content::SocketPermissionRequest::OperationType)
+
+IPC_STRUCT_TRAITS_BEGIN(content::SocketPermissionRequest)
+  IPC_STRUCT_TRAITS_MEMBER(type)
+  IPC_STRUCT_TRAITS_MEMBER(host)
+  IPC_STRUCT_TRAITS_MEMBER(port)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(extensions::SocketPermissionData)
+  IPC_STRUCT_TRAITS_MEMBER(pattern())
+  IPC_STRUCT_TRAITS_MEMBER(match_subdomains())
+IPC_STRUCT_TRAITS_END()
+
 IPC_STRUCT_TRAITS_BEGIN(extensions::BluetoothDevicePermissionData)
   IPC_STRUCT_TRAITS_MEMBER(device_address())
 IPC_STRUCT_TRAITS_END()
@@ -191,14 +205,6 @@ struct ParamTraits<extensions::APIPermission*> {
 template <>
 struct ParamTraits<extensions::APIPermissionSet> {
   typedef extensions::APIPermissionSet param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<extensions::SocketPermissionData> {
-  typedef extensions::SocketPermissionData param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
