@@ -27,6 +27,11 @@ MAX_PERMANENT_ERROR_EXIT_CODE=105
 MINIMUM_RELAUNCH_INTERVAL=60
 MAXIMUM_HOST_FAILURES=10
 
+# Exit code 126 is defined by Posix to mean "Command found, but not
+# executable", and is returned if the process cannot be launched due to
+# parental control.
+PERMISSION_DENIED_PARENTAL_CONTROL=126
+
 HOST_PID=0
 SIGNAL_WAS_TRAPPED=0
 
@@ -93,6 +98,7 @@ run_host() {
         kill -$SIGNAL "$HOST_PID"
       elif [[ "$EXIT_CODE" -eq "0" ||
               "$EXIT_CODE" -eq "$SIGTERM_EXIT_CODE" ||
+              "$EXIT_CODE" -eq "$PERMISSION_DENIED_PARENTAL_CONTROL" ||
               ("$EXIT_CODE" -ge "$MIN_PERMANENT_ERROR_EXIT_CODE" && \
               "$EXIT_CODE" -le "$MAX_PERMANENT_ERROR_EXIT_CODE") ]]; then
         echo "Host returned permanent exit code $EXIT_CODE"
