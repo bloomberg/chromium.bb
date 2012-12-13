@@ -78,7 +78,7 @@ Later modifications (see chromium.patch):
 
 - Guarded all usage of EGL_Y_INVERTED_NOK with EGL_NOK_texture_from_pixmap
   so that it can be compiled against standard EGL 1.4 headers.
-  
+
 - Initialized uninitialized mask variable in eglconfig.c line 245.
 
 - Fixed compiler warning about cast to pointer from integer of different size
@@ -107,10 +107,12 @@ Later modifications (see chromium.patch):
   ir_to_mesa.cpp
   https://code.google.com/p/chromium/issues/detail?id=139772
   https://bugs.freedesktop.org/show_bug.cgi?id=52996
+  https://codereview.chromium.org/11549005/
 
 - Suppressed the OOB read reported by AddressSanitizer in _mesa_add_parameter
   from prog_parameter.c
   http://code.google.com/p/chromium/issues/detail?id=142316
+  https://codereview.chromium.org/11549005/
 
 - Fix the compile errors on Android
 
