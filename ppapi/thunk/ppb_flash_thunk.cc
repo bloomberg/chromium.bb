@@ -22,10 +22,10 @@ namespace thunk {
 namespace {
 
 void SetInstanceAlwaysOnTop(PP_Instance instance, PP_Bool on_top) {
-  EnterInstanceAPI<PPB_Flash_Functions_API> enter(instance);
+  EnterInstance enter(instance);
   if (enter.failed())
     return;
-  enter.functions()->SetInstanceAlwaysOnTop(instance, on_top);
+  enter.functions()->GetFlashAPI()->SetInstanceAlwaysOnTop(instance, on_top);
 }
 
 PP_Bool DrawGlyphs(PP_Instance instance,
@@ -39,10 +39,10 @@ PP_Bool DrawGlyphs(PP_Instance instance,
                    uint32_t glyph_count,
                    const uint16_t glyph_indices[],
                    const PP_Point glyph_advances[]) {
-  EnterInstanceAPI<PPB_Flash_Functions_API> enter(instance);
+  EnterInstance enter(instance);
   if (enter.failed())
     return PP_FALSE;
-  return enter.functions()->DrawGlyphs(
+  return enter.functions()->GetFlashAPI()->DrawGlyphs(
       instance, pp_image_data, font_desc, color, position, clip, transformation,
       allow_subpixel_aa, glyph_count, glyph_indices, glyph_advances);
 }
@@ -67,11 +67,11 @@ int32_t Navigate(PP_Resource request_id,
     instance = enter.resource()->pp_instance();
   }
 
-  EnterInstanceAPI<PPB_Flash_Functions_API> enter(instance);
+  EnterInstance enter(instance);
   if (enter.failed())
     return PP_ERROR_BADARGUMENT;
-  return enter.functions()->Navigate(instance, request_id, target,
-                                     from_user_action);
+  return enter.functions()->GetFlashAPI()->Navigate(instance, request_id,
+                                                    target, from_user_action);
 }
 
 void RunMessageLoop(PP_Instance instance) {
@@ -107,10 +107,10 @@ void PreLoadFontWin(const void* logfontw) {
 }
 
 PP_Bool IsRectTopmost(PP_Instance instance, const PP_Rect* rect) {
-  EnterInstanceAPI<PPB_Flash_Functions_API> enter(instance);
+  EnterInstance enter(instance);
   if (enter.failed())
     return PP_FALSE;
-  return enter.functions()->IsRectTopmost(instance, rect);
+  return enter.functions()->GetFlashAPI()->IsRectTopmost(instance, rect);
 }
 
 int32_t InvokePrinting(PP_Instance instance) {

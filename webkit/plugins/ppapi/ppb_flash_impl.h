@@ -22,8 +22,32 @@ class PPB_Flash_Impl : public ::ppapi::thunk::PPB_Flash_API {
   virtual ~PPB_Flash_Impl();
 
   // PPB_Flash_API.
+  virtual void SetInstanceAlwaysOnTop(PP_Instance instance,
+                                      PP_Bool on_top) OVERRIDE;
+  virtual PP_Bool DrawGlyphs(
+      PP_Instance instance,
+      PP_Resource pp_image_data,
+      const PP_BrowserFont_Trusted_Description* font_desc,
+      uint32_t color,
+      const PP_Point* position,
+      const PP_Rect* clip,
+      const float transformation[3][3],
+      PP_Bool allow_subpixel_aa,
+      uint32_t glyph_count,
+      const uint16_t glyph_indices[],
+      const PP_Point glyph_advances[]) OVERRIDE;
+  virtual int32_t Navigate(PP_Instance instance,
+                           PP_Resource request_info,
+                           const char* target,
+                           PP_Bool from_user_action) OVERRIDE;
+  virtual int32_t Navigate(PP_Instance instance,
+                           const ::ppapi::URLRequestInfoData& data,
+                           const char* target,
+                           PP_Bool from_user_action) OVERRIDE;
   virtual double GetLocalTimeZoneOffset(PP_Instance instance,
                                         PP_Time t) OVERRIDE;
+  virtual PP_Bool IsRectTopmost(PP_Instance instance,
+                                const PP_Rect* rect) OVERRIDE;
   virtual PP_Var GetSetting(PP_Instance instance,
                             PP_FlashSetting setting) OVERRIDE;
 

@@ -10,14 +10,15 @@
 #include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/proxy/connection.h"
 #include "ppapi/proxy/plugin_resource.h"
+#include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/thunk/ppb_flash_functions_api.h"
 
 namespace ppapi {
 namespace proxy {
 
-class FlashResource
+class PPAPI_PROXY_EXPORT FlashResource
     : public PluginResource,
-      public thunk::PPB_Flash_Functions_API {
+      public NON_EXPORTED_BASE(thunk::PPB_Flash_Functions_API) {
  public:
   FlashResource(Connection connection, PP_Instance instance);
   virtual ~FlashResource();
@@ -32,27 +33,6 @@ class FlashResource
   virtual PP_Bool SetCrashData(PP_Instance instance,
                                PP_FlashCrashKey key,
                                PP_Var value) OVERRIDE;
-  virtual void SetInstanceAlwaysOnTop(PP_Instance instance,
-                                      PP_Bool on_top) OVERRIDE;
-  virtual PP_Bool DrawGlyphs(
-      PP_Instance instance,
-      PP_Resource pp_image_data,
-      const PP_BrowserFont_Trusted_Description* font_desc,
-      uint32_t color,
-      const PP_Point* position,
-      const PP_Rect* clip,
-      const float transformation[3][3],
-      PP_Bool allow_subpixel_aa,
-      uint32_t glyph_count,
-      const uint16_t glyph_indices[],
-      const PP_Point glyph_advances[]) OVERRIDE;
-  virtual int32_t Navigate(PP_Instance instance,
-                           PP_Resource request_info,
-                           const char* target,
-                           PP_Bool from_user_action) OVERRIDE;
-  virtual PP_Bool IsRectTopmost(PP_Instance instance,
-                                const PP_Rect* rect) OVERRIDE;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(FlashResource);
 };
