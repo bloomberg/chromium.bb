@@ -417,6 +417,13 @@ void RenderWidgetHostViewAndroid::AcceleratedSurfaceBuffersSwapped(
       texture_id_in_layer_,
       reinterpret_cast<const signed char*>(
           id_to_mailbox_[current_buffer_id_].c_str()));
+
+  // We need to tell ContentViewCore about the new frame before calling
+  // setNeedsDisplay() below so that it has the needed information schedule the
+  // next compositor frame.
+  if (content_view_core_)
+    content_view_core_->DidProduceRendererFrame();
+
   texture_layer_->setNeedsDisplay();
   texture_layer_->setBounds(params.size);
   texture_size_in_layer_ = params.size;

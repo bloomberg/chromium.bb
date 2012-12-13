@@ -151,6 +151,7 @@ ContentViewCoreImpl::ContentViewCoreImpl(JNIEnv* env, jobject obj,
       root_layer_(cc::Layer::create()),
       tab_crashed_(false),
       input_events_delivered_at_vsync_(input_events_delivered_at_vsync),
+      renderer_frame_pending_(false),
       window_android_(window_android) {
   CHECK(web_contents) <<
       "A ContentViewCoreImpl should be created with a valid WebContents.";
@@ -609,6 +610,10 @@ void ContentViewCoreImpl::AttachLayer(scoped_refptr<cc::Layer> layer) {
 
 void ContentViewCoreImpl::RemoveLayer(scoped_refptr<cc::Layer> layer) {
   layer->removeFromParent();
+}
+
+void ContentViewCoreImpl::DidProduceRendererFrame() {
+  renderer_frame_pending_ = true;
 }
 
 void ContentViewCoreImpl::LoadUrl(
@@ -1102,6 +1107,13 @@ void ContentViewCoreImpl::ShowInterstitialPage(
 jboolean ContentViewCoreImpl::IsShowingInterstitialPage(JNIEnv* env,
                                                         jobject obj) {
   return web_contents_->ShowingInterstitialPage();
+}
+
+jboolean ContentViewCoreImpl::ConsumePendingRendererFrame(JNIEnv* env,
+                                                          jobject obj) {
+  bool had_pending_frame = renderer_frame_pending_;
+  renderer_frame_pending_ = false;
+  return had_pending_frame;
 }
 
 jboolean ContentViewCoreImpl::IsRenderWidgetHostViewReady(JNIEnv* env,

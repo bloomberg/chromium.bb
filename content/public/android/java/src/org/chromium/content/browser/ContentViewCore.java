@@ -773,6 +773,16 @@ public class ContentViewCore implements MotionEventDelegate {
                 false : nativeIsShowingInterstitialPage(mNativeContentViewCore);
     }
 
+    /**
+     * Indicate that the browser compositor has consumed a pending renderer frame.
+     *
+     * @return Whether there was a pending renderer frame.
+     */
+    public boolean consumePendingRendererFrame() {
+        return mNativeContentViewCore == 0 ?
+                false : nativeConsumePendingRendererFrame(mNativeContentViewCore);
+    }
+
     @CalledByNative
     public int getWidth() {
         return mViewportWidth;
@@ -2394,6 +2404,8 @@ public class ContentViewCore implements MotionEventDelegate {
     private native void nativeShowInterstitialPage(
             int nativeContentViewCoreImpl, String url, int nativeInterstitialPageDelegateAndroid);
     private native boolean nativeIsShowingInterstitialPage(int nativeContentViewCoreImpl);
+
+    private native boolean nativeConsumePendingRendererFrame(int nativeContentViewCoreImpl);
 
     private native boolean nativeIsIncognito(int nativeContentViewCoreImpl);
 

@@ -192,6 +192,8 @@ class ContentViewCoreImpl : public ContentViewCore,
                             jint delegate);
   jboolean IsShowingInterstitialPage(JNIEnv* env, jobject obj);
 
+  jboolean ConsumePendingRendererFrame(JNIEnv* env, jobject obj);
+
   // --------------------------------------------------------------------------
   // Public methods that call to Java via JNI
   // --------------------------------------------------------------------------
@@ -239,6 +241,7 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   void AttachLayer(scoped_refptr<cc::Layer> layer);
   void RemoveLayer(scoped_refptr<cc::Layer> layer);
+  void DidProduceRendererFrame();
 
  private:
   class ContentViewUserData;
@@ -290,6 +293,10 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   // Whether input events will be consistently delivered at vsync time.
   bool input_events_delivered_at_vsync_;
+
+  // Whether a new frame from the renderer is waiting to be displayed by the
+  // browser compositor.
+  bool renderer_frame_pending_;
 
   float dpi_scale_;
 
