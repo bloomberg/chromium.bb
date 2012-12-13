@@ -698,10 +698,10 @@ Press any key to continue exploring.
     Resolution:
   </message>
   <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_START_CALIBRATING_OVERSCAN" desc="Label to start calibrating the overscan preference.">
-    Start overscan calibration
+    TV alignment
   </message>
   <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_FINISH_CALIBRATING_OVERSCAN" desc="Label to finish calibrating the overscan preference.">
-    Finish calibration
+    Finish alignment
   </message>
   <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_CLEAR_CALIBRATING_OVERSCAN" desc="Label to clear the current overscan preference.">
     Clear
