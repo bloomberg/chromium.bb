@@ -269,6 +269,9 @@ class ASH_EXPORT LauncherView : public views::View,
 
   ShelfGestureHandler gesture_handler_;
 
+  // True when an item being inserted or removed in the model cancels a drag.
+  bool cancelling_drag_model_changed_;
+
   DISALLOW_COPY_AND_ASSIGN(LauncherView);
 };
 

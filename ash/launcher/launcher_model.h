@@ -47,6 +47,10 @@ class ASH_EXPORT LauncherModel {
   // Returns the index of the item by id.
   int ItemIndexByID(int id) const;
 
+  // Returns the index of the first panel or the index where the first panel
+  // would go if there are no panels.
+  int FirstPanelIndex() const;
+
   // Returns the id assigned to the next item added.
   LauncherID next_id() const { return next_id_; }
 
