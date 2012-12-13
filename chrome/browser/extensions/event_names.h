@@ -95,6 +95,10 @@ extern const char kOnSystemIndicatorClicked[];
 extern const char kOnSyncStateChanged[];
 extern const char kOnFileSynced[];
 
+// MediaGalleriesPrivate.
+extern const char kOnAttachEventName[];
+extern const char kOnDetachEventName[];
+
 }  // namespace event_names
 
 }  // namespace extensions

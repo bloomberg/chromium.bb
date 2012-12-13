@@ -35,7 +35,6 @@
 #include "chrome/browser/extensions/api/app_runtime/app_runtime_api.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
 #include "chrome/browser/extensions/api/extension_action/extension_actions_api.h"
-#include "chrome/browser/extensions/api/media_galleries_private/media_galleries_private_event_router.h"
 #include "chrome/browser/extensions/api/push_messaging/push_messaging_api.h"
 #include "chrome/browser/extensions/api/runtime/runtime_api.h"
 #include "chrome/browser/extensions/app_notification_manager.h"
@@ -528,8 +527,6 @@ void ExtensionService::InitEventRouters() {
       BookmarkModelFactory::GetForProfile(profile_)));
   push_messaging_event_router_.reset(
       new extensions::PushMessagingEventRouter(profile_));
-  media_galleries_private_event_router_.reset(
-      new extensions::MediaGalleriesPrivateEventRouter(profile_));
 
 #if defined(OS_CHROMEOS)
   FileBrowserEventRouterFactory::GetForProfile(

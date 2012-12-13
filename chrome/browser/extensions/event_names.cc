@@ -83,6 +83,9 @@ const char kOnSystemIndicatorClicked[] = "systemIndicator.onClicked";
 const char kOnSyncStateChanged[] = "syncFileSystem.onSyncStateChanged";
 const char kOnFileSynced[] = "syncFileSystem.onFileSynced";
 
+const char kOnAttachEventName[] = "mediaGalleriesPrivate.onDeviceAttached";
+const char kOnDetachEventName[] = "mediaGalleriesPrivate.onDeviceDetached";
+
 }  // namespace event_names
 
 }  // namespace extensions

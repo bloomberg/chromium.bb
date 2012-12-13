@@ -23,6 +23,7 @@
 #include "chrome/browser/extensions/api/idle/idle_manager_factory.h"
 #include "chrome/browser/extensions/api/managed_mode/managed_mode_api_factory.h"
 #include "chrome/browser/extensions/api/management/management_api_factory.h"
+#include "chrome/browser/extensions/api/media_galleries_private/media_galleries_private_api_factory.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api_factory.h"
 #include "chrome/browser/extensions/api/preference/preference_api_factory.h"
 #include "chrome/browser/extensions/api/processes/processes_api_factory.h"
@@ -237,6 +238,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   extensions::FontSettingsAPIFactory::GetInstance();
   extensions::IdleManagerFactory::GetInstance();
   extensions::ManagedModeAPIFactory::GetInstance();
+  extensions::MediaGalleriesPrivateAPIFactory::GetInstance();
   extensions::OmniboxAPIFactory::GetInstance();
   extensions::PreferenceAPIFactory::GetInstance();
   extensions::ProcessesAPIFactory::GetInstance();

@@ -10,6 +10,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/media_gallery/media_file_system_registry.h"
@@ -19,10 +20,6 @@
 namespace extensions {
 
 namespace {
-
-// Events
-const char kOnAttachEventName[] = "mediaGalleriesPrivate.onDeviceAttached";
-const char kOnDetachEventName[] = "mediaGalleriesPrivate.onDeviceDetached";
 
 std::string GetTransientIdForDeviceId(const std::string& device_id) {
   chrome::MediaFileSystemRegistry* registry =
@@ -57,7 +54,7 @@ void MediaGalleriesPrivateEventRouter::OnRemovableStorageAttached(
     const FilePath::StringType& location) {
   EventRouter* router =
       extensions::ExtensionSystem::Get(profile_)->event_router();
-  if (!router->HasEventListener(kOnAttachEventName))
+  if (!router->HasEventListener(event_names::kOnAttachEventName))
     return;
 
   DeviceAttachmentDetails details;
@@ -66,14 +63,14 @@ void MediaGalleriesPrivateEventRouter::OnRemovableStorageAttached(
 
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(details.ToValue().release());
-  DispatchEvent(kOnAttachEventName, args.Pass());
+  DispatchEvent(event_names::kOnAttachEventName, args.Pass());
 }
 
 void MediaGalleriesPrivateEventRouter::OnRemovableStorageDetached(
     const std::string& id) {
   EventRouter* router =
       extensions::ExtensionSystem::Get(profile_)->event_router();
-  if (!router->HasEventListener(kOnDetachEventName))
+  if (!router->HasEventListener(event_names::kOnDetachEventName))
     return;
 
   DeviceDetachmentDetails details;
@@ -81,7 +78,7 @@ void MediaGalleriesPrivateEventRouter::OnRemovableStorageDetached(
 
   scoped_ptr<base::ListValue> args(new ListValue());
   args->Append(details.ToValue().release());
-  DispatchEvent(kOnDetachEventName, args.Pass());
+  DispatchEvent(event_names::kOnDetachEventName, args.Pass());
 }
 
 void MediaGalleriesPrivateEventRouter::DispatchEvent(
