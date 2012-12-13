@@ -74,17 +74,8 @@ class BookmarkContextMenuControllerViews : public BaseBookmarkModelObserver {
 
   void BuildMenu();
 
-  Profile* profile() const { return profile_; }
-
   void set_navigator(content::PageNavigator* navigator) {
     navigator_ = navigator;
-  }
-  content::PageNavigator* navigator() const { return navigator_; }
-
-  views::Widget* parent_widget() const { return parent_widget_; }
-
-  const std::vector<const BookmarkNode*>& selection() const {
-    return selection_;
   }
 
  protected:
@@ -104,6 +95,15 @@ class BookmarkContextMenuControllerViews : public BaseBookmarkModelObserver {
       content::PageNavigator* navigator,
       const BookmarkNode* parent,
       const std::vector<const BookmarkNode*>& selection);
+
+  const Profile* profile() const { return profile_; }
+  Profile* profile() { return profile_; }
+
+  views::Widget* parent_widget() { return parent_widget_; }
+
+  const std::vector<const BookmarkNode*>& selection() const {
+    return selection_;
+  }
 
  private:
   // Overridden from BaseBookmarkModelObserver:
