@@ -9,6 +9,12 @@
       },
       "settings": {
          "behllobkkfkfnphdnhnkndlbkcpglgmj": {
+            "active_permissions": {
+               "scriptable_host": [ "file:///*" ]
+            },
+            "granted_permissions": {
+               "scriptable_host": [ "file:///*" ]
+            },
             "location": 1,
             "manifest":
             {
