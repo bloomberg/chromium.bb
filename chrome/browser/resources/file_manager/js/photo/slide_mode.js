@@ -1160,13 +1160,14 @@ SlideMode.prototype.toggleEditor_ = function(opt_event) {
 
   ImageUtil.setAttribute(this.container_, 'editing', !this.isEditing());
 
-  if (this.isEditing()) { // isEditing_ has just been flipped to a new value.
+  if (this.isEditing()) { // isEditing has just been flipped to a new value.
     if (this.context_.readonlyDirName) {
       this.editor_.getPrompt().showAt(
           'top', 'readonly_warning', 0, this.context_.readonlyDirName);
     }
   } else {
     this.editor_.getPrompt().hide();
+    this.editor_.leaveModeGently();
   }
 
   ImageUtil.setAttribute(this.editButton_, 'pressed', this.isEditing());
