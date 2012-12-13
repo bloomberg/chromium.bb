@@ -499,8 +499,15 @@ void GpuMemoryManager::Manage() {
       // Set the state when visible.
       allocation.renderer_allocation.bytes_limit_when_visible =
           bytes_limit_when_visible;
+      // Experiment to determine if aggressively discarding tiles on OS X
+      // results in greater stability.
+#if defined(OS_MACOSX)
+      allocation.renderer_allocation.priority_cutoff_when_visible =
+          GpuMemoryAllocationForRenderer::kPriorityCutoffAllowNiceToHave;
+#else
       allocation.renderer_allocation.priority_cutoff_when_visible =
           GpuMemoryAllocationForRenderer::kPriorityCutoffAllowEverything;
+#endif
 
       // Set the state when backgrounded.
       bool allow_allocation_when_backgrounded = false;
