@@ -36,9 +36,6 @@ class SadTabHelper : public content::WebContentsObserver,
  public:
   virtual ~SadTabHelper();
 
-  // Platform specific function to determine if there is a current sad tab page.
-  bool HasSadTab() const;
-
 #if defined(TOOLKIT_VIEWS)
   views::Widget* sad_tab() { return sad_tab_.get(); }
 #endif
@@ -48,7 +45,6 @@ class SadTabHelper : public content::WebContentsObserver,
 
   explicit SadTabHelper(content::WebContents* web_contents);
 
-  // Platform specific function to get an instance of the sad tab page.
   void InstallSadTab(base::TerminationStatus status);
 
   // Overridden from content::WebContentsObserver:

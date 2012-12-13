@@ -21,17 +21,13 @@
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(SadTabHelper)
 
+SadTabHelper::~SadTabHelper() {
+}
+
 SadTabHelper::SadTabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents) {
   registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_CONNECTED,
                  content::Source<content::WebContents>(web_contents));
-}
-
-SadTabHelper::~SadTabHelper() {
-}
-
-bool SadTabHelper::HasSadTab() const {
-  return sad_tab_.get() != NULL;
 }
 
 void SadTabHelper::RenderViewGone(base::TerminationStatus status) {
@@ -41,7 +37,7 @@ void SadTabHelper::RenderViewGone(base::TerminationStatus status) {
   if (browser_shutdown::GetShutdownType() != browser_shutdown::NOT_VALID)
     return;
 
-  if (HasSadTab())
+  if (sad_tab_)
     return;
 
   if (status == base::TERMINATION_STATUS_ABNORMAL_TERMINATION ||
@@ -53,28 +49,22 @@ void SadTabHelper::RenderViewGone(base::TerminationStatus status) {
 void SadTabHelper::Observe(int type,
                            const content::NotificationSource& source,
                            const content::NotificationDetails& details) {
-  switch (type) {
-    case content::NOTIFICATION_WEB_CONTENTS_CONNECTED:
-      if (HasSadTab()) {
+  DCHECK_EQ(content::NOTIFICATION_WEB_CONTENTS_CONNECTED, type);
+  if (sad_tab_) {
 #if defined(OS_MACOSX)
-        sad_tab_controller_mac::RemoveSadTab(sad_tab_.get());
+    sad_tab_controller_mac::RemoveSadTab(sad_tab_.get());
 #elif defined(TOOLKIT_VIEWS)
-        sad_tab_->Close();
-        // See http://crbug.com/117668. When the Widget is being destructed, we
-        // want calls to sad_tab() to return NULL.
-        scoped_ptr<views::Widget> local_sad_tab;
-        local_sad_tab.swap(sad_tab_);
+    sad_tab_->Close();
+    // See http://crbug.com/117668. When the Widget is being destructed, we
+    // want calls to sad_tab() to return NULL.
+    scoped_ptr<views::Widget> local_sad_tab;
+    local_sad_tab.swap(sad_tab_);
 #elif defined(TOOLKIT_GTK)
-        sad_tab_->Close();
+    sad_tab_->Close();
 #else
 #error Unknown platform
 #endif
-        sad_tab_.reset();
-      }
-      break;
-
-    default:
-      NOTREACHED() << "Got a notification we didn't register for.";
+    sad_tab_.reset();
   }
 }
 
