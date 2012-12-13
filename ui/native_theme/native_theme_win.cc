@@ -36,17 +36,15 @@ const SkColor kInvalidColorIdColor = SkColorSetRGB(255, 0, 128);
 // Dialogs:
 const SkColor kDialogBackgroundColor = SkColorSetRGB(200, 200, 200);
 // FocusableBorder:
-const SkColor kFocusedBorderColor = SkColorSetRGB(0x4D, 0x90, 0xFE);
-const SkColor kUnfocusedBorderColor = SkColorSetRGB(0xD9, 0xD9, 0xD9);
+const SkColor kFocusedBorderColor = SkColorSetRGB(0x4d, 0x90, 0xfe);
+const SkColor kUnfocusedBorderColor = SkColorSetRGB(0xd9, 0xd9, 0xd9);
 // TextButton:
 const SkColor kTextButtonBackgroundColor = SkColorSetRGB(0xde, 0xde, 0xde);
-const SkColor kTextButtonEnabledColor = SkColorSetRGB(6, 45, 117);
-const SkColor kTextButtonDisabledColor = SkColorSetRGB(161, 161, 146);
 const SkColor kTextButtonHighlightColor = SkColorSetARGB(200, 255, 255, 255);
-const SkColor kTextButtonHoverColor = kTextButtonEnabledColor;
+const SkColor kTextButtonHoverColor = SkColorSetRGB(6, 45, 117);
 // MenuItem:
-const SkColor kEnabledMenuItemForegroundColor = kTextButtonEnabledColor;
-const SkColor kDisabledMenuItemForegroundColor = kTextButtonDisabledColor;
+const SkColor kEnabledMenuItemForegroundColor = SkColorSetRGB(6, 45, 117);
+const SkColor kDisabledMenuItemForegroundColor = SkColorSetRGB(161, 161, 146);
 const SkColor kFocusedMenuItemBackgroundColor = SkColorSetRGB(246, 249, 253);
 const SkColor kMenuSeparatorColor = SkColorSetARGB(50, 0, 0, 0);
 // Textfield:
@@ -55,6 +53,7 @@ const SkColor kTextfieldSelectionBackgroundUnfocused = SK_ColorLTGRAY;
 // Windows system color IDs cached and updated by the native theme.
 const int kSystemColors[] = {
   COLOR_3DFACE,
+  COLOR_BTNTEXT,
   COLOR_GRAYTEXT,
   COLOR_HIGHLIGHT,
   COLOR_HIGHLIGHTTEXT,
@@ -470,9 +469,9 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
     case kColorId_TextButtonBackgroundColor:
       return kTextButtonBackgroundColor;
     case kColorId_TextButtonEnabledColor:
-      return kTextButtonEnabledColor;
+      return system_colors_[COLOR_BTNTEXT];
     case kColorId_TextButtonDisabledColor:
-      return kTextButtonDisabledColor;
+      return system_colors_[COLOR_GRAYTEXT];
     case kColorId_TextButtonHighlightColor:
       return kTextButtonHighlightColor;
     case kColorId_TextButtonHoverColor:
@@ -490,7 +489,7 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
 
     // Label
     case kColorId_LabelEnabledColor:
-      return system_colors_[COLOR_WINDOWTEXT];
+      return system_colors_[COLOR_BTNTEXT];
     case kColorId_LabelDisabledColor:
       return system_colors_[COLOR_GRAYTEXT];
     case kColorId_LabelBackgroundColor:

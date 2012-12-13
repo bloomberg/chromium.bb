@@ -207,21 +207,13 @@ TextButtonBase::TextButtonBase(ButtonListener* listener, const string16& text)
       show_multiple_icon_states_(true),
       is_default_(false),
       multi_line_(false),
-      color_(ui::NativeTheme::instance()->GetSystemColor(
-          ui::NativeTheme::kColorId_TextButtonEnabledColor)),
-      color_enabled_(ui::NativeTheme::instance()->GetSystemColor(
-          ui::NativeTheme::kColorId_TextButtonEnabledColor)),
-      color_disabled_(ui::NativeTheme::instance()->GetSystemColor(
-          ui::NativeTheme::kColorId_TextButtonDisabledColor)),
-      color_highlight_(ui::NativeTheme::instance()->GetSystemColor(
-          ui::NativeTheme::kColorId_TextButtonHighlightColor)),
-      color_hover_(ui::NativeTheme::instance()->GetSystemColor(
-          ui::NativeTheme::kColorId_TextButtonHoverColor)),
       use_enabled_color_from_theme_(true),
       use_disabled_color_from_theme_(true),
       use_highlight_color_from_theme_(true),
       use_hover_color_from_theme_(true) {
   SetText(text);
+  // OnNativeThemeChanged sets the color member variables.
+  TextButtonBase::OnNativeThemeChanged(GetNativeTheme());
   SetAnimationDuration(kHoverAnimationDurationMs);
 }
 
