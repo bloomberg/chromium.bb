@@ -1637,31 +1637,15 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 
   if (delegate_)
     return [delegate_ respondsToSelector:selector];
-  else
-    return NO;
+
+  return NO;
 }
 
-- (NSMethodSignature*)methodSignatureForSelector:(SEL)selector {
-  // Trickiness: this doesn't mean "does this object's superclass respond to
-  // this selector" but rather "does the -respondsToSelector impl from the
-  // superclass say that this class responds to the selector".
-  if ([super respondsToSelector:selector])
-    return [super methodSignatureForSelector:selector];
+- (id)forwardingTargetForSelector:(SEL)selector {
+  if ([delegate_ respondsToSelector:selector])
+    return delegate_;
 
-  if (delegate_)
-    return [delegate_ methodSignatureForSelector:selector];
-  else
-    return nil;
-}
-
-- (void)forwardInvocation:(NSInvocation*)invocation {
-  // TODO(avi): Oh, man, use -forwardingTargetForSelector: when 10.6 is the
-  // minimum requirement.
-
-  if (delegate_ && [delegate_ respondsToSelector:[invocation selector]])
-    [invocation invokeWithTarget:delegate_];
-  else
-    [super forwardInvocation:invocation];
+  return [super forwardingTargetForSelector:selector];
 }
 
 - (void)setCanBeKeyView:(BOOL)can {
