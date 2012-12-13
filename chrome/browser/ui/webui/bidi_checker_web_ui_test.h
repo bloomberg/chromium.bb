@@ -20,8 +20,6 @@ class WebUIBidiCheckerBrowserTest : public WebUIBrowserTest {
  public:
   virtual ~WebUIBidiCheckerBrowserTest();
 
-  virtual void SetUp() OVERRIDE;
-
  protected:
   WebUIBidiCheckerBrowserTest();
 

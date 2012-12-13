@@ -365,14 +365,14 @@ class SyncSetupHandlerTest : public testing::TestWithParam<bool> {
   virtual void SetUp() OVERRIDE {
     bool use_client_login_flow = GetParam();
     if (use_client_login_flow) {
-      if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUseClientLoginSigninFlow)) {
-            CommandLine::ForCurrentProcess()->AppendSwitch(
-                switches::kUseClientLoginSigninFlow);
-      }
-    } else {
       DCHECK(!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUseClientLoginSigninFlow));
+          switches::kUseWebBasedSigninFlow));
+    } else {
+      if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseWebBasedSigninFlow)) {
+            CommandLine::ForCurrentProcess()->AppendSwitch(
+                switches::kUseWebBasedSigninFlow);
+      }
     }
 
     error_ = GoogleServiceAuthError::None();

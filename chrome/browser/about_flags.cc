@@ -855,11 +855,11 @@ const Experiment kExperiments[] = {
   },
 #endif
   {
-    "use-client-login-signin-flow",
-    IDS_FLAGS_USE_CLIENT_LOGIN_SIGNIN_FLOW_NAME,
-    IDS_FLAGS_USE_CLIENT_LOGIN_SIGNIN_FLOW_DESCRIPTION,
+    "use-web-based-signin-flow",
+    IDS_FLAGS_USE_WEB_BASED_SIGNIN_FLOW_NAME,
+    IDS_FLAGS_USE_WEB_BASED_SIGNIN_FLOW_DESCRIPTION,
     kOsMac | kOsWin | kOsLinux,
-    SINGLE_VALUE_TYPE(switches::kUseClientLoginSigninFlow)
+    SINGLE_VALUE_TYPE(switches::kUseWebBasedSigninFlow)
   },
   {
     "enable-desktop-guest-mode",

@@ -305,8 +305,8 @@ bool SyncPromoUI::GetAutoCloseForSyncPromoURL(const GURL& url) {
 // static
 bool SyncPromoUI::UseWebBasedSigninFlow() {
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kUseClientLoginSigninFlow);
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kUseWebBasedSigninFlow);
 #else
   return false;
 #endif

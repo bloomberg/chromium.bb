@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/webui/bidi_checker_web_ui_test.h"
 
 #include "base/base_paths.h"
-#include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
@@ -24,7 +23,6 @@
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -82,19 +80,6 @@ static const FilePath::CharType* kBidiCheckerTestsJS =
     FILE_PATH_LITERAL("bidichecker_tests.js");
 
 WebUIBidiCheckerBrowserTest::~WebUIBidiCheckerBrowserTest() {}
-
-void WebUIBidiCheckerBrowserTest::SetUp() {
-  // The new web-based sign in flow does not use webui.  However, the old
-  // /CliengLogin flow does. Force this test to always run the old flow to make
-  // sure it does not regress.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kUseClientLoginSigninFlow)) {
-        CommandLine::ForCurrentProcess()->AppendSwitch(
-            switches::kUseClientLoginSigninFlow);
-  }
-
-  WebUIBrowserTest::SetUp();
-}
 
 WebUIBidiCheckerBrowserTest::WebUIBidiCheckerBrowserTest() {}
 
