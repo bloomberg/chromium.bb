@@ -83,7 +83,6 @@
         'gl_surface.cc',
         'gl_surface.h',
         'gl_surface_android.cc',
-        'gl_surface_android.h',
         'gl_surface_linux.cc',
         'gl_surface_mac.cc',
         'gl_surface_stub.cc',

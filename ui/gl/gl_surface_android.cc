@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gl/gl_surface_android.h"
+#include "ui/gl/gl_surface.h"
 
 #include <EGL/egl.h>
 
@@ -13,6 +13,7 @@
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/gl_surface_stub.h"
 
 using ui::GetLastEGLErrorString;
@@ -79,108 +80,6 @@ GLSurface::CreateOffscreenGLSurface(bool software, const gfx::Size& size) {
     default:
       NOTREACHED();
       return NULL;
-  }
-}
-
-AndroidViewSurface::AndroidViewSurface()
-  : NativeViewGLSurfaceEGL(false, 0),
-    pbuffer_surface_(new PbufferGLSurfaceEGL(false, Size(1, 1))),
-    window_(NULL) {
-}
-
-AndroidViewSurface::~AndroidViewSurface() {
-}
-
-bool AndroidViewSurface::Initialize() {
-  DCHECK(pbuffer_surface_.get());
-  return pbuffer_surface_->Initialize();
-}
-
-void AndroidViewSurface::Destroy() {
-  if (pbuffer_surface_.get()) {
-    pbuffer_surface_->Destroy();
-  } else {
-    window_ = NULL;
-  }
-  NativeViewGLSurfaceEGL::Destroy();
-}
-
-bool AndroidViewSurface::IsOffscreen() {
-  return false;
-}
-
-bool AndroidViewSurface::SwapBuffers() {
-  if (!pbuffer_surface_.get())
-    return NativeViewGLSurfaceEGL::SwapBuffers();
-  return true;
-}
-
-gfx::Size AndroidViewSurface::GetSize() {
-  if (pbuffer_surface_.get())
-    return pbuffer_surface_->GetSize();
-  else
-    return NativeViewGLSurfaceEGL::GetSize();
-}
-
-EGLSurface AndroidViewSurface::GetHandle() {
-  if (pbuffer_surface_.get())
-    return pbuffer_surface_->GetHandle();
-  else
-    return NativeViewGLSurfaceEGL::GetHandle();
-}
-
-bool AndroidViewSurface::Resize(const gfx::Size& size) {
-  if (pbuffer_surface_.get())
-    return pbuffer_surface_->Resize(size);
-  else if (GetHandle()) {
-    DCHECK(window_ && window_->GetNativeWindow());
-    // Deactivate and restore any currently active context.
-    EGLContext context = eglGetCurrentContext();
-    if (context != EGL_NO_CONTEXT) {
-      eglMakeCurrent(GetDisplay(), EGL_NO_SURFACE, EGL_NO_SURFACE,
-          EGL_NO_CONTEXT);
-    }
-    NativeViewGLSurfaceEGL::Destroy();
-    if (CreateWindowSurface(window_)) {
-      if (context != EGL_NO_CONTEXT)
-        eglMakeCurrent(GetDisplay(), GetHandle(), GetHandle(), context);
-    }
-  }
-  return true;
-}
-
-bool AndroidViewSurface::CreateWindowSurface(AndroidNativeWindow* window) {
-  DCHECK(window->GetNativeWindow());
-  window_ = window;
-  EGLSurface surface = eglCreateWindowSurface(GetDisplay(),
-                                              GetConfig(),
-                                              window->GetNativeWindow(),
-                                              NULL);
-  if (surface == EGL_NO_SURFACE) {
-    LOG(ERROR) << "eglCreateWindowSurface failed with error "
-               << GetLastEGLErrorString();
-    Destroy();
-    return false;
-  }
-
-  SetHandle(surface);
-  return true;
-}
-
-void AndroidViewSurface::SetNativeWindow(AndroidNativeWindow* window) {
-  if (window->GetNativeWindow()) {
-    DCHECK(pbuffer_surface_.get());
-    pbuffer_surface_->Destroy();
-    pbuffer_surface_ = NULL;
-
-    CreateWindowSurface(window);
-  } else {
-    DCHECK(GetHandle());
-    NativeViewGLSurfaceEGL::Destroy();
-    window_ = NULL;
-
-    pbuffer_surface_ = new PbufferGLSurfaceEGL(false, Size(1,1));
-    pbuffer_surface_->Initialize();
   }
 }
 

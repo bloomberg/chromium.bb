@@ -75,10 +75,6 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
 
 RenderWidgetHostViewAndroid::~RenderWidgetHostViewAndroid() {
   SetContentViewCore(NULL);
-  if (!shared_surface_.is_null()) {
-    ImageTransportFactoryAndroid::GetInstance()->DestroySharedSurfaceHandle(
-        shared_surface_);
-  }
   if (texture_id_in_layer_) {
     ImageTransportFactoryAndroid::GetInstance()->DeleteTexture(
         texture_id_in_layer_);
@@ -471,25 +467,12 @@ void RenderWidgetHostViewAndroid::StartContentIntent(
 }
 
 gfx::GLSurfaceHandle RenderWidgetHostViewAndroid::GetCompositingSurface() {
-  if (CompositorImpl::IsInitialized()) {
-    // The app uses the browser-side compositor.
-    if (surface_texture_transport_.get()) {
-      return surface_texture_transport_->GetCompositingSurface(
-          host_->surface_id());
-    } else {
-      if (shared_surface_.is_null()) {
-        shared_surface_ =
-            ImageTransportFactoryAndroid::GetInstance()->
-            CreateSharedSurfaceHandle();
-      }
-      return shared_surface_;
-    }
+  if (surface_texture_transport_.get()) {
+    return surface_texture_transport_->GetCompositingSurface(
+        host_->surface_id());
+  } else {
+    return gfx::GLSurfaceHandle(gfx::kNullPluginWindow, true);
   }
-
-  // On Android, we cannot generate a window handle that can be passed to the
-  // GPU process through the native side. Instead, we send the surface handle
-  // through Binder after the compositing context has been created.
-  return gfx::GLSurfaceHandle(gfx::kNullPluginWindow, true);
 }
 
 void RenderWidgetHostViewAndroid::GetScreenInfo(WebKit::WebScreenInfo* result) {

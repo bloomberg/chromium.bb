@@ -194,10 +194,6 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
   // The most recent texture size that was pushed to the texture layer.
   gfx::Size texture_size_in_layer_;
 
-  // The handle for the transport surface (between renderer and browser-side
-  // compositor) for this view.
-  gfx::GLSurfaceHandle shared_surface_;
-
   // Used for image transport when needing to share resources across threads.
   scoped_ptr<SurfaceTextureTransportClient> surface_texture_transport_;
 

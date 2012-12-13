@@ -25,11 +25,6 @@ class DirectGLImageTransportFactory : public ImageTransportFactoryAndroid {
   DirectGLImageTransportFactory();
   virtual ~DirectGLImageTransportFactory();
 
-  virtual gfx::GLSurfaceHandle CreateSharedSurfaceHandle() OVERRIDE {
-    return gfx::GLSurfaceHandle();
-  }
-  virtual void DestroySharedSurfaceHandle(
-      const gfx::GLSurfaceHandle& handle) OVERRIDE {}
   virtual uint32_t InsertSyncPoint() OVERRIDE { return 0; }
   virtual uint32_t CreateTexture() OVERRIDE {
     return context_->createTexture();
@@ -71,9 +66,6 @@ class CmdBufferImageTransportFactory : public ImageTransportFactoryAndroid {
   CmdBufferImageTransportFactory();
   virtual ~CmdBufferImageTransportFactory();
 
-  virtual gfx::GLSurfaceHandle CreateSharedSurfaceHandle() OVERRIDE;
-  virtual void DestroySharedSurfaceHandle(
-      const gfx::GLSurfaceHandle& handle) OVERRIDE;
   virtual uint32_t InsertSyncPoint() OVERRIDE;
   virtual uint32_t CreateTexture() OVERRIDE;
   virtual void DeleteTexture(uint32_t id) OVERRIDE;
@@ -112,42 +104,32 @@ CmdBufferImageTransportFactory::CmdBufferImageTransportFactory() {
 CmdBufferImageTransportFactory::~CmdBufferImageTransportFactory() {
 }
 
-gfx::GLSurfaceHandle
-CmdBufferImageTransportFactory::CreateSharedSurfaceHandle() {
-  if (!context_->makeContextCurrent()) {
-    NOTREACHED() << "Failed to make shared graphics context current";
-    return gfx::GLSurfaceHandle();
-  }
-
-  gfx::GLSurfaceHandle handle = gfx::GLSurfaceHandle(
-      gfx::kNullPluginWindow, true);
-  handle.parent_gpu_process_id = context_->GetGPUProcessID();
-  context_->flush();
-  return handle;
-}
-
-void CmdBufferImageTransportFactory::DestroySharedSurfaceHandle(
-    const gfx::GLSurfaceHandle& handle) {
-  if (!context_->makeContextCurrent()) {
-    NOTREACHED() << "Failed to make shared graphics context current";
-    return;
-  }
-}
-
 uint32_t CmdBufferImageTransportFactory::InsertSyncPoint() {
   return context_->insertSyncPoint();
 }
 
 uint32_t CmdBufferImageTransportFactory::CreateTexture() {
+  if (!context_->makeContextCurrent()) {
+    LOG(ERROR) << "Failed to make helper context current.";
+    return false;
+  }
   return context_->createTexture();
 }
 
 void CmdBufferImageTransportFactory::DeleteTexture(uint32_t id) {
+  if (!context_->makeContextCurrent()) {
+    LOG(ERROR) << "Failed to make helper context current.";
+    return;
+  }
   context_->deleteTexture(id);
 }
 
 void CmdBufferImageTransportFactory::AcquireTexture(
     uint32 texture_id, const signed char* mailbox_name) {
+  if (!context_->makeContextCurrent()) {
+    LOG(ERROR) << "Failed to make helper context current.";
+    return;
+  }
   context_->bindTexture(GL_TEXTURE_2D, texture_id);
   context_->consumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox_name);
   context_->flush();
@@ -155,6 +137,10 @@ void CmdBufferImageTransportFactory::AcquireTexture(
 
 void CmdBufferImageTransportFactory::ReleaseTexture(
     uint32 texture_id, const signed char* mailbox_name) {
+  if (!context_->makeContextCurrent()) {
+    LOG(ERROR) << "Failed to make helper context current.";
+    return;
+  }
   context_->bindTexture(GL_TEXTURE_2D, texture_id);
   context_->produceTextureCHROMIUM(GL_TEXTURE_2D, mailbox_name);
 }
