@@ -111,6 +111,8 @@ void MenuConfig::Init(const NativeTheme* theme) {
   show_mnemonics =
       (SystemParametersInfo(SPI_GETKEYBOARDCUES, 0, &show_cues, 0) &&
        show_cues == TRUE);
+
+  SystemParametersInfo(SPI_GETMENUSHOWDELAY, 0, &show_delay, 0);
 }
 
 // static

@@ -124,6 +124,10 @@ struct VIEWS_EXPORT MenuConfig {
 
   const ui::NativeTheme* native_theme;
 
+  // Delay, in ms, between when menus are selected or moused over and the menu
+  // appears.
+  int show_delay;
+
  private:
   // Configures a MenuConfig as appropriate for the current platform.
   void Init(const ui::NativeTheme* theme);

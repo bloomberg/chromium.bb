@@ -41,10 +41,6 @@ using ui::OSExchangeData;
 // Period of the scroll timer (in milliseconds).
 static const int kScrollTimerMS = 30;
 
-// Delay, in ms, between when menus are selected are moused over and the menu
-// appears.
-static const int kShowDelay = 400;
-
 // Amount of time from when the drop exits the menu and the menu is hidden.
 static const int kCloseOnExitTime = 1200;
 
@@ -1536,8 +1532,9 @@ void MenuController::BuildMenuItemPath(MenuItemView* item,
 }
 
 void MenuController::StartShowTimer() {
-  show_timer_.Start(FROM_HERE, TimeDelta::FromMilliseconds(kShowDelay), this,
-                    &MenuController::CommitPendingSelection);
+    show_timer_.Start(FROM_HERE,
+                      TimeDelta::FromMilliseconds(menu_config_.show_delay),
+                      this, &MenuController::CommitPendingSelection);
 }
 
 void MenuController::StopShowTimer() {
