@@ -12,6 +12,9 @@ weston_tests =				\
 
 TESTS_ENVIRONMENT = $(SHELL) $(top_srcdir)/tests/weston-tests-env
 
+clean-local:
+	-rm -rf logs
+
 export abs_builddir
 
 noinst_LTLIBRARIES =			\
