@@ -15,7 +15,13 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, BookmarkManager) {
+// Times out on win asan, http://crbug.com/166026
+#if defined(OS_WIN) && defined(ADDRESS_SANITIZER)
+#define MAYBE_BookmarkManager DISABLED_BookmarkManager
+#else
+#define MAYBE_BookmarkManager BookmarkManager
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_BookmarkManager) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 

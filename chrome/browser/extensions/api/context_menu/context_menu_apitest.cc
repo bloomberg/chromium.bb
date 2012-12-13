@@ -11,7 +11,13 @@
 
 namespace extensions {
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContextMenus) {
+// Times out on win asan, http://crbug.com/166026
+#if defined(OS_WIN) && defined(ADDRESS_SANITIZER)
+#define MAYBE_ContextMenus DISABLED_ContextMenus
+#else
+#define MAYBE_ContextMenus ContextMenus
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_ContextMenus) {
   ASSERT_TRUE(RunExtensionTest("context_menus/basics")) << message_;
   ASSERT_TRUE(RunExtensionTest("context_menus/no_perms")) << message_;
   ASSERT_TRUE(RunExtensionTest("context_menus/item_ids")) << message_;

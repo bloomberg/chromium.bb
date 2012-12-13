@@ -7,7 +7,13 @@
 
 namespace extensions {
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Cookies) {
+// Times out on win asan, http://crbug.com/166026
+#if defined(OS_WIN) && defined(ADDRESS_SANITIZER)
+#define MAYBE_Cookies DISABLED_Cookies
+#else
+#define MAYBE_Cookies Cookies
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Cookies) {
   ASSERT_TRUE(RunExtensionTest("cookies/api")) << message_;
 }
 

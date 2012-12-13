@@ -10,7 +10,13 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/chrome_switches.h"
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, GetAlertsForTab) {
+// Times out on win asan, http://crbug.com/166026
+#if defined(OS_WIN) && defined(ADDRESS_SANITIZER)
+#define MAYBE_GetAlertsForTab DISABLED_GetAlertsForTab
+#else
+#define MAYBE_GetAlertsForTab GetAlertsForTab
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_GetAlertsForTab) {
   content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
   ASSERT_TRUE(web_contents);
   InfoBarTabHelper* infobar_helper =
