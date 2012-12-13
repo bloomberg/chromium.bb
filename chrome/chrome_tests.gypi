@@ -1443,6 +1443,9 @@
           ],
         }],
         ['internal_pdf', {
+          'dependencies': [
+            '../pdf/pdf.gyp:pdf',
+          ],
           'sources': [
             'browser/ui/pdf/pdf_browsertest.cc',
           ],
