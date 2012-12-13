@@ -35,7 +35,7 @@ class JavaBridgeChannelHost : public NPChannelBase {
  private:
   JavaBridgeChannelHost() {}
   friend class base::RefCountedThreadSafe<JavaBridgeChannelHost>;
-  virtual ~JavaBridgeChannelHost() {}
+  virtual ~JavaBridgeChannelHost();
 
   static NPChannelBase* ClassFactory() {
     return new JavaBridgeChannelHost();

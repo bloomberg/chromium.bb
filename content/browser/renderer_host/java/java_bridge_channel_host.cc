@@ -28,6 +28,14 @@ base::LazyInstance<WaitableEvent, WaitableEventLazyInstanceTraits> dummy_event =
 base::subtle::AtomicWord g_last_id = 0;
 }
 
+JavaBridgeChannelHost::~JavaBridgeChannelHost() {
+#if defined(OS_POSIX)
+  if (channel_handle_.socket.fd > 0) {
+    close(channel_handle_.socket.fd);
+  }
+#endif
+}
+
 JavaBridgeChannelHost* JavaBridgeChannelHost::GetJavaBridgeChannelHost(
     int renderer_id,
     base::MessageLoopProxy* ipc_message_loop) {
@@ -62,8 +70,10 @@ bool JavaBridgeChannelHost::Init(base::MessageLoopProxy* ipc_message_loop,
 
   // Finish populating our ChannelHandle.
 #if defined(OS_POSIX)
-  // Leave the auto-close property at its default value.
-  channel_handle_.socket.fd = channel_->GetClientFileDescriptor();
+  // We take control of the FD for all session between this host and
+  // the corresponding renderers. We keep it open until this object
+  // is deleted.
+  channel_handle_.socket.fd = channel_->TakeClientFileDescriptor();
 #endif
 
   return true;
