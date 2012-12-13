@@ -955,7 +955,14 @@ const Experiment kExperiments[] = {
     kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kEnableChromebookFunctionKey),
   },
-#endif
+  {
+    "enable-launcher-per-display",
+    IDS_FLAGS_ENABLE_LAUNCHER_PER_DISPLAY_NAME,
+    IDS_FLAGS_ENABLE_LAUNCHER_PER_DISPLAY_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(ash::switches::kAshLauncherPerDisplay),
+  },
+#endif  // defined(OS_CHROMEOS)
   {
     "enable-views-textfield",
     IDS_FLAGS_ENABLE_VIEWS_TEXTFIELD_NAME,
