@@ -59,7 +59,7 @@ gfx::Image LoadInstallPromptIcon() {
   std::string file_contents;
   file_util::ReadFileToString(path, &file_contents);
 
-  return gfx::Image(
+  return gfx::Image::CreateFrom1xPNGBytes(
       reinterpret_cast<const unsigned char*>(file_contents.c_str()),
       file_contents.length());
 }

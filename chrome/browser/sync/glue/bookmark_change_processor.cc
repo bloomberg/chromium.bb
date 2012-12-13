@@ -79,12 +79,11 @@ void BookmarkChangeProcessor::UpdateSyncNodeProperties(
 }
 
 // static
-void BookmarkChangeProcessor::EncodeFavicon(const BookmarkNode* src,
-                                            BookmarkModel* model,
-                                            std::vector<unsigned char>* dst) {
+void BookmarkChangeProcessor::EncodeFavicon(
+    const BookmarkNode* src,
+    BookmarkModel* model,
+    scoped_refptr<base::RefCountedMemory>* dst) {
   const gfx::Image& favicon = model->GetFavicon(src);
-
-  dst->clear();
 
   // Check for empty images.  This can happen if the favicon is
   // still being loaded.
@@ -93,7 +92,7 @@ void BookmarkChangeProcessor::EncodeFavicon(const BookmarkNode* src,
 
   // Re-encode the BookmarkNode's favicon as a PNG, and pass the data to the
   // sync subsystem.
-  *dst = favicon.As1xPNGBytes()->data();
+  *dst = favicon.As1xPNGBytes();
 }
 
 void BookmarkChangeProcessor::RemoveOneSyncNode(
@@ -750,12 +749,13 @@ void BookmarkChangeProcessor::SetSyncNodeFavicon(
     const BookmarkNode* bookmark_node,
     BookmarkModel* model,
     syncer::WriteNode* sync_node) {
-  std::vector<unsigned char> favicon_bytes;
+  scoped_refptr<base::RefCountedMemory> favicon_bytes(NULL);
   EncodeFavicon(bookmark_node, model, &favicon_bytes);
-  if (!favicon_bytes.empty()) {
+  if (favicon_bytes.get() && favicon_bytes->size()) {
     sync_pb::BookmarkSpecifics updated_specifics(
         sync_node->GetBookmarkSpecifics());
-    updated_specifics.set_favicon(&favicon_bytes[0], favicon_bytes.size());
+    updated_specifics.set_favicon(favicon_bytes->front(),
+                                  favicon_bytes->size());
     updated_specifics.set_icon_url(bookmark_node->icon_url().spec());
     sync_node->SetBookmarkSpecifics(updated_specifics);
   }

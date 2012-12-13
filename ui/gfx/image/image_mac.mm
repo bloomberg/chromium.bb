@@ -30,7 +30,7 @@ NSImage* GetErrorNSImage() {
 
 }  // namespace
 
-scoped_refptr<base::RefCountedBytes> Get1xPNGBytesFromNSImage(
+scoped_refptr<base::RefCountedMemory> Get1xPNGBytesFromNSImage(
     NSImage* nsimage) {
   CGImageRef cg_image = [nsimage CGImageForProposedRect:NULL
                                                 context:nil
@@ -55,7 +55,7 @@ NSImage* NSImageFromPNG(const std::vector<gfx::ImagePNGRep>& image_png_reps) {
 
   scoped_nsobject<NSImage> image;
   for (size_t i = 0; i < image_png_reps.size(); ++i) {
-    scoped_refptr<base::RefCountedBytes> png = image_png_reps[i].raw_data;
+    scoped_refptr<base::RefCountedMemory> png = image_png_reps[i].raw_data;
     CHECK(png.get());
     scoped_nsobject<NSData> ns_data(
         [[NSData alloc] initWithBytes:png->front() length:png->size()]);

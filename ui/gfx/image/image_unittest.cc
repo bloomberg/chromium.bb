@@ -146,7 +146,7 @@ TEST_F(ImageTest, SkiaToSkiaRef) {
 
 TEST_F(ImageTest, EmptyImageToPNG) {
   gfx::Image image;
-  scoped_refptr<base::RefCountedBytes> png_bytes = image.As1xPNGBytes();
+  scoped_refptr<base::RefCountedMemory> png_bytes = image.As1xPNGBytes();
   EXPECT_TRUE(png_bytes.get());
   EXPECT_FALSE(png_bytes->size());
 }
@@ -160,7 +160,7 @@ TEST_F(ImageTest, ImageNo1xToPNG) {
   image_skia.AddRepresentation(gfx::ImageSkiaRep(gt::CreateBitmap(
       kSize2x, kSize2x), ui::SCALE_FACTOR_200P));
   gfx::Image image1(image_skia);
-  scoped_refptr<base::RefCountedBytes> png_bytes1 = image1.As1xPNGBytes();
+  scoped_refptr<base::RefCountedMemory> png_bytes1 = image1.As1xPNGBytes();
   EXPECT_TRUE(png_bytes1.get());
   EXPECT_FALSE(png_bytes1->size());
 
@@ -168,7 +168,7 @@ TEST_F(ImageTest, ImageNo1xToPNG) {
   image_png_reps.push_back(gfx::ImagePNGRep(
       gt::CreatePNGBytes(kSize2x), ui::SCALE_FACTOR_200P));
   gfx::Image image2(image_png_reps);
-  scoped_refptr<base::RefCountedBytes> png_bytes2 = image2.As1xPNGBytes();
+  scoped_refptr<base::RefCountedMemory> png_bytes2 = image2.As1xPNGBytes();
   EXPECT_TRUE(png_bytes2.get());
   EXPECT_FALSE(png_bytes2->size());
 }
@@ -179,7 +179,7 @@ TEST_F(ImageTest, CreateExtractPNGBytes) {
   const int kSize1x = 25;
   const int kSize2x = 50;
 
-  scoped_refptr<base::RefCountedBytes> bytes1x = gt::CreatePNGBytes(kSize1x);
+  scoped_refptr<base::RefCountedMemory> bytes1x = gt::CreatePNGBytes(kSize1x);
   std::vector<gfx::ImagePNGRep> image_png_reps;
   image_png_reps.push_back(gfx::ImagePNGRep(bytes1x, ui::SCALE_FACTOR_100P));
   image_png_reps.push_back(gfx::ImagePNGRep(
@@ -211,8 +211,8 @@ TEST_F(ImageTest, MultiResolutionPNGToImageSkia) {
   const int kSize1x = 25;
   const int kSize2x = 50;
 
-  scoped_refptr<base::RefCountedBytes> bytes1x = gt::CreatePNGBytes(kSize1x);
-  scoped_refptr<base::RefCountedBytes> bytes2x = gt::CreatePNGBytes(kSize2x);
+  scoped_refptr<base::RefCountedMemory> bytes1x = gt::CreatePNGBytes(kSize1x);
+  scoped_refptr<base::RefCountedMemory> bytes2x = gt::CreatePNGBytes(kSize2x);
 
   std::vector<gfx::ImagePNGRep> image_png_reps;
   image_png_reps.push_back(gfx::ImagePNGRep(bytes1x, ui::SCALE_FACTOR_100P));
@@ -235,8 +235,8 @@ TEST_F(ImageTest, MultiResolutionPNGToPlatform) {
   const int kSize1x = 25;
   const int kSize2x = 50;
 
-  scoped_refptr<base::RefCountedBytes> bytes1x = gt::CreatePNGBytes(kSize1x);
-  scoped_refptr<base::RefCountedBytes> bytes2x = gt::CreatePNGBytes(kSize2x);
+  scoped_refptr<base::RefCountedMemory> bytes1x = gt::CreatePNGBytes(kSize1x);
+  scoped_refptr<base::RefCountedMemory> bytes2x = gt::CreatePNGBytes(kSize2x);
   std::vector<gfx::ImagePNGRep> image_png_reps;
   image_png_reps.push_back(gfx::ImagePNGRep(bytes1x, ui::SCALE_FACTOR_100P));
   image_png_reps.push_back(gfx::ImagePNGRep(bytes2x, ui::SCALE_FACTOR_200P));
@@ -261,7 +261,7 @@ TEST_F(ImageTest, MultiResolutionPNGToPlatform) {
 
 TEST_F(ImageTest, PlatformToPNGEncodeAndDecode) {
   gfx::Image image(gt::CreatePlatformImage());
-  scoped_refptr<base::RefCountedBytes> png_data = image.As1xPNGBytes();
+  scoped_refptr<base::RefCountedMemory> png_data = image.As1xPNGBytes();
   EXPECT_TRUE(png_data.get());
   EXPECT_TRUE(png_data->size());
   EXPECT_TRUE(image.HasRepresentation(gfx::Image::kImageRepPNG));
@@ -281,7 +281,7 @@ TEST_F(ImageTest, PNGEncodeFromSkiaDecodeToPlatform) {
   ui::ScaleFactor ideal_scale_factor = ui::GetScaleFactorFromScale(1.0f);
 
   gfx::Image from_skia(gt::CreateBitmap(25, 25));
-  scoped_refptr<base::RefCountedBytes> png_bytes =
+  scoped_refptr<base::RefCountedMemory> png_bytes =
       from_skia.As1xPNGBytes();
 
   std::vector<gfx::ImagePNGRep> image_png_reps;
@@ -297,7 +297,8 @@ TEST_F(ImageTest, PNGEncodeFromSkiaDecodeToPlatform) {
 TEST_F(ImageTest, PNGEncodeFromPlatformDecodeToSkia) {
   // Force the conversion sequence platform_type to png to skia.
   gfx::Image from_platform(gt::CreatePlatformImage());
-  scoped_refptr<base::RefCountedBytes> png_bytes = from_platform.As1xPNGBytes();
+  scoped_refptr<base::RefCountedMemory> png_bytes =
+      from_platform.As1xPNGBytes();
   std::vector<gfx::ImagePNGRep> image_png_reps;
   image_png_reps.push_back(gfx::ImagePNGRep(png_bytes, ui::SCALE_FACTOR_100P));
   gfx::Image from_png(image_png_reps);

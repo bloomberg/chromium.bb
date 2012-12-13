@@ -15,11 +15,11 @@ namespace gfx {
 // was intended for.
 struct UI_EXPORT ImagePNGRep {
   ImagePNGRep();
-  ImagePNGRep(const scoped_refptr<base::RefCountedBytes>& data,
+  ImagePNGRep(const scoped_refptr<base::RefCountedMemory>& data,
               ui::ScaleFactor data_scale_factor);
   ~ImagePNGRep();
 
-  scoped_refptr<base::RefCountedBytes> raw_data;
+  scoped_refptr<base::RefCountedMemory> raw_data;
   ui::ScaleFactor scale_factor;
 };
 

@@ -63,7 +63,7 @@ GdkPixbuf* GetErrorPixbuf() {
 
 GdkPixbuf* GdkPixbufFromPNG(
     const std::vector<gfx::ImagePNGRep>& image_png_reps) {
-  scoped_refptr<base::RefCountedBytes> png_bytes(NULL);
+  scoped_refptr<base::RefCountedMemory> png_bytes(NULL);
   for (size_t i = 0; i < image_png_reps.size(); ++i) {
     if (image_png_reps[i].scale_factor == ui::SCALE_FACTOR_100P)
       png_bytes = image_png_reps[i].raw_data;
@@ -97,7 +97,7 @@ GdkPixbuf* GdkPixbufFromPNG(
   return pixbuf;
 }
 
-scoped_refptr<base::RefCountedBytes> Get1xPNGBytesFromPixbuf(
+scoped_refptr<base::RefCountedMemory> Get1xPNGBytesFromPixbuf(
     GdkPixbuf* pixbuf) {
   gchar* image = NULL;
   gsize image_size;
@@ -114,12 +114,14 @@ scoped_refptr<base::RefCountedBytes> Get1xPNGBytesFromPixbuf(
 #endif // defined(TOOLKIT_GTK)
 
 #if defined(OS_IOS)
-scoped_refptr<base::RefCountedBytes> Get1xPNGBytesFromUIImage(UIImage* uiimage);
+scoped_refptr<base::RefCountedMemory> Get1xPNGBytesFromUIImage(
+    UIImage* uiimage);
 // Caller takes ownership of the returned UIImage.
 UIImage* CreateUIImageFromPNG(
     const std::vector<gfx::ImagePNGRep>& image_png_reps);
 #elif defined(OS_MACOSX)
-scoped_refptr<base::RefCountedBytes> Get1xPNGBytesFromNSImage(NSImage* nsimage);
+scoped_refptr<base::RefCountedMemory> Get1xPNGBytesFromNSImage(
+    NSImage* nsimage);
 // Caller takes ownership of the returned NSImage.
 NSImage* NSImageFromPNG(const std::vector<gfx::ImagePNGRep>& image_png_reps);
 #endif // defined(OS_MACOSX)
@@ -127,7 +129,7 @@ NSImage* NSImageFromPNG(const std::vector<gfx::ImagePNGRep>& image_png_reps);
 #if defined(OS_IOS)
 ImageSkia* ImageSkiaFromPNG(
     const std::vector<gfx::ImagePNGRep>& image_png_reps);
-scoped_refptr<base::RefCountedBytes> Get1xPNGBytesFromImageSkia(
+scoped_refptr<base::RefCountedMemory> Get1xPNGBytesFromImageSkia(
     const ImageSkia* skia);
 #else
 // Returns a 16x16 red image to visually show error in decoding PNG.
@@ -147,7 +149,7 @@ ImageSkia* ImageSkiaFromPNG(
 
   scoped_ptr<gfx::ImageSkia> image_skia(new ImageSkia());
   for (size_t i = 0; i < image_png_reps.size(); ++i) {
-    scoped_refptr<base::RefCountedBytes> raw_data =
+    scoped_refptr<base::RefCountedMemory> raw_data =
         image_png_reps[i].raw_data;
     CHECK(raw_data.get());
     SkBitmap bitmap;
@@ -164,7 +166,7 @@ ImageSkia* ImageSkiaFromPNG(
   return image_skia.release();
 }
 
-scoped_refptr<base::RefCountedBytes> Get1xPNGBytesFromImageSkia(
+scoped_refptr<base::RefCountedMemory> Get1xPNGBytesFromImageSkia(
     const ImageSkia* image_skia) {
   ImageSkiaRep image_skia_rep = image_skia->GetRepresentation(
       ui::SCALE_FACTOR_100P);
@@ -409,20 +411,6 @@ Image::Image() {
   // |storage_| is NULL for empty Images.
 }
 
-Image::Image(const unsigned char* png, size_t input_size) {
-  if (input_size == 0u)
-    return;
-
-  scoped_refptr<base::RefCountedBytes> raw_data(new base::RefCountedBytes());
-  raw_data->data().assign(png, png + input_size);
-  std::vector<gfx::ImagePNGRep> image_reps;
-  image_reps.push_back(ImagePNGRep(raw_data, ui::SCALE_FACTOR_100P));
-
-  storage_ = new internal::ImageStorage(Image::kImageRepPNG);
-  internal::ImageRepPNG* rep = new internal::ImageRepPNG(image_reps);
-  AddRepresentation(rep);
-}
-
 Image::Image(const std::vector<ImagePNGRep>& image_reps) {
   // Do not store obviously invalid ImagePNGReps.
   std::vector<ImagePNGRep> filtered;
@@ -497,9 +485,16 @@ Image::~Image() {
 }
 
 // static
-Image Image::CreateFrom1xPNGEncodedData(const unsigned char* input,
-                                        size_t input_size) {
-  return Image(input, input_size);
+Image Image::CreateFrom1xPNGBytes(const unsigned char* input,
+                                  size_t input_size) {
+  if (input_size == 0u)
+    return gfx::Image();
+
+  scoped_refptr<base::RefCountedBytes> raw_data(new base::RefCountedBytes());
+  raw_data->data().assign(input, input + input_size);
+  std::vector<gfx::ImagePNGRep> image_reps;
+  image_reps.push_back(ImagePNGRep(raw_data, ui::SCALE_FACTOR_100P));
+  return gfx::Image(image_reps);
 }
 
 const SkBitmap* Image::ToSkBitmap() const {
@@ -652,7 +647,7 @@ NSImage* Image::ToNSImage() const {
 }
 #endif
 
-scoped_refptr<base::RefCountedBytes> Image::As1xPNGBytes() const {
+scoped_refptr<base::RefCountedMemory> Image::As1xPNGBytes() const {
   if (IsEmpty())
     return new base::RefCountedBytes();
 
@@ -668,7 +663,7 @@ scoped_refptr<base::RefCountedBytes> Image::As1xPNGBytes() const {
     return new base::RefCountedBytes();
   }
 
-  scoped_refptr<base::RefCountedBytes> png_bytes(NULL);
+  scoped_refptr<base::RefCountedMemory> png_bytes(NULL);
   switch (DefaultRepresentationType()) {
 #if defined(TOOLKIT_GTK)
     case kImageRepGdk: {
@@ -738,8 +733,11 @@ NSImage* Image::AsNSImage() const {
 }
 #endif
 
-scoped_refptr<base::RefCountedBytes> Image::Copy1xPNGBytes() const {
-  return new base::RefCountedBytes(As1xPNGBytes()->data());
+scoped_refptr<base::RefCountedMemory> Image::Copy1xPNGBytes() const {
+  scoped_refptr<base::RefCountedMemory> original = As1xPNGBytes();
+  scoped_refptr<base::RefCountedBytes> copy(new base::RefCountedBytes());
+  copy->data().assign(original->front(), original->front() + original->size());
+  return copy;
 }
 
 ImageSkia* Image::CopyImageSkia() const {

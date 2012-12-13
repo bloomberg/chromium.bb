@@ -30,7 +30,7 @@ void SetSupportedScaleFactorsTo1xAnd2x();
 const SkBitmap CreateBitmap(int width, int height);
 
 // Returns PNG encoded bytes for a bitmap of |edge_size|x|edge_size|.
-scoped_refptr<base::RefCountedBytes> CreatePNGBytes(int edge_size);
+scoped_refptr<base::RefCountedMemory> CreatePNGBytes(int edge_size);
 
 // TODO(rohitrao): Remove the no-argument version of CreateImage().
 gfx::Image CreateImage();

@@ -11,7 +11,7 @@ ImagePNGRep::ImagePNGRep()
       scale_factor(ui::SCALE_FACTOR_NONE) {
 }
 
-ImagePNGRep::ImagePNGRep(const scoped_refptr<base::RefCountedBytes>& data,
+ImagePNGRep::ImagePNGRep(const scoped_refptr<base::RefCountedMemory>& data,
                          ui::ScaleFactor data_scale_factor)
     : raw_data(data),
       scale_factor(data_scale_factor) {

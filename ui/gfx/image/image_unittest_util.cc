@@ -43,7 +43,7 @@ const SkBitmap CreateBitmap(int width, int height) {
   return bitmap;
 }
 
-scoped_refptr<base::RefCountedBytes> CreatePNGBytes(int edge_size) {
+scoped_refptr<base::RefCountedMemory> CreatePNGBytes(int edge_size) {
   SkBitmap bitmap = CreateBitmap(edge_size, edge_size);
   scoped_refptr<base::RefCountedBytes> bytes(new base::RefCountedBytes());
   PNGCodec::EncodeBGRASkBitmap(bitmap, false, &bytes->data());

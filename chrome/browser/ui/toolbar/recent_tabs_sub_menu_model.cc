@@ -403,8 +403,10 @@ void RecentTabsSubMenuModel::AddTabFavicon(int model_index,
   std::string favicon_png;
   if (associator &&
       associator->GetSyncedFaviconForPageURL(url.spec(), &favicon_png)) {
-    SetIcon(index_in_menu, gfx::Image(reinterpret_cast<const unsigned char*>(
-        favicon_png.data()), favicon_png.size()));
+    gfx::Image image = gfx::Image::CreateFrom1xPNGBytes(
+        reinterpret_cast<const unsigned char*>(favicon_png.data()),
+        favicon_png.size());
+    SetIcon(index_in_menu, image);
     return;
   }
 

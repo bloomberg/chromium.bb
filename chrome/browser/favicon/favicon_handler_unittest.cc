@@ -279,9 +279,11 @@ class TestFaviconHandler : public FaviconHandler {
                                   const GURL& icon_url,
                                   history::IconType icon_type,
                                   const gfx::Image& image) OVERRIDE {
-    std::vector<unsigned char> bitmap_data = image.As1xPNGBytes()->data();
-    history_handler_.reset(
-        new HistoryRequestHandler(page_url, icon_url, icon_type, bitmap_data));
+    scoped_refptr<base::RefCountedMemory> bytes = image.As1xPNGBytes();
+    std::vector<unsigned char> bitmap_data(bytes->front(),
+                                           bytes->front() + bytes->size());
+    history_handler_.reset(new HistoryRequestHandler(
+        page_url, icon_url, icon_type, bitmap_data));
   }
 
   virtual FaviconService* GetFaviconService() OVERRIDE {

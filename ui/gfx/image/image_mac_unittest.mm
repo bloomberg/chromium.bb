@@ -185,8 +185,8 @@ TEST_F(ImageMacTest, MultiResolutionPNGToNSImage) {
   const int kSize1x = 25;
   const int kSize2x = 50;
 
-  scoped_refptr<base::RefCountedBytes> bytes1x = gt::CreatePNGBytes(kSize1x);
-  scoped_refptr<base::RefCountedBytes> bytes2x = gt::CreatePNGBytes(kSize2x);
+  scoped_refptr<base::RefCountedMemory> bytes1x = gt::CreatePNGBytes(kSize1x);
+  scoped_refptr<base::RefCountedMemory> bytes2x = gt::CreatePNGBytes(kSize2x);
   std::vector<gfx::ImagePNGRep> image_png_reps;
   image_png_reps.push_back(gfx::ImagePNGRep(bytes1x, ui::SCALE_FACTOR_100P));
   image_png_reps.push_back(gfx::ImagePNGRep(bytes2x, ui::SCALE_FACTOR_200P));

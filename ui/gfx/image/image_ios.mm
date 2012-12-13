@@ -49,7 +49,7 @@ UIImage* CreateErrorUIImage(float scale) {
 // Converts from ImagePNGRep to UIImage.
 UIImage* CreateUIImageFromImagePNGRep(const gfx::ImagePNGRep& image_png_rep) {
   float scale = ui::GetScaleFactorScale(image_png_rep.scale_factor);
-  scoped_refptr<base::RefCountedBytes> png = image_png_rep.raw_data;
+  scoped_refptr<base::RefCountedMemory> png = image_png_rep.raw_data;
   CHECK(png.get());
   NSData* data = [NSData dataWithBytes:png->front() length:png->size()];
   UIImage* image = [[UIImage alloc] initWithData:data scale:scale];
@@ -58,7 +58,7 @@ UIImage* CreateUIImageFromImagePNGRep(const gfx::ImagePNGRep& image_png_rep) {
 
 }  // namespace
 
-scoped_refptr<base::RefCountedBytes> Get1xPNGBytesFromUIImage(
+scoped_refptr<base::RefCountedMemory> Get1xPNGBytesFromUIImage(
     UIImage* uiimage) {
   NSData* data = UIImagePNGRepresentation(uiimage);
 
@@ -95,7 +95,7 @@ UIImage* CreateUIImageFromPNG(
   return CreateUIImageFromImagePNGRep(image_png_reps[closest_index]);
 }
 
-scoped_refptr<base::RefCountedBytes> Get1xPNGBytesFromImageSkia(
+scoped_refptr<base::RefCountedMemory> Get1xPNGBytesFromImageSkia(
     const ImageSkia* skia) {
   // iOS does not expose libpng, so conversion from ImageSkia to PNG must go
   // through UIImage.

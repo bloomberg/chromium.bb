@@ -64,13 +64,6 @@ class UI_EXPORT Image {
   // Creates an empty image with no representations.
   Image();
 
-  // Creates a new image by copying the PNG-encoded input for use as the default
-  // representation. For example (from an std::vector):
-  // std::vector<unsigned char> png = ...;
-  // gfx::Image image(&png.front(), png.size());
-  // TODO(pkotwicz): Get rid of this constructor.
-  Image(const unsigned char* png, size_t input_size);
-
   // Creates a new image by copying the raw PNG-encoded input for use as the
   // default representation.
   explicit Image(const std::vector<ImagePNGRep>& image_reps);
@@ -111,9 +104,9 @@ class UI_EXPORT Image {
   // For example (from an std::vector):
   // std::vector<unsigned char> png = ...;
   // gfx::Image image =
-  //     Image::CreateFrom1xPNGEncodedData(&png.front(), png.size());
-  static Image CreateFrom1xPNGEncodedData(const unsigned char* input,
-                                          size_t input_size);
+  //     Image::CreateFrom1xPNGBytes(&png.front(), png.size());
+  static Image CreateFrom1xPNGBytes(const unsigned char* input,
+                                    size_t input_size);
 
   // Converts the Image to the desired representation and stores it internally.
   // The returned result is a weak pointer owned by and scoped to the life of
@@ -133,7 +126,7 @@ class UI_EXPORT Image {
   // unavailable, either because the image has no data for 1x or because it is
   // empty, an empty RefCountedBytes object is returned. NULL is never
   // returned.
-  scoped_refptr<base::RefCountedBytes> As1xPNGBytes() const;
+  scoped_refptr<base::RefCountedMemory> As1xPNGBytes() const;
 
   // Same as ToSkBitmap(), but returns a null SkBitmap if this image is empty.
   SkBitmap AsBitmap() const;
@@ -153,7 +146,7 @@ class UI_EXPORT Image {
   // backing pixels are shared amongst all copies (a fact of each of the
   // converted representations, rather than a limitation imposed by Image) and
   // so the result should be considered immutable.
-  scoped_refptr<base::RefCountedBytes> Copy1xPNGBytes() const;
+  scoped_refptr<base::RefCountedMemory> Copy1xPNGBytes() const;
   ImageSkia* CopyImageSkia() const;
   SkBitmap* CopySkBitmap() const;
 #if defined(TOOLKIT_GTK)

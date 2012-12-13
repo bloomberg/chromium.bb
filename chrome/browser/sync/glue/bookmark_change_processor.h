@@ -165,10 +165,10 @@ class BookmarkChangeProcessor : public BookmarkModelObserver,
                                        BookmarkModel* model,
                                        syncer::WriteNode* dst);
 
-  // Helper function to encode a bookmark's favicon into a PNG byte vector.
+  // Helper function to encode a bookmark's favicon into raw PNG data.
   static void EncodeFavicon(const BookmarkNode* src,
                             BookmarkModel* model,
-                            std::vector<unsigned char>* dst);
+                            scoped_refptr<base::RefCountedMemory>* dst);
 
   // Remove the sync node corresponding to |node|.  It shouldn't have
   // any children.
