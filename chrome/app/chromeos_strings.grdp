@@ -2856,9 +2856,6 @@ Battery full
   <message name="IDS_KEYBOARD_OVERLAY_OPEN_DIALOG" desc="The text in the keyboard overlay to explain the shortcut (open a dialog to select file).">
     Open dialog
   </message>
-  <message name="IDS_KEYBOARD_OVERLAY_OPEN_FILES_APP" desc="The text in the keyboard overlay to explain the shortcut (open the files app).">
-    Open Files app
-  </message>
   <message name="IDS_KEYBOARD_OVERLAY_PAGE_DOWN" desc="The text in the keyboard overlay to explain the shortcut.">
     Page Down
   </message>

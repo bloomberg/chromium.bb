@@ -181,7 +181,6 @@ struct I18nContentToMessage {
   { "keyboardOverlayOpenAddressInNewTab",
     IDS_KEYBOARD_OVERLAY_OPEN_ADDRESS_IN_NEW_TAB },
   { "keyboardOverlayOpenDialog", IDS_KEYBOARD_OVERLAY_OPEN_DIALOG },
-  { "keyboardOverlayOpenFilesApp", IDS_KEYBOARD_OVERLAY_OPEN_FILES_APP },
   { "keyboardOverlayPageDown", IDS_KEYBOARD_OVERLAY_PAGE_DOWN },
   { "keyboardOverlayPageUp", IDS_KEYBOARD_OVERLAY_PAGE_UP },
   { "keyboardOverlayPaste", IDS_KEYBOARD_OVERLAY_PASTE },

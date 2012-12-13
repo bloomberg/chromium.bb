@@ -15835,7 +15835,6 @@ var keyboardOverlayData = {
     'left<>ALT': 'keyboardOverlayGoBack',
     'left<>CTRL': 'keyboardOverlayPreviousWord',
     'left<>CTRL<>SHIFT': 'keyboardOverlaySelectWordAtATime',
-    'm<>CTRL': 'keyboardOverlayOpenFilesApp',
     'maximize<>ALT': 'keyboardOverlaySwapPrimaryMonitor',
     'maximize<>CTRL': 'keyboardOverlayMirrorMonitors',
     'maximize<>SHIFT': 'keyboardOverlayFullScreen',
