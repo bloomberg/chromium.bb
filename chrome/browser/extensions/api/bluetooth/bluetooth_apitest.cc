@@ -7,6 +7,7 @@
 #include "base/stringprintf.h"
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_api.h"
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_event_router.h"
+#include "chrome/browser/extensions/api/permissions/permissions_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -18,6 +19,7 @@
 #include "device/bluetooth/bluetooth_out_of_band_pairing_data.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/bluetooth/test/mock_bluetooth_device.h"
+#include "device/bluetooth/test/mock_bluetooth_socket.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using device::BluetoothAdapter;
@@ -136,6 +138,15 @@ static void CallProvidesServiceCallback(
   callback.Run(Value);
 }
 
+static void CallConnectToServiceCallback(
+    const std::string& name,
+    const BluetoothDevice::SocketCallback& callback) {
+  scoped_refptr<device::MockBluetoothSocket> socket =
+      new device::MockBluetoothSocket();
+  EXPECT_CALL(*socket, fd()).WillRepeatedly(testing::Return(1));
+  callback.Run(socket);
+}
+
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(BluetoothApiTest, IsAvailable) {
@@ -223,15 +234,14 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetLocalOutOfBandPairingData) {
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothApiTest, SetOutOfBandPairingData) {
-  std::string device_address("11:12:13:14:15:16");
-  EXPECT_CALL(*mock_adapter_, GetDevice(device_address))
+  EXPECT_CALL(*mock_adapter_, GetDevice(device1_->address()))
       .WillOnce(testing::Return(device1_.get()));
   EXPECT_CALL(*device1_,
               ClearOutOfBandPairingData(testing::Truly(CallClosure),
                                         testing::_));
 
   std::string params = base::StringPrintf(
-      "[{\"deviceAddress\":\"%s\"}]", device_address.c_str());
+      "[{\"deviceAddress\":\"%s\"}]", device1_->address().c_str());
 
   scoped_refptr<api::BluetoothSetOutOfBandPairingDataFunction> set_oob_function;
   set_oob_function = setupFunction(
@@ -243,7 +253,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, SetOutOfBandPairingData) {
   // Try again with an error
   testing::Mock::VerifyAndClearExpectations(mock_adapter_);
   testing::Mock::VerifyAndClearExpectations(device1_.get());
-  EXPECT_CALL(*mock_adapter_, GetDevice(device_address))
+  EXPECT_CALL(*mock_adapter_, GetDevice(device1_->address()))
       .WillOnce(testing::Return(device1_.get()));
   EXPECT_CALL(*device1_,
               ClearOutOfBandPairingData(testing::_,
@@ -457,4 +467,17 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetDevicesError) {
   listener.Reply("go");
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+IN_PROC_BROWSER_TEST_F(BluetoothApiTest, Permissions) {
+  RequestPermissionsFunction::SetAutoConfirmForTests(true);
+  RequestPermissionsFunction::SetIgnoreUserGestureForTests(true);
+
+  EXPECT_CALL(*mock_adapter_, GetDevice(device1_->address()))
+      .WillOnce(testing::Return(device1_.get()));
+  EXPECT_CALL(*device1_,
+              ConnectToService(testing::_, testing::_))
+      .WillOnce(testing::Invoke(CallConnectToServiceCallback));
+
+  EXPECT_TRUE(RunExtensionTest("bluetooth/permissions")) << message_;
 }

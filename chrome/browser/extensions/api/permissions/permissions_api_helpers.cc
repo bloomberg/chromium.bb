@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/permissions/permissions_api_helpers.h"
 
 #include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/values.h"
 #include "chrome/common/extensions/api/permissions.h"
 #include "chrome/common/extensions/extension.h"
@@ -27,6 +28,7 @@ namespace permissions_api_helpers {
 
 namespace {
 
+const char kDelimiter[] = "|";
 const char kInvalidParameter[] =
     "Invalid argument for permission '*'.";
 const char kInvalidOrigin[] =
@@ -34,7 +36,7 @@ const char kInvalidOrigin[] =
 const char kUnknownPermissionError[] =
     "'*' is not a recognized permission.";
 const char kUnsupportedPermissionId[] =
-    "Only the bluetoothDevice and usbDevice permissions support arguments.";
+    "Only the bluetoothDevices and usbDevices permissions support arguments.";
 
 }  // namespace
 
@@ -44,7 +46,17 @@ scoped_ptr<Permissions> PackPermissionSet(const PermissionSet* set) {
   permissions->permissions.reset(new std::vector<std::string>());
   for (APIPermissionSet::const_iterator i = set->apis().begin();
        i != set->apis().end(); ++i) {
-    permissions->permissions->push_back(i->ToString());
+    base::Value* value = NULL;
+    i->ToValue(&value);
+    if (!value) {
+      permissions->permissions->push_back(i->name());
+    } else {
+      std::string name(i->name());
+      std::string json;
+      base::JSONWriter::Write(value, &json);
+      permissions->permissions->push_back(name + kDelimiter + json);
+      delete value;
+    }
   }
 
   permissions->origins.reset(new std::vector<std::string>());
@@ -67,8 +79,8 @@ scoped_refptr<PermissionSet> UnpackPermissionSet(
       // objects/strings all the way through the API. Until then, put this
       // processing here.
       // http://code.google.com/p/chromium/issues/detail?id=162042
-      if (it->find("|") != std::string::npos) {
-        size_t delimiter = it->find("|");
+      if (it->find(kDelimiter) != std::string::npos) {
+        size_t delimiter = it->find(kDelimiter);
         std::string permission_name = it->substr(0, delimiter);
         std::string permission_arg = it->substr(delimiter + 1);
 

@@ -152,6 +152,40 @@ bool SocketPermissionData::Check(
   return true;
 }
 
+void SocketPermissionData::ToValue(base::Value** value) const {
+  *value = base::Value::CreateStringValue(GetAsString());
+}
+
+bool SocketPermissionData::FromValue(const base::Value* value) {
+  std::string spec;
+  if (!value->GetAsString(&spec))
+    return false;
+
+  return Parse(spec);
+}
+
+SocketPermissionData::HostType SocketPermissionData::GetHostType() const {
+  return pattern_.host.empty() ? SocketPermissionData::ANY_HOST :
+         match_subdomains_     ? SocketPermissionData::HOSTS_IN_DOMAINS :
+                                 SocketPermissionData::SPECIFIC_HOSTS;
+}
+
+const std::string SocketPermissionData::GetHost() const {
+  return pattern_.host;
+}
+
+content::SocketPermissionRequest& SocketPermissionData::pattern() {
+  // Clear the spec because the caller could mutate |this|.
+  spec_.clear();
+  return pattern_;
+}
+
+bool& SocketPermissionData::match_subdomains() {
+  // Clear the spec because the caller could mutate |this|.
+  spec_.clear();
+  return match_subdomains_;
+}
+
 bool SocketPermissionData::Parse(const std::string& permission) {
   do {
     pattern_.host.clear();
@@ -208,16 +242,6 @@ bool SocketPermissionData::Parse(const std::string& permission) {
   return false;
 }
 
-SocketPermissionData::HostType SocketPermissionData::GetHostType() const {
-  return pattern_.host.empty() ? SocketPermissionData::ANY_HOST :
-         match_subdomains_     ? SocketPermissionData::HOSTS_IN_DOMAINS :
-                                 SocketPermissionData::SPECIFIC_HOSTS;
-}
-
-const std::string SocketPermissionData::GetHost() const {
-  return pattern_.host;
-}
-
 const std::string& SocketPermissionData::GetAsString() const {
   if (!spec_.empty())
     return spec_;
@@ -239,18 +263,6 @@ const std::string& SocketPermissionData::GetAsString() const {
     spec_.append(1, kColon).append(base::IntToString(pattern_.port));
 
   return spec_;
-}
-
-content::SocketPermissionRequest& SocketPermissionData::pattern() {
-  // Clear the spec because the caller could mutate |this|.
-  spec_.clear();
-  return pattern_;
-}
-
-bool& SocketPermissionData::match_subdomains() {
-  // Clear the spec because the caller could mutate |this|.
-  spec_.clear();
-  return match_subdomains_;
 }
 
 void SocketPermissionData::Reset() {

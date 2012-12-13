@@ -138,10 +138,6 @@ class APIPermission {
     return info_;
   }
 
-  // Returns a string representation of this permissions.  The default string
-  // representation is the name of the permission.
-  virtual std::string ToString() const;
-
   // Returns true if this permission cannot be found in the manifest.
   virtual bool ManifestEntryForbidden() const;
 

@@ -8,6 +8,6 @@
     }
   },
   "optional_permissions": [
-    {"usbDevice":["123:456"]}
+    {"usbDevices":[{"vendorId":123,"productId":123}]}
   ]
 }

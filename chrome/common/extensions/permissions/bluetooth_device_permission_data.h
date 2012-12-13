@@ -9,6 +9,12 @@
 
 #include "chrome/common/extensions/permissions/api_permission.h"
 
+namespace base {
+
+class Value;
+
+}  // namespace base
+
 namespace extensions {
 
 // A pattern that can be used to match a Bluetooth device permission.
@@ -22,15 +28,16 @@ class BluetoothDevicePermissionData {
   // matches the address of this object..
   bool Check(const APIPermission::CheckParam* param) const;
 
-  // Populate the address from a string.
-  bool Parse(const std::string& spec);
+  // Convert |this| into a base::Value.
+  void ToValue(base::Value** value) const;
 
-  // Return the address.
-  const std::string& GetAsString() const;
+  // Populate |this| from a base::Value.
+  bool FromValue(const base::Value* value);
 
   bool operator<(const BluetoothDevicePermissionData& rhs) const;
   bool operator==(const BluetoothDevicePermissionData& rhs) const;
 
+  // The address |this| matches against.
   const std::string& device_address() const { return device_address_; }
 
   // This accessor is provided for IPC_STRUCT_TRAITS_MEMBER.  Please

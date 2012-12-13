@@ -6,7 +6,14 @@
 
 #include <string>
 
+#include "base/values.h"
 #include "chrome/common/extensions/permissions/bluetooth_device_permission.h"
+
+namespace {
+
+const char* kDeviceAddressKey = "deviceAddress";
+
+}  // namespace
 
 namespace extensions {
 
@@ -27,13 +34,26 @@ bool BluetoothDevicePermissionData::Check(
   return device_address_ == specific_param.device_address;
 }
 
-bool BluetoothDevicePermissionData::Parse(const std::string& spec) {
-  device_address_ = spec;
-  return true;
+void BluetoothDevicePermissionData::ToValue(base::Value** value) const {
+  base::DictionaryValue* result = new base::DictionaryValue();
+  result->SetString(kDeviceAddressKey, device_address_);
+  *value = result;
 }
 
-const std::string &BluetoothDevicePermissionData::GetAsString() const {
-  return device_address_;
+bool BluetoothDevicePermissionData::FromValue(const base::Value* value) {
+  if (!value)
+    return false;
+
+  const base::DictionaryValue* dict_value;
+  if (!value->GetAsDictionary(&dict_value))
+    return false;
+
+  if (!dict_value->GetString(kDeviceAddressKey, &device_address_)) {
+    device_address_.clear();
+    return false;
+  }
+
+  return true;
 }
 
 bool BluetoothDevicePermissionData::operator<(

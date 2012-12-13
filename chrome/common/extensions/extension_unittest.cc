@@ -1250,7 +1250,7 @@ TEST(ExtensionTest, DontSyncDefault) {
 
 TEST(ExtensionTest, OptionalOnlyPermission) {
   // Set feature current channel to dev because the only permission that must
-  // be optional (usbDevice) is only available on dev channel.
+  // be optional (usbDevices) is only available on dev channel.
   Feature::ScopedCurrentChannel scoped_channel(
       chrome::VersionInfo::CHANNEL_DEV);
 
@@ -1262,7 +1262,7 @@ TEST(ExtensionTest, OptionalOnlyPermission) {
                                     &error);
   EXPECT_TRUE(extension == NULL);
   ASSERT_EQ(ErrorUtils::FormatErrorMessage(
-        errors::kPermissionMustBeOptional, "usbDevice"), error);
+        errors::kPermissionMustBeOptional, "usbDevices"), error);
 
   error.clear();
   extension = LoadManifestUnchecked("optional_only_permission",

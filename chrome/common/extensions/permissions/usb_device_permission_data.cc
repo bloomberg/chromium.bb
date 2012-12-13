@@ -10,24 +10,26 @@
 #include "base/basictypes.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
+#include "base/values.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
 #include "chrome/common/extensions/permissions/usb_device_permission.h"
 
 namespace {
 
-const char kColon = ':';
+const char* kProductIdKey = "productId";
+const char* kVendorIdKey = "vendorId";
 
 }  // namespace
 
 namespace extensions {
 
 UsbDevicePermissionData::UsbDevicePermissionData()
-  : vendor_id_(0), product_id_(0), spec_("") {
+  : vendor_id_(0), product_id_(0) {
 }
 
 UsbDevicePermissionData::UsbDevicePermissionData(uint16 vendor_id,
                                                  uint16 product_id)
-  : vendor_id_(vendor_id), product_id_(product_id), spec_("") {
+  : vendor_id_(vendor_id), product_id_(product_id) {
 }
 
 bool UsbDevicePermissionData::Check(
@@ -40,33 +42,35 @@ bool UsbDevicePermissionData::Check(
       product_id_ == specific_param.product_id;
 }
 
-bool UsbDevicePermissionData::Parse(const std::string& spec) {
-  spec_.clear();
+void UsbDevicePermissionData::ToValue(base::Value** value) const {
+  base::DictionaryValue* result = new base::DictionaryValue();
+  result->SetInteger(kVendorIdKey, vendor_id_);
+  result->SetInteger(kProductIdKey, product_id_);
+  *value = result;
+}
 
-  std::vector<std::string> tokens;
-  base::SplitStringDontTrim(spec, kColon, &tokens);
-  if (tokens.size() != 2)
+bool UsbDevicePermissionData::FromValue(const base::Value* value) {
+  if (!value)
+    return false;
+
+  const base::DictionaryValue* dict_value;
+  if (!value->GetAsDictionary(&dict_value))
     return false;
 
   int temp;
-  if (!base::StringToInt(tokens[0], &temp) || temp < 0 || temp > kuint16max)
+  if (!dict_value->GetInteger(kVendorIdKey, &temp))
+    return false;
+  if (temp < 0 || temp > kuint16max)
     return false;
   vendor_id_ = temp;
 
-  if (!base::StringToInt(tokens[1], &temp) || temp < 0 || temp > kuint16max)
+  if (!dict_value->GetInteger(kProductIdKey, &temp))
+    return false;
+  if (temp < 0 || temp > kuint16max)
     return false;
   product_id_ = temp;
 
   return true;
-}
-
-const std::string& UsbDevicePermissionData::GetAsString() const {
-  if (spec_.empty()) {
-    spec_.append(base::IntToString(vendor_id_));
-    spec_.append(1, kColon);
-    spec_.append(base::IntToString(product_id_));
-  }
-  return spec_;
 }
 
 bool UsbDevicePermissionData::operator<(

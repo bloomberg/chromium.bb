@@ -293,6 +293,21 @@ std::string SizeToString(const gfx::Size& max_size) {
          base::IntToString(max_size.height());
 }
 
+bool ContainsManifestForbiddenPermission(const APIPermissionSet& apis,
+                                         string16* error) {
+  CHECK(error);
+  for (APIPermissionSet::const_iterator i = apis.begin();
+      i != apis.end(); ++i) {
+    if ((*i)->ManifestEntryForbidden()) {
+      *error = ErrorUtils::FormatErrorMessageUTF16(
+          errors::kPermissionNotAllowedInManifest,
+          (*i)->info()->name());
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace
 
 const FilePath::CharType Extension::kManifestFilename[] =
@@ -1543,6 +1558,11 @@ bool Extension::InitFromValue(int flags, string16* error) {
                         error,
                         &optional_api_permissions,
                         &optional_host_permissions)) {
+    return false;
+  }
+
+  if (ContainsManifestForbiddenPermission(api_permissions, error) ||
+      ContainsManifestForbiddenPermission(optional_api_permissions, error)) {
     return false;
   }
 

@@ -19,12 +19,6 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace {
-
-const char* kSeparator = "|";
-
-}  // namespace
-
 namespace extensions {
 
 BluetoothDevicePermission::BluetoothDevicePermission(
@@ -34,16 +28,6 @@ BluetoothDevicePermission::BluetoothDevicePermission(
 }
 
 BluetoothDevicePermission::~BluetoothDevicePermission() {
-}
-
-std::string BluetoothDevicePermission::ToString() const {
-  std::vector<std::string> parts;
-  parts.push_back(name());
-  for (std::set<BluetoothDevicePermissionData>::const_iterator i =
-      data_set_.begin(); i != data_set_.end(); ++i) {
-    parts.push_back(i->GetAsString());
-  }
-  return JoinString(parts, kSeparator);
 }
 
 bool BluetoothDevicePermission::ManifestEntryForbidden() const {
@@ -60,7 +44,7 @@ PermissionMessages BluetoothDevicePermission::GetMessages() const {
   for (std::set<BluetoothDevicePermissionData>::const_iterator i =
       data_set_.begin(); i != data_set_.end(); ++i) {
 
-    const std::string& device_address = i->GetAsString();
+    const std::string& device_address = i->device_address();
     string16 device_identifier;
     if (bluetooth_adapter) {
       device::BluetoothDevice* device =

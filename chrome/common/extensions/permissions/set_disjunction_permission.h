@@ -121,10 +121,14 @@ class SetDisjunctionPermission : public APIPermission {
       return false;
 
     for (size_t i = 0; i < list->GetSize(); ++i) {
-      std::string str;
-      PermissionDataType data;
-      if (!list->GetString(i, &str) || !data.Parse(str))
+      const base::Value* item_value;
+      if (!list->Get(i, &item_value))
         return false;
+
+      PermissionDataType data;
+      if (!data.FromValue(item_value))
+        return false;
+
       data_set_.insert(data);
     }
     return true;
@@ -134,7 +138,9 @@ class SetDisjunctionPermission : public APIPermission {
     base::ListValue* list = new ListValue();
     typename std::set<PermissionDataType>::const_iterator i;
     for (i = data_set_.begin(); i != data_set_.end(); ++i) {
-      list->Append(base::Value::CreateStringValue(i->GetAsString()));
+      base::Value* item_value;
+      i->ToValue(&item_value);
+      list->Append(item_value);
     }
     *value = list;
   }

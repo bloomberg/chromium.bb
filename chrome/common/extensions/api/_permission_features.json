@@ -44,6 +44,10 @@
     "channel": "dev",
     "extension_types": ["platform_app"]
   },
+  "bluetoothDevices": {
+    "channel": "dev",
+    "extension_types": ["platform_app"]
+  },
   "bookmarkManagerPrivate": {
     "channel": "stable",
     "extension_types": ["extension", "packaged_app"],
@@ -349,7 +353,7 @@
     "channel": "dev",
     "extension_types": ["platform_app"]
   },
-  "usbDevice": {
+  "usbDevices": {
     "channel": "dev",
     "extension_types": ["platform_app"]
   },

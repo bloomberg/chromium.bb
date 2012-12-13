@@ -102,6 +102,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, OptionalPermissionsAutoConfirm) {
   EXPECT_TRUE(RunExtensionTest("permissions/optional")) << message_;
 }
 
+// Tests that the optional permissions API works correctly with complex
+// permissions.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ComplexOptionalPermissions) {
+  // Rather than setting the granted permissions, set the UI autoconfirm flag
+  // and run the same tests.
+  RequestPermissionsFunction::SetAutoConfirmForTests(true);
+  RequestPermissionsFunction::SetIgnoreUserGestureForTests(true);
+  EXPECT_TRUE(RunExtensionTest("permissions/complex_optional")) << message_;
+}
+
 // Test that denying the optional permissions confirmation dialog works.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, OptionalPermissionsDeny) {
   RequestPermissionsFunction::SetAutoConfirmForTests(false);

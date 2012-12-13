@@ -30,7 +30,6 @@ class BluetoothDevicePermission
   virtual ~BluetoothDevicePermission();
 
   // APIPermission overrides
-  virtual std::string ToString() const OVERRIDE;
   virtual bool ManifestEntryForbidden() const OVERRIDE;
   virtual PermissionMessages GetMessages() const OVERRIDE;
 };

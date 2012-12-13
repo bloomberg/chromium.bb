@@ -118,10 +118,6 @@ const char* APIPermission::name() const {
   return info()->name();
 }
 
-std::string APIPermission::ToString() const {
-  return name();
-}
-
 bool APIPermission::ManifestEntryForbidden() const {
   return false;
 }
@@ -336,13 +332,13 @@ void APIPermissionInfo::RegisterAllPermissions(
     { APIPermission::kBluetooth, "bluetooth", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH,
       PermissionMessage::kBluetooth },
-    { APIPermission::kBluetoothDevice, "bluetoothDevice",
+    { APIPermission::kBluetoothDevice, "bluetoothDevices",
       kFlagNone, 0, PermissionMessage::kNone,
       &::CreateAPIPermission<BluetoothDevicePermission> },
     { APIPermission::kUsb, "usb", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_USB,
       PermissionMessage::kUsb },
-    { APIPermission::kUsbDevice, "usbDevice",
+    { APIPermission::kUsbDevice, "usbDevices",
       kFlagMustBeOptional, 0, PermissionMessage::kNone,
       &::CreateAPIPermission<UsbDevicePermission> },
     { APIPermission::kSystemIndicator, "systemIndicator", kFlagNone,

@@ -9,6 +9,12 @@
 #include "base/basictypes.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
 
+namespace base {
+
+class Value;
+
+}  // namespace base
+
 namespace extensions {
 
 // A pattern that can be used to match a USB device permission.
@@ -19,9 +25,15 @@ class UsbDevicePermissionData {
   UsbDevicePermissionData();
   UsbDevicePermissionData(uint16 vendor_id, uint16 product_id);
 
+  // Check if |param| (which must be a UsbDevicePermissionData::CheckParam)
+  // matches the vendor and product IDs associated with |this|.
   bool Check(const APIPermission::CheckParam* param) const;
-  bool Parse(const std::string& spec);
-  const std::string& GetAsString() const;
+
+  // Convert |this| into a base::Value.
+  void ToValue(base::Value** value) const;
+
+  // Populate |this| from a base::Value.
+  bool FromValue(const base::Value* value);
 
   bool operator<(const UsbDevicePermissionData& rhs) const;
   bool operator==(const UsbDevicePermissionData& rhs) const;
@@ -37,7 +49,6 @@ class UsbDevicePermissionData {
  private:
   uint16 vendor_id_;
   uint16 product_id_;
-  mutable std::string spec_;
 };
 
 }  // namespace extensions

@@ -33,14 +33,7 @@ bool CreateAPIPermission(
   if (permission_info) {
     scoped_ptr<APIPermission> permission(
         permission_info->CreateAPIPermission());
-    if (permission->ManifestEntryForbidden()) {
-      if (error) {
-        *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kPermissionNotAllowedInManifest, permission_info->name());
-        return false;
-      }
-      LOG(WARNING) << "Permission not allowed in manifest.";
-    } else if (!permission->FromValue(permission_value)) {
+    if (!permission->FromValue(permission_value)) {
       if (error) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
             errors::kInvalidPermission, permission_info->name());
