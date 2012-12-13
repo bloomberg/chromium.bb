@@ -383,6 +383,7 @@ void DriveFileSyncService::ProcessRemoteChange(
       token.Pass(), processor, remote_change, callback));
   processor->PrepareForProcessRemoteChange(
       remote_change.url,
+      kServiceName,
       base::Bind(&DriveFileSyncService::DidPrepareForProcessRemoteChange,
                  AsWeakPtr(), base::Passed(&param)));
 }

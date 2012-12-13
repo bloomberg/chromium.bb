@@ -43,6 +43,7 @@ namespace sync_file_system {
 namespace {
 
 const char kSyncRootDirectoryName[] = "Chrome Syncable FileSystem";
+const char* kServiceName = DriveFileSyncService::kServiceName;
 
 FilePath::StringType ASCIIToFilePathString(const std::string& path) {
   return FilePath().AppendASCII(path).value();
@@ -90,8 +91,7 @@ class DriveFileSyncServiceTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
-    ASSERT_TRUE(fileapi::RegisterSyncableFileSystem(
-        DriveFileSyncService::kServiceName));
+    ASSERT_TRUE(fileapi::RegisterSyncableFileSystem(kServiceName));
 
     mock_drive_service_ = new StrictMock<google_apis::MockDriveService>;
 
@@ -131,8 +131,7 @@ class DriveFileSyncServiceTest : public testing::Test {
     sync_client_.reset();
     mock_drive_service_ = NULL;
 
-    EXPECT_TRUE(fileapi::RevokeSyncableFileSystem(
-        DriveFileSyncService::kServiceName));
+    EXPECT_TRUE(fileapi::RevokeSyncableFileSystem(kServiceName));
     message_loop_.RunUntilIdle();
   }
 
@@ -233,7 +232,7 @@ class DriveFileSyncServiceTest : public testing::Test {
   fileapi::FileSystemURL CreateURL(const GURL& origin,
                                    const FilePath::StringType& path) {
     return fileapi::CreateSyncableFileSystemURL(
-        origin, DriveFileSyncService::kServiceName, FilePath(path));
+        origin, kServiceName, FilePath(path));
   }
 
   void ProcessRemoteChange(fileapi::SyncStatusCode expected_status,
@@ -333,7 +332,7 @@ ACTION_P2(InvokeGetResourceListCallback5, error, result) {
 ACTION(PrepareForRemoteChange_Busy) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(arg1,
+      base::Bind(arg2,
                  fileapi::SYNC_STATUS_FILE_BUSY,
                  fileapi::SyncFileMetadata(),
                  fileapi::FileChangeList()));
@@ -342,7 +341,7 @@ ACTION(PrepareForRemoteChange_Busy) {
 ACTION(PrepareForRemoteChange_NotFound) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(arg1,
+      base::Bind(arg2,
                  fileapi::SYNC_STATUS_OK,
                  fileapi::SyncFileMetadata(fileapi::SYNC_FILE_TYPE_UNKNOWN, 0,
                                            base::Time()),
@@ -352,7 +351,7 @@ ACTION(PrepareForRemoteChange_NotFound) {
 ACTION(PrepareForRemoteChange_NotModified) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(arg1,
+      base::Bind(arg2,
                  fileapi::SYNC_STATUS_OK,
                  fileapi::SyncFileMetadata(fileapi::SYNC_FILE_TYPE_FILE, 0,
                                            base::Time()),
@@ -685,7 +684,7 @@ TEST_F(DriveFileSyncServiceTest, UnregisterOrigin) {
 TEST_F(DriveFileSyncServiceTest, ResolveLocalSyncOperationType) {
   const fileapi::FileSystemURL url = fileapi::CreateSyncableFileSystemURL(
       GURL("chrome-extension://example/"),
-      DriveFileSyncService::kServiceName,
+      kServiceName,
       FilePath().AppendASCII("path/to/file"));
   const std::string kResourceId("123456");
   const int64 kChangestamp = 654321;
@@ -812,7 +811,8 @@ TEST_F(DriveFileSyncServiceTest, RemoteChange_Busy) {
       .Times(AnyNumber());
 
   EXPECT_CALL(*mock_remote_processor(),
-              PrepareForProcessRemoteChange(CreateURL(kOrigin, kFileName), _))
+              PrepareForProcessRemoteChange(CreateURL(kOrigin, kFileName),
+                                            kServiceName, _))
       .WillOnce(PrepareForRemoteChange_Busy());
   EXPECT_CALL(*mock_remote_processor(),
               ClearLocalChanges(CreateURL(kOrigin, kFileName), _))
@@ -847,7 +847,8 @@ TEST_F(DriveFileSyncServiceTest, RemoteChange_NewFile) {
       .Times(AnyNumber());
 
   EXPECT_CALL(*mock_remote_processor(),
-              PrepareForProcessRemoteChange(CreateURL(kOrigin, kFileName), _))
+              PrepareForProcessRemoteChange(CreateURL(kOrigin, kFileName),
+                                            kServiceName, _))
       .WillOnce(PrepareForRemoteChange_NotFound());
   EXPECT_CALL(*mock_remote_processor(),
               ClearLocalChanges(CreateURL(kOrigin, kFileName), _))
@@ -900,7 +901,8 @@ TEST_F(DriveFileSyncServiceTest, RemoteChange_UpdateFile) {
       .Times(AnyNumber());
 
   EXPECT_CALL(*mock_remote_processor(),
-              PrepareForProcessRemoteChange(CreateURL(kOrigin, kFileName), _))
+              PrepareForProcessRemoteChange(CreateURL(kOrigin, kFileName),
+                                            kServiceName, _))
       .WillOnce(PrepareForRemoteChange_NotModified());
   EXPECT_CALL(*mock_remote_processor(),
               ClearLocalChanges(CreateURL(kOrigin, kFileName), _))

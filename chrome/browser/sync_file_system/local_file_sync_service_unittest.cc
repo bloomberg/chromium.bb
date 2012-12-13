@@ -12,6 +12,7 @@
 #include "chrome/browser/sync_file_system/local_file_sync_service.h"
 #include "chrome/browser/sync_file_system/mock_local_change_processor.h"
 #include "chrome/browser/sync_file_system/sync_file_system_test_util.h"
+#include "chrome/test/base/testing_profile.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/file_system_context.h"
@@ -117,7 +118,7 @@ class LocalFileSyncServiceTest
         thread_helper_.io_task_runner(),
         thread_helper_.file_task_runner()));
 
-    local_service_.reset(new LocalFileSyncService);
+    local_service_.reset(new LocalFileSyncService(&profile_));
 
     file_system_->SetUp();
 
@@ -157,6 +158,7 @@ class LocalFileSyncServiceTest
     base::RunLoop run_loop;
     local_service_->PrepareForProcessRemoteChange(
         url,
+        kServiceName,
         base::Bind(&DidPrepareForProcessRemoteChange,
                    where,
                    run_loop.QuitClosure(),
@@ -180,6 +182,8 @@ class LocalFileSyncServiceTest
   int64 GetNumChangesInTracker() const {
     return file_system_->file_system_context()->change_tracker()->num_changes();
   }
+
+  TestingProfile profile_;
 
   MultiThreadTestHelper thread_helper_;
 

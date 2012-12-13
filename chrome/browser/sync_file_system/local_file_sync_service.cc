@@ -5,8 +5,14 @@
 #include "chrome/browser/sync_file_system/local_file_sync_service.h"
 
 #include "base/stl_util.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync_file_system/local_change_processor.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/site_instance.h"
+#include "content/public/browser/storage_partition.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_url.h"
@@ -80,8 +86,9 @@ void LocalFileSyncService::OriginChangeMap::SetOriginChangeCount(
 
 // LocalFileSyncService -------------------------------------------------------
 
-LocalFileSyncService::LocalFileSyncService()
-    : sync_context_(new LocalFileSyncContext(
+LocalFileSyncService::LocalFileSyncService(Profile* profile)
+    : profile_(profile),
+      sync_context_(new LocalFileSyncContext(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO))) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -95,6 +102,7 @@ LocalFileSyncService::~LocalFileSyncService() {
 void LocalFileSyncService::Shutdown() {
   sync_context_->RemoveOriginChangeObserver(this);
   sync_context_->ShutdownOnUIThread();
+  profile_ = NULL;
 }
 
 void LocalFileSyncService::MaybeInitializeFileSystemContext(
@@ -164,7 +172,33 @@ void LocalFileSyncService::GetLocalFileMetadata(
 
 void LocalFileSyncService::PrepareForProcessRemoteChange(
     const FileSystemURL& url,
+    const std::string& service_name,
     const PrepareChangeCallback& callback) {
+  if (!ContainsKey(origin_to_contexts_, url.origin())) {
+    // This could happen if a remote sync is triggered for the app that hasn't
+    // been initialized in this service.
+    DCHECK(profile_);
+    // The given url.origin() must be for valid installed app.
+    ExtensionService* extension_service =
+        extensions::ExtensionSystem::Get(profile_)->extension_service();
+    const extensions::Extension* extension = extension_service->GetInstalledApp(
+        url.origin());
+    DCHECK(extension);
+    GURL site_url = extension_service->GetSiteForExtensionId(extension->id());
+    DCHECK(!site_url.is_empty());
+    scoped_refptr<fileapi::FileSystemContext> file_system_context =
+        content::BrowserContext::GetStoragePartitionForSite(
+            profile_, site_url)->GetFileSystemContext();
+    MaybeInitializeFileSystemContext(
+        url.origin(),
+        service_name,
+        file_system_context,
+        base::Bind(&LocalFileSyncService::DidInitializeForRemoteSync,
+                   AsWeakPtr(), url, service_name,
+                   file_system_context, callback));
+    return;
+  }
+
   DCHECK(ContainsKey(origin_to_contexts_, url.origin()));
   sync_context_->PrepareForSync(
       origin_to_contexts_[url.origin()], url,
@@ -250,6 +284,24 @@ void LocalFileSyncService::DidInitializeFileSystemContext(
                       OnLocalChangeAvailable(num_changes));
   }
   callback.Run(status);
+}
+
+void LocalFileSyncService::DidInitializeForRemoteSync(
+    const fileapi::FileSystemURL& url,
+    const std::string& service_name,
+    fileapi::FileSystemContext* file_system_context,
+    const PrepareChangeCallback& callback,
+    SyncStatusCode status) {
+  if (status != fileapi::SYNC_STATUS_OK) {
+    DVLOG(1) << "FileSystemContext initialization failed for remote sync:"
+             << url.DebugString() << " status=" << status
+             << " (" << SyncStatusCodeToString(status) << ")";
+    callback.Run(status, fileapi::SyncFileMetadata(),
+                 FileChangeList());
+    return;
+  }
+  origin_to_contexts_[url.origin()] = file_system_context;
+  PrepareForProcessRemoteChange(url, service_name, callback);
 }
 
 void LocalFileSyncService::RunLocalSyncCallback(

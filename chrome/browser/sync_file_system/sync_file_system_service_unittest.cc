@@ -126,7 +126,7 @@ class SyncFileSystemServiceTest : public testing::Test {
         thread_helper_.io_task_runner(),
         thread_helper_.file_task_runner()));
 
-    local_service_ = new LocalFileSyncService;
+    local_service_ = new LocalFileSyncService(&profile_);
     remote_service_ = new StrictMock<MockRemoteFileSyncService>;
     sync_service_.reset(new SyncFileSystemService(&profile_));
 

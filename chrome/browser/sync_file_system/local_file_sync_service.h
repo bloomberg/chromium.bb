@@ -20,6 +20,7 @@
 #include "webkit/fileapi/syncable/sync_status_code.h"
 
 class GURL;
+class Profile;
 
 namespace fileapi {
 class FileChange;
@@ -57,7 +58,7 @@ class LocalFileSyncService
   typedef base::Callback<void(bool has_pending_changes)>
       HasPendingLocalChangeCallback;
 
-  LocalFileSyncService();
+  explicit LocalFileSyncService(Profile* profile);
   virtual ~LocalFileSyncService();
 
   void Shutdown();
@@ -103,6 +104,7 @@ class LocalFileSyncService
   // RemoteChangeProcessor overrides.
   virtual void PrepareForProcessRemoteChange(
       const fileapi::FileSystemURL& url,
+      const std::string& service_name,
       const PrepareChangeCallback& callback) OVERRIDE;
   virtual void ApplyRemoteChange(
       const fileapi::FileChange& change,
@@ -150,6 +152,12 @@ class LocalFileSyncService
       fileapi::FileSystemContext* file_system_context,
       const fileapi::SyncStatusCallback& callback,
       fileapi::SyncStatusCode status);
+  void DidInitializeForRemoteSync(
+      const fileapi::FileSystemURL& url,
+      const std::string& service_name,
+      fileapi::FileSystemContext* file_system_context,
+      const PrepareChangeCallback& callback,
+      fileapi::SyncStatusCode status);
 
   // Runs local_sync_callback_ and resets it.
   void RunLocalSyncCallback(
@@ -167,6 +175,8 @@ class LocalFileSyncService
       const fileapi::FileChange& last_change,
       const fileapi::FileChangeList& changes,
       fileapi::SyncStatusCode status);
+
+  Profile* profile_;
 
   scoped_refptr<fileapi::LocalFileSyncContext> sync_context_;
 

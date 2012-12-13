@@ -531,7 +531,7 @@ ProfileKeyedService* SyncFileSystemServiceFactory::BuildServiceInstanceFor(
   SyncFileSystemService* service = new SyncFileSystemService(profile);
 
   scoped_ptr<LocalFileSyncService> local_file_service(
-      new LocalFileSyncService);
+      new LocalFileSyncService(profile));
 
   scoped_ptr<RemoteFileSyncService> remote_file_service;
   if (mock_remote_file_service_)
