@@ -97,8 +97,12 @@ void FaviconHelper::OnDownloadFavicon(int id,
     }
   }
 
-  Send(new IconHostMsg_DidDownloadFavicon(
-      routing_id(), id, image_url, true, image_size, result_images));
+  Send(new IconHostMsg_DidDownloadFavicon(routing_id(),
+                                          id,
+                                          image_url,
+                                          result_images.empty(),
+                                          image_size,
+                                          result_images));
 }
 
 bool FaviconHelper::DownloadFavicon(int id,
