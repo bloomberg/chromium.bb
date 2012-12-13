@@ -398,7 +398,7 @@
     "extension_types": ["extension", "packaged_app"]
   },
   "webview": {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": ["platform_app"]
   }
 }
