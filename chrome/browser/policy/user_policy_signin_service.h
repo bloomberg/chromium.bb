@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/policy/cloud_policy_service.h"
+#include "chrome/browser/policy/user_info_fetcher.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -42,6 +43,7 @@ class UserPolicySigninService
       public OAuth2AccessTokenConsumer,
       public CloudPolicyService::Observer,
       public CloudPolicyClient::Observer,
+      public UserInfoFetcher::Delegate,
       public content::NotificationObserver {
  public:
   // The callback invoked once policy fetch is complete. Passed boolean
@@ -80,6 +82,11 @@ class UserPolicySigninService
 
   // ProfileKeyedService implementation:
   virtual void Shutdown() OVERRIDE;
+
+  // UserInfoFetcher::Delegate implementation:
+  virtual void OnGetUserInfoSuccess(const DictionaryValue* response) OVERRIDE;
+  virtual void OnGetUserInfoFailure(
+      const GoogleServiceAuthError& error) OVERRIDE;
 
  private:
   // Returns false if cloud policy is disabled or if the currently signed-in
@@ -130,6 +137,14 @@ class UserPolicySigninService
 
   // Fetcher used while obtaining an OAuth token for client registration.
   scoped_ptr<OAuth2AccessTokenFetcher> oauth2_access_token_fetcher_;
+
+  // Helper class for fetching information from GAIA about the currently
+  // signed-in user.
+  scoped_ptr<UserInfoFetcher> user_info_fetcher_;
+
+  // Access token used to register the CloudPolicyClient and also access
+  // GAIA to get information about the signed in user.
+  std::string oauth_access_token_;
 
   DISALLOW_COPY_AND_ASSIGN(UserPolicySigninService);
 };

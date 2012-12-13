@@ -945,6 +945,7 @@
         'browser/policy/user_cloud_policy_manager_unittest.cc',
         'browser/policy/user_cloud_policy_store_chromeos_unittest.cc',
         'browser/policy/user_cloud_policy_store_unittest.cc',
+        'browser/policy/user_info_fetcher_unittest.cc',
         'browser/policy/user_policy_cache_unittest.cc',
         'browser/policy/user_policy_signin_service_unittest.cc',
         'browser/predictors/autocomplete_action_predictor_table_unittest.cc',

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/policy/user_policy_signin_service.h"
 
+#include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/cloud_policy_service.h"
@@ -24,13 +25,19 @@
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
 
 namespace {
-// TODO(atwilson): Move this once we add OAuth token support to TokenService.
+// Various OAuth service scopes required to do CloudPolicyClient registration.
 const char kServiceScopeChromeOSDeviceManagement[] =
     "https://www.googleapis.com/auth/chromeosdevicemanagement";
+const char kServiceScopeGetUserInfo[] =
+    "https://www.googleapis.com/auth/userinfo.email";
 
-// How long to delay before starting device policy network requests. Set to a
-// few seconds to alleviate contention during initial startup.
-const int64 kPolicyServiceInitializationDelayMilliseconds = 2000;
+// The key under which the hosted-domain value is stored in the UserInfo
+// response.
+const char kGetHostedDomainKey[] = "hd";
+
+// How long to delay before starting device policy network requests. Set to 10
+// seconds to alleviate contention during initial startup.
+const int64 kPolicyServiceInitializationDelayMilliseconds = 10000;
 }  // namespace
 
 namespace policy {
@@ -142,6 +149,8 @@ void UserPolicySigninService::Observe(
       // the Profile is not fully initialized when this object is constructed
       // (DoFinalInit() has not yet been called, so ProfileIOData and
       // SSLConfigServiceManager have not been created yet).
+      // TODO(atwilson): Switch to using a timer instead, to avoid contention
+      // with other services at startup (http://crbug.com/165468).
       SigninManager* signin_manager =
           SigninManagerFactory::GetForProfile(profile_);
       if (signin_manager->GetAuthenticatedUsername().empty())
@@ -246,15 +255,20 @@ void UserPolicySigninService::RegisterCloudPolicyService(
     std::string login_token) {
   DCHECK(!GetManager()->IsClientRegistered());
   DVLOG(1) << "Fetching new DM Token";
-  // Do nothing if already fetching an access token.
-  if (oauth2_access_token_fetcher_.get())
+  // Do nothing if already starting the registration process.
+  if (oauth2_access_token_fetcher_.get() ||
+      user_info_fetcher_.get() ||
+      !oauth_access_token_.empty()) {
     return;
+  }
 
-  // Start fetching an OAuth2 access token for the device management service and
-  // hand it off to the CloudPolicyClient when done.
+  // Start fetching an OAuth2 access token for the device management and
+  // userinfo services.
   oauth2_access_token_fetcher_.reset(
       new OAuth2AccessTokenFetcher(this, profile_->GetRequestContext()));
-  std::vector<std::string> scopes(1, kServiceScopeChromeOSDeviceManagement);
+  std::vector<std::string> scopes;
+  scopes.push_back(kServiceScopeChromeOSDeviceManagement);
+  scopes.push_back(kServiceScopeGetUserInfo);
   GaiaUrls* gaia_urls = GaiaUrls::GetInstance();
   oauth2_access_token_fetcher_->Start(
       gaia_urls->oauth2_chrome_client_id(),
@@ -275,11 +289,34 @@ void UserPolicySigninService::OnGetTokenFailure(
 void UserPolicySigninService::OnGetTokenSuccess(
     const std::string& access_token,
     const base::Time& expiration_time) {
-  UserCloudPolicyManager* manager = GetManager();
-  // Pass along the new access token to the CloudPolicyClient.
-  DVLOG(1) << "Fetched new scoped OAuth token:" << access_token;
-  manager->RegisterClient(access_token);
+  oauth_access_token_ = access_token;
+  DVLOG(1) << "Fetched new scoped OAuth token:" << oauth_access_token_;
   oauth2_access_token_fetcher_.reset();
+  // Now we've gotten our access token - contact GAIA to see if this is a
+  // hosted domain.
+  user_info_fetcher_.reset(new UserInfoFetcher(this,
+                                               profile_->GetRequestContext()));
+  user_info_fetcher_->Start(oauth_access_token_);
+}
+
+void UserPolicySigninService::OnGetUserInfoFailure(
+    const GoogleServiceAuthError& error) {
+  user_info_fetcher_.reset();
+  NotifyPendingFetchCallback(false);
+}
+
+void UserPolicySigninService::OnGetUserInfoSuccess(
+    const DictionaryValue* data) {
+  user_info_fetcher_.reset();
+  if (!data->HasKey(kGetHostedDomainKey)) {
+    VLOG(1) << "User not from a hosted domain - skipping registration";
+    NotifyPendingFetchCallback(false);
+    return;
+  }
+  VLOG(1) << "Registering CloudPolicyClient for user from hosted domain";
+  // The user is from a hosted domain, so it's OK to register the
+  // CloudPolicyClient and make requests from DMServer.
+  GetManager()->RegisterClient(oauth_access_token_);
 }
 
 void UserPolicySigninService::OnRegistrationStateChanged(

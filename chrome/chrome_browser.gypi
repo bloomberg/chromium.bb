@@ -1423,6 +1423,8 @@
         'browser/policy/user_cloud_policy_store_base.h',
         'browser/policy/user_cloud_policy_store_chromeos.cc',
         'browser/policy/user_cloud_policy_store_chromeos.h',
+        'browser/policy/user_info_fetcher.cc',
+        'browser/policy/user_info_fetcher.h',
         'browser/policy/user_policy_cache.cc',
         'browser/policy/user_policy_cache.h',
         'browser/policy/user_policy_disk_cache.cc',
