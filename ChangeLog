@@ -1,5 +1,9 @@
 2012-12-13  Christian Egli  <christian.egli@sbs.ch>
 
+	* tests/brl_checks.c:
+	* liblouis/compileTranslationTable.c: Fix compiler warnings, like
+	unused variables, etc.
+
 	* configure.ac:
 	* NEWS: Update for release 2.5.2
 

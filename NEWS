@@ -9,6 +9,7 @@ tables for Inuktitut, Korean and UEB.
    - Update gnulib
    - Fix a bug in the correct opcode which causes sometimes random
      results when translating. Thanks to Bert Frees.
+   - Fixes for compiler warnings.
 
 ** New features
 *** New Braille tables

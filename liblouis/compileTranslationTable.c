@@ -1484,7 +1484,6 @@ parseChars (FileInfo * nested, CharsString * result, CharsString * token)
 	{
 	  if (ch == '\\')
 	    {			/* escape sequence */
-	      int ok = 1;
 	      switch (ch = token->chars[in])
 		{
 		case '\\':
@@ -1531,7 +1530,6 @@ parseChars (FileInfo * nested, CharsString * result, CharsString * token)
 		    not32:
 		      compileError (nested,
 				    "liblouis has not been compiled for 32-bit Unicode");
-		      ok = 0;
 		      break;
 		    }
 		  if (token->length - in > 5)
@@ -1552,7 +1550,6 @@ parseChars (FileInfo * nested, CharsString * result, CharsString * token)
 		  break;
 		default:
 		  compileError (nested, "invalid escape sequence '\\%c'", ch);
-		  ok = 0;
 		  break;
 		}
 	      in++;
@@ -5207,9 +5204,8 @@ lou_getTablePaths ()
 }
 */
 
-void
-debugHook ()
+void debugHook ()
 {
-  char *hook = "debug hook\n";
-  printf (hook);
+  char *hook = "debug hook";
+  printf ("%s\n", hook);
 }

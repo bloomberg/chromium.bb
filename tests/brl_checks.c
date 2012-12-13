@@ -110,7 +110,7 @@ check_inpos(const char *tableList, const char *str, const int *expected_poslist)
 {
   widechar *inbuf;
   widechar *outbuf;
-  int *inpos, *outpos;
+  int *inpos;
   int inlen;
   int outlen;
   int i, rv = 0;
