@@ -74,9 +74,10 @@ class ImageLoader : public ProfileKeyedService {
 
   // Checks whether image is a component extension resource. Returns false
   // if a given |resource| does not have a corresponding image in bundled
-  // resources. Otherwise fills |resource_id|.
+  // resources. Otherwise fills |resource_id|. This doesn't check if the
+  // extension the resource is in is actually a component extension.
   static bool IsComponentExtensionResource(
-      const extensions::Extension* extension,
+      const FilePath& extension_path,
       const FilePath& resource_path,
       int* resource_id);
 

@@ -244,7 +244,7 @@ TEST_F(ImageLoaderTest, IsComponentExtensionResource) {
 #if defined(FILE_MANAGER_EXTENSION)
   int resource_id;
   ASSERT_EQ(true,
-            ImageLoader::IsComponentExtensionResource(extension.get(),
+            ImageLoader::IsComponentExtensionResource(extension->path(),
                                                       resource.relative_path(),
                                                       &resource_id));
   ASSERT_EQ(IDR_FILE_MANAGER_ICON_16, resource_id);

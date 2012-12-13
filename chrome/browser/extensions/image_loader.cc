@@ -154,9 +154,10 @@ ImageLoader* ImageLoader::Get(Profile* profile) {
 }
 
 // static
-bool ImageLoader::IsComponentExtensionResource(const Extension* extension,
-                                               const FilePath& resource_path,
-                                               int* resource_id) {
+bool ImageLoader::IsComponentExtensionResource(
+    const FilePath& extension_path,
+    const FilePath& resource_path,
+    int* resource_id) {
   static const GritResourceMap kExtraComponentExtensionResources[] = {
     {"web_store/webstore_icon_128.png", IDR_WEBSTORE_ICON},
     {"web_store/webstore_icon_16.png", IDR_WEBSTORE_ICON_16},
@@ -168,10 +169,7 @@ bool ImageLoader::IsComponentExtensionResource(const Extension* extension,
   static const size_t kExtraComponentExtensionResourcesSize =
       arraysize(kExtraComponentExtensionResources);
 
-  if (extension->location() != Extension::COMPONENT)
-    return false;
-
-  FilePath directory_path = extension->path();
+  FilePath directory_path = extension_path;
   FilePath resources_dir;
   FilePath relative_path;
   if (!PathService::Get(chrome::DIR_RESOURCES, &resources_dir) ||
@@ -241,7 +239,9 @@ void ImageLoader::LoadImagesAsync(
            extension->path() == it->resource.extension_root());
 
     int resource_id;
-    if (IsComponentExtensionResource(extension, it->resource.relative_path(),
+    if (extension->location() == Extension::COMPONENT &&
+        IsComponentExtensionResource(extension->path(),
+                                     it->resource.relative_path(),
                                      &resource_id)) {
       LoadResourceOnUIThread(resource_id, &bitmaps[i]);
     }

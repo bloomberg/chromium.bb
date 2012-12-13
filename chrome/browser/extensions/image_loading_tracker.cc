@@ -306,11 +306,13 @@ void ImageLoadingTracker::LoadImages(
       loader_ = new ImageLoader(this);
 
     int resource_id = -1;
-    if (extensions::ImageLoader::IsComponentExtensionResource(
-        extension, it->resource.relative_path(), &resource_id))
+    if (extension->location() == Extension::COMPONENT &&
+        extensions::ImageLoader::IsComponentExtensionResource(
+            extension->path(), it->resource.relative_path(), &resource_id)) {
       loader_->LoadResource(*it, id, resource_id);
-    else
+    } else {
       loader_->LoadImage(*it, id);
+    }
   }
 }
 

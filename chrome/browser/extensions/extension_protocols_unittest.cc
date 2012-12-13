@@ -8,6 +8,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_protocols.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/test/mock_resource_context.h"
@@ -42,6 +43,24 @@ scoped_refptr<Extension> CreateTestExtension(const std::string& name,
   return extension;
 }
 
+scoped_refptr<Extension> CreateWebStoreExtension() {
+  DictionaryValue manifest;
+  manifest.SetString("name", "WebStore");
+  manifest.SetString("version", "1");
+  manifest.SetString("icons.16", "webstore_icon_16.png");
+
+  FilePath path;
+  EXPECT_TRUE(PathService::Get(chrome::DIR_RESOURCES, &path));
+  path = path.AppendASCII("web_store");
+
+  std::string error;
+  scoped_refptr<Extension> extension(
+      Extension::Create(path, Extension::COMPONENT, manifest,
+                        Extension::NO_FLAGS, &error));
+  EXPECT_TRUE(extension.get()) << error;
+  return extension;
+}
+
 class ExtensionProtocolTest : public testing::Test {
  public:
   ExtensionProtocolTest()
@@ -54,17 +73,21 @@ class ExtensionProtocolTest : public testing::Test {
     net::URLRequestContext* request_context =
         resource_context_.GetRequestContext();
     old_factory_ = request_context->job_factory();
-    // Register an incognito extension protocol handler.
-    job_factory_.SetProtocolHandler(
-        extensions::kExtensionScheme,
-        CreateExtensionProtocolHandler(true, extension_info_map_));
-    request_context->set_job_factory(&job_factory_);
   }
 
   virtual void TearDown() {
     net::URLRequestContext* request_context =
         resource_context_.GetRequestContext();
     request_context->set_job_factory(old_factory_);
+  }
+
+  void SetProtocolHandler(bool incognito) {
+    net::URLRequestContext* request_context =
+        resource_context_.GetRequestContext();
+    job_factory_.SetProtocolHandler(
+        extensions::kExtensionScheme,
+        CreateExtensionProtocolHandler(incognito, extension_info_map_));
+    request_context->set_job_factory(&job_factory_);
   }
 
   void StartRequest(net::URLRequest* request,
@@ -95,6 +118,9 @@ class ExtensionProtocolTest : public testing::Test {
 // in incognito, and it's either a non-main-frame request or a split-mode
 // extension).
 TEST_F(ExtensionProtocolTest, IncognitoRequest) {
+  // Register an incognito extension protocol handler.
+  SetProtocolHandler(true);
+
   struct TestCase {
     // Inputs.
     std::string name;
@@ -153,6 +179,37 @@ TEST_F(ExtensionProtocolTest, IncognitoRequest) {
             cases[i].name;
       }
     }
+  }
+}
+
+// Tests getting a resource for a component extension works correctly, both when
+// the extension is enabled and when it is disabled.
+TEST_F(ExtensionProtocolTest, ComponentResourceRequest) {
+  // Register a non-incognito extension protocol handler.
+  SetProtocolHandler(false);
+
+  scoped_refptr<Extension> extension = CreateWebStoreExtension();
+  extension_info_map_->AddExtension(
+      extension, base::Time::Now(), false);
+
+  // First test it with the extension enabled.
+  {
+    net::URLRequest request(extension->GetResourceURL("webstore_icon_16.png"),
+                            &test_delegate_,
+                            resource_context_.GetRequestContext());
+    StartRequest(&request, ResourceType::MEDIA);
+    EXPECT_EQ(net::URLRequestStatus::SUCCESS, request.status().status());
+  }
+
+  // And then test it with the extension disabled.
+  extension_info_map_->RemoveExtension(extension->id(),
+                                       extension_misc::UNLOAD_REASON_DISABLE);
+  {
+    net::URLRequest request(extension->GetResourceURL("webstore_icon_16.png"),
+                            &test_delegate_,
+                            resource_context_.GetRequestContext());
+    StartRequest(&request, ResourceType::MEDIA);
+    EXPECT_EQ(net::URLRequestStatus::SUCCESS, request.status().status());
   }
 }
 

@@ -378,8 +378,8 @@ ExtensionProtocolHandler::MaybeCreateJob(
     FilePath request_path =
         extension_file_util::ExtensionURLToRelativeFilePath(request->url());
     int resource_id;
-    if (extensions::ImageLoader::IsComponentExtensionResource(extension,
-        request_path, &resource_id)) {
+    if (extensions::ImageLoader::IsComponentExtensionResource(
+        directory_path, request_path, &resource_id)) {
       relative_path = relative_path.Append(request_path);
       relative_path = relative_path.NormalizePathSeparators();
       return new URLRequestResourceBundleJob(
