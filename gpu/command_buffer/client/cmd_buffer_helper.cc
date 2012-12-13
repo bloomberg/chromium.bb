@@ -172,7 +172,6 @@ int32 CommandBufferHelper::InsertToken() {
 // Waits until the current token value is greater or equal to the value passed
 // in argument.
 void CommandBufferHelper::WaitForToken(int32 token) {
-  TRACE_EVENT_IF_LONGER_THAN0(50, "gpu", "CommandBufferHelper::WaitForToken");
   if (!usable()) {
     return;
   }
