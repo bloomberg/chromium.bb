@@ -256,7 +256,7 @@ class ExtensionGalleriesHost
       }
 
       FilePath path = gallery_info.AbsolutePath();
-      if (!path.IsAbsolute())
+      if (!MediaStorageUtil::CanCreateFileSystem(device_id, path))
         continue;
 
       std::string fsid;
@@ -602,8 +602,7 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
     DCHECK(!MediaStorageUtil::IsMassStorageDevice(device_id));
 
     // Sanity checks for |path|.
-    CHECK(path.IsAbsolute());
-    CHECK(!path.ReferencesParent());
+    CHECK(MediaStorageUtil::CanCreateFileSystem(device_id, path));
     std::string fs_name(extension_misc::kMediaFileSystemPathPart);
     const std::string fsid =
         IsolatedContext::GetInstance()->RegisterFileSystemForPath(

@@ -28,6 +28,8 @@ class MediaStorageUtil {
     FIXED_MASS_STORAGE,
     // A MTP or PTP device.
     MTP_OR_PTP,
+    // A Mac ImageCapture device.
+    MAC_IMAGE_CAPTURE,
   };
 
   typedef std::set<std::string /*device id*/> DeviceIdSet;
@@ -54,6 +56,10 @@ class MediaStorageUtil {
   // Looks inside |device_id| to determine if it is a mass storage device
   // (type isn't MTP_OR_PTP).
   static bool IsMassStorageDevice(const std::string& device_id);
+
+  // Returns true if we will be able to create a filesystem for this device.
+  static bool CanCreateFileSystem(const std::string& device_id,
+                                  const FilePath& path);
 
   // Determines if the device is attached to the computer.
   static void IsDeviceAttached(const std::string& device_id,
