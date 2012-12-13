@@ -277,7 +277,7 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, NoJsManifestBackgroundPage) {
       message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, FLAKY_OpenTwoBackgroundPages) {
+IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, OpenTwoBackgroundPages) {
   host_resolver()->AddRule("a.com", "127.0.0.1");
   ASSERT_TRUE(StartTestServer());
 
@@ -367,7 +367,7 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, DISABLED_OpenPopupFromBGPage) {
   ASSERT_TRUE(RunExtensionTest("app_background_page/bg_open")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, OpenThenClose) {
+IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, DISABLED_OpenThenClose) {
   host_resolver()->AddRule("a.com", "127.0.0.1");
   ASSERT_TRUE(StartTestServer());
 
