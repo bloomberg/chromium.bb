@@ -61,7 +61,8 @@ class InstantController {
               size_t selection_end,
               bool verbatim,
               bool user_input_in_progress,
-              bool omnibox_popup_is_open);
+              bool omnibox_popup_is_open,
+              bool escape_pressed);
 
   // Sets the bounds of the omnibox dropdown, in screen coordinates.
   void SetOmniboxBounds(const gfx::Rect& bounds);

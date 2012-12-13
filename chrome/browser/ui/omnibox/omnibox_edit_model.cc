@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/auto_reset.h"
 #include "base/format_macros.h"
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
@@ -101,6 +102,7 @@ OmniboxEditModel::OmniboxEditModel(OmniboxView* view,
       is_keyword_hint_(false),
       profile_(profile),
       in_revert_(false),
+      in_escape_handler_(false),
       allow_exact_keyword_match_(false) {
   // Use a restricted subset of the autocomplete providers if we're using the
   // Instant Extended API, as it doesn't support them all.
@@ -628,9 +630,8 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
   }
 
   if (disposition != NEW_BACKGROUND_TAB) {
-    in_revert_ = true;
+    base::AutoReset<bool> tmp(&in_revert_, true);
     view_->RevertAll();  // Revert the box to its unedited state
-    in_revert_ = false;
   }
 
   if (match.type == AutocompleteMatch::EXTENSION_APP) {
@@ -652,6 +653,8 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
       destination_url = GURL(template_url->url_ref().
                              ReplaceSearchTerms(search_terms_args));
     }
+    // This calls RevertAll again.
+    base::AutoReset<bool> tmp(&in_revert_, true);
     controller_->OnAutocompleteAccept(destination_url, disposition,
                                       match.transition, alternate_nav_url);
   }
@@ -794,7 +797,9 @@ bool OmniboxEditModel::OnEscapeKeyPressed() {
   if (!user_input_in_progress_ && view_->IsSelectAll())
     return false;
 
+  in_escape_handler_ = true;
   view_->RevertAll();
+  in_escape_handler_ = false;
   view_->SelectAll(true);
   return true;
 }
@@ -1229,7 +1234,8 @@ bool OmniboxEditModel::DoInstant(const AutocompleteMatch& match) {
   view_->GetSelectionBounds(&start, &end);
 
   return instant->Update(match, user_text, full_text, start, end,
-      UseVerbatimInstant(), user_input_in_progress_, popup_->IsOpen());
+      UseVerbatimInstant(), user_input_in_progress_, popup_->IsOpen(),
+      in_escape_handler_);
 }
 
 void OmniboxEditModel::DoPrerender(const AutocompleteMatch& match) {

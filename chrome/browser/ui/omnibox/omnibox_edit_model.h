@@ -550,6 +550,11 @@ class OmniboxEditModel : public AutocompleteControllerDelegate {
   // in this case, so we use the flag to determine if this is happening.
   bool in_revert_;
 
+  // InstantController needs this in extended mode to distinguish the case in
+  // which it should instruct a committed search results page to revert to
+  // showing results for the original query.
+  bool in_escape_handler_;
+
   // Indicates if the upcoming autocomplete search is allowed to be treated as
   // an exact keyword match.  If this is true then keyword mode will be
   // triggered automatically if the input is "<keyword> <search string>".  We

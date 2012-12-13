@@ -170,7 +170,8 @@ bool InstantController::Update(const AutocompleteMatch& match,
                                size_t selection_end,
                                bool verbatim,
                                bool user_input_in_progress,
-                               bool omnibox_popup_is_open) {
+                               bool omnibox_popup_is_open,
+                               bool escape_pressed) {
   if (!extended_enabled_ && !instant_enabled_)
     return false;
 
@@ -178,7 +179,8 @@ bool InstantController::Update(const AutocompleteMatch& match,
            << " user_text='" << user_text << "' full_text='" << full_text << "'"
            << " selection_start=" << selection_start << " selection_end="
            << selection_end << " verbatim=" << verbatim << " typing="
-           << user_input_in_progress << " popup=" << omnibox_popup_is_open;
+           << user_input_in_progress << " popup=" << omnibox_popup_is_open
+           << " escape_pressed=" << escape_pressed;
 
   // If the popup is open, the user has to be typing.
   DCHECK(!omnibox_popup_is_open || user_input_in_progress);
@@ -229,8 +231,10 @@ bool InstantController::Update(const AutocompleteMatch& match,
           // be pointing to the previous tab (which was a search results page).
           // Ensure we don't send the omnibox text to a random webpage (the new
           // tab), by comparing the old and new WebContents.
-          if (instant_tab_->contents() == browser_->GetActiveWebContents())
+          if (escape_pressed &&
+              instant_tab_->contents() == browser_->GetActiveWebContents()) {
             instant_tab_->Submit(full_text);
+          }
         } else if (!full_text.empty()) {
           // If |full_text| is empty, the user is on the NTP. The preview may
           // be showing custom NTP content; hide only if that's not the case.
