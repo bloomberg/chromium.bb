@@ -689,7 +689,12 @@ class BookmarkBarViewTest7 : public BookmarkBarViewEventTestBase {
   GURL url_dragging_;
 };
 
+#if !(defined(OS_WIN) && defined(USE_AURA))
+// This test passes locally (on aero and non-aero) but fails on the trybots and
+// buildbot.
+// http://crbug.com/154081
 VIEW_TEST(BookmarkBarViewTest7, DNDToDifferentMenu)
+#endif
 
 // Drags from one menu to next so that original menu closes, then back to
 // original menu.
@@ -793,7 +798,12 @@ class BookmarkBarViewTest8 : public BookmarkBarViewEventTestBase {
   GURL url_dragging_;
 };
 
+#if !(defined(OS_WIN) && defined(USE_AURA))
+// This test passes locally (on aero and non-aero) but fails on the trybots and
+// buildbot.
+// http://crbug.com/154081
 VIEW_TEST(BookmarkBarViewTest8, DNDBackToOriginatingMenu)
+#endif
 
 // Moves the mouse over the scroll button and makes sure we get scrolling.
 class BookmarkBarViewTest9 : public BookmarkBarViewEventTestBase {
