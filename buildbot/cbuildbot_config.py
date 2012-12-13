@@ -906,6 +906,7 @@ internal_paladin.add_config('mario-paladin',
   boards=['x86-mario'],
   gs_path='gs://chromeos-x86-mario/pre-flight-master',
   paladin_builder_name='mario paladin',
+  vm_tests=constants.SIMPLE_AU_TEST_TYPE,
 )
 
 internal_arm_paladin.add_config('daisy-paladin',
@@ -952,7 +953,6 @@ internal_paladin.add_config('lumpy-paladin',
 internal_paladin.add_config('link-paladin',
   boards=['link'],
   paladin_builder_name='link paladin',
-  vm_tests=constants.SIMPLE_AU_TEST_TYPE,
 )
 
 internal_paladin.add_config('kiev-paladin',
