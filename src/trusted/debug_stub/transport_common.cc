@@ -257,7 +257,7 @@ SocketBinding *SocketBinding::Bind(const char *addr) {
   }
   // Do not delay sending small packets.  This significantly speeds up
   // remote debugging.  Debug stub uses buffering to send outgoing packets so
-  // they are not splitted to more TCP packets than necessary.
+  // they are not split into more TCP packets than necessary.
   int nodelay = 1;
   if (setsockopt(socket_handle, IPPROTO_TCP, TCP_NODELAY,
                  reinterpret_cast<char *>(&nodelay),
