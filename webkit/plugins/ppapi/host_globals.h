@@ -47,11 +47,11 @@ class HostGlobals : public ::ppapi::PpapiGlobals {
   virtual void PreCacheFontForFlash(const void* logfontw) OVERRIDE;
   virtual base::Lock* GetProxyLock() OVERRIDE;
   virtual void LogWithSource(PP_Instance instance,
-                             PP_LogLevel_Dev level,
+                             PP_LogLevel level,
                              const std::string& source,
                              const std::string& value) OVERRIDE;
   virtual void BroadcastLogWithSource(PP_Module module,
-                                      PP_LogLevel_Dev level,
+                                      PP_LogLevel level,
                                       const std::string& source,
                                       const std::string& value) OVERRIDE;
   virtual ::ppapi::MessageLoopShared* GetCurrentMessageLoop() OVERRIDE;

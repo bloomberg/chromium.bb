@@ -7,7 +7,6 @@
 #include <iostream>
 #include <sstream>
 
-#include "ppapi/c/dev/ppb_console_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_opengles2.h"
 #include "ppapi/cpp/core.h"

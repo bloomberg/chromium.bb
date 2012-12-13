@@ -10,9 +10,9 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_local.h"  // For testing purposes only.
-#include "ppapi/c/dev/ppb_console_dev.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
+#include "ppapi/c/ppb_console.h"
 #include "ppapi/shared_impl/api_id.h"
 #include "ppapi/shared_impl/ppapi_shared_export.h"
 
@@ -79,7 +79,7 @@ class PPAPI_SHARED_EXPORT PpapiGlobals {
   // Logs the given string to the JS console. If "source" is empty, the name of
   // the current module will be used, if it can be determined.
   virtual void LogWithSource(PP_Instance instance,
-                             PP_LogLevel_Dev level,
+                             PP_LogLevel level,
                              const std::string& source,
                              const std::string& value) = 0;
 
@@ -92,7 +92,7 @@ class PPAPI_SHARED_EXPORT PpapiGlobals {
   // Note that in the plugin process, the module parameter is ignored since
   // there is only one possible one.
   virtual void BroadcastLogWithSource(PP_Module module,
-                                      PP_LogLevel_Dev level,
+                                      PP_LogLevel level,
                                       const std::string& source,
                                       const std::string& value) = 0;
 

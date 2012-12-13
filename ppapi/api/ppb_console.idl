@@ -4,24 +4,24 @@
  */
 
 /**
- * This file defines the <code>PPB_Console_Dev</code> interface.
+ * This file defines the <code>PPB_Console</code> interface.
  */
 
 [generate_thunk]
 
 label Chrome {
-  M14 = 0.1
+  M25 = 1.0
 };
 
 [assert_size(4)]
-enum PP_LogLevel_Dev {
+enum PP_LogLevel {
   PP_LOGLEVEL_TIP = 0,
   PP_LOGLEVEL_LOG = 1,
   PP_LOGLEVEL_WARNING = 2,
   PP_LOGLEVEL_ERROR = 3
 };
 
-interface PPB_Console_Dev {
+interface PPB_Console {
   /**
    * Logs the given message to the JavaScript console associated with the
    * given plugin instance with the given logging level. The name of the plugin
@@ -30,7 +30,7 @@ interface PPB_Console_Dev {
    */
   void Log(
       [in] PP_Instance instance,
-      [in] PP_LogLevel_Dev level,
+      [in] PP_LogLevel level,
       [in] PP_Var value);
 
   /**
@@ -45,7 +45,7 @@ interface PPB_Console_Dev {
    */
   void LogWithSource(
       [in] PP_Instance instance,
-      [in] PP_LogLevel_Dev level,
+      [in] PP_LogLevel level,
       [in] PP_Var source,
       [in] PP_Var value);
 };

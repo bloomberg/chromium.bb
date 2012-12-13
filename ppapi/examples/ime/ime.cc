@@ -6,8 +6,8 @@
 #include <utility>
 #include <vector>
 
-#include "ppapi/c/dev/ppb_console_dev.h"
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
+#include "ppapi/c/ppb_console.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/dev/font_dev.h"
 #include "ppapi/cpp/dev/ime_input_event_dev.h"
@@ -701,8 +701,8 @@ class MyInstance : public pp::Instance {
 
   // Prints a debug message.
   void Log(const pp::Var& value) {
-    const PPB_Console_Dev* console = reinterpret_cast<const PPB_Console_Dev*>(
-        pp::Module::Get()->GetBrowserInterface(PPB_CONSOLE_DEV_INTERFACE));
+    const PPB_Console* console = reinterpret_cast<const PPB_Console*>(
+        pp::Module::Get()->GetBrowserInterface(PPB_CONSOLE_INTERFACE));
     if (!console)
       return;
     console->Log(pp_instance(), PP_LOGLEVEL_LOG, value.pp_var());

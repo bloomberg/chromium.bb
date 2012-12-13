@@ -58,13 +58,13 @@ base::Lock* TestGlobals::GetProxyLock() {
 }
 
 void TestGlobals::LogWithSource(PP_Instance instance,
-                                PP_LogLevel_Dev level,
+                                PP_LogLevel level,
                                 const std::string& source,
                                 const std::string& value) {
 }
 
 void TestGlobals::BroadcastLogWithSource(PP_Module module,
-                                         PP_LogLevel_Dev level,
+                                         PP_LogLevel level,
                                          const std::string& source,
                                          const std::string& value) {
 }

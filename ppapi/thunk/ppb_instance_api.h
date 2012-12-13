@@ -7,7 +7,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "ppapi/c/dev/ppb_console_dev.h"
 #include "ppapi/c/dev/ppb_text_input_dev.h"
 #include "ppapi/c/dev/ppb_url_util_dev.h"
 #include "ppapi/c/pp_bool.h"
@@ -15,6 +14,7 @@
 #include "ppapi/c/pp_size.h"
 #include "ppapi/c/pp_time.h"
 #include "ppapi/c/ppb_audio_config.h"
+#include "ppapi/c/ppb_console.h"
 #include "ppapi/c/ppb_gamepad.h"
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/ppb_mouse_cursor.h"
@@ -71,10 +71,10 @@ class PPB_Instance_API {
 
   // Console.
   virtual void Log(PP_Instance instance,
-                   PP_LogLevel_Dev log_level,
+                   PP_LogLevel log_level,
                    PP_Var value) = 0;
   virtual void LogWithSource(PP_Instance instance,
-                             PP_LogLevel_Dev log_level,
+                             PP_LogLevel log_level,
                              PP_Var source,
                              PP_Var value) = 0;
 

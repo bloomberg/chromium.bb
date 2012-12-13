@@ -247,7 +247,7 @@ void HostDispatcher::OnHostMsgLogWithSource(PP_Instance instance,
                                             int int_log_level,
                                             const std::string& source,
                                             const std::string& value) {
-  PP_LogLevel_Dev level = static_cast<PP_LogLevel_Dev>(int_log_level);
+  PP_LogLevel level = static_cast<PP_LogLevel>(int_log_level);
   if (instance) {
     PpapiGlobals::Get()->LogWithSource(instance, level, source, value);
   } else {

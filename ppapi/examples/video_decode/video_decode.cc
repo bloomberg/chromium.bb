@@ -11,8 +11,8 @@
 #include <set>
 #include <vector>
 
-#include "ppapi/c/dev/ppb_console_dev.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/c/ppb_console.h"
 #include "ppapi/c/ppb_opengles2.h"
 #include "ppapi/cpp/dev/video_decoder_client_dev.h"
 #include "ppapi/cpp/dev/video_decoder_dev.h"
@@ -178,7 +178,7 @@ class VideoDecodeDemoInstance : public pp::Instance,
   pp::CompletionCallbackFactory<VideoDecodeDemoInstance> callback_factory_;
 
   // Unowned pointers.
-  const PPB_Console_Dev* console_if_;
+  const PPB_Console* console_if_;
   const PPB_Core* core_if_;
   const PPB_OpenGLES2* gles2_if_;
 
@@ -226,8 +226,8 @@ VideoDecodeDemoInstance::VideoDecodeDemoInstance(PP_Instance instance,
       swap_ticks_(0),
       callback_factory_(this),
       context_(NULL) {
-  assert((console_if_ = static_cast<const PPB_Console_Dev*>(
-      module->GetBrowserInterface(PPB_CONSOLE_DEV_INTERFACE))));
+  assert((console_if_ = static_cast<const PPB_Console*>(
+      module->GetBrowserInterface(PPB_CONSOLE_INTERFACE))));
   assert((core_if_ = static_cast<const PPB_Core*>(
       module->GetBrowserInterface(PPB_CORE_INTERFACE))));
   assert((gles2_if_ = static_cast<const PPB_OpenGLES2*>(

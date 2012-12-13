@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
-#include "ppapi/c/dev/ppb_console_dev.h"
+#include "ppapi/c/ppb_console.h"
 #include "ppapi/shared_impl/host_resource.h"
 
 // All resource types should be added here. This implements our hand-rolled
@@ -203,7 +203,7 @@ class PPAPI_SHARED_EXPORT Resource : public base::RefCounted<Resource> {
 
  protected:
   // Logs a message to the console from this resource.
-  void Log(PP_LogLevel_Dev level, const std::string& message);
+  void Log(PP_LogLevel level, const std::string& message);
 
   // Notifications for subclasses.
   virtual void LastPluginRefWasDeleted() {}

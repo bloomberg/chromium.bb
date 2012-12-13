@@ -43,12 +43,12 @@
 #include "native_client/src/trusted/plugin/utility.h"
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 
-#include "ppapi/c/dev/ppb_console_dev.h"
 #include "ppapi/c/dev/ppp_find_dev.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
 #include "ppapi/c/dev/ppp_selection_dev.h"
 #include "ppapi/c/dev/ppp_zoom_dev.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/c/ppb_console.h"
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/c/ppp_input_event.h"
 #include "ppapi/c/ppp_instance.h"
@@ -1914,9 +1914,9 @@ void Plugin::AddToConsole(const nacl::string& text) {
                                  static_cast<uint32_t>(prefix_string.size()));
   PP_Var str = var_interface->VarFromUtf8(text.c_str(),
                                           static_cast<uint32_t>(text.size()));
-  const PPB_Console_Dev* console_interface =
-      static_cast<const PPB_Console_Dev*>(
-          module->GetBrowserInterface(PPB_CONSOLE_DEV_INTERFACE));
+  const PPB_Console* console_interface =
+      static_cast<const PPB_Console*>(
+          module->GetBrowserInterface(PPB_CONSOLE_INTERFACE));
   console_interface->LogWithSource(pp_instance(), PP_LOGLEVEL_LOG, prefix, str);
   var_interface->Release(prefix);
   var_interface->Release(str);

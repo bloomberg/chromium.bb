@@ -117,7 +117,7 @@ const void* PluginDispatcher::GetBrowserInterface(const char* interface_name) {
 
 // static
 void PluginDispatcher::LogWithSource(PP_Instance instance,
-                                     PP_LogLevel_Dev level,
+                                     PP_LogLevel level,
                                      const std::string& source,
                                      const std::string& value) {
   if (!g_live_dispatchers || !g_instance_to_dispatcher)

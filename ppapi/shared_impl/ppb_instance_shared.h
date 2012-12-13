@@ -19,10 +19,10 @@ class PPAPI_SHARED_EXPORT PPB_Instance_Shared
 
   // Implementation of some shared PPB_Instance_FunctionAPI functions.
   virtual void Log(PP_Instance instance,
-                   PP_LogLevel_Dev log_level,
+                   PP_LogLevel log_level,
                    PP_Var value) OVERRIDE;
   virtual void LogWithSource(PP_Instance instance,
-                             PP_LogLevel_Dev log_level,
+                             PP_LogLevel log_level,
                              PP_Var source,
                              PP_Var value) OVERRIDE;
 

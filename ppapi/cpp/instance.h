@@ -14,6 +14,7 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
+#include "ppapi/c/ppb_console.h"
 #include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/view.h"
 
@@ -469,6 +470,29 @@ class Instance {
   /// and dictionaries are not yet supported. Ref-counted var types are copied,
   /// and are therefore not shared between the instance and the browser.
   void PostMessage(const Var& message);
+
+  /// @}
+
+  /// @{
+  /// @name PPB_Console methods for logging to the console:
+
+  /// Logs the given message to the JavaScript console associated with the
+  /// given plugin instance with the given logging level. The name of the plugin
+  /// issuing the log message will be automatically prepended to the message.
+  /// The value may be any type of Var.
+  void LogToConsole(PP_LogLevel level, const Var& value);
+
+  /// Logs a message to the console with the given source information rather
+  /// than using the internal PPAPI plugin name. The name must be a string var.
+  ///
+  /// The regular log function will automatically prepend the name of your
+  /// plugin to the message as the "source" of the message. Some plugins may
+  /// wish to override this. For example, if your plugin is a Python
+  /// interpreter, you would want log messages to contain the source .py file
+  /// doing the log statement rather than have "python" show up in the console.
+  void LogToConsoleWithSource(PP_LogLevel level,
+                              const Var& source,
+                              const Var& value);
 
   /// @}
 

@@ -9,7 +9,6 @@
 #include "ppapi/c/ppb.h"
 #include "ppapi/c/dev/ppb_audio_input_dev.h"
 #include "ppapi/c/dev/ppb_buffer_dev.h"
-#include "ppapi/c/dev/ppb_console_dev.h"
 #include "ppapi/c/dev/ppb_crypto_dev.h"
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "ppapi/c/dev/ppb_device_ref_dev.h"
@@ -43,6 +42,7 @@
 #include "ppapi/c/dev/ppp_zoom_dev.h"
 #include "ppapi/c/ppb_audio.h"
 #include "ppapi/c/ppb_audio_config.h"
+#include "ppapi/c/ppb_console.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppb_file_io.h"
 #include "ppapi/c/ppb_file_ref.h"
@@ -121,6 +121,7 @@ static int mystrcmp(const char* s1, const char *s2) {
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Audio_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioConfig_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioConfig_1_1;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Console_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Core_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileIO_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileIO_1_1;
@@ -171,7 +172,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLLoaderTrusted_0_3;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_3;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Buffer_Dev_0_4;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Console_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Crypto_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_CursorControl_Dev_0_4;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_DeviceRef_Dev_0_1;
@@ -259,6 +259,22 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Instance_Private_0_1;
 /* Not generating wrapper methods for PPB_AudioConfig_1_0 */
 
 /* Not generating wrapper methods for PPB_AudioConfig_1_1 */
+
+/* Begin wrapper methods for PPB_Console_1_0 */
+
+static __attribute__((pnaclcall))
+void Pnacl_M25_PPB_Console_Log(PP_Instance instance, PP_LogLevel level, struct PP_Var value) {
+  const struct PPB_Console_1_0 *iface = Pnacl_WrapperInfo_PPB_Console_1_0.real_iface;
+  iface->Log(instance, level, value);
+}
+
+static __attribute__((pnaclcall))
+void Pnacl_M25_PPB_Console_LogWithSource(PP_Instance instance, PP_LogLevel level, struct PP_Var source, struct PP_Var value) {
+  const struct PPB_Console_1_0 *iface = Pnacl_WrapperInfo_PPB_Console_1_0.real_iface;
+  iface->LogWithSource(instance, level, source, value);
+}
+
+/* End wrapper methods for PPB_Console_1_0 */
 
 /* Begin wrapper methods for PPB_Core_1_0 */
 
@@ -1585,22 +1601,6 @@ void Pnacl_M25_PPB_AudioInput_Dev_Close(PP_Resource audio_input) {
 /* End wrapper methods for PPB_AudioInput_Dev_0_3 */
 
 /* Not generating wrapper methods for PPB_Buffer_Dev_0_4 */
-
-/* Begin wrapper methods for PPB_Console_Dev_0_1 */
-
-static __attribute__((pnaclcall))
-void Pnacl_M14_PPB_Console_Dev_Log(PP_Instance instance, PP_LogLevel_Dev level, struct PP_Var value) {
-  const struct PPB_Console_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_Console_Dev_0_1.real_iface;
-  iface->Log(instance, level, value);
-}
-
-static __attribute__((pnaclcall))
-void Pnacl_M14_PPB_Console_Dev_LogWithSource(PP_Instance instance, PP_LogLevel_Dev level, struct PP_Var source, struct PP_Var value) {
-  const struct PPB_Console_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_Console_Dev_0_1.real_iface;
-  iface->LogWithSource(instance, level, source, value);
-}
-
-/* End wrapper methods for PPB_Console_Dev_0_1 */
 
 /* Not generating wrapper methods for PPB_Crypto_Dev_0_1 */
 
@@ -3506,6 +3506,11 @@ static struct PP_Var Pnacl_M18_PPP_Instance_Private_GetInstanceObject(PP_Instanc
 
 /* Not generating wrapper interface for PPB_AudioConfig_1_1 */
 
+struct PPB_Console_1_0 Pnacl_Wrappers_PPB_Console_1_0 = {
+    .Log = (void (*)(PP_Instance instance, PP_LogLevel level, struct PP_Var value))&Pnacl_M25_PPB_Console_Log,
+    .LogWithSource = (void (*)(PP_Instance instance, PP_LogLevel level, struct PP_Var source, struct PP_Var value))&Pnacl_M25_PPB_Console_LogWithSource
+};
+
 struct PPB_Core_1_0 Pnacl_Wrappers_PPB_Core_1_0 = {
     .AddRefResource = (void (*)(PP_Resource resource))&Pnacl_M14_PPB_Core_AddRefResource,
     .ReleaseResource = (void (*)(PP_Resource resource))&Pnacl_M14_PPB_Core_ReleaseResource,
@@ -3832,11 +3837,6 @@ struct PPB_AudioInput_Dev_0_3 Pnacl_Wrappers_PPB_AudioInput_Dev_0_3 = {
 };
 
 /* Not generating wrapper interface for PPB_Buffer_Dev_0_4 */
-
-struct PPB_Console_Dev_0_1 Pnacl_Wrappers_PPB_Console_Dev_0_1 = {
-    .Log = (void (*)(PP_Instance instance, PP_LogLevel_Dev level, struct PP_Var value))&Pnacl_M14_PPB_Console_Dev_Log,
-    .LogWithSource = (void (*)(PP_Instance instance, PP_LogLevel_Dev level, struct PP_Var source, struct PP_Var value))&Pnacl_M14_PPB_Console_Dev_LogWithSource
-};
 
 /* Not generating wrapper interface for PPB_Crypto_Dev_0_1 */
 
@@ -4333,6 +4333,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioConfig_1_1 = {
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Console_1_0 = {
+  .iface_macro = PPB_CONSOLE_INTERFACE_1_0,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_Console_1_0,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Core_1_0 = {
   .iface_macro = PPB_CORE_INTERFACE_1_0,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_Core_1_0,
@@ -4630,12 +4636,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_3 = {
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Buffer_Dev_0_4 = {
   .iface_macro = PPB_BUFFER_DEV_INTERFACE_0_4,
   .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Console_Dev_0_1 = {
-  .iface_macro = PPB_CONSOLE_DEV_INTERFACE_0_1,
-  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_Console_Dev_0_1,
   .real_iface = NULL
 };
 
@@ -5123,6 +5123,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_Audio_1_0,
   &Pnacl_WrapperInfo_PPB_AudioConfig_1_0,
   &Pnacl_WrapperInfo_PPB_AudioConfig_1_1,
+  &Pnacl_WrapperInfo_PPB_Console_1_0,
   &Pnacl_WrapperInfo_PPB_Core_1_0,
   &Pnacl_WrapperInfo_PPB_FileIO_1_0,
   &Pnacl_WrapperInfo_PPB_FileIO_1_1,
@@ -5167,7 +5168,6 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_2,
   &Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_3,
   &Pnacl_WrapperInfo_PPB_Buffer_Dev_0_4,
-  &Pnacl_WrapperInfo_PPB_Console_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_Crypto_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_CursorControl_Dev_0_4,
   &Pnacl_WrapperInfo_PPB_DeviceRef_Dev_0_1,

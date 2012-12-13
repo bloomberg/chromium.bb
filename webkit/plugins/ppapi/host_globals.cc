@@ -45,7 +45,7 @@ void GetAllContainersForModule(PluginModule* module,
     containers->insert((*i)->container());
 }
 
-WebConsoleMessage::Level LogLevelToWebLogLevel(PP_LogLevel_Dev level) {
+WebConsoleMessage::Level LogLevelToWebLogLevel(PP_LogLevel level) {
   switch (level) {
     case PP_LOGLEVEL_TIP:
       return WebConsoleMessage::LevelTip;
@@ -59,7 +59,7 @@ WebConsoleMessage::Level LogLevelToWebLogLevel(PP_LogLevel_Dev level) {
   }
 }
 
-WebConsoleMessage MakeLogMessage(PP_LogLevel_Dev level,
+WebConsoleMessage MakeLogMessage(PP_LogLevel level,
                                  const std::string& source,
                                  const std::string& message) {
   std::string result = source;
@@ -141,7 +141,7 @@ base::Lock* HostGlobals::GetProxyLock() {
 }
 
 void HostGlobals::LogWithSource(PP_Instance instance,
-                                PP_LogLevel_Dev level,
+                                PP_LogLevel level,
                                 const std::string& source,
                                 const std::string& value) {
   PluginInstance* instance_object = HostGlobals::Get()->GetInstance(instance);
@@ -154,7 +154,7 @@ void HostGlobals::LogWithSource(PP_Instance instance,
 }
 
 void HostGlobals::BroadcastLogWithSource(PP_Module pp_module,
-                                         PP_LogLevel_Dev level,
+                                         PP_LogLevel level,
                                          const std::string& source,
                                          const std::string& value) {
   // Get the unique containers associated with the broadcast. This prevents us

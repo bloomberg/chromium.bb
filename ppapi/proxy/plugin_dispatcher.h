@@ -14,9 +14,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/process.h"
 #include "build/build_config.h"
-#include "ppapi/c/dev/ppb_console_dev.h"
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_instance.h"
+#include "ppapi/c/ppb_console.h"
 #include "ppapi/proxy/dispatcher.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
 #include "ppapi/shared_impl/ppb_view_shared.h"
@@ -116,7 +116,7 @@ class PPAPI_PROXY_EXPORT PluginDispatcher
   // invalid, to all instances associated with all dispatchers. Used for
   // global log messages.
   static void LogWithSource(PP_Instance instance,
-                            PP_LogLevel_Dev level,
+                            PP_LogLevel level,
                             const std::string& source,
                             const std::string& value);
 

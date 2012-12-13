@@ -5,6 +5,7 @@
 #include "ppapi/cpp/instance.h"
 
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/c/ppb_console.h"
 #include "ppapi/c/ppb_input_event.h"
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/ppb_messaging.h"
@@ -23,6 +24,10 @@
 namespace pp {
 
 namespace {
+
+template <> const char* interface_name<PPB_Console_1_0>() {
+  return PPB_CONSOLE_INTERFACE_1_0;
+}
 
 template <> const char* interface_name<PPB_InputEvent_1_0>() {
   return PPB_INPUT_EVENT_INTERFACE_1_0;
@@ -121,6 +126,22 @@ void Instance::PostMessage(const Var& message) {
     return;
   get_interface<PPB_Messaging_1_0>()->PostMessage(pp_instance(),
                                               message.pp_var());
+}
+
+void Instance::LogToConsole(PP_LogLevel level, const Var& value) {
+  if (!has_interface<PPB_Console_1_0>())
+    return;
+  get_interface<PPB_Console_1_0>()->Log(
+      pp_instance(), level, value.pp_var());
+}
+
+void Instance::LogToConsoleWithSource(PP_LogLevel level,
+                                      const Var& source,
+                                      const Var& value) {
+  if (!has_interface<PPB_Console_1_0>())
+    return;
+  get_interface<PPB_Console_1_0>()->LogWithSource(
+      pp_instance(), level, source.pp_var(), value.pp_var());
 }
 
 void Instance::AddPerInstanceObject(const std::string& interface_name,

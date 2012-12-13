@@ -130,7 +130,7 @@ base::Lock* PluginGlobals::GetProxyLock() {
 }
 
 void PluginGlobals::LogWithSource(PP_Instance instance,
-                                  PP_LogLevel_Dev level,
+                                  PP_LogLevel level,
                                   const std::string& source,
                                   const std::string& value) {
   const std::string& fixed_up_source = source.empty() ? plugin_name_ : source;
@@ -138,7 +138,7 @@ void PluginGlobals::LogWithSource(PP_Instance instance,
 }
 
 void PluginGlobals::BroadcastLogWithSource(PP_Module /* module */,
-                                           PP_LogLevel_Dev level,
+                                           PP_LogLevel level,
                                            const std::string& source,
                                            const std::string& value) {
   // Since we have only one module in a plugin process, broadcast is always

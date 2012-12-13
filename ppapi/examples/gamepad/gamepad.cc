@@ -6,7 +6,6 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-#include "ppapi/c/dev/ppb_console_dev.h"
 #include "ppapi/c/ppb_gamepad.h"
 #include "ppapi/c/ppb_input_event.h"
 #include "ppapi/cpp/completion_callback.h"

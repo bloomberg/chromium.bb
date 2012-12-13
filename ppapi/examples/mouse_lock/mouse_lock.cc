@@ -6,7 +6,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-#include "ppapi/c/dev/ppb_console_dev.h"
+#include "ppapi/c/ppb_console.h"
 #include "ppapi/c/ppb_input_event.h"
 #include "ppapi/cpp/graphics_2d.h"
 #include "ppapi/cpp/image_data.h"
@@ -37,8 +37,8 @@ class MyInstance : public pp::Instance, public pp::MouseLock {
   virtual ~MyInstance() {}
 
   virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]) {
-    console_ = reinterpret_cast<const PPB_Console_Dev*>(
-        pp::Module::Get()->GetBrowserInterface(PPB_CONSOLE_DEV_INTERFACE));
+    console_ = reinterpret_cast<const PPB_Console*>(
+        pp::Module::Get()->GetBrowserInterface(PPB_CONSOLE_INTERFACE));
     if (!console_)
       return false;
 
@@ -226,7 +226,7 @@ class MyInstance : public pp::Instance, public pp::MouseLock {
                 pow(static_cast<double>(point_1_y - point_2_y), 2));
   }
 
-  void Log(PP_LogLevel_Dev level, const char* format, ...) {
+  void Log(PP_LogLevel level, const char* format, ...) {
     va_list args;
     va_start(args, format);
     char buf[512];
@@ -249,7 +249,7 @@ class MyInstance : public pp::Instance, public pp::MouseLock {
 
   pp::CompletionCallbackFactory<MyInstance> callback_factory_;
 
-  const PPB_Console_Dev* console_;
+  const PPB_Console* console_;
 
   pp::FlashFullscreen flash_fullscreen_;
 
