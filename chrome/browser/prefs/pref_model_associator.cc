@@ -62,6 +62,7 @@ void PrefModelAssociator::InitPrefAndAssociate(
       // sync server. Note: this only updates the user value store, which is
       // ignored if the preference is policy controlled.
       if (new_value->IsType(Value::TYPE_NULL)) {
+        LOG(WARNING) << "Sync has null value for pref " << pref_name.c_str();
         pref_service_->ClearPref(pref_name.c_str());
       } else if (!new_value->IsType(user_pref_value->GetType())) {
         LOG(WARNING) << "Synced value for " << preference.name()
@@ -84,9 +85,11 @@ void PrefModelAssociator::InitPrefAndAssociate(
                                syncer::SyncChange::ACTION_UPDATE,
                                sync_data));
       }
-    } else {
+    } else if (!sync_value->IsType(Value::TYPE_NULL)) {
       // Only a server value exists. Just set the local user value.
       pref_service_->Set(pref_name.c_str(), *sync_value);
+    } else {
+      LOG(WARNING) << "Sync has null value for pref " << pref_name.c_str();
     }
   } else if (user_pref_value) {
     // The server does not know about this preference and should be added
@@ -201,6 +204,11 @@ bool PrefModelAssociator::CreatePrefSyncData(
     const std::string& name,
     const Value& value,
     syncer::SyncData* sync_data) {
+  if (value.IsType(Value::TYPE_NULL)) {
+    LOG(ERROR) << "Attempting to sync a null pref value for " << name;
+    return false;
+  }
+
   std::string serialized;
   // TODO(zea): consider JSONWriter::Write since you don't have to check
   // failures to deserialize.
