@@ -1413,9 +1413,7 @@ DialogType.isModal = function(type) {
 
     var leadListItem = this.findListItemForNode_(this.renameInput_);
     if (this.currentList_ == this.table_.list) {
-      var props = this.metadataCache_.getCached(leadEntry, 'filesystem');
-      this.updateDate_(leadListItem.querySelector('.date'), props);
-      this.updateSize_(leadListItem.querySelector('.size'), leadEntry, props);
+      this.table_.updateFileMetadata(leadListItem, leadEntry);
     }
     this.currentList_.restoreLeadItem(leadListItem);
   };

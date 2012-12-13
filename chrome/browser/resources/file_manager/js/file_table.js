@@ -297,6 +297,18 @@ FileTable.prototype.updateDate_ = function(div, filesystemProps) {
 };
 
 /**
+ * Updates the file metadata in the table item.
+ *
+ * @param {Element} item Table item,
+ * @param {Entry} entry File entry,
+ */
+FileTable.prototype.updateFileMetadata = function(item, entry) {
+  var props = this.metadataCache_.getCached(entry, 'filesystem');
+  this.updateDate_(item.querySelector('.date'), props);
+  this.updateSize_(item.querySelector('.size'), entry, props);
+};
+
+/**
  * Render the Available offline column of the detail table.
  *
  * @param {Entry} entry The Entry object to render.
