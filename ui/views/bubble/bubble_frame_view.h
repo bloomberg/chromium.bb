@@ -8,12 +8,12 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/insets.h"
-#include "ui/views/bubble/bubble_border.h"
 #include "ui/views/window/non_client_view.h"
 
 namespace views {
+
+class BubbleBorder;
 
 // This is a NonClientFrameView used to render the BubbleBorder.
 class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView {

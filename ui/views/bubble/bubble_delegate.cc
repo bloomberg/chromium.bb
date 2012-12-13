@@ -7,6 +7,7 @@
 #include "ui/base/animation/slide_animation.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/rect.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
@@ -98,14 +99,6 @@ Widget* CreateBorderWidget(BubbleDelegateView* bubble) {
 
 }  // namespace
 
-#if defined(OS_WIN) && !defined(USE_AURA)
-const SkColor BubbleDelegateView::kBackgroundColor =
-    color_utils::GetSysSkColor(COLOR_WINDOW);
-#else
-// TODO(beng): source from theme provider.
-const SkColor BubbleDelegateView::kBackgroundColor = SK_ColorWHITE;
-#endif
-
 BubbleDelegateView::BubbleDelegateView()
     : close_on_esc_(true),
       close_on_deactivate_(true),
@@ -114,7 +107,7 @@ BubbleDelegateView::BubbleDelegateView()
       move_with_anchor_(false),
       arrow_location_(BubbleBorder::TOP_LEFT),
       shadow_(BubbleBorder::SMALL_SHADOW),
-      color_(kBackgroundColor),
+      color_explicitly_set_(false),
       margins_(kDefaultMargin, kDefaultMargin, kDefaultMargin, kDefaultMargin),
       original_opacity_(255),
       border_widget_(NULL),
@@ -122,8 +115,8 @@ BubbleDelegateView::BubbleDelegateView()
       accept_events_(true),
       adjust_if_offscreen_(true),
       parent_window_(NULL) {
-  set_background(Background::CreateSolidBackground(color_));
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
+  UpdateColorsFromTheme(GetNativeTheme());
 }
 
 BubbleDelegateView::BubbleDelegateView(
@@ -136,7 +129,7 @@ BubbleDelegateView::BubbleDelegateView(
       move_with_anchor_(false),
       arrow_location_(arrow_location),
       shadow_(BubbleBorder::SMALL_SHADOW),
-      color_(kBackgroundColor),
+      color_explicitly_set_(false),
       margins_(kDefaultMargin, kDefaultMargin, kDefaultMargin, kDefaultMargin),
       original_opacity_(255),
       border_widget_(NULL),
@@ -144,8 +137,8 @@ BubbleDelegateView::BubbleDelegateView(
       accept_events_(true),
       adjust_if_offscreen_(true),
       parent_window_(NULL) {
-  set_background(Background::CreateSolidBackground(color_));
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
+  UpdateColorsFromTheme(GetNativeTheme());
 }
 
 BubbleDelegateView::~BubbleDelegateView() {
@@ -287,6 +280,10 @@ bool BubbleDelegateView::AcceleratorPressed(
   return true;
 }
 
+void BubbleDelegateView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+  UpdateColorsFromTheme(theme);
+}
+
 void BubbleDelegateView::AnimationEnded(const ui::Animation* animation) {
   if (animation != fade_animation_.get())
     return;
@@ -344,6 +341,17 @@ gfx::Rect BubbleDelegateView::GetBubbleBounds() {
   // its size is the preferred size of the bubble's client view (this view).
   return GetBubbleFrameView()->GetUpdatedWindowBounds(GetAnchorRect(),
       GetPreferredSize(), adjust_if_offscreen_);
+}
+
+void BubbleDelegateView::UpdateColorsFromTheme(const ui::NativeTheme* theme) {
+  if (!color_explicitly_set_) {
+    color_ = GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_WindowBackground);
+  }
+  set_background(Background::CreateSolidBackground(color()));
+  BubbleFrameView* frame_view = GetBubbleFrameView();
+  if (frame_view)
+    frame_view->bubble_border()->set_background_color(color());
 }
 
 #if defined(OS_WIN) && !defined(USE_AURA)

@@ -450,6 +450,10 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
   }
 
   switch (color_id) {
+    // Windows
+    case kColorId_WindowBackground:
+      return system_colors_[COLOR_WINDOW];
+
     // Dialogs
     case kColorId_DialogBackground:
       // TODO(benrg): Should this use the new Windows theme functions? The old

@@ -35,6 +35,7 @@ const int kItemMarginY = 4;
 const int kIconMarginX = 6;
 const int kSeparatorPaddingY = 5;
 const int kMaxItemTextWidth = 200;
+const SkColor kHighlightColor = 0xFFE3EDF6;
 
 inline int Round(double x) {
   return static_cast<int>(x + 0.5);
@@ -199,8 +200,7 @@ class ProfileItemView : public views::CustomButton,
                         public HighlightDelegate {
  public:
   ProfileItemView(const AvatarMenuModel::Item& item,
-                  views::ButtonListener* switch_profile_listener,
-                  views::LinkListener* edit_profile_listener);
+                  AvatarMenuBubbleView* parent);
 
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
@@ -212,34 +212,35 @@ class ProfileItemView : public views::CustomButton,
   virtual void OnHighlightStateChanged() OVERRIDE;
   virtual void OnFocusStateChanged(bool has_focus) OVERRIDE;
 
+  const AvatarMenuModel::Item& item() const { return item_; }
   EditProfileLink* edit_link() { return edit_link_; }
-  const AvatarMenuModel::Item& item() { return item_; }
 
  private:
   static gfx::ImageSkia GetBadgedIcon(const gfx::ImageSkia& icon);
 
   bool IsHighlighted();
 
-  EditProfileLink* edit_link_;
-  views::ImageView* image_view_;
   AvatarMenuModel::Item item_;
+  AvatarMenuBubbleView* parent_;
+  views::ImageView* image_view_;
   views::Label* name_label_;
   views::Label* sync_state_label_;
+  EditProfileLink* edit_link_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProfileItemView);
 };
 
 ProfileItemView::ProfileItemView(const AvatarMenuModel::Item& item,
-                                 views::ButtonListener* switch_profile_listener,
-                                 views::LinkListener* edit_profile_listener)
-    : views::CustomButton(switch_profile_listener),
-      item_(item) {
+                                 AvatarMenuBubbleView* parent)
+    : views::CustomButton(parent),
+      item_(item),
+      parent_(parent) {
   image_view_ = new ProfileImageView();
   gfx::ImageSkia profile_icon = *item_.icon.ToImageSkia();
-  if (item_.active) {
-    gfx::ImageSkia badged_icon(GetBadgedIcon(profile_icon));
-    image_view_->SetImage(badged_icon);
-  } else {
+  if (item_.active)
+    image_view_->SetImage(GetBadgedIcon(profile_icon));
+  else
     image_view_->SetImage(profile_icon);
-  }
   AddChildView(image_view_);
 
   // Add a label to show the profile name.
@@ -265,9 +266,8 @@ ProfileItemView::ProfileItemView(const AvatarMenuModel::Item& item,
   // Add an edit profile link.
   edit_link_ = new EditProfileLink(
       l10n_util::GetStringUTF16(IDS_PROFILES_EDIT_PROFILE_LINK), this);
-  edit_link_->set_listener(edit_profile_listener);
+  edit_link_->set_listener(parent);
   edit_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  edit_link_->SetEnabledColor(SkColorSetRGB(0xe3, 0xed, 0xf6));
   edit_link_->SetHasFocusBorder(true);
   AddChildView(edit_link_);
 
@@ -342,13 +342,11 @@ void ProfileItemView::OnBlur() {
 }
 
 void ProfileItemView::OnHighlightStateChanged() {
-  set_background(IsHighlighted() ? views::Background::CreateSolidBackground(
-      SkColorSetRGB(0xe3, 0xed, 0xf6)) : NULL);
-  SkColor background_color = background() ?
-      background()->get_color() : views::BubbleDelegateView::kBackgroundColor;
-  name_label_->SetBackgroundColor(background_color);
-  sync_state_label_->SetBackgroundColor(background_color);
-  edit_link_->SetBackgroundColor(background_color);
+  const SkColor color = IsHighlighted() ? kHighlightColor : parent_->color();
+  set_background(views::Background::CreateSolidBackground(color));
+  name_label_->SetBackgroundColor(color);
+  sync_state_label_->SetBackgroundColor(color);
+  edit_link_->SetBackgroundColor(color);
 
   bool show_edit = IsHighlighted() && item_.active;
   sync_state_label_->SetVisible(!show_edit);
@@ -532,7 +530,7 @@ void AvatarMenuBubbleView::OnAvatarMenuModelChanged(
 
   for (size_t i = 0; i < avatar_menu_model->GetNumberOfItems(); ++i) {
     const AvatarMenuModel::Item& item = avatar_menu_model->GetItemAt(i);
-    ProfileItemView* item_view = new ProfileItemView(item, this, this);
+    ProfileItemView* item_view = new ProfileItemView(item, this);
     item_view->SetAccessibleName(l10n_util::GetStringFUTF16(
         IDS_PROFILES_SWITCH_TO_PROFILE_ACCESSIBLE_NAME, item.name));
     item_view->set_focusable(true);
@@ -548,7 +546,6 @@ void AvatarMenuBubbleView::OnAvatarMenuModelChanged(
   add_profile_link_->set_listener(this);
   add_profile_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   add_profile_link_->SetBackgroundColor(color());
-  add_profile_link_->SetEnabledColor(SkColorSetRGB(0xe3, 0xed, 0xf6));
   AddChildView(add_profile_link_);
 
   // If the bubble has already been shown then resize and reposition the bubble.

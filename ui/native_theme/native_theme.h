@@ -218,6 +218,8 @@ class NATIVE_THEME_EXPORT NativeTheme {
 
   // Colors for GetSystemColor().
   enum ColorId {
+    // Windows
+    kColorId_WindowBackground,
     // Dialogs
     kColorId_DialogBackground,
     // FocusableBorder
