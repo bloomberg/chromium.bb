@@ -9,7 +9,7 @@
 <translation id="7658239707568436148">Kanselahin</translation>
 <translation id="6746493157771801606">I-clear ang kasaysayan</translation>
 <translation id="6040143037577758943">Isara</translation>
-<translation id="1643640058022401035">Tatapusin ng pag-alis sa pahinang ito ang iyong session sa Chrome Remote Desktop.</translation>
+<translation id="5254120496627797685">Tatapusin ng pag-alis sa pahinang ito ang iyong session sa Chrome Remote Desktop.</translation>
 <translation id="5308380583665731573">Kumonekta</translation>
 <translation id="6985691951107243942">Sigurado ka bang nais mong huwag paganahin ang remote na koneksyon sa <ph name="HOSTNAME"/>? Kung magbago ang iyong isip, kakailanganin mong bisitahin ang computer na iyon upang muling paganahin ang mga koneksyon.</translation>
 <translation id="6748108480210050150">Mula</translation>
@@ -18,9 +18,9 @@
 <translation id="6998989275928107238">Kay</translation>
 <translation id="2359808026110333948">Magpatuloy</translation>
 <translation id="2919669478609886916">Kasalukuyan mong ibinabahagi ang machine na ito sa isa pang user. Gusto mo bang ipagpatuloy ang pagbabahagi?</translation>
-<translation id="8864965950780407789">Upang gamitin ang Chrome Remote Desktop, dapat kang magbigay ng mga pagpapahintulot ng pinalawak na access sa iyong computer. Kailangan mo lamang itong gawin nang isang beses.</translation>
+<translation id="173559734173571936">Upang gamitin ang Chrome Remote Desktop, dapat kang magbigay ng mga pagpapahintulot ng pinalawak na access sa iyong computer. Kailangan mo lamang itong gawin nang isang beses.</translation>
 <translation id="1023096696228309145">Hilingin sa user na nagmamay-ari ng computer na gusto mong i-access na i-click ang ‘Ibahagi Ngayon’ at ibigay sa iyo ang access code.</translation>
-<translation id="6011539954251327702">Binibigyang-daan ka ng Chrome Remote Desktop na ibahagi sa Web ang iyong computer nang secure. Kailangang nagpapatakbo ng Chrome Remote app ang parehong mga user, na matatagpuan sa <ph name="URL"/>.</translation>
+<translation id="5379087427956679853">Binibigyang-daan ka ng Chrome Remote Desktop na ibahagi sa Web ang iyong computer nang secure. Kailangang nagpapatakbo ng Chrome Remote app ang parehong mga user, na matatagpuan sa <ph name="URL"/>.</translation>
 <translation id="4394049700291259645">Huwag Paganahin</translation>
 <translation id="4314644002001494905">Idiskonekta (Ctrl+Alt+Esc)</translation>
 <translation id="8342538585421421741">Idiskonekta (Opt+Ctrl+Esc)</translation>
@@ -28,16 +28,16 @@
 <translation id="4804818685124855865">Idiskonekta</translation>
 
 <translation id="6930242544192836755">Tagal</translation>
-<translation id="8246880134154544773">Nabigo ang pagpapatotoo. Mangyaring mag-sign in muli sa Remote na Desktop ng Chrome.</translation>
-<translation id="9032136467203159543">Nawawala ang ilang bahaging kinakailangan para sa Chrome Remote Desktop. Mangyaring tiyaking na-install mo ang pinakabagong bersyon at subukang muli.</translation>
+<translation id="8172070902751707422">Nabigo ang pagpapatotoo. Mangyaring mag-sign in muli sa Remote na Desktop ng Chrome.</translation>
+<translation id="2707879711568641861">Nawawala ang ilang bahaging kinakailangan para sa Chrome Remote Desktop. Mangyaring tiyaking na-install mo ang pinakabagong bersyon at subukang muli.</translation>
 <translation id="2813770873348017932">Pansamantalang naka-block ang mga koneksyon sa remote na computer dahil sinubukan ng isang tao na kumonekta dito gamit ang isang di-wastong PIN. Pakisubukang muli sa ibang pagkakataon.</translation>
 <translation id="3106379468611574572">Hindi tumutugon ang malayuang computer sa mga kahilingan ng koneksyon. Paki-verify na ito ay online at subukang muli.</translation>
-<translation id="2944598174730150896">Natukoy ang isang hindi tugmang bersyon ng Chrome Remote Desktop. Mangyaring tiyaking na-install mo ang pinakabagong bersyon ng Google Chrome at Chrome Remote Desktop sa parehong mga computer at subukang muli.</translation>
+<translation id="851521648418609391">Natukoy ang isang hindi tugmang bersyon ng Chrome Remote Desktop. Mangyaring tiyaking na-install mo ang pinakabagong bersyon ng Google Chrome at Chrome Remote Desktop sa parehong mga computer at subukang muli.</translation>
 <translation id="4277736576214464567">Di-wasto ang access code. Pakisubukang muli.</translation>
-<translation id="3403830762023901068">Hindi pinapahintulutan ng mga setting ng patakaran ang pagbabahagi sa computer na ito bilang host ng Remote na Desktop ng Chrome. Makipag-ugnay sa iyong system administrator para humingi ng tulong.</translation>
+<translation id="2208514473086078157">Hindi pinapahintulutan ng mga setting ng patakaran ang pagbabahagi sa computer na ito bilang host ng Remote na Desktop ng Chrome. Makipag-ugnay sa iyong system administrator para humingi ng tulong.</translation>
 <translation id="2366718077645204424">Hindi maabot ang host. Maaaring dahil ito sa configuration ng network na iyong ginagamit.</translation>
-<translation id="5908809458024685848">Hindi ka naka-sign in sa Remote na Desktop ng Chrome. Mangyaring mag-sign in at subukang muli.</translation>
-<translation id="371039623761974302">Nawawala ang ilang bahaging kinakailangan para sa Chrome Remote Desktop. Mangyaring tiyaking pinapatakbo mo ang pinakabagong bersyon ng Google Chrome at subukang muli.</translation>
+<translation id="7729639150174291243">Hindi ka naka-sign in sa Remote na Desktop ng Chrome. Mangyaring mag-sign in at subukang muli.</translation>
+<translation id="4019628723432694459">Nawawala ang ilang bahaging kinakailangan para sa Chrome Remote Desktop. Mangyaring tiyaking pinapatakbo mo ang pinakabagong bersyon ng Google Chrome at subukang muli.</translation>
 <translation id="2805036638902441020">Nabigo ang server na tumugon sa kahilingan ng network.</translation>
 <translation id="5593560073513909978">Pansamantalang hindi available ang serbisyo. Pakisubukang muli sa ibang pagkakataon.</translation>
 <translation id="1546934824884762070">May naganap na hindi inaasahang error. Paki-ulat ang problemang ito sa mga developer.</translation>
@@ -48,14 +48,14 @@
 <translation id="7649070708921625228">Tulong</translation>
 <translation id="4572065712096155137">I-access</translation>
 <translation id="1342297293546459414">Tingnan at kontrolin ang isang nakabahaging computer.</translation>
-<translation id="2353140552984634198">Maaari mong ligtas na ma-access ang computer na ito gamit ang Remote na Desktop ng Chrome.</translation>
+<translation id="3258789396564295715">Maaari mong ligtas na ma-access ang computer na ito gamit ang Remote na Desktop ng Chrome.</translation>
 <translation id="6198252989419008588">Magpalit ng PIN</translation>
 <translation id="1199593201721843963">Huwag paganahin ang mga remote na koneksyon</translation>
 <translation id="7606912958770842224">Paganahin ang mga remote na koneksyon</translation>
-<translation id="1291443878853470558">Dapat mong paganahin ang mga remote na koneksyon kung nais mong gamitin ang Remote na Desktop ng Chrome upang ma-access ang computer na ito.</translation>
-<translation id="897805526397249209">Upang paganahin ang mga malayuang koneksyon sa ibang computer, i-install ang Remote na Desktop ng Chrome doon at i-click ang “<ph name="BUTTON_NAME"/>”.</translation>
-<translation id="4481276415609939789">Wala kang mga computer na nakarehistro. Upang paganahin ang mga malayuang koneksyon sa isang computer, i-install ang Remote na Desktop ng Chrome doon at i-click ang “<ph name="BUTTON_NAME"/>”.</translation>
-<translation id="7038683108611689168">Tulungan kaming pagbutihin ang Remote na Desktop ng Chrome sa pamamagitan ng pagbibigay-daan sa aming mangolekta ng mga statistics sa paggamit at ulat ng pag-crash.</translation>
+<translation id="4006787130661126000">Dapat mong paganahin ang mga remote na koneksyon kung nais mong gamitin ang Remote na Desktop ng Chrome upang ma-access ang computer na ito.</translation>
+<translation id="4361728918881830843">Upang paganahin ang mga malayuang koneksyon sa ibang computer, i-install ang Remote na Desktop ng Chrome doon at i-click ang “<ph name="BUTTON_NAME"/>”.</translation>
+<translation id="174018511426417793">Wala kang mga computer na nakarehistro. Upang paganahin ang mga malayuang koneksyon sa isang computer, i-install ang Remote na Desktop ng Chrome doon at i-click ang “<ph name="BUTTON_NAME"/>”.</translation>
+<translation id="2499160551253595098">Tulungan kaming pagbutihin ang Remote na Desktop ng Chrome sa pamamagitan ng pagbibigay-daan sa aming mangolekta ng mga statistics sa paggamit at ulat ng pag-crash.</translation>
 <translation id="4156740505453712750">Upang protektahan ang access sa computer na ito, mangyaring pumili ng PIN na <ph name="BOLD_START"/>hindi bababa sa anim na digit<ph name="BOLD_END"/>. Hihingin ang PIN na ito kapag kumokonekta mula sa isa pang lokasyon.</translation>
 <translation id="154040539590487450">Nabigong simulan ang serbisyo ng remote na access.</translation>
 <translation id="2013884659108657024">Dina-download ng Chrome ang installer ng Host ng Remote na Desktop ng Chrome. Sa sandaling makumpleto ang download, mangyaring patakbuhin ang installer bago magpatuloy.</translation>
@@ -81,7 +81,7 @@
 <translation id="5702987232842159181">Nakakonekta:</translation>
 <translation id="811307782653349804">I-access ang iyong computer mula saanman.</translation>
 <translation id="4430915108080446161">Binubuo ang access code…</translation>
-<translation id="4703799847237267011">Natapos na ang iyong session sa Chrome Remote Desktop.</translation>
+<translation id="3776024066357219166">Natapos na ang iyong session sa Chrome Remote Desktop.</translation>
 <translation id="5708869785009007625">Kasalukuyang nakabahagi ang iyong desktop kay <ph name="USER"/>.</translation>
 <translation id="9188433529406846933">Pahintulutan</translation>
 <translation id="701976023053394610">Remote na Tulong</translation>
@@ -94,7 +94,7 @@
 <translation id="4808503597364150972">Pakilagay ang iyong PIN para sa <ph name="HOSTNAME"/>.</translation>
 <translation id="5156271271724754543">Pakilagay ang parehong PIN sa parehong mga kahon.</translation>
 <translation id="5625493749705183369">Mag-access ng iba pang mga computer o payagan ang isa pang user na i-access sa Internet ang iyong computer nang secure.</translation>
-<translation id="2699970397166997657">Chrome Remote Desktop</translation>
+<translation id="7401733114166276557">Chrome Remote Desktop</translation>
 <translation id="579702532610384533">Muling kumonekta</translation>
 <translation id="7144878232160441200">Subukang muli</translation>
 <translation id="7948001860594368197">Mga pagpipilian sa screen</translation>

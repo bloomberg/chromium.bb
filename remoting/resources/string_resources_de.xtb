@@ -9,7 +9,7 @@
 <translation id="7658239707568436148">Abbrechen</translation>
 <translation id="6746493157771801606">Verlauf löschen</translation>
 <translation id="6040143037577758943">Schließen</translation>
-<translation id="1643640058022401035">Wenn Sie diese Seite verlassen, wird Ihre Chrome Remote Desktop-Sitzung beendet.</translation>
+<translation id="5254120496627797685">Wenn Sie diese Seite verlassen, wird Ihre Chrome Remote Desktop-Sitzung beendet.</translation>
 <translation id="5308380583665731573">Verbinden</translation>
 <translation id="6985691951107243942">Möchten Sie die Remote-Verbindungen zu <ph name="HOSTNAME"/> wirklich deaktivieren? Wenn Sie die Verbindungen später erneut aktivieren möchten, müssen Sie dies von diesem Computer aus tun.</translation>
 <translation id="6748108480210050150">Von</translation>
@@ -18,9 +18,9 @@
 <translation id="6998989275928107238">Zu</translation>
 <translation id="2359808026110333948">Weiter</translation>
 <translation id="2919669478609886916">Dieser Computer ist zurzeit für einen anderen Nutzer freigegeben. Möchten Sie Ihren Computer weiterhin freigeben?</translation>
-<translation id="8864965950780407789">Zur Verwendung von Chrome Remote Desktop ist es erforderlich, erweiterte Zugriffsberechtigungen für Ihren Computer zu gewähren. Dieser Schritt ist nur einmal erforderlich.</translation>
+<translation id="173559734173571936">Zur Verwendung von Chrome Remote Desktop ist es erforderlich, erweiterte Zugriffsberechtigungen für Ihren Computer zu gewähren. Dieser Schritt ist nur einmal erforderlich.</translation>
 <translation id="1023096696228309145">Bitten Sie den Nutzer, auf dessen Computer Sie zugreifen möchten, auf &quot;Jetzt freigeben&quot; zu klicken und Ihnen den Zugriffscode mitzuteilen.</translation>
-<translation id="6011539954251327702">Chrome Remote Desktop ermöglicht die sichere Freigabe Ihres Computers über das Internet. Beide Nutzer müssen dazu die Chrome Remote Desktop-App ausführen. Diese App finden Sie unter <ph name="URL"/>.</translation>
+<translation id="5379087427956679853">Chrome Remote Desktop ermöglicht die sichere Freigabe Ihres Computers über das Internet. Beide Nutzer müssen dazu die Chrome Remote Desktop-App ausführen. Diese App finden Sie unter <ph name="URL"/>.</translation>
 <translation id="4394049700291259645">Deaktivieren</translation>
 <translation id="4314644002001494905">Verbindung trennen (Strg+Alt+Esc)</translation>
 <translation id="8342538585421421741">Verbindung trennen (Wahltaste+Strg+Esc)</translation>
@@ -28,16 +28,16 @@
 <translation id="4804818685124855865">Verbindung trennen</translation>
 
 <translation id="6930242544192836755">Dauer</translation>
-<translation id="8246880134154544773">Fehler bei der Authentifizierung. Melden Sie sich erneut in Chrome Remote Desktop an.</translation>
-<translation id="9032136467203159543">Es fehlen einige Komponenten, die für Chrome Remote Desktop erforderlich sind. Überprüfen Sie, ob die neueste Version installiert ist, und versuchen Sie es erneut.</translation>
+<translation id="8172070902751707422">Fehler bei der Authentifizierung. Melden Sie sich erneut in Chrome Remote Desktop an.</translation>
+<translation id="2707879711568641861">Es fehlen einige Komponenten, die für Chrome Remote Desktop erforderlich sind. Überprüfen Sie, ob die neueste Version installiert ist, und versuchen Sie es erneut.</translation>
 <translation id="2813770873348017932">Die Verbindungen zum Remote-Computer werden vorübergehend blockiert, da versucht wurde, eine Verbindung mit einer ungültigen PIN herzustellen. Bitte versuchen Sie es später erneut.</translation>
 <translation id="3106379468611574572">Der Remote-Computer reagiert nicht auf Verbindungsanfragen. Überprüfen Sie, ob er online ist, und versuchen Sie es erneut.</translation>
-<translation id="2944598174730150896">Eine inkompatible Version von Chrome Remote Desktop wurde erkannt. Überprüfen Sie, ob die neueste Version von Google Chrome und Chrome Remote Desktop auf beiden Computern installiert ist, und versuchen Sie es erneut.</translation>
+<translation id="851521648418609391">Eine inkompatible Version von Chrome Remote Desktop wurde erkannt. Überprüfen Sie, ob die neueste Version von Google Chrome und Chrome Remote Desktop auf beiden Computern installiert ist, und versuchen Sie es erneut.</translation>
 <translation id="4277736576214464567">Der Zugriffscode ist ungültig. Versuchen Sie es erneut.</translation>
-<translation id="3403830762023901068">Gemäß den Richtlinieneinstellungen können Sie diesen Computer nicht als Chrome Remote Desktop-Host verwenden. Wenden Sie sich für weitere Hilfe an Ihren Systemadministrator.</translation>
+<translation id="2208514473086078157">Gemäß den Richtlinieneinstellungen können Sie diesen Computer nicht als Chrome Remote Desktop-Host verwenden. Wenden Sie sich für weitere Hilfe an Ihren Systemadministrator.</translation>
 <translation id="2366718077645204424">Die Verbindung zum Host kann nicht hergestellt werden, da das von Ihnen verwendete Netzwerk möglicherweise nicht korrekt konfiguriert ist.</translation>
-<translation id="5908809458024685848">Sie sind nicht in Chrome Remote Desktop angemeldet. Melden Sie sich an und versuchen Sie es erneut.</translation>
-<translation id="371039623761974302">Es fehlen einige Komponenten, die für Chrome Remote Desktop erforderlich sind. Überprüfen Sie, ob Sie die neueste Version von Google Chrome verwenden, und versuchen Sie es erneut.</translation>
+<translation id="7729639150174291243">Sie sind nicht in Chrome Remote Desktop angemeldet. Melden Sie sich an und versuchen Sie es erneut.</translation>
+<translation id="4019628723432694459">Es fehlen einige Komponenten, die für Chrome Remote Desktop erforderlich sind. Überprüfen Sie, ob Sie die neueste Version von Google Chrome verwenden, und versuchen Sie es erneut.</translation>
 <translation id="2805036638902441020">Der Server reagiert nicht auf die Netzwerkanfrage.</translation>
 <translation id="5593560073513909978">Der Service ist vorübergehend nicht verfügbar. Bitte versuchen Sie es später erneut.</translation>
 <translation id="1546934824884762070">Ein unerwarteter Fehler ist aufgetreten. Bitte melden Sie dieses Problem an die Entwickler.</translation>
@@ -48,14 +48,14 @@
 <translation id="7649070708921625228">Hilfe</translation>
 <translation id="4572065712096155137">Zugriff</translation>
 <translation id="1342297293546459414">Freigegebenen Computer sehen und steuern</translation>
-<translation id="2353140552984634198">Mit Chrome Remote Desktop erhalten Sie sicheren Zugriff auf diesen Computer.</translation>
+<translation id="3258789396564295715">Mit Chrome Remote Desktop erhalten Sie sicheren Zugriff auf diesen Computer.</translation>
 <translation id="6198252989419008588">PIN ändern</translation>
 <translation id="1199593201721843963">Remote-Verbindungen deaktivieren</translation>
 <translation id="7606912958770842224">Remote-Verbindungen aktivieren</translation>
-<translation id="1291443878853470558">Aktivieren Sie die Remote-Verbindungen, wenn Sie mit Chrome Remote Desktop auf diesen Computer zugreifen möchten.</translation>
-<translation id="897805526397249209">Um Remote-Verbindungen zu einem anderen Computer zu ermöglichen, installieren Sie auf dem betreffenden Computer Chrome Remote Desktop und klicken Sie auf &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
-<translation id="4481276415609939789">Sie haben noch keine Computer registriert. Um Remote-Verbindungen zu einem Computer zu ermöglichen, installieren Sie auf dem entsprechenden Computer Chrome Remote Desktop und klicken Sie auf &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
-<translation id="7038683108611689168">Helfen Sie uns bei der Verbesserung von Chrome Remote Desktop, indem Sie zulassen, dass wir Nutzungsstatistiken und Absturzberichte erfassen.</translation>
+<translation id="4006787130661126000">Aktivieren Sie die Remote-Verbindungen, wenn Sie mit Chrome Remote Desktop auf diesen Computer zugreifen möchten.</translation>
+<translation id="4361728918881830843">Um Remote-Verbindungen zu einem anderen Computer zu ermöglichen, installieren Sie auf dem betreffenden Computer Chrome Remote Desktop und klicken Sie auf &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
+<translation id="174018511426417793">Sie haben noch keine Computer registriert. Um Remote-Verbindungen zu einem Computer zu ermöglichen, installieren Sie auf dem entsprechenden Computer Chrome Remote Desktop und klicken Sie auf &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
+<translation id="2499160551253595098">Helfen Sie uns bei der Verbesserung von Chrome Remote Desktop, indem Sie zulassen, dass wir Nutzungsstatistiken und Absturzberichte erfassen.</translation>
 <translation id="4156740505453712750">Um den Zugriff auf diesen Computer zu schützen, wählen Sie eine PIN mit <ph name="BOLD_START"/>mindestens 6 Ziffern<ph name="BOLD_END"/> aus. Die Eingabe dieser PIN ist erforderlich, wenn eine Verbindung von einem anderen Ort aus hergestellt wird.</translation>
 <translation id="154040539590487450">Fehler beim Starten des Remote-Zugriffsdienstes</translation>
 <translation id="2013884659108657024">Chrome lädt das Installationsprogramm für den Chrome Remote Desktop Host herunter. Führen Sie nach dem Download das Installationsprogramm aus, bevor Sie fortfahren.</translation>
@@ -81,7 +81,7 @@
 <translation id="5702987232842159181">Verbunden:</translation>
 <translation id="811307782653349804">Greifen Sie von jedem beliebigen Ort aus auf Ihren Computer zu.</translation>
 <translation id="4430915108080446161">Zugriffscode wird generiert...</translation>
-<translation id="4703799847237267011">Ihre Chrome Remote Desktop-Sitzung wurde beendet.</translation>
+<translation id="3776024066357219166">Ihre Chrome Remote Desktop-Sitzung wurde beendet.</translation>
 <translation id="5708869785009007625">Ihr Desktop ist derzeit für <ph name="USER"/> freigegeben.</translation>
 <translation id="9188433529406846933">Autorisieren</translation>
 <translation id="701976023053394610">Remote-Unterstützung</translation>
@@ -94,7 +94,7 @@
 <translation id="4808503597364150972">Bitte geben Sie Ihre PIN für <ph name="HOSTNAME"/> ein.</translation>
 <translation id="5156271271724754543">Die PIN muss in beiden Feldern identisch sein.</translation>
 <translation id="5625493749705183369">Greifen Sie sicher über das Internet auf andere Computer zu oder gewähren Sie anderen Nutzern Zugriff auf Ihren Computer.</translation>
-<translation id="2699970397166997657">Chrome Remote Desktop</translation>
+<translation id="7401733114166276557">Chrome Remote Desktop</translation>
 <translation id="579702532610384533">Erneut verbinden</translation>
 <translation id="7144878232160441200">Erneut versuchen</translation>
 <translation id="7948001860594368197">Bildschirmoptionen</translation>

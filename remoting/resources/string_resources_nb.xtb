@@ -9,7 +9,7 @@
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="6746493157771801606">Tøm logg</translation>
 <translation id="6040143037577758943">Lukk</translation>
-<translation id="1643640058022401035">Hvis du forlater denne siden, avsluttes Chrome Eksternt skrivebord-økten.</translation>
+<translation id="5254120496627797685">Hvis du forlater denne siden, avsluttes Chrome Eksternt skrivebord-økten.</translation>
 <translation id="5308380583665731573">Koble til</translation>
 <translation id="6985691951107243942">Er du sikker på at du vil deaktivere eksterne tilkoblinger til <ph name="HOSTNAME"/>? Hvis du ombestemmer deg må du tilbake til datamaskinen for å gjenopprette tilkoblingene.</translation>
 <translation id="6748108480210050150">Fra</translation>
@@ -18,9 +18,9 @@
 <translation id="6998989275928107238">Til</translation>
 <translation id="2359808026110333948">Fortsett</translation>
 <translation id="2919669478609886916">Du deler denne datamaskinen med en annen bruker. Vil du fortsette å dele?</translation>
-<translation id="8864965950780407789">For å bruke Chrome Eksternt skrivebord må du gi utvidede tilgangstillatelser til datamaskinen din. Du trenger å gjøre dette bare én gang.</translation>
+<translation id="173559734173571936">For å bruke Chrome Eksternt skrivebord må du gi utvidede tilgangstillatelser til datamaskinen din. Du trenger å gjøre dette bare én gang.</translation>
 <translation id="1023096696228309145">Be brukeren som har datamaskinen du ønsker tilgang til, om å klikke på «Del nå» og gi deg tilgangskoden.</translation>
-<translation id="6011539954251327702">Med Chrome Eksternt skrivebord kan du trygt dele datamaskinen via Internett. Begge brukerne må kjøre Chrome Eksternt skrivebord-programmet, som kan lastes ned på <ph name="URL"/>.</translation>
+<translation id="5379087427956679853">Med Chrome Eksternt skrivebord kan du trygt dele datamaskinen via Internett. Begge brukerne må kjøre Chrome Eksternt skrivebord-programmet, som kan lastes ned på <ph name="URL"/>.</translation>
 <translation id="4394049700291259645">Deaktiver</translation>
 <translation id="4314644002001494905">Koble fra (Ctrl + Alt + Esc)</translation>
 <translation id="8342538585421421741">Koble fra (Opt + Ctrl + Esc)</translation>
@@ -28,16 +28,16 @@
 <translation id="4804818685124855865">Koble fra</translation>
 
 <translation id="6930242544192836755">Varighet</translation>
-<translation id="8246880134154544773">Autentiseringen mislyktes. Logg deg på Chrome Eksternt skrivebord på nytt.</translation>
-<translation id="9032136467203159543">Du mangler noen komponenter som kreves for Chrome Eksternt skrivebord. Kontroller at du har installert den nyeste versjonen, og prøv på nytt.</translation>
+<translation id="8172070902751707422">Autentiseringen mislyktes. Logg deg på Chrome Eksternt skrivebord på nytt.</translation>
+<translation id="2707879711568641861">Du mangler noen komponenter som kreves for Chrome Eksternt skrivebord. Kontroller at du har installert den nyeste versjonen, og prøv på nytt.</translation>
 <translation id="2813770873348017932">Tilkoblinger til den eksterne datamaskinen er midlertidig blokkert fordi noen prøvde å koble seg til med en ugyldig PIN-kode. Prøv på nytt senere.</translation>
 <translation id="3106379468611574572">Den eksterne datamaskinen svarer ikke på tilkoblingsforespørsler. Kontroller at datamaskinen er koblet til Internett, og prøv på nytt.</translation>
-<translation id="2944598174730150896">En ikke-kompatibel versjon av Chrome Eksternt skrivebord ble oppdaget. Kontroller at du har den nyeste versjonen av Google Chrome og Chrome Eksternt skrivebord på begge maskinene, og prøv på nytt.</translation>
+<translation id="851521648418609391">En ikke-kompatibel versjon av Chrome Eksternt skrivebord ble oppdaget. Kontroller at du har den nyeste versjonen av Google Chrome og Chrome Eksternt skrivebord på begge maskinene, og prøv på nytt.</translation>
 <translation id="4277736576214464567">Tilgangskoden er ugyldig. Prøv på nytt.</translation>
-<translation id="3403830762023901068">Innstillingene for retningslinjene tillater ikke at denne datamaskinen deles som vert for Chrome Eksternt skrivebord. Ta kontakt med systemadministratoren for å få hjelp.</translation>
+<translation id="2208514473086078157">Innstillingene for retningslinjene tillater ikke at denne datamaskinen deles som vert for Chrome Eksternt skrivebord. Ta kontakt med systemadministratoren for å få hjelp.</translation>
 <translation id="2366718077645204424">Kunne ikke nå verten. Dette er sannsynligvis på grunn av innstillingene for nettverket du bruker.</translation>
-<translation id="5908809458024685848">Du er ikke logget på Chrome Eksternt skrivebord. Logg deg på og prøv på nytt.</translation>
-<translation id="371039623761974302">Du mangler noen komponenter som kreves for Chrome Eksternt skrivebord. Sørg for at du kjører den nyeste versjonen av Google Chrome, og prøv på nytt.</translation>
+<translation id="7729639150174291243">Du er ikke logget på Chrome Eksternt skrivebord. Logg deg på og prøv på nytt.</translation>
+<translation id="4019628723432694459">Du mangler noen komponenter som kreves for Chrome Eksternt skrivebord. Sørg for at du kjører den nyeste versjonen av Google Chrome, og prøv på nytt.</translation>
 <translation id="2805036638902441020">Tjeneren svarte ikke på nettverksforespørselen.</translation>
 <translation id="5593560073513909978">Tjenesten er ikke tilgjengelig for øyeblikket. Prøv på nytt senere.</translation>
 <translation id="1546934824884762070">Det oppsto en uventet feil. Rapporter dette problemet til utviklerne.</translation>
@@ -48,14 +48,14 @@
 <translation id="7649070708921625228">Hjelp</translation>
 <translation id="4572065712096155137">Tilgang</translation>
 <translation id="1342297293546459414">Se og kontroller en delt datamaskin.</translation>
-<translation id="2353140552984634198">Du kan få sikker tilgang til denne datamaskinen ved å bruke Chrome Eksternt skrivebord.</translation>
+<translation id="3258789396564295715">Du kan få sikker tilgang til denne datamaskinen ved å bruke Chrome Eksternt skrivebord.</translation>
 <translation id="6198252989419008588">Endre PIN-koden</translation>
 <translation id="1199593201721843963">Deaktiver eksterne tilkoblinger</translation>
 <translation id="7606912958770842224">Aktiver eksterne tilkoblinger</translation>
-<translation id="1291443878853470558">Du må aktivere eksterne tilkoblinger hvis du vil ha tilgang til denne datamaskinen gjennom Chrome Eksternt skrivebord.</translation>
-<translation id="897805526397249209">Du kan aktivere ekstern forbindelse til en annen datamaskin ved å installere Chrome Eksternt skrivebord der og klikke på <ph name="BUTTON_NAME"/>.</translation>
-<translation id="4481276415609939789">Ingen datamaskiner er registrert i kontoen din. Du kan aktivere ekstern forbindelse til en annen datamaskin ved å installere Chrome Eksternt skrivebord der og klikke på <ph name="BUTTON_NAME"/>.</translation>
-<translation id="7038683108611689168">Hjelp oss med å forbedre Chrome Eksternt skrivebord ved å la oss å samle bruksstatistikk og programstopprapporter.</translation>
+<translation id="4006787130661126000">Du må aktivere eksterne tilkoblinger hvis du vil ha tilgang til denne datamaskinen gjennom Chrome Eksternt skrivebord.</translation>
+<translation id="4361728918881830843">Du kan aktivere ekstern forbindelse til en annen datamaskin ved å installere Chrome Eksternt skrivebord der og klikke på <ph name="BUTTON_NAME"/>.</translation>
+<translation id="174018511426417793">Ingen datamaskiner er registrert i kontoen din. Du kan aktivere ekstern forbindelse til en annen datamaskin ved å installere Chrome Eksternt skrivebord der og klikke på <ph name="BUTTON_NAME"/>.</translation>
+<translation id="2499160551253595098">Hjelp oss med å forbedre Chrome Eksternt skrivebord ved å la oss å samle bruksstatistikk og programstopprapporter.</translation>
 <translation id="4156740505453712750">For å beskytte bruken av denne datamaskinen, må du velge en PIN-kode på <ph name="BOLD_START"/>minst seks siffer<ph name="BOLD_END"/>. Denne PIN-koden er nødvendig ved tilkobling.</translation>
 <translation id="154040539590487450">Kunne ikke starte tjenesten for ekstern tilgang.</translation>
 <translation id="2013884659108657024">Chrome laster ned installasjonsprogrammet for Chrome Eksternt skrivebord-vert. Når nedlastingen er ferdig må du kjøre installasjonsprogrammet før du fortsetter.</translation>
@@ -81,7 +81,7 @@
 <translation id="5702987232842159181">Tilkoblet:</translation>
 <translation id="811307782653349804">Bruk din egen datamaskin uansett hvor du er.</translation>
 <translation id="4430915108080446161">Genererer tilgangskode …</translation>
-<translation id="4703799847237267011">Chrome Eksternt skrivebord-økten din er avsluttet.</translation>
+<translation id="3776024066357219166">Chrome Eksternt skrivebord-økten din er avsluttet.</translation>
 <translation id="5708869785009007625">Skrivebordet ditt deles for øyeblikket med <ph name="USER"/>.</translation>
 <translation id="9188433529406846933">Godkjenn</translation>
 <translation id="701976023053394610">Fjernhjelp</translation>
@@ -94,7 +94,7 @@
 <translation id="4808503597364150972">Skriv inn PIN-koden for <ph name="HOSTNAME"/>.</translation>
 <translation id="5156271271724754543">Skriv inn samme PIN-kode i begge feltene.</translation>
 <translation id="5625493749705183369">Få tilgang til andre datamaskiner eller gi en annen bruker sikker tilgang til datamaskinen din via Internett.</translation>
-<translation id="2699970397166997657">Chrome Eksternt skrivebord</translation>
+<translation id="7401733114166276557">Chrome Eksternt skrivebord</translation>
 <translation id="579702532610384533">Koble til på nytt</translation>
 <translation id="7144878232160441200">Prøv på nytt</translation>
 <translation id="7948001860594368197">Skjermalternativer</translation>

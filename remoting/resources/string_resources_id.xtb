@@ -9,7 +9,7 @@
 <translation id="7658239707568436148">Batal</translation>
 <translation id="6746493157771801606">Hapus riwayat</translation>
 <translation id="6040143037577758943">Tutup</translation>
-<translation id="1643640058022401035">Dengan meninggalkan laman ini, Anda akan mengakhiri sesi Chrome Desktop Jarak Jauh.</translation>
+<translation id="5254120496627797685">Dengan meninggalkan laman ini, Anda akan mengakhiri sesi Chrome Desktop Jarak Jauh.</translation>
 <translation id="5308380583665731573">Sambungkan</translation>
 <translation id="6985691951107243942">Yakin ingin menonaktifkan sambungan jarak jauh dengan <ph name="HOSTNAME"/>? Jika Anda berubah pikiran, Anda perlu mengunjungi komputer tersebut untuk mengaktifkan kembali sambungan.</translation>
 <translation id="6748108480210050150">Dari</translation>
@@ -18,9 +18,9 @@
 <translation id="6998989275928107238">Ke</translation>
 <translation id="2359808026110333948">Lanjutkan</translation>
 <translation id="2919669478609886916">Saat ini Anda sedang berbagi mesin ini dengan pengguna lain. Apakah Anda ingin terus berbagi?</translation>
-<translation id="8864965950780407789">Untuk menggunakan Chrome Desktop Jarak Jauh Anda harus memberikan izin akses yang diperpanjang ke komputer. Anda hanya perlu melakukan ini satu kali.</translation>
+<translation id="173559734173571936">Untuk menggunakan Chrome Desktop Jarak Jauh Anda harus memberikan izin akses yang diperpanjang ke komputer. Anda hanya perlu melakukan ini satu kali.</translation>
 <translation id="1023096696228309145">Mintalah kepada pengguna yang ingin Anda akses komputernya agar mengeklik 'Bagikan Sekarang' dan memberikan kode aksesnya kepada Anda.</translation>
-<translation id="6011539954251327702">Chrome Desktop Jarak Jauh memungkinkan Anda berbagi komputer melalui web dengan aman. Kedua pengguna harus menjalankan apl Chrome Desktop Jarak Jauh yang dapat ditemukan di <ph name="URL"/>.</translation>
+<translation id="5379087427956679853">Chrome Desktop Jarak Jauh memungkinkan Anda berbagi komputer melalui web dengan aman. Kedua pengguna harus menjalankan apl Chrome Desktop Jarak Jauh yang dapat ditemukan di <ph name="URL"/>.</translation>
 <translation id="4394049700291259645">Nonaktifkan</translation>
 <translation id="4314644002001494905">Putuskan sambungan (Ctrl+Alt+Esc)</translation>
 <translation id="8342538585421421741">Putuskan sambungan (Opt+Ctrl+Esc)</translation>
@@ -28,16 +28,16 @@
 <translation id="4804818685124855865">Putuskan sambungan</translation>
 
 <translation id="6930242544192836755">Durasi</translation>
-<translation id="8246880134154544773">Autentikasi gagal. Masuk ke Chrome Desktop Jarak Jauh lagi.</translation>
-<translation id="9032136467203159543">Beberapa komponen yang diperlukan untuk Chrome Desktop Jarak Jauh hilang. Pastikan bahwa Anda telah memasang versi teranyar dan coba lagi.</translation>
+<translation id="8172070902751707422">Autentikasi gagal. Masuk ke Chrome Desktop Jarak Jauh lagi.</translation>
+<translation id="2707879711568641861">Beberapa komponen yang diperlukan untuk Chrome Desktop Jarak Jauh hilang. Pastikan bahwa Anda telah memasang versi teranyar dan coba lagi.</translation>
 <translation id="2813770873348017932">Sambungan ke komputer jarak jauh diblokir untuk sementara karena seseorang mencoba untuk menyambungkannya dengan PIN yang tidak valid. Coba lagi nanti.</translation>
 <translation id="3106379468611574572">Komputer jarak jauh tidak menanggapi permintaan sambungan. Verifikasikan bahwa komputer jarak jauh sedang online dan coba lagi.</translation>
-<translation id="2944598174730150896">Versi Chrome Desktop Jarak Jauh yang tidak kompatibel terdeteksi. Pastikan bahwa Anda memiliki Google Chrome dan Chrome Desktop Jarak Jauh versi teranyar di kedua komputer lalu coba lagi.</translation>
+<translation id="851521648418609391">Versi Chrome Desktop Jarak Jauh yang tidak kompatibel terdeteksi. Pastikan bahwa Anda memiliki Google Chrome dan Chrome Desktop Jarak Jauh versi teranyar di kedua komputer lalu coba lagi.</translation>
 <translation id="4277736576214464567">Kode akses tidak valid. Harap coba lagi.</translation>
-<translation id="3403830762023901068">Setelan kebijakan tidak mengizinkan berbagi komputer ini sebagai hosting Chrome Desktop Jarak Jauh. Hubungi administrator sistem Anda untuk mendapatkan bantuan.</translation>
+<translation id="2208514473086078157">Setelan kebijakan tidak mengizinkan berbagi komputer ini sebagai hosting Chrome Desktop Jarak Jauh. Hubungi administrator sistem Anda untuk mendapatkan bantuan.</translation>
 <translation id="2366718077645204424">Tidak dapat mencapai host. Ini mungkin karena konfigurasi jaringan yang Anda gunakan.</translation>
-<translation id="5908809458024685848">Anda tidak masuk ke Chrome Desktop Jarak Jauh. Masuk dan coba lagi.</translation>
-<translation id="371039623761974302">Beberapa komponen yang diperlukan untuk Chrome Desktop Jarak Jauh hilang. Pastikan bahwa Anda menjalankan Google Chrome versi teranyar dan coba lagi.</translation>
+<translation id="7729639150174291243">Anda tidak masuk ke Chrome Desktop Jarak Jauh. Masuk dan coba lagi.</translation>
+<translation id="4019628723432694459">Beberapa komponen yang diperlukan untuk Chrome Desktop Jarak Jauh hilang. Pastikan bahwa Anda menjalankan Google Chrome versi teranyar dan coba lagi.</translation>
 <translation id="2805036638902441020">Server gagal menanggapi permintaan jaringan.</translation>
 <translation id="5593560073513909978">Layanan kami tidak tersedia untuk sementara. Coba lagi nanti.</translation>
 <translation id="1546934824884762070">Terjadi kesalahan yang tidak terduga. Laporkan masalah ini kepada pengembang.</translation>
@@ -48,14 +48,14 @@
 <translation id="7649070708921625228">Bantuan</translation>
 <translation id="4572065712096155137">Akses</translation>
 <translation id="1342297293546459414">Melihat dan mengontrol komputer bersama.</translation>
-<translation id="2353140552984634198">Mungkin Anda dapat mengakses komputer ini dengan aman menggunakan Chrome Desktop Jarak Jauh.</translation>
+<translation id="3258789396564295715">Mungkin Anda dapat mengakses komputer ini dengan aman menggunakan Chrome Desktop Jarak Jauh.</translation>
 <translation id="6198252989419008588">Ubah PIN</translation>
 <translation id="1199593201721843963">Nonaktifkan sambungan jarak jauh</translation>
 <translation id="7606912958770842224">Aktifkan sambungan jarak jauh</translation>
-<translation id="1291443878853470558">Anda harus mengaktifkan sambungan jarak jauh jika ingin menggunakan Chrome Desktop Jarak Jauh untuk mengakses komputer ini.</translation>
-<translation id="897805526397249209">Untuk mengaktifkan sambungan jarak jauh ke komputer yang berbeda, pasang Chrome Desktop Jarak Jauh di komputer tersebut lalu klik &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
-<translation id="4481276415609939789">Anda tidak memiliki komputer yang terdaftar. Untuk mengaktifkan sambungan jarak jauh ke komputer, pasang Chrome Desktop Jarak Jauh di komputer tersebut lalu klik &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
-<translation id="7038683108611689168">Bantu kami meningkatkan Chrome Desktop Jarak Jauh dengan mengizinkan kami mengumpulkan statistik penggunaan dan laporan kerusakan.</translation>
+<translation id="4006787130661126000">Anda harus mengaktifkan sambungan jarak jauh jika ingin menggunakan Chrome Desktop Jarak Jauh untuk mengakses komputer ini.</translation>
+<translation id="4361728918881830843">Untuk mengaktifkan sambungan jarak jauh ke komputer yang berbeda, pasang Chrome Desktop Jarak Jauh di komputer tersebut lalu klik &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
+<translation id="174018511426417793">Anda tidak memiliki komputer yang terdaftar. Untuk mengaktifkan sambungan jarak jauh ke komputer, pasang Chrome Desktop Jarak Jauh di komputer tersebut lalu klik &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
+<translation id="2499160551253595098">Bantu kami meningkatkan Chrome Desktop Jarak Jauh dengan mengizinkan kami mengumpulkan statistik penggunaan dan laporan kerusakan.</translation>
 <translation id="4156740505453712750">Untuk melindungi akses ke komputer ini, pilih PIN dengan <ph name="BOLD_START"/>setidaknya enam digit<ph name="BOLD_END"/>. PIN ini akan dibutuhkan saat menyambung dari lokasi lain.</translation>
 <translation id="154040539590487450">Gagal memulai layanan akses jarak jauh.</translation>
 <translation id="2013884659108657024">Chrome sedang mengunduh pemasang Chrome Host Desktop Jarak Jauh. Setelah unduhan selesai, jalankan pemasang sebelum melanjutkan.</translation>
@@ -81,7 +81,7 @@
 <translation id="5702987232842159181">Tersambung:</translation>
 <translation id="811307782653349804">Akses komputer Anda dari mana saja.</translation>
 <translation id="4430915108080446161">Membuat kode akses...</translation>
-<translation id="4703799847237267011">Sesi Chrome Desktop Jarak Jauh Anda telah berakhir.</translation>
+<translation id="3776024066357219166">Sesi Chrome Desktop Jarak Jauh Anda telah berakhir.</translation>
 <translation id="5708869785009007625">Desktop Anda saat ini sedang dibagikan dengan <ph name="USER"/>.</translation>
 <translation id="9188433529406846933">Beri Otorisasi</translation>
 <translation id="701976023053394610">Bantuan Jarak Jauh</translation>
@@ -94,7 +94,7 @@
 <translation id="4808503597364150972">Masukkan PIN Anda untuk <ph name="HOSTNAME"/>.</translation>
 <translation id="5156271271724754543">Masukkan PIN yang sama di kedua kotak.</translation>
 <translation id="5625493749705183369">Mengakses komputer lain atau mengizinkan pengguna lain mengakses komputer Anda dengan aman melalui internet.</translation>
-<translation id="2699970397166997657">Chrome Desktop Jarak Jauh</translation>
+<translation id="7401733114166276557">Chrome Desktop Jarak Jauh</translation>
 <translation id="579702532610384533">Sambungkan kembali</translation>
 <translation id="7144878232160441200">Coba lagi</translation>
 <translation id="7948001860594368197">Opsi layar</translation>

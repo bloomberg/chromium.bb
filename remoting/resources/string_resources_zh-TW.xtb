@@ -9,7 +9,7 @@
 <translation id="7658239707568436148">取消</translation>
 <translation id="6746493157771801606">清除紀錄</translation>
 <translation id="6040143037577758943">關閉</translation>
-<translation id="1643640058022401035">如果離開這個頁面，您的「Chrome 遠端桌面」工作階段也會結束。</translation>
+<translation id="5254120496627797685">如果離開這個頁面，您的「Chrome 遠端桌面」工作階段也會結束。</translation>
 <translation id="5308380583665731573">連線</translation>
 <translation id="6985691951107243942">您是否確定要停用與 <ph name="HOSTNAME"/> 之間的遠端連線？如果之後改變心意的話，您必須親身前往該電腦所在位置，修改設定後才能重新啟用連線。</translation>
 <translation id="6748108480210050150">連線者</translation>
@@ -18,9 +18,9 @@
 <translation id="6998989275928107238">連線對象</translation>
 <translation id="2359808026110333948">繼續</translation>
 <translation id="2919669478609886916">您目前與另一位使用者共用這台電腦，您要繼續共用嗎？</translation>
-<translation id="8864965950780407789">如要使用「Chrome 遠端桌面」，您必須將電腦的延伸存取權限授予該應用程式，這個步驟只需執行一次。</translation>
+<translation id="173559734173571936">如要使用「Chrome 遠端桌面」，您必須將電腦的延伸存取權限授予該應用程式，這個步驟只需執行一次。</translation>
 <translation id="1023096696228309145">與您要連線的電腦所屬使用者聯絡，要求對方按一下 [立即共用]，並告知您存取碼。</translation>
-<translation id="6011539954251327702">「Chrome 遠端桌面」提供了一個安全的機制，讓您透過網路與他人共用自己的電腦。您和共用對象都必須執行「Chrome 遠端桌面」應用程式，請前往 <ph name="URL"/> 安裝。</translation>
+<translation id="5379087427956679853">「Chrome 遠端桌面」提供了一個安全的機制，讓您透過網路與他人共用自己的電腦。您和共用對象都必須執行「Chrome 遠端桌面」應用程式，請前往 <ph name="URL"/> 安裝。</translation>
 <translation id="4394049700291259645">停用</translation>
 <translation id="4314644002001494905">中斷連線 (Ctrl+Alt+Esc 鍵)</translation>
 <translation id="8342538585421421741">中斷連線 (Opt+Ctrl+Esc 鍵)</translation>
@@ -28,16 +28,16 @@
 <translation id="4804818685124855865">中斷連線</translation>
 
 <translation id="6930242544192836755">持續時間</translation>
-<translation id="8246880134154544773">驗證失敗。請重新登入 Chrome 遠端桌面。</translation>
-<translation id="9032136467203159543">找不到「Chrome 遠端桌面」所需的部分元件。請確認您已安裝最新版本的 Google Chrome，然後再試一次。</translation>
+<translation id="8172070902751707422">驗證失敗。請重新登入 Chrome 遠端桌面。</translation>
+<translation id="2707879711568641861">找不到「Chrome 遠端桌面」所需的部分元件。請確認您已安裝最新版本的 Google Chrome，然後再試一次。</translation>
 <translation id="2813770873348017932">由於有人試圖使用無效的 PIN 連線到遠端電腦，導致您的連線暫時受阻。請稍後再試。</translation>
 <translation id="3106379468611574572">遠端電腦未回應您的連線要求。請確認遠端電腦已在線上，然後再試一次。</translation>
-<translation id="2944598174730150896">偵測到不相容的「Chrome 遠端桌面」版本。請確認您與共用對象的電腦均使用最新版本的 Google Chrome，然後再試一次。</translation>
+<translation id="851521648418609391">偵測到不相容的「Chrome 遠端桌面」版本。請確認您與共用對象的電腦均使用最新版本的 Google Chrome，然後再試一次。</translation>
 <translation id="4277736576214464567">存取碼無效，請再試一次。</translation>
-<translation id="3403830762023901068">政策設定不允許以 Chrome 遠端桌面主機的形式共用這台電腦。如需協助，請與您的系統管理員聯絡。</translation>
+<translation id="2208514473086078157">政策設定不允許以 Chrome 遠端桌面主機的形式共用這台電腦。如需協助，請與您的系統管理員聯絡。</translation>
 <translation id="2366718077645204424">無法連線到主機，原因可能與您所使用網路的設定有關。</translation>
-<translation id="5908809458024685848">您尚未登入 Chrome 遠端桌面。請登入並再試一次。</translation>
-<translation id="371039623761974302">找不到「Chrome 遠端桌面」所需的部分元件。請確認您執行的是最新版本的 Google Chrome，然後再試一次。</translation>
+<translation id="7729639150174291243">您尚未登入 Chrome 遠端桌面。請登入並再試一次。</translation>
+<translation id="4019628723432694459">找不到「Chrome 遠端桌面」所需的部分元件。請確認您執行的是最新版本的 Google Chrome，然後再試一次。</translation>
 <translation id="2805036638902441020">伺服器無法回應網路要求。</translation>
 <translation id="5593560073513909978">這項服務暫時無法使用，請稍後再試。</translation>
 <translation id="1546934824884762070">發生未預期的錯誤，請向開發人員回報這個問題。</translation>
@@ -48,14 +48,14 @@
 <translation id="7649070708921625228">說明</translation>
 <translation id="4572065712096155137">存取</translation>
 <translation id="1342297293546459414">瀏覽及操作共用的電腦。</translation>
-<translation id="2353140552984634198">您可以透過 Chrome 遠端桌面，安全地存取這台電腦。</translation>
+<translation id="3258789396564295715">您可以透過 Chrome 遠端桌面，安全地存取這台電腦。</translation>
 <translation id="6198252989419008588">變更 PIN</translation>
 <translation id="1199593201721843963">停用遠端連線</translation>
 <translation id="7606912958770842224">啟用遠端連線</translation>
-<translation id="1291443878853470558">如果您想要透過 Chrome 遠端桌面存取這台電腦，就必須啟用遠端連線。</translation>
-<translation id="897805526397249209">如要為其他電腦啟用遠端連線，請在您想要連線的電腦上安裝 Chrome 遠端桌面，然後按一下 [<ph name="BUTTON_NAME"/>]。</translation>
-<translation id="4481276415609939789">您尚未註冊任何電腦。如要為電腦啟用遠端連線，請在電腦上安裝 Chrome 遠端桌面，然後按一下 [<ph name="BUTTON_NAME"/>]。</translation>
-<translation id="7038683108611689168">允許我們收集使用統計資料和當機報告，協助我們改善 Chrome 遠端桌面。</translation>
+<translation id="4006787130661126000">如果您想要透過 Chrome 遠端桌面存取這台電腦，就必須啟用遠端連線。</translation>
+<translation id="4361728918881830843">如要為其他電腦啟用遠端連線，請在您想要連線的電腦上安裝 Chrome 遠端桌面，然後按一下 [<ph name="BUTTON_NAME"/>]。</translation>
+<translation id="174018511426417793">您尚未註冊任何電腦。如要為電腦啟用遠端連線，請在電腦上安裝 Chrome 遠端桌面，然後按一下 [<ph name="BUTTON_NAME"/>]。</translation>
+<translation id="2499160551253595098">允許我們收集使用統計資料和當機報告，協助我們改善 Chrome 遠端桌面。</translation>
 <translation id="4156740505453712750">如要保護這台電腦，避免不明人士入侵，請選擇一個<ph name="BOLD_START"/>至少 6 位數<ph name="BOLD_END"/>的 PIN。當使用者從其他位置連線時，必須先輸入這個 PIN 驗證身分。</translation>
 <translation id="154040539590487450">無法啟動遠端存取服務。</translation>
 <translation id="2013884659108657024">Chrome 正在下載 Chrome 遠端桌面主機端安裝程式。下載完成後，請先執行該安裝程式，然後再繼續。</translation>
@@ -81,7 +81,7 @@
 <translation id="5702987232842159181">已連線的電腦：</translation>
 <translation id="811307782653349804">無論您人在哪裡，都能存取自己的電腦。</translation>
 <translation id="4430915108080446161">正在產生存取碼…</translation>
-<translation id="4703799847237267011">您的「Chrome 遠端桌面」工作階段已結束。</translation>
+<translation id="3776024066357219166">您的「Chrome 遠端桌面」工作階段已結束。</translation>
 <translation id="5708869785009007625">您目前正與 <ph name="USER"/> 共用電腦。</translation>
 <translation id="9188433529406846933">授權</translation>
 <translation id="701976023053394610">遠端協助</translation>
@@ -94,7 +94,7 @@
 <translation id="4808503597364150972">請輸入 <ph name="HOSTNAME"/> 的 PIN。</translation>
 <translation id="5156271271724754543">請在兩個方塊中輸入相同的 PIN。</translation>
 <translation id="5625493749705183369">在安全的連線機制下，透過網際網路存取其他電腦，或是允許其他使用者存取您的電腦。</translation>
-<translation id="2699970397166997657">Chrome 遠端桌面</translation>
+<translation id="7401733114166276557">Chrome 遠端桌面</translation>
 <translation id="579702532610384533">重新連線</translation>
 <translation id="7144878232160441200">重試</translation>
 <translation id="7948001860594368197">螢幕選項</translation>

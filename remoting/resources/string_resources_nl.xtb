@@ -9,7 +9,7 @@
 <translation id="7658239707568436148">Annuleren</translation>
 <translation id="6746493157771801606">Geschiedenis wissen</translation>
 <translation id="6040143037577758943">Sluiten</translation>
-<translation id="1643640058022401035">Als u deze pagina verlaat, wordt uw Chrome Remote Desktop-sessie beëindigd.</translation>
+<translation id="5254120496627797685">Als u deze pagina verlaat, wordt uw Chrome Remote Desktop-sessie beëindigd.</translation>
 <translation id="5308380583665731573">Verbinding maken</translation>
 <translation id="6985691951107243942">Weet u zeker dat u externe verbindingen met <ph name="HOSTNAME"/> wilt uitschakelen? Als u van gedachten verandert, moet u naar die computer gaan om de verbindingen weer in te schakelen.</translation>
 <translation id="6748108480210050150">Van</translation>
@@ -18,9 +18,9 @@
 <translation id="6998989275928107238">Aan</translation>
 <translation id="2359808026110333948">Doorgaan</translation>
 <translation id="2919669478609886916">U deelt deze computer momenteel met een andere gebruiker. Wilt u doorgaan met delen?</translation>
-<translation id="8864965950780407789">Om Chrome Remote Desktop te gebruiken, moet u eerst uitgebreide toegangsrechten voor uw computer verlenen. U hoeft dit slechts één keer te doen.</translation>
+<translation id="173559734173571936">Om Chrome Remote Desktop te gebruiken, moet u eerst uitgebreide toegangsrechten voor uw computer verlenen. U hoeft dit slechts één keer te doen.</translation>
 <translation id="1023096696228309145">Vraag de gebruiker tot wiens computer u toegang wilt hebben, op 'Nu delen' te klikken en u de toegangscode te geven.</translation>
-<translation id="6011539954251327702">Met Chrome Remote Desktop kunt u uw computer veilig delen via internet. Beide gebruikers moeten de app Chrome Remote Desktop uitvoeren, die beschikbaar is op <ph name="URL"/>.</translation>
+<translation id="5379087427956679853">Met Chrome Remote Desktop kunt u uw computer veilig delen via internet. Beide gebruikers moeten de app Chrome Remote Desktop uitvoeren, die beschikbaar is op <ph name="URL"/>.</translation>
 <translation id="4394049700291259645">Uitschakelen</translation>
 <translation id="4314644002001494905">Verbinding verbreken (Ctrl+Alt+Esc)</translation>
 <translation id="8342538585421421741">Verbinding verbreken (Opt+Ctrl+Esc)</translation>
@@ -28,16 +28,16 @@
 <translation id="4804818685124855865">Verbinding verbreken</translation>
 
 <translation id="6930242544192836755">Duur</translation>
-<translation id="8246880134154544773">Authenticatie mislukt. Meld u opnieuw aan bij Chrome Remote Desktop.</translation>
-<translation id="9032136467203159543">Er ontbreken enkele componenten die vereist zijn voor Chrome Remote Desktop. Controleer of u de nieuwste versie heeft geïnstalleerd en probeer het opnieuw.</translation>
+<translation id="8172070902751707422">Authenticatie mislukt. Meld u opnieuw aan bij Chrome Remote Desktop.</translation>
+<translation id="2707879711568641861">Er ontbreken enkele componenten die vereist zijn voor Chrome Remote Desktop. Controleer of u de nieuwste versie heeft geïnstalleerd en probeer het opnieuw.</translation>
 <translation id="2813770873348017932">Verbindingen met de externe computer zijn tijdelijk geblokkeerd omdat iemand heeft geprobeerd met een ongeldige pincode verbinding te maken met de computer. Probeer het later opnieuw.</translation>
 <translation id="3106379468611574572">De externe computer reageert niet op verbindingsverzoeken. Controleer of deze online is en probeer het opnieuw.</translation>
-<translation id="2944598174730150896">Er is een incompatibele versie van Chrome Remote Desktop gedetecteerd. Controleer of beide computers beschikken over de nieuwste versie van Google Chrome en Chrome Remote Desktop en probeer het opnieuw.</translation>
+<translation id="851521648418609391">Er is een incompatibele versie van Chrome Remote Desktop gedetecteerd. Controleer of beide computers beschikken over de nieuwste versie van Google Chrome en Chrome Remote Desktop en probeer het opnieuw.</translation>
 <translation id="4277736576214464567">De toegangscode is ongeldig. Probeer het opnieuw.</translation>
-<translation id="3403830762023901068">De beleidsinstellingen staan het delen van deze computer als host voor Chrome Remote Desktop niet toe. Neem contact op met uw systeembeheerder voor hulp.</translation>
+<translation id="2208514473086078157">De beleidsinstellingen staan het delen van deze computer als host voor Chrome Remote Desktop niet toe. Neem contact op met uw systeembeheerder voor hulp.</translation>
 <translation id="2366718077645204424">Kan de host niet bereiken. Dit komt waarschijnlijk door de configuratie van het netwerk dat u gebruikt.</translation>
-<translation id="5908809458024685848">U bent niet aangemeld bij Chrome Remote Desktop. Meld u aan en probeer het opnieuw.</translation>
-<translation id="371039623761974302">Er ontbreken enkele componenten die vereist zijn voor Chrome Remote Desktop. Controleer of u de nieuwste versie van Google Chrome gebruikt en probeer het opnieuw.</translation>
+<translation id="7729639150174291243">U bent niet aangemeld bij Chrome Remote Desktop. Meld u aan en probeer het opnieuw.</translation>
+<translation id="4019628723432694459">Er ontbreken enkele componenten die vereist zijn voor Chrome Remote Desktop. Controleer of u de nieuwste versie van Google Chrome gebruikt en probeer het opnieuw.</translation>
 <translation id="2805036638902441020">De server heeft niet gereageerd op het netwerkverzoek.</translation>
 <translation id="5593560073513909978">De service is tijdelijk niet beschikbaar. Probeer het later opnieuw.</translation>
 <translation id="1546934824884762070">Er is een onverwachte fout opgetreden. Meld dit probleem aan de ontwikkelaars.</translation>
@@ -48,14 +48,14 @@
 <translation id="7649070708921625228">Help</translation>
 <translation id="4572065712096155137">Toegang</translation>
 <translation id="1342297293546459414">Een gedeelde computer bekijken en beheren.</translation>
-<translation id="2353140552984634198">U kunt veilig toegang krijgen tot deze computer via Chrome Remote Desktop.</translation>
+<translation id="3258789396564295715">U kunt veilig toegang krijgen tot deze computer via Chrome Remote Desktop.</translation>
 <translation id="6198252989419008588">Pincode wijzigen</translation>
 <translation id="1199593201721843963">Externe verbindingen uitschakelen</translation>
 <translation id="7606912958770842224">Externe verbindingen inschakelen</translation>
-<translation id="1291443878853470558">U moet externe verbindingen inschakelen als u Chrome Remote Desktop wilt gebruiken voor toegang tot deze computer.</translation>
-<translation id="897805526397249209">Als u externe verbindingen met een andere computer mogelijk wilt maken, installeert u Chrome Remote Desktop op die computer en klikt u op '<ph name="BUTTON_NAME"/>'.</translation>
-<translation id="4481276415609939789">U heeft geen geregistreerde computers. Als u externe verbindingen met een computer mogelijk wilt maken, installeert u Chrome Remote Desktop op die computer en klikt u op '<ph name="BUTTON_NAME"/>'.</translation>
-<translation id="7038683108611689168">Help ons Chrome Remote Desktop te verbeteren door ons toestemming te geven gebruiksstatistieken en crashrapporten te verzamelen.</translation>
+<translation id="4006787130661126000">U moet externe verbindingen inschakelen als u Chrome Remote Desktop wilt gebruiken voor toegang tot deze computer.</translation>
+<translation id="4361728918881830843">Als u externe verbindingen met een andere computer mogelijk wilt maken, installeert u Chrome Remote Desktop op die computer en klikt u op '<ph name="BUTTON_NAME"/>'.</translation>
+<translation id="174018511426417793">U heeft geen geregistreerde computers. Als u externe verbindingen met een computer mogelijk wilt maken, installeert u Chrome Remote Desktop op die computer en klikt u op '<ph name="BUTTON_NAME"/>'.</translation>
+<translation id="2499160551253595098">Help ons Chrome Remote Desktop te verbeteren door ons toestemming te geven gebruiksstatistieken en crashrapporten te verzamelen.</translation>
 <translation id="4156740505453712750">Om de toegang tot deze computer te beschermen, kiest u een pincode van <ph name="BOLD_START"/>ten minste zes cijfers<ph name="BOLD_END"/>. U moet deze pincode opgeven wanneer u verbinding maakt vanaf een andere locatie.</translation>
 <translation id="154040539590487450">Kan de service voor externe toegang niet starten.</translation>
 <translation id="2013884659108657024">Chrome downloadt het installatieprogramma voor de Chrome Remote Desktop-host. Zodra het downloaden is voltooid, voert u het installatieprogramma uit voordat u doorgaat.</translation>
@@ -81,7 +81,7 @@
 <translation id="5702987232842159181">Verbonden:</translation>
 <translation id="811307782653349804">Krijg overal toegang tot uw eigen computer.</translation>
 <translation id="4430915108080446161">Toegangscode genereren…</translation>
-<translation id="4703799847237267011">Uw Chrome Remote Desktop-sessie is beëindigd.</translation>
+<translation id="3776024066357219166">Uw Chrome Remote Desktop-sessie is beëindigd.</translation>
 <translation id="5708869785009007625">Uw bureaublad wordt momenteel gedeeld met <ph name="USER"/>.</translation>
 <translation id="9188433529406846933">Autoriseren</translation>
 <translation id="701976023053394610">Externe ondersteuning</translation>
@@ -94,7 +94,7 @@
 <translation id="4808503597364150972">Geef uw pincode voor <ph name="HOSTNAME"/> op.</translation>
 <translation id="5156271271724754543">Geef dezelfde pincode in beide vakken op.</translation>
 <translation id="5625493749705183369">Toegang krijgen tot andere computers of een andere gebruiker toestemming geven veilig toegang te krijgen tot uw computer via internet.</translation>
-<translation id="2699970397166997657">Chrome Remote Desktop</translation>
+<translation id="7401733114166276557">Chrome Remote Desktop</translation>
 <translation id="579702532610384533">Opnieuw verbinding maken</translation>
 <translation id="7144878232160441200">Opnieuw proberen</translation>
 <translation id="7948001860594368197">Schermopties</translation>

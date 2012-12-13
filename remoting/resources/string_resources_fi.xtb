@@ -9,7 +9,7 @@
 <translation id="7658239707568436148">Peruuta</translation>
 <translation id="6746493157771801606">Tyhjennä historia</translation>
 <translation id="6040143037577758943">Sulje</translation>
-<translation id="1643640058022401035">Vaihtamalla sivua päätät Chrome-etäkäyttökerran.</translation>
+<translation id="5254120496627797685">Vaihtamalla sivua päätät Chrome-etäkäyttökerran.</translation>
 <translation id="5308380583665731573">Yhdistä</translation>
 <translation id="6985691951107243942">Haluatko varmasti poistaa käytöstä etäyhteydet kohteeseen <ph name="HOSTNAME"/>? Jos muutat mieltäsi, yhteydet täytyy palauttaa käyttöön kyseisellä tietokoneella.</translation>
 <translation id="6748108480210050150">Aloittaja</translation>
@@ -18,9 +18,9 @@
 <translation id="6998989275928107238">Kohde</translation>
 <translation id="2359808026110333948">Jatka</translation>
 <translation id="2919669478609886916">Jaat tällä hetkellä tämän tietokoneen toisen käyttäjän kanssa. Haluatko jatkaa jakamista?</translation>
-<translation id="8864965950780407789">Sinun on annettava laajennetut käyttöoikeudet tietokoneeseesi, jotta voit käyttää Chrome-etäkäyttöä. Tämä täytyy tehdä vain kerran.</translation>
+<translation id="173559734173571936">Sinun on annettava laajennetut käyttöoikeudet tietokoneeseesi, jotta voit käyttää Chrome-etäkäyttöä. Tämä täytyy tehdä vain kerran.</translation>
 <translation id="1023096696228309145">Pyydä käyttäjää, jonka tietokonetta haluat käyttää, valitsemaan Jaa nyt ja antamaan sinulle käyttökoodi.</translation>
-<translation id="6011539954251327702">Chrome-etäkäyttösovelluksen avulla voit jakaa tietokoneesi suojatun verkkoyhteyden kautta. Molempien käyttäjien täytyy käyttää osoitteesta <ph name="URL"/> löytyvää Chrome-etäkäyttösovellusta.</translation>
+<translation id="5379087427956679853">Chrome-etäkäyttösovelluksen avulla voit jakaa tietokoneesi suojatun verkkoyhteyden kautta. Molempien käyttäjien täytyy käyttää osoitteesta <ph name="URL"/> löytyvää Chrome-etäkäyttösovellusta.</translation>
 <translation id="4394049700291259645">Poista käytöstä</translation>
 <translation id="4314644002001494905">Katkaise yhteys (Ctrl + Alt + Esc)</translation>
 <translation id="8342538585421421741">Katkaise yhteys (Opt + Ctrl + Esc)</translation>
@@ -28,16 +28,16 @@
 <translation id="4804818685124855865">Katkaise yhteys</translation>
 
 <translation id="6930242544192836755">Kesto</translation>
-<translation id="8246880134154544773">Todennus epäonnistui. Kirjaudu uudelleen sisään Chrome-etäkäyttöön.</translation>
-<translation id="9032136467203159543">Jotkin Chrome-etäkäyttöön vaadittavat komponentit puuttuvat. Varmista, että olet asentanut uusimman Google Chrome -version, ja yritä uudelleen.</translation>
+<translation id="8172070902751707422">Todennus epäonnistui. Kirjaudu uudelleen sisään Chrome-etäkäyttöön.</translation>
+<translation id="2707879711568641861">Jotkin Chrome-etäkäyttöön vaadittavat komponentit puuttuvat. Varmista, että olet asentanut uusimman Google Chrome -version, ja yritä uudelleen.</translation>
 <translation id="2813770873348017932">Yhteydet etätietokoneeseen on väliaikaisesti estetty, sillä siihen yritettiin ottaa yhteys virheellisellä PIN-koodilla. Yritä myöhemmin uudelleen.</translation>
 <translation id="3106379468611574572">Etätietokone ei vastaa yhteyspyyntöihin. Vahvista, että se on online-tilassa, ja yritä uudelleen.</translation>
-<translation id="2944598174730150896">Havaittiin yhteensopimaton Chrome-etäkäyttöversio. Varmista, että molemmissa tietokoneissa on uusimmat Google Chrome- ja Chrome-etäkäyttöversiot, ja yritä uudelleen.</translation>
+<translation id="851521648418609391">Havaittiin yhteensopimaton Chrome-etäkäyttöversio. Varmista, että molemmissa tietokoneissa on uusimmat Google Chrome- ja Chrome-etäkäyttöversiot, ja yritä uudelleen.</translation>
 <translation id="4277736576214464567">Käyttökoodi on virheellinen. Yritä uudelleen.</translation>
-<translation id="3403830762023901068">Käytäntöasetukset eivät salli tämän tietokoneen jakamista Chrome-etäkäyttöisäntänä. Ota yhteyttä järjestelmänvalvojaan.</translation>
+<translation id="2208514473086078157">Käytäntöasetukset eivät salli tämän tietokoneen jakamista Chrome-etäkäyttöisäntänä. Ota yhteyttä järjestelmänvalvojaan.</translation>
 <translation id="2366718077645204424">Isäntään ei saatu yhteyttä. Tämä johtuu luultavasti käyttämäsi verkon määrityksistä.</translation>
-<translation id="5908809458024685848">Et ole kirjautunut Chrome-etäkäyttöön. Kirjaudu sisään ja yritä uudelleen.</translation>
-<translation id="371039623761974302">Jotkin Chrome-etäkäyttöön vaadittavat komponentit puuttuvat. Varmista, että käytät uusinta Google Chrome -versiota ja yritä uudelleen.</translation>
+<translation id="7729639150174291243">Et ole kirjautunut Chrome-etäkäyttöön. Kirjaudu sisään ja yritä uudelleen.</translation>
+<translation id="4019628723432694459">Jotkin Chrome-etäkäyttöön vaadittavat komponentit puuttuvat. Varmista, että käytät uusinta Google Chrome -versiota ja yritä uudelleen.</translation>
 <translation id="2805036638902441020">Palvelin ei pystynyt vastaamaan verkkopyyntöön.</translation>
 <translation id="5593560073513909978">Palvelu ei ole tällä hetkellä käytettävissä. Yritä myöhemmin uudelleen.</translation>
 <translation id="1546934824884762070">Odottamaton virhe. Ilmoita tästä ongelmasta kehittäjille.</translation>
@@ -48,14 +48,14 @@
 <translation id="7649070708921625228">Ohje</translation>
 <translation id="4572065712096155137">Ota käyttöön</translation>
 <translation id="1342297293546459414">Tarkastele ja hallinnoi jaettua tietokonetta.</translation>
-<translation id="2353140552984634198">Tähän tietokoneeseen voi ottaa yhteyden Chrome-etäkäytön avulla.</translation>
+<translation id="3258789396564295715">Tähän tietokoneeseen voi ottaa yhteyden Chrome-etäkäytön avulla.</translation>
 <translation id="6198252989419008588">Vaihda PIN-koodi</translation>
 <translation id="1199593201721843963">Poista etäyhteydet käytöstä</translation>
 <translation id="7606912958770842224">Ota etäyhteydet käyttöön</translation>
-<translation id="1291443878853470558">Etäyhteydet on otettava käyttöön, jotta tietokonetta voidaan käyttää Chrome-etäkäytön avulla.</translation>
-<translation id="897805526397249209">Ota etäyhteys käyttöön asentamalla toiselle tietokoneelle Chrome-etäkäyttö ja valitsemalla <ph name="BUTTON_NAME"/>.</translation>
-<translation id="4481276415609939789">Käyttöösi ei ole rekisteröity tietokoneita. Ota käyttöön etäyhteys asentamalla toiselle tietokoneelle Chrome-etäkäyttö ja valitsemalla <ph name="BUTTON_NAME"/>.</translation>
-<translation id="7038683108611689168">Auta meitä parantamaan Chrome-etäkäyttöä antamalla meidän kerätä käyttötilastoja ja virheraportteja.</translation>
+<translation id="4006787130661126000">Etäyhteydet on otettava käyttöön, jotta tietokonetta voidaan käyttää Chrome-etäkäytön avulla.</translation>
+<translation id="4361728918881830843">Ota etäyhteys käyttöön asentamalla toiselle tietokoneelle Chrome-etäkäyttö ja valitsemalla <ph name="BUTTON_NAME"/>.</translation>
+<translation id="174018511426417793">Käyttöösi ei ole rekisteröity tietokoneita. Ota käyttöön etäyhteys asentamalla toiselle tietokoneelle Chrome-etäkäyttö ja valitsemalla <ph name="BUTTON_NAME"/>.</translation>
+<translation id="2499160551253595098">Auta meitä parantamaan Chrome-etäkäyttöä antamalla meidän kerätä käyttötilastoja ja virheraportteja.</translation>
 <translation id="4156740505453712750">Suojaa tietokonettasi valitsemalla <ph name="BOLD_START"/>vähintään kuusinumeroinen<ph name="BOLD_END"/> PIN-koodi. PIN-koodia pyydetään, kun muodostat yhteyden toisesta sijainnista.</translation>
 <translation id="154040539590487450">Etäkäyttöpalvelun käynnistäminen epäonnistui.</translation>
 <translation id="2013884659108657024">Chrome lataa Chrome-etäkäytön isäntäsovelluksen asennusohjelmaa.  Suorita asennusohjelma, kun lataus on valmis.</translation>
@@ -81,7 +81,7 @@
 <translation id="5702987232842159181">Yhdistetty:</translation>
 <translation id="811307782653349804">Käytä tietokonettasi mistä haluat.</translation>
 <translation id="4430915108080446161">Luodaan käyttökoodia...</translation>
-<translation id="4703799847237267011">Chrome-etäkäyttökerta on päättynyt.</translation>
+<translation id="3776024066357219166">Chrome-etäkäyttökerta on päättynyt.</translation>
 <translation id="5708869785009007625">Tietokoneesi on jaettu käyttäjän <ph name="USER"/> kanssa.</translation>
 <translation id="9188433529406846933">Valtuuta</translation>
 <translation id="701976023053394610">Etätuki</translation>
@@ -94,7 +94,7 @@
 <translation id="4808503597364150972">Anna kohteen <ph name="HOSTNAME"/> PIN-koodi.</translation>
 <translation id="5156271271724754543">Kirjoita sama PIN-koodi molempiin ruutuihin.</translation>
 <translation id="5625493749705183369">Käytä muita tietokoneita tai salli toisen käyttäjän käyttää tietokonettasi suojatun internetyhteyden kautta.</translation>
-<translation id="2699970397166997657">Chrome-etäkäyttö</translation>
+<translation id="7401733114166276557">Chrome-etäkäyttö</translation>
 <translation id="579702532610384533">Yhdistä uudelleen</translation>
 <translation id="7144878232160441200">Yritä uudelleen</translation>
 <translation id="7948001860594368197">Näytön asetukset</translation>

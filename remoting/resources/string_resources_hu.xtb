@@ -9,7 +9,7 @@
 <translation id="7658239707568436148">Mégse</translation>
 <translation id="6746493157771801606">Előzmények törlése</translation>
 <translation id="6040143037577758943">Bezárás</translation>
-<translation id="1643640058022401035">Ha elhagyja ezt az oldalt, akkor befejeződik a Chrome távoliasztal-szolgáltatás munkamenete.</translation>
+<translation id="5254120496627797685">Ha elhagyja ezt az oldalt, akkor befejeződik a Chrome távoliasztal-szolgáltatás munkamenete.</translation>
 <translation id="5308380583665731573">Kapcsolódás</translation>
 <translation id="6985691951107243942">Biztosan le szeretné tiltani a távoli kapcsolatokat a(z) <ph name="HOSTNAME"/> gazdagéppel? Ha meggondolja magát, akkor azon a számítógépen kell majd újból engedélyeznie a kapcsolatokat.</translation>
 <translation id="6748108480210050150">Kezdeményező</translation>
@@ -18,9 +18,9 @@
 <translation id="6998989275928107238">Cél</translation>
 <translation id="2359808026110333948">Tovább</translation>
 <translation id="2919669478609886916">Ezt a gépet jelenleg megosztja egy másik felhasználóval. Szeretné folytatni a megosztást?</translation>
-<translation id="8864965950780407789">A Chrome távoliasztal-szolgáltatás használatához kiterjesztett hozzáférési jogosultságokat kell adnia a számítógépéhez. Ezt csak egyszer kell elvégezni.</translation>
+<translation id="173559734173571936">A Chrome távoliasztal-szolgáltatás használatához kiterjesztett hozzáférési jogosultságokat kell adnia a számítógépéhez. Ezt csak egyszer kell elvégezni.</translation>
 <translation id="1023096696228309145">Kérje meg azt a felhasználót, akinek a számítógépét használni szeretné, hogy kattintson a &quot;Megosztás most&quot; feliratra, és adja meg Önnek a hozzáférési kódot.</translation>
-<translation id="6011539954251327702">A Chrome távoliasztal-szolgáltatás lehetővé teszi a számítógép biztonságos megosztását az interneten keresztül. Mindkét felhasználónál futnia kell a Chrome távoliasztal-szolgáltatásnak, amely itt található: <ph name="URL"/></translation>
+<translation id="5379087427956679853">A Chrome távoliasztal-szolgáltatás lehetővé teszi a számítógép biztonságos megosztását az interneten keresztül. Mindkét felhasználónál futnia kell a Chrome távoliasztal-szolgáltatásnak, amely itt található: <ph name="URL"/></translation>
 <translation id="4394049700291259645">Letiltás</translation>
 <translation id="4314644002001494905">Kapcsolat bontása (Ctrl+Alt+Esc)</translation>
 <translation id="8342538585421421741">Kapcsolat bontása (Opt+Ctrl+Esc)</translation>
@@ -28,16 +28,16 @@
 <translation id="4804818685124855865">Kapcsolat bontása</translation>
 
 <translation id="6930242544192836755">Időtartam</translation>
-<translation id="8246880134154544773">A hitelesítés nem sikerült. Kérjük, jelentkezzen be újra a Chrome távoliasztal-szolgáltatásba.</translation>
-<translation id="9032136467203159543">A Chrome távoliasztal-szolgáltatás egyes szükséges összetevői hiányoznak. Kérjük, ellenőrizze, hogy telepítve van-e a legfrissebb verzió, majd próbálja újra.</translation>
+<translation id="8172070902751707422">A hitelesítés nem sikerült. Kérjük, jelentkezzen be újra a Chrome távoliasztal-szolgáltatásba.</translation>
+<translation id="2707879711568641861">A Chrome távoliasztal-szolgáltatás egyes szükséges összetevői hiányoznak. Kérjük, ellenőrizze, hogy telepítve van-e a legfrissebb verzió, majd próbálja újra.</translation>
 <translation id="2813770873348017932">A távoli számítógéphez való csatlakozás ideiglenesen le van tiltva, mert valaki érvénytelen PIN kóddal próbált csatlakozni hozzá. Kérjük, próbálja újra később.</translation>
 <translation id="3106379468611574572">A távoli számítógép nem válaszol a csatlakozási kérésekre. Kérjük, ellenőrizze, hogy kapcsolatban van-e, majd próbálja újra.</translation>
-<translation id="2944598174730150896">A Chrome távoliasztal-szolgáltatás egy nem kompatibilis verziója található a számítógépen. Kérjük, ellenőrizze, hogy mindkét számítógépen a Google Chrome és a Chrome távoliasztal-szolgáltatás legfrissebb verziói legyenek, majd próbálja újra.</translation>
+<translation id="851521648418609391">A Chrome távoliasztal-szolgáltatás egy nem kompatibilis verziója található a számítógépen. Kérjük, ellenőrizze, hogy mindkét számítógépen a Google Chrome és a Chrome távoliasztal-szolgáltatás legfrissebb verziói legyenek, majd próbálja újra.</translation>
 <translation id="4277736576214464567">A hozzáférési kód érvénytelen. Kérjük, próbálja újra.</translation>
-<translation id="3403830762023901068">A szabályzatbeállítások értelmében a Chrome távoliasztal-szolgáltatásban nem oszthatja meg számítógépét gazdaszámítógépként. Segítségért lépjen kapcsolatba a rendszergazdával.</translation>
+<translation id="2208514473086078157">A szabályzatbeállítások értelmében a Chrome távoliasztal-szolgáltatásban nem oszthatja meg számítógépét gazdaszámítógépként. Segítségért lépjen kapcsolatba a rendszergazdával.</translation>
 <translation id="2366718077645204424">A gazdagép nem érhető el. Ez valószínűleg az Ön által használt hálózat konfigurációja miatt van.</translation>
-<translation id="5908809458024685848">Ön nincs bejelentkezve a Chrome távoliasztal-szolgáltatásba. Kérjük, jelentkezzen be, és próbálja újra.</translation>
-<translation id="371039623761974302">A Chrome távoliasztal-szolgáltatás egyes szükséges összetevői hiányoznak. Kérjük, ellenőrizze, hogy a Google Chrome legfrissebb verzióját használja-e, majd próbálja újra.</translation>
+<translation id="7729639150174291243">Ön nincs bejelentkezve a Chrome távoliasztal-szolgáltatásba. Kérjük, jelentkezzen be, és próbálja újra.</translation>
+<translation id="4019628723432694459">A Chrome távoliasztal-szolgáltatás egyes szükséges összetevői hiányoznak. Kérjük, ellenőrizze, hogy a Google Chrome legfrissebb verzióját használja-e, majd próbálja újra.</translation>
 <translation id="2805036638902441020">A szerver nem válaszolt a hálózati kérésre.</translation>
 <translation id="5593560073513909978">A szolgáltatás átmenetileg nem érhető el. Kérjük, próbálkozzon újra később.</translation>
 <translation id="1546934824884762070">Váratlan hiba történt. Kérjük, jelentse a problémát a fejlesztőknek.</translation>
@@ -48,14 +48,14 @@
 <translation id="7649070708921625228">Súgó</translation>
 <translation id="4572065712096155137">Elérés</translation>
 <translation id="1342297293546459414">Megosztott számítógép megtekintése és irányítása.</translation>
-<translation id="2353140552984634198">Biztonságosan hozzáférhet a számítógéphez a Chrome távoliasztal-szolgáltatás segítségével.</translation>
+<translation id="3258789396564295715">Biztonságosan hozzáférhet a számítógéphez a Chrome távoliasztal-szolgáltatás segítségével.</translation>
 <translation id="6198252989419008588">PIN kód módosítása</translation>
 <translation id="1199593201721843963">Távoli kapcsolatok letiltása</translation>
 <translation id="7606912958770842224">Távoli kapcsolatok engedélyezése</translation>
-<translation id="1291443878853470558">Engedélyeznie kell a távoli kapcsolatokat, ha a Chrome távoliasztal-szolgáltatást szeretné használni ennek a számítógépnek az eléréséhez.</translation>
-<translation id="897805526397249209">Ahhoz, hogy engedélyezhesse a távoli kapcsolatokat egy másik számítógépen, telepítse a gépre a Chrome távoliasztal-szolgáltatást, majd kattintson a következő gombra: <ph name="BUTTON_NAME"/>.</translation>
-<translation id="4481276415609939789">Önnek nincs regisztrált számítógépe. Ahhoz, hogy engedélyezhesse a távoli kapcsolatokat egy számítógépen, telepítse a gépre a Chrome távoliasztal-szolgáltatást, majd kattintson a következő gombra: <ph name="BUTTON_NAME"/>.</translation>
-<translation id="7038683108611689168">Segítsen fejleszteni a Chrome távoliasztal-szolgáltatást azáltal, hogy rendelkezésünkre bocsátja a használati statisztikákat és hibajelentéseket.</translation>
+<translation id="4006787130661126000">Engedélyeznie kell a távoli kapcsolatokat, ha a Chrome távoliasztal-szolgáltatást szeretné használni ennek a számítógépnek az eléréséhez.</translation>
+<translation id="4361728918881830843">Ahhoz, hogy engedélyezhesse a távoli kapcsolatokat egy másik számítógépen, telepítse a gépre a Chrome távoliasztal-szolgáltatást, majd kattintson a következő gombra: <ph name="BUTTON_NAME"/>.</translation>
+<translation id="174018511426417793">Önnek nincs regisztrált számítógépe. Ahhoz, hogy engedélyezhesse a távoli kapcsolatokat egy számítógépen, telepítse a gépre a Chrome távoliasztal-szolgáltatást, majd kattintson a következő gombra: <ph name="BUTTON_NAME"/>.</translation>
+<translation id="2499160551253595098">Segítsen fejleszteni a Chrome távoliasztal-szolgáltatást azáltal, hogy rendelkezésünkre bocsátja a használati statisztikákat és hibajelentéseket.</translation>
 <translation id="4156740505453712750">A számítógéphez való hozzáférés védelme érdekében válasszon egy <ph name="BOLD_START"/>legalább hat számjegyből álló<ph name="BOLD_END"/> PIN kódot. Erre a kódra akkor lesz szükség, amikor egy másik helyről szeretne csatlakozni.</translation>
 <translation id="154040539590487450">Nem sikerült elindítani a távoli hozzáférési szolgáltatást.</translation>
 <translation id="2013884659108657024">A Chrome letölti a Chrome távoliasztal-szolgáltatás gazdagépekhez való telepítőjét. Miután a letöltés befejeződött, futtassa a telepítőt a folytatás előtt.</translation>
@@ -81,7 +81,7 @@
 <translation id="5702987232842159181">Csatlakoztatva:</translation>
 <translation id="811307782653349804">Bárhonnan hozzáférhet saját számítógépéhez.</translation>
 <translation id="4430915108080446161">Hozzáférési kód létrehozása...</translation>
-<translation id="4703799847237267011">A Chrome távoliasztal-szolgáltatás munkamenet véget ért.</translation>
+<translation id="3776024066357219166">A Chrome távoliasztal-szolgáltatás munkamenet véget ért.</translation>
 <translation id="5708869785009007625">Az asztalt jelenleg ezzel a felhasználóval osztja meg: <ph name="USER"/></translation>
 <translation id="9188433529406846933">Engedélyezés</translation>
 <translation id="701976023053394610">Távsegítség</translation>
@@ -94,7 +94,7 @@
 <translation id="4808503597364150972">Kérjük, adja meg a(z) <ph name="HOSTNAME"/> PIN kódját.</translation>
 <translation id="5156271271724754543">Kérjük, ugyanazt a PIN kódot adja meg mindkét mezőben.</translation>
 <translation id="5625493749705183369">Más számítógépek elérése vagy annak engedélyezése, hogy egy másik felhasználó a számítógéphez biztonságosan hozzáférhessen az interneten keresztül.</translation>
-<translation id="2699970397166997657">Chrome távoliasztal-szolgáltatás</translation>
+<translation id="7401733114166276557">Chrome távoliasztal-szolgáltatás</translation>
 <translation id="579702532610384533">Újrakapcsolódás</translation>
 <translation id="7144878232160441200">Újra</translation>
 <translation id="7948001860594368197">Képernyő-beállítások</translation>

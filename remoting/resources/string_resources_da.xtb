@@ -9,7 +9,7 @@
 <translation id="7658239707568436148">Annuller</translation>
 <translation id="6746493157771801606">Ryd historik</translation>
 <translation id="6040143037577758943">Luk</translation>
-<translation id="1643640058022401035">Hvis du forlader denne side, afsluttes din session med Chrome Fjernskrivebord.</translation>
+<translation id="5254120496627797685">Hvis du forlader denne side, afsluttes din session med Chrome Fjernskrivebord.</translation>
 <translation id="5308380583665731573">Opret forbindelse</translation>
 <translation id="6985691951107243942">Er du sikker på, at du vil deaktivere fjernforbindelserne til <ph name="HOSTNAME"/>? Hvis du ombestemmer dig, skal du genaktivere forbindelserne på den computer.</translation>
 <translation id="6748108480210050150">Fra</translation>
@@ -18,9 +18,9 @@
 <translation id="6998989275928107238">Til</translation>
 <translation id="2359808026110333948">Fortsæt</translation>
 <translation id="2919669478609886916">Du deler i øjeblikket denne maskine med en anden bruger. Vil du fortsætte med at dele?</translation>
-<translation id="8864965950780407789">Hvis du vil bruge Chrome Fjernskrivebord, skal du give udvidet tilladelse til adgang til din computer. Du skal kun gøre dette én gang.</translation>
+<translation id="173559734173571936">Hvis du vil bruge Chrome Fjernskrivebord, skal du give udvidet tilladelse til adgang til din computer. Du skal kun gøre dette én gang.</translation>
 <translation id="1023096696228309145">Bed den bruger, hvis computer, du ønsker adgang til, om at klikke på &quot;Del nu&quot; og give dig adgangskoden.</translation>
-<translation id="6011539954251327702">Chrome Fjernskrivebord giver dig mulighed for sikkert at dele din computer via internettet. Begge brugere skal køre appen Chrome Fjernskrivebord, som kan findes på <ph name="URL"/>.</translation>
+<translation id="5379087427956679853">Chrome Fjernskrivebord giver dig mulighed for sikkert at dele din computer via internettet. Begge brugere skal køre appen Chrome Fjernskrivebord, som kan findes på <ph name="URL"/>.</translation>
 <translation id="4394049700291259645">Deaktiver</translation>
 <translation id="4314644002001494905">Afbryd (Ctrl+Alt+Esc)</translation>
 <translation id="8342538585421421741">Afbryd (Opt+Ctrl+Esc)</translation>
@@ -28,16 +28,16 @@
 <translation id="4804818685124855865">Afbryd forbindelsen</translation>
 
 <translation id="6930242544192836755">Varighed</translation>
-<translation id="8246880134154544773">Godkendelse mislykkedes. Log ind på Chrome Fjernskrivebord igen.</translation>
-<translation id="9032136467203159543">Nogle komponenter, der kræves til Chrome Fjernskrivebord, mangler. Kontroller, at du har den nyeste version af Google Chrome, og prøv igen.</translation>
+<translation id="8172070902751707422">Godkendelse mislykkedes. Log ind på Chrome Fjernskrivebord igen.</translation>
+<translation id="2707879711568641861">Nogle komponenter, der kræves til Chrome Fjernskrivebord, mangler. Kontroller, at du har den nyeste version af Google Chrome, og prøv igen.</translation>
 <translation id="2813770873348017932">Forbindelserne til fjerncomputeren er midlertidigt blokeret, fordi nogen forsøgte at få forbindelse til den med en ugyldig pinkode. Prøv igen senere.</translation>
 <translation id="3106379468611574572">Fjerncomputeren svarer ikke på anmodninger om oprettelse af forbindelse. Kontroller, at den er online, og prøv igen.</translation>
-<translation id="2944598174730150896">Der er registreret en inkompatibel version af Chrome Fjernskrivebord. Kontroller, at du har den nyeste version af Google Chrome og Chrome Fjernskrivebord på begge computere, og prøv igen.</translation>
+<translation id="851521648418609391">Der er registreret en inkompatibel version af Chrome Fjernskrivebord. Kontroller, at du har den nyeste version af Google Chrome og Chrome Fjernskrivebord på begge computere, og prøv igen.</translation>
 <translation id="4277736576214464567">Adgangskoden er ugyldig. Prøv igen.</translation>
-<translation id="3403830762023901068">Politikindstillingerne tillader ikke, at denne computer deles som en Chrome Fjernskrivebord-host. Kontakt din systemadministrator for at få hjælp.</translation>
+<translation id="2208514473086078157">Politikindstillingerne tillader ikke, at denne computer deles som en Chrome Fjernskrivebord-host. Kontakt din systemadministrator for at få hjælp.</translation>
 <translation id="2366718077645204424">Værten kunne ikke nås. Dette skyldes sandsynligvis konfigurationen af ​​det netværk, du bruger.</translation>
-<translation id="5908809458024685848">Du er ikke logget ind på Chrome Fjernskrivebord. Log ind, og prøv igen.</translation>
-<translation id="371039623761974302">Nogle komponenter, der kræves til Chrome Fjernskrivebord, mangler. Kontroller, at du har den nyeste version af Google Chrome, og prøv igen.</translation>
+<translation id="7729639150174291243">Du er ikke logget ind på Chrome Fjernskrivebord. Log ind, og prøv igen.</translation>
+<translation id="4019628723432694459">Nogle komponenter, der kræves til Chrome Fjernskrivebord, mangler. Kontroller, at du har den nyeste version af Google Chrome, og prøv igen.</translation>
 <translation id="2805036638902441020">Serveren svarede ikke på netværksanmodningen</translation>
 <translation id="5593560073513909978">Tjenesten er midlertidigt utilgængelig. Prøv igen senere.</translation>
 <translation id="1546934824884762070">Der opstod en uventet fejl. Rapporter dette problem til udviklerne.</translation>
@@ -48,14 +48,14 @@
 <translation id="7649070708921625228">Hjælp</translation>
 <translation id="4572065712096155137">Adgang</translation>
 <translation id="1342297293546459414">Få vist og kontroller en delt computer.</translation>
-<translation id="2353140552984634198">Du kan få sikker adgang til denne computer via Chrome Fjernskrivebord.</translation>
+<translation id="3258789396564295715">Du kan få sikker adgang til denne computer via Chrome Fjernskrivebord.</translation>
 <translation id="6198252989419008588">Skift pinkode</translation>
 <translation id="1199593201721843963">Deaktiver fjernforbindelserne</translation>
 <translation id="7606912958770842224">Aktivér fjernforbindelserne</translation>
-<translation id="1291443878853470558">Du skal aktivere fjernforbindelserne, hvis du vil bruge Chrome Fjernskrivebord til at få adgang til denne computer.</translation>
-<translation id="897805526397249209">Hvis du vil aktivere fjernforbindelser til en anden computer, skal du installere Chrome Fjernskrivebord på den pågældende computer og klikke på &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
-<translation id="4481276415609939789">Du har ingen registrerede computere. Hvis du vil aktivere fjernforbindelser til en computer, skal du installere Chrome Fjernskrivebord på den pågældende computer og klikke på &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
-<translation id="7038683108611689168">Hjælp os med at forbedre Chrome Fjernskrivebord ved at lade os indsamle brugsstatistikker og rapporter om nedbrud.</translation>
+<translation id="4006787130661126000">Du skal aktivere fjernforbindelserne, hvis du vil bruge Chrome Fjernskrivebord til at få adgang til denne computer.</translation>
+<translation id="4361728918881830843">Hvis du vil aktivere fjernforbindelser til en anden computer, skal du installere Chrome Fjernskrivebord på den pågældende computer og klikke på &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
+<translation id="174018511426417793">Du har ingen registrerede computere. Hvis du vil aktivere fjernforbindelser til en computer, skal du installere Chrome Fjernskrivebord på den pågældende computer og klikke på &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
+<translation id="2499160551253595098">Hjælp os med at forbedre Chrome Fjernskrivebord ved at lade os indsamle brugsstatistikker og rapporter om nedbrud.</translation>
 <translation id="4156740505453712750">For at beskytte adgangen til denne computer skal du vælge en pinkode på <ph name="BOLD_START"/>mindst seks cifre<ph name="BOLD_END"/>. Denne pinkode skal indtastes, når du opretter forbindelse fra et andet sted.</translation>
 <translation id="154040539590487450">Tjenesten til fjernadgang kunne ikke starte.</translation>
 <translation id="2013884659108657024">Chrome downloader installationsprogrammet Chrome Remote Desktop Host. Når overførslen er færdig, skal du køre installationsprogrammet, før du fortsætter.</translation>
@@ -81,7 +81,7 @@
 <translation id="5702987232842159181">Tilsluttet:</translation>
 <translation id="811307782653349804">Få adgang til din egen computer, uanset hvor du er.</translation>
 <translation id="4430915108080446161">Genererer adgangskode...</translation>
-<translation id="4703799847237267011">Din session med Chrome Fjernskrivebord er afsluttet.</translation>
+<translation id="3776024066357219166">Din session med Chrome Fjernskrivebord er afsluttet.</translation>
 <translation id="5708869785009007625">Dit skrivebord deles i øjeblikket med <ph name="USER"/>.</translation>
 <translation id="9188433529406846933">Tillad</translation>
 <translation id="701976023053394610">Fjernsupport</translation>
@@ -94,7 +94,7 @@
 <translation id="4808503597364150972">Indtast din pinkode til <ph name="HOSTNAME"/>.</translation>
 <translation id="5156271271724754543">Indtast den samme pinkode i begge felter.</translation>
 <translation id="5625493749705183369">Få adgang til andre computere, eller giv en anden bruger adgang til din computer sikkert via internettet.</translation>
-<translation id="2699970397166997657">Chrome Fjernskrivebord</translation>
+<translation id="7401733114166276557">Chrome Fjernskrivebord</translation>
 <translation id="579702532610384533">Genopret forbindelse</translation>
 <translation id="7144878232160441200">Prøv igen</translation>
 <translation id="7948001860594368197">Valgmuligheder for skærm</translation>

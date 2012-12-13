@@ -9,7 +9,7 @@
 <translation id="7658239707568436148">取消</translation>
 <translation id="6746493157771801606">清除历史记录</translation>
 <translation id="6040143037577758943">关闭</translation>
-<translation id="1643640058022401035">离开此页会结束您的 Chrome 远程桌面会话。</translation>
+<translation id="5254120496627797685">离开此页会结束您的 Chrome 远程桌面会话。</translation>
 <translation id="5308380583665731573">连接</translation>
 <translation id="6985691951107243942">您确定要停用与“<ph name="HOSTNAME"/>”的远程连接吗？如果您以后想要重新启用连接，需要访问该计算机。</translation>
 <translation id="6748108480210050150">发件人</translation>
@@ -18,9 +18,9 @@
 <translation id="6998989275928107238">收件人</translation>
 <translation id="2359808026110333948">继续</translation>
 <translation id="2919669478609886916">您目前正在与其他用户共享此计算机。您希望继续共享吗？</translation>
-<translation id="8864965950780407789">要使用 Chrome 远程桌面，您必须向您的计算机授予更多访问权限。此操作只需执行一次。</translation>
+<translation id="173559734173571936">要使用 Chrome 远程桌面，您必须向您的计算机授予更多访问权限。此操作只需执行一次。</translation>
 <translation id="1023096696228309145">让您想要访问的计算机的使用者点击“立即共享”，然后告诉您访问代码。</translation>
-<translation id="6011539954251327702">Chrome 远程桌面可让您通过网络安全地共享您的计算机。两个用户必须同时运行 Chrome 远程桌面应用。要下载该应用，请访问 <ph name="URL"/>。</translation>
+<translation id="5379087427956679853">Chrome 远程桌面可让您通过网络安全地共享您的计算机。两个用户必须同时运行 Chrome 远程桌面应用。要下载该应用，请访问 <ph name="URL"/>。</translation>
 <translation id="4394049700291259645">停用</translation>
 <translation id="4314644002001494905">断开连接 (Ctrl+Alt+Esc)</translation>
 <translation id="8342538585421421741">断开连接 (Opt+Ctrl+Esc)</translation>
@@ -28,16 +28,16 @@
 <translation id="4804818685124855865">断开连接</translation>
 
 <translation id="6930242544192836755">持续时间</translation>
-<translation id="8246880134154544773">身份验证失败。请重新登录 Chrome 远程桌面。</translation>
-<translation id="9032136467203159543">缺少 Chrome 远程桌面所需的某些组件。请确保您已安装最新版本，然后重试。</translation>
+<translation id="8172070902751707422">身份验证失败。请重新登录 Chrome 远程桌面。</translation>
+<translation id="2707879711568641861">缺少 Chrome 远程桌面所需的某些组件。请确保您已安装最新版本，然后重试。</translation>
 <translation id="2813770873348017932">与远程计算机的连接已被暂时阻止，因为有人试图使用无效 PIN 连接到该计算机。请稍后重试。</translation>
 <translation id="3106379468611574572">远程计算机没有对连接请求做出响应。请确保其在线，然后重试。</translation>
-<translation id="2944598174730150896">检测到一个不兼容的 Chrome 远程桌面版本。请确保两台计算机上使用的 Google Chrome 浏览器和 Chrome 远程桌面都是最新版本，然后重试。</translation>
+<translation id="851521648418609391">检测到一个不兼容的 Chrome 远程桌面版本。请确保两台计算机上使用的 Google Chrome 浏览器和 Chrome 远程桌面都是最新版本，然后重试。</translation>
 <translation id="4277736576214464567">访问代码无效，请重试。</translation>
-<translation id="3403830762023901068">策略设置不允许以 Chrome 远程桌面主机的形式共享此计算机。请与您的系统管理员联系寻求帮助。</translation>
+<translation id="2208514473086078157">策略设置不允许以 Chrome 远程桌面主机的形式共享此计算机。请与您的系统管理员联系寻求帮助。</translation>
 <translation id="2366718077645204424">无法连接到主机，这可能是由您所使用网络的配置导致的。</translation>
-<translation id="5908809458024685848">您目前并未登录到 Chrome 远程桌面。请登录，然后重试。</translation>
-<translation id="371039623761974302">缺少 Chrome 远程桌面所需的某些组件。请确保您所运行的是 Google Chrome 浏览器的最新版本，然后重试。</translation>
+<translation id="7729639150174291243">您目前并未登录到 Chrome 远程桌面。请登录，然后重试。</translation>
+<translation id="4019628723432694459">缺少 Chrome 远程桌面所需的某些组件。请确保您所运行的是 Google Chrome 浏览器的最新版本，然后重试。</translation>
 <translation id="2805036638902441020">服务器无法响应网络请求。</translation>
 <translation id="5593560073513909978">此服务暂时无法使用。请稍后再试。</translation>
 <translation id="1546934824884762070">发生意外错误。请将此问题报告给开发者。</translation>
@@ -48,14 +48,14 @@
 <translation id="7649070708921625228">帮助</translation>
 <translation id="4572065712096155137">访问</translation>
 <translation id="1342297293546459414">查看和控制共享的计算机。</translation>
-<translation id="2353140552984634198">您可使用  Chrome 远程桌面安全地访问此计算机。</translation>
+<translation id="3258789396564295715">您可使用  Chrome 远程桌面安全地访问此计算机。</translation>
 <translation id="6198252989419008588">更改 PIN</translation>
 <translation id="1199593201721843963">停用远程连接</translation>
 <translation id="7606912958770842224">启用远程连接</translation>
-<translation id="1291443878853470558">如果您想使用 Chrome 远程桌面访问此计算机，就必须启用远程连接。</translation>
-<translation id="897805526397249209">要远程连接到另一台计算机，需要安装 Chrome 远程桌面并点击“<ph name="BUTTON_NAME"/>”。</translation>
-<translation id="4481276415609939789">您未注册任何计算机。要远程连接到某计算机，需要安装 Chrome 远程桌面并点击“<ph name="BUTTON_NAME"/>”。</translation>
-<translation id="7038683108611689168">允许我们收集使用情况统计信息和崩溃报告，以帮助改进 Chrome 远程桌面。</translation>
+<translation id="4006787130661126000">如果您想使用 Chrome 远程桌面访问此计算机，就必须启用远程连接。</translation>
+<translation id="4361728918881830843">要远程连接到另一台计算机，需要安装 Chrome 远程桌面并点击“<ph name="BUTTON_NAME"/>”。</translation>
+<translation id="174018511426417793">您未注册任何计算机。要远程连接到某计算机，需要安装 Chrome 远程桌面并点击“<ph name="BUTTON_NAME"/>”。</translation>
+<translation id="2499160551253595098">允许我们收集使用情况统计信息和崩溃报告，以帮助改进 Chrome 远程桌面。</translation>
 <translation id="4156740505453712750">为防止他人擅自访问此计算机，请选用一个<ph name="BOLD_START"/>至少 6 位数<ph name="BOLD_END"/>的 PIN。当从其他位置连接时，将需要输入此 PIN。</translation>
 <translation id="154040539590487450">无法启动远程访问服务。</translation>
 <translation id="2013884659108657024">Chrome 浏览器正在下载 Chrome 远程桌面主机安装程序。下载完成后，请先运行该安装程序，再继续操作。</translation>
@@ -81,7 +81,7 @@
 <translation id="5702987232842159181">已连接：</translation>
 <translation id="811307782653349804">从任何地方访问您自己的计算机。</translation>
 <translation id="4430915108080446161">正在生成访问代码...</translation>
-<translation id="4703799847237267011">您的 Chrome 远程桌面会话已结束。</translation>
+<translation id="3776024066357219166">您的 Chrome 远程桌面会话已结束。</translation>
 <translation id="5708869785009007625">您目前正与<ph name="USER"/>共享您的桌面。</translation>
 <translation id="9188433529406846933">授权</translation>
 <translation id="701976023053394610">远程协助</translation>
@@ -94,7 +94,7 @@
 <translation id="4808503597364150972">请输入您用于“<ph name="HOSTNAME"/>”的 PIN。</translation>
 <translation id="5156271271724754543">请在两个框中输入相同的 PIN。</translation>
 <translation id="5625493749705183369">访问其他计算机或允许其他用户通过互联网安全地访问您的计算机。</translation>
-<translation id="2699970397166997657">Chrome 远程桌面</translation>
+<translation id="7401733114166276557">Chrome 远程桌面</translation>
 <translation id="579702532610384533">重新连接</translation>
 <translation id="7144878232160441200">重试</translation>
 <translation id="7948001860594368197">屏幕选项</translation>

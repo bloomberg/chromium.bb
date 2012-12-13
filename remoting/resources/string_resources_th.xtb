@@ -9,7 +9,7 @@
 <translation id="7658239707568436148">ยกเลิก</translation>
 <translation id="6746493157771801606">ล้างประวัติ</translation>
 <translation id="6040143037577758943">ปิด</translation>
-<translation id="1643640058022401035">การออกจากหน้านี้จะสิ้นสุดเซสชัน Chrome Remote Desktop ของคุณ</translation>
+<translation id="5254120496627797685">การออกจากหน้านี้จะสิ้นสุดเซสชัน Chrome Remote Desktop ของคุณ</translation>
 <translation id="5308380583665731573">เชื่อมต่อ</translation>
 <translation id="6985691951107243942">คุณแน่ใจหรือไม่ว่าต้องการปิดใช้งานการเชื่อมต่อระยะไกลกับ <ph name="HOSTNAME"/> หากคุณเปลี่ยนใจภายหลัง คุณจะต้องไปที่คอมพิวเตอร์เครื่องนั้นเพื่อเปิดใช้งานการเชื่อมต่ออีกครั้ง</translation>
 <translation id="6748108480210050150">จาก</translation>
@@ -18,9 +18,9 @@
 <translation id="6998989275928107238">ถึง</translation>
 <translation id="2359808026110333948">ดำเนินการต่อ</translation>
 <translation id="2919669478609886916">ขณะนี้คุณกำลังแบ่งปันคอมพิวเตอร์เครื่องนี้กับผู้ใช้อื่น คุณต้องการแบ่งปันต่อไปหรือไม่</translation>
-<translation id="8864965950780407789">ในการใช้ Chrome Remote Desktop คุณต้องให้สิทธิ์การเข้าถึงเพิ่มเติมสำหรับคอมพิวเตอร์ของคุณ คุณจะต้องทำเช่นนี้เพียงครั้งเดียว</translation>
+<translation id="173559734173571936">ในการใช้ Chrome Remote Desktop คุณต้องให้สิทธิ์การเข้าถึงเพิ่มเติมสำหรับคอมพิวเตอร์ของคุณ คุณจะต้องทำเช่นนี้เพียงครั้งเดียว</translation>
 <translation id="1023096696228309145">ขอให้ผู้ใช้ที่คุณต้องการเข้าถึงคอมพิวเตอร์ของเขาคลิกที่ &quot;แบ่งปันเดี๋ยวนี้&quot; และให้รหัสการเข้าถึงแก่คุณ</translation>
-<translation id="6011539954251327702">Chrome Remote Desktop อนุญาตให้คุณแบ่งปันคอมพิวเตอร์ของคุณผ่านเว็บอย่างปลอดภัย ผู้ใช้ทั้งสองจะต้องเรียกใช้แอปพลิเคชัน Chrome Remote Desktop ซึ่งสามารถรับได้ที่ <ph name="URL"/></translation>
+<translation id="5379087427956679853">Chrome Remote Desktop อนุญาตให้คุณแบ่งปันคอมพิวเตอร์ของคุณผ่านเว็บอย่างปลอดภัย ผู้ใช้ทั้งสองจะต้องเรียกใช้แอปพลิเคชัน Chrome Remote Desktop ซึ่งสามารถรับได้ที่ <ph name="URL"/></translation>
 <translation id="4394049700291259645">ปิดใช้งาน</translation>
 <translation id="4314644002001494905">หยุดเชื่อมต่อ (Ctrl+Alt+Esc)</translation>
 <translation id="8342538585421421741">หยุดเชื่อมต่อ (Opt+Ctrl+Esc)</translation>
@@ -28,16 +28,16 @@
 <translation id="4804818685124855865">หยุดเชื่อมต่อ</translation>
 
 <translation id="6930242544192836755">ระยะเวลา</translation>
-<translation id="8246880134154544773">การตรวจสอบสิทธิ์ล้มเหลว โปรดลงชื่อเข้าใช้ Chrome Remote Desktop อีกครั้ง</translation>
-<translation id="9032136467203159543">องค์ประกอบที่จำเป็นบางอย่างสำหรับ Chrome Remote Desktop ขาดหายไป โปรดตรวจสอบให้แน่ใจว่าคุณติดตั้งรุ่นล่าสุดแล้วและลองอีกครั้ง</translation>
+<translation id="8172070902751707422">การตรวจสอบสิทธิ์ล้มเหลว โปรดลงชื่อเข้าใช้ Chrome Remote Desktop อีกครั้ง</translation>
+<translation id="2707879711568641861">องค์ประกอบที่จำเป็นบางอย่างสำหรับ Chrome Remote Desktop ขาดหายไป โปรดตรวจสอบให้แน่ใจว่าคุณติดตั้งรุ่นล่าสุดแล้วและลองอีกครั้ง</translation>
 <translation id="2813770873348017932">การเชื่อมต่อกับคอมพิวเตอร์ระยะไกลถูกบล็อกไว้ชั่วคราว เนื่องจากมีผู้พยายามเชื่อมต่อกับคอมพิวเตอร์ดังกล่าวโดยใช้ PIN ที่ไม่ถูกต้อง โปรดลองอีกครั้งในภายหลัง</translation>
 <translation id="3106379468611574572">คอมพิวเตอร์ระยะไกลไม่ตอบสนองคำขอการเชื่อมต่อ โปรดตรวจยืนยันว่าคอมพิวเตอร์ดังกล่าวออนไลน์อยู่และลองอีกครั้ง</translation>
-<translation id="2944598174730150896">ตรวจพบรุ่นที่เข้ากันไม่ได้ของ Chrome Remote Desktop โปรดตรวจสอบให้แน่ใจว่าคุณมี Google Chrome และ Chrome Remote Desktop รุ่นล่าสุดบนคอมพิวเตอร์ทั้งสองเครื่องและลองอีกครั้ง</translation>
+<translation id="851521648418609391">ตรวจพบรุ่นที่เข้ากันไม่ได้ของ Chrome Remote Desktop โปรดตรวจสอบให้แน่ใจว่าคุณมี Google Chrome และ Chrome Remote Desktop รุ่นล่าสุดบนคอมพิวเตอร์ทั้งสองเครื่องและลองอีกครั้ง</translation>
 <translation id="4277736576214464567">รหัสการเข้าถึงไม่ถูกต้อง โปรดลองอีกครั้ง</translation>
-<translation id="3403830762023901068">การตั้งค่านโยบายไม่อนุญาตให้แบ่งปันคอมพิวเตอร์นี้เป็นโฮสต์ Chrome Remote Desktop โปรดติดต่อขอรับความช่วยเหลือจากผู้ดูแลระบบของคุณ</translation>
+<translation id="2208514473086078157">การตั้งค่านโยบายไม่อนุญาตให้แบ่งปันคอมพิวเตอร์นี้เป็นโฮสต์ Chrome Remote Desktop โปรดติดต่อขอรับความช่วยเหลือจากผู้ดูแลระบบของคุณ</translation>
 <translation id="2366718077645204424">ไม่สามารถเข้าถึงโฮสต์ อาจเป็นเพราะการกำหนดค่าของเครือข่ายที่คุณกำลังใช้อยู่</translation>
-<translation id="5908809458024685848">คุณยังไม่ได้ลงชื่อเข้าใช้ Chrome Remote Desktop โปรดลงชื่อเข้าใช้และลองอีกครั้ง</translation>
-<translation id="371039623761974302">องค์ประกอบที่จำเป็นบางอย่างสำหรับ Chrome Remote Desktop ขาดหายไป โปรดตรวจสอบให้แน่ใจว่าคุณใช้ Google Chrome รุ่นล่าสุดแล้วและลองอีกครั้ง</translation>
+<translation id="7729639150174291243">คุณยังไม่ได้ลงชื่อเข้าใช้ Chrome Remote Desktop โปรดลงชื่อเข้าใช้และลองอีกครั้ง</translation>
+<translation id="4019628723432694459">องค์ประกอบที่จำเป็นบางอย่างสำหรับ Chrome Remote Desktop ขาดหายไป โปรดตรวจสอบให้แน่ใจว่าคุณใช้ Google Chrome รุ่นล่าสุดแล้วและลองอีกครั้ง</translation>
 <translation id="2805036638902441020">เซิร์ฟเวอร์ไม่สามารถตอบสนองคำขอของเครือข่าย</translation>
 <translation id="5593560073513909978">ไม่สามารถให้บริการนี้ได้ในขณะนี้ โปรดลองอีกครั้งในภายหลัง</translation>
 <translation id="1546934824884762070">เกิดข้อผิดพลาดที่ไม่คาดคิด โปรดรายงานปัญหานี้ให้นักพัฒนาซอฟต์แวร์ทราบ</translation>
@@ -48,14 +48,14 @@
 <translation id="7649070708921625228">ความช่วยเหลือ</translation>
 <translation id="4572065712096155137">เข้าถึง</translation>
 <translation id="1342297293546459414">เห็นและควบคุมคอมพิวเตอร์ที่แบ่งปันกัน</translation>
-<translation id="2353140552984634198">คุณสามารถเข้าถึงคอมพิวเตอร์เครื่องนี้ได้อย่างปลอดภัยโดยใช้ Chrome Remote Desktop</translation>
+<translation id="3258789396564295715">คุณสามารถเข้าถึงคอมพิวเตอร์เครื่องนี้ได้อย่างปลอดภัยโดยใช้ Chrome Remote Desktop</translation>
 <translation id="6198252989419008588">เปลี่ยน PIN</translation>
 <translation id="1199593201721843963">ปิดใช้งานการเชื่อมต่อระยะไกล</translation>
 <translation id="7606912958770842224">เปิดใช้งานการเชื่อมต่อระยะไกล</translation>
-<translation id="1291443878853470558">คุณต้องเปิดใช้งานการเชื่อมต่อระยะไกลหากคุณต้องการใช้ Chrome Remote Desktop ในการเข้าถึงคอมพิวเตอร์เครื่องนี้</translation>
-<translation id="897805526397249209">ในการเปิดใช้งานการเชื่อมต่อระยะไกลกับคอมพิวเตอร์เครื่องอื่น ให้ติดตั้ง Chrome Remote Desktop ที่คอมพิวเตอร์ที่ต้องการใช้งานและคลิก &quot;<ph name="BUTTON_NAME"/>&quot;</translation>
-<translation id="4481276415609939789">คุณไม่มีคอมพิวเตอร์ที่ได้ลงทะเบียนไว้ หากต้องการเปิดใช้งานการเชื่อมต่อระยะไกลกับคอมพิวเตอร์ ให้ติดตั้ง Chrome Remote Desktop ที่คอมพิวเตอร์ที่ต้องการใช้งานและคลิก &quot;<ph name="BUTTON_NAME"/>&quot;</translation>
-<translation id="7038683108611689168">ช่วยเราปรับปรุง Chrome Remote Desktop ให้ดีขึ้นด้วยการอนุญาตให้เรารวบรวมสถิติการใช้งานและรายงานข้อขัดข้อง</translation>
+<translation id="4006787130661126000">คุณต้องเปิดใช้งานการเชื่อมต่อระยะไกลหากคุณต้องการใช้ Chrome Remote Desktop ในการเข้าถึงคอมพิวเตอร์เครื่องนี้</translation>
+<translation id="4361728918881830843">ในการเปิดใช้งานการเชื่อมต่อระยะไกลกับคอมพิวเตอร์เครื่องอื่น ให้ติดตั้ง Chrome Remote Desktop ที่คอมพิวเตอร์ที่ต้องการใช้งานและคลิก &quot;<ph name="BUTTON_NAME"/>&quot;</translation>
+<translation id="174018511426417793">คุณไม่มีคอมพิวเตอร์ที่ได้ลงทะเบียนไว้ หากต้องการเปิดใช้งานการเชื่อมต่อระยะไกลกับคอมพิวเตอร์ ให้ติดตั้ง Chrome Remote Desktop ที่คอมพิวเตอร์ที่ต้องการใช้งานและคลิก &quot;<ph name="BUTTON_NAME"/>&quot;</translation>
+<translation id="2499160551253595098">ช่วยเราปรับปรุง Chrome Remote Desktop ให้ดีขึ้นด้วยการอนุญาตให้เรารวบรวมสถิติการใช้งานและรายงานข้อขัดข้อง</translation>
 <translation id="4156740505453712750">ในการป้องกันการเข้าถึงคอมพิวเตอร์นี้ โปรดเลือก PIN <ph name="BOLD_START"/>อย่างน้อยหกหลัก<ph name="BOLD_END"/> โดยจะต้องใช้ PIN นี้เมื่อเชื่อมต่อจากตำแหน่งอื่น</translation>
 <translation id="154040539590487450">ไม่สามารถเริ่มบริการเข้าถึงระยะไกล</translation>
 <translation id="2013884659108657024">Chrome กำลังดาวน์โหลดตัวติดตั้ง Chrome Remote Desktop Host เมื่อดาวน์โหลดเสร็จแล้ว โปรดเรียกใช้โปรแกรมติดตั้งก่อนดำเนินการต่อ</translation>
@@ -81,7 +81,7 @@
 <translation id="5702987232842159181">เชื่อมต่อแล้ว:</translation>
 <translation id="811307782653349804">เข้าถึงคอมพิวเตอร์ของคุณเองจากที่ใดก็ได้</translation>
 <translation id="4430915108080446161">กำลังสร้างรหัสการเข้าถึง...</translation>
-<translation id="4703799847237267011">เซสชัน Chrome Remote Desktop ของคุณสิ้นสุดแล้ว</translation>
+<translation id="3776024066357219166">เซสชัน Chrome Remote Desktop ของคุณสิ้นสุดแล้ว</translation>
 <translation id="5708869785009007625">ขณะนี้มีการแบ่งปันเดสก์ท็อปของคุณกับ <ph name="USER"/></translation>
 <translation id="9188433529406846933">อนุญาต</translation>
 <translation id="701976023053394610">ความช่วยเหลือจากระยะไกล</translation>
@@ -94,7 +94,7 @@
 <translation id="4808503597364150972">โปรดป้อน PIN ของคุณสำหรับ <ph name="HOSTNAME"/></translation>
 <translation id="5156271271724754543">โปรดป้อน PIN เดียวกันลงในทั้งสองช่อง</translation>
 <translation id="5625493749705183369">เข้าถึงคอมพิวเตอร์เครื่องอื่นหรืออนุญาตให้ผู้ใช้อื่นเข้าถึงคอมพิวเตอร์ของคุณอย่างปลอดภัยผ่านทางอินเทอร์เน็ต</translation>
-<translation id="2699970397166997657">Chrome Remote Desktop</translation>
+<translation id="7401733114166276557">Chrome Remote Desktop</translation>
 <translation id="579702532610384533">เชื่อมต่อใหม่</translation>
 <translation id="7144878232160441200">ลองอีกครั้ง</translation>
 <translation id="7948001860594368197">ตัวเลือกหน้าจอ</translation>

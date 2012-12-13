@@ -9,7 +9,7 @@
 <translation id="7658239707568436148">Anulaţi</translation>
 <translation id="6746493157771801606">Ştergeţi istoricul</translation>
 <translation id="6040143037577758943">Închideţi</translation>
-<translation id="1643640058022401035">Părăsind această pagină veţi încheia sesiunea dvs. Desktop la distanţă Chrome.</translation>
+<translation id="5254120496627797685">Părăsind această pagină veţi încheia sesiunea dvs. Desktop la distanţă Chrome.</translation>
 <translation id="5308380583665731573">Conectaţi-vă</translation>
 <translation id="6985691951107243942">Sigur doriţi să dezactivaţi conexiunile la distanţă la <ph name="HOSTNAME"/>? Dacă vă răzgândiţi, va fi necesar să accesaţi computerul respectiv pentru a reactiva conexiunile.</translation>
 <translation id="6748108480210050150">De la</translation>
@@ -18,9 +18,9 @@
 <translation id="6998989275928107238">La</translation>
 <translation id="2359808026110333948">Continuaţi</translation>
 <translation id="2919669478609886916">În prezent permiteţi accesul la acest computer altui utilizator. Doriţi să permiteţi în continuare accesul?</translation>
-<translation id="8864965950780407789">Pentru a utiliza aplicaţia Desktop la distanţă Chrome trebuie să acordaţi permisiuni extinse de acces la computerul dvs. Este necesar să faceţi acest lucru numai o singură dată.</translation>
+<translation id="173559734173571936">Pentru a utiliza aplicaţia Desktop la distanţă Chrome trebuie să acordaţi permisiuni extinse de acces la computerul dvs. Este necesar să faceţi acest lucru numai o singură dată.</translation>
 <translation id="1023096696228309145">Cereţi-i utilizatorului al cărui computer doriţi să îl accesaţi să facă clic pe „Permiteţi accesul acum” şi să vă transmită codul de acces.</translation>
-<translation id="6011539954251327702">Cu aplicaţia Desktop la distanţă Chrome puteţi permite accesul în siguranţă la computerul dvs. pe web. Ambii utilizatori trebuie să ruleze aplicaţia Desktop la distanţă Chrome, care poate fi găsită la <ph name="URL"/>.</translation>
+<translation id="5379087427956679853">Cu aplicaţia Desktop la distanţă Chrome puteţi permite accesul în siguranţă la computerul dvs. pe web. Ambii utilizatori trebuie să ruleze aplicaţia Desktop la distanţă Chrome, care poate fi găsită la <ph name="URL"/>.</translation>
 <translation id="4394049700291259645">Dezactivaţi</translation>
 <translation id="4314644002001494905">Deconectaţi-vă (Ctrl+Alt+Esc)</translation>
 <translation id="8342538585421421741">Deconectaţi-vă (Opt+Ctrl+Esc)</translation>
@@ -28,16 +28,16 @@
 <translation id="4804818685124855865">Deconectaţi-vă</translation>
 
 <translation id="6930242544192836755">Durată</translation>
-<translation id="8246880134154544773">Autentificarea a eşuat. Conectaţi-vă din nou la Desktop la distanţă Chrome.</translation>
-<translation id="9032136467203159543">Unele componente necesare pentru Desktop la distanţă Chrome lipsesc. Asiguraţi-vă că aţi instalat cea mai recentă versiune a aplicaţiei şi încercaţi din nou.</translation>
+<translation id="8172070902751707422">Autentificarea a eşuat. Conectaţi-vă din nou la Desktop la distanţă Chrome.</translation>
+<translation id="2707879711568641861">Unele componente necesare pentru Desktop la distanţă Chrome lipsesc. Asiguraţi-vă că aţi instalat cea mai recentă versiune a aplicaţiei şi încercaţi din nou.</translation>
 <translation id="2813770873348017932">Conexiunile cu computerul la distanţă sunt blocate temporar, deoarece cineva a încercat să se conecteze la acesta utilizând un cod PIN nevalid. Încercaţi din nou mai târziu.</translation>
 <translation id="3106379468611574572">Computerul la distanţă nu răspunde la solicitările de conectare. Verificaţi dacă respectivul computer este online şi încercaţi din nou.</translation>
-<translation id="2944598174730150896">A fost detectată o versiune incompatibilă a aplicaţiei Desktop la distanţă Chrome. Asiguraţi-vă că aveţi cea mai recentă versiune pentru Google Chrome şi Desktop la distanţă Chrome pe ambele computere şi încercaţi din nou.</translation>
+<translation id="851521648418609391">A fost detectată o versiune incompatibilă a aplicaţiei Desktop la distanţă Chrome. Asiguraţi-vă că aveţi cea mai recentă versiune pentru Google Chrome şi Desktop la distanţă Chrome pe ambele computere şi încercaţi din nou.</translation>
 <translation id="4277736576214464567">Codul de acces nu este valid. Încercaţi din nou.</translation>
-<translation id="3403830762023901068">Setările politicii nu acceptă permiterea accesului la acest computer în calitate de gazdă pentru Desktop la distanţă Chrome. Contactaţi administratorul de sistem pentru asistenţă.</translation>
+<translation id="2208514473086078157">Setările politicii nu acceptă permiterea accesului la acest computer în calitate de gazdă pentru Desktop la distanţă Chrome. Contactaţi administratorul de sistem pentru asistenţă.</translation>
 <translation id="2366718077645204424">Gazda nu poate fi accesată. Acest lucru este cauzat probabil de configuraţia reţelei pe care o utilizaţi.</translation>
-<translation id="5908809458024685848">Nu sunteţi conectat(ă) la Desktop la distanţă Chrome. Conectaţi-vă şi încercaţi din nou.</translation>
-<translation id="371039623761974302">Unele componente necesare pentru aplicaţia Desktop la distanţă Chrome lipsesc. Asiguraţi-vă că rulaţi cea mai recentă versiune a browserului Google Chrome şi încercaţi din nou.</translation>
+<translation id="7729639150174291243">Nu sunteţi conectat(ă) la Desktop la distanţă Chrome. Conectaţi-vă şi încercaţi din nou.</translation>
+<translation id="4019628723432694459">Unele componente necesare pentru aplicaţia Desktop la distanţă Chrome lipsesc. Asiguraţi-vă că rulaţi cea mai recentă versiune a browserului Google Chrome şi încercaţi din nou.</translation>
 <translation id="2805036638902441020">Serverul nu a putut răspunde la solicitarea din reţea.</translation>
 <translation id="5593560073513909978">Serviciul este temporar indisponibil. Încercaţi din nou mai târziu.</translation>
 <translation id="1546934824884762070">A apărut o eroare neaşteptată. Raportaţi această problemă dezvoltatorilor.</translation>
@@ -48,14 +48,14 @@
 <translation id="7649070708921625228">Ajutor</translation>
 <translation id="4572065712096155137">Accesaţi</translation>
 <translation id="1342297293546459414">Vedeţi şi controlaţi un computer la care se permite accesul.</translation>
-<translation id="2353140552984634198">Puteţi accesa acest computer în siguranţă utilizând Desktop la distanţă Chrome.</translation>
+<translation id="3258789396564295715">Puteţi accesa acest computer în siguranţă utilizând Desktop la distanţă Chrome.</translation>
 <translation id="6198252989419008588">Schimbaţi codul PIN</translation>
 <translation id="1199593201721843963">Dezactivaţi conexiunile la distanţă</translation>
 <translation id="7606912958770842224">Activaţi conexiunile la distanţă</translation>
-<translation id="1291443878853470558">Trebuie să permiteţi conexiunile la distanţă dacă doriţi să utilizaţi Desktop la distanţă Chrome pentru a accesa acest computer.</translation>
-<translation id="897805526397249209">Pentru a activa conexiunile la distanţă pentru alt computer, instalaţi Desktop la distanţă Chrome pe acesta şi faceţi clic pe „<ph name="BUTTON_NAME"/>”.</translation>
-<translation id="4481276415609939789">Nu aveţi niciun computer înregistrat. Pentru a activa conexiunile la distanţă pentru un computer, instalaţi Desktop la distanţă Chrome pe acesta şi faceţi clic pe „<ph name="BUTTON_NAME"/>”.</translation>
-<translation id="7038683108611689168">Ajutaţi-ne să îmbunătăţim Desktop la distanţă Chrome, permiţându-ne să colectăm statistici de utilizare şi rapoarte de blocare.</translation>
+<translation id="4006787130661126000">Trebuie să permiteţi conexiunile la distanţă dacă doriţi să utilizaţi Desktop la distanţă Chrome pentru a accesa acest computer.</translation>
+<translation id="4361728918881830843">Pentru a activa conexiunile la distanţă pentru alt computer, instalaţi Desktop la distanţă Chrome pe acesta şi faceţi clic pe „<ph name="BUTTON_NAME"/>”.</translation>
+<translation id="174018511426417793">Nu aveţi niciun computer înregistrat. Pentru a activa conexiunile la distanţă pentru un computer, instalaţi Desktop la distanţă Chrome pe acesta şi faceţi clic pe „<ph name="BUTTON_NAME"/>”.</translation>
+<translation id="2499160551253595098">Ajutaţi-ne să îmbunătăţim Desktop la distanţă Chrome, permiţându-ne să colectăm statistici de utilizare şi rapoarte de blocare.</translation>
 <translation id="4156740505453712750">Pentru a proteja accesul la acest computer, alegeţi un cod PIN format din <ph name="BOLD_START"/>cel puţin şase cifre<ph name="BOLD_END"/>. Acest cod PIN va fi solicitat când vă conectaţi din altă locaţie.</translation>
 <translation id="154040539590487450">Pornirea serviciului de acces la distanţă a eşuat.</translation>
 <translation id="2013884659108657024">Chrome descarcă programul de instalare a gazdei pentru Desktop la distanţă Chrome. După ce se descarcă, rulaţi programul de instalare înainte de a continua.</translation>
@@ -81,7 +81,7 @@
 <translation id="5702987232842159181">Conectat:</translation>
 <translation id="811307782653349804">Accesaţi propriul computer de oriunde.</translation>
 <translation id="4430915108080446161">Se generează codul de acces...</translation>
-<translation id="4703799847237267011">Sesiunea dvs. Desktop la distanţă Chrome s-a încheiat.</translation>
+<translation id="3776024066357219166">Sesiunea dvs. Desktop la distanţă Chrome s-a încheiat.</translation>
 <translation id="5708869785009007625">În prezent, accesul la desktopul dvs. este permis pentru <ph name="USER"/>.</translation>
 <translation id="9188433529406846933">Autorizaţi</translation>
 <translation id="701976023053394610">Asistenţă la distanţă</translation>
@@ -94,7 +94,7 @@
 <translation id="4808503597364150972">Introduceţi codul PIN pentru <ph name="HOSTNAME"/>.</translation>
 <translation id="5156271271724754543">Introduceţi acelaşi cod PIN în ambele casete.</translation>
 <translation id="5625493749705183369">Accesaţi alte computere sau permiteţi altui utilizator să acceseze computerul dvs. în siguranţă pe internet.</translation>
-<translation id="2699970397166997657">Desktop la distanţă Chrome</translation>
+<translation id="7401733114166276557">Desktop la distanţă Chrome</translation>
 <translation id="579702532610384533">Reconectaţi-vă</translation>
 <translation id="7144878232160441200">Reîncercaţi</translation>
 <translation id="7948001860594368197">Opţiuni ecran</translation>

@@ -9,7 +9,7 @@
 <translation id="7658239707568436148">İptal</translation>
 <translation id="6746493157771801606">Geçmişi temizle</translation>
 <translation id="6040143037577758943">Kapat</translation>
-<translation id="1643640058022401035">Bu sayfadan ayrılırsanız Chrome Uzaktan Masaüstü oturumunuz sonlanır.</translation>
+<translation id="5254120496627797685">Bu sayfadan ayrılırsanız Chrome Uzaktan Masaüstü oturumunuz sonlanır.</translation>
 <translation id="5308380583665731573">Bağlan</translation>
 <translation id="6985691951107243942"><ph name="HOSTNAME"/> adlı bilgisayara uzaktan bağlantıları devre dışı bırakmak istediğinizden emin misiniz? Daha sonra fikrinizi değiştirirseniz, bağlantıları yeniden etkinleştirmek için söz konusu bilgisayarı ziyaret etmeniz gerekecektir.</translation>
 <translation id="6748108480210050150">Nereden</translation>
@@ -18,9 +18,9 @@
 <translation id="6998989275928107238">Nereye</translation>
 <translation id="2359808026110333948">Devam</translation>
 <translation id="2919669478609886916">Bu makineyi şu anda başka bir kullanıcıyla paylaşıyorsunuz. Paylaşmaya devam etmek istiyor musunuz?</translation>
-<translation id="8864965950780407789">Chrome Uzaktan Masaüstü uygulamasını kullanabilmek için öncelikle, bilgisayarınıza genişletilmiş erişim izinleri vermelisiniz. Bunu yalnızca bir kez yapmanız gerekir.</translation>
+<translation id="173559734173571936">Chrome Uzaktan Masaüstü uygulamasını kullanabilmek için öncelikle, bilgisayarınıza genişletilmiş erişim izinleri vermelisiniz. Bunu yalnızca bir kez yapmanız gerekir.</translation>
 <translation id="1023096696228309145">Bilgisayarına erişmek istediğiniz kullanıcıdan, 'Şimdi Paylaş' seçeneğini tıklamasını ve size erişim kodunu vermesini isteyin.</translation>
-<translation id="6011539954251327702">Chrome Uzaktan Masaüstü, bilgisayarınızı Web üzerinden güvenli bir şekilde paylaşabilmenize olanak sağlar. Her iki kullanıcının da Chrome Uzaktan Masaüstü uygulamasını çalıştırıyor olması gerekir. Uygulamayı <ph name="URL"/> adresinde bulabilirsiniz.</translation>
+<translation id="5379087427956679853">Chrome Uzaktan Masaüstü, bilgisayarınızı Web üzerinden güvenli bir şekilde paylaşabilmenize olanak sağlar. Her iki kullanıcının da Chrome Uzaktan Masaüstü uygulamasını çalıştırıyor olması gerekir. Uygulamayı <ph name="URL"/> adresinde bulabilirsiniz.</translation>
 <translation id="4394049700291259645">Devre Dışı Bırak</translation>
 <translation id="4314644002001494905">Bağlantıyı Kes (Ctrl+Alt+Esc)</translation>
 <translation id="8342538585421421741">Bağlantıyı Kes (Opt+Ctrl+Esc)</translation>
@@ -28,16 +28,16 @@
 <translation id="4804818685124855865">Bağlantıyı Kes</translation>
 
 <translation id="6930242544192836755">Süre</translation>
-<translation id="8246880134154544773">Kimlik doğrulama başarısız oldu. Lütfen Chrome Uzaktan Masaüstü'nde tekrar oturum açın.</translation>
-<translation id="9032136467203159543">Chrome Uzaktan Masaüstü için gereken bazı bileşenler eksik. Lütfen son sürümü yüklediğinizden emin olun ve tekrar deneyin.</translation>
+<translation id="8172070902751707422">Kimlik doğrulama başarısız oldu. Lütfen Chrome Uzaktan Masaüstü'nde tekrar oturum açın.</translation>
+<translation id="2707879711568641861">Chrome Uzaktan Masaüstü için gereken bazı bileşenler eksik. Lütfen son sürümü yüklediğinizden emin olun ve tekrar deneyin.</translation>
 <translation id="2813770873348017932">Bir kullanıcı geçersiz PIN ile bağlanmaya çalıştığından uzak bilgisayara yapılan bağlantılar geçici olarak engellenmiştir. Lütfen daha sonra tekrar deneyin.</translation>
 <translation id="3106379468611574572">Uzaktan bağlanacağınız bilgisayar, bağlantı isteklerine yanıt vermiyor. Lütfen bu bilgisayarın çevrimiçi olduğunu doğrulayın ve tekrar deneyin.</translation>
-<translation id="2944598174730150896">Chrome Uzaktan Masaüstü uygulamasının uyumsuz bir sürümü algılandı. Lütfen, her iki bilgisayarda Google Chrome ve Chrome Uzaktan Masaüstü uygulamalarının son sürümlerinin olduğundan emin olun ve tekrar deneyin.</translation>
+<translation id="851521648418609391">Chrome Uzaktan Masaüstü uygulamasının uyumsuz bir sürümü algılandı. Lütfen, her iki bilgisayarda Google Chrome ve Chrome Uzaktan Masaüstü uygulamalarının son sürümlerinin olduğundan emin olun ve tekrar deneyin.</translation>
 <translation id="4277736576214464567">Erişim kodu geçersiz. Lütfen tekrar deneyin.</translation>
-<translation id="3403830762023901068">Politika ayarları bu bilgisayarın bir Chrome Uzak Masaüstü ana makinesi olarak paylaşılmasına izin vermiyor. Yardım için sistem yöneticinizle iletişim kurun.</translation>
+<translation id="2208514473086078157">Politika ayarları bu bilgisayarın bir Chrome Uzak Masaüstü ana makinesi olarak paylaşılmasına izin vermiyor. Yardım için sistem yöneticinizle iletişim kurun.</translation>
 <translation id="2366718077645204424">Ana bilgisayara erişilemiyor. Bu sorun, kullandığınız ağın yapılandırmasından kaynaklanıyor olabilir.</translation>
-<translation id="5908809458024685848">Chrome Uzaktan Masaüstü'nde oturum açmadınız. Lütfen oturum açın ve tekrar deneyin.</translation>
-<translation id="371039623761974302">Chrome Uzaktan Masaüstü için gereken bazı bileşenler eksik. Lütfen Google Chrome'un son sürümünü çalıştırdığınızdan emin olun ve tekrar deneyin.</translation>
+<translation id="7729639150174291243">Chrome Uzaktan Masaüstü'nde oturum açmadınız. Lütfen oturum açın ve tekrar deneyin.</translation>
+<translation id="4019628723432694459">Chrome Uzaktan Masaüstü için gereken bazı bileşenler eksik. Lütfen Google Chrome'un son sürümünü çalıştırdığınızdan emin olun ve tekrar deneyin.</translation>
 <translation id="2805036638902441020">Sunucu, ağ isteğine yanıt veremedi.</translation>
 <translation id="5593560073513909978">Hizmet geçici olarak kullanılamıyor. Lütfen daha sonra tekrar deneyin.</translation>
 <translation id="1546934824884762070">Beklenmeyen bir hata oluştu. Lütfen bu sorunu geliştiricilere bildirin.</translation>
@@ -48,14 +48,14 @@
 <translation id="7649070708921625228">Yardım</translation>
 <translation id="4572065712096155137">Erişimi Başlat</translation>
 <translation id="1342297293546459414">Paylaşılan bir bilgisayarı görün ve denetleyin.</translation>
-<translation id="2353140552984634198">Chrome Uzaktan Masaüstü uygulamasını kullanarak bu bilgisayara güvenli bir şekilde erişebilirsiniz.</translation>
+<translation id="3258789396564295715">Chrome Uzaktan Masaüstü uygulamasını kullanarak bu bilgisayara güvenli bir şekilde erişebilirsiniz.</translation>
 <translation id="6198252989419008588">PIN'i değiştir</translation>
 <translation id="1199593201721843963">Uzaktan bağlantıları devre dışı bırak</translation>
 <translation id="7606912958770842224">Uzaktan bağlantıları etkinleştir</translation>
-<translation id="1291443878853470558">Bu bilgisayara erişmek için Chrome Uzaktan Masaüstü uygulamasını kullanmak istiyorsanız uzaktan bağlantıları etkinleştirmelisiniz.</translation>
-<translation id="897805526397249209">Başka bir bilgisayara uzaktan bağlantıları etkinleştirmek için Chrome Uzaktan Masaüstü'nü o bilgisayara yükleyin ve “<ph name="BUTTON_NAME"/>” düğmesini tıklayın.</translation>
-<translation id="4481276415609939789">Kayıtlı bilgisayarınız yok. Başka bir bilgisayara uzaktan bağlantıları etkinleştirmek için Chrome Uzaktan Masaüstü'nü o bilgisayara yükleyin ve “<ph name="BUTTON_NAME"/>” düğmesini tıklayın.</translation>
-<translation id="7038683108611689168">Kullanım istatistiklerini ve kilitlenme raporlarını toplamamıza izin vererek Chrome Uzaktan Masaüstü'nü daha iyi hale getirmemize yardımcı olun.</translation>
+<translation id="4006787130661126000">Bu bilgisayara erişmek için Chrome Uzaktan Masaüstü uygulamasını kullanmak istiyorsanız uzaktan bağlantıları etkinleştirmelisiniz.</translation>
+<translation id="4361728918881830843">Başka bir bilgisayara uzaktan bağlantıları etkinleştirmek için Chrome Uzaktan Masaüstü'nü o bilgisayara yükleyin ve “<ph name="BUTTON_NAME"/>” düğmesini tıklayın.</translation>
+<translation id="174018511426417793">Kayıtlı bilgisayarınız yok. Başka bir bilgisayara uzaktan bağlantıları etkinleştirmek için Chrome Uzaktan Masaüstü'nü o bilgisayara yükleyin ve “<ph name="BUTTON_NAME"/>” düğmesini tıklayın.</translation>
+<translation id="2499160551253595098">Kullanım istatistiklerini ve kilitlenme raporlarını toplamamıza izin vererek Chrome Uzaktan Masaüstü'nü daha iyi hale getirmemize yardımcı olun.</translation>
 <translation id="4156740505453712750">Bu bilgisayara erişimi korumak için, lütfen <ph name="BOLD_START"/>en az altı basamaklı<ph name="BOLD_END"/> bir PIN kodu seçin. Bu PIN kodu başka bir konumdan bağlanırken gerekecektir.</translation>
 <translation id="154040539590487450">Uzaktan erişim hizmeti başlatılamadı.</translation>
 <translation id="2013884659108657024">Chrome, Chrome Uzaktan Masaüstü Ana Bilgisayar yükleyicisini indiriyor. İndirme işlemi tamamlandığında, devam etmeden önce lütfen yükleyiciyi çalıştırın.</translation>
@@ -81,7 +81,7 @@
 <translation id="5702987232842159181">Bağlı:</translation>
 <translation id="811307782653349804">Bilgisayarınıza her yerden erişin.</translation>
 <translation id="4430915108080446161">Erişim kodu oluşturuluyor...</translation>
-<translation id="4703799847237267011">Chrome Uzaktan Masaüstü oturumunuz sonlandı.</translation>
+<translation id="3776024066357219166">Chrome Uzaktan Masaüstü oturumunuz sonlandı.</translation>
 <translation id="5708869785009007625">Masaüstünüz şu anda <ph name="USER"/> ile paylaşılıyor.</translation>
 <translation id="9188433529406846933">Yetkilendir</translation>
 <translation id="701976023053394610">Uzaktan Yardım</translation>
@@ -94,7 +94,7 @@
 <translation id="4808503597364150972">Lütfen <ph name="HOSTNAME"/> için PIN'inizi girin.</translation>
 <translation id="5156271271724754543">Lütfen her iki kutuya da aynı PIN'i girin.</translation>
 <translation id="5625493749705183369">İnternet üzerinden güvenli bir şekilde diğer bilgisayarlara erişin veya başka kullanıcıların bilgisayarınıza erişmesine izin verin.</translation>
-<translation id="2699970397166997657">Chrome Uzaktan Masaüstü</translation>
+<translation id="7401733114166276557">Chrome Uzaktan Masaüstü</translation>
 <translation id="579702532610384533">Yeniden bağlan</translation>
 <translation id="7144878232160441200">Yeniden dene</translation>
 <translation id="7948001860594368197">Ekran seçenekleri</translation>

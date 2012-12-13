@@ -9,7 +9,7 @@
 <translation id="7658239707568436148">Annuler</translation>
 <translation id="6746493157771801606">Effacer l'historique</translation>
 <translation id="6040143037577758943">Fermer</translation>
-<translation id="1643640058022401035">En quittant cette page, vous mettrez fin à la session du bureau à distance Chrome.</translation>
+<translation id="5254120496627797685">En quittant cette page, vous mettrez fin à la session du bureau à distance Chrome.</translation>
 <translation id="5308380583665731573">Connexion</translation>
 <translation id="6985691951107243942">Voulez-vous vraiment désactiver les connexions à distance à <ph name="HOSTNAME"/> ? Si vous changez d'avis, vous devrez réactiver les connexions depuis cet ordinateur.</translation>
 <translation id="6748108480210050150">De</translation>
@@ -18,9 +18,9 @@
 <translation id="6998989275928107238">À</translation>
 <translation id="2359808026110333948">Continuer</translation>
 <translation id="2919669478609886916">Vous partagez actuellement cette machine avec un autre utilisateur. Voulez-vous continuer ce partage ?</translation>
-<translation id="8864965950780407789">Pour utiliser le bureau à distance Chrome, vous devez autoriser l'accès étendu à votre ordinateur. Vous n'aurez à effectuer cette opération qu'une seule fois.</translation>
+<translation id="173559734173571936">Pour utiliser le bureau à distance Chrome, vous devez autoriser l'accès étendu à votre ordinateur. Vous n'aurez à effectuer cette opération qu'une seule fois.</translation>
 <translation id="1023096696228309145">Demandez à l'utilisateur possédant l'ordinateur auquel vous souhaitez accéder de cliquer sur &quot;Partager&quot;, puis de vous communiquer le code d'accès.</translation>
-<translation id="6011539954251327702">L'application Bureau à distance Chrome vous permet de partager votre ordinateur sur le Web en toute sécurité. Pour ce faire, les deux utilisateurs en question doivent exécuter cette application, disponible à l'adresse <ph name="URL"/>.</translation>
+<translation id="5379087427956679853">L'application Bureau à distance Chrome vous permet de partager votre ordinateur sur le Web en toute sécurité. Pour ce faire, les deux utilisateurs en question doivent exécuter cette application, disponible à l'adresse <ph name="URL"/>.</translation>
 <translation id="4394049700291259645">Désactiver</translation>
 <translation id="4314644002001494905">Déconnecter (Ctrl + Alt + Echap)</translation>
 <translation id="8342538585421421741">Déconnecter (Opt + Ctrl + Echap)</translation>
@@ -28,16 +28,16 @@
 <translation id="4804818685124855865">Se déconnecter</translation>
 
 <translation id="6930242544192836755">Durée</translation>
-<translation id="8246880134154544773">Échec de l'authentification. Veuillez vous connecter au bureau à distance Google Chrome, puis réessayer.</translation>
-<translation id="9032136467203159543">Certains composants nécessaires à l'utilisation du bureau à distance Chrome sont introuvables. Veuillez vous assurer que vous utilisez la dernière version de Google Chrome, puis réessayer.</translation>
+<translation id="8172070902751707422">Échec de l'authentification. Veuillez vous connecter au bureau à distance Google Chrome, puis réessayer.</translation>
+<translation id="2707879711568641861">Certains composants nécessaires à l'utilisation du bureau à distance Chrome sont introuvables. Veuillez vous assurer que vous utilisez la dernière version de Google Chrome, puis réessayer.</translation>
 <translation id="2813770873348017932">Les connexions à l'ordinateur distant sont momentanément bloquées, car un utilisateur a tenté de s'y connecter en utilisant un code d'accès erroné. Veuillez réessayer ultérieurement.</translation>
 <translation id="3106379468611574572">L'ordinateur distant ne répond pas aux demandes de connexion. Veuillez vérifier qu'il est connecté, puis réessayer.</translation>
-<translation id="2944598174730150896">Une version incompatible du bureau à distance Chrome a été détectée. Veuillez vous assurer que vous utilisez la dernière version de Google Chrome et du bureau à distance sur les deux ordinateurs, puis réessayer.</translation>
+<translation id="851521648418609391">Une version incompatible du bureau à distance Chrome a été détectée. Veuillez vous assurer que vous utilisez la dernière version de Google Chrome et du bureau à distance sur les deux ordinateurs, puis réessayer.</translation>
 <translation id="4277736576214464567">Le code d'accès n'est pas valide. Veuillez réessayer.</translation>
-<translation id="3403830762023901068">Les paramètres des règles n'autorisent pas le partage de cet ordinateur en tant qu'hôte du bureau à distance de Google Chrome. Veuillez contacter votre administrateur système pour obtenir de l'aide.</translation>
+<translation id="2208514473086078157">Les paramètres des règles n'autorisent pas le partage de cet ordinateur en tant qu'hôte du bureau à distance de Google Chrome. Veuillez contacter votre administrateur système pour obtenir de l'aide.</translation>
 <translation id="2366718077645204424">Impossible de joindre l'hôte, probablement en raison de la configuration du réseau que vous utilisez.</translation>
-<translation id="5908809458024685848">Vous n'êtes pas connecté au bureau à distance Google Chrome. Veuillez vous connecter, puis réessayer.</translation>
-<translation id="371039623761974302">Certains composants nécessaires à l'utilisation du bureau à distance Chrome sont introuvables. Veuillez vous assurer que vous utilisez la dernière version de Google Chrome, puis réessayer.</translation>
+<translation id="7729639150174291243">Vous n'êtes pas connecté au bureau à distance Google Chrome. Veuillez vous connecter, puis réessayer.</translation>
+<translation id="4019628723432694459">Certains composants nécessaires à l'utilisation du bureau à distance Chrome sont introuvables. Veuillez vous assurer que vous utilisez la dernière version de Google Chrome, puis réessayer.</translation>
 <translation id="2805036638902441020">Échec de la réponse du serveur à la demande du réseau.</translation>
 <translation id="5593560073513909978">Le service est momentanément indisponible. Veuillez réessayer ultérieurement.</translation>
 <translation id="1546934824884762070">Une erreur inattendue s'est produite. Veuillez signaler le problème aux développeurs.</translation>
@@ -48,14 +48,14 @@
 <translation id="7649070708921625228">Aide</translation>
 <translation id="4572065712096155137">Accéder au bureau</translation>
 <translation id="1342297293546459414">Voir et contrôler un ordinateur partagé</translation>
-<translation id="2353140552984634198">Vous pouvez accéder à cet ordinateur en toute sécurité via le bureau à distance Google Chrome.</translation>
+<translation id="3258789396564295715">Vous pouvez accéder à cet ordinateur en toute sécurité via le bureau à distance Google Chrome.</translation>
 <translation id="6198252989419008588">Modifier le code d'accès</translation>
 <translation id="1199593201721843963">Désactiver les connexions à distance</translation>
 <translation id="7606912958770842224">Activer les connexions à distance</translation>
-<translation id="1291443878853470558">Si vous souhaitez utiliser le bureau à distance Google Chrome pour accéder à cet ordinateur, vous devez activer les connexions à distance.</translation>
-<translation id="897805526397249209">Pour activer les connexions distantes à un autre ordinateur, installez l'application Bureau à distance Google Chrome sur celui-ci, puis cliquez sur &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
-<translation id="4481276415609939789">Aucun ordinateur n'est enregistré. Pour activer les connexions distantes à un ordinateur, installez l'application Bureau à distance Google Chrome sur celui-ci, puis cliquez sur &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
-<translation id="7038683108611689168">Aidez-nous à améliorer le bureau à distance Google Chrome en nous autorisant à recueillir des statistiques d'utilisation et des rapports d'erreur.</translation>
+<translation id="4006787130661126000">Si vous souhaitez utiliser le bureau à distance Google Chrome pour accéder à cet ordinateur, vous devez activer les connexions à distance.</translation>
+<translation id="4361728918881830843">Pour activer les connexions distantes à un autre ordinateur, installez l'application Bureau à distance Google Chrome sur celui-ci, puis cliquez sur &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
+<translation id="174018511426417793">Aucun ordinateur n'est enregistré. Pour activer les connexions distantes à un ordinateur, installez l'application Bureau à distance Google Chrome sur celui-ci, puis cliquez sur &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
+<translation id="2499160551253595098">Aidez-nous à améliorer le bureau à distance Google Chrome en nous autorisant à recueillir des statistiques d'utilisation et des rapports d'erreur.</translation>
 <translation id="4156740505453712750">Pour protéger l'accès à cet ordinateur, veuillez choisir un code d'accès <ph name="BOLD_START"/>composé d'au moins six chiffres<ph name="BOLD_END"/>. Ce code sera nécessaire lorsque vous vous connecterez depuis un autre emplacement.</translation>
 <translation id="154040539590487450">Échec du démarrage du service d'accès à distance.</translation>
 <translation id="2013884659108657024">Le programme d'installation de l'hôte du bureau à distance Google Chrome est en cours de téléchargement dans Google Chrome. Une fois le téléchargement terminé, veuillez lancer le programme d'installation avant de continuer.</translation>
@@ -81,7 +81,7 @@
 <translation id="5702987232842159181">Connecté :</translation>
 <translation id="811307782653349804">Accédez à votre ordinateur où que vous soyez.</translation>
 <translation id="4430915108080446161">Génération du code d'accès…</translation>
-<translation id="4703799847237267011">La session du bureau à distance Chrome est terminée.</translation>
+<translation id="3776024066357219166">La session du bureau à distance Chrome est terminée.</translation>
 <translation id="5708869785009007625">Vous partagez actuellement votre bureau avec <ph name="USER"/>.</translation>
 <translation id="9188433529406846933">Autoriser</translation>
 <translation id="701976023053394610">Assistance à distance</translation>
@@ -94,7 +94,7 @@
 <translation id="4808503597364150972">Veuillez saisir le code d'accès pour <ph name="HOSTNAME"/>.</translation>
 <translation id="5156271271724754543">Veuillez saisir le même code d'accès dans les deux champs.</translation>
 <translation id="5625493749705183369">Accédez à d'autres ordinateurs ou permettez à un utilisateur d'accéder au vôtre en toute sécurité via Internet.</translation>
-<translation id="2699970397166997657">Bureau à distance Chrome</translation>
+<translation id="7401733114166276557">Bureau à distance Chrome</translation>
 <translation id="579702532610384533">Se reconnecter</translation>
 <translation id="7144878232160441200">Réessayer</translation>
 <translation id="7948001860594368197">Options de l'écran</translation>

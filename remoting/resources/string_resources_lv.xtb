@@ -9,7 +9,7 @@
 <translation id="7658239707568436148">Atcelt</translation>
 <translation id="6746493157771801606">Notīrīt vēsturi</translation>
 <translation id="6040143037577758943">Aizvērt</translation>
-<translation id="1643640058022401035">Aizverot šo lapu, Chrome attālās darbvirsmas sesija tiks pārtraukta.</translation>
+<translation id="5254120496627797685">Aizverot šo lapu, Chrome attālās darbvirsmas sesija tiks pārtraukta.</translation>
 <translation id="5308380583665731573">Pievienot</translation>
 <translation id="6985691951107243942">Vai tiešām vēlaties atspējot attālos savienojumus ar <ph name="HOSTNAME"/>? Ja pārdomāsiet, savienojumus ar šo datoru varēsiet iespējot tikai klātienē.</translation>
 <translation id="6748108480210050150">No:</translation>
@@ -18,9 +18,9 @@
 <translation id="6998989275928107238">Kam:</translation>
 <translation id="2359808026110333948">Turpināt</translation>
 <translation id="2919669478609886916">Šobrīd jūs kopīgojat šo ierīci ar citu lietotāju. Vai vēlaties turpināt kopīgošanu?</translation>
-<translation id="8864965950780407789">Lai izmantotu Chrome attālo darbvirsmu, vispirms piešķiriet paplašinātas piekļuves atļaujas savam datoram. Tas ir jādara tikai vienu reizi.</translation>
+<translation id="173559734173571936">Lai izmantotu Chrome attālo darbvirsmu, vispirms piešķiriet paplašinātas piekļuves atļaujas savam datoram. Tas ir jādara tikai vienu reizi.</translation>
 <translation id="1023096696228309145">Lūdziet lietotājam, kura datoram vēlaties piekļūt, noklikšķināt uz Kopīgot šo datoru un pēc tam piešķirt jums piekļuves kodu.</translation>
-<translation id="6011539954251327702">Izmantojot Chrome attālo darbvirsmu, varat drošā veidā tīmeklī kopīgot savu datoru. Abiem lietotājiem ir jāizmanto lietotne Chrome attālā darbvirsma, kas atrodama šeit: <ph name="URL"/>.</translation>
+<translation id="5379087427956679853">Izmantojot Chrome attālo darbvirsmu, varat drošā veidā tīmeklī kopīgot savu datoru. Abiem lietotājiem ir jāizmanto lietotne Chrome attālā darbvirsma, kas atrodama šeit: <ph name="URL"/>.</translation>
 <translation id="4394049700291259645">Atspējot</translation>
 <translation id="4314644002001494905">Atvienot (Ctrl+Alt+Esc)</translation>
 <translation id="8342538585421421741">Atvienot (Ctrl+Ctrl+Esc)</translation>
@@ -28,16 +28,16 @@
 <translation id="4804818685124855865">Atvienot</translation>
 
 <translation id="6930242544192836755">Ilgums</translation>
-<translation id="8246880134154544773">Autentificēšana neizdevās. Lūdzu, vēlreiz pierakstieties Chrome attālajā darbvirsmā.</translation>
-<translation id="9032136467203159543">Trūkst dažu Chrome attālajai darbvirsmai nepieciešamo komponentu. Pārbaudiet, vai esat instalējis jaunāko versiju un mēģiniet vēlreiz.</translation>
+<translation id="8172070902751707422">Autentificēšana neizdevās. Lūdzu, vēlreiz pierakstieties Chrome attālajā darbvirsmā.</translation>
+<translation id="2707879711568641861">Trūkst dažu Chrome attālajai darbvirsmai nepieciešamo komponentu. Pārbaudiet, vai esat instalējis jaunāko versiju un mēģiniet vēlreiz.</translation>
 <translation id="2813770873348017932">Savienojumi ar attālo datoru ir īslaicīgi bloķēti, jo kāds mēģināja izveidot savienojumu, izmantojot nederīgu PIN. Lūdzu, vēlāk mēģiniet vēlreiz.</translation>
 <translation id="3106379468611574572">Attālais dators nereaģē uz savienojuma pieprasījumiem. Pārbaudiet, vai tam ir savienojums ar internetu un mēģiniet vēlreiz.</translation>
-<translation id="2944598174730150896">Tika konstatēta nesaderīga Chrome attālās darbvirsmas versija. Pārbaudiet, vai lietojat pārlūka Google Chrome un lietotnes Chrome attālā darbvirsma jaunāko versiju abos datoros un mēģiniet vēlreiz.</translation>
+<translation id="851521648418609391">Tika konstatēta nesaderīga Chrome attālās darbvirsmas versija. Pārbaudiet, vai lietojat pārlūka Google Chrome un lietotnes Chrome attālā darbvirsma jaunāko versiju abos datoros un mēģiniet vēlreiz.</translation>
 <translation id="4277736576214464567">Piekļuves kods nav derīgs. Mēģiniet vēlreiz.</translation>
-<translation id="3403830762023901068">Saskaņā ar politikas iestatījumiem šo datoru nevar koplietot kā Chrome attālās darbvirsmas saimniekdatoru. Lai saņemtu palīdzību, sazinieties ar sistēmas administratoru.</translation>
+<translation id="2208514473086078157">Saskaņā ar politikas iestatījumiem šo datoru nevar koplietot kā Chrome attālās darbvirsmas saimniekdatoru. Lai saņemtu palīdzību, sazinieties ar sistēmas administratoru.</translation>
 <translation id="2366718077645204424">Nevar sasniegt saimniekdatoru. Iespējamais iemesls var būt tīkla konfigurācija, kuru izmantojat.</translation>
-<translation id="5908809458024685848">Jūs neesat pierakstījies Chrome attālajā darbvirsmā. Lūdzu, pierakstieties un mēģiniet vēlreiz.</translation>
-<translation id="371039623761974302">Trūkst dažu Chrome attālajai darbvirsmai nepieciešamo komponentu. Pārbaudiet, vai lietojat jaunāko pārlūka Google Chrome versiju un mēģiniet vēlreiz.</translation>
+<translation id="7729639150174291243">Jūs neesat pierakstījies Chrome attālajā darbvirsmā. Lūdzu, pierakstieties un mēģiniet vēlreiz.</translation>
+<translation id="4019628723432694459">Trūkst dažu Chrome attālajai darbvirsmai nepieciešamo komponentu. Pārbaudiet, vai lietojat jaunāko pārlūka Google Chrome versiju un mēģiniet vēlreiz.</translation>
 <translation id="2805036638902441020">Serverim neizdevās atbildēt uz tīkla pieprasījumu.</translation>
 <translation id="5593560073513909978">Šobrīd pakalpojums nav pieejams. Vēlāk mēģiniet vēlreiz.</translation>
 <translation id="1546934824884762070">Radās neparedzēta kļūda. Ziņojiet par šo problēmu izstrādātājiem.</translation>
@@ -48,14 +48,14 @@
 <translation id="7649070708921625228">Palīdzība</translation>
 <translation id="4572065712096155137">Piekļuve</translation>
 <translation id="1342297293546459414">Skatiet un kontrolējiet kopīgotu datoru.</translation>
-<translation id="2353140552984634198">Varat izveidot drošu savienojumu ar šo datoru, izmantojot Chrome attālo darbvirsmu.</translation>
+<translation id="3258789396564295715">Varat izveidot drošu savienojumu ar šo datoru, izmantojot Chrome attālo darbvirsmu.</translation>
 <translation id="6198252989419008588">Mainīt PIN</translation>
 <translation id="1199593201721843963">Atspējot attālos savienojumus</translation>
 <translation id="7606912958770842224">Iespējot attālos savienojumus</translation>
-<translation id="1291443878853470558">Ja vēlaties piekļūt šim datoram, izmantojot Chrome attālo darbvirsmu, ir jāiespējo attālie savienojumi.</translation>
-<translation id="897805526397249209">Lai iespējotu attālus savienojumus ar citu datoru, instalējiet Chrome attālo darbvirsmu attiecīgajā datorā un noklikšķiniet uz <ph name="BUTTON_NAME"/>.</translation>
-<translation id="4481276415609939789">Jums nav neviena reģistrēta datora. Lai iespējotu attālus savienojumus ar kādu datoru, instalējiet Chrome attālo darbvirsmu attiecīgajā datorā un noklikšķiniet uz <ph name="BUTTON_NAME"/>.</translation>
-<translation id="7038683108611689168">Palīdziet mums uzlabot Chrome attālo darbvirsmu, ļaujot mums apkopot lietojuma statistiku un avāriju pārskatus.</translation>
+<translation id="4006787130661126000">Ja vēlaties piekļūt šim datoram, izmantojot Chrome attālo darbvirsmu, ir jāiespējo attālie savienojumi.</translation>
+<translation id="4361728918881830843">Lai iespējotu attālus savienojumus ar citu datoru, instalējiet Chrome attālo darbvirsmu attiecīgajā datorā un noklikšķiniet uz <ph name="BUTTON_NAME"/>.</translation>
+<translation id="174018511426417793">Jums nav neviena reģistrēta datora. Lai iespējotu attālus savienojumus ar kādu datoru, instalējiet Chrome attālo darbvirsmu attiecīgajā datorā un noklikšķiniet uz <ph name="BUTTON_NAME"/>.</translation>
+<translation id="2499160551253595098">Palīdziet mums uzlabot Chrome attālo darbvirsmu, ļaujot mums apkopot lietojuma statistiku un avāriju pārskatus.</translation>
 <translation id="4156740505453712750">Lai aizsargātu piekļuvi šim datoram, lūdzu, izvēlieties PIN, kas sastāv no <ph name="BOLD_START"/>vismaz sešiem cipariem<ph name="BOLD_END"/>. Šis PIN būs nepieciešams, veidojot savienojumu no citas atrašanās vietas.</translation>
 <translation id="154040539590487450">Neizdevās sākt attālās piekļuves pakalpojumu.</translation>
 <translation id="2013884659108657024">No pārlūkprogrammas Chrome saimniekdatorā tiek lejupielādēta Chrome attālās darbvirsmas instalēšanas programma. Kad lejupielāde būs pabeigta, pirms turpināt, lūdzu, palaidiet instalēšanas programmu.</translation>
@@ -81,7 +81,7 @@
 <translation id="5702987232842159181">Pievienots:</translation>
 <translation id="811307782653349804">Piekļūstiet savam datoram, atrodoties jebkurā vietā.</translation>
 <translation id="4430915108080446161">Notiek piekļuves koda ģenerēšana...</translation>
-<translation id="4703799847237267011">Jūsu Chrome attālās darbvirsmas sesija ir pārtraukta.</translation>
+<translation id="3776024066357219166">Jūsu Chrome attālās darbvirsmas sesija ir pārtraukta.</translation>
 <translation id="5708869785009007625">Jūsu darbvirsma šobrīd tiek koplietota ar lietotāju <ph name="USER"/>.</translation>
 <translation id="9188433529406846933">Autorizēt</translation>
 <translation id="701976023053394610">Attālā palīdzība</translation>
@@ -94,7 +94,7 @@
 <translation id="4808503597364150972">Lūdzu, ievadiet savu <ph name="HOSTNAME"/> PIN kodu.</translation>
 <translation id="5156271271724754543">Lūdzu, ievadiet vienu un to pašu PIN kodu abos lodziņos.</translation>
 <translation id="5625493749705183369">Piekļūstiet citiem datoriem vai ļaujiet citam lietotājam piekļūt jūsu datoram drošā veidā, izmantojot interneta savienojumu.</translation>
-<translation id="2699970397166997657">Chrome attālā darbvirsma</translation>
+<translation id="7401733114166276557">Chrome attālā darbvirsma</translation>
 <translation id="579702532610384533">Atkārtoti izveidot savienojumu</translation>
 <translation id="7144878232160441200">Mēģināt vēlreiz</translation>
 <translation id="7948001860594368197">Ekrāna opcijas</translation>

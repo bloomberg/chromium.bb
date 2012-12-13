@@ -9,7 +9,7 @@
 <translation id="7658239707568436148">Cancel·la</translation>
 <translation id="6746493157771801606">Esborra l'historial</translation>
 <translation id="6040143037577758943">Tanca</translation>
-<translation id="1643640058022401035">Si sortiu d'aquesta pàgina, la sessió de Chrome Remote Desktop finalitzarà.</translation>
+<translation id="5254120496627797685">Si sortiu d'aquesta pàgina, la sessió de Chrome Remote Desktop finalitzarà.</translation>
 <translation id="5308380583665731573">Connecta</translation>
 <translation id="6985691951107243942">Esteu segur que voleu desactivar les connexions remotes a <ph name="HOSTNAME"/>? Si canvieu de parer, haureu de visitar aquest equip per tornar-les a activar.</translation>
 <translation id="6748108480210050150">De</translation>
@@ -18,9 +18,9 @@
 <translation id="6998989275928107238">Per a</translation>
 <translation id="2359808026110333948">Continua</translation>
 <translation id="2919669478609886916">Esteu compartint aquest equip amb un altre usuari. Voleu continuar compartint-lo?</translation>
-<translation id="8864965950780407789">Per utilitzar Chrome Remote Desktop heu de concedir permisos d'accés ampliat a l'equip. Només ho heu de fer una vegada.</translation>
+<translation id="173559734173571936">Per utilitzar Chrome Remote Desktop heu de concedir permisos d'accés ampliat a l'equip. Només ho heu de fer una vegada.</translation>
 <translation id="1023096696228309145">Demaneu a l'usuari de l'equip al qual voleu accedir que faci clic a &quot;Comparteix ara&quot; i que us doni el codi d'accés.</translation>
-<translation id="6011539954251327702">Chrome Remote Desktop us permet compartir el vostre equip de manera segura mitjançant el web. Els dos usuaris han d'executar l'aplicació Chrome Remote Desktop, que es pot cercar a <ph name="URL"/>.</translation>
+<translation id="5379087427956679853">Chrome Remote Desktop us permet compartir el vostre equip de manera segura mitjançant el web. Els dos usuaris han d'executar l'aplicació Chrome Remote Desktop, que es pot cercar a <ph name="URL"/>.</translation>
 <translation id="4394049700291259645">Desactiva</translation>
 <translation id="4314644002001494905">Desconnecta (Ctrl+Alt+Esc)</translation>
 <translation id="8342538585421421741">Desconnecta (Opt+Ctrl+Esc)</translation>
@@ -28,16 +28,16 @@
 <translation id="4804818685124855865">Desconnecta</translation>
 
 <translation id="6930242544192836755">Durada</translation>
-<translation id="8246880134154544773">Ha fallat l'autenticació. Torneu a iniciar la sessió a l'escriptori remot de Chrome.</translation>
-<translation id="9032136467203159543">Falten alguns components que es requereixen per a Chrome Remote Desktop. Assegureu-vos que hàgiu instal·lat la versió més recent de Google Chrome i torneu-ho a provar.</translation>
+<translation id="8172070902751707422">Ha fallat l'autenticació. Torneu a iniciar la sessió a l'escriptori remot de Chrome.</translation>
+<translation id="2707879711568641861">Falten alguns components que es requereixen per a Chrome Remote Desktop. Assegureu-vos que hàgiu instal·lat la versió més recent de Google Chrome i torneu-ho a provar.</translation>
 <translation id="2813770873348017932">S'han bloquejat temporalment les connexions a l'equip remot perquè algú ha provat de connectar-hi amb un PIN no vàlid. Torneu-ho a provar més tard.</translation>
 <translation id="3106379468611574572">L'equip remot no respon a les sol·licituds de connexió. Verifiqueu que estigui en línia i torneu-ho a provar.</translation>
-<translation id="2944598174730150896">S'ha detectat una versió incompatible de Chrome Remote Desktop. Assegureu-vos que teniu la versió més recent de Google Chrome i de Chrome Remote Desktop als dos equips i torneu-ho a provar.</translation>
+<translation id="851521648418609391">S'ha detectat una versió incompatible de Chrome Remote Desktop. Assegureu-vos que teniu la versió més recent de Google Chrome i de Chrome Remote Desktop als dos equips i torneu-ho a provar.</translation>
 <translation id="4277736576214464567">El codi d'accés no és vàlid. Torneu-ho a provar.</translation>
-<translation id="3403830762023901068">La configuració de la política no permet compartir aquest equip com a amfitrió de l'escriptori remot de Chrome. Contacteu amb l'administrador del sistema per obtenir assistència.</translation>
+<translation id="2208514473086078157">La configuració de la política no permet compartir aquest equip com a amfitrió de l'escriptori remot de Chrome. Contacteu amb l'administrador del sistema per obtenir assistència.</translation>
 <translation id="2366718077645204424">No es pot connectar amb l'amfitrió. Probablement, això passa a causa de la configuració de la xarxa que esteu fent servir.</translation>
-<translation id="5908809458024685848">No heu iniciat la sessió a l'escriptori remot de Chrome. Inicieu-hi la sessió i torneu-ho a provar.</translation>
-<translation id="371039623761974302">Falten alguns components que es requereixen per a Chrome Remote Desktop. Assegureu-vos que executeu la versió més recent de Google Chrome i torneu-ho a provar.</translation>
+<translation id="7729639150174291243">No heu iniciat la sessió a l'escriptori remot de Chrome. Inicieu-hi la sessió i torneu-ho a provar.</translation>
+<translation id="4019628723432694459">Falten alguns components que es requereixen per a Chrome Remote Desktop. Assegureu-vos que executeu la versió més recent de Google Chrome i torneu-ho a provar.</translation>
 <translation id="2805036638902441020">El servidor no ha pogut respondre a la sol·licitud de xarxa.</translation>
 <translation id="5593560073513909978">El servei no està disponible temporalment. Torneu-ho a provar més tard.</translation>
 <translation id="1546934824884762070">S'ha produït un error inesperat. Informeu d'aquest problema als desenvolupadors.</translation>
@@ -48,14 +48,14 @@
 <translation id="7649070708921625228">Ajuda</translation>
 <translation id="4572065712096155137">Accedeix</translation>
 <translation id="1342297293546459414">Vegeu i controleu un equip compartit.</translation>
-<translation id="2353140552984634198">Podeu accedir de manera segura a aquest equip mitjançant l'escriptori remot de Chrome.</translation>
+<translation id="3258789396564295715">Podeu accedir de manera segura a aquest equip mitjançant l'escriptori remot de Chrome.</translation>
 <translation id="6198252989419008588">Canvia el PIN</translation>
 <translation id="1199593201721843963">Desactiva les connexions remotes</translation>
 <translation id="7606912958770842224">Activa les connexions remotes</translation>
-<translation id="1291443878853470558">Heu d'activar les connexions remotes si voleu utilitzar l'escriptori remot de Chrome per accedir a aquest equip.</translation>
-<translation id="897805526397249209">Per activar les connexions remotes a un equip diferent, instal·leu-hi l'escriptori remot de Chrome i feu clic a “<ph name="BUTTON_NAME"/>”.</translation>
-<translation id="4481276415609939789">No teniu cap equip registrat. Per activar les connexions remotes a un equip, instal·leu-hi l'escriptori remot de Chrome i feu clic a “<ph name="BUTTON_NAME"/>”.</translation>
-<translation id="7038683108611689168">Ajudeu-nos a millorar l'escriptori remot de Chrome: permeteu-nos recollir estadístiques d'ús i informes d'error.</translation>
+<translation id="4006787130661126000">Heu d'activar les connexions remotes si voleu utilitzar l'escriptori remot de Chrome per accedir a aquest equip.</translation>
+<translation id="4361728918881830843">Per activar les connexions remotes a un equip diferent, instal·leu-hi l'escriptori remot de Chrome i feu clic a “<ph name="BUTTON_NAME"/>”.</translation>
+<translation id="174018511426417793">No teniu cap equip registrat. Per activar les connexions remotes a un equip, instal·leu-hi l'escriptori remot de Chrome i feu clic a “<ph name="BUTTON_NAME"/>”.</translation>
+<translation id="2499160551253595098">Ajudeu-nos a millorar l'escriptori remot de Chrome: permeteu-nos recollir estadístiques d'ús i informes d'error.</translation>
 <translation id="4156740505453712750">Per protegir l'accés a aquest equip, trieu un PIN de <ph name="BOLD_START"/>com a mínim sis dígits<ph name="BOLD_END"/>. Aquest PIN es necessitarà quan us connecteu des d'una altra ubicació.</translation>
 <translation id="154040539590487450">No s'ha pogut iniciar el servei d'accés remot.</translation>
 <translation id="2013884659108657024">Chrome està baixant l'instal·lador de l'amfitrió de l'escriptori remot de Chrome. Quan s'hagi completat la baixada, executeu l'instal·lador abans de continuar.</translation>
@@ -81,7 +81,7 @@
 <translation id="5702987232842159181">Connectat:</translation>
 <translation id="811307782653349804">Accediu al vostre equip des de qualsevol lloc.</translation>
 <translation id="4430915108080446161">S'està generant el codi d'accés...</translation>
-<translation id="4703799847237267011">La sessió de Chrome Remote Desktop ha finalitzat.</translation>
+<translation id="3776024066357219166">La sessió de Chrome Remote Desktop ha finalitzat.</translation>
 <translation id="5708869785009007625">Esteu compartint l'escriptori amb <ph name="USER"/>.</translation>
 <translation id="9188433529406846933">Autoritza</translation>
 <translation id="701976023053394610">Assistència remota</translation>
@@ -94,7 +94,7 @@
 <translation id="4808503597364150972">Introduïu el vostre PIN per a <ph name="HOSTNAME"/>.</translation>
 <translation id="5156271271724754543">Introduïu el mateix PIN en tots dos quadres.</translation>
 <translation id="5625493749705183369">Accediu a altres equips o permeteu que un altre usuari accedeixi al vostre equip de manera segura per Internet.</translation>
-<translation id="2699970397166997657">Chrome Remote Desktop</translation>
+<translation id="7401733114166276557">Chrome Remote Desktop</translation>
 <translation id="579702532610384533">Torna a connectar</translation>
 <translation id="7144878232160441200">Torna-ho a provar</translation>
 <translation id="7948001860594368197">Opcions de pantalla</translation>
