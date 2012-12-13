@@ -4,6 +4,7 @@
 
 // Multiply-included file, no traditional include guard.
 #include <string>
+#include <vector>
 
 #include "content/public/common/common_param_traits.h"
 #include "content/shell/shell_webpreferences.h"
@@ -72,6 +73,9 @@ IPC_MESSAGE_ROUTED1(ShellViewHostMsg_OverridePreferences,
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_CanOpenWindows)
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_ShowWebInspector)
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_CloseWebInspector)
+IPC_SYNC_MESSAGE_ROUTED1_1(ShellViewHostMsg_RegisterIsolatedFileSystem,
+                           std::vector<FilePath> /* absolute_filenames */,
+                           std::string /* filesystem_id */)
 
 IPC_MESSAGE_ROUTED2(ShellViewHostMsg_NotImplemented,
                     std::string /* object_name */,

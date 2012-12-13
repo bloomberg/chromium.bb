@@ -18,6 +18,7 @@
 #include "content/shell/shell_content_browser_client.h"
 #include "content/shell/shell_messages.h"
 #include "content/shell/shell_switches.h"
+#include "webkit/fileapi/isolated_context.h"
 #include "webkit/support/webkit_support_gfx.h"
 
 namespace content {
@@ -155,11 +156,12 @@ bool WebKitTestController::PrepareForLayoutTest(
           content::GetContentClient()->browser())->browser_context();
   main_window_ = content::Shell::CreateNewWindow(
       browser_context,
-      test_url,
+      GURL(),
       NULL,
       MSG_ROUTING_NONE,
       NULL);
   Observe(main_window_->web_contents());
+  main_window_->LoadURL(test_url);
   if (test_url.spec().find("/dumpAsText/") != std::string::npos ||
       test_url.spec().find("\\dumpAsText\\") != std::string::npos) {
     dump_as_text_ = true;
@@ -216,6 +218,8 @@ bool WebKitTestController::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(WebKitTestController, message)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_DidFinishLoad, OnDidFinishLoad)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_PrintMessage, OnPrintMessage)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_RegisterIsolatedFileSystem,
+                        OnRegisterIsolatedFileSystem)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_TextDump, OnTextDump)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_ImageDump, OnImageDump)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_OverridePreferences,
@@ -409,6 +413,16 @@ void WebKitTestController::OnShowWebInspector() {
 
 void WebKitTestController::OnCloseWebInspector() {
   main_window_->CloseDevTools();
+}
+
+void WebKitTestController::OnRegisterIsolatedFileSystem(
+    const std::vector<FilePath>& absolute_filenames,
+    std::string* filesystem_id) {
+  fileapi::IsolatedContext::FileInfoSet files;
+  for (size_t i = 0; i < absolute_filenames.size(); ++i)
+    files.AddPath(absolute_filenames[i], NULL);
+  *filesystem_id =
+      fileapi::IsolatedContext::GetInstance()->RegisterDraggedFileSystem(files);
 }
 
 void WebKitTestController::OnNotImplemented(

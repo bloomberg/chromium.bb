@@ -33,6 +33,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTask.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestProxy.h"
+#include "webkit/base/file_path_string_conversions.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpreferences.h"
 
@@ -204,9 +205,13 @@ void WebKitTestRunner::postDelayedTask(WebTask* task, long long ms) {
 
 WebString WebKitTestRunner::registerIsolatedFileSystem(
     const WebKit::WebVector<WebKit::WebString>& absolute_filenames) {
-  Send(new ShellViewHostMsg_NotImplemented(
-      routing_id(), "WebTestDelegate", "registerIsolatedFileSystem"));
-  return WebString();
+  std::vector<FilePath> files;
+  for (size_t i = 0; i < absolute_filenames.size(); ++i)
+    files.push_back(webkit_base::WebStringToFilePath(absolute_filenames[i]));
+  std::string filesystem_id;
+  Send(new ShellViewHostMsg_RegisterIsolatedFileSystem(
+      routing_id(), files, &filesystem_id));
+  return WebString::fromUTF8(filesystem_id);
 }
 
 long long WebKitTestRunner::getCurrentTimeInMillisecond() {
@@ -227,11 +232,7 @@ WebString WebKitTestRunner::getAbsoluteWebStringFromUTF8Path(
             FILE_PATH_LITERAL("foo")));
     net::FileURLToFilePath(base_url.Resolve(utf8_path), &path);
   }
-#if defined(OS_WIN)
-  return WebString(path.value());
-#else
-  return WideToUTF16(base::SysNativeMBToWide(path.value()));
-#endif
+  return webkit_base::FilePathToWebString(path);
 }
 
 // RenderViewObserver  --------------------------------------------------------

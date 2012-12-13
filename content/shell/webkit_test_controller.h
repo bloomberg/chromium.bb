@@ -122,6 +122,9 @@ class WebKitTestController : public base::NonThreadSafe,
   void OnCanOpenWindows();
   void OnShowWebInspector();
   void OnCloseWebInspector();
+  void OnRegisterIsolatedFileSystem(
+      const std::vector<FilePath>& absolute_filenames,
+      std::string* filesystem_id);
 
   void OnNotImplemented(const std::string& object_name,
                         const std::string& method_name);
