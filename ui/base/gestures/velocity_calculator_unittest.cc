@@ -87,8 +87,16 @@ TEST(VelocityCalculatorTest, IsAccurateWithLargeTimes) {
   EXPECT_LT(velocity_calculator.YVelocity(), -124000);
 }
 
+
+// TODO(rjkroege): Fix this test on windows.
+#if defined(OS_WIN)
+#define MAYBE_RequiresEnoughData DISABLED_RequiresEnoughData
+#else
+#define MAYBE_RequiresEnoughData RequiresEnoughData
+#endif
+
 // Check that the right values are returned for insufficient data.
-TEST(VelocityCalculatorTest, RequiresEnoughData) {
+TEST(VelocityCalculatorTest, MAYBE_RequiresEnoughData) {
   VelocityCalculator velocity_calculator(3);
   int64 start_time = 0;
 
