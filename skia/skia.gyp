@@ -136,7 +136,7 @@
         '../third_party/skia/src/utils/SkNullCanvas.cpp',
         '../third_party/skia/include/utils/SkNWayCanvas.h',
         '../third_party/skia/src/utils/SkNWayCanvas.cpp',
-
+        '../third_party/skia/src/utils/SkPictureUtils.cpp',
         '../third_party/skia/include/pdf/SkPDFDevice.h',
         '../third_party/skia/include/pdf/SkPDFDocument.h',
 
@@ -151,7 +151,7 @@
         '../third_party/skia/include/images/SkPageFlipper.h',
 
         '../third_party/skia/include/utils/SkNullCanvas.h',
-
+        '../third_party/skia/include/utils/SkPictureUtils.h',
         'ext/bitmap_platform_device.h',
         'ext/bitmap_platform_device_android.cc',
         'ext/bitmap_platform_device_android.h',

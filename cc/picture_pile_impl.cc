@@ -79,4 +79,14 @@ void PicturePileImpl::Raster(
                                          rasterizeBeginTime).InSecondsF();
 }
 
+void PicturePileImpl::GatherPixelRefs(
+    const gfx::Rect& rect, std::list<skia::LazyPixelRef*>& pixel_refs) {
+  std::list<skia::LazyPixelRef*> result;
+  for (PicturePile::Pile::const_iterator i = pile_.begin();
+      i != pile_.end(); ++i) {
+    (*i)->GatherPixelRefs(rect, result);
+    pixel_refs.splice(pixel_refs.end(), result);
+  }
+}
+
 }  // namespace cc

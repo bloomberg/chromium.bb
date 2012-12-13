@@ -5,6 +5,7 @@
 #include "cc/tile_manager.h"
 
 #include <algorithm>
+#include <set>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -66,6 +67,16 @@ class RasterThread : public base::Thread {
         base::Bind(&RasterThread::RunReply, base::Unretained(this), reply));
   }
 
+  void PostImageDecodingTaskAndReply(const tracked_objects::Location& from_here,
+                                     skia::LazyPixelRef* pixel_ref,
+                                     const base::Closure& reply) {
+    ++num_pending_tasks_;
+    message_loop_proxy()->PostTaskAndReply(
+        from_here,
+        base::Bind(&RunImageDecodeTask, base::Unretained(pixel_ref)),
+        base::Bind(&RasterThread::RunReply, base::Unretained(this), reply));
+  }
+
  private:
   static void RunRasterTask(PicturePileImpl* picture_pile,
                             uint8_t* mapped_buffer,
@@ -87,6 +98,11 @@ class RasterThread : public base::Thread {
         stats);
   }
 
+  static void RunImageDecodeTask(skia::LazyPixelRef* pixel_ref) {
+    TRACE_EVENT0("cc", "RasterThread::RunImageDecodeTask");
+    pixel_ref->Decode();
+  }
+
   void RunReply(const base::Closure& reply) {
     --num_pending_tasks_;
     reply.Run();
@@ -101,7 +117,8 @@ ManagedTileState::ManagedTileState()
     : can_use_gpu_memory(false),
       can_be_freed(true),
       resource_is_being_initialized(false),
-      contents_swizzled(false) {
+      contents_swizzled(false),
+      need_to_gather_pixel_refs(true) {
 }
 
 ManagedTileState::~ManagedTileState() {
@@ -284,7 +301,7 @@ void TileManager::ManageTiles() {
   AssignGpuMemoryToTiles();
 
   // Finally, kick the rasterizer.
-  DispatchMoreRasterTasks();
+  DispatchMoreTasks();
 }
 
 void TileManager::CheckForCompletedSetPixels() {
@@ -332,6 +349,15 @@ void TileManager::AssignGpuMemoryToTiles() {
       tiles_that_need_to_be_rasterized_.begin(),
       tiles_that_need_to_be_rasterized_.end());
 
+  // Record all the tiles in the image decoding list. A tile will not be
+  // inserted to the rasterizer queue if it is waiting for image decoding.
+  std::set<Tile*> image_decoding_tile_set;
+  for (std::list<Tile*>::iterator it = tiles_with_image_decoding_tasks_.begin();
+      it != tiles_with_image_decoding_tasks_.end(); ++it) {
+    image_decoding_tile_set.insert(*it);
+  }
+  tiles_with_image_decoding_tasks_.clear();
+
   size_t bytes_left = global_state_.memory_limit_in_bytes - unreleasable_bytes;
   for (TileVector::iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
     Tile* tile = *it;
@@ -352,8 +378,12 @@ void TileManager::AssignGpuMemoryToTiles() {
     bytes_left -= tile_bytes;
     managed_tile_state.can_use_gpu_memory = true;
     if (!managed_tile_state.resource &&
-        !managed_tile_state.resource_is_being_initialized)
-      tiles_that_need_to_be_rasterized_.push_back(tile);
+        !managed_tile_state.resource_is_being_initialized) {
+      if (image_decoding_tile_set.end() != image_decoding_tile_set.find(tile))
+        tiles_with_image_decoding_tasks_.push_back(tile);
+      else
+        tiles_that_need_to_be_rasterized_.push_back(tile);
+    }
   }
 
   // Reverse two tiles_that_need_* vectors such that pop_back gets
@@ -370,26 +400,123 @@ void TileManager::FreeResourcesForTile(Tile* tile) {
     resource_pool_->ReleaseResource(managed_tile_state.resource.Pass());
 }
 
-void TileManager::DispatchMoreRasterTasks() {
-  while (!tiles_that_need_to_be_rasterized_.empty()) {
-    RasterThread* thread = 0;
+RasterThread* TileManager::GetFreeRasterThread() {
+  RasterThread* thread = 0;
+  for (RasterThreadVector::iterator it = raster_threads_.begin();
+       it != raster_threads_.end(); ++it) {
+    if ((*it)->num_pending_tasks() == kNumPendingRasterTasksPerThread)
+      continue;
+    // Check if this is the best thread we've found so far.
+    if (!thread || (*it)->num_pending_tasks() < thread->num_pending_tasks())
+      thread = *it;
+  }
+  return thread;
+}
 
-    for (RasterThreadVector::iterator it = raster_threads_.begin();
-         it != raster_threads_.end(); ++it) {
-      if ((*it)->num_pending_tasks() == kNumPendingRasterTasksPerThread)
-        continue;
-      // Check if this is the best thread we've found so far.
-      if (!thread || (*it)->num_pending_tasks() < thread->num_pending_tasks())
-        thread = *it;
-    }
-
-    // Stop dispatching tasks when all threads are busy.
-    if (!thread)
+void TileManager::DispatchMoreTasks() {
+  // Because tiles in the image decoding list have higher priorities, we
+  // need to process those tiles first before we start to handle the tiles
+  // in the need_to_be_rasterized queue.
+  std::list<Tile*>::iterator it = tiles_with_image_decoding_tasks_.begin();
+  while (it != tiles_with_image_decoding_tasks_.end()) {
+    DispatchImageDecodingTasksForTile(*it);
+    ManagedTileState& managed_state = (*it)->managed_state();
+    if (managed_state.pending_pixel_refs.empty()) {
+      RasterThread* thread = GetFreeRasterThread();
+      if (!thread)
         return;
+      DispatchOneRasterTask(thread, *it);
+      tiles_with_image_decoding_tasks_.erase(it++);
+    } else {
+      ++it;
+    }
+  }
 
-    DispatchOneRasterTask(thread, tiles_that_need_to_be_rasterized_.back());
+  // Process all tiles in the need_to_be_rasterized queue. If a tile has
+  // image decoding tasks, put it to the back of the image decoding list.
+  while (!tiles_that_need_to_be_rasterized_.empty()) {
+    Tile* tile = tiles_that_need_to_be_rasterized_.back();
+    DispatchImageDecodingTasksForTile(tile);
+    ManagedTileState& managed_state = tile->managed_state();
+    if (!managed_state.pending_pixel_refs.empty()) {
+      tiles_with_image_decoding_tasks_.push_back(tile);
+    } else {
+      RasterThread* thread = GetFreeRasterThread();
+      if (!thread)
+        return;
+      DispatchOneRasterTask(thread, tile);
+    }
     tiles_that_need_to_be_rasterized_.pop_back();
   }
+}
+
+void TileManager::DispatchImageDecodingTasksForTile(Tile* tile) {
+  ManagedTileState& managed_state = tile->managed_state();
+  if (managed_state.need_to_gather_pixel_refs) {
+    TRACE_EVENT0("cc",
+        "TileManager::DispatchImageDecodingTaskForTile: Gather PixelRefs");
+    const_cast<PicturePileImpl *>(tile->picture_pile())->GatherPixelRefs(
+        tile->content_rect_, managed_state.pending_pixel_refs);
+    managed_state.need_to_gather_pixel_refs = false;
+  }
+
+  std::list<skia::LazyPixelRef*>& pending_pixel_refs =
+      tile->managed_state().pending_pixel_refs;
+  std::list<skia::LazyPixelRef*>::iterator it = pending_pixel_refs.begin();
+  while (it != pending_pixel_refs.end()) {
+    if (pending_decode_tasks_.end() != pending_decode_tasks_.find(
+        (*it)->getGenerationID())) {
+      ++it;
+      continue;
+    }
+    // TODO(qinmin): passing correct image size to PrepareToDecode().
+    if ((*it)->PrepareToDecode(skia::LazyPixelRef::PrepareParams())) {
+      pending_pixel_refs.erase(it++);
+    } else {
+      RasterThread* thread = GetFreeRasterThread();
+      if (thread)
+        DispatchOneImageDecodingTask(thread, tile, *it);
+      ++it;
+    }
+  }
+}
+
+void TileManager::DispatchOneImageDecodingTask(RasterThread* thread,
+                                               scoped_refptr<Tile> tile,
+                                               skia::LazyPixelRef* pixel_ref) {
+  TRACE_EVENT0("cc", "TileManager::DispatchOneImageDecodingTask");
+  uint32_t pixel_ref_id = pixel_ref->getGenerationID();
+  DCHECK(pending_decode_tasks_.end() ==
+      pending_decode_tasks_.find(pixel_ref_id));
+  pending_decode_tasks_[pixel_ref_id] = pixel_ref;
+
+  thread->PostImageDecodingTaskAndReply(
+          FROM_HERE,
+          pixel_ref,
+          base::Bind(&TileManager::OnImageDecodingTaskCompleted,
+                     base::Unretained(this),
+                     tile,
+                     pixel_ref_id));
+}
+
+void TileManager::OnImageDecodingTaskCompleted(scoped_refptr<Tile> tile,
+                                               uint32_t pixel_ref_id) {
+  TRACE_EVENT0("cc", "TileManager::OnImageDecoded");
+  pending_decode_tasks_.erase(pixel_ref_id);
+
+  for (TileList::iterator it = tiles_with_image_decoding_tasks_.begin();
+      it != tiles_with_image_decoding_tasks_.end(); ++it) {
+    std::list<skia::LazyPixelRef*>& pixel_refs =
+        (*it)->managed_state().pending_pixel_refs;
+    for (std::list<skia::LazyPixelRef*>::iterator pixel_it =
+        pixel_refs.begin(); pixel_it != pixel_refs.end(); ++pixel_it) {
+      if (pixel_ref_id == (*pixel_it)->getGenerationID()) {
+        pixel_refs.erase(pixel_it);
+        break;
+      }
+    }
+  }
+  DispatchMoreTasks();
 }
 
 void TileManager::DispatchOneRasterTask(
@@ -446,7 +573,7 @@ void TileManager::OnRasterTaskCompleted(
   // tiles. The result of this could be that this tile is no longer
   // allowed to use gpu memory and in that case we need to abort
   // initialization and free all associated resources before calling
-  // DispatchMoreRasterTasks().
+  // DispatchMoreTasks().
   AssignGpuMemoryToTiles();
 
   // Finish resource initialization if |can_use_gpu_memory| is true.
@@ -470,8 +597,7 @@ void TileManager::OnRasterTaskCompleted(
     resource_pool_->ReleaseResource(resource.Pass());
     managed_tile_state.resource_is_being_initialized = false;
   }
-
-  DispatchMoreRasterTasks();
+  DispatchMoreTasks();
 }
 
 void TileManager::DidFinishTileInitialization(Tile* tile) {

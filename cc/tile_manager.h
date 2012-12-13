@@ -5,9 +5,11 @@
 #ifndef CC_TILE_MANAGER_H_
 #define CC_TILE_MANAGER_H_
 
+#include <list>
 #include <queue>
 #include <vector>
 
+#include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "cc/resource_pool.h"
@@ -53,6 +55,8 @@ class CC_EXPORT ManagedTileState {
   scoped_ptr<ResourcePool::Resource> resource;
   bool resource_is_being_initialized;
   bool contents_swizzled;
+  bool need_to_gather_pixel_refs;
+  std::list<skia::LazyPixelRef*> pending_pixel_refs;
 
   // Ephemeral state, valid only during Manage.
   TileManagerBin bin;
@@ -91,7 +95,7 @@ class CC_EXPORT TileManager {
   void FreeResourcesForTile(Tile*);
   void ScheduleManageTiles();
   void ScheduleCheckForCompletedSetPixels();
-  void DispatchMoreRasterTasks();
+  void DispatchMoreTasks();
   void DispatchOneRasterTask(RasterThread*, scoped_refptr<Tile>);
   void OnRasterTaskCompleted(
       scoped_refptr<Tile>,
@@ -99,6 +103,11 @@ class CC_EXPORT TileManager {
       scoped_refptr<PicturePileImpl>,
       RenderingStats*);
   void DidFinishTileInitialization(Tile*);
+  void DispatchImageDecodingTasksForTile(Tile*);
+  void OnImageDecodingTaskCompleted(scoped_refptr<Tile>, uint32_t);
+  void DispatchOneImageDecodingTask(
+      RasterThread*, scoped_refptr<Tile>, skia::LazyPixelRef*);
+  RasterThread* GetFreeRasterThread();
 
   TileManagerClient* client_;
   scoped_ptr<ResourcePool> resource_pool_;
@@ -110,6 +119,14 @@ class CC_EXPORT TileManager {
   typedef std::vector<Tile*> TileVector;
   TileVector tiles_;
   TileVector tiles_that_need_to_be_rasterized_;
+
+  typedef std::list<Tile*> TileList;
+  // Tiles with image decoding tasks. These tiles need to be rasterized
+  // when all the image decoding tasks finish.
+  TileList tiles_with_image_decoding_tasks_;
+
+  typedef base::hash_map<uint32_t, skia::LazyPixelRef*> PixelRefMap;
+  PixelRefMap pending_decode_tasks_;
 
   typedef std::queue<scoped_refptr<Tile> > TileQueue;
   TileQueue tiles_with_pending_set_pixels_;

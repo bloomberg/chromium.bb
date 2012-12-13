@@ -5,6 +5,7 @@
 #ifndef CC_PICTURE_PILE_IMPL_H_
 #define CC_PICTURE_PILE_IMPL_H_
 
+#include <list>
 #include <map>
 
 #include "base/basictypes.h"
@@ -37,6 +38,8 @@ public:
       gfx::Rect content_rect,
       float contents_scale,
       RenderingStats* stats);
+
+  void GatherPixelRefs(const gfx::Rect&, std::list<skia::LazyPixelRef*>&);
 
 private:
   friend class PicturePile;

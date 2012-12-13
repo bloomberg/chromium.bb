@@ -7,7 +7,14 @@
 #include "cc/picture.h"
 #include "cc/rendering_stats.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkData.h"
+#include "third_party/skia/include/utils/SkPictureUtils.h"
 #include "ui/gfx/rect_conversions.h"
+
+namespace {
+// URI label for a lazily decoded SkPixelRef.
+const char labelLazyDecoded[] = "lazy";
+}
 
 namespace cc {
 
@@ -87,6 +94,34 @@ void Picture::Raster(SkCanvas* canvas) {
   canvas->translate(layer_rect_.x(), layer_rect_.y());
   canvas->drawPicture(*picture_);
   canvas->restore();
+}
+
+void Picture::GatherPixelRefs(const gfx::Rect& rect,
+                              std::list<skia::LazyPixelRef*>& result) {
+  DCHECK(picture_);
+  SkData* pixel_refs = SkPictureUtils::GatherPixelRefs(
+      picture_.get(), SkRect::MakeXYWH(rect.x(),
+                                       rect.y(),
+                                       rect.width(),
+                                       rect.height()));
+  if (!pixel_refs)
+    return;
+
+  void* data = const_cast<void*>(pixel_refs->data());
+  if (!data) {
+    pixel_refs->unref();
+    return;
+  }
+
+  SkPixelRef** refs = reinterpret_cast<SkPixelRef**>(data);
+  for (unsigned int i = 0; i < pixel_refs->size() / sizeof(SkPixelRef*); ++i) {
+    if (*refs && (*refs)->getURI() && !strncmp(
+        (*refs)->getURI(), labelLazyDecoded, 4)) {
+      result.push_back(static_cast<skia::LazyPixelRef*>(*refs));
+    }
+    refs++;
+  }
+  pixel_refs->unref();
 }
 
 }  // namespace cc

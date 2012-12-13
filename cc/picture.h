@@ -5,11 +5,15 @@
 #ifndef CC_PICTURE_H_
 #define CC_PICTURE_H_
 
+#include <list>
+
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "cc/cc_export.h"
+#include "skia/ext/lazy_pixel_ref.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkPicture.h"
+#include "third_party/skia/include/core/SkPixelRef.h"
 #include "ui/gfx/rect.h"
 
 namespace cc {
@@ -38,6 +42,9 @@ public:
   // Raster this Picture's layer_rect into the given canvas.
   // Assumes contentsScale have already been applied.
   void Raster(SkCanvas* canvas);
+
+  void GatherPixelRefs(const gfx::Rect& rect,
+                       std::list<skia::LazyPixelRef*>&);
 
 private:
   Picture(gfx::Rect layer_rect);
