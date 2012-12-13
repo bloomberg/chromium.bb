@@ -837,7 +837,8 @@ ifeq ($(PLATFORM),win)
 	    --prefix=$(PREFIX) \
 	    --without-python \
 	    --host=x86_64-w64-mingw32 \
-	    --target=x86_64-nacl
+	    --target=x86_64-nacl \
+	    --enable-targets=arm-none-nacl-eabi
 	$(MAKE) -C BUILD/build-gdb-$(CROSSARCH) all
 	$(MAKE) -C BUILD/build-gdb-$(CROSSARCH) DESTDIR=$(DESTDIR) install
 else
@@ -847,7 +848,8 @@ else
 	  CFLAGS="$(USER_CFLAGS)" \
 	  ../../SRC/gdb/configure \
 	    --prefix=$(PREFIX) \
-	    --target=x86_64-nacl
+	    --target=x86_64-nacl \
+	    --enable-targets=arm-none-eabi-nacl
 	$(MAKE) -C BUILD/build-gdb-$(CROSSARCH) all
 	$(MAKE) -C BUILD/build-gdb-$(CROSSARCH) DESTDIR=$(DESTDIR) install
 endif
