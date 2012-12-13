@@ -45,6 +45,7 @@ RELATIVE_CWD = {
   'missing_trailing_slash': '.',
   'no_run': '.',
   'non_existent': '.',
+  'split': '.',
   'symlink_full': '.',
   'symlink_partial': '.',
   'touch_only': '.',
@@ -63,6 +64,11 @@ DEPENDENCIES = {
     os.path.join('files1', 'test_file2.txt'),
   ],
   'non_existent': [],
+  'split': [
+    os.path.join('files1', 'subdir', '42.txt'),
+    os.path.join('test', 'data', 'foo.txt'),
+    'split.py',
+  ],
   'symlink_full': [
     os.path.join('files1', 'subdir', '42.txt'),
     os.path.join('files1', 'test_file1.txt'),
@@ -186,6 +192,11 @@ class IsolateModeBase(IsolateBase):
   def _gen_files(self, read_only, empty_file, with_time):
     """Returns a dict of files like calling isolate.process_input() on each
     file.
+
+    Arguments:
+    - read_only: Mark all the 'm' modes without the writeable bit.
+    - empty_file: Add a specific empty file (size 0).
+    - with_time: Include 't' timestamps. For saved state .state files.
     """
     root_dir = ROOT_DIR
     if RELATIVE_CWD[self.case()] == '.':
@@ -245,6 +256,7 @@ class IsolateModeBase(IsolateBase):
       u'command': [],
       u'files': self._gen_files(read_only, empty_file, True),
       u'isolate_file': unicode(self.filename()),
+      u'isolated_files': [self.isolated],
       u'os': unicode(isolate.get_flavor()),
       u'relative_cwd': unicode(RELATIVE_CWD[self.case()]),
       u'variables': {
@@ -266,7 +278,7 @@ class IsolateModeBase(IsolateBase):
   def _expect_no_result(self):
     self.assertFalse(os.path.exists(self.isolated))
 
-  def _execute(self, mode, case, args, need_output):
+  def _execute(self, mode, case, args, need_output, cwd=ROOT_DIR):
     """Executes isolate.py."""
     self.assertEquals(
         case,
@@ -294,7 +306,6 @@ class IsolateModeBase(IsolateBase):
       stderr = None
 
     logging.debug(cmd)
-    cwd = ROOT_DIR
     p = subprocess.Popen(
         cmd,
         stdout=stdout,
@@ -397,6 +408,7 @@ class Isolate(unittest.TestCase):
       # Symlink stuff is unsupported there, remove them from the list.
       files = [f for f in files if not f.startswith('symlink_')]
 
+    files.remove('split')
     # TODO(csharp): touch_only is disabled until crbug.com/150823 is fixed.
     files.remove('touch_only')
 
@@ -412,6 +424,7 @@ class Isolate(unittest.TestCase):
       fixture_name = 'Isolate_%s' % mode
       fixture = getattr(sys.modules[__name__], fixture_name)
       actual_cases = set(i for i in dir(fixture) if i.startswith('test_'))
+      actual_cases.discard('split')
       missing = expected_cases - actual_cases
       self.assertFalse(missing, '%s.%s' % (fixture_name, missing))
 
@@ -471,15 +484,17 @@ class Isolate_check(IsolateModeBase):
 class Isolate_hashtable(IsolateModeBase):
   def _gen_expected_tree(self, empty_file):
     expected = [
-      v['h'] for v in self._gen_files(False, empty_file, False).itervalues()
+      unicode(v['h'])
+      for v in self._gen_files(False, empty_file, False).itervalues()
     ]
-    expected.append(calc_sha1(self.isolated))
+    expected.append(unicode(calc_sha1(self.isolated)))
     return expected
 
   def _expected_hash_tree(self, empty_file):
     """Verifies the files written in the temporary directory."""
     self.assertEquals(
-        sorted(self._gen_expected_tree(empty_file)), self._result_tree())
+        sorted(self._gen_expected_tree(empty_file)),
+        map(unicode, self._result_tree()))
 
   def test_fail(self):
     self._execute('hashtable', 'fail.isolate', [], False)
@@ -501,6 +516,51 @@ class Isolate_hashtable(IsolateModeBase):
     self._execute('hashtable', 'no_run.isolate', [], False)
     self._expected_hash_tree(None)
     self._expect_results([], None, None, None)
+
+  def test_split(self):
+    self._execute(
+        'hashtable',
+        'split.isolate',
+        ['-V', 'DEPTH', '.', '-V', 'PRODUCT_DIR', 'files1'],
+        False,
+        cwd=os.path.join(ROOT_DIR, 'tests', 'isolate'))
+    # Reimplement _expected_hash_tree():
+    tree = self._gen_expected_tree(None)
+    isolated_base = self.isolated[:-len('.isolated')]
+    isolated_hashes = [
+      unicode(calc_sha1(isolated_base + '.0.isolated')),
+      unicode(calc_sha1(isolated_base + '.1.isolated')),
+    ]
+    tree.extend(isolated_hashes)
+    self.assertEquals(sorted(tree), map(unicode, self._result_tree()))
+
+    # Reimplement _expected_result():
+    files = self._gen_files(None, None, False)
+    expected = {
+      u'command': [u'python', u'split.py'],
+      u'files': {u'split.py': files['split.py']},
+      u'includes': isolated_hashes,
+      u'os': unicode(isolate.get_flavor()),
+      u'relative_cwd': unicode(RELATIVE_CWD[self.case()]),
+    }
+    self.assertEquals(expected, json.load(open(self.isolated, 'r')))
+
+    key = os.path.join(u'test', 'data', 'foo.txt')
+    expected = {
+      u'files': {key: files[key]},
+      u'os': unicode(isolate.get_flavor()),
+    }
+    self.assertEquals(
+        expected, json.load(open(isolated_base + '.0.isolated', 'r')))
+
+    key = os.path.join(u'files1', 'subdir', '42.txt')
+    expected = {
+      u'files': {key: files[key]},
+      u'os': unicode(isolate.get_flavor()),
+    }
+    self.assertEquals(
+        expected, json.load(open(isolated_base + '.1.isolated', 'r')))
+
 
   # TODO(csharp): Disabled until crbug.com/150823 is fixed.
   def do_not_test_touch_only(self):

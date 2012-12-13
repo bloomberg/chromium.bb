@@ -1098,6 +1098,42 @@ def load_isolate_for_flavor(content, flavor):
   return config.command, dependencies, touched, config.read_only
 
 
+def chromium_save_isolated(isolated, data, variables):
+  """Writes one or many .isolated files.
+
+  This slightly increases the cold cache cost but greatly reduce the warm cache
+  cost by splitting low-churn files off the master .isolated file. It also
+  reduces overall isolateserver memcache consumption.
+  """
+  slaves = []
+
+  def extract_into_included_isolated(prefix):
+    new_slave = {'files': {}, 'os': data['os']}
+    for f in data['files'].keys():
+      if f.startswith(prefix):
+        new_slave['files'][f] = data['files'].pop(f)
+    if new_slave['files']:
+      slaves.append(new_slave)
+
+  # Split test/data/ in its own .isolated file.
+  extract_into_included_isolated(os.path.join('test', 'data', ''))
+
+  # Split everything out of PRODUCT_DIR in its own .isolated file.
+  if variables.get('PRODUCT_DIR'):
+    extract_into_included_isolated(variables['PRODUCT_DIR'])
+
+  files = [isolated]
+  for index, f in enumerate(slaves):
+    slavepath = isolated[:-len('.isolated')] + '.%d.isolated' % index
+    trace_inputs.write_json(slavepath, f, True)
+    data.setdefault('includes', []).append(
+        isolateserver_archive.sha1_file(slavepath))
+    files.append(slavepath)
+
+  trace_inputs.write_json(isolated, data, True)
+  return files
+
+
 class Flattenable(object):
   """Represents data that can be represented as a json file."""
   MEMBERS = ()
@@ -1156,6 +1192,7 @@ class SavedState(Flattenable):
     'command',
     'files',
     'isolate_file',
+    'isolated_files',
     'os',
     'read_only',
     'relative_cwd',
@@ -1168,9 +1205,14 @@ class SavedState(Flattenable):
     super(SavedState, self).__init__()
     self.command = []
     self.files = {}
+    # Link back to the .isolate file.
     self.isolate_file = None
+    # Used to support/remember 'slave' .isolated files.
+    self.isolated_files = []
     self.read_only = None
     self.relative_cwd = None
+    # Variables are saved so a user can use isolate.py after building and the
+    # GYP variables are still defined.
     self.variables = {}
 
   def update(self, isolate_file, variables):
@@ -1241,6 +1283,7 @@ class SavedState(Flattenable):
     out += '  isolate_file: %s\n' % self.isolate_file
     out += '  read_only: %s\n' % self.read_only
     out += '  relative_cwd: %s' % self.relative_cwd
+    out += '  isolated_files: %s' % self.isolated_files
     out += '  variables: %s' % ''.join(
         '\n    %s=%s' % (k, self.variables[k]) for k in sorted(self.variables))
     out += ')'
@@ -1341,11 +1384,14 @@ class CompleteState(object):
   def save_files(self):
     """Saves self.saved_state and creates a .isolated file."""
     logging.debug('Dumping to %s' % self.isolated_filepath)
-    trace_inputs.write_json(
-        self.isolated_filepath, self.saved_state.to_isolated(), True)
+    self.saved_state.isolated_files = chromium_save_isolated(
+        self.isolated_filepath,
+        self.saved_state.to_isolated(),
+        self.saved_state.variables)
     total_bytes = sum(
         i.get('s', 0) for i in self.saved_state.files.itervalues())
     if total_bytes:
+      # TODO(maruel): Stats are missing the .isolated files.
       logging.debug('Total size: %d bytes' % total_bytes)
     saved_state_file = isolatedfile_to_state(self.isolated_filepath)
     logging.debug('Dumping to %s' % saved_state_file)
@@ -1525,19 +1571,22 @@ def CMDhashtable(args):
       # created (which is probably not intended).
       complete_state.save_files()
 
-      logging.info('Creating content addressed object store with %d item',
-                   len(complete_state.saved_state.files))
-
-      with open(complete_state.isolated_filepath, 'rb') as f:
-        content = f.read()
-      isolated_metadata = {
-        'h': hashlib.sha1(content).hexdigest(),
-        's': len(content),
-        'priority': '0'
-      }
-
       infiles = complete_state.saved_state.files
-      infiles[complete_state.isolated_filepath] = isolated_metadata
+      # Add all the .isolated files.
+      for item in complete_state.saved_state.isolated_files:
+        item_path = os.path.join(
+            os.path.dirname(complete_state.isolated_filepath), item)
+        with open(item_path, 'rb') as f:
+          content = f.read()
+        isolated_metadata = {
+          'h': hashlib.sha1(content).hexdigest(),
+          's': len(content),
+          'priority': '0'
+        }
+        infiles[item_path] = isolated_metadata
+
+      logging.info('Creating content addressed object store with %d item',
+                   len(infiles))
 
       if re.match(r'^https?://.+$', options.outdir):
         isolateserver_archive.upload_sha1_tree(

@@ -58,6 +58,7 @@ class IsolateTest(IsolateBase):
     expected = {
       'command': [],
       'files': {},
+      'isolated_files': [],
       'os': isolate.get_flavor(),
       'variables': {},
     }
@@ -72,6 +73,7 @@ class IsolateTest(IsolateBase):
       'command': [],
       'files': {},
       'isolate_file': unicode(os.path.join(ROOT_DIR, 'maybe')),
+      'isolated_files': [],
       'os': isolate.get_flavor(),
       'variables': {'foo': 42},
     }
@@ -790,7 +792,7 @@ class IsolateLoad(IsolateBase):
 
   def _get_option(self, isolate_file):
     class Options(object):
-      isolated = os.path.join(self.directory, 'isolated')
+      isolated = os.path.join(self.directory, 'foo.isolated')
       outdir = os.path.join(self.directory, 'outdir')
       isolate = isolate_file
       variables = {'foo': 'bar'}
@@ -867,7 +869,7 @@ class IsolateLoad(IsolateBase):
     expected_saved_state = {
       'command': ['python', 'touch_root.py'],
       'files': {
-        os.path.join(u'tests', 'isolate', 'touch_root.py'): {
+        os.path.join('tests', 'isolate', 'touch_root.py'): {
           'm': 488,
           'h': _sha1('tests', 'isolate', 'touch_root.py'),
           's': _size('tests', 'isolate', 'touch_root.py'),
@@ -879,10 +881,12 @@ class IsolateLoad(IsolateBase):
         },
       },
       'isolate_file': isolate_file,
+      'isolated_files': [],
       'os': isolate.get_flavor(),
       'relative_cwd': os.path.join('tests', 'isolate'),
       'variables': {'foo': 'bar'},
     }
+    self._cleanup_isolated(expected_saved_state)
     self._cleanup_saved_state(actual_saved_state)
     self.assertEqual(expected_saved_state, actual_saved_state)
 
@@ -922,10 +926,12 @@ class IsolateLoad(IsolateBase):
         },
       },
       'isolate_file': isolate_file,
+      'isolated_files': [],
       'os': isolate.get_flavor(),
       'relative_cwd': os.path.join('tests', 'isolate'),
       'variables': {'foo': 'bar'},
     }
+    self._cleanup_isolated(expected_saved_state)
     self._cleanup_saved_state(actual_saved_state)
     self.assertEqual(expected_saved_state, actual_saved_state)
 
@@ -965,6 +971,7 @@ class IsolateLoad(IsolateBase):
         },
       },
       'isolate_file': isolate_file,
+      'isolated_files': [],
       'os': isolate.get_flavor(),
       'relative_cwd': os.path.join('tests', 'isolate'),
       'variables': {
@@ -972,6 +979,7 @@ class IsolateLoad(IsolateBase):
         'BAZ': os.path.join('tests', 'isolate'),
       },
     }
+    self._cleanup_isolated(expected_saved_state)
     self._cleanup_saved_state(actual_saved_state)
     self.assertEqual(expected_saved_state, actual_saved_state)
 
@@ -1033,15 +1041,129 @@ class IsolateLoad(IsolateBase):
         },
       },
       'isolate_file': isolate_file,
+      'isolated_files': [],
       'os': isolate.get_flavor(),
       'relative_cwd': os.path.join('tests', 'isolate'),
       'variables': {
         'foo': 'bar',
-        'PRODUCT_DIR': '.', #os.path.join('tests', 'isolate'),
+        'PRODUCT_DIR': '.',
       },
     }
+    self._cleanup_isolated(expected_saved_state)
     self._cleanup_saved_state(actual_saved_state)
     self.assertEqual(expected_saved_state, actual_saved_state)
+    self.assertEqual([], os.listdir(self.directory))
+
+  def test_chromium_split(self):
+    # Create an .isolate file and a tree of random stuff.
+    isolate_file = os.path.join(
+        ROOT_DIR, 'tests', 'isolate', 'split.isolate')
+    options = self._get_option(isolate_file)
+    options.variables = {
+      'DEPTH': '.',
+      'PRODUCT_DIR': os.path.join('files1'),
+    }
+    complete_state = isolate.load_complete_state(
+        options, os.path.join(ROOT_DIR, 'tests', 'isolate'), None)
+    # By saving the files, it forces splitting the data up.
+    complete_state.save_files()
+
+    actual_isolated_master = isolate.trace_inputs.read_json(
+        os.path.join(self.directory, 'foo.isolated'))
+    expected_isolated_master = {
+      u'command': [u'python', u'split.py'],
+      u'files': {
+        u'split.py': {
+          u'm': 488,
+          u'h': unicode(_sha1('tests', 'isolate', 'split.py')),
+          u's': _size('tests', 'isolate', 'split.py'),
+        },
+      },
+      u'includes': [
+        unicode(_sha1(os.path.join(self.directory, 'foo.0.isolated'))),
+        unicode(_sha1(os.path.join(self.directory, 'foo.1.isolated'))),
+      ],
+      u'os': unicode(isolate.get_flavor()),
+      u'relative_cwd': u'.',
+    }
+    self._cleanup_isolated(expected_isolated_master)
+    self.assertEqual(expected_isolated_master, actual_isolated_master)
+
+    actual_isolated_0 = isolate.trace_inputs.read_json(
+        os.path.join(self.directory, 'foo.0.isolated'))
+    expected_isolated_0 = {
+      u'files': {
+        os.path.join(u'test', 'data', 'foo.txt'): {
+          u'm': 416,
+          u'h': unicode(_sha1('tests', 'isolate', 'test', 'data', 'foo.txt')),
+          u's': _size('tests', 'isolate', 'test', 'data', 'foo.txt'),
+        },
+      },
+      u'os': unicode(isolate.get_flavor()),
+    }
+    self._cleanup_isolated(expected_isolated_0)
+    self.assertEqual(expected_isolated_0, actual_isolated_0)
+
+    actual_isolated_1 = isolate.trace_inputs.read_json(
+        os.path.join(self.directory, 'foo.1.isolated'))
+    expected_isolated_1 = {
+      u'files': {
+        os.path.join(u'files1', 'subdir', '42.txt'): {
+          u'm': 416,
+          u'h': unicode(
+              _sha1('tests', 'isolate', 'files1', 'subdir', '42.txt')),
+          u's': _size('tests', 'isolate', 'files1', 'subdir', '42.txt'),
+        },
+      },
+      u'os': unicode(isolate.get_flavor()),
+    }
+    self._cleanup_isolated(expected_isolated_1)
+    self.assertEqual(expected_isolated_1, actual_isolated_1)
+
+    actual_saved_state = isolate.trace_inputs.read_json(
+        isolate.isolatedfile_to_state(options.isolated))
+    expected_saved_state = {
+      u'command': [u'python', u'split.py'],
+      u'files': {
+        os.path.join(u'files1', 'subdir', '42.txt'): {
+          u'm': 416,
+          u'h': unicode(
+            _sha1('tests', 'isolate', 'files1', 'subdir', '42.txt')),
+          u's': _size('tests', 'isolate', 'files1', 'subdir', '42.txt'),
+        },
+        u'split.py': {
+          u'm': 488,
+          u'h': unicode(_sha1('tests', 'isolate', 'split.py')),
+          u's': _size('tests', 'isolate', 'split.py'),
+        },
+        os.path.join(u'test', 'data', 'foo.txt'): {
+          u'm': 416,
+          u'h': unicode(_sha1('tests', 'isolate', 'test', 'data', 'foo.txt')),
+          u's': _size('tests', 'isolate', 'test', 'data', 'foo.txt'),
+        },
+      },
+      u'isolate_file': unicode(isolate_file),
+      u'isolated_files': [
+        unicode(options.isolated),
+        unicode(options.isolated[:-len('.isolated')] + '.0.isolated'),
+        unicode(options.isolated[:-len('.isolated')] + '.1.isolated'),
+      ],
+      u'os': unicode(isolate.get_flavor()),
+      u'relative_cwd': u'.',
+      u'variables': {
+        u'DEPTH': u'.',
+        u'PRODUCT_DIR': u'files1',
+      },
+    }
+    self._cleanup_isolated(expected_saved_state)
+    self._cleanup_saved_state(actual_saved_state)
+    self.assertEqual(expected_saved_state, actual_saved_state)
+    self.assertEqual(
+        [
+          'foo.0.isolated', 'foo.1.isolated',
+          'foo.isolated', 'foo.isolated.state',
+        ],
+        sorted(os.listdir(self.directory)))
 
 
 if __name__ == '__main__':
