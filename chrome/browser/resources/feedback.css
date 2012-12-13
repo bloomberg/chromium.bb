@@ -88,10 +88,20 @@
   -webkit-box-direction: reverse;
 </if>
   display: -webkit-box;
-  padding: 0px 0px 12px;
+  padding: 0 0 12px;
 }
 
 #buttons-pane > input {
   -webkit-margin-end: 0.8em;
   display: block;
+}
+
+#attach-file-note {
+  padding: 10px 0 20px
+}
+
+.attach-file-notification {
+  color: rgb(204, 0, 0);
+  font-weight: bold;
+  padding-left: 20px;
 }

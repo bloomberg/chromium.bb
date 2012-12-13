@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
@@ -318,6 +319,11 @@ ChromeWebUIDataSource* CreateFeedbackUIHTMLSource(bool successful_init) {
                              IDS_FEEDBACK_CHOOSE_DIFFERENT_SCREENSHOT);
   source->AddLocalizedString("choose-original-screenshot",
                              IDS_FEEDBACK_CHOOSE_ORIGINAL_SCREENSHOT);
+  source->AddLocalizedString("attach-file-note",
+                             IDS_FEEDBACK_ATTACH_FILE_NOTE);
+  source->AddLocalizedString("attach-file-to-big",
+                             IDS_FEEDBACK_ATTACH_FILE_TO_BIG);
+  source->AddLocalizedString("reading-file", IDS_FEEDBACK_READING_FILE);
 #else
   source->AddLocalizedString("currentscreenshots",
                              IDS_FEEDBACK_INCLUDE_NEW_SCREEN_IMAGE);
@@ -598,15 +604,6 @@ void FeedbackHandler::HandleSendReport(const ListValue* list_value) {
     LOG(ERROR) << "Bug report hasn't been intialized yet.";
     return;
   }
-  // TODO(rkc): Find a better way to do this check.
-#if defined(OS_CHROMEOS)
-  if (list_value->GetSize() != 6) {
-#else
-  if (list_value->GetSize() != 5) {
-#endif
-    LOG(ERROR) << "Feedback data corrupt! Feedback not sent.";
-    return;
-  }
 
   ListValue::const_iterator i = list_value->begin();
   std::string page_url;
@@ -634,6 +631,21 @@ void FeedbackHandler::HandleSendReport(const ListValue* list_value) {
   // If we aren't sending the sys_info, cancel the gathering of the syslogs.
   if (!send_sys_info)
     CancelFeedbackCollection();
+
+  std::string attached_filename;
+  std::string attached_filedata;
+  // If we have an attached file, we'll still have more data in the list.
+  if (i != list_value->end()) {
+    (*i++)->GetAsString(&attached_filename);
+    std::string encoded_filedata;
+    (*i++)->GetAsString(&encoded_filedata);
+    if (!base::Base64Decode(
+        base::StringPiece(encoded_filedata), &attached_filedata)) {
+      LOG(ERROR) << "Unable to attach file: " << attached_filename;
+      // Clear the filename so feedback_util doesn't try to attach the file.
+      attached_filename = "";
+    }
+  }
 #endif
 
   // Update the data in feedback_data_ so it can be sent
@@ -648,6 +660,8 @@ void FeedbackHandler::HandleSendReport(const ListValue* list_value) {
                              , send_sys_info
                              , false  // sent_report
                              , timestamp_
+                             , attached_filename
+                             , attached_filedata
 #endif
                              );
 

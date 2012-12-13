@@ -124,6 +124,8 @@ void FeedbackData::UpdateData(Profile* profile,
                               , const bool send_sys_info
                               , const bool sent_report
                               , const std::string& timestamp
+                              , const std::string& attached_filename
+                              , const std::string& attached_filedata
 #endif
                               ) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -138,6 +140,8 @@ void FeedbackData::UpdateData(Profile* profile,
   send_sys_info_ = send_sys_info;
   sent_report_ = sent_report;
   timestamp_ = timestamp;
+  attached_filename_ = attached_filename;
+  attached_filedata_ = attached_filedata;
 #endif
 }
 
@@ -165,6 +169,8 @@ void FeedbackData::SendReport() {
                            , zip_content_ ? zip_content_->length() : 0
                            , send_sys_info_ ? sys_info_ : NULL
                            , timestamp_
+                           , attached_filename_
+                           , attached_filedata_
 #endif
                            );
 

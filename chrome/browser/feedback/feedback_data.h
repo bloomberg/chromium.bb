@@ -35,6 +35,8 @@ class FeedbackData {
                   , const bool send_sys_info
                   , const bool sent_report
                   , const std::string& timestamp
+                  , const std::string& attached_filename
+                  , const std::string& attached_filedata
 #endif
                   );
 
@@ -76,6 +78,9 @@ class FeedbackData {
   // Content of the compressed system logs.
   std::string* zip_content_;
   std::string timestamp_;
+  std::string attached_filename_;
+  std::string attached_filedata_;
+
   // NOTE: Extra boolean sent_report_ is required because callback may
   // occur before or after we call SendReport().
   bool sent_report_;

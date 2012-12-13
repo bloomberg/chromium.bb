@@ -5,6 +5,7 @@
 // Constants.
 /** @const */ var FEEDBACK_LANDING_PAGE =
     'https://www.google.com/support/chrome/go/feedback_confirmation';
+/** @const */ var MAX_ATTACH_FILE_SIZE = 3 * 1024 * 1024;
 
 var selectedThumbnailDivId = '';
 var selectedThumbnailId = '';
@@ -16,6 +17,11 @@ savedThumbnailIds['saved-screenshots'] = '';
 
 var categoryTag = '';
 var forceDisableScreenshots = false;
+
+
+// Globals to manage reading data from the attach a file option.
+var attachFileBinaryData = '';
+var lastReader = null;
 
 /**
  * Selects an image thumbnail in the specified div.
@@ -84,6 +90,50 @@ function enableScreenshots() {
 }
 
 /**
+ * Reads the selected file when the user selects a file.
+ * @param {event} evtFileSelected The on changed event for the file input box.
+ */
+function onFileSelected(evtFileSelected) {
+  var file = evtFileSelected.target.files[0];
+  if (file.size > MAX_ATTACH_FILE_SIZE) {
+    $('attach-error').hidden = false;
+
+    // Clear our selected file.
+    $('attach-file').value = '';
+    attachFileBinaryData = null;
+    $('attach-file-checkbox').checked = false;
+
+    return;
+  }
+
+  $('attach-error').hidden = true;
+
+  // Abort an existing file read operation if one exists.
+  if (lastReader) {
+    lastReader.abort();
+    lastReader = null;
+  }
+
+  var reader = new FileReader();
+  reader.onloadend = function(evtLoadEnd) {
+    if (evtLoadEnd.target.readyState == FileReader.DONE) {
+      attachFileBinaryData = evtLoadEnd.target.result;
+      lastReader = null;
+      // Check the checkbox so we do send this file. Users can uncheck the
+      // box if they don't want to send the file.
+      $('attach-file-checkbox').checked = true;
+      $('reading-file').hidden = true;
+      $('send-report-button').disabled = false;
+    }
+  };
+
+  lastReader = reader;
+  reader.readAsBinaryString(file);
+  $('reading-file').hidden = false;
+  $('send-report-button').disabled = true;
+}
+
+/**
  * Sends the report; after the report is sent, we need to be redirected to
  * the landing page, but we shouldn't be able to navigate back, hence
  * we open the landing page in a new tab and sendReport closes this tab.
@@ -114,6 +164,13 @@ function sendReport() {
   // Add chromeos data if it exists.
   if ($('sys-info-checkbox')) {
     reportArray = reportArray.concat([String($('sys-info-checkbox').checked)]);
+  }
+
+  if ($('attach-file-checkbox') &&
+      $('attach-file-checkbox').checked &&
+      attachFileBinaryData) {
+    reportArray = reportArray.concat(
+        [$('attach-file').files[0].name, btoa(attachFileBinaryData)]);
   }
 
   // open the landing page in a new tab, sendReport will close this one.
@@ -198,6 +255,9 @@ function changeToCurrent() {
  * Window onload handler, sets up the page.
  */
 function load() {
+  if ($('attach-file'))
+    $('attach-file').addEventListener('change', onFileSelected);
+
   if ($('sysinfo-url')) {
     $('sysinfo-url').onclick = function(event) {
       chrome.send('openSystemTab');

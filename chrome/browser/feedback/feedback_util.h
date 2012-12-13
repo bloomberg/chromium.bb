@@ -80,6 +80,8 @@ class FeedbackUtil {
       , int zipped_logs_length
       , const chromeos::system::LogDictionaryType* const sys_info
       , const std::string& timestamp
+      , const std::string& attached_filename
+      , const std::string& attached_filedata
 #endif
   );
   // Redirects the user to Google's phishing reporting page.

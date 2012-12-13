@@ -7993,6 +7993,16 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_FEEDBACK_CHOOSE_ORIGINAL_SCREENSHOT" desc="Text for changing the screenshot selection from saved to current">
         (Go back to original screenshot)
       </message>
+      <message name="IDS_FEEDBACK_ATTACH_FILE_NOTE" desc="Text for describing the maximum size for an attached file">
+        To help fix your issue, often having the source file on hand helps.&lt;br&gt;
+        Note: You can attach one file per feedback report (3 MB limit)
+      </message>
+      <message name="IDS_FEEDBACK_READING_FILE" desc="Text to display if reading a file when the user clicks the send report button">
+        Reading file..
+      </message>
+      <message name="IDS_FEEDBACK_ATTACH_FILE_TO_BIG" desc="Text to display if the file being attached is too big">
+        Selected file is too big.
+      </message>
       <message name="IDS_FEEDBACK_PRIVACY_NOTE" desc="Text for the privacy note included with Chrome OS">
         Your Chrome and Operating system version will be submitted in addition
         to any information you choose to include above. This feedback is used to

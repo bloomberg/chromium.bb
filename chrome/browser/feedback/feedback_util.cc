@@ -71,6 +71,7 @@ const int kHttpPostFailServerError = 500;
 #if defined(OS_CHROMEOS)
 const char kBZip2MimeType[] = "application/x-bzip2";
 const char kLogsAttachmentName[] = "system_logs.bz2";
+const char kArbitraryMimeType[] = "application/octet-stream";
 #endif
 
 const int64 kInitialRetryDelay = 900000;  // 15 minutes
@@ -242,6 +243,8 @@ void FeedbackUtil::SendReport(
     , int zipped_logs_length
     , const chromeos::system::LogDictionaryType* const sys_info
     , const std::string& timestamp
+    , const std::string& attached_filename
+    , const std::string& attached_filedata
 #endif
     ) {
   // Create google feedback protocol buffer objects
@@ -334,6 +337,14 @@ void FeedbackUtil::SendReport(
 
   if (timestamp != "")
     AddFeedbackData(&feedback_data, std::string(kTimestampTag), timestamp);
+
+  if (attached_filename != "") {
+    userfeedback::ProductSpecificBinaryData attached_file;
+    attached_file.set_mime_type(kArbitraryMimeType);
+    attached_file.set_name(attached_filename);
+    attached_file.set_data(attached_filedata);
+    *(feedback_data.add_product_specific_binary_data()) = attached_file;
+  }
 #endif
 
   // Set our category tag if we have one
