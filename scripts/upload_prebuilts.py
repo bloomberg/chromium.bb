@@ -156,7 +156,7 @@ def RevGitFile(filename, value, retries=5, key='PORTAGE_BINHOST', dryrun=False):
 
 def GetVersion():
   """Get the version to put in LATEST and update the git version with."""
-  return datetime.datetime.now().strftime('%d.%m.%y.%H%M%S')
+  return datetime.datetime.now().strftime('%Y.%m.%d.%H%M%S')
 
 
 def _GsUpload(local_file, remote_file, acl):
