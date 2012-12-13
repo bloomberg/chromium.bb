@@ -212,8 +212,7 @@ bool SQLiteCursor::GetFavicon(history::FaviconID id,
         base::Bind(&SQLiteCursor::GetFaviconForIDInUIThread,
                    base::Unretained(this), id,
                    base::Bind(&SQLiteCursor::OnFaviconData,
-                              base::Unretained(this)),
-                   &tracker_));
+                              base::Unretained(this))));
 
     if (test_observer_)
       test_observer_->OnPostGetFaviconTask();
@@ -234,10 +233,11 @@ bool SQLiteCursor::GetFavicon(history::FaviconID id,
 
 void SQLiteCursor::GetFaviconForIDInUIThread(
     history::FaviconID id,
-    const FaviconService::FaviconRawCallback& callback,
-    CancelableTaskTracker* tracker) {
+    const FaviconService::FaviconRawCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  favicon_service_->GetLargestRawFaviconForID(id, callback, tracker);
+  if (!tracker_.get())
+    tracker_.reset(new CancelableTaskTracker());
+  favicon_service_->GetLargestRawFaviconForID(id, callback, tracker_.get());
 }
 
 
@@ -260,8 +260,11 @@ void SQLiteCursor::OnMoved(AndroidHistoryProviderService::Handle handle,
 
 void SQLiteCursor::CancelAllRequests(base::WaitableEvent* finished) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  consumer_.CancelAllRequests();
-  tracker_.TryCancelAll();
+
+  // Destruction will cancel all pending tasks.
+  consumer_.reset();
+  tracker_.reset();
+
   if (finished)
     finished->Signal();
 }
@@ -275,7 +278,9 @@ SQLiteCursor::JavaColumnType SQLiteCursor::GetColumnTypeInternal(int column) {
 
 void SQLiteCursor::RunMoveStatementOnUIThread(int pos) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!consumer_.get())
+    consumer_.reset(new CancelableRequestConsumer());
   service_->MoveStatement(
-      statement_, position_, pos, &consumer_,
+      statement_, position_, pos, consumer_.get(),
       base::Bind(&SQLiteCursor::OnMoved, base::Unretained(this)));
 }

@@ -147,8 +147,7 @@ class SQLiteCursor {
 
   void GetFaviconForIDInUIThread(
       history::FaviconID id,
-      const FaviconService::FaviconRawCallback& callback,
-      CancelableTaskTracker* tracker);
+      const FaviconService::FaviconRawCallback& callback);
 
   // The callback function of FaviconService::GetLargestRawFaviconForID().
   void OnFaviconData(const history::FaviconBitmapResult& bitmap_result);
@@ -180,8 +179,9 @@ class SQLiteCursor {
 
   FaviconService* favicon_service_;
 
-  CancelableRequestConsumer consumer_;
-  CancelableTaskTracker tracker_;
+  // Live on UI thread.
+  scoped_ptr<CancelableRequestConsumer> consumer_;
+  scoped_ptr<CancelableTaskTracker> tracker_;
 
   // The count of result rows.
   int count_;
