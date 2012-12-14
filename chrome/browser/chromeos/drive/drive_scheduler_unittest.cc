@@ -150,7 +150,7 @@ class FakeDriveService : public DriveServiceInterface {
 
   virtual void AddNewDirectory(const GURL& parent_content_url,
                                const FilePath::StringType& directory_name,
-                               const GetDataCallback& callback) {
+                               const GetResourceEntryCallback& callback) {
   }
 
   virtual void DownloadFile(

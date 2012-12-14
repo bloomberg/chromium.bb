@@ -207,7 +207,7 @@ class DriveFileSyncClient
 
   void DidCreateDirectory(const ResourceIdCallback& callback,
                           google_apis::GDataErrorCode error,
-                          scoped_ptr<base::Value> data);
+                          scoped_ptr<google_apis::ResourceEntry> entry);
 
   void SearchFilesInDirectory(const std::string& directory_resource_id,
                               const std::string& search_query,

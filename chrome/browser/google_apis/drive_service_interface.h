@@ -228,7 +228,7 @@ class DriveServiceInterface {
   // |callback| must not be null.
   virtual void AddNewDirectory(const GURL& parent_content_url,
                                const FilePath::StringType& directory_name,
-                               const GetDataCallback& callback) = 0;
+                               const GetResourceEntryCallback& callback) = 0;
 
   // Downloads a file identified by its |content_url|. The downloaded file will
   // be stored at |local_cache_path| location. Upon completion, invokes

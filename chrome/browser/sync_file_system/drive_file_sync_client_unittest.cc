@@ -172,12 +172,12 @@ ACTION_P2(InvokeGetResourceEntryCallback1, error, result) {
       base::Bind(arg1, error, base::Passed(&entry)));
 }
 
-// Invokes |arg2| as a GetDataCallback.
-ACTION_P2(InvokeGetDataCallback2, error, result) {
-  scoped_ptr<base::Value> value(result.Pass());
+// Invokes |arg2| as a GetResourceEntryCallback.
+ACTION_P2(InvokeGetResourceEntryCallback2, error, result) {
+  scoped_ptr<google_apis::ResourceEntry> entry(result.Pass());
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(arg2, error, base::Passed(&value)));
+      base::Bind(arg2, error, base::Passed(&entry)));
 }
 
 // Invokes |arg5| as a GetResourceListCallback.
@@ -305,8 +305,11 @@ TEST_F(DriveFileSyncClientTest, CreateSyncRoot) {
   scoped_ptr<google_apis::ResourceList> not_found_result =
       google_apis::ResourceList::ExtractAndParse(*not_found_result_value);
 
-  scoped_ptr<base::Value> created_result(google_apis::test_util::LoadJSONFile(
-      "sync_file_system/sync_root_created.json").Pass());
+  scoped_ptr<base::Value> created_result_value(
+      google_apis::test_util::LoadJSONFile(
+          "sync_file_system/sync_root_created.json").Pass());
+  scoped_ptr<google_apis::ResourceEntry> created_result =
+      google_apis::ResourceEntry::ExtractAndParse(*created_result_value);
 
   // Expected to call GetResourceList from GetDriveDirectoryForSyncRoot.
   EXPECT_CALL(*mock_drive_service(),
@@ -326,8 +329,8 @@ TEST_F(DriveFileSyncClientTest, CreateSyncRoot) {
                   GURL(),  // content_url
                   FilePath().AppendASCII(kSyncRootDirectoryName).value(),
                   _))
-      .WillOnce(InvokeGetDataCallback2(google_apis::HTTP_CREATED,
-                                       base::Passed(&created_result)));
+      .WillOnce(InvokeGetResourceEntryCallback2(google_apis::HTTP_CREATED,
+                                                base::Passed(&created_result)));
 
   bool done = false;
   GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
@@ -393,8 +396,11 @@ TEST_F(DriveFileSyncClientTest, CreateOriginDirectory) {
           "sync_file_system/origin_directory_get_parent.json").Pass());
   scoped_ptr<google_apis::ResourceEntry> got_parent_result
       = google_apis::ResourceEntry::ExtractAndParse(*got_parent_result_value);
-  scoped_ptr<base::Value> created_result(google_apis::test_util::LoadJSONFile(
-      "sync_file_system/origin_directory_created.json").Pass());
+  scoped_ptr<base::Value> created_result_value(
+      google_apis::test_util::LoadJSONFile(
+          "sync_file_system/origin_directory_created.json").Pass());
+  scoped_ptr<google_apis::ResourceEntry> created_result =
+      google_apis::ResourceEntry::ExtractAndParse(*created_result_value);
 
   testing::InSequence sequence;
 
@@ -423,8 +429,8 @@ TEST_F(DriveFileSyncClientTest, CreateOriginDirectory) {
               AddNewDirectory(GURL("https://sync_root_content_url"),
                               FilePath().AppendASCII(dir_title).value(),
                               _))
-      .WillOnce(InvokeGetDataCallback2(google_apis::HTTP_CREATED,
-                                       base::Passed(&created_result)));
+      .WillOnce(InvokeGetResourceEntryCallback2(google_apis::HTTP_CREATED,
+                                                base::Passed(&created_result)));
 
   bool done = false;
   GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;

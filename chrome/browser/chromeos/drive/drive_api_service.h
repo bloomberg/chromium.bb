@@ -107,7 +107,7 @@ class DriveAPIService : public google_apis::DriveServiceInterface,
   virtual void AddNewDirectory(
       const GURL& parent_content_url,
       const FilePath::StringType& directory_name,
-      const google_apis::GetDataCallback& callback) OVERRIDE;
+      const google_apis::GetResourceEntryCallback& callback) OVERRIDE;
   virtual void InitiateUpload(
       const google_apis::InitiateUploadParams& params,
       const google_apis::InitiateUploadCallback& callback) OVERRIDE;

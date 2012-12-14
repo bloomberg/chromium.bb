@@ -315,7 +315,7 @@ void DriveAPIService::DeleteResource(
 void DriveAPIService::AddNewDirectory(
     const GURL& parent_content_url,
     const FilePath::StringType& directory_name,
-    const google_apis::GetDataCallback& callback) {
+    const google_apis::GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 

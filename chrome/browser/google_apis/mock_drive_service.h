@@ -75,7 +75,7 @@ class MockDriveService : public DriveServiceInterface {
   MOCK_METHOD3(AddNewDirectory,
       void(const GURL& parent_content_url,
           const FilePath::StringType& directory_name,
-          const GetDataCallback& callback));
+          const GetResourceEntryCallback& callback));
   MOCK_METHOD5(
       DownloadFile,
       void(const FilePath& virtual_path,
@@ -172,7 +172,7 @@ class MockDriveService : public DriveServiceInterface {
   // |directory_data_|.
   void CreateDirectoryStub(const GURL& parent_content_url,
       const FilePath::StringType& directory_name,
-      const GetDataCallback& callback);
+      const GetResourceEntryCallback& callback);
 
   // Will call |callback| with HTTP_SUCCESS, the given URL, and the host+path
   // portion of the URL as the temporary file path. If |file_data_| is not null,

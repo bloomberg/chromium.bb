@@ -382,9 +382,11 @@ IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest,
 
   // First, file browser will try to create new directory.
   scoped_ptr<base::Value> dir_value(LoadJSONFile(kTestDirectory));
+  scoped_ptr<google_apis::ResourceEntry> dir_resource_entry =
+      google_apis::ResourceEntry::ExtractAndParse(*dir_value);
   EXPECT_CALL(*mock_drive_service_, AddNewDirectory(_, _, _))
       .WillOnce(MockCreateDirectoryCallback(
-          google_apis::HTTP_SUCCESS, &dir_value));
+          google_apis::HTTP_SUCCESS, &dir_resource_entry));
 
   // Then the test will try to read an existing file file.
   // Remote filesystem should first request root feed from gdata server.

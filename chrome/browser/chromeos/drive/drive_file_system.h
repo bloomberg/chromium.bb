@@ -343,10 +343,10 @@ class DriveFileSystem : public DriveFileSystemInterface,
       scoped_ptr<google_apis::AccountMetadataFeed> account_metadata);
 
   // Callback for handling directory create requests. Adds the directory
-  // represented by |created_entry| to the local filesystem.
+  // represented by |entry| to the local filesystem.
   void AddNewDirectory(const CreateDirectoryParams& params,
                        google_apis::GDataErrorCode status,
-                       scoped_ptr<base::Value> created_entry);
+                       scoped_ptr<google_apis::ResourceEntry> entry);
 
   // Callback for DriveResourceMetadata::AddEntryToDirectory. Continues the
   // recursive creation of a directory path by calling CreateDirectory again.

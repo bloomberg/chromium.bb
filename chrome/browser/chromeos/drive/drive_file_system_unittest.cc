@@ -336,8 +336,10 @@ class DriveFileSystemTest : public testing::Test {
                                                   false,  // is_exclusive
                                                   false,  // is_recursive
         base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
+    scoped_ptr<google_apis::ResourceEntry> entry =
+          google_apis::ResourceEntry::ExtractAndParse(*atom);
     file_system_->AddNewDirectory(
-        params, google_apis::HTTP_SUCCESS, atom.Pass());
+        params, google_apis::HTTP_SUCCESS, entry.Pass());
     google_apis::test_util::RunBlockingPoolTask();
     EXPECT_EQ(DRIVE_FILE_OK, error);
   }

@@ -313,12 +313,12 @@ ACTION_P2(InvokeGetResourceEntryCallback1, error, result) {
       base::Bind(arg1, error, base::Passed(&entry)));
 }
 
-// Invokes |arg2| as a GetDataCallback.
-ACTION_P2(InvokeGetDataCallback2, error, result) {
-  scoped_ptr<base::Value> value(result.Pass());
+// Invokes |arg2| as a GetResourceEntryCallback.
+ACTION_P2(InvokeGetResourceEntryCallback2, error, result) {
+  scoped_ptr<google_apis::ResourceEntry> entry(result.Pass());
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(arg2, error, base::Passed(&value)));
+      base::Bind(arg2, error, base::Passed(&entry)));
 }
 
 // Invokes |arg5| as a GetResourceListCallback.
@@ -504,13 +504,16 @@ TEST_F(DriveFileSyncServiceTest, RegisterNewOrigin) {
           google_apis::HTTP_SUCCESS,
           base::Passed(&sync_root_entry)));
 
-  scoped_ptr<Value> origin_directory_created(LoadJSONFile(
+  scoped_ptr<Value> origin_directory_created_value(LoadJSONFile(
       "sync_file_system/origin_directory_created.json"));
+  scoped_ptr<google_apis::ResourceEntry> origin_directory_created
+      = google_apis::ResourceEntry::ExtractAndParse(
+          *origin_directory_created_value);
   FilePath::StringType dirname = FilePath().AppendASCII(
       DriveFileSyncClient::OriginToDirectoryTitle(kOrigin)).value();
   EXPECT_CALL(*mock_drive_service(),
               AddNewDirectory(kSyncRootContentURL, dirname, _))
-      .WillOnce(InvokeGetDataCallback2(
+      .WillOnce(InvokeGetResourceEntryCallback2(
           google_apis::HTTP_SUCCESS,
           base::Passed(&origin_directory_created)));
 

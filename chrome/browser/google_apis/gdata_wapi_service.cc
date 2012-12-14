@@ -373,7 +373,7 @@ void GDataWapiService::DeleteResource(
 void GDataWapiService::AddNewDirectory(
     const GURL& parent_content_url,
     const FilePath::StringType& directory_name,
-    const GetDataCallback& callback) {
+    const GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -381,7 +381,8 @@ void GDataWapiService::AddNewDirectory(
       new CreateDirectoryOperation(operation_registry(),
                                    url_request_context_getter_,
                                    url_generator_,
-                                   callback,
+                                   base::Bind(&ParseResourceEntryAndRun,
+                                              callback),
                                    parent_content_url,
                                    directory_name));
 }

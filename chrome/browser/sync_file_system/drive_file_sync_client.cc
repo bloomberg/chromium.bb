@@ -213,7 +213,7 @@ void DriveFileSyncClient::DidGetParentDirectoryForCreateDirectory(
 void DriveFileSyncClient::DidCreateDirectory(
     const ResourceIdCallback& callback,
     google_apis::GDataErrorCode error,
-    scoped_ptr<base::Value> data) {
+    scoped_ptr<google_apis::ResourceEntry> entry) {
   DCHECK(CalledOnValidThread());
 
   if (error != google_apis::HTTP_SUCCESS &&
@@ -225,8 +225,6 @@ void DriveFileSyncClient::DidCreateDirectory(
 
   // TODO(tzik): Confirm if there's no confliction. If another client tried
   // to create the directory, we might make duplicated directories.
-  scoped_ptr<google_apis::ResourceEntry> entry(
-      google_apis::ResourceEntry::ExtractAndParse(*data));
   DCHECK(entry);
   callback.Run(error, entry->resource_id());
 }

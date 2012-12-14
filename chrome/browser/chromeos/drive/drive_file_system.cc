@@ -1313,7 +1313,7 @@ void DriveFileSystem::OnGetAccountMetadata(
 void DriveFileSystem::AddNewDirectory(
     const CreateDirectoryParams& params,
     google_apis::GDataErrorCode status,
-    scoped_ptr<base::Value> data) {
+    scoped_ptr<google_apis::ResourceEntry> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!params.callback.is_null());
 
@@ -1325,8 +1325,7 @@ void DriveFileSystem::AddNewDirectory(
 
   resource_metadata_->AddEntryToDirectory(
       params.created_directory_path.DirName(),
-      scoped_ptr<google_apis::ResourceEntry>(
-          google_apis::ResourceEntry::ExtractAndParse(*data)),
+      entry.Pass(),
       base::Bind(&DriveFileSystem::ContinueCreateDirectory,
                  ui_weak_ptr_,
                  params));

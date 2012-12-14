@@ -159,11 +159,13 @@ void MockDriveService::RemoveResourceFromDirectoryStub(
 void MockDriveService::CreateDirectoryStub(
     const GURL& parent_content_url,
     const FilePath::StringType& directory_name,
-    const GetDataCallback& callback) {
+    const GetResourceEntryCallback& callback) {
+  scoped_ptr<ResourceEntry> resource_entry =
+      ResourceEntry::ExtractAndParse(*directory_data_);
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(callback, HTTP_SUCCESS,
-                 base::Passed(&directory_data_)));
+                 base::Passed(&resource_entry)));
 }
 
 void MockDriveService::DownloadFileStub(

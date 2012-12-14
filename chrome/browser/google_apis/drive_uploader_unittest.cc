@@ -139,9 +139,10 @@ class MockDriveServiceBase : public DriveServiceInterface {
       const EntryActionCallback& callback) OVERRIDE {
     NOTREACHED();
   }
-  virtual void AddNewDirectory(const GURL& parent_content_url,
-                               const FilePath::StringType& directory_name,
-                               const GetDataCallback& callback) OVERRIDE {
+  virtual void AddNewDirectory(
+      const GURL& parent_content_url,
+      const FilePath::StringType& directory_name,
+      const GetResourceEntryCallback& callback) OVERRIDE {
     NOTREACHED();
   }
   virtual void DownloadFile(

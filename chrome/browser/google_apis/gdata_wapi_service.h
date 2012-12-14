@@ -105,7 +105,7 @@ class GDataWapiService : public DriveServiceInterface,
   virtual void AddNewDirectory(
       const GURL& parent_content_url,
       const FilePath::StringType& directory_name,
-      const GetDataCallback& callback) OVERRIDE;
+      const GetResourceEntryCallback& callback) OVERRIDE;
   virtual void InitiateUpload(
       const InitiateUploadParams& params,
       const InitiateUploadCallback& callback) OVERRIDE;
