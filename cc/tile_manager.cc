@@ -170,6 +170,20 @@ void TileManager::RegisterTile(Tile* tile) {
 }
 
 void TileManager::UnregisterTile(Tile* tile) {
+  for (TileList::iterator it = tiles_with_image_decoding_tasks_.begin();
+       it != tiles_with_image_decoding_tasks_.end(); it++) {
+    if (*it == tile) {
+      tiles_with_image_decoding_tasks_.erase(it);
+      break;;
+    }
+  }
+  for (TileVector::iterator it = tiles_that_need_to_be_rasterized_.begin();
+       it != tiles_that_need_to_be_rasterized_.end(); it++) {
+    if (*it == tile) {
+      tiles_that_need_to_be_rasterized_.erase(it);
+      break;
+    }
+  }
   for (TileVector::iterator it = tiles_.begin(); it != tiles_.end(); it++) {
     if (*it == tile) {
       FreeResourcesForTile(tile);
