@@ -84,13 +84,31 @@ sigchld_handler(int signal_number, void *data)
 	return 1;
 }
 
+static void
+weston_output_transform_init(struct weston_output *output, uint32_t transform);
+
 WL_EXPORT int
 weston_output_switch_mode(struct weston_output *output, struct weston_mode *mode)
 {
+	int ret;
+
 	if (!output->switch_mode)
 		return -1;
 
-	return output->switch_mode(output, mode);
+	ret = output->switch_mode(output, mode);
+	if (ret < 0)
+		return ret;
+
+	/* Update output region and transformation matrix */
+	weston_output_transform_init(output, output->transform);
+
+	pixman_region32_init(&output->previous_damage);
+	pixman_region32_init_rect(&output->region, output->x, output->y,
+				  output->width, output->height);
+
+	weston_output_update_matrix(output);
+
+	return ret;
 }
 
 WL_EXPORT void

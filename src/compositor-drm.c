@@ -1041,8 +1041,6 @@ drm_output_switch_mode(struct weston_output *output_base, struct weston_mode *mo
 
 	/*update output*/
 	output->base.current = &drm_mode->base;
-	output->base.dirty = 1;
-	weston_output_move(&output->base, output->base.x, output->base.y);
 	return 0;
 
 err_gl:
