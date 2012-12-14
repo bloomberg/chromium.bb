@@ -147,6 +147,10 @@ void BrowserInstantController::ActiveTabChanged() {
   instant_.ActiveTabChanged();
 }
 
+void BrowserInstantController::TabDeactivated(content::WebContents* contents) {
+  instant_.TabDeactivated(contents);
+}
+
 void BrowserInstantController::SetContentHeight(int height) {
   OnThemeAreaHeightChanged(height);
 }

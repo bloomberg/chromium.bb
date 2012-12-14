@@ -106,6 +106,9 @@ class InstantController {
   // newly active tab is an Instant search results page.
   void ActiveTabChanged();
 
+  // The user is about to switch tabs. Commit the preview if needed.
+  void TabDeactivated(content::WebContents* contents);
+
   // Sets whether Instant should show result previews.
   void SetInstantEnabled(bool instant_enabled);
 

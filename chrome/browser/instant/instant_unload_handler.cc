@@ -63,9 +63,15 @@ InstantUnloadHandler::~InstantUnloadHandler() {
 void InstantUnloadHandler::RunUnloadListenersOrDestroy(
     content::WebContents* contents,
     int index) {
+  DCHECK(!contents->GetDelegate());
+
   if (!contents->NeedToFireBeforeUnload()) {
     // Tab doesn't have any beforeunload listeners and can be safely deleted.
-    delete contents;
+    // However, the tab object should not be deleted immediately because when we
+    // get here from BrowserInstantController::TabDeactivated, other tab
+    // observers may still expect to interact with the tab before the event has
+    // finished propagating.
+    MessageLoop::current()->DeleteSoon(FROM_HERE, contents);
     return;
   }
 

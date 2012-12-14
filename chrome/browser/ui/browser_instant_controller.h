@@ -76,6 +76,9 @@ class BrowserInstantController : public content::NotificationObserver,
   // Invoked by |browser_| when the active tab changes.
   void ActiveTabChanged();
 
+  // Invoked by |browser_| when the active tab is about to be deactivated.
+  void TabDeactivated(content::WebContents* contents);
+
   // Invoked by |BrowserWindow| during layout to set content height which is
   // used as theme area height, i.e. the height of the area that the entire
   // theme background image should fill up.

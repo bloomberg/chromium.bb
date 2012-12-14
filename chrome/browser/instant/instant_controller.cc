@@ -25,6 +25,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/web_contents.h"
 #include "net/base/escape.h"
 #include "unicode/normalizer2.h"
 
@@ -633,6 +634,12 @@ void InstantController::ActiveTabChanged() {
 
   if (extended_enabled_)
     ResetInstantTab();
+}
+
+void InstantController::TabDeactivated(content::WebContents* contents) {
+  DVLOG(1) << "TabDeactivated";
+  if (extended_enabled_ && !contents->IsBeingDestroyed())
+    CommitIfPossible(INSTANT_COMMIT_FOCUS_LOST);
 }
 
 void InstantController::SetInstantEnabled(bool instant_enabled) {

@@ -1094,6 +1094,9 @@ void Browser::TabDeactivated(WebContents* contents) {
   // Save what the user's currently typing, so it can be restored when we
   // switch back to this tab.
   window_->GetLocationBar()->SaveStateToContents(contents);
+
+  if (instant_controller_)
+    instant_controller_->TabDeactivated(contents);
 }
 
 void Browser::ActiveTabChanged(WebContents* old_contents,
