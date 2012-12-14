@@ -8584,7 +8584,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
 
       <!-- Cloud Print proxy strings -->
       <message name="IDS_CLOUD_PRINT_CHROMEOS_OPTION_LABEL" desc="Label for the cloud print section of the Chrome OS advanced options dialog.">
-        Set up or manage printers in <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph>
+        Set up or manage printers in <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph>.
       </message>
       <message name="IDS_CLOUD_PRINT_CHROMEOS_OPTION_BUTTON" desc="Text on a button to go to the cloud print home page from the Chrome OS advanced options dialog.">
         Open <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph>
@@ -10423,7 +10423,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         Reopen the pages that were open last
       </message>
       <message name="IDS_OPTIONS_STARTUP_RESTORE_LAST_SESSION" desc="The label of the 'Continue where I left off' startup option radio button">
-        Continue where I left off
+        Continue where I left off.
       </message>
       <message name="IDS_OPTIONS_STARTUP_SHOW_PAGES" desc="The label of the 'Show these pages:' startup option radio button">
         Open a specific page or set of pages.
