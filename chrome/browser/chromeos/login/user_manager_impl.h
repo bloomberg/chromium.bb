@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/login/wallpaper_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chrome/browser/policy/device_local_account_policy_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -32,9 +33,11 @@ namespace chromeos {
 class RemoveUserDelegate;
 
 // Implementation of the UserManager.
-class UserManagerImpl : public UserManager,
-                        public ProfileSyncServiceObserver,
-                        public content::NotificationObserver {
+class UserManagerImpl
+    : public UserManager,
+      public ProfileSyncServiceObserver,
+      public content::NotificationObserver,
+      public policy::DeviceLocalAccountPolicyService::Observer {
  public:
   virtual ~UserManagerImpl();
 
@@ -95,6 +98,10 @@ class UserManagerImpl : public UserManager,
   // ProfileSyncServiceObserver implementation.
   virtual void OnStateChanged() OVERRIDE;
 
+  // policy::DeviceLocalAccountPolicyService::Observer implementation.
+  virtual void OnPolicyUpdated(const std::string& account_id) OVERRIDE;
+  virtual void OnDeviceLocalAccountsChanged() OVERRIDE;
+
  private:
   friend class UserManagerImplWrapper;
   friend class WallpaperManager;
@@ -150,8 +157,15 @@ class UserManagerImpl : public UserManager,
   // updated list of public accounts is received from policy.
   bool UpdateAndCleanUpPublicAccounts(const base::ListValue& public_accounts);
 
+  // Updates the display name for public account |username| from policy settings
+  // associated with that username.
+  void UpdatePublicAccountDisplayName(const std::string& username);
+
   // Interface to the signed settings store.
   CrosSettings* cros_settings_;
+
+  // Interface to device-local account definitions and associated policy.
+  policy::DeviceLocalAccountPolicyService* device_local_account_policy_service_;
 
   // True if users have been loaded from prefs already.
   bool users_loaded_;

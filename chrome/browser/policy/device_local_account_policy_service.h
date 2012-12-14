@@ -49,6 +49,10 @@ class DeviceLocalAccountPolicyBroker {
   // Reads the refresh delay from policy and configures the refresh scheduler.
   void UpdateRefreshDelay();
 
+  // Retrieves the display name for the account as stored in policy. Returns an
+  // empty string if the policy is not present.
+  std::string GetDisplayName() const;
+
  private:
   const std::string account_id_;
   scoped_ptr<DeviceLocalAccountPolicyStore> store_;

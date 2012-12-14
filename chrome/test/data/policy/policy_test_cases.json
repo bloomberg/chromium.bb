@@ -1541,6 +1541,10 @@
     ]
   },
 
+  "UserDisplayName": {
+    "os": ["chromeos"]
+  },
+
   "----- Chrome OS device policies ---------------------------------------": {},
 
   "DevicePolicyRefreshRate": {

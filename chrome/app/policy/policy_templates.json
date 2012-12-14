@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 168
+#   For your editing convenience: highest ID currently used: 169
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -3815,6 +3815,26 @@
       If you set this policy, users cannot change or override it.
 
       If the policy is left not set, users can choose whether the shelf should auto-hide.''',
+    },
+    {
+      'name': 'UserDisplayName',
+      'type': 'string',
+      'schema': { 'type': 'string' },
+      'supported_on': ['chrome_os:25-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': 'Policy User',
+      'id': 169,
+      'caption': '''Set the display name for device-local accounts''',
+      'desc': '''Controls the account name <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> shows on the login screen for the corresponding device-local account.
+
+      If this policy is set, the login screen will use the specified string in the picture-based login chooser for the corresponding device-local account.
+
+      If the policy is left not set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will use the device-local account's email account ID as the display name on the login screen.
+
+      This policy is ignored for regular user accounts.''',
     },
   ],
   'messages': {

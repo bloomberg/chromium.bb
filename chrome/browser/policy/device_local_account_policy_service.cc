@@ -52,6 +52,15 @@ void DeviceLocalAccountPolicyBroker::UpdateRefreshDelay() {
   }
 }
 
+std::string DeviceLocalAccountPolicyBroker::GetDisplayName() const {
+  std::string display_name;
+  const base::Value* display_name_value =
+      store_->policy_map().GetValue(policy::key::kUserDisplayName);
+  if (display_name_value)
+    display_name_value->GetAsString(&display_name);
+  return display_name;
+}
+
 DeviceLocalAccountPolicyService::DeviceLocalAccountPolicyService(
     chromeos::SessionManagerClient* session_manager_client,
     chromeos::DeviceSettingsService* device_settings_service)

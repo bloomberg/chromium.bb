@@ -40,6 +40,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "policy/policy_constants.h"
 
 using content::BrowserThread;
 
@@ -161,6 +162,7 @@ void UserManager::RegisterPrefs(PrefService* local_state) {
 
 UserManagerImpl::UserManagerImpl()
     : cros_settings_(CrosSettings::Get()),
+      device_local_account_policy_service_(NULL),
       users_loaded_(false),
       logged_in_user_(NULL),
       session_started_(false),
@@ -194,6 +196,8 @@ void UserManagerImpl::Shutdown() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   cros_settings_->RemoveSettingsObserver(kAccountsPrefDeviceLocalAccounts,
                                          this);
+  if (device_local_account_policy_service_)
+    device_local_account_policy_service_->RemoveObserver(this);
 }
 
 UserImageManager* UserManagerImpl::GetUserImageManager() {
@@ -471,6 +475,13 @@ void UserManagerImpl::Observe(int type,
                               const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_OWNERSHIP_STATUS_CHANGED:
+      if (!device_local_account_policy_service_) {
+        device_local_account_policy_service_ =
+            g_browser_process->browser_policy_connector()->
+                GetDeviceLocalAccountPolicyService();
+        if (device_local_account_policy_service_)
+          device_local_account_policy_service_->AddObserver(this);
+      }
       CheckOwnership();
       RetrieveTrustedDevicePolicies();
       break;
@@ -513,6 +524,15 @@ void UserManagerImpl::OnStateChanged() {
     SaveUserOAuthStatus(logged_in_user_->email(),
                         User::OAUTH_TOKEN_STATUS_INVALID);
   }
+}
+
+void UserManagerImpl::OnPolicyUpdated(const std::string& account_id) {
+  UpdatePublicAccountDisplayName(account_id);
+}
+
+void UserManagerImpl::OnDeviceLocalAccountsChanged() {
+  // No action needed here, changes to the list of device-local accounts get
+  // handled via the kAccountsPrefDeviceLocalAccounts device setting observer.
 }
 
 bool UserManagerImpl::IsCurrentUserOwner() const {
@@ -686,6 +706,7 @@ void UserManagerImpl::EnsureUsersLoaded() {
   for (std::vector<std::string>::const_iterator it = public_accounts.begin();
        it != public_accounts.end(); ++it) {
     users_.push_back(User::CreatePublicAccountUser(*it));
+    UpdatePublicAccountDisplayName(*it);
   }
 
   user_image_manager_->LoadUserImages(users_);
@@ -903,12 +924,28 @@ bool UserManagerImpl::UpdateAndCleanUpPublicAccounts(
       users_.insert(users_.begin(), GetLoggedInUser());
     else
       users_.insert(users_.begin(), User::CreatePublicAccountUser(*it));
+    UpdatePublicAccountDisplayName(*it);
   }
 
   user_image_manager_->LoadUserImages(
       UserList(users_.begin(), users_.begin() + new_public_accounts.size()));
 
   return true;
+}
+
+void UserManagerImpl::UpdatePublicAccountDisplayName(
+    const std::string& username) {
+  std::string display_name;
+
+  if (device_local_account_policy_service_) {
+    policy::DeviceLocalAccountPolicyBroker* broker =
+        device_local_account_policy_service_->GetBrokerForAccount(username);
+    if (broker)
+      display_name = broker->GetDisplayName();
+  }
+
+  // Set or clear the display name.
+  SaveUserDisplayName(username, UTF8ToUTF16(display_name));
 }
 
 }  // namespace chromeos
