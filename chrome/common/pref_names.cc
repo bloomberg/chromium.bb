@@ -827,7 +827,7 @@ const char kDeauthorizeContentLicenses[] =
 const char kDeleteTimePeriod[] = "browser.clear_data.time_period";
 
 // Boolean pref to define the default values for using spellchecker.
-const char kEnableSpellCheck[] = "browser.enable_spellchecking";
+const char kEnableContinuousSpellcheck[] = "browser.enable_spellchecking";
 
 // List of names of the enabled labs experiments (see chrome/browser/labs.cc).
 const char kEnabledLabsExperiments[] = "browser.enabled_labs_experiments";

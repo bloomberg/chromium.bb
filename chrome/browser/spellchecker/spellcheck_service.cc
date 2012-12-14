@@ -49,7 +49,7 @@ SpellcheckService::SpellcheckService(Profile* profile)
       base::Bind(&SpellcheckService::OnSpellCheckDictionaryChanged,
                  base::Unretained(this)));
   pref_change_registrar_.Add(
-      prefs::kEnableSpellCheck,
+      prefs::kEnableContinuousSpellcheck,
       base::Bind(&SpellcheckService::InitForAllRenderers,
                  base::Unretained(this)));
 
@@ -185,7 +185,7 @@ void SpellcheckService::InitForRenderer(content::RenderProcessHost* process) {
       hunspell_dictionary_->GetLanguage(),
       prefs->GetBoolean(prefs::kEnableAutoSpellCorrect)));
   process->Send(new SpellCheckMsg_EnableSpellCheck(
-      prefs->GetBoolean(prefs::kEnableSpellCheck)));
+      prefs->GetBoolean(prefs::kEnableContinuousSpellcheck)));
 }
 
 SpellCheckHostMetrics* SpellcheckService::GetMetrics() const {

@@ -300,7 +300,7 @@ class SpellCheckRenderViewObserver : public content::RenderViewHostObserver {
       Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
       DCHECK(profile);
       spellcheckChecked_ =
-          profile->GetPrefs()->GetBoolean(prefs::kEnableSpellCheck);
+          profile->GetPrefs()->GetBoolean(prefs::kEnableContinuousSpellcheck);
       NSCellStateValue checkedState =
           spellcheckChecked_ ? NSOnState : NSOffState;
       [(id)item setState:checkedState];
@@ -361,8 +361,8 @@ class SpellCheckRenderViewObserver : public content::RenderViewHostObserver {
   Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
   DCHECK(profile);
   PrefService* pref = profile->GetPrefs();
-  pref->SetBoolean(prefs::kEnableSpellCheck,
-                   !pref->GetBoolean(prefs::kEnableSpellCheck));
+  pref->SetBoolean(prefs::kEnableContinuousSpellcheck,
+                   !pref->GetBoolean(prefs::kEnableContinuousSpellcheck));
 }
 
 - (void)spellCheckEnabled:(BOOL)enabled checked:(BOOL)checked {

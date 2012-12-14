@@ -105,7 +105,7 @@ bool SpellingServiceClient::RequestTextCheck(
 
 bool SpellingServiceClient::IsAvailable(Profile* profile, ServiceType type) {
   const PrefService* pref = profile->GetPrefs();
-  if (!pref->GetBoolean(prefs::kEnableSpellCheck) ||
+  if (!pref->GetBoolean(prefs::kEnableContinuousSpellcheck) ||
       !pref->GetBoolean(prefs::kSpellCheckUseSpellingService))
     return false;
 

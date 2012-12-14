@@ -302,7 +302,7 @@ TEST_F(SpellingServiceClientTest, RequestTextCheck) {
   };
 
   PrefService* pref = profile_.GetPrefs();
-  pref->SetBoolean(prefs::kEnableSpellCheck, true);
+  pref->SetBoolean(prefs::kEnableContinuousSpellcheck, true);
   pref->SetBoolean(prefs::kSpellCheckUseSpellingService, true);
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTests); ++i) {
@@ -334,12 +334,12 @@ TEST_F(SpellingServiceClientTest, AvailableServices) {
   // When a user disables spellchecking or prevent using the Spelling service,
   // this function should return false both for suggestions and for spellcheck.
   PrefService* pref = profile_.GetPrefs();
-  pref->SetBoolean(prefs::kEnableSpellCheck, false);
+  pref->SetBoolean(prefs::kEnableContinuousSpellcheck, false);
   pref->SetBoolean(prefs::kSpellCheckUseSpellingService, false);
   EXPECT_FALSE(client_.IsAvailable(&profile_, kSuggest));
   EXPECT_FALSE(client_.IsAvailable(&profile_, kSpellcheck));
 
-  pref->SetBoolean(prefs::kEnableSpellCheck, true);
+  pref->SetBoolean(prefs::kEnableContinuousSpellcheck, true);
   pref->SetBoolean(prefs::kSpellCheckUseSpellingService, true);
 
   // For locales supported by the SpellCheck service, this function returns

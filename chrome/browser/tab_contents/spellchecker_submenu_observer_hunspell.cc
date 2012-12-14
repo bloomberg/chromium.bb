@@ -114,7 +114,7 @@ bool SpellCheckerSubMenuObserver::IsCommandIdChecked(int command_id) {
   if (command_id == IDC_CHECK_SPELLING_WHILE_TYPING) {
     Profile* profile = proxy_->GetProfile();
     DCHECK(profile);
-    return profile->GetPrefs()->GetBoolean(prefs::kEnableSpellCheck);
+    return profile->GetPrefs()->GetBoolean(prefs::kEnableContinuousSpellcheck);
   }
 
   return false;
@@ -128,7 +128,7 @@ bool SpellCheckerSubMenuObserver::IsCommandIdEnabled(int command_id) {
   const PrefService* pref = profile->GetPrefs();
   if (command_id >= IDC_SPELLCHECK_LANGUAGES_FIRST &&
       command_id < IDC_SPELLCHECK_LANGUAGES_LAST) {
-    return pref->GetBoolean(prefs::kEnableSpellCheck);
+    return pref->GetBoolean(prefs::kEnableContinuousSpellcheck);
   }
 
   switch (command_id) {
@@ -162,8 +162,8 @@ void SpellCheckerSubMenuObserver::ExecuteCommand(int command_id) {
   switch (command_id) {
     case IDC_CHECK_SPELLING_WHILE_TYPING:
       profile->GetPrefs()->SetBoolean(
-          prefs::kEnableSpellCheck,
-          !profile->GetPrefs()->GetBoolean(prefs::kEnableSpellCheck));
+          prefs::kEnableContinuousSpellcheck,
+          !profile->GetPrefs()->GetBoolean(prefs::kEnableContinuousSpellcheck));
     break;
   }
 }

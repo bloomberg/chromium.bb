@@ -82,7 +82,7 @@ bool SpellCheckerSubMenuObserver::IsCommandIdChecked(int command_id) {
   if (command_id == IDC_CHECK_SPELLING_WHILE_TYPING) {
     Profile* profile = proxy_->GetProfile();
     DCHECK(profile);
-    return profile->GetPrefs()->GetBoolean(prefs::kEnableSpellCheck);
+    return profile->GetPrefs()->GetBoolean(prefs::kEnableContinuousSpellcheck);
   }
 
   return false;
@@ -111,8 +111,8 @@ void SpellCheckerSubMenuObserver::ExecuteCommand(int command_id) {
   switch (command_id) {
     case IDC_CHECK_SPELLING_WHILE_TYPING:
       profile->GetPrefs()->SetBoolean(
-          prefs::kEnableSpellCheck,
-          !profile->GetPrefs()->GetBoolean(prefs::kEnableSpellCheck));
+          prefs::kEnableContinuousSpellcheck,
+          !profile->GetPrefs()->GetBoolean(prefs::kEnableContinuousSpellcheck));
       break;
 
     case IDC_SPELLPANEL_TOGGLE:

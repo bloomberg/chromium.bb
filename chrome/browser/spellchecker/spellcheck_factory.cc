@@ -40,7 +40,7 @@ ProfileKeyedService* SpellcheckServiceFactory::BuildServiceInstanceFor(
 
   // Instantiates Metrics object for spellchecking for use.
   spellcheck->StartRecordingMetrics(
-      profile->GetPrefs()->GetBoolean(prefs::kEnableSpellCheck));
+      profile->GetPrefs()->GetBoolean(prefs::kEnableContinuousSpellcheck));
 
   return spellcheck;
 }
@@ -56,7 +56,7 @@ void SpellcheckServiceFactory::RegisterUserPrefs(PrefService* user_prefs) {
   user_prefs->RegisterBooleanPref(prefs::kSpellCheckUseSpellingService,
                                   false,
                                   PrefService::UNSYNCABLE_PREF);
-  user_prefs->RegisterBooleanPref(prefs::kEnableSpellCheck,
+  user_prefs->RegisterBooleanPref(prefs::kEnableContinuousSpellcheck,
                                   true,
                                   PrefService::SYNCABLE_PREF);
   user_prefs->RegisterBooleanPref(prefs::kEnableAutoSpellCorrect,

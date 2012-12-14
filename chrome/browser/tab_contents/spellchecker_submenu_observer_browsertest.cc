@@ -137,7 +137,7 @@ IN_PROC_BROWSER_TEST_F(SpellCheckerSubMenuObserverTest, ToggleSpelling) {
   menu->SetObserver(observer.get());
   menu->GetPrefs()->SetString(prefs::kAcceptLanguages, "en-US");
   menu->GetPrefs()->SetString(prefs::kSpellCheckDictionary, "en-US");
-  menu->GetPrefs()->SetBoolean(prefs::kEnableSpellCheck, true);
+  menu->GetPrefs()->SetBoolean(prefs::kEnableContinuousSpellcheck, true);
   content::ContextMenuParams params;
   observer->InitMenu(params);
 
@@ -150,6 +150,7 @@ IN_PROC_BROWSER_TEST_F(SpellCheckerSubMenuObserverTest, ToggleSpelling) {
   // not checked. Also, verify that the value of "browser.enable_spellchecking"
   // is now false.
   menu->ExecuteCommand(IDC_CHECK_SPELLING_WHILE_TYPING);
-  EXPECT_FALSE(menu->GetPrefs()->GetBoolean(prefs::kEnableSpellCheck));
+  EXPECT_FALSE(
+      menu->GetPrefs()->GetBoolean(prefs::kEnableContinuousSpellcheck));
   EXPECT_FALSE(menu->IsCommandIdChecked(IDC_CHECK_SPELLING_WHILE_TYPING));
 }
