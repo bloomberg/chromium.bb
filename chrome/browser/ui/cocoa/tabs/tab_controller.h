@@ -50,6 +50,7 @@ class MenuDelegate;
   BOOL app_;
   BOOL mini_;
   BOOL pinned_;
+  BOOL projecting_;
   BOOL active_;
   BOOL selected_;
   GURL url_;
@@ -68,6 +69,10 @@ class MenuDelegate;
 @property(assign, nonatomic) BOOL app;
 @property(assign, nonatomic) BOOL mini;
 @property(assign, nonatomic) BOOL pinned;
+// A tab is called "projecting" when a video/audio stream of its contents is
+// being captured and perhaps streamed remotely. We add a favicon glow animation
+// in this state to notify the user.
+@property(assign, nonatomic) BOOL projecting;
 // Note that |-selected| will return YES if the controller is |-active|, too.
 // |-setSelected:| affects the selection, while |-setActive:| affects the key
 // status/focus of the content.

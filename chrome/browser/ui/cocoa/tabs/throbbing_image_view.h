@@ -14,11 +14,13 @@
 class ThrobbingImageViewAnimationDelegate;
 
 @interface ThrobbingImageView : NSView {
- @private
+ @protected
   scoped_nsobject<NSImage> backgroundImage_;
   scoped_nsobject<NSImage> throbImage_;
-  scoped_ptr<ThrobbingImageViewAnimationDelegate> delegate_;
   scoped_ptr<ui::ThrobAnimation> throbAnimation_;
+
+ @private
+  scoped_ptr<ThrobbingImageViewAnimationDelegate> delegate_;
 }
 
 - (id)initWithFrame:(NSRect)rect

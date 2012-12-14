@@ -729,6 +729,8 @@
         'browser/ui/cocoa/tabs/dock_info_mac.cc',
         'browser/ui/cocoa/tabs/tab_controller.h',
         'browser/ui/cocoa/tabs/tab_controller.mm',
+        'browser/ui/cocoa/tabs/tab_projecting_image_view.h',
+        'browser/ui/cocoa/tabs/tab_projecting_image_view.mm',
         'browser/ui/cocoa/tabs/tab_strip_controller.h',
         'browser/ui/cocoa/tabs/tab_strip_controller.mm',
         'browser/ui/cocoa/tabs/tab_strip_drag_controller.h',

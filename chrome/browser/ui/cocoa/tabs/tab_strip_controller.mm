@@ -42,6 +42,7 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
 #import "chrome/browser/ui/cocoa/tabs/throbber_view.h"
+#import "chrome/browser/ui/cocoa/tabs/tab_projecting_image_view.h"
 #import "chrome/browser/ui/cocoa/tabs/throbbing_image_view.h"
 #import "chrome/browser/ui/cocoa/tracking_area.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
@@ -100,9 +101,12 @@ const CGFloat kNewTabButtonOffset = 8.0;
 // Time (in seconds) in which tabs animate to their final position.
 const NSTimeInterval kAnimationDuration = 0.125;
 
-// The amount by wich the profile menu button is offset (from tab tabs or new
+// The amount by which the profile menu button is offset (from tab tabs or new
 // tab button).
 const CGFloat kProfileMenuButtonOffset = 6.0;
+
+// The width and height of the icon + glow for projecting mode.
+const CGFloat kProjectingIconWidthAndHeight = 32.0;
 
 // Throbbing duration on webrtc "this web page is watching you" favicon overlay.
 const int kRecordingDurationMs = 1000;
@@ -1483,9 +1487,26 @@ private:
         NSImageView* imageView = [self iconImageViewForContents:contents];
 
         ui::ThemeProvider* theme = [[tabStripView_ window] themeProvider];
-        if (chrome::ShouldShowRecordingIndicator(contents) && theme) {
-          NSImage* recording = theme->GetNSImageNamed(IDR_TAB_RECORDING, true);
+        if (theme && [tabController projecting]) {
+          NSImage* projectorGlow =
+              theme->GetNSImageNamed(IDR_TAB_CAPTURE_GLOW, true);
+          NSImage* projector = theme->GetNSImageNamed(IDR_TAB_CAPTURE, true);
 
+          NSRect frame = NSMakeRect(0,
+                                    0,
+                                    kProjectingIconWidthAndHeight,
+                                    kProjectingIconWidthAndHeight);
+          TabProjectingImageView* projectingView =
+              [[[TabProjectingImageView alloc] initWithFrame:frame
+                                         backgroundImage:[imageView image]
+                                          projectorImage:projector
+                                              throbImage:projectorGlow
+                                              durationMS:kRecordingDurationMs]
+                  autorelease];
+
+          iconView = projectingView;
+        } else if (theme && chrome::ShouldShowRecordingIndicator(contents)) {
+          NSImage* recording = theme->GetNSImageNamed(IDR_TAB_RECORDING, true);
           NSRect frame =
               NSMakeRect(0, 0, kIconWidthAndHeight, kIconWidthAndHeight);
           ThrobbingImageView* recordingView =
@@ -1515,7 +1536,7 @@ private:
     }
 
     [tabController setIconView:iconView];
-    if (iconView) {
+    if (iconView && ![tabController projecting]) {
       // See the comment above kTabOverlap for why these DCHECKs exist.
       DCHECK_GE(NSMinX([iconView frame]), kTabOverlap);
       // TODO(thakis): Ideally, this would be true too, but it's not true in
@@ -1545,6 +1566,7 @@ private:
   }
 
   TabController* tabController = [tabArray_ objectAtIndex:index];
+  [tabController setProjecting:chrome::ShouldShowProjectingIndicator(contents)];
 
   if (change != TabStripModelObserver::LOADING_ONLY)
     [self setTabTitle:tabController withContents:contents];

@@ -25,6 +25,7 @@
 @synthesize loadingState = loadingState_;
 @synthesize mini = mini_;
 @synthesize pinned = pinned_;
+@synthesize projecting = projecting_;
 @synthesize target = target_;
 @synthesize url = url_;
 
@@ -221,7 +222,24 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 - (void)setIconView:(NSView*)iconView {
   [iconView_ removeFromSuperview];
   iconView_.reset([iconView retain]);
-  if ([self app] || [self mini]) {
+  if ([self projecting] && [self loadingState] == kTabDone) {
+    // When projecting we have bigger iconView to accommodate the glow
+    // animation, so this frame should be double the size of a favicon.
+    NSRect iconFrame = [iconView frame];
+
+    // Center the iconView given it's double regular size.
+    if ([self app] || [self mini]) {
+      const CGFloat tabWidth = [self app] ? [TabController appTabWidth]
+                                          : [TabController miniTabWidth];
+      iconFrame.origin.x = std::floor((tabWidth - NSWidth(iconFrame)) / 2.0);
+    } else {
+      iconFrame.origin.x = std::floor(originalIconFrame_.origin.x / 2.0);
+    }
+
+    iconFrame.origin.y = -std::ceil(originalIconFrame_.origin.y / 2.0);
+
+    [iconView_ setFrame:iconFrame];
+  } else if ([self app] || [self mini]) {
     NSRect appIconFrame = [iconView frame];
     appIconFrame.origin = originalIconFrame_.origin;
 

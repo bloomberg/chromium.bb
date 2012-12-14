@@ -1312,6 +1312,7 @@
         'browser/ui/cocoa/table_row_nsimage_cache_unittest.mm',
         'browser/ui/cocoa/tabpose_window_unittest.mm',
         'browser/ui/cocoa/tabs/tab_controller_unittest.mm',
+        'browser/ui/cocoa/tabs/tab_projecting_image_view_unittest.mm',
         'browser/ui/cocoa/tabs/tab_strip_controller_unittest.mm',
         'browser/ui/cocoa/tabs/tab_strip_view_unittest.mm',
         'browser/ui/cocoa/tabs/tab_view_unittest.mm',
