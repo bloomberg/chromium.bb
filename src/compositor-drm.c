@@ -1272,6 +1272,40 @@ find_crtc_for_connector(struct drm_compositor *ec,
 	return -1;
 }
 
+/* Init output state that depends on gl or gbm */
+static int
+drm_output_init_egl(struct drm_output *output, struct drm_compositor *ec)
+{
+	output->surface = gbm_surface_create(ec->gbm,
+					     output->base.current->width,
+					     output->base.current->height,
+					     GBM_FORMAT_XRGB8888,
+					     GBM_BO_USE_SCANOUT |
+					     GBM_BO_USE_RENDERING);
+	if (!output->surface) {
+		weston_log("failed to create gbm surface\n");
+		return -1;
+	}
+
+	if (gl_renderer_output_create(&output->base, output->surface) < 0) {
+		gbm_surface_destroy(output->surface);
+		return -1;
+	}
+
+	output->cursor_bo[0] =
+		gbm_bo_create(ec->gbm, 64, 64, GBM_FORMAT_ARGB8888,
+			      GBM_BO_USE_CURSOR_64X64 | GBM_BO_USE_WRITE);
+	output->cursor_bo[1] =
+		gbm_bo_create(ec->gbm, 64, 64, GBM_FORMAT_ARGB8888,
+			      GBM_BO_USE_CURSOR_64X64 | GBM_BO_USE_WRITE);
+	if (output->cursor_bo[0] == NULL || output->cursor_bo[1] == NULL) {
+		weston_log("cursor buffers unavailable, using gl cursors\n");
+		ec->cursors_are_broken = 1;
+	}
+
+	return 0;
+}
+
 static int
 create_output_for_connector(struct drm_compositor *ec,
 			    drmModeRes *resources,
@@ -1405,33 +1439,13 @@ create_output_for_connector(struct drm_compositor *ec,
 
 	output->base.current->flags |= WL_OUTPUT_MODE_CURRENT;
 
-	output->surface = gbm_surface_create(ec->gbm,
-					     output->base.current->width,
-					     output->base.current->height,
-					     GBM_FORMAT_XRGB8888,
-					     GBM_BO_USE_SCANOUT |
-					     GBM_BO_USE_RENDERING);
-	if (!output->surface) {
-		weston_log("failed to create gbm surface\n");
-		goto err_free;
-	}
-
 	weston_output_init(&output->base, &ec->base, x, y,
 			   connector->mmWidth, connector->mmHeight,
 			   o ? o->transform : WL_OUTPUT_TRANSFORM_NORMAL);
 
-	if (gl_renderer_output_create(&output->base, output->surface) < 0)
+	if (drm_output_init_egl(output, ec) < 0) {
+		weston_log("Failed to init output gl state\n");
 		goto err_output;
-
-	output->cursor_bo[0] =
-		gbm_bo_create(ec->gbm, 64, 64, GBM_FORMAT_ARGB8888,
-			      GBM_BO_USE_CURSOR_64X64 | GBM_BO_USE_WRITE);
-	output->cursor_bo[1] =
-		gbm_bo_create(ec->gbm, 64, 64, GBM_FORMAT_ARGB8888,
-			      GBM_BO_USE_CURSOR_64X64 | GBM_BO_USE_WRITE);
-	if (output->cursor_bo[0] == NULL || output->cursor_bo[1] == NULL) {
-		weston_log("cursor buffers unavailable, using gl cursors\n");
-		ec->cursors_are_broken = 1;
 	}
 
 	output->backlight = backlight_init(drm_device,
@@ -1469,7 +1483,6 @@ create_output_for_connector(struct drm_compositor *ec,
 
 err_output:
 	weston_output_destroy(&output->base);
-	gbm_surface_destroy(output->surface);
 err_free:
 	wl_list_for_each_safe(drm_mode, next, &output->base.mode_list,
 							base.link) {
