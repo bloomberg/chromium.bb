@@ -369,9 +369,10 @@ namespace downloads {
     // |downloadId|: The identifier for the downloaded file.
     static void show(long downloadId);
 
-    // Erase matching $ref:DownloadItem from history
-    [nodoc] static void erase(DownloadQuery query,
-                              optional EraseCallback callback);
+    // Erase matching $ref:DownloadItem from history. An $ref.onErased event
+    // will fire for each $ref.DownloadItem that matches <code>query</code>,
+    // then <code>callback</code> will be called.
+    static void erase(DownloadQuery query, optional EraseCallback callback);
 
     // TODO(benjhayden) Comment.
     [nodoc] static void setDestination(long downloadId, DOMString relativePath);

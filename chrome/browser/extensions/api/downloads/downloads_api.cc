@@ -748,9 +748,8 @@ bool DownloadsCancelFunction::RunImpl() {
   // |download_item| can be NULL if the download ID was invalid or if the
   // download is not currently active.  Either way, we don't consider it a
   // failure.
-  if (error_.empty())
-    RecordApiFunctions(DOWNLOADS_FUNCTION_CANCEL);
-  return error_.empty();
+  RecordApiFunctions(DOWNLOADS_FUNCTION_CANCEL);
+  return true;
 }
 
 DownloadsEraseFunction::DownloadsEraseFunction() {}
@@ -760,10 +759,26 @@ bool DownloadsEraseFunction::RunImpl() {
   scoped_ptr<extensions::api::downloads::Erase::Params> params(
       extensions::api::downloads::Erase::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
-  error_ = download_extension_errors::kNotImplementedError;
-  if (error_.empty())
-    RecordApiFunctions(DOWNLOADS_FUNCTION_ERASE);
-  return error_.empty();
+  DownloadManager* manager = NULL;
+  DownloadManager* incognito_manager = NULL;
+  GetManagers(profile(), include_incognito(), &manager, &incognito_manager);
+  DownloadQuery::DownloadVector results;
+  RunDownloadQuery(params->query,
+                   manager,
+                   incognito_manager,
+                   &error_,
+                   &results);
+  if (!error_.empty())
+    return false;
+  base::ListValue* json_results = new base::ListValue();
+  for (DownloadManager::DownloadVector::const_iterator it = results.begin();
+       it != results.end(); ++it) {
+    json_results->Append(base::Value::CreateIntegerValue((*it)->GetId()));
+    (*it)->Remove();
+  }
+  SetResult(json_results);
+  RecordApiFunctions(DOWNLOADS_FUNCTION_ERASE);
+  return true;
 }
 
 DownloadsSetDestinationFunction::DownloadsSetDestinationFunction() {}

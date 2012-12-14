@@ -7,7 +7,6 @@
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
-#include "base/json/json_writer.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
@@ -878,7 +877,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
-                       DownloadExtensionTest_PauseResumeCancel) {
+                       DownloadExtensionTest_PauseResumeCancelErase) {
   DownloadItem* download_item = CreateSlowTestDownload();
   ASSERT_TRUE(download_item);
 
@@ -941,6 +940,22 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       new DownloadsResumeFunction(), "[-42]");
   EXPECT_STREQ(download_extension_errors::kInvalidOperationError,
                error.c_str());
+
+  int id = download_item->GetId();
+  scoped_ptr<base::Value> result(RunFunctionAndReturnResult(
+      new DownloadsEraseFunction(),
+      base::StringPrintf("[{\"id\": %d}]", id)));
+  DownloadManager::DownloadVector items;
+  GetCurrentManager()->GetAllDownloads(&items);
+  EXPECT_EQ(0UL, items.size());
+  ASSERT_TRUE(result);
+  download_item = NULL;
+  base::ListValue* result_list = NULL;
+  ASSERT_TRUE(result->GetAsList(&result_list));
+  ASSERT_EQ(1UL, result_list->GetSize());
+  int element = -1;
+  ASSERT_TRUE(result_list->GetInteger(0, &element));
+  EXPECT_EQ(id, element);
 }
 
 scoped_refptr<UIThreadExtensionFunction> MockedGetFileIconFunction(

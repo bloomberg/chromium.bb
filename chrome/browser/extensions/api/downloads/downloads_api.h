@@ -115,7 +115,7 @@ class DownloadsCancelFunction : public SyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsCancelFunction);
 };
 
-class DownloadsEraseFunction : public AsyncExtensionFunction {
+class DownloadsEraseFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("downloads.erase");
   DownloadsEraseFunction();
