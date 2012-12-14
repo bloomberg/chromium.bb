@@ -220,6 +220,11 @@ void UserPolicySigninService::InitializeUserCloudPolicyManager() {
 }
 
 void UserPolicySigninService::ShutdownUserCloudPolicyManager() {
+  // Stop any in-progress token fetch.
+  oauth2_access_token_fetcher_.reset();
+  user_info_fetcher_.reset();
+  oauth_access_token_.clear();
+
   StopObserving();
   NotifyPendingFetchCallback(false);
 
