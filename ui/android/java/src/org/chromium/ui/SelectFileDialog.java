@@ -27,12 +27,6 @@ import org.chromium.ui.gfx.NativeWindow;
  */
 @JNINamespace("ui")
 class SelectFileDialog implements NativeWindow.IntentCallback{
-    // TODO (aurimas): Move these constants into strings.xml within ui (after crbug.com/136704 is
-    //                 fixed) to support internationalization.
-    private static final String LOW_MEMORY_ERROR =
-            "Unable to complete previous operation due to low memory";
-    private static final String OPENING_FILE_ERROR = "Failed to open selected file";
-
     private static final String IMAGE_TYPE = "image/";
     private static final String VIDEO_TYPE = "video/";
     private static final String AUDIO_TYPE = "audio/";
@@ -73,16 +67,17 @@ class SelectFileDialog implements NativeWindow.IntentCallback{
         Intent camcorder = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
         Intent soundRecorder = new Intent(
                 MediaStore.Audio.Media.RECORD_SOUND_ACTION);
+        String lowMemoryError = window.getContext().getString(R.string.low_memory_error);
 
         // Quick check - if a capture parameter other than filesystem (the default) is specified we
         // should just launch the appropriate intent. Otherwise build up a chooser based on the
         // accept type and then display that to the user.
         if (captureCamera()) {
-            if (window.showIntent(camera, this, LOW_MEMORY_ERROR)) return;
+            if (window.showIntent(camera, this, lowMemoryError)) return;
         } else if (captureCamcorder()) {
-            if (window.showIntent(camcorder, this, LOW_MEMORY_ERROR)) return;
+            if (window.showIntent(camcorder, this, lowMemoryError)) return;
         } else if (captureMicrophone()) {
-            if (window.showIntent(soundRecorder, this, LOW_MEMORY_ERROR)) return;
+            if (window.showIntent(soundRecorder, this, lowMemoryError)) return;
         }
 
         Intent getContentIntent = new Intent(Intent.ACTION_GET_CONTENT);
@@ -117,7 +112,7 @@ class SelectFileDialog implements NativeWindow.IntentCallback{
 
         chooser.putExtra(Intent.EXTRA_INTENT, getContentIntent);
 
-        if (!window.showIntent(chooser, this, LOW_MEMORY_ERROR)) onFileNotSelected();
+        if (!window.showIntent(chooser, this, lowMemoryError)) onFileNotSelected();
     }
 
     /**
@@ -186,7 +181,8 @@ class SelectFileDialog implements NativeWindow.IntentCallback{
         }
         if (!success) {
             onFileNotSelected();
-            window.showError(OPENING_FILE_ERROR);
+            String openingFileError = window.getContext().getString(R.string.opening_file_error);
+            window.showError(openingFileError);
         }
     }
 
