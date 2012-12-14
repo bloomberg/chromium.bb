@@ -21,7 +21,9 @@ LOCAL_SRC_FILES += \
     $(call all-java-files-under, ../ui/android/java/resource_map) \
 
 # contentview and its dependencies
-LOCAL_AIDL_INCLUDES := $(LOCAL_PATH)/../content/public/android/java/src
+LOCAL_AIDL_INCLUDES := \
+    $(LOCAL_PATH)/../content/public/android/java/src \
+    $(LOCAL_PATH)/../third_party/eyesfree/src/android/java/src
 LOCAL_SRC_FILES += \
     $(call all-java-files-under, ../content/public/android/java/src) \
     ../content/public/android/java/src/org/chromium/content/common/ISandboxedProcessCallback.aidl \
@@ -30,6 +32,8 @@ LOCAL_SRC_FILES += \
     $(call all-java-files-under, ../media/base/android/java/src) \
     $(call all-java-files-under, ../net/android/java/src) \
     $(call all-java-files-under, ../ui/android/java/src) \
+    $(call all-java-files-under, ../third_party/eyesfree/src/android/java/src) \
+    $(call all-Iaidl-files-under, ../third_party/eyesfree/src/android/java/src)
 
 # browser components
 LOCAL_SRC_FILES += \
