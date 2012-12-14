@@ -1121,14 +1121,6 @@ TEST_F(ValidatorTests, CheckPushSpUnpredictable) {
                        "push {sp} (A2 a8-248) should be unpredictable");
 }
 
-TEST_F(ValidatorTests, CheckPushPcUnpredictable) {
-  // Run test to verify that "Push {pc}", encoding A2 on a8-248 of ARM manual,
-  // is unsafe.
-  all_cond_values_fail(0xe52dF004,  // push {pc}
-                       kDefaultBaseAddr,
-                       "push {pc} (A2 A8-248) should be unpredictable");
-}
-
 TEST_F(ValidatorTests, ConditionalBreakpoints) {
   ProblemSpy spy;
   arm_inst bkpt = 0xE1200070;  // BKPT #0

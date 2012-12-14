@@ -118,6 +118,8 @@
 #       as "base + immediate". (missing implies false).
 # is_literal_load: Checks whether the instruction is a PC-relative
 #       load plus immediate.
+# is_load_tp: Checks if r9 is used to load a thread pointer (missing
+#       implies false).
 # pool_head: Defines instruction to start a literal pool.
 #       (missing implies false).
 # relative: Defines if the instruction is a direct relative
@@ -1174,96 +1176,157 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | else:                              = Undefined     # Note on page A5-18
 +--
 
-# TODO(karl): Add uses to corresponding classes.
+
 +-- load_store_word_and_unsigned_byte (See Section A5.3)
+# Instructions that use Rt and an immediate value.
+*LdRtPcImm
+  { cond(31:28), U(23), Rt(15:12), imm12(11:0) }
+  baseline := Load2RegisterImm12Op;
+  imm32 := ZeroExtend(imm12, 32);
+  add := U=1;
+  base := Pc;
+  defs := {Rt};
+  uses := {Pc};
+  is_literal_load := true;
+*LdRtPcImmB *LdRtPcImm
+  safety := Rt == Pc => UNPREDICTABLE;
+
+# Instructions that use Rt, Rn, and an immediate value.
+*RtRnImm
+  { cond(31:28), P(24), U(23), W(21), Rn(19:16), Rt(15:12), imm12(11:0) }
+  imm32 := ZeroExtend(imm12, 32);
+  index := P=1; add := U=1; wback := P=0 | W=1;
+  base := Rn;
+  small_imm_base_wb := wback;
+*LdRtRnImm *RtRnImm
+  baseline := Load2RegisterImm12Op;
+  defs := {Rt, base if wback else None};
+  uses := {Rn};
+  safety := Rn == Pc => DECODER_ERROR &
+            P=0 & W=1 => DECODER_ERROR &
+            wback & Rn == Rt => UNPREDICTABLE &
+            Rt == Pc => FORBIDDEN_OPERANDS;
+  # Print constraint:
+  #    Rn=1101 & P=0 & U=1 & W=0 & imm12=000000000100 => see POP;
+*LdRtRnImmB *LdRtRnImm
+  safety := Rn == Pc => DECODER_ERROR &
+            P=0 & W=1 => DECODER_ERROR &
+            Rt == Pc => UNPREDICTABLE &
+            wback & Rn == Rt => UNPREDICTABLE;
+*LdRtRnImmTpCheck *LdRtRnImm
+  baseline := LdrImmediateOp;
+  is_load_tp := Rn == Tp & index & not wback & add & imm12 in {0, 4};
+*StRtRnImm *RtRnImm
+  baseline := Store2RegisterImm12Op;
+  defs := {base if wback else None};
+  uses := {Rn, Rt};
+  safety := P=0 & W=1 => DECODER_ERROR &
+            wback & (Rn == Pc | Rn == Rt)=> UNPREDICTABLE;
+  # Print constraint:
+  #    Rn=1101 & P=1 & U=0 & W=1 & imm12=000000000100 => see PUSH;
+*StRtRnImmB *StRtRnImm
+  safety := P=0 & W=1 => DECODER_ERROR &
+            Rt == Pc => UNPREDICTABLE &
+            wback & (Rn == Pc | Rn == Rt)=> UNPREDICTABLE;
+
+# Instructions that use Rt, Rn, and Rm with a shifted, immediate value.
+*RtRnRmSh
+  { cond(31:28), P(24), U(23), W(21), Rn(19:16), Rt(15:12),
+    imm5(11:7), type(6:5), Rm(3:0) }
+  index := P=1; add := U=1; wback := P=0 | W=1;
+  shift := DecodeImmShift(type, imm5);
+  base := Rn;
+*LdRtRnRmSh *RtRnRmSh
+  baseline := Load3RegisterImm5Op;
+  defs := {Rt, base if wback else None};
+  uses := {Rm, Rn};
+  safety := P=0 & W=1 => DECODER_ERROR &
+            Rm == Pc => UNPREDICTABLE &
+            wback & (Rn == Pc | Rn == Rt) => UNPREDICTABLE &
+            ArchVersion() < 6 & wback & Rn == Rm => UNPREDICTABLE &
+            index => FORBIDDEN &
+            Rt == Pc => FORBIDDEN_OPERANDS;
+*LdRtRnRmShB *LdRtRnRmSh
+  safety := P=0 & W=1 => DECODER_ERROR &
+            Pc in { Rt, Rm} => UNPREDICTABLE &
+            wback & (Rn == Pc | Rn == Rt) => UNPREDICTABLE &
+            ArchVersion() < 6 & wback & Rn == Rm => UNPREDICTABLE &
+            index => FORBIDDEN;
+*StRtRnRmSh *RtRnRmSh
+  baseline := Store3RegisterImm5Op;
+  defs := {base if wback else None};
+  uses := {Rm, Rn, Rt};
+  safety := P=0 & W=1 => DECODER_ERROR &
+            Rm == Pc => UNPREDICTABLE &
+            wback & (Rn == Pc | Rn == Rt) => UNPREDICTABLE &
+            ArchVersion() < 6 & wback & Rn == Rm => UNPREDICTABLE &
+            index => FORBIDDEN;
+*StRtRnRmShB *StRtRnRmSh
+  safety := P=0 & W=1 => DECODER_ERROR &
+            Pc in {Rm, Rt} => UNPREDICTABLE &
+            wback & (Rn == Pc | Rn == Rt) => UNPREDICTABLE &
+            ArchVersion() < 6 & wback & Rn == Rm => UNPREDICTABLE &
+            index => FORBIDDEN;
++--
 # Note: Column op1 is repeated so that several rows can define
 # (anded) multiple test conditions for this row.
 | A(25) op1(24:20) B(4) Rn(19:16)  op1_repeated(24:20)
-| 0     xx0x0      -    -          ~0x010 -> load_store_word_and_unsigned_byte_str_or_push
-| 1     xx0x0      0    -          ~0x010 = Store3RegisterImm5Op
-                                            => StoreBasedOffsetMemory
-                                            Str_Rule_195_A1_P386
-                                            cccc011pd0w0nnnnttttiiiiitt0mmmm
-| 0     0x010      -    -          - = ForbiddenCondDecoder => Forbidden
-                                       Strt_Rule_A1
-                                       cccc0100u010nnnnttttiiiiiiiiiiii
-| 1     0x010      0    -          - = ForbiddenCondDecoder => Forbidden
-                                       Strt_Rule_A2
-                                       cccc0110u010nnnnttttiiiiitt0mmmm
+| 0     xx0x0      -    -          ~0x010
+        = *StRtRnImm pattern := cccc010pu0w0nnnnttttiiiiiiiiiiii;
+          rule := STR_immediate;
+| 1     xx0x0      0    -          ~0x010
+        = *StRtRnRmSh pattern := cccc011pd0w0nnnnttttiiiiitt0mmmm;
+          rule := STR_register;
+| 0     0x010      -    -          -
+        = baseline := ForbiddenCondDecoder;
+          pattern := cccc0100u010nnnnttttiiiiiiiiiiii; rule := STRT_A1;
+| 1     0x010      0    -          -
+        = baseline := ForbiddenCondDecoder;
+          pattern := cccc0110u010nnnnttttiiiiitt0mmmm; rule := STRT_A2;
 | 0     xx0x1      -    ~1111      ~0x011
-                                   = LdrImmediateOp
-                                   Ldr_Rule_58_A1_P120
-                                   cccc010pu0w1nnnnttttiiiiiiiiiiii
+        = *LdRtRnImmTpCheck pattern := cccc010pu0w1nnnnttttiiiiiiiiiiii;
+          rule := LDR_immediate;
 | "     xx0x1      "    1111       ~0x011
-                                   = Load2RegisterImm12Op
-                                   => LoadBasedImmedMemory
-                                   Ldr_Rule_59_A1_P122
-                                   cccc0101u0011111ttttiiiiiiiiiiii
+        = *LdRtPcImm pattern := cccc0101u0011111ttttiiiiiiiiiiii;
+           rule := LDR_literal;
 | 1     xx0x1      0    -          ~0x011
-                                   = Load3RegisterImm5Op => LoadBasedOffsetMemory
-                                   Ldr_Rule_60_A1_P124
-                                   cccc011pu0w1nnnnttttiiiiitt0mmmm
-| 0     0x011      -    -          - = ForbiddenCondDecoder => Forbidden
-                                       Ldrt_Rule_A1
-                                       cccc0100u011nnnnttttiiiiiiiiiiii
-| 1     0x011      0    -          - = ForbiddenCondDecoder => Forbidden
-                                       Ldrt_Rule_A2
-                                       cccc0110u011nnnnttttiiiiitt0mmmm
+        = *LdRtRnRmSh pattern := cccc011pu0w1nnnnttttiiiiitt0mmmm;
+          rule := LDR_register;
+| 0     0x011      -    -          -
+        = baseline := ForbiddenCondDecoder;
+          pattern := cccc0100u011nnnnttttiiiiiiiiiiii; rule := LDRT_A1;
+| 1     0x011      0    -          -
+        = baseline := ForbiddenCondDecoder;
+          pattern := cccc0110u011nnnnttttiiiiitt0mmmm; rule := LDRT_A2;
 | 0     xx1x0      -    -          ~0x110
-                                   = Store2RegisterImm12Op
-                                   => StoreBasedImmedMemory
-                                   Strb_Rule_197_A1_P390
-                                   cccc010pu1w0nnnnttttiiiiiiiiiiii
+        = *StRtRnImmB pattern := cccc010pu1w0nnnnttttiiiiiiiiiiii;
+          rule := STRB_immediate;
 | 1     xx1x0      0    -          ~0x110
-                                   = Store3RegisterImm5Op
-                                   => StoreBasedOffsetMemory
-                                   Strb_Rule_198_A1_P392
-                                   cccc011pu1w0nnnnttttiiiiitt0mmmm
-| 0     0x110      -    -          - = ForbiddenCondDecoder => Forbidden
-                                       Strtb_Rule_A1
-                                       cccc0100u110nnnnttttiiiiiiiiiiii
-| 1     0x110      0    -          - = ForbiddenCondDecoder => Forbidden
-                                       Strtb_Rule_A2
-                                       cccc0110u110nnnnttttiiiiitt0mmmm
+        = *StRtRnRmSh pattern := cccc011pu1w0nnnnttttiiiiitt0mmmm;
+          rule := STRB_register;
+| 0     0x110      -    -          -
+        = baseline := ForbiddenCondDecoder;
+          pattern := cccc0100u110nnnnttttiiiiiiiiiiii; rule := STRBT_A1;
+| 1     0x110      0    -          -
+        = baseline := ForbiddenCondDecoder;
+          pattern := cccc0110u110nnnnttttiiiiitt0mmmm; rule := STRBT_A2;
 | 0     xx1x1      -    ~1111      ~0x111
-                                   = Load2RegisterImm12Op
-                                   => LoadBasedImmedMemory
-                                   Ldrb_Rule_62_A1_P128
-                                   cccc010pu1w1nnnnttttiiiiiiiiiiii NotRnIsPc
+        = *LdRtRnImmB pattern := cccc010pu1w1nnnnttttiiiiiiiiiiii;
+          rule := LDRB_immediate;
 | "     xx1x1      "    1111       ~0x111
-                                   = Load2RegisterImm12Op
-                                   => LoadBasedImmedMemory
-                                   Ldrb_Rule_63_A1_P130
-                                   cccc0101u1011111ttttiiiiiiiiiiii
+        = *LdRtPcImmB pattern := cccc0101u1011111ttttiiiiiiiiiiii;
+          rule := LDRB_literal;
 | 1     xx1x1      0    -          ~0x111
-                                   = Load3RegisterImm5Op => LoadBasedOffsetMemory
-                                   Ldrb_Rule_64_A1_P132
-                                   cccc011pu1w1nnnnttttiiiiitt0mmmm
-| 0     0x111      -    -          - = ForbiddenCondDecoder => Forbidden
-                                       Ldrtb_Rule_A1
-                                       cccc0100u111nnnnttttiiiiiiiiiiii
-| 1     0x111      0    -          - = ForbiddenCondDecoder => Forbidden
-                                       Ldrtb_Rule_A2
-                                       cccc0110u111nnnnttttiiiiitt0mmmm
+        = *LdRtRnRmShB pattern := cccc011pu1w1nnnnttttiiiiitt0mmmm;
+          rule := LDRB_register;
+| 0     0x111      -    -          -
+        = baseline := ForbiddenCondDecoder;
+          pattern := cccc0100u111nnnnttttiiiiiiiiiiii; rule := LDRBT_A1;
+| 1     0x111      0    -          -
+        = baseline := ForbiddenCondDecoder;
+          pattern := cccc0110u111nnnnttttiiiiitt0mmmm; rule := LDRBT_A2;
 # Instructions with A==1 and B==1 are in media_instructions.
 # TODO(jfb) Should we mark them as unreachable?
-+--
-
-# TODO(karl): Add uses to corresponding classes.
-+-- load_store_word_and_unsigned_byte_str_or_push (See Section A5.3)
-# This table is written to handle special variant of Str that also
-# corresponds to a push, in table load_store_word_and_unsigned_byte.
-| Flags(24:21) Rn(19:16) Imm12(11:0)
-# Note: The baseline class Store2RegisterImm12OpRnNotRtOnWriteback guarantees
-# that we don't allow Rt(15:12) to be PC or SP.
-| 1001         1101      000000000100 = Store2RegisterImm12OpRnNotRtOnWriteback
-                                      Push_Rule_123_A2_P248
-                                      cccc010100101101tttt000000000100
-| else:                               = Store2RegisterImm12Op
-                                      => StoreBasedImmedMemory
-                                      Str_Rule_194_A1_P384
-                                      cccc010pu0w0nnnnttttiiiiiiiiiiii
-                                      & ~cccc010100101101tttt000000000100
 +--
 
 # TODO(karl): Add uses to corresponding classes.

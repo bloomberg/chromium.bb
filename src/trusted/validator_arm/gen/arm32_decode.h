@@ -76,9 +76,6 @@ class Arm32DecoderState : DecoderState {
   inline const ClassDecoder& decode_load_store_word_and_unsigned_byte(
       const Instruction inst) const;
 
-  inline const ClassDecoder& decode_load_store_word_and_unsigned_byte_str_or_push(
-      const Instruction inst) const;
-
   inline const ClassDecoder& decode_media_instructions(
       const Instruction inst) const;
 
@@ -185,12 +182,12 @@ class Arm32DecoderState : DecoderState {
   const ForbiddenCondDecoder ForbiddenCondDecoder_instance_;
   const InstructionBarrier InstructionBarrier_instance_;
   const LdrImmediateOp LdrImmediateOp_instance_;
+  const Load2RegisterImm12Op Load2RegisterImm12Op_instance_;
   const Load2RegisterImm8DoubleOp Load2RegisterImm8DoubleOp_instance_;
   const Load2RegisterImm8Op Load2RegisterImm8Op_instance_;
   const Load3RegisterDoubleOp Load3RegisterDoubleOp_instance_;
+  const Load3RegisterImm5Op Load3RegisterImm5Op_instance_;
   const Load3RegisterOp Load3RegisterOp_instance_;
-  const LoadBasedImmedMemory LoadBasedImmedMemory_instance_;
-  const LoadBasedOffsetMemory LoadBasedOffsetMemory_instance_;
   const LoadExclusive2RegisterDoubleOp LoadExclusive2RegisterDoubleOp_instance_;
   const LoadExclusive2RegisterOp LoadExclusive2RegisterOp_instance_;
   const LoadMultiple LoadMultiple_instance_;
@@ -206,13 +203,12 @@ class Arm32DecoderState : DecoderState {
   const PermanentlyUndefined PermanentlyUndefined_instance_;
   const PreloadRegisterImm12Op PreloadRegisterImm12Op_instance_;
   const PreloadRegisterPairOp PreloadRegisterPairOp_instance_;
-  const Store2RegisterImm12OpRnNotRtOnWriteback Store2RegisterImm12OpRnNotRtOnWriteback_instance_;
+  const Store2RegisterImm12Op Store2RegisterImm12Op_instance_;
   const Store2RegisterImm8DoubleOp Store2RegisterImm8DoubleOp_instance_;
   const Store2RegisterImm8Op Store2RegisterImm8Op_instance_;
   const Store3RegisterDoubleOp Store3RegisterDoubleOp_instance_;
+  const Store3RegisterImm5Op Store3RegisterImm5Op_instance_;
   const Store3RegisterOp Store3RegisterOp_instance_;
-  const StoreBasedImmedMemory StoreBasedImmedMemory_instance_;
-  const StoreBasedOffsetMemory StoreBasedOffsetMemory_instance_;
   const StoreExclusive3RegisterDoubleOp StoreExclusive3RegisterDoubleOp_instance_;
   const StoreExclusive3RegisterOp StoreExclusive3RegisterOp_instance_;
   const StoreRegisterList StoreRegisterList_instance_;

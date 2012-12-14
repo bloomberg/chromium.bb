@@ -70,7 +70,7 @@ pat_bit_set        ::= '{' (bitpattern (',' bitpattern)*)? '}'
 pat_row        ::= pattern+ action
 pattern        ::= bitpattern | '-' | '"'
 row            ::= '|' (pat_row | default_row)
-rule_restrict  ::= ('&' bit_expr)* ('&' 'other' ':' id)?
+rule_restrict  ::= ('&' (bit_expr | bitpattern))* ('&' 'other' ':' id)?
 rule_restrict_deprecated ::= ('&' bitpattern)* ('&' 'other' ':' id)?
 safety_check   ::= id | bit_expr1 ('=>' id)?     # note: single id only at end.
 table          ::= table_desc table_actions header row+ footer
@@ -117,6 +117,7 @@ _PREDEFINED_CONSTS = {
     'Pc': dgen_core.Literal(15),
     'Lr': dgen_core.Literal(14),
     'Sp': dgen_core.Literal(13),
+    'Tp': dgen_core.Literal(9),
     # Boolean values.
     'true': dgen_core.BoolValue(True),
     'false': dgen_core.BoolValue(False),
@@ -756,8 +757,13 @@ class Parser(object):
       return self._pat_row(table, starred_actions, last_patterns, last_action)
 
   def _rule_restrict(self, context):
-    """ rule_restrict  ::= ('&' bit_expr)* ('&' 'other' ':' id)? """
+    """ rule_restrict  ::= ('&' (bit_expr | bitpattern))* ('&' 'other' ':' id)?
 
+        Note: We restrict bit_expr to only be those cases where it isn't a
+        bitpattern, since the overlap with bit_expr is non-empty. If you
+        need to make a conflicting bit_expr not conflict with a bit pattern,
+        just enclose the expression with parenthesis.
+    """
     restrictions = context.find('constraints')
     if not restrictions:
       context.define('constraints', dgen_core.RuleRestrictions())
@@ -768,6 +774,13 @@ class Parser(object):
         self._read_token(':')
         restrictions.safety = self._id()
         return
+      elif (self._is_next_tokens(['word', '&']) or
+            self._is_next_tokens(['word', ';']) or
+            self._is_next_tokens(['~', 'word', '&']) or
+            self._is_next_tokens(['~', 'word', ';'])):
+        restrictions.add(
+            dgen_core.BitPattern.parse(self._bitpattern32(),
+                                       dgen_core.BitField('constraint', 31, 0)))
       else:
         restrictions.add(self._bit_expr(context))
 
@@ -984,6 +997,22 @@ class Parser(object):
       print "Read %s" % token
     return token
 
+  def _is_next_tokens(self, tokens):
+    """Returns true if the input contains the sequence of tokens."""
+    read_tokens = []
+    match = True
+    check_tokens = list(tokens)
+    while check_tokens:
+      token = check_tokens.pop(0)
+      next = self._next_token()
+      if next.kind == token:
+        read_tokens.append(self._read_token(token))
+      else:
+        match = False
+        break
+    self._pushback_tokens(read_tokens)
+    return match
+
   def _next_token(self):
     """Returns the next token from the input."""
     # First seee if cached.
@@ -1046,7 +1075,7 @@ class Parser(object):
       self._pushed_tokens.append(self._token)
       self._token = token
     else:
-      self.token = token
+      self._token = token
 
   def _pushback_tokens(self, tokens):
     """Puts back the reversed list of tokens on to the input stream."""

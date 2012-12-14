@@ -737,14 +737,12 @@ SafetyLevel LoadStore2RegisterImm12Op::safety(Instruction i) const {
     return UNPREDICTABLE;
   }
 
+  if (byte.IsDefined(i) && t.reg(i).Equals(Register::Pc())) {
+    return UNPREDICTABLE;
+  }
+
   // Don't allow modification of PC (NaCl constraint).
   if (defs(i).Contains(Register::Pc())) return FORBIDDEN_OPERANDS;
-
-  // NaCl special restriction to make all load/store immediates behave
-  // the same.
-  if (t.reg(i).Equals(Register::Pc())) {
-    return FORBIDDEN_OPERANDS;
-  }
 
   return MAY_BE_SAFE;
 }
@@ -762,6 +760,10 @@ Register LoadStore2RegisterImm12Op::base_address_register(Instruction i) const {
 // Load2RegisterImm12Op
 RegisterList Load2RegisterImm12Op::defs(Instruction i) const {
   return RegisterList(base_small_writeback_register(i)).Add(t.reg(i));
+}
+
+RegisterList Load2RegisterImm12Op::uses(Instruction i) const {
+  return RegisterList(n.reg(i));
 }
 
 bool Load2RegisterImm12Op::is_literal_load(Instruction i) const {
@@ -791,22 +793,8 @@ RegisterList Store2RegisterImm12Op::defs(Instruction i) const {
   return RegisterList(base_small_writeback_register(i));
 }
 
-// Store2RegisterImm12OpRnNotRtOnWriteback
-SafetyLevel Store2RegisterImm12OpRnNotRtOnWriteback::
-safety(Instruction i) const {
-  SafetyLevel level = Store2RegisterImm12Op::safety(i);
-  if (MAY_BE_SAFE != level) return level;
-
-  // TODO(jfb) Redundant with LoadStore2RegisterImm12Op, once it is fixed.
-  if (HasWriteBack(i) && (n.reg(i).Equals(t.reg(i))))
-    return UNPREDICTABLE;
-
-  return MAY_BE_SAFE;
-}
-
-RegisterList Store2RegisterImm12OpRnNotRtOnWriteback::uses(
-    Instruction i) const {
-  return RegisterList(Register::Sp()).Add(t.reg(i));
+RegisterList Store2RegisterImm12Op::uses(Instruction i) const {
+  return RegisterList(n.reg(i)).Add(t.reg(i));
 }
 
 // LoadStoreRegisterList
@@ -1156,16 +1144,16 @@ SafetyLevel LoadStore3RegisterImm5Op::safety(Instruction i) const {
     return UNPREDICTABLE;
   }
 
-  // Don't let Rt be Pc (NaCl constraint -- See header file for special
-  // note).
-  if (t.reg(i).Equals(Register::Pc())) {
-    return FORBIDDEN_OPERANDS;
+  if (byte.IsDefined(i) & t.reg(i).Equals(Register::Pc())) {
+    return UNPREDICTABLE;
+  }
+
+  if ((ArchVersion() < 6) && HasWriteBack(i) && m.reg(i).Equals(n.reg(i))) {
+    return UNPREDICTABLE;
   }
 
   // Don't let addressing writeback alter PC (NaCl constraint).
   if (defs(i).Contains(Register::Pc())) return FORBIDDEN_OPERANDS;
-
-  // TODO(jfb) if ArchVersion() < 6 && wback && m == n then UNPREDICTABLE;
 
   return MAY_BE_SAFE;
 }
@@ -1190,6 +1178,10 @@ RegisterList Store3RegisterImm5Op::defs(Instruction i) const {
     defines.Add(n.reg(i));
   }
   return defines;
+}
+
+RegisterList Store3RegisterImm5Op::uses(Instruction i) const {
+  return RegisterList(m.reg(i)).Add(n.reg(i)).Add(t.reg(i));
 }
 
 // Unary2RegisterImmedShiftedOp

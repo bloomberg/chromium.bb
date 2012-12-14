@@ -50,12 +50,12 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , ForbiddenCondDecoder_instance_()
   , InstructionBarrier_instance_()
   , LdrImmediateOp_instance_()
+  , Load2RegisterImm12Op_instance_()
   , Load2RegisterImm8DoubleOp_instance_()
   , Load2RegisterImm8Op_instance_()
   , Load3RegisterDoubleOp_instance_()
+  , Load3RegisterImm5Op_instance_()
   , Load3RegisterOp_instance_()
-  , LoadBasedImmedMemory_instance_()
-  , LoadBasedOffsetMemory_instance_()
   , LoadExclusive2RegisterDoubleOp_instance_()
   , LoadExclusive2RegisterOp_instance_()
   , LoadMultiple_instance_()
@@ -71,13 +71,12 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , PermanentlyUndefined_instance_()
   , PreloadRegisterImm12Op_instance_()
   , PreloadRegisterPairOp_instance_()
-  , Store2RegisterImm12OpRnNotRtOnWriteback_instance_()
+  , Store2RegisterImm12Op_instance_()
   , Store2RegisterImm8DoubleOp_instance_()
   , Store2RegisterImm8Op_instance_()
   , Store3RegisterDoubleOp_instance_()
+  , Store3RegisterImm5Op_instance_()
   , Store3RegisterOp_instance_()
-  , StoreBasedImmedMemory_instance_()
-  , StoreBasedOffsetMemory_instance_()
   , StoreExclusive3RegisterDoubleOp_instance_()
   , StoreExclusive3RegisterOp_instance_()
   , StoreRegisterList_instance_()
@@ -951,10 +950,11 @@ const ClassDecoder& Arm32DecoderState::decode_halfword_multiply_and_multiply_acc
 const ClassDecoder& Arm32DecoderState::decode_load_store_word_and_unsigned_byte(
      const Instruction inst) const
 {
+  UNREFERENCED_PARAMETER(inst);
   if ((inst.Bits() & 0x02000000) == 0x00000000 /* A(25)=0 */ &&
       (inst.Bits() & 0x00500000) == 0x00000000 /* op1(24:20)=xx0x0 */ &&
       (inst.Bits() & 0x01700000) != 0x00200000 /* op1_repeated(24:20)=~0x010 */) {
-    return decode_load_store_word_and_unsigned_byte_str_or_push(inst);
+    return Store2RegisterImm12Op_instance_;
   }
 
   if ((inst.Bits() & 0x02000000) == 0x00000000 /* A(25)=0 */ &&
@@ -969,20 +969,20 @@ const ClassDecoder& Arm32DecoderState::decode_load_store_word_and_unsigned_byte(
       (inst.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16)=1111 */ &&
       (inst.Bits() & 0x01700000) != 0x00300000 /* op1_repeated(24:20)=~0x011 */ &&
       (inst.Bits() & 0x01200000) == 0x01000000 /* $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx */) {
-    return LoadBasedImmedMemory_instance_;
+    return Load2RegisterImm12Op_instance_;
   }
 
   if ((inst.Bits() & 0x02000000) == 0x00000000 /* A(25)=0 */ &&
       (inst.Bits() & 0x00500000) == 0x00400000 /* op1(24:20)=xx1x0 */ &&
       (inst.Bits() & 0x01700000) != 0x00600000 /* op1_repeated(24:20)=~0x110 */) {
-    return StoreBasedImmedMemory_instance_;
+    return Store2RegisterImm12Op_instance_;
   }
 
   if ((inst.Bits() & 0x02000000) == 0x00000000 /* A(25)=0 */ &&
       (inst.Bits() & 0x00500000) == 0x00500000 /* op1(24:20)=xx1x1 */ &&
       (inst.Bits() & 0x000F0000) != 0x000F0000 /* Rn(19:16)=~1111 */ &&
       (inst.Bits() & 0x01700000) != 0x00700000 /* op1_repeated(24:20)=~0x111 */) {
-    return LoadBasedImmedMemory_instance_;
+    return Load2RegisterImm12Op_instance_;
   }
 
   if ((inst.Bits() & 0x02000000) == 0x00000000 /* A(25)=0 */ &&
@@ -990,66 +990,46 @@ const ClassDecoder& Arm32DecoderState::decode_load_store_word_and_unsigned_byte(
       (inst.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16)=1111 */ &&
       (inst.Bits() & 0x01700000) != 0x00700000 /* op1_repeated(24:20)=~0x111 */ &&
       (inst.Bits() & 0x01200000) == 0x01000000 /* $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx */) {
-    return LoadBasedImmedMemory_instance_;
+    return Load2RegisterImm12Op_instance_;
   }
 
   if ((inst.Bits() & 0x02000000) == 0x00000000 /* A(25)=0 */ &&
       (inst.Bits() & 0x01200000) == 0x00200000 /* op1(24:20)=0xx1x */) {
-    return Forbidden_instance_;
+    return ForbiddenCondDecoder_instance_;
   }
 
   if ((inst.Bits() & 0x02000000) == 0x02000000 /* A(25)=1 */ &&
       (inst.Bits() & 0x00500000) == 0x00000000 /* op1(24:20)=xx0x0 */ &&
       (inst.Bits() & 0x00000010) == 0x00000000 /* B(4)=0 */ &&
       (inst.Bits() & 0x01700000) != 0x00200000 /* op1_repeated(24:20)=~0x010 */) {
-    return StoreBasedOffsetMemory_instance_;
+    return Store3RegisterImm5Op_instance_;
   }
 
   if ((inst.Bits() & 0x02000000) == 0x02000000 /* A(25)=1 */ &&
       (inst.Bits() & 0x00500000) == 0x00100000 /* op1(24:20)=xx0x1 */ &&
       (inst.Bits() & 0x00000010) == 0x00000000 /* B(4)=0 */ &&
       (inst.Bits() & 0x01700000) != 0x00300000 /* op1_repeated(24:20)=~0x011 */) {
-    return LoadBasedOffsetMemory_instance_;
+    return Load3RegisterImm5Op_instance_;
   }
 
   if ((inst.Bits() & 0x02000000) == 0x02000000 /* A(25)=1 */ &&
       (inst.Bits() & 0x00500000) == 0x00400000 /* op1(24:20)=xx1x0 */ &&
       (inst.Bits() & 0x00000010) == 0x00000000 /* B(4)=0 */ &&
       (inst.Bits() & 0x01700000) != 0x00600000 /* op1_repeated(24:20)=~0x110 */) {
-    return StoreBasedOffsetMemory_instance_;
+    return Store3RegisterImm5Op_instance_;
   }
 
   if ((inst.Bits() & 0x02000000) == 0x02000000 /* A(25)=1 */ &&
       (inst.Bits() & 0x00500000) == 0x00500000 /* op1(24:20)=xx1x1 */ &&
       (inst.Bits() & 0x00000010) == 0x00000000 /* B(4)=0 */ &&
       (inst.Bits() & 0x01700000) != 0x00700000 /* op1_repeated(24:20)=~0x111 */) {
-    return LoadBasedOffsetMemory_instance_;
+    return Load3RegisterImm5Op_instance_;
   }
 
   if ((inst.Bits() & 0x02000000) == 0x02000000 /* A(25)=1 */ &&
       (inst.Bits() & 0x01200000) == 0x00200000 /* op1(24:20)=0xx1x */ &&
       (inst.Bits() & 0x00000010) == 0x00000000 /* B(4)=0 */) {
-    return Forbidden_instance_;
-  }
-
-  // Catch any attempt to fall though ...
-  return not_implemented_;
-}
-
-// Implementation of table: load_store_word_and_unsigned_byte_str_or_push.
-// Specified by: See Section A5.3
-const ClassDecoder& Arm32DecoderState::decode_load_store_word_and_unsigned_byte_str_or_push(
-     const Instruction inst) const
-{
-  UNREFERENCED_PARAMETER(inst);
-  if ((inst.Bits() & 0x01E00000) == 0x01200000 /* Flags(24:21)=1001 */ &&
-      (inst.Bits() & 0x000F0000) == 0x000D0000 /* Rn(19:16)=1101 */ &&
-      (inst.Bits() & 0x00000FFF) == 0x00000004 /* Imm12(11:0)=000000000100 */) {
-    return Store2RegisterImm12OpRnNotRtOnWriteback_instance_;
-  }
-
-  if (true) {
-    return StoreBasedImmedMemory_instance_;
+    return ForbiddenCondDecoder_instance_;
   }
 
   // Catch any attempt to fall though ...

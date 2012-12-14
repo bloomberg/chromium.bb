@@ -1101,42 +1101,20 @@ class PreloadRegisterPairOp : public ClassDecoder {
 // +--------+------+--+--+--+--+--+--------+--------+------------------------+
 // |31302928|272625|24|23|22|21|20|19181716|15141312|1110 9 8 7 6 5 4 3 2 1 0|
 // +--------+------+--+--+--+--+--+--------+--------+------------------------+
-// |  conds |      | P| U|  | w|  |   Rn   |   Rt   |        imm12           |
+// |  conds |      | P| U| B| w|  |   Rn   |   Rt   |        imm12           |
 // +--------+------+--+--+--+--+--+--------+--------+------------------------+
 // wback = (P=0 || W==1)
 //
 // if P=0 and W=1, should not parse as this instruction.
 // if wback && (Rn=15 or Rn=Rt) then unpredictable.
+// if B, load/store a byte. Otherwise, load/store a word.
 // NaCl disallows writing to PC.
-//
-// Note: NaCl disallows Rt=PC for stores (not just loads), even
-// though it isn't a requirement of the corresponding baseline
-// classees. This is done so that StrImmediate (in the actual class
-// decoders) behave the same as instances of this. This simplifies
-// what we need to model in actual classes.
-//
-// Note: Currently, on stores, we don't check case: wback && Rn=Rt,
-// since many of the compilers generate this variant. However, for
-// push, we enforce this using class Store2RegisterImm12OpRnNotRtOnWriteback.
-//
-// For store register immediate (Str rule 194, A1 on page 384):
-// if Rn=Sp && P=1 && U=0 && W=1 && imm12=4, then PUSH (A8.6.123, A2 on A8-248).
-//    Note: We use Store2RegisterImm12OpRnNotRtOnWriteback in this case, to
-//    deal with the relaxation noted above. See test CheckPushSpUnpredictable
-//    in validator_tests.cc to see that we do handle "push {sp}" correctly.
-//
-// For load register immediate (Ldr rule 59, A1 on page 122):
-// If Rn=Sp && P=0 && U=1 && W=0 && imm12=4, then POP ().
-//    Note: This is just a speciial case instruction that behaves like a
-//    Load2RegisterImm12Op instruction. That is, the pop loads from the
-//    top of stack the value of Rt, and then increments the stack by 4. Since
-//    this doesn't effect the NaCl constraints we need for such loads, we do
-//    not model it as a special instruction.
 class LoadStore2RegisterImm12Op : public ClassDecoder {
  public:
   static const Imm12Bits0To11Interface imm12;
   static const RegBits12To15Interface t;
   static const RegBits16To19Interface n;
+  static const FlagBit22Interface byte;
   static const WritesBit21Interface writes;
   static const AddOffsetBit23Interface direction;
   static const PrePostIndexingBit24Interface indexing;
@@ -1163,11 +1141,21 @@ class LoadStore2RegisterImm12Op : public ClassDecoder {
 };
 
 // Defines the virtuals for a load immediate instruction.
+//
+// For load register immediate (Ldr rule 59, A1 on page 122):
+// If Rn=Sp && P=0 && U=1 && W=0 && imm12=4, then POP ().
+//    Note: This is just a special case instruction that behaves like a
+//    Load2RegisterImm12Op instruction. That is, the pop loads from the
+//    top of stack the value of Rt, and then increments the stack by 4. Since
+//    this doesn't affect the NaCl constraints we need for such loads, we do
+//    not model it as a special instruction.
+
 class Load2RegisterImm12Op : public LoadStore2RegisterImm12Op {
  public:
   Load2RegisterImm12Op() : LoadStore2RegisterImm12Op(true) {
   }
   virtual RegisterList defs(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
   virtual bool is_literal_load(Instruction i) const;
 
  private:
@@ -1187,29 +1175,23 @@ class LdrImmediateOp : public Load2RegisterImm12Op {
 };
 
 // Defines the virtuals for a store immediate instruction.
-// Note: See class LoadStore2RegisterImm12Op for more information
-// on how PUSH (i.e. when Rn=Sp && U=0 && W=1 && Imm12=4) is handled.
+//
+// For store register immediate (Str rule 194, A1 on page 384):
+// if Rn=Sp && P=1 && U=0 && W=1 && imm12=4, then PUSH.
+//    Note: This is just a special case instruction that behaves like
+//    a Store2RegisterImm12Op instruction. That is, the push loads the
+//    value of Rt on top of the stack, and then increments the stack by 4.
+//    Since this doesn't affect the NaCl constraints we need for such loads,
+//    we do not model it as a special instruction.
 class Store2RegisterImm12Op : public LoadStore2RegisterImm12Op {
  public:
   Store2RegisterImm12Op() : LoadStore2RegisterImm12Op(false) {
   }
   virtual RegisterList defs(Instruction i) const;
-
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(Store2RegisterImm12Op);
-};
-
-// Defines virtual for a store immediate instruction with the following
-// constraint:
-//     if wback && Rn=Rt then unpredictable.
-class Store2RegisterImm12OpRnNotRtOnWriteback : public Store2RegisterImm12Op {
- public:
-  Store2RegisterImm12OpRnNotRtOnWriteback() {}
-  virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(Store2RegisterImm12OpRnNotRtOnWriteback);
+  NACL_DISALLOW_COPY_AND_ASSIGN(Store2RegisterImm12Op);
 };
 
 // Models a load/store of  multiple registers into/out of memory.
@@ -1802,7 +1784,7 @@ class StoreExclusive3RegisterDoubleOp : public StoreExclusive3RegisterOp {
 // +------+------+--+--+--+--+--+--------+--------+----------+----+--+---------+
 // |31..28|272625|24|23|22|21|20|19181716|15141312|1110 9 8 7| 6 5| 4| 3 2 1 0 |
 // +------+------+--+--+--+--+--+--------+--------+----------+----+--+---------+
-// | cond |      | P| U|  | W|  |   Rm   |   Rt   |   imm5   |type|  |    Rm   |
+// | cond |      | P| U| B| W|  |   Rm   |   Rt   |   imm5   |type|  |    Rm   |
 // +------+------+--+--+--+--+--+--------+--------+----------+----+--+---------+
 // wback = (P=0 || W=1)
 //
@@ -1810,13 +1792,8 @@ class StoreExclusive3RegisterDoubleOp : public StoreExclusive3RegisterOp {
 // If Rm=15 then unpredicatble.
 // If wback && (Rn=15 or Rn=Rt) then unpredictable.
 // if ArchVersion() < 6 && wback && Rm=Rn then unpredictable.
+// if B, load/store a byte. Otherwise, load/store a word.
 // NaCl Disallows writing to PC.
-//
-// Note: NaCl disallows Rt=PC for stores (not just loads), even
-// though it isn't a requirement of the corresponding baseline
-// classes. This is done so that StrRegister (in the actual class
-// decoders) behave the same as this. This simplifies what we need to
-// model in actual classes.
 class LoadStore3RegisterImm5Op : public ClassDecoder {
  public:
   // Interfaces for components in the instruction.
@@ -1824,6 +1801,7 @@ class LoadStore3RegisterImm5Op : public ClassDecoder {
   static const RegBits12To15Interface t;
   static const RegBits16To19Interface n;
   static const WritesBit21Interface writes;
+  static const FlagBit22Interface byte;
   static const AddOffsetBit23Interface direction;
   static const PrePostIndexingBit24Interface indexing;
   static const ConditionBits28To31Interface cond;
@@ -1871,6 +1849,7 @@ class Store3RegisterImm5Op : public LoadStore3RegisterImm5Op {
   Store3RegisterImm5Op() : LoadStore3RegisterImm5Op(false) {
   }
   virtual RegisterList defs(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Store3RegisterImm5Op);

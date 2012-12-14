@@ -1167,16 +1167,11 @@ ApplySanityChecks(Instruction inst,
   EXPECT_FALSE(expected_decoder_.t.reg(inst).Equals(Register::Pc()))
       << "Expected UNPREDICTABLE for " << InstContents();
 
-  // NOTE: The manual states that that it is also unpredictable
-  // when HasWriteBack(i) and Rn=Rt. However, the compilers
-  // may not check for this. For the moment, we are changing
-  // the code to ignore this case for loads and store.
-  // TODO(karl): Should we not allow this?
-  // EXPECT_FALSE(expected_decoder_.HasWriteBack(inst) &&
-  //              (expected_decoder_.n.reg(inst).Equals(Register::Pc()) ||
-  //               expected_decoder_.n.reg(inst).Equals(
-  //                   expected_decoder_.t.reg(inst))))
-  //     << "Expected UNPREDICTABLE for " << InstContents();
+  EXPECT_FALSE(expected_decoder_.HasWriteBack(inst) &&
+               (expected_decoder_.n.reg(inst).Equals(Register::Pc()) ||
+                expected_decoder_.n.reg(inst).Equals(
+                    expected_decoder_.t.reg(inst))))
+      << "Expected UNPREDICTABLE for " << InstContents();
 
   // Other NaCl constraints about this instruction.
   EXPECT_FALSE(ExpectedDecoder().defs(inst).Contains(Register::Pc()))
@@ -1232,15 +1227,10 @@ ApplySanityChecks(Instruction inst,
   EXPECT_NE(expected_decoder_.t2.number(inst), static_cast<uint32_t>(15))
       << "Expected UNPREDICTABLE for " << InstContents();
 
-  // NOTE: The manual states that that it is also unpredictable
-  // when HasWriteBack(i) and Rn=Rt. However, the compilers
-  // may not check for this. For the moment, we are changing
-  // the code to ignore this case for loads and store.
-  // TODO(karl): Should we not allow this?
-  // EXPECT_FALSE(expected_decoder_.HasWriteBack(inst) &&
-  //              expected_decoder_.n.reg(inst).Equals(
-  //                  expected_decoder_.t2.reg(inst)))
-  //     << "Expected UNPREDICTABLE for " << InstContents();
+  EXPECT_FALSE(expected_decoder_.HasWriteBack(inst) &&
+               expected_decoder_.n.reg(inst).Equals(
+                   expected_decoder_.t2.reg(inst)))
+      << "Expected UNPREDICTABLE for " << InstContents();
 
   return true;
 }
@@ -1355,23 +1345,21 @@ ApplySanityChecks(Instruction inst,
   EXPECT_TRUE(expected_decoder_.t.reg(inst).Equals(inst.Reg(15, 12)));
   EXPECT_TRUE(expected_decoder_.n.reg(inst).Equals(inst.Reg(19, 16)));
   EXPECT_EQ(expected_decoder_.writes.IsDefined(inst), inst.Bit(21));
+  EXPECT_EQ(expected_decoder_.byte.IsDefined(inst), inst.Bit(22));
   EXPECT_EQ(expected_decoder_.direction.IsAdd(inst), inst.Bit(23));
   EXPECT_EQ(expected_decoder_.indexing.IsPreIndexing(inst), inst.Bit(24));
 
   // Other ARM constraints about this instruction.
-  EXPECT_FALSE(expected_decoder_.t.reg(inst).Equals(Register::Pc()))
-      << "Expected UNPREDICTABLE for " << InstContents();
+  if (expected_decoder_.byte.IsDefined(inst)) {
+    EXPECT_FALSE(expected_decoder_.t.reg(inst).Equals(Register::Pc()))
+        << "Expected UNPREDICTABLE for " << InstContents();
+  }
 
-  // NOTE: The manual states that that it is also unpredictable
-  // when HasWriteBack(i) and Rn=Rt. However, the compilers
-  // may not check for this. For the moment, we are changing
-  // the code to ignore this case for loads and store.
-  // TODO(karl): Should we not allow this?
-  // EXPECT_FALSE(expected_decoder_.HasWriteBack(inst) &&
-  //              (expected_decoder_.n.reg(inst).Equals(Register::Pc()) ||
-  //               expected_decoder_.n.reg(inst).Equals(
-  //                   expected_decoder_.t.reg(inst))))
-  //     << "Expected UNPREDICTABLE for " << InstContents();
+  EXPECT_FALSE(expected_decoder_.HasWriteBack(inst) &&
+               (expected_decoder_.n.reg(inst).Equals(Register::Pc()) ||
+                expected_decoder_.n.reg(inst).Equals(
+                    expected_decoder_.t.reg(inst))))
+      << "Expected UNPREDICTABLE for " << InstContents();
 
   // Other NaCl constraints about this instruction.
   EXPECT_FALSE(ExpectedDecoder().defs(inst).Contains(Register::Pc()))
@@ -1617,16 +1605,11 @@ ApplySanityChecks(Instruction inst,
   EXPECT_FALSE(expected_decoder_.t.reg(inst).Equals(Register::Pc()))
       << "Expected UNPREDICTABLE for " << InstContents();
 
-  // NOTE: The manual states that that it is also unpredictable
-  // when HasWriteBack(i) and Rn=Rt. However, the compilers
-  // may not check for this. For the moment, we are changing
-  // the code to ignore this case for loads and stores.
-  // TODO(karl): Should we not allow this?
-  // EXPECT_FALSE(expected_decoder_.HasWriteBack(inst) &&
-  //              (expected_decoder_.n.reg(inst).Equals(Register::Pc()) ||
-  //               expected_decoder_.n.reg(inst).Equals(
-  //                   expected_decoder_.t.reg(inst))))
-  //     << "Expected UNPREDICTABLE for " << InstContents();
+  EXPECT_FALSE(expected_decoder_.HasWriteBack(inst) &&
+               (expected_decoder_.n.reg(inst).Equals(Register::Pc()) ||
+                expected_decoder_.n.reg(inst).Equals(
+                    expected_decoder_.t.reg(inst))))
+      << "Expected UNPREDICTABLE for " << InstContents();
 
   // Other NaCl constraints about this instruction.
   EXPECT_FALSE(expected_decoder_.indexing.IsPreIndexing(inst))
@@ -1659,15 +1642,10 @@ ApplySanityChecks(Instruction inst,
   EXPECT_NE(expected_decoder_.t2.number(inst), static_cast<uint32_t>(15))
       << "Expected UNPREDICTABLE for " << InstContents();
 
-  // NOTE: The manual states that that it is also unpredictable
-  // when HasWriteBack(i) and Rn=Rt. However, the compilers
-  // may not check for this. For the moment, we are changing
-  // the code to ignore this case for loads and stores.
-  // TODO(karl): Should we not allow this?
-  // EXPECT_FALSE(expected_decoder_.HasWriteBack(inst) &&
-  //              expected_decoder_.n.reg(inst).Equals(
-  //                  expected_decoder_.t2.reg(inst)))
-  //     << "Expected UNPREDICTABLE for " << InstContents();
+  EXPECT_FALSE(expected_decoder_.HasWriteBack(inst) &&
+               expected_decoder_.n.reg(inst).Equals(
+                   expected_decoder_.t2.reg(inst)))
+      << "Expected UNPREDICTABLE for " << InstContents();
 
   return true;
 }
@@ -1754,6 +1732,7 @@ ApplySanityChecks(Instruction inst,
   EXPECT_TRUE(expected_decoder_.t.reg(inst).Equals(inst.Reg(15, 12)));
   EXPECT_TRUE(expected_decoder_.n.reg(inst).Equals(inst.Reg(19, 16)));
   EXPECT_EQ(expected_decoder_.writes.IsDefined(inst), inst.Bit(21));
+  EXPECT_EQ(expected_decoder_.byte.IsDefined(inst), inst.Bit(22));
   EXPECT_EQ(expected_decoder_.direction.IsAdd(inst), inst.Bit(23));
   EXPECT_EQ(expected_decoder_.indexing.IsPreIndexing(inst), inst.Bit(24));
 
@@ -1762,19 +1741,16 @@ ApplySanityChecks(Instruction inst,
   EXPECT_EQ(expected_decoder_.shift_type.value(inst), inst.Bits(6, 5));
 
   // Other ARM constraints about this instruction.
-  EXPECT_FALSE(expected_decoder_.t.reg(inst).Equals(Register::Pc()))
-      << "Expected UNPREDICTABLE for " << InstContents();
+  if (expected_decoder_.byte.IsDefined(inst)) {
+    EXPECT_FALSE(expected_decoder_.t.reg(inst).Equals(Register::Pc()))
+        << "Expected UNPREDICTABLE for " << InstContents();
+  }
 
-  // NOTE: The manual states that that it is also unpredictable
-  // when HasWriteBack(i) and Rn=Rt. However, the compilers
-  // may not check for this. For the moment, we are changing
-  // the code to ignore this case for loads and store.
-  // TODO(karl): Should we not allow this?
-  // EXPECT_FALSE(expected_decoder_.HasWriteBack(inst) &&
-  //              (expected_decoder_.n.reg(inst).Equals(Register::Pc()) ||
-  //               expected_decoder_.n.reg(inst).Equals(
-  //                   expected_decoder_.t.reg(inst))))
-  //     << "Expected UNPREDICTABLE for " << InstContents();
+  EXPECT_FALSE(expected_decoder_.HasWriteBack(inst) &&
+               (expected_decoder_.n.reg(inst).Equals(Register::Pc()) ||
+                expected_decoder_.n.reg(inst).Equals(
+                    expected_decoder_.t.reg(inst))))
+      << "Expected UNPREDICTABLE for " << InstContents();
 
   // Other NaCl constraints about this instruction.
   EXPECT_FALSE(ExpectedDecoder().defs(inst).Contains(Register::Pc()))

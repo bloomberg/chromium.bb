@@ -164,14 +164,27 @@ bool UnsafeCondDecoderTesterCase3
 }
 
 // Neutral case:
-// inst(25)=0 & inst(24:20)=xx0x1 & inst(19:16)=~1111 & inst(24:20)=~0x011
-//    = {baseline: 'LdrImmediateOp',
-//       constraints: }
+// inst(25)=0 & inst(24:20)=xx0x0 & inst(24:20)=~0x010
+//    = {baseline: 'Store2RegisterImm12Op',
+//       constraints: ,
+//       defs: {inst(19:16) if inst(24)=0 || inst(21)=1 else 32},
+//       safety: ['inst(24)=0 && inst(21)=1 => DECODER_ERROR', 'inst(24)=0 || inst(21)=1 && (15 == inst(19:16) || inst(15:12) == inst(19:16)) => UNPREDICTABLE']}
 //
 // Representaive case:
-// A(25)=0 & op1(24:20)=xx0x1 & Rn(19:16)=~1111 & op1_repeated(24:20)=~0x011
-//    = {baseline: LdrImmediateOp,
-//       constraints: }
+// A(25)=0 & op1(24:20)=xx0x0 & op1_repeated(24:20)=~0x010
+//    = {None: 32,
+//       P: P(24),
+//       Pc: 15,
+//       Rn: Rn(19:16),
+//       Rt: Rt(15:12),
+//       W: W(21),
+//       base: Rn,
+//       baseline: Store2RegisterImm12Op,
+//       constraints: ,
+//       defs: {base if wback else None},
+//       fields: [P(24), W(21), Rn(19:16), Rt(15:12)],
+//       safety: [P(24)=0 && W(21)=1 => DECODER_ERROR, wback && (Rn == Pc || Rn == Rt) => UNPREDICTABLE],
+//       wback: P(24)=0 || W(21)=1}
 class LoadStore2RegisterImm12OpTesterCase4
     : public LoadStore2RegisterImm12OpTester {
  public:
@@ -180,9 +193,77 @@ class LoadStore2RegisterImm12OpTesterCase4
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool LoadStore2RegisterImm12OpTesterCase4
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x02000000) != 0x00000000 /* A(25)=~0 */) return false;
+  if ((inst.Bits() & 0x00500000) != 0x00000000 /* op1(24:20)=~xx0x0 */) return false;
+  if ((inst.Bits() & 0x01700000) == 0x00200000 /* op1_repeated(24:20)=0x010 */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return LoadStore2RegisterImm12OpTester::
+      PassesParsePreconditions(inst, decoder);
+}
+
+bool LoadStore2RegisterImm12OpTesterCase4
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(LoadStore2RegisterImm12OpTester::ApplySanityChecks(inst, decoder));
+
+  // safety: P(24)=0 && W(21)=1 => DECODER_ERROR
+  EXPECT_TRUE(!(((inst.Bits() & 0x01000000) == 0x00000000) && ((inst.Bits() & 0x00200000) == 0x00200000)));
+
+  // safety: wback && (Rn == Pc || Rn == Rt) => UNPREDICTABLE
+  EXPECT_TRUE(!((((inst.Bits() & 0x01000000) == 0x00000000) || ((inst.Bits() & 0x00200000) == 0x00200000)) && (((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) || (((((inst.Bits() & 0x000F0000) >> 16)) == (((inst.Bits() & 0x0000F000) >> 12))))))));
+
+  // defs: {base if wback else None};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().Add(Register((((inst.Bits() & 0x01000000) == 0x00000000) || ((inst.Bits() & 0x00200000) == 0x00200000) ? ((inst.Bits() & 0x000F0000) >> 16) : 32)))));
+
+  return true;
+}
+
+// Neutral case:
+// inst(25)=0 & inst(24:20)=xx0x1 & inst(19:16)=~1111 & inst(24:20)=~0x011
+//    = {baseline: 'LdrImmediateOp',
+//       constraints: ,
+//       defs: {inst(15:12),inst(19:16) if inst(24)=0 || inst(21)=1 else 32},
+//       safety: ['15 == inst(19:16) => DECODER_ERROR', 'inst(24)=0 && inst(21)=1 => DECODER_ERROR', 'inst(24)=0 || inst(21)=1 && inst(15:12) == inst(19:16) => UNPREDICTABLE', '15 == inst(15:12) => FORBIDDEN_OPERANDS']}
+//
+// Representaive case:
+// A(25)=0 & op1(24:20)=xx0x1 & Rn(19:16)=~1111 & op1_repeated(24:20)=~0x011
+//    = {None: 32,
+//       P: P(24),
+//       Pc: 15,
+//       Rn: Rn(19:16),
+//       Rt: Rt(15:12),
+//       W: W(21),
+//       base: Rn,
+//       baseline: LdrImmediateOp,
+//       constraints: ,
+//       defs: {Rt,base if wback else None},
+//       fields: [P(24), W(21), Rn(19:16), Rt(15:12)],
+//       safety: [Rn == Pc => DECODER_ERROR, P(24)=0 && W(21)=1 => DECODER_ERROR, wback && Rn == Rt => UNPREDICTABLE, Rt == Pc => FORBIDDEN_OPERANDS],
+//       wback: P(24)=0 || W(21)=1}
+class LoadStore2RegisterImm12OpTesterCase5
+    : public LoadStore2RegisterImm12OpTester {
+ public:
+  LoadStore2RegisterImm12OpTesterCase5(const NamedClassDecoder& decoder)
+    : LoadStore2RegisterImm12OpTester(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
+};
+
+bool LoadStore2RegisterImm12OpTesterCase5
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -198,26 +279,55 @@ bool LoadStore2RegisterImm12OpTesterCase4
       PassesParsePreconditions(inst, decoder);
 }
 
+bool LoadStore2RegisterImm12OpTesterCase5
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(LoadStore2RegisterImm12OpTester::ApplySanityChecks(inst, decoder));
+
+  // safety: Rn == Pc => DECODER_ERROR
+  EXPECT_TRUE(((((inst.Bits() & 0x000F0000) >> 16)) != (15)));
+
+  // safety: P(24)=0 && W(21)=1 => DECODER_ERROR
+  EXPECT_TRUE(!(((inst.Bits() & 0x01000000) == 0x00000000) && ((inst.Bits() & 0x00200000) == 0x00200000)));
+
+  // safety: wback && Rn == Rt => UNPREDICTABLE
+  EXPECT_TRUE(!((((inst.Bits() & 0x01000000) == 0x00000000) || ((inst.Bits() & 0x00200000) == 0x00200000)) && (((((inst.Bits() & 0x000F0000) >> 16)) == (((inst.Bits() & 0x0000F000) >> 12))))));
+
+  // safety: Rt == Pc => FORBIDDEN_OPERANDS
+  EXPECT_TRUE(((((inst.Bits() & 0x0000F000) >> 12)) != (15)));
+
+  // defs: {Rt,base if wback else None};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().Add(Register(((inst.Bits() & 0x0000F000) >> 12))).Add(Register((((inst.Bits() & 0x01000000) == 0x00000000) || ((inst.Bits() & 0x00200000) == 0x00200000) ? ((inst.Bits() & 0x000F0000) >> 16) : 32)))));
+
+  return true;
+}
+
 // Neutral case:
 // inst(25)=0 & inst(24:20)=xx0x1 & inst(19:16)=1111 & inst(24:20)=~0x011 & inst(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
 //    = {baseline: 'Load2RegisterImm12Op',
-//       constraints: }
+//       constraints: ,
+//       defs: {inst(15:12)}}
 //
 // Representaive case:
 // A(25)=0 & op1(24:20)=xx0x1 & Rn(19:16)=1111 & op1_repeated(24:20)=~0x011 & $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
-//    = {baseline: Load2RegisterImm12Op,
-//       constraints: }
-class LoadStore2RegisterImm12OpTesterCase5
+//    = {Rt: Rt(15:12),
+//       baseline: Load2RegisterImm12Op,
+//       constraints: ,
+//       defs: {Rt},
+//       fields: [Rt(15:12)]}
+class LoadStore2RegisterImm12OpTesterCase6
     : public LoadStore2RegisterImm12OpTester {
  public:
-  LoadStore2RegisterImm12OpTesterCase5(const NamedClassDecoder& decoder)
+  LoadStore2RegisterImm12OpTesterCase6(const NamedClassDecoder& decoder)
     : LoadStore2RegisterImm12OpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
-bool LoadStore2RegisterImm12OpTesterCase5
+bool LoadStore2RegisterImm12OpTesterCase6
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -234,26 +344,52 @@ bool LoadStore2RegisterImm12OpTesterCase5
       PassesParsePreconditions(inst, decoder);
 }
 
+bool LoadStore2RegisterImm12OpTesterCase6
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(LoadStore2RegisterImm12OpTester::ApplySanityChecks(inst, decoder));
+
+  // defs: {Rt};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
+
+  return true;
+}
+
 // Neutral case:
 // inst(25)=0 & inst(24:20)=xx1x0 & inst(24:20)=~0x110
 //    = {baseline: 'Store2RegisterImm12Op',
-//       constraints: }
+//       constraints: ,
+//       defs: {inst(19:16) if inst(24)=0 || inst(21)=1 else 32},
+//       safety: ['inst(24)=0 && inst(21)=1 => DECODER_ERROR', '15 == inst(15:12) => UNPREDICTABLE', 'inst(24)=0 || inst(21)=1 && (15 == inst(19:16) || inst(15:12) == inst(19:16)) => UNPREDICTABLE']}
 //
 // Representaive case:
 // A(25)=0 & op1(24:20)=xx1x0 & op1_repeated(24:20)=~0x110
-//    = {baseline: Store2RegisterImm12Op,
-//       constraints: }
-class LoadStore2RegisterImm12OpTesterCase6
+//    = {None: 32,
+//       P: P(24),
+//       Pc: 15,
+//       Rn: Rn(19:16),
+//       Rt: Rt(15:12),
+//       W: W(21),
+//       base: Rn,
+//       baseline: Store2RegisterImm12Op,
+//       constraints: ,
+//       defs: {base if wback else None},
+//       fields: [P(24), W(21), Rn(19:16), Rt(15:12)],
+//       safety: [P(24)=0 && W(21)=1 => DECODER_ERROR, Rt == Pc => UNPREDICTABLE, wback && (Rn == Pc || Rn == Rt) => UNPREDICTABLE],
+//       wback: P(24)=0 || W(21)=1}
+class LoadStore2RegisterImm12OpTesterCase7
     : public LoadStore2RegisterImm12OpTester {
  public:
-  LoadStore2RegisterImm12OpTesterCase6(const NamedClassDecoder& decoder)
+  LoadStore2RegisterImm12OpTesterCase7(const NamedClassDecoder& decoder)
     : LoadStore2RegisterImm12OpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
-bool LoadStore2RegisterImm12OpTesterCase6
+bool LoadStore2RegisterImm12OpTesterCase7
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -268,28 +404,61 @@ bool LoadStore2RegisterImm12OpTesterCase6
       PassesParsePreconditions(inst, decoder);
 }
 
+bool LoadStore2RegisterImm12OpTesterCase7
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(LoadStore2RegisterImm12OpTester::ApplySanityChecks(inst, decoder));
+
+  // safety: P(24)=0 && W(21)=1 => DECODER_ERROR
+  EXPECT_TRUE(!(((inst.Bits() & 0x01000000) == 0x00000000) && ((inst.Bits() & 0x00200000) == 0x00200000)));
+
+  // safety: Rt == Pc => UNPREDICTABLE
+  EXPECT_TRUE(((((inst.Bits() & 0x0000F000) >> 12)) != (15)));
+
+  // safety: wback && (Rn == Pc || Rn == Rt) => UNPREDICTABLE
+  EXPECT_TRUE(!((((inst.Bits() & 0x01000000) == 0x00000000) || ((inst.Bits() & 0x00200000) == 0x00200000)) && (((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) || (((((inst.Bits() & 0x000F0000) >> 16)) == (((inst.Bits() & 0x0000F000) >> 12))))))));
+
+  // defs: {base if wback else None};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().Add(Register((((inst.Bits() & 0x01000000) == 0x00000000) || ((inst.Bits() & 0x00200000) == 0x00200000) ? ((inst.Bits() & 0x000F0000) >> 16) : 32)))));
+
+  return true;
+}
+
 // Neutral case:
 // inst(25)=0 & inst(24:20)=xx1x1 & inst(19:16)=~1111 & inst(24:20)=~0x111
 //    = {baseline: 'Load2RegisterImm12Op',
 //       constraints: ,
-//       safety: ["'NotRnIsPc'"]}
+//       defs: {inst(15:12),inst(19:16) if inst(24)=0 || inst(21)=1 else 32},
+//       safety: ['15 == inst(19:16) => DECODER_ERROR', 'inst(24)=0 && inst(21)=1 => DECODER_ERROR', '15 == inst(15:12) => UNPREDICTABLE', 'inst(24)=0 || inst(21)=1 && inst(15:12) == inst(19:16) => UNPREDICTABLE']}
 //
 // Representaive case:
 // A(25)=0 & op1(24:20)=xx1x1 & Rn(19:16)=~1111 & op1_repeated(24:20)=~0x111
-//    = {baseline: Load2RegisterImm12Op,
+//    = {None: 32,
+//       P: P(24),
+//       Pc: 15,
+//       Rn: Rn(19:16),
+//       Rt: Rt(15:12),
+//       W: W(21),
+//       base: Rn,
+//       baseline: Load2RegisterImm12Op,
 //       constraints: ,
-//       safety: ['NotRnIsPc']}
-class LoadStore2RegisterImm12OpTesterCase7
-    : public LoadStore2RegisterImm12OpTesterNotRnIsPc {
+//       defs: {Rt,base if wback else None},
+//       fields: [P(24), W(21), Rn(19:16), Rt(15:12)],
+//       safety: [Rn == Pc => DECODER_ERROR, P(24)=0 && W(21)=1 => DECODER_ERROR, Rt == Pc => UNPREDICTABLE, wback && Rn == Rt => UNPREDICTABLE],
+//       wback: P(24)=0 || W(21)=1}
+class LoadStore2RegisterImm12OpTesterCase8
+    : public LoadStore2RegisterImm12OpTester {
  public:
-  LoadStore2RegisterImm12OpTesterCase7(const NamedClassDecoder& decoder)
-    : LoadStore2RegisterImm12OpTesterNotRnIsPc(decoder) {}
+  LoadStore2RegisterImm12OpTesterCase8(const NamedClassDecoder& decoder)
+    : LoadStore2RegisterImm12OpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
-bool LoadStore2RegisterImm12OpTesterCase7
+bool LoadStore2RegisterImm12OpTesterCase8
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -301,30 +470,62 @@ bool LoadStore2RegisterImm12OpTesterCase7
   if ((inst.Bits() & 0x01700000) == 0x00700000 /* op1_repeated(24:20)=0x111 */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return LoadStore2RegisterImm12OpTesterNotRnIsPc::
+  return LoadStore2RegisterImm12OpTester::
       PassesParsePreconditions(inst, decoder);
+}
+
+bool LoadStore2RegisterImm12OpTesterCase8
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(LoadStore2RegisterImm12OpTester::ApplySanityChecks(inst, decoder));
+
+  // safety: Rn == Pc => DECODER_ERROR
+  EXPECT_TRUE(((((inst.Bits() & 0x000F0000) >> 16)) != (15)));
+
+  // safety: P(24)=0 && W(21)=1 => DECODER_ERROR
+  EXPECT_TRUE(!(((inst.Bits() & 0x01000000) == 0x00000000) && ((inst.Bits() & 0x00200000) == 0x00200000)));
+
+  // safety: Rt == Pc => UNPREDICTABLE
+  EXPECT_TRUE(((((inst.Bits() & 0x0000F000) >> 12)) != (15)));
+
+  // safety: wback && Rn == Rt => UNPREDICTABLE
+  EXPECT_TRUE(!((((inst.Bits() & 0x01000000) == 0x00000000) || ((inst.Bits() & 0x00200000) == 0x00200000)) && (((((inst.Bits() & 0x000F0000) >> 16)) == (((inst.Bits() & 0x0000F000) >> 12))))));
+
+  // defs: {Rt,base if wback else None};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().Add(Register(((inst.Bits() & 0x0000F000) >> 12))).Add(Register((((inst.Bits() & 0x01000000) == 0x00000000) || ((inst.Bits() & 0x00200000) == 0x00200000) ? ((inst.Bits() & 0x000F0000) >> 16) : 32)))));
+
+  return true;
 }
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=xx1x1 & inst(19:16)=1111 & inst(24:20)=~0x111 & inst(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
 //    = {baseline: 'Load2RegisterImm12Op',
-//       constraints: }
+//       constraints: ,
+//       defs: {inst(15:12)},
+//       safety: ['15 == inst(15:12) => UNPREDICTABLE']}
 //
 // Representaive case:
 // A(25)=0 & op1(24:20)=xx1x1 & Rn(19:16)=1111 & op1_repeated(24:20)=~0x111 & $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
-//    = {baseline: Load2RegisterImm12Op,
-//       constraints: }
-class LoadStore2RegisterImm12OpTesterCase8
+//    = {Pc: 15,
+//       Rt: Rt(15:12),
+//       baseline: Load2RegisterImm12Op,
+//       constraints: ,
+//       defs: {Rt},
+//       fields: [Rt(15:12)],
+//       safety: [Rt == Pc => UNPREDICTABLE]}
+class LoadStore2RegisterImm12OpTesterCase9
     : public LoadStore2RegisterImm12OpTester {
  public:
-  LoadStore2RegisterImm12OpTesterCase8(const NamedClassDecoder& decoder)
+  LoadStore2RegisterImm12OpTesterCase9(const NamedClassDecoder& decoder)
     : LoadStore2RegisterImm12OpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
-bool LoadStore2RegisterImm12OpTesterCase8
+bool LoadStore2RegisterImm12OpTesterCase9
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -341,6 +542,20 @@ bool LoadStore2RegisterImm12OpTesterCase8
       PassesParsePreconditions(inst, decoder);
 }
 
+bool LoadStore2RegisterImm12OpTesterCase9
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(LoadStore2RegisterImm12OpTester::ApplySanityChecks(inst, decoder));
+
+  // safety: Rt == Pc => UNPREDICTABLE
+  EXPECT_TRUE(((((inst.Bits() & 0x0000F000) >> 12)) != (15)));
+
+  // defs: {Rt};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
+
+  return true;
+}
+
 // Neutral case:
 // inst(25)=1 & inst(24:20)=0x010 & inst(4)=0
 //    = {baseline: 'ForbiddenCondDecoder',
@@ -350,17 +565,17 @@ bool LoadStore2RegisterImm12OpTesterCase8
 // A(25)=1 & op1(24:20)=0x010 & B(4)=0
 //    = {baseline: ForbiddenCondDecoder,
 //       constraints: }
-class UnsafeCondDecoderTesterCase9
+class UnsafeCondDecoderTesterCase10
     : public UnsafeCondDecoderTester {
  public:
-  UnsafeCondDecoderTesterCase9(const NamedClassDecoder& decoder)
+  UnsafeCondDecoderTesterCase10(const NamedClassDecoder& decoder)
     : UnsafeCondDecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool UnsafeCondDecoderTesterCase9
+bool UnsafeCondDecoderTesterCase10
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -384,17 +599,17 @@ bool UnsafeCondDecoderTesterCase9
 // A(25)=1 & op1(24:20)=0x011 & B(4)=0
 //    = {baseline: ForbiddenCondDecoder,
 //       constraints: }
-class UnsafeCondDecoderTesterCase10
+class UnsafeCondDecoderTesterCase11
     : public UnsafeCondDecoderTester {
  public:
-  UnsafeCondDecoderTesterCase10(const NamedClassDecoder& decoder)
+  UnsafeCondDecoderTesterCase11(const NamedClassDecoder& decoder)
     : UnsafeCondDecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool UnsafeCondDecoderTesterCase10
+bool UnsafeCondDecoderTesterCase11
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -418,17 +633,17 @@ bool UnsafeCondDecoderTesterCase10
 // A(25)=1 & op1(24:20)=0x110 & B(4)=0
 //    = {baseline: ForbiddenCondDecoder,
 //       constraints: }
-class UnsafeCondDecoderTesterCase11
+class UnsafeCondDecoderTesterCase12
     : public UnsafeCondDecoderTester {
  public:
-  UnsafeCondDecoderTesterCase11(const NamedClassDecoder& decoder)
+  UnsafeCondDecoderTesterCase12(const NamedClassDecoder& decoder)
     : UnsafeCondDecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool UnsafeCondDecoderTesterCase11
+bool UnsafeCondDecoderTesterCase12
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -452,17 +667,17 @@ bool UnsafeCondDecoderTesterCase11
 // A(25)=1 & op1(24:20)=0x111 & B(4)=0
 //    = {baseline: ForbiddenCondDecoder,
 //       constraints: }
-class UnsafeCondDecoderTesterCase12
+class UnsafeCondDecoderTesterCase13
     : public UnsafeCondDecoderTester {
  public:
-  UnsafeCondDecoderTesterCase12(const NamedClassDecoder& decoder)
+  UnsafeCondDecoderTesterCase13(const NamedClassDecoder& decoder)
     : UnsafeCondDecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool UnsafeCondDecoderTesterCase12
+bool UnsafeCondDecoderTesterCase13
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -480,23 +695,40 @@ bool UnsafeCondDecoderTesterCase12
 // Neutral case:
 // inst(25)=1 & inst(24:20)=xx0x0 & inst(4)=0 & inst(24:20)=~0x010
 //    = {baseline: 'Store3RegisterImm5Op',
-//       constraints: }
+//       constraints: ,
+//       defs: {inst(19:16) if inst(24)=0 || inst(21)=1 else 32},
+//       safety: ['inst(24)=0 && inst(21)=1 => DECODER_ERROR', '15 == inst(3:0) => UNPREDICTABLE', 'inst(24)=0 || inst(21)=1 && (15 == inst(19:16) || inst(15:12) == inst(19:16)) => UNPREDICTABLE', 'ArchVersion() < 6 && inst(24)=0 || inst(21)=1 && inst(19:16) == inst(3:0) => UNPREDICTABLE', 'inst(24)=1 => FORBIDDEN']}
 //
 // Representaive case:
 // A(25)=1 & op1(24:20)=xx0x0 & B(4)=0 & op1_repeated(24:20)=~0x010
-//    = {baseline: Store3RegisterImm5Op,
-//       constraints: }
-class LoadStore3RegisterImm5OpTesterCase13
+//    = {None: 32,
+//       P: P(24),
+//       Pc: 15,
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rt: Rt(15:12),
+//       W: W(21),
+//       base: Rn,
+//       baseline: Store3RegisterImm5Op,
+//       constraints: ,
+//       defs: {base if wback else None},
+//       fields: [P(24), W(21), Rn(19:16), Rt(15:12), Rm(3:0)],
+//       index: P(24)=1,
+//       safety: [P(24)=0 && W(21)=1 => DECODER_ERROR, Rm == Pc => UNPREDICTABLE, wback && (Rn == Pc || Rn == Rt) => UNPREDICTABLE, ArchVersion() < 6 && wback && Rn == Rm => UNPREDICTABLE, index => FORBIDDEN],
+//       wback: P(24)=0 || W(21)=1}
+class LoadStore3RegisterImm5OpTesterCase14
     : public LoadStore3RegisterImm5OpTester {
  public:
-  LoadStore3RegisterImm5OpTesterCase13(const NamedClassDecoder& decoder)
+  LoadStore3RegisterImm5OpTesterCase14(const NamedClassDecoder& decoder)
     : LoadStore3RegisterImm5OpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
-bool LoadStore3RegisterImm5OpTesterCase13
+bool LoadStore3RegisterImm5OpTesterCase14
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -512,26 +744,69 @@ bool LoadStore3RegisterImm5OpTesterCase13
       PassesParsePreconditions(inst, decoder);
 }
 
+bool LoadStore3RegisterImm5OpTesterCase14
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(LoadStore3RegisterImm5OpTester::ApplySanityChecks(inst, decoder));
+
+  // safety: P(24)=0 && W(21)=1 => DECODER_ERROR
+  EXPECT_TRUE(!(((inst.Bits() & 0x01000000) == 0x00000000) && ((inst.Bits() & 0x00200000) == 0x00200000)));
+
+  // safety: Rm == Pc => UNPREDICTABLE
+  EXPECT_TRUE((((inst.Bits() & 0x0000000F)) != (15)));
+
+  // safety: wback && (Rn == Pc || Rn == Rt) => UNPREDICTABLE
+  EXPECT_TRUE(!((((inst.Bits() & 0x01000000) == 0x00000000) || ((inst.Bits() & 0x00200000) == 0x00200000)) && (((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) || (((((inst.Bits() & 0x000F0000) >> 16)) == (((inst.Bits() & 0x0000F000) >> 12))))))));
+
+  // safety: ArchVersion() < 6 && wback && Rn == Rm => UNPREDICTABLE
+  EXPECT_TRUE(!((((nacl_arm_dec::ArchVersion()) < (6))) && (((inst.Bits() & 0x01000000) == 0x00000000) || ((inst.Bits() & 0x00200000) == 0x00200000)) && (((((inst.Bits() & 0x000F0000) >> 16)) == ((inst.Bits() & 0x0000000F))))));
+
+  // safety: index => FORBIDDEN
+  EXPECT_TRUE(!((inst.Bits() & 0x01000000) == 0x01000000));
+
+  // defs: {base if wback else None};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().Add(Register((((inst.Bits() & 0x01000000) == 0x00000000) || ((inst.Bits() & 0x00200000) == 0x00200000) ? ((inst.Bits() & 0x000F0000) >> 16) : 32)))));
+
+  return true;
+}
+
 // Neutral case:
 // inst(25)=1 & inst(24:20)=xx0x1 & inst(4)=0 & inst(24:20)=~0x011
 //    = {baseline: 'Load3RegisterImm5Op',
-//       constraints: }
+//       constraints: ,
+//       defs: {inst(15:12),inst(19:16) if inst(24)=0 || inst(21)=1 else 32},
+//       safety: ['inst(24)=0 && inst(21)=1 => DECODER_ERROR', '15 == inst(3:0) => UNPREDICTABLE', 'inst(24)=0 || inst(21)=1 && (15 == inst(19:16) || inst(15:12) == inst(19:16)) => UNPREDICTABLE', 'ArchVersion() < 6 && inst(24)=0 || inst(21)=1 && inst(19:16) == inst(3:0) => UNPREDICTABLE', 'inst(24)=1 => FORBIDDEN', '15 == inst(15:12) => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // A(25)=1 & op1(24:20)=xx0x1 & B(4)=0 & op1_repeated(24:20)=~0x011
-//    = {baseline: Load3RegisterImm5Op,
-//       constraints: }
-class LoadStore3RegisterImm5OpTesterCase14
+//    = {None: 32,
+//       P: P(24),
+//       Pc: 15,
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rt: Rt(15:12),
+//       W: W(21),
+//       base: Rn,
+//       baseline: Load3RegisterImm5Op,
+//       constraints: ,
+//       defs: {Rt,base if wback else None},
+//       fields: [P(24), W(21), Rn(19:16), Rt(15:12), Rm(3:0)],
+//       index: P(24)=1,
+//       safety: [P(24)=0 && W(21)=1 => DECODER_ERROR, Rm == Pc => UNPREDICTABLE, wback && (Rn == Pc || Rn == Rt) => UNPREDICTABLE, ArchVersion() < 6 && wback && Rn == Rm => UNPREDICTABLE, index => FORBIDDEN, Rt == Pc => FORBIDDEN_OPERANDS],
+//       wback: P(24)=0 || W(21)=1}
+class LoadStore3RegisterImm5OpTesterCase15
     : public LoadStore3RegisterImm5OpTester {
  public:
-  LoadStore3RegisterImm5OpTesterCase14(const NamedClassDecoder& decoder)
+  LoadStore3RegisterImm5OpTesterCase15(const NamedClassDecoder& decoder)
     : LoadStore3RegisterImm5OpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
-bool LoadStore3RegisterImm5OpTesterCase14
+bool LoadStore3RegisterImm5OpTesterCase15
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -547,26 +822,72 @@ bool LoadStore3RegisterImm5OpTesterCase14
       PassesParsePreconditions(inst, decoder);
 }
 
+bool LoadStore3RegisterImm5OpTesterCase15
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(LoadStore3RegisterImm5OpTester::ApplySanityChecks(inst, decoder));
+
+  // safety: P(24)=0 && W(21)=1 => DECODER_ERROR
+  EXPECT_TRUE(!(((inst.Bits() & 0x01000000) == 0x00000000) && ((inst.Bits() & 0x00200000) == 0x00200000)));
+
+  // safety: Rm == Pc => UNPREDICTABLE
+  EXPECT_TRUE((((inst.Bits() & 0x0000000F)) != (15)));
+
+  // safety: wback && (Rn == Pc || Rn == Rt) => UNPREDICTABLE
+  EXPECT_TRUE(!((((inst.Bits() & 0x01000000) == 0x00000000) || ((inst.Bits() & 0x00200000) == 0x00200000)) && (((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) || (((((inst.Bits() & 0x000F0000) >> 16)) == (((inst.Bits() & 0x0000F000) >> 12))))))));
+
+  // safety: ArchVersion() < 6 && wback && Rn == Rm => UNPREDICTABLE
+  EXPECT_TRUE(!((((nacl_arm_dec::ArchVersion()) < (6))) && (((inst.Bits() & 0x01000000) == 0x00000000) || ((inst.Bits() & 0x00200000) == 0x00200000)) && (((((inst.Bits() & 0x000F0000) >> 16)) == ((inst.Bits() & 0x0000000F))))));
+
+  // safety: index => FORBIDDEN
+  EXPECT_TRUE(!((inst.Bits() & 0x01000000) == 0x01000000));
+
+  // safety: Rt == Pc => FORBIDDEN_OPERANDS
+  EXPECT_TRUE(((((inst.Bits() & 0x0000F000) >> 12)) != (15)));
+
+  // defs: {Rt,base if wback else None};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().Add(Register(((inst.Bits() & 0x0000F000) >> 12))).Add(Register((((inst.Bits() & 0x01000000) == 0x00000000) || ((inst.Bits() & 0x00200000) == 0x00200000) ? ((inst.Bits() & 0x000F0000) >> 16) : 32)))));
+
+  return true;
+}
+
 // Neutral case:
 // inst(25)=1 & inst(24:20)=xx1x0 & inst(4)=0 & inst(24:20)=~0x110
 //    = {baseline: 'Store3RegisterImm5Op',
-//       constraints: }
+//       constraints: ,
+//       defs: {inst(19:16) if inst(24)=0 || inst(21)=1 else 32},
+//       safety: ['inst(24)=0 && inst(21)=1 => DECODER_ERROR', '15 == inst(3:0) => UNPREDICTABLE', 'inst(24)=0 || inst(21)=1 && (15 == inst(19:16) || inst(15:12) == inst(19:16)) => UNPREDICTABLE', 'ArchVersion() < 6 && inst(24)=0 || inst(21)=1 && inst(19:16) == inst(3:0) => UNPREDICTABLE', 'inst(24)=1 => FORBIDDEN']}
 //
 // Representaive case:
 // A(25)=1 & op1(24:20)=xx1x0 & B(4)=0 & op1_repeated(24:20)=~0x110
-//    = {baseline: Store3RegisterImm5Op,
-//       constraints: }
-class LoadStore3RegisterImm5OpTesterCase15
+//    = {None: 32,
+//       P: P(24),
+//       Pc: 15,
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rt: Rt(15:12),
+//       W: W(21),
+//       base: Rn,
+//       baseline: Store3RegisterImm5Op,
+//       constraints: ,
+//       defs: {base if wback else None},
+//       fields: [P(24), W(21), Rn(19:16), Rt(15:12), Rm(3:0)],
+//       index: P(24)=1,
+//       safety: [P(24)=0 && W(21)=1 => DECODER_ERROR, Rm == Pc => UNPREDICTABLE, wback && (Rn == Pc || Rn == Rt) => UNPREDICTABLE, ArchVersion() < 6 && wback && Rn == Rm => UNPREDICTABLE, index => FORBIDDEN],
+//       wback: P(24)=0 || W(21)=1}
+class LoadStore3RegisterImm5OpTesterCase16
     : public LoadStore3RegisterImm5OpTester {
  public:
-  LoadStore3RegisterImm5OpTesterCase15(const NamedClassDecoder& decoder)
+  LoadStore3RegisterImm5OpTesterCase16(const NamedClassDecoder& decoder)
     : LoadStore3RegisterImm5OpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
-bool LoadStore3RegisterImm5OpTesterCase15
+bool LoadStore3RegisterImm5OpTesterCase16
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -582,26 +903,69 @@ bool LoadStore3RegisterImm5OpTesterCase15
       PassesParsePreconditions(inst, decoder);
 }
 
+bool LoadStore3RegisterImm5OpTesterCase16
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(LoadStore3RegisterImm5OpTester::ApplySanityChecks(inst, decoder));
+
+  // safety: P(24)=0 && W(21)=1 => DECODER_ERROR
+  EXPECT_TRUE(!(((inst.Bits() & 0x01000000) == 0x00000000) && ((inst.Bits() & 0x00200000) == 0x00200000)));
+
+  // safety: Rm == Pc => UNPREDICTABLE
+  EXPECT_TRUE((((inst.Bits() & 0x0000000F)) != (15)));
+
+  // safety: wback && (Rn == Pc || Rn == Rt) => UNPREDICTABLE
+  EXPECT_TRUE(!((((inst.Bits() & 0x01000000) == 0x00000000) || ((inst.Bits() & 0x00200000) == 0x00200000)) && (((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) || (((((inst.Bits() & 0x000F0000) >> 16)) == (((inst.Bits() & 0x0000F000) >> 12))))))));
+
+  // safety: ArchVersion() < 6 && wback && Rn == Rm => UNPREDICTABLE
+  EXPECT_TRUE(!((((nacl_arm_dec::ArchVersion()) < (6))) && (((inst.Bits() & 0x01000000) == 0x00000000) || ((inst.Bits() & 0x00200000) == 0x00200000)) && (((((inst.Bits() & 0x000F0000) >> 16)) == ((inst.Bits() & 0x0000000F))))));
+
+  // safety: index => FORBIDDEN
+  EXPECT_TRUE(!((inst.Bits() & 0x01000000) == 0x01000000));
+
+  // defs: {base if wback else None};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().Add(Register((((inst.Bits() & 0x01000000) == 0x00000000) || ((inst.Bits() & 0x00200000) == 0x00200000) ? ((inst.Bits() & 0x000F0000) >> 16) : 32)))));
+
+  return true;
+}
+
 // Neutral case:
 // inst(25)=1 & inst(24:20)=xx1x1 & inst(4)=0 & inst(24:20)=~0x111
 //    = {baseline: 'Load3RegisterImm5Op',
-//       constraints: }
+//       constraints: ,
+//       defs: {inst(15:12),inst(19:16) if inst(24)=0 || inst(21)=1 else 32},
+//       safety: ['inst(24)=0 && inst(21)=1 => DECODER_ERROR', '15 == inst(15:12) || 15 == inst(3:0) => UNPREDICTABLE', 'inst(24)=0 || inst(21)=1 && (15 == inst(19:16) || inst(15:12) == inst(19:16)) => UNPREDICTABLE', 'ArchVersion() < 6 && inst(24)=0 || inst(21)=1 && inst(19:16) == inst(3:0) => UNPREDICTABLE', 'inst(24)=1 => FORBIDDEN']}
 //
 // Representaive case:
 // A(25)=1 & op1(24:20)=xx1x1 & B(4)=0 & op1_repeated(24:20)=~0x111
-//    = {baseline: Load3RegisterImm5Op,
-//       constraints: }
-class LoadStore3RegisterImm5OpTesterCase16
+//    = {None: 32,
+//       P: P(24),
+//       Pc: 15,
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rt: Rt(15:12),
+//       W: W(21),
+//       base: Rn,
+//       baseline: Load3RegisterImm5Op,
+//       constraints: ,
+//       defs: {Rt,base if wback else None},
+//       fields: [P(24), W(21), Rn(19:16), Rt(15:12), Rm(3:0)],
+//       index: P(24)=1,
+//       safety: [P(24)=0 && W(21)=1 => DECODER_ERROR, Pc in {Rt,Rm} => UNPREDICTABLE, wback && (Rn == Pc || Rn == Rt) => UNPREDICTABLE, ArchVersion() < 6 && wback && Rn == Rm => UNPREDICTABLE, index => FORBIDDEN],
+//       wback: P(24)=0 || W(21)=1}
+class LoadStore3RegisterImm5OpTesterCase17
     : public LoadStore3RegisterImm5OpTester {
  public:
-  LoadStore3RegisterImm5OpTesterCase16(const NamedClassDecoder& decoder)
+  LoadStore3RegisterImm5OpTesterCase17(const NamedClassDecoder& decoder)
     : LoadStore3RegisterImm5OpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
-bool LoadStore3RegisterImm5OpTesterCase16
+bool LoadStore3RegisterImm5OpTesterCase17
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -617,6 +981,32 @@ bool LoadStore3RegisterImm5OpTesterCase16
       PassesParsePreconditions(inst, decoder);
 }
 
+bool LoadStore3RegisterImm5OpTesterCase17
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(LoadStore3RegisterImm5OpTester::ApplySanityChecks(inst, decoder));
+
+  // safety: P(24)=0 && W(21)=1 => DECODER_ERROR
+  EXPECT_TRUE(!(((inst.Bits() & 0x01000000) == 0x00000000) && ((inst.Bits() & 0x00200000) == 0x00200000)));
+
+  // safety: Pc in {Rt,Rm} => UNPREDICTABLE
+  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == ((inst.Bits() & 0x0000000F))))));
+
+  // safety: wback && (Rn == Pc || Rn == Rt) => UNPREDICTABLE
+  EXPECT_TRUE(!((((inst.Bits() & 0x01000000) == 0x00000000) || ((inst.Bits() & 0x00200000) == 0x00200000)) && (((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) || (((((inst.Bits() & 0x000F0000) >> 16)) == (((inst.Bits() & 0x0000F000) >> 12))))))));
+
+  // safety: ArchVersion() < 6 && wback && Rn == Rm => UNPREDICTABLE
+  EXPECT_TRUE(!((((nacl_arm_dec::ArchVersion()) < (6))) && (((inst.Bits() & 0x01000000) == 0x00000000) || ((inst.Bits() & 0x00200000) == 0x00200000)) && (((((inst.Bits() & 0x000F0000) >> 16)) == ((inst.Bits() & 0x0000000F))))));
+
+  // safety: index => FORBIDDEN
+  EXPECT_TRUE(!((inst.Bits() & 0x01000000) == 0x01000000));
+
+  // defs: {Rt,base if wback else None};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().Add(Register(((inst.Bits() & 0x0000F000) >> 12))).Add(Register((((inst.Bits() & 0x01000000) == 0x00000000) || ((inst.Bits() & 0x00200000) == 0x00200000) ? ((inst.Bits() & 0x000F0000) >> 16) : 32)))));
+
+  return true;
+}
+
 // The following are derived class decoder testers for decoder actions
 // associated with a pattern of an action. These derived classes introduce
 // a default constructor that automatically initializes the expected decoder
@@ -626,19 +1016,19 @@ bool LoadStore3RegisterImm5OpTesterCase16
 // inst(25)=0 & inst(24:20)=0x010
 //    = {baseline: 'ForbiddenCondDecoder',
 //       constraints: ,
-//       rule: 'Strt_Rule_A1'}
+//       rule: 'STRT_A1'}
 //
 // Representative case:
 // A(25)=0 & op1(24:20)=0x010
 //    = {baseline: ForbiddenCondDecoder,
 //       constraints: ,
-//       rule: Strt_Rule_A1}
+//       rule: STRT_A1}
 class ForbiddenCondDecoderTester_Case0
     : public UnsafeCondDecoderTesterCase0 {
  public:
   ForbiddenCondDecoderTester_Case0()
     : UnsafeCondDecoderTesterCase0(
-      state_.ForbiddenCondDecoder_Strt_Rule_A1_instance_)
+      state_.ForbiddenCondDecoder_STRT_A1_instance_)
   {}
 };
 
@@ -646,19 +1036,19 @@ class ForbiddenCondDecoderTester_Case0
 // inst(25)=0 & inst(24:20)=0x011
 //    = {baseline: 'ForbiddenCondDecoder',
 //       constraints: ,
-//       rule: 'Ldrt_Rule_A1'}
+//       rule: 'LDRT_A1'}
 //
 // Representative case:
 // A(25)=0 & op1(24:20)=0x011
 //    = {baseline: ForbiddenCondDecoder,
 //       constraints: ,
-//       rule: Ldrt_Rule_A1}
+//       rule: LDRT_A1}
 class ForbiddenCondDecoderTester_Case1
     : public UnsafeCondDecoderTesterCase1 {
  public:
   ForbiddenCondDecoderTester_Case1()
     : UnsafeCondDecoderTesterCase1(
-      state_.ForbiddenCondDecoder_Ldrt_Rule_A1_instance_)
+      state_.ForbiddenCondDecoder_LDRT_A1_instance_)
   {}
 };
 
@@ -666,19 +1056,19 @@ class ForbiddenCondDecoderTester_Case1
 // inst(25)=0 & inst(24:20)=0x110
 //    = {baseline: 'ForbiddenCondDecoder',
 //       constraints: ,
-//       rule: 'Strtb_Rule_A1'}
+//       rule: 'STRBT_A1'}
 //
 // Representative case:
 // A(25)=0 & op1(24:20)=0x110
 //    = {baseline: ForbiddenCondDecoder,
 //       constraints: ,
-//       rule: Strtb_Rule_A1}
+//       rule: STRBT_A1}
 class ForbiddenCondDecoderTester_Case2
     : public UnsafeCondDecoderTesterCase2 {
  public:
   ForbiddenCondDecoderTester_Case2()
     : UnsafeCondDecoderTesterCase2(
-      state_.ForbiddenCondDecoder_Strtb_Rule_A1_instance_)
+      state_.ForbiddenCondDecoder_STRBT_A1_instance_)
   {}
 };
 
@@ -686,19 +1076,52 @@ class ForbiddenCondDecoderTester_Case2
 // inst(25)=0 & inst(24:20)=0x111
 //    = {baseline: 'ForbiddenCondDecoder',
 //       constraints: ,
-//       rule: 'Ldrtb_Rule_A1'}
+//       rule: 'LDRBT_A1'}
 //
 // Representative case:
 // A(25)=0 & op1(24:20)=0x111
 //    = {baseline: ForbiddenCondDecoder,
 //       constraints: ,
-//       rule: Ldrtb_Rule_A1}
+//       rule: LDRBT_A1}
 class ForbiddenCondDecoderTester_Case3
     : public UnsafeCondDecoderTesterCase3 {
  public:
   ForbiddenCondDecoderTester_Case3()
     : UnsafeCondDecoderTesterCase3(
-      state_.ForbiddenCondDecoder_Ldrtb_Rule_A1_instance_)
+      state_.ForbiddenCondDecoder_LDRBT_A1_instance_)
+  {}
+};
+
+// Neutral case:
+// inst(25)=0 & inst(24:20)=xx0x0 & inst(24:20)=~0x010
+//    = {baseline: 'Store2RegisterImm12Op',
+//       constraints: ,
+//       defs: {inst(19:16) if inst(24)=0 || inst(21)=1 else 32},
+//       rule: 'STR_immediate',
+//       safety: ['inst(24)=0 && inst(21)=1 => DECODER_ERROR', 'inst(24)=0 || inst(21)=1 && (15 == inst(19:16) || inst(15:12) == inst(19:16)) => UNPREDICTABLE']}
+//
+// Representative case:
+// A(25)=0 & op1(24:20)=xx0x0 & op1_repeated(24:20)=~0x010
+//    = {None: 32,
+//       P: P(24),
+//       Pc: 15,
+//       Rn: Rn(19:16),
+//       Rt: Rt(15:12),
+//       W: W(21),
+//       base: Rn,
+//       baseline: Store2RegisterImm12Op,
+//       constraints: ,
+//       defs: {base if wback else None},
+//       fields: [P(24), W(21), Rn(19:16), Rt(15:12)],
+//       rule: STR_immediate,
+//       safety: [P(24)=0 && W(21)=1 => DECODER_ERROR, wback && (Rn == Pc || Rn == Rt) => UNPREDICTABLE],
+//       wback: P(24)=0 || W(21)=1}
+class Store2RegisterImm12OpTester_Case4
+    : public LoadStore2RegisterImm12OpTesterCase4 {
+ public:
+  Store2RegisterImm12OpTester_Case4()
+    : LoadStore2RegisterImm12OpTesterCase4(
+      state_.Store2RegisterImm12Op_STR_immediate_instance_)
   {}
 };
 
@@ -706,19 +1129,32 @@ class ForbiddenCondDecoderTester_Case3
 // inst(25)=0 & inst(24:20)=xx0x1 & inst(19:16)=~1111 & inst(24:20)=~0x011
 //    = {baseline: 'LdrImmediateOp',
 //       constraints: ,
-//       rule: 'Ldr_Rule_58_A1_P120'}
+//       defs: {inst(15:12),inst(19:16) if inst(24)=0 || inst(21)=1 else 32},
+//       rule: 'LDR_immediate',
+//       safety: ['15 == inst(19:16) => DECODER_ERROR', 'inst(24)=0 && inst(21)=1 => DECODER_ERROR', 'inst(24)=0 || inst(21)=1 && inst(15:12) == inst(19:16) => UNPREDICTABLE', '15 == inst(15:12) => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // A(25)=0 & op1(24:20)=xx0x1 & Rn(19:16)=~1111 & op1_repeated(24:20)=~0x011
-//    = {baseline: LdrImmediateOp,
+//    = {None: 32,
+//       P: P(24),
+//       Pc: 15,
+//       Rn: Rn(19:16),
+//       Rt: Rt(15:12),
+//       W: W(21),
+//       base: Rn,
+//       baseline: LdrImmediateOp,
 //       constraints: ,
-//       rule: Ldr_Rule_58_A1_P120}
-class LdrImmediateOpTester_Case4
-    : public LoadStore2RegisterImm12OpTesterCase4 {
+//       defs: {Rt,base if wback else None},
+//       fields: [P(24), W(21), Rn(19:16), Rt(15:12)],
+//       rule: LDR_immediate,
+//       safety: [Rn == Pc => DECODER_ERROR, P(24)=0 && W(21)=1 => DECODER_ERROR, wback && Rn == Rt => UNPREDICTABLE, Rt == Pc => FORBIDDEN_OPERANDS],
+//       wback: P(24)=0 || W(21)=1}
+class LdrImmediateOpTester_Case5
+    : public LoadStore2RegisterImm12OpTesterCase5 {
  public:
-  LdrImmediateOpTester_Case4()
-    : LoadStore2RegisterImm12OpTesterCase4(
-      state_.LdrImmediateOp_Ldr_Rule_58_A1_P120_instance_)
+  LdrImmediateOpTester_Case5()
+    : LoadStore2RegisterImm12OpTesterCase5(
+      state_.LdrImmediateOp_LDR_immediate_instance_)
   {}
 };
 
@@ -726,19 +1162,23 @@ class LdrImmediateOpTester_Case4
 // inst(25)=0 & inst(24:20)=xx0x1 & inst(19:16)=1111 & inst(24:20)=~0x011 & inst(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
 //    = {baseline: 'Load2RegisterImm12Op',
 //       constraints: ,
-//       rule: 'Ldr_Rule_59_A1_P122'}
+//       defs: {inst(15:12)},
+//       rule: 'LDR_literal'}
 //
 // Representative case:
 // A(25)=0 & op1(24:20)=xx0x1 & Rn(19:16)=1111 & op1_repeated(24:20)=~0x011 & $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
-//    = {baseline: Load2RegisterImm12Op,
+//    = {Rt: Rt(15:12),
+//       baseline: Load2RegisterImm12Op,
 //       constraints: ,
-//       rule: Ldr_Rule_59_A1_P122}
-class Load2RegisterImm12OpTester_Case5
-    : public LoadStore2RegisterImm12OpTesterCase5 {
+//       defs: {Rt},
+//       fields: [Rt(15:12)],
+//       rule: LDR_literal}
+class Load2RegisterImm12OpTester_Case6
+    : public LoadStore2RegisterImm12OpTesterCase6 {
  public:
-  Load2RegisterImm12OpTester_Case5()
-    : LoadStore2RegisterImm12OpTesterCase5(
-      state_.Load2RegisterImm12Op_Ldr_Rule_59_A1_P122_instance_)
+  Load2RegisterImm12OpTester_Case6()
+    : LoadStore2RegisterImm12OpTesterCase6(
+      state_.Load2RegisterImm12Op_LDR_literal_instance_)
   {}
 };
 
@@ -746,19 +1186,32 @@ class Load2RegisterImm12OpTester_Case5
 // inst(25)=0 & inst(24:20)=xx1x0 & inst(24:20)=~0x110
 //    = {baseline: 'Store2RegisterImm12Op',
 //       constraints: ,
-//       rule: 'Strb_Rule_197_A1_P390'}
+//       defs: {inst(19:16) if inst(24)=0 || inst(21)=1 else 32},
+//       rule: 'STRB_immediate',
+//       safety: ['inst(24)=0 && inst(21)=1 => DECODER_ERROR', '15 == inst(15:12) => UNPREDICTABLE', 'inst(24)=0 || inst(21)=1 && (15 == inst(19:16) || inst(15:12) == inst(19:16)) => UNPREDICTABLE']}
 //
 // Representative case:
 // A(25)=0 & op1(24:20)=xx1x0 & op1_repeated(24:20)=~0x110
-//    = {baseline: Store2RegisterImm12Op,
+//    = {None: 32,
+//       P: P(24),
+//       Pc: 15,
+//       Rn: Rn(19:16),
+//       Rt: Rt(15:12),
+//       W: W(21),
+//       base: Rn,
+//       baseline: Store2RegisterImm12Op,
 //       constraints: ,
-//       rule: Strb_Rule_197_A1_P390}
-class Store2RegisterImm12OpTester_Case6
-    : public LoadStore2RegisterImm12OpTesterCase6 {
+//       defs: {base if wback else None},
+//       fields: [P(24), W(21), Rn(19:16), Rt(15:12)],
+//       rule: STRB_immediate,
+//       safety: [P(24)=0 && W(21)=1 => DECODER_ERROR, Rt == Pc => UNPREDICTABLE, wback && (Rn == Pc || Rn == Rt) => UNPREDICTABLE],
+//       wback: P(24)=0 || W(21)=1}
+class Store2RegisterImm12OpTester_Case7
+    : public LoadStore2RegisterImm12OpTesterCase7 {
  public:
-  Store2RegisterImm12OpTester_Case6()
-    : LoadStore2RegisterImm12OpTesterCase6(
-      state_.Store2RegisterImm12Op_Strb_Rule_197_A1_P390_instance_)
+  Store2RegisterImm12OpTester_Case7()
+    : LoadStore2RegisterImm12OpTesterCase7(
+      state_.Store2RegisterImm12Op_STRB_immediate_instance_)
   {}
 };
 
@@ -766,21 +1219,32 @@ class Store2RegisterImm12OpTester_Case6
 // inst(25)=0 & inst(24:20)=xx1x1 & inst(19:16)=~1111 & inst(24:20)=~0x111
 //    = {baseline: 'Load2RegisterImm12Op',
 //       constraints: ,
-//       rule: 'Ldrb_Rule_62_A1_P128',
-//       safety: ["'NotRnIsPc'"]}
+//       defs: {inst(15:12),inst(19:16) if inst(24)=0 || inst(21)=1 else 32},
+//       rule: 'LDRB_immediate',
+//       safety: ['15 == inst(19:16) => DECODER_ERROR', 'inst(24)=0 && inst(21)=1 => DECODER_ERROR', '15 == inst(15:12) => UNPREDICTABLE', 'inst(24)=0 || inst(21)=1 && inst(15:12) == inst(19:16) => UNPREDICTABLE']}
 //
 // Representative case:
 // A(25)=0 & op1(24:20)=xx1x1 & Rn(19:16)=~1111 & op1_repeated(24:20)=~0x111
-//    = {baseline: Load2RegisterImm12Op,
+//    = {None: 32,
+//       P: P(24),
+//       Pc: 15,
+//       Rn: Rn(19:16),
+//       Rt: Rt(15:12),
+//       W: W(21),
+//       base: Rn,
+//       baseline: Load2RegisterImm12Op,
 //       constraints: ,
-//       rule: Ldrb_Rule_62_A1_P128,
-//       safety: ['NotRnIsPc']}
-class Load2RegisterImm12OpTester_Case7
-    : public LoadStore2RegisterImm12OpTesterCase7 {
+//       defs: {Rt,base if wback else None},
+//       fields: [P(24), W(21), Rn(19:16), Rt(15:12)],
+//       rule: LDRB_immediate,
+//       safety: [Rn == Pc => DECODER_ERROR, P(24)=0 && W(21)=1 => DECODER_ERROR, Rt == Pc => UNPREDICTABLE, wback && Rn == Rt => UNPREDICTABLE],
+//       wback: P(24)=0 || W(21)=1}
+class Load2RegisterImm12OpTester_Case8
+    : public LoadStore2RegisterImm12OpTesterCase8 {
  public:
-  Load2RegisterImm12OpTester_Case7()
-    : LoadStore2RegisterImm12OpTesterCase7(
-      state_.Load2RegisterImm12Op_Ldrb_Rule_62_A1_P128_instance_)
+  Load2RegisterImm12OpTester_Case8()
+    : LoadStore2RegisterImm12OpTesterCase8(
+      state_.Load2RegisterImm12Op_LDRB_immediate_instance_)
   {}
 };
 
@@ -788,19 +1252,26 @@ class Load2RegisterImm12OpTester_Case7
 // inst(25)=0 & inst(24:20)=xx1x1 & inst(19:16)=1111 & inst(24:20)=~0x111 & inst(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
 //    = {baseline: 'Load2RegisterImm12Op',
 //       constraints: ,
-//       rule: 'Ldrb_Rule_63_A1_P130'}
+//       defs: {inst(15:12)},
+//       rule: 'LDRB_literal',
+//       safety: ['15 == inst(15:12) => UNPREDICTABLE']}
 //
 // Representative case:
 // A(25)=0 & op1(24:20)=xx1x1 & Rn(19:16)=1111 & op1_repeated(24:20)=~0x111 & $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
-//    = {baseline: Load2RegisterImm12Op,
+//    = {Pc: 15,
+//       Rt: Rt(15:12),
+//       baseline: Load2RegisterImm12Op,
 //       constraints: ,
-//       rule: Ldrb_Rule_63_A1_P130}
-class Load2RegisterImm12OpTester_Case8
-    : public LoadStore2RegisterImm12OpTesterCase8 {
+//       defs: {Rt},
+//       fields: [Rt(15:12)],
+//       rule: LDRB_literal,
+//       safety: [Rt == Pc => UNPREDICTABLE]}
+class Load2RegisterImm12OpTester_Case9
+    : public LoadStore2RegisterImm12OpTesterCase9 {
  public:
-  Load2RegisterImm12OpTester_Case8()
-    : LoadStore2RegisterImm12OpTesterCase8(
-      state_.Load2RegisterImm12Op_Ldrb_Rule_63_A1_P130_instance_)
+  Load2RegisterImm12OpTester_Case9()
+    : LoadStore2RegisterImm12OpTesterCase9(
+      state_.Load2RegisterImm12Op_LDRB_literal_instance_)
   {}
 };
 
@@ -808,19 +1279,19 @@ class Load2RegisterImm12OpTester_Case8
 // inst(25)=1 & inst(24:20)=0x010 & inst(4)=0
 //    = {baseline: 'ForbiddenCondDecoder',
 //       constraints: ,
-//       rule: 'Strt_Rule_A2'}
+//       rule: 'STRT_A2'}
 //
 // Representative case:
 // A(25)=1 & op1(24:20)=0x010 & B(4)=0
 //    = {baseline: ForbiddenCondDecoder,
 //       constraints: ,
-//       rule: Strt_Rule_A2}
-class ForbiddenCondDecoderTester_Case9
-    : public UnsafeCondDecoderTesterCase9 {
+//       rule: STRT_A2}
+class ForbiddenCondDecoderTester_Case10
+    : public UnsafeCondDecoderTesterCase10 {
  public:
-  ForbiddenCondDecoderTester_Case9()
-    : UnsafeCondDecoderTesterCase9(
-      state_.ForbiddenCondDecoder_Strt_Rule_A2_instance_)
+  ForbiddenCondDecoderTester_Case10()
+    : UnsafeCondDecoderTesterCase10(
+      state_.ForbiddenCondDecoder_STRT_A2_instance_)
   {}
 };
 
@@ -828,19 +1299,19 @@ class ForbiddenCondDecoderTester_Case9
 // inst(25)=1 & inst(24:20)=0x011 & inst(4)=0
 //    = {baseline: 'ForbiddenCondDecoder',
 //       constraints: ,
-//       rule: 'Ldrt_Rule_A2'}
+//       rule: 'LDRT_A2'}
 //
 // Representative case:
 // A(25)=1 & op1(24:20)=0x011 & B(4)=0
 //    = {baseline: ForbiddenCondDecoder,
 //       constraints: ,
-//       rule: Ldrt_Rule_A2}
-class ForbiddenCondDecoderTester_Case10
-    : public UnsafeCondDecoderTesterCase10 {
+//       rule: LDRT_A2}
+class ForbiddenCondDecoderTester_Case11
+    : public UnsafeCondDecoderTesterCase11 {
  public:
-  ForbiddenCondDecoderTester_Case10()
-    : UnsafeCondDecoderTesterCase10(
-      state_.ForbiddenCondDecoder_Ldrt_Rule_A2_instance_)
+  ForbiddenCondDecoderTester_Case11()
+    : UnsafeCondDecoderTesterCase11(
+      state_.ForbiddenCondDecoder_LDRT_A2_instance_)
   {}
 };
 
@@ -848,19 +1319,19 @@ class ForbiddenCondDecoderTester_Case10
 // inst(25)=1 & inst(24:20)=0x110 & inst(4)=0
 //    = {baseline: 'ForbiddenCondDecoder',
 //       constraints: ,
-//       rule: 'Strtb_Rule_A2'}
+//       rule: 'STRBT_A2'}
 //
 // Representative case:
 // A(25)=1 & op1(24:20)=0x110 & B(4)=0
 //    = {baseline: ForbiddenCondDecoder,
 //       constraints: ,
-//       rule: Strtb_Rule_A2}
-class ForbiddenCondDecoderTester_Case11
-    : public UnsafeCondDecoderTesterCase11 {
+//       rule: STRBT_A2}
+class ForbiddenCondDecoderTester_Case12
+    : public UnsafeCondDecoderTesterCase12 {
  public:
-  ForbiddenCondDecoderTester_Case11()
-    : UnsafeCondDecoderTesterCase11(
-      state_.ForbiddenCondDecoder_Strtb_Rule_A2_instance_)
+  ForbiddenCondDecoderTester_Case12()
+    : UnsafeCondDecoderTesterCase12(
+      state_.ForbiddenCondDecoder_STRBT_A2_instance_)
   {}
 };
 
@@ -868,19 +1339,19 @@ class ForbiddenCondDecoderTester_Case11
 // inst(25)=1 & inst(24:20)=0x111 & inst(4)=0
 //    = {baseline: 'ForbiddenCondDecoder',
 //       constraints: ,
-//       rule: 'Ldrtb_Rule_A2'}
+//       rule: 'LDRBT_A2'}
 //
 // Representative case:
 // A(25)=1 & op1(24:20)=0x111 & B(4)=0
 //    = {baseline: ForbiddenCondDecoder,
 //       constraints: ,
-//       rule: Ldrtb_Rule_A2}
-class ForbiddenCondDecoderTester_Case12
-    : public UnsafeCondDecoderTesterCase12 {
+//       rule: LDRBT_A2}
+class ForbiddenCondDecoderTester_Case13
+    : public UnsafeCondDecoderTesterCase13 {
  public:
-  ForbiddenCondDecoderTester_Case12()
-    : UnsafeCondDecoderTesterCase12(
-      state_.ForbiddenCondDecoder_Ldrtb_Rule_A2_instance_)
+  ForbiddenCondDecoderTester_Case13()
+    : UnsafeCondDecoderTesterCase13(
+      state_.ForbiddenCondDecoder_LDRBT_A2_instance_)
   {}
 };
 
@@ -888,19 +1359,34 @@ class ForbiddenCondDecoderTester_Case12
 // inst(25)=1 & inst(24:20)=xx0x0 & inst(4)=0 & inst(24:20)=~0x010
 //    = {baseline: 'Store3RegisterImm5Op',
 //       constraints: ,
-//       rule: 'Str_Rule_195_A1_P386'}
+//       defs: {inst(19:16) if inst(24)=0 || inst(21)=1 else 32},
+//       rule: 'STR_register',
+//       safety: ['inst(24)=0 && inst(21)=1 => DECODER_ERROR', '15 == inst(3:0) => UNPREDICTABLE', 'inst(24)=0 || inst(21)=1 && (15 == inst(19:16) || inst(15:12) == inst(19:16)) => UNPREDICTABLE', 'ArchVersion() < 6 && inst(24)=0 || inst(21)=1 && inst(19:16) == inst(3:0) => UNPREDICTABLE', 'inst(24)=1 => FORBIDDEN']}
 //
 // Representative case:
 // A(25)=1 & op1(24:20)=xx0x0 & B(4)=0 & op1_repeated(24:20)=~0x010
-//    = {baseline: Store3RegisterImm5Op,
+//    = {None: 32,
+//       P: P(24),
+//       Pc: 15,
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rt: Rt(15:12),
+//       W: W(21),
+//       base: Rn,
+//       baseline: Store3RegisterImm5Op,
 //       constraints: ,
-//       rule: Str_Rule_195_A1_P386}
-class Store3RegisterImm5OpTester_Case13
-    : public LoadStore3RegisterImm5OpTesterCase13 {
+//       defs: {base if wback else None},
+//       fields: [P(24), W(21), Rn(19:16), Rt(15:12), Rm(3:0)],
+//       index: P(24)=1,
+//       rule: STR_register,
+//       safety: [P(24)=0 && W(21)=1 => DECODER_ERROR, Rm == Pc => UNPREDICTABLE, wback && (Rn == Pc || Rn == Rt) => UNPREDICTABLE, ArchVersion() < 6 && wback && Rn == Rm => UNPREDICTABLE, index => FORBIDDEN],
+//       wback: P(24)=0 || W(21)=1}
+class Store3RegisterImm5OpTester_Case14
+    : public LoadStore3RegisterImm5OpTesterCase14 {
  public:
-  Store3RegisterImm5OpTester_Case13()
-    : LoadStore3RegisterImm5OpTesterCase13(
-      state_.Store3RegisterImm5Op_Str_Rule_195_A1_P386_instance_)
+  Store3RegisterImm5OpTester_Case14()
+    : LoadStore3RegisterImm5OpTesterCase14(
+      state_.Store3RegisterImm5Op_STR_register_instance_)
   {}
 };
 
@@ -908,19 +1394,34 @@ class Store3RegisterImm5OpTester_Case13
 // inst(25)=1 & inst(24:20)=xx0x1 & inst(4)=0 & inst(24:20)=~0x011
 //    = {baseline: 'Load3RegisterImm5Op',
 //       constraints: ,
-//       rule: 'Ldr_Rule_60_A1_P124'}
+//       defs: {inst(15:12),inst(19:16) if inst(24)=0 || inst(21)=1 else 32},
+//       rule: 'LDR_register',
+//       safety: ['inst(24)=0 && inst(21)=1 => DECODER_ERROR', '15 == inst(3:0) => UNPREDICTABLE', 'inst(24)=0 || inst(21)=1 && (15 == inst(19:16) || inst(15:12) == inst(19:16)) => UNPREDICTABLE', 'ArchVersion() < 6 && inst(24)=0 || inst(21)=1 && inst(19:16) == inst(3:0) => UNPREDICTABLE', 'inst(24)=1 => FORBIDDEN', '15 == inst(15:12) => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // A(25)=1 & op1(24:20)=xx0x1 & B(4)=0 & op1_repeated(24:20)=~0x011
-//    = {baseline: Load3RegisterImm5Op,
+//    = {None: 32,
+//       P: P(24),
+//       Pc: 15,
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rt: Rt(15:12),
+//       W: W(21),
+//       base: Rn,
+//       baseline: Load3RegisterImm5Op,
 //       constraints: ,
-//       rule: Ldr_Rule_60_A1_P124}
-class Load3RegisterImm5OpTester_Case14
-    : public LoadStore3RegisterImm5OpTesterCase14 {
+//       defs: {Rt,base if wback else None},
+//       fields: [P(24), W(21), Rn(19:16), Rt(15:12), Rm(3:0)],
+//       index: P(24)=1,
+//       rule: LDR_register,
+//       safety: [P(24)=0 && W(21)=1 => DECODER_ERROR, Rm == Pc => UNPREDICTABLE, wback && (Rn == Pc || Rn == Rt) => UNPREDICTABLE, ArchVersion() < 6 && wback && Rn == Rm => UNPREDICTABLE, index => FORBIDDEN, Rt == Pc => FORBIDDEN_OPERANDS],
+//       wback: P(24)=0 || W(21)=1}
+class Load3RegisterImm5OpTester_Case15
+    : public LoadStore3RegisterImm5OpTesterCase15 {
  public:
-  Load3RegisterImm5OpTester_Case14()
-    : LoadStore3RegisterImm5OpTesterCase14(
-      state_.Load3RegisterImm5Op_Ldr_Rule_60_A1_P124_instance_)
+  Load3RegisterImm5OpTester_Case15()
+    : LoadStore3RegisterImm5OpTesterCase15(
+      state_.Load3RegisterImm5Op_LDR_register_instance_)
   {}
 };
 
@@ -928,19 +1429,34 @@ class Load3RegisterImm5OpTester_Case14
 // inst(25)=1 & inst(24:20)=xx1x0 & inst(4)=0 & inst(24:20)=~0x110
 //    = {baseline: 'Store3RegisterImm5Op',
 //       constraints: ,
-//       rule: 'Strb_Rule_198_A1_P392'}
+//       defs: {inst(19:16) if inst(24)=0 || inst(21)=1 else 32},
+//       rule: 'STRB_register',
+//       safety: ['inst(24)=0 && inst(21)=1 => DECODER_ERROR', '15 == inst(3:0) => UNPREDICTABLE', 'inst(24)=0 || inst(21)=1 && (15 == inst(19:16) || inst(15:12) == inst(19:16)) => UNPREDICTABLE', 'ArchVersion() < 6 && inst(24)=0 || inst(21)=1 && inst(19:16) == inst(3:0) => UNPREDICTABLE', 'inst(24)=1 => FORBIDDEN']}
 //
 // Representative case:
 // A(25)=1 & op1(24:20)=xx1x0 & B(4)=0 & op1_repeated(24:20)=~0x110
-//    = {baseline: Store3RegisterImm5Op,
+//    = {None: 32,
+//       P: P(24),
+//       Pc: 15,
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rt: Rt(15:12),
+//       W: W(21),
+//       base: Rn,
+//       baseline: Store3RegisterImm5Op,
 //       constraints: ,
-//       rule: Strb_Rule_198_A1_P392}
-class Store3RegisterImm5OpTester_Case15
-    : public LoadStore3RegisterImm5OpTesterCase15 {
+//       defs: {base if wback else None},
+//       fields: [P(24), W(21), Rn(19:16), Rt(15:12), Rm(3:0)],
+//       index: P(24)=1,
+//       rule: STRB_register,
+//       safety: [P(24)=0 && W(21)=1 => DECODER_ERROR, Rm == Pc => UNPREDICTABLE, wback && (Rn == Pc || Rn == Rt) => UNPREDICTABLE, ArchVersion() < 6 && wback && Rn == Rm => UNPREDICTABLE, index => FORBIDDEN],
+//       wback: P(24)=0 || W(21)=1}
+class Store3RegisterImm5OpTester_Case16
+    : public LoadStore3RegisterImm5OpTesterCase16 {
  public:
-  Store3RegisterImm5OpTester_Case15()
-    : LoadStore3RegisterImm5OpTesterCase15(
-      state_.Store3RegisterImm5Op_Strb_Rule_198_A1_P392_instance_)
+  Store3RegisterImm5OpTester_Case16()
+    : LoadStore3RegisterImm5OpTesterCase16(
+      state_.Store3RegisterImm5Op_STRB_register_instance_)
   {}
 };
 
@@ -948,19 +1464,34 @@ class Store3RegisterImm5OpTester_Case15
 // inst(25)=1 & inst(24:20)=xx1x1 & inst(4)=0 & inst(24:20)=~0x111
 //    = {baseline: 'Load3RegisterImm5Op',
 //       constraints: ,
-//       rule: 'Ldrb_Rule_64_A1_P132'}
+//       defs: {inst(15:12),inst(19:16) if inst(24)=0 || inst(21)=1 else 32},
+//       rule: 'LDRB_register',
+//       safety: ['inst(24)=0 && inst(21)=1 => DECODER_ERROR', '15 == inst(15:12) || 15 == inst(3:0) => UNPREDICTABLE', 'inst(24)=0 || inst(21)=1 && (15 == inst(19:16) || inst(15:12) == inst(19:16)) => UNPREDICTABLE', 'ArchVersion() < 6 && inst(24)=0 || inst(21)=1 && inst(19:16) == inst(3:0) => UNPREDICTABLE', 'inst(24)=1 => FORBIDDEN']}
 //
 // Representative case:
 // A(25)=1 & op1(24:20)=xx1x1 & B(4)=0 & op1_repeated(24:20)=~0x111
-//    = {baseline: Load3RegisterImm5Op,
+//    = {None: 32,
+//       P: P(24),
+//       Pc: 15,
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rt: Rt(15:12),
+//       W: W(21),
+//       base: Rn,
+//       baseline: Load3RegisterImm5Op,
 //       constraints: ,
-//       rule: Ldrb_Rule_64_A1_P132}
-class Load3RegisterImm5OpTester_Case16
-    : public LoadStore3RegisterImm5OpTesterCase16 {
+//       defs: {Rt,base if wback else None},
+//       fields: [P(24), W(21), Rn(19:16), Rt(15:12), Rm(3:0)],
+//       index: P(24)=1,
+//       rule: LDRB_register,
+//       safety: [P(24)=0 && W(21)=1 => DECODER_ERROR, Pc in {Rt,Rm} => UNPREDICTABLE, wback && (Rn == Pc || Rn == Rt) => UNPREDICTABLE, ArchVersion() < 6 && wback && Rn == Rm => UNPREDICTABLE, index => FORBIDDEN],
+//       wback: P(24)=0 || W(21)=1}
+class Load3RegisterImm5OpTester_Case17
+    : public LoadStore3RegisterImm5OpTesterCase17 {
  public:
-  Load3RegisterImm5OpTester_Case16()
-    : LoadStore3RegisterImm5OpTesterCase16(
-      state_.Load3RegisterImm5Op_Ldrb_Rule_64_A1_P132_instance_)
+  Load3RegisterImm5OpTester_Case17()
+    : LoadStore3RegisterImm5OpTesterCase17(
+      state_.Load3RegisterImm5Op_LDRB_register_instance_)
   {}
 };
 
@@ -975,94 +1506,120 @@ class Arm32DecoderStateTests : public ::testing::Test {
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=0x010
-//    = {actual: 'Forbidden',
+//    = {actual: 'ForbiddenCondDecoder',
 //       baseline: 'ForbiddenCondDecoder',
 //       constraints: ,
 //       pattern: 'cccc0100u010nnnnttttiiiiiiiiiiii',
-//       rule: 'Strt_Rule_A1'}
+//       rule: 'STRT_A1'}
 //
-// Representative case:
+// Representaive case:
 // A(25)=0 & op1(24:20)=0x010
-//    = {actual: Forbidden,
+//    = {actual: ForbiddenCondDecoder,
 //       baseline: ForbiddenCondDecoder,
 //       constraints: ,
 //       pattern: cccc0100u010nnnnttttiiiiiiiiiiii,
-//       rule: Strt_Rule_A1}
+//       rule: STRT_A1}
 TEST_F(Arm32DecoderStateTests,
        ForbiddenCondDecoderTester_Case0_TestCase0) {
-  ForbiddenCondDecoderTester_Case0 baseline_tester;
-  NamedForbidden_Strt_Rule_A1 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0100u010nnnnttttiiiiiiiiiiii");
+  ForbiddenCondDecoderTester_Case0 tester;
+  tester.Test("cccc0100u010nnnnttttiiiiiiiiiiii");
 }
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=0x011
-//    = {actual: 'Forbidden',
+//    = {actual: 'ForbiddenCondDecoder',
 //       baseline: 'ForbiddenCondDecoder',
 //       constraints: ,
 //       pattern: 'cccc0100u011nnnnttttiiiiiiiiiiii',
-//       rule: 'Ldrt_Rule_A1'}
+//       rule: 'LDRT_A1'}
 //
-// Representative case:
+// Representaive case:
 // A(25)=0 & op1(24:20)=0x011
-//    = {actual: Forbidden,
+//    = {actual: ForbiddenCondDecoder,
 //       baseline: ForbiddenCondDecoder,
 //       constraints: ,
 //       pattern: cccc0100u011nnnnttttiiiiiiiiiiii,
-//       rule: Ldrt_Rule_A1}
+//       rule: LDRT_A1}
 TEST_F(Arm32DecoderStateTests,
        ForbiddenCondDecoderTester_Case1_TestCase1) {
-  ForbiddenCondDecoderTester_Case1 baseline_tester;
-  NamedForbidden_Ldrt_Rule_A1 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0100u011nnnnttttiiiiiiiiiiii");
+  ForbiddenCondDecoderTester_Case1 tester;
+  tester.Test("cccc0100u011nnnnttttiiiiiiiiiiii");
 }
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=0x110
-//    = {actual: 'Forbidden',
+//    = {actual: 'ForbiddenCondDecoder',
 //       baseline: 'ForbiddenCondDecoder',
 //       constraints: ,
 //       pattern: 'cccc0100u110nnnnttttiiiiiiiiiiii',
-//       rule: 'Strtb_Rule_A1'}
+//       rule: 'STRBT_A1'}
 //
-// Representative case:
+// Representaive case:
 // A(25)=0 & op1(24:20)=0x110
-//    = {actual: Forbidden,
+//    = {actual: ForbiddenCondDecoder,
 //       baseline: ForbiddenCondDecoder,
 //       constraints: ,
 //       pattern: cccc0100u110nnnnttttiiiiiiiiiiii,
-//       rule: Strtb_Rule_A1}
+//       rule: STRBT_A1}
 TEST_F(Arm32DecoderStateTests,
        ForbiddenCondDecoderTester_Case2_TestCase2) {
-  ForbiddenCondDecoderTester_Case2 baseline_tester;
-  NamedForbidden_Strtb_Rule_A1 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0100u110nnnnttttiiiiiiiiiiii");
+  ForbiddenCondDecoderTester_Case2 tester;
+  tester.Test("cccc0100u110nnnnttttiiiiiiiiiiii");
 }
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=0x111
-//    = {actual: 'Forbidden',
+//    = {actual: 'ForbiddenCondDecoder',
 //       baseline: 'ForbiddenCondDecoder',
 //       constraints: ,
 //       pattern: 'cccc0100u111nnnnttttiiiiiiiiiiii',
-//       rule: 'Ldrtb_Rule_A1'}
+//       rule: 'LDRBT_A1'}
 //
-// Representative case:
+// Representaive case:
 // A(25)=0 & op1(24:20)=0x111
-//    = {actual: Forbidden,
+//    = {actual: ForbiddenCondDecoder,
 //       baseline: ForbiddenCondDecoder,
 //       constraints: ,
 //       pattern: cccc0100u111nnnnttttiiiiiiiiiiii,
-//       rule: Ldrtb_Rule_A1}
+//       rule: LDRBT_A1}
 TEST_F(Arm32DecoderStateTests,
        ForbiddenCondDecoderTester_Case3_TestCase3) {
-  ForbiddenCondDecoderTester_Case3 baseline_tester;
-  NamedForbidden_Ldrtb_Rule_A1 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0100u111nnnnttttiiiiiiiiiiii");
+  ForbiddenCondDecoderTester_Case3 tester;
+  tester.Test("cccc0100u111nnnnttttiiiiiiiiiiii");
+}
+
+// Neutral case:
+// inst(25)=0 & inst(24:20)=xx0x0 & inst(24:20)=~0x010
+//    = {actual: 'Store2RegisterImm12Op',
+//       baseline: 'Store2RegisterImm12Op',
+//       constraints: ,
+//       defs: {inst(19:16) if inst(24)=0 || inst(21)=1 else 32},
+//       pattern: 'cccc010pu0w0nnnnttttiiiiiiiiiiii',
+//       rule: 'STR_immediate',
+//       safety: ['inst(24)=0 && inst(21)=1 => DECODER_ERROR', 'inst(24)=0 || inst(21)=1 && (15 == inst(19:16) || inst(15:12) == inst(19:16)) => UNPREDICTABLE']}
+//
+// Representaive case:
+// A(25)=0 & op1(24:20)=xx0x0 & op1_repeated(24:20)=~0x010
+//    = {None: 32,
+//       P: P(24),
+//       Pc: 15,
+//       Rn: Rn(19:16),
+//       Rt: Rt(15:12),
+//       W: W(21),
+//       actual: Store2RegisterImm12Op,
+//       base: Rn,
+//       baseline: Store2RegisterImm12Op,
+//       constraints: ,
+//       defs: {base if wback else None},
+//       fields: [P(24), W(21), Rn(19:16), Rt(15:12)],
+//       pattern: cccc010pu0w0nnnnttttiiiiiiiiiiii,
+//       rule: STR_immediate,
+//       safety: [P(24)=0 && W(21)=1 => DECODER_ERROR, wback && (Rn == Pc || Rn == Rt) => UNPREDICTABLE],
+//       wback: P(24)=0 || W(21)=1}
+TEST_F(Arm32DecoderStateTests,
+       Store2RegisterImm12OpTester_Case4_TestCase4) {
+  Store2RegisterImm12OpTester_Case4 tester;
+  tester.Test("cccc010pu0w0nnnnttttiiiiiiiiiiii");
 }
 
 // Neutral case:
@@ -1070,298 +1627,382 @@ TEST_F(Arm32DecoderStateTests,
 //    = {actual: 'LdrImmediateOp',
 //       baseline: 'LdrImmediateOp',
 //       constraints: ,
+//       defs: {inst(15:12),inst(19:16) if inst(24)=0 || inst(21)=1 else 32},
 //       pattern: 'cccc010pu0w1nnnnttttiiiiiiiiiiii',
-//       rule: 'Ldr_Rule_58_A1_P120'}
+//       rule: 'LDR_immediate',
+//       safety: ['15 == inst(19:16) => DECODER_ERROR', 'inst(24)=0 && inst(21)=1 => DECODER_ERROR', 'inst(24)=0 || inst(21)=1 && inst(15:12) == inst(19:16) => UNPREDICTABLE', '15 == inst(15:12) => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // A(25)=0 & op1(24:20)=xx0x1 & Rn(19:16)=~1111 & op1_repeated(24:20)=~0x011
-//    = {actual: LdrImmediateOp,
+//    = {None: 32,
+//       P: P(24),
+//       Pc: 15,
+//       Rn: Rn(19:16),
+//       Rt: Rt(15:12),
+//       W: W(21),
+//       actual: LdrImmediateOp,
+//       base: Rn,
 //       baseline: LdrImmediateOp,
 //       constraints: ,
+//       defs: {Rt,base if wback else None},
+//       fields: [P(24), W(21), Rn(19:16), Rt(15:12)],
 //       pattern: cccc010pu0w1nnnnttttiiiiiiiiiiii,
-//       rule: Ldr_Rule_58_A1_P120}
+//       rule: LDR_immediate,
+//       safety: [Rn == Pc => DECODER_ERROR, P(24)=0 && W(21)=1 => DECODER_ERROR, wback && Rn == Rt => UNPREDICTABLE, Rt == Pc => FORBIDDEN_OPERANDS],
+//       wback: P(24)=0 || W(21)=1}
 TEST_F(Arm32DecoderStateTests,
-       LdrImmediateOpTester_Case4_TestCase4) {
-  LdrImmediateOpTester_Case4 tester;
+       LdrImmediateOpTester_Case5_TestCase5) {
+  LdrImmediateOpTester_Case5 tester;
   tester.Test("cccc010pu0w1nnnnttttiiiiiiiiiiii");
 }
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=xx0x1 & inst(19:16)=1111 & inst(24:20)=~0x011 & inst(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
-//    = {actual: 'LoadBasedImmedMemory',
+//    = {actual: 'Load2RegisterImm12Op',
 //       baseline: 'Load2RegisterImm12Op',
 //       constraints: ,
+//       defs: {inst(15:12)},
 //       pattern: 'cccc0101u0011111ttttiiiiiiiiiiii',
-//       rule: 'Ldr_Rule_59_A1_P122'}
+//       rule: 'LDR_literal'}
 //
-// Representative case:
+// Representaive case:
 // A(25)=0 & op1(24:20)=xx0x1 & Rn(19:16)=1111 & op1_repeated(24:20)=~0x011 & $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
-//    = {actual: LoadBasedImmedMemory,
+//    = {Rt: Rt(15:12),
+//       actual: Load2RegisterImm12Op,
 //       baseline: Load2RegisterImm12Op,
 //       constraints: ,
+//       defs: {Rt},
+//       fields: [Rt(15:12)],
 //       pattern: cccc0101u0011111ttttiiiiiiiiiiii,
-//       rule: Ldr_Rule_59_A1_P122}
+//       rule: LDR_literal}
 TEST_F(Arm32DecoderStateTests,
-       Load2RegisterImm12OpTester_Case5_TestCase5) {
-  Load2RegisterImm12OpTester_Case5 baseline_tester;
-  NamedLoadBasedImmedMemory_Ldr_Rule_59_A1_P122 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0101u0011111ttttiiiiiiiiiiii");
+       Load2RegisterImm12OpTester_Case6_TestCase6) {
+  Load2RegisterImm12OpTester_Case6 tester;
+  tester.Test("cccc0101u0011111ttttiiiiiiiiiiii");
 }
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=xx1x0 & inst(24:20)=~0x110
-//    = {actual: 'StoreBasedImmedMemory',
+//    = {actual: 'Store2RegisterImm12Op',
 //       baseline: 'Store2RegisterImm12Op',
 //       constraints: ,
+//       defs: {inst(19:16) if inst(24)=0 || inst(21)=1 else 32},
 //       pattern: 'cccc010pu1w0nnnnttttiiiiiiiiiiii',
-//       rule: 'Strb_Rule_197_A1_P390'}
+//       rule: 'STRB_immediate',
+//       safety: ['inst(24)=0 && inst(21)=1 => DECODER_ERROR', '15 == inst(15:12) => UNPREDICTABLE', 'inst(24)=0 || inst(21)=1 && (15 == inst(19:16) || inst(15:12) == inst(19:16)) => UNPREDICTABLE']}
 //
-// Representative case:
+// Representaive case:
 // A(25)=0 & op1(24:20)=xx1x0 & op1_repeated(24:20)=~0x110
-//    = {actual: StoreBasedImmedMemory,
+//    = {None: 32,
+//       P: P(24),
+//       Pc: 15,
+//       Rn: Rn(19:16),
+//       Rt: Rt(15:12),
+//       W: W(21),
+//       actual: Store2RegisterImm12Op,
+//       base: Rn,
 //       baseline: Store2RegisterImm12Op,
 //       constraints: ,
+//       defs: {base if wback else None},
+//       fields: [P(24), W(21), Rn(19:16), Rt(15:12)],
 //       pattern: cccc010pu1w0nnnnttttiiiiiiiiiiii,
-//       rule: Strb_Rule_197_A1_P390}
+//       rule: STRB_immediate,
+//       safety: [P(24)=0 && W(21)=1 => DECODER_ERROR, Rt == Pc => UNPREDICTABLE, wback && (Rn == Pc || Rn == Rt) => UNPREDICTABLE],
+//       wback: P(24)=0 || W(21)=1}
 TEST_F(Arm32DecoderStateTests,
-       Store2RegisterImm12OpTester_Case6_TestCase6) {
-  Store2RegisterImm12OpTester_Case6 baseline_tester;
-  NamedStoreBasedImmedMemory_Strb_Rule_197_A1_P390 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc010pu1w0nnnnttttiiiiiiiiiiii");
+       Store2RegisterImm12OpTester_Case7_TestCase7) {
+  Store2RegisterImm12OpTester_Case7 tester;
+  tester.Test("cccc010pu1w0nnnnttttiiiiiiiiiiii");
 }
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=xx1x1 & inst(19:16)=~1111 & inst(24:20)=~0x111
-//    = {actual: 'LoadBasedImmedMemory',
+//    = {actual: 'Load2RegisterImm12Op',
 //       baseline: 'Load2RegisterImm12Op',
 //       constraints: ,
+//       defs: {inst(15:12),inst(19:16) if inst(24)=0 || inst(21)=1 else 32},
 //       pattern: 'cccc010pu1w1nnnnttttiiiiiiiiiiii',
-//       rule: 'Ldrb_Rule_62_A1_P128',
-//       safety: ["'NotRnIsPc'"]}
+//       rule: 'LDRB_immediate',
+//       safety: ['15 == inst(19:16) => DECODER_ERROR', 'inst(24)=0 && inst(21)=1 => DECODER_ERROR', '15 == inst(15:12) => UNPREDICTABLE', 'inst(24)=0 || inst(21)=1 && inst(15:12) == inst(19:16) => UNPREDICTABLE']}
 //
-// Representative case:
+// Representaive case:
 // A(25)=0 & op1(24:20)=xx1x1 & Rn(19:16)=~1111 & op1_repeated(24:20)=~0x111
-//    = {actual: LoadBasedImmedMemory,
+//    = {None: 32,
+//       P: P(24),
+//       Pc: 15,
+//       Rn: Rn(19:16),
+//       Rt: Rt(15:12),
+//       W: W(21),
+//       actual: Load2RegisterImm12Op,
+//       base: Rn,
 //       baseline: Load2RegisterImm12Op,
 //       constraints: ,
+//       defs: {Rt,base if wback else None},
+//       fields: [P(24), W(21), Rn(19:16), Rt(15:12)],
 //       pattern: cccc010pu1w1nnnnttttiiiiiiiiiiii,
-//       rule: Ldrb_Rule_62_A1_P128,
-//       safety: ['NotRnIsPc']}
+//       rule: LDRB_immediate,
+//       safety: [Rn == Pc => DECODER_ERROR, P(24)=0 && W(21)=1 => DECODER_ERROR, Rt == Pc => UNPREDICTABLE, wback && Rn == Rt => UNPREDICTABLE],
+//       wback: P(24)=0 || W(21)=1}
 TEST_F(Arm32DecoderStateTests,
-       Load2RegisterImm12OpTester_Case7_TestCase7) {
-  Load2RegisterImm12OpTester_Case7 baseline_tester;
-  NamedLoadBasedImmedMemory_Ldrb_Rule_62_A1_P128 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc010pu1w1nnnnttttiiiiiiiiiiii");
+       Load2RegisterImm12OpTester_Case8_TestCase8) {
+  Load2RegisterImm12OpTester_Case8 tester;
+  tester.Test("cccc010pu1w1nnnnttttiiiiiiiiiiii");
 }
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=xx1x1 & inst(19:16)=1111 & inst(24:20)=~0x111 & inst(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
-//    = {actual: 'LoadBasedImmedMemory',
+//    = {actual: 'Load2RegisterImm12Op',
 //       baseline: 'Load2RegisterImm12Op',
 //       constraints: ,
+//       defs: {inst(15:12)},
 //       pattern: 'cccc0101u1011111ttttiiiiiiiiiiii',
-//       rule: 'Ldrb_Rule_63_A1_P130'}
+//       rule: 'LDRB_literal',
+//       safety: ['15 == inst(15:12) => UNPREDICTABLE']}
 //
-// Representative case:
+// Representaive case:
 // A(25)=0 & op1(24:20)=xx1x1 & Rn(19:16)=1111 & op1_repeated(24:20)=~0x111 & $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
-//    = {actual: LoadBasedImmedMemory,
+//    = {Pc: 15,
+//       Rt: Rt(15:12),
+//       actual: Load2RegisterImm12Op,
 //       baseline: Load2RegisterImm12Op,
 //       constraints: ,
+//       defs: {Rt},
+//       fields: [Rt(15:12)],
 //       pattern: cccc0101u1011111ttttiiiiiiiiiiii,
-//       rule: Ldrb_Rule_63_A1_P130}
+//       rule: LDRB_literal,
+//       safety: [Rt == Pc => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
-       Load2RegisterImm12OpTester_Case8_TestCase8) {
-  Load2RegisterImm12OpTester_Case8 baseline_tester;
-  NamedLoadBasedImmedMemory_Ldrb_Rule_63_A1_P130 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0101u1011111ttttiiiiiiiiiiii");
+       Load2RegisterImm12OpTester_Case9_TestCase9) {
+  Load2RegisterImm12OpTester_Case9 tester;
+  tester.Test("cccc0101u1011111ttttiiiiiiiiiiii");
 }
 
 // Neutral case:
 // inst(25)=1 & inst(24:20)=0x010 & inst(4)=0
-//    = {actual: 'Forbidden',
+//    = {actual: 'ForbiddenCondDecoder',
 //       baseline: 'ForbiddenCondDecoder',
 //       constraints: ,
 //       pattern: 'cccc0110u010nnnnttttiiiiitt0mmmm',
-//       rule: 'Strt_Rule_A2'}
+//       rule: 'STRT_A2'}
 //
-// Representative case:
+// Representaive case:
 // A(25)=1 & op1(24:20)=0x010 & B(4)=0
-//    = {actual: Forbidden,
+//    = {actual: ForbiddenCondDecoder,
 //       baseline: ForbiddenCondDecoder,
 //       constraints: ,
 //       pattern: cccc0110u010nnnnttttiiiiitt0mmmm,
-//       rule: Strt_Rule_A2}
+//       rule: STRT_A2}
 TEST_F(Arm32DecoderStateTests,
-       ForbiddenCondDecoderTester_Case9_TestCase9) {
-  ForbiddenCondDecoderTester_Case9 baseline_tester;
-  NamedForbidden_Strt_Rule_A2 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0110u010nnnnttttiiiiitt0mmmm");
+       ForbiddenCondDecoderTester_Case10_TestCase10) {
+  ForbiddenCondDecoderTester_Case10 tester;
+  tester.Test("cccc0110u010nnnnttttiiiiitt0mmmm");
 }
 
 // Neutral case:
 // inst(25)=1 & inst(24:20)=0x011 & inst(4)=0
-//    = {actual: 'Forbidden',
+//    = {actual: 'ForbiddenCondDecoder',
 //       baseline: 'ForbiddenCondDecoder',
 //       constraints: ,
 //       pattern: 'cccc0110u011nnnnttttiiiiitt0mmmm',
-//       rule: 'Ldrt_Rule_A2'}
+//       rule: 'LDRT_A2'}
 //
-// Representative case:
+// Representaive case:
 // A(25)=1 & op1(24:20)=0x011 & B(4)=0
-//    = {actual: Forbidden,
+//    = {actual: ForbiddenCondDecoder,
 //       baseline: ForbiddenCondDecoder,
 //       constraints: ,
 //       pattern: cccc0110u011nnnnttttiiiiitt0mmmm,
-//       rule: Ldrt_Rule_A2}
+//       rule: LDRT_A2}
 TEST_F(Arm32DecoderStateTests,
-       ForbiddenCondDecoderTester_Case10_TestCase10) {
-  ForbiddenCondDecoderTester_Case10 baseline_tester;
-  NamedForbidden_Ldrt_Rule_A2 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0110u011nnnnttttiiiiitt0mmmm");
+       ForbiddenCondDecoderTester_Case11_TestCase11) {
+  ForbiddenCondDecoderTester_Case11 tester;
+  tester.Test("cccc0110u011nnnnttttiiiiitt0mmmm");
 }
 
 // Neutral case:
 // inst(25)=1 & inst(24:20)=0x110 & inst(4)=0
-//    = {actual: 'Forbidden',
+//    = {actual: 'ForbiddenCondDecoder',
 //       baseline: 'ForbiddenCondDecoder',
 //       constraints: ,
 //       pattern: 'cccc0110u110nnnnttttiiiiitt0mmmm',
-//       rule: 'Strtb_Rule_A2'}
+//       rule: 'STRBT_A2'}
 //
-// Representative case:
+// Representaive case:
 // A(25)=1 & op1(24:20)=0x110 & B(4)=0
-//    = {actual: Forbidden,
+//    = {actual: ForbiddenCondDecoder,
 //       baseline: ForbiddenCondDecoder,
 //       constraints: ,
 //       pattern: cccc0110u110nnnnttttiiiiitt0mmmm,
-//       rule: Strtb_Rule_A2}
+//       rule: STRBT_A2}
 TEST_F(Arm32DecoderStateTests,
-       ForbiddenCondDecoderTester_Case11_TestCase11) {
-  ForbiddenCondDecoderTester_Case11 baseline_tester;
-  NamedForbidden_Strtb_Rule_A2 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0110u110nnnnttttiiiiitt0mmmm");
+       ForbiddenCondDecoderTester_Case12_TestCase12) {
+  ForbiddenCondDecoderTester_Case12 tester;
+  tester.Test("cccc0110u110nnnnttttiiiiitt0mmmm");
 }
 
 // Neutral case:
 // inst(25)=1 & inst(24:20)=0x111 & inst(4)=0
-//    = {actual: 'Forbidden',
+//    = {actual: 'ForbiddenCondDecoder',
 //       baseline: 'ForbiddenCondDecoder',
 //       constraints: ,
 //       pattern: 'cccc0110u111nnnnttttiiiiitt0mmmm',
-//       rule: 'Ldrtb_Rule_A2'}
+//       rule: 'LDRBT_A2'}
 //
-// Representative case:
+// Representaive case:
 // A(25)=1 & op1(24:20)=0x111 & B(4)=0
-//    = {actual: Forbidden,
+//    = {actual: ForbiddenCondDecoder,
 //       baseline: ForbiddenCondDecoder,
 //       constraints: ,
 //       pattern: cccc0110u111nnnnttttiiiiitt0mmmm,
-//       rule: Ldrtb_Rule_A2}
+//       rule: LDRBT_A2}
 TEST_F(Arm32DecoderStateTests,
-       ForbiddenCondDecoderTester_Case12_TestCase12) {
-  ForbiddenCondDecoderTester_Case12 baseline_tester;
-  NamedForbidden_Ldrtb_Rule_A2 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0110u111nnnnttttiiiiitt0mmmm");
+       ForbiddenCondDecoderTester_Case13_TestCase13) {
+  ForbiddenCondDecoderTester_Case13 tester;
+  tester.Test("cccc0110u111nnnnttttiiiiitt0mmmm");
 }
 
 // Neutral case:
 // inst(25)=1 & inst(24:20)=xx0x0 & inst(4)=0 & inst(24:20)=~0x010
-//    = {actual: 'StoreBasedOffsetMemory',
+//    = {actual: 'Store3RegisterImm5Op',
 //       baseline: 'Store3RegisterImm5Op',
 //       constraints: ,
+//       defs: {inst(19:16) if inst(24)=0 || inst(21)=1 else 32},
 //       pattern: 'cccc011pd0w0nnnnttttiiiiitt0mmmm',
-//       rule: 'Str_Rule_195_A1_P386'}
+//       rule: 'STR_register',
+//       safety: ['inst(24)=0 && inst(21)=1 => DECODER_ERROR', '15 == inst(3:0) => UNPREDICTABLE', 'inst(24)=0 || inst(21)=1 && (15 == inst(19:16) || inst(15:12) == inst(19:16)) => UNPREDICTABLE', 'ArchVersion() < 6 && inst(24)=0 || inst(21)=1 && inst(19:16) == inst(3:0) => UNPREDICTABLE', 'inst(24)=1 => FORBIDDEN']}
 //
-// Representative case:
+// Representaive case:
 // A(25)=1 & op1(24:20)=xx0x0 & B(4)=0 & op1_repeated(24:20)=~0x010
-//    = {actual: StoreBasedOffsetMemory,
+//    = {None: 32,
+//       P: P(24),
+//       Pc: 15,
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rt: Rt(15:12),
+//       W: W(21),
+//       actual: Store3RegisterImm5Op,
+//       base: Rn,
 //       baseline: Store3RegisterImm5Op,
 //       constraints: ,
+//       defs: {base if wback else None},
+//       fields: [P(24), W(21), Rn(19:16), Rt(15:12), Rm(3:0)],
+//       index: P(24)=1,
 //       pattern: cccc011pd0w0nnnnttttiiiiitt0mmmm,
-//       rule: Str_Rule_195_A1_P386}
+//       rule: STR_register,
+//       safety: [P(24)=0 && W(21)=1 => DECODER_ERROR, Rm == Pc => UNPREDICTABLE, wback && (Rn == Pc || Rn == Rt) => UNPREDICTABLE, ArchVersion() < 6 && wback && Rn == Rm => UNPREDICTABLE, index => FORBIDDEN],
+//       wback: P(24)=0 || W(21)=1}
 TEST_F(Arm32DecoderStateTests,
-       Store3RegisterImm5OpTester_Case13_TestCase13) {
-  Store3RegisterImm5OpTester_Case13 baseline_tester;
-  NamedStoreBasedOffsetMemory_Str_Rule_195_A1_P386 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc011pd0w0nnnnttttiiiiitt0mmmm");
+       Store3RegisterImm5OpTester_Case14_TestCase14) {
+  Store3RegisterImm5OpTester_Case14 tester;
+  tester.Test("cccc011pd0w0nnnnttttiiiiitt0mmmm");
 }
 
 // Neutral case:
 // inst(25)=1 & inst(24:20)=xx0x1 & inst(4)=0 & inst(24:20)=~0x011
-//    = {actual: 'LoadBasedOffsetMemory',
+//    = {actual: 'Load3RegisterImm5Op',
 //       baseline: 'Load3RegisterImm5Op',
 //       constraints: ,
+//       defs: {inst(15:12),inst(19:16) if inst(24)=0 || inst(21)=1 else 32},
 //       pattern: 'cccc011pu0w1nnnnttttiiiiitt0mmmm',
-//       rule: 'Ldr_Rule_60_A1_P124'}
+//       rule: 'LDR_register',
+//       safety: ['inst(24)=0 && inst(21)=1 => DECODER_ERROR', '15 == inst(3:0) => UNPREDICTABLE', 'inst(24)=0 || inst(21)=1 && (15 == inst(19:16) || inst(15:12) == inst(19:16)) => UNPREDICTABLE', 'ArchVersion() < 6 && inst(24)=0 || inst(21)=1 && inst(19:16) == inst(3:0) => UNPREDICTABLE', 'inst(24)=1 => FORBIDDEN', '15 == inst(15:12) => FORBIDDEN_OPERANDS']}
 //
-// Representative case:
+// Representaive case:
 // A(25)=1 & op1(24:20)=xx0x1 & B(4)=0 & op1_repeated(24:20)=~0x011
-//    = {actual: LoadBasedOffsetMemory,
+//    = {None: 32,
+//       P: P(24),
+//       Pc: 15,
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rt: Rt(15:12),
+//       W: W(21),
+//       actual: Load3RegisterImm5Op,
+//       base: Rn,
 //       baseline: Load3RegisterImm5Op,
 //       constraints: ,
+//       defs: {Rt,base if wback else None},
+//       fields: [P(24), W(21), Rn(19:16), Rt(15:12), Rm(3:0)],
+//       index: P(24)=1,
 //       pattern: cccc011pu0w1nnnnttttiiiiitt0mmmm,
-//       rule: Ldr_Rule_60_A1_P124}
+//       rule: LDR_register,
+//       safety: [P(24)=0 && W(21)=1 => DECODER_ERROR, Rm == Pc => UNPREDICTABLE, wback && (Rn == Pc || Rn == Rt) => UNPREDICTABLE, ArchVersion() < 6 && wback && Rn == Rm => UNPREDICTABLE, index => FORBIDDEN, Rt == Pc => FORBIDDEN_OPERANDS],
+//       wback: P(24)=0 || W(21)=1}
 TEST_F(Arm32DecoderStateTests,
-       Load3RegisterImm5OpTester_Case14_TestCase14) {
-  Load3RegisterImm5OpTester_Case14 baseline_tester;
-  NamedLoadBasedOffsetMemory_Ldr_Rule_60_A1_P124 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc011pu0w1nnnnttttiiiiitt0mmmm");
+       Load3RegisterImm5OpTester_Case15_TestCase15) {
+  Load3RegisterImm5OpTester_Case15 tester;
+  tester.Test("cccc011pu0w1nnnnttttiiiiitt0mmmm");
 }
 
 // Neutral case:
 // inst(25)=1 & inst(24:20)=xx1x0 & inst(4)=0 & inst(24:20)=~0x110
-//    = {actual: 'StoreBasedOffsetMemory',
+//    = {actual: 'Store3RegisterImm5Op',
 //       baseline: 'Store3RegisterImm5Op',
 //       constraints: ,
+//       defs: {inst(19:16) if inst(24)=0 || inst(21)=1 else 32},
 //       pattern: 'cccc011pu1w0nnnnttttiiiiitt0mmmm',
-//       rule: 'Strb_Rule_198_A1_P392'}
+//       rule: 'STRB_register',
+//       safety: ['inst(24)=0 && inst(21)=1 => DECODER_ERROR', '15 == inst(3:0) => UNPREDICTABLE', 'inst(24)=0 || inst(21)=1 && (15 == inst(19:16) || inst(15:12) == inst(19:16)) => UNPREDICTABLE', 'ArchVersion() < 6 && inst(24)=0 || inst(21)=1 && inst(19:16) == inst(3:0) => UNPREDICTABLE', 'inst(24)=1 => FORBIDDEN']}
 //
-// Representative case:
+// Representaive case:
 // A(25)=1 & op1(24:20)=xx1x0 & B(4)=0 & op1_repeated(24:20)=~0x110
-//    = {actual: StoreBasedOffsetMemory,
+//    = {None: 32,
+//       P: P(24),
+//       Pc: 15,
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rt: Rt(15:12),
+//       W: W(21),
+//       actual: Store3RegisterImm5Op,
+//       base: Rn,
 //       baseline: Store3RegisterImm5Op,
 //       constraints: ,
+//       defs: {base if wback else None},
+//       fields: [P(24), W(21), Rn(19:16), Rt(15:12), Rm(3:0)],
+//       index: P(24)=1,
 //       pattern: cccc011pu1w0nnnnttttiiiiitt0mmmm,
-//       rule: Strb_Rule_198_A1_P392}
+//       rule: STRB_register,
+//       safety: [P(24)=0 && W(21)=1 => DECODER_ERROR, Rm == Pc => UNPREDICTABLE, wback && (Rn == Pc || Rn == Rt) => UNPREDICTABLE, ArchVersion() < 6 && wback && Rn == Rm => UNPREDICTABLE, index => FORBIDDEN],
+//       wback: P(24)=0 || W(21)=1}
 TEST_F(Arm32DecoderStateTests,
-       Store3RegisterImm5OpTester_Case15_TestCase15) {
-  Store3RegisterImm5OpTester_Case15 baseline_tester;
-  NamedStoreBasedOffsetMemory_Strb_Rule_198_A1_P392 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc011pu1w0nnnnttttiiiiitt0mmmm");
+       Store3RegisterImm5OpTester_Case16_TestCase16) {
+  Store3RegisterImm5OpTester_Case16 tester;
+  tester.Test("cccc011pu1w0nnnnttttiiiiitt0mmmm");
 }
 
 // Neutral case:
 // inst(25)=1 & inst(24:20)=xx1x1 & inst(4)=0 & inst(24:20)=~0x111
-//    = {actual: 'LoadBasedOffsetMemory',
+//    = {actual: 'Load3RegisterImm5Op',
 //       baseline: 'Load3RegisterImm5Op',
 //       constraints: ,
+//       defs: {inst(15:12),inst(19:16) if inst(24)=0 || inst(21)=1 else 32},
 //       pattern: 'cccc011pu1w1nnnnttttiiiiitt0mmmm',
-//       rule: 'Ldrb_Rule_64_A1_P132'}
+//       rule: 'LDRB_register',
+//       safety: ['inst(24)=0 && inst(21)=1 => DECODER_ERROR', '15 == inst(15:12) || 15 == inst(3:0) => UNPREDICTABLE', 'inst(24)=0 || inst(21)=1 && (15 == inst(19:16) || inst(15:12) == inst(19:16)) => UNPREDICTABLE', 'ArchVersion() < 6 && inst(24)=0 || inst(21)=1 && inst(19:16) == inst(3:0) => UNPREDICTABLE', 'inst(24)=1 => FORBIDDEN']}
 //
-// Representative case:
+// Representaive case:
 // A(25)=1 & op1(24:20)=xx1x1 & B(4)=0 & op1_repeated(24:20)=~0x111
-//    = {actual: LoadBasedOffsetMemory,
+//    = {None: 32,
+//       P: P(24),
+//       Pc: 15,
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rt: Rt(15:12),
+//       W: W(21),
+//       actual: Load3RegisterImm5Op,
+//       base: Rn,
 //       baseline: Load3RegisterImm5Op,
 //       constraints: ,
+//       defs: {Rt,base if wback else None},
+//       fields: [P(24), W(21), Rn(19:16), Rt(15:12), Rm(3:0)],
+//       index: P(24)=1,
 //       pattern: cccc011pu1w1nnnnttttiiiiitt0mmmm,
-//       rule: Ldrb_Rule_64_A1_P132}
+//       rule: LDRB_register,
+//       safety: [P(24)=0 && W(21)=1 => DECODER_ERROR, Pc in {Rt,Rm} => UNPREDICTABLE, wback && (Rn == Pc || Rn == Rt) => UNPREDICTABLE, ArchVersion() < 6 && wback && Rn == Rm => UNPREDICTABLE, index => FORBIDDEN],
+//       wback: P(24)=0 || W(21)=1}
 TEST_F(Arm32DecoderStateTests,
-       Load3RegisterImm5OpTester_Case16_TestCase16) {
-  Load3RegisterImm5OpTester_Case16 baseline_tester;
-  NamedLoadBasedOffsetMemory_Ldrb_Rule_64_A1_P132 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc011pu1w1nnnnttttiiiiitt0mmmm");
+       Load3RegisterImm5OpTester_Case17_TestCase17) {
+  Load3RegisterImm5OpTester_Case17 tester;
+  tester.Test("cccc011pu1w1nnnnttttiiiiitt0mmmm");
 }
 
 }  // namespace nacl_arm_test
