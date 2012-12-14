@@ -701,7 +701,7 @@ static int
 checkMultCaps (void)
 {
   int k;
-  for (k = 0; k < table->lenBeginCaps && k < srcmax - src; k++)
+  for (k = 0; k < table->lenBeginCaps; k++)
     if (!checkAttr (currentInput[src + k], CTC_UpperCase, 0))
       return 0;
   return 1;
@@ -1136,7 +1136,7 @@ noCompbrlAhead (void)
   int curSrc;
   if (start >= srcmax)
     return 1;
-  while (start < srcmax && checkAttr (currentInput[start], CTC_Space, 0))
+  while (checkAttr (currentInput[start], CTC_Space, 0) && start < srcmax)
     start++;
   if (start == srcmax || (transOpcode == CTO_JoinableWord && (!checkAttr
 							      (currentInput
@@ -1151,7 +1151,7 @@ noCompbrlAhead (void)
 							       0))))
     return 1;
   end = start;
-  while (end < srcmax && !checkAttr (currentInput[end], CTC_Space, 0))
+  while (!checkAttr (currentInput[end], CTC_Space, 0) && end < srcmax)
     end++;
   if ((mode & (compbrlAtCursor | compbrlLeftCursor)) && cursorPosition
       >= start && cursorPosition < end)
