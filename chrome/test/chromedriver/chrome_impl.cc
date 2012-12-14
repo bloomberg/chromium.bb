@@ -12,8 +12,9 @@
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
 #include "base/values.h"
-#include "chrome/test/chromedriver/devtools_client.h"
+#include "chrome/test/chromedriver/devtools_client_impl.h"
 #include "chrome/test/chromedriver/net/net_util.h"
+#include "chrome/test/chromedriver/net/sync_websocket_impl.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
 #include "chrome/test/chromedriver/status.h"
 #include "googleurl/src/gurl.h"
@@ -36,10 +37,12 @@ Status FetchPagesInfo(URLRequestContextGetter* context_getter,
 ChromeImpl::ChromeImpl(base::ProcessHandle process,
                        URLRequestContextGetter* context_getter,
                        base::ScopedTempDir* user_data_dir,
-                       int port)
+                       int port,
+                       const SyncWebSocketFactory& socket_factory)
     : process_(process),
       context_getter_(context_getter),
-      port_(port) {
+      port_(port),
+      socket_factory_(socket_factory) {
   if (user_data_dir->IsValid()) {
     CHECK(user_data_dir_.Set(user_data_dir->Take()));
   }
@@ -61,7 +64,7 @@ Status ChromeImpl::Init() {
   }
   if (debugger_urls.empty())
     return Status(kUnknownError, "unable to discover open pages");
-  client_.reset(new DevToolsClient(context_getter_, debugger_urls.front()));
+  client_.reset(new DevToolsClientImpl(socket_factory_, debugger_urls.front()));
   return Status(kOk);
 }
 

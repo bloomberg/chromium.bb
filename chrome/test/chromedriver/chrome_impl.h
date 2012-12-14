@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/process.h"
 #include "chrome/test/chromedriver/chrome.h"
+#include "chrome/test/chromedriver/net/sync_websocket_factory.h"
 
 class DevToolsClient;
 class Status;
@@ -24,7 +25,8 @@ class ChromeImpl : public Chrome {
   ChromeImpl(base::ProcessHandle process,
              URLRequestContextGetter* context_getter,
              base::ScopedTempDir* user_data_dir,
-             int port);
+             int port,
+             const SyncWebSocketFactory& socket_factory);
   virtual ~ChromeImpl();
 
   Status Init();
@@ -38,6 +40,7 @@ class ChromeImpl : public Chrome {
   scoped_refptr<URLRequestContextGetter> context_getter_;
   base::ScopedTempDir user_data_dir_;
   int port_;
+  SyncWebSocketFactory socket_factory_;
   scoped_ptr<DevToolsClient> client_;
 };
 

@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/test/chromedriver/chrome_launcher.h"
+#include "chrome/test/chromedriver/net/sync_websocket_factory.h"
 
 class Chrome;
 class FilePath;
@@ -18,7 +19,8 @@ class URLRequestContextGetter;
 
 class ChromeLauncherImpl : public ChromeLauncher {
  public:
-  explicit ChromeLauncherImpl(URLRequestContextGetter* context_getter);
+  explicit ChromeLauncherImpl(URLRequestContextGetter* context_getter,
+                              const SyncWebSocketFactory& socket_factory);
   virtual ~ChromeLauncherImpl();
 
   // Overridden from ChromeLauncher:
@@ -27,6 +29,7 @@ class ChromeLauncherImpl : public ChromeLauncher {
 
  private:
   scoped_refptr<URLRequestContextGetter> context_getter_;
+  SyncWebSocketFactory socket_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherImpl);
 };

@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome_launcher_impl.h"
 #include "chrome/test/chromedriver/commands.h"
+#include "chrome/test/chromedriver/net/sync_websocket_factory.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
 #include "chrome/test/chromedriver/session.h"
 #include "chrome/test/chromedriver/session_command.h"
@@ -27,7 +28,9 @@ void CommandExecutorImpl::Init() {
   CHECK(io_thread_.StartWithOptions(options));
   context_getter_ = new URLRequestContextGetter(
       io_thread_.message_loop_proxy());
-  launcher_.reset(new ChromeLauncherImpl(context_getter_));
+  launcher_.reset(new ChromeLauncherImpl(
+      context_getter_,
+      CreateSyncWebSocketFactory(context_getter_)));
 
   // Session commands.
   base::Callback<Status(

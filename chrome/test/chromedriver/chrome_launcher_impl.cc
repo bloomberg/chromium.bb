@@ -17,8 +17,11 @@
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
 #include "chrome/test/chromedriver/status.h"
 
-ChromeLauncherImpl::ChromeLauncherImpl(URLRequestContextGetter* context_getter)
-    : context_getter_(context_getter) {}
+ChromeLauncherImpl::ChromeLauncherImpl(
+    URLRequestContextGetter* context_getter,
+    const SyncWebSocketFactory& socket_factory)
+    : context_getter_(context_getter),
+      socket_factory_(socket_factory) {}
 
 ChromeLauncherImpl::~ChromeLauncherImpl() {}
 
@@ -48,7 +51,7 @@ Status ChromeLauncherImpl::Launch(
   if (!base::LaunchProcess(command, options, &process))
     return Status(kUnknownError, "chrome failed to start");
   scoped_ptr<ChromeImpl> chrome_impl(new ChromeImpl(
-      process, context_getter_, &user_data_dir, port));
+      process, context_getter_, &user_data_dir, port, socket_factory_));
   Status status = chrome_impl->Init();
   if (status.IsError())
     return status;

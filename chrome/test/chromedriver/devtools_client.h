@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace base {
@@ -15,26 +14,18 @@ class DictionaryValue;
 }
 
 class Status;
-class SyncWebSocket;
-class URLRequestContextGetter;
 
 // A DevTools client of a single DevTools debugger.
 class DevToolsClient {
  public:
-  DevToolsClient(URLRequestContextGetter* context_getter,
-                 const std::string& url);
-  ~DevToolsClient();
+  virtual ~DevToolsClient() {}
 
-  Status SendCommand(const std::string& method,
-                     const base::DictionaryValue& params);
-
- private:
-  scoped_refptr<URLRequestContextGetter> context_getter_;
-  std::string url_;
-  scoped_ptr<SyncWebSocket> socket_;
-  bool connected_;
-
-  DISALLOW_COPY_AND_ASSIGN(DevToolsClient);
+  virtual Status SendCommand(const std::string& method,
+                             const base::DictionaryValue& params) = 0;
+  virtual Status SendCommandAndGetResult(
+      const std::string& method,
+      const base::DictionaryValue& params,
+      scoped_ptr<base::DictionaryValue>* result) = 0;
 };
 
 #endif  // CHROME_TEST_CHROMEDRIVER_DEVTOOLS_CLIENT_H_

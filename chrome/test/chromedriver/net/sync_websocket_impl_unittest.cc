@@ -14,7 +14,7 @@
 #include "base/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
-#include "chrome/test/chromedriver/net/sync_websocket.h"
+#include "chrome/test/chromedriver/net/sync_websocket_impl.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/ip_endpoint.h"
@@ -27,10 +27,10 @@
 
 namespace {
 
-class SyncWebSocketTest : public testing::Test,
-                          public net::HttpServer::Delegate {
+class SyncWebSocketImplTest : public testing::Test,
+                              public net::HttpServer::Delegate {
  public:
-  SyncWebSocketTest()
+  SyncWebSocketImplTest()
       : io_thread_("io"),
         close_on_receive_(false) {
     base::Thread::Options options(MessageLoop::TYPE_IO, 0);
@@ -40,16 +40,16 @@ class SyncWebSocketTest : public testing::Test,
     base::WaitableEvent event(false, false);
     io_thread_.message_loop_proxy()->PostTask(
         FROM_HERE,
-        base::Bind(&SyncWebSocketTest::InitOnIO,
+        base::Bind(&SyncWebSocketImplTest::InitOnIO,
                    base::Unretained(this), &event));
     event.Wait();
   }
 
-  virtual ~SyncWebSocketTest() {
+  virtual ~SyncWebSocketImplTest() {
     base::WaitableEvent event(false, false);
     io_thread_.message_loop_proxy()->PostTask(
         FROM_HERE,
-        base::Bind(&SyncWebSocketTest::DestroyServerOnIO,
+        base::Bind(&SyncWebSocketImplTest::DestroyServerOnIO,
                    base::Unretained(this), &event));
     event.Wait();
   }
@@ -100,22 +100,22 @@ class SyncWebSocketTest : public testing::Test,
 
 }  // namespace
 
-TEST_F(SyncWebSocketTest, CreateDestroy) {
-  SyncWebSocket sock(context_getter_);
+TEST_F(SyncWebSocketImplTest, CreateDestroy) {
+  SyncWebSocketImpl sock(context_getter_);
 }
 
-TEST_F(SyncWebSocketTest, Connect) {
-  SyncWebSocket sock(context_getter_);
+TEST_F(SyncWebSocketImplTest, Connect) {
+  SyncWebSocketImpl sock(context_getter_);
   ASSERT_TRUE(sock.Connect(server_url_));
 }
 
-TEST_F(SyncWebSocketTest, ConnectFail) {
-  SyncWebSocket sock(context_getter_);
+TEST_F(SyncWebSocketImplTest, ConnectFail) {
+  SyncWebSocketImpl sock(context_getter_);
   ASSERT_FALSE(sock.Connect(GURL("ws://127.0.0.1:33333")));
 }
 
-TEST_F(SyncWebSocketTest, SendReceive) {
-  SyncWebSocket sock(context_getter_);
+TEST_F(SyncWebSocketImplTest, SendReceive) {
+  SyncWebSocketImpl sock(context_getter_);
   ASSERT_TRUE(sock.Connect(server_url_));
   ASSERT_TRUE(sock.Send("hi"));
   std::string message;
@@ -123,8 +123,8 @@ TEST_F(SyncWebSocketTest, SendReceive) {
   ASSERT_STREQ("hi", message.c_str());
 }
 
-TEST_F(SyncWebSocketTest, SendReceiveLarge) {
-  SyncWebSocket sock(context_getter_);
+TEST_F(SyncWebSocketImplTest, SendReceiveLarge) {
+  SyncWebSocketImpl sock(context_getter_);
   ASSERT_TRUE(sock.Connect(server_url_));
   // Sends/receives 200kb. For some reason pushing this above 240kb on my
   // machine results in receiving no data back from the http server.
@@ -136,8 +136,8 @@ TEST_F(SyncWebSocketTest, SendReceiveLarge) {
   ASSERT_EQ(wrote_message, message);
 }
 
-TEST_F(SyncWebSocketTest, SendReceiveMany) {
-  SyncWebSocket sock(context_getter_);
+TEST_F(SyncWebSocketImplTest, SendReceiveMany) {
+  SyncWebSocketImpl sock(context_getter_);
   ASSERT_TRUE(sock.Connect(server_url_));
   ASSERT_TRUE(sock.Send("1"));
   ASSERT_TRUE(sock.Send("2"));
@@ -151,9 +151,9 @@ TEST_F(SyncWebSocketTest, SendReceiveMany) {
   ASSERT_STREQ("3", message.c_str());
 }
 
-TEST_F(SyncWebSocketTest, CloseOnReceive) {
+TEST_F(SyncWebSocketImplTest, CloseOnReceive) {
   close_on_receive_ = true;
-  SyncWebSocket sock(context_getter_);
+  SyncWebSocketImpl sock(context_getter_);
   ASSERT_TRUE(sock.Connect(server_url_));
   ASSERT_TRUE(sock.Send("1"));
   std::string message;
@@ -161,13 +161,13 @@ TEST_F(SyncWebSocketTest, CloseOnReceive) {
   ASSERT_STREQ("", message.c_str());
 }
 
-TEST_F(SyncWebSocketTest, CloseOnSend) {
-  SyncWebSocket sock(context_getter_);
+TEST_F(SyncWebSocketImplTest, CloseOnSend) {
+  SyncWebSocketImpl sock(context_getter_);
   ASSERT_TRUE(sock.Connect(server_url_));
   base::WaitableEvent event(false, false);
   io_thread_.message_loop_proxy()->PostTask(
       FROM_HERE,
-      base::Bind(&SyncWebSocketTest::DestroyServerOnIO,
+      base::Bind(&SyncWebSocketImplTest::DestroyServerOnIO,
                  base::Unretained(this), &event));
   event.Wait();
   ASSERT_FALSE(sock.Send("1"));
