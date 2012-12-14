@@ -323,8 +323,6 @@ void DriveFileSystem::Reload() {
 void DriveFileSystem::Initialize() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  drive_service_->Initialize(profile_);
-
   ResetResourceMetadata();
 
   PrefService* pref_service = profile_->GetPrefs();

@@ -66,8 +66,6 @@ class StaleCacheFilesRemoverTest : public testing::Test {
     // DriveFileSystem object, which will own the mock object.
     mock_drive_service_ = new StrictMock<google_apis::MockDriveService>;
 
-    EXPECT_CALL(*mock_drive_service_, Initialize(profile_.get())).Times(1);
-
     fake_free_disk_space_getter_.reset(new FakeFreeDiskSpaceGetter);
 
     scoped_refptr<base::SequencedWorkerPool> pool =

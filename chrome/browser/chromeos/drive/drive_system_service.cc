@@ -146,6 +146,7 @@ void DriveSystemService::Initialize(
                                                               cache()));
 
   sync_client_->Initialize();
+  drive_service_->Initialize(profile_);
   file_system_->Initialize();
   cache_->RequestInitialize(base::Bind(&DriveSystemService::OnCacheInitialized,
                                        weak_ptr_factory_.GetWeakPtr()));
