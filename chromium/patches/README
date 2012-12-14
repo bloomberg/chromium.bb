@@ -28,3 +28,8 @@ ugly/
   dalecurtis: In order to preserve ABI compatibility after av_gettime() was
   moved inside the FFmpeg code base, they added a "symbolic link" version which
   our build chain doesn't like.  Remove it until the next major version bump.
+
+08_add_vp9_support.patch
+  tomfinegan: Add support for VP9 in WebM:
+      Tracking issue: http://crbug.com/166094
+      CL: https://codereview.chromium.org/11578025/
