@@ -992,6 +992,12 @@ void BrowsingDataRemover::ClearServerBoundCertsOnIOThread(
       rq_context->GetURLRequestContext()->server_bound_cert_service();
   server_bound_cert_service->GetCertStore()->DeleteAllCreatedBetween(
       delete_begin_, delete_end_);
+  // Need to close open SSL connections which may be using the channel ids we
+  // are deleting.
+  // TODO(mattm): http://crbug.com/166069 Make the server bound cert
+  // service/store have observers that can notify relevant things directly.
+  rq_context->GetURLRequestContext()->ssl_config_service()->
+      NotifySSLConfigChange();
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&BrowsingDataRemover::OnClearedServerBoundCerts,

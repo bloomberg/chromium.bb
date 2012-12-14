@@ -120,8 +120,15 @@ void BrowsingDataServerBoundCertHelperImpl::DeleteOnIOThread(
   net::ServerBoundCertStore* cert_store =
       request_context_getter_->GetURLRequestContext()->
       server_bound_cert_service()->GetCertStore();
-  if (cert_store)
+  if (cert_store) {
     cert_store->DeleteServerBoundCert(server_id);
+    // Need to close open SSL connections which may be using the channel ids we
+    // are deleting.
+    // TODO(mattm): http://crbug.com/166069 Make the server bound cert
+    // service/store have observers that can notify relevant things directly.
+    request_context_getter_->GetURLRequestContext()->ssl_config_service()->
+        NotifySSLConfigChange();
+  }
 }
 
 }  // namespace

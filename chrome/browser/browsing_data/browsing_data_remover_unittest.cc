@@ -260,12 +260,19 @@ class RemoveSafeBrowsingCookieTester : public RemoveCookieTester {
 };
 #endif
 
-class RemoveServerBoundCertTester {
+class RemoveServerBoundCertTester : public net::SSLConfigService::Observer {
  public:
-  explicit RemoveServerBoundCertTester(TestingProfile* profile) {
+  explicit RemoveServerBoundCertTester(TestingProfile* profile)
+      : ssl_config_changed_count_(0) {
     profile->CreateRequestContext();
     server_bound_cert_service_ = profile->GetRequestContext()->
         GetURLRequestContext()->server_bound_cert_service();
+    ssl_config_service_ = profile->GetSSLConfigService();
+    ssl_config_service_->AddObserver(this);
+  }
+
+  virtual ~RemoveServerBoundCertTester() {
+    ssl_config_service_->RemoveObserver(this);
   }
 
   int ServerBoundCertCount() {
@@ -295,12 +302,19 @@ class RemoveServerBoundCertTester {
     return server_bound_cert_service_->GetCertStore();
   }
 
+  int ssl_config_changed_count() const {
+    return ssl_config_changed_count_;
+  }
+
+  // net::SSLConfigService::Observer implementation:
+  virtual void OnSSLConfigChanged() OVERRIDE {
+    ssl_config_changed_count_++;
+  }
+
  private:
   net::ServerBoundCertService* server_bound_cert_service_;
-
-  net::SSLClientCertType type_;
-  std::string key_;
-  std::string cert_;
+  scoped_refptr<net::SSLConfigService> ssl_config_service_;
+  int ssl_config_changed_count_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoveServerBoundCertTester);
 };
@@ -667,6 +681,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveServerBoundCertForever) {
   RemoveServerBoundCertTester tester(GetProfile());
 
   tester.AddServerBoundCert(kTestOrigin1);
+  EXPECT_EQ(0, tester.ssl_config_changed_count());
   EXPECT_EQ(1, tester.ServerBoundCertCount());
 
   BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,
@@ -674,6 +689,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveServerBoundCertForever) {
 
   EXPECT_EQ(BrowsingDataRemover::REMOVE_SERVER_BOUND_CERTS, GetRemovalMask());
   EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginSetMask());
+  EXPECT_EQ(1, tester.ssl_config_changed_count());
   EXPECT_EQ(0, tester.ServerBoundCertCount());
 }
 
@@ -685,6 +701,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveServerBoundCertLastHour) {
   tester.AddServerBoundCertWithTimes(kTestOrigin2,
                                      now - base::TimeDelta::FromHours(2),
                                      now);
+  EXPECT_EQ(0, tester.ssl_config_changed_count());
   EXPECT_EQ(2, tester.ServerBoundCertCount());
 
   BlockUntilBrowsingDataRemoved(BrowsingDataRemover::LAST_HOUR,
@@ -692,7 +709,8 @@ TEST_F(BrowsingDataRemoverTest, RemoveServerBoundCertLastHour) {
 
   EXPECT_EQ(BrowsingDataRemover::REMOVE_SERVER_BOUND_CERTS, GetRemovalMask());
   EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginSetMask());
-  EXPECT_EQ(1, tester.ServerBoundCertCount());
+  EXPECT_EQ(1, tester.ssl_config_changed_count());
+  ASSERT_EQ(1, tester.ServerBoundCertCount());
   net::ServerBoundCertStore::ServerBoundCertList certs;
   tester.GetCertStore()->GetAllServerBoundCerts(&certs);
   EXPECT_EQ(kTestOrigin2, certs.front().server_identifier());

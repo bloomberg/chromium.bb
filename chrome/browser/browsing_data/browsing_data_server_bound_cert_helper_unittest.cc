@@ -16,15 +16,26 @@
 
 using content::BrowserThread;
 
-class BrowsingDataServerBoundCertHelperTest : public testing::Test {
+class BrowsingDataServerBoundCertHelperTest
+    : public testing::Test,
+      public net::SSLConfigService::Observer {
  public:
-  virtual void SetUp() {
+  BrowsingDataServerBoundCertHelperTest() : ssl_config_changed_count_(0) {
+  }
+
+  virtual void SetUp() OVERRIDE {
     ui_thread_.reset(new content::TestBrowserThread(BrowserThread::UI,
                                                     &message_loop_));
     io_thread_.reset(new content::TestBrowserThread(BrowserThread::IO,
                                                     &message_loop_));
     testing_profile_.reset(new TestingProfile());
     testing_profile_->CreateRequestContext();
+
+    testing_profile_->GetSSLConfigService()->AddObserver(this);
+  }
+
+  virtual void TearDown() OVERRIDE {
+    testing_profile_->GetSSLConfigService()->RemoveObserver(this);
   }
 
   void CreateCertsForTest() {
@@ -49,6 +60,11 @@ class BrowsingDataServerBoundCertHelperTest : public testing::Test {
     MessageLoop::current()->Quit();
   }
 
+  // net::SSLConfigService::Observer implementation:
+  virtual void OnSSLConfigChanged() OVERRIDE {
+    ssl_config_changed_count_++;
+  }
+
  protected:
   MessageLoop message_loop_;
   scoped_ptr<content::TestBrowserThread> ui_thread_;
@@ -56,6 +72,8 @@ class BrowsingDataServerBoundCertHelperTest : public testing::Test {
   scoped_ptr<TestingProfile> testing_profile_;
 
   net::ServerBoundCertStore::ServerBoundCertList server_bound_cert_list_;
+
+  int ssl_config_changed_count_;
 };
 
 TEST_F(BrowsingDataServerBoundCertHelperTest, FetchData) {
@@ -84,6 +102,8 @@ TEST_F(BrowsingDataServerBoundCertHelperTest, FetchData) {
   EXPECT_EQ("https://www.youtube.com:443", it->server_identifier());
 
   ASSERT_TRUE(++it == server_bound_cert_list_.end());
+
+  EXPECT_EQ(0, ssl_config_changed_count_);
 }
 
 TEST_F(BrowsingDataServerBoundCertHelperTest, DeleteCert) {
@@ -98,6 +118,7 @@ TEST_F(BrowsingDataServerBoundCertHelperTest, DeleteCert) {
                  base::Unretained(this)));
   MessageLoop::current()->Run();
 
+  EXPECT_EQ(1, ssl_config_changed_count_);
   ASSERT_EQ(1UL, server_bound_cert_list_.size());
   net::ServerBoundCertStore::ServerBoundCertList::const_iterator it =
       server_bound_cert_list_.begin();
@@ -113,6 +134,7 @@ TEST_F(BrowsingDataServerBoundCertHelperTest, DeleteCert) {
       base::Bind(&BrowsingDataServerBoundCertHelperTest::FetchCallback,
                  base::Unretained(this)));
   MessageLoop::current()->Run();
+  EXPECT_EQ(2, ssl_config_changed_count_);
   ASSERT_EQ(0UL, server_bound_cert_list_.size());
 }
 
@@ -141,6 +163,7 @@ TEST_F(BrowsingDataServerBoundCertHelperTest, CannedUnique) {
 
   EXPECT_EQ("https://www.google.com:443", cert.server_identifier());
   EXPECT_EQ(net::CLIENT_CERT_ECDSA_SIGN, cert.type());
+  EXPECT_EQ(0, ssl_config_changed_count_);
 }
 
 TEST_F(BrowsingDataServerBoundCertHelperTest, CannedEmpty) {

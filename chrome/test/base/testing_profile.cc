@@ -643,7 +643,9 @@ net::URLRequestContextGetter* TestingProfile::GetRequestContextForExtensions() {
 }
 
 net::SSLConfigService* TestingProfile::GetSSLConfigService() {
-  return NULL;
+  if (!GetRequestContext())
+    return NULL;
+  return GetRequestContext()->GetURLRequestContext()->ssl_config_service();
 }
 
 net::URLRequestContextGetter*
