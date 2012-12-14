@@ -668,7 +668,6 @@ def RetryInvocation(return_handler, exc_handler, max_retry, functor, *args,
       ret = functor(*args, **kwds)
       if not return_handler(ret):
         return ret
-    #pylint: disable=W0703
     except Exception, e:
       # Note we're not snagging BaseException, so MemoryError/KeyboardInterrupt
       # and friends don't enter this except block.

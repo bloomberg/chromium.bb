@@ -7,7 +7,6 @@
 
 import optparse
 import os
-import sys
 
 from chromite.lib import gdata_lib
 from chromite.lib import table
@@ -296,6 +295,3 @@ def main(argv):
   # write auth_token out to that location.
   if options.token_file:
     creds.StoreAuthTokenIfNeeded(options.token_file)
-
-if __name__ == '__main__':
-  main()

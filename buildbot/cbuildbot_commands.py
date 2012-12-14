@@ -460,7 +460,6 @@ def ArchiveTestResults(buildroot, test_results_dir, prefix):
     shutil.rmtree(results_path)
     return test_tarball
 
-  # pylint: disable=W0703
   except Exception, e:
     cros_build_lib.Warning(
         '========================================================')

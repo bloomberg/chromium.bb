@@ -133,7 +133,6 @@ class _TeeProcess(multiprocessing.Process):
       failed = False
     except ToldToDie:
       failed = False
-    # pylint: disable=W0703
     except Exception, e:
       tb = traceback.format_exc()
       cros_build_lib.PrintBuildbotStepFailure(self._error_handle)
@@ -149,7 +148,6 @@ class _TeeProcess(multiprocessing.Process):
       if failed:
         try:
           os.kill(self.master_pid, signal.SIGTERM)
-        # pylint: disable=W0703
         except Exception, e:
           self._error_handle.write("\nTee failed signaling %s\n" % e)
 

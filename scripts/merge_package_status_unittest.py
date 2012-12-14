@@ -9,8 +9,6 @@
 import exceptions
 import mox
 import os
-import re
-import sys
 import tempfile
 
 from chromite.lib import cros_test_lib

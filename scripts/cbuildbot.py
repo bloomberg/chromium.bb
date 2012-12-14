@@ -14,7 +14,6 @@ import distutils.version
 import errno
 import glob
 import logging
-import multiprocessing
 import optparse
 import os
 import pprint

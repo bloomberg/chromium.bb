@@ -51,14 +51,15 @@ class EnforcedCleanupSection(object):
       return
     # Since we share stdin/stdout/whatever, suppress sigint should we somehow
     # become the foreground process in the session group.
+    # pylint: disable=W0212
     signal.signal(signal.SIGINT, signal.SIG_IGN)
     # Child code.  We lose the lock via lockf/fork semantics.
     self._is_child = True
     try:
       self._lock.write_lock()
     except Exception, e:
-      print >>sys.stderr, ("EnforcedCleanupSection %s excepted(%r) attempting "
-                           "to take the write lock; hard exiting." % (self, e))
+      print >> sys.stderr, ("EnforcedCleanupSection %s excepted(%r) attempting "
+                            "to take the write lock; hard exiting." % (self, e))
       # We have no way of knowing the state of the parent if this locking
       # fails- failure means a code bug.  Specifically, we don't know if
       # cleanup code was run, thus just flat out bail.
@@ -82,6 +83,7 @@ class EnforcedCleanupSection(object):
     if self._is_child:
       # All cleanup code that would've run, has ran.
       # Hard exit to bypass any further code execution.
+      # pylint: disable=W0212
       os._exit(0)
     os.write(self._lock.fd, '\n')
     self._lock.unlock()

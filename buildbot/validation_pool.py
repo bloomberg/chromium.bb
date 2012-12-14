@@ -1135,7 +1135,6 @@ class ValidationPool(object):
       try:
         self._HandleApplyFailure(
             [InternalCQError(patch, msg) for patch in self.changes])
-      # pylint: disable=W0703
       except Exception, e:
         if mox is None or not isinstance(e, mox.Error):
           # If it's not a mox error, let it fly.

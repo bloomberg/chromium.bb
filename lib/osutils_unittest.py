@@ -11,9 +11,6 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__)))))
 
-import shutil
-import tempfile
-
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
@@ -23,10 +20,10 @@ class TestOsutils(cros_test_lib.TempDirTestCase):
 
   def testReadWriteFile(self):
     """Verify we can write data to a file, and then read it back."""
-    file = os.path.join(self.tempdir, 'foo')
+    filename = os.path.join(self.tempdir, 'foo')
     data = 'alsdkfjasldkfjaskdlfjasdf'
-    self.assertEqual(osutils.WriteFile(file, data), None)
-    self.assertEqual(osutils.ReadFile(file), data)
+    self.assertEqual(osutils.WriteFile(filename, data), None)
+    self.assertEqual(osutils.ReadFile(filename), data)
 
   def testSafeUnlink(self):
     """Test unlinking files work (existing or not)."""

@@ -146,8 +146,8 @@ class GerritHelper(object):
         [('--remove', x) for x in cros_build_lib.iflatten_instance(remove)]))
     if project is not None:
       command += ['--project', project]
-    # Always set the change last; else --project may not take hold by that point,
-    # with gerrit complaining of duplicates when there aren't.
+    # Always set the change last; else --project may not take hold by that
+    # point, with gerrit complaining of duplicates when there aren't.
     # Yes kiddies, gerrit can be retarded; this being one of those cases.
     command.append(str(change))
     cros_build_lib.RunCommandCaptureOutput(command, print_cmd=self.print_cmd)

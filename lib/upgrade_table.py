@@ -5,15 +5,6 @@
 
 """UpgradeTable class is used in Portage package upgrade process."""
 
-import logging
-import optparse
-import os
-import portage
-import re
-import shutil
-import sys
-import tempfile
-
 from chromite.lib import table
 
 class UpgradeTable(table.Table):

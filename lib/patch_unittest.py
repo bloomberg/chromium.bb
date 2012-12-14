@@ -124,7 +124,7 @@ I am the first commit.
   def _GetSha1(self, cwd, refspec):
     return self._run(['git', 'rev-list', '-n1', refspec], cwd=cwd)
 
-  def _MakeRepo(self, name, clone, branch='master', alternates=True):
+  def _MakeRepo(self, name, clone, alternates=True):
     path = os.path.join(self.tempdir, name)
     cmd = ['git', 'clone', clone, path]
     if alternates:
@@ -155,7 +155,7 @@ I am the first commit.
     return git1, git2, patch
 
   def testGetDiffStatus(self):
-    git1, git2, patch1 = self._CommonGitSetup()
+    git1, _, patch1 = self._CommonGitSetup()
     # Ensure that it can work on the first commit, even if it
     # doesn't report anything (no delta; it's the first files).
     patch1 = self._MkPatch(git1, self._GetSha1(git1, self.DEFAULT_TRACKING))
@@ -170,7 +170,7 @@ I am the first commit.
     self.assertEqual({'monkey2': 'A'}, patch4.GetDiffStatus(git1))
 
   def testFetch(self):
-    git1, git2, patch = self._CommonGitSetup()
+    _, git2, patch = self._CommonGitSetup()
     patch.Fetch(git2)
     self.assertEqual(patch.sha1, self._GetSha1(git2, 'FETCH_HEAD'))
     # Verify reuse; specifically that Fetch doesn't actually run since
@@ -190,7 +190,7 @@ I am the first commit.
                        self.DEFAULT_TRACKING, check_attrs={'inflight':True})
 
   def testCleanlyApply(self):
-    git1, git2, patch = self._CommonGitSetup()
+    _, git2, patch = self._CommonGitSetup()
     # Clone git3 before we modify git2; else we'll just wind up
     # cloning it's master.
     git3 = self._MakeRepo('git3', git2)
@@ -201,12 +201,12 @@ I am the first commit.
     # validates this; the Apply usage here fully validates it via
     # ensuring that the attempted Apply goes boom if it can't get the
     # required sha1.
-    patch.project_url='/dev/null'
+    patch.project_url = '/dev/null'
     patch.Apply(git3, self.DEFAULT_TRACKING)
     self.assertEqual(patch.sha1, self._GetSha1(git3, 'HEAD'))
 
   def testFailsApply(self):
-    git1, git2, patch1 = self._CommonGitSetup()
+    _, git2, patch1 = self._CommonGitSetup()
     patch2 = self.CommitFile(git2, 'monkeys', 'not foon')
     # Note that Apply creates it's own branch, resetting to master
     # thus we have to re-apply (even if it looks stupid, it's right).
@@ -216,7 +216,7 @@ I am the first commit.
                        exact_kls=True, check_attrs={'inflight':True})
 
   def testTrivial(self):
-    git1, git2, patch1 = self._CommonGitSetup()
+    _, git2, patch1 = self._CommonGitSetup()
     # Throw in a bunch of newlines so that content-merging would work.
     content = 'not foon%s' % ('\n' * 100)
     patch1 = self._MkPatch(git2, self._GetSha1(git2, 'HEAD'))
@@ -233,8 +233,8 @@ I am the first commit.
     # Reset so we derive the next changes from patch1.
     git.RunGit(git2, ['reset', '--hard', patch1.sha1])
     patch6 = self.CommitFile(git2, 'blah', 'some-other-file')
-    patch7 = self.CommitFile(git2, 'monkeys',
-                             '%sblah' % content.replace('not', 'bot'))
+    self.CommitFile(git2, 'monkeys',
+                    '%sblah' % content.replace('not', 'bot'))
 
     self.assertRaises2(cros_patch.PatchAlreadyApplied,
                        patch1.Apply, git2, self.DEFAULT_TRACKING, trivial=True,
@@ -461,7 +461,7 @@ class TestLocalPatchGit(TestGitRepoPatch):
                           sha1, **kwds)
 
   def testUpload(self):
-    def ProjectDirMock(sourceroot):
+    def ProjectDirMock(_sourceroot):
       return git1
 
     git1, git2, patch = self._CommonGitSetup()
@@ -471,6 +471,7 @@ class TestLocalPatchGit(TestGitRepoPatch):
     patch.ProjectDir = ProjectDirMock
     # First suppress carbon copy behaviour so we verify pushing
     # plain works.
+    # pylint: disable=E1101
     sha1 = patch.sha1
     patch._GetCarbonCopy = lambda: sha1
     patch.Upload(git2, 'refs/testing/test1')
@@ -516,7 +517,7 @@ class TestUploadedLocalPatch(TestGitRepoPatch):
                           carbon_copy_sha1=sha1, **kwds)
 
   def testStringRepresentation(self):
-    git1, git2, patch = self._CommonGitSetup()
+    _, _, patch = self._CommonGitSetup()
     str_rep = str(patch).split(':')
     for element in [self.PROJECT, self.ORIGINAL_BRANCH, self.ORIGINAL_SHA1[:8]]:
       self.assertTrue(element in str_rep,

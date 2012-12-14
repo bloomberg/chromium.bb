@@ -137,6 +137,7 @@ class Table(object):
 
   def __eq__(self, other):
     """Return true if two tables are equal."""
+    # pylint: disable=W0212
     return self._columns == other._columns and self._rows == other._rows
 
   def __ne__(self, other):
@@ -146,10 +147,6 @@ class Table(object):
   def __getitem__(self, index):
     """Access one or more rows by index or slice."""
     return self.GetRowByIndex(index)
-
-  def __setitem__(self, key, item):
-    """Set one or more rows by index or slice."""
-    raise NotImplementedError("Implementation not done, yet.")
 
   def __delitem__(self, index):
     """Delete one or more rows by index or slice."""
@@ -262,23 +259,9 @@ class Table(object):
     row = self._PrepareValuesForAdd(values)
     self._rows[index] = row
 
-  def SetRowByValue(self, id_column, values):
-    """Set the |values| of the row identified by the value in |id_column|.
-
-    The column specified by |id_column| should be a unique identifier column,
-    where the value in that column is different for every row.  If it is not
-    unique, the behavior of this method is undefined.
-    """
-    row = self._PrepareValuesForAdd(values)
-    raise NotImplementedError("Implementation not done, yet.")
-
   def RemoveRowByIndex(self, index):
     """Remove the row at |index|."""
     del self._rows[index]
-
-  def RemoveRowsByValue(self, id_values):
-    """Remove any rows matching the key/value pairs in |id_values|."""
-    raise NotImplementedError("Implementation not done, yet.")
 
   def HasColumn(self, name):
     """Return True if column |name| is in this table, False otherwise."""
@@ -349,6 +332,7 @@ class Table(object):
     # If requested, allow columns in other_table to create new columns
     # in this table if this table does not already have them.
     if allow_new_columns:
+      # pylint: disable=W0212
       for ix, col in enumerate(other_table._columns):
         if not self.HasColumn(col):
           # Create a merge_rule on the fly for this new column.

@@ -719,9 +719,9 @@ class LessAnnoyingMox(mox.Mox):
     kls = self.mock_classes.get(
         self._GetNamespace(obj), mox.MockObject)
     # Copy attrs; I don't trust mox to not be stupid here.
-    mock = kls(obj, attrs=attrs)
-    self._mock_objects.append(mock)
-    return mock
+    new_mock = kls(obj, attrs=attrs)
+    self._mock_objects.append(new_mock)
+    return new_mock
 
 
 class MoxTestCase(TestCase):

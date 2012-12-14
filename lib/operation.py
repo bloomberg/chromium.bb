@@ -406,8 +406,10 @@ class Operation:
       request: True to request verbose mode if available, False to do nothing.
 
     """
-    self.old_verbose = self.verbose
+    old_verbose = self.verbose
     if request and not self.explicit_verbose:
       self.verbose = True
-    yield
-    self.verbose = self.old_verbose
+    try:
+      yield
+    finally:
+      self.verbose = old_verbose

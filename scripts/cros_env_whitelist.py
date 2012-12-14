@@ -9,5 +9,5 @@ Print the environment whitelist.
 from chromite.buildbot import constants
 
 
-def main(argv):
+def main(_argv):
   print ' '.join(constants.CHROOT_ENVIRONMENT_WHITELIST)

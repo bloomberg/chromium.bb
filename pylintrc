@@ -56,9 +56,11 @@
 # W0142: Used * or ** magic
 # W0403: Relative import 'constants', should be 'chromite.buildbot.constants'
 # W0511: Used when a warning note as FIXME or XXX is detected.
+# W0703: Catching too general exception Exception.
 # R0904: Too many public methods
 # R0921: Abstract class not referenced.
-disable=C0103,C0111,C0302,C0321,E1103,I0011,R0201,R0902,R0903,R0911,R0912,R0913,R0914,R0915,W0122,W0141,W0142,W0403,W0511,R0904,R0921
+# R0922: Abstract class is only referenced N times.
+disable=C0103,C0111,C0302,C0321,E1103,I0011,R0201,R0902,R0903,R0911,R0912,R0913,R0914,R0915,W0122,W0141,W0142,W0403,W0511,W0703,R0904,R0921,R0922
 
 
 [REPORTS]

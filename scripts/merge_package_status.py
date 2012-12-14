@@ -10,7 +10,6 @@ one csv file, in preparation for uploading to a Google Docs spreadsheet.
 import optparse
 import os
 import re
-import sys
 
 from chromite.lib import operation
 from chromite.lib import table

@@ -73,7 +73,7 @@ def main(argv):
       by_compatibility[compat_id].add(other_board)
 
   if compatible_boards is None:
-    print >>sys.stderr, "Missing portageq wrapper for %s" % flags.board
+    print >> sys.stderr, "Missing portageq wrapper for %s" % flags.board
     sys.exit(1)
 
   # If a non-generic prebuilt is available, ignore the generic ones,

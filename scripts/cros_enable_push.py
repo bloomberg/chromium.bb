@@ -12,10 +12,10 @@ from chromite.lib import git
 
 
 def _Usage(handle):
-  print >>handle, (
+  print >> handle, (
      "Tool to fix git configuration and add push configuration to a repo.")
-  print >>handle
-  print >>handle, (
+  print >> handle
+  print >> handle, (
 """Fix git configuration, and enable git pushing to the remote.
 
 To run this script, either invoke it from within a repo checkout, or pass it
@@ -39,7 +39,7 @@ def main(argv):
     path = git.FindRepoCheckoutRoot()
     if path is None:
       _Usage(sys.stderr)
-      print >>sys.stderr, "We're not in a repo checkout."
+      print >> sys.stderr, "We're not in a repo checkout."
       return 1
   else:
     if argv[0] in ('-h', '--help', '--usage'):
@@ -48,7 +48,7 @@ def main(argv):
     path = argv[0]
     if not repository.IsARepoRoot(path):
       _Usage(sys.stderr)
-      print >>sys.stderr, ("Path %s doesn't point to the root of a repository."
+      print >> sys.stderr, ("Path %s doesn't point to the root of a repository."
                            % (argv[0],))
       return 1
 

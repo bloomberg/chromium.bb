@@ -40,7 +40,7 @@ class _Lock(cros_build_lib.MasterPidContextManager):
     return self._fd
 
   def _GetFd(self):
-    raise NotImplemented(self, '_GetFd')
+    raise NotImplementedError(self, '_GetFd')
 
   def _enforce_lock(self, flags, message):
     # Try nonblocking first, if it fails, display the context/message,

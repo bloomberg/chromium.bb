@@ -52,11 +52,11 @@ def _LoadDEPS(deps_content):
         return self._local_scope['vars'][var_name]
       raise Exception('Var is not defined: %s' % var_name)
 
-  locals = {}
-  var = _VarImpl({}, locals)
-  globals = {'From': FromImpl, 'Var': var.Lookup, 'deps_os': {}}
-  exec(deps_content) in globals, locals
-  return locals
+  my_locals = {}
+  var = _VarImpl({}, my_locals)
+  my_globals = {'From': FromImpl, 'Var': var.Lookup, 'deps_os': {}}
+  exec(deps_content) in my_globals, my_locals
+  return my_locals
 
 
 def _CreateCrosSymlink(repo_root):
