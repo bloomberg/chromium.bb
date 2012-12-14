@@ -5,8 +5,6 @@
 #ifndef UI_APP_LIST_APPS_GRID_VIEW_H_
 #define UI_APP_LIST_APPS_GRID_VIEW_H_
 
-#include <vector>
-
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/timer.h"
@@ -145,6 +143,10 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
                             bool animate_target,
                             const gfx::Rect& target);
 
+  // Extracts drag location info from |event| into |drag_point|.
+  void ExtractDragLocation(const ui::LocatedEvent& event,
+                           gfx::Point* drag_point);
+
   // Calculates |drop_target_| based on |drag_point|. |drag_point| is in the
   // grid view's coordinates. When |use_page_button_hovering| is true and
   // |drag_point| is hovering on a page button, use the last slot on that page
@@ -202,6 +204,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   Pointer drag_pointer_;
   Index drop_target_;
 
+  // Last mouse drag location in this view's coordinates.
   gfx::Point last_drag_point_;
 
   // Timer to auto flip page when dragging an item near the left/right edges.

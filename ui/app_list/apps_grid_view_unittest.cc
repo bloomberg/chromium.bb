@@ -176,11 +176,11 @@ class AppsGridViewTest : public testing::Test {
         to - view->bounds().origin());
 
     ui::MouseEvent pressed_event(ui::ET_MOUSE_PRESSED,
-                                 translated_from, translated_from, 0);
+                                 translated_from, from, 0);
     apps_grid_view_->InitiateDrag(view, pointer, pressed_event);
 
     ui::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED,
-                              translated_to, translated_to, 0);
+                              translated_to, to, 0);
     apps_grid_view_->UpdateDrag(view, pointer, drag_event);
   }
 

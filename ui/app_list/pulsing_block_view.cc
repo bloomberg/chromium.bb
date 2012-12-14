@@ -75,7 +75,7 @@ void SchedulePulsingAnimation(ui::Layer* layer) {
 namespace app_list {
 
 PulsingBlockView::PulsingBlockView(const gfx::Size& size, bool start_delay) {
-#if !defined(OS_WIN)
+#if defined(USE_AURA)
   SetPaintToLayer(true);
   SetFillsBoundsOpaquely(false);
 

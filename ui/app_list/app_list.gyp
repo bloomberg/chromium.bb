@@ -66,6 +66,13 @@
         'search_result_list_view.h',
         'search_result_list_view_delegate.h',
       ],
+      'conditions': [
+        ['use_aura==1', {
+          'dependencies': [
+            '../aura/aura.gyp:aura',
+          ],
+        }],
+      ],
     },
     {
       'target_name': 'app_list_unittests',

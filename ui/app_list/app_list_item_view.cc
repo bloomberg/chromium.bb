@@ -139,7 +139,7 @@ void AppListItemView::SetUIState(UIState state) {
 
   ui_state_ = state;
 
-#if !defined(OS_WIN)
+#if defined(USE_AURA)
   ui::ScopedLayerAnimationSettings settings(layer()->GetAnimator());
   switch (ui_state_) {
     case UI_STATE_NORMAL:

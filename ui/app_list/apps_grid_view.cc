@@ -17,6 +17,10 @@
 #include "ui/views/view_model_utils.h"
 #include "ui/views/widget/widget.h"
 
+#if defined(USE_AURA)
+#include "ui/aura/root_window.h"
+#endif
+
 namespace {
 
 // Padding space in pixels for fixed layout.
@@ -190,24 +194,24 @@ void AppsGridView::UpdateDrag(views::View* view,
     ReorderChildView(drag_view_, -1);
     bounds_animator_.StopAnimatingView(drag_view_);
   }
-  if (drag_pointer_ == pointer) {
-    last_drag_point_ = event.location();
-    views::View::ConvertPointToTarget(drag_view_, this, &last_drag_point_);
+  if (drag_pointer_ != pointer)
+    return;
 
-    const Index last_drop_target = drop_target_;
-    CalculateDropTarget(last_drag_point_, false);
-    MaybeStartPageFlipTimer(last_drag_point_);
+  ExtractDragLocation(event, &last_drag_point_);
 
-    gfx::Point page_switcher_point(last_drag_point_);
-    views::View::ConvertPointToTarget(this, page_switcher_view_,
-                                      &page_switcher_point);
-    page_switcher_view_->UpdateUIForDragPoint(page_switcher_point);
+  const Index last_drop_target = drop_target_;
+  CalculateDropTarget(last_drag_point_, false);
+  MaybeStartPageFlipTimer(last_drag_point_);
 
-    if (last_drop_target != drop_target_)
-      AnimateToIdealBounds();
-    drag_view_->SetPosition(
-        gfx::PointAtOffsetFromOrigin(last_drag_point_ - drag_start_));
-  }
+  gfx::Point page_switcher_point(last_drag_point_);
+  views::View::ConvertPointToTarget(this, page_switcher_view_,
+                                    &page_switcher_point);
+  page_switcher_view_->UpdateUIForDragPoint(page_switcher_point);
+
+  if (last_drop_target != drop_target_)
+    AnimateToIdealBounds();
+  drag_view_->SetPosition(
+      gfx::PointAtOffsetFromOrigin(last_drag_point_ - drag_start_));
 }
 
 void AppsGridView::EndDrag(bool cancel) {
@@ -367,7 +371,7 @@ views::View* AppsGridView::CreateViewForItemAtIndex(size_t index) {
   AppListItemView* view = new AppListItemView(this,
                                               model_->apps()->GetItemAt(index));
   view->SetIconSize(icon_size_);
-#if !defined(OS_WIN)
+#if defined(USE_AURA)
   view->SetPaintToLayer(true);
   view->SetFillsBoundsOpaquely(false);
 #endif
@@ -380,7 +384,7 @@ void AppsGridView::SetSelectedItemByIndex(const Index& index) {
 
   views::View* new_selection = GetViewAtIndex(index);
   if (!new_selection)
-    return; // Keep current selection.
+    return;  // Keep current selection.
 
   if (selected_view_)
     selected_view_->SchedulePaint();
@@ -554,7 +558,7 @@ void AppsGridView::AnimationBetweenRows(views::View* view,
   const int dir = current_page < target_page ||
       (current_page == target_page && current.y() < target.y()) ? 1 : -1;
 
-#if !defined(OS_WIN)
+#if defined(USE_AURA)
   scoped_ptr<ui::Layer> layer;
   if (animate_current) {
     layer.reset(view->RecreateLayer());
@@ -574,11 +578,37 @@ void AppsGridView::AnimationBetweenRows(views::View* view,
   view->SetBoundsRect(target_in);
   bounds_animator_.AnimateViewTo(view, target);
 
-#if !defined(OS_WIN)
+#if defined(USE_AURA)
   bounds_animator_.SetAnimationDelegate(
       view,
       new RowMoveAnimationDelegate(view, layer.release(), current_out),
       true);
+#endif
+}
+
+void AppsGridView::ExtractDragLocation(const ui::LocatedEvent& event,
+                                       gfx::Point* drag_point) {
+#if defined(USE_AURA)
+  // Use root location of |event| instead of location in |drag_view_|'s
+  // coordinates because |drag_view_| has a scale transform and location
+  // could have integer round error and causes jitter.
+  *drag_point = event.root_location();
+
+  // GetWidget() could be NULL for tests.
+  if (GetWidget()) {
+    aura::Window::ConvertPointToTarget(
+        GetWidget()->GetNativeWindow()->GetRootWindow(),
+        GetWidget()->GetNativeWindow(),
+        drag_point);
+  }
+
+  views::View::ConvertPointFromWidget(this, drag_point);
+#else
+  // For non-aura, root location is not clearly defined but |drag_view_| does
+  // not have the scale transform. So no round error would be introduced and
+  // it's okay to use View::ConvertPointToTarget.
+  *drag_point = event.location();
+  views::View::ConvertPointToTarget(drag_view_, this, drag_point);
 #endif
 }
 

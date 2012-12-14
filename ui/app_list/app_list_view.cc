@@ -130,7 +130,7 @@ void AppListView::InitAsBubble(
   views::BubbleDelegateView::CreateBubble(this);
   SetBubbleArrowLocation(arrow_location);
 
-#if !defined(OS_WIN)
+#if defined(USE_AURA)
   GetBubbleFrameView()->set_background(new AppListBackground(
       GetBubbleFrameView()->bubble_border()->GetBorderCornerRadius(),
       search_box_view_));
