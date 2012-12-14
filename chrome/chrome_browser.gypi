@@ -2350,6 +2350,8 @@
             'browser/nacl_host/nacl_broker_service_win.h',
             'browser/nacl_host/nacl_browser.cc',
             'browser/nacl_host/nacl_browser.h',
+            'browser/nacl_host/nacl_infobar.cc',
+            'browser/nacl_host/nacl_infobar.h',
             'browser/nacl_host/nacl_process_host.cc',
             'browser/nacl_host/nacl_process_host.h',
             'browser/nacl_host/nacl_validation_cache.cc',

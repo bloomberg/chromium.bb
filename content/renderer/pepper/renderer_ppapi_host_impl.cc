@@ -53,6 +53,11 @@ RendererPpapiHost::CreateExternalPluginModule(
   return renderer_ppapi_host;
 }
 
+// static
+CONTENT_EXPORT RendererPpapiHost*
+RendererPpapiHost::GetForPPInstance(PP_Instance instance) {
+  return RendererPpapiHostImpl::GetForPPInstance(instance);
+}
 
 // Out-of-process constructor.
 RendererPpapiHostImpl::RendererPpapiHostImpl(

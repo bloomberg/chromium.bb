@@ -1678,6 +1678,15 @@ void Plugin::ReportLoadSuccess(LengthComputable length_computable,
 void Plugin::ReportLoadError(const ErrorInfo& error_info) {
   PLUGIN_PRINTF(("Plugin::ReportLoadError (error='%s')\n",
                  error_info.message().c_str()));
+  // For errors the user (and not just the developer) should know about,
+  // report them to the renderer so the browser can display a message.
+  if (error_info.error_code() == ERROR_MANIFEST_PROGRAM_MISSING_ARCH) {
+    // A special case: the manifest may otherwise be valid but is missing
+    // a program/file compatible with the user's sandbox.
+    nacl_interface()->ReportNaClError(pp_instance(),
+                                      PP_NACL_MANIFEST_MISSING_ARCH);
+  }
+
   // Set the readyState attribute to indicate we need to start over.
   set_nacl_ready_state(DONE);
   set_nexe_error_reported(true);

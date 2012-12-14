@@ -557,6 +557,11 @@ IPC_SYNC_MESSAGE_CONTROL1_1(ChromeViewHostMsg_GetReadonlyPnaclFD,
 IPC_SYNC_MESSAGE_CONTROL0_1(ChromeViewHostMsg_NaClCreateTemporaryFile,
                             IPC::PlatformFileForTransit /* out file */)
 
+// A renderer sends this to the browser process to display infobar
+IPC_MESSAGE_CONTROL2(ChromeViewHostMsg_NaClErrorStatus,
+                     int /* render_view_id */,
+                     int /* Error ID */)
+
 // Notification that the page has an OpenSearch description document
 // associated with it.
 IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_PageHasOSDD,

@@ -54,6 +54,16 @@ typedef std::map<PP_Instance, InstanceInfo> InstanceInfoMap;
 base::LazyInstance<InstanceInfoMap> g_instance_info =
     LAZY_INSTANCE_INITIALIZER;
 
+static int GetRoutingID(PP_Instance instance) {
+  // Check that we are on the main renderer thread.
+  DCHECK(content::RenderThread::Get());
+  content::RendererPpapiHost *host =
+      content::RendererPpapiHost::GetForPPInstance(instance);
+  if (!host)
+    return 0;
+  return host->GetRoutingIDForWidget(instance);
+}
+
 // Launch NaCl's sel_ldr process.
 PP_NaClResult LaunchSelLdr(PP_Instance instance,
                            const char* alleged_url,
@@ -72,20 +82,9 @@ PP_NaClResult LaunchSelLdr(PP_Instance instance,
   // Some nexes do not use ppapi and launch from the background thread,
   // so those nexes can skip finding a routing_id.
   if (uses_ppapi) {
-    // Check that we are on the main renderer thread.
-    CHECK(content::RenderThread::Get());
-    webkit::ppapi::PluginInstance* plugin_instance =
-        content::GetHostGlobals()->GetInstance(instance);
-    if (!plugin_instance)
+    routing_id = GetRoutingID(instance);
+    if (!routing_id)
       return PP_NACL_FAILED;
-
-    WebKit::WebView* web_view =
-        plugin_instance->container()->element().document().frame()->view();
-    content::RenderView* render_view =
-        content::RenderView::FromWebView(web_view);
-    if (!render_view)
-      return PP_NACL_FAILED;
-    routing_id = render_view->GetRoutingID();
   }
 
   InstanceInfo instance_info;
@@ -250,6 +249,21 @@ PP_Bool IsPnaclEnabled() {
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePnacl));
 }
 
+PP_NaClResult ReportNaClError(PP_Instance instance,
+                              PP_NaClError error_id) {
+  IPC::Sender* sender = content::RenderThread::Get();
+
+  if (!sender->Send(
+          new ChromeViewHostMsg_NaClErrorStatus(
+              // TODO(dschuff): does this enum need to be sent as an int,
+              // or is it safe to include the appropriate headers in
+              // render_messages.h?
+              GetRoutingID(instance), static_cast<int>(error_id)))) {
+    return PP_NACL_FAILED;
+  }
+  return PP_NACL_OK;
+}
+
 const PPB_NaCl_Private nacl_interface = {
   &LaunchSelLdr,
   &StartPpapiProxy,
@@ -260,7 +274,8 @@ const PPB_NaCl_Private nacl_interface = {
   &GetReadonlyPnaclFD,
   &CreateTemporaryFile,
   &IsOffTheRecord,
-  &IsPnaclEnabled
+  &IsPnaclEnabled,
+  &ReportNaClError
 };
 
 }  // namespace

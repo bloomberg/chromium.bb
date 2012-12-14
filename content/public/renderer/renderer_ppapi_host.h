@@ -69,6 +69,11 @@ class RendererPpapiHost {
       const IPC::ChannelHandle& channel_handle,
       int plugin_child_id);
 
+  // Returns the RendererPpapiHost associated with the given PP_Instance,
+  // or NULL if the instance is invalid.
+  CONTENT_EXPORT static RendererPpapiHost* GetForPPInstance(
+      PP_Instance instance);
+
   // Returns the PpapiHost object.
   virtual ppapi::host::PpapiHost* GetPpapiHost() = 0;
 

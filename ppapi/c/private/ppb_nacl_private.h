@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Thu Nov 29 15:01:09 2012. */
+/* From private/ppb_nacl_private.idl modified Thu Dec 13 13:40:29 2012. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -43,6 +43,15 @@ typedef enum {
   PP_NACL_USE_SRPC = 128
 } PP_NaClResult;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_NaClResult, 4);
+
+/** NaCl-specific errors that should be reported to the user */
+typedef enum {
+  /**
+   *  The manifest program element does not contain a program usable on the
+   *  user's architecture
+   */
+  PP_NACL_MANIFEST_MISSING_ARCH = 0
+} PP_NaClError;
 /**
  * @}
  */
@@ -115,6 +124,9 @@ struct PPB_NaCl_Private_1_0 {
   /* Return true if PNaCl is turned on.
    */
   PP_Bool (*IsPnaclEnabled)(void);
+  /* Display a UI message to the user. */
+  PP_NaClResult (*ReportNaClError)(PP_Instance instance,
+                                   PP_NaClError message_id);
 };
 
 typedef struct PPB_NaCl_Private_1_0 PPB_NaCl_Private;

@@ -86,6 +86,7 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
   void OnGetReadonlyPnaclFd(const std::string& filename,
                             IPC::Message* reply_msg);
   void OnNaClCreateTemporaryFile(IPC::Message* reply_msg);
+  void OnNaClErrorStatus(int render_view_id, int error_id);
 #endif
   void OnDnsPrefetch(const std::vector<std::string>& hostnames);
   void OnResourceTypeStats(const WebKit::WebCache::ResourceTypeStats& stats);

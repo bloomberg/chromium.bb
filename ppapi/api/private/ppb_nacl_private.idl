@@ -26,6 +26,15 @@ enum PP_NaClResult {
   PP_NACL_USE_SRPC = 128
 };
 
+/** NaCl-specific errors that should be reported to the user */
+enum PP_NaClError {
+  /**
+   *  The manifest program element does not contain a program usable on the
+   *  user's architecture
+  */
+  PP_NACL_MANIFEST_MISSING_ARCH = 0
+};
+
 /* PPB_NaCl_Private */
 interface PPB_NaCl_Private {
   /* Launches NaCl's sel_ldr process.  Returns PP_NACL_OK on success and writes
@@ -99,4 +108,8 @@ interface PPB_NaCl_Private {
   /* Return true if PNaCl is turned on.
    */
   PP_Bool IsPnaclEnabled();
+
+  /* Display a UI message to the user. */
+  PP_NaClResult ReportNaClError([in] PP_Instance instance,
+                                [in] PP_NaClError message_id);
 };

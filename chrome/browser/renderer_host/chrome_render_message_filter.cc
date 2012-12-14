@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/nacl_host/nacl_infobar.h"
 #include "chrome/browser/nacl_host/nacl_process_host.h"
 #include "chrome/browser/nacl_host/pnacl_file_host.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
@@ -79,6 +80,7 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                                     OnGetReadonlyPnaclFd)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ChromeViewHostMsg_NaClCreateTemporaryFile,
                                     OnNaClCreateTemporaryFile)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_NaClErrorStatus, OnNaClErrorStatus)
 #endif
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_DnsPrefetch, OnDnsPrefetch)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_ResourceTypeStats,
@@ -193,6 +195,13 @@ void ChromeRenderMessageFilter::OnGetReadonlyPnaclFd(
 void ChromeRenderMessageFilter::OnNaClCreateTemporaryFile(
     IPC::Message* reply_msg) {
   pnacl_file_host::CreateTemporaryFile(this, reply_msg);
+}
+
+void ChromeRenderMessageFilter::OnNaClErrorStatus(int render_view_id,
+                                                  int error_id) {
+  // Currently there is only one kind of error status, for which
+  // we want to show the user an infobar.
+  ShowNaClInfobar(render_process_id_, render_view_id, error_id);
 }
 #endif
 
