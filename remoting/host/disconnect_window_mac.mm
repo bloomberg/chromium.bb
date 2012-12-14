@@ -12,6 +12,11 @@
 #include "remoting/host/disconnect_window.h"
 #include "remoting/host/ui_strings.h"
 
+@interface DisconnectWindowController()
+- (BOOL)isRToL;
+- (void)Hide;
+@end
+
 namespace remoting {
 
 class DisconnectWindowMac : public remoting::DisconnectWindow {
@@ -55,7 +60,7 @@ bool DisconnectWindowMac::Show(const UiStrings& ui_strings,
 void DisconnectWindowMac::Hide() {
   // DisconnectWindowController is responsible for releasing itself in its
   // windowWillClose: method.
-  [window_controller_ close];
+  [window_controller_ Hide];
   window_controller_ = nil;
 }
 
@@ -64,10 +69,6 @@ scoped_ptr<DisconnectWindow> DisconnectWindow::Create() {
 }
 
 }  // namespace remoting
-
-@interface DisconnectWindowController()
-- (BOOL)isRToL;
-@end
 
 @implementation DisconnectWindowController
 - (id)initWithUiStrings:(const remoting::UiStrings&)ui_strings
@@ -98,8 +99,9 @@ scoped_ptr<DisconnectWindow> DisconnectWindow::Create() {
   return rtl_;
 }
 
-- (void)close {
-  [super close];
+- (void)Hide {
+  disconnect_callback_.Reset();
+  [self close];
 }
 
 - (void)windowDidLoad {

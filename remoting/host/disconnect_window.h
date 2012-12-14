@@ -28,12 +28,15 @@ class DisconnectWindow {
   virtual ~DisconnectWindow() {}
 
   // Shows the disconnect window allowing the user to disconnect the session.
-  // Returns false if the window could not be shown for any reason.
+  // Returns false if the window could not be shown for any reason. The
+  // disconnect callback will be invoked if the user clicks the disconnect
+  // button, or if the window is closed for any reason other than Hide() being
+  // called
   virtual bool Show(const UiStrings& ui_strings,
                     const DisconnectCallback& disconnect_callback,
                     const std::string& username) = 0;
 
-  // Hides the disconnect window.
+  // Hides the disconnect window. The disconnect callback will not be invoked.
   virtual void Hide() = 0;
 
   static scoped_ptr<DisconnectWindow> Create();
