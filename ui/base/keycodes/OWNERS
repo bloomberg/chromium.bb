@@ -1,3 +1,2 @@
-# Below this line are OWNERS for usb_keycode_map.h only.
-garykac@chromium.org
-wez@chromium.org
+per-file usb_keycode_map*=garykac@chromium.org
+per-file usb_keycode_map*=wez@chromium.org
