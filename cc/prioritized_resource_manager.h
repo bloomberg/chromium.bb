@@ -38,9 +38,9 @@ class Proxy;
 
 class CC_EXPORT PrioritizedResourceManager {
 public:
-    static scoped_ptr<PrioritizedResourceManager> create(int pool, const Proxy* proxy)
+    static scoped_ptr<PrioritizedResourceManager> create(const Proxy* proxy)
     {
-        return make_scoped_ptr(new PrioritizedResourceManager(pool, proxy));
+        return make_scoped_ptr(new PrioritizedResourceManager(proxy));
     }
     scoped_ptr<PrioritizedResource> createTexture(gfx::Size size, GLenum format)
     {
@@ -152,7 +152,7 @@ private:
         return a < b;
     }
 
-    PrioritizedResourceManager(int pool, const Proxy* proxy);
+    PrioritizedResourceManager(const Proxy* proxy);
 
     bool evictBackingsToReduceMemory(size_t limitBytes,
                                      int priorityCutoff,
@@ -176,7 +176,6 @@ private:
     size_t m_memoryUseBytes;
     size_t m_memoryAboveCutoffBytes;
     size_t m_memoryAvailableBytes;
-    int m_pool;
 
     typedef base::hash_set<PrioritizedResource*> TextureSet;
     typedef std::vector<PrioritizedResource*> TextureVector;

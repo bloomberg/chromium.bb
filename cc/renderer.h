@@ -32,13 +32,6 @@ protected:
 
 class CC_EXPORT Renderer {
 public:
-    // This enum defines the various resource pools for the ResourceProvider
-    // where textures get allocated.
-    enum ResourcePool {
-      ImplPool = 1, // This pool is for textures that get allocated on the impl thread (e.g. RenderSurfaces).
-      ContentPool // This pool is for textures that get allocated on the main thread (e.g. tiles).
-    };
-
     virtual ~Renderer() { }
 
     virtual const RendererCapabilities& capabilities() const = 0;

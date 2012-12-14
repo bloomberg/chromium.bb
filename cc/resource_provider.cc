@@ -54,7 +54,6 @@ ResourceProvider::Resource::Resource()
     , glUploadQueryId(0)
     , pixels(0)
     , pixelBuffer(0)
-    , pool(0)
     , lockForReadCount(0)
     , lockedForWrite(false)
     , external(false)
@@ -68,13 +67,12 @@ ResourceProvider::Resource::Resource()
 {
 }
 
-ResourceProvider::Resource::Resource(unsigned textureId, int pool, const gfx::Size& size, GLenum format, GLenum filter)
+ResourceProvider::Resource::Resource(unsigned textureId, const gfx::Size& size, GLenum format, GLenum filter)
     : glId(textureId)
     , glPixelBufferId(0)
     , glUploadQueryId(0)
     , pixels(0)
     , pixelBuffer(0)
-    , pool(pool)
     , lockForReadCount(0)
     , lockedForWrite(false)
     , external(false)
@@ -88,13 +86,12 @@ ResourceProvider::Resource::Resource(unsigned textureId, int pool, const gfx::Si
 {
 }
 
-ResourceProvider::Resource::Resource(uint8_t* pixels, int pool, const gfx::Size& size, GLenum format, GLenum filter)
+ResourceProvider::Resource::Resource(uint8_t* pixels, const gfx::Size& size, GLenum format, GLenum filter)
     : glId(0)
     , glPixelBufferId(0)
     , glUploadQueryId(0)
     , pixels(pixels)
     , pixelBuffer(0)
-    , pool(pool)
     , lockForReadCount(0)
     , lockedForWrite(false)
     , external(false)
@@ -148,21 +145,21 @@ bool ResourceProvider::inUseByConsumer(ResourceId id)
     return !!resource->lockForReadCount || resource->exported;
 }
 
-ResourceProvider::ResourceId ResourceProvider::createResource(int pool, const gfx::Size& size, GLenum format, TextureUsageHint hint)
+ResourceProvider::ResourceId ResourceProvider::createResource(const gfx::Size& size, GLenum format, TextureUsageHint hint)
 {
     switch (m_defaultResourceType) {
     case GLTexture:
-        return createGLTexture(pool, size, format, hint);
+        return createGLTexture(size, format, hint);
     case Bitmap:
         DCHECK(format == GL_RGBA);
-        return createBitmap(pool, size);
+        return createBitmap(size);
     }
 
     LOG(FATAL) << "Invalid default resource type.";
     return 0;
 }
 
-ResourceProvider::ResourceId ResourceProvider::createGLTexture(int pool, const gfx::Size& size, GLenum format, TextureUsageHint hint)
+ResourceProvider::ResourceId ResourceProvider::createGLTexture(const gfx::Size& size, GLenum format, TextureUsageHint hint)
 {
     DCHECK_LE(size.width(), m_maxTextureSize);
     DCHECK_LE(size.height(), m_maxTextureSize);
@@ -187,19 +184,19 @@ ResourceProvider::ResourceId ResourceProvider::createGLTexture(int pool, const g
         GLC(context3d, context3d->texImage2D(GL_TEXTURE_2D, 0, format, size.width(), size.height(), 0, format, GL_UNSIGNED_BYTE, 0));
 
     ResourceId id = m_nextId++;
-    Resource resource(textureId, pool, size, format, GL_LINEAR);
+    Resource resource(textureId, size, format, GL_LINEAR);
     m_resources[id] = resource;
     return id;
 }
 
-ResourceProvider::ResourceId ResourceProvider::createBitmap(int pool, const gfx::Size& size)
+ResourceProvider::ResourceId ResourceProvider::createBitmap(const gfx::Size& size)
 {
     DCHECK(m_threadChecker.CalledOnValidThread());
 
     uint8_t* pixels = new uint8_t[size.width() * size.height() * 4];
 
     ResourceId id = m_nextId++;
-    Resource resource(pixels, pool, size, GL_RGBA, GL_LINEAR);
+    Resource resource(pixels, size, GL_RGBA, GL_LINEAR);
     m_resources[id] = resource;
     return id;
 }
@@ -217,7 +214,7 @@ ResourceProvider::ResourceId ResourceProvider::createResourceFromExternalTexture
     GLC(context3d, context3d->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
 
     ResourceId id = m_nextId++;
-    Resource resource(textureId, 0, gfx::Size(), 0, GL_LINEAR);
+    Resource resource(textureId, gfx::Size(), 0, GL_LINEAR);
     resource.external = true;
     m_resources[id] = resource;
     return id;
@@ -264,18 +261,6 @@ void ResourceProvider::deleteResourceInternal(ResourceMap::iterator it)
         delete[] resource->pixelBuffer;
 
     m_resources.erase(it);
-}
-
-void ResourceProvider::deleteOwnedResources(int pool)
-{
-    DCHECK(m_threadChecker.CalledOnValidThread());
-    ResourceIdArray toDelete;
-    for (ResourceMap::iterator it = m_resources.begin(); it != m_resources.end(); ++it) {
-        if (it->second.pool == pool && !it->second.external && !it->second.markedForDeletion)
-            toDelete.push_back(it->first);
-    }
-    for (ResourceIdArray::iterator it = toDelete.begin(); it != toDelete.end(); ++it)
-        deleteResource(*it);
 }
 
 ResourceProvider::ResourceType ResourceProvider::resourceType(ResourceId id)
@@ -545,22 +530,23 @@ bool ResourceProvider::initialize()
     return true;
 }
 
-int ResourceProvider::createChild(int pool)
+int ResourceProvider::createChild()
 {
     DCHECK(m_threadChecker.CalledOnValidThread());
     Child childInfo;
-    childInfo.pool = pool;
     int child = m_nextChild++;
     m_children[child] = childInfo;
     return child;
 }
 
-void ResourceProvider::destroyChild(int child)
+void ResourceProvider::destroyChild(int child_id)
 {
     DCHECK(m_threadChecker.CalledOnValidThread());
-    ChildMap::iterator it = m_children.find(child);
+    ChildMap::iterator it = m_children.find(child_id);
     DCHECK(it != m_children.end());
-    deleteOwnedResources(it->second.pool);
+    Child& child = it->second;
+    for (ResourceIdMap::iterator child_it = child.childToParentMap.begin(); child_it != child.childToParentMap.end(); ++child_it)
+        deleteResource(child_it->second);
     m_children.erase(it);
 }
 
@@ -643,7 +629,7 @@ void ResourceProvider::receiveFromChild(int child, const TransferableResourceLis
         GLC(context3d, context3d->bindTexture(GL_TEXTURE_2D, textureId));
         GLC(context3d, context3d->consumeTextureCHROMIUM(GL_TEXTURE_2D, it->mailbox.name));
         ResourceId id = m_nextId++;
-        Resource resource(textureId, childInfo.pool, it->size, it->format, it->filter);
+        Resource resource(textureId, it->size, it->format, it->filter);
         resource.mailbox.setName(it->mailbox.name);
         m_resources[id] = resource;
         childInfo.parentToChildMap[id] = it->id;

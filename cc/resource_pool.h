@@ -19,7 +19,6 @@ class ResourcePool {
   class Resource : public cc::Resource {
    public:
     Resource(ResourceProvider* resource_provider,
-             Renderer::ResourcePool pool_id,
              const gfx::Size& size,
              GLenum format);
     ~Resource();
@@ -30,9 +29,8 @@ class ResourcePool {
     DISALLOW_COPY_AND_ASSIGN(Resource);
   };
 
-  static scoped_ptr<ResourcePool> Create(ResourceProvider* resource_provider,
-                                         Renderer::ResourcePool pool_id) {
-    return make_scoped_ptr(new ResourcePool(resource_provider, pool_id));
+  static scoped_ptr<ResourcePool> Create(ResourceProvider* resource_provider) {
+    return make_scoped_ptr(new ResourcePool(resource_provider));
   }
 
   virtual ~ResourcePool();
@@ -46,12 +44,10 @@ class ResourcePool {
   void SetMaxMemoryUsageBytes(size_t max_memory_usage_bytes);
 
  protected:
-  ResourcePool(ResourceProvider* resource_provider,
-               Renderer::ResourcePool pool_id);
+  ResourcePool(ResourceProvider* resource_provider);
 
  private:
   ResourceProvider* resource_provider_;
-  Renderer::ResourcePool pool_id_;
   size_t max_memory_usage_bytes_;
   size_t memory_usage_bytes_;
 

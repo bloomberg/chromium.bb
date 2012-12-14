@@ -65,7 +65,7 @@ public:
     ResourceUpdateControllerTest()
         : m_proxy(scoped_ptr<Thread>(NULL))
         , m_queue(make_scoped_ptr(new ResourceUpdateQueue))
-        , m_resourceManager(PrioritizedResourceManager::create(Renderer::ContentPool, &m_proxy))
+        , m_resourceManager(PrioritizedResourceManager::create(&m_proxy))
         , m_fullUploadCountExpected(0)
         , m_partialCountExpected(0)
         , m_totalUploadCountExpected(0)

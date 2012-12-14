@@ -310,11 +310,10 @@ TEST_P(ResourceProviderTest, Basic)
 {
     gfx::Size size(1, 1);
     WGC3Denum format = GL_RGBA;
-    int pool = 1;
     size_t pixelSize = textureSize(size, format);
     ASSERT_EQ(4U, pixelSize);
 
-    ResourceProvider::ResourceId id = m_resourceProvider->createResource(pool, size, format, ResourceProvider::TextureUsageAny);
+    ResourceProvider::ResourceId id = m_resourceProvider->createResource(size, format, ResourceProvider::TextureUsageAny);
     expectNumResources(1);
 
     uint8_t data[4] = {1, 2, 3, 4};
@@ -329,33 +328,14 @@ TEST_P(ResourceProviderTest, Basic)
     expectNumResources(0);
 }
 
-TEST_P(ResourceProviderTest, DeleteOwnedResources)
-{
-    gfx::Size size(1, 1);
-    WGC3Denum format = GL_RGBA;
-    int pool = 1;
-
-    const int count = 3;
-    for (int i = 0; i < count; ++i)
-        m_resourceProvider->createResource(pool, size, format, ResourceProvider::TextureUsageAny);
-    expectNumResources(3);
-
-    m_resourceProvider->deleteOwnedResources(pool+1);
-    expectNumResources(3);
-
-    m_resourceProvider->deleteOwnedResources(pool);
-    expectNumResources(0);
-}
-
 TEST_P(ResourceProviderTest, Upload)
 {
     gfx::Size size(2, 2);
     WGC3Denum format = GL_RGBA;
-    int pool = 1;
     size_t pixelSize = textureSize(size, format);
     ASSERT_EQ(16U, pixelSize);
 
-    ResourceProvider::ResourceId id = m_resourceProvider->createResource(pool, size, format, ResourceProvider::TextureUsageAny);
+    ResourceProvider::ResourceId id = m_resourceProvider->createResource(size, format, ResourceProvider::TextureUsageAny);
 
     uint8_t image[16] = {0};
     gfx::Rect imageRect(gfx::Point(), size);
@@ -422,21 +402,19 @@ TEST_P(ResourceProviderTest, TransferResources)
 
     gfx::Size size(1, 1);
     WGC3Denum format = GL_RGBA;
-    int pool = 1;
     size_t pixelSize = textureSize(size, format);
     ASSERT_EQ(4U, pixelSize);
 
-    ResourceProvider::ResourceId id1 = childResourceProvider->createResource(pool, size, format, ResourceProvider::TextureUsageAny);
+    ResourceProvider::ResourceId id1 = childResourceProvider->createResource(size, format, ResourceProvider::TextureUsageAny);
     uint8_t data1[4] = {1, 2, 3, 4};
     gfx::Rect rect(gfx::Point(), size);
     childResourceProvider->setPixels(id1, data1, rect, rect, gfx::Vector2d());
 
-    ResourceProvider::ResourceId id2 = childResourceProvider->createResource(pool, size, format, ResourceProvider::TextureUsageAny);
+    ResourceProvider::ResourceId id2 = childResourceProvider->createResource(size, format, ResourceProvider::TextureUsageAny);
     uint8_t data2[4] = {5, 5, 5, 5};
     childResourceProvider->setPixels(id2, data2, rect, rect, gfx::Vector2d());
 
-    int childPool = 2;
-    int childId = m_resourceProvider->createChild(childPool);
+    int childId = m_resourceProvider->createChild();
 
     {
         // Transfer some resources to the parent.
@@ -539,17 +517,15 @@ TEST_P(ResourceProviderTest, DeleteTransferredResources)
 
     gfx::Size size(1, 1);
     WGC3Denum format = GL_RGBA;
-    int pool = 1;
     size_t pixelSize = textureSize(size, format);
     ASSERT_EQ(4U, pixelSize);
 
-    ResourceProvider::ResourceId id = childResourceProvider->createResource(pool, size, format, ResourceProvider::TextureUsageAny);
+    ResourceProvider::ResourceId id = childResourceProvider->createResource(size, format, ResourceProvider::TextureUsageAny);
     uint8_t data[4] = {1, 2, 3, 4};
     gfx::Rect rect(gfx::Point(), size);
     childResourceProvider->setPixels(id, data, rect, rect, gfx::Vector2d());
 
-    int childPool = 2;
-    int childId = m_resourceProvider->createChild(childPool);
+    int childId = m_resourceProvider->createChild();
 
     {
         // Transfer some resource to the parent.
@@ -601,7 +577,6 @@ TEST_P(ResourceProviderTest, ScopedSampler)
 
     gfx::Size size(1, 1);
     WGC3Denum format = GL_RGBA;
-    int pool = 1;
     int textureId = 1;
 
     // Check that the texture gets created with the right sampler settings.
@@ -610,7 +585,7 @@ TEST_P(ResourceProviderTest, ScopedSampler)
     EXPECT_CALL(*context, texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
     EXPECT_CALL(*context, texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
     EXPECT_CALL(*context, texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
-    ResourceProvider::ResourceId id = resourceProvider->createResource(pool, size, format, ResourceProvider::TextureUsageAny);
+    ResourceProvider::ResourceId id = resourceProvider->createResource(size, format, ResourceProvider::TextureUsageAny);
 
     // Creating a sampler with the default filter should not change any texture
     // parameters.

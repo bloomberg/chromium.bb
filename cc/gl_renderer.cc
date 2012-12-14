@@ -484,7 +484,7 @@ scoped_ptr<ScopedResource> GLRenderer::drawBackgroundFilters(
     int filteredDeviceBackgroundTextureId = texture->getTextureHandle();
 
     scoped_ptr<ScopedResource> backgroundTexture = ScopedResource::create(m_resourceProvider);
-    if (!backgroundTexture->Allocate(Renderer::ImplPool, quad->rect.size(), GL_RGBA, ResourceProvider::TextureUsageFramebuffer))
+    if (!backgroundTexture->Allocate(quad->rect.size(), GL_RGBA, ResourceProvider::TextureUsageFramebuffer))
         return scoped_ptr<ScopedResource>();
 
     const RenderPass* targetRenderPass = frame.currentRenderPass;
@@ -1455,7 +1455,7 @@ bool GLRenderer::getFramebufferTexture(ScopedResource* texture, const gfx::Rect&
 {
     DCHECK(!texture->id() || (texture->size() == deviceRect.size() && texture->format() == GL_RGB));
 
-    if (!texture->id() && !texture->Allocate(Renderer::ImplPool, deviceRect.size(), GL_RGB, ResourceProvider::TextureUsageAny))
+    if (!texture->id() && !texture->Allocate(deviceRect.size(), GL_RGB, ResourceProvider::TextureUsageAny))
         return false;
 
     ResourceProvider::ScopedWriteLockGL lock(m_resourceProvider, texture->id());

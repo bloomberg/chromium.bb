@@ -277,7 +277,7 @@ bool DirectRenderer::useRenderPass(DrawingFrame& frame, const RenderPass* render
 
     gfx::Size size = renderPassTextureSize(renderPass);
     size.Enlarge(m_enlargePassTextureAmount.x(), m_enlargePassTextureAmount.y());
-    if (!texture->id() && !texture->Allocate(Renderer::ImplPool, size, renderPassTextureFormat(renderPass), ResourceProvider::TextureUsageFramebuffer))
+    if (!texture->id() && !texture->Allocate(size, renderPassTextureFormat(renderPass), ResourceProvider::TextureUsageFramebuffer))
         return false;
 
     return bindFramebufferToTexture(frame, texture, renderPass->output_rect);

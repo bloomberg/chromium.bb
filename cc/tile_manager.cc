@@ -136,8 +136,7 @@ TileManager::TileManager(
     ResourceProvider* resource_provider,
     size_t num_raster_threads)
     : client_(client),
-      resource_pool_(ResourcePool::Create(resource_provider,
-                                          Renderer::ImplPool)),
+      resource_pool_(ResourcePool::Create(resource_provider)),
       manage_tiles_pending_(false),
       manage_tiles_call_count_(0),
       check_for_completed_set_pixels_pending_(false) {

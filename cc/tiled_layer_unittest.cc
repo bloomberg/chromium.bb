@@ -59,7 +59,7 @@ public:
     {
         m_layerTreeHost = LayerTreeHost::create(&m_fakeLayerImplTreeHostClient, m_settings, scoped_ptr<Thread>(NULL));
         m_proxy = m_layerTreeHost->proxy();
-        m_resourceManager = PrioritizedResourceManager::create(Renderer::ContentPool, m_proxy);
+        m_resourceManager = PrioritizedResourceManager::create(m_proxy);
         m_layerTreeHost->initializeRendererIfNeeded();
         DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked(m_proxy);
         m_resourceProvider = ResourceProvider::create(m_outputSurface.get());

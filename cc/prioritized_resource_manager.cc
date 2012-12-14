@@ -15,14 +15,13 @@ using namespace std;
 
 namespace cc {
 
-PrioritizedResourceManager::PrioritizedResourceManager(int pool, const Proxy* proxy)
+PrioritizedResourceManager::PrioritizedResourceManager(const Proxy* proxy)
     : m_proxy(proxy)
     , m_maxMemoryLimitBytes(defaultMemoryAllocationLimit())
     , m_externalPriorityCutoff(PriorityCalculator::allowEverythingCutoff())
     , m_memoryUseBytes(0)
     , m_memoryAboveCutoffBytes(0)
     , m_memoryAvailableBytes(0)
-    , m_pool(pool)
     , m_backingsTailNotSorted(false)
     , m_memoryVisibleBytes(0)
     , m_memoryVisibleAndNearbyBytes(0)
@@ -396,7 +395,7 @@ PrioritizedResource::Backing* PrioritizedResourceManager::createBacking(gfx::Siz
 {
     DCHECK(m_proxy->isImplThread() && m_proxy->isMainThreadBlocked());
     DCHECK(resourceProvider);
-    ResourceProvider::ResourceId resourceId = resourceProvider->createResource(m_pool, size, format, ResourceProvider::TextureUsageAny);
+    ResourceProvider::ResourceId resourceId = resourceProvider->createResource(size, format, ResourceProvider::TextureUsageAny);
     PrioritizedResource::Backing* backing = new PrioritizedResource::Backing(resourceId, resourceProvider, size, format);
     m_memoryUseBytes += backing->bytes();
     return backing;

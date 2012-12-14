@@ -39,7 +39,7 @@ public:
 
     scoped_ptr<PrioritizedResourceManager> createManager(size_t maxTextures)
     {
-        scoped_ptr<PrioritizedResourceManager> manager = PrioritizedResourceManager::create(0, &m_proxy);
+        scoped_ptr<PrioritizedResourceManager> manager = PrioritizedResourceManager::create(&m_proxy);
         manager->setMaxMemoryLimitBytes(texturesMemorySize(maxTextures));
         return manager.Pass();
     }

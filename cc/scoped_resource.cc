@@ -15,13 +15,13 @@ ScopedResource::~ScopedResource() {
   Free();
 }
 
-bool ScopedResource::Allocate(int pool, const gfx::Size& size, GLenum format,
+bool ScopedResource::Allocate(const gfx::Size& size, GLenum format,
                               ResourceProvider::TextureUsageHint hint) {
   DCHECK(!id());
   DCHECK(!size.IsEmpty());
 
   set_dimensions(size, format);
-  set_id(resource_provider_->createResource(pool, size, format, hint));
+  set_id(resource_provider_->createResource(size, format, hint));
 
 #ifndef NDEBUG
   allocate_thread_id_ = base::PlatformThread::CurrentId();

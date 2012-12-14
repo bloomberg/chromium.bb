@@ -153,7 +153,7 @@ void LayerTreeHost::initializeRenderer()
         maxPartialTextureUpdates = min(m_settings.maxPartialTextureUpdates, m_proxy->maxPartialTextureUpdates());
     m_settings.maxPartialTextureUpdates = maxPartialTextureUpdates;
 
-    m_contentsTextureManager = PrioritizedResourceManager::create(Renderer::ContentPool, m_proxy.get());
+    m_contentsTextureManager = PrioritizedResourceManager::create(m_proxy.get());
     m_surfaceMemoryPlaceholder = m_contentsTextureManager->createTexture(gfx::Size(), GL_RGBA);
 
     m_rendererInitialized = true;

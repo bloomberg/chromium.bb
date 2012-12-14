@@ -77,7 +77,7 @@ void HeadsUpDisplayLayerImpl::willDraw(ResourceProvider* resourceProvider)
         m_hudTexture->Free();
 
     if (!m_hudTexture->id())
-        m_hudTexture->Allocate(Renderer::ImplPool, bounds(), GL_RGBA, ResourceProvider::TextureUsageAny);
+        m_hudTexture->Allocate(bounds(), GL_RGBA, ResourceProvider::TextureUsageAny);
 }
 
 void HeadsUpDisplayLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuadsData)

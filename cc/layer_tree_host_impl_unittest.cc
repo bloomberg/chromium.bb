@@ -1051,7 +1051,7 @@ private:
         setTilingData(*tilingData.get());
         setSkipsDraw(skipsDraw);
         if (!tileMissing) {
-            ResourceProvider::ResourceId resource = resourceProvider->createResource(Renderer::ContentPool, gfx::Size(), GL_RGBA, ResourceProvider::TextureUsageAny);
+            ResourceProvider::ResourceId resource = resourceProvider->createResource(gfx::Size(), GL_RGBA, ResourceProvider::TextureUsageAny);
             pushTileProperties(0, 0, resource, gfx::Rect(), false);
         }
         if (animating)
@@ -1675,7 +1675,7 @@ private:
         , m_quadsAppended(false)
         , m_quadRect(5, 5, 5, 5)
         , m_quadVisibleRect(5, 5, 5, 5)
-        , m_resourceId(resourceProvider->createResource(Renderer::ContentPool, gfx::Size(1, 1), GL_RGBA, ResourceProvider::TextureUsageAny))
+        , m_resourceId(resourceProvider->createResource(gfx::Size(1, 1), GL_RGBA, ResourceProvider::TextureUsageAny))
     {
         setAnchorPoint(gfx::PointF(0, 0));
         setBounds(gfx::Size(10, 10));
@@ -2750,15 +2750,14 @@ public:
     void createResources(ResourceProvider* provider)
     {
         DCHECK(provider);
-        int pool = 0;
         gfx::Size size(10, 10);
         GLenum format = GL_RGBA;
         ResourceProvider::TextureUsageHint hint = ResourceProvider::TextureUsageAny;
         setScrollbarGeometry(ScrollbarGeometryFixedThumb::create(FakeWebScrollbarThemeGeometryNonEmpty::create()));
 
-        setBackTrackResourceId(provider->createResource(pool, size, format, hint));
-        setForeTrackResourceId(provider->createResource(pool, size, format, hint));
-        setThumbResourceId(provider->createResource(pool, size, format, hint));
+        setBackTrackResourceId(provider->createResource(size, format, hint));
+        setForeTrackResourceId(provider->createResource(size, format, hint));
+        setThumbResourceId(provider->createResource(size, format, hint));
     }
 
 protected:
@@ -2770,7 +2769,7 @@ protected:
 
 static inline scoped_ptr<RenderPass> createRenderPassWithResource(ResourceProvider* provider)
 {
-    ResourceProvider::ResourceId resourceId = provider->createResource(0, gfx::Size(1, 1), GL_RGBA, ResourceProvider::TextureUsageAny);
+    ResourceProvider::ResourceId resourceId = provider->createResource(gfx::Size(1, 1), GL_RGBA, ResourceProvider::TextureUsageAny);
 
     scoped_ptr<TestRenderPass> pass = TestRenderPass::Create();
     pass->SetNew(RenderPass::Id(1, 1), gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1), gfx::Transform());

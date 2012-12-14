@@ -110,8 +110,8 @@ TEST_F(SoftwareRendererTest, tileQuad)
     setViewportSize(outerSize);
     initializeRenderer();
 
-    ResourceProvider::ResourceId resourceYellow = resourceProvider()->createResource(1, outerSize, GL_RGBA, ResourceProvider::TextureUsageAny);
-    ResourceProvider::ResourceId resourceCyan = resourceProvider()->createResource(1, innerSize, GL_RGBA, ResourceProvider::TextureUsageAny);
+    ResourceProvider::ResourceId resourceYellow = resourceProvider()->createResource(outerSize, GL_RGBA, ResourceProvider::TextureUsageAny);
+    ResourceProvider::ResourceId resourceCyan = resourceProvider()->createResource(innerSize, GL_RGBA, ResourceProvider::TextureUsageAny);
 
     SkColor yellow = SK_ColorYELLOW;
     SkColor cyan = SK_ColorCYAN;

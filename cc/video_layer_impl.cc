@@ -316,7 +316,7 @@ bool VideoLayerImpl::FramePlane::allocateData(
     if (resourceId)
         return true;
 
-    resourceId = resourceProvider->createResource(Renderer::ImplPool, size, format, ResourceProvider::TextureUsageAny);
+    resourceId = resourceProvider->createResource(size, format, ResourceProvider::TextureUsageAny);
     return resourceId;
 }
 

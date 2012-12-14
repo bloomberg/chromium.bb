@@ -9,11 +9,9 @@
 namespace cc {
 
 ResourcePool::Resource::Resource(cc::ResourceProvider* resource_provider,
-                                 cc::Renderer::ResourcePool pool_id,
                                  const gfx::Size& size,
                                  GLenum format)
     : cc::Resource(resource_provider->createResource(
-                       pool_id,
                        size,
                        format,
                        ResourceProvider::TextureUsageAny),
@@ -29,10 +27,8 @@ ResourcePool::Resource::~Resource() {
   resource_provider_->deleteResource(id());
 }
 
-ResourcePool::ResourcePool(ResourceProvider* resource_provider,
-                           Renderer::ResourcePool pool_id)
+ResourcePool::ResourcePool(ResourceProvider* resource_provider)
     : resource_provider_(resource_provider),
-      pool_id_(pool_id),
       max_memory_usage_bytes_(0),
       memory_usage_bytes_(0) {
 }
@@ -58,7 +54,7 @@ scoped_ptr<ResourcePool::Resource> ResourcePool::AcquireResource(
 
   // Create new resource.
   Resource* resource = new Resource(
-      resource_provider_, pool_id_, size, format);
+      resource_provider_, size, format);
   memory_usage_bytes_ += resource->bytes();
   return make_scoped_ptr(resource);
 }

@@ -40,7 +40,10 @@ public:
     typedef unsigned ResourceId;
     typedef std::vector<ResourceId> ResourceIdArray;
     typedef base::hash_map<ResourceId, ResourceId> ResourceIdMap;
-    enum TextureUsageHint { TextureUsageAny, TextureUsageFramebuffer };
+    enum TextureUsageHint {
+        TextureUsageAny,
+        TextureUsageFramebuffer,
+    };
     enum ResourceType {
         GLTexture = 1,
         Bitmap,
@@ -67,18 +70,15 @@ public:
     ResourceType resourceType(ResourceId);
 
     // Creates a resource of the default resource type.
-    ResourceId createResource(int pool, const gfx::Size&, GLenum format, TextureUsageHint);
+    ResourceId createResource(const gfx::Size&, GLenum format, TextureUsageHint);
 
     // You can also explicitly create a specific resource type.
-    ResourceId createGLTexture(int pool, const gfx::Size&, GLenum format, TextureUsageHint);
-    ResourceId createBitmap(int pool, const gfx::Size&);
+    ResourceId createGLTexture(const gfx::Size&, GLenum format, TextureUsageHint);
+    ResourceId createBitmap(const gfx::Size&);
     // Wraps an external texture into a GL resource.
     ResourceId createResourceFromExternalTexture(unsigned textureId);
 
     void deleteResource(ResourceId);
-
-    // Deletes all resources owned by a given pool.
-    void deleteOwnedResources(int pool);
 
     // Update pixels from image, copying sourceRect (in image) into destRect (in the resource).
     void setPixels(ResourceId, const uint8_t* image, const gfx::Rect& imageRect, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset);
@@ -97,11 +97,10 @@ public:
     // Returns true if the shallow flush occurred, false otherwise.
     bool shallowFlushIfSupported();
 
-    // Creates accounting for a child, and associate it with a pool. Resources
-    // transfered from that child will go to that pool. Returns a child ID.
-    int createChild(int pool);
+    // Creates accounting for a child. Returns a child ID.
+    int createChild();
 
-    // Destroys accounting for the child, deleting all resources from that pool.
+    // Destroys accounting for the child, deleting all accounted resources.
     void destroyChild(int child);
 
     // Gets the child->parent resource ID map.
@@ -230,8 +229,8 @@ public:
 private:
     struct Resource {
         Resource();
-        Resource(unsigned textureId, int pool, const gfx::Size& size, GLenum format, GLenum filter);
-        Resource(uint8_t* pixels, int pool, const gfx::Size& size, GLenum format, GLenum filter);
+        Resource(unsigned textureId, const gfx::Size& size, GLenum format, GLenum filter);
+        Resource(uint8_t* pixels, const gfx::Size& size, GLenum format, GLenum filter);
 
         unsigned glId;
         // Pixel buffer used for set pixels without unnecessary copying.
@@ -241,7 +240,6 @@ private:
         Mailbox mailbox;
         uint8_t* pixels;
         uint8_t* pixelBuffer;
-        int pool;
         int lockForReadCount;
         bool lockedForWrite;
         bool external;
@@ -259,7 +257,6 @@ private:
         Child();
         ~Child();
 
-        int pool;
         ResourceIdMap childToParentMap;
         ResourceIdMap parentToChildMap;
     };
