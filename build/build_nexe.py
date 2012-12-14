@@ -495,7 +495,11 @@ class Builder(object):
       if self.strip_all or self.strip_debug:
         self.Strip(out)
     elif self.outtype in ['nlib', 'plib']:
-      self.Archive(srcs)
+      out = self.Archive(srcs)
+      if self.strip_debug:
+        self.Strip(out)
+      elif self.strip_all:
+        ErrOut('FAILED: --strip-all on libs will result in unusable libs.')
     else:
       ErrOut('FAILED: Unknown outtype %s:\n' % (self.outtype))
 
