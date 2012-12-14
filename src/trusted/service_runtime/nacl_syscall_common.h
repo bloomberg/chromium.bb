@@ -152,6 +152,10 @@ int32_t NaClCommonSysGetdents(struct NaClAppThread  *natp,
                               void                  *dirp,
                               size_t                count);
 
+int32_t NaClSysGetTimeOfDay(struct NaClAppThread      *natp,
+                            struct nacl_abi_timeval   *tv,
+                            struct nacl_abi_timezone  *tz);
+
 int32_t NaClCommonSysClockGetRes(struct NaClAppThread *natp,
                                  int                  clk_id,
                                  uint32_t             tsp);

@@ -57,49 +57,6 @@
 #include "native_client/src/trusted/service_runtime/linux/nacl_syscall_inl.h"
 
 
-int32_t NaClSysGetTimeOfDay(struct NaClAppThread      *natp,
-                            struct nacl_abi_timeval   *tv,
-                            struct nacl_abi_timezone  *tz) {
-  int                     retval;
-  struct nacl_abi_timeval now;
-
-  UNREFERENCED_PARAMETER(tz);
-
-  NaClLog(3,
-          ("Entered NaClSysGetTimeOfDay(%08"NACL_PRIxPTR
-           ", 0x%08"NACL_PRIxPTR", 0x%08"NACL_PRIxPTR")\n"),
-          (uintptr_t) natp, (uintptr_t) tv, (uintptr_t) tz);
-
-  /*
-   * tz is not supported in linux, nor is it supported by glibc, since
-   * tzset(3) and the zoneinfo file should be used instead.
-   *
-   * TODO(bsy) Do we make the zoneinfo directory available to
-   * applications?
-   */
-
-  retval = NaClGetTimeOfDay(&now);
-  if (0 != retval) {
-    goto cleanup;
-  }
-  /*
-   * Coarsen the time to the same level we get on Windows -
-   * 10 microseconds.
-   */
-  if (!NaClHighResolutionTimerEnabled()) {
-    now.nacl_abi_tv_usec = (now.nacl_abi_tv_usec / 10) * 10;
-  }
-  CHECK(now.nacl_abi_tv_usec >= 0);
-  CHECK(now.nacl_abi_tv_usec < NACL_MICROS_PER_UNIT);
-  if (!NaClCopyOutToUser(natp->nap, (uintptr_t) tv, &now, sizeof now)) {
-    retval = -NACL_ABI_EFAULT;
-    goto cleanup;
-  }
-  retval = 0;
-cleanup:
-  return retval;
-}
-
 /*
  * TODO(bsy): REMOVE THIS AND PROVIDE GETRUSAGE.  This is normally
  * not a syscall; instead, it is a library routine on top of
