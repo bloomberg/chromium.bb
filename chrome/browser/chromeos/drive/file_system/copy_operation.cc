@@ -178,8 +178,8 @@ void CopyOperation::TransferRegularFile(
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_,
       FROM_HERE,
-      base::Bind(&net::GetMimeTypeFromExtension,
-                 remote_dest_file_path.Extension(),
+      base::Bind(&net::GetMimeTypeFromFile,
+                 remote_dest_file_path,
                  base::Unretained(content_type)),
       base::Bind(&CopyOperation::StartFileUpload,
                  weak_ptr_factory_.GetWeakPtr(),
