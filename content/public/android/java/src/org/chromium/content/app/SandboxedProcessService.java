@@ -102,6 +102,10 @@ public class SandboxedProcessService extends Service {
 
     @Override
     public void onCreate() {
+        Log.i(TAG, "Creating new SandboxedProcessService pid=" + Process.myPid());
+        if (sContext != null) {
+            Log.e(TAG, "SanboxedProcessService created again in process!");
+        }
         sContext = this;
         super.onCreate();
 
@@ -151,6 +155,7 @@ public class SandboxedProcessService extends Service {
 
     @Override
     public void onDestroy() {
+        Log.i(TAG, "Destroying SandboxedProcessService pid=" + Process.myPid());
         super.onDestroy();
         if (mCommandLineParams == null) {
             // This process was destroyed before it even started. Nothing more to do.

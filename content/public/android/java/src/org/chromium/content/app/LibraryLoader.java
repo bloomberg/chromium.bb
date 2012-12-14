@@ -145,16 +145,20 @@ public class LibraryLoader {
 
     // This asserts that calls to ensureInitialized() will happen from the
     // same thread.
+    private static Object sCheckThreadLock = new Object();
     private static Thread sMyThread;
     private static void checkThreadUsage() {
-        Thread currentThread = java.lang.Thread.currentThread();
-        if (sMyThread == null) {
-            sMyThread = currentThread;
-        } else {
-            if (sMyThread != currentThread) {
-                Log.e(TAG, "Threading violation detected. My thread=" + sMyThread +
-                    " but I'm being accessed from thread=" + currentThread);
-                assert false;
+        Thread currentThread = Thread.currentThread();
+        synchronized (sCheckThreadLock) {
+            if (sMyThread == null) {
+                sMyThread = currentThread;
+            } else {
+                if (sMyThread != currentThread) {
+                    Log.e(TAG, "Threading violation detected. My thread=" + sMyThread + " id=" +
+                            sMyThread.getId() + " but I'm being accessed from thread=" +
+                          currentThread + " id=" + currentThread.getId());
+                    assert false;
+                }
             }
         }
     }
