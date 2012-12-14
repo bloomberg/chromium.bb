@@ -327,8 +327,15 @@ FileTable.prototype.renderOffline_ = function(entry, columnId, table) {
   var checkbox = this.ownerDocument.createElement('INPUT');
   filelist.decorateCheckbox(checkbox);
   checkbox.classList.add('pin');
-  // checkbox.addEventListener('click',
-  //                          this.onPinClick_.bind(this, checkbox, entry));
+
+  var command = this.ownerDocument.querySelector('command#toggle-pinned');
+  function onPinClick(event) {
+    command.canExecuteChange(checkbox);
+    command.execute(checkbox);
+    event.preventDefault();
+  }
+
+  checkbox.addEventListener('click', onPinClick);
   checkbox.style.display = 'none';
   checkbox.entry = entry;
   div.appendChild(checkbox);

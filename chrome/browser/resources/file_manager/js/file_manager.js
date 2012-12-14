@@ -1685,13 +1685,6 @@ DialogType.isModal = function(type) {
     }, 100);
   };
 
-  FileManager.prototype.onPinClick_ = function(checkbox, entry, event) {
-    var command = this.document_.querySelector('command#toggle-pinned');
-    command.canExecuteChange(checkbox);
-    command.execute(checkbox);
-    event.preventDefault();
-  };
-
   FileManager.prototype.selectDefaultPathInFilenameInput_ = function() {
     var input = this.filenameInput_;
     input.focus();
