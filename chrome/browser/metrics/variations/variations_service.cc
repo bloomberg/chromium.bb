@@ -177,7 +177,7 @@ void VariationsService::DoActualFetch() {
                                       net::LOAD_DO_NOT_SAVE_COOKIES);
   pending_seed_request_->SetRequestContext(
       g_browser_process->system_request_context());
-  pending_seed_request_->SetMaxRetries(kMaxRetrySeedFetch);
+  pending_seed_request_->SetMaxRetriesOn5xx(kMaxRetrySeedFetch);
   if (!variations_serial_number_.empty()) {
     pending_seed_request_->AddExtraRequestHeader("If-Match:" +
                                                  variations_serial_number_);

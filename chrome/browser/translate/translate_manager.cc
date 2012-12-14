@@ -839,7 +839,8 @@ void TranslateManager::FetchLanguageListFromTranslateServer(
                                                net::LOAD_DO_NOT_SAVE_COOKIES);
   language_list_request_pending_->SetRequestContext(
       g_browser_process->system_request_context());
-  language_list_request_pending_->SetMaxRetries(kMaxRetryLanguageListFetch);
+  language_list_request_pending_->SetMaxRetriesOn5xx(
+      kMaxRetryLanguageListFetch);
   language_list_request_pending_->Start();
 }
 

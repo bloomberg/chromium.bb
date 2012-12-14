@@ -530,7 +530,7 @@ void ChromeToMobileService::SnapshotFileRead(base::WeakPtr<Observer> observer,
 void ChromeToMobileService::InitRequest(net::URLFetcher* request) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   request->SetRequestContext(profile_->GetRequestContext());
-  request->SetMaxRetries(kMaxRetries);
+  request->SetMaxRetriesOn5xx(kMaxRetries);
   DCHECK(!access_token_.empty());
   request->SetExtraRequestHeaders("Authorization: OAuth " +
       access_token_ + "\r\n" + cloud_print::kChromeCloudPrintProxyHeader);

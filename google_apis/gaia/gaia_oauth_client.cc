@@ -128,7 +128,7 @@ void GaiaOAuthClient::Core::GetUserInfo(const std::string& oauth_access_token,
   request_->SetRequestContext(request_context_getter_);
   request_->AddExtraRequestHeader(
       "Authorization: OAuth " + oauth_access_token);
-  request_->SetMaxRetries(max_retries);
+  request_->SetMaxRetriesOn5xx(max_retries);
   request_->Start();
 }
 
@@ -143,7 +143,7 @@ void GaiaOAuthClient::Core::MakeGaiaRequest(
       0, gaia_url_, net::URLFetcher::POST, this));
   request_->SetRequestContext(request_context_getter_);
   request_->SetUploadData("application/x-www-form-urlencoded", post_body);
-  request_->SetMaxRetries(max_retries);
+  request_->SetMaxRetriesOn5xx(max_retries);
   request_->Start();
 }
 
@@ -195,8 +195,8 @@ void GaiaOAuthClient::Core::HandleResponse(
   if (!response_dict.get()) {
     // If we don't have an access token yet and the the error was not
     // RC_BAD_REQUEST, we may need to retry.
-    if ((source->GetMaxRetries() != -1) &&
-        (num_retries_ > source->GetMaxRetries())) {
+    if ((source->GetMaxRetriesOn5xx() != -1) &&
+        (num_retries_ > source->GetMaxRetriesOn5xx())) {
       // Retry limit reached. Give up.
       delegate_->OnNetworkError(source->GetResponseCode());
     } else {

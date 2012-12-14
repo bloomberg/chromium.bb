@@ -100,7 +100,7 @@ class RequestImpl : public WebHistoryService::Request,
     net::URLFetcher* fetcher = net::URLFetcher::Create(
         url_, net::URLFetcher::GET, this);
     fetcher->SetRequestContext(profile_->GetRequestContext());
-    fetcher->SetMaxRetries(kMaxRetries);
+    fetcher->SetMaxRetriesOn5xx(kMaxRetries);
     fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                           net::LOAD_DO_NOT_SAVE_COOKIES);
     fetcher->AddExtraRequestHeader("Authorization: Bearer " + access_token);

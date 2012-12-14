@@ -328,7 +328,7 @@ void GoogleURLTracker::StartFetchIfDesirable() {
 
   // Configure to max_retries at most kMaxRetries times for 5xx errors.
   static const int kMaxRetries = 5;
-  fetcher_->SetMaxRetries(kMaxRetries);
+  fetcher_->SetMaxRetriesOn5xx(kMaxRetries);
 
   fetcher_->Start();
 }
