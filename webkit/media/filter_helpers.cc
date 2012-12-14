@@ -38,14 +38,14 @@ static void AddDefaultDecodersToCollection(
     scoped_refptr<media::DecryptingAudioDecoder> decrypting_audio_decoder =
         new media::DecryptingAudioDecoder(
             message_loop,
-            base::Bind(&ProxyDecryptor::RequestDecryptorNotification,
+            base::Bind(&ProxyDecryptor::SetDecryptorReadyCB,
                        base::Unretained(proxy_decryptor)));
     filter_collection->GetAudioDecoders()->push_back(decrypting_audio_decoder);
 
     scoped_refptr<media::DecryptingVideoDecoder> decrypting_video_decoder =
         new media::DecryptingVideoDecoder(
             message_loop,
-            base::Bind(&ProxyDecryptor::RequestDecryptorNotification,
+            base::Bind(&ProxyDecryptor::SetDecryptorReadyCB,
                        base::Unretained(proxy_decryptor)));
     // TODO(xhwang): Ideally we should have decrypting video decoder after
     // regular video decoder since in the real world most videos are not

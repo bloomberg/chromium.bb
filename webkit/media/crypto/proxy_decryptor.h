@@ -42,15 +42,11 @@ class ProxyDecryptor : public media::Decryptor {
     decryptor_ = decryptor.Pass();
   }
 
-  // Callback to notify that the decryptor has been created.
-  typedef base::Callback<void(Decryptor*)> DecryptorNotificationCB;
-
-  // Requests the ProxyDecryptor to notify the decryptor creation through the
-  // |decryptor_notification_cb| provided.
-  // If |decryptor_notification_cb| is null, the ProxyDecryptor should cancel
-  // the existing request and fire it with NULL immediately.
-  void RequestDecryptorNotification(
-      const DecryptorNotificationCB& decryptor_notification_cb);
+  // Requests the ProxyDecryptor to notify the decryptor when it's ready through
+  // the |decryptor_ready_cb| provided.
+  // If |decryptor_ready_cb| is null, the existing callback will be fired with
+  // NULL immediately and reset.
+  void SetDecryptorReadyCB(const media::DecryptorReadyCB& decryptor_ready_cb);
 
   // media::Decryptor implementation.
   virtual bool GenerateKeyRequest(const std::string& key_system,
@@ -117,7 +113,7 @@ class ProxyDecryptor : public media::Decryptor {
   // safe as per the Decryptor interface.
   base::Lock lock_;
 
-  DecryptorNotificationCB decryptor_notification_cb_;
+  media::DecryptorReadyCB decryptor_ready_cb_;
 
   // The real decryptor that does decryption for the ProxyDecryptor.
   // This pointer is protected by the |lock_|.

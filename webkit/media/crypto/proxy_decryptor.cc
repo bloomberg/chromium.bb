@@ -79,25 +79,28 @@ ProxyDecryptor::~ProxyDecryptor() {
 }
 
 // TODO(xhwang): Support multiple decryptor notification request (e.g. from
-// video and audio decoders).
-void ProxyDecryptor::RequestDecryptorNotification(
-     const DecryptorNotificationCB& decryptor_notification_cb) {
+// video and audio decoders). The current implementation is okay for the current
+// media pipeline since we initialize audio and video decoders in sequence.
+// But ProxyDecryptor should not depend on media pipeline's implementation
+// detail.
+void ProxyDecryptor::SetDecryptorReadyCB(
+     const media::DecryptorReadyCB& decryptor_ready_cb) {
   base::AutoLock auto_lock(lock_);
 
   // Cancels the previous decryptor request.
-  if (decryptor_notification_cb.is_null()) {
-    if (!decryptor_notification_cb_.is_null())
-      base::ResetAndReturn(&decryptor_notification_cb_).Run(NULL);
+  if (decryptor_ready_cb.is_null()) {
+    if (!decryptor_ready_cb_.is_null())
+      base::ResetAndReturn(&decryptor_ready_cb_).Run(NULL);
     return;
   }
 
   // Normal decryptor request.
-  DCHECK(decryptor_notification_cb_.is_null());
+  DCHECK(decryptor_ready_cb_.is_null());
   if (decryptor_) {
-    decryptor_notification_cb.Run(decryptor_.get());
+    decryptor_ready_cb.Run(decryptor_.get());
     return;
   }
-  decryptor_notification_cb_ = decryptor_notification_cb;
+  decryptor_ready_cb_ = decryptor_ready_cb;
 }
 
 bool ProxyDecryptor::GenerateKeyRequest(const std::string& key_system,
@@ -124,8 +127,8 @@ bool ProxyDecryptor::GenerateKeyRequest(const std::string& key_system,
     return false;
   }
 
-  if (!decryptor_notification_cb_.is_null())
-    base::ResetAndReturn(&decryptor_notification_cb_).Run(decryptor_.get());
+  if (!decryptor_ready_cb_.is_null())
+    base::ResetAndReturn(&decryptor_ready_cb_).Run(decryptor_.get());
 
   return true;
 }
