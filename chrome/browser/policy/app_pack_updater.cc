@@ -102,7 +102,6 @@ AppPackUpdater::AppPackUpdater(net::URLRequestContextGetter* request_context,
 AppPackUpdater::~AppPackUpdater() {
   chromeos::CrosSettings::Get()->RemoveSettingsObserver(
       chromeos::kAppPack, this);
-  net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
 }
 
 extensions::ExternalLoader* AppPackUpdater::CreateExternalLoader() {
@@ -141,7 +140,6 @@ void AppPackUpdater::Init() {
       this,
       chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
       content::NotificationService::AllBrowserContextsAndSources());
-  net::NetworkChangeNotifier::AddIPAddressObserver(this);
   LoadPolicy();
 }
 
@@ -172,28 +170,6 @@ void AppPackUpdater::Observe(int type,
   }
 }
 
-void AppPackUpdater::OnIPAddressChanged() {
-  // Check if the AppPack has been fully downloaded whenever the network
-  // changes. This allows the AppPack to recover in case the network wasn't
-  // ready early during startup.
-  // To avoid performing too many update checks in case the network conditions
-  // change too often, an update is only triggered now if there are extensions
-  // configured via policy that haven't been checked for updates yet.
-  for (PolicyEntryMap::iterator it = app_pack_extensions_.begin();
-       it != app_pack_extensions_.end(); ++it) {
-    if (!it->second.update_checked) {
-      // |id| is configured via policy, but hasn't been updated before.
-      // Drop any pending requests and start a full check now.
-      VLOG(1) << "Extension " << it->first << " hasn't been checked yet, "
-              << "new update triggered now by network change notification.";
-      downloader_.reset();
-      weak_ptr_factory_.InvalidateWeakPtrs();
-      LoadPolicy();
-      break;
-    }
-  }
-}
-
 void AppPackUpdater::LoadPolicy() {
   chromeos::CrosSettings* settings = chromeos::CrosSettings::Get();
   if (chromeos::CrosSettingsProvider::TRUSTED != settings->PrepareTrustedValues(
@@ -217,8 +193,7 @@ void AppPackUpdater::LoadPolicy() {
       std::string update_url;
       if (dict->GetString(kExtensionId, &id) &&
           dict->GetString(kUpdateUrl, &update_url)) {
-        app_pack_extensions_[id].update_url = update_url;
-        app_pack_extensions_[id].update_checked = false;
+        app_pack_extensions_[id] = update_url;
       } else {
         LOG(WARNING) << "Failed to read required fields for an AppPack entry, "
                      << "ignoring.";
@@ -405,7 +380,7 @@ void AppPackUpdater::UpdateExtensionLoader() {
     PolicyEntryMap::iterator policy_entry = app_pack_extensions_.find(id);
     if (policy_entry != app_pack_extensions_.end() &&
         extension_urls::IsWebstoreUpdateUrl(
-            GURL(policy_entry->second.update_url))) {
+            GURL(policy_entry->second))) {
       dict->SetBoolean(extensions::ExternalProviderImpl::kIsFromWebstore, true);
     }
 
@@ -427,7 +402,7 @@ void AppPackUpdater::DownloadMissingExtensions() {
   }
   for (PolicyEntryMap::iterator it = app_pack_extensions_.begin();
        it != app_pack_extensions_.end(); ++it) {
-    downloader_->AddPendingExtension(it->first, GURL(it->second.update_url), 0);
+    downloader_->AddPendingExtension(it->first, GURL(it->second), 0);
   }
   VLOG(1) << "Downloading AppPack update manifest now";
   downloader_->StartAllPending();
@@ -441,7 +416,6 @@ void AppPackUpdater::OnExtensionDownloadFailed(
   if (error == NO_UPDATE_AVAILABLE) {
     if (!ContainsKey(cached_extensions_, id))
       LOG(ERROR) << "AppPack extension " << id << " not found on update server";
-    SetUpdateChecked(id);
   } else {
     LOG(ERROR) << "AppPack failed to download extension " << id
                << ", error " << error;
@@ -455,10 +429,6 @@ void AppPackUpdater::OnExtensionDownloadFinished(
     const std::string& version,
     const extensions::ExtensionDownloaderDelegate::PingResult& ping_result,
     const std::set<int>& request_ids) {
-  // Just downloaded the latest version, no need to do further update checks
-  // for this extension.
-  SetUpdateChecked(id);
-
   // The explicit copy ctors are to make sure that Bind() binds a copy and not
   // a reference to the arguments.
   PostBlockingTask(FROM_HERE,
@@ -597,12 +567,6 @@ void AppPackUpdater::SetScreenSaverPath(const FilePath& path) {
     if (!screen_saver_update_callback_.is_null())
       screen_saver_update_callback_.Run(screen_saver_path_);
   }
-}
-
-void AppPackUpdater::SetUpdateChecked(const std::string& id) {
-  PolicyEntryMap::iterator entry = app_pack_extensions_.find(id);
-  if (entry != app_pack_extensions_.end())
-    entry->second.update_checked = true;
 }
 
 }  // namespace policy

@@ -129,6 +129,11 @@ void GaiaOAuthClient::Core::GetUserInfo(const std::string& oauth_access_token,
   request_->AddExtraRequestHeader(
       "Authorization: OAuth " + oauth_access_token);
   request_->SetMaxRetriesOn5xx(max_retries);
+  // Fetchers are sometimes cancelled because a network change was detected,
+  // especially at startup and after sign-in on ChromeOS. Retrying once should
+  // be enough in those cases; let the fetcher retry up to 3 times just in case.
+  // http://crbug.com/163710
+  request_->SetAutomaticallyRetryOnNetworkChanges(3);
   request_->Start();
 }
 
@@ -144,6 +149,8 @@ void GaiaOAuthClient::Core::MakeGaiaRequest(
   request_->SetRequestContext(request_context_getter_);
   request_->SetUploadData("application/x-www-form-urlencoded", post_body);
   request_->SetMaxRetriesOn5xx(max_retries);
+  // See comment on SetAutomaticallyRetryOnNetworkChanges() above.
+  request_->SetAutomaticallyRetryOnNetworkChanges(3);
   request_->Start();
 }
 

@@ -512,6 +512,12 @@ void DeviceManagementService::StartJob(DeviceManagementRequestJobImpl* job,
                         net::LOAD_DISABLE_CACHE |
                         (bypass_proxy ? net::LOAD_BYPASS_PROXY : 0));
   fetcher->SetRequestContext(request_context_getter_.get());
+  // Early device policy fetches on ChromeOS and Auto-Enrollment checks are
+  // often interrupted during ChromeOS startup when network change notifications
+  // are sent. Allowing the fetcher to retry once after that is enough to
+  // recover; allow it to retry up to 3 times just in case.
+  // http://crosbug.com/16114
+  fetcher->SetAutomaticallyRetryOnNetworkChanges(3);
   job->ConfigureRequest(fetcher);
   pending_jobs_[fetcher] = job;
   fetcher->Start();

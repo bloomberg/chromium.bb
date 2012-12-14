@@ -429,6 +429,11 @@ void ExtensionDownloader::CreateManifestFetcher() {
   manifest_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                                   net::LOAD_DO_NOT_SAVE_COOKIES |
                                   net::LOAD_DISABLE_CACHE);
+  // Update checks can be interrupted if a network change is detected; this is
+  // common for the retail mode AppPack on ChromeOS. Retrying once should be
+  // enough to recover in those cases; let the fetcher retry up to 3 times
+  // just in case. http://crosbug.com/130602
+  manifest_fetcher_->SetAutomaticallyRetryOnNetworkChanges(3);
   manifest_fetcher_->Start();
 }
 
@@ -674,6 +679,7 @@ void ExtensionDownloader::CreateExtensionFetcher() {
   extension_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                                    net::LOAD_DO_NOT_SAVE_COOKIES |
                                    net::LOAD_DISABLE_CACHE);
+  extension_fetcher_->SetAutomaticallyRetryOnNetworkChanges(3);
   // Download CRX files to a temp file. The blacklist is small and will be
   // processed in memory, so it is fetched into a string.
   if (extensions_queue_.active_request()->id != kBlacklistAppID) {
