@@ -45,6 +45,7 @@ const int kTopPadding = 6;
 const int kBottomPadding = 10;
 const int kProgressBarWidth = 100;
 const int kProgressBarHeight = 8;
+const int64 kHideDelayInMs = 1000;
 
 string16 GetTrayLabel(const ash::DriveOperationStatusList& list) {
   return l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_DRIVE_SYNCING,
@@ -443,14 +444,35 @@ void TrayDrive::UpdateAfterLoginStatusChange(user::LoginStatus status) {
 }
 
 void TrayDrive::OnDriveRefresh(const DriveOperationStatusList& list) {
-  tray_view()->SetVisible(list.size() > 0);
-  tray_view()->SchedulePaint();
+  if (list.empty()) {
+    // If the list becomes empty, the tray item will be hidden after a certain
+    // amount of delay. This is to avoid flashes between sequentially executed
+    // Drive operations (see crbug/165679).
+    hide_timer_.Start(FROM_HERE,
+                      base::TimeDelta::FromMilliseconds(kHideDelayInMs),
+                      this,
+                      &TrayDrive::HideIfNoOperations);
+    return;
+  }
 
+  // If the list is non-empty, stop the hiding timer (if any).
+  hide_timer_.Stop();
+
+  tray_view()->SetVisible(true);
   if (default_)
     default_->Update(&list);
-
   if (detailed_)
     detailed_->Update(&list);
+}
+
+void TrayDrive::HideIfNoOperations() {
+  DriveOperationStatusList empty_list;
+
+  tray_view()->SetVisible(false);
+  if (default_)
+    default_->Update(&empty_list);
+  if (detailed_)
+    detailed_->Update(&empty_list);
 }
 
 }  // namespace internal

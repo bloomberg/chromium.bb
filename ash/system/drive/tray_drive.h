@@ -7,6 +7,7 @@
 
 #include "ash/system/drive/drive_observer.h"
 #include "ash/system/tray/tray_image_item.h"
+#include "base/timer.h"
 
 namespace views {
 class Label;
@@ -41,13 +42,12 @@ class TrayDrive : public TrayImageItem,
   // Overridden from DriveObserver.
   virtual void OnDriveRefresh(const DriveOperationStatusList& list) OVERRIDE;
 
-  // Delayed re-check of the status after encounter operation depleted list.
-  void OnStatusCheck();
-
-  void UpdateTrayIcon(bool show);
+  // Delayed hiding of the tray item after encountering an empty operation list.
+  void HideIfNoOperations();
 
   tray::DriveDefaultView* default_;
   tray::DriveDetailedView* detailed_;
+  base::OneShotTimer<TrayDrive> hide_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayDrive);
 };
