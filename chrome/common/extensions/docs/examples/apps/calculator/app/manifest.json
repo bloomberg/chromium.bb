@@ -8,5 +8,6 @@
   "icons": {
     "16": "images/icon-16x16.png",
     "128": "images/icon-128x128.png"
-  }
+  },
+  "permissions": ["storage"]
 }

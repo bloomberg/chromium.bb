@@ -10,7 +10,7 @@
 // in non-Chrome browsers, which is useful for example to test touch support
 // with a non-Chrome touch device.
 if (typeof chrome !== 'undefined' && chrome.app && chrome.app.runtime) {
-  chrome.app.runtime.onLaunched.addListener(function() {
+  var showCalculatorWindow = function () {
     chrome.app.window.create('calculator.html', {
       defaultWidth: 243, minWidth: 243, maxWidth: 243,
       defaultHeight: 380, minHeight: 380, maxHeight: 380,
@@ -19,6 +19,19 @@ if (typeof chrome !== 'undefined' && chrome.app && chrome.app.runtime) {
       appWindow.contentWindow.onload = function() {
         new Controller(new Model(9), new View(appWindow.contentWindow));
       };
+
+      chrome.storage.local.set({windowVisible: true});
+      appWindow.onClosed.addListener(function() {
+        chrome.storage.local.set({windowVisible: false});
+      });
+    });
+  }
+
+  chrome.app.runtime.onLaunched.addListener(showCalculatorWindow);
+  chrome.app.runtime.onRestarted.addListener(function() {
+    chrome.storage.local.get('windowVisible', function(data) {
+      if (data.windowVisible)
+        showCalculatorWindow();
     });
   });
 }
