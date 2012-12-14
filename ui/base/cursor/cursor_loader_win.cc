@@ -123,11 +123,13 @@ void CursorLoaderWin::UnloadAll() {
 
 void CursorLoaderWin::SetPlatformCursor(gfx::NativeCursor* cursor) {
 #if defined(USE_AURA)
-  const wchar_t* cursor_id = GetCursorId(*cursor);
+  if (cursor->native_type() != kCursorCustom) {
+    const wchar_t* cursor_id = GetCursorId(*cursor);
 
-  // TODO(jamescook): Support for non-system cursors will require finding
-  // the appropriate module to pass to LoadCursor().
-  cursor->SetPlatformCursor(LoadCursor(NULL, cursor_id));
+    // TODO(jamescook): Support for non-system cursors will require finding
+    // the appropriate module to pass to LoadCursor().
+    cursor->SetPlatformCursor(LoadCursor(NULL, cursor_id));
+  }
 #endif
 }
 

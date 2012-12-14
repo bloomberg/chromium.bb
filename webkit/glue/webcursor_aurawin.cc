@@ -7,17 +7,30 @@
 #include <windows.h>
 
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
+#include "ui/gfx/icon_util.h"
 
 const ui::PlatformCursor WebCursor::GetPlatformCursor() {
-  // TODO(winguru): Return an appropriate platform-cursor.
-  return LoadCursor(NULL, IDC_ARROW);
+  if (!IsCustom())
+    return LoadCursor(NULL, IDC_ARROW);
+
+  if (custom_cursor_)
+    return custom_cursor_;
+
+  custom_cursor_ =
+      IconUtil::CreateCursorFromDIB(
+          custom_size_,
+          hotspot_,
+          !custom_data_.empty() ? &custom_data_[0] : NULL,
+          custom_data_.size());
+  return custom_cursor_;
 }
 
 void WebCursor::SetDeviceScaleFactor(float scale_factor) {
-  // TODO(winguru): Scale the cursor.
+  // TODO(winguru): Add support for scaling the cursor.
 }
 
 void WebCursor::InitPlatformData() {
+  custom_cursor_ = NULL;
 }
 
 bool WebCursor::SerializePlatformData(Pickle* pickle) const {
@@ -33,6 +46,10 @@ bool WebCursor::IsPlatformDataEqual(const WebCursor& other) const {
 }
 
 void WebCursor::CleanupPlatformData() {
+  if (custom_cursor_) {
+    DestroyIcon(custom_cursor_);
+    custom_cursor_ = NULL;
+  }
 }
 
 void WebCursor::CopyPlatformData(const WebCursor& other) {

@@ -7,7 +7,7 @@
 #include "grit/webkit_unscaled_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
-#include "ui/gfx/gdi_util.h"
+#include "ui/gfx/icon_util.h"
 #include "webkit/glue/webcursor.h"
 
 using WebKit::WebCursorInfo;
@@ -128,39 +128,12 @@ HCURSOR WebCursor::GetCursor(HINSTANCE module_handle){
   if (external_cursor_)
     return external_cursor_;
 
-  BITMAPINFO cursor_bitmap_info = {0};
-  gfx::CreateBitmapHeader(
-      custom_size_.width(), custom_size_.height(),
-      reinterpret_cast<BITMAPINFOHEADER*>(&cursor_bitmap_info));
-  HDC dc = GetDC(0);
-  HDC workingDC = CreateCompatibleDC(dc);
-  HBITMAP bitmap_handle = CreateDIBSection(
-      dc, &cursor_bitmap_info, DIB_RGB_COLORS, 0, 0, 0);
-  if (!custom_data_.empty())
-    SetDIBits(
-        0, bitmap_handle, 0, custom_size_.height(), &custom_data_[0],
-        &cursor_bitmap_info, DIB_RGB_COLORS);
-
-  HBITMAP old_bitmap = reinterpret_cast<HBITMAP>(
-      SelectObject(workingDC, bitmap_handle));
-  SetBkMode(workingDC, TRANSPARENT);
-  SelectObject(workingDC, old_bitmap);
-
-  HBITMAP mask = CreateBitmap(
-      custom_size_.width(), custom_size_.height(), 1, 1, NULL);
-  ICONINFO ii = {0};
-  ii.fIcon = FALSE;
-  ii.xHotspot = hotspot_.x();
-  ii.yHotspot = hotspot_.y();
-  ii.hbmMask = mask;
-  ii.hbmColor = bitmap_handle;
-
-  custom_cursor_ = CreateIconIndirect(&ii);
-
-  DeleteObject(mask);
-  DeleteObject(bitmap_handle);
-  DeleteDC(workingDC);
-  ReleaseDC(0, dc);
+  custom_cursor_ =
+      IconUtil::CreateCursorFromDIB(
+          custom_size_,
+          hotspot_,
+          !custom_data_.empty() ? &custom_data_[0] : NULL,
+          custom_data_.size());
   return custom_cursor_;
 }
 

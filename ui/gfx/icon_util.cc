@@ -7,9 +7,12 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_handle.h"
+#include "base/win/scoped_hdc.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/gdi_util.h"
 #include "ui/gfx/size.h"
 
 namespace {
@@ -144,6 +147,56 @@ SkBitmap* IconUtil::CreateSkBitmapFromHICON(HICON icon) {
 
   gfx::Size icon_size(bitmap_info.bmWidth, bitmap_info.bmHeight);
   return new SkBitmap(CreateSkBitmapFromHICONHelper(icon, icon_size));
+}
+
+HICON IconUtil::CreateCursorFromDIB(const gfx::Size& icon_size,
+                                    const gfx::Point& hotspot,
+                                    const void* dib_bits,
+                                    size_t dib_size) {
+  BITMAPINFO icon_bitmap_info = {0};
+  gfx::CreateBitmapHeader(
+      icon_size.width(),
+      icon_size.height(),
+      reinterpret_cast<BITMAPINFOHEADER*>(&icon_bitmap_info));
+
+  base::win::ScopedGetDC dc(NULL);
+  base::win::ScopedCreateDC working_dc(CreateCompatibleDC(dc));
+  base::win::ScopedGDIObject<HBITMAP> bitmap_handle(
+      CreateDIBSection(dc,
+                       &icon_bitmap_info,
+                       DIB_RGB_COLORS,
+                       0,
+                       0,
+                       0));
+  if (dib_size > 0) {
+    SetDIBits(0,
+              bitmap_handle,
+              0,
+              icon_size.height(),
+              dib_bits,
+              &icon_bitmap_info,
+              DIB_RGB_COLORS);
+  }
+
+  HBITMAP old_bitmap = reinterpret_cast<HBITMAP>(
+      SelectObject(working_dc, bitmap_handle));
+  SetBkMode(working_dc, TRANSPARENT);
+  SelectObject(working_dc, old_bitmap);
+
+  base::win::ScopedGDIObject<HBITMAP> mask(
+      CreateBitmap(icon_size.width(),
+                   icon_size.height(),
+                   1,
+                   1,
+                   NULL));
+  ICONINFO ii = {0};
+  ii.fIcon = FALSE;
+  ii.xHotspot = hotspot.x();
+  ii.yHotspot = hotspot.y();
+  ii.hbmMask = mask;
+  ii.hbmColor = bitmap_handle;
+
+  return CreateIconIndirect(&ii);
 }
 
 SkBitmap IconUtil::CreateSkBitmapFromHICONHelper(HICON icon,

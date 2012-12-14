@@ -390,9 +390,6 @@ void DesktopRootWindowHostWin::ReleaseCapture() {
 }
 
 void DesktopRootWindowHostWin::SetCursor(gfx::NativeCursor cursor) {
-  // Custom web cursors are handled directly.
-  if (cursor == ui::kCursorCustom)
-    return;
   ui::CursorLoaderWin cursor_loader;
   cursor_loader.SetPlatformCursor(&cursor);
 
