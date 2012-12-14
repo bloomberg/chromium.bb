@@ -75,13 +75,6 @@ class CONTENT_EXPORT InputEventFilter
   void SendACKOnIOThread(int routing_id, WebKit::WebInputEvent::Type event_type,
                          InputEventAckState ack_result);
 
-  // Queues the given IME event message in the message_ queue if the queue is
-  // not empty and returns true, otherwise returns false.
-  bool QueueImeEvent(const IPC::Message& message);
-
-  // Forwards pending IME event messages to the renderer.
-  void ForwardPendingImeEvents();
-
   scoped_refptr<base::MessageLoopProxy> main_loop_;
   IPC::Listener* main_listener_;
 
