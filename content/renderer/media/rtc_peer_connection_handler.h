@@ -15,6 +15,7 @@
 
 namespace WebKit {
 class WebFrame;
+class WebRTCDataChannelHandler;
 }
 
 namespace content {
@@ -122,12 +123,9 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
       const WebKit::WebMediaStreamDescriptor& stream) OVERRIDE;
   virtual void getStats(
       const WebKit::WebRTCStatsRequest& request) OVERRIDE;
-  // We will be deleted by WebKit after stop has been returned.
-  virtual void stop() OVERRIDE;
-
   virtual WebKit::WebRTCDataChannelHandler* createDataChannel(
-      const WebKit::WebString& label,
-      bool reliable) OVERRIDE;
+      const WebKit::WebString& label, bool reliable) OVERRIDE;
+  virtual void stop() OVERRIDE;
 
   // webrtc::PeerConnectionObserver implementation
   virtual void OnError() OVERRIDE;

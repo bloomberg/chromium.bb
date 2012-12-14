@@ -260,6 +260,9 @@ const char kEnableCompositingForFixedPosition[] =
 // Enables CSS3 custom filters
 const char kEnableCssShaders[]              = "enable-css-shaders";
 
+// Enables RTCPeerConnection data channels
+const char kEnableDataChannels[]            = "enable-data-channels";
+
 // Enables device motion events.
 const char kEnableDeviceMotion[]            = "enable-device-motion";
 

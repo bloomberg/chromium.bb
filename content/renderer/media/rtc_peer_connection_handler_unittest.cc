@@ -4,8 +4,10 @@
 
 #include <string>
 
+#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
+#include "content/public/common/content_switches.h"
 #include "content/renderer/media/media_stream_extra_data.h"
 #include "content/renderer/media/mock_media_stream_dependency_factory.h"
 #include "content/renderer/media/mock_peer_connection_impl.h"
@@ -458,6 +460,9 @@ TEST_F(RTCPeerConnectionHandlerTest, OnRenegotiationNeeded) {
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, CreateDataChannel) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableDataChannels);
+
   WebKit::WebString label = "d1";
   scoped_ptr<WebKit::WebRTCDataChannelHandler> channel(
       pc_handler_->createDataChannel("d1", true));
