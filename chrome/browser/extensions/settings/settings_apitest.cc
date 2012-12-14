@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -13,7 +12,6 @@
 #include "chrome/browser/extensions/settings/settings_sync_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/value_builder.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "sync/api/sync_change.h"
@@ -88,8 +86,6 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
  protected:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableManagedStorage);
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
     EXPECT_CALL(policy_provider_, IsInitializationComplete())
