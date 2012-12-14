@@ -8862,6 +8862,7 @@ error::Error GLES2DecoderImpl::HandleBeginQueryEXT(
   switch (target) {
     case GL_COMMANDS_ISSUED_CHROMIUM:
     case GL_LATENCY_QUERY_CHROMIUM:
+    case GL_ASYNC_PIXEL_TRANSFERS_COMPLETED_CHROMIUM:
       break;
     default:
       if (!features().occlusion_query_boolean) {
