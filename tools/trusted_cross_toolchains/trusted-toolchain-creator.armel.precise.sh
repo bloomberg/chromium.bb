@@ -215,6 +215,7 @@ readonly ARMEL_EXTRA_PACKAGES="\
   x11proto-damage-dev \
   x11proto-fixes-dev \
   x11proto-input-dev \
+  x11proto-kb-dev \
   x11proto-randr-dev \
   x11proto-record-dev \
   x11proto-render-dev \
@@ -310,6 +311,7 @@ CreateTarBall() {
 #@
 #@ InstallCrossArmBasePackages
 #@
+#@      Install packages needed for arm cross compilation.
 InstallCrossArmBasePackages() {
   sudo apt-get install ${CROSS_ARM_TC_PACKAGES}
 }
@@ -497,12 +499,12 @@ BuildJail() {
   CreateTarBall $1
 }
 
-#@
-#@ GeneratePackageList
-#@
-#@     Looks up package names in ${TMP}/Packages and write list of URLs
-#@     to output file.
-#@
+#
+# GeneratePackageList
+#
+#     Looks up package names in ${TMP}/Packages and write list of URLs
+#     to output file.
+#
 GeneratePackageList() {
   local output_file=$1
   echo "Updating: ${output_file}"

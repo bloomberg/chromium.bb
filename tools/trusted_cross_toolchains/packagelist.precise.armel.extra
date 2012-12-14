@@ -106,6 +106,7 @@ main/x/x11proto-composite/x11proto-composite-dev_0.4.2-2_all.deb
 main/x/x11proto-damage/x11proto-damage-dev_1.2.1-2_all.deb
 main/x/x11proto-fixes/x11proto-fixes-dev_5.0-2ubuntu1_all.deb
 main/x/x11proto-input/x11proto-input-dev_2.1.99.6-1_all.deb
+main/x/x11proto-kb/x11proto-kb-dev_1.0.5-2_all.deb
 main/x/x11proto-randr/x11proto-randr-dev_1.4.0+git20101207.0d32bb07-0ubuntu2_all.deb
 main/x/x11proto-record/x11proto-record-dev_1.14.1-2_all.deb
 main/x/x11proto-render/x11proto-render-dev_0.11.1-2_all.deb
