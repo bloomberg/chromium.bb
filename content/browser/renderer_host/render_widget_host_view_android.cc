@@ -445,7 +445,7 @@ void RenderWidgetHostViewAndroid::AcceleratedSurfaceSuspend() {
 }
 
 void RenderWidgetHostViewAndroid::AcceleratedSurfaceNew(
-    int32 width_in_pixel, int32 height_in_pixel, uint64 surface_id,
+    uint64 surface_id,
     const std::string& mailbox_name) {
   DCHECK(surface_id == 1 || surface_id == 2);
   id_to_mailbox_[surface_id] = mailbox_name;

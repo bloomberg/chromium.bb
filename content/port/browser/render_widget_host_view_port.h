@@ -241,11 +241,8 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
   virtual void HasTouchEventHandlers(bool need_touch_events) = 0;
 #endif
 
-  virtual void AcceleratedSurfaceNew(
-      int32 width_in_pixel,
-      int32 height_in_pixel,
-      uint64 surface_id,
-      const std::string& mailbox_name) {}
+  virtual void AcceleratedSurfaceNew(uint64 surface_id,
+                                     const std::string& mailbox_name) {}
   virtual void AcceleratedSurfaceRelease() {}
 
 #if defined(TOOLKIT_GTK)

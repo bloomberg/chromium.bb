@@ -44,15 +44,9 @@ IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceNew_Params)
   IPC_STRUCT_MEMBER(int32, surface_id)
-  IPC_STRUCT_MEMBER(int32, width)
-  IPC_STRUCT_MEMBER(int32, height)
   IPC_STRUCT_MEMBER(uint64, surface_handle)
   IPC_STRUCT_MEMBER(std::string, mailbox_name)
   IPC_STRUCT_MEMBER(int32, route_id)
-#if defined(OS_MACOSX)
-  IPC_STRUCT_MEMBER(gfx::PluginWindowHandle, window)
-  IPC_STRUCT_MEMBER(bool, create_transport_dib)
-#endif
 IPC_STRUCT_END()
 
 #undef IPC_MESSAGE_EXPORT
@@ -86,9 +80,6 @@ IPC_STRUCT_END()
 IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceRelease_Params)
   IPC_STRUCT_MEMBER(int32, surface_id)
   IPC_STRUCT_MEMBER(int32, route_id)
-#if defined(OS_MACOSX)
-  IPC_STRUCT_MEMBER(gfx::PluginWindowHandle, window)
-#endif
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(GPUCommandBufferConsoleMessage)

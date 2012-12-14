@@ -312,9 +312,7 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceNew(
       params.mailbox_name.length() != GL_MAILBOX_SIZE_CHROMIUM)
     return;
 
-  view->AcceleratedSurfaceNew(
-      params.width, params.height, params.surface_handle,
-      params.mailbox_name);
+  view->AcceleratedSurfaceNew(params.surface_handle, params.mailbox_name);
 }
 
 static base::TimeDelta GetSwapDelay() {

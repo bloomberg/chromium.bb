@@ -128,9 +128,7 @@ class RenderWidgetHostViewAura
       int gpu_host_id) OVERRIDE;
   virtual void AcceleratedSurfaceSuspend() OVERRIDE;
   virtual bool HasAcceleratedSurface(const gfx::Size& desired_size) OVERRIDE;
-  virtual void AcceleratedSurfaceNew(int32 width_in_pixel,
-                                     int32 height_in_pixel,
-                                     uint64 surface_id,
+  virtual void AcceleratedSurfaceNew(uint64 surface_id,
                                      const std::string& mailbox_name) OVERRIDE;
   virtual void AcceleratedSurfaceRelease() OVERRIDE;
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE;

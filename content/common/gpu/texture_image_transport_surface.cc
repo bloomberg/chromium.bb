@@ -403,8 +403,6 @@ void TextureImageTransportSurface::CreateBackTexture() {
   const MailboxName& name = mailbox_name(backbuffer_.surface_handle);
 
   GpuHostMsg_AcceleratedSurfaceNew_Params params;
-  params.width = current_size_.width();
-  params.height = current_size_.height();
   params.surface_handle = backbuffer_.surface_handle;
   params.mailbox_name.append(
       reinterpret_cast<const char*>(&name), sizeof(name));
