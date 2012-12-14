@@ -19,7 +19,12 @@ RenderingStats::RenderingStats()
       numImplThreadScrolls(0),
       numMainThreadScrolls(0),
       numLayersDrawn(0),
-      numMissingTiles(0) {
+      numMissingTiles(0),
+      totalDeferredImageDecodeCount(0),
+      totalDeferredImageCacheHitCount(0),
+      totalImageGatheringCount(0),
+      totalDeferredImageDecodeTimeInSeconds(0),
+      totalImageGatheringTimeInSeconds(0) {
 }
 
 void RenderingStats::EnumerateFields(Enumerator* enumerator) const {
@@ -37,6 +42,15 @@ void RenderingStats::EnumerateFields(Enumerator* enumerator) const {
     enumerator->AddInt64("numMainThreadScrolls", numMainThreadScrolls);
     enumerator->AddInt64("numLayersDrawn", numLayersDrawn);
     enumerator->AddInt64("numMissingTiles", numMissingTiles);
+    enumerator->AddInt64("totalDeferredImageDecodeCount",
+                         totalDeferredImageDecodeCount);
+    enumerator->AddInt64("totalDeferredImageCacheHitCount",
+                         totalDeferredImageCacheHitCount);
+    enumerator->AddInt64("totalImageGatheringCount", totalImageGatheringCount);
+    enumerator->AddDouble("totalDeferredImageDecodeTimeInSeconds",
+                          totalDeferredImageDecodeTimeInSeconds);
+    enumerator->AddDouble("totalImageGatheringTimeInSeconds",
+                          totalImageGatheringTimeInSeconds);
 }
 
 }  // namespace cc

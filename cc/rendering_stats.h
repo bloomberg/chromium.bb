@@ -26,6 +26,11 @@ struct CC_EXPORT RenderingStats {
     int64 numMainThreadScrolls;
     int64 numLayersDrawn;
     int64 numMissingTiles;
+    int64 totalDeferredImageDecodeCount;
+    int64 totalDeferredImageCacheHitCount;
+    int64 totalImageGatheringCount;
+    double totalDeferredImageDecodeTimeInSeconds;
+    double totalImageGatheringTimeInSeconds;
     // Note: when adding new members, please remember to update enumerateFields
     // in rendering_stats.cc.
 

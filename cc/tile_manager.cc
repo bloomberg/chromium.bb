@@ -69,11 +69,12 @@ class RasterThread : public base::Thread {
 
   void PostImageDecodingTaskAndReply(const tracked_objects::Location& from_here,
                                      skia::LazyPixelRef* pixel_ref,
+                                     RenderingStats* stats,
                                      const base::Closure& reply) {
     ++num_pending_tasks_;
     message_loop_proxy()->PostTaskAndReply(
         from_here,
-        base::Bind(&RunImageDecodeTask, base::Unretained(pixel_ref)),
+        base::Bind(&RunImageDecodeTask, pixel_ref, stats),
         base::Bind(&RasterThread::RunReply, base::Unretained(this), reply));
   }
 
@@ -98,9 +99,13 @@ class RasterThread : public base::Thread {
         stats);
   }
 
-  static void RunImageDecodeTask(skia::LazyPixelRef* pixel_ref) {
+  static void RunImageDecodeTask(skia::LazyPixelRef* pixel_ref,
+                                 RenderingStats* stats) {
     TRACE_EVENT0("cc", "RasterThread::RunImageDecodeTask");
+    base::TimeTicks decodeBeginTime = base::TimeTicks::Now();
     pixel_ref->Decode();
+    stats->totalDeferredImageDecodeTimeInSeconds +=
+        (base::TimeTicks::Now() - decodeBeginTime).InSecondsF();
   }
 
   void RunReply(const base::Closure& reply) {
@@ -343,8 +348,17 @@ void TileManager::CheckForCompletedSetPixels() {
 
 void TileManager::renderingStats(RenderingStats* stats) {
   stats->totalRasterizeTimeInSeconds =
-    rendering_stats_.totalRasterizeTimeInSeconds;
+      rendering_stats_.totalRasterizeTimeInSeconds;
   stats->totalPixelsRasterized = rendering_stats_.totalPixelsRasterized;
+  stats->totalDeferredImageDecodeCount =
+      rendering_stats_.totalDeferredImageDecodeCount;
+  stats->totalDeferredImageCacheHitCount =
+      rendering_stats_.totalDeferredImageCacheHitCount;
+  stats->totalImageGatheringCount = rendering_stats_.totalImageGatheringCount;
+  stats->totalDeferredImageDecodeTimeInSeconds =
+      rendering_stats_.totalDeferredImageDecodeTimeInSeconds;
+  stats->totalImageGatheringTimeInSeconds =
+      rendering_stats_.totalImageGatheringTimeInSeconds;
 }
 
 void TileManager::AssignGpuMemoryToTiles() {
@@ -363,13 +377,9 @@ void TileManager::AssignGpuMemoryToTiles() {
       tiles_that_need_to_be_rasterized_.begin(),
       tiles_that_need_to_be_rasterized_.end());
 
-  // Record all the tiles in the image decoding list. A tile will not be
-  // inserted to the rasterizer queue if it is waiting for image decoding.
-  std::set<Tile*> image_decoding_tile_set;
-  for (std::list<Tile*>::iterator it = tiles_with_image_decoding_tasks_.begin();
-      it != tiles_with_image_decoding_tasks_.end(); ++it) {
-    image_decoding_tile_set.insert(*it);
-  }
+  // Reset the image decoding list so that we don't mess up with tile
+  // priorities. Tiles will be added to the image decoding list again
+  // when DispatchMoreTasks() is called.
   tiles_with_image_decoding_tasks_.clear();
 
   size_t bytes_left = global_state_.memory_limit_in_bytes - unreleasable_bytes;
@@ -392,12 +402,8 @@ void TileManager::AssignGpuMemoryToTiles() {
     bytes_left -= tile_bytes;
     managed_tile_state.can_use_gpu_memory = true;
     if (!managed_tile_state.resource &&
-        !managed_tile_state.resource_is_being_initialized) {
-      if (image_decoding_tile_set.end() != image_decoding_tile_set.find(tile))
-        tiles_with_image_decoding_tasks_.push_back(tile);
-      else
-        tiles_that_need_to_be_rasterized_.push_back(tile);
-    }
+        !managed_tile_state.resource_is_being_initialized)
+      tiles_that_need_to_be_rasterized_.push_back(tile);
   }
 
   // Reverse two tiles_that_need_* vectors such that pop_back gets
@@ -464,16 +470,22 @@ void TileManager::DispatchMoreTasks() {
   }
 }
 
-void TileManager::DispatchImageDecodingTasksForTile(Tile* tile) {
+void TileManager::GatherPixelRefsForFile(Tile* tile) {
+  TRACE_EVENT0("cc", "TileManager::GatherPixelRefsForFile");
   ManagedTileState& managed_state = tile->managed_state();
   if (managed_state.need_to_gather_pixel_refs) {
-    TRACE_EVENT0("cc",
-        "TileManager::DispatchImageDecodingTaskForTile: Gather PixelRefs");
+    base::TimeTicks gatherBeginTime = base::TimeTicks::Now();
     const_cast<PicturePileImpl *>(tile->picture_pile())->GatherPixelRefs(
         tile->content_rect_, managed_state.pending_pixel_refs);
+    rendering_stats_.totalImageGatheringCount++;
+    rendering_stats_.totalImageGatheringTimeInSeconds +=
+        (base::TimeTicks::Now() - gatherBeginTime).InSecondsF();
     managed_state.need_to_gather_pixel_refs = false;
   }
+}
 
+void TileManager::DispatchImageDecodingTasksForTile(Tile* tile) {
+  GatherPixelRefsForFile(tile);
   std::list<skia::LazyPixelRef*>& pending_pixel_refs =
       tile->managed_state().pending_pixel_refs;
   std::list<skia::LazyPixelRef*>::iterator it = pending_pixel_refs.begin();
@@ -485,11 +497,13 @@ void TileManager::DispatchImageDecodingTasksForTile(Tile* tile) {
     }
     // TODO(qinmin): passing correct image size to PrepareToDecode().
     if ((*it)->PrepareToDecode(skia::LazyPixelRef::PrepareParams())) {
+      rendering_stats_.totalDeferredImageCacheHitCount++;
       pending_pixel_refs.erase(it++);
     } else {
       RasterThread* thread = GetFreeRasterThread();
-      if (thread)
-        DispatchOneImageDecodingTask(thread, tile, *it);
+      if (!thread)
+        return;
+      DispatchOneImageDecodingTask(thread, tile, *it);
       ++it;
     }
   }
@@ -503,21 +517,28 @@ void TileManager::DispatchOneImageDecodingTask(RasterThread* thread,
   DCHECK(pending_decode_tasks_.end() ==
       pending_decode_tasks_.find(pixel_ref_id));
   pending_decode_tasks_[pixel_ref_id] = pixel_ref;
+  RenderingStats* stats = new RenderingStats();
 
   thread->PostImageDecodingTaskAndReply(
           FROM_HERE,
           pixel_ref,
+          stats,
           base::Bind(&TileManager::OnImageDecodingTaskCompleted,
                      base::Unretained(this),
                      tile,
-                     pixel_ref_id));
+                     pixel_ref_id,
+                     stats));
 }
 
 void TileManager::OnImageDecodingTaskCompleted(scoped_refptr<Tile> tile,
-                                               uint32_t pixel_ref_id) {
+                                               uint32_t pixel_ref_id,
+                                               RenderingStats* stats) {
   TRACE_EVENT0("cc", "TileManager::OnImageDecoded");
   pending_decode_tasks_.erase(pixel_ref_id);
-
+  rendering_stats_.totalDeferredImageDecodeTimeInSeconds +=
+      stats->totalDeferredImageDecodeTimeInSeconds;
+  rendering_stats_.totalDeferredImageDecodeCount++;
+  delete stats;
   for (TileList::iterator it = tiles_with_image_decoding_tasks_.begin();
       it != tiles_with_image_decoding_tasks_.end(); ++it) {
     std::list<skia::LazyPixelRef*>& pixel_refs =
