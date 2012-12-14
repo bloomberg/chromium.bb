@@ -1,6 +1,5 @@
 <div id="pointer-overlay" class="page" hidden>
   <div class="close-button"></div>
-  <h1 id="pointer-overlay-title"></h1>
   <div class="content-area">
     <section id="pointer-section-touchpad" hidden>
       <h3 i18n-content="pointerOverlaySectionTitleTouchpad"></h3>
@@ -11,9 +10,18 @@
           <span i18n-content="enableTapToClick"></span>
         </label>
       </div>
-      <div class="checkbox">
+      <div class="radio" id="touchpad-scroll-direction">
         <label>
-          <input type="checkbox" metric="Options_TouchpadNaturalScroll"
+          <input type="radio" name="touchpad-scroll-direction" value="false"
+              metric="Options_TouchpadNaturalScroll"
+              pref="settings.touchpad.natural_scroll" dialog-pref>
+          <span i18n-content="traditionalScroll"></span>
+        </label>
+      </div>
+      <div class="radio">
+        <label>
+          <input type="radio" name="touchpad-scroll-direction" value="true" 
+              metric="Options_TouchpadNaturalScroll"
               pref="settings.touchpad.natural_scroll" dialog-pref>
           <span i18n-values=".innerHTML:naturalScroll"></span>
         </label>

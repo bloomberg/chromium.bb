@@ -58,17 +58,14 @@ cr.define('options', function() {
    * @param {String} label i18n key for the overlay title.
    */
   PointerOverlay.setTitle = function(label) {
-    var header = $('pointer-overlay-title');
     var button = $('pointer-settings-button');
     var noPointersLabel = $('no-pointing-devices');
     if (label.length > 0) {
       var title = loadTimeData.getString(label);
-      header.textContent = title;
       button.textContent = title;
       button.hidden = false;
       noPointersLabel.hidden = true;
     } else {
-      header.textContent = '';
       button.hidden = true;
       noPointersLabel.hidden = false;
     }

@@ -41,6 +41,8 @@ void PointerHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
       IDS_OPTIONS_SETTINGS_TAP_TO_CLICK_ENABLED_DESCRIPTION },
     { "primaryMouseRight",
       IDS_OPTIONS_SETTINGS_PRIMARY_MOUSE_RIGHT_DESCRIPTION },
+    { "traditionalScroll",
+      IDS_OPTIONS_SETTINGS_TRADITIONAL_SCROLL_DESCRIPTION },
   };
 
   localized_strings->SetString("naturalScroll",
