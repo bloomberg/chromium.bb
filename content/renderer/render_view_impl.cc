@@ -2250,6 +2250,10 @@ void RenderViewImpl::UpdateTargetURL(const GURL& url,
 }
 
 void RenderViewImpl::StartNavStateSyncTimerIfNecessary() {
+  // No need to update state if no page has committed yet.
+  if (page_id_ == -1)
+    return;
+
   int delay;
   if (send_content_state_immediately_)
     delay = 0;
