@@ -306,8 +306,26 @@ bool PathProvider(int key, FilePath* result) {
     // encoded in the path, and these will need to be split.
     case chrome::DIR_PNACL_BASE:
     case chrome::DIR_PNACL_COMPONENT:
-      if (!PathService::Get(base::DIR_MODULE, &cur))
+#if defined(OS_MACOSX)
+      // PNaCl really belongs in the InternalPluginsDirectory but actually
+      // copying it there would result in the files also being shipped, which
+      // we don't want yet. So for now, just find them in the directory where
+      // they get built.
+      if (!PathService::Get(base::DIR_EXE, &cur))
         return false;
+      if (base::mac::AmIBundled()) {
+        // If we're called from chrome, it's beside the app (outside the
+        // app bundle), if we're called from a unittest, we'll already be
+        // outside the bundle so use the exe dir.
+        // exe_dir gave us .../Chromium.app/Contents/MacOS/Chromium.
+        cur = cur.DirName();
+        cur = cur.DirName();
+        cur = cur.DirName();
+      }
+#else
+      if (!GetInternalPluginsDirectory(&cur))
+        return false;
+#endif
       cur = cur.Append(FILE_PATH_LITERAL("pnacl"));
       break;
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
