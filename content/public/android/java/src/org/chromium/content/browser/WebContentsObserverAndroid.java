@@ -56,6 +56,16 @@ public abstract class WebContentsObserverAndroid {
     }
 
     /**
+     * Similar to didNavigateMainFrame but also called on subframe navigations.
+     * @param url The validated url for the page.
+     * @param baseUrl The validated base url for the page.
+     * @param isReload True if this navigation is a reload.
+     */
+    @CalledByNative
+    public void didNavigateAnyFrame(String url, String baseUrl, boolean isReload) {
+    }
+
+    /**
      * Destroy the corresponding native object.
      */
     @CalledByNative

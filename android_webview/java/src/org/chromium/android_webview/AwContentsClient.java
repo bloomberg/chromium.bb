@@ -173,6 +173,12 @@ public abstract class AwContentsClient extends ContentViewClient {
             AwContentsClient.this.onReceivedError(
                     ErrorCodeConversionHelper.convertErrorCode(errorCode), description, failingUrl);
         }
+
+        @Override
+        public void didNavigateAnyFrame(String url, String baseUrl, boolean isReload) {
+            AwContentsClient.this.doUpdateVisitedHistory(url, isReload);
+        }
+
     }
 
     void installWebContentsObserver(ContentViewCore contentViewCore) {
@@ -189,7 +195,9 @@ public abstract class AwContentsClient extends ContentViewClient {
     //--------------------------------------------------------------------------------------------
     //             WebView specific methods that map directly to WebViewClient / WebChromeClient
     //--------------------------------------------------------------------------------------------
-    //
+
+    // TODO(boliu): Make this abstract.
+    public void doUpdateVisitedHistory(String url, boolean isReload) {}
 
     public abstract void onProgressChanged(int progress);
 

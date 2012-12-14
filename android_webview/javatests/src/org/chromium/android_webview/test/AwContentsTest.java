@@ -214,6 +214,8 @@ public class AwContentsTest extends AndroidWebViewTestBase {
         }
     }
 
+    @Feature({"AndroidWebView", "Downloads"})
+    @SmallTest
     public void testDownload() throws Throwable {
         AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
         AwContents awContents = testView.getAwContents();
@@ -252,6 +254,37 @@ public class AwContentsTest extends AndroidWebViewTestBase {
                     return true;
                 }
             }));
+        } finally {
+            if (webServer != null) webServer.shutdown();
+        }
+    }
+
+    @Feature({"AndroidWebView"})
+    @SmallTest
+    public void testUpdateVisitedHistoryCallback() throws Throwable {
+        AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
+        AwContents awContents = testView.getAwContents();
+
+        // TODO(boliu): This is to work around disk cache corruption bug on
+        // unclean shutdown (crbug.com/154805).
+        clearCacheOnUiThread(awContents, true);
+
+        final String path = "/testUpdateVisitedHistoryCallback.html";
+        final String html = "testUpdateVisitedHistoryCallback";
+
+        TestWebServer webServer = null;
+        try {
+            webServer = new TestWebServer(false);
+            final String pageUrl = webServer.setResponse(path, html, null);
+
+            loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
+            assertEquals(pageUrl, mContentsClient.mLastVisitedUrl);
+            assertEquals(false, mContentsClient.mLastVisitIsReload);
+
+            // Reload
+            loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
+            assertEquals(pageUrl, mContentsClient.mLastVisitedUrl);
+            assertEquals(true, mContentsClient.mLastVisitIsReload);
         } finally {
             if (webServer != null) webServer.shutdown();
         }

@@ -400,6 +400,14 @@ public class AwContents {
             // allow access to file:// URLs (subject to OS level permission checks).
             params.setCanLoadLocalResources(true);
         }
+
+        // If we are reloading the same url, then set transition type as reload.
+        if (params.getUrl() != null &&
+            params.getUrl().equals(mContentViewCore.getUrl()) &&
+            params.getTransitionType() == ContentViewCore.PAGE_TRANSITION_LINK) {
+            params.setTransitionType(ContentViewCore.PAGE_TRANSITION_RELOAD);
+        }
+
         mContentViewCore.loadUrl(params);
 
         if (mInterceptNavigationDelegate != null) {

@@ -58,12 +58,13 @@ import java.lang.annotation.Annotation;
 public class ContentViewCore implements MotionEventDelegate {
     private static final String TAG = ContentViewCore.class.getName();
 
-    // The following constants match the ones in chrome/common/page_transition_types.h.
+    // The following constants match the ones in content/public/common/page_transition_types.h
     // Add more if you need them.
     public static final int PAGE_TRANSITION_LINK = 0;
     public static final int PAGE_TRANSITION_TYPED = 1;
     public static final int PAGE_TRANSITION_AUTO_BOOKMARK = 2;
     public static final int PAGE_TRANSITION_START_PAGE = 6;
+    public static final int PAGE_TRANSITION_RELOAD = 8;
 
     // Used when ContentView implements a standalone View.
     public static final int PERSONALITY_VIEW = 0;

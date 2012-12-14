@@ -120,6 +120,23 @@ void WebContentsObserverAndroid::DidNavigateMainFrame(
       env, obj.obj(), jstring_url.obj(), jstring_base_url.obj());
 }
 
+void WebContentsObserverAndroid::DidNavigateAnyFrame(
+    const LoadCommittedDetails& details,
+    const FrameNavigateParams& params) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = weak_java_observer_.get(env);
+  if (obj.is_null())
+    return;
+  ScopedJavaLocalRef<jstring> jstring_url =
+      ConvertUTF8ToJavaString(env, params.url.spec());
+  ScopedJavaLocalRef<jstring> jstring_base_url =
+      ConvertUTF8ToJavaString(env, params.base_url.spec());
+  jboolean jboolean_is_reload = PAGE_TRANSITION_RELOAD == params.transition;
+  Java_WebContentsObserverAndroid_didNavigateAnyFrame(
+      env, obj.obj(), jstring_url.obj(), jstring_base_url.obj(),
+      jboolean_is_reload);
+}
+
 void WebContentsObserverAndroid::DidFailLoadInternal(
     bool is_provisional_load,
     bool is_main_frame,

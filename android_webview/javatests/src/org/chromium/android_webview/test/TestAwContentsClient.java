@@ -131,6 +131,15 @@ class TestAwContentsClient extends NullContentsClient {
         }
     }
 
+    String mLastVisitedUrl;
+    boolean mLastVisitIsReload;
+
+    @Override
+    public void doUpdateVisitedHistory(String url, boolean isReload) {
+        mLastVisitedUrl = url;
+        mLastVisitIsReload = isReload;
+    }
+
     String mLastDownloadUrl;
     String mLastDownloadUserAgent;
     String mLastDownloadContentDisposition;

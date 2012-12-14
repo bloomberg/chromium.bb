@@ -30,6 +30,10 @@ class NullContentsClient extends AwContentsClient {
     }
 
     @Override
+    public void doUpdateVisitedHistory(String url, boolean isReload) {
+    }
+
+    @Override
     public void onProgressChanged(int progress) {
     }
 

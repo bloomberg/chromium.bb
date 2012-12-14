@@ -120,6 +120,13 @@ public class LoadUrlParams {
     }
 
     /**
+     * Return the url.
+     */
+    public String getUrl() {
+        return mUrl;
+    }
+
+    /**
      * Set load type of this load. Defaults to LOAD_TYPE_DEFAULT.
      * @param loadType One of LOAD_TYPE static constants above.
      */
@@ -133,6 +140,13 @@ public class LoadUrlParams {
      */
     public void setTransitionType(int transitionType) {
         mTransitionType = transitionType;
+    }
+
+    /**
+     * Return the transition type.
+     */
+    public int getTransitionType() {
+        return mTransitionType;
     }
 
     /**

@@ -47,6 +47,8 @@ class WebContentsObserverAndroid : public WebContentsObserver {
                            RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidNavigateMainFrame(const LoadCommittedDetails& details,
                                     const FrameNavigateParams& params) OVERRIDE;
+  virtual void DidNavigateAnyFrame(const LoadCommittedDetails& details,
+                                   const FrameNavigateParams& params) OVERRIDE;
   virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE;
 
   void DidFailLoadInternal(bool is_provisional_load,
