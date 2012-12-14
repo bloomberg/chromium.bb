@@ -429,10 +429,10 @@ bool IsZipValid(const Word& word, size_t state_index) {
 bool IsZipValidForState(const Word& word, size_t state_index) {
   // List of valid zip code ranges.
   static const struct {
-    char low;
-    char high;
-    char exception1;
-    char exception2;
+    signed char low;
+    signed char high;
+    signed char exception1;
+    signed char exception2;
   } zip_range[] = {
     { 99, 99, -1, -1 }, // AK Alaska.
     { 35, 36, -1, -1 }, // AL Alabama.
