@@ -94,15 +94,42 @@ bool IsControlGroupExperiment(uint8 experiment_id) {
 }
 
 void URLRequestResponseStarted(net::URLRequest* request) {
+  static const char* kModPagespeedHeader = "X-Mod-Pagespeed";
+  static const char* kModPagespeedHistogram = "Prerender.ModPagespeedHeader";
   const content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(request);
   // Gather histogram information about the X-Mod-Pagespeed header.
   if (info->GetResourceType() == ResourceType::MAIN_FRAME &&
       IsWebURL(request->url())) {
-    UMA_HISTOGRAM_ENUMERATION("Prerender.ModPagespeedHeader", 0, 2);
+    UMA_HISTOGRAM_ENUMERATION(kModPagespeedHistogram, 0, 101);
     if (request->response_headers() &&
-        request->response_headers()->HasHeader("X-Mod-Pagespeed"))
-      UMA_HISTOGRAM_ENUMERATION("Prerender.ModPagespeedHeader", 1, 2);
+        request->response_headers()->HasHeader(kModPagespeedHeader)) {
+      UMA_HISTOGRAM_ENUMERATION(kModPagespeedHistogram, 1, 101);
+
+      // Attempt to parse the version number, and encode it in buckets
+      // 2 through 99. 0 and 1 are used to store all pageviews and
+      // # pageviews with the MPS header (see above).
+      void* iter = NULL;
+      std::string mps_version;
+      if (request->response_headers()->EnumerateHeader(
+              &iter, kModPagespeedHeader, &mps_version) &&
+          !mps_version.empty()) {
+        // Mod Pagespeed versions are of the form a.b.c.d-e
+        int a, b, c, d, e;
+        int num_parsed = sscanf(mps_version.c_str(), "%d.%d.%d.%d-%d",
+                                &a, &b, &c, &d, &e);
+        if (num_parsed == 5) {
+          int output = 2;
+          if (c > 10)
+            output += 2 * (c - 10);
+          if (d > 1)
+            output++;
+          if (output < 2 || output >= 99)
+            output = 99;
+          UMA_HISTOGRAM_ENUMERATION(kModPagespeedHistogram, output, 101);
+        }
+      }
+    }
   }
 }
 
