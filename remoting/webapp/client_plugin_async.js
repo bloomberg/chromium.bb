@@ -347,6 +347,20 @@ remoting.ClientPluginAsync.prototype.remapKey =
 };
 
 /**
+ * Enable/disable redirection of the specified key to the web-app.
+ *
+ * @param {number} keycode The USB-style code of the key.
+ * @param {Boolean} trap True to enable trapping, False to disable.
+ */
+remoting.ClientPluginAsync.prototype.trapKey = function(keycode, trap) {
+  this.plugin.postMessage(JSON.stringify(
+      { method: 'trapKey', data: {
+          'keycode': keycode,
+          'trap': trap}
+      }));
+};
+
+/**
  * Returns an associative array with a set of stats for this connecton.
  *
  * @return {remoting.ClientSession.PerfStats} The connection statistics.

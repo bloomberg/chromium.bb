@@ -59,7 +59,8 @@ remoting.ClientPlugin.Feature = {
   PAUSE_VIDEO: 'pauseVideo',
   PAUSE_AUDIO: 'pauseAudio',
   REMAP_KEY: 'remapKey',
-  SEND_CLIPBOARD_ITEM: 'sendClipboardItem'
+  SEND_CLIPBOARD_ITEM: 'sendClipboardItem',
+  TRAP_KEY: 'trapKey'
 };
 
 /**
@@ -122,6 +123,14 @@ remoting.ClientPlugin.prototype.injectKeyEvent =
  */
 remoting.ClientPlugin.prototype.remapKey =
     function(fromKeycode, toKeycode) {};
+
+/**
+ * Enable/disable redirection of the specified key to the web-app.
+ *
+ * @param {number} keycode The USB-style code of the key.
+ * @param {Boolean} trap True to enable trapping, False to disable.
+ */
+remoting.ClientPlugin.prototype.trapKey = function(keycode, trap) {}
 
 /**
  * Returns an associative array with a set of stats for this connection.
