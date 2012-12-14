@@ -442,10 +442,12 @@ void TaskManagerTabContentsResourceProvider::StartUpdating() {
   for (size_t i = 0; i < profiles.size(); ++i) {
     prerender::PrerenderManager* prerender_manager =
         prerender::PrerenderManagerFactory::GetForProfile(profiles[i]);
-    const std::vector<content::WebContents*> contentses =
-        prerender_manager->GetAllPrerenderingContents();
-    for (size_t j = 0; j < contentses.size(); ++j)
-      Add(contentses[j]);
+    if (prerender_manager) {
+      const std::vector<content::WebContents*> contentses =
+          prerender_manager->GetAllPrerenderingContents();
+      for (size_t j = 0; j < contentses.size(); ++j)
+        Add(contentses[j]);
+    }
   }
 
   // Add all the pages being background printed.
