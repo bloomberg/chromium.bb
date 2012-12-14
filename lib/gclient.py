@@ -4,14 +4,34 @@
 
 """Common functions used for syncing Chrome."""
 
+import os
 import pprint
 import socket
 
 from chromite.lib import cros_build_lib
+from chromite.lib import osutils
 
 CHROME_COMMITTER_URL = 'svn://svn.chromium.org/chrome'
 SVN_MIRROR_URL = 'svn://svn-mirror.golo.chromium.org'
 STATUS_URL = 'https://chromium-status.appspot.com/current?format=json'
+
+
+def FindGclientFile(path):
+  """Returns the nearest higher-level gclient file from the specified path.
+
+  Args:
+    path: The path to use. Defaults to cwd.
+  """
+  return osutils.FindInPathParents(
+      '.gclient', path, test_func=os.path.isfile)
+
+
+def FindGclientCheckoutRoot(path):
+  """Get the root of your gclient managed checkout."""
+  gclient_path = FindGclientFile(path)
+  if gclient_path:
+    return os.path.dirname(gclient_path)
+  return None
 
 
 def _UseGoloMirror():

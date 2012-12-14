@@ -22,6 +22,7 @@ _path = os.path.normpath(os.path.join(os.path.dirname(_path), '..', '..'))
 sys.path.insert(0, _path)
 from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
+from chromite.lib import osutils
 # Now restore it so that relative scripts don't get cranky.
 sys.path.pop(0)
 del _path
@@ -29,24 +30,17 @@ del _path
 EXTERNAL_GERRIT_SSH_REMOTE = 'gerrit'
 
 
-def FindRepoDir(path=None):
+def FindRepoDir(path):
   """Returns the nearest higher-level repo dir from the specified path.
 
   Args:
     path: The path to use. Defaults to cwd.
   """
-  if path is None:
-    path = os.getcwd()
-  path = os.path.abspath(path)
-  while path != '/':
-    repo_dir = os.path.join(path, '.repo')
-    if os.path.isdir(repo_dir):
-      return repo_dir
-    path = os.path.dirname(path)
-  return None
+  return osutils.FindInPathParents(
+      '.repo', path, test_func=os.path.isdir)
 
 
-def FindRepoCheckoutRoot(path=None):
+def FindRepoCheckoutRoot(path):
   """Get the root of your repo managed checkout."""
   repo_dir = FindRepoDir(path)
   if repo_dir:

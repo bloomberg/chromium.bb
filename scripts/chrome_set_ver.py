@@ -332,7 +332,7 @@ def main(argv):
           "Can't find %s.  Run build_packages or setup_board to update "
           "your choot." % ssh_path)
 
-  repo_root = git.FindRepoCheckoutRoot()
+  repo_root = git.FindRepoCheckoutRoot(os.getcwd())
   chromium_src_root = os.path.join(repo_root, _CHROMIUM_SRC_ROOT)
   if not os.path.isdir(os.path.join(chromium_src_root, '.git')):
     error_msg = 'chromium checkout not found at %s.\n' % chromium_src_root

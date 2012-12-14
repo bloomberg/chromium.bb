@@ -179,6 +179,60 @@ def FindMissingBinaries(needed_tools):
   return [binary for binary in needed_tools if Which(binary) is None]
 
 
+def IteratePathParents(start_path):
+  """Generator that iterates through a directory's parents.
+
+  Yields:
+    The passed-in path, along with its parents.  i.e.,
+    IteratePathParents('/usr/local') would yield '/usr/local', '/usr/', and '/'.
+
+  Arguments:
+    start_path: The path to start from.
+  """
+  path = os.path.abspath(start_path)
+  yield path
+  while path.strip('/'):
+    path = os.path.dirname(path)
+    yield path
+
+
+def FindInPathParents(path_to_find, start_path, test_func=None):
+  """Look for a relative path, ascending through parent directories.
+
+  Ascend through parent directories of current path looking for a relative
+  path.  I.e., given a directory structure like:
+  -/
+   |
+   --usr
+     |
+     --bin
+     |
+     --local
+       |
+       --google
+
+  the call FindInPathParents('bin', '/usr/local') would return '/usr/bin', and
+  the call FindInPathParents('google', '/usr/local') would return
+  '/usr/local/google'.
+
+  Arguments:
+    rel_path: The relative path to look for.
+    start_path: The path to start the search from.  If |start_path| is a
+      directory, it will be included in the directories that are searched.
+    test_func: The function to use to verify the relative path.  Defaults to
+      os.path.exists.  The function will be passed one argument - the target
+      path to test.  A True return value will cause AscendingLookup to return
+      the target.
+  """
+  if test_func is None:
+    test_func = os.path.exists
+  for path in IteratePathParents(start_path):
+    target = os.path.join(path, path_to_find)
+    if test_func(target):
+      return target
+  return None
+
+
 # pylint: disable=W0212,R0904,W0702
 def _TempDirSetup(self, prefix='tmp', update_env=True):
   """Generate a tempdir, modifying the object, and env to use it.

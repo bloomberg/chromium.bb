@@ -94,5 +94,63 @@ class TestOsutils(cros_test_lib.TempDirTestCase):
                       osutils.RmDir, subpath, sudo=True)
 
 
+class IteratePathParentsTest(cros_test_lib.TestCase):
+  """Test parent directory iteration functionality."""
+
+  def _RunForPath(self, path, expected):
+    result_components = []
+    for p in osutils.IteratePathParents(path):
+      result_components.append(os.path.basename(p))
+
+    result_components.reverse()
+    if expected is not None:
+      self.assertEquals(expected, result_components)
+
+  def testIt(self):
+    """Run the test vectors."""
+    vectors = {
+        '/': [''],
+        '/path/to/nowhere': ['', 'path', 'to', 'nowhere'],
+        '/path/./to': ['', 'path', 'to'],
+        '//path/to': ['', 'path', 'to'],
+        'path/to': None,
+        '': None,
+    }
+    for p, e in vectors.iteritems():
+      self._RunForPath(p, e)
+
+
+class FindInPathParentsTest(cros_test_lib.TempDirTestCase):
+  """Test FindInPathParents functionality."""
+
+  D = cros_test_lib.Directory
+
+  DIR_STRUCT = [
+    D('a', [
+      D('.repo', []),
+      D('b', [
+        D('c', [])
+      ])
+    ])
+  ]
+
+  START_PATH = os.path.join('a', 'b', 'c')
+
+  def setUp(self):
+    cros_test_lib.CreateOnDiskHierarchy(self.tempdir, self.DIR_STRUCT)
+
+  def testFound(self):
+    """Target is found."""
+    found = osutils.FindInPathParents(
+      '.repo', os.path.join(self.tempdir, self.START_PATH))
+    self.assertEquals(found, os.path.join(self.tempdir, 'a', '.repo'))
+
+  def testNotFound(self):
+    """Target is not found."""
+    found = osutils.FindInPathParents(
+      'does.not/exist', os.path.join(self.tempdir, self.START_PATH))
+    self.assertEquals(found, None)
+
+
 if __name__ == '__main__':
   cros_test_lib.main()

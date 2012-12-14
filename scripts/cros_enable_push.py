@@ -5,6 +5,7 @@
 
 """Script to setup push configuration in a git-repo checkout."""
 
+import os
 import sys
 from chromite.buildbot import configure_repo
 from chromite.buildbot import repository
@@ -36,7 +37,7 @@ def main(argv):
     _Usage(sys.stderr)
     return 1
   if not argv:
-    path = git.FindRepoCheckoutRoot()
+    path = git.FindRepoCheckoutRoot(os.getcwd())
     if path is None:
       _Usage(sys.stderr)
       print >> sys.stderr, "We're not in a repo checkout."

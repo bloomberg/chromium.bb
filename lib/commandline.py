@@ -189,7 +189,7 @@ class BaseParser(object):
   def FindCacheDir(_parser, _opts):
     path = os.environ.get(constants.SHARED_CACHE_ENVVAR)
     if path is None:
-      path = git.FindRepoCheckoutRoot()
+      path = git.FindRepoCheckoutRoot(os.getcwd())
       path = os.path.join(path, '.cache') if path else path
     if path is None:
       path = os.path.join(tempfile.gettempdir(), 'chromeos-cache')
