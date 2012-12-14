@@ -59,7 +59,7 @@ enum GPUProcessLifetimeEvent {
   DIED_SECOND_TIME,
   DIED_THIRD_TIME,
   DIED_FOURTH_TIME,
-  GPU_PROCESS_LIFETIME_EVENT_MAX
+  GPU_PROCESS_LIFETIME_EVENT_MAX = 100
 };
 
 // Indexed by GpuProcessKind. There is one of each kind maximum. This array may
@@ -69,6 +69,9 @@ static GpuProcessHost *g_gpu_process_hosts[
 
 // Number of times the gpu process has crashed in the current browser session.
 static int g_gpu_crash_count = 0;
+static int g_gpu_recent_crash_count = 0;
+static double g_last_gpu_crash_time;
+static bool g_crashed_before = false;
 static int g_gpu_software_crash_count = 0;
 
 // Maximum number of times the gpu process is allowed to crash in a session.
@@ -388,11 +391,31 @@ GpuProcessHost::~GpuProcessHost() {
         gpu_enabled_ = false;
       }
     } else {
+      ++g_gpu_crash_count;
       UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessLifetimeEvents",
-                                DIED_FIRST_TIME + g_gpu_crash_count,
+                                std::min(DIED_FIRST_TIME + g_gpu_crash_count,
+                                         GPU_PROCESS_LIFETIME_EVENT_MAX - 1),
                                 GPU_PROCESS_LIFETIME_EVENT_MAX);
 
-      if (++g_gpu_crash_count >= kGpuMaxCrashCount) {
+      /*
+       * Allow about 1 GPU crash per hour to be removed from the crash count,
+       * so very occasional crashes won't eventually add up and prevent the
+       * GPU process from launching.
+       */
+      ++g_gpu_recent_crash_count;
+      base::Time current_time = base::Time::Now();
+      if (g_crashed_before) {
+        base::Time last_crash_time =
+            base::Time::FromDoubleT(g_last_gpu_crash_time);
+        int hours_different = (current_time - last_crash_time).InHours();
+        g_gpu_recent_crash_count = std::max(0,
+            g_gpu_recent_crash_count - hours_different);
+      }
+
+      g_crashed_before = true;
+      g_last_gpu_crash_time = current_time.ToDoubleT();
+
+      if (g_gpu_recent_crash_count >= kGpuMaxCrashCount) {
 #if !defined(OS_CHROMEOS)
         // The gpu process is too unstable to use. Disable it for current
         // session.
