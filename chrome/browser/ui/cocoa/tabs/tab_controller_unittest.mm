@@ -338,7 +338,7 @@ TEST_F(TabControllerTest, TitleViewLayout) {
                         [[controller titleView] frame]));
 
   // Resize the tab so that that the it grows.
-  tabFrame.size.width = [TabController maxTabWidth] * 0.75;
+  tabFrame.size.width = static_cast<int>([TabController maxTabWidth] * 0.75);
   [[controller view] setFrame:tabFrame];
 
   // The icon view and close button should be visible again and the title view
