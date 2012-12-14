@@ -5,10 +5,14 @@
 #include "chrome/browser/prerender/prerender_util.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/string_util.h"
+#include "content/public/browser/resource_request_info.h"
 #include "googleurl/src/url_canon.h"
 #include "googleurl/src/url_parse.h"
 #include "googleurl/src/url_util.h"
+#include "net/http/http_response_headers.h"
+#include "net/url_request/url_request.h"
 
 namespace prerender {
 
@@ -87,6 +91,19 @@ bool IsNoSwapInExperiment(uint8 experiment_id) {
 bool IsControlGroupExperiment(uint8 experiment_id) {
   // Currently, experiments 7 and 8 fall in this category.
   return experiment_id == 7 || experiment_id == 8;
+}
+
+void URLRequestResponseStarted(net::URLRequest* request) {
+  const content::ResourceRequestInfo* info =
+      content::ResourceRequestInfo::ForRequest(request);
+  // Gather histogram information about the X-Mod-Pagespeed header.
+  if (info->GetResourceType() == ResourceType::MAIN_FRAME &&
+      IsWebURL(request->url())) {
+    UMA_HISTOGRAM_ENUMERATION("Prerender.ModPagespeedHeader", 0, 2);
+    if (request->response_headers() &&
+        request->response_headers()->HasHeader("X-Mod-Pagespeed"))
+      UMA_HISTOGRAM_ENUMERATION("Prerender.ModPagespeedHeader", 1, 2);
+  }
 }
 
 }  // namespace prerender
