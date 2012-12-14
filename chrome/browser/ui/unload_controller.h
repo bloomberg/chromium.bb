@@ -13,7 +13,6 @@
 #include "content/public/browser/notification_registrar.h"
 
 class Browser;
-class TabContents;
 class TabStripModel;
 
 namespace content {

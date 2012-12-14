@@ -32,7 +32,7 @@ class DownloadDangerPrompt {
   // Return a new self-deleting DownloadDangerPrompt. |accepted| or |canceled|
   // will be run when the the respective action is invoked. |canceled| may also
   // be called when |item| is either no longer dangerous or no longer in
-  // progress, or if the tab corresponding to |tab_contents| is
+  // progress, or if the tab corresponding to |web_contents| is
   // closing. The returned DownloadDangerPrompt* is only used for testing. The
   // caller does not own the object and receive no guarantees about lifetime.
   static DownloadDangerPrompt* Create(

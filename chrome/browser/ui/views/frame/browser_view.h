@@ -50,7 +50,6 @@ class InstantPreviewControllerViews;
 class LocationBarView;
 class StatusBubbleViews;
 class SearchViewController;
-class TabContents;
 class TabStrip;
 class TabStripModel;
 class ToolbarView;

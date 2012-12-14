@@ -167,8 +167,8 @@ class HistoryRequestHandler {
 // of subclassing.
 class TestFaviconHandlerDelegate : public FaviconHandlerDelegate {
  public:
-  explicit TestFaviconHandlerDelegate(WebContents* tab_contents)
-      : tab_contents_(tab_contents) {
+  explicit TestFaviconHandlerDelegate(WebContents* web_contents)
+      : web_contents_(web_contents) {
   }
 
   virtual NavigationEntry* GetActiveEntry() {
@@ -184,11 +184,11 @@ class TestFaviconHandlerDelegate : public FaviconHandlerDelegate {
   }
 
   virtual void NotifyFaviconUpdated() {
-    tab_contents_->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
+    web_contents_->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
   }
 
  private:
-  WebContents* tab_contents_;  // weak
+  WebContents* web_contents_;  // weak
 };
 
 // This class is used to catch the FaviconHandler's download and history

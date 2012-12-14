@@ -76,7 +76,7 @@ class FindBarController : public content::NotificationObserver {
 
  private:
   // Sents an update to the find bar with the tab contents' current result. The
-  // tab_contents_ must be non-NULL before this call. Theis handles
+  // web_contents_ must be non-NULL before this call. Theis handles
   // de-flickering in addition to just calling the update function.
   void UpdateFindBarForCurrentResult();
 

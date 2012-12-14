@@ -55,7 +55,7 @@ class SearchDelegate : public SearchModelObserver {
   // propagated to the |browser_model_|.
   SearchModel* browser_model_;
 
-  // Weak.  The TabContents owns this.  It is the model of the active
+  // Weak.  The WebContents owns this.  It is the model of the active
   // tab.  Changes to this model are propagated through to the |browser_model_|.
   SearchModel* tab_model_;
 

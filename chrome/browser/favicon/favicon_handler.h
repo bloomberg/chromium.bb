@@ -254,7 +254,6 @@ class FaviconHandler {
   GURL url_;
 
   // Whether we got the initial response for the favicon back from the renderer.
-  // See "Favicon Details" in tab_contents.cc for more details.
   bool got_favicon_from_history_;
 
   // Whether the favicon is out of date or the favicon data in

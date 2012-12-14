@@ -72,7 +72,7 @@ class FileSelectHelper
   };
 
   void RunFileChooser(content::RenderViewHost* render_view_host,
-                      content::WebContents* tab_contents,
+                      content::WebContents* web_contents,
                       const content::FileChooserParams& params);
   void RunFileChooserOnFileThread(
       const content::FileChooserParams& params);

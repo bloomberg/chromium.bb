@@ -33,7 +33,7 @@ void SetCommandLineSwitchASCII(const std::string& switch_string,
 void SetChromeSpecificCommandLineFlags() {
   // Turn on autofill.
   // TODO(nileshagrawal): Remove this flag once Android stops relying on
-  // tab_contents.cc.
+  // tab_contents.cc. http://crbug.com/153587
   SetCommandLineSwitch(switches::kEnableNewAutofillUi);
 
   // Turn on autologin.

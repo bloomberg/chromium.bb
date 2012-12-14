@@ -81,7 +81,7 @@ void ChromeGeolocationPermissionContext::RequestGeolocationPermission(
   if (chrome::GetViewType(web_contents) != chrome::VIEW_TYPE_TAB_CONTENTS) {
     // The tab may have gone away, or the request may not be from a tab at all.
     // TODO(mpcomplete): the request could be from a background page or
-    // extension popup (tab_contents will have a different ViewType). But why do
+    // extension popup (web_contents will have a different ViewType). But why do
     // we care? Shouldn't we still put an infobar up in the current tab?
     LOG(WARNING) << "Attempt to use geolocation tabless renderer: "
                  << id.ToString()

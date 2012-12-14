@@ -176,7 +176,7 @@ class WebIntentPickerController
     picker_model_->set_observer(observer);
   }
 
-  // Notify the controller that its TabContents is hosting a web intents
+  // Notify the controller that its WebContents is hosting a web intents
   // service. Sets the source and dispatcher for the invoking client.
   void SetWindowDispositionSource(content::WebContents* source,
                                   content::WebIntentsDispatcher* dispatcher);
@@ -294,9 +294,8 @@ class WebIntentPickerController
   bool cancelled_;
 #endif
 
-  // Weak pointer to the source WebContents for the intent if the TabContents
-  // with which this controller is associated is hosting a web intents window
-  // disposition service.
+  // Weak pointer to the source WebContents for the intent if it is associated
+  // with this controller and hosting a web intents window disposition service.
   content::WebContents* window_disposition_source_;
 
   // If this tab is hosting a web intents service, a weak pointer to dispatcher

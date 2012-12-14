@@ -74,7 +74,7 @@ class BlockedContentTabHelper
   // Object that holds any blocked WebContentses spawned from this WebContents.
   scoped_ptr<BlockedContentContainer> blocked_contents_;
 
-  // Should we block all child TabContents this attempts to spawn.
+  // Should we block all child WebContentses this attempts to spawn.
   bool all_contents_blocked_;
 
   // Delegate for notifying our owner (usually Browser) about stuff. Not owned

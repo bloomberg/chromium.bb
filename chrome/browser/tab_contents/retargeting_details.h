@@ -25,7 +25,7 @@ struct RetargetingDetails {
   // The target tab contents.
   content::WebContents* target_web_contents;
 
-  // True if the target_tab_contents is not yet inserted into a tab strip.
+  // True if the target_web_contents is not yet inserted into a tab strip.
   bool not_yet_in_tabstrip;
 };
 

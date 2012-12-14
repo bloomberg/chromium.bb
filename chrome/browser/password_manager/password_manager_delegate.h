@@ -18,7 +18,7 @@ class PasswordManagerDelegate {
   PasswordManagerDelegate() {}
   virtual ~PasswordManagerDelegate() {}
 
-  // Fill forms matching |form_data| in |tab_contents|.  By default, goes
+  // Fill forms matching |form_data| in |web_contents|.  By default, goes
   // through the RenderViewHost to FillPasswordForm.  Tests can override this
   // to sever the dependency on the entire rendering stack.
   virtual void FillPasswordForm(

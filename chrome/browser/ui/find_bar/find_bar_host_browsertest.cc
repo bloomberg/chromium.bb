@@ -1106,7 +1106,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, StayActive) {
   // Simulate a user clearing the search string. Ideally, we should be
   // simulating keypresses here for searching for something and pressing
   // backspace, but that's been proven flaky in the past, so we go straight to
-  // tab_contents.
+  // web_contents.
   FindTabHelper* find_tab_helper = FindTabHelper::FromWebContents(
       browser()->tab_strip_model()->GetActiveWebContents());
   // Stop the (non-existing) find operation, and clear the selection (which

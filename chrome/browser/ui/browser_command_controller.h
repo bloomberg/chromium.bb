@@ -18,7 +18,6 @@
 class Browser;
 class BrowserWindow;
 class Profile;
-class TabContents;
 
 namespace content {
 struct NativeWebKeyboardEvent;

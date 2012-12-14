@@ -18,7 +18,7 @@ class ConstrainedWindowTabHelperDelegate {
   // Returns true if constrained windows should be focused. Default is true.
   virtual bool ShouldFocusConstrainedWindow();
 
-  // Changes the blocked state of |tab_contents|. WebContentses are considered
+  // Changes the blocked state of |web_contents|. WebContentses are considered
   // blocked while displaying a tab modal dialog. During that time renderer host
   // will ignore any UI interaction within WebContents outside of the
   // currently displaying dialog.

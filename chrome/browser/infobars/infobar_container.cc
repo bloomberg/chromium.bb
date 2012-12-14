@@ -121,7 +121,6 @@ void InfoBarContainer::RemoveAllInfoBarsForDestruction() {
   // and at worst disastrous to call that.
   delegate_ = NULL;
 
-  // TODO(pkasting): Remove this once TabContents calls CloseSoon().
   for (size_t i = infobars_.size(); i > 0; --i)
     infobars_[i - 1]->CloseSoon();
 

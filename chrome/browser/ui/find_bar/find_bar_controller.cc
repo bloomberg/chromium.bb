@@ -128,7 +128,7 @@ void FindBarController::Observe(int type,
   FindTabHelper* find_tab_helper =
       FindTabHelper::FromWebContents(web_contents_);
   if (type == chrome::NOTIFICATION_FIND_RESULT_AVAILABLE) {
-    // Don't update for notifications from TabContentses other than the one we
+    // Don't update for notifications from WebContentses other than the one we
     // are actively tracking.
     if (content::Source<WebContents>(source).ptr() == web_contents_) {
       UpdateFindBarForCurrentResult();

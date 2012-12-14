@@ -55,7 +55,7 @@ void EmptyUrlCheckCallback(bool processed) {
 // asynchronously checks whether the phishing classifier should run for this
 // URL.  If so, it notifies the renderer with a StartPhishingDetection IPC.
 // Objects of this class are ref-counted and will be destroyed once nobody
-// uses it anymore.  If |tab_contents|, |csd_service| or |host| go away you need
+// uses it anymore.  If |web_contents|, |csd_service| or |host| go away you need
 // to call Cancel().  We keep the |database_manager| alive in a ref pointer for
 // as long as it takes.
 class ClientSideDetectionHost::ShouldClassifyUrlRequest

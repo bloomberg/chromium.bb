@@ -38,7 +38,7 @@ class MetroPinTabHelper
   // continue on with the page pinning action.
   class FaviconChooser;
 
-  explicit MetroPinTabHelper(content::WebContents* tab_contents);
+  explicit MetroPinTabHelper(content::WebContents* web_contents);
   friend class content::WebContentsUserData<MetroPinTabHelper>;
 
   // Favicon download callback.

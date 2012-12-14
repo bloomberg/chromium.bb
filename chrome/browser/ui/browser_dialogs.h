@@ -10,7 +10,6 @@
 
 class Browser;
 class SkBitmap;
-class TabContents;
 class TabModalConfirmDialogDelegate;
 
 namespace content {
@@ -67,7 +66,7 @@ void HideHungRendererDialog(content::WebContents* contents);
 #if !defined(OS_MACOSX)
 // Shows the create web app shortcut dialog box.
 void ShowCreateWebAppShortcutsDialog(gfx::NativeWindow parent_window,
-                                     content::WebContents* tab_contents);
+                                     content::WebContents* web_contents);
 #endif
 
 }  // namespace chrome

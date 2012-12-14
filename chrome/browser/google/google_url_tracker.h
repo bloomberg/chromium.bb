@@ -139,8 +139,8 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
   // Called by Observe() after SearchCommitted() registers notification
   // listeners, to indicate that we've received the "load now pending"
   // notification.  |navigation_controller_source| and |web_contents_source| are
-  // NotificationSources pointing to the associated NavigationController and
-  // TabContents, respectively, for this load; |infobar_helper| is the
+  // the NotificationSource pointing to the associated NavigationController and
+  // the WebContents, respectively, for this load; |infobar_helper| is the
   // InfoBarTabHelper of the associated tab; and |pending_id| is the unique ID
   // of the newly pending NavigationEntry.  If there is already a visible
   // GoogleURLTracker infobar for this tab, this function resets its associated

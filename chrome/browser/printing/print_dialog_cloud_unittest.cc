@@ -355,8 +355,7 @@ TEST_F(CloudPrintWebDialogDelegateTest, UnownedFlowLetGo) {
   EXPECT_THAT(mock_flow_handler_.get(), NotNull());
 }
 
-// Testing for ExternalWebDialogUI needs a mock WebContents, mock
-// CloudPrintWebDialogDelegate (provided through the mock
-// tab_contents)
+// Testing for ExternalWebDialogUI needs a mock WebContents and mock
+// CloudPrintWebDialogDelegate (attached to the mock web_contents).
 
 // Testing for PrintDialogCloud needs a mock Browser.

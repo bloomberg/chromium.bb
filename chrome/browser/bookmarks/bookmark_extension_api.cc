@@ -899,7 +899,7 @@ void BookmarksIOFunction::ShowSelectFileDialog(ui::SelectFileDialog::Type type,
   // on for saving once Google Drive client on ChromeOS supports it.
   if (type == ui::SelectFileDialog::SELECT_OPEN_FILE)
     file_type_info.support_gdata = true;
-  // |tab_contents| can be NULL (for background pages), which is fine. In such
+  // |web_contents| can be NULL (for background pages), which is fine. In such
   // a case if file-selection dialogs are forbidden by policy, we will not
   // show an InfoBar, which is better than letting one appear out of the blue.
   select_file_dialog_->SelectFile(type,

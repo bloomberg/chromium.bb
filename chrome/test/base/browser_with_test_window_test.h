@@ -36,7 +36,7 @@ class WebContents;
 // Base class for browser based unit tests. BrowserWithTestWindowTest creates a
 // Browser with a TestingProfile and TestBrowserWindow. To add a tab use
 // AddTab. For example, the following adds a tab and navigates to
-// two URLs that target the TestTabContents:
+// two URLs that target the TestWebContents:
 //
 //   // Add a new tab and navigate it. This will be at index 0.
 //   AddTab(browser(), GURL("http://foo/1"));

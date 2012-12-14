@@ -151,7 +151,7 @@ class TranslateManager : public content::NotificationObserver,
                                  int render_id,
                                  const std::string& page_lang);
 
-  // Sends a translation request to the RenderView of |tab_contents|.
+  // Sends a translation request to the RenderView of |web_contents|.
   void DoTranslatePage(content::WebContents* web_contents,
                        const std::string& translate_script,
                        const std::string& source_lang,

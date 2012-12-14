@@ -812,9 +812,9 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
   // check.
   bool CheckPending(Browser* browser);
 
-  // Returns the CaptivePortalTabReloader::State of |tab_contents|.
+  // Returns the CaptivePortalTabReloader::State of |web_contents|.
   CaptivePortalTabReloader::State GetStateOfTabReloader(
-      WebContents* tab_contents) const;
+      WebContents* web_contents) const;
 
   // Returns the CaptivePortalTabReloader::State of the indicated tab.
   CaptivePortalTabReloader::State GetStateOfTabReloaderAt(Browser* browser,

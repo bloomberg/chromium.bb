@@ -22,7 +22,7 @@ class TemplateURLFetcherUICallbacks : public TemplateURLFetcherCallbacks,
                                       public content::NotificationObserver {
  public:
   TemplateURLFetcherUICallbacks(SearchEngineTabHelper* tab_helper,
-                                content::WebContents* tab_contents);
+                                content::WebContents* web_contents);
   virtual ~TemplateURLFetcherUICallbacks();
 
   // TemplateURLFetcherCallback implementation.

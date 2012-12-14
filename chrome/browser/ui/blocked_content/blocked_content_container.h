@@ -21,7 +21,7 @@ namespace content {
 class WebContents;
 }
 
-// Takes ownership of TabContentses that are unrequested popup windows.
+// Takes ownership of WebContentses that are unrequested popup windows.
 class BlockedContentContainer : public BlockedContentTabHelperDelegate,
                                 public content::WebContentsDelegate {
  public:
@@ -30,7 +30,7 @@ class BlockedContentContainer : public BlockedContentTabHelperDelegate,
   virtual ~BlockedContentContainer();
 
   // Adds a WebContents to this container. |bounds| are the window bounds
-  // requested for the TabContents.
+  // requested for the WebContents.
   void AddWebContents(content::WebContents* web_contents,
                       WindowOpenDisposition disposition,
                       const gfx::Rect& bounds,

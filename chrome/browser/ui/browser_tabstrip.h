@@ -13,7 +13,6 @@
 class Browser;
 class GURL;
 class Profile;
-class TabContents;
 
 namespace content {
 class SiteInstance;
@@ -34,7 +33,7 @@ content::WebContents* GetWebContentsAt(const Browser* browser, int index);
 void AddBlankTabAt(Browser* browser, int index, bool foreground);
 
 // Adds a selected tab with the specified URL and transition, returns the
-// created TabContents.
+// created WebContents.
 content::WebContents* AddSelectedTabWithURL(Browser* browser,
                                             const GURL& url,
                                             content::PageTransition transition);

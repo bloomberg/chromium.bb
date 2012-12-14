@@ -34,11 +34,11 @@ class TabEventObserver {
   // TODO(kkania): Track other types of scheduled navigations.
 
   // Called when the tab that had no pending loads now has a new pending
-  // load. |tab_contents| will always be valid.
+  // load. |web_contents| will always be valid.
   virtual void OnFirstPendingLoad(content::WebContents* web_contents) { }
 
   // Called when the tab that had one or more pending loads now has no
-  // pending loads. |tab_contents| will always be valid.
+  // pending loads. |web_contents| will always be valid.
   //
   // This method will always be called if |OnFirstPendingLoad| was called.
   virtual void OnNoMorePendingLoads(content::WebContents* web_contents) { }

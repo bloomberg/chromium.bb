@@ -26,7 +26,6 @@
 
 class Profile;
 class SessionCommand;
-class TabContents;
 struct SessionTab;
 struct SessionWindow;
 

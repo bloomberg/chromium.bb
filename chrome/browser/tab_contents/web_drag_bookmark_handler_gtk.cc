@@ -74,7 +74,7 @@ void WebDragBookmarkHandlerGtk::OnDragEnter() {
 }
 
 void WebDragBookmarkHandlerGtk::OnDrop() {
-  // This is non-null if tab_contents_ is showing an ExtensionWebUI with
+  // This is non-null if web_contents_ is showing an ExtensionWebUI with
   // support for (at the moment experimental) drag and drop extensions.
   if (bookmark_tab_helper_) {
     if (bookmark_tab_helper_->GetBookmarkDragDelegate()) {
