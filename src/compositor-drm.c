@@ -1003,7 +1003,7 @@ drm_output_switch_mode(struct weston_output *output_base, struct weston_mode *mo
 
 	gl_renderer_output_destroy(&output->base);
 
-	if (!gl_renderer_output_create(&output->base, surface)) {
+	if (gl_renderer_output_create(&output->base, surface) < 0) {
 		weston_log("failed to create renderer output\n");
 		goto err_gbm;
 	}
