@@ -300,7 +300,7 @@ class SortHelper {
   [self addColumnWithId:IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN visible:NO];
   [self addColumnWithId:IDS_TASK_MANAGER_CPU_COLUMN visible:YES];
   [self addColumnWithId:IDS_TASK_MANAGER_NET_COLUMN visible:YES];
-  [self addColumnWithId:IDS_TASK_MANAGER_PROCESS_ID_COLUMN visible:NO];
+  [self addColumnWithId:IDS_TASK_MANAGER_PROCESS_ID_COLUMN visible:YES];
   [self addColumnWithId:IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN
                 visible:NO];
   [self addColumnWithId:IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN

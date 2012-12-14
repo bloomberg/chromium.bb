@@ -657,7 +657,6 @@ void TaskManagerGtk::CreateTaskManagerTreeview() {
   // Hide some columns by default.
   TreeViewColumnSetVisible(treeview_, kTaskManagerProfileName, false);
   TreeViewColumnSetVisible(treeview_, kTaskManagerSharedMem, false);
-  TreeViewColumnSetVisible(treeview_, kTaskManagerProcessID, false);
   TreeViewColumnSetVisible(treeview_, kTaskManagerJavaScriptMemory, false);
   TreeViewColumnSetVisible(treeview_, kTaskManagerWebCoreImageCache, false);
   TreeViewColumnSetVisible(treeview_, kTaskManagerWebCoreScriptsCache, false);
