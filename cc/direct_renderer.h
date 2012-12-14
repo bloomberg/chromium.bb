@@ -44,6 +44,8 @@ public:
         bool flippedY;
     };
 
+    void setEnlargePassTextureAmountForTesting(gfx::Vector2d amount);
+
 protected:
     DirectRenderer(RendererClient* client, ResourceProvider* resourceProvider);
 
@@ -102,6 +104,9 @@ protected:
     ResourceProvider* m_resourceProvider;
 
 private:
+
+    gfx::Vector2d m_enlargePassTextureAmount;
+
     DISALLOW_COPY_AND_ASSIGN(DirectRenderer);
 };
 

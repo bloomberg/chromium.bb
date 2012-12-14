@@ -171,12 +171,6 @@ std::string VertexShaderPosTexTransform::getShaderString() const
     );
 }
 
-VertexShaderQuad::VertexShaderQuad()
-    : m_matrixLocation(-1)
-    , m_pointLocation(-1)
-{
-}
-
 std::string VertexShaderPosTexIdentity::getShaderString() const
 {
     return SHADER(
@@ -190,19 +184,30 @@ std::string VertexShaderPosTexIdentity::getShaderString() const
     );
 }
 
+VertexShaderQuad::VertexShaderQuad()
+    : m_matrixLocation(-1)
+    , m_pointLocation(-1)
+    , m_texScaleLocation(-1)
+{
+}
+
 void VertexShaderQuad::init(WebGraphicsContext3D* context, unsigned program, bool usingBindUniform, int* baseUniformIndex)
 {
     static const char* shaderUniforms[] = {
         "matrix",
         "point",
+        "texScale",
     };
-    int locations[2];
+    int locations[3];
 
     getProgramUniformLocations(context, program, shaderUniforms, arraysize(shaderUniforms), arraysize(locations), locations, usingBindUniform, baseUniformIndex);
 
     m_matrixLocation = locations[0];
     m_pointLocation = locations[1];
-    DCHECK(m_matrixLocation != -1 && m_pointLocation != -1);
+    m_texScaleLocation = locations[2];
+    DCHECK_NE(m_matrixLocation, -1);
+    DCHECK_NE(m_pointLocation, -1);
+    DCHECK_NE(m_texScaleLocation, -1);
 }
 
 std::string VertexShaderQuad::getShaderString() const
@@ -212,6 +217,7 @@ std::string VertexShaderQuad::getShaderString() const
         attribute vec2 a_texCoord;
         uniform mat4 matrix;
         uniform vec2 point[4];
+        uniform vec2 texScale;
         varying vec2 v_texCoord;
         void main()
         {
@@ -222,7 +228,7 @@ std::string VertexShaderQuad::getShaderString() const
             pos.xy += (a_texCoord.x * a_texCoord.y) * point[2];
             pos.xy += (complement.x * a_texCoord.y) * point[3];
             gl_Position = matrix * pos;
-            v_texCoord = pos.xy + vec2(0.5);
+            v_texCoord = (pos.xy + vec2(0.5)) * texScale;
         }
     );
 }

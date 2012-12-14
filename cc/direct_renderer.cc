@@ -113,6 +113,11 @@ DirectRenderer::~DirectRenderer()
 {
 }
 
+void DirectRenderer::setEnlargePassTextureAmountForTesting(gfx::Vector2d amount)
+{
+    m_enlargePassTextureAmount = amount;
+}
+
 void DirectRenderer::decideRenderPassAllocationsForFrame(const RenderPassList& renderPassesInDrawOrder)
 {
     base::hash_map<RenderPass::Id, const RenderPass*> renderPassesInFrame;
@@ -134,7 +139,9 @@ void DirectRenderer::decideRenderPassAllocationsForFrame(const RenderPassList& r
         CachedResource* texture = passIterator->second;
         DCHECK(texture);
 
-        if (texture->id() && (texture->size() != requiredSize || texture->format() != requiredFormat))
+        bool sizeAppropriate = texture->size().width() >= requiredSize.width() &&
+                               texture->size().height() >= requiredSize.height();
+        if (texture->id() && (!sizeAppropriate || texture->format() != requiredFormat))
             texture->Free();
     }
 
@@ -267,7 +274,10 @@ bool DirectRenderer::useRenderPass(DrawingFrame& frame, const RenderPass* render
 
     CachedResource* texture = m_renderPassTextures.get(renderPass->id);
     DCHECK(texture);
-    if (!texture->id() && !texture->Allocate(Renderer::ImplPool, renderPassTextureSize(renderPass), renderPassTextureFormat(renderPass), ResourceProvider::TextureUsageFramebuffer))
+
+    gfx::Size size = renderPassTextureSize(renderPass);
+    size.Enlarge(m_enlargePassTextureAmount.x(), m_enlargePassTextureAmount.y());
+    if (!texture->id() && !texture->Allocate(Renderer::ImplPool, size, renderPassTextureFormat(renderPass), ResourceProvider::TextureUsageFramebuffer))
         return false;
 
     return bindFramebufferToTexture(frame, texture, renderPass->output_rect);

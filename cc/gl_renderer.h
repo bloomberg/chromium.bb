@@ -97,7 +97,8 @@ private:
     void drawCheckerboardQuad(const DrawingFrame&, const CheckerboardDrawQuad*);
     void drawDebugBorderQuad(const DrawingFrame&, const DebugBorderDrawQuad*);
     scoped_ptr<ScopedResource> drawBackgroundFilters(
-        DrawingFrame&, const RenderPassDrawQuad*, const WebKit::WebFilterOperations&,
+        DrawingFrame&, const RenderPassDrawQuad*,
+        const WebKit::WebFilterOperations&,
         const gfx::Transform& contentsDeviceTransform,
         const gfx::Transform& contentsDeviceTransformInverse);
     void drawRenderPassQuad(DrawingFrame&, const RenderPassDrawQuad*);
@@ -156,8 +157,8 @@ private:
     typedef ProgramBinding<VertexShaderPosTex, FragmentShaderCheckerboard> TileCheckerboardProgram;
 
     // Render surface shaders.
-    typedef ProgramBinding<VertexShaderPosTex, FragmentShaderRGBATexAlpha> RenderPassProgram;
-    typedef ProgramBinding<VertexShaderPosTex, FragmentShaderRGBATexAlphaMask> RenderPassMaskProgram;
+    typedef ProgramBinding<VertexShaderPosTexTransform, FragmentShaderRGBATexAlpha> RenderPassProgram;
+    typedef ProgramBinding<VertexShaderPosTexTransform, FragmentShaderRGBATexAlphaMask> RenderPassMaskProgram;
     typedef ProgramBinding<VertexShaderQuad, FragmentShaderRGBATexAlphaAA> RenderPassProgramAA;
     typedef ProgramBinding<VertexShaderQuad, FragmentShaderRGBATexAlphaMaskAA> RenderPassMaskProgramAA;
 

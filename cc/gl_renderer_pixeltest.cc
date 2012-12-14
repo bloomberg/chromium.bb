@@ -43,7 +43,6 @@ class FakeRendererClient : public RendererClient {
   virtual bool hasImplThread() const OVERRIDE { return false; }
 };
 
-
 class GLRendererPixelTest : public testing::Test {
  protected:
   GLRendererPixelTest() {}
@@ -55,24 +54,38 @@ class GLRendererPixelTest : public testing::Test {
     renderer_ = GLRenderer::create(&fake_client_, resource_provider_.get());
   }
 
+  bool PixelsMatchReference(FilePath ref_file, gfx::Rect viewport_rect) {
+    SkBitmap bitmap;
+    bitmap.setConfig(SkBitmap::kARGB_8888_Config,
+                     viewport_rect.width(), viewport_rect.height());
+    bitmap.allocPixels();
+    unsigned char* pixels = static_cast<unsigned char*>(bitmap.getPixels());
+    renderer_->getFramebufferPixels(pixels, viewport_rect);
+
+    FilePath test_data_dir;
+    if (!PathService::Get(cc::test::DIR_TEST_DATA, &test_data_dir))
+      return false;
+
+    return test::IsSameAsPNGFile(bitmap, test_data_dir.Append(ref_file));
+  }
+
   scoped_ptr<OutputSurface> output_surface_;
   FakeRendererClient fake_client_;
   scoped_ptr<ResourceProvider> resource_provider_;
   scoped_ptr<GLRenderer> renderer_;
 };
 
-#if !defined(OS_ANDROID)
-TEST_F(GLRendererPixelTest, simpleGreenRect) {
-  gfx::Rect rect(0, 0, 200, 200);
-
-  RenderPass::Id id(1, 1);
+scoped_ptr<RenderPass> CreateTestRenderPass(RenderPass::Id id, gfx::Rect rect) {
+  scoped_ptr<RenderPass> pass = RenderPass::Create();
   const gfx::Rect output_rect = rect;
   const gfx::RectF damage_rect = rect;
   const gfx::Transform transform_to_root_target;
-  scoped_ptr<RenderPass> pass = RenderPass::Create();
   pass->SetNew(id, output_rect, damage_rect, transform_to_root_target);
+  return pass.Pass();
+}
 
-  const gfx::Transform content_to_target_transform;
+scoped_ptr<SharedQuadState> CreateTestSharedQuadState(
+    gfx::Transform content_to_target_transform, gfx::Rect rect) {
   const gfx::Rect visible_content_rect = rect;
   const gfx::Rect clipped_rect_in_target = rect;
   const gfx::Rect clip_rect = rect;
@@ -85,6 +98,34 @@ TEST_F(GLRendererPixelTest, simpleGreenRect) {
                        clip_rect,
                        is_clipped,
                        opacity);
+  return shared_state.Pass();
+}
+
+scoped_ptr<DrawQuad> CreateTestRenderPassDrawQuad(
+    SharedQuadState* shared_state, gfx::Rect rect, RenderPass::Id pass_id) {
+  scoped_ptr<RenderPassDrawQuad> quad = RenderPassDrawQuad::Create();
+  quad->SetNew(shared_state,
+               rect,
+               pass_id,
+               false,         // is_replica
+               0,             // mask_resource_id
+               rect,          // contents_changed_since_last_frame
+               gfx::RectF()); // mask_uv_rect
+
+  return quad.PassAs<DrawQuad>();
+}
+
+
+#if !defined(OS_ANDROID)
+TEST_F(GLRendererPixelTest, simpleGreenRect) {
+  gfx::Rect rect(0, 0, 200, 200);
+
+  RenderPass::Id id(1, 1);
+  scoped_ptr<RenderPass> pass = CreateTestRenderPass(id, rect);
+
+  gfx::Transform content_to_target_transform;
+  scoped_ptr<SharedQuadState> shared_state =
+      CreateTestSharedQuadState(content_to_target_transform, rect);
 
   scoped_ptr<SolidColorDrawQuad> color_quad = SolidColorDrawQuad::Create();
   color_quad->SetNew(shared_state.get(), rect, SK_ColorGREEN);
@@ -98,17 +139,55 @@ TEST_F(GLRendererPixelTest, simpleGreenRect) {
 
   renderer_->drawFrame(pass_list, pass_map);
 
-  SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, 200, 200);
-  bitmap.allocPixels();
-  unsigned char* pixels = static_cast<unsigned char*>(bitmap.getPixels());
-  renderer_->getFramebufferPixels(pixels, gfx::Rect(0, 0, 200, 200));
+  EXPECT_TRUE(PixelsMatchReference(FilePath(FILE_PATH_LITERAL("green.png")),
+                                   rect));
+}
 
-  FilePath test_data_dir;
-  ASSERT_TRUE(PathService::Get(cc::test::DIR_TEST_DATA, &test_data_dir));
-  // test::WritePNGFile(bitmap, test_data_dir.AppendASCII("green.png"));
-  EXPECT_TRUE(test::IsSameAsPNGFile(bitmap,
-                                    test_data_dir.AppendASCII("green.png")));
+TEST_F(GLRendererPixelTest, RenderPassChangesSize) {
+  gfx::Rect viewport_rect(200, 200);
+
+  RenderPass::Id root_pass_id(1, 1);
+  scoped_ptr<RenderPass> root_pass =
+      CreateTestRenderPass(root_pass_id, viewport_rect);
+
+  RenderPass::Id child_pass_id(2, 2);
+  gfx::Rect pass_rect(200, 200);
+  scoped_ptr<RenderPass> child_pass =
+      CreateTestRenderPass(child_pass_id, pass_rect);
+
+  gfx::Transform content_to_target_transform;
+  scoped_ptr<SharedQuadState> shared_state =
+      CreateTestSharedQuadState(content_to_target_transform, viewport_rect);
+
+  scoped_ptr<SolidColorDrawQuad> blue = SolidColorDrawQuad::Create();
+  blue->SetNew(shared_state.get(), gfx::Rect(0, 0, 100, 200), SK_ColorBLUE);
+  scoped_ptr<SolidColorDrawQuad> yellow = SolidColorDrawQuad::Create();
+  yellow->SetNew(shared_state.get(), gfx::Rect(100, 0, 100, 200), SK_ColorYELLOW);
+
+  child_pass->quad_list.append(blue.PassAs<DrawQuad>());
+  child_pass->quad_list.append(yellow.PassAs<DrawQuad>());
+
+  scoped_ptr<SharedQuadState> pass_shared_state =
+      CreateTestSharedQuadState(gfx::Transform(), pass_rect);
+  root_pass->quad_list.append(
+      CreateTestRenderPassDrawQuad(pass_shared_state.get(),
+                                   pass_rect,
+                                   child_pass_id));
+
+  RenderPassList pass_list;
+  pass_list.push_back(child_pass.get());
+  pass_list.push_back(root_pass.get());
+
+  RenderPassIdHashMap pass_map;
+  pass_map.add(child_pass_id, child_pass.Pass());
+  pass_map.add(root_pass_id, root_pass.Pass());
+
+  renderer_->setEnlargePassTextureAmountForTesting(gfx::Vector2d(50, 75));
+  renderer_->decideRenderPassAllocationsForFrame(pass_list);
+  renderer_->drawFrame(pass_list, pass_map);
+
+  EXPECT_TRUE(PixelsMatchReference(
+      FilePath(FILE_PATH_LITERAL("blue_yellow.png")), viewport_rect));
 }
 #endif
 

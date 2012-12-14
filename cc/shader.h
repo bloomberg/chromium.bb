@@ -85,10 +85,12 @@ public:
 
     int matrixLocation() const { return m_matrixLocation; }
     int pointLocation() const { return m_pointLocation; }
+    int texScaleLocation() const { return m_texScaleLocation; }
 
 private:
     int m_matrixLocation;
     int m_pointLocation;
+    int m_texScaleLocation;
 };
 
 class VertexShaderTile {

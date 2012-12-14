@@ -494,7 +494,7 @@ scoped_ptr<ScopedResource> GLRenderer::drawBackgroundFilters(
         // Copy the readback pixels from device to the background texture for the surface.
         gfx::Transform deviceToFramebufferTransform;
         deviceToFramebufferTransform.Translate(quad->rect.width() / 2.0, quad->rect.height() / 2.0);
-        deviceToFramebufferTransform.Scale3d(quad->rect.width(), quad->rect.height(), 1);
+        deviceToFramebufferTransform.Scale(quad->rect.width(), quad->rect.height());
         deviceToFramebufferTransform.PreconcatTransform(contentsDeviceTransformInverse);
         copyTextureToFramebuffer(frame, filteredDeviceBackgroundTextureId, deviceRect, deviceToFramebufferTransform);
     }
@@ -583,6 +583,9 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
     int shaderMaskTexCoordOffsetLocation = -1;
     int shaderMatrixLocation = -1;
     int shaderAlphaLocation = -1;
+    int shaderTexTransformLocation = -1;
+    int shaderTexScaleLocation = -1;
+
     if (useAA && maskTextureId) {
         const RenderPassMaskProgramAA* program = renderPassMaskProgramAA();
         setUseProgram(program->program());
@@ -595,6 +598,7 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
         shaderMaskTexCoordOffsetLocation = program->fragmentShader().maskTexCoordOffsetLocation();
         shaderMatrixLocation = program->vertexShader().matrixLocation();
         shaderAlphaLocation = program->fragmentShader().alphaLocation();
+        shaderTexScaleLocation = program->vertexShader().texScaleLocation();
     } else if (!useAA && maskTextureId) {
         const RenderPassMaskProgram* program = renderPassMaskProgram();
         setUseProgram(program->program());
@@ -605,6 +609,7 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
         shaderMaskTexCoordOffsetLocation = program->fragmentShader().maskTexCoordOffsetLocation();
         shaderMatrixLocation = program->vertexShader().matrixLocation();
         shaderAlphaLocation = program->fragmentShader().alphaLocation();
+        shaderTexTransformLocation = program->vertexShader().texTransformLocation();
     } else if (useAA && !maskTextureId) {
         const RenderPassProgramAA* program = renderPassProgramAA();
         setUseProgram(program->program());
@@ -614,6 +619,7 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
         shaderEdgeLocation = program->fragmentShader().edgeLocation();
         shaderMatrixLocation = program->vertexShader().matrixLocation();
         shaderAlphaLocation = program->fragmentShader().alphaLocation();
+        shaderTexScaleLocation = program->vertexShader().texScaleLocation();
     } else {
         const RenderPassProgram* program = renderPassProgram();
         setUseProgram(program->program());
@@ -621,6 +627,23 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
 
         shaderMatrixLocation = program->vertexShader().matrixLocation();
         shaderAlphaLocation = program->fragmentShader().alphaLocation();
+        shaderTexTransformLocation = program->vertexShader().texTransformLocation();
+    }
+
+    float tex_scale_x = quad->rect.width() / static_cast<float>(contentsTexture->size().width());
+    float tex_scale_y = quad->rect.height() / static_cast<float>(contentsTexture->size().height());
+    DCHECK_LE(tex_scale_x, 1.0f);
+    DCHECK_LE(tex_scale_y, 1.0f);
+
+    if (shaderTexTransformLocation != -1) {
+        GLC(context(), context()->uniform4f(shaderTexTransformLocation,
+                                            0.0f, 0.0f,
+                                            tex_scale_x, tex_scale_y));
+    } else if (shaderTexScaleLocation != -1) {
+        GLC(context(), context()->uniform2f(shaderTexScaleLocation,
+                                            tex_scale_x, tex_scale_y));
+    } else {
+      NOTREACHED();
     }
 
     if (shaderMaskSamplerLocation != -1) {
@@ -628,8 +651,10 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
         DCHECK(shaderMaskTexCoordOffsetLocation != 1);
         GLC(context(), context()->activeTexture(GL_TEXTURE1));
         GLC(context(), context()->uniform1i(shaderMaskSamplerLocation, 1));
-        GLC(context(), context()->uniform2f(shaderMaskTexCoordOffsetLocation, quad->mask_uv_rect.x(), quad->mask_uv_rect.y()));
-        GLC(context(), context()->uniform2f(shaderMaskTexCoordScaleLocation, quad->mask_uv_rect.width(), quad->mask_uv_rect.height()));
+        GLC(context(), context()->uniform2f(shaderMaskTexCoordOffsetLocation,
+                                            quad->mask_uv_rect.x(), quad->mask_uv_rect.y()));
+        GLC(context(), context()->uniform2f(shaderMaskTexCoordScaleLocation,
+                                            quad->mask_uv_rect.width() / tex_scale_x, quad->mask_uv_rect.height() / tex_scale_y));
         m_resourceProvider->bindForSampling(quad->mask_resource_id, GL_TEXTURE_2D, GL_LINEAR);
         GLC(context(), context()->activeTexture(GL_TEXTURE0));
     }
@@ -1232,6 +1257,8 @@ void GLRenderer::copyTextureToFramebuffer(const DrawingFrame& frame, int texture
 
     setUseProgram(program->program());
     GLC(context(), context()->uniform1i(program->fragmentShader().samplerLocation(), 0));
+    GLC(context(), context()->uniform4f(program->vertexShader().texTransformLocation(),
+                                        0.0f, 0.0f, 1.0f, 1.0f));
     setShaderOpacity(1, program->fragmentShader().alphaLocation());
     drawQuadGeometry(frame, drawMatrix, rect, program->vertexShader().matrixLocation());
 }
