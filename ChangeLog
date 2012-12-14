@@ -1,3 +1,9 @@
+2012-12-14  Christian Egli  <christian.egli@sbs.ch>
+
+	* tests/brl_checks.h:
+	* tests/brl_checks.c (convert_typeform): Add the new function to
+	the header file.
+
 2012-12-13  Christian Egli  <christian.egli@sbs.ch>
 
 	* tests/typeform.c:
