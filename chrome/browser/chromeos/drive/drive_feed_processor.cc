@@ -157,7 +157,7 @@ void DriveFeedProcessor::ContinueApplyEntryProto(
       RemoveEntryFromParent(entry_proto, file_path);
     } else {
       // Entry exists and needs to be refreshed.
-      RefreshEntryProto(entry_proto, file_path);
+      RefreshEntry(entry_proto, file_path);
     }
   } else if (error == DRIVE_FILE_ERROR_NOT_FOUND && !entry_proto.deleted()) {
     // Adding a new entry.
@@ -258,25 +258,25 @@ void DriveFeedProcessor::NotifyForRemoveEntryFromParent(
   ApplyNextEntryProtoAsync();
 }
 
-void DriveFeedProcessor::RefreshEntryProto(const DriveEntryProto& entry_proto,
-                                           const FilePath& file_path) {
+void DriveFeedProcessor::RefreshEntry(const DriveEntryProto& entry_proto,
+                                      const FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  resource_metadata_->RefreshEntryProto(
+  resource_metadata_->RefreshEntry(
       entry_proto,
-      base::Bind(&DriveFeedProcessor::NotifyForRefreshEntryProto,
+      base::Bind(&DriveFeedProcessor::NotifyForRefreshEntry,
                  weak_ptr_factory_.GetWeakPtr(),
                  file_path));
 }
 
-void DriveFeedProcessor::NotifyForRefreshEntryProto(
+void DriveFeedProcessor::NotifyForRefreshEntry(
     const FilePath& old_file_path,
     DriveFileError error,
     const FilePath& file_path,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  DVLOG(1) << "NotifyForRefreshEntryProto " << file_path.value();
+  DVLOG(1) << "NotifyForRefreshEntry " << file_path.value();
   if (error == DRIVE_FILE_OK) {
     // Notify old parent.
     changed_dirs_.insert(old_file_path.DirName());
@@ -364,7 +364,7 @@ void DriveFeedProcessor::OnGetRootEntryProto(
   }
   DCHECK(root_proto.get());
   root_proto->set_upload_url(root_upload_url_.spec());
-  resource_metadata_->RefreshEntryProto(
+  resource_metadata_->RefreshEntry(
       *root_proto,
       base::Bind(&DriveFeedProcessor::OnUpdateRootUploadUrl,
                  weak_ptr_factory_.GetWeakPtr()));

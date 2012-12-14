@@ -126,11 +126,11 @@ class DriveFeedProcessor {
 
   // Refreshes DriveResourceMetadata entry that has the same resource_id as
   // |entry_proto| with |entry_proto|. Updates changed_dirs_ as a side effect.
-  void RefreshEntryProto(const DriveEntryProto& entry_proto,
-                         const FilePath& file_path);
+  void RefreshEntry(const DriveEntryProto& entry_proto,
+                    const FilePath& file_path);
 
-  // Callback for DriveResourceMetadata::RefreshEntryProto.
-  void NotifyForRefreshEntryProto(
+  // Callback for DriveResourceMetadata::RefreshEntry.
+  void NotifyForRefreshEntry(
       const FilePath& old_file_path,
       DriveFileError error,
       const FilePath& file_path,
@@ -144,7 +144,7 @@ class DriveFeedProcessor {
   void OnGetRootEntryProto(DriveFileError error,
                            scoped_ptr<DriveEntryProto> root_proto);
 
-  // Callback for DriveResourceMetadata::RefreshEntryProto after the root upload
+  // Callback for DriveResourceMetadata::RefreshEntry after the root upload
   // url is set.
   void OnUpdateRootUploadUrl(DriveFileError error,
                              const FilePath& root_path,

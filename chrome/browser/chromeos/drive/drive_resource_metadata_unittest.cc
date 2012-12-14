@@ -649,7 +649,7 @@ TEST_F(DriveResourceMetadataTest, RenameEntry) {
   EXPECT_EQ(FilePath(), drive_file_path);
 }
 
-TEST_F(DriveResourceMetadataTest, RefreshEntryProto) {
+TEST_F(DriveResourceMetadataTest, RefreshEntry) {
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   FilePath drive_file_path;
   scoped_ptr<DriveEntryProto> entry_proto;
@@ -672,7 +672,7 @@ TEST_F(DriveResourceMetadataTest, RefreshEntryProto) {
   file_entry_proto.mutable_file_specific_info()->set_file_md5(updated_md5);
   file_entry_proto.set_title("file100");
   entry_proto.reset();
-  resource_metadata_.RefreshEntryProto(
+  resource_metadata_.RefreshEntry(
       file_entry_proto,
       base::Bind(&test_util::CopyResultsFromGetEntryInfoWithFilePathCallback,
                  &error, &drive_file_path, &entry_proto));
@@ -715,7 +715,7 @@ TEST_F(DriveResourceMetadataTest, RefreshEntryProto) {
   dir_entry_proto.set_title("dir100");
   dir_entry_proto.set_parent_resource_id("resource_id:dir3");
   entry_proto.reset();
-  resource_metadata_.RefreshEntryProto(
+  resource_metadata_.RefreshEntry(
       dir_entry_proto,
       base::Bind(&test_util::CopyResultsFromGetEntryInfoWithFilePathCallback,
                  &error, &drive_file_path, &entry_proto));
@@ -749,8 +749,8 @@ TEST_F(DriveResourceMetadataTest, RefreshEntryProto) {
   EXPECT_FALSE(entry_proto.get());
 }
 
-// Test the special logic for RefreshEntryProto of root.
-TEST_F(DriveResourceMetadataTest, RefreshEntryProto_Root) {
+// Test the special logic for RefreshEntry of root.
+TEST_F(DriveResourceMetadataTest, RefreshEntry_Root) {
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   FilePath drive_file_path;
   scoped_ptr<DriveEntryProto> entry_proto;
@@ -768,11 +768,11 @@ TEST_F(DriveResourceMetadataTest, RefreshEntryProto_Root) {
   EXPECT_EQ(kWAPIRootDirectoryResourceIdForTesting, entry_proto->resource_id());
   EXPECT_TRUE(entry_proto->upload_url().empty());
 
-  // Set upload url and call RefreshEntryProto on root.
+  // Set upload url and call RefreshEntry on root.
   DriveEntryProto dir_entry_proto(*entry_proto);
   dir_entry_proto.set_upload_url("http://root.upload.url/");
   entry_proto.reset();
-  resource_metadata_.RefreshEntryProto(
+  resource_metadata_.RefreshEntry(
       dir_entry_proto,
       base::Bind(&test_util::CopyResultsFromGetEntryInfoWithFilePathCallback,
                  &error, &drive_file_path, &entry_proto));

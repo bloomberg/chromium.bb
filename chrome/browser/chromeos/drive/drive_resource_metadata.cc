@@ -498,23 +498,7 @@ void DriveResourceMetadata::GetEntryInfoPairByPaths(
                  callback));
 }
 
-void DriveResourceMetadata::RefreshFile(
-    scoped_ptr<google_apis::ResourceEntry> entry,
-    const GetEntryInfoWithFilePathCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  if (!entry.get()) {
-    PostGetEntryInfoWithFilePathCallbackError(
-        callback, DRIVE_FILE_ERROR_FAILED);
-    return;
-  }
-
-  RefreshEntryProto(ConvertResourceEntryToDriveEntryProto(
-      *entry), callback);
-}
-
-void DriveResourceMetadata::RefreshEntryProto(
+void DriveResourceMetadata::RefreshEntry(
     const DriveEntryProto& entry_proto,
     const GetEntryInfoWithFilePathCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -561,7 +545,7 @@ void DriveResourceMetadata::RefreshEntryProto(
     new_parent->AddEntry(new_entry);  // Transfers ownership.
   }
 
-  DVLOG(1) << "RefreshEntryProto " << new_entry->GetFilePath().value();
+  DVLOG(1) << "RefreshEntry " << new_entry->GetFilePath().value();
   // Note that base_name is not the same for new_entry and entry_proto.
   new_entry->ToProtoFull(result_entry_proto.get());
   base::MessageLoopProxy::current()->PostTask(

@@ -245,7 +245,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
                 const ScopedVector<google_apis::ResourceList>& feed_list,
                 DriveFileError error);
 
-  // Callback for DriveResourceMetadata::RefreshFile, from OnSearch.
+  // Callback for DriveResourceMetadata::RefreshEntry, from OnSearch.
   // Adds |drive_file_path| to |results|. When |entry_proto| is not present in
   // the local file system snapshot, it is not added to |results|. Instead,
   // CheckForUpdates is called. Runs |callback| with |results| if
@@ -434,7 +434,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
                           scoped_ptr<google_apis::ResourceEntry> entry);
 
   // Check available space using file size from the fetched metadata. Called
-  // from OnGetResourceEntry after RefreshFile is complete.
+  // from OnGetResourceEntry after RefreshEntry is complete.
   void CheckForSpaceBeforeDownload(
       const GetFileFromCacheParams& params,
       int64 file_size,

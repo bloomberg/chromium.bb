@@ -118,7 +118,7 @@ struct EntryInfoPairResult {
 typedef base::Callback<void(scoped_ptr<EntryInfoPairResult> pair_result)>
     GetEntryInfoPairCallback;
 
-// Class to handle DriveEntry* lookups, add/remove DriveEntry*.
+// Storage for Drive Metadata.
 class DriveResourceMetadata {
  public:
   // Map of resource id and serialized DriveEntry.
@@ -208,15 +208,8 @@ class DriveResourceMetadata {
   // Refreshes a drive entry with the same resource id as |entry_proto|.
   // |callback| is run with the error, file path and proto of the entry.
   // |callback| must not be null.
-  void RefreshEntryProto(const DriveEntryProto& entry_proto,
-                         const GetEntryInfoWithFilePathCallback& callback);
-
-  // Refresh a drive entry with resource_id that matches that of |entry|,
-  // with |entry|.
-  // |callback| must not be null.
-  // TODO(achuith): Deprecate this in favor of RefreshEntryProto above.
-  void RefreshFile(scoped_ptr<google_apis::ResourceEntry> entry,
-                   const GetEntryInfoWithFilePathCallback& callback);
+  void RefreshEntry(const DriveEntryProto& entry_proto,
+                    const GetEntryInfoWithFilePathCallback& callback);
 
   // Removes all child files of |directory| and replaces them with
   // |entry_proto_map|. |callback| is called with the directory path.

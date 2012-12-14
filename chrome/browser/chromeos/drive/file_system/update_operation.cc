@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
+#include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 #include "chrome/browser/google_apis/drive_uploader.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -118,8 +119,8 @@ void UpdateOperation::OnUpdatedFileUploaded(
     return;
   }
 
-  metadata_->RefreshFile(
-      resource_entry.Pass(),
+  metadata_->RefreshEntry(
+      ConvertResourceEntryToDriveEntryProto(*resource_entry),
       base::Bind(&UpdateOperation::OnUpdatedFileRefreshed,
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }

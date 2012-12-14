@@ -992,8 +992,8 @@ void DriveFileSystem::OnGetResourceEntry(
   }
 
   DCHECK_EQ(params.resource_id, entry->resource_id());
-  resource_metadata_->RefreshFile(
-      entry.Pass(),
+  resource_metadata_->RefreshEntry(
+      ConvertResourceEntryToDriveEntryProto(*entry),
       base::Bind(&DriveFileSystem::CheckForSpaceBeforeDownload,
                  ui_weak_ptr_,
                  params,
@@ -1413,10 +1413,10 @@ void DriveFileSystem::OnSearch(
                    callback);
 
     // Some entries (e.g. shared_with_me files) are not tracked in
-    // DriveResourceMetadata, so that we skip RefreshEntryProto() and call the
+    // DriveResourceMetadata, so that we skip RefreshEntry() and call the
     // callback directly.
     if (!shared_with_me) {
-      resource_metadata_->RefreshEntryProto(entry_proto, entry_info_callback);
+      resource_metadata_->RefreshEntry(entry_proto, entry_info_callback);
     } else {
       entry_info_callback.Run(
           DRIVE_FILE_OK,
