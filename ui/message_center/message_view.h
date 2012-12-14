@@ -39,10 +39,10 @@ class MessageView : public views::SlideOutView,
 
   void set_scroller(views::ScrollView* scroller) { scroller_ = scroller; }
 
-  // views::View overrides.
+  // Overridden from views::View.
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
 
-  // ui::EventHandler overrides.
+  // Overridden from ui::EventHandler.
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   // Overridden from ButtonListener.

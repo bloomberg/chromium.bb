@@ -18,7 +18,7 @@ namespace message_center {
 const SkColor kNotificationColor = SkColorSetRGB(0xfe, 0xfe, 0xfe);
 const SkColor kNotificationReadColor = SkColorSetRGB(0xfa, 0xfa, 0xfa);
 
-const int kBaseFormatPrimaryIconWidth = 40;
+const int kBaseFormatPrimaryIconWidth = 64;
 const int kBaseFormatSecondaryIconWidth = 16;
 const int kBaseFormatTimestampWidth = 60;
 const int kBaseFormatButtonWidth = 60;

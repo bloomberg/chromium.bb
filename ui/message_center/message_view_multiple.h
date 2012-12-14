@@ -20,13 +20,15 @@ class MessageViewMultiple : public MessageView {
                       const NotificationList::Notification& notification);
   virtual ~MessageViewMultiple();
 
-  // MessageView
+  // Overridden from MessageView.
   virtual void SetUpView() OVERRIDE;
 
  protected:
   MessageViewMultiple();
 
  private:
+  views::Border* CreateTopBorder(int height);
+
   DISALLOW_COPY_AND_ASSIGN(MessageViewMultiple);
 };
 
