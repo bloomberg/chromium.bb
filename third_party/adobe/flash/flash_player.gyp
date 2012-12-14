@@ -45,21 +45,6 @@
   # anything to be done in this file (instead of a higher-level .gyp file).
   'targets': [
     {
-      # TODO(shess): Remove this target entirely.
-      'target_name': 'flash_player',
-      'type': 'none',
-      'conditions': [
-        [ 'branding == "Chrome"', {
-          'copies': [{
-            'destination': '<(PRODUCT_DIR)',
-            'files': [],
-            'conditions': [
-            ],
-          }],
-        }],
-      ],
-    },
-    {
       'target_name': 'flapper_version_h',
       'type': 'none',
       'copies': [{
