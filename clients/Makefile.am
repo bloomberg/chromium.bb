@@ -92,7 +92,10 @@ toolkit_libs =						\
 flower_SOURCES = flower.c
 flower_LDADD = $(toolkit_libs)
 
-weston_screenshooter_SOURCES = screenshot.c screenshooter-protocol.c
+weston_screenshooter_SOURCES =			\
+	screenshot.c				\
+	screenshooter-protocol.c		\
+	screenshooter-client-protocol.h
 weston_screenshooter_LDADD = $(toolkit_libs)
 
 weston_terminal_SOURCES = terminal.c
