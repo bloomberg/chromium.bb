@@ -139,7 +139,7 @@ class ImeAdapter {
             attach(mNativeImeAdapter, sTextInputTypeNone);
             dismissInput(true);
         }
-    };
+    }
 
     private DelayedDismissInput mDismissInput = null;
 
@@ -160,9 +160,11 @@ class ImeAdapter {
         mHandler = new Handler();
         mInputDialogContainer = new InputDialogContainer(context,
                 new InputDialogContainer.InputActionDelegate() {
+                    @Override
                     public void clearFocus() {
                         nativeClearFocus(mNativeImeAdapterAndroid);
                     }
+                    @Override
                     public void replaceText(String text) {
                         nativeReplaceText(mNativeImeAdapterAndroid, text);
                         mViewEmbedder.onSetFieldValue();
@@ -492,7 +494,6 @@ class ImeAdapter {
     static public class AdapterInputConnection extends BaseInputConnection {
         private View mInternalView;
         private ImeAdapter mImeAdapter;
-        private Editable mEditable;
         private boolean mSingleLine;
         private int numBatchEdits;
         private boolean shouldUpdateImeSelection;
@@ -521,16 +522,13 @@ class ImeAdapter {
         public void setEditableText(String text, int selectionStart, int selectionEnd,
                 int compositionStart, int compositionEnd) {
 
-            if (mEditable == null) {
-                mEditable = Editable.Factory.getInstance().newEditable("");
-            }
-
-            int prevSelectionStart = Selection.getSelectionStart(mEditable);
-            int prevSelectionEnd = Selection.getSelectionEnd(mEditable);
-            int prevEditableLength = mEditable.length();
-            int prevCompositionStart = getComposingSpanStart(mEditable);
-            int prevCompositionEnd = getComposingSpanEnd(mEditable);
-            String prevText = mEditable.toString();
+            Editable editable = getEditable();
+            int prevSelectionStart = Selection.getSelectionStart(editable);
+            int prevSelectionEnd = Selection.getSelectionEnd(editable);
+            int prevEditableLength = editable.length();
+            int prevCompositionStart = getComposingSpanStart(editable);
+            int prevCompositionEnd = getComposingSpanEnd(editable);
+            String prevText = editable.toString();
 
             selectionStart = Math.min(selectionStart, text.length());
             selectionEnd = Math.min(selectionEnd, text.length());
@@ -555,9 +553,9 @@ class ImeAdapter {
             }
 
             if (!textUnchanged) {
-                mEditable.replace(0, mEditable.length(), text);
+                editable.replace(0, editable.length(), text);
             }
-            Selection.setSelection(mEditable, selectionStart, selectionEnd);
+            Selection.setSelection(editable, selectionStart, selectionEnd);
             super.setComposingRegion(compositionStart, compositionEnd);
 
             if (textUnchanged || prevText.equals("")) {
@@ -567,15 +565,6 @@ class ImeAdapter {
                 getInputMethodManager().updateSelection(mInternalView,
                         selectionStart, selectionEnd, compositionStart, compositionEnd);
             }
-        }
-
-        @Override
-        public Editable getEditable() {
-            if (mEditable == null) {
-                mEditable = Editable.Factory.getInstance().newEditable("");
-                Selection.setSelection(mEditable, 0);
-            }
-            return mEditable;
         }
 
         @Override
@@ -632,13 +621,14 @@ class ImeAdapter {
         @Override
         public ExtractedText getExtractedText(ExtractedTextRequest request, int flags) {
             ExtractedText et = new ExtractedText();
-            if (mEditable == null) {
+            Editable editable = getEditable();
+            if (editable == null) {
                 et.text = "";
             } else {
-                et.text = mEditable.toString();
-                et.partialEndOffset = mEditable.length();
-                et.selectionStart = Selection.getSelectionStart(mEditable);
-                et.selectionEnd = Selection.getSelectionEnd(mEditable);
+                et.text = editable.toString();
+                et.partialEndOffset = editable.length();
+                et.selectionStart = Selection.getSelectionStart(editable);
+                et.selectionEnd = Selection.getSelectionEnd(editable);
             }
             et.flags = mSingleLine ? ExtractedText.FLAG_SINGLE_LINE : 0;
             return et;
@@ -688,8 +678,9 @@ class ImeAdapter {
 
         @Override
         public boolean finishComposingText() {
-            if (mEditable == null
-                    || (getComposingSpanStart(mEditable) == getComposingSpanEnd(mEditable))) {
+            Editable editable = getEditable();
+            if (editable == null
+                    || (getComposingSpanStart(editable) == getComposingSpanEnd(editable))) {
                 return true;
             }
             super.finishComposingText();
@@ -731,12 +722,13 @@ class ImeAdapter {
         }
 
         private void updateImeSelection() {
-            if (mEditable != null) {
+            Editable editable = getEditable();
+            if (editable != null) {
                 getInputMethodManager().updateSelection(mInternalView,
-                        Selection.getSelectionStart(mEditable),
-                        Selection.getSelectionEnd(mEditable),
-                        getComposingSpanStart(mEditable),
-                        getComposingSpanEnd(mEditable));
+                        Selection.getSelectionStart(editable),
+                        Selection.getSelectionEnd(editable),
+                        getComposingSpanStart(editable),
+                        getComposingSpanEnd(editable));
             }
         }
 
