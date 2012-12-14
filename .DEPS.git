@@ -232,7 +232,7 @@ deps_os = {
         'src/third_party/WebKit/Source/Platform/chromium/public':
             Var('git_url') + '/external/WebKit/Source/Platform/chromium/public.git@1bfdca6e58819d27ddbd193e3c5c765ea1c60cc1',
         'src/third_party/WebKit/Source/WebKit/chromium/public':
-            Var('git_url') + '/external/WebKit/Source/WebKit/chromium/public.git@d4145814db42018153e57e383611dab869d40eb2',
+            Var('git_url') + '/external/WebKit/Source/WebKit/chromium/public.git@ce2cca85b025d84d0ec480ea3bc5190f29a8bd02',
         'src/third_party/WebKit/Tools/DumpRenderTree':
             None,
         'src/third_party/WebKit/Tools/Scripts':
