@@ -3734,9 +3734,19 @@ void GLES2DecoderImpl::DoGenerateMipmap(GLenum target) {
     return;
   }
 
-  if (!texture_manager()->ClearTextureLevel(this, info, target, 0)) {
-    SetGLError(GL_OUT_OF_MEMORY, "glGenerateMipmaps", "dimensions too big");
-    return;
+  if (target == GL_TEXTURE_CUBE_MAP) {
+    for (int i = 0; i < 6; ++i) {
+      GLenum face = GL_TEXTURE_CUBE_MAP_POSITIVE_X + i;
+      if (!texture_manager()->ClearTextureLevel(this, info, face, 0)) {
+        SetGLError(GL_OUT_OF_MEMORY, "glGenerateMipmaps", "dimensions too big");
+        return;
+      }
+    }
+  } else {
+    if (!texture_manager()->ClearTextureLevel(this, info, target, 0)) {
+      SetGLError(GL_OUT_OF_MEMORY, "glGenerateMipmaps", "dimensions too big");
+      return;
+    }
   }
 
   CopyRealGLErrorsToWrapper();
