@@ -776,8 +776,10 @@ Browser* StartupBrowserCreatorImpl::OpenTabsInBrowser(Browser* browser,
     profile_ = browser->profile();
 
   if (!browser || !browser->is_type_tabbed()) {
+    // The startup code only executes for browsers launched in desktop mode.
+    // i.e. HOST_DESKTOP_TYPE_NATIVE. Ash should never get here.
     chrome::HostDesktopType host_desktop_type = browser ?
-        browser->host_desktop_type() : chrome::GetActiveDesktop();
+        browser->host_desktop_type() : chrome::HOST_DESKTOP_TYPE_NATIVE;
     browser = new Browser(Browser::CreateParams(profile_, host_desktop_type));
   } else {
 #if defined(TOOLKIT_GTK)
