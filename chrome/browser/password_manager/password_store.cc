@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/message_loop_proxy.h"
 #include "base/stl_util.h"
 #include "chrome/browser/password_manager/password_store_consumer.h"
 #include "content/public/browser/browser_thread.h"
@@ -16,10 +17,52 @@ using content::BrowserThread;
 using std::vector;
 using content::PasswordForm;
 
+namespace {
+
+// PasswordStoreConsumer callback requires vector const reference.
+void RunConsumerCallbackIfNotCanceled(
+    const CancelableTaskTracker::IsCanceledCallback& is_canceled_cb,
+    PasswordStoreConsumer* consumer,
+    const vector<PasswordForm*>* matched_forms) {
+  if (is_canceled_cb.Run()) {
+    STLDeleteContainerPointers(matched_forms->begin(), matched_forms->end());
+    return;
+  }
+
+  // OnGetPasswordStoreResults owns PasswordForms in the vector.
+  consumer->OnGetPasswordStoreResults(*matched_forms);
+}
+
+void PostConsumerCallback(
+    base::TaskRunner* task_runner,
+    const CancelableTaskTracker::IsCanceledCallback& is_canceled_cb,
+    PasswordStoreConsumer* consumer,
+    const base::Time& ignore_logins_cutoff,
+    const vector<PasswordForm*>& matched_forms) {
+  vector<PasswordForm*>* matched_forms_copy = new vector<PasswordForm*>();
+  if (ignore_logins_cutoff.is_null()) {
+    *matched_forms_copy = matched_forms;
+  } else {
+    // Apply |ignore_logins_cutoff| and delete old ones.
+    for (size_t i = 0; i < matched_forms.size(); i++) {
+      if (matched_forms[i]->date_created < ignore_logins_cutoff)
+        delete matched_forms[i];
+      else
+        matched_forms_copy->push_back(matched_forms[i]);
+    }
+  }
+
+  task_runner->PostTask(
+      FROM_HERE,
+      base::Bind(&RunConsumerCallbackIfNotCanceled,
+                 is_canceled_cb, consumer, base::Owned(matched_forms_copy)));
+}
+
+}  // namespace
+
 PasswordStore::GetLoginsRequest::GetLoginsRequest(
     const GetLoginsCallback& callback)
-    : CancelableRequest1<GetLoginsCallback,
-                         std::vector<PasswordForm*> >(callback) {
+    : CancelableRequest1<GetLoginsCallback, vector<PasswordForm*> >(callback) {
 }
 
 void PasswordStore::GetLoginsRequest::ApplyIgnoreLoginsCutoff() {
@@ -74,8 +117,9 @@ void PasswordStore::RemoveLoginsCreatedBetween(const base::Time& delete_begin,
                      delete_begin, delete_end))));
 }
 
-CancelableRequestProvider::Handle PasswordStore::GetLogins(
-    const PasswordForm& form, PasswordStoreConsumer* consumer) {
+CancelableTaskTracker::TaskId PasswordStore::GetLogins(
+    const PasswordForm& form,
+    PasswordStoreConsumer* consumer) {
   // Per http://crbug.com/121738, we deliberately ignore saved logins for
   // http*://www.google.com/ that were stored prior to 2012. (Google now uses
   // https://accounts.google.com/ for all login forms, so these should be
@@ -93,8 +137,20 @@ CancelableRequestProvider::Handle PasswordStore::GetLogins(
         { 2012, 1, 0, 1, 0, 0, 0, 0 };  // 00:00 Jan 1 2012
     ignore_logins_cutoff = base::Time::FromUTCExploded(exploded_cutoff);
   }
-  return Schedule(&PasswordStore::GetLoginsImpl, consumer, form,
-                  ignore_logins_cutoff);
+
+  CancelableTaskTracker::IsCanceledCallback is_canceled_cb;
+  CancelableTaskTracker::TaskId id =
+      consumer->cancelable_task_tracker()->NewTrackedTaskId(&is_canceled_cb);
+
+  ConsumerCallbackRunner callback_runner =
+      base::Bind(&PostConsumerCallback,
+                 base::MessageLoopProxy::current(),
+                 is_canceled_cb,
+                 consumer,
+                 ignore_logins_cutoff);
+  ScheduleTask(
+      base::Bind(&PasswordStore::GetLoginsImpl, this, form, callback_runner));
+  return id;
 }
 
 CancelableRequestProvider::Handle PasswordStore::GetAutofillableLogins(
@@ -137,10 +193,12 @@ void PasswordStore::ForwardLoginsResult(GetLoginsRequest* request) {
 
 template<typename BackendFunc>
 CancelableRequestProvider::Handle PasswordStore::Schedule(
-    BackendFunc func, PasswordStoreConsumer* consumer) {
-  scoped_refptr<GetLoginsRequest> request(NewGetLoginsRequest(
-      base::Bind(&PasswordStoreConsumer::OnPasswordStoreRequestDone,
-                 base::Unretained(consumer))));
+    BackendFunc func,
+    PasswordStoreConsumer* consumer) {
+  scoped_refptr<GetLoginsRequest> request(
+      NewGetLoginsRequest(
+          base::Bind(&PasswordStoreConsumer::OnPasswordStoreRequestDone,
+                     base::Unretained(consumer))));
   AddRequest(request, consumer->cancelable_consumer());
   ScheduleTask(base::Bind(func, this, request));
   return request->handle();
@@ -148,11 +206,14 @@ CancelableRequestProvider::Handle PasswordStore::Schedule(
 
 template<typename BackendFunc>
 CancelableRequestProvider::Handle PasswordStore::Schedule(
-    BackendFunc func, PasswordStoreConsumer* consumer,
-    const PasswordForm& form, const base::Time& ignore_logins_cutoff) {
-  scoped_refptr<GetLoginsRequest> request(NewGetLoginsRequest(
-      base::Bind(&PasswordStoreConsumer::OnPasswordStoreRequestDone,
-                 base::Unretained(consumer))));
+    BackendFunc func,
+    PasswordStoreConsumer* consumer,
+    const PasswordForm& form,
+    const base::Time& ignore_logins_cutoff) {
+  scoped_refptr<GetLoginsRequest> request(
+      NewGetLoginsRequest(
+          base::Bind(&PasswordStoreConsumer::OnPasswordStoreRequestDone,
+                     base::Unretained(consumer))));
   request->set_ignore_logins_cutoff(ignore_logins_cutoff);
   AddRequest(request, consumer->cancelable_consumer());
   ScheduleTask(base::Bind(func, this, request, form));

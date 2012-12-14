@@ -40,8 +40,8 @@ class MockPasswordManagerDelegate : public PasswordManagerDelegate {
   MOCK_METHOD0(DidLastPageLoadEncounterSSLErrors, bool());
 };
 
-ACTION_P2(InvokeConsumer, handle, forms) {
-  arg0->OnPasswordStoreRequestDone(handle, forms);
+ACTION_P(InvokeConsumer, forms) {
+  arg0->OnGetPasswordStoreResults(forms);
 }
 
 ACTION_P(SaveToScopedPtr, scoped) {
@@ -119,7 +119,7 @@ TEST_F(PasswordManagerTest, FormSubmitEmptyStore) {
   std::vector<PasswordForm*> result;  // Empty password store.
   EXPECT_CALL(delegate_, FillPasswordForm(_)).Times(Exactly(0));
   EXPECT_CALL(*store_, GetLogins(_,_))
-      .WillOnce(DoAll(WithArg<1>(InvokeConsumer(0, result)), Return(0)));
+      .WillOnce(DoAll(WithArg<1>(InvokeConsumer(result)), Return(1)));
   std::vector<PasswordForm> observed;
   PasswordForm form(MakeSimpleForm());
   observed.push_back(form);
@@ -151,7 +151,7 @@ TEST_F(PasswordManagerTest, GeneratedPasswordFormSubmitEmptyStore) {
   std::vector<PasswordForm*> result;  // Empty password store.
   EXPECT_CALL(delegate_, FillPasswordForm(_)).Times(Exactly(0));
   EXPECT_CALL(*store_, GetLogins(_,_))
-      .WillOnce(DoAll(WithArg<1>(InvokeConsumer(0, result)), Return(0)));
+      .WillOnce(DoAll(WithArg<1>(InvokeConsumer(result)), Return(1)));
   std::vector<PasswordForm> observed;
   PasswordForm form(MakeSimpleForm());
   observed.push_back(form);
@@ -185,7 +185,7 @@ TEST_F(PasswordManagerTest, FormSubmitNoGoodMatch) {
   result.push_back(existing_different);
   EXPECT_CALL(delegate_, FillPasswordForm(_));
   EXPECT_CALL(*store_, GetLogins(_,_))
-      .WillOnce(DoAll(WithArg<1>(InvokeConsumer(0, result)), Return(0)));
+      .WillOnce(DoAll(WithArg<1>(InvokeConsumer(result)), Return(1)));
 
   std::vector<PasswordForm> observed;
   PasswordForm form(MakeSimpleForm());
@@ -215,7 +215,7 @@ TEST_F(PasswordManagerTest, FormSeenThenLeftPage) {
   std::vector<PasswordForm*> result;  // Empty password store.
   EXPECT_CALL(delegate_, FillPasswordForm(_)).Times(Exactly(0));
   EXPECT_CALL(*store_, GetLogins(_,_))
-    .WillOnce(DoAll(WithArg<1>(InvokeConsumer(0, result)), Return(0)));
+      .WillOnce(DoAll(WithArg<1>(InvokeConsumer(result)), Return(1)));
   std::vector<PasswordForm> observed;
   PasswordForm form(MakeSimpleForm());
   observed.push_back(form);
@@ -243,7 +243,7 @@ TEST_F(PasswordManagerTest, FormSubmitAfterNavigateSubframe) {
   std::vector<PasswordForm*> result;  // Empty password store.
   EXPECT_CALL(delegate_, FillPasswordForm(_)).Times(Exactly(0));
   EXPECT_CALL(*store_, GetLogins(_,_))
-      .WillOnce(DoAll(WithArg<1>(InvokeConsumer(0, result)), Return(0)));
+      .WillOnce(DoAll(WithArg<1>(InvokeConsumer(result)), Return(1)));
   std::vector<PasswordForm> observed;
   PasswordForm form(MakeSimpleForm());
   observed.push_back(form);
@@ -279,7 +279,7 @@ TEST_F(PasswordManagerTest, FormSubmitFailedLogin) {
   std::vector<PasswordForm*> result;  // Empty password store.
   EXPECT_CALL(delegate_, FillPasswordForm(_)).Times(Exactly(0));
   EXPECT_CALL(*store_, GetLogins(_,_))
-    .WillRepeatedly(DoAll(WithArg<1>(InvokeConsumer(0, result)), Return(0)));
+      .WillRepeatedly(DoAll(WithArg<1>(InvokeConsumer(result)), Return(1)));
   std::vector<PasswordForm> observed;
   PasswordForm form(MakeSimpleForm());
   observed.push_back(form);
@@ -300,7 +300,7 @@ TEST_F(PasswordManagerTest, FormSubmitInvisibleLogin) {
   std::vector<PasswordForm*> result;  // Empty password store.
   EXPECT_CALL(delegate_, FillPasswordForm(_)).Times(Exactly(0));
   EXPECT_CALL(*store_, GetLogins(_,_))
-      .WillRepeatedly(DoAll(WithArg<1>(InvokeConsumer(0, result)), Return(0)));
+      .WillRepeatedly(DoAll(WithArg<1>(InvokeConsumer(result)), Return(1)));
   std::vector<PasswordForm> observed;
   PasswordForm form(MakeSimpleForm());
   observed.push_back(form);
@@ -333,7 +333,7 @@ TEST_F(PasswordManagerTest, InitiallyInvisibleForm) {
   result.push_back(existing);
   EXPECT_CALL(delegate_, FillPasswordForm(_));
   EXPECT_CALL(*store_, GetLogins(_,_))
-      .WillRepeatedly(DoAll(WithArg<1>(InvokeConsumer(0, result)), Return(0)));
+      .WillRepeatedly(DoAll(WithArg<1>(InvokeConsumer(result)), Return(1)));
   std::vector<PasswordForm> observed;
   PasswordForm form(MakeSimpleForm());
   observed.push_back(form);
@@ -368,7 +368,7 @@ TEST_F(PasswordManagerTest, FillPasswordsOnDisabledManager) {
                            Value::CreateBooleanValue(false));
   EXPECT_CALL(delegate_, FillPasswordForm(_));
   EXPECT_CALL(*store_, GetLogins(_, _))
-    .WillRepeatedly(DoAll(WithArg<1>(InvokeConsumer(0, result)), Return(0)));
+      .WillRepeatedly(DoAll(WithArg<1>(InvokeConsumer(result)), Return(1)));
   std::vector<PasswordForm> observed;
   PasswordForm form(MakeSimpleForm());
   observed.push_back(form);
@@ -381,7 +381,7 @@ TEST_F(PasswordManagerTest, FormNotSavedAutocompleteOff) {
   std::vector<PasswordForm*> result;  // Empty password store.
   EXPECT_CALL(delegate_, FillPasswordForm(_)).Times(Exactly(0));
   EXPECT_CALL(*store_, GetLogins(_,_))
-      .WillOnce(DoAll(WithArg<1>(InvokeConsumer(0, result)), Return(0)));
+      .WillOnce(DoAll(WithArg<1>(InvokeConsumer(result)), Return(1)));
   std::vector<PasswordForm> observed;
   PasswordForm form(MakeSimpleForm());
   form.password_autocomplete_set = false;
@@ -409,7 +409,7 @@ TEST_F(PasswordManagerTest, GeneratedPasswordFormSavedAutocompleteOff) {
   std::vector<PasswordForm*> result;  // Empty password store.
   EXPECT_CALL(delegate_, FillPasswordForm(_)).Times(Exactly(0));
   EXPECT_CALL(*store_, GetLogins(_,_))
-      .WillOnce(DoAll(WithArg<1>(InvokeConsumer(0, result)), Return(0)));
+      .WillOnce(DoAll(WithArg<1>(InvokeConsumer(result)), Return(1)));
   std::vector<PasswordForm> observed;
   PasswordForm form(MakeSimpleForm());
   form.password_autocomplete_set = false;

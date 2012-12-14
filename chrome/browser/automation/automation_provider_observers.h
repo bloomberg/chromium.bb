@@ -1159,9 +1159,12 @@ class AutomationProviderGetPasswordsObserver : public PasswordStoreConsumer {
       IPC::Message* reply_message);
   virtual ~AutomationProviderGetPasswordsObserver();
 
+  // PasswordStoreConsumer implementation.
   virtual void OnPasswordStoreRequestDone(
       CancelableRequestProvider::Handle handle,
       const std::vector<content::PasswordForm*>& result) OVERRIDE;
+  virtual void OnGetPasswordStoreResults(
+      const std::vector<content::PasswordForm*>& results) OVERRIDE;
 
  private:
   base::WeakPtr<AutomationProvider> provider_;

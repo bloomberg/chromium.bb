@@ -14,6 +14,7 @@
 #include "base/time.h"
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/profiles/refcounted_profile_keyed_service.h"
+#include "chrome/common/cancelable_task_tracker.h"
 
 class PasswordStore;
 class PasswordStoreConsumer;
@@ -102,11 +103,12 @@ class PasswordStore
   void RemoveLoginsCreatedBetween(const base::Time& delete_begin,
                                   const base::Time& delete_end);
 
-  // Searches for a matching PasswordForm and returns a handle so the async
-  // request can be tracked. Implement the PasswordStoreConsumer interface to be
+  // Searches for a matching PasswordForm and returns a ID so the async request
+  // can be tracked. Implement the PasswordStoreConsumer interface to be
   // notified on completion.
-  virtual Handle GetLogins(const content::PasswordForm& form,
-                           PasswordStoreConsumer* consumer);
+  virtual CancelableTaskTracker::TaskId GetLogins(
+      const content::PasswordForm& form,
+      PasswordStoreConsumer* consumer);
 
   // Gets the complete list of PasswordForms that are not blacklist entries--and
   // are thus auto-fillable--and returns a handle so the async request can be
@@ -147,7 +149,9 @@ class PasswordStore
   virtual GetLoginsRequest* NewGetLoginsRequest(
       const GetLoginsCallback& callback);
 
-  // Schedule the given |task| to be run in the PasswordStore's own thread.
+  // Schedule the given |task| to be run in the PasswordStore's task thread. By
+  // default it uses DB thread, but sub classes can override to use other
+  // threads.
   virtual bool ScheduleTask(const base::Closure& task);
 
   // These will be run in PasswordStore's own thread.
@@ -162,11 +166,17 @@ class PasswordStore
   // Synchronous implementation to remove the given logins.
   virtual void RemoveLoginsCreatedBetweenImpl(const base::Time& delete_begin,
                                               const base::Time& delete_end) = 0;
+
+  typedef base::Callback<void(const std::vector<content::PasswordForm*>&)>
+      ConsumerCallbackRunner;  // Owns all PasswordForms in the vector.
+
   // Should find all PasswordForms with the same signon_realm. The results
   // will then be scored by the PasswordFormManager. Once they are found
   // (or not), the consumer should be notified.
-  virtual void GetLoginsImpl(GetLoginsRequest* request,
-                             const content::PasswordForm& form) = 0;
+  virtual void GetLoginsImpl(
+      const content::PasswordForm& form,
+      const ConsumerCallbackRunner& callback_runner) = 0;
+
   // Finds all non-blacklist PasswordForms, and notifies the consumer.
   virtual void GetAutofillableLoginsImpl(GetLoginsRequest* request) = 0;
   // Finds all blacklist PasswordForms, and notifies the consumer.
@@ -193,7 +203,8 @@ class PasswordStore
   // form |form| and responses delivered to |consumer| on the current thread.
   // See GetLogins() for more information on |ignore_logins_cutoff|.
   template<typename BackendFunc>
-  Handle Schedule(BackendFunc func, PasswordStoreConsumer* consumer,
+  Handle Schedule(BackendFunc func,
+                  PasswordStoreConsumer* consumer,
                   const content::PasswordForm& form,
                   const base::Time& ignore_logins_cutoff);
 

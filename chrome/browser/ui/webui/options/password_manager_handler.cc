@@ -238,6 +238,13 @@ void PasswordManagerHandler::PasswordListPopulater::
   page_->SetPasswordList();
 }
 
+void PasswordManagerHandler::PasswordListPopulater::OnGetPasswordStoreResults(
+    const std::vector<content::PasswordForm*>& results) {
+  // TODO(kaiwang): Implement when I refactor
+  // PasswordStore::GetAutofillableLogins and PasswordStore::GetBlacklistLogins.
+  NOTIMPLEMENTED();
+}
+
 PasswordManagerHandler::PasswordExceptionListPopulater::
     PasswordExceptionListPopulater(PasswordManagerHandler* page)
         : ListPopulater(page) {
@@ -265,6 +272,14 @@ void PasswordManagerHandler::PasswordExceptionListPopulater::
   page_->password_exception_list_.insert(page_->password_exception_list_.end(),
                                          result.begin(), result.end());
   page_->SetPasswordExceptionList();
+}
+
+void PasswordManagerHandler::PasswordExceptionListPopulater::
+    OnGetPasswordStoreResults(
+        const std::vector<content::PasswordForm*>& results) {
+  // TODO(kaiwang): Implement when I refactor
+  // PasswordStore::GetAutofillableLogins and PasswordStore::GetBlacklistLogins.
+  NOTIMPLEMENTED();
 }
 
 }  // namespace options

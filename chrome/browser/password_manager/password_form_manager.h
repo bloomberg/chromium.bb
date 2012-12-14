@@ -84,13 +84,14 @@ class PasswordFormManager : public PasswordStoreConsumer {
   void SetHasGeneratedPassword();
 
   // Determines if we need to autofill given the results of the query.
-  void OnRequestDone(
-      int handle, const std::vector<content::PasswordForm*>& result);
+  void OnRequestDone(const std::vector<content::PasswordForm*>& result);
 
   // PasswordStoreConsumer implementation.
   virtual void OnPasswordStoreRequestDone(
       CancelableRequestProvider::Handle handle,
       const std::vector<content::PasswordForm*>& result) OVERRIDE;
+  virtual void OnGetPasswordStoreResults(
+      const std::vector<content::PasswordForm*>& results) OVERRIDE;
 
   // A user opted to 'never remember' passwords for this form.
   // Blacklist it so that from now on when it is seen we ignore it.
@@ -227,9 +228,6 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   // PasswordManager owning this.
   const PasswordManager* const password_manager_;
-
-  // Handle to any pending PasswordStore::GetLogins query.
-  CancelableRequestProvider::Handle pending_login_query_;
 
   // Convenience pointer to entry in best_matches_ that is marked
   // as preferred. This is only allowed to be null if there are no best matches

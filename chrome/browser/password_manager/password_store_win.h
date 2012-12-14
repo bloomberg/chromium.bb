@@ -36,15 +36,14 @@ class PasswordStoreWin : public PasswordStoreDefault {
   // Invoked from Shutdown, but run on the DB thread.
   void ShutdownOnDBThread();
 
-  virtual GetLoginsRequest* NewGetLoginsRequest(
-      const GetLoginsCallback& callback) OVERRIDE;
+  virtual void GetLoginsImpl(
+      const content::PasswordForm& form,
+      const ConsumerCallbackRunner& callback_runner) OVERRIDE;
 
-  // See PasswordStoreDefault.
-  virtual void ForwardLoginsResult(GetLoginsRequest* request) OVERRIDE;
-
-  // Overridden so that we can save the form for later use.
-  virtual void GetLoginsImpl(GetLoginsRequest* request,
-                             const content::PasswordForm& form) OVERRIDE;
+  void GetIE7LoginIfNecessary(
+    const content::PasswordForm& form,
+    const ConsumerCallbackRunner& callback_runner,
+    const std::vector<content::PasswordForm*>& matched_forms);
 
   scoped_ptr<DBHandler> db_handler_;
 

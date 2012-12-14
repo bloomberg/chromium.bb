@@ -763,6 +763,9 @@ bool PasswordStoreMac::Init() {
 void PasswordStoreMac::ShutdownOnUIThread() {
 }
 
+// Mac stores passwords in the system keychain, which can block for an
+// arbitrarily long time (most notably, it can block on user confirmation
+// from a dialog). Use a dedicated thread to avoid blocking DB thread.
 bool PasswordStoreMac::ScheduleTask(const base::Closure& task) {
   if (thread_.get()) {
     thread_->message_loop()->PostTask(FROM_HERE, task);
@@ -888,8 +891,9 @@ void PasswordStoreMac::RemoveLoginsCreatedBetweenImpl(
   }
 }
 
-void PasswordStoreMac::GetLoginsImpl(GetLoginsRequest* request,
-                                     const content::PasswordForm& form) {
+void PasswordStoreMac::GetLoginsImpl(
+    const content::PasswordForm& form,
+    const ConsumerCallbackRunner& callback_runner) {
   MacKeychainPasswordFormAdapter keychain_adapter(keychain_.get());
   std::vector<PasswordForm*> keychain_forms =
       keychain_adapter.PasswordsFillingForm(form);
@@ -897,17 +901,18 @@ void PasswordStoreMac::GetLoginsImpl(GetLoginsRequest* request,
   std::vector<PasswordForm*> database_forms;
   login_metadata_db_->GetLogins(form, &database_forms);
 
-  std::vector<PasswordForm*>& merged_forms = request->value;
+  std::vector<PasswordForm*> matched_forms;
   internal_keychain_helpers::MergePasswordForms(&keychain_forms,
                                                 &database_forms,
-                                                &merged_forms);
+                                                &matched_forms);
 
   // Strip any blacklist entries out of the unused Keychain array, then take
   // all the entries that are left (which we can use as imported passwords).
   std::vector<PasswordForm*> keychain_blacklist_forms =
       internal_keychain_helpers::ExtractBlacklistForms(&keychain_forms);
-  merged_forms.insert(merged_forms.end(), keychain_forms.begin(),
-                      keychain_forms.end());
+  matched_forms.insert(matched_forms.end(),
+                       keychain_forms.begin(),
+                       keychain_forms.end());
   keychain_forms.clear();
   STLDeleteElements(&keychain_blacklist_forms);
 
@@ -915,7 +920,7 @@ void PasswordStoreMac::GetLoginsImpl(GetLoginsRequest* request,
   RemoveDatabaseForms(database_forms);
   STLDeleteElements(&database_forms);
 
-  ForwardLoginsResult(request);
+  callback_runner.Run(matched_forms);
 }
 
 void PasswordStoreMac::GetBlacklistLoginsImpl(GetLoginsRequest* request) {

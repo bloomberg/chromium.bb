@@ -36,8 +36,9 @@ class PasswordStoreDefault : public PasswordStore {
       const content::PasswordForm& form) OVERRIDE;
   virtual void RemoveLoginsCreatedBetweenImpl(
       const base::Time& delete_begin, const base::Time& delete_end) OVERRIDE;
-  virtual void GetLoginsImpl(GetLoginsRequest* request,
-                             const content::PasswordForm& form) OVERRIDE;
+  virtual void GetLoginsImpl(
+      const content::PasswordForm& form,
+      const ConsumerCallbackRunner& callback_runner) OVERRIDE;
   virtual void GetAutofillableLoginsImpl(GetLoginsRequest* request) OVERRIDE;
   virtual void GetBlacklistLoginsImpl(GetLoginsRequest* request) OVERRIDE;
   virtual bool FillAutofillableLogins(

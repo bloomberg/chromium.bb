@@ -35,6 +35,8 @@ class MockPasswordStoreConsumer : public PasswordStoreConsumer {
   MOCK_METHOD2(OnPasswordStoreRequestDone,
                void(CancelableRequestProvider::Handle,
                     const std::vector<PasswordForm*>&));
+  MOCK_METHOD1(OnGetPasswordStoreResults,
+               void(const std::vector<PasswordForm*>&));
 };
 
 // This class will add and remove a mock notification observer from
@@ -238,24 +240,23 @@ TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
   MockPasswordStoreConsumer consumer;
 
   // Make sure we quit the MessageLoop even if the test fails.
-  ON_CALL(consumer, OnPasswordStoreRequestDone(_, _))
+  ON_CALL(consumer, OnGetPasswordStoreResults(_))
       .WillByDefault(QuitUIMessageLoop());
 
   // Expect the appropriate replies, as above, in reverse order than we will
   // issue the queries. Each retires on saturation to avoid matcher spew, except
   // the last which quits the message loop.
   EXPECT_CALL(consumer,
-      OnPasswordStoreRequestDone(_,
-          ContainsAllPasswordForms(bar_example_expected)))
-      .WillOnce(DoAll(WithArg<1>(STLDeleteElements0()), QuitUIMessageLoop()));
+      OnGetPasswordStoreResults(ContainsAllPasswordForms(bar_example_expected)))
+      .WillOnce(DoAll(WithArg<0>(STLDeleteElements0()), QuitUIMessageLoop()));
   EXPECT_CALL(consumer,
-      OnPasswordStoreRequestDone(_,
+      OnGetPasswordStoreResults(
           ContainsAllPasswordForms(accounts_google_expected)))
-      .WillOnce(WithArg<1>(STLDeleteElements0())).RetiresOnSaturation();
+      .WillOnce(WithArg<0>(STLDeleteElements0())).RetiresOnSaturation();
   EXPECT_CALL(consumer,
-      OnPasswordStoreRequestDone(_,
+      OnGetPasswordStoreResults(
           ContainsAllPasswordForms(www_google_expected)))
-      .WillOnce(WithArg<1>(STLDeleteElements0())).RetiresOnSaturation();
+      .WillOnce(WithArg<0>(STLDeleteElements0())).RetiresOnSaturation();
 
   store->GetLogins(www_google, &consumer);
   store->GetLogins(accounts_google, &consumer);

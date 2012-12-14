@@ -50,6 +50,8 @@ class MockPasswordStoreConsumer : public PasswordStoreConsumer {
   MOCK_METHOD2(OnPasswordStoreRequestDone,
                void(CancelableRequestProvider::Handle,
                     const std::vector<PasswordForm*>&));
+  MOCK_METHOD1(OnGetPasswordStoreResults,
+               void(const std::vector<PasswordForm*>&));
 };
 
 // This class will add and remove a mock notification observer from

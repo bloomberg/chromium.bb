@@ -73,11 +73,6 @@ class PasswordManagerHandler : public OptionsPageUIHandler,
     // Send a query to the password store to populate a list.
     virtual void Populate() = 0;
 
-    // Send the password store's reply back to the handler.
-    virtual void OnPasswordStoreRequestDone(
-        CancelableRequestProvider::Handle handle,
-        const std::vector<content::PasswordForm*>& result) = 0;
-
    protected:
     PasswordManagerHandler* page_;
     CancelableRequestProvider::Handle pending_login_query_;
@@ -95,6 +90,8 @@ class PasswordManagerHandler : public OptionsPageUIHandler,
     virtual void OnPasswordStoreRequestDone(
         CancelableRequestProvider::Handle handle,
         const std::vector<content::PasswordForm*>& result) OVERRIDE;
+    virtual void OnGetPasswordStoreResults(
+        const std::vector<content::PasswordForm*>& results) OVERRIDE;
   };
 
   // A short class to mediate requests to the password store for exceptions.
@@ -109,6 +106,8 @@ class PasswordManagerHandler : public OptionsPageUIHandler,
     virtual void OnPasswordStoreRequestDone(
         CancelableRequestProvider::Handle handle,
         const std::vector<content::PasswordForm*>& result) OVERRIDE;
+    virtual void OnGetPasswordStoreResults(
+        const std::vector<content::PasswordForm*>& results) OVERRIDE;
   };
 
   // Password store consumer for populating the password list and exceptions.

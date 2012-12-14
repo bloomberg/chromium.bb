@@ -115,22 +115,25 @@ void PasswordStoreX::SortLoginsByOrigin(NativeBackend::PasswordFormList* list) {
   std::sort(list->begin(), list->end(), LoginLessThan());
 }
 
-void PasswordStoreX::GetLoginsImpl(GetLoginsRequest* request,
-                                   const PasswordForm& form) {
+void PasswordStoreX::GetLoginsImpl(
+    const content::PasswordForm& form,
+    const ConsumerCallbackRunner& callback_runner) {
   CheckMigration();
-  if (use_native_backend() && backend_->GetLogins(form, &request->value)) {
-    SortLoginsByOrigin(&request->value);
-    ForwardLoginsResult(request);
+  std::vector<content::PasswordForm*> matched_forms;
+  if (use_native_backend() && backend_->GetLogins(form, &matched_forms)) {
+    SortLoginsByOrigin(&matched_forms);
+    callback_runner.Run(matched_forms);
     // The native backend may succeed and return no data even while locked, if
     // the query did not match anything stored. So we continue to allow fallback
     // until we perform a write operation, or until a read returns actual data.
-    if (request->value.size() > 0)
+    if (matched_forms.size() > 0)
       allow_fallback_ = false;
   } else if (allow_default_store()) {
-    PasswordStoreDefault::GetLoginsImpl(request, form);
+    DCHECK(matched_forms.empty());
+    PasswordStoreDefault::GetLoginsImpl(form, callback_runner);
   } else {
     // The consumer will be left hanging unless we reply.
-    ForwardLoginsResult(request);
+    callback_runner.Run(matched_forms);
   }
 }
 

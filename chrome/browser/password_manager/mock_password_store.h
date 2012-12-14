@@ -18,8 +18,9 @@ class MockPasswordStore : public PasswordStore {
   static scoped_refptr<RefcountedProfileKeyedService> Build(Profile* profile);
 
   MOCK_METHOD1(RemoveLogin, void(const content::PasswordForm&));
-  MOCK_METHOD2(GetLogins, int(const content::PasswordForm&,
-                              PasswordStoreConsumer*));
+  MOCK_METHOD2(GetLogins,
+               CancelableTaskTracker::TaskId(const content::PasswordForm&,
+                                             PasswordStoreConsumer*));
   MOCK_METHOD1(AddLogin, void(const content::PasswordForm&));
   MOCK_METHOD1(UpdateLogin, void(const content::PasswordForm&));
   MOCK_METHOD0(ReportMetrics, void());
@@ -29,8 +30,9 @@ class MockPasswordStore : public PasswordStore {
   MOCK_METHOD1(RemoveLoginImpl, void(const content::PasswordForm&));
   MOCK_METHOD2(RemoveLoginsCreatedBetweenImpl, void(const base::Time&,
                const base::Time&));
-  MOCK_METHOD2(GetLoginsImpl, void(GetLoginsRequest*,
-                                   const content::PasswordForm&));
+  MOCK_METHOD2(GetLoginsImpl,
+               void(const content::PasswordForm& form,
+                    const ConsumerCallbackRunner& callback_runner));
   MOCK_METHOD1(GetAutofillableLoginsImpl, void(GetLoginsRequest*));
   MOCK_METHOD1(GetBlacklistLoginsImpl, void(GetLoginsRequest*));
   MOCK_METHOD1(FillAutofillableLogins,

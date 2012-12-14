@@ -32,7 +32,6 @@ PasswordFormManager::PasswordFormManager(Profile* profile,
       is_new_login_(true),
       has_generated_password_(false),
       password_manager_(password_manager),
-      pending_login_query_(0),
       preferred_match_(NULL),
       state_(PRE_MATCHING_PHASE),
       profile_(profile),
@@ -225,7 +224,6 @@ void PasswordFormManager::Save() {
 
 void PasswordFormManager::FetchMatchingLoginsFromPasswordStore() {
   DCHECK_EQ(state_, PRE_MATCHING_PHASE);
-  DCHECK(!pending_login_query_);
   state_ = MATCHING_PHASE;
   PasswordStore* password_store = PasswordStoreFactory::GetForProfile(
       profile_, Profile::EXPLICIT_ACCESS);
@@ -233,14 +231,14 @@ void PasswordFormManager::FetchMatchingLoginsFromPasswordStore() {
     NOTREACHED();
     return;
   }
-  pending_login_query_ = password_store->GetLogins(observed_form_, this);
+  password_store->GetLogins(observed_form_, this);
 }
 
 bool PasswordFormManager::HasCompletedMatching() {
   return state_ == POST_MATCHING_PHASE;
 }
 
-void PasswordFormManager::OnRequestDone(int handle,
+void PasswordFormManager::OnRequestDone(
     const std::vector<PasswordForm*>& logins_result) {
   // Note that the result gets deleted after this call completes, but we own
   // the PasswordForm objects pointed to by the result vector, thus we keep
@@ -340,12 +338,17 @@ void PasswordFormManager::OnRequestDone(int handle,
 }
 
 void PasswordFormManager::OnPasswordStoreRequestDone(
-    CancelableRequestProvider::Handle handle,
-    const std::vector<PasswordForm*>& result) {
-  DCHECK_EQ(state_, MATCHING_PHASE);
-  DCHECK_EQ(pending_login_query_, handle);
+      CancelableRequestProvider::Handle handle,
+      const std::vector<content::PasswordForm*>& result) {
+  // TODO(kaiwang): Remove this function.
+  NOTREACHED();
+}
 
-  if (result.empty()) {
+void PasswordFormManager::OnGetPasswordStoreResults(
+      const std::vector<content::PasswordForm*>& results) {
+  DCHECK_EQ(state_, MATCHING_PHASE);
+
+  if (results.empty()) {
     state_ = POST_MATCHING_PHASE;
     // No result means that we visit this site the first time so we don't need
     // to check whether this site is blacklisted or not. Just send a message
@@ -353,9 +356,7 @@ void PasswordFormManager::OnPasswordStoreRequestDone(
     SendNotBlacklistedToRenderer();
     return;
   }
-
-  OnRequestDone(handle, result);
-  pending_login_query_ = 0;
+  OnRequestDone(results);
 }
 
 bool PasswordFormManager::IgnoreResult(const PasswordForm& form) const {

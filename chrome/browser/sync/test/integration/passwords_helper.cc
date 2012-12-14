@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
 
+#include "base/compiler_specific.h"
 #include "base/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time.h"
@@ -43,13 +44,19 @@ class PasswordStoreConsumerHelper : public PasswordStoreConsumer {
 
   virtual void OnPasswordStoreRequestDone(
       CancelableRequestProvider::Handle handle,
-      const std::vector<PasswordForm*>& result) {
+      const std::vector<PasswordForm*>& result) OVERRIDE {
+    // TODO(kaiwang): Remove this function.
+    NOTREACHED();
+  }
+
+  virtual void OnGetPasswordStoreResults(
+      const std::vector<PasswordForm*>& result) OVERRIDE {
     result_->clear();
     for (std::vector<PasswordForm*>::const_iterator it = result.begin();
-         it != result.end(); ++it) {
-      // Make a copy of the form since it gets deallocated after the caller of
-      // this method returns.
+         it != result.end();
+         ++it) {
       result_->push_back(**it);
+      delete *it;
     }
 
     // Quit the message loop to wake up passwords_helper::GetLogins.

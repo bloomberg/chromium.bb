@@ -33,6 +33,8 @@ public:
   MOCK_METHOD2(OnPasswordStoreRequestDone,
                void(CancelableRequestProvider::Handle,
                     const std::vector<content::PasswordForm*>&));
+  MOCK_METHOD1(OnGetPasswordStoreResults,
+               void(const std::vector<content::PasswordForm*>&));
 };
 
 ACTION(STLDeleteElements0) {
@@ -996,10 +998,10 @@ TEST_F(PasswordStoreMacTest, TestStoreUpdate) {
 
   // Do a store-level query to wait for all the operations above to be done.
   MockPasswordStoreConsumer consumer;
-  ON_CALL(consumer, OnPasswordStoreRequestDone(_, _)).WillByDefault(
+  ON_CALL(consumer, OnGetPasswordStoreResults(_)).WillByDefault(
       QuitUIMessageLoop());
-  EXPECT_CALL(consumer, OnPasswordStoreRequestDone(_, _)).WillOnce(
-      DoAll(WithArg<1>(STLDeleteElements0()), QuitUIMessageLoop()));
+  EXPECT_CALL(consumer, OnGetPasswordStoreResults(_)).WillOnce(
+      DoAll(WithArg<0>(STLDeleteElements0()), QuitUIMessageLoop()));
   store_->GetLogins(*joint_form, &consumer);
   MessageLoop::current()->Run();
 

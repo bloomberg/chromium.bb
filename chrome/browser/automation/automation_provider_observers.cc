@@ -1580,6 +1580,13 @@ void AutomationProviderGetPasswordsObserver::OnPasswordStoreRequestDone(
   delete this;
 }
 
+void AutomationProviderGetPasswordsObserver::OnGetPasswordStoreResults(
+    const std::vector<content::PasswordForm*>& results) {
+  // TODO(kaiwang): Implement when I refactor
+  // PasswordManager::GetAutofillableLogins.
+  NOTIMPLEMENTED();
+}
+
 PasswordStoreLoginsChangedObserver::PasswordStoreLoginsChangedObserver(
     AutomationProvider* automation,
     IPC::Message* reply_message,

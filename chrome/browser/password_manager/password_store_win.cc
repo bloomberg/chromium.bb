@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/password_manager/ie7_password.h"
@@ -17,36 +18,6 @@
 
 using content::BrowserThread;
 using content::PasswordForm;
-
-namespace {
-// Subclass GetLoginsRequest in order to hold a copy of the form information
-// from the GetLogins request for the ForwardLoginsResult call. Note that the
-// other calls such as GetBlacklistLogins and GetAutofillableLogins, the form is
-// not set.
-class FormGetLoginsRequest : public PasswordStore::GetLoginsRequest {
- public:
-  explicit FormGetLoginsRequest(
-      const PasswordStore::GetLoginsCallback& callback)
-      : GetLoginsRequest(callback) {}
-
-  // We hold a copy of the |form| used in GetLoginsImpl as a pointer.  If the
-  // form is not set (is NULL), then we are not a GetLogins request.
-  void SetLoginsRequestForm(const PasswordForm& form) {
-    form_.reset(new PasswordForm(form));
-  }
-  PasswordForm* form() const {
-    return form_.get();
-  }
-  bool IsLoginsRequest() const { return !!form_.get(); }
-
- protected:
-  virtual ~FormGetLoginsRequest() {}
-
- private:
-  scoped_ptr<PasswordForm> form_;
-};
-
-}  // namespace
 
 // Handles requests to WebDataService.
 class PasswordStoreWin::DBHandler : public WebDataServiceConsumer {
@@ -59,21 +30,34 @@ class PasswordStoreWin::DBHandler : public WebDataServiceConsumer {
 
   ~DBHandler();
 
-  // Requests the IE7 login for |url| and |request|. This is async. The request
-  // is processed when complete.
-  void GetIE7Login(const GURL& url, GetLoginsRequest* request);
+  // Requests the IE7 login for |form|. This is async. |callback_runner| will be
+  // run when complete.
+  void GetIE7Login(
+      const PasswordForm& form,
+      const PasswordStoreWin::ConsumerCallbackRunner& callback_runner);
 
  private:
-  // Holds requests associated with in-flight GetLogin queries.
-  typedef std::map<WebDataService::Handle,
-                   scoped_refptr<GetLoginsRequest> > PendingRequestMap;
+  struct RequestInfo {
+    RequestInfo() {}
+
+    RequestInfo(PasswordForm* request_form,
+                const PasswordStoreWin::ConsumerCallbackRunner& runner)
+        : form(request_form),
+          callback_runner(runner) {}
+
+    PasswordForm* form;
+    PasswordStoreWin::ConsumerCallbackRunner callback_runner;
+  };
+
+  // Holds info associated with in-flight GetIE7Login requests.
+  typedef std::map<WebDataService::Handle, RequestInfo> PendingRequestMap;
 
   // Gets logins from IE7 if no others are found. Also copies them into
   // Chrome's WebDatabase so we don't need to look next time.
   PasswordForm* GetIE7Result(const WDTypedResult* result,
                              const PasswordForm& form);
 
-  // WebDataServiceConsumer.
+  // WebDataServiceConsumer implementation.
   virtual void OnWebDataServiceRequestDone(
       WebDataService::Handle handle,
       const WDTypedResult* result) OVERRIDE;
@@ -84,7 +68,6 @@ class PasswordStoreWin::DBHandler : public WebDataServiceConsumer {
   // from PasswordStoreWin::Shutdown, which deletes us.
   scoped_refptr<PasswordStoreWin> password_store_;
 
-  // Holds requests associated with in-flight GetLogin queries.
   PendingRequestMap pending_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(DBHandler);
@@ -93,18 +76,22 @@ class PasswordStoreWin::DBHandler : public WebDataServiceConsumer {
 PasswordStoreWin::DBHandler::~DBHandler() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   for (PendingRequestMap::const_iterator i = pending_requests_.begin();
-       i != pending_requests_.end(); ++i) {
+       i != pending_requests_.end();
+       ++i) {
     web_data_service_->CancelRequest(i->first);
+    delete i->second.form;
   }
 }
 
-void PasswordStoreWin::DBHandler::GetIE7Login(const GURL& url,
-                                              GetLoginsRequest* request) {
+void PasswordStoreWin::DBHandler::GetIE7Login(
+    const PasswordForm& form,
+    const PasswordStoreWin::ConsumerCallbackRunner& callback_runner) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   IE7PasswordInfo info;
-  info.url_hash = ie7_password::GetUrlHash(UTF8ToWide(url.spec()));
+  info.url_hash = ie7_password::GetUrlHash(UTF8ToWide(form.origin.spec()));
   WebDataService::Handle handle = web_data_service_->GetIE7Login(info, this);
-  pending_requests_.insert(PendingRequestMap::value_type(handle, request));
+  pending_requests_[handle] =
+      RequestInfo(new PasswordForm(form), callback_runner);
 }
 
 PasswordForm* PasswordStoreWin::DBHandler::GetIE7Result(
@@ -148,28 +135,30 @@ void PasswordStoreWin::DBHandler::OnWebDataServiceRequestDone(
     const WDTypedResult* result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 
-  PendingRequestMap::iterator i(pending_requests_.find(handle));
+  PendingRequestMap::iterator i = pending_requests_.find(handle);
   DCHECK(i != pending_requests_.end());
-  scoped_refptr<GetLoginsRequest> request(i->second);
+
+  scoped_ptr<PasswordForm> form(i->second.form);
+  PasswordStoreWin::ConsumerCallbackRunner callback_runner(
+      i->second.callback_runner);
   pending_requests_.erase(i);
 
-  if (!result)
-    return;  // The WDS returns NULL if it is shutting down.
+  std::vector<content::PasswordForm*> matched_forms;
+
+  if (!result) {
+    // The WDS returns NULL if it is shutting down. Run callback with empty
+    // result.
+    callback_runner.Run(matched_forms);
+    return;
+  }
 
   DCHECK_EQ(PASSWORD_IE7_RESULT, result->GetType());
-  PasswordForm* form =
-      static_cast<FormGetLoginsRequest*>(request.get())->form();
-  DCHECK(form);
   PasswordForm* ie7_form = GetIE7Result(result, *form);
 
   if (ie7_form)
-    request->value.push_back(ie7_form);
+    matched_forms.push_back(ie7_form);
 
-  // Since we aren't using ForwardLoginsResult(), we must call
-  // ApplyIgnoreLoginsCutoff() manually here as is done in
-  // PasswordStore::ForwardLoginsResult().
-  request->ApplyIgnoreLoginsCutoff();
-  request->ForwardResult(request->handle(), request->value);
+  callback_runner.Run(matched_forms);
 }
 
 PasswordStoreWin::PasswordStoreWin(LoginDatabase* login_database,
@@ -187,11 +176,6 @@ void PasswordStoreWin::ShutdownOnDBThread() {
   db_handler_.reset();
 }
 
-PasswordStore::GetLoginsRequest* PasswordStoreWin::NewGetLoginsRequest(
-    const GetLoginsCallback& callback) {
-  return new FormGetLoginsRequest(callback);
-}
-
 void PasswordStoreWin::ShutdownOnUIThread() {
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
@@ -199,21 +183,24 @@ void PasswordStoreWin::ShutdownOnUIThread() {
   PasswordStoreDefault::ShutdownOnUIThread();
 }
 
-void PasswordStoreWin::ForwardLoginsResult(GetLoginsRequest* request) {
+void PasswordStoreWin::GetIE7LoginIfNecessary(
+    const PasswordForm& form,
+    const ConsumerCallbackRunner& callback_runner,
+    const std::vector<content::PasswordForm*>& matched_forms) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-  if (static_cast<FormGetLoginsRequest*>(request)->IsLoginsRequest() &&
-      request->value.empty() && db_handler_.get()) {
-    db_handler_->GetIE7Login(
-        static_cast<FormGetLoginsRequest*>(request)->form()->origin,
-        request);
+  if (matched_forms.empty() && db_handler_.get()) {
+    db_handler_->GetIE7Login(form, callback_runner);
   } else {
-    PasswordStore::ForwardLoginsResult(request);
+    // No need to get IE7 login.
+    callback_runner.Run(matched_forms);
   }
 }
 
-void PasswordStoreWin::GetLoginsImpl(GetLoginsRequest* request,
-                                     const PasswordForm& form) {
-  static_cast<FormGetLoginsRequest*>(request)->SetLoginsRequestForm(form);
-
-  PasswordStoreDefault::GetLoginsImpl(request, form);
+void PasswordStoreWin::GetLoginsImpl(
+    const PasswordForm& form,
+    const ConsumerCallbackRunner& callback_runner) {
+  ConsumerCallbackRunner get_ie7_login =
+      base::Bind(&PasswordStoreWin::GetIE7LoginIfNecessary,
+                 this, form, callback_runner);
+  PasswordStoreDefault::GetLoginsImpl(form, get_ie7_login);
 }

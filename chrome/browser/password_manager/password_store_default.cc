@@ -94,9 +94,11 @@ void PasswordStoreDefault::RemoveLoginsCreatedBetweenImpl(
 }
 
 void PasswordStoreDefault::GetLoginsImpl(
-    GetLoginsRequest* request, const content::PasswordForm& form) {
-  login_db_->GetLogins(form, &request->value);
-  ForwardLoginsResult(request);
+    const content::PasswordForm& form,
+    const ConsumerCallbackRunner& callback_runner) {
+  std::vector<PasswordForm*> matched_forms;
+  login_db_->GetLogins(form, &matched_forms);
+  callback_runner.Run(matched_forms);
 }
 
 void PasswordStoreDefault::GetAutofillableLoginsImpl(
