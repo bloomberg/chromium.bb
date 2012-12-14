@@ -11,14 +11,12 @@
 
 namespace {
 
-bool IsRequired(const extensions::Extension* extension) {
-  return extensions::Extension::IsRequired(extension->location());
-}
-
 bool ManagementPolicyImpl(const extensions::Extension* extension,
                           string16* error,
                           bool modifiable_value) {
-  bool modifiable = !IsRequired(extension);
+  bool modifiable =
+      extension->location() != extensions::Extension::COMPONENT &&
+      extension->location() != extensions::Extension::EXTERNAL_POLICY_DOWNLOAD;
   // Some callers equate "no restriction" to true, others to false.
   if (modifiable)
     return modifiable_value;
@@ -57,7 +55,8 @@ bool UserMayLoad(const base::ListValue* blacklist,
                  const base::ListValue* allowed_types,
                  const Extension* extension,
                  string16* error) {
-  if (IsRequired(extension))
+  // Component extensions are always allowed.
+  if (extension->location() == Extension::COMPONENT)
     return true;
 
   // Early exit for the common case of no policy restrictions.

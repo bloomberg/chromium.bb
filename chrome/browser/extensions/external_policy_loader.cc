@@ -24,6 +24,9 @@ ExternalPolicyLoader::ExternalPolicyLoader(Profile* profile)
   pref_change_registrar_.Add(prefs::kExtensionInstallForceList,
                              base::Bind(&ExternalPolicyLoader::StartLoading,
                                         base::Unretained(this)));
+  pref_change_registrar_.Add(prefs::kExtensionAllowedTypes,
+                             base::Bind(&ExternalPolicyLoader::StartLoading,
+                                        base::Unretained(this)));
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_PROFILE_DESTROYED,
                               content::Source<Profile>(profile_));
