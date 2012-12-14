@@ -110,15 +110,18 @@ string16 GetTitle(int render_process_id, int render_view_id) {
 
 }  // namespace
 
-MediaStreamCaptureIndicator::TabEquals::TabEquals(int render_process_id,
+MediaStreamCaptureIndicator::TabEquals::TabEquals(WebContents* web_contents,
+                                                  int render_process_id,
                                                   int render_view_id)
-    : render_process_id_(render_process_id),
+    : web_contents_(web_contents),
+      render_process_id_(render_process_id),
       render_view_id_(render_view_id) {}
 
 bool MediaStreamCaptureIndicator::TabEquals::operator() (
     const MediaStreamCaptureIndicator::CaptureDeviceTab& tab) {
-    return (render_process_id_ == tab.render_process_id &&
-            render_view_id_ == tab.render_view_id);
+  return (web_contents_ == tab.web_contents ||
+          (render_process_id_ == tab.render_process_id &&
+           render_view_id_ == tab.render_view_id));
 }
 
 MediaStreamCaptureIndicator::MediaStreamCaptureIndicator()
@@ -398,9 +401,13 @@ void MediaStreamCaptureIndicator::AddCaptureDeviceTab(
     return;
 
   CaptureDeviceTabs::iterator iter = std::find_if(
-      tabs_.begin(), tabs_.end(), TabEquals(render_process_id, render_view_id));
+      tabs_.begin(), tabs_.end(), TabEquals(web_contents,
+                                            render_process_id,
+                                            render_view_id));
   if (iter == tabs_.end()) {
-    tabs_.push_back(CaptureDeviceTab(render_process_id, render_view_id));
+    tabs_.push_back(CaptureDeviceTab(web_contents,
+                                     render_process_id,
+                                     render_view_id));
     iter = tabs_.end() - 1;
   }
 
@@ -441,8 +448,12 @@ void MediaStreamCaptureIndicator::RemoveCaptureDeviceTab(
     int render_view_id,
     const content::MediaStreamDevices& devices) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  WebContents* web_contents = tab_util::GetWebContentsByID(render_process_id,
+                                                           render_view_id);
   CaptureDeviceTabs::iterator iter = std::find_if(
-      tabs_.begin(), tabs_.end(), TabEquals(render_process_id, render_view_id));
+      tabs_.begin(), tabs_.end(), TabEquals(web_contents,
+                                            render_process_id,
+                                            render_view_id));
 
   if (iter != tabs_.end()) {
     content::MediaStreamDevices::const_iterator dev = devices.begin();
@@ -468,8 +479,6 @@ void MediaStreamCaptureIndicator::RemoveCaptureDeviceTab(
       tabs_.erase(iter);
   }
 
-  WebContents* web_contents = tab_util::GetWebContentsByID(render_process_id,
-                                                           render_view_id);
   if (web_contents)
     web_contents->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
 
@@ -482,8 +491,15 @@ void MediaStreamCaptureIndicator::RemoveCaptureDeviceTab(
 bool MediaStreamCaptureIndicator::IsProcessCapturing(int render_process_id,
                                                      int render_view_id) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  WebContents* web_contents = tab_util::GetWebContentsByID(render_process_id,
+                                                           render_view_id);
+  if (!web_contents)
+    return false;
+
   CaptureDeviceTabs::const_iterator iter = std::find_if(
-      tabs_.begin(), tabs_.end(), TabEquals(render_process_id, render_view_id));
+      tabs_.begin(), tabs_.end(), TabEquals(web_contents,
+                                            render_process_id,
+                                            render_view_id));
   if (iter == tabs_.end())
     return false;
   return (iter->audio_ref_count > 0 || iter->video_ref_count > 0);
@@ -492,8 +508,15 @@ bool MediaStreamCaptureIndicator::IsProcessCapturing(int render_process_id,
 bool MediaStreamCaptureIndicator::IsProcessCapturingTab(
     int render_process_id, int render_view_id) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  WebContents* web_contents = tab_util::GetWebContentsByID(render_process_id,
+                                                           render_view_id);
+  if (!web_contents)
+    return false;
+
   CaptureDeviceTabs::const_iterator iter = std::find_if(
-      tabs_.begin(), tabs_.end(), TabEquals(render_process_id, render_view_id));
+      tabs_.begin(), tabs_.end(), TabEquals(web_contents,
+                                            render_process_id,
+                                            render_view_id));
   if (iter == tabs_.end())
     return false;
   return (iter->tab_capture_ref_count > 0);

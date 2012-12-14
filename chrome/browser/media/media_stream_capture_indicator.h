@@ -14,6 +14,10 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/image/image_skia.h"
 
+namespace content {
+class WebContents;
+}  // namespace content
+
 class StatusIcon;
 class StatusTray;
 
@@ -54,17 +58,22 @@ class MediaStreamCaptureIndicator
 
  private:
   // Struct to store the usage information of the capture devices for each tab.
+  // Note: It is not safe to dereference WebContents pointer. This is used to
+  // track the tab after navigations as render_view_id's can change.
   // TODO(estade): this should be called CaptureDeviceContents; not all the
   // render views it represents are tabs.
   struct CaptureDeviceTab {
-    CaptureDeviceTab(int render_process_id,
+    CaptureDeviceTab(content::WebContents* web_contents,
+                     int render_process_id,
                      int render_view_id)
-        : render_process_id(render_process_id),
+        : web_contents(web_contents),
+          render_process_id(render_process_id),
           render_view_id(render_view_id),
           audio_ref_count(0),
           video_ref_count(0),
           tab_capture_ref_count(0) {}
 
+    content::WebContents* web_contents;
     int render_process_id;
     int render_view_id;
     int audio_ref_count;
@@ -73,15 +82,23 @@ class MediaStreamCaptureIndicator
   };
 
   // A private predicate used in std::find_if to find a |CaptureDeviceTab|
-  // which matches the information specified at construction.
+  // which matches the information specified at construction. A tab will match
+  // if either the web_contents pointer is the same or the render_process_id and
+  // render_view_id's are the same. In the first case, a tab with a UI indicator
+  // may have changed page so the id's are different. In the second case, the
+  // web_contents may have already been destroyed before the indicator was
+  // hidden.
   class TabEquals {
    public:
-    TabEquals(int render_process_id, int render_view_id);
+    TabEquals(content::WebContents* web_contents,
+              int render_process_id,
+              int render_view_id);
 
     bool operator() (
         const MediaStreamCaptureIndicator::CaptureDeviceTab& tab);
 
    private:
+    content::WebContents* web_contents_;
     int render_process_id_;
     int render_view_id_;
   };
