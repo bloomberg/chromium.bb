@@ -158,6 +158,31 @@ v8::Handle<v8::Value> EvaluateInWebInspector(const v8::Arguments& args) {
   return v8::Undefined();
 }
 
+v8::Handle<v8::Value> ExecCommand(const v8::Arguments& args) {
+  // This method takes one, two, or three parameters, however, we only care
+  // about the first and third parameter which (if present) need to be strings.
+  // We ignore the second parameter (user interface) since this command
+  // emulates a manual action.
+  if (args.Length() == 0 || args.Length() > 3)
+    return v8::Undefined();
+
+  if (!args[0]->IsString() || (args.Length() == 3 && !args[2]->IsString()))
+    return v8::Undefined();
+
+  WebKitTestRunner* runner =
+      ShellRenderProcessObserver::GetInstance()->main_test_runner();
+  if (!runner)
+    return v8::Undefined();
+
+  std::string command(*v8::String::AsciiValue(args[0]));
+  std::string value;
+  if (args.Length() == 3)
+    value = *v8::String::AsciiValue(args[2]);
+
+  runner->ExecCommand(command, value);
+  return v8::Undefined();
+}
+
 v8::Handle<v8::Value> GetGlobalFlag(const v8::Arguments& args) {
   return v8::Boolean::New(g_global_flag);
 }
@@ -237,6 +262,8 @@ WebKitTestRunnerBindings::GetNativeFunction(v8::Handle<v8::String> name) {
     return v8::FunctionTemplate::New(CloseWebInspector);
   if (name->Equals(v8::String::New("EvaluateInWebInspector")))
     return v8::FunctionTemplate::New(EvaluateInWebInspector);
+  if (name->Equals(v8::String::New("ExecCommand")))
+    return v8::FunctionTemplate::New(ExecCommand);
   if (name->Equals(v8::String::New("GetGlobalFlag")))
     return v8::FunctionTemplate::New(GetGlobalFlag);
   if (name->Equals(v8::String::New("SetGlobalFlag")))

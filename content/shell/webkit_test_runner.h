@@ -71,6 +71,7 @@ class WebKitTestRunner : public RenderViewObserver,
   void ShowWebInspector();
   void CloseWebInspector();
   void EvaluateInWebInspector(int32_t call_id, const std::string& script);
+  void ExecCommand(const std::string& command, const std::string& value);
 
   void NotImplemented(const std::string& object, const std::string& method);
 

@@ -328,6 +328,12 @@ void WebKitTestRunner::EvaluateInWebInspector(int32_t call_id,
     agent->evaluateInWebInspector(call_id, WebString::fromUTF8(script));
 }
 
+void WebKitTestRunner::ExecCommand(const std::string& command,
+                                   const std::string& value) {
+  render_view()->GetWebView()->focusedFrame()->executeCommand(
+      WebString::fromUTF8(command), WebString::fromUTF8(value));
+}
+
 void WebKitTestRunner::NotImplemented(const std::string& object,
                                       const std::string& method) {
   Send(new ShellViewHostMsg_NotImplemented(routing_id(), object, method));

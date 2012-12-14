@@ -8,6 +8,7 @@ var testRunner = testRunner || {};
   native function CloseWebInspector();
   native function Display();
   native function EvaluateInWebInspector();
+  native function ExecCommand();
   native function GetWorkerThreadCount();
   native function NotifyDone();
   native function SetCanOpenWindows();
@@ -75,6 +76,7 @@ var testRunner = testRunner || {};
     Object.defineProperty(this,
                           "evaluateInWebInspector",
                           {value: EvaluateInWebInspector});
+    Object.defineProperty(this, "execCommand", {value: ExecCommand});
 
 
     Object.defineProperty(this,
