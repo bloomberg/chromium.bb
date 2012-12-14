@@ -242,6 +242,12 @@ const wchar_t kPostedResultSubstring[] = L"/writefile/";
 
 void ChromeFrameTestWithWebServer::SimpleBrowserTestExpectedResult(
     BrowserKind browser, const wchar_t* page, const char* result) {
+  if (browser == IE && chrome_frame_test::GetInstalledIEVersion() >= IE_9) {
+    LOG(INFO) << "Temporarily disabling IE9 web server tests. "
+                 "See http://crbug.com/143699";
+    return;
+  }
+
   int tries = 0;
   ExpectAndHandlePostedResult();
   // Retry tests that timeout once; see http://crbug.com/96449.
