@@ -671,7 +671,7 @@ Press any key to continue exploring.
     Failed to disconnect and unpair from "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>".
   </message>
   <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_EXPLANATION" desc="In the settings tab, this text explains the accessibiliy features.">
-    Enable the accessibility features you need.
+    Enable accessibility features to make your device easier to use.
   </message>
   <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SPOKEN_FEEDBACK_DESCRIPTION" desc="In the settings tab, the text next to the checkbox for spoken feedback.">
     Enable spoken feedback
@@ -698,7 +698,7 @@ Press any key to continue exploring.
     Enable virtual keyboard
   </message>
   <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SHOULD_ALWAYS_SHOW_MENU" desc="In the settings tab, the text next to the checkbox to show the accessibility tray menu regardless of the state of a11y features.">
-    Enable accessibility menu
+    Show accessibility options in the system menu
   </message>
   <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_BUTTON_LABEL" desc="Label for the button opening display settings tab.">
     Display settings
