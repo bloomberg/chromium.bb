@@ -471,6 +471,7 @@ static GLES2Util::EnumToString enum_to_string_table[] = {
   { 0x84DE, "GL_TEXTURE30", },
   { 0x84DB, "GL_TEXTURE27", },
   { 0x84DC, "GL_TEXTURE28", },
+  { 0x6002, "GL_TEXTURE_POOL_UNMANAGED_CHROMIUM", },
   { 0x84DA, "GL_TEXTURE26", },
   { 0x8242, "GL_DEBUG_OUTPUT_SYNCHRONOUS", },
   { 0x8243, "GL_DEBUG_NEXT_LOGGED_MESSAGE_LENGTH", },
@@ -636,8 +637,10 @@ static GLES2Util::EnumToString enum_to_string_table[] = {
   { 0x40000000, "GL_MULTISAMPLE_BUFFER_BIT6_QCOM", },
   { 0x9116, "GL_SYNC_FENCE_APPLE", },
   { 0x88EF, "GL_PIXEL_UNPACK_TRANSFER_BUFFER_BINDING_CHROMIUM", },
+  { 0x6000, "GL_TEXTURE_POOL_CHROMIUM", },
   { 0x00000800, "GL_DEPTH_BUFFER_BIT3_QCOM", },
   { 0x1903, "GL_RED_EXT", },
+  { 0x6001, "GL_TEXTURE_POOL_MANAGED_CHROMIUM", },
   { 0x8CE2, "GL_COLOR_ATTACHMENT2_NV", },
   { 0x8BC1, "GL_COUNTER_RANGE_AMD", },
   { 0x8CE0, "GL_COLOR_ATTACHMENT0", },
@@ -1295,8 +1298,19 @@ std::string GLES2Util::GetStringTextureParameter(uint32 value) {
   static EnumToString string_table[] = {
     { GL_TEXTURE_MAG_FILTER, "GL_TEXTURE_MAG_FILTER" },
     { GL_TEXTURE_MIN_FILTER, "GL_TEXTURE_MIN_FILTER" },
+    { GL_TEXTURE_POOL_CHROMIUM, "GL_TEXTURE_POOL_CHROMIUM" },
     { GL_TEXTURE_WRAP_S, "GL_TEXTURE_WRAP_S" },
     { GL_TEXTURE_WRAP_T, "GL_TEXTURE_WRAP_T" },
+  };
+  return GLES2Util::GetQualifiedEnumString(
+      string_table, arraysize(string_table), value);
+}
+
+std::string GLES2Util::GetStringTexturePool(uint32 value) {
+  static EnumToString string_table[] = {
+    { GL_TEXTURE_POOL_MANAGED_CHROMIUM, "GL_TEXTURE_POOL_MANAGED_CHROMIUM" },
+    { GL_TEXTURE_POOL_UNMANAGED_CHROMIUM,
+    "GL_TEXTURE_POOL_UNMANAGED_CHROMIUM" },
   };
   return GLES2Util::GetQualifiedEnumString(
       string_table, arraysize(string_table), value);

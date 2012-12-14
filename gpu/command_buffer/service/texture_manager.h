@@ -66,6 +66,10 @@ class GPU_EXPORT TextureManager {
       return usage_;
     }
 
+    GLenum pool() const {
+      return pool_;
+    }
+
     int num_uncleared_mips() const {
       return num_uncleared_mips_;
     }
@@ -310,11 +314,7 @@ class GPU_EXPORT TextureManager {
     GLenum wrap_s_;
     GLenum wrap_t_;
     GLenum usage_;
-
-    // The accounting pool towards which the memory for this allocation should
-    // be charged. This will be rolled into a new GLenum texture parameter in
-    // a separate change.
-    MemoryTracker::Pool tracking_pool_;
+    GLenum pool_;
 
     // The maximum level that has been set.
     GLint max_level_set_;
@@ -539,7 +539,7 @@ class GPU_EXPORT TextureManager {
   void StartTracking(TextureInfo* info);
   void StopTracking(TextureInfo* info);
 
-  MemoryTypeTracker* GetMemTracker(MemoryTracker::Pool tracking_pool);
+  MemoryTypeTracker* GetMemTracker(GLenum texture_pool);
   scoped_ptr<MemoryTypeTracker> memory_tracker_managed_;
   scoped_ptr<MemoryTypeTracker> memory_tracker_unmanaged_;
 

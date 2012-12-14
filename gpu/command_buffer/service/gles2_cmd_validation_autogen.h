@@ -59,6 +59,7 @@ ValueValidator<GLenum> texture_internal_format_storage;
 ValueValidator<GLenum> texture_mag_filter_mode;
 ValueValidator<GLenum> texture_min_filter_mode;
 ValueValidator<GLenum> texture_parameter;
+ValueValidator<GLenum> texture_pool;
 ValueValidator<GLenum> texture_target;
 ValueValidator<GLenum> texture_usage;
 ValueValidator<GLenum> texture_wrap_mode;

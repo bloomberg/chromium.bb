@@ -56,6 +56,7 @@ static std::string GetStringTextureInternalFormatStorage(uint32 value);
 static std::string GetStringTextureMagFilterMode(uint32 value);
 static std::string GetStringTextureMinFilterMode(uint32 value);
 static std::string GetStringTextureParameter(uint32 value);
+static std::string GetStringTexturePool(uint32 value);
 static std::string GetStringTextureTarget(uint32 value);
 static std::string GetStringTextureUsage(uint32 value);
 static std::string GetStringTextureWrapMode(uint32 value);

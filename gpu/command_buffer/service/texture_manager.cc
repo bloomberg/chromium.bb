@@ -101,7 +101,7 @@ TextureManager::TextureInfo::TextureInfo(TextureManager* manager,
       wrap_s_(GL_REPEAT),
       wrap_t_(GL_REPEAT),
       usage_(GL_NONE),
-      tracking_pool_(MemoryTracker::kUnmanaged),
+      pool_(GL_TEXTURE_POOL_UNMANAGED_CHROMIUM),
       max_level_set_(-1),
       texture_complete_(false),
       cube_complete_(false),
@@ -475,6 +475,14 @@ GLenum TextureManager::TextureInfo::SetParameter(
         return GL_INVALID_ENUM;
       }
       mag_filter_ = param;
+      break;
+    case GL_TEXTURE_POOL_CHROMIUM:
+      if (!feature_info->validators()->texture_pool.IsValid(param)) {
+        return GL_INVALID_ENUM;
+      }
+      manager_->GetMemTracker(pool_)->TrackMemFree(estimated_size());
+      pool_ = param;
+      manager_->GetMemTracker(pool_)->TrackMemAlloc(estimated_size());
       break;
     case GL_TEXTURE_WRAP_S:
       if (!feature_info->validators()->texture_wrap_mode.IsValid(param)) {
@@ -915,12 +923,12 @@ void TextureManager::SetLevelInfo(
   num_uncleared_mips_ -= info->num_uncleared_mips();
   DCHECK_GE(num_uncleared_mips_, 0);
 
-  GetMemTracker(info->tracking_pool_)->TrackMemFree(info->estimated_size());
+  GetMemTracker(info->pool_)->TrackMemFree(info->estimated_size());
   info->SetLevelInfo(
       feature_info_, target, level, internal_format, width, height, depth,
       border, format, type, cleared);
-  GetMemTracker(info->tracking_pool_)->TrackMemAlloc(info->estimated_size());
-  GetMemTracker(info->tracking_pool_)->UpdateMemRepresented();
+  GetMemTracker(info->pool_)->TrackMemAlloc(info->estimated_size());
+  GetMemTracker(info->pool_)->UpdateMemRepresented();
 
   num_uncleared_mips_ += info->num_uncleared_mips();
   if (!info->CanRender(feature_info_)) {
@@ -1072,10 +1080,10 @@ bool TextureManager::MarkMipmapsGenerated(TextureManager::TextureInfo* info) {
   }
   num_uncleared_mips_ -= info->num_uncleared_mips();
   DCHECK_GE(num_uncleared_mips_, 0);
-  GetMemTracker(info->tracking_pool_)->TrackMemFree(info->estimated_size());
+  GetMemTracker(info->pool_)->TrackMemFree(info->estimated_size());
   bool result = info->MarkMipmapsGenerated(feature_info_);
-  GetMemTracker(info->tracking_pool_)->TrackMemAlloc(info->estimated_size());
-  GetMemTracker(info->tracking_pool_)->UpdateMemRepresented();
+  GetMemTracker(info->pool_)->TrackMemAlloc(info->estimated_size());
+  GetMemTracker(info->pool_)->UpdateMemRepresented();
 
   num_uncleared_mips_ += info->num_uncleared_mips();
   if (!info->CanRender(feature_info_)) {
@@ -1135,18 +1143,16 @@ void TextureManager::StopTracking(TextureManager::TextureInfo* texture) {
   }
   num_uncleared_mips_ -= texture->num_uncleared_mips();
   DCHECK_GE(num_uncleared_mips_, 0);
-  GetMemTracker(texture->tracking_pool_)->TrackMemFree(
-      texture->estimated_size());
-  GetMemTracker(texture->tracking_pool_)->UpdateMemRepresented();
+  GetMemTracker(texture->pool_)->TrackMemFree(texture->estimated_size());
+  GetMemTracker(texture->pool_)->UpdateMemRepresented();
 }
 
-MemoryTypeTracker* TextureManager::GetMemTracker(
-    MemoryTracker::Pool tracking_pool) {
+MemoryTypeTracker* TextureManager::GetMemTracker(GLenum tracking_pool) {
   switch(tracking_pool) {
-    case MemoryTracker::kManaged:
+    case GL_TEXTURE_POOL_MANAGED_CHROMIUM:
       return memory_tracker_managed_.get();
       break;
-    case MemoryTracker::kUnmanaged:
+    case GL_TEXTURE_POOL_UNMANAGED_CHROMIUM:
       return memory_tracker_unmanaged_.get();
       break;
     default:

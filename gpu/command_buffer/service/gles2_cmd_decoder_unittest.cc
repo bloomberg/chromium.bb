@@ -7935,6 +7935,46 @@ TEST_F(GLES2DecoderTest, ReleaseTexImage2DCHROMIUM) {
   EXPECT_TRUE(info->GetLevelImage(GL_TEXTURE_2D, 0) == NULL);
 }
 
+TEST_F(GLES2DecoderManualInitTest, GpuMemoryManagerCHROMIUM) {
+  InitDecoder(
+      "GL_ARB_texture_rectangle",  // extensions
+      false,   // has alpha
+      false,   // has depth
+      false,   // has stencil
+      false,   // request alpha
+      false,   // request depth
+      false,   // request stencil
+      true);   // bind generates resource
+
+  TextureManager::TextureInfo* info = GetTextureInfo(client_texture_id_);
+  EXPECT_TRUE(info != NULL);
+  EXPECT_TRUE(info->pool() == GL_TEXTURE_POOL_UNMANAGED_CHROMIUM);
+
+  DoBindTexture(
+      GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+
+  TexParameteri cmd;
+  cmd.Init(GL_TEXTURE_2D,
+           GL_TEXTURE_POOL_CHROMIUM,
+           GL_TEXTURE_POOL_UNMANAGED_CHROMIUM);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  cmd.Init(GL_TEXTURE_2D,
+           GL_TEXTURE_POOL_CHROMIUM,
+           GL_TEXTURE_POOL_MANAGED_CHROMIUM);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  EXPECT_TRUE(info->pool() == GL_TEXTURE_POOL_MANAGED_CHROMIUM);
+
+  cmd.Init(GL_TEXTURE_2D,
+           GL_TEXTURE_POOL_CHROMIUM,
+           GL_NONE);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+}
+
 // TODO(gman): Complete this test.
 // TEST_F(GLES2DecoderTest, CompressedTexImage2DGLError) {
 // }

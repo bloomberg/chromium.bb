@@ -449,8 +449,14 @@ static GLenum valid_texture_min_filter_mode_table[] = {
 static GLenum valid_texture_parameter_table[] = {
   GL_TEXTURE_MAG_FILTER,
   GL_TEXTURE_MIN_FILTER,
+  GL_TEXTURE_POOL_CHROMIUM,
   GL_TEXTURE_WRAP_S,
   GL_TEXTURE_WRAP_T,
+};
+
+static GLenum valid_texture_pool_table[] = {
+  GL_TEXTURE_POOL_MANAGED_CHROMIUM,
+  GL_TEXTURE_POOL_UNMANAGED_CHROMIUM,
 };
 
 static GLenum valid_texture_target_table[] = {
@@ -629,6 +635,8 @@ Validators::Validators()
       texture_parameter(
           valid_texture_parameter_table, arraysize(
               valid_texture_parameter_table)),
+      texture_pool(
+          valid_texture_pool_table, arraysize(valid_texture_pool_table)),
       texture_target(
           valid_texture_target_table, arraysize(valid_texture_target_table)),
       texture_usage(

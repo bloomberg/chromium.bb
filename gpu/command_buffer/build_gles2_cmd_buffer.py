@@ -845,11 +845,19 @@ _ENUM_LISTS = {
     'valid': [
       'GL_TEXTURE_MAG_FILTER',
       'GL_TEXTURE_MIN_FILTER',
+      'GL_TEXTURE_POOL_CHROMIUM',
       'GL_TEXTURE_WRAP_S',
       'GL_TEXTURE_WRAP_T',
     ],
     'invalid': [
       'GL_GENERATE_MIPMAP',
+    ],
+  },
+  'TexturePool': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_TEXTURE_POOL_MANAGED_CHROMIUM',
+      'GL_TEXTURE_POOL_UNMANAGED_CHROMIUM',
     ],
   },
   'TextureWrapMode': {

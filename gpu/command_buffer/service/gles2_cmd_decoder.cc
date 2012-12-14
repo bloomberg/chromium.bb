@@ -4865,6 +4865,11 @@ void GLES2DecoderImpl::DoTexParameteri(
     SetGLErrorInvalidParam(error, "glTexParameteri", pname, param);
     return;
   }
+  // Texture tracking pools exist only for the command decoder, so
+  // do not pass them on to the native GL implementation.
+  if (pname == GL_TEXTURE_POOL_CHROMIUM) {
+    return;
+  }
   glTexParameteri(target, pname, param);
 }
 
