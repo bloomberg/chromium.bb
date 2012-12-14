@@ -354,7 +354,6 @@
             '../build/linux/system.gyp:fontconfig',
             '../build/linux/system.gyp:freetype2',
             '../build/linux/system.gyp:pangocairo',
-            '../third_party/harfbuzz-ng/harfbuzz.gyp:harfbuzz-ng',
             '../third_party/icu/icu.gyp:icuuc',
           ],
           'cflags': [
@@ -401,7 +400,6 @@
               'dependencies': [
                 '../third_party/expat/expat.gyp:expat',
                 '../third_party/freetype/freetype.gyp:ft2',
-                '../third_party/harfbuzz/harfbuzz.gyp:harfbuzz',
                 'skia_opts'
               ],
               'dependencies!': [
@@ -421,9 +419,6 @@
               ],
               'sources!': [
                 'ext/vector_platform_device_skia.cc',
-              ],
-              'export_dependent_settings': [
-                '../third_party/harfbuzz/harfbuzz.gyp:harfbuzz',
               ],
             }],
             [ '_toolset == "target" and android_build_type == 0', {
