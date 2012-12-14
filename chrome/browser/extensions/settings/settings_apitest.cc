@@ -422,6 +422,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, IsStorageEnabled) {
 }
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
+
 IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, ManagedStorage) {
   // Set policies for the test extension.
   scoped_ptr<base::DictionaryValue> policy = extensions::DictionaryBuilder()
@@ -479,6 +480,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, PRE_ManagedStorageEvents) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
+// TODO(joaodasilva): This test times out on Vista. http://crbug.com/166261
+#if !defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, ManagedStorageEvents) {
   // This test runs after PRE_ManagedStorageEvents without having deleted the
   // profile, so the extension is still around. While the browser restarted the
@@ -496,6 +499,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, ManagedStorageEvents) {
   // the onChanged notification.
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
+#endif  // !defined(OS_WIN)
+
 #endif  // defined(ENABLE_CONFIGURATION_POLICY)
 
 IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, ManagedStorageDisabled) {
