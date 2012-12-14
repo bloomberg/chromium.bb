@@ -296,6 +296,7 @@ class DriveDetailedView : public TrayDetailsView,
 
     // Apply the update.
     std::set<FilePath> new_set;
+    bool item_list_changed = false;
     for (DriveOperationStatusList::const_iterator it = list->begin();
          it != list->end(); ++it) {
       const DriveOperationStatus& operation = *it;
@@ -315,6 +316,7 @@ class DriveDetailedView : public TrayDetailsView,
 
         update_map_[operation.file_path] = row_view;
         scroll_content()->AddChildView(row_view);
+        item_list_changed = true;
       }
     }
 
@@ -333,7 +335,11 @@ class DriveDetailedView : public TrayDetailsView,
         removed_iter != remove_set.end(); ++removed_iter)  {
       delete update_map_[*removed_iter];
       update_map_.erase(*removed_iter);
+      item_list_changed = true;
     }
+
+    if (item_list_changed)
+      scroller()->Layout();
 
     // Close the details if there is really nothing to show there anymore.
     if (new_set.empty())
