@@ -187,13 +187,29 @@ cr.define('options', function() {
         siteLink.hidden = false;
       }
 
-      // The 'Reload' checkbox.
       if (extension.allow_reload) {
+        // The 'Reload' link.
         var reload = node.querySelector('.reload-link');
         reload.addEventListener('click', function(e) {
           chrome.send('extensionSettingsReload', [extension.id]);
         });
         reload.hidden = false;
+
+        if (extension.is_platform_app) {
+          // The 'Launch' link.
+          var launch = node.querySelector('.launch-link');
+          launch.addEventListener('click', function(e) {
+            chrome.send('extensionSettingsLaunch', [extension.id]);
+          });
+          launch.hidden = false;
+
+          // The 'Restart' link.
+          var restart = node.querySelector('.restart-link');
+          restart.addEventListener('click', function(e) {
+            chrome.send('extensionSettingsRestart', [extension.id]);
+          });
+          restart.hidden = false;
+        }
       }
 
       if (!extension.terminated) {

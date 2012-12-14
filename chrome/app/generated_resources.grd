@@ -5444,6 +5444,12 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
       <message name="IDS_EXTENSIONS_RELOAD_TERMINATED" desc="The link for reloading extensions.">
         Reload
       </message>
+      <message name="IDS_EXTENSIONS_LAUNCH" desc="The link for launching apps.">
+        Launch
+      </message>
+      <message name="IDS_EXTENSIONS_RESTART" desc="The link for restarting apps.">
+        Restart
+      </message>
       <if expr="is_macosx">
         <message name="IDS_EXTENSIONS_RELOAD_UNPACKED" desc="The link for reloading unpacked extensions.">
           Reload (⌘R)

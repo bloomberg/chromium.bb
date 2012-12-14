@@ -36,6 +36,7 @@
 #include "chrome/browser/tab_contents/background_contents.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/view_type_utils.h"
@@ -147,6 +148,7 @@ DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   extension_data->SetBoolean("allow_reload",
                              extension->location() == Extension::LOAD);
   extension_data->SetBoolean("is_hosted_app", extension->is_hosted_app());
+  extension_data->SetBoolean("is_platform_app", extension->is_platform_app());
   extension_data->SetBoolean("homepageProvided",
                              extension->GetHomepageURL().is_valid());
 
@@ -287,6 +289,10 @@ void ExtensionSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_INCOGNITO_WARNING));
   localized_strings->SetString("extensionSettingsReloadTerminated",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_RELOAD_TERMINATED));
+  localized_strings->SetString("extensionSettingsLaunch",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_LAUNCH));
+  localized_strings->SetString("extensionSettingsRestart",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_RESTART));
   localized_strings->SetString("extensionSettingsReloadUnpacked",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_RELOAD_UNPACKED));
   localized_strings->SetString("extensionSettingsOptions",
@@ -360,6 +366,12 @@ void ExtensionSettingsHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("extensionSettingsInspect",
       base::Bind(&ExtensionSettingsHandler::HandleInspectMessage,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("extensionSettingsLaunch",
+      base::Bind(&ExtensionSettingsHandler::HandleLaunchMessage,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("extensionSettingsRestart",
+      base::Bind(&ExtensionSettingsHandler::HandleRestartMessage,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("extensionSettingsReload",
       base::Bind(&ExtensionSettingsHandler::HandleReloadMessage,
@@ -625,6 +637,26 @@ void ExtensionSettingsHandler::HandleInspectMessage(const ListValue* args) {
   }
 
   DevToolsWindow::OpenDevToolsWindow(host);
+}
+
+void ExtensionSettingsHandler::HandleLaunchMessage(const ListValue* args) {
+  CHECK_EQ(1U, args->GetSize());
+  std::string extension_id;
+  CHECK(args->GetString(0, &extension_id));
+  const extensions::Extension* extension =
+      extension_service_->GetExtensionById(extension_id, false);
+  application_launch::LaunchParams params(extension_service_->profile(),
+                                          extension,
+                                          extension_misc::LAUNCH_WINDOW,
+                                          NEW_WINDOW);
+  application_launch::OpenApplication(params);
+}
+
+void ExtensionSettingsHandler::HandleRestartMessage(const ListValue* args) {
+  CHECK_EQ(1U, args->GetSize());
+  std::string extension_id;
+  CHECK(args->GetString(0, &extension_id));
+  extension_service_->RestartExtension(extension_id);
 }
 
 void ExtensionSettingsHandler::HandleReloadMessage(const ListValue* args) {
