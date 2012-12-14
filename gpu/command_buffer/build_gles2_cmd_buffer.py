@@ -2445,14 +2445,16 @@ class CHeaderWriter(CWriter):
 
   _non_alnum_re = re.compile(r'[^a-zA-Z0-9]')
 
-  def __init__(self, filename, file_comment = None, guard_depth = 3):
+  def __init__(self, filename, file_comment = None):
     CWriter.__init__(self, filename)
 
-    base = os.path.dirname(os.path.abspath(filename))
-    for i in range(guard_depth):
-      base = os.path.dirname(base)
+    base = os.path.abspath(filename)
+    while os.path.basename(base) != 'src':
+      new_base = os.path.dirname(base)
+      assert new_base != base  # Prevent infinite loop.
+      base = new_base
 
-    hpath = os.path.abspath(filename)[len(base) + 1:]
+    hpath = os.path.relpath(filename, base)
     self.guard = self._non_alnum_re.sub('_', hpath).upper() + '_'
 
     self.Write(_LICENSE)
@@ -7554,7 +7556,7 @@ def main(argv):
         "service/gles2_cmd_validation_implementation_autogen.h")
     gen.WriteCommonUtilsHeader("common/gles2_cmd_utils_autogen.h")
     gen.WriteCommonUtilsImpl("common/gles2_cmd_utils_implementation_autogen.h")
-    gen.WriteGLES2Header("../../third_party/khronos/GLES2/gl2chromium.h")
+    gen.WriteGLES2Header("../GLES2/gl2chromium.h")
 
   if gen.errors > 0:
     print "%d errors" % gen.errors

@@ -1693,6 +1693,7 @@ void GLES2Implementation::DiscardFramebufferEXT(
     return;
   }
   helper_->DiscardFramebufferEXTImmediate(target, count, attachments);
+  CheckGLError();
 }
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_IMPL_AUTOGEN_H_

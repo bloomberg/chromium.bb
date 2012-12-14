@@ -9,8 +9,8 @@
 // Because we are using both the real system GL and our own.
 // emulated GL we need to use different names to avoid conflicts.
 
-#ifndef THIRD_PARTY_KHRONOS_GLES2_GL2CHROMIUM_H_
-#define THIRD_PARTY_KHRONOS_GLES2_GL2CHROMIUM_H_
+#ifndef GPU_GLES2_GL2CHROMIUM_H_
+#define GPU_GLES2_GL2CHROMIUM_H_
 
 #if defined(GLES2_USE_CPP_BINDINGS)
 #define GLES2_GET_FUN(name) gles2::GetGLContext()->name
@@ -228,5 +228,5 @@
 #define glAsyncTexImage2DCHROMIUM GLES2_GET_FUN(AsyncTexImage2DCHROMIUM)
 #define glDiscardFramebufferEXT GLES2_GET_FUN(DiscardFramebufferEXT)
 
-#endif  // THIRD_PARTY_KHRONOS_GLES2_GL2CHROMIUM_H_
+#endif  // GPU_GLES2_GL2CHROMIUM_H_
 

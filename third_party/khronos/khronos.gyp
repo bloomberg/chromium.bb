@@ -15,6 +15,7 @@
           'all_dependent_settings': {
             'include_dirs': [
               '.',
+              '../../gpu',  # Contains GLES2/gl2chromium.h
             ],
           },
         },
@@ -26,7 +27,7 @@
           'type': 'none',
           'all_dependent_settings': {
             'include_dirs': [
-              '/usr/include',
+              '../../gpu',  # Contains GLES2/gl2chromium.h
             ],
           },
         },
