@@ -20,7 +20,7 @@ namespace sandbox {
 // signal handler.
 // A process would typically create a broker process before entering
 // sandboxing.
-// 1. BrokerProcess open_broker(file_whitelist);
+// 1. BrokerProcess open_broker(read_whitelist, write_whitelist);
 // 2. CHECK(open_broker.Init(NULL));
 // 3. Enable sandbox.
 // 4. Use open_broker.Open() to open files.
@@ -37,8 +37,9 @@ class BrokerProcess {
   ~BrokerProcess();
   // Will initialize the broker process. There should be no threads at this
   // point, since we need to fork().
-  // sandbox_callback should be NULL as this feature is not implemented yet.
-  bool Init(void* sandbox_callback);
+  // sandbox_callback is a function that should be called to enable the
+  // sandbox in the broker.
+  bool Init(bool (*sandbox_callback)(void));
 
   // Can be used in place of open(). Will be async signal safe.
   // The implementation only supports certain white listed flags and will

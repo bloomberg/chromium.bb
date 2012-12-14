@@ -110,10 +110,8 @@ BrokerProcess::~BrokerProcess() {
   }
 }
 
-bool BrokerProcess::Init(void* sandbox_callback) {
+bool BrokerProcess::Init(bool (*sandbox_callback)(void)) {
   CHECK(!initialized_);
-  CHECK_EQ(sandbox_callback, (void*) NULL) <<
-      "sandbox_callback is not implemented";
   int socket_pair[2];
   // Use SOCK_SEQPACKET, because we need to preserve message boundaries
   // but we also want to be notified (recvmsg should return and not block)
@@ -148,7 +146,10 @@ bool BrokerProcess::Init(void* sandbox_callback) {
     shutdown(socket_pair[0], SHUT_WR);
     ipc_socketpair_ = socket_pair[0];
     is_child_ = true;
-    // TODO(jln): activate a sandbox here.
+    // Enable the sandbox if provided.
+    if (sandbox_callback) {
+      CHECK(sandbox_callback());
+    }
     initialized_ = true;
     for (;;) {
       HandleRequest();

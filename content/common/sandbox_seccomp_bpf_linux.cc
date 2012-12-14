@@ -23,6 +23,7 @@
 #include "content/common/sandbox_linux.h"
 #include "content/common/sandbox_seccomp_bpf_linux.h"
 #include "content/public/common/content_switches.h"
+#include "sandbox/linux/services/broker_process.h"
 
 // These are the only architectures supported for now.
 #if defined(__i386__) || defined(__x86_64__) || \
@@ -37,8 +38,12 @@
 using playground2::arch_seccomp_data;
 using playground2::ErrorCode;
 using playground2::Sandbox;
+using sandbox::BrokerProcess;
 
 namespace {
+
+void StartSandboxWithPolicy(Sandbox::EvaluateSyscall syscall_policy,
+                            BrokerProcess* broker_process);
 
 inline bool IsChromeOS() {
 #if defined(OS_CHROMEOS)
@@ -100,71 +105,27 @@ bool IsAcceleratedVideoDecodeEnabled() {
   return is_enabled;
 }
 
-static const char kDriRcPath[] = "/etc/drirc";
-
-// TODO(jorgelo): limited to /etc/drirc for now, extend this to cover
-// other sandboxed file access cases.
-int OpenWithCache(const char* pathname, int flags) {
-  static int drircfd = -1;
-  static bool do_open = true;
-  int res = -1;
-
-  if (strcmp(pathname, kDriRcPath) == 0 && flags == O_RDONLY) {
-    if (do_open) {
-      drircfd = open(pathname, flags);
-      do_open = false;
-      res = drircfd;
-    } else {
-      // dup() man page:
-      // "After a successful return from one of these system calls,
-      // the old and new file descriptors may be used interchangeably.
-      // They refer to the same open file description and thus share
-      // file offset and file status flags; for example, if the file offset
-      // is modified by using lseek(2) on one of the descriptors,
-      // the offset is also changed for the other."
-      // Since |drircfd| can be dup()'ed and read many times, we need to
-      // lseek() it to the beginning of the file before returning.
-      // We assume the caller will not keep more than one fd open at any
-      // one time. Intel driver code in Mesa that parses /etc/drirc does
-      // open()/read()/close() in the same function.
-      if (drircfd < 0) {
-        errno = ENOENT;
-        return -1;
-      }
-      int newfd = dup(drircfd);
-      if (newfd < 0) {
-        errno = ENOMEM;
-        return -1;
-      }
-      if (lseek(newfd, 0, SEEK_SET) == static_cast<off_t>(-1)) {
-        (void) HANDLE_EINTR(close(newfd));
-        errno = ENOMEM;
-        return -1;
-      }
-      res = newfd;
-    }
-  } else {
-    res = open(pathname, flags);
-  }
-
-  return res;
-}
-
-// We allow the GPU process to open /etc/drirc because it's needed by Mesa.
-// OpenWithCache() has been called before enabling the sandbox, and has cached
-// a file descriptor for /etc/drirc.
 intptr_t GpuOpenSIGSYS_Handler(const struct arch_seccomp_data& args,
-                               void* aux) {
-  uint64_t arg0 = args.args[0];
-  uint64_t arg1 = args.args[1];
-  const char* pathname = reinterpret_cast<const char*>(arg0);
-  int flags = static_cast<int>(arg1);
-
-  if (strcmp(pathname, kDriRcPath) == 0) {
-    int ret = OpenWithCache(pathname, flags);
-    return (ret == -1) ? -errno : ret;
-  } else {
-    return -ENOENT;
+                               void* aux_broker_process) {
+  RAW_CHECK(aux_broker_process);
+  BrokerProcess* broker_process =
+      static_cast<BrokerProcess*>(aux_broker_process);
+  switch(args.nr) {
+    case __NR_open:
+      return broker_process->Open(reinterpret_cast<const char*>(args.args[0]),
+                                  static_cast<int>(args.args[1]));
+    case __NR_openat:
+      // Allow using openat() as open().
+      if (static_cast<int>(args.args[0]) == AT_FDCWD) {
+        return
+            broker_process->Open(reinterpret_cast<const char*>(args.args[1]),
+                                 static_cast<int>(args.args[2]));
+      } else {
+        return -EPERM;
+      }
+    default:
+      RAW_CHECK(false);
+      return -ENOSYS;
   }
 }
 
@@ -1234,7 +1195,7 @@ ErrorCode BaselinePolicy(int sysno) {
 }
 
 // x86_64 only for now. Needs to be adapted and tested for i386/ARM.
-ErrorCode GpuProcessPolicy_x86_64(int sysno, void *) {
+ErrorCode GpuProcessPolicy_x86_64(int sysno, void *broker_process) {
   switch(sysno) {
     case __NR_ioctl:
 #if defined(ADDRESS_SANITIZER)
@@ -1243,26 +1204,27 @@ ErrorCode GpuProcessPolicy_x86_64(int sysno, void *) {
 #endif
       return ErrorCode(ErrorCode::ERR_ALLOWED);
     case __NR_open:
-      // Accelerated video decode is enabled by default only on Chrome OS.
-      if (IsAcceleratedVideoDecodeEnabled()) {
-        // Accelerated video decode needs to open /dev/dri/card0, and
-        // dup()'ing an already open file descriptor does not work.
-        // Allow open() even though it severely weakens the sandbox,
-        // to test the sandboxing mechanism in general.
-        // TODO(jorgelo): remove this once we solve the libva issue.
-        return ErrorCode(ErrorCode::ERR_ALLOWED);
-      } else {
-        // Hook open() in the GPU process to allow opening /etc/drirc,
-        // needed by Mesa.
-        // The hook needs dup(), lseek(), and close() to be allowed.
-        return Sandbox::Trap(GpuOpenSIGSYS_Handler, NULL);
-      }
+    case __NR_openat:
+        return Sandbox::Trap(GpuOpenSIGSYS_Handler, broker_process);
     default:
       if (IsEventFd(sysno))
         return ErrorCode(ErrorCode::ERR_ALLOWED);
 
       // Default on the baseline policy.
       return BaselinePolicy(sysno);
+  }
+}
+
+// x86_64 only for now. Needs to be adapted and tested for i386/ARM.
+// A GPU broker policy is the same as a GPU policy with open and
+// openat allowed.
+ErrorCode GpuBrokerProcessPolicy_x86_64(int sysno, void*) {
+  switch(sysno) {
+    case __NR_open:
+    case __NR_openat:
+      return ErrorCode(ErrorCode::ERR_ALLOWED);
+    default:
+      return GpuProcessPolicy_x86_64(sysno, NULL);
   }
 }
 
@@ -1358,11 +1320,38 @@ ErrorCode AllowAllPolicy(int sysno, void *) {
   }
 }
 
+bool EnableGpuBrokerPolicyCallBack() {
+  StartSandboxWithPolicy(GpuBrokerProcessPolicy_x86_64, NULL);
+  return true;
+}
+
+// Start a broker process to handle open() inside the sandbox.
+void InitGpuBrokerProcess_x86_64(BrokerProcess** broker_process) {
+  static const char kDriRcPath[] = "/etc/drirc";
+  static const char kDriCard0Path[] = "/dev/dri/card0";
+
+  CHECK(broker_process);
+  CHECK(*broker_process == NULL);
+
+  std::vector<std::string> read_whitelist;
+  read_whitelist.push_back(kDriCard0Path);
+  read_whitelist.push_back(kDriRcPath);
+  std::vector<std::string> write_whitelist;
+  write_whitelist.push_back(kDriCard0Path);
+
+  *broker_process = new BrokerProcess(read_whitelist, write_whitelist);
+  // Initialize the broker process and give it a sandbox call back.
+  CHECK((*broker_process)->Init(EnableGpuBrokerPolicyCallBack));
+}
+
 // Warms up/preloads resources needed by the policies.
-void WarmupPolicy(Sandbox::EvaluateSyscall policy) {
+// Eventually start a broker process and return it in broker_process.
+void WarmupPolicy(Sandbox::EvaluateSyscall policy,
+                  BrokerProcess** broker_process) {
 #if defined(__x86_64__)
   if (policy == GpuProcessPolicy_x86_64) {
-    OpenWithCache(kDriRcPath, O_RDONLY);
+    // Create a new broker process.
+    InitGpuBrokerProcess_x86_64(broker_process);
     // Accelerated video decode dlopen()'s this shared object
     // inside the sandbox, so preload it now.
     // TODO(jorgelo): generalize this to other platforms.
@@ -1409,17 +1398,26 @@ Sandbox::EvaluateSyscall GetProcessSyscallPolicy(
   return AllowAllPolicy;
 }
 
+// broker_process can be NULL if there is no need for one.
+void StartSandboxWithPolicy(Sandbox::EvaluateSyscall syscall_policy,
+                            BrokerProcess* broker_process) {
+
+  Sandbox::setSandboxPolicy(syscall_policy, broker_process);
+  Sandbox::startSandbox();
+}
+
 // Initialize the seccomp-bpf sandbox.
 bool StartBpfSandbox(const CommandLine& command_line,
                      const std::string& process_type) {
-  Sandbox::EvaluateSyscall SyscallPolicy =
+  Sandbox::EvaluateSyscall syscall_policy =
       GetProcessSyscallPolicy(command_line, process_type);
 
-  // Warms up resources needed by the policy we're about to enable.
-  WarmupPolicy(SyscallPolicy);
+  BrokerProcess* broker_process = NULL;
+  // Warm up resources needed by the policy we're about to enable and
+  // eventually start a broker process.
+  WarmupPolicy(syscall_policy, &broker_process);
 
-  Sandbox::setSandboxPolicy(SyscallPolicy, NULL);
-  Sandbox::startSandbox();
+  StartSandboxWithPolicy(syscall_policy, broker_process);
 
   return true;
 }
