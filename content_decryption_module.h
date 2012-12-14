@@ -410,11 +410,15 @@ class Host {
   // Returns the current epoch wall time in seconds.
   virtual double GetCurrentWallTimeInSeconds() = 0;
 
+  // Sends a keymessage event to the application.
+  // Length parameters should not include null termination.
   virtual void SendKeyMessage(
       const char* session_id, int32_t session_id_length,
       const char* message, int32_t message_length,
       const char* default_url, int32_t default_url_length) = 0;
 
+  // Sends a keyerror event to the application.
+  // |session_id_length| should not include null termination.
   virtual void SendKeyError(const char* session_id,
                             int32_t session_id_length,
                             MediaKeyError error_code,
