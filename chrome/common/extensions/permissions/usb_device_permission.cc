@@ -11,9 +11,12 @@
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
-#include "device/usb/usb_ids.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if defined(ENABLE_EXTENSIONS)
+#include "device/usb/usb_ids.h"
+#endif
 
 namespace extensions {
 
@@ -30,6 +33,8 @@ PermissionMessages UsbDevicePermission::GetMessages() const {
   DCHECK(HasMessages());
   PermissionMessages result;
 
+#if defined(ENABLE_EXTENSIONS)
+  // device.gyp:device_usb is not available when extensions are disabled.
   for (std::set<UsbDevicePermissionData>::const_iterator i =
       data_set_.begin(); i != data_set_.end(); ++i) {
 
@@ -59,6 +64,9 @@ PermissionMessages UsbDevicePermission::GetMessages() const {
               product_name,
               vendor_name)));
   }
+#else
+  NOTREACHED();
+#endif  // defined(ENABLE_EXTENSIONS)
 
   return result;
 }

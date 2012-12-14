@@ -438,6 +438,9 @@
           'sources!': [
             'common/extensions/api/extension_api_stub.cc',
           ],
+          'dependencies': [
+            '../device/device.gyp:device_usb',
+          ],
         }, {  # enable_extensions == 0
           'sources/': [
             ['exclude', '^common/extensions/api/'],

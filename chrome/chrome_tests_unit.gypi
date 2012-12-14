@@ -1738,6 +1738,11 @@
             ['exclude', '^browser/sync/glue/chrome_extensions_activity_monitor_unittest.cc'],
             ['exclude', '^common/extensions/api/'],
           ],
+          'sources!':[
+            'browser/extensions/extension_context_menu_model_unittest.cc',
+            'browser/extensions/extension_ui_unittest.cc',
+            'browser/extensions/permissions_updater_unittest.cc',
+          ],
         }],
         ['use_ash==1', {
           'sources': [
@@ -2092,8 +2097,6 @@
 
             # There's no Browser/BrowserList on Android.
             'browser/browser_commands_unittest.cc',
-            'browser/extensions/extension_context_menu_model_unittest.cc',
-            'browser/extensions/extension_ui_unittest.cc',
             'browser/managed_mode/managed_mode_unittest.cc',
             'browser/managed_mode/managed_mode_url_filter_unittest.cc',
             'browser/net/gaia/gaia_oauth_fetcher_unittest.cc',

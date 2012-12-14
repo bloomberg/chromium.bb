@@ -6,7 +6,7 @@ include_rules = [
   "+chromeos",
   "+content/components",
   "+content/public/browser",
-  "+device",
+  "+device/bluetooth",
   "+extensions/common",
   "+google/cacheinvalidation",  # Sync invalidation API protobuf files.
   "+google_apis",

@@ -31,7 +31,6 @@
         '../content/content.gyp:content_browser',
         '../crypto/crypto.gyp:crypto',
         '../device/device.gyp:device_bluetooth',
-        '../device/device.gyp:device_usb',
         '../net/net.gyp:net',
         '../skia/skia.gyp:skia',
         '../sync/sync.gyp:sync_notifier',
@@ -768,8 +767,6 @@
             ['include', '^browser/extensions/api/messaging/native_process_launcher_win.cc'],
             ['include', '^browser/extensions/api/messaging/native_message_port.cc'],
             ['include', '^browser/extensions/api/omnibox/omnibox_api.cc'],
-            ['include', '^browser/extensions/api/permissions/permissions_api.cc'],
-            ['include', '^browser/extensions/api/permissions/permissions_api_helpers.cc'],
             ['include', '^browser/extensions/api/processes/processes_api.cc'],
             ['include', '^browser/extensions/api/processes/processes_api_constants.cc'],
             ['include', '^browser/extensions/api/proxy/proxy_api.cc'],
@@ -792,6 +789,7 @@
             ['include', '^browser/extensions/api/web_request/web_request_time_tracker.cc'],
           ],
           'dependencies!': [
+            '../device/device.gyp:device_bluetooth',
             '../third_party/libusb/libusb.gyp:libusb'
           ],
         }],
