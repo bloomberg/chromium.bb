@@ -64,8 +64,8 @@ check_translation_with_mode(const char *tableList, const char *str,
 
   int expectedlen = strlen(expected);
 
-  inlen = strlen(str) * 2;
-  outlen = inlen;
+  inlen = strlen(str);
+  outlen = inlen * 2;
   inbuf = malloc(sizeof(widechar) * inlen);
   outbuf = malloc(sizeof(widechar) * outlen);
   if (typeform != NULL)
@@ -73,7 +73,8 @@ check_translation_with_mode(const char *tableList, const char *str,
       typeformbuf = malloc(outlen);
       memcpy(typeformbuf, typeform, outlen);
     }
-  if (!extParseChars(str, inbuf))
+  inlen = extParseChars(str, inbuf);
+  if (!inlen)
     {
       printf("Cannot parse input string.\n");
       return 1;
@@ -262,8 +263,9 @@ check_hyphenation(const char *tableList, const char *str, const char *expected)
   int rv = 0;
 
   inlen = strlen(str);
-  inbuf = malloc(sizeof(widechar) * (inlen + 1));
-  if (!extParseChars(str, inbuf))
+  inbuf = malloc(sizeof(widechar) * inlen);
+  inlen = extParseChars(str, inbuf);
+  if (!inlen)
     {
       printf("Cannot parse input string.\n");
       return 1;
