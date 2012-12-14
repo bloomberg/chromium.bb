@@ -8,8 +8,11 @@
 #include "content/common/content_export.h"
 #include "content/common/p2p_sockets.h"
 
-#include "ipc/ipc_message.h"
 #include "net/base/ip_endpoint.h"
+
+namespace IPC {
+class Sender;
+}
 
 namespace content {
 

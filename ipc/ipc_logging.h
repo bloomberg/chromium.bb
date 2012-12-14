@@ -28,6 +28,7 @@ typedef base::hash_map<uint32, LogFunction > LogFunctionMap;
 namespace IPC {
 
 class Message;
+class Sender;
 
 // One instance per process.  Needs to be created on the main thread (the UI
 // thread in the browser) but OnPreDispatchMessage/OnPostDispatchMessage

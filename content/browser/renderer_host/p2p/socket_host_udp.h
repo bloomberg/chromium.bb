@@ -16,7 +16,6 @@
 #include "content/browser/renderer_host/p2p/socket_host.h"
 #include "content/common/content_export.h"
 #include "content/common/p2p_sockets.h"
-#include "ipc/ipc_sender.h"
 #include "net/base/ip_endpoint.h"
 #include "net/udp/udp_server_socket.h"
 

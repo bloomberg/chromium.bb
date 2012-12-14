@@ -12,10 +12,6 @@
 #include "base/pickle.h"
 #include "ipc/ipc_export.h"
 
-// TODO(brettw) remove this and update files that depend on this being included
-// from here.
-#include "ipc/ipc_sender.h"
-
 #if !defined(NDEBUG)
 #define IPC_MESSAGE_LOG_ENABLED
 #endif
@@ -34,8 +30,6 @@ namespace IPC {
 
 //------------------------------------------------------------------------------
 
-class Channel;
-class Message;
 struct LogData;
 
 class IPC_EXPORT Message : public Pickle {

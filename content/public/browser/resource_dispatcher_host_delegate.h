@@ -9,7 +9,6 @@
 
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
-#include "ipc/ipc_message.h"
 #include "webkit/glue/resource_type.h"
 
 class GURL;
@@ -24,6 +23,10 @@ class ResourceContext;
 class ResourceThrottle;
 struct Referrer;
 struct ResourceResponse;
+}
+
+namespace IPC {
+class Sender;
 }
 
 namespace net {

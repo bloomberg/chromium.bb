@@ -12,13 +12,17 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/importer/importer_bridge.h"
 #include "chrome/browser/importer/profile_writer.h"
-#include "ipc/ipc_message.h"
 
 class GURL;
 
 namespace base {
 class DictionaryValue;
 class TaskRunner;
+}
+
+namespace IPC {
+class Message;
+class Sender;
 }
 
 // When the importer is run in an external process, the bridge is effectively

@@ -13,6 +13,7 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/profile_import_process_messages.h"
 #include "content/public/common/password_form.h"
+#include "ipc/ipc_sender.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/password_manager/ie7_password.h"

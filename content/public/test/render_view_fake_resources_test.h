@@ -54,6 +54,10 @@
 
 struct ResourceHostMsg_Request;
 
+namespace IPC {
+class Channel;
+}
+
 namespace WebKit {
 class WebFrame;
 class WebHistoryItem;
