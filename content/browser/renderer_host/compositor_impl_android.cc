@@ -207,7 +207,8 @@ WebKit::WebGLId CompositorImpl::GenerateTexture(gfx::JavaBitmap& bitmap) {
   unsigned int texture_id = BuildBasicTexture();
   WebKit::WebGraphicsContext3D* context =
       ImageTransportFactoryAndroid::GetInstance()->GetContext3D();
-  if (texture_id == 0 || context->isContextLost())
+  if (texture_id == 0 || context->isContextLost() ||
+      !context->makeContextCurrent())
     return 0;
   WebKit::WebGLId format = GetGLFormatForBitmap(bitmap);
   WebKit::WebGLId type = GetGLTypeForBitmap(bitmap);
@@ -232,7 +233,8 @@ WebKit::WebGLId CompositorImpl::GenerateCompressedTexture(gfx::Size& size,
   unsigned int texture_id = BuildBasicTexture();
   WebKit::WebGraphicsContext3D* context =
         ImageTransportFactoryAndroid::GetInstance()->GetContext3D();
-  if (texture_id == 0 || context->isContextLost())
+  if (texture_id == 0 || context->isContextLost() ||
+      !context->makeContextCurrent())
     return 0;
   context->compressedTexImage2D(GL_TEXTURE_2D,
                                 0,
@@ -250,7 +252,7 @@ WebKit::WebGLId CompositorImpl::GenerateCompressedTexture(gfx::Size& size,
 void CompositorImpl::DeleteTexture(WebKit::WebGLId texture_id) {
   WebKit::WebGraphicsContext3D* context =
       ImageTransportFactoryAndroid::GetInstance()->GetContext3D();
-  if (context->isContextLost())
+  if (context->isContextLost() || !context->makeContextCurrent())
     return;
   context->deleteTexture(texture_id);
   context->shallowFlushCHROMIUM();
@@ -354,7 +356,7 @@ void CompositorImpl::OnViewContextSwapBuffersAborted() {
 WebKit::WebGLId CompositorImpl::BuildBasicTexture() {
   WebKit::WebGraphicsContext3D* context =
             ImageTransportFactoryAndroid::GetInstance()->GetContext3D();
-  if (context->isContextLost())
+  if (context->isContextLost() || !context->makeContextCurrent())
     return 0;
   WebKit::WebGLId texture_id = context->createTexture();
   context->bindTexture(GL_TEXTURE_2D, texture_id);
