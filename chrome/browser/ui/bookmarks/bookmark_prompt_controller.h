@@ -17,7 +17,6 @@
 
 class Browser;
 class PrefServiceBase;
-class TabContents;
 
 namespace content {
 class WebContents;
