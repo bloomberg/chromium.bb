@@ -35,6 +35,16 @@ XSESSION_COMMAND = None
 
 LOG_FILE_ENV_VAR = "CHROME_REMOTE_DESKTOP_LOG_FILE"
 
+# This script has a sensible default for the initial and maximum desktop size,
+# which can be overridden either on the command-line, or via a comma-separated
+# list of sizes in this environment variable.
+DEFAULT_SIZES_ENV_VAR = "CHROME_REMOTE_DESKTOP_DEFAULT_DESKTOP_SIZES"
+
+# By default, provide a relatively small size to handle the case where resize-
+# to-client is disabled, and a much larger size to support clients with large
+# or mulitple monitors. These defaults can be overridden in ~/.profile.
+DEFAULT_SIZES = "1600x1200,3840x1600"
+
 SCRIPT_PATH = sys.path[0]
 
 DEFAULT_INSTALL_PATH = "/opt/google/chrome-remote-desktop"
@@ -748,7 +758,6 @@ def waitpid_handle_exceptions(pid, deadline):
 
 
 def main():
-  DEFAULT_SIZE = "2560x1600"
   EPILOG = """This script is not intended for use by end-users.  To configure
 Chrome Remote Desktop, please install the app from the Chrome
 Web Store: https://chrome.google.com/remotedesktop"""
@@ -756,10 +765,9 @@ Web Store: https://chrome.google.com/remotedesktop"""
       usage="Usage: %prog [options] [ -- [ X server options ] ]",
       epilog=EPILOG)
   parser.add_option("-s", "--size", dest="size", action="append",
-                    help="Dimensions of virtual desktop (default: %s). "
-                    "This can be specified multiple times to make multiple "
-                    "screen resolutions available (if the Xvfb server "
-                    "supports this)" % DEFAULT_SIZE)
+                    help="Dimensions of virtual desktop. This can be specified "
+                    "multiple times to make multiple screen resolutions "
+                    "available (if the Xvfb server supports this).")
   parser.add_option("-f", "--foreground", dest="foreground", default=False,
                     action="store_true",
                     help="Don't run as a background daemon.")
@@ -833,7 +841,10 @@ Web Store: https://chrome.google.com/remotedesktop"""
 
   # Collate the list of sizes that XRANDR should support.
   if not options.size:
-    options.size = [DEFAULT_SIZE]
+    default_sizes = DEFAULT_SIZES
+    if os.environ.has_key(DEFAULT_SIZES_ENV_VAR):
+      default_sizes = os.environ[DEFAULT_SIZES_ENV_VAR]
+    options.size = default_sizes.split(",");
 
   sizes = []
   for size in options.size:
