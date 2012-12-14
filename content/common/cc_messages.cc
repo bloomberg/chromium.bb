@@ -12,33 +12,6 @@
 
 namespace IPC {
 
-void ParamTraits<WebKit::WebData>::Write(Message* m, const param_type& p) {
-  if (p.isEmpty()) {
-    m->WriteData(NULL, 0);
-  } else {
-    m->WriteData(p.data(), p.size());
-  }
-}
-
-bool ParamTraits<WebKit::WebData>::Read(
-    const Message* m, PickleIterator* iter, param_type* r) {
-  const char *data = NULL;
-  int data_size = 0;
-  if (!m->ReadData(iter, &data, &data_size) || data_size < 0)
-    return false;
-  if (data_size)
-    r->assign(data, data_size);
-  else
-    r->reset();
-  return true;
-}
-
-void ParamTraits<WebKit::WebData>::Log(const param_type& p, std::string* l) {
-  l->append("(WebData of size ");
-  LogParam(p.size(), l);
-  l->append(")");
-}
-
 void ParamTraits<WebKit::WebFilterOperation>::Write(
     Message* m, const param_type& p) {
   WriteParam(m, p.type());
