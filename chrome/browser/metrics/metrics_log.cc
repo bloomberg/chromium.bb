@@ -69,7 +69,7 @@ typedef SystemProfileProto::GoogleUpdate::ProductInfo ProductInfo;
 namespace {
 
 // Returns the date at which the current metrics client ID was created as
-// a string containing milliseconds since the epoch, or "0" if none was found.
+// a string containing seconds since the epoch, or "0" if none was found.
 std::string GetMetricsEnabledDate(PrefService* pref) {
   if (!pref) {
     NOTREACHED();
