@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram.h"
 #include "base/string_piece.h"
 #include "base/stringprintf.h"
 #include "base/sys_info.h"
@@ -73,6 +74,14 @@ void DisplayReconfigCallback(CGDirectDisplayID display,
 // approaching a threshold where system stability might be compromised.
 const int64 kBlockAllDomainsMs = 10000;
 const int kNumResetsWithinDuration = 1;
+
+// Enums for UMA histograms.
+enum BlockStatusHistogram {
+  BLOCK_STATUS_NOT_BLOCKED,
+  BLOCK_STATUS_SPECIFIC_DOMAIN_BLOCKED,
+  BLOCK_STATUS_ALL_DOMAINS_BLOCKED,
+  BLOCK_STATUS_MAX
+};
 
 }  // namespace anonymous
 
@@ -668,6 +677,11 @@ GpuDataManagerImpl::Are3DAPIsBlockedAtTime(
       // Err on the side of caution, and assume that if a particular
       // domain shows up in the block map, it's there for a good
       // reason and don't let its presence there automatically expire.
+
+      UMA_HISTOGRAM_ENUMERATION("GPU.BlockStatusForClient3DAPIs",
+                                BLOCK_STATUS_SPECIFIC_DOMAIN_BLOCKED,
+                                BLOCK_STATUS_MAX);
+
       return DOMAIN_BLOCK_STATUS_BLOCKED;
     }
   }
@@ -696,8 +710,16 @@ GpuDataManagerImpl::Are3DAPIsBlockedAtTime(
   }
 
   if (num_resets_within_timeframe >= kNumResetsWithinDuration) {
+    UMA_HISTOGRAM_ENUMERATION("GPU.BlockStatusForClient3DAPIs",
+                              BLOCK_STATUS_ALL_DOMAINS_BLOCKED,
+                              BLOCK_STATUS_MAX);
+
     return DOMAIN_BLOCK_STATUS_ALL_DOMAINS_BLOCKED;
   }
+
+  UMA_HISTOGRAM_ENUMERATION("GPU.BlockStatusForClient3DAPIs",
+                            BLOCK_STATUS_NOT_BLOCKED,
+                            BLOCK_STATUS_MAX);
 
   return DOMAIN_BLOCK_STATUS_NOT_BLOCKED;
 }

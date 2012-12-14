@@ -4,6 +4,7 @@
 
 #include "chrome/browser/three_d_api_observer.h"
 
+#include "base/metrics/histogram.h"
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/api/infobars/infobar_service.h"
 #include "content/public/browser/gpu_data_manager.h"
@@ -12,6 +13,17 @@
 #include "ui/base/l10n/l10n_util.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(ThreeDAPIObserver)
+
+namespace {
+
+enum ThreeDInfobarDismissalHistogram {
+  THREE_D_INFOBAR_IGNORED,
+  THREE_D_INFOBAR_RELOADED,
+  THREE_D_INFOBAR_CLOSED_WITHOUT_ACTION,
+  THREE_D_INFOBAR_DISMISSAL_MAX
+};
+
+}  // namespace
 
 // ThreeDAPIInfoBarDelegate ---------------------------------------------
 
@@ -37,6 +49,10 @@ class ThreeDAPIInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   GURL url_;
   content::ThreeDAPIType requester_;
+  // Basically indicates whether the infobar was displayed at all, or
+  // was a temporary instance thrown away by the InfobarService.
+  mutable bool message_text_queried_;
+  bool action_taken_;
 
   DISALLOW_COPY_AND_ASSIGN(ThreeDAPIInfoBarDelegate);
 };
@@ -47,10 +63,17 @@ ThreeDAPIInfoBarDelegate::ThreeDAPIInfoBarDelegate(
     content::ThreeDAPIType requester)
     : ConfirmInfoBarDelegate(owner),
       url_(url),
-      requester_(requester) {
+      requester_(requester),
+      message_text_queried_(false),
+      action_taken_(false) {
 }
 
 ThreeDAPIInfoBarDelegate::~ThreeDAPIInfoBarDelegate() {
+  if (message_text_queried_ && !action_taken_) {
+    UMA_HISTOGRAM_ENUMERATION("GPU.ThreeDAPIInfoBarDismissal",
+                              THREE_D_INFOBAR_CLOSED_WITHOUT_ACTION,
+                              THREE_D_INFOBAR_DISMISSAL_MAX);
+  }
 }
 
 bool ThreeDAPIInfoBarDelegate::EqualsDelegate(InfoBarDelegate* delegate) const {
@@ -69,6 +92,8 @@ ThreeDAPIInfoBarDelegate::AsThreeDAPIInfoBarDelegate() {
 }
 
 string16 ThreeDAPIInfoBarDelegate::GetMessageText() const {
+  message_text_queried_ = true;
+
   string16 api_name;
   switch (requester_) {
     case content::THREE_D_API_TYPE_WEBGL:
@@ -91,12 +116,18 @@ string16 ThreeDAPIInfoBarDelegate::GetButtonLabel(
 }
 
 bool ThreeDAPIInfoBarDelegate::Accept() {
-  // TODO(kbr): add UMA stats.
+  action_taken_ = true;
+  UMA_HISTOGRAM_ENUMERATION("GPU.ThreeDAPIInfoBarDismissal",
+                            THREE_D_INFOBAR_IGNORED,
+                            THREE_D_INFOBAR_DISMISSAL_MAX);
   return true;
 }
 
 bool ThreeDAPIInfoBarDelegate::Cancel() {
-  // TODO(kbr): add UMA stats.
+  action_taken_ = true;
+  UMA_HISTOGRAM_ENUMERATION("GPU.ThreeDAPIInfoBarDismissal",
+                            THREE_D_INFOBAR_RELOADED,
+                            THREE_D_INFOBAR_DISMISSAL_MAX);
   content::GpuDataManager::GetInstance()->UnblockDomainFrom3DAPIs(url_);
   owner()->GetWebContents()->GetController().Reload(true);
   return true;
