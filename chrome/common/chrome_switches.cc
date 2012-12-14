@@ -215,17 +215,11 @@ const char kCrashOnHangSeconds[]            = "crash-on-hang-seconds";
 // list of BrowserThreads that are supported.
 //
 // For example:
-//    --crash-on-hang-threads=UI,IO --> Crash the browser if UI or IO thread
-//                                      is not responsive.
+//    --crash-on-hang-threads=UI:3,IO:3 --> Crash the browser if UI or IO thread
+//                                          is not responsive and the number of
+//                                          browser threads that are responding
+//                                          is less than or equal to 3.
 const char kCrashOnHangThreads[]            = "crash-on-hang-threads";
-
-// Causes the browser process to crash if the number of browser threads that
-// are responding is equal to the given number.
-//
-// For example:
-//    --crash-on-live=1 --> Crash if only one thread is responsive and all
-//                          other threads are not responsive.
-const char kCrashOnLive[]                   = "crash-on-live";
 
 // Some platforms like ChromeOS default to empty desktop.
 // Browser tests may need to add this switch so that at least one browser

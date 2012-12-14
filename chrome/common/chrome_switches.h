@@ -72,7 +72,6 @@ extern const char kContentSettings2[];
 extern const char kCountry[];
 extern const char kCrashOnHangSeconds[];
 extern const char kCrashOnHangThreads[];
-extern const char kCrashOnLive[];
 extern const char kCreateBrowserOnStartupForTests[];
 extern const char kDebugEnableFrameToggle[];
 extern const char kDebugPackedApps[];

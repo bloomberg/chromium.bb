@@ -10,6 +10,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
+#include "base/string_number_conversions.h"
+#include "base/string_split.h"
 #include "base/string_tokenizer.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
@@ -239,8 +241,7 @@ class ThreadWatcherTest : public ::testing::Test {
   static const BrowserThread::ID webkit_thread_id;
   static const std::string webkit_thread_name;
   static const std::string crash_on_hang_seconds;
-  static const std::string crash_on_hang_threads;
-  static const std::string crash_on_live;
+  static const std::string crash_on_hang_thread_names;
   CustomThreadWatcher* io_watcher_;
   CustomThreadWatcher* webkit_watcher_;
   ThreadWatcherList* thread_watcher_list_;
@@ -326,8 +327,7 @@ const BrowserThread::ID ThreadWatcherTest::webkit_thread_id =
     BrowserThread::WEBKIT_DEPRECATED;
 const std::string ThreadWatcherTest::webkit_thread_name = "WEBKIT";
 const std::string ThreadWatcherTest::crash_on_hang_seconds = "24";
-const std::string ThreadWatcherTest::crash_on_hang_threads = "IO,UI";
-const std::string ThreadWatcherTest::crash_on_live = "3";
+const std::string ThreadWatcherTest::crash_on_hang_thread_names = "IO:3,UI:3";
 
 TEST_F(ThreadWatcherTest, CommandLineArgs) {
   // Setup command_line arguments.
@@ -335,18 +335,14 @@ TEST_F(ThreadWatcherTest, CommandLineArgs) {
   command_line.AppendSwitchASCII(switches::kCrashOnHangSeconds,
                                  crash_on_hang_seconds);
   command_line.AppendSwitchASCII(switches::kCrashOnHangThreads,
-                                 crash_on_hang_threads);
-  command_line.AppendSwitchASCII(switches::kCrashOnLive,
-                                 crash_on_live);
+                                 crash_on_hang_thread_names);
 
   // Parse command_line arguments.
   uint32 unresponsive_threshold;
-  std::set<std::string> crash_on_hang_thread_names;
-  uint32 live_threads_threshold;
+  ThreadWatcherList::CrashOnHangThreadMap crash_on_hang_threads;
   ThreadWatcherList::ParseCommandLine(command_line,
                                       &unresponsive_threshold,
-                                      &crash_on_hang_thread_names,
-                                      &live_threads_threshold);
+                                      &crash_on_hang_threads);
 
   // Verify the data.
   uint32 crash_on_unresponsive_seconds =
@@ -354,18 +350,24 @@ TEST_F(ThreadWatcherTest, CommandLineArgs) {
   EXPECT_EQ(static_cast<int>(crash_on_unresponsive_seconds),
             atoi(crash_on_hang_seconds.c_str()));
 
-  // Check ThreadWatcherTestList has the right crash_on_hang_threads.
-  StringTokenizer tokens(crash_on_hang_threads, ",");
+  // Check ThreadWatcherTestList has the right crash_on_hang_thread_names.
+  StringTokenizer tokens(crash_on_hang_thread_names, ",");
+  std::vector<std::string> values;
   while (tokens.GetNext()) {
-    std::string thread_name = tokens.token();
-    std::set<std::string>::iterator it =
-        crash_on_hang_thread_names.find(thread_name);
-    bool crash_on_hang = (it != crash_on_hang_thread_names.end());
+    const std::string& token = tokens.token();
+    base::SplitString(token, ':', &values);
+    if (values.size() != 2)
+      continue;
+    std::string thread_name = values[0];
+    uint32 live_threads_threshold;
+    if (!base::StringToUint(values[1], &live_threads_threshold))
+      continue;
+    ThreadWatcherList::CrashOnHangThreadMap::iterator it =
+        crash_on_hang_threads.find(thread_name);
+    bool crash_on_hang = (it != crash_on_hang_threads.end());
     EXPECT_TRUE(crash_on_hang);
+    EXPECT_EQ(it->second, live_threads_threshold);
   }
-
-  EXPECT_EQ(static_cast<int>(live_threads_threshold),
-            atoi(crash_on_live.c_str()));
 }
 
 // Test registration. When thread_watcher_list_ goes out of scope after

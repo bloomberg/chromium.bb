@@ -10,6 +10,8 @@
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
 #include "base/lazy_instance.h"
+#include "base/string_number_conversions.h"
+#include "base/string_split.h"
 #include "base/string_tokenizer.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -408,12 +410,10 @@ const int ThreadWatcherList::kLiveThreadsThreshold = 3;
 // static
 void ThreadWatcherList::StartWatchingAll(const CommandLine& command_line) {
   uint32 unresponsive_threshold;
-  std::set<std::string> crash_on_hang_thread_names;
-  uint32 live_threads_threshold;
+  CrashOnHangThreadMap crash_on_hang_threads;
   ParseCommandLine(command_line,
                    &unresponsive_threshold,
-                   &crash_on_hang_thread_names,
-                   &live_threads_threshold);
+                   &crash_on_hang_threads);
 
   ThreadWatcherObserver::SetupNotifications(
       base::TimeDelta::FromSeconds(kSleepSeconds * unresponsive_threshold));
@@ -422,8 +422,7 @@ void ThreadWatcherList::StartWatchingAll(const CommandLine& command_line) {
       FROM_HERE,
       base::Bind(&ThreadWatcherList::InitializeAndStartWatching,
                  unresponsive_threshold,
-                 crash_on_hang_thread_names,
-                 live_threads_threshold),
+                 crash_on_hang_threads),
       base::TimeDelta::FromSeconds(120));
 }
 
@@ -497,8 +496,7 @@ ThreadWatcherList::~ThreadWatcherList() {
 void ThreadWatcherList::ParseCommandLine(
     const CommandLine& command_line,
     uint32* unresponsive_threshold,
-    std::set<std::string>* crash_on_hang_thread_names,
-    uint32* live_threads_threshold) {
+    CrashOnHangThreadMap* crash_on_hang_threads) {
   // Determine |unresponsive_threshold| based on switches::kCrashOnHangSeconds.
   *unresponsive_threshold = kUnresponsiveCount;
 
@@ -529,37 +527,62 @@ void ThreadWatcherList::ParseCommandLine(
     }
   }
 
-  std::string crash_on_hang_threads;
+  std::string crash_on_hang_thread_names;
 
   // Default to crashing the browser if UI or IO threads are not responsive
   // except in stable channel.
   if (channel == chrome::VersionInfo::CHANNEL_STABLE)
-    crash_on_hang_threads = "";
+    crash_on_hang_thread_names = "";
   else
-    crash_on_hang_threads = "UI,IO";
+    crash_on_hang_thread_names = "UI:3,IO:3";
 
+  bool has_command_line_overwrite = false;
   if (command_line.HasSwitch(switches::kCrashOnHangThreads)) {
-    crash_on_hang_threads =
+    crash_on_hang_thread_names =
         command_line.GetSwitchValueASCII(switches::kCrashOnHangThreads);
+    has_command_line_overwrite = true;
   }
-  StringTokenizer tokens(crash_on_hang_threads, ",");
-  while (tokens.GetNext())
-    crash_on_hang_thread_names->insert(tokens.token());
+  StringTokenizer tokens(crash_on_hang_thread_names, ",");
+  std::vector<std::string> values;
+  while (tokens.GetNext()) {
+    const std::string& token = tokens.token();
+    base::SplitString(token, ':', &values);
+    if (values.size() != 2)
+      continue;
+    std::string thread_name = values[0];
+    uint32 live_threads_threshold;
+    if (!base::StringToUint(values[1], &live_threads_threshold))
+      continue;
+    CrashOnHangThreadMap::iterator it =
+        crash_on_hang_threads->find(thread_name);
+    if (crash_on_hang_threads->end() == it)
+      (*crash_on_hang_threads)[thread_name] = live_threads_threshold;
+  }
 
-  // Determine |live_threads_threshold| based on switches::kCrashOnLive.
-  *live_threads_threshold = kLiveThreadsThreshold;
-  if (command_line.HasSwitch(switches::kCrashOnLive)) {
-    std::string live_threads =
-        command_line.GetSwitchValueASCII(switches::kCrashOnLive);
-    *live_threads_threshold = static_cast<uint32>(atoi(live_threads.c_str()));
+  if (channel != chrome::VersionInfo::CHANNEL_CANARY ||
+      has_command_line_overwrite) {
+    return;
   }
+
+  // Set up a field trial for 10% of the users to crash if IO thread is not
+  // responsive.
+  CrashOnHangThreadMap::iterator it = crash_on_hang_threads->find("IO");
+  if (crash_on_hang_threads->end() == it)
+    return;
+
+  scoped_refptr<base::FieldTrial> field_trial(
+      base::FieldTrialList::FactoryGetFieldTrial(
+          "ThreadWatcher", 100, "default_hung_threads",
+          2013, 10, 30, NULL));
+  int io_hung_thread_group = field_trial->AppendGroup("io_hung_thread", 10);
+  if (field_trial->group() == io_hung_thread_group)
+    it->second = INT_MAX;  // Crash anytime IO thread hangs.
 }
 
 // static
 void ThreadWatcherList::InitializeAndStartWatching(
     uint32 unresponsive_threshold,
-    const std::set<std::string>& crash_on_hang_thread_names,
-    uint32 live_threads_threshold) {
+    const CrashOnHangThreadMap& crash_on_hang_threads) {
   DCHECK(WatchDogThread::CurrentlyOnWatchDogThread());
 
   ThreadWatcherList* thread_watcher_list = new ThreadWatcherList();
@@ -576,24 +599,18 @@ void ThreadWatcherList::InitializeAndStartWatching(
       base::TimeDelta::FromSeconds(kUnresponsiveSeconds);
 
   StartWatching(BrowserThread::UI, "UI", kSleepTime, kUnresponsiveTime,
-                unresponsive_threshold, crash_on_hang_thread_names,
-                live_threads_threshold);
+                unresponsive_threshold, crash_on_hang_threads);
   StartWatching(BrowserThread::IO, "IO", kSleepTime, kUnresponsiveTime,
-                unresponsive_threshold, crash_on_hang_thread_names,
-                live_threads_threshold);
+                unresponsive_threshold, crash_on_hang_threads);
   StartWatching(BrowserThread::DB, "DB", kSleepTime, kUnresponsiveTime,
-                unresponsive_threshold, crash_on_hang_thread_names,
-                live_threads_threshold);
+                unresponsive_threshold, crash_on_hang_threads);
   StartWatching(BrowserThread::FILE, "FILE", kSleepTime, kUnresponsiveTime,
-                unresponsive_threshold, crash_on_hang_thread_names,
-                live_threads_threshold);
+                unresponsive_threshold, crash_on_hang_threads);
   StartWatching(BrowserThread::FILE_USER_BLOCKING, "FILE_USER_BLOCKING",
                 kSleepTime, kUnresponsiveTime,
-                unresponsive_threshold, crash_on_hang_thread_names,
-                live_threads_threshold);
+                unresponsive_threshold, crash_on_hang_threads);
   StartWatching(BrowserThread::CACHE, "CACHE", kSleepTime, kUnresponsiveTime,
-                unresponsive_threshold, crash_on_hang_thread_names,
-                live_threads_threshold);
+                unresponsive_threshold, crash_on_hang_threads);
 }
 
 // static
@@ -603,13 +620,17 @@ void ThreadWatcherList::StartWatching(
     const base::TimeDelta& sleep_time,
     const base::TimeDelta& unresponsive_time,
     uint32 unresponsive_threshold,
-    const std::set<std::string>& crash_on_hang_thread_names,
-    uint32 live_threads_threshold) {
+    const CrashOnHangThreadMap& crash_on_hang_threads) {
   DCHECK(WatchDogThread::CurrentlyOnWatchDogThread());
 
-  std::set<std::string>::const_iterator it =
-      crash_on_hang_thread_names.find(thread_name);
-  bool crash_on_hang = (it != crash_on_hang_thread_names.end());
+  CrashOnHangThreadMap::const_iterator it =
+      crash_on_hang_threads.find(thread_name);
+  bool crash_on_hang = false;
+  uint32 live_threads_threshold = 0;
+  if (it != crash_on_hang_threads.end()) {
+    crash_on_hang = true;
+    live_threads_threshold = it->second;
+  }
 
   ThreadWatcher::StartWatching(
       ThreadWatcher::WatchingParams(thread_id,
