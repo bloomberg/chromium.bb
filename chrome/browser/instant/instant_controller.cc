@@ -829,11 +829,20 @@ void InstantController::InstantLoaderRenderViewGone() {
 void InstantController::InstantLoaderAboutToNavigateMainFrame(const GURL& url) {
   GURL instant_url(loader_->instant_url());
 
-  // Don't commit if the URL being navigated to has the same host and path as
-  // the instant URL. This enables the instant page to change the query
-  // parameters and fragments of the URL without it navigating.
-  if (url.host() != instant_url.host() || url.path() != instant_url.path())
+  // If we are navigating to the instant URL, do nothing.
+  if (url == instant_url)
+    return;
+
+  // Commit the navigation if either:
+  //  - The page is in NTP mode (so it could only navigate on a user click) or
+  //  - The page is not in NTP mode and we are navigating to a URL with a
+  //    different host or path than the instant URL. This enables the instant
+  //    page when it is showing search results to change the query parameters
+  //    and fragments of the URL without it navigating.
+  if (model_.mode().is_ntp() ||
+      (url.host() != instant_url.host() || url.path() != instant_url.path())) {
     CommitIfPossible(INSTANT_COMMIT_NAVIGATED);
+  }
 }
 
 void InstantController::OmniboxLostFocus(gfx::NativeView view_gaining_focus) {
