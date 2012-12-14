@@ -579,6 +579,7 @@
         'browser/chromeos/input_method/input_method_configuration_unittest.cc',
         'browser/chromeos/input_method/input_method_descriptor_unittest.cc',
         'browser/chromeos/input_method/input_method_manager_impl_unittest.cc',
+        'browser/chromeos/input_method/input_method_persistence_unittest.cc',
         'browser/chromeos/input_method/input_method_property_unittest.cc',
         'browser/chromeos/input_method/input_method_util_unittest.cc',
         'browser/chromeos/input_method/input_method_whitelist_unittest.cc',

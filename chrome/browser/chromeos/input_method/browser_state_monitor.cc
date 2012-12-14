@@ -13,10 +13,9 @@
 namespace chromeos {
 namespace input_method {
 
-BrowserStateMonitor::BrowserStateMonitor(InputMethodManager* manager,
-                                         InputMethodDelegate* delegate)
-    : manager_(manager),
-      delegate_(delegate),
+BrowserStateMonitor::BrowserStateMonitor(
+    const base::Callback<void(InputMethodManager::State)>& observer)
+    : observer_(observer),
       state_(InputMethodManager::STATE_LOGIN_SCREEN) {
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_LOGIN_USER_CHANGED,
@@ -33,51 +32,21 @@ BrowserStateMonitor::BrowserStateMonitor(InputMethodManager* manager,
                               chrome::NOTIFICATION_APP_TERMINATING,
                               content::NotificationService::AllSources());
 
-  manager_->SetState(state_);
-  manager_->AddObserver(this);
+  if (!observer_.is_null())
+    observer_.Run(state_);
 }
 
 BrowserStateMonitor::~BrowserStateMonitor() {
-  manager_->RemoveObserver(this);
 }
-
-void BrowserStateMonitor::InputMethodChanged(InputMethodManager* manager,
-                                             bool show_message) {
-  DCHECK_EQ(manager_, manager);
-  const std::string current_input_method =
-      manager->GetCurrentInputMethod().id();
-  // Save the new input method id depending on the current browser state.
-  switch (state_) {
-    case InputMethodManager::STATE_LOGIN_SCREEN:
-      if (!InputMethodUtil::IsKeyboardLayout(current_input_method)) {
-        DVLOG(1) << "Only keyboard layouts are supported: "
-                 << current_input_method;
-        return;
-      }
-      delegate_->SetSystemInputMethod(current_input_method);
-      return;
-    case InputMethodManager::STATE_BROWSER_SCREEN:
-      delegate_->SetUserInputMethod(current_input_method);
-      return;
-    case InputMethodManager::STATE_LOCK_SCREEN:
-      // We use a special set of input methods on the screen. Do not update.
-      return;
-    case InputMethodManager::STATE_TERMINATING:
-      return;
-  }
-  NOTREACHED();
-}
-
-void BrowserStateMonitor::InputMethodPropertyChanged(
-    InputMethodManager* manager) {}
 
 void BrowserStateMonitor::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
+  const InputMethodManager::State old_state = state_;
   switch (type) {
     case chrome::NOTIFICATION_APP_TERMINATING: {
-      SetState(InputMethodManager::STATE_TERMINATING);
+      state_ = InputMethodManager::STATE_TERMINATING;
       break;
     }
     case chrome::NOTIFICATION_LOGIN_USER_CHANGED: {
@@ -87,7 +56,7 @@ void BrowserStateMonitor::Observe(
       // as of writing, but it might be changed in the future (therefore we need
       // to listen to NOTIFICATION_SESSION_STARTED as well.)
       DVLOG(1) << "Received chrome::NOTIFICATION_LOGIN_USER_CHANGED";
-      SetState(InputMethodManager::STATE_BROWSER_SCREEN);
+      state_ = InputMethodManager::STATE_BROWSER_SCREEN;
       break;
     }
     case chrome::NOTIFICATION_SESSION_STARTED: {
@@ -97,13 +66,13 @@ void BrowserStateMonitor::Observe(
       // is sent in the PreProfileInit phase in case when Chrome crashes and
       // restarts.
       DVLOG(1) << "Received chrome::NOTIFICATION_SESSION_STARTED";
-      SetState(InputMethodManager::STATE_BROWSER_SCREEN);
+      state_ = InputMethodManager::STATE_BROWSER_SCREEN;
       break;
     }
     case chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED: {
       const bool is_screen_locked = *content::Details<bool>(details).ptr();
-      SetState(is_screen_locked ? InputMethodManager::STATE_LOCK_SCREEN :
-               InputMethodManager::STATE_BROWSER_SCREEN);
+      state_ = is_screen_locked ? InputMethodManager::STATE_LOCK_SCREEN :
+          InputMethodManager::STATE_BROWSER_SCREEN;
       break;
     }
     default: {
@@ -111,6 +80,10 @@ void BrowserStateMonitor::Observe(
       break;
     }
   }
+
+  if (old_state != state_ && !observer_.is_null())
+    observer_.Run(state_);
+
   // Note: browser notifications are sent in the following order.
   //
   // Normal login:
@@ -131,13 +104,6 @@ void BrowserStateMonitor::Observe(
   // InputMethodChanged() between chrome::NOTIFICATION_LOGIN_USER_CHANGED and
   // chrome::NOTIFICATION_SESSION_STARTED because SESSION_STARTED is sent very
   // early on Chrome crash/restart.
-}
-
-void BrowserStateMonitor::SetState(InputMethodManager::State new_state) {
-  const InputMethodManager::State old_state = state_;
-  state_ = new_state;
-  if (old_state != state_)
-    manager_->SetState(state_);
 }
 
 }  // namespace input_method

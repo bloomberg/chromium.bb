@@ -14,17 +14,13 @@
 namespace chromeos {
 namespace input_method {
 
-// Persists input method changes to the BrowserProcess local state or to the
-// user preferences, as appropriate. Accesses the hardware keyboard layout and
-// application locale from the BrowserProcess.
+// Accesses the hardware keyboard layout and application locale from the
+// BrowserProcess.
 class InputMethodDelegateImpl : public InputMethodDelegate {
  public:
   InputMethodDelegateImpl();
 
   // InputMethodDelegate implementation.
-  virtual void SetSystemInputMethod(
-      const std::string& input_method) OVERRIDE;
-  virtual void SetUserInputMethod(const std::string& input_method) OVERRIDE;
   virtual std::string GetHardwareKeyboardLayout() const OVERRIDE;
   virtual std::string GetActiveLocale() const OVERRIDE;
 

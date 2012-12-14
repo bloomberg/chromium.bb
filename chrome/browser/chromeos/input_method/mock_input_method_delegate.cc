@@ -8,24 +8,10 @@ namespace chromeos {
 namespace input_method {
 
 MockInputMethodDelegate::MockInputMethodDelegate()
-    : active_locale_("en"),
-      update_system_input_method_count_(0),
-      update_user_input_method_count_(0) {
+    : active_locale_("en") {
 }
 
 MockInputMethodDelegate::~MockInputMethodDelegate() {
-}
-
-void MockInputMethodDelegate::SetSystemInputMethod(
-    const std::string& input_method) {
-  ++update_system_input_method_count_;
-  system_input_method_ = input_method;
-}
-
-void MockInputMethodDelegate::SetUserInputMethod(
-    const std::string& input_method) {
-  ++update_user_input_method_count_;
-  user_input_method_ = input_method;
 }
 
 std::string MockInputMethodDelegate::GetHardwareKeyboardLayout() const {

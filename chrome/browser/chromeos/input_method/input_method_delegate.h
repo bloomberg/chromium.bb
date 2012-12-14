@@ -18,10 +18,6 @@ class InputMethodDelegate {
   InputMethodDelegate() {}
   virtual ~InputMethodDelegate() {}
 
-  // Persists input method choices when no user is logged in.
-  virtual void SetSystemInputMethod(const std::string& input_method) = 0;
-  // Persists input method choices when the user is logged in.
-  virtual void SetUserInputMethod(const std::string& input_method) = 0;
   // Retrieves the hardware keyboard layout ID. May return an empty string if
   // the ID is unknown.
   virtual std::string GetHardwareKeyboardLayout() const = 0;

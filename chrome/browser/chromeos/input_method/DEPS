@@ -1,0 +1,31 @@
+include_rules = [
+  "-chrome",
+  "+chrome/browser/chromeos/input_method",
+  "-content",
+]
+
+specific_include_rules = {
+  # The configuration layer.
+  '(input_method_delegate_impl|input_method_persistence|browser_state_monitor)'
+  '(_unittest)?\.(h|cc)': [
+    "+chrome/common",
+    "+chrome/browser",
+    "+chrome/test",
+    "+content/public",
+  ],
+  # TODO(erikwright): Bring this list to zero.
+  #
+  # Do not add to the list of temporarily-allowed dependencies below,
+  # and please do not introduce more #includes of these files.
+  'input_method_manager_impl\.cc': [
+    # TODO(erikwright): Much/all of language_preferences can/should be decoupled
+    # from chrome/browser.
+    "!chrome/browser/chromeos/language_preferences.h"
+  ],
+  'ibus_controller_impl\.cc|xkeyboard\.cc': [
+    "!content/public/browser/browser_thread.h",
+  ],
+  'xkeyboard_unittest\.cc': [
+    "!content/public/test/test_browser_thread.h",
+  ],
+}

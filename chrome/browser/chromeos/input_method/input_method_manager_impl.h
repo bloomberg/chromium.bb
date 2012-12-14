@@ -11,24 +11,25 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/chromeos/input_method/browser_state_monitor.h"
 #include "chrome/browser/chromeos/input_method/candidate_window_controller.h"
 #include "chrome/browser/chromeos/input_method/ibus_controller.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/input_method/input_method_whitelist.h"
-#include "chrome/browser/chromeos/input_method/xkeyboard.h"
 
 namespace chromeos {
 class InputMethodEngineIBus;
 namespace input_method {
 class InputMethodDelegate;
+class XKeyboard;
 
 // The implementation of InputMethodManager.
 class InputMethodManagerImpl : public InputMethodManager,
                                public CandidateWindowController::Observer,
                                public IBusController::Observer {
  public:
+  // Constructs an InputMethodManager instance. The client is responsible for
+  // calling |SetState| in response to relevant changes in browser state.
   explicit InputMethodManagerImpl(scoped_ptr<InputMethodDelegate> delegate);
   virtual ~InputMethodManagerImpl();
 
@@ -38,6 +39,9 @@ class InputMethodManagerImpl : public InputMethodManager,
   // setters.
   void Init();
 
+  // Receives notification of an InputMethodManager::State transition.
+  void SetState(State new_state);
+
   // InputMethodManager override:
   virtual void AddObserver(InputMethodManager::Observer* observer) OVERRIDE;
   virtual void AddCandidateWindowObserver(
@@ -45,7 +49,6 @@ class InputMethodManagerImpl : public InputMethodManager,
   virtual void RemoveObserver(InputMethodManager::Observer* observer) OVERRIDE;
   virtual void RemoveCandidateWindowObserver(
       InputMethodManager::CandidateWindowObserver* observer) OVERRIDE;
-  virtual void SetState(State new_state) OVERRIDE;
   virtual scoped_ptr<InputMethodDescriptors>
       GetSupportedInputMethods() const OVERRIDE;
   virtual scoped_ptr<InputMethodDescriptors>
@@ -159,10 +162,6 @@ class InputMethodManagerImpl : public InputMethodManager,
   // those created by extension.
   std::map<std::string, InputMethodDescriptor> extra_input_methods_;
   std::map<std::string, InputMethodEngineIBus*> extra_input_method_instances_;
-
-  // The browser state monitor is used to receive notifications from the browser
-  // and call SetState() method of |this| class.
-  scoped_ptr<BrowserStateMonitor> browser_state_monitor_;
 
   // The IBus controller is used to control the input method status and
   // allow callbacks when the input method status changes.

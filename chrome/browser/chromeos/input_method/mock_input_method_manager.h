@@ -27,7 +27,6 @@ class MockInputMethodManager : public InputMethodManager {
   virtual void RemoveObserver(InputMethodManager::Observer* observer) OVERRIDE;
   virtual void RemoveCandidateWindowObserver(
       InputMethodManager::CandidateWindowObserver* observer) OVERRIDE;
-  virtual void SetState(State new_state) OVERRIDE;
   virtual scoped_ptr<InputMethodDescriptors>
       GetSupportedInputMethods() const OVERRIDE;
   virtual scoped_ptr<InputMethodDescriptors>
@@ -74,8 +73,6 @@ class MockInputMethodManager : public InputMethodManager {
   // TODO(yusukes): Add more variables for counting the numbers of the API calls
   int add_observer_count_;
   int remove_observer_count_;
-  int set_state_count_;
-  State last_state_;
 
  private:
   // The value GetCurrentInputMethod().id() will return.

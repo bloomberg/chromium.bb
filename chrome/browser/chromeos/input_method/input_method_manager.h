@@ -73,9 +73,6 @@ class InputMethodManager {
   virtual void RemoveCandidateWindowObserver(
       CandidateWindowObserver* observer) = 0;
 
-  // Sets the current browser status.
-  virtual void SetState(State new_state) = 0;
-
   // Returns all input methods that are supported, including ones not active.
   // This function never returns NULL. Note that input method extensions are NOT
   // included in the result.

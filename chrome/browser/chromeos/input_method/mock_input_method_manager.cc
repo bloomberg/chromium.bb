@@ -10,8 +10,6 @@ namespace input_method {
 MockInputMethodManager::MockInputMethodManager()
     : add_observer_count_(0),
       remove_observer_count_(0),
-      set_state_count_(0),
-      last_state_(STATE_TERMINATING),
       util_(&delegate_, whitelist_.GetSupportedInputMethods()) {
 }
 
@@ -34,11 +32,6 @@ void MockInputMethodManager::RemoveObserver(
 
 void MockInputMethodManager::RemoveCandidateWindowObserver(
     InputMethodManager::CandidateWindowObserver* observer) {
-}
-
-void MockInputMethodManager::SetState(State new_state) {
-  ++set_state_count_;
-  last_state_ = new_state;
 }
 
 scoped_ptr<InputMethodDescriptors>

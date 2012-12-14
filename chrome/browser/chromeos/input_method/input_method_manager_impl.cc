@@ -10,7 +10,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
-#include "chrome/browser/chromeos/input_method/browser_state_monitor.h"
 #include "chrome/browser/chromeos/input_method/candidate_window_controller.h"
 #include "chrome/browser/chromeos/input_method/input_method_delegate.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine_ibus.h"
@@ -83,7 +82,6 @@ void InputMethodManagerImpl::SetState(State new_state) {
       break;
     case STATE_TERMINATING: {
       ibus_controller_->Stop();
-      browser_state_monitor_.reset();  // For crbug.com/120183.
       if (candidate_window_controller_.get()) {
         candidate_window_controller_->Shutdown(ibus_controller_.get());
         candidate_window_controller_.reset();
@@ -581,7 +579,6 @@ void InputMethodManagerImpl::OnDisconnected() {
 void InputMethodManagerImpl::Init() {
   DCHECK(!ibus_controller_.get());
 
-  browser_state_monitor_.reset(new BrowserStateMonitor(this, delegate_.get()));
   ibus_controller_.reset(IBusController::Create());
   xkeyboard_.reset(XKeyboard::Create(util_));
   ibus_controller_->AddObserver(this);

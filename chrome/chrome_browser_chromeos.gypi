@@ -336,6 +336,8 @@
         'browser/chromeos/input_method/input_method_manager.h',
         'browser/chromeos/input_method/input_method_manager_impl.cc',
         'browser/chromeos/input_method/input_method_manager_impl.h',
+        'browser/chromeos/input_method/input_method_persistence.cc',
+        'browser/chromeos/input_method/input_method_persistence.h',
         'browser/chromeos/input_method/input_method_property.cc',
         'browser/chromeos/input_method/input_method_property.h',
         'browser/chromeos/input_method/input_method_util.cc',
