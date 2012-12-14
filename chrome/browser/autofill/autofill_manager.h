@@ -172,6 +172,10 @@ class AutofillManager : public content::WebContentsObserver,
   bool OnFormSubmitted(const FormData& form,
                        const base::TimeTicks& timestamp);
 
+  // Tell the renderer the current interactive autocomplete failed somehow.
+  // Exposed for testing.
+  virtual void ReturnAutocompleteError();
+
  private:
   // content::WebContentsObserver:
   virtual void RenderViewCreated(content::RenderViewHost* host) OVERRIDE;
@@ -234,9 +238,6 @@ class AutofillManager : public content::WebContentsObserver,
 
   // Passes return data for an OnRequestAutocomplete call back to the page.
   void ReturnAutocompleteData(const FormStructure* result);
-
-  // Tell the renderer the current interactive autocomplete failed somehow.
-  void ReturnAutocompleteError();
 
   // Fills |host| with the RenderViewHost for this tab.
   // Returns false if Autofill is disabled or if the host is unavailable.
@@ -378,6 +379,8 @@ class AutofillManager : public content::WebContentsObserver,
                            DeterminePossibleFieldTypesForUpload);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
                            DeterminePossibleFieldTypesForUploadStressTest);
+  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
+                           DisabledAutofillDispatchesError);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AddressSuggestionsCount);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AutofillIsEnabledAtPageLoad);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, DeveloperEngagement);

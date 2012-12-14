@@ -39,6 +39,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/ssl_status.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
@@ -459,6 +460,7 @@ class TestAutofillManager : public AutofillManager {
       : AutofillManager(web_contents, delegate, personal_data),
         personal_data_(personal_data),
         autofill_enabled_(true),
+        request_autocomplete_error_count_(0),
         did_finish_async_form_submit_(false),
         message_loop_is_running_(false) {
   }
@@ -467,6 +469,10 @@ class TestAutofillManager : public AutofillManager {
 
   void set_autofill_enabled(bool autofill_enabled) {
     autofill_enabled_ = autofill_enabled;
+  }
+
+  int request_autocomplete_error_count() const {
+    return request_autocomplete_error_count_;
   }
 
   void set_expected_submitted_field_types(
@@ -573,6 +579,10 @@ class TestAutofillManager : public AutofillManager {
     form_structures()->push_back(form);
   }
 
+  virtual void ReturnAutocompleteError() OVERRIDE {
+    ++request_autocomplete_error_count_;
+  }
+
  private:
   // AutofillManager is ref counted.
   virtual ~TestAutofillManager() {}
@@ -581,6 +591,7 @@ class TestAutofillManager : public AutofillManager {
   TestPersonalDataManager* personal_data_;
 
   bool autofill_enabled_;
+  int request_autocomplete_error_count_;
 
   bool did_finish_async_form_submit_;
   bool message_loop_is_running_;
@@ -3122,6 +3133,17 @@ TEST_F(AutofillManagerTest, RemoveProfileVariant) {
   // update these expectations.
   // http://crbug.com/124211
   EXPECT_TRUE(autofill_manager_->GetProfileWithGUID(guid.c_str()));
+}
+
+TEST_F(AutofillManagerTest, DisabledAutofillDispatchesError) {
+  ASSERT_EQ(0, autofill_manager_->request_autocomplete_error_count());
+
+  autofill_manager_->set_autofill_enabled(false);
+  autofill_manager_->OnRequestAutocomplete(FormData(),
+                                           GURL(),
+                                           content::SSLStatus());
+
+  EXPECT_EQ(1, autofill_manager_->request_autocomplete_error_count());
 }
 
 namespace {

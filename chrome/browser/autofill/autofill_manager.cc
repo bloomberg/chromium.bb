@@ -778,6 +778,11 @@ void AutofillManager::OnRequestAutocomplete(
     const FormData& form,
     const GURL& frame_url,
     const content::SSLStatus& ssl_status) {
+  if (!IsAutofillEnabled()) {
+    ReturnAutocompleteError();
+    return;
+  }
+
   base::Callback<void(const FormStructure*)> callback =
       base::Bind(&AutofillManager::ReturnAutocompleteData, this);
   autofill::AutofillDialogController* controller =
