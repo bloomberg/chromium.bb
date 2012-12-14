@@ -18,8 +18,10 @@ if env.Bit('target_arm'):
 env.Append(CCFLAGS=['-O0', '-g', '-fno-omit-frame-pointer'])
 # We need to disable PNaCl's link time optimizations so that functions
 # do not get inlined, so that we can set breakpoints on these
-# functions.
-env.Append(LINKFLAGS=['-O0'])
+# functions.  Also make translation optimizaton level -O0.
+if env.Bit('bitcode'):
+  env.Append(LINKFLAGS=['-O0'])
+  env.Append(TRANSLATEFLAGS=['-O0'])
 
 test_args = ['--gdb', env['GDB'],
              '--output_dir', env.subst('${TARGET_ROOT}/test_results')]
@@ -92,10 +94,7 @@ node = env.CommandTest(
     command=['${PYTHON}', env.File('change_variable.py'),
              '--nexe', gdb_test_guest] + test_args)
 
-# This test does not pass with PNaCl yet.
-# TODO(mseaborn): Debug this and enable the test on PNaCl.
-env.AddNodeToTestSuite(node, test_suites, 'run_gdb_change_variable_test',
-                       is_broken=env.Bit('bitcode'))
+env.AddNodeToTestSuite(node, test_suites, 'run_gdb_change_variable_test')
 env.TestBindsFixedTcpPort(node)
 
 # GDB treats multithreaded programs specially. Provide distinct nexe for

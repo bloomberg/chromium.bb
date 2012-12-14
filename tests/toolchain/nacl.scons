@@ -222,6 +222,16 @@ for tag, e in ENVIRONMENTS_TO_TRY:
         src in ['eh_return.c']):
       is_broken = True
 
+    # Using -O0 for the compile, including LLC -O0 fails with PIC on x86-64.
+    # TODO(jvoung): fix PIC global address materialization.
+    # http://code.google.com/p/nativeclient/issues/detail?id=3219
+    if (env.Bit('bitcode') and
+        env.Bit('target_x86_64') and
+        env.Bit('nacl_pic') and
+        tag.startswith('noopt') and
+        src in ['unwind_trace.cc', 'stack_frame.cc']):
+      is_broken = True
+
     name = src.split('.')[0] + '_' + tag
     nobj = e.ComponentObject(name + '.o', src)
     nexe = e.ComponentProgram(name, nobj, EXTRA_LIBS=['${NONIRT_LIBS}'])
